@@ -1240,7 +1240,10 @@ void AliITS::UpdateInternalGeometry(){
 
   //reads new geometry from TGeo 
   AliDebug(1,"Delete ITSgeom and create a new one reading TGeo");
-  AliITSInitGeometry initgeom("AliITSvPPRasymmFMD",2);
+  AliITSVersion_t version = (AliITSVersion_t)IsVersion();
+  Int_t minor = 0;
+  if(version==kvPPRasymmFMD)minor=2;  // default minor version for this geom.
+  AliITSInitGeometry initgeom(version,minor);
   AliITSgeom* geom = initgeom.CreateAliITSgeom();
   SetITSgeom(geom);
 }

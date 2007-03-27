@@ -54,6 +54,18 @@ $Id$
 #include "AliITSInitGeometry.h"
 
 ClassImp(AliITSInitGeometry)
+
+const Bool_t AliITSInitGeometry::fgkOldSPDbarrel = kTRUE;
+const Bool_t AliITSInitGeometry::fgkOldSDDbarrel = kFALSE;
+const Bool_t AliITSInitGeometry::fgkOldSSDbarrel = kTRUE;
+const Bool_t AliITSInitGeometry::fgkOldSDDcone   = kTRUE;
+const Bool_t AliITSInitGeometry::fgkOldSSDcone   = kTRUE;
+const Bool_t AliITSInitGeometry::fgkOldSPDshield = kTRUE;
+const Bool_t AliITSInitGeometry::fgkOldSDDshield = kTRUE;
+const Bool_t AliITSInitGeometry::fgkOldSSDshield = kTRUE;
+const Bool_t AliITSInitGeometry::fgkOldServices  = kTRUE;
+const Bool_t AliITSInitGeometry::fgkOldSupports  = kTRUE;
+/*
 //______________________________________________________________________
 AliITSInitGeometry::AliITSInitGeometry():
 TObject(),
@@ -71,12 +83,13 @@ fDecode(kFALSE){
     // Return:
     //   A default inilized AliITSInitGeometry object
 }
+*/
 //______________________________________________________________________
-AliITSInitGeometry::AliITSInitGeometry(const Char_t *name,Int_t minorversion):
+AliITSInitGeometry::AliITSInitGeometry(AliITSVersion_t version,Int_t minorversion):
 TObject(),
-fName(name),
+fName(0),
 fMinorVersion(minorversion),
-fMajorVersion(0),
+fMajorVersion(version),
 fTiming(kFALSE),
 fSegGeom(kFALSE),
 fDecode(kFALSE){
@@ -87,17 +100,34 @@ fDecode(kFALSE){
     //   none.
     // Return:
     //   A default inilized AliITSInitGeometry object
+  if(version == kvPPRasymmFMD && (fMinorVersion==1|| fMinorVersion==2)){
+    fName="AliITSvPPRasymmFMD";
+  }
+  else if(version == kv11Hybrid){
+    fName="AliITSv11Hybrid";
+  }
+  else {
+    AliFatal(Form("Undefined geometry: fMajorVersion=%d, fMinorVersion= %d",(Int_t)fMajorVersion,fMinorVersion));
+  }
+  /*
 
     if(fName.CompareTo("AliITSvPPRasymmFMD")==0)if(fMinorVersion==1||
-						   fMinorVersion==2){
+						   fMinorVersion==2) {
 	fMajorVersion=10;
 	return;
     } // end if
+
+    if (fName.CompareTo("AliITSv11")==0) {
+	fMajorVersion=11;
+	return;
+    } // end if
+
     // if not defined geometry error
     Error("AliITSInitGeometry(name,version)"," Name must be AliITSvPPRasymmFMD"
 	" and version must be 1 or 2 for now.");
     fMinorVersion = 0;
     fName = "";
+  */
     return;
 }
 //______________________________________________________________________
@@ -138,12 +168,22 @@ Bool_t AliITSInitGeometry::InitAliITSgeom(AliITSgeom *geom){
     AliFatal("The geometry manager has not been initialized (e.g. TGeoManager::Import(\"geometry.root\")should be called in advance) - exit forced");
     return kFALSE;
   }
-  switch(fMajorVersion){
-  case 10:{ // only case defined so far
+  switch(fMajorVersion) {
+
+  case kvPPRasymmFMD: { 
     return InitAliITSgeomPPRasymmFMD(geom);
-  }break; // end case
-  default:{
-    Error("InitAliITSgeom","Undefined geomtery");
+  } break; // end case
+
+  case kv11Hybrid: { 
+    return InitAliITSgeomV11Hybrid(geom);
+  } break; // end case
+
+  case kv11: {
+    return InitAliITSgeomV11(geom);
+  } break; // end case
+
+  default: {
+    AliFatal("Undefined geometry");
     return kFALSE;
   } break; // end case
   } // end switch
@@ -226,6 +266,166 @@ Bool_t AliITSInitGeometry::InitAliITSgeomPPRasymmFMD(AliITSgeom *geom){
     } // end if
     return kTRUE;
 }
+
+//______________________________________________________________________
+Bool_t AliITSInitGeometry::InitAliITSgeomV11Hybrid(AliITSgeom *geom){
+    // Initilizes the geometry transformation class AliITSgeom
+    // to values appropreate to this specific geometry. Now that
+    // the segmentation is part of AliITSgeom, the detector
+    // segmentations are also defined here.
+    // Inputs:
+    //   AliITSgeom *geom  A pointer to the AliITSgeom class
+    // Outputs:
+    //   AliITSgeom *geom  This pointer recreated and properly inilized.
+    // Return:
+    //   none.
+
+  const Int_t kItype  = 0; // Type of transformation defined 0=> Geant
+  const Int_t klayers = 6; // number of layers in the ITS
+  const Int_t kladders[klayers]   = {20,40,14,22,34,38}; // Number of ladders
+  const Int_t kdetectors[klayers] = {4,4,6,8,22,25};// number of detector/lad
+  const AliITSDetector kIdet[6]   = {kSPD,kSPD,kSDD,kSDD,kSSD,kSSD};
+  const TString kPathbase = "/ALIC_1/ITSV_1/";
+  
+  char *pathSDDsens1, *pathSDDsens2;
+  if (SDDIsTGeoNative()) {
+    pathSDDsens1 = "%sITSsddLayer3_1/ITSsddLadd_%d/ITSsddSensor3_%d/ITSsddWafer3_%d/ITSsddSensitivL3_1";
+    pathSDDsens2 = "%sITSsddLayer4_1/ITSsddLadd_%d/ITSsddSensor4_%d/ITSsddWafer4_%d/ITSsddSensitivL4_1";
+  } else{
+    pathSDDsens1 = "%sITSD_1/IT34_1/I004_%d/I302_%d/ITS3_%d";
+    pathSDDsens2 = "%sITSD_1/IT34_1/I005_%d/I402_%d/ITS4_%d";
+  }
+  
+  const TString kNames[klayers] = {
+    "%sITSD_1/IT12_1/I12B_%d/I10B_%d/I107_%d/I101_1/ITS1_1", // lay=1
+    "%sITSD_1/IT12_1/I12B_%d/I20B_%d/I1D7_%d/I1D1_1/ITS2_1", // lay=2
+    pathSDDsens1, // lay=3
+    pathSDDsens2, // lay=4
+    "%sITSD_1/IT56_1/I565_%d/I562_%d/ITS5_%d", // lay=5
+    "%sITSD_1/IT56_1/I569_%d/I566_%d/ITS6_%d"};// Lay=6
+  
+  Int_t mod,nmods=0, lay, lad, det, cpn0, cpn1, cpn2;
+  Double_t tran[3]={0.,0.,0.}, rot[10]={9*0.0,1.0};
+  TArrayD shapePar;
+  TString path, shapeName;
+  TGeoHMatrix matrix;
+  Bool_t initSeg[3]={kFALSE, kFALSE, kFALSE};
+  TStopwatch *time = 0x0;
+  if(fTiming) time = new TStopwatch();
+
+  if(fTiming) time->Start();
+  for(mod=0;mod<klayers;mod++) nmods += kladders[mod]*kdetectors[mod];
+  geom->Init(kItype,klayers,kladders,kdetectors,nmods);
+
+  for(mod=0;mod<nmods;mod++) {
+
+    DecodeDetectorLayers(mod,lay,lad,det); // Write
+    geom->CreateMatrix(mod,lay,lad,det,kIdet[lay-1],tran,rot);
+    RecodeDetector(mod,cpn0,cpn1,cpn2); // Write reusing lay,lad,det.
+
+    if (SDDIsTGeoNative())
+      if (kIdet[lay-1]==kSDD) {
+	cpn0 = lad-1;
+	cpn1 = det-1;
+	cpn2 = 1;
+      }
+
+    path.Form(kNames[lay-1].Data(),
+	      kPathbase.Data(),cpn0,cpn1,cpn2);
+    geom->GetGeomMatrix(mod)->SetPath(path);
+    GetTransformation(path.Data(),matrix);
+    geom->SetTrans(mod,matrix.GetTranslation());
+    geom->SetRotMatrix(mod,matrix.GetRotationMatrix());
+    if(initSeg[kIdet[lay-1]]) continue;
+    GetShape(path,shapeName,shapePar);
+    if(shapeName.CompareTo("BOX")){
+      Error("InitITSgeom","Geometry changed without proper code update"
+	    "or error in reading geometry. Shape is not BOX.");
+      return kFALSE;
+    } // end if
+    InitGeomShapePPRasymmFMD(kIdet[lay-1],initSeg,shapePar,geom);
+  } // end for module
+
+  if(fTiming){
+    time->Stop();
+    time->Print();
+    delete time;
+  } // end if
+  return kTRUE;
+}
+
+//______________________________________________________________________
+Bool_t AliITSInitGeometry::InitAliITSgeomV11(AliITSgeom *geom){
+  // Initilizes the geometry transformation class AliITSgeom
+  // Now that the segmentation is part of AliITSgeom, the detector
+  // segmentations are also defined here.
+  //
+  // Inputs:
+  //   AliITSgeom *geom  A pointer to the AliITSgeom class
+  // Outputs:
+  //   AliITSgeom *geom  This pointer recreated and properly inilized.
+  // LG
+
+
+  const Int_t kItype=0; // Type of transormation defined 0=> Geant
+  const Int_t klayers = 6; // number of layers in the ITS
+  const Int_t kladders[klayers]   = {20,40,14,22,34,38}; // Number of ladders
+  const Int_t kdetectors[klayers] = {4,4,6,8,22,25};// number of detector/lad
+  const AliITSDetector kIdet[6]   = {kSPD,kSPD,kSDD,kSDD,kSSD,kSSD};
+
+  const TString kPathbase = "/ALIC_1/ITSV_1/";
+  const TString kNames[klayers] =
+    {"AliITSInitGeometry:spd missing", // lay=1
+     "AliITSInitGeometry:spd missing", // lay=2
+     "%sITSsddLayer3_1/ITSsddLadd_%d/ITSsddSensor_%d/ITSsddWafer_1/ITSsddSensitiv_1", // lay=3
+     "%sITSsddLayer4_1/ITSsddLadd_%d/ITSsddSensor_%d/ITSsddWafer_1/ITSsddSensitiv_1", // lay=4
+     "AliITSInitGeometry:ssd missing", // lay=5
+     "AliITSInitGeometry:ssd missing"};// lay=6
+ 
+  Int_t mod,nmods=0,lay,lad,det,cpn0,cpn1,cpn2;
+  Double_t tran[3]={0.0,0.0,0.0},rot[10]={9*0.0,1.0};
+  TArrayD shapePar;
+  TString path,shapeName;
+  TGeoHMatrix matrix;
+  Bool_t initSeg[3]={kFALSE,kFALSE,kFALSE};
+  TStopwatch *time = 0x0;if(fTiming) time=new TStopwatch();
+  
+  if(fTiming) time->Start();
+  for(mod=0;mod<klayers;mod++) nmods += kladders[mod]*kdetectors[mod];
+  
+  geom->Init(kItype,klayers,kladders,kdetectors,nmods);
+  for(mod=0;mod<nmods;mod++) {
+    
+    DecodeDetectorLayers(mod,lay,lad,det); // Write
+    geom->CreateMatrix(mod,lay,lad,det,kIdet[lay-1],tran,rot);
+    RecodeDetector(mod,cpn0,cpn1,cpn2); // Write reusing lay,lad,det.
+    path.Form(kNames[lay-1].Data(),
+	      kPathbase.Data(),cpn0,cpn1,cpn2);
+    geom->GetGeomMatrix(mod)->SetPath(path);
+    if (GetTransformation(path.Data(),matrix)) {
+      geom->SetTrans(mod,matrix.GetTranslation());
+      geom->SetRotMatrix(mod,matrix.GetRotationMatrix());
+    }
+    
+    if(initSeg[kIdet[lay-1]]) continue;
+    GetShape(path,shapeName,shapePar);
+    if(shapeName.CompareTo("BOX")){
+      Error("InitAliITSgeomV11","Geometry changed without proper code update"
+	    "or error in reading geometry. Shape is not BOX.");
+      return kFALSE;
+    } // end if
+    InitGeomShapePPRasymmFMD(kIdet[lay-1],initSeg,shapePar,geom);
+    
+  } // end for module
+  
+  if(fTiming){
+    time->Stop();
+    time->Print();
+    delete time;
+  } // end if
+  return kTRUE;
+}
+
 //______________________________________________________________________
 Bool_t AliITSInitGeometry::InitGeomShapePPRasymmFMD(AliITSDetector idet,
 						       Bool_t *initSeg,
@@ -387,9 +587,9 @@ Bool_t AliITSInitGeometry::GetTransformation(const TString &volumePath,
     // Preserve the modeler state.
     gGeoManager->PushPath();
     if (!gGeoManager->cd(volumePath.Data())) {
-	gGeoManager->PopPath();
-	Error("GetTransformation","Error in cd-ing to ",volumePath.Data());
-	return kFALSE;
+      gGeoManager->PopPath();
+      Error("GetTransformation","Error in cd-ing to ",volumePath.Data());
+      return kFALSE;
     } // end if !gGeoManager
     mat = *gGeoManager->GetCurrentMatrix();
     // Retstore the modeler state.

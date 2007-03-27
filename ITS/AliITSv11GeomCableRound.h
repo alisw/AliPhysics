@@ -29,8 +29,9 @@ class AliITSv11GeomCableRound : public AliITSv11GeomCable {
 
   void          AddCheckPoint( TGeoVolume *vol, Int_t iCheckPt,
 			       Double_t *coord, Double_t *orthVect);
-  Int_t         CreateAndInsertCableSegment(Int_t p2);
-  Int_t         CreateAndInsertTorusSegment(Int_t p2, Double_t rotation=0);
+  TGeoVolume*   CreateAndInsertCableSegment(Int_t p2, TGeoCombiTrans** ct=0);
+  TGeoVolume*   CreateAndInsertTorusSegment(Int_t p2, Double_t rotation=0,
+					    TGeoCombiTrans** ct=0);
   void          PrintCheckPoints() const;
 
   void          SetNLayers(Int_t nLayers);

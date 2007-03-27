@@ -329,9 +329,10 @@ AliITSgeom* AliITSLoader::GetITSgeom(Bool_t force) {
     delete fGeom;
     fGeom = 0;
   }
-  AliITSInitGeometry initgeom("AliITSvPPRasymmFMD",2);
+  AliITSInitGeometry initgeom;
   fGeom = initgeom.CreateAliITSgeom();
   AliDebug(1,"AliITSgeom object has been initialized from TGeo\n");
+  AliInfo(Form("Geometry name: %s",(initgeom.GetGeometryName()).Data()));
   return fGeom;
 }
 //______________________________________________________________________

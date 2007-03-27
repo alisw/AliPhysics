@@ -80,10 +80,9 @@ void AliITSReconstructor::Init(AliRunLoader *runLoader) const{
     // Return:
     //   none.
 
-    AliITSInitGeometry *initgeom = new AliITSInitGeometry("AliITSvPPRasymmFMD",
-							  2);
-    AliITSgeom *geom = initgeom->CreateAliITSgeom();
-    delete initgeom; // once created, do not need initgeom any more.
+    AliITSInitGeometry initgeom;
+    AliITSgeom *geom = initgeom.CreateAliITSgeom();
+    AliInfo(Form("Geometry name: %s",(initgeom.GetGeometryName()).Data()));
     AliITSLoader* loader = static_cast<AliITSLoader*>
 	(runLoader->GetLoader("ITSLoader"));
     if (!loader) {

@@ -10,6 +10,7 @@
 //*************************************************************************
 
 class TGeoVolume;
+class TGeoVolumeAssembly;
 class TGeoTranslation;
 class TGeoCombiTrans;
 class TGeoArb8;
@@ -54,26 +55,33 @@ class AliITSv11GeometrySDD : public AliITSv11Geometry {
 
   virtual void  SetParameters();
   TGeoVolume*   GetMotherVolume() const { return fMotherVol;};
-  const char*   GetSenstiveVolumeMame() const {return fgSDDsensitiveVolName;};
+  const char*   GetSenstiveVolumeName3() const {return fgSDDsensitiveVolName3;};
+  const char*   GetSenstiveVolumeName4() const {return fgSDDsensitiveVolName4;};
   Int_t         GetLay3NLadders() const;
   Int_t         GetLay4NLadders() const;
 
   private:
 
-  // Create ladder virtual volumes and its detectors
-  virtual TGeoVolume*  CreateLadder(Int_t iLay);
-  virtual TGeoVolume*  CreateDetectors(Int_t iLay);
-  // Create virtual volumes inside a ladder volume
-  virtual TGeoVolume*  CreateLadderSegment(Int_t iLay, Int_t iSeg);
-  virtual TGeoVolume*  CreateEndLadder(Int_t iLay);
-  // Create some basic objects  
-  virtual TGeoVolume*  CreateHybrid(Int_t iLRSide);
-  virtual TGeoVolume*  CreatePinSupport();
-  virtual TGeoVolume*  CreateCoolPipeSupportL();
-  virtual TGeoVolume*  CreateCoolPipeSupportR();
-  virtual TGeoVolume*  CreateSDDsensor();
-  virtual TGeoVolume*  CreateBaseThermalBridge();
-  void                 CreateBasicObjects();
+  virtual TGeoVolumeAssembly*  CreateLadder(Int_t iLay);
+  virtual TGeoVolumeAssembly*  CreateDetectorsAssembly(Int_t iLay);
+  virtual TGeoVolumeAssembly*  CreateLadderSegment(Int_t iLay, Int_t iSeg);
+  virtual TGeoVolumeAssembly*  CreateEndLadder(Int_t iLay);
+  virtual TGeoVolumeAssembly*  CreateEndLadderCards(Int_t iLay);
+  virtual TGeoVolumeAssembly*  CreateSupportRing(Int_t iLay);
+
+  // Create some basic objects : 
+  virtual void                 CreateSDDsensor();
+  virtual TGeoVolume*          CreateHybrid(Int_t iLRSide);
+  virtual TGeoVolume*          CreatePinSupport();
+  virtual TGeoVolume*          CreateCoolPipeSupportL();
+  virtual TGeoVolume*          CreateCoolPipeSupportR();
+  virtual TGeoVolume*          CreateBaseThermalBridge();
+
+  virtual TGeoVolumeAssembly*  CreateCarlosCard(Int_t iLay);
+  virtual TGeoVolumeAssembly*  CreateLVCard(Int_t orientation);
+  virtual TGeoVolumeAssembly*  CreateHVCard(Int_t iLay);
+
+  void                         CreateBasicObjects();
 
 
   // Check that the nedium exists
@@ -81,7 +89,8 @@ class AliITSv11GeometrySDD : public AliITSv11Geometry {
 
   // Create a TGeoCombiTrans: general rotation in phi and (dy,dz) translation 
   TGeoCombiTrans* CreateCombiTrans( const char *name,
-				    Double_t dy, Double_t dz, Double_t dphi);
+				    Double_t dy, Double_t dz, Double_t dphi,
+				    Bool_t planeSym=kFALSE);
 
   // add (dx,dy,dz) translation to a initial TGeoCombiTrans
   void AddTranslationToCombiTrans( TGeoCombiTrans* ct,
@@ -95,7 +104,8 @@ class AliITSv11GeometrySDD : public AliITSv11Geometry {
   TGeoVolume* fPinSupport;        //!  pins glued to sensors
   TGeoVolume* fCoolPipeSupportL;  //!  half of cooling pipe support
   TGeoVolume* fCoolPipeSupportR;  //!  half of cooling pipe support
-  TGeoVolume* fSDDsensor;         //!  sensor and HV cables on it
+  TGeoVolume* fSDDsensor3;        //!  sensor of lay. 3 and HV cables on it
+  TGeoVolume* fSDDsensor4;        //!  sensor of lay. 4 and HV cables on it
   TGeoVolume* fBaseThermalBridge; //!  Base of hybrid thermal bridge
   TGeoVolume* fHybrid;            //!  hybrid volume
 
@@ -104,8 +114,8 @@ class AliITSv11GeometrySDD : public AliITSv11Geometry {
   TGeoMatrix* fLaddSegCommonTr[fgkNladdSegCommonVol]; //! their transf.
 
   AliITSv11GeomCableFlat *fDigitCableLay3A; // layer 3 cables, side A
-  AliITSv11GeomCableFlat *fDigitCableLay3B; // layer 3 cables, side A
-  AliITSv11GeomCableFlat *fDigitCableLay4A; // layer 4 cables, side B
+  AliITSv11GeomCableFlat *fDigitCableLay3B; // layer 3 cables, side B
+  AliITSv11GeomCableFlat *fDigitCableLay4A; // layer 4 cables, side A
   AliITSv11GeomCableFlat *fDigitCableLay4B; // layer 4 cables, side B
 
   TGeoVolume *fMotherVol;    //! mother volume given in LayerX() funct.
@@ -128,10 +138,12 @@ class AliITSv11GeometrySDD : public AliITSv11Geometry {
   Int_t fColorGlass;         //  ===
   Int_t fColorSMD;           //  ===
   Int_t fColorSMDweld;       //  ===
+  Int_t fColorStesalite;     //  ===
 
   //--------------------------------------  parameters for the SDD geometry
 
-  static const char* fgSDDsensitiveVolName;       // name of sensitive vol
+  static const char* fgSDDsensitiveVolName3;       // sens. vol. name for lay. 3
+  static const char* fgSDDsensitiveVolName4;       // sens. vol. name for lay. 4
 
   static const Int_t    fgkLay3Nladd;             // 14
   static const Int_t    fgkLay3Ndet;              //  6
@@ -296,6 +308,149 @@ class AliITSv11GeometrySDD : public AliITSv11Geometry {
   static const Double_t fgkLongHVcableAlThick;    //   Voltage
   static const Double_t fgkLongHVcableSeparation; //   cables
 
+
+  static const Double_t fgkRubyDX; // ruby dx with respect to the middle (to ladder z axis)
+  static const Double_t fgkRubyZladd3;
+  static const Double_t fgkRubyZladd4;
+
+  static const Double_t fgkLadFoot_X; // Length of ladder foot
+  static const Double_t fgkLadFoot_Z; // width 
+  static const Double_t fgkLadFoot_Y; // thickness
+  static const Double_t fgkLadFootMiddleY; // thickness in the middle part
+  static const Double_t fgkLadBox1_X;
+  static const Double_t fgkLadFingerPrint_X;
+  static const Double_t fgkLadFingerPrint_Y;
+  static const Double_t fgkLadFingerPrintBorder;
+  static const Double_t fgkRubyCageHoleZ;
+  static const Double_t fgkRubyCageHoleX;
+  static const Double_t fgkRubyCageHoleY;
+  static const Double_t fgkRubyCageAxisShift;
+  static const Double_t fgkScrewM4diam;
+  static const Double_t fgkRubyScrewShiftToCenterY;
+  static const Double_t fgkRubyHoleDiam;
+
+// the end ladder cooling pipe and its heat exchanger
+  static const Double_t fgkEndLadPipeUlengthLay3;
+  static const Double_t fgkEndLadPipeUlengthLay4;
+  static const Double_t fgkEndLadPipeUwidth;
+  static const Double_t fgkEndLadPipeRadius;
+  static const Double_t fgkEndLadPipeInnerDiam;
+  static const Double_t fgkEndLadPipeOuterDiam;
+
+  static const Double_t fgkEndLadPipeArmZLay3;   //
+  static const Double_t fgkEndLadPipeArmZLay4;   //
+  static const Double_t fgkEndLadPipeArmX;    // the arms of the U cooling tube
+  static const Double_t fgkEndLadPipeArmY;
+  static const Double_t fgkEndLadPipeArmBoxDY; // shift in Y of the arms from the axis
+  static const Double_t fgkEndLadPipeArmBoxDX;  // shift in X of the arms from the axis
+  static const Double_t fgkEndLadPipeArmZpos; // 
+
+
+  // approx dim for now - all of the following has to be checked
+  // once Beppe provide the drawing
+
+  // Carlos Card :
+  static const Double_t fgkLVcard_X;
+  static const Double_t fgkLVcard_Y;
+  static const Double_t fgkLVcard_Z;
+  static const Double_t fgkLVcard_CuZ;
+
+  static const Double_t fgkLVChip0_X;
+  static const Double_t fgkLVChip0_Y;
+  static const Double_t fgkLVChip0_Z; // all except si layer
+  static const Double_t fgkLVChip0_SiZ; //???????????????????????????????????????????????????
+  static const Double_t fgkLVChip0_PosX;
+  static const Double_t fgkLVChip0_PosY;
+
+  static const Double_t fgkLVChip1_X;
+  static const Double_t fgkLVChip1_Y;
+  static const Double_t fgkLVChip1_Z;
+  static const Double_t fgkLVChip1_SiZ;
+  static const Double_t fgkLVChip1_PosX;
+  static const Double_t fgkLVChip1_PosY;
+
+  static const Double_t fgkLVChip2_X;
+ static const Double_t fgkLVChip2_Y;
+  static const Double_t fgkLVChip2_Z;
+  static const Double_t fgkLVChip2_SiZ;
+  static const Double_t fgkLVChip2_PosX;
+  static const Double_t fgkLVChip2_PosY;
+
+  static const Double_t fgkLVChip3_X;
+  static const Double_t fgkLVChip3_Y;
+  static const Double_t fgkLVChip3_Z;
+  static const Double_t fgkLVChip3_SiZ;
+  static const Double_t fgkLVChip3_PosX;
+  static const Double_t fgkLVChip3_PosY;
+
+  static const Double_t fgkLVcool_X1;
+  static const Double_t fgkLVcool_Y1;
+  static const Double_t fgkLVcool_Z1;
+
+  static const Double_t fgkLVcool_X2;
+  static const Double_t fgkLVcool_Y2;
+  static const Double_t fgkLVcool_Z2;
+
+  static const Double_t fgkLVcool_X3;
+  static const Double_t fgkLVcool_Y3;
+  static const Double_t fgkLVcoolPosY;
+
+  // HV card :
+
+  static const Double_t fgkHVCardCeramX;
+  static const Double_t fgkHVCardCeramY;
+  static const Double_t fgkHVCardCeramZ;
+
+  static const Double_t fgkHVCardCapa1X;
+  static const Double_t fgkHVCardCapa1Z;
+  static const Double_t fgkHVCardCapa1Ymid;
+  static const Double_t fgkHVCardCapa1Yend;
+  static const Double_t fgkHVCardCapa1PosX;
+  static const Double_t fgkHVCardCapa1PosY;
+
+  static const Double_t fgkHVCardCapa2X;
+  static const Double_t fgkHVCardCapa2Z;
+  static const Double_t fgkHVCardCapa2Ymid;
+  static const Double_t fgkHVCardCapa2Yend;
+  static const Double_t fgkHVCardCapa2PosX;
+  static const Double_t fgkHVCardCapa2PosY;
+
+  static const Double_t fgkHVCardCapa3Xmid;
+  static const Double_t fgkHVCardCapa3Xend;
+  static const Double_t fgkHVCardCapa3Z;
+  static const Double_t fgkHVCardCapa3Y;
+
+  static const Double_t fgkHVCardCapa3PosX1;
+  static const Double_t fgkHVCardCapa3PosX2;
+  static const Double_t fgkHVCardCapa3PosX3;
+  static const Double_t fgkHVCardCapa3PosX4;
+  static const Double_t fgkHVCardCapa3PosX5;
+  static const Double_t fgkHVCardCapa3PosY1;
+  static const Double_t fgkHVCardCapa3PosY2;
+  static const Double_t fgkHVCardCapa3PosY3;
+
+  static const Double_t fgkHVCardCool1X;
+  static const Double_t fgkHVCardCool1Y;
+  static const Double_t fgkHVCardCool1Z;
+  static const Double_t fgkHVCardCool2X;
+  static const Double_t fgkHVCardCool2Y;
+  static const Double_t fgkHVCardCool2Z;
+  static const Double_t fgkHVCardCool3X;
+  static const Double_t fgkHVCardCool3Y;
+  static const Double_t fgkHVCardCool3Z;
+  static const Double_t fgkHVCardCoolDY;
+
+  static const Double_t fgkCarlosSuppX1;
+  static const Double_t fgkCarlosSuppY1;
+  static const Double_t fgkCarlosSuppX2;
+  static const Double_t fgkCarlosSuppY2;
+  static const Double_t fgkCarlosSuppZ;
+  static const Double_t fgkCarlosSuppAngle;
+  static const Double_t fgkCarlosSuppX3;
+  static const Double_t fgkCarlosSuppY3;
+  static const Double_t fgkCarlosSuppZ3;
+  static const Double_t fgkCarlosSuppTopLen;
+
   static const Double_t fgkmu;  // 1 micron, or more for debugging
 
   // calculated parameters
@@ -310,7 +465,7 @@ class AliITSv11GeometrySDD : public AliITSv11Geometry {
   Double_t fLay3sensorZPos[6];     // Z pos of sensors in layer 3
   Double_t fLay4sensorZPos[8];     // Z pos of sensors in layer 4
 
-  ClassDef(AliITSv11GeometrySDD,1) // ITS v11 SDD geometry
+  ClassDef(AliITSv11GeometrySDD,2) // ITS v11 SDD geometry
 };
 
 

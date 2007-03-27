@@ -12,9 +12,7 @@
 
 class TGeoVolume;
 class TGeoTranslation;
-//class TGeoCombiTrans;
-//class TGeoArb8;
-//class TGeoNode;
+class TGeoCombiTrans;
 class TGeoMedium;
 
 #include "AliITSv11GeomCable.h"
@@ -32,9 +30,12 @@ class AliITSv11GeomCableFlat : public AliITSv11GeomCable {
   Int_t       SetLayer(Int_t nLayer,Double_t thick,TGeoMedium *medium,Int_t color=0);
   void        AddCheckPoint( TGeoVolume *vol, Int_t iCheckPt,
 			     Double_t *coord, Double_t *orthVect);
-  TGeoVolume* CreateAndInsertCableSegment(Int_t p2, Double_t rotation=0);
-  TGeoVolume* CreateAndInsertBoxCableSegment(Int_t p2, Double_t rotation=0);
-  TGeoVolume* CreateAndInsertCableCylSegment(Int_t p2, Double_t rotation=0);
+  TGeoVolume* CreateAndInsertCableSegment(Int_t p2, Double_t rotation=0,
+					  TGeoCombiTrans** ct=0);
+  TGeoVolume* CreateAndInsertBoxCableSegment(Int_t p2, Double_t rotation=0,
+					     TGeoCombiTrans** ct=0);
+  TGeoVolume* CreateAndInsertCableCylSegment(Int_t p2, Double_t rotation=0,
+					     TGeoCombiTrans** ct=0);
 
   void        SetWidth(Double_t width) { fWidth = width;};
   void        SetThickness(Double_t thick) {fThick = thick;};

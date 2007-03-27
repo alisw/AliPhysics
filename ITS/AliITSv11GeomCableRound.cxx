@@ -41,7 +41,7 @@
 // ************************************************************************
 
   // Getting some media 
-  TGeoMedium *air   = gGeoManager->GetMedium("ITS_ITSair");
+  TGeoMedium *air   = gGeoManager->GetMedium("ITS_AIR$");
   TGeoMedium *water = gGeoManager->GetMedium("ITS_WATER");
   TGeoMedium *alu   = gGeoManager->GetMedium("ITS_ITSal"); 
 
@@ -283,7 +283,8 @@ void AliITSv11GeomCableRound::PrintCheckPoints() const {
 
 
 //________________________________________________________________________
-Int_t AliITSv11GeomCableRound::CreateAndInsertCableSegment(Int_t p2)
+TGeoVolume* AliITSv11GeomCableRound::CreateAndInsertCableSegment(Int_t p2,
+								 TGeoCombiTrans** ct)
 {
 //    Creates a cable segment between points p1 and p2.
 //
@@ -297,7 +298,7 @@ Int_t AliITSv11GeomCableRound::CreateAndInsertCableSegment(Int_t p2)
   TGeoNode *mainNode;
   if (fInitialNode==0) {
     TObjArray *nodes = gGeoManager->GetListOfNodes();
-    if (nodes->GetEntriesFast()==0) return kFALSE;
+    if (nodes->GetEntriesFast()==0) return 0;
     mainNode = (TGeoNode *) nodes->UncheckedAt(0);
   } else {
     mainNode = fInitialNode;
@@ -311,7 +312,7 @@ Int_t AliITSv11GeomCableRound::CreateAndInsertCableSegment(Int_t p2)
   fCurrentVol = p1Vol;
   if (! CheckDaughter(mainNode)) {
     printf("Error::volume containing point is not visible in node tree!\n");
-    return kFALSE;
+    return 0;
   };
 
   Double_t coord1[3], coord2[3], vect1[3], vect2[3];
@@ -329,7 +330,7 @@ Int_t AliITSv11GeomCableRound::CreateAndInsertCableSegment(Int_t p2)
     fCurrentVol = p2Vol;
     if (! CheckDaughter(mainNode)) {
       printf("Error::volume containing point is not visible in node tree!\n");
-      return kFALSE;
+      return 0;
     };
     Int_t p2nodeInd[fgkCableMaxNodeLevel];
     for (Int_t i=0; i<fgkCableMaxNodeLevel; i++) p2nodeInd[i]=fNodeInd[i];
@@ -411,7 +412,7 @@ Int_t AliITSv11GeomCableRound::CreateAndInsertCableSegment(Int_t p2)
     printf("%f, %f, %f\n",coord2[0], coord2[1], coord2[2]);
   };
 //   #include <TGeoSphere.h>
-//   TGeoMedium *airSDD = gGeoManager->GetMedium("ITS_ITSsddAir");
+//   TGeoMedium *airSDD = gGeoManager->GetMedium("ITS_AIR$");
 //   TGeoSphere *sphere = new TGeoSphere(0, 0.15);
 //   TGeoVolume *vSphere = new TGeoVolume("", sphere, airSDD);
 //   TGeoTranslation *trC = new TGeoTranslation("", cx, cy, cz);
@@ -423,12 +424,15 @@ Int_t AliITSv11GeomCableRound::CreateAndInsertCableSegment(Int_t p2)
 //   p2Vol->AddNode(vSphere, p2*3-1, tr1);
 //   p2Vol->AddNode(vSphere, p2*3  , tr2);
 
-  return kTRUE;
+  if (ct) *ct = combi;
+  return vCableSeg;
 }
 
 
 //________________________________________________________________________
-Int_t AliITSv11GeomCableRound::CreateAndInsertTorusSegment(Int_t p2, Double_t rotation)
+TGeoVolume* AliITSv11GeomCableRound::CreateAndInsertTorusSegment(Int_t p2,
+								 Double_t rotation,
+								 TGeoCombiTrans** ct)
 {
   // Create a torus cable segment between points p1 and p2.
   // The radius and position of the torus is defined by the
@@ -439,7 +443,7 @@ Int_t AliITSv11GeomCableRound::CreateAndInsertTorusSegment(Int_t p2, Double_t ro
   TGeoNode *mainNode;
   if (fInitialNode==0) {
     TObjArray *nodes = gGeoManager->GetListOfNodes();
-    if (nodes->GetEntriesFast()==0) return kFALSE;
+    if (nodes->GetEntriesFast()==0) return 0;
     mainNode = (TGeoNode *) nodes->UncheckedAt(0);
   } else {
     mainNode = fInitialNode;
@@ -453,7 +457,7 @@ Int_t AliITSv11GeomCableRound::CreateAndInsertTorusSegment(Int_t p2, Double_t ro
   fCurrentVol = p1Vol;
   if (! CheckDaughter(mainNode)) {
     printf("Error::volume containing point is not visible in node tree!\n");
-    return kFALSE;
+    return 0;
   };
 
   Double_t coord1[3], coord2[3], vect1[3], vect2[3];
@@ -471,7 +475,7 @@ Int_t AliITSv11GeomCableRound::CreateAndInsertTorusSegment(Int_t p2, Double_t ro
     fCurrentVol = p2Vol;
     if (! CheckDaughter(mainNode)) {
       printf("Error::volume containing point is not visible in node tree!\n");
-      return kFALSE;
+      return 0;
     };
     Int_t p2nodeInd[fgkCableMaxNodeLevel];
     for (Int_t i=0; i<fgkCableMaxNodeLevel; i++) p2nodeInd[i]=fNodeInd[i];
@@ -588,7 +592,8 @@ Int_t AliITSv11GeomCableRound::CreateAndInsertTorusSegment(Int_t p2, Double_t ro
     printf("%f, %f, %f\n",coord2[0], coord2[1], coord2[2]);
   };
 
-  return kTRUE;
+  if (ct) *ct = combiTorus;
+  return vCableSegT;
 }
 
 //________________________________________________________________________
@@ -623,7 +628,7 @@ TGeoVolume *AliITSv11GeomCableRound::CreateSegment( Double_t *coord1,
 				    localVect1[0],localVect1[1],localVect1[2],
 				    localVect2[0],localVect2[1],localVect2[2]);
 
-  TGeoMedium *airSDD = gGeoManager->GetMedium("ITS_ITSair");
+  TGeoMedium *airSDD = gGeoManager->GetMedium("ITS_AIR$");
   char name[100];
   sprintf(name, "%s_%i",GetName(),p);
   TGeoVolume *vCableSeg = new TGeoVolume(name, cableSeg, airSDD);
@@ -664,7 +669,7 @@ TGeoVolume *AliITSv11GeomCableRound::CreateTorus( Double_t &phi,
   //=================================================
   // Create the segment
   TGeoTorus *cableSeg = new TGeoTorus(torusR, 0, fRadius, torusPhi1, torusDPhi);
-  TGeoMedium *airSDD = gGeoManager->GetMedium("ITS_ITSair");
+  TGeoMedium *airSDD = gGeoManager->GetMedium("ITS_AIR$");
   char name[100];
   sprintf(name, "%s_%i",GetName(),p);
   TGeoVolume *vCableSeg = new TGeoVolume(name, cableSeg, airSDD);

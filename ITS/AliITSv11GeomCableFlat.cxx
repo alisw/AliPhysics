@@ -186,7 +186,8 @@ void AliITSv11GeomCableFlat::PrintCheckPoints() const {
 
 //________________________________________________________________________
 TGeoVolume* AliITSv11GeomCableFlat::CreateAndInsertCableSegment(Int_t p2,
-							  Double_t rotation)
+								Double_t rotation,
+								TGeoCombiTrans** ct)
 {
 //    Creates a cable segment between points p1 and p2.
 //    Rotation is the eventual rotation of the flat cable
@@ -366,7 +367,7 @@ TGeoVolume* AliITSv11GeomCableFlat::CreateAndInsertCableSegment(Int_t p2,
   };
 
 //   #include <TGeoSphere.h>
-//   TGeoMedium *airSDD = gGeoManager->GetMedium("ITS_ITSsddAir");
+//   TGeoMedium *airSDD = gGeoManager->GetMedium("ITS_AIR$");
 //   TGeoSphere *sphere = new TGeoSphere(0, 0.05);
 //   TGeoVolume *vSphere = new TGeoVolume("", sphere, airSDD);
 //   TGeoTranslation *trC = new TGeoTranslation("", cx, cy, cz);
@@ -377,13 +378,14 @@ TGeoVolume* AliITSv11GeomCableFlat::CreateAndInsertCableSegment(Int_t p2,
 //   p2Vol->AddNode(vSphere, p2*3-2, trC);
 //   p2Vol->AddNode(vSphere, p2*3-1, tr1);
 //   p2Vol->AddNode(vSphere, p2*3  , tr2);
-
+  if (ct) *ct = combiB;
   return vCableSegB;
 }
 
 //________________________________________________________________________
 TGeoVolume* AliITSv11GeomCableFlat::CreateAndInsertBoxCableSegment(Int_t p2,
-							  Double_t rotation)
+								   Double_t rotation,
+								   TGeoCombiTrans** ct)
 {
   // This function is to be use only when the segment has the shape
   // of a simple box, i.e. the normal vector to its end is perpendicular
@@ -563,12 +565,14 @@ TGeoVolume* AliITSv11GeomCableFlat::CreateAndInsertBoxCableSegment(Int_t p2,
     printf("%f, %f, %f\n",coord2[0], coord2[1], coord2[2]);
   };
 
+  if (ct) *ct = combiB;
   return vCableSegB;
 }
 
 //________________________________________________________________________
 TGeoVolume* AliITSv11GeomCableFlat::CreateAndInsertCableCylSegment(Int_t p2,
-							  Double_t rotation)
+								   Double_t rotation,
+								   TGeoCombiTrans** ct)
 {
   // Create a flat cable segment with a curvature between points p1 and p2.
   // The radius and position of the curve is defined by the
@@ -732,6 +736,7 @@ TGeoVolume* AliITSv11GeomCableFlat::CreateAndInsertCableCylSegment(Int_t p2,
     printf("%f, %f, %f\n",coord2[0], coord2[1], coord2[2]);
   };
 
+  if (ct) *ct = combiTorus;
   return vCableSegT;
 }
 
@@ -774,9 +779,9 @@ TGeoVolume *AliITSv11GeomCableFlat::CreateSegment( Double_t *coord1,
   if (localVect1[1]<0) tanACosCosPhi1 = -tanACosCosPhi1;
   if (localVect2[1]<0) tanACosCosPhi2 = -tanACosCosPhi2;
 
-  Double_t dl1 = 0.5*fThick*tanACosCosPhi1;
-  Double_t dl2 = 0.5*fThick*tanACosCosPhi2;
-
+  Double_t dl1 = 0.5*fThick*tanACosCosPhi1*0.99999999999999;
+  Double_t dl2 = 0.5*fThick*tanACosCosPhi2*0.99999999999999;
+  // 0.9999999999999 is for correcting dawn problems in TGeo...
   //=================================================
   // Create the segment
   TGeoArb8 *cableSeg = new TGeoArb8(fThick/2);
@@ -789,7 +794,7 @@ TGeoVolume *AliITSv11GeomCableFlat::CreateSegment( Double_t *coord1,
   cableSeg->SetVertex( 6,  fWidth/2,  length/2 - dL2 + dl2);
   cableSeg->SetVertex( 7,  fWidth/2, -length/2 + dL1 - dl1);
 
-  TGeoMedium *airSDD = gGeoManager->GetMedium("ITS_ITSair");
+  TGeoMedium *airSDD = gGeoManager->GetMedium("ITS_AIR$");
   TGeoVolume *vCableSeg = new TGeoVolume(GetName(), cableSeg, airSDD);
 
   // add all cable layers
@@ -842,7 +847,7 @@ TGeoVolume *AliITSv11GeomCableFlat::CreateCylSegment(Double_t &phi,
 
   TGeoTubeSeg *cableSeg = new TGeoTubeSeg(rMin, rMax, fWidth/2,
 					  phi1, phi2);
-  TGeoMedium *airSDD = gGeoManager->GetMedium("ITS_ITSair");
+  TGeoMedium *airSDD = gGeoManager->GetMedium("ITS_AIR$");
   TGeoVolume *vCableSeg = new TGeoVolume(GetName(), cableSeg, airSDD);
 
   // add all cable layers
@@ -881,7 +886,7 @@ TGeoVolume *AliITSv11GeomCableFlat::CreateBoxSegment( Double_t *coord1,
 
   TGeoBBox *cableSeg = new  TGeoBBox(fWidth/2, length/2, fThick/2);
 
-  TGeoMedium *airSDD = gGeoManager->GetMedium("ITS_ITSair");
+  TGeoMedium *airSDD = gGeoManager->GetMedium("ITS_AIR$");
   TGeoVolume *vCableSeg = new TGeoVolume(GetName(), cableSeg, airSDD);
 
   // add all cable layers
