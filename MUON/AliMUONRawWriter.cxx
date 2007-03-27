@@ -79,6 +79,7 @@
 #include "TList.h"
 #include "TObjArray.h"
 #include "TStopwatch.h"
+#include <Riostream.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONRawWriter) // Class implementation in ROOT context
@@ -173,43 +174,6 @@ AliMUONRawWriter::~AliMUONRawWriter(void)
   
   delete[] fTimers;
 }
-
-//______________________________________________________________________________
-//void
-//AliMUONRawWriter::CheckDigits()
-//{
-//  std::map<int,std::map<int,int> > m;
-//  
-//  for (Int_t iSt = 0; iSt < AliMUONConstants::NTrackingCh()/2; ++iSt) 
-//  {
-//    for (Int_t iCh = iSt*2; iCh <= iSt*2 + 1; ++iCh) 
-//    {      
-//      TClonesArray* muonDigits = fMUONData->Digits(iCh);
-//      for (Int_t idig = 0; idig < muonDigits->GetEntriesFast(); idig++) 
-//      {        
-//        AliMUONDigit* digit = (AliMUONDigit*) muonDigits->UncheckedAt(idig);
-//        Int_t busPatchId = GetBusPatch(*digit);
-//        m[busPatchId][digit->ManuId()]++;
-//      }
-//    } 
-//  }
-//  
-//  std::map<int,std::map<int,int> >::const_iterator it;
-//  
-//  Int_t nManuMax(0);
-//  
-//  for ( it = m.begin(); it != m.end(); ++it )
-//  {
-//    AliDebug(1,Form("BusPatch %3d has %3d manus",it->first,it->second.size()));
-//    nManuMax = std::max((Int_t)it->second.size(),nManuMax);
-//    std::map<int,int>::const_iterator it2;
-//    for ( it2 = it->second.begin(); it2 != it->second.end(); ++it2 )
-//    {
-//      AliDebug(1,Form("        BusPatch %3d Manu %4d Nch %3d",it->first,it2->first,it2->second));
-//    }
-//  }
-//  AliDebug(1,Form("Max manus per busPatch : %3d",nManuMax));
-//}
 
 //____________________________________________________________________
 Int_t AliMUONRawWriter::Digits2Raw()
@@ -559,11 +523,6 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
   
  // DDL event one per half chamber
 
-  // stored local id number 
-  TArrayI isFired(256);
-  isFired.Reset();
-
-
  // DDL header size
   Int_t headerSize = sizeof(AliRawDataHeader)/4;
 
@@ -604,6 +563,7 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
   UInt_t regInpHpt;
 
   UInt_t devX;
+  UChar_t sdevX;
   UInt_t version = 1; // software version
   UInt_t eventPhys = 1; // trigger type: 1 for physics, 0 for software
   UInt_t serialNb = 0xF; // serial nb of card: all bits on for the moment
@@ -632,11 +592,6 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
     eventPhys = 0; //set to generate scaler events
 
   Int_t nEntries = (Int_t) (localTrigger->GetEntries());// 234 local cards
-  // stored the local card id that's fired
-  for (Int_t i = 0; i <  nEntries; i++) {
-    locTrg = (AliMUONLocalTrigger*)localTrigger->At(i);
-    isFired[locTrg->LoCircuit()] = 1; // storing local boards with informations
-  }
 
   if (!nEntries)
     AliDebug(1, "No Trigger information available");
@@ -751,88 +706,69 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
 
       // 16 local card per regional board
       //      UShort_t localMask = 0x0;
-
+      
       for (Int_t iLoc = 0; iLoc < 16; iLoc++) {
+	  
+	  // slot zero for Regional card
+	  AliMUONLocalTriggerBoard* localBoard = (AliMUONLocalTriggerBoard*)boards->At(iLoc+1);
+	  
+	  if (localBoard) { // if not empty slot
+	      
+	      if ((iLocCard = localBoard->GetNumber()) != 0) {// if notified board
+		  
+		  locTrg  = (AliMUONLocalTrigger*)localTrigger->At(iEntries++);
+		  locCard = locTrg->LoCircuit();
+		  locDec  = locTrg->GetLoDecision();
+		  trigY =  locTrg->LoTrigY();
+		  posY  = locTrg->LoStripY();
+		  posX  = locTrg->LoStripX();
+		  devX  = locTrg->LoDev();
+		  sdevX = locTrg->LoSdev();
+		  
+		  AliDebug(4,Form("loctrg %d, posX %d, posY %d, devX %d\n", 
+				  locTrg->LoCircuit(),locTrg->LoStripX(),locTrg->LoStripY(),locTrg->LoDev()));  
+		  //packing word
+		  word = 0;
+		  AliBitPacking::PackWord((UInt_t)iLoc,word,19,22); //card id number in crate
+		  AliBitPacking::PackWord((UInt_t)locDec,word,15,18);
+		  AliBitPacking::PackWord((UInt_t)trigY,word,14,14);
+		  AliBitPacking::PackWord((UInt_t)posY,word,10,13);
+		  AliBitPacking::PackWord((UInt_t)sdevX,word,9,9);
+		  AliBitPacking::PackWord((UInt_t)devX,word,5,8);
+		  AliBitPacking::PackWord((UInt_t)posX,word,0,4);
+		  
+		  buffer[index++] = (locTrg->GetX1Pattern() | (locTrg->GetX2Pattern() << 16));
+		  buffer[index++] = (locTrg->GetX3Pattern() | (locTrg->GetX4Pattern() << 16));
+		  buffer[index++] = (locTrg->GetY1Pattern() | (locTrg->GetY2Pattern() << 16));
+		  buffer[index++] = (locTrg->GetY3Pattern() | (locTrg->GetY4Pattern() << 16));
+		  buffer[index++] = (Int_t)word; // data word
 
-	// slot zero for Regional card
-	AliMUONLocalTriggerBoard* localBoard = (AliMUONLocalTriggerBoard*)boards->At(iLoc+1);
-
-	if (localBoard) { // if not empty slot
-
-	  if ((iLocCard = localBoard->GetNumber()) != 0) {// if notified board
-
-	    if (isFired[iLocCard]) { // if card has triggered
-	      locTrg  = (AliMUONLocalTrigger*)localTrigger->At(iEntries++);
-	      locCard = locTrg->LoCircuit();
-	      locDec  = locTrg->GetLoDecision();
-	      trigY = 0;
-	      posY  = locTrg->LoStripY();
-	      posX  = locTrg->LoStripX();
-	      devX  = locTrg->LoDev();
-
-	      AliDebug(4,Form("loctrg %d, posX %d, posY %d, devX %d\n", 
-			      locTrg->LoCircuit(),locTrg->LoStripX(),locTrg->LoStripY(),locTrg->LoDev()));
-	    } else { //no trigger (see PRR chpt 3.4)
-	      locDec = 0;
-	      trigY = 1;
-	      posY = 15;
-	      posX = 0;
-	      devX = 0x8;
-	      // set local card id to -1
-	      locCard = -1; 
-	    }
-	   
-	    //packing word
-	    word = 0;
-	    AliBitPacking::PackWord((UInt_t)iLoc,word,19,22); //card id number in crate
-	    AliBitPacking::PackWord((UInt_t)locDec,word,15,18);
-	    AliBitPacking::PackWord((UInt_t)trigY,word,14,14);
-	    AliBitPacking::PackWord((UInt_t)posY,word,10,13);
-	    AliBitPacking::PackWord((UInt_t)devX,word,5,9);
-	    AliBitPacking::PackWord((UInt_t)posX,word,0,4);
-
-	    if (locCard == iLocCard) {
-	      // add local cards structure
-	      buffer[index++] = (locTrg->GetX1Pattern() | (locTrg->GetX2Pattern() << 16));
-	      buffer[index++] = (locTrg->GetX3Pattern() | (locTrg->GetX4Pattern() << 16));
-	      buffer[index++] = (locTrg->GetY1Pattern() | (locTrg->GetY2Pattern() << 16));
-	      buffer[index++] = (locTrg->GetY3Pattern() | (locTrg->GetY4Pattern() << 16));
-	      buffer[index++] = (Int_t)word; // data word
-
-	    } else {
-	      buffer[index++] = 0; // 4 words for x1, x2, y1, y2
-	      buffer[index++] = 0; 
-	      buffer[index++] = 0; 
-	      buffer[index++] = 0; 
-	      buffer[index++] = (Int_t)word; // data word
-
-	    }
-	  } else {// number!=0
-	  // fill with 10CDEAD word for 'non-notified' slots
-	  for (Int_t i = 0; i < fLocalStruct->GetLength(); i++)
-	    buffer[index++] = fLocalStruct->GetDisableWord(); 
+	      } else {// number!=0
+		  // fill with 10CDEAD word for 'non-notified' slots
+		  for (Int_t i = 0; i < fLocalStruct->GetLength(); i++)
+		      buffer[index++] = fLocalStruct->GetDisableWord(); 
+	      }
+	  } else { 
+	      // fill with 10CDEAD word for empty slots
+	      for (Int_t i = 0; i < fLocalStruct->GetLength(); i++)
+		  buffer[index++] = fLocalStruct->GetDisableWord(); 
+	  }// condition localBoard
+	  
+	  // 45 regional scaler word
+	  if (fScalerEvent) {
+	      memcpy(&buffer[index], fLocalStruct->GetScalers(), kLocScalerLength*4);
+	      index += kLocScalerLength;
 	  }
-	} else { 
-	  // fill with 10CDEAD word for empty slots
-	  for (Int_t i = 0; i < fLocalStruct->GetLength(); i++)
-	    buffer[index++] = fLocalStruct->GetDisableWord(); 
-	}// condition localBoard
-
-	// 45 regional scaler word
-	if (fScalerEvent) {
-	  memcpy(&buffer[index], fLocalStruct->GetScalers(), kLocScalerLength*4);
-	  index += kLocScalerLength;
-	}
-
-	// end of local structure words
- 	buffer[index++] = fLocalStruct->GetEndOfLocal();
-
+	  
+	  // end of local structure words
+	  buffer[index++] = fLocalStruct->GetEndOfLocal();
+	  
       } // local card 
       // fill regional header with local output
       fRegHeader->SetInput(regInpHpt, 0);
       fRegHeader->SetInput(regInpHpt, 1);
       memcpy(&buffer[indexReg],fRegHeader->GetHeader(),kRegHeaderLength*4);
-
+      
     } // Regional card
     
 
