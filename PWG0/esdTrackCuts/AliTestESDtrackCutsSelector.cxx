@@ -30,7 +30,11 @@ AliTestESDtrackCutsSelector::AliTestESDtrackCutsSelector() :
   AliSelectorRL(),
   fEsdTrackCutsAll(0),
   fEsdTrackCutsPri(0),
-  fEsdTrackCutsSec(0)
+  fEsdTrackCutsSec(0),
+  fEsdTrackCutsPlusZ(0),
+  fEsdTrackCutsMinusZ(0),
+  fEsdTrackCutsPos(0),
+  fEsdTrackCutsNeg(0)
 {
   //
   // Constructor. Initialization of pointers
@@ -60,22 +64,25 @@ void AliTestESDtrackCutsSelector::ReadUserObjects(TTree* tree)
 {
   // read the user objects, called from slavebegin and begin
 
+  // only do it once
+  if (fEsdTrackCutsAll)
+    return;
+
   if (!fEsdTrackCutsAll && fInput)
     fEsdTrackCutsAll = dynamic_cast<AliESDtrackCuts*> (fInput->FindObject("esdTrackCutsAll")->Clone());
-  if (!fEsdTrackCutsPri && fInput)
-    fEsdTrackCutsPri = dynamic_cast<AliESDtrackCuts*> (fInput->FindObject("esdTrackCutsPri")->Clone());
-  if (!fEsdTrackCutsSec && fInput)
-    fEsdTrackCutsSec = dynamic_cast<AliESDtrackCuts*> (fInput->FindObject("esdTrackCutsSec")->Clone());
 
   if (!fEsdTrackCutsAll && tree)
     fEsdTrackCutsAll = dynamic_cast<AliESDtrackCuts*> (tree->GetUserInfo()->FindObject("esdTrackCutsAll"));
-  if (!fEsdTrackCutsPri && tree)
-    fEsdTrackCutsPri = dynamic_cast<AliESDtrackCuts*> (tree->GetUserInfo()->FindObject("esdTrackCutsPri"));
-  if (!fEsdTrackCutsSec && tree)
-    fEsdTrackCutsSec = dynamic_cast<AliESDtrackCuts*> (tree->GetUserInfo()->FindObject("esdTrackCutsSec"));
 
-  if (!fEsdTrackCutsAll || !fEsdTrackCutsPri || !fEsdTrackCutsSec)
-     AliDebug(AliLog::kError, "ERROR: Could not read esdTrackCutsXXX from input list.");
+  if (!fEsdTrackCutsAll)
+     AliDebug(AliLog::kError, "ERROR: Could not read fEsdTrackCutsAll from input list.");
+
+  fEsdTrackCutsPri =    dynamic_cast<AliESDtrackCuts*> (fEsdTrackCutsAll->Clone("fEsdTrackCutsPri"));
+  fEsdTrackCutsSec =    dynamic_cast<AliESDtrackCuts*> (fEsdTrackCutsAll->Clone("fEsdTrackCutsSec"));
+  fEsdTrackCutsPlusZ =  dynamic_cast<AliESDtrackCuts*> (fEsdTrackCutsAll->Clone("fEsdTrackCutsPlusZ"));
+  fEsdTrackCutsMinusZ = dynamic_cast<AliESDtrackCuts*> (fEsdTrackCutsAll->Clone("fEsdTrackCutsMinusZ"));
+  fEsdTrackCutsPos =    dynamic_cast<AliESDtrackCuts*> (fEsdTrackCutsAll->Clone("fEsdTrackCutsPos"));
+  fEsdTrackCutsNeg =    dynamic_cast<AliESDtrackCuts*> (fEsdTrackCutsAll->Clone("fEsdTrackCutsNeg"));
 }
 
 void AliTestESDtrackCutsSelector::SlaveBegin(TTree* tree)
@@ -87,6 +94,24 @@ void AliTestESDtrackCutsSelector::SlaveBegin(TTree* tree)
   AliSelectorRL::SlaveBegin(tree);
 
   ReadUserObjects(tree);
+}
+
+void AliTestESDtrackCutsSelector::Init(TTree* tree)
+{
+  // read the user objects
+
+  AliSelectorRL::Init(tree);
+
+  // Enable only the needed branches
+  if (tree)
+  {
+    tree->SetBranchStatus("*", 0);
+    tree->SetBranchStatus("fTriggerMask", 1);
+    tree->SetBranchStatus("fSPDVertex*", 1);
+    tree->SetBranchStatus("fTracks.fLabel", 1);
+
+    AliESDtrackCuts::EnableNeededBranches(tree);
+  }
 }
 
 Bool_t AliTestESDtrackCutsSelector::Process(Long64_t entry)
@@ -116,7 +141,7 @@ Bool_t AliTestESDtrackCutsSelector::Process(Long64_t entry)
   if (!fESD) {
     AliDebug(AliLog::kError, "ESD branch not available");
     return kFALSE;
-  }  
+  }
 
   if (!AliPWG0Helper::IsVertexReconstructed(fESD)) {
     AliDebug(AliLog::kDebug+5, "Vertex is not reconstructed");
@@ -124,7 +149,7 @@ Bool_t AliTestESDtrackCutsSelector::Process(Long64_t entry)
   }
 
   // check if the esd track cut objects are there
-  if (!fEsdTrackCutsAll || !fEsdTrackCutsPri || !fEsdTrackCutsSec) {
+  if (!fEsdTrackCutsAll || !fEsdTrackCutsPri || !fEsdTrackCutsSec || !fEsdTrackCutsPlusZ || !fEsdTrackCutsMinusZ || !fEsdTrackCutsPos || !fEsdTrackCutsNeg) {
     AliDebug(AliLog::kError, "fEsdTrackCutsXXX not available");
     return kFALSE;
   }
@@ -165,6 +190,20 @@ Bool_t AliTestESDtrackCutsSelector::Process(Long64_t entry)
       fEsdTrackCutsPri->AcceptTrack(esdTrack);
     else
       fEsdTrackCutsSec->AcceptTrack(esdTrack);
+
+    TParticlePDG* pdgPart = particle->GetPDG();
+    if (pdgPart)
+    {
+      if (pdgPart->Charge() > 0)
+        fEsdTrackCutsPos->AcceptTrack(esdTrack);
+      else if (pdgPart->Charge() < 0)
+        fEsdTrackCutsNeg->AcceptTrack(esdTrack);
+    }
+
+    if (particle->Eta() < 0)
+      fEsdTrackCutsPlusZ->AcceptTrack(esdTrack);
+    else
+      fEsdTrackCutsMinusZ->AcceptTrack(esdTrack);
   }
   
   return kTRUE;
@@ -188,6 +227,10 @@ void AliTestESDtrackCutsSelector::SlaveTerminate()
   fOutput->Add(fEsdTrackCutsAll);
   fOutput->Add(fEsdTrackCutsPri);
   fOutput->Add(fEsdTrackCutsSec);
+  fOutput->Add(fEsdTrackCutsPlusZ);
+  fOutput->Add(fEsdTrackCutsMinusZ);
+  fOutput->Add(fEsdTrackCutsPos);
+  fOutput->Add(fEsdTrackCutsNeg);
 }
 
 void AliTestESDtrackCutsSelector::Terminate()
@@ -198,23 +241,31 @@ void AliTestESDtrackCutsSelector::Terminate()
 
   AliSelectorRL::Terminate();
 
-  if (fOutput)
-    fOutput->Print();
-
   fEsdTrackCutsAll = dynamic_cast<AliESDtrackCuts*> (fOutput->FindObject("esdTrackCutsAll"));
-  fEsdTrackCutsPri = dynamic_cast<AliESDtrackCuts*> (fOutput->FindObject("esdTrackCutsPri"));
-  fEsdTrackCutsSec = dynamic_cast<AliESDtrackCuts*> (fOutput->FindObject("esdTrackCutsSec"));
+  fEsdTrackCutsPri = dynamic_cast<AliESDtrackCuts*> (fOutput->FindObject("fEsdTrackCutsPri"));
+  fEsdTrackCutsSec = dynamic_cast<AliESDtrackCuts*> (fOutput->FindObject("fEsdTrackCutsSec"));
+  fEsdTrackCutsPlusZ = dynamic_cast<AliESDtrackCuts*> (fOutput->FindObject("fEsdTrackCutsPlusZ"));
+  fEsdTrackCutsMinusZ = dynamic_cast<AliESDtrackCuts*> (fOutput->FindObject("fEsdTrackCutsMinusZ"));
+  fEsdTrackCutsPos = dynamic_cast<AliESDtrackCuts*> (fOutput->FindObject("fEsdTrackCutsPos"));
+  fEsdTrackCutsNeg = dynamic_cast<AliESDtrackCuts*> (fOutput->FindObject("fEsdTrackCutsNeg"));
 
   // check if the esd track cut objects are there
-  if (!fEsdTrackCutsAll || !fEsdTrackCutsPri || !fEsdTrackCutsSec) {
-    AliDebug(AliLog::kError, Form("fEsdTrackCutsXXX not available %p %p %p", fEsdTrackCutsAll, fEsdTrackCutsPri, fEsdTrackCutsSec));
+  if (!fEsdTrackCutsAll || !fEsdTrackCutsPri || !fEsdTrackCutsSec || !fEsdTrackCutsPlusZ || !fEsdTrackCutsMinusZ || !fEsdTrackCutsPos || !fEsdTrackCutsNeg) {
+    AliDebug(AliLog::kError, Form("fEsdTrackCutsXXX not available %p %p %p %p %p %p %p", fEsdTrackCutsAll, fEsdTrackCutsPri, fEsdTrackCutsSec, fEsdTrackCutsPlusZ, fEsdTrackCutsMinusZ, fEsdTrackCutsPos, fEsdTrackCutsNeg));
     return;
   }
 
   TFile* file = TFile::Open("trackCuts.root", "RECREATE");
-  fEsdTrackCutsAll->SaveHistograms("esdTrackCutsAll");
-  fEsdTrackCutsPri->SaveHistograms("esdTrackCutsPri");
-  fEsdTrackCutsSec->SaveHistograms("esdTrackCutsSec");
+
+  fEsdTrackCutsAll->SaveHistograms();
+  fEsdTrackCutsPri->SaveHistograms();
+  fEsdTrackCutsSec->SaveHistograms();
+  fEsdTrackCutsPlusZ->SaveHistograms();
+  fEsdTrackCutsMinusZ->SaveHistograms();
+  fEsdTrackCutsPos->SaveHistograms();
+  fEsdTrackCutsNeg->SaveHistograms();
 
   file->Close();
+
+	fEsdTrackCutsAll->DrawHistograms();
 }
