@@ -92,6 +92,7 @@ fWindowWidth(0) {
   SetPPsetting();
   ConfigIterations();
   SetWindowWidth();
+  SetVtxStart((Double_t)x0,(Double_t)y0,0.);
 
 }
 

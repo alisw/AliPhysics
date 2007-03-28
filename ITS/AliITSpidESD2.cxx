@@ -27,7 +27,7 @@
 #include "AliESD.h"
 #include "AliESDtrack.h"
 #include "AliITStrackV2.h"
-#include "AliITSclusterV2.h"
+#include "AliITSRecPoint.h"
 #include "AliITStrackerMI.h"
 #include "AliITSLoader.h"
 #include "AliITSPident.h"
@@ -122,7 +122,7 @@ Int_t AliITSpidESD2::MakePID(AliESD *event)
     Int_t cluindssd1 = track->GetClusterIndex(1);
     Int_t cluindssd2 = track->GetClusterIndex(0);
     Float_t q1,q1corr,q2,q2corr,q3,q3corr,q4,q4corr;
-    AliITSclusterV2* clu1=(AliITSclusterV2*)fTracker->GetCluster(cluindsdd1);
+    AliITSRecPoint* clu1=(AliITSRecPoint*)fTracker->GetCluster(cluindsdd1);
     if(clu1!=0){
       q1=clu1->GetQ(); 
       q1corr=q1*TMath::Sqrt((1-snp*snp)/(1+tgl*tgl));
@@ -132,7 +132,7 @@ Int_t AliITSpidESD2::MakePID(AliESD *event)
       q1corr=-99;
     }
 	
-    AliITSclusterV2* clu2=(AliITSclusterV2*)fTracker->GetCluster(cluindsdd2);
+    AliITSRecPoint* clu2=(AliITSRecPoint*)fTracker->GetCluster(cluindsdd2);
     if(clu2!=0){
       q2=clu2->GetQ();
       q2corr=q2*TMath::Sqrt((1-snp*snp)/(1+tgl*tgl));
@@ -142,7 +142,7 @@ Int_t AliITSpidESD2::MakePID(AliESD *event)
       q2corr=-99;
     }
     
-    AliITSclusterV2* clu3=(AliITSclusterV2*)fTracker->GetCluster(cluindssd1);
+    AliITSRecPoint* clu3=(AliITSRecPoint*)fTracker->GetCluster(cluindssd1);
     if(clu3!=0){
       q3=clu3->GetQ();
       q3corr=q3*TMath::Sqrt((1-snp*snp)/(1+tgl*tgl));
@@ -152,7 +152,7 @@ Int_t AliITSpidESD2::MakePID(AliESD *event)
       q3corr=-99;
     }
     
-    AliITSclusterV2* clu4=(AliITSclusterV2*)fTracker->GetCluster(cluindssd2);
+    AliITSRecPoint* clu4=(AliITSRecPoint*)fTracker->GetCluster(cluindssd2);
     if(clu4!=0){
       q4=clu4->GetQ();
       q4corr=q4*TMath::Sqrt((1-snp*snp)/(1+tgl*tgl));
@@ -168,9 +168,9 @@ Int_t AliITSpidESD2::MakePID(AliESD *event)
     Float_t prie=0.;
     Double_t invPt=track->Get1Pt();
     AliITSPident mypid(momits,invPt,dEdxsignal,fSp,qlay,prip,prik,pripi,prie); 
-    condprobfun[0]=0.;//el
-    condprobfun[1]=0.;//mu
-    condprobfun[2]=mypid.GetProdCondFunPi();//pi
+    condprobfun[0]=mypid.GetProdCondFunPi();//el -> ITS does not distinguish among Pi,mu,el
+    condprobfun[1]=mypid.GetProdCondFunPi();//mu -> ITS does not distinguish among Pi,mu,el
+    condprobfun[2]=mypid.GetProdCondFunPi();//pi -> ITS does not distinguish among Pi,mu,el
     condprobfun[3]=mypid.GetProdCondFunK();//kaon
     condprobfun[4]=mypid.GetProdCondFunPro();//pro
 

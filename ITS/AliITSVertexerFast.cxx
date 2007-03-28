@@ -40,6 +40,10 @@ fSmear(0)
 {
   // Default Constructor
   fSmear = 0;
+  AliRunLoader *rl =AliRunLoader::GetRunLoader();
+  TTree *trK=(TTree*)rl->TreeK();
+  if(!trK)AliFatal("This class should be used only with simulated events!!");
+  rl->LoadHeader(); 
 }
 
 //______________________________________________________________________
@@ -50,7 +54,13 @@ fSmear(0)
   fSmear = new Double_t[3];
   for(Int_t i=0;i<3;i++)fSmear[i]=smear[i];
   Info("AliITSVertexerFast","Gaussian smaring of the generated vertex. Parameters %f12.5 , %f12.5 , %f12.5 \n",fSmear[0],fSmear[1],fSmear[2]);
+  AliRunLoader *rl =AliRunLoader::GetRunLoader();
+  TTree *trK=(TTree*)rl->TreeK();
+  if(!trK)AliFatal("This class should be used only with simulated events!!");
+  rl->LoadHeader(); 
+
 }
+
 
 //______________________________________________________________________
 AliITSVertexerFast::~AliITSVertexerFast(){
@@ -66,10 +76,10 @@ AliESDVertex* AliITSVertexerFast::FindVertexForCurrentEvent(Int_t evnumb){
   AliRunLoader *rl =AliRunLoader::GetRunLoader();
   rl->GetEvent(evnumb);
   TArrayF primaryVertex(3);  // true vertex
-  AliHeader* header = gAlice->GetHeader();
+  AliHeader* header = rl->GetAliRun()->GetHeader();
   AliGenEventHeader* genEventHeader = header->GenEventHeader();   
   genEventHeader->PrimaryVertex(primaryVertex); 
-
+  
   // Smearing
   Double_t vrttrue[3],vrtx[3];
   for(Int_t k=0; k<3;k++){
@@ -81,6 +91,7 @@ AliESDVertex* AliITSVertexerFast::FindVertexForCurrentEvent(Int_t evnumb){
   fCurrentVertex = new AliESDVertex(vrtx,fSmear,name);
   fCurrentVertex->SetTruePos(vrttrue);
   return fCurrentVertex;
+  
 }
 
 //______________________________________________________________________

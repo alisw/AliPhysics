@@ -3,8 +3,7 @@
 //
 //          Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
 //-------------------------------------------------------------------------
-//uncomment the line below for running with V1 cluster finder classes 
-//#define V1
+
 
 #include "AliRun.h"
 
@@ -257,27 +256,32 @@ static void CheckLabels(Int_t lab[3]) {
   //------------------------------------------------------------
   // Tries to find mother's labels
   //------------------------------------------------------------
+  AliRunLoader *rl = AliRunLoader::GetRunLoader();
+  TTree *trK=(TTree*)rl->TreeK();
+
+  if(trK){
     Int_t label=lab[0];
     if (label>=0) {
-       TParticle *part=(TParticle*)gAlice->GetMCApp()->Particle(label);
-       label=-3;
-       while (part->P() < 0.005) {
-          Int_t m=part->GetFirstMother();
-          if (m<0) {
-             Info("CheckLabels","Primary momentum: %f",part->P()); 
-             break;
-          }
-          if (part->GetStatusCode()>0) {
-             Info("CheckLabels","Primary momentum: %f",part->P()); 
-             break;
-          }
-          label=m;
-          part=(TParticle*)gAlice->GetMCApp()->Particle(label);
-        }
-        if      (lab[1]<0) lab[1]=label;
-        else if (lab[2]<0) lab[2]=label;
-        else ;//cerr<<"CheckLabels : No empty labels !\n";
+      TParticle *part=(TParticle*)gAlice->GetMCApp()->Particle(label);
+      label=-3;
+      while (part->P() < 0.005) {
+	Int_t m=part->GetFirstMother();
+	if (m<0) {
+	  Info("CheckLabels","Primary momentum: %f",part->P()); 
+	  break;
+	}
+	if (part->GetStatusCode()>0) {
+	  Info("CheckLabels","Primary momentum: %f",part->P()); 
+	  break;
+	}
+	label=m;
+	part=(TParticle*)gAlice->GetMCApp()->Particle(label);
+      }
+      if      (lab[1]<0) lab[1]=label;
+      else if (lab[2]<0) lab[2]=label;
+      else ;//cerr<<"CheckLabels : No empty labels !\n";
     }
+  }
 }
 
 /*
@@ -312,17 +316,21 @@ static void CheckLabels2(Int_t lab[10]) {
   //------------------------------------------------------------
   // Tries to find mother's labels
   //------------------------------------------------------------
-  Int_t nlabels =0; 
-  for (Int_t i=0;i<10;i++) if (lab[i]>=0) nlabels++;
-  if(nlabels == 0) return; // In case of no labels just exit
+  AliRunLoader *rl = AliRunLoader::GetRunLoader();
+  TTree *trK=(TTree*)rl->TreeK();
 
-  Int_t ntracks = gAlice->GetMCApp()->GetNtrack();
+  if(trK){
+    Int_t nlabels =0; 
+    for (Int_t i=0;i<10;i++) if (lab[i]>=0) nlabels++;
+    if(nlabels == 0) return; // In case of no labels just exit
 
-  for (Int_t i=0;i<10;i++){
-    Int_t label = lab[i];
-    if (label>=0 && label<ntracks) {
-      TParticle *part=(TParticle*)gAlice->GetMCApp()->Particle(label);
-      if (part->P() < 0.02) {
+    Int_t ntracks = gAlice->GetMCApp()->GetNtrack();
+
+    for (Int_t i=0;i<10;i++){
+      Int_t label = lab[i];
+      if (label>=0 && label<ntracks) {
+	TParticle *part=(TParticle*)gAlice->GetMCApp()->Particle(label);
+	if (part->P() < 0.02) {
 	  Int_t m=part->GetFirstMother();
 	  if (m<0) {	
 	    continue;
@@ -331,63 +339,69 @@ static void CheckLabels2(Int_t lab[10]) {
 	    continue;
 	  }
 	  lab[i]=m;       
+	}
+	else
+	  if (part->P() < 0.12 && nlabels>3) {
+	    lab[i]=-2;
+	    nlabels--;
+	  } 
       }
-      else
-	if (part->P() < 0.12 && nlabels>3) {
+      else{
+	if ( (label>ntracks||label <0) && nlabels>3) {
 	  lab[i]=-2;
 	  nlabels--;
 	} 
-    }
-    else{
-      if ( (label>ntracks||label <0) && nlabels>3) {
-	lab[i]=-2;
-	nlabels--;
-      } 
-    }
-  }  
-  if (nlabels>3){
-    for (Int_t i=0;i<10;i++){
-      if (nlabels>3){
-	Int_t label = lab[i];
-	if (label>=0 && label<ntracks) {
-	  TParticle *part=(TParticle*)gAlice->GetMCApp()->Particle(label);
-	  if (part->P() < 0.1) {
-	    lab[i]=-2;
-	    nlabels--;
+      }
+    }  
+    if (nlabels>3){
+      for (Int_t i=0;i<10;i++){
+	if (nlabels>3){
+	  Int_t label = lab[i];
+	  if (label>=0 && label<ntracks) {
+	    TParticle *part=(TParticle*)gAlice->GetMCApp()->Particle(label);
+	    if (part->P() < 0.1) {
+	      lab[i]=-2;
+	      nlabels--;
+	    }
 	  }
 	}
       }
     }
-  }
 
-  //compress labels -- if multi-times the same
-  Int_t lab2[10];
-  for (Int_t i=0;i<10;i++) lab2[i]=-2;
-  for (Int_t i=0;i<10  ;i++){
-    if (lab[i]<0) continue;
-    for (Int_t j=0;j<10 &&lab2[j]!=lab[i];j++){
-      if (lab2[j]<0) {
-	lab2[j]= lab[i];
-	break;
+    //compress labels -- if multi-times the same
+    Int_t lab2[10];
+    for (Int_t i=0;i<10;i++) lab2[i]=-2;
+    for (Int_t i=0;i<10  ;i++){
+      if (lab[i]<0) continue;
+      for (Int_t j=0;j<10 &&lab2[j]!=lab[i];j++){
+	if (lab2[j]<0) {
+	  lab2[j]= lab[i];
+	  break;
+	}
       }
     }
+    for (Int_t j=0;j<10;j++) lab[j]=lab2[j];
   }
-  for (Int_t j=0;j<10;j++) lab[j]=lab2[j];
-  
 }
 
 static void AddLabel(Int_t lab[10], Int_t label) {
+// add label of the particle in the kine tree which originates this cluster
+// (used for reconstruction of MC data only, for comparison purposes)
+  AliRunLoader *rl = AliRunLoader::GetRunLoader();
+  TTree *trK=(TTree*)rl->TreeK();
 
-  if(label<0) return; // In case of no label just exit
+  if(trK){
+    if(label<0) return; // In case of no label just exit
 
-  Int_t ntracks = gAlice->GetMCApp()->GetNtrack();
-  if (label>ntracks) return;
-  for (Int_t i=0;i<10;i++){
-    //    if (label<0) break;
-    if (lab[i]==label) break;
-    if (lab[i]<0) {
-      lab[i]= label;
-      break;
+    Int_t ntracks = gAlice->GetMCApp()->GetNtrack();
+    if (label>ntracks) return;
+    for (Int_t i=0;i<10;i++){
+      //    if (label<0) break;
+      if (lab[i]==label) break;
+      if (lab[i]<0) {
+	lab[i]= label;
+	break;
+      }
     }
   }
 }
@@ -419,7 +433,6 @@ void AliITSclustererV2::RecPoints2Clusters
 
 //***********************************
 
-#ifndef V1
 
 void AliITSclustererV2:: 
 FindCluster(Int_t k,Int_t maxz,AliBin *bins,Int_t &n,Int_t *idx) {
@@ -1673,79 +1686,3 @@ void AliITSclustererV2::FindClustersSSD(AliITSRawStream* input,
   Info("FindClustersSSD", "found clusters in ITS SSD: %d", nClustersSSD);
 }
 
-#else   //V1
-
-#include "AliITSDetType.h"
-#include "AliITS.h"
-#include "AliITSsegmentationSPD.h"
-#include "AliITSClusterFinderSPD.h"
-
-#include "AliITSresponseSDD.h"
-#include "AliITSsegmentationSDD.h"
-#include "AliITSClusterFinderSDD.h"
-
-#include "AliITSsegmentationSSD.h"
-#include "AliITSClusterFinderSSD.h"
-
-
-void AliITSclustererV2::
-FindClustersSPD(const TClonesArray *digits, TClonesArray *clusters) {
-  //------------------------------------------------------------
-  // Actual SPD cluster finding based on AliITSClusterFinderSPD
-  //------------------------------------------------------------
-  static AliITS *its=(AliITS*)gAlice->GetModule("ITS");
-  static TClonesArray *points=its->RecPoints();
-  static AliITSsegmentationSPD *seg=
-         (AliITSsegmentationSPD *)its->DetType(0)->GetSegmentationModel();
-  static AliITSClusterFinderSPD cf(seg, (TClonesArray*)digits, points);
-
-  cf.FindRawClusters(fI);
-  RecPoints2Clusters(points, fI, clusters);
-  its->ResetRecPoints();
-
-}
-
-void AliITSclustererV2::
-FindClustersSDD(const TClonesArray *digits, TClonesArray *clusters) {
-  //------------------------------------------------------------
-  // Actual SDD cluster finding based on AliITSClusterFinderSDD
-  //------------------------------------------------------------
-  static AliITS *its=(AliITS*)gAlice->GetModule("ITS");
-  static TClonesArray *points=its->RecPoints();
-  static AliITSresponseSDD *resp=
-        (AliITSresponseSDD *)its->DetType(1)->GetResponseModel();
-  static AliITSsegmentationSDD *seg=
-         (AliITSsegmentationSDD *)its->DetType(1)->GetSegmentationModel();
-  static AliITSClusterFinderSDD 
-         cf(seg,resp,(TClonesArray*)digits,its->ClustersAddress(1));
-
-  cf.FindRawClusters(fI);
-  Int_t nc=points->GetEntriesFast();
-  while (nc--) { //To be consistent with the SSD cluster charges
-     AliITSRecPoint *p=(AliITSRecPoint*)points->UncheckedAt(nc);
-     p->SetQ(p->GetQ()/12.);
-  }
-  RecPoints2Clusters(points, fI, clusters);
-  its->ResetClusters(1);
-  its->ResetRecPoints();
-
-}
-
-void AliITSclustererV2::
-FindClustersSSD(const TClonesArray *digits, TClonesArray *clusters) {
-  //------------------------------------------------------------
-  // Actual SSD cluster finding based on AliITSClusterFinderSSD
-  //------------------------------------------------------------
-  static AliITS *its=(AliITS*)gAlice->GetModule("ITS");
-  static TClonesArray *points=its->RecPoints();
-  static AliITSsegmentationSSD *seg=
-         (AliITSsegmentationSSD *)its->DetType(2)->GetSegmentationModel();
-  static AliITSClusterFinderSSD cf(seg,(TClonesArray*)digits);
-
-  cf.FindRawClusters(fI);
-  RecPoints2Clusters(points, fI, clusters);
-  its->ResetRecPoints();
-
-}
-
-#endif

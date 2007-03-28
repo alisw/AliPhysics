@@ -59,19 +59,23 @@ void AliITSClusterFinderV2::CheckLabels2(Int_t lab[10]) {
   //------------------------------------------------------------
   // Tries to find mother's labels
   //------------------------------------------------------------
-  Int_t nlabels =0; 
-  for (Int_t i=0;i<10;i++) if (lab[i]>=0) nlabels++;
-  if(nlabels == 0) return; // In case of no labels just exit
+  AliRunLoader *rl = AliRunLoader::GetRunLoader();
+  TTree *trK=(TTree*)rl->TreeK();
+
+  if(trK){
+    Int_t nlabels =0; 
+    for (Int_t i=0;i<10;i++) if (lab[i]>=0) nlabels++;
+    if(nlabels == 0) return; // In case of no labels just exit
 
 
-  Int_t ntracks = gAlice->GetMCApp()->GetNtrack();
+    Int_t ntracks = gAlice->GetMCApp()->GetNtrack();
 
-  for (Int_t i=0;i<10;i++){
-    Int_t label = lab[i];
-    if (label>=0 && label<ntracks) {
-      TParticle *part=(TParticle*)gAlice->GetMCApp()->Particle(label);
+    for (Int_t i=0;i<10;i++){
+      Int_t label = lab[i];
+      if (label>=0 && label<ntracks) {
+	TParticle *part=(TParticle*)gAlice->GetMCApp()->Particle(label);
 
-      if (part->P() < 0.02) {
+	if (part->P() < 0.02) {
 	  Int_t m=part->GetFirstMother();
 	  if (m<0) {	
 	    continue;
@@ -80,66 +84,69 @@ void AliITSClusterFinderV2::CheckLabels2(Int_t lab[10]) {
 	    continue;
 	  }
 	  lab[i]=m;       
+	}
+	else
+	  if (part->P() < 0.12 && nlabels>3) {
+	    lab[i]=-2;
+	    nlabels--;
+	  } 
       }
-      else
-	if (part->P() < 0.12 && nlabels>3) {
+      else{
+	if ( (label>ntracks||label <0) && nlabels>3) {
 	  lab[i]=-2;
 	  nlabels--;
 	} 
-    }
-    else{
-      if ( (label>ntracks||label <0) && nlabels>3) {
-	lab[i]=-2;
-	nlabels--;
-      } 
-    }
-  }  
-  if (nlabels>3){
-    for (Int_t i=0;i<10;i++){
-      if (nlabels>3){
-	Int_t label = lab[i];
-	if (label>=0 && label<ntracks) {
-	  TParticle *part=(TParticle*)gAlice->GetMCApp()->Particle(label);
-	  if (part->P() < 0.1) {
-	    lab[i]=-2;
-	    nlabels--;
+      }
+    }  
+    if (nlabels>3){
+      for (Int_t i=0;i<10;i++){
+	if (nlabels>3){
+	  Int_t label = lab[i];
+	  if (label>=0 && label<ntracks) {
+	    TParticle *part=(TParticle*)gAlice->GetMCApp()->Particle(label);
+	    if (part->P() < 0.1) {
+	      lab[i]=-2;
+	      nlabels--;
+	    }
 	  }
 	}
       }
     }
-  }
 
-  //compress labels -- if multi-times the same
-  Int_t lab2[10];
-  for (Int_t i=0;i<10;i++) lab2[i]=-2;
-  for (Int_t i=0;i<10  ;i++){
-    if (lab[i]<0) continue;
-    for (Int_t j=0;j<10 &&lab2[j]!=lab[i];j++){
-      if (lab2[j]<0) {
-	lab2[j]= lab[i];
-	break;
+    //compress labels -- if multi-times the same
+    Int_t lab2[10];
+    for (Int_t i=0;i<10;i++) lab2[i]=-2;
+    for (Int_t i=0;i<10  ;i++){
+      if (lab[i]<0) continue;
+      for (Int_t j=0;j<10 &&lab2[j]!=lab[i];j++){
+	if (lab2[j]<0) {
+	  lab2[j]= lab[i];
+	  break;
+	}
       }
     }
-  }
-  for (Int_t j=0;j<10;j++) lab[j]=lab2[j];
+    for (Int_t j=0;j<10;j++) lab[j]=lab2[j];
   
+  }
 }
 
 //______________________________________________________________________
 void AliITSClusterFinderV2::AddLabel(Int_t lab[10], Int_t label) {
-
   //add label to the cluster
+  AliRunLoader *rl = AliRunLoader::GetRunLoader();
+  TTree *trK=(TTree*)rl->TreeK();
+  if(trK){
+    if(label<0) return; // In case of no label just exit
 
-  if(label<0) return; // In case of no label just exit
-
-  Int_t ntracks = gAlice->GetMCApp()->GetNtrack();
-  if (label>ntracks) return;
-  for (Int_t i=0;i<10;i++){
-    //    if (label<0) break;
-    if (lab[i]==label) break;
-    if (lab[i]<0) {
-      lab[i]= label;
-      break;
+    Int_t ntracks = gAlice->GetMCApp()->GetNtrack();
+    if (label>ntracks) return;
+    for (Int_t i=0;i<10;i++){
+      //    if (label<0) break;
+      if (lab[i]==label) break;
+      if (lab[i]<0) {
+	lab[i]= label;
+	break;
+      }
     }
   }
 }

@@ -96,14 +96,6 @@ AliITSreconstruction::AliITSreconstruction(const char* filename):
        Error("AliITSreconstruction","Can not load the session",filename);
        return;
      }
-    fRunLoader->LoadgAlice();
-    gAlice = fRunLoader->GetAliRun();
-
-    if(!gAlice) {
-          Error("AliITSreconstruction","gAlice not found on file. Aborting.");
-          fInit = kFALSE;
-          return;
-      } // end if !gAlice
 
 }
 
@@ -155,8 +147,8 @@ Bool_t AliITSreconstruction::Init(){
        Error("Init","Run Loader is NULL");
        return kFALSE;
      }
-    fRunLoader->LoadgAlice();
-    fRunLoader->LoadHeader();  
+    //  fRunLoader->LoadgAlice();
+    //   fRunLoader->LoadHeader();  
 
     fLoader = (AliITSLoader*) fRunLoader->GetLoader("ITSLoader");
     if(!fLoader) {
@@ -166,7 +158,7 @@ Bool_t AliITSreconstruction::Init(){
 
     // Now ready to init.
  
-    fRunLoader->CdGAFile();
+    //fRunLoader->CdGAFile();
     fITSgeom = fLoader->GetITSgeom();
 
     fDetTypeRec = new AliITSDetTypeRec(fLoader);
@@ -175,7 +167,7 @@ Bool_t AliITSreconstruction::Init(){
     fEnt0 = 0;
 
     //fEnt  = gAlice->GetEventsPerRun();
-    fEnt = Int_t(fRunLoader->TreeE()->GetEntries());
+    fEnt = Int_t(fRunLoader->GetNumberOfEvents());
 
     fLoader->LoadDigits("read");
     fLoader->LoadRecPoints("recreate");
