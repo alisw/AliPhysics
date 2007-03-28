@@ -98,4 +98,6 @@
 23-jan-2007 NvE Bug fixed by Garmt in IceMakeHits.cxx.
 15-mar-2007 GdV IceMakeHits.cxx cleaned up to remove unnecessary tests which have become
                 obsolete due to bug fix in IceRawTWR.
+28-mar-2007 NvE Explicitly included TMath.h in IceChi2.h and IcePandel.h due to a
+                ROOT restructuring introduced in version 5.15/04.
                  

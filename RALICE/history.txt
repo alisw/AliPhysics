@@ -768,3 +768,5 @@
                 crash in TTimestamp invokation for very future dates.
                 Also more accurate calculation introduced of the change (dpsi) in
                 ecliptic longitude due to nutation in AliTimestamp::GetGAST.
+28-mar-2007 NvE AliTimestamp::Date extended to provide apparent sidereal time via
+                specification of negative "mode" parameter.

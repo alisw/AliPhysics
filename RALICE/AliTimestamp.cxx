@@ -216,11 +216,13 @@ void AliTimestamp::Date(Int_t mode,Double_t offset)
 // mode = 1 ==> Only the UT yy-mm-dd hh:mm:ss.sss and GMST info is printed
 //        2 ==> Only the Julian parameter info is printed
 //        3 ==> Both the UT, GMST and Julian parameter info is printed
+//       -1 ==> Only the UT yy-mm-dd hh:mm:ss.sss and GAST info is printed
+//       -3 ==> Both the UT, GAST and Julian parameter info is printed
 //
 // offset : Local time offset from UT (and also GMST) in fractional hours.
 //
 // When an offset value is specified, the corresponding local times
-// LT and LMST are printed as well.
+// LT and LMST (or LAST) are printed as well.
 //
 // The default values are mode=3 and offset=0.
 //
@@ -235,8 +237,9 @@ void AliTimestamp::Date(Int_t mode,Double_t offset)
  TString day[7]={"Mon","Tue","Wed","Thu","Fri","Sat","Sun"};
  UInt_t y,m,d,wd;
  Int_t hh,mm,ss,ns,ps;
+ Double_t gast;
  
- if (mode==1 || mode==3)
+ if (abs(mode)==1 || abs(mode)==3)
  {
   if (mjd>=40587 && (mjd<65442 || (mjd==65442 && mjsec<8047)))
   {
@@ -253,10 +256,26 @@ void AliTimestamp::Date(Int_t mode,Double_t offset)
   cout << setfill('0') << setw(2) << hh << ":"
        << setw(2) << mm << ":" << setw(2) << ss << "."
        << setw(9) << ns << setw(3) << ps << " (UT)  ";
-  GetGMST(hh,mm,ss,ns,ps);
+  if (mode>0)
+  {
+   GetGMST(hh,mm,ss,ns,ps);
+  }
+  else
+  {
+   gast=GetGAST();
+   Convert(gast,hh,mm,ss,ns,ps);
+  }
   cout << setfill('0') << setw(2) << hh << ":"
        << setw(2) << mm << ":" << setw(2) << ss << "."
-       << setw(9) << ns << setw(3) << ps << " (GMST)" << endl;
+       << setw(9) << ns << setw(3) << ps;
+  if (mode>0)
+  {
+   cout << " (GMST)" << endl;
+  }
+  else
+  {
+   cout << " (GAST)" << endl;
+  }
 
   // Local time information
   if (offset)
@@ -279,11 +298,27 @@ void AliTimestamp::Date(Int_t mode,Double_t offset)
    }
    // Determine the local time by including the offset w.r.t. the original timestamp
    Double_t hlt=GetLT(offset);
-   Double_t hlst=GetLMST(offset);
-   PrintTime(hlt,12); cout << " (LT)  "; PrintTime(hlst,12); cout << " (LMST)" << endl;
+   Double_t hlst=0;
+   if (mode>0)
+   {
+    hlst=GetLMST(offset);
+   }
+   else
+   {
+    hlst=GetLAST(offset);
+   }
+   PrintTime(hlt,12); cout << " (LT)  "; PrintTime(hlst,12);
+   if (mode>0)
+   {
+    cout << " (LMST)" << endl;
+   }
+   else
+   {
+    cout << " (LAST)" << endl;
+   }
   }
  }
- if (mode==2 || mode==3)
+ if (abs(mode)==2 || abs(mode)==3)
  {
   Int_t jd,jsec,jns;
   GetJD(jd,jsec,jns);
