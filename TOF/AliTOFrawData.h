@@ -17,8 +17,8 @@ class AliTOFrawData : public TObject {
   // TOF rawData class
  public:
   AliTOFrawData(); // default ctr
-  AliTOFrawData(Int_t a, Int_t b, Int_t c, Int_t d, Int_t e, Int_t f, Int_t g, Int_t h, Int_t l); // ctr
-  AliTOFrawData(Int_t a, Int_t b, Int_t c, Int_t d, Int_t e, Int_t f, Float_t ee, Float_t ff, Int_t g, Int_t h, Int_t l); // ctr
+  AliTOFrawData(Int_t a, Int_t b, Int_t c, Int_t d, Float_t e, Float_t f, Int_t g, Int_t h, Int_t l); // ctr
+  AliTOFrawData(Int_t a, Int_t b, Int_t c, Int_t d, Float_t e, Float_t f, Float_t ee, Float_t ff, Int_t g, Int_t h, Int_t l); // ctr
   ~AliTOFrawData() {}; // default dtr
   AliTOFrawData(const AliTOFrawData& r);     // dummy copy constructor
   AliTOFrawData& operator=(const AliTOFrawData& r); // dummy assignment operator

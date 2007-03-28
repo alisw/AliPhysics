@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2007/02/20 15:57:00  decaro
+Raw data update: to read the TOF raw data defined in UNPACKED mode
+
 Revision 1.12  2006/08/22 13:29:42  arcelli
 removal of effective c++ warnings (C.Zampolli)
 
@@ -994,10 +997,13 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
 	    digs->GetPadx()  !=volume[3] ||
 	    digs->GetPadz()  !=volume[4]) AliWarning(" --- ERROR --- ");
 
-	timeOfFlight = (Int_t)(digs->GetTdc())%8192;
+	//timeOfFlight = (Int_t)(digs->GetTdc())%8192;
+	timeOfFlight = (Int_t)(digs->GetTdc());
+	if (timeOfFlight>=8192) timeOfFlight = 0;
+
 	totCharge = (Int_t)(digs->GetToT());//digs->GetAdc();
 	// temporary control
-	if (totCharge<0) totCharge = TMath::Abs(totCharge);
+	if (totCharge<0) totCharge = 0;//TMath::Abs(totCharge);
 	if (totCharge>=256) totCharge = 255;
 
 	if (fPackedAcquisition) {

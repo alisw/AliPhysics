@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2007/02/20 15:57:00  decaro
+Raw data update: to read the TOF raw data defined in UNPACKED mode
+
 Revision 0.1  2006/12/15 A.De Caro
    Introuction
 */
@@ -53,8 +56,8 @@ AliTOFrawData::AliTOFrawData() :
 }
 
 //_____________________________________________________________________________
-AliTOFrawData::AliTOFrawData(Int_t a, Int_t b, Int_t c, Int_t d, Int_t e,
-			     Int_t f, Int_t g, Int_t h, Int_t l) :
+AliTOFrawData::AliTOFrawData(Int_t a, Int_t b, Int_t c, Int_t d, Float_t e,
+			     Float_t f, Int_t g, Int_t h, Int_t l) :
   TObject(),
   fACQflag(h),
   fPSbit(g),
@@ -74,8 +77,8 @@ AliTOFrawData::AliTOFrawData(Int_t a, Int_t b, Int_t c, Int_t d, Int_t e,
 }
 
 //_____________________________________________________________________________
-AliTOFrawData::AliTOFrawData(Int_t a, Int_t b, Int_t c, Int_t d, Int_t e,
-			     Int_t f, Float_t ee, Float_t ff, Int_t g, Int_t h, Int_t l) :
+AliTOFrawData::AliTOFrawData(Int_t a, Int_t b, Int_t c, Int_t d, Float_t e,
+			     Float_t f, Float_t ee, Float_t ff, Int_t g, Int_t h, Int_t l) :
   TObject(),
   fACQflag(h),
   fPSbit(g),

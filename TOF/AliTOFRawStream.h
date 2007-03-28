@@ -43,8 +43,8 @@ class AliTOFRawStream: public TObject {
   Int_t GetPadX()   const {return fPadX;};
   Int_t GetIndex(Int_t *detId); // Get channel index for Online Calibration 
   
-  Int_t GetTofBin() const {return fTime;};
-  Int_t GetToTbin() const {return fToT;};
+  Float_t GetTofBin() const {return fTime;};
+  Float_t GetToTbin() const {return fToT;};
   Float_t GetLeadingEdge() const {return fLeadingEdge;};
   Float_t GetTrailingEdge() const {return fTrailingEdge;};
 
@@ -91,8 +91,8 @@ class AliTOFRawStream: public TObject {
   Int_t         fTRMchain;     // TRM chain number [0;1]
   Int_t         fTDC;          // TDC number [0;14]
   Int_t         fTDCchannel;   // TDC channel number [0;7]
-  Int_t         fTime;         // time-of-flight measurement [0;8191]
-  Int_t         fToT;          // time-over-threshould measurement [0;255]
+  Float_t       fTime;         // time-of-flight measurement [0;8191]
+  Float_t       fToT;          // time-over-threshould measurement [0;255]
   Float_t       fLeadingEdge;  // leading edge measurement
   Float_t       fTrailingEdge; // trailing edge measurement
   Int_t         fErrorFlag;    // error flag
