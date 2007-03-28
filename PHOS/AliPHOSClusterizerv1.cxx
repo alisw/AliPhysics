@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.101  2007/03/06 06:51:27  kharlov
+ * Calculation of cluster properties dep. on vertex posponed to TrackSegmentMaker
+ *
  * Revision 1.100  2007/01/10 11:07:26  kharlov
  * Raw digits writing to file (B.Polichtchouk)
  *
@@ -637,9 +640,10 @@ void AliPHOSClusterizerv1::WriteRecPoints()
       delete rp ;
     }
 
-// No vertex is available now, calculate only vertex-independent quantities and 
-// postpone cluster properties calculation to TrackSegmentMaker
+// No vertex is available now, calculate cirrections in PID
       rp->EvalAll(fW0,digits) ;
+      TVector3 fakeVtx(0.,0.,0.) ;
+      rp->EvalAll(fW0,fakeVtx,digits) ;
   }
   emcRecPoints->Compress() ;
 //  emcRecPoints->Sort() ; //Can not sort until position is calculated!

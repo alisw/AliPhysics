@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.49  2007/03/06 06:51:27  kharlov
+ * Calculation of cluster properties dep. on vertex posponed to TrackSegmentMaker
+ *
  * Revision 1.48  2006/08/30 16:12:52  kharlov
  * Reconstruction of raw data from beam test 2006 (B.Polichtchouk)
  *
@@ -133,7 +136,6 @@ private:
 private:
 
   Bool_t  fDefaultInit;              //! Says if the task was created by defaut ctor (only parameters are initialized)
-
   Int_t   fEmcCrystals ;             // number of EMC cristals in PHOS
 
   Bool_t  fToUnfold ;                // To perform unfolding 

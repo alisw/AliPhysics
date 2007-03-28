@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.50  2007/03/06 06:54:48  kharlov
+ * DP:Calculation of cluster properties dep. on vertex added
+ *
  * Revision 1.49  2007/02/01 13:59:11  hristov
  * Forward declaration
  *
@@ -86,8 +89,6 @@ private:
   void    InitParameters() ;
   void    PrintTrackSegments(Option_t *option) ;
   virtual void   WriteTrackSegments() ;
-  void    GetVertex(void) ;
-  void    EvalRecPoints(void) ;
 
 private:  
 

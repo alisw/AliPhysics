@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.84  2007/03/07 07:01:21  hristov
+ * Fixing copy/paste erro. Additional protections
+ *
  * Revision 1.83  2007/03/06 21:07:37  kharlov
  * DP: xz CPV-EMC distance filled to TS
  *
@@ -489,9 +492,6 @@ void  AliPHOSTrackSegmentMakerv1::Exec(Option_t *option)
     
     gime->TrackSegments()->Clear();
 
-    GetVertex() ;
-    EvalRecPoints() ;
-
     //    if(!ReadRecPoints(ievent))   continue; //reads RecPoints for event ievent
     
     for(fModule = 1; fModule <= geom->GetNModules() ; fModule++ ) {
@@ -517,68 +517,6 @@ void  AliPHOSTrackSegmentMakerv1::Exec(Option_t *option)
    }
   if(fWrite) //do not unload in "on flight" mode
     Unload();
-}
-//____________________________________________________________________________
-void AliPHOSTrackSegmentMakerv1::GetVertex(void)
-{ //extract vertex either using ESD or generator
-  
-  //Try to extract vertex from data
-  if(fESD){
-    const AliESDVertex *esdVtx = fESD->GetVertex() ;
-    if(esdVtx){
-      fVtx.SetXYZ(esdVtx->GetXv(),esdVtx->GetYv(),esdVtx->GetZv()) ;
-      return ;
-    }
-  }
-  
-  AliWarning("Can not read vertex from data, use fixed \n") ;
-  fVtx.SetXYZ(0.,0.,0.) ;
- 
-}
-//____________________________________________________________________________
-void AliPHOSTrackSegmentMakerv1::EvalRecPoints(void)
-{ //calculate parameters of RecPoints using vertex and writing them
-
-  AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
-  TClonesArray * digits = gime->Digits() ;
-  AliPHOSClusterizer * cl = gime->Clusterizer() ;
-  TObjArray * emcRecPoints = gime->EmcRecPoints() ; 
-  if (!emcRecPoints) {
-    AliError("No CPV rec. points!");
-  }
-  else {
-    Double_t w0=cl->GetEmcLogWeight() ;
-    for(Int_t i=0; i<emcRecPoints->GetEntriesFast() ; i++){
-      AliPHOSEmcRecPoint * point = static_cast<AliPHOSEmcRecPoint*>(emcRecPoints->At(i));
-      if (point) point->EvalAll(w0,fVtx,digits) ;
-      else {
-	AliError(Form("No AliPHOSEmcRecPoint is found at %d",i));
-      }
-    }
-    emcRecPoints->Sort() ;
-  }
-
-  TObjArray * cpvRecPoints = gime->CpvRecPoints() ;
-  if (!cpvRecPoints) {
-    AliError("No CPV rec. points!");
-  }
-  else {
-    Double_t w0CPV=cl->GetCpvLogWeight() ;
-    for(Int_t i=0; i<cpvRecPoints->GetEntriesFast() ; i++){
-      AliPHOSCpvRecPoint * point = static_cast<AliPHOSCpvRecPoint*>(cpvRecPoints->At(i));
-      if (point) point->EvalAll(w0CPV,fVtx,digits) ;
-      else {
-	AliError(Form("No AliPHOSCpvRecPoint is found at %d",i));
-      }
-    }
-    cpvRecPoints->Sort() ;
-  }
-
-  //write recaculated RecPoints
-  gime->WriteRecPoints("OVERWRITE");
-  gime->WriteClusterizer("OVERWRITE");
- 
-
 }
 //____________________________________________________________________________
 void AliPHOSTrackSegmentMakerv1::Unload() 
