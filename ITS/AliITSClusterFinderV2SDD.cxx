@@ -79,9 +79,9 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(TClonesArray *digits) {
      Int_t z=d->GetCoord1()+1;   //z
      Int_t q=d->GetSignal();
 
-     if(q<cal->GetThresholdAnode(d->GetCoord1())) continue;
      if(q>baseline) q-=(Int_t)baseline;
      else q=0;
+     if(q<cal->GetThresholdAnode(d->GetCoord1())) continue;
  
      //if (q<3) continue;
 
@@ -226,7 +226,8 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
 	 // z=  -z+fZshift[fModule];
 	 //      c.SetY(y);
 	 //  c.SetZ(z);
-	 Float_t xdet = cal->GetDriftPath((yyyy-0.5)*25,0);
+	 Float_t timebin = GetSeg()->Dpx(0);
+	 Float_t xdet = cal->GetDriftPath((yyyy-0.5)*timebin,0);
 	 xdet=xdet/10000.-fHwSDD-fYoffSDD;
 	 if (s) xdet=-xdet;
 	 
