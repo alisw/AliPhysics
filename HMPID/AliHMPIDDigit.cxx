@@ -159,6 +159,7 @@ void AliHMPIDDigit::WriteRaw(TObjArray *pDigAll)
     TClonesArray *pDigCh=(TClonesArray *)pDigAll->At(iCh); //list of digits for current chamber 
     for(Int_t iDig=0;iDig<pDigCh->GetEntriesFast();iDig++){//digits loop
       AliHMPIDDigit *pDig=(AliHMPIDDigit*)pDigCh->At(iDig);
+      if(pDig->Q() < 1) continue;
       Int_t ddl,r,d,a;            //32 bits data word 
       pDig->Raw(w32,ddl,r,d,a);                             
       if(ddl%2){
