@@ -29,7 +29,6 @@
 #pragma link C++ class  AliITSv11GeometrySupport+;
 #pragma link C++ class  AliITSv11GeometrySPD+;
 #pragma link C++ class  AliITSv11GeometrySDD+;
-#pragma link C++ class  AliITSv11GeometrySSD+;
 #pragma link C++ class  AliITSv11Hybrid+;
 #pragma link C++ class  AliITShit+;
 // Standard ITS detector class initilizers
