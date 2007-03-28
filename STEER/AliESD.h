@@ -32,7 +32,6 @@
 #include "AliESDVZERO.h"
 #include "AliMultiplicity.h"
 #include "AliRawDataErrorLog.h"
-#include "AliAODEvent.h"
 
 class AliESDfriend;
 
@@ -227,8 +226,6 @@ public:
   void ResetV0s() { fV0s.Clear(); }
   void ResetCascades() { fCascades.Clear(); }
   void Reset();
-
-  AliAODEvent *CreateAOD() const;
 
   void  Print(Option_t *option="") const;
 

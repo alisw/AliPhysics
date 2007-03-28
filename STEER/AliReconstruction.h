@@ -126,7 +126,7 @@ private:
   //===========================================//
   void           CreateTag(TFile* file);
   //==========================================//
-  void           CreateAOD(TFile* file);
+  void           ESDFile2AODFile(TFile* esdFile, TFile* aodFile);
 
   void           WriteAlignmentData(AliESD* esd);
 
