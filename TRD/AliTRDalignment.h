@@ -15,6 +15,7 @@
 
 #include <TObject.h>
 #include <TRandom.h>
+#include <TObjString.h>
 
 #include <AliAlignObj.h>
 
@@ -25,42 +26,44 @@ class AliTRDalignment : public TObject {
   AliTRDalignment();
   AliTRDalignment(const AliTRDalignment& source);
   AliTRDalignment& operator=(const AliTRDalignment& source);  
+  AliTRDalignment& operator*=(double fac);  
   AliTRDalignment& operator+=(const AliTRDalignment& source);  
   AliTRDalignment& operator-=(const AliTRDalignment& source);  
   Bool_t operator==(const AliTRDalignment& source) const;  
-  virtual ~AliTRDalignment() {};                     // destructor
+  virtual ~AliTRDalignment() {};
 
   // setting 
 
   void SetSmZero();                                  // reset to zero supermodule data
   void SetChZero();                                  // reset to zero chamber data
   void SetZero() {SetSmZero(); SetChZero();}         // reset to zero both
-  void SetSm(Int_t sm, const Double_t a[6])          { for (int i = 0; i < 6; i++) fSm[sm][i] = a[i]; }
-  void SetCh(Int_t ch, const Double_t a[6])          { for (int i = 0; i < 6; i++) fCh[ch][i] = a[i]; }
-  void SetSmRandom(Double_t a[6]);                   // generate random gaussians with sigmas a
-  void SetChRandom(Double_t a[6]);                   // generate random gaussians with sigmas a
+  void SetSm(int sm, const double a[6])              {for (int i = 0; i < 6; i++) fSm[sm][i] = a[i];}
+  void SetCh(int ch, const double a[6])              {for (int i = 0; i < 6; i++) fCh[ch][i] = a[i];}
+  void SetSmRandom(double a[6]);                     // generate random gaussians with sigmas a
+  void SetChRandom(double a[6]);                     // generate random gaussians with sigmas a
   void SetSmFull();                                  // set supermodule data to initial aka full 
   void SetChFull();                                  // set chamber data to initial aka full 
   void SetSmResidual();                              // set supermodule data to final aka residual
   void SetChResidual();                              // set chamber data to final aka residual
-  void SetFull() {SetSmFull(); SetChFull();}
-  void SetResidual() {SetSmResidual(); SetChResidual();}
+  void SetFull()                                     {SetSmFull(); SetChFull();}
+  void SetResidual()                                 {SetSmResidual(); SetChResidual();}
+  void SetComment(char *s)                           {fComment.SetString(s);} 
 
   // dumping on screen
 
-  void PrintSm(Int_t sm, FILE *fp = stdout) const;   // print data of a supermodule
-  void PrintCh(Int_t sm, FILE *fp = stdout) const;   // print data of a chamber
-  void PrintSm(FILE *fp = stdout) const              { for (int i = 0; i <  18; i++)  PrintSm(i,fp);  }
-  void PrintCh(FILE *fp = stdout) const              { for (int i = 0; i < 540; i++)  PrintCh(i,fp);  }
-  void Print(FILE *fp = stdout) const                { PrintSm(fp); PrintCh(fp);                      }
-  void Print(Option_t *) const                       { Print();                                       } 
+  void PrintSm(int sm, FILE *fp = stdout) const;     // print data of a supermodule
+  void PrintCh(int sm, FILE *fp = stdout) const;     // print data of a chamber
+  void PrintSm(FILE *fp = stdout) const              {for (int i = 0; i <  18; i++)  PrintSm(i,fp);}
+  void PrintCh(FILE *fp = stdout) const              {for (int i = 0; i < 540; i++)  PrintCh(i,fp);}
+  void Print(FILE *fp = stdout) const                {PrintSm(fp); PrintCh(fp);                    }
+  void Print(Option_t *) const                       {Print();                                     } 
 
   // reading-in from file
 
   void ReadAscii(char *filename);                    // read from ascii file
   void ReadRoot(char *filename);                     // read from root file
   void ReadDB(char *filename);                       // read from DB file
-  void ReadDB(char *db, char *path, Int_t run, Int_t version=-1, Int_t subversion=-1);
+  void ReadDB(char *db, char *path, int run, int version=-1, int subversion=-1);
   void ReadGeo(char *misaligned);                    // read from misaligned_geometry.root
   void ReadSurveyReport(char *filename);             // read from survey report
   void ReadAny(char *filename);                      // read from any kind of file
@@ -69,49 +72,71 @@ class AliTRDalignment : public TObject {
 
   void WriteAscii(char *filename) const;             // store data on ascii file
   void WriteRoot(char *filename);                    // store data on root file
-  void WriteDB(char *filename, char *comment, Int_t run0, Int_t run1);
-                                                     // store data on a local DB-like file
-  void WriteDB(char *db, char *path, char *comment, Int_t run0, Int_t run1); 
+  void WriteDB(char *filename, int run0, int run1);  // store data on a local DB-like file
+  void WriteDB(char *db, char *path, int run0, int run1); 
                                                      // store data on DB file
   void WriteGeo(char *filename);                     // apply misalignment and store geometry 
 
   // geometry and symbolic names getters
 
   // phi-sector number of chamber ch, 0-17
-  Int_t    GetSec(Int_t ch) const                    { return ch/30;   }
+  int GetSec(int ch) const                           {return ch/30;}
   // stack number, 0-4
-  Int_t    GetSta(Int_t ch) const                    { return ch%30/6; }
-  // plane number, 0-5
-  Int_t    GetPla(Int_t ch) const                    { return ch%30%6; }
+  int GetSta(int ch) const                           {return ch%30/6;}
+  // plane number, 0-5 
+  int GetPla(int ch) const                           {return ch%30%6;}
   // module number, 0-89
-  Int_t    GetMod(Int_t ch) const                    { return 5*GetSec(ch)+GetSta(ch);                           } 
+  int GetMod(int ch) const                           {return 5*GetSec(ch)+GetSta(ch);                           } 
   // layer number, 9-14
-  Int_t    GetLay(Int_t ch) const                    { return AliAlignObj::kTRD1+GetPla(ch);                     }
+  int GetLay(int ch) const                           {return AliAlignObj::kTRD1+GetPla(ch);                     }
   // volume id
-  UShort_t GetVoi(Int_t ch) const                    { return AliAlignObj::LayerToVolUID(GetLay(ch),GetMod(ch)); }
-  char    *GetSmName(Int_t sm) const                 { return Form("TRD/sm%02d",sm);                             }
-  char    *GetChName(Int_t ch) const                 { return Form("TRD/sm%02d/st%d/pl%d",GetSec(ch),GetSta(ch),GetPla(ch)); }
+  UShort_t GetVoi(int ch) const                      {return AliAlignObj::LayerToVolUID(GetLay(ch),GetMod(ch)); }
+  // symbolic name of a supermodule
+  char *GetSmName(int sm) const                      {return Form("TRD/sm%02d",sm);                             }
+  // symbolic name of a chamber
+  char *GetChName(int ch) const                      {return Form("TRD/sm%02d/st%d/pl%d",GetSec(ch),GetSta(ch),GetPla(ch)); }
 
   // data analysis
 
-  Double_t GetSmRMS(Int_t xyz) const;                // calculate rms fSm[*][xyz]
-  Double_t GetChRMS(Int_t xyz) const;                // calculate rms fCh[*][xyz]
-  void     PrintSmRMS() const;                       // print rms of fSm
-  void     PrintChRMS() const;                       // print rms of fCh
-  void     PrintRMS() const                          { PrintSmRMS(); PrintChRMS();}
+  double GetSmRMS(int xyz) const;                    // calculate rms fSm[*][xyz]
+  double GetChRMS(int xyz) const;                    // calculate rms fCh[*][xyz]
+  void   PrintSmRMS() const;                         // print rms of fSm
+  void   PrintChRMS() const;                         // print rms of fCh
+  void   PrintRMS() const                            {PrintSmRMS(); PrintChRMS();}
+
+  double SurveyChi2(int i, double *a);               // compare survey with ideal, return chi2
+  double SurveyChi2(double *a)                       {return SurveyChi2(fIbuffer[0],a);}
+  void   SurveyToAlignment(int i, char *flag);       // determine alignment of supermodule i based on survey
 
  protected:
 
-  void ArToNumbers(TClonesArray *ar);                // read ar and fill fSm and fCh
-  void NumbersToAr(TClonesArray *ar);                // build ar using fSm and fCh data
-  void LoadIdealGeometry(char *filename);            // load ideal geometry from file
-  void LoadIdealGeometry() {LoadIdealGeometry("geometry.root");} 
+  void   ArToNumbers(TClonesArray *ar);              // read ar and fill fSm and fCh
+  void   NumbersToAr(TClonesArray *ar);              // build ar using fSm and fCh data
+  void   LoadIdealGeometry(char *filename);          // load ideal geometry from file
+  void   LoadIdealGeometry()                         {LoadIdealGeometry("geometry.root");} 
 
  protected:
 
-  Double_t fSm[18][6];                               // supermodule data
-  Double_t fCh[540][6];                              // chamber data 
-  TRandom  fRan;                                     // random generator for fake alignment data
+  double     fSm[18][6];                             // supermodule data
+  double     fCh[540][6];                            // chamber data 
+  TObjString fComment;                               // info concerning origin of the data etc.
+  TRandom    fRan;                                   // random generator for fake alignment data
+
+  // Temporary storage for ideal position of the survey points and the survey data.
+  // The survey data are in master frame and in cm. Each supermodule has 8 survey marks. 
+  // The indices are sm number, z-end, radius, phi. 
+  // The ideal positions of survey points are in local frame of supermodule and in cm. 
+  // The indices are z-end, radius, phi. 
+  // The processed survey results are stored in fSm.
+  double fSurveyX[18][2][2][2];                      // supermodule survey point X
+  double fSurveyY[18][2][2][2];                      // supermodule survey point Y
+  double fSurveyZ[18][2][2][2];                      // supermodule survey point Z
+  double fSurveyE[18][2][2][2];                      // supermodule survey point error
+  double fSurveyX0[2][2][2];                         // ideal X position of the survey marks
+  double fSurveyY0[2][2][2];                         // ideal Y position of the survey marks
+  double fSurveyZ0[2][2][2];                         // ideal Z position of the survey marks
+  int    fIbuffer[1000];                             // generic buffer for misc. operations
+  double fDbuffer[1000];                             // generic buffer for misc. operations
 
   ClassDef(AliTRDalignment,1)    
 
