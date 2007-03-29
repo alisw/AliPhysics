@@ -32,7 +32,7 @@ ClassImp(AliRawEquipmentHeader)
 AliRawEquipmentHeader::AliRawEquipmentHeader():
   fSize(0),
   fEquipmentType(0),
-  fEquipmentID(0),
+  fEquipmentID(0xffffffff),
   fBasicElementSizeType(0)
 {
   // Default constructor
@@ -60,7 +60,8 @@ void AliRawEquipmentHeader::Reset()
 {
   // Reset the contents of the equipment
   // header data
-  fSize = fEquipmentType = fEquipmentID = fBasicElementSizeType = 0;
+  fSize = fEquipmentType = fBasicElementSizeType = 0;
+  fEquipmentID = 0xffffffff;
 
   for(Int_t i = 0; i < kAttributeWords; i++)
     fTypeAttribute[i] = 0;
