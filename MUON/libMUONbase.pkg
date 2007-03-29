@@ -31,6 +31,8 @@ SRCS:=  AliMUON.cxx AliMUONv1.cxx \
         AliMUON2DMap.cxx \
         AliMUON2DMapIterator.cxx \
         AliMUON1DArray.cxx \
+        AliMUON1DMap.cxx \
+        AliMUON1DMapIterator.cxx \
         AliMUONVCalibParam.cxx \
         AliMUONCalibParam1I.cxx \
         AliMUONCalibParam2F.cxx \
@@ -45,7 +47,7 @@ SRCS:=  AliMUON.cxx AliMUONv1.cxx \
         AliMUON2DStoreValidator.cxx \
         AliMUONCheckItem.cxx \
         AliMUONCheckItemIterator.cxx
-     
+             
 HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= MUONbaseLinkDef.h

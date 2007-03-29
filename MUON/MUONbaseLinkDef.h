@@ -46,6 +46,8 @@
 #pragma link C++ class AliMUON2DMap+;
 #pragma link C++ class AliMUON2DMapIterator+;
 #pragma link C++ class AliMUON1DArray+;
+#pragma link C++ class AliMUON1DMap+;
+#pragma link C++ class AliMUON1DMapIterator+;
 #pragma link C++ class AliMUONVCalibParam+;
 #pragma link C++ class AliMUONCalibParam1I+;
 #pragma link C++ class AliMUONCalibParam2F+;
