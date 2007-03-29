@@ -851,9 +851,12 @@ Int_t AliTRDRawStream::ReadAll()
 		  //
 		  //fDigits->SetData(fROW, fCOL, fTB+ctr, fSig[ctr] - fCommonAdditive);
 		  fDigits->SetData(fROW, fCOL, fTB+ctr, fSig[ctr]);
-		  fTrack0->SetData(fROW, fCOL, fTB+ctr, 0);
-		  fTrack1->SetData(fROW, fCOL, fTB+ctr, 0);
-		  fTrack2->SetData(fROW, fCOL, fTB+ctr, 0);
+		  // The MC labels have been already flushed, no need
+		  // in the following three lines
+		  //		  fTrack0->SetData(fROW, fCOL, fTB+ctr, 0);
+		  //		  fTrack1->SetData(fROW, fCOL, fTB+ctr, 0);
+		  //		  fTrack2->SetData(fROW, fCOL, fTB+ctr, 0);
+		  //
 		}
 	      }
 	    }
@@ -1358,8 +1361,9 @@ Int_t  AliTRDRawStream::DecodeDataWordV1V2()
     fSig[2] = (fDataWord & 0xffc00000) >> 22;
 
     // Print data to screen:
-    AliDebug(5, Form("SM%d L%dS%d: ROB%d MCM=%d ADC=%d (ROW=%d COL=%d): Data %04d %04d %04d\n",
-		     fSM, fLAYER, fSTACK, fROB, fMCM, fADC, fROW, fCOL, fSig[0], fSig[1], fSig[2]));
+    // Do NOT switch on for default production, it is VERY slow
+    //    AliDebug(5, Form("SM%d L%dS%d: ROB%d MCM=%d ADC=%d (ROW=%d COL=%d): Data %04d %04d %04d\n",
+    //		     fSM, fLAYER, fSTACK, fROB, fMCM, fADC, fROW, fCOL, fSig[0], fSig[1], fSig[2]));
     
   }
   else {
