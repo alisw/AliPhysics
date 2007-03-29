@@ -22,6 +22,9 @@ In order to run the examples you should use the ESD.par as well as the ANALYSIS.
 o) Kine
    You can find the runProcess.C and the demoLocal.C macros along with the AliAnalysisTaskRLPt class. Use the example to access the MC information. You have to run it with aliroot. The last additions are the executable (should be stored in your $HOME/bin AliEn directory), the xml collection (run $ALICE_ROOT/STEER/CreateXML.C), the jdl (you must change it accordingly) and the macro to be used as a template for the batch sessions.
 
+o) packages
+   You can find the ESD.par and ANALYSIS.par having the latest updates to be used with PDC06 data
+
 ===========================================================
 For any questions send mails to: Panos.Christakoglou@cern.ch
 ===========================================================
