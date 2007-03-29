@@ -355,6 +355,10 @@ Bool_t AliRawReaderRoot::ReadHeader()
       fCount = 0;
       fEquipment = fSubEvent->GetEquipment(fEquipmentIndex++);
       if (!fEquipment) continue;
+      if (!IsSelected()) {
+	fPosition = fEnd;
+	continue;
+      }
       fRawData = fEquipment->GetRawData();
       if (!fRawData) {
 	fPosition = fEnd;
@@ -383,8 +387,8 @@ Bool_t AliRawReaderRoot::ReadHeader()
       fHeader = (AliRawDataHeader*) fPosition;
       if ((fPosition + fHeader->fSize) != fEnd) {
 	Warning("ReadHeader",
-		"raw data size found in the header is wrong (%d != %d)! Using the equipment size instead !",
-		fHeader->fSize, fEnd - fPosition);
+		"Equipment %d : raw data size found in the header is wrong (%d != %d)! Using the equipment size instead !",
+		fEquipment->GetEquipmentHeader()->GetId(),fHeader->fSize, fEnd - fPosition);
 	fHeader->fSize = fEnd - fPosition;
       }
       fPosition += sizeof(AliRawDataHeader);
@@ -549,8 +553,8 @@ Int_t AliRawReaderRoot::CheckData() const
       AliRawDataHeader* header = (AliRawDataHeader*) position;
       if ((position + header->fSize) != end) {
 	Warning("ReadHeader",
-		"raw data size found in the header is wrong (%d != %d)! Using the equipment size instead !",
-		header->fSize, end - position);
+		"Equipment %d : raw data size found in the header is wrong (%d != %d)! Using the equipment size instead !",
+		equipment->GetEquipmentHeader()->GetId(),header->fSize, end - position);
 	header->fSize = end - position;
 	result |= kErrSize;
       }
