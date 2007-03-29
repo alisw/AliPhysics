@@ -22,6 +22,7 @@
 #include "TObjArray.h"
 #include "TObjString.h"
 #include "TString.h"
+#include "TMap.h"
 
 ///
 /// \class AliMpHelper
@@ -48,6 +49,52 @@ AliMpHelper::~AliMpHelper()
   ///
   /// Dtor.
   ///
+}
+
+//_____________________________________________________________________________
+TMap* 
+AliMpHelper::Decode(const TString& s)
+{
+  /// \todo add comment  
+
+  TString ss(s);
+  ss.ToUpper();
+  
+  TMap* m = new TMap;
+  m->SetOwner(true);
+  
+  TObjArray* a = ss.Tokenize(";");
+  TIter next(a);
+  TObjString* o;
+  
+  while ( ( o = static_cast<TObjString*>(next()) ) )
+  {
+    TString& os(o->String());
+    TObjArray* b = os.Tokenize("=");
+    if (b->GetEntries()==2)
+    {
+      m->Add(b->At(0),b->At(1));
+    }
+  }
+  return m;
+}
+
+//_____________________________________________________________________________
+Bool_t 
+AliMpHelper::Decode(const TMap& m, const TString& key, TString& value)
+{
+  /// \todo add comment  
+
+  TString skey(key);
+  skey.ToUpper();
+  value = "";
+  TPair* p = static_cast<TPair*>(m.FindObject(skey));
+  if (p) 
+  {
+    value = (static_cast<TObjString*>(p->Value()))->String();
+    return kTRUE;
+  }
+  return kFALSE;
 }
 
 //_____________________________________________________________________________

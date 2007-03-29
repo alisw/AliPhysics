@@ -19,6 +19,7 @@
 
 class TArrayI;
 class TString;
+class TMap;
 
 class AliMpHelper : public TObject
 {
@@ -33,6 +34,10 @@ class AliMpHelper : public TObject
 
   static TString Normalize(const char* line);
                            
+  static TMap* Decode(const TString& s);
+  
+  static Bool_t Decode(const TMap& m, const TString& key, TString& value);
+  
   ClassDef(AliMpHelper,1) // Helper for parsing slat stations mapping files 
 };
 

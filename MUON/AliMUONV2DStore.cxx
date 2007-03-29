@@ -33,6 +33,7 @@ ClassImp(AliMUONV2DStore)
 
 #include "AliMpIntPair.h"
 #include "AliMUONObjectPair.h"
+#include "AliMpHelper.h"
 #include "AliMUONVDataIterator.h"
 #include "Riostream.h"
 #include "TMap.h"
@@ -52,44 +53,6 @@ AliMUONV2DStore::~AliMUONV2DStore()
 /// Destructor
 }
 
-TMap* Decode(const TString& s)
-{
-  TString ss(s);
-  ss.ToUpper();
-  
-  TMap* m = new TMap;
-  m->SetOwner(true);
-  
-  TObjArray* a = ss.Tokenize(";");
-  TIter next(a);
-  TObjString* o;
-  
-  while ( ( o = static_cast<TObjString*>(next()) ) )
-  {
-    TString& os(o->String());
-    TObjArray* b = os.Tokenize("=");
-    if (b->GetEntries()==2)
-    {
-      m->Add(b->At(0),b->At(1));
-    }
-  }
-  return m;
-}
-
-Bool_t Decode(const TMap& m, const TString& key, TString& value)
-{
-  TString skey(key);
-  skey.ToUpper();
-  value = "";
-  TPair* p = static_cast<TPair*>(m.FindObject(skey));
-  if (p) 
-  {
-    value = (static_cast<TObjString*>(p->Value()))->String();
-    return kTRUE;
-  }
-  return kFALSE;
-}
-
 //_____________________________________________________________________________
 void
 AliMUONV2DStore::Print(Option_t* opt) const
@@ -104,14 +67,14 @@ AliMUONV2DStore::Print(Option_t* opt) const
   
   AliMUONObjectPair* pair;
   
-  TMap* m = Decode(opt);
+  TMap* m = AliMpHelper::Decode(opt);
   
   TString si;  
-  Bool_t selectI = Decode(*m,"i",si);
+  Bool_t selectI = AliMpHelper::Decode(*m,"i",si);
   TString sj;
-  Bool_t selectJ = Decode(*m,"j",sj);
+  Bool_t selectJ = AliMpHelper::Decode(*m,"j",sj);
   TString sopt;
-  Decode(*m,"opt",sopt);
+  AliMpHelper::Decode(*m,"opt",sopt);
   
   m->DeleteAll();
   delete m;
