@@ -27,8 +27,8 @@ PACKBLIBS := $(ROOTCLIBS) $(ROOTPLIBS) -lTreePlayer -lGeomPainter -lGed -lRGL $(
 
 ifeq (macosx,$(ALICE_TARGET))
 
-# On Mac OS X gcc we need GL and GLU
-ELIBS+=GL GLU
+# On Mac OS X gcc we need GL
+ELIBS+=GL
 ELIBSDIR+=/usr/X11R6/lib/
 
 ELIBSCPP:=$(filter-out microcern,$(ELIBS))
@@ -38,8 +38,8 @@ ELIBSCPP:=$(filter-out HBTP,$(ELIBSCPP))
 ELIBSCPP:=$(filter-out herwig,$(ELIBSCPP))
 ELIBSCPP:=$(filter-out EPEMGEN,$(ELIBSCPP))
 PACKLDFLAGS:=$(LDFLAGS) $(ELIBSCPP:%=-Wl,-u,_G__cpp_setupG__%)
-# On Mac OS X gcc we need f2c
-ELIBS+=f2c
+# On Mac OS X gcc we need f2c and GLU
+ELIBS+=f2c GLU
 ELIBSDIR+=$(FINK_ROOT)/lib
 
 endif
