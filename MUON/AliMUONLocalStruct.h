@@ -54,9 +54,9 @@ public:
    Bool_t   GetTriggerY() const {return (fData[4] >> 14 & 0x1);}
             /// Return Upos
    UChar_t  GetYPos() const {return fData[4] >> 10 &  0xF;}
-            /// Return Xdev
-//   UChar_t  GetXDev() const {return fData[4] >> 5  &  0x1F;}
+            /// Get Sign of X deviation 
    UChar_t  GetSXDev() const {return fData[4] >> 9  &  0x1;}
+            /// Get X deviation 
    UChar_t  GetXDev() const {return fData[4] >> 5  &  0xF;}
             /// Return TriggerX
    Bool_t   GetTriggerX() const {return ((GetXDev() >> 4  & 0x1) && !(GetXDev() & 0xF));}
