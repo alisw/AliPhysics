@@ -162,14 +162,7 @@ Int_t AliMUONTriggerLut::GetMask(Int_t ystrip)
 {
 /// Return the mask corresponding to ystrip
 
-  Int_t tabMask[16]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-  Int_t mask=0;
-  tabMask[ystrip]=1;
-  for (Int_t i=0; i<16; i++) 
-  {          
-    mask += tabMask[i]<<i; 
-  }
-  return mask;
+    return (Int_t)(1<<ystrip);
 }
 
 
