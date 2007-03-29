@@ -24,12 +24,14 @@ void loadlibs ()
 {
   gSystem->Load("libVMC");
   gSystem->Load("libMinuit");
+  gSystem->Load("libTree");
   
   gSystem->Load("libESD");
   
   gSystem->Load("libSTEER"); 
   gSystem->Load("libCDB");
   
+  gSystem->Load("libPhysics");
   gSystem->Load("libMUONmapping");
   gSystem->Load("libMUONgeometry");
   gSystem->Load("libMUONbase");
