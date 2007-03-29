@@ -25,6 +25,7 @@
 #include "AliCDBManager.h"
 #include "AliDCSValue.h"
 #include "AliMUON1DArray.h"
+#include "AliMUON1DMap.h"
 #include "AliMUON2DMap.h"
 #include "AliMUON2DStoreValidator.h"
 #include "AliMUONCalibParam1I.h"
@@ -38,8 +39,10 @@
 #include "AliMUONVCalibParam.h"
 #include "AliMUONVCalibParam.h"
 #include "AliMUONVDataIterator.h"
+#include "AliMpDDLStore.h"
 #include "AliMpDEIterator.h"
 #include "AliMpDEManager.h"
+#include "AliMpDetElement.h"
 #include "AliMpManuList.h"
 #include "AliMpSegmentation.h"
 #include "AliMpStationType.h"
@@ -50,10 +53,10 @@
 #include "TList.h"
 #include "TMap.h"
 #include "TObjString.h"
+#include "TROOT.h"
 #include "TRandom.h"
 #include "TStopwatch.h"
 #include "TSystem.h"
-#include "TROOT.h"
 #include <map>
 
 #endif
@@ -383,6 +386,92 @@ Int_t makePedestalStore(AliMUONV2DStore& pedestalStore, Bool_t defaultValues)
   
   delete list;
   cout << nmanus << " Manus and " << nchannels << " channels." << endl;
+  return nchannels;
+  
+}
+
+//_____________________________________________________________________________
+Int_t makeCapacitanceStore(AliMUONV1DStore& capaStore, Bool_t defaultValues)
+{
+  TList* list = AliMpManuList::ManuList();
+  TIter next(list);
+  
+  AliMpIntPair* p;
+  
+  Int_t nchannels(0);
+  Int_t nmanus(0);
+  Int_t nmanusOK(0); // manus for which we got the serial number
+  
+  Bool_t replace = kFALSE;
+  
+  const Int_t nChannels(64);
+  const Float_t kCapaMean(1.0);
+  const Float_t kCapaSigma(0.5);
+  
+  while ( ( p = (AliMpIntPair*)next() ) )
+  {
+    ++nmanus;
+    
+    Int_t detElemId = p->GetFirst();
+    Int_t manuId = p->GetSecond();
+    
+    AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId); 
+    Int_t serialNumber = de->GetManuSerialFromId(manuId);
+      
+    if ( serialNumber > 0 ) ++nmanusOK;
+    
+    const AliMpVSegmentation* seg = 
+      AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(detElemId,manuId);
+
+    AliMUONVCalibParam* capa = static_cast<AliMUONVCalibParam*>(capaStore.Get(serialNumber));
+    
+    if (!capa)
+    {
+      capa = new AliMUONCalibParamNF(1,nChannels,1.0);
+      Bool_t ok = capaStore.Set(serialNumber,capa,replace);
+      if (!ok)
+      {
+        cout << "Could not set serialNumber=" << serialNumber << " manuId="
+        << manuId << endl;
+      }      
+    }
+    
+    for ( Int_t manuChannel = 0; manuChannel < nChannels; ++manuChannel )
+    {
+      AliMpPad pad = seg->PadByLocation(AliMpIntPair(manuId,manuChannel),kFALSE);
+      if (!pad.IsValid()) continue;
+      
+      ++nchannels;
+      
+      Float_t capaValue;
+      
+      if ( defaultValues ) 
+      {
+        capaValue = 1.0;
+      }
+      else
+      {
+        capaValue = -1;
+        while ( capaValue < 0 )
+        {
+          capaValue = gRandom->Gaus(kCapaMean,kCapaSigma);
+        }
+      }
+      capa->SetValueAsFloat(manuChannel,0,capaValue);
+    }
+  }
+  
+  delete list;
+  Float_t percent = 0;
+  if ( nmanus ) percent = 100*nmanusOK/nmanus;
+  cout << Form("%5d manus with serial number (out of %5d manus = %3.0f%%)",
+               nmanusOK,nmanus,percent) << endl;
+  cout << Form("%5d channels",nchannels) << endl;
+  if ( percent < 100 ) 
+  {
+    cout << "WARNING : did not get all serial numbers. capaStore is incomplete !!!!"
+    << endl;
+  }
   return nchannels;
   
 }
@@ -718,12 +807,13 @@ void writePedestals(const char* cdbpath, Bool_t defaultValues,
   delete pedestalStore;
 }
 
+
 //_____________________________________________________________________________
 void writeGains(const char* cdbpath, Bool_t defaultValues,
                     Int_t startRun, Int_t endRun)
 {
   /// generate gain values (either 1 if defaultValues=true or random
-  /// if defaultValues=false, see makePedestalStore) and
+  /// if defaultValues=false, see makeGainStore) and
   /// store them into CDB located at cdbpath, with a validity period
   /// ranging from startRun to endRun
   
@@ -733,6 +823,23 @@ void writeGains(const char* cdbpath, Bool_t defaultValues,
   
   writeToCDB(cdbpath,"MUON/Calib/Gains",gainStore,startRun,endRun,defaultValues);
   delete gainStore;
+}
+
+//_____________________________________________________________________________
+void writeCapacitances(const char* cdbpath, Bool_t defaultValues,
+                       Int_t startRun, Int_t endRun)
+{
+  /// generate manu capacitance values (either 1 if defaultValues=true or random
+  /// if defaultValues=false, see makeCapacitanceStore) and
+  /// store them into CDB located at cdbpath, with a validity period
+  /// ranging from startRun to endRun
+  
+  AliMUONV1DStore* capaStore = new AliMUON1DMap(16828);
+  Int_t ngenerated = makeCapacitanceStore(*capaStore,defaultValues);
+  cout << "Ngenerated = " << ngenerated << endl;
+  
+  writeToCDB(cdbpath,"MUON/Calib/Capacitances",capaStore,startRun,endRun,defaultValues);
+  delete capaStore;
 }
 
 //_____________________________________________________________________________

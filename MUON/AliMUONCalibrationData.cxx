@@ -59,7 +59,8 @@ fLocalTriggerBoardMasks(0x0),
 fRegionalTriggerBoardMasks(0x0),
 fGlobalTriggerBoardMasks(0x0),
 fTriggerLut(0x0),
-fTriggerEfficiency(0x0)
+fTriggerEfficiency(0x0),
+fCapacitances(0x0)
 {
 /// Default ctor.
 
@@ -79,24 +80,16 @@ fTriggerEfficiency(0x0)
     OnDemandGlobalTriggerBoardMasks();
     OnDemandTriggerLut();
     OnDemandTriggerEfficiency();
+    OnDemandCapacitances();
   }
 }
 
 //_____________________________________________________________________________
 AliMUONCalibrationData::~AliMUONCalibrationData()
 {
-/// Destructor. Note that we're the owner of our pointers.
-
-  delete fPedestals;
-  delete fGains;
-  delete fHV;
-  delete fLocalTriggerBoardMasks;
-  delete fRegionalTriggerBoardMasks;
-  delete fGlobalTriggerBoardMasks;
-  delete fTriggerLut;
-  delete fTriggerEfficiency;
+  /// Destructor. Note that we're the owner of our pointers.
+  Reset();
 }
-
 //_____________________________________________________________________________
 TMap*
 AliMUONCalibrationData::HV() const
@@ -159,11 +152,44 @@ AliMUONCalibrationData::Gains(Int_t detElemId, Int_t manuId) const
 }
 
 //_____________________________________________________________________________
+AliMUONV1DStore*
+AliMUONCalibrationData::Capacitances() const
+{
+  /// Create (if needed) and return the internal store for capacitances.
+  return OnDemandCapacitances();
+}
+
+//_____________________________________________________________________________
 AliMUONV2DStore*
 AliMUONCalibrationData::Gains() const
 {
   /// Create (if needed) and return the internal store for gains.
   return OnDemandGains();
+}
+
+//_____________________________________________________________________________
+AliMUONV1DStore*
+AliMUONCalibrationData::OnDemandCapacitances() const
+{
+  /// Create (if needed) and return the internal store for capacitances.
+  
+  if (!fCapacitances)
+  {
+    AliCDBEntry* entry = GetEntry("MUON/Calib/Capacitances");
+    if (entry)
+    {
+      fCapacitances = dynamic_cast<AliMUONV1DStore*>(entry->GetObject());
+      if (!fCapacitances)
+      {
+        AliError("Capacitances not of the expected type !!!");
+      }
+    }
+    else
+    {
+      AliError("Could not get capacitances !");
+    }
+  }
+  return fCapacitances;
 }
 
 //_____________________________________________________________________________
@@ -453,6 +479,32 @@ AliMUONCalibrationData::OnDemandTriggerLut() const
     }
   }
   return fTriggerLut;
+}
+
+//_____________________________________________________________________________
+void
+AliMUONCalibrationData::Reset()
+{
+/// Reset all data
+
+  delete fPedestals;
+  fPedestals = 0x0;
+  delete fGains;
+  fGains = 0x0;
+  delete fHV;
+  fHV = 0x0;
+  delete fLocalTriggerBoardMasks;
+  fLocalTriggerBoardMasks = 0x0;
+  delete fRegionalTriggerBoardMasks;
+  fRegionalTriggerBoardMasks = 0x0;
+  delete fGlobalTriggerBoardMasks;
+  fGlobalTriggerBoardMasks = 0x0;
+  delete fTriggerLut;
+  fTriggerLut = 0x0;
+  delete fTriggerEfficiency;
+  fTriggerEfficiency = 0x0;
+  delete fCapacitances;
+  fCapacitances = 0x0;
 }
 
 

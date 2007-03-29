@@ -35,6 +35,8 @@ public:
   AliMUONCalibrationData(Int_t runNumber=-1, Bool_t deferredInitialization=kTRUE);
   virtual ~AliMUONCalibrationData();
 
+  AliMUONV1DStore* Capacitances() const;
+  
   AliMUONV2DStore* Gains() const;
   
   /// Get the Gain calibration object for channels within (detElemId,manuId).
@@ -72,6 +74,8 @@ public:
   /// Get the trigger efficiency map
   AliMUONTriggerEfficiencyCells* TriggerEfficiency() const;
   
+  void Reset();
+  
 protected:
   /// Not implemented
   AliMUONCalibrationData(const AliMUONCalibrationData& other);
@@ -80,6 +84,7 @@ protected:
   
 private:
   AliCDBEntry* GetEntry(const char* path) const;
+  AliMUONV1DStore* OnDemandCapacitances() const;
   AliMUONV2DStore* OnDemandGains() const;
   AliMUONV2DStore* OnDemandPedestals() const;
   TMap* OnDemandHV() const;
@@ -100,8 +105,9 @@ private:
   mutable AliMUONVCalibParam* fGlobalTriggerBoardMasks; //!< Global trigger board maska
   mutable AliMUONTriggerLut* fTriggerLut; //!< TRigger LUTs
   mutable AliMUONTriggerEfficiencyCells* fTriggerEfficiency; //!< Trigger efficiency cells
+  mutable AliMUONV1DStore* fCapacitances; //!< Manu capacitances
   
-  ClassDef(AliMUONCalibrationData,4) // Storage for all MUON calibration data.
+  ClassDef(AliMUONCalibrationData,5) // Storage for all MUON calibration data.
 };
 
 #endif

@@ -39,9 +39,12 @@ void writeHV(const char* cdbpath, Bool_t defaultValues,
              Int_t startRun, Int_t endRun);
 
 void writePedestals(const char* cdbpath, Bool_t defaultValues,
-                    Int_t startRun, Int_t endRun);
+                    Int_t startRun, Int_t endRun=99999999);
 
 void writeGains(const char* cdbpath, Bool_t defaultValues,
-                Int_t startRun, Int_t endRun);
+                Int_t startRun, Int_t endRun=99999999);
+
+void writeCapacitances(const char* cdbpath, Bool_t defaultValues,
+                       Int_t startRun=0, Int_t endRun=99999999);
 
 #endif
