@@ -770,3 +770,5 @@
                 ecliptic longitude due to nutation in AliTimestamp::GetGAST.
 28-mar-2007 NvE AliTimestamp::Date extended to provide apparent sidereal time via
                 specification of negative "mode" parameter.
+29-mar-2007 NvE New memberfunction Almanac() introduced in AliTimestamp to provide a 
+                central place for calculation of astronomical observables.

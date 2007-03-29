@@ -1747,74 +1747,16 @@ Double_t AliTimestamp::GetGAST()
 //
 //      GAST = GMST + (equation of the equinoxes)
 //
-// With the right ascension and declination values to be (0,0) for the
-// vernal equinox, we can workout the shift in right ascension of the vernal
-// equinox due to nutation.
-// The nutation model used is the new one as documented in :
-//   "The IAU Resolutions on Astronomical Reference Systems,
-//    Time Scales and Earth Rotation Models".
-// This document is freely available as Circular 179 (2005) of the
-// United States Naval Observatory (USNO).
-// (See : http://aa.usno.navy.mil/publications/docs).
-// The new expression for the equation of the equinoxes is based on a series
-// expansion and is the most accurate one known to date.
-// The components are documented on p.17 of the USNO Circular 179.
-//
-// The change (dpsi) in a star's ecliptic longitude is evaluated using
-// the formulas from the book "Astronomical Algorithms" by Jean Meeus.
+// The equation of the equinoxes is determined via the Almanac() memberfunction.
 // 
-// Since GMST is based on the MJD, the TTimeStamp limitations
-// do not apply here.
+// Since GMST is based on the MJD, the TTimeStamp limitations do not apply here.
 
- Double_t pi=acos(-1.);
-
- Double_t gmst=GetGMST();
-
- Double_t days;    // Time difference in fractional Julian days w.r.t. the start of J2000.
- Double_t t;       // Time difference in fractional Julian centuries w.r.t. the start of J2000.
- Double_t epsilon; // Mean obliquity of the ecliptic
- Double_t lsun;    // Mean longitude of the Sun
- Double_t lmoon;   // Mean longitude of the Moon
- Double_t omega;   // Mean longitude of the Moon's mean ascending mode
- Double_t f;       // Mean argument of latitude of the moon
- Double_t d;       // Mean elongation of the Moon from the Sun
-
- days=GetJD()-2451545.0;
- t=days/36525.;
-
- // Values in degrees
- lsun=280.4665+36000.7698*t;
- lmoon=218.3165+481267.8813*t;
-
- // Values in arcseconds
- epsilon=84381.406-46.836769*t-0.0001831*pow(t,2)+0.00200340*pow(t,3)
-         -0.000000576*pow(t,4)-0.0000000434*pow(t,5);
- omega=450160.398036-6962890.5431*t+7.4722*pow(t,2)+0.007702*pow(t,3)-0.00005939*pow(t,4);
- f=335779.526232+1739527262.8478*t-12.7512*pow(t,2)-0.001037*pow(t,3)+0.00000417*pow(t,4);
- d=1072260.70369+1602961601.2090*t-6.3706*pow(t,2)+0.006593*pow(t,3)-0.00003169*pow(t,4);
-
- // Convert to radians
- lsun=lsun*pi/180.;
- lmoon=lmoon*pi/180.;
- epsilon=epsilon*pi/(180.*3600.);
- omega=omega*pi/(180.*3600.);
- f=f*pi/(180.*3600.);
- d=d*pi/(180.*3600.);
-
- // Change in ecliptic longitude (in arcseconds) due to nutation
- Double_t dpsi=-17.2*sin(omega)-1.32*sin(2.*lsun)-0.23*sin(2.*lmoon)+0.21*sin(2.*omega);
-
- // Right ascension shift of the vernal equinox (in arcseconds) due to nutation
- Double_t da;
- da=dpsi*cos(epsilon)+0.00264096*sin(omega)+0.00006352*sin(2.*omega)
-    +0.00001175*sin(2.*f-2.*d+3.*omega)+0.00001121*sin(2.*f-2.*d+omega)
-    -0.00000455*sin(2.*f-2.*d+2.*omega)+0.00000202*sin(2.*f+3.*omega)+0.00000198*sin(2.*f+omega)
-    -0.00000172*sin(3.*omega)-0.00000087*t*sin(omega);
+ Double_t da=Almanac();
 
  // Convert to fractional hours
- da=da/(3600.*15.);
+ da/=3600.;
 
- Double_t gast=gmst+da;
+ Double_t gast=GetGMST()+da;
 
  while (gast<0)
  {
@@ -2028,5 +1970,132 @@ Double_t AliTimestamp::GetTJD(Double_t e,TString mode) const
  Double_t tjd=GetJD(e,mode)-2440000.5;
 
  return tjd;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliTimestamp::Almanac(Double_t* dpsi,Double_t* deps,Double_t* eps)
+{
+// Determination of some astronomical observables which may be needed
+// for further calculations like e.g. precession of coordinates.
+//
+// The standard returned value is the "equation of the equinoxes" 
+// (i.e. the nutational shift of the RA of the vernal equinox) in seconds.
+// The memberfunction arguments provide the possibility of retrieving
+// optional returned values. The corresponding observables are :
+//
+// dpsi : Nutational shift in ecliptic longitude in arcseconds
+// deps : Nutational shift in ecliptic obliquity in arcseconds
+// eps  : Mean obliquity of the ecliptic in arcseconds
+//
+// All shifts are determined for the current timestamp with
+// J2000.0 (i.e. 01-jan-2000 12:00:00 UT) as the reference epoch.
+//
+// Invokation example :
+// --------------------
+// AliTimestamp t;
+// Double_t da,dpsi,deps,eps;
+// da=t.Almanac(&dpsi,&deps,&eps); 
+//
+// The nutation model used is the new one as documented in :
+//   "The IAU Resolutions on Astronomical Reference Systems,
+//    Time Scales and Earth Rotation Models".
+// This document is freely available as Circular 179 (2005) of the
+// United States Naval Observatory (USNO).
+// (See : http://aa.usno.navy.mil/publications/docs).
+//
+// The change in ecliptic longitude (dpsi) and ecliptic obliquity (deps)
+// are evaluated using the IAU 2000A nutation series expansion
+// as provided in the USNO Circular 179.
+// The new expression for the equation of the equinoxes is based on a series
+// expansion and is the most accurate one known to date.
+// The components are documented on p.17 of the USNO Circular 179.
+//
+// In the current implementation only the first 28 terms of the nutation series
+// are used. This provides an accuracy of about 0.01 arcsec corresponding to 0.001 sec.
+// In case a better accuracy is required, the series can be extended.
+// The total series expansion consists of 1365 terms.
+// 
+// Since all calculations are based on the JD, the TTimeStamp limitations
+// do not apply here.
+
+ Double_t pi=acos(-1.);
+
+ Double_t t;       // Time difference in fractional Julian centuries w.r.t. the start of J2000.
+ Double_t epsilon; // Mean obliquity of the ecliptic
+ Double_t l;       // Mean anomaly of the Moon
+ Double_t lp;      // Mean anomaly of the Sun
+ Double_t f;       // Mean argument of latitude of the moon
+ Double_t d;       // Mean elongation of the Moon from the Sun
+ Double_t om;      // Mean longitude of the Moon's mean ascending mode
+
+ t=(GetJD()-2451545.0)/36525.;
+
+ // Values of epsilon and the fundamental luni-solar arguments in arcseconds
+ epsilon=84381.406-46.836769*t-0.0001831*pow(t,2)+0.00200340*pow(t,3)
+         -0.000000576*pow(t,4)-0.0000000434*pow(t,5);
+ l=485868.249036+1717915923.2178*t+31.8792*pow(t,2)+0.051635*pow(t,3)-0.00024470*pow(t,4);
+ lp=1287104.79305+129596581.0481*t-0.5532*pow(t,2)+0.000136*pow(t,3)-0.00001149*pow(t,4);
+ f=335779.526232+1739527262.8478*t-12.7512*pow(t,2)-0.001037*pow(t,3)+0.00000417*pow(t,4);
+ d=1072260.70369+1602961601.2090*t-6.3706*pow(t,2)+0.006593*pow(t,3)-0.00003169*pow(t,4);
+ om=450160.398036-6962890.5431*t+7.4722*pow(t,2)+0.007702*pow(t,3)-0.00005939*pow(t,4);
+
+ if (eps) *eps=epsilon;
+
+ // Convert to radians
+ epsilon=epsilon*pi/(180.*3600.);
+ f=f*pi/(180.*3600.);
+ d=d*pi/(180.*3600.);
+ l=l*pi/(180.*3600.);
+ lp=lp*pi/(180.*3600.);
+ om=om*pi/(180.*3600.);
+
+ //The IAU 2000A nutation series expansion.
+ Double_t phi[28]={om,2.*(f-d+om),2.*(f+om),2.*om,lp,lp+2.*(f-d+om),l,
+                   2.*f+om,l+2.*(f+om),2.*(f-d+om)-lp,2.*(f-d)+om,2.*(f+om)-l,2.*d-l,l+om,
+                   om-l,2.*(f+d+om)-l,l+2.*f+om,2.*(f-l)+om,2.*d,2.*(f+d+om),2.*(f-d+om-lp),
+                   2.*(d-l),2.*(l+d+om),l+2.*(f-d+om),2.*f+om-l,2.*l,2.*f,lp+om};
+ Double_t s[28]={-17.2064161,-1.3170907,-0.2276413, 0.2074554, 0.1475877,-0.0516821, 0.0711159,
+                  -0.0387298,-0.0301461, 0.0215829, 0.0128227, 0.0123457, 0.0156994, 0.0063110,
+                  -0.0057976,-0.0059641,-0.0051613, 0.0045893, 0.0063384,-0.0038571, 0.0032481,
+                  -0.0047722,-0.0031046, 0.0028593, 0.0020441, 0.0029243, 0.0025887,-0.0014053};
+ Double_t sd[28]={-0.0174666,-0.0001675,-0.0000234, 0.0000207,-0.0003633, 0.0001226, 0.0000073,
+                  -0.0000367,-0.0000036,-0.0000494, 0.0000137, 0.0000011, 0.0000010, 0.0000063,
+                  -0.0000063,-0.0000011,-0.0000042, 0.0000050, 0.0000011,-0.0000001, 0.0000000,
+                   0.0000000,-0.0000001, 0.0000000, 0.0000021, 0.0000000, 0.0000000,-0.0000025};
+ Double_t cp[28]={ 0.0033386,-0.0013696, 0.0002796,-0.0000698, 0.0011817,-0.0000524,-0.0000872,
+                   0.0000380, 0.0000816, 0.0000111, 0.0000181, 0.0000019,-0.0000168, 0.0000027,
+                  -0.0000189, 0.0000149, 0.0000129, 0.0000031,-0.0000150, 0.0000158, 0.0000000,
+                  -0.0000018, 0.0000131,-0.0000001, 0.0000010,-0.0000074,-0.0000066, 0.0000079};
+ Double_t c[28]= { 9.2052331, 0.5730336, 0.0978459,-0.0897492, 0.0073871, 0.0224386,-0.0006750,
+                   0.0200728, 0.0129025,-0.0095929,-0.0068982,-0.0053311,-0.0001235,-0.0033228,
+                   0.0031429, 0.0025543, 0.0026366,-0.0024236,-0.0001220, 0.0016452,-0.0013870,
+                   0.0000477, 0.0013238,-0.0012338,-0.0010758,-0.0000609,-0.0000550, 0.0008551};
+ Double_t cd[28]={ 0.0009086,-0.0003015,-0.0000485, 0.0000470,-0.0000184,-0.0000677, 0.0000000,
+                   0.0000018,-0.0000063, 0.0000299,-0.0000009, 0.0000032, 0.0000000, 0.0000000,
+                   0.0000000,-0.0000011, 0.0000000,-0.0000010, 0.0000000,-0.0000011, 0.0000000,
+                   0.0000000,-0.0000011, 0.0000010, 0.0000000, 0.0000000, 0.0000000,-0.0000002};
+ Double_t sp[28]={ 0.0015377,-0.0004587, 0.0001374,-0.0000291,-0.0001924,-0.0000174, 0.0000358,
+                   0.0000318, 0.0000367, 0.0000132, 0.0000039,-0.0000004, 0.0000082,-0.0000009,
+                  -0.0000075, 0.0000066, 0.0000078, 0.0000020, 0.0000029, 0.0000068, 0.0000000,
+                  -0.0000025, 0.0000059,-0.0000003,-0.0000003, 0.0000013, 0.0000011,-0.0000045};
+ 
+ Double_t dp=0,de=0,da=0;
+ for (Int_t i=0; i<28; i++)
+ {
+  dp+=(s[i]+sd[i]*t)*sin(phi[i])+cp[i]*cos(phi[i]);
+  de+=(c[i]+cd[i]*t)*cos(phi[i])+sp[i]*sin(phi[i]);
+ }
+
+ da=dp*cos(epsilon)+0.00264096*sin(om)+0.00006352*sin(2.*om)
+     +0.00001175*sin(2.*f-2.*d+3.*om)+0.00001121*sin(2.*f-2.*d+om)
+     -0.00000455*sin(2.*f-2.*d+2.*om)+0.00000202*sin(2.*f+3.*om)+0.00000198*sin(2.*f+om)
+     -0.00000172*sin(3.*om)-0.00000087*t*sin(om);
+
+ if (dpsi) *dpsi=dp;
+ if (deps) *deps=de;
+
+ // Convert to seconds
+ da/=15.;
+
+ return da;
 }
 ///////////////////////////////////////////////////////////////////////////
