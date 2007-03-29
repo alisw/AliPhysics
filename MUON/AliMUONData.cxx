@@ -1473,11 +1473,17 @@ AliMUONData::DumpRecTrigger(Int_t event2Check,
     for (Int_t ilocal=0; ilocal<nlocals; ilocal++) { // Local Trigger
       locTrg = static_cast<AliMUONLocalTrigger*>(localTrigger->At(ilocal));
 
-      if ( (locTrg->LoSdev()==1 && locTrg->LoDev()==0 && locTrg->LoStripX()==0) && // no trigger in X
-	   (locTrg->LoTrigY()==1 && locTrg->LoStripY()==15) ) { // no trigger in Y
-	  // no trigger at all
-	  
-      } else { // trigger
+      Bool_t xTrig=kFALSE;
+      Bool_t yTrig=kFALSE;
+
+      if ( locTrg->LoSdev()==1 && locTrg->LoDev()==0 && 
+	   locTrg->LoStripX()==0) xTrig=kFALSE; // no trigger in X
+      else xTrig=kTRUE;                         // trigger in X
+      if (locTrg->LoTrigY()==1 && 
+	  locTrg->LoStripY()==15 ) yTrig = kFALSE; // no trigger in Y
+      else yTrig = kTRUE;                          // trigger in Y
+
+      if (xTrig && yTrig) { // make Trigger Track if trigger in X and Y
 	  
 	  if (printout) locTrg->Print("full");
 	  

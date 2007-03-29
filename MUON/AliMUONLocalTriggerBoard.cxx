@@ -1060,41 +1060,49 @@ void AliMUONLocalTriggerBoard::LocalTrigger()
 {
 /// L0 trigger after LUT
 ///
-    Int_t deviation=0, iStripY=0, iStripX=0;
+    Int_t deviation=0;
+    Int_t iStripY=0;
+    Int_t iStripX=0;
+    Bool_t xOutput=kFALSE;
+    Bool_t yOutput=kFALSE;
 
    for (Int_t i=0; i<4; i++) deviation += static_cast<int>( fMinDev[i] << i );
    for (Int_t i=0; i<4; i++) iStripY   += static_cast<int>( fCoordY[i] << i );
 
-   if (fMinDev[4]==1 && !deviation) fOutput=0;     // No trigger
-   else 
-   {
-      if (fCoordY[4]==1 && iStripY==15) fOutput=0; // No trigger
-      else 
-         fOutput=1;
+   if (fMinDev[4]==1 && !deviation) xOutput=kFALSE;  // no trigger in X
+   else xOutput=kTRUE;                               // trigger in X
+   if (fCoordY[4]==1 && iStripY==15) yOutput=kFALSE; // no trigger in Y
+   else yOutput=kTRUE;                               // trigger in Y
+
+   if (xOutput) {
+      for (Int_t i=0; i<5; i++) iStripX += static_cast<int>( fMinDevStrip[i] << i );
+      fDev      = deviation;
+      fStripX11 = iStripX;
+   }
+   if (yOutput) {
+      fStripY11 = iStripY;
+      fTrigY    = fCoordY[4];
    }
   
-   if (fOutput) 
-   { 
-      for (Int_t i=0; i<5; i++) iStripX += static_cast<int>( fMinDevStrip[i] << i );
+//   cout << " Local Trigger " << " " << fNumber << " " << 
+//       xOutput << " " << yOutput << " " << fDev << " " << fStripX11 << " " <<
+//       fTrigY << " " << fStripY11 << "\n";
 
-      fDev      = deviation;
-      fStripY11 = iStripY;
-      fStripX11 = iStripX;
-      fTrigY    = fCoordY[4];
+   if (yOutput && yOutput){ // trigger in X and Y
+       fOutput =1;
 
-      Int_t sign = 0;
-
-      if ( !fMinDev[4] &&  deviation ) sign=-1;
-      if ( !fMinDev[4] && !deviation ) sign= 0;
-      if (  fMinDev[4] == 1 )          sign=+1;    
-
-      deviation *= sign; 
-
+       Int_t sign = 0;
+       if ( !fMinDev[4] &&  deviation ) sign=-1;
+       if ( !fMinDev[4] && !deviation ) sign= 0;
+       if (  fMinDev[4] == 1 )          sign=+1;    
+       
+       deviation *= sign; 
+       
 //    calculate deviation in [0;+30]
-      deviation += 15;
-
+       deviation += 15;
+       
 //    GET LUT OUTPUT FOR icirc/istripX1/deviation/istripY
-      fLUT->GetLutOutput(fNumber, fStripX11, deviation, fStripY11, fLutLpt, fLutHpt);
+       fLUT->GetLutOutput(fNumber, fStripX11, deviation, fStripY11, fLutLpt, fLutHpt);
    }  
 }
 
