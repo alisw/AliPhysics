@@ -1,0 +1,88 @@
+//   fV0CHeight1         =    2.5; // height of cell 1
+//   fV0CHeight2         =    4.4; // height of cell 2
+//   fV0CHeight3         =    7.4; // height of cell 3
+//   fV0CHeight4         =   12.5; // height of cell 4
+//   fV0CRMin            =    4.6; // inner radius of box
+
+//   fV0AR0     =  4.2;  // Radius of hole
+//   fV0AR1     =  7.6;  // Maximun radius of 1st cell
+//   fV0AR2     = 13.8; // Maximun radius of 2nd cell
+//   fV0AR3     = 22.7; // Maximun radius of 3rd cell
+//   fV0AR4     = 41.3; // Maximun radius of 4th cell
+
+void vzero_digits()
+{
+  static const Float_t RadC[] = { 4.6, 7.1, 11.5, 18.9, 31.4 };
+  static const Float_t RadA[] = { 4.2, 7.6, 13.8, 22.7, 41.4 };
+  static const Float_t RadEps = 0.4;
+  static const Float_t PhiEps = 0.025;
+  static const Float_t PhiStp = TMath::TwoPi()/8.0;
+
+  gStyle->SetPalette(1, 0);
+
+  AliRunLoader* rl =  Alieve::Event::AssertRunLoader();
+  rl->LoadDigits("VZERO");
+
+  TTree* dt = rl->GetTreeD("VZERO", false);
+  TClonesArray* dca = 0;
+  dt->SetBranchAddress("VZERODigit", &dca);
+  dt->GetEntry(0);
+
+  Float_t v[12];
+
+  Reve::QuadSet* modR = new Reve::QuadSet("V0R");
+  modR->Reset(Reve::QuadSet::QT_FreeQuad, kFALSE, 32);
+
+  Reve::QuadSet* modL = new Reve::QuadSet("V0L");
+  modL->Reset(Reve::QuadSet::QT_FreeQuad, kFALSE, 32);
+ 
+  Int_t numEntr = dca->GetEntriesFast();
+  for (Int_t entr=0; entr<numEntr; ++entr)
+  {
+    AliVZEROdigit* d = (AliVZEROdigit*) dca->UncheckedAt(entr);
+    Int_t i = d->PMNumber();
+
+    if (i < 32)   // V0 Right
+    {
+      Reve::QuadSet* module = modR;
+      Int_t ri = i / 8;
+      Int_t pi = i % 8;
+      Float_t minR = RadC[ri]  + RadEps, maxR = RadC[ri+1] - RadEps;
+      Float_t minP = pi*PhiStp + PhiEps, maxP = (pi+1)*PhiStp - PhiEps;
+
+      v[ 0] = minR*TMath::Cos(minP); v[ 1] = minR*TMath::Sin(minP); v[ 2] = 0;
+      v[ 3] = maxR*TMath::Cos(minP); v[ 4] = maxR*TMath::Sin(minP); v[ 5] = 0;
+      v[ 6] = maxR*TMath::Cos(maxP); v[ 7] = maxR*TMath::Sin(maxP); v[ 8] = 0;
+      v[ 9] = minR*TMath::Cos(maxP); v[10] = minR*TMath::Sin(maxP); v[11] = 0;
+
+      module->AddQuad(v);
+      module->QuadValue(d->ADC());
+      module->QuadId(d);
+    }
+    else          // V0 Left
+    {
+      Reve::QuadSet* module = modL;
+      Int_t ri = (i-32) / 8;
+      Int_t pi = i % 8;
+      Float_t minR = RadA[ri]  + RadEps, maxR = RadA[ri+1] - RadEps;
+      Float_t minP = pi*PhiStp + PhiEps, maxP = (pi+1)*PhiStp - PhiEps;
+
+      v[ 0] = minR*TMath::Cos(minP); v[ 1] = minR*TMath::Sin(minP); v[ 2] = 0;
+      v[ 3] = maxR*TMath::Cos(minP); v[ 4] = maxR*TMath::Sin(minP); v[ 5] = 0;
+      v[ 6] = maxR*TMath::Cos(maxP); v[ 7] = maxR*TMath::Sin(maxP); v[ 8] = 0;
+      v[ 9] = minR*TMath::Cos(maxP); v[10] = minR*TMath::Sin(maxP); v[11] = 0;
+
+      module->AddQuad(v);
+      module->QuadValue(d->ADC());
+      module->QuadId(d);
+    }
+  }
+
+  modL->RefHMTrans().SetPos(0, 0, 324);
+  modR->RefHMTrans().SetPos(0, 0, -84);
+
+  gReve->AddRenderElement(modL);
+  gReve->AddRenderElement(modR);
+
+  gReve->Redraw3D();
+}
