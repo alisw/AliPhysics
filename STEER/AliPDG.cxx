@@ -66,6 +66,15 @@ ClassImp(AliPDG)
 		     0,0,"QCD diffr. state",9902110);
   pdgDB->AddParticle("p_diffr+","p_diffr+",0,kTRUE,
 		     0,1,"QCD diffr. state",9902210);
+
+// Some particles produced by HERWIG
+  pdgDB->AddParticle("rho3(1690)0","rho(1690)0", 1.69, kTRUE,
+		     0, 0,"rho", 117);
+  pdgDB->AddParticle("pion2(1670)0","pion2(1670)0", 1.67, kTRUE,
+		     0, 0,"pion", 10115);
+  pdgDB->AddParticle("omega(1650)","omega(1650)", 1.65, kTRUE,
+		     0, 0,"pion", 30223);
+
 // Done by default now from Pythia6 table!
 //
 //
