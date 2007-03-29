@@ -1088,7 +1088,7 @@ void AliMUONLocalTriggerBoard::LocalTrigger()
 //       xOutput << " " << yOutput << " " << fDev << " " << fStripX11 << " " <<
 //       fTrigY << " " << fStripY11 << "\n";
 
-   if (yOutput && yOutput){ // trigger in X and Y
+   if (xOutput && yOutput){ // trigger in X and Y
        fOutput =1;
 
        Int_t sign = 0;
@@ -1320,7 +1320,7 @@ void AliMUONLocalTriggerBoard::Response()
    TrigY(yY1, yY2, yY3, yY4, yY3U, yY3D, yY4U, yY4D);
    
 // ASIGN fLutLpt, fLutHpt
-   LocalTrigger(); 
+   LocalTrigger();
 
    fResponse = fLutLpt[0]                      + 
        static_cast<int>(fLutLpt[1]<<1) + 
