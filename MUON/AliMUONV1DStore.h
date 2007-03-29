@@ -16,6 +16,8 @@
 #  include "TObject.h"
 #endif
 
+class AliMUONVDataIterator;
+
 class AliMUONV1DStore : public TObject
 {
 public:
@@ -25,6 +27,9 @@ public:
   /// Return the object stored at i.
   virtual TObject* Get(Int_t i) const = 0;
   
+  /// Return iterator
+  virtual AliMUONVDataIterator* Iterator() const { return 0x0; }
+  
   /** Set the object stored at i.
     if replace=false and there's already an object there, returns kFALSE
     */
@@ -32,6 +37,9 @@ public:
   
   /// Whether or not this container is the owner of its contents.
   virtual Bool_t IsOwner() const = 0;
+  
+  virtual void Print(Option_t* opt="") const;
+
   
 private:  
   ClassDef(AliMUONV1DStore,0) // Generic container indexed by a single integer

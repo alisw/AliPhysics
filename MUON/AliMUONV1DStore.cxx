@@ -17,6 +17,14 @@
 
 #include "AliMUONV1DStore.h"
 
+#include "AliMUONVDataIterator.h"
+#include "AliMUONObjectPair.h"
+#include "AliMpIntPair.h"
+#include "AliMpHelper.h"
+#include <TMap.h>
+#include <TString.h>
+#include <Riostream.h>
+
 /// \class AliMUONV1DStore
 /// Defines an interface equivalent to a list of TObject, indexed
 /// by integer (somehow a vector, except that indices are not necessarily
@@ -42,6 +50,45 @@ AliMUONV1DStore::~AliMUONV1DStore()
 {
 /// Destructor
 }
+
+void
+AliMUONV1DStore::Print(Option_t* opt) const
+{
+  /// Printout
+  /// opt is used to filter which i you want to see
+  /// e.g opt="I=12;opt=Full" to see complete values, but only for i=12
+  /// Warning : decoding of opt format is not really bullet-proof (yet?)
+  
+  AliMUONVDataIterator* it = this->Iterator();
+  
+  AliMUONObjectPair* pair;
+  
+  TMap* m = AliMpHelper::Decode(opt);
+  
+  TString si;  
+  Bool_t selectI = AliMpHelper::Decode(*m,"i",si);
+  TString sopt;
+  AliMpHelper::Decode(*m,"opt",sopt);
+  
+  m->DeleteAll();
+  delete m;
+  
+  while ( ( pair = static_cast<AliMUONObjectPair*>(it->Next() ) ) )
+  {
+    AliMpIntPair* ip = static_cast<AliMpIntPair*>(pair->First());
+    Int_t i = ip->GetFirst();
+    if ( selectI && i != si.Atoi() ) continue;
+    cout << Form("[%d]",i) << endl;
+    TObject* o = pair->Second();
+    if (o) 
+    {
+      o->Print(sopt.Data());
+    }
+  }
+  
+  delete it;
+}
+
 
 
 
