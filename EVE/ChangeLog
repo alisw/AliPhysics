@@ -1,3 +1,14 @@
+2007-03-29  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* alice-macros/geom_vzero.C:
+	VZERO volumes now placed in common mother.
+
+	* alice-macros/vzero_digits.C:
+	New file, import VZERO digits.
+
+	* alice-macros/vzero_hits.C:
+	Fix indentation.
+
 2007-03-26  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
 
 	* alice-macros/its_module_stepper.C:
