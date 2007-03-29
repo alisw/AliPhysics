@@ -180,6 +180,10 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 
   // Get the geometry
   AliTRDgeometry *geo            = AliTRDgeometry::GetGeometry(fRunLoader);  
+  if (!geo) {
+    AliWarning("Loading default TRD geometry!");
+    geo = new AliTRDgeometry();
+  }
 
   AliTRDcalibDB  *calibration    = AliTRDcalibDB::Instance();
   if (!calibration) {
