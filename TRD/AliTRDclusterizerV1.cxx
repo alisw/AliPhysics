@@ -293,12 +293,14 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 	  for ( col = 2;  col <  nColMax;    col++) {
             for (time = 0; time < nTimeTotal; time++) {
 
-              Float_t signalL = TMath::Abs(digitsOut->GetDataUnchecked(row,col  ,time));
               Float_t signalM = TMath::Abs(digitsOut->GetDataUnchecked(row,col-1,time));
-              Float_t signalR = TMath::Abs(digitsOut->GetDataUnchecked(row,col-2,time));
  
 	      // Look for the maximum
               if (signalM >= maxThresh) {
+
+                Float_t signalL = TMath::Abs(digitsOut->GetDataUnchecked(row,col  ,time));
+                Float_t signalR = TMath::Abs(digitsOut->GetDataUnchecked(row,col-2,time));
+
                 if ((TMath::Abs(signalL) <= signalM) && 
                     (TMath::Abs(signalR) <  signalM)) {
 		  if ((TMath::Abs(signalL) >= sigThresh) ||
@@ -307,6 +309,7 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
                     digitsOut->SetDataUnchecked(row,col-1,time,-signalM);
 		  }
 		}
+
 	      }
 
             }
