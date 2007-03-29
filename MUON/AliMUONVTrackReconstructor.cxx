@@ -356,18 +356,27 @@ Bool_t AliMUONVTrackReconstructor::MakeTriggerTracks(void)
   for (Int_t i=0; i<nlocals; i++) { // loop on Local Trigger
       locTrg = (AliMUONLocalTrigger*)localTrigger->UncheckedAt(i);      
       
-      if ( (locTrg->LoSdev()==1 && locTrg->LoDev()==0 && locTrg->LoStripX()==0) && // no trigger in X
-	   (locTrg->LoTrigY()==1 && locTrg->LoStripY()==15) ) { // no trigger in Y
-	  // no trigger at all
-	  
-      } else { // trigger
+      Bool_t xTrig=kFALSE;
+      Bool_t yTrig=kFALSE;
+      
+      if ( locTrg->LoSdev()==1 && locTrg->LoDev()==0 && 
+	   locTrg->LoStripX()==0) xTrig=kFALSE; // no trigger in X
+      else xTrig=kTRUE;                         // trigger in X
+      if (locTrg->LoTrigY()==1 && 
+	  locTrg->LoStripY()==15 ) yTrig = kFALSE; // no trigger in Y
+      else yTrig = kTRUE;                          // trigger in Y
+
+      if (xTrig && yTrig) { // make Trigger Track if trigger in X and Y
 	  
 	  AliDebug(1, "AliMUONTrackReconstructor::MakeTriggerTrack using NEW trigger \n");
 	  AliMUONTriggerCircuit* circuit = 
 	      (AliMUONTriggerCircuit*)fTriggerCircuit->At(locTrg->LoCircuit()-1); // -1 !!!
 	  
 	  y11 = circuit->GetY11Pos(locTrg->LoStripX()); 
-	  stripX21 = locTrg->LoStripX()+locTrg->LoDev()+1;
+	  Float_t deviation = locTrg->LoDev(); // convert to [1-30]
+	  deviation *= locTrg->LoSdev();
+	  deviation += 15;
+	  stripX21 = locTrg->LoStripX()+deviation+1;
 	  y21 = circuit->GetY21Pos(stripX21);       
 	  x11 = circuit->GetX11Pos(locTrg->LoStripY());
 	  
@@ -383,7 +392,7 @@ Bool_t AliMUONVTrackReconstructor::MakeTriggerTracks(void)
 	  fTriggerTrack->SetThetay(thetay);
 	  fTriggerTrack->SetGTPattern(gloTrigPat);
 	  fTriggerTrack->SetLoTrgNum(i);
-	  
+	      
 	  fMUONData->AddRecTriggerTrack(*fTriggerTrack);
       } // board is fired 
   } // end of loop on Local Trigger
