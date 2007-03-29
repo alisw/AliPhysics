@@ -10,6 +10,7 @@
 #pragma link C++ class AliRawEquipmentHeader;
 #pragma link C++ class AliRawEquipment;
 #pragma link C++ class AliRawData;
+#pragma link C++ class AliRawDataArray;
 #pragma link C++ class AliStats;
 #pragma link C++ class AliRawEventTag;
 #pragma link C++ class AliAltroMapping+;

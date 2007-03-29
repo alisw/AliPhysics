@@ -28,9 +28,11 @@
 #include <TString.h>
 #endif
 
+#include "AliDAQ.h"
 
 // Forward class declarations
 class AliRawEvent;
+class AliRawDataArray;
 class AliStats;
 class TFile;
 class AliESD;
@@ -42,7 +44,7 @@ public:
 	    AliESD *esd,
 	    Int_t compress,
             const char* fileName = NULL);
-   virtual ~AliRawDB() { if(Close()==-1) Error("~AliRawDB", "cannot close output file!"); }
+   virtual ~AliRawDB();
 
    virtual const char *GetOpenOption() const { return "RECREATE"; }
    virtual Int_t       GetNetopt() const { return 0; }
@@ -75,6 +77,7 @@ protected:
    TFile         *fRawDB;         // DB to store raw data
    TTree         *fTree;          // tree used to store raw data
    AliRawEvent   *fEvent;         // AliRawEvent via which data is stored
+   AliRawDataArray  *fDetRawData[AliDAQ::kNDetectors+1]; // Detectors raw-data payload
    TTree         *fESDTree;       // tree for storing HLT ESD information
    AliESD        *fESD;           // pointer to HLT ESD object
    Int_t          fCompress;      // compression mode (1 default)

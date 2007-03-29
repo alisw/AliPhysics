@@ -38,7 +38,10 @@
 
 #include "AliESD.h"
 #include "AliRawEvent.h"
+#include "AliRawDataArray.h"
 #include "AliRawEventHeaderBase.h"
+#include "AliRawEquipment.h"
+#include "AliRawEquipmentHeader.h"
 #include "AliStats.h"
 
 #include "AliRawDB.h"
@@ -68,10 +71,26 @@ AliRawDB::AliRawDB(AliRawEvent *event,
 {
    // Create a new raw DB
 
+  for (Int_t iDet = 0; iDet < AliDAQ::kNDetectors; iDet++)
+    fDetRawData[iDet] = new AliRawDataArray(AliDAQ::NumberOfDdls(iDet));
+
+  fDetRawData[AliDAQ::kNDetectors] = new AliRawDataArray(100);
+
    if (fileName) {
       if (!Create(fileName))
          MakeZombie();
    }
+}
+
+
+//______________________________________________________________________________
+AliRawDB::~AliRawDB() {
+  // Destructor
+
+  if(Close()==-1) Error("~AliRawDB", "cannot close output file!");
+
+  for (Int_t iDet = 0; iDet < (AliDAQ::kNDetectors + 1); iDet++)
+    delete fDetRawData[iDet];
 }
 
 //______________________________________________________________________________
@@ -238,11 +257,22 @@ void AliRawDB::MakeTree()
    fTree = new TTree("RAW", Form("ALICE raw-data tree (%s)", GetAliRootTag()));
    fTree->SetAutoSave(2000000000);  // autosave when 2 Gbyte written
 
+   fTree->BranchRef();
+
    Int_t bufsize = 256000;
    // splitting 29.6 MB/s, no splitting 35.3 MB/s on P4 2GHz 15k SCSI
    //Int_t split   = 1;
    Int_t split   = 0;
    fTree->Branch("rawevent", "AliRawEvent", &fEvent, bufsize, split);
+
+   // Make brach for each sub-detector
+   for (Int_t iDet = 0; iDet < AliDAQ::kNDetectors; iDet++) {
+     fTree->Branch(AliDAQ::DetectorName(iDet),"AliRawDataArray",
+		   &fDetRawData[iDet],bufsize,split);
+   }
+   // Make special branch for unrecognized raw-data payloads
+   fTree->Branch("Common","AliRawDataArray",
+		   &fDetRawData[AliDAQ::kNDetectors],bufsize,split);
 
    // Create tree which will contain the HLT ESD information
 
@@ -304,6 +334,23 @@ Int_t AliRawDB::Close()
 Int_t AliRawDB::Fill()
 {
    // Fill the trees and return the number of written bytes
+
+  for (Int_t iDet = 0; iDet < (AliDAQ::kNDetectors + 1); iDet++)
+    fDetRawData[iDet]->ClearData();
+
+   // Move the raw-data payloads to the corresponding branches
+  for(Int_t iSubEvent = 0; iSubEvent < fEvent->GetNSubEvents(); iSubEvent++) {
+    AliRawEvent *subEvent = fEvent->GetSubEvent(iSubEvent);
+    for(Int_t iEquipment = 0; iEquipment < subEvent->GetNEquipments(); iEquipment++) {
+      AliRawEquipment *equipment = subEvent->GetEquipment(iEquipment);
+      UInt_t eqId = equipment->GetEquipmentHeader()->GetId();
+      Int_t ddlIndex;
+      Int_t iDet = AliDAQ::DetectorIDFromDdlID(eqId,ddlIndex);
+      if (iDet < 0 || iDet > AliDAQ::kNDetectors)
+	iDet = AliDAQ::kNDetectors;
+      equipment->SetRawDataRef(fDetRawData[iDet]);
+    }
+  }
 
    Double_t bytes = fRawDB->GetBytesWritten();
    Bool_t error = kFALSE;

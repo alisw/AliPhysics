@@ -38,6 +38,8 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
+#include <AliRawDataArray.h>
+
 #include "AliRawEquipmentHeader.h"
 #include "AliRawData.h"
 
@@ -50,7 +52,8 @@ ClassImp(AliRawEquipment)
 //______________________________________________________________________________
 AliRawEquipment::AliRawEquipment():
 fEqpHdr(NULL),
-fRawData(NULL)
+fRawData(NULL),
+fRawDataRef(NULL)
 {
    // Create ALICE equipment object.
 
@@ -72,10 +75,14 @@ AliRawData *AliRawEquipment::GetRawData()
 {
    // Get raw data part of AliRawEquipment.
 
-   if (!fRawData)
+  if (!fRawData) {
+    if (!fRawDataRef.IsValid())
       fRawData = new AliRawData;
-
-   return fRawData;
+    else {
+      fRawData = (AliRawData*)fRawDataRef.GetObject();
+    }
+  }
+  return fRawData;
 }
 
 //______________________________________________________________________________
@@ -87,6 +94,7 @@ void AliRawEquipment::Reset()
 
    if (fEqpHdr) fEqpHdr->Reset();
    GetRawData()->SetSize(0);
+   fRawDataRef = NULL;
 }
 
 //______________________________________________________________________________
@@ -96,4 +104,22 @@ AliRawEquipment::~AliRawEquipment()
 
    delete fEqpHdr;
    delete fRawData;
+}
+
+//______________________________________________________________________________
+void AliRawEquipment::SetRawDataRef(AliRawDataArray *array)
+{
+  // Set the TRef to the raw-data container
+  // before writing it to the branch
+  if (fRawData) {
+    fRawDataRef = fRawData;
+    array->Add(fRawData);
+    fRawData = NULL;
+    return;
+  }
+  else {
+    Error("SetRawDataRef", "Raw-data payload does not exist! Can not set a reference to it!");    
+    fRawDataRef = NULL;
+    return;
+  }
 }

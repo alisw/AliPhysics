@@ -34,9 +34,10 @@
 #ifndef ROOT_TObject
 #include <TObject.h>
 #endif
-
+#include <TRef.h>
 
 // Forward class declarations
+class AliRawDataArray;
 class AliRawEquipmentHeader;
 class AliRawData;
 
@@ -50,15 +51,17 @@ public:
    AliRawEquipmentHeader *GetEquipmentHeader();
    AliRawData            *GetRawData();
    void                   Reset();
+   void                   SetRawDataRef(AliRawDataArray *array);
 
 private:
    AliRawEquipmentHeader *fEqpHdr;      // equipment header
    AliRawData            *fRawData;     // raw data container
+   TRef                   fRawDataRef;  // reference to raw data container
 
    AliRawEquipment(const AliRawEquipment& rawEvent);
    AliRawEquipment& operator = (const AliRawEquipment& rawEvent);
 
-   ClassDef(AliRawEquipment,1)  // ALICE raw equipment object
+   ClassDef(AliRawEquipment,2)  // ALICE raw equipment object
 };
 
 #endif
