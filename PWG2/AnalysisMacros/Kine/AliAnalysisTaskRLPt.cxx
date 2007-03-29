@@ -1,5 +1,6 @@
 #define AliAnalysisTaskRLPt_cxx
 
+#include "Riostream.h"
 #include "TChain.h"
 #include "TH1.h"
 #include "TCanvas.h"
@@ -71,12 +72,14 @@ void AliAnalysisTaskRLPt::Exec(Option_t *) {
   }
   // loop over mc particles
   Int_t nPrim = stack->GetNprimary();
-  printf("Particles: %d - Tracks: %d \n",nPrim,fESD->GetNumberOfTracks());
+  Int_t iTracks = 0;
   for(Int_t i = 0; i < nPrim; i++) {
     TParticle * particle = stack->Particle(i); 
     if(TMath::Abs(particle->Eta()) > 1.0) continue;
     fHistPt->Fill(particle->Pt());
+    iTracks += 1;
   }
+  cout<<"Entry: "<<ientry<<" - Particles: "<<nPrim<<" - Accepted: "<<iTracks<<" - Tracks: "<<fESD->GetNumberOfTracks()<<endl;
 
   // Post final data. It will be written to a file with option "RECREATE"
   PostData(0, fHistPt);
