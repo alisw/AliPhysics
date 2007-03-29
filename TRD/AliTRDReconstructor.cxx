@@ -123,35 +123,35 @@ void AliTRDReconstructor::Reconstruct(AliRunLoader *runLoader
   //
   // Trigger (tracklets, LTU)
   //
-  loader->LoadTracks();
-  if (loader->TreeT()) {
-    AliError("Tracklets already exist");
-    return;
-  }
-  AliInfo("Trigger tracklets will be produced");
+//   loader->LoadTracks();
+//   if (loader->TreeT()) {
+//     AliError("Tracklets already exist");
+//     return;
+//   }
+//   AliInfo("Trigger tracklets will be produced");
 
-  AliTRDtrigger trdTrigger("Trigger","Trigger class"); 
+//   AliTRDtrigger trdTrigger("Trigger","Trigger class"); 
 
-  AliTRDtrigParam *trigp = new AliTRDtrigParam("TRDtrigParam"
-                                              ,"TRD Trigger parameters");
+//   AliTRDtrigParam *trigp = new AliTRDtrigParam("TRDtrigParam"
+//                                               ,"TRD Trigger parameters");
 
-  Float_t field = AliTracker::GetBz() * 0.1; // Tesla
-  AliInfo(Form("Trigger set for magnetic field = %f Tesla \n",field));
-  trigp->SetField(field);
-  trigp->Init();
-  trdTrigger.SetParameter(trigp);
+//   Float_t field = AliTracker::GetBz() * 0.1; // Tesla
+//   AliInfo(Form("Trigger set for magnetic field = %f Tesla \n",field));
+//   trigp->SetField(field);
+//   trigp->Init();
+//   trdTrigger.SetParameter(trigp);
 
-  rawReader->RewindEvents();
+//   rawReader->RewindEvents();
 
-  for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
-    if (!rawReader->NextEvent()) break;
-    trdTrigger.Open(runLoader->GetFileName(),iEvent);
-    trdTrigger.ReadDigits(rawReader);
-    trdTrigger.MakeTracklets();
-    trdTrigger.WriteTracklets(-1);
-  }
+//   for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
+//     if (!rawReader->NextEvent()) break;
+//     trdTrigger.Open(runLoader->GetFileName(),iEvent);
+//     trdTrigger.ReadDigits(rawReader);
+//     trdTrigger.MakeTracklets();
+//     trdTrigger.WriteTracklets(-1);
+//   }
 
-  loader->UnloadTracks();
+//   loader->UnloadTracks();
 
 }
 
