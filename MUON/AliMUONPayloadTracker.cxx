@@ -274,7 +274,7 @@ Bool_t AliMUONPayloadTracker::CheckDataParity()
 //______________________________________________________
 void AliMUONPayloadTracker::AddParityErrBus(Int_t buspatch)
 {
-// adding bus with at least on parity error
+/// adding bus with at least on parity error
     fParityErrBus.Set(fParityErrBus.GetSize() + 1);
     fParityErrBus.AddAt(buspatch, fParityErrBus.GetSize() - 1);
 }
