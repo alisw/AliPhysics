@@ -41,7 +41,19 @@ extern "C" {
 //*          dtrack = energy deposition of the jth deposition event      *
 //*          dptrck = momentum loss of the jth deposition event          *
 //*                                                                      *
-//*          jtrack = identity number of the particle                    *
+//*          Jtrack = identity number of the particle: for recoils or    *
+//*                   kerma deposition it can be outside the allowed     *
+//*                   particle id range, assuming values like:           *
+//*                     208: "heavy" recoil                              *
+//*                     211: EM below threshold                          *
+//*                     308: low energy neutron kerma                    *
+//*                   in those cases the id of the particle originating  *
+//*                   the interaction is saved inside J0trck (which othe-*
+//*                   rwise is zero)                                     *
+//*          J0trck = see above                                          *
+//*          Ifltrk = flag used for internal debugging (trying to solve  *
+//*                   possible residual issues with Mgdraw driven        *
+//*                   quenching)                                         *
 //*          etrack = total energy of the particle                       *
 //*          ptrack = momentum of the particle (not always defined, if   *
 //*                 < 0 must be obtained from etrack)                    *
@@ -99,46 +111,48 @@ extern "C" {
 const Int_t mxtrck = 2500;
 
 typedef struct {
-   Double_t xtrack[mxtrck+1];
-   Double_t ytrack[mxtrck+1];
-   Double_t ztrack[mxtrck+1];
-   Double_t ttrack[mxtrck];
-   Double_t dtrack[mxtrck];
-   Double_t dptrck[mxtrck][3];
-   Double_t etrack;
-   Double_t ptrack;
-   Double_t cxtrck;
-   Double_t cytrck;
-   Double_t cztrck;
-   Double_t wtrack;
-   Double_t cxtrpl;
-   Double_t cytrpl;
-   Double_t cztrpl;
-   Double_t zfftrk;
-   Double_t zfrttk;
-   Double_t atrack;
-   Double_t ctrack;
-   Double_t cmtrck;
-   Double_t akshrt;
-   Double_t aklong;
-   Double_t wscrng;
-   Double_t wninou;
-   Double_t spausr[mkbmx1];
-   Double_t sttrck;
-   Double_t satrck;
-   Int_t    ntrack;
-   Int_t    mtrack;
-   Int_t    jtrack;
-   Int_t    ktrack;
-   Int_t    mmtrck;
-   Int_t    lt1trk;
-   Int_t    lt2trk;
-   Int_t    ihspnt;
-   Int_t    ltrack;
-   Int_t    llouse;
-   Int_t    ispusr[mkbmx2];
-   Int_t    lfsssc;
-   Int_t    lpkill;
+    Double_t xtrack[mxtrck+1];
+    Double_t ytrack[mxtrck+1];
+    Double_t ztrack[mxtrck+1];
+    Double_t ttrack[mxtrck];
+    Double_t dtrack[mxtrck];
+    Double_t dptrck[mxtrck][3];
+    Double_t etrack;
+    Double_t ptrack;
+    Double_t cxtrck;
+    Double_t cytrck;
+    Double_t cztrck;
+    Double_t wtrack;
+    Double_t cxtrpl;
+    Double_t cytrpl;
+    Double_t cztrpl;
+    Double_t zfftrk;
+    Double_t zfrttk;
+    Double_t atrack;
+    Double_t ctrack;
+    Double_t cmtrck;
+    Double_t akshrt;
+    Double_t aklong;
+    Double_t wscrng;
+    Double_t wninou;
+    Double_t spausr[mkbmx1];
+    Double_t sttrck;
+    Double_t satrck;
+    Int_t    ntrack;
+    Int_t    mtrack;
+    Int_t    ifltrk;
+    Int_t    jtrack;
+    Int_t    j0trck;
+    Int_t    ktrack;
+    Int_t    mmtrck;
+    Int_t    lt1trk;
+    Int_t    lt2trk;
+    Int_t    ihspnt;
+    Int_t    ltrack;
+    Int_t    llouse;
+    Int_t    ispusr[mkbmx2];
+    Int_t    lfsssc;
+    Int_t    lpkill;
 } trackrCommon;
 #define TRACKR COMMON_BLOCK(TRACKR,trackr)
 COMMON_BLOCK_DEF(trackrCommon,TRACKR);

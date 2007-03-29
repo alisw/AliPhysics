@@ -90,8 +90,8 @@ extern "C" {
 //*     const Int_t mkbmx2 =    3;
     const Int_t mkbmx1 = 11;
     const Int_t mkbmx2 = 11;
-    const Int_t mxirrd = 100;
-    const Int_t mxtrdc = 120;
+    const Int_t mxirrd = 500;
+    const Int_t mxtrdc = 500;
     const Int_t nktl   = 17;
 }
 
