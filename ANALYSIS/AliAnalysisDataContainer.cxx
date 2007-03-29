@@ -266,12 +266,12 @@ void AliAnalysisDataContainer::PrintContainer(Option_t *option, Int_t indent) co
    opt.ToLower();
    Bool_t dep = (opt.Contains("dep"))?kTRUE:kFALSE;
    if (!dep) {
-      printf("%s\n", Form("%sContainer: %s  type: %s", ind.Data(), GetName(), GetTitle()));
+      printf("%sContainer: %s  type: %s", ind.Data(), GetName(), GetTitle());
       if (fProducer) 
-         printf("%s\n", Form("%s = Data producer: task %s",ind.Data(),fProducer->GetName()));
+         printf("%s = Data producer: task %s",ind.Data(),fProducer->GetName());
       else
-         printf("%s\n", Form("%s= No data producer"));
-      printf("%s", Form("%s = Consumer tasks: "));
+         printf("%s= No data producer",ind.Data());
+      printf("%s = Consumer tasks: ", ind.Data());
       if (!fConsumers || !fConsumers->GetEntriesFast()) printf("-none-\n");
       else printf("\n");
    }   
