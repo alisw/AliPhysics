@@ -12,9 +12,10 @@ SRCS = 	AliJet.cxx AliJetHeader.cxx \
 	AliJetHadronCorrectionv0.cxx AliJetHadronCorrectionv1.cxx \
 	AliJetFillUnitArrayTracks.cxx \
 	AliJetDummyGeo.cxx \
+	AliJetFinderTypes.cxx \
 	AliAnalysisTaskJets.cxx
 
 
-HDRS:= $(SRCS:.cxx=.h)
+HDRS:= $(SRCS:.cxx=.h) 
 DHDR= JETANLinkDef.h
 
