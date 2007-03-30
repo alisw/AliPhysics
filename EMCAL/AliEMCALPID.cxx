@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.10  2007/03/09 14:34:11  gustavo
+ * Correct probability calculation, added missing initialization of data members
+ *
  * Revision 1.9  2007/02/20 20:17:43  hristov
  * Corrected array size, removed warnings (icc)
  *
@@ -235,7 +238,7 @@ void AliEMCALPID::RunPID(AliESD *esd)
 	// trivial check against NULL object passed
   
   if (esd == 0x0) {
-    AliInfo("NULL ESD object passed!!" );
+    AliInfo("NULL ESD object passed !!" );
     return ;
   }
 
@@ -249,10 +252,15 @@ void AliEMCALPID::RunPID(AliESD *esd)
     lambda0 = clust->GetM02();
     // verify cluster type
     Int_t clusterType= clust->GetClusterType();
-    if (clusterType == AliESDCaloCluster::kClusterv1 && lambda0 != 0 && energy > 5 && energy < 1000) {
+    if (clusterType == AliESDCaloCluster::kClusterv1 && lambda0 != 0  && energy < 1000) {
+
+
       // reject clusters with lambda0 = 0
-      // reject clusters with energy < 5 GeV
+
+
       ComputePID(energy, lambda0);
+
+
       if (fPrintInfo) {
 	AliInfo("___________________________________________________");
 	AliInfo(Form( "Particle Energy = %f",energy));
@@ -289,6 +297,10 @@ void AliEMCALPID::ComputePID(Double_t energy, Double_t lambda0)
 // This is the main command, which uses the distributions computed and parametrised, 
 // and gives the PID by the bayesian method.
 //
+
+if (energy<5){energy =6;}
+
+
   TArrayD paramDistribGamma  = DistLambda0(energy, 1);
   TArrayD paramDistribPiZero = DistLambda0(energy, 2);
   TArrayD paramDistribHadron = DistLambda0(energy, 3);
