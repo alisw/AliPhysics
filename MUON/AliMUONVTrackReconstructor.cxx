@@ -373,8 +373,14 @@ Bool_t AliMUONVTrackReconstructor::MakeTriggerTracks(void)
 	      (AliMUONTriggerCircuit*)fTriggerCircuit->At(locTrg->LoCircuit()-1); // -1 !!!
 	  
 	  y11 = circuit->GetY11Pos(locTrg->LoStripX()); 
-	  Float_t deviation = locTrg->LoDev(); // convert to [1-30]
-	  deviation *= locTrg->LoSdev();
+// need first to convert deviation to [0-30] 
+// (see AliMUONLocalTriggerBoard::LocalTrigger)
+	  Int_t deviation = locTrg->LoDev(); 
+	  Int_t sign = 0;
+	  if ( !locTrg->LoSdev() &&  deviation ) sign=-1;
+	  if ( !locTrg->LoSdev() && !deviation ) sign= 0;
+	  if (  locTrg->LoSdev() == 1 )          sign=+1;
+	  deviation *= sign;
 	  deviation += 15;
 	  stripX21 = locTrg->LoStripX()+deviation+1;
 	  y21 = circuit->GetY21Pos(stripX21);       
