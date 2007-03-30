@@ -62,7 +62,7 @@ void endraw(Int_t& icode, Int_t& mreg, Double_t& rull, Double_t& xsco, Double_t&
     Int_t nodeId;
     Int_t volId = fluka->CurrentVolID(nodeId);
     Int_t crtlttc = gGeoManager->GetCurrentNodeId()+1;
-    if( mreg != volId  && !gGeoManager->IsOutside() ) {
+    if(debug && mreg != volId  && !gGeoManager->IsOutside() ) {
        cout << "  endraw:   track=" << TRACKR.ispusr[mkbmx2-1] << " pdg=" << fluka->PDGFromId(TRACKR.jtrack)
             << " icode=" << icode << " gNstep=" << fluka->GetNstep() << endl
             << "               fluka   mreg=" << mreg << " mlttc=" << mlttc << endl

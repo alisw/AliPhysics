@@ -71,7 +71,7 @@ void mgdraw(Int_t& icode, Int_t& mreg)
 
     // check region lattice consistency (debug Ernesto)
     // *****************************************************
-    if( mreg != volId  && !gGeoManager->IsOutside() ) {
+    if(verbosityLevel>=3 && mreg != volId  && !gGeoManager->IsOutside() ) {
        cout << "  mgdraw:   track=" << trackId << " pdg=" << fluka->PDGFromId(TRACKR.jtrack)
             << " icode=" << icode << " gNstep=" << fluka->GetNstep() << endl
             << "               fluka   mreg=" << mreg << " mlttc=" << mlttc << endl

@@ -52,7 +52,7 @@ void bxdraw(Int_t& icode, Int_t& mreg, Int_t& newreg,
     Int_t nodeId;
     Int_t volId = fluka->CurrentVolID(nodeId);
     Int_t crtlttc = gGeoManager->GetCurrentNodeId()+1;
-    if( mreg != volId  && !gGeoManager->IsOutside()) {
+    if(debug && mreg != volId  && !gGeoManager->IsOutside()) {
        cout << "  bxdraw:   track=" << TRACKR.ispusr[mkbmx2-1]<< " pdg=" << fluka->PDGFromId(TRACKR.jtrack)
             << " icode=" << icode << " gNstep=" << fluka->GetNstep() << endl
             << "               fluka   mreg=" << mreg << " oldlttc=" << oldlttc << " newreg=" << newreg << " newlttc=" << newlttc << endl
@@ -83,7 +83,7 @@ void bxdraw(Int_t& icode, Int_t& mreg, Int_t& newreg,
     Int_t nodeId;
     Int_t volId = fluka->CurrentVolID(nodeId);
     Int_t crtlttc = gGeoManager->GetCurrentNodeId()+1;
-    if( newreg != volId  && !gGeoManager->IsOutside()) {
+    if(debug && newreg != volId  && !gGeoManager->IsOutside()) {
        cout << "  bxdraw:   track=" << TRACKR.ispusr[mkbmx2-1] << " pdg=" << fluka->PDGFromId(TRACKR.jtrack)
             << " icode=" << icode << " gNstep=" << fluka->GetNstep() << endl
             << "               fluka   mreg=" << mreg << " oldlttc=" << oldlttc << " newreg=" << newreg << " newlttc=" << newlttc << endl

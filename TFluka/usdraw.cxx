@@ -58,7 +58,7 @@ void usdraw(Int_t& icode, Int_t& mreg,
     Int_t nodeId;
     Int_t volId = fluka->CurrentVolID(nodeId);
     Int_t crtlttc = gGeoManager->GetCurrentNodeId()+1;
-    if( mreg != volId  && !gGeoManager->IsOutside() ) {
+    if(verbosityLevel>=3 && mreg != volId  && !gGeoManager->IsOutside() ) {
        cout << "  usdraw:   track=" << TRACKR.ispusr[mkbmx2-1] << " pdg=" << fluka->PDGFromId(TRACKR.jtrack)
             << " icode=" << icode << " gNstep=" << fluka->GetNstep() << endl
             << "               fluka   mreg=" << mreg << " mlttc=" << mlttc << endl

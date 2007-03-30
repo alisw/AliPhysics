@@ -1374,13 +1374,9 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
 
 {
    // Initialize FLUKa point and direction;
+   static Int_t ierr = 0;
    gNstep++;
-
-//   if( (gNstep > 43912170 && gNstep < 43912196 ) ||
-//       (gNstep > 47424560 && gNstep < 47424581  ) ||
-//       (gNstep > 54388266 && gNstep < 54388319 )
-//       ) gMCGeom->SetDebugMode();
-//   else gMCGeom->SetDebugMode(kFALSE);
+//      gMCGeom->SetDebugMode(kTRUE);
    
    NORLAT.xn[0] = pSx;
    NORLAT.xn[1] = pSy;
@@ -1393,11 +1389,15 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
       oldReg = gGeoManager->GetCurrentVolume()->GetNumber();
    }
 
-   if (gMCGeom->IsDebugging()) cout << "g1wr gNstep=" << gNstep
-                                    << " oldReg="<< oldReg <<" olttc="<< olttc
-                                    << " track=" << TRACKR.ispusr[mkbmx2-1] << endl;
+   if (gMCGeom->IsDebugging()) {
+      cout << "g1wr gNstep=" << gNstep << " oldReg="<< oldReg <<" olttc="<< olttc
+           << " track=" << TRACKR.ispusr[mkbmx2-1] << endl;
+      cout << " point: (" << pSx << ", " << pSy << ", " << pSz << ")  dir: ("
+           << pV[0] << ", " << pV[1] << ", " << pV[2] << ")" << endl;
+   }        
+           
 
-   Int_t ccreg,cclat;
+   Int_t ccreg=0,cclat=0;
    gMCGeom->GetCurrentRegion(ccreg,cclat);
    Bool_t crossed = (ccreg==oldReg && cclat==olttc)?kFALSE:kTRUE;
 
@@ -1444,21 +1444,68 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
 
    gGeoManager->SetCurrentPoint(pSx, pSy, pSz);
    gGeoManager->SetCurrentDirection(pV);
-
+   Double_t pt[3], local[3], ldir[3];
+   Int_t pid = TRACKR.jtrack;
+   pt[0] = pSx;
+   pt[1] = pSy;
+   pt[2] = pSz;
+   gGeoManager->MasterToLocal(pt,local);
+   gGeoManager->MasterToLocalVect(pV,ldir);
+/*
+   Bool_t valid = gGeoManager->GetCurrentVolume()->Contains(local);
+   if (!valid) {
+      printf("location not valid in %s pid=%i\n", gGeoManager->GetPath(),pid);
+      printf("local:(%f, %f, %f)  ldir:(%f, %f, %f)\n", local[0],local[1],local[2],ldir[0],ldir[1],ldir[2]);
+//      gGeoManager->FindNode();
+//      printf("   -> actual location: %s\n", gGeoManager->GetPath());
+   }   
+*/
+   Double_t pstep = propStep;
+   Double_t snext = propStep;
+   const Double_t epsil = 0.9999999 * TGeoShape::Tolerance();
+   // This should never happen !!!
+   if (pstep<TGeoShape::Tolerance()) {
+      printf("Proposed step is 0 !!!\n");
+      pstep = 2.*TGeoShape::Tolerance();
+   }   
    if (crossed) {
-      gGeoManager->FindNextBoundaryAndStep(propStep);
-      saf = 0.0;
+      gGeoManager->FindNextBoundaryAndStep(pstep);
+      snext = gGeoManager->GetStep();
+      saf = 0.;
+      if (snext <= TGeoShape::Tolerance()) {
+//         printf("FLUKA crossed boundary but snext=%g\n", snext);
+         ierr++;
+         snext = epsil;
+      } else {
+         snext += TGeoShape::Tolerance();
+         ierr = 0;
+      }     
    } else {
-      gGeoManager->FindNextBoundaryAndStep(propStep, kTRUE);
+      gGeoManager->FindNextBoundaryAndStep(pstep, kTRUE);
+      snext = gGeoManager->GetStep();
       saf = gGeoManager->GetSafeDistance();
-      if (saf<0) saf=0.0;
+      if (snext <= TGeoShape::Tolerance()) {
+//         printf("FLUKA put particle on bondary without crossing\n");
+         ierr++;
+         snext = epsil;
+         saf = 0.;
+      } else {
+         snext += TGeoShape::Tolerance();
+         ierr = 0;
+      }      
+      if (saf<0) saf=0.;
       saf -= saf*3.0e-09;
    }
-
-   Double_t snext = gGeoManager->GetStep();
-
-   if (snext<=0.0) snext = TGeoShape::Tolerance();
-
+//   if (ierr>1) {
+//      printf("%d snext=%g\n", ierr, snext);
+//   }   
+   if (ierr == 10) {
+//      printf("Too many null steps - sending error code -33...\n");
+      newReg = -33;   // Error code
+      ierr = 0;
+      return;
+   }   
+   
    PAREM.dist = snext;
    NORLAT.distn = snext;
    NORLAT.xn[0] += snext*pV[0];
@@ -1480,7 +1527,6 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
    // We really crossed the boundary, but is it the same region ?
    gMCGeom->SetNextRegion(newReg, newLttc);
 
-   Int_t pid = TRACKR.jtrack;
    if ( ((newReg==oldReg && newLttc!=olttc) || (oldReg!=newReg && olttc==newLttc) ) && pid!=-1) {
       // Virtual boundary between replicants
       newReg  = gFluka->GetDummyRegion();
@@ -1603,7 +1649,8 @@ void lkwr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
       printf("   in: oldReg=%i oldLttc=%i\n", oldReg, oldLttc);
    }   
    flagErr = 0;
-   TGeoNode *node = gGeoManager->FindNode(pSx, pSy, pSz);
+   Double_t epsil = 1000.*TGeoShape::Tolerance();
+   TGeoNode *node = gGeoManager->FindNode(pSx+epsil*pV[0], pSy+epsil*pV[1], pSz+epsil*pV[2]);
    if (gGeoManager->IsOutside()) {
       newReg = gMCGeom->NofVolumes()+2;
       newLttc = TFlukaMCGeometry::kLttcOutside;
@@ -1637,8 +1684,8 @@ void lkwr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
 
    if( oldReg!=newReg && oldLttc==newLttc ) {
       // this should not happen!! ??? Ernesto
-       cout << "  lkwr      oldReg!=newReg ("<< oldReg <<"!="<< newReg
-            << ") && oldLttc==newLttc ("<< newLttc <<") !!!!!!!!!!!!!!!!!" << endl;
+//       cout << "  lkwr      oldReg!=newReg ("<< oldReg <<"!="<< newReg
+//            << ") && oldLttc==newLttc ("<< newLttc <<") !!!!!!!!!!!!!!!!!" << endl;
       newReg  = dummy;
       newLttc = TFlukaMCGeometry::kLttcVirtual;
       flagErr = newReg;
