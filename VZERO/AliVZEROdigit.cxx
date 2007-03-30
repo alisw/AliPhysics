@@ -59,5 +59,9 @@ AliVZEROdigit::AliVZEROdigit(Int_t PMnumber, Int_t adc, Int_t time)
    fTime       = time;
 }
 
+void AliVZEROdigit::Print(const Option_t*) const
+{
+    Dump();
+}
 
 

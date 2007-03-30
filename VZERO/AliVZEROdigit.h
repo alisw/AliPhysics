@@ -15,6 +15,8 @@ class AliVZEROdigit: public AliDigit  {
     AliVZEROdigit(Int_t* tracks, Int_t* digits);
     AliVZEROdigit(Int_t /* PMnumber */, Int_t /* ADC */, Int_t /* Time */);
     virtual ~AliVZEROdigit() {};
+    virtual void Print(const Option_t* option="") const;
+    
     Int_t   PMNumber()  const {return fPMNumber;}    
     Int_t   ADC()  const {return fADC;}
     Int_t   Time() const {return fTime;}
