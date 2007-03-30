@@ -127,9 +127,10 @@ void AliDIPOv3::CreateSpectrometerDipole()
     TGeoCombiTrans* trDDIP = new TGeoCombiTrans("trDDIP", 0., dipoleL/2. * TMath::Tan(alhc * kDegrad), 0., rotlhc);
     trDDIP->RegisterYourself();
      
-    TGeoBBox* shDDIP2 =  new TGeoBBox("shDDIP2", 164, 182., 25.);
-
-    TGeoPcon* shDDIP3 =  new TGeoPcon("shDDIP3", 0., 360., 5);
+    TGeoBBox* shDDIP2 =  new TGeoBBox(164., 182., 25.);
+    shDDIP2->SetName("shDDIP2");
+    TGeoPcon* shDDIP3 =  new TGeoPcon(  0., 360.,  5);
+    shDDIP3->SetName("shDDIP3");
     Float_t z30 =  825. - kZDipole;
     Float_t zst = 1052. - kZDipole;
     
@@ -358,28 +359,32 @@ void AliDIPOv3::CreateSpectrometerDipole()
     Float_t rmin1, rmin2, rmax1, rmax2;
 
     Float_t zHanger1 = 811.9;
-    TGeoBBox* shHanger11  = new TGeoBBox("shHanger11", 2.5/2., 250., 25./2.);
-
+    TGeoBBox* shHanger11  = new TGeoBBox(2.5/2., 250., 25./2.);
+    shHanger11->SetName("shHanger11");
+    
     rmin1 = (zHanger1 - 13.) * TMath::Tan(2. * kDegrad);
     rmin2 = rmin1 + 26. * TMath::Tan( 2.0 * kDegrad);
     rmax1 = (zHanger1 - 13.) * TMath::Tan(9. * kDegrad);
     rmax2 = rmax1 + 26. * TMath::Tan(9. * kDegrad);
 
-    TGeoCone* shHanger12  = new TGeoCone("shHanger12", 13., rmin1, rmax1, rmin2, rmax2);
+    TGeoCone* shHanger12  = new TGeoCone(13., rmin1, rmax1, rmin2, rmax2);
+    shHanger12->SetName("shHanger12");
     TGeoCompositeShape*  shHanger1 = new TGeoCompositeShape("shHanger1", "shHanger12*shHanger11:trHanger");
     TGeoVolume* voHanger1 = new TGeoVolume("DHanger1", shHanger1, kMedSteel);
     //
     // SAA1 Support: Hanger 2
     //
     Float_t zHanger2 = 1171.9;
-    TGeoBBox* shHanger21  = new TGeoBBox("shHanger21", 3.5/2., 250., 25./2.);
-
+    TGeoBBox* shHanger21  = new TGeoBBox(3.5/2., 250., 25./2.);
+    shHanger21->SetName("shHanger21");
 
     rmin1 = 35.8 + (zHanger2 - 13. - zst - kZDipole) * TMath::Tan(2. * kDegrad);
     rmin2 = rmin1 + 26. * TMath::Tan( 2.0 * kDegrad);
     rmax1 = rcD1 + (zHanger2 - 13. - kZDipole) * TMath::Tan(10.1 * kDegrad);
     rmax2 = rmax1 + 26. * TMath::Tan(10.1 * kDegrad);
-    TGeoCone* shHanger22  = new TGeoCone("shHanger22", 13., rmin1, rmax1, rmin2, rmax2);
+    TGeoCone* shHanger22  = new TGeoCone(13., rmin1, rmax1, rmin2, rmax2);
+    shHanger22->SetName("shHanger22");
+
     TGeoCompositeShape*  shHanger2 = new TGeoCompositeShape("shHanger2", "shHanger22*shHanger21:trHanger");
     
     TGeoVolume* voHanger2 = new TGeoVolume("DHanger2", shHanger2, kMedSteel);
@@ -441,9 +446,9 @@ void AliDIPOv3::CreateSpectrometerDipole()
     
     asDipole->SetVisContainers(1);
     voDDIP->SetVisibility(0);
-    asDipole->AddNode(voDDIP, 1, gGeoIdentity);
-    top->AddNode(asDipole, 1, new TGeoCombiTrans(0., dipoleL / 2. * TMath::Tan(alhc * kDegrad), -kZDipole, rotxzlhc));
 
+    top->AddNode(asDipole, 1, new TGeoCombiTrans(0., dipoleL / 2. * TMath::Tan(alhc * kDegrad), -kZDipole, rotxzlhc));
+    top->AddNode(voDDIP,   1, new TGeoCombiTrans(0., dipoleL / 2. * TMath::Tan(alhc * kDegrad), -kZDipole, rotxzlhc));
 }
 
 
