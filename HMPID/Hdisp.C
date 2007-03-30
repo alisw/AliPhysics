@@ -163,7 +163,7 @@ void DrawEvt(TClonesArray *pHitLst,TObjArray *pDigLst,TObjArray *pCluLst,AliESD 
     Float_t ckov=pTrk->GetHMPIDsignal();  Float_t err=TMath::Sqrt(pTrk->GetHMPIDchi2());
     if(ckov>0){
       Printf("theta %f phi %f ckov %f",th*TMath::RadToDeg(),ph*TMath::RadToDeg(),ckov);
-      rec.SetTrack(xRad,yRad,th,ph+TMath::Pi());
+      rec.SetTrack(xRad,yRad,th,ph);
       for(Int_t j=0;j<100;j++){ 
         TVector2 pos;
         pos=rec.TracePhot(ckov,j*0.0628);
