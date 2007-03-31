@@ -512,13 +512,16 @@ void AliEMCALTrigger::SetTriggers(const TClonesArray * ampmatrix,const Int_t iSM
 void AliEMCALTrigger::Trigger() 
 {
   //Main Method to select triggers.
-  AliRunLoader *rl = AliRunLoader::GetRunLoader();
+  AliRunLoader *runLoader = AliRunLoader::GetRunLoader();
   AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>
-    (rl->GetDetectorLoader("EMCAL"));
-  rl->LoadgAlice();  //Neede by calls to AliRun in SetTriggers
+    (runLoader->GetDetectorLoader("EMCAL"));
  
   //Load EMCAL Geometry
-  AliEMCALGeometry * geom = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
+  AliEMCALGeometry * geom = 0;
+  if (runLoader->GetAliRun() && runLoader->GetAliRun()->GetDetector("EMCAL"))
+    geom = dynamic_cast<AliEMCAL*>(runLoader->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
+  if (geom == 0)
+    geom = AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaulGeometryName());
 
   if (geom==0)
     AliFatal("Did not get geometry from EMCALLoader");
@@ -537,7 +540,7 @@ void AliEMCALTrigger::Trigger()
 
   //Take the digits list if simulation
   if(fSimulation){
-    rl->LoadDigits("EMCAL");
+    runLoader->LoadDigits("EMCAL");
     fDigitsList = emcalLoader->Digits() ;
   }
   if(!fDigitsList)
