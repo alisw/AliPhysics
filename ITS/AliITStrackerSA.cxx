@@ -45,6 +45,7 @@ ClassImp(AliITStrackerSA)
 //____________________________________________________________________________
 AliITStrackerSA::AliITStrackerSA():AliITStrackerMI(),
 fPhiEstimate(0),
+fITSStandAlone(0),
 fLambdac(0),
 fPhic(0),
 fCoef1(0),
@@ -67,6 +68,7 @@ fCluCoord(0){
 //____________________________________________________________________________
 AliITStrackerSA::AliITStrackerSA(const Char_t *geom):AliITStrackerMI(0),
 fPhiEstimate(0),
+fITSStandAlone(0),
 fLambdac(0),
 fPhic(0),
 fCoef1(0),
@@ -96,6 +98,7 @@ fCluCoord(0)
 //____________________________________________________________________________
 AliITStrackerSA::AliITStrackerSA(const Char_t *geom, AliESDVertex *vert):AliITStrackerMI(0),
 fPhiEstimate(0),
+fITSStandAlone(0),
 fLambdac(0),
 fPhic(0),
 fCoef1(0),
@@ -110,7 +113,7 @@ fListOfTracks(0),
 fITSclusters(0),
 fSixPoints(0),
 fCluLayer(0),
-fCluCoord(0) 
+fCluCoord(0)
 {
   // Standard constructor (Vertex is known and passed to this obj.)
   if (geom) {
@@ -123,6 +126,7 @@ fCluCoord(0)
 //____________________________________________________________________________
 AliITStrackerSA::AliITStrackerSA(const Char_t *geom, AliITSVertexer *vertexer):AliITStrackerMI(0),
 fPhiEstimate(0),
+fITSStandAlone(0),
 fLambdac(0),
 fPhic(0),
 fCoef1(0),
@@ -137,7 +141,7 @@ fListOfTracks(0),
 fITSclusters(0),
 fSixPoints(0),
 fCluLayer(0),
-fCluCoord(0)  
+fCluCoord(0)
 {
   // Standard constructor (Vertex is unknown - vertexer is passed to this obj)
   if (geom) {
@@ -151,6 +155,7 @@ fCluCoord(0)
 //____________________________________________________________________________
 AliITStrackerSA::AliITStrackerSA(const AliITStrackerSA& tracker):AliITStrackerMI(),
 fPhiEstimate(tracker.fPhiEstimate),
+fITSStandAlone(tracker.fITSStandAlone),
 fLambdac(tracker.fLambdac),
 fPhic(tracker.fPhic),
 fCoef1(tracker.fCoef1),
@@ -229,6 +234,24 @@ AliITStrackerSA::~AliITStrackerSA(){
 }
 
 //____________________________________________________________________________
+Int_t AliITStrackerSA::Clusters2Tracks(AliESD *event){
+// This method is used to find and fit the tracks. By default the corresponding
+// method in the parent class is invoked. In this way a combined tracking
+// TPC+ITS is performed. If the flag fITSStandAlone is true, the tracking
+// is done in the ITS only. In the standard reconstruction chain this option
+// can be set via AliReconstruction::SetOption("ITS","onlyITS")
+  Int_t rc=0;
+  if(!fITSStandAlone){
+    rc=AliITStrackerMI::Clusters2Tracks(event);
+  }
+  else {
+    AliDebug(1,"Stand Alone flag set: doing tracking in ITS alone\n");
+  }
+  if(!rc) rc=FindTracks(event);
+  return rc;
+}
+
+//____________________________________________________________________________
 void AliITStrackerSA::Init(){
   //  Reset all data members
     fPhiEstimate=0;
@@ -245,6 +268,7 @@ void AliITStrackerSA::Init(){
     SetWindowSizes();
     fITSclusters = 0;
     SetSixPoints();
+    SetSAFlag(kFALSE);
     fListOfTracks=new TObjArray(0,0);
     fCluLayer = 0;
     fCluCoord = 0;
@@ -418,7 +442,6 @@ Int_t AliITStrackerSA::FindTracks(AliESD* event){
 	outtrack.UpdateTrackParams(tr2,AliESDtrack::kITSin);
 	event->AddTrack(&outtrack);
 	ntrack++;
-	
       }
 	
 
@@ -823,8 +846,8 @@ Int_t AliITStrackerSA::SearchClusters(Int_t layer,Double_t phiwindow,Double_t la
     FindEquation(fPoint1[0],fPoint1[1],fPoint2[0],fPoint2[1],fPoint3[0],fPoint3[1],fCoef1,fCoef2,fCoef3);
     if (FindIntersection(fCoef1,fCoef2,fCoef3,-r*r,cx1,cy1,cx2,cy2)==0)
        return 0;
-    Double_t fi1=TMath::ATan2(cy1,cx1);
-    Double_t fi2=TMath::ATan2(cy2,cx2);
+    Double_t fi1=TMath::ATan2(cy1-fPoint1[1],cx1-fPoint1[0]);
+    Double_t fi2=TMath::ATan2(cy2-fPoint1[1],cx2-fPoint1[0]);
     fPhiEstimate=ChoosePoint(fi1,fi2,fPhic);
   }
 
@@ -1117,7 +1140,7 @@ void AliITStrackerSA::GetCoorAngles(AliITSRecPoint* cl,Double_t &phi,Double_t &l
   y=xyz[1];
   z=xyz[2];
  
-  phi=TMath::ATan2(y,x);
+  phi=TMath::ATan2(y-vertex[1],x-vertex[0]);
   lambda=TMath::ATan2(z-vertex[2],TMath::Sqrt((x-vertex[0])*(x-vertex[0])+(y-vertex[1])*(y-vertex[1])));
 }
 

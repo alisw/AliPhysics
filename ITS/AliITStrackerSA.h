@@ -33,7 +33,7 @@ class AliITStrackerSA : public AliITStrackerMI {
   AliITStrackerSA(const AliITStrackerSA& tracker);
   AliITStrackerSA& operator=(const AliITStrackerSA& source);
   virtual ~AliITStrackerSA();  
-  virtual Int_t Clusters2Tracks(AliESD *event){Int_t rc = AliITStrackerMI::Clusters2Tracks(event); if(!rc) rc=FindTracks(event); return rc;}
+  virtual Int_t Clusters2Tracks(AliESD *event);
   Int_t FindTracks(AliESD* event);
 
   AliITStrackV2* FitTrack(AliITStrackSA* tr,Double_t* primaryVertex);
@@ -44,6 +44,8 @@ class AliITStrackerSA : public AliITStrackerMI {
   void SetClusterTree(TTree * itscl){fITSclusters = itscl;}
   void SetSixPoints(Bool_t sp = kFALSE){fSixPoints = sp;}
   Bool_t GetSixPoints() const {return fSixPoints;}
+  void SetSAFlag(Bool_t fl){fITSStandAlone=fl;}  // StandAlone flag setter
+  Bool_t GetSAFlag() const {return fITSStandAlone;} // StandAlone flag getter
   void SetWindowSizes(Int_t n=46, Double_t *phi=0, Double_t *lam=0);
 
   enum {kSAflag=0x8000}; //flag to mark clusters used in the SA tracker
@@ -83,6 +85,7 @@ class AliITStrackerSA : public AliITStrackerMI {
 
 
   Double_t fPhiEstimate; //Estimation of phi angle on next layer
+  Bool_t fITSStandAlone; //Tracking is performed in the ITS alone if kTRUE
   Float_t fPoint1[2];   //! coord. of 1-st point to evaluate the curvature
   Float_t fPoint2[2];   //! coord. of 2-nd point to evaluate the curvature
   Float_t fPoint3[2];   //! coord. of 3-rd point to evaluate the curvature
@@ -104,7 +107,7 @@ class AliITStrackerSA : public AliITStrackerMI {
   TClonesArray** fCluLayer; //! array with clusters 
   TClonesArray** fCluCoord; //! array with cluster info
 
-  ClassDef(AliITStrackerSA,3)
+  ClassDef(AliITStrackerSA,4)
 };
 
 #endif

@@ -136,6 +136,13 @@ fNSA(0)
 		   tanlambda,
 		   curv/conv};
 
+
+  // dealing with the case B=0 (taken from AliTPCtrack.cxx)
+  Double_t p0=TMath::Sign(1/kMostProbablePt,sP[4]);
+  Double_t w0=sC[14]/(sC[14] + p0*p0), w1=p0*p0/(sC[14] + p0*p0);
+  sP[4] = w0*p0 + w1*sP[4];
+  sC[14]*=w1;
+                                                                              
   Set(sX,sAlpha,sP,sC);
 
   for(Int_t i=0; i<kMaxLayer; i++) fIndex[i] = 0;  // to be set explicitely

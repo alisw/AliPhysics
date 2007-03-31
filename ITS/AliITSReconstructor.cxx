@@ -171,6 +171,9 @@ AliTracker* AliITSReconstructor::CreateTracker(AliRunLoader* runLoader)const
   }
   else {
     tracker =  new AliITStrackerSA(0);  // inherits from AliITStrackerMI
+    AliITStrackerSA *sat=(AliITStrackerSA*)tracker;
+    if(selectedTracker.Contains("onlyITS"))sat->SetSAFlag(kTRUE);
+    if(sat->GetSAFlag())AliDebug(1,"Tracking Performed in ITS only\n");
   }
 
   TString selectedPIDmethod = GetOption();
