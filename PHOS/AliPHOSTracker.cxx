@@ -1,5 +1,7 @@
 #include "AliPHOSTracker.h"
+#include "AliPHOSClusterizerv1.h"
 #include "AliPHOSTrackSegmentMakerv1.h"
+#include "AliPHOSTrackSegmentMakerv2.h"
 #include "AliPHOSPIDv1.h"
 #include "AliRunLoader.h"
 #include "AliESD.h"
@@ -23,10 +25,14 @@ Int_t AliPHOSTracker::PropagateBack(AliESD *esd) {
 
   TString headerFile(fRunLoader->GetFileName()) ; 
   TString branchName(fRunLoader->GetEventFolder()->GetName()) ;  
-
+ 
   AliPHOSTrackSegmentMakerv1 tsm(headerFile, branchName);
+//  AliPHOSTrackSegmentMakerv2 tsm(headerFile, branchName);
   tsm.SetESD(esd) ; 
   AliPHOSPIDv1 pid(headerFile, branchName);
+  pid.SetESD(esd) ; 
+
+  SetDebug() ;
 
   // do current event; the loop over events is done by AliReconstruction::Run()
   tsm.SetEventRange(eventNumber, eventNumber) ; 

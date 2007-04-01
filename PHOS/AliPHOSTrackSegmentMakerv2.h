@@ -88,8 +88,6 @@ private:
   void    InitParameters() ;
   void    PrintTrackSegments(Option_t *option) ;
   virtual void   WriteTrackSegments() ;
-  void    GetVertex(void) ;
-  void    EvalRecPoints(void) ;
 
 private:  
 
