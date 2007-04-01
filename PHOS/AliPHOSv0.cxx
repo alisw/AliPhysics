@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.86  2007/03/06 06:55:46  kharlov
+ * DP:Misalignment of CPV added
+ *
  * Revision 1.85  2007/03/01 11:37:37  kharlov
  * Strip units changed from 8x1 to 8x2 (T.Pocheptsov)
  *
@@ -59,7 +62,9 @@
 #include <TTRD1.h>
 #include <TTree.h>
 #include <TVirtualMC.h>
+#include <TGeoPhysicalNode.h>
 #include <TGeoManager.h>
+#include <TVector3.h>
 
 // --- Standard library ---
 
@@ -910,6 +915,7 @@ void AliPHOSv0::AddAlignableVolumes() const
 
   //Aligning of CPV should be done for volume PCPV_1
   symbModuleName="PHOS/Module";
+  Double_t rotMatrix[9] ;
   for(Int_t iModule=1; iModule<=nModules; iModule++){
     volpath = physModulePath;
     volpath += iModule;
@@ -918,6 +924,25 @@ void AliPHOSv0::AddAlignableVolumes() const
     symname += iModule;
     symname += "/CPV";
     gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data());
+          
+    // Creates the TGeo Local to Tracking transformation matrix ...
+    TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntry(symname.Data()) ;
+    const char *path = alignableEntry->GetTitle();
+    if (!gGeoManager->cd(path))
+       AliFatal(Form("Volume path %s not valid!",path));
+    TGeoHMatrix *matLtoT = new TGeoHMatrix;
+    matLtoT->SetDx(0.) ;
+    matLtoT->SetDy(0.) ;
+    matLtoT->SetDz(0.) ;
+    rotMatrix[0]= 1;  rotMatrix[1]= 0;  rotMatrix[2]= 0; // 
+    rotMatrix[3]= 0;  rotMatrix[4]= 0;  rotMatrix[5]= 1; //
+    rotMatrix[6]= 0;  rotMatrix[7]= 1;  rotMatrix[8]= 0;
+    TGeoRotation rot;
+    rot.SetMatrix(rotMatrix);
+    matLtoT->MultiplyLeft(&rot);
+    TGeoHMatrix *matTtoL = new TGeoHMatrix(matLtoT->Inverse());
+    delete matLtoT;
+    alignableEntry->SetMatrix(matTtoL);
   }
  
 
@@ -980,6 +1005,60 @@ void AliPHOSv0::AddAlignableVolumes() const
          fullSymbStripName += j;
 
          gGeoManager->SetAlignableEntry(fullSymbStripName.Data(), fullPhysStripName.Data());
+
+         // Creates the TGeo Local to Tracking transformation matrix ...
+         TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntry(fullSymbStripName.Data()) ;
+         const char *path = alignableEntry->GetTitle();
+         if (!gGeoManager->cd(path))
+           AliFatal(Form("Volume path %s not valid!",path));
+         TGeoHMatrix matLtoT = *gGeoManager->GetCurrentMatrix() ;
+         Double_t refl[3]={-1.,-1.,-1.} ;
+         matLtoT.SetScale(refl) ;
+         TGeoHMatrix *matTtoL = new TGeoHMatrix(matLtoT.Inverse());
+ 
+         char phosPath[50] ;
+         sprintf(phosPath,"/ALIC_1/PHOS_%d",module) ;
+         if (!gGeoManager->cd(phosPath)){
+            AliFatal("Geo manager can not find path \n");
+         }
+         TGeoHMatrix *mPHOS = gGeoManager->GetCurrentMatrix();
+         if (mPHOS) 
+           matTtoL->Multiply(mPHOS);
+         else{
+           AliFatal("Geo matrixes are not loaded \n") ;
+         }
+         //Switch y<->z
+         Double_t rot[9]={1.,0.,0.,  0.,1.,0., 0.,0.,1.} ;
+         matTtoL->SetRotation(rot) ;
+         alignableEntry->SetMatrix(matTtoL);
+
+/*
+  //Check poisition of corner cell of the strip
+  AliPHOSGeometry * geom = AliPHOSGeometry::GetInstance() ;
+  Int_t relid[4] ; 
+  relid[0] = module ;
+  relid[1] = 0 ;
+  Int_t iStrip=ind1D ;
+  Int_t icell=1 ;
+  Int_t raw = geom->GetEMCAGeometry()->GetNCellsXInStrip()*((iStrip-1)/geom->GetEMCAGeometry()->GetNStripZ()) +
+                1 + (icell-1)/geom->GetEMCAGeometry()->GetNCellsZInStrip() ;
+  Int_t col = geom->GetEMCAGeometry()->GetNCellsZInStrip()*(1+(iStrip-1)%geom->GetEMCAGeometry()->GetNStripZ()) - 
+                (icell-1)%geom->GetEMCAGeometry()->GetNCellsZInStrip() ;
+  if(col==0) col=geom->GetNZ() ;
+  relid[2] = raw ;
+  relid[3] = col ;
+  Float_t xG,zG ; 
+  geom->RelPosInModule(relid, xG, zG) ;
+printf("============\n") ;
+printf("Geometry: x=%f, z=%f \n",xG,zG) ;
+  Int_t absid ; 
+  geom->RelToAbsNumbering(relid,absid) ;
+  Double_t pos[3]= {-2.2*3.5,0.0,1.1}; //Position incide the strip (Y coordinalte is not important)
+  Double_t posC[3]={0.0,0.0,0.}; //Global position
+ 
+  matTtoL->MasterToLocal(pos,posC);
+printf("Matrix:   x=%f, z=%f, y=%f \n",posC[0],posC[2],posC[1]) ;
+*/
       }
     }
   }
