@@ -80,7 +80,7 @@ public:
                                          // converts the absolute PHOS numbering to a relative 
   void  RelPosToAbsId(Int_t module, Double_t x, Double_t z, Int_t & AbsId) const; 
                                          // converts local PHOS-module (x, z) coordinates to absId 
-  void  GetIncidentVector(TVector3 &vtx, Int_t module, Float_t x, Float_t z, TVector3& vInc) const ;
+  void  GetIncidentVector(const TVector3 &vtx, Int_t module, Float_t x, Float_t z, TVector3& vInc) const ;
                                          //calculates vector from vertex to current point in module local frame
   void  Local2Global(Int_t module, Float_t x, Float_t z, TVector3 &globaPos) const ;
 

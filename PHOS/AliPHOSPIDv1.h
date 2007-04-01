@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.59  2007/03/06 06:57:46  kharlov
+ * DP:calculation of distance to CPV done in TSM
+ *
  * Revision 1.58  2006/04/12 11:32:03  alibrary
  * Simplification of Makefile and some small corrections
  *
@@ -106,6 +109,8 @@ public:
   void SetWriting(Bool_t toWrite = kFALSE){fWrite = toWrite;} 
   void Print(const Option_t * = "") const ; 
 
+  void GetVertex(void) ; //Extracts vertex in current event
+
   virtual const char * Version() const { return "pid-v1" ; }  
 
   AliPHOSPIDv1 & operator = (const AliPHOSPIDv1 & /*pid*/) { return *this ;} 
@@ -154,6 +159,8 @@ private:
   Double_t   *fPPi0 ;                    //! Principal pi0 eigenvalues
   Int_t       fRecParticlesInRun ;       //! Total number of recparticles in one run
   TMatrixF    *fParameters;               //! Matrix of identification Parameters
+
+  TVector3   fVtx ;                      //! Vertex position in current event
 
   //Initial pid population
   Double_t fInitPID[AliPID::kSPECIESN] ; // Initial population to do bayesian PID

@@ -699,7 +699,7 @@ void AliPHOSGeometry::Local2Global(Int_t mod, Float_t x, Float_t z,
 
 }
 //____________________________________________________________________________
-void AliPHOSGeometry::GetIncidentVector(TVector3 &vtx, Int_t module, Float_t x,Float_t z, TVector3 &vInc) const {
+void AliPHOSGeometry::GetIncidentVector(const TVector3 &vtx, Int_t module, Float_t x,Float_t z, TVector3 &vInc) const {
   //Calculates vector pointing from vertex to current poisition in module local frame
 
   TVector3 global ;

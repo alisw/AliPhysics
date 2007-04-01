@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.105  2007/03/06 06:57:46  kharlov
+ * DP:calculation of distance to CPV done in TSM
+ *
  * Revision 1.104  2006/12/15 10:46:26  hristov
  * Using TMath::Abs instead of fabs
  *
@@ -105,13 +108,15 @@
 #include "TPrincipal.h"
 #include "TFile.h" 
 #include "TSystem.h"
+#include "TVector3.h"
 
 // --- AliRoot header files ---
 	      //#include "AliLog.h"
-#include "AliGenerator.h"
 #include "AliPHOS.h"
 #include "AliPHOSPIDv1.h"
 #include "AliPHOSGetter.h"
+#include "AliESD.h"
+#include "AliESDVertex.h"
 
 ClassImp( AliPHOSPIDv1) 
 
@@ -507,6 +512,7 @@ void  AliPHOSPIDv1::Exec(Option_t *option)
     if(gime->TrackSegments() && //Skip events, where no track segments made
        gime->TrackSegments()->GetEntriesFast()) {
 
+      GetVertex() ;
       MakeRecParticles() ;
 
       if(fBayesian)
@@ -791,15 +797,15 @@ Int_t  AliPHOSPIDv1::GetCPVBit(AliPHOSTrackSegment * ts, Int_t effPur, Float_t e
   if(effPur>2 || effPur<0)
     AliError(Form("Invalid Efficiency-Purity choice %d",effPur));
 
-  if(ts->GetCpvIndex()<0)
-    return 1 ; //no CPV cluster
+//DP  if(ts->GetCpvIndex()<0)
+//DP    return 1 ; //no CPV cluster
   
   Float_t sigX = GetCpv2EmcDistanceCut("X",e);
   Float_t sigZ = GetCpv2EmcDistanceCut("Z",e);
   
   Float_t deltaX = TMath::Abs(ts->GetCpvDistance("X"));
   Float_t deltaZ = TMath::Abs(ts->GetCpvDistance("Z"));
-  //Info("GetCPVBit"," xdist %f, sigx %f, zdist %f, sigz %f",deltaX, sigX, deltaZ,sigZ) ;
+//  Info("GetCPVBit"," xdist %f, sigx %f, zdist %f, sigz %f",deltaX, sigX, deltaZ,sigZ) ;
  
   //if(deltaX>sigX*(effPur+1))
   //if((deltaX>sigX*(effPur+1)) || (deltaZ>sigZ*(effPur+1)))
@@ -889,16 +895,46 @@ TVector3 AliPHOSPIDv1::GetMomentumDirection(AliPHOSEmcRecPoint * emc, AliPHOSCpv
   
   emc->GetGlobalPosition(dir, dummy) ;
 
-  //account correction to the position of IP
-  Float_t xo,yo,zo ; //Coordinates of the origin
-  if(gAlice && gAlice->GetMCApp() && gAlice->Generator()){
-    gAlice->Generator()->GetOrigin(xo,yo,zo) ;
+  TVector3 local ; 
+  emc->GetLocalPosition(local) ;
+
+  AliPHOSGeometry * phosgeom = AliPHOSGeometry::GetInstance() ;
+  //Correct for the non-perpendicular incidence
+  // Correction for the depth of the shower starting point (TDR p 127)
+  Float_t para = 0.925 ;
+  Float_t parb = 6.52 ;
+ 
+  //Remove Old correction (vertex at 0,0,0)
+  TVector3 vtxOld(0.,0.,0.) ;
+  TVector3 vInc ;
+  Float_t x=local.X() ;
+  Float_t z=local.Z() ;
+  phosgeom->GetIncidentVector(vtxOld,emc->GetPHOSMod(),x,z,vInc) ;
+  Float_t depthxOld = 0.;
+  Float_t depthzOld = 0.;
+  Float_t energy = emc->GetEnergy() ;
+  if (energy > 0 && vInc.Y()!=0.) {
+    depthxOld = ( para * TMath::Log(energy) + parb ) * vInc.X()/vInc.Y() ;
+    depthzOld = ( para * TMath::Log(energy) + parb ) * vInc.Z()/vInc.Y() ;
   }
   else{
-    xo=yo=zo=0.;
+    AliError("Cluster with zero energy \n");
+  } 
+  //Apply Real vertex
+  phosgeom->GetIncidentVector(fVtx,emc->GetPHOSMod(),x,z,vInc) ;
+  Float_t depthx = 0.;
+  Float_t depthz = 0.;
+  if (energy > 0 && vInc.Y()!=0.) {
+    depthx = ( para * TMath::Log(energy) + parb ) * vInc.X()/vInc.Y() ;
+    depthz = ( para * TMath::Log(energy) + parb ) * vInc.Z()/vInc.Y() ;
   }
-  TVector3 origin(xo,yo,zo);
-  dir = dir - origin ;
+
+  dir.SetXYZ(dir.X()-(depthxOld-depthx)*TMath::Sin(dir.Phi()),
+             dir.Y()-(depthxOld-depthx)*TMath::Cos(dir.Phi()),
+             dir.Z()+depthzOld-depthz) ;
+
+  //Correct for the vertex position
+  dir = dir - fVtx ;
   dir.SetMag(1.) ;
 
   return dir ;  
@@ -1020,12 +1056,12 @@ void  AliPHOSPIDv1::MakePID()
     if(ts->GetEmcIndex()>=0)
       emc = (AliPHOSEmcRecPoint *) emcRecPoints->At(ts->GetEmcIndex()) ;
     
-    AliPHOSCpvRecPoint * cpv = 0 ;
-    if(ts->GetCpvIndex()>=0)
-      cpv = (AliPHOSCpvRecPoint *) cpvRecPoints->At(ts->GetCpvIndex()) ;
-    
-//     Int_t track = 0 ; 
-//     track = ts->GetTrackIndex() ; //TPC tracks ?
+//    AliPHOSCpvRecPoint * cpv = 0 ;
+//    if(ts->GetCpvIndex()>=0)
+//      cpv = (AliPHOSCpvRecPoint *) cpvRecPoints->At(ts->GetCpvIndex()) ;
+//    
+////     Int_t track = 0 ; 
+////     track = ts->GetTrackIndex() ; //TPC tracks ?
     
     if (!emc) {
       AliFatal(Form("-> emc(%d) = %d", ts->GetEmcIndex(), emc )) ;
@@ -1095,6 +1131,9 @@ void  AliPHOSPIDv1::MakePID()
     
     // ###########Shower shape: Dispersion####################
     Float_t dispersion = emc->GetDispersion();
+    //DP: Correct for non-perpendicular incidence
+    //DP: still to be done 
+
     //dispersion is not well defined if the cluster is only in few crystals
     
     sdp[AliPID::kPhoton][index]   = 1. ;
@@ -1366,7 +1405,7 @@ void  AliPHOSPIDv1::MakeRecParticles()
     
     Float_t  lambda[2] ;
     emc->GetElipsAxis(lambda) ;
-    
+ 
     if((lambda[0]>0.01) && (lambda[1]>0.01)){
       // Looking PCA. Define and calculate the data (X),
       // introduce in the function X2P that gives the components (P).  
@@ -1444,7 +1483,7 @@ void  AliPHOSPIDv1::MakeRecParticles()
     rp->SetMomentum(dir.X(),dir.Y(),dir.Z(),encal) ;
     rp->SetCalcMass(0);
     rp->Name(); //If photon sets the particle pdg name to gamma
-    rp->SetProductionVertex(0,0,0,0);
+    rp->SetProductionVertex(fVtx.X(),fVtx.Y(),fVtx.Z(),0);
     rp->SetFirstMother(-1);
     rp->SetLastMother(-1);
     rp->SetFirstDaughter(-1);
@@ -1475,7 +1514,7 @@ void  AliPHOSPIDv1::Print(const Option_t *) const
     printf("        RCPV 2x3 rows x and z, columns function cut parameters\n") ;
     printf("        TOF  1x3 [High Eff-Low Pur,Medium Eff-Pur, Low Eff-High Pur]\n") ;
     printf("        PCA  5x4 [5 ellipse parametres and 4 parametres to calculate them: A/Sqrt(E) + B* E + C * E^2 + D]\n") ;
-    Printf("    Pi0 PCA  5x3 [5 ellipse parametres and 3 parametres to calculate them: A + B* E + C * E^2]\n") ;
+    printf("    Pi0 PCA  5x3 [5 ellipse parametres and 3 parametres to calculate them: A + B* E + C * E^2]\n") ;
     fParameters->Print() ;
 }
 
@@ -1695,8 +1734,23 @@ void  AliPHOSPIDv1::WriteRecParticles()
     gime->WritePID("OVERWRITE");
   }
 }
-
-
+//____________________________________________________________________________
+void AliPHOSPIDv1::GetVertex(void)
+{ //extract vertex either using ESD or generator
+ 
+  //Try to extract vertex from data
+  if(fESD){
+    const AliESDVertex *esdVtx = fESD->GetVertex() ;
+    if(esdVtx){
+      fVtx.SetXYZ(esdVtx->GetXv(),esdVtx->GetYv(),esdVtx->GetZv()) ;
+      return ;
+    }
+  }
+ 
+  AliWarning("Can not read vertex from data, use fixed \n") ;
+  fVtx.SetXYZ(0.,0.,0.) ;
+ 
+}
 //_______________________________________________________________________
 void AliPHOSPIDv1::SetInitPID(const Double_t *p) {
   // Sets values for the initial population of each particle type 
