@@ -353,7 +353,6 @@ void AliPHOSGeometry::ImpactOnEmc(Double_t * vtx, Double_t theta, Double_t phi,
     //Calculate direction in module plain
     n-=v+fr*p ;
     n*=-1. ;
-n.Print() ;
     Float_t * sz = fGeometryEMCA->GetInnerThermoHalfSize() ; //Wery close to the zise of the Xtl set
     if(TMath::Abs(TMath::Abs(n.Z())<sz[2]) && n.Pt()<sz[0]){
       moduleNumber = imod ;
