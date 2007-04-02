@@ -8,6 +8,7 @@
 #include <AliESD.h>           
 #include <AliBitPacking.h> //HmpidPayload()
 #include "AliHMPIDDigit.h" 
+#include "AliHMPIDParam.h" 
 #include "AliHMPIDCluster.h" 
 #include "AliHMPIDReconstructor.h" //docosmic()
 
@@ -80,6 +81,7 @@ void AliHMPIDSelector::Init(TTree *pTr)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Bool_t AliHMPIDSelector::Process(Long64_t entry)
 {
+  AliHMPIDParam *pParam=AliHMPIDParam::Instance();
   fChain->GetTree()->GetEntry(entry);
 
   for(Int_t iTrk=0;iTrk<fEsd->GetNumberOfTracks();iTrk++){
@@ -90,8 +92,21 @@ Bool_t AliHMPIDSelector::Process(Long64_t entry)
      fCkovP->Fill(pTrk->GetP(),pTrk->GetHMPIDsignal()) ; 
      fSigP ->Fill(pTrk->GetP(),TMath::Sqrt(pTrk->GetHMPIDchi2()));
      
-   Float_t xm,ym; Int_t q,np;  pTrk->GetHMPIDmip(xm,ym,q,np);  fMipXY->Fill(xm,ym); //mip info
-   Float_t xd,yd,th,ph;        pTrk->GetHMPIDtrk(xd,yd,th,ph); fDifX->Fill(xd-xm); //track info 
+   Float_t xClu,yClu; Int_t q,np;  
+   Float_t xPc,yPc;  
+   pTrk->GetHMPIDmip(xClu,yClu,q,np);  
+   fMipXY->Fill(xClu,yClu); //mip info
+   Float_t xRad,yRad,th,ph;        
+   pTrk->GetHMPIDtrk(xRad,yRad,th,ph); 
+   Int_t iCh=pTrk->GetHMPIDcluIdx();iCh/=1000000;
+   Double_t p1[3],n1[3]; pParam->Norm(iCh,n1); pParam->Lors2Mars(iCh,0,0,p1,AliHMPIDParam::kPc);  //point & norm  for RAD
+   Printf(" pointer ESD %x ",fEsd);
+   Double_t bField=fEsd->GetMagneticField();
+   
+   Printf(" B field %f ",bField);
+   if(pTrk->Intersect(p1,n1,bField)==kFALSE) continue;                              //try to intersect track with the middle of radiator
+   pParam->Mars2Lors   (iCh,p1,xPc,yPc);                                                          //TRKxPC position
+   fDifX->Fill(xPc-xClu); //track info 
      
      Double_t pid[5];  pTrk->GetHMPIDpid(pid); for(Int_t i =0;i<5;i++) fProb[i]->Fill(pid[i]);
   }//tracks loop 
@@ -211,7 +226,7 @@ void HmpidPayload(ifstream *pFile,Int_t iDdl,TObjArray *pDigAll)
       pFile->read((char*)&w32,4);
       if(w32&0x08000000) continue; //it's DILOGIC CW
       AliHMPIDDigit *pDig=new AliHMPIDDigit;
-      pDig->Raw(iDdl,w32);   
+      pDig->Raw(w32,iDdl);
       new ((*pDig1)[iDigCnt++]) AliHMPIDDigit(*pDig);
     }//words loop 
   }//rows loop
