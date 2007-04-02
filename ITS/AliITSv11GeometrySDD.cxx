@@ -15,7 +15,14 @@
 
 
 //*************************************************************************
+//
 // SDD geometry, based on ROOT geometrical modeler
+//
+// Its integration to the aliroot framework is done in the AliITSv11Hybrid
+// class (AliITSv11 not being functionnal so far)
+//
+// This geometry has no dependence with aliroot, you can run it with root
+// only, provided that the AliITSv11GeomCable classes are also compiled
 //
 // Ludovic Gaudichet                                   gaudichet@to.infn.it
 //*************************************************************************
@@ -23,7 +30,6 @@
 
 
 // General Root includes
-//#include <Riostream.h>
 #include <TMath.h>
 
 // Root Geometry includes
@@ -42,7 +48,6 @@
 #include "AliITSv11GeometrySDD.h"
 #include "AliITSv11GeomCableFlat.h"
 #include "AliITSv11GeomCableRound.h"
-#include "TList.h"
 
 const char*    AliITSv11GeometrySDD::fgSDDsensitiveVolName3 = "ITSsddSensitivL3";
 const char*    AliITSv11GeometrySDD::fgSDDsensitiveVolName4 = "ITSsddSensitivL4";
@@ -224,13 +229,13 @@ const Double_t AliITSv11GeometrySDD::fgkRubyZladd3          = 250*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkRubyZladd4          = 325*fgkmm;
 
 // the stesalite ladder foot at its end
-const Double_t AliITSv11GeometrySDD::fgkLadFoot_X         = 60.*fgkmm;
-const Double_t AliITSv11GeometrySDD::fgkLadFoot_Z         = 20.*fgkmm;
-const Double_t AliITSv11GeometrySDD::fgkLadFoot_Y         =  8.*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLadFootX         = 60.*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLadFootZ         = 20.*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLadFootY         =  8.*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkLadFootMiddleY    =  4.5*fgkmm;
-const Double_t AliITSv11GeometrySDD::fgkLadBox1_X         = 23.*fgkmm;
-const Double_t AliITSv11GeometrySDD::fgkLadFingerPrint_X  =  6.*fgkmm;
-const Double_t AliITSv11GeometrySDD::fgkLadFingerPrint_Y  =  1.*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLadBox1X         = 23.*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLadFingerPrintX  =  6.*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLadFingerPrintY  =  1.*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkLadFingerPrintBorder = 4.*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkRubyCageHoleZ     =  8.*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkRubyCageHoleX     =  9.*fgkmm;
@@ -258,49 +263,49 @@ const Double_t AliITSv11GeometrySDD::fgkEndLadPipeArmBoxDX   =   0.125*fgkmm;  /
 const Double_t AliITSv11GeometrySDD::fgkEndLadPipeArmZpos    =   8.9*fgkmm; // 
 
 // LV card :
-const Double_t AliITSv11GeometrySDD::fgkLVcard_X = 26.525*fgkmm;
-const Double_t AliITSv11GeometrySDD::fgkLVcard_Y = 44.95*fgkmm;
-const Double_t AliITSv11GeometrySDD::fgkLVcard_Z = 1.*fgkmm; // all except Cu layer   //???
-const Double_t AliITSv11GeometrySDD::fgkLVcard_CuZ = 0.1*fgkmm;   //???
+const Double_t AliITSv11GeometrySDD::fgkLVcardX = 26.525*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLVcardY = 44.95*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLVcardZ = 1.*fgkmm; // all except Cu layer   //???
+const Double_t AliITSv11GeometrySDD::fgkLVcardCuZ = 0.1*fgkmm;   //???
 
-const Double_t AliITSv11GeometrySDD::fgkLVChip0_X    = 16.525*fgkmm;
-const Double_t AliITSv11GeometrySDD::fgkLVChip0_Y    = 10.8*fgkmm;
-const Double_t AliITSv11GeometrySDD::fgkLVChip0_Z    =  3.5*fgkmm; // all except si layer   //???
-const Double_t AliITSv11GeometrySDD::fgkLVChip0_SiZ  =  0.2*fgkmm; //???????????????????????????????????????????????????
-const Double_t AliITSv11GeometrySDD::fgkLVChip0_PosX = 13.*fgkmm; //19.95*fgkmm;  ???
-const Double_t AliITSv11GeometrySDD::fgkLVChip0_PosY = 10.3*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLVChip0X    = 16.525*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLVChip0Y    = 10.8*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLVChip0Z    =  3.5*fgkmm; // all except si layer   //???
+const Double_t AliITSv11GeometrySDD::fgkLVChip0SiZ  =  0.2*fgkmm; //???????????????????????????????????????????????????
+const Double_t AliITSv11GeometrySDD::fgkLVChip0PosX = 13.*fgkmm; //19.95*fgkmm;  ???
+const Double_t AliITSv11GeometrySDD::fgkLVChip0PosY = 10.3*fgkmm;
 
-const Double_t AliITSv11GeometrySDD::fgkLVChip1_X    = 6.00*fgkmm;
-const Double_t AliITSv11GeometrySDD::fgkLVChip1_Y    = 6.00*fgkmm;
-const Double_t AliITSv11GeometrySDD::fgkLVChip1_Z    = 1*fgkmm;  // ???
-const Double_t AliITSv11GeometrySDD::fgkLVChip1_SiZ  = 0.2*fgkmm;  // ???
-const Double_t AliITSv11GeometrySDD::fgkLVChip1_PosX = 18.*fgkmm;
-const Double_t AliITSv11GeometrySDD::fgkLVChip1_PosY = 27.6*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLVChip1X    = 6.00*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLVChip1Y    = 6.00*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLVChip1Z    = 1*fgkmm;  // ???
+const Double_t AliITSv11GeometrySDD::fgkLVChip1SiZ  = 0.2*fgkmm;  // ???
+const Double_t AliITSv11GeometrySDD::fgkLVChip1PosX = 18.*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLVChip1PosY = 27.6*fgkmm;
 
-const Double_t AliITSv11GeometrySDD::fgkLVChip2_X    = 6.00*fgkmm;
-const Double_t AliITSv11GeometrySDD::fgkLVChip2_Y    = 6.00*fgkmm;
-const Double_t AliITSv11GeometrySDD::fgkLVChip2_Z    = 1*fgkmm;    // ???
-const Double_t AliITSv11GeometrySDD::fgkLVChip2_SiZ  = 0.2*fgkmm;  //???
-const Double_t AliITSv11GeometrySDD::fgkLVChip2_PosX = 18.0*fgkmm;
-const Double_t AliITSv11GeometrySDD::fgkLVChip2_PosY = 39.0*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLVChip2X    = 6.00*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLVChip2Y    = 6.00*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLVChip2Z    = 1*fgkmm;    // ???
+const Double_t AliITSv11GeometrySDD::fgkLVChip2SiZ  = 0.2*fgkmm;  //???
+const Double_t AliITSv11GeometrySDD::fgkLVChip2PosX = 18.0*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLVChip2PosY = 39.0*fgkmm;
 
-const Double_t AliITSv11GeometrySDD::fgkLVChip3_X    = 4.01*fgkmm;
-const Double_t AliITSv11GeometrySDD::fgkLVChip3_Y    = 4.01*fgkmm;
-const Double_t AliITSv11GeometrySDD::fgkLVChip3_Z    = 1*fgkmm; // ???
-const Double_t AliITSv11GeometrySDD::fgkLVChip3_SiZ  = 0.2*fgkmm;
-const Double_t AliITSv11GeometrySDD::fgkLVChip3_PosX = 20.7*fgkmm;
-const Double_t AliITSv11GeometrySDD::fgkLVChip3_PosY = 21.4*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLVChip3X    = 4.01*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLVChip3Y    = 4.01*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLVChip3Z    = 1*fgkmm; // ???
+const Double_t AliITSv11GeometrySDD::fgkLVChip3SiZ  = 0.2*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLVChip3PosX = 20.7*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLVChip3PosY = 21.4*fgkmm;
 
-const Double_t AliITSv11GeometrySDD::fgkLVcool_X1  = 17.25*fgkmm;
-const Double_t AliITSv11GeometrySDD::fgkLVcool_Y1  =  8.7*fgkmm;
-const Double_t AliITSv11GeometrySDD::fgkLVcool_Z1  =  1.*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLVcoolX1  = 17.25*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLVcoolY1  =  8.7*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLVcoolZ1  =  1.*fgkmm;
 
-const Double_t AliITSv11GeometrySDD::fgkLVcool_X2  =  3.5*fgkmm;
-const Double_t AliITSv11GeometrySDD::fgkLVcool_Y2  =  8.7*fgkmm;
-const Double_t AliITSv11GeometrySDD::fgkLVcool_Z2  =  2.3*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLVcoolX2  =  3.5*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLVcoolY2  =  8.7*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLVcoolZ2  =  2.3*fgkmm;
 
-const Double_t AliITSv11GeometrySDD::fgkLVcool_X3  =  4.75*fgkmm;
-const Double_t AliITSv11GeometrySDD::fgkLVcool_Y3  =  3.1*fgkmm; //+0.1=glue
+const Double_t AliITSv11GeometrySDD::fgkLVcoolX3  =  4.75*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLVcoolY3  =  3.1*fgkmm; //+0.1=glue
 const Double_t AliITSv11GeometrySDD::fgkLVcoolPosY  = 6.5*fgkmm;
 
 // HV card :
@@ -2601,44 +2606,44 @@ TGeoVolumeAssembly* AliITSv11GeometrySDD::CreateEndLadder(Int_t iLay) {
   // the really small level difference of 0.3mm on the bottom
 
   Double_t footDY = -(fgkLadderHeight/2-fgkLadderBeamRadius)+tDY
-                    - fgkLadFoot_Y/2+fgkLadFingerPrint_Y;
+                    - fgkLadFootY/2+fgkLadFingerPrintY;
 
   Double_t epsilon = 2e-10;
-  TGeoBBox *ladFootBox1 = new TGeoBBox("ladFootBox1",fgkLadBox1_X/2, fgkLadFoot_Y/2,
-				       fgkLadFoot_Z/2);
+  TGeoBBox *ladFootBox1 = new TGeoBBox("ladFootBox1",fgkLadBox1X/2, fgkLadFootY/2,
+				       fgkLadFootZ/2);
   TGeoTranslation *ladFootBox1Tr = new TGeoTranslation("ladFootBox1Tr",
-						       fgkLadFoot_X/2-fgkLadBox1_X/2,0,0);
-  TGeoBBox *ladFingerPrint = new TGeoBBox("ladFingerPrint",fgkLadFingerPrint_X/2,
-					  fgkLadFingerPrint_Y/2+epsilon, fgkLadFoot_Z/2+epsilon);
+						       fgkLadFootX/2-fgkLadBox1X/2,0,0);
+  TGeoBBox *ladFingerPrint = new TGeoBBox("ladFingerPrint",fgkLadFingerPrintX/2,
+					  fgkLadFingerPrintY/2+epsilon, fgkLadFootZ/2+epsilon);
 
   TGeoTranslation *ladFingerPrintTr = new TGeoTranslation("ladFingerPrintTr",
-			    fgkLadFoot_X/2-fgkLadFingerPrintBorder-fgkLadFingerPrint_X/2,
-			    fgkLadFoot_Y/2-fgkLadFingerPrint_Y/2+epsilon,
+			    fgkLadFootX/2-fgkLadFingerPrintBorder-fgkLadFingerPrintX/2,
+			    fgkLadFootY/2-fgkLadFingerPrintY/2+epsilon,
 			    0);
 
   TGeoBBox *rubyCageHole = new TGeoBBox("rubyCageHole",fgkRubyCageHoleX/2,
 					fgkRubyCageHoleY/2+epsilon, fgkRubyCageHoleZ/2);
 
   TGeoTranslation *rubyCageHoleTr = new TGeoTranslation("rubyCageHoleTr",
-				 fgkLadFoot_X/2-(fgkLadFoot_X/2-fgkRubyDX)+fgkRubyCageAxisShift,
-				 fgkLadFoot_Y/2-fgkRubyCageHoleY/2,0);
+				 fgkLadFootX/2-(fgkLadFootX/2-fgkRubyDX)+fgkRubyCageAxisShift,
+				 fgkLadFootY/2-fgkRubyCageHoleY/2,0);
 
-  double rubyScrewHoleLen = fgkLadFoot_X/2-fgkRubyDX;
+  double rubyScrewHoleLen = fgkLadFootX/2-fgkRubyDX;
   TGeoTube *rubyScrewHole = new TGeoTube("rubyScrewHole", 0,fgkScrewM4diam/2,
 			    rubyScrewHoleLen/2);
 
   TGeoRotation *rot9090 = new TGeoRotation("",90,90,0);
   TGeoCombiTrans *rubyScrewHoleTr = new TGeoCombiTrans("rubyScrewHoleTr",
-				    fgkLadFoot_X/2-rubyScrewHoleLen/2,
+				    fgkLadFootX/2-rubyScrewHoleLen/2,
 				    -fgkRubyScrewShiftToCenterY, 0, rot9090);
 
-  Double_t rubyHoleLen = fgkLadFoot_Y-fgkRubyCageHoleY;
+  Double_t rubyHoleLen = fgkLadFootY-fgkRubyCageHoleY;
   TGeoTube *rubyHole = new TGeoTube("rubyHole", 0,fgkRubyHoleDiam/2,
 				    rubyHoleLen/2);
 
   TGeoRotation *rot90 = new TGeoRotation("",0,90,0);
   TGeoCombiTrans *rubyHoleTr = new TGeoCombiTrans("rubyHoleTr", fgkRubyDX,
-				   -(fgkLadFoot_Y-rubyHoleLen)/2, 0, rot90);
+				   -(fgkLadFootY-rubyHoleLen)/2, 0, rot90);
 
   ladFootBox1Tr->RegisterYourself();
   ladFingerPrintTr->RegisterYourself();
@@ -2662,24 +2667,24 @@ TGeoVolumeAssembly* AliITSv11GeometrySDD::CreateEndLadder(Int_t iLay) {
   //--- This was the right part of the foot, now let's do the middle
   //--- and the right parts
 
-  Double_t middleX = fgkLadFoot_X-fgkLadBox1_X-fgkLadFingerPrint_X-fgkLadFingerPrintBorder;
+  Double_t middleX = fgkLadFootX-fgkLadBox1X-fgkLadFingerPrintX-fgkLadFingerPrintBorder;
   TGeoBBox *footMiddle = new TGeoBBox("footMiddle", middleX/2, fgkLadFootMiddleY/2,
-				      fgkLadFoot_Z/2);
+				      fgkLadFootZ/2);
   TGeoTranslation *middleXTr = new TGeoTranslation("middleXTr",
-				   fgkLadFoot_X/2-fgkLadBox1_X-middleX/2,
-				   fgkLadFoot_Y/2-fgkLadFootMiddleY/2 + footDY, footDZ);
+				   fgkLadFootX/2-fgkLadBox1X-middleX/2,
+				   fgkLadFootY/2-fgkLadFootMiddleY/2 + footDY, footDZ);
 
   TGeoVolume *vFootMiddle = new TGeoVolume("vFootMiddle", footMiddle,stesalite);
   vFootMiddle->SetLineColor(fColorStesalite);
   virtualEnd->AddNode(vFootMiddle, 1, middleXTr);
   
   //--
-  TGeoBBox *footLeftLadFinger = new TGeoBBox("footLeftLadFinger", fgkLadFingerPrint_X/2,
-					     (fgkLadFoot_Y-fgkLadFingerPrint_Y)/2,
-					     fgkLadFoot_Z/2);
+  TGeoBBox *footLeftLadFinger = new TGeoBBox("footLeftLadFinger", fgkLadFingerPrintX/2,
+					     (fgkLadFootY-fgkLadFingerPrintY)/2,
+					     fgkLadFootZ/2);
   TGeoTranslation *footLeftLadFingerTr = new TGeoTranslation("footLeftLadFingerTr",
-				   -fgkLadFoot_X/2+fgkLadFingerPrintBorder+fgkLadFingerPrint_X/2,
-				   -fgkLadFingerPrint_Y/2 + footDY, footDZ);
+				   -fgkLadFootX/2+fgkLadFingerPrintBorder+fgkLadFingerPrintX/2,
+				   -fgkLadFingerPrintY/2 + footDY, footDZ);
   TGeoVolume *vFootLeftLadFinger = new TGeoVolume("vFootLeftLadFinger",footLeftLadFinger,
 						  stesalite);
   vFootLeftLadFinger->SetLineColor(fColorStesalite);
@@ -2687,10 +2692,10 @@ TGeoVolumeAssembly* AliITSv11GeometrySDD::CreateEndLadder(Int_t iLay) {
 
   //--
   TGeoBBox *footLeft = new TGeoBBox("footLeft", fgkLadFingerPrintBorder/2,
-				    fgkLadFoot_Y/2,
-				    fgkLadFoot_Z/2);
+				    fgkLadFootY/2,
+				    fgkLadFootZ/2);
   TGeoTranslation *footLeftTr = new TGeoTranslation("footLeftTr",
-				   -fgkLadFoot_X/2+fgkLadFingerPrintBorder/2,
+				   -fgkLadFootX/2+fgkLadFingerPrintBorder/2,
 				    footDY, footDZ);
   TGeoVolume *vFootLeft = new TGeoVolume("vFootLeft",footLeft,stesalite);
   vFootLeft->SetLineColor(fColorStesalite);
@@ -2740,7 +2745,7 @@ TGeoVolumeAssembly* AliITSv11GeometrySDD::CreateEndLadder(Int_t iLay) {
 
   TGeoTranslation* guideHVtr = new TGeoTranslation(fgkHVguideDX,
      -(fgkLadderHeight/2-fgkLadderBeamRadius)+tDY-fgkHVguideY1/2,
-     footDZ+fgkLadFoot_Z/2+fgkHVguideZ1/2-(fgkHVguideSuppFullZ-fgkHVguideZ2));
+     footDZ+fgkLadFootZ/2+fgkHVguideZ1/2-(fgkHVguideSuppFullZ-fgkHVguideZ2));
   virtualEnd->AddNode(guideHV, 1, guideHVtr);
 
 
@@ -2756,16 +2761,18 @@ TGeoVolumeAssembly* AliITSv11GeometrySDD::CreateEndLadder(Int_t iLay) {
   return virtualEnd;
 }
 
+
+/*
 //________________________________________________________________________
 TGeoVolumeAssembly* AliITSv11GeometrySDD::CreateCarlosCard(Int_t iLay) {
 //
-// To e done
+// To be done
 //
 
   iLay=iLay;
   return 0;
 }
-
+*/
 
 //________________________________________________________________________
 TGeoVolumeAssembly* AliITSv11GeometrySDD::CreateLVCard(Int_t orientation) {
@@ -2787,43 +2794,43 @@ TGeoVolumeAssembly* AliITSv11GeometrySDD::CreateLVCard(Int_t orientation) {
   // we are going to use flat cable class to create multilayer box ...
   Double_t p1[3], p2[3], vX[3] = {1,0,0};
 
-  Double_t carLVfullThick = fgkLVcard_Z+fgkLVcard_CuZ;
-  AliITSv11GeomCableFlat cardLV("cardLV", fgkLVcard_Y, carLVfullThick); // name, width, thickness
+  Double_t carLVfullThick = fgkLVcardZ+fgkLVcardCuZ;
+  AliITSv11GeomCableFlat cardLV("cardLV", fgkLVcardY, carLVfullThick); // name, width, thickness
   cardLV.SetNLayers(2);
-  cardLV.SetLayer(0, fgkLVcard_CuZ, copper,     30); // index, thickness, material, color
-  cardLV.SetLayer(1, fgkLVcard_Z,   glassFiber, 30);
+  cardLV.SetLayer(0, fgkLVcardCuZ, copper,     30); // index, thickness, material, color
+  cardLV.SetLayer(1, fgkLVcardZ,   glassFiber, 30);
   cardLV.SetInitialNode( (TGeoVolume *) cardLVassembly);
   p1[0] = 0;
-  p1[1] = fgkLVcard_Y/2;
+  p1[1] = fgkLVcardY/2;
   p1[2] = 0;
-  p2[0] = orientation*fgkLVcard_X;
-  p2[1] = fgkLVcard_Y/2;
+  p2[0] = orientation*fgkLVcardX;
+  p2[1] = fgkLVcardY/2;
   p2[2] = 0;
   cardLV.AddCheckPoint( (TGeoVolume *) cardLVassembly, 0, p1, vX);
   cardLV.AddCheckPoint( (TGeoVolume *) cardLVassembly, 1, p2, vX);
   cardLV.CreateAndInsertBoxCableSegment(1);
 
-  Double_t chip0fullThick = fgkLVChip0_Z + fgkLVChip0_SiZ;
-  AliITSv11GeomCableFlat chipO("chipO", fgkLVChip0_Y, chip0fullThick); // name, width, thickness
+  Double_t chip0fullThick = fgkLVChip0Z + fgkLVChip0SiZ;
+  AliITSv11GeomCableFlat chipO("chipO", fgkLVChip0Y, chip0fullThick); // name, width, thickness
   chipO.SetNLayers(2);
-  chipO.SetLayer(0, fgkLVChip0_SiZ, siliconChip, 8); // index, thickness, material, color
-  chipO.SetLayer(1, fgkLVChip0_Z,   plastiChip, 12);
+  chipO.SetLayer(0, fgkLVChip0SiZ, siliconChip, 8); // index, thickness, material, color
+  chipO.SetLayer(1, fgkLVChip0Z,   plastiChip, 12);
   chipO.SetInitialNode( (TGeoVolume *) cardLVassembly);
-  p1[0] = orientation*(fgkLVChip0_PosX - fgkLVChip0_X/2);
-  p1[1] = fgkLVChip0_PosY;
+  p1[0] = orientation*(fgkLVChip0PosX - fgkLVChip0X/2);
+  p1[1] = fgkLVChip0PosY;
   p1[2] = carLVfullThick/2 + chip0fullThick/2;
-  p2[0] = orientation*(fgkLVChip0_PosX + fgkLVChip0_X/2);
-  p2[1] = fgkLVChip0_PosY;
+  p2[0] = orientation*(fgkLVChip0PosX + fgkLVChip0X/2);
+  p2[1] = fgkLVChip0PosY;
   p2[2] = carLVfullThick/2 + chip0fullThick/2;
   chipO.AddCheckPoint( (TGeoVolume *) cardLVassembly, 0, p1, vX);
   chipO.AddCheckPoint( (TGeoVolume *) cardLVassembly, 1, p2, vX);
   chipO.CreateAndInsertBoxCableSegment(1);
 
   //same chip but the other side
-  AliITSv11GeomCableFlat chipOB("chipOB", fgkLVChip0_Y, chip0fullThick); // name, width, thickness
+  AliITSv11GeomCableFlat chipOB("chipOB", fgkLVChip0Y, chip0fullThick); // name, width, thickness
   chipOB.SetNLayers(2);
-  chipOB.SetLayer(0, fgkLVChip0_SiZ, siliconChip, 8); // index, thickness, material, color
-  chipOB.SetLayer(1, fgkLVChip0_Z,   plastiChip, 12);
+  chipOB.SetLayer(0, fgkLVChip0SiZ, siliconChip, 8); // index, thickness, material, color
+  chipOB.SetLayer(1, fgkLVChip0Z,   plastiChip, 12);
   chipOB.SetInitialNode( (TGeoVolume *) cardLVassembly);
 
   p1[2] = -carLVfullThick/2 - chip0fullThick/2;
@@ -2833,50 +2840,50 @@ TGeoVolumeAssembly* AliITSv11GeometrySDD::CreateLVCard(Int_t orientation) {
   chipOB.CreateAndInsertBoxCableSegment(1);
 
 
-  Double_t chip1fullThick = fgkLVChip1_Z + fgkLVChip1_SiZ;
-  AliITSv11GeomCableFlat chip1("chip1", fgkLVChip1_Y, chip1fullThick);
+  Double_t chip1fullThick = fgkLVChip1Z + fgkLVChip1SiZ;
+  AliITSv11GeomCableFlat chip1("chip1", fgkLVChip1Y, chip1fullThick);
   chip1.SetNLayers(2);
-  chip1.SetLayer(0, fgkLVChip1_SiZ, siliconChip, 8);
-  chip1.SetLayer(1, fgkLVChip1_Z,   plastiChip, 12);
+  chip1.SetLayer(0, fgkLVChip1SiZ, siliconChip, 8);
+  chip1.SetLayer(1, fgkLVChip1Z,   plastiChip, 12);
   chip1.SetInitialNode( (TGeoVolume *) cardLVassembly);
-  p1[0] = orientation*(fgkLVChip1_PosX-fgkLVChip1_X/2);
-  p1[1] = fgkLVChip1_PosY;
+  p1[0] = orientation*(fgkLVChip1PosX-fgkLVChip1X/2);
+  p1[1] = fgkLVChip1PosY;
   p1[2] = carLVfullThick/2 + chip1fullThick/2;
 
-  p2[0] = orientation*(fgkLVChip1_PosX+fgkLVChip1_X/2);
-  p2[1] = fgkLVChip1_PosY;
+  p2[0] = orientation*(fgkLVChip1PosX+fgkLVChip1X/2);
+  p2[1] = fgkLVChip1PosY;
   p2[2] = carLVfullThick/2 + chip1fullThick/2;
   chip1.AddCheckPoint( (TGeoVolume *) cardLVassembly, 0, p1, vX);
   chip1.AddCheckPoint( (TGeoVolume *) cardLVassembly, 1, p2, vX);
   chip1.CreateAndInsertBoxCableSegment(1);
 
-  Double_t chip2fullThick = fgkLVChip2_Z + fgkLVChip2_SiZ;
-  AliITSv11GeomCableFlat chip2("chip2", fgkLVChip2_Y, chip2fullThick);
+  Double_t chip2fullThick = fgkLVChip2Z + fgkLVChip2SiZ;
+  AliITSv11GeomCableFlat chip2("chip2", fgkLVChip2Y, chip2fullThick);
   chip2.SetNLayers(2);
-  chip2.SetLayer(0, fgkLVChip2_SiZ, siliconChip, 8);
-  chip2.SetLayer(1, fgkLVChip2_Z,   plastiChip, 12);
+  chip2.SetLayer(0, fgkLVChip2SiZ, siliconChip, 8);
+  chip2.SetLayer(1, fgkLVChip2Z,   plastiChip, 12);
   chip2.SetInitialNode( (TGeoVolume *) cardLVassembly);
-  p1[0] = orientation*(fgkLVChip2_PosX-fgkLVChip2_X/2);
-  p1[1] = fgkLVChip2_PosY;
+  p1[0] = orientation*(fgkLVChip2PosX-fgkLVChip2X/2);
+  p1[1] = fgkLVChip2PosY;
   p1[2] = carLVfullThick/2 + chip2fullThick/2;
-  p2[0] = orientation*(fgkLVChip2_PosX+fgkLVChip2_X/2);
-  p2[1] = fgkLVChip2_PosY;
+  p2[0] = orientation*(fgkLVChip2PosX+fgkLVChip2X/2);
+  p2[1] = fgkLVChip2PosY;
   p2[2] = carLVfullThick/2 + chip2fullThick/2;
   chip2.AddCheckPoint( (TGeoVolume *) cardLVassembly, 0, p1, vX);
   chip2.AddCheckPoint( (TGeoVolume *) cardLVassembly, 1, p2, vX);
   chip2.CreateAndInsertBoxCableSegment(1);
 
-  Double_t chip3fullThick = fgkLVChip3_Z + fgkLVChip3_SiZ;
-  AliITSv11GeomCableFlat chip3("chip3", fgkLVChip3_Y, chip3fullThick);
+  Double_t chip3fullThick = fgkLVChip3Z + fgkLVChip3SiZ;
+  AliITSv11GeomCableFlat chip3("chip3", fgkLVChip3Y, chip3fullThick);
   chip3.SetNLayers(2);
-  chip3.SetLayer(0, fgkLVChip3_Z,   plastiChip, 12);
-  chip3.SetLayer(1, fgkLVChip3_SiZ, siliconChip, 8);
+  chip3.SetLayer(0, fgkLVChip3Z,   plastiChip, 12);
+  chip3.SetLayer(1, fgkLVChip3SiZ, siliconChip, 8);
   chip3.SetInitialNode( (TGeoVolume *) cardLVassembly);
-  p1[0] = orientation*(fgkLVChip3_PosX-fgkLVChip3_X/2);
-  p1[1] = fgkLVChip3_PosY;
+  p1[0] = orientation*(fgkLVChip3PosX-fgkLVChip3X/2);
+  p1[1] = fgkLVChip3PosY;
   p1[2] = -carLVfullThick/2 - chip3fullThick/2;
-  p2[0] = orientation*(fgkLVChip3_PosX+fgkLVChip3_X/2);
-  p2[1] = fgkLVChip3_PosY;
+  p2[0] = orientation*(fgkLVChip3PosX+fgkLVChip3X/2);
+  p2[1] = fgkLVChip3PosY;
   p2[2] = -carLVfullThick/2 - chip3fullThick/2;
   chip3.AddCheckPoint( (TGeoVolume *) cardLVassembly, 0, p1, vX);
   chip3.AddCheckPoint( (TGeoVolume *) cardLVassembly, 1, p2, vX);
@@ -2886,16 +2893,16 @@ TGeoVolumeAssembly* AliITSv11GeometrySDD::CreateLVCard(Int_t orientation) {
   // the Al pieces for heat exchange :
 
   TGeoBBox *alLVcooling1 = new TGeoBBox("alLVcooling1" ,
-			   fgkLVcool_X1/2, fgkLVcool_Y1/2, fgkLVcool_Z1/2);
+			   fgkLVcoolX1/2, fgkLVcoolY1/2, fgkLVcoolZ1/2);
 
   TGeoTranslation *alLVcooling1Tr = new TGeoTranslation("alLVcooling1Tr",
-				 orientation*(fgkLVcool_X1/2+fgkLVcool_X2),
-					fgkLVcoolPosY+fgkLVcool_Y1/2,
-			  carLVfullThick/2+chip0fullThick+fgkLVcool_Z1/2);
+				 orientation*(fgkLVcoolX1/2+fgkLVcoolX2),
+					fgkLVcoolPosY+fgkLVcoolY1/2,
+			  carLVfullThick/2+chip0fullThick+fgkLVcoolZ1/2);
   TGeoTranslation *alLVcooling1TrB = new TGeoTranslation("alLVcooling1TrB",
-				 orientation*(fgkLVcool_X1/2+fgkLVcool_X2),
-					 fgkLVcoolPosY+fgkLVcool_Y1/2,
-			  -(carLVfullThick/2+chip0fullThick+fgkLVcool_Z1/2));
+				 orientation*(fgkLVcoolX1/2+fgkLVcoolX2),
+					 fgkLVcoolPosY+fgkLVcoolY1/2,
+			  -(carLVfullThick/2+chip0fullThick+fgkLVcoolZ1/2));
 
   TGeoVolume *vAlLVcooling1 = new TGeoVolume("vAlLVcooling1",alLVcooling1,
 					     alCu12SDD);
@@ -2903,15 +2910,15 @@ TGeoVolumeAssembly* AliITSv11GeometrySDD::CreateLVCard(Int_t orientation) {
 
   //--
   TGeoBBox * alLVcooling2 = new TGeoBBox("lLVcooling2" ,
-				 fgkLVcool_X2/2, fgkLVcool_Y2/2, fgkLVcool_Z2/2);
+				 fgkLVcoolX2/2, fgkLVcoolY2/2, fgkLVcoolZ2/2);
   TGeoTranslation *alLVcooling2Tr = new TGeoTranslation("alLVcooling2Tr",
-					orientation*(fgkLVcool_X2/2),
-					fgkLVcoolPosY+fgkLVcool_Y1/2,
-		     carLVfullThick/2+chip0fullThick+fgkLVcool_Z1-fgkLVcool_Z2/2);
+					orientation*(fgkLVcoolX2/2),
+					fgkLVcoolPosY+fgkLVcoolY1/2,
+		     carLVfullThick/2+chip0fullThick+fgkLVcoolZ1-fgkLVcoolZ2/2);
   TGeoTranslation *alLVcooling2TrB = new TGeoTranslation("alLVcooling2TrB",
-					orientation*(fgkLVcool_X2/2),
-					fgkLVcoolPosY+fgkLVcool_Y1/2,
-		   -(carLVfullThick/2+chip0fullThick+fgkLVcool_Z1-fgkLVcool_Z2/2));
+					orientation*(fgkLVcoolX2/2),
+					fgkLVcoolPosY+fgkLVcoolY1/2,
+		   -(carLVfullThick/2+chip0fullThick+fgkLVcoolZ1-fgkLVcoolZ2/2));
 
   TGeoVolume *vAlLVcooling2 = new TGeoVolume("vAlLVcooling2",alLVcooling2,
 					     alCu12SDD);
@@ -2919,16 +2926,16 @@ TGeoVolumeAssembly* AliITSv11GeometrySDD::CreateLVCard(Int_t orientation) {
 
   //--
 
-  Double_t alLVcool_Z3 = (fgkLVcard_CuZ+fgkLVcard_Z+2.*(fgkLVChip0_SiZ+fgkLVChip0_Z)
-			  +fgkLVcool_Z1*2.);
+  Double_t alLVcoolZ3 = (fgkLVcardCuZ+fgkLVcardZ+2.*(fgkLVChip0SiZ+fgkLVChip0Z)
+			  +fgkLVcoolZ1*2.);
 
   TGeoBBox * alLVcooling3 = new TGeoBBox("lLVcooling3" ,
-			   fgkLVcool_X3/2, fgkLVcool_Y3/2, alLVcool_Z3/2);
+			   fgkLVcoolX3/2, fgkLVcoolY3/2, alLVcoolZ3/2);
 
 
   TGeoTranslation *alLVcooling3Tr = new TGeoTranslation("alLVcooling3Tr",
-					orientation*(-fgkLVcool_X3/2),
-					fgkLVcoolPosY+fgkLVcool_Y1-fgkLVcool_Y3/2,
+					orientation*(-fgkLVcoolX3/2),
+					fgkLVcoolPosY+fgkLVcoolY1-fgkLVcoolY3/2,
 					0);
 
   TGeoVolume *vAlLVcooling3 = new TGeoVolume("vAlLVcooling3",alLVcooling3,alCu12SDD);
@@ -3328,13 +3335,13 @@ TGeoVolumeAssembly*  AliITSv11GeometrySDD::CreateEndLadderCards(Int_t iLay) {
 
   Double_t cardLVxShift = (fgkEndLadPipeUwidth/2-fgkEndLadPipeArmX/2
 			   +fgkEndLadPipeArmBoxDX);
-  Double_t cardLVyShift = (-fgkLVcoolPosY-fgkLVcool_Y1+fgkLVcool_Y3
+  Double_t cardLVyShift = (-fgkLVcoolPosY-fgkLVcoolY1+fgkLVcoolY3
 			   +fgkEndLadPipeArmY/2+fgkEndLadPipeArmBoxDY);
 
-  Double_t alLVcool_Z3 = (fgkLVcard_CuZ+fgkLVcard_Z+2.*(fgkLVChip0_SiZ+fgkLVChip0_Z)
-			  +fgkLVcool_Z1*2.);
+  Double_t alLVcoolZ3 = (fgkLVcardCuZ+fgkLVcardZ+2.*(fgkLVChip0SiZ+fgkLVChip0Z)
+			  +fgkLVcoolZ1*2.);
 
-  Double_t firstLVCardZ = fgkEndLadPipeArmZpos-fgkEndLadPipeOuterDiam/2.+alLVcool_Z3/2
+  Double_t firstLVCardZ = fgkEndLadPipeArmZpos-fgkEndLadPipeOuterDiam/2.+alLVcoolZ3/2
                           +coolUzPos+1.25*fgkmm;
   // Position in z of the first LVB with respect to the start of the cooling
   // rectangular arm, coming  (from inside of the ladder)
@@ -3343,7 +3350,7 @@ TGeoVolumeAssembly*  AliITSv11GeometrySDD::CreateEndLadderCards(Int_t iLay) {
   for (Int_t iCard=0; iCard<nCards; iCard++) {
 
     Double_t cardLVzShift = firstLVCardZ + 
-      Double_t(iCard)*(alLVcool_Z3 + 2.*spaceBetweenCards+fgkHVCardCool3Z);
+      Double_t(iCard)*(alLVcoolZ3 + 2.*spaceBetweenCards+fgkHVCardCool3Z);
 
     TGeoTranslation *trCardLVassemblyR = new TGeoTranslation(cardLVxShift,
 					     cardLVyShift, cardLVzShift);
@@ -3367,7 +3374,7 @@ TGeoVolumeAssembly*  AliITSv11GeometrySDD::CreateEndLadderCards(Int_t iLay) {
   for (Int_t iCard=0; iCard<nCards; iCard++) {
 
     Double_t fact = iCard*2.+1.;
-    Double_t coolHVdz = (firstLVCardZ + alLVcool_Z3*fact/2 + spaceBetweenCards*fact
+    Double_t coolHVdz = (firstLVCardZ + alLVcoolZ3*fact/2 + spaceBetweenCards*fact
 			 + fgkHVCardCool3Z*fact/2. + coolHVCenterShift);
     TGeoTranslation *trCardHV = new TGeoTranslation(0,coolHVdy, coolHVdz);
     endLadderCards->AddNode(cardHV, iCard+1, trCardHV);
@@ -3441,7 +3448,7 @@ TGeoVolumeAssembly*  AliITSv11GeometrySDD::CreateEndLadderCards(Int_t iLay) {
   assemblySupCarlos->AddNode(vSupCarlosBoard3, 1, carlosSupTr4);
 
   Double_t spaceBetweenCarlsoCards = 0.1*fgkmm;
-  Double_t firstCarlosCardZ = (firstLVCardZ - alLVcool_Z3/2 + alLVcool_Z3*4 +
+  Double_t firstCarlosCardZ = (firstLVCardZ - alLVcoolZ3/2 + alLVcoolZ3*4 +
 			       fgkHVCardCool3Z*4 + spaceBetweenCards*7 + 2*fgkmm);
   // position in z of the first Carlos board, coming  from inside of the ladder
 
@@ -3538,7 +3545,7 @@ TGeoVolumeAssembly* AliITSv11GeometrySDD::CreateSupportRing(Int_t iLay) {
   TGeoBBox *rubyCageInternBox = new TGeoBBox("rubyCageInternBox",fgkRubyCageInternSide/2,
 				    fgkRubyCageY/2+epsilon, fgkRubyCageInternSide/2);
 
-  TGeoTube *ScrewHole = new TGeoTube("screwHole", 0, fgkRubyCageScrewHoleR,
+  TGeoTube *screwHole = new TGeoTube("screwHole", 0, fgkRubyCageScrewHoleR,
 				     fgkRubyCageHoleDX/2+epsilon);
 
   TGeoRotation *rotV = new TGeoRotation("", 90,90,-90);
@@ -3593,7 +3600,7 @@ TGeoVolumeAssembly* AliITSv11GeometrySDD::CreateSupportRing(Int_t iLay) {
   if(GetDebug(3)) { // Remove compiler warning.
     rubyCageBox->InspectShape();
     rubyCageInternBox->InspectShape();
-    ScrewHole->InspectShape();
+    screwHole->InspectShape();
     screwHoleFoot->InspectShape();
     rubyCageVInternBox->InspectShape();
     rubyCageVInternTriangl->InspectShape();

@@ -4,10 +4,20 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+
 //*************************************************************************
-// class AliITSv11GeometrySDD
+//
+// SDD geometry, based on ROOT geometrical modeler
+//
+// Its integration to the aliroot framework is done in the AliITSv11Hybrid
+// class (AliITSv11 not being functionnal so far)
+//
+// This geometry has no dependence with aliroot, you can run it with root
+// only, provided that the AliITSv11GeomCable classes are also compiled
+//
 // Ludovic Gaudichet                                   gaudichet@to.infn.it
 //*************************************************************************
+
 
 class TGeoVolume;
 class TGeoVolumeAssembly;
@@ -77,7 +87,7 @@ class AliITSv11GeometrySDD : public AliITSv11Geometry {
   virtual TGeoVolume*          CreateCoolPipeSupportR();
   virtual TGeoVolume*          CreateBaseThermalBridge();
 
-  virtual TGeoVolumeAssembly*  CreateCarlosCard(Int_t iLay);
+/*   virtual TGeoVolumeAssembly*  CreateCarlosCard(Int_t iLay); */
   virtual TGeoVolumeAssembly*  CreateLVCard(Int_t orientation);
   virtual TGeoVolumeAssembly*  CreateHVCard(Int_t iLay);
 
@@ -309,147 +319,146 @@ class AliITSv11GeometrySDD : public AliITSv11Geometry {
   static const Double_t fgkLongHVcableSeparation; //   cables
 
 
-  static const Double_t fgkRubyDX; // ruby dx with respect to the middle (to ladder z axis)
-  static const Double_t fgkRubyZladd3;
-  static const Double_t fgkRubyZladd4;
+  static const Double_t fgkRubyDX;                // ruby dx with respect to the middle (to ladder z axis)
+  static const Double_t fgkRubyZladd3;            // Z of ruby, ladder 3
+  static const Double_t fgkRubyZladd4;            // Z of ruby, ladder 4
 
-  static const Double_t fgkLadFoot_X; // Length of ladder foot
-  static const Double_t fgkLadFoot_Z; // width 
-  static const Double_t fgkLadFoot_Y; // thickness
-  static const Double_t fgkLadFootMiddleY; // thickness in the middle part
-  static const Double_t fgkLadBox1_X;
-  static const Double_t fgkLadFingerPrint_X;
-  static const Double_t fgkLadFingerPrint_Y;
-  static const Double_t fgkLadFingerPrintBorder;
-  static const Double_t fgkRubyCageHoleZ;
-  static const Double_t fgkRubyCageHoleX;
-  static const Double_t fgkRubyCageHoleY;
-  static const Double_t fgkRubyCageAxisShift;
-  static const Double_t fgkScrewM4diam;
-  static const Double_t fgkRubyScrewShiftToCenterY;
-  static const Double_t fgkRubyHoleDiam;
+  static const Double_t fgkLadFootX;              // Length of ladder foot
+  static const Double_t fgkLadFootZ;              // width 
+  static const Double_t fgkLadFootY;              // thickness
+  static const Double_t fgkLadFootMiddleY;        // thickness in the middle part
+  static const Double_t fgkLadBox1X;              // size in X
+  static const Double_t fgkLadFingerPrintX;       // size in X
+  static const Double_t fgkLadFingerPrintY ;      // size in Y
+  static const Double_t fgkLadFingerPrintBorder;  // size in X
+  static const Double_t fgkRubyCageHoleZ;         // size in Z
+  static const Double_t fgkRubyCageHoleX;         // size in X
+  static const Double_t fgkRubyCageHoleY;         // size in Y
+  static const Double_t fgkRubyCageAxisShift;     // shift in X
+  static const Double_t fgkScrewM4diam;           // M4 screw standard diameter 
+  static const Double_t fgkRubyScrewShiftToCenterY; // screw placement 
+  static const Double_t fgkRubyHoleDiam;          // guess what
 
 // the end ladder cooling pipe and its heat exchanger
-  static const Double_t fgkEndLadPipeUlengthLay3;
-  static const Double_t fgkEndLadPipeUlengthLay4;
-  static const Double_t fgkEndLadPipeUwidth;
-  static const Double_t fgkEndLadPipeRadius;
-  static const Double_t fgkEndLadPipeInnerDiam;
-  static const Double_t fgkEndLadPipeOuterDiam;
+  static const Double_t fgkEndLadPipeUlengthLay3; // length in Z of the U cooling tube
+  static const Double_t fgkEndLadPipeUlengthLay4; // length in Z of the U cooling tube
+  static const Double_t fgkEndLadPipeUwidth;      // width
+  static const Double_t fgkEndLadPipeRadius;      // radius
+  static const Double_t fgkEndLadPipeInnerDiam;   // InnerDiam
+  static const Double_t fgkEndLadPipeOuterDiam;   // OuterDiam
 
-  static const Double_t fgkEndLadPipeArmZLay3;   //
-  static const Double_t fgkEndLadPipeArmZLay4;   //
-  static const Double_t fgkEndLadPipeArmX;    // the arms of the U cooling tube
-  static const Double_t fgkEndLadPipeArmY;
-  static const Double_t fgkEndLadPipeArmBoxDY; // shift in Y of the arms from the axis
-  static const Double_t fgkEndLadPipeArmBoxDX;  // shift in X of the arms from the axis
-  static const Double_t fgkEndLadPipeArmZpos; // 
+  static const Double_t fgkEndLadPipeArmZLay3;    // the arms of the U cooling tube
+  static const Double_t fgkEndLadPipeArmZLay4;    // (rectangular part surrounding the)
+  static const Double_t fgkEndLadPipeArmX;        // the tube
+  static const Double_t fgkEndLadPipeArmY;        // X, Y : size in the correxponding axis
+  static const Double_t fgkEndLadPipeArmBoxDY;    // shift in Y of the arms from the axis
+  static const Double_t fgkEndLadPipeArmBoxDX;    // shift in X of the arms from the axis
+  static const Double_t fgkEndLadPipeArmZpos;     // position with respect to tube  
 
 
   // approx dim for now - all of the following has to be checked
-  // once Beppe provide the drawing
+  // once Beppe provide the drawing...
 
   // Carlos Card :
-  static const Double_t fgkLVcard_X;
-  static const Double_t fgkLVcard_Y;
-  static const Double_t fgkLVcard_Z;
-  static const Double_t fgkLVcard_CuZ;
+  static const Double_t fgkLVcardX;              // size of the card itself in X
+  static const Double_t fgkLVcardY;              // size of the card itself in Y
+  static const Double_t fgkLVcardZ;              // size of the card itself in Z
+  static const Double_t fgkLVcardCuZ;            // Cu thickness
 
-  static const Double_t fgkLVChip0_X;
-  static const Double_t fgkLVChip0_Y;
-  static const Double_t fgkLVChip0_Z; // all except si layer
-  static const Double_t fgkLVChip0_SiZ; //???????????????????????????????????????????????????
-  static const Double_t fgkLVChip0_PosX;
-  static const Double_t fgkLVChip0_PosY;
+  static const Double_t fgkLVChip0X;             // chip #0
+  static const Double_t fgkLVChip0Y;             // ...
+  static const Double_t fgkLVChip0Z;             //  thickness without si layer
+  static const Double_t fgkLVChip0SiZ;           // Si layer thickness
+  static const Double_t fgkLVChip0PosX;          // Position with respect to the card
+  static const Double_t fgkLVChip0PosY;          // Position with respect to the card
 
-  static const Double_t fgkLVChip1_X;
-  static const Double_t fgkLVChip1_Y;
-  static const Double_t fgkLVChip1_Z;
-  static const Double_t fgkLVChip1_SiZ;
-  static const Double_t fgkLVChip1_PosX;
-  static const Double_t fgkLVChip1_PosY;
+  static const Double_t fgkLVChip1X;             // same
+  static const Double_t fgkLVChip1Y;             // conventions
+  static const Double_t fgkLVChip1Z;             // as
+  static const Double_t fgkLVChip1SiZ;           // chip 0
+  static const Double_t fgkLVChip1PosX;          // ==
+  static const Double_t fgkLVChip1PosY;          // ==
 
-  static const Double_t fgkLVChip2_X;
- static const Double_t fgkLVChip2_Y;
-  static const Double_t fgkLVChip2_Z;
-  static const Double_t fgkLVChip2_SiZ;
-  static const Double_t fgkLVChip2_PosX;
-  static const Double_t fgkLVChip2_PosY;
+  static const Double_t fgkLVChip2X;             // same
+  static const Double_t fgkLVChip2Y;             // conventions
+  static const Double_t fgkLVChip2Z;             // as
+  static const Double_t fgkLVChip2SiZ;           // chip 0
+  static const Double_t fgkLVChip2PosX;          // ==
+  static const Double_t fgkLVChip2PosY;          // ==
 
-  static const Double_t fgkLVChip3_X;
-  static const Double_t fgkLVChip3_Y;
-  static const Double_t fgkLVChip3_Z;
-  static const Double_t fgkLVChip3_SiZ;
-  static const Double_t fgkLVChip3_PosX;
-  static const Double_t fgkLVChip3_PosY;
+  static const Double_t fgkLVChip3X;             // same
+  static const Double_t fgkLVChip3Y;             // conventions
+  static const Double_t fgkLVChip3Z;             // as
+  static const Double_t fgkLVChip3SiZ;           // chip 0
+  static const Double_t fgkLVChip3PosX;          // ==
+  static const Double_t fgkLVChip3PosY;          // ==
 
-  static const Double_t fgkLVcool_X1;
-  static const Double_t fgkLVcool_Y1;
-  static const Double_t fgkLVcool_Z1;
+  static const Double_t fgkLVcoolX1;             // pieces of alCu12
+  static const Double_t fgkLVcoolY1;             // for heat exchange
+  static const Double_t fgkLVcoolZ1;             // with the cooling tube
 
-  static const Double_t fgkLVcool_X2;
-  static const Double_t fgkLVcool_Y2;
-  static const Double_t fgkLVcool_Z2;
+  static const Double_t fgkLVcoolX2;             // X,Y,Z are
+  static const Double_t fgkLVcoolY2;             // dimensions
+  static const Double_t fgkLVcoolZ2;             // of the pieces
 
-  static const Double_t fgkLVcool_X3;
-  static const Double_t fgkLVcool_Y3;
-  static const Double_t fgkLVcoolPosY;
+  static const Double_t fgkLVcoolX3;             // ==
+  static const Double_t fgkLVcoolY3;             // ==
+  static const Double_t fgkLVcoolPosY;           // ==
 
   // HV card :
+  static const Double_t fgkHVCardCeramX;         // size in X of the ceramic card
+  static const Double_t fgkHVCardCeramY;         // size in Y
+  static const Double_t fgkHVCardCeramZ;         // size in Z
 
-  static const Double_t fgkHVCardCeramX;
-  static const Double_t fgkHVCardCeramY;
-  static const Double_t fgkHVCardCeramZ;
+  static const Double_t fgkHVCardCapa1X;         // size in X of the capa 1
+  static const Double_t fgkHVCardCapa1Z;         // size in Z
+  static const Double_t fgkHVCardCapa1Ymid;      // size of the middle part
+  static const Double_t fgkHVCardCapa1Yend;      // ...
+  static const Double_t fgkHVCardCapa1PosX;      // position on the card
+  static const Double_t fgkHVCardCapa1PosY;      // position on the card
 
-  static const Double_t fgkHVCardCapa1X;
-  static const Double_t fgkHVCardCapa1Z;
-  static const Double_t fgkHVCardCapa1Ymid;
-  static const Double_t fgkHVCardCapa1Yend;
-  static const Double_t fgkHVCardCapa1PosX;
-  static const Double_t fgkHVCardCapa1PosY;
+  static const Double_t fgkHVCardCapa2X;         // idem for second type capa
+  static const Double_t fgkHVCardCapa2Z;         //   love me
+  static const Double_t fgkHVCardCapa2Ymid;      //   ...
+  static const Double_t fgkHVCardCapa2Yend;      //   tender,
+  static const Double_t fgkHVCardCapa2PosX;      //   ...
+  static const Double_t fgkHVCardCapa2PosY;      //   love me true
 
-  static const Double_t fgkHVCardCapa2X;
-  static const Double_t fgkHVCardCapa2Z;
-  static const Double_t fgkHVCardCapa2Ymid;
-  static const Double_t fgkHVCardCapa2Yend;
-  static const Double_t fgkHVCardCapa2PosX;
-  static const Double_t fgkHVCardCapa2PosY;
+  static const Double_t fgkHVCardCapa3Xmid;      //  idem for third type capa
+  static const Double_t fgkHVCardCapa3Xend;      //  ===
+  static const Double_t fgkHVCardCapa3Z;         //  ===
+  static const Double_t fgkHVCardCapa3Y;         //  ===
 
-  static const Double_t fgkHVCardCapa3Xmid;
-  static const Double_t fgkHVCardCapa3Xend;
-  static const Double_t fgkHVCardCapa3Z;
-  static const Double_t fgkHVCardCapa3Y;
+  static const Double_t fgkHVCardCapa3PosX1;     // this capa is placed
+  static const Double_t fgkHVCardCapa3PosX2;     // in several positions
+  static const Double_t fgkHVCardCapa3PosX3;     // ...
+  static const Double_t fgkHVCardCapa3PosX4;     // ===
+  static const Double_t fgkHVCardCapa3PosX5;     // ===
+  static const Double_t fgkHVCardCapa3PosY1;     // ===
+  static const Double_t fgkHVCardCapa3PosY2;     // ===
+  static const Double_t fgkHVCardCapa3PosY3;     // ===
 
-  static const Double_t fgkHVCardCapa3PosX1;
-  static const Double_t fgkHVCardCapa3PosX2;
-  static const Double_t fgkHVCardCapa3PosX3;
-  static const Double_t fgkHVCardCapa3PosX4;
-  static const Double_t fgkHVCardCapa3PosX5;
-  static const Double_t fgkHVCardCapa3PosY1;
-  static const Double_t fgkHVCardCapa3PosY2;
-  static const Double_t fgkHVCardCapa3PosY3;
+  static const Double_t fgkHVCardCool1X;         // cooling
+  static const Double_t fgkHVCardCool1Y;         // pieces for
+  static const Double_t fgkHVCardCool1Z;         // heat exchange
+  static const Double_t fgkHVCardCool2X;         // with
+  static const Double_t fgkHVCardCool2Y;         // cooling U tube
+  static const Double_t fgkHVCardCool2Z;         // ===
+  static const Double_t fgkHVCardCool3X;         // ===
+  static const Double_t fgkHVCardCool3Y;         // ===
+  static const Double_t fgkHVCardCool3Z;         // ===
+  static const Double_t fgkHVCardCoolDY;         // ===
 
-  static const Double_t fgkHVCardCool1X;
-  static const Double_t fgkHVCardCool1Y;
-  static const Double_t fgkHVCardCool1Z;
-  static const Double_t fgkHVCardCool2X;
-  static const Double_t fgkHVCardCool2Y;
-  static const Double_t fgkHVCardCool2Z;
-  static const Double_t fgkHVCardCool3X;
-  static const Double_t fgkHVCardCool3Y;
-  static const Double_t fgkHVCardCool3Z;
-  static const Double_t fgkHVCardCoolDY;
-
-  static const Double_t fgkCarlosSuppX1;
-  static const Double_t fgkCarlosSuppY1;
-  static const Double_t fgkCarlosSuppX2;
-  static const Double_t fgkCarlosSuppY2;
-  static const Double_t fgkCarlosSuppZ;
-  static const Double_t fgkCarlosSuppAngle;
-  static const Double_t fgkCarlosSuppX3;
-  static const Double_t fgkCarlosSuppY3;
-  static const Double_t fgkCarlosSuppZ3;
-  static const Double_t fgkCarlosSuppTopLen;
+  static const Double_t fgkCarlosSuppX1;         // piece on which
+  static const Double_t fgkCarlosSuppY1;         // the carlos card
+  static const Double_t fgkCarlosSuppX2;         // is fixed
+  static const Double_t fgkCarlosSuppY2;         // ===
+  static const Double_t fgkCarlosSuppZ;          // ===
+  static const Double_t fgkCarlosSuppAngle;      //  ===
+  static const Double_t fgkCarlosSuppX3;         // ===
+  static const Double_t fgkCarlosSuppY3;         // ===
+  static const Double_t fgkCarlosSuppZ3;         // ===
+  static const Double_t fgkCarlosSuppTopLen;     // ===
 
   static const Double_t fgkmu;  // 1 micron, or more for debugging
 

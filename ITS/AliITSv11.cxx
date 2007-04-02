@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 2007-2008, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -13,7 +13,9 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+
 //************************************************************************
+//
 //                 Inner Traking System geometry v11
 //
 //  Based on ROOT geometrical modeler
@@ -22,7 +24,6 @@
 //************************************************************************
 
 
-//#include <Riostream.h>
 #include <TClonesArray.h>
 #include <TLorentzVector.h>
 
@@ -37,8 +38,6 @@
 #include "AliITShit.h"
 
 #include "AliITSCalibrationSDD.h"
-#include "AliITSCalibrationSPD.h"
-#include "AliITSCalibrationSSD.h"
 
 #include "AliITSsegmentationSDD.h"
 #include "AliITSsegmentationSPD.h"
