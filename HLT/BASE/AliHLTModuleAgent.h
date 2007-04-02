@@ -68,8 +68,8 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
    * AliHLTConfigurationHandler. The agent can adapt the configurations
    * to be registered to the current AliRoot setup by checking the
    * runloader.
-   * @param handler[in]   the configuration handler
-   * @param runloader[in] AliRoot runloader
+   * @param handler   [in] the configuration handler
+   * @param runloader [in] AliRoot runloader
    * @return neg. error code if failed
    */
   virtual int CreateConfigurations(AliHLTConfigurationHandler* handler,
@@ -81,7 +81,7 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
    * described by the last configuration(s) in the chain. 
    * The agent can adapt the configurations to be registered to the current
    * AliRoot setup by checking the runloader.
-   * @param runloader[in] AliRoot runloader
+   * @param runloader  [in] AliRoot runloader
    * @return string containing the top configurations separated by blanks
    */
   virtual const char* GetTopConfigurations(AliRunLoader* runloader=NULL) const;

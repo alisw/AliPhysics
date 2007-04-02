@@ -60,12 +60,12 @@ const char* AliHLTTPCVertexFinderComponent::GetComponentID()
 void AliHLTTPCVertexFinderComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
     {
     list.clear();
-    list.push_back( AliHLTTPCDefinitions::gkClustersDataType );
+    list.push_back( AliHLTTPCDefinitions::fgkClustersDataType );
     }
 
 AliHLTComponentDataType AliHLTTPCVertexFinderComponent::GetOutputDataType()
     {
-    return AliHLTTPCDefinitions::gkVertexDataType;
+    return AliHLTTPCDefinitions::fgkVertexDataType;
     }
 
 void AliHLTTPCVertexFinderComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
@@ -118,7 +118,7 @@ int AliHLTTPCVertexFinderComponent::DoEvent( const AliHLTComponentEventData& evt
 	iter = blocks+ndx;
 	mysize = 0;
 	offset = tSize;
-	if ( iter->fDataType != AliHLTTPCDefinitions::gkClustersDataType )
+	if ( iter->fDataType != AliHLTTPCDefinitions::fgkClustersDataType )
 	    {
 	    continue;
 	    }

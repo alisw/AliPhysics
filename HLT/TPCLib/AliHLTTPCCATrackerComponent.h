@@ -9,44 +9,70 @@
  */
 
 #include "AliHLTProcessor.h"
-#include "AliHLTTPCDefinitions.h"
 
 class AliHLTTPCCATracker;
 class AliHLTTPCVertex;
 
+/**
+ * @class AliHLTTPCCATrackerComponent
+ * The Cellular Automaton tracker component.
+ */
 class AliHLTTPCCATrackerComponent : public AliHLTProcessor
     {
     public:
+      /** standard constructor */
       AliHLTTPCCATrackerComponent();
+      /** not a valid copy constructor, defined according to effective C++ style */
+      AliHLTTPCCATrackerComponent(const AliHLTTPCCATrackerComponent&);
+      /** not a valid assignment op, but defined according to effective C++ style */
+      AliHLTTPCCATrackerComponent& operator=(const AliHLTTPCCATrackerComponent&);
+      /** standard destructor */
       virtual ~AliHLTTPCCATrackerComponent();
       
       // Public functions to implement AliHLTComponent's interface.
       // These functions are required for the registration process
       
+      /** @see component interface @ref AliHLTComponent::GetComponentID */
       const char* GetComponentID();
-      void GetInputDataTypes( vector<AliHLTComponent_DataType>& list);
-      AliHLTComponent_DataType GetOutputDataType();
-      virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
-      AliHLTComponent* Spawn();
       
+      /** @see component interface @ref AliHLTComponent::GetInputDataTypes */
+      void GetInputDataTypes( vector<AliHLTComponentDataType>& list);
+
+      /** @see component interface @ref AliHLTComponent::GetOutputDataType */
+      AliHLTComponentDataType GetOutputDataType();
+
+      /** @see component interface @ref AliHLTComponent::GetOutputDataSize */
+      virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
+
+      /** @see component interface @ref AliHLTComponent::Spawn */
+      AliHLTComponent* Spawn();
+
     protected:
 
 	// Protected functions to implement AliHLTComponent's interface.
 	// These functions provide initialization as well as the actual processing
 	// capabilities of the component. 
 
+      /** @see component interface @ref AliHLTComponent::DoInit */
 	int DoInit( int argc, const char** argv );
+
+      /** @see component interface @ref AliHLTComponent::DoDeinit */
 	int DoDeinit();
-	int DoEvent( const AliHLTComponent_EventData& evtData, const AliHLTComponent_BlockData* blocks, 
-		     AliHLTComponent_TriggerData& trigData, AliHLTUInt8_t* outputPtr, 
-		     AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks );
+
+      /** @see component interface @ref AliHLTProcessor::DoEvent */
+	int DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
+		     AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
+		     AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
 	
     private:
 
-	AliHLTTPCCATracker* fTracker;
-	AliHLTTPCVertex* fVertex;
+      /** the tracker object */
+      AliHLTTPCCATracker* fTracker;                                //! transient
+      /** the virtexer object */
+      AliHLTTPCVertex* fVertex;                                    //! transient
 
-	Double_t fBField;
+      /** magnetic field */
+      Double_t fBField;                                            // see above
 
 	ClassDef(AliHLTTPCCATrackerComponent, 0)
 

@@ -10,11 +10,11 @@
  */
 
 #include "AliHLTDataTypes.h"
-#include "TObject.h"
+#include "Rtypes.h"
 
 class AliHLTTPCDefinitions
-    {
-    public:
+{
+public:
       AliHLTTPCDefinitions();
       virtual ~AliHLTTPCDefinitions();
 
@@ -59,18 +59,23 @@ class AliHLTTPCDefinitions
 		return ((maxSliceNr & 0xFF) << 24) | ((minSliceNr & 0xFF) << 16) | ((maxPatchNr & 0xFF) << 8) | ((minPatchNr & 0xFF));
 		}
 
-	static const AliHLTComponentDataType gkDDLPackedRawDataType;
-	static const AliHLTComponentDataType gkPackedRawDataType;
-	static const AliHLTComponentDataType gkUnpackedRawDataType;
-	static const AliHLTComponentDataType gkClustersDataType;
-      /** track segments in local coordinates */
-	static const AliHLTComponentDataType gkTrackSegmentsDataType;
-      /** tracks in global koordinates */
-	static const AliHLTComponentDataType gkTracksDataType;
-	static const AliHLTComponentDataType gkVertexDataType;
+  /** DDL packed RAW data */
+  static const AliHLTComponentDataType fgkDDLPackedRawDataType;    // see above
+  /** packed RAW data */
+  static const AliHLTComponentDataType fgkPackedRawDataType;       // see above
+  /** unpacked RAW data */
+  static const AliHLTComponentDataType fgkUnpackedRawDataType;     // see above
+  /** cluster data */
+  static const AliHLTComponentDataType fgkClustersDataType;        // see above
+  /** track segments in local coordinates */
+  static const AliHLTComponentDataType fgkTrackSegmentsDataType;   // see above
+  /** tracks in global koordinates */
+  static const AliHLTComponentDataType fgkTracksDataType;          // see above
+  /** vertex data structure */
+  static const AliHLTComponentDataType fgkVertexDataType;          // see above
 
-	ClassDef(AliHLTTPCDefinitions, 0)
+  ClassDef(AliHLTTPCDefinitions, 0);
 
-    };
+};
 
 #endif

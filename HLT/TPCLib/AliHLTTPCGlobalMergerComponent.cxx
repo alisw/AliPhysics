@@ -16,7 +16,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/** @file   AliHLTTPCGlobalMergerComponent.h
+/** @file   AliHLTTPCGlobalMergerComponent.cxx
     @author Timm Steinbeck, Matthias Richter
     @date   
     @brief  HLT TPC global merger component.
@@ -36,6 +36,7 @@ using namespace std;
 #include "AliHLTTPCTrackletDataFormat.h"
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCClusterDataFormat.h"
+#include "AliHLTTPCDefinitions.h"
 #include <stdlib.h>
 #include <errno.h>
 
@@ -45,37 +46,64 @@ AliHLTTPCGlobalMergerComponent gAliHLTTPCGlobalMergerComponent;
 ClassImp(AliHLTTPCGlobalMergerComponent)
 
 AliHLTTPCGlobalMergerComponent::AliHLTTPCGlobalMergerComponent()
-    {
-    fGlobalMerger = NULL;
-    fVertex = NULL;
-    }
+  :
+  fGlobalMerger(NULL),
+  fVertex(NULL)
+{
+  // see header file for class documentation
+  // or
+  // refer to README to build package
+  // or
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+}
+
+AliHLTTPCGlobalMergerComponent::AliHLTTPCGlobalMergerComponent(const AliHLTTPCGlobalMergerComponent&)
+  :
+  fGlobalMerger(NULL),
+  fVertex(NULL)
+{
+  // see header file for class documentation
+  HLTFatal("copy constructor untested");
+}
+
+AliHLTTPCGlobalMergerComponent& AliHLTTPCGlobalMergerComponent::operator=(const AliHLTTPCGlobalMergerComponent&)
+{ 
+  // see header file for class documentation
+  HLTFatal("assignment operator untested");
+  return *this;
+}
 
 AliHLTTPCGlobalMergerComponent::~AliHLTTPCGlobalMergerComponent()
-    {
-    }
+{
+  // see header file for class documentation
+}
 
 // Public functions to implement AliHLTComponent's interface.
 // These functions are required for the registration process
 
 const char* AliHLTTPCGlobalMergerComponent::GetComponentID()
     {
+  // see header file for class documentation
     return "TPCGlobalMerger";
     }
 
 void AliHLTTPCGlobalMergerComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
     {
+  // see header file for class documentation
     list.clear();
-    list.push_back( AliHLTTPCDefinitions::gkTrackSegmentsDataType );
-    list.push_back( AliHLTTPCDefinitions::gkVertexDataType );
+    list.push_back( AliHLTTPCDefinitions::fgkTrackSegmentsDataType );
+    list.push_back( AliHLTTPCDefinitions::fgkVertexDataType );
     }
 
 AliHLTComponentDataType AliHLTTPCGlobalMergerComponent::GetOutputDataType()
     {
-    return AliHLTTPCDefinitions::gkTracksDataType;
+  // see header file for class documentation
+    return AliHLTTPCDefinitions::fgkTracksDataType;
     }
 
 void AliHLTTPCGlobalMergerComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
     {
+  // see header file for class documentation
     // XXX TODO: Find more realistic values.
     constBase = 0;
     inputMultiplier = 1.0;
@@ -83,16 +111,19 @@ void AliHLTTPCGlobalMergerComponent::GetOutputDataSize( unsigned long& constBase
 
 AliHLTComponent* AliHLTTPCGlobalMergerComponent::Spawn()
     {
+  // see header file for class documentation
     return new AliHLTTPCGlobalMergerComponent;
     }
 
 void AliHLTTPCGlobalMergerComponent::SetMergerParameters(Double_t maxy,Double_t maxz,Double_t maxkappa,Double_t maxpsi,Double_t maxtgl)
     {
+  // see header file for class documentation
     fGlobalMerger->SetParameter( maxy, maxz, maxkappa, maxpsi, maxtgl );
     }
 
 int AliHLTTPCGlobalMergerComponent::DoInit( int argc, const char** argv )
     {
+  // see header file for class documentation
     if ( fGlobalMerger || fVertex )
 	return EINPROGRESS;
     fGlobalMerger = new AliHLTTPCGlobalMerger();
@@ -103,6 +134,7 @@ int AliHLTTPCGlobalMergerComponent::DoInit( int argc, const char** argv )
 
 int AliHLTTPCGlobalMergerComponent::DoDeinit()
     {
+  // see header file for class documentation
     if ( fGlobalMerger )
 	delete fGlobalMerger;
     fGlobalMerger = NULL;
@@ -116,6 +148,7 @@ int AliHLTTPCGlobalMergerComponent::DoEvent( const AliHLTComponentEventData& evt
 					      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 					      AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
     {
+  // see header file for class documentation
     const AliHLTComponentBlockData* iter = NULL;
     const AliHLTComponentBlockData* lastVertexBlock = NULL;
     unsigned long ndx;
@@ -160,7 +193,7 @@ int AliHLTTPCGlobalMergerComponent::DoEvent( const AliHLTComponentEventData& evt
 	    }
 	if ( sdIter->fSlice == slice )
 	    {
-	    if ( iter->fDataType == AliHLTTPCDefinitions::gkTrackSegmentsDataType )
+	    if ( iter->fDataType == AliHLTTPCDefinitions::fgkTrackSegmentsDataType )
 		{
 		if ( !sdIter->fTrackletBlock )
 		    {
@@ -174,7 +207,7 @@ int AliHLTTPCGlobalMergerComponent::DoEvent( const AliHLTComponentEventData& evt
 			     slice, evtData.fEventID, evtData.fEventID, sdIter->fTrackletBlockIndex, ndx );
 		    }
 		}
-	    if ( iter->fDataType == AliHLTTPCDefinitions::gkVertexDataType )
+	    if ( iter->fDataType == AliHLTTPCDefinitions::fgkVertexDataType )
 		{
 		lastVertexBlock = iter;
 		if ( !sdIter->fVertexBlock )

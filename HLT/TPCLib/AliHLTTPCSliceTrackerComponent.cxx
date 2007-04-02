@@ -112,13 +112,13 @@ const char* AliHLTTPCSliceTrackerComponent::GetComponentID()
 void AliHLTTPCSliceTrackerComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
 {
   list.clear();
-  list.push_back( AliHLTTPCDefinitions::gkClustersDataType );
-  list.push_back( AliHLTTPCDefinitions::gkVertexDataType );
+  list.push_back( AliHLTTPCDefinitions::fgkClustersDataType );
+  list.push_back( AliHLTTPCDefinitions::fgkVertexDataType );
 }
 
 AliHLTComponentDataType AliHLTTPCSliceTrackerComponent::GetOutputDataType()
 {
-  return AliHLTTPCDefinitions::gkTrackSegmentsDataType;
+  return AliHLTTPCDefinitions::fgkTrackSegmentsDataType;
 }
 
 void AliHLTTPCSliceTrackerComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
@@ -549,7 +549,7 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
 	else
 	    *slCntIter++;
 
-	if ( iter->fDataType == AliHLTTPCDefinitions::gkVertexDataType )
+	if ( iter->fDataType == AliHLTTPCDefinitions::fgkVertexDataType )
 	    {
 	    inPtrV = (AliHLTTPCVertexData*)(iter->fPtr);
 	    vertexIter = iter;
@@ -557,7 +557,7 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
 	    fVertex->Read( inPtrV );
 	    vertexSlice = slice;
 	    }
-	if ( iter->fDataType == AliHLTTPCDefinitions::gkClustersDataType )
+	if ( iter->fDataType == AliHLTTPCDefinitions::fgkClustersDataType )
 	    {
 	    patch = AliHLTTPCDefinitions::GetMinPatchNr( *iter );
 	    if ( minPatch>patch )
@@ -614,7 +614,7 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
 	for ( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
 	    {
 	    iter = blocks+ndx;
-	    if ( iter->fDataType == AliHLTTPCDefinitions::gkVertexDataType && slice==AliHLTTPCDefinitions::GetMinSliceNr( *iter ) )
+	    if ( iter->fDataType == AliHLTTPCDefinitions::fgkVertexDataType && slice==AliHLTTPCDefinitions::GetMinSliceNr( *iter ) )
 		{
 		inPtrV = (AliHLTTPCVertexData*)(iter->fPtr);
 		vertexIter = iter;
@@ -635,7 +635,7 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
 	{
 	iter = blocks+ndx;
 
-	if ( iter->fDataType == AliHLTTPCDefinitions::gkClustersDataType && slice==AliHLTTPCDefinitions::GetMinSliceNr( *iter ) )
+	if ( iter->fDataType == AliHLTTPCDefinitions::fgkClustersDataType && slice==AliHLTTPCDefinitions::GetMinSliceNr( *iter ) )
 	    {
 	    patch = AliHLTTPCDefinitions::GetMinPatchNr( *iter );
 	    pIter = patchIndices.begin();

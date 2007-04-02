@@ -17,7 +17,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/** @file   AliHLTTPCSliceTrackerComponent.cxx
+/** @file   AliHLTTPCClusterFinderComponent.cxx
     @author Timm Steinbeck, Matthias Richter, Jochen Thaeder
     @date   
     @brief  The TPC cluster finder processing component
@@ -103,15 +103,15 @@ void AliHLTTPCClusterFinderComponent::GetInputDataTypes( vector<AliHLTComponentD
     {
   // see header file for class documentation
     list.clear(); 
-    if (fPackedSwitch) list.push_back( AliHLTTPCDefinitions::gkDDLPackedRawDataType );
-    else list.push_back( AliHLTTPCDefinitions::gkUnpackedRawDataType );
+    if (fPackedSwitch) list.push_back( AliHLTTPCDefinitions::fgkDDLPackedRawDataType );
+    else list.push_back( AliHLTTPCDefinitions::fgkUnpackedRawDataType );
    
     }
 
 AliHLTComponentDataType AliHLTTPCClusterFinderComponent::GetOutputDataType()
     {
   // see header file for class documentation
-    return AliHLTTPCDefinitions::gkClustersDataType;
+    return AliHLTTPCDefinitions::fgkClustersDataType;
     }
 
 void AliHLTTPCClusterFinderComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
@@ -321,23 +321,23 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
 	if (fPackedSwitch) {	
 	  char tmp1[14], tmp2[14];
 	  DataType2Text( iter->fDataType, tmp1 );
-	  DataType2Text( AliHLTTPCDefinitions::gkDDLPackedRawDataType, tmp2 );
+	  DataType2Text( AliHLTTPCDefinitions::fgkDDLPackedRawDataType, tmp2 );
 	  Logging( kHLTLogDebug, "HLT::TPCClusterFinder::DoEvent", "Event received", 
 		   "Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s",
 		   evtData.fEventID, evtData.fEventID, tmp1, tmp2 );
 
-	  if ( iter->fDataType != AliHLTTPCDefinitions::gkDDLPackedRawDataType ) continue;
+	  if ( iter->fDataType != AliHLTTPCDefinitions::fgkDDLPackedRawDataType ) continue;
 
 	}
 	else {
 	  char tmp1[14], tmp2[14];
 	  DataType2Text( iter->fDataType, tmp1 );
-	  DataType2Text( AliHLTTPCDefinitions::gkUnpackedRawDataType, tmp2 );
+	  DataType2Text( AliHLTTPCDefinitions::fgkUnpackedRawDataType, tmp2 );
 	  Logging( kHLTLogDebug, "HLT::TPCClusterFinder::DoEvent", "Event received", 
 		   "Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s",
 		   evtData.fEventID, evtData.fEventID, tmp1, tmp2 );
 
-	  if ( iter->fDataType != AliHLTTPCDefinitions::gkUnpackedRawDataType ) continue;
+	  if ( iter->fDataType != AliHLTTPCDefinitions::fgkUnpackedRawDataType ) continue;
 
 	}
     	

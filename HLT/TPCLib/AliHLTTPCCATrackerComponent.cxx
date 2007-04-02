@@ -39,6 +39,7 @@ using namespace std;
 #include "AliHLTTPCTrackSegmentData.h"
 #include "AliHLTTPCTrackArray.h"
 #include "AliHLTTPCTrackletDataFormat.h"
+#include "AliHLTTPCDefinitions.h"
 //#include "AliHLTTPC.h"
 #include <stdlib.h>
 #include <iostream>
@@ -53,13 +54,36 @@ AliHLTTPCCATrackerComponent gAliHLTTPCCATrackerComponent;
 ClassImp(AliHLTTPCCATrackerComponent)
 
 AliHLTTPCCATrackerComponent::AliHLTTPCCATrackerComponent()
-    {
-    fTracker = NULL;
-    fVertex = NULL;
-    }
+  :
+  fTracker(NULL),
+  fVertex(NULL)
+{
+  // see header file for class documentation
+  // or
+  // refer to README to build package
+  // or
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+}
+
+AliHLTTPCCATrackerComponent::AliHLTTPCCATrackerComponent(const AliHLTTPCCATrackerComponent&)
+  :
+  fTracker(NULL),
+  fVertex(NULL)
+{
+  // see header file for class documentation
+  HLTFatal("copy constructor untested");
+}
+
+AliHLTTPCCATrackerComponent& AliHLTTPCCATrackerComponent::operator=(const AliHLTTPCCATrackerComponent&)
+{
+  // see header file for class documentation
+  HLTFatal("assignment operator untested");
+  return *this;
+}
 
 AliHLTTPCCATrackerComponent::~AliHLTTPCCATrackerComponent()
     {
+  // see header file for class documentation
     }
 
 // Public functions to implement AliHLTComponent's interface.
@@ -67,23 +91,27 @@ AliHLTTPCCATrackerComponent::~AliHLTTPCCATrackerComponent()
 
 const char* AliHLTTPCCATrackerComponent::GetComponentID()
     {
+  // see header file for class documentation
     return "TPCCATracker";
     }
 
-void AliHLTTPCCATrackerComponent::GetInputDataTypes( vector<AliHLTComponent_DataType>& list)
+void AliHLTTPCCATrackerComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
     {
+  // see header file for class documentation
     list.clear();
-    list.push_back( AliHLTTPCDefinitions::gkClustersDataType );
-    list.push_back( AliHLTTPCDefinitions::gkVertexDataType );
+    list.push_back( AliHLTTPCDefinitions::fgkClustersDataType );
+    list.push_back( AliHLTTPCDefinitions::fgkVertexDataType );
     }
 
-AliHLTComponent_DataType AliHLTTPCCATrackerComponent::GetOutputDataType()
+AliHLTComponentDataType AliHLTTPCCATrackerComponent::GetOutputDataType()
     {
-    return AliHLTTPCDefinitions::gkTrackSegmentsDataType;
+  // see header file for class documentation
+    return AliHLTTPCDefinitions::fgkTrackSegmentsDataType;
     }
 
 void AliHLTTPCCATrackerComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
     {
+  // see header file for class documentation
     // XXX TODO: Find more realistic values.
     constBase = 0;
     inputMultiplier = 0.2;
@@ -91,11 +119,13 @@ void AliHLTTPCCATrackerComponent::GetOutputDataSize( unsigned long& constBase, d
 
 AliHLTComponent* AliHLTTPCCATrackerComponent::Spawn()
     {
+  // see header file for class documentation
     return new AliHLTTPCCATrackerComponent;
     }
 
 int AliHLTTPCCATrackerComponent::DoInit( int argc, const char** argv )
     {
+  // see header file for class documentation
     Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoInit", "DoInit", "DoInit()" );
 
     if ( fTracker || fVertex )
@@ -142,6 +172,7 @@ int AliHLTTPCCATrackerComponent::DoInit( int argc, const char** argv )
 
 int AliHLTTPCCATrackerComponent::DoDeinit()
     {
+  // see header file for class documentation
     if ( fTracker )
 	delete fTracker;
     fTracker = NULL;
@@ -151,10 +182,11 @@ int AliHLTTPCCATrackerComponent::DoDeinit()
     return 0;
     }
 
-int AliHLTTPCCATrackerComponent::DoEvent( const AliHLTComponent_EventData& evtData, const AliHLTComponent_BlockData* blocks, 
-					      AliHLTComponent_TriggerData& trigData, AliHLTUInt8_t* outputPtr, 
-					      AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks )
+int AliHLTTPCCATrackerComponent::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
+					      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
+					      AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
     {
+  // see header file for class documentation
     Logging( kHLTLogDebug, "HLT::TPCCATracker::DoEvent", "DoEvent", "DoEvent()" );
     if ( evtData.fBlockCnt<=0 )
       {
@@ -162,11 +194,11 @@ int AliHLTTPCCATrackerComponent::DoEvent( const AliHLTComponent_EventData& evtDa
 	return 0;
       }
 
-    const AliHLTComponent_BlockData* iter = NULL;
+    const AliHLTComponentBlockData* iter = NULL;
     unsigned long ndx;
     AliHLTTPCClusterData* inPtrSP;
     AliHLTTPCVertexData* inPtrV = NULL;
-    const AliHLTComponent_BlockData* vertexIter=NULL;
+    const AliHLTComponentBlockData* vertexIter=NULL;
     AliHLTTPCTrackletData* outPtr;
     AliHLTUInt8_t* outBPtr;
 
@@ -223,7 +255,7 @@ int AliHLTTPCCATrackerComponent::DoEvent( const AliHLTComponent_EventData& evtDa
 	else
 	    *slCntIter++;
 
-	if ( iter->fDataType == AliHLTTPCDefinitions::gkVertexDataType )
+	if ( iter->fDataType == AliHLTTPCDefinitions::fgkVertexDataType )
 	    {
 	    inPtrV = (AliHLTTPCVertexData*)(iter->fPtr);
 	    vertexIter = iter;
@@ -231,7 +263,7 @@ int AliHLTTPCCATrackerComponent::DoEvent( const AliHLTComponent_EventData& evtDa
 	    fVertex->Read( inPtrV );
 	    vertexSlice = slice;
 	    }
-	if ( iter->fDataType == AliHLTTPCDefinitions::gkClustersDataType )
+	if ( iter->fDataType == AliHLTTPCDefinitions::fgkClustersDataType )
 	    {
 	    patch = AliHLTTPCDefinitions::GetMinPatchNr( *iter );
 	    if ( minPatch>patch )
@@ -288,7 +320,7 @@ int AliHLTTPCCATrackerComponent::DoEvent( const AliHLTComponent_EventData& evtDa
 	for ( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
 	    {
 	    iter = blocks+ndx;
-	    if ( iter->fDataType == AliHLTTPCDefinitions::gkVertexDataType && slice==AliHLTTPCDefinitions::GetMinSliceNr( *iter ) )
+	    if ( iter->fDataType == AliHLTTPCDefinitions::fgkVertexDataType && slice==AliHLTTPCDefinitions::GetMinSliceNr( *iter ) )
 		{
 		inPtrV = (AliHLTTPCVertexData*)(iter->fPtr);
 		vertexIter = iter;
@@ -310,7 +342,7 @@ int AliHLTTPCCATrackerComponent::DoEvent( const AliHLTComponent_EventData& evtDa
 	{
 	iter = blocks+ndx;
 
-	if ( iter->fDataType == AliHLTTPCDefinitions::gkClustersDataType && slice==AliHLTTPCDefinitions::GetMinSliceNr( *iter ) )
+	if ( iter->fDataType == AliHLTTPCDefinitions::fgkClustersDataType && slice==AliHLTTPCDefinitions::GetMinSliceNr( *iter ) )
 	    {
 	    patch = AliHLTTPCDefinitions::GetMinPatchNr( *iter );
 	    pIter = patchIndices.begin();
@@ -369,7 +401,7 @@ int AliHLTTPCCATrackerComponent::DoEvent( const AliHLTComponent_EventData& evtDa
     tSize += mysize+sizeof(AliHLTTPCTrackletData);
     outBPtr += mysize+sizeof(AliHLTTPCTrackletData);
     
-    AliHLTComponent_BlockData bd;
+    AliHLTComponentBlockData bd;
     FillBlockData( bd );
     bd.fOffset = offset;
     bd.fSize = tSize;

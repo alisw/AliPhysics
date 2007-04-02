@@ -34,6 +34,7 @@ class AliHLTAgentSample : public AliHLTModuleAgent {
    * AliHLTConfigurationHandler. The agent can adapt the configurations
    * to be registered to the current AliRoot setup by checking the
    * runloader.
+   * @param handler      the configuration handler
    * @param runloader    AliRoot runloader
    * @return neg. error code if failed
    */

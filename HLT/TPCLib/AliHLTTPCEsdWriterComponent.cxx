@@ -106,8 +106,8 @@ int AliHLTTPCEsdWriterComponent::DumpEvent( const AliHLTComponentEventData& evtD
  
       for (int ndx=0; ndx<(int)evtData.fBlockCnt && iResult>=0; ndx++) {
 	iter = blocks+ndx;
-	if ( (bIsTrackSegs=(iter->fDataType == AliHLTTPCDefinitions::gkTrackSegmentsDataType))==1 ||
-	     iter->fDataType == AliHLTTPCDefinitions::gkTracksDataType ) {
+	if ( (bIsTrackSegs=(iter->fDataType == AliHLTTPCDefinitions::fgkTrackSegmentsDataType))==1 ||
+	     iter->fDataType == AliHLTTPCDefinitions::fgkTracksDataType ) {
 	  Int_t minslice=AliHLTTPCDefinitions::GetMinSliceNr(iter->fSpecification);
 	  Int_t maxslice=AliHLTTPCDefinitions::GetMaxSliceNr(iter->fSpecification);
 	  if (bIsTrackSegs==0) {

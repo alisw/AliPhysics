@@ -86,7 +86,7 @@ int AliHLTRootFileWriterComponent::ScanArgument(int argc, const char** argv)
   if (argc==0 && argv==NULL) {
     // this is just to get rid of the warning "unused parameter"
   }
-  int iResult=-EPROTO;
+  int iResult=-EINVAL;
   return iResult;
 }
 
