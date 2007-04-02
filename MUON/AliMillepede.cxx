@@ -862,6 +862,7 @@ Int_t AliMillepede::GlobalFit(double par[], double error[], double pull[])
   int nLocFits     = 0;
 
   AliInfo("..... Making global fit .....");
+  AliInfo(Form("First Iteration with cut factor %.2f", fChi2CutFactor));
 
   nLocFitsTot = AliMillepede::GetNLocalEquations();
 	
@@ -944,11 +945,9 @@ Int_t AliMillepede::GlobalFit(double par[], double error[], double pull[])
 
       if (fIter == 1) error[i] = fMatCGlo[i][i]; // Unfitted error
     }
-    AliInfo("");
     AliInfo(Form("The rank defect of the symmetric %d by %d matrix is %d (bad if non 0)",
 	    nVar, nVar, nVar-nGloFix-nRank));
 		
-    AliInfo("");
     AliInfo(Form("Total : %d local fits, %d rejected.", fNLocalFits, fNLocalFitsRejected));
     if (fIter == 0)  break;  // No iterations set     
     fIter++;
@@ -967,6 +966,8 @@ Int_t AliMillepede::GlobalFit(double par[], double error[], double pull[])
 	fIter = fMaxIter - 1;     // Last iteration
       }
     }
+    AliInfo("");
+    AliInfo("----------------------------------------------");
     AliInfo(Form("Iteration %d with cut factor %.2f", fIter, fChi2CutFactor));
     
     // Reset global variables
@@ -1027,7 +1028,7 @@ Int_t AliMillepede::GlobalFit(double par[], double error[], double pull[])
 
   for (j=0; j<fNGlobalPar; j++) {  
     par[j]   = fInitPar[j]+fDeltaPar[j];
-    pull[j]  = (fSigmaPar[j] <= 0.) ? 0. : fDeltaPar[j]/TMath::Sqrt(fSigmaPar[j]*fSigmaPar[j]-fMatCGlo[j][j]);
+    pull[j]  = (fSigmaPar[j] <= 0. || fSigmaPar[j]*fSigmaPar[j]-fMatCGlo[j][j] <=0.) ? 0. : fDeltaPar[j]/TMath::Sqrt(fSigmaPar[j]*fSigmaPar[j]-fMatCGlo[j][j]);
     error[j] = TMath::Sqrt(TMath::Abs(fMatCGlo[j][j]));
   }
 
