@@ -663,13 +663,14 @@ int AliHLTTPCTrack::Convert2AliKalmanTrack()
     0.,  0.,  0.,  0.,  0.
   };
 
+  Double_t charge=-1.0 * (double) GetCharge();
   Double_t xhit = GetFirstPointX();
   Double_t xx[5];
   xx[0] = GetFirstPointY();
   xx[1] = GetFirstPointZ();
   xx[2] = TMath::Sin(GetPsi());
   xx[3] = GetTgl();
-  xx[4] = 1.0/GetPt();
+  xx[4] = charge*(1.0/GetPt());
   //cout << "xhit=" << xhit << " y=" << xx[0] << " z=" << xx[1] << endl;
   //cout << "alpha=" << alpha << endl;
 
@@ -677,7 +678,7 @@ int AliHLTTPCTrack::Convert2AliKalmanTrack()
   fdEdx=0;
 
   // the Set function was not available in earlier versions, check done
-  // during configure, or by default on in the AliRoot build
+  // during configure; for the AliRoot build, by default ON 
 #ifdef EXTERNALTRACKPARAM_V1
 #warning track conversion to ESD format needs AliRoot version > v4-05-04
   //TODO (Feb 07): make this a real warning when logging system is adapted
