@@ -138,4 +138,6 @@ void AliTPCRawStream::ApplyAltroMapping()
   fRow = fMapping[patchIndex]->GetPadRow(hwAddress);
   fPad = fMapping[patchIndex]->GetPad(hwAddress);
 
+  if ((fRow < 0) || (fPad < 0))
+    AddMappingErrorLog(Form("hw=%d",hwAddress)); 
 }
