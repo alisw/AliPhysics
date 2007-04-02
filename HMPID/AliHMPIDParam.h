@@ -34,7 +34,10 @@ public:
   void     Lors2Mars   (Int_t c,Float_t x,Float_t y,Double_t *m,Int_t pl=kPc)const{Double_t z=0; switch(pl){case kPc:z=8.0;break; case kAnod:z=7.806;break; case kRad:z=-1.25; break;}   Double_t l[3]={x-fX,y-fY,z};  fM[c]->LocalToMaster(l,m); }    
   TVector3 Lors2Mars   (Int_t c,Float_t x,Float_t y,            Int_t pl=kPc)const{Double_t m[3];Lors2Mars(c,x,y,m,pl); return TVector3(m);    }//MRS->LRS  
   void     Mars2Lors   (Int_t c,Double_t *m,Float_t &x,Float_t &y           )const{Double_t l[3];fM[c]->MasterToLocal(m,l);x=l[0]+fX;y=l[1]+fY;}//MRS->LRS
-  void     Mars2LorsVec(Int_t c,Double_t *m,Float_t &th,Float_t &ph         )const{Double_t l[3]; fM[c]->MasterToLocalVect(m,l); Float_t pt=TMath::Sqrt(l[0]*l[0]+l[1]*l[1]); th=TMath::ATan(pt/l[2]); ph=TMath::ATan(l[1]/l[0]);}    
+  void     Mars2LorsVec(Int_t c,Double_t *m,Float_t &th,Float_t &ph         )const{Double_t l[3]; fM[c]->MasterToLocalVect(m,l); 
+                                                                                   Float_t pt=TMath::Sqrt(l[0]*l[0]+l[1]*l[1]); 
+                                                                                           th=TMath::ATan(pt/l[2]); 
+                                                                                           ph=TMath::ATan2(l[1],l[0]);}    
   TVector3 Norm        (Int_t c                                             )const{Double_t n[3]; Norm(c,n); return TVector3(n);               }//norm 
   void     Norm        (Int_t c,Double_t *n                                 )const{Double_t l[3]={0,0,1};fM[c]->LocalToMasterVect(l,n);        }//norm
   
@@ -42,7 +45,7 @@ public:
 protected:
          AliHMPIDParam();             //default ctor is protected to enforce it to be singleton
   static AliHMPIDParam *fgInstance;   //static pointer  to instance of AliHMPIDParam singleton
-  TGeoHMatrix *fM[7];                //poiners to matrices defining HMPID chambers rotations-translations
+  TGeoHMatrix *fM[7];                //pointers to matrices defining HMPID chambers rotations-translations
   Float_t fX;                        //x shift of LORS with respect to rotated MARS 
   Float_t fY;                        //y shift of LORS with respect to rotated MARS   
   ClassDef(AliHMPIDParam,0)           //HMPID main parameters class
