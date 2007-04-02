@@ -50,7 +50,7 @@ private:
 
   static const int fgkMaxGlobalPar  = 1000; ///< Max. number of global parameters
   static const int fgkMaxLocalPar   = 20;   ///< Max. number of local parameters
-  static const int fgkMaxGloCsts    = 10;   ///< Max. number of constraint equations
+  static const int fgkMaxGloCsts    = 20;   ///< Max. number of constraint equations
   static const int fgkMaxGloPC	    = 1010; ///< fgkMaxGlobalPar+fgkMaxGloCsts
 
 
