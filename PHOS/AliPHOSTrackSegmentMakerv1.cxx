@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.85  2007/03/28 19:18:15  kharlov
+ * RecPoints recalculation in TSM removed
+ *
  * Revision 1.84  2007/03/07 07:01:21  hristov
  * Fixing copy/paste erro. Additional protections
  *
@@ -584,7 +587,7 @@ void AliPHOSTrackSegmentMakerv1::PrintTrackSegments(Option_t * option)
   TClonesArray * trackSegments = AliPHOSGetter::Instance()->TrackSegments() ; 
 
   Info("PrintTrackSegments", "Results from TrackSegmentMaker:") ; 
-  printf("nevent: %d\n", gAlice->GetEvNumber()) ; 
+  printf("nevent: %d\n", AliPHOSGetter::Instance()->EventNumber()) ; 
   printf("        Found %d TrackSegments\n", trackSegments->GetEntriesFast() ); 
   
   if(strstr(option,"all")) {  // printing found TS

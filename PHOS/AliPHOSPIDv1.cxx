@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.106  2007/04/01 15:40:15  kharlov
+ * Correction for actual vertex position implemented
+ *
  * Revision 1.105  2007/03/06 06:57:46  kharlov
  * DP:calculation of distance to CPV done in TSM
  *
@@ -1531,7 +1534,7 @@ void AliPHOSPIDv1::PrintRecParticles(Option_t * option)
 
   TString message ; 
   message  = "\nevent " ;
-  message += gAlice->GetEvNumber() ; 
+  message += gime->EventNumber();
   message += "       found " ; 
   message += recParticles->GetEntriesFast(); 
   message += " RecParticles\n" ; 
