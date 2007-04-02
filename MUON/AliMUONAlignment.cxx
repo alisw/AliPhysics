@@ -53,6 +53,7 @@ ClassImp(AliMUONAlignment)
   Int_t AliMUONAlignment::fgNDetElemCh[10] = {4,4,4,4,18,18,26,26,26,26};
   Int_t AliMUONAlignment::fgSNDetElemCh[10] = {4,8,12,16,34,52,78,104,130,156};
   Int_t AliMUONAlignment::fgNParCh = 3;
+  Int_t AliMUONAlignment::fgNTrkMod = 16;
   Int_t AliMUONAlignment::fgNCh = 10;
   Int_t AliMUONAlignment::fgNSt = 5;
 
@@ -107,7 +108,8 @@ void AliMUONAlignment::Init(Int_t nGlobal,  /* number of global paramers */
   /// Initialization of AliMillepede. Fix parameters, define constraints ...
   fMillepede->InitMille(nGlobal,nLocal,nStdDev,fResCut,fResCutInitial);
 
-  Bool_t bStOnOff[5] = {kFALSE,kFALSE,kTRUE,kTRUE,kTRUE};
+  Bool_t bStOnOff[5] = {kTRUE,kTRUE,kTRUE,kTRUE,kTRUE};
+  Bool_t bSpecLROnOff[2] = {kTRUE,kTRUE};
 
   AllowVariations(bStOnOff);
 
@@ -115,15 +117,23 @@ void AliMUONAlignment::Init(Int_t nGlobal,  /* number of global paramers */
   for (Int_t iSt=0; iSt<5; iSt++)
     if (!bStOnOff[iSt]) FixStation(iSt+1);
 
-  Bool_t bVarXYT[3] = {kFALSE,kTRUE,kFALSE};
-  Bool_t bDetTLBR[4] = {kFALSE,kTRUE,kFALSE,kTRUE};
+  FixHalfSpectrometer(bStOnOff,bSpecLROnOff);
+
   ResetConstraints();
-  AddConstraints(bStOnOff,bVarXYT,bDetTLBR);
+  
+  // Define global constrains to be applied
+  // X, Y, P, XvsZ, YvsZ, PvsZ, XvsY, YvsY, PvsY
+  Bool_t bVarXYT[9] = {kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE};
+  Bool_t bDetTLBR[4] = {kFALSE,kTRUE,kFALSE,kTRUE};
+  //  AddConstraints(bStOnOff,bVarXYT,bDetTLBR,bSpecLROnOff);
+
+  // Other possible way to add constrains
   bVarXYT[0] = kFALSE; bVarXYT[1] = kFALSE; bVarXYT[2] = kTRUE;
   bDetTLBR[0] = kFALSE; bDetTLBR[1] = kTRUE; bDetTLBR[2] = kFALSE; bDetTLBR[3] = kFALSE;
-  AddConstraints(bStOnOff,bVarXYT,bDetTLBR);
-  bVarXYT[0] = kFALSE; bVarXYT[1] = kFALSE; bVarXYT[2] = kTRUE;
-  AddConstraints(bStOnOff,bVarXYT);
+//   AddConstraints(bStOnOff,bVarXYT,bDetTLBR);
+
+  bVarXYT[0] = kTRUE; bVarXYT[1] = kTRUE; bVarXYT[2] = kFALSE;
+  //  AddConstraints(bStOnOff,bVarXYT);
   
   // Set iterations
   if (fStartFac>1) fMillepede->SetIterations(fStartFac);          
@@ -137,6 +147,58 @@ void AliMUONAlignment::FixStation(Int_t iSt){
     FixParameter(i*fgNParCh+0, 0.0);
     FixParameter(i*fgNParCh+1, 0.0);
     FixParameter(i*fgNParCh+2, 0.0);
+  }
+}
+
+void AliMUONAlignment::FixHalfSpectrometer(Bool_t *lStOnOff, Bool_t *lSpecLROnOff){
+  /// Fix left or right detector
+  for (Int_t i = 0; i < fgNDetElem; i++){    
+    Int_t iCh=0;
+    for (iCh=1; iCh<=fgNCh; iCh++){
+      if (i<fgSNDetElemCh[iCh-1]) break;
+    }
+    Int_t iSt = lStOnOff[(iCh-1)/2] ? (iCh+1)/2 : 0; 
+    if (iSt){
+      Int_t lDetElemNumber = (iCh==1) ? i : i-fgSNDetElemCh[iCh-2];
+      if (iCh>=1 && iCh<=4){
+	if ((lDetElemNumber==1 || lDetElemNumber==2) && !lSpecLROnOff[0]){ // From track crossings
+	  FixParameter(i*fgNParCh+0, 0.0);
+	  FixParameter(i*fgNParCh+1, 0.0);
+	  FixParameter(i*fgNParCh+2, 0.0);
+	}
+	if ((lDetElemNumber==0 || lDetElemNumber==3) && !lSpecLROnOff[1]){ // From track crossings
+	  FixParameter(i*fgNParCh+0, 0.0);
+	  FixParameter(i*fgNParCh+1, 0.0);
+	  FixParameter(i*fgNParCh+2, 0.0);
+	}
+      }
+      if (iCh>=5 && iCh<=6){
+	if ((lDetElemNumber>=5&&lDetElemNumber<=13) && !lSpecLROnOff[0]){
+	  FixParameter(i*fgNParCh+0, 0.0);
+	  FixParameter(i*fgNParCh+1, 0.0);
+	  FixParameter(i*fgNParCh+2, 0.0);
+	}
+	if (((lDetElemNumber>=0&&lDetElemNumber<=4) || 
+	     (lDetElemNumber>=14&&lDetElemNumber<=17)) && !lSpecLROnOff[1]){
+	  FixParameter(i*fgNParCh+0, 0.0);
+	  FixParameter(i*fgNParCh+1, 0.0);
+	  FixParameter(i*fgNParCh+2, 0.0);
+	}
+      }
+      if (iCh>=7 && iCh<=10){
+	if ((lDetElemNumber>=7&&lDetElemNumber<=19) && !lSpecLROnOff[0]){
+	  FixParameter(i*fgNParCh+0, 0.0);
+	  FixParameter(i*fgNParCh+1, 0.0);
+	  FixParameter(i*fgNParCh+2, 0.0);
+	}
+	if (((lDetElemNumber>=0&&lDetElemNumber<=6) || 
+	     (lDetElemNumber>=20&&lDetElemNumber<=25)) && !lSpecLROnOff[1]){
+	  FixParameter(i*fgNParCh+0, 0.0);
+	  FixParameter(i*fgNParCh+1, 0.0);
+	  FixParameter(i*fgNParCh+2, 0.0);
+	}
+      }
+    }
   }
 }
 
@@ -193,8 +255,19 @@ void AliMUONAlignment::AddConstraints(Bool_t *lStOnOff,Bool_t *lVarXYT){
   }
 }
 
-void AliMUONAlignment::AddConstraints(Bool_t *lStOnOff,Bool_t *lVarXYT, Bool_t *lDetTLBR){
-  /// Add constraint equations for selected stations, degrees of freedom detector half 
+void AliMUONAlignment::AddConstraints(Bool_t *lStOnOff,Bool_t *lVarXYT, Bool_t *lDetTLBR, Bool_t *lSpecLROnOff){
+  /// Add constraint equations for selected stations, degrees of freedom and detector half 
+  Double_t lDetElemLocX = 0.;
+  Double_t lDetElemLocY = 0.;
+  Double_t lDetElemLocZ = 0.;
+  Double_t lDetElemGloX = 0.;
+  Double_t lDetElemGloY = 0.;
+  Double_t lDetElemGloZ = 0.;
+  Double_t lMeanY = 0.;
+  Double_t lSigmaY = 0.;
+  Double_t lMeanZ = 0.;
+  Double_t lSigmaZ = 0.;
+  Int_t lNDetElem = 0;
   for (Int_t i = 0; i < fgNDetElem; i++){    
     Int_t iCh=0;
     for (iCh=1; iCh<=fgNCh; iCh++){
@@ -202,23 +275,134 @@ void AliMUONAlignment::AddConstraints(Bool_t *lStOnOff,Bool_t *lVarXYT, Bool_t *
     }
     Int_t iSt = lStOnOff[(iCh-1)/2] ? (iCh+1)/2 : 0; 
     if (iSt){
+      Int_t lDetElemNumber = (iCh==1) ? i : i-fgSNDetElemCh[iCh-2];
+      Int_t lDetElemId = iCh*100+lDetElemNumber;
+      fTransform->Local2Global(lDetElemId,lDetElemLocX,lDetElemLocY,lDetElemLocZ,
+			       lDetElemGloX,lDetElemGloY,lDetElemGloZ);
+      if (iCh>=1 && iCh<=4){
+	if ((lDetElemNumber==1 || lDetElemNumber==2) && lSpecLROnOff[0]){ // From track crossings
+	  lMeanY += lDetElemGloY;
+	  lSigmaY += lDetElemGloY*lDetElemGloY;
+	  lMeanZ += lDetElemGloZ;
+	  lSigmaZ += lDetElemGloZ*lDetElemGloZ;
+	  lNDetElem++;
+	}
+	if ((lDetElemNumber==0 || lDetElemNumber==3) && lSpecLROnOff[1]){ // From track crossings
+	  lMeanY += lDetElemGloY;
+	  lSigmaY += lDetElemGloY*lDetElemGloY;
+	  lMeanZ += lDetElemGloZ;
+	  lSigmaZ += lDetElemGloZ*lDetElemGloZ;
+	  lNDetElem++;
+	}
+      }
+      if (iCh>=5 && iCh<=6){
+	if ((lDetElemNumber>=5&&lDetElemNumber<=13) && lSpecLROnOff[0]){
+	  lMeanY += lDetElemGloY;
+	  lSigmaY += lDetElemGloY*lDetElemGloY;
+	  lMeanZ += lDetElemGloZ;
+	  lSigmaZ += lDetElemGloZ*lDetElemGloZ;
+	  lNDetElem++;
+	}
+	if (((lDetElemNumber>=0&&lDetElemNumber<=4) || 
+	     (lDetElemNumber>=14&&lDetElemNumber<=17)) && lSpecLROnOff[1]){
+	  lMeanY += lDetElemGloY;
+	  lSigmaY += lDetElemGloY*lDetElemGloY;
+	  lMeanZ += lDetElemGloZ;
+	  lSigmaZ += lDetElemGloZ*lDetElemGloZ;
+	  lNDetElem++;
+	}
+      }
+      if (iCh>=7 && iCh<=10){
+	if ((lDetElemNumber>=7&&lDetElemNumber<=19) && lSpecLROnOff[0]){
+	  lMeanY += lDetElemGloY;
+	  lSigmaY += lDetElemGloY*lDetElemGloY;
+	  lMeanZ += lDetElemGloZ;
+	  lSigmaZ += lDetElemGloZ*lDetElemGloZ;
+	  lNDetElem++;
+	}
+	if (((lDetElemNumber>=0&&lDetElemNumber<=6) || 
+	     (lDetElemNumber>=20&&lDetElemNumber<=25)) && lSpecLROnOff[1]){
+	  lMeanY += lDetElemGloY;
+	  lSigmaY += lDetElemGloY*lDetElemGloY;
+	  lMeanZ += lDetElemGloZ;
+	  lSigmaZ += lDetElemGloZ*lDetElemGloZ;
+	  lNDetElem++;
+	}
+      }
+    }
+  }
+  lMeanY /= lNDetElem;
+  lSigmaY /= lNDetElem;
+  lSigmaY = TMath::Sqrt(lSigmaY-lMeanY*lMeanY);
+  lMeanZ /= lNDetElem;
+  lSigmaZ /= lNDetElem;
+  lSigmaZ = TMath::Sqrt(lSigmaZ-lMeanZ*lMeanZ);
+  AliInfo(Form("Used %i DetElem, MeanZ= %f , SigmaZ= %f", lNDetElem,lMeanZ,lSigmaZ));  
+
+  for (Int_t i = 0; i < fgNDetElem; i++){    
+    Int_t iCh=0;
+    for (iCh=1; iCh<=fgNCh; iCh++){
+      if (i<fgSNDetElemCh[iCh-1]) break;
+    }
+    Int_t iSt = lStOnOff[(iCh-1)/2] ? (iCh+1)/2 : 0; 
+    if (iSt){
+      Int_t lDetElemNumber = (iCh==1) ? i : i-fgSNDetElemCh[iCh-2];
+      Int_t lDetElemId = iCh*100+lDetElemNumber;
+      fTransform->Local2Global(lDetElemId,lDetElemLocX,lDetElemLocY,lDetElemLocZ,
+			       lDetElemGloX,lDetElemGloY,lDetElemGloZ);
       if (lVarXYT[0]) { // X constraint
 	if (lDetTLBR[0]) ConstrainT(i,iCh,fConstraintXT,0); // Top half
 	if (lDetTLBR[1]) ConstrainL(i,iCh,fConstraintXL,0); // Left half
 	if (lDetTLBR[2]) ConstrainB(i,iCh,fConstraintXB,0); // Bottom half
 	if (lDetTLBR[3]) ConstrainR(i,iCh,fConstraintXR,0); // Right half
       }
-      if (lVarXYT[1]) { // X constraint
+      if (lVarXYT[1]) { // Y constraint
 	if (lDetTLBR[0]) ConstrainT(i,iCh,fConstraintYT,1); // Top half
 	if (lDetTLBR[1]) ConstrainL(i,iCh,fConstraintYL,1); // Left half
 	if (lDetTLBR[2]) ConstrainB(i,iCh,fConstraintYB,1); // Bottom half
 	if (lDetTLBR[3]) ConstrainR(i,iCh,fConstraintYR,1); // Right half
       }
-      if (lVarXYT[2]) { // X constraint
+      if (lVarXYT[2]) { // P constraint
 	if (lDetTLBR[0]) ConstrainT(i,iCh,fConstraintPT,2); // Top half
 	if (lDetTLBR[1]) ConstrainL(i,iCh,fConstraintPL,2); // Left half
 	if (lDetTLBR[2]) ConstrainB(i,iCh,fConstraintPB,2); // Bottom half
 	if (lDetTLBR[3]) ConstrainR(i,iCh,fConstraintPR,2); // Right half
+      }
+      if (lVarXYT[3]) { // X-Z shearing
+	if (lDetTLBR[0]) ConstrainT(i,iCh,fConstraintXZT,0,(lDetElemGloZ-lMeanZ)/lSigmaZ); // Top half
+	if (lDetTLBR[1]) ConstrainL(i,iCh,fConstraintXZL,0,(lDetElemGloZ-lMeanZ)/lSigmaZ); // Left half
+	if (lDetTLBR[2]) ConstrainB(i,iCh,fConstraintXZB,0,(lDetElemGloZ-lMeanZ)/lSigmaZ); // Bottom half
+	if (lDetTLBR[3]) ConstrainR(i,iCh,fConstraintXZR,0,(lDetElemGloZ-lMeanZ)/lSigmaZ); // Right half
+      }
+      if (lVarXYT[4]) { // Y-Z shearing
+	if (lDetTLBR[0]) ConstrainT(i,iCh,fConstraintYZT,1,(lDetElemGloZ-lMeanZ)/lSigmaZ); // Top half
+	if (lDetTLBR[1]) ConstrainL(i,iCh,fConstraintYZL,1,(lDetElemGloZ-lMeanZ)/lSigmaZ); // Left half
+	if (lDetTLBR[2]) ConstrainB(i,iCh,fConstraintYZB,1,(lDetElemGloZ-lMeanZ)/lSigmaZ); // Bottom half
+	if (lDetTLBR[3]) ConstrainR(i,iCh,fConstraintYZR,1,(lDetElemGloZ-lMeanZ)/lSigmaZ); // Right half
+      }
+      if (lVarXYT[5]) { // P-Z rotation
+	if (lDetTLBR[0]) ConstrainT(i,iCh,fConstraintPZT,2,(lDetElemGloZ-lMeanZ)/lSigmaZ); // Top half
+	if (lDetTLBR[1]) ConstrainL(i,iCh,fConstraintPZL,2,(lDetElemGloZ-lMeanZ)/lSigmaZ); // Left half
+	if (lDetTLBR[2]) ConstrainB(i,iCh,fConstraintPZB,2,(lDetElemGloZ-lMeanZ)/lSigmaZ); // Bottom half
+	if (lDetTLBR[3]) ConstrainR(i,iCh,fConstraintPZR,2,(lDetElemGloZ-lMeanZ)/lSigmaZ); // Right half
+      }
+      if (lVarXYT[6]) { // X-Y shearing
+	if (lDetTLBR[0]) ConstrainT(i,iCh,fConstraintXYT,0,(lDetElemGloY-lMeanY)/lSigmaY); // Top half
+	if (lDetTLBR[1]) ConstrainL(i,iCh,fConstraintXYL,0,(lDetElemGloY-lMeanY)/lSigmaY); // Left half
+	if (lDetTLBR[2]) ConstrainB(i,iCh,fConstraintXYB,0,(lDetElemGloY-lMeanY)/lSigmaY); // Bottom half
+	if (lDetTLBR[3]) ConstrainR(i,iCh,fConstraintXYR,0,(lDetElemGloY-lMeanY)/lSigmaY); // Right half
+      }
+      if (lVarXYT[7]) { // Y-Y scaling
+	if (lDetTLBR[0]) ConstrainT(i,iCh,fConstraintYYT,1,(lDetElemGloY-lMeanY)/lSigmaY); // Top half
+	if (lDetTLBR[1]) ConstrainL(i,iCh,fConstraintYYL,1,(lDetElemGloY-lMeanY)/lSigmaY); // Left half
+	if (lDetTLBR[2]) ConstrainB(i,iCh,fConstraintYYB,1,(lDetElemGloY-lMeanY)/lSigmaY); // Bottom half
+	if (lDetTLBR[3]) ConstrainR(i,iCh,fConstraintYYR,1,(lDetElemGloY-lMeanY)/lSigmaY); // Right half
+      }
+      if (lVarXYT[8]) { // P-Y rotation
+	if (lDetTLBR[0]) ConstrainT(i,iCh,fConstraintPYT,2,(lDetElemGloY-lMeanY)/lSigmaY); // Top half
+	if (lDetTLBR[1]) ConstrainL(i,iCh,fConstraintPYL,2,(lDetElemGloY-lMeanY)/lSigmaY); // Left half
+	if (lDetTLBR[2]) ConstrainB(i,iCh,fConstraintPYB,2,(lDetElemGloY-lMeanY)/lSigmaY); // Bottom half
+	if (lDetTLBR[3]) ConstrainR(i,iCh,fConstraintPYR,2,(lDetElemGloY-lMeanY)/lSigmaY); // Right half
       }
     }
   }
@@ -240,9 +424,45 @@ void AliMUONAlignment::AddConstraints(Bool_t *lStOnOff,Bool_t *lVarXYT, Bool_t *
     if (lDetTLBR[2]) AddConstraint(fConstraintPB,0.0); // Bottom half
     if (lDetTLBR[3]) AddConstraint(fConstraintPR,0.0); // Right half
   }
+  if (lVarXYT[3]) { // X-Z constraint
+    if (lDetTLBR[0]) AddConstraint(fConstraintXZT,0.0); // Top half
+    if (lDetTLBR[1]) AddConstraint(fConstraintXZL,0.0); // Left half
+    if (lDetTLBR[2]) AddConstraint(fConstraintXZB,0.0); // Bottom half
+    if (lDetTLBR[3]) AddConstraint(fConstraintXZR,0.0); // Right half
+  }
+  if (lVarXYT[4]) { // Y-Z constraint
+    if (lDetTLBR[0]) AddConstraint(fConstraintYZT,0.0); // Top half
+    if (lDetTLBR[1]) AddConstraint(fConstraintYZL,0.0); // Left half
+    if (lDetTLBR[2]) AddConstraint(fConstraintYZB,0.0); // Bottom half
+    if (lDetTLBR[3]) AddConstraint(fConstraintYZR,0.0); // Right half
+  }
+  if (lVarXYT[5]) { // P-Z constraint
+    if (lDetTLBR[0]) AddConstraint(fConstraintPZT,0.0); // Top half
+    if (lDetTLBR[1]) AddConstraint(fConstraintPZL,0.0); // Left half
+    if (lDetTLBR[2]) AddConstraint(fConstraintPZB,0.0); // Bottom half
+    if (lDetTLBR[3]) AddConstraint(fConstraintPZR,0.0); // Right half
+  }
+  if (lVarXYT[6]) { // X-Y constraint
+    if (lDetTLBR[0]) AddConstraint(fConstraintXYT,0.0); // Top half
+    if (lDetTLBR[1]) AddConstraint(fConstraintXYL,0.0); // Left half
+    if (lDetTLBR[2]) AddConstraint(fConstraintXYB,0.0); // Bottom half
+    if (lDetTLBR[3]) AddConstraint(fConstraintXYR,0.0); // Right half
+  }
+  if (lVarXYT[7]) { // Y-Y constraint
+    if (lDetTLBR[0]) AddConstraint(fConstraintYYT,0.0); // Top half
+    if (lDetTLBR[1]) AddConstraint(fConstraintYYL,0.0); // Left half
+    if (lDetTLBR[2]) AddConstraint(fConstraintYYB,0.0); // Bottom half
+    if (lDetTLBR[3]) AddConstraint(fConstraintYYR,0.0); // Right half
+  }
+  if (lVarXYT[8]) { // P-Y constraint
+    if (lDetTLBR[0]) AddConstraint(fConstraintPYT,0.0); // Top half
+    if (lDetTLBR[1]) AddConstraint(fConstraintPYL,0.0); // Left half
+    if (lDetTLBR[2]) AddConstraint(fConstraintPYB,0.0); // Bottom half
+    if (lDetTLBR[3]) AddConstraint(fConstraintPYR,0.0); // Right half
+  }
 }
 
-void AliMUONAlignment::ConstrainT(Int_t lDetElem, Int_t lCh, Double_t *lConstraintT, Int_t iVar){
+void AliMUONAlignment::ConstrainT(Int_t lDetElem, Int_t lCh, Double_t *lConstraintT, Int_t iVar, Double_t lWeight){
   /// Set constrain equation for top half of spectrometer
   Int_t lDetElemNumber = (lCh==1) ? lDetElem : lDetElem-fgSNDetElemCh[lCh-2];
   if (lCh>=1 && lCh<=4){
@@ -262,31 +482,31 @@ void AliMUONAlignment::ConstrainT(Int_t lDetElem, Int_t lCh, Double_t *lConstrai
   }
 }
 
-void AliMUONAlignment::ConstrainL(Int_t lDetElem, Int_t lCh, Double_t *lConstraintL, Int_t iVar){
+void AliMUONAlignment::ConstrainL(Int_t lDetElem, Int_t lCh, Double_t *lConstraintL, Int_t iVar, Double_t lWeight){
   /// Set constrain equation for left half of spectrometer
   Int_t lDetElemNumber = (lCh==1) ? lDetElem : lDetElem-fgSNDetElemCh[lCh-2];
   if (lCh>=1 && lCh<=4){
     if (lDetElemNumber==1 || lDetElemNumber==2){ // From track crossings
-      lConstraintL[lDetElem*fgNParCh+iVar]=1.0;
+      lConstraintL[lDetElem*fgNParCh+iVar]=lWeight;
     }
   }
   if (lCh>=5 && lCh<=6){
     if (lDetElemNumber>=5&&lDetElemNumber<=13){
-      lConstraintL[lDetElem*fgNParCh+iVar]=1.0;
+      lConstraintL[lDetElem*fgNParCh+iVar]=lWeight;
     }
   }
   if (lCh>=7 && lCh<=10){
     if (lDetElemNumber>=7&&lDetElemNumber<=19){
-      lConstraintL[lDetElem*fgNParCh+iVar]=1.0;
+      lConstraintL[lDetElem*fgNParCh+iVar]=lWeight;
     }
   }
 }
 
-void AliMUONAlignment::ConstrainB(Int_t lDetElem, Int_t lCh, Double_t *lConstraintB, Int_t iVar){
+void AliMUONAlignment::ConstrainB(Int_t lDetElem, Int_t lCh, Double_t *lConstraintB, Int_t iVar, Double_t lWeight){
   /// Set constrain equation for bottom half of spectrometer
   Int_t lDetElemNumber = (lCh==1) ? lDetElem : lDetElem-fgSNDetElemCh[lCh-2];
   if (lCh>=1 && lCh<=4){
-    if (lDetElemNumber==2 && lDetElemNumber==3){ // From track crossings
+    if (lDetElemNumber==2 || lDetElemNumber==3){ // From track crossings
       lConstraintB[lDetElem*fgNParCh+iVar]=1.0;
     }
   }
@@ -304,24 +524,24 @@ void AliMUONAlignment::ConstrainB(Int_t lDetElem, Int_t lCh, Double_t *lConstrai
   }
 }
 
-void AliMUONAlignment::ConstrainR(Int_t lDetElem, Int_t lCh, Double_t *lConstraintR, Int_t iVar){
+void AliMUONAlignment::ConstrainR(Int_t lDetElem, Int_t lCh, Double_t *lConstraintR, Int_t iVar, Double_t lWeight){
   /// Set constrain equation for right half of spectrometer
   Int_t lDetElemNumber = (lCh==1) ? lDetElem : lDetElem-fgSNDetElemCh[lCh-2];
   if (lCh>=1 && lCh<=4){
-    if (lDetElemNumber==0 && lDetElemNumber==3){ // From track crossings
-      lConstraintR[lDetElem*fgNParCh+iVar]=1.0;
+    if (lDetElemNumber==0 || lDetElemNumber==3){ // From track crossings
+      lConstraintR[lDetElem*fgNParCh+iVar]=lWeight;
     }
   }
   if (lCh>=5 && lCh<=6){
     if ((lDetElemNumber>=0&&lDetElemNumber<=4) || 
 	(lDetElemNumber>=14&&lDetElemNumber<=17)){
-      lConstraintR[lDetElem*fgNParCh+iVar]=1.0;
+      lConstraintR[lDetElem*fgNParCh+iVar]=lWeight;
     }
   }
   if (lCh>=7 && lCh<=10){
     if ((lDetElemNumber>=0&&lDetElemNumber<=6) || 
 	(lDetElemNumber>=20&&lDetElemNumber<=25)){
-      lConstraintR[lDetElem*fgNParCh+iVar]=1.0;
+      lConstraintR[lDetElem*fgNParCh+iVar]=lWeight;
     }
   }
 }
@@ -329,51 +549,126 @@ void AliMUONAlignment::ConstrainR(Int_t lDetElem, Int_t lCh, Double_t *lConstrai
 void AliMUONAlignment::ResetConstraints(){
   /// Reset all constraint equations
   for (Int_t i = 0; i < fgNDetElem; i++){    
-      fConstraintX[i*fgNParCh+0]=0.0;
-      fConstraintX[i*fgNParCh+1]=0.0;
-      fConstraintX[i*fgNParCh+2]=0.0;
-      fConstraintY[i*fgNParCh+0]=0.0;
-      fConstraintY[i*fgNParCh+1]=0.0;
-      fConstraintY[i*fgNParCh+2]=0.0;
-      fConstraintP[i*fgNParCh+0]=0.0;
-      fConstraintP[i*fgNParCh+1]=0.0;
-      fConstraintP[i*fgNParCh+2]=0.0;
-      fConstraintXT[i*fgNParCh+0]=0.0;
-      fConstraintXT[i*fgNParCh+1]=0.0;
-      fConstraintXT[i*fgNParCh+2]=0.0;
-      fConstraintYT[i*fgNParCh+0]=0.0;
-      fConstraintYT[i*fgNParCh+1]=0.0;
-      fConstraintYT[i*fgNParCh+2]=0.0;
-      fConstraintPT[i*fgNParCh+0]=0.0;
-      fConstraintPT[i*fgNParCh+1]=0.0;
-      fConstraintPT[i*fgNParCh+2]=0.0;
-      fConstraintXL[i*fgNParCh+0]=0.0;
-      fConstraintXL[i*fgNParCh+1]=0.0;
-      fConstraintXL[i*fgNParCh+2]=0.0;
-      fConstraintYL[i*fgNParCh+0]=0.0;
-      fConstraintYL[i*fgNParCh+1]=0.0;
-      fConstraintYL[i*fgNParCh+2]=0.0;
-      fConstraintPL[i*fgNParCh+0]=0.0;
-      fConstraintPL[i*fgNParCh+1]=0.0;
-      fConstraintPL[i*fgNParCh+2]=0.0;
-      fConstraintXB[i*fgNParCh+0]=0.0;
-      fConstraintXB[i*fgNParCh+1]=0.0;
-      fConstraintXB[i*fgNParCh+2]=0.0;
-      fConstraintYB[i*fgNParCh+0]=0.0;
-      fConstraintYB[i*fgNParCh+1]=0.0;
-      fConstraintYB[i*fgNParCh+2]=0.0;
-      fConstraintPB[i*fgNParCh+0]=0.0;
-      fConstraintPB[i*fgNParCh+1]=0.0;
-      fConstraintPB[i*fgNParCh+2]=0.0;
-      fConstraintXR[i*fgNParCh+0]=0.0;
-      fConstraintXR[i*fgNParCh+1]=0.0;
-      fConstraintXR[i*fgNParCh+2]=0.0;
-      fConstraintYR[i*fgNParCh+0]=0.0;
-      fConstraintYR[i*fgNParCh+1]=0.0;
-      fConstraintYR[i*fgNParCh+2]=0.0;
-      fConstraintPR[i*fgNParCh+0]=0.0;
-      fConstraintPR[i*fgNParCh+1]=0.0;
-      fConstraintPR[i*fgNParCh+2]=0.0;
+    fConstraintX[i*fgNParCh+0]=0.0;
+    fConstraintX[i*fgNParCh+1]=0.0;
+    fConstraintX[i*fgNParCh+2]=0.0;
+    fConstraintY[i*fgNParCh+0]=0.0;
+    fConstraintY[i*fgNParCh+1]=0.0;
+    fConstraintY[i*fgNParCh+2]=0.0;
+    fConstraintP[i*fgNParCh+0]=0.0;
+    fConstraintP[i*fgNParCh+1]=0.0;
+    fConstraintP[i*fgNParCh+2]=0.0;
+    fConstraintXT[i*fgNParCh+0]=0.0;
+    fConstraintXT[i*fgNParCh+1]=0.0;
+    fConstraintXT[i*fgNParCh+2]=0.0;
+    fConstraintYT[i*fgNParCh+0]=0.0;
+    fConstraintYT[i*fgNParCh+1]=0.0;
+    fConstraintYT[i*fgNParCh+2]=0.0;
+    fConstraintPT[i*fgNParCh+0]=0.0;
+    fConstraintPT[i*fgNParCh+1]=0.0;
+    fConstraintPT[i*fgNParCh+2]=0.0;
+    fConstraintXZT[i*fgNParCh+0]=0.0;
+    fConstraintXZT[i*fgNParCh+1]=0.0;
+    fConstraintXZT[i*fgNParCh+2]=0.0;
+    fConstraintYZT[i*fgNParCh+0]=0.0;
+    fConstraintYZT[i*fgNParCh+1]=0.0;
+    fConstraintYZT[i*fgNParCh+2]=0.0;
+    fConstraintPZT[i*fgNParCh+0]=0.0;
+    fConstraintPZT[i*fgNParCh+1]=0.0;
+    fConstraintPZT[i*fgNParCh+2]=0.0;
+    fConstraintXYT[i*fgNParCh+0]=0.0;
+    fConstraintXYT[i*fgNParCh+1]=0.0;
+    fConstraintXYT[i*fgNParCh+2]=0.0;
+    fConstraintYYT[i*fgNParCh+0]=0.0;
+    fConstraintYYT[i*fgNParCh+1]=0.0;
+    fConstraintYYT[i*fgNParCh+2]=0.0;
+    fConstraintPYT[i*fgNParCh+0]=0.0;
+    fConstraintPYT[i*fgNParCh+1]=0.0;
+    fConstraintPYT[i*fgNParCh+2]=0.0;
+    fConstraintXL[i*fgNParCh+0]=0.0;
+    fConstraintXL[i*fgNParCh+1]=0.0;
+    fConstraintXL[i*fgNParCh+2]=0.0;
+    fConstraintYL[i*fgNParCh+0]=0.0;
+    fConstraintYL[i*fgNParCh+1]=0.0;
+    fConstraintYL[i*fgNParCh+2]=0.0;
+    fConstraintPL[i*fgNParCh+0]=0.0;
+    fConstraintPL[i*fgNParCh+1]=0.0;
+    fConstraintPL[i*fgNParCh+2]=0.0;
+    fConstraintXZL[i*fgNParCh+0]=0.0;
+    fConstraintXZL[i*fgNParCh+1]=0.0;
+    fConstraintXZL[i*fgNParCh+2]=0.0;
+    fConstraintYZL[i*fgNParCh+0]=0.0;
+    fConstraintYZL[i*fgNParCh+1]=0.0;
+    fConstraintYZL[i*fgNParCh+2]=0.0;
+    fConstraintPZL[i*fgNParCh+0]=0.0;
+    fConstraintPZL[i*fgNParCh+1]=0.0;
+    fConstraintPZL[i*fgNParCh+2]=0.0;
+    fConstraintXYL[i*fgNParCh+0]=0.0;
+    fConstraintXYL[i*fgNParCh+1]=0.0;
+    fConstraintXYL[i*fgNParCh+2]=0.0;
+    fConstraintYYL[i*fgNParCh+0]=0.0;
+    fConstraintYYL[i*fgNParCh+1]=0.0;
+    fConstraintYYL[i*fgNParCh+2]=0.0;
+    fConstraintPYL[i*fgNParCh+0]=0.0;
+    fConstraintPYL[i*fgNParCh+1]=0.0;
+    fConstraintPYL[i*fgNParCh+2]=0.0;
+    fConstraintXB[i*fgNParCh+0]=0.0;
+    fConstraintXB[i*fgNParCh+1]=0.0;
+    fConstraintXB[i*fgNParCh+2]=0.0;
+    fConstraintYB[i*fgNParCh+0]=0.0;
+    fConstraintYB[i*fgNParCh+1]=0.0;
+    fConstraintYB[i*fgNParCh+2]=0.0;
+    fConstraintPB[i*fgNParCh+0]=0.0;
+    fConstraintPB[i*fgNParCh+1]=0.0;
+    fConstraintPB[i*fgNParCh+2]=0.0;
+    fConstraintXZB[i*fgNParCh+0]=0.0;
+    fConstraintXZB[i*fgNParCh+1]=0.0;
+    fConstraintXZB[i*fgNParCh+2]=0.0;
+    fConstraintYZB[i*fgNParCh+0]=0.0;
+    fConstraintYZB[i*fgNParCh+1]=0.0;
+    fConstraintYZB[i*fgNParCh+2]=0.0;
+    fConstraintPZB[i*fgNParCh+0]=0.0;
+    fConstraintPZB[i*fgNParCh+1]=0.0;
+    fConstraintPZB[i*fgNParCh+2]=0.0;
+    fConstraintXYB[i*fgNParCh+0]=0.0;
+    fConstraintXYB[i*fgNParCh+1]=0.0;
+    fConstraintXYB[i*fgNParCh+2]=0.0;
+    fConstraintYYB[i*fgNParCh+0]=0.0;
+    fConstraintYYB[i*fgNParCh+1]=0.0;
+    fConstraintYYB[i*fgNParCh+2]=0.0;
+    fConstraintPYB[i*fgNParCh+0]=0.0;
+    fConstraintPYB[i*fgNParCh+1]=0.0;
+    fConstraintPYB[i*fgNParCh+2]=0.0;
+    fConstraintXR[i*fgNParCh+0]=0.0;
+    fConstraintXR[i*fgNParCh+1]=0.0;
+    fConstraintXR[i*fgNParCh+2]=0.0;
+    fConstraintYR[i*fgNParCh+0]=0.0;
+    fConstraintYR[i*fgNParCh+1]=0.0;
+    fConstraintYR[i*fgNParCh+2]=0.0;
+    fConstraintPR[i*fgNParCh+0]=0.0;
+    fConstraintPR[i*fgNParCh+1]=0.0;
+    fConstraintPR[i*fgNParCh+2]=0.0;
+    fConstraintXZR[i*fgNParCh+0]=0.0;
+    fConstraintXZR[i*fgNParCh+1]=0.0;
+    fConstraintXZR[i*fgNParCh+2]=0.0;
+    fConstraintYZR[i*fgNParCh+0]=0.0;
+    fConstraintYZR[i*fgNParCh+1]=0.0;
+    fConstraintYZR[i*fgNParCh+2]=0.0;
+    fConstraintPZR[i*fgNParCh+0]=0.0;
+    fConstraintPZR[i*fgNParCh+1]=0.0;
+    fConstraintPZR[i*fgNParCh+2]=0.0;
+    fConstraintPZR[i*fgNParCh+0]=0.0;
+    fConstraintPZR[i*fgNParCh+1]=0.0;
+    fConstraintPZR[i*fgNParCh+2]=0.0;
+    fConstraintXYR[i*fgNParCh+0]=0.0;
+    fConstraintXYR[i*fgNParCh+1]=0.0;
+    fConstraintXYR[i*fgNParCh+2]=0.0;
+    fConstraintYYR[i*fgNParCh+0]=0.0;
+    fConstraintYYR[i*fgNParCh+1]=0.0;
+    fConstraintYYR[i*fgNParCh+2]=0.0;
+    fConstraintPYR[i*fgNParCh+0]=0.0;
+    fConstraintPYR[i*fgNParCh+1]=0.0;
+    fConstraintPYR[i*fgNParCh+2]=0.0;
   }
 }
 
@@ -440,8 +735,8 @@ void AliMUONAlignment::LocalEquationX() {
   SetLocalDerivative(3, fSinPhi * (fTrackPos[2] - fTrackPos0[2]));
 
   // set global derivatives
-  SetGlobalDerivative(fDetElemNumber*fgNParCh+0, -1.);
-  SetGlobalDerivative(fDetElemNumber*fgNParCh+1,  0.);
+  SetGlobalDerivative(fDetElemNumber*fgNParCh+0, -fCosPhi);
+  SetGlobalDerivative(fDetElemNumber*fgNParCh+1, -fSinPhi);
   if (fBFieldOn){
     SetGlobalDerivative(fDetElemNumber*fgNParCh+2,
 			-fSinPhi*(fTrackPos[0]-fDetElemPos[0]) 
@@ -467,8 +762,8 @@ void AliMUONAlignment::LocalEquationY() {
   SetLocalDerivative(3, fCosPhi * (fTrackPos[2] - fTrackPos0[2]));
 
   // set global derivatives
-  SetGlobalDerivative(fDetElemNumber*fgNParCh+0,  0.);
-  SetGlobalDerivative(fDetElemNumber*fgNParCh+1, -1.);
+  SetGlobalDerivative(fDetElemNumber*fgNParCh+0,  fSinPhi);
+  SetGlobalDerivative(fDetElemNumber*fgNParCh+1, -fCosPhi);
   if (fBFieldOn){
   SetGlobalDerivative(fDetElemNumber*fgNParCh+2,
  		      -fCosPhi*(fTrackPos[0]-fDetElemPos[0])
@@ -517,14 +812,6 @@ void AliMUONAlignment::FillDetElemData() {
   }
   fTransform->Local2Global(fDetElemId,lDetElemLocX,lDetElemLocY,lDetElemLocZ,
 			   fDetElemPos[0],fDetElemPos[1],fDetElemPos[2]);
-  if (fDetElemId/100 < 5){    
-    fSigma[0] = 3.0e-2;
-    fSigma[1] = 3.0e-2;
-  }
-  else {
-    fSigma[0] = 1.0e-1;
-    fSigma[1] = 1.0e-2;    
-  }  
 }
 
 void AliMUONAlignment::ProcessTrack(AliMUONTrack * track) {
@@ -537,8 +824,8 @@ void AliMUONAlignment::ProcessTrack(AliMUONTrack * track) {
   // get size of arrays
   Int_t nTrackParam = fTrackParamAtHit->GetEntries();
   Int_t nHitForRec = fHitForRecAtHit->GetEntries();
-  AliInfo(Form("Number of track param entries : %i ", nTrackParam));
-  AliInfo(Form("Number of hit for rec entries : %i ", nHitForRec));
+  AliDebug(1,Form("Number of track param entries : %i ", nTrackParam));
+  AliDebug(1,Form("Number of hit for rec entries : %i ", nHitForRec));
 
   for(Int_t iHit=0; iHit<nHitForRec; iHit++) {
     fRecHit = (AliMUONHitForRec *) fHitForRecAtHit->At(iHit);
@@ -603,6 +890,7 @@ void AliMUONAlignment::LocalFit(Int_t iTrack, Double_t *lTrackParam, Int_t lSing
 void AliMUONAlignment::GlobalFit(Double_t *parameters,Double_t *errors,Double_t *pulls) {
   /// Call global fit; Global parameters are stored in parameters
   fMillepede->GlobalFit(parameters,errors,pulls);
+
   AliInfo("Done fitting global parameters!");
   for (int iGlob=0; iGlob<fgNDetElem; iGlob++){
     printf("%d\t %f\t %f\t %f \n",iGlob,parameters[iGlob*fgNParCh+0],parameters[iGlob*fgNParCh+1],parameters[iGlob*fgNParCh+2]);
@@ -621,33 +909,36 @@ void AliMUONAlignment::PrintGlobalParameters() {
 }
 
 //_________________________________________________________________________
-TGeoCombiTrans AliMUONAlignment::ReAlign(const TGeoCombiTrans & transform, double *detElemMisAlignment) const
+TGeoCombiTrans AliMUONAlignment::ReAlign(const TGeoCombiTrans & transform, double *lMisAlignment) const
 {
   /// Realign given transformation by given misalignment and return the misaligned transformation
   
   Double_t cartMisAlig[3] = {0,0,0};
   Double_t angMisAlig[3] = {0,0,0};
-  const Double_t *trans = transform.GetTranslation();
-  TGeoRotation *rot;
-  // check if the rotation we obtain is not NULL
-  if (transform.GetRotation()) {    
-    rot = transform.GetRotation();
-  }
-  else {    
-    rot = new TGeoRotation("rot");
-  }			// default constructor.
+//   const Double_t *trans = transform.GetTranslation();
+//   TGeoRotation *rot;
+//   // check if the rotation we obtain is not NULL
+//   if (transform.GetRotation()) {    
+//     rot = transform.GetRotation();
+//   }
+//   else {    
+//     rot = new TGeoRotation("rot");
+//   }			// default constructor.
 
-  cartMisAlig[0] = -detElemMisAlignment[0];
-  cartMisAlig[1] = -detElemMisAlignment[1];
-  angMisAlig[2] = -detElemMisAlignment[2]*180./TMath::Pi();
+  cartMisAlig[0] = -lMisAlignment[0];
+  cartMisAlig[1] = -lMisAlignment[1];
+  angMisAlig[2] = -lMisAlignment[2]*180./TMath::Pi();
 
-  TGeoTranslation newTrans(cartMisAlig[0] + trans[0], cartMisAlig[1] + trans[1], cartMisAlig[2] + trans[2]);
-  
-  rot->RotateX(angMisAlig[0]);
-  rot->RotateY(angMisAlig[1]);
-  rot->RotateZ(angMisAlig[2]);
+  TGeoTranslation deltaTrans(cartMisAlig[0], cartMisAlig[1], cartMisAlig[2]);
+  TGeoRotation deltaRot;
+  deltaRot.RotateX(angMisAlig[0]);
+  deltaRot.RotateY(angMisAlig[1]);
+  deltaRot.RotateZ(angMisAlig[2]);
 
-  return TGeoCombiTrans(newTrans, *rot);
+  TGeoCombiTrans deltaTransf(deltaTrans,deltaRot);
+  TGeoHMatrix newTransfMat = transform * deltaTransf;
+
+  return TGeoCombiTrans(newTransfMat);
 }
 
 //______________________________________________________________________
@@ -668,80 +959,102 @@ AliMUONAlignment::ReAlign(const AliMUONGeometryTransformer * transformer,
   // Adds the new module transformer to a new geometry transformer
   // Returns the new geometry transformer
 
+  Double_t lModuleMisAlignment[3] = {0.,0.,0.};
   Double_t lDetElemMisAlignment[3] = {0.,0.,0.};
+  Int_t iDetElemId = 0;
+  Int_t iDetElemNumber = 0;
 
   AliMUONGeometryTransformer *newGeometryTransformer =
     new AliMUONGeometryTransformer(kTRUE);
-  for (Int_t iMt = 0; iMt < transformer->GetNofModuleTransformers(); iMt++)
-    {				// module transformers
+  for (Int_t iMt = 0; iMt < transformer->GetNofModuleTransformers(); iMt++) {
+    // module transformers    
+    const AliMUONGeometryModuleTransformer *kModuleTransformer =
+      transformer->GetModuleTransformer(iMt, true);
       
-      const AliMUONGeometryModuleTransformer *kModuleTransformer =
-	transformer->GetModuleTransformer(iMt, true);
-      
-      AliMUONGeometryModuleTransformer *newModuleTransformer =
-	new AliMUONGeometryModuleTransformer(iMt);
-      newGeometryTransformer->AddModuleTransformer(newModuleTransformer);
+    AliMUONGeometryModuleTransformer *newModuleTransformer =
+      new AliMUONGeometryModuleTransformer(iMt);
+    newGeometryTransformer->AddModuleTransformer(newModuleTransformer);
+    
+    TGeoCombiTrans moduleTransform =
+      TGeoCombiTrans(*kModuleTransformer->GetTransformation());
+    // New module transformation
+    TGeoCombiTrans newModuleTransform = ReAlign(moduleTransform,lModuleMisAlignment);
+    newModuleTransformer->SetTransformation(newModuleTransform);
+    
+    // Get delta transformation: 
+    // Tdelta = Tnew * Told.inverse
+    TGeoHMatrix deltaModuleTransform = 
+      AliMUONGeometryBuilder::Multiply(newModuleTransform, 
+				       kModuleTransformer->GetTransformation()->Inverse());    
+    // Create module mis alignment matrix
+    newGeometryTransformer
+      ->AddMisAlignModule(kModuleTransformer->GetModuleId(), deltaModuleTransform);
+    
+    AliMpExMap *detElements = kModuleTransformer->GetDetElementStore();
+    
+    if (verbose)
+      AliInfo(Form("%i DEs in old GeometryStore  %i",detElements->GetSize(), iMt));
 
-      TGeoCombiTrans moduleTransform =
-	TGeoCombiTrans(*kModuleTransformer->GetTransformation());
-      TGeoCombiTrans *newModuleTransform = new TGeoCombiTrans(moduleTransform);	
-              // same module transform as the previous one 
-	      // no mis align object created
-      newModuleTransformer->SetTransformation(moduleTransform);
+    for (Int_t iDe = 0; iDe < detElements->GetSize(); iDe++) {
+      // detection elements.
+      AliMUONGeometryDetElement *detElement =
+	(AliMUONGeometryDetElement *) detElements->GetObject(iDe);
+      if (!detElement)
+	AliFatal("Detection element not found.");
 
-      AliMpExMap *detElements = kModuleTransformer->GetDetElementStore();
-
-      if (verbose)
-	AliInfo(Form
-		("%i DEs in old GeometryStore  %i",
-		 detElements->GetSize(), iMt));
-      Int_t iBase = !iMt ? 0 : fgSNDetElemCh[iMt-1];
-      for (Int_t iDe = 0; iDe < detElements->GetSize(); iDe++)
-	{			// detection elements.
-	  AliMUONGeometryDetElement *detElement =
-	    (AliMUONGeometryDetElement *) detElements->GetObject(iDe);
-	  if (!detElement)
-	    AliFatal("Detection element not found.");
-
-	  /// make a new detection element
-	  AliMUONGeometryDetElement *newDetElement =
-	    new AliMUONGeometryDetElement(detElement->GetId(),
-					  detElement->GetVolumePath());
-	  for (int i=0; i<fgNParCh; i++) {
-	    AliInfo(Form("iMt %i, iBase %i, iDe %i, iPar %i",iMt, iBase, iDe, (iBase+iDe)*fgNParCh+i));
-	    lDetElemMisAlignment[i] = 
-	      (iMt<fgNCh) ? misAlignments[(iBase+iDe)*fgNParCh+i] : 0.;  	      
-	  }
-	  // local transformation of this detection element.
-          TGeoCombiTrans localTransform
-	    = TGeoCombiTrans(*detElement->GetLocalTransformation());
-	  TGeoCombiTrans newLocalTransform = ReAlign(localTransform,lDetElemMisAlignment);
-          newDetElement->SetLocalTransformation(newLocalTransform);	  
-
-	  // global transformation
-	  TGeoHMatrix newGlobalTransform =
-	    AliMUONGeometryBuilder::Multiply(*newModuleTransform,
-	                                      newLocalTransform);
-	  newDetElement->SetGlobalTransformation(newGlobalTransform);
-	  
-	  // add this det element to module
-	  newModuleTransformer->GetDetElementStore()->Add(newDetElement->GetId(),
-							  newDetElement);
-          // Get delta transformation: 
-	  // Tdelta = Tnew * Told.inverse
-	  TGeoHMatrix  deltaTransform
-	    = AliMUONGeometryBuilder::Multiply(
-	        newGlobalTransform, 
-		detElement->GetGlobalTransformation()->Inverse());
-	  
-	  // Create mis alignment matrix
-	  newGeometryTransformer
-	    ->AddMisAlignDetElement(detElement->GetId(), deltaTransform);
+      /// make a new detection element
+      AliMUONGeometryDetElement *newDetElement =
+	new AliMUONGeometryDetElement(detElement->GetId(),
+				      detElement->GetVolumePath());
+      TString lDetElemName(detElement->GetDEName());
+      lDetElemName.ReplaceAll("DE","");
+      iDetElemId = lDetElemName.Atoi();
+      iDetElemNumber = iDetElemId%100;
+      for (int iCh=0; iCh<iDetElemId/100-1; iCh++){
+	iDetElemNumber += fgNDetElemCh[iCh];
+      }
+      for (int i=0; i<fgNParCh; i++) {
+	lDetElemMisAlignment[i] = 0.0;
+	if (iMt<fgNTrkMod) {
+	  AliInfo(Form("iMt %i, iCh %i, iDe %i, iDeId %i, iDeNb %i, iPar %i",iMt, iDetElemId/100, iDe, iDetElemId, iDetElemNumber, iDetElemNumber*fgNParCh+i));
+	  lDetElemMisAlignment[i] =  misAlignments[iDetElemNumber*fgNParCh+i];
 	}
-      if (verbose)
-	AliInfo(Form("Added module transformer %i to the transformer", iMt));
-      newGeometryTransformer->AddModuleTransformer(newModuleTransformer);
+      }
+      // local transformation of this detection element.
+      TGeoCombiTrans localTransform
+	= TGeoCombiTrans(*detElement->GetLocalTransformation());
+      TGeoCombiTrans newLocalTransform = ReAlign(localTransform,lDetElemMisAlignment);
+      newDetElement->SetLocalTransformation(newLocalTransform);	  
+
+      // global transformation
+      TGeoHMatrix newGlobalTransform =
+	AliMUONGeometryBuilder::Multiply(newModuleTransform,
+					 newLocalTransform);
+      newDetElement->SetGlobalTransformation(newGlobalTransform);
+	  
+      // add this det element to module
+      newModuleTransformer->GetDetElementStore()->Add(newDetElement->GetId(),
+						      newDetElement);
+
+      // In the Alice Alignment Framework misalignment objects store
+      // global delta transformation
+      // Get detection "intermediate" global transformation
+      TGeoHMatrix newOldGlobalTransform = newModuleTransform * localTransform;
+      // Get detection element global delta transformation: 
+      // Tdelta = Tnew * Told.inverse
+      TGeoHMatrix  deltaGlobalTransform
+	= AliMUONGeometryBuilder::Multiply(newGlobalTransform, 
+					   newOldGlobalTransform.Inverse());
+	  
+      // Create mis alignment matrix
+      newGeometryTransformer
+	->AddMisAlignDetElement(detElement->GetId(), deltaGlobalTransform);
     }
+      
+    if (verbose)
+      AliInfo(Form("Added module transformer %i to the transformer", iMt));
+    newGeometryTransformer->AddModuleTransformer(newModuleTransformer);
+  }
   return newGeometryTransformer;
 }
 
