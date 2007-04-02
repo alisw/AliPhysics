@@ -58,7 +58,7 @@ void AliHMPIDSelector::SlaveBegin(TTree *tree)
    fCkovP    = new TH2F("CkovP" , "#theta_{c}, [rad];P, [GeV]", 150,   0,  7  ,500, 0, 1); 
    fSigP     = new TH2F("SigP"  ,"#sigma_{#theta_c}"          , 150,   0,  7  ,100, 0, 1e20);
    fMipXY    = new TH2F("MipXY" ,"mip position"               , 260,   0,130  ,252,0,126); 
-   fDifX     = new TH1F("DifX" ,"diff"                       , 200, -5, 5);
+   fDifX     = new TH1F("DifX" ,"diff"                       , 100, -2.5, 2.5);
       
    fProb[0] = new TH1F("PidE" ,"PID: e yellow #mu magenta"  ,100,0,1); fProb[0]->SetLineColor(kYellow);
    fProb[1] = new TH1F("PidMu","pid of #mu"                 ,100,0,1); fProb[1]->SetLineColor(kMagenta);
@@ -75,7 +75,7 @@ void AliHMPIDSelector::Init(TTree *pTr)
   if ( !pTr )  return ;
   fChain = pTr ;
   fChain->SetBranchAddress("ESD", &fEsd) ;
-  fChain->SetBranchStatus("*", 0);
+  fChain->SetBranchStatus("*", 1);
   fChain->SetBranchStatus("fTracks.*", 1);
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -83,32 +83,28 @@ Bool_t AliHMPIDSelector::Process(Long64_t entry)
 {
   AliHMPIDParam *pParam=AliHMPIDParam::Instance();
   fChain->GetTree()->GetEntry(entry);
-
+ 
   for(Int_t iTrk=0;iTrk<fEsd->GetNumberOfTracks();iTrk++){
-     AliESDtrack *pTrk=fEsd->GetTrack(iTrk);
+    AliESDtrack *pTrk=fEsd->GetTrack(iTrk);
      
 //     if(pTrk->GetHMPIDsignal()==-1) continue;
      
-     fCkovP->Fill(pTrk->GetP(),pTrk->GetHMPIDsignal()) ; 
-     fSigP ->Fill(pTrk->GetP(),TMath::Sqrt(pTrk->GetHMPIDchi2()));
+    fCkovP->Fill(pTrk->GetP(),pTrk->GetHMPIDsignal()) ; 
+    fSigP ->Fill(pTrk->GetP(),TMath::Sqrt(pTrk->GetHMPIDchi2()));
      
-   Float_t xClu,yClu; Int_t q,np;  
-   Float_t xPc,yPc;  
-   pTrk->GetHMPIDmip(xClu,yClu,q,np);  
-   fMipXY->Fill(xClu,yClu); //mip info
-   Float_t xRad,yRad,th,ph;        
-   pTrk->GetHMPIDtrk(xRad,yRad,th,ph); 
-   Int_t iCh=pTrk->GetHMPIDcluIdx();iCh/=1000000;
-   Double_t p1[3],n1[3]; pParam->Norm(iCh,n1); pParam->Lors2Mars(iCh,0,0,p1,AliHMPIDParam::kPc);  //point & norm  for RAD
-   Printf(" pointer ESD %x ",fEsd);
-   Double_t bField=fEsd->GetMagneticField();
-   
-   Printf(" B field %f ",bField);
-   if(pTrk->Intersect(p1,n1,bField)==kFALSE) continue;                              //try to intersect track with the middle of radiator
-   pParam->Mars2Lors   (iCh,p1,xPc,yPc);                                                          //TRKxPC position
-   fDifX->Fill(xPc-xClu); //track info 
+    Float_t xClu,yClu; Int_t q,np;  
+    Float_t xPc,yPc;  
+    pTrk->GetHMPIDmip(xClu,yClu,q,np);  
+    fMipXY->Fill(xClu,yClu); //mip info
+    Float_t xRad,yRad,th,ph;        
+    pTrk->GetHMPIDtrk(xRad,yRad,th,ph); 
+    Int_t iCh=pTrk->GetHMPIDcluIdx();iCh/=1000000;
+    Double_t p1[3],n1[3]; pParam->Norm(iCh,n1); pParam->Lors2Mars(iCh,0,0,p1,AliHMPIDParam::kPc);      //point & norm  for PC
+    if(pTrk->Intersect(p1,n1,fEsd->GetMagneticField())==kFALSE) continue;                              //try to intersect track with PC
+    pParam->Mars2Lors   (iCh,p1,xPc,yPc);                                                              //TRKxPC position
+    fDifX->Fill(xPc-xClu); //track info 
      
-     Double_t pid[5];  pTrk->GetHMPIDpid(pid); for(Int_t i =0;i<5;i++) fProb[i]->Fill(pid[i]);
+    Double_t pid[5];  pTrk->GetHMPIDpid(pid); for(Int_t i =0;i<5;i++) fProb[i]->Fill(pid[i]);
   }//tracks loop 
      
   return kTRUE;

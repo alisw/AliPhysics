@@ -68,7 +68,6 @@ void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t n
 
   Float_t xRa,yRa,th,ph;       
   pTrk->GetHMPIDtrk(xRa,yRa,th,ph);        //initialize this track: th and ph angles at middle of RAD 
-//  ph-=TMath::Pi();                                                                            // right XYZ local orientation
   SetTrack(xRa,yRa,th,ph);
   
   fRadNmean=nmean;

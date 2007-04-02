@@ -23,6 +23,8 @@ void Hdisp(Int_t cosRun=44)                                                    /
       gMaxEvt=gAL->GetNumberOfEvents()-1;
       gHL->LoadHits(); gHL->LoadSDigits(); gHL->LoadDigits(); gHL->LoadRecPoints();
 
+      AliHMPIDTracker::SetFieldMap(gAL->GetAliRun()->Field(),kTRUE);
+      
       TFile *pEsdFl=TFile::Open("AliESDs.root"); gEsdTr=(TTree*) pEsdFl->Get("esdTree"); gEsdTr->SetBranchAddress("ESD", &gEsd);
       pAll->cd(7); TButton *pBtn=new TButton("Next","ReadEvt()",0,0,0.2,0.1);   pBtn->Draw();
                    TButton *pHitBtn=new TButton("Print hits","PrintHits()",0,0.2,0.3,0.3);   pHitBtn->Draw();
@@ -163,6 +165,9 @@ void DrawCh(Int_t iCh)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void DrawEvt(TClonesArray *pHitLst,TObjArray *pDigLst,TObjArray *pCluLst,AliESD *pEsd)
 {//draws all the objects of current event in given canvas
+  
+  AliHMPIDParam *pParam=AliHMPIDParam::Instance();
+  
   AliHMPIDRecon rec;  
   TPolyMarker *pTxC[7], *pRin[7]; TMarker *pMip,*pCko,*pFee,*pDig,*pClu;
   pMip=new TMarker; pMip->SetMarkerColor(kRed);  pMip->SetMarkerStyle(kOpenTriangleUp);
@@ -181,11 +186,19 @@ void DrawEvt(TClonesArray *pHitLst,TObjArray *pDigLst,TObjArray *pCluLst,AliESD 
     if(ch<0) continue; //this track does not hit HMPID
     ch/=1000000; 
     Float_t th,ph,xRad,yRad; pTrk->GetHMPIDtrk(xRad,yRad,th,ph);//get info on current track
-//    pTxC[ch]->SetNextPoint(xPc,yPc);                          //add new intersection point  TEMPORARLY DISABLED...no more available in ESD!
-    
+//
+//Find again intersection of track with PC--> it is not stored in ESD!
+//    
+    Float_t xPc=0,yPc=0;                                                                                               //track intersection point with PC  
+    Double_t pMom[3],nCh[3]; pTrk->GetPxPyPz(pMom);pParam->Norm(ch,nCh); pParam->Lors2Mars(ch,0,0,pMom,AliHMPIDParam::kPc);  //point & norm  for PC
+    if(pTrk->Intersect(pMom,nCh,-AliHMPIDTracker::GetBz())==kTRUE){                                                      //try to intersect track with PC
+      pParam->Mars2Lors   (ch,pMom,xPc,yPc);                                                                             //TRKxPC position
+      pTxC[ch]->SetNextPoint(xPc,yPc);
+    }
+// end of point intersection @ PC    
     Float_t ckov=pTrk->GetHMPIDsignal();  Float_t err=TMath::Sqrt(pTrk->GetHMPIDchi2());
     if(ckov>0){
-      Printf("theta %f phi %f ckov %f",th*TMath::RadToDeg(),ph*TMath::RadToDeg(),ckov);
+//      Printf("theta %f phi %f ckov %f",th*TMath::RadToDeg(),ph*TMath::RadToDeg(),ckov);
       rec.SetTrack(xRad,yRad,th,ph);
       for(Int_t j=0;j<100;j++){ 
         TVector2 pos;
