@@ -2,33 +2,57 @@ TCanvas *pAll=0;
 AliRunLoader *gAL=0; AliLoader *gHL=0; AliESD *gEsd=0; TTree *gEsdTr=0; AliHMPID *gH=0;
 Int_t gEvt=0; Int_t gMaxEvt=0;
 TObjArray *pNmean;
+
+TChain *pCosCh=new TChain("cosmic");                                                               //clm: Define TChain for cosmic
+TObjArray *pCosDigAll=0;                                                                           //clm: Define global Digits
+TObjArray *pCosCluAll=0;                                                                           //clm: Define global Clusters
+Int_t gCosRun=0;                                                                                   //clm: global cosmic event number
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void Hdisp()
+void Hdisp(Int_t cosRun=44)                                                    //clm: Select cosmic file for display
 {//display events from files if any in current directory or simulated events
   pAll=new TCanvas("all","",1300,900); pAll->Divide(3,3,0,0);
 //  pAll->ToggleEditor();
   pAll->Connect("ProcessedEvent(Int_t,Int_t,Int_t,TObject*)",0,"","DoZoom(Int_t,Int_t,Int_t,TObject*)");
 
   OpenCalib();  
-  if(gSystem->IsFileInIncludePath("galice.root")){// tries to open session
-    if(gAlice) delete gAlice;                                               //in case we execute this in aliroot delete default AliRun object 
-    gAL=AliRunLoader::Open();                                                                    //try to open galice.root from current dir 
-    gAL->LoadgAlice();                                                                           //take new AliRun object from galice.root   
-    gHL=gAL->GetDetectorLoader("HMPID");  gH=(AliHMPID*)gAL->GetAliRun()->GetDetector("HMPID");  //get HMPID object from galice.root
-    gMaxEvt=gAL->GetNumberOfEvents()-1;
-    gHL->LoadHits(); gHL->LoadSDigits(); gHL->LoadDigits(); gHL->LoadRecPoints();
+     if(gSystem->IsFileInIncludePath("galice.root")){// tries to open session
+      if(gAlice) delete gAlice;                                               //in case we execute this in aliroot delete default AliRun object 
+      gAL=AliRunLoader::Open();                                                                    //try to open galice.root from current dir 
+      gAL->LoadgAlice();                                                                           //take new AliRun object from galice.root   
+      gHL=gAL->GetDetectorLoader("HMPID");  gH=(AliHMPID*)gAL->GetAliRun()->GetDetector("HMPID");  //get HMPID object from galice.root
+      gMaxEvt=gAL->GetNumberOfEvents()-1;
+      gHL->LoadHits(); gHL->LoadSDigits(); gHL->LoadDigits(); gHL->LoadRecPoints();
 
-    TFile *pEsdFl=TFile::Open("AliESDs.root"); gEsdTr=(TTree*) pEsdFl->Get("esdTree"); gEsdTr->SetBranchAddress("ESD", &gEsd);
-    pAll->cd(7); TButton *pBtn=new TButton("Next","ReadEvt()",0,0,0.2,0.1);   pBtn->Draw();
-                 TButton *pHitBtn=new TButton("Print hits","PrintHits()",0,0.2,0.3,0.3);   pHitBtn->Draw();
-                 TButton *pSdiBtn=new TButton("Print sdis","PrintSdis()",0,0.4,0.3,0.5);   pSdiBtn->Draw();
-                 TButton *pDigBtn=new TButton("Print digs","PrintDigs()",0,0.6,0.3,0.7);   pDigBtn->Draw();
-                 TButton *pCluBtn=new TButton("Print clus","PrintClus()",0,0.8,0.3,0.9);   pCluBtn->Draw();  
-    ReadEvt();
-  }else{
-    pAll->cd(7); TButton *pBtn=new TButton("Next","SimEvt()",0,0,0.2,0.1);   pBtn->Draw(); 
-    SimEvt();
-  }      
+      TFile *pEsdFl=TFile::Open("AliESDs.root"); gEsdTr=(TTree*) pEsdFl->Get("esdTree"); gEsdTr->SetBranchAddress("ESD", &gEsd);
+      pAll->cd(7); TButton *pBtn=new TButton("Next","ReadEvt()",0,0,0.2,0.1);   pBtn->Draw();
+                   TButton *pHitBtn=new TButton("Print hits","PrintHits()",0,0.2,0.3,0.3);   pHitBtn->Draw();
+                   TButton *pSdiBtn=new TButton("Print sdis","PrintSdis()",0,0.4,0.3,0.5);   pSdiBtn->Draw();
+                   TButton *pDigBtn=new TButton("Print digs","PrintDigs()",0,0.6,0.3,0.7);   pDigBtn->Draw();
+                   TButton *pCluBtn=new TButton("Print clus","PrintClus()",0,0.8,0.3,0.9);   pCluBtn->Draw();  
+      ReadEvt();
+    }
+    else if ( gSystem->IsFileInIncludePath(Form("cosmic%d.root",cosRun))){                          //clm: Check if cosmic file is in the folder
+    gCosRun=cosRun;
+    pCosCh->Add(Form("cosmic%d.root",gCosRun));                                                      //clm: Add cosmic file to chain
+    pCosCh->SetBranchAddress("Digs",&pCosDigAll);                                                   //clm: Set digit branch address
+    pCosCh->SetBranchAddress("Clus",&pCosCluAll);                                                   //clm: Set cluster branch address    
+    gMaxEvt=pCosCh->GetEntries()-1;                                                                 //clm: Get number of events from the cosmic chain
+    pAll->cd(7); TButton *pCosBtn=new TButton("Next Cosmic","ReadCosEvt()",0,0,0.3,0.1);   pCosBtn->Draw();   //clm: define next button
+    ReadCosEvt();                                                                                   //clm: Read first cosmic event  
+    }            
+    else{
+      pAll->cd(7); TButton *pBtn=new TButton("Next","SimEvt()",0,0,0.2,0.1);   pBtn->Draw(); 
+      SimEvt();
+          }      
+}
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void ReadCosEvt()
+{// Read curent cosmic event and display it assumes that session is alredy opened
+  if(gEvt>gMaxEvt) gEvt=0; if(gEvt<0) gEvt=gMaxEvt;                                     //clm: set event limits
+  pCosCh->GetEntry(gEvt);                                                               //clm: read event from chain
+  DrawCosEvt(pCosDigAll,pCosCluAll);                                                    //clm: draw cosmic event
+  gEvt++;                                                                             
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void ReadEvt()
@@ -38,8 +62,7 @@ void ReadEvt()
   
   gEsdTr->GetEntry(gEvt); gAL->GetEvent(gEvt); 
   ReadHits(&hits); gHL->TreeS()->GetEntry(0); gHL->TreeD()->GetEntry(0); gHL->TreeR()->GetEntry(0);
-  
-  
+    
   DrawEvt(&hits,gH->DigLst(),gH->CluLst(),gEsd);
   gEvt++;
 }
@@ -214,6 +237,43 @@ void DrawEvt(TClonesArray *pHitLst,TObjArray *pDigLst,TObjArray *pCluLst,AliESD 
                                         pLeg->AddEntry(pClu   ,Form("Clus %i"       ,totClu),"p");    
                                         pLeg->Draw();
 }//DrawEvt()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void DrawCosEvt(TObjArray *pCosDigLst,TObjArray *pCosCluLst)                              //clm: new method to read and display cosmic events 
+{//draws all the objects of current event in given canvas
+  TMarker *pDig,*pClu;
+  pDig=new TMarker; pDig->SetMarkerColor(kGreen);pDig->SetMarkerStyle(kOpenSquare);
+  pClu=new TMarker; pClu->SetMarkerColor(kBlue); pClu->SetMarkerStyle(kStar);
+  
+      
+  Int_t totDig=0,totClu=0;
+  for(Int_t iCh=0;iCh<7;iCh++){//chambers loop                                            //clm: chambers loop is now not needed since iCh=0 but kept for provision
+    totDig+=((TClonesArray*)pCosDigLst->At(iCh))->GetEntriesFast();
+    totClu+=((TClonesArray*)pCosCluLst->At(iCh))->GetEntriesFast();
+    
+    switch(iCh){
+      case 6: pAll->cd(1); break; case 5: pAll->cd(2); break;
+      case 4: pAll->cd(4); break; case 3: pAll->cd(5); break; case 2: pAll->cd(6); break;
+                                  case 1: pAll->cd(8); break; case 0: pAll->cd(9); break;
+    }
+   gPad->SetEditable(kTRUE); gPad->Clear(); 
+   DrawCh(iCh);
+  if(gCosRun < 500 && iCh == 6) {                           //clm: hard coded selection since raw data does not contain ch info which is set to 0
+  ((TClonesArray*)pCosDigLst->At(0))->Draw();               //draw digits
+  ((TClonesArray*)pCosCluLst->At(0))->Draw();              //draw clusters
+  }
+  if (gCosRun >= 500 && iCh == 5) { 
+  ((TClonesArray*)pCosDigLst->At(0))->Draw();               //draw digits
+  ((TClonesArray*)pCosCluLst->At(0))->Draw();              //draw clusters
+  }
+   
+   gPad->SetEditable(kFALSE);
+  }//chambers loop
+  pAll->cd(3);  gPad->Clear(); TLegend *pLeg=new TLegend(0.2,0.2,0.8,0.8);
+                                        pLeg->SetHeader(Form("Cosmic Run %i Event %i Total %i",gCosRun,gEvt,gMaxEvt+1));
+                                        pLeg->AddEntry(pDig   ,Form("Digs %i"       ,totDig),"p");    
+                                        pLeg->AddEntry(pClu   ,Form("Clus %i"       ,totClu),"p");    
+                                        pLeg->Draw();
+}//DrawCosEvt()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void DoZoom(Int_t evt, Int_t px, Int_t py, TObject *obj)
 {
