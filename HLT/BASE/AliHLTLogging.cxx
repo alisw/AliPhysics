@@ -211,8 +211,10 @@ const char* AliHLTLogging::BuildLogString(const char *format, va_list ap)
   // see header file for class documentation
 
   int iResult=0;
+#ifdef R__VA_COPY
   va_list bap;
   R__VA_COPY(bap, ap);
+#endif //R__VA_COPY
 
   // take the first argument from the list as format string if no
   // format was given
@@ -229,7 +231,8 @@ const char* AliHLTLogging::BuildLogString(const char *format, va_list ap)
       break;
 
     // terminate if buffer is already at the limit
-    if (gAliHLTLoggingTarget.GetSize()>=gALIHLTLOGGING_MAXBUFFERSIZE) {
+    if (gAliHLTLoggingTarget.GetSize()>=gALIHLTLOGGING_MAXBUFFERSIZE) 
+    {
       gAliHLTLoggingTarget[gAliHLTLoggingTarget.GetSize()-1]=0;
       break;
     }
@@ -239,11 +242,18 @@ const char* AliHLTLogging::BuildLogString(const char *format, va_list ap)
     gAliHLTLoggingTarget.Set(iResult+1);
 
     // copy the original list and skip the first argument if this was the format string
+#ifdef R__VA_COPY
     va_end(ap);
     R__VA_COPY(ap, bap);
+#else
+    gAliHLTLoggingTarget[gAliHLTLoggingTarget.GetSize()-1]=0;
+    break;
+#endif //R__VA_COPY
     if (format==NULL) va_arg(ap, const char*);
   }     
+#ifdef R__VA_COPY
   va_end(bap);
+#endif //R__VA_COPY
 
   return gAliHLTLoggingTarget.GetArray();
 }
