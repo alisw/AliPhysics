@@ -58,6 +58,17 @@ class AliAltroRawStream: public TObject {
     void  SetShortDataHeader(Bool_t flag) { fIsShortDataHeader = flag; } // Specify whenever to assume or not a short CDH format
 
     void PrintDebug() const; // Print debug information in case of decoding errors
+    void AddMappingErrorLog(const char *message = NULL);
+
+    enum EAltroRawStreamError {
+      kRCUTrailerSizeErr = 1,
+      kAltroTrailerErr = 2,
+      kBunchLengthReadErr = 3,
+      kTimeBinReadErr = 4,
+      kAmplitudeReadErr = 5,
+      k32bitWordReadErr = 6,
+      kBadAltroMapping = 7
+    };
 
   protected:
     AliAltroRawStream(const AliAltroRawStream& stream);

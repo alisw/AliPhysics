@@ -141,8 +141,7 @@ Bool_t AliAltroRawStream::Next()
       fPosition = GetPosition();
     }
 
-    if (!ReadTrailer())
-      AliFatal("Incorrect trailer information !");
+    ReadTrailer();
 
     fBunchLength = 0;
   }
@@ -208,27 +207,45 @@ Bool_t AliAltroRawStream::ReadTrailer()
   Int_t nFillWords = 0;
   while ((temp = GetNextWord()) == 0x2AA) nFillWords++;
   if (nFillWords == 0) {
-    PrintDebug();
-    AliFatal("Incorrect trailer found ! Expected 0x2AA not found !");
+    fRawReader->AddMajorErrorLog(kAltroTrailerErr,"no 0x2AA");
+    //    PrintDebug();
+    AliWarning("Incorrect trailer found ! Expected 0x2AA not found !");
+    // trying to recover and find the next bunch
+    while ((fPosition > 5) && (temp != 0x2AA)) temp = GetNextWord();
+    if (temp != 0x2AA) {
+      fCount = fPosition = 0;
+      return kFALSE;
+    }
+    temp = GetNextWord();
   }
 
   //Then read the trailer
-  if (fPosition <= 4) {
-    PrintDebug();
-    AliFatal(Form("Incorrect raw data size ! Expected at lest 4 words but found %d !",fPosition));
+  if (fPosition < 5) {
+    fRawReader->AddMajorErrorLog(kAltroTrailerErr,Form("size %d < 5",
+						    fPosition));
+    //    PrintDebug();
+    AliWarning(Form("Incorrect raw data size ! Expected at least 5 words but found %d !",fPosition));
+    fCount = fPosition = 0;
+    return kFALSE;
   }
 
   fCount = (temp << 4) & 0x3FF;
   if ((temp >> 6) != 0xA) {
-    PrintDebug();
-    AliFatal(Form("Incorrect trailer found ! Expecting 0xA but found %x !",temp >> 6));
+    fRawReader->AddMajorErrorLog(kAltroTrailerErr,"no 0xA");
+    //    PrintDebug();
+    AliWarning(Form("Incorrect trailer found ! Expecting 0xA but found 0x%x !",temp >> 6));
+    fCount = 0;
+    return kFALSE;
   }
 
   temp = GetNextWord();
   fHWAddress = (temp & 0x3) << 10;
   if (((temp >> 2) & 0xF) != 0xA) {
-    PrintDebug();
-    AliFatal(Form("Incorrect trailer found ! Expecting second 0xA but found %x !",(temp >> 2) & 0xF));
+    fRawReader->AddMajorErrorLog(kAltroTrailerErr,"no second 0xA");
+    //    PrintDebug();
+    AliWarning(Form("Incorrect trailer found ! Expecting second 0xA but found 0x%x !",(temp >> 2) & 0xF));
+    fCount = 0;
+    return kFALSE;
   }
   fCount |= ((temp & 0x3FF) >> 6);
   if (fCount == 0) return kFALSE;
@@ -267,8 +284,9 @@ void AliAltroRawStream::ReadBunch()
   // Read altro payload in 
   // backward direction
   if (fPosition <= 0) {
-    PrintDebug();
-    AliFatal("Could not read bunch length !");
+    fRawReader->AddMinorErrorLog(kBunchLengthReadErr,"");
+    //    PrintDebug();
+    AliWarning("Could not read bunch length !");
   }
 
   fBunchLength = GetNextWord() - 2;
@@ -276,8 +294,9 @@ void AliAltroRawStream::ReadBunch()
   fCount--;
 
   if (fPosition <= 0) {
-    PrintDebug();
-    AliFatal("Could not read time bin !");
+    fRawReader->AddMinorErrorLog(kTimeBinReadErr,"");
+    //    PrintDebug();
+    AliWarning("Could not read time bin !");
   }
 
   fTime = GetNextWord();
@@ -291,8 +310,9 @@ void AliAltroRawStream::ReadAmplitude()
 {
   // Read next time bin amplitude
   if (fPosition <= 0) {
-    PrintDebug();
-    AliFatal("Could not read sample amplitude !");
+    fRawReader->AddMinorErrorLog(kAmplitudeReadErr,"");
+    //    PrintDebug();
+    AliWarning("Could not read sample amplitude !");
   }
 
   fSignal = GetNextWord();
@@ -371,20 +391,28 @@ Int_t AliAltroRawStream::GetPosition()
 
       // Check the consistency of the header and trailer
       if ((fRawReader->GetDataSize() - 4) != position) {
-	PrintDebug();
-	AliFatal(Form("Inconsistent raw data size ! Expected %d bytes (from the header), found %d bytes (in the RCU trailer)!",
-		      fRawReader->GetDataSize()-4,
-		      position));
+	fRawReader->AddMajorErrorLog(kRCUTrailerSizeErr,Form("h=%d rcu=%d bytes",
+							     fRawReader->GetDataSize()-4,
+							     position));
+	//	PrintDebug();
+	AliWarning(Form("Inconsistent raw data size ! Expected %d bytes (from the header), found %d bytes (in the RCU trailer)!",
+			fRawReader->GetDataSize()-4,
+			position));
+	position = fRawReader->GetDataSize()-4;
       }
     }
     else {
       // Check the consistency of the header and trailer
       // In this case the header is shorter by 4 bytes
       if (fRawReader->GetDataSize() != position) {
-	PrintDebug();
-	AliFatal(Form("Inconsistent raw data size ! Expected %d bytes (from the header), found %d bytes (in the RCU trailer)!",
-		      fRawReader->GetDataSize(),
-		      position));
+	fRawReader->AddMajorErrorLog(kRCUTrailerSizeErr,Form("h=%d rcu=%d bytes",
+							     fRawReader->GetDataSize(),
+							     position));
+	//	PrintDebug();
+	AliWarning(Form("Inconsistent raw data size ! Expected %d bytes (from the header), found %d bytes (in the RCU trailer)!",
+			fRawReader->GetDataSize(),
+			position));
+	position = fRawReader->GetDataSize();
       }
 
       // 7 32-bit words Common Data Header
@@ -412,8 +440,9 @@ UInt_t AliAltroRawStream::Get32bitWord(Int_t &index)
   }
 
   if (index < 4) {
-    PrintDebug();
-    AliFatal(Form("Invalid raw data payload index (%d) !",index));
+    fRawReader->AddFatalErrorLog(k32bitWordReadErr,Form("pos = %d",index));
+    //    PrintDebug();
+    AliWarning(Form("Invalid raw data payload position (%d) !",index));
   }
 
   UInt_t word = 0;
@@ -504,4 +533,14 @@ Int_t AliAltroRawStream::GetChannel() const
   if (fHWAddress == -1) return -1;
 
   return (fHWAddress & 0xF);
+}
+
+//_____________________________________________________________________________
+void AliAltroRawStream::AddMappingErrorLog(const char *message)
+{
+  // Signal a mapping error
+  // The method can be used by the TPC,PHOS,EMCAL,FMD raw stream
+  // classes in order to log an error related to bad altro mapping
+
+  if (fRawReader) fRawReader->AddMinorErrorLog(kBadAltroMapping,message);
 }
