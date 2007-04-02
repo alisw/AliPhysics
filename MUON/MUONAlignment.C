@@ -91,13 +91,35 @@ void MUONAlignment(Int_t nEvents = 100000, char* geoFilename = "geometry.root", 
   AliMUONGeometryTransformer *transform = new AliMUONGeometryTransformer(true);
   transform->ReadGeometryData("volpath.dat", gGeoManager);
   alig->SetGeometryTransformer(transform);
+  
+  // Set tracking station to use
+  Bool_t bStOnOff[5] = {kTRUE,kTRUE,kTRUE,kTRUE,kTRUE};
+
+  // Fix parameters or add constraints here
+  for (Int_t iSt=0; iSt<5; iSt++)
+    if (!bStOnOff[iSt]) alig->FixStation(iSt+1);
+
+  // Left and right sides of the detector are independent, one can choose to align 
+  // only one side
+  Bool_t bSpecLROnOff[2] = {kTRUE,kTRUE};
+  alig->FixHalfSpectrometer(bStOnOff,bSpecLROnOff);
+
+  // Set predifined global constrains: X, Y, P, XvsZ, YvsZ, PvsZ, XvsY, YvsY, PvsY
+  Bool_t bVarXYT[9] = {kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE};
+  Bool_t bDetTLBR[4] = {kFALSE,kTRUE,kFALSE,kTRUE};
+  alig->AddConstraints(bStOnOff,bVarXYT,bDetTLBR,bSpecLROnOff);
+
 
   char cFileName[100];  
   AliMUONDataInterface amdi;
 
   Int_t lMaxFile = 1000;
   Int_t iFile = 0;
+  Int_t iEvent = 0;
   bool bKeepLoop = kTRUE;
+  Int_t iTrackTot=0;
+  Int_t iTrackOk=0;
+
   while(bKeepLoop && iFile<lMaxFile){
     iFile++;
     if (bLoop) {
@@ -112,12 +134,19 @@ void MUONAlignment(Int_t nEvents = 100000, char* geoFilename = "geometry.root", 
     cout << "Using file: " << cFileName << endl;
     amdi.SetFile(cFileName);
     Int_t nevents = amdi.NumberOfEvents();
+    cout << "... with " << nevents << endl;
     for(Int_t event = 0; event < nevents; event++) {
       amdi.GetEvent(event);
+      if (iEvent >= nEvents){
+	bKeepLoop = kFALSE;
+	break;
+      }
+      iEvent++;
+
       Int_t ntracks = amdi.NumberOfRecTracks();
-      cout << " there are " << ntracks << " tracks in event " << event << endl;
+      if (!event%100)
+	cout << " there are " << ntracks << " tracks in event " << event << endl;
       Int_t iTrack=0;
-      Int_t iTrackOk=0;
       AliMUONTrack* track = amdi.RecTrack(iTrack);
       while(track) {   
 	AliMUONTrackParam trackParam(*((AliMUONTrackParam*)(track->GetTrackParamAtHit()->First())));
@@ -126,15 +155,15 @@ void MUONAlignment(Int_t nEvents = 100000, char* geoFilename = "geometry.root", 
 	fInvBenMom->Fill(invBenMom);
 	fBenMom->Fill(1./invBenMom);
 	if (TMath::Abs(invBenMom)<=1.04) {
-	  cout << "Track " << iTrack << endl;
 	  alig->ProcessTrack(track);
-	  cout << "Calling LocalFit" << endl;
 	  alig->LocalFit(iTrackOk++,trackParams,0);
 	}
 	iTrack++;
+	iTrackTot++;
 	track = amdi.RecTrack(iTrack);
       }
     }
+    cout << "Processed " << iTrackTot << " Tracks so far." << endl;
   }
   alig->GlobalFit(parameters,errors,pulls);
 
