@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.9  2007/02/28 10:42:58  acolla
+Run type field added in SHUTTLE framework. Run type is read from "run type" logbook and retrieved by
+AliPreprocessor::GetRunType() function.
+
 Revision 1.7  2006/11/06 14:24:21  jgrosseo
 reading of run parameters from the logbook
 online offline naming conversion
@@ -138,7 +142,7 @@ void AliPreprocessor::Initialize(Int_t run, UInt_t startTime,	UInt_t endTime)
 }
 
 //______________________________________________________________________________________________
-UInt_t AliPreprocessor::Store(const char* pathLevel2, const char* pathLevel3, TObject* object,
+Bool_t AliPreprocessor::Store(const char* pathLevel2, const char* pathLevel3, TObject* object,
 		AliCDBMetaData* metaData, Int_t validityStart, Bool_t validityInfinite)
 {
   // Stores a CDB object in the storage for offline reconstruction. Objects that are not needed for
@@ -167,7 +171,7 @@ UInt_t AliPreprocessor::Store(const char* pathLevel2, const char* pathLevel3, TO
 }
 
 //______________________________________________________________________________________________
-UInt_t AliPreprocessor::StoreReferenceData(const char* pathLevel2, const char* pathLevel3, TObject* object,
+Bool_t AliPreprocessor::StoreReferenceData(const char* pathLevel2, const char* pathLevel3, TObject* object,
 		AliCDBMetaData* metaData)
 {
   // Stores a CDB object in the storage for reference data. This objects will not be available during

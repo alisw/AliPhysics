@@ -34,10 +34,12 @@ class AliPreprocessor : public TNamed
     virtual void Initialize(Int_t run, UInt_t startTime, UInt_t endTime);
     virtual UInt_t Process(TMap* dcsAliasMap) = 0;
 
+    virtual Bool_t ProcessDCS() {return kTRUE;}
+
   protected:
-    UInt_t Store(const char* pathLevel2, const char* pathLevel3, TObject* object,
+    Bool_t Store(const char* pathLevel2, const char* pathLevel3, TObject* object,
     		AliCDBMetaData* metaData, Int_t validityStart = 0, Bool_t validityInfinite = kFALSE);
-    UInt_t StoreReferenceData(const char* pathLevel2, const char* pathLevel3, TObject* object,
+    Bool_t StoreReferenceData(const char* pathLevel2, const char* pathLevel3, TObject* object,
     		AliCDBMetaData* metaData);
     const char* GetFile(Int_t system, const char* id, const char* source);
     TList* GetFileSources(Int_t system, const char* id);
