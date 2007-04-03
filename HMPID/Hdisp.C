@@ -154,8 +154,8 @@ void DrawCh(Int_t iCh)
   if(iCh>=0){TLatex txt; txt.SetTextSize(0.1); txt.DrawLatex(-5,-5,Form("%i",iCh));}
   
   for(Int_t iPc=AliHMPIDDigit::kMinPc;iPc<=AliHMPIDDigit::kMaxPc;iPc++){
-    TBox *pBox=new TBox(AliHMPIDDigit::fMinPcX[iPc],AliHMPIDDigit::fMinPcY[iPc],
-                        AliHMPIDDigit::fMaxPcX[iPc],AliHMPIDDigit::fMaxPcY[iPc]);
+    TBox *pBox=new TBox(AliHMPIDDigit::MinPcX(iPc),AliHMPIDDigit::MinPcY(iPc),
+                        AliHMPIDDigit::MaxPcX(iPc),AliHMPIDDigit::MaxPcY(iPc));
     
     pBox->SetFillStyle(0);
     pBox->Draw();

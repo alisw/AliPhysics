@@ -78,7 +78,7 @@ void AliHMPIDCluster::DigAdd(AliHMPIDDigit *pDig)
 {
 // Adds a given digit to the list of digits belonging to this cluster, cluster is not owner of digits
 // Arguments: pDig - pointer to digit to be added  
-//   Returns: none  
+// Returns: none  
   if(!fDigs) {fSi=0;fDigs = new TObjArray;} //create list of digits in the first invocation
   fDigs->Add(pDig);
   fSt=kFrm;
@@ -87,6 +87,9 @@ void AliHMPIDCluster::DigAdd(AliHMPIDDigit *pDig)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDCluster::Reset()
 {
+  //
+  //
+  //
   if(fDigs) delete fDigs; 
   fDigs=0; 
   fSt=kEmp;
@@ -98,11 +101,14 @@ void AliHMPIDCluster::Reset()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Bool_t AliHMPIDCluster::IsInPc()
 {
+  //Check if (X,Y) position is inside the PC limits
+  //Arguments:
+  //  Returns: True or False
   Int_t pc = ((AliHMPIDDigit*)fDigs->At(0))->Pc();
  
   
-  if ( fX < AliHMPIDDigit::fMinPcX[pc] || fX > AliHMPIDDigit::fMaxPcX[pc] || 
-       fY < AliHMPIDDigit::fMinPcY[pc] || fY > AliHMPIDDigit::fMaxPcY[pc] ) return kFALSE;
+  if ( fX < AliHMPIDDigit::MinPcX(pc) || fX > AliHMPIDDigit::MaxPcX(pc) || 
+       fY < AliHMPIDDigit::MinPcY(pc) || fY > AliHMPIDDigit::MaxPcY(pc) ) return kFALSE;
   
   return kTRUE;
   
