@@ -32,6 +32,7 @@ class TMonaLisaWriter;
 class AliShuttle: public AliShuttleInterface {
 public:
 	enum DCSType {kAlias=0, kDP};
+	enum returnCodes {kDCSErrCode=20051975, kStorErrCode=20051976};
 
 	AliShuttle(const AliShuttleConfig* config, UInt_t timeout = 5000, Int_t retries = 5);
 	virtual ~AliShuttle();
@@ -50,9 +51,9 @@ public:
 	UInt_t GetCurrentStartTime() const;
 	UInt_t GetCurrentEndTime() const;
 
-	virtual UInt_t Store(const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData,
+	virtual Bool_t Store(const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData,
 			Int_t validityStart = 0, Bool_t validityInfinite = kFALSE);
-	virtual UInt_t StoreReferenceData(const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData);
+	virtual Bool_t StoreReferenceData(const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData);
 	virtual const char* GetFile(Int_t system, const char* detector,
 		const char* id, const char* source);
 	virtual TList* GetFileSources(Int_t system, const char* detector, const char* id);
@@ -92,13 +93,15 @@ private:
 	Bool_t RetrieveFile(UInt_t system, const char* daqFileName, const char* localFileName);
 
 	Bool_t UpdateTable();
+	Bool_t UpdateTableFailCase();
 
-	UInt_t WriteToCDB(const char* mainUri, const char* localUri,
-				const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData,
-				Int_t validityStart = 0, Bool_t validityInfinite = kFALSE);
+	Bool_t StoreLocally(const TString& localUri, const AliCDBPath& path, TObject* object,
+				AliCDBMetaData* metaData, Int_t validityStart = 0, Bool_t validityInfinite = kFALSE);
 
-	Bool_t TryToStoreAgain();
-	Bool_t TryToStoreAgain(TString& storageType);
+	Bool_t StoreOCDB();
+	Bool_t StoreOCDB(const TString& uri);
+	void CleanLocalStorage(const TString& uri);
+	void RemoveFile(const char* filename);
 
 	AliShuttleStatus* ReadShuttleStatus();
 	Bool_t WriteShuttleStatus(AliShuttleStatus* status);
@@ -128,7 +131,6 @@ private:
 	TList  fFXSlist[3];		// List of files retrieved from each FXS
 
 	AliCDBEntry* fStatusEntry; // last CDB entry containing a AliShuttleStatus retrieved
-	Bool_t fGridError; 	   // Grid storage error flag
 
 	TMutex* fMonitoringMutex;   // mutex to lock the monitoring class members
 	UInt_t fLastActionTime;    // time of last action for monitoring

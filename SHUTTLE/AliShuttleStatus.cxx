@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.4  2006/10/02 16:38:39  jgrosseo
+update (alberto):
+fixed memory leaks
+storing of objects that failed to be stored to the grid before
+interfacing of shuttle status table in daq system
+
 Revision 1.3  2006/08/29 09:16:05  jgrosseo
 small update
 
@@ -122,10 +128,14 @@ const char* AliShuttleStatus::GetStatusName(Status status)
     case kDCSStarted: return "DCSStarted";
     case kDCSError: return "DCSError";
     case kPPStarted: return "PPStarted";
+    case kPPTimeOut: return "PPTimeOut";
+    case kPPOutOfMemory: return "PPOutOfMemory";
     case kPPError: return "PPError";
+    case kPPDone: return "PPDone";
+    case kStoreStarted: return "StoreStarted";
+    case kStoreError: return "StoreError";
     case kDone: return "Done";
     case kFailed: return "Failed";
-    case kStoreFailed: return "StoreFailed";
   }
 
   return 0;

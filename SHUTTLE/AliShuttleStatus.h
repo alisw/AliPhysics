@@ -21,10 +21,14 @@ public:
     kDCSStarted,
     kDCSError,
     kPPStarted,
+    kPPTimeOut,
+    kPPOutOfMemory,
     kPPError,
+    kPPDone,
+    kStoreStarted,
+    kStoreError,
     kDone, // final
-    kFailed,  // final
-    kStoreFailed 
+    kFailed  // final
   };
 
   AliShuttleStatus();
