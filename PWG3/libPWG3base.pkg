@@ -1,11 +1,13 @@
 # $Id$
 
-SRCS:=  AliQuarkoniaAcceptance.cxx   AliQuarkoniaEfficiency.cxx        
+SRCS:= AliQuarkoniaAcceptance.cxx \
+       AliQuarkoniaEfficiency.cxx \
+       AliPWG3TrackExtrapInterface.cxx
      
      
 HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= PWG3baseLinkDef.h
 
-EINCLUDE:= 
+EINCLUDE:= MUON
 
