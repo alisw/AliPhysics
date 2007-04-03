@@ -29,6 +29,7 @@ ClassImp(AliAnalysisTaskJets)
 
 AliAnalysisTaskJets::AliAnalysisTaskJets(const char* name):
     AliAnalysisTask(name, "AnalysisTaskJets"),
+    fDebug(0),
     fJetFinder(0x0),
     fChain(0x0),
     fESD(0x0)
@@ -38,11 +39,11 @@ AliAnalysisTaskJets::AliAnalysisTaskJets(const char* name):
     DefineOutput(0, TH1::Class());
 }
 
-void AliAnalysisTaskJets::Init(Option_t */*option*/)
+void AliAnalysisTaskJets::ConnectInputData(Option_t */*option*/)
 {
 // Initialisation
 //
-    printf("AnalysisJets::Init() \n");
+    if (fDebug > 1) printf("AnalysisJets::Init() \n");
 
     // Call configuration file
     gROOT->LoadMacro("ConfigJetAnalysis.C");
@@ -59,7 +60,7 @@ void AliAnalysisTaskJets::Exec(Option_t */*option*/)
 // Execute analysis for current event
 //
     Long64_t ientry = fChain->GetReadEntry();
-    printf("Analysing event # %5d \n", (Int_t) ientry);
+     if (fDebug > 1) printf("Analysing event # %5d \n", (Int_t) ientry);
     
     fJetFinder->ProcessEvent(ientry);
 }
@@ -69,6 +70,6 @@ void AliAnalysisTaskJets::Terminate(Option_t */*option*/)
 // Terminate analysis
 //
     printf("AnalysisJets: Terminate() \n");
-    fJetFinder->FinishRun();
+    if (fJetFinder) fJetFinder->FinishRun();
 }
 
