@@ -49,6 +49,7 @@
 #include <TSystem.h>
 #include <TROOT.h>
 #include <TStopwatch.h>
+#include <TPluginManager.h>
 
 #include <sys/uio.h>
 #ifdef USE_EB
@@ -117,6 +118,13 @@ AliMDC::AliMDC(Int_t compress, Bool_t deleteFiles, EFilterMode filterMode,
   // will be stored. In case this option is not given, the *.guid files
   // will be written to the same folder as the raw-data files.
  
+  // This line is needed in case of a stand-alone application w/o
+  // $ROOTSYS/etc/system.rootrc file
+  gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
+					"*",
+					"TStreamerInfo",
+					"RIO",
+					"TStreamerInfo()");
 
   if (fFilterMode != kFilterOff) {
     fESD = new AliESD;
