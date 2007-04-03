@@ -26,7 +26,9 @@
 #include "TMath.h"
 #include "TClass.h"
 #include "TFile.h"
+#include "TH1F.h"
 #include "TH2F.h"
+#include "AliMathBase.h"
 ClassImp(AliTPCCalROC)
 
 
@@ -122,11 +124,98 @@ void AliTPCCalROC::Streamer(TBuffer &R__b)
 }
 
 
+Double_t AliTPCCalROC::GetLTM(Double_t *sigma, Double_t fraction){
+  //
+  //  Calculate LTM mean and sigma
+  //
+  Double_t *ddata = new Double_t[fNChannels];
+  Double_t mean=0, lsigma=0;
+  Int_t hh = TMath::Min(TMath::Nint(fraction *fNChannels), Int_t(fNChannels));
+  for (UInt_t i=0;i<fNChannels;i++) ddata[i]= fData[i];
+  AliMathBase::EvaluateUni(UInt_t(fNChannels),ddata, mean, lsigma, hh);
+  if (sigma) *sigma=lsigma;
+  delete [] ddata;
+  return mean;
+}
 
-void AliTPCCalROC::Draw(Option_t* option){
+TH1F * AliTPCCalROC::MakeHisto1D(Float_t min, Float_t max,Int_t type){
   //
-  // create histogram with values and draw it
+  // make 1D histo
+  // type -1 = user defined range
+  //       0 = nsigma cut nsigma=min
+  //       1 = delta cut around median delta=min
+  if (type>=0){
+    if (type==0){
+      // nsigma range
+      Float_t mean  = GetMean();
+      Float_t sigma = GetRMS();
+      Float_t nsigma = TMath::Abs(min);
+      min = mean-nsigma*sigma;
+      max = mean+nsigma*sigma;
+    }
+    if (type==1){
+      // fixed range
+      Float_t mean   = GetMedian();
+      Float_t  delta = min;
+      min = mean-delta;
+      max = mean+delta;
+    }
+    if (type==2){
+      //
+      // LTM mean +- nsigma
+      //
+      Double_t sigma;
+      Float_t mean  = GetLTM(&sigma,max);
+      sigma*=min;
+      min = mean-sigma;
+      max = mean+sigma;
+    }
+  }
+  char  name[1000];
+  sprintf(name,"%s ROC 1D%d",GetTitle(),fSector);
+  TH1F * his = new TH1F(name,name,100, min,max);
+  for (UInt_t irow=0; irow<fNRows; irow++){
+    UInt_t npads = (Int_t)GetNPads(irow);
+    for (UInt_t ipad=0; ipad<=npads; ipad++){
+      his->Fill(GetValue(irow,ipad));
+    }
+  }
+  return his;
+}
+
+
+
+TH2F * AliTPCCalROC::MakeHisto2D(Float_t min, Float_t max,Int_t type){
   //
+  // make 2D histo
+  // type -1 = user defined range
+  //       0 = nsigma cut nsigma=min
+  //       1 = delta cut around median delta=min
+  if (type>=0){
+    if (type==0){
+      // nsigma range
+      Float_t mean  = GetMean();
+      Float_t sigma = GetRMS();
+      Float_t nsigma = TMath::Abs(min);
+      min = mean-nsigma*sigma;
+      max = mean+nsigma*sigma;
+    }
+    if (type==1){
+      // fixed range
+      Float_t mean   = GetMedian();
+      Float_t  delta = min;
+      min = mean-delta;
+      max = mean+delta;
+    }
+    if (type==2){
+      Double_t sigma;
+      Float_t mean  = GetLTM(&sigma,max);
+      sigma*=min;
+      min = mean-sigma;
+      max = mean+sigma;
+
+    }
+  }
   UInt_t maxPad = 0;
   for (UInt_t irow=0; irow<fNRows; irow++){
     if (GetNPads(irow)>maxPad) maxPad = GetNPads(irow);
@@ -140,8 +229,60 @@ void AliTPCCalROC::Draw(Option_t* option){
       his->Fill(irow+0.5,Int_t(ipad)-Int_t(npads/2)+0.5,GetValue(irow,ipad));
     }
   }
+  his->SetMaximum(max);
+  his->SetMinimum(min);
+  return his;
+}
+
+TH2F * AliTPCCalROC::MakeHistoOutliers(Float_t delta, Float_t fraction, Int_t type){
+  //
+  // Make Histogram with outliers
+  // mode = 0 - sigma cut used
+  // mode = 1 - absolute cut used
+  // fraction - fraction of values used to define sigma
+  // delta - in mode 0 - nsigma cut
+  //            mode 1 - delta cut
+  Double_t sigma;
+  Float_t mean  = GetLTM(&sigma,fraction);  
+  if (type==0) delta*=sigma; 
+  UInt_t maxPad = 0;
+  for (UInt_t irow=0; irow<fNRows; irow++){
+    if (GetNPads(irow)>maxPad) maxPad = GetNPads(irow);
+  }
+
+  char  name[1000];
+  sprintf(name,"%s ROC Outliers%d",GetTitle(),fSector);
+  TH2F * his = new TH2F(name,name,fNRows+10,-5, fNRows+5, maxPad+10, -(Int_t(maxPad/2))-5, maxPad/2+5);
+  for (UInt_t irow=0; irow<fNRows; irow++){
+    UInt_t npads = (Int_t)GetNPads(irow);
+    for (UInt_t ipad=0; ipad<=npads; ipad++){
+      if (TMath::Abs(GetValue(irow,ipad)-mean)>delta)
+	his->Fill(irow+0.5,Int_t(ipad)-Int_t(npads/2)+0.5,1);
+    }
+  }
+  return his;
+}
+
+
+
+void AliTPCCalROC::Draw(Option_t* opt){
+  //
+  // create histogram with values and draw it
+  //
+  TH1 * his=0; 
+  TString option=opt;
+  option.ToUpper();
+  if (option.Contains("1D")){
+    his = MakeHisto1D();
+  }
+  else{
+    his = MakeHisto2D();
+  }
   his->Draw(option);
 }
+
+
+
 
 
 void AliTPCCalROC::Test(){

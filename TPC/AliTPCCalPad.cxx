@@ -23,7 +23,9 @@
 
 #include "AliTPCCalPad.h"
 #include "AliTPCCalROC.h"
-
+#include <TObjArray.h>
+#include <TAxis.h>
+#include <TGraph.h>
 ClassImp(AliTPCCalPad)
 
 //_____________________________________________________________________________
@@ -62,6 +64,20 @@ AliTPCCalPad::AliTPCCalPad(const AliTPCCalPad &c):TNamed(c)
   ((AliTPCCalPad &) c).Copy(*this);
 
 }
+
+//_____________________________________________________________________________
+AliTPCCalPad::AliTPCCalPad(TObjArray * array):TNamed()
+{
+  //
+  // AliTPCCalPad default constructor
+  //
+
+  for (Int_t isec = 0; isec < kNsec; isec++) {
+    fROC[isec] = (AliTPCCalROC *)array->At(isec);
+  }
+
+}
+
 
 ///_____________________________________________________________________________
 AliTPCCalPad::~AliTPCCalPad()
@@ -104,4 +120,38 @@ void AliTPCCalPad::Copy(TObject &c) const
     }
   }
   TObject::Copy(c);
+}
+
+TGraph  *  AliTPCCalPad::MakeGraph(Int_t type, Float_t ratio){
+  //
+  //   type=1 - mean
+  //        2 - median
+  //        3 - LTM
+  Int_t npoints = 0;
+  for (Int_t i=0;i<72;i++) if (fROC[i]) npoints++;
+  TGraph * graph = new TGraph(npoints);
+  npoints=0;   
+  for (Int_t isec=0;isec<72;isec++){
+    if (!fROC[isec]) continue;
+    if (type==0)  graph->SetPoint(npoints,isec,fROC[isec]->GetMean());      
+    if (type==1)  graph->SetPoint(npoints,isec,fROC[isec]->GetMedian());
+    if (type==2)  graph->SetPoint(npoints,isec,fROC[isec]->GetLTM(0,ratio));    
+    npoints++;
+  }
+
+  graph->GetXaxis()->SetTitle("Sector"); 
+  if (type==0) {
+    graph->GetYaxis()->SetTitle("Mean");   
+    graph->SetMarkerStyle(22);    
+  }
+  if (type==1) {
+    graph->GetYaxis()->SetTitle("Median");   
+    graph->SetMarkerStyle(22);    
+  }
+  if (type==2) {
+      graph->GetYaxis()->SetTitle(Form("Mean%f",ratio));      
+      graph->SetMarkerStyle(24);
+  }
+
+  return graph;
 }
