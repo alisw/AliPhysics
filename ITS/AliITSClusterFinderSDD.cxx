@@ -81,13 +81,19 @@ void AliITSClusterFinderSDD::SetCutAmplitude(Int_t mod,Double_t nsigma){
     // set the signal threshold for cluster finder
     Double_t baseline,noiseAfterEl;
 
-    
+    AliITSresponseSDD* res  = (AliITSresponseSDD*)((AliITSCalibrationSDD*)GetResp(mod))->GetResponse();
+    const char *option=res->ZeroSuppOption();
     Int_t nanodes = GetResp(mod)->Wings()*GetResp(mod)->Channels()*GetResp(mod)->Chips();
     fCutAmplitude.Set(nanodes);
     for(Int_t ian=0;ian<nanodes;ian++){
-      baseline=GetResp(mod)->GetBaseline(ian);
       noiseAfterEl = ((AliITSCalibrationSDD*)GetResp(mod))->GetNoiseAfterElectronics(ian);
-      fCutAmplitude[ian] = (Int_t)((baseline + nsigma*noiseAfterEl));
+      if((strstr(option,"1D")) || (strstr(option,"2D"))){ 
+	fCutAmplitude[ian] = (Int_t)(nsigma*noiseAfterEl);
+      }
+      else{
+	baseline=GetResp(mod)->GetBaseline(ian);
+	fCutAmplitude[ian] = (Int_t)((baseline + nsigma*noiseAfterEl));
+      } 
     }
 }
 //______________________________________________________________________
@@ -103,6 +109,9 @@ void AliITSClusterFinderSDD::Find1DClusters(){
     Double_t fSddLength   = GetSeg()->Dx();
     Double_t anodePitch   = GetSeg()->Dpz(dummy);
     AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(fModule);
+    AliITSresponseSDD* res  = (AliITSresponseSDD*)((AliITSCalibrationSDD*)GetResp(fModule))->GetResponse();
+    const char *option=res->ZeroSuppOption();
+
     // map the signal
     Map()->ClearMap();
     Map()->SetThresholdArr(fCutAmplitude);
@@ -184,13 +193,14 @@ void AliITSClusterFinderSDD::Find1DClusters(){
                     Int_t   clusterMult   = 0;
                     Double_t clusterPeakAmplitude = 0.;
                     Int_t its,peakpos     = -1;
-                    //Double_t n, baseline;
-                    //GetResp(fModule)->GetNoiseParam(n,baseline);
-		    Double_t baseline=GetResp(fModule)->GetBaseline(idx);
+		    		   
 		    for(its=tstart; its<=tstop; its++) {
                         fadc=(float)Map()->GetSignal(idx,its);
-                        if(fadc>baseline) fadc -= baseline;
-                        else fadc = 0.;
+			if(!((strstr(option,"1D")) || (strstr(option,"2D")))){
+			  Double_t baseline=GetResp(fModule)->GetBaseline(idx);
+			  if(fadc>baseline) fadc -= baseline;
+			  else fadc = 0.;
+			}
                         clusterCharge += fadc;
                         // as a matter of fact we should take the peak
                         // pos before FFT
@@ -256,12 +266,14 @@ void AliITSClusterFinderSDD::Find1DClustersE(){
     Map()->SetThresholdArr( fCutAmplitude );
     Map()->FillMap2();
 
+    AliITSresponseSDD* res  = (AliITSresponseSDD*)cal->GetResponse();
+    const char *option=res->ZeroSuppOption();
+
     Int_t nClu = 0;
     //        cout << "Search  cluster... "<< endl;
     for( Int_t j=0; j<2; j++ ){
         for( Int_t k=0; k<fNofAnodes; k++ ){
-            Int_t idx = j*fNofAnodes+k;
-	    Double_t baseline=GetResp(fModule)->GetBaseline(idx);
+            Int_t idx = j*fNofAnodes+k;	    
             Bool_t on = kFALSE;
             Int_t start = 0;
             Int_t nTsteps = 0;
@@ -287,8 +299,11 @@ void AliITSClusterFinderSDD::Find1DClustersE(){
                         nTsteps = 0;
                     } // end if on...
                     nTsteps++ ;
-                    if( fadc > baseline ) fadc -= baseline;
-                    else fadc=0.;
+		    if(!((strstr(option,"1D")) || (strstr(option,"2D")))){
+		      Double_t baseline=GetResp(fModule)->GetBaseline(idx);
+		      if( fadc > baseline ) fadc -= baseline;
+		      else fadc=0.;
+		    }
                     charge += fadc;
                     time += fadc*l;
                     if( fadc > fmax ){ 
@@ -693,10 +708,10 @@ void AliITSClusterFinderSDD::ResolveClusters(){
     Double_t fTimeStep = GetSeg()->Dpx( dummy );
     Double_t fSddLength = GetSeg()->Dx();
     Double_t anodePitch = GetSeg()->Dpz( dummy );
-    //Double_t n, baseline;
-    //GetResp(fModule)->GetNoiseParam( n, baseline );
     Int_t electronics =GetResp(fModule)->GetElectronics(); // 1 = PASCAL, 2 = OLA
     AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(fModule);
+    AliITSresponseSDD* res  = (AliITSresponseSDD*)cal->GetResponse();
+    const char *option=res->ZeroSuppOption();
     
 
     for( Int_t j=0; j<nofClusters; j++ ){ 
@@ -723,10 +738,12 @@ void AliITSClusterFinderSDD::ResolveClusters(){
         // make a local map from cluster region
         for( Int_t ianode=astart; ianode<=astop; ianode++ ){
             for( Int_t itime=tstart; itime<=tstop; itime++ ){
-                Double_t fadc = Map()->GetSignal( ianode, itime );
-		Double_t baseline=GetResp(fModule)->GetBaseline(ianode);
-                if( fadc > baseline ) fadc -= (Double_t)baseline;
-                else fadc = 0.;
+                Double_t fadc = Map()->GetSignal( ianode, itime );	       
+		if(!((strstr(option,"1D")) || (strstr(option,"2D")))){
+		  Double_t baseline=GetResp(fModule)->GetBaseline(ianode);
+		  if( fadc > baseline ) fadc -= (Double_t)baseline;
+		  else fadc = 0.;
+		}
                 Int_t index = (itime-tstart+1)*zdim+(ianode-astart+1);
                 sp[index] = fadc;
             } // time loop

@@ -26,7 +26,6 @@
 #include <TFile.h>
 #include <TRandom.h>
 #include <TROOT.h>
-
 #include "AliITS.h"
 #include "AliITSMapA2.h"
 #include "AliITSRawData.h"
@@ -804,7 +803,8 @@ void AliITSsimulationSDD::ListOfFiredCells(Int_t *arg,Double_t timeAmplitude,
 //____________________________________________
 void AliITSsimulationSDD::AddDigit( Int_t i, Int_t j, Int_t signal ) {
     // Adds a Digit.
-    Int_t size = AliITSdigitSPD::GetNTracks();
+    Int_t size = AliITSdigit::GetNTracks();
+
     Int_t digits[3];
     Int_t * tracks = new Int_t[size];
     Int_t * hits = new Int_t[size];
@@ -1090,7 +1090,6 @@ AliITSMap*   AliITSsimulationSDD::HitMap(Int_t i){
 //______________________________________________________________________
 void AliITSsimulationSDD::ZeroSuppression(const char *option) {
     // perform the zero suppresion
-
     if (strstr(option,"2D")) {
         //Init2D();              // activate if param change module by module
         Compress2D();
@@ -1410,7 +1409,7 @@ void AliITSsimulationSDD::StoreAllDigits(){
             digits[1] = j;
             digits[2] = signal;
             fITS->AddRealDigit(1,digits);
-        } // end for j
+	} // end for j
     } // end for i
 } 
 //______________________________________________________________________

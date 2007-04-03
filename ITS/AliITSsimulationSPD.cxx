@@ -709,7 +709,7 @@ void AliITSsimulationSPD::FrompListToDigits(){
     Int_t j,ix,iz;
     Double_t  electronics;
     Double_t sig;
-    const Int_t    knmaxtrk=AliITSdigitSPD::GetNTracks();
+    const Int_t    knmaxtrk=AliITSdigit::GetNTracks();
     static AliITSdigitSPD dig;
     AliITSCalibrationSPD* res = (AliITSCalibrationSPD*)GetCalibrationModel(fDetType->GetITSgeom()->GetStartSPD());
     if(GetDebug(1)) Info("FrompListToDigits","()");

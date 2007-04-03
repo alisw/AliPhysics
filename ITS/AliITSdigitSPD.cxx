@@ -34,8 +34,8 @@ fSignalSPD(0){
     // be a valide track of hit number.
     Int_t i;
 
-    for(i=0;i<fgkSspd;i++) fTracks[i]  = -3;
-    for(i=0;i<fgkSspd;i++) fHits[i]    = -1;
+    for(i=0;i<fgkSize;i++) fTracks[i]  = -3;
+    for(i=0;i<fgkSize;i++) fHits[i]    = -1;
 }
 //______________________________________________________________________
 AliITSdigitSPD::AliITSdigitSPD(const Int_t *digits):
@@ -43,8 +43,8 @@ fSignalSPD(digits[2]){
     // Creates a SPD digit object
     Int_t i;
 
-    for(i=0;i<fgkSspd;i++) fTracks[i]  = -3;
-    for(i=0;i<fgkSspd;i++) fHits[i]    = -1;
+    for(i=0;i<fgkSize;i++) fTracks[i]  = -3;
+    for(i=0;i<fgkSize;i++) fHits[i]    = -1;
     fCoord1       = digits[0];
     fCoord2       = digits[1];
     fSignal       = 1;
@@ -55,7 +55,7 @@ AliITSdigitSPD::AliITSdigitSPD(const Int_t *digits,const Int_t *tracks,
 fSignalSPD(digits[2]){
     // Creates a simulated SPD digit object
 
-    for(Int_t i=0; i<fgkSspd; i++) {
+    for(Int_t i=0; i<fgkSize; i++) {
 	fTracks[i] = tracks[i];
 	fHits[i]   = hits[i];
     } // end for i
@@ -100,8 +100,8 @@ void AliITSdigitSPD::Print(ostream *os){
     Int_t i;
 
     AliITSdigit::Print(os);
-    for(i=0;i<fgkSspd;i++) *os <<","<< fTracks[i];
-    for(i=0;i<fgkSspd;i++) *os <<","<< fHits[i];
+    for(i=0;i<fgkSize;i++) *os <<","<< fTracks[i];
+    for(i=0;i<fgkSize;i++) *os <<","<< fHits[i];
     *os << "," << fSignalSPD;
 }
 //______________________________________________________________________
@@ -110,8 +110,8 @@ void AliITSdigitSPD::Read(istream *os){
     Int_t i;
 
     AliITSdigit::Read(os);
-    for(i=0;i<fgkSspd;i++) *os >> fTracks[i];
-    for(i=0;i<fgkSspd;i++) *os >> fHits[i];
+    for(i=0;i<fgkSize;i++) *os >> fTracks[i];
+    for(i=0;i<fgkSize;i++) *os >> fHits[i];
     *os >> fSignalSPD;
 }
 //______________________________________________________________________

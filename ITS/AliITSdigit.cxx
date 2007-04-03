@@ -32,6 +32,9 @@ fCoord1(0),
 fCoord2(0),
 fSignal(0){
   //default constructor. zero all values.
+  for(Int_t i=0;i<fgkSize;i++) fTracks[i] = 0;
+  for(Int_t i=0;i<fgkSize;i++) fHits[i]   = 0;
+  
 }
 
 
@@ -40,6 +43,9 @@ fCoord1(digits[0]),
 fCoord2(digits[1]),
 fSignal(digits[2]){
   // Creates a real data digit object
+  for(Int_t i=0;i<fgkSize;i++) fTracks[i] = 0;
+  for(Int_t i=0;i<fgkSize;i++) fHits[i]   = 0;
+
 
 }
 //______________________________________________________________________

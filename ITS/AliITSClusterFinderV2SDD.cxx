@@ -25,7 +25,7 @@
 #include "AliITSRecPoint.h"
 #include "AliITSDetTypeRec.h"
 #include "AliRawReader.h"
-#include "AliITSRawStreamSDDv3.h"
+#include "AliITSRawStreamSDD.h"
 #include "AliITSCalibrationSDD.h"
 #include "AliITSDetTypeRec.h"
 #include "AliITSsegmentationSDD.h"
@@ -68,21 +68,22 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(TClonesArray *digits) {
   bins[0]=new AliBin[kMAXBIN];
   bins[1]=new AliBin[kMAXBIN];
   AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(fModule);
-  
+  AliITSresponseSDD* res  = (AliITSresponseSDD*)cal->GetResponse();
+  const char *option=res->ZeroSuppOption();
   AliITSdigitSDD *d=0;
   Int_t i, ndigits=digits->GetEntriesFast();
   for (i=0; i<ndigits; i++) {
      d=(AliITSdigitSDD*)digits->UncheckedAt(i);
-     Float_t baseline = cal->GetBaseline(d->GetCoord1());
-
      Int_t y=d->GetCoord2()+1;   //y
      Int_t z=d->GetCoord1()+1;   //z
      Int_t q=d->GetSignal();
-
-     if(q>baseline) q-=(Int_t)baseline;
-     else q=0;
+     if(!((strstr(option,"1D")) || (strstr(option,"2D")))){
+       Float_t baseline = cal->GetBaseline(d->GetCoord1());
+       if(q>baseline) q-=(Int_t)baseline;
+       else q=0;
+     }
      if(q<cal->GetThresholdAnode(d->GetCoord1())) continue;
- 
+     
      //if (q<3) continue;
 
      if (z <= fNzSDD) {
@@ -241,7 +242,7 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
          Float_t hit[5] = {y, z, 0.0030*0.0030, 0.0020*0.0020, q};
          Int_t  info[3] = {maxj-minj+1, maxi-mini+1, fNlayer[fModule]};
 
-         //if (c.GetQ() < 20.) continue; //noise cluster
+         if (c.GetQ() < 20.) continue; //noise cluster
 	 
 	 if (digits) {	  
 	   //	   AliBin *b=&bins[s][idx[k]];
@@ -276,7 +277,7 @@ void AliITSClusterFinderV2SDD::RawdataToClusters(AliRawReader* rawReader,TClones
   // This function creates ITS clusters from raw data
   //------------------------------------------------------------
   rawReader->Reset();
-  AliITSRawStreamSDDv3 inputSDD(rawReader);
+  AliITSRawStreamSDD inputSDD(rawReader);
   FindClustersSDD(&inputSDD,clusters);
 
 }

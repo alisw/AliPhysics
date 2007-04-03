@@ -31,8 +31,8 @@ AliITSdigitSSD::AliITSdigitSSD():AliITSdigit(){
     // default constructor
     Int_t i;
 
-    for(i=0; i<fgkSssd; i++) fTracks[i] = -3;
-    for(i=0; i<fgkSssd; i++) fHits[i] = -1;
+    for(i=0; i<fgkSize; i++) fTracks[i] = -3;
+    for(i=0; i<fgkSize; i++) fHits[i] = -1;
 }
 //__________________________________________________________________________
 AliITSdigitSSD::AliITSdigitSSD(const Int_t *digits):AliITSdigit(digits){
@@ -43,7 +43,7 @@ AliITSdigitSSD::AliITSdigitSSD(const Int_t *digits,const Int_t *tracks,
 			       const Int_t *hits):AliITSdigit(digits){
     // Creates a simulated SSD digit object
 
-    for(Int_t i=0; i<fgkSssd; i++) {
+    for(Int_t i=0; i<fgkSize; i++) {
 	fTracks[i] = tracks[i];
 	fHits[i]   = hits[i];
     } // end for i
@@ -85,8 +85,8 @@ void AliITSdigitSSD::Print(ostream *os){
     Int_t i;
 
     AliITSdigit::Print(os);
-    for(i=0; i<fgkSssd; i++) *os <<","<< fTracks[i];
-    for(i=0; i<fgkSssd; i++) *os <<","<< fHits[i];
+    for(i=0; i<fgkSize; i++) *os <<","<< fTracks[i];
+    for(i=0; i<fgkSize; i++) *os <<","<< fHits[i];
 }
 //______________________________________________________________________
 void AliITSdigitSSD::Read(istream *os){
@@ -94,8 +94,8 @@ void AliITSdigitSSD::Read(istream *os){
     Int_t i;
 
     AliITSdigit::Read(os);
-    for(i=0; i<fgkSssd; i++) *os >> fTracks[i];
-    for(i=0; i<fgkSssd; i++) *os >> fHits[i];
+    for(i=0; i<fgkSize; i++) *os >> fTracks[i];
+    for(i=0; i<fgkSize; i++) *os >> fHits[i];
 }
 //______________________________________________________________________
 ostream &operator<<(ostream &os,AliITSdigitSSD &source){

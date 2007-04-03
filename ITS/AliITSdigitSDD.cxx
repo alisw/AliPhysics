@@ -39,9 +39,9 @@ fSignalExpanded(0){
     // be a valide track of hit number.
     Int_t i;
 
-    for(i=0;i<fgkSsdd;i++) fTracks[i] = -3;
-    for(i=0;i<fgkSsdd;i++) fHits[i]   = -1;
-    for(i=0;i<fgkSsdd;i++) fTcharges[i] = 0;
+    for(i=0;i<fgkSize;i++) fTracks[i] = -3;
+    for(i=0;i<fgkSize;i++) fHits[i]   = -1;
+    for(i=0;i<fgkSize;i++) fTcharges[i] = 0;
     SetSignalExpanded(-1000);
 }
 //________________________________________________________________________
@@ -50,8 +50,11 @@ fPhysics(phys),
 fSignalExpanded(0){
  
    // Creates a simulated SDD digit object to be updated
-
-    SetSignalExpanded(-1000);
+  for(Int_t i=0;i<fgkSize;i++) fTracks[i] = -3;
+  for(Int_t i=0;i<fgkSize;i++) fHits[i]   = -1;
+  for(Int_t i=0;i<fgkSize;i++) fTcharges[i] = 0;
+  
+  SetSignalExpanded(-1000);
 }
 
 //________________________________________________________________________
@@ -60,7 +63,7 @@ void AliITSdigitSDD::InitObject(Float_t phys,const Int_t *tracks,
 
   // Protected function used by standard constructors
   fPhysics = phys;
-  for(Int_t i=0; i<fgkSsdd; i++) {
+  for(Int_t i=0; i<fgkSize; i++) {
     fTcharges[i] = charges[i];
     fTracks[i]   = tracks[i];
     fHits[i]     = hits[i];
@@ -177,9 +180,9 @@ void AliITSdigitSDD::Print(ostream *os){
 
     AliITSdigit::Print(os);
     *os <<","<< fPhysics;
-    for(i=0; i<fgkSsdd; i++) *os <<","<< fTcharges[i];
-    for(i=0; i<fgkSsdd; i++) *os <<","<< fTracks[i];
-    for(i=0; i<fgkSsdd; i++) *os <<","<< fHits[i];
+    for(i=0; i<fgkSize; i++) *os <<","<< fTcharges[i];
+    for(i=0; i<fgkSize; i++) *os <<","<< fTracks[i];
+    for(i=0; i<fgkSize; i++) *os <<","<< fHits[i];
     *os <<","<< fSignalExpanded;
 }
 //______________________________________________________________________
@@ -190,9 +193,9 @@ void AliITSdigitSDD::Read(istream *os){
 
     AliITSdigit::Read(os);
     *os >>fPhysics;
-    for(i=0; i<fgkSsdd; i++) *os >> fTcharges[i];
-    for(i=0; i<fgkSsdd; i++) *os >> fTracks[i];
-    for(i=0; i<fgkSsdd; i++) *os >> fHits[i];
+    for(i=0; i<fgkSize; i++) *os >> fTcharges[i];
+    for(i=0; i<fgkSize; i++) *os >> fTracks[i];
+    for(i=0; i<fgkSize; i++) *os >> fHits[i];
     *os >>fSignalExpanded;
 }
 //______________________________________________________________________
