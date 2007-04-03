@@ -977,9 +977,9 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
     }
     loader->WriteRecPoints("OVERWRITE");
     loader->UnloadRecPoints();
-    AliDebug(1,Form("Execution time for %s: R:%.2fs C:%.2fs",
-		    fgkDetectorName[iDet],
-		    stopwatchDet.RealTime(),stopwatchDet.CpuTime()));
+    AliInfo(Form("Execution time for %s: R:%.2fs C:%.2fs",
+		 fgkDetectorName[iDet],
+		 stopwatchDet.RealTime(),stopwatchDet.CpuTime()));
   }
 
   if ((detStr.CompareTo("ALL") != 0) && !detStr.IsNull()) {
