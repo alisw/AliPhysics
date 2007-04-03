@@ -31,6 +31,8 @@ class AliMUONCheck : public TObject
 public:
   AliMUONCheck(const char* galiceFile, const char* esdFile,
                Int_t firstEvent=0, Int_t lastEvent=-1, const char* outDir="");
+  AliMUONCheck(const char* galiceFile, const char* galiceFileSim, const char* esdFile,
+               Int_t firstEvent=0, Int_t lastEvent=-1, const char* outDir="");
   virtual ~AliMUONCheck();
  
   /// Return true if contains valid data
@@ -51,7 +53,8 @@ private:
   AliMUONCheck& operator=(const AliMUONCheck& rhs);
   
 private:
-  TString fFileName;   //!< File (galice.root) to read from
+  TString fFileName;   //!< File (galice.root) to read from fro reconstructed data
+  TString fFileNameSim; //!< File (galiceSim.root) for simulated data
   TString fesdFileName; //!< File (AliESDs.root) to read from
  
   const char* foutDir;  //!< output data directory
@@ -59,10 +62,14 @@ private:
   Int_t   fFirstEvent;  //!< First event to consider
   Int_t   fLastEvent;   //!< Last event to consider
 
-  AliRunLoader* fRunLoader; //!< AliRunLoader pointer
-  AliLoader*    fLoader; //!< MUON loader pointer
+  AliRunLoader* fRunLoader;    //!< AliRunLoader pointer for reconstruction
+  AliRunLoader* fRunLoaderSim; //!< AliRunLoader pointer for simulation
 
-  AliMUONData*  fData;  //!< AliMUONData pointer (to access containers)
+  AliLoader*    fLoader;    //!< MUON loader pointer for reconstruction
+  AliLoader*    fLoaderSim; //!< MUON loader pointer for simulation
+
+  AliMUONData*  fData;     //!< AliMUONData pointer (to access containers) for recontruction 
+  AliMUONData*  fDataSim;  //!< AliMUONData pointer (to access containers) for simulation
 
   TTree   * fTree ;     //!< pointer to the analyzed TTree or TChain
   AliESD  * fESD ;      //!< Declaration of leave types

@@ -60,17 +60,18 @@
 /// \cond CLASSIMP
 ClassImp(AliMUONCheck)
 /// \endcond
-
-//_____________________________________________________________________________
-  AliMUONCheck::AliMUONCheck(const char* galiceFile,const char* esdFile,Int_t firstEvent, Int_t lastEvent,const char* outDir) 
+AliMUONCheck::AliMUONCheck(const char* galiceFile, const char* esdFile,Int_t firstEvent, Int_t lastEvent,const char* outDir) 
 : TObject(),
   fFileName(galiceFile),
+  fFileNameSim(galiceFile),
   fesdFileName(esdFile),
   foutDir(outDir),
   fFirstEvent(firstEvent),
   fLastEvent(lastEvent),
   fRunLoader(0x0),
+  fRunLoaderSim(0x0),
   fData(0x0),
+  fDataSim(0x0),
   fTree(0)
 {
   /// ctor
@@ -93,6 +94,83 @@ ClassImp(AliMUONCheck)
     }
   }
     
+ fRunLoaderSim = AliRunLoader::Open(fFileNameSim.Data(),"MUONFolderSim","READ");
+  if (!fRunLoaderSim) 
+  {
+    AliError(Form("Error opening %s file \n",fFileNameSim.Data()));
+  }  
+  else
+  {
+    fLoaderSim = fRunLoaderSim->GetLoader("MUONLoader");
+    if ( fLoaderSim )
+    {
+      fDataSim = new AliMUONData(fLoaderSim,"MUON","MUON");
+    }
+    else
+    {
+      AliError(Form("Could get MUONLoader"));
+    }
+  }
+
+  char command[120];
+  sprintf(command,"rm -rf %s", foutDir);
+  gSystem->Exec(command);
+  gSystem->mkdir(foutDir);
+
+}
+//_____________________________________________________________________________
+AliMUONCheck::AliMUONCheck(const char* galiceFile, const char* galiceFileSim, const char* esdFile,Int_t firstEvent, Int_t lastEvent,const char* outDir) 
+: TObject(),
+  fFileName(galiceFile),
+  fFileNameSim(galiceFileSim),
+  fesdFileName(esdFile),
+  foutDir(outDir),
+  fFirstEvent(firstEvent),
+  fLastEvent(lastEvent),
+  fRunLoader(0x0),
+  fRunLoaderSim(0x0),
+  fData(0x0),
+  fDataSim(0x0),
+  fTree(0)
+{
+  /// ctor
+ 
+  fRunLoader = AliRunLoader::Open(fFileName.Data(),"MUONFolder","READ");
+  if (!fRunLoader) 
+  {
+    AliError(Form("Error opening %s file \n",fFileName.Data()));
+  }  
+  else
+  {
+    fLoader = fRunLoader->GetLoader("MUONLoader");
+    if ( fLoader )
+    {
+      fData = new AliMUONData(fLoader,"MUON","MUON");
+    }
+    else
+    {
+      AliError(Form("Could get MUONLoader"));
+    }
+  }
+    
+ fRunLoaderSim = AliRunLoader::Open(fFileNameSim.Data(),"MUONFolderSim","READ");
+  if (!fRunLoaderSim) 
+  {
+    AliError(Form("Error opening %s file \n",fFileNameSim.Data()));
+  }  
+  else
+  {
+    fLoaderSim = fRunLoaderSim->GetLoader("MUONLoader");
+    if ( fLoaderSim )
+    {
+      fDataSim = new AliMUONData(fLoaderSim,"MUON","MUON");
+    }
+    else
+    {
+      AliError(Form("Could get MUONLoader"));
+    }
+  }
+
   char command[120];
   sprintf(command,"rm -rf %s", foutDir);
   gSystem->Exec(command);
@@ -119,11 +197,13 @@ AliMUONCheck::operator=(const AliMUONCheck&)
 //_____________________________________________________________________________
 AliMUONCheck::~AliMUONCheck()
 {
- 
 /// Destructor
   fRunLoader->UnloadAll();
+  fRunLoaderSim->UnloadAll();
   delete fRunLoader;
   delete fData;
+  delete fRunLoaderSim;
+  delete fDataSim;
 }
 
 //_____________________________________________________________________________
@@ -445,8 +525,8 @@ AliMUONCheck::CheckKine()
   // Stack of particle for each event
   AliStack* stack;
   
-  Int_t fnevents = fRunLoader->GetNumberOfEvents();
-  fRunLoader->LoadKinematics("READ");
+  Int_t fnevents = fRunLoaderSim->GetNumberOfEvents();
+  fRunLoaderSim->LoadKinematics("READ");
          
   Int_t endOfLoop = fLastEvent+1;
   
@@ -465,8 +545,8 @@ AliMUONCheck::CheckKine()
     Int_t nmu2=0;
     nev++;  
     
-    fRunLoader->GetEvent(ievent); 
-    stack = fRunLoader->Stack();
+    fRunLoaderSim->GetEvent(ievent); 
+    stack = fRunLoaderSim->Stack();
     npa = stack->GetNprimary();
     npb = stack->GetNtrack(); 
     printf("Primary particles  %i   \n",npa); 
@@ -518,7 +598,7 @@ AliMUONCheck::CheckKine()
     printf("                                                                  \n") ;
   }//ievent
   
-  fRunLoader->UnloadKinematics();
+  fRunLoaderSim->UnloadKinematics();
   
   printf("=================================================================\n") ;
   printf("               Total number of processed events  %d               \n", nev) ;
@@ -573,7 +653,7 @@ AliMUONCheck::CheckKine()
   fprintf(outtxt,"**************************************************************** \n");
   fclose(outtxt);
 
-  fRunLoader->UnloadKinematics();
+  fRunLoaderSim->UnloadKinematics();
 }
 
 //_____________________________________________________________________________
@@ -605,7 +685,7 @@ AliMUONCheck::CheckTrackRef()
   hitDensity[3]->SetXTitle("R (cm)");
   Int_t fnevents = fRunLoader->GetNumberOfEvents();
   
-  fRunLoader->LoadTrackRefs();
+  fRunLoaderSim->LoadTrackRefs();
   Int_t endOfLoop = fLastEvent+1;
   
   if ( fLastEvent == -1 ) endOfLoop = fnevents;
@@ -614,10 +694,10 @@ AliMUONCheck::CheckTrackRef()
   Int_t nev=0;
   Int_t ntot=fLastEvent+1-fFirstEvent;
   for (ievent = fFirstEvent; ievent < endOfLoop; ++ievent ) {
-    fRunLoader->GetEvent(ievent);
+    fRunLoaderSim->GetEvent(ievent);
     Int_t  save=-99;
     nev++;  
-    TTree *tTR = fRunLoader->TreeTR();
+    TTree *tTR = fRunLoaderSim->TreeTR();
     Int_t nentries = (Int_t)tTR->GetEntries();
     TClonesArray *fRefArray = new TClonesArray("AliTrackReference");
     TBranch *branch = tTR->GetBranch("MUON");
@@ -687,7 +767,7 @@ AliMUONCheck::CheckTrackRef()
      delete  fRefArray; 
   }//evt loop
        
-  fRunLoader->UnloadTrackRefs();
+  fRunLoaderSim->UnloadTrackRefs();
   gSystem->cd(foutDir);
   TCanvas *c6 = new TCanvas("c6","TOF",400,10,600,700);
   c6->Divide(1,2);
@@ -716,7 +796,7 @@ AliMUONCheck::CheckTrackRef()
   printf("***                Leaving TRef()               *** \n");
   printf("*************************************************** \n");
 
-  fRunLoader->UnloadTrackRefs();
+  fRunLoaderSim->UnloadTrackRefs();
 }
 
 //_____________________________________________________________________________
@@ -726,8 +806,8 @@ AliMUONCheck::CheckOccupancy(Bool_t perDetEle) const
 /// Check occupancy for the first event selected
 
   // Loading MUON subsystem
-  fLoader->LoadDigits("READ");
-  AliMUONData muondata(fLoader,"MUON","MUON");
+  fLoaderSim->LoadDigits("READ");
+  AliMUONData muondata(fLoaderSim,"MUON","MUON");
   
   AliMUONDigit * mDigit =0x0;
   const AliMpVSegmentation * segbend = 0x0;
@@ -804,7 +884,7 @@ AliMUONCheck::CheckOccupancy(Bool_t perDetEle) const
 
   // Get event
   printf(">>> Event %d \n", fFirstEvent);
-  fRunLoader->GetEvent(fFirstEvent);
+  fRunLoaderSim->GetEvent(fFirstEvent);
   muondata.SetTreeAddress("D"); 
   muondata.GetDigits();
 
@@ -862,7 +942,7 @@ AliMUONCheck::CheckOccupancy(Bool_t perDetEle) const
 	 100.*((Float_t) totaloccupancyNonBending)/((Float_t) totalchannelsNonBending)            );
   muondata.ResetDigits();
   //    } // end cathode loop
-  fLoader->UnloadDigits();
+  fLoaderSim->UnloadDigits();
 }
 
 //_____________________________________________________________________________
