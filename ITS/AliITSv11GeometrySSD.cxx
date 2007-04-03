@@ -21,10 +21,9 @@
 //*************************************************************************
 #include "TMath.h"
 #include "TGeoVolume.h"
-#include "TGeoMedium.h"
+//#include "TGeoMedium.h"
 #include "TGeoMatrix.h"
 #include <TGeoManager.h>
-#include "AliITSv11GeometrySSD.h"
 #include "TVector3.h"
 #include "TGeoArb8.h"
 #include "TList.h"
@@ -32,9 +31,7 @@
 #include "TGeoCompositeShape.h"
 #include "TGeoTube.h"
 #include "TGeoBBox.h"
-#include "TGeoTrd1.h"
-#include <iostream>
-using namespace std;
+#include "AliITSv11GeometrySSD.h"
 /////////////////////////////////////////////////////////////////////////////////
 //Parameters for SSD Geometry
 /////////////////////////////////////////////////////////////////////////////////
@@ -140,7 +137,6 @@ const Double_t AliITSv11GeometrySSD:: fgkSSDEndFlexCompWidth[3] =
 // SSD Ladder Cable (lengths are in mm and angles in degrees)
 /////////////////////////////////////////////////////////////////////////////////
 const Double_t AliITSv11GeometrySSD::fgkSSDLadderCableWidth     =   23.5;
-const Double_t AliITSv11GeometrySSD::fgkSSDEndLadderCableLength =   50.000; /////to be modified
 /////////////////////////////////////////////////////////////////////////////////
 // SSD Module (lengths are in mm and angles in degrees)
 /////////////////////////////////////////////////////////////////////////////////
@@ -313,75 +309,157 @@ const Double_t AliITSv11GeometrySSD::fgkSSDMountingBlockScrewHoleHeigth      =
 const Double_t AliITSv11GeometrySSD::fgkSSDMountingBlockScrewHoleRadius[2]   =
 									{  1.5,fgkSSDMountingBlockScrewHoleEdge/6.};
 /////////////////////////////////////////////////////////////////////////////////
-AliITSv11GeometrySSD::AliITSv11GeometrySSD(){           
-  ///////////////////////////////// 
-  // Standard Default Constructor
-  ///////////////////////////////// 
-  // Initializing display colors  
-  ////////////////////////////// 
-  fColorCarbonFiber =  4;
-  fColorRyton       =  5;
-  fColorPhynox      =  5;
-  fColorSilicon     =  3;
-  fColorAl          =  7;
-  fColorKapton      =  6;
-  fColorPolyhamide  =  5;
-  fColorStiffener   =  9;
-  fColorEpoxy       = 30;
+ClassImp(AliITSv11GeometrySSD)
+/////////////////////////////////////////////////////////////////////////////////
+AliITSv11GeometrySSD::AliITSv11GeometrySSD(): TObject(),
+  fSSDChipMedium(),
+  fSSDChipGlueMedium(),
+  fSSDStiffenerMedium(),
+  fSSDStiffenerConnectorMedium(),
+  fSSDStiffener0603CapacitorMedium(),
+  fSSDStiffener1812CapacitorMedium(),
+  fSSDStiffenerHybridWireMedium(),
+  fSSDKaptonFlexMedium(),
+  fSSDAlTraceFlexMedium(),
+  fSSDAlTraceLadderCableMedium(),
+  fSSDKaptonLadderCableMedium(),
+  fSSDKaptonChipCableMedium(),
+  fSSDAlTraceChipCableMedium(),
+  fSSDAlCoolBlockMedium(),
+  fSSDSensorMedium(),
+  fSSDSensorSupportMedium(),
+  fSSDCarbonFiberMedium(),
+  fSSDTubeHolderMedium(),
+  fSSDCoolingTubeWater(),
+  fSSDCoolingTubePhynox(),
+  fSSDMountingBlockMedium(),
+  fMotherVol(0),
+  fColorCarbonFiber(4),
+  fColorRyton(5),
+  fColorPhynox(5),
+  fColorSilicon(3),
+  fColorAl(7),
+  fColorKapton(6),
+  fColorPolyhamide(5),
+  fColorStiffener(9),
+  fColorEpoxy(30)
+{
+  ////////////////////////
+  // Standard constructor
+  ////////////////////////
   CreateMaterials();
+}
+/////////////////////////////////////////////////////////////////////////////////
+AliITSv11GeometrySSD::AliITSv11GeometrySSD(const AliITSv11GeometrySSD &s):
+  TObject(s),
+  fSSDChipMedium(s.fSSDChipMedium),
+  fSSDChipGlueMedium(s.fSSDChipGlueMedium),
+  fSSDStiffenerMedium(s.fSSDStiffenerMedium),
+  fSSDStiffenerConnectorMedium(s.fSSDStiffenerConnectorMedium),
+  fSSDStiffener0603CapacitorMedium(s.fSSDStiffener0603CapacitorMedium),
+  fSSDStiffener1812CapacitorMedium(s.fSSDStiffener1812CapacitorMedium),
+  fSSDStiffenerHybridWireMedium(s.fSSDStiffenerHybridWireMedium),
+  fSSDKaptonFlexMedium(s.fSSDKaptonFlexMedium),
+  fSSDAlTraceFlexMedium(s.fSSDAlTraceFlexMedium),
+  fSSDAlTraceLadderCableMedium(s.fSSDAlTraceLadderCableMedium),
+  fSSDKaptonLadderCableMedium(s.fSSDKaptonLadderCableMedium),
+  fSSDKaptonChipCableMedium(s.fSSDKaptonChipCableMedium),
+  fSSDAlTraceChipCableMedium(s.fSSDAlTraceChipCableMedium),
+  fSSDAlCoolBlockMedium(s.fSSDAlCoolBlockMedium),
+  fSSDSensorMedium(s.fSSDSensorMedium),
+  fSSDSensorSupportMedium(s.fSSDSensorSupportMedium),
+  fSSDCarbonFiberMedium(s.fSSDCarbonFiberMedium),
+  fSSDTubeHolderMedium(s.fSSDTubeHolderMedium),
+  fSSDCoolingTubeWater(s.fSSDCoolingTubeWater),
+  fSSDCoolingTubePhynox(s.fSSDCoolingTubePhynox),
+  fSSDMountingBlockMedium(s.fSSDMountingBlockMedium),
+  fMotherVol(s.fMotherVol),
+  fColorCarbonFiber(s.fColorCarbonFiber),
+  fColorRyton(s.fColorRyton),
+  fColorPhynox(s.fColorPhynox),
+  fColorSilicon(s.fColorSilicon),
+  fColorAl(s.fColorAl),
+  fColorKapton(s.fColorKapton),
+  fColorPolyhamide(s.fColorPolyhamide),
+  fColorStiffener(s.fColorStiffener),
+  fColorEpoxy(s.fColorEpoxy)
+{
+  ////////////////////////
+  // Copy Constructor
+  ////////////////////////
+  CreateMaterials();
+}
+/////////////////////////////////////////////////////////////////////////////////
+AliITSv11GeometrySSD& AliITSv11GeometrySSD::
+operator=(const AliITSv11GeometrySSD &s){
+  ////////////////////////
+  // Assignment operator
+  ////////////////////////
+  this->~AliITSv11GeometrySSD();
+  new(this) AliITSv11GeometrySSD(s); 
+  return *this;
+/*	
+  if(&s == this) return *this;
+  fMotherVol = s.fMotherVol;
+  return *this;
+ */
 }
 /////////////////////////////////////////////////////////////////////////////////
 // Setting the transformation Matrices
 /////////////////////////////////////////////////////////////////////////////////
 void AliITSv11GeometrySSD::SetSSDSensorSupportCombiTransMatrix(){
-  ////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////
+  // Method generating CombiTrans Matrix for SSD Sensor Support   
+  /////////////////////////////////////////////////////////////
   //Translation Parameters SSDSensorSupportAssembly:
   ////////////////////////////////////////////////////////
-  const Double_t SSDSensorSupportTransX[3] = {-0.5*fgkSSDSensorSideSupportWidth,
+  const Double_t kssdsensorsupporttransx[3] = {-0.5*fgkSSDSensorSideSupportWidth,
 					                           0.5*fgkSSDSensorSideSupportWidth,
 					                   0.5*fgkSSDSensorCenterSupportThickness[0]
 									  -    fgkSSDSensorCenterSupportPosition}; 
-  const Double_t SSDSensorSupportTransY[3] = 
+  const Double_t kssdsensorsupporttransy[3] = 
 									   {0.5*fgkSSDSensorSideSupportThickness[0],
 					                   -0.5*fgkSSDSensorSideSupportThickness[0]
 						               -fgkSSDModuleSensorSupportDistance,
 					                    0.5*fgkSSDSensorCenterSupportWidth
 									   -0.5*fgkSSDModuleSensorSupportDistance}; 
-  const Double_t SSDSensorSupportTransZ[3] = {0.,0.,
+  const Double_t kssdsensorsupporttransz[3] = {0.,0.,
 										fgkSSDSensorCenterSupportThickness[0]}; 
   ////////////////////////////////////////////////////////
   //Rotational Parameters SSDSensorSupportAssembly:
   ////////////////////////////////////////////////////////  
-  const Double_t SSDSensorSupportRotPhi[3]   = {   0., 180., 270.};
-  const Double_t SSDSensorSupportRotTheta[3] = {  90.,  90.,  90.};
-  const Double_t SSDSensorSupportRotPsi[3]   = {- 90.,- 90.,- 90.};
+  const Double_t kssdsensorsupportrotphi[3]   = {   0., 180., 270.};
+  const Double_t kssdsensorsupportrottheta[3] = {  90.,  90.,  90.};
+  const Double_t kssdsensorsupportrotpsi[3]   = {- 90.,- 90.,- 90.};
   ////////////////////////////////////////////////////////////////
   //Name of CombiTrans Transformation of SSDSensorSupportAssembly:
   ////////////////////////////////////////////////////////////////
-  char SSDSensorSupportCombiTransName[40];
-  char SSDSensorSupportRotName[40];
-  TGeoCombiTrans *SSDSensorSupportLocalMatrix[fgkSSDSensorSupportCombiTransNumber];
+  char ssdsensorsupportcombitransname[40];
+  char ssdsensorsupportrotname[40];
+  TGeoCombiTrans *ssdsensorsupportlocalmatrix[fgkSSDSensorSupportCombiTransNumber];
   for(Int_t i=0; i<fgkSSDSensorSupportCombiTransNumber; i++){ 
-		sprintf(SSDSensorSupportCombiTransName,"SSDSensorSupportCombiTrans%i",i);
-		sprintf(SSDSensorSupportRotName,"SSDSensorSupportRot%i",i);
-		SSDSensorSupportLocalMatrix[i] =
-				 new TGeoCombiTrans(SSDSensorSupportCombiTransName,
-									SSDSensorSupportTransX[i],
-									SSDSensorSupportTransY[i],
-									SSDSensorSupportTransZ[i],
-									new TGeoRotation(SSDSensorSupportRotName,
-													  SSDSensorSupportRotPhi[i],
-													SSDSensorSupportRotTheta[i],
-												    SSDSensorSupportRotPsi[i]));
-           SSDSensorSupportCombiTransMatrix[i] = SSDSensorSupportLocalMatrix[i];
+		sprintf(ssdsensorsupportcombitransname,"SSDSensorSupportCombiTrans%i",i);
+		sprintf(ssdsensorsupportrotname,"SSDSensorSupportRot%i",i);
+		ssdsensorsupportlocalmatrix[i] =
+				 new TGeoCombiTrans(ssdsensorsupportcombitransname,
+									kssdsensorsupporttransx[i],
+									kssdsensorsupporttransy[i],
+									kssdsensorsupporttransz[i],
+									new TGeoRotation(ssdsensorsupportrotname,
+													   kssdsensorsupportrotphi[i],
+													   kssdsensorsupportrottheta[i],
+												    kssdsensorsupportrotpsi[i]));
+           fSSDSensorSupportCombiTransMatrix[i] = ssdsensorsupportlocalmatrix[i];
   }
 }
 /////////////////////////////////////////////////////////////////////////////////
 void AliITSv11GeometrySSD::SetSSDModuleCombiTransMatrix(Double_t SSDChipCablesHeigth){
-/////////////////////////////////////////////////////////////////////////////////
-//Translation Parameters SSDModuleAssembly:
-////////////////////////////////////////////////////////
-  const Double_t SSDModuleTransX[7] = {0.5*fgkSSDStiffenerLength,
+  /////////////////////////////////////////////////////////////
+  // Method generating CombiTrans Matrix for SSD Module   
+  /////////////////////////////////////////////////////////////
+  //Translation Parameters SSDModuleAssembly:
+  ////////////////////////////////////////////////////////
+  const Double_t kssdmoduletransx[7] = {0.5*fgkSSDStiffenerLength,
            				         0.5*fgkSSDChipLength+0.5*(fgkSSDStiffenerLength
 				       - (fgkSSDChipNumber*fgkSSDChipLength+(fgkSSDChipNumber-1)
 					   * fgkSSDChipSeparationLength)),
@@ -394,7 +472,7 @@ void AliITSv11GeometrySSD::SetSSDModuleCombiTransMatrix(Double_t SSDChipCablesHe
 			   + (fgkSSDChipNumber-1)*fgkSSDChipCablesLength[0]),
 				0.5*(fgkSSDStiffenerLength+fgkSSDChipNumber*fgkSSDChipLength
 			   +(fgkSSDChipNumber-1)*fgkSSDChipSeparationLength)}; 
-  const Double_t SSDModuleTransY[7] = {0.5*fgkSSDStiffenerWidth,
+  const Double_t kssdmoduletransy[7] = {0.5*fgkSSDStiffenerWidth,
 				       0.5*fgkSSDChipWidth+(fgkSSDStiffenerWidth
 					 - fgkSSDStiffenerToChipDist-fgkSSDChipWidth),
 				     - fgkSSDModuleStiffenerPosition[1]+0.5*fgkSSDSensorLength,
@@ -405,7 +483,7 @@ void AliITSv11GeometrySSD::SetSSDModuleCombiTransMatrix(Double_t SSDChipCablesHe
 				     + fgkSSDStiffenerToChipDist+fgkSSDChipWidth,
 				       fgkSSDSensorLength-2.*fgkSSDModuleStiffenerPosition[1]
 					 - fgkSSDStiffenerWidth}; 
-  const Double_t SSDModuleTransZ[7] = {0.5*fgkSSDStiffenerHeight,
+  const Double_t kssdmoduletransz[7] = {0.5*fgkSSDStiffenerHeight,
 				     - 0.5*fgkSSDChipHeight,
 				       0.5*fgkSSDSensorHeight-fgkSSDStiffenerHeight-fgkSSDChipHeight
 					 - SSDChipCablesHeigth,
@@ -416,251 +494,263 @@ void AliITSv11GeometrySSD::SetSSDModuleCombiTransMatrix(Double_t SSDChipCablesHe
   ////////////////////////////////////////////////////////
   //Rotational Parameters SSDModuleAssembly:
   ////////////////////////////////////////////////////////  
-  const Double_t SSDModuleRotPhi[7]   = {   0.,   0.,  90.,   0.,   0.,  90., 180.};
-  const Double_t SSDModuleRotTheta[7] = {   0.,   0.,   0.,   0.,   0.,   0.,   0.};
-  const Double_t SSDModuleRotPsi[7]   = {   0.,   0.,   0.,   0.,   0.,   0.,   0.};
+  const Double_t kssdmodulerotphi[7]   = {   0.,   0.,  90.,   0.,   0.,  90., 180.};
+  const Double_t kssdmodulerottheta[7] = {   0.,   0.,   0.,   0.,   0.,   0.,   0.};
+  const Double_t kssdmodulerotpsi[7]   = {   0.,   0.,   0.,   0.,   0.,   0.,   0.};
   ////////////////////////////////////////////////////////  
   //Name of CombiTrans Transformation of SSDModuleAssembly:
   ////////////////////////////////////////////////////////  
-  const char* SSDModuleCombiTransName[7] = {"SSDStiffenerCombiTrans",
+  const char* ssdmodulecombitransname[7] = {"SSDStiffenerCombiTrans",
 											     "SSDChipCombiTrans",
 											   "SSDSensorCombiTrans",
 											    "SSDFlex0CombiTrans",
 										 "SSDCoolingBlockCombiTrans",
 										   "SSDChipCablesCombiTrans",
 										        "SSDFlex1CombiTrans"};
-  const char* SSDModuleRotName[7] = {"SSDStiffenerRotName",
+  const char* ssdmodulerotname[7] = {"SSDStiffenerRotName",
 										  "SSDChipRotName",
 										"SSDSensorRotName",
 										 "SSDFlex0RotName",
 								  "SSDCoolingBlockRotName",
 									"SSDChipCablesRotName",
 										"SSDFlex1RotName"};
-  TGeoCombiTrans *SSDModuleLocalMatrix[fgkSSDModuleCombiTransNumber];
+  TGeoCombiTrans *ssdmodulelocalmatrix[fgkSSDModuleCombiTransNumber];
   for(Int_t i=0; i<fgkSSDModuleCombiTransNumber; i++){ 
-					SSDModuleLocalMatrix[i] =
-					new TGeoCombiTrans(SSDModuleCombiTransName[i],
-									   SSDModuleTransX[i],
-									   SSDModuleTransY[i],
-									   SSDModuleTransZ[i],
-									   new TGeoRotation(SSDModuleRotName[i],
-														SSDModuleRotPhi[i],
-												        SSDModuleRotTheta[i],
-												        SSDModuleRotPsi[i]));
-    SSDModuleCombiTransMatrix[i] = SSDModuleLocalMatrix[i];
+					ssdmodulelocalmatrix[i] =
+					new TGeoCombiTrans(ssdmodulecombitransname[i],
+									   kssdmoduletransx[i],
+									   kssdmoduletransy[i],
+									   kssdmoduletransz[i],
+									   new TGeoRotation(ssdmodulerotname[i],
+														      kssdmodulerotphi[i],
+												        kssdmodulerottheta[i],
+												        kssdmodulerotpsi[i]));
+    fSSDModuleCombiTransMatrix[i] = ssdmodulelocalmatrix[i];
   }
 }
 /////////////////////////////////////////////////////////////////////////////////
 void AliITSv11GeometrySSD::SetCarbonFiberJunctionCombiTransMatrix(){
-/////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////
+  // Method generating CombiTrans Matrix for Carbon Fiber Junction   
+  /////////////////////////////////////////////////////////////
   //Translation Parameters CarbonFiberJunction:
   ////////////////////////////////////////////////////////
-  const Double_t CarbonFiberJunctionTransX[3] = 
+  const Double_t kcarbonfiberjunctiontransx[3] = 
 				{  0.0,fgkCarbonFiberTriangleLength,fgkCarbonFiberTriangleLength
 				 * TMath::Cos(fgkCarbonFiberTriangleAngle*TMath::DegToRad())};
-  const Double_t CarbonFiberJunctionTransY[3] = 
+  const Double_t kcarbonfiberjunctiontransy[3] = 
 									  {  0.0, 0.0,fgkCarbonFiberTriangleLength
 				 *   TMath::Sin(fgkCarbonFiberTriangleAngle*TMath::DegToRad())};
-  const Double_t CarbonFiberJunctionTransZ[3] = {  0.0,  0.0,  0.0};
+  const Double_t kcarbonfiberjunctiontransz[3] = {  0.0,  0.0,  0.0};
   ////////////////////////////////////////////////////////
   //Rotational Parameters CarbonFiberJunction:
   ////////////////////////////////////////////////////////
-  const Double_t CarbonFiberJunctionRotPhi[3]   = {   0., 120., 240.};
-  const Double_t CarbonFiberJunctionRotTheta[3] = {   0.,   0.,   0.};
-  const Double_t CarbonFiberJunctionRotPsi[3]   = {   0.,   0.,   0.};
+  const Double_t kcarbonfiberjunctionrotphi[3]   = {   0., 120., 240.};
+  const Double_t kcarbonfiberjunctionrottheta[3] = {   0.,   0.,   0.};
+  const Double_t kcarbonfiberjunctionrotpsi[3]   = {   0.,   0.,   0.};
   ///////////////////////////////////////////////////////////
   //Name of CombiTrans Transformation of CarbonFiberJunction:
   ///////////////////////////////////////////////////////////
-  char CarbonFiberJunctionCombiTransName[40];
-  char CarbonFiberJunctionRotName[40];
-  TGeoCombiTrans *CarbonFiberJunctionLocalMatrix[fgkCarbonFiberJunctionCombiTransNumber];
+  char carbonfiberjunctioncombitransname[40];
+  char carbonfiberjunctionrotname[40];
+  TGeoCombiTrans *carbonfiberjunctionlocalmatrix[fgkCarbonFiberJunctionCombiTransNumber];
   for(Int_t i=0; i<fgkCarbonFiberJunctionCombiTransNumber; i++) {
-		sprintf(CarbonFiberJunctionCombiTransName,"CarbonFiberJunctionCombiTrans%i",i);
-		sprintf(CarbonFiberJunctionRotName,"CarbonFiberJunctionRot%i",i);
-		CarbonFiberJunctionLocalMatrix[i] =
-					new TGeoCombiTrans(CarbonFiberJunctionCombiTransName,
-									   CarbonFiberJunctionTransX[i],
-									   CarbonFiberJunctionTransY[i],
-									   CarbonFiberJunctionTransZ[i],
-								new TGeoRotation(CarbonFiberJunctionRotName,
-												CarbonFiberJunctionRotPhi[i],
-												CarbonFiberJunctionRotTheta[i],
-												CarbonFiberJunctionRotPsi[i]));
-    CarbonFiberJunctionCombiTransMatrix[i] = CarbonFiberJunctionLocalMatrix[i];
+		sprintf(carbonfiberjunctioncombitransname,"CarbonFiberJunctionCombiTrans%i",i);
+		sprintf(carbonfiberjunctionrotname,"CarbonFiberJunctionRot%i",i);
+		carbonfiberjunctionlocalmatrix[i] =
+					new TGeoCombiTrans(carbonfiberjunctioncombitransname,
+									   kcarbonfiberjunctiontransx[i],
+									   kcarbonfiberjunctiontransy[i],
+									   kcarbonfiberjunctiontransz[i],
+								new TGeoRotation(carbonfiberjunctionrotname,
+												kcarbonfiberjunctionrotphi[i],
+												kcarbonfiberjunctionrottheta[i],
+												kcarbonfiberjunctionrotpsi[i]));
+    fCarbonFiberJunctionCombiTransMatrix[i] = carbonfiberjunctionlocalmatrix[i];
   }
 }
 /////////////////////////////////////////////////////////////////////////////////
 void AliITSv11GeometrySSD::SetEndLadderCarbonFiberJunctionCombiTransMatrix(Int_t i){
-/////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////
+  // Method generating CombiTrans Matrix for End Ladder Carbon Fiber Junction   
+  /////////////////////////////////////////////////////////////
   //Translation Parameters EndLadderCarbonFiberJunction:
   ////////////////////////////////////////////////////////
-  const Double_t EndLadderCarbonFiberJunctionTransX[3] = 
+  const Double_t kendladdercarbonfiberjunctiontransx[3] = 
 				{  0.0,fgkCarbonFiberTriangleLength,fgkCarbonFiberTriangleLength
 		*            TMath::Cos(fgkCarbonFiberTriangleAngle*TMath::DegToRad())};
-  const Double_t EndLadderCarbonFiberJunctionTransY[3] = 
+  const Double_t kendladdercarbonfiberjunctiontransy[3] = 
 										{  0.0, 0.0,fgkCarbonFiberTriangleLength
 		*            TMath::Sin(fgkCarbonFiberTriangleAngle*TMath::DegToRad())};
-  const Double_t EndLadderCarbonFiberJunctionTransZ[3] = {  0.0,  0.0,  
+  const Double_t kendladdercarbonfiberjunctiontransz[3] = {  0.0,  0.0,  
 						   0.5*(fgkEndLadderCarbonFiberLowerJunctionLength[i]
 							   -fgkEndLadderCarbonFiberUpperJunctionLength[i])};
   ////////////////////////////////////////////////////////
   //Rotational Parameters EndLadderCarbonFiberJunction:
   ////////////////////////////////////////////////////////
-  const Double_t EndLadderCarbonFiberJunctionRotPhi[3]   = {   0., 120., 240.};
-  const Double_t EndLadderCarbonFiberJunctionRotTheta[3] = {   0.,   0.,   0.};
-  const Double_t EndLadderCarbonFiberJunctionRotPsi[3]   = {   0.,   0.,   0.};
+  const Double_t kendladdercarbonfiberjunctionrotphi[3]   = {   0., 120., 240.};
+  const Double_t kendladdercarbonfiberjunctionrottheta[3] = {   0.,   0.,   0.};
+  const Double_t kendladdercarbonfiberjunctionrotpsi[3]   = {   0.,   0.,   0.};
   ///////////////////////////////////////////////////////////
   //Name of CombiTrans Transformation of CarbonFiberJunction:
   ///////////////////////////////////////////////////////////
-  char EndLadderCarbonFiberJunctionCombiTransName[40];
-  char EndLadderCarbonFiberJunctionRotName[40];
-  TGeoCombiTrans *EndLadderCarbonFiberJunctionLocalMatrix[fgkEndLadderCarbonFiberJunctionCombiTransNumber];
+  char endladdercarbonfiberjunctioncombitransname[40];
+  char endladdercarbonfiberjunctionrotname[40];
+  TGeoCombiTrans *endladdercarbonfiberjunctionlocalmatrix[fgkEndLadderCarbonFiberJunctionCombiTransNumber];
   for(Int_t i=0; i<fgkEndLadderCarbonFiberJunctionCombiTransNumber; i++) {
-	sprintf(EndLadderCarbonFiberJunctionCombiTransName,"EndLadderCarbonFiberJunctionCombiTrans%i",i);
-	sprintf(EndLadderCarbonFiberJunctionRotName,"EndLadderCarbonFiberJunctionRot%i",i);
-	EndLadderCarbonFiberJunctionLocalMatrix[i] =
-	new TGeoCombiTrans(EndLadderCarbonFiberJunctionCombiTransName,
-										  EndLadderCarbonFiberJunctionTransX[i],
-										  EndLadderCarbonFiberJunctionTransY[i],
-										  EndLadderCarbonFiberJunctionTransZ[i],
-						new TGeoRotation(EndLadderCarbonFiberJunctionRotName,
-									  	  EndLadderCarbonFiberJunctionRotPhi[i],
-										EndLadderCarbonFiberJunctionRotTheta[i],
-									    EndLadderCarbonFiberJunctionRotPsi[i]));
-    EndLadderCarbonFiberJunctionCombiTransMatrix[i] = 
-									 EndLadderCarbonFiberJunctionLocalMatrix[i];
+	sprintf(endladdercarbonfiberjunctioncombitransname,"EndLadderCarbonFiberJunctionCombiTrans%i",i);
+	sprintf(endladdercarbonfiberjunctionrotname,"EndLadderCarbonFiberJunctionRot%i",i);
+	endladdercarbonfiberjunctionlocalmatrix[i] =
+	new TGeoCombiTrans(endladdercarbonfiberjunctioncombitransname,
+										  kendladdercarbonfiberjunctiontransx[i],
+										  kendladdercarbonfiberjunctiontransy[i],
+										  kendladdercarbonfiberjunctiontransz[i],
+						new TGeoRotation(endladdercarbonfiberjunctionrotname,
+									  	  kendladdercarbonfiberjunctionrotphi[i],
+										    kendladdercarbonfiberjunctionrottheta[i],
+									     kendladdercarbonfiberjunctionrotpsi[i]));
+    fEndLadderCarbonFiberJunctionCombiTransMatrix[i] = 
+									 endladdercarbonfiberjunctionlocalmatrix[i];
   }
 }
 ////////////////////////////////////////////////////////////////////////////////
 void AliITSv11GeometrySSD::SetCarbonFiberAssemblyCombiTransMatrix(){
-/////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////
+  // Method generating CombiTrans Matrix for Carbon fiber Assembly   
+  /////////////////////////////////////////////////////////////
   //Translation Parameters CarbonFiberAssembly:
   ////////////////////////////////////////////////////////
-  const Double_t CarbonFiberAssemblyTransX[3] = {  0.0,  0.0,  0.0};
-  const Double_t CarbonFiberAssemblyTransY[3] = 
+  const Double_t kcarbonfiberassemblytransx[3] = {  0.0,  0.0,  0.0};
+  const Double_t kcarbonfiberassemblytransy[3] = 
 										{  0.5*fgkCarbonFiberJunctionWidth, 0.0, 
 					fgkCarbonFiberJunctionWidth-fgkCarbonFiberLowerSupportWidth
 			   -    fgkCarbonFiberLowerSupportVolumePosition[0]
 			   -    fgkCarbonFiberLowerSupportVolumePosition[1]};
-  const Double_t CarbonFiberAssemblyTransZ[3] = 
+  const Double_t kcarbonfiberassemblytransz[3] = 
 						  {  0.0,  0.0,-  0.5*fgkCarbonFiberLowerSupportHeight};
   ////////////////////////////////////////////////////////
   //Rotational Parameters CarbonFiberAssembly:
   ////////////////////////////////////////////////////////
-  const Double_t CarbonFiberAssemblyRotPhi[3]   = {   0.,  90.,   0.};
-  const Double_t CarbonFiberAssemblyRotTheta[3] = {  90.,
+  const Double_t kcarbonfiberassemblyrotphi[3]   = {   0.,  90.,   0.};
+  const Double_t kcarbonfiberassemblyrottheta[3] = {  90.,
 											-fgkCarbonFiberTriangleAngle,   0.};
-  const Double_t CarbonFiberAssemblyRotPsi[3]   = {   0.,- 90.,   0.};
+  const Double_t kcarbonfiberassemblyrotpsi[3]   = {   0.,- 90.,   0.};
   ///////////////////////////////////////////////////////////
   //Name of CombiTrans Transformation of CarbonFiberAssembly:
   ///////////////////////////////////////////////////////////
-  char CarbonFiberAssemblyCombiTransName[30];
-  char CarbonFiberAssemblyRotName[30];
-  TGeoCombiTrans *CarbonFiberAssemblyLocalMatrix[fgkCarbonFiberAssemblyCombiTransNumber];
+  char carbonfiberassemblycombitransname[30];
+  char carbonfiberassemblyrotname[30];
+  TGeoCombiTrans *carbonfiberassemblylocalmatrix[fgkCarbonFiberAssemblyCombiTransNumber];
   for(Int_t i=0; i<fgkCarbonFiberAssemblyCombiTransNumber; i++) {
-	sprintf(CarbonFiberAssemblyCombiTransName,"CarbonFiberAssemblyCombiTrans%i",i);
-	sprintf(CarbonFiberAssemblyRotName,"CarbonFiberAssemblyRot%i",i);
-	CarbonFiberAssemblyLocalMatrix[i] =
-						new TGeoCombiTrans(CarbonFiberAssemblyCombiTransName,
-										   CarbonFiberAssemblyTransX[i],
-										   CarbonFiberAssemblyTransY[i],
-										   CarbonFiberAssemblyTransZ[i],
-						 new TGeoRotation(CarbonFiberAssemblyRotName,
-										   CarbonFiberAssemblyRotPhi[i],
-										   CarbonFiberAssemblyRotTheta[i],
-										   CarbonFiberAssemblyRotPsi[i]));
-    CarbonFiberAssemblyCombiTransMatrix[i] = CarbonFiberAssemblyLocalMatrix[i];
+	sprintf(carbonfiberassemblycombitransname,"CarbonFiberAssemblyCombiTrans%i",i);
+	sprintf(carbonfiberassemblyrotname,"CarbonFiberAssemblyRot%i",i);
+	carbonfiberassemblylocalmatrix[i] =
+						new TGeoCombiTrans(carbonfiberassemblycombitransname,
+										   kcarbonfiberassemblytransx[i],
+										   kcarbonfiberassemblytransy[i],
+										   kcarbonfiberassemblytransz[i],
+						 new TGeoRotation(carbonfiberassemblyrotname,
+										   kcarbonfiberassemblyrotphi[i],
+										   kcarbonfiberassemblyrottheta[i],
+										   kcarbonfiberassemblyrotpsi[i]));
+    fCarbonFiberAssemblyCombiTransMatrix[i] = carbonfiberassemblylocalmatrix[i];
   }
 }
 /////////////////////////////////////////////////////////////////////////////////
 void AliITSv11GeometrySSD::SetCoolingTubeSupportCombiTransMatrix(){
-  ////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////
+  // Method generating CombiTrans Matrix for Cooling Tube Support   
+  /////////////////////////////////////////////////////////////
   //Translation Parameters CoolingTubeSupport:
   ////////////////////////////////////////////////////////
-  Double_t Phi = TMath::ASin(0.5*fgkCoolingTubeSupportHeight
+  Double_t phi = TMath::ASin(0.5*fgkCoolingTubeSupportHeight
 													/fgkCoolingTubeSupportRmax);
-  const Double_t CoolingTubeSupportTransX[2] = 
-						  {0.,2.*fgkCoolingTubeSupportRmax*TMath::Cos(Phi)
+  const Double_t kcoolingtubesupporttransx[2] = 
+						  {0.,2.*fgkCoolingTubeSupportRmax*TMath::Cos(phi)
 						+  2.*(fgkCoolingTubeSupportLength
-						-  fgkCoolingTubeSupportRmax*(1.+TMath::Cos(Phi)))
+						-  fgkCoolingTubeSupportRmax*(1.+TMath::Cos(phi)))
 						+  fgkCarbonFiberTriangleLength
 						-  2.0*fgkCarbonFiberJunctionLength};
-  const Double_t CoolingTubeSupportTransY[2] = {  0.0,  0.0};
-  const Double_t CoolingTubeSupportTransZ[2] = {  0.0,  0.0};
+  const Double_t kcoolingtubesupporttransy[2] = {  0.0,  0.0};
+  const Double_t kcoolingtubesupporttransz[2] = {  0.0,  0.0};
   ////////////////////////////////////////////////////////
   //Rotational Parameters CoolingTubeSupport:
   ////////////////////////////////////////////////////////
-  const Double_t CoolingTubeSupportRotPhi[2]   = {   0., 180.};
-  const Double_t CoolingTubeSupportRotTheta[2] = {   0.,   0.};
-  const Double_t CoolingTubeSupportRotPsi[2]   = {   0.,   0.};
+  const Double_t kcoolingsubesupportrotphi[2]   = {   0., 180.};
+  const Double_t kcoolingsubesupportrottheta[2] = {   0.,   0.};
+  const Double_t kcoolingsubesupportrotpsi[2]   = {   0.,   0.};
   ///////////////////////////////////////////////////////////
   //Name of CombiTrans Transformation of CarbonFiberJunction:
   ///////////////////////////////////////////////////////////
-  char CoolingTubeSupportCombiTransName[40];
-  char CoolingTubeSupportRotName[40];
-  TGeoCombiTrans *CoolingTubeSupportLocalMatrix[fgkCoolingTubeSupportCombiTransNumber];
+  char coolingtubesupportcombitransname[40];
+  char coolingtubesupportrotname[40];
+  TGeoCombiTrans *coolingtubesupportlocalmatrix[fgkCoolingTubeSupportCombiTransNumber];
   for(Int_t i=0; i<fgkCoolingTubeSupportCombiTransNumber; i++) {
-	sprintf(CoolingTubeSupportCombiTransName,"CoolingTubeSupportCombiTrans%i",i);
-	sprintf(CoolingTubeSupportRotName,"CoolingTubeSupportRot%i",i);
-	CoolingTubeSupportLocalMatrix[i] =
-			new TGeoCombiTrans(CoolingTubeSupportCombiTransName,
-							   CoolingTubeSupportTransX[i],
-							   CoolingTubeSupportTransY[i],
-							   CoolingTubeSupportTransZ[i],
-							   new TGeoRotation(CoolingTubeSupportRotName,
-												CoolingTubeSupportRotPhi[i],
-												CoolingTubeSupportRotTheta[i],
-												CoolingTubeSupportRotPsi[i]));
-    CoolingTubeSupportCombiTransMatrix[i] = CoolingTubeSupportLocalMatrix[i];
+	sprintf(coolingtubesupportcombitransname,"CoolingTubeSupportCombiTrans%i",i);
+	sprintf(coolingtubesupportrotname,"CoolingTubeSupportRot%i",i);
+	coolingtubesupportlocalmatrix[i] =
+			new TGeoCombiTrans(coolingtubesupportcombitransname,
+							   kcoolingtubesupporttransx[i],
+							   kcoolingtubesupporttransy[i],
+							   kcoolingtubesupporttransz[i],
+							   new TGeoRotation(coolingtubesupportrotname,
+												kcoolingsubesupportrotphi[i],
+												kcoolingsubesupportrottheta[i],
+												kcoolingsubesupportrotpsi[i]));
+    fCoolingTubeSupportCombiTransMatrix[i] = coolingtubesupportlocalmatrix[i];
   }
 }
 /////////////////////////////////////////////////////////////////////////////////
 void AliITSv11GeometrySSD::SetCoolingTubeCombiTransMatrix(){
-  ////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////
+  // Method generating CombiTrans Matrix for Cooling Tube  
+  /////////////////////////////////////////////////////////////
   //Translation Parameters CoolingTube:
   ////////////////////////////////////////////////////////
-  const Double_t CoolingTubeTransX[2] = {  0.,  fgkCoolingTubeSeparation};
-  const Double_t CoolingTubeTransY[2] = {  fgkCoolingTubeLength/2.0, fgkCoolingTubeLength/2.0};
-  const Double_t CoolingTubeTransZ[2] = {  0.0,  0.};
+  const Double_t kcoolingtubetransx[2] = {  0.,  fgkCoolingTubeSeparation};
+  const Double_t kcoolingtubetransy[2] = {  fgkCoolingTubeLength/2.0, fgkCoolingTubeLength/2.0};
+  const Double_t kcoolingtubetransz[2] = {  0.0,  0.};
   ////////////////////////////////////////////////////////
   //Rotational Parameters CoolingTube:
   ////////////////////////////////////////////////////////
-  const Double_t CoolingTubeRotPhi[2]   = {   0.,   0.};
-  const Double_t CoolingTubeRotTheta[2] = {  90.,  90.};
-  const Double_t CoolingTubeRotPsi[2]   = {   0.,   0.};
+  const Double_t kcoolingtuberotphi[2]   = {   0.,   0.};
+  const Double_t kcoolingtuberottheta[2] = {  90.,  90.};
+  const Double_t kcoolingtuberotpsi[2]   = {   0.,   0.};
   ///////////////////////////////////////////////////////////
   //Name of CombiTrans Transformation of CarbonFiberJunction:
   ///////////////////////////////////////////////////////////
-  const char* CoolingTubeCombiTransName[fgkCoolingTubeCombiTransNumber] = 
+  const char* coolingtubecombitransname[fgkCoolingTubeCombiTransNumber] = 
 							{"CoolingTubeCombiTrans0","CoolingTubeCombiTrans1"};
-  const char* CoolingTubeRorationName[fgkCoolingTubeCombiTransNumber] = 
+  const char* coolingtuberotationname[fgkCoolingTubeCombiTransNumber] = 
 								{"CoolingTubeRotation0","CoolingTubeRotation1"};
-  TGeoCombiTrans *CoolingTubeLocalMatrix[fgkCoolingTubeCombiTransNumber];
+  TGeoCombiTrans *coolingtubelocalmatrix[fgkCoolingTubeCombiTransNumber];
   for(Int_t i=0; i<fgkCoolingTubeCombiTransNumber; i++) {
-	CoolingTubeLocalMatrix[i] =
-			new TGeoCombiTrans(CoolingTubeCombiTransName[i],
-							   CoolingTubeTransX[i],
-							   CoolingTubeTransY[i],
-							   CoolingTubeTransZ[i], 
-							   new TGeoRotation(CoolingTubeRorationName[i],
-							                    CoolingTubeRotPhi[i],
-							                    CoolingTubeRotTheta[i],
-									    CoolingTubeRotPsi[i]    ) );
-    CoolingTubeTransMatrix[i] = CoolingTubeLocalMatrix[i];
+	 coolingtubelocalmatrix[i] =
+			new TGeoCombiTrans(coolingtubecombitransname[i],
+							   kcoolingtubetransx[i],
+							   kcoolingtubetransy[i],
+							   kcoolingtubetransz[i], 
+							   new TGeoRotation(coolingtuberotationname[i],
+							                    kcoolingtuberotphi[i],
+							                    kcoolingtuberottheta[i],
+                           kcoolingtuberotpsi[i]) );
+    fCoolingTubeTransMatrix[i] = coolingtubelocalmatrix[i];
   }
 }
 /////////////////////////////////////////////////////////////////////////////////
 void AliITSv11GeometrySSD::SetLadderSegmentCombiTransMatrix(){
-/////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////
+  // Method generating CombiTrans Matrix for SSD Ladder Segment   
+  /////////////////////////////////////////////////////////////
   //Translation Parameters LadderSegment:
   ////////////////////////////////////////////////////////
-	const Double_t LadderSegmentTransX[fgkLadderSegmentCombiTransNumber] = {  0.,
+	const Double_t kladdersegmenttransx[fgkLadderSegmentCombiTransNumber] = {  0.,
 	 -  0.5*(fgkSSDSensorWidth-fgkCarbonFiberTriangleLength),
 			 fgkCarbonFiberTriangleLength+fgkCarbonFiberJunctionToSensorSupport,
 			 fgkCarbonFiberJunctionLength-(fgkCoolingTubeSupportLength
 	 -       fgkCoolingTubeSupportRmax),
 		0.5*(fgkCarbonFiberTriangleLength-fgkCoolingTubeSeparation)}; 
-	const Double_t LadderSegmentTransY[fgkLadderSegmentCombiTransNumber] = {  0.,
+	const Double_t kladdersegmenttransy[fgkLadderSegmentCombiTransNumber] = {  0.,
 	 -      (2.*fgkSSDSensorLength-fgkSSDSensorOverlap)+
 			 fgkSSDModuleStiffenerPosition[1]+fgkSSDStiffenerWidth
 	 +		 0.5*fgkSSDFlexHoleLength+2.*fgkCarbonFiberJunctionWidth
@@ -673,7 +763,7 @@ void AliITSv11GeometrySSD::SetLadderSegmentCombiTransMatrix(){
 				  fgkCarbonFiberJunctionWidth-fgkCarbonFiberLowerSupportWidth
 	 -			  fgkCoolingTubeSupportToCarbonFiber,
 												 0.0};
-	const Double_t LadderSegmentTransZ[fgkLadderSegmentCombiTransNumber] = {  0.,
+	const Double_t kladdersegmenttransz[fgkLadderSegmentCombiTransNumber] = {  0.,
 	 -        (fgkSSDModuleCoolingBlockToSensor+0.5*fgkCoolingTubeSupportHeight
 	 -         fgkSSDSensorHeight-fgkSSDChipCablesHeight[3]-fgkSSDChipHeight),
 																			 0.,
@@ -682,598 +772,622 @@ void AliITSv11GeometrySSD::SetLadderSegmentCombiTransMatrix(){
 //////////////////////////////////////////////////
   //Rotational Parameters LadderSegment:
   ////////////////////////////////////////////////////////
-  const Double_t LadderSegmentRotPhi[fgkLadderSegmentCombiTransNumber]   =
+  const Double_t kladdersegmentrotphi[fgkLadderSegmentCombiTransNumber]   =
 													  {   0.,   0.,- 90.,   0.,  0.};
-  const Double_t LadderSegmentRotTheta[fgkLadderSegmentCombiTransNumber] = 
+  const Double_t kladdersegmentrottheta[fgkLadderSegmentCombiTransNumber] = 
 													  {   0.,   0.,   0.,  90.,  0.};
-  const Double_t LadderSegmentRotPsi[fgkLadderSegmentCombiTransNumber]   = 
+  const Double_t kladdersegmentrotpsi[fgkLadderSegmentCombiTransNumber]   = 
 													  {   0.,   0.,   0.,   0.,  0.};
   //////////////////////////////////////////////////////
   //Name of CombiTrans Transformation of LadderSegment:
   //////////////////////////////////////////////////////
-  char LadderSegmentCombiTransName[40];
-  char LadderSegmentRotName[40];
-  TGeoCombiTrans *LadderSegmentLocalMatrix[fgkLadderSegmentCombiTransNumber];
+  char laddersegmentcombitransname[40];
+  char laddersegmentrotname[40];
+  TGeoCombiTrans *laddersegmentlocalmatrix[fgkLadderSegmentCombiTransNumber];
   for(Int_t i=0; i<fgkLadderSegmentCombiTransNumber; i++) {
-		sprintf(LadderSegmentCombiTransName,"LadderSegmentCombiTrans%i",i);
-		sprintf(LadderSegmentRotName,"LadderSegmentRot%i",i);
-		LadderSegmentLocalMatrix[i] =
-					new TGeoCombiTrans(LadderSegmentCombiTransName,
-									   LadderSegmentTransX[i],
-									   LadderSegmentTransY[i],
-									   LadderSegmentTransZ[i],
-									   new TGeoRotation(LadderSegmentRotName,
-														LadderSegmentRotPhi[i],
-														LadderSegmentRotTheta[i],
-														LadderSegmentRotPsi[i]));
-    LadderSegmentCombiTransMatrix[i] = LadderSegmentLocalMatrix[i];
+		sprintf(laddersegmentcombitransname,"LadderSegmentCombiTrans%i",i);
+		sprintf(laddersegmentrotname,"LadderSegmentRot%i",i);
+		laddersegmentlocalmatrix[i] =
+					new TGeoCombiTrans(laddersegmentcombitransname,
+									   kladdersegmenttransx[i],
+									   kladdersegmenttransy[i],
+									   kladdersegmenttransz[i],
+									   new TGeoRotation(laddersegmentrotname,
+														kladdersegmentrotphi[i],
+														kladdersegmentrottheta[i],
+														kladdersegmentrotpsi[i]));
+    fLadderSegmentCombiTransMatrix[i] = laddersegmentlocalmatrix[i];
   }
 }
 /////////////////////////////////////////////////////////////////////////////////
 void AliITSv11GeometrySSD::SetEndLadderSegmentCombiTransMatrix(Int_t i){
-/////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////
+  // Method generating CombiTrans Matrix for SSD End Ladder Segment   
+  /////////////////////////////////////////////////////////////
   //Translation Parameters EndLadderSegment:
   ////////////////////////////////////////////////////////
-  const Double_t EndLadderSegmentTransX[4] = {0.0,
+  const Double_t kendladdersegmenttransx[fgkEndLadderSegmentCombiTransNumber] =
+            {0.0,
 											  0.0,
-	         -  0.25*(fgkSSDMountingBlockLength[0]
-			 +	fgkSSDMountingBlockLength[1])
-			 +  0.5*fgkCarbonFiberTriangleLength,
+          -  0.25*(fgkSSDMountingBlockLength[0]
+			       +	 fgkSSDMountingBlockLength[1])
+          +  0.5*fgkCarbonFiberTriangleLength,
 											  0.0}; 
-  const Double_t EndLadderSegmentTransY[4] = 
+  const Double_t kendladdersegmenttransy[fgkEndLadderSegmentCombiTransNumber] = 
 							 {0.5*fgkEndLadderCarbonFiberLowerJunctionLength[i],
-					          i==0 ? 0. : fgkCarbonFiberLowerSupportWidth,
-					                 fgkEndLadderMountingBlockPosition[i],
+            i==0 ? 0. : fgkCarbonFiberLowerSupportWidth,
+                        fgkEndLadderMountingBlockPosition[i],
 					           (1-i)*(fgkEndLadderMountingBlockPosition[i]
 										 +  0.5*fgkSSDMountingBlockWidth)}; 
-  const Double_t EndLadderSegmentTransZ[4] = {0.0,
+  const Double_t kendladdersegmenttransz[fgkEndLadderSegmentCombiTransNumber] = 
+            {0.0,
 											  0.0,
 										-  fgkSSDMountingBlockHeight[1]
 										+  0.5*fgkSSDMountingBlockHeight[0],
-									    -  0.5*fgkCarbonFiberLowerSupportHeight}; 
+          -  0.5*fgkCarbonFiberLowerSupportHeight}; 
   ////////////////////////////////////////////////////////
   //Rotational Parameters EndLadderSegment:
   ////////////////////////////////////////////////////////  
-  const Double_t EndLadderSegmentRotPhi[4]   = {   0.,  90.,   0.,   0.};
-  const Double_t EndLadderSegmentRotTheta[4] = {  90.,-fgkCarbonFiberTriangleAngle,
-												   0.,   0.};
-  const Double_t EndLadderSegmentRotPsi[4]   = {   0.,- 90.,   0.,   0.};
+  const Double_t kendladdersegmentrotphi[fgkEndLadderSegmentCombiTransNumber] =  
+            {   0.,  90.,   0.,   0.};
+  const Double_t kendladdersegmentrottheta[fgkEndLadderSegmentCombiTransNumber] = 
+            {  90.,-fgkCarbonFiberTriangleAngle, 0.,   0.};
+  const Double_t kendladdersegmentrotpsi[fgkEndLadderSegmentCombiTransNumber] = 
+            {   0.,- 90.,   0.,   0.};
   ////////////////////////////////////////////////////////
   //Name of CombiTrans Transformation of EndLadderSegment:
   ////////////////////////////////////////////////////////
-  char EndLadderSegmentCombiTransName[30];
-  char EndLadderSegmentRotName[30];
-  TGeoCombiTrans *EndLadderSegmentLocalMatrix[fgkEndLadderSegmentCombiTransNumber];
+  char endladdersegmentcombitransname[30];
+  char endladdersegmentrotname[30];
+  TGeoCombiTrans *endladdersegmentlocalmatrix[fgkEndLadderSegmentCombiTransNumber];
   for(Int_t i=0; i<fgkEndLadderSegmentCombiTransNumber; i++){ 
-  		sprintf(EndLadderSegmentCombiTransName,"EndLadderSegmentCombiTrans%i",i);
-		sprintf(EndLadderSegmentRotName,"EndLadderSegmentRot%i",i);
-		EndLadderSegmentLocalMatrix[i] =
-				new TGeoCombiTrans(EndLadderSegmentCombiTransName,
-								   EndLadderSegmentTransX[i],
-								   EndLadderSegmentTransY[i],
-								   EndLadderSegmentTransZ[i],
-								   new TGeoRotation(EndLadderSegmentRotName,
-													EndLadderSegmentRotPhi[i],
-													EndLadderSegmentRotTheta[i],
-													EndLadderSegmentRotPsi[i]));
-    EndLadderSegmentCombiTransMatrix[i] = EndLadderSegmentLocalMatrix[i];
+  		sprintf(endladdersegmentcombitransname,"EndLadderSegmentCombiTrans%i",i);
+		sprintf(endladdersegmentrotname,"EndLadderSegmentRot%i",i);
+		endladdersegmentlocalmatrix[i] =
+				new TGeoCombiTrans(endladdersegmentcombitransname,
+								   kendladdersegmenttransx[i],
+								   kendladdersegmenttransy[i],
+								   kendladdersegmenttransz[i],
+								   new TGeoRotation(endladdersegmentrotname,
+													kendladdersegmentrotphi[i],
+													kendladdersegmentrottheta[i],
+													kendladdersegmentrotpsi[i]));
+    fEndLadderSegmentCombiTransMatrix[i] = endladdersegmentlocalmatrix[i];
   }
 }
 /////////////////////////////////////////////////////////////////////////////////
 void AliITSv11GeometrySSD::SetLadderCableCombiTransMatrix(Int_t iLayer){
-////////////////////////////////////////////////////////////////////////////////
-// Translation Parameters for LadderCable
-/////////////////////////////////////////
-  Double_t SSDFlexRadius = fgkSSDStiffenerHeight+2*fgkSSDFlexHeight[0]
+  /////////////////////////////////////////////////////////////
+  // Method generating CombiTrans Matrix for SSD Ladder Cable   
+  /////////////////////////////////////////////////////////////
+  // Translation Parameters for LadderCable
+  /////////////////////////////////////////
+  Double_t ssdflexradius = fgkSSDStiffenerHeight+2*fgkSSDFlexHeight[0]
 					     + fgkSSDFlexHeight[1];  
-  Double_t SSDFlexRadiusMax = (fgkSSDFlexLength[3]-fgkSSDFlexLength[2])
+  Double_t ssdflexradiusmax = (fgkSSDFlexLength[3]-fgkSSDFlexLength[2])
 							/  TMath::Tan(fgkSSDFlexAngle*TMath::DegToRad());
-  Double_t SSDLadderCableTransX[3];
-  SSDLadderCableTransX[0] = (SSDFlexRadiusMax-fgkSSDFlexHeight[1]-SSDFlexRadius)
+  Double_t ssdladdercabletransx[3];
+  ssdladdercabletransx[0] = (ssdflexradiusmax-fgkSSDFlexHeight[1]-ssdflexradius)
 						  *   TMath::Sin(2.*fgkSSDFlexAngle*TMath::DegToRad())
 						  *	  TMath::Cos(2.*fgkSSDFlexAngle*TMath::DegToRad());
-  SSDLadderCableTransX[1] = ((SSDFlexRadiusMax-fgkSSDFlexHeight[1]-SSDFlexRadius)
-						  -     SSDLadderCableTransX[0]
+  ssdladdercabletransx[1] = ((ssdflexradiusmax-fgkSSDFlexHeight[1]-ssdflexradius)
+						  -     ssdladdercabletransx[0]
 						  /     TMath::Sin(2.*fgkSSDFlexAngle*TMath::DegToRad()))
 						  *     TMath::Cos(fgkSSDFlexAngle*TMath::DegToRad());						
-  SSDLadderCableTransX[2] = (fgkSSDFlexFullLength-2.*fgkSSDFlexAngle
-						  *	  TMath::DegToRad()*SSDFlexRadiusMax
+  ssdladdercabletransx[2] = (fgkSSDFlexFullLength-2.*fgkSSDFlexAngle
+						  *	  TMath::DegToRad()*ssdflexradiusmax
 						  -     fgkSSDFlexLength[2]-TMath::Pi()
 						  *	  fgkSSDStiffenerHeight-fgkSSDFlexLength[0]
 						  -	  fgkSSDLadderCableWidth)
 						  *	  TMath::Cos(2.*fgkSSDFlexAngle*TMath::DegToRad());
-  Double_t SSDLadderCableTransZ[3] = {SSDLadderCableTransX[0]
+  Double_t ssdladdercabletransz[3] = {ssdladdercabletransx[0]
 						  *	TMath::Tan(2.*fgkSSDFlexAngle*TMath::DegToRad()),
-							SSDLadderCableTransX[1]
+							ssdladdercabletransx[1]
 						  *	TMath::Tan(fgkSSDFlexAngle*TMath::DegToRad()),
-							SSDLadderCableTransX[2]
+							ssdladdercabletransx[2]
 						  *	TMath::Tan(2.*fgkSSDFlexAngle*TMath::DegToRad())};	
-  TGeoRotation* LocalLadderCableRot[3];	
-  LocalLadderCableRot[0] = new TGeoRotation("LocalLadderCableRot0",90.,0.,0.);
-  LocalLadderCableRot[1] = new TGeoRotation("LocalLadderCableRot1",90.,60.,-90.);
-  LocalLadderCableRot[2] = new TGeoRotation("LocalLadderCableRot2");
-  LocalLadderCableRot[2]->SetRotation((*LocalLadderCableRot[1])
-						 *			  (*LocalLadderCableRot[0]));
-////////////////////////////////////////////
-// LocalLadderCableCombiTransMatrix
-////////////////////////////////////////////
-  const Int_t LocalLadderSideCablesNumber = 2;
-  const Int_t LocalLadderCombiTransNumber = 5;
-  TGeoCombiTrans** LocalLadderCableCombiTransMatrix[LocalLadderSideCablesNumber];
-  for(Int_t i=0; i<LocalLadderSideCablesNumber; i++) 
-	LocalLadderCableCombiTransMatrix[i] = 
-							   new TGeoCombiTrans*[LocalLadderCombiTransNumber];
-///////////////////////////////////////////
-// Left Side Ladder Cables Transformations
-///////////////////////////////////////////
-  LocalLadderCableCombiTransMatrix[0][0]  =
+  TGeoRotation* localladdercablerot[3];	
+  localladdercablerot[0] = new TGeoRotation("LocalLadderCableRot0",90.,0.,0.);
+  localladdercablerot[1] = new TGeoRotation("LocalLadderCableRot1",90.,60.,-90.);
+  localladdercablerot[2] = new TGeoRotation("LocalLadderCableRot2");
+  localladdercablerot[2]->SetRotation((*localladdercablerot[1])
+						 *			  (*localladdercablerot[0]));
+  ////////////////////////////////////////////
+  // LocalLadderCableCombiTransMatrix
+  ////////////////////////////////////////////
+  const Int_t klocalladdersidecablesnumber = 2;
+  const Int_t klocalladdercombitransnumber = 5;
+  TGeoCombiTrans** localladdercablecombitransmatrix[klocalladdersidecablesnumber];
+  for(Int_t i=0; i<klocalladdersidecablesnumber; i++) 
+	 localladdercablecombitransmatrix[i] = 
+							   new TGeoCombiTrans*[klocalladdercombitransnumber];
+  ///////////////////////////////////////////
+  // Left Side Ladder Cables Transformations
+  ///////////////////////////////////////////
+  localladdercablecombitransmatrix[0][0]  =
 						new TGeoCombiTrans(-0.5*fgkCarbonFiberTriangleLength,
 						0.,0.,NULL);
-  LocalLadderCableCombiTransMatrix[0][1] = LadderSegmentCombiTransMatrix[1];
-  LocalLadderCableCombiTransMatrix[0][2] = 
+  localladdercablecombitransmatrix[0][1] = fLadderSegmentCombiTransMatrix[1];
+  localladdercablecombitransmatrix[0][2] = 
 						new TGeoCombiTrans(fgkSSDModuleStiffenerPosition[0],
 										   fgkSSDModuleStiffenerPosition[1],0.,0);
-  LocalLadderCableCombiTransMatrix[0][3] = SSDModuleCombiTransMatrix[6];
-  LocalLadderCableCombiTransMatrix[0][4] = 
-						new TGeoCombiTrans(-SSDLadderCableTransX[0]
-						-     SSDLadderCableTransX[1]-SSDLadderCableTransX[2]
+  localladdercablecombitransmatrix[0][3] = fSSDModuleCombiTransMatrix[6];
+  localladdercablecombitransmatrix[0][4] = 
+						new TGeoCombiTrans(-ssdladdercabletransx[0]
+						-     ssdladdercabletransx[1]-ssdladdercabletransx[2]
 						+     fgkSSDFlexLength[0]-fgkSSDFlexLength[2],
 							  0.,
 							  0.5*fgkSSDFlexHeight[0]+2.*(fgkSSDFlexHeight[0]
 						+	  fgkSSDFlexHeight[1])+2.*fgkSSDStiffenerHeight
-						+     SSDLadderCableTransZ[0]-SSDLadderCableTransZ[1]
-						+	  SSDLadderCableTransZ[2],LocalLadderCableRot[2]);
-///////////////////////////////////////////
-// Rigth Side Ladder Cables Transformations
-///////////////////////////////////////////
- for(Int_t i=0; i<LocalLadderCombiTransNumber; i++)
-   LocalLadderCableCombiTransMatrix[1][i] = 
-			(i!=3 ? LocalLadderCableCombiTransMatrix[0][i]:
-					SSDModuleCombiTransMatrix[3]); 	
-///////////////////////////////////////////
-// Setting LadderCableCombiTransMatrix
-///////////////////////////////////////////
-Int_t BeamAxisTrans[3] = {0,0,0};
-switch(iLayer){
-case 5: 
-	BeamAxisTrans[0] = fgkSSDLay5SensorsNumber/2;
-	BeamAxisTrans[1] = BeamAxisTrans[0]+1;
-	BeamAxisTrans[2] = BeamAxisTrans[0]-1;
-	break;
-case 6:
-	BeamAxisTrans[0] = (fgkSSDLay6SensorsNumber-1)/2;
-	BeamAxisTrans[1] = BeamAxisTrans[0]+1;
-	BeamAxisTrans[2] = BeamAxisTrans[0];
-	break;
-}
- TGeoHMatrix* LocalLadderCableHMatrix[LocalLadderSideCablesNumber];
- TGeoRotation* LadderCableRot;
- TGeoTranslation* LadderCableTrans;
- for(Int_t i=0; i<LocalLadderSideCablesNumber; i++){
-	LocalLadderCableHMatrix[i] = new TGeoHMatrix();
-	for(Int_t j=0; j<LocalLadderCombiTransNumber; j++){
-		  LocalLadderCableHMatrix[i]->MultiplyLeft(
-		  LocalLadderCableCombiTransMatrix[i][LocalLadderCombiTransNumber-j-1]);
-	}
-	LadderCableRot = new TGeoRotation();
-	LadderCableRot->SetMatrix(LocalLadderCableHMatrix[i]->GetRotationMatrix());
-    LadderCableTrans = new TGeoTranslation();
-    Double_t* LadderCableTransVector = LocalLadderCableHMatrix[i]->GetTranslation();
-    LadderCableTrans->SetTranslation(LadderCableTransVector[0],
-									 LadderCableTransVector[1]
-					+                (i==0 ? BeamAxisTrans[0] : 0.)
+						+     ssdladdercabletransz[0]-ssdladdercabletransz[1]
+						+	  ssdladdercabletransz[2],localladdercablerot[2]);
+  ///////////////////////////////////////////
+  // Rigth Side Ladder Cables Transformations
+  ///////////////////////////////////////////
+  for(Int_t i=0; i<klocalladdercombitransnumber; i++)
+   localladdercablecombitransmatrix[1][i] = 
+			(i!=3 ? localladdercablecombitransmatrix[0][i]:
+					fSSDModuleCombiTransMatrix[3]); 	
+  ///////////////////////////////////////////
+  // Setting LadderCableCombiTransMatrix
+  ///////////////////////////////////////////
+  Int_t beamaxistrans[3] = {0,0,0};
+  switch(iLayer){
+  case 5: 
+	  beamaxistrans[0] = fgkSSDLay5SensorsNumber/2;
+	  beamaxistrans[1] = beamaxistrans[0]+1;
+	  beamaxistrans[2] = beamaxistrans[0]-1;
+  break;
+  case 6:
+	  beamaxistrans[0] = (fgkSSDLay6SensorsNumber-1)/2;
+  	beamaxistrans[1] = beamaxistrans[0]+1;
+  	beamaxistrans[2] = beamaxistrans[0];
+	  break;
+  }
+  TGeoHMatrix* localladdercablehmatrix[klocalladdersidecablesnumber];
+  TGeoRotation* laddercablerot;
+  TGeoTranslation* laddercabletrans;
+  for(Int_t i=0; i<klocalladdersidecablesnumber; i++){
+	 localladdercablehmatrix[i] = new TGeoHMatrix();
+	 for(Int_t j=0; j<klocalladdercombitransnumber; j++){
+		   localladdercablehmatrix[i]->MultiplyLeft(
+		   localladdercablecombitransmatrix[i][klocalladdercombitransnumber-j-1]);
+	 }
+	 laddercablerot = new TGeoRotation();
+	 laddercablerot->SetMatrix(localladdercablehmatrix[i]->GetRotationMatrix());
+  laddercabletrans = new TGeoTranslation();
+  Double_t* laddercabletransvector = localladdercablehmatrix[i]->GetTranslation();
+  laddercabletrans->SetTranslation(laddercabletransvector[0],
+									 laddercabletransvector[1]
+					+                (i==0 ? beamaxistrans[0] : 0.)
 					*				 fgkCarbonFiberJunctionWidth,
-									 LadderCableTransVector[2]);	 
-	LadderCableCombiTransMatrix[i] = new TGeoCombiTrans(*LadderCableTrans,
-												   *LadderCableRot);
+									 laddercabletransvector[2]);	 
+	 fLadderCableCombiTransMatrix[i] = new TGeoCombiTrans(*laddercabletrans,
+												   *laddercablerot);
 	} 
-	LadderCableCombiTransMatrix[2] = 
-					AddTranslationToCombiTrans(LadderCableCombiTransMatrix[1],0.,
-					BeamAxisTrans[1]*fgkCarbonFiberJunctionWidth,0.);
-	LadderCableCombiTransMatrix[3] = 
-					AddTranslationToCombiTrans(LadderCableCombiTransMatrix[0],0.,
-					BeamAxisTrans[2]*fgkCarbonFiberJunctionWidth,0.);
- }
+	fLadderCableCombiTransMatrix[2] = 
+					AddTranslationToCombiTrans(fLadderCableCombiTransMatrix[1],0.,
+					beamaxistrans[1]*fgkCarbonFiberJunctionWidth,0.);
+	fLadderCableCombiTransMatrix[3] = 
+					AddTranslationToCombiTrans(fLadderCableCombiTransMatrix[0],0.,
+					beamaxistrans[2]*fgkCarbonFiberJunctionWidth,0.);
+}
 /////////////////////////////////////////////////////////////////////////////////
 TGeoVolume* AliITSv11GeometrySSD::GetSSDSensorSupportShape(Double_t length, 
 							Double_t height,Double_t width,Double_t* thickness){
-////////////////////////////////////////////////////////////////////////////////
-  const Int_t VertexNumber = 4;
-  const Int_t ShapesNumber = 2;
-  Double_t Width[2] = {width,width};
-  TVector3** VertexPosition[ShapesNumber];
-  for(Int_t i = 0; i<ShapesNumber; i++) VertexPosition[i] = 
-													new TVector3*[VertexNumber];
+  /////////////////////////////////////////////////////////////
+  // Method generating SSD Sensor Support Shape   
+  /////////////////////////////////////////////////////////////
+  const Int_t kvertexnumber = 4;
+  const Int_t kshapesnumber = 2;
+  Double_t shapewidth[2] = {width,width};
+  TVector3** vertexposition[kshapesnumber];
+  for(Int_t i = 0; i<kshapesnumber; i++) vertexposition[i] = 
+													new TVector3*[kvertexnumber];
   //First Shape Vertex Positioning
-  VertexPosition[0][0] = new TVector3();
-  VertexPosition[0][1] = new TVector3(height);
-  VertexPosition[0][2] = new TVector3(thickness[0]);
-  VertexPosition[0][3] = new TVector3(*VertexPosition[0][1]);
+  vertexposition[0][0] = new TVector3();
+  vertexposition[0][1] = new TVector3(height);
+  vertexposition[0][2] = new TVector3(thickness[0]);
+  vertexposition[0][3] = new TVector3(*vertexposition[0][1]);
   //Second Shape Vertex Positioning
-  VertexPosition[1][0] = new TVector3(*VertexPosition[0][0]);
-  VertexPosition[1][1] = new TVector3(length);
-  VertexPosition[1][2] = new TVector3(thickness[1]);
-  VertexPosition[1][3] = new TVector3(VertexPosition[1][1]->X());
-  char* SSDSensorSupportShapeName[ShapesNumber] = 
+  vertexposition[1][0] = new TVector3(*vertexposition[0][0]);
+  vertexposition[1][1] = new TVector3(length);
+  vertexposition[1][2] = new TVector3(thickness[1]);
+  vertexposition[1][3] = new TVector3(vertexposition[1][1]->X());
+  char* ssdsensorsupportshapename[kshapesnumber] = 
 							{"SSDSensorSupportShape1","SSDSensorSupportShape2"};
-  TGeoArb8* SSDSensorSupportShape[ShapesNumber];
-  for(Int_t i = 0; i< ShapesNumber; i++) SSDSensorSupportShape[i] = 
-					   GetArbShape(VertexPosition[i],Width,i==0 ? 
+  TGeoArb8* lSSDSensorSupportShape[kshapesnumber];
+  for(Int_t i = 0; i< kshapesnumber; i++) lSSDSensorSupportShape[i] = 
+					   GetArbShape(vertexposition[i],shapewidth,i==0 ? 
 													 thickness[1]: thickness[0],
-												  SSDSensorSupportShapeName[i]);
+												  ssdsensorsupportshapename[i]);
   /////////////////////////////////////
   //Setting Translations and Rotations: 
   /////////////////////////////////////
-  TGeoRotation* SSDSensorSupportShapeRot[2];
-  SSDSensorSupportShapeRot[0] = 
+  TGeoRotation* ssdsensorsupportshaperot[2];
+  ssdsensorsupportshaperot[0] = 
 					 new TGeoRotation("SSDSensorSupportShapeRot1",180.,0.,0.);
-  SSDSensorSupportShapeRot[1] = 
+  ssdsensorsupportshaperot[1] = 
 					 new TGeoRotation("SSDSensorSupportShapeRot2",90.,90.,-90.);
-  TGeoTranslation* SSDSensorSupportShapeTrans = 
+  TGeoTranslation* ssdsensorsupportshapetrans = 
 					 new TGeoTranslation("SSDSensorSupportShapeTrans",0.,0.,
 															  0.5*thickness[0]);
-  TGeoCombiTrans* SSDSensorSupportCombiTrans = 
+  TGeoCombiTrans* ssdsensorsupportcombitrans = 
 	  new TGeoCombiTrans("SSDSensorSupportCombiTrans",0.5*thickness[0],width,0.,
-						  new TGeoRotation((*SSDSensorSupportShapeRot[1])
-						*                  (*SSDSensorSupportShapeRot[0])));
-  TGeoVolume* SSDSensorSupportCompVolume = 
+						  new TGeoRotation((*ssdsensorsupportshaperot[1])
+						*                  (*ssdsensorsupportshaperot[0])));
+  TGeoVolume* ssdsensorsupportcompvolume = 
 						  new TGeoVolumeAssembly("SSDSensorSupportCompVolume");
-  SSDSensorSupportCompVolume->AddNode(new TGeoVolume("SSDSensorSupportVolume1",
-							SSDSensorSupportShape[0],fgkSSDSensorSupportMedium),1,
-							SSDSensorSupportShapeTrans);
-  SSDSensorSupportCompVolume->AddNode(new TGeoVolume("SSDSensorSupportVolume2",
-							SSDSensorSupportShape[1],fgkSSDSensorSupportMedium),1,
-							SSDSensorSupportCombiTrans);
-  return SSDSensorSupportCompVolume;
+  ssdsensorsupportcompvolume->AddNode(new TGeoVolume("SSDSensorSupportVolume1",
+							lSSDSensorSupportShape[0],fSSDSensorSupportMedium),1,
+							ssdsensorsupportshapetrans);
+  ssdsensorsupportcompvolume->AddNode(new TGeoVolume("SSDSensorSupportVolume2",
+							lSSDSensorSupportShape[1],fSSDSensorSupportMedium),1,
+							ssdsensorsupportcombitrans);
+  return ssdsensorsupportcompvolume;
 }
 /////////////////////////////////////////////////////////////////////////////////
 TGeoVolume* AliITSv11GeometrySSD::GetSSDSensorSupport(Int_t VolumeKind, Int_t n){
-////////////////////////////////////////////////////////////////////////////////
-  TGeoVolume* SSDSensorSupport;
-  Double_t SideSupportThickness[2] = {fgkSSDSensorSideSupportThickness[0],
+  /////////////////////////////////////////////////////////////
+  // Method generating SSD Sensor Support    
+  /////////////////////////////////////////////////////////////
+  TGeoVolume* ssdsensorsupport;
+  Double_t sidesupporthickness[2] = {fgkSSDSensorSideSupportThickness[0],
 										   fgkSSDSensorSideSupportThickness[1]};
-  VolumeKind == 0 ? SSDSensorSupport = GetSSDSensorSupportShape(
+  VolumeKind == 0 ? ssdsensorsupport = GetSSDSensorSupportShape(
 								fgkSSDSensorSideSupportLength,
 								fgkSSDSensorSideSupportHeight[(n==0 ? 0 : 1)],
 								fgkSSDSensorSideSupportWidth,
-								SideSupportThickness) :
-    SSDSensorSupport = GetSSDSensorSupportShape(fgkSSDSensorCenterSupportLength,
+								sidesupporthickness) :
+    ssdsensorsupport = GetSSDSensorSupportShape(fgkSSDSensorCenterSupportLength,
 						        fgkSSDSensorCenterSupportHeight[(n==0 ? 0 : 1)],
 							    fgkSSDSensorCenterSupportWidth,
-							    SideSupportThickness);
-  return SSDSensorSupport;
+							    sidesupporthickness);
+  return ssdsensorsupport;
 }
 /////////////////////////////////////////////////////////////////////////////////
 TGeoVolume* AliITSv11GeometrySSD::GetSSDSensorSupportAssembly(Int_t n){
-////////////////////////////////////////////////////////////////////////////////
-  TGeoVolume* SSDSensorSupportAssembly = 
+  /////////////////////////////////////////////////////////////
+  // Method generating SSD Sensor Support Assembly   
+  /////////////////////////////////////////////////////////////
+  TGeoVolume* ssdsensorsupportassembly = 
 							 new TGeoVolumeAssembly("SSDSensorSupportAssembly");
-  const Int_t VolumeNumber = 2;
-  TGeoVolume* SSDSensorSupport[VolumeNumber];
-  for(Int_t i=0; i<VolumeNumber; i++) SSDSensorSupport[i] = 
+  const Int_t kvolumenumber = 2;
+  TGeoVolume* ssdsensorsupport[kvolumenumber];
+  for(Int_t i=0; i<kvolumenumber; i++) ssdsensorsupport[i] = 
 														GetSSDSensorSupport(i,n);
   SetSSDSensorSupportCombiTransMatrix();
   for(Int_t i=0; i<fgkSSDSensorSupportCombiTransNumber; i++) 
-	SSDSensorSupportAssembly->AddNode((i<2 ? SSDSensorSupport[0]:
-											 SSDSensorSupport[1]),
-										 i+1,SSDSensorSupportCombiTransMatrix[i]);
-  return SSDSensorSupportAssembly;
+	ssdsensorsupportassembly->AddNode((i<2 ? ssdsensorsupport[0]:
+											 ssdsensorsupport[1]),
+										 i+1,fSSDSensorSupportCombiTransMatrix[i]);
+  return ssdsensorsupportassembly;
 }
 /////////////////////////////////////////////////////////////////////////////////
 TGeoVolume* AliITSv11GeometrySSD::GetSSDModule(Int_t iChipCablesHeight){
-////////////////////////////////////////////////////////////////////////////////
-  TGeoVolume* SSDModuleVolume[fgkSSDModuleCombiTransNumber-1];
-  SSDModuleVolume[0] = GetSSDStiffenerAssembly();
-  SSDModuleVolume[1] = GetSSDChipAssembly();
-  SSDModuleVolume[2] = GetSSDSensor();
-  SSDModuleVolume[3] = GetSSDFlexAssembly();
-  SSDModuleVolume[4] = GetSSDCoolingBlockAssembly();
-  SSDModuleVolume[5] = GetSSDChipCablesAssembly(fgkSSDChipCablesHeight[iChipCablesHeight+2]);
+  /////////////////////////////////////////////////////////////
+  // Method generating SSD Sensor Module    
+  /////////////////////////////////////////////////////////////
+  TGeoVolume* ssdmodulevolume[fgkSSDModuleCombiTransNumber-1];
+  ssdmodulevolume[0] = GetSSDStiffenerAssembly();
+  ssdmodulevolume[1] = GetSSDChipAssembly();
+  ssdmodulevolume[2] = GetSSDSensor();
+  ssdmodulevolume[3] = GetSSDFlexAssembly();
+  ssdmodulevolume[4] = GetSSDCoolingBlockAssembly();
+  ssdmodulevolume[5] = GetSSDChipCablesAssembly(fgkSSDChipCablesHeight[iChipCablesHeight+2]);
   SetSSDModuleCombiTransMatrix(fgkSSDChipCablesHeight[iChipCablesHeight+2]);
-  TGeoCombiTrans* SSDModuleGlobalCombiTrans = 
+  TGeoCombiTrans* ssdmoduleglobalcombitrans = 
 								   new TGeoCombiTrans("SSDModuleGlobalCombiTrans",
 									   fgkSSDModuleStiffenerPosition[0],
 									   fgkSSDModuleStiffenerPosition[1],0.,NULL);
-  TGeoHMatrix* SSDModuleHMatrix[fgkSSDModuleCombiTransNumber];
-  TGeoVolume* SSDModule = new TGeoVolumeAssembly("SSDModule");
+  TGeoHMatrix* ssdmodulehmatrix[fgkSSDModuleCombiTransNumber];
+  TGeoVolume* ssdmodule = new TGeoVolumeAssembly("SSDModule");
   for(Int_t i=0; i<fgkSSDModuleCombiTransNumber; i++){ 
-	SSDModuleHMatrix[i] = new TGeoHMatrix((*SSDModuleGlobalCombiTrans)
-						*				  (*SSDModuleCombiTransMatrix[i]));
-	SSDModule->AddNode(i==fgkSSDModuleCombiTransNumber-1 ? SSDModuleVolume[3] : 
-						  SSDModuleVolume[i],i!=fgkSSDModuleCombiTransNumber-1?1:2,
-						  SSDModuleHMatrix[i]);
+	ssdmodulehmatrix[i] = new TGeoHMatrix((*ssdmoduleglobalcombitrans)
+						*				  (*fSSDModuleCombiTransMatrix[i]));
+	ssdmodule->AddNode(i==fgkSSDModuleCombiTransNumber-1 ? ssdmodulevolume[3] : 
+						  ssdmodulevolume[i],i!=fgkSSDModuleCombiTransNumber-1?1:2,
+						  ssdmodulehmatrix[i]);
   }
-  return SSDModule;
+  return ssdmodule;
 }
 /////////////////////////////////////////////////////////////////////////////////
 TGeoVolume* AliITSv11GeometrySSD::GetSSDSensor(){
-////////////////////////////////////////////////////////////////////////////////
-  Double_t fgkSSDSensorSensitiveLength = fgkSSDSensorLength-2.*fgkSSDSensorInsensitiveLength;
-  Double_t fgkSSDSensorSensitiveWidth  = fgkSSDSensorWidth-2.*fgkSSDSensorInsensitiveWidth;
-  TGeoBBox* SSDSensorSensitiveShape = new TGeoBBox("SSDSensorSensitiveShape",
-                                                0.5*fgkSSDSensorSensitiveLength,
-                                                0.5*fgkSSDSensorSensitiveWidth,
+  /////////////////////////////////////////////////////////////
+  // Method generating SSD Sensor  
+  /////////////////////////////////////////////////////////////
+  Double_t ssdsensitivelength = fgkSSDSensorLength-2.*fgkSSDSensorInsensitiveLength;
+  Double_t ssdsensitivewidth  = fgkSSDSensorWidth-2.*fgkSSDSensorInsensitiveWidth;
+  TGeoBBox* ssdsensorsensitiveshape = new TGeoBBox("SSDSensorSensitiveShape",
+                                                0.5*ssdsensitivelength,
+                                                0.5*ssdsensitivewidth,
                                                 0.5*fgkSSDSensorHeight);
-  TGeoVolume* SSDSensorSensitive = 
-      new TGeoVolume(fgkSSDSensitiveVolName,SSDSensorSensitiveShape,fgkSSDSensorMedium);
-  SSDSensorSensitive->SetLineColor(fColorSilicon);
-  TGeoBBox* SSDSensorInsensitiveShape[2];
-  SSDSensorInsensitiveShape[0] = new TGeoBBox("SSDSensorInSensitiveShape1",
+  TGeoVolume* ssdsensorsensitive = 
+      new TGeoVolume(fgkSSDSensitiveVolName,ssdsensorsensitiveshape,fSSDSensorMedium);
+  ssdsensorsensitive->SetLineColor(fColorSilicon);
+  TGeoBBox* ssdsensorinsensitiveshape[2];
+  ssdsensorinsensitiveshape[0] = new TGeoBBox("SSDSensorInsensitiveShape1",
                                                 0.5*fgkSSDSensorLength,
                                                 0.5*fgkSSDSensorInsensitiveWidth,
                                                 0.5*fgkSSDSensorHeight);
-  SSDSensorInsensitiveShape[1] = new TGeoBBox("SSDSensorInSensitiveShape2",
+  ssdsensorinsensitiveshape[1] = new TGeoBBox("SSDSensorInsensitiveShape2",
                                                 0.5*fgkSSDSensorInsensitiveWidth,
-                                                0.5*fgkSSDSensorSensitiveWidth,
+                                                0.5*ssdsensitivewidth,
                                                 0.5*fgkSSDSensorHeight);
-  const char* SSDSensorInsensitiveName[2] = {"SSDSensorInsensitive1",
+  const char* ssdsensorinsensitivename[2] = {"SSDSensorInsensitive1",
                                              "SSDSensorInsensitive2"};
-  TGeoVolume* SSDSensorInsensitive[2];
-  for(Int_t i=0; i<2; i++){ SSDSensorInsensitive[i] = 
-      new TGeoVolume(SSDSensorInsensitiveName[i],SSDSensorInsensitiveShape[i],
-                     fgkSSDSensorMedium);
-      SSDSensorInsensitive[i]->SetLineColor(fColorCarbonFiber);
+  TGeoVolume* ssdsensorinsensitive[2];
+  for(Int_t i=0; i<2; i++){ ssdsensorinsensitive[i] = 
+      new TGeoVolume(ssdsensorinsensitivename[i],ssdsensorinsensitiveshape[i],
+                     fSSDSensorMedium);
+      ssdsensorinsensitive[i]->SetLineColor(fColorCarbonFiber);
   }
-  TGeoVolume* SSDSensorInsensitiveVol = 
+  TGeoVolume* ssdsensorinsensitivevol = 
                               new TGeoVolumeAssembly("SSDSensorInsensitiveVol");
   for(Int_t i=0; i<4; i++) 
-            SSDSensorInsensitiveVol->AddNode(i%2==0 ? SSDSensorInsensitive[0]:
-            SSDSensorInsensitive[1],i<2?1:2,
+            ssdsensorinsensitivevol->AddNode(i%2==0 ? ssdsensorinsensitive[0]:
+            ssdsensorinsensitive[1],i<2?1:2,
                   new TGeoTranslation(0.5*(1.-TMath::Power(-1.,i))*(i==1? 1.:-1.)
-      *     (SSDSensorSensitiveShape->GetDX()+SSDSensorInsensitiveShape[1]->GetDX()),
+      *     (ssdsensorsensitiveshape->GetDX()+ssdsensorinsensitiveshape[1]->GetDX()),
                         0.5*(1.+TMath::Power(-1.,i))*(i==0?-1.: 1.)
-      *     (SSDSensorSensitiveShape->GetDY()+SSDSensorInsensitiveShape[0]->GetDY()),0.));            
-  TGeoVolume* SSDSensor = new TGeoVolumeAssembly("SSDSensor");
-  SSDSensor->AddNode(SSDSensorSensitive,1),SSDSensor->AddNode(SSDSensorInsensitiveVol,1);
-  return SSDSensor;
+      *     (ssdsensorsensitiveshape->GetDY()+ssdsensorinsensitiveshape[0]->GetDY()),0.));            
+  TGeoVolume* ssdsensor = new TGeoVolumeAssembly("SSDSensor");
+  ssdsensor->AddNode(ssdsensorsensitive,1),ssdsensor->AddNode(ssdsensorinsensitivevol,1);
+  return ssdsensor;
 }
 /////////////////////////////////////////////////////////////////////////////////
-TGeoVolume* AliITSv11GeometrySSD::GetSSDChipAssembly(){
-////////////////////////////////////////////////////////////////////////////////
-  const Int_t SSDChipRowNumber = 2;
-  TGeoBBox* SSDChipCompShape[2];
-  SSDChipCompShape[0] =  new TGeoBBox("SSDChipCompShape",
+TGeoVolume* AliITSv11GeometrySSD::GetSSDChipAssembly() const{
+  /////////////////////////////////////////////////////////////
+  // Method generating SSD Chip Assembly    
+  /////////////////////////////////////////////////////////////
+  const Int_t kssdchiprownumber = 2;
+  TGeoBBox* ssdchipcompshape[2];
+  ssdchipcompshape[0] =  new TGeoBBox("SSDChipCompShape",
 										0.5*fgkSSDChipLength,
 										0.5*fgkSSDChipWidth,
 										0.5*(fgkSSDChipHeight-fgkSSDChipGlueHeight));
-  SSDChipCompShape[1] =  new TGeoBBox("SSDChipGlueCompShape",
+  ssdchipcompshape[1] =  new TGeoBBox("SSDChipGlueCompShape",
 										0.5*fgkSSDChipLength,
 										0.5*fgkSSDChipWidth,
 										0.5*fgkSSDChipGlueHeight);
-  TGeoVolume* SSDChipComp[2];
-  SSDChipComp[0] = new TGeoVolume("SSDChipComp",SSDChipCompShape[0],fgkSSDChipMedium);
-  SSDChipComp[1] = new TGeoVolume("SSDChipGlueComp",SSDChipCompShape[1],
-								  fgkSSDChipGlueMedium);
-  SSDChipComp[0]->SetLineColor(fColorSilicon);  
-  SSDChipComp[1]->SetLineColor(fColorEpoxy);
-  TGeoTranslation* SSDChipCompTrans[2];
-  SSDChipCompTrans[0] = new TGeoTranslation(0.,0.,-SSDChipCompShape[1]->GetDZ());
-  SSDChipCompTrans[1] = new TGeoTranslation(0.,0.,SSDChipCompShape[0]->GetDZ());
-  TGeoVolume* SSDChip = new TGeoVolumeAssembly("SSDChip");  
-  for(Int_t i=0; i<2; i++) SSDChip->AddNode(SSDChipComp[i],1,SSDChipCompTrans[i]);
-  Double_t SSDChipSeparation[2] = {fgkSSDChipLength+fgkSSDChipSeparationLength,
+  TGeoVolume* ssdchipcomp[2];
+  ssdchipcomp[0] = new TGeoVolume("SSDChipComp",ssdchipcompshape[0],fSSDChipMedium);
+  ssdchipcomp[1] = new TGeoVolume("SSDChipGlueComp",ssdchipcompshape[1],
+								  fSSDChipGlueMedium);
+  ssdchipcomp[0]->SetLineColor(fColorSilicon);  
+  ssdchipcomp[1]->SetLineColor(fColorEpoxy);
+  TGeoTranslation* ssdchipcomptrans[2];
+  ssdchipcomptrans[0] = new TGeoTranslation(0.,0.,-ssdchipcompshape[1]->GetDZ());
+  ssdchipcomptrans[1] = new TGeoTranslation(0.,0.,ssdchipcompshape[0]->GetDZ());
+  TGeoVolume* ssdchip = new TGeoVolumeAssembly("SSDChip");  
+  for(Int_t i=0; i<2; i++) ssdchip->AddNode(ssdchipcomp[i],1,ssdchipcomptrans[i]);
+  Double_t ssdchipseparation[2] = {fgkSSDChipLength+fgkSSDChipSeparationLength,
 						  fgkSSDSensorLength-2.*fgkSSDModuleStiffenerPosition[1]
 				   -  2.*(fgkSSDStiffenerWidth-fgkSSDStiffenerToChipDist
 				   -  0.5*fgkSSDChipWidth)};
-  TGeoVolume* SSDChipAssembly = new TGeoVolumeAssembly("SSDChipAssembly"); 
-  for(Int_t i=0; i<SSDChipRowNumber; i++)
+  TGeoVolume* ssdchipassembly = new TGeoVolumeAssembly("SSDChipAssembly"); 
+  for(Int_t i=0; i<kssdchiprownumber; i++)
     for(Int_t j=0; j<fgkSSDChipNumber; j++) 
-		SSDChipAssembly->AddNode(SSDChip,fgkSSDChipNumber*i+j+1,
-		new TGeoTranslation(j*SSDChipSeparation[0],i*SSDChipSeparation[1],0.));
-  return SSDChipAssembly;
+		ssdchipassembly->AddNode(ssdchip,fgkSSDChipNumber*i+j+1,
+		new TGeoTranslation(j*ssdchipseparation[0],i*ssdchipseparation[1],0.));
+  return ssdchipassembly;
 }
 /////////////////////////////////////////////////////////////////////////////////
 TGeoVolume* AliITSv11GeometrySSD::GetSSDStiffenerAssembly(){
-////////////////////////////////////////////////////////////////////////////////
-  const Int_t SSDStiffenerNumber = 2;
-  Double_t SSDStiffenerSeparation = fgkSSDSensorLength
+  /////////////////////////////////////////////////////////////
+  // Method generating SSD Stiffener Assembly    
+  /////////////////////////////////////////////////////////////
+  const Int_t kssdstiffenernumber = 2;
+  Double_t ssdstiffenerseparation = fgkSSDSensorLength
 								  - 2.*fgkSSDModuleStiffenerPosition[1]
 								  -    fgkSSDStiffenerWidth;
-  TGeoVolume* SSDStiffener = new TGeoVolumeAssembly("SSDStiffener");
+  TGeoVolume* ssdstiffener = new TGeoVolumeAssembly("SSDStiffener");
 ////////////////////////////
 // Stiffener Volumes
 ///////////////////////////
-  const Int_t StiffenerBoxNumber = 6;
-  TGeoBBox* SSDStiffenerBoxShapes[StiffenerBoxNumber];
-  SSDStiffenerBoxShapes[0] = new TGeoBBox("SSDStiffenerBoxShape1",
+  const Int_t kstiffenerboxnumber = 6;
+  TGeoBBox* ssdstiffenerboxshapes[kstiffenerboxnumber];
+  ssdstiffenerboxshapes[0] = new TGeoBBox("SSDStiffenerBoxShape1",
 										  0.5* fgkSSDStiffenerLength,
 										  0.5* fgkSSDStiffenerWidth,
 										  0.5*(fgkSSDStiffenerHeight
 						   -                   fgkSSDConnectorHeight));
-  SSDStiffenerBoxShapes[1] = new TGeoBBox("SSDStiffenerBoxShape2",
+  ssdstiffenerboxshapes[1] = new TGeoBBox("SSDStiffenerBoxShape2",
 										  0.5*(fgkSSDConnectorPosition[0]
 						   -              2.0* fgkSSDConnectorLength
 						   -				   fgkSSDConnectorSeparation),
 										  0.5* fgkSSDStiffenerWidth,
 										  0.5* fgkSSDConnectorHeight);
-  SSDStiffenerBoxShapes[2] = new TGeoBBox("SSDStiffenerBoxShape3",
+  ssdstiffenerboxshapes[2] = new TGeoBBox("SSDStiffenerBoxShape3",
 										  0.5*(fgkSSDConnectorSeparation
 						   +              2.*  fgkSSDConnectorLength),
 										  0.5* fgkSSDConnectorPosition[1],
 										  0.5* fgkSSDConnectorHeight);
-  SSDStiffenerBoxShapes[3] = new TGeoBBox("SSDStiffenerBoxShape4",
-											SSDStiffenerBoxShapes[2]->GetDX(),
+  ssdstiffenerboxshapes[3] = new TGeoBBox("SSDStiffenerBoxShape4",
+											ssdstiffenerboxshapes[2]->GetDX(),
 										  0.5*(fgkSSDStiffenerWidth
 						   -                   fgkSSDConnectorPosition[1]
 						   -                   fgkSSDConnectorWidth),
 										  0.5* fgkSSDConnectorHeight);
-   SSDStiffenerBoxShapes[4] = new TGeoBBox("SSDStiffenerBoxShape5",
+   ssdstiffenerboxshapes[4] = new TGeoBBox("SSDStiffenerBoxShape5",
 										  0.5* fgkSSDConnectorSeparation,
 										  0.5* fgkSSDConnectorWidth,
 										  0.5* fgkSSDConnectorHeight);
-   SSDStiffenerBoxShapes[5] = new TGeoBBox("SSDStiffenerBoxShape6",
+   ssdstiffenerboxshapes[5] = new TGeoBBox("SSDStiffenerBoxShape6",
 										  0.5*(fgkSSDStiffenerLength
 							 -				   fgkSSDConnectorPosition[0]),
 										  0.5* fgkSSDStiffenerWidth,
 										  0.5* fgkSSDConnectorHeight);
-  TGeoVolume* SSDStiffenerBox[StiffenerBoxNumber];
-  char SSDStiffenerBoxName[30];
-  for(Int_t i=0; i<StiffenerBoxNumber; i++){ 
-	sprintf(SSDStiffenerBoxName,"SSDStiffenerBox%i",i+1);
-    SSDStiffenerBox[i] = new TGeoVolume(SSDStiffenerBoxName,SSDStiffenerBoxShapes[i],
-									  fgkSSDStiffenerMedium);
-	SSDStiffenerBox[i]->SetLineColor(fColorStiffener);
+  TGeoVolume* ssdstiffenerbox[kstiffenerboxnumber];
+  char ssdtiffenerboxname[30];
+  for(Int_t i=0; i<kstiffenerboxnumber; i++){ 
+	 sprintf(ssdtiffenerboxname,"SSDStiffenerBox%i",i+1);
+    ssdstiffenerbox[i] = new TGeoVolume(ssdtiffenerboxname,ssdstiffenerboxshapes[i],
+									  fSSDStiffenerMedium);
+	ssdstiffenerbox[i]->SetLineColor(fColorStiffener);
   }
 ////////////////////////////
 // Connector 
 ///////////////////////////
-  TGeoBBox* SSDConnectorShape =  new TGeoBBox("SSDConnectorShape",
+  TGeoBBox* ssdconnectorshape =  new TGeoBBox("SSDConnectorShape",
 											 0.5*fgkSSDConnectorLength,
 											 0.5*fgkSSDConnectorWidth,
 											 0.5*fgkSSDConnectorHeight);
-  TGeoVolume* SSDConnector    = new TGeoVolume("SSDConnector",SSDConnectorShape,
-												fgkSSDStiffenerConnectorMedium); 
-  SSDConnector->SetLineColor(fColorAl);
-  const Int_t SSDConnectorNumber = 2;
-  TGeoTranslation* SSDConnectorTrans[SSDConnectorNumber];
-  SSDConnectorTrans[0] = new TGeoTranslation("SSDConnectorTrans1",
-        -  SSDStiffenerBoxShapes[0]->GetDX()+fgkSSDConnectorPosition[0]
+  TGeoVolume* ssdconnector    = new TGeoVolume("SSDConnector",ssdconnectorshape,
+												fSSDStiffenerConnectorMedium); 
+  ssdconnector->SetLineColor(fColorAl);
+  const Int_t kssdconnectornumber = 2;
+  TGeoTranslation* ssdconnectortrans[kssdconnectornumber];
+  ssdconnectortrans[0] = new TGeoTranslation("SSDConnectorTrans1",
+        -  ssdstiffenerboxshapes[0]->GetDX()+fgkSSDConnectorPosition[0]
 		-  fgkSSDConnectorSeparation-1.5*fgkSSDConnectorLength,
-		   SSDStiffenerBoxShapes[0]->GetDY()-fgkSSDConnectorPosition[1]
-		-  SSDConnectorShape->GetDY(),
-		   SSDStiffenerBoxShapes[0]->GetDZ()+SSDConnectorShape->GetDZ());	
-  SSDConnectorTrans[1] = new TGeoTranslation("SSDConnectorTrans2",
-        -  SSDStiffenerBoxShapes[0]->GetDX()+fgkSSDConnectorPosition[0]
+		   ssdstiffenerboxshapes[0]->GetDY()-fgkSSDConnectorPosition[1]
+		-  ssdconnectorshape->GetDY(),
+		   ssdstiffenerboxshapes[0]->GetDZ()+ssdconnectorshape->GetDZ());	
+  ssdconnectortrans[1] = new TGeoTranslation("SSDConnectorTrans2",
+        -  ssdstiffenerboxshapes[0]->GetDX()+fgkSSDConnectorPosition[0]
         -  0.5*fgkSSDConnectorLength,
-           SSDStiffenerBoxShapes[0]->GetDY()-fgkSSDConnectorPosition[1]
-		-  SSDConnectorShape->GetDY(),
-		   SSDStiffenerBoxShapes[0]->GetDZ()+SSDConnectorShape->GetDZ());
-  for(Int_t i=0; i<SSDConnectorNumber; i++)
-			SSDStiffener->AddNode(SSDConnector,i+1,SSDConnectorTrans[i]);	
+           ssdstiffenerboxshapes[0]->GetDY()-fgkSSDConnectorPosition[1]
+		-  ssdconnectorshape->GetDY(),
+		   ssdstiffenerboxshapes[0]->GetDZ()+ssdconnectorshape->GetDZ());
+  for(Int_t i=0; i<kssdconnectornumber; i++)
+			ssdstiffener->AddNode(ssdconnector,i+1,ssdconnectortrans[i]);	
 //////////////////////////////////////
 // TGeoTranslation for Stiffener Boxes
 //////////////////////////////////////
-  TGeoTranslation* SSDStiffenerBoxTrans[StiffenerBoxNumber];
-  SSDStiffenerBoxTrans[0] = new TGeoTranslation("SSDStiffenerBoxTrans1",0.,0.,0.);
-  SSDStiffenerBoxTrans[1] = new TGeoTranslation("SSDStiffenerBoxTrans2",
-		 - (SSDStiffenerBoxShapes[0]->GetDX()-SSDStiffenerBoxShapes[1]->GetDX()),
+  TGeoTranslation* ssdstiffenerboxtrans[kstiffenerboxnumber];
+  ssdstiffenerboxtrans[0] = new TGeoTranslation("SSDStiffenerBoxTrans1",0.,0.,0.);
+  ssdstiffenerboxtrans[1] = new TGeoTranslation("SSDStiffenerBoxTrans2",
+		 - (ssdstiffenerboxshapes[0]->GetDX()-ssdstiffenerboxshapes[1]->GetDX()),
 		    0.,
-			SSDStiffenerBoxShapes[0]->GetDZ()+SSDStiffenerBoxShapes[1]->GetDZ());
-  SSDStiffenerBoxTrans[2] = new TGeoTranslation("SSDStiffenerBoxTrans3",
-         - SSDStiffenerBoxShapes[0]->GetDX()-SSDStiffenerBoxShapes[2]->GetDX()
+			ssdstiffenerboxshapes[0]->GetDZ()+ssdstiffenerboxshapes[1]->GetDZ());
+  ssdstiffenerboxtrans[2] = new TGeoTranslation("SSDStiffenerBoxTrans3",
+         - ssdstiffenerboxshapes[0]->GetDX()-ssdstiffenerboxshapes[2]->GetDX()
 		 + fgkSSDConnectorPosition[0],
-		   SSDStiffenerBoxShapes[0]->GetDY()-SSDStiffenerBoxShapes[2]->GetDY(),
-		   SSDStiffenerBoxShapes[0]->GetDZ()+SSDStiffenerBoxShapes[2]->GetDZ());
-  SSDStiffenerBoxTrans[3] = new TGeoTranslation("SSDStiffenerBoxTrans4",
-         - SSDStiffenerBoxShapes[0]->GetDX()-SSDStiffenerBoxShapes[3]->GetDX()
+		   ssdstiffenerboxshapes[0]->GetDY()-ssdstiffenerboxshapes[2]->GetDY(),
+		   ssdstiffenerboxshapes[0]->GetDZ()+ssdstiffenerboxshapes[2]->GetDZ());
+  ssdstiffenerboxtrans[3] = new TGeoTranslation("SSDStiffenerBoxTrans4",
+         - ssdstiffenerboxshapes[0]->GetDX()-ssdstiffenerboxshapes[3]->GetDX()
 		 + fgkSSDConnectorPosition[0],
-		 - SSDStiffenerBoxShapes[0]->GetDY()+SSDStiffenerBoxShapes[3]->GetDY(),
-		   SSDStiffenerBoxShapes[0]->GetDZ()+SSDStiffenerBoxShapes[3]->GetDZ());
-  SSDStiffenerBoxTrans[4] = new TGeoTranslation("SSDStiffenerBoxTrans5",
-		 - SSDStiffenerBoxShapes[0]->GetDX()+fgkSSDConnectorPosition[0]
-		 - 0.5*fgkSSDConnectorSeparation-2.*SSDConnectorShape->GetDX(),
-		   SSDStiffenerBoxShapes[0]->GetDY()-fgkSSDConnectorPosition[1]
-		 - SSDConnectorShape->GetDY(),
-		   SSDStiffenerBoxShapes[0]->GetDZ()+SSDConnectorShape->GetDZ());
-  SSDStiffenerBoxTrans[5] = new TGeoTranslation("SSDStiffenerBoxTrans6",
-         - SSDStiffenerBoxShapes[0]->GetDX()+fgkSSDConnectorPosition[0]
-		 + SSDStiffenerBoxShapes[5]->GetDX(),
+		 - ssdstiffenerboxshapes[0]->GetDY()+ssdstiffenerboxshapes[3]->GetDY(),
+		   ssdstiffenerboxshapes[0]->GetDZ()+ssdstiffenerboxshapes[3]->GetDZ());
+  ssdstiffenerboxtrans[4] = new TGeoTranslation("SSDStiffenerBoxTrans5",
+		 - ssdstiffenerboxshapes[0]->GetDX()+fgkSSDConnectorPosition[0]
+		 - 0.5*fgkSSDConnectorSeparation-2.*ssdconnectorshape->GetDX(),
+		   ssdstiffenerboxshapes[0]->GetDY()-fgkSSDConnectorPosition[1]
+		 - ssdconnectorshape->GetDY(),
+		   ssdstiffenerboxshapes[0]->GetDZ()+ssdconnectorshape->GetDZ());
+  ssdstiffenerboxtrans[5] = new TGeoTranslation("SSDStiffenerBoxTrans6",
+         - ssdstiffenerboxshapes[0]->GetDX()+fgkSSDConnectorPosition[0]
+		 + ssdstiffenerboxshapes[5]->GetDX(),
 		   0.,
-		   SSDStiffenerBoxShapes[0]->GetDZ()+SSDStiffenerBoxShapes[5]->GetDZ());
-  for(Int_t i=0; i<StiffenerBoxNumber; i++) 
-		SSDStiffener->AddNode(SSDStiffenerBox[i],1,SSDStiffenerBoxTrans[i]);	
-  TGeoCombiTrans* SSDStiffenerCombiTrans[SSDStiffenerNumber];
-  char SSDStiffenerCombiTransName[30];
-    for(Int_t i=0; i<SSDStiffenerNumber; i++){ 
-	sprintf(SSDStiffenerCombiTransName,"SSDStiffenerCombiTrans%i",i+1);
-    SSDStiffenerCombiTrans[i] = new TGeoCombiTrans(SSDStiffenerCombiTransName,
-			0.,i*SSDStiffenerSeparation,0.,new TGeoRotation("",180*(1-i),0.,0.));
+		   ssdstiffenerboxshapes[0]->GetDZ()+ssdstiffenerboxshapes[5]->GetDZ());
+  for(Int_t i=0; i<kstiffenerboxnumber; i++) 
+		ssdstiffener->AddNode(ssdstiffenerbox[i],1,ssdstiffenerboxtrans[i]);	
+  TGeoCombiTrans* ssdstiffenercombitrans[kssdstiffenernumber];
+  char ssdstiffenercombitransname[30];
+    for(Int_t i=0; i<kssdstiffenernumber; i++){ 
+	sprintf(ssdstiffenercombitransname,"SSDStiffenerCombiTrans%i",i+1);
+    ssdstiffenercombitrans[i] = new TGeoCombiTrans(ssdstiffenercombitransname,
+			0.,i*ssdstiffenerseparation,0.,new TGeoRotation("",180*(1-i),0.,0.));
   }
 ////////////////////////////
 // Capacitor 0603-2200 nF
 ///////////////////////////
-  const Int_t Capacitor0603Number = 5;
-  TGeoBBox* Capacitor0603Shape =  new TGeoBBox("Capacitor0603Shape",
+  const Int_t knapacitor0603number = 5;
+  TGeoBBox* capacitor0603shape =  new TGeoBBox("Capacitor0603Shape",
 											 0.5*fgkSSDCapacitor0603Length,
 											 0.5*fgkSSDCapacitor0603Width,
 											 0.5*fgkSSDCapacitor0603Height);
-  TGeoVolume* Capacitor0603 = new TGeoVolume("Capacitor0603",Capacitor0603Shape,
-                                             fgkSSDStiffener0603CapacitorMedium); 
-  Capacitor0603->SetLineColor(fColorAl);
+  TGeoVolume* capacitor0603 = new TGeoVolume("Capacitor0603",capacitor0603shape,
+                                             fSSDStiffener0603CapacitorMedium); 
+  capacitor0603->SetLineColor(fColorAl);
 ////////////////////////////
 // Capacitor 1812-330 nF
 ///////////////////////////
-  TGeoBBox* Capacitor1812Shape =  new TGeoBBox("Capacitor1812Shape",
+  TGeoBBox* capacitor1812shape =  new TGeoBBox("Capacitor1812Shape",
 											 0.5*fgkSSDCapacitor1812Length,
 											 0.5*fgkSSDCapacitor1812Width,
 											 0.5*fgkSSDCapacitor1812Height);
-  TGeoVolume* Capacitor1812 = new TGeoVolume("Capacitor1812",Capacitor1812Shape,
-                                             fgkSSDStiffener1812CapacitorMedium); 
-  Capacitor1812->SetLineColor(fColorAl);
-  TGeoTranslation* Capacitor1812Trans = new TGeoTranslation("Capacitor1812Trans",
+  TGeoVolume* capacitor1812 = new TGeoVolume("Capacitor1812",capacitor1812shape,
+                                             fSSDStiffener1812CapacitorMedium); 
+  capacitor1812->SetLineColor(fColorAl);
+  TGeoTranslation* capacitor1812trans = new TGeoTranslation("Capacitor1812Trans",
 			  0.,
-			  0.5*fgkSSDStiffenerWidth+SSDStiffenerSeparation
-	       -  Capacitor1812Shape->GetDY()-fgkSSDConnectorPosition[1],
-			  SSDStiffenerBoxShapes[0]->GetDZ()+fgkSSDConnectorHeight
+			  0.5*fgkSSDStiffenerWidth+ssdstiffenerseparation
+	       -  capacitor1812shape->GetDY()-fgkSSDConnectorPosition[1],
+			  ssdstiffenerboxshapes[0]->GetDZ()+fgkSSDConnectorHeight
 		   +  0.5*fgkSSDCapacitor1812Height);
 ////////////////////////////
 //Hybrid Wire
 ////////////////////////////
-  Double_t WireX = 2.*(fgkSSDConnectorPosition[0]-0.5*fgkSSDStiffenerLength
+  Double_t wirex = 2.*(fgkSSDConnectorPosition[0]-0.5*fgkSSDStiffenerLength
 				 - 0.5*fgkSSDConnectorLength)-fgkSSDConnectorLength
 				 - fgkSSDConnectorSeparation;
-  Double_t WireY = SSDStiffenerSeparation+fgkSSDStiffenerWidth
+  Double_t wirey = ssdstiffenerseparation+fgkSSDStiffenerWidth
 				 - 2.*fgkSSDConnectorPosition[1]-fgkSSDConnectorWidth;
-  Double_t SSDWireRadius = TMath::Sqrt(TMath::Power(WireX,2.)
-				         + TMath::Power(WireY,2));
-  Double_t WireAngle = TMath::ATan(WireX/WireY);
-  TGeoTube *HybridWireShape = new TGeoTube("HybridWireShape", 0., 
-						fgkSSDWireRadius, 0.5*SSDWireRadius);
-  TGeoVolume* HybridWire = new TGeoVolume("HybridWire",HybridWireShape,
-                                             fgkSSDStiffenerHybridWireMedium); 
-  HybridWire->SetLineColor(fColorPhynox);
-  TGeoCombiTrans* HybridWireCombiTrans[2];
-  HybridWireCombiTrans[0] = new TGeoCombiTrans("HybridWireCombiTrans1",
+  Double_t ssdwireradius = TMath::Sqrt(TMath::Power(wirex,2.)
+				         + TMath::Power(wirey,2));
+  Double_t wireangle = TMath::ATan(wirex/wirey);
+  TGeoTube *hybridwireshape = new TGeoTube("HybridWireShape", 0., 
+						fgkSSDWireRadius, 0.5*ssdwireradius);
+  TGeoVolume* hybridwire = new TGeoVolume("HybridWire",hybridwireshape,
+                                             fSSDStiffenerHybridWireMedium); 
+  hybridwire->SetLineColor(fColorPhynox);
+  TGeoCombiTrans* hybridwirecombitrans[2];
+  hybridwirecombitrans[0] = new TGeoCombiTrans("HybridWireCombiTrans1",
                    0.5*fgkSSDStiffenerLength-fgkSSDConnectorPosition[0]
 				 + 1.5*fgkSSDConnectorLength+fgkSSDConnectorSeparation,
-                   0.5*SSDWireRadius-0.5*fgkSSDStiffenerWidth
+                   0.5*ssdwireradius-0.5*fgkSSDStiffenerWidth
 				 + fgkSSDConnectorPosition[1]+0.5*fgkSSDConnectorWidth,
-				   SSDStiffenerBoxShapes[0]->GetDZ()+fgkSSDConnectorHeight
+				   ssdstiffenerboxshapes[0]->GetDZ()+fgkSSDConnectorHeight
 				 + fgkSSDWireRadius,
                    new TGeoRotation("HybridWireRot1",0.,90.,0.));
-  HybridWireCombiTrans[1] = new TGeoCombiTrans("HybridWireCombiTrans2",
+  hybridwirecombitrans[1] = new TGeoCombiTrans("HybridWireCombiTrans2",
 				   0.,
 				 - 0.5*fgkSSDConnectorWidth+fgkSSDWireRadius,
 				   0.,	
                    new TGeoRotation("HybridWireRot2",
-				 -                  WireAngle*TMath::RadToDeg(),0.,0.));
-  TGeoHMatrix* HybridWireMatrix = new TGeoHMatrix();
-  HybridWireMatrix->MultiplyLeft(HybridWireCombiTrans[0]);
-  HybridWireMatrix->MultiplyLeft(HybridWireCombiTrans[1]);
+				 -                  wireangle*TMath::RadToDeg(),0.,0.));
+  TGeoHMatrix* hybridwirematrix = new TGeoHMatrix();
+  hybridwirematrix->MultiplyLeft(hybridwirecombitrans[0]);
+  hybridwirematrix->MultiplyLeft(hybridwirecombitrans[1]);
 ////////////////////////////
 // Stiffener Assembly
 ///////////////////////////
-  TGeoVolume* SSDStiffenerAssembly = 
+  TGeoVolume* ssdstiffenerassembly = 
 								new TGeoVolumeAssembly("SSDStiffenerAssembly");
-  SSDStiffenerAssembly->AddNode(HybridWire,1,HybridWireMatrix);
-  for(Int_t i=0; i<SSDStiffenerNumber; i++) {
-	SSDStiffenerAssembly->AddNode(SSDStiffener,i+1,SSDStiffenerCombiTrans[i]);
-	for(Int_t j=1; j<Capacitor0603Number+1; j++){
-    SSDStiffenerAssembly->AddNode(Capacitor0603,Capacitor0603Number*i+j,new TGeoTranslation("",(j-3.
+  ssdstiffenerassembly->AddNode(hybridwire,1,hybridwirematrix);
+  for(Int_t i=0; i<kssdstiffenernumber; i++) {
+	ssdstiffenerassembly->AddNode(ssdstiffener,i+1,ssdstiffenercombitrans[i]);
+	for(Int_t j=1; j<knapacitor0603number+1; j++){
+    ssdstiffenerassembly->AddNode(capacitor0603,knapacitor0603number*i+j,new TGeoTranslation("",(j-3.
 	)/6*fgkSSDStiffenerLength,
-					i*SSDStiffenerSeparation+
+					i*ssdstiffenerseparation+
 					0.5*((i==0? 1:-1)*fgkSSDStiffenerWidth
 					+(i==0? -1:+1)*fgkSSDCapacitor0603Width),
 					-0.5*(fgkSSDStiffenerHeight+fgkSSDCapacitor0603Height)));
 	}
-	if(i==1) SSDStiffenerAssembly->AddNode(Capacitor1812,1,Capacitor1812Trans);
+	if(i==1) ssdstiffenerassembly->AddNode(capacitor1812,1,capacitor1812trans);
 }
-  return SSDStiffenerAssembly;
+  return ssdstiffenerassembly;
 }
 /////////////////////////////////////////////////////////////////////////////////
 TGeoVolume* AliITSv11GeometrySSD::GetSSDChipCables(Double_t SSDChipCablesHeigth, 
 																	char* side){
-////////////////////////////////////////////////////////////////////////////////
-  const Int_t SSDChipCablesLayNumber = 2;
-  Int_t SSDChipCablesColor[2] = {fColorAl,fColorPolyhamide};
-  Double_t SSDChipCablesRadius[2];
-  SSDChipCablesRadius[0] = 0.25*(SSDChipCablesHeigth
+  /////////////////////////////////////////////////////////////
+  // Method generating SSD Chip Cables    
+  /////////////////////////////////////////////////////////////
+  const Int_t kssdchipcableslaynumber = 2;
+  Int_t ssdchipcablescolor[2] = {fColorAl,fColorPolyhamide};
+  Double_t ssdchipcablesradius[2];
+  ssdchipcablesradius[0] = 0.25*(SSDChipCablesHeigth
 						 -  fgkSSDChipCablesHeight[0]
 						 -  fgkSSDChipCablesHeight[1]);
-  SSDChipCablesRadius[1] = SSDChipCablesRadius[0]-fgkSSDChipCablesHeight[0];
-  Double_t SSDChipCablesPieceLength = 0.5*(fgkSSDChipCablesWidth[0]
-								    - 2.*TMath::Pi()*SSDChipCablesRadius[0]
-									- SSDChipCablesRadius[0]
+  ssdchipcablesradius[1] = ssdchipcablesradius[0]-fgkSSDChipCablesHeight[0];
+  Double_t ssdchipcablespiecelength = 0.5*(fgkSSDChipCablesWidth[0]
+								    - 2.*TMath::Pi()*ssdchipcablesradius[0]
+									- ssdchipcablesradius[0]
 									- fgkSSDChipCablesWidth[1]
 									- fgkSSDChipCablesWidth[2]
 									- (side=="Right" ? 0 : 
@@ -1284,38 +1398,38 @@ TGeoVolume* AliITSv11GeometrySSD::GetSSDChipCables(Double_t SSDChipCablesHeigth,
   //////////////////////////
   //Box and Tube Seg Shapes
   //////////////////////////
-  char* SSDChipCablesBoxShapeName[2*SSDChipCablesLayNumber] = 
+  char* ssdchipcablesboxshapename[2*kssdchipcableslaynumber] = 
 					  {"SSDChipCablesBoxLay0Shape0","SSDChipCablesBoxLay0Shape1",
 					   "SSDChipCablesBoxLay1Shape0","SSDChipCablesBoxLay1Shape1"};
-  char* SSDChipCablesTubeSegShapeName[2*SSDChipCablesLayNumber] = 
+  char* ssdchipcablestubesegshapename[2*kssdchipcableslaynumber] = 
 			  {"SSDChipCablesTubeSegLay0Shape0","SSDChipCablesTubeSegLay0Shape1",
 			   "SSDChipCablesTubeSegLay1Shape0","SSDChipCablesTubeSegLay1Shape1"};
-  TGeoBBox** SSDChipCablesBoxShape[SSDChipCablesLayNumber];
-  TGeoTubeSeg** SSDChipCablesTubeSegShape[SSDChipCablesLayNumber];
-  for(Int_t i=0; i<SSDChipCablesLayNumber; i++){
-    SSDChipCablesBoxShape[i]        = new TGeoBBox*[2];
-    SSDChipCablesTubeSegShape[i]    = new TGeoTubeSeg*[2+(side=="Right" ? 0 : 1)];
-    SSDChipCablesBoxShape[i][0]     = new TGeoBBox(SSDChipCablesBoxShapeName[2*i],
-												   0.5*SSDChipCablesPieceLength,
+  TGeoBBox** ssdchipcablesboxshape[kssdchipcableslaynumber];
+  TGeoTubeSeg** ssdchipcablestubesegshape[kssdchipcableslaynumber];
+  for(Int_t i=0; i<kssdchipcableslaynumber; i++){
+    ssdchipcablesboxshape[i]        = new TGeoBBox*[2];
+    ssdchipcablestubesegshape[i]    = new TGeoTubeSeg*[2+(side=="Right" ? 0 : 1)];
+    ssdchipcablesboxshape[i][0]     = new TGeoBBox(ssdchipcablesboxshapename[2*i],
+												   0.5*ssdchipcablespiecelength,
 												   0.5*fgkSSDChipCablesLength[1],
 												   0.5*fgkSSDChipCablesHeight[i]);
-    SSDChipCablesBoxShape[i][1]     = new TGeoBBox(SSDChipCablesBoxShapeName[2*i+1],
-						   0.5*(SSDChipCablesPieceLength+SSDChipCablesRadius[0]
+    ssdchipcablesboxshape[i][1]     = new TGeoBBox(ssdchipcablesboxshapename[2*i+1],
+						   0.5*(ssdchipcablespiecelength+ssdchipcablesradius[0]
 					 + (side=="Right" ? 0. : fgkSSDModuleStiffenerPosition[1])),		
 				    0.5*fgkSSDChipCablesLength[1],0.5*fgkSSDChipCablesHeight[i]);
-    SSDChipCablesTubeSegShape[i][0] = 
-					   new TGeoTubeSeg(SSDChipCablesTubeSegShapeName[2*i],						
-						   SSDChipCablesRadius[1]-i*fgkSSDChipCablesHeight[1],
-						   SSDChipCablesRadius[i],0.5*fgkSSDChipCablesLength[1],
+    ssdchipcablestubesegshape[i][0] = 
+					   new TGeoTubeSeg(ssdchipcablestubesegshapename[2*i],						
+						   ssdchipcablesradius[1]-i*fgkSSDChipCablesHeight[1],
+						   ssdchipcablesradius[i],0.5*fgkSSDChipCablesLength[1],
 						   0.,180.);
-    SSDChipCablesTubeSegShape[i][1] = 
-					   new TGeoTubeSeg(SSDChipCablesTubeSegShapeName[2*i+1],
-					         SSDChipCablesRadius[0]+i*fgkSSDChipCablesHeight[0],
-							 SSDChipCablesRadius[0]+fgkSSDChipCablesHeight[0]
+    ssdchipcablestubesegshape[i][1] = 
+					   new TGeoTubeSeg(ssdchipcablestubesegshapename[2*i+1],
+					         ssdchipcablesradius[0]+i*fgkSSDChipCablesHeight[0],
+							 ssdchipcablesradius[0]+fgkSSDChipCablesHeight[0]
 					 +		 i*fgkSSDChipCablesHeight[1],
 							 0.5*fgkSSDChipCablesLength[1],0.,180.);
-    if(side!="Right") SSDChipCablesTubeSegShape[i][2] = 
-					 new TGeoTubeSeg(SSDChipCablesTubeSegShapeName[2*i],
+    if(side!="Right") ssdchipcablestubesegshape[i][2] = 
+					 new TGeoTubeSeg(ssdchipcablestubesegshapename[2*i],
 						 0.5*fgkSSDSensorHeight+(1-i)*fgkSSDChipCablesHeight[1],
 						 0.5*fgkSSDSensorHeight+(1-i)*fgkSSDChipCablesHeight[0]
 					 +   fgkSSDChipCablesHeight[1],
@@ -1324,27 +1438,27 @@ TGeoVolume* AliITSv11GeometrySSD::GetSSDChipCables(Double_t SSDChipCablesHeigth,
   //////////////////////////
   //Box under Chip
   //////////////////////////
-  char SSDUnderChipCablesBoxShapeName[30];
-  char SSDUnderChipCablesBoxName[30];	
-  char SSDUnderChipCablesBoxTransName[30];	
-  TGeoBBox* SSDUnderChipCablesBoxShape[SSDChipCablesLayNumber];
-  TGeoVolume* SSDUnderChipCablesBox[SSDChipCablesLayNumber]; 
-  TGeoTranslation* SSDUnderChipCablesBoxTrans[SSDChipCablesLayNumber];
-  for(Int_t i=0; i<SSDChipCablesLayNumber; i++){ 
-		sprintf(SSDUnderChipCablesBoxShapeName,"SSDUnderChipCablesBoxShape%i",i+1);
-		sprintf(SSDUnderChipCablesBoxName,"SSDUnderChipCablesBox%i",i+1);
-		sprintf(SSDUnderChipCablesBoxTransName,"SSDUnderChipCablesBoxTrans%i",i+1);
-		SSDUnderChipCablesBoxShape[i] = 
-								   new TGeoBBox(SSDUnderChipCablesBoxShapeName,
+  char ssdunderchipcablesboxshapename[30];
+  char ssdunderchipcablesboxname[30];	
+  char ssdunderchipcablesboxtransname[30];	
+  TGeoBBox* ssdunderchipcablesboxshape[kssdchipcableslaynumber];
+  TGeoVolume* ssdunderchipcablesbox[kssdchipcableslaynumber]; 
+  TGeoTranslation* ssdunderchipcablesboxtrans[kssdchipcableslaynumber];
+  for(Int_t i=0; i<kssdchipcableslaynumber; i++){ 
+		sprintf(ssdunderchipcablesboxshapename,"SSDUnderChipCablesBoxShape%i",i+1);
+		sprintf(ssdunderchipcablesboxname,"SSDUnderChipCablesBox%i",i+1);
+		sprintf(ssdunderchipcablesboxtransname,"SSDUnderChipCablesBoxTrans%i",i+1);
+		ssdunderchipcablesboxshape[i] = 
+								   new TGeoBBox(ssdunderchipcablesboxshapename,
 								   0.5*fgkSSDChipWidth,
 								   0.5*fgkSSDChipCablesLength[1],
 								   0.5*fgkSSDChipCablesHeight[i]);
-		SSDUnderChipCablesBox[i] = new TGeoVolume(SSDUnderChipCablesBoxName,
-									SSDUnderChipCablesBoxShape[i],
-									(i==0?fgkSSDAlTraceChipCableMedium:fgkSSDKaptonChipCableMedium));		
-        SSDUnderChipCablesBox[i]->SetLineColor(SSDChipCablesColor[i]);
-		SSDUnderChipCablesBoxTrans[i] = 
-						new TGeoTranslation(SSDUnderChipCablesBoxTransName,
+		ssdunderchipcablesbox[i] = new TGeoVolume(ssdunderchipcablesboxname,
+									ssdunderchipcablesboxshape[i],
+									(i==0?fSSDAlTraceChipCableMedium:fSSDKaptonChipCableMedium));		
+        ssdunderchipcablesbox[i]->SetLineColor(ssdchipcablescolor[i]);
+		ssdunderchipcablesboxtrans[i] = 
+						new TGeoTranslation(ssdunderchipcablesboxtransname,
 						(side=="Right"?-1.:1.)*0.5*fgkSSDChipWidth,
 						0.5*(fgkSSDChipCablesLength[0]-fgkSSDChipCablesLength[1])
 						+0.5*fgkSSDChipCablesLength[1],
@@ -1353,1473 +1467,1512 @@ TGeoVolume* AliITSv11GeometrySSD::GetSSDChipCables(Double_t SSDChipCablesHeigth,
   //////////////////
   //Trapezoid Shapes
   //////////////////
-  const Int_t SSDChipCablesVertexNumber = 2;
-  const Int_t SSDChipCablesTrapezoidNumber = 2;
-  TVector3** SSDChipCablesTrapezoidVertex[SSDChipCablesVertexNumber];
-  for(Int_t i = 0; i< SSDChipCablesTrapezoidNumber; i++) 
-	 SSDChipCablesTrapezoidVertex[i] = new TVector3*[SSDChipCablesVertexNumber];
+  const Int_t kssdchipcablesvertexnumber = 2;
+  const Int_t kssdchipcablestrapezoidnumber = 2;
+  TVector3** ssdchipcablestrapezoidvertex[kssdchipcablesvertexnumber];
+  for(Int_t i = 0; i< kssdchipcablestrapezoidnumber; i++) 
+	 ssdchipcablestrapezoidvertex[i] = new TVector3*[kssdchipcablesvertexnumber];
   //First Shape Vertex Positioning
-  SSDChipCablesTrapezoidVertex[0][0] = new TVector3();
-  SSDChipCablesTrapezoidVertex[0][1] = 
+  ssdchipcablestrapezoidvertex[0][0] = new TVector3();
+  ssdchipcablestrapezoidvertex[0][1] = 
 		new TVector3(0.5*(fgkSSDChipCablesLength[0]-fgkSSDChipCablesLength[1]));
   //Second Shape Vertex Positioning
-  SSDChipCablesTrapezoidVertex[1][0] = 
-							  new TVector3(*SSDChipCablesTrapezoidVertex[0][0]);
-  SSDChipCablesTrapezoidVertex[1][1] = 
-							  new TVector3(*SSDChipCablesTrapezoidVertex[0][1]);
+  ssdchipcablestrapezoidvertex[1][0] = 
+							  new TVector3(*ssdchipcablestrapezoidvertex[0][0]);
+  ssdchipcablestrapezoidvertex[1][1] = 
+							  new TVector3(*ssdchipcablestrapezoidvertex[0][1]);
   //Setting the names of shapes and volumes
-  char* SSDChipCablesTrapezoidBoxShapeName[SSDChipCablesTrapezoidNumber] = 
+  char* ssdchipcablestrapezoidboxshapename[kssdchipcablestrapezoidnumber] = 
 		  {"SSDChipCablesTrapezoidBoxShape1","SSDChipCablesTrapezoidBoxShape2"};
-  char* SSDChipCablesTrapezoidShapeName[SSDChipCablesTrapezoidNumber] = 
+  char* ssdchipcablestrapezoidshapename[kssdchipcablestrapezoidnumber] = 
 		  {"SSDChipCablesTrapezoidShape1","SSDChipCablesTrapezoidShape2"};
-  char* SSDChipCablesTrapezoidBoxName[SSDChipCablesTrapezoidNumber] = 
+  char* ssdchipcablestrapezoidboxname[kssdchipcablestrapezoidnumber] = 
 		  {"SSDChipCablesTrapezoidBox1","SSDChipCablesTrapezoidBox2"};
-  char* SSDChipCablesTrapezoidName[SSDChipCablesTrapezoidNumber] = 
+  char* ssdhipcablestrapezoidname[kssdchipcablestrapezoidnumber] = 
 		  {"SSDChipCablesTrapezoid1","SSDChipCablesTrapezoid2"};
-  char* SSDChipCablesTrapezoidAssemblyName[SSDChipCablesTrapezoidNumber] = 
+  char* ssdchipcablestrapezoidassemblyname[kssdchipcablestrapezoidnumber] = 
 		  {"SSDChipCablesTrapezoidAssembly1","SSDChipCablesTrapezoidAssembly2"};
   //Setting the Shapes
-  TGeoBBox* SSDChipCablesTrapezoidBoxShape[SSDChipCablesTrapezoidNumber]; 
-  TGeoArb8* SSDChipCablesTrapezoidShape[SSDChipCablesTrapezoidNumber];
+  TGeoBBox* ssdchipcablestrapezoidboxshape[kssdchipcablestrapezoidnumber]; 
+  TGeoArb8* ssdchipcablestrapezoidshape[kssdchipcablestrapezoidnumber];
   //Setting the Volumes
-  TGeoVolume* SSDChipCablesTrapezoidBox[SSDChipCablesTrapezoidNumber];
-  TGeoVolume* SSDChipCablesTrapezoid[SSDChipCablesTrapezoidNumber];
-  TGeoVolume* SSDChipCablesTrapezoidAssembly[SSDChipCablesTrapezoidNumber]; 
-  Double_t SSDChipCablesTrapezoidWidth[SSDChipCablesVertexNumber] = 
+  TGeoVolume* ssdchipcablestrapezoidbox[kssdchipcablestrapezoidnumber];
+  TGeoVolume* ssdchipcablestrapezoid[kssdchipcablestrapezoidnumber];
+  TGeoVolume* ssdchipcablestrapezoidassembly[kssdchipcablestrapezoidnumber]; 
+  Double_t ssdchipcablestrapezoidwidth[kssdchipcablesvertexnumber] = 
    {fgkSSDChipCablesWidth[1]+fgkSSDChipCablesWidth[2],fgkSSDChipCablesWidth[1]};
-  for(Int_t i=0; i<SSDChipCablesTrapezoidNumber; i++){
-    SSDChipCablesTrapezoidBoxShape[i] = 
-					new TGeoBBox(SSDChipCablesTrapezoidBoxShapeName[i],
+  for(Int_t i=0; i<kssdchipcablestrapezoidnumber; i++){
+    ssdchipcablestrapezoidboxshape[i] = 
+					new TGeoBBox(ssdchipcablestrapezoidboxshapename[i],
 						0.5*fgkSSDChipCablesLength[1],
 					    0.5*(fgkSSDChipCablesWidth[1]+fgkSSDChipCablesWidth[2]),
 						0.5*fgkSSDChipCablesHeight[i]);
-    SSDChipCablesTrapezoidShape[i] = 
-							  GetTrapezoidShape(SSDChipCablesTrapezoidVertex[i],
-							  SSDChipCablesTrapezoidWidth,
+    ssdchipcablestrapezoidshape[i] = 
+							  GetTrapezoidShape(ssdchipcablestrapezoidvertex[i],
+							  ssdchipcablestrapezoidwidth,
 							  fgkSSDChipCablesHeight[i],
-							  SSDChipCablesTrapezoidShapeName[i]);
-    SSDChipCablesTrapezoidBox[i] = 
-						new TGeoVolume(SSDChipCablesTrapezoidBoxName[i],
-									   SSDChipCablesTrapezoidBoxShape[i],
-									   (i==0?fgkSSDAlTraceChipCableMedium:fgkSSDKaptonChipCableMedium));
-    SSDChipCablesTrapezoid[i] = new TGeoVolume(SSDChipCablesTrapezoidName[i],
-											   SSDChipCablesTrapezoidShape[i],
-											   (i==0?fgkSSDAlTraceChipCableMedium:fgkSSDKaptonChipCableMedium));
-    SSDChipCablesTrapezoidBox[i]->SetLineColor(SSDChipCablesColor[i]);
-    SSDChipCablesTrapezoid[i]->SetLineColor(SSDChipCablesColor[i]);
-    SSDChipCablesTrapezoidAssembly[i] = 
-				new TGeoVolumeAssembly(SSDChipCablesTrapezoidAssemblyName[i]);
-    SSDChipCablesTrapezoidAssembly[i]->AddNode(SSDChipCablesTrapezoidBox[i],1,
+							  ssdchipcablestrapezoidshapename[i]);
+    ssdchipcablestrapezoidbox[i] = 
+						new TGeoVolume(ssdchipcablestrapezoidboxname[i],
+									   ssdchipcablestrapezoidboxshape[i],
+									   (i==0?fSSDAlTraceChipCableMedium:fSSDKaptonChipCableMedium));
+    ssdchipcablestrapezoid[i] = new TGeoVolume(ssdhipcablestrapezoidname[i],
+											   ssdchipcablestrapezoidshape[i],
+											   (i==0?fSSDAlTraceChipCableMedium:fSSDKaptonChipCableMedium));
+    ssdchipcablestrapezoidbox[i]->SetLineColor(ssdchipcablescolor[i]);
+    ssdchipcablestrapezoid[i]->SetLineColor(ssdchipcablescolor[i]);
+    ssdchipcablestrapezoidassembly[i] = 
+				new TGeoVolumeAssembly(ssdchipcablestrapezoidassemblyname[i]);
+    ssdchipcablestrapezoidassembly[i]->AddNode(ssdchipcablestrapezoidbox[i],1,
 				new TGeoTranslation(0.5*fgkSSDChipCablesLength[1],
 				   0.5*(fgkSSDChipCablesWidth[1]+fgkSSDChipCablesWidth[2]),0.));
-    SSDChipCablesTrapezoidAssembly[i]->AddNode(SSDChipCablesTrapezoid[i],0,
+    ssdchipcablestrapezoidassembly[i]->AddNode(ssdchipcablestrapezoid[i],0,
 			new TGeoCombiTrans(0.,0.,0.,new TGeoRotation("",90.,180.,-90.)));
-    SSDChipCablesTrapezoidAssembly[i]->AddNode(SSDChipCablesTrapezoid[i],1,
+    ssdchipcablestrapezoidassembly[i]->AddNode(ssdchipcablestrapezoid[i],1,
 			new TGeoTranslation(fgkSSDChipCablesLength[1],0.,0.));
   }
   /////////////////////////////
   //Box and Tube Seg CombiTrans
   /////////////////////////////
-  TGeoTranslation* SSDChipCablesBoxTrans[2*SSDChipCablesLayNumber];
-  SSDChipCablesBoxTrans[0] = 
+  TGeoTranslation* ssdchipcablesboxtrans[2*kssdchipcableslaynumber];
+  ssdchipcablesboxtrans[0] = 
 					new TGeoTranslation("SSDChipCablesLay1Box1Trans",0.,0.,0.);
-  SSDChipCablesBoxTrans[1] = 
+  ssdchipcablesboxtrans[1] = 
 					new TGeoTranslation("SSDChipCablesLay1Box2Trans",
-										 SSDChipCablesBoxShape[0][1]->GetDX()
-						   -             0.5*SSDChipCablesPieceLength,
+										 ssdchipcablesboxshape[0][1]->GetDX()
+						   -             0.5*ssdchipcablespiecelength,
                        0.0,
-						   -             2.*SSDChipCablesRadius[0]
+						   -             2.*ssdchipcablesradius[0]
 						   -             fgkSSDChipCablesHeight[0]);
-  SSDChipCablesBoxTrans[2] = new TGeoTranslation("SSDChipCablesLay2Box1Trans",
+  ssdchipcablesboxtrans[2] = new TGeoTranslation("SSDChipCablesLay2Box1Trans",
 										 0.0,
 										 0.0,
 										 0.5*(fgkSSDChipCablesHeight[0]
 						   +			 fgkSSDChipCablesHeight[1]));
-  SSDChipCablesBoxTrans[3] = 
+  ssdchipcablesboxtrans[3] = 
 							 new TGeoTranslation("SSDChipCablesLay2Box2Trans",
-										 SSDChipCablesBoxShape[1][1]->GetDX()
-						   -			 0.5*SSDChipCablesPieceLength,
+										 ssdchipcablesboxshape[1][1]->GetDX()
+						   -			 0.5*ssdchipcablespiecelength,
 										 0.0,
-						   -			 2.*SSDChipCablesRadius[0]
+						   -			 2.*ssdchipcablesradius[0]
 						   -			 0.5*fgkSSDChipCablesHeight[1]
 						   -			 1.5*fgkSSDChipCablesHeight[0]);
-  TGeoRotation* SSDChipCablesRot[3];
-  SSDChipCablesRot[0] = new TGeoRotation("SSDChipCablesRot1",0.,90.,0.);
-  SSDChipCablesRot[1] = new TGeoRotation("SSDChipCablesRot2",90.,90.,-90.);
-  SSDChipCablesRot[2] = new TGeoRotation("SSDChipCablesRot3",90.,-90.,-90.);
-  TGeoCombiTrans* SSDChipCablesTubeSegCombiTrans[2*(SSDChipCablesLayNumber+
-													  (side=="Right" ? 0 : 1))];
-  SSDChipCablesTubeSegCombiTrans[0] = 
+  TGeoRotation* ssdchipcablesrot[3];
+  ssdchipcablesrot[0] = new TGeoRotation("SSDChipCablesRot1",0.,90.,0.);
+  ssdchipcablesrot[1] = new TGeoRotation("SSDChipCablesRot2",90.,90.,-90.);
+  ssdchipcablesrot[2] = new TGeoRotation("SSDChipCablesRot3",90.,-90.,-90.);
+  TGeoCombiTrans* ssdchipcablestubesegcombitrans[2*(kssdchipcableslaynumber+1)];    
+//  TGeoCombiTrans* SSDChipCablesTubeSegCombiTrans[2*(SSDChipCablesLayNumber+
+//													  (side=="Right" ? 0 : 1))];
+  ssdchipcablestubesegcombitrans[0] = 
 				new TGeoCombiTrans("SSDChipCablesLay1TubeSeg1CombiTrans",
-				0.5*SSDChipCablesPieceLength,
+				0.5*ssdchipcablespiecelength,
 				0.0,
-				SSDChipCablesRadius[0]
+				ssdchipcablesradius[0]
 			-   0.5*fgkSSDChipCablesHeight[0],
-				new TGeoRotation((*SSDChipCablesRot[1])*(*SSDChipCablesRot[0])));
-  SSDChipCablesTubeSegCombiTrans[1] = 
+				new TGeoRotation((*ssdchipcablesrot[1])*(*ssdchipcablesrot[0])));
+  ssdchipcablestubesegcombitrans[1] = 
 				new TGeoCombiTrans("SSDChipCablesLay1TubeSeg2CombiTrans",
-			-   0.5*SSDChipCablesPieceLength,
+			-   0.5*ssdchipcablespiecelength,
 				0.0,
-			-   SSDChipCablesRadius[0]-0.5*fgkSSDChipCablesHeight[0],
-				new TGeoRotation((*SSDChipCablesRot[2])*(*SSDChipCablesRot[0])));
-  SSDChipCablesTubeSegCombiTrans[2] = 
+			-   ssdchipcablesradius[0]-0.5*fgkSSDChipCablesHeight[0],
+				new TGeoRotation((*ssdchipcablesrot[2])*(*ssdchipcablesrot[0])));
+  ssdchipcablestubesegcombitrans[2] = 
   new TGeoCombiTrans("SSDChipCablesLay2TubeSeg1CombiTrans",
-				0.5*SSDChipCablesPieceLength,
+				0.5*ssdchipcablespiecelength,
 				0.0,
-				SSDChipCablesRadius[0]-0.5*fgkSSDChipCablesHeight[0],
-				new TGeoRotation((*SSDChipCablesRot[1])*(*SSDChipCablesRot[0])));
-  SSDChipCablesTubeSegCombiTrans[3] = 
+				ssdchipcablesradius[0]-0.5*fgkSSDChipCablesHeight[0],
+				new TGeoRotation((*ssdchipcablesrot[1])*(*ssdchipcablesrot[0])));
+  ssdchipcablestubesegcombitrans[3] = 
 				new TGeoCombiTrans("SSDChipCablesLay2TubeSeg2CombiTrans",
-			-	0.5*SSDChipCablesPieceLength,
+			-	0.5*ssdchipcablespiecelength,
 				0.0,
-			-	SSDChipCablesRadius[0]+0.5*fgkSSDChipCablesHeight[0]
+			-	ssdchipcablesradius[0]+0.5*fgkSSDChipCablesHeight[0]
 			-   fgkSSDChipCablesHeight[0],
-				new TGeoRotation((*SSDChipCablesRot[2])*(*SSDChipCablesRot[0])));
-  SSDChipCablesTubeSegCombiTrans[4] = 
+				new TGeoRotation((*ssdchipcablesrot[2])*(*ssdchipcablesrot[0])));
+  ssdchipcablestubesegcombitrans[4] = 
 				new TGeoCombiTrans("SSDChipCablesLay1TubeSeg4CombiTrans",
-				0.5*SSDChipCablesPieceLength+SSDChipCablesRadius[0]
+				0.5*ssdchipcablespiecelength+ssdchipcablesradius[0]
 			+   fgkSSDModuleStiffenerPosition[1],
 				0.0,
-			-	2.*SSDChipCablesRadius[0]-0.5*fgkSSDChipCablesHeight[0]
+			-	2.*ssdchipcablesradius[0]-0.5*fgkSSDChipCablesHeight[0]
 			-   (0.5*fgkSSDSensorHeight+fgkSSDChipCablesHeight[0]
 			+	fgkSSDChipCablesHeight[1]),
-			new TGeoRotation((*SSDChipCablesRot[1])*(*SSDChipCablesRot[0])));
-  SSDChipCablesTubeSegCombiTrans[5] = 
+			new TGeoRotation((*ssdchipcablesrot[1])*(*ssdchipcablesrot[0])));
+  ssdchipcablestubesegcombitrans[5] = 
 			new TGeoCombiTrans("SSDChipCablesLay2TubeSeg5CombiTrans",
-				0.5*SSDChipCablesPieceLength+SSDChipCablesRadius[0]
+				0.5*ssdchipcablespiecelength+ssdchipcablesradius[0]
 			+	fgkSSDModuleStiffenerPosition[1],
 				0.0,
-			-	2.*SSDChipCablesRadius[0]-0.5*fgkSSDChipCablesHeight[0]
+			-	2.*ssdchipcablesradius[0]-0.5*fgkSSDChipCablesHeight[0]
 			-	(0.5*fgkSSDSensorHeight+fgkSSDChipCablesHeight[0]
 			+	fgkSSDChipCablesHeight[1]),
-			new TGeoRotation((*SSDChipCablesRot[1])*(*SSDChipCablesRot[0])));
-  TGeoCombiTrans* SSDChipCablesTrapezoidCombiTrans[SSDChipCablesLayNumber];
-  SSDChipCablesTrapezoidCombiTrans[0] = (side=="Right" ? 
+			new TGeoRotation((*ssdchipcablesrot[1])*(*ssdchipcablesrot[0])));
+  TGeoCombiTrans* ssdchipcablestrapezoidcombitrans[kssdchipcableslaynumber];
+  ssdchipcablestrapezoidcombitrans[0] = (side=="Right" ? 
 			new TGeoCombiTrans("SSDChipCableLay1TrapezoidRightCombiTrans",
-				0.5*SSDChipCablesPieceLength+SSDChipCablesTrapezoidWidth[0]
-			+	SSDChipCablesRadius[0],
+				0.5*ssdchipcablespiecelength+ssdchipcablestrapezoidwidth[0]
+			+	ssdchipcablesradius[0],
 			-	0.5*fgkSSDChipCablesLength[1],
-			-	fgkSSDChipCablesHeight[0]-2.*SSDChipCablesRadius[0],
+			-	fgkSSDChipCablesHeight[0]-2.*ssdchipcablesradius[0],
 			new TGeoRotation("",90.,0.,0.)) :
 			new TGeoCombiTrans("SSDChipCableLay1TrapezoidLeftCombiTrans",
 			-	2.*(fgkSSDChipCablesWidth[1]+fgkSSDChipCablesWidth[2])
-			+	0.5*SSDChipCablesPieceLength+SSDChipCablesTrapezoidWidth[0]
-			+	SSDChipCablesRadius[0]+fgkSSDModuleStiffenerPosition[1],
+			+	0.5*ssdchipcablespiecelength+ssdchipcablestrapezoidwidth[0]
+			+	ssdchipcablesradius[0]+fgkSSDModuleStiffenerPosition[1],
 				0.5*fgkSSDChipCablesLength[1],
 			-	2.*(fgkSSDChipCablesHeight[0]+fgkSSDChipCablesHeight[1])
-			-	2.*SSDChipCablesRadius[0]-fgkSSDSensorHeight,
+			-	2.*ssdchipcablesradius[0]-fgkSSDSensorHeight,
 			new TGeoRotation("",-90.,0.,0.)));
-  SSDChipCablesTrapezoidCombiTrans[1] = (side=="Right" ? 
+  ssdchipcablestrapezoidcombitrans[1] = (side=="Right" ? 
 			new TGeoCombiTrans("SSDChipCableLay2TrapezoidRightCombiTrans",
-				0.5*SSDChipCablesPieceLength+SSDChipCablesTrapezoidWidth[0]
-			+	SSDChipCablesRadius[0],
+				0.5*ssdchipcablespiecelength+ssdchipcablestrapezoidwidth[0]
+			+	ssdchipcablesradius[0],
 			-	0.5*fgkSSDChipCablesLength[1],
 			-	0.5*(fgkSSDChipCablesHeight[0]+fgkSSDChipCablesHeight[1])
-			-	fgkSSDChipCablesHeight[0]-2.*SSDChipCablesRadius[0],
+			-	fgkSSDChipCablesHeight[0]-2.*ssdchipcablesradius[0],
 				new TGeoRotation("",90.,0.,0.)) :
 				new TGeoCombiTrans("SSDChipCableLay2TrapezoidLeftCombiTrans",
 			-	2.*(fgkSSDChipCablesWidth[1]+fgkSSDChipCablesWidth[2])
-			+	0.5*SSDChipCablesPieceLength+SSDChipCablesTrapezoidWidth[0]
-			+	SSDChipCablesRadius[0]+fgkSSDModuleStiffenerPosition[1],
+			+	0.5*ssdchipcablespiecelength+ssdchipcablestrapezoidwidth[0]
+			+	ssdchipcablesradius[0]+fgkSSDModuleStiffenerPosition[1],
 				0.5*fgkSSDChipCablesLength[1],-0.5*(fgkSSDChipCablesHeight[0]
 			+	fgkSSDChipCablesHeight[1])-fgkSSDChipCablesHeight[1]
-			-	fgkSSDChipCablesHeight[0]-2.*SSDChipCablesRadius[0]
+			-	fgkSSDChipCablesHeight[0]-2.*ssdchipcablesradius[0]
 			-	fgkSSDSensorHeight,new TGeoRotation("",-90.,0.,0.)));  
   //////////////////////////
   //Box and Tube Seg Volumes
   //////////////////////////
-  char* SSDChipCablesBoxName[2*SSDChipCablesLayNumber] = 
+  char* ssdchipcablesboxname[2*kssdchipcableslaynumber] = 
 							 {"SSDChipCablesLay1Box1","SSDChipCablesLay1Box2",
 							  "SSDChipCablesLay2Box1","SSDChipCablesLay2Box2"};
-  char* SSDChipRightCablesTubeSegName[2*SSDChipCablesLayNumber] = 
+  char* ssdchiprightcablestubesegname[2*kssdchipcableslaynumber] = 
 			  {"SSDChipRightCablesLay1TubeSeg1","SSDChipRightCablesLay1TubeSeg2",
 			   "SSDChipRightCablesLay2TubeSeg1","SSDChipRightCablesLay2TubeSeg2"};
-  char* SSDChipLeftCablesTubeSegName[2*SSDChipCablesLayNumber] = 
+  char* ssdchipLeftcablestubesegname[2*kssdchipcableslaynumber] = 
 			  {"SSDChipLeftCablesLay1TubeSeg1","SSDChipLeftCablesLay1TubeSeg2",
 			   "SSDChipLeftCablesLay2TubeSeg1","SSDChipLeftCablesLay2TubeSeg2"};
-  char* SSDChipCablesLayAssemblyName[SSDChipCablesLayNumber] = 
+  char* ssdchipcableslayassemblyname[kssdchipcableslaynumber] = 
 			  {"SSDChipCablesLay1","SSDChipCablesLay2"};
-  TGeoVolume** SSDChipCablesBox[SSDChipCablesLayNumber];
-  TGeoVolume** SSDChipCablesTubeSeg[SSDChipCablesLayNumber];
-  TGeoVolume* SSDChipCablesLayAssembly[SSDChipCablesLayNumber];
-  for(Int_t i=0; i<SSDChipCablesLayNumber; i++){
-    TGeoMedium* SSDChipCablesLayMed = 
-            (i==0?fgkSSDAlTraceChipCableMedium:fgkSSDKaptonChipCableMedium);
-    SSDChipCablesBox[i] = new TGeoVolume*[2];
-    SSDChipCablesTubeSeg[i] = new TGeoVolume*[2+(side=="Right" ? 0 : 1)];
-    SSDChipCablesBox[i][0] = new TGeoVolume(SSDChipCablesBoxName[2*i],
-					   SSDChipCablesBoxShape[i][0],SSDChipCablesLayMed);
-    SSDChipCablesBox[i][1] = new TGeoVolume(SSDChipCablesBoxName[2*i+1],
-					   SSDChipCablesBoxShape[i][1],SSDChipCablesLayMed);
-    SSDChipCablesTubeSeg[i][0] = new TGeoVolume(SSDChipRightCablesTubeSegName[2*i],
-					   SSDChipCablesTubeSegShape[i][0],SSDChipCablesLayMed);
-    SSDChipCablesTubeSeg[i][1] = new TGeoVolume(SSDChipRightCablesTubeSegName[2*i+1],
-					   SSDChipCablesTubeSegShape[i][1],SSDChipCablesLayMed);
-    SSDChipCablesBox[i][0]->SetLineColor(SSDChipCablesColor[i]);
-    SSDChipCablesBox[i][1]->SetLineColor(SSDChipCablesColor[i]);
-    SSDChipCablesTubeSeg[i][0]->SetLineColor(SSDChipCablesColor[i]);
-    SSDChipCablesTubeSeg[i][1]->SetLineColor(SSDChipCablesColor[i]);
-    SSDChipCablesLayAssembly[i] = new TGeoVolumeAssembly(SSDChipCablesLayAssemblyName[i]);
-    SSDChipCablesLayAssembly[i]->AddNode(SSDChipCablesBox[i][0],1,
-										 SSDChipCablesBoxTrans[2*i]);
-    SSDChipCablesLayAssembly[i]->AddNode(SSDChipCablesBox[i][1],1,
-										 SSDChipCablesBoxTrans[2*i+1]);
-    SSDChipCablesLayAssembly[i]->AddNode(SSDChipCablesTubeSeg[i][0],1,
-										 SSDChipCablesTubeSegCombiTrans[2*i]);
-    SSDChipCablesLayAssembly[i]->AddNode(SSDChipCablesTubeSeg[i][1],1,
-										 SSDChipCablesTubeSegCombiTrans[2*i+1]);
+  TGeoVolume** ssdchipcablesbox[kssdchipcableslaynumber];
+  TGeoVolume** ssdchipcablestubeseg[kssdchipcableslaynumber];
+  TGeoVolume* ssdchipcableslayassembly[kssdchipcableslaynumber];
+  for(Int_t i=0; i<kssdchipcableslaynumber; i++){
+    TGeoMedium* ssdchipcableslaymed = 
+            (i==0?fSSDAlTraceChipCableMedium:fSSDKaptonChipCableMedium);
+    ssdchipcablesbox[i] = new TGeoVolume*[2];
+    ssdchipcablestubeseg[i] = new TGeoVolume*[2+(side=="Right" ? 0 : 1)];
+    ssdchipcablesbox[i][0] = new TGeoVolume(ssdchipcablesboxname[2*i],
+					   ssdchipcablesboxshape[i][0],ssdchipcableslaymed);
+    ssdchipcablesbox[i][1] = new TGeoVolume(ssdchipcablesboxname[2*i+1],
+					   ssdchipcablesboxshape[i][1],ssdchipcableslaymed);
+    ssdchipcablestubeseg[i][0] = new TGeoVolume(ssdchiprightcablestubesegname[2*i],
+					   ssdchipcablestubesegshape[i][0],ssdchipcableslaymed);
+    ssdchipcablestubeseg[i][1] = new TGeoVolume(ssdchiprightcablestubesegname[2*i+1],
+					   ssdchipcablestubesegshape[i][1],ssdchipcableslaymed);
+    ssdchipcablesbox[i][0]->SetLineColor(ssdchipcablescolor[i]);
+    ssdchipcablesbox[i][1]->SetLineColor(ssdchipcablescolor[i]);
+    ssdchipcablestubeseg[i][0]->SetLineColor(ssdchipcablescolor[i]);
+    ssdchipcablestubeseg[i][1]->SetLineColor(ssdchipcablescolor[i]);
+    ssdchipcableslayassembly[i] = new TGeoVolumeAssembly(ssdchipcableslayassemblyname[i]);
+    ssdchipcableslayassembly[i]->AddNode(ssdchipcablesbox[i][0],1,
+										 ssdchipcablesboxtrans[2*i]);
+    ssdchipcableslayassembly[i]->AddNode(ssdchipcablesbox[i][1],1,
+										 ssdchipcablesboxtrans[2*i+1]);
+    ssdchipcableslayassembly[i]->AddNode(ssdchipcablestubeseg[i][0],1,
+										 ssdchipcablestubesegcombitrans[2*i]);
+    ssdchipcableslayassembly[i]->AddNode(ssdchipcablestubeseg[i][1],1,
+										 ssdchipcablestubesegcombitrans[2*i+1]);
     if(side!="Right"){
-      SSDChipCablesTubeSeg[i][2] = new TGeoVolume(SSDChipLeftCablesTubeSegName[2*i],
-												  SSDChipCablesTubeSegShape[i][2],
-												  SSDChipCablesLayMed);
-      SSDChipCablesTubeSeg[i][2]->SetLineColor(SSDChipCablesColor[i]);
-      SSDChipCablesLayAssembly[i]->AddNode(SSDChipCablesTubeSeg[i][2],1,
-										   SSDChipCablesTubeSegCombiTrans[4+i]);
+      ssdchipcablestubeseg[i][2] = new TGeoVolume(ssdchipLeftcablestubesegname[2*i],
+												  ssdchipcablestubesegshape[i][2],
+												  ssdchipcableslaymed);
+      ssdchipcablestubeseg[i][2]->SetLineColor(ssdchipcablescolor[i]);
+      ssdchipcableslayassembly[i]->AddNode(ssdchipcablestubeseg[i][2],1,
+										   ssdchipcablestubesegcombitrans[4+i]);
     }
-    SSDChipCablesLayAssembly[i]->AddNode(SSDChipCablesTrapezoidAssembly[i],1,
-										 SSDChipCablesTrapezoidCombiTrans[i]);
+    ssdchipcableslayassembly[i]->AddNode(ssdchipcablestrapezoidassembly[i],1,
+										 ssdchipcablestrapezoidcombitrans[i]);
   }
-  TGeoCombiTrans* SSDChipCablesCombiTrans[SSDChipCablesLayNumber];
-  SSDChipCablesCombiTrans[0] = new TGeoCombiTrans("SSDChipCablesCombiTrans1",
-					   (side=="Right" ? -1 : 1)*0.5*SSDChipCablesPieceLength,
+  TGeoCombiTrans* ssdchipcablescombitrans[kssdchipcableslaynumber];
+  ssdchipcablescombitrans[0] = new TGeoCombiTrans("SSDChipCablesCombiTrans1",
+					   (side=="Right" ? -1 : 1)*0.5*ssdchipcablespiecelength,
 						0.5*fgkSSDChipCablesLength[0],
-					-	(2.*SSDChipCablesRadius[0]-fgkSSDChipCablesHeight[0]
+					-	(2.*ssdchipcablesradius[0]-fgkSSDChipCablesHeight[0]
 					-	0.5*fgkSSDChipCablesHeight[1]),
 						new TGeoRotation("",(side=="Right" ? 0 : 1)*180.,0.,0.));
-  SSDChipCablesCombiTrans[1] = new TGeoCombiTrans("SSDChipCablesCombiTrans2",
-						(side=="Right" ? -1 : 1)*0.5*SSDChipCablesPieceLength,
+  ssdchipcablescombitrans[1] = new TGeoCombiTrans("SSDChipCablesCombiTrans2",
+						(side=="Right" ? -1 : 1)*0.5*ssdchipcablespiecelength,
 						0.5*fgkSSDChipCablesLength[0],
-					-	(2.*SSDChipCablesRadius[0]-fgkSSDChipCablesHeight[0]
+					-	(2.*ssdchipcablesradius[0]-fgkSSDChipCablesHeight[0]
 					-	0.5*fgkSSDChipCablesHeight[1]),
 						new TGeoRotation("",(side=="Right" ? 0 : 1)*180.,0.,0.));
-  TGeoVolume* SSDChipCablesAssembly = 
+  TGeoVolume* ssdchipcablesassembly = 
 						new TGeoVolumeAssembly("SSDChipCables");
-  for(Int_t i=0; i<SSDChipCablesLayNumber; i++){ 
-		SSDChipCablesAssembly->AddNode(SSDChipCablesLayAssembly[i],1,
-													SSDChipCablesCombiTrans[i]);
-		SSDChipCablesAssembly->AddNode(SSDUnderChipCablesBox[i],1,SSDUnderChipCablesBoxTrans[i]);
+  for(Int_t i=0; i<kssdchipcableslaynumber; i++){ 
+		ssdchipcablesassembly->AddNode(ssdchipcableslayassembly[i],1,
+													ssdchipcablescombitrans[i]);
+		ssdchipcablesassembly->AddNode(ssdunderchipcablesbox[i],1,ssdunderchipcablesboxtrans[i]);
   }
-  return SSDChipCablesAssembly;
+  return ssdchipcablesassembly;
 }
 /////////////////////////////////////////////////////////////////////////////////
 TGeoVolume* AliITSv11GeometrySSD::GetSSDChipCablesAssembly(Double_t SSDChipCablesHeigth){
-////////////////////////////////////////////////////////////////////////////////
-  const Int_t ChipCablesNumber = 2;
-  Double_t ChipCablesTransVector = fgkSSDSensorLength
+  /////////////////////////////////////////////////////////////
+  // Method generating SSD Chip Cables Assembly    
+  /////////////////////////////////////////////////////////////
+  const Int_t kchipcablesnumber = 2;
+  Double_t chipcablestransvector = fgkSSDSensorLength
 								 - 2.*fgkSSDModuleStiffenerPosition[1]
 								 - 2.*(fgkSSDStiffenerWidth
 								 - fgkSSDStiffenerToChipDist-fgkSSDChipWidth);
-  char* SSDChipCablesName[ChipCablesNumber] = {"Right","Left"};
-  TGeoVolume* SSDChipCables[ChipCablesNumber];  
-  TGeoVolume* SSDChipCablesAssembly = 
+  char* ssdchipcablesname[kchipcablesnumber] = {"Right","Left"};
+  TGeoVolume* ssdchipcables[kchipcablesnumber];  
+  TGeoVolume* ssdchipcablesassembly = 
 					 new TGeoVolumeAssembly("SSDChipCablesAssembly");
-  for(Int_t i=0; i<ChipCablesNumber; i++) SSDChipCables[i] = 
-					 GetSSDChipCables(SSDChipCablesHeigth,SSDChipCablesName[i]);
-  for(Int_t i=0; i<ChipCablesNumber; i++)
+  for(Int_t i=0; i<kchipcablesnumber; i++) ssdchipcables[i] = 
+					 GetSSDChipCables(SSDChipCablesHeigth,ssdchipcablesname[i]);
+  for(Int_t i=0; i<kchipcablesnumber; i++)
     for(Int_t j=0; j<fgkSSDChipNumber; j++)
-      SSDChipCablesAssembly->AddNode(SSDChipCables[i],fgkSSDChipNumber*i+j+1,
-			new TGeoTranslation(-(SSDChipCablesName[i]=="Left" ? 1. : 0.)
-		*	ChipCablesTransVector,(j-0.5)*fgkSSDChipCablesLength[0]
+      ssdchipcablesassembly->AddNode(ssdchipcables[i],fgkSSDChipNumber*i+j+1,
+			new TGeoTranslation(-(ssdchipcablesname[i]=="Left" ? 1. : 0.)
+		*	chipcablestransvector,(j-0.5)*fgkSSDChipCablesLength[0]
 		+	0.5*fgkSSDChipCablesLength[1],0.));
-  return SSDChipCablesAssembly;
+  return ssdchipcablesassembly;
 }
 /////////////////////////////////////////////////////////////////////////////////
-TGeoVolume* AliITSv11GeometrySSD::GetSSDFlex(Double_t SSDFlexRadius, Double_t SSDFlexHeigth){
-////////////////////////////////////////////////////////////////////////////////  
-  const Int_t SSDFlexVolumeNumber = 3;
-  TGeoVolume* SSDFlexVolume[SSDFlexVolumeNumber];
+TGeoVolume* AliITSv11GeometrySSD::GetSSDFlex(Double_t ssdflexradius, Double_t SSDFlexHeigth){
+  /////////////////////////////////////////////////////////////
+  // Method generating SSD Flex    
+  /////////////////////////////////////////////////////////////
+  const Int_t kssdflexvolumenumber = 3;
+  TGeoVolume* ssdflexvolume[kssdflexvolumenumber];
   ////////////////////////
   // Setting Display Color
   ////////////////////////
-  Int_t SSDFlexColor;
-  SSDFlexColor = (SSDFlexHeigth == fgkSSDFlexHeight[0] ? fColorAl: fColorPolyhamide);
-  TGeoMedium* SSDFlexMed = (SSDFlexHeigth == fgkSSDFlexHeight[0] ? fgkSSDAlTraceFlexMedium :
-                            fgkSSDKaptonFlexMedium);
+  Int_t ssdflexcolor;
+  ssdflexcolor = (SSDFlexHeigth == fgkSSDFlexHeight[0] ? fColorAl: fColorPolyhamide);
+  TGeoMedium* ssdflexmed = (SSDFlexHeigth == fgkSSDFlexHeight[0] ? fSSDAlTraceFlexMedium :
+                            fSSDKaptonFlexMedium);
   ////////////////////////
   // SSDFlexTrapezoidShape
   ////////////////////////
-  const Int_t SSDFlexVertexNumber = 2;
-  Double_t SSDFlexWidth[SSDFlexVertexNumber] = {fgkSSDFlexWidth[1],
+  const Int_t kssdflexvertexnumber = 2;
+  Double_t ssdflexwidth[kssdflexvertexnumber] = {fgkSSDFlexWidth[1],
 												fgkSSDFlexWidth[0]};
-  TVector3* SSDFlexVertex[SSDFlexVertexNumber];
-  SSDFlexVertex[0] = new TVector3();
-  SSDFlexVertex[1] = new TVector3(fgkSSDFlexLength[0]-fgkSSDFlexLength[1]);
-  TGeoArb8* SSDFlexTrapezoidShape = GetTrapezoidShape(SSDFlexVertex,
-													  SSDFlexWidth,SSDFlexHeigth,
+  TVector3* ssdflexvertex[kssdflexvertexnumber];
+  ssdflexvertex[0] = new TVector3();
+  ssdflexvertex[1] = new TVector3(fgkSSDFlexLength[0]-fgkSSDFlexLength[1]);
+  TGeoArb8* ssdflextrapezoidshape = GetTrapezoidShape(ssdflexvertex,
+													  ssdflexwidth,SSDFlexHeigth,
 													  "SSDFlexTrapezoidShape");
-  SSDFlexVolume[0] = new TGeoVolume("SSDFlexTrapezoid",SSDFlexTrapezoidShape,SSDFlexMed);
-  SSDFlexVolume[0]->SetLineColor(SSDFlexColor);
+  ssdflexvolume[0] = new TGeoVolume("SSDFlexTrapezoid",ssdflextrapezoidshape,ssdflexmed);
+  ssdflexvolume[0]->SetLineColor(ssdflexcolor);
   /////////////////////////
   //SSDFlexTubeSeg Assembly
   /////////////////////////
-  const Int_t SSDFlexTubeSegNumber = 2;
-  TGeoTubeSeg* SSDFlexTubeSegShape[SSDFlexTubeSegNumber];
-  Double_t SSDFlexRadiusMax = (fgkSSDFlexLength[3]-fgkSSDFlexLength[2])
+  const Int_t kssdflextubesegnumber = 2;
+  TGeoTubeSeg* ssdflextubesegshape[kssdflextubesegnumber];
+  Double_t ssdflexradiusmax = (fgkSSDFlexLength[3]-fgkSSDFlexLength[2])
 							/  TMath::Tan(fgkSSDFlexAngle*TMath::DegToRad());
-  SSDFlexTubeSegShape[0] = new TGeoTubeSeg("SSDFlexTubeSegShape1",
-						   SSDFlexRadius,SSDFlexRadius+SSDFlexHeigth,
+  ssdflextubesegshape[0] = new TGeoTubeSeg("SSDFlexTubeSegShape1",
+						   ssdflexradius,ssdflexradius+SSDFlexHeigth,
 						   0.5*fgkSSDFlexWidth[0],0.,180.);
-  SSDFlexTubeSegShape[1] = new TGeoTubeSeg("SSDFlexTubeSegShape2",
-						   SSDFlexRadiusMax-SSDFlexRadius-SSDFlexHeigth,
-						   SSDFlexRadiusMax-SSDFlexRadius,0.5*fgkSSDFlexWidth[0],
+  ssdflextubesegshape[1] = new TGeoTubeSeg("SSDFlexTubeSegShape2",
+						   ssdflexradiusmax-ssdflexradius-SSDFlexHeigth,
+						   ssdflexradiusmax-ssdflexradius,0.5*fgkSSDFlexWidth[0],
 						   0.,2.*fgkSSDFlexAngle);
-  TGeoRotation** SSDFlexTubSegRot[SSDFlexTubeSegNumber];
-  for(Int_t i = 0; i<SSDFlexTubeSegNumber; i++) 
-									  SSDFlexTubSegRot[i] = new TGeoRotation*[2]; 
-  SSDFlexTubSegRot[0][0] = new TGeoRotation("SSDFlexTubeSeg1Rot1", 0., 90.,  0.);
-  SSDFlexTubSegRot[0][1] = new TGeoRotation("SSDFlexTubeSeg1Rot2",90., 90.,-90.);
-  SSDFlexTubSegRot[1][0] = new TGeoRotation("SSDFlexTubeSeg2Rot1", 0.,-90.,  0.);
-  SSDFlexTubSegRot[1][1] = new TGeoRotation("SSDFlexTubeSeg2Rot2",90., 90.,-90.);
-  TGeoCombiTrans* SSDFlexTubeSegCombiTrans[SSDFlexTubeSegNumber];
-  SSDFlexTubeSegCombiTrans[0] = new TGeoCombiTrans("SSDFlexTubeSegCombiTrans1",
+  TGeoRotation** ssdflextubsegrot[kssdflextubesegnumber];
+  for(Int_t i = 0; i<kssdflextubesegnumber; i++) 
+									  ssdflextubsegrot[i] = new TGeoRotation*[2]; 
+  ssdflextubsegrot[0][0] = new TGeoRotation("SSDFlexTubeSeg1Rot1", 0., 90.,  0.);
+  ssdflextubsegrot[0][1] = new TGeoRotation("SSDFlexTubeSeg1Rot2",90., 90.,-90.);
+  ssdflextubsegrot[1][0] = new TGeoRotation("SSDFlexTubeSeg2Rot1", 0.,-90.,  0.);
+  ssdflextubsegrot[1][1] = new TGeoRotation("SSDFlexTubeSeg2Rot2",90., 90.,-90.);
+  TGeoCombiTrans* ssdflextubesegcombitrans[kssdflextubesegnumber];
+  ssdflextubesegcombitrans[0] = new TGeoCombiTrans("SSDFlexTubeSegCombiTrans1",
 								fgkSSDFlexLength[0],0.5*fgkSSDFlexWidth[0],
-								SSDFlexRadius+0.5*SSDFlexHeigth,
-								new TGeoRotation((*SSDFlexTubSegRot[0][1])
-							*	(*SSDFlexTubSegRot[0][0])));
-  SSDFlexTubeSegCombiTrans[1] = new TGeoCombiTrans("SSDFlexTubeSegCombiTrans2",
+								ssdflexradius+0.5*SSDFlexHeigth,
+								new TGeoRotation((*ssdflextubsegrot[0][1])
+							*	(*ssdflextubsegrot[0][0])));
+  ssdflextubesegcombitrans[1] = new TGeoCombiTrans("SSDFlexTubeSegCombiTrans2",
 								fgkSSDFlexLength[0]-fgkSSDFlexLength[2],
 								0.5*fgkSSDFlexWidth[0],
-								SSDFlexRadiusMax+0.5*SSDFlexHeigth+SSDFlexRadius,
-								new TGeoRotation((*SSDFlexTubSegRot[1][1])
-							*	(*SSDFlexTubSegRot[1][0])));
-  SSDFlexVolume[1] = new TGeoVolumeAssembly("SSDFlexTubeSegAssembly");
-  TGeoVolume* SSDFlexTubeSeg[SSDFlexTubeSegNumber];
-  char SSDFlexTubeSegName[30];
-  for(Int_t i=0; i<SSDFlexTubeSegNumber; i++){ 
-		sprintf(SSDFlexTubeSegName,"SSDFlexTubeSeg%i",i+1);
-		SSDFlexTubeSeg[i] = new TGeoVolume(SSDFlexTubeSegName,SSDFlexTubeSegShape[i],
-                                     SSDFlexMed);
-		SSDFlexTubeSeg[i]->SetLineColor(SSDFlexColor);
-        SSDFlexVolume[1]->AddNode(SSDFlexTubeSeg[i],1,SSDFlexTubeSegCombiTrans[i]);
+								ssdflexradiusmax+0.5*SSDFlexHeigth+ssdflexradius,
+								new TGeoRotation((*ssdflextubsegrot[1][1])
+							*	(*ssdflextubsegrot[1][0])));
+  ssdflexvolume[1] = new TGeoVolumeAssembly("SSDFlexTubeSegAssembly");
+  TGeoVolume* ssdflextubeseg[kssdflextubesegnumber];
+  char ssdflextubesegname[30];
+  for(Int_t i=0; i<kssdflextubesegnumber; i++){ 
+		sprintf(ssdflextubesegname,"SSDFlexTubeSeg%i",i+1);
+		ssdflextubeseg[i] = new TGeoVolume(ssdflextubesegname,ssdflextubesegshape[i],
+                                     ssdflexmed);
+		ssdflextubeseg[i]->SetLineColor(ssdflexcolor);
+        ssdflexvolume[1]->AddNode(ssdflextubeseg[i],1,ssdflextubesegcombitrans[i]);
   }
   ///////////
   //Box Shape 
   ///////////
-  const Int_t SSDFlexBoxNumber = 7;
-  Double_t SSDFlexBoxLength[SSDFlexBoxNumber];
-  SSDFlexBoxLength[0] = 0.5*(fgkSSDChipNumber
+  const Int_t kssdflexboxnumber = 7;
+  Double_t ssdflexboxlength[kssdflexboxnumber];
+  ssdflexboxlength[0] = 0.5*(fgkSSDChipNumber
 					  *	fgkSSDChipLength+(fgkSSDChipNumber-1)
 					  *	fgkSSDChipSeparationLength
 					  - fgkSSDModuleSensorSupportDistance-fgkSSDFlexHoleLength)
 					  - (fgkSSDFlexLength[0]-fgkSSDFlexLength[1]);
-  SSDFlexBoxLength[1] = fgkSSDModuleSensorSupportDistance+fgkSSDFlexHoleLength;
-  SSDFlexBoxLength[2] = 0.5*(fgkSSDModuleSensorSupportDistance
+  ssdflexboxlength[1] = fgkSSDModuleSensorSupportDistance+fgkSSDFlexHoleLength;
+  ssdflexboxlength[2] = 0.5*(fgkSSDModuleSensorSupportDistance
 					  -	fgkSSDFlexHoleLength-fgkSSDFlexHoleWidth); 	
-  SSDFlexBoxLength[3] = fgkSSDFlexHoleWidth;	
-  SSDFlexBoxLength[4] = fgkSSDFlexLength[1]-SSDFlexBoxLength[0]
-					  -	SSDFlexBoxLength[1];
-  SSDFlexBoxLength[5] = fgkSSDFlexLength[2];	
-  SSDFlexBoxLength[6] = fgkSSDFlexFullLength-2.*fgkSSDFlexAngle
-					  *	TMath::DegToRad()*SSDFlexRadiusMax
+  ssdflexboxlength[3] = fgkSSDFlexHoleWidth;	
+  ssdflexboxlength[4] = fgkSSDFlexLength[1]-ssdflexboxlength[0]
+					  -	ssdflexboxlength[1];
+  ssdflexboxlength[5] = fgkSSDFlexLength[2];	
+  ssdflexboxlength[6] = fgkSSDFlexFullLength-2.*fgkSSDFlexAngle
+					  *	TMath::DegToRad()*ssdflexradiusmax
 					  - fgkSSDFlexLength[2]-TMath::Pi()
 					  *	fgkSSDStiffenerHeight-fgkSSDFlexLength[0];	
-  Double_t SSDFlexBoxWidth[SSDFlexBoxNumber];
-  SSDFlexBoxWidth[0] = fgkSSDFlexWidth[0];
-  SSDFlexBoxWidth[1] = fgkSSDFlexWidth[0]-fgkSSDFlexHoleWidth;
-  SSDFlexBoxWidth[2] = fgkSSDFlexHoleWidth;
-  SSDFlexBoxWidth[3] = SSDFlexBoxWidth[2]-fgkSSDFlexHoleLength;
-  SSDFlexBoxWidth[4] = fgkSSDFlexWidth[0];
-  SSDFlexBoxWidth[5] = fgkSSDFlexWidth[0];
-  SSDFlexBoxWidth[6] = fgkSSDFlexWidth[0];
-  TGeoBBox* SSDFlexBoxShape[SSDFlexBoxNumber+1];
-  for(Int_t i=0; i<SSDFlexBoxNumber+1; i++) SSDFlexBoxShape[i] = 
-						(i!= SSDFlexBoxNumber ? new TGeoBBox("SSDFlexBoxShape",
-								0.5*SSDFlexBoxLength[i],
-								0.5*SSDFlexBoxWidth[i],0.5*SSDFlexHeigth) : 
-								SSDFlexBoxShape[2]);
+  Double_t ssdflexboxwidth[kssdflexboxnumber];
+  ssdflexboxwidth[0] = fgkSSDFlexWidth[0];
+  ssdflexboxwidth[1] = fgkSSDFlexWidth[0]-fgkSSDFlexHoleWidth;
+  ssdflexboxwidth[2] = fgkSSDFlexHoleWidth;
+  ssdflexboxwidth[3] = ssdflexboxwidth[2]-fgkSSDFlexHoleLength;
+  ssdflexboxwidth[4] = fgkSSDFlexWidth[0];
+  ssdflexboxwidth[5] = fgkSSDFlexWidth[0];
+  ssdflexboxwidth[6] = fgkSSDFlexWidth[0];
+  TGeoBBox* ssdflexboxshape[kssdflexboxnumber+1];
+  for(Int_t i=0; i<kssdflexboxnumber+1; i++) ssdflexboxshape[i] = 
+						(i!= kssdflexboxnumber ? new TGeoBBox("SSDFlexBoxShape",
+								0.5*ssdflexboxlength[i],
+								0.5*ssdflexboxwidth[i],0.5*SSDFlexHeigth) : 
+								ssdflexboxshape[2]);
   //////////////////////////////
   //SSDFlex Box Shape CombiTrans 
   //////////////////////////////
-  TGeoCombiTrans* SSDFlexBoxCombiTrans[SSDFlexBoxNumber+1];
-  SSDFlexBoxCombiTrans[0] = new TGeoCombiTrans("SSDFlexBoxCombiTrans0",
-								SSDFlexVertex[1]->X()+0.5*SSDFlexBoxLength[0],
+  TGeoCombiTrans* ssdflexboxcombitrans[kssdflexboxnumber+1];
+  ssdflexboxcombitrans[0] = new TGeoCombiTrans("SSDFlexBoxCombiTrans0",
+								ssdflexvertex[1]->X()+0.5*ssdflexboxlength[0],
 								0.5*fgkSSDFlexWidth[0],0.,0);
-  SSDFlexBoxCombiTrans[1] = new TGeoCombiTrans("SSDFlexBoxCombiTrans1",
-								SSDFlexVertex[1]->X()+SSDFlexBoxLength[0]
-							+	0.5*SSDFlexBoxLength[1],
-								fgkSSDFlexHoleWidth+0.5*SSDFlexBoxWidth[1],0.,0);
-  SSDFlexBoxCombiTrans[2] = new TGeoCombiTrans("SSDFlexBoxCombiTrans2",
-								SSDFlexVertex[1]->X()+SSDFlexBoxLength[0]
-							+	fgkSSDFlexHoleLength+0.5*SSDFlexBoxLength[2],
-								0.5*SSDFlexBoxWidth[2],0.,0);
-  SSDFlexBoxCombiTrans[3] = new TGeoCombiTrans("SSDFlexBoxCombiTrans3",
-								SSDFlexVertex[1]->X()+SSDFlexBoxLength[0]
-							+	fgkSSDFlexHoleLength+SSDFlexBoxLength[2]
+  ssdflexboxcombitrans[1] = new TGeoCombiTrans("SSDFlexBoxCombiTrans1",
+								ssdflexvertex[1]->X()+ssdflexboxlength[0]
+							+	0.5*ssdflexboxlength[1],
+								fgkSSDFlexHoleWidth+0.5*ssdflexboxwidth[1],0.,0);
+  ssdflexboxcombitrans[2] = new TGeoCombiTrans("SSDFlexBoxCombiTrans2",
+								ssdflexvertex[1]->X()+ssdflexboxlength[0]
+							+	fgkSSDFlexHoleLength+0.5*ssdflexboxlength[2],
+								0.5*ssdflexboxwidth[2],0.,0);
+  ssdflexboxcombitrans[3] = new TGeoCombiTrans("SSDFlexBoxCombiTrans3",
+								ssdflexvertex[1]->X()+ssdflexboxlength[0]
+							+	fgkSSDFlexHoleLength+ssdflexboxlength[2]
 							+	0.5*fgkSSDFlexHoleWidth,
-								fgkSSDFlexHoleLength+0.5*SSDFlexBoxWidth[3],0.,0);
-  SSDFlexBoxCombiTrans[4] = new TGeoCombiTrans("SSDFlexBoxCombiTrans4",
-								SSDFlexVertex[1]->X()+SSDFlexBoxLength[0]
-							+	SSDFlexBoxLength[1]+0.5*SSDFlexBoxLength[4],
+								fgkSSDFlexHoleLength+0.5*ssdflexboxwidth[3],0.,0);
+  ssdflexboxcombitrans[4] = new TGeoCombiTrans("SSDFlexBoxCombiTrans4",
+								ssdflexvertex[1]->X()+ssdflexboxlength[0]
+							+	ssdflexboxlength[1]+0.5*ssdflexboxlength[4],
 								0.5*fgkSSDFlexWidth[0],0.,0);
-  SSDFlexBoxCombiTrans[5] = new TGeoCombiTrans("SSDFlexBoxCombiTrans5",
+  ssdflexboxcombitrans[5] = new TGeoCombiTrans("SSDFlexBoxCombiTrans5",
 							-	0.5*fgkSSDFlexLength[2]+fgkSSDFlexLength[0],
 								0.5*fgkSSDFlexWidth[0],
-								2.*SSDFlexRadius+SSDFlexHeigth,0);
-  SSDFlexBoxCombiTrans[6] = new TGeoCombiTrans("SSDFlexBoxCombiTrans6",
-							-	SSDFlexBoxShape[6]->GetDX()
-							+	SSDFlexBoxShape[6]->GetDX()
+								2.*ssdflexradius+SSDFlexHeigth,0);
+  ssdflexboxcombitrans[6] = new TGeoCombiTrans("SSDFlexBoxCombiTrans6",
+							-	ssdflexboxshape[6]->GetDX()
+							+	ssdflexboxshape[6]->GetDX()
 							*	TMath::Cos(2.*fgkSSDFlexAngle*TMath::DegToRad())
 							+	fgkSSDFlexLength[0]-fgkSSDFlexLength[2]
-							-	(SSDFlexRadiusMax-SSDFlexRadius-0.5*SSDFlexHeigth)
+							-	(ssdflexradiusmax-ssdflexradius-0.5*SSDFlexHeigth)
 							*	TMath::Cos(fgkSSDFlexAngle*TMath::DegToRad()),
-								0.5*fgkSSDFlexWidth[0],SSDFlexBoxShape[6]->GetDX()
+								0.5*fgkSSDFlexWidth[0],ssdflexboxshape[6]->GetDX()
 								*TMath::Sin(2.*fgkSSDFlexAngle*TMath::DegToRad())
-							+	SSDFlexHeigth+2.*SSDFlexRadius+(SSDFlexRadiusMax
-							-	SSDFlexRadius-0.5*SSDFlexHeigth)
+							+	SSDFlexHeigth+2.*ssdflexradius+(ssdflexradiusmax
+							-	ssdflexradius-0.5*SSDFlexHeigth)
 							*	TMath::Sin(fgkSSDFlexAngle*TMath::DegToRad()),
 								new TGeoRotation("",90.,2.*fgkSSDFlexAngle,-90.));
-  SSDFlexBoxCombiTrans[7] = new TGeoCombiTrans("SSDFlexBoxCombiTrans7",
-								SSDFlexVertex[1]->X()+SSDFlexBoxLength[0]
-							+	fgkSSDFlexHoleLength+1.5*SSDFlexBoxLength[2]
-							+	SSDFlexBoxLength[3],
-								0.5*SSDFlexBoxWidth[2],0.,0);
+  ssdflexboxcombitrans[7] = new TGeoCombiTrans("SSDFlexBoxCombiTrans7",
+								ssdflexvertex[1]->X()+ssdflexboxlength[0]
+							+	fgkSSDFlexHoleLength+1.5*ssdflexboxlength[2]
+							+	ssdflexboxlength[3],
+								0.5*ssdflexboxwidth[2],0.,0);
   ////////////////////////////
   //SSDFlex Box Shape Assembly 
   ////////////////////////////
-  SSDFlexVolume[2] = new TGeoVolumeAssembly("SSDFlexBoxAssembly");
-  TGeoVolume* SSDFlexBox[SSDFlexBoxNumber+1];
-  TGeoVolume* SSDEndFlex = GetSSDEndFlex(SSDFlexBoxLength[6],SSDFlexHeigth);
-  TGeoHMatrix* SSDEndFlexHMatrix = new TGeoHMatrix();
-  TGeoRotation* SSDEndFlexRot= new TGeoRotation("SSDEndFlexRot",180.,0.,0);
-  SSDEndFlexHMatrix->MultiplyLeft(SSDEndFlexRot);
-  SSDEndFlexHMatrix->MultiplyLeft(SSDFlexBoxCombiTrans[6]);
-  char SSDFlexBoxName[30];
-  for(Int_t i=0; i<SSDFlexBoxNumber+1; i++){
-	sprintf(SSDFlexBoxName,"SSDFlexBox%i",i!=SSDFlexBoxNumber?i+1:7);
-	if(i==6){SSDFlexVolume[2]->AddNode(SSDEndFlex,1,SSDEndFlexHMatrix);}
+  ssdflexvolume[2] = new TGeoVolumeAssembly("SSDFlexBoxAssembly");
+  TGeoVolume* ssdflexbox[kssdflexboxnumber+1];
+  TGeoVolume* ssdendflex = GetSSDEndFlex(ssdflexboxlength[6],SSDFlexHeigth);
+  TGeoHMatrix* ssdendflexhmatrix = new TGeoHMatrix();
+  TGeoRotation* ssdendflexrot = new TGeoRotation("SSDEndFlexRot",180.,0.,0);
+  ssdendflexhmatrix->MultiplyLeft(ssdendflexrot);
+  ssdendflexhmatrix->MultiplyLeft(ssdflexboxcombitrans[6]);
+  char ssdflexboxname[30];
+  for(Int_t i=0; i<kssdflexboxnumber+1; i++){
+	sprintf(ssdflexboxname,"SSDFlexBox%i",i!=kssdflexboxnumber?i+1:7);
+	if(i==6){ssdflexvolume[2]->AddNode(ssdendflex,1,ssdendflexhmatrix);}
 	else{
-    SSDFlexBox[i] = new TGeoVolume(SSDFlexBoxName,SSDFlexBoxShape[i],
-                                   SSDFlexMed);
-	SSDFlexBox[i]->SetLineColor(SSDFlexColor);
-	SSDFlexVolume[2]->AddNode(SSDFlexBox[i],1,SSDFlexBoxCombiTrans[i]);}
+    ssdflexbox[i] = new TGeoVolume(ssdflexboxname,ssdflexboxshape[i],
+                                   ssdflexmed);
+	ssdflexbox[i]->SetLineColor(ssdflexcolor);
+	ssdflexvolume[2]->AddNode(ssdflexbox[i],1,ssdflexboxcombitrans[i]);}
  }
   //////////////////////
   //SSDFlex Construction
   //////////////////////
-  TGeoVolume* SSDFlex = new TGeoVolumeAssembly("SSDFlex");
-  for(Int_t i =0; i<SSDFlexVolumeNumber; i++) SSDFlex->AddNode(SSDFlexVolume[i],1);
-  return SSDFlex;
+  TGeoVolume* ssdflex = new TGeoVolumeAssembly("SSDFlex");
+  for(Int_t i =0; i<kssdflexvolumenumber; i++) ssdflex->AddNode(ssdflexvolume[i],1);
+  return ssdflex;
 }
 /////////////////////////////////////////////////////////////////////////////////
 TGeoVolume* AliITSv11GeometrySSD::GetSSDEndFlex(Double_t SSDEndFlexLength, 
 														Double_t SSDFlexHeigth){
+  /////////////////////////////////////////////////////////////
+  // Method generating SSD End Flex   
   /////////////////////////////////////////
   // Setting Display Color, Media and Index
   /////////////////////////////////////////
-  Int_t SSDFlexColor;
-  SSDFlexColor = (SSDFlexHeigth == fgkSSDFlexHeight[0] ? fColorAl: fColorPolyhamide);
-  TGeoMedium* SSDFlexMed = (SSDFlexHeigth == fgkSSDFlexHeight[0] ? fgkSSDAlTraceFlexMedium :
-                            fgkSSDKaptonFlexMedium);
+  Int_t ssdflexcolor;
+  ssdflexcolor = (SSDFlexHeigth == fgkSSDFlexHeight[0] ? fColorAl: fColorPolyhamide);
+  TGeoMedium* ssdflexmed = (SSDFlexHeigth == fgkSSDFlexHeight[0] ? fSSDAlTraceFlexMedium :
+                            fSSDKaptonFlexMedium);
   ////////////////////////
-  const Int_t SSDEndFlexBoxNumber = 5;
-  TGeoBBox* SSDEndFlexBBoxShape[SSDEndFlexBoxNumber];
-  SSDEndFlexBBoxShape[0] = new TGeoBBox("SSDFlexBoxShape1",
+  const Int_t kssdendflexboxnumber = 5;
+  TGeoBBox* ssdendflexbboxshape[kssdendflexboxnumber];
+  ssdendflexbboxshape[0] = new TGeoBBox("SSDFlexBoxShape1",
 								   0.5*SSDEndFlexLength,0.5*fgkSSDFlexWidth[0],
 								   0.5*SSDFlexHeigth);
-  SSDEndFlexBBoxShape[1] = new TGeoBBox("SSDFlexBoxShape2",
+  ssdendflexbboxshape[1] = new TGeoBBox("SSDFlexBoxShape2",
 				    0.5*fgkSSDEndFlexCompLength[1],
 					0.5*(fgkSSDEndFlexCompWidth[0]-fgkSSDFlexWidth[0])/2,
 					0.5*SSDFlexHeigth);
-  SSDEndFlexBBoxShape[2] = new TGeoBBox("SSDFlexBoxShape3",
+  ssdendflexbboxshape[2] = new TGeoBBox("SSDFlexBoxShape3",
 				    0.5*fgkSSDEndFlexCompLength[2],
 					0.5*(fgkSSDEndFlexCompWidth[1]-fgkSSDFlexWidth[0])/2,
 					0.5*SSDFlexHeigth);
-  SSDEndFlexBBoxShape[3] = new TGeoBBox("SSDFlexBoxShape4",
+  ssdendflexbboxshape[3] = new TGeoBBox("SSDFlexBoxShape4",
 				    0.5*fgkSSDEndFlexCompLength[3],
 					0.5*(fgkSSDEndFlexCompWidth[0]-fgkSSDFlexWidth[0])/2,
 					0.5*SSDFlexHeigth);
-  SSDEndFlexBBoxShape[4] = new TGeoBBox("SSDFlexBoxShape5",
+  ssdendflexbboxshape[4] = new TGeoBBox("SSDFlexBoxShape5",
 				    0.5*(fgkSSDEndFlexCompLength[4]+fgkSSDEndFlexCompLength[5]),
 					0.25*(fgkSSDEndFlexCompWidth[2]-fgkSSDFlexWidth[0])/2,
 					0.5*SSDFlexHeigth);
-  TGeoVolume* SSDEndFlexBBox[SSDEndFlexBoxNumber];  
-  char SSDEndFlexBBoxName[30];
-  for(Int_t i=0; i<SSDEndFlexBoxNumber; i++){
-	sprintf(SSDEndFlexBBoxName,"SSDEndFlexBBox%i",i+1);
-	SSDEndFlexBBox[i] = new TGeoVolume(SSDEndFlexBBoxName,
-                     SSDEndFlexBBoxShape[i],
-                     SSDFlexMed);
-	SSDEndFlexBBox[i]->SetLineColor(SSDFlexColor);
+  TGeoVolume* ssdendflexbbox[kssdendflexboxnumber];  
+  char ssdendflexbboxname[30];
+  for(Int_t i=0; i<kssdendflexboxnumber; i++){
+	sprintf(ssdendflexbboxname,"SSDEndFlexBBox%i",i+1);
+	ssdendflexbbox[i] = new TGeoVolume(ssdendflexbboxname,
+                     ssdendflexbboxshape[i],
+                     ssdflexmed);
+	ssdendflexbbox[i]->SetLineColor(ssdflexcolor);
   }
-  TGeoVolume* SSDEndFlex = new TGeoVolumeAssembly("SSDEndFlex");
-  Double_t PartialSumLength = 0.;
-  for(Int_t i=0; i<SSDEndFlexBoxNumber+1; i++) PartialSumLength += fgkSSDEndFlexCompLength[i];
-  Double_t ReferenceLength = SSDEndFlexLength-PartialSumLength;
-  SSDEndFlex->AddNode(SSDEndFlexBBox[0],1);
-  SSDEndFlex->AddNode(SSDEndFlexBBox[1],1,new TGeoTranslation(
-					-  0.5*SSDEndFlexLength+ReferenceLength+fgkSSDEndFlexCompLength[0]
+  TGeoVolume* ssdendflex = new TGeoVolumeAssembly("SSDEndFlex");
+  Double_t partialsumlength = 0.;
+  for(Int_t i=0; i<kssdendflexboxnumber+1; i++) partialsumlength += fgkSSDEndFlexCompLength[i];
+  Double_t referencelength = SSDEndFlexLength-partialsumlength;
+  ssdendflex->AddNode(ssdendflexbbox[0],1);
+  ssdendflex->AddNode(ssdendflexbbox[1],1,new TGeoTranslation(
+					-  0.5*SSDEndFlexLength+referencelength+fgkSSDEndFlexCompLength[0]
 					+  0.5*fgkSSDEndFlexCompLength[1],
-					   0.5*fgkSSDFlexWidth[0]+SSDEndFlexBBoxShape[1]->GetDY(),
+					   0.5*fgkSSDFlexWidth[0]+ssdendflexbboxshape[1]->GetDY(),
 					   0.));
-  SSDEndFlex->AddNode(SSDEndFlexBBox[1],2,new TGeoTranslation(
-					-  0.5*SSDEndFlexLength+ReferenceLength+fgkSSDEndFlexCompLength[0]
+  ssdendflex->AddNode(ssdendflexbbox[1],2,new TGeoTranslation(
+					-  0.5*SSDEndFlexLength+referencelength+fgkSSDEndFlexCompLength[0]
 					+  0.5*fgkSSDEndFlexCompLength[1],
-					-  0.5*fgkSSDFlexWidth[0]-SSDEndFlexBBoxShape[1]->GetDY(),
+					-  0.5*fgkSSDFlexWidth[0]-ssdendflexbboxshape[1]->GetDY(),
 					   0.));
-  SSDEndFlex->AddNode(SSDEndFlexBBox[2],1,new TGeoTranslation(
-					-  0.5*SSDEndFlexLength+ReferenceLength+fgkSSDEndFlexCompLength[0]
+  ssdendflex->AddNode(ssdendflexbbox[2],1,new TGeoTranslation(
+					-  0.5*SSDEndFlexLength+referencelength+fgkSSDEndFlexCompLength[0]
 					+  fgkSSDEndFlexCompLength[1]+0.5*fgkSSDEndFlexCompLength[2],
-					+  0.5*fgkSSDFlexWidth[0]+SSDEndFlexBBoxShape[2]->GetDY(),
+					+  0.5*fgkSSDFlexWidth[0]+ssdendflexbboxshape[2]->GetDY(),
 					   0.));
-  SSDEndFlex->AddNode(SSDEndFlexBBox[2],2,new TGeoTranslation(
-					-  0.5*SSDEndFlexLength+ReferenceLength+fgkSSDEndFlexCompLength[0]
+  ssdendflex->AddNode(ssdendflexbbox[2],2,new TGeoTranslation(
+					-  0.5*SSDEndFlexLength+referencelength+fgkSSDEndFlexCompLength[0]
 					+  fgkSSDEndFlexCompLength[1]+0.5*fgkSSDEndFlexCompLength[2],
-					-  0.5*fgkSSDFlexWidth[0]-SSDEndFlexBBoxShape[2]->GetDY(),
+					-  0.5*fgkSSDFlexWidth[0]-ssdendflexbboxshape[2]->GetDY(),
 					   0.));
-  SSDEndFlex->AddNode(SSDEndFlexBBox[3],1,new TGeoTranslation(
-					-  0.5*SSDEndFlexLength+ReferenceLength+fgkSSDEndFlexCompLength[0]
+  ssdendflex->AddNode(ssdendflexbbox[3],1,new TGeoTranslation(
+					-  0.5*SSDEndFlexLength+referencelength+fgkSSDEndFlexCompLength[0]
 					+  fgkSSDEndFlexCompLength[1]+fgkSSDEndFlexCompLength[2]
 					+  0.5*fgkSSDEndFlexCompLength[3],
-					+  0.5*fgkSSDFlexWidth[0]+SSDEndFlexBBoxShape[3]->GetDY(),
+					+  0.5*fgkSSDFlexWidth[0]+ssdendflexbboxshape[3]->GetDY(),
 					   0.));
-  SSDEndFlex->AddNode(SSDEndFlexBBox[3],2,new TGeoTranslation(
-					-  0.5*SSDEndFlexLength+ReferenceLength+fgkSSDEndFlexCompLength[0]
+  ssdendflex->AddNode(ssdendflexbbox[3],2,new TGeoTranslation(
+					-  0.5*SSDEndFlexLength+referencelength+fgkSSDEndFlexCompLength[0]
 					+  fgkSSDEndFlexCompLength[1]+fgkSSDEndFlexCompLength[2]
 					+  0.5*fgkSSDEndFlexCompLength[3],
-					-  0.5*fgkSSDFlexWidth[0]-SSDEndFlexBBoxShape[3]->GetDY(),
+					-  0.5*fgkSSDFlexWidth[0]-ssdendflexbboxshape[3]->GetDY(),
 					   0.));
-  SSDEndFlex->AddNode(SSDEndFlexBBox[4],1,new TGeoTranslation(
-					-  0.5*SSDEndFlexLength+ReferenceLength+fgkSSDEndFlexCompLength[0]
+  ssdendflex->AddNode(ssdendflexbbox[4],1,new TGeoTranslation(
+					-  0.5*SSDEndFlexLength+referencelength+fgkSSDEndFlexCompLength[0]
 					+  fgkSSDEndFlexCompLength[1]+fgkSSDEndFlexCompLength[2]
 					+  fgkSSDEndFlexCompLength[3]+0.5*(fgkSSDEndFlexCompLength[4]+fgkSSDEndFlexCompLength[5]),
-					+  0.5*fgkSSDFlexWidth[0]+SSDEndFlexBBoxShape[4]->GetDY(),
+					+  0.5*fgkSSDFlexWidth[0]+ssdendflexbboxshape[4]->GetDY(),
 					   0.));
-  SSDEndFlex->AddNode(SSDEndFlexBBox[4],2,new TGeoTranslation(
-					-  0.5*SSDEndFlexLength+ReferenceLength+fgkSSDEndFlexCompLength[0]
+  ssdendflex->AddNode(ssdendflexbbox[4],2,new TGeoTranslation(
+					-  0.5*SSDEndFlexLength+referencelength+fgkSSDEndFlexCompLength[0]
 					+  fgkSSDEndFlexCompLength[1]+fgkSSDEndFlexCompLength[2]
 					+  fgkSSDEndFlexCompLength[3]+0.5*(fgkSSDEndFlexCompLength[4]
 					+  fgkSSDEndFlexCompLength[5]),
-					-  0.5*fgkSSDFlexWidth[0]-SSDEndFlexBBoxShape[4]->GetDY(),
+					-  0.5*fgkSSDFlexWidth[0]-ssdendflexbboxshape[4]->GetDY(),
 					   0.));
-  return SSDEndFlex;
+  return ssdendflex;
 }
 /////////////////////////////////////////////////////////////////////////////////
 TGeoVolume* AliITSv11GeometrySSD::GetSSDFlexAssembly(){
-////////////////////////////////////////////////////////////////////////////////
-  TGeoVolume* SSDFlexAssembly = new TGeoVolumeAssembly("SSDFlexAssembly");
-  const Int_t SSDFlexLayerNumber = 4;
-  Double_t SSDFlexHeight[SSDFlexLayerNumber];
-  Double_t SSDFlexRadius[SSDFlexLayerNumber];
-  TGeoTranslation* SSDFlexTrans[SSDFlexLayerNumber];
-  for(Int_t i=0; i<SSDFlexLayerNumber; i++){ 
-    SSDFlexHeight[i] = (i%2==0 ? fgkSSDFlexHeight[0] : fgkSSDFlexHeight[1]);
-    SSDFlexRadius[i] = (i==0 ? fgkSSDStiffenerHeight : SSDFlexRadius[i-1]
-					 +					   SSDFlexHeight[i-1]);
-    SSDFlexTrans[i]  = new TGeoTranslation(0.,0.,-0.5*i*(SSDFlexHeight[0]
-					 +					   SSDFlexHeight[1])); 
-    SSDFlexAssembly->AddNode(GetSSDFlex(SSDFlexRadius[i],SSDFlexHeight[i]),i+1,
-										   SSDFlexTrans[i]);   
+  /////////////////////////////////////////////////////////////
+  // Method generating SSD Flex Assembly    
+  /////////////////////////////////////////////////////////////
+  TGeoVolume* ssdflexassembly = new TGeoVolumeAssembly("SSDFlexAssembly");
+  const Int_t kssdflexlayernumber = 4;
+  Double_t ssdflexheight[kssdflexlayernumber];
+  Double_t ssdflexradius[kssdflexlayernumber];
+  TGeoTranslation* ssdflextrans[kssdflexlayernumber];
+  for(Int_t i=0; i<kssdflexlayernumber; i++){ 
+    ssdflexheight[i] = (i%2==0 ? fgkSSDFlexHeight[0] : fgkSSDFlexHeight[1]);
+    ssdflexradius[i] = (i==0 ? fgkSSDStiffenerHeight : ssdflexradius[i-1]
+					 +					   ssdflexheight[i-1]);
+    ssdflextrans[i]  = new TGeoTranslation(0.,0.,-0.5*i*(ssdflexheight[0]
+					 +					   ssdflexheight[1])); 
+    ssdflexassembly->AddNode(GetSSDFlex(ssdflexradius[i],ssdflexheight[i]),i+1,
+										   ssdflextrans[i]);   
   }
-  return SSDFlexAssembly;
+  return ssdflexassembly;
 }
 /////////////////////////////////////////////////////////////////////////////////
 TGeoVolume* AliITSv11GeometrySSD::GetSSDCoolingBlockAssembly(){
-////////////////////////////////////////////////////////////////////////////////
-  const Int_t SSDCoolingBlockTransNumber = 2;
-  Double_t SSDCoolingBlockTransVector[SSDCoolingBlockTransNumber] = 
+  /////////////////////////////////////////////////////////////
+  // Method generating SSD Cooling Block Assembly    
+  /////////////////////////////////////////////////////////////
+  const Int_t kssdcoolingblocktransnumber = 2;
+  Double_t ssdcoolingblocktransvector[kssdcoolingblocktransnumber] = 
 					{fgkSSDModuleSensorSupportDistance+fgkSSDCoolingBlockLength,
 					 fgkSSDSensorLength-2.*fgkSSDModuleStiffenerPosition[1]
 				-	 fgkSSDCoolingBlockWidth};
-  TGeoVolume* SSDCoolingBlock = GetSSDCoolingBlock();
-  TGeoVolume* SSDCoolingBlockAssembly = 
+  TGeoVolume* ssdcoolingblock = GetSSDCoolingBlock();
+  TGeoVolume* ssdcoolingblockassembly = 
 							  new TGeoVolumeAssembly("SSDCoolingBlockAssembly");
-  for(Int_t i=0; i<SSDCoolingBlockTransNumber; i++)
-    for(Int_t j=0; j<SSDCoolingBlockTransNumber; j++) 
-		SSDCoolingBlockAssembly->AddNode(SSDCoolingBlock,
-						  SSDCoolingBlockTransNumber*i+j+1,
-						  new TGeoTranslation(i*SSDCoolingBlockTransVector[0],
-						  j*SSDCoolingBlockTransVector[1],0.));
-  return SSDCoolingBlockAssembly;
+  for(Int_t i=0; i<kssdcoolingblocktransnumber; i++)
+    for(Int_t j=0; j<kssdcoolingblocktransnumber; j++) 
+		ssdcoolingblockassembly->AddNode(ssdcoolingblock,
+						  kssdcoolingblocktransnumber*i+j+1,
+						  new TGeoTranslation(i*ssdcoolingblocktransvector[0],
+						  j*ssdcoolingblocktransvector[1],0.));
+  return ssdcoolingblockassembly;
 }
 /////////////////////////////////////////////////////////////////////////////////
 TGeoVolume* AliITSv11GeometrySSD::GetSSDCoolingBlock(){
-/////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////
+  // Method generating SSD Cooling Block    
+  /////////////////////////////////////////////////////////////
   // Center Cooling Block Hole
   ////////////////////////////
-  Double_t CoolingBlockHoleAngle = TMath::ACos(0.5*fgkSSDCoolingBlockHoleLength[0]
+  Double_t coolingblockholeangle = TMath::ACos(0.5*fgkSSDCoolingBlockHoleLength[0]
 							/fgkSSDCoolingBlockHoleRadius[0])*TMath::RadToDeg();
-  Double_t CoolingBlockHoleWidth = fgkSSDCoolingBlockWidth;
-  /*TGeoTubeSeg* CoolingBlockHoleShape = */ new TGeoTubeSeg("CoolingBlockHoleShape",
+  Double_t coolingblockholewidth = fgkSSDCoolingBlockWidth;
+  new TGeoTubeSeg("CoolingBlockHoleShape",
 						0.,
 						fgkSSDCoolingBlockHoleRadius[0],
-						0.5*CoolingBlockHoleWidth,
-						180.-CoolingBlockHoleAngle,360.+CoolingBlockHoleAngle);
-  TVector3* CoolingBlockHoleVertex[3];
-  CoolingBlockHoleVertex[0] = new TVector3();
-  CoolingBlockHoleVertex[1] = new TVector3(fgkSSDCoolingBlockHoleRadius[0]
-					*	TMath::Cos((90.-CoolingBlockHoleAngle)*TMath::DegToRad()),
+						0.5*coolingblockholewidth,
+						180.-coolingblockholeangle,360.+coolingblockholeangle);
+  TVector3* coolingblockholevertex[3];
+  coolingblockholevertex[0] = new TVector3();
+  coolingblockholevertex[1] = new TVector3(fgkSSDCoolingBlockHoleRadius[0]
+					*	TMath::Cos((90.-coolingblockholeangle)*TMath::DegToRad()),
 						fgkSSDCoolingBlockHoleRadius[0]
-					*	TMath::Sin((90.-CoolingBlockHoleAngle)*TMath::DegToRad()));
-  CoolingBlockHoleVertex[2] = new TVector3(CoolingBlockHoleVertex[1]->X(),
-					-	CoolingBlockHoleVertex[1]->Y());
-  /* TGeoArb8* CoolingBlockTriangleHoleShape = */
-						GetTriangleShape(CoolingBlockHoleVertex,
-						CoolingBlockHoleWidth,"CoolingBlockTriangleHoleShape");
-  TGeoRotation* CoolingBlockHoleRot = 
+					*	TMath::Sin((90.-coolingblockholeangle)*TMath::DegToRad()));
+  coolingblockholevertex[2] = new TVector3(coolingblockholevertex[1]->X(),
+					-	coolingblockholevertex[1]->Y());
+						GetTriangleShape(coolingblockholevertex,
+						coolingblockholewidth,"CoolingBlockTriangleHoleShape");
+  TGeoRotation* coolingblockholerot = 
 							  new TGeoRotation("CoolingBlockHoleRot",90,0.,0.);
-  CoolingBlockHoleRot->RegisterYourself();
-  /* TGeoCompositeShape* CoolingTubeHoleShape  = */ 
-                              new TGeoCompositeShape("CoolingTubeHoleShape",
+  coolingblockholerot->RegisterYourself();
+    new TGeoCompositeShape("CoolingTubeHoleShape",
 							  "CoolingBlockTriangleHoleShape:CoolingBlockHoleRot+"
 							  "CoolingBlockHoleShape");
   ///////////////////////////
   // Cooling Block Trapezoids
   ///////////////////////////
-  const Int_t VertexNumber = 4;
-  const Int_t TrapezoidNumber = 2;
-  TVector3** CoolingBlockTrapezoidVertex[TrapezoidNumber];
-  for(Int_t i = 0; i<TrapezoidNumber; i++) CoolingBlockTrapezoidVertex[i] = 
-						new TVector3*[VertexNumber]; 
-  Double_t CoolingBlockComponentHeight    = fgkSSDCoolingBlockHeight[0]
+  const Int_t kvertexnumber = 4;
+  const Int_t ktrapezoidnumber = 2;
+  TVector3** coolingblocktrapezoidvertex[ktrapezoidnumber];
+  for(Int_t i = 0; i<ktrapezoidnumber; i++) coolingblocktrapezoidvertex[i] = 
+						new TVector3*[kvertexnumber]; 
+  Double_t coolingblockcomponentheight = fgkSSDCoolingBlockHeight[0]
 				    -	fgkSSDCoolingBlockHoleCenter
 					-	fgkSSDCoolingBlockHoleRadius[0]
-					*	TMath::Sin(CoolingBlockHoleAngle*TMath::DegToRad());
-  Double_t CoolingBlockTrapezoidLength[TrapezoidNumber] = 
+					*	TMath::Sin(coolingblockholeangle*TMath::DegToRad());
+  Double_t coolingblocktrapezoidlength[ktrapezoidnumber] = 
 					{	fgkSSDCoolingBlockLength,
 						0.5*(fgkSSDCoolingBlockLength-2.
 					*	(fgkSSDCoolingBlockHoleLength[1]
 					-	fgkSSDCoolingBlockHoleRadius[1])
 					-	fgkSSDCoolingBlockHoleLength[0])}; 
-  Double_t CoolingBlockTrapezoidHeigth[TrapezoidNumber] = 
-					{	fgkSSDCoolingBlockHeight[0]-CoolingBlockComponentHeight
+  Double_t coolingblocktrapezoidheigth[ktrapezoidnumber] = 
+					{	fgkSSDCoolingBlockHeight[0]-coolingblockcomponentheight
 					-	fgkSSDCoolingBlockHeight[1]-fgkSSDCoolingBlockHeight[2]
 					-	fgkSSDCoolingBlockHoleRadius[1],
-						CoolingBlockComponentHeight};
-  Double_t CoolingBlockTrapezoidWidth[TrapezoidNumber]  = 
+						coolingblockcomponentheight};
+  Double_t coolingblocktrapezoidwidth[ktrapezoidnumber]  = 
 						{fgkSSDCoolingBlockWidth,fgkSSDCoolingBlockWidth};
   //////////////////////////
   //Vertex Positioning Shape 
   //////////////////////////
-  CoolingBlockTrapezoidVertex[0][0] = new TVector3();
-  CoolingBlockTrapezoidVertex[0][1] = new TVector3(CoolingBlockTrapezoidLength[0]);
-  CoolingBlockTrapezoidVertex[0][2] = new TVector3(
-						0.5*(CoolingBlockTrapezoidVertex[0][1]->X()
-					-	2.*CoolingBlockTrapezoidLength[1]
+  coolingblocktrapezoidvertex[0][0] = new TVector3();
+  coolingblocktrapezoidvertex[0][1] = new TVector3(coolingblocktrapezoidlength[0]);
+  coolingblocktrapezoidvertex[0][2] = new TVector3(
+						0.5*(coolingblocktrapezoidvertex[0][1]->X()
+					-	2.*coolingblocktrapezoidlength[1]
 					-	fgkSSDCoolingBlockHoleLength[0]));
-  CoolingBlockTrapezoidVertex[0][3] = 
-						new TVector3(CoolingBlockTrapezoidVertex[0][1]->X()
-					-	CoolingBlockTrapezoidVertex[0][2]->X());
-  CoolingBlockTrapezoidVertex[1][0] = new TVector3(); 
-  CoolingBlockTrapezoidVertex[1][1] = new TVector3(CoolingBlockTrapezoidLength[1]);
-  CoolingBlockTrapezoidVertex[1][2] = 
-						new TVector3(CoolingBlockTrapezoidHeigth[1]
-					/				 CoolingBlockTrapezoidHeigth[0]
-					*	CoolingBlockTrapezoidVertex[0][2]->X());
-  CoolingBlockTrapezoidVertex[1][3] = 
-						new TVector3(CoolingBlockTrapezoidVertex[1][1]->X());
-  char* CoolingBlockTrapezoidShapeName[TrapezoidNumber] = 
+  coolingblocktrapezoidvertex[0][3] = 
+						new TVector3(coolingblocktrapezoidvertex[0][1]->X()
+					-	coolingblocktrapezoidvertex[0][2]->X());
+  coolingblocktrapezoidvertex[1][0] = new TVector3(); 
+  coolingblocktrapezoidvertex[1][1] = new TVector3(coolingblocktrapezoidlength[1]);
+  coolingblocktrapezoidvertex[1][2] = 
+						new TVector3(coolingblocktrapezoidheigth[1]
+					/				 coolingblocktrapezoidheigth[0]
+					*	coolingblocktrapezoidvertex[0][2]->X());
+  coolingblocktrapezoidvertex[1][3] = 
+						new TVector3(coolingblocktrapezoidvertex[1][1]->X());
+  char* coolingblocktrapezoidshapename[ktrapezoidnumber] = 
 					{"CoolingBlockTrapezoidShape0","CoolingBlockTrapezoidShape1"};
-  TGeoArb8* CoolingBlockTrapezoidShape[TrapezoidNumber];
-  for(Int_t i = 0; i< TrapezoidNumber; i++) CoolingBlockTrapezoidShape[i] = 
-						GetArbShape(CoolingBlockTrapezoidVertex[i],
-						CoolingBlockTrapezoidWidth,
-						CoolingBlockTrapezoidHeigth[i],
-						CoolingBlockTrapezoidShapeName[i]);
-  TGeoTranslation* CoolingBlockTrapezoidTrans = 
+  TGeoArb8* coolingblocktrapezoidshape[ktrapezoidnumber];
+  for(Int_t i = 0; i< ktrapezoidnumber; i++) coolingblocktrapezoidshape[i] = 
+						GetArbShape(coolingblocktrapezoidvertex[i],
+						coolingblocktrapezoidwidth,
+						coolingblocktrapezoidheigth[i],
+						coolingblocktrapezoidshapename[i]);
+  TGeoTranslation* coolingblocktrapezoidtrans = 
 						new TGeoTranslation("CoolingBlockTrapezoidTrans",
-						CoolingBlockTrapezoidVertex[0][2]->X(),
+						coolingblocktrapezoidvertex[0][2]->X(),
 						0.0,
-						0.5*(CoolingBlockTrapezoidHeigth[0]
-					+	CoolingBlockTrapezoidHeigth[1]));
-  CoolingBlockTrapezoidTrans->RegisterYourself();
-  TGeoCombiTrans* CoolingBlockTrapezoidCombiTrans = 
+						0.5*(coolingblocktrapezoidheigth[0]
+					+	coolingblocktrapezoidheigth[1]));
+  coolingblocktrapezoidtrans->RegisterYourself();
+  TGeoCombiTrans* coolingblocktrapezoidcombitrans = 
 						new TGeoCombiTrans("CoolingBlockTrapezoidCombiTrans",
-						CoolingBlockTrapezoidVertex[0][3]->X(),
+						coolingblocktrapezoidvertex[0][3]->X(),
 						fgkSSDCoolingBlockWidth,
-						0.5*(CoolingBlockTrapezoidHeigth[0]
-					+	CoolingBlockTrapezoidHeigth[1]),
+						0.5*(coolingblocktrapezoidheigth[0]
+					+	coolingblocktrapezoidheigth[1]),
 						new TGeoRotation("",180.,0.,0.));
-  CoolingBlockTrapezoidCombiTrans->RegisterYourself();
-  /* TGeoCompositeShape* CoolingBlockTrapezoidCompositeShape = */ 
+  coolingblocktrapezoidcombitrans->RegisterYourself();
 	new TGeoCompositeShape("CoolingBlockTrapezoidCompositeShape",
 	"CoolingBlockTrapezoidShape0+CoolingBlockTrapezoidShape1:CoolingBlockTrapezoidTrans+"
 	"CoolingBlockTrapezoidShape1:CoolingBlockTrapezoidCombiTrans"); 
   /////////////////////////////
   // Cooling Block Boxes Shapes
   /////////////////////////////
-  const Int_t BoxNumber = 3;
-  TGeoBBox* CoolingBlockBoxShape[BoxNumber];
-  CoolingBlockBoxShape[0] = new TGeoBBox("CoolingBlockBoxShape0",
+  const Int_t kboxnumber = 3;
+  TGeoBBox* coolingblockboxshape[kboxnumber];
+  coolingblockboxshape[0] = new TGeoBBox("CoolingBlockBoxShape0",
 						0.5*fgkSSDCoolingBlockLength,
 						0.5*fgkSSDCoolingBlockWidth,
 						0.5*fgkSSDCoolingBlockHoleRadius[1]);
-  CoolingBlockBoxShape[1] = new TGeoBBox("CoolingBlockBoxShape1",
+  coolingblockboxshape[1] = new TGeoBBox("CoolingBlockBoxShape1",
 						0.5*(fgkSSDCoolingBlockLength
 					-	2.*fgkSSDCoolingBlockHoleLength[1]),
 						0.5*fgkSSDCoolingBlockWidth,
 						0.5*fgkSSDCoolingBlockHeight[2]);
-  CoolingBlockBoxShape[2] = new TGeoBBox("CoolingBlockBoxShape2",
+  coolingblockboxshape[2] = new TGeoBBox("CoolingBlockBoxShape2",
 						0.5*fgkSSDCoolingBlockLength,
 						0.5*fgkSSDCoolingBlockWidth,
 						0.5*fgkSSDCoolingBlockHeight[1]);
-  TGeoTranslation* CoolingBlockBoxTrans[BoxNumber-1];
-  CoolingBlockBoxTrans[0] = new TGeoTranslation("CoolingBlockBoxTrans0",0.,0.,
+  TGeoTranslation* coolingblockboxtrans[kboxnumber-1];
+  coolingblockboxtrans[0] = new TGeoTranslation("CoolingBlockBoxTrans0",0.,0.,
 						0.5*(fgkSSDCoolingBlockHeight[1]
 					+	fgkSSDCoolingBlockHoleRadius[1])
 					+	fgkSSDCoolingBlockHeight[2]);
-  CoolingBlockBoxTrans[1] = new TGeoTranslation("CoolingBlockBoxTrans1",
+  coolingblockboxtrans[1] = new TGeoTranslation("CoolingBlockBoxTrans1",
 						0.0,
 						0.0,
 						0.5*(fgkSSDCoolingBlockHeight[1]
 					+	fgkSSDCoolingBlockHeight[2]));
-  for(Int_t i=0; i<BoxNumber-1; i++) CoolingBlockBoxTrans[i]->RegisterYourself();
-  /* TGeoCompositeShape* CoolingBlockBoxCompositeShape = */
+  for(Int_t i=0; i<kboxnumber-1; i++) coolingblockboxtrans[i]->RegisterYourself();
 	new TGeoCompositeShape("CoolingBlockBoxCompositeShape",
 						   "CoolingBlockBoxShape0:CoolingBlockBoxTrans0+"
 	 "CoolingBlockBoxShape1:CoolingBlockBoxTrans1+CoolingBlockBoxShape2");
   ///////////////////////
   // Cooling Block Shape
   //////////////////////
-  TGeoCombiTrans* CoolingTubeHoleShapeCombiTrans = 
+  TGeoCombiTrans* coolingtubeholeshapecombitrans = 
 						new TGeoCombiTrans("CoolingTubeHoleShapeCombiTrans",
 						0.5*fgkSSDCoolingBlockLength,
 						0.5*fgkSSDCoolingBlockWidth,
 						fgkSSDCoolingBlockHoleCenter,
 						new TGeoRotation("",0.,90.,0.));
-  CoolingTubeHoleShapeCombiTrans->RegisterYourself();
-  TGeoTranslation* CoolingBlockTrapezoidCompositeShapeTrans = 
+  coolingtubeholeshapecombitrans->RegisterYourself();
+  TGeoTranslation* coolingblocktrapezoidcompositeshapetrans = 
 						new TGeoTranslation("CoolingBlockTrapezoidCompositeShapeTrans",
 						0.0,
 						0.0,
-						0.5*CoolingBlockTrapezoidHeigth[0]+fgkSSDCoolingBlockHeight[1]+
+						0.5*coolingblocktrapezoidheigth[0]+fgkSSDCoolingBlockHeight[1]+
 						fgkSSDCoolingBlockHeight[2]+fgkSSDCoolingBlockHoleRadius[1]);
-  CoolingBlockTrapezoidCompositeShapeTrans->RegisterYourself();
-  TGeoTranslation* CoolingBlockBoxCompositeShapeTrans = 
+  coolingblocktrapezoidcompositeshapetrans->RegisterYourself();
+  TGeoTranslation* coolingblockboxcompositeshapetrans = 
 						new TGeoTranslation("CoolingBlockBoxCompositeShapeTrans",
 						0.5*fgkSSDCoolingBlockLength,
 						0.5*fgkSSDCoolingBlockWidth,
 						0.5*fgkSSDCoolingBlockHeight[1]);
-  CoolingBlockBoxCompositeShapeTrans->RegisterYourself();
-  TGeoCompositeShape* SSDCoolingBlockShape = 
+  coolingblockboxcompositeshapetrans->RegisterYourself();
+  TGeoCompositeShape* ssdoolingblockshape = 
 		new TGeoCompositeShape("SSDCoolingBlockShape",	
 		"CoolingBlockBoxCompositeShape:CoolingBlockBoxCompositeShapeTrans+"
 		"CoolingBlockTrapezoidCompositeShape:CoolingBlockTrapezoidCompositeShapeTrans-"
 		"CoolingTubeHoleShape:CoolingTubeHoleShapeCombiTrans");
-  TGeoVolume* SSDCoolingBlock = new TGeoVolume("SSDCoolingBlock",
-		SSDCoolingBlockShape,fgkSSDAlCoolBlockMedium);
-  return SSDCoolingBlock;
+  TGeoVolume* ssdcoolingblock = new TGeoVolume("SSDCoolingBlock",
+		ssdoolingblockshape,fSSDAlCoolBlockMedium);
+  return ssdcoolingblock;
 }
 /////////////////////////////////////////////////////////////////////////////////
 TGeoVolume* AliITSv11GeometrySSD::GetCarbonFiberJunction(Double_t width){
-////////////////////////////////////////////////////////////////////////////////
-  const Int_t VertexNumber = 4;
-  TVector3* Vertex[VertexNumber];
-  Vertex[0] = new TVector3();
-  Vertex[1] = new TVector3(fgkCarbonFiberJunctionLength,0.);
-  Vertex[2] = new TVector3(fgkCarbonFiberJunctionLength
+  /////////////////////////////////////////////////////////////
+  // Method generating SSD Carbon Fiber Junction
+  /////////////////////////////////////////////////////////////
+  const Int_t kvertexnumber = 4;
+  TVector3* vertex[kvertexnumber];
+  vertex[0] = new TVector3();
+  vertex[1] = new TVector3(fgkCarbonFiberJunctionLength,0.);
+  vertex[2] = new TVector3(fgkCarbonFiberJunctionLength
 	        -	  fgkCarbonFiberJunctionEdge[1]
 			*	  TMath::Cos(fgkCarbonFiberJunctionAngle[1]*TMath::DegToRad()),
 				  fgkCarbonFiberJunctionEdge[1]*TMath::Sin(fgkCarbonFiberJunctionAngle[1]
 			*     TMath::DegToRad()));
-  Vertex[3] = new TVector3(fgkCarbonFiberJunctionEdge[0]
+  vertex[3] = new TVector3(fgkCarbonFiberJunctionEdge[0]
 			*	  TMath::Cos(fgkCarbonFiberJunctionAngle[0]*TMath::DegToRad()),
 				  fgkCarbonFiberJunctionEdge[0]
 			*	  TMath::Sin(fgkCarbonFiberJunctionAngle[0]*TMath::DegToRad()));
-  TGeoArb8* CarbonFiberJunctionShapePiece = 
+  TGeoArb8* carbonfiberjunctionshapepiece = 
 						new TGeoArb8("CarbonFiberJunctionShapePiece",0.5*width);
   //////////////////////////////////
   //Setting the vertices in TGeoArb8
   //////////////////////////////////
-  for(Int_t i = 0; i<2*VertexNumber; i++)
-	CarbonFiberJunctionShapePiece->SetVertex(i,
-							Vertex[(i < VertexNumber ? i: i-VertexNumber)]->X(),
-							Vertex[(i < VertexNumber ? i : i-VertexNumber)]->Y());
-  TGeoRotation* CarbonFiberJunctionRot = 
+  for(Int_t i = 0; i<2*kvertexnumber; i++)
+	carbonfiberjunctionshapepiece->SetVertex(i,
+							vertex[(i < kvertexnumber ? i: i-kvertexnumber)]->X(),
+							vertex[(i < kvertexnumber ? i : i-kvertexnumber)]->Y());
+  TGeoRotation* carbonfiberjunctionrot = 
 						new TGeoRotation("CarbonFiberJunctionRot",
 										  180.,
 										  180.,
 										  180-2.*fgkCarbonFiberJunctionAngle[0]); 
-  TGeoVolume* CarbonFiberJunctionPiece = 
+  TGeoVolume* carbonfiberjunctionpiece = 
 						new TGeoVolume("CarbonFiberJunctionPiece",
-						CarbonFiberJunctionShapePiece,fgkSSDCarbonFiberMedium);
-  TGeoVolume* CarbonFiberJunction = 
+						carbonfiberjunctionshapepiece,fSSDCarbonFiberMedium);
+  TGeoVolume* carbonfiberjunction = 
 						new TGeoVolumeAssembly("CarbonFiberJunction");
-  CarbonFiberJunctionPiece->SetLineColor(fColorCarbonFiber);
-  CarbonFiberJunction->AddNode(CarbonFiberJunctionPiece,1);
-  CarbonFiberJunction->AddNode(CarbonFiberJunctionPiece,2,CarbonFiberJunctionRot);
-  return CarbonFiberJunction;
+  carbonfiberjunctionpiece->SetLineColor(fColorCarbonFiber);
+  carbonfiberjunction->AddNode(carbonfiberjunctionpiece,1);
+  carbonfiberjunction->AddNode(carbonfiberjunctionpiece,2,carbonfiberjunctionrot);
+  return carbonfiberjunction;
 }
 /////////////////////////////////////////////////////////////////////////////////
 TGeoVolume* AliITSv11GeometrySSD::GetCarbonFiberJunctionAssembly(){
-////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////
+  // Method generating SSD Carbon Fiber Junction Assembly    
+  /////////////////////////////////////////////////////////////
   SetCarbonFiberJunctionCombiTransMatrix();
-  TGeoVolume* CarbonFiberJunctionAssembly = 
+  TGeoVolume* carbonfiberjunctionassembly = 
 						  new TGeoVolumeAssembly("CarbonFiberJunctionAssembly");
-  TGeoVolume* CarbonFiberJunction = 
+  TGeoVolume* carbonfiberjunction = 
 						  GetCarbonFiberJunction(fgkCarbonFiberJunctionWidth);
   for(Int_t i=0; i<fgkCarbonFiberJunctionCombiTransNumber;i++) 
-    CarbonFiberJunctionAssembly->AddNode(CarbonFiberJunction,i+1,
-										 CarbonFiberJunctionCombiTransMatrix[i]);
-  return CarbonFiberJunctionAssembly;
+    carbonfiberjunctionassembly->AddNode(carbonfiberjunction,i+1,
+										 fCarbonFiberJunctionCombiTransMatrix[i]);
+  return carbonfiberjunctionassembly;
 }
 /////////////////////////////////////////////////////////////////////////////////
-TList* AliITSv11GeometrySSD::GetLadderCableSegment(Double_t SSDEndLadderCableLength){
-/////////////////////////////////////////////////////////////////////////////////
-const Int_t LadderCableSegmentNumber = 2;
-/////////////////////////////////////////
-// LadderSegmentBBox Volume
-/////////////////////////////////////////
-  TGeoBBox* LadderCableSegmentBBoxShape[LadderCableSegmentNumber];
-  const char* LadderCableSegmentBBoxShapeName[LadderCableSegmentNumber] = 
+TList* AliITSv11GeometrySSD::GetLadderCableSegment(Double_t ssdendladdercablelength){
+  /////////////////////////////////////////////////////////////
+  // Method returning a List containing pointers to Ladder Cable Volumes    
+  /////////////////////////////////////////////////////////////
+  const Int_t kladdercablesegmentnumber = 2;
+  /////////////////////////////////////////
+  // LadderSegmentBBox Volume
+  /////////////////////////////////////////
+  TGeoBBox* laddercablesegmentbboxshape[kladdercablesegmentnumber];
+  const char* laddercablesegmentbboxshapename[kladdercablesegmentnumber] = 
 				{"LadderCableSegmentBBoxShape1","LadderCableSegmentBBoxShape2"};
-  for(Int_t i=0; i<LadderCableSegmentNumber; i++) LadderCableSegmentBBoxShape[i] = 
-						  new TGeoBBox(LadderCableSegmentBBoxShapeName[i],
+  for(Int_t i=0; i<kladdercablesegmentnumber; i++) laddercablesegmentbboxshape[i] = 
+						  new TGeoBBox(laddercablesegmentbboxshapename[i],
 									   0.5*fgkSSDFlexWidth[0],
 									   0.5*fgkSSDLadderCableWidth,
 									   0.5*fgkSSDFlexHeight[i]); 
-  const char* LadderCableSegmentBBoxName[LadderCableSegmentNumber] = 
+  const char* laddercablesegmentbboxname[kladdercablesegmentnumber] = 
 						  {"LadderCableSegmentBBox1","LadderCableSegmentBBox2"};
-  TGeoVolume* LadderCableSegmentBBox[LadderCableSegmentNumber];
-  for(Int_t i=0; i<LadderCableSegmentNumber; i++){ 
-			LadderCableSegmentBBox[i] =
-						  new TGeoVolume(LadderCableSegmentBBoxName[i],
-										 LadderCableSegmentBBoxShape[i],
-										 (i==0?fgkSSDAlTraceLadderCableMedium:
-            fgkSSDKaptonLadderCableMedium));
-			LadderCableSegmentBBox[i]->SetLineColor(i==0 ? fColorAl : 
+  TGeoVolume* laddercablesegmentbbox[kladdercablesegmentnumber];
+  for(Int_t i=0; i<kladdercablesegmentnumber; i++){ 
+			laddercablesegmentbbox[i] =
+						  new TGeoVolume(laddercablesegmentbboxname[i],
+										 laddercablesegmentbboxshape[i],
+										 (i==0?fSSDAlTraceLadderCableMedium:
+            fSSDKaptonLadderCableMedium));
+			laddercablesegmentbbox[i]->SetLineColor(i==0 ? fColorAl : 
 														   fColorPolyhamide);
   }
-  TGeoTranslation* LadderCableSegmentBBoxTrans[LadderCableSegmentNumber];										  
-  LadderCableSegmentBBoxTrans[0] = 
+  TGeoTranslation* laddercablesegmentbboxtrans[kladdercablesegmentnumber];										  
+  laddercablesegmentbboxtrans[0] = 
 						   new TGeoTranslation("LadderCableSegmentBBoxTrans1",
 											   0.5*fgkSSDFlexWidth[0],
 											   0.5*fgkSSDLadderCableWidth,
 											   0.5*fgkSSDFlexHeight[0]);
-  LadderCableSegmentBBoxTrans[1] = 
+  laddercablesegmentbboxtrans[1] = 
 						   new TGeoTranslation("LadderCableSegmentBBoxTrans2",
 											   0.5*fgkSSDFlexWidth[0],
 											   0.5*fgkSSDLadderCableWidth,
 											   fgkSSDFlexHeight[0]
 											   +0.5*fgkSSDFlexHeight[1]);
-  TGeoVolume* LadderCableSegmentBBoxAssembly = 
+  TGeoVolume* laddercablesegmentbboxassembly = 
 						   new TGeoVolumeAssembly("LadderCableSegmentBBoxAssembly"); 
-  for(Int_t i=0; i<LadderCableSegmentNumber; i++)  
-		LadderCableSegmentBBoxAssembly->AddNode(LadderCableSegmentBBox[i],1,
-											    LadderCableSegmentBBoxTrans[i]);
+  for(Int_t i=0; i<kladdercablesegmentnumber; i++)  
+		laddercablesegmentbboxassembly->AddNode(laddercablesegmentbbox[i],1,
+											    laddercablesegmentbboxtrans[i]);
 /////////////////////////////////////////
 // LadderSegmentArb8 Volume
 /////////////////////////////////////////
-  const Int_t VertexNumber = 4;
-  TVector3** LadderCableSegmentVertexPosition[LadderCableSegmentNumber];
-  for(Int_t i = 0; i<LadderCableSegmentNumber; i++) LadderCableSegmentVertexPosition[i] = 
-												  new TVector3*[VertexNumber];
+  const Int_t kvertexnumber = 4;
+  TVector3** laddercablesegmentvertexposition[kladdercablesegmentnumber];
+  for(Int_t i = 0; i<kladdercablesegmentnumber; i++) laddercablesegmentvertexposition[i] = 
+												  new TVector3*[kvertexnumber];
 //Shape Vertex Positioning
-  for(Int_t i=0; i<LadderCableSegmentNumber; i++){
-	LadderCableSegmentVertexPosition[i][0] = new TVector3(0.,i*fgkSSDFlexHeight[0]);
-	LadderCableSegmentVertexPosition[i][1] = new TVector3(fgkSSDLadderCableWidth,
+  for(Int_t i=0; i<kladdercablesegmentnumber; i++){
+	laddercablesegmentvertexposition[i][0] = new TVector3(0.,i*fgkSSDFlexHeight[0]);
+	laddercablesegmentvertexposition[i][1] = new TVector3(fgkSSDLadderCableWidth,
 														  i*fgkSSDFlexHeight[0]);
-	LadderCableSegmentVertexPosition[i][2] = new TVector3(0.,fgkSSDFlexHeight[0]
+	laddercablesegmentvertexposition[i][2] = new TVector3(0.,fgkSSDFlexHeight[0]
 										   +			     fgkSSDFlexHeight[1]
 										   +			  i*fgkSSDFlexHeight[0]);
-	LadderCableSegmentVertexPosition[i][3] = 
-						   new TVector3(LadderCableSegmentVertexPosition[i][1]->X(),
-										LadderCableSegmentVertexPosition[i][2]->Y());
+	laddercablesegmentvertexposition[i][3] = 
+						   new TVector3(laddercablesegmentvertexposition[i][1]->X(),
+										laddercablesegmentvertexposition[i][2]->Y());
   }
-  Double_t LadderCableSegmentWidth[2][2] = {{fgkSSDFlexHeight[0],fgkSSDFlexHeight[0]},
+  Double_t laddercablesegmentwidth[2][2] = {{fgkSSDFlexHeight[0],fgkSSDFlexHeight[0]},
 							     		    {fgkSSDFlexHeight[1],fgkSSDFlexHeight[1]}};	
-  char* LadderCableSegmentArbShapeName[LadderCableSegmentNumber] = 
+  char* laddercablesegmentarbshapename[kladdercablesegmentnumber] = 
 					{"LadderCableSegmentArbShape1","LadderCableSegmentArbShape2"};
-  TGeoArb8* LadderCableSegmentArbShape[LadderCableSegmentNumber];
-  for(Int_t i = 0; i< LadderCableSegmentNumber; i++) LadderCableSegmentArbShape[i] = 
-					GetArbShape(LadderCableSegmentVertexPosition[i],
-								LadderCableSegmentWidth[i],
+  TGeoArb8* laddercablesegmentarbshape[kladdercablesegmentnumber];
+  for(Int_t i = 0; i< kladdercablesegmentnumber; i++) laddercablesegmentarbshape[i] = 
+					GetArbShape(laddercablesegmentvertexposition[i],
+								laddercablesegmentwidth[i],
 								fgkCarbonFiberJunctionWidth-fgkSSDFlexWidth[0],
-								LadderCableSegmentArbShapeName[i]);
-  const char* LadderCableSegmentArbName[LadderCableSegmentNumber] = 
+								laddercablesegmentarbshapename[i]);
+  const char* laddercablesegmentarbname[kladdercablesegmentnumber] = 
 						  {"LadderCableSegmentArb1","LadderCableSegmentArb2"};
-  TGeoVolume* LadderCableSegmentArb[LadderCableSegmentNumber];
-  for(Int_t i=0; i<LadderCableSegmentNumber; i++){
-			 LadderCableSegmentArb[i] =
-						   new TGeoVolume(LadderCableSegmentArbName[i],
-										  LadderCableSegmentArbShape[i],
-										  (i==0?fgkSSDAlTraceLadderCableMedium:
-            fgkSSDKaptonLadderCableMedium)); 
-			 LadderCableSegmentArb[i]->SetLineColor(i==0 ? fColorAl : 
+  TGeoVolume* laddercablesegmentarb[kladdercablesegmentnumber];
+  for(Int_t i=0; i<kladdercablesegmentnumber; i++){
+			 laddercablesegmentarb[i] =
+						   new TGeoVolume(laddercablesegmentarbname[i],
+										  laddercablesegmentarbshape[i],
+										  (i==0?fSSDAlTraceLadderCableMedium:
+            fSSDKaptonLadderCableMedium)); 
+			 laddercablesegmentarb[i]->SetLineColor(i==0 ? fColorAl : 
 														   fColorPolyhamide);
 }
-  TGeoRotation* LadderCableSegmentArbRot[LadderCableSegmentNumber];
-  LadderCableSegmentArbRot[0] = new TGeoRotation("LadderCableSegmentArbRot1",
+  TGeoRotation* laddercablesegmentarbrot[kladdercablesegmentnumber];
+  laddercablesegmentarbrot[0] = new TGeoRotation("LadderCableSegmentArbRot1",
 												 90.,90,-90.);	 
-  LadderCableSegmentArbRot[1] = new TGeoRotation("LadderCableSegmentArbRot2",
+  laddercablesegmentarbrot[1] = new TGeoRotation("LadderCableSegmentArbRot2",
 												  0.,90.,0.);	 
-  TGeoCombiTrans* LadderCableSegmentArbCombiTrans =  
+  TGeoCombiTrans* laddercablesegmentarbcombitrans =  
 						   new TGeoCombiTrans("LadderCableSegmentArbCombiTrans",
 							   0.5*(fgkCarbonFiberJunctionWidth-fgkSSDFlexWidth[0])
 							 + fgkSSDFlexWidth[0],0.,0.,
-						   new TGeoRotation((*LadderCableSegmentArbRot[1])
-						     *(*LadderCableSegmentArbRot[0])));
-  TGeoVolume* LadderCableSegmentArbAssembly = 
+						   new TGeoRotation((*laddercablesegmentarbrot[1])
+						     *(*laddercablesegmentarbrot[0])));
+  TGeoVolume* laddercablesegmentarbassembly = 
 						   new TGeoVolumeAssembly("LadderCableSegmentArbAssembly"); 
-  for(Int_t i=0; i<LadderCableSegmentNumber; i++)
-  LadderCableSegmentArbAssembly->AddNode(LadderCableSegmentArb[i],1,
-										   LadderCableSegmentArbCombiTrans);
+  for(Int_t i=0; i<kladdercablesegmentnumber; i++)
+  laddercablesegmentarbassembly->AddNode(laddercablesegmentarb[i],1,
+										   laddercablesegmentarbcombitrans);
 /////////////////////////////////////////
 // End Ladder Cable Volume
 /////////////////////////////////////////
-  TGeoBBox* LadderEndCableSegmentBBoxShape[LadderCableSegmentNumber];
-  const char* LadderEndCableSegmentBBoxShapeName[LadderCableSegmentNumber] = 
+  TGeoBBox* ladderendcablesegmentbboxshape[kladdercablesegmentnumber];
+  const char* ladderendcablesegmentbboxshapename[kladdercablesegmentnumber] = 
 				{"LadderEndCableSegmentBBoxShape1","LadderEndCableSegmentBBoxShape2"};
-  for(Int_t i=0; i<LadderCableSegmentNumber; i++) LadderEndCableSegmentBBoxShape[i] = 
-						  new TGeoBBox(LadderEndCableSegmentBBoxShapeName[i],
-									   0.5*SSDEndLadderCableLength,
+  for(Int_t i=0; i<kladdercablesegmentnumber; i++) ladderendcablesegmentbboxshape[i] = 
+						  new TGeoBBox(ladderendcablesegmentbboxshapename[i],
+									   0.5*ssdendladdercablelength,
 									   0.5*fgkSSDLadderCableWidth,
 									   0.5*fgkSSDFlexHeight[i]);
-  const char* LadderEndCableSegmentBBoxName[LadderCableSegmentNumber] = 
+  const char* ladderendcablesegmentbboxname[kladdercablesegmentnumber] = 
 						  {"LadderEndCableSegmentBBox1","LadderEndCableSegmentBBox2"};
-  TGeoVolume* LadderEndCableSegmentBBox[LadderCableSegmentNumber];
-  for(Int_t i=0; i<LadderCableSegmentNumber; i++){ 
-			LadderEndCableSegmentBBox[i] =
-						  new TGeoVolume(LadderEndCableSegmentBBoxName[i],
-										 LadderEndCableSegmentBBoxShape[i],
-										 (i==0?fgkSSDAlTraceLadderCableMedium:
-            fgkSSDKaptonLadderCableMedium));
-			LadderEndCableSegmentBBox[i]->SetLineColor(i==0 ? fColorAl : 
+  TGeoVolume* ladderendcablesegmentbbox[kladdercablesegmentnumber];
+  for(Int_t i=0; i<kladdercablesegmentnumber; i++){ 
+			ladderendcablesegmentbbox[i] =
+						  new TGeoVolume(ladderendcablesegmentbboxname[i],
+										 ladderendcablesegmentbboxshape[i],
+										 (i==0?fSSDAlTraceLadderCableMedium:
+            fSSDKaptonLadderCableMedium));
+			ladderendcablesegmentbbox[i]->SetLineColor(i==0 ? fColorAl : 
 														   fColorPolyhamide);
   }
-  TGeoTranslation* LadderEndCableSegmentBBoxTrans[LadderCableSegmentNumber];										  
-  LadderEndCableSegmentBBoxTrans[0] = 
+  TGeoTranslation* ladderendcablesegmentbboxtrans[kladdercablesegmentnumber];										  
+  ladderendcablesegmentbboxtrans[0] = 
 						   new TGeoTranslation("LadderEndCableSegmentBBoxTrans0",
-											   0.5*SSDEndLadderCableLength,
+											   0.5*ssdendladdercablelength,
 											   0.5*fgkSSDLadderCableWidth,
 											   0.5*fgkSSDFlexHeight[0]);
-  LadderEndCableSegmentBBoxTrans[1] = 
+  ladderendcablesegmentbboxtrans[1] = 
 						   new TGeoTranslation("LadderEndCableSegmentBBoxTrans1",
-											   0.5*SSDEndLadderCableLength,
+											   0.5*ssdendladdercablelength,
 											   0.5*fgkSSDLadderCableWidth,
 											   fgkSSDFlexHeight[0]
 											   +0.5*fgkSSDFlexHeight[1]);
-  TGeoVolume* LadderEndCableSegmentBBoxAssembly = 
+  TGeoVolume* ladderendcablesegmentbboxassembly = 
 						   new TGeoVolumeAssembly("LadderEndCableSegmentBBoxAssembly"); 
-  for(Int_t i=0; i<LadderCableSegmentNumber; i++)  
-		LadderEndCableSegmentBBoxAssembly->AddNode(LadderEndCableSegmentBBox[i],1,
-											    LadderEndCableSegmentBBoxTrans[i]);
+  for(Int_t i=0; i<kladdercablesegmentnumber; i++)  
+		ladderendcablesegmentbboxassembly->AddNode(ladderendcablesegmentbbox[i],1,
+											    ladderendcablesegmentbboxtrans[i]);
 /////////////////////////////////////////
-  TList* LadderCableSegmentList = new TList();
-  LadderCableSegmentList->Add(LadderCableSegmentBBoxAssembly);
-  LadderCableSegmentList->Add(LadderCableSegmentArbAssembly);
-  LadderCableSegmentList->Add(LadderEndCableSegmentBBoxAssembly);
-  return LadderCableSegmentList;
+  TList* laddercablesegmentlist = new TList();
+  laddercablesegmentlist->Add(laddercablesegmentbboxassembly);
+  laddercablesegmentlist->Add(laddercablesegmentarbassembly);
+  laddercablesegmentlist->Add(ladderendcablesegmentbboxassembly);
+  return laddercablesegmentlist;
   }
 /////////////////////////////////////////////////////////////////////////////////
-TGeoVolume* AliITSv11GeometrySSD::GetLadderCable(Int_t n, Double_t SSDEndLadderCableLength){
-/////////////////////////////////////////////////////////////////////////////////
-  TList* LadderCableSegmentList = GetLadderCableSegment(SSDEndLadderCableLength);
-  TGeoVolume* LadderCable = new TGeoVolumeAssembly("LadderCable"); 
+TGeoVolume* AliITSv11GeometrySSD::GetLadderCable(Int_t n, Double_t ssdendladdercablelength){
+  /////////////////////////////////////////////////////////////
+  // Method generating Ladder Cable Volumes Assemblies    
+  /////////////////////////////////////////////////////////////
+  TList* laddercablesegmentlist = GetLadderCableSegment(ssdendladdercablelength);
+  TGeoVolume* laddercable = new TGeoVolumeAssembly("LadderCable"); 
   for(Int_t i=0; i<n; i++){
-	TGeoTranslation* LadderCableTrans = new TGeoTranslation(
+	 TGeoTranslation* laddercabletrans = new TGeoTranslation(
 							i*(fgkCarbonFiberJunctionWidth),
 							fgkSSDLadderCableWidth-fgkSSDFlexWidth[0],
 							i*(fgkSSDFlexHeight[0]+fgkSSDFlexHeight[1]));
-    LadderCable->AddNode((TGeoVolume*)LadderCableSegmentList->At(0),i+1,LadderCableTrans);  
-	if(i!=n-1) LadderCable->AddNode((TGeoVolume*)LadderCableSegmentList->At(1),i+1,LadderCableTrans);  
+    laddercable->AddNode((TGeoVolume*)laddercablesegmentlist->At(0),i+1,laddercabletrans);  
+	if(i!=n-1) laddercable->AddNode((TGeoVolume*)laddercablesegmentlist->At(1),i+1,laddercabletrans);  
   }
-  TGeoTranslation* EndLadderCableTrans = new TGeoTranslation("EndLadderCableTrans",
+  TGeoTranslation* endladdercabletrans = new TGeoTranslation("EndLadderCableTrans",
 					  (n-1)*fgkCarbonFiberJunctionWidth+fgkSSDFlexWidth[0],
 								 fgkSSDLadderCableWidth-fgkSSDFlexWidth[0],
 					  (n-1)*(fgkSSDFlexHeight[0]+fgkSSDFlexHeight[1]));
-  LadderCable->AddNode((TGeoVolume*)LadderCableSegmentList->At(2),1,EndLadderCableTrans);
-  return LadderCable;
+  laddercable->AddNode((TGeoVolume*)laddercablesegmentlist->At(2),1,endladdercabletrans);
+  return laddercable;
 }
 /////////////////////////////////////////////////////////////////////////////////
-TGeoVolume* AliITSv11GeometrySSD::GetLadderCableAssembly(Int_t n, Double_t SSDEndLadderCableLength){
-/////////////////////////////////////////////////////////////////////////////////
-  TGeoVolume* LadderCableAssembly = new TGeoVolumeAssembly("LadderCableAssembly");
-  char LadderCableTransName[30];
+TGeoVolume* AliITSv11GeometrySSD::GetLadderCableAssembly(Int_t n, Double_t ssdendladdercablelength){
+  /////////////////////////////////////////////////////////////
+  // Method generating Ladder Cable Volumes Assembly   
+  /////////////////////////////////////////////////////////////
+  TGeoVolume* laddercableassembly = new TGeoVolumeAssembly("LadderCableAssembly");
+  char laddercabletransname[30];
   for(Int_t i=0; i<n; i++){ 
-	sprintf(LadderCableTransName,"LadderCableTrans%i",i+1);
-    LadderCableAssembly->AddNode(GetLadderCable(n-i,SSDEndLadderCableLength),i+1,
-	new TGeoTranslation(LadderCableTransName,i*fgkCarbonFiberJunctionWidth,0.,0.));
+	sprintf(laddercabletransname,"LadderCableTrans%i",i+1);
+    laddercableassembly->AddNode(GetLadderCable(n-i,ssdendladdercablelength),i+1,
+	new TGeoTranslation(laddercabletransname,i*fgkCarbonFiberJunctionWidth,0.,0.));
   }
-  return LadderCableAssembly;
+  return laddercableassembly;
 }
 /////////////////////////////////////////////////////////////////////////////////
-TList* AliITSv11GeometrySSD::GetLadderCableAssemblyList(Int_t n, Double_t SSDEndLadderCableLength){
-/////////////////////////////////////////////////////////////////////////////////
-  const Int_t LadderCableAssemblyNumber = 2;
-  TGeoVolume* LadderCableAssembly = GetLadderCableAssembly(n,SSDEndLadderCableLength);
-  TGeoVolume* LadderCable[LadderCableAssemblyNumber];
-  char LadderCableAssemblyName[30];
-  TList* LadderCableAssemblyList = new TList();
-  for(Int_t i=0; i<LadderCableAssemblyNumber; i++){ 
-	sprintf(LadderCableAssemblyName,"LadderCableAssembly%i",i+1);
-	LadderCable[i] = new TGeoVolumeAssembly(LadderCableAssemblyName);
-	LadderCable[i]->AddNode(LadderCableAssembly,i+1,i==0 ? NULL :
+TList* AliITSv11GeometrySSD::GetLadderCableAssemblyList(Int_t n, Double_t ssdendladdercablelength){
+  /////////////////////////////////////////////////////////////
+  // Method generating Ladder Cable List Assemblies  
+  /////////////////////////////////////////////////////////////  
+  const Int_t kladdercableassemblynumber = 2;
+  TGeoVolume* laddercableassembly = GetLadderCableAssembly(n,ssdendladdercablelength);
+  TGeoVolume* ladderCable[kladdercableassemblynumber];
+  char laddercableassemblyname[30];
+  TList* laddercableassemblylist = new TList();
+  for(Int_t i=0; i<kladdercableassemblynumber; i++){ 
+	sprintf(laddercableassemblyname,"LadderCableAssembly%i",i+1);
+	ladderCable[i] = new TGeoVolumeAssembly(laddercableassemblyname);
+	ladderCable[i]->AddNode(laddercableassembly,i+1,i==0 ? NULL :
 					 new TGeoCombiTrans((n-1)
 					 *	 fgkCarbonFiberJunctionWidth+fgkSSDFlexWidth[0],
 					     2.*fgkSSDLadderCableWidth+0.5*fgkSSDFlexWidth[0],
 											0.,new TGeoRotation("",180,0.,0.)));
-	LadderCableAssemblyList->Add(LadderCable[i]);
+	laddercableassemblylist->Add(ladderCable[i]);
 }
-  return LadderCableAssemblyList;
+  return laddercableassemblylist;
 }
 /////////////////////////////////////////////////////////////////////////////////
 TList* AliITSv11GeometrySSD::GetEndLadderCarbonFiberJunctionAssembly(){
-////////////////////////////////////////////////////////////////////////////////
-  const Int_t EndLabberCarbonFiberJunctionNumber = 2;
-  TGeoVolume* EndLadderCarbonFiberJunctionAssembly[EndLabberCarbonFiberJunctionNumber];
-  EndLadderCarbonFiberJunctionAssembly[0] = 
+  /////////////////////////////////////////////////////////////
+  // Method generating the End Ladder Carbon Fiber Junction Assembly   
+  /////////////////////////////////////////////////////////////  
+  const Int_t kendlabbercarbonfiberjunctionumber = 2;
+  TGeoVolume* endladdercarbonfiberjunctionassembly[kendlabbercarbonfiberjunctionumber];
+  endladdercarbonfiberjunctionassembly[0] = 
 				new TGeoVolumeAssembly("EndLadderCarbonFiberJunctionAssembly1");
-  EndLadderCarbonFiberJunctionAssembly[1] = 
+  endladdercarbonfiberjunctionassembly[1] = 
 				new TGeoVolumeAssembly("EndLadderCarbonFiberJunctionAssembly2");
-  TGeoVolume** EndLadderCarbonFiberJunction[EndLabberCarbonFiberJunctionNumber];
-  for(Int_t i=0; i<EndLabberCarbonFiberJunctionNumber; i++) 
-						   EndLadderCarbonFiberJunction[i] = new TGeoVolume*[2];
-  for(Int_t i=0; i<EndLabberCarbonFiberJunctionNumber; i++){
-    EndLadderCarbonFiberJunction[i][0] = 
+  TGeoVolume** endladdercarbonfiberjunction[kendlabbercarbonfiberjunctionumber];
+  for(Int_t i=0; i<kendlabbercarbonfiberjunctionumber; i++) 
+						   endladdercarbonfiberjunction[i] = new TGeoVolume*[2];
+  for(Int_t i=0; i<kendlabbercarbonfiberjunctionumber; i++){
+    endladdercarbonfiberjunction[i][0] = 
 		  GetCarbonFiberJunction(fgkEndLadderCarbonFiberLowerJunctionLength[i]);
-    EndLadderCarbonFiberJunction[i][1] = 
+    endladdercarbonfiberjunction[i][1] = 
 		  GetCarbonFiberJunction(fgkEndLadderCarbonFiberUpperJunctionLength[i]);
   }
-  TList* EndLadderCarbonFiberJunctionList = new TList();
-  for(Int_t i=0; i<EndLabberCarbonFiberJunctionNumber; i++){
+  TList* endladdercarbonfiberjunctionlist = new TList();
+  for(Int_t i=0; i<kendlabbercarbonfiberjunctionumber; i++){
     SetEndLadderCarbonFiberJunctionCombiTransMatrix(i);
     for(Int_t j=0; j<fgkCarbonFiberJunctionCombiTransNumber; j++)
-      EndLadderCarbonFiberJunctionAssembly[i]->AddNode(j==2 ? 
-						 EndLadderCarbonFiberJunction[i][1] : 
-						 EndLadderCarbonFiberJunction[i][0],
-						 j+1,EndLadderCarbonFiberJunctionCombiTransMatrix[j]);
-    EndLadderCarbonFiberJunctionList->Add(EndLadderCarbonFiberJunctionAssembly[i]);
+      endladdercarbonfiberjunctionassembly[i]->AddNode(j==2 ? 
+						 endladdercarbonfiberjunction[i][1] : 
+						 endladdercarbonfiberjunction[i][0],
+						 j+1,fEndLadderCarbonFiberJunctionCombiTransMatrix[j]);
+    endladdercarbonfiberjunctionlist->Add(endladdercarbonfiberjunctionassembly[i]);
   }
-  return EndLadderCarbonFiberJunctionList;
+  return endladdercarbonfiberjunctionlist;
 }
 ////////////////////////////////////////////////////////////////////////////////
 TGeoVolume* AliITSv11GeometrySSD::GetCarbonFiberSupport(){
-////////////////////////////////////////////////////////////////////////////////
-  const Int_t VertexNumber = 4;
-  const Int_t ShapesNumber = 2;
-  TVector3** VertexPosition[ShapesNumber];
-  for(Int_t i=0; i<ShapesNumber; i++) VertexPosition[i] = new TVector3*[VertexNumber];
-  Double_t CarbonFiberSupportXAxisEdgeProj = 
+  /////////////////////////////////////////////////////////////
+  // Method generating the Carbon Fiber Support   
+  /////////////////////////////////////////////////////////////  
+  const Int_t kvertexnumber = 4;
+  const Int_t kshapesnumber = 2;
+  TVector3** vertexposition[kshapesnumber];
+  for(Int_t i=0; i<kshapesnumber; i++) vertexposition[i] = new TVector3*[kvertexnumber];
+  Double_t carbonfibersupportxaxisEdgeproj = 
 		fgkCarbonFiberSupportEdgeLength*TMath::Cos(fgkCarbonFiberJunctionAngle[0]
 	*	TMath::DegToRad());
-  Double_t Theta = TMath::ATan(fgkCarbonFiberSupportYAxisLength
+  Double_t theta = TMath::ATan(fgkCarbonFiberSupportYAxisLength
 				 /			   fgkCarbonFiberSupportXAxisLength);
   /////////////////////
   //Vertex Positioning
   ////////////////////
-  VertexPosition[0][0] = new TVector3();
-  VertexPosition[0][1] = new TVector3(fgkCarbonFiberSupportXAxisLength,
+  vertexposition[0][0] = new TVector3();
+  vertexposition[0][1] = new TVector3(fgkCarbonFiberSupportXAxisLength,
 									  fgkCarbonFiberSupportYAxisLength);
-  VertexPosition[0][2] = new TVector3(CarbonFiberSupportXAxisEdgeProj,
-									  CarbonFiberSupportXAxisEdgeProj
-					   *			  TMath::Tan(Theta));
-  VertexPosition[0][3] = new TVector3(fgkCarbonFiberSupportXAxisLength
-					   -			  CarbonFiberSupportXAxisEdgeProj,
+  vertexposition[0][2] = new TVector3(carbonfibersupportxaxisEdgeproj,
+									  carbonfibersupportxaxisEdgeproj
+					   *			  TMath::Tan(theta));
+  vertexposition[0][3] = new TVector3(fgkCarbonFiberSupportXAxisLength
+					   -			  carbonfibersupportxaxisEdgeproj,
 									  fgkCarbonFiberSupportYAxisLength
-					   -			  VertexPosition[0][2]->Y());
+					   -			  vertexposition[0][2]->Y());
   ////////////////////////////////////////////////////
   //Setting the parameters for Isometry Transformation
   ////////////////////////////////////////////////////
-  Double_t SymmetryPlanePosition = (fgkCarbonFiberSupportYAxisLength
+  Double_t symmetryplaneposition = (fgkCarbonFiberSupportYAxisLength
 								 +	fgkCarbonFiberSupportTopEdgeDist[0]
 								 +	fgkCarbonFiberSupportWidth);
   Double_t* param = new Double_t[4]; 
-  param[0] = 0., param[1] = 1., param[2] = 0., param[3] = -SymmetryPlanePosition;
-  for(Int_t j=0; j<VertexNumber; j++) VertexPosition[1][j] = 
-				  new TVector3((GetReflection(VertexPosition[0][j],param))->X(),
-							  (GetReflection(VertexPosition[0][j],param))->Y());
-  char* CarbonFiberSupportShapeName[ShapesNumber] = 
+  param[0] = 0., param[1] = 1., param[2] = 0., param[3] = -symmetryplaneposition;
+  for(Int_t j=0; j<kvertexnumber; j++) vertexposition[1][j] = 
+				  new TVector3((GetReflection(vertexposition[0][j],param))->X(),
+							  (GetReflection(vertexposition[0][j],param))->Y());
+  char* carbonfibersupportshapename[kshapesnumber] = 
 						{"CarbonFiberSupportShape1","CarbonFiberSupportShape2"};
-  TGeoArb8* CarbonFiberSupportShape[ShapesNumber]; 
-  Double_t Width[2] = {fgkCarbonFiberSupportWidth,fgkCarbonFiberSupportWidth};
-  Double_t CarbonFiberSupportHeight = 
-	  CarbonFiberSupportXAxisEdgeProj*TMath::Tan(fgkCarbonFiberJunctionAngle[0]
+  TGeoArb8* carbonfibersupportshape[kshapesnumber]; 
+  Double_t width[2] = {fgkCarbonFiberSupportWidth,fgkCarbonFiberSupportWidth};
+  Double_t carbonfibersupportheight = 
+	  carbonfibersupportxaxisEdgeproj*TMath::Tan(fgkCarbonFiberJunctionAngle[0]
 	  *TMath::DegToRad());
-  for(Int_t i = 0; i< ShapesNumber; i++) CarbonFiberSupportShape[i] = 
-					GetArbShape(VertexPosition[i],Width,CarbonFiberSupportHeight,
-									CarbonFiberSupportShapeName[i],i==0 ? 1: -1);
+  for(Int_t i = 0; i< kshapesnumber; i++) carbonfibersupportshape[i] = 
+					GetArbShape(vertexposition[i],width,carbonfibersupportheight,
+									carbonfibersupportshapename[i],i==0 ? 1: -1);
   /////////////////////////////////////
   //Setting Translations and Rotations: 
   /////////////////////////////////////
-  TGeoTranslation* CarbonFiberSupportTrans = 
+  TGeoTranslation* carbonfibersupporttrans = 
 						  new TGeoTranslation("CarbonFiberSupportTrans",
-											  0.0,0.0,0.5*CarbonFiberSupportHeight);
-  CarbonFiberSupportTrans->RegisterYourself();
-  TGeoRotation* CarbonFiberCompShapeRot[2];
-  CarbonFiberCompShapeRot[0] = new TGeoRotation("CarbonFiberCompShapeRot1",
+											  0.0,0.0,0.5*carbonfibersupportheight);
+  carbonfibersupporttrans->RegisterYourself();
+  TGeoRotation* carbonfibercompshaperot[2];
+  carbonfibercompshaperot[0] = new TGeoRotation("CarbonFiberCompShapeRot1",
 											  0.0,180.0,0.0);
-  CarbonFiberCompShapeRot[1] = new TGeoRotation("CarbonFiberCompShapeRot2",
+  carbonfibercompshaperot[1] = new TGeoRotation("CarbonFiberCompShapeRot2",
 										  90.,-fgkCarbonFiberTriangleAngle,-90.);
-  Double_t TransVector[3] = {fgkCarbonFiberTriangleLength
+  Double_t transvector[3] = {fgkCarbonFiberTriangleLength
 						  *  TMath::Cos(fgkCarbonFiberTriangleAngle
 						  *	 TMath::DegToRad()),0.,-fgkCarbonFiberTriangleLength
 						  *	 TMath::Sin(fgkCarbonFiberTriangleAngle
 						  *	 TMath::DegToRad())};
-  TGeoCombiTrans* CarbonFiberSupportCombiTrans = 
+  TGeoCombiTrans* carbonfibersupportcombitrans = 
 							   new TGeoCombiTrans("CarbonFiberSupportCombiTrans",
-							   TransVector[0],2.*SymmetryPlanePosition
-						  +	   TransVector[1],TransVector[2],
-							   new TGeoRotation((*CarbonFiberCompShapeRot[1])
-						  *	   (*CarbonFiberCompShapeRot[0])));
-  CarbonFiberSupportCombiTrans->RegisterYourself();
+							   transvector[0],2.*symmetryplaneposition
+						  +	   transvector[1],transvector[2],
+							   new TGeoRotation((*carbonfibercompshaperot[1])
+						  *	   (*carbonfibercompshaperot[0])));
+  carbonfibersupportcombitrans->RegisterYourself();
 ////////////////////////////////////////////////////////////////////////////////
-  TGeoCompositeShape* CarbonFiberSupportCompShape = 
+  TGeoCompositeShape* carbonfibersupportcompshape = 
 							new TGeoCompositeShape("CarbonFiberSupportCompShape",
 							"CarbonFiberSupportShape1:CarbonFiberSupportTrans+"
 							"CarbonFiberSupportShape2:CarbonFiberSupportTrans");
-  TGeoVolume* CarbonFiberSupport = new TGeoVolume("CarbonFiberSupport",
-						   CarbonFiberSupportCompShape,fgkSSDCarbonFiberMedium);
-  CarbonFiberSupport->SetLineColor(fColorCarbonFiber);
-  TGeoVolume* CarbonFiberSupportAssembly = 
+  TGeoVolume* carbonfibersupport = new TGeoVolume("CarbonFiberSupport",
+						   carbonfibersupportcompshape,fSSDCarbonFiberMedium);
+  carbonfibersupport->SetLineColor(fColorCarbonFiber);
+  TGeoVolume* carbonfibersupportassembly = 
 						    new TGeoVolumeAssembly("CarbonFiberSupportAssembly");
-  CarbonFiberSupportAssembly->AddNode(CarbonFiberSupport,1);
-  CarbonFiberSupportAssembly->AddNode(CarbonFiberSupport,2,
-									  CarbonFiberSupportCombiTrans);
-  return CarbonFiberSupportAssembly;
+  carbonfibersupportassembly->AddNode(carbonfibersupport,1);
+  carbonfibersupportassembly->AddNode(carbonfibersupport,2,
+									  carbonfibersupportcombitrans);
+  return carbonfibersupportassembly;
 }
 ////////////////////////////////////////////////////////////////////////////////
 TGeoVolume* AliITSv11GeometrySSD::GetCarbonFiberLowerSupport(Int_t ikind, Bool_t EndLadder){
-////////////////////////////////////////////////////////////////////////////////
-  const Int_t VertexNumber = 4;
-  const Int_t ShapesNumber = 2;
-  Double_t Width[2] = {fgkCarbonFiberLowerSupportWidth,
+  /////////////////////////////////////////////////////////////
+  // Method generating the Carbon Fiber Lower Support   
+  /////////////////////////////////////////////////////////////  
+  const Int_t kvertexnumber = 4;
+  const Int_t kshapesnumber = 2;
+  Double_t width[2] = {fgkCarbonFiberLowerSupportWidth,
 								fgkCarbonFiberLowerSupportWidth};
-  TVector3** VertexPosition[ShapesNumber];
-  for(Int_t i = 0; i<ShapesNumber; i++) VertexPosition[i] = 
-						 new TVector3*[VertexNumber];
+  TVector3** vertexposition[kshapesnumber];
+  for(Int_t i = 0; i<kshapesnumber; i++) vertexposition[i] = 
+						 new TVector3*[kvertexnumber];
   //First Shape Vertex Positioning
-  VertexPosition[0][0] = new TVector3(fgkCarbonFiberLowerSupportLowerLenght);
-  VertexPosition[0][1] = new TVector3(fgkCarbonFiberTriangleLength
+  vertexposition[0][0] = new TVector3(fgkCarbonFiberLowerSupportLowerLenght);
+  vertexposition[0][1] = new TVector3(fgkCarbonFiberTriangleLength
 					   -		fgkCarbonFiberLowerSupportLowerLenght);
-  VertexPosition[0][2] = new TVector3();
-  VertexPosition[0][3] = new TVector3(fgkCarbonFiberTriangleLength);
+  vertexposition[0][2] = new TVector3();
+  vertexposition[0][3] = new TVector3(fgkCarbonFiberTriangleLength);
   //Second Shape Vertex Positioning
-  Double_t Theta = TMath::ATan((fgkCarbonFiberLowerSupportVolumePosition[1]
+  Double_t theta = TMath::ATan((fgkCarbonFiberLowerSupportVolumePosition[1]
 				 -				fgkCarbonFiberLowerSupportVolumePosition[0])
 				 /				fgkCarbonFiberTriangleLength);
-  VertexPosition[1][0] = new TVector3(VertexPosition[0][0]->X(),
-								VertexPosition[0][0]->X()*TMath::Tan(Theta)
+  vertexposition[1][0] = new TVector3(vertexposition[0][0]->X(),
+								vertexposition[0][0]->X()*TMath::Tan(theta)
 				 +				fgkCarbonFiberLowerSupportVolumePosition[0]);
-  VertexPosition[1][1] = new TVector3(VertexPosition[0][1]->X(),
-								VertexPosition[0][1]->X()*TMath::Tan(Theta)
+  vertexposition[1][1] = new TVector3(vertexposition[0][1]->X(),
+								vertexposition[0][1]->X()*TMath::Tan(theta)
 				 +				fgkCarbonFiberLowerSupportVolumePosition[0]);
-  VertexPosition[1][2] = new TVector3(0.,fgkCarbonFiberLowerSupportVolumePosition[0]);
-  VertexPosition[1][3] = new TVector3(fgkCarbonFiberTriangleLength,
+  vertexposition[1][2] = new TVector3(0.,fgkCarbonFiberLowerSupportVolumePosition[0]);
+  vertexposition[1][3] = new TVector3(fgkCarbonFiberTriangleLength,
 								fgkCarbonFiberLowerSupportVolumePosition[1]);
-  char* CarbonFiberLowerSupportName[ShapesNumber] = 
+  char* carbonfiberlowersupportname[kshapesnumber] = 
 			  {"CarbonFiberLowerSupportShape1","CarbonFiberLowerSupportShape2"};
-  TGeoArb8* CarbonFiberLowerSupportShape[ShapesNumber];
-  for(Int_t i = 0; i< ShapesNumber; i++) CarbonFiberLowerSupportShape[i] = 
-								GetArbShape(VertexPosition[i],Width,
+  TGeoArb8* carbonfiberlowersupportshape[kshapesnumber];
+  for(Int_t i = 0; i< kshapesnumber; i++) carbonfiberlowersupportshape[i] = 
+								GetArbShape(vertexposition[i],width,
 											fgkCarbonFiberLowerSupportHeight,
-											CarbonFiberLowerSupportName[i]);
+											carbonfiberlowersupportname[i]);
   ///////////////////////////////////////////////////////
-  TGeoTranslation* CarbonFiberLowerSupportTrans[ShapesNumber];
-  CarbonFiberLowerSupportTrans[0] = 
+  TGeoTranslation* carbonfiberlowersupporttrans[kshapesnumber];
+  carbonfiberlowersupporttrans[0] = 
 						new TGeoTranslation("CarbonFiberLowerSupportTrans1",
 						0.0,
-						VertexPosition[1][3]->Y()+VertexPosition[1][2]->Y(),
+						vertexposition[1][3]->Y()+vertexposition[1][2]->Y(),
 						0.0);
-  CarbonFiberLowerSupportTrans[1] = 
+  carbonfiberlowersupporttrans[1] = 
 						new TGeoTranslation("CarbonFiberLowerSupportTrans2",
 						0.0,
-				-		VertexPosition[1][3]->Y()-VertexPosition[1][2]->Y(),
+				-		vertexposition[1][3]->Y()-vertexposition[1][2]->Y(),
 						0.0);
-  for(Int_t i = 0; i< ShapesNumber; i++) 
-						CarbonFiberLowerSupportTrans[i]->RegisterYourself(); 
+  for(Int_t i = 0; i< kshapesnumber; i++) 
+						carbonfiberlowersupporttrans[i]->RegisterYourself(); 
   ///////////////////////////////////////////////////////
-  TGeoCompositeShape* CarbonFiberLowerSupportCompShape; 
+  TGeoCompositeShape* carbonfiberlowersupportcompshape; 
   if(EndLadder==false)
-    CarbonFiberLowerSupportCompShape = 
+    carbonfiberlowersupportcompshape = 
 				new TGeoCompositeShape("CarbonFiberLowerSupportCompShape",
 				"CarbonFiberLowerSupportShape2+"
 				"CarbonFiberLowerSupportShape1:CarbonFiberLowerSupportTrans1");
   else
     if(ikind==0)
-      CarbonFiberLowerSupportCompShape = 
-						  (TGeoCompositeShape*)CarbonFiberLowerSupportShape[0];
+      carbonfiberlowersupportcompshape = 
+						  (TGeoCompositeShape*)carbonfiberlowersupportshape[0];
     else
-      CarbonFiberLowerSupportCompShape = 
+      carbonfiberlowersupportcompshape = 
 	new TGeoCompositeShape("CarbonFiberLowerSupportCompShape",
 				 "CarbonFiberLowerSupportShape1+"
 				 "CarbonFiberLowerSupportShape1:CarbonFiberLowerSupportTrans1"); 
-  TGeoVolume* CarbonFiberLowerSupport = new TGeoVolume("CarbonFiberLowerSupport",
-					  CarbonFiberLowerSupportCompShape,fgkSSDCarbonFiberMedium);
-  CarbonFiberLowerSupport->SetLineColor(fColorCarbonFiber);
-  return CarbonFiberLowerSupport;
+  TGeoVolume* carbonfiberlowersupport = new TGeoVolume("CarbonFiberLowerSupport",
+					  carbonfiberlowersupportcompshape,fSSDCarbonFiberMedium);
+  carbonfiberlowersupport->SetLineColor(fColorCarbonFiber);
+  return carbonfiberlowersupport;
 }
 ////////////////////////////////////////////////////////////////////////////////
 TGeoVolume* AliITSv11GeometrySSD::GetCarbonFiberAssemblySupport(){
-////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////
+  // Method generating the Carbon Fiber Assembly Support   
+  /////////////////////////////////////////////////////////////  
   SetCarbonFiberAssemblyCombiTransMatrix();
-  TGeoVolume* CarbonFiberAssemblySupport = 
+  TGeoVolume* carbonfiberassemblysupport = 
 						new TGeoVolumeAssembly("CarbonFiberAssembly");
-  TGeoVolume* CarbonFiberAssemblyVolumes[fgkCarbonFiberAssemblyCombiTransNumber];
-  CarbonFiberAssemblyVolumes[0] = GetCarbonFiberJunctionAssembly();
-  CarbonFiberAssemblyVolumes[1] = GetCarbonFiberSupport();
-  CarbonFiberAssemblyVolumes[2] = GetCarbonFiberLowerSupport();
+  TGeoVolume* carbonfiberassemblyvolumes[fgkCarbonFiberAssemblyCombiTransNumber];
+  carbonfiberassemblyvolumes[0] = GetCarbonFiberJunctionAssembly();
+  carbonfiberassemblyvolumes[1] = GetCarbonFiberSupport();
+  carbonfiberassemblyvolumes[2] = GetCarbonFiberLowerSupport();
   for(Int_t i=0; i<fgkCarbonFiberAssemblyCombiTransNumber;i++) 
-    CarbonFiberAssemblySupport->AddNode(CarbonFiberAssemblyVolumes[i],1,
-						CarbonFiberAssemblyCombiTransMatrix[i]);
-  return CarbonFiberAssemblySupport;
+    carbonfiberassemblysupport->AddNode(carbonfiberassemblyvolumes[i],1,
+						fCarbonFiberAssemblyCombiTransMatrix[i]);
+  return carbonfiberassemblysupport;
 }
 ////////////////////////////////////////////////////////////////////////////////
 TGeoVolume* AliITSv11GeometrySSD::GetCoolingTubeSupport(){
-////////////////////////////////////////////////////////////////////////////////
-  const Int_t VertexNumber = 3;
-  Double_t Phi = TMath::ASin(0.5*fgkCoolingTubeSupportHeight
+  /////////////////////////////////////////////////////////////
+  // Method generating the Cooling Tube Support
+  /////////////////////////////////////////////////////////////  
+  const Int_t kvertexnumber = 3;
+  Double_t phi = TMath::ASin(0.5*fgkCoolingTubeSupportHeight
 			   /			 fgkCoolingTubeSupportRmax)*TMath::RadToDeg();
-  /* TGeoTubeSeg* CoolingTubeSegShape =  */ 
 						new TGeoTubeSeg("CoolingTubeSegShape",0.0,
 							fgkCoolingTubeSupportRmax,
-							0.5*fgkCoolingTubeSupportWidth,Phi,
-							360-Phi);
-  /* TGeoTube* CoolingTubeHoleShape =  */
+							0.5*fgkCoolingTubeSupportWidth,phi,
+							360-phi);
 						new TGeoTube("CoolingTubeHoleShape",0.0,
 							fgkCoolingTubeSupportRmin,
 							0.5*fgkCoolingTubeSupportWidth);
-  TVector3* VertexPosition[VertexNumber];
+  TVector3* vertexposition[kvertexnumber];
   ///////////////////////////
   //Shape Vertex Positioning
   ///////////////////////////
-  VertexPosition[0] = new TVector3();
-  VertexPosition[1] = new TVector3(fgkCoolingTubeSupportRmax
-					*		TMath::Cos(Phi*TMath::DegToRad()),
+  vertexposition[0] = new TVector3();
+  vertexposition[1] = new TVector3(fgkCoolingTubeSupportRmax
+					*		TMath::Cos(phi*TMath::DegToRad()),
 							fgkCoolingTubeSupportRmax
-					*		TMath::Sin(Phi*TMath::DegToRad()));
-  VertexPosition[2] = new TVector3(VertexPosition[1]->X(),
-					-			   VertexPosition[1]->Y());
-  /* TGeoArb8* CoolingTubeTriangleShape = */ GetTriangleShape(VertexPosition,
+					*		TMath::Sin(phi*TMath::DegToRad()));
+  vertexposition[2] = new TVector3(vertexposition[1]->X(),
+					-			   vertexposition[1]->Y());
+  GetTriangleShape(vertexposition,
 									   fgkCoolingTubeSupportWidth,
 									   "CoolingTubeTriangleShape");
-  Double_t* BoxOrigin = new Double_t[3];
-  Double_t BoxLength = fgkCoolingTubeSupportLength-fgkCoolingTubeSupportRmax
-					 - VertexPosition[1]->X();
-  BoxOrigin[0] = VertexPosition[1]->X()+0.5*BoxLength, BoxOrigin[1] = BoxOrigin[2] = 0.;
-  /* TGeoBBox* CoolingTubeBoxShape = */
-						new TGeoBBox("CoolingTubeBoxShape",0.5*BoxLength,
+  Double_t* boxorigin = new Double_t[3];
+  Double_t boxlength = fgkCoolingTubeSupportLength-fgkCoolingTubeSupportRmax
+					 - vertexposition[1]->X();
+  boxorigin[0] = vertexposition[1]->X()+0.5*boxlength, boxorigin[1] = boxorigin[2] = 0.;
+						new TGeoBBox("CoolingTubeBoxShape",0.5*boxlength,
 							0.5*fgkCoolingTubeSupportHeight,
-							0.5*fgkCoolingTubeSupportWidth,BoxOrigin);
-  TGeoCompositeShape* CoolingTubeSupportShape = 
+							0.5*fgkCoolingTubeSupportWidth,boxorigin);
+  TGeoCompositeShape* coolingtubesupportshape = 
 						new TGeoCompositeShape("CoolingTubeSupportShape",
 						 "(CoolingTubeSegShape+CoolingTubeTriangleShape"
 						 "+CoolingTubeBoxShape)-CoolingTubeHoleShape"); 
-  TGeoVolume* CoolingTubeSupport = new TGeoVolume("CoolingTubeSupport",
-						 CoolingTubeSupportShape,fgkSSDTubeHolderMedium);
-  return CoolingTubeSupport;
+  TGeoVolume* coolingtubesupport = new TGeoVolume("CoolingTubeSupport",
+						 coolingtubesupportshape,fSSDTubeHolderMedium);
+  return coolingtubesupport;
 }
 ////////////////////////////////////////////////////////////////////////////////
 TGeoVolume* AliITSv11GeometrySSD::GetCoolingTubeSupportAssembly(){
-////////////////////////////////////////////////////////////////////////////////
-  TGeoVolume* CoolingTubeSupportAssembly = 
+  /////////////////////////////////////////////////////////////
+  // Method generating the Cooling Tube Support Assembly
+  /////////////////////////////////////////////////////////////  
+  TGeoVolume* coolingtubesupportassembly = 
 						   new TGeoVolumeAssembly("CoolingTubeSupportAssembly");
-  TGeoVolume* CoolingTubeSupport = GetCoolingTubeSupport();
+  TGeoVolume* coolingtubesupport = GetCoolingTubeSupport();
   SetCoolingTubeSupportCombiTransMatrix();
   for(Int_t i=0; i<fgkCoolingTubeSupportCombiTransNumber;i++) 
-    CoolingTubeSupportAssembly->AddNode(CoolingTubeSupport,i+1,
-										 CoolingTubeSupportCombiTransMatrix[i]);
-  return CoolingTubeSupportAssembly;
+    coolingtubesupportassembly->AddNode(coolingtubesupport,i+1,
+										 fCoolingTubeSupportCombiTransMatrix[i]);
+  return coolingtubesupportassembly;
 }
 ////////////////////////////////////////////////////////////////////////////////
-TGeoVolume* AliITSv11GeometrySSD::GetCoolingTube(){
-////////////////////////////////////////////////////////////////////////////////
-  TGeoVolume* CoolingTubeAssembly = new TGeoVolumeAssembly("CoolingTubeAssembly");
-  TGeoTube *CoolingTubeShape = new TGeoTube("CoolingTubeShape", fgkCoolingTubeRmin, 
+TGeoVolume* AliITSv11GeometrySSD::GetCoolingTube() const{
+  /////////////////////////////////////////////////////////////
+  // Method generating the Cooling Tube 
+  /////////////////////////////////////////////////////////////  
+  TGeoVolume* coolingtubeassembly = new TGeoVolumeAssembly("CoolingTubeAssembly");
+  TGeoTube *coolingtubeshape = new TGeoTube("CoolingTubeShape", fgkCoolingTubeRmin, 
 						fgkCoolingTubeRmax, fgkCoolingTubeLength/2.0);
-  TGeoVolume* CoolingTube = new TGeoVolume("CoolingTube",
-						 CoolingTubeShape,fgkSSDCoolingTubePhynox);
-  TGeoTube *CoolingTubeInteriorShape = new TGeoTube("CoolingTubeInteriorShape", 
+  TGeoVolume* coolingtube = new TGeoVolume("CoolingTube",
+						 coolingtubeshape,fSSDCoolingTubePhynox);
+  TGeoTube *coolingtubeinteriorshape = new TGeoTube("CoolingTubeInteriorShape", 
 						0, fgkCoolingTubeRmin, 
 						fgkCoolingTubeLength/2.0);
-  TGeoVolume *CoolingTubeInterior = new TGeoVolume("CoolingTubeInterior",
-						   CoolingTubeInteriorShape,fgkSSDCoolingTubeWater);
-  CoolingTubeAssembly->AddNode(CoolingTube,1);
-  CoolingTubeAssembly->AddNode(CoolingTubeInterior,2);
-  return CoolingTubeAssembly;
+  TGeoVolume *coolingtubeinterior = new TGeoVolume("CoolingTubeInterior",
+						   coolingtubeinteriorshape,fSSDCoolingTubeWater);
+  coolingtubeassembly->AddNode(coolingtube,1);
+  coolingtubeassembly->AddNode(coolingtubeinterior,2);
+  return coolingtubeassembly;
 }  
 ////////////////////////////////////////////////////////////////////////////////
 TGeoVolume* AliITSv11GeometrySSD::GetCoolingTubeAssembly(){
-////////////////////////////////////////////////////////////////////////////////
-  TGeoVolume* CoolingTubeAssembly =   new TGeoVolumeAssembly("CoolingTubeAssembly");
-  TGeoVolume* CoolingTube = GetCoolingTube();
+  /////////////////////////////////////////////////////////////
+  // Method generating the Cooling Tube Assembly
+  /////////////////////////////////////////////////////////////  
+  TGeoVolume* coolingtubeassembly =   new TGeoVolumeAssembly("CoolingTubeAssembly");
+  TGeoVolume* coolingtube = GetCoolingTube();
   SetCoolingTubeCombiTransMatrix();
   for(Int_t i=0; i<fgkCoolingTubeCombiTransNumber;i++) 
-    CoolingTubeAssembly->AddNode(CoolingTube,i+1,CoolingTubeTransMatrix[i]);
-  return CoolingTubeAssembly;
+    coolingtubeassembly->AddNode(coolingtube,i+1,fCoolingTubeTransMatrix[i]);
+  return coolingtubeassembly;
 }
 ////////////////////////////////////////////////////////////////////////////////
 TGeoVolume* AliITSv11GeometrySSD::GetLadderSegment(Int_t iChipCablesHeight){
-////////////////////////////////////////////////////////////////////////////////
-    TGeoVolume* LadderSegment = new TGeoVolumeAssembly("LadderSegment");
-    TGeoVolume* LadderSegmentVolumes[fgkLadderSegmentCombiTransNumber];
-    LadderSegmentVolumes[0] = GetCarbonFiberAssemblySupport();
-    LadderSegmentVolumes[1] = GetSSDModule(iChipCablesHeight);
-    LadderSegmentVolumes[2] = GetSSDSensorSupportAssembly(iChipCablesHeight);
-    LadderSegmentVolumes[3] = GetCoolingTubeSupportAssembly();
-	LadderSegmentVolumes[4] = GetCoolingTubeAssembly(); 
-    SetLadderSegmentCombiTransMatrix();
-    for(Int_t i=0; i<fgkLadderSegmentCombiTransNumber; i++) 
-      LadderSegment->AddNode(LadderSegmentVolumes[i],1,
-							 LadderSegmentCombiTransMatrix[i]);
-    return LadderSegment;
-}
+  /////////////////////////////////////////////////////////////
+  // Method generating the basic Ladder Segment element which will be replicated   
+  /////////////////////////////////////////////////////////////  
+  TGeoVolume*laddersegment = new TGeoVolumeAssembly("LadderSegment");
+  TGeoVolume* laddersegmentvolumes[fgkLadderSegmentCombiTransNumber];
+  laddersegmentvolumes[0] = GetCarbonFiberAssemblySupport();
+  laddersegmentvolumes[1] = GetSSDModule(iChipCablesHeight);
+  laddersegmentvolumes[2] = GetSSDSensorSupportAssembly(iChipCablesHeight);
+  laddersegmentvolumes[3] = GetCoolingTubeSupportAssembly();
+	 laddersegmentvolumes[4] = GetCoolingTubeAssembly(); 
+  SetLadderSegmentCombiTransMatrix();
+  for(Int_t i=0; i<fgkLadderSegmentCombiTransNumber; i++) 
+   laddersegment->AddNode(laddersegmentvolumes[i],1,
+							 fLadderSegmentCombiTransMatrix[i]);
+  return laddersegment;
+ }
 ////////////////////////////////////////////////////////////////////////////////
 TList* AliITSv11GeometrySSD::GetEndLadderSegment(){
-////////////////////////////////////////////////////////////////////////////////
-  const Int_t EndLadderSegmentNumber = 2;
-  TList* EndLadderCarbonFiberJunctionList = GetEndLadderCarbonFiberJunctionAssembly();
-  TGeoVolume* EndLadderSegment[EndLadderSegmentNumber];
-  EndLadderSegment[0] = new TGeoVolumeAssembly("EndLadderSegment1");
-  EndLadderSegment[1] = new TGeoVolumeAssembly("EndLadderSegment2");
-  TGeoVolume** LadderSegmentVolumes[EndLadderSegmentNumber];
-  const Int_t LadderSegmentVolumeNumber = 4;
-  for(Int_t i=0; i<EndLadderSegmentNumber; i++) LadderSegmentVolumes[i] = 
-						new TGeoVolume*[LadderSegmentVolumeNumber];
-  LadderSegmentVolumes[0][0] = (TGeoVolume*)EndLadderCarbonFiberJunctionList->At(0);
-  LadderSegmentVolumes[0][1] = GetCarbonFiberSupport();
-  LadderSegmentVolumes[0][2] = GetSSDMountingBlock();
-  LadderSegmentVolumes[0][3] = GetCarbonFiberLowerSupport(0,true);
-  LadderSegmentVolumes[1][0] = (TGeoVolume*)EndLadderCarbonFiberJunctionList->At(1);
-  LadderSegmentVolumes[1][1] = LadderSegmentVolumes[0][1];
-  LadderSegmentVolumes[1][2] = LadderSegmentVolumes[0][2];
-  LadderSegmentVolumes[1][3] = GetCarbonFiberLowerSupport(1,true);
-  TList* EndLadderSegmentList = new TList();
-  for(Int_t i=0; i<EndLadderSegmentNumber; i++){
+  /////////////////////////////////////////////////////////////
+  // Method generating the Terminal Ladder Segment  
+  /////////////////////////////////////////////////////////////  
+  const Int_t kendladdersegmentnumber = 2;
+  TList* endladdercarbonfiberjunctionlist = GetEndLadderCarbonFiberJunctionAssembly();
+  TGeoVolume* endladdersegment[kendladdersegmentnumber];
+  endladdersegment[0] = new TGeoVolumeAssembly("EndLadderSegment1");
+  endladdersegment[1] = new TGeoVolumeAssembly("EndLadderSegment2");
+  TGeoVolume** laddersegmentvolumes[kendladdersegmentnumber];
+  const Int_t kladdersegmentvolumenumber = 4;
+  for(Int_t i=0; i<kendladdersegmentnumber; i++) laddersegmentvolumes[i] = 
+						new TGeoVolume*[kladdersegmentvolumenumber];
+  laddersegmentvolumes[0][0] = (TGeoVolume*)endladdercarbonfiberjunctionlist->At(0);
+  laddersegmentvolumes[0][1] = GetCarbonFiberSupport();
+  laddersegmentvolumes[0][2] = GetSSDMountingBlock();
+  laddersegmentvolumes[0][3] = GetCarbonFiberLowerSupport(0,true);
+  laddersegmentvolumes[1][0] = (TGeoVolume*)endladdercarbonfiberjunctionlist->At(1);
+  laddersegmentvolumes[1][1] = laddersegmentvolumes[0][1];
+  laddersegmentvolumes[1][2] = laddersegmentvolumes[0][2];
+  laddersegmentvolumes[1][3] = GetCarbonFiberLowerSupport(1,true);
+  TList* endladdersegmentlist = new TList();
+  for(Int_t i=0; i<kendladdersegmentnumber; i++){
     SetEndLadderSegmentCombiTransMatrix(i);
-    for(Int_t j=0; j<LadderSegmentVolumeNumber; j++)
-      EndLadderSegment[i]->AddNode(LadderSegmentVolumes[i][j],1,
-								   EndLadderSegmentCombiTransMatrix[j]);
-    EndLadderSegmentList->Add(EndLadderSegment[i]);
+    for(Int_t j=0; j<kladdersegmentvolumenumber; j++)
+      endladdersegment[i]->AddNode(laddersegmentvolumes[i][j],1,
+								   fEndLadderSegmentCombiTransMatrix[j]);
+    endladdersegmentlist->Add(endladdersegment[i]);
   }
-  return EndLadderSegmentList;
+  return endladdersegmentlist;
 }
 ////////////////////////////////////////////////////////////////////////////////
 TGeoVolume* AliITSv11GeometrySSD::GetSSDMountingBlock(){
-////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////
+  // Method generating the Mounting Block   
+  /////////////////////////////////////////////////////////////  
   // Mounting Block Boxes Shapes
   ///////////////////////////////////////
-  const Int_t MountingBlockBoxNumber = 3;
-  TGeoBBox* MountingBlockBoxShape[MountingBlockBoxNumber];
-  MountingBlockBoxShape[0] = new TGeoBBox("MountingBlockBoxShape0",
+  const Int_t kmountingblockboxnumber = 3;
+  TGeoBBox* mountingblockboxshape[kmountingblockboxnumber];
+  mountingblockboxshape[0] = new TGeoBBox("MountingBlockBoxShape0",
 							0.25*(fgkSSDMountingBlockLength[0]
 						-	fgkSSDMountingBlockLength[1]),
 							0.5*fgkSSDMountingBlockWidth,
 							0.5*fgkSSDMountingBlockHeight[0]);
-  MountingBlockBoxShape[1] = new TGeoBBox("MountingBlockBoxShape1",
+  mountingblockboxshape[1] = new TGeoBBox("MountingBlockBoxShape1",
 							0.25*(fgkSSDMountingBlockLength[1]
 						-	fgkSSDMountingBlockLength[2]),
 							0.5*fgkSSDMountingBlockWidth,
 							0.5*(fgkSSDMountingBlockHeight[1]
 						-	fgkSSDMountingBlockHeight[3]));
-  MountingBlockBoxShape[2] = new TGeoBBox("MountingBlockBoxShape2",
+  mountingblockboxshape[2] = new TGeoBBox("MountingBlockBoxShape2",
 							0.5*fgkSSDMountingBlockLength[2],
 							0.5*fgkSSDMountingBlockWidth,
 							0.5*(fgkSSDMountingBlockHeight[2]
 						-	fgkSSDMountingBlockHeight[3]));
-  TGeoTranslation* MountingBlockBoxTrans[MountingBlockBoxNumber+2];
-  MountingBlockBoxTrans[0] = new TGeoTranslation("MountingBlockBoxTrans0",0.,0.,0.);
-  MountingBlockBoxTrans[1] = new TGeoTranslation("MountingBlockBoxTrans1",
-							MountingBlockBoxShape[0]->GetDX()
-						+	MountingBlockBoxShape[1]->GetDX(),
+  TGeoTranslation* mountingblockboxtrans[kmountingblockboxnumber+2];
+  mountingblockboxtrans[0] = new TGeoTranslation("MountingBlockBoxTrans0",0.,0.,0.);
+  mountingblockboxtrans[1] = new TGeoTranslation("MountingBlockBoxTrans1",
+							mountingblockboxshape[0]->GetDX()
+						+	mountingblockboxshape[1]->GetDX(),
 							0.0,
-							MountingBlockBoxShape[1]->GetDZ()
-						-	MountingBlockBoxShape[0]->GetDZ()
+							mountingblockboxshape[1]->GetDZ()
+						-	mountingblockboxshape[0]->GetDZ()
 						+	fgkSSDMountingBlockHeight[3]);
-  MountingBlockBoxTrans[2] = new TGeoTranslation("MountingBlockBoxTrans2",
-							MountingBlockBoxShape[0]->GetDX()
-						+	2.*MountingBlockBoxShape[1]->GetDX()
-						+	MountingBlockBoxShape[2]->GetDX(),
+  mountingblockboxtrans[2] = new TGeoTranslation("MountingBlockBoxTrans2",
+							mountingblockboxshape[0]->GetDX()
+						+	2.*mountingblockboxshape[1]->GetDX()
+						+	mountingblockboxshape[2]->GetDX(),
 							0.0,
-							MountingBlockBoxShape[2]->GetDZ()
-						-	MountingBlockBoxShape[0]->GetDZ()
+							mountingblockboxshape[2]->GetDZ()
+						-	mountingblockboxshape[0]->GetDZ()
 						+	fgkSSDMountingBlockHeight[3]);
-  MountingBlockBoxTrans[3] = new TGeoTranslation("MountingBlockBoxTrans3",
-							MountingBlockBoxShape[0]->GetDX()
-						+	MountingBlockBoxShape[1]->GetDX()
-						+	2.*(MountingBlockBoxShape[1]->GetDX()
-						+	MountingBlockBoxShape[2]->GetDX()),
+  mountingblockboxtrans[3] = new TGeoTranslation("MountingBlockBoxTrans3",
+							mountingblockboxshape[0]->GetDX()
+						+	mountingblockboxshape[1]->GetDX()
+						+	2.*(mountingblockboxshape[1]->GetDX()
+						+	mountingblockboxshape[2]->GetDX()),
 							0.0,
-							MountingBlockBoxShape[1]->GetDZ()
-						-	MountingBlockBoxShape[0]->GetDZ()
+							mountingblockboxshape[1]->GetDZ()
+						-	mountingblockboxshape[0]->GetDZ()
 						+	fgkSSDMountingBlockHeight[3]);
-  MountingBlockBoxTrans[4] = new TGeoTranslation("MountingBlockBoxTrans4",
-							2.*(MountingBlockBoxShape[0]->GetDX()
-						+	2.*MountingBlockBoxShape[1]->GetDX()
-						+   MountingBlockBoxShape[2]->GetDX()),
+  mountingblockboxtrans[4] = new TGeoTranslation("MountingBlockBoxTrans4",
+							2.*(mountingblockboxshape[0]->GetDX()
+						+	2.*mountingblockboxshape[1]->GetDX()
+						+   mountingblockboxshape[2]->GetDX()),
 							0.0,
 							0.0);
-  for(Int_t i=0; i<MountingBlockBoxNumber+2; i++) 
-									MountingBlockBoxTrans[i]->RegisterYourself();
+  for(Int_t i=0; i<kmountingblockboxnumber+2; i++) 
+									mountingblockboxtrans[i]->RegisterYourself();
   ///////////////////////////////////////
   // Mounting Block Trapezoid Hole Shapes
   ///////////////////////////////////////
-  const Int_t HoleTrapezoidVertexNumber = 4;
-  TVector3* HoleTrapezoidVertex[HoleTrapezoidVertexNumber];
-  HoleTrapezoidVertex[0] = new TVector3();
-  HoleTrapezoidVertex[1] = new TVector3(fgkSSDMountingBlockHoleTrapezoidHeight);
-  HoleTrapezoidVertex[2] = new TVector3(*HoleTrapezoidVertex[0]);
-  HoleTrapezoidVertex[3] = new TVector3(*HoleTrapezoidVertex[1]);
-  Double_t HoleTrapezoidWidth[2] = {fgkSSDMountingBlockHoleTrapezoidUpBasis
-						+	2.*MountingBlockBoxShape[1]->GetDX()
+  const Int_t kholetrapezoidvertexnumber = 4;
+  TVector3* holetrapezoidvertex[kholetrapezoidvertexnumber];
+  holetrapezoidvertex[0] = new TVector3();
+  holetrapezoidvertex[1] = new TVector3(fgkSSDMountingBlockHoleTrapezoidHeight);
+  holetrapezoidvertex[2] = new TVector3(*holetrapezoidvertex[0]);
+  holetrapezoidvertex[3] = new TVector3(*holetrapezoidvertex[1]);
+  Double_t holetrapezoidwidth[2] = {fgkSSDMountingBlockHoleTrapezoidUpBasis
+						+	2.*mountingblockboxshape[1]->GetDX()
 						*	TMath::Tan(fgkSSDMountingBlockHoleTrapezoidAngle
 						*	TMath::DegToRad()),
 							fgkSSDMountingBlockHoleTrapezoidUpBasis}; 
-  /* TGeoArb8* HoleTrapezoidShape =*/ GetArbShape(HoleTrapezoidVertex,
-							HoleTrapezoidWidth,
-							2.*MountingBlockBoxShape[1]->GetDX(),
+  GetArbShape(holetrapezoidvertex,
+							holetrapezoidwidth,
+							2.*mountingblockboxshape[1]->GetDX(),
 							"HoleTrapezoidShape");
-  TGeoRotation* HoleTrapezoidShapeRot[2];
-  HoleTrapezoidShapeRot[0] = new TGeoRotation("HoleTrapezoidShapeRot0",
+  TGeoRotation* holetrapezoidshaperot[2];
+  holetrapezoidshaperot[0] = new TGeoRotation("HoleTrapezoidShapeRot0",
 							90.,-90.,-90.);
-  HoleTrapezoidShapeRot[1] = new TGeoRotation("HoleTrapezoidShapeRot1",
+  holetrapezoidshaperot[1] = new TGeoRotation("HoleTrapezoidShapeRot1",
 							-180.,0.,0.);
-  TGeoCombiTrans* HoleTrapezoidShapeCombiTrans = 
+  TGeoCombiTrans* holetrapezoidshapecombitrans = 
 							new TGeoCombiTrans("HoleTrapezoidShapeCombiTrans",
-							MountingBlockBoxShape[0]->GetDX()
-						+	3.*MountingBlockBoxShape[1]->GetDX()
-						+	2.*MountingBlockBoxShape[2]->GetDX(),
+							mountingblockboxshape[0]->GetDX()
+						+	3.*mountingblockboxshape[1]->GetDX()
+						+	2.*mountingblockboxshape[2]->GetDX(),
 							0.5*fgkSSDMountingBlockWidth,
 						-	fgkSSDMountingBlockHoleTrapezoidHeight
-						+	2.*MountingBlockBoxShape[1]->GetDZ()
-						-	MountingBlockBoxShape[0]->GetDZ()
+						+	2.*mountingblockboxshape[1]->GetDZ()
+						-	mountingblockboxshape[0]->GetDZ()
 						+	fgkSSDMountingBlockHeight[3],
-							new TGeoRotation((*HoleTrapezoidShapeRot[1])
-						*	(*HoleTrapezoidShapeRot[0])));
-  HoleTrapezoidShapeCombiTrans->RegisterYourself();
+							new TGeoRotation((*holetrapezoidshaperot[1])
+						*	(*holetrapezoidshaperot[0])));
+  holetrapezoidshapecombitrans->RegisterYourself();
   ///////////////////////////////////
   // Mounting Block Screw Hole Shapes
   ///////////////////////////////////
-  const Int_t MountingBlockTubeNumber = 2;
-  TGeoTube* MountingBlockTubeShape[MountingBlockTubeNumber];
-  MountingBlockTubeShape[0] = new TGeoTube("MountingBlockTubeShape0",0.0,
+  const Int_t kmountingblocktubenumber = 2;
+  TGeoTube* mountingblocktubeshape[kmountingblocktubenumber];
+  mountingblocktubeshape[0] = new TGeoTube("MountingBlockTubeShape0",0.0,
 							fgkSSDMountingBlockHoleRadius,
-							MountingBlockBoxShape[0]->GetDZ());
-  MountingBlockTubeShape[1] = new TGeoTube("MountingBlockTubeShape1",0.0,
+							mountingblockboxshape[0]->GetDZ());
+  mountingblocktubeshape[1] = new TGeoTube("MountingBlockTubeShape1",0.0,
 							fgkSSDMountingBlockHoleRadius,
-							MountingBlockBoxShape[2]->GetDZ());
-  TGeoTranslation* MountingBlockTubeTrans[2*MountingBlockTubeNumber];
-  MountingBlockTubeTrans[0] = new TGeoTranslation("MountingBlockTubeTrans0",
+							mountingblockboxshape[2]->GetDZ());
+  TGeoTranslation* mountingblocktubetrans[2*kmountingblocktubenumber];
+  mountingblocktubetrans[0] = new TGeoTranslation("MountingBlockTubeTrans0",
 						-	0.5*(fgkSSDMountingBlockLength[0]
 						-	fgkSSDMountingBlockHoleTubeLength[0]),
 							0.5*fgkSSDMountingBlockWidth
 						-	fgkSSDMountingBlockHoleTubeWidth[0],0.);
-  MountingBlockTubeTrans[1] = new TGeoTranslation("MountingBlockTubeTrans1",
+  mountingblocktubetrans[1] = new TGeoTranslation("MountingBlockTubeTrans1",
 						-	0.5*(fgkSSDMountingBlockLength[0]
 						-	fgkSSDMountingBlockHoleTubeLength[0])
 						+	fgkSSDMountingBlockHoleTubeLength[0],
 						-	0.5*fgkSSDMountingBlockWidth
 						+	fgkSSDMountingBlockHoleTubeWidth[0],
 							0.);
-  MountingBlockTubeTrans[2] = new TGeoTranslation("MountingBlockTubeTrans2",
-						-	MountingBlockBoxShape[0]->GetDX()
+  mountingblocktubetrans[2] = new TGeoTranslation("MountingBlockTubeTrans2",
+						-	mountingblockboxshape[0]->GetDX()
 						+	0.5*fgkSSDMountingBlockLength[0]
 						-	fgkSSDMountingBlockHoleTubeLength[1],
 							0.5*fgkSSDMountingBlockWidth
 						-	fgkSSDMountingBlockHoleTubeWidth[0],
-							MountingBlockBoxShape[2]->GetDZ()
-						-	MountingBlockBoxShape[0]->GetDZ()
+							mountingblockboxshape[2]->GetDZ()
+						-	mountingblockboxshape[0]->GetDZ()
 						+	fgkSSDMountingBlockHeight[3]);
-  MountingBlockTubeTrans[3] = new TGeoTranslation("MountingBlockTubeTrans3",
-						-	MountingBlockBoxShape[0]->GetDX()
+  mountingblocktubetrans[3] = new TGeoTranslation("MountingBlockTubeTrans3",
+						-	mountingblockboxshape[0]->GetDX()
 						+	0.5*fgkSSDMountingBlockLength[0],
 						-	0.5*fgkSSDMountingBlockWidth
 						+	fgkSSDMountingBlockHoleTubeWidth[1],
-							MountingBlockBoxShape[2]->GetDZ()
-						-	MountingBlockBoxShape[0]->GetDZ()
+							mountingblockboxshape[2]->GetDZ()
+						-	mountingblockboxshape[0]->GetDZ()
 						+	fgkSSDMountingBlockHeight[3]);
-  for(Int_t i=0; i<2*MountingBlockTubeNumber; i++) 
-						MountingBlockTubeTrans[i]->RegisterYourself();
-  /* TGeoCompositeShape* MountingBlockMainShape = */
+  for(Int_t i=0; i<2*kmountingblocktubenumber; i++) 
+						mountingblocktubetrans[i]->RegisterYourself();
 						new TGeoCompositeShape("MountingBlockMainShape",
 						"MountingBlockBoxShape0:MountingBlockBoxTrans0+"
 						"MountingBlockBoxShape1:MountingBlockBoxTrans1+"
@@ -2829,58 +2982,56 @@ TGeoVolume* AliITSv11GeometrySSD::GetSSDMountingBlock(){
   ////////////////////////////////////////////
   // Mounting Block Screw Composite Hole Shapes
   ////////////////////////////////////////////
-  const Int_t MountingBlockHoleTubeSegNumber = 4;
-  /* TGeoTubeSeg* MountingBlockHoleTubeSegShape =  */ 
+  const Int_t kmountingblockholetubesegnumber = 4;
 						new TGeoTubeSeg("MountingBlockHoleTubeSegShape",
 						0.0,
 						fgkSSDMountingBlockScrewHoleRadius[0],
 						0.5*fgkSSDMountingBlockScrewHoleHeigth,-90.,180.);
-  TGeoCombiTrans* MountingBlockHoleTubeSegCombiTrans[MountingBlockHoleTubeSegNumber];
-  char* MountingBlockHoleTubeSegCombiTransName[MountingBlockHoleTubeSegNumber] = 
+  TGeoCombiTrans* mountingblockholetubesegcombitrans[kmountingblockholetubesegnumber];
+  char* mountingblockholetubesegcombitransname[kmountingblockholetubesegnumber] = 
 					{	"MountingBlockHoleTubeSegCombiTrans0",
 						"MountingBlockHoleTubeSegCombiTrans1",
 						"MountingBlockHoleTubeSegCombiTrans2",
 						"MountingBlockHoleTubeSegCombiTrans3"};
-  for(Int_t i=0; i<MountingBlockHoleTubeSegNumber; i++){
-    MountingBlockHoleTubeSegCombiTrans[i] =
-      new TGeoCombiTrans(MountingBlockHoleTubeSegCombiTransName[i],
+  for(Int_t i=0; i<kmountingblockholetubesegnumber; i++){
+    mountingblockholetubesegcombitrans[i] =
+      new TGeoCombiTrans(mountingblockholetubesegcombitransname[i],
 						0.5*fgkSSDMountingBlockScrewHoleEdge*TMath::Sqrt(2)
 					*	TMath::Cos(45*(2*i+1)*TMath::DegToRad()),
 						0.5*fgkSSDMountingBlockScrewHoleEdge*TMath::Sqrt(2)
 					*	TMath::Sin(45*(2*i+1)*TMath::DegToRad()),
 						0.0,
 						new TGeoRotation("",90.*i,0.,0.));
-    MountingBlockHoleTubeSegCombiTrans[i]->RegisterYourself();
+    mountingblockholetubesegcombitrans[i]->RegisterYourself();
   }
-  TGeoBBox* MountingBlockHoleBoxShape = 
+  TGeoBBox* mountingblockholeboxshape = 
 						new TGeoBBox("MountingBlockHoleBoxShape",
 						0.5*fgkSSDMountingBlockScrewHoleEdge,
 						0.5*fgkSSDMountingBlockScrewHoleEdge,
 						0.5*fgkSSDMountingBlockScrewHoleHeigth);
-  TGeoCompositeShape* MountingBlockScrewHole[2];
-  MountingBlockScrewHole[0] = 
+  TGeoCompositeShape* mountingblockscrewhole[2];
+  mountingblockscrewhole[0] = 
 			new TGeoCompositeShape("MountingBlockScrewHole0",
 			"MountingBlockHoleTubeSegShape:MountingBlockHoleTubeSegCombiTrans0+"
 			"MountingBlockHoleTubeSegShape:MountingBlockHoleTubeSegCombiTrans1+"
 			"MountingBlockHoleTubeSegShape:MountingBlockHoleTubeSegCombiTrans2+"
 			"MountingBlockHoleTubeSegShape:MountingBlockHoleTubeSegCombiTrans3+"
 			"MountingBlockHoleBoxShape");
-  /* TGeoTubeSeg* MountingBlockLowerHoleTubeSegShape = */
 			new TGeoTubeSeg("MountingBlockLowerHoleTubeSegShape",
 						0.0,
 						fgkSSDMountingBlockScrewHoleRadius[1],
 						0.5*(fgkSSDMountingBlockHoleTubeWidth[0]
 					-	fgkSSDMountingBlockScrewHoleHeigth
 					-	fgkSSDMountingBlockHeight[3]),0.,90.); 
-  TGeoCombiTrans* MountingBlockLowerHoleTubeSegCombiTrans[MountingBlockHoleTubeSegNumber];
-  char* MountingBlockLowerHoleTubeSegCombiTransName[MountingBlockHoleTubeSegNumber] =
+  TGeoCombiTrans* mountingblocklowerholetubesegcombitrans[kmountingblockholetubesegnumber];
+  char* mountingblocklowerholetubesegcombitransname[kmountingblockholetubesegnumber] =
 					{	"MountingBlockLowerHoleTubeSegCombiTrans0",
 						"MountingBlockLowerHoleTubeSegCombiTrans1",
 						"MountingBlockLowerHoleTubeSegCombiTrans2",
 						"MountingBlockLowerHoleTubeSegCombiTrans3"};
-  for(Int_t i=0; i<MountingBlockHoleTubeSegNumber; i++){
-    MountingBlockLowerHoleTubeSegCombiTrans[i] =
-			new TGeoCombiTrans(MountingBlockLowerHoleTubeSegCombiTransName[i],
+  for(Int_t i=0; i<kmountingblockholetubesegnumber; i++){
+    mountingblocklowerholetubesegcombitrans[i] =
+			new TGeoCombiTrans(mountingblocklowerholetubesegcombitransname[i],
 						0.5*(fgkSSDMountingBlockScrewHoleEdge
 					-	2.*fgkSSDMountingBlockScrewHoleRadius[1])
 					*	TMath::Sqrt(2)*TMath::Cos(45*(2*i+1)*TMath::DegToRad()),
@@ -2888,34 +3039,34 @@ TGeoVolume* AliITSv11GeometrySSD::GetSSDMountingBlock(){
 					-	2.0*fgkSSDMountingBlockScrewHoleRadius[1])
 					*	TMath::Sqrt(2)*TMath::Sin(45*(2*i+1)*TMath::DegToRad()),0.,
 						new TGeoRotation("",90.*i,0.,0.));
-					MountingBlockLowerHoleTubeSegCombiTrans[i]->RegisterYourself();
+					mountingblocklowerholetubesegcombitrans[i]->RegisterYourself();
   }
   Double_t fgkSSDMountingBlockLowerScrewHoleEdge = fgkSSDMountingBlockScrewHoleEdge
 					-	2.*fgkSSDMountingBlockScrewHoleRadius[1];
-  TGeoBBox* MountingBlockLowerHoleBoxShape[2];
-  MountingBlockLowerHoleBoxShape[0] = 
+  TGeoBBox* mountingblocklowerholeboxshape[2];
+  mountingblocklowerholeboxshape[0] = 
 			new TGeoBBox("MountingBlockLowerHoleBoxShape0",
 						0.5*fgkSSDMountingBlockLowerScrewHoleEdge,
 						0.5*fgkSSDMountingBlockLowerScrewHoleEdge,
 						0.5*(fgkSSDMountingBlockHoleTubeWidth[0]
 					-	fgkSSDMountingBlockScrewHoleHeigth
 					-	fgkSSDMountingBlockHeight[3]));
-  MountingBlockLowerHoleBoxShape[1] = 
+  mountingblocklowerholeboxshape[1] = 
 			new TGeoBBox("MountingBlockLowerHoleBoxShape1",
 						0.5*fgkSSDMountingBlockLowerScrewHoleEdge,
 						0.5*fgkSSDMountingBlockScrewHoleRadius[1],
 						0.5*(fgkSSDMountingBlockHoleTubeWidth[0]
 					-	fgkSSDMountingBlockScrewHoleHeigth
 					-	fgkSSDMountingBlockHeight[3]));
-  TGeoCombiTrans* MountingBlockLowerHoleBoxCombiTrans[MountingBlockHoleTubeSegNumber];
-  char* MountingBlockLowerHoleBoxCombiTransName[MountingBlockHoleTubeSegNumber] = 
+  TGeoCombiTrans* mountingblocklowerholeBoxcombitrans[kmountingblockholetubesegnumber];
+  char* mountingBlockLowerHoleBoxCombiTransName[kmountingblockholetubesegnumber] = 
 					{	"MountingBlockLowerHoleBoxCombiTrans0",
 						"MountingBlockLowerHoleBoxCombiTrans1",
 						"MountingBlockLowerHoleBoxCombiTrans2",
 						"MountingBlockLowerHoleBoxCombiTrans3"};
-  for(Int_t i=0; i<MountingBlockHoleTubeSegNumber; i++){
-    MountingBlockLowerHoleBoxCombiTrans[i] =
-			new TGeoCombiTrans(MountingBlockLowerHoleBoxCombiTransName[i],
+  for(Int_t i=0; i<kmountingblockholetubesegnumber; i++){
+    mountingblocklowerholeBoxcombitrans[i] =
+			new TGeoCombiTrans(mountingBlockLowerHoleBoxCombiTransName[i],
 						0.5*(fgkSSDMountingBlockLowerScrewHoleEdge
 					+	fgkSSDMountingBlockScrewHoleRadius[1])
 					*	TMath::Cos(90*(i+1)*TMath::DegToRad()),
@@ -2923,9 +3074,9 @@ TGeoVolume* AliITSv11GeometrySSD::GetSSDMountingBlock(){
 					+	fgkSSDMountingBlockScrewHoleRadius[1])
 					*	TMath::Sin(90*(i+1)*TMath::DegToRad()),0.,
 						new TGeoRotation("",90.*i,0.,0.));
-    MountingBlockLowerHoleBoxCombiTrans[i]->RegisterYourself();
+    mountingblocklowerholeBoxcombitrans[i]->RegisterYourself();
   }
-  MountingBlockScrewHole[1] = new TGeoCompositeShape("MountingBlockScrewHole1",
+  mountingblockscrewhole[1] = new TGeoCompositeShape("MountingBlockScrewHole1",
 	"MountingBlockLowerHoleTubeSegShape:MountingBlockLowerHoleTubeSegCombiTrans0+"
 	"MountingBlockLowerHoleTubeSegShape:MountingBlockLowerHoleTubeSegCombiTrans1+"
 	"MountingBlockLowerHoleTubeSegShape:MountingBlockLowerHoleTubeSegCombiTrans2+"
@@ -2935,280 +3086,306 @@ TGeoVolume* AliITSv11GeometrySSD::GetSSDMountingBlock(){
 	"MountingBlockLowerHoleBoxShape1:MountingBlockLowerHoleBoxCombiTrans1+"
 	"MountingBlockLowerHoleBoxShape1:MountingBlockLowerHoleBoxCombiTrans2+"
 	"MountingBlockLowerHoleBoxShape1:MountingBlockLowerHoleBoxCombiTrans3");
-  TGeoTranslation* MountingBlockScrewHole1Trans = 
+  TGeoTranslation* mountingblockscrewhole1trans = 
 			new TGeoTranslation("MountingBlockScrewHole1Trans",0.,0.,
-					-	MountingBlockLowerHoleBoxShape[0]->GetDZ()
-					-	MountingBlockHoleBoxShape->GetDZ());
-  MountingBlockScrewHole1Trans->RegisterYourself();
-  /* TGeoCompositeShape* MountingBlockHole = */ 
+					-	mountingblocklowerholeboxshape[0]->GetDZ()
+					-	mountingblockholeboxshape->GetDZ());
+  mountingblockscrewhole1trans->RegisterYourself();
 			new TGeoCompositeShape("MountingBlockHole",
 	"MountingBlockScrewHole0+MountingBlockScrewHole1:MountingBlockScrewHole1Trans");
-  TGeoTranslation* MountingBlockHoleTrans = new TGeoTranslation("MountingBlockHoleTrans",
+  TGeoTranslation* mountingblockholetrans = new TGeoTranslation("MountingBlockHoleTrans",
 						0.5*fgkSSDMountingBlockLength[0]
-					-	MountingBlockBoxShape[0]->GetDZ(),
+					-	mountingblockboxshape[0]->GetDZ(),
 						0.0,
-						2.*MountingBlockBoxShape[2]->GetDZ()
-					-	MountingBlockBoxShape[0]->GetDZ()
+						2.*mountingblockboxshape[2]->GetDZ()
+					-	mountingblockboxshape[0]->GetDZ()
 					+	fgkSSDMountingBlockHeight[3]
-					-	MountingBlockHoleBoxShape->GetDZ());
-  MountingBlockHoleTrans->RegisterYourself();
-  TGeoCompositeShape* MountingBlockShape = new TGeoCompositeShape("MountingBlockShape",
+					-	mountingblockholeboxshape->GetDZ());
+  mountingblockholetrans->RegisterYourself();
+  TGeoCompositeShape* mountingblockshape = new TGeoCompositeShape("MountingBlockShape",
 			"MountingBlockMainShape-(MountingBlockTubeShape0:MountingBlockTubeTrans0+"
 			"MountingBlockTubeShape0:MountingBlockTubeTrans1+"
 			"MountingBlockTubeShape1:MountingBlockTubeTrans2+"
 			"MountingBlockTubeShape1:MountingBlockTubeTrans3+"
 			"HoleTrapezoidShape:HoleTrapezoidShapeCombiTrans+"
 			"MountingBlockHole:MountingBlockHoleTrans)");
-  TGeoVolume* SSDMountingBlock = new TGeoVolume("SSDMountingBlock",
-			MountingBlockShape,fgkSSDMountingBlockMedium);
-  return SSDMountingBlock;
+  TGeoVolume* ssdmountingblock = new TGeoVolume("SSDMountingBlock",
+			mountingblockshape,fSSDMountingBlockMedium);
+  return ssdmountingblock;
 }
 ////////////////////////////////////////////////////////////////////////////////
 TGeoVolume* AliITSv11GeometrySSD::GetLadder(Int_t iLayer){
-  TGeoVolume* Ladder = new TGeoVolumeAssembly(iLayer==5 ? "ITSssdLay5Ladd" 
+  /////////////////////////////////////////////////////////////
+  // Method generating the Layer5 or Layer6 Ladder  
+  /////////////////////////////////////////////////////////////  
+  TGeoVolume* ladder = new TGeoVolumeAssembly(iLayer==5 ? "ITSssdLay5Ladd" 
 														: "ITSssdLay6Ladd");
-  TGeoVolume* LadderSegment[2];
-  LadderSegment[0] = GetLadderSegment(0);
-  LadderSegment[1] = GetLadderSegment(1);
-  TList* EndLadderSegmentList = GetEndLadderSegment();
-  Double_t BeamAxisTransVector = fgkCarbonFiberJunctionWidth;
-  Int_t SSDLaySensorsNumber = (iLayer==5 ? 
+  TGeoVolume* laddersegment[2];
+  laddersegment[0] = GetLadderSegment(0);
+  laddersegment[1] = GetLadderSegment(1);
+  TList* endladdersegmentlist = GetEndLadderSegment();
+  Double_t beamaxistransvector = fgkCarbonFiberJunctionWidth;
+  Int_t ssdlaysensorsnumber = (iLayer==5 ? 
 						fgkSSDLay5SensorsNumber : 
 						fgkSSDLay6SensorsNumber);
-  for(Int_t i=0; i<SSDLaySensorsNumber; i++) Ladder->AddNode(i%2==0 ? 
-						LadderSegment[iLayer==5 ? 0 : 1] : 
-						LadderSegment[iLayer==5 ? 1 : 0],
-						SSDLaySensorsNumber-i,new TGeoTranslation("",-0.5*fgkCarbonFiberTriangleLength,
-						BeamAxisTransVector*i,0.));
-  Ladder->AddNode((TGeoVolume*)EndLadderSegmentList->At(0),1,
+  for(Int_t i=0; i<ssdlaysensorsnumber; i++) ladder->AddNode(i%2==0 ? 
+						laddersegment[iLayer==5 ? 0 : 1] : 
+						laddersegment[iLayer==5 ? 1 : 0],
+						ssdlaysensorsnumber-i,new TGeoTranslation("",-0.5*fgkCarbonFiberTriangleLength,
+						beamaxistransvector*i,0.));
+  ladder->AddNode((TGeoVolume*)endladdersegmentlist->At(0),1,
 						new TGeoTranslation("",-0.5*fgkCarbonFiberTriangleLength,
-						fgkCarbonFiberJunctionWidth*SSDLaySensorsNumber,0.));
-  Ladder->AddNode((TGeoVolume*)EndLadderSegmentList->At(1),1,
+						fgkCarbonFiberJunctionWidth*ssdlaysensorsnumber,0.));
+  ladder->AddNode((TGeoVolume*)endladdersegmentlist->At(1),1,
 						new TGeoCombiTrans("",0.5*fgkCarbonFiberTriangleLength,
 						0.,0.,new TGeoRotation("",180.,0.,0.)));
 /////////////////////////////////////////////////////////////////////////////						
 /// Placing Ladder Cables
 /////////////////////////////////////////////////////////////////////////////		
   SetLadderCableCombiTransMatrix(iLayer);
-  Int_t SideCableNumber[2] = {0,0};
+  Int_t sidecablenumber[2] = {0,0};
   switch(iLayer){
 	case 5: 
-		SideCableNumber[0] = fgkSSDLay5SensorsNumber/2+1; 
-		SideCableNumber[1] = SideCableNumber[0]-2;
+		sidecablenumber[0] = fgkSSDLay5SensorsNumber/2+1; 
+		sidecablenumber[1] = sidecablenumber[0]-2;
 		break;
     case 6:
-		SideCableNumber[0] = (fgkSSDLay6SensorsNumber-1)/2+1;
-		SideCableNumber[1] = SideCableNumber[0]-1;
+		sidecablenumber[0] = (fgkSSDLay6SensorsNumber-1)/2+1;
+		sidecablenumber[1] = sidecablenumber[0]-1;
 		break;
   }
-  const Double_t* CarbonFiberToModulePosition = 
-							 LadderSegmentCombiTransMatrix[1]->GetTranslation();
-  Double_t SSDEndLadderCableLength[4];
-  SSDEndLadderCableLength[0] = CarbonFiberToModulePosition[1]
+  const Double_t* carbonfibertomoduleposition = 
+							 fLadderSegmentCombiTransMatrix[1]->GetTranslation();
+  Double_t ssdendladdercablelength[4];
+  ssdendladdercablelength[0] = carbonfibertomoduleposition[1]
 							 + fgkSSDSensorLength
 							 - fgkSSDModuleStiffenerPosition[1]
 							 - fgkSSDStiffenerWidth 
 							 - fgkSSDFlexWidth[0]
 							 + fgkEndLadderCarbonFiberLowerJunctionLength[1];
-  SSDEndLadderCableLength[1] = CarbonFiberToModulePosition[1]
+  ssdendladdercablelength[1] = carbonfibertomoduleposition[1]
 							 + fgkSSDModuleStiffenerPosition[1]
 							 + fgkSSDStiffenerWidth
 							 + fgkEndLadderCarbonFiberLowerJunctionLength[1];
-  SSDEndLadderCableLength[2] = SSDEndLadderCableLength[1]
+  ssdendladdercablelength[2] = ssdendladdercablelength[1]
 							 - fgkEndLadderCarbonFiberLowerJunctionLength[1]
 							 + fgkEndLadderCarbonFiberLowerJunctionLength[0];
-  SSDEndLadderCableLength[3] = fgkCarbonFiberJunctionWidth-(fgkSSDSensorLength
-							 + CarbonFiberToModulePosition[1]
+  ssdendladdercablelength[3] = fgkCarbonFiberJunctionWidth-(fgkSSDSensorLength
+							 + carbonfibertomoduleposition[1]
 							 - fgkSSDModuleStiffenerPosition[1]
 							 - fgkSSDStiffenerWidth)
 							 + fgkEndLadderCarbonFiberLowerJunctionLength[1];
-  TList* LadderCableAssemblyList[4];
-  const Int_t EndLadderCablesNumber = 4;
-  for(Int_t i=0; i<EndLadderCablesNumber; i++){
-	  LadderCableAssemblyList[i] = 
-	  GetLadderCableAssemblyList(SideCableNumber[i<2?0:1],
-								   SSDEndLadderCableLength[i]);
-	  Ladder->AddNode((TGeoVolume*)LadderCableAssemblyList[i]->At(i%2==0?0:1),
-									i<2?1:2,LadderCableCombiTransMatrix[i]);
+  TList* laddercableassemblylist[4];
+  const Int_t kendladdercablesnumber = 4;
+  for(Int_t i=0; i<kendladdercablesnumber; i++){
+	  laddercableassemblylist[i] = 
+	  GetLadderCableAssemblyList(sidecablenumber[i<2?0:1],
+								   ssdendladdercablelength[i]);
+	  ladder->AddNode((TGeoVolume*)laddercableassemblylist[i]->At(i%2==0?0:1),
+									i<2?1:2,fLadderCableCombiTransMatrix[i]);
   }
-  return Ladder;
+  return ladder;
 }								  
 ////////////////////////////////////////////////////////////////////////////////
 TGeoVolume* AliITSv11GeometrySSD::GetLayer(Int_t iLayer){
-  TGeoVolume* Layer = new TGeoVolumeAssembly(iLayer==5 ? "ITSssdLayer5" 
+  /////////////////////////////////////////////////////////////
+  // Method generating the Layer5 or Layer6  
+  /////////////////////////////////////////////////////////////  
+  TGeoVolume* layer = new TGeoVolumeAssembly(iLayer==5 ? "ITSssdLayer5" 
 													   : "ITSssdLayer6");
-  TGeoVolume* Ladder = GetLadder(iLayer);
+  TGeoVolume* ladder = GetLadder(iLayer);
   /////////////////////////////////////////////////////
   // Setting the CombiTransformation to pass ITS center 
   /////////////////////////////////////////////////////
-  Double_t ITSCenterTransZ = iLayer==5 ? fgkSSDLay5LadderLength
+  Double_t itscentertransz = iLayer==5 ? fgkSSDLay5LadderLength
                            -             fgkLay5CenterITSPosition: 
                                          fgkSSDLay6LadderLength
                            -             fgkLay6CenterITSPosition;
-  Double_t ITSSensorYTrans = fgkSSDModuleCoolingBlockToSensor
+  Double_t itssensorytrans = fgkSSDModuleCoolingBlockToSensor
                            + 0.5*        fgkCoolingTubeSupportHeight
                            -(iLayer==5 ? fgkSSDSensorSideSupportHeight[1]
                            -             fgkSSDSensorSideSupportHeight[0]: 0.);
-  TGeoRotation* ITSCenterRot[3];
-  ITSCenterRot[0] = new TGeoRotation("ITSCenterRot0",90.,180.,-90.);
-  ITSCenterRot[1] = new TGeoRotation("ITSCenterRot1",0.,90.,0.);
-  ITSCenterRot[2] = new TGeoRotation((*ITSCenterRot[1])*(*ITSCenterRot[0]));
-  TGeoCombiTrans* ITSCenterCombiTrans = new TGeoCombiTrans("ITSCenterCombiTrans",0.,
-                                        fgkSSDMountingBlockHeight[1]+ITSSensorYTrans,
+  TGeoRotation* itscenterrot[3];
+  itscenterrot[0] = new TGeoRotation("ITSCenterRot0",90.,180.,-90.);
+  itscenterrot[1] = new TGeoRotation("ITSCenterRot1",0.,90.,0.);
+  itscenterrot[2] = new TGeoRotation((*itscenterrot[1])*(*itscenterrot[0]));
+  TGeoCombiTrans* itscentercombitrans = new TGeoCombiTrans("ITSCenterCombiTrans",0.,
+                                        fgkSSDMountingBlockHeight[1]+itssensorytrans,
                                         fgkEndLadderCarbonFiberLowerJunctionLength[1]
-                                      - ITSCenterTransZ,ITSCenterRot[2]);
+                                      - itscentertransz,itscenterrot[2]);
   /////////////////////////////////////////////////////
   // Setting the Ladder into the Layer 
   /////////////////////////////////////////////////////
-  Double_t LayLadderAnglePosition = 360./(iLayer==5 ? fgkSSDLay5LadderNumber : 
-                                          fgkSSDLay6LadderNumber);
-  Int_t LayLadderNumber        = iLayer==5 ? fgkSSDLay5LadderNumber : 
-                                             fgkSSDLay6LadderNumber; 
-  Double_t LayRadiusMin        = iLayer==5 ? fgkSSDLay5RadiusMin    : 
-                                             fgkSSDLay6RadiusMin;
-  Double_t LayRadiusMax        = iLayer==5 ? fgkSSDLay5RadiusMax    : 
-                                             fgkSSDLay6RadiusMax;
-  TGeoCombiTrans* LadderCombiTrans[LayLadderNumber];
-  TGeoHMatrix* LadderHMatrix[LayLadderNumber];
-  Double_t LayerRadius = 0.;
-  char LadderCombiTransName[30], LadderRotName[30];
-  for(Int_t i=0; i<LayLadderNumber;i++){
-      sprintf(LadderCombiTransName,"LadderCombiTrans%i",i);
-      sprintf(LadderRotName,"LaddeRot%i",i);
-      switch(iLayer){
-            case 5: 
-                  LayerRadius = (i%2==0 ? LayRadiusMin: LayRadiusMax);
-                  break;
-            case 6:
-                  LayerRadius = (i%2==0 ? LayRadiusMax : LayRadiusMin);
-                  break;
+  TGeoCombiTrans* lay5laddercombitrans[fgkSSDLay5LadderNumber];
+  TGeoCombiTrans* lay6laddercombitrans[fgkSSDLay6LadderNumber];
+  TGeoHMatrix* lay5ladderhmatrix[fgkSSDLay5LadderNumber];
+  TGeoHMatrix* lay6ladderhmatrix[fgkSSDLay6LadderNumber];
+  if(iLayer==5){
+      Double_t lay5ladderangleposition = 360./fgkSSDLay5LadderNumber;    
+      char lay5laddercombitransname[30], lay5ladderrotname[30];
+      for(Int_t i=0; i<fgkSSDLay5LadderNumber;i++){
+      sprintf(lay5laddercombitransname,"Lay5LadderCombiTrans%i",i);
+      sprintf(lay5ladderrotname,"Lay5LaddeRot%i",i);
+      Double_t lay5layerradius = (i%2==0 ? fgkSSDLay5RadiusMin: fgkSSDLay5RadiusMax);
+      lay5laddercombitrans[i] = new TGeoCombiTrans(lay5laddercombitransname,
+                                lay5layerradius *	TMath::Cos((i+1)
+                              * lay5ladderangleposition*TMath::DegToRad()),
+                                lay5layerradius *	TMath::Sin((i+1)
+                              * lay5ladderangleposition*TMath::DegToRad()),0.,
+                                new TGeoRotation(lay5ladderrotname,(i+1)
+                              * lay5ladderangleposition-90,0.,0.));
+      lay5ladderhmatrix[i] = new TGeoHMatrix((*lay5laddercombitrans[i])
+                           * (*itscentercombitrans));
+      layer->AddNode(ladder,i+1,lay5ladderhmatrix[i]);            
       }
-      LadderCombiTrans[i] = new TGeoCombiTrans(LadderCombiTransName,
-                            LayerRadius *	TMath::Cos((i+1)
-                          * LayLadderAnglePosition*TMath::DegToRad()),
-                            LayerRadius *	TMath::Sin((i+1)
-                          * LayLadderAnglePosition*TMath::DegToRad()),0.,
-                            new TGeoRotation(LadderRotName,(i+1)
-                          * LayLadderAnglePosition-90,0.,0.));
-    LadderHMatrix[i] = new TGeoHMatrix((*LadderCombiTrans[i])
-                          * (*ITSCenterCombiTrans));
-    Layer->AddNode(Ladder,i+1,LadderHMatrix[i]);          
-  }   
-  return Layer;
+  }
+  else{
+      Double_t lay6ladderangleposition = 360./fgkSSDLay6LadderNumber;    
+      char lay6laddercombitransname[30], lay6ladderrotname[30];
+      for(Int_t i=0; i<fgkSSDLay6LadderNumber;i++){
+      sprintf(lay6laddercombitransname,"Lay6LadderCombiTrans%i",i);
+      sprintf(lay6ladderrotname,"Lay6LaddeRot%i",i);
+      Double_t lay6layerradius = (i%2==0 ? fgkSSDLay6RadiusMin: fgkSSDLay6RadiusMax);
+      lay6laddercombitrans[i] = new TGeoCombiTrans(lay6laddercombitransname,
+                                lay6layerradius *	TMath::Cos((i+1)
+                              * lay6ladderangleposition*TMath::DegToRad()),
+                                lay6layerradius *	TMath::Sin((i+1)
+                              * lay6ladderangleposition*TMath::DegToRad()),0.,
+                                new TGeoRotation(lay6ladderrotname,(i+1)
+                              * lay6ladderangleposition-90,0.,0.));
+      lay6ladderhmatrix[i] = new TGeoHMatrix((*lay6laddercombitrans[i])
+                           * (*itscentercombitrans));
+      layer->AddNode(ladder,i+1,lay6ladderhmatrix[i]);            
+      }
+  }
+  return layer;
 }
 ////////////////////////////////////////////////////////////////////////////////
 void AliITSv11GeometrySSD::Layer5(TGeoVolume* moth){
-////////////////////////////////////////////////////////////////////////////////
-// Insert the layer 5 in the mother volume. 
-////////////////////////////////////////////////////////////////////////////////
-	if(! moth){
-		cout << "Error::AliITSv11GeometrySSD: Can't insert layer5, mother is null!"<< endl;
-		return;
-	}
-	fMotherVol = moth;
-	moth->AddNode(GetLayer(5),1,0);
-}
+  /////////////////////////////////////////////////////////////
+  // Insert the layer 5 in the mother volume. 
+  /////////////////////////////////////////////////////////////
+  if (! moth) {
+    printf("Error::AliITSv11GeometrySSD: Can't insert layer5, mother is null!\n");
+    return;
+  };
+	 fMotherVol = moth;
+	 moth->AddNode(GetLayer(5),1,0);
+ }
 ////////////////////////////////////////////////////////////////////////////////
 void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
-////////////////////////////////////////////////////////////////////////////////
-// Insert the layer 6 in the mother volume. 
-////////////////////////////////////////////////////////////////////////////////
-	if(! moth){
-		cout << "Error::AliITSv11GeometrySSD: Can't insert layer6, mother is null!"<< endl;
-		return;
-	}
-	fMotherVol = moth;
-	moth->AddNode(GetLayer(6),1,0);
-}
+  /////////////////////////////////////////////////////////////
+  // Insert the layer 6 in the mother volume. 
+  /////////////////////////////////////////////////////////////
+  if (! moth) {
+    printf("Error::AliITSv11GeometrySSD: Can't insert layer6, mother is null!\n");
+    return;
+  };
+	 fMotherVol = moth;
+	 moth->AddNode(GetLayer(6),1,0);
+ }
 ////////////////////////////////////////////////////////////////////////////////
 TGeoArb8* AliITSv11GeometrySSD::GetTrapezoidShape(TVector3* vertexpos[], 
-							Double_t* width, Double_t height, char* shapename){
-////////////////////////////////////////////////////////////////////////////////
-  const Int_t VertexNumber = 4;
-  const Int_t TransVectNumber = 2;
-  TVector3* Vertex[VertexNumber];
-  TVector3* TransVector[2];
-  for(Int_t i=0; i<TransVectNumber; i++) 
-									TransVector[i] = new TVector3(0.,width[i]);
-////////////////////////////////////////////////////////////////////////////////
+							Double_t* width, Double_t height, char* shapename) const{
+  /////////////////////////////////////////////////////////////
+  // Method generating a trapezoid shape 
+  /////////////////////////////////////////////////////////////
+  const Int_t kvertexnumber = 4;
+  const Int_t ktransvectnumber = 2;
+  TVector3* vertex[kvertexnumber];
+  TVector3* transvector[2];
+  for(Int_t i=0; i<ktransvectnumber; i++) 
+									transvector[i] = new TVector3(0.,width[i]);
+  /////////////////////////////////////////////////////////////
   //Setting the vertices
-////////////////////////////////////////////////////////////////////////////////
-  Vertex[0] = new TVector3(*vertexpos[0]);
-  Vertex[1] = new TVector3(*vertexpos[1]);
-  Vertex[2] = new TVector3(*Vertex[1]+*TransVector[1]);
-  Vertex[3] = new TVector3(*Vertex[0]+*TransVector[0]);
-  TGeoArb8* TrapezoidShape = new TGeoArb8(shapename,0.5*height);
-  for(Int_t i=0; i<2*VertexNumber; i++) 
-	TrapezoidShape->SetVertex(i,Vertex[(i<VertexNumber ? i : i-VertexNumber)]->X(),
-								Vertex[(i<VertexNumber ? i : i-VertexNumber)]->Y()); 
-  return TrapezoidShape;
+  /////////////////////////////////////////////////////////////
+  vertex[0] = new TVector3(*vertexpos[0]);
+  vertex[1] = new TVector3(*vertexpos[1]);
+  vertex[2] = new TVector3(*vertex[1]+*transvector[1]);
+  vertex[3] = new TVector3(*vertex[0]+*transvector[0]);
+  TGeoArb8* trapezoidshape = new TGeoArb8(shapename,0.5*height);
+  for(Int_t i=0; i<2*kvertexnumber; i++) 
+	trapezoidshape->SetVertex(i,vertex[(i<kvertexnumber ? i : i-kvertexnumber)]->X(),
+								vertex[(i<kvertexnumber ? i : i-kvertexnumber)]->Y()); 
+  return trapezoidshape;
 }
 ////////////////////////////////////////////////////////////////////////////////
 TGeoArb8* AliITSv11GeometrySSD::GetArbShape(TVector3* vertexpos[], Double_t* width, 
-									Double_t height, char* shapename, Int_t isign){
-  const Int_t VertexNumber = 8;
-  const Int_t TransVectNumber = 2;
-  TVector3* Vertex[VertexNumber];
-  TVector3* TransVector[2];
-  for(Int_t i=0; i<TransVectNumber; i++) TransVector[i] = new TVector3(0.,width[i]);
-////////////////////////////////////////////////////////////////////////////////
+									Double_t height, char* shapename, Int_t isign) const{
+  /////////////////////////////////////////////////////////////
+  // Method generating an Arb shape 
+  /////////////////////////////////////////////////////////////
+  const Int_t kvertexnumber = 8;
+  const Int_t ktransvectnumber = 2;
+  TVector3* vertex[kvertexnumber];
+  TVector3* transvector[2];
+  for(Int_t i=0; i<ktransvectnumber; i++) transvector[i] = new TVector3(0.,width[i]);
+  /////////////////////////////////////////////////////////////
   //Setting the vertices for TGeoArb8
-////////////////////////////////////////////////////////////////////////////////
-  Vertex[0] = new TVector3(*vertexpos[0]);
-  Vertex[1] = new TVector3(*vertexpos[1]);
-  Vertex[2] = new TVector3(*Vertex[1]+isign*(*TransVector[0]));
-  Vertex[3] = new TVector3(*Vertex[0]+isign*(*TransVector[0]));
-  Vertex[4] = new TVector3(*vertexpos[2]);
-  Vertex[5] = new TVector3(*vertexpos[3]);
-  Vertex[6] = new TVector3(*Vertex[5]+isign*(*TransVector[1]));
-  Vertex[7] = new TVector3(*Vertex[4]+isign*(*TransVector[1]));
-////////////////////////////////////////////////////////////////////////////////
-  TGeoArb8* ArbShape = new TGeoArb8(shapename,0.5*height);
-  for(Int_t i = 0; i<VertexNumber;i++) 
-							ArbShape->SetVertex(i,Vertex[i]->X(),Vertex[i]->Y());
-  return ArbShape;
+  /////////////////////////////////////////////////////////////
+  vertex[0] = new TVector3(*vertexpos[0]);
+  vertex[1] = new TVector3(*vertexpos[1]);
+  vertex[2] = new TVector3(*vertex[1]+isign*(*transvector[0]));
+  vertex[3] = new TVector3(*vertex[0]+isign*(*transvector[0]));
+  vertex[4] = new TVector3(*vertexpos[2]);
+  vertex[5] = new TVector3(*vertexpos[3]);
+  vertex[6] = new TVector3(*vertex[5]+isign*(*transvector[1]));
+  vertex[7] = new TVector3(*vertex[4]+isign*(*transvector[1]));
+  /////////////////////////////////////////////////////////////
+  TGeoArb8* arbshape = new TGeoArb8(shapename,0.5*height);
+  for(Int_t i = 0; i<kvertexnumber;i++) 
+							arbshape->SetVertex(i,vertex[i]->X(),vertex[i]->Y());
+  return arbshape;
 } 
 ////////////////////////////////////////////////////////////////////////////////
 TGeoArb8* AliITSv11GeometrySSD::GetTriangleShape(TVector3* vertexpos[], 
-											  Double_t height, char* shapename){
-////////////////////////////////////////////////////////////////////////////////
-  const Int_t VertexNumber = 4;
-  TVector3* Vertex[VertexNumber];
+											  Double_t height, char* shapename) const{
+  /////////////////////////////////////////////////////////////
+  // Method generating a triangle shape 
+  /////////////////////////////////////////////////////////////
+  const Int_t kvertexnumber = 4;
+  TVector3* vertex[kvertexnumber];
 //////////////////////////////////////
   //Setting the vertices for TGeoArb8
   ////////////////////////////////////
-  for(Int_t i = 0; i<VertexNumber; i++)  
-  Vertex[i] = new TVector3(i!=VertexNumber-1?*vertexpos[i]:*Vertex[VertexNumber-1-i]);
-  TGeoArb8* TriangleShape = new TGeoArb8(shapename,0.5*height);
-  for(Int_t i = 0; i<2*VertexNumber; i++) 
-	TriangleShape->SetVertex(i,Vertex[(i < VertexNumber ? i: i-VertexNumber)]->X(),
-							   Vertex[(i < VertexNumber ? i : i-VertexNumber)]->Y());
-  return TriangleShape;
+  for(Int_t i = 0; i<kvertexnumber; i++)  
+  vertex[i] = new TVector3(i!=kvertexnumber-1?*vertexpos[i]:*vertex[kvertexnumber-1-i]);
+  TGeoArb8* triangleshape = new TGeoArb8(shapename,0.5*height);
+  for(Int_t i = 0; i<2*kvertexnumber; i++) 
+	triangleshape->SetVertex(i,vertex[(i < kvertexnumber ? i: i-kvertexnumber)]->X(),
+							   vertex[(i < kvertexnumber ? i : i-kvertexnumber)]->Y());
+  return triangleshape;
 }
 ////////////////////////////////////////////////////////////////////////////////
-TVector3* AliITSv11GeometrySSD::GetReflection(TVector3* Vector,Double_t* Param){
-////////////////////////////////////////////////////////////////////////////////
-  TVector3* n = new TVector3(Param[0],Param[1],Param[2]);
-  Double_t D = ((*Vector)*(*n)+Param[3])/n->Mag2();
-  TVector3* ReflectedVector = new TVector3(*Vector-2*D*(*n));
-  return ReflectedVector;
+TVector3* AliITSv11GeometrySSD::GetReflection(TVector3* vector,Double_t* param) const{
+  /////////////////////////////////////////////////////////////
+  // Given an axis specified by param, it gives the reflection of the point
+  // respect to the axis
+  /////////////////////////////////////////////////////////////
+  TVector3* n = new TVector3(param[0],param[1],param[2]);
+  Double_t d = ((*vector)*(*n)+param[3])/n->Mag2();
+  TVector3* reflectedvector = new TVector3(*vector-2*d*(*n));
+  return reflectedvector;
 }
 ////////////////////////////////////////////////////////////////////////////////
 TGeoCombiTrans* AliITSv11GeometrySSD::AddTranslationToCombiTrans(TGeoCombiTrans* ct,
                                                        Double_t dx,
                                                        Double_t dy,
                                                        Double_t dz) const{
-  TGeoCombiTrans* CombiTrans = new TGeoCombiTrans(*ct);
+  /////////////////////////////////////////////////////////////
   // Add a dx,dy,dz translation to the initial TGeoCombiTrans
-  const Double_t *vect = CombiTrans->GetTranslation();
-  Double_t newVect[3] = {vect[0]+dx, vect[1]+dy, vect[2]+dz};
-  CombiTrans->SetTranslation(newVect);
-  return CombiTrans;
+  /////////////////////////////////////////////////////////////
+  TGeoCombiTrans* combiTrans = new TGeoCombiTrans(*ct);
+  const Double_t *vect = combiTrans->GetTranslation();
+  Double_t newvect[3] = {vect[0]+dx, vect[1]+dy, vect[2]+dz};
+  combiTrans->SetTranslation(newvect);
+  return combiTrans;
 }
 ////////////////////////////////////////////////////////////////////////////////
-//To be interfaced with AliRoot Materials file
-////////////////////////////////////////////////////////////////////////////////
 TGeoMedium* AliITSv11GeometrySSD::GetMedium(const char* mediumName) {
+  /////////////////////////////////////////////////////////////
+  // Method returning the Medium type 
+  /////////////////////////////////////////////////////////////
   char ch[30];
   sprintf(ch, "ITS_%s",mediumName);
   TGeoMedium* medium =  gGeoManager->GetMedium(ch);
@@ -3233,21 +3410,21 @@ TGeoMedium* AliITSv11GeometrySSD::GetMedium(const char* mediumName) {
   Int_t SINumber = 0;
   TGeoMaterial* SiMaterial = new TGeoMaterial("SiMaterial");
   TGeoMedium* Silicon = new TGeoMedium("Silicon",SINumber,SiMaterial);
-  fgkSSDSensorMedium = Silicon;
+  fSSDSensorMedium = Silicon;
   ///////////////////////////////////
   // Silicon Mixture for Sensor
   /////////////////////////////////// 
   Int_t SiMixtureNumber = 1;
   TGeoMaterial* SiMixtureMaterial = new TGeoMaterial("SiMixtureMaterial");
   TGeoMedium* SiliconMixture = new TGeoMedium("SiliconMixture",SiMixtureNumber,SiMixtureMaterial);
-  fgkSSDChipMedium = SiliconMixture;
+  fSSDChipMedium = SiliconMixture;
   ///////////////////////////////////
   // Stiffener Components Materials
   /////////////////////////////////// 
   Int_t K1100Number = 2;
   TGeoMaterial* K1100Material = new TGeoMaterial("K1100Material");
   TGeoMedium* K1100 = new TGeoMedium("K1100",K1100Number,K1100Material);
-  fgkSSDStiffenerMedium = K1100;
+  fSSDStiffenerMedium = K1100;
   ///////////////////////////  
   // Stiffener Connectors 
   ///////////////////////////  
@@ -3255,7 +3432,7 @@ TGeoMedium* AliITSv11GeometrySSD::GetMedium(const char* mediumName) {
   TGeoMaterial* SnMaterial = new TGeoMaterial("SnMaterial");
   TGeoMedium* SnMedium = new TGeoMedium("SnMedium",SnMaterialNumber,
                                                 SnMaterial);
-  fgkSSDStiffenerConnectorMedium = SnMedium;
+  fSSDStiffenerConnectorMedium = SnMedium;
   ////////////////////////////////  
   // Stiffener 0603-1812 Capacitor
   ////////////////////////////////  
@@ -3264,8 +3441,8 @@ TGeoMedium* AliITSv11GeometrySSD::GetMedium(const char* mediumName) {
   TGeoMedium* Al2O3Medium = new TGeoMedium("Al2O3Medium",
                                                 Al2O3Number,
                                                 Al2O3Material);
-  fgkSSDStiffener0603CapacitorMedium = Al2O3Medium;
-  fgkSSDStiffener1812CapacitorMedium = Al2O3Medium;
+  fSSDStiffener0603CapacitorMedium = Al2O3Medium;
+  fSSDStiffener1812CapacitorMedium = Al2O3Medium;
   ///////////////////////////  
   // Stiffener Hybrid Wire 
   ///////////////////////////  
@@ -3274,7 +3451,7 @@ TGeoMedium* AliITSv11GeometrySSD::GetMedium(const char* mediumName) {
   TGeoMedium* CuHybridWireMedium = new TGeoMedium("CuHybridWireMedium",
                                                 CuHybridWireNumber,
                                                 CuHybridWireMaterial);
-  fgkSSDStiffenerHybridWireMedium = CuHybridWireMedium;
+  fSSDStiffenerHybridWireMedium = CuHybridWireMedium;
   ///////////////////////////  
   // Al for Cooling Block
   ///////////////////////////  
@@ -3283,7 +3460,7 @@ TGeoMedium* AliITSv11GeometrySSD::GetMedium(const char* mediumName) {
   TGeoMedium* AlCoolBlockMedium = new TGeoMedium("AlCoolBlockMedium",
                                                 AlCoolBlockNumber,
                                                 AlCoolBlockMaterial);
-  fgkSSDAlCoolBlockMedium = AlCoolBlockMedium;
+  fSSDAlCoolBlockMedium = AlCoolBlockMedium;
   //////////////////////////////////////////////////////  
   // Kapton and Al for Chip Cable Flex and Ladder Cables
   //////////////////////////////////////////////////////  
@@ -3297,12 +3474,12 @@ TGeoMedium* AliITSv11GeometrySSD::GetMedium(const char* mediumName) {
   TGeoMedium* AlTraceMedium = new TGeoMedium("AlTraceMedium",
                                                 AlTraceBlockNumber,
                                                 AlTraceMaterial);
-  fgkSSDKaptonChipCableMedium = KaptonMedium;
-  fgkSSDAlTraceChipCableMedium = AlTraceMedium;
-  fgkSSDKaptonFlexMedium = KaptonMedium;
-  fgkSSDAlTraceFlexMedium = AlTraceMedium;
-  fgkSSDKaptonLadderCableMedium = KaptonMedium;
-  fgkSSDAlTraceLadderCableMedium = AlTraceMedium;
+  fSSDKaptonChipCableMedium = KaptonMedium;
+  fSSDAlTraceChipCableMedium = AlTraceMedium;
+  fSSDKaptonFlexMedium = KaptonMedium;
+  fSSDAlTraceFlexMedium = AlTraceMedium;
+  fSSDKaptonLadderCableMedium = KaptonMedium;
+  fSSDAlTraceLadderCableMedium = AlTraceMedium;
   /////////////////////////////////////////////////////////////////  
   // M55J for Carbon Fiber, CarbonFiber Lower Support and Junction
   //////////////////////////////////////////////////////////////////  
@@ -3310,8 +3487,8 @@ TGeoMedium* AliITSv11GeometrySSD::GetMedium(const char* mediumName) {
   TGeoMaterial* M55JMaterial = new TGeoMaterial("M55JMaterial");
   TGeoMedium* M55JMedium = new TGeoMedium("M55JMedium",M55JNumber,
                                            M55JMaterial);
-  fgkSSDCarbonFiberMedium = M55JMedium;
-  fgkSSDMountingBlockMedium = M55JMedium;
+  fSSDCarbonFiberMedium = M55JMedium;
+  fSSDMountingBlockMedium = M55JMedium;
   /////////////////////////////////////////////////////////////////  
   // G10 for Detector Leg, TubeHolder
   //////////////////////////////////////////////////////////////////  
@@ -3319,8 +3496,8 @@ TGeoMedium* AliITSv11GeometrySSD::GetMedium(const char* mediumName) {
   TGeoMaterial* G10Material = new TGeoMaterial("G10Material");
   TGeoMedium* G10Medium = new TGeoMedium("G10Medium",G10Number,
                                            G10Material);
-  fgkSSDTubeHolderMedium = G10Medium;
-  fgkSSDSensorSupportMedium = G10Medium;
+  fSSDTubeHolderMedium = G10Medium;
+  fSSDSensorSupportMedium = G10Medium;
   /////////////////////////////////////////////////////////////////  
   // Water and Phynox for Cooling Tube
   //////////////////////////////////////////////////////////////////  
@@ -3328,12 +3505,12 @@ TGeoMedium* AliITSv11GeometrySSD::GetMedium(const char* mediumName) {
   TGeoMaterial* WaterMaterial = new TGeoMaterial("WaterMaterial");
   TGeoMedium* WaterMedium = new TGeoMedium("WaterMedium",WaterNumber,
                                            WaterMaterial);
-  fgkSSDCoolingTubeWater = WaterMedium;
+  fSSDCoolingTubeWater = WaterMedium;
   Int_t PhynoxNumber = 12;
   TGeoMaterial* PhynoxMaterial = new TGeoMaterial("PhynoxMaterial");
   TGeoMedium* PhynoxMedium = new TGeoMedium("PhynoxMedium",PhynoxNumber,
                                            PhynoxMaterial);
-  fgkSSDCoolingTubePhynox = PhynoxMedium;
+  fSSDCoolingTubePhynox = PhynoxMedium;
 }
 */
 void AliITSv11GeometrySSD::CreateMaterials(){
@@ -3343,57 +3520,58 @@ void AliITSv11GeometrySSD::CreateMaterials(){
   ///////////////////////////////////
   // Silicon for Sensor
   /////////////////////////////////// 
-  fgkSSDSensorMedium = GetMedium("Si");
+  fSSDSensorMedium = GetMedium("Si");
   ///////////////////////////////////
   // Silicon Mixture for Sensor
   /////////////////////////////////// 
-  fgkSSDChipMedium = GetMedium("SPD SI CHIP$");
-  fgkSSDChipGlueMedium = GetMedium("EPOXY$");
+  fSSDChipMedium = GetMedium("SPD SI CHIP$");
+  fSSDChipGlueMedium = GetMedium("EPOXY$");
   ///////////////////////////////////
   // Stiffener Components Materials
   /////////////////////////////////// 
-  fgkSSDStiffenerMedium = GetMedium("ITSsddCarbonM55J");
+  fSSDStiffenerMedium = GetMedium("ITSsddCarbonM55J");
   ///////////////////////////  
   // Stiffener Connectors 
   ///////////////////////////  
-  fgkSSDStiffenerConnectorMedium = GetMedium("COPPER");
+  fSSDStiffenerConnectorMedium = GetMedium("COPPER");
   ////////////////////////////////  
   // Stiffener 0603-1812 Capacitor
   ////////////////////////////////  
-  fgkSSDStiffener0603CapacitorMedium = GetMedium("SDD ruby sph. Al2O3");
-  fgkSSDStiffener1812CapacitorMedium = GetMedium("SDD ruby sph. Al2O3");
+  fSSDStiffener0603CapacitorMedium = GetMedium("SDD ruby sph. Al2O3");
+  fSSDStiffener1812CapacitorMedium = GetMedium("SDD ruby sph. Al2O3");
   ///////////////////////////  
   // Stiffener Hybrid Wire 
   ///////////////////////////  
-  fgkSSDStiffenerHybridWireMedium = GetMedium("COPPER");
+  fSSDStiffenerHybridWireMedium = GetMedium("COPPER");
   ///////////////////////////  
   // Al for Cooling Block
   ///////////////////////////  
-  fgkSSDAlCoolBlockMedium = GetMedium("ITSal");
+  fSSDAlCoolBlockMedium = GetMedium("ITSal");
   //////////////////////////////////////////////////////  
   // Kapton and Al for Chip Cable Flex and Ladder Cables
   //////////////////////////////////////////////////////  
-  fgkSSDKaptonChipCableMedium = GetMedium("KAPTONH(POLYCH2)");
-  fgkSSDAlTraceChipCableMedium = GetMedium("ITSal");
-  fgkSSDKaptonFlexMedium = GetMedium("KAPTONH(POLYCH2)");
-  fgkSSDAlTraceFlexMedium = GetMedium("ITSal");
-  fgkSSDKaptonLadderCableMedium = GetMedium("KAPTONH(POLYCH2)");
-  fgkSSDAlTraceLadderCableMedium = GetMedium("ITSal");
+  fSSDKaptonChipCableMedium = GetMedium("KAPTONH(POLYCH2)");
+  fSSDAlTraceChipCableMedium = GetMedium("ITSal");
+  fSSDKaptonFlexMedium = GetMedium("KAPTONH(POLYCH2)");
+  fSSDAlTraceFlexMedium = GetMedium("ITSal");
+  fSSDKaptonLadderCableMedium = GetMedium("KAPTONH(POLYCH2)");
+  fSSDAlTraceLadderCableMedium = GetMedium("ITSal");
   /////////////////////////////////////////////////////////////////  
   // M55J for Carbon Fiber, CarbonFiber Lower Support and Junction
   //////////////////////////////////////////////////////////////////  
-  fgkSSDCarbonFiberMedium = GetMedium("GEN C (M55J)$");
+  fSSDCarbonFiberMedium = GetMedium("GEN C (M55J)$");
   /////////////////////////////////////////////////////////////////  
   // G10 for Detector Leg, TubeHolder
   //////////////////////////////////////////////////////////////////  
-  fgkSSDTubeHolderMedium = GetMedium("G10FR4$");
-  fgkSSDSensorSupportMedium = GetMedium("G10FR4$");
-  fgkSSDMountingBlockMedium = GetMedium("G10FR4$");
-  fgkSSDMountingBlockMedium = GetMedium("G10FR4$");
+  fSSDTubeHolderMedium = GetMedium("G10FR4$");
+  fSSDSensorSupportMedium = GetMedium("G10FR4$");
+  fSSDMountingBlockMedium = GetMedium("G10FR4$");
+  fSSDMountingBlockMedium = GetMedium("G10FR4$");
   /////////////////////////////////////////////////////////////////  
   // Water and Phynox for Cooling Tube
   //////////////////////////////////////////////////////////////////  
-  fgkSSDCoolingTubeWater = GetMedium("WATER");
-  fgkSSDCoolingTubePhynox = GetMedium("INOX$");
+  fSSDCoolingTubeWater = GetMedium("WATER");
+  fSSDCoolingTubePhynox = GetMedium("INOX$");
 }
 /////////////////////////////////////////////////////////////////////
+
