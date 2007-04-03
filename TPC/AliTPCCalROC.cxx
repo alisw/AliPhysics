@@ -123,6 +123,59 @@ void AliTPCCalROC::Streamer(TBuffer &R__b)
    }
 }
 
+//  //
+//   // algebra
+//   void Add(Float_t c1);
+//   void Multiply(Float_t c1);
+//   void Add(const AliTPCCalROC * roc, Double_t c1 = 1);
+//   void Divide(const AliTPCCalROC * roc);   
+
+void AliTPCCalROC::Add(Float_t c1){
+  //
+  // add constant
+  //
+  for (UInt_t  idata = 0; idata< fNChannels; idata++) fData[idata]+=c1;
+}
+void AliTPCCalROC::Multiply(Float_t c1){
+  //
+  // add constant
+  //
+  for (UInt_t  idata = 0; idata< fNChannels; idata++) fData[idata]*=c1;
+}
+
+void AliTPCCalROC::Add(const AliTPCCalROC * roc, Double_t c1){
+  //
+  // add values 
+  //
+  for (UInt_t  idata = 0; idata< fNChannels; idata++){
+    fData[idata]+=roc->fData[idata]*c1;
+  }
+}
+
+
+void AliTPCCalROC::Multiply(const AliTPCCalROC*  roc) {
+  //
+  // multiply values - per by pad
+  //
+  for (UInt_t  idata = 0; idata< fNChannels; idata++){
+    fData[idata]*=roc->fData[idata];
+  }
+}
+
+
+void AliTPCCalROC::Divide(const AliTPCCalROC*  roc) {
+  //
+  // divide values 
+  //
+  Float_t kEpsilon=0.00000000000000001;
+  for (UInt_t  idata = 0; idata< fNChannels; idata++){
+    if (TMath::Abs(roc->fData[idata])>kEpsilon)
+      fData[idata]/=roc->fData[idata];
+  }
+}
+
+
+
 
 Double_t AliTPCCalROC::GetLTM(Double_t *sigma, Double_t fraction){
   //

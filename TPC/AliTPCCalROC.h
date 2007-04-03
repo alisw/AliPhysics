@@ -35,6 +35,14 @@ class AliTPCCalROC : public TObject {
   void         SetValue(UInt_t channel, Float_t vd) {fData[channel]= vd; };
   virtual void Draw(Option_t* option = "");
   //
+  // algebra
+  void Add(Float_t c1);
+  void Multiply(Float_t c1);
+  void Add(const AliTPCCalROC * roc, Double_t c1 = 1);
+  void Multiply(const AliTPCCalROC * roc);   
+  void Divide(const AliTPCCalROC * roc);   
+  // statistic
+  //
   Double_t GetMean(){return TMath::Mean(fNChannels, fData);}
   Double_t GetRMS() {return TMath::RMS(fNChannels, fData);}
   Double_t GetMedian() {return TMath::Median(fNChannels, fData);}
