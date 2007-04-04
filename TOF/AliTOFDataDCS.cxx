@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2007/02/20 15:57:00  decaro
+Raw data update: to read the TOF raw data defined in UNPACKED mode
+
 Revision 1.4  2007/02/19 15:41:55  decaro
 Coding convention: few corrections
 
@@ -767,8 +770,8 @@ void AliTOFDataDCS::Introduce(UInt_t numAlias, const TObjArray* aliasArr)const
   entries = aliasArr->GetEntries();
   int nal=0;
   nal=numAlias;
-  AliInfo(Form("************ Alias: %s **********",fAliasNames[numAlias].Data()));
-  AliInfo(Form("    	%d DP values collected",entries));
+  AliDebug(2,Form("************ Alias: %s **********",fAliasNames[numAlias].Data()));
+  AliDebug(2,Form("    	%d DP values collected",entries));
 
 }
 
