@@ -15,7 +15,9 @@ void TOFPreprocessor()
   gSystem->Load("$ALICE/SHUTTLE/TestShuttle/libTestShuttle.so");
 
   // initialize location of CDB
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
+  AliTestShuttle::SetMainCDB("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
+  AliTestShuttle::SetMainRefStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestReference");
+
 
   // create AliTestShuttle instance
   AliTestShuttle* shuttle = new AliTestShuttle(0, 0, 1000);
