@@ -61,7 +61,8 @@ AliTOFPreprocessor::AliTOFPreprocessor(AliShuttleInterface* shuttle) :
   fData(0),
   fh2(0),
   fCal(0),
-  fTOFGeometry(0)
+  fTOFGeometry(0),
+  fStoreRefData(kTRUE)
 {
   // constructor
 }
@@ -105,17 +106,27 @@ void AliTOFPreprocessor::Initialize(Int_t run, UInt_t startTime,
 UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
 {
   // Fills data into a AliTOFDataDCS object
+  // return codes:
+  // return=0 : all ok
+  // return=1 : no DCS input data
+  // return=2 : no DCS processed data was stored
+  // return=3 : no DAQ input for Ref Data
+  // return=4 : failed to store Ref data
+  // return=5 : failed to retrieve DAQ data for calibration 
+  // return=6 : problems in histos in the input DAQ file 
+  // return=7 : failed to store Online Delays
 
   TH1::AddDirectory(0);
-  UInt_t resultDCS=0;
-  UInt_t resultDAQ=0;
-  UInt_t resultDAQRef=0;
-  UInt_t result=0;
+
+  Bool_t resultDCS=kTRUE;
+  Bool_t resultDAQ=kTRUE;
+  Bool_t resultDAQRef=kTRUE;
 
   // processing DCS
 
   if (!dcsAliasMap){
-    Log("No DCS map found");
+    Log("No DCS map found: TOF exiting from Shuttle");
+    return 1;// return error Code for DCS input data not found 
   }
   else {
   // The processing of the DCS input data is forwarded to AliTOFDataDCS
@@ -123,57 +134,65 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
     AliCDBMetaData metaDataDCS;
     metaDataDCS.SetBeamPeriod(0);
     metaDataDCS.SetResponsible("Chiara Zampolli");
-    metaDataDCS.SetComment("This preprocessor fills an AliTOFDataDCS object.");     resultDCS = Store("Calib","DCSData",fData, &metaDataDCS);
-    //    result+=resultDCS;
+    metaDataDCS.SetComment("This preprocessor fills an AliTOFDataDCS object.");
+    AliInfo("Storing DCS Data");
+    resultDCS = Store("Calib","DCSData",fData, &metaDataDCS);
     if (!resultDCS){
-      Log("Some problems occurred while storing DCS data processing results");
-      return 0;
+      Log("Some problems occurred while storing DCS data processing results, TOF exiting from Shuttle");
+      return 2;// return error Code for processed DCS data not stored 
     }
   }
 
+  AliInfo("Surviving");
   // processing DAQ
 
   TFile * daqFile=0x0;
 
-  //retrieving data at Run level
-  TList* list = GetFileSources(kDAQ, "RUNLevel");
-  if (list)
-    {
-      AliInfo("The following sources produced files with the id RUNLevel");
-      list->Print();
-      for (Int_t jj=0;jj<list->GetEntries();jj++){
-	TObjString * str = dynamic_cast<TObjString*> (list->At(jj));
-	AliInfo(Form("found source %s", str->String().Data()));
-	// file to be stored run per run
-	TString fileNameRun = GetFile(kDAQ, "RUNLevel", str->GetName());
-	if (fileNameRun.Length()>0){
-	  AliInfo(Form("Got the file %s, now we can store the Reference Data for the current Run.", fileNameRun.Data()));
-	  daqFile = new TFile(fileNameRun.Data(),"READ");
-	  fh2 = (TH2S*) daqFile->Get("htof");
-	  AliCDBMetaData metaDataHisto;
-	  metaDataHisto.SetBeamPeriod(0);
-	  metaDataHisto.SetResponsible("Chiara Zampolli");
-	  metaDataHisto.SetComment("This preprocessor stores the array of histos object as Reference Data.");
-	  resultDAQRef = StoreReferenceData("Calib","DAQData",fh2, &metaDataHisto);
-	  //	  result+=resultDAQRef*2;
-	  if (!resultDAQRef){
-	    Log("some problems occurred::No Reference Data stored, still going on (please check!)");
+  if(fStoreRefData){
+    //retrieving data at Run level
+    TList* list = GetFileSources(kDAQ, "RUNLevel");
+    if (list)
+      {
+	AliInfo("The following sources produced files with the id RUNLevel");
+	list->Print();
+	for (Int_t jj=0;jj<list->GetEntries();jj++){
+	  TObjString * str = dynamic_cast<TObjString*> (list->At(jj));
+	  AliInfo(Form("found source %s", str->String().Data()));
+	  // file to be stored run per run
+	  TString fileNameRun = GetFile(kDAQ, "RUNLevel", str->GetName());
+	  if (fileNameRun.Length()>0){
+	    AliInfo(Form("Got the file %s, now we can store the Reference Data for the current Run.", fileNameRun.Data()));
+	    daqFile = new TFile(fileNameRun.Data(),"READ");
+	    fh2 = (TH2S*) daqFile->Get("htof");
+	    AliCDBMetaData metaDataHisto;
+	    metaDataHisto.SetBeamPeriod(0);
+	    metaDataHisto.SetResponsible("Chiara Zampolli");
+	    metaDataHisto.SetComment("This preprocessor stores the array of histos object as Reference Data.");
+	    AliInfo("Storing Reference Data");
+	    resultDAQRef = StoreReferenceData("Calib","DAQData",fh2, &metaDataHisto);
+	    if (!resultDAQRef){
+	      Log("some problems occurred::No Reference Data stored, TOF exiting from Shuttle");
+	      return 4;//return error code for failure in storing Ref Data 
+	    }
+	    daqFile->Close();
+	    delete daqFile;
 	  }
-	  daqFile->Close();
-	  delete daqFile;
+	  
+	  else{
+	    Log("The input data file from DAQ (run-level) was not found, TOF exiting from Shuttle "); 
+	    return 3;//return error code for failure in retrieving Ref Data 
+	  }
 	}
-
-	else{
-          Log("The input data file from DAQ (run-level) was not found, still going on with Cumulative data file (please check!) "); 
-        }
       }
-    }
-  else{
-    Log("The input data file list from DAQ (run-level) was not found, still going on with Cumulative data file (please check!) "); 
+    else{
+      Log("The input data file list from DAQ (run-level) was not found, TOF exiting from Shuttle "); 
+      return 3;//return error code for failure in retrieving Ref Data 
+    }	
   }
 
-  //Total files, with summed histos
 
+//Total files, with cumulative histos
+  
   TList* listTot = GetFileSources(kDAQ, "DELAYS");
   if (listTot)
     {
@@ -193,7 +212,7 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
 	  if (!fh2){
 	    Log("some problems occurred:: No histo retrieved, TOF exiting from Shuttle");
 	    delete daqFile;
-	    return 0;
+	    return 6; //return error code for histograms not existing/junky
 	  }
 	  else {
 	    static const Int_t kSize=fh2->GetNbinsX();
@@ -203,7 +222,7 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
 	    if (kSize != npads){
 	      Log(" number of bins along x different from number of pads, found only a subset of the histograms, TOF exiting from Shuttle");
 	      delete daqFile;
-              return 0;
+              return 6; //return error code for histograms not existing/junky
 	    }
 	    for (Int_t ich=0;ich<kSize;ich++){
 	      TH1S *h1 = new TH1S("h1","h1",kNBins,kXBinmin-0.5,kNBins*1.+kXBinmin-0.5);
@@ -253,37 +272,27 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
 	  metaData.SetBeamPeriod(0);
 	  metaData.SetResponsible("Chiara Zampolli");
 	  metaData.SetComment("This preprocessor fills an AliTOFCal object.");
+	  AliInfo("Storing Calibration Data");
 	  resultDAQ = Store("Calib","OnlineDelay",fCal, &metaData);
           if(!resultDAQ){
 	    Log("Some problems occurred while storing DAQ data processing results");
-	    return 0;
+	    return 7;//return error code for problems in storing DAQ data 
 	  }
 	}
 	else{
 	  Log("The Cumulative data file from DAQ does not exist, TOF exiting from Shuttle"); 
-          return 0;
+          return 5;//return error code for problems in retrieving DAQ data 
 	}
       }
     }
   else{
     Log("Problem: no list for Cumulative data file from DAQ was found, TOF exiting from Shuttle");
-    return 0;
+    return 5; //return error code for problems in retrieving DAQ data 
   }
 
-  //  delete list;
-  // list = 0;
-  // delete listTot;
-  // listTot = 0;
   daqFile=0;
 
-  if(resultDCS ==2|| resultDAQ ==2) {
-    result=2;
-  }
-  else{ 
-    result=1;
-  }
-
-  return result;
+  return 0;
 }
 
 
