@@ -630,9 +630,9 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     if(timeWalkCorr)tof=CorrectTimeWalk(mindistZ,tof);
     t->SetTOFsignal(tof);
     t->SetTOFcluster(idclus); // pointing to the recPoints tree
-    Double_t time[10]; t->GetIntegratedTimes(time);
+    Double_t time[AliPID::kSPECIES]; t->GetIntegratedTimes(time);
     Double_t mom=t->GetP();
-    for(Int_t j=0;j<=AliPID::kSPECIES;j++){
+    for(Int_t j=0;j<AliPID::kSPECIES;j++){
       Double_t mass=AliPID::ParticleMass(j);
       time[j]+=(recL-trackPos[3][0])/3e-2*TMath::Sqrt(mom*mom+mass*mass)/mom;
     }
