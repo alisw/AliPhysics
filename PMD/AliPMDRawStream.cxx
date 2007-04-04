@@ -160,7 +160,6 @@ Bool_t AliPMDRawStream::DdlData(Int_t indexDDL, TObjArray *pmdddlcont)
   Int_t startRowBus[kNPatchBus], endRowBus[kNPatchBus];
   Int_t startColBus[kNPatchBus], endColBus[kNPatchBus];
 
-
   for (Int_t ibus = 0; ibus < kNPatchBus; ibus++)
     {
       mcmperBus[ibus]   = -1;
@@ -169,7 +168,6 @@ Bool_t AliPMDRawStream::DdlData(Int_t indexDDL, TObjArray *pmdddlcont)
       startColBus[ibus] = -1;
       endColBus[ibus]   = -1;
     }
-
 
   for (Int_t im = 0; im < modulePerDDL; im++)
     {
@@ -189,10 +187,7 @@ Bool_t AliPMDRawStream::DdlData(Int_t indexDDL, TObjArray *pmdddlcont)
 	}
     }
 
-
-
   infile.close();
-
 
   AliPMDBlockHeader    blockHeader;
   AliPMDDspHeader      dspHeader;
@@ -211,18 +206,16 @@ Bool_t AliPMDRawStream::DdlData(Int_t indexDDL, TObjArray *pmdddlcont)
   Int_t dspHeaderWord[10];
   Int_t pbusHeaderWord[4];
 
-  Int_t ilowLimit = 0;
-  Int_t iuppLimit = 0;
-
+  Int_t ilowLimit       = 0;
+  Int_t iuppLimit       = 0;
   Int_t blRawDataLength = 0;
-  Int_t iwordcount = 0;
+  Int_t iwordcount      = 0;
 
 
   for (Int_t iblock = 0; iblock < 2; iblock++)
     {
       ilowLimit = iuppLimit;
       iuppLimit = ilowLimit + kblHLen;
-
 
       for (Int_t i = ilowLimit; i < iuppLimit; i++)
 	{
@@ -247,7 +240,6 @@ Bool_t AliPMDRawStream::DdlData(Int_t indexDDL, TObjArray *pmdddlcont)
 
 	  for (Int_t ibus = 0; ibus < 5; ibus++)
 	    {
-
 	      ilowLimit = iuppLimit;
 	      iuppLimit = ilowLimit + kpbusHLen;
 
@@ -316,7 +308,6 @@ Bool_t AliPMDRawStream::DdlData(Int_t indexDDL, TObjArray *pmdddlcont)
       if (iwordcount == blRawDataLength) break;
 
     } // end of BLOCK
-
   
   delete [] buffer;
 
@@ -371,36 +362,38 @@ void AliPMDRawStream::GetRowCol(Int_t ddlno, Int_t pbusid,
     {
       if (pbusid  < 18)
 	{
-	  if(mcmno > 11)
-	    {
-	      row = startRowBus[pbusid] + irownew;
-	      col = startColBus[pbusid] + (mcmno-12)*4 + icolnew;
-	    }
-	  else
+	  if (mcmno <= 11)
 	    {
 	      // Add 16 to skip the 1st 15 rows
 	      row = startRowBus[pbusid] + irownew + 16;
 	      col = startColBus[pbusid] + (mcmno)*4 + icolnew;
 	    }
+	  else if(mcmno > 11)
+	    {
+	      row = startRowBus[pbusid] + irownew;
+	      col = startColBus[pbusid] + (mcmno-12)*4 + icolnew;
+	    }
 	}
       else if(pbusid > 17)
 	{
-	  if(mcmno > 11)
+	  if (mcmno <= 11)
 	    {
-	      row = endRowBus[pbusid] - (15 - irownew)  ;
-	      col = endColBus[pbusid] - (mcmno - 12)*4 - (3 - icolnew);
-	    }
-	  else 
-	    {
+	      col = endColBus[pbusid] - mcmno*4 - (3 - icolnew); 
+
 	      if(endRowBus[pbusid] - startRowBus[pbusid] > 16)
 		row = endRowBus[pbusid] - (15 - irownew) - 16 ;
 	      else
 		row = endRowBus[pbusid] - (15 - irownew) ;
-	      col = endColBus[pbusid] - mcmno*4 - (3 - icolnew); 
+	      
+
+	    }
+	  else if(mcmno > 11)
+	    {
+	      row = endRowBus[pbusid] - (15 - irownew)  ;
+	      col = endColBus[pbusid] - (mcmno - 12)*4 - (3 - icolnew);
 	    }
 	}
     }
-  
   else if (ddlno == 5)
     {
       if (pbusid  <= 17)

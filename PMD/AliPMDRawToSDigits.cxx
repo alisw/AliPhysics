@@ -95,7 +95,7 @@ AliPMDRawToSDigits::~AliPMDRawToSDigits()
 
 void AliPMDRawToSDigits::Raw2SDigits(AliRunLoader *runLoader, AliRawReader *rawReader)
 {
-  // Converts RAW data to digits
+  // Converts RAW data to sdigits
   //
   TObjArray pmdddlcont;
   AliLoader *pmdLoader = runLoader->GetLoader("PMDLoader");
@@ -113,40 +113,33 @@ void AliPMDRawToSDigits::Raw2SDigits(AliRunLoader *runLoader, AliRawReader *rawR
   const Int_t kDDL = AliDAQ::NumberOfDdls("PMD");
   const Int_t kRow = 48;
   const Int_t kCol = 96;
+  const Int_t kSMN = 48;
 
   Int_t idet = 0;
-  Int_t iSMN = 0;
   Int_t indexsmn = 0;
-
+  Int_t ismn = 0;
+  
+  Int_t ***precpvADC;
+  precpvADC = new int **[kSMN];
+  for (Int_t i=0; i<kSMN; i++) precpvADC[i] = new int *[kRow];
+  for (Int_t i=0; i<kSMN;i++)
+    {
+      for (Int_t j=0; j<kRow; j++) precpvADC[i][j] = new int [kCol];
+    }
+  for (Int_t i = 0; i < kSMN; i++)
+    {
+      for (Int_t j = 0; j < kRow; j++)
+	{
+	  for (Int_t k = 0; k < kCol; k++)
+	    {
+	      precpvADC[i][j][k] = 0;
+	    }
+	}
+    }
+  
   for (Int_t indexDDL = 0; indexDDL < kDDL; indexDDL++)
     {
 
-      if (indexDDL < 4)
-	{
-	  iSMN = 6;
-	}
-      else if (indexDDL >= 4)
-	{
-	  iSMN = 12;
-	}
-      Int_t ***precpvADC;
-      precpvADC = new int **[iSMN];
-      for (Int_t i=0; i<iSMN; i++) precpvADC[i] = new int *[kRow];
-      for (Int_t i=0; i<iSMN;i++)
-	{
-	  for (Int_t j=0; j<kRow; j++) precpvADC[i][j] = new int [kCol];
-	}
-      for (Int_t i = 0; i < iSMN; i++)
-	{
-	  for (Int_t j = 0; j < kRow; j++)
-	    {
-	      for (Int_t k = 0; k < kCol; k++)
-		{
-		  precpvADC[i][j][k] = 0;
-		}
-	    }
-	}
-      
       rawReader->Reset();
       AliPMDRawStream pmdinput(rawReader);
       rawReader->Select("PMD", indexDDL, indexDDL);
@@ -166,106 +159,81 @@ void AliPMDRawToSDigits::Raw2SDigits(AliRunLoader *runLoader, AliRawReader *rawR
 	  Int_t col = pmdddl->GetColumn();
 	  Int_t sig = pmdddl->GetSignal();
 	  
-	  
 	  if (indexDDL < 4)
 	    {
 	      if (det != 0)
 		AliError(Form("*DDL %d and Detector NUMBER %d NOT MATCHING *",
 			      indexDDL, det));
-	      indexsmn = smn - indexDDL * 6;
+	      indexsmn = smn;
 	    }
-	  else if (indexDDL == 4)
+	  else if (indexDDL == 4 || indexDDL == 5)
 	    {
 	      if (det != 1)
 		AliError(Form("*DDL %d and Detector NUMBER %d NOT MATCHING *",
 			      indexDDL, det));
-	      if (smn < 6)
-		{
-		  indexsmn = smn;
-		}
-	      else if (smn >= 18 && smn < 24)
-		{
-		  indexsmn = smn - 12;
-		}
+	      indexsmn = smn + 24;
 	    }
-	  else if (indexDDL == 5)
-	    {
-	      if (det != 1)
-		AliError(Form("*DDL %d and Detector NUMBER %d NOT MATCHING *",
-			      indexDDL, det));
-	      if (smn >= 6 && smn < 12)
-		{
-		  indexsmn = smn - 6;
-		}
-	      else if (smn >= 12 && smn < 18)
-		{
-		  indexsmn = smn - 6;
-		}
-	    }	      
+
 	  precpvADC[indexsmn][row][col] = sig;
 	}
       
       pmdddlcont.Clear();
       
-      // Add the sdigits here
-
-      Int_t ismn = 0;
-      for (Int_t indexsmn = 0; indexsmn < iSMN; indexsmn++)
-	{
-	  if (indexDDL < 4)
-	    {
-	      ismn = indexsmn + indexDDL * 6;
-	      idet = 0;
-	    }
-	  else if (indexDDL == 4)
-	    {
-	      if (indexsmn < 6)
-		{
-		  ismn = indexsmn;
-		}
-	      else if (indexsmn >= 6 && indexsmn < 12)
-		{
-		  ismn = indexsmn + 12;
-		}
-	      idet = 1;
-	    }
-	  else if (indexDDL == 5)
-	    {
-	      if (indexsmn < 6)
-		{
-		  ismn = indexsmn + 6;
-		}
-	      else if (indexsmn >= 6 && indexsmn < 12)
-		{
-		  ismn = indexsmn + 6;
-		}
-	      idet = 1;
-	    }
-
-	  for (Int_t irow = 0; irow < kRow; irow++)
-	    {
-	      for (Int_t icol = 0; icol < kCol; icol++)
-		{
-
-		  Int_t trno = -99999;
-		  Int_t sig1 = precpvADC[indexsmn][irow][icol];
-		  
-		  // plug in a function to convert to adc to MeV
-		  Float_t edep = 0.;
-		  if (sig1 > 0)
-		    {
-		      AdcToMeV(sig1,edep);
-		      AddSDigit(trno,idet,ismn,irow,icol,edep);
-		    }
-		} // row
-	    }     // col
-
-	  treeS->Fill();
-	  ResetSDigit();
-	}	  
     } // DDL Loop
+      
+  // Add the sdigits here
+  
+  for ( indexsmn = 0; indexsmn < kSMN; indexsmn++)
+    {
+
+      if (indexsmn < 23)
+	{
+	  idet = 0;
+	  ismn = indexsmn;
+	}
+      else if (indexsmn > 23)
+	{
+	  idet = 0;
+	  ismn = indexsmn - 24;
+	}
+      for (Int_t irow = 0; irow < kRow; irow++)
+	{
+	  for (Int_t icol = 0; icol < kCol; icol++)
+	    {
+
+	      Int_t trno = -99999;
+	      Int_t sig1 = precpvADC[indexsmn][irow][icol];
+	      
+	      // plug in a function to convert to adc to MeV
+	      Float_t edep = 0.;
+	      if (sig1 > 0)
+		{
+		  AdcToMeV(sig1,edep);
+		  AddSDigit(trno,idet,ismn,irow,icol,edep);
+		}
+	    } // row
+	}     // col
+      
+      treeS->Fill();
+      ResetSDigit();
+    }
 
   pmdLoader->WriteSDigits("OVERWRITE");
+
+  // Delete all the pointers
+  
+  for (Int_t i = 0; i < kSMN; i++)
+    {
+      for (Int_t j = 0; j < kRow; j++)
+	{
+	  delete [] precpvADC[i][j];
+	}
+    }
+  for (Int_t j = 0; j < kSMN; j++)
+    {
+      delete [] precpvADC[j];
+    }
+  delete [] precpvADC;
   
 }
 // ------------------------------------------------------------------------- //
@@ -274,7 +242,7 @@ void AliPMDRawToSDigits::Raw2Digits(AliRunLoader *runLoader, AliRawReader *rawRe
   // Converts RAW data to digits
   //
   TObjArray pmdddlcont;
-
+  
   AliLoader *pmdLoader = runLoader->GetLoader("PMDLoader");
   
   TTree* treeD = pmdLoader->TreeD();
@@ -286,44 +254,35 @@ void AliPMDRawToSDigits::Raw2Digits(AliRunLoader *runLoader, AliRawReader *rawRe
   Int_t bufsize = 16000;
   if (!fDigits) fDigits = new TClonesArray("AliPMDdigit", 1000);
   treeD->Branch("PMDDigit", &fDigits, bufsize); 
-
+  
   const Int_t kDDL = AliDAQ::NumberOfDdls("PMD");
   const Int_t kRow = 48;
   const Int_t kCol = 96;
-
+  const Int_t kSMN = 48;
+  
   Int_t idet = 0;
-  Int_t iSMN = 0;
+  Int_t ismn = 0;
   Int_t indexsmn = 0;
-
-  for (Int_t indexDDL = 0; indexDDL < kDDL; indexDDL++)
+  
+  Int_t ***precpvADC;
+  precpvADC = new int **[kSMN];
+  for (Int_t i=0; i<kSMN; i++) precpvADC[i] = new int *[kRow];
+  for (Int_t i=0; i<kSMN;i++)
     {
-
-      if (indexDDL < 4)
+      for (Int_t j=0; j<kRow; j++) precpvADC[i][j] = new int [kCol];
+    }
+  for (Int_t i = 0; i < kSMN; i++)
+    {
+      for (Int_t j = 0; j < kRow; j++)
 	{
-	  iSMN = 6;
-	}
-      else if (indexDDL >= 4)
-	{
-	  iSMN = 12;
-	}
-      Int_t ***precpvADC;
-      precpvADC = new int **[iSMN];
-      for (Int_t i=0; i<iSMN; i++) precpvADC[i] = new int *[kRow];
-      for (Int_t i=0; i<iSMN;i++)
-	{
-	  for (Int_t j=0; j<kRow; j++) precpvADC[i][j] = new int [kCol];
-	}
-      for (Int_t i = 0; i < iSMN; i++)
-	{
-	  for (Int_t j = 0; j < kRow; j++)
+	  for (Int_t k = 0; k < kCol; k++)
 	    {
-	      for (Int_t k = 0; k < kCol; k++)
-		{
-		  precpvADC[i][j][k] = 0;
-		}
+	      precpvADC[i][j][k] = 0;
 	    }
 	}
-      
+    }
+  for (Int_t indexDDL = 0; indexDDL < kDDL; indexDDL++)
+    {    
       rawReader->Reset();
       AliPMDRawStream pmdinput(rawReader);
       rawReader->Select("PMD", indexDDL, indexDDL);
@@ -351,98 +310,68 @@ void AliPMDRawToSDigits::Raw2Digits(AliRunLoader *runLoader, AliRawReader *rawRe
 	      if (det != 0)
 		AliError(Form("*DDL %d and Detector NUMBER %d NOT MATCHING *",
 			      indexDDL, det));
-	      indexsmn = smn - indexDDL * 6;
+	      indexsmn = smn ;
 	    }
-	  else if (indexDDL == 4)
+	  else if (indexDDL == 4 || indexDDL == 5)
 	    {
 	      if (det != 1)
 		AliError(Form("*DDL %d and Detector NUMBER %d NOT MATCHING *",
 			      indexDDL, det));
-	      if (smn < 6)
-		{
-		  indexsmn = smn;
-		}
-	      else if (smn >= 18 && smn < 24)
-		{
-		  indexsmn = smn - 12;
-		}
-	    }
-	  else if (indexDDL == 5)
-	    {
-	      if (det != 1)
-		AliError(Form("*DDL %d and Detector NUMBER %d NOT MATCHING *",
-			      indexDDL, det));
-	      if (smn >= 6 && smn < 12)
-		{
-		  indexsmn = smn - 6;
-		}
-	      else if (smn >= 12 && smn < 18)
-		{
-		  indexsmn = smn - 6;
-		}
+	      indexsmn = smn + 24;
 	    }	      
 	  precpvADC[indexsmn][row][col] = sig;
 	}
       
       pmdddlcont.Clear();
+    } // DDL Loop  
       
-      // Add the digits here
-      
-      Int_t ismn = 0;
-      for (Int_t indexsmn = 0; indexsmn < iSMN; indexsmn++)
+  // Add the digits here
+  for (indexsmn = 0; indexsmn < kSMN; indexsmn++)
+    {
+      if (indexsmn < 23)
 	{
-	  if (indexDDL < 4)
+	  ismn = indexsmn;
+	  idet = 0;
+	}
+      else if (indexsmn > 23)
+	{
+	  ismn = indexsmn -24;
+	  idet = 1;
+	}
+      for (Int_t irow = 0; irow < kRow; irow++)
+	{
+	  for (Int_t icol = 0; icol < kCol; icol++)
 	    {
-	      ismn = indexsmn + indexDDL * 6;
-	      idet = 0;
-	    }
-	  else if (indexDDL == 4)
-	    {
-	      if (indexsmn < 6)
+	      Int_t trno = -99999;
+	      Int_t sig1 = precpvADC[indexsmn][irow][icol];
+	      
+	      // plug in a function to convert to adc to MeV
+	      if (sig1 > 0)
 		{
-		  ismn = indexsmn;
+		  AddDigit(trno,idet,ismn,irow,icol,sig1);
 		}
-	      else if (indexsmn >= 6 && indexsmn < 12)
-		{
-		  ismn = indexsmn + 12;
-		}
-	      idet = 1;
-	    }
-	  else if (indexDDL == 5)
-	    {
-	      if (indexsmn < 6)
-		{
-		  ismn = indexsmn + 6;
-		}
-	      else if (indexsmn >= 6 && indexsmn < 12)
-		{
-		  ismn = indexsmn + 6;
-		}
-	      idet = 1;
-	    }
-
-	  for (Int_t irow = 0; irow < kRow; irow++)
-	    {
-	      for (Int_t icol = 0; icol < kCol; icol++)
-		{
-		  Int_t trno = -99999;
-		  Int_t sig1 = precpvADC[indexsmn][irow][icol];
-		  
-		  // plug in a function to convert to adc to MeV
-		  if (sig1 > 0)
-		    {
-		      AddDigit(trno,idet,ismn,irow,icol,sig1);
-		    }
-		} // row
-	    }     // col
-	  treeD->Fill();
-	  ResetDigit();
-	}	  
-	  
-    } // DDL Loop
+	    } // row
+	}     // col
+      treeD->Fill();
+      ResetDigit();
+    }	  
   
   pmdLoader->WriteDigits("OVERWRITE");
 
+  // Delete all the pointers
+
+  for (Int_t i = 0; i < kSMN; i++)
+    {
+      for (Int_t j = 0; j < kRow; j++)
+	{
+	  delete [] precpvADC[i][j];
+	}
+    }
+  for (Int_t j = 0; j < kSMN; j++)
+    {
+      delete [] precpvADC[j];
+    }
+  delete [] precpvADC;
 }
 // ------------------------------------------------------------------------- //
 

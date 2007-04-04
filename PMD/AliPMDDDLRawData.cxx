@@ -355,6 +355,7 @@ void AliPMDDDLRawData::GetUMDigitsData(TTree *treeD, Int_t imodule,
 				       UInt_t busPatch[][1536])
 {
   // Retrives digits data UnitModule by UnitModule
+
   UInt_t baseword;
   UInt_t mcmno, chno;
   UInt_t adc;
@@ -390,10 +391,6 @@ void AliPMDDDLRawData::GetUMDigitsData(TTree *treeD, Int_t imodule,
     {
       modulePerDDL = 12;
     }
-
-
-
-
 
   TString fileName(gSystem->Getenv("ALICE_ROOT"));
 
@@ -519,9 +516,6 @@ void AliPMDDDLRawData::TransformS2H(Int_t smn, Int_t &irow, Int_t &icol)
       icolnew = icol;
     }
 
-  // In the new geometry always Geant (0,0) and Hardware (0,0) start
-  // from the top left corner
-
   irow = irownew;
   icol = icolnew;
 
@@ -582,16 +576,14 @@ void AliPMDDDLRawData::GetMCMCh(Int_t ddlno, Int_t row, Int_t col,
 	      // PRE plane, SU Mod = 0, 1
 	      mcmno = (col-scol)/4;
 	      
-	    } // end of ddl 0 and 1
+	    }
 	  else if (ddlno == 2 || ddlno == 3)
 	    {
 	      // PRE plane,  SU Mod = 2, 3
 	      Int_t icolnew = (col - scol)/4;
 	      mcmno = tmcm - 1 - icolnew;
-	    }// end of ddl 2 and 3
-
-
-	  else if (ddlno == 4 ||ddlno == 5 )
+	    }
+	  else if (ddlno == 4 )
 	    {
 	      // CPV plane,  SU Mod = 0, 3 : ddl = 4
 	      
@@ -602,7 +594,8 @@ void AliPMDDDLRawData::GetMCMCh(Int_t ddlno, Int_t row, Int_t col,
 		    {
 		      mcmno = 12 + (col-scol)/4;
 		    }
-		  else if(row >= midrow && row < erow)
+		  else if(row >= midrow && row <= erow)
+		  
 		    {
 		      mcmno = (col-scol)/4;
 		    }
@@ -614,27 +607,60 @@ void AliPMDDDLRawData::GetMCMCh(Int_t ddlno, Int_t row, Int_t col,
 		  if(rowdiff > 16)
 		    {
 		      Int_t midrow = srow + 16;
-		      if (row >= midrow && row < erow)
+		      if (row >= midrow && row <= erow)
 			{
-			  Int_t icolnew = (col - scol)/4;
-			  mcmno = 24 - 1 - icolnew;
-			  
+			  mcmno = 12 + (ecol -col)/4;
 			}
 		      else if (row >= srow && row < midrow)
 			{
-			  Int_t icolnew = (col - scol)/4;
-			  mcmno = 12 - 1 - icolnew; 
+			  mcmno = (ecol - col)/4;
 			}
 		    }
-		  else 
+		  else if (rowdiff < 16) 
 		    {
-		      Int_t icolnew = (col - scol)/4;
-		      mcmno = 12 - 1 - icolnew;
+		      mcmno = (ecol - col)/4;
 		    } 
 		}
 	    }
-
- 	}  
+	  else if ( ddlno == 5)
+	    {
+	      // CPV plane,  SU Mod = 0, 3 : ddl = 4
+	      
+	      if(ibus <= 17)
+		{
+		  Int_t midrow = srow + 16;
+		  if(row >= srow && row < midrow)
+		    {
+		      mcmno = 12 + (col-scol)/4;
+		    }
+		  else if(row >= midrow && row <= erow)
+		    {
+		      mcmno = (col-scol)/4;
+		    }
+		}
+	      
+	      else if (ibus > 17)
+		{
+		  Int_t rowdiff = endRowBus[ibus] - startRowBus[ibus];
+		  if(rowdiff > 16)
+		    {
+		      Int_t midrow = srow + 16;
+		      if (row >= midrow && row <= erow)
+			{
+			  mcmno = 12 + (ecol -col)/4;
+			}
+		      else if (row >= srow && row < midrow)
+			{
+			  mcmno = (ecol - col)/4;
+			}
+		    }
+		  else if (rowdiff < 16) 
+		    {
+		      mcmno = (ecol - col)/4;
+		    } 
+		}
+	    }
+	}
     }
 } 
 
