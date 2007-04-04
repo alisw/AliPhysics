@@ -155,7 +155,7 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
   Float_t delayVertex = param->GetTimeDelayTVD();
   for (Int_t i=0; i<24; i++){
     timeDelayCFD[i] = param->GetTimeDelayCFD(i);
-   timeDelayLED[i] = param->GetTimeDelayLED(i);
+    timeDelayLED[i] = param->GetTimeDelayLED(i);
     TGraph* gr = param ->GetSlew(i);
     slewingLED.AddAtAndExpand(gr,i);
 
@@ -165,13 +165,14 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
     TGraph* grEff = param ->GetPMTeff(i);
     fEffPMT.AddAtAndExpand(grEff,i);
   }
-  
-  zdetC = param->GetZposition(0);
-  zdetA = param->GetZposition(1);
-  
-  AliT0hit  *startHit;
-  TBranch *brHits=0;
-  
+ 
+ 
+   zdetC = TMath::Abs(param->GetZPosition("T0/C/PMT1"));
+   zdetA  = TMath::Abs(param->GetZPosition("T0/A/PMT15"));
+
+   AliT0hit  *startHit;
+   TBranch *brHits=0;
+   
   Int_t nFiles=fManager->GetNinputs();
   for (Int_t inputFile=0; inputFile<nFiles;  inputFile++) {
     if (inputFile < nFiles-1) {
@@ -315,7 +316,6 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
 	Float_t maxValue=hr->GetMaximum(50);
 	trCFD=trCFD-Int_t((maxValue-slew)/channelWidth);
 	ftimeCFD->AddAt(Int_t (trCFD),i);
-	cout<<" slew "<<slew<<" "<<maxValue<<" "<<trCFD<<endl;
 	}
       } //pmt loop
 

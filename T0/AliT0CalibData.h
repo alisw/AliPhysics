@@ -61,10 +61,9 @@ class AliT0CalibData: public TNamed {
   Int_t GetChannel(Int_t trm,  Int_t tdc, Int_t chain, Int_t channel);
   void PrintLookup(Option_t* option= "", Int_t iTRM=0, Int_t iTDC=0, Int_t iChannel=0) const;
   TMap *GetMapLookup(void) {return &fLookup;}
+  Int_t GetNumberOfTRMs() const {return fNumberOfTRMs;}
+  void SetNumberOfTRMs(Int_t ntrms=2) {fNumberOfTRMs = ntrms;}
 
-  //Int_t GetA(void) {return fa;}
-  //void SetA (Int_t a) {fa=a;}
-  
  protected:
 
   Float_t  fTimeDelayCFD[24]; // Coeff. for time delay (24 different cables & CFD )
@@ -74,10 +73,10 @@ class AliT0CalibData: public TNamed {
   TObjArray fSlewingLED;  //time - amp.LED slew
   TObjArray fSlewingRec;  //time - amp. LED slew for reconstruction
   TMap fLookup;           //lookup table
-  //Int_t fa;
+  Int_t fNumberOfTRMs;    // number of TRMs in setup
 
   //
-  ClassDef(AliT0CalibData,3)    // T0 Sensor Calibration data
+  ClassDef(AliT0CalibData,4)    // T0 Sensor Calibration data
 };
 
 typedef AliT0CalibData AliSTARTCalibData; // for backward compatibility

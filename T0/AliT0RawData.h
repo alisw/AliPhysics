@@ -45,6 +45,7 @@ class AliT0RawData : public TObject {
    //this method is used to write the data header
    void  WriteTrailer(UInt_t slot, Int_t word1, UInt_t word2, UInt_t word3); 
    void  WriteChainDataHeader(UInt_t chainNumber,UInt_t slotID);
+   void  WriteChainDataTrailer(UInt_t chainNumber);
    void  FillTime(Int_t ch, Int_t iTDC, Int_t time);
 
  //T0 digits arrays

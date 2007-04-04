@@ -23,6 +23,7 @@ class AliT0RawReader : public TTask {
   Int_t            GetPosition();
   UInt_t         GetNextWord();
   Int_t GetData(Int_t channel, Int_t hit) {return fAllData[channel][hit];}
+  //  void SetNumberOfTRM(Int_t trm=2) {fNTRM=trm;}
   
   protected :
 
@@ -30,6 +31,8 @@ class AliT0RawReader : public TTask {
 
   UChar_t*         fData;         // raw data
   Int_t            fPosition;     // current (32 bit) position in fData
+  //  Int_t            fNTRM; //number of TRMs, 1 - testbeam; 2 - simulation
+ 
   Int_t fAllData[110][5];
   
  ClassDef(AliT0RawReader, 0) //class for reading T0 Raw data

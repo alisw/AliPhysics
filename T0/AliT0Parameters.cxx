@@ -34,6 +34,8 @@
 #include <TMath.h>
 #include <TSystem.h>
 #include <Riostream.h>
+#include <TGeoManager.h>
+#include <TGeoPhysicalNode.h>
 
 AliT0CalibData* AliT0Parameters::fgCalibData = 0;
 AliT0CalibData* AliT0Parameters::fgLookUp = 0;
@@ -57,7 +59,14 @@ AliT0Parameters::Instance()
 
 //____________________________________________________________________
 AliT0Parameters::AliT0Parameters()
-  :fIsInit(kFALSE),fPh2Mip(0),fmV2Mip(0),fChannelWidth(0),fmV2Channel(0),fQTmin(0),fQTmax(0),fSlewingLED(),fSlewingRec(),fPMTeff(),fTimeDelayLED(0),fTimeDelayCFD(0),fTimeDelayTVD(0),fCalibentry(), fLookUpentry(),fSlewCorr()
+  :fIsInit(kFALSE),
+   fPh2Mip(0),fmV2Mip(0),
+   fChannelWidth(0),fmV2Channel(0),
+   fQTmin(0),fQTmax(0),
+   fSlewingLED(),fSlewingRec(),
+   fPMTeff(),
+   fTimeDelayLED(0),fTimeDelayCFD(0),fTimeDelayTVD(0),
+   fCalibentry(), fLookUpentry(),fSlewCorr()
 {
   // Default constructor 
 
@@ -77,6 +86,7 @@ AliT0Parameters::AliT0Parameters()
    }
   SetTimeDelayTVD();
   SetZposition();
+  SetNumberOfTRMs(2);
   
 }
 
@@ -92,15 +102,14 @@ AliT0Parameters::Init()
   AliCDBStorage *stor =AliCDBManager::Instance()->GetStorage("local://$ALICE_ROOT");
   //time equalizing
   AliCDBEntry* fCalibentry  = stor->Get("T0/Calib/TimeDelay",0);
- if (fCalibentry){
+  if (fCalibentry)
    fgCalibData  = (AliT0CalibData*)fCalibentry->GetObject();
-  }
- else 
-   { AliError(" ALARM !!!! No time delays in CDB "); }
+  else 
+    AliError(" ALARM !!!! No time delays in CDB "); 
  //slewing correction
   AliCDBEntry* fSlewCorr  = stor->Get("T0/Calib/Slewing_Walk",0);
- if (fSlewCorr){
-   fgSlewCorr  = (AliT0CalibData*)fSlewCorr->GetObject();
+  if (fSlewCorr){
+    fgSlewCorr  = (AliT0CalibData*)fSlewCorr->GetObject();
   }
   fLookUpentry  = stor->Get("T0/Calib/LookUp_Table",0);
   if (fLookUpentry){
@@ -300,7 +309,6 @@ Float_t AliT0Parameters::GetWalkVal(Int_t ipmt, Float_t mv) const
   return fgCalibData -> GetWalkVal(ipmt, mv) ;
 }
 
-//__________________________________________________________________
 
 //__________________________________________________________________
 void 
@@ -343,3 +351,42 @@ AliT0Parameters::GetChannel(Int_t trm,  Int_t tdc, Int_t chain, Int_t channel)
   
 
 }
+//__________________________________________________________________
+Int_t
+AliT0Parameters::GetNumberOfTRMs() 
+{
+  // return number of trms
+  // 
+  if (!fgLookUp) {
+    fNumberOfTRMs = 2;
+    return  fNumberOfTRMs;
+  } 
+  return  fgLookUp ->GetNumberOfTRMs();
+}
+//________________________________________________________________________________
+Double_t AliT0Parameters::GetZPosition(const char* symname){
+// Get the global z coordinate of the given T0 alignable volume
+//
+  Double_t *tr;
+  
+  cout<<symname<<endl;
+  TGeoPNEntry *pne = gGeoManager->GetAlignableEntry(symname);
+  if (!pne) return 0;
+  
+
+  TGeoPhysicalNode *pnode = pne->GetPhysicalNode();
+  if(pnode){
+          TGeoHMatrix* hm = pnode->GetMatrix();
+           tr = hm->GetTranslation();
+  }else{
+          const char* path = pne->GetTitle();
+          if(!gGeoManager->cd(path)){
+                  AliErrorClass(Form("Volume path %s not valid!",path));
+                  return 0;
+          }
+         tr = gGeoManager->GetCurrentMatrix()->GetTranslation();
+  }
+  return tr[2];
+
+}
+

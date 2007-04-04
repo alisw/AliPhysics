@@ -171,7 +171,7 @@ void AliT0RawData::GetDigits(AliT0digit *fDigits)
     allData->AddAt(fTimeCFD->At(i-1),i+24);
     allData->AddAt(fADC0->At(i-1),i+54);
     allData->AddAt(fADC1->At(i-1),i+78);
-    //    cout<<i<<" led "<<fTimeLED->At(i-1)<<" cfd "<<fTimeCFD->At(i-1)<<" qt0 "<<fADC0->At(i-1)<<" qt1 "<<fADC1->At(i-1)<<endl;
+
   }
   allData->AddAt(meantime,49);
   allData->AddAt(timediff,50);
@@ -185,82 +185,88 @@ void AliT0RawData::GetDigits(AliT0digit *fDigits)
   allData->AddAt(mult1,54);
   allData->AddAt(mult1,107); //trigger semi-central
 
-  // cout<<" new Event "<<endl;
-  //   for (Int_t ia=0; ia<110; ia++) cout<<ia<<" "<<allData->At(ia)<<endl;
+  // cout.setf( ios_base::hex, ios_base::basefield );
+  
   //space for DRM header
-  fIndex += 4;
+  fIndex += 6;
 
+  Int_t startTRM=fIndex;
   //space for 1st TRM header
   fIndex ++;
   positionOfTRMHeader= fIndex;
 
   //space for chain  header
   fIndex ++;
-
+  WriteChainDataHeader(0, 0); // 
   // Loop through all PMT
   Int_t chain=0; 
   Int_t iTDC = 0;
   Int_t channel=0;
   Int_t trm1words=0;
-  Int_t fWordsIn1stTRM=0;
+
   //LED
   for (Int_t det = 0; det < 55; det++) {
     time = allData->At(det);
-
-    if (time >0) { 
+    if (time >0)  
       FillTime(channel,  iTDC,  time); 
-      trm1words++;   
-     }
     if (channel < 6) channel +=2;
     else {
       channel = 0; 
       iTDC++;
       if (iTDC>15) { chain++; iTDC=0;}
     }
-    //  cout<<det<<" "<<time<<" "<<iTDC<<" "<<channel<<" "<<endl;
   }
   
-  WriteTrailer(0,0,fEventNumber,1); // 1st chain trailer
+
+  WriteChainDataTrailer(1); // 1st chain trailer
+  fIndex++;
+  WriteChainDataHeader(2, 1); // 
+  WriteChainDataTrailer(3); // 2st chain trailer
   WriteTrailer(15,0,fEventNumber,5); // 1st TRM trailer
-  fWordsIn1stTRM = trm1words + 4;
-  //  WriteTRMDataHeader(3, trm1words , positionOfTRMHeader);
+  trm1words = fIndex - startTRM;
   WriteTRMDataHeader(0, trm1words , positionOfTRMHeader);
 
 
   //space for 2st TRM header
+  startTRM=fIndex;
   fIndex ++;
   positionOfTRMHeader= fIndex;
-
-  //space for chain  header
+ 
+  // chain  header
   fIndex ++;
-
-
+  WriteChainDataHeader(0, 0); // 
   chain=0; 
   iTDC = 0;
   channel=0;
-  Int_t trm2words=0;
+
   for (Int_t det = 55; det < 108; det++) {
     time = allData->At(det);
-
-    if (time >0) { 
+    
+    if (time >0)  
       FillTime(channel,  iTDC,  time); 
-      trm2words++;}
+     
     if (channel < 6) channel +=2;
     else {
       channel = 0; 
       iTDC++;
       if (iTDC>15) { chain++; iTDC=0;}
     }
-    //    cout<<det<<" "<<time<<" "<<channel<<" "<<iTDC<<endl;
- }
+    
+    
+  }
+    WriteChainDataTrailer(1); // 1st chain trailer
+    fIndex++;
+    WriteChainDataHeader(2, 1); // 
+    WriteChainDataTrailer(3); // 2st chain trailer
+    WriteTrailer(15,0,fEventNumber,5); // 1st TRM trailer
+    trm1words = fIndex - startTRM;
+    WriteTRMDataHeader(1, trm1words , positionOfTRMHeader);
+    //DRM trailer
+    WriteTrailer(1,0,fEventNumber,5); // 1st TRM trailer
+    
+    WriteDRMDataHeader();
 
-  WriteTrailer(0,0,fEventNumber,1); // 1st chain trailer
-  WriteTrailer(15,0,fEventNumber,5); // 1st TRM trailer
-  //  WriteTRMDataHeader(5,trm2words,positionOfTRMHeader);
-  WriteTRMDataHeader(1,trm2words,positionOfTRMHeader);
-
-  WriteTrailer(1,fEventNumber,0,5); //DRM trailer
-  WriteDRMDataHeader();
+    delete allData;
 
 }
 //------------------------------------------------------------------------------
@@ -304,6 +310,7 @@ void  AliT0RawData::WriteDRMDataHeader()
   PackWord(baseWord,word,28,31); // 0100 marks header
   fBuffer[0]=  baseWord;
 
+
   //DRM status header 1
   word = 1;
   PackWord(baseWord,word,0, 3); // 0001 
@@ -317,8 +324,9 @@ void  AliT0RawData::WriteDRMDataHeader()
   PackWord(baseWord,word,28,31); // 0100 marks header
    fBuffer[1] = baseWord;
 
-  word=0;
-  baseWord=0;
+
+   word=0;
+   baseWord=0;
 
     //DRM status header 2
     word = 1;
@@ -332,6 +340,7 @@ void  AliT0RawData::WriteDRMDataHeader()
     word=4;
     PackWord(baseWord,word,28,31); // 0100 marks header
     fBuffer[2]=  baseWord;
+ 
 
     
     word=0;
@@ -345,7 +354,10 @@ void  AliT0RawData::WriteDRMDataHeader()
     PackWord(baseWord,word,28,31); // 0100 marks header
     fBuffer[3]=  baseWord;
 
-
+    // new DRM format
+    fBuffer[4]=  baseWord;
+    fBuffer[5]=  baseWord;
+    
     word=0;
     baseWord=0;
     
@@ -378,7 +390,7 @@ void  AliT0RawData::WriteTRMDataHeader(UInt_t slotID, Int_t nWordsInTRM,
   word=4;
   PackWord(baseWord,word,28,31); // 0100 marks header
   fBuffer[positionOfTRMHeader] =  baseWord;
- cout<<" TRM header "<<baseWord<<endl;   
+
   word=0; 
   baseWord=0;
      
@@ -407,7 +419,31 @@ void  AliT0RawData::WriteChainDataHeader(UInt_t chainNumber,UInt_t slotID)
   PackWord(baseWord,word,27,27); //  TS
   word=chainNumber;
   PackWord(baseWord,word,28,31); // 0100 marks header
-  fBuffer[4] =  baseWord;
+  fBuffer[fIndex] =  baseWord;
+
+  word=0;
+  baseWord=0;     
+  
+}
+//_____________________________________________________________________________
+
+void  AliT0RawData::WriteChainDataTrailer(UInt_t chainNumber )
+{
+//Write a (dummy or real) DDL Chain  data trailer 
+//set the compression bit if compressed
+//  chainNumber 00 or 10
+  UInt_t word;
+  UInt_t baseWord=0;
+  word = 0; // ask Tatiana 7 or 9 
+  PackWord(baseWord,word,0, 3); // status
+  word = 0;
+  PackWord(baseWord,word,4, 15); // MBZ
+  word=fEventNumber;
+  PackWord(baseWord,word,16,27); // event counter
+  word=chainNumber;
+  PackWord(baseWord,word,28,31); // chain number
+  fIndex++;
+  fBuffer[fIndex] =  baseWord;
 
   word=0;
   baseWord=0;     
@@ -456,7 +492,7 @@ void  AliT0RawData::WriteTrailer(UInt_t slot, Int_t word1, UInt_t word2, UInt_t 
   PackWord(baseWord,word,28,31); //  marks trailer
   fIndex++;
   fBuffer[fIndex] =  baseWord;
-  
+
   word=0;
   baseWord=0;
 

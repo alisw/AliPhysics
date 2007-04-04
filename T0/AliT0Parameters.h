@@ -54,8 +54,9 @@ public:
   Int_t GetmV2channel()     const { return fmV2Channel; }
   Int_t GetQTmin() const {return fQTmin;}
   Int_t GetQTmax() const {return fQTmax;}
-  Float_t GetZposition(Int_t i) const {return fT0zPosition[i];}
-  TGraph *  GetPMTeff(Int_t ipmt) const  
+  Double_t GetZposition(Int_t i) const {return fT0zPosition[i];}
+  Double_t GetZPosition(const char* symname) ;
+   TGraph *  GetPMTeff(Int_t ipmt) const  
   {return (TGraph*)fPMTeff.At(ipmt);}
   Float_t GetpmtEFF(Int_t ipmt, Float_t lambda) const
   {return((TGraph*)fPMTeff.At(ipmt))->Eval(lambda);} 
@@ -80,6 +81,8 @@ public:
   //  TMap *LookupTable;
 
   Int_t GetChannel(Int_t trm,  Int_t tdc, Int_t chain, Int_t channel);
+  Int_t GetNumberOfTRMs();
+  void SetNumberOfTRMs(Int_t ntrms=2) {fNumberOfTRMs = ntrms;}
 
 protected:
   AliT0Parameters();
@@ -105,7 +108,8 @@ protected:
   Float_t  fTimeDelayTVD;  //time delay for TVD (vertex trigger channel)
   
   TMap fLookUp;           //lookup table
-  
+  Int_t fNumberOfTRMs;    // number of TRMs in setup
+
   static AliT0CalibData * fgCalibData; // singleton for Calibration data
   static AliT0CalibData * fgLookUp; // singleton for Calibration data
   static AliT0CalibData * fgSlewCorr; // singleton for Calibration data

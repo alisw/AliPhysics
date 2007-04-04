@@ -31,13 +31,13 @@ void AliT0SetCDB()
 		  "Set time dalay");
   menu->AddButton("Set walk","SetWalk()",
 		  "Set slewing coorection");
- menu->AddButton("Set Align","SetAC()",
+  menu->AddButton("Set Align","SetAC()",
 		  "Set alignment coefficients");
   menu->AddButton("Set LookUpTable","SetLookUp()",
                   "Set LookUp table");
   menu->AddButton("Read time delay","GetTimeDelay()",
 		  "Read time delay");
- menu->AddButton("Read walk","GetWalk()",
+  menu->AddButton("Read walk","GetWalk()",
 		  "Read amplitude-time correction");
   menu->AddButton("Read alignment CC","GetAC()",
 		  "Read face detector position ");
@@ -159,9 +159,12 @@ void SetWalk()
   TRandom rn;
   
   for(Int_t ipmt=0; ipmt<24; ipmt++) {
-    calibda->SetWalk(ipmt,"data/CFD-Amp.txt");
-    calibda->SetSlewingLED(ipmt,"data/CFD-LED.txt");
-    calibda->SetSlewingRec(ipmt,"data/CFD-LED.txt");
+    //    calibda->SetWalk(ipmt,"data/CFD-Amp.txt");
+    //    calibda->SetSlewingLED(ipmt,"data/CFD-LED.txt");
+    //  calibda->SetSlewingRec(ipmt,"data/CFD-LED.txt");
+    calibda->SetWalk(ipmt);
+    calibda->SetSlewingLED(ipmt);
+    calibda->SetSlewingRec(ipmt);
   }
   //Store calibration data into database
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
@@ -259,7 +262,7 @@ void SetLookUp()
   AliT0CalibData *calibda=new AliT0CalibData("T0");
 
   calibda->ReadAsciiLookup("lookUpTable.txt");
-//calibda->SetA(5);
+
   //Store calibration data into database
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
 

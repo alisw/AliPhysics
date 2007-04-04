@@ -109,8 +109,9 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
     TGraph* gr = param ->GetSlewRec(i);
     slewingLEDrec.AddAtAndExpand(gr,i) ;  
   }
-  zdetC = param->GetZposition(0);
-  zdetA  = param->GetZposition(1);
+  zdetC = param->GetZPosition("C");
+  zdetA  = param->GetZPosition("A");
+
     
   AliDebug(1,Form("Start DIGITS reconstruction "));
 
@@ -211,7 +212,8 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
     //Q->T-> coefficients !!!! should be asked!!!
   Float_t  timeDelayLED[24];
   Float_t zdetA,zdetC;
-  TObjArray slewingLEDrec;
+  Int_t allData[110][5];
+   TObjArray slewingLEDrec;
   TObjArray walk;
     
   TArrayI * timeCFD = new TArrayI(24); 
@@ -219,10 +221,13 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   TArrayI * chargeQT0 = new TArrayI(24); 
   TArrayI * chargeQT1 = new TArrayI(24); 
 
+   for (Int_t i=0; i<110; i++) {
+     allData[i][0]=0;
+   }
+
    AliT0RawReader myrawreader(rawReader);
    if (!myrawreader.Next())
      AliDebug(1,Form(" no raw data found!! %i", myrawreader.Next()));
-   Int_t allData[110][5];
    for (Int_t i=0; i<110; i++) {
      allData[i][0]=myrawreader.GetData(i,0);
    }
@@ -240,12 +245,10 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
     slewingLEDrec.AddAtAndExpand(gr,i) ;  
   }
   
-    zdetC = param->GetZposition(0);
-    zdetA  = param->GetZposition(1);
-    //  zdetC=GetZdet("C");
-    // zdetA=GetZdet("A");
-  cout<<" !!!!!  zdetC "<<zdetC<<"  zdetA "<< zdetA<<endl;    
-   for (Int_t in=0; in<24; in++)
+  zdetC = param->GetZPosition("T0/C/PMT1");
+  zdetA  = param->GetZPosition("T0/A/PMT15");
+
+  for (Int_t in=0; in<24; in++)
      {
        timeLED->AddAt(allData[in+1][0],in);
        timeCFD->AddAt(allData[in+25][0],in);
@@ -272,7 +275,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
       Int_t qt0= chargeQT0->At(ipmt);
       Int_t qt1= chargeQT1->At(ipmt);
       if((qt1-qt0)>0)  adc[ipmt] = TMath::Exp( Double_t (channelWidth*(qt1-qt0)/1000));
-      time[ipmt] = channelWidth * (calib-> WalkCorrection( ipmt,qt1 , timeCFD->At(ipmt) ) ) ;
+       time[ipmt] = channelWidth * (calib-> WalkCorrection( ipmt,qt1 , timeCFD->At(ipmt) ) ) ;
       Double_t sl = (timeLED->At(ipmt) - timeCFD->At(ipmt)- (1000.*timeDelayLED[ipmt]/channelWidth))*channelWidth;
       Double_t qt=((TGraph*)slewingLEDrec.At(ipmt))->Eval(sl/1000.);
       frecpoints->SetTime(ipmt,time[ipmt]);
@@ -376,7 +379,8 @@ void AliT0Reconstructor::FillESD(AliRunLoader* runLoader, AliESD *pESD) const
     pESD->SetT0(timeStart);        // interaction time 
     pESD->SetT0time(time);         // best TOF on each PMT 
     pESD->SetT0amplitude(amp);     // number of particles(MIPs) on each PMT
-    cout<<" ESD >> "<<Zposition<<" "<<timeStart<<endl;
+ 
+    AliDebug(1,Form(" Z position %f cm,  T0  %f ps",Zposition , timeStart));
 
     pStartLoader->UnloadRecPoints();
    

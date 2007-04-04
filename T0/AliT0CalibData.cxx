@@ -96,8 +96,8 @@ void  AliT0CalibData::Print(Option_t*) const
 {
 
   printf("\n	----	PM Arrays	----\n\n");
-  printf(" Time delay CFD \n");
-  for (Int_t i=0; i<24; i++) printf("  %f",fTimeDelayCFD[i]);
+  printf(" Time delay CFD & LED\n");
+  for (Int_t i=0; i<24; i++) printf(" CFD  %f LED %f ",fTimeDelayCFD[i], fTimeDelayLED[i]);
 } 
 
 //________________________________________________________________
@@ -106,11 +106,13 @@ void  AliT0CalibData::PrintLookup(Option_t*, Int_t iTRM, Int_t iTDC, Int_t iChan
   
   AliT0LookUpKey* lookkey= new AliT0LookUpKey();
   AliT0LookUpValue*  lookvalue= new AliT0LookUpValue();
-  
+
+  cout<<" Number Of TRMs in setup "<<GetNumberOfTRMs()<<endl;
   lookvalue->SetTRM(iTRM);
   lookvalue->SetTDC(iTDC);
   lookvalue->SetChain(0);
   lookvalue->SetChannel(iChannel);
+
   
   printf(" AliT0CalibData::PrintLookup ::start GetValue %i %i %i \n",iTRM, iTDC, iChannel);
   lookkey = (AliT0LookUpKey*) fLookup.GetValue((TObject*)lookvalue);
@@ -153,7 +155,7 @@ void AliT0CalibData::SetWalk(Int_t ipmt)
   ifstream inFile(filename);
   if(!inFile) AliError(Form("Cannot open file %s !",filename));
   
-  Int_t i=0, i1=0, i2=0;
+  Int_t i=0;
   while(getline(inFile,buffer)){
     inFile >> ps >> mv;
 
@@ -161,11 +163,12 @@ void AliT0CalibData::SetWalk(Int_t ipmt)
     i++;
   }
   inFile.close();
+  cout<<" number of data "<<i<<endl;
  
   TMath::Sort(i, y, index,down);
   Int_t amp=0, iin=0, isum=0, sum=0;
   Int_t ind=0;
-  for (Int_t ii=0; ii<70000; ii++)
+  for (Int_t ii=0; ii<i; ii++)
     {
       ind=index[ii];
       if(y[ind] == amp)
@@ -182,7 +185,7 @@ void AliT0CalibData::SetWalk(Int_t ipmt)
 	    time[isum] =Float_t (x[ind]);
 	  amplitude[isum] = Float_t (amp);
 	  amp=y[ind];
-	  cout<<ii<<" "<<ind<<" "<<y[ind]<<" "<<x[ind]<<" iin "<<iin<<" mean "<<time[isum]<<" amp "<< amplitude[isum]<<" "<<isum<<endl;
+	  //	  cout<<ii<<" "<<ind<<" "<<y[ind]<<" "<<x[ind]<<" iin "<<iin<<" mean "<<time[isum]<<" amp "<< amplitude[isum]<<" "<<isum<<endl;
 	  iin=0;
 	  isum++;
 	  sum=0;
@@ -230,7 +233,7 @@ void AliT0CalibData::SetSlewingRec(Int_t ipmt)
   Float_t x[100], y[100];
   string buffer;
   
- const char * filename = gSystem->ExpandPathName("$ALICE_ROOT/T0/data/re.root");
+ const char * filename = gSystem->ExpandPathName("$ALICE_ROOT/T0/data/CFD-LED.root");
    ifstream inFile(filename);
   if(!inFile) {AliError(Form("Cannot open file %s !",filename));}
   
@@ -251,6 +254,7 @@ void AliT0CalibData::SetSlewingRec(Int_t ipmt)
   
 }
 
+//________________________________________________________________
 
 void AliT0CalibData::ReadAsciiLookup(const Char_t *filename)
 {
@@ -268,46 +272,53 @@ void AliT0CalibData::ReadAsciiLookup(const Char_t *filename)
     {
       //  AliLog(Form("Cannot open file %s ! Getting hardcoded value",filename));
 
-    trm=0; tdc=0; chain=0; channel=0; key=0;
-    for (Int_t ik=0; ik<108; ik++)
-      {
-	AliT0LookUpKey * lookkey= new AliT0LookUpKey();
-	AliT0LookUpValue * lookvalue= new AliT0LookUpValue();
-	
-      lookvalue->SetTRM(trm);
-      lookvalue->SetTDC(tdc);
-      lookvalue->SetChain(chain);
-      lookvalue->SetChannel(channel);
-      lookkey->SetKey(ik);
-      if(ik>53) { trm=1; tdc=0; channel=0;}
-      if (channel<7) channel +=2;
-      else {channel = 0; tdc++;}
-      }
+      //      fNumberOfTRMs = 2;
+      SetNumberOfTRMs(2);
+      trm=0; tdc=0; chain=0; channel=0; key=0;
+      for (Int_t ik=0; ik<108; ik++)
+	{
+	  AliT0LookUpKey * lookkey= new AliT0LookUpKey();
+	  AliT0LookUpValue * lookvalue= new AliT0LookUpValue();
+	  
+	  lookvalue->SetTRM(trm);
+	  lookvalue->SetTDC(tdc);
+	  lookvalue->SetChain(chain);
+	  lookvalue->SetChannel(channel);
+	  lookkey->SetKey(ik);
+	  if(ik>53) { trm=1; tdc=0; channel=0;}
+	  if (channel<7) channel +=2;
+	  else {channel = 0; tdc++;}
+	}
     }
   Char_t varname[11];
-  // while(lookup.eof())
-
- for (Int_t i=0; i<108; i++)
+  Int_t ntrms;
+  if(lookup)
     {
-       AliT0LookUpKey * lookkey= new AliT0LookUpKey();
-       AliT0LookUpValue * lookvalue= new AliT0LookUpValue();
-
- lookup>>varname>>key>>trm>>chain>>tdc>>channel;
-      lookvalue->SetTRM(trm);
-      lookvalue->SetTDC(tdc);
-      lookvalue->SetChain(chain);
-      lookvalue->SetChannel(channel);
-      lookkey->SetKey(key);
-
+      lookup>>ntrms;
+      cout<<" !!!!!!! ntrms "<<ntrms<<endl;
+      //      fNumberOfTRMs=ntrms;
+      SetNumberOfTRMs(ntrms);
+       while(!lookup.eof())
+	{
+	  AliT0LookUpKey * lookkey= new AliT0LookUpKey();
+	  AliT0LookUpValue * lookvalue= new AliT0LookUpValue();
+	  
+	  lookup>>varname>>key>>trm>>chain>>tdc>>channel;
+	  lookvalue->SetTRM(trm);
+	  lookvalue->SetTDC(tdc);
+	  lookvalue->SetChain(chain);
+	  lookvalue->SetChannel(channel);
+	  lookkey->SetKey(key);
+	  cout<<"lookup "<<varname<<" "<<key<<" "<<trm<<" "<<chain<<" "<<tdc<<" "<<channel<<endl;	  
+	  
+	  fLookup.Add((TObject*)lookvalue,(TObject*)lookkey);
+	  
+	}
       
-      fLookup.Add((TObject*)lookvalue,(TObject*)lookkey);
-
+      lookup.close();
+      
     }
-
-   lookup.close();
-
 }
-
 //________________________________________________________________
 
 Int_t AliT0CalibData::GetChannel(Int_t trm,  Int_t tdc, Int_t chain, Int_t channel)
