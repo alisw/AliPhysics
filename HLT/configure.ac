@@ -158,11 +158,6 @@ if test ! "x$have_aliroot" = "xno" ; then
   LDFLAGS="$save_LDFLAGS -L${ROOTLIBDIR} $ALIROOT_LDFLAGS"
   
   # check for certain AliRoot libraries/files/features
-  # CBD library is present since AliRoot version v4-05-00 (02.06.2006)
-  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
-  CHECKLIB=CDB
-  AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"])
-
   # splitted RAW libraries since AliRoot version v4-04-Rev-07 (09.08.2006)
   have_alirawdata=no
   LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
@@ -194,9 +189,23 @@ if test ! "x$have_aliroot" = "xno" ; then
   AC_MSG_CHECKING([for AliRawReader classes in RAWData libraries])
   AC_MSG_RESULT([$have_alirawdata])
 
+  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
+  CHECKLIB=AOD
+  AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"])
+
+  # CBD library is present since AliRoot version v4-05-00 (02.06.2006)
+  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS -lSTEER"
+  CHECKLIB=CDB
+  AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"])
+
+  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
+  CHECKLIB=STEER
+  AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"])
+
   dnl
   dnl check whether AliLog supports notification callback
   dnl
+  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
   have_alilog_notification=no
   AC_MSG_CHECKING([whether AliLog supports notification callback])
   AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliLog.h>], 
@@ -218,10 +227,6 @@ if test ! "x$have_aliroot" = "xno" ; then
  				  [AC_DEFINE(EXTERNALTRACKPARAM_V1)])
   AC_MSG_CHECKING(for version of AliExternalTrackParam)
   AC_MSG_RESULT($externaltrackparam_version)
-
-  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
-  CHECKLIB=STEER
-  AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"])
 
   if test ! "x$have_aliroot" = "xno" ; then
     # the HLTTPCLib needs to link agains TPCbase and TPCrec
