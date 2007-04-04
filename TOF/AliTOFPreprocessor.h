@@ -24,6 +24,8 @@ class AliTOFPreprocessor : public AliPreprocessor
   public:
     AliTOFPreprocessor(AliShuttleInterface* shuttle);
     virtual ~AliTOFPreprocessor();
+    void   SetStoreRefData(Bool_t in){fStoreRefData=in;};
+    Bool_t GetStoreRefData() const {return fStoreRefData;};
 
   protected:
     virtual void Initialize(Int_t run, UInt_t startTime, UInt_t endTime);
@@ -41,8 +43,7 @@ class AliTOFPreprocessor : public AliPreprocessor
     TH2S *fh2;       // TH2S from DAQ for histograms for delays  
     AliTOFCalOnline *fCal;         // TOF Calibration object
     AliTOFGeometry *fTOFGeometry;  // TOF Geometry version
-
-    ClassDef(AliTOFPreprocessor, 0);
+    Bool_t fStoreRefData;  // Flag to decide storage of Ref Data
+    ClassDef(AliTOFPreprocessor, 1);
 };
-
 #endif
