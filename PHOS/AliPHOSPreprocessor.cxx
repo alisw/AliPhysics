@@ -64,19 +64,24 @@ UInt_t AliPHOSPreprocessor::Process(TMap* /*valueSet*/)
   TString runType = GetRunType();
   Log(Form("Run type: %s",runType.Data()));
 
+  if(runType=="LED") {
+    Bool_t ledOK = ProcessLEDRun();
+    if(ledOK) return 0;
+    else
+      return 1;
+  }
+
   gRandom->SetSeed(0); //the seed is set to the current  machine clock!
   AliPHOSEmcCalibData calibData;
-  AliPHOSEmcBadChannelsMap badMap;
 
   TList* list = GetFileSources(kDAQ, "AMPLITUDES");
   if(!list) {
     Log("Sources list not found, exit.");
-    return 0;
+    return 1;
   }
 
   TIter iter(list);
   TObjString *source;
-  Int_t result=0;
   
   while ((source = dynamic_cast<TObjString *> (iter.Next()))) {
     AliInfo(Form("found source %s", source->String().Data()));
@@ -88,7 +93,7 @@ UInt_t AliPHOSPreprocessor::Process(TMap* /*valueSet*/)
 
     if(!f.IsOpen()) {
       Log(Form("File %s is not opened, something goes wrong!",fileName.Data()));
-      return 0;
+      return 1;
     }
 
     const Int_t nMod=5; // 1:5 modules
@@ -110,30 +115,7 @@ UInt_t AliPHOSPreprocessor::Process(TMap* /*valueSet*/)
     Int_t ikey = 0;
     Int_t counter = 0;
     TH1F* hRef = 0;
-
-    // Check for dead channels    
-    if (runType=="LED") {    
-
-      Log(Form("Begin check for dead channels."));
-      for(Int_t mod=0; mod<nMod; mod++) {
-	for(Int_t col=0; col<nCol; col++) {
-	  for(Int_t row=0; row<nRow; row++) {
-	    sprintf(hnam,"mod%dcol%drow%d",mod,col,row);
-	    histo = (TH1F*)f.Get(hnam);
-	    if(histo)
-	      if (histo->GetMean()<1) {
-		Log(Form("Channel: [%d,%d,%d] seems dead, <E>=%.1f.",mod,col,row,histo->GetMean()));
-		badMap.SetBadChannel(mod,col,row);
-	      }
-	  }
-	}
-      }
-      //Store bad channels map
-      AliCDBMetaData badMapMetaData;
-      result = Store("Bad", "EmcData", &badMap, &badMapMetaData);
-      return result;
-    }
-
+    
     //Check if the file contains any histogram
     
     if(nkeys< 2){
@@ -189,7 +171,74 @@ UInt_t AliPHOSPreprocessor::Process(TMap* /*valueSet*/)
   //Store EMC calibration data
   
   AliCDBMetaData emcMetaData;
-  result = Store("Calib", "EmcData", &calibData, &emcMetaData);
+  Bool_t emcOK = Store("Calib", "EmcGainPedestals", &calibData, &emcMetaData);
+
+  if(emcOK) return 0;
+  else
+    return 1;
+
+}
+
+
+Bool_t AliPHOSPreprocessor::ProcessLEDRun()
+{
+  //Process LED run, fill bad channels map.
+
+  AliPHOSEmcBadChannelsMap badMap;
+
+  TList* list = GetFileSources(kDAQ, "LED");
+  if(!list) {
+    Log("Sources list for LED run not found, exit.");
+    return kFALSE;
+  }
+
+  TIter iter(list);
+  TObjString *source;
+  char hnam[80];
+  TH1F* histo=0;
+  
+  while ((source = dynamic_cast<TObjString *> (iter.Next()))) {
+
+    AliInfo(Form("found source %s", source->String().Data()));
+
+    TString fileName = GetFile(kDAQ, "LED", source->GetName());
+    AliInfo(Form("Got filename: %s",fileName.Data()));
+
+    TFile f(fileName);
+
+    if(!f.IsOpen()) {
+      Log(Form("File %s is not opened, something goes wrong!",fileName.Data()));
+      return kFALSE;
+    }
+
+    const Int_t nMod=5; // 1:5 modules
+    const Int_t nCol=56; //1:56 columns in each module
+    const Int_t nRow=64; //1:64 rows in each module
+
+    // Check for dead channels    
+    Log(Form("Begin check for dead channels."));
+
+    for(Int_t mod=0; mod<nMod; mod++) {
+      for(Int_t col=0; col<nCol; col++) {
+	for(Int_t row=0; row<nRow; row++) {
+	  sprintf(hnam,"mod%dcol%drow%d",mod,col,row);
+	  histo = (TH1F*)f.Get(hnam);
+	  if(histo)
+	    if (histo->GetMean()<1) {
+	      Log(Form("Channel: [%d,%d,%d] seems dead, <E>=%.1f.",mod,col,row,histo->GetMean()));
+	      badMap.SetBadChannel(mod,col,row);
+	    }
+	}
+      }
+    }
+
+  }
+
+  //Store bad channels map
+  AliCDBMetaData badMapMetaData;
+
+  //Bad channels data valid from current run fRun until updated (validityInfinite=kTRUE)
+  Bool_t result = Store("Calib", "EmcBadChannels", &badMap, &badMapMetaData, fRun, kTRUE);
   return result;
 
 }

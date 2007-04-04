@@ -21,8 +21,9 @@ public:
 protected:
 
   virtual UInt_t Process(TMap* valueSet);
+  Bool_t ProcessLEDRun();
 
-  ClassDef(AliPHOSPreprocessor,0);
+  ClassDef(AliPHOSPreprocessor,1);
 
 };
 
