@@ -18,6 +18,8 @@ protected:
                         UInt_t endTime);
 
         virtual UInt_t Process(TMap* valueSet);
+	
+	virtual Bool_t ProcessDCS();
 
 	ClassDef(TestHMPIDPreprocessor, 0);
 };

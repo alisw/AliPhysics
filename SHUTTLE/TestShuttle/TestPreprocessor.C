@@ -63,10 +63,9 @@ void TestPreprocessor()
   // Three files originating from different LDCs but with the same id are also added
   // Note that the test preprocessor name is TPC. The name of the detector's preprocessor must follow
   // the "online" naming convention ALICE-INT-2003-039.
-  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "TPC", "PEDESTALS", "GDC", "file1.root");
   shuttle->AddInputFile(AliShuttleInterface::kDAQ, "TPC", "DRIFTVELOCITY", "LDC0", "file2a.root");
   shuttle->AddInputFile(AliShuttleInterface::kDAQ, "TPC", "DRIFTVELOCITY", "LDC1", "file2b.root");
-  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "TPC", "DRIFTVELOCITY", "LDC2", "file2b.root");
+  shuttle->AddInputFile(AliShuttleInterface::kDAQ, "TPC", "DRIFTVELOCITY", "LDC2", "file2c.root");
 
   // TODO(3)
   //

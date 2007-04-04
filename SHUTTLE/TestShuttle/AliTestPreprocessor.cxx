@@ -68,8 +68,11 @@ UInt_t AliTestPreprocessor::Process(TMap* dcsAliasMap)
   // Fills data into a AliTestDataDCS object
 
   if (!dcsAliasMap)
-    return 1;
-
+  {
+  	Log("ERROR: No DCS map provided by SHUTTLE!");
+  	return 1;
+  }
+  
   // The processing of the DCS input data is forwarded to AliTestDataDCS
   fData->ProcessData(*dcsAliasMap);
 
@@ -79,23 +82,35 @@ UInt_t AliTestPreprocessor::Process(TMap* dcsAliasMap)
   TString runType = GetRunType();
   Log(Form("Run type for run %d: %s", fRun, runType.Data()));
 
-  TString fileName = GetFile(kDAQ, "PEDESTALS", "GDC");
-  if (fileName.Length() > 0)
-    Log(Form("Got the file %s, now we can extract some values.", fileName.Data()));
-  //TODO here the file could be opened, some values extracted and  written to e.g. fData
+  // Example of how to retrieve the list of sources that produced the file with id DRIFTVELOCITY
+  TList* sourceList = GetFileSources(kDAQ, "DRIFTVELOCITY");
+  if (!sourceList)
+  {
+  	Log("Error: No sources found for id DRIFTVELOCITY!");
+	return 1;
+  }
+  
+  // TODO We have the list of sources that produced the files with Id DRIFTVELOCITY. 
+  // Now we will loop on the list and we'll query the files one by one. 
+  Log("The following sources produced files with the id DRIFTVELOCITY");
+  sourceList->Print();
+  
+  TIter iter(sourceList);
+  TObjString *source = 0;
+  while((source=dynamic_cast<TObjString*> (iter.Next()))){
+  	TString fileName = GetFile(kDAQ, "DRIFTVELOCITY", source->GetName());
+  	if (fileName.Length() > 0)
+    		Log(Form("Got the file %s, now we can extract some values.", fileName.Data()));
+  }
 
-  //Example to store a file directly to the reference storage
-  if (!StoreReferenceFile(fileName, "InputData.root"))
+  delete sourceList;
+
+  // Example to store a file directly to the reference storage
+  // Suppose we have queried the file from the FXS. Now the file is available locally and is called "file1.root".
+  const char* refFileName="file1.root";
+  if (!StoreReferenceFile(refFileName, "InputData.root"))
   	return 1;
   
-  TList* list = GetFileSources(kDAQ, "DRIFTVELOCITY");
-  if (list)
-  {
-    Log("The following sources produced files with the id DRIFTVELOCITY");
-    list->Print();
-    delete list;
-  }
-  //TODO here the files could be opened, some values extracted and  written to e.g. fData
 
   // Example of how to retrieve a run parameter using GetRunParameter function
   // TODO Here the parameter must be set manually with SetInputRunParameter function,

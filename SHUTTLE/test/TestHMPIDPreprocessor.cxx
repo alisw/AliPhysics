@@ -27,6 +27,7 @@
 #include <TTimeStamp.h>
 #include <TObjString.h>
 #include <TSystem.h>
+#include <TList.h>
 
 ClassImp(TestHMPIDPreprocessor)
 
@@ -62,18 +63,29 @@ void TestHMPIDPreprocessor::Initialize(Int_t run, UInt_t startTime,
 }
 
 //________________________________________________________________________________________
+Bool_t TestHMPIDPreprocessor::ProcessDCS() 
+{
+// Initialize preprocessor
+
+	TString runType = GetRunType();
+	if(runType == "LED") return kFALSE;
+	return kTRUE;
+}
+
+
+//________________________________________________________________________________________
 UInt_t TestHMPIDPreprocessor::Process(TMap* /*valueMap*/)
 {
 // process data retrieved by the Shuttle
 
-	UInt_t result = kFALSE;
+	Bool_t result = kFALSE;
 
 	// Get run type and start the processing algorithm accordingly
 	TString runType = GetRunType();
 	if (runType.Length()==0)
 	{
 		Log("Undefined run type!");
-		return 0;
+		return 1;
 	}
 
 	Log(Form("Run type: %s", runType.Data()));
@@ -85,7 +97,7 @@ UInt_t TestHMPIDPreprocessor::Process(TMap* /*valueMap*/)
 
 		if(!filesources) {
 			AliError(Form("No sources found for thresholds.txt for run %d !", fRun));
-			return 0;
+			return 2;
 		}
 
 		AliInfo("Here's the list of sources for thresholds.txt");
@@ -97,11 +109,12 @@ UInt_t TestHMPIDPreprocessor::Process(TMap* /*valueMap*/)
 		while((source=dynamic_cast<TObjString*> (iter.Next()))){
 			printf("\n\n Getting file #%d\n",++i);
 			//if(i==1) continue;
-			TString filename = GetFile(AliShuttleInterface::kDAQ, "DAQFile", source->GetName());
+			//TString filename = GetFile(AliShuttleInterface::kDAQ, "DAQFile", source->GetName());
+			TString filename = "DAQfile.txt";
 			if(!filename.Length()) {
 				AliError(Form("Error: retrieval of file from source %s failed!", source->GetName()));
 				delete filesources;
-				return 0;
+				return 3;
 			}
 			TString command = Form("more %s",filename.Data());
 			gSystem->Exec(command.Data());
@@ -122,7 +135,7 @@ UInt_t TestHMPIDPreprocessor::Process(TMap* /*valueMap*/)
 		TString filename = GetFile(AliShuttleInterface::kDCS, "DCSFile", 0);
 		if(!filename.Length()) {
 			AliError(Form("Error: retrieval of file from DCS failed!"));
-			return 0;
+			return 4;
 		}
 		TString command = Form("more %s", filename.Data());
 		gSystem->Exec(command.Data());
@@ -132,7 +145,7 @@ UInt_t TestHMPIDPreprocessor::Process(TMap* /*valueMap*/)
 		AliCDBMetaData metaData;
 		result = Store("Calib", "DCSData", &filenameObj, &metaData);
 
-	} else if (runType == "GAINS")
+	} else if (runType == "LED")
 	{
 
 		// HLT
@@ -140,7 +153,7 @@ UInt_t TestHMPIDPreprocessor::Process(TMap* /*valueMap*/)
 
 		if(!filesources) {
 			Log(Form("No sources found for HLTFile for run %d !", fRun));
-			return 0;
+			return 5;
 		}
 
 		AliInfo("Here's the list of sources for HLTFile");
@@ -152,11 +165,12 @@ UInt_t TestHMPIDPreprocessor::Process(TMap* /*valueMap*/)
 		while((source=dynamic_cast<TObjString*> (iter.Next()))){
 			printf("\n\n Getting file #%d\n",++i);
 			//if(i==1) continue;
-			TString filename = GetFile(AliShuttleInterface::kHLT, "HLTFile", source->GetName());
+			//TString filename = GetFile(AliShuttleInterface::kHLT, "HLTFile", source->GetName());
+			TString filename="HLTfile.txt";
 			if(!filename.Length()) {
 				AliError(Form("Error: retrieval of file from source %s failed!", source->GetName()));
 				delete filesources;
-				return 0;
+				return 6;
 			}
 			TString command = Form("more %s",filename.Data());
 			gSystem->Exec(command.Data());
@@ -172,8 +186,13 @@ UInt_t TestHMPIDPreprocessor::Process(TMap* /*valueMap*/)
 	} else {
 		Log(Form("Unknown run type: %s", runType.Data()));
 	}
-
-	AliInfo(Form("result = %d",result));
-	return result;
+	
+	if(!result) 
+	{
+		Log("Storage error!");
+		return 100;
+	}
+	
+	return 0;
 }
 

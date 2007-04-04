@@ -26,6 +26,7 @@
 #include <TTimeStamp.h>
 #include <TObjString.h>
 #include <TH2F.h>
+#include <TList.h>
 
 ClassImp(TestTPCPreprocessor)
 

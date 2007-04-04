@@ -27,6 +27,7 @@
 #include <TTimeStamp.h>
 #include <TObjString.h>
 #include <TSystem.h>
+#include <TList.h>
 
 ClassImp(TestZDCPreprocessor)
 
