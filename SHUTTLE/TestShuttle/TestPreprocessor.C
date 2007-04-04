@@ -70,11 +70,10 @@ void TestPreprocessor()
 
   // TODO(3)
   //
-  // The shuttle can read run type for each detector stored in the "run type" logbook.
+  // The shuttle can read run type stored in the DAQ logbook.
   // To test it, we must provide the run type manually. They will be retrieved in the preprocessor
   // using GetRunType function.
-  shuttle->AddInputRunType("TPC", "PHYSICS");
-  shuttle->AddInputRunType("PHS", "PEDESTALS");
+  shuttle->SetInputRunType("PHYSICS");
 
   // TODO(4)
   //

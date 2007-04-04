@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.10  2007/02/28 10:41:01  acolla
+Run type field added in SHUTTLE framework. Run type is read from "run type" logbook and retrieved by
+AliPreprocessor::GetRunType() function.
+Added some ldap definition files.
+
 Revision 1.8  2007/02/13 11:22:25  acolla
 Shuttle getters and setters of main/local OCDB/Reference storages, temp and log
 folders moved to AliShuttleInterface
@@ -98,7 +103,7 @@ AliTestShuttle::AliTestShuttle(Int_t run, UInt_t startTime, UInt_t endTime) :
   fEndTime(endTime),
   fInputFiles(0),
   fRunParameters(0),
-  fRunTypeMap(0),
+  fRunType(),
   fPreprocessors(0),
   fDcsAliasMap(0)
 {
@@ -106,12 +111,10 @@ AliTestShuttle::AliTestShuttle(Int_t run, UInt_t startTime, UInt_t endTime) :
 
   fInputFiles = new TMap;
   fRunParameters = new TMap;
-  fRunTypeMap = new TMap;
   fPreprocessors = new TObjArray;
 
   fInputFiles->SetOwner(1);
   fRunParameters->SetOwner(1);
-  fRunTypeMap->SetOwner(1);
   fPreprocessors->SetOwner(1);
 }
 
@@ -126,9 +129,6 @@ AliTestShuttle::~AliTestShuttle()
   delete fRunParameters;
   fRunParameters = 0;
 
-  delete fRunTypeMap;
-  fRunTypeMap = 0;
-
   delete fPreprocessors;
   fPreprocessors = 0;
 
@@ -137,7 +137,7 @@ AliTestShuttle::~AliTestShuttle()
 }
 
 //______________________________________________________________________________________________
-UInt_t AliTestShuttle::Store(const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData,
+Bool_t AliTestShuttle::Store(const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData,
 				Int_t validityStart, Bool_t validityInfinite)
 {
   // Stores the CDB object
@@ -165,7 +165,7 @@ UInt_t AliTestShuttle::Store(const AliCDBPath& path, TObject* object, AliCDBMeta
 }
 
 //______________________________________________________________________________________________
-UInt_t AliTestShuttle::StoreReferenceData(const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData)
+Bool_t AliTestShuttle::StoreReferenceData(const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData)
 {
   // Stores the object as reference data
   // This function should be called at the end of the preprocessor cycle
@@ -176,6 +176,51 @@ UInt_t AliTestShuttle::StoreReferenceData(const AliCDBPath& path, TObject* objec
   AliCDBId id(path, fRun, fRun);
 
   return AliCDBManager::Instance()->GetStorage(fgkMainRefStorage)->Put(object, id, metaData);
+}
+
+//______________________________________________________________________________________________
+Bool_t AliTestShuttle::StoreReferenceFile(const char* detector, const char* localFile, const char* gridFileName)
+{
+	//
+	// Stores reference file directly (without opening it). 
+	//
+	// This implementation just stores it on the local disk, the full AliShuttle 
+	// puts it to the Grid FileCatalog
+	
+	AliCDBManager* man = AliCDBManager::Instance();
+	AliCDBStorage* sto = man->GetStorage(fgkMainRefStorage);
+	
+	TString localBaseFolder = sto->GetBaseFolder();
+	
+	TString targetDir;
+	targetDir.Form("%s/%s", localBaseFolder.Data(), detector);
+	
+	TString target;
+	target.Form("%s/%d_%s", targetDir.Data(), fRun, gridFileName);
+	
+	Int_t result = gSystem->GetPathInfo(targetDir, 0, (Long64_t*) 0, 0, 0);
+	if (result)
+	{
+		result = gSystem->mkdir(targetDir, kTRUE);
+		if (result != 0)
+		{
+			Log("SHUTTLE", Form("StoreReferenceFile - Error creating base directory %s", targetDir.Data()));
+			return kFALSE;
+		}
+	}
+		
+	result = gSystem->CopyFile(localFile, target);
+
+	if (result == 0)
+	{
+		Log("SHUTTLE", Form("StoreReferenceFile - Stored file %s locally to %s", localFile, target.Data()));
+		return kTRUE;
+	}
+	else
+	{
+		Log("SHUTTLE", Form("StoreReferenceFile - Storing file %s locally to %s failed with %d", localFile, target.Data(), result));
+		return kFALSE;
+	}		
 }
 
 //______________________________________________________________________________________________
@@ -292,7 +337,7 @@ Bool_t AliTestShuttle::AddInputCDBEntry(AliCDBEntry* entry)
 }
 
 //______________________________________________________________________________________________
-AliCDBEntry* AliTestShuttle::GetFromOCDB(const AliCDBPath& path)
+AliCDBEntry* AliTestShuttle::GetFromOCDB(const char* detector, const AliCDBPath& path)
 {
 // returns obiect from OCDB valid for current run
 
@@ -353,37 +398,13 @@ void AliTestShuttle::AddInputRunParameter(const char* key, const char* value){
 }
 
 //______________________________________________________________________________________________
-void AliTestShuttle::AddInputRunType(const char* detCode, const char* runType){
-// set a run type (in reality it will be read from the "run type" logbook)
+const char* AliTestShuttle::GetRunType()
+{
+	//
+	// get a run parameter
+	//
 
-	if (strcmp("DET", detCode) != 0)
-	{
-		if (GetDetPos(detCode) < 0)
-		{
-			AliError(Form("Invalid detector name: %s", detCode));
-			return;
-		}
-	}
-	TObjString* detObj = new TObjString(detCode);
-	if (fRunTypeMap->Contains(detCode)) {
-		AliWarning(Form("Detector %s already inserted: it will be replaced.", detCode));
-		delete fRunTypeMap->Remove(detObj);
-
-	}
-	fRunTypeMap->Add(detObj, new TObjString(runType));
-	AliDebug(2, Form("Number of detectors: %d", fRunTypeMap->GetEntries()));
-}
-
-//______________________________________________________________________________________________
-const char* AliTestShuttle::GetRunType(const char* detCode){
-// get a run parameter
-
-	TObjString* value = dynamic_cast<TObjString*> (fRunTypeMap->GetValue(detCode));
-	if(!value) {
-		AliError(Form("Input run type not set for detector %s!", detCode));
-		return 0;
-	}
-	return value->GetName();
+	return fRunType;
 }
 
 //______________________________________________________________________________________________

@@ -23,10 +23,3 @@ void DATENotifier::errorHandler(int severity, int code, char *msg)
 		Form("DIM Error: severity<%d>, code<%d> , message<%s>",
 		severity, code, msg));
 }
-
-//______________________________________________________________________
-DATENotifier::DATENotifier(const DATENotifier& /*other*/):
-DimInfo(), fTrigger(0) {
-// copy constructor (not implemented)
-
-}

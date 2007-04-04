@@ -89,7 +89,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   TObjArray *aliasLHCState = (TObjArray *)valueMap->GetValue("LHCState");
   if(!aliasLHCState) {
     Log(Form("LHCState not found!!!"));
-    return 0;
+    return 1;
   }
   AliGRPDCS *dcs1 = new AliGRPDCS(aliasLHCState,iStartTime,iStopTime);
   TString sLHCState = dcs1->ProcessDCS(3);  
@@ -102,7 +102,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   TObjArray *aliasLHCPeriod = (TObjArray *)valueMap->GetValue("LHCPeriod");
   if(!aliasLHCPeriod) {
     Log(Form("LHCPeriod not found!!!"));
-    return 0;
+    return 1;
   }
   AliGRPDCS *dcs2 = new AliGRPDCS(aliasLHCPeriod,iStartTime,iStopTime);
   TString sLHCPeriod = dcs2->ProcessDCS(3);  
@@ -115,7 +115,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   TObjArray *aliasLHCLuminosity = (TObjArray *)valueMap->GetValue("LHCLuminosity");
   if(!aliasLHCLuminosity) {
     Log(Form("LHCLuminosity not found!!!"));
-    return 0;
+    return 1;
   }
   AliGRPDCS *dcs3 = new AliGRPDCS(aliasLHCLuminosity,iStartTime,iStopTime);
   TString sMeanLHCLuminosity = dcs3->ProcessDCS(2);  
@@ -128,7 +128,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   TObjArray *aliasBeamIntensity = (TObjArray *)valueMap->GetValue("BeamIntensity");
   if(!aliasBeamIntensity) {
     Log(Form("BeamIntensity not found!!!"));
-    return 0;
+    return 1;
   }
   AliGRPDCS *dcs4 = new AliGRPDCS(aliasBeamIntensity,iStartTime,iStopTime);
   TString sMeanBeamIntensity = dcs4->ProcessDCS(2);  
@@ -141,7 +141,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   TObjArray *aliasL3Current = (TObjArray *)valueMap->GetValue("L3Current");
   if(!aliasL3Current) {
     Log(Form("L3Current not found!!!"));
-    return 0;
+    return 1;
   }
   AliGRPDCS *dcs5 = new AliGRPDCS(aliasL3Current,iStartTime,iStopTime);
   TString sMeanL3Current = dcs5->ProcessDCS(2);  
@@ -154,7 +154,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   TObjArray *aliasL3Polarity = (TObjArray *)valueMap->GetValue("L3Polarity");
   if(!aliasL3Polarity) {
     Log(Form("L3Polarity not found!!!"));
-    return 0;
+    return 1;
   }
   AliGRPDCS *dcs6 = new AliGRPDCS(aliasL3Polarity,iStartTime,iStopTime);
   TString sL3Polarity = dcs6->ProcessDCS(4);  
@@ -167,7 +167,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   TObjArray *aliasDipoleCurrent = (TObjArray *)valueMap->GetValue("DipoleCurrent");
   if(!aliasDipoleCurrent) {
     Log(Form("DipoleCurrent not found!!!"));
-    return 0;
+    return 1;
   }
   AliGRPDCS *dcs7 = new AliGRPDCS(aliasDipoleCurrent,iStartTime,iStopTime);
   TString sMeanDipoleCurrent = dcs7->ProcessDCS(2);  
@@ -180,7 +180,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   TObjArray *aliasDipolePolarity = (TObjArray *)valueMap->GetValue("DipolePolarity");
   if(!aliasDipolePolarity) {
     Log(Form("DipolePolarity not found!!!"));
-    return 0;
+    return 1;
   }
   AliGRPDCS *dcs8 = new AliGRPDCS(aliasDipolePolarity,iStartTime,iStopTime);
   TString sDipolePolarity = dcs8->ProcessDCS(4);  
@@ -193,7 +193,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   TObjArray *aliasCavernTemperature = (TObjArray *)valueMap->GetValue("CavernTemperature");
   if(!aliasCavernTemperature) {
     Log(Form("CavernTemperature not found!!!"));
-    return 0;
+    return 1;
   }
   AliGRPDCS *dcs9 = new AliGRPDCS(aliasCavernTemperature,iStartTime,iStopTime);
   TString sMeanCavernTemperature = dcs9->ProcessDCS(2);  
@@ -206,7 +206,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   TObjArray *aliasCavernPressure = (TObjArray *)valueMap->GetValue("CavernPressure");
   if(!aliasCavernPressure) {
     Log(Form("CavernPressure not found!!!"));
-    return 0;
+    return 1;
   }
   AliGRPDCS *dcs10 = new AliGRPDCS(aliasCavernPressure,iStartTime,iStopTime);
   TString sMeanCavernPressure = dcs10->ProcessDCS(2);  
@@ -331,11 +331,13 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   AliCDBMetaData md;
   md.SetResponsible("Panos");
   
-  Int_t result=0;
-  result = Store("GRP", "Values", values, &md);
+  Bool_t result = Store("GRP", "Values", values, &md);
   
   delete values;
   
-  return result;
+  if (result)
+    return 0;
+  else
+    return 1;
 }
 

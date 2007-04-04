@@ -32,7 +32,7 @@ class TMonaLisaWriter;
 class AliShuttle: public AliShuttleInterface {
 public:
 	enum DCSType {kAlias=0, kDP};
-	enum returnCodes {kDCSErrCode=20051975, kStorErrCode=20051976};
+	enum TestMode { kNone = 0, kSkipDCS = 1, kErrorDCS = 2, kErrorFXSSources = 4, kErrorFXSFiles = 8, kErrorOCDB = 16, kErrorStorage = 32, kErrorGrid = 64 };
 
 	AliShuttle(const AliShuttleConfig* config, UInt_t timeout = 5000, Int_t retries = 5);
 	virtual ~AliShuttle();
@@ -54,17 +54,19 @@ public:
 	virtual Bool_t Store(const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData,
 			Int_t validityStart = 0, Bool_t validityInfinite = kFALSE);
 	virtual Bool_t StoreReferenceData(const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData);
+	virtual Bool_t StoreReferenceFile(const char* detector, const char* localFile, const char* gridFileName);
 	virtual const char* GetFile(Int_t system, const char* detector,
 		const char* id, const char* source);
 	virtual TList* GetFileSources(Int_t system, const char* detector, const char* id);
 	virtual const char* GetRunParameter(const char* lbEntry);
-	virtual AliCDBEntry* GetFromOCDB(const AliCDBPath& path);
-	virtual const char* GetRunType(const char* detCode);
+	virtual AliCDBEntry* GetFromOCDB(const char* detector, const AliCDBPath& path);
+	virtual const char* GetRunType();
 	virtual void Log(const char* detector, const char* message);
 
-	//TODO Test only, remove later !
-	void SetProcessDCS(Bool_t process) {fgkProcessDCS = process;}
 	void SetLogbookEntry(AliShuttleLogbookEntry* entry) {fLogbookEntry=entry;}
+	
+	void SetTestMode(TestMode testMode) { fTestMode = testMode; }
+	void SetReadTestModeFromLog(Bool_t flag) { fReadTestMode = flag; }
 
 	Bool_t Connect(Int_t system);
 
@@ -81,7 +83,7 @@ private:
 	AliShuttle(const AliShuttle& other);
 	AliShuttle& operator= (const AliShuttle& other);
 
-	UInt_t ProcessCurrentDetector();
+	Bool_t ProcessCurrentDetector();
 
 	AliShuttleLogbookEntry* QueryRunParameters(Int_t run);
 	Bool_t QueryShuttleLogbook(const char* whereClause, TObjArray& entries);
@@ -100,6 +102,7 @@ private:
 
 	Bool_t StoreOCDB();
 	Bool_t StoreOCDB(const TString& uri);
+	Bool_t StoreRefFilesToGrid();
 	void CleanLocalStorage(const TString& uri);
 	void RemoveFile(const char* filename);
 
@@ -113,8 +116,6 @@ private:
 	void SetLastAction(const char* action);
 	
 	void SendMLInfo();
-
-	void SetRunType();
 
 	const AliShuttleConfig* fConfig; 	// pointer to configuration object
 
@@ -140,8 +141,8 @@ private:
 
 	TMonaLisaWriter* fMonaLisa;  // ML instance that sends the processing information
 
-	//TODO Test only, remove later !
-	static Bool_t fgkProcessDCS; // flag to enable DCS archive data processing
+	TestMode fTestMode;          // sets test mode flags, that e.g. simulate a dcs error etc.
+	Bool_t fReadTestMode;        // Reads the test mode from the log entry of the given run (only for test)
 
 	ClassDef(AliShuttle, 0);
 };

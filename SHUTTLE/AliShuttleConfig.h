@@ -53,6 +53,7 @@ public:
 	Int_t GetMaxRetries() const { return fMaxRetries; }
 
 	Int_t GetPPTimeOut() const { return fPPTimeOut; }
+	Int_t GetPPMaxMem() const { return fPPMaxMem; }
 
 	const TObjArray* GetDetectors() const;
 
@@ -140,7 +141,8 @@ private:
 
 	Int_t fMaxRetries;        // number of retries of a failed preprocessor
 
-	Int_t fPPTimeOut;         // timeout until a preprocessor is canceled
+	Int_t fPPTimeOut;         // timeout until a preprocessor is killed
+	Int_t fPPMaxMem;          // maximum allowed memory until a preprocessor is killed
 
 	TMap fDetectorMap; 		//! Map of the detector-by-detector configuration
 	TObjArray fDetectorList; 	//! List of detectors with valid configuration

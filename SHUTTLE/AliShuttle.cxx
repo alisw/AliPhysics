@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.33  2007/04/03 13:56:01  acolla
+Grid Storage at the end of preprocessing. Added virtual method to disable DCS query according to the
+run type.
+
 Revision 1.32  2007/02/28 10:41:56  acolla
 Run type field added in SHUTTLE framework. Run type is read from "run type" logbook and retrieved by
 AliPreprocessor::GetRunType() function.
@@ -181,6 +185,11 @@ some docs added
 #include <TSQLResult.h>
 #include <TSQLRow.h>
 #include <TMutex.h>
+#include <TSystemDirectory.h>
+#include <TSystemFile.h>
+#include <TFileMerger.h>
+#include <TGrid.h>
+#include <TGridResult.h>
 
 #include <TMonaLisaWriter.h>
 
@@ -190,8 +199,6 @@ some docs added
 #include <sys/wait.h>
 
 ClassImp(AliShuttle)
-
-Bool_t AliShuttle::fgkProcessDCS(kTRUE);
 
 //______________________________________________________________________________________________
 AliShuttle::AliShuttle(const AliShuttleConfig* config,
@@ -205,7 +212,9 @@ fStatusEntry(0),
 fMonitoringMutex(0),
 fLastActionTime(0),
 fLastAction(),
-fMonaLisa(0)
+fMonaLisa(0),
+fTestMode(kNone),
+fReadTestMode(kFALSE)
 {
 	//
 	// config: AliShuttleConfig used
@@ -230,7 +239,9 @@ fMonaLisa(0)
 //______________________________________________________________________________________________
 AliShuttle::~AliShuttle()
 {
-// destructor
+	//
+	// destructor
+	//
 
 	fPreprocessorMap.DeleteAll();
 	for(int iSys=0;iSys<4;iSys++)
@@ -277,26 +288,24 @@ void AliShuttle::RegisterPreprocessor(AliPreprocessor* preprocessor)
 Bool_t AliShuttle::Store(const AliCDBPath& path, TObject* object,
 		AliCDBMetaData* metaData, Int_t validityStart, Bool_t validityInfinite)
 {
-  // Stores a CDB object in the storage for offline reconstruction. Objects that are not needed for
-  // offline reconstruction, but should be stored anyway (e.g. for debugging) should NOT be stored
-  // using this function. Use StoreReferenceData instead!
-  // It calls StoreLocally function which temporarily stores the data locally; when the preprocessor
-  // finishes the data are transferred to the main storage (Grid).
+	// Stores a CDB object in the storage for offline reconstruction. Objects that are not needed for
+	// offline reconstruction, but should be stored anyway (e.g. for debugging) should NOT be stored
+	// using this function. Use StoreReferenceData instead!
+	// It calls StoreLocally function which temporarily stores the data locally; when the preprocessor
+	// finishes the data are transferred to the main storage (Grid).
 
 	return StoreLocally(fgkLocalCDB, path, object, metaData, validityStart, validityInfinite);
-
 }
 
 //______________________________________________________________________________________________
 Bool_t AliShuttle::StoreReferenceData(const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData)
 {
-  // Stores a CDB object in the storage for reference data. This objects will not be available during
-  // offline reconstrunction. Use this function for reference data only!
-  // It calls StoreLocally function which temporarily stores the data locally; when the preprocessor
-  // finishes the data are transferred to the main storage (Grid).
+	// Stores a CDB object in the storage for reference data. This objects will not be available during
+	// offline reconstrunction. Use this function for reference data only!
+	// It calls StoreLocally function which temporarily stores the data locally; when the preprocessor
+	// finishes the data are transferred to the main storage (Grid).
 
 	return StoreLocally(fgkLocalRefStorage, path, object, metaData);
-
 }
 
 //______________________________________________________________________________________________
@@ -304,25 +313,31 @@ Bool_t AliShuttle::StoreLocally(const TString& localUri,
 			const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData,
 			Int_t validityStart, Bool_t validityInfinite)
 {
-  // Store object temporarily in local storage. Parameters are passed by Store and StoreReferenceData functions.
-  // when the preprocessor finishes the data are transferred to the main storage (Grid).
-  // The parameters are:
-  //   1) Uri of the backup storage (Local)
-  //   2) the object's path.
-  //   3) the object to be stored
-  //   4) the metaData to be associated with the object
-  //   5) the validity start run number w.r.t. the current run,
-  //      if the data is valid only for this run leave the default 0
-  //   6) specifies if the calibration data is valid for infinity (this means until updated),
-  //      typical for calibration runs, the default is kFALSE
-  //
-  // returns 0 if fail, 1 otherwise
+	// Store object temporarily in local storage. Parameters are passed by Store and StoreReferenceData functions.
+	// when the preprocessor finishes the data are transferred to the main storage (Grid).
+	// The parameters are:
+	//   1) Uri of the backup storage (Local)
+	//   2) the object's path.
+	//   3) the object to be stored
+	//   4) the metaData to be associated with the object
+	//   5) the validity start run number w.r.t. the current run,
+	//      if the data is valid only for this run leave the default 0
+	//   6) specifies if the calibration data is valid for infinity (this means until updated),
+	//      typical for calibration runs, the default is kFALSE
+	//
+	// returns 0 if fail, 1 otherwise
 
+	if (fTestMode & kErrorStorage)
+	{
+		Log(fCurrentDetector, "StoreLocally - In TESTMODE - Simulating error while storing locally");
+		return kFALSE;
+	}
+	
 	const char* cdbType = (localUri == fgkLocalCDB) ? "CDB" : "Reference";
 
 	Int_t firstRun = GetCurrentRun() - validityStart;
   	if(firstRun < 0) {
-		AliError("First valid run happens to be less than 0! Setting it to 0.");
+		AliWarning("First valid run happens to be less than 0! Setting it to 0.");
 		firstRun=0;
   	}
 
@@ -352,7 +367,7 @@ Bool_t AliShuttle::StoreLocally(const TString& localUri,
 
 	if(!result) {
 
-		Log("SHUTTLE", Form("StoreLocally - Can't store %s data!", fCurrentDetector.Data()));
+		Log(fCurrentDetector, Form("StoreLocally - Can't store object <%s>!", id.ToString().Data()));
 	}
 
 	return result;
@@ -361,16 +376,29 @@ Bool_t AliShuttle::StoreLocally(const TString& localUri,
 //______________________________________________________________________________________________
 Bool_t AliShuttle::StoreOCDB()
 {
-  // Called when preprocessor ends successfully or when previous storage attempt failed (kStoreError status)
-  // Calls underlying StoreOCDB(const char*) function twice, for OCDB and Reference storage.
-
+	//
+	// Called when preprocessor ends successfully or when previous storage attempt failed (kStoreError status)
+	// Calls underlying StoreOCDB(const char*) function twice, for OCDB and Reference storage.
+	// Then calls StoreRefFilesToGrid to store reference files. 
+	//
+	
+	if (fTestMode & kErrorGrid)
+	{
+		Log("SHUTTLE", "StoreOCDB - In TESTMODE - Simulating error while storing in the Grid");
+		Log(fCurrentDetector, "StoreOCDB - In TESTMODE - Simulating error while storing in the Grid");
+		return kFALSE;
+	}
+	
 	AliInfo("Storing OCDB data ...");
 	Bool_t resultCDB = StoreOCDB(fgkMainCDB);
 
 	AliInfo("Storing reference data ...");
 	Bool_t resultRef = StoreOCDB(fgkMainRefStorage);
-
-	return resultCDB && resultRef;
+	
+	AliInfo("Storing reference files ...");
+	Bool_t resultRefFiles = StoreRefFilesToGrid();
+	
+	return resultCDB && resultRef && resultRefFiles;
 }
 
 //______________________________________________________________________________________________
@@ -487,9 +515,157 @@ Bool_t AliShuttle::StoreOCDB(const TString& gridURI)
 }
 
 //______________________________________________________________________________________________
+Bool_t AliShuttle::StoreReferenceFile(const char* detector, const char* localFile, const char* gridFileName)
+{
+	//
+	// Stores reference file directly (without opening it). This function stores the file locally
+	// renaming it to #runNumber_gridFileName.
+	//
+	
+	if (fTestMode & kErrorStorage)
+	{
+		Log(fCurrentDetector, "StoreReferenceFile - In TESTMODE - Simulating error while storing locally");
+		return kFALSE;
+	}
+	
+	AliCDBManager* man = AliCDBManager::Instance();
+	AliCDBStorage* sto = man->GetStorage(fgkLocalRefStorage);
+	
+	TString localBaseFolder = sto->GetBaseFolder();
+	
+	TString targetDir;
+	targetDir.Form("%s/%s", localBaseFolder.Data(), detector);
+	
+	TString target;
+	target.Form("%s/%d_%s", targetDir.Data(), GetCurrentRun(), gridFileName);
+	
+	Int_t result = gSystem->GetPathInfo(targetDir, 0, (Long64_t*) 0, 0, 0);
+	if (result)
+	{
+		result = gSystem->mkdir(targetDir, kTRUE);
+		if (result != 0)
+		{
+			Log("SHUTTLE", Form("StoreReferenceFile - Error creating base directory %s", targetDir.Data()));
+			return kFALSE;
+		}
+	}
+		
+	result = gSystem->CopyFile(localFile, target);
+
+	if (result == 0)
+	{
+		Log("SHUTTLE", Form("StoreReferenceFile - Stored file %s locally to %s", localFile, target.Data()));
+		return kTRUE;
+	}
+	else
+	{
+		Log("SHUTTLE", Form("StoreReferenceFile - Storing file %s locally to %s failed", localFile, target.Data()));
+		return kFALSE;
+	}	
+}
+
+//______________________________________________________________________________________________
+Bool_t AliShuttle::StoreRefFilesToGrid()
+{
+	//
+	// Transfers the reference file to the Grid.
+	// The final full path of the file is:
+	// gridBaseReferenceFolder/DET/#runNumber_gridFileName
+	//
+	
+	AliCDBManager* man = AliCDBManager::Instance();
+	AliCDBStorage* sto = man->GetStorage(fgkLocalRefStorage);
+	if (!sto)
+		return kFALSE;
+	TString localBaseFolder = sto->GetBaseFolder();
+		
+	TString dir;
+	dir.Form("%s/%s", localBaseFolder.Data(), fCurrentDetector.Data());
+	
+	AliCDBStorage* gridSto = man->GetStorage(fgkMainRefStorage);
+	if (!gridSto)
+		return kFALSE;
+	TString gridBaseFolder = gridSto->GetBaseFolder();
+	TString alienDir;
+	alienDir.Form("%s%s", gridBaseFolder.Data(), fCurrentDetector.Data());
+	
+	if(!gGrid) 
+		return kFALSE;
+	
+	// check that DET folder exists, otherwise create it
+	TGridResult* result = gGrid->Ls(alienDir.Data());
+	
+	if(!result)
+		return kFALSE;
+	
+	if(!result->GetFileName(0)) {
+		if(!gGrid->Mkdir(alienDir.Data(),"",0)){
+			Log("SHUTTLE", Form("StoreRefFilesToGrid - Cannot create directory %s",
+					alienDir.Data()));
+			return kFALSE;
+		}
+		
+	}
+
+	TString begin;
+	begin.Form("%d_", GetCurrentRun());
+	
+	TSystemDirectory* baseDir = new TSystemDirectory("/", dir);
+	TList* dirList            = baseDir->GetListOfFiles();
+	if (!dirList)
+		return kTRUE;
+		
+	Int_t nDirs               = dirList->GetEntries();
+	
+	Bool_t success = kTRUE;
+	
+	for (Int_t iDir=0; iDir<nDirs; ++iDir)
+	{
+		TSystemFile* entry = dynamic_cast<TSystemFile*> (dirList->At(iDir));
+		if (!entry)
+			continue;
+			
+		if (entry->IsDirectory())
+			continue;
+			
+		TString fileName(entry->GetName());
+		if (!fileName.BeginsWith(begin))
+			continue;
+			
+		TString fullLocalPath;
+		fullLocalPath.Form("%s/%s", dir.Data(), fileName.Data());
+		
+		TString fullGridPath;
+		fullGridPath.Form("alien://%s/%s", alienDir.Data(), fileName.Data());
+
+		Log("SHUTTLE", Form("StoreRefFilesToGrid - Copying local file %s to %s", fullLocalPath.Data(), fullGridPath.Data()));
+		
+		TFileMerger fileMerger;
+		Bool_t result = fileMerger.Cp(fullLocalPath, fullGridPath);
+		
+		if (result)
+		{
+			Log("SHUTTLE", Form("StoreRefFilesToGrid - Copying local file %s to %s succeeded", fullLocalPath.Data(), fullGridPath.Data()));
+			RemoveFile(fullLocalPath);
+		}
+		else
+		{
+			Log("SHUTTLE", Form("StoreRefFilesToGrid - Copying local file %s to %s failed", fullLocalPath.Data(), fullGridPath.Data()));
+			success = kFALSE;
+		}
+	}
+	
+	delete baseDir;
+	
+	return success;
+}
+
+//______________________________________________________________________________________________
 void AliShuttle::CleanLocalStorage(const TString& uri)
 {
-// Called in case the preprocessor is declared failed. Remove remaining objects from the local storages.
+	//
+	// Called in case the preprocessor is declared failed. Remove remaining objects from the local storages.
+	//
 
 	const char* type = 0;
 	if(uri == fgkLocalCDB) {
@@ -526,7 +702,9 @@ void AliShuttle::CleanLocalStorage(const TString& uri)
 //______________________________________________________________________________________________
 void AliShuttle::RemoveFile(const char* filename)
 {
-// removes local file
+	//
+	// removes local file
+	//
 
 	TString command(Form("rm -f %s", filename));
 
@@ -541,7 +719,9 @@ void AliShuttle::RemoveFile(const char* filename)
 //______________________________________________________________________________________________
 AliShuttleStatus* AliShuttle::ReadShuttleStatus()
 {
-// Reads the AliShuttleStatus from the CDB
+	//
+	// Reads the AliShuttleStatus from the CDB
+	//
 
 	if (fStatusEntry){
 		delete fStatusEntry;
@@ -566,7 +746,9 @@ AliShuttleStatus* AliShuttle::ReadShuttleStatus()
 //______________________________________________________________________________________________
 Bool_t AliShuttle::WriteShuttleStatus(AliShuttleStatus* status)
 {
-// writes the status for one subdetector
+	//
+	// writes the status for one subdetector
+	//
 
 	if (fStatusEntry){
 		delete fStatusEntry;
@@ -596,7 +778,9 @@ Bool_t AliShuttle::WriteShuttleStatus(AliShuttleStatus* status)
 //______________________________________________________________________________________________
 void AliShuttle::UpdateShuttleStatus(AliShuttleStatus::Status newStatus, Bool_t increaseCount)
 {
-  // changes the AliShuttleStatus for the given detector and run to the given status
+	//
+	// changes the AliShuttleStatus for the given detector and run to the given status
+	//
 
 	if (!fStatusEntry){
 		AliError("UNEXPECTED: fStatusEntry empty");
@@ -652,9 +836,9 @@ void AliShuttle::SendMLInfo()
 //______________________________________________________________________________________________
 Bool_t AliShuttle::ContinueProcessing()
 {
-// this function reads the AliShuttleStatus information from CDB and
-// checks if the processing should be continued
-// if yes it returns kTRUE and updates the AliShuttleStatus with nextStatus
+	// this function reads the AliShuttleStatus information from CDB and
+	// checks if the processing should be continued
+	// if yes it returns kTRUE and updates the AliShuttleStatus with nextStatus
 
 	if (!fConfig->HostProcessDetector(fCurrentDetector)) return kFALSE;
 
@@ -711,7 +895,8 @@ Bool_t AliShuttle::ContinueProcessing()
 		Log("SHUTTLE",
 			Form("ContinueProcessing - %s: Grid storage of one or more objects failed. Trying again now",
 				fCurrentDetector.Data()));
-		if(StoreOCDB()){
+		UpdateShuttleStatus(AliShuttleStatus::kStoreStarted);
+		if (StoreOCDB()){
 			Log("SHUTTLE", Form("ContinueProcessing - %s: all objects successfully stored into main storage",
 				fCurrentDetector.Data()));
 			UpdateShuttleStatus(AliShuttleStatus::kDone);
@@ -720,8 +905,7 @@ Bool_t AliShuttle::ContinueProcessing()
 			Log("SHUTTLE",
 				Form("ContinueProcessing - %s: Grid storage failed again",
 					fCurrentDetector.Data()));
-			// trigger ML information manually because we do not had a status change
-			SendMLInfo();
+			UpdateShuttleStatus(AliShuttleStatus::kStoreError);
 		}
 		return kFALSE;
 	}
@@ -739,23 +923,28 @@ Bool_t AliShuttle::ContinueProcessing()
 
 		// there may still be objects in local OCDB and reference storage
 		// and FXS databases may be not updated: do it now!
-		CleanLocalStorage(fgkLocalCDB);
-		CleanLocalStorage(fgkLocalRefStorage);
-		UpdateTableFailCase();
+		
+		// TODO Currently disabled, we want to keep files in case of failure!
+		// CleanLocalStorage(fgkLocalCDB);
+		// CleanLocalStorage(fgkLocalRefStorage);
+		// UpdateTableFailCase();
+		
+		// Send mail to detector expert!
+		AliInfo(Form("Sending mail to %s expert...", fCurrentDetector.Data()));
+		if (!SendMail())
+			Log("SHUTTLE", Form("ContinueProcessing - Could not send mail to %s expert",
+					fCurrentDetector.Data()));
 
 	} else {
 		Log("SHUTTLE", Form("ContinueProcessing - %s: restarting. "
 				"Aborted before with %s. Retry number %d.", fCurrentDetector.Data(),
 				status->GetStatusName(), status->GetCount()));
-		UpdateShuttleStatus(AliShuttleStatus::kStarted, kTRUE);
+		Bool_t increaseCount = kTRUE;
+		if (status->GetStatus() == AliShuttleStatus::kDCSError || status->GetStatus() == AliShuttleStatus::kDCSStarted)
+			increaseCount = kFALSE;
+		UpdateShuttleStatus(AliShuttleStatus::kStarted, increaseCount);
 		cont = kTRUE;
 	}
-
-	// Send mail to detector expert!
-	AliInfo(Form("Sending mail to %s expert...", fCurrentDetector.Data()));
-	if (!SendMail())
-		Log("SHUTTLE", Form("ContinueProcessing - Could not send mail to %s expert",
-				fCurrentDetector.Data()));
 
 	return cont;
 }
@@ -770,9 +959,27 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 	// Returns kFALSE in case of error occured and kTRUE otherwise
 	//
 
-	if(!entry) return kFALSE;
+	if (!entry) return kFALSE;
 
 	fLogbookEntry = entry;
+
+	AliInfo(Form("\n\n \t\t\t^*^*^*^*^*^*^*^*^*^*^*^* run %d: START ^*^*^*^*^*^*^*^*^*^*^*^* \n",
+					GetCurrentRun()));
+
+	// create ML instance that monitors this run
+	fMonaLisa = new TMonaLisaWriter(Form("%d", GetCurrentRun()), "SHUTTLE", "aliendb1.cern.ch");
+	// disable monitoring of other parameters that come e.g. from TFile
+	gMonitoringWriter = 0;
+
+	// Send the information to ML
+	TMonaLisaText  mlStatus("SHUTTLE_status", "Processing");
+	TMonaLisaText  mlRunType("SHUTTLE_runtype", Form("%s (%s)", entry->GetRunType(), entry->GetRunParameter("log")));
+
+	TList mlList;
+	mlList.Add(&mlStatus);
+	mlList.Add(&mlRunType);
+
+	fMonaLisa->SendParameters(&mlList);
 
 	if (fLogbookEntry->IsDone())
 	{
@@ -782,25 +989,38 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 		return kTRUE;
 	}
 
-	// create ML instance that monitors this run
-	fMonaLisa = new TMonaLisaWriter(Form("%d", GetCurrentRun()), "SHUTTLE", "aliendb1.cern.ch");
-	// disable monitoring of other parameters that come e.g. from TFile
-	gMonitoringWriter = 0;
-
-	AliInfo(Form("\n\n \t\t\t^*^*^*^*^*^*^*^*^*^*^*^* run %d: START ^*^*^*^*^*^*^*^*^*^*^*^* \n",
-					GetCurrentRun()));
-
-	// Set run type from run type logbook into current fLogbookEntry
-	SetRunType();
-
-	// Send the information to ML
-	TMonaLisaText  mlStatus("SHUTTLE_status", "Processing");
-
-	TList mlList;
-	mlList.Add(&mlStatus);
-
-	fMonaLisa->SendParameters(&mlList);
-
+	// read test mode if flag is set
+	if (fReadTestMode)
+	{
+		TString logEntry(entry->GetRunParameter("log"));
+		//printf("log entry = %s\n", logEntry.Data());
+		TString searchStr("Testmode: ");
+		Int_t pos = logEntry.Index(searchStr.Data());
+		//printf("%d\n", pos);
+		if (pos >= 0)
+		{
+			TSubString subStr = logEntry(pos + searchStr.Length(), logEntry.Length());
+			//printf("%s\n", subStr.String().Data());
+			TString newStr(subStr.Data());
+			TObjArray* token = newStr.Tokenize(' ');
+			if (token)
+			{
+				//token->Print();
+				TObjString* tmpStr = dynamic_cast<TObjString*> (token->First());
+				if (tmpStr)
+				{
+					Int_t testMode = tmpStr->String().Atoi();
+					if (testMode > 0)
+					{
+						Log("SHUTTLE", Form("Enabling test mode %d", testMode));
+						SetTestMode((TestMode) testMode);
+					}
+				}
+				delete token;	       
+			}
+		}
+	}
+	
 	fLogbookEntry->Print("all");
 
 	// Initialization
@@ -849,8 +1069,11 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 
 				if (expiredTime > fConfig->GetPPTimeOut())
 				{
-					Log("SHUTTLE", Form("%s: Process time out. Run time: %d seconds. Killing...",
-								fCurrentDetector.Data(), expiredTime));
+					TString tmp;
+					tmp.Form("Process of %s time out. Run time: %d seconds. Killing...",
+								fCurrentDetector.Data(), expiredTime);
+					Log("SHUTTLE", tmp);
+					Log(fCurrentDetector, tmp);
 
 					kill(pid, 9);
 
@@ -862,9 +1085,55 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 				else
 				{
 					if (expiredTime % 60 == 0)
-					Log("SHUTTLE", Form("Checked process. Run time: %d seconds.",
+						Log("SHUTTLE", Form("Checked process. Run time: %d seconds.",
 								expiredTime));
 					gSystem->Sleep(1000);
+					
+					TString checkStr;
+					checkStr.Form("ps -o vsize --pid %d | tail -n 1", pid);
+					FILE* pipe = gSystem->OpenPipe(checkStr, "r");
+					if (!pipe)
+					{
+						Log("SHUTTLE", Form("Error: Could not open pipe to %s", checkStr.Data()));
+						continue;
+					}
+						
+					char buffer[100];
+					if (!fgets(buffer, 100, pipe))
+					{
+						Log("SHUTTLE", "Error: ps did not return anything");
+						gSystem->ClosePipe(pipe);
+						continue;
+					}
+					gSystem->ClosePipe(pipe);
+					
+					//Log("SHUTTLE", Form("ps returned %s", buffer));
+					
+					Int_t mem = 0;
+					if ((sscanf(buffer, "%d\n", &mem) != 1) || !mem)
+					{
+						Log("SHUTTLE", "Error: Could not parse output of ps");
+						continue;
+					}
+					
+					if (expiredTime % 60 == 0)
+						Log("SHUTTLE", Form("The process consumes %d KB of memory.", mem));
+					
+					if (mem > fConfig->GetPPMaxMem())
+					{
+						TString tmp;
+						tmp.Form("Process exceeds maximum allowed memory (%d KB > %d KB). Killing...",
+							mem, fConfig->GetPPMaxMem());
+						Log("SHUTTLE", tmp);
+						Log(fCurrentDetector, tmp);
+	
+						kill(pid, 9);
+	
+	    					UpdateShuttleStatus(AliShuttleStatus::kPPOutOfMemory);
+						hasError = kTRUE;
+	
+						gSystem->Sleep(1000);
+					}
 				}
 			}
 
@@ -878,7 +1147,7 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 				Log("SHUTTLE", Form("%s: the return code is %d", fCurrentDetector.Data(),
 										returnCode));
 
-				if (returnCode != 0) hasError = kTRUE;
+				if (returnCode == 0) hasError = kTRUE;
 			}
 		}
 		else if (pid == 0)
@@ -886,22 +1155,9 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 			// client
 			AliInfo(Form("In client process of %d - %s", GetCurrentRun(), aDetector->GetName()));
 
-			UInt_t returnCode = ProcessCurrentDetector(); // 0 means success
-
-
-			if (returnCode > 0) // TODO: returnCode>0 means Preprocessor ERROR! Preprocessors should follow this!
-			{
-				if (returnCode == kDCSErrCode)
-				{
-					AliInfo(Form("\n \t\t\t****** run %d - %s: DCS ERROR ****** \n\n",
-							GetCurrentRun(), aDetector->GetName()));
-				} else {
-
-					AliInfo(Form("\n \t\t\t****** run %d - %s: PREPROCESSOR ERROR ****** \n\n",
-							GetCurrentRun(), aDetector->GetName()));
-				}
-			} else { // Preprocessor finished successfully!
-
+			Bool_t success = ProcessCurrentDetector();
+			if (success) // Preprocessor finished successfully!
+			{ 
 				// Update time_processed field in FXS DB
 				if (UpdateTable() == kFALSE)
 					Log("SHUTTLE", Form("Process - %s: Could not update FXS databases!"));
@@ -913,11 +1169,12 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 					AliInfo(Form("\n \t\t\t****** run %d - %s: STORAGE ERROR ****** \n\n",
 							GetCurrentRun(), aDetector->GetName()));
 					UpdateShuttleStatus(AliShuttleStatus::kStoreError);
-					returnCode = kStorErrCode;
+					success = kFALSE;
 				} else {
 					AliInfo(Form("\n \t\t\t****** run %d - %s: DONE ****** \n\n",
 							GetCurrentRun(), aDetector->GetName()));
 					UpdateShuttleStatus(AliShuttleStatus::kDone);
+					UpdateShuttleLogbook(fCurrentDetector, "DONE");
 				}
 			}
 
@@ -927,10 +1184,10 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 			}
 
 			AliInfo(Form("Client process of %d - %s is exiting now with %d.",
-							GetCurrentRun(), aDetector->GetName(), returnCode));
+							GetCurrentRun(), aDetector->GetName(), success));
 
 			// the client exits here
-			gSystem->Exit(returnCode);
+			gSystem->Exit(success);
 
 			AliError("We should never get here!!!");
 		}
@@ -983,7 +1240,7 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 }
 
 //______________________________________________________________________________________________
-UInt_t AliShuttle::ProcessCurrentDetector()
+Bool_t AliShuttle::ProcessCurrentDetector()
 {
 	//
         // Makes data retrieval just for a specific detector (fCurrentDetector).
@@ -1004,12 +1261,15 @@ UInt_t AliShuttle::ProcessCurrentDetector()
 
 	Bool_t processDCS = aPreprocessor->ProcessDCS();
 
-	// TODO Test only... I've added a flag that allows to
-	// exclude DCS archive DB query
-	if (!processDCS || !fgkProcessDCS)
+	if (!processDCS || fTestMode & kSkipDCS)
 	{
-		AliInfo("Skipping DCS processing!");
-		aDCSError = kFALSE;
+		AliInfo("In TESTMODE - Skipping DCS processing!");
+	} 
+	else if (fTestMode & kErrorDCS)
+	{
+		AliInfo("In TESTMODE - Simulating DCS error");
+		UpdateShuttleStatus(AliShuttleStatus::kDCSError);
+		return kFALSE;
 	} else {
 
 		UpdateShuttleStatus(AliShuttleStatus::kDCSStarted);
@@ -1041,7 +1301,7 @@ UInt_t AliShuttle::ProcessCurrentDetector()
 						anAlias->GetName()));
 				UpdateShuttleStatus(AliShuttleStatus::kDCSError);
 				dcsMap.DeleteAll();
-				return kDCSErrCode;
+				return kFALSE;
 			}
 		}
 
@@ -1068,7 +1328,7 @@ UInt_t AliShuttle::ProcessCurrentDetector()
 						aDP->GetName()));
 				UpdateShuttleStatus(AliShuttleStatus::kDCSError);
 				dcsMap.DeleteAll();
-				return kDCSErrCode;
+				return kFALSE;
 			}
 		}
 	}
@@ -1080,26 +1340,29 @@ UInt_t AliShuttle::ProcessCurrentDetector()
 
 	if (returnValue > 0) // Preprocessor error!
 	{
+		Log(fCurrentDetector, Form("Preprocessor failed. Process returned %d.", returnValue));
 		UpdateShuttleStatus(AliShuttleStatus::kPPError);
-
-	} else { // preprocessor ok!
-    		UpdateShuttleStatus(AliShuttleStatus::kPPDone);
-		UpdateShuttleLogbook(fCurrentDetector, "DONE");
-		Log("SHUTTLE", Form("ProcessCurrentDetector - %s preprocessor returned success",
-					fCurrentDetector.Data()));
-        }
+		dcsMap.DeleteAll();
+		return kFALSE;
+	}
+	
+	// preprocessor ok!
+	UpdateShuttleStatus(AliShuttleStatus::kPPDone);
+	Log(fCurrentDetector, Form("ProcessCurrentDetector - %s preprocessor returned success",
+				fCurrentDetector.Data()));
 
 	dcsMap.DeleteAll();
 
-	return returnValue;
+	return kTRUE;
 }
 
 //______________________________________________________________________________________________
 Bool_t AliShuttle::QueryShuttleLogbook(const char* whereClause,
 		TObjArray& entries)
 {
-// Query DAQ's Shuttle logbook and fills detector status object.
-// Call QueryRunParameters to query DAQ logbook for run parameters.
+	// Query DAQ's Shuttle logbook and fills detector status object.
+	// Call QueryRunParameters to query DAQ logbook for run parameters.
+	//
 
 	entries.SetOwner(1);
 
@@ -1118,15 +1381,9 @@ Bool_t AliShuttle::QueryShuttleLogbook(const char* whereClause,
 	AliDebug(2,Form("Query = %s", sqlQuery.Data()));
 
 	if(aResult->GetRowCount() == 0) {
-//		if(sqlQuery.EndsWith("where shuttle_done=0 order by run")){
-//			Log("SHUTTLE", "QueryShuttleLogbook - All runs in Shuttle Logbook are already DONE");
-//			delete aResult;
-//			return kTRUE;
-//		} else {
-			AliInfo("No entries in Shuttle Logbook match request");
-			delete aResult;
-			return kTRUE;
-//		}
+		AliInfo("No entries in Shuttle Logbook match request");
+		delete aResult;
+		return kTRUE;
 	}
 
 	// TODO Check field count!
@@ -1154,9 +1411,6 @@ Bool_t AliShuttle::QueryShuttleLogbook(const char* whereClause,
 		delete aRow;
 	}
 
-//	if(sqlQuery.EndsWith("where shuttle_done=0 order by run"))
-//		Log("SHUTTLE", Form("QueryShuttleLogbook - Found %d unprocessed runs in Shuttle Logbook",
-//							entries.GetEntriesFast()));
 	delete aResult;
 	return kTRUE;
 }
@@ -1229,11 +1483,11 @@ AliShuttleLogbookEntry* AliShuttle::QueryRunParameters(Int_t run)
 Bool_t AliShuttle::GetValueSet(const char* host, Int_t port, const char* entry,
 				TObjArray* valueSet, DCSType type)
 {
-// Retrieve all "entry" data points from the DCS server
-// host, port: TSocket connection parameters
-// entry: name of the alias or data point
-// valueSet: array of retrieved AliDCSValue's
-// type: kAlias or kDP
+	// Retrieve all "entry" data points from the DCS server
+	// host, port: TSocket connection parameters
+	// entry: name of the alias or data point
+	// valueSet: array of retrieved AliDCSValue's
+	// type: kAlias or kDP
 
 	AliDCSClient client(host, port, fTimeout, fRetries);
 	if (!client.IsConnected())
@@ -1275,14 +1529,21 @@ Bool_t AliShuttle::GetValueSet(const char* host, Int_t port, const char* entry,
 const char* AliShuttle::GetFile(Int_t system, const char* detector,
 		const char* id, const char* source)
 {
-// Get calibration file from file exchange servers
-// First queris the FXS database for the file name, using the run, detector, id and source info
-// then calls RetrieveFile(filename) for actual copy to local disk
-// run: current run being processed (given by Logbook entry fLogbookEntry)
-// detector: the Preprocessor name
-// id: provided as a parameter by the Preprocessor
-// source: provided by the Preprocessor through GetFileSources function
+	// Get calibration file from file exchange servers
+	// First queris the FXS database for the file name, using the run, detector, id and source info
+	// then calls RetrieveFile(filename) for actual copy to local disk
+	// run: current run being processed (given by Logbook entry fLogbookEntry)
+	// detector: the Preprocessor name
+	// id: provided as a parameter by the Preprocessor
+	// source: provided by the Preprocessor through GetFileSources function
 
+	// check if test mode should simulate a FXS error
+	if (fTestMode & kErrorFXSFiles)
+	{
+		Log(detector, Form("GetFile - In TESTMODE - Simulating error while connecting to %s FXS", GetSystemName(system)));
+		return 0;
+	}
+	
 	// check connection, in case connect
 	if (!Connect(system))
 	{
@@ -1432,7 +1693,9 @@ const char* AliShuttle::GetFile(Int_t system, const char* detector,
 //______________________________________________________________________________________________
 Bool_t AliShuttle::RetrieveFile(UInt_t system, const char* fxsFileName, const char* localFileName)
 {
-// Copies file from FXS to local Shuttle machine
+	//
+	// Copies file from FXS to local Shuttle machine
+	//
 
 	// check temp directory: trying to cd to temp; if it does not exist, create it
 	AliDebug(2, Form("Copy file %s from %s FXS into %s/%s",
@@ -1483,13 +1746,22 @@ Bool_t AliShuttle::RetrieveFile(UInt_t system, const char* fxsFileName, const ch
 //______________________________________________________________________________________________
 TList* AliShuttle::GetFileSources(Int_t system, const char* detector, const char* id)
 {
-// Get sources producing the condition file Id from file exchange servers
+	//
+	// Get sources producing the condition file Id from file exchange servers
+	//
+	
+	// check if test mode should simulate a FXS error
+	if (fTestMode & kErrorFXSSources)
+	{
+		Log(detector, Form("GetFileSources - In TESTMODE - Simulating error while connecting to %s FXS", GetSystemName(system)));
+		return 0;
+	}
+
 
 	if (system == kDCS)
 	{
 		AliError("DCS system has only one source of data!");
 		return NULL;
-
 	}
 
 	// check connection, in case connect
@@ -1553,8 +1825,9 @@ TList* AliShuttle::GetFileSources(Int_t system, const char* detector, const char
 //______________________________________________________________________________________________
 Bool_t AliShuttle::Connect(Int_t system)
 {
-// Connect to MySQL Server of the system's FXS MySQL databases
-// DAQ Logbook, Shuttle Logbook and DAQ FXS db are on the same host
+	// Connect to MySQL Server of the system's FXS MySQL databases
+	// DAQ Logbook, Shuttle Logbook and DAQ FXS db are on the same host
+	//
 
 	// check connection: if already connected return
 	if(fServer[system] && fServer[system]->IsConnected()) return kTRUE;
@@ -1612,7 +1885,9 @@ Bool_t AliShuttle::Connect(Int_t system)
 //______________________________________________________________________________________________
 Bool_t AliShuttle::UpdateTable()
 {
-// Update FXS table filling time_processed field in all rows corresponding to current run and detector
+	//
+	// Update FXS table filling time_processed field in all rows corresponding to current run and detector
+	//
 
 	Bool_t result = kTRUE;
 
@@ -1692,9 +1967,9 @@ Bool_t AliShuttle::UpdateTable()
 //______________________________________________________________________________________________
 Bool_t AliShuttle::UpdateTableFailCase()
 {
-// Update FXS table filling time_processed field in all rows corresponding to current run and detector
-// this is called in case the preprocessor is declared failed for the current run, because
-// the fields are updated only in case of success
+	// Update FXS table filling time_processed field in all rows corresponding to current run and detector
+	// this is called in case the preprocessor is declared failed for the current run, because
+	// the fields are updated only in case of success
 
 	Bool_t result = kTRUE;
 
@@ -1800,7 +2075,9 @@ Bool_t AliShuttle::UpdateShuttleLogbook(const char* detector, const char* status
 //______________________________________________________________________________________________
 Int_t AliShuttle::GetCurrentRun() const
 {
-// Get current run from logbook entry
+	//
+	// Get current run from logbook entry
+	//
 
 	return fLogbookEntry ? fLogbookEntry->GetRun() : -1;
 }
@@ -1808,7 +2085,9 @@ Int_t AliShuttle::GetCurrentRun() const
 //______________________________________________________________________________________________
 UInt_t AliShuttle::GetCurrentStartTime() const
 {
-// get current start time
+	//
+	// get current start time
+	//
 
 	return fLogbookEntry ? fLogbookEntry->GetStartTime() : 0;
 }
@@ -1816,7 +2095,9 @@ UInt_t AliShuttle::GetCurrentStartTime() const
 //______________________________________________________________________________________________
 UInt_t AliShuttle::GetCurrentEndTime() const
 {
-// get current end time from logbook entry
+	//
+	// get current end time from logbook entry
+	//
 
 	return fLogbookEntry ? fLogbookEntry->GetEndTime() : 0;
 }
@@ -1824,7 +2105,9 @@ UInt_t AliShuttle::GetCurrentEndTime() const
 //______________________________________________________________________________________________
 void AliShuttle::Log(const char* detector, const char* message)
 {
-// Fill log string with a message
+	//
+	// Fill log string with a message
+	//
 
 	void* dir = gSystem->OpenDirectory(GetShuttleLogDir());
 	if (dir == NULL) {
@@ -1868,12 +2151,12 @@ void AliShuttle::Log(const char* detector, const char* message)
 //______________________________________________________________________________________________
 Bool_t AliShuttle::Collect(Int_t run)
 {
-//
-// Collects conditions data for all UNPROCESSED run written to DAQ LogBook in case of run = -1 (default)
-// If a dedicated run is given this run is processed
-//
-// In operational mode, this is the Shuttle function triggered by the EOR signal.
-//
+	//
+	// Collects conditions data for all UNPROCESSED run written to DAQ LogBook in case of run = -1 (default)
+	// If a dedicated run is given this run is processed
+	//
+	// In operational mode, this is the Shuttle function triggered by the EOR signal.
+	//
 
 	if (run == -1)
 		Log("SHUTTLE","Collect - Shuttle called. Collecting conditions data for unprocessed runs");
@@ -1949,7 +2232,9 @@ Bool_t AliShuttle::Collect(Int_t run)
 //______________________________________________________________________________________________
 Bool_t AliShuttle::RetrieveConditionsData(const TObjArray& dateEntries)
 {
-// Retrieve conditions data for all runs that aren't processed yet
+	//
+	// Retrieve conditions data for all runs that aren't processed yet
+	//
 
 	Bool_t hasError = kFALSE;
 
@@ -1972,6 +2257,10 @@ Bool_t AliShuttle::RetrieveConditionsData(const TObjArray& dateEntries)
 //______________________________________________________________________________________________
 ULong_t AliShuttle::GetTimeOfLastAction() const
 {
+	//
+	// Gets time of last action
+	//
+
 	ULong_t tmp;
 
 	fMonitoringMutex->Lock();
@@ -1986,7 +2275,9 @@ ULong_t AliShuttle::GetTimeOfLastAction() const
 //______________________________________________________________________________________________
 const TString AliShuttle::GetLastAction() const
 {
+	//
 	// returns a string description of the last action
+	//
 
 	TString tmp;
 
@@ -2002,7 +2293,9 @@ const TString AliShuttle::GetLastAction() const
 //______________________________________________________________________________________________
 void AliShuttle::SetLastAction(const char* action)
 {
+	//
 	// updates the monitoring variables
+	//
 
 	fMonitoringMutex->Lock();
 
@@ -2015,7 +2308,9 @@ void AliShuttle::SetLastAction(const char* action)
 //______________________________________________________________________________________________
 const char* AliShuttle::GetRunParameter(const char* param)
 {
-// returns run parameter read from DAQ logbook
+	//
+	// returns run parameter read from DAQ logbook
+	//
 
 	if(!fLogbookEntry) {
 		AliError("No logbook entry!");
@@ -2026,14 +2321,22 @@ const char* AliShuttle::GetRunParameter(const char* param)
 }
 
 //______________________________________________________________________________________________
-AliCDBEntry* AliShuttle::GetFromOCDB(const AliCDBPath& path)
+AliCDBEntry* AliShuttle::GetFromOCDB(const char* detector, const AliCDBPath& path)
 {
-// returns obiect from OCDB valid for current run
+	//
+	// returns object from OCDB valid for current run
+	//
 
+	if (fTestMode & kErrorOCDB)
+	{
+		Log(detector, "GetFromOCDB - In TESTMODE - Simulating error with OCDB");
+		return 0;
+	}
+	
 	AliCDBStorage *sto = AliCDBManager::Instance()->GetStorage(fgkMainCDB);
 	if (!sto)
 	{
-		Log("SHUTTLE", "GetFromOCDB - Cannot activate main OCDB for query!");
+		Log(detector, "GetFromOCDB - Cannot activate main OCDB for query!");
 		return 0;
 	}
 
@@ -2043,7 +2346,12 @@ AliCDBEntry* AliShuttle::GetFromOCDB(const AliCDBPath& path)
 //______________________________________________________________________________________________
 Bool_t AliShuttle::SendMail()
 {
-// sends a mail to the subdetector expert in case of preprocessor error
+	//
+	// sends a mail to the subdetector expert in case of preprocessor error
+	//
+	
+	if (fTestMode != kNone)
+		return kTRUE;
 
 	void* dir = gSystem->OpenDirectory(GetShuttleLogDir());
 	if (dir == NULL)
@@ -2137,61 +2445,26 @@ Bool_t AliShuttle::SendMail()
 }
 
 //______________________________________________________________________________________________
-void AliShuttle::SetRunType()
+const char* AliShuttle::GetRunType()
 {
-// Gets run type from logbook and fills current Shuttle logbook entry
-
-	// check connection, in case connect
-	if(!Connect(3)){
-		Log("SHUTTLE", "SetRunType - Couldn't connect to DAQ Logbook.");
-		return;
-	}
-
-	TString sqlQuery = Form("select detector,run_type from %s where run_number=%d",
-					fConfig->GetRunTypelbTable(), GetCurrentRun());
-
-	AliDebug(2, Form("SQL query: \n%s",sqlQuery.Data()));
-
-	// Query execution
-	TSQLResult* aResult;
-	aResult = dynamic_cast<TSQLResult*> (fServer[3]->Query(sqlQuery));
-	if (!aResult) {
-		Log("SHUTTLE", Form("SetRunType - Can't execute query <%s>", sqlQuery.Data()));
-		return;
-	}
-
-	TSQLRow* aRow;
-	while ((aRow = aResult->Next())) {
-		TString det(aRow->GetField(0), aRow->GetFieldLength(0));
-		TString runType(aRow->GetField(1), aRow->GetFieldLength(1));
-
-		fLogbookEntry->SetRunType(det, runType);
-		delete aRow;
-	}
-
-	delete aResult;
-
-	return;
-
-}
-
-//______________________________________________________________________________________________
-const char* AliShuttle::GetRunType(const char* detCode)
-{
-// returns run type read from "run type" logbook
+	//
+	// returns run type read from "run type" logbook
+	//
 
 	if(!fLogbookEntry) {
 		AliError("No logbook entry!");
 		return 0;
 	}
 
-	return fLogbookEntry->GetRunType(detCode);
+	return fLogbookEntry->GetRunType();
 }
 
 //______________________________________________________________________________________________
 void AliShuttle::SetShuttleTempDir(const char* tmpDir)
 {
-// sets Shuttle temp directory
+	//
+	// sets Shuttle temp directory
+	//
 
 	fgkShuttleTempDir = gSystem->ExpandPathName(tmpDir);
 }
@@ -2199,7 +2472,9 @@ void AliShuttle::SetShuttleTempDir(const char* tmpDir)
 //______________________________________________________________________________________________
 void AliShuttle::SetShuttleLogDir(const char* logDir)
 {
-// sets Shuttle log directory
+	//
+	// sets Shuttle log directory
+	//
 
 	fgkShuttleLogDir = gSystem->ExpandPathName(logDir);
 }

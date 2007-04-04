@@ -12,6 +12,16 @@ Bool_t Shuttle(const char* param = "listen", const char* dets=0) {
 //	gSystem->Load("$ALICE_ROOT/SHUTTLE/test/libTest.so");
 
 	AliLog::SetGlobalDebugLevel(2);
+	
+	const char* pwd = gSystem->pwd();
+	
+	if( !gSystem->Getenv("SHUTTLE_DIR")) 
+	{
+		printf("Setting base SHUTTLE folder to %s\n", pwd);
+		gSystem->Setenv("SHUTTLE_DIR", pwd);
+	} else {
+		printf("Shuttle base folder is %s\n", gSystem->Getenv("SHUTTLE_DIR"));
+	}
 
 // 	Setting local CDB and reference storage locations
 	  AliShuttle::SetMainCDB("alien://user=aliprod?folder=testShuttle/OCDB");

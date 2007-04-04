@@ -33,14 +33,12 @@ TObject(),
 fRun(-1),
 fRunParameters(0)
 {
-  // default constructor
+	//
+	// default constructor
+	//
 
 	const UInt_t nDet = AliShuttleInterface::NDetectors();
 	memset(fDetectorStatus, kUnprocessed, nDet*sizeof(Status));
-        for (UInt_t i=0;i<nDet;i++)
-	{
-		fRunType[i]="";
-	}
 	fRunParameters.SetOwner(1);
 }
 
@@ -50,21 +48,21 @@ TObject(),
 fRun(run),
 fRunParameters(0)
 {
-// default constructor
+	//
+	// default constructor
+	//
 
 	const UInt_t nDet = AliShuttleInterface::NDetectors();
 	memset(fDetectorStatus, kUnprocessed, nDet*sizeof(Status));
 	if(status) SetDetectorStatus(status);
-        for (UInt_t i=0;i<nDet;i++)
-	{
-		fRunType[i]="";
-	}
 	fRunParameters.SetOwner(1);
 }
 
 //______________________________________________________________________________________________
 AliShuttleLogbookEntry::~AliShuttleLogbookEntry() {
-// destructor
+	//
+	// destructor
+	//
 
 }
 
@@ -74,7 +72,9 @@ TObject(),
 fRun(c.fRun),
 fRunParameters(0)
 {
-  // copy constructor
+	//
+	// copy constructor
+	//
 
 	SetDetectorStatus(c.GetDetectorStatus());
 	fRunParameters.SetOwner(1);
@@ -85,17 +85,14 @@ fRunParameters(0)
 		TObjString* aValue= dynamic_cast<TObjString*>(aPair->Value());
 		fRunParameters.Add(aKey->Clone(), aValue->Clone());
 	}
-
-	for (UInt_t i=0;i<AliShuttleInterface::NDetectors();i++)
-	{
-		fRunType[i]=c.GetRunType(i);
-	}
 }
 
 //______________________________________________________________________________________________
 AliShuttleLogbookEntry &AliShuttleLogbookEntry::operator=(const AliShuttleLogbookEntry &c)
 {
-  // assigment operator
+	//
+	// assigment operator
+	//
 
 	if (this != &c)
 		((AliShuttleLogbookEntry &) c).Copy(*this);
@@ -105,7 +102,9 @@ AliShuttleLogbookEntry &AliShuttleLogbookEntry::operator=(const AliShuttleLogboo
 //______________________________________________________________________________________________
 void AliShuttleLogbookEntry::Copy(TObject& c) const
 {
-  // copy function
+	//
+	// copy function
+	//
 
 	AliShuttleLogbookEntry& target = (AliShuttleLogbookEntry &) c;
 
@@ -120,16 +119,14 @@ void AliShuttleLogbookEntry::Copy(TObject& c) const
 	}
 
 	target.SetDetectorStatus(GetDetectorStatus());
-	for (UInt_t i=0;i<AliShuttleInterface::NDetectors();i++)
-	{
-		target.SetRunType(i, fRunType[i]);
-	}
 }
 
 //______________________________________________________________________________________________
 AliShuttleLogbookEntry::Status AliShuttleLogbookEntry::GetDetectorStatus(Int_t detPos) const
 {
-// get detector status from detector code
+	//
+	// get detector status from detector code
+	//
 
 	if(detPos < 0 || detPos >= (Int_t) AliShuttleInterface::NDetectors()) {
 		AliError(Form("Invalid parameter: %d", detPos));
@@ -141,7 +138,9 @@ AliShuttleLogbookEntry::Status AliShuttleLogbookEntry::GetDetectorStatus(Int_t d
 //______________________________________________________________________________________________
 void AliShuttleLogbookEntry::SetDetectorStatus(const char* detName, Status status)
 {
-// set detector status from detector code
+	//
+	// set detector status from detector code
+	//
 
 	Int_t detPos = AliShuttleInterface::GetDetPos(detName);
 	if(detPos<0) return;
@@ -151,7 +150,9 @@ void AliShuttleLogbookEntry::SetDetectorStatus(const char* detName, Status statu
 //______________________________________________________________________________________________
 void AliShuttleLogbookEntry::SetDetectorStatus(const char* detName, const char* statusName)
 {
-// set detector status from detector code
+	//
+	// set detector status from detector code
+	//
 
 	Int_t detPos = AliShuttleInterface::GetDetPos(detName);
 	if(detPos<0) return;
@@ -161,7 +162,9 @@ void AliShuttleLogbookEntry::SetDetectorStatus(const char* detName, const char* 
 //______________________________________________________________________________________________
 void AliShuttleLogbookEntry::SetDetectorStatus(Status* status)
 {
-// set detector status from detector code
+	//
+	// set detector status from detector code
+	//
 
 	for(UInt_t i=0; i < AliShuttleInterface::NDetectors(); i++){
 		fDetectorStatus[i] = status[i];
@@ -171,7 +174,9 @@ void AliShuttleLogbookEntry::SetDetectorStatus(Status* status)
 //______________________________________________________________________________________________
 void AliShuttleLogbookEntry::SetDetectorStatus(UInt_t detPos, Status status)
 {
-// set detector status from detector code
+	//
+	// set detector status from detector code
+	//
 
 	if(detPos >= AliShuttleInterface::NDetectors()) {
 		AliError(Form("Shuttle has only %d subdetectors!", AliShuttleInterface::NDetectors()));
@@ -183,7 +188,9 @@ void AliShuttleLogbookEntry::SetDetectorStatus(UInt_t detPos, Status status)
 //______________________________________________________________________________________________
 void AliShuttleLogbookEntry::SetDetectorStatus(UInt_t detPos, const char* statusName)
 {
-// set detector status from detector code
+	//
+	// set detector status from detector code
+	//
 
 	if(detPos >= AliShuttleInterface::NDetectors()) {
 		AliError(Form("Shuttle has only %d subdetectors!", AliShuttleInterface::NDetectors()));
@@ -203,55 +210,11 @@ void AliShuttleLogbookEntry::SetDetectorStatus(UInt_t detPos, const char* status
 	}
 }
 
-
-
-//______________________________________________________________________________________________
-const char* AliShuttleLogbookEntry::GetRunType(Int_t detPos) const
-{
-// get detector status from detector code
-
-	if(detPos < 0 || detPos >= (Int_t) AliShuttleInterface::NDetectors()) {
-		AliError(Form("Invalid parameter: %d", detPos));
-		return 0;
-	}
-	return (fRunType[detPos].Length() > 0) ? fRunType[detPos].Data() : 0;
-}
-
-//______________________________________________________________________________________________
-void AliShuttleLogbookEntry::SetRunType(const char* detName, const char* runType)
-{
-// set detector status from detector code
-
-	Int_t detPos = AliShuttleInterface::GetDetPos(detName);
-	if(detPos<0) return;
-	SetRunType(detPos, runType);
-}
-
-//______________________________________________________________________________________________
-void AliShuttleLogbookEntry::SetRunType(const TString* runType)
-{
-// set detector status from detector code
-
-	for (UInt_t i=0; i < AliShuttleInterface::NDetectors(); i++) {
-		fRunType[i] = runType[i];
-	}
-}
-
-//______________________________________________________________________________________________
-void AliShuttleLogbookEntry::SetRunType(UInt_t detPos, const char* runType)
-{
-// set detector status from detector code
-
-	if(detPos >= AliShuttleInterface::NDetectors()) {
-		AliError(Form("Shuttle has only %d subdetectors!", AliShuttleInterface::NDetectors()));
-		return;
-	}
-	fRunType[detPos] = runType;
-}
-
 //______________________________________________________________________________________________
 Bool_t AliShuttleLogbookEntry::IsDone() const{
-// return TRUE if all subdetectors are in status DONE, FAILED or INACTIVE
+	//
+	// return TRUE if all subdetectors are in status DONE, FAILED or INACTIVE
+	//
 
 	for(UInt_t i=0; i < AliShuttleInterface::NDetectors(); i++){
 		if(fDetectorStatus[i] == kUnprocessed) return kFALSE;
@@ -262,7 +225,9 @@ Bool_t AliShuttleLogbookEntry::IsDone() const{
 //______________________________________________________________________________________________
 const char* AliShuttleLogbookEntry::GetDetectorStatusName(Status status)
 {
-  // returns a name (string) of the detector status
+	//
+	// returns a name (string) of the detector status
+	//
 
       switch (status){
 	    case kUnprocessed: return "UNPROCESSED";
@@ -277,7 +242,9 @@ const char* AliShuttleLogbookEntry::GetDetectorStatusName(Status status)
 //______________________________________________________________________________________________
 void AliShuttleLogbookEntry::Print(Option_t* option) const
 {
-  // print current shuttle logbook entry
+	//
+	// print current shuttle logbook entry
+	//
 
 	TString message = "\n*** Run parameters ***\n";
 	TTimeStamp startTimeStamp(GetStartTime());
@@ -289,14 +256,8 @@ void AliShuttleLogbookEntry::Print(Option_t* option) const
 
 	for (UInt_t i=0; i < AliShuttleInterface::NDetectors(); i++)
 	{
-		message += Form("\t%2d - %s: %s ", i, AliShuttleInterface::GetDetName(i),
+		message += Form("\t%2d - %s: %s \n", i, AliShuttleInterface::GetDetName(i),
 					GetDetectorStatusName(fDetectorStatus[i]));
-		if (fDetectorStatus[i] == kUnprocessed && fRunType[i].Length()>0)
-		{
-			message += Form("\t Run type: %s \n", GetRunType(i));
-		} else {
-			message += "\n";
-		}
 	}
 
 	AliInfo(Form("option: %s",option));
@@ -324,7 +285,9 @@ void AliShuttleLogbookEntry::Print(Option_t* option) const
 }
 //______________________________________________________________________________________________
 void AliShuttleLogbookEntry::SetRunParameter(const char* key, const char* value){
-// set a run parameter (read from the DAQ logbook)
+	//
+	// set a run parameter (read from the DAQ logbook)
+	//
 
 	TObjString* keyObj = new TObjString(key);
 	if (fRunParameters.Contains(key)) {
@@ -337,7 +300,9 @@ void AliShuttleLogbookEntry::SetRunParameter(const char* key, const char* value)
 }
 //______________________________________________________________________________________________
 const char* AliShuttleLogbookEntry::GetRunParameter(const char* key) const{
-// get a run parameter
+	//
+	// get a run parameter
+	//
 
 	TObjString* value = dynamic_cast<TObjString*> (fRunParameters.GetValue(key));
 	if(!value) {

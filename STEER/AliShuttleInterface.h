@@ -28,11 +28,12 @@ class AliShuttleInterface : public TObject
     virtual Bool_t Store(const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData,
     				Int_t validityStart = 0, Bool_t validityInfinite = kFALSE) = 0;
     virtual Bool_t StoreReferenceData(const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData) = 0;
+    virtual Bool_t StoreReferenceFile(const char* detector, const char* localFile, const char* gridFileName) = 0;
     virtual const char* GetFile(Int_t system, const char* detector, const char* id, const char* source) = 0;
     virtual TList* GetFileSources(Int_t system, const char* detector, const char* id) = 0;
     virtual const char* GetRunParameter(const char* lbEntry) = 0;
-    virtual AliCDBEntry* GetFromOCDB(const AliCDBPath& path) = 0;
-    virtual const char* GetRunType(const char* detCode) = 0;
+    virtual AliCDBEntry* GetFromOCDB(const char* detector, const AliCDBPath& path) = 0;
+    virtual const char* GetRunType() = 0;
     virtual void Log(const char* detector, const char* message) = 0;
 
     virtual void RegisterPreprocessor(AliPreprocessor* preprocessor) = 0;

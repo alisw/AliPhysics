@@ -8,6 +8,7 @@
 
 #include <TTimeStamp.h>
 #include <TObjString.h>
+#include <TList.h>
 
 //
 // This class is an example for a simple preprocessor.
@@ -39,11 +40,26 @@ void AliTestPreprocessor::Initialize(Int_t run, UInt_t startTime,
 
   AliPreprocessor::Initialize(run, startTime, endTime);
 
-	AliInfo(Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s", run,
+	Log(Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s", run,
 		TTimeStamp(startTime).AsString(),
 		TTimeStamp(endTime).AsString()));
 
 	fData = new AliTestDataDCS(fRun, fStartTime, fEndTime);
+}
+
+//______________________________________________________________________________________________
+Bool_t AliTestPreprocessor::ProcessDCS()
+{
+	//
+	// decide here if DCS data is to be processed
+	//
+	
+	// TODO implement a decision, e.g. based on the run type
+	// In this example: Skip DCS if run type is CALIB
+	if (strcmp(GetRunType(), "CALIB") == 0)
+		return kFALSE;
+	
+	return kTRUE;
 }
 
 //______________________________________________________________________________________________
@@ -52,7 +68,7 @@ UInt_t AliTestPreprocessor::Process(TMap* dcsAliasMap)
   // Fills data into a AliTestDataDCS object
 
   if (!dcsAliasMap)
-    return 0;
+    return 1;
 
   // The processing of the DCS input data is forwarded to AliTestDataDCS
   fData->ProcessData(*dcsAliasMap);
@@ -61,17 +77,21 @@ UInt_t AliTestPreprocessor::Process(TMap* dcsAliasMap)
   // TODO Here the run type for the "DET" detector must be set manually with SetInputRunType function,
   // in reality it will be read from the "run type" logbook!
   TString runType = GetRunType();
-  AliInfo(Form("Run type for run %d: %s", fRun, runType.Data()));
+  Log(Form("Run type for run %d: %s", fRun, runType.Data()));
 
   TString fileName = GetFile(kDAQ, "PEDESTALS", "GDC");
   if (fileName.Length() > 0)
-    AliInfo(Form("Got the file %s, now we can extract some values.", fileName.Data()));
+    Log(Form("Got the file %s, now we can extract some values.", fileName.Data()));
   //TODO here the file could be opened, some values extracted and  written to e.g. fData
 
+  //Example to store a file directly to the reference storage
+  if (!StoreReferenceFile(fileName, "InputData.root"))
+  	return 1;
+  
   TList* list = GetFileSources(kDAQ, "DRIFTVELOCITY");
   if (list)
   {
-    AliInfo("The following sources produced files with the id DRIFTVELOCITY");
+    Log("The following sources produced files with the id DRIFTVELOCITY");
     list->Print();
     delete list;
   }
@@ -107,10 +127,13 @@ UInt_t AliTestPreprocessor::Process(TMap* dcsAliasMap)
 	metaData.SetResponsible("TPC expert");
 	metaData.SetComment("This preprocessor fills an AliTestDataDCS object.");
 
-	UInt_t result = Store("Calib", "Data", fData, &metaData, 0, 0);
+	Bool_t result = Store("Calib", "Data", fData, &metaData, 0, 0);
 	delete fData;
 	fData = 0;
 
-  return result;
+  if (!result)
+  	return 1;
+  
+  return 0;
 }
 

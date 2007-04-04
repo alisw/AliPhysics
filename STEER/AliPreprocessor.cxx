@@ -193,6 +193,17 @@ Bool_t AliPreprocessor::StoreReferenceData(const char* pathLevel2, const char* p
   return fShuttle->StoreReferenceData(AliCDBPath(offlineDetName, pathLevel2, pathLevel3), object,
   		metaData);
 }
+    
+//______________________________________________________________________________________________
+Bool_t AliPreprocessor::StoreReferenceFile(const char* localFile, const char* gridFileName)
+{
+	//
+	// Stores a file directly (without opening it) in the reference storage in the Grid
+	//
+	// The call is delegated to AliShuttleInterface
+	
+	return fShuttle->StoreReferenceFile(GetName(), localFile, gridFileName);
+}
 
 //______________________________________________________________________________________________
 const char* AliPreprocessor::GetFile(Int_t system, const char* id, const char* source)
@@ -247,7 +258,7 @@ AliCDBEntry* AliPreprocessor::GetFromOCDB(const char* pathLevel2, const char* pa
   if (!offlineDetName) return 0;
 
   return dynamic_cast<AliCDBEntry*>
-  	(fShuttle->GetFromOCDB(AliCDBPath(offlineDetName, pathLevel2, pathLevel3)));
+  	(fShuttle->GetFromOCDB(GetName(), AliCDBPath(offlineDetName, pathLevel2, pathLevel3)));
 }
 
 //______________________________________________________________________________________________
@@ -257,5 +268,5 @@ const char* AliPreprocessor::GetRunType()
   //
   // The call is delegated to AliShuttleInterface
 
-  return fShuttle->GetRunType(GetName());
+  return fShuttle->GetRunType();
 }

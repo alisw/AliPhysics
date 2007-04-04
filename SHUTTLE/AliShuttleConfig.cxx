@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.19  2007/02/28 10:41:56  acolla
+Run type field added in SHUTTLE framework. Run type is read from "run type" logbook and retrieved by
+AliPreprocessor::GetRunType() function.
+Added some ldap definition files.
+
 Revision 1.18  2007/01/23 19:20:03  acolla
 Removed old ldif files, added TOF, MCH ldif files. Added some options in
 AliShuttleConfig::Print. Added in Ali Shuttle: SetShuttleTempDir and
@@ -315,7 +320,7 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	fIsValid(kFALSE), fConfigHost(host),
 	fDAQlbHost(""), fDAQlbPort(), fDAQlbUser(""), fDAQlbPass(""),
 	fDAQlbDB(""), fDAQlbTable(""), fShuttlelbTable(""), fRunTypelbTable(""),
-	fMaxRetries(0), fPPTimeOut(0), fDetectorMap(), fDetectorList(),
+	fMaxRetries(0), fPPTimeOut(0), fPPMaxMem(0), fDetectorMap(), fDetectorList(),
 	fShuttleInstanceHost(""), fProcessedDetectors(), fProcessAll(kFALSE)
 {
 	//
@@ -514,6 +519,15 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	tmpStr = anAttribute->GetValue();
 	fPPTimeOut = tmpStr.Atoi();
 
+	anAttribute = anEntry->GetAttribute("PPMaxMem");
+	if (!anAttribute) {
+		AliError("Can't find PPMaxMem attribute!");
+		delete aResult; delete anEntry;
+		return;
+	}
+	tmpStr = anAttribute->GetValue();
+	fPPMaxMem = tmpStr.Atoi();
+	
 	delete aResult; delete anEntry;
 
 	// FXS configuration (FXS logbook and hosts)
@@ -801,7 +815,7 @@ void AliShuttleConfig::Print(Option_t* option) const
 		result += "\n";
 	}
 
-	result += Form("PP time out = %d - Max total retries = %d\n\n", fPPTimeOut, fMaxRetries);
+	result += Form("PP time out = %d - Max PP memsize = %d KB - Max total retries = %d\n\n", fPPTimeOut, fPPMaxMem, fMaxRetries);
 	result += "------------------------------------------------------\n";
 
 	result += Form("Logbook Configuration \n\n \tHost: %s:%d; \tUser: %s; ",
