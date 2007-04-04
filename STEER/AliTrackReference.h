@@ -61,9 +61,9 @@ public:
   Bool_t IsSortable() const {return kTRUE;}
   Int_t Compare(const TObject *obj) const {
     Int_t ll = ((AliTrackReference*)obj)->GetTrack();
-    if (ll == fTrack) return 0;
     if (ll < fTrack) return 1;
     if (ll > fTrack) return -1;
+    return 0;
   }
 
 protected:
