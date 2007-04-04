@@ -90,7 +90,6 @@ AliMUONTriggerChamberEff::AliMUONTriggerChamberEff(Int_t firstRun, Int_t lastRun
 {
 /// Standard constructor
     ResetArrays();
-    delete gAlice;
 }
 
 //_____________________________________________________________________________
@@ -144,10 +143,11 @@ void AliMUONTriggerChamberEff::CleanGalice()
     //
     /// Unload all loaded data
     //
-    
-    fRunLoader->UnloadAll();
+    delete fData;
+    fData = NULL;
+    fRunLoader->UnloadAll("all");
     delete fRunLoader;
-    fRunLoader = 0;
+    fRunLoader = NULL;
 }
 
 //_____________________________________________________________________________
@@ -195,49 +195,119 @@ void AliMUONTriggerChamberEff::InfoDigit()
       } // end digit loop
     } // end chamber loop
     fData->ResetDigits();
+    fData->ResetTrigger();
 }
 
 
 //_____________________________________________________________________________
-Bool_t AliMUONTriggerChamberEff::PadMatchTrack(Float_t xPad, Float_t yPad, Float_t dpx, Float_t dpy, 
+Int_t AliMUONTriggerChamberEff::MatchingPad(Int_t &detElemId, Float_t coor[2], const AliMUONGeometryTransformer *kGeomTransformer, Bool_t isMatch[fgkNcathodes], Int_t nboard[fgkNcathodes][4], Float_t zRealMatch[fgkNchambers], Float_t y11)
+{
+    //
+    /// Check slat and board number of digit matching track
+    //
+
+    enum {kBending, kNonBending};
+
+    Float_t minMatchDist[fgkNcathodes];
+
+    for(Int_t cath=0; cath<fgkNcathodes; cath++){
+	isMatch[cath]=kFALSE;
+	minMatchDist[cath]=9999.;
+    }
+    Int_t iChamber = detElemId/100-1;
+    Int_t ch = iChamber-10;
+    Float_t oldDeltaZ = AliMUONConstants::DefaultChamberZ(iChamber) - AliMUONConstants::DefaultChamberZ(10);
+    Float_t y = coor[1];
+    Int_t iSlat = detElemId%100;
+    Int_t trigDigitBendPlane = -1;
+    TClonesArray* digits = fData->Digits(iChamber);
+    digits->Sort();
+    Int_t foundDetElemId = detElemId;
+    Float_t foundZmatch=999.;
+    Float_t yCoorAtPadZ=999.;
+    Int_t ndigits = (Int_t)digits->GetEntriesFast();
+    AliMUONDigit * mDigit = 0x0;
+    for(Int_t idigit=0; idigit<ndigits; idigit++) { // digit loop
+	mDigit = (AliMUONDigit*)digits->At(idigit);
+	Int_t currDetElemId = mDigit->DetElemId();
+	Int_t currSlat = currDetElemId%100;
+	if(TMath::Abs(currSlat%18-iSlat%18)>1)continue; // Check neighbour slats
+	Int_t cathode = mDigit->Cathode();
+	Int_t ix = mDigit->PadX();
+	Int_t iy = mDigit->PadY();
+	Float_t xpad, ypad, zpad;
+	const AliMpVSegmentation* seg = AliMpSegmentation::Instance()
+	    ->GetMpSegmentation(currDetElemId,AliMp::GetCathodType(cathode));
+
+	AliMpPad pad = seg->PadByIndices(AliMpIntPair(ix,iy),kTRUE);
+	Float_t xlocal1 = pad.Position().X();
+	Float_t ylocal1 = pad.Position().Y();
+	Float_t dpx = pad.Dimensions().X();
+	Float_t dpy = pad.Dimensions().Y();
+	kGeomTransformer->Local2Global(currDetElemId, xlocal1, ylocal1, 0, xpad, ypad, zpad);
+	if(fDebugLevel>2)printf("DetElemId = %i\tCathode = %i\t(x,y) Pad = (%i,%i) = (%.2f,%.2f)\tDim = (%.2f,%.2f)\tTrack = (%.2f,%.2f)\n",currDetElemId,cathode,ix,iy,xpad,ypad,dpx,dpy,coor[0],coor[1]);
+	// searching track intersection with chambers (second approximation)
+	if(ch%2==1){
+	    Float_t deltaZ = zpad - zRealMatch[0];
+	    y = (coor[1]-y11)*deltaZ/oldDeltaZ + y11;
+	    if(fDebugLevel>=3 && TMath::Abs(y-coor[1])>0.1)printf("oldDeltaZ = %7.2f   newDeltaZ = %7.2f\toldY = %7.2f   new y = %7.2f\n",oldDeltaZ,deltaZ,coor[1],y);
+	}
+	Float_t matchDist = PadMatchTrack(xpad, ypad, dpx, dpy, coor[0], y, ch);
+	if(matchDist>minMatchDist[cathode])continue;
+	isMatch[cathode] = kTRUE;
+	minMatchDist[cathode] = matchDist;
+	foundDetElemId = currDetElemId;
+	foundZmatch=zpad;
+	yCoorAtPadZ=y;
+	if(cathode==kBending)trigDigitBendPlane = idigit;
+	for (Int_t loc=0; loc<pad.GetNofLocations(); loc++){
+	    AliMpIntPair location = pad.GetLocation(loc);
+	    nboard[cathode][loc] = location.GetFirst();
+	}
+	for(Int_t loc=pad.GetNofLocations(); loc<4; loc++){
+	    nboard[cathode][loc]=-1;
+	}
+    }
+    if(isMatch[kBending] || isMatch[kNonBending]){
+	detElemId = foundDetElemId;
+	zRealMatch[ch] = foundZmatch;
+	coor[1] = yCoorAtPadZ;
+	if(fDebugLevel>2){
+	    Int_t whichCathode=kBending;
+	    if(!isMatch[kBending])whichCathode=kNonBending;
+	}
+    }
+    return trigDigitBendPlane;
+}
+
+//_____________________________________________________________________________
+Float_t AliMUONTriggerChamberEff::PadMatchTrack(Float_t xPad, Float_t yPad, Float_t dpx, Float_t dpy, 
 					       Float_t xTrackAtPad, Float_t yTrackAtPad, Int_t chamber)
 {
     //
     /// Decides if the digit belongs to the trigger track.
     //
 
-    Float_t numOfHalfWidth = 5.;
-    Bool_t match = kFALSE;
-    Float_t maxDistX = dpx;
-    if(fReproduceTrigResponse && chamber>=2) maxDistX = 3.*dpx;// Non-bending plane: check the +- 1 strip between stations
-    if(!fReproduceTrigResponse)maxDistX = numOfHalfWidth*dpx;
-    Float_t maxDistY = dpy;
-    if(fReproduceTrigResponse && chamber%2) maxDistY = 3*dpy;// bending plane: check the +- 1 strip between planes in the same station
-    if(!fReproduceTrigResponse) maxDistY = numOfHalfWidth*dpy;
-    Float_t deltaX = TMath::Abs(xPad-xTrackAtPad);
-    Float_t deltaY = TMath::Abs(yPad-yTrackAtPad);
-    if(deltaX<=maxDistX && deltaY<=maxDistY)match = kTRUE;
-    return match;
-}
+    Float_t maxDist = 3.;//cm
 
+    Float_t matchDist = 99999.;
 
-//_____________________________________________________________________________
-Bool_t AliMUONTriggerChamberEff::IsDiffLocalBoard(Int_t currDetElemId, Int_t iy, Int_t detElemIdP1, Int_t iyDigitP1) const
-{
-    //
-    /// Determins if the digits belong to the same local board.
-    /// Used only if one wants to reproduce the trigger algorithm result.
-    /// (fReproduceTrigResponse = kTRUE).
-    //
+    Float_t deltaX = TMath::Abs(xPad-xTrackAtPad)-dpx;
+    Float_t deltaY = TMath::Abs(yPad-yTrackAtPad)-dpy;
+    Float_t maxDistX = maxDist;
+    Float_t maxDistY = maxDist;
+    
+    if(fReproduceTrigResponse){
+	maxDistX = dpx;
+	maxDistY = dpy;
+	deltaX = TMath::Abs(xPad-xTrackAtPad);
+	deltaY = TMath::Abs(yPad-yTrackAtPad);
+	if(dpx<dpy && chamber>=2) maxDistX = 3.*dpx;// Non-bending plane: check the +- 1 strip between stations
+	if(dpy<dpx && chamber%2) maxDistY = 3.*dpy;// bending plane: check the +- 1 strip between planes in the same station
+    }
 
-    Bool_t isDiff = kTRUE;
-    if(detElemIdP1<0 || iyDigitP1<0)return kFALSE;
-    Int_t currSlat = currDetElemId%100;
-    Int_t slatP1 = detElemIdP1%100;
-    Int_t currLoc = iy/16;
-    Int_t locP1 = iyDigitP1/16;
-    if(currSlat==slatP1 && currLoc==locP1)isDiff = kFALSE;
-    return isDiff;
+    if(deltaX<=maxDistX && deltaY<=maxDistY)matchDist = deltaX*deltaX + deltaY*deltaY;
+    return matchDist;
 }
 
 
@@ -273,8 +343,12 @@ Int_t AliMUONTriggerChamberEff::DetElemIdFromPos(Float_t x, Float_t y, Int_t cha
     AliMpDEIterator it;
     const AliMUONGeometryTransformer *kGeomTransformer = fMUON->GetGeometryTransformer();
     AliMUONSegmentation *segmentation = fMUON->GetSegmentation();
+    Float_t minDist = 999.;
     for ( it.First(chamber-1); ! it.IsDone(); it.Next() ){
 	Int_t detElemId = it.CurrentDEId();
+	Int_t ich = detElemId/100-10;
+	Float_t tolerance=0.2*((Float_t)ich);
+	Float_t currDist=9999.;
 
 	if (  segmentation->HasDE(detElemId) ){
 	    const AliMpVSegmentation* seg = 
@@ -302,7 +376,14 @@ Int_t AliMUONTriggerChamberEff::DetElemIdFromPos(Float_t x, Float_t y, Int_t cha
 		    yg2 = yg01;
 		}
 
-		if(x>=xg1 && x<=xg2 && y>=yg1 && y<=yg2){
+		if(x>=xg1-tolerance && x<=xg2+tolerance && y>=yg1-tolerance && y<=yg2+tolerance){ // takes into account errors in extrapolation
+		    if(y<yg1) currDist = yg1-y;
+		    else if(y>yg2) currDist = y-yg2;
+		    if(currDist<minDist) {
+			resultingDetElemId = detElemId;
+			minDist=currDist;
+			continue;
+		    }
 		    resultingDetElemId = detElemId;
 		    break;
 		}
@@ -383,16 +464,15 @@ void AliMUONTriggerChamberEff::PerformTriggerChamberEff(const char* outputDir)
     Int_t evtBeforePrint = 1000;
     Float_t rad2deg = 180./TMath::Pi();
 
-    Int_t chOrder[] = {0,2,1,3};
-    Int_t station[] = {0,0,1,1};
+    Int_t chOrder[fgkNchambers] = {0,2,1,3};
     Float_t zRealMatch[fgkNchambers] = {0.0};
     Float_t correctFactor[fgkNcathodes] = {1.};
 
     Bool_t match[fgkNchambers][fgkNcathodes] = {{kFALSE}};
+    Bool_t matchPad[fgkNcathodes]={kFALSE};
 
     TClonesArray *recTrigTracksArray = 0x0;
     AliMUONTriggerTrack *recTrigTrack = 0x0;
-    AliMUONDigit * mDigit = 0x0;
 
     Float_t zMeanChamber[fgkNchambers];
     for(Int_t ch=0; ch<fgkNchambers; ch++){
@@ -407,21 +487,15 @@ void AliMUONTriggerChamberEff::PerformTriggerChamberEff(const char* outputDir)
     Int_t atLeast1MuPerEv[fgkNchambers][fgkNcathodes] = {{0}};
     Int_t digitPerTrack[fgkNcathodes] = {0};
 
-    Float_t trackIntersectCh[2][fgkNchambers]={{0.0}};
+    Float_t trackIntersectCh[fgkNchambers][2]={{0.0}};
 
-    Int_t slatInPlane1[2][fgkNcathodes];
-    Int_t iyDigitInPlane1[2][fgkNcathodes];
+    Int_t triggeredDigits[2][fgkNchambers] = {{-1}};
 
-    const Int_t kMaxNumOfTracks = 10;
-    Int_t trigScheme[kMaxNumOfTracks][fgkNchambers][fgkNcathodes]={{{0}}};
-    Int_t triggeredDigits[kMaxNumOfTracks][fgkNchambers][fgkNcathodes] = {{{-1}}};
-    Int_t slatThatTriggered[kMaxNumOfTracks][fgkNchambers][fgkNcathodes]={{{-1}}};
-    Int_t boardThatTriggered[kMaxNumOfTracks][fgkNchambers][fgkNcathodes][4]={{{{-1}}}};
-    Int_t nboard[4]={-1};
+    Int_t trigScheme[fgkNchambers][fgkNcathodes]={{0}};
+    Int_t slatThatTriggered[fgkNchambers][fgkNcathodes]={{-1}};
+    Int_t boardThatTriggered[fgkNchambers][fgkNcathodes][4]={{{-1}}};
+    Int_t nboard[fgkNcathodes][4]={{-1}};
     Int_t ineffBoard[4]={-1};
-
-    const Int_t kMaxNumOfDigits = 20;
-    Int_t detElOfDigitsInData[kMaxNumOfDigits][fgkNchambers][fgkNcathodes] = {{{-1}}};
 
     char filename[150];
     FileStat_t fs;
@@ -441,30 +515,28 @@ void AliMUONTriggerChamberEff::PerformTriggerChamberEff(const char* outputDir)
 	SetGaliceFile(filename);
     }
 
+
     for (Int_t ievent=fFirstEvent; ievent<=fLastEvent; ievent++) { // event loop
 	Bool_t isClearEvent = kTRUE;
 
 	for(Int_t ch=0; ch<fgkNchambers; ch++){
 	    for(Int_t cath=0; cath<fgkNcathodes; cath++){
 		partNumOfTrig[ch][cath]=0;
-		match[ch][cath]=kFALSE;
-		for(Int_t itrack=0; itrack<kMaxNumOfTracks; itrack++){
-		    triggeredDigits[itrack][ch][cath]=-1;
-		    slatThatTriggered[itrack][ch][cath]=-1;
-		    for(Int_t loc=0; loc<4; loc++){
-			boardThatTriggered[itrack][ch][cath][loc]=-1;
-		    }
-		}
-		for(Int_t idig=0; idig<kMaxNumOfDigits; idig++){
-		    detElOfDigitsInData[idig][ch][cath]=-1;
-		}
+	    }
+	    for(Int_t itrack=0; itrack<2; itrack++){
+		triggeredDigits[itrack][ch]=-1;
 	    }
 	}
 
 	fRunLoader->GetEvent(ievent);
 	if (ievent%evtBeforePrint==0) printf("\t Event = %d\n",ievent);
 
-	fData->SetTreeAddress("RL");
+	fData->ResetDigits();
+	fData->ResetTrigger();
+	fData->ResetRecTriggerTracks();
+	fData->ResetRecTracks();
+
+	fData->SetTreeAddress("RL,RT");
 	fData->GetRecTriggerTracks();
 	recTrigTracksArray = fData->RecTriggerTracks();
 	Int_t nRecTrigTracks = (Int_t) recTrigTracksArray->GetEntriesFast();
@@ -477,9 +549,14 @@ void AliMUONTriggerChamberEff::PerformTriggerChamberEff(const char* outputDir)
 	for (Int_t iRecTrigTrack=0; iRecTrigTrack<nRecTrigTracks; iRecTrigTrack++) {
 	    for(Int_t cath=0; cath<fgkNcathodes; cath++){
 		digitPerTrack[cath]=0;
-		for(Int_t sta=0; sta<2; sta++){
-		    slatInPlane1[sta][cath] = -9999;
-		    iyDigitInPlane1[sta][cath] = -9999;
+	    }
+	    for(Int_t ch=0; ch<fgkNchambers; ch++){
+		for(Int_t cath=0; cath<fgkNcathodes; cath++){
+		    match[ch][cath]=kFALSE;
+		    slatThatTriggered[ch][cath]=-1;
+		    for(Int_t loc=0; loc<4; loc++){
+			boardThatTriggered[ch][cath][loc]=-1;
+		    }
 		}
 	    }
 
@@ -497,20 +574,15 @@ void AliMUONTriggerChamberEff::PerformTriggerChamberEff(const char* outputDir)
 	    for(Int_t ch=0; ch<fgkNchambers; ch++) {
 		zRealMatch[ch] = zMeanChamber[ch];
 		for(Int_t cath=0; cath<fgkNcathodes; cath++){
-		    trigScheme[iRecTrigTrack][ch][cath] = 0;
+		    trigScheme[ch][cath] = 0;
 		}
 	    }
 
 	    for(Int_t ch=0; ch<fgkNchambers; ch++) { // chamber loop
 		Int_t currCh = chOrder[ch];
-		Int_t ichamber = 10+currCh;
-		Int_t currStation = station[currCh];
-		TClonesArray* digits = fData->Digits(ichamber);
-		digits->Sort();
-		Int_t ndigits = (Int_t)digits->GetEntriesFast();
 		if(fDebugLevel>=2){
 		    if(fDebugLevel<3)printf("\tEvent = %i, Track = %i\n", ievent, iRecTrigTrack);
-		    printf("DigitNum: %i digits detected\n",ndigits);
+		    printf("zMeanChamber[%i] = %.2f\tzRealMatch[0] = %.2f\n",currCh,zMeanChamber[currCh],zRealMatch[0]);
 		}
 
 		for(Int_t cath=0; cath<fgkNcathodes; cath++){
@@ -522,200 +594,139 @@ void AliMUONTriggerChamberEff::PerformTriggerChamberEff(const char* outputDir)
 
 		// searching track intersection with chambers (first approximation)
 		Float_t deltaZ = zMeanChamber[currCh] - zMeanChamber[0];
-		trackIntersectCh[0][currCh] = zMeanChamber[currCh] * TMath::Tan(thetaX) * correctFactor[kNonBending];// x position (info from non-bending plane) 
-		trackIntersectCh[1][currCh] = y11 + deltaZ * TMath::Tan(thetaY) * correctFactor[kBending];// y position (info from bending plane)
+		trackIntersectCh[currCh][0] = zMeanChamber[currCh] * TMath::Tan(thetaX) * correctFactor[kNonBending];// x position (info from non-bending plane) 
+		trackIntersectCh[currCh][1] = y11 + deltaZ * TMath::Tan(thetaY) * correctFactor[kBending];// y position (info from bending plane)
+		Int_t detElemIdFromTrack = DetElemIdFromPos(trackIntersectCh[currCh][0], trackIntersectCh[currCh][1], 11+currCh, 0);
+		if(detElemIdFromTrack<0) {
+		    if(fDebugLevel>1) printf("Warning: trigger track outside trigger chamber\n");
+		    continue;
+		}
+		
+		triggeredDigits[1][currCh] = MatchingPad(detElemIdFromTrack, trackIntersectCh[currCh], kGeomTransformer, matchPad, nboard, zRealMatch, y11);
 
-		for(Int_t idigit=0; idigit<ndigits; idigit++) { // digit loop
-		    mDigit = (AliMUONDigit*)digits->At(idigit);
-		    for(Int_t loc=0; loc<4; loc++){
-			nboard[loc]=-1;
-		    }
-
-		    // searching loaded digit global position and dimension
-		    Int_t detElemId = mDigit->DetElemId();
-		    Int_t cathode = mDigit->Cathode();
-		    Int_t ix = mDigit->PadX();
-		    Int_t iy = mDigit->PadY();
-		    Float_t xpad, ypad, zpad;
-		    if(detElOfDigitsInData[idigit][ch][cathode]==-1)detElOfDigitsInData[idigit][ch][cathode] = detElemId;
-
-		    if(fDebugLevel>=2)printf("cathode = %i\n",cathode);
-		    const AliMpVSegmentation* seg = AliMpSegmentation::Instance()
-                      ->GetMpSegmentation(detElemId,AliMp::GetCathodType(cathode));
-
-		    AliMpPad pad = seg->PadByIndices(AliMpIntPair(ix,iy),kTRUE);
-		    for (Int_t loc=0; loc<pad.GetNofLocations(); loc++){
-			AliMpIntPair location = pad.GetLocation(loc);
-			nboard[loc] = location.GetFirst();
-		    }
-
-		    // get the pad position and dimensions
-		    Float_t xlocal1 = pad.Position().X();
-		    Float_t ylocal1 = pad.Position().Y();
-		    Float_t dpx = pad.Dimensions().X();
-		    Float_t dpy = pad.Dimensions().Y();
-
-		    kGeomTransformer->Local2Global(detElemId, xlocal1, ylocal1, 0, xpad, ypad, zpad);
-
-		    if(fDebugLevel>=3)printf("ch = %i\t cath = %i\tpad = (%4.1f, %4.1f, %4.1f)\tsize = (%3.1f, %3.1f)\n",currCh,cathode,xpad,ypad,zpad,dpx,dpy);
-
-		    // searching track intersection with chambers (second approximation)
-		    if(ch>=2){
-			deltaZ = zpad - zRealMatch[0];
-			trackIntersectCh[1][currCh] = y11 + deltaZ * TMath::Tan(thetaY) * correctFactor[kBending];// y position (info from bending plane)
-		    }
-
-		    // deciding if digit matches track
-		    Bool_t isDiffLocBoard = kFALSE;
-		    if(fReproduceTrigResponse)isDiffLocBoard = IsDiffLocalBoard(detElemId, iy, slatInPlane1[currStation][cathode], iyDigitInPlane1[currStation][cathode]);
-		    Bool_t matchPad = PadMatchTrack(xpad, ypad, dpx, dpy, trackIntersectCh[0][currCh], trackIntersectCh[1][currCh], currCh);
-
-		    if(matchPad && ch<2){
-			slatInPlane1[currStation][cathode] = detElemId;
-			iyDigitInPlane1[currStation][cathode] = iy;
-			if(fDebugLevel>=3)printf("slatInPlane1[%i][%i] = %i\tiyDigitInPlane1[%i][%i] = %i\n",currStation,cathode,slatInPlane1[currStation][cathode],currStation,cathode,iyDigitInPlane1[currStation][cathode]);
-		    }
-
-		    if(isDiffLocBoard && fDebugLevel>=1)printf("\tDifferent local board\n");
-
-		    match[currCh][cathode] = (matchPad && !isDiffLocBoard);
-
-		    if(match[currCh][cathode]){
-			digitPerTrack[cathode]++;
-			trigScheme[iRecTrigTrack][currCh][cathode]++;
-			triggeredDigits[iRecTrigTrack][currCh][cathode] = idigit;
-			slatThatTriggered[iRecTrigTrack][currCh][cathode] = detElemId;
-			for(Int_t loc=0; loc<4; loc++){
-			    boardThatTriggered[iRecTrigTrack][currCh][cathode][loc] = nboard[loc];
+		// deciding if digit matches track
+		Bool_t isDiffLocBoard = kFALSE;
+		if(fReproduceTrigResponse && ch>2){
+		    for(Int_t cath=0; cath<fgkNcathodes; cath++){
+			if(boardThatTriggered[currCh][cath][0]>=0){
+			    if(boardThatTriggered[currCh][cath][0]!=boardThatTriggered[currCh-1][cath][0]) isDiffLocBoard = kTRUE;
 			}
-			if(digitPerTrack[cathode]>4 && !fReproduceTrigResponse)isClearEvent = kFALSE;
 		    }
+		}
 
-		    // in case of match, store real z position of the chamber
-		    if(matchPad)zRealMatch[currCh] = zpad;
+		if(isDiffLocBoard && fDebugLevel>=1)printf("\tDifferent local board\n");
 
-		} // end digit loop
+		for(Int_t cath=0; cath<fgkNcathodes; cath++){
+		    match[currCh][cath] = (matchPad[cath] && !isDiffLocBoard);
+		    if(!match[currCh][cath]) continue;
+		    digitPerTrack[cath]++;
+		    trigScheme[currCh][cath]++;
+		    slatThatTriggered[currCh][cath] = detElemIdFromTrack;
+		    for(Int_t loc=0; loc<4; loc++){
+			boardThatTriggered[currCh][cath][loc] = nboard[cath][loc];
+		    }
+		}
 	    } // end chamber loop
 
 	    for(Int_t cath=0; cath<fgkNcathodes; cath++){
-		if(digitPerTrack[cath]<3 && !fReproduceTrigResponse)isClearEvent = kFALSE;
+		if(digitPerTrack[cath]<3)isClearEvent = kFALSE;
+		if(fDebugLevel>=1 && !isClearEvent)printf("Warning: found %i digits for trigger track cathode %i.\nRejecting event\n", digitPerTrack[cath],cath);
 	    }
 
-	    if(!isClearEvent && !fReproduceTrigResponse){ 
-		fData->ResetDigits();
-		continue;
-	    }
+	    if(!isClearEvent && !fReproduceTrigResponse) continue;
 
 	    Int_t commonDigits = 0;
-	    Int_t doubleTrack = -1;
-	    for(Int_t itrack=0; itrack<iRecTrigTrack; itrack++){
-		for(Int_t ch=0; ch<fgkNchambers; ch++){
-		    if(triggeredDigits[itrack][ch][kBending]==triggeredDigits[iRecTrigTrack][ch][kBending])commonDigits++;
-		}
-		if(commonDigits>=2){
-		    doubleCountTrack=kTRUE;
-		    doubleTrack = itrack;
-		    break;
-		}
+	    for(Int_t ch=0; ch<fgkNchambers; ch++){
+		if(triggeredDigits[1][ch]==triggeredDigits[0][ch]) commonDigits++; // Compare with previous track
+		triggeredDigits[0][ch] = triggeredDigits[1][ch]; // Store this track parameters for comparison with next one
+	    }
+	    if(commonDigits>=2){
+		doubleCountTrack=kTRUE;
 	    }
 
-	    for(Int_t cath=0; cath<fgkNcathodes; cath++){
-		if(!doubleCountTrack || fReproduceTrigResponse){
+	    if(!doubleCountTrack || fReproduceTrigResponse){
+		for(Int_t cath=0; cath<fgkNcathodes; cath++){
 		    Int_t is44 = 1;
-		    Bool_t goodForSlatEff=kTRUE;
-		    Bool_t goodForBoardEff=kTRUE;
-		    Int_t firstSlat=slatThatTriggered[iRecTrigTrack][0][cath]%100;
-		    if(firstSlat<0)firstSlat=slatThatTriggered[iRecTrigTrack][1][cath]%100;
-		    Int_t firstBoard=boardThatTriggered[iRecTrigTrack][0][0][0];
-		    if(firstBoard<0)firstBoard=boardThatTriggered[iRecTrigTrack][1][0][0];
+		    Bool_t goodForSlatEff = kTRUE;
+		    Bool_t goodForBoardEff = kTRUE;
+		    Int_t ineffSlat = -1;
+		    Int_t ineffDetElId = -1;
+		    Int_t firstSlat = slatThatTriggered[0][cath]%100;
+		    if(firstSlat<0) firstSlat=slatThatTriggered[1][cath]%100;
+		    Int_t firstBoard = boardThatTriggered[0][kBending][0];
+		    if(firstBoard<0) firstBoard=boardThatTriggered[1][kBending][0];
 		    for(Int_t ch=0; ch<fgkNchambers; ch++){
-			is44 *= trigScheme[iRecTrigTrack][ch][cath];
-			Int_t currSlat=slatThatTriggered[iRecTrigTrack][ch][cath]%100;
-			if(currSlat<0)continue;
+			Bool_t isCurrChIneff = kFALSE;
+			is44 *= trigScheme[ch][cath];
+			Int_t currSlat = slatThatTriggered[ch][cath]%100;
+			if(currSlat<0){
+			    ineffDetElId = DetElemIdFromPos(trackIntersectCh[ch][0], trackIntersectCh[ch][1], 11+ch, cath);
+			    currSlat = ineffDetElId%100;
+			    ineffSlat = currSlat;
+			    isCurrChIneff = kTRUE;
+			}
 			if(currSlat!=firstSlat)goodForSlatEff=kFALSE;
 			Bool_t atLeastOneLoc=kFALSE;
+			if(isCurrChIneff) LocalBoardFromPos(trackIntersectCh[ch][0], trackIntersectCh[ch][1], ineffDetElId, cath, ineffBoard);
 			for(Int_t loc=0; loc<4; loc++){
-			    Int_t currBoard = boardThatTriggered[iRecTrigTrack][ch][cath][loc];
+			    Int_t currBoard = boardThatTriggered[ch][cath][loc];
+			    if(isCurrChIneff) currBoard = ineffBoard[loc];
 			    if(currBoard==firstBoard){
 				atLeastOneLoc=kTRUE;
 				break;
 			    }
 			}
 			if(!atLeastOneLoc)goodForBoardEff=kFALSE;
+		    } // end chamber loop
+		    
+		    for(Int_t ch=0; ch<fgkNchambers; ch++){
+			if(match[ch][cath])partNumOfTrig[ch][cath]++;
 		    }
-		    if(fDebugLevel==1)printf("\tEvent = %i, Track = %i\n", ievent, iRecTrigTrack);
+
+		    // Trigger 4/4
 		    if(is44==1){
 			fTrigger44[cath]++;
 			if(fDebugLevel>=1)printf("Trigger44[%i] = %i\n",cath,fTrigger44[cath]);
 			if(goodForSlatEff){
 			    for(Int_t ch=0; ch<fgkNchambers; ch++){
-				for(Int_t slat=0; slat<fgkNslats; slat++){
-				    Int_t corrDetEl = (ch+11)*100 + slat;
-				    if(corrDetEl==slatThatTriggered[iRecTrigTrack][ch][cath]){
-					fHitPerSlat[ch][cath][slat]++;
-					if(fDebugLevel>=1)printf("Slat that triggered = %i\n",corrDetEl);
-					if(goodForBoardEff && firstBoard>0){
-					    fHitPerBoard[ch][cath][firstBoard-1]++;
-					    if(fDebugLevel>=1)printf("Board that triggered = %i\n",firstBoard);
-					}
-					else if(fDebugLevel>=1)printf("Event = %i, Track = %i: Particle crossed different boards: rejected!\n",ievent,iRecTrigTrack);
-				    }
+				fHitPerSlat[ch][cath][firstSlat]++;
+				if(fDebugLevel>=1)printf("Slat that triggered = %i\n",slatThatTriggered[ch][cath]);
+				if(goodForBoardEff && firstBoard>0){
+				    fHitPerBoard[ch][cath][firstBoard-1]++;
+				    if(fDebugLevel>=1)printf("Board that triggered = %i\n",firstBoard);
 				}
+				else if(fDebugLevel>=1)printf("Event = %i, Track = %i: Particle crossed different boards: rejected!\n",ievent,iRecTrigTrack);
 			    }
 			}
 			else printf("Event = %i, Track = %i: Particle crossed different slats: rejected!\n",ievent,iRecTrigTrack);
 		    }
-		    if(digitPerTrack[cath]==3){
-			for(Int_t ch=0; ch<fgkNchambers; ch++){
-			    if(match[ch][cath])partNumOfTrig[ch][cath]++;
-			    if(trigScheme[iRecTrigTrack][ch][cath]==0){
-				fTrigger34[ch][cath]++;
-				if(fDebugLevel>=1)printf("Trigger34[%i][%i] = %i\n",ch,cath,fTrigger34[ch][cath]);
-				if(!goodForSlatEff){
-				    printf("Event %i, Track = %i: Particle crossed different slats: rejected!\n",ievent,iRecTrigTrack);
-				    continue;
-				}
-				Int_t ineffSlat = DetElemIdFromPos(trackIntersectCh[0][ch], trackIntersectCh[1][ch], 11+ch, cath);
-				if(fDebugLevel>=1)printf("Slat non efficient = %i\n",ineffSlat);
-				if(ineffSlat>0){
-				    Int_t slatInCh = ineffSlat%100;
-				    fInefficientSlat[ch][cath][slatInCh]++;
-				    for(Int_t idig=0; idig<kMaxNumOfDigits; idig++){
-					if(ineffSlat==detElOfDigitsInData[idig][ch][cath])cout<<"Warning: "<<ineffSlat<<" is not inefficient!!!"<<endl;
-				    }
-				    LocalBoardFromPos(trackIntersectCh[0][ch], trackIntersectCh[1][ch], ineffSlat, cath, ineffBoard);
-				    Int_t boardNonEff=-1;
-				    for(Int_t loc=0; loc<4; loc++){
-					if(ineffBoard[loc]==firstBoard){
-					    boardNonEff=ineffBoard[loc];
-					    break;
-					}
-				    }
-				    if(fDebugLevel>=1)printf("Board non efficient = %i\n",boardNonEff);
-				    if(boardNonEff>0)fInefficientBoard[ch][cath][boardNonEff-1]++;
-				    else if(fDebugLevel>=1){
-					printf("Inefficient board should be %i.\tBoards found:\n", firstBoard);
-					for(Int_t loc=0; loc<4; loc++){
-					    printf("%i\t",ineffBoard[loc]);
-					}
-					printf("\n");
-				    }
-				    
-				}
+
+		    // Trigger 3/4
+		    if(ineffDetElId>0){
+			Int_t ineffCh = ineffDetElId/100-11;
+			fTrigger34[ineffCh][cath]++;
+			if(fDebugLevel>=1) printf("Trigger34[%i][%i] = %i\n",ineffCh,cath,fTrigger34[ineffCh][cath]);
+			if(goodForSlatEff){
+			    if(fDebugLevel>=1) printf("Slat non efficient = %i\n",ineffDetElId);
+			    fInefficientSlat[ineffCh][cath][ineffSlat]++;
+
+			    if(goodForBoardEff && firstBoard>0){
+				if(fDebugLevel>=1) printf("Board non efficient = %i\n",firstBoard);
+				fInefficientBoard[ineffCh][cath][firstBoard-1]++;
 			    }
+			    else if(fDebugLevel>=1) printf("Event = %i, Track = %i: Particle crossed different boards: rejected!\n",ievent,iRecTrigTrack);
 			}
+			else printf("Event %i, Track = %i: Particle crossed different slats: rejected!\n",ievent,iRecTrigTrack);
 		    }
-		}
-		else if(doubleCountTrack){
-		    if(fDebugLevel<=1)printf("\n\tEvent = %i, Track = %i: ", ievent,iRecTrigTrack);
-		    printf("Double Count Track: %i similar to %i. Track rejected!\n",iRecTrigTrack, doubleTrack);
-		}
+		} // end loop on cathodes
 	    }
-	}// end trigger tracks loop
-	if(nRecTrigTracks<=0){ 
-	    fData->ResetDigits();
-	    continue;
-	}
+	    else if(doubleCountTrack){
+		if(fDebugLevel<=1)printf("\n\tEvent = %i, Track = %i: ", ievent,iRecTrigTrack);
+		printf("Double Count Track: %i similar to %i. Track rejected!\n",iRecTrigTrack, iRecTrigTrack-1);
+	    }
+	} // end trigger tracks loop
+	if(nRecTrigTracks<=0) continue;
+
 	for(Int_t ch=0; ch<fgkNchambers; ch++){
 	    for(Int_t cath=0; cath<fgkNcathodes; cath++){
 		totNumOfTrig[ch][cath] += partNumOfTrig[ch][cath];
@@ -735,8 +746,6 @@ void AliMUONTriggerChamberEff::PerformTriggerChamberEff(const char* outputDir)
 	    InfoDigit();
 	    cout<<"\n"<<endl;
 	}
-
-	fData->ResetDigits();
     }// end event loop
     if(fFirstRun>=0)CleanGalice();
     } //end loop over run

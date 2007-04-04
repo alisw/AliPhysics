@@ -11,6 +11,7 @@
 
 #include <TObject.h>
 #include <TString.h>
+#include "AliMUONGeometryTransformer.h"
 
 class AliRunLoader;
 class AliMUONData;
@@ -36,19 +37,7 @@ public:
     {fDebugLevel=debugLevel;}
 
     void PerformTriggerChamberEff(const char* outputDir);
-    
-protected:
-    Bool_t PadMatchTrack(Float_t xPad, Float_t yPad, Float_t dpx, Float_t dpy,
-			 Float_t xTrackAtPad, Float_t yTrackAtPad, Int_t chamber);
-    Bool_t IsDiffLocalBoard(Int_t currDetElemId, Int_t iy, Int_t detElemIdP1, Int_t iyDigitP1) const;
-    void PrintTrigger(AliMUONGlobalTrigger *globalTrig);
-    void InfoDigit();
-    void CalculateEfficiency(Int_t trigger44, Int_t trigger34, Float_t &efficiency, Float_t &error, Bool_t failuresAsInput);
-    Int_t DetElemIdFromPos(Float_t x, Float_t y, Int_t chamber, Int_t cathode);
-    void LocalBoardFromPos(Float_t x, Float_t y, Int_t detElemId, Int_t cathode, Int_t localBoard[4]);
-    void ResetArrays();
-    void WriteOutput(const char* outputDir, Int_t totNumOfTrig[4][2], Int_t atLeast1MuPerEv[4][2]);
-    void WriteEfficiencyMap(const char* outputDir);
+
     
 private:
     /// Not implemented
@@ -82,6 +71,22 @@ private:
     Int_t fHitPerSlat[fgkNchambers][fgkNcathodes][fgkNslats];//!< Array counting # of times slats were efficient
     Int_t fInefficientBoard[fgkNchambers][fgkNcathodes][fgkNboards];//!< Array counting # of times boards were inefficient
     Int_t fHitPerBoard[fgkNchambers][fgkNcathodes][fgkNboards];//!< Array counting # of times boards were efficient
+
+    
+protected:
+    Int_t MatchingPad(Int_t &detElemId, Float_t coor[2], const AliMUONGeometryTransformer *kGeomTransformer,
+		      Bool_t isMatch[fgkNcathodes], Int_t nboard[fgkNcathodes][4], Float_t zRealMatch[fgkNchambers], Float_t y11);
+    Float_t PadMatchTrack(Float_t xPad, Float_t yPad, Float_t dpx, Float_t dpy,
+			 Float_t xTrackAtPad, Float_t yTrackAtPad, Int_t chamber);
+    void PrintTrigger(AliMUONGlobalTrigger *globalTrig);
+    void InfoDigit();
+    void CalculateEfficiency(Int_t trigger44, Int_t trigger34, Float_t &efficiency, Float_t &error, Bool_t failuresAsInput);
+    Int_t DetElemIdFromPos(Float_t x, Float_t y, Int_t chamber, Int_t cathode);
+    void LocalBoardFromPos(Float_t x, Float_t y, Int_t detElemId, Int_t cathode, Int_t localBoard[4]);
+    void ResetArrays();
+    void WriteOutput(const char* outputDir, Int_t totNumOfTrig[4][2], Int_t atLeast1MuPerEv[4][2]);
+    void WriteEfficiencyMap(const char* outputDir);
+    
 
     ClassDef(AliMUONTriggerChamberEff,0) // Dumper of MUON related data
 };
