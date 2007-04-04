@@ -18,7 +18,7 @@
 
 //==============================================================================
 //   AliAnalysysManager - Manager analysis class. Allows creation of several
-// analysis tasks and data containers storing their input/output. Allows 
+// analysis tasks and data containers storing their input/output. Allows
 // connecting/chaining tasks via shared data containers. Serializes the current
 // event for all tasks depending only on initial input data.
 //==============================================================================
@@ -83,7 +83,7 @@ AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
    fZombies    = new TObjArray();
    fContainers = new TObjArray();
    fInputs     = new TObjArray();
-   fOutputs    = new TObjArray();  
+   fOutputs    = new TObjArray();
 }
 
 //______________________________________________________________________________
@@ -176,7 +176,7 @@ void AliAnalysisManager::Init(TTree *tree)
    if (!top) {
       cout<<"Error: No top input container !" <<endl;
       return;
-   }   
+   }
    top->SetData(tree);
 }
 
@@ -200,7 +200,8 @@ void AliAnalysisManager::SlaveBegin(TTree *tree)
   // The tree argument is deprecated (on PROOF 0 is passed).
    if (fDebug > 1) {
       cout << "AliAnalysisManager::SlaveBegin()" << endl;
-   }   
+   }
+
    TIter next(fTasks);
    AliAnalysisTask *task;
    // Call CreateOutputObjects for all tasks
@@ -244,10 +245,9 @@ Bool_t AliAnalysisManager::Process(Long64_t entry)
   //  The entry is always the local entry number in the current tree.
   //  Assuming that fChain is the pointer to the TChain being processed,
   //  use fChain->GetTree()->GetEntry(entry).
-  
    if (fDebug > 1) {
       cout << "AliAnalysisManager::Process()" << endl;
-   }   
+   }
    GetEntry(entry);
    ExecAnalysis();
    return kTRUE;
@@ -263,9 +263,16 @@ void AliAnalysisManager::PackOutput(TList *target)
    if (!target) {
       Error("PackOutput", "No target. Aborting.");
       return;
-   }   
+   }
 
    if (fMode == kProofAnalysis) {
+      AliAnalysisDataContainer *top = (AliAnalysisDataContainer*)fInputs->At(0);
+      if (!top) {
+          cout<<"Error: No top input container !" <<endl;
+          return;
+      }
+      top->SetData(0);
+
       TIter next(fOutputs);
       AliAnalysisDataContainer *output;
       while ((output=(AliAnalysisDataContainer*)next())) {
@@ -276,8 +283,8 @@ void AliAnalysisManager::PackOutput(TList *target)
    } 
    fContainers->Clear();
    if (fDebug > 1) {
-      printf("   ->output list contains %d containers\n", target->GetSize());  
-   }   
+      printf("   ->output list contains %d containers\n", target->GetSize());
+   }
 }
 
 //______________________________________________________________________________
@@ -297,7 +304,7 @@ void AliAnalysisManager::ReplaceOutputContainers(TList *source)
       Int_t ntasks = fTasks->GetEntries();
       AliAnalysisTask *task;
       AliAnalysisDataSlot *oslot;
-      for (Int_t i=0; i<ntasks; i++) {  
+      for (Int_t i=0; i<ntasks; i++) {
          task = (AliAnalysisTask*)fTasks->At(i);
          Int_t nout = task->GetNoutputs();
          for (Int_t iout=0; iout<nout; iout++) {
@@ -324,20 +331,22 @@ void AliAnalysisManager::UnpackOutput(TList *source)
       printf("AliAnalysisManager::UnpackOutput(): %d containers\n", source->GetSize());
       printf("   Source list contains %d containers\n", source->GetSize());
    }   
-   TCollection *collection = source;
-   if (fMode == kLocalAnalysis) collection = fOutputs;
-   TIter next(collection);
 
    if (fMode == kProofAnalysis) {
       ReplaceOutputContainers(source);
       fOutputs->Clear();
-   }   
+   }
+
+   TCollection *collection = source;
+   if (fMode == kLocalAnalysis) collection = fOutputs;
+   TIter next(collection);
+
    AliAnalysisDataContainer *output;
    while ((output=(AliAnalysisDataContainer*)next())) {
       if (fMode == kProofAnalysis) {
          output->SetDataOwned(kTRUE);
          fOutputs->Add(output);
-      }   
+      }
       if (!output->GetData()) continue;
       // Check if the output need to be written to a file.
       const char *filename = output->GetFileName();
@@ -578,7 +587,7 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree)
             return;
          } 
          // Run tree-based analysis via AliAnalysisSelector  
-         gROOT->ProcessLine(".L ANALYSIS/AliAnalysisSelector.cxx+");
+         gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/AliAnalysisSelector.cxx+");
          cout << "===== RUNNING LOCAL ANALYSIS " << GetName() << " ON TREE " << tree->GetName() << endl;
          sprintf(line, "AliAnalysisSelector *selector = new AliAnalysisSelector((AliAnalysisManager*)0x%lx);",(ULong_t)this);
          gROOT->ProcessLine(line);

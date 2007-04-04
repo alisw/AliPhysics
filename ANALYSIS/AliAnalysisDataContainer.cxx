@@ -229,12 +229,12 @@ Long64_t AliAnalysisDataContainer::Merge(TCollection *list)
    if (!callEnv.IsValid() && !list->IsEmpty()) {
       cout << "No merge interface for data stored by " << GetName() << ". Merging not possible !" << endl;
       return 1;
-   }   
-   
+   }
+
    if (list->IsEmpty()) return 1;
 
    TIter next(list);
-   AliAnalysisDataContainer *cont;   
+   AliAnalysisDataContainer *cont;
    // Make a list where to temporary store the data to be merged.
    TList *collectionData = new TList();
    Int_t count = 0; // object counter
@@ -248,12 +248,12 @@ Long64_t AliAnalysisDataContainer::Merge(TCollection *list)
       printf(" ... merging object %s\n", data->GetName());
       collectionData->Add(data);
       count++;
-   }   
+   }
    callEnv.SetParam((Long_t) collectionData);
    callEnv.Execute(fData);
    delete collectionData;
-   
-   return count+1;   
+
+   return count+1;
 }
 
 //______________________________________________________________________________
@@ -274,7 +274,8 @@ void AliAnalysisDataContainer::PrintContainer(Option_t *option, Int_t indent) co
       printf("%s = Consumer tasks: ", ind.Data());
       if (!fConsumers || !fConsumers->GetEntriesFast()) printf("-none-\n");
       else printf("\n");
-   }   
+   }
+   printf("Filename: %s\n", fFileName.Data());
    TIter next(fConsumers);
    AliAnalysisTask *task;
    while ((task=(AliAnalysisTask*)next())) task->PrintTask(option, indent+3);
@@ -300,7 +301,7 @@ Bool_t AliAnalysisDataContainer::SetData(TObject *data, Option_t *)
          }
       }      
       return kTRUE;
-   } 
+   }
    // Check if it is the producer who published the data     
    if (fProducer->GetPublishedData()==data) {
       fData = data;

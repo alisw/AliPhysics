@@ -33,14 +33,14 @@ class AliAnalysisTask : public TTask {
   };   
 
  protected:
-  Bool_t                    fReady;      // Flag if the task is ready
-  Bool_t                    fInitialized; // True if Init() was called
-  Int_t                     fNinputs;    // Number of inputs
-  Int_t                     fNoutputs;   // Number of outputs
-  Bool_t                   *fOutputReady; //[fNoutputs] Flags for output readyness
-  TObject                  *fPublishedData; // !published data
-  TObjArray                *fInputs;     // Array of input slots
-  TObjArray                *fOutputs;    // Array of output slots
+  Bool_t                    fReady;         // Flag if the task is ready
+  Bool_t                    fInitialized;   // True if Init() was called
+  Int_t                     fNinputs;       // Number of inputs
+  Int_t                     fNoutputs;      // Number of outputs
+  Bool_t                   *fOutputReady;   //[fNoutputs] Flags for output readyness
+  TObject                  *fPublishedData; //! published data
+  TObjArray                *fInputs;        // Array of input slots
+  TObjArray                *fOutputs;       // Array of output slots
 
   // Define the input/output slots (called by user in the ctor of the derived class)
   //=== CALL IN THE CONSTRUCTOR OF DERIVED CLASS TO DEFINE INPUTS/OUTPUTS ===
