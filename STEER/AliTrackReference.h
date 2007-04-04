@@ -58,6 +58,13 @@ public:
   virtual Float_t LocalX() const {return fX*TMath::Cos(-Alpha()) - fY*TMath::Sin(-Alpha());}
   virtual Float_t LocalY() const {return fX*TMath::Sin(-Alpha()) + fY*TMath::Cos(-Alpha());}
 
+  Bool_t IsSortable() const {return kTRUE;}
+  Int_t Compare(const TObject *obj) const {
+    Int_t ll = ((AliTrackReference*)obj)->GetTrack();
+    if (ll == fTrack) return 0;
+    if (ll < fTrack) return 1;
+    if (ll > fTrack) return -1;
+  }
 
 protected:
   Int_t     fTrack;  // Track number
@@ -71,6 +78,6 @@ protected:
   Float_t   fTime;   // time of flight in cm  
   Int_t     fUserId; // optional Id defined by user
 
-  ClassDef(AliTrackReference,4)  //Base class for all Alice track references
+  ClassDef(AliTrackReference,5)  //Base class for all Alice track references
 };
 #endif
