@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.35  2007/04/04 16:26:38  acolla
+1. Re-organization of function calls in TestPreprocessor to make it more meaningful.
+2. Added missing dependency in test preprocessors.
+3. in AliShuttle.cxx: processing time and memory consumption info on a single line.
+
 Revision 1.34  2007/04/04 10:33:36  jgrosseo
 1) Storing of files to the Grid is now done _after_ your preprocessors succeeded. This is transparent, which means that you can still use the same functions (Store, StoreReferenceData) to store files to the Grid. However, the Shuttle first stores them locally and transfers them after the preprocessor finished. The return code of these two functions has changed from UInt_t to Bool_t which gives you the success of the storing.
 In case of an error with the Grid, the Shuttle will retry the storing later, the preprocessor does not need to be run again.
@@ -595,44 +600,36 @@ Bool_t AliShuttle::StoreRefFilesToGrid()
 	TString localBaseFolder = sto->GetBaseFolder();
 		
 	TString dir;
-	dir.Form("%s/%s", localBaseFolder.Data(), fCurrentDetector.Data());
+	dir.Form("%s/%s", localBaseFolder.Data(), GetOfflineDetName(fCurrentDetector));
 	
 	AliCDBStorage* gridSto = man->GetStorage(fgkMainRefStorage);
 	if (!gridSto)
 		return kFALSE;
 	TString gridBaseFolder = gridSto->GetBaseFolder();
 	TString alienDir;
-	alienDir.Form("%s%s", gridBaseFolder.Data(), fCurrentDetector.Data());
+	alienDir.Form("%s%s", gridBaseFolder.Data(), GetOfflineDetName(fCurrentDetector));
 	
-	if(!gGrid) 
+	if (!gGrid) 
 		return kFALSE;
 	
-	// check that DET folder exists, otherwise create it
-	TGridResult* result = gGrid->Ls(alienDir.Data());
-	
-	if(!result)
-		return kFALSE;
-	
-	if(!result->GetFileName(0)) {
-		if(!gGrid->Mkdir(alienDir.Data(),"",0)){
-			Log("SHUTTLE", Form("StoreRefFilesToGrid - Cannot create directory %s",
-					alienDir.Data()));
-			return kFALSE;
-		}
-		
-	}
-
 	TString begin;
 	begin.Form("%d_", GetCurrentRun());
 	
 	TSystemDirectory* baseDir = new TSystemDirectory("/", dir);
+	if (!baseDir)
+		return kTRUE;
+		
 	TList* dirList            = baseDir->GetListOfFiles();
 	if (!dirList)
+	{
+		delete baseDir;
 		return kTRUE;
+	}
 		
 	Int_t nDirs               = dirList->GetEntries();
 	
 	Bool_t success = kTRUE;
+	Bool_t first = kTRUE;
 	
 	for (Int_t iDir=0; iDir<nDirs; ++iDir)
 	{
@@ -646,6 +643,28 @@ Bool_t AliShuttle::StoreRefFilesToGrid()
 		TString fileName(entry->GetName());
 		if (!fileName.BeginsWith(begin))
 			continue;
+			
+		if (first)
+		{
+			first = kFALSE;
+			// check that DET folder exists, otherwise create it
+			TGridResult* result = gGrid->Ls(alienDir.Data(), "a");
+			
+			if (!result)
+				return kFALSE;
+			
+			if (!result->GetFileName(0)) 
+			{
+				if (!gGrid->Mkdir(alienDir.Data(),"",0))
+				{
+					Log("SHUTTLE", Form("StoreRefFilesToGrid - Cannot create directory %s",
+							alienDir.Data()));
+					delete baseDir;
+					return kFALSE;
+				}
+				
+			}
+		}
 			
 		TString fullLocalPath;
 		fullLocalPath.Form("%s/%s", dir.Data(), fileName.Data());
@@ -1007,6 +1026,7 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 	// read test mode if flag is set
 	if (fReadTestMode)
 	{
+		fTestMode = kNone;
 		TString logEntry(entry->GetRunParameter("log"));
 		//printf("log entry = %s\n", logEntry.Data());
 		TString searchStr("Testmode: ");
@@ -1035,6 +1055,8 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 			}
 		}
 	}
+	
+	Log("SHUTTLE", Form("The test mode flag is %d", (Int_t) fTestMode));
 	
 	fLogbookEntry->Print("all");
 
@@ -1274,13 +1296,14 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 
 	Bool_t processDCS = aPreprocessor->ProcessDCS();
 
-	if (!processDCS || fTestMode & kSkipDCS)
+	if (!processDCS || (fTestMode & kSkipDCS))
 	{
-		AliInfo("In TESTMODE - Skipping DCS processing!");
+		Log(fCurrentDetector, "In TESTMODE - Skipping DCS processing!");
 	} 
 	else if (fTestMode & kErrorDCS)
 	{
-		AliInfo("In TESTMODE - Simulating DCS error");
+		Log(fCurrentDetector, "In TESTMODE - Simulating DCS error");
+		UpdateShuttleStatus(AliShuttleStatus::kDCSStarted);
 		UpdateShuttleStatus(AliShuttleStatus::kDCSError);
 		return kFALSE;
 	} else {
