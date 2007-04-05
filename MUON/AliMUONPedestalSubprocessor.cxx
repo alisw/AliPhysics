@@ -26,7 +26,6 @@
 #include "AliLog.h"
 #include "AliMUON2DMap.h"
 #include "AliMUONCalibParamNF.h"
-#include "AliMUONConstants.h"
 #include "AliMUONObjectPair.h"
 #include "AliMUONPedestalSubprocessor.h"
 #include "AliMUONPreprocessor.h"
@@ -229,5 +228,6 @@ AliMUONPedestalSubprocessor::Print(Option_t* opt) const
   {
     AliMUONVCalibParam* value = static_cast<AliMUONVCalibParam*>(p->Value());
     value->Print(opt);
+    if (it->IsOwner()) delete p;
   }
 }

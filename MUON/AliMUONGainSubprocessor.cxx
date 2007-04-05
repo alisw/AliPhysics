@@ -242,5 +242,6 @@ AliMUONGainSubprocessor::Print(Option_t* opt) const
   {
     AliMUONVCalibParam* value = static_cast<AliMUONVCalibParam*>(p->Value());
     value->Print(opt);
+    if ( it->IsOwner() ) delete p;
   }
 }
