@@ -51,25 +51,15 @@
 
 #include "AliLog.h"
 #include "AliMUON2DMap.h"
-#include "AliMUONCalibParam1I.h"
+#include "AliMUONCalibParamNI.h"
+#include "AliMUONCalibrationData.h"
 #include "AliMUONObjectPair.h"
 #include "AliMUONV2DStore.h"
 #include "AliMUONVCalibParam.h"
 #include "AliMUONVDataIterator.h"
-#include "AliMpArea.h"
-#include "AliMpConstants.h"
-#include "AliMpDEManager.h"
-#include "AliMpPad.h"
-#include "AliMpSegmentation.h"
-#include "AliMpStationType.h"
-#include "AliMpVPadIterator.h"
-#include "AliMpVSegmentation.h"
+#include "AliMpIntPair.h"
 #include <Riostream.h>
-#include <TMath.h>
-#include <TObjArray.h>
 #include <TStopwatch.h>
-#include <map>
-#include <utility>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONPadStatusMapMaker)
@@ -77,21 +67,12 @@ ClassImp(AliMUONPadStatusMapMaker)
 
 Int_t AliMUONPadStatusMapMaker::fgkSelfDead = 1;
 
-namespace
-{
-  Bool_t IsZero(Double_t x)
-  {
-    return TMath::Abs(x) < AliMpConstants::LengthTolerance();
-  }
-}
-
 //_____________________________________________________________________________
-AliMUONPadStatusMapMaker::AliMUONPadStatusMapMaker() 
+AliMUONPadStatusMapMaker::AliMUONPadStatusMapMaker(const AliMUONCalibrationData& calibData) 
 : TObject(),
 fStatus(0x0),
 fMask(0),
-fSegmentation(0x0),
-fTimerComputeStatusMap(0x0)
+fCalibrationData(calibData)
 {
   /// ctor
 }
@@ -100,70 +81,55 @@ fTimerComputeStatusMap(0x0)
 AliMUONPadStatusMapMaker::~AliMUONPadStatusMapMaker()
 {
   /// dtor
-  delete fTimerComputeStatusMap;
 }
 
 //_____________________________________________________________________________
 Int_t
-AliMUONPadStatusMapMaker::ComputeStatusMap(const TObjArray& neighbours,
-                                           Int_t detElemId) const
+AliMUONPadStatusMapMaker::ComputeStatusMap(const AliMUONVCalibParam& neighbours,
+                                          Int_t manuChannel,
+                                          Int_t detElemId) const
 {
   /// Given a list of neighbours of one pad (which includes the pad itself)
   /// compute the status map (aka deadmap) for that pad.
   
-  fTimerComputeStatusMap->Start(kFALSE);
-  
   Int_t statusMap(0);
-  
- //Compute the statusmap related to the status of neighbouring
- //pads. An invalid pad means "outside of edges".
-  Int_t i(0);
-  TIter next(&neighbours);
-  AliMpPad* p;
-  
-  while ( ( p = static_cast<AliMpPad*>(next()) ) )
+
+  //Compute the statusmap related to the status of neighbouring
+  //pads. An invalid pad means "outside of edges".
+
+  Int_t n = neighbours.Dimension();
+  for ( Int_t i = 0; i < n; ++i )
   {
+    Int_t x = neighbours.ValueAsInt(manuChannel,i);
+    Int_t m,c;
+    neighbours.UnpackValue(x,m,c);
+    if ( c < 0 ) continue;
     Int_t status = 0;
-    if ( !p->IsValid() )
+    if ( !m )
     {
       status = -1;
     }
     else
     {
-      status = GetPadStatus(detElemId,*p);
+      status = GetPadStatus(detElemId,m,c);
     }
     if ( ( fMask==0 && status !=0 ) || ( (status & fMask) != 0 ) )
     {
       statusMap |= (1<<i);
     }
-    ++i;
   }
-  
-  fTimerComputeStatusMap->Stop();
   return statusMap;
 }
 
 //_____________________________________________________________________________
 Int_t
-AliMUONPadStatusMapMaker::GetPadStatus(Int_t detElemId,
-                                      const AliMpPad& pad) const
+AliMUONPadStatusMapMaker::GetPadStatus(Int_t detElemId, 
+                                       Int_t manuId, Int_t manuChannel) const
+                                      
 {
   /// Get the pad status
-  Int_t manuId = pad.GetLocation().GetFirst();
-  Int_t manuChannel = pad.GetLocation().GetSecond();
   AliMUONVCalibParam* param = static_cast<AliMUONVCalibParam*>(fStatus->Get(detElemId,manuId));
   return param->ValueAsInt(manuChannel);
-}
-
-//_____________________________________________________________________________
-Bool_t
-AliMUONPadStatusMapMaker::IsValid(const AliMpPad& pad, 
-                                  const TVector2& shift) const
-{
-  /// Whether pad.Position()+shift is within the detector
-  TVector2 testPos = pad.Position() - pad.Dimensions() + shift;
-  AliMpPad p = fSegmentation->PadByPosition(testPos,kFALSE);
-  return p.IsValid();
 }
 
 //_____________________________________________________________________________
@@ -172,7 +138,7 @@ AliMUONPadStatusMapMaker::MakeEmptyPadStatusMap()
 {
   /// Make an empty (but complete) statusMap
   
-  AliMUONCalibParam1I param(64,0);
+  AliMUONCalibParamNI param(1,64,0);
   
   return AliMUON2DMap::Generate(param);
 }
@@ -190,14 +156,10 @@ AliMUONPadStatusMapMaker::MakePadStatusMap(const AliMUONV2DStore& status,
   fStatus = &status;
   fMask = mask;
   
-  AliMpExMap chamberTimers(kTRUE);
-  fTimerComputeStatusMap = new TStopwatch;
-  fTimerComputeStatusMap->Start(kTRUE);
-  fTimerComputeStatusMap->Stop();
-  
-  TStopwatch timer;
-  
+  TStopwatch timer;  
   timer.Start(kTRUE);
+  
+  AliMUONV2DStore* neighbourStore = fCalibrationData.Neighbours();
   
   AliMUONV2DStore* statusMap = status.CloneEmpty();
   
@@ -208,26 +170,9 @@ AliMUONPadStatusMapMaker::MakePadStatusMap(const AliMUONV2DStore& status,
   {
     AliMpIntPair* ip = static_cast<AliMpIntPair*>(pair->First());
 
-    Int_t detElemId = ip->GetFirst();
-    
+    Int_t detElemId = ip->GetFirst();    
     Int_t manuId = ip->GetSecond();
-    Int_t chamber = AliMpDEManager::GetChamberId(detElemId);
-    
-    TStopwatch* chTimer = static_cast<TStopwatch*>(chamberTimers.GetValue(chamber));
-    if (!chTimer)
-    {
-      chTimer = new TStopwatch;
-      chTimer->Start(kTRUE);
-      chTimer->Stop();
-      chamberTimers.Add(chamber,chTimer);
-    }
-    
-    chTimer->Start(kFALSE);
-    
-    const AliMpVSegmentation* seg = 
-      AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(detElemId,manuId);
-    fSegmentation = seg;
-    
+        
     AliMUONVCalibParam* statusEntry = static_cast<AliMUONVCalibParam*>(pair->Second());
     
     AliMUONVCalibParam* statusMapEntry = static_cast<AliMUONVCalibParam*>
@@ -235,8 +180,18 @@ AliMUONPadStatusMapMaker::MakePadStatusMap(const AliMUONV2DStore& status,
 
     if (!statusMapEntry)
     {
-      statusMapEntry = new AliMUONCalibParam1I(64,0);
+      statusMapEntry = new AliMUONCalibParamNI(1,64,0);
       statusMap->Set(detElemId,manuId,statusMapEntry,false);
+    }
+    
+    AliMUONVCalibParam* neighbours = static_cast<AliMUONVCalibParam*>
+      (neighbourStore->Get(detElemId,manuId));
+    
+    if (!neighbours)
+    {
+      AliFatal(Form("Could not find neighbours for DE %d manuId %d",
+                    detElemId,manuId));
+      continue;
     }
     
     for ( Int_t manuChannel = 0; manuChannel < statusEntry->Size(); ++manuChannel ) 
@@ -244,47 +199,36 @@ AliMUONPadStatusMapMaker::MakePadStatusMap(const AliMUONV2DStore& status,
       // Loop over channels and for each channel loop on its immediate neighbours
       // to produce a statusMap word for this channel.
       
-      AliMpPad pad = seg->PadByLocation(AliMpIntPair(manuId,manuChannel),kFALSE);
-      
       Int_t statusMapValue(0);
+
+      Int_t x = neighbours->ValueAsInt(manuChannel,0);
       
-      if ( pad.IsValid() )
-      {
-        TObjArray neighbours;
-        neighbours.SetOwner(kTRUE);
-        fSegmentation->GetNeighbours(pad,neighbours,true,true);
-        statusMapValue = ComputeStatusMap(neighbours,detElemId);      
+      if ( x > 0 )
+      { // channel is a valid one (i.e. (manuId,manuChannel) is an existing pad)
+        // assert(x>=0);
+        statusMapValue = ComputeStatusMap(*neighbours,manuChannel,detElemId);
       }
       else
       {
         statusMapValue = fgkSelfDead;
       }
+      
       statusMapEntry->SetValueAsInt(manuChannel,0,statusMapValue);
     }
-    chTimer->Stop();
+    
+    if (it->IsOwner()) delete pair;
   }
   
   delete it;
-  
-  TExMapIter cit = chamberTimers.GetIterator();
-  
-  Long_t key, value;
-  
-  while ( cit.Next(key,value) ) 
-  {
-    TStopwatch* t = reinterpret_cast<TStopwatch*>(value);
-    cout << Form("Chamber %2ld CPU time/manu %5.0f ms ",key,t->CpuTime()*1e3/t->Counter());
-    t->Print();
-  }
 
-  cout << "ComputeStatusMap timer : ";
-  fTimerComputeStatusMap->Print();
-  cout<< endl;
+  timer.Stop();
   
-  cout << "MakePadStatusMap total timer : ";
-  timer.Print();
-  cout << endl;
-  
+  StdoutToAliInfo(
+                  cout << "MakePadStatusMap total timer : ";
+                  timer.Print();
+                  cout << endl;
+                  );
+
   return statusMap;
 }
 

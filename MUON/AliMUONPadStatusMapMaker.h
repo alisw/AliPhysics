@@ -16,17 +16,18 @@
 #  include "TObject.h"
 #endif
 
+class AliMUONCalibrationData;
 class AliMUONV2DStore;
+class AliMUONVCalibParam;
 class AliMpPad;
-class TObjArray;
 class AliMpVSegmentation;
+class TObjArray;
 class TVector2;
-class TStopwatch;
 
 class AliMUONPadStatusMapMaker : public TObject
 {
 public:
-  AliMUONPadStatusMapMaker();
+  AliMUONPadStatusMapMaker(const AliMUONCalibrationData& calibData);
   virtual ~AliMUONPadStatusMapMaker();
   
   /// Return status bit map to tell a pad is bad
@@ -45,18 +46,16 @@ private:
   AliMUONPadStatusMapMaker& operator=(const AliMUONPadStatusMapMaker&);
 
 private:
-  Int_t ComputeStatusMap(const TObjArray& neighbours, Int_t detElemId) const;
+  Int_t ComputeStatusMap(const AliMUONVCalibParam& neighbours, 
+                        Int_t manuChannel, Int_t detElemId) const;
   
-  Int_t GetPadStatus(Int_t detElemId, const AliMpPad& pad) const;
-  
-  Bool_t IsValid(const AliMpPad& pad, const TVector2& shift) const;
+  Int_t GetPadStatus(Int_t detElemId, Int_t manuId, Int_t manuChannel) const;
   
 private:
     static Int_t fgkSelfDead; //!< status bit map to tell a pad is bad
   const AliMUONV2DStore* fStatus; //!< status store
   Int_t fMask; //!< mask to be tested
-  const AliMpVSegmentation* fSegmentation; //!< segmentation of current de
-  
+
   /// Bit numbers
   enum EBitNumbers
   {
@@ -70,8 +69,7 @@ private:
     kRightBit = 17,
     kRightTopBit = 18
   };
-  
-  TStopwatch* fTimerComputeStatusMap; //!< to time the ComputeStatusMap() method
+  const AliMUONCalibrationData& fCalibrationData; //!< to access neighbourStore
   
   ClassDef(AliMUONPadStatusMapMaker,0) // Pad status map maker
 };
