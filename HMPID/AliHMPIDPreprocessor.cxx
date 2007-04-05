@@ -38,6 +38,7 @@ UInt_t AliHMPIDPreprocessor::Process(TMap* pMap)
 //    delete list;
 //  }
 
+
   if(!pMap)  return 0;                    //no DCS map provided 
   Double_t sor=0,eor=1500;
 
@@ -86,10 +87,12 @@ UInt_t AliHMPIDPreprocessor::Process(TMap* pMap)
   arQthre.Print();
 //  Store("Calib", "Press" , &arPress , &metaData); 
 //  Store("Calib", "Tmean" , &arTmean , &metaData); 
-  Store("Calib", "Qthre" , &arQthre , &metaData); 
-  Store("Calib", "Nmean" , &arNmean , &metaData); 
-  AliInfo("End.");  
-  return 1;
+
+  if( Store("Calib", "Qthre" , &arQthre , &metaData) == kTRUE && Store("Calib", "Nmean" , &arNmean , &metaData) == kTRUE ) return 0;   //clm: compatibility with new Store and preprocessor requirement
+  else return 0;
+  
+  //  AliInfo("End.");  
 
 }//Process()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  
