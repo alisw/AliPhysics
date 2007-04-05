@@ -50,10 +50,14 @@ class AliMUONRawStreamTracker: public TObject {
     /// Set object for reading the raw data
     void SetReader(AliRawReader* rawReader) {fRawReader = rawReader;}
 
-    /// Return pointer for buspatch structure
-    AliMUONDDLTracker*      GetDDLTracker()   const {return fPayload->GetDDLTracker();}
+    /// Return pointer for DDL
+    AliMUONDDLTracker*      GetDDLTracker() const {return fPayload->GetDDLTracker();}
+
+    /// Return pointer for payload
+    AliMUONPayloadTracker*  GetPayLoad()    const {return fPayload;}
+
     /// Return number of DDL
-    Int_t                   GetDDL()          const {return fDDL - 1;}
+    Int_t                   GetDDL()        const {return fDDL - 1;}
 
   private :
     /// Not implemented

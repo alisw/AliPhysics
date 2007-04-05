@@ -179,13 +179,13 @@ Bool_t AliMUONRawStreamTracker::NextDDL()
   fRawReader->Reset();
   fRawReader->Select("MUONTRK", fDDL, fDDL);  //Select the DDL file to be read  
 
-  fRawReader->ReadHeader();
+  if(!fRawReader->ReadHeader()) return kFALSE;
 
   Int_t totalDataWord  = fRawReader->GetDataSize(); // in bytes
 
   UInt_t *buffer = new UInt_t[totalDataWord/4];
 
-  fRawReader->ReadNext((UChar_t*)buffer, totalDataWord); 
+  if(!fRawReader->ReadNext((UChar_t*)buffer, totalDataWord)) return kFALSE;
 
   fPayload->Decode(buffer, totalDataWord/4);
 
