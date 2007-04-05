@@ -6,7 +6,7 @@
 
 // $Id$
 
-/// \ingroup base
+/// \ingroup calib
 /// \class AliMUON1DMapIterator
 /// \brief Implementation of AliMUONVDataIterator for 1D maps
 /// 
@@ -35,13 +35,15 @@ public:
   /** The object returned by this iterator is an AliMUONObjectPair(TObject* key,TObject* value)
     where key is an AliMpIntPair (i,0), and value is 
     an AliMUONVCalibParam.
-    The returned object must be deleted by the user.
+    The returned object must be deleted by the user (as advertised by the IsOwner method below)
     */
   virtual TObject* Next();
   
   virtual void Reset(); 
   
   virtual Bool_t Remove();
+  
+  virtual Bool_t IsOwner() const { return kTRUE; }
   
 private:
   /// copy ctor will not implemented
