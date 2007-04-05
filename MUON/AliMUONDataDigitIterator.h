@@ -33,6 +33,8 @@ public:
   
   Bool_t Remove();
   
+  Bool_t IsOwner() const { return kFALSE; }
+  
 private:
     void CopyTo(AliMUONDataDigitIterator& destination) const;
   
