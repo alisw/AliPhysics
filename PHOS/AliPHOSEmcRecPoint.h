@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.35  2007/03/06 06:47:28  kharlov
+ * DP:Possibility to use actual vertex position added
+ *
  * Revision 1.34  2005/05/28 14:19:04  schutz
  * Compilation warnings fixed by T.P.
  *
@@ -81,6 +84,9 @@ public:
   Float_t     GetM4z()   const {return fM4z;  } // Get forth  Z-moment
   Float_t     GetPhixe() const {return fPhixe;} // Get angle between center gravity and eigen vector
 
+  Float_t     GetDistanceToBadCrystal() const {return fDistToBadCrystal;}
+  void        SetDistanceToBadCrystal(Float_t dist) {fDistToBadCrystal=dist;}
+
   AliPHOSEmcRecPoint & operator = (const AliPHOSEmcRecPoint & /*rvalue*/)  { return *this ; }
 
  protected:
@@ -104,10 +110,11 @@ public:
   Float_t fM3x;               // Third  moment along X axis
   Float_t fM4z;               // Forth  moment along Z axis
   Float_t fPhixe;             // Angle between center-gravity vector and eigen vector
+  Float_t fDistToBadCrystal;  // Distance to nearest bad crystal
 
   Int_t fDebug;               //! debug level (0 - no output)
   
-  ClassDef(AliPHOSEmcRecPoint,2)  // EMC RecPoint (cluster)
+  ClassDef(AliPHOSEmcRecPoint,3)  // EMC RecPoint (cluster)
 
 };
 

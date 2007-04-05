@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.56  2007/03/06 06:47:28  kharlov
+ * DP:Possibility to use actual vertex position added
+ *
  * Revision 1.55  2007/01/19 20:31:19  kharlov
  * Improved formatting for Print()
  *
@@ -63,7 +66,7 @@ AliPHOSEmcRecPoint::AliPHOSEmcRecPoint() :
   fCoreEnergy(0.), fDispersion(0.),
   fEnergyList(0), fTime(-1.), fNExMax(0),
   fM2x(0.), fM2z(0.), fM3x(0.), fM4z(0.),
-  fPhixe(0.), fDebug(0)
+  fPhixe(0.), fDistToBadCrystal(-1),fDebug(0)
 {
   // ctor
   fMulDigit   = 0 ;  
@@ -77,7 +80,7 @@ AliPHOSEmcRecPoint::AliPHOSEmcRecPoint(const char * opt) :
   fCoreEnergy(0.), fDispersion(0.),
   fEnergyList(0), fTime(-1.), fNExMax(0),
   fM2x(0.), fM2z(0.), fM3x(0.), fM4z(0.),
-  fPhixe(0.), fDebug(0)
+  fPhixe(0.), fDistToBadCrystal(-1), fDebug(0)
 {
   // ctor
   fMulDigit   = 0 ;  
@@ -91,7 +94,7 @@ AliPHOSEmcRecPoint::AliPHOSEmcRecPoint(const AliPHOSEmcRecPoint & rp) :
   fCoreEnergy(rp.fCoreEnergy), fDispersion(rp.fDispersion),
   fEnergyList(0), fTime(rp.fTime), fNExMax(rp.fNExMax),
   fM2x(rp.fM2x), fM2z(rp.fM2z), fM3x(rp.fM3x), fM4z(rp.fM4z),
-  fPhixe(rp.fPhixe), fDebug(rp.fDebug)
+  fPhixe(rp.fPhixe), fDistToBadCrystal(rp.fDistToBadCrystal), fDebug(rp.fDebug)
 {
   // cpy ctor
   fMulDigit   = rp.fMulDigit ;  
