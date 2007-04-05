@@ -179,22 +179,6 @@ AliMUONCheck::AliMUONCheck(const char* galiceFile, const char* galiceFileSim, co
 }
 
 //_____________________________________________________________________________
-AliMUONCheck::AliMUONCheck(const AliMUONCheck& rhs) : TObject(rhs)
-{
-  /// copy ctor
-  AliFatal("Implement me if needed");
-}
-
-//_____________________________________________________________________________
-AliMUONCheck& 
-AliMUONCheck::operator=(const AliMUONCheck&)
-{
-  /// assignement operator
-  AliFatal("Implement me if needed")
-  return *this;
-}
-
-//_____________________________________________________________________________
 AliMUONCheck::~AliMUONCheck()
 {
 /// Destructor
