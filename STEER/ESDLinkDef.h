@@ -59,11 +59,6 @@
 
 #pragma link C++ class  AliRawDataErrorLog+;
 
-#ifdef WITHXML
-#pragma link C++ class AliTagAnalysis+;
-#pragma link C++ class AliXMLCollection+;
-#endif
-
 #endif
 
 
