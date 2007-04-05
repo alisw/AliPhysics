@@ -51,14 +51,6 @@ public:
   AliHLTLogging& operator=(const AliHLTLogging&);
   virtual ~AliHLTLogging();
 
-  // logging filter for all objects
-  //
-  static AliHLTComponentLogSeverity SetGlobalLogLevel(AliHLTComponentLogSeverity iLogFilter) {fGlobalLogFilter=iLogFilter; return fGlobalLogFilter;}
-
-  // logging filter for individual object
-  //
-  AliHLTComponentLogSeverity SetLocalLogLevel(AliHLTComponentLogSeverity iLogFilter) {fLocalLogFilter=iLogFilter; return fLocalLogFilter;}
-
   // set the default key word
   // the keyword is intended to simplify the use of logging macros
   // 
@@ -99,10 +91,12 @@ public:
   int CheckFilter(AliHLTComponentLogSeverity severity) const;
 
   // set global logging level
+  // logging filter for all objects
   //
   static void SetGlobalLoggingLevel(AliHLTComponentLogSeverity level);
 
   // set local logging level
+  // logging filter for individual object
   //
   void SetLocalLoggingLevel(AliHLTComponentLogSeverity level);
 

@@ -164,7 +164,7 @@ int AliHLTLogging::Message(void *param, AliHLTComponentLogSeverity severity,
   }
   TString out="HLT Log ";
   out+=strSeverity;
-  if (origin) {out+=": "; out+=origin;}
+  if (origin && origin[0]!=0) {out+=": <"; out+=origin; out+="> ";}
   out+=" "; out+=message;
   if (keyword!=NULL && strcmp(keyword, HLT_DEFAULT_LOG_KEYWORD)!=0) {
     out+=" ("; out+=keyword; out +=")";

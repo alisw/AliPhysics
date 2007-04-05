@@ -75,7 +75,7 @@ ClassImp(AliHLTTPCDisplayMain)
 AliHLTTPCDisplayMain::AliHLTTPCDisplayMain(void* pt2GUI, void (*pt2Function)(void*, Int_t)) {
   //constructor
 
-  AliHLTLogging::SetGlobalLogLevel(kHLTLogError);
+  AliHLTLogging::SetGlobalLoggingLevel(kHLTLogError);
 
   fCanvasArray = new TCanvas* [nCanvasTypes];
   fWorkerArray = new void* [nWorkerTypes]; 
