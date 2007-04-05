@@ -72,14 +72,14 @@ UInt_t AliMUONGMSSubprocessor::ProcessFile(const TString& fileName)
   TFile f(fileName.Data());
   if ( ! f.IsOpen() ) {
     Master()->Log(Form("Cannot open file %s",fileName.Data()));
-    return 0;
+    return 1;
   }  
   
   // Get array with matrices
   TClonesArray* array = (TClonesArray*)f.Get(fgkMatrixArrayName);
   if ( ! array ) {
     Master()->Log(Form("TClonesArray not found in file %s",fileName.Data()));
-    return 0;
+    return 2;
   }  
   
   // Convert matrices into Alice alignment objects
@@ -96,12 +96,12 @@ UInt_t AliMUONGMSSubprocessor::ProcessFile(const TString& fileName)
   metaData.SetResponsible("");
   metaData.SetComment("This preprocessor fills GMS alignment objects.");
 
-  UInt_t result = Master()->Store("SHUTTLE", "GMS", data, &metaData, 0, 0);
+  Bool_t result = Master()->Store("SHUTTLE", "GMS", data, &metaData, 0, 0);
 
   // Clear MisAlignArray in transformer
   fTransformer.ClearMisAlignmentData();
 
-  return result;
+  return (result!=kTRUE);
 }  
 
 //

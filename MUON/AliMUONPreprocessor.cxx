@@ -42,7 +42,8 @@ ClassImp(AliMUONPreprocessor)
 //_____________________________________________________________________________
 AliMUONPreprocessor::AliMUONPreprocessor(const char* detName, AliShuttleInterface* shuttle)
 : AliPreprocessor(detName, shuttle),
-  fSubprocessors(new TObjArray())
+  fSubprocessors(new TObjArray()),
+  fProcessDCS(kFALSE)
 {
   /// ctor
 }
@@ -60,14 +61,16 @@ AliMUONPreprocessor::ClearSubprocessors()
 {
   /// Empty our subprocessor list
   fSubprocessors->Clear();
+  fProcessDCS = kFALSE;
 }
 
 //_____________________________________________________________________________
 void
-AliMUONPreprocessor::Add(AliMUONVSubprocessor* sub)
+AliMUONPreprocessor::Add(AliMUONVSubprocessor* sub, Bool_t processDCS)
 {
   /// Add a subprocessor to our list of workers
   fSubprocessors->Add(sub);
+  if ( processDCS == kTRUE ) fProcessDCS = processDCS;
 }
 
 //_____________________________________________________________________________

@@ -89,7 +89,8 @@ AliMUONTrackerPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTi
   }
   else if ( runType == "PHYSICS" ) // FIXME : check the name
   {
-    Add(fHVSubprocessor); // to be called only for physics runs
+    Bool_t useDCS(kTRUE);
+    Add(fHVSubprocessor,useDCS); // to be called only for physics runs
     Log("INFO-Will run HV subprocessor");
   }
   else

@@ -121,7 +121,7 @@ AliMUONPedestalSubprocessor::Process(TMap* /*dcsAliasMap*/)
   {
     // this is the only reason to fail for the moment : getting no pedestal
     // at all.
-    return 0;
+    return 1;
   }
     
   AliMUON2DStoreValidator validator;
@@ -156,9 +156,9 @@ AliMUONPedestalSubprocessor::Process(TMap* /*dcsAliasMap*/)
 	metaData.SetComment("Computed by AliMUONPedestalSubprocessor $Id$");
   
   Bool_t validToInfinity = kTRUE;
-	UInt_t result = Master()->Store("Calib", "Pedestals", fPedestals, &metaData, 0, validToInfinity);
+	Bool_t result = Master()->Store("Calib", "Pedestals", fPedestals, &metaData, 0, validToInfinity);
   
-  return result;  
+  return ( result != kTRUE ); // return 0 if everything is ok.  
 }
 
 //_____________________________________________________________________________

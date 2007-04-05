@@ -105,9 +105,10 @@ void TestMUONPreprocessor(Int_t runNumber=80)
   // To test it, we must provide the run parameters manually. They will be retrieved in the preprocessor
   // using GetRunParameter function.
   // In real life the parameters will be retrieved automatically from the run logbook;
-//  shuttle->AddInputRunType("MCH", "PEDESTAL_RUN"); 
-  shuttle->AddInputRunType("MCH","ELECTRONICS_CALIBRATION_RUN");
-  // shuttle->AddInputRunType("MCH", "GMS"); 
+  shuttle->SetInputRunType("PEDESTAL_RUN"); 
+  //shuttle->SetInputRunType("ELECTRONICS_CALIBRATION_RUN");
+  //shuttle->SetInputRunType("GMS"); 
+  //shuttle->SetInputRunType("PHYSICS");
   // PEDESTAL_RUN -> pedestals
   // ELECTRONICS_CALIBRATION_RUN -> gains
   // PHYSICS ? -> HV
@@ -134,8 +135,6 @@ TMap* CreateDCSAliasMap()
   
   TMap* aliasMap = new TMap;
   aliasMap->SetOwner(kTRUE);
-  
-  return aliasMap;
   
   TRandom random(0);
   

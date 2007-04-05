@@ -26,6 +26,8 @@ public:
   virtual UInt_t Process(TMap* dcsAliasMap);
   virtual void Print(Option_t* opt="") const;
   
+  virtual Bool_t ProcessDCS() { return fProcessDCS; }
+
   /// Publish AliPreprocessor::Log function
   void Log(const char* message) { AliPreprocessor::Log(message); }
   
@@ -34,7 +36,7 @@ public:
   { return AliPreprocessor::GetFileSources(system,id); }
 
   /// Publish AliPreprocessor::Store function
-  UInt_t Store(const char* pathLevel2, const char* pathLevel3, TObject* object,
+  Bool_t Store(const char* pathLevel2, const char* pathLevel3, TObject* object,
                AliCDBMetaData* metaData, 
                Int_t validityStart = 0, Bool_t validityInfinite = kFALSE)
   {
@@ -52,7 +54,7 @@ protected:
   AliMUONPreprocessor(const char* detName, AliShuttleInterface* shuttle);
   virtual ~AliMUONPreprocessor();
   
-  void Add(AliMUONVSubprocessor* subProcessor); 
+  void Add(AliMUONVSubprocessor* subProcessor, Bool_t processDCS=kFALSE); 
   void ClearSubprocessors();
   
 private:
@@ -66,8 +68,9 @@ private:
 private:
 
   TObjArray* fSubprocessors; //!< sub processors to execute
+  Bool_t fProcessDCS; //!< whether the current subprocessor(s) needs DCS or not
   
-  ClassDef(AliMUONPreprocessor,1) // MUON Shuttle preprocessor
+  ClassDef(AliMUONPreprocessor,2) // MUON Shuttle preprocessor
 };
 
 #endif

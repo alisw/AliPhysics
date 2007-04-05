@@ -123,7 +123,7 @@ AliMUONGainSubprocessor::Process(TMap* /*dcsAliasMap*/)
   {
     // this is the only reason to fail for the moment : getting no Gain
     // at all.
-    return 0;
+    return 1;
   }
     
   AliMUON2DStoreValidator validator;
@@ -158,9 +158,9 @@ AliMUONGainSubprocessor::Process(TMap* /*dcsAliasMap*/)
 	metaData.SetComment("Computed by AliMUONGainSubprocessor $Id$");
   
   Bool_t validToInfinity = kTRUE;
-	UInt_t result = Master()->Store("Calib", "Gains", fGains, &metaData, 0, validToInfinity);
+	Bool_t result = Master()->Store("Calib", "Gains", fGains, &metaData, 0, validToInfinity);
   
-  return result;  
+  return ( result != kTRUE ); // return 0 if everything is ok  
 }
 
 //_____________________________________________________________________________

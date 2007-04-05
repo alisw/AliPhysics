@@ -120,7 +120,6 @@ AliMUONHVSubprocessor::Process(TMap* dcsAliasMap)
     if (!hvPair)
     {
       ++aliasNotFound;
-//      Master()->Log(Form("WARNING Did not find expected alias (%s)",aliasName.Data()));
     }
     else
     {
@@ -129,7 +128,6 @@ AliMUONHVSubprocessor::Process(TMap* dcsAliasMap)
       if (!values)
       {
         ++valueNotFound;
-//        Master()->Log(Form("WARNING Could not get values for alias (%s)",aliasName.Data()));
       }
       else
       {
@@ -143,7 +141,7 @@ AliMUONHVSubprocessor::Process(TMap* dcsAliasMap)
   if ( kNoAliases ) 
   {
     Master()->Log("ERROR : no DCS values found");
-    return 0;
+    return 1;
   }
   
   if ( aliasNotFound ) 
@@ -165,8 +163,8 @@ AliMUONHVSubprocessor::Process(TMap* dcsAliasMap)
   
   Bool_t validToInfinity(kFALSE);
   
-  UInt_t result = Master()->Store("Calib","HV",&hv,&metaData,0,validToInfinity);
+  Bool_t result = Master()->Store("Calib","HV",&hv,&metaData,0,validToInfinity);
   
-  return result;
+  return ( result != kTRUE); // return 0 if everything is ok
 }
 
