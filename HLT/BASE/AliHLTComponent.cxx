@@ -65,6 +65,7 @@ AliHLTComponent::AliHLTComponent()
 
 AliHLTComponent::AliHLTComponent(const AliHLTComponent&)
   :
+  AliHLTLogging(),
   fEnvironment(),
   fCurrentEvent(0),
   fEventCount(-1),

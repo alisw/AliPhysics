@@ -20,7 +20,18 @@
 
 ClassImp(AliHLTTPCVertex)
 
-AliHLTTPCVertex::AliHLTTPCVertex(){
+AliHLTTPCVertex::AliHLTTPCVertex()
+  :
+  fX(0.0),
+  fY(0.0),  
+  fZ(0.0),  
+  fPhi(0.0),
+  fR(0.0),  
+  fXErr(1.0),
+  fYErr(1.0),
+  fZErr(1.0),
+  fMWxy(1.0)
+{
   //
   // default constructor for the AliHLTTPCVertex class. 
   //
@@ -28,7 +39,8 @@ AliHLTTPCVertex::AliHLTTPCVertex(){
   SetZero();  
 }
 
-AliHLTTPCVertex::~AliHLTTPCVertex(){
+AliHLTTPCVertex::~AliHLTTPCVertex()
+{
   //
   // destructor
   //
@@ -61,4 +73,3 @@ void AliHLTTPCVertex::Read(const AliHLTTPCVertexData *vertex)
   fPhi=0;
   fMWxy = 1.;
 }
-

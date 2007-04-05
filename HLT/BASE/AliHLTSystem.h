@@ -249,7 +249,7 @@ class AliHLTSystem : public AliHLTLogging {
    */
   int BuildTaskListsFromTopConfigurations(AliRunLoader* runloader=NULL);
 
-  enum {
+  enum AliHLTSystemState_t {
     kUninitialized       = 0x0,
     kLibrariesLoaded     = 0x1,
     kConfigurationLoaded = 0x2,
@@ -257,7 +257,7 @@ class AliHLTSystem : public AliHLTLogging {
     kReady               = 0x7,
     kRunning             = 0x8,
     kError               = 0x1000
-  } AliHLTSystemState_t ;
+  };
 
   /**
    * Check status of the system.
