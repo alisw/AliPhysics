@@ -70,7 +70,9 @@ public:
   void WriteTriggerEfficiency(Int_t startRun=0, Int_t endRun=ALIMUONCDBINFINITY);
   
 private:
-    AliMUONCDB(const AliMUONCDB& rhs);
+  /// Not implemented
+  AliMUONCDB(const AliMUONCDB& rhs);
+  /// Not implemented
   AliMUONCDB& operator=(const AliMUONCDB& rhs);
   
 private:
