@@ -73,7 +73,7 @@ AliMUONDigitCalibrator::AliMUONDigitCalibrator(AliMUONData* muonData,
       AliMUONPadStatusMaker maker(*calib);
       
       // this is here that we decide on our "goodness" policy, i.e.
-      // what do we call an invalid pad (a pad maybe bad because it's HV
+      // what do we call an invalid pad (a pad maybe bad because its HV
       // was too low, or its pedestals too high, etc..)
       //
       maker.SetHVSt12Limits(1300,1600);
@@ -86,7 +86,7 @@ AliMUONDigitCalibrator::AliMUONDigitCalibrator(AliMUONData* muonData,
       // we do not check that status is != 0x0, as this is supposed to be
       // the responsability of the padStatusMaker.
       
-      AliMUONPadStatusMapMaker mapMaker;
+      AliMUONPadStatusMapMaker mapMaker(*calib);
       
       Int_t mask(0x8080); 
       //FIXME: kind of fake one for the moment, we consider dead only 
