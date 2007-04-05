@@ -25,13 +25,13 @@
 #include "AliMUONPadStatusMaker.h"
 
 #include "AliMUON2DMap.h"
-#include "AliMUONCalibParam1I.h"
+#include "AliMUON2DStoreValidator.h"
+#include "AliMUONCalibParamNI.h"
 #include "AliMUONCalibrationData.h"
 #include "AliMUONHVNamer.h"
 #include "AliMUONObjectPair.h"
 #include "AliMUONVCalibParam.h"
 #include "AliMUONVDataIterator.h"
-
 #include "AliMpArea.h"
 #include "AliMpDEIterator.h"
 #include "AliMpDEManager.h"
@@ -48,18 +48,15 @@
 #include "AliMpSlatSegmentation.h"
 #include "AliMpStationType.h"
 #include "AliMpVPadIterator.h"
-#include "AliMUON2DStoreValidator.h"
-#include "AliCDBManager.h"
 #include "AliCDBEntry.h"
+#include "AliCDBManager.h"
 #include "AliDCSValue.h"
 #include "AliLog.h"
+#include <Riostream.h>
+#include <TMap.h>
+#include <TStopwatch.h>
+#include <TString.h>
 
-#include "Riostream.h"
-#include "TMap.h"
-#include "TStopwatch.h"
-#include "TString.h"
-
-#include <cassert>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONPadStatusMaker)
@@ -152,7 +149,7 @@ AliMUONPadStatusMaker::GeneratePadStatus(Int_t value)
   /// Generate a "fake" store, with all (detElemId,manuId) present,
   /// and containing all the same value
   
-  AliMUONCalibParam1I param(64,value);
+  AliMUONCalibParamNI param(1,64,value);
   
   return AliMUON2DMap::Generate(param);
 }
@@ -471,7 +468,7 @@ AliMUONPadStatusMaker::MakePedestalStatus(const AliMUONV2DStore& pedValues) cons
           static_cast<AliMUONVCalibParam*>(pedStatuses->Get(detElemId,manuId));
         if ( !vStatus ) 
         {
-          vStatus = new AliMUONCalibParam1I(64,0);
+          vStatus = new AliMUONCalibParamNI(1,64,0);
           pedStatuses->Set(detElemId,manuId,vStatus,false);
         }
         vStatus->SetValueAsInt(manuChannel,0,status);
@@ -497,7 +494,7 @@ AliMUONPadStatusMaker::MakeStatus() const
   if (!hvValues)
   {
     AliError("Could not get HV values from CDB. Will create dummy ones and mark those as missing");
-    AliMUONCalibParam1I param(64,kHVMissing);
+    AliMUONCalibParamNI param(1,64,kHVMissing);
     hvStatus = AliMUON2DMap::Generate(param);
   }
   else
@@ -511,7 +508,7 @@ AliMUONPadStatusMaker::MakeStatus() const
   if (!pedValues)
   {
     AliError("Could not get pedestals values from CDB. Will create dummy ones and mark those as missing");
-    AliMUONCalibParam1I param(64,kPedMissing);
+    AliMUONCalibParamNI param(1,64,kPedMissing);
     pedStatus = AliMUON2DMap::Generate(param);
   }
   else
@@ -587,7 +584,7 @@ AliMUONPadStatusMaker::SetStatusSt12(AliMUONV2DStore& hvStatus,
         static_cast<AliMUONVCalibParam*>(hvStatus.Get(detElemId,manuId));
         if (!dead)
         {
-          dead = new AliMUONCalibParam1I(64,status);
+          dead = new AliMUONCalibParamNI(1,64,status);
           hvStatus.Set(detElemId,manuId,dead,false);
         }        
         else
@@ -633,7 +630,7 @@ AliMUONPadStatusMaker::SetStatusSt345(AliMUONV2DStore& hvStatus,
       }
       if (!dead)
       {
-        dead = new AliMUONCalibParam1I(64,status);
+        dead = new AliMUONCalibParamNI(1,64,status);
         hvStatus.Set(detElemId,manuId,dead,false);
       }
     }    
