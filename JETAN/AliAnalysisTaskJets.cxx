@@ -27,6 +27,15 @@ ClassImp(AliAnalysisTaskJets)
 
 ////////////////////////////////////////////////////////////////////////
 
+AliAnalysisTaskJets::AliAnalysisTaskJets():
+    fDebug(0),
+    fJetFinder(0x0),
+    fChain(0x0),
+    fESD(0x0)
+{
+  // Default constructor
+}
+
 AliAnalysisTaskJets::AliAnalysisTaskJets(const char* name):
     AliAnalysisTask(name, "AnalysisTaskJets"),
     fDebug(0),
@@ -36,20 +45,25 @@ AliAnalysisTaskJets::AliAnalysisTaskJets(const char* name):
 {
   // Default constructor
     DefineInput (0, TChain::Class());
-    DefineOutput(0, TH1::Class());
+//    DefineOutput(0, TTree::Class());
 }
 
-void AliAnalysisTaskJets::ConnectInputData(Option_t */*option*/)
+void AliAnalysisTaskJets::Init()
 {
-// Initialisation
-//
-    if (fDebug > 1) printf("AnalysisJets::Init() \n");
-
+    // Initialization
+    if (fDebug > 1) printf("AnalysisTaskJets::Init() \n");
     // Call configuration file
     gROOT->LoadMacro("ConfigJetAnalysis.C");
     fJetFinder = (AliJetFinder*) gInterpreter->ProcessLine("ConfigJetAnalysis()");
     // Initialise Jet Analysis
     fJetFinder->Init();
+}
+
+void AliAnalysisTaskJets::ConnectInputData(Option_t */*option*/)
+{
+// Connect the input data
+//
+    if (fDebug > 1) printf("AnalysisTaskJets::ConnectInputData() \n");
     fChain = (TChain*)GetInputData(0);
     fJetFinder->ConnectTree(fChain);
     fJetFinder->WriteHeaders();
@@ -69,7 +83,7 @@ void AliAnalysisTaskJets::Terminate(Option_t */*option*/)
 {
 // Terminate analysis
 //
-    printf("AnalysisJets: Terminate() \n");
+    if (fDebug > 1) printf("AnalysisJets: Terminate() \n");
     if (fJetFinder) fJetFinder->FinishRun();
 }
 

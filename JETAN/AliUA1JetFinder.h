@@ -40,7 +40,7 @@ class AliUA1JetFinder : public AliJetFinder
   AliUA1JetFinder& operator = (const AliUA1JetFinder& ruaf);
 
   AliUA1JetHeader* fHeader;         // pointer to jet header
-  TH2F           * fLego;           //! Lego Histo
+  TH2F           * fLego;           // Lego Histo
 
   ClassDef(AliUA1JetFinder,1)
 };

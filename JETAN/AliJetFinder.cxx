@@ -34,11 +34,13 @@
 ClassImp(AliJetFinder)
 
 AliJetFinder::AliJetFinder():
+    fJetT(0),
     fPlotMode(kFALSE),
     fJets(0),
     fGenJets(0),
     fLeading(0),
     fReader(0x0),
+    fHeader(0x0),
     fPlots(0x0),
     fOut(0x0)
     
@@ -105,13 +107,13 @@ void AliJetFinder::WriteJetsToFile(Int_t i)
   fOut->cd();
   char hname[30];
   sprintf(hname,"TreeJ%d",i);
-  TTree* jetT = new TTree(hname,"AliJet");
-  jetT->Branch("FoundJet",&fJets,1000);
-  jetT->Branch("GenJet",&fGenJets,1000);
-  jetT->Branch("LeadingPart",&fLeading,1000);
-  jetT->Fill();
-  jetT->Write(hname);
-  delete jetT;
+  fJetT = new TTree(hname,"AliJet");
+  fJetT->Branch("FoundJet",&fJets,1000);
+  fJetT->Branch("GenJet",&fGenJets,1000);
+  fJetT->Branch("LeadingPart",&fLeading,1000);
+  fJetT->Fill();
+  fJetT->Write(hname);
+  delete fJetT;
 }
 
 ////////////////////////////////////////////////////////////////////////

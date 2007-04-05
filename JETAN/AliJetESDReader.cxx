@@ -106,7 +106,7 @@ void AliJetESDReader::OpenInputFiles()
   
   int nMax = fChain->GetEntries(); 
 
-  printf("\nTotal number of events in chain= %d \n",nMax);
+  printf("\n AliJetESDReader: Total number of events in chain= %d \n",nMax);
   
   // set number of events in header
   if (fReaderHeader->GetLastEvent() == -1)
@@ -123,7 +123,7 @@ void AliJetESDReader::ConnectTree(TTree* tree) {
      
      fChain->SetBranchAddress("ESD",    &fESD);
      Int_t nMax = fChain->GetEntries(); 
-     printf("\nTotal number of events in chain= %5d \n", nMax);
+     printf("\n AliJetESDReader: Total number of events in chain= %5d \n", nMax);
      // set number of events in header
      if (fReaderHeader->GetLastEvent() == -1)
 	 fReaderHeader->SetLastEvent(nMax);

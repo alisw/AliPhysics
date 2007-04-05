@@ -57,15 +57,15 @@ class AliJetFinder : public TObject
  protected:
   AliJetFinder(const AliJetFinder& rJetFinder);
   AliJetFinder& operator = (const AliJetFinder& rhsf);
-
-  Bool_t fPlotMode;              // do you want control plots?
-  AliJet* fJets;                 // pointer to jet class
-  AliJet* fGenJets;              // pointer to generated jets
-  AliLeading*   fLeading;        // pointer to leading particle data 
-  AliJetReader* fReader;         // pointer to reader
-  AliJetHeader* fHeader;         // pointer to header
-  AliJetControlPlots* fPlots;    // pointer to control plots
-  TFile* fOut;                   // output file
+  TTree* fJetT;                  //! pointer to jet tree
+  Bool_t fPlotMode;              //!  do you want control plots?
+  AliJet* fJets;                 //! pointer to jet class
+  AliJet* fGenJets;              //! pointer to generated jets
+  AliLeading*   fLeading;        //! pointer to leading particle data 
+  AliJetReader* fReader;         //  pointer to reader
+  AliJetHeader* fHeader;         //  pointer to header
+  AliJetControlPlots* fPlots;    //! pointer to control plots
+  TFile* fOut;                   //! output file
   ClassDef(AliJetFinder,2)
 };
 
