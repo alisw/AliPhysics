@@ -378,21 +378,23 @@ endif
 .PRECIOUS: $(patsubst %.c,$(MODDIRO)/%.d,$(CSRCS))
 .PRECIOUS: $(patsubst %.F,$(MODDIRO)/%.d,$(patsubst %.f,$(MODDIRO)/%.d,$(FSRCS)))
 
-@PACKAGE@CHECKS  := $(patsubst %.cxx,@MODULE@/check/%.viol,$(SRCS))
-@PACKAGE@PREPROC := $(patsubst %.viol,%.i,$(@PACKAGE@CHECKS))
-@PACKAGE@REVENGS := $(patsubst %.viol,%.ii,$(@PACKAGE@CHECKS))
+@PACKAGE@CHECKS := $(patsubst %.cxx,@MODULE@/check/%.viol,$(SRCS))
 
 check-@MODULE@: $(@PACKAGE@CHECKS)
 
 # IRST coding rule check 
-$(@PACKAGE@PREPROC): $(patsubst %.cxx, $(MODDIR)/%.cxx, $(SRCS)) $(@PACKAGE@DEP)
+@MODULE@/check/%.i : @MODULE@/%.cxx @MODULE@/tgt_$(ALICE_TARGET)/%.d
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
 	$(MUTE)$(CXX) -E $(@PACKAGE@DEFINE) $(@PACKAGE@INC) -I. $< > $@ $(@PACKAGE@CXXFLAGS)
 	@cd $(dir $@) ; $(IRST_INSTALLDIR)/patch/patch4alice.prl $(notdir $@)
 
 # IRST coding rule check
-$(@PACKAGE@CHECKS) : $(@PACKAGE@PREPROC)
+@MODULE@/check/%.viol : @MODULE@/check/%.i
 	$(MUTE)echo $@ ; $(CODE_CHECK) $< $(shell echo $(dir $<) | sed -e 's:/check::') > $@
+
+@PACKAGE@PREPROC       = $(patsubst %.viol,%.i,$(@PACKAGE@CHECKS))
+
+@PACKAGE@REVENGS       = $(patsubst %.viol,%.ii,$(@PACKAGE@CHECKS))
 
 .SECONDARY: $(@PACKAGE@REVENGS) $(@PACKAGE@PREPROC)
 
