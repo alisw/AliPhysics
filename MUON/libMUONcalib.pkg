@@ -1,0 +1,25 @@
+# $Id$
+
+SRCS:=  AliMUONVDataIterator.cxx \
+        AliMUONObjectPair.cxx \
+        AliMUONTriggerLut.cxx \
+        AliMUONV2DStore.cxx \
+        AliMUONV1DStore.cxx \
+        AliMUON2DMap.cxx \
+        AliMUON2DMapIterator.cxx \
+        AliMUON1DArray.cxx \
+        AliMUON1DMap.cxx \
+        AliMUON1DMapIterator.cxx \
+        AliMUONVCalibParam.cxx \
+        AliMUONCalibParamNF.cxx \
+        AliMUONCalibParamNI.cxx \
+        AliMUONTriggerEfficiencyCells.cxx\
+        AliMUON2DStoreValidator.cxx \
+        AliMUONCheckItem.cxx \
+        AliMUONCheckItemIterator.cxx
+
+HDRS:= $(SRCS:.cxx=.h)
+
+DHDR:= MUONcalibLinkDef.h
+
+EINCLUDE:= MUON/mapping

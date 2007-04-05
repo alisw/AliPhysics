@@ -13,25 +13,23 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+/* $Id */
 
-// Macro for loading libraries needed for reading & decoding rawdata
-// Christian Finck
+// Macro for loading libraries needed for dealing with calibration data containers
+// Laurent Aphecetche
 
-void loadlibraw () 
+void loadlibcalib () 
 {
   gSystem->Load("libVMC");
   gSystem->Load("libMinuit");
   gSystem->Load("libTree");
   
   gSystem->Load("libESD");
-  
-  gSystem->Load("libRAWDatabase");
-  gSystem->Load("libRAWDatarec");
+  gSystem->Load("libSTEER"); 
   
   gSystem->Load("libPhysics");
-  
+
   gSystem->Load("libMUONmapping");
-  gSystem->Load("libMUONraw");
-  
+  gSystem->Load("libMUONcalib");
+
 }

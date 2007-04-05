@@ -69,6 +69,12 @@
  */
 /** @} */
 
+/** @defgroup calib MUON_calib
+ *  Category of basic classes for calibration
+ *  @{
+ */
+/** @} */
+
 /** @defgroup shuttle MUON_shuttle
  *  Category of classes for shuttle
  *  @{

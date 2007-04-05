@@ -33,6 +33,7 @@ void loadlibs ()
   
   gSystem->Load("libPhysics");
   gSystem->Load("libMUONmapping");
+  gSystem->Load("libMUONcalib");
   gSystem->Load("libMUONgeometry");
   gSystem->Load("libMUONbase");
 
