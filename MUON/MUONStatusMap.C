@@ -51,6 +51,7 @@ void findBad(const AliMUONV2DStore& status)
     {
       cout << Form("DE %4d ManuId %4d",detElemId,manuId) << endl;
     }
+    if (it->IsOwner()) delete pair;
   }
 }
 
