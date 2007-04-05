@@ -15,13 +15,13 @@
 class AliMUONConstants : public TObject {
  public:
     /// Return number of chambers
-    static Int_t    NCh() {return fgNCh;}
+  static Int_t    NCh();
     /// Return number of tracking chambers
-    static Int_t    NTrackingCh() {return fgNTrackingCh;}
+  static Int_t    NTrackingCh();
     /// Return number of tracking stations
     static Int_t    NTrackingSt() {return fgNTrackingSt;}
     /// Return number of trigger chambers
-    static Int_t    NTriggerCh() {return fgNTriggerCh;}
+    static Int_t    NTriggerCh() {return NCh()-NTrackingCh();}
     /// Return number of trigger circuits
     static Int_t    NTriggerCircuit() {return fgNTriggerCircuit;}
     /// Return number of detection element
@@ -88,10 +88,7 @@ class AliMUONConstants : public TObject {
     virtual ~AliMUONConstants(){}
 
  private:
-    static Int_t  fgNCh;                ///<  Number of Chambers    
-    static Int_t  fgNTrackingCh;        ///<  Number of Tracking Chambers
     static Int_t  fgNTrackingSt;        ///<  Number of Tracking Stations
-    static Int_t  fgNTriggerCh;         ///<  Number of Trigger Chambers
     static Int_t  fgNTriggerCircuit;    ///<  Number of Trigger Circuits
     static Int_t  fgNDetElem;           ///<  Number of Detection Elements.
     static Int_t  fgNGeomModules;       ///<  Number of Geometry modules   

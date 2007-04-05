@@ -21,6 +21,7 @@
 
 #include "TMath.h"
 #include "TClass.h"
+#include "AliMpConstants.h"
 
 ///
 /// \class AliMUONConstants
@@ -37,10 +38,7 @@
 ClassImp(AliMUONConstants)
 /// \endcond
 
-Int_t   AliMUONConstants::fgNCh = 14;
-Int_t   AliMUONConstants::fgNTrackingCh = 10;
 Int_t   AliMUONConstants::fgNTrackingSt = 5;
-Int_t   AliMUONConstants::fgNTriggerCh = 4;
 Int_t   AliMUONConstants::fgNTriggerCircuit = 234;
 Int_t   AliMUONConstants::fgNDetElem = 228;
 Int_t   AliMUONConstants::fgNGeomModules = 20;
@@ -91,6 +89,18 @@ Double_t AliMUONConstants::fgYokeL = 309.4;
 
 // Defaults parameters for track reconstruction
 Double_t  AliMUONConstants::fgChamberThicknessInX0 = 0.03;
+
+//______________________________________________________________________________
+Int_t AliMUONConstants::NCh()
+{
+  return AliMpConstants::NofChambers();
+}
+
+//______________________________________________________________________________
+Int_t AliMUONConstants::NTrackingCh()
+{
+  return AliMpConstants::NofTrackingChambers();
+}
 
 //______________________________________________________________________________
 Int_t AliMUONConstants::ChamberNumber(Float_t z) 
