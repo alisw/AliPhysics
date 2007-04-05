@@ -26,10 +26,8 @@
 #pragma link C++ class AliMUONLogger+;
 
 // containers
-#pragma link C++ class AliMUONObjectPair+;
 #pragma link C++ class AliMUONData+; 
 #pragma link C++ class AliMUONDataIterator+; 
-#pragma link C++ class AliMUONVDataIterator+; 
 #pragma link C++ class AliMUONDataDigitIterator+; 
 #pragma link C++ class AliMUONPoints+; 
 #pragma link C++ class AliMUONHit+; 
@@ -38,31 +36,16 @@
 #pragma link C++ class AliMUONGlobalTrigger+; 
 #pragma link C++ class AliMUONRegionalTrigger+; 
 #pragma link C++ class AliMUONLocalTrigger+; 
-#pragma link C++ class AliMUONTriggerLut+; 
-
-// calibration
-#pragma link C++ class AliMUONV2DStore+;
-#pragma link C++ class AliMUONV1DStore+;
-#pragma link C++ class AliMUON2DMap+;
-#pragma link C++ class AliMUON2DMapIterator+;
-#pragma link C++ class AliMUON1DArray+;
-#pragma link C++ class AliMUON1DMap+;
-#pragma link C++ class AliMUON1DMapIterator+;
-#pragma link C++ class AliMUONVCalibParam+;
-#pragma link C++ class AliMUONCalibParam1I+;
-#pragma link C++ class AliMUONCalibParam2F+;
-#pragma link C++ class AliMUONCalibParamNF+;
-#pragma link C++ class AliMUONCalibrationData+;
-#pragma link C++ class AliMUONTriggerEfficiencyCells+;
 #pragma link C++ class AliMUONTriggerChamberEff+;
-#pragma link C++ class AliMUONCheckItem+;
-#pragma link C++ class AliMUONCheckItemIterator+;
-#pragma link C++ class AliMUON2DStoreValidator+;
 
 // raw data
 #pragma link C++ class AliMUONDigitMaker+;
 #pragma link C++ class AliMUONRawStreamTracker+;
 #pragma link C++ class AliMUONRawStreamTrigger+;
+
+// calibration access
+#pragma link C++ class AliMUONCalibrationData+;
+#pragma link C++ class AliMUONCDB+;
 
 #endif
 

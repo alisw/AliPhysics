@@ -1,8 +1,8 @@
 # $Id$
 
-SRCS:=  AliMUON.cxx AliMUONv1.cxx \
+SRCS:=  AliMUONConstants.cxx \
+        AliMUON.cxx AliMUONv1.cxx \
         AliMUONMathieson.cxx \
-        AliMUONConstants.cxx \
         AliMUONDataInterface.cxx \
         AliMUONLoader.cxx \
         AliMUONChamber.cxx \
@@ -11,8 +11,6 @@ SRCS:=  AliMUON.cxx AliMUONv1.cxx \
         AliMUONTriggerCircuit.cxx \
         AliMUONData.cxx \
         AliMUONDataIterator.cxx \
-        AliMUONVDataIterator.cxx \
-        AliMUONObjectPair.cxx \
         AliMUONDataDigitIterator.cxx \
         AliMUONPoints.cxx \
         AliMUONHit.cxx \
@@ -21,33 +19,18 @@ SRCS:=  AliMUON.cxx AliMUONv1.cxx \
         AliMUONGlobalTrigger.cxx  \
         AliMUONRegionalTrigger.cxx \
         AliMUONLocalTrigger.cxx \
-        AliMUONTriggerLut.cxx \
         AliMUONSt12QuadrantSegmentation.cxx \
         AliMUONSt345SlatSegmentation.cxx \
         AliMUONTriggerSegmentation.cxx \
         AliMUONSegFactory.cxx \
-        AliMUONV2DStore.cxx \
-        AliMUONV1DStore.cxx \
-        AliMUON2DMap.cxx \
-        AliMUON2DMapIterator.cxx \
-        AliMUON1DArray.cxx \
-        AliMUON1DMap.cxx \
-        AliMUON1DMapIterator.cxx \
-        AliMUONVCalibParam.cxx \
-        AliMUONCalibParam1I.cxx \
-        AliMUONCalibParam2F.cxx \
-        AliMUONCalibParamNF.cxx \
         AliMUONCalibrationData.cxx \
-        AliMUONTriggerEfficiencyCells.cxx\
         AliMUONRawStreamTrigger.cxx \
         AliMUONRawStreamTracker.cxx  \
         AliMUONDigitMaker.cxx \
         AliMUONTriggerChamberEff.cxx \
         AliMUONLogger.cxx \
-        AliMUON2DStoreValidator.cxx \
-        AliMUONCheckItem.cxx \
-        AliMUONCheckItemIterator.cxx
-             
+        AliMUONCDB.cxx
+
 HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= MUONbaseLinkDef.h
