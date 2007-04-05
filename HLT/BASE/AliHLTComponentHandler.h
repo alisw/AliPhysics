@@ -23,8 +23,6 @@ class AliHLTComponent;
 struct AliHLTComponentEnvironment;
 struct AliHLTComponentDataType;
 
-typedef void* AliHLTLibHandle;
-
 /**
  * @class AliHLTComponentHandler
  * The component handler controls all the processing components available in
@@ -126,14 +124,14 @@ class AliHLTComponentHandler : public AliHLTLogging {
 
   /**
    * Create a component of the given name (ID).
-   * The method tries to find a registerd component of id \em componentID and calls
-   * the \em Spawn method of the template component. After successful creation of
-   * a new object, the Init method is called in order to initialize the environment
-   * and the component arguments. <br>
+   * The method tries to find a registerd component of id \em componentID and
+   * calls the \em Spawn method of the template component. After successful
+   * creation of a new object, the Init method is called in order to initialize
+   * the environment and the component arguments. <br>
    * The environment is the same for all components, but each component can
    * have an additional private parameter \em pEnvParam.<br>
-   * The component arguments consist of an array of strings and the array size in the
-   * usual manner of the main() function.
+   * The component arguments consist of an array of strings and the array size
+   * in the usual manner of the main() function.
    * @param componentID  ID of the component to create
    * @param pEnvParam    environment parameter for the component
    * @param argc         number of arguments in argv
@@ -198,6 +196,17 @@ class AliHLTComponentHandler : public AliHLTLogging {
    * @return neg. error code if failed
    */
   int UnloadLibraries();
+
+  /**
+   * Compount descriptor for component libraries
+   */
+  struct AliHLTLibHandle {
+    AliHLTLibHandle() : handle(NULL), name(NULL) {}
+    /** dlopen handle */
+    void* handle;                                                  //! transient
+    /** name of the library, casted to TString* before use */
+    void* name;                                                    //! transient
+  };
 
   /** list of registered components */
   vector<AliHLTComponent*> fComponentList;                         // see above 

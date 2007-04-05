@@ -24,7 +24,22 @@ class AliRunLoader;
  * @class AliHLTModuleAgent
  * @brief Agent helper class for HLT sub modules, e.g. PHOS, TPC, Trigger
  *
- * This class describes 
+ * This class implements the agent base class for the HLT sub modules.
+ * The agent of a library gives information on the features of the module,
+ * like the configurations to run and other component libraries it depends
+ * on.
+ * 
+ * All HLT component libraries are loaded on demand through the HLT steering
+ * instance (@ref AliHLTSystem). A library can implement an agent derived 
+ * from this base class, and has to define one global object of this agent
+ * in the code. The agent will be registered automatically, and the features
+ * can be queried when required.
+ *
+ * This is usually done during running the AliRoot Reconstruction (see
+ * <tt>AliReconstruction</tt>. The HLT implemets the AliHLTReconstructor which
+ * holds the HLT steering object. Several flags can be specified as options
+ * via the SetOption method of AliReconstruction, including the component
+ * libraries to be loaded.
  *
  * There must be only one agent per module/library.
  *

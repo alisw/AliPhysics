@@ -503,6 +503,8 @@ int AliHLTSystem::Configure(AliRunLoader* runloader)
     HLTError("HLT system in running state, can not configure");
     return -EBUSY;
   }
+  if (CheckFilter(kHLTLogDebug))
+    AliHLTModuleAgent::PrintStatus();
   ClearStatusFlags(kConfigurationLoaded|kTaskListCreated);
   iResult=LoadConfigurations(runloader);
   if (iResult>=0) {
@@ -542,7 +544,7 @@ int AliHLTSystem::LoadConfigurations(AliRunLoader* runloader)
   while (pAgent && iResult>=0) {
     const char* deplibs=pAgent->GetRequiredComponentLibraries();
     if (deplibs) {
-      HLTDebug("load libraries \'%s\' %s for agent %s (%p)", deplibs, pAgent->GetName(), pAgent);
+      HLTDebug("load libraries \'%s\' for agent %s (%p)", deplibs, pAgent->GetName(), pAgent);
       iResult=LoadComponentLibraries(deplibs);
     }
     if (iResult>=0) {

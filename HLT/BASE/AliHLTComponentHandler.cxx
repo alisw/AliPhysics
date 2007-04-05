@@ -258,20 +258,39 @@ int AliHLTComponentHandler::LoadLibrary( const char* libraryPath )
   int iResult=0;
   if (libraryPath) {
     AliHLTComponent::SetGlobalComponentHandler(this);
-    AliHLTLibHandle hLib=NULL;
+    AliHLTLibHandle hLib;
 #ifdef HAVE_DLFCN_H
     // use interface to the dynamic linking loader
-    hLib=dlopen(libraryPath, RTLD_NOW);
+    hLib.handle=dlopen(libraryPath, RTLD_NOW);
 #else
     // use ROOT dynamic loader
-    if (gSystem->Load(libraryPath)==0) {
-      // create TString object to store library path and use pointer as handle 
-      hLib=reinterpret_cast<AliHLTLibHandle>(new TString(libraryPath));
+    // check if the library was already loaded, as Load returns
+    // 'failure' if the library was already loaded
+    vector<AliHLTLibHandle>::iterator element=fLibraryList.begin();
+    while (element!=fLibraryList.end()) {
+      TString* name=reinterpret_cast<TString*>((*element).name);
+      if (name->CompareTo(libraryPath)==0) {
+	int* pRootHandle=reinterpret_cast<int*>((*element).handle);
+	(*pRootHandle)++;
+	HLTDebug("instance %d of library %s loaded", (*pRootHandle), libraryPath);
+	hLib.handle=pRootHandle;
+	break;
+      }
+      element++;
+    }
+    
+    if (hLib.handle==NULL && gSystem->Load(libraryPath)==0) {
+      int* pRootHandle=new int;
+      if (pRootHandle) *pRootHandle=1;
+      hLib.handle=pRootHandle;
+      HLTDebug("library %s loaded via gSystem", libraryPath);
     }
 #endif //HAVE_DLFCN_H
-    if (hLib) {
+    if (hLib.handle!=NULL) {
+      // create TString object to store library path and use pointer as handle 
+      hLib.name=new TString(libraryPath);
       HLTInfo("library %s loaded", libraryPath);
-      fLibraryList.push_back(hLib);
+      fLibraryList.insert(fLibraryList.begin(), hLib);
       iResult=RegisterScheduledComponents();
     } else {
       HLTError("can not load library %s", libraryPath);
@@ -308,14 +327,29 @@ int AliHLTComponentHandler::UnloadLibraries()
   int iResult=0;
   vector<AliHLTLibHandle>::iterator element=fLibraryList.begin();
   while (element!=fLibraryList.end()) {
+    TString* pName=reinterpret_cast<TString*>((*element).name);
 #ifdef HAVE_DLFCN_H
-    dlclose(*element);
+    dlclose((*element).handle);
 #else
-    TString* libraryPath=reinterpret_cast<TString*>(*element);
-    gSystem->Unload(libraryPath->Data());
-    delete libraryPath;
+    int* pCount=reinterpret_cast<int*>((*element).handle);
+    if (--(*pCount)==0) {
+      if (pName)
+	gSystem->Unload(pName->Data());
+      else {
+	HLTError("missing library name, can not unload");
+      }
+      delete pCount;
+    }
 #endif //HAVE_DLFCN_H
-    element++;
+    if (pName) {
+      HLTDebug("unload library %s", pName->Data());
+      delete pName;
+    } else {
+      HLTWarning("missing name for unloaded library");
+    }
+    pName=NULL;
+    fLibraryList.erase(element);
+    element=fLibraryList.begin();
   }
   return iResult;
 }

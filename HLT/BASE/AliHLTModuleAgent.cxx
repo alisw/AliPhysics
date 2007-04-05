@@ -74,12 +74,18 @@ void AliHLTModuleAgent::PrintStatus(const char* agent)
 		  "agent %s not found", agent);
     }
   } else {
-  TObjLink* lnk=fgAgentList.FirstLink();
-  while (lnk) {
-    log.Logging(kHLTLogInfo, "AliHLTModuleAgent::PrintStatus", "module agents", 
-		((AliHLTModuleAgent*)lnk->GetObject())->GetName());
-    lnk=lnk->Next();
-  }
+    TObjLink* lnk=fgAgentList.FirstLink();
+    log.Logging(kHLTLogInfo, "", "", "-----------------------");
+    log.Logging(kHLTLogInfo, "", "", "available module agents");
+    if (lnk==NULL) 
+      log.Logging(kHLTLogInfo, "", "", "   none");
+    while (lnk) {
+      TString msg;
+      msg.Form("   %s : %p", ((AliHLTModuleAgent*)lnk->GetObject())->GetName(), lnk->GetObject());
+      log.Logging(kHLTLogInfo, "", "", msg.Data());
+      lnk=lnk->Next();
+    }
+    log.Logging(kHLTLogInfo, "", "", "-----------------------");
   }
 }
 
@@ -152,7 +158,7 @@ int AliHLTModuleAgent::Unregister(AliHLTModuleAgent* pAgent)
   AliHLTLogging log;
   if (!pAgent) return -EINVAL;
   if (fgAgentList.FindObject(pAgent)!=NULL) {
-    log.Logging(kHLTLogDebug, "AliHLTModuleAgent::Unregister", "", "module agent %s (%p) removed", pAgent->GetName(), pAgent);
+    log.Logging(kHLTLogDebug, "AliHLTModuleAgent::Unregister", "", "module agent %p removed", pAgent);
     fgAgentList.Remove(pAgent);
   } else {
   }
