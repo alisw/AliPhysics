@@ -26,9 +26,10 @@
 #include "AliESDtrack.h"
 #include "AliITStrackV2.h"
 
+const Int_t AliITStrackV2::fgkWARN = 5;
+
 ClassImp(AliITStrackV2)
 
-const Int_t kWARN=5;
 
 //____________________________________________________________________________
 AliITStrackV2::AliITStrackV2() : AliKalmanTrack(),
@@ -194,32 +195,32 @@ Bool_t AliITStrackV2::Invariant() const {
 
   Double_t sP2=GetParameter()[2];
   if (TMath::Abs(sP2) >= kAlmost1){
-     if (n>kWARN) Warning("Invariant","fP2=%f\n",sP2);
+     if (n>fgkWARN) Warning("Invariant","fP2=%f\n",sP2);
      return kFALSE;
   }
   Double_t sC00=GetCovariance()[0];
   if (sC00<=0 || sC00>9.) {
-     if (n>kWARN) Warning("Invariant","fC00=%f\n",sC00); 
+     if (n>fgkWARN) Warning("Invariant","fC00=%f\n",sC00); 
      return kFALSE;
   }
   Double_t sC11=GetCovariance()[2];
   if (sC11<=0 || sC11>9.) {
-     if (n>kWARN) Warning("Invariant","fC11=%f\n",sC11); 
+     if (n>fgkWARN) Warning("Invariant","fC11=%f\n",sC11); 
      return kFALSE;
   }
   Double_t sC22=GetCovariance()[5];
   if (sC22<=0 || sC22>1.) {
-     if (n>kWARN) Warning("Invariant","fC22=%f\n",sC22); 
+     if (n>fgkWARN) Warning("Invariant","fC22=%f\n",sC22); 
      return kFALSE;
   }
   Double_t sC33=GetCovariance()[9];
   if (sC33<=0 || sC33>1.) {
-     if (n>kWARN) Warning("Invariant","fC33=%f\n",sC33); 
+     if (n>fgkWARN) Warning("Invariant","fC33=%f\n",sC33); 
      return kFALSE;
   }
   Double_t sC44=GetCovariance()[14];
   if (sC44<=0 /*|| sC44>6e-5*/) {
-     if (n>kWARN) Warning("Invariant","fC44=%f\n",sC44);
+     if (n>fgkWARN) Warning("Invariant","fC44=%f\n",sC44);
      return kFALSE;
   }
 
@@ -335,5 +336,25 @@ Double_t AliITStrackV2::GetBz() const {
   if (AliTracker::UniformField()) return AliTracker::GetBz();
   Double_t r[3]; GetXYZ(r); 
   return AliTracker::GetBz(r);
+}
+
+//____________________________________________________________________________
+Bool_t AliITStrackV2::
+GetPhiZat(Double_t rk, Double_t &phik, Double_t &zk) const {
+  //------------------------------------------------------------------
+  // This function returns the global cylindrical (phik,zk) of the track 
+  // position estimated at the radius rk. 
+  // The track curvature is neglected.
+  //------------------------------------------------------------------
+  Double_t d=GetD(0.,0.);
+  if (TMath::Abs(d) > rk) return kFALSE; 
+
+  Double_t r=TMath::Sqrt(GetX()*GetX() + GetY()*GetY());
+  Double_t phi=GetAlpha()+TMath::ASin(GetSnp());
+
+  phik=phi+TMath::ASin(d/rk)-TMath::ASin(d/r);
+  zk=GetZ()+GetTgl()*(TMath::Sqrt(rk*rk-d*d) - TMath::Sqrt(r*r-d*d));
+
+  return kTRUE;
 }
 

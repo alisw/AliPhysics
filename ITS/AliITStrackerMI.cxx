@@ -743,13 +743,10 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	  continue;
 	}
       }
-      //
-      //find intersection with layer
-      Double_t x,y,z;  
-      if (!currenttrack1.GetGlobalXYZat(r,x,y,z)) {
-	continue;
-      }
-      Double_t phi=TMath::ATan2(y,x);
+
+      Double_t phi,z;
+      if (!currenttrack1.GetPhiZat(r,phi,z)) continue;
+
       Int_t idet=layer.FindDetectorIndex(phi,z);
       if (idet<0) {
 	continue;
@@ -1697,15 +1694,14 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *t,
      }
      //
 
-     Double_t x,y,z;
-     if (!t->GetGlobalXYZat(r,x,y,z)) { 
-       return kFALSE;
-     }
-     Double_t phi=TMath::ATan2(y,x);
+     Double_t phi,z;
+     if (!t->GetPhiZat(r,phi,z)) return kFALSE;
+
      Int_t idet=layer.FindDetectorIndex(phi,z);
      if (idet<0) { 
        return kFALSE;
      }
+
      const AliITSdetector &det=layer.GetDetector(idet);
      phi=det.GetPhi();
      if (!t->Propagate(phi,det.GetR())) {
@@ -1845,12 +1841,9 @@ AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *t,const Int_t *clindex) {
         t->GetGlobalXYZat(t->GetX(),oldX,oldY,oldZ);
      }
      //
+     Double_t phi,z;
+     if (!t->GetPhiZat(r,phi,z)) return kFALSE;
 
-     Double_t x,y,z;
-     if (!t->GetGlobalXYZat(r,x,y,z)) { 
-       return kFALSE;
-     }
-     Double_t phi=TMath::ATan2(y,x);
      Int_t idet=layer.FindDetectorIndex(phi,z);
      if (idet<0) { 
        return kFALSE;

@@ -481,12 +481,11 @@ void AliITStrackerV2::FollowProlongation() {
     }
 
     //find intersection
-    Double_t x,y,z;  
-    if (!fTrackToFollow.GetGlobalXYZat(r,x,y,z)) {
+    Double_t phi,z;  
+    if (!fTrackToFollow.GetPhiZat(r,phi,z)) {
       //Warning("FollowProlongation","failed to estimate track !\n");
       return;
     }
-    Double_t phi=TMath::ATan2(y,x);
 
     Int_t idet=layer.FindDetectorIndex(phi,z);
     if (idet<0) {
@@ -1025,11 +1024,11 @@ Bool_t AliITStrackerV2::RefitAt(Double_t xx,AliITStrackV2 *t,
      }
      //
 
-     Double_t x,y,z;
-     if (!t->GetGlobalXYZat(r,x,y,z)) { 
+     Double_t phi,z;
+     if (!t->GetPhiZat(r,phi,z)) { 
        return kFALSE;
      }
-     Double_t phi=TMath::ATan2(y,x);
+
      Int_t idet=layer.FindDetectorIndex(phi,z);
      if (idet<0) { 
        return kFALSE;

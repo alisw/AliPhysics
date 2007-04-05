@@ -94,7 +94,7 @@ public:
     Double_t GetR() const {return fR;}
     Int_t FindClusterIndex(Float_t z) const;
     AliITSRecPoint *GetCluster(Int_t i) const {return i<fN? fClusters[i]:0;} 
-    Float_t         *GetWeight(Int_t i)  {return i<fN ?&fClusterWeight[i]:0;}
+    Float_t         *GetWeight(Int_t i) {return i<fN ?&fClusterWeight[i]:0;}
     AliITSdetector &GetDetector(Int_t n) const { return fDetectors[n]; }
     Int_t FindDetectorIndex(Double_t phi, Double_t z) const;
     Double_t GetThickness(Double_t y, Double_t z, Double_t &x0) const;

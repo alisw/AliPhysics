@@ -56,6 +56,7 @@ public:
   }
 
   Bool_t GetGlobalXYZat(Double_t r,Double_t &x,Double_t &y,Double_t &z) const;
+  Bool_t GetPhiZat(Double_t r,Double_t &phi,Double_t &z) const;
 
   Int_t Compare(const TObject *o) const;
   Int_t GetClusterIndex(Int_t i) const {return fIndex[i];}
@@ -67,6 +68,8 @@ public:
 protected:
   Double_t GetBz() const ;
   Double_t fdEdx;            // dE/dx
+
+  static const Int_t fgkWARN; //! used for debugging purposes
   Float_t fdEdxSample[4];    // array of dE/dx samples b.b.
 
   Int_t fIndex[2*kMaxLayer]; // indices of associated clusters 
@@ -75,7 +78,7 @@ protected:
 
 private:
   AliITStrackV2 &operator=(const AliITStrackV2 &tr);
-  ClassDef(AliITStrackV2,6)  //ITS reconstructed track
+  ClassDef(AliITStrackV2,7)  //ITS reconstructed track
 };
 
 inline
