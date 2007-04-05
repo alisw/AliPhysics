@@ -1027,9 +1027,11 @@ void AliHLTTask::PrintStatus()
 ClassImp(AliHLTConfigurationHandler)
 
 AliHLTConfigurationHandler::AliHLTConfigurationHandler()
+  :
+  fgListConfigurations()
 {
   // see header file for function documentation
-  SetLocalLogLevel(kHLTLogInfo);
+  SetLocalLoggingLevel(kHLTLogInfo);
 }
 
 AliHLTConfigurationHandler::~AliHLTConfigurationHandler()
