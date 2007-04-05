@@ -5,7 +5,10 @@
 //functions for each layer are convoluted Landau-Gaussian functions.      // 
 // Origin: Elena Bruna bruna@to.infn.it,, Massimo Masera masera@to.infn.it//
 //////////////////////////////////////////////////////////////////////////
+#include "AliITStrackV2.h"
 #include "AliITSPident.h"
+#include "AliITSSteerPid.h"
+#include <Riostream.h>
 
 ClassImp(AliITSPident)
   //_______________________________________________________________________
@@ -18,15 +21,15 @@ fPBayespi(0),
 fPPriorip(0),
 fPPriorik(0),
 fPPrioripi(0),
-fPPriorie(0),
-fInvPt(0)
+fPPriorie(0)
 {
   // default constructor
-  for (Int_t i=0;i<4;i++){
+  for (Int_t i=0;i<8;i++){
     fCondFunProLay[i]=0;
     fCondFunKLay[i]=0;
     fCondFunPiLay[i]=0;
   }
+  for (Int_t i=0;i<4;i++)fNcls[i]=0;
 }
 //_______________________________________________________________________
 AliITSPident::~AliITSPident(){
@@ -42,8 +45,7 @@ fPBayespi(ob.fPBayespi),
 fPPriorip(ob.fPPriorip),
 fPPriorik(ob.fPPriorik),
 fPPrioripi(ob.fPPrioripi),
-fPPriorie(ob.fPPriorie),
-fInvPt(ob.fInvPt)  
+fPPriorie(ob.fPPriorie)
 {
   // Copy constructor
 }
@@ -58,7 +60,7 @@ AliITSPident& AliITSPident::operator=(const AliITSPident&  ob){
 
 
 //_______________________________________________________________________
-AliITSPident::AliITSPident(Double_t mom,Double_t invPt,Double_t dEdx,AliITSSteerPid *sp,Float_t *Qlay,Float_t priorip,Float_t priorik,Float_t prioripi,Float_t priorie):
+AliITSPident::AliITSPident(Double_t mom,Double_t dEdx,AliITSSteerPid *sp,Float_t *Qlay,Float_t *nlay,Float_t priorip,Float_t priorik,Float_t prioripi,Float_t priorie):
 fMom(mom),
 fdEdx(dEdx),
 fPBayesp(0),
@@ -67,15 +69,17 @@ fPBayespi(0),
 fPPriorip(priorip),
 fPPriorik(priorik),
 fPPrioripi(prioripi),
-fPPriorie(priorie),
-fInvPt(invPt){
-
-  //test
-
+fPPriorie(priorie)
+{
+  //
+  for (Int_t i=0;i<8;i++){
+    fCondFunProLay[i]=-1;
+    fCondFunKLay[i]=-1;
+    fCondFunPiLay[i]=-1;
+  }
   for(Int_t la=0;la<4;la++){//loop on layers
     Double_t parp[3];Double_t park[3];Double_t parpi[3];
-    sp->GetParFitLayer(la,fMom,parp,park,parpi);
-
+    fNcls[la]=0;
     Double_t range[6];
     range[0]=0.3*parp[1];
     range[1]=2.*parp[1];
@@ -85,19 +89,28 @@ fInvPt(invPt){
     
     range[4]=0.3*parpi[1];
     range[5]=2.*parpi[1];
-      CookFunItsLay(la,0,parp,Qlay[la],fMom,range[0],range[1],"fPro");
-      CookFunItsLay(la,1,park,Qlay[la],fMom,range[2],range[3],"fKao");
-      CookFunItsLay(la,2,parpi,Qlay[la],fMom,range[4],range[5],"fPi");
+    Int_t layer=la+2;
+    for(Int_t ii=0;ii<8;ii++){
+      if(nlay[ii]==layer){
+	fNcls[la]++;
+	if(Qlay[ii]>0){
+	  sp->GetParFitLayer(la,fMom,parp,park,parpi);
+	  CookFunItsLay(ii,0,parp,Qlay[ii],fMom,range[0],range[1],"fPro");
+	  CookFunItsLay(ii,1,park,Qlay[ii],fMom,range[2],range[3],"fKao");
+	  CookFunItsLay(ii,2,parpi,Qlay[ii],fMom,range[4],range[5],"fPi");
+	}  
+      }
+    }
     
   }
-
-  Float_t prior[4];Double_t condFun[4][3];
+ 
+  Float_t prior[4];Double_t condFun[8][3];
 
   prior[0]=fPPriorip;
   prior[1]=fPPriorik;
   prior[2]=fPPrioripi;
   prior[3]=fPPriorie;
-  for(Int_t la=0;la<4;la++){
+  for(Int_t la=0;la<8;la++){
     condFun[la][0]= fCondFunProLay[la];
     condFun[la][1]= fCondFunKLay[la]; 
     condFun[la][2]= fCondFunPiLay[la];
@@ -107,11 +120,10 @@ fInvPt(invPt){
   fPBayesp=CookCombinedBayes(condFun,prior,0);
   fPBayesk=CookCombinedBayes(condFun,prior,1); 
   fPBayespi=CookCombinedBayes(condFun,prior,2); 
- }
+}
 
-
-//_______________________________________________________________________
-AliITSPident::AliITSPident(AliITStrackV2 *trackITS,AliITSSteerPid *sp,Float_t *Qlay,Float_t priorip,Float_t priorik,Float_t prioripi,Float_t priorie):
+//__________________________________________________________________________________________
+AliITSPident::AliITSPident(AliITStrackV2 *trackITS,AliITSSteerPid *sp,Float_t *Qlay,Float_t *nlay,Float_t priorip,Float_t priorik,Float_t prioripi,Float_t priorie):
 fMom(0),
 fdEdx(0),
 fPBayesp(0),
@@ -120,10 +132,14 @@ fPBayespi(0),
 fPPriorip(priorip),
 fPPriorik(priorik),
 fPPrioripi(prioripi),
-fPPriorie(priorie),
-fInvPt(0)
+fPPriorie(priorie)
 {
   //
+  for (Int_t i=0;i<8;i++){
+    fCondFunProLay[i]=-1;
+    fCondFunKLay[i]=-1;
+    fCondFunPiLay[i]=-1;
+  }
   Double_t xr;
   Double_t par[5];
   trackITS->GetExternalParameters(xr,par);
@@ -132,32 +148,42 @@ fInvPt(0)
     fMom=1/(TMath::Abs(par[4])*TMath::Cos(lamb));
   }
  
-  fInvPt=par[4];
  
   for(Int_t la=0;la<4;la++){//loop on layers
     Double_t parp[3];Double_t park[3];Double_t parpi[3];
-    sp->GetParFitLayer(la,fMom,parp,park,parpi);
+    fNcls[la]=0;
     Double_t range[8];
     range[0]=0.3*parp[1];
     range[1]=2.*parp[1];
 
     range[2]=0.3*park[1];
     range[3]=2.*park[1];
-    
+
     range[4]=0.3*parpi[1];
     range[5]=2.*parpi[1];
-      CookFunItsLay(la,0,parp,Qlay[la],fMom,range[0],range[1],"fPro");
-      CookFunItsLay(la,1,park,Qlay[la],fMom,range[2],range[3],"fKao");
-      CookFunItsLay(la,2,parpi,Qlay[la],fMom,range[4],range[5],"fPi");
+
+    Int_t layer=la+2;
+    for(Int_t ii=0;ii<8;ii++){
+      if(nlay[ii]==layer){
+	fNcls[la]++;
+	if(Qlay[ii]>0){
+	  sp->GetParFitLayer(la,fMom,parp,park,parpi);
+	  CookFunItsLay(ii,0,parp,Qlay[ii],fMom,range[0],range[1],"fPro");
+	  CookFunItsLay(ii,1,park,Qlay[ii],fMom,range[2],range[3],"fKao");
+	  CookFunItsLay(ii,2,parpi,Qlay[ii],fMom,range[4],range[5],"fPi");
+	}  
+      }
+    }
+    
   }
 
-  Float_t prior[4];Double_t condFun[4][3];
+  Float_t prior[4];Double_t condFun[8][3];
 
   prior[0]=fPPriorip;
   prior[1]=fPPriorik;
   prior[2]=fPPrioripi;
   prior[3]=fPPriorie;
-  for(Int_t la=0;la<4;la++){
+  for(Int_t la=0;la<8;la++){
     condFun[la][0]= fCondFunProLay[la];
     condFun[la][1]= fCondFunKLay[la]; 
     condFun[la][2]= fCondFunPiLay[la];
@@ -171,12 +197,47 @@ fInvPt(0)
 
 }
 //_______________________________________________________________________
+void AliITSPident::GetNclsPerLayer(Int_t *ncls) const{
+  //number of clusters for each layer (sdd1,sdd2,ssd1,ssd2)
+ for(Int_t la=0;la<4;la++){
+   ncls[la]=fNcls[la];
+ }
+
+}//_______________________________________________________________________
+Double_t AliITSPident::GetProdCondFunPro() const {
+  //Product of conditional probability functions for protons
+    Double_t rv=1.;
+    for(Int_t i=0;i<8;i++){
+      Double_t fun=GetCondFunPro(i);
+      if(fun>=0)rv*=fun;
+    }
+    return rv;
+}//_______________________________________________________________________
+Double_t AliITSPident::GetProdCondFunK() const {
+  //Product of conditional probability functions for kaons
+    Double_t rv=1.; 
+    for(Int_t i=0;i<8;i++){
+      Double_t fun=GetCondFunK(i);
+      if(fun>=0)rv*=fun;
+    }
+    return rv;
+}
+//_______________________________________________________________________
+Double_t AliITSPident::GetProdCondFunPi() const {
+  //Product of conditional probability functions for pions
+    Double_t rv=1.; 
+    for(Int_t i=0;i<8;i++){
+      Double_t fun=GetCondFunPi(i);
+      if(fun>=0)rv*=fun;
+    }
+    return rv;
+}
+//_______________________________________________________________________
 void AliITSPident::PrintParameters() const{
  //print parameters
   cout<<"___________________________\n";
   cout<<"Track Local Momentum = "<<"  "<<fMom<<endl;
   cout<<"Track dEdx = "<<"  "<<fdEdx<<endl;
-  cout<<"Inv Pt = "<<fInvPt<<endl;
 }
 
 //_______________________________________________________________________
@@ -327,10 +388,10 @@ Float_t AliITSPident::CookCombinedBayes(Double_t condfun[][3],Float_t *prior,Int
   Float_t pprior[4]={0,0,0,0};
   for(Int_t j=0;j<4;j++)pprior[j]=prior[j];
   pprior[2]+=pprior[3];//prior for electrons summed to priors for pions
-  for(Int_t i=0;i<4;i++){//layer
+  for(Int_t i=0;i<8;i++){//layer
     if (condfun[i][0]>0 || condfun[i][1]>0 ||condfun[i][2]>0) test++; 
   }
-  if(test==4){
+  if(test>0){
     if ((pprior[0]!=0 || pprior[1]!=0 ||pprior[2]!=0)&&CookSum(condfun,pprior)!=0){
 
       bayes=pprior[part]*CookProd(condfun,part)*1/CookSum(condfun,pprior);
@@ -345,9 +406,8 @@ Float_t AliITSPident::CookCombinedBayes(Double_t condfun[][3],Float_t *prior,Int
 Float_t AliITSPident::CookProd(Double_t condfun[][3],Int_t part)const{
   //
   Float_t p=1;
-  for(Int_t lay=0;lay<4;lay++){
-  
-    p=p*condfun[lay][part];
+  for(Int_t lay=0;lay<8;lay++){
+    if(condfun[lay][part]>=0)p=p*condfun[lay][part];
   }
 
   return p;

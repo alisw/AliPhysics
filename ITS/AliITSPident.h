@@ -8,20 +8,19 @@
 //functions for each layer are convoluted Landau-Gaussian functions.     // 
 // Origin: Elena Bruna bruna@to.infn.it, Massimo Masera masera@to.infn.it//
 ////////////////////////////////////////////////////////////////////////
-#include "AliITStrackV2.h"
+
 #include <TObject.h>
-#include <Riostream.h>
-#include <TF1.h>
-#include <TTree.h>
-#include "AliITSPidParItem.h"
-#include "AliITSSteerPid.h"
+class AliITStrackV2;
+class AliITSSteerPid;
+class TF1;
+class AliITSPidParItem;
 class AliITSPident : public TObject{
 
  public:
   AliITSPident();
-  AliITSPident(Double_t mom,Double_t invPt,Double_t dEdx,AliITSSteerPid *sp,Float_t *Qlay,Float_t priorip=0.066,Float_t priorik=0.103,Float_t prioripi=0.83,Float_t priorie=0.001);
+  AliITSPident(Double_t mom,Double_t dEdx,AliITSSteerPid *sp,Float_t *Qlay,Float_t *nlay,Float_t priorip=0.066,Float_t priorik=0.103,Float_t prioripi=0.83,Float_t priorie=0.001);
   
-  AliITSPident(AliITStrackV2 *trackITS,AliITSSteerPid *sp,Float_t *Qlay,Float_t priorip=0.066,Float_t priorik=0.103,Float_t prioripi=0.83,Float_t priorie=0.001);
+  AliITSPident(AliITStrackV2 *trackITS,AliITSSteerPid *sp,Float_t *Qlay,Float_t *nlay,Float_t priorip=0.066,Float_t priorik=0.103,Float_t prioripi=0.83,Float_t priorie=0.001);
 
   virtual ~AliITSPident();
   Float_t GetP() const {return fMom;}//local momentum (GeV/c)
@@ -29,25 +28,15 @@ class AliITSPident : public TObject{
   Double_t GetCondFunPro(Int_t lay) const {
     return fCondFunProLay[lay];
   }
-  Double_t GetProdCondFunPro() const {
-    Double_t rv=1.; for(Int_t i=0;i<4;i++)rv*=GetCondFunPro(i);
-    return rv;
-  }
+  Double_t GetProdCondFunPro() const;
   Double_t GetCondFunK(Int_t lay) const {
     return fCondFunKLay[lay];
   }
-  Double_t GetProdCondFunK() const {
-    Double_t rv=1.; for(Int_t i=0;i<4;i++)rv*=GetCondFunK(i);
-    return rv;
-  }
+  Double_t GetProdCondFunK() const;
   Double_t GetCondFunPi(Int_t lay) const {
     return fCondFunPiLay[lay];
   }
-  Double_t GetProdCondFunPi() const {
-    Double_t rv=1.; for(Int_t i=0;i<4;i++)rv*=GetCondFunPi(i);
-    return rv;
-  }
-  Float_t GetInvPt() const {return fInvPt;}
+  Double_t GetProdCondFunPi() const;
   void PrintParameters() const;
   Float_t GetPBayesp()const {return fPBayesp;}
   Float_t GetPBayesk()const {return fPBayesk;}
@@ -56,7 +45,7 @@ class AliITSPident : public TObject{
   Float_t GetPPriorik() const {return fPPriorik;}
   Float_t GetPPrioripi() const {return fPPrioripi;}
   Float_t GetPPriorie() const {return fPPriorie;}
-  
+  void GetNclsPerLayer(Int_t *ncls) const;
   static Double_t Langaufun(Double_t *x, Double_t *par);
   static Double_t Langaufun2(Double_t *x, Double_t *par);
   static Double_t Langaufunnorm(Double_t *x, Double_t *par);
@@ -74,9 +63,9 @@ class AliITSPident : public TObject{
 
   Float_t fMom;                   // Particle momentum
   Double_t fdEdx;                 // Particle dE/dx
-  Double_t fCondFunProLay[4];     // one for each silicon layer
-  Double_t fCondFunKLay[4];       // cond. prob. function kaons per layer
-  Double_t fCondFunPiLay[4];      // cond. prob. function pions per layer
+  Double_t fCondFunProLay[8];     // one for each silicon layer
+  Double_t fCondFunKLay[8];       // cond. prob. function kaons per layer
+  Double_t fCondFunPiLay[8];      // cond. prob. function pions per layer
   Float_t fPBayesp;               // Bayes prob. 
   Float_t fPBayesk;               // Bayes prob. for kaons
   Float_t fPBayespi;              // Bayes prob. for pions 
@@ -84,8 +73,7 @@ class AliITSPident : public TObject{
   Float_t fPPriorik;              // Priori prob. for kaons
   Float_t fPPrioripi;             // Priori prob. for pions
   Float_t fPPriorie;              // Priori prob. for electrons
-  Float_t fInvPt;                 // Particle Inverse Transverse momentum
-
-  ClassDef(AliITSPident,1);
+  Int_t fNcls[4];                 // N. of clusters per layer (sdd1,sdd2,ssd1,ssd2) 
+  ClassDef(AliITSPident,2);
 };
 #endif

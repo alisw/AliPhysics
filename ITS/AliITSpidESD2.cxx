@@ -92,7 +92,7 @@ Int_t AliITSpidESD2::MakePID(AliESD *event)
   fLoader->LoadRecPoints();
   TTree *cTree=fLoader->TreeR();
   fTracker->LoadClusters(cTree);
-
+  printf("==== Landau Fit PID ITS ====== \n");
   Int_t ntrk=event->GetNumberOfTracks();
   Double_t momits;
   // for (Int_t i=0; i<ntrk; i++) {
@@ -117,60 +117,41 @@ Int_t AliITSpidESD2::MakePID(AliESD *event)
     const Int_t kns=AliPID::kSPECIES;
     Double_t condprobfun[kns];
     for(Int_t ii=0;ii<kns;ii++)condprobfun[ii]=0;
-    Int_t cluindsdd1 = track->GetClusterIndex(3);
-    Int_t cluindsdd2 = track->GetClusterIndex(2);
-    Int_t cluindssd1 = track->GetClusterIndex(1);
-    Int_t cluindssd2 = track->GetClusterIndex(0);
-    Float_t q1,q1corr,q2,q2corr,q3,q3corr,q4,q4corr;
-    AliITSRecPoint* clu1=(AliITSRecPoint*)fTracker->GetCluster(cluindsdd1);
-    if(clu1!=0){
-      q1=clu1->GetQ(); 
-      q1corr=q1*TMath::Sqrt((1-snp*snp)/(1+tgl*tgl));
+    Int_t cluind[12];
+    for(Int_t ii=0;ii<12;ii++){
+      cluind[ii]=track->GetClusterIndex(ii);
     }
-    else{
-      q1=-99;
-      q1corr=-99;
+    AliITSRecPoint* cluarr[12];
+    Float_t qclu[8],qclucorr[8],nlay[8];
+    for(Int_t i=0;i<8;i++){
+      qclu[i]=0;
+      qclucorr[i]=0;
+      nlay[i]=0;
     }
-	
-    AliITSRecPoint* clu2=(AliITSRecPoint*)fTracker->GetCluster(cluindsdd2);
-    if(clu2!=0){
-      q2=clu2->GetQ();
-      q2corr=q2*TMath::Sqrt((1-snp*snp)/(1+tgl*tgl));
+    Int_t jj=0;
+    for(Int_t i=0;i<12;i++){
+      cluind[i]=track->GetClusterIndex(i);
+      if(cluind[i]>0){
+	cluarr[i]=(AliITSRecPoint*)fTracker->GetCluster(cluind[i]);
+	Int_t lay=cluarr[i]->GetLayer();
+	if(lay>1){//sdd+ssd only
+	  qclu[jj]=cluarr[i]->GetQ(); 
+	  qclucorr[jj]=qclu[jj]*TMath::Sqrt((1-snp*snp)/(1+tgl*tgl));
+	  nlay[jj]=lay;
+	  jj++;
+	}
+	else qclucorr[jj]=-1;
+      }
     }
-    else{
-      q2=-99;
-      q2corr=-99;
-    }
-    
-    AliITSRecPoint* clu3=(AliITSRecPoint*)fTracker->GetCluster(cluindssd1);
-    if(clu3!=0){
-      q3=clu3->GetQ();
-      q3corr=q3*TMath::Sqrt((1-snp*snp)/(1+tgl*tgl));
-    }
-    else{
-      q3=-99;
-      q3corr=-99;
-    }
-    
-    AliITSRecPoint* clu4=(AliITSRecPoint*)fTracker->GetCluster(cluindssd2);
-    if(clu4!=0){
-      q4=clu4->GetQ();
-      q4corr=q4*TMath::Sqrt((1-snp*snp)/(1+tgl*tgl));
-    }
-    else{
-      q4=-99;
-      q4corr=-99;
-    }
-    Float_t qlay[4]={q1corr,q2corr,q3corr,q4corr};
+
     Float_t prip=0.33;
     Float_t prik=0.33;
     Float_t pripi=0.33;
     Float_t prie=0.;
-    Double_t invPt=track->Get1Pt();
-    AliITSPident mypid(momits,invPt,dEdxsignal,fSp,qlay,prip,prik,pripi,prie); 
-    condprobfun[0]=mypid.GetProdCondFunPi();//el -> ITS does not distinguish among Pi,mu,el
-    condprobfun[1]=mypid.GetProdCondFunPi();//mu -> ITS does not distinguish among Pi,mu,el
-    condprobfun[2]=mypid.GetProdCondFunPi();//pi -> ITS does not distinguish among Pi,mu,el
+    AliITSPident mypid(momits,dEdxsignal,fSp,qclucorr,nlay,prip,prik,pripi,prie); 
+    condprobfun[0]=mypid.GetProdCondFunPi();//el --PID in the ITS does not distinguish among Pi,el,mu
+    condprobfun[1]=mypid.GetProdCondFunPi();//mu
+    condprobfun[2]=mypid.GetProdCondFunPi();//pi
     condprobfun[3]=mypid.GetProdCondFunK();//kaon
     condprobfun[4]=mypid.GetProdCondFunPro();//pro
 
