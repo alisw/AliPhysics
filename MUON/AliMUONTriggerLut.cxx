@@ -78,16 +78,28 @@ void AliMUONTriggerLut::ReadFromFile(const char* filename)
     AliFatal(Form("Could not open file %s",filename));
   }
   
-  fLptPlus = (TH3*)(f.Get("LptPlus")->Clone());  
-  fLptMinu = (TH3*)(f.Get("LptMinu")->Clone());
-  fLptUnde = (TH3*)(f.Get("LptUnde")->Clone());
-  fHptPlus = (TH3*)(f.Get("HptPlus")->Clone());  
-  fHptMinu = (TH3*)(f.Get("HptMinu")->Clone());
-  fHptUnde = (TH3*)(f.Get("HptUnde")->Clone());
-  fAptPlus = (TH3*)(f.Get("AptPlus")->Clone());  
-  fAptMinu = (TH3*)(f.Get("AptMinu")->Clone());
-  fAptUnde = (TH3*)(f.Get("AptUnde")->Clone());
+  AliDebug(1,Form("filename=%s",filename));
+  
+//  fLptPlus = (TH3*)(f.Get("LptPlus")->Clone());  
+//  fLptMinu = (TH3*)(f.Get("LptMinu")->Clone());
+//  fLptUnde = (TH3*)(f.Get("LptUnde")->Clone());
+//  fHptPlus = (TH3*)(f.Get("HptPlus")->Clone());  
+//  fHptMinu = (TH3*)(f.Get("HptMinu")->Clone());
+//  fHptUnde = (TH3*)(f.Get("HptUnde")->Clone());
+//  fAptPlus = (TH3*)(f.Get("AptPlus")->Clone());  
+//  fAptMinu = (TH3*)(f.Get("AptMinu")->Clone());
+//  fAptUnde = (TH3*)(f.Get("AptUnde")->Clone());
 
+  fLptPlus = (TH3*)(f.Get("LptPlus"));  
+  fLptMinu = (TH3*)(f.Get("LptMinu"));
+  fLptUnde = (TH3*)(f.Get("LptUnde"));
+  fHptPlus = (TH3*)(f.Get("HptPlus"));  
+  fHptMinu = (TH3*)(f.Get("HptMinu"));
+  fHptUnde = (TH3*)(f.Get("HptUnde"));
+  fAptPlus = (TH3*)(f.Get("AptPlus"));  
+  fAptMinu = (TH3*)(f.Get("AptMinu"));
+  fAptUnde = (TH3*)(f.Get("AptUnde"));
+  
   // insure we "detach" those histograms from file f
   fLptPlus->SetDirectory(0);
   fLptMinu->SetDirectory(0);

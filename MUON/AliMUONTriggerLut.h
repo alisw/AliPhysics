@@ -6,7 +6,7 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
-/// \ingroup base
+/// \ingroup calib
 /// \class AliMUONTriggerLut
 /// \brief MUON trigger look up table class 
 ///
