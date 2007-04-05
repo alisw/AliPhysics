@@ -19,7 +19,8 @@ ELIBS    := Aliengui \
   FASTSIM microcern \
   RAWDatabase RAWDatarec RAWDatasim \
   HLTbase AliHLTSrc AliHLTComp AliHLTMisc AliHLTMUON \
-  AliHLTHough AliHLTITS
+  AliHLTHough AliHLTITS \
+  ANALYSIS
 
 ifeq (macosx,$(ALICE_TARGET))
 

@@ -33,9 +33,9 @@
 #ifdef WITHALIEN
 #include <TAlienCollection.h>
 #include <TGridResult.h>
+#include <TFileMerger.h>
 #endif
 #include <TChain.h>
-#include <TFileMerger.h>
 #include <TGrid.h>
 #include <TROOT.h> 
 #include <TSystem.h>
@@ -98,6 +98,7 @@ Bool_t AliAnalysisGoodies::Alien2Local(const TString collectionNameIn, const TSt
   //        in: a xml esd collection file name 
   //        ou: the local directory where to save the esd root files          
 
+#ifdef WITHALIEN
   Bool_t rv = kTRUE ; 
 
   fTimer.Start() ; 
@@ -148,7 +149,10 @@ Bool_t AliAnalysisGoodies::Alien2Local(const TString collectionNameIn, const TSt
   fTimer.Stop();
   fTimer.Print();
 
-  return rv ; 
+  return rv ;
+#else
+  return kFALSE;
+#endif
 }
 
 //______________________________________________________________________
