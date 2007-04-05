@@ -18,18 +18,18 @@
 #include "AliMUON2DStoreValidator.h"
 
 #include "AliLog.h"
-#include "AliMUONCalibParam1I.h"
-#include "AliMpIntPair.h"
-#include "AliMpManuList.h"
-#include "AliMUONV2DStore.h"
-#include "TList.h"
-#include "TObjArray.h"
 #include "AliMUONCheckItem.h"
 #include "AliMUONCheckItemIterator.h"
+#include "AliMpConstants.h"
+#include "AliMUONV2DStore.h"
+#include "AliMUONVCalibParam.h"
 #include "AliMpDEManager.h"
-#include "TObjString.h"
-#include "AliMUONConstants.h"
-#include "Riostream.h"
+#include "AliMpIntPair.h"
+#include "AliMpManuList.h"
+#include <Riostream.h>
+#include <TList.h>
+#include <TObjArray.h>
+#include <TObjString.h>
 
 /// \class AliMUON2DStoreValidator
 ///
@@ -84,7 +84,7 @@ AliMUON2DStoreValidator::GetChamber(Int_t chamberID)
   /// Return (and create if not present) the given chamber
   /// chamberID in 0..NCh()
   
-  if ( chamberID < 0 || chamberID >= AliMUONConstants::NCh() )
+  if ( chamberID < 0 || chamberID >= AliMpConstants::NofTrackingChambers() )
   {
     AliFatal(Form("Invalid chamber number %d",chamberID));
     return 0x0;
@@ -92,7 +92,7 @@ AliMUON2DStoreValidator::GetChamber(Int_t chamberID)
   
   if (!fChambers) 
   {
-    fChambers = new TObjArray(AliMUONConstants::NCh());
+    fChambers = new TObjArray(AliMpConstants::NofTrackingChambers());
   }
     
   AliMUONCheckItem* chamber = 

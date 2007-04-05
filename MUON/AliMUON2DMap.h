@@ -3,7 +3,7 @@
 
 // $Id$
 
-/// \ingroup base
+/// \ingroup calib
 /// \class AliMUON2DMap
 /// \brief Basic implementation of AliMUONV2DStore container using
 /// AliMpExMap internally.

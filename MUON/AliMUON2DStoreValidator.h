@@ -6,7 +6,7 @@
 
 // $Id$
 
-/// \ingroup rec
+/// \ingroup calib
 /// \class AliMUON2DStoreValidator
 /// \brief Determine which channels, manus, DEs, stations are missing
 /// from a 2DStore.

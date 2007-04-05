@@ -24,7 +24,7 @@
 #include "AliMpIntPair.h"
 #include "AliMpManuList.h"
 #include "AliMpDEManager.h"
-#include "AliMUONConstants.h"
+#include "AliMpConstants.h"
 #include <TList.h>
 
 /// \class AliMUON2DMap
@@ -48,7 +48,7 @@ AliMUON2DMap::AliMUON2DMap(Bool_t optimizeForDEManu)
     if ( fOptimizeForDEManu )
     {
       Int_t nDEs(0);
-      for ( Int_t i = 0; i < AliMUONConstants::NTrackingCh(); ++i )
+      for ( Int_t i = 0; i < AliMpConstants::NofTrackingChambers(); ++i )
       {
         nDEs += AliMpDEManager::GetNofDEInChamber(i);
       }

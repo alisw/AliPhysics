@@ -19,7 +19,7 @@
 #include "TSystem.h"
 
 #include "AliMUONTriggerEfficiencyCells.h"
-#include "AliMUONConstants.h"
+#include "AliMpConstants.h"
 #include "AliLog.h"
 
 /// \class AliMUONTriggerEfficiencyCells
@@ -256,7 +256,7 @@ Int_t AliMUONTriggerEfficiencyCells::FindChamberIndex(Int_t detElemId)
 {
 ///  From detElemId to chamber number
 
-  Int_t offset = 100*(AliMUONConstants::NTrackingCh()+1);
+  Int_t offset = 100*(AliMpConstants::NofTrackingChambers()+1);
   Int_t chamber = (detElemId-offset)/100;
   return chamber;
 }
@@ -267,7 +267,7 @@ Int_t AliMUONTriggerEfficiencyCells::FindSlatIndex(Int_t detElemId)
 {
 ///  From detElemId to slat index.
 
-  Int_t offset = 100*(AliMUONConstants::NTrackingCh()+1);
+  Int_t offset = 100*(AliMpConstants::NofTrackingChambers()+1);
   Int_t chamber = FindChamberIndex(detElemId);
   Int_t slat = detElemId-offset-(chamber*100);
   return slat;
