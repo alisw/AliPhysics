@@ -31,15 +31,64 @@
 ClassImp(AliMUONV2DStore)
 /// \endcond
 
-#include "AliMpIntPair.h"
+#include "AliLog.h"
 #include "AliMUONObjectPair.h"
-#include "AliMpHelper.h"
 #include "AliMUONVDataIterator.h"
-#include "Riostream.h"
-#include "TMap.h"
-#include "TObjArray.h"
-#include "TObjString.h"
-#include "TString.h"
+#include "AliMpIntPair.h"
+#include <TMap.h>
+#include <TString.h>
+#include <TObjString.h>
+#include <TObjArray.h>
+#include <Riostream.h>
+
+namespace
+{
+  //_____________________________________________________________________________
+  void Decode(TMap& m, const TString& s, const char* sep)
+{
+    /// Fills the map m with (key,value) extracted from s
+    /// where s is of the form :
+    /// key1=value1;key2=value2;key3=value3
+    
+    TString ss(s);
+    ss.ToUpper();
+    
+    m.SetOwner(true);
+    
+    TObjArray* a = ss.Tokenize(sep);
+    TIter next(a);
+    TObjString* o;
+    
+    while ( ( o = static_cast<TObjString*>(next()) ) )
+    {
+      TString& os(o->String());
+      TObjArray* b = os.Tokenize("=");
+      if (b->GetEntries()==2)
+      {
+        m.Add(b->At(0),b->At(1));
+      }
+    }
+}
+
+//_____________________________________________________________________________
+Bool_t FindValue(const TMap& m, const TString& key, TString& value)
+{
+  /// Find value corresponding to key in map m.
+  /// Return false if key not found.
+  
+  TString skey(key);
+  skey.ToUpper();
+  value = "";
+  TPair* p = static_cast<TPair*>(m.FindObject(skey));
+  if (p) 
+  {
+    value = (static_cast<TObjString*>(p->Value()))->String();
+    return kTRUE;
+  }
+  return kFALSE;
+}
+
+}
 
 //_____________________________________________________________________________
 AliMUONV2DStore::AliMUONV2DStore()
@@ -53,6 +102,7 @@ AliMUONV2DStore::~AliMUONV2DStore()
 /// Destructor
 }
 
+
 //_____________________________________________________________________________
 void
 AliMUONV2DStore::Print(Option_t* opt) const
@@ -62,22 +112,20 @@ AliMUONV2DStore::Print(Option_t* opt) const
   /// e.g opt="I=12;J=1;opt=Full" to see complete values, but only for the 
   /// (12,1) pair.
   /// Warning : decoding of opt format is not really bullet-proof (yet?)
-  
+
   AliMUONVDataIterator* it = this->Iterator();
   
   AliMUONObjectPair* pair;
   
-  TMap* m = AliMpHelper::Decode(opt);
+  TMap m;
+  Decode(m,opt,";");
   
   TString si;  
-  Bool_t selectI = AliMpHelper::Decode(*m,"i",si);
+  Bool_t selectI = FindValue(m,"i",si);
   TString sj;
-  Bool_t selectJ = AliMpHelper::Decode(*m,"j",sj);
+  Bool_t selectJ = FindValue(m,"j",sj);
   TString sopt;
-  AliMpHelper::Decode(*m,"opt",sopt);
-  
-  m->DeleteAll();
-  delete m;
+  FindValue(m,"opt",sopt);
   
   while ( ( pair = static_cast<AliMUONObjectPair*>(it->Next() ) ) )
   {
@@ -92,9 +140,9 @@ AliMUONV2DStore::Print(Option_t* opt) const
     {
       o->Print(sopt.Data());
     }
+    if ( it->IsOwner() ) delete pair;
   }
-  
   delete it;
-}
+}  
 
 

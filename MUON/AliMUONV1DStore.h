@@ -3,7 +3,7 @@
 
 // $Id$
 
-/// \ingroup base
+/// \ingroup calib
 /// \class AliMUONV1DStore
 /// \brief Generic container indexed by a single integer.
 /// 
