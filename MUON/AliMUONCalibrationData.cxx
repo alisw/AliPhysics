@@ -60,7 +60,8 @@ fRegionalTriggerBoardMasks(0x0),
 fGlobalTriggerBoardMasks(0x0),
 fTriggerLut(0x0),
 fTriggerEfficiency(0x0),
-fCapacitances(0x0)
+fCapacitances(0x0),
+fNeighbours(0x0)
 {
 /// Default ctor.
 
@@ -81,6 +82,7 @@ fCapacitances(0x0)
     OnDemandTriggerLut();
     OnDemandTriggerEfficiency();
     OnDemandCapacitances();
+    OnDemandNeighbours();
   }
 }
 
@@ -161,10 +163,43 @@ AliMUONCalibrationData::Capacitances() const
 
 //_____________________________________________________________________________
 AliMUONV2DStore*
+AliMUONCalibrationData::Neighbours() const
+{
+  /// Create (if needed) and return the internal store for neighbours.
+  return OnDemandNeighbours();
+}
+
+//_____________________________________________________________________________
+AliMUONV2DStore*
 AliMUONCalibrationData::Gains() const
 {
   /// Create (if needed) and return the internal store for gains.
   return OnDemandGains();
+}
+
+//_____________________________________________________________________________
+AliMUONV2DStore*
+AliMUONCalibrationData::OnDemandNeighbours() const
+{
+  /// Create (if needed) and return the internal store for neighbours.
+  
+  if (!fNeighbours)
+  {
+    AliCDBEntry* entry = GetEntry("MUON/Calib/Neighbours");
+    if (entry)
+    {
+      fNeighbours = dynamic_cast<AliMUONV2DStore*>(entry->GetObject());
+      if (!fNeighbours)
+      {
+        AliError("Neighbours not of the expected type !!!");
+      }
+    }
+    else
+    {
+      AliError("Could not get neighbours !");
+    }
+  }
+  return fNeighbours;
 }
 
 //_____________________________________________________________________________
@@ -216,6 +251,7 @@ AliMUONCalibrationData::OnDemandGains() const
   }
   return fGains;
 }
+
 
 //_____________________________________________________________________________
 AliMUONVCalibParam* 
@@ -505,6 +541,8 @@ AliMUONCalibrationData::Reset()
   fTriggerEfficiency = 0x0;
   delete fCapacitances;
   fCapacitances = 0x0;
+  delete fNeighbours;
+  fNeighbours = 0x0;
 }
 
 

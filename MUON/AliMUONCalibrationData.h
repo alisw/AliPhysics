@@ -35,6 +35,8 @@ public:
   AliMUONCalibrationData(Int_t runNumber=-1, Bool_t deferredInitialization=kTRUE);
   virtual ~AliMUONCalibrationData();
 
+  AliMUONV2DStore* Neighbours() const;
+  
   AliMUONV1DStore* Capacitances() const;
   
   AliMUONV2DStore* Gains() const;
@@ -84,6 +86,7 @@ protected:
   
 private:
   AliCDBEntry* GetEntry(const char* path) const;
+  AliMUONV2DStore* OnDemandNeighbours() const;
   AliMUONV1DStore* OnDemandCapacitances() const;
   AliMUONV2DStore* OnDemandGains() const;
   AliMUONV2DStore* OnDemandPedestals() const;
@@ -106,8 +109,9 @@ private:
   mutable AliMUONTriggerLut* fTriggerLut; //!< TRigger LUTs
   mutable AliMUONTriggerEfficiencyCells* fTriggerEfficiency; //!< Trigger efficiency cells
   mutable AliMUONV1DStore* fCapacitances; //!< Manu capacitances
+  mutable AliMUONV2DStore* fNeighbours; //!< list of neighbours for all channels
   
-  ClassDef(AliMUONCalibrationData,5) // Storage for all MUON calibration data.
+  ClassDef(AliMUONCalibrationData,6) // Storage for all MUON calibration data.
 };
 
 #endif
