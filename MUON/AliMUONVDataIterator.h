@@ -3,7 +3,7 @@
 
 // $Id$
 
-/// \ingroup base
+/// \ingroup calib
 /// \class AliMUONVDataIterator
 /// \brief Defines an interface of an iterator over muon data structure(s)
 /// 
@@ -22,14 +22,19 @@ public:
   AliMUONVDataIterator();
   virtual ~AliMUONVDataIterator();
   
-  /// \todo add comment
+  /// Return next object in the iteration.
+  /// To know if the client must delete that object, use
+  /// the IsOwner() method
   virtual TObject* Next() = 0;
   
-  /// \todo add comment
+  /// Reset (i.e. Rewind) the iterator
   virtual void Reset() = 0; 
   
-  /// \todo add comment
+  /// Remove the current item (might not be implemented yet)
   virtual Bool_t Remove() = 0;
+  
+  /// Whether or not the objects returned by this iterator are to be deleted
+  virtual Bool_t IsOwner() const = 0;
   
   ClassDef(AliMUONVDataIterator,0) // Interface for an iterator on AliMUONData.
 };
