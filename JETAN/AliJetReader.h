@@ -62,14 +62,14 @@ class AliJetReader : public TObject
   AliJetReader(const AliJetReader& rJetReader);
   AliJetReader& operator = (const AliJetReader& rhsr);
   TClonesArray            *fMomentumArray;    // array of particle momenta
-  TClonesArray            *fArrayMC;          // array of mc particles
-  TTask                   *fFillUnitArray;    // task list for filling the UnitArray
+  TClonesArray            *fArrayMC;          //! array of mc particles
+  TTask                   *fFillUnitArray;    //! task list for filling the UnitArray
   AliJetReaderHeader      *fReaderHeader;     // pointer to header
   TArrayI                  fSignalFlag;       // to flag if a particle comes from pythia or
                                               // from the underlying event
   TArrayI                  fCutFlag;          // to flag if a particle passed the pt cut or not
-  AliJetUnitArray         *fUnitArray;        // array of digit position and energy 
-  AliJetUnitArray         *fUnitArrayNoCuts;  // array of digit position and energy 
+  AliJetUnitArray         *fUnitArray;        //! array of digit position and energy 
+  AliJetUnitArray         *fUnitArrayNoCuts;  //! array of digit position and energy 
   Bool_t                   fArrayInitialised; // To check that array of units is initialised  
   ClassDef(AliJetReader,1)
 };

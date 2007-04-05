@@ -15,13 +15,14 @@
 class AliJetHadronCorrection : public TNamed {
 
   public:
-  AliJetHadronCorrection(const char *name="name", const char *title="title");
-  virtual ~AliJetHadronCorrection() {} 
+    AliJetHadronCorrection();
+    AliJetHadronCorrection(const char *name, const char *title);
+    virtual ~AliJetHadronCorrection() {} 
 
   // Add for particle
-  virtual Double_t GetEnergy(Double_t pmom, Double_t eta, Int_t gid)=0; 
+    virtual Double_t GetEnergy(Double_t pmom, Double_t eta, Int_t gid)=0; 
 
-  ClassDef(AliJetHadronCorrection,1) // Hadron correction for EMC (abstract class)
+    ClassDef(AliJetHadronCorrection,1) // Hadron correction for EMC (abstract class)
 };
 
 #endif // ALIJETHADRONCORRECTION_H

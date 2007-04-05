@@ -16,7 +16,8 @@ class AliJetHadronCorrectionv0: public AliJetHadronCorrection {
   static AliJetHadronCorrectionv0* fHadrCorr;
 
   protected:
-  AliJetHadronCorrectionv0(const char *name="HadronCorrectionv0", const char *title="title");
+  AliJetHadronCorrectionv0() {;}
+  AliJetHadronCorrectionv0(const char *name, const char *title);
 
   public:
   static  AliJetHadronCorrectionv0* Instance();
