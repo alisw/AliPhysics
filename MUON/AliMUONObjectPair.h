@@ -6,7 +6,7 @@
 
 // $Id$
 
-/// \ingroup base
+/// \ingroup calib
 /// \class AliMUONObjectPair
 /// \brief The equivalent of a std::pair<TObject*,TObject*> ;-)
 /// 

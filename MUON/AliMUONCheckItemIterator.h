@@ -6,7 +6,7 @@
 
 // $Id$
 
-/// \ingroup rec
+/// \ingroup calib
 /// \class AliMUONCheckItemIterator
 /// \brief Iterator on CheckItem
 /// 

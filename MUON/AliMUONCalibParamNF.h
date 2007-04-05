@@ -3,7 +3,7 @@
 
 // $Id$
 
-/// \ingroup base
+/// \ingroup calib
 /// \class AliMUONCalibParamNF
 /// \brief Implementation of AliMUONVCalibParam for tuples of floats
 /// 
