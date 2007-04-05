@@ -276,7 +276,8 @@ void AliShuttleLogbookEntry::Print(Option_t* option) const
 				if(keyStr.Length()<30) message.Append(' ', 30-keyStr.Length());
 				message += Form("%s\n", aValue->GetName());
 			} else {
-				message += "\tlog                            ...\n";
+				TString logStr(aValue->GetName(), 100);
+				message += Form("\tlog (first 100 chars)          %s \n",logStr.Data());
 			}
 		}
 	}

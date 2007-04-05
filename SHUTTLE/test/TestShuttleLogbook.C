@@ -9,8 +9,8 @@ Bool_t Connect(){
 	if(fServer && fServer->IsConnected()) return kTRUE;
 
 //	TString serverHost="mysql://pcald30.cern.ch";
-	TString serverHost="mysql://pcepalice62.cern.ch";
-	fServer = TSQLServer::Connect(serverHost.Data(),"offline","alice");
+	TString serverHost="mysql://aldaqgw01-gpn.cern.ch:1434";
+	fServer = TSQLServer::Connect(serverHost.Data(),"shuttle","alice");
 	
 	printf("Connecting to mysql server on %s !!!!!!\n", serverHost.Data());
 
@@ -22,7 +22,7 @@ Bool_t Connect(){
 
 	// Get table
 	TSQLResult* aResult=0;
-	aResult = fServer->GetTables("REFSYSLOG");
+	aResult = fServer->GetTables("SHUTTLE_TEST");
 	delete aResult;
 	return kTRUE;
 }
@@ -38,7 +38,7 @@ Bool_t QueryShuttleLogbook(AliShuttleLogbookEntry& entry, Int_t runNumber=-1)
 	}
 	if(!Connect()) return kFALSE;
 	if(runNumber<=0) runNumber= entry.GetRun();
-	entry.SetRun(runNumber); 
+	//entry.SetRun(runNumber); 
 
 	// check connection, in case connect
 	if(!Connect()) return kFALSE;
@@ -53,11 +53,11 @@ Bool_t QueryShuttleLogbook(AliShuttleLogbookEntry& entry, Int_t runNumber=-1)
 	}
 
 	// TODO Check field count!
-	if (aResult->GetFieldCount() != 24) {
-		printf("Invalid SQL result field number!\n");
-		delete aResult;
-		return kFALSE;
-	}
+//	if (aResult->GetFieldCount() != 24) {
+//		printf("Invalid SQL result field number!\n");
+//		delete aResult;
+//		return kFALSE;
+//	}
 
 	TSQLRow* aRow;
 	while ((aRow = aResult->Next())) {
@@ -65,7 +65,7 @@ Bool_t QueryShuttleLogbook(AliShuttleLogbookEntry& entry, Int_t runNumber=-1)
 		Int_t run = runString.Atoi();
 
 		// loop on detectors
-		for(UInt_t ii = 0; ii < 24; ii++){
+		for(UInt_t ii = 0; ii < 22; ii++){
 			entry.SetDetectorStatus(aResult->GetFieldName(ii), aRow->GetField(ii));
 		}
 
@@ -115,8 +115,8 @@ Bool_t QueryShuttleLogbook(AliShuttleLogbookEntry& entry, Int_t runNumber=-1)
 			return kFALSE;
 		}
 
-		entry.SetStartTime(startTime);
-		entry.SetEndTime(endTime);
+//		entry.SetStartTime(startTime);
+//		entry.SetEndTime(endTime);
 
 		delete aRow;
 	}
