@@ -29,6 +29,7 @@
 #include "AliCDBEntry.h"
 #include "AliPHOSEmcCalibData.h"
 #include "AliPHOSCpvCalibData.h"
+#include "AliPHOSEmcBadChannelsMap.h"
 #include "AliCDBMetaData.h"
 
 ClassImp(AliPHOSCalibData)
@@ -38,12 +39,14 @@ ClassImp(AliPHOSCalibData)
     TNamed(), 
     fCalibDataEmc(0x0), 
     fCalibDataCpv(0x0),
+    fEmcBadChannelsMap(0x0),
     fEmcDataPath("PHOS/Calib/EmcGainPedestals"),
-    fCpvDataPath("PHOS/Calib/CpvGainPedestals")
+    fCpvDataPath("PHOS/Calib/CpvGainPedestals"),
+    fEmcBadChannelsMapPath("PHOS/Calib/EmcBadChannels")
 {
   // Default constructor
   
-  AliCDBEntry* entryEmc = AliCDBManager::Instance()->Get(fEmcDataPath.Data());
+   AliCDBEntry* entryEmc = AliCDBManager::Instance()->Get(fEmcDataPath.Data());
   if(entryEmc)
     fCalibDataEmc = (AliPHOSEmcCalibData*)entryEmc->GetObject();
   
@@ -51,14 +54,19 @@ ClassImp(AliPHOSCalibData)
   if(entryCpv)
     fCalibDataCpv = (AliPHOSCpvCalibData*)entryCpv->GetObject();
 
+  AliCDBEntry* entryEmcBadMap = AliCDBManager::Instance()->Get(fEmcBadChannelsMapPath.Data());
+  if(entryEmcBadMap)
+    fEmcBadChannelsMap = (AliPHOSEmcBadChannelsMap*)entryEmcBadMap->GetObject(); 
+
 }
 
 //________________________________________________________________
 AliPHOSCalibData::AliPHOSCalibData(Int_t runNumber) :
   TNamed("phosCalib","PHOS Calibration Data Manager"),
-  fCalibDataEmc(0x0), fCalibDataCpv(0x0),
+  fCalibDataEmc(0x0), fCalibDataCpv(0x0), fEmcBadChannelsMap(0x0),
   fEmcDataPath("PHOS/Calib/EmcGainPedestals"),
-  fCpvDataPath("PHOS/Calib/CpvGainPedestals")
+  fCpvDataPath("PHOS/Calib/CpvGainPedestals"),
+  fEmcBadChannelsMapPath("PHOS/Calib/EmcBadChannels")
 {
   // Constructor
   AliCDBEntry* entryEmc = AliCDBManager::Instance()->Get(fEmcDataPath.Data(),runNumber);
@@ -69,6 +77,11 @@ AliPHOSCalibData::AliPHOSCalibData(Int_t runNumber) :
   if(entryCpv)
     fCalibDataCpv = (AliPHOSCpvCalibData*)entryCpv->GetObject();
 
+  AliCDBEntry* entryEmcBadMap = AliCDBManager::Instance()->
+    Get(fEmcBadChannelsMapPath.Data(),runNumber);
+  if(entryEmcBadMap)
+    fEmcBadChannelsMap = (AliPHOSEmcBadChannelsMap*)entryEmcBadMap->GetObject(); 
+
 }
 
 //________________________________________________________________
@@ -76,8 +89,10 @@ AliPHOSCalibData::AliPHOSCalibData(AliPHOSCalibData & phosCDB) :
   TNamed(phosCDB),
   fCalibDataEmc(phosCDB.fCalibDataEmc),
   fCalibDataCpv(phosCDB.fCalibDataCpv),
+  fEmcBadChannelsMap(phosCDB.fEmcBadChannelsMap),
   fEmcDataPath(phosCDB.fEmcDataPath),
-  fCpvDataPath(phosCDB.fCpvDataPath)
+  fCpvDataPath(phosCDB.fCpvDataPath),
+  fEmcBadChannelsMapPath(phosCDB.fEmcBadChannelsMapPath)
 {
   // Copy constructor
 }
@@ -96,8 +111,10 @@ AliPHOSCalibData & AliPHOSCalibData::operator = (const AliPHOSCalibData & rhs)
   TNamed::operator=(rhs);
   fCalibDataEmc = rhs.fCalibDataEmc;
   fCalibDataCpv = rhs.fCalibDataCpv;
+  fEmcBadChannelsMap = rhs.fEmcBadChannelsMap;
   fEmcDataPath  = rhs.fEmcDataPath;
   fCpvDataPath  = rhs.fCpvDataPath;
+  fEmcBadChannelsMapPath = rhs.fEmcBadChannelsMapPath;
   
   return *this;
 }
@@ -131,6 +148,9 @@ void AliPHOSCalibData::CreateNew()
 
   if(fCalibDataCpv) delete fCalibDataCpv;
   fCalibDataCpv = new AliPHOSCpvCalibData("PHOS-CPV");
+
+  if(fEmcBadChannelsMap) delete fEmcBadChannelsMap;
+  fEmcBadChannelsMap = new AliPHOSEmcBadChannelsMap();
 
 }
 
@@ -174,6 +194,27 @@ Bool_t AliPHOSCalibData::WriteCpv(Int_t firstRun, Int_t lastRun, AliCDBMetaData 
   else
     return kFALSE;
 
+}
+
+
+//________________________________________________________________
+Bool_t AliPHOSCalibData::WriteEmcBadChannelsMap(Int_t firstRun,Int_t lastRun,AliCDBMetaData *md)
+{
+  //Write EMC bad channels map into CDB.
+
+  if(!fEmcBadChannelsMap) return kFALSE;
+  
+  AliCDBStorage* storage = AliCDBManager::Instance()->GetSpecificStorage("PHOS/*");
+  if(!storage)
+    storage = AliCDBManager::Instance()->GetDefaultStorage();
+
+  if(storage) { 
+    AliCDBId id(fEmcBadChannelsMapPath.Data(),firstRun,lastRun);
+    storage->Put(fEmcBadChannelsMap,id, md);
+    return kTRUE;
+  }
+  else
+    return kFALSE;
 }
 
 //________________________________________________________________
@@ -336,4 +377,24 @@ void AliPHOSCalibData::RandomCpv(Float_t ccMin, Float_t ccMax)
       }
     }
   }
+}
+
+//________________________________________________________________
+Bool_t AliPHOSCalibData::IsBadChannelEmc(Int_t module, Int_t col, Int_t row) const
+{
+  //If no bad channels map found, channel considered good
+
+  if(fEmcBadChannelsMap) 
+    return fEmcBadChannelsMap->IsBadChannel(module,col,row);
+  else
+    return kFALSE;
+}
+
+//________________________________________________________________
+Int_t AliPHOSCalibData::GetNumOfEmcBadChannels() const
+{
+  if(fEmcBadChannelsMap)
+    return fEmcBadChannelsMap->GetNumOfBadChannels();
+  else
+    return 0;
 }

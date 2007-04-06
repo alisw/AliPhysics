@@ -15,6 +15,7 @@
 
 class AliPHOSEmcCalibData;
 class AliPHOSCpvCalibData;
+class AliPHOSEmcBadChannelsMap;
 class AliCDBMetaData;
 
 class AliPHOSCalibData: public TNamed {
@@ -46,21 +47,27 @@ class AliPHOSCalibData: public TNamed {
   void SetADCchannelCpv(Int_t module, Int_t column, Int_t row, Float_t value);
   void SetADCpedestalCpv(Int_t module, Int_t column, Int_t row, Float_t value);
 
+  Int_t  GetNumOfEmcBadChannels() const;
+  Bool_t IsBadChannelEmc(Int_t module, Int_t col, Int_t row) const; 
+
   void SetEmcDataPath(const char* emcPath) {fEmcDataPath=emcPath;}
   void SetCpvDataPath(const char* cpvPath) {fCpvDataPath=cpvPath;}
 
   Bool_t WriteEmc(Int_t firstRun, Int_t lastRun, AliCDBMetaData *md);
   Bool_t WriteCpv(Int_t firstRun, Int_t lastRun, AliCDBMetaData *md);
+  Bool_t WriteEmcBadChannelsMap(Int_t firstRun, Int_t lastRun, AliCDBMetaData *md);
 
  private:
 
   AliPHOSEmcCalibData* fCalibDataEmc; // EMC calibration data
   AliPHOSCpvCalibData* fCalibDataCpv; // CPV calibration data
+  AliPHOSEmcBadChannelsMap* fEmcBadChannelsMap; // EMC bad channels map
   
   TString fEmcDataPath; // path to EMC calibration data
   TString fCpvDataPath; // path to CPV calibration data
+  TString fEmcBadChannelsMapPath; // path to bad channels map
 
-  ClassDef(AliPHOSCalibData,2)    // PHOS Calibration data
+  ClassDef(AliPHOSCalibData,3)    // PHOS Calibration data
 };
 
 #endif
