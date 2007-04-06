@@ -38,6 +38,7 @@ ClassImp(AliITSresponseSSD)
 //______________________________________________________________________
 AliITSresponseSSD::AliITSresponseSSD():AliITSresponse(),
 fADCpereV(0),
+fKeVperADC(0),
 fCouplingPR(0),
 fCouplingPL(0),
 fCouplingNR(0),
@@ -50,6 +51,7 @@ fOption2(){
   SetDiffCoeff(fgkDiffCoeffDefault,0.);
   SetParamOptions(fgkOption1Default.Data(),fgkOption2Default.Data());
   SetADCpereV();
+  SetKeVperADC();
   SetCouplings(fgkfCouplingPR,fgkfCouplingPL,fgkfCouplingNR,fgkfCouplingNL);
   SetZSThreshold(fgkZSThreshold);
 }
@@ -57,6 +59,7 @@ fOption2(){
 //______________________________________________________________________
 AliITSresponseSSD::AliITSresponseSSD(const AliITSresponseSSD &ob) : AliITSresponse(ob),
 fADCpereV(ob.fADCpereV),
+fKeVperADC(ob.fKeVperADC),
 fCouplingPR(ob.fCouplingPR),
 fCouplingPL(ob.fCouplingPL),
 fCouplingNR(ob.fCouplingNR),

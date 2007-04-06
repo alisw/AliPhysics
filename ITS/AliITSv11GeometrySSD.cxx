@@ -21,7 +21,6 @@
 //*************************************************************************
 #include "TMath.h"
 #include "TGeoVolume.h"
-//#include "TGeoMedium.h"
 #include "TGeoMatrix.h"
 #include <TGeoManager.h>
 #include "TVector3.h"
@@ -37,148 +36,148 @@
 /////////////////////////////////////////////////////////////////////////////////
 // Layer5 (lengths are in mm and angles in degrees)
 /////////////////////////////////////////////////////////////////////////////////
-const Double_t AliITSv11GeometrySSD::fgkSSDLay5LadderLength      = 950.7;
+const Double_t AliITSv11GeometrySSD::fgkSSDLay5LadderLength      = 950.7*fgkmm;
 const Int_t AliITSv11GeometrySSD::fgkSSDLay5SensorsNumber        =  22;
 const Int_t AliITSv11GeometrySSD::fgkSSDLay5LadderNumber         =  34;
-const Double_t AliITSv11GeometrySSD::fgkSSDLay5RadiusMin         = 378.0;
-const Double_t AliITSv11GeometrySSD::fgkSSDLay5RadiusMax         = 384.0;
-const Double_t AliITSv11GeometrySSD::fgkLay5CenterITSPosition    = 467.85;
+const Double_t AliITSv11GeometrySSD::fgkSSDLay5RadiusMin         = 378.0*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDLay5RadiusMax         = 384.0*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkLay5CenterITSPosition    = 467.85*fgkmm;
 /////////////////////////////////////////////////////////////////////////////////
 // Layer6 (lengths are in mm and angles in degrees)
 /////////////////////////////////////////////////////////////////////////////////
-const Double_t AliITSv11GeometrySSD::fgkSSDLay6LadderLength      = 1068.0;
+const Double_t AliITSv11GeometrySSD::fgkSSDLay6LadderLength      = 1068.0*fgkmm;
 const Int_t AliITSv11GeometrySSD::fgkSSDLay6SensorsNumber        =   25;
 const Int_t AliITSv11GeometrySSD::fgkSSDLay6LadderNumber         =   38;
-const Double_t AliITSv11GeometrySSD::fgkSSDLay6RadiusMin         =  428.0;
-const Double_t AliITSv11GeometrySSD::fgkSSDLay6RadiusMax         =  434.0;
-const Double_t AliITSv11GeometrySSD::fgkLay6CenterITSPosition    = 526.50;
+const Double_t AliITSv11GeometrySSD::fgkSSDLay6RadiusMin         =  428.0*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDLay6RadiusMax         =  434.0*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkLay6CenterITSPosition    = 526.50*fgkmm;
 /////////////////////////////////////////////////////////////////////////////////
 // SSD Chips and Hybrid (lengths are in mm and angles in degrees)
 /////////////////////////////////////////////////////////////////////////////////
 const Int_t AliITSv11GeometrySSD::fgkSSDChipNumber               =   6;
-const Double_t AliITSv11GeometrySSD::fgkSSDChipLength            =  11.100; 
-const Double_t AliITSv11GeometrySSD::fgkSSDChipWidth             =   3.850;
-const Double_t AliITSv11GeometrySSD::fgkSSDChipHeight            =   0.180;
-const Double_t AliITSv11GeometrySSD::fgkSSDChipSeparationLength  =   1.000;
+const Double_t AliITSv11GeometrySSD::fgkSSDChipLength            =  11.100*fgkmm; 
+const Double_t AliITSv11GeometrySSD::fgkSSDChipWidth             =   3.850*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDChipHeight            =   0.180*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDChipSeparationLength  =   1.000*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDChipGlueLength        =   fgkSSDChipLength;
 const Double_t AliITSv11GeometrySSD::fgkSSDChipGlueWidth         =   fgkSSDChipWidth;
-const Double_t AliITSv11GeometrySSD::fgkSSDChipGlueHeight        =   0.030;
+const Double_t AliITSv11GeometrySSD::fgkSSDChipGlueHeight        =   0.030*fgkmm;
 /////////////////////////////////////////////////////////////////////////////////
 // Stiffener (lengths are in mm and angles in degrees)
 /////////////////////////////////////////////////////////////////////////////////
-const Double_t AliITSv11GeometrySSD::fgkSSDStiffenerLength       =  73.000;
-const Double_t AliITSv11GeometrySSD::fgkSSDStiffenerWidth        =   6.500;
-//const Double_t AliITSv11GeometrySSD::fgkSSDStiffenerHeight       =   3.315;
-const Double_t AliITSv11GeometrySSD::fgkSSDStiffenerHeight       =   0.315;
-const Double_t AliITSv11GeometrySSD::fgkSSDStiffenerToChipDist   =   2.500;
-const Double_t AliITSv11GeometrySSD::fgkSSDCapacitor0603Length   =   1.600;
-const Double_t AliITSv11GeometrySSD::fgkSSDCapacitor0603Width    =   0.870;
-const Double_t AliITSv11GeometrySSD::fgkSSDCapacitor0603Height   =   0.800;
-const Double_t AliITSv11GeometrySSD::fgkSSDCapacitor1812Length   =   4.600;
-const Double_t AliITSv11GeometrySSD::fgkSSDCapacitor1812Width    =   3.400;
-const Double_t AliITSv11GeometrySSD::fgkSSDCapacitor1812Height   =   1.400;
-const Double_t AliITSv11GeometrySSD::fgkSSDWireLength            =  30.000;
-const Double_t AliITSv11GeometrySSD::fgkSSDWireRadius            =   0.185;
-const Double_t AliITSv11GeometrySSD::fgkSSDConnectorPosition[2]  = {44.32, 0.33};
-const Double_t AliITSv11GeometrySSD::fgkSSDConnectorSeparation   = 0.44;
-const Double_t AliITSv11GeometrySSD::fgkSSDConnectorLength       = 2.16;
-const Double_t AliITSv11GeometrySSD::fgkSSDConnectorWidth        = 3.60;
+const Double_t AliITSv11GeometrySSD::fgkSSDStiffenerLength       =  73.000*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDStiffenerWidth        =   6.500*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDStiffenerHeight       =   0.315*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDStiffenerToChipDist   =   2.500*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDCapacitor0603Length   =   1.600*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDCapacitor0603Width    =   0.870*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDCapacitor0603Height   =   0.800*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDCapacitor1812Length   =   4.600*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDCapacitor1812Width    =   3.400*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDCapacitor1812Height   =   1.400*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDWireLength            =  30.000*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDWireRadius            =   0.185*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDConnectorPosition[2]  = {44.32*fgkmm, 
+                                                                     0.33*fgkmm};
+const Double_t AliITSv11GeometrySSD::fgkSSDConnectorSeparation   = 0.44*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDConnectorLength       = 2.16*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDConnectorWidth        = 3.60*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDConnectorHeight       = 
-													  0.25*fgkSSDStiffenerHeight;
+                                                   0.25*fgkSSDStiffenerHeight;
 /////////////////////////////////////////////////////////////////////////////////
 // Cooling Block (lengths are in mm and angles in degrees)
 /////////////////////////////////////////////////////////////////////////////////
-const Double_t AliITSv11GeometrySSD::fgkSSDCoolingBlockLength    =   3.000;
-const Double_t AliITSv11GeometrySSD::fgkSSDCoolingBlockWidth     =   4.000;
+const Double_t AliITSv11GeometrySSD::fgkSSDCoolingBlockLength    =   3.000*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDCoolingBlockWidth     =   4.000*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDCoolingBlockHeight[3] = 
-													 {1.950, 0.240, 0.300};
+													 {1.950*fgkmm, 0.240*fgkmm, 0.300*fgkmm};
 const Double_t AliITSv11GeometrySSD::fgkSSDCoolingBlockHoleRadius[2] = 
-														    {1.000, 0.120};
+														    {1.000*fgkmm, 0.120*fgkmm};
 const Double_t AliITSv11GeometrySSD::fgkSSDCoolingBlockHoleLength[2] = 
-															{1.900, 0.400};
+															{1.900*fgkmm, 0.400*fgkmm};
 const Double_t AliITSv11GeometrySSD::fgkSSDCoolingBlockHoleCenter    =  
-																	 1.500;
+																	 1.500*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDCoolingBlockHoleHeight    =  
-																	 0.300;
+																	 0.300*fgkmm;
 /////////////////////////////////////////////////////////////////////////////////
 // SSD Sensor (lengths are in mm and angles in degrees)
 /////////////////////////////////////////////////////////////////////////////////
 const char*  AliITSv11GeometrySSD::fgkSSDSensitiveVolName       = 
                                                           "SSDSensorSensitiveVol";
-const Double_t AliITSv11GeometrySSD::fgkSSDSensorLength          =  42.000;
-const Double_t AliITSv11GeometrySSD::fgkSSDSensorHeight          =   0.300;
-const Double_t AliITSv11GeometrySSD::fgkSSDSensorWidth           =  75.000;
+const Double_t AliITSv11GeometrySSD::fgkSSDSensorLength          =  42.000*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDSensorHeight          =   0.300*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDSensorWidth           =  75.000*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDSensorOverlap         = 
-	   											   fgkSSDSensorLength-39.1;
-const Double_t AliITSv11GeometrySSD::fgkSSDSensorInsensitiveLength      = 1.; 
-const Double_t AliITSv11GeometrySSD::fgkSSDSensorInsensitiveWidth       = 1.;
+	   											   fgkSSDSensorLength-39.1*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDSensorInsensitiveLength      = 1.*fgkmm; 
+const Double_t AliITSv11GeometrySSD::fgkSSDSensorInsensitiveWidth       = 1.*fgkmm;
 /////////////////////////////////////////////////////////////////////////////////
 // Flex (lengths are in mm and angles in degrees)
 /////////////////////////////////////////////////////////////////////////////////
-const Double_t AliITSv11GeometrySSD::fgkSSDFlexFullLength       =  106.000; 
+const Double_t AliITSv11GeometrySSD::fgkSSDFlexFullLength       =  106.000*fgkmm; 
 const Double_t AliITSv11GeometrySSD::fgkSSDFlexLength[4]        = 
 			{0.5*(fgkSSDStiffenerLength+fgkSSDChipNumber*fgkSSDChipLength
 						+(fgkSSDChipNumber-1)*fgkSSDChipSeparationLength),
 			 0.5*(fgkSSDStiffenerLength+fgkSSDChipNumber*fgkSSDChipLength
-						+(fgkSSDChipNumber-1)*fgkSSDChipSeparationLength)-4.000,
-						  9.500, 10.000};
+						+(fgkSSDChipNumber-1)*fgkSSDChipSeparationLength)-4.000*fgkmm,
+						  9.500*fgkmm, 10.000*fgkmm};
 const Double_t AliITSv11GeometrySSD::fgkSSDFlexWidth[2]         = 
-														 {  9.340,  5.380};
+														 {  9.340*fgkmm,  5.380*fgkmm};
 const Double_t AliITSv11GeometrySSD::fgkSSDFlexHeight[2]        =
-														 {  0.030,  0.020};      
+														 {  0.030*fgkmm,  0.020*fgkmm};      
 const Double_t AliITSv11GeometrySSD::fgkSSDFlexAngle            =   30.000;
-const Double_t AliITSv11GeometrySSD::fgkSSDFlexHoleLength       =    1.430;
-const Double_t AliITSv11GeometrySSD::fgkSSDFlexHoleWidth        =    3.000;
+const Double_t AliITSv11GeometrySSD::fgkSSDFlexHoleLength       =    1.430*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkSSDFlexHoleWidth        =    3.000*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDEndFlexCompLength[6] = 
-										   {3.30,4.12,4.22,1.70,0.75,7.18};
+										   {3.30*fgkmm,4.12*fgkmm,4.22*fgkmm,1.70*fgkmm,0.75*fgkmm,7.18*fgkmm};
 const Double_t AliITSv11GeometrySSD:: fgkSSDEndFlexCompWidth[3] =
-													   {15.03,23.48,12.28};
+													   {15.03*fgkmm,23.48*fgkmm,12.28*fgkmm};
 /////////////////////////////////////////////////////////////////////////////////
 // SSD Ladder Cable (lengths are in mm and angles in degrees)
 /////////////////////////////////////////////////////////////////////////////////
-const Double_t AliITSv11GeometrySSD::fgkSSDLadderCableWidth     =   23.5;
+const Double_t AliITSv11GeometrySSD::fgkSSDLadderCableWidth     =   23.5*fgkmm;
 /////////////////////////////////////////////////////////////////////////////////
 // SSD Module (lengths are in mm and angles in degrees)
 /////////////////////////////////////////////////////////////////////////////////
 const Double_t AliITSv11GeometrySSD::fgkSSDModuleStiffenerPosition[2]  = 
-														   { 1.000, 3.900};
+														   { 1.000*fgkmm, 3.900*fgkmm};
 const Double_t AliITSv11GeometrySSD::fgkSSDModuleSensorSupportDistance =  
-																	45.600;
+																	45.600*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDModuleCoolingBlockToSensor  =  
-																	 5.075;
+																	 5.075*fgkmm;
 /////////////////////////////////////////////////////////////////////////////////
 // Sensor Support (lengths are in mm and angles in degrees)
 /////////////////////////////////////////////////////////////////////////////////
 const Double_t AliITSv11GeometrySSD::fgkSSDSensorSideSupportLength		   = 
-																	   5.800;
+																	   5.800*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDSensorSideSupportWidth          =  
-																	   2.000;
+																	   2.000*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDSensorSideSupportHeight[2]      =
-														     { 4.620, 5.180};
+														     { 4.620*fgkmm, 5.180*fgkmm};
 const Double_t AliITSv11GeometrySSD::fgkSSDSensorSideSupportThickness[2] = 
-														     { 0.450, 0.450};
+														     { 0.450*fgkmm, 0.450*fgkmm};
 const Double_t AliITSv11GeometrySSD::fgkSSDSensorSideSupportPosition       =  
 									  0.5*(fgkSSDModuleSensorSupportDistance
 							       +    fgkSSDSensorSideSupportThickness[0])
 								   -           fgkSSDSensorSideSupportLength;
 const Double_t AliITSv11GeometrySSD::fgkSSDSensorCenterSupportLength	   =  
-									   								   5.250;
+									   								   5.250*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDSensorCenterSupportWidth        =
-																       1.680;
+																       1.680*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDSensorCenterSupportHeight[2]    =
 	   {fgkSSDSensorSideSupportHeight[0]+fgkSSDSensorSideSupportThickness[0],
 	   fgkSSDSensorSideSupportHeight[1]+fgkSSDSensorSideSupportThickness[1]};
 const Double_t AliITSv11GeometrySSD::fgkSSDSensorCenterSupportThickness[2] =
    {fgkSSDSensorSideSupportThickness[0],fgkSSDSensorSideSupportThickness[1]};
 const Double_t AliITSv11GeometrySSD::fgkSSDSensorCenterSupportPosition     = 
-																      19.000;
+																      19.000*fgkmm;
 /////////////////////////////////////////////////////////////////////////////////
 // Chip Cables (lengths are in mm and angles in degrees)
 /////////////////////////////////////////////////////////////////////////////////
 const Double_t AliITSv11GeometrySSD::fgkSSDChipCablesLength[2]   = 
-						 {73.12/fgkSSDChipNumber,fgkSSDChipLength+2.*0.19};
+						 {73.12/fgkSSDChipNumber*fgkmm,fgkSSDChipLength+2.*0.19*fgkmm};
 const Double_t AliITSv11GeometrySSD::fgkSSDChipCablesHeight[4]   = 
-						{  0.014,  0.010, fgkSSDModuleCoolingBlockToSensor
+						{  0.014*fgkmm,  0.010*fgkmm, fgkSSDModuleCoolingBlockToSensor
   -  (fgkSSDSensorSideSupportHeight[1]-fgkSSDSensorSideSupportHeight[0])
   -   fgkSSDCoolingBlockHoleCenter-fgkSSDStiffenerHeight
   -   fgkSSDChipHeight-fgkSSDSensorHeight,
@@ -186,22 +185,20 @@ const Double_t AliITSv11GeometrySSD::fgkSSDChipCablesHeight[4]   =
   -   fgkSSDCoolingBlockHoleCenter-fgkSSDStiffenerHeight
   -   fgkSSDChipHeight-fgkSSDSensorHeight};
 const Double_t AliITSv11GeometrySSD::fgkSSDChipCablesWidth[3]    = 
-												 { 11.000,  0.800,  0.600};
+												 { 11.000*fgkmm,  0.800*fgkmm,  0.600*fgkmm};
 /////////////////////////////////////////////////////////////////////////////////
 // Carbon Fiber Junction Parameters (lengths are in mm and angles in degrees)
 /////////////////////////////////////////////////////////////////////////////////
 const Double_t AliITSv11GeometrySSD::fgkCarbonFiberJunctionLength          = 
-																	   3.820;
-//const Double_t AliITSv11GeometrySSD::fgkCarbonFiberJunctionLength          = 
-//																	   3.780;
+																	   3.820*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkCarbonFiberJunctionWidth           = 
 									  fgkSSDSensorLength-fgkSSDSensorOverlap;
 const Double_t AliITSv11GeometrySSD::fgkCarbonFiberJunctionEdge[2]         = 
-															 {  0.86,  0.30};
+															 {  0.86*fgkmm,  0.30*fgkmm};
 const Double_t AliITSv11GeometrySSD::fgkCarbonFiberJunctionAngle[2]        = 
 															 { 30.00, 90.00};
 const Double_t AliITSv11GeometrySSD::fgkCarbonFiberJunctionToSensorSupport = 
-																	    1.78;
+																	    1.78*fgkmm;
 /////////////////////////////////////////////////////////////////////////////////
 //Carbon Fiber Parameters (lengths are in mm and angles in degrees)
 /////////////////////////////////////////////////////////////////////////////////
@@ -210,11 +207,11 @@ const Double_t AliITSv11GeometrySSD::fgkCarbonFiberTriangleLength          =
 const Double_t AliITSv11GeometrySSD::fgkCarbonFiberTriangleAngle           = 
 																	   60.00;
 const Double_t AliITSv11GeometrySSD::fgkCarbonFiberSupportTopEdgeDist[2]   = 
-														   {  0.751,  0.482};
+														   {  0.751*fgkmm,  0.482*fgkmm};
 const Double_t AliITSv11GeometrySSD::fgkCarbonFiberSupportEdgeLength       =  
-																	   1.630;
+																	   1.630*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkCarbonFiberSupportWidth            = 
-																	   0.950;
+																	   0.950*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkCarbonFiberSupportXAxisLength      = 
 	     fgkCarbonFiberTriangleLength-0.5*fgkCarbonFiberSupportTopEdgeDist[1]
 	             / TMath::Cos(fgkCarbonFiberTriangleAngle*TMath::DegToRad());
@@ -225,11 +222,11 @@ const Double_t AliITSv11GeometrySSD::fgkCarbonFiberSupportYAxisLength      =
 // Carbon Fiber Lower Support Parameters (lengths are in mm)
 /////////////////////////////////////////////////////////////////////////////////
 const Double_t AliITSv11GeometrySSD::fgkCarbonFiberLowerSupportWidth             
-																	  =  0.950;
+																	  =  0.950*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkCarbonFiberLowerSupportLowerLenght       
-																	  =  1.600;
+																	  =  1.600*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkCarbonFiberLowerSupportHeight            
-																	  =  0.830;
+																	  =  0.830*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkCarbonFiberLowerSupportVolumeSeparation  
 											  = 0.5*fgkCarbonFiberSupportWidth;
 const Double_t AliITSv11GeometrySSD::fgkCarbonFiberLowerSupportTransverseWidth   
@@ -253,65 +250,65 @@ const Double_t AliITSv11GeometrySSD::fgkEndLadderCarbonFiberLowerJunctionLength[
 	  -fgkSSDLay5SensorsNumber*fgkCarbonFiberJunctionWidth
 	  +fgkCarbonFiberLowerSupportWidth)};
 const Double_t AliITSv11GeometrySSD::fgkEndLadderCarbonFiberUpperJunctionLength[2] = 
-		{fgkEndLadderCarbonFiberLowerJunctionLength[0]-20.4,
-		 fgkEndLadderCarbonFiberLowerJunctionLength[1]-20.6};
+		{fgkEndLadderCarbonFiberLowerJunctionLength[0]-20.4*fgkmm,
+		 fgkEndLadderCarbonFiberLowerJunctionLength[1]-20.6*fgkmm};
 const Double_t AliITSv11GeometrySSD::fgkEndLadderMountingBlockPosition[2] = 
-						   {fgkEndLadderCarbonFiberLowerJunctionLength[0]-16.50,
-						   fgkEndLadderCarbonFiberLowerJunctionLength[1]-31.50};
+						   {fgkEndLadderCarbonFiberLowerJunctionLength[0]-16.50*fgkmm,
+						   fgkEndLadderCarbonFiberLowerJunctionLength[1]-31.50*fgkmm};
 /////////////////////////////////////////////////////////////////////////////////
 // Cooling Tube Support (lengths are in mm and angles in degrees)
 /////////////////////////////////////////////////////////////////////////////////
-const Double_t AliITSv11GeometrySSD::fgkCoolingTubeSupportRmax          =  1.45;
+const Double_t AliITSv11GeometrySSD::fgkCoolingTubeSupportRmax          =  1.45*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkCoolingTubeSupportRmin          
 											  = fgkSSDCoolingBlockHoleRadius[0];
-const Double_t AliITSv11GeometrySSD::fgkCoolingTubeSupportLength        =  8.55;
-const Double_t AliITSv11GeometrySSD::fgkCoolingTubeSupportHeight        =  0.85;
-const Double_t AliITSv11GeometrySSD::fgkCoolingTubeSupportWidth         =  2.00;
+const Double_t AliITSv11GeometrySSD::fgkCoolingTubeSupportLength        =  8.55*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkCoolingTubeSupportHeight        =  0.85*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkCoolingTubeSupportWidth         =  2.00*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkCoolingTubeSupportSeparation    = 
                                       fgkSSDSensorLength-2.*fgkSSDSensorOverlap;
-const Double_t AliITSv11GeometrySSD::fgkCoolingTubeSupportToCarbonFiber = 11.70;
+const Double_t AliITSv11GeometrySSD::fgkCoolingTubeSupportToCarbonFiber = 11.70*fgkmm;
 /////////////////////////////////////////////////////////////////////////////////
 // Cooling Tube (lengths are in mm and angles in degrees)
 /////////////////////////////////////////////////////////////////////////////////
 const Double_t AliITSv11GeometrySSD::fgkCoolingTubeRmax       = 
 													  fgkCoolingTubeSupportRmin;
-const Double_t AliITSv11GeometrySSD::fgkCoolingTubeRmin       =  0.96;
+const Double_t AliITSv11GeometrySSD::fgkCoolingTubeRmin       =  0.96*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkCoolingTubeLength     = 
 													fgkCarbonFiberJunctionWidth;
 const Double_t AliITSv11GeometrySSD::fgkCoolingTubeSeparation = 
 					fgkSSDModuleSensorSupportDistance+fgkSSDCoolingBlockLength;
-//const Double_t AliITSv11GeometrySSD_ct::fgkCoolingTubeLength               =  39.1;
 /////////////////////////////////////////////////////////////////////////////////
 // SSD Mounting Block Parameters (lengths are in mm and angles in degrees)
 /////////////////////////////////////////////////////////////////////////////////
 const Double_t AliITSv11GeometrySSD::fgkSSDMountingBlockLength[3]            = 
-															{ 60.0, 42.2, 34.0};
+															{ 60.0*fgkmm, 42.2*fgkmm, 34.0*fgkmm};
 const Double_t AliITSv11GeometrySSD::fgkSSDMountingBlockHeight[4]            =
-													  {  4.0,  8.0,  5.0,  0.2};
+													  {  4.0*fgkmm,  8.0*fgkmm,  5.0*fgkmm,  0.2*fgkmm};
 const Double_t AliITSv11GeometrySSD::fgkSSDMountingBlockWidth                =   
-																		   20.0;
+																		   20.0*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDMountingBlockHoleTrapezoidAngle   =   
 																		   40.0;
 const Double_t AliITSv11GeometrySSD::fgkSSDMountingBlockHoleTrapezoidHeight  = 
 	           0.30*(fgkSSDMountingBlockHeight[1]-fgkSSDMountingBlockHeight[2]);
 const Double_t AliITSv11GeometrySSD::fgkSSDMountingBlockHoleTrapezoidUpBasis =    
-																			2.5;
+																			2.5*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDMountingBlockHoleTubeLength[2]    = 
-																  { 56.0, 12.0}; 
+																  { 56.0*fgkmm, 12.0*fgkmm}; 
 const Double_t AliITSv11GeometrySSD::fgkSSDMountingBlockHoleTubeWidth[2]     = 
-																  {  5.0,  2.9}; 
+																  {  5.0*fgkmm,  2.9*fgkmm}; 
 const Double_t AliITSv11GeometrySSD::fgkSSDMountingBlockHoleRadius           = 
-																			1.0;
+																			1.0*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDMountingBlockScrewHoleEdge        =   
-																			6.0;
+																			6.0*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDMountingBlockScrewHoleHeigth      =  
-																			4.0;
+																			4.0*fgkmm;
 const Double_t AliITSv11GeometrySSD::fgkSSDMountingBlockScrewHoleRadius[2]   =
-									{  1.5,fgkSSDMountingBlockScrewHoleEdge/6.};
+									{  1.5*fgkmm,fgkSSDMountingBlockScrewHoleEdge/6.};
 /////////////////////////////////////////////////////////////////////////////////
 ClassImp(AliITSv11GeometrySSD)
 /////////////////////////////////////////////////////////////////////////////////
-AliITSv11GeometrySSD::AliITSv11GeometrySSD(): TObject(),
+AliITSv11GeometrySSD::AliITSv11GeometrySSD(): 
+  AliITSv11Geometry(),
   fSSDChipMedium(),
   fSSDChipGlueMedium(),
   fSSDStiffenerMedium(),
@@ -351,7 +348,7 @@ AliITSv11GeometrySSD::AliITSv11GeometrySSD(): TObject(),
 }
 /////////////////////////////////////////////////////////////////////////////////
 AliITSv11GeometrySSD::AliITSv11GeometrySSD(const AliITSv11GeometrySSD &s):
-  TObject(s),
+  AliITSv11Geometry(s.GetDebug()),
   fSSDChipMedium(s.fSSDChipMedium),
   fSSDChipGlueMedium(s.fSSDChipGlueMedium),
   fSSDStiffenerMedium(s.fSSDStiffenerMedium),
@@ -3131,7 +3128,7 @@ TGeoVolume* AliITSv11GeometrySSD::GetLadder(Int_t iLayer){
   for(Int_t i=0; i<ssdlaysensorsnumber; i++) ladder->AddNode(i%2==0 ? 
 						laddersegment[iLayer==5 ? 0 : 1] : 
 						laddersegment[iLayer==5 ? 1 : 0],
-						ssdlaysensorsnumber-i,new TGeoTranslation("",-0.5*fgkCarbonFiberTriangleLength,
+						ssdlaysensorsnumber-i-1,new TGeoTranslation(-0.5*fgkCarbonFiberTriangleLength,
 						beamaxistransvector*i,0.));
   ladder->AddNode((TGeoVolume*)endladdersegmentlist->At(0),1,
 						new TGeoTranslation("",-0.5*fgkCarbonFiberTriangleLength,
@@ -3236,7 +3233,7 @@ TGeoVolume* AliITSv11GeometrySSD::GetLayer(Int_t iLayer){
                               * lay5ladderangleposition-90,0.,0.));
       lay5ladderhmatrix[i] = new TGeoHMatrix((*lay5laddercombitrans[i])
                            * (*itscentercombitrans));
-      layer->AddNode(ladder,i+1,lay5ladderhmatrix[i]);            
+      layer->AddNode(ladder,i,lay5ladderhmatrix[i]);            
       }
   }
   else{
@@ -3255,7 +3252,7 @@ TGeoVolume* AliITSv11GeometrySSD::GetLayer(Int_t iLayer){
                               * lay6ladderangleposition-90,0.,0.));
       lay6ladderhmatrix[i] = new TGeoHMatrix((*lay6laddercombitrans[i])
                            * (*itscentercombitrans));
-      layer->AddNode(ladder,i+1,lay6ladderhmatrix[i]);            
+      layer->AddNode(ladder,i,lay6ladderhmatrix[i]);            
       }
   }
   return layer;

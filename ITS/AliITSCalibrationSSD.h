@@ -93,9 +93,12 @@ class AliITSCalibrationSSD : public AliITSCalibration {
   
     virtual void SetParamOptions(const char *opt1, const char *opt2) {((AliITSresponseSSD*)fResponse)->SetParamOptions(opt1,opt2);}
     virtual void GetParamOptions(char *opt1,char *opt2) const {((AliITSresponseSSD*)fResponse)->ParamOptions(opt1,opt2);}
-    virtual void SetADCpereV(Double_t a=200./30000.0) {((AliITSresponseSSD*)fResponse)->SetADCpereV(a);}
+    virtual void SetADCpereV(Double_t a=120./24888.9) {((AliITSresponseSSD*)fResponse)->SetADCpereV(a);}
     virtual Double_t GetDEvToADC(Double_t eV) const {return ((AliITSresponseSSD*)fResponse)->DEvToADC(eV);}
     virtual Int_t IEvToADC(Double_t eV) const {return ((AliITSresponseSSD*)fResponse)->IEvToADC(eV);} 
+
+    virtual void SetKeVperADC(Double_t a=86.4/120.0) {((AliITSresponseSSD*)fResponse)->SetKeVperADC(a);}
+    virtual Double_t ADCToKeV(Double_t adc) const {return ((AliITSresponseSSD*)fResponse)->ADCToKeV(adc);}
 
   virtual Double_t GetCouplingPR() const {return ((AliITSresponseSSD*)fResponse)->GetCouplingPR();}
   virtual Double_t GetCouplingPL() const {return ((AliITSresponseSSD*)fResponse)->GetCouplingPL();}

@@ -4,7 +4,6 @@
 //*************************************************************************
 #ifndef ALIITSV11GEOMETRYSSD_H
 #define ALIITSV11GEOMETRYSSD_H
-#include <TObject.h>
 class TGeoVolume;
 class TGeoCombiTrans;
 class TGeoMedium;
@@ -15,7 +14,8 @@ class TGeoArb8;
 class TList;
 class TGeoTube;
 class TGeoHMatrix;
-class AliITSv11GeometrySSD: public TObject {
+#include "AliITSv11Geometry.h"
+class AliITSv11GeometrySSD: public AliITSv11Geometry {
 public:
   AliITSv11GeometrySSD();
   AliITSv11GeometrySSD(const AliITSv11GeometrySSD &source);
@@ -132,7 +132,6 @@ public:
   /////////////////////////////////////////////////////////////////////////
   void Layer6(TGeoVolume* mothervolume);
   // Method placing the Layer6 within mother volume  
-//  TGeoMedium *GetMedium(char*); // to be interfaced with AliRoot
   /////////////////////////////////////////////////////////////////////////
   //Auxiliary methods for shapes building
   /////////////////////////////////////////////////////////////////////////
@@ -455,6 +454,6 @@ private:
   Int_t fColorPolyhamide;     //  ===
   Int_t fColorStiffener;      //  ===
   Int_t fColorEpoxy;          //  ===
-  ClassDef(AliITSv11GeometrySSD, 1)     // ITS v11 SSD geometry
+  ClassDef(AliITSv11GeometrySSD, 2)     // ITS v11 SSD geometry
 };
 #endif

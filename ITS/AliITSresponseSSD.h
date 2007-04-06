@@ -4,7 +4,7 @@
  * See cxx source for full Copyright notice                               */
 
 #include "AliITSresponse.h"
-
+#include <Riostream.h>
 
 /////////////////////////////////////////////////// 
 // Response class for SSD                        //
@@ -24,11 +24,14 @@ class AliITSresponseSSD : public AliITSresponse {
 	// options
 	strcpy(opt1,fOption1.Data());  strcpy(opt2,fOption2.Data());
     }
-    void SetADCpereV(Double_t a=200./30000.0){fADCpereV = a;}
+    void SetADCpereV(Double_t a=120./24888.9){fADCpereV = a;}
     Double_t DEvToADC(Double_t eV) const {return eV*fADCpereV;}
     Int_t IEvToADC(Double_t eV) const { // Converts electron-hole pairs to
       return ((Int_t) DEvToADC(eV)); }
       
+    void SetKeVperADC(Double_t a=86.4/120.){fKeVperADC = a;}
+    Double_t ADCToKeV(Double_t adc) const {return adc*fKeVperADC;}
+
     Double_t  GetCouplingPR() const {// couplings
       return fCouplingPR;}
     Double_t  GetCouplingPL() const {// couplings
@@ -49,12 +52,13 @@ protected:
     static const TString fgkOption1Default; // default for fOption1
     static const TString fgkOption2Default; // default for fOption2
 
-    static const Double_t fgkfCouplingPR;
-    static const Double_t fgkfCouplingPL;
-    static const Double_t fgkfCouplingNR;
-    static const Double_t fgkfCouplingNL;
+    static const Double_t fgkfCouplingPR;  // default value for couplings
+    static const Double_t fgkfCouplingPL;  // default value for couplings
+    static const Double_t fgkfCouplingNR;  // default value for couplings
+    static const Double_t fgkfCouplingNL;  // default value for couplings
 
     Double_t fADCpereV;        // Constant to convert eV to ADC.
+    Double_t fKeVperADC;       // Constant to convert ADC to keV
 
     Double_t  fCouplingPR;  // couplings
     Double_t  fCouplingPL;  // couplings
