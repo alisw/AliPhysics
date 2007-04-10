@@ -462,7 +462,7 @@ void AliMUONAlignment::AddConstraints(Bool_t *lStOnOff,Bool_t *lVarXYT, Bool_t *
   }
 }
 
-void AliMUONAlignment::ConstrainT(Int_t lDetElem, Int_t lCh, Double_t *lConstraintT, Int_t iVar, Double_t lWeight){
+void AliMUONAlignment::ConstrainT(Int_t lDetElem, Int_t lCh, Double_t *lConstraintT, Int_t iVar, Double_t /*lWeight*/){
   /// Set constrain equation for top half of spectrometer
   Int_t lDetElemNumber = (lCh==1) ? lDetElem : lDetElem-fgSNDetElemCh[lCh-2];
   if (lCh>=1 && lCh<=4){
@@ -502,7 +502,7 @@ void AliMUONAlignment::ConstrainL(Int_t lDetElem, Int_t lCh, Double_t *lConstrai
   }
 }
 
-void AliMUONAlignment::ConstrainB(Int_t lDetElem, Int_t lCh, Double_t *lConstraintB, Int_t iVar, Double_t lWeight){
+void AliMUONAlignment::ConstrainB(Int_t lDetElem, Int_t lCh, Double_t *lConstraintB, Int_t iVar, Double_t /*lWeight*/){
   /// Set constrain equation for bottom half of spectrometer
   Int_t lDetElemNumber = (lCh==1) ? lDetElem : lDetElem-fgSNDetElemCh[lCh-2];
   if (lCh>=1 && lCh<=4){
