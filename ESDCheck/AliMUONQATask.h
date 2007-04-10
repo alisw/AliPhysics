@@ -3,17 +3,22 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 //______________________________________________________________________________
-// An analysis task to check the MUON data in simulated data
-//
-//*-- Ivana Hrivnacova
+/// An analysis task to check the MUON data in simulated data
+/// This class checks out the ESD tree, providing the matching with
+/// the trigger,trigger responses for Low and High Pt cuts
+/// (in Single, Unlike Sign and Like Sign) and gives Pt, Y, ITS vertex
+/// and multiplicity distributions. All results are in histogram form.
+/// The output is a root file and eps files in MUON.tar.gz. 
+
+//*-- Frederic Yermia
 //////////////////////////////////////////////////////////////////////////////
 
-#include <TTree.h> 
+#include <TLorentzVector.h>
 #include "AliAnalysisTask.h"  
 
 class AliESD ; 
 class TH1F ;
- 
+class Tree ; 
 class AliMUONQATask : public AliAnalysisTask {
 
 public:
@@ -30,30 +35,40 @@ private:
   AliESD  * fESD ;              //! Declaration of leave types
 
   TObjArray * fOutputContainer ; //! output data container
-
-  Int_t fnTrackTrig ; //!
-  Int_t ftracktot   ; //!
-  Int_t fnevents    ; //!
-  Int_t fSPLowpt    ; //!
-  Int_t fSPHighpt   ; //!
-  Int_t fSPAllpt    ; //!
-  Int_t fSMLowpt    ; //!
-  Int_t fSMHighpt   ; //!
-  Int_t fSMAllpt    ; //!
-  Int_t fSULowpt    ; //!
-  Int_t fSUHighpt   ; //!
-  Int_t fSUAllpt    ; //!
-  Int_t fUSLowpt    ; //!
-  Int_t fUSHighpt   ; //!
-  Int_t fUSAllpt    ; //! 
-  Int_t fLSLowpt    ; //!
-  Int_t fLSHighpt   ; //! 
-  Int_t fLSAllpt    ; //!
+  
+  TLorentzVector fV1; //! Lorentz Momentum
+  Int_t fnTrackTrig ; //! Number of trigger matching tracks
+  Int_t ftracktot   ; //! Number of ESD tracks
+  Int_t fnevents    ; //! Number of events
+  Int_t fSLowpt     ; //! Single trigger response
+  Int_t fUSLowpt    ; //! Unlike Sign Low trigger response
+  Int_t fUSHighpt   ; //! Unlike Sign High trigger response
+  Int_t fLSLowpt    ; //! Like Sign Low trigger response
+  Int_t fLSHighpt   ; //! Like Sign High trigger response
+  Float_t fmuonMass ; //! Muon mass
+  Double_t fthetaX  ; //! Angle of track at vertex in X direction (rad)
+  Double_t fthetaY  ; //! Angle of track at vertex in Y direction (rad)
+  Double_t fpYZ     ; //! Bending Momentum
+  Double_t fPxRec1  ; //! X rec. Momentum
+  Double_t fPyRec1  ; //! Y rec. Momentum
+  Double_t fPzRec1  ; //! Z rec. Momentum
+  Double_t fE1      ; //! Muon Enenrgy
+  Int_t fZ1         ; //! Z coordinate (cm)
 
   // Histograms
-  TH1F * fhMUONVertex ; //! 
-  TH1F * fhMUONMult   ; //!
-   
+  TH1F * fhMUONVertex ; //! ITS Z-Vertex
+  TH1F * fhMUONMult   ; //! Track Multilicity
+  TH1F * fhPt   ;       //! Track transverse momentum
+  TH1F * fhY   ;        //!  Track rapidity
+  TH1F * fheffMatchT ;  //! Efficiency of trigger matching
+  TH1F * fhSLowpt ;     //! Percent of single response
+  TH1F * fhUSLowpt ;    //! Percent of US Low response
+  TH1F * fhUSHighpt ;   //! Percent of US High response
+  TH1F * fhLSLowpt ;    //! Percent of LS Low response
+  TH1F * fhLSHighpt ;   //! Percent of LS High response
+  TH1F * fhChi2   ;      //! Track Chi Square by d.o.f.
+  TH1F * fhChi2match ;  //! Chi2 of trigger/track matching 
+
   ClassDef(AliMUONQATask, 0); // a MUON photon analysis task 
 };
 #endif // ALIMUONQATASK_H

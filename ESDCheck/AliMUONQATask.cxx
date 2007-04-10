@@ -15,24 +15,29 @@
 
 /* $Id$ */
 
-// An analysis task to check the MUON data in simulated data
-//
-//*-- Ivana Hrivnacova
+/// An analysis task to check the MUON data in simulated data
+/// This class checks out the ESD tree, providing the matching with
+/// the trigger,trigger responses for Low and High Pt cuts
+/// (in Single, Unlike Sign and Like Sign) and gives Pt, Y, ITS vertex
+/// and multiplicity distributions. All results are in histogram form.
+/// The output is a root file and eps files in MUON.tar.gz. 
+
+//*-- Frederic Yermia, yermia@to.infn.it
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
 #include <TCanvas.h>
 #include <TChain.h>
-#include <TFile.h> 
+#include <TFile.h>
 #include <TH1F.h>
 #include <TROOT.h>
-
+#include <TLorentzVector.h>
 #include "AliMUONQATask.h" 
 #include "AliESD.h" 
 #include "AliLog.h"
 #include "AliESDVertex.h" 
 #include "AliESDMuonTrack.h"
-
+#include <TLorentzVector.h>
 //______________________________________________________________________________
 AliMUONQATask::AliMUONQATask(const char *name) : 
   AliAnalysisTask(name,""),  
@@ -41,40 +46,61 @@ AliMUONQATask::AliMUONQATask(const char *name) :
   fnTrackTrig(0), 
   ftracktot(0),
   fnevents(0),
-  fSPLowpt(0),
-  fSPHighpt(0),
-  fSPAllpt(0),
-  fSMLowpt(0),
-  fSMHighpt(0),
-  fSMAllpt(0),
-  fSULowpt(0),
-  fSUHighpt(0),
-  fSUAllpt(0),
+  fSLowpt(0),
   fUSLowpt(0),
   fUSHighpt(0),
-  fUSAllpt(0), 
   fLSLowpt(0),
   fLSHighpt(0),
-  fLSAllpt(0),
+  fmuonMass(0.105658389),
+  fthetaX(0),
+  fthetaY(0),
+  fpYZ(0),
+  fPxRec1(0),
+  fPyRec1(0),
+  fPzRec1(0),
+  fE1(0),
+  fZ1(0),
   fhMUONVertex(0),
-  fhMUONMult(0)
+  fhMUONMult(0),
+  fhPt(0),
+  fhY(0),
+  fheffMatchT(0),
+  fhSLowpt(0),
+  fhUSLowpt(0),
+  fhUSHighpt(0),
+  fhLSLowpt(0),
+  fhLSHighpt(0),
+  fhChi2(0),  
+  fhChi2match(0)  
 {
   // Constructor.
   // Input slot #0 works with an Ntuple
   DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TH1 container
   DefineOutput(0,  TObjArray::Class()) ; 
+
 }
+
 
 //______________________________________________________________________________
 AliMUONQATask::~AliMUONQATask()
 { 
   // dtor
-  fOutputContainer->Clear() ; 
-  delete fOutputContainer ; 
+   fOutputContainer->Clear() ; 
+   delete fOutputContainer ; 
   
-  delete fhMUONVertex ; 
-  delete fhMUONMult ; 
+   delete fhMUONVertex ; 
+   delete fhMUONMult ; 
+   delete fhPt ; 
+   delete fhY ;
+   delete fheffMatchT ;
+   delete fhSLowpt ;
+   delete fhUSLowpt ;
+   delete fhUSHighpt;
+   delete fhLSLowpt ;
+   delete fhLSHighpt;
+   delete fhChi2   ;  
+   delete fhChi2match ;
 }
 
 //______________________________________________________________________________
@@ -107,15 +133,32 @@ void AliMUONQATask::CreateOutputObjects()
   // create histograms 
   fhMUONVertex = new TH1F("hMUONVertex","ITS Vertex"                ,100, -25., 25.);
   fhMUONMult   = new TH1F("hMUONMult"  ,"Multiplicity of ESD tracks",10,  -0.5, 9.5);
-
-  
+  fhPt = new TH1F("hPt","Pt",100, 0.,20.);
+  fhY = new TH1F("hY","Rapidity",100,-5.,-1.);
+  fheffMatchT =  new TH1F("heff_matchT","Trigger Matching Efficiency",100, 0.,100.);
+  fhSLowpt = new TH1F("hSLowpt","Single Low Pt Response (%)",101, 0.,101.);
+  fhUSLowpt = new TH1F("hUSLowpt","Unlike Sign Low Pt Response (%)",101, 0.,101.);
+  fhUSHighpt = new TH1F("hUSHighpt","Unlike Sign High Pt Response (%)",101, 0.,101.);
+  fhLSLowpt = new TH1F("hLSLowpt","Like Sign Low Pt Response (%)",101, 0.,101.);
+  fhLSHighpt = new TH1F("hLSHighpt","Like Sign High Pt Response (%)",101, 0.,101.);
+  fhChi2 = new TH1F("hChi2","Chi2 by d.o.f.",100, 0.,20.);
+  fhChi2match = new TH1F("hChi2match","Chi2 of trig/track matching",100, 0.,20.);
   // create output container
   
-  fOutputContainer = new TObjArray(2) ; 
+  fOutputContainer = new TObjArray(10) ; 
   fOutputContainer->SetName(GetName()) ; 
-
   fOutputContainer->AddAt(fhMUONVertex,             0) ; 
   fOutputContainer->AddAt(fhMUONMult,               1) ; 
+  fOutputContainer->AddAt(fhPt,                     2) ; 
+  fOutputContainer->AddAt(fhY,                      3) ; 
+  fOutputContainer->AddAt(fheffMatchT,              4) ;
+  fOutputContainer->AddAt(fhSLowpt,                 5) ;
+  fOutputContainer->AddAt(fhUSLowpt,                6) ;
+  fOutputContainer->AddAt(fhUSHighpt,               7) ;
+  fOutputContainer->AddAt(fhLSLowpt,                8) ;
+  fOutputContainer->AddAt(fhLSHighpt,               9) ;
+  fOutputContainer->AddAt(fhChi2,                  10) ;
+  fOutputContainer->AddAt( fhChi2match,            11) ;
 }
 
 //______________________________________________________________________________
@@ -147,36 +190,21 @@ void AliMUONQATask::Exec(Option_t *)
   
   ULong64_t trigWord = fESD->GetTriggerMask() ;
 
-  if (trigWord & 0x01) 
-    fSPLowpt++;
-  if (trigWord & 0x02)
-    fSPHighpt++;
-  if (trigWord & 0x04)
-    fSPAllpt++;
-  if (trigWord & 0x08)
-    fSMLowpt++;
-  if (trigWord & 0x010)
-    fSMHighpt++;
-  if (trigWord & 0x020)
-    fSMAllpt++;
-  if (trigWord & 0x040)
-    fSULowpt++;
-  if (trigWord & 0x080)
-    fSUHighpt++; 
-  if (trigWord & 0x100)
-    fSUAllpt++;
-  if (trigWord & 0x200)
-    fUSLowpt++;     
-  if (trigWord & 0x400)
-    fUSHighpt++;
-  if (trigWord & 0x800)
-    fUSAllpt++;
-  if (trigWord & 0x1000)
+  if (trigWord & 0x80) {
+        fSLowpt++;
+  }
+  if (trigWord & 0x100){
     fLSLowpt++;
-  if (trigWord & 0x2000)
+  } 
+  if (trigWord & 0x200){
     fLSHighpt++;
-  if (trigWord & 0x4000)
-    fLSAllpt++;
+  }  
+  if (trigWord & 0x400){
+    fUSLowpt++;
+  }
+  if (trigWord & 0x800){
+    fUSHighpt++;
+  }
 
   Int_t tracktrig  = 0 ;
   Int_t iTrack1 ; 
@@ -184,15 +212,40 @@ void AliMUONQATask::Exec(Option_t *)
   for (iTrack1 = 0 ; iTrack1 < nTracks ; iTrack1++) { //1st loop
     AliESDMuonTrack* muonTrack = fESD->GetMuonTrack(iTrack1) ;
     ftracktot++ ;
+      fthetaX = muonTrack->GetThetaX();
+      fthetaY = muonTrack->GetThetaY();
+      fpYZ     =  1./TMath::Abs(muonTrack->GetInverseBendingMomentum());
+      fPzRec1  = - fpYZ / TMath::Sqrt(1.0 + TMath::Tan(fthetaY)*TMath::Tan(fthetaY));
+      fPxRec1  = fPzRec1 * TMath::Tan(fthetaX);
+      fPyRec1  = fPzRec1 * TMath::Tan(fthetaY);
+      fZ1 = Int_t(TMath::Sign(1.,muonTrack->GetInverseBendingMomentum()));
+      fE1 = TMath::Sqrt(fmuonMass * fmuonMass + fPxRec1 * fPxRec1 + fPyRec1 * fPyRec1 + fPzRec1 * fPzRec1);
+      fV1.SetPxPyPzE(fPxRec1, fPyRec1, fPzRec1, fE1);
+
+      // -----------> transverse momentum
+      Float_t pt1 = fV1.Pt();
+      // ----------->Rapidity
+      Float_t y1 = fV1.Rapidity();
+  
     if(muonTrack->GetMatchTrigger()) {
       fnTrackTrig++ ;
       tracktrig++ ;
+      Float_t  Chi2match = muonTrack->GetChi2MatchTrigger();
+      fhChi2match->Fill(Chi2match);
     }
-  }
 
+     Float_t   fitfmin  = muonTrack->GetChi2();
+     Int_t    ntrackhits = muonTrack->GetNHit();
+     Float_t Chi2= fitfmin  / (2.0 * ntrackhits - 5);
+    
+     fhChi2->Fill(Chi2);
+     fhPt->Fill(pt1);
+     fhY->Fill(y1);
+  }
+  
   fhMUONVertex->Fill(zVertex) ;
   fhMUONMult->Fill(Float_t(nTracks)) ;
-
+  
   PostData(0, fOutputContainer);  
 }
 
@@ -200,51 +253,121 @@ void AliMUONQATask::Exec(Option_t *)
 void AliMUONQATask::Terminate(Option_t *)
 {
   // Processing when the event loop is ended
+    Int_t fSLowPt = fSLowpt;
+   if(fnevents){
+     fSLowPt = 100 * fSLowpt / fnevents ;
+     fhSLowpt->Fill(fSLowPt); }
+    Int_t fUSLowPt = fUSLowpt;
+   if(fnevents){
+     fUSLowPt = 100 * fUSLowpt / fnevents ;
+     fhUSLowpt->Fill(fUSLowPt); }
+    Int_t fUSHighPt = fUSHighpt;
+    if(fnevents){
+      fUSHighPt = 100 * fUSHighpt / fnevents ;
+      fhUSHighpt->Fill(fUSHighPt); }
+    Int_t fLSLowPt = fLSLowpt;
+    if(fnevents){
+      fLSLowPt = 100 * fLSLowpt / fnevents ;
+      fhLSLowpt->Fill(fLSLowPt); }
+    Int_t fLSHighPt = fLSHighpt;
+    if(fnevents){
+      fLSHighPt = 100 * fLSHighpt / fnevents ;
+      fhLSHighpt->Fill(fLSHighPt); }
+  
+    Int_t effMatch = -1 ; 
+    if (ftracktot){ 
+      effMatch = 100 * fnTrackTrig / ftracktot ;
+      fheffMatchT->Fill(effMatch);}
 
   AliInfo(Form("Terminate %s:", GetName())) ;
   fOutputContainer = (TObjArray*)GetOutputData(0);
   fhMUONVertex = (TH1F*)fOutputContainer->At(0);
   fhMUONMult   = (TH1F*)fOutputContainer->At(1); 
-  
-  Int_t eff_match = -1 ; 
-  if (ftracktot) 
-    eff_match = 100 * fnTrackTrig / ftracktot ;
-
+  fhPt  = (TH1F*)fOutputContainer->At(2); 
+  fhY  = (TH1F*)fOutputContainer->At(3); 
+  fheffMatchT=(TH1F*)fOutputContainer->At(4); 
+  fhSLowpt=(TH1F*)fOutputContainer->At(5); 
+  fhUSLowpt=(TH1F*)fOutputContainer->At(6); 
+  fhUSHighpt=(TH1F*)fOutputContainer->At(7);
+  fhLSLowpt=(TH1F*)fOutputContainer->At(8); 
+  fhLSHighpt=(TH1F*)fOutputContainer->At(9);
+ //______________________________________________________________________
   printf("===================================================\n") ;
   printf("================  %s ESD SUMMARY    ==============\n", GetName()) ;
   printf("                                                   \n") ;
   printf("         Total number of processed events  %d      \n", fnevents) ;
   printf("\n")  ;
   printf("\n")  ;
-  printf("Table 4:                                         \n") ;
-  printf(" Global Trigger output       Low pt  High pt   All\n") ;
-  printf(" number of Single Plus      :\t");
-  printf("%i\t%i\t%i\t", fSPLowpt, fSPHighpt, fSPAllpt) ;
-  printf("\n");
-  printf(" number of Single Minus     :\t");
-  printf("%i\t%i\t%i\t", fSMLowpt, fSMHighpt, fSMAllpt) ;
-  printf("\n");
-  printf(" number of Single Undefined :\t"); 
-  printf("%i\t%i\t%i\t", fSULowpt, fSUHighpt, fSUAllpt) ;
+  printf("Table 1:                                         \n") ;
+   printf("===================================================\n") ;
+ printf(" Global Trigger output       Low pt  High pt \n") ;
+  printf(" number of Single      :\t");
+  printf("%i\t", fSLowpt) ;
   printf("\n");
   printf(" number of UnlikeSign pair  :\t"); 
-  printf("%i\t%i\t%i\t", fUSLowpt, fUSHighpt, fUSAllpt) ;
+  printf("%i\t%i\t", fUSLowpt, fUSHighpt) ;
   printf("\n");
   printf(" number of LikeSign pair    :\t");  
-  printf("%i\t%i\t%i\t", fLSLowpt, fLSHighpt, fLSAllpt) ;
+  printf("%i\t%i\t", fLSLowpt, fLSHighpt) ;
   printf("\n");
   printf("===================================================\n") ;
   printf("\n") ;
-  printf("matching efficiency with the trigger for single tracks = %2d %% \n", eff_match);
+  printf("matching efficiency with the trigger for single tracks = %2d %% \n", effMatch);
+  printf("\n") ;
+  printf("===================================================\n") ;
   
-  TCanvas * cMUON = new TCanvas("cMUON", "MUON ESD Test", 400, 10, 600, 700) ;
-  cMUON->Divide(1,2) ;
-  cMUON->cd(1) ;
+TCanvas * cMUON1 = new TCanvas("cMUON1", "MUON ESD Vert & Mult", 400, 10, 600, 700) ;
+  cMUON1->Divide(1,2) ;
+  cMUON1->cd(1) ;
+ fhMUONVertex->SetXTitle("Vz (cm)");
   fhMUONVertex->Draw() ;
-  cMUON->cd(2) ;
-  fhMUONMult->Draw() ;  
-  cMUON->Print("MUON.eps") ; 
+  cMUON1->cd(2) ;
+  fhMUONMult->SetXTitle(" Track Multiplicity");
+  fhMUONMult->Draw() ;
+  cMUON1->Print("MUON1.eps") ; 
 
+  TCanvas * cMUON2 = new TCanvas("cMUON2", "MUON ESD Pt & Y", 400, 10, 600, 700) ;
+  cMUON2->Divide(1,2) ;
+  cMUON2->cd(1) ;
+  fhPt->SetXTitle("Pt (GeV)");
+  fhPt->Draw() ;
+  cMUON2->cd(2) ;
+  fhY->SetXTitle("Y");
+  fhY->Draw() ;
+  cMUON2->Print("MUON2.eps") ;
+  
+  TCanvas * cMUON3 = new TCanvas("cMUON3", "Track Chi2 by dof and Chi2 of trigger/track matching ", 400, 10, 600, 700) ;
+  cMUON3->Divide(1,2) ;
+  cMUON3->cd(1) ;
+  fhChi2->SetXTitle("Chi2 by d.o.f.");
+  fhChi2->Draw();
+  cMUON3->cd(2) ;
+  fhChi2match->SetXTitle("Chi2 of trig/track matching");
+  fhChi2match->Draw();
+  cMUON3->Print("MUON3.eps") ;
+  
+  TCanvas * cMUON4 = new TCanvas("cMUON4", "Trigger Matching and Trigger Response (%)", 400, 10, 600, 700) ;
+  cMUON4->Divide(2,3) ;
+  cMUON4->cd(1) ;
+  fheffMatchT->SetXTitle("%");
+  fheffMatchT->Draw() ;
+  cMUON4->cd(2) ;
+  fhSLowpt->SetXTitle("%");
+  fhSLowpt->Draw() ;
+  cMUON4->cd(3) ;
+  fhUSLowpt->SetXTitle("%");
+  fhUSLowpt->Draw() ;
+  cMUON4->cd(4) ;
+  fhUSHighpt->SetXTitle("%");
+  fhUSHighpt->Draw() ;
+  cMUON4->cd(5) ;
+  fhLSLowpt->SetXTitle("%");
+  fhLSLowpt->Draw() ;
+  cMUON4->cd(6) ;
+  fhLSHighpt->SetXTitle("%");
+  fhLSHighpt->Draw() ;
+  cMUON4->Print("MUON4.eps") ;
+ 
   char line[1024] ; 
   sprintf(line, ".!tar -zcvf %s.tar.gz *.eps", GetName()) ; 
   gROOT->ProcessLine(line);
