@@ -28,6 +28,7 @@
 #include <TGaxis.h>
 #include <TLatex.h>
 #include <TPad.h>
+#include <TROOT.h>
 
 #include "AliTOFQATask.h" 
 #include "AliESD.h" 
@@ -589,7 +590,7 @@ void AliTOFQATask::Terminate(Option_t *)
   fhTOFDeltaTime   = (TH1F*)fOutputContainer->At(13);
   fhTOFDeltaTimeMT = (TH1F*)fOutputContainer->At(14);
   fhTOFIDSpecies   = (TH1F*)fOutputContainer->At(15);
-  fhTOFMassVsMom   = (TH1F*)fOutputContainer->At(16);
+  fhTOFMassVsMom   = (TH2F*)fOutputContainer->At(16);
   fhTOFMass        = (TH1F*)fOutputContainer->At(17);
   GetEfficiency();
 //  PostData(0, fOutputContainer);
