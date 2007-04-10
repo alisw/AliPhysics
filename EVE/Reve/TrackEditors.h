@@ -51,6 +51,7 @@ protected:
   TGButton*          fRnrDecay;
 
   RGDoubleValuator*  fPtRange;
+  RGDoubleValuator*  fPRange;
 
 public:
   TrackListEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
@@ -74,6 +75,7 @@ public:
   void DoRnrPM();
 
   void DoPtRange();
+  void DoPRange();
 
   ClassDef(TrackListEditor, 1); // Editor for TrackList
 }; // endclass TrackListEditor

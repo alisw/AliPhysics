@@ -50,7 +50,8 @@ TrackListEditor::TrackListEditor(const TGWindow *p,
   fRnrReferences(0),
   fRnrDecay(0),
 
-  fPtRange(0)
+  fPtRange(0),
+  fPRange(0)
 {
   MakeTitle("TrackList");
   Int_t labelW = 67;
@@ -127,6 +128,15 @@ TrackListEditor::TrackListEditor(const TGWindow *p,
   fPtRange->Connect("ValueSet()",
 		    "Reve::TrackListEditor", this, "DoPtRange()");
   AddFrame(fPtRange, new TGLayoutHints(kLHintsTop, 1, 1, 4, 1));
+
+  fPRange = new RGDoubleValuator(this,"P Range", 200, 0);
+  fPRange->SetNELength(6);
+  fPRange->Build();
+  fPRange->GetSlider()->SetWidth(224);
+  fPRange->SetLimits(0, 100, TGNumberFormat::kNESRealTwo);
+  fPRange->Connect("ValueSet()",
+		    "Reve::TrackListEditor", this, "DoPRange()");
+  AddFrame(fPRange, new TGLayoutHints(kLHintsTop, 1, 1, 4, 1));
 
   // --- Rendering control
   {
@@ -235,6 +245,7 @@ void TrackListEditor::SetModel(TObject* obj)
     fRnrMarkers->SetState(fTC->GetRnrMarkers() ? kButtonDown : kButtonUp);
   }
   fPtRange->SetValues(fTC->GetMinPt(), fTC->GetMaxPt());
+  fPRange->SetValues(fTC->GetMinP(), fTC->GetMaxP());
 }
 
 /**************************************************************************/
@@ -344,6 +355,14 @@ void TrackListEditor::DoPtRange()
 {
  
   fTC->SelectByPt(fPtRange->GetMin(), fPtRange->GetMax());
+  Update();
+}
+
+
+void TrackListEditor::DoPRange()
+{
+ 
+  fTC->SelectByP(fPRange->GetMin(), fPRange->GetMax());
   Update();
 }
 
