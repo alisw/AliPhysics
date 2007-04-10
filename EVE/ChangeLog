@@ -1,3 +1,18 @@
+2007-04-10  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* README_MUON:
+	New file, moved from alice-macros/.
+
+	* alice-macros/MUON_display.C:
+	Bogdan: new version of MUON visualization.
+
+	* alice-macros/MUON_track_info.C:
+	* alice-macros/README_MUON:
+	Bogdan: removed files.
+
+	* macros/reve_quad_test.C:
+	Added an example function, similar to what will be used for EMC.
+	
 2007-03-29  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* alice-macros/geom_vzero.C:
