@@ -7,5 +7,6 @@
 #pragma link off all functions;
  
 #pragma link C++ class  AliVZEROReconstructor+;
+#pragma link C++ class  AliVZERORawStream+;
 
 #endif

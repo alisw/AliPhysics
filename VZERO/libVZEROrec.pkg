@@ -1,8 +1,8 @@
 #-*- Mode: Makefile -*-
 # $Id$
 
-SRCS= \
-AliVZEROReconstructor.cxx
+SRCS= AliVZEROReconstructor.cxx \
+      AliVZERORawStream.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 

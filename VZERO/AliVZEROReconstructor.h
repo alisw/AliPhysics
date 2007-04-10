@@ -32,7 +32,7 @@ public:
   virtual void   Reconstruct(AliRawReader* /*rawReader*/, 
 		             TTree* /*clustersTree*/) const {return;};
   virtual void   Reconstruct(AliRunLoader* /*runLoader*/, 
-                             AliRawReader* /*rawReader*/) const {return;};
+                             AliRawReader* /*rawReader*/) const;
   virtual void   Reconstruct(TTree*, TTree*) const {return;};
   
   virtual void   FillESD(AliRunLoader* /*runLoader*/, AliESD* /*esd*/) const;
