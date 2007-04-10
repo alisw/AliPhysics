@@ -50,7 +50,7 @@ public:
   Track(Reve::RecTrack* t, TrackRnrStyle* rs);
   virtual ~Track();
 
-  void MakeTrack(Bool_t recurse=kFALSE);
+  virtual void MakeTrack(Bool_t recurse=kFALSE);
 
   TrackRnrStyle* GetRnrStyle() const  { return fRnrStyle; }
   void SetRnrStyle(TrackRnrStyle* rs) { fRnrStyle = rs; }
@@ -110,6 +110,9 @@ public:
 
   Float_t                  fMinPt;
   Float_t                  fMaxPt;
+
+  Float_t                  fMinP;
+  Float_t                  fMaxP;
 
   Color_t                  fPMColor;
   Style_t                  fPMStyle;
@@ -215,6 +218,9 @@ public:
   Float_t GetMinPt()        const { return fRnrStyle->fMinPt; }
   Float_t GetMaxPt()        const { return fRnrStyle->fMaxPt; }
 
+  Float_t GetMinP()         const { return fRnrStyle->fMinP; }
+  Float_t GetMaxP()         const { return fRnrStyle->fMaxP; }
+
   Bool_t  GetFitDaughters()  const { return fRnrStyle->fFitDaughters; }
   Bool_t  GetFitReferences() const { return fRnrStyle->fFitReferences; }
   Bool_t  GetFitDecay()      const { return fRnrStyle->fFitDecay; }
@@ -233,6 +239,7 @@ public:
   Int_t   GetNTracks() { return fN; }
 
   void SelectByPt(Float_t min_pt=0.2, Float_t max_pt=10); // *MENU*
+  void SelectByP(Float_t min_pt=0.0, Float_t max_pt=100); // *MENU*
 
   //--------------------------------
 

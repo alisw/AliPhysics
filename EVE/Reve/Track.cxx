@@ -389,6 +389,9 @@ TrackRnrStyle::TrackRnrStyle() :
   fMinPt   (0.1),
   fMaxPt   (10),
 
+  fMinP    (0.1),
+  fMaxP    (100),
+
   fFitDaughters  (kTRUE),
   fFitReferences (kTRUE),
   fFitDecay      (kTRUE),
@@ -496,7 +499,7 @@ void TrackList::MakeMarkers()
   Reset(fChildren.size());
   for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
     Track& t = *((Track*)(*i));
-    if(t.GetN() > 0)
+    if(t.GetRnrSelf() && t.GetN() > 0)
       SetNextPoint(t.fV.x, t.fV.y, t.fV.z);
   }
   gReve->Redraw3D();
@@ -592,7 +595,6 @@ void TrackList::SetRnrMarkers(Bool_t rnr)
 
 void TrackList::SetRnrTracks(Bool_t rnr)
 {
-
   fRnrTracks = rnr;
   gReve->Redraw3D();
 }
@@ -614,6 +616,21 @@ void TrackList::SelectByPt(Float_t min_pt, Float_t max_pt)
     Bool_t on = ptsq >= minptsq && ptsq <= maxptsq;
     (*i)->SetRnrSelf(on);
     (*i)->SetRnrChildren(on);
+  }
+}
+
+void TrackList::SelectByP(Float_t min_p, Float_t max_p)
+{
+  fRnrStyle->fMinP = min_p;
+  fRnrStyle->fMaxP = max_p;
+
+  Float_t minpsq = min_p*min_p;
+  Float_t maxpsq = max_p*max_p;
+  Float_t psq;
+
+  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+    psq = ((Track*)(*i))->fP.Mag();
+    (*i)->SetRnrSelf(psq >= minpsq && psq <= maxpsq);
   }
 }
 
