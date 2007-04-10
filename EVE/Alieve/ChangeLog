@@ -1,3 +1,26 @@
+2007-04-10  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* MUONChamber.cxx:
+	* MUONChamber.h:
+	* MUONChamberData.cxx:
+	* MUONChamberData.h:
+	* MUONChamberEditor.cxx:
+	* MUONChamberEditor.h:
+	* MUONChamberGL.cxx:
+	* MUONChamberGL.h:
+	* MUONData.cxx:
+	* MUONData.h:
+	* MUONTrack.cxx:
+	* MUONTrack.h:
+	Bogdan: new version of MUON visualization.
+
+	* MUONTracks.cxx:
+	* MUONTracks.h:
+	Bogdan: removed files.
+
+	* LinkDef.h:
+	Remove pragma for class MUONTracks.
+
 2007-03-26  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
 
 	* ITSModuleStepperGL.cxx:
