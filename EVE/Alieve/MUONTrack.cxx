@@ -1,9 +1,18 @@
 #include "MUONTrack.h"
 
+#include <Alieve/EventAlieve.h>
+
 #include <AliMagF.h>
+#include <AliMagFMaps.h>
 #include <AliLog.h>
+#include <AliESDMuonTrack.h>
+#include <AliTrackReference.h>
+#include <AliESD.h>
+#include <AliRunLoader.h>
+#include <AliRun.h>
 
 #include <AliMUONTrack.h>
+#include <AliMUONTriggerTrack.h>
 #include <AliMUONTrackParam.h>
 #include <AliMUONConstants.h>
 
@@ -12,6 +21,10 @@
 #include <TMatrixD.h>
 #include <TStyle.h>
 #include <TROOT.h>
+#include <TParticle.h>
+#include <TParticlePDG.h>
+
+#include <Riostream.h>
 
 using namespace Reve;
 using namespace Alieve;
@@ -22,16 +35,25 @@ using namespace Alieve;
 
 ClassImp(MUONTrack)
 
+AliMagF* MUONTrack::fFieldMap = 0;
+
 //______________________________________________________________________
 MUONTrack::MUONTrack(Reve::RecTrack* t, TrackRnrStyle* rs) :
   Reve::Track(t,rs),
-  fFieldMap(0),
   fTrack(0),
-  fCount(0)
+  fPart(0),
+  fCount(0),
+  fIsMUONTrack(kFALSE),
+  fIsMUONTriggerTrack(kFALSE),
+  fIsESDTrack(kFALSE),
+  fIsMCTrack(kFALSE),
+  fIsRefTrack(kFALSE)
 {
   //
   // constructor
   //
+
+  fFieldMap = Alieve::Event::AssertMagField();
 
 }
 
@@ -42,6 +64,323 @@ MUONTrack::~MUONTrack()
   // destructor
   //
 
+  if (fIsRefTrack || fIsESDTrack) delete fTrack;
+  if (fIsMCTrack) delete fPart;
+
+}
+
+//______________________________________________________________________
+void MUONTrack::PrintMCTrackInfo()
+{
+  //
+  // information about the MC particle
+  //
+
+  Float_t pt, p;
+
+  if (!fPart) {
+    cout << "   ! no particle ..." << endl;
+    return;
+  }
+
+  cout << endl;
+  cout << "   MC track parameters at vertex" << endl;
+  cout << "   -------------------------------------------------------------------------------------" << endl;
+  cout << "   PDG code          Vx           Vy           Vz           Px           Py           Pz   " << endl;
+    
+  cout << "   " <<
+    setw(8) << setprecision(0) << 
+    fPart->GetPdgCode() << "    " << 
+    setw(8) << setprecision(3) << 
+    fPart->Vx() << "     " << 
+    setw(8) << setprecision(3) << 
+    fPart->Vy() << "     " << 
+    setw(8) << setprecision(3) << 
+    fPart->Vz() << "     " << 
+    setw(8) << setprecision(3) << 
+    fPart->Px() << "     " << 
+    setw(8) << setprecision(3) << 
+    fPart->Py() << "     " << 
+    setw(8) << setprecision(4) << 
+    fPart->Pz() << "     " << 
+    
+    endl;
+  
+  pt = TMath::Sqrt(fPart->Px()*fPart->Px()+fPart->Py()*fPart->Py());
+  p  = TMath::Sqrt(fPart->Px()*fPart->Px()+fPart->Py()*fPart->Py()+fPart->Pz()*fPart->Pz());
+  
+  cout << endl;
+  cout << "   Pt = " << 
+    setw(8) << setprecision(3) <<
+    pt << "  GeV/c" << endl;
+  
+  cout << "   P  = " << 
+    setw(8) << setprecision(4) <<
+    p  << "  GeV/c" << endl;
+    
+}
+
+//______________________________________________________________________
+void MUONTrack::PrintMUONTrackInfo()
+{
+  //
+  // information about the reconstructed/reference track; at hits and at vertex
+  //
+
+  Double_t RADDEG = 180.0/TMath::Pi();
+
+  Int_t nparam;
+  Float_t pt, bc, nbc, zc;
+  AliMUONTrackParam *mtp;
+  TClonesArray *trackParamAtHit;
+
+  if (!fTrack) {
+    cout << "   ! no reconstructed track ..." << endl;
+    return;
+  }
+
+  if (fIsMUONTrack) {
+    cout << endl;
+    cout << "   Track number " << fLabel << endl;
+    cout << "   ---------------------------------------------------------------------------------------------------------------------------------" << endl;
+    cout << endl;
+    cout << "   Number of clusters       " << fTrack->GetNTrackHits() << endl;
+    cout << "   Match to trigger         " << fTrack->GetMatchTrigger() << endl;
+    if (fTrack->GetMatchTrigger()) {
+      cout << "   Chi2 tracking-trigger    " << fTrack->GetChi2MatchTrigger() << endl;
+      cout << "   Local trigger number     " << fTrack->GetLoTrgNum() << endl;
+    }
+  }
+
+  if (fIsRefTrack) {
+    cout << endl;
+    cout << "   Track reference number " << fLabel << endl;
+    cout << "   ---------------------------------------------------------------------------------------------------------------------------------" << endl;
+    cout << endl;
+    cout << "   Number of clusters       " << fTrack->GetNTrackHits() << endl;
+  }
+ 
+  trackParamAtHit = fTrack->GetTrackParamAtHit();
+  nparam = trackParamAtHit->GetEntries();
+
+  cout << endl;
+  cout << "   TrackParamAtHit entries  " << nparam << "" << endl;
+  cout << "   ---------------------------------------------------------------------------------------------------------------------------------" << endl;
+  cout << "   Number   InvBendMom   BendSlope   NonBendSlope   BendCoord   NonBendCoord               Z        Px        Py        Pz         P" << endl;
+
+  for (Int_t i = 0; i < nparam; i++) {
+
+    mtp = (AliMUONTrackParam*)trackParamAtHit->At(i);
+
+    cout << 
+      setw(9)<< setprecision(3) << 
+      i << "     " << 
+
+      setw(8) << setprecision(3) << 
+      mtp->GetInverseBendingMomentum() << "    " << 
+
+      setw(8) << setprecision(3) <<
+      mtp->GetBendingSlope()*RADDEG << "       " << 
+
+      setw(8) << setprecision(3) <<
+      mtp->GetNonBendingSlope()*RADDEG << "    " << 
+
+      setw(8) << setprecision(4) <<
+      mtp->GetBendingCoor() << "       " <<  
+
+      setw(8) << setprecision(4) <<
+      mtp->GetNonBendingCoor() << "      " <<  
+
+      setw(10) << setprecision(6) <<
+      mtp->GetZ() << "  " <<  
+
+      setw(8) << setprecision(4) <<
+      mtp->Px() << "  " <<  
+
+      setw(8) << setprecision(4) <<
+      mtp->Py() << "  " <<  
+
+      setw(8) << setprecision(4) <<
+      mtp->Pz() << "  " <<  
+
+      setw(8) << setprecision(4) <<
+      mtp->P() << "  " <<  
+
+      endl;
+
+  }
+
+  cout << endl;
+  cout << "   Track parameters at vertex" << endl;
+  cout << "   --------------------------------------------------------------------------------------------------------------------" << endl;
+  cout << "   InvBendMom   BendSlope   NonBendSlope   BendCoord   NonBendCoord           Z        Px        Py        Pz         P" << endl;
+
+  mtp = (AliMUONTrackParam*)fTrack->GetTrackParamAtVertex();
+
+  bc  = mtp->GetBendingCoor();
+  nbc = mtp->GetNonBendingCoor();
+  zc  = mtp->GetZ();
+  if (bc  < 0.001) bc  = 0.0;
+  if (nbc < 0.001) nbc = 0.0;
+  if (zc  < 0.001) zc  = 0.0;
+
+  cout << "     " <<
+    setw(8) << setprecision(3) << 
+    mtp->GetInverseBendingMomentum() << "    " << 
+    
+    setw(8) << setprecision(3) <<
+    mtp->GetBendingSlope()*RADDEG << "       " << 
+    
+    setw(8) << setprecision(3) <<
+    mtp->GetNonBendingSlope()*RADDEG << "    " << 
+    
+    setw(8) << setprecision(4) <<
+    bc << "       " <<  
+    
+    setw(8) << setprecision(4) <<
+    nbc << "  " <<  
+    
+    setw(10) << setprecision(6) <<
+    zc << "  " <<  
+    
+    setw(8) << setprecision(4) <<
+    mtp->Px() << "  " <<  
+    
+    setw(8) << setprecision(4) <<
+    mtp->Py() << "  " <<  
+    
+    setw(8) << setprecision(4) <<
+    mtp->Pz() << "  " <<  
+    
+    setw(8) << setprecision(4) <<
+    mtp->P() << "  " <<  
+    
+    endl;
+  
+  pt = TMath::Sqrt(mtp->Px()*mtp->Px()+mtp->Py()*mtp->Py());
+
+  cout << endl;
+  cout << "   Pt = " << 
+    setw(8) << setprecision(3) <<
+    pt << "  GeV/c" << endl;
+
+}
+
+//______________________________________________________________________
+void MUONTrack::PrintMUONTriggerTrackInfo()
+{
+  //
+  // information about the trigger track
+  //
+
+  // Double_t RADDEG = 180.0/TMath::Pi();
+
+}
+
+//______________________________________________________________________
+void MUONTrack::PrintESDTrackInfo()
+{
+  //
+  // information about the reconstructed ESD track at vertex
+  //
+
+  Double_t RADDEG = 180.0/TMath::Pi();
+  Float_t pt;
+
+  AliMUONTrackParam *mtp = (AliMUONTrackParam*)fTrack->GetTrackParamAtVertex();
+
+  cout << endl;
+  cout << "   ESD muon track " << endl;
+  cout << "   -----------------------------------------------------------------------------------------------------------" << endl;
+  cout << "   InvBendMom   BendSlope   NonBendSlope    BendCoord   NonBendCoord           Z        Px        Py        Pz" << endl;
+  
+  cout << "     " << 
+    
+    setw(8) << setprecision(4) << 
+    mtp->GetInverseBendingMomentum() << "    " << 
+    
+    setw(8) << setprecision(3) <<
+    mtp->GetBendingSlope()*RADDEG << "       " << 
+    
+    setw(8) << setprecision(3) <<
+    mtp->GetNonBendingSlope()*RADDEG << "     " << 
+    
+    setw(8) << setprecision(4) <<
+    mtp->GetBendingCoor() << "       " <<  
+    
+    setw(8) << setprecision(4) <<
+    mtp->GetNonBendingCoor() << "  " <<  
+    
+    setw(10) << setprecision(6) <<
+    mtp->GetZ() << "  " <<  
+    
+    setw(8) << setprecision(3) <<
+    mtp->Px() << "  " <<  
+    
+    setw(8) << setprecision(3) <<
+    mtp->Py() << "  " <<  
+    
+    setw(8) << setprecision(3) <<
+    mtp->Pz() << "  " <<  
+    
+    endl;
+  
+  pt = TMath::Sqrt(mtp->Px()*mtp->Px()+mtp->Py()*mtp->Py());
+  
+  cout << endl;
+  cout << "   Pt = " << 
+    setw(8) << setprecision(3) <<
+    pt << "  GeV/c" << endl;
+  
+  cout << "   P  = " << 
+    setw(8) << setprecision(4) <<
+    mtp->P()  << "  GeV/c" << endl;
+  
+  AliESD* esd = Alieve::Event::AssertESD();
+  
+  Double_t spdVertexX = 0;
+  Double_t spdVertexY = 0;
+  Double_t spdVertexZ = 0;
+  Double_t esdVertexX = 0;
+  Double_t esdVertexY = 0;
+  Double_t esdVertexZ = 0;
+
+  AliESDVertex* spdVertex = (AliESDVertex*) esd->GetVertex();
+  if (spdVertex->GetNContributors()) {
+    spdVertexZ = spdVertex->GetZv();
+    spdVertexY = spdVertex->GetYv();
+    spdVertexX = spdVertex->GetXv();
+  }
+  
+  AliESDVertex* esdVertex = (AliESDVertex*) esd->GetPrimaryVertex();
+  if (esdVertex->GetNContributors()) {
+    esdVertexZ = esdVertex->GetZv();
+    esdVertexY = esdVertex->GetYv();
+    esdVertexX = esdVertex->GetXv();
+  }
+  
+  Float_t t0v = esd->GetT0zVertex();
+  
+  cout << endl;
+  cout << endl;
+  cout << "External vertex SPD: " << 
+    setw(3) <<
+    spdVertex->GetNContributors() << "   " <<
+    setw(8) << setprecision(3) <<
+    spdVertexX << "   " <<
+    spdVertexY << "   " <<
+    spdVertexZ << "   " << endl;
+  cout << "External vertex ESD: " << 
+    setw(3) <<
+    esdVertex->GetNContributors() << "   " <<
+    setw(8) << setprecision(3) <<
+    esdVertexX << "   " <<
+    esdVertexY << "   " <<
+    esdVertexZ << "   " << endl;
+  cout << "External vertex T0: " << 
+    setw(8) << setprecision(3) <<
+    t0v << "   " << endl;
+  
 }
 
 //______________________________________________________________________
@@ -51,8 +390,26 @@ void MUONTrack::MUONTrackInfo()
   // MENU function
   //
 
-  Reve::LoadMacro("MUON_track_info.C");
-  gROOT->ProcessLine(Form("MUON_track_info(%d);", fLabel));
+  if (fIsMCTrack) {
+    PrintMCTrackInfo();
+  }
+    
+  if (fIsMUONTrack || fIsRefTrack) {
+    PrintMUONTrackInfo();
+  }
+    
+  if (fIsESDTrack) {
+    PrintESDTrackInfo();
+  }
+
+  if (fIsMUONTriggerTrack) {
+    PrintMUONTriggerTrackInfo();
+  }
+    
+  cout << endl;
+  cout << endl;
+  cout << endl;
+  cout << "   (slopes [deg], coord [cm], p [GeV/c])" << endl;
 
 }
 
@@ -63,25 +420,61 @@ void MUONTrack::MUONTriggerInfo()
   // MENU function
   //
 
-  Reve::LoadMacro("MUON_trigger_info.C");
-  gROOT->ProcessLine(Form("MUON_trigger_info(%d);", fLabel));
+  if (fIsMUONTrack) {
+    Reve::LoadMacro("MUON_trigger_info.C");
+    gROOT->ProcessLine(Form("MUON_trigger_info(%d);", fLabel));
+  }
+  if (fIsRefTrack) {
+    cout << "This is a reference track!" << endl;
+  }
+  if (fIsMCTrack) {
+    cout << "This is a Monte-Carlo track!" << endl;
+  }
+  if (fIsESDTrack) {
+
+    AliESD* esd = Alieve::Event::AssertESD();
+    ULong64_t triggerMask = esd->GetTriggerMask();
+
+    cout << endl;
+    cout << ">>>>>#########################################################################################################################" << endl;
+    cout << endl;
+
+    cout << "   ESD track trigger info" << endl;
+    cout << "   -----------------------------------------------------" << endl;
+    cout << endl;
+
+    cout << "   Match to trigger         " << fTrack->GetMatchTrigger() << endl;
+    cout << endl;
+    cout << "   ESD trigger mask = " << triggerMask << endl;
+
+    cout << endl;
+    cout << "#########################################################################################################################<<<<<" << endl;
+    cout << endl;
+    
+  }
 
 }
 
 //______________________________________________________________________
-void MUONTrack::MakeTrack(AliMUONTrack *mtrack, AliMagF *fmap)
+void MUONTrack::MakeMUONTrack(AliMUONTrack *mtrack)
 {
   //
   // builds the track with dipole field
   //
 
-  fTrack    = mtrack;
-  fFieldMap = fmap;
+  if (!fIsRefTrack) {
+    fIsMUONTrack = kTRUE;
+    fTrack    = mtrack;
+  }
+
+  if (fIsRefTrack) {
+    fTrack = new AliMUONTrack(*mtrack);
+  }
 
   Double_t xv, yv;
   Float_t ax, bx, ay, by;
-  Float_t xr[20], yr[20], zr[20];
-  Float_t xrc[20], yrc[20], zrc[20];
+  Float_t xr[28], yr[28], zr[28];
+  Float_t xrc[28], yrc[28], zrc[28];
   char form[1000];
     
   TMatrixD smatrix(2,2);
@@ -95,26 +488,31 @@ void MUONTrack::MakeTrack(AliMUONTrack *mtrack, AliMagF *fmap)
   // middle z between the two detector planes of the trigger chambers
   Float_t zg[4] = { -1603.5, -1620.5, -1703.5, -1720.5 };
 
-  AliMUONTrackParam *mtp = (AliMUONTrackParam*)mtrack->GetTrackParamAtVertex();
+  AliMUONTrackParam *mtp = mtrack->GetTrackParamAtVertex();
   Float_t pt = TMath::Sqrt(mtp->Px()*mtp->Px()+mtp->Py()*mtp->Py());
+  Float_t pv[3];
+  pv[0] = mtp->Px();
+  pv[1] = mtp->Py();
+  pv[2] = mtp->Pz();
+  fP.Set(pv);
 
-  //PH The line below is replaced waiting for a fix in Root
-  //PH which permits to use variable siza arguments in CINT
-  //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
-  if (mtrack->GetMatchTrigger()) {
-    //PH      track->SetName(Form("MUONTrack %2d (MT)", fLabel));
-    sprintf(form,"MUONTrack %2d (MT)", fLabel);
-    SetName(form);
-    SetLineStyle(1);
-    //SetLineColor(2);
-    SetLineColor(ColorIndex(pt));
-  } else {
-    //PH      track->SetName(Form("MUONTrack %2d     ", fLabel));
-    sprintf(form,"MUONTrack %2d     ", fLabel);
-    SetName(form);
-    SetLineStyle(2);
-    //SetLineColor(2);
-    SetLineColor(ColorIndex(pt));
+  if (fIsMUONTrack) {
+    //PH The line below is replaced waiting for a fix in Root
+    //PH which permits to use variable siza arguments in CINT
+    //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
+    if (mtrack->GetMatchTrigger()) {
+      //PH      track->SetName(Form("MUONTrack %2d (MT)", fLabel));
+      sprintf(form,"MUONTrack %2d (MT)", fLabel);
+      SetName(form);
+      SetLineStyle(1);
+      SetLineColor(ColorIndex(pt));
+    } else {
+      //PH      track->SetName(Form("MUONTrack %2d     ", fLabel));
+      sprintf(form,"MUONTrack %2d     ", fLabel);
+      SetName(form);
+      SetLineStyle(1);
+      SetLineColor(ColorIndex(pt));
+    }
   }
   
   AliMUONTrackParam *trackParam = mtrack->GetTrackParamAtVertex(); 
@@ -122,15 +520,17 @@ void MUONTrack::MakeTrack(AliMUONTrack *mtrack, AliMagF *fmap)
   yRec0  = trackParam->GetBendingCoor();
   zRec0  = trackParam->GetZ();
   
-  SetPoint(fCount,xRec0,yRec0,zRec0);
-  fCount++;
+  if (fIsMUONTrack) {
+    SetPoint(fCount,xRec0,yRec0,zRec0);
+    fCount++;
+  }
 
-  for (Int_t i = 0; i < 20; i++) xr[i]=yr[i]=zr[i]=0.0;
+  for (Int_t i = 0; i < 28; i++) xr[i]=yr[i]=zr[i]=0.0;
   
   Int_t nTrackHits = mtrack->GetNTrackHits();
   
-  Bool_t hitChamber[10] = {kFALSE};
-
+  Bool_t hitChamber[14] = {kFALSE};
+  Int_t iCha;
   TClonesArray* trackParamAtHit = mtrack->GetTrackParamAtHit();
 
   for (Int_t iHit = 0; iHit < nTrackHits; iHit++){
@@ -139,17 +539,20 @@ void MUONTrack::MakeTrack(AliMUONTrack *mtrack, AliMagF *fmap)
     yRec  = trackParam->GetBendingCoor();
     zRec  = trackParam->GetZ();
     
-    //printf("Hit %d x %f y %f z %f \n",iHit,xRec,yRec,zRec);
+    iCha = AliMUONConstants::ChamberNumber(zRec);
+    //printf("Hit %d x %f y %f z %f c %2d \n",iHit,xRec,yRec,zRec,iCha);
     
     xr[iHit] = xRec;
     yr[iHit] = yRec;
     zr[iHit] = zRec;
-    
-    hitChamber[AliMUONConstants::ChamberNumber(zRec)] = kTRUE;
+
+    hitChamber[iCha] = kTRUE;
 
   }
 
   Int_t crntCha, lastHitSt12, firstHitSt3, lastHitSt3, firstHitSt45;
+
+  if (fIsMUONTrack) nTrackHits = 10;
 
   lastHitSt12  = -1;
   firstHitSt3  = -1;
@@ -263,6 +666,8 @@ void MUONTrack::MakeTrack(AliMUONTrack *mtrack, AliMagF *fmap)
       fCount++;
     }
   }
+  
+  if (!fIsMUONTrack) return;
 
   Int_t nrc = 0;
   if (mtrack->GetMatchTrigger() && 1) {
@@ -334,6 +739,169 @@ void MUONTrack::MakeTrack(AliMUONTrack *mtrack, AliMagF *fmap)
 }
 
 //______________________________________________________________________
+void MUONTrack::MakeMUONTriggerTrack(AliMUONTriggerTrack *mtrack)
+{
+  //
+  // builds the trigger track from one point and direction
+  //
+
+  Float_t x1   = mtrack->GetX11();
+  Float_t y1   = mtrack->GetY11();
+  Float_t thex = mtrack->GetThetax();
+  Float_t they = mtrack->GetThetay();
+
+  Float_t z11 = -1600.0;
+  Float_t z22 = -1724.0;
+  Float_t dz  = z22-z11;
+
+  Float_t x2 = x1 + dz*TMath::Tan(thex);
+  Float_t y2 = y1 + dz*TMath::Tan(they);
+
+  SetPoint(fCount,x1,y1,z11); fCount++;
+  SetPoint(fCount,x2,y2,z22); fCount++;
+
+  char form[1000];
+
+  sprintf(form,"MUONTriggerTrack %2d",mtrack->GetLoTrgNum());
+  SetName(form);
+  SetLineStyle(1);
+
+}
+
+//______________________________________________________________________
+void MUONTrack::MakeESDTrack(AliESDMuonTrack *mtrack)
+{
+  //
+  // builds the track with dipole field starting from the TParticle
+  //
+
+  fIsESDTrack = kTRUE;
+
+  fTrack = new AliMUONTrack();
+  AliMUONTrackParam trackParam;
+  trackParam.GetParamFrom(*mtrack);
+  fTrack->SetTrackParamAtVertex(&trackParam);
+  fTrack->SetMatchTrigger(mtrack->GetMatchTrigger());
+
+  char form[1000];
+  sprintf(form,"ESDTrack %2d ", fLabel);
+  SetName(form);
+  SetLineStyle(3);
+  SetLineColor(0);
+
+  Double_t vect[7], vout[7];
+  Double_t step = 1.0;
+
+  Int_t charge = (Int_t)TMath::Sign(1.0,trackParam.GetInverseBendingMomentum());
+  Float_t pv[3];
+  pv[0] = trackParam.Px();
+  pv[1] = trackParam.Py();
+  pv[2] = trackParam.Pz();
+  fP.Set(pv);
+  
+  vect[0] = trackParam.GetNonBendingCoor();
+  vect[1] = trackParam.GetBendingCoor();
+  vect[2] = trackParam.GetZ();
+  vect[3] = trackParam.Px()/trackParam.P();
+  vect[4] = trackParam.Py()/trackParam.P();
+  vect[5] = trackParam.Pz()/trackParam.P();
+  vect[6] = trackParam.P();
+
+  //cout << "vertex " << vect[0] << "   " << vect[1] << "   " << vect[2] << "   " << endl;
+
+  Double_t zMax = -1750.0;
+  Double_t rMax =   350.0;
+  Double_t r    =     0.0;
+
+  Int_t nSteps = 0;
+  while ((vect[2] > zMax) && (nSteps < 10000) && (r < rMax)) {
+    nSteps++;
+    OneStepRungekutta(charge, step, vect, vout);
+    SetPoint(fCount,vout[0],vout[1],vout[2]);
+    fCount++;
+    for (Int_t i = 0; i < 7; i++) {
+      vect[i] = vout[i];
+    }
+    r = TMath::Sqrt(vect[0]*vect[0]+vect[1]*vect[1]);
+  }
+
+}
+
+//______________________________________________________________________
+void MUONTrack::MakeMCTrack(TParticle *part)
+{
+  //
+  // builds the track with dipole field starting from the TParticle
+  //
+
+  fIsMCTrack = kTRUE;
+
+  fPart     = new TParticle(*part);
+
+  char form[1000];
+  sprintf(form,"MCTrack %2d ", fLabel);
+  SetName(form);
+  SetLineStyle(2);
+  SetLineColor(8);
+
+  Double_t vect[7], vout[7];
+  Double_t step = 1.0;
+
+  Float_t pv[3];
+  pv[0] = fPart->Px();
+  pv[1] = fPart->Py();
+  pv[2] = fPart->Pz();
+  fP.Set(pv);
+
+  vect[0] = fPart->Vx();
+  vect[1] = fPart->Vy();
+  vect[2] = fPart->Vz();
+  vect[3] = fPart->Px()/fPart->P();
+  vect[4] = fPart->Py()/fPart->P();
+  vect[5] = fPart->Pz()/fPart->P();
+  vect[6] = fPart->P();
+
+  TParticlePDG *ppdg = fPart->GetPDG(1);
+  Int_t charge = (Int_t)(ppdg->Charge()/3.0);
+  
+  Double_t zMax = -1750.0;
+  Double_t rMax =   350.0;
+  Double_t r    =     0.0;
+
+  Int_t nSteps = 0;
+  while ((vect[2] > zMax) && (nSteps < 10000) && (r < rMax)) {
+    nSteps++;
+    OneStepRungekutta(charge, step, vect, vout);
+    SetPoint(fCount,vout[0],vout[1],vout[2]);
+    fCount++;
+    for (Int_t i = 0; i < 7; i++) {
+      vect[i] = vout[i];
+    }
+    r = TMath::Sqrt(vect[0]*vect[0]+vect[1]*vect[1]);
+  }
+
+}
+
+//______________________________________________________________________
+void MUONTrack::MakeRefTrack(AliMUONTrack *mtrack)
+{
+  //
+  // builds the track with dipole field starting from the TParticle
+  //
+
+  fIsRefTrack = kTRUE;
+
+  char form[1000];
+  sprintf(form,"RefTrack %2d ", fLabel);
+  SetName(form);
+  SetLineStyle(2);
+  SetLineColor(0);
+
+  MakeMUONTrack(mtrack);
+
+}
+
+//______________________________________________________________________
 void MUONTrack::Propagate(Float_t *xr, Float_t *yr, Float_t *zr, Int_t i1, Int_t i2)
 {
   //
@@ -345,10 +913,9 @@ void MUONTrack::Propagate(Float_t *xr, Float_t *yr, Float_t *zr, Int_t i1, Int_t
   Double_t zMax;
 
   if (i2 == 9999) {
-    //zMax = -1750.0;
-    zMax = zr[i1]+2.0;
+    zMax = zr[i1]+1.5*step;
   } else {
-    zMax = zr[i2]+2.0;
+    zMax = zr[i2]+1.5*step;
   }
 
   AliMUONTrackParam *trackParam = fTrack->GetTrackParamAtVertex(); 
@@ -369,7 +936,6 @@ void MUONTrack::Propagate(Float_t *xr, Float_t *yr, Float_t *zr, Int_t i1, Int_t
   while ((vect[2] > zMax) && (nSteps < 10000)) {
     nSteps++;
     OneStepRungekutta(charge, step, vect, vout);
-    //printf("%f %f %f \n",vect[0],vect[1],vect[2]);
     SetPoint(fCount,vout[0],vout[1],vout[2]);
     fCount++;
     for (Int_t i = 0; i < 7; i++) {
@@ -391,9 +957,11 @@ void MUONTrack::GetField(Double_t *position, Double_t *field)
 
   x[0] = position[0]; x[1] = position[1]; x[2] = position[2];
 
-  if (fFieldMap) fFieldMap->Field(x,b);
+  if (fFieldMap) {
+    fFieldMap->Field(x,b);
+  }
   else {
-    //AliWarning("No field map");
+    AliWarning("No field map");
     field[0] = field[1] = field[2] = 0.0;
     return;
   }

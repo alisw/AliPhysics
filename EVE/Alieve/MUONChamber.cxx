@@ -22,7 +22,7 @@ using namespace Alieve;
 ClassImp(MUONChamber)
 
 //______________________________________________________________________
-MUONChamber::MUONChamber(const Text_t* n, const Text_t* t) :
+MUONChamber::MUONChamber(Int_t id, const Text_t* n, const Text_t* t) :
 Reve::RenderElement(fFrameColor),
 TNamed(n,t),
 fMUONData(0),
@@ -31,12 +31,24 @@ fRTS(1),
 fChamberID(0),
 fQuadSet1(n,t),
 fQuadSet2(n,t),
+fPointSet1(n),
+fPointSet2(n),
 fThreshold(0),
-fMaxVal(1024)
+fMaxVal(4096),
+fClusterSize(5),
+fHitSize(5)
 {
   //
   // constructor
   //
+
+  Char_t name[256];
+  if (id < 10) {
+    sprintf(name,"Chamber %02d (trac)",id);
+  } else {
+    sprintf(name,"Chamber %02d (trig)",id);
+  }
+  SetName(name);
 
   ComputeBBox();
 
@@ -66,17 +78,21 @@ void MUONChamber::ComputeBBox()
   BBoxInit();
 #endif
   
-  fBBox[0] = -300.0;
-  fBBox[1] = +300.0;
-  fBBox[2] = -300.0;
-  fBBox[3] = +300.0;
+  fBBox[0] = - 400.0;
+  fBBox[1] = + 400.0;
+  fBBox[2] = - 400.0;
+  fBBox[3] = + 400.0;
   fBBox[4] = -1800.0;
-  fBBox[5] = -500.0;
+  fBBox[5] = + 500.0;
 
   Float_t* b1 = fQuadSet1.AssertBBox();
   for(Int_t i=0; i<6; ++i) { b1[i] = fBBox[i]; }
   Float_t* b2 = fQuadSet2.AssertBBox();
   for(Int_t i=0; i<6; ++i) { b2[i] = fBBox[i]; }
+  Float_t* b3 = fPointSet1.AssertBBox();
+  for(Int_t i=0; i<6; ++i) { b3[i] = fBBox[i]; }
+  Float_t* b4 = fPointSet2.AssertBBox();
+  for(Int_t i=0; i<6; ++i) { b4[i] = fBBox[i]; }
   
 }
 
@@ -131,6 +147,30 @@ void MUONChamber::SetMaxVal(Int_t mv)
 
   fMaxVal = TMath::Max(mv, (Int_t)(fThreshold + 1));
   ClearColorArray();
+  IncRTS();
+
+}
+
+//______________________________________________________________________
+void MUONChamber::SetClusterSize(Int_t size)
+{
+  //
+  // cluster point size
+  //
+
+  fClusterSize = TMath::Max(1, size);
+  IncRTS();
+
+}
+
+//______________________________________________________________________
+void MUONChamber::SetHitSize(Int_t size)
+{
+  //
+  // hit point size
+  //
+
+  fHitSize = TMath::Max(1, size);
   IncRTS();
 
 }
@@ -224,19 +264,26 @@ void MUONChamber::UpdateQuads()
 
   fQuadSet1.Quads().clear();
   fQuadSet2.Quads().clear();
+  fPointSet1.Reset();
+  fPointSet2.Reset();
 
   MUONChamberData* data = GetChamberData();
   
   Float_t *buffer;
-  Float_t x0, y0, x1, y1, z;
-  Int_t charge, cathode;
+  Float_t x0, y0, x1, y1, z, clsq;
+  Int_t charge, cathode, nDigits, nClusters, nHits, oldSize, ic1, ic2;
+  Double_t clsX, clsY, clsZ;
+  Float_t hitX, hitY, hitZ;
+    
   if (data != 0) {
 
     SetupColorArray();
 
-    Int_t ndigits = data->GetNDigits();
+    // digits
+
+    nDigits = data->GetNDigits();
     
-    for (Int_t id = 0; id < ndigits; id++) {
+    for (Int_t id = 0; id < nDigits; id++) {
 
       buffer = data->GetDigitBuffer(id);
 
@@ -248,6 +295,8 @@ void MUONChamber::UpdateQuads()
       charge = (Int_t)buffer[5];
       cathode = (Int_t)buffer[6];
       
+      if (charge <= fThreshold) continue;
+
       if (cathode == 0) {
 
 	fQuadSet1.Quads().push_back(Reve::Quad());
@@ -288,7 +337,41 @@ void MUONChamber::UpdateQuads()
 
     } // end digits loop
 
-  }
+    // clusters
+    
+    nClusters = data->GetNClusters()/2;  // only one cathode plane
+    oldSize = fPointSet1.GrowFor(nClusters);
+    ic1 = ic2 = 0;
+    for (Int_t ic = 0; ic < (nClusters*2); ic++) {
+
+      buffer = data->GetClusterBuffer(ic);
+
+      clsX    = (Double_t)buffer[0];
+      clsY    = (Double_t)buffer[1];
+      clsZ    = (Double_t)buffer[2];
+      clsq    = buffer[3];      
+      cathode = (Int_t)buffer[4];
+
+      if (cathode == 0) {
+	fPointSet1.SetPoint(ic1,clsX,clsY,clsZ);
+	ic1++;
+      }
+
+    } // end clusters loop
+
+    // hits
+
+    nHits = data->GetNHits();
+    oldSize = fPointSet2.GrowFor(nHits);
+    for (Int_t ih = 0; ih < nHits; ih++) {
+      buffer = data->GetHitBuffer(ih);
+      hitX = buffer[0];
+      hitY = buffer[1];
+      hitZ = buffer[2];
+      fPointSet2.SetPoint(ih,hitX,hitY,hitZ);
+    }
+
+  } // end data
 
 }
 

@@ -48,6 +48,10 @@ class MUONData : public TObject, public Reve::ReferenceCount
   void GetTriggerChamber(AliMUONLocalStruct* localStruct,
                          Int_t& xyPattern, Int_t& iChamber, Int_t& iCath, 
 			 Int_t iCase);
+
+  Int_t fNTrackList;      // number of MC tracks which have hits
+  Int_t fTrackList[100];  // list of MC tracks which have hits
+
  public:
 
   MUONData();
@@ -56,8 +60,11 @@ class MUONData : public TObject, public Reve::ReferenceCount
   MUONData(const MUONData&);
   MUONData& operator=(const MUONData&);
 
+  void Reset();
+
   void LoadDigits(TTree* tree);
   void LoadRecPoints(TTree* tree);
+  void LoadHits(TTree* tree);
   void LoadRaw(TString fileName);
   void LoadRawTracker();
   void LoadRawTrigger();
@@ -66,6 +73,10 @@ class MUONData : public TObject, public Reve::ReferenceCount
   void CreateAllChambers();
   void DropAllChambers();
   void DeleteAllChambers();
+
+  void  RegisterTrack(Int_t track);
+  Int_t GetNTrackList() { return fNTrackList; }
+  Int_t GetTrack(Int_t index);
 
   MUONChamberData* GetChamberData(Int_t chamber);
 

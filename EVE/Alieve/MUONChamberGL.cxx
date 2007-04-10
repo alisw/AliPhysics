@@ -15,6 +15,8 @@
 
 /* $Id$ */
 
+#include <Riostream.h>
+
 #include <TMath.h>
 
 #include "MUONChamberGL.h"
@@ -119,6 +121,7 @@ void MUONChamberGL::DirectDraw(const TGLDrawFlags& /*flags*/) const
   if(hasData) {
 
     DrawQuads();
+    DrawPoints();
   
   }
 
@@ -172,6 +175,66 @@ void MUONChamberGL::DrawQuads() const
 
   glPopAttrib();
 
+}
+
+//______________________________________________________________________
+void MUONChamberGL::DrawPoints() const
+{
+  //
+  // draw the clusters as GL_QUADS
+  //
+
+  Float_t x, y, z;
+
+  glDisable(GL_LIGHTING);
+  glLineWidth(1.0);
+
+  glColor3f(1.0,1.0,1.0);
+    
+  glBegin(GL_LINES);
+    
+  // clusters
+
+  Int_t clsSize = fChamber->fClusterSize;
+
+  if (clsSize > 1) {
+
+    for (Int_t i = 0; i < fChamber->fPointSet1.GetN(); i++) {
+      
+      fChamber->fPointSet1.GetPoint(i,x,y,z);
+
+      glVertex3f(x-clsSize,y+clsSize,z);
+      glVertex3f(x+clsSize,y-clsSize,z);
+      
+      glVertex3f(x-clsSize,y-clsSize,z);
+      glVertex3f(x+clsSize,y+clsSize,z);
+      
+    }
+    
+  }
+
+  // hits
+
+  Int_t hitSize = fChamber->fHitSize;
+
+  if (hitSize > 1) {
+
+    for (Int_t i = 0; i < fChamber->fPointSet2.GetN(); i++) {
+      
+      fChamber->fPointSet2.GetPoint(i,x,y,z);
+      
+      glVertex3f(x-hitSize,y,z);
+      glVertex3f(x+hitSize,y,z);
+      
+      glVertex3f(x,y-hitSize,z);
+      glVertex3f(x,y+hitSize,z);
+      
+    }
+    
+  }
+
+  glEnd();
+    
 }
 
 //______________________________________________________________________

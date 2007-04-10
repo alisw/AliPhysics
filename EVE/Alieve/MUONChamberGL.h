@@ -22,6 +22,7 @@ class MUONChamberGL : public TGLObject
   virtual void DirectDraw(const TGLDrawFlags & flags) const;
   void DrawChamberFrame() const;
   void DrawQuads() const;
+  void DrawPoints() const;
 
   MUONChamber*             fChamber; // fModel dynamic-casted to MUONChamberGL
   mutable UInt_t           fRTS;     // render time stamp

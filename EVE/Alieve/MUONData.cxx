@@ -20,6 +20,8 @@
 
 #include <AliLog.h>
 
+#include <AliMUONHit.h>
+#include <AliMUONRawCluster.h>
 #include <AliMUONDigit.h>
 #include <AliMUONRawStreamTracker.h>
 #include <AliMUONRawStreamTrigger.h>
@@ -61,12 +63,17 @@ AliMpDDLStore*           MUONData::fgBusPatchManager  = 0;
 
 //______________________________________________________________________
 MUONData::MUONData() :
-  fChambers(14)
+  fChambers(14),
+  fNTrackList(0)
 {
   //
   // Constructor
   //
   
+  for (Int_t i = 0; i < 100; i++) {
+    fTrackList[i] = -1;
+  }
+
   CreateAllChambers();
 
 }
@@ -79,6 +86,22 @@ MUONData::~MUONData()
   //
 
   DeleteAllChambers();
+
+}
+
+//______________________________________________________________________
+void MUONData::Reset()
+{
+  //
+  // Reset data
+  //
+
+  //DropAllChambers();
+
+  fNTrackList = 0;
+  for (Int_t i = 0; i < 100; i++) {
+    fTrackList[i] = -1;
+  }
 
 }
 
@@ -165,6 +188,32 @@ void MUONData::DeleteAllChambers()
 }
 
 //______________________________________________________________________
+void MUONData::RegisterTrack(Int_t track)
+{
+  //
+  // register (in a list) a track with hits in the chambers
+  //
+
+  if (fNTrackList >= 100) {
+    cout << "Maximum of registered tracks reached..." << endl;
+    return;
+  }
+
+  Bool_t inList = kFALSE;
+  for (Int_t i = 0; i < fNTrackList; i++) {
+    if (track == fTrackList[i]) {
+      inList = kTRUE;
+      break;
+    }
+  }
+  if (!inList) {
+    fTrackList[fNTrackList] = track;
+    fNTrackList++;
+  }
+
+}
+
+//______________________________________________________________________
 void MUONData::LoadDigits(TTree* tree)
 {
   // 
@@ -195,12 +244,8 @@ void MUONData::LoadDigits(TTree* tree)
       detElemId = mdig->DetElemId();      
       charge    = (Int_t)mdig->Signal();
 
-      if (c > 9) {
-	//printf("cha %d deid %d cath %1d ix %d iy %d q %d \n",c,detElemId,cathode,ix,iy,charge);  
-      }
-
       fChambers[c]->RegisterDigit(detElemId,cathode,ix,iy,charge);
-
+      
     } // end digits loop
 
   }
@@ -208,12 +253,83 @@ void MUONData::LoadDigits(TTree* tree)
 }
 
 //______________________________________________________________________
-void MUONData::LoadRecPoints(TTree* /*tree*/)
+void MUONData::LoadRecPoints(TTree* tree)
 {
   //
   // load reconstructed points from the TreeR
   // load local trigger information
   //
+
+  Char_t branchname[30];
+  TClonesArray *clusters = 0;
+  Int_t nclusters;
+  AliMUONRawCluster  *mcls;
+  Int_t detElemId;
+  Float_t clsX, clsY, clsZ, charge;
+
+  for (Int_t c = 0; c < 10; ++c) {
+
+    if (fChambers[c] == 0) continue;
+    sprintf(branchname,"MUONRawClusters%d",c+1);
+    tree->SetBranchAddress(branchname,&clusters);
+    tree->GetEntry(0);
+
+    nclusters = clusters->GetEntriesFast(); 
+
+    for (Int_t ic = 0; ic < nclusters; ic++) {
+      mcls  = (AliMUONRawCluster*)clusters->UncheckedAt(ic);
+
+      detElemId = mcls->GetDetElemId();
+      for (Int_t icath = 0; icath < 2; icath++) {
+	clsX   = mcls->GetX(icath);
+	clsY   = mcls->GetY(icath);
+	clsZ   = mcls->GetZ(icath);
+	charge = mcls->GetCharge(icath);
+
+	fChambers[c]->RegisterCluster(detElemId,icath,clsX,clsY,clsZ,charge);
+      }
+
+    }
+
+  }
+
+}
+
+//______________________________________________________________________
+void MUONData::LoadHits(TTree* tree)
+{
+  //
+  // load simulation hits from the TreeH
+  //
+
+  TClonesArray *hits = 0;
+  AliMUONHit  *mhit;
+  Int_t cha, detElemId, nhits, ntracks;
+  Float_t hitX, hitY, hitZ;
+
+  ntracks = tree->GetEntries();
+  tree->SetBranchAddress("MUONHits",&hits);
+
+  for (Int_t it = 0; it < ntracks; it++) {
+
+    tree->GetEvent(it);
+    nhits = hits->GetEntriesFast();
+
+    for (Int_t ih = 0; ih < nhits; ih++) {
+
+      mhit = (AliMUONHit*)hits->UncheckedAt(ih);
+      hitX = mhit->X();
+      hitY = mhit->Y();
+      hitZ = mhit->Z();
+      detElemId = mhit->DetElemId();
+      cha = mhit->Chamber();
+
+      RegisterTrack(mhit->GetTrack());
+
+      fChambers[cha-1]->RegisterHit(detElemId,hitX,hitY,hitZ);
+
+    }
+  }
 
 }
 
@@ -634,6 +750,21 @@ void MUONData::GetTriggerChamber(AliMUONLocalStruct* localStruct, Int_t& xyPatte
     iCath = 1;
     iChamber = 13;
     break;
+  }
+
+}
+
+//______________________________________________________________________
+Int_t MUONData::GetTrack(Int_t index)
+{
+  //
+  // return track stack number for "index"-th track with hits in the chambers
+  //
+
+  if (index < 100) {
+    return fTrackList[index];
+  } else {
+    return -1;
   }
 
 }

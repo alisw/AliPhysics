@@ -1,7 +1,6 @@
 #include "MUONChamberData.h"
 
 #include <AliMUONSegmentation.h>
-#include <AliMUONConstants.h>
 #include <AliMUONGeometryTransformer.h>
 #include <AliMUONSegFactory.h>
 #include <mapping/AliMpDEIterator.h>
@@ -14,6 +13,8 @@
 
 #include <TMath.h>
 #include <TVector2.h>
+
+#include <Riostream.h>
 
 #include "Alieve/EventAlieve.h"
 
@@ -46,6 +47,9 @@ MUONChamberData::MUONChamberData(Int_t chamber)
   fChamberID = chamber;
   fNDetElem  = 0;
   fNDigits   = 0;
+  fNClusters = 0;
+  fNHits     = 0;
+
   for (Int_t i = 0; i < 26; i++) {
     for (Int_t j = 0; j < 4; j++) {
       fFrameCoord[i][j] = 0.0;
@@ -53,6 +57,12 @@ MUONChamberData::MUONChamberData(Int_t chamber)
   }
   for (Int_t i = 0; i < 7*4096; i++) {
     fDigitBuffer[i] = 0.0;
+  }
+  for (Int_t i = 0; i < 5*128; i++) {
+    fClusterBuffer[i] = 0.0;
+  }
+  for (Int_t i = 0; i < 3*128; i++) {
+    fHitBuffer[i] = 0.0;
   }
 
   for (Int_t i = 0; i < 3; i++) {
@@ -86,6 +96,10 @@ void MUONChamberData::DropData()
   //
   // release the chamber data
   //
+
+  fNDigits   = 0;
+  fNClusters = 0;
+  fNHits     = 0;
 
   return;
 
@@ -258,5 +272,47 @@ void MUONChamberData::RegisterDigit(Int_t detElemId, Int_t cathode, Int_t ix, In
   fDigitBuffer[fNDigits+6] = cathode;
 
   fNDigits += 7;
+  /*
+  if ((fChamberID < 10 && charge > 5) || fChamberID >= 10) {
+    cout << "dig  " << fChamberID << "  cath  " << cathode << "  z  " << gloP[2] << endl;
+  }
+  */
+}
+
+//______________________________________________________________________
+void MUONChamberData::RegisterCluster(Int_t /*detElemId*/, Int_t cathode, Float_t clsX, Float_t clsY, Float_t clsZ, Float_t charge)
+{
+  //
+  // add a reconstructed point (cluster) to this chamber
+  //
+  // identical clusters are registered for both cathode planes ...
+  //
+
+  fClusterBuffer[fNClusters  ] = clsX;
+  fClusterBuffer[fNClusters+1] = clsY;
+  fClusterBuffer[fNClusters+2] = clsZ;
+  fClusterBuffer[fNClusters+3] = charge;
+  fClusterBuffer[fNClusters+4] = cathode;
+
+  fNClusters += 5;
+
+  //cout << "cls " << fChamberID << "  cath  " << cathode << "  z  " << clsZ << endl;
+
+}
+
+//______________________________________________________________________
+void MUONChamberData::RegisterHit(Int_t /*detElemId*/, Float_t hitX, Float_t hitY, Float_t hitZ)
+{
+  //
+  // add a simulation hit to this chamber
+  //
+
+  fHitBuffer[fNHits  ] = hitX;
+  fHitBuffer[fNHits+1] = hitY;
+  fHitBuffer[fNHits+2] = hitZ;
+
+  //cout << "hit " << fChamberID << "  z  " << hitZ << endl;
+
+  fNHits += 3;
 
 }

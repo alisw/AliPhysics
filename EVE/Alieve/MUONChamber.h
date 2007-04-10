@@ -3,6 +3,7 @@
 
 #include <Reve/RenderElement.h>
 #include <Reve/QuadSet.h>
+#include <Reve/PointSet.h>
 
 #include <TNamed.h>
 #include <TAtt3D.h>
@@ -38,25 +39,29 @@ class MUONChamber : public Reve::RenderElement,
   Int_t             fChamberID;     // number of the chamber, 0 to 13
   Reve::OldQuadSet  fQuadSet1;      // 1st cathode plane digits
   Reve::OldQuadSet  fQuadSet2;      // 2nd cathode plane digits
+  Reve::PointSet    fPointSet1;     // reconstructed points (1st cathode)
+  Reve::PointSet    fPointSet2;     // simulation hits
   Short_t           fThreshold;     // digit amplitude threshold
   Int_t             fMaxVal;        // digit amplitude maximum value
+  Int_t             fClusterSize;   // cluster point size
+  Int_t             fHitSize;       // hit point size
 
   void SetupColor(Int_t val, UChar_t* pix) const;
 
   mutable UChar_t* fColorArray;
-  void ClearColorArray();
-  void SetupColorArray() const;
+  void     ClearColorArray();
+  void     SetupColorArray() const;
   UChar_t* ColorFromArray(Int_t val) const;
   void     ColorFromArray(Int_t val, UChar_t* pix) const;
   Int_t    ColorIndex(Int_t val) const;
 
 public:
 
-  MUONChamber(const Text_t* n = "MUONChamber", const Text_t* t = 0);
+  MUONChamber(Int_t id, const Text_t* n = "MUONChamber", const Text_t* t = 0);
   virtual ~MUONChamber();
 
-  virtual void ComputeBBox();
-  virtual void Paint(Option_t* option = "");
+  virtual void   ComputeBBox();
+  virtual void   Paint(Option_t* option = "");
   virtual UInt_t IncRTS()     { return ++fRTS; };
   virtual Bool_t CanEditMainColor() { return kTRUE; }
 
@@ -66,8 +71,10 @@ public:
   MUONData* GetData() const { return fMUONData; };
   MUONChamberData* GetChamberData() const;
   Int_t GetID() const { return fChamberID; };
-  void SetThreshold(Short_t t);
-  void SetMaxVal(Int_t mv);
+  void  SetThreshold(Short_t t);
+  void  SetMaxVal(Int_t mv);
+  void  SetClusterSize(Int_t size);
+  void  SetHitSize(Int_t size);
 
   ClassDef(MUONChamber,1);  // Visualisation of the MUON chambers
 
