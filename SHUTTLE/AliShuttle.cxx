@@ -234,7 +234,8 @@ fLastActionTime(0),
 fLastAction(),
 fMonaLisa(0),
 fTestMode(kNone),
-fReadTestMode(kFALSE)
+fReadTestMode(kFALSE),
+fOutputRedirected(kFALSE)
 {
 	//
 	// config: AliShuttleConfig used
@@ -1190,6 +1191,20 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 			// client
 			AliInfo(Form("In client process of %d - %s", GetCurrentRun(), aDetector->GetName()));
 
+			AliInfo("Redirecting output...");
+
+			if ((freopen(GetLogFileName(fCurrentDetector), "w", stdout)) == 0)
+			{
+				Log("SHUTTLE", "Could not freopen stdout");
+			}
+			else
+			{
+				fOutputRedirected = kTRUE;
+				if ((dup2(fileno(stdout), fileno(stderr))) < 0)
+					Log("SHUTTLE", "Could not redirect stderr");
+				
+			}
+			
 			Bool_t success = ProcessCurrentDetector();
 			if (success) // Preprocessor finished successfully!
 			{ 
@@ -2162,12 +2177,12 @@ void AliShuttle::Log(const char* detector, const char* message)
 	toLog += Form("%s", message);
 
   	AliInfo(toLog.Data());
+	
+	// if we redirect the log output already to the file, leave here
+	if (fOutputRedirected && strcmp(detector, "SHUTTLE") != 0)
+		return;
 
-  	TString fileName;
-	if (GetCurrentRun() >= 0) 
-		fileName.Form("%s/%s_%d.log", GetShuttleLogDir(), detector, GetCurrentRun());
-	else
-		fileName.Form("%s/%s.log", GetShuttleLogDir(), detector);
+  	TString fileName = GetLogFileName(detector);
 	
   	gSystem->ExpandPathName(fileName);
 
@@ -2182,6 +2197,23 @@ void AliShuttle::Log(const char* detector, const char* message)
   	logFile << toLog.Data() << "\n";
 
   	logFile.close();
+}
+
+//______________________________________________________________________________________________
+TString AliShuttle::GetLogFileName(const char* detector) const
+{
+	// 
+	// returns the name of the log file for a given sub detector
+	//
+	
+	TString fileName;
+	
+	if (GetCurrentRun() >= 0) 
+		fileName.Form("%s/%s_%d.log", GetShuttleLogDir(), detector, GetCurrentRun());
+	else
+		fileName.Form("%s/%s.log", GetShuttleLogDir(), detector);
+
+	return fileName;
 }
 
 //______________________________________________________________________________________________

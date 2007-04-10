@@ -112,6 +112,8 @@ private:
 	void UpdateShuttleStatus(AliShuttleStatus::Status newStatus, Bool_t increaseCount = kFALSE);
 	Bool_t UpdateShuttleLogbook(const char* detector, const char* status=0);
 	Bool_t SendMail();
+	
+	TString GetLogFileName(const char* detector) const;
 
 	void SetLastAction(const char* action);
 	
@@ -143,6 +145,8 @@ private:
 
 	TestMode fTestMode;          // sets test mode flags, that e.g. simulate a dcs error etc.
 	Bool_t fReadTestMode;        // Reads the test mode from the log entry of the given run (only for test)
+	
+	Bool_t fOutputRedirected;    // is the output redirected to a file
 
 	ClassDef(AliShuttle, 0);
 };
