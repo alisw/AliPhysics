@@ -132,12 +132,13 @@ Bool_t AliMUONRawStreamTrigger::NextDDL()
   fRawReader->Reset();
   fRawReader->Select("MUONTRG", fDDL, fDDL);  //Select the DDL file to be read  
 
-  fRawReader->ReadHeader();
+  if (!fRawReader->ReadHeader()) return kFALSE;
 
   Int_t totalDataWord = fRawReader->GetDataSize(); // in bytes
   UInt_t *buffer = new UInt_t[totalDataWord/4];
 
-  fRawReader->ReadNext((UChar_t*)buffer, totalDataWord); 
+  // check not necessary yet, but for future developments
+  if (!fRawReader->ReadNext((UChar_t*)buffer, totalDataWord)) return kFALSE; 
   
   fPayload->Decode(buffer);
 
