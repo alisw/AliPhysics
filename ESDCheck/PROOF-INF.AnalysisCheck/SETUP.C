@@ -2,6 +2,7 @@ void SETUP()
 {
 
    // Load the ESD library
+   gSystem->Load("libPhysics");
    gSystem->Load("libAnalysisCheck");
 
    // Set the Include paths
