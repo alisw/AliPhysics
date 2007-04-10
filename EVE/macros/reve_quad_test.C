@@ -25,6 +25,35 @@ Reve::QuadSet* reve_quad_test(Float_t x=0, Float_t y=0, Float_t z=0,
   return q;
 }
 
+Reve::QuadSet* reve_quad_test_emc(Float_t x=0, Float_t y=0, Float_t z=0,
+				  Int_t num=100)
+{
+  TRandom r(0);
+
+  gStyle->SetPalette(1, 0);
+
+  Reve::QuadSet* q = new Reve::QuadSet("EMC Supermodule");
+  q->SetOwnIds(kTRUE);
+  q->Reset(Reve::QuadSet::QT_RectangleXZFixedDimY, kFALSE, 32);
+  q->SetDefWidth(8);
+  q->SetDefHeight(8);
+
+  for (Int_t i=0; i<num; ++i) {
+    q->AddQuad(r.Uniform(-100, 100), r.Uniform(-100, 100));
+    q->QuadValue(r.Uniform(0, 130));
+    q->AddId(new TNamed(Form("Cell %d", i)));
+  }
+  q->RefitPlex();
+
+  Reve::ZTrans& t = q->RefHMTrans();
+  t.SetPos(x, y, z);
+
+  gReve->AddRenderElement(q);
+  gReve->Redraw3D();
+
+  return q;
+}
+
 Reve::QuadSet* reve_quad_test_circ()
 {
   TRandom r(0);
@@ -132,10 +161,10 @@ void reve_quad_test_hierarchy(Int_t n=4)
 {
   gStyle->SetPalette(1, 0);
 
-  Reve::RGBAPalette* pal = new RGBAPalette(20, 100);
+  Reve::RGBAPalette* pal = new Reve::RGBAPalette(20, 100);
   pal->SetLimits(0, 120);
 
-  Reve::FrameBox*    box = new FrameBox();
+  Reve::FrameBox*    box = new Reve::FrameBox();
   box->SetAABox(-10, -10, -10, 20, 20, 20);
   box->SetFrameColor((Color_t) 33);
 
