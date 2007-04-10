@@ -1,0 +1,88 @@
+
+How to run the MUON display
+---------------------------
+
+1. Launch 'alieve' executable
+
+   alieve
+
+2. Load the following macros (.L ...)
+
+   alieve_init.C
+   event_next.C
+   event_prev.C
+   event_goto.C
+   MUON_display.C
+   MUON_geom.C
+   MUON_geomAll.C
+
+   also interesting for the vertex
+
+   its_hits.C
+   its_digits.C
+   geom_its.C
+   esd_tracks.C
+
+3. Initialize
+
+   alieve_init("directory_to_data",event_number)
+
+4. Display simulation digits
+
+   MUON_display(0,0)   - without tracks
+   MUON_display(0,1)   - with tracks
+
+5. Display raw data
+
+   MUON_display(1,0)
+   MUON_display(1,1)
+
+6. Display all geometry defined in Config.C
+
+   MUON_geomAll()
+
+7. Display only the MUON detector
+
+   MUON_geom()
+
+Obs: to delete geometry elements from the display, click the right mouse button
+in the "Reve" window, "Object Browser" tab, on the name of the node and select 
+"Destroy" from the menu.
+
+8. Navigate in the event list
+
+   event_next()
+   event_prev()
+   event_goto(n)
+
+9. Shift + right mouse button one a muon track opens the context menu:
+   - track and trigger information is available
+
+10. Use mouse buttons or keys:
+
+   Move camera with
+
+   +/J,j  - increase
+   -/K,k  - decrease
+   up/down/left/right arrows
+
+   T,t/W,w  - toggle between filled areas and wired areas
+
+   'Home' key  - reset the position of the camera
+
+Files:
+
+MUON*.cxx , MUON*.h   in $ALICE_ROOT/EVE/Alieve
+MUON*.C               in $ALICE_ROOT/EVE/alice-macros
+
+See also the $ALICE_ROOT/EVE/README file.
+
+
+
+
+
+Bogdan Vulpescu, 06 Mar 2007
+LPC Clermont-Ferrand
+vulpescu@clermont.in2p3.fr
+
+
