@@ -9,7 +9,9 @@ SRCS:= AliMUONDDLTrigger.cxx \
        AliMUONBlockHeader.cxx \
        AliMUONDspHeader.cxx \
        AliMUONBusStruct.cxx \
-       AliMUONPayloadTracker.cxx 
+       AliMUONPayloadTracker.cxx \
+       AliMUONRawStreamTrigger.cxx \
+       AliMUONRawStreamTracker.cxx
  
 
 HDRS:= $(SRCS:.cxx=.h)

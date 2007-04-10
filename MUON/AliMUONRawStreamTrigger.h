@@ -5,7 +5,7 @@
 
 /*$Id$*/
 
-/// \ingroup base
+/// \ingroup raw
 /// \class AliMUONRawStreamTrigger
 /// \brief Class for reading MUON raw digits
 ///

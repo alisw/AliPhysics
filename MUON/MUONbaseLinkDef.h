@@ -40,8 +40,6 @@
 
 // raw data
 #pragma link C++ class AliMUONDigitMaker+;
-#pragma link C++ class AliMUONRawStreamTracker+;
-#pragma link C++ class AliMUONRawStreamTrigger+;
 
 // calibration access
 #pragma link C++ class AliMUONCalibrationData+;

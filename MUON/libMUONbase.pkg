@@ -24,8 +24,6 @@ SRCS:=  AliMUONConstants.cxx \
         AliMUONTriggerSegmentation.cxx \
         AliMUONSegFactory.cxx \
         AliMUONCalibrationData.cxx \
-        AliMUONRawStreamTrigger.cxx \
-        AliMUONRawStreamTracker.cxx  \
         AliMUONDigitMaker.cxx \
         AliMUONTriggerChamberEff.cxx \
         AliMUONLogger.cxx \

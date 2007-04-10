@@ -14,6 +14,8 @@
 #pragma link C++ class AliMUONBlockHeader+;
 #pragma link C++ class AliMUONBusStruct+;
 #pragma link C++ class AliMUONPayloadTracker+;
+#pragma link C++ class AliMUONRawStreamTracker+;
+#pragma link C++ class AliMUONRawStreamTrigger+;
 
 #endif
 
