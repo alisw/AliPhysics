@@ -37,7 +37,6 @@
 #pragma link C++ class Alieve::MUONChamberData+;
 #pragma link C++ class Alieve::MUONChamberEditor+;
 #pragma link C++ class Alieve::MUONChamberGL+;
-#pragma link C++ class Alieve::MUONTracks+;
 #pragma link C++ class Alieve::MUONTrack+;
 
 // PMD
