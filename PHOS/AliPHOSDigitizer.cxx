@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.94  2007/02/01 10:34:47  hristov
+ * Removing warnings on Solaris x86
+ *
  * Revision 1.93  2006/10/17 13:17:01  kharlov
  * Replace AliInfo by AliDebug
  *
@@ -500,7 +503,7 @@ void AliPHOSDigitizer::DecalibrateEMC(AliPHOSDigit *digit)
   Int_t row   =relId[2];
   Int_t column=relId[3];
   Float_t decalibration = gime->CalibData()->GetADCchannelEmc(module,column,row);
-  Float_t energy = digit->GetEnergy() * decalibration;
+  Float_t energy = digit->GetEnergy() / decalibration;
   digit->SetEnergy(energy);
 }
 //____________________________________________________________________________
