@@ -96,7 +96,10 @@ void AliMultiplicityMCSelector::Init(TTree* tree)
     tree->SetBranchStatus("*", 0);
     tree->SetBranchStatus("fTriggerMask", 1);
     tree->SetBranchStatus("fSPDVertex*", 1);
-    tree->SetBranchStatus("fSPDMult*", 1);
+
+    #ifdef ITSMEASUREMENT
+      tree->SetBranchStatus("fSPDMult*", 1);
+    #endif
 
     #ifdef TPCMEASUREMENT
       AliESDtrackCuts::EnableNeededBranches(tree);
@@ -298,7 +301,7 @@ Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
   }
 #endif
 
-  fMultiplicity->FillMeasured(vtxMC[2], nESDTracks05, nESDTracks10, nESDTracks15, nESDTracks20);
+  fMultiplicity->FillMeasured(vtx[2], nESDTracks05, nESDTracks10, nESDTracks15, nESDTracks20);
 
   // TODO should this be vtx[2] or vtxMC[2] ?
   fMultiplicity->FillCorrection(vtxMC[2], nMCTracks05, nMCTracks10, nMCTracks15, nMCTracks20, nMCTracksAll, nESDTracks05, nESDTracks10, nESDTracks15, nESDTracks20);
