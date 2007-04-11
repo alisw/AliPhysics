@@ -22,6 +22,7 @@
 ///////////////////////////////////////////////////////////////////////////////
  
 #include "AliPHOSEmcBadChannelsMap.h"
+#include "AliPHOSGeometry.h"
  
 ClassImp(AliPHOSEmcBadChannelsMap)
  
@@ -76,4 +77,42 @@ AliPHOSEmcBadChannelsMap& AliPHOSEmcBadChannelsMap::operator= (const AliPHOSEmcB
   }
 
   return *this;
+}
+
+//_________________________________________________________________
+
+void AliPHOSEmcBadChannelsMap::BadChannelIds(Int_t *badIds)
+{
+  //Fill array badIds by the Ids of bad channels.
+  //Array badIds of length GetNumOfBadChannels() should be prepared in advance. 
+
+  if(!badIds) return;
+  if(!fBads>0) return;
+
+  AliPHOSGeometry* geom = AliPHOSGeometry::GetInstance();
+
+  if(!geom)
+    geom = AliPHOSGeometry::GetInstance("IHEP");
+
+  Int_t absId;
+  Int_t relId[4];
+
+  Int_t iBad = 0;
+  relId[1] =  0; // EMC crystal
+
+  for(Int_t mod=1; mod<6; mod++) { 
+    for(Int_t col=1; col<57; col++) { 
+      for(Int_t row=1; row<65; row++) {
+	if(IsBadChannel(mod,col,row)) {
+	  relId[0] = mod;
+	  relId[3] = col;
+	  relId[2] = row;
+	  geom->RelToAbsNumbering(relId,absId);
+	  badIds[iBad]=absId;
+	  iBad++;
+	}
+      }
+    }
+  }
+
 }

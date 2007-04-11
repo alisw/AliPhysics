@@ -22,6 +22,7 @@ public:
   void SetBadChannel(Int_t module, Int_t col, Int_t row) { fBadChannelEmc[module-1][col-1][row-1] = kTRUE; ++fBads; }
   Bool_t IsBadChannel(Int_t module, Int_t col, Int_t row) const { return fBadChannelEmc[module-1][col-1][row-1]; }
   Int_t GetNumOfBadChannels() const {  return fBads; }
+  void BadChannelIds(Int_t *badIds=0);
   void Reset();
 
 private:
@@ -29,7 +30,7 @@ private:
   Bool_t fBadChannelEmc[5][56][64]; //[mod][col][row]
   Int_t fBads;
 
-  ClassDef(AliPHOSEmcBadChannelsMap,1)
+  ClassDef(AliPHOSEmcBadChannelsMap,2)
 
 };
 
