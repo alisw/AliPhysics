@@ -380,13 +380,6 @@ Int_t AliRawDB::GetTotalSize()
     }
     total += skey;
     if (fTree->GetZipBytes() > 0) total += fTree->GetTotBytes();
-#if ROOT_VERSION_CODE >= ROOT_VERSION(5,15,0)
-    TBufferFile b(TBuffer::kWrite,10000);
-#else
-    TBuffer b(TBuffer::kWrite,10000);
-#endif
-    TTree::Class()->WriteBuffer(b,fTree);
-    total += b.Length();
   }
 
   if(fESDTree)
@@ -399,13 +392,6 @@ Int_t AliRawDB::GetTotalSize()
       }
       total += skey;
       if (fESDTree->GetZipBytes() > 0) total += fESDTree->GetTotBytes();
-#if ROOT_VERSION_CODE >= ROOT_VERSION(5,15,0)
-      TBufferFile b(TBuffer::kWrite,10000);
-#else
-      TBuffer b(TBuffer::kWrite,10000);
-#endif
-      TTree::Class()->WriteBuffer(b,fESDTree);
-      total += b.Length();
     }
 
   return total;
