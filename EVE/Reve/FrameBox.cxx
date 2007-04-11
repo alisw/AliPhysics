@@ -78,6 +78,27 @@ void FrameBox::SetAABox(Float_t x,  Float_t y,  Float_t z,
   p[0] = x;       p[1] = y;       p[2] = z + dz;
 }
 
+void FrameBox::SetAABoxCenterHalfSize(Float_t x,  Float_t y,  Float_t z,
+				      Float_t dx, Float_t dy, Float_t dz)
+{
+  fFrameType = FT_Box;
+  fFrameSize = 24;
+  delete [] fFramePoints;
+  fFramePoints = new Float_t [fFrameSize];
+
+  Float_t* p = fFramePoints;
+  //bottom
+  p[0] = x - dx;  p[1] = y + dy;  p[2] = z - dz;  p += 3;
+  p[0] = x + dx;  p[1] = y + dy;  p[2] = z - dz;  p += 3;
+  p[0] = x + dx;  p[1] = y - dy;  p[2] = z - dz;  p += 3;
+  p[0] = x - dx;  p[1] = y - dy;  p[2] = z - dz;  p += 3;
+  //top
+  p[0] = x - dx;  p[1] = y + dy;  p[2] = z + dz;  p += 3;
+  p[0] = x + dx;  p[1] = y + dy;  p[2] = z + dz;  p += 3;
+  p[0] = x + dx;  p[1] = y - dy;  p[2] = z + dz;  p += 3;
+  p[0] = x - dx;  p[1] = y - dy;  p[2] = z + dz;
+}
+
 /**************************************************************************/
 
 void FrameBox::SetFrameColor(Color_t ci)

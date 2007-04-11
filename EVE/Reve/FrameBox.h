@@ -38,6 +38,9 @@ public:
   void SetAABox(Float_t x,  Float_t y,  Float_t z,
 		Float_t dx, Float_t dy, Float_t dz);
 
+  void SetAABoxCenterHalfSize(Float_t x,  Float_t y,  Float_t z,
+                              Float_t dx, Float_t dy, Float_t dz);
+
   // ----------------------------------------------------------------
 
   FrameType_e  GetFrameType()   const { return fFrameType; }
