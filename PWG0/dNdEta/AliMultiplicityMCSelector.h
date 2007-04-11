@@ -6,8 +6,6 @@
 #include "AliSelectorRL.h"
 
 class AliESDtrackCuts;
-class TH2F;
-class TH3F;
 class AliMultiplicityCorrection;
 
 class AliMultiplicityMCSelector : public AliSelectorRL {

@@ -2,23 +2,22 @@
 
 #include "AliMultiplicityESDSelector.h"
 
-#include <TStyle.h>
-#include <TSystem.h>
-#include <TCanvas.h>
 #include <TVector3.h>
-#include <TChain.h>
 #include <TFile.h>
-#include <TH1F.h>
+#include <TH2F.h>
+#include <TH3F.h>
+#include <TTree.h>
 
 #include <AliLog.h>
 #include <AliESD.h>
+#include <AliMultiplicity.h>
 
 #include "esdTrackCuts/AliESDtrackCuts.h"
 #include "AliPWG0Helper.h"
+#include "dNdEta/AliMultiplicityCorrection.h"
 
-#ifdef ALISELECTOR_USEMONALISA
-  #include <TMonaLisaWriter.h>
-#endif
+//#define TPCMEASUREMENT
+#define ITSMEASUREMENT
 
 ClassImp(AliMultiplicityESDSelector)
 
@@ -26,9 +25,6 @@ AliMultiplicityESDSelector::AliMultiplicityESDSelector() :
   AliSelector(),
   fMultiplicity(0),
   fEsdTrackCuts(0)
-#ifdef ALISELECTOR_USEMONALISA
-  ,fMonaLisaWriter(0)
-#endif
 {
   //
   // Constructor. Initialization of pointers
@@ -78,25 +74,30 @@ void AliMultiplicityESDSelector::SlaveBegin(TTree* tree)
 
   ReadUserObjects(tree);
 
-  fMultiplicity = new TH1F("fMultiplicity", "multiplicity", 201, 0.5, 200.5);
+  fMultiplicity = new AliMultiplicityCorrection("Multiplicity", "Multiplicity");
+}
 
-  #ifdef ALISELECTOR_USEMONALISA
-    TNamed *nm = 0;
-    if (fInput)
-      nm = dynamic_cast<TNamed*> (fInput->FindObject("PROOF_QueryTag"));
-    if (!nm)
-    {
-      AliDebug(AliLog::kError, "Query tag not found. Cannot enable monitoring");
-      return;
-    }
+void AliMultiplicityESDSelector::Init(TTree* tree)
+{
+  // read the user objects
 
-    TString option = GetOption();
-    option.ReplaceAll("#+", "");
+  AliSelector::Init(tree);
 
-    TString id;
-    id.Form("%s_%s%d", gSystem->HostName(), nm->GetTitle(), gSystem->GetPid());
-    fMonaLisaWriter = new TMonaLisaWriter(option, id, "CAF", "aliendb6.cern.ch");
-  #endif
+  // enable only the needed branches
+  if (tree)
+  {
+    tree->SetBranchStatus("*", 0);
+    tree->SetBranchStatus("fTriggerMask", 1);
+    tree->SetBranchStatus("fSPDVertex*", 1);
+
+    #ifdef ITSMEASUREMENT
+      tree->SetBranchStatus("fSPDMult*", 1);
+    #endif
+
+    #ifdef TPCMEASUREMENT
+      AliESDtrackCuts::EnableNeededBranches(tree);
+    #endif
+  }
 }
 
 Bool_t AliMultiplicityESDSelector::Process(Long64_t entry)
@@ -129,22 +130,103 @@ Bool_t AliMultiplicityESDSelector::Process(Long64_t entry)
     return kFALSE;
   }
 
+  Bool_t eventTriggered = AliPWG0Helper::IsEventTriggered(fESD);
+  Bool_t eventVertex = AliPWG0Helper::IsVertexReconstructed(fESD);
+
+  if (!eventTriggered || !eventVertex)
+    return kTRUE;
+
+  // get the ESD vertex
+  const AliESDVertex* vtxESD = fESD->GetVertex();
+  Double_t vtx[3];
+  vtxESD->GetXYZ(vtx);
+
+  Int_t nESDTracks05 = 0;
+  Int_t nESDTracks10 = 0;
+  Int_t nESDTracks15 = 0;
+  Int_t nESDTracks20 = 0;
+
+#ifdef ITSMEASUREMENT
+  // get tracklets
+  const AliMultiplicity* mult = fESD->GetMultiplicity();
+  if (!mult)
+  {
+    AliDebug(AliLog::kError, "AliMultiplicity not available");
+    return kFALSE;
+  }
+
+  // get multiplicity from ITS tracklets
+  for (Int_t i=0; i<mult->GetNumberOfTracklets(); ++i)
+  {
+    //printf("%d %f %f %f\n", i, mult->GetTheta(i), mult->GetPhi(i), mult->GetDeltaPhi(i));
+
+    // this removes non-tracklets. Very bad solution. SPD guys are working on better solution...
+    if (mult->GetDeltaPhi(i) < -1000)
+      continue;
+
+    Float_t theta = mult->GetTheta(i);
+    Float_t eta   = -TMath::Log(TMath::Tan(theta/2.));
+
+    if (TMath::Abs(eta) < 0.5)
+      nESDTracks05++;
+
+    if (TMath::Abs(eta) < 1.0)
+      nESDTracks10++;
+
+    if (TMath::Abs(eta) < 1.5)
+      nESDTracks15++;
+
+    if (TMath::Abs(eta) < 2.0)
+      nESDTracks20++;
+  }
+#endif
+
+#ifdef TPCMEASUREMENT
   if (!fEsdTrackCuts)
   {
     AliDebug(AliLog::kError, "fESDTrackCuts not available");
     return kFALSE;
   }
 
-  if (AliPWG0Helper::IsEventTriggered(fESD) == kFALSE)
-    return kTRUE;
+  // get multiplicity from ESD tracks
+  TObjArray* list = fEsdTrackCuts->GetAcceptedTracks(fESD);
+  Int_t nGoodTracks = list->GetEntries();
+  // loop over esd tracks
+  for (Int_t i=0; i<nGoodTracks; i++)
+  {
+    AliESDtrack* esdTrack = dynamic_cast<AliESDtrack*> (list->At(i));
+    if (!esdTrack)
+    {
+      AliDebug(AliLog::kError, Form("ERROR: Could not retrieve track %d.", i));
+      continue;
+    }
 
-  if (AliPWG0Helper::IsVertexReconstructed(fESD) == kFALSE)
-    return kTRUE;
+    Double_t p[3];
+    esdTrack->GetConstrainedPxPyPz(p); // ### TODO should be okay because we have a vertex, however GetInnerPxPyPy / GetOuterPxPyPy also exist
+    TVector3 vector(p);
 
-  // get number of "good" tracks
-  Int_t nGoodTracks = fEsdTrackCuts->CountAcceptedTracks(fESD);
+    Float_t theta = vector.Theta();
+    Float_t eta   = -TMath::Log(TMath::Tan(theta/2.));
+    Float_t pt = vector.Pt();
 
-  fMultiplicity->Fill(nGoodTracks);
+    //if (pt < kPtCut)
+    //  continue;
+
+    if (TMath::Abs(eta) < 0.5)
+      nESDTracks05++;
+
+    if (TMath::Abs(eta) < 1.0)
+      nESDTracks10++;
+
+    if (TMath::Abs(eta) < 1.5)
+      nESDTracks15++;
+
+    if (TMath::Abs(eta) < 2.0)
+      nESDTracks20++;
+  }
+#endif
+
+  fMultiplicity->FillMeasured(vtx[2], nESDTracks05, nESDTracks10, nESDTracks15, nESDTracks20);
 
   return kTRUE;
 }
@@ -156,14 +238,6 @@ void AliMultiplicityESDSelector::SlaveTerminate()
   // on each slave server.
 
   AliSelector::SlaveTerminate();
-
-  #ifdef ALISELECTOR_USEMONALISA
-    if (fMonaLisaWriter)
-    {
-      delete fMonaLisaWriter;
-      fMonaLisaWriter = 0;
-    }
-  #endif
 
   // Add the histograms to the output on each slave server
   if (!fOutput)
@@ -183,15 +257,19 @@ void AliMultiplicityESDSelector::Terminate()
 
   AliSelector::Terminate();
 
-  fMultiplicity = dynamic_cast<TH1F*> (fOutput->FindObject("fMultiplicity"));
+  fMultiplicity = dynamic_cast<AliMultiplicityCorrection*> (fOutput->FindObject("Multiplicity"));
 
   if (!fMultiplicity)
   {
-    AliDebug(AliLog::kError, Form("ERROR: Histogram not available %p", (void*) fMultiplicity));
+    AliDebug(AliLog::kError, Form("ERROR: Histograms not available %p", (void*) fMultiplicity));
     return;
   }
 
   TFile* file = TFile::Open("multiplicityESD.root", "RECREATE");
-  fMultiplicity->Write();
+
+  fMultiplicity->SaveHistograms();
+
   file->Close();
+
+  fMultiplicity->DrawHistograms();
 }
