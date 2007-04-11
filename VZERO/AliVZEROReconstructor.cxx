@@ -71,19 +71,41 @@ void AliVZEROReconstructor::Init(AliRunLoader* runLoader)
 }
 
 //______________________________________________________________________
-void AliVZEROReconstructor::Reconstruct(AliRunLoader* runLoader) const
+void AliVZEROReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digitsTree) const
 {
+  if (!digitsTree) {
+    AliError("No digits tree!");
+    return;
+  }
 
-  AliVZEROLoader* loader = (AliVZEROLoader* )runLoader->GetLoader( "VZEROLoader" );
-//  AliVZEROLoader* loader = (AliVZEROLoader* )fRunLoader->GetLoader( "VZEROLoader" );
- 
-  loader->LoadDigits("READ");
-  TTree* vzeroDigitsTree = loader->TreeD();
-  if (!vzeroDigitsTree) return;
+  TClonesArray* digitsArray = new TClonesArray("AliVZEROdigit");
+  digitsTree->Branch("VZERODigit", &digitsArray);
 
-  TClonesArray* vzeroDigits = new TClonesArray("AliVZEROdigit",1000);
-  TBranch* digitBranch = vzeroDigitsTree->GetBranch("VZERODigit");
-  digitBranch->SetAddress(&vzeroDigits);
+  rawReader->Reset();
+  AliVZERORawStream rawStream(rawReader);
+  while (rawStream.Next()) {
+    Int_t pmNumber = rawStream.GetCell();
+    Int_t adc = rawStream.GetADC();  
+    Int_t time = rawStream.GetTime();
+    new ((*digitsArray)[digitsArray->GetEntriesFast()])
+      AliVZEROdigit(pmNumber,adc,time);
+  }
+
+  digitsTree->Fill();
+}
+
+//______________________________________________________________________
+void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
+				    AliESD* esd) const
+{
+  if (!digitsTree) {
+    AliError("No digits tree!");
+    return;
+  }
+
+  TClonesArray* digitsArray = NULL;
+  TBranch* digitBranch = digitsTree->GetBranch("VZERODigit");
+  digitBranch->SetAddress(&digitsArray);
 
   Int_t   NbPMV0A = 0;
   Int_t   NbPMV0C = 0;
@@ -108,14 +130,14 @@ void AliVZEROReconstructor::Reconstruct(AliRunLoader* runLoader) const
        MRingV0C[j] = 0;}
      
   // loop over VZERO entries
-  Int_t nEntries = (Int_t)vzeroDigitsTree->GetEntries();
+  Int_t nEntries = (Int_t)digitsTree->GetEntries();
   for (Int_t e=0; e<nEntries; e++) {
-    vzeroDigitsTree->GetEvent(e);
+    digitsTree->GetEvent(e);
 
-    Int_t nDigits = vzeroDigits->GetEntriesFast();
+    Int_t nDigits = digitsArray->GetEntriesFast();
     
     for (Int_t d=0; d<nDigits; d++) {    
-      AliVZEROdigit* digit = (AliVZEROdigit*)vzeroDigits->At(d);      
+      AliVZEROdigit* digit = (AliVZEROdigit*)digitsArray->At(d);      
       Int_t  PMNumber      = digit->PMNumber();  
       ADC[PMNumber] = digit->ADC();  
       if (PMNumber<=31) {
@@ -154,91 +176,10 @@ void AliVZEROReconstructor::Reconstruct(AliRunLoader* runLoader) const
   fESDVZERO->SetMRingV0A(MRingV0A);
   fESDVZERO->SetMRingV0C(MRingV0C);
   
-}
-
-//______________________________________________________________________
-void AliVZEROReconstructor::Reconstruct(AliRunLoader* runLoader,AliRawReader* rawReader) const
-{
-
-  Int_t nEvents = runLoader->GetNumberOfEvents();
-
-  for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
-    if (!rawReader->NextEvent()) break;
-    AliVZERORawStream rawStream(rawReader);
-
-    Int_t   NbPMV0A = 0;
-    Int_t   NbPMV0C = 0;
-    Int_t   MTotV0A = 0;
-    Int_t   MTotV0C = 0;
-    Float_t ADCV0A  = 0.0;
-    Float_t ADCV0C  = 0.0;
-    Float_t MultV0A[4];
-    Float_t MultV0C[4];
-    Int_t   MRingV0A[4];
-    Int_t   MRingV0C[4];
-  
-    Int_t   ADC[64]; 
-    Float_t MIP[64];
-    for (Int_t i=0; i<64; i++){
-      ADC[i] = 0;
-      MIP[i] = 110.0;}
-    for (Int_t j=0; j<4; j++){
-      MultV0A[j]  = 0.0;
-      MultV0C[j]  = 0.0;
-      MRingV0A[j] = 0;
-      MRingV0C[j] = 0;}
-     
-    // loop over VZERO entries
-    while (rawStream.Next()) {
-      Int_t PMNumber = rawStream.GetCell();
-      ADC[PMNumber] = rawStream.GetADC();  
-      if (PMNumber<=31) {
-        if (PMNumber<=7) MultV0C[0]=MultV0C[0]+ float(ADC[PMNumber])/MIP[PMNumber];
-	if (PMNumber>=8  && PMNumber<=15) MultV0C[1]=MultV0C[1]+ float(ADC[PMNumber])/MIP[PMNumber];
-	if (PMNumber>=16 && PMNumber<=23) MultV0C[2]=MultV0C[2]+ float(ADC[PMNumber])/MIP[PMNumber];
-	if (PMNumber>=24 && PMNumber<=31) MultV0C[3]=MultV0C[3]+ float(ADC[PMNumber])/MIP[PMNumber];
-        ADCV0C = ADCV0C + float(ADC[PMNumber])/MIP[PMNumber];
-	if(ADC[PMNumber] > 4) NbPMV0C++;
-      }	
-      if (PMNumber>=32) {
-        if (PMNumber>=32 && PMNumber<=39) MultV0A[0]=MultV0A[0]+ float(ADC[PMNumber])/MIP[PMNumber];
-	if (PMNumber>=40 && PMNumber<=47) MultV0A[1]=MultV0A[1]+ float(ADC[PMNumber])/MIP[PMNumber];
-	if (PMNumber>=48 && PMNumber<=55) MultV0A[2]=MultV0A[2]+ float(ADC[PMNumber])/MIP[PMNumber];
-	if (PMNumber>=56 && PMNumber<=63) MultV0A[3]=MultV0A[3]+ float(ADC[PMNumber])/MIP[PMNumber];
-        ADCV0A = ADCV0A + float(ADC[PMNumber])/MIP[PMNumber];
-	if(ADC[PMNumber] > 4) NbPMV0A++;
-      }
-    } // end of loop over digits
-    
-    MTotV0A = int(ADCV0A + 0.5);
-    MTotV0C = int(ADCV0C + 0.5);
-    for (Int_t j=0; j<4; j++){       
-      MRingV0A[j] = int(MultV0A[j] + 0.5);
-      MRingV0C[j] = int(MultV0C[j] + 0.5);}
-     
-    AliDebug(1,Form("VZERO multiplicities : %d (V0A) %d (V0C)", MTotV0A, MTotV0C));
-    AliDebug(1,Form("Number of PMs fired  : %d (V0A) %d (V0C)", NbPMV0A, NbPMV0C));
-
-    fESDVZERO->SetNbPMV0A(NbPMV0A);
-    fESDVZERO->SetNbPMV0C(NbPMV0C);
-    fESDVZERO->SetMTotV0A(MTotV0A);
-    fESDVZERO->SetMTotV0C(MTotV0C);
-    fESDVZERO->SetMRingV0A(MRingV0A);
-    fESDVZERO->SetMRingV0C(MRingV0C);
-  } // end of loop over events in digits tree
-}
-
-//_____________________________________________________________________________
-void AliVZEROReconstructor::FillESD(AliRunLoader* /*runLoader*/, 
-				    AliESD* esd) const
-{
-// fill ESD 
-
-   if (esd) { 
-      AliDebug(1, Form("Writing VZERO data to ESD tree"));
-      esd->SetVZEROData(fESDVZERO);
-   }
-  
+  if (esd) { 
+    AliDebug(1, Form("Writing VZERO data to ESD tree"));
+    esd->SetVZEROData(fESDVZERO);
+  }
 }
 
 //_____________________________________________________________________________

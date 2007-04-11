@@ -27,24 +27,36 @@ public:
   AliVZEROReconstructor();
   virtual ~AliVZEROReconstructor();
   virtual void   Init(AliRunLoader* runLoader);
-  virtual void   Reconstruct(AliRunLoader* runLoader) const;
+  virtual void   Reconstruct(AliRunLoader* /*runLoader*/) const {
+    AliError("Method not implemented"); return;};
   
   virtual void   Reconstruct(AliRawReader* /*rawReader*/, 
-		             TTree* /*clustersTree*/) const {return;};
+		             TTree* /*clustersTree*/) const {
+    AliError("Method not implemented"); return;};
   virtual void   Reconstruct(AliRunLoader* /*runLoader*/, 
-                             AliRawReader* /*rawReader*/) const;
+                             AliRawReader* /*rawReader*/) const {
+    AliError("Method not implemented"); return;};
   virtual void   Reconstruct(TTree*, TTree*) const {return;};
   
-  virtual void   FillESD(AliRunLoader* /*runLoader*/, AliESD* /*esd*/) const;
+  virtual void   FillESD(AliRunLoader* /*runLoader*/, AliESD* /*esd*/) const {
+    AliInfo("Method is not used"); return;};
   
-  virtual void   FillESD(TTree* /*digitsTree*/, TTree* /*clustersTree*/, 
-			         AliESD* /*esd*/) const {return;};
+  virtual void   FillESD(TTree* digitsTree, TTree* /*clustersTree*/, 
+			 AliESD* /*esd*/) const;
+
   virtual void   FillESD(AliRawReader* /*rawReader*/, TTree* /*clustersTree*/, 
-			 AliESD* /*esd*/) const {return;};
+			 AliESD* /*esd*/) const {
+    AliError("Method not implemented"); return;};
   
   virtual void   FillESD(AliRunLoader* /*runLoader*/, 
-			 AliRawReader* /*rawReader*/, AliESD* /*esd*/) const {return;};
+			 AliRawReader* /*rawReader*/, AliESD* /*esd*/) const {
+    AliInfo("Method is not used"); return;};
   
+  virtual Bool_t HasDigitConversion() const { return kTRUE; }
+  virtual void   ConvertDigits(AliRawReader* rawReader,
+			       TTree* digitsTree) const;
+  virtual Bool_t HasLocalReconstruction() const { return kTRUE; }
+
   AliCDBStorage     *SetStorage(const char* uri);
   AliVZEROCalibData *GetCalibData() const; 
 
