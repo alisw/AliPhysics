@@ -197,6 +197,43 @@ void AliTPCROC::SetGeometry()
   //   SetOuterWWPitch(kOuterWWPitch);
   //   SetROuterFirstWire(kROuterFirstWire);
   //   SetROuterLastWire(kROuterLastWire);  
+
+  UInt_t i=0;
+  Float_t firstrow = fInnerRadiusLow + 1.575;   
+  for( i= 0;i<fNRowLow;i++)
+    {
+      Float_t x = firstrow + fInnerPadPitchLength*(Float_t)i;  
+      fPadRowLow[i]=x;
+      fYInner[i+1]  = x*TMath::Tan(fInnerAngle/2.)-fInnerWireMount;
+      fNPadsLow[i] = GetNPads(0,i) ;     // ROC implement     
+    }
+  // cross talk rows
+  fYInner[0]=(fPadRowLow[0]-fInnerPadPitchLength)*TMath::Tan(fInnerAngle/2.)-fInnerWireMount;
+  fYInner[fNRowLow+1]=(fPadRowLow[fNRowLow-1]+fInnerPadPitchLength)*TMath::Tan(fInnerAngle/2.)-fInnerWireMount; 
+  firstrow = fOuterRadiusLow + 1.6;
+  for(i=0;i<fNRowUp;i++)
+    {
+      if(i<fNRowUp1){
+	Float_t x = firstrow + fOuter1PadPitchLength*(Float_t)i; 
+	fPadRowUp[i]=x;
+	fYOuter[i+1]= x*TMath::Tan(fOuterAngle/2.)-fOuterWireMount;
+	fNPadsUp[i] =  GetNPads(36,i) ;     // ROC implement      
+	if(i==fNRowUp1-1) {
+	  fLastWireUp1=fPadRowUp[i] +0.625;
+	  firstrow = fPadRowUp[i] + 0.5*(fOuter1PadPitchLength+fOuter2PadPitchLength);
+	}
+      }
+      else
+	{
+	  Float_t x = firstrow + fOuter2PadPitchLength*(Float_t)(i-64);
+	  fPadRowUp[i]=x;
+	  fNPadsUp[i] =  GetNPads(36,i) ;     // ROC implement
+	}
+      fYOuter[i+1]  = fPadRowUp[i]*TMath::Tan(fOuterAngle/2.)-fOuterWireMount;
+    }
+  
+
+
 } 
 
 
@@ -357,3 +394,36 @@ AliTPCROC::~AliTPCROC()
   
 }
 
+
+
+
+void AliTPCROC::GetPositionLocal(UInt_t sector, UInt_t row, UInt_t pad, Float_t *pos){
+  //
+  // get position of center of pad - ideal frame used
+  //
+  pos[2]=fZLength;
+  if (sector<36){
+   pos[0] = fPadRowLow[row];
+   pos[1] = fInnerPadPitchWidth*(Int_t(pad)-Int_t(fNPads[0][row])/2);
+  }else{
+    pos[0] = fPadRowUp[row];
+    pos[1] = fOuterPadPitchWidth*(Int_t(pad)-Int_t(fNPads[0][row])/2);    
+  }
+  if ((sector%36)>=18){
+    pos[2] *= -1.;
+    pos[1] *= -1.;
+  }
+}
+
+
+void AliTPCROC::GetPositionGlobal(UInt_t sector, UInt_t row, UInt_t pad, Float_t *pos){
+  //
+  // get position of center of pad - ideal frame used 
+  //
+  GetPositionLocal(sector,row,pad,pos);
+  Double_t alpha = TMath::DegToRad()*(10.+20.*(sector%18));
+  Float_t gx = pos[0]*TMath::Cos(alpha)-pos[1]*TMath::Sin(alpha);
+  Float_t gy = pos[1]*TMath::Cos(alpha)+pos[0]*TMath::Sin(alpha);
+  pos[0] = gx;
+  pos[1] = gy;
+}

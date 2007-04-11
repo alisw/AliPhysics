@@ -22,7 +22,8 @@ class AliTPCROC : public TObject {
   AliTPCROC &operator = (const AliTPCROC & roc); //assignment operator
   void Init(); 
   virtual           ~AliTPCROC();
-
+  void GetPositionLocal(UInt_t sector, UInt_t row, UInt_t pad, Float_t *pos);
+  void GetPositionGlobal(UInt_t sector, UInt_t row, UInt_t pad, Float_t *pos);
   //
   //    numbering
   UInt_t GetNSectors() const          { return fNSectorsAll;}
@@ -48,8 +49,15 @@ class AliTPCROC : public TObject {
   UInt_t    GetNSector() const {return fNSectorsAll;}
   Float_t  GetZLength() const {return fZLength;}
   //
-
- protected:
+  // get pad row parameters
+  //
+  Float_t GetPadRowRadiiLow(Int_t irow) const {return ( irow>=0 && (irow<fNRowLow) ) ? fPadRowLow[irow]: 0;} //get the pad row (irow) radii
+  Float_t GetPadRowRadiiUp(Int_t irow) const {return ( irow>=0 && (irow<fNRowUp) ) ? fPadRowUp[irow]: 0;}   //get the pad row (irow) radii   
+  Float_t GetPadRowRadii(Int_t isec,Int_t irow) const {
+    return ( (isec < fNSectors[0]) ?GetPadRowRadiiLow(irow):GetPadRowRadiiUp(irow));}
+  //
+  
+protected:
   //
   //     number of pads
   //
@@ -113,12 +121,12 @@ class AliTPCROC : public TObject {
   UInt_t     fNRowUp2;            //number of long pad rows per sector up   -set
   UInt_t     fNRowUp;            //number of pad rows per sector up     -calculated
   UInt_t     fNtRows;            //total number of rows in TPC          -calculated
-  Float_t   fPadRowLow[600]; //Lower sector, pad row radii          -calculated
-  Float_t   fPadRowUp[600];  //Upper sector, pad row radii          -calculated 
-  UInt_t     fNPadsLow[600];  //Lower sector, number of pads per row -calculated
-  UInt_t     fNPadsUp[600];   //Upper sector, number of pads per row -calculated
-  Float_t   fYInner[600];     //Inner sector, wire-length
-  Float_t   fYOuter[600];     //Outer sector, wire-length   
+  Float_t   fPadRowLow[100]; //Lower sector, pad row radii          -calculated
+  Float_t   fPadRowUp[100];  //Upper sector, pad row radii          -calculated 
+  UInt_t     fNPadsLow[100];  //Lower sector, number of pads per row -calculated
+  UInt_t     fNPadsUp[100];   //Upper sector, number of pads per row -calculated
+  Float_t   fYInner[100];     //Inner sector, wire-length
+  Float_t   fYOuter[100];     //Outer sector, wire-length   
  protected:
   static AliTPCROC*   fgInstance; //! Instance of this class (singleton implementation)
   ClassDef(AliTPCROC,0)    //  TPC ROC class
