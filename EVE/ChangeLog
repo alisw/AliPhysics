@@ -1,3 +1,14 @@
+2007-04-11  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* alice-macros/emcal_digits.C:
+	* alice-macros/emcal_hits.C:
+	* alice-macros/geom_emcal.C:
+	New files, proto-emcal-viz.
+
+	* alice-macros/geom_hmpid.C:
+	* alice-macros/geom_rich.C:
+	Rename rich to hmpid etc.
+
 2007-04-10  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* README_MUON:
