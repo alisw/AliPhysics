@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.50  2007/03/28 19:18:15  kharlov
+ * RecPoints recalculation in TSM removed
+ *
  * Revision 1.49  2007/03/06 06:51:27  kharlov
  * Calculation of cluster properties dep. on vertex posponed to TrackSegmentMaker
  *
@@ -116,6 +119,7 @@ protected:
   virtual Bool_t IsInCpv (AliPHOSDigit * digit)const ;     // Tells if id digit is in CPV
   void           CleanDigits(TClonesArray * digits) ;
   void           GetCalibrationParameters(void);
+  void           SetDistancesToBadChannels();
 
   AliPHOSClusterizerv1 & operator = (const AliPHOSClusterizerv1 & obj);
  

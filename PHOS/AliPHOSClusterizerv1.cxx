@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.102  2007/03/28 19:18:15  kharlov
+ * RecPoints recalculation in TSM removed
+ *
  * Revision 1.101  2007/03/06 06:51:27  kharlov
  * Calculation of cluster properties dep. on vertex posponed to TrackSegmentMaker
  *
@@ -310,7 +313,7 @@ void AliPHOSClusterizerv1::Exec(Option_t *option)
 
     if(fToUnfold)             
       MakeUnfolding() ;
-
+    
     WriteRecPoints();
 
     if(strstr(option,"deb"))  
@@ -652,6 +655,9 @@ void AliPHOSClusterizerv1::WriteRecPoints()
     dynamic_cast<AliPHOSEmcRecPoint *>( emcRecPoints->At(index) )->SetIndexInList(index) ;
   }
   
+  //For each rec.point set the distance to the nearest bad crystal (BVP)
+  SetDistancesToBadChannels();
+
   //Now the same for CPV
   for(index = 0; index < cpvRecPoints->GetEntries(); index++){
     AliPHOSCpvRecPoint * rp = dynamic_cast<AliPHOSCpvRecPoint *>( cpvRecPoints->At(index) );
@@ -1255,3 +1261,49 @@ void AliPHOSClusterizerv1::PrintRecPoints(Option_t * option)
   }
 }
 
+
+//____________________________________________________________________________
+void AliPHOSClusterizerv1::SetDistancesToBadChannels()
+{
+  //For each EMC rec. point set the distance to the nearest bad crystal.
+  //Author: Boris Polichtchouk 
+
+  if(!fCalibData->GetNumOfEmcBadChannels()) return;
+  AliInfo(Form("%d bad channel(s) found.\n",fCalibData->GetNumOfEmcBadChannels()));
+
+  AliPHOSGetter* gime = AliPHOSGetter::Instance();
+  AliPHOSGeometry* geom = gime->PHOSGeometry();
+ 
+  TObjArray * emcRecPoints = gime->EmcRecPoints() ;
+  
+  Int_t badIds[8000];
+  fCalibData->EmcBadChannelIds(badIds);
+
+  AliPHOSEmcRecPoint* rp;
+
+  TMatrixF gmat;
+  TVector3 gposRecPoint; // global (in ALICE frame) position of rec. point
+  TVector3 gposBadChannel; // global position of bad crystal
+  TVector3 dR;
+
+  Float_t dist,minDist;
+
+  for(Int_t iRP=0; iRP<emcRecPoints->GetEntries(); iRP++){
+    rp = (AliPHOSEmcRecPoint*)emcRecPoints->At(iRP);
+    minDist = 1.e+07;
+
+    for(Int_t iBad=0; iBad<fCalibData->GetNumOfEmcBadChannels(); iBad++) {
+      rp->GetGlobalPosition(gposRecPoint,gmat);
+      geom->RelPosInAlice(badIds[iBad],gposBadChannel);
+      AliDebug(2,Form("BC position:[%.3f,%.3f,%.3f], RP position:[%.3f,%.3f,%.3f]. E=%.3f\n",
+		      gposBadChannel.X(),gposBadChannel.Y(),gposBadChannel.Z(),
+		      gposRecPoint.X(),gposRecPoint.Y(),gposRecPoint.Z(),rp->GetEnergy()));
+      dR = gposBadChannel-gposRecPoint;
+      dist = dR.Mag();
+      if(dist<minDist) minDist = dist;
+    }
+
+    rp->SetDistanceToBadCrystal(minDist); 
+  }
+
+}
