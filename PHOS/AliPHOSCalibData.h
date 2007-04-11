@@ -49,6 +49,7 @@ class AliPHOSCalibData: public TNamed {
 
   Int_t  GetNumOfEmcBadChannels() const;
   Bool_t IsBadChannelEmc(Int_t module, Int_t col, Int_t row) const; 
+  void   EmcBadChannelIds(Int_t *badIds=0); 
 
   void SetEmcDataPath(const char* emcPath) {fEmcDataPath=emcPath;}
   void SetCpvDataPath(const char* cpvPath) {fCpvDataPath=cpvPath;}
@@ -67,7 +68,7 @@ class AliPHOSCalibData: public TNamed {
   TString fCpvDataPath; // path to CPV calibration data
   TString fEmcBadChannelsMapPath; // path to bad channels map
 
-  ClassDef(AliPHOSCalibData,3)    // PHOS Calibration data
+  ClassDef(AliPHOSCalibData,4)    // PHOS Calibration data
 };
 
 #endif

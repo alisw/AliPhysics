@@ -398,3 +398,13 @@ Int_t AliPHOSCalibData::GetNumOfEmcBadChannels() const
   else
     return 0;
 }
+
+//________________________________________________________________
+void AliPHOSCalibData::EmcBadChannelIds(Int_t *badIds)
+{
+  //Fill array badIds by the Ids of EMC bad channels.
+  //Array badIds of length GetNumOfBadChannels() should be prepared in advance. 
+
+  if(fEmcBadChannelsMap)              
+    fEmcBadChannelsMap->BadChannelIds(badIds);
+}
