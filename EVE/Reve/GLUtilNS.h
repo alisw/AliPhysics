@@ -3,6 +3,9 @@
 #ifndef __CINT__
 
 #include <TGLIncludes.h>
+#include <TObject.h>
+
+class TAttMarker;
 
 namespace GLUtilNS
 {
@@ -44,6 +47,15 @@ public:
   ~GL_Float_Holder()
   { if(fFlip) fFoo(fState); }
 };
+
+
+void RenderPolyMarkers(TAttMarker& marker, Float_t* p, Int_t n, 
+		       Bool_t selection, Bool_t sec_selection);
+
+void RenderPoints(TAttMarker& marker, Float_t* p, Int_t n,
+		  Bool_t selection, Bool_t sec_selection);
+
+void RenderCrosses(TAttMarker& marker, Float_t* p, Int_t n, Bool_t sec_selection);
 
 }
 
