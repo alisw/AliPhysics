@@ -33,6 +33,7 @@ using namespace std;
 #include "AliHLTConfigurationHandler.h"
 #include "AliHLTTask.h"
 #include "AliHLTModuleAgent.h"
+#include "AliHLTOfflineInterface.h"
 #include <TObjArray.h>
 #include <TObjString.h>
 #include <TString.h>
@@ -439,7 +440,9 @@ int AliHLTSystem::Reconstruct(int nofEvents, AliRunLoader* runLoader,
   if (runLoader) {
     HLTInfo("Run Loader %p, Raw Reader %p , %d events", runLoader, rawReader, nofEvents);
     if (CheckStatus(kReady)) {
-      iResult=Run(nofEvents);
+      if ((iResult=AliHLTOfflineInterface::SetParamsToComponents(runLoader, rawReader))>=0) {
+	iResult=Run(nofEvents);
+      }
     } else {
       HLTError("wrong state %#x, required flags %#x", GetStatusFlags(), kReady);
     }
@@ -456,6 +459,7 @@ int AliHLTSystem::FillESD(int eventNo, AliRunLoader* runLoader, AliESD* esd)
   int iResult=0;
   if (runLoader) {
     HLTInfo("Event %d: Run Loader %p, ESD %p", eventNo, runLoader, esd);
+    iResult=AliHLTOfflineInterface::FillComponentESDs(eventNo, runLoader, esd);
   } else {
     HLTError("missing run loader/ESD instance(s)");
     iResult=-EINVAL;

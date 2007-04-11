@@ -56,12 +56,12 @@ class AliHLTOfflineInterface : public TObject {
   /**
    * Get the AliRoot run loader.
    */
-  const AliRunLoader* GetRunLoader() const;
+  AliRunLoader* GetRunLoader() const;
 
   /**
    * Get the AliRoot raw reader
    */
-  const AliRawReader* GetRawReader() const;
+  AliRawReader* GetRawReader() const;
 
   /**
    * Set AliRoot ESD for the current event.
@@ -100,22 +100,26 @@ class AliHLTOfflineInterface : public TObject {
    * Fill ESD for one event.
    * Fill the ESD with the previously reconstructed data. It must be implmented
    * by the child class.
+   * @param eventNo       event No. \em Note: this is an internal enumeration of the
+   *                      processed events.
    * @param runLoader     the AliRoot runloader
    * @param esd           an AliESD instance
    * @return neg. error code if failed 
    */
-  virtual int FillESD(AliRunLoader* runLoader, AliESD* esd)=0;
+  virtual int FillESD(int eventNo, AliRunLoader* runLoader, AliESD* esd)=0;
 
   /**
    * Fill ESD for one event.
    * The FillESD method of all active AliHLTOfflineDataSink's is called in
    * order to fill the ESD with the previously reconstructed data. This method
    * works on the global list.
+   * @param eventNo       event No. \em Note: this is an internal enumeration of the
+   *                      processed events.
    * @param runLoader     the AliRoot runloader
    * @param esd           an AliESD instance
    * @return neg. error code if failed 
    */
-  static int FillComponentESDs(AliRunLoader* runLoader, AliESD* esd);
+  static int FillComponentESDs(int eventNo, AliRunLoader* runLoader, AliESD* esd);
 
   /**
    * Reset AliRoot internal params of all active components.
@@ -145,9 +149,14 @@ protected:
   /** the current object link (list position) */
   static TObjLink* fgCurrentLnk;                                  // see above
 
-  /** AliRoot run loader instance */
+  /** global AliRoot run loader instance (for all components) */
+  static AliRunLoader* fgpRunLoader;                              //! transient
+  /** global AliRoot raw reader instance (for all components) */
+  static AliRawReader* fgpRawReader;                              //! transient
+
+  /** private AliRoot run loader instance */
   AliRunLoader* fpRunLoader;                                      //! transient
-  /** AliRoot raw reader instance */
+  /** private AliRoot raw reader instance */
   AliRawReader* fpRawReader;                                      //! transient
   /** AliRoot HLT ESD instance */
   AliESD* fpESD;                                                  //! transient

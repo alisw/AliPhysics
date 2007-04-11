@@ -75,17 +75,17 @@ void AliHLTModuleAgent::PrintStatus(const char* agent)
     }
   } else {
     TObjLink* lnk=fgAgentList.FirstLink();
-    log.Logging(kHLTLogInfo, "", "", "-----------------------");
-    log.Logging(kHLTLogInfo, "", "", "available module agents");
+    log.Logging(kHLTLogInfo, "AliHLT", "", "-----------------------");
+    log.Logging(kHLTLogInfo, "AliHLT", "", "available module agents");
     if (lnk==NULL) 
-      log.Logging(kHLTLogInfo, "", "", "   none");
+      log.Logging(kHLTLogInfo, "AliHLT", "", "   none");
     while (lnk) {
       TString msg;
       msg.Form("   %s : %p", ((AliHLTModuleAgent*)lnk->GetObject())->GetName(), lnk->GetObject());
-      log.Logging(kHLTLogInfo, "", "", msg.Data());
+      log.Logging(kHLTLogInfo, "AliHLT", "", msg.Data());
       lnk=lnk->Next();
     }
-    log.Logging(kHLTLogInfo, "", "", "-----------------------");
+    log.Logging(kHLTLogInfo, "AliHLT", "", "-----------------------");
   }
 }
 

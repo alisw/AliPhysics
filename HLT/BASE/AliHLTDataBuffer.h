@@ -323,6 +323,12 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
   /** global instance to HLT logging class for static methods */
   static AliHLTLogging fgLogging;                                  // see above
 
+  /** size of the safety pattern */
+  static const Int_t fgkSafetyPatternSize;                         // see above
+
+  /** the safety pattern */
+  static const char fgkSafetyPattern[];                            //!transient
+
   //////////////////////////////////////////////////////////////////////////////
   // internal helper functions
 

@@ -61,6 +61,7 @@ AliHLTComponent::AliHLTComponent()
   memset(&fEnvironment, 0, sizeof(AliHLTComponentEnvironment));
   if (fgpComponentHandler)
     fgpComponentHandler->ScheduleRegister(this);
+  SetLocalLoggingLevel(kHLTLogDefault);
 }
 
 AliHLTComponent::AliHLTComponent(const AliHLTComponent&)
@@ -95,6 +96,7 @@ AliHLTComponent& AliHLTComponent::operator=(const AliHLTComponent&)
 AliHLTComponent::~AliHLTComponent()
 {
   // see header file for function documentation
+  CleanupInputObjects();
 }
 
 AliHLTComponentHandler* AliHLTComponent::fgpComponentHandler=NULL;
@@ -124,8 +126,51 @@ int AliHLTComponent::Init( AliHLTComponentEnvironment* environ, void* environPar
     memcpy(&fEnvironment, environ, sizeof(AliHLTComponentEnvironment));
     fEnvironment.fParam=environParam;
   }
-  iResult=DoInit(argc, argv);
+  const char** pArguments=NULL;
+  int iNofChildArgs=0;
+  TString argument="";
+  int bMissingParam=0;
+  if (argc>0) {
+    pArguments=new const char*[argc];
+    if (pArguments) {
+      for (int i=0; i<argc && iResult>=0; i++) {
+	argument=argv[i];
+	if (argument.IsNull()) continue;
+
+	// benchmark
+	if (argument.CompareTo("benchmark")==0) {
+
+	  // loglevel
+	} else if (argument.CompareTo("loglevel")==0) {
+	  if ((bMissingParam=(++i>=argc))) break;
+	  TString parameter(argv[i]);
+	  parameter.Remove(TString::kLeading, ' '); // remove all blanks
+	  if (parameter.BeginsWith("0x") &&
+	      parameter.Replace(0,2,"",0).IsHex()) {
+	    AliHLTComponentLogSeverity loglevel=kHLTLogNone;
+	    sscanf(parameter.Data(),"%x", &loglevel);
+	    SetLocalLoggingLevel(loglevel);
+	  } else {
+	    HLTError("wrong parameter for argument %s, hex number expected", argument.Data());
+	    iResult=-EINVAL;
+	  }
+	} else {
+	  pArguments[iNofChildArgs++]=argv[i];
+	}
+      }
+    } else {
+      iResult=-ENOMEM;
+    }
+  }
+  if (bMissingParam) {
+    HLTError("missing parameter for argument %s", argument.Data());
+    iResult=-EINVAL;
+  }
+  if (iResult>=0) {
+    iResult=DoInit(iNofChildArgs, pArguments);
+  }
   if (iResult>=0) fEventCount=0;
+  if (pArguments) delete [] pArguments;
   return iResult;
 }
 
@@ -390,7 +435,7 @@ const TObject* AliHLTComponent::GetFirstInputObject(const AliHLTComponentDataTyp
   if (classname) fClassName=classname;
   else fClassName.clear();
   int idx=FindInputBlock(fSearchDataType, 0);
-  //HLTDebug("found block %d when searching for data type %s", idx, DataType2Text(dt).c_str());
+  HLTDebug("found block %d when searching for data type %s", idx, DataType2Text(dt).c_str());
   TObject* pObj=NULL;
   if (idx>=0) {
     if ((pObj=GetInputObject(idx, fClassName.c_str(), bForce))!=NULL) {
@@ -450,11 +495,11 @@ TObject* AliHLTComponent::CreateInputObject(int idx, int bForce)
       if (fpInputBlocks[idx].fPtr) {
 	AliHLTUInt32_t firstWord=*((AliHLTUInt32_t*)fpInputBlocks[idx].fPtr);
 	if (firstWord==fpInputBlocks[idx].fSize-sizeof(AliHLTUInt32_t)) {
-	  //HLTDebug("create object from block %d size %d", idx, fpInputBlocks[idx].fSize);
+	  HLTDebug("create object from block %d size %d", idx, fpInputBlocks[idx].fSize);
 	  AliHLTMessage msg(fpInputBlocks[idx].fPtr, fpInputBlocks[idx].fSize);
 	  pObj=msg.ReadObject(msg.GetClass());
 	  if (pObj && msg.GetClass()) {
-	    //HLTDebug("object %p type %s created", pObj, msg.GetClass()->GetName());
+	    HLTDebug("object %p type %s created", pObj, msg.GetClass()->GetName());
 	  } else {
 	  }
 	} else {
@@ -493,6 +538,18 @@ TObject* AliHLTComponent::GetInputObject(int idx, const char* classname, int bFo
     HLTFatal("memory allocation failed: TObjArray of size %d", fCurrentEventData.fBlockCnt);
   }
   return pObj;
+}
+
+int AliHLTComponent::CleanupInputObjects()
+{
+  if (!fpInputObjects) return 0;
+  TObjArray* array=fpInputObjects;
+  fpInputObjects=NULL;
+  for (int i=0; i<array->GetEntries(); i++) {
+    TObject* pObj=array->At(i);
+    if (pObj) delete pObj;
+  }
+  delete array;
 }
 
 AliHLTComponentDataType AliHLTComponent::GetDataType(const TObject* pObject)
@@ -618,7 +675,7 @@ int AliHLTComponent::PushBack(TObject* pObject, const AliHLTComponentDataType& d
       msg.SetLength(); // sets the length to the first (reserved) word
       iResult=InsertOutputBlock(msg.Buffer(), iMsgLength, dt, spec);
       if (iResult>=0) {
-	//HLTDebug("object %s (%p) inserted to output", pObject->ClassName(), pObject);
+	HLTDebug("object %s (%p) size %d inserted to output", pObject->ClassName(), pObject, iMsgLength);
       }
     } else {
       HLTError("object serialization failed for object %p", pObject);
@@ -657,7 +714,7 @@ int AliHLTComponent::InsertOutputBlock(void* pBuffer, int iSize, const AliHLTCom
   // see header file for function documentation
   int iResult=0;
   if (pBuffer) {
-    if (fpOutputBuffer && (fOutputBufferSize-fOutputBufferFilled)) {
+    if (fpOutputBuffer && iSize<=(fOutputBufferSize-fOutputBufferFilled)) {
       AliHLTUInt8_t* pTgt=fpOutputBuffer+fOutputBufferFilled;
       AliHLTComponentBlockData bd;
       FillBlockData( bd );
@@ -686,6 +743,14 @@ int AliHLTComponent::InsertOutputBlock(void* pBuffer, int iSize, const AliHLTCom
     iResult=-EINVAL;
   }
   return iResult;
+}
+
+int AliHLTComponent::EstimateObjectSize(TObject* pObject) const
+{
+  if (!pObject) return -EINVAL;
+    AliHLTMessage msg(kMESS_OBJECT);
+    msg.WriteObject(pObject);
+    return msg.Length();  
 }
 
 int AliHLTComponent::CreateEventDoneData(AliHLTComponentEventDoneData edd)
@@ -741,6 +806,7 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
     outputBlockCnt=0;
     outputBlocks=NULL;
   }
+  CleanupInputObjects();
   IncrementEventCounter();
   return iResult;
 }

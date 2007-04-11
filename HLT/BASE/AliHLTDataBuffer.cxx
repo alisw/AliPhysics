@@ -82,6 +82,8 @@ vector<AliHLTDataBuffer::AliHLTRawBuffer*> AliHLTDataBuffer::fgFreeBuffers;
 vector<AliHLTDataBuffer::AliHLTRawBuffer*> AliHLTDataBuffer::fgActiveBuffers;
 AliHLTUInt32_t AliHLTDataBuffer::fgMargin=1024;
 AliHLTLogging AliHLTDataBuffer::fgLogging;
+const Int_t AliHLTDataBuffer::fgkSafetyPatternSize=16;
+const char AliHLTDataBuffer::fgkSafetyPattern[]={0x28, 0x63, 0x29, 0x4d, 0x52, 0x49, 0x43, 0x48, 0x54, 0x45, 0x52, 0x20, 0x32, 0x30, 0x30, 0x37};
 
 AliHLTDataBuffer::~AliHLTDataBuffer()
 {
@@ -297,10 +299,12 @@ int AliHLTDataBuffer::SetSegments(AliHLTUInt8_t* pTgt, AliHLTComponentBlockData*
 	  } else {
 	    HLTError("block data specification %#d (%s) exceeds size of data buffer", i, AliHLTComponent::DataType2Text(arrayBlockData[i].fDataType).data());
 	    HLTError("block offset=%d, block size=%d, buffer size=%d", arrayBlockData[i].fOffset, arrayBlockData[i].fSize, fpBuffer->fSize);
+	    iResult=-E2BIG;
 	  }
 	}
       } else {
 	HLTError("this data buffer (%p) does not match the internal data buffer %p of raw buffer %p", pTgt, fpBuffer->fPtr, fpBuffer);
+	iResult=-EINVAL;
       }
     } else {
       HLTFatal("internal data structur missmatch");
@@ -345,9 +349,10 @@ AliHLTDataBuffer::AliHLTRawBuffer* AliHLTDataBuffer::CreateRawBuffer(AliHLTUInt3
 {
   // see header file for function documentation
   AliHLTRawBuffer* pRawBuffer=NULL;
+  int reqSize=size+fgkSafetyPatternSize;
   vector<AliHLTRawBuffer*>::iterator buffer=fgFreeBuffers.begin();
   while (buffer!=fgFreeBuffers.end() && pRawBuffer==NULL) {
-    if ((*buffer)->fTotalSize>=size && ((*buffer)->fTotalSize-size)<fgMargin) {
+    if ((*buffer)->fTotalSize>=reqSize && ((*buffer)->fTotalSize-reqSize)<fgMargin) {
       // assign this element
       pRawBuffer=*buffer;
       pRawBuffer->fSize=size;
@@ -363,12 +368,15 @@ AliHLTDataBuffer::AliHLTRawBuffer* AliHLTDataBuffer::CreateRawBuffer(AliHLTUInt3
     pRawBuffer=new AliHLTRawBuffer;
     if (pRawBuffer) {
       memset(pRawBuffer, 0, sizeof(AliHLTRawBuffer));
-      pRawBuffer->fPtr=malloc(size);
+      pRawBuffer->fPtr=malloc(reqSize);
       if (pRawBuffer->fPtr) {
 	pRawBuffer->fSize=size;
-	pRawBuffer->fTotalSize=size;
+	pRawBuffer->fTotalSize=reqSize;
 	fgActiveBuffers.push_back(pRawBuffer);
 	fgLogging.Logging(kHLTLogDebug, "AliHLTDataBuffer::CreateRawBuffer", "data buffer handling", "new raw buffer %p of size %d created (container %p)", pRawBuffer->fPtr, pRawBuffer->fTotalSize, pRawBuffer);
+	if (fgkSafetyPatternSize>0) {
+	  memcpy(((char*)pRawBuffer->fPtr)+pRawBuffer->fSize, fgkSafetyPattern, fgkSafetyPatternSize);
+	}
       } else {
 	delete pRawBuffer;
 	pRawBuffer=NULL;
@@ -391,6 +399,11 @@ int AliHLTDataBuffer::ReleaseRawBuffer(AliHLTRawBuffer* pBuffer)
       buffer++;
     }
     if (buffer!=fgActiveBuffers.end()) {
+      if (fgkSafetyPatternSize>0) {
+	if (memcmp(((char*)(*buffer)->fPtr)+(*buffer)->fSize, fgkSafetyPattern, fgkSafetyPatternSize)!=0) {
+	  fgLogging.Logging(kHLTLogFatal, "AliHLTDataBuffer::ReleaseRawBuffer", "data buffer handling", "component has written beyond end of data buffer %p size %d", (*buffer)->fPtr, (*buffer)->fSize);
+	}
+      }
       (*buffer)->fSize=0;
       fgFreeBuffers.push_back(*buffer);
       fgActiveBuffers.erase(buffer);

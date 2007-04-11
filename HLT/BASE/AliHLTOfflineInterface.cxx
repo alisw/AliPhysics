@@ -22,6 +22,7 @@
 */
 
 #include "AliHLTOfflineInterface.h"
+#include "AliHLTLogging.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTOfflineInterface)
@@ -41,6 +42,8 @@ AliHLTOfflineInterface::AliHLTOfflineInterface()
 
 TList AliHLTOfflineInterface::fgList;
 TObjLink* AliHLTOfflineInterface::fgCurrentLnk=NULL;
+AliRunLoader* AliHLTOfflineInterface::fgpRunLoader=NULL;
+AliRawReader* AliHLTOfflineInterface::fgpRawReader=NULL;
 
 AliHLTOfflineInterface::AliHLTOfflineInterface(AliRunLoader* pRunLoader, AliRawReader* pRawReader)
   :
@@ -72,14 +75,14 @@ AliHLTOfflineInterface::~AliHLTOfflineInterface()
 {
 }
 
-const AliRunLoader* AliHLTOfflineInterface::GetRunLoader() const
+AliRunLoader* AliHLTOfflineInterface::GetRunLoader() const
 {
-  return fpRunLoader;
+  return fpRunLoader!=NULL?fpRunLoader:fgpRunLoader;
 }
 
-const AliRawReader* AliHLTOfflineInterface::GetRawReader() const
+AliRawReader* AliHLTOfflineInterface::GetRawReader() const
 {
-  return fpRawReader;
+  return fpRawReader!=NULL?fpRawReader:fgpRawReader;
 }
 
 int AliHLTOfflineInterface::SetESD(Int_t eventNo, AliESD* pESD)
@@ -121,16 +124,27 @@ int AliHLTOfflineInterface::Reset()
 int AliHLTOfflineInterface::SetParamsToComponents(AliRunLoader* runLoader, AliRawReader* rawReader)
 {
   // see header file for class documentation
+  AliHLTLogging log;
   int iResult=0;
+  int count=0;
+  fgpRunLoader=runLoader;
+  fgpRawReader=rawReader;
   fgCurrentLnk=fgList.FirstLink();
   while (fgCurrentLnk!=NULL) {
     AliHLTOfflineInterface* pComponent=reinterpret_cast<AliHLTOfflineInterface*>(fgCurrentLnk->GetObject());
     int iLocal=0;
     if (pComponent) iLocal=pComponent->SetParams(runLoader, rawReader);
     if (iLocal<0) {
+      log.LoggingVarargs(kHLTLogWarning, "AliHLTOfflineInterface","SetParamsToComponents", __FILE__, __LINE__,
+			"parameter initialization failed for component %p with result %d", pComponent, iLocal);
       if (iResult>=0) iResult=iLocal;
     }
+    count++;
     fgCurrentLnk=fgCurrentLnk->Next();
+  }
+  if (iResult>=0) {
+      log.LoggingVarargs(kHLTLogInfo, "AliHLTOfflineInterface","SetParamsToComponents", __FILE__, __LINE__,
+			"parameters set to %d offline interface component(s)", count);
   }
   return iResult;
 }
@@ -152,7 +166,7 @@ int AliHLTOfflineInterface::ResetComponents()
   return iResult;
 }
 
-int AliHLTOfflineInterface::FillComponentESDs(AliRunLoader* runLoader, AliESD* esd)
+int AliHLTOfflineInterface::FillComponentESDs(int eventNo, AliRunLoader* runLoader, AliESD* esd)
 {
   // see header file for class documentation
   int iResult=0;
@@ -160,7 +174,13 @@ int AliHLTOfflineInterface::FillComponentESDs(AliRunLoader* runLoader, AliESD* e
   while (fgCurrentLnk!=NULL) {
     AliHLTOfflineInterface* pComponent=reinterpret_cast<AliHLTOfflineInterface*>(fgCurrentLnk->GetObject());
     int iLocal=0;
-    if (pComponent) iLocal=pComponent->FillESD(runLoader, esd);
+    if (pComponent) {
+      pComponent->SetESD(eventNo, esd);
+      if (pComponent->GetRunLoader()!=runLoader) {
+	//HLTWarning("runLoader missmatch: component %p was reconstructed with runLoader %p, but got %p now", pComponent, pComponent->GetRunLoader(), runLoader);
+      }
+      iLocal=pComponent->FillESD(eventNo, runLoader, esd);
+    }
     if (iLocal<0) {
       if (iResult>=0) iResult=iLocal;
     }

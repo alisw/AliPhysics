@@ -143,6 +143,9 @@ class TObjArray;
  * the parameters. The component implementation 
  * @see AliHLTProcessor AliHLTDataSource AliHLTDataSink
  *
+ * \em IMPORTANT: objects and block descriptors provided by the high-level interface
+ *  <b>MUST NOT BE DELETED</b> by the caller.
+ *
  * @subsubsection alihltcomponent-high-level-int-guidelines High-level interface guidelines
  * - Structures must inherit from the ROOT object base class TObject in order be 
  * transported by the transportation framework.
@@ -475,7 +478,8 @@ class AliHLTComponent : public AliHLTLogging {
    * If also the class name is provided, the object is checked for the right
    * class type. The input data block needs a certain structure, namely the 
    * buffer size as first word. If the cross check fails, the retrieval is
-   * silently abondoned, unless the \em bForce parameter is set.
+   * silently abondoned, unless the \em bForce parameter is set.<br>
+   * \em Note: THE OBJECT MUST NOT BE DELETED by the caller.
    * @param dt          data type of the object
    * @param classname   class name of the object
    * @param bForce      force the retrieval of an object, error messages
@@ -496,7 +500,8 @@ class AliHLTComponent : public AliHLTLogging {
    * If also the class name is provided, the object is checked for the right
    * class type. The input data block needs a certain structure, namely the 
    * buffer size as first word. If the cross check fails, the retrieval is
-   * silently abondoned, unless the \em bForce parameter is set.
+   * silently abondoned, unless the \em bForce parameter is set.<br>
+   * \em Note: THE OBJECT MUST NOT BE DELETED by the caller.
    * @param dtID        data type ID of the object
    * @param dtOrigin    data type origin of the object
    * @param classname   class name of the object
@@ -515,7 +520,8 @@ class AliHLTComponent : public AliHLTLogging {
    * The hight-level methods provide functionality to transfer ROOT data
    * structures which inherit from TObject.
    * The method looks for the next ROOT object of type and class specified
-   * to the previous @ref GetFirstInputObject call.
+   * to the previous @ref GetFirstInputObject call.<br>
+   * \em Note: THE OBJECT MUST NOT BE DELETED by the caller.
    * @param bForce      force the retrieval of an object, error messages
    *                    are suppressed if \em bForce is not set
    * @return pointer to @ref TObject, NULL if no more objects available
@@ -545,7 +551,8 @@ class AliHLTComponent : public AliHLTLogging {
   /**
    * Get the first block of a specific data type from the input data.
    * The method looks for the first block of type dt in the input stream. It is intended
-   * to be used within the high-level interface.
+   * to be used within the high-level interface.<br>
+   * \em Note: THE BLOCK DESCRIPTOR MUST NOT BE DELETED by the caller.
    * @param dt          data type of the block
    * @return pointer to @ref AliHLTComponentBlockData
    */
@@ -555,7 +562,8 @@ class AliHLTComponent : public AliHLTLogging {
    * Get the first block of a specific data type from the input data.
    * The method looks for the first block of type specified by the ID and 
    * Origin strings in the input stream.  It is intended
-   * to be used within the high-level interface.
+   * to be used within the high-level interface.<br>
+   * \em Note: THE BLOCK DESCRIPTOR MUST NOT BE DELETED by the caller.
    * @param dtID        data type ID of the block
    * @param dtOrigin    data type origin of the block
    * @return pointer to @ref AliHLTComponentBlockData
@@ -564,7 +572,8 @@ class AliHLTComponent : public AliHLTLogging {
 						      const char* dtOrigin);
 
   /**
-   * Get input block by index
+   * Get input block by index.<br>
+   * \em Note: THE BLOCK DESCRIPTOR MUST NOT BE DELETED by the caller.
    * @return pointer to AliHLTComponentBlockData, NULL if index out of range
    */
   const AliHLTComponentBlockData* GetInputBlock(int index);
@@ -573,7 +582,8 @@ class AliHLTComponent : public AliHLTLogging {
    * Get the next block of a specific data type from the input data.
    * The method looks for the next block  of type and class specified
    * to the previous @ref GetFirstInputBlock call.
-   * To be used within the high-level interface.
+   * To be used within the high-level interface.<br>
+   * \em Note: THE BLOCK DESCRIPTOR MUST NOT BE DELETED by the caller.
    */
   const AliHLTComponentBlockData* GetNextInputBlock();
 
@@ -632,6 +642,13 @@ class AliHLTComponent : public AliHLTLogging {
 	       AliHLTUInt32_t spec=kAliHLTVoidDataSpec);
 
   /**
+   * Estimate size of a TObject
+   * @param pObject
+   * @return buffer size in byte
+   */
+  int EstimateObjectSize(TObject* pObject) const;
+
+  /**
    * Insert event-done data information into the output.
    * @param edd          event-done data information
    */
@@ -680,7 +697,9 @@ class AliHLTComponent : public AliHLTLogging {
 
   /**
    * Get input object
-   * Get object from the input block list
+   * Get object from the input block list. The methods first checks whether the
+   * object was already created. If not, it is created by @ref CreateInputObject
+   * and inserted into the list of objects.
    * @param idx         index in the input block list
    * @param classname   name of the class, object is checked for correct class
    *                    name if set
@@ -691,6 +710,12 @@ class AliHLTComponent : public AliHLTLogging {
    * @internal
    */
   TObject* GetInputObject(int idx, const char* classname=NULL, int bForce=0);
+
+  /**
+   * Clean the list of input objects.
+   * Cleanup is done at the end of each event processing.
+   */
+  int CleanupInputObjects();
 
   /**
    * Insert a buffer into the output block stream.

@@ -48,7 +48,7 @@ class AliHLTOfflineDataSource
   /**
    * Default implementation as sources do not have a real FillESD method.
    */
-  int FillESD(AliRunLoader* runLoader, AliESD* esd) {
+  int FillESD(int eventNo, AliRunLoader* runLoader, AliESD* esd) {
     if (esd==NULL && runLoader==NULL) {
       // get rid of 'unused parameter' warning
     }
