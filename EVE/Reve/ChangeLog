@@ -1,11 +1,11 @@
 2007-04-11  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
 
-	* Reve/StraightLineSet.cxx:
-	* Reve/StraightLineSet.h:
-	* Reve/StraightLineSetEditor.cxx:
-	* Reve/StraightLineSetEditor.h:
-	* Reve/StraightLineSetGL.cxx:
-	* Reve/StraightLineSetGL.h:
+	* StraightLineSet.cxx:
+	* StraightLineSet.h:
+	* StraightLineSetEditor.cxx:
+	* StraightLineSetEditor.h:
+	* StraightLineSetGL.cxx:
+	* StraightLineSetGL.h:
 	New class StraightLineSet with accompanying GL and Editor classes.
 
 	* LinkDef.h:
