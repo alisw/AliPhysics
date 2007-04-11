@@ -277,12 +277,9 @@ void RenderElement::SetRnrChildren(Bool_t rnr)
   }
 }
 
-void RenderElement::ToggleRnrState()
+void RenderElement::SetRnrState(Bool_t rnr)
 {
-  if (fRnrSelf || fRnrChildren)
-    fRnrSelf = fRnrChildren = kFALSE;  
-  else
-    fRnrSelf = fRnrChildren = kTRUE; 
+  fRnrSelf = fRnrChildren = rnr; 
 
   for (sLTI_i i=fItems.begin(); i!=fItems.end(); ++i) 
   {

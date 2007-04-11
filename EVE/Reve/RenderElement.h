@@ -144,7 +144,7 @@ public:
   virtual Bool_t GetRnrChildren() const { return fRnrChildren; }
   virtual void   SetRnrSelf(Bool_t rnr);
   virtual void   SetRnrChildren(Bool_t rnr);
-  virtual void   ToggleRnrState();
+  virtual void   SetRnrState(Bool_t rnr);
 
   virtual Bool_t CanEditMainColor()        { return kFALSE; }
   Color_t* GetMainColorPtr()               { return fMainColorPtr; }

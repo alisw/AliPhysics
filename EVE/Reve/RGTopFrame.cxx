@@ -408,7 +408,7 @@ void RGTopFrame::UndrawRenderElement(RenderElement* rnr_element, TVirtualPad* pa
 
 /**************************************************************************/
 
-void RGTopFrame::RenderElementChecked(TObject* obj, Bool_t /*state*/)
+void RGTopFrame::RenderElementChecked(TObject* obj, Bool_t state)
 {
   // Item's user-data is blindly casted into TObject.
   // We recast it blindly back into the render element.
@@ -416,7 +416,7 @@ void RGTopFrame::RenderElementChecked(TObject* obj, Bool_t /*state*/)
   // fRnrChildren.
 
   RenderElement* rnrEl = (RenderElement*) obj;
-  rnrEl->ToggleRnrState();
+  rnrEl->SetRnrState(state);
 
   if(fEditor->GetModel() == rnrEl->GetObject()) {
     fEditor->DisplayObject(rnrEl->GetObject());
