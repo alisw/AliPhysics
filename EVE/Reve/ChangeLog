@@ -1,3 +1,28 @@
+2007-04-11  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	* Reve/StraightLineSet.cxx:
+	* Reve/StraightLineSet.h:
+	* Reve/StraightLineSetEditor.cxx:
+	* Reve/StraightLineSetEditor.h:
+	* Reve/StraightLineSetGL.cxx:
+	* Reve/StraightLineSetGL.h:
+	New class StraightLineSet with accompanying GL and Editor classes.
+
+	* LinkDef.h:
+	Register new StraightLineSetXyzz classes.
+
+	* GLUtilNS.h:
+	* GLUtilNS.cxx:
+	Add a function to render polymarkers from float array and
+	TAttMarker.
+
+	* RGTopFrame.cxx:
+	* RenderElement.cxx:
+	* RenderElement.h:
+	Reimplement callback of the Checked() signal from
+	RGBrowser::fListTree; function in RenderElement renamed from
+	ToggleRnrState to SetRnrState.
+
 2007-04-11  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* FrameBox.cxx:

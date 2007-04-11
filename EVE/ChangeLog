@@ -1,3 +1,8 @@
+2007-04-11  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	* macros/reve_lineset_test.C:
+	New macro: example usage of StraightLineSet set.
+
 2007-04-11  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* alice-macros/emcal_digits.C:
