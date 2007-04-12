@@ -43,6 +43,8 @@
 #pragma link C++ class AliTPCAltroMapping+;
 #pragma link C++ class AliTPCRawStream+;
 #pragma link C++ class AliTPCRawStreamOld+;
+#pragma link C++ class AliTPCCalibPedestal+;
+
 
 #endif
 
