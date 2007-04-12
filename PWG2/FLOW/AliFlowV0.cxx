@@ -26,25 +26,17 @@ using namespace std; //required for resolving the 'cout' symbol
 ClassImp(AliFlowV0) 
 //////////////////////////////////////////////////////////////////////////////
 AliFlowV0::AliFlowV0():
-  fDaughterP(0x0), fDaughterN(0x0)
+  fPhi(0.), fPt(0.), fEta(0.), fChi2(0.), fMass(0.), fDca(0.), fCrossDCA(0.), fSigma(1.), fLabel(0), fMostLikelihoodPID(0), fPointAngle(0.),
+fDaughterP(0x0), fDaughterN(0x0)
 {
  // default constructor  
- 
- fPhi = 0. ;
- fEta = 0. ;
- fPt = 0. ;
- fChi2 = 0. ;
- fMass = 0. ;			
- fDca = 0. ;
- fCrossDCA = 0. ;
- fSigma = 1. ;
- fLabel = 0 ;
- fPointAngle = 0. ;
- for(Int_t dd=0;dd<3;dd++) { fCrossPoint[dd] = 0. ; }
+  for(Int_t dd=0;dd<3;dd++) { fCrossPoint[dd] = 0. ; }
  // fDaughterP = 0  ; fDaughterN = 0  ;
 }
 //////////////////////////////////////////////////////////////////////////////
-AliFlowV0::AliFlowV0(const Char_t* name) 
+AliFlowV0::AliFlowV0(const Char_t* name):
+  fPhi(0.), fPt(0.), fEta(0.), fChi2(0.), fMass(0.), fDca(0.), fCrossDCA(0.), fSigma(1.), fLabel(0), fMostLikelihoodPID(0), fPointAngle(0.),
+fDaughterP(0x0), fDaughterN(0x0)
 {
  // TNamed constructor 
  

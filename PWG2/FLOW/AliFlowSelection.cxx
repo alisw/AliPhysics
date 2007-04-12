@@ -47,15 +47,13 @@ Int_t    AliFlowSelection::fgTPChits[AliFlowConstants::kSels] = { 0 , 1 } ;
 
 ClassImp(AliFlowSelection)
 //-----------------------------------------------------------------------
-AliFlowSelection::AliFlowSelection()
+AliFlowSelection::AliFlowSelection():
+  fHarmonic(-1), fSelection(-1), fSubevent(-1), fPtBinsPart(AliFlowConstants::kPtBinsPart), fCent(-1), fRun(-1), fV0SideBand(0.), fConstrainablePart(kFALSE)
 {
  // Default constructor: when initialized all selection cuts are disabled (lo>hi).
 
- fCent		       = -1 ; 
- fRun		       = -1 ; 
  // -
  fPidPart[0] = '\0' ;
- fConstrainablePart    = kFALSE ; 	// = kTRUE
  fPidProbPart[0]       = 1 ;    	// = 0.  
  fPidProbPart[1]       = 0 ;    	// = 1.  
  fPtPart[0]	       = 1 ; 		// = 0.  
@@ -82,7 +80,6 @@ AliFlowSelection::AliFlowSelection()
  fYPart[1]	       = 0 ; 		// = 0.  
  // -
  fV0Pid[10] = '\0' ;
- fV0SideBand 	       = 0. ;
  fV0Pt[0]	       = 1 ;  
  fV0Pt[1]	       = 0 ;  
  fV0P[0]	       = 1 ;  
@@ -103,12 +100,6 @@ AliFlowSelection::AliFlowSelection()
  fV0DcaCross[1]        = 0 ;  
  fV0Mass[0]	       = 1 ;
  fV0Mass[1]	       = 0 ;
- // -
- fPtBinsPart 	       = AliFlowConstants::kPtBinsPart ;  
- // -		        
- fHarmonic  = -1 ;   // harmonic
- fSelection = -1 ;   // selection
- fSubevent  = -1 ;   // sub-event
 }
 //-----------------------------------------------------------------------
 AliFlowSelection::~AliFlowSelection() 
