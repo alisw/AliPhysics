@@ -189,12 +189,14 @@ TTreeStream  & TTreeSRedirector::operator<<(Int_t id)
     }
   }
   if (!clayout){
+    TDirectory * backup = gDirectory;
     fFile->cd();
     char chname[100];
     sprintf(chname,"Tree%d",id);
     clayout = new TTreeStream(chname);
     clayout->fId=id;
     fDataLayouts->AddAt(clayout,entries);
+    if (backup) backup->cd();
   }
   return *clayout;
 }
@@ -210,11 +212,13 @@ TTreeStream  & TTreeSRedirector::operator<<(const char* name)
   Int_t entries = fDataLayouts->GetEntriesFast();
 
   if (!clayout){
+    TDirectory * backup = gDirectory;
     fFile->cd();
     clayout = new TTreeStream(name);
     clayout->fId=-1;
     clayout->SetName(name);
     fDataLayouts->AddAt(clayout,entries);    
+    if (backup) backup->cd();
   }
   return *clayout;
 }
