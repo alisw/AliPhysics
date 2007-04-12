@@ -43,7 +43,6 @@
 #include "AliRsnDaughter.h"
 #include "AliRsnEvent.h"
 #include "AliRsnSelectorRL.h"
-#include "TAlienFile.h"
 
 ClassImp(AliRsnSelectorRL)
 
