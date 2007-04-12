@@ -26,6 +26,8 @@
 #include <TObjArray.h>
 #include <TAxis.h>
 #include <TGraph.h>
+#include <TGraph2D.h>
+#include <TH2F.h>
 ClassImp(AliTPCCalPad)
 
 //_____________________________________________________________________________
@@ -155,3 +157,36 @@ TGraph  *  AliTPCCalPad::MakeGraph(Int_t type, Float_t ratio){
 
   return graph;
 }
+
+TH2F *AliTPCCalPad::MakeHisto2D(Int_t side){
+  //
+  // Make 2D graph
+  // side  -  specify the side A = 0 C = 1
+  // type  -  used types of determination of boundaries in z
+  Float_t kEpsilon = 0.000000000001;
+  TH2F * his = new TH2F(GetName(), GetName(), 250,-250,250,250,-250,250);
+  AliTPCROC * roc  = AliTPCROC::Instance(); 
+  for (Int_t isec=0; isec<72; isec++){
+    if (side==0 && isec%36>=18) continue;
+    if (side>0 && isec%36<18) continue;
+    if (fROC[isec]){
+      AliTPCCalROC * calRoc = fROC[isec];
+      for (UInt_t irow=0; irow<calRoc->GetNrows(); irow++)
+	for (UInt_t ipad=0; ipad<calRoc->GetNPads(irow); ipad++)
+	  if (TMath::Abs(calRoc->GetValue(irow,ipad))>kEpsilon){
+	    Float_t xyz[3];
+	    roc->GetPositionGlobal(isec,irow,ipad,xyz);
+	    Int_t binx = 1+TMath::Nint((xyz[0]+250.)*0.5);
+	    Int_t biny = 1+TMath::Nint((xyz[1]+250.)*0.5);
+	    Float_t value = calRoc->GetValue(irow,ipad);	    
+	    his->SetBinContent(binx,biny,value);
+	  }
+    }
+  }
+  his->SetXTitle("x (cm)");
+  his->SetYTitle("y (cm)");
+  return his;
+}
+
+
+

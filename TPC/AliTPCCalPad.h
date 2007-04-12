@@ -17,6 +17,7 @@ class AliTPCCalROC;
 class AliTPCCalDet;
 class TObjArray;
 class TGraph;
+class TH2F;
 
 class AliTPCCalPad : public TNamed {
  public:
@@ -32,6 +33,7 @@ class AliTPCCalPad : public TNamed {
   //
   //
   TGraph       *MakeGraph(Int_t type=0, Float_t ratio=0.7);
+  TH2F     *MakeHisto2D(Int_t side=0);
  protected:
   AliTPCCalROC *fROC[kNsec];                    //  Array of ROC objects which contain the values per pad
   ClassDef(AliTPCCalPad,1)                      //  TPC calibration class for parameters which are saved per pad
