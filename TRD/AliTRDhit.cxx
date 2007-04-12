@@ -30,6 +30,7 @@ AliTRDhit::AliTRDhit()
   :AliHit()
   ,fDetector(0)
   ,fQ(0)
+  ,fTime(0)
 {
   //
   // AliTRDhit default constructor
@@ -39,10 +40,11 @@ AliTRDhit::AliTRDhit()
 
 //_____________________________________________________________________________
 AliTRDhit::AliTRDhit(Int_t shunt, Int_t track, Int_t det
-                   , Float_t *hits, Int_t q)
+                   , Float_t *hits, Int_t q, Float_t time)
   :AliHit(shunt,track)
   ,fDetector((UShort_t) det)
   ,fQ((Short_t) q)
+  ,fTime(time)
 {
   //
   // Create a TRD hit

@@ -379,9 +379,9 @@ Bool_t  AliTRDtracker::Transform(AliTRDcluster *cluster)
 
   cluster->SetY(cluster->GetY() - driftX*exB);
   Double_t xplane = (Double_t) AliTRDgeometry::GetTime0(plane); 
-  cluster->SetX(xplane- cluster->GetX());
+  cluster->SetX(xplane - cluster->GetX());
 
-  TGeoHMatrix *matrix =  fGeom->GetCorrectionMatrix(cluster->GetDetector());
+  TGeoHMatrix *matrix = fGeom->GetCorrectionMatrix(cluster->GetDetector());
   if (!matrix) {
     // No matrix found - if somebody used geometry with holes
     AliError("Invalid Geometry - Default Geometry used\n");
@@ -404,7 +404,7 @@ Bool_t  AliTRDtracker::Transform(AliTRDcluster *cluster)
   }
 
   if (plane == 5) {
-     cluster->SetX(localPosTracker[0]+kX0shift5);
+    cluster->SetX(localPosTracker[0]+kX0shift5);
   }
   else {
     cluster->SetX(localPosTracker[0]+kX0shift);

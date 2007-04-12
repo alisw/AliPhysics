@@ -54,7 +54,8 @@ class AliTRD : public AliDetector {
   virtual void     MakeBranch(Option_t *option);
 
   virtual void     AddHit(Int_t, Int_t*, Float_t*)       { }; 
-  virtual void     AddHit(Int_t track, Int_t det, Float_t *hits, Int_t q, Bool_t inDrift); 
+  virtual void     AddHit(Int_t track, Int_t det, Float_t *hits
+                        , Int_t q, Float_t time, Bool_t inDrift); 
 
   virtual void     SetTreeAddress();
 

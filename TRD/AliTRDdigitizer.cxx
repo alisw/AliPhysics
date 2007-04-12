@@ -855,6 +855,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
       pos[2]           = hit->Z();
       Int_t   track    = hit->Track();
       Int_t   detector = hit->GetDetector();
+      Float_t hittime  = hit->GetTime();
       Int_t   plane    = fGeo->GetPlane(detector);
       Int_t   chamber  = fGeo->GetChamber(detector);
       padPlane         = commonParam->GetPadPlane(plane,chamber);
@@ -934,7 +935,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
         locT = locT - kDrWidth/2.0 - kAmWidth/2.0;
       } 
 
-      // The driftlength (w/o diffusion yet !).
+      // The driftlength [cm] (w/o diffusion yet !).
       // It is negative if the hit is between pad plane and anode wires.
       Double_t driftlength = -1.0 * locT;
 
@@ -1022,22 +1023,25 @@ Bool_t AliTRDdigitizer::MakeDigits()
         driftvelocity = calVdriftDetValue * calVdriftROC->GetValue(colE,rowE);
         Float_t t0    = calT0DetValue     + calT0ROC->GetValue(colE,rowE);
 
-        // Convert the position to drift time, using either constant drift velocity or
+        // Convert the position to drift time [mus], using either constant drift velocity or
         // time structure of drift cells (non-isochronity, GARFIELD calculation).
+	// Also add absolute time of hits to take pile-up events into account properly
 	Double_t drifttime;
         if (simParam->TimeStructOn()) {
 	  // Get z-position with respect to anode wire
-          Double_t Z  =  row0 - locR + simParam->GetAnodeWireOffset();
-	  Z -= ((Int_t)(2 * Z)) / 2.0;
-	  if (Z > 0.25) {
-            Z  = 0.5 - Z;
+          Double_t zz  =  row0 - locR + simParam->GetAnodeWireOffset();
+	  zz -= ((Int_t)(2 * zz)) / 2.0;
+	  if (zz > 0.25) {
+            zz  = 0.5 - zz;
 	  }
 	  // Use drift time map (GARFIELD)
-          drifttime = TimeStruct(driftvelocity,0.5*kAmWidth-1.0*locT,Z);
+          drifttime = TimeStruct(driftvelocity,0.5*kAmWidth-1.0*locT,zz)
+                    + hittime;
         } 
         else {
 	  // Use constant drift velocity
-          drifttime = -1.0 * locT / driftvelocity;
+          drifttime = -1.0 * locT / driftvelocity
+                    + hittime;
         }
 
         // Apply the gas gain including fluctuations

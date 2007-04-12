@@ -1422,7 +1422,6 @@ Int_t AliTRDgeometry::GetPadRowFromMCM(Int_t irob, Int_t imcm) const
 
   return fgkMCMrow*(irob/2) + imcm/fgkMCMrow;
 
-;
 }
 
 //_____________________________________________________________________________

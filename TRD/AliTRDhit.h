@@ -18,17 +18,19 @@ class AliTRDhit : public AliHit {
  public:
 
   AliTRDhit();
-  AliTRDhit(Int_t shunt, Int_t track, Int_t det, Float_t *hits, Int_t q);
+  AliTRDhit(Int_t shunt, Int_t track, Int_t det, Float_t *hits, Int_t q, Float_t time);
   virtual ~AliTRDhit();
 
           Int_t    GetDetector() const         { return fDetector; }
           Int_t    GetCharge() const           { return fQ;        }
+          Float_t  GetTime() const             { return fTime;     }
 
           void     SetX(Float_t x)             { fX        =   x;  }
           void     SetY(Float_t y)             { fY        =   y;  }
           void     SetZ(Float_t z)             { fZ        =   z;  }
           void     SetDetector(Int_t det)      { fDetector = det;  }
           void     SetQ(Int_t q)               { fQ        =   q;  }
+          void     SetTime(Float_t time)       { fTime     = time; }
 
           Bool_t   FromDrift() const           { return TestBit(kDrift);         }
           Bool_t   FromAmplification() const   { return TestBit(kAmplification); }
@@ -49,8 +51,9 @@ class AliTRDhit : public AliHit {
 
           UShort_t fDetector;               //  TRD detector number
           Short_t  fQ;                      //  Charge created by a hit. TR signals are negative.
+          Float_t  fTime;                   //  Absolute time of hit [mus]. Needed for pile-up events
 
-  ClassDef(AliTRDhit,3)                     //  Hit for the Transition Radiation Detector
+  ClassDef(AliTRDhit,4)                     //  Hit for the Transition Radiation Detector
 
 };
 

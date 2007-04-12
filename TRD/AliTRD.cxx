@@ -294,14 +294,21 @@ void AliTRD::Digits2Raw()
 
 //_____________________________________________________________________________
 void AliTRD::AddHit(Int_t track, Int_t det, Float_t *hits, Int_t q
-                  , Bool_t inDrift)
+                  , Float_t time, Bool_t inDrift)
 {
   //
   // Add a hit for the TRD
   // 
 
   TClonesArray &lhits = *fHits;
-  AliTRDhit *hit = new(lhits[fNhits++]) AliTRDhit(fIshunt,track,det,hits,q);
+  AliTRDhit *hit = new(lhits[fNhits++]) AliTRDhit(fIshunt
+                                                 ,track
+                                                 ,det
+                                                 ,hits
+                                                 ,q
+                                                 ,time);
+
+  printf("AliTRD::AddHit --- time = %f\n",time);
 
   if (inDrift) {
     hit->SetDrift();
