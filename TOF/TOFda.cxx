@@ -40,6 +40,7 @@ extern "C" {
 #include "TH2S.h"
 #include "TObject.h"
 #include "TBenchmark.h"
+#include "TMath.h"
 #include "TRandom.h"
 
 
