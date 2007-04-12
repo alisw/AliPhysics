@@ -407,7 +407,7 @@ void AliTPCROC::GetPositionLocal(UInt_t sector, UInt_t row, UInt_t pad, Float_t 
    pos[1] = fInnerPadPitchWidth*(Int_t(pad)-Int_t(fNPads[0][row])/2);
   }else{
     pos[0] = fPadRowUp[row];
-    pos[1] = fOuterPadPitchWidth*(Int_t(pad)-Int_t(fNPads[0][row])/2);    
+    pos[1] = fOuterPadPitchWidth*(Int_t(pad)-Int_t(fNPads[1][row])/2);    
   }
   if ((sector%36)>=18){
     pos[2] *= -1.;

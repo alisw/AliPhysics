@@ -51,9 +51,9 @@ class AliTPCROC : public TObject {
   //
   // get pad row parameters
   //
-  Float_t GetPadRowRadiiLow(Int_t irow) const {return ( irow>=0 && (irow<fNRowLow) ) ? fPadRowLow[irow]: 0;} //get the pad row (irow) radii
-  Float_t GetPadRowRadiiUp(Int_t irow) const {return ( irow>=0 && (irow<fNRowUp) ) ? fPadRowUp[irow]: 0;}   //get the pad row (irow) radii   
-  Float_t GetPadRowRadii(Int_t isec,Int_t irow) const {
+  Float_t GetPadRowRadiiLow(UInt_t irow) const {return ( irow<fNRowLow ) ? fPadRowLow[irow]: 0;} //get the pad row (irow) radii
+  Float_t GetPadRowRadiiUp(UInt_t irow) const {return ( irow<fNRowUp ) ? fPadRowUp[irow]: 0;}   //get the pad row (irow) radii   
+  Float_t GetPadRowRadii(UInt_t isec, UInt_t irow) const {
     return ( (isec < fNSectors[0]) ?GetPadRowRadiiLow(irow):GetPadRowRadiiUp(irow));}
   //
   
