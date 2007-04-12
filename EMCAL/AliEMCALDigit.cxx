@@ -58,13 +58,17 @@ AliEMCALDigit::AliEMCALDigit() :
   // default ctor 
 
   // Need to initialise for reading old files
+  fPrimary = new Int_t[fNMaxPrimary] ;
   fDEPrimary = new Float_t[fNMaxPrimary] ;
+  fIparent = new Int_t[fNMaxiparent] ; 
   fDEParent = new Float_t[fNMaxiparent] ; 
   for ( Int_t i = 0; i < fNMaxPrimary ; i++) {
+    fPrimary[i]  = -1 ;
     fDEPrimary[i]  = 0 ;
   } 
 
-  for ( Int_t i = 0; i< fNMaxiparent ; i++) {
+  for ( Int_t i = 0; i < fNMaxiparent ; i++) {
+    fIparent[i] = -1 ;
     fDEParent[i] = 0 ;
   }
 }
@@ -152,12 +156,12 @@ AliEMCALDigit::AliEMCALDigit(const AliEMCALDigit & digit)
   fIparent = new Int_t[fNMaxiparent] ;
   fDEParent = new Float_t[fNMaxiparent] ;
   Int_t i ;
-  for ( i = 0; i < fNMaxPrimary ; i++) {
+  for ( i = 0; i < fNprimary ; i++) {
     fPrimary[i]  = digit.fPrimary[i] ;
     fDEPrimary[i]  = digit.fDEPrimary[i] ;
   }
   Int_t j ;
-  for (j = 0; j< fNMaxiparent ; j++) {
+  for (j = 0; j< fNiparent ; j++) {
     fIparent[j]  = digit.fIparent[j] ;
     fDEParent[j]  = digit.fDEParent[j] ;
   }
