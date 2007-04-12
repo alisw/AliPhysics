@@ -209,7 +209,7 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
     return kFALSE;
   }
 
-  // ADC threshols
+  // ADC thresholds
   Float_t ADCthreshold   = simParam->GetADCthreshold();
   // Threshold value for the maximum
   Float_t maxThresh      = recParam->GetClusMaxThresh();
@@ -217,7 +217,9 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
   Float_t sigThresh      = recParam->GetClusSigThresh();
 
   // Detector wise calibration object for t0
-  const AliTRDCalDet *calT0Det = calibration->GetT0Det();
+  const AliTRDCalDet *calT0Det         = calibration->GetT0Det();
+  // Detector wise calibration object for the gain factors
+  const AliTRDCalDet *calGainFactorDet = calibration->GetGainFactorDet();
 
   // Iteration limit for unfolding procedure
   const Float_t kEpsilon = 0.01;             
@@ -272,9 +274,13 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
         AliTRDpadPlane *padPlane = commonParam->GetPadPlane(iplan,icham);
 
 	// Calibration object with pad wise values for t0
-        AliTRDCalROC *calT0ROC      = calibration->GetT0ROC(idet);
+        AliTRDCalROC *calT0ROC              = calibration->GetT0ROC(idet);
+	// Calibration object with pad wise values for the gain factors
+        AliTRDCalROC *calGainFactorROC      = calibration->GetGainFactorROC(idet);
         // Calibration value for chamber wise t0
-        Float_t       calT0DetValue = calT0Det->GetValue(idet);
+        Float_t       calT0DetValue         = calT0Det->GetValue(idet);
+        // Calibration value for chamber wise gain factor
+        Float_t       calGainFactorDetValue = calGainFactorDet->GetValue(idet);
 
         Int_t nClusters      = 0;
         Int_t nClusters2pad  = 0;
@@ -286,8 +292,13 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 	// Apply the gain and the tail cancelation via digital filter
         AliTRDdataArrayF *digitsOut = new AliTRDdataArrayF(digitsIn->GetNrow()
                                                           ,digitsIn->GetNcol()
-                                                          ,digitsIn->GetNtime());
-        Transform(digitsIn,digitsOut,idet,nRowMax,nColMax,nTimeTotal,ADCthreshold);
+                                                          ,digitsIn->GetNtime()); 
+        Transform(digitsIn
+                 ,digitsOut
+                 ,nRowMax,nColMax,nTimeTotal
+                 ,ADCthreshold
+                 ,calGainFactorROC
+                 ,calGainFactorDetValue);
 
 	// Input digits are not needed any more
         digitsIn->Compress(1,0);
@@ -673,9 +684,10 @@ Double_t AliTRDclusterizerV1::Unfold(Double_t eps, Int_t plane, Double_t *padSig
 //_____________________________________________________________________________
 void AliTRDclusterizerV1::Transform(AliTRDdataArrayI *digitsIn
 				  , AliTRDdataArrayF *digitsOut
-				  , Int_t idet, Int_t nRowMax
-				  , Int_t nColMax, Int_t nTimeTotal
-				  , Float_t ADCthreshold)
+				  , Int_t nRowMax, Int_t nColMax, Int_t nTimeTotal
+				  , Float_t ADCthreshold
+			          , AliTRDCalROC *calGainFactorROC
+				  , Float_t calGainFactorDetValue)
 {
   //
   // Apply gain factor
@@ -691,24 +703,9 @@ void AliTRDclusterizerV1::Transform(AliTRDdataArrayI *digitsIn
     AliError("No AliTRDRecParam instance available\n");
     return;
   }
-  AliTRDcalibDB *calibration = AliTRDcalibDB::Instance();
-  if (!calibration) {
-    AliError("No AliTRDcalibDB instance available\n");
-    return;  
-  }
 
   Double_t *inADC  = new Double_t[nTimeTotal];  // ADC data before tail cancellation
   Double_t *outADC = new Double_t[nTimeTotal];  // ADC data after tail cancellation
-
-  AliDebug(1,Form("Tail cancellation (nExp = %d) for detector %d.\n"
-	         ,recParam->GetTCnexp(),idet));
-
-  // Calibration object with chamber wise values for the gain factor
-  const AliTRDCalDet *calGainFactorDet      = calibration->GetGainFactorDet();
-  // Calibration object with pad wise values for the gain factor
-  AliTRDCalROC       *calGainFactorROC      = calibration->GetGainFactorROC(idet);
-  // Calibration value for chamber wise gain factors
-  Float_t             calGainFactorDetValue = calGainFactorDet->GetValue(idet);
 
   for (iRow  = 0; iRow  <  nRowMax;   iRow++ ) {
     for (iCol  = 0; iCol  <  nColMax;   iCol++ ) {

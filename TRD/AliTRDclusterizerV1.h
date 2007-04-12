@@ -16,6 +16,7 @@
 class AliTRDdataArrayI;
 class AliTRDdataArrayF;
 class AliTRDdigitsManager;
+class AliTRDCalROC;
 class AliRawReader;
 
 class AliTRDclusterizerV1 : public AliTRDclusterizer {
@@ -31,15 +32,17 @@ class AliTRDclusterizerV1 : public AliTRDclusterizer {
   virtual void     Copy(TObject &c) const;
   virtual Bool_t   MakeClusters();
   virtual Bool_t   ReadDigits();
-  virtual Bool_t   ReadDigits(AliRawReader* rawReader);
+  virtual Bool_t   ReadDigits(AliRawReader *rawReader);
 
  protected:
 
           void     DeConvExp(Double_t *source, Double_t *target
                            , Int_t nTimeTotal, Int_t nexp);
-          void     Transform(AliTRDdataArrayI* digitsIn, AliTRDdataArrayF* digitsOut
-		           , Int_t idet, Int_t nRowMax, Int_t nColMax
-                           , Int_t nTimeTotal, Float_t ADCthreshold);
+          void     Transform(AliTRDdataArrayI *digitsIn, AliTRDdataArrayF *digitsOut
+		           , Int_t nRowMax, Int_t nColMax, Int_t nTimeTotal
+                           , Float_t ADCthreshold
+                           , AliTRDCalROC *calGainFactorROC
+                           , Float_t calGainFactorDetValue);
   virtual Double_t Unfold(Double_t eps, Int_t plane, Double_t *padSignal);
           Double_t GetCOG(Double_t signal[5]); 
 
