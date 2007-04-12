@@ -63,17 +63,12 @@ Bool_t  AliFlowEvent::fgCustomRespFunc = kFALSE ;  // custom "detector response 
 ClassImp(AliFlowEvent) 
 //-----------------------------------------------------------
 AliFlowEvent::AliFlowEvent(Int_t lenght):
-  fTrackCollection(0x0), fV0Collection(0x0)	
+  fEventID(0), fRunID(0), fOrigMult(0), fL0Trigger(0), fZDCpart(0), fCentrality(-1), fDone(kFALSE),
+ fTrackCollection(0x0), fV0Collection(0x0)	
 {
  // Default constructor: initializes the ObjArray of FlowTracks and FlowV0s, 
  // cleans the internal variables, sets all the weights to 1, sets default flags.
  
- fEventID = 0 ; 
- fRunID = 0 ;		       
- fOrigMult = 0 ;
- fL0Trigger = 0 ;			       
- fCentrality = -1 ;
- fZDCpart = 0 ;
  for(int zz=0;zz<3;zz++) { fZDCenergy[zz] = 0. ; }
  for(int i=0;i<AliFlowConstants::kHars;i++) { fExtPsi[i] = 0. ; fExtRes[i] = 0.; }
  
@@ -101,7 +96,6 @@ AliFlowEvent::AliFlowEvent(Int_t lenght):
  
  // The Expected particles abundance is taken directly from AliFlowConstants::fgBayesian[] (see Bayesian P.Id.)
  
- fDone = kFALSE ;
 }
 //-----------------------------------------------------------
 AliFlowEvent::~AliFlowEvent() 

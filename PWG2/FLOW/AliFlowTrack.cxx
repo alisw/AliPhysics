@@ -40,21 +40,10 @@ using namespace std; //required for resolving the 'cout' symbol
 
 ClassImp(AliFlowTrack)
 //-------------------------------------------------------------
-AliFlowTrack::AliFlowTrack()
-{
+AliFlowTrack::AliFlowTrack():
+fPhi(0.), fEta(0.), fPt(0.), fZFirstPoint(0.), fZLastPoint(0.), fChi2(0.), fTrackLength(0.), fMostLikelihoodPID(0), fPhiGlobal(0.), fEtaGlobal(0.), fPtGlobal(0.), fLabel(0) {
  // Default constructor
  
- fPhi = 0. ;
- fEta = 0. ;
- fPt  = 0. ;
- fPhiGlobal = 0. ;
- fEtaGlobal = 0. ;
- fPtGlobal  = 0. ;
- fChi2 = 0. ;
- fZFirstPoint = 0. ;  		      
- fZLastPoint = 0. ;			      
- fTrackLength = 0. ;
- fMostLikelihoodPID = 0 ;		      
  for(Int_t dd=0;dd<2;dd++) 	                { fDcaSigned[dd] = 0. ; }			      
  for(Int_t ii=0;ii<AliFlowConstants::kPid;ii++) { fCombRespFun[ii]   = 0. ; }
  for(Int_t det=0;det<4;det++)
@@ -66,8 +55,8 @@ AliFlowTrack::AliFlowTrack()
  ResetSelection() ;			      
 }
 //-------------------------------------------------------------
-AliFlowTrack::AliFlowTrack(const Char_t* name) 
-{
+AliFlowTrack::AliFlowTrack(const Char_t* name):
+fPhi(0.), fEta(0.), fPt(0.), fZFirstPoint(0.), fZLastPoint(0.), fChi2(0.), fTrackLength(0.), fMostLikelihoodPID(0), fPhiGlobal(0.), fEtaGlobal(0.), fPtGlobal(0.), fLabel(0) {
  // TNamed constructor
   
  SetName(name) ;
