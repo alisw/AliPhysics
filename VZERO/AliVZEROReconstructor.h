@@ -60,13 +60,13 @@ public:
   AliCDBStorage     *SetStorage(const char* uri);
   AliVZEROCalibData *GetCalibData() const; 
 
-private:
-  AliVZEROReconstructor(const AliVZEROReconstructor& reconstructor);
-  AliVZEROReconstructor& operator = (const AliVZEROReconstructor& reconstructor);
-  
 protected:
   AliESDVZERO*        fESDVZERO;      // ESD output object  
   AliESD*                  fESD;      // ESD object
+  
+private:
+  AliVZEROReconstructor(const AliVZEROReconstructor& reconstructor);
+  AliVZEROReconstructor& operator = (const AliVZEROReconstructor& reconstructor);
   
 private:
   AliRunLoader*      fRunLoader;      //! pointer to runloader    
