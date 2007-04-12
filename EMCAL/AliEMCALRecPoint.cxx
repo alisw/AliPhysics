@@ -64,10 +64,6 @@ AliEMCALRecPoint::AliEMCALRecPoint()
     fSuperModuleNumber(0)
 {
   // ctor
-  fMaxTrack = 0 ;
-  fMulDigit = 0 ;
-  fAmp   = 0. ;   
-
   AliRunLoader *rl = AliRunLoader::GetRunLoader();
   if (rl->GetAliRun() && rl->GetAliRun()->GetDetector("EMCAL"))
     fGeomPtr = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
@@ -96,16 +92,20 @@ AliEMCALRecPoint::AliEMCALRecPoint(const char * opt)
     fSuperModuleNumber(0)
 {
   // ctor
+  // Increase fMaxTrack for EMCAL.
+  delete [] fTracksList;
   fMaxTrack = 1000 ;
-  fMulDigit   = 0 ; 
-  fAmp   = 0. ;   
+  fTracksList = new Int_t[fMaxTrack];
   fDETracksList = new Float_t[fMaxTrack];
+
   fParentsList = new Int_t[fMaxParent];
   fDEParentsList = new Float_t[fMaxParent];
   for (Int_t i = 0; i < fMaxTrack; i++)
     fDETracksList[i] = 0;
-  for (Int_t i = 0; i < fMaxParent; i++)
+  for (Int_t i = 0; i < fMaxParent; i++) {
+    fParentsList[i] = -1;
     fDEParentsList[i] = 0;
+  }
 
   AliRunLoader *rl = AliRunLoader::GetRunLoader();
   if (rl->GetAliRun() && rl->GetAliRun()->GetDetector("EMCAL"))
@@ -202,34 +202,20 @@ void AliEMCALRecPoint::AddDigit(AliEMCALDigit & digit, Float_t Energy)
       tempoId[index] = fAbsIdList[index] ; 
     }
     
-    delete [] fDigitsList ; 
-    fDigitsList =  new Int_t[fMaxDigit];
- 
+    delete [] fDigitsList ;
     delete [] fEnergyList ;
-    fEnergyList =  new Float_t[fMaxDigit];
-
     delete [] fTimeList ;
-    fTimeList =  new Float_t[fMaxDigit];
-
     delete [] fAbsIdList ;
-    fAbsIdList =  new Int_t[fMaxDigit];
 
-    for ( index = 0 ; index < fMulDigit ; index++ ){
-      fDigitsList[index] = tempo[index] ;
-      fEnergyList[index] = tempoE[index] ; 
-      fTimeList[index] = tempoT[index] ; 
-      fAbsIdList[index]  = tempoId[index] ; 
-    }
- 
-    delete [] tempo ;
-    delete [] tempoE ; 
-    delete [] tempoT ; 
-    delete [] tempoId ; 
+    fDigitsList = tempo;
+    fEnergyList = tempoE; 
+    fTimeList = tempoT;
+    fAbsIdList = tempoId;
   } // if
   
   fDigitsList[fMulDigit]   = digit.GetIndexInList()  ; 
   fEnergyList[fMulDigit]   = Energy ;
-  fTimeList[fMulDigit]     = digit.GetTime() ;
+  fTimeList[fMulDigit]     = digit.GetTimeR() ;
   fAbsIdList[fMulDigit]    = digit.GetId();
   fMulDigit++ ; 
   fAmp += Energy ; 
@@ -406,22 +392,13 @@ break;
 void AliEMCALRecPoint::EvalAll(Float_t logWeight,TClonesArray * digits) 
 {
   // Evaluates all shower parameters
-
   EvalLocalPosition(logWeight, digits) ;
-  //  printf("eval position done\n");
   EvalElipsAxis(logWeight, digits) ;
-  //  printf("eval axis done\n");
   EvalDispersion(logWeight, digits) ;
-  //  printf("eval dispersion done\n");
   //EvalCoreEnergy(logWeight, digits);
- // printf("eval energy done\n");
   EvalTime(digits) ;
-  //  printf("eval time done\n");
-
   EvalPrimaries(digits) ;
-  //  printf("eval pri done\n");
   EvalParents(digits);
-  //  printf("eval parent done\n");
 }
 
 //____________________________________________________________________________
@@ -682,7 +659,7 @@ void  AliEMCALRecPoint::EvalPrimaries(TClonesArray * digits)
     for ( jndex = 0 ; jndex < nprimaries ; jndex++ ) { // all primaries in digit
       if ( fMulTrack > fMaxTrack ) {
 	fMulTrack = fMaxTrack ;
-	Error("GetNprimaries", "increase fMaxTrack ")  ;
+	Error("EvalPrimaries", "increase fMaxTrack ")  ;
 	break ;
       }
       Int_t newPrimary = digit->GetPrimary(jndex+1);
@@ -727,6 +704,8 @@ void  AliEMCALRecPoint::EvalParents(TClonesArray * digits)
 
   Int_t index ;  
   for ( index = 0 ; index < GetDigitsMultiplicity() ; index++ ) { // all digits
+    if (fDigitsList[index] >= digits->GetEntries() || fDigitsList[index] < 0)
+       AliError(Form("Trying to get invalid digit %d (idx in WriteRecPoint %d)",fDigitsList[index],index));
     digit = dynamic_cast<AliEMCALDigit *>(digits->At( fDigitsList[index] )) ; 
     Int_t nparents = digit->GetNiparent() ;
     if ( nparents == 0 ) continue ;
@@ -735,7 +714,7 @@ void  AliEMCALRecPoint::EvalParents(TClonesArray * digits)
     for ( jndex = 0 ; jndex < nparents ; jndex++ ) { // all primaries in digit
       if ( fMulParent > fMaxParent ) {
 	fMulTrack = - 1 ;
-	Error("GetNiparent", "increase fMaxParent")  ;
+	Error("EvalParents", "increase fMaxParent")  ;
 	break ;
       }
       Int_t newParent = digit->GetIparent(jndex+1) ;
@@ -749,7 +728,7 @@ void  AliEMCALRecPoint::EvalParents(TClonesArray * digits)
 	  break ;
 	}
       } // end of check
-      if ( !already && (fMulTrack < fMaxTrack)) { // store it
+      if ( !already && (fMulParent < fMaxParent)) { // store it
 	parentArray[fMulParent] = newParent ; 
 	dEParentArray[fMulParent] = newdEParent ; 
 	fMulParent++ ;
