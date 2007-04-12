@@ -63,8 +63,15 @@ Bool_t  AliFlowEvent::fgCustomRespFunc = kFALSE ;  // custom "detector response 
 ClassImp(AliFlowEvent) 
 //-----------------------------------------------------------
 AliFlowEvent::AliFlowEvent(Int_t lenght):
-  fEventID(0), fRunID(0), fOrigMult(0), fL0Trigger(0), fZDCpart(0), fCentrality(-1), fDone(kFALSE),
- fTrackCollection(0x0), fV0Collection(0x0)	
+  fEventID(0), 
+  fRunID(0), 
+  fOrigMult(0), 
+  fL0Trigger(0), 
+  fZDCpart(0), 
+  fCentrality(-1), 
+  fTrackCollection(0x0), 
+  fV0Collection(0x0), 
+  fDone(kFALSE)	
 {
  // Default constructor: initializes the ObjArray of FlowTracks and FlowV0s, 
  // cleans the internal variables, sets all the weights to 1, sets default flags.
