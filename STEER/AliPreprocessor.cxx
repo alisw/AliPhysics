@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2007/04/05 08:05:55  acolla
+Conversion from online to offline detector name in StoreReferenceFile
+
 Revision 1.11  2007/04/04 10:29:18  jgrosseo
 1) Storing of files to the Grid is now done _after_ your preprocessors succeeded. This is transparent, which means that you can still use the same functions (Store, StoreReferenceData) to store files to the Grid. However, the Shuttle first stores them locally and transfers them after the preprocessor finished. The return code of these two functions has changed from UInt_t to Bool_t which gives you the success of the storing.
 In case of an error with the Grid, the Shuttle will retry the storing later, the preprocessor does not need to be run again.
@@ -214,6 +217,10 @@ Bool_t AliPreprocessor::StoreReferenceFile(const char* localFile, const char* gr
 {
 	//
 	// Stores a file directly (without opening it) in the reference storage in the Grid
+	//
+	// The file is stored under the following location: 
+	// <base folder of reference storage>/<DET>/<RUN#>_<gridFileName>
+	// where <gridFileName> is the second parameter given to the function
 	//
 	// The call is delegated to AliShuttleInterface
 	
