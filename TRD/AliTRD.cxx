@@ -308,8 +308,6 @@ void AliTRD::AddHit(Int_t track, Int_t det, Float_t *hits, Int_t q
                                                  ,q
                                                  ,time);
 
-  printf("AliTRD::AddHit --- time = %f\n",time);
-
   if (inDrift) {
     hit->SetDrift();
   }
