@@ -54,8 +54,9 @@ using namespace std; //required for resolving the 'cout' symbol
 ClassImp(AliFlowWeighter) 
 //-----------------------------------------------------------------------
 AliFlowWeighter::AliFlowWeighter(const AliFlowSelection* flowSelect):
+  fEventNumber(0), fTrackNumber(0), fNumberOfV0s(0), fNumberOfTracks(0), fPhiBins(0), fPhiMin(0.), fPhiMax(0.), 
   fFlowEvent(0x0), fFlowTrack(0x0), fFlowSelect(0x0), fFlowTracks(0x0),
-  fWgtFile(0x0), fPhiWgtHistList(0x0)
+  fWgtFile(0x0), fWgtFileName("flowPhiWgt.hist.root"), fPhiWgtHistList(0x0)
 {
  // default constructor (selection given or default selection)
 
@@ -63,8 +64,7 @@ AliFlowWeighter::AliFlowWeighter(const AliFlowSelection* flowSelect):
  else 		{ fFlowSelect = new AliFlowSelection() ; }
  
  // output file (histograms)
- fWgtFileName = "flowPhiWgt.hist.root" ;
- fWgtFile     = 0 ;
+ //fWgtFile     = 0 ;
 }
 //-----------------------------------------------------------------------
 AliFlowWeighter::~AliFlowWeighter()

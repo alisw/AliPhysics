@@ -46,42 +46,22 @@ using namespace std; //required for resolving the 'cout' symbol
 ClassImp(AliFlowMaker) 
 //-----------------------------------------------------------------------
 AliFlowMaker::AliFlowMaker():
+  fEventNumber(0), fTrackNumber(0), fV0Number(0), fGoodTracks(0), fGoodV0s(0),
+  fGoodTracksEta(0), fPosiTracks(0), fNegaTracks(0), fUnconstrained(0),
+  fSumAll(0), fCutEvts(0), fCutTrks(0), fCutV0s(0), fNewAli(kFALSE), 
+  fLoopTrks(kTRUE), fLoopV0s(kTRUE), fCounter(0), 
   fESD(0x0), fTrack(0x0), fV0(0x0), fVertex(0x0),
-  fFlowEvent(0x0), fFlowTrack(0x0), fFlowV0(0x0)
+  fRunID(0), fNumberOfEvents(0), fNumberOfTracks(0), 
+  fNumberOfV0s(0), fMagField(0), 
+  fFlowEvent(0x0), fFlowTrack(0x0), fFlowV0(0x0),
+  fNHits(0), fElow(0.001), fEup(1000.)
 {
  // default constructor 
  // resets counters , sets defaults
  
- fNewAli = kFALSE ;
- // flags
- fLoopTrks = kTRUE ;
- fLoopV0s = kTRUE ;	
- fCounter = 0 ; 
- // loop variable
- fRunID = 0 ;       
- fEventNumber = 0 ; 
- fTrackNumber = 0 ; 
- fV0Number = 0 ;    
- fEventNumber = 0 ;
- fNumberOfTracks = 0 ;
- fNumberOfV0s = 0 ; 
- fMagField = 0. ;
- // counters
- fGoodTracks = 0  ;  
- fGoodV0s    = 0  ;	
- fGoodTracksEta = 0  ;
- fPosiTracks = 0  ;  
- fNegaTracks = 0  ;  
- fUnconstrained = 0  ;
- fCutEvts    = 0  ;	
- fCutTrks    = 0  ;	
- fCutV0s     = 0  ;
  for(Int_t bb=0;bb<5;bb++) { fBayesianAll[bb] = 0 ; } ;
- fSumAll = 0  ; 
 
  // trak cuts
- fNHits = 0 ;			
- fElow = 0.001 ; fEup = 1000. ;   
  fLabel[0] = 0 ; fLabel[1] = -1 ;
 }
 //-----------------------------------------------------------------------
