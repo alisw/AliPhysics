@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.37  2007/04/10 16:53:14  jgrosseo
+redirecting sub detector stdout, stderr to sub detector log file
+
 Revision 1.35  2007/04/04 16:26:38  acolla
 1. Re-organization of function calls in TestPreprocessor to make it more meaningful.
 2. Added missing dependency in test preprocessors.
@@ -539,9 +542,12 @@ Bool_t AliShuttle::StoreOCDB(const TString& gridURI)
 Bool_t AliShuttle::StoreReferenceFile(const char* detector, const char* localFile, const char* gridFileName)
 {
 	//
-	// Stores reference file directly (without opening it). This function stores the file locally
-	// renaming it to #runNumber_gridFileName.
+	// Stores reference file directly (without opening it). This function stores the file locally.
 	//
+	// The file is stored under the following location: 
+	// <base folder of local reference storage>/<DET>/<RUN#>_<gridFileName>
+	// where <gridFileName> is the second parameter given to the function
+	// 
 	
 	if (fTestMode & kErrorStorage)
 	{
@@ -590,9 +596,11 @@ Bool_t AliShuttle::StoreRefFilesToGrid()
 {
 	//
 	// Transfers the reference file to the Grid.
-	// The final full path of the file is:
-	// gridBaseReferenceFolder/DET/#runNumber_gridFileName
 	//
+	// The file is stored under the following location: 
+	// <base folder of reference storage>/<DET>/<RUN#>_<gridFileName>
+	// where <gridFileName> is the second parameter given to the function
+	//	
 	
 	AliCDBManager* man = AliCDBManager::Instance();
 	AliCDBStorage* sto = man->GetStorage(fgkLocalRefStorage);
