@@ -379,11 +379,14 @@ endif
 .PRECIOUS: $(patsubst %.F,$(MODDIRO)/%.d,$(patsubst %.f,$(MODDIRO)/%.d,$(FSRCS)))
 
 @PACKAGE@CHECKS := $(patsubst %.cxx,@MODULE@/check/%.viol,$(SRCS))
+@PACKAGE@SRCDIR := $(dir $(word 1,$(patsubst %.cxx,@MODULE@/%.cxx,$(SRCS))))
+@PACKAGE@CHKDIR := $(dir $(word 1,$(@PACKAGE@CHECKS)))
+@PACKAGE@OBJDIR := $(dir $(word 1,$(patsubst %.cxx,@MODULE@/tgt_$(ALICE_TARGET)/%.cxx,$(SRCS))))
 
 check-@MODULE@: $(@PACKAGE@CHECKS)
 
 # IRST coding rule check 
-@MODULE@/check/%.i : @MODULE@/%.cxx @MODULE@/tgt_$(ALICE_TARGET)/%.d
+$(@PACKAGE@CHKDIR)%.i : $(@PACKAGE@SRCDIR)%.cxx $(@PACKAGE@OBJDIR)%.d
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
 	$(MUTE)$(CXX) -E $(@PACKAGE@DEFINE) $(@PACKAGE@INC) -I. $< > $@ $(@PACKAGE@CXXFLAGS)
 	@cd $(dir $@) ; $(IRST_INSTALLDIR)/patch/patch4alice.prl $(notdir $@)
