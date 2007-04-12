@@ -29,6 +29,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "AliMathBase.h"
+
 ClassImp(AliTPCCalROC)
 
 
@@ -229,7 +230,7 @@ TH1F * AliTPCCalROC::MakeHisto1D(Float_t min, Float_t max,Int_t type){
   TH1F * his = new TH1F(name,name,100, min,max);
   for (UInt_t irow=0; irow<fNRows; irow++){
     UInt_t npads = (Int_t)GetNPads(irow);
-    for (UInt_t ipad=0; ipad<=npads; ipad++){
+    for (UInt_t ipad=0; ipad<npads; ipad++){
       his->Fill(GetValue(irow,ipad));
     }
   }
@@ -278,7 +279,7 @@ TH2F * AliTPCCalROC::MakeHisto2D(Float_t min, Float_t max,Int_t type){
   TH2F * his = new TH2F(name,name,fNRows+10,-5, fNRows+5, maxPad+10, -(Int_t(maxPad/2))-5, maxPad/2+5);
   for (UInt_t irow=0; irow<fNRows; irow++){
     UInt_t npads = (Int_t)GetNPads(irow);
-    for (UInt_t ipad=0; ipad<=npads; ipad++){
+    for (UInt_t ipad=0; ipad<npads; ipad++){
       his->Fill(irow+0.5,Int_t(ipad)-Int_t(npads/2)+0.5,GetValue(irow,ipad));
     }
   }
@@ -308,7 +309,7 @@ TH2F * AliTPCCalROC::MakeHistoOutliers(Float_t delta, Float_t fraction, Int_t ty
   TH2F * his = new TH2F(name,name,fNRows+10,-5, fNRows+5, maxPad+10, -(Int_t(maxPad/2))-5, maxPad/2+5);
   for (UInt_t irow=0; irow<fNRows; irow++){
     UInt_t npads = (Int_t)GetNPads(irow);
-    for (UInt_t ipad=0; ipad<=npads; ipad++){
+    for (UInt_t ipad=0; ipad<npads; ipad++){
       if (TMath::Abs(GetValue(irow,ipad)-mean)>delta)
 	his->Fill(irow+0.5,Int_t(ipad)-Int_t(npads/2)+0.5,1);
     }
