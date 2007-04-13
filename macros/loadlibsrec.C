@@ -29,6 +29,7 @@ void loadlibsrec ()
   gSystem->Load("libPHOSrec");
   gSystem->Load("libMUONmapping");
   gSystem->Load("libMUONgeometry");
+  gSystem->Load("libMUONcalib");
   gSystem->Load("libMUONbase");
   gSystem->Load("libMUONraw");
   gSystem->Load("libMUONsim");
@@ -73,6 +74,7 @@ void loadlibsrec ()
   gSystem->Load("libTOFsim");
   gSystem->Load("libTOFrec");
 
+  gSystem->Load("libHLTbase");
   gSystem->Load("libAliHLTITS");
   gSystem->Load("libAliHLTSrc");
   gSystem->Load("libAliHLTMisc");
