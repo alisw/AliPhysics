@@ -3433,7 +3433,9 @@ void AliTRDCalibraFit::PlotWriteCH()
       if(scale != fScaleFitFactor){
 	AliInfo(Form("The normalisation is different from a nomalisation to one."));
 	AliInfo(Form("For one we have %f and here %f",scale,fScaleFitFactor));
-	if(!fAccCDB) AliInfo(Form("It is not normal because we didn't choose a reference database!"))
+	if(!fAccCDB) {
+	  AliInfo(Form("It is not normal because we didn't choose a reference database!"));
+	}
       }
       scale = fScaleFitFactor;
     }
@@ -3460,7 +3462,9 @@ void AliTRDCalibraFit::PlotWriteCH()
       if(scale != fScaleFitFactor){
 	AliInfo(Form("The normalisation is different from a nomalisation to one."));
 	AliInfo(Form("For one we have %f and here %f",scale,fScaleFitFactor));
-	if(!fAccCDB) AliInfo(Form("It is not normal because we didn't choose a reference database!"))
+	if(!fAccCDB) {
+	  AliInfo(Form("It is not normal because we didn't choose a reference database!"));
+	}
       }
       scale = fScaleFitFactor;
     }
@@ -3487,7 +3491,9 @@ void AliTRDCalibraFit::PlotWriteCH()
       if(scale != fScaleFitFactor){
 	AliInfo(Form("The normalisation is different from a nomalisation to one."));
 	AliInfo(Form("For one we have %f and here %f",scale,fScaleFitFactor));
-	if(!fAccCDB) AliInfo(Form("It is not normal because we didn't choose a reference database!"))
+	if(!fAccCDB) {
+	  AliInfo(Form("It is not normal because we didn't choose a reference database!"));
+	}
       }
       scale = fScaleFitFactor;
     }
@@ -3514,7 +3520,9 @@ void AliTRDCalibraFit::PlotWriteCH()
       if(scale != fScaleFitFactor){
 	AliInfo(Form("The normalisation is different from a nomalisation to one."));
 	AliInfo(Form("For one we have %f and here %f",scale,fScaleFitFactor));
-	if(!fAccCDB) AliInfo(Form("It is not normal because we didn't choose a reference database!"))
+	if(!fAccCDB) {
+	  AliInfo(Form("It is not normal because we didn't choose a reference database!"));
+	}
       }
       scale = fScaleFitFactor;
     }
