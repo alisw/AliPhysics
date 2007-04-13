@@ -63,11 +63,9 @@ class AliMUONDigitMaker : public TObject
         /// Set Crate array
   void  SetCrateManager(AliMUONTriggerCrateStore* crateManager) {fCrateManager =  crateManager;}
 
-  /// enable only list of digits for the display
-  void SetDisplayFlag() { fDisplayFlag = kTRUE; }
+       /// enable only list of digits for the display
+  void SetDisplayFlag() { fDisplayFlag = kTRUE;  fDigitFlag = kFALSE;}
 
-  // return the list of digits to the display
-  TList* GetDigitsList() { return fDigitsList; }
 
  private:
   /// Not implemented
@@ -86,8 +84,6 @@ class AliMUONDigitMaker : public TObject
   Bool_t           fTriggerFlag;       //!< true for reading also trigger rawdata
 
   Bool_t           fDisplayFlag;       //!< true for returning digits list to the display
-
-  TList*           fDigitsList;        //!< list to return to the display
 
   AliMUONRawStreamTracker* fRawStreamTracker;  //!< pointer of raw stream for tracker
   AliMUONRawStreamTrigger* fRawStreamTrigger;  //!< pointer of raw stream for trigger

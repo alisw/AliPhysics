@@ -90,7 +90,6 @@ AliMUONDigitMaker::AliMUONDigitMaker(Bool_t flag)
     fDigitFlag(flag),
     fTriggerFlag(kTRUE),
     fDisplayFlag(kFALSE),
-    fDigitsList(0),
     fRawStreamTracker(new AliMUONRawStreamTracker()),    
     fRawStreamTrigger(new AliMUONRawStreamTrigger()),    
     fDigit(new AliMUONDigit()),
@@ -127,8 +126,6 @@ AliMUONDigitMaker::~AliMUONDigitMaker()
   delete fLocalTrigger;
   delete fGlobalTrigger;
 
-  delete fDigitsList;
-
   AliDebug(1, Form("Execution time for MUON tracker : R:%.2fs C:%.2fs",
                fTrackerTimer.RealTime(),fTrackerTimer.CpuTime()));
   AliDebug(1, Form("   Execution time for MUON tracker (mapping calls part) "
@@ -146,12 +143,6 @@ Int_t AliMUONDigitMaker::Raw2Digits(AliRawReader* rawReader)
   /// Main method to creates digit
   /// for tracker 
   /// and trigger
-
-  if (fDisplayFlag) {
-    fDigitsList = new TList();
-    fCrateManager = new AliMUONTriggerCrateStore();   
-    fCrateManager->ReadFromFile();
-  }
 
   // generate digits
   ReadTrackerDDL(rawReader);
@@ -251,20 +242,12 @@ Int_t AliMUONDigitMaker::ReadTrackerDDL(AliRawReader* rawReader)
 	    // fill digits
 	    iChamber = AliMpDEManager::GetChamberId(fDigit->DetElemId());
 
-	    if (!fDisplayFlag) {
-	      if (fDigitFlag)
+ 
+	    if (fDigitFlag || fDisplayFlag)
 		fMUONData->AddDigit(iChamber, *fDigit);
-	      else
+	    else
 		fMUONData->AddSDigit(iChamber, *fDigit);
-	    } else {
-	      AliMUONDigit *dig = new AliMUONDigit();
-	      dig->SetPadX(fDigit->PadX());
-	      dig->SetPadY(fDigit->PadY());
-	      dig->SetDetElemId(fDigit->DetElemId());
-	      dig->SetCathode(fDigit->Cathode());
-	      dig->SetSignal(fDigit->Signal());
-	      fDigitsList->Add(dig);
-	    }
+
 
 	  } // iData
 	} // iBusPatch
@@ -385,11 +368,9 @@ Int_t AliMUONDigitMaker::ReadTriggerDDL(AliRawReader* rawReader)
 
 	  if (fDigitFlag) {
 	    // fill local trigger
-	    if (!fDisplayFlag) {
 	      fLocalTrigger->SetLocalStruct(loCircuit, *localStruct);
 	      fMUONData->AddLocalTrigger(*fLocalTrigger);
-	    }
-
+	      
 	  } else {
 	    // Make SDigit
 
@@ -406,13 +387,7 @@ Int_t AliMUONDigitMaker::ReadTriggerDDL(AliRawReader* rawReader)
 		if (!fDisplayFlag) {
 		  fMUONData->AddSDigit(iChamber, *digit);
 		} else {
-		  AliMUONDigit *dig = new AliMUONDigit();
-		  dig->SetPadX(digit->PadX());
-		  dig->SetPadY(digit->PadY());
-		  dig->SetDetElemId(digit->DetElemId());
-		  dig->SetCathode(digit->Cathode());
-		  dig->SetSignal(1);
-		  fDigitsList->Add(dig);
+		  fMUONData->AddDigit(iChamber, *digit);
 		}
 
 	      }
@@ -533,6 +508,7 @@ Int_t AliMUONDigitMaker::TriggerDigits(AliMUONLocalTriggerBoard* localBoard,
 	// file digit
 	digit->SetPadX(padX);
 	digit->SetPadY(padY);
+	digit->SetSignal(1.);
 	digit->SetCathode(iCath);
 	digit->SetDetElemId(detElemId);
 	digit->SetElectronics(nBoard, ibitxy);
