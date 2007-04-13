@@ -139,7 +139,7 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
     // Loop over the `timebins', and make the digits
     for (size_t i = 0; i < last; i++) {
       if (i < preSamp) continue;
-      Int_t    n      = array->GetEntries();
+      Int_t    n      = array->GetEntriesFast();
       UShort_t curStr = str + stripMin + i / rate;
       if ((curStr-str) > stripMax) {
 	AliError(Form("Current strip is %d but DB says max is %d", 
