@@ -13,6 +13,9 @@
 
 #include <TObject.h>
 #include "TStopwatch.h"
+
+class TList;
+
 class AliRawReader;
 class AliMUONData;
 class AliMUONDigit;
@@ -60,6 +63,12 @@ class AliMUONDigitMaker : public TObject
         /// Set Crate array
   void  SetCrateManager(AliMUONTriggerCrateStore* crateManager) {fCrateManager =  crateManager;}
 
+  /// enable only list of digits for the display
+  void SetDisplayFlag() { fDisplayFlag = kTRUE; }
+
+  // return the list of digits to the display
+  TList* GetDigitsList() { return fDigitsList; }
+
  private:
   /// Not implemented
   AliMUONDigitMaker (const AliMUONDigitMaker& rhs); // copy constructor
@@ -72,9 +81,13 @@ class AliMUONDigitMaker : public TObject
   
   Bool_t           fScalerEvent;       //!< flag to generates scaler event
 
-  Bool_t           fDigitFlag;        //!< true for Digit, false for SDigit
+  Bool_t           fDigitFlag;         //!< true for Digit, false for SDigit
 
   Bool_t           fTriggerFlag;       //!< true for reading also trigger rawdata
+
+  Bool_t           fDisplayFlag;       //!< true for returning digits list to the display
+
+  TList*           fDigitsList;        //!< list to return to the display
 
   AliMUONRawStreamTracker* fRawStreamTracker;  //!< pointer of raw stream for tracker
   AliMUONRawStreamTrigger* fRawStreamTrigger;  //!< pointer of raw stream for trigger
