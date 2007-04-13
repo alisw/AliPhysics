@@ -22,6 +22,7 @@ ELIBS    := Aliengui \
   AliHLTHough AliHLTITS \
   ANALYSIS
 
+
 ifeq (macosx,$(ALICE_TARGET))
 
 ELIBSCPP:=$(filter-out microcern,$(ELIBS))
@@ -36,6 +37,6 @@ ELIBS+=f2c
 ELIBSDIR+=$(FINK_ROOT)/lib
 endif
 
-PACKBLIBS := -L$(ROOTSYS)/lib $(ROOTCLIBS) $(ROOTPLIBS) $(SYSLIBS)
+PACKBLIBS := $(ROOTCLIBS) $(ROOTPLIBS) -lProofPlayer -lProof -lNet -lRAliEn -lXMLIO -lNetx $(SYSLIBS)
 
 
