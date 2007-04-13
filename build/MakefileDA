@@ -3,18 +3,21 @@
 ifdef DAMODULE
 
 CXXFLAGS+=-I${ALICE_ROOT}/RAW
+CXXFLAGS+=-I${ALICE_ROOT}/$(DAMODULE)
+CXXFLAGS+=$(addprefix -I,$(filter-out %tgt_${ALICE_TARGET},$(filter-out %CVS,$(patsubst %/,%,$(shell ls -d ${ALICE_ROOT}/$(DAMODULE)/*/)))))
 
 ifneq ($(EXTRADAMODULE),) 
 CXXFLAGS+=-I${ALICE_ROOT}/$(EXTRADAMODULE)
+CXXFLAGS+=$(addprefix -I,$(filter-out %tgt_${ALICE_TARGET},$(filter-out %CVS,$(patsubst %/,%,$(shell ls -d ${ALICE_ROOT}/$(EXTRADAMODULE)/*/)))))
 endif
 
-DASRC=${DAMODULE}/${DAMODULE}da.cxx
-DADEP=${DAMODULE}/${DAMODULE}da.d
-DAOBJ=${DAMODULE}/tgt_${ALICE_TARGET}/${DAMODULE}da.o
-DALIB=${ALICE_ROOT}/lib/tgt_${ALICE_TARGET}/lib${DAMODULE}DA.a
-DAEXE=${ALICE_ROOT}/bin/tgt_${ALICE_TARGET}/${DAMODULE}da.exe
+DASRC=${DAMODULE}/${DAMODULE}${DANAME}da.cxx
+DADEP=${DAMODULE}/tgt_${ALICE_TARGET}/${DAMODULE}${DANAME}da.d
+DAOBJ=${DAMODULE}/tgt_${ALICE_TARGET}/${DAMODULE}${DANAME}da.o
+DALIB=${ALICE_ROOT}/lib/tgt_${ALICE_TARGET}/lib${DAMODULE}${DANAME}DA.a
+DAEXE=${ALICE_ROOT}/bin/tgt_${ALICE_TARGET}/${DAMODULE}${DANAME}da.exe
 
-DAMAKEFILE=${DAMODULE}/${DAMODULE}da.make
+DAMAKEFILE=${DAMODULE}/tgt_${ALICE_TARGET}/${DAMODULE}${DANAME}da.make
 
 DAQDADIR=${ALICE}/daqDAlib
 DAQDALIB=$(DAQDADIR)/libdaqDA.a
@@ -25,77 +28,83 @@ SYSLIBS=-ldl
 
 MONITORLIBS=$(shell date-config --monitorlibs=noshift)
 
-ALIROOTALIBS=$(RAWDatabaseALIB) $(RAWDatarecALIB) $(RAWDatasimALIB) $(STEERALIB) $(CDBALIB) $(ESDALIB)
+ALIROOTALIBS=$(RAWDatabaseALIB) $(RAWDatarecALIB) $(RAWDatasimALIB) $(STEERALIB) $(CDBALIB) $(ESDALIB) $(AODALIB)
 
-ALIROOTALIBS+=$($(DAMODULE)baseALIB) $($(DAMODULE)recALIB) $($(DAMODULE)simALIB)
+ALIROOTALIBS+=$($(DAMODULE)ALIBS)
 
 ifneq ($(EXTRADAMODULE),) 
 
-ALIROOTALIBS+=$($(EXTRADAMODULE)baseALIB) $($(EXTRADAMODULE)recALIB) $($(EXTRADAMODULE)simALIB)
+ALIROOTALIBS+=$($(EXTRADAMODULE)ALIBS)
 
 endif
 
 static-DA: $(DAEXE)
 
 $(DAEXE): $(LIBPATH) $(DAOBJ) $(DALIB) $(DAQDALIB)
-
-	$(LD) $(LDFLAGS) -o $@ $(DAOBJ) $(DALIB) \
+	@echo "Making $(DAEXE) executable..."
+	$(MUTE)$(LD) $(LDFLAGS) -o $@ $(DAOBJ) $(DALIB) \
 	$(SYSLIBS) \
 	$(ROOTLIBDIR)/libRoot.a \
 	$(ROOTLIBDIR)/libfreetype.a $(ROOTLIBDIR)/libpcre.a \
 	$(MONITORLIBS) $(DAQDALIB)
 
 $(DAOBJ): $(DASRC) $(DAQDADIR) $(DADEP)
-	$(CXX) -c $(CXXFLAGS) -I$(DAQDADIR) $< -o $@
+	@echo "Compiling $(DASRC)..."
+	$(MUTE)$(CXX) -c $(CXXFLAGS) -I$(DAQDADIR) $< -o $@
 
 $(DADEP): $(DASRC) $(DAQDADIR)
-	$(CPP) -MM $(CXXFLAGS) -I$(DAQDADIR) $< > $@
+	@echo "Making $(DASRC) dependencies..."
+	$(MUTE)$(CPP) -MM $(CXXFLAGS) -I$(DAQDADIR) $< > $@
 
 DAINCLUDES=$(sort $(filter-out %.o:,$(filter-out %.cxx,$(filter-out \,$(shell cat $(DADEP))))))
 
 -include $(DADEP)
 
 $(DALIB): $(ALIROOTALIBS)
-	@rm -rf $@
-	@rm -rf junk
-	mkdir junk && cd junk && $(addprefix $(AR) x ../,$(addsuffix &&,$^)) $(AR) r $@ *.o && cd .. && rm -rf junk
+	@echo "Making $(DALIB)..."
+	$(MUTE)rm -rf $@
+	$(MUTE)rm -rf junk
+	$(MUTE)mkdir junk && cd junk && $(addprefix $(AR) x ../,$(addsuffix &&,$^)) $(AR) r $@ *.o && cd .. && rm -rf junk
 
 clean-DA:
-	@rm -f $(DAEXE)
-	@rm -f $(DAOBJ)
-	@rm -f $(DADEP)
-	@rm -f $(DAMAKEFILE)
-	@rm -f $(DALIB)
-	@rm -f $(ALIROOTALIBS)
+	@echo "Cleaning $(DAMODULE)$(DANAME) detector-algorithm..."
+	$(MUTE)rm -f $(DAEXE)
+	$(MUTE)rm -f $(DAOBJ)
+	$(MUTE)rm -f $(DADEP)
+	$(MUTE)rm -f $(DAMAKEFILE)
+	$(MUTE)rm -f $(DALIB)
+	$(MUTE)rm -f $(ALIROOTALIBS)
 
 $(DAMAKEFILE):
+	@echo "Making $(DAMAKEFILE)..."
 	@echo "CXXFLAGS+=""$$""(shell date-config --cflags)" > $@
 	@echo "CXXFLAGS+=-Iinclude" >> $@
 	@echo "DAQDADIR=daqDAlib" >> $@
 	@echo "DAQDALIB=""$$""(DAQDADIR)/libdaqDA.a" >> $@
 	@echo "MONITORLIBS=""$$""(shell date-config --monitorlibs=noshift)" >> $@
-	@echo "${DAMODULE}da.exe: ${DAMODULE}da.o" >> $@
+	@echo "${DAMODULE}${DANAME}da.exe: ${DAMODULE}${DANAME}da.o" >> $@
 	@echo "		""$$""(CXX) ""$$""(LDFLAGS) -o ""$$""@ ""$$""< \\" >> $@
-	@echo "		lib/lib${DAMODULE}DA.a \\" >> $@
+	@echo "		lib/lib${DAMODULE}${DANAME}DA.a \\" >> $@
 	@echo "		$(SYSLIBS) \\" >> $@
 	@echo "		lib/libRoot.a \\" >> $@
 	@echo "		lib/libfreetype.a lib/libpcre.a \\" >> $@
 	@echo "		""$$""(MONITORLIBS) ""$$""(DAQDALIB)" >> $@
-	@echo "${DAMODULE}da.o: ${DAMODULE}da.cxx" >> $@
+	@echo "${DAMODULE}${DANAME}da.o: ${DAMODULE}${DANAME}da.cxx" >> $@
 	@echo "		""$$""(CXX) -c ""$$""(CXXFLAGS) -I""$$""(DAQDADIR) ""$$""< -o ""$$""@" >> $@
 	@echo "clean:" >> $@
-	@echo "		@rm -f ${DAMODULE}da.exe ${DAMODULE}da.o" >> $@
+	@echo "		@rm -f ${DAMODULE}${DANAME}da.exe ${DAMODULE}${DANAME}da.o" >> $@
 
 tar-DA: $(DASRC) $(DALIB) $(DAQDADIR) $(DADEP) $(DAMAKEFILE)
-	@rm -rf $(DAMODULE)da.tar
-	@rm -rf junk
-	@mkdir junk && mkdir junk/lib && mkdir junk/include && \
+	@echo "Making $(DAMODULE)$(DANAME) detector-algorithm archive..."
+	$(MUTE)rm -rf $(DAMODULE)${DANAME}da.tar
+	$(MUTE)rm -rf junk
+	$(MUTE)mkdir junk && mkdir junk/lib && mkdir junk/include && \
 	cp -a $(DASRC) $(DAQDADIR) junk && \
 	cp -a $(DALIB) $(ROOTLIBDIR)/libRoot.a $(ROOTLIBDIR)/libfreetype.a $(ROOTLIBDIR)/libpcre.a junk/lib && \
 	$(foreach daincfile,$(DAINCLUDES), cp -a $(daincfile) junk/include &&) \
 	cp -a $(DAMAKEFILE) junk/Makefile && \
 	cd junk && \
-	tar cf ../$(DAMODULE)da.tar * && \
+	tar cf ../$(DAMODULE)${DANAME}da.tar * && \
 	cd .. && rm -rf junk
 
 else
@@ -108,7 +117,12 @@ tar-DA:
 	@echo "* In order to build a detector-algorithm package you have to set the environment variable DAMODULE *"
 	@echo "* For example: setenv DAMODULE TOF                                                                 *"
 	@echo "*          or  export DAMODULE=TOF                                                                 *"
-	@echo "* If the detector algorithm uses data from another sub-detector you can specify this by setting    *"
+	@echo "* If you have only one detector-algorithm package then it is enough to have DAMODULEda.cxx         *"
+	@echo "* in your DAMODULE directory. In case of several detector-algorithms you have to specify also the  *"
+	@echo "* name of the algorithm whcih you want to build. The makefile will use DAMODULEDANAMEda.cxx        *"
+	@echo "* in your DAMODULE directory. Then in order to build your specific detector-algorithm package you  *"
+	@echo "* have to set the environment variable DANAME.                                                     *"
+	@echo "* If the detector algorithm uses code from another sub-detector you can specify this by setting    *"
 	@echo "* the environment variable EXTRADAMODULE                                                           *"
 	@echo "****************************************************************************************************"
 	@echo
