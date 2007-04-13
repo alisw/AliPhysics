@@ -22,6 +22,7 @@
 #include <AliRunLoader.h>  //Stack()
 #include <AliStack.h>      //Stack()
 #include <TParticle.h>     //Stack()    
+#include <TGeoPhysicalNode.h> //ctor
 
 ClassImp(AliHMPIDParam)
 
@@ -34,10 +35,19 @@ AliHMPIDParam::AliHMPIDParam():TNamed("RichParam","default version")
 // Note that TGeoManager should be already initialized from geometry.root file  
   fX=0.5*AliHMPIDDigit::SizeAllX();
   fY=0.5*AliHMPIDDigit::SizeAllY();
-  for(Int_t i=0;i<7;i++) 
-    if(gGeoManager)
-      fM[i]=(TGeoHMatrix*)gGeoManager->GetVolume("ALIC")->GetNode(Form("HMPID_%i",i))->GetMatrix();
-    else{
+  for(Int_t i=AliHMPIDDigit::kMinCh;i<=AliHMPIDDigit::kMaxCh;i++) 
+    if(gGeoManager && gGeoManager->IsClosed()) {
+//      fM[i]=(TGeoHMatrix*)gGeoManager->GetVolume("ALIC")->GetNode(Form("HMPID_%i",i))->GetMatrix(); // previous style
+      TGeoPNEntry* pne = gGeoManager->GetAlignableEntry(i);
+      if (!pne) {
+        AliErrorClass(Form("The symbolic volume %s does not correspond to any physical entry!",Form("HMPID_%i",i)));
+        fM[i]=new TGeoHMatrix;
+        IdealPosition(i,fM[i]);
+      } else {
+        TGeoPhysicalNode *pnode = pne->GetPhysicalNode();
+        fM[i]=pnode->GetMatrix();
+      }
+    } else{
       fM[i]=new TGeoHMatrix;
       IdealPosition(i,fM[i]);
     } 
