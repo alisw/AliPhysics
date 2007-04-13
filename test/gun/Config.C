@@ -1,0 +1,516 @@
+// One can use the configuration macro in compiled mode by
+// root [0] gSystem->Load("libgeant321");
+// root [0] gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include\
+//                   -I$ALICE_ROOT -I$ALICE/geant3/TGeant3");
+// root [0] .x grun.C(1,"Config.C++")
+
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <Riostream.h>
+#include <TRandom.h>
+#include <TSystem.h>
+#include <TVirtualMC.h>
+#include <TGeant3TGeo.h>
+#include "STEER/AliRunLoader.h"
+#include "STEER/AliRun.h"
+#include "STEER/AliConfig.h"
+#include "PYTHIA6/AliDecayerPythia.h"
+#include "EVGEN/AliGenCocktail.h"
+#include "EVGEN/AliGenHIJINGpara.h"
+#include "EVGEN/AliGenFixed.h"
+#include "EVGEN/AliGenBox.h"
+#include "STEER/AliMagFMaps.h"
+#include "STRUCT/AliBODY.h"
+#include "STRUCT/AliMAG.h"
+#include "STRUCT/AliABSOv0.h"
+#include "STRUCT/AliDIPOv2.h"
+#include "STRUCT/AliHALL.h"
+#include "STRUCT/AliFRAMEv2.h"
+#include "STRUCT/AliSHILv2.h"
+#include "STRUCT/AliPIPEv0.h"
+#include "ITS/AliITSvPPRasymmFMD.h"
+#include "TPC/AliTPCv2.h"
+#include "TOF/AliTOFv5T0.h"
+#include "HMPID/AliHMPIDv1.h"
+#include "ZDC/AliZDCv2.h"
+#include "TRD/AliTRDv1.h"
+#include "TRD/AliTRDgeometry.h"
+#include "FMD/AliFMDv1.h"
+#include "MUON/AliMUONv1.h"
+#include "PHOS/AliPHOSv1.h"
+#include "PMD/AliPMDv1.h"
+#include "T0/AliT0v1.h"
+#include "EMCAL/AliEMCALv2.h"
+#include "ACORDE/AliACORDEv0.h"
+#include "VZERO/AliVZEROv7.h"
+#endif
+
+enum PprTrigConf_t
+{
+    kDefaultPPTrig, kDefaultPbPbTrig
+};
+
+const char * pprTrigConfName[] = {
+    "p-p","Pb-Pb"
+};
+
+Float_t EtaToTheta(Float_t arg);
+
+static PprTrigConf_t strig = kDefaultPPTrig;// default PP trigger configuration
+
+void Config()
+{
+    // ThetaRange is (0., 180.). It was (0.28,179.72) 7/12/00 09:00
+    // Theta range given through pseudorapidity limits 22/6/2001
+
+    // Set Random Number seed
+  gRandom->SetSeed(123456); // Set 0 to use the currecnt time
+
+
+   // libraries required by geant321
+#if defined(__CINT__)
+    gSystem->Load("libgeant321");
+#endif
+
+    new     TGeant3TGeo("C++ Interface to Geant3");
+
+    AliRunLoader* rl=0x0;
+
+
+    rl = AliRunLoader::Open("galice.root",
+			    AliConfig::GetDefaultEventFolderName(),
+			    "recreate");
+    if (rl == 0x0)
+      {
+	gAlice->Fatal("Config.C","Can not instatiate the Run Loader");
+	return;
+      }
+    rl->SetCompressionLevel(2);
+    rl->SetNumberOfEventsPerFile(3);
+    gAlice->SetRunLoader(rl);
+
+    // Set the trigger configuration
+    gAlice->SetTriggerDescriptor(pprTrigConfName[strig]);
+    cout<<"Trigger configuration is set to  "<<pprTrigConfName[strig]<<endl;
+
+    //
+    // Set External decayer
+    TVirtualMCDecayer *decayer = new AliDecayerPythia();
+
+    decayer->SetForceDecay(kAll);
+    decayer->Init();
+    gMC->SetExternalDecayer(decayer);
+    //=======================================================================
+    // ************* STEERING parameters FOR ALICE SIMULATION **************
+    // --- Specify event type to be tracked through the ALICE setup
+    // --- All positions are in cm, angles in degrees, and P and E in GeV
+
+
+    gMC->SetProcess("DCAY",1);
+    gMC->SetProcess("PAIR",1);
+    gMC->SetProcess("COMP",1);
+    gMC->SetProcess("PHOT",1);
+    gMC->SetProcess("PFIS",0);
+    gMC->SetProcess("DRAY",0);
+    gMC->SetProcess("ANNI",1);
+    gMC->SetProcess("BREM",1);
+    gMC->SetProcess("MUNU",1);
+    gMC->SetProcess("CKOV",1);
+    gMC->SetProcess("HADR",1);
+    gMC->SetProcess("LOSS",2);
+    gMC->SetProcess("MULS",1);
+    gMC->SetProcess("RAYL",1);
+
+    Float_t cut = 1.e-3;        // 1MeV cut by default
+    Float_t tofmax = 1.e10;
+
+    gMC->SetCut("CUTGAM", cut);
+    gMC->SetCut("CUTELE", cut);
+    gMC->SetCut("CUTNEU", cut);
+    gMC->SetCut("CUTHAD", cut);
+    gMC->SetCut("CUTMUO", cut);
+    gMC->SetCut("BCUTE",  cut); 
+    gMC->SetCut("BCUTM",  cut); 
+    gMC->SetCut("DCUTE",  cut); 
+    gMC->SetCut("DCUTM",  cut); 
+    gMC->SetCut("PPCUTM", cut);
+    gMC->SetCut("TOFMAX", tofmax); 
+
+    // Special generation for Valgrind tests
+    // Each detector is fired by few particles selected 
+    // to cover specific cases
+
+
+    // The cocktail iitself
+
+    AliGenCocktail *gener = new AliGenCocktail();
+    gener->SetPhiRange(0, 360);
+    // Set pseudorapidity range from -8 to 8.
+    Float_t thmin = EtaToTheta(8);   // theta min. <---> eta max
+    Float_t thmax = EtaToTheta(-8);  // theta max. <---> eta min 
+    gener->SetThetaRange(thmin,thmax);
+    gener->SetOrigin(0, 0, 0);  //vertex position
+    gener->SetSigma(0, 0, 0);   //Sigma in (X,Y,Z) (cm) on IP position
+
+
+    // Particle guns for the barrel part (taken from RichConfig)
+
+    AliGenFixed *pG1=new AliGenFixed(1);
+    pG1->SetPart(2212);
+    pG1->SetMomentum(2.5);
+    pG1->SetTheta(109.5-3);
+    pG1->SetPhi(10);
+    gener->AddGenerator(pG1,"g1",1);
+    
+    AliGenFixed *pG2=new AliGenFixed(1);
+    pG2->SetPart(211);
+    pG2->SetMomentum(1.0);
+    pG2->SetTheta( 90.0-3);
+    pG2->SetPhi(10);
+    gener->AddGenerator(pG2,"g2",1);
+
+    AliGenFixed *pG3=new AliGenFixed(1);
+    pG3->SetPart(-211);
+    pG3->SetMomentum(1.5);
+    pG3->SetTheta(109.5-3);
+    pG3->SetPhi(30);
+    gener->AddGenerator(pG3,"g3",1);
+    
+    AliGenFixed *pG4=new AliGenFixed(1);
+    pG4->SetPart(321);
+    pG4->SetMomentum(0.7);
+    pG4->SetTheta( 90.0-3);
+    pG4->SetPhi(30);
+    gener->AddGenerator(pG4,"g4",1);
+    
+    AliGenFixed *pG5=new AliGenFixed(1);
+    pG5->SetPart(-321);
+    pG5->SetMomentum(1.0);
+    pG5->SetTheta( 70.0-3);
+    pG5->SetPhi(30);
+    gener->AddGenerator(pG5,"g5",1);
+    
+    AliGenFixed *pG6=new AliGenFixed(1);
+    pG6->SetPart(-2212);
+    pG6->SetMomentum(2.5);
+    pG6->SetTheta( 90.0-3);
+    pG6->SetPhi(50);
+    gener->AddGenerator(pG6,"g6",1);
+    
+    AliGenFixed *pG7=new AliGenFixed(1);
+    pG7->SetPart(-211);
+    pG7->SetMomentum(0.7);
+    pG7->SetTheta( 70.0-3);
+    pG7->SetPhi(50);
+    gener->AddGenerator(pG7,"g7",1);
+
+    // Electrons for TRD
+
+    AliGenFixed *pG8=new AliGenFixed(1);
+    pG8->SetPart(11);
+    pG8->SetMomentum(1.2);
+    pG8->SetTheta( 95.0);
+    pG8->SetPhi(190);
+    gener->AddGenerator(pG8,"g8",1);
+
+    AliGenFixed *pG9=new AliGenFixed(1);
+    pG9->SetPart(-11);
+    pG9->SetMomentum(1.2);
+    pG9->SetTheta( 85.0);
+    pG9->SetPhi(190);
+    gener->AddGenerator(pG9,"g9",1);
+
+    // PHOS
+
+    AliGenBox *gphos = new AliGenBox(1);
+    gphos->SetMomentumRange(10,11.);
+    gphos->SetPhiRange(270.5,270.7);
+    gphos->SetThetaRange(90.5,90.7);
+    gphos->SetPart(22);
+    gener->AddGenerator(gphos,"GENBOX GAMMA for PHOS",1);
+
+    // EMCAL
+
+    AliGenBox *gemcal = new AliGenBox(1);
+    gemcal->SetMomentumRange(10,11.);
+    gemcal->SetPhiRange(90.5,199.5);
+    gemcal->SetThetaRange(90.5,90.7);
+    gemcal->SetPart(22);
+    gener->AddGenerator(gemcal,"GENBOX GAMMA for EMCAL",1);
+
+    // MUON
+    AliGenBox * gmuon1 = new AliGenBox(1);
+    gmuon1->SetMomentumRange(20.,20.1);
+    gmuon1->SetPhiRange(0., 360.);         
+    gmuon1->SetThetaRange(171.000,178.001);
+    gmuon1->SetPart(13);           // Muons
+    gener->AddGenerator(gmuon1,"GENBOX MUON1",1);
+
+    AliGenBox * gmuon2 = new AliGenBox(1);
+    gmuon2->SetMomentumRange(20.,20.1);
+    gmuon2->SetPhiRange(0., 360.);         
+    gmuon2->SetThetaRange(171.000,178.001);
+    gmuon2->SetPart(-13);           // Muons
+    gener->AddGenerator(gmuon2,"GENBOX MUON1",1);
+
+    //TOF
+    AliGenFixed *gtof=new AliGenFixed(1);
+    gtof->SetPart(2212);
+    gtof->SetMomentum(2.5);
+    gtof->SetTheta(95);
+    pG1->SetPhi(340);
+    gener->AddGenerator(gtof,"Proton for TOF",1);
+    
+    gener->Init();
+
+
+    // 
+    // Activate this line if you want the vertex smearing to happen
+    // track by track
+    //
+    //gener->SetVertexSmear(perTrack); 
+    // Field (L3 0.5 T)
+    AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., 2);
+    field->SetL3ConstField(1); //Using const. field in the barrel if 0
+    gAlice->SetField(field);    
+
+
+    Int_t   iABSO  =  1;
+    Int_t   iDIPO  =  1;
+    Int_t   iFMD   =  1;
+    Int_t   iFRAME =  1;
+    Int_t   iHALL  =  1;
+    Int_t   iITS   =  1;
+    Int_t   iMAG   =  1;
+    Int_t   iMUON  =  1;
+    Int_t   iPHOS  =  1;
+    Int_t   iPIPE  =  1;
+    Int_t   iPMD   =  1;
+    Int_t   iHMPID  =  1;
+    Int_t   iSHIL  =  1;
+    Int_t   iT0 =  1;
+    Int_t   iTOF   =  1;
+    Int_t   iTPC   =  1;
+    Int_t   iTRD   =  1;
+    Int_t   iZDC   =  1;
+    Int_t   iEMCAL =  1;
+    Int_t   iACORDE   =  0;
+    Int_t   iVZERO =  1;
+    rl->CdGAFile();
+    //=================== Alice BODY parameters =============================
+    AliBODY *BODY = new AliBODY("BODY", "Alice envelop");
+
+    if (iMAG)
+    {
+        //=================== MAG parameters ============================
+        // --- Start with Magnet since detector layouts may be depending ---
+        // --- on the selected Magnet dimensions ---
+        AliMAG *MAG = new AliMAG("MAG", "Magnet");
+    }
+
+
+    if (iABSO)
+    {
+        //=================== ABSO parameters ============================
+        AliABSO *ABSO = new AliABSOv0("ABSO", "Muon Absorber");
+    }
+
+    if (iDIPO)
+    {
+        //=================== DIPO parameters ============================
+
+        AliDIPO *DIPO = new AliDIPOv2("DIPO", "Dipole version 2");
+    }
+
+    if (iHALL)
+    {
+        //=================== HALL parameters ============================
+
+        AliHALL *HALL = new AliHALL("HALL", "Alice Hall");
+    }
+
+
+    if (iFRAME)
+    {
+        //=================== FRAME parameters ============================
+
+        AliFRAMEv2 *FRAME = new AliFRAMEv2("FRAME", "Space Frame");
+    }
+
+    if (iSHIL)
+    {
+        //=================== SHIL parameters ============================
+
+        AliSHIL *SHIL = new AliSHILv2("SHIL", "Shielding Version 2");
+    }
+
+
+    if (iPIPE)
+    {
+        //=================== PIPE parameters ============================
+
+        AliPIPE *PIPE = new AliPIPEv0("PIPE", "Beam Pipe");
+    }
+ 
+    if(iITS) {
+
+    //=================== ITS parameters ============================
+    //
+    // As the innermost detector in ALICE, the Inner Tracking System "impacts" on
+    // almost all other detectors. This involves the fact that the ITS geometry
+    // still has several options to be followed in parallel in order to determine
+    // the best set-up which minimizes the induced background. All the geometries
+    // available to date are described in the following. Read carefully the comments
+    // and use the default version (the only one uncommented) unless you are making
+    // comparisons and you know what you are doing. In this case just uncomment the
+    // ITS geometry you want to use and run Aliroot.
+    //
+    // Detailed geometries:         
+    //
+    //
+    //
+	AliITSvPPRasymmFMD *ITS  = new AliITSvPPRasymmFMD("ITS","ITS PPR detailed version with asymmetric services");
+	ITS->SetMinorVersion(2);  // don't touch this parameter if you're not an ITS developer
+	ITS->SetReadDet(kFALSE);	  // don't touch this parameter if you're not an ITS developer
+	//    ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det");  // don't touch this parameter if you're not an ITS developer
+	ITS->SetThicknessDet1(200.);   // detector thickness on layer 1 must be in the range [100,300]
+	ITS->SetThicknessDet2(200.);   // detector thickness on layer 2 must be in the range [100,300]
+	ITS->SetThicknessChip1(150.);  // chip thickness on layer 1 must be in the range [150,300]
+	ITS->SetThicknessChip2(150.);  // chip thickness on layer 2 must be in the range [150,300]
+	ITS->SetRails(0);	       // 1 --> rails in ; 0 --> rails out
+	ITS->SetCoolingFluid(1);       // 1 --> water ; 0 --> freon
+
+ 
+    //
+    // Coarse geometries (warning: no hits are produced with these coarse geometries and they unuseful 
+    // for reconstruction !):
+    //                                                     
+    //
+    //AliITSvPPRcoarseasymm *ITS  = new AliITSvPPRcoarseasymm("ITS","New ITS PPR coarse version with asymmetric services");
+    //ITS->SetRails(0);                // 1 --> rails in ; 0 --> rails out
+    //ITS->SetSupportMaterial(0);      // 0 --> Copper ; 1 --> Aluminum ; 2 --> Carbon
+    //
+    //AliITS *ITS  = new AliITSvPPRcoarsesymm("ITS","New ITS PPR coarse version with symmetric services");
+    //ITS->SetRails(0);                // 1 --> rails in ; 0 --> rails out
+    //ITS->SetSupportMaterial(0);      // 0 --> Copper ; 1 --> Aluminum ; 2 --> Carbon
+    //                      
+    //
+    //
+    // Geant3 <-> EUCLID conversion
+    // ============================
+    //
+    // SetEUCLID is a flag to output (=1) or not to output (=0) both geometry and
+    // media to two ASCII files (called by default ITSgeometry.euc and
+    // ITSgeometry.tme) in a format understandable to the CAD system EUCLID.
+    // The default (=0) means that you dont want to use this facility.
+    //
+     ITS->SetEUCLID(0);  
+    }
+
+    if (iTPC)
+    {
+        //============================ TPC parameters ===================
+        AliTPC *TPC = new AliTPCv2("TPC", "Default");
+    }
+
+
+    if (iTOF) {
+        //=================== TOF parameters ============================
+	AliTOF *TOF = new AliTOFv5T0("TOF", "normal TOF");
+	// Partial geometry: modules at 2,3,4,6,7,11,12,14,15,16
+	// starting at 6h in positive direction
+	Int_t TOFSectors[18]={-1,-1,0,0,0,-1,0,0,-1,-1,-1,0,0,-1,0,0,0,0};
+	TOF->SetTOFSectors(TOFSectors);
+     }
+
+
+    if (iHMPID)
+    {
+        //=================== HMPID parameters ===========================
+        AliHMPID *HMPID = new AliHMPIDv1("HMPID", "normal HMPID");
+
+    }
+
+
+    if (iZDC)
+    {
+        //=================== ZDC parameters ============================
+
+        AliZDC *ZDC = new AliZDCv2("ZDC", "normal ZDC");
+    }
+
+    if (iTRD)
+    {
+        //=================== TRD parameters ============================
+
+        AliTRD *TRD = new AliTRDv1("TRD", "TRD slow simulator");
+        AliTRDgeometry *geoTRD = TRD->GetGeometry();
+	// Partial geometry: modules at 2,3,4,6,11,12,14,15
+	// starting at 6h in positive direction
+	geoTRD->SetSMstatus(0,0);
+        geoTRD->SetSMstatus(1,0);
+        geoTRD->SetSMstatus(5,0);
+        geoTRD->SetSMstatus(7,0);
+        geoTRD->SetSMstatus(8,0);
+        geoTRD->SetSMstatus(9,0);
+        geoTRD->SetSMstatus(10,0);
+        geoTRD->SetSMstatus(13,0);
+        geoTRD->SetSMstatus(16,0);
+        geoTRD->SetSMstatus(17,0);
+    }
+
+    if (iFMD)
+    {
+        //=================== FMD parameters ============================
+	AliFMD *FMD = new AliFMDv1("FMD", "normal FMD");
+   }
+
+    if (iMUON)
+    {
+        //=================== MUON parameters ===========================
+        // New MUONv1 version (geometry defined via builders)
+        AliMUON *MUON = new AliMUONv1("MUON","default");
+    }
+    //=================== PHOS parameters ===========================
+
+    if (iPHOS)
+    {
+        AliPHOS *PHOS = new AliPHOSv1("PHOS", "IHEP");
+    }
+
+
+    if (iPMD)
+    {
+        //=================== PMD parameters ============================
+        AliPMD *PMD = new AliPMDv1("PMD", "normal PMD");
+    }
+
+    if (iT0)
+    {
+        //=================== T0 parameters ============================
+        AliT0 *T0 = new AliT0v1("T0", "T0 Detector");
+    }
+
+    if (iEMCAL)
+    {
+        //=================== EMCAL parameters ============================
+        AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "SHISH_77_TRD1_2X2_FINAL_110DEG");
+    }
+
+     if (iACORDE)
+    {
+        //=================== ACORDE parameters ============================
+        AliACORDE *ACORDE = new AliACORDEv0("ACORDE", "normal ACORDE");
+    }
+
+     if (iVZERO)
+    {
+        //=================== VZERO parameters ============================
+        AliVZERO *VZERO = new AliVZEROv7("VZERO", "normal VZERO");
+    }
+
+
+}
+
+Float_t EtaToTheta(Float_t arg){
+  return (180./TMath::Pi())*2.*atan(exp(-arg));
+}
