@@ -256,13 +256,16 @@ void AliMC::ResetGenerator(AliGenerator *generator)
   //
   // Load the event generator
   //
-  if(fGenerator)
-    if(generator)
+  if(fGenerator) {
+    if(generator) {
       AliWarning(Form("Replacing generator %s with %s",
-		      fGenerator->GetName(),generator->GetName()))
-    else
+		      fGenerator->GetName(),generator->GetName()));
+    }
+    else {
       AliWarning(Form("Replacing generator %s with NULL",
 		      fGenerator->GetName()));
+    }
+  }
   fGenerator = generator;
 }
 
