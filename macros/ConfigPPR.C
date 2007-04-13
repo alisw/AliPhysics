@@ -492,7 +492,7 @@ void Config()
 
      if (iVZERO)
     {
-        //=================== ACORDE parameters ============================
+        //=================== VZERO parameters ============================
         AliVZERO *VZERO = new AliVZEROv7("VZERO", "normal VZERO");
     }
  
