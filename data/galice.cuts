@@ -336,7 +336,8 @@ SHIL 15 1.e-4 1.e-4 1.e-3 1.e-4 1.e-3 1.e-3 1.e-3
 SHIL 35 1.e-3 1.e-2 1.e-3 1.e-3
 * very shielded
 SHIL 55 1.e-3 1.e-2 1.e-3 1.e-3
-
+* Muon transport region
+SHIL 75  1e-5  1e-5  1e-3  1e-3  1e-5  1e-5  1e-5  1e-5  1e-5  -1.   1     1     1     1     1     1     1     1     1     1     1
 * VACUUM
 * ^^^^^^
 * unshielded
@@ -402,14 +403,14 @@ MAG 35 1.e-3 1.e-2 1.e-2 1.e-3
 * Hall HALL
 * =========
 
-* IRON
-* ^^^^
+* STEEL
+* ^^^^^
 * unshielded
 HALL 10 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
 * shielded
 HALL 30 1.e-3 1.e-2 1.e-2 1.e-3
 * very shielded
-HALL 50 1.e-3 1.e-2 1.e-2 1.e-3
+HALL 50 1.e00 1.e00 1.e-1 1.e-3
 
 * Air
 * ^^^
@@ -418,7 +419,7 @@ HALL 15 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
 * shielded
 HALL 35 1.e-3 1.e-2 1.e-2 1.e-3
 * very shielded
-HALL 55 1.e-3 1.e-2 1.e-2 1.e-3
+HALL 55 1.e00 1.e00 1.e-1 1.e-3
 
 * CONCRETE
 * ^^^^^^^^
@@ -427,7 +428,7 @@ HALL 17 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
 * far
 HALL 37 1.e-3 1.e-2 1.e-2 1.e-3
 * very far
-HALL 57 1.e-3 1.e-2 1.e-2 1.e-3
+HALL 57 1.e00 1.e00 1.e-1 1.e-3
 
 
 * Beam Pipe PIPE
