@@ -97,17 +97,17 @@ class AliMUONTrackParam : public TObject
   Double_t fInverseBendingMomentum; ///< Inverse bending momentum (GeV/c ** -1) times the charge (assumed forward motion)
   Double_t fZ; ///< Z coordinate (cm)
   
-  /// Covariance matrix of track parameters, ordered as follow:
+  /// Covariance matrix of track parameters, ordered as follow:      <pre>
   ///    <X,X>      <X,SlopeX>        <X,Y>      <X,SlopeY>       <X,InvP_yz>
   /// <X,SlopeX>  <SlopeX,SlopeX>  <Y,SlopeX>  <SlopeX,SlopeY>  <SlopeX,InvP_yz>
   ///    <X,Y>      <Y,SlopeX>        <Y,Y>      <Y,SlopeY>       <Y,InvP_yz>
   /// <X,SlopeY>  <SlopeX,SlopeY>  <Y,SlopeY>  <SlopeY,SlopeY>  <SlopeY,InvP_yz>
-  /// <X,InvP_yz> <SlopeX,InvP_yz> <Y,InvP_yz> <SlopeY,InvP_yz> <InvP_yz,InvP_yz>
-  TMatrixD *fCovariances; //!
+  /// <X,InvP_yz> <SlopeX,InvP_yz> <Y,InvP_yz> <SlopeY,InvP_yz> <InvP_yz,InvP_yz>  </pre>
+  TMatrixD *fCovariances; ///< \brief Covariance matrix of track parameters 
   
   AliMUONHitForRec *fHitForRecPtr; //!< Pointer to associated HitForRec if any
   
-  ClassDef(AliMUONTrackParam, 2) // Track parameters in ALICE dimuon spectrometer
+  ClassDef(AliMUONTrackParam, 3) // Track parameters in ALICE dimuon spectrometer
 };
 	
 #endif

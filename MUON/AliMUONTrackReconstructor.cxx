@@ -368,7 +368,7 @@ void AliMUONTrackReconstructor::FollowTracks(void)
     trackIndex++;
     nextTrack = (AliMUONTrack*) fRecTracksPtr->After(track); // prepare next track
     track->SetFitWithVertex(kFALSE); // just to be sure
-    Fit(track,kTRUE, kFALSE);
+    Fit(track,kTRUE, kTRUE);
     // Printout for debuging
     if (AliLog::GetGlobalDebugLevel() >= 3) {
       cout << "FollowTracks: track candidate(0..) " << trackIndex << " after final fit" << endl;
@@ -937,14 +937,29 @@ Double_t MultipleScatteringAngle2(AliMUONTrackParam *param)
   //__________________________________________________________________________
 void AliMUONTrackReconstructor::FillMUONTrack(void)
 {
-  /// Fill fHitForRecAtHit of AliMUONTrack's
+  /// Fill AliMUONTrack's fHitForRecAtHit array
+  /// Recompute track parameters and covariances at each attached cluster from those at the first one
   AliMUONTrack *track;
+  AliMUONTrackParam trackParam;
   AliMUONTrackParam *trackParamAtHit;
+  AliMUONHitForRec *hitForRecAtHit;
+  
   track = (AliMUONTrack*) fRecTracksPtr->First();
   while (track) {
     trackParamAtHit = (AliMUONTrackParam*) (track->GetTrackParamAtHit()->First());
+    trackParam = *trackParamAtHit;
     while (trackParamAtHit) {
-      track->AddHitForRecAtHit(trackParamAtHit->GetHitForRecPtr());
+      hitForRecAtHit = trackParamAtHit->GetHitForRecPtr();
+      // extrapolation to the plane of the hitForRec attached to the current trackParamAtHit
+      AliMUONTrackExtrap::ExtrapToZCov(&trackParam, hitForRecAtHit->GetZ());
+      // update track parameters of the current hit
+      trackParamAtHit->SetTrackParam(trackParam);
+      // update covariance matrix of track parameters of the current hit
+      trackParamAtHit->SetCovariances(trackParam.GetCovariances());
+      // update array of track hit
+      track->AddHitForRecAtHit(hitForRecAtHit);
+      // prepare next step, add MCS effects in parameter covariances
+      AliMUONTrackExtrap::AddMCSEffect(&trackParam,AliMUONConstants::ChamberThicknessInX0(),1.);
       trackParamAtHit = (AliMUONTrackParam*) (track->GetTrackParamAtHit()->After(trackParamAtHit)); 
     }
     track = (AliMUONTrack*) fRecTracksPtr->After(track);
