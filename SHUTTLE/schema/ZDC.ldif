@@ -1,0 +1,17 @@
+# ZDC config
+dn: det=ZDC,o=alice,dc=cern,dc=ch
+objectClass: AliShuttleDetector
+det: ZDC
+StrictRunOrder: 0
+responsible: not_yet_set
+DCSHost: aldcs053.cern.ch
+DCSPort: 4242
+DCSalias: ZPA_HV[0..4].actual.vMon
+DCSalias: ZNA_HV[0..4].actual.vMon
+DCSalias: ZNC_HV[0..4].actual.vMon
+DCSalias: ZPC_HV[0..4].actual.vMon
+DCSalias: ZEM_HV[0..1].actual.vMon
+DCSalias: ZNA_POS.actual.position
+DCSalias: ZPA_POS.actual.position
+DCSalias: ZNC_POS.actual.position
+DCSalias: ZPC_POS.actual.position

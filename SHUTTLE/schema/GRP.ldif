@@ -1,0 +1,18 @@
+# GRP config
+dn: det=GRP,o=alice,dc=cern,dc=ch
+objectClass: AliShuttleDetector
+det: GRP
+StrictRunOrder: 0
+responsible: not_yet_set
+DCSHost: aldcs053.cern.ch
+DCSPort: 4242
+DCSalias: LHCState
+DCSalias: LHCPeriod
+DCSalias: LHCLuminosity
+DCSalias: BeamIntensity
+DCSalias: L3Current
+DCSalias: DipoleCurrent
+DCSalias: L3Polarity
+DCSalias: DipolePolarity
+DCSalias: CavernTemperature
+DCSalias: CavernAtmosPressure

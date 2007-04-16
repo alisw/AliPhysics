@@ -1,0 +1,18 @@
+# PHS config
+dn: det=PHS,o=alice,dc=cern,dc=ch
+objectClass: AliShuttleDetector
+det: PHS
+StrictRunOrder: 0
+responsible: not_yet_set
+DCSHost: aldcs053.cern.ch
+DCSPort: 4242
+DCSalias: phs_hvIsegMeasVoltage[0..4]
+DCSalias: phs_hvIsegMeasCurrent[0..4]
+DCSalias: phs_hvIsegMeasAlarm[0..4]
+DCSalias: phs_lvWiener1MeasCurrent[0..19]
+DCSalias: phs_lvWienerMeasAlarm[0..19]
+DCSalias: phs_temperatureCold[0..24]
+DCSalias: phs_hvSettingVoltageCode[00000..17919]
+DCSalias: phs_baselineSetting[00000..17919]
+DCSalias: phs_zeroThresholdSetting[0..4]
+DCSalias: phs_activeChannelSetting[0..17919]
