@@ -1,7 +1,7 @@
 // @(#) $Id$
 // Original: AliHLTDisplay.cxx,v 1.26 2005/06/14 10:55:21 cvetan 
 
-/** \class AliHLTTPCDisplay
+/**
 <pre>
 //_____________________________________________________________
 // AliHLTTPCDisplay

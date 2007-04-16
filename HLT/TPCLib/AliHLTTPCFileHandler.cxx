@@ -31,7 +31,7 @@
 using namespace std;
 #endif
 
-/** \class AliHLTTPCFileHandler
+/**
 <pre>
 //_____________________________________________________________
 // AliHLTTPCFileHandler

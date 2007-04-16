@@ -1,6 +1,6 @@
 // $Id$
 
-/** \class AliHLTTPCDisplayPad
+/**
 <pre>
 //_____________________________________________________________
 // AliHLTTPCDisplayPad

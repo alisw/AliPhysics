@@ -35,10 +35,11 @@
 // AliHLTTPCConfMapPoint
 //
 // Hit class for conformal mapper
-</pre
+</pre>
 */
 
-ClassImp(AliHLTTPCConfMapPoint)
+/** ROOT macro for the implementation of ROOT specific class methods */
+ClassImp(AliHLTTPCConfMapPoint);
 
 Bool_t AliHLTTPCConfMapPoint::fgDontMap=kFALSE;
 

@@ -31,7 +31,7 @@ class AliHLTTPCDisplayFront;
 
 /**
  * @class AliHLTTPCDisplayMain
- * The class handels the interface between the graphical user interface (@ref AliLHLTGUI) 
+ * The class handels the interface between the graphical user interface (AliLHLTGUI) 
  * and the worker classes for the ALICE HLT online display. It also handles the interface
  * to the AnalysisChain via HOMER reader class. Furthermore all relavant global variables 
  * are stored here via get and set functions.
@@ -47,7 +47,7 @@ class AliHLTTPCDisplayMain : public TObject , public AliHLTLogging {
   /**
    * Constructor
    * @param pt2GUI          Pointer to class AliHLTGUI
-   * @param pt2Dunction     Pointer to callback Function class AliHLTGUI
+   * @param pt2Function     Pointer to callback Function class AliHLTGUI
    */
   AliHLTTPCDisplayMain(void* pt2GUI, void (*pt2Function)(void*, Int_t));
 
@@ -63,7 +63,7 @@ class AliHLTTPCDisplayMain : public TObject , public AliHLTLogging {
   /** ---------------------------------------------------------------------- */
 
   //-->   TODO check this file location
-  /** Connect to Analysis Chain via hosts and Ports specified in @ref AliHLTGUI 
+  /** Connect to Analysis Chain via hosts and Ports specified in AliHLTGUI 
    *  @param cnt          Number hosts
    *  @param hostnames    Array of hostnames of the TDS
    *  @param ports        Array of ports of the TDS
@@ -90,7 +90,7 @@ class AliHLTTPCDisplayMain : public TObject , public AliHLTLogging {
   void ReadTrackData();
 
   /** Main working function. Calls worker classes and handles displaying 
-   *  @param newrawSlice   If set to kTRUE, raw data from a new slice is read and zero suppression is applied.<br>
+   *  @param newRawSlice   If set to kTRUE, raw data from a new slice is read and zero suppression is applied.<br>
    *                       Standard is kFALSE.
    */
   void DisplayEvent(Bool_t newRawSlice = kFALSE);
