@@ -125,6 +125,7 @@ class AliRawReader: public TObject {
       return AddErrorLog(AliRawDataErrorLog::kFatal,code,message);
     }
     Int_t            GetNumberOfErrorLogs() const { return fErrorLogs.GetEntriesFast(); }
+    const TClonesArray &GetAllErrorLogs() const { return fErrorLogs; }
     AliRawDataErrorLog *GetErrorLog(Int_t i) const {
       return (AliRawDataErrorLog *)fErrorLogs.UncheckedAt(i);
     }

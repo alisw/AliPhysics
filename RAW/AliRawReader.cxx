@@ -143,6 +143,7 @@ AliRawReader::~AliRawReader()
   // initialized
   if (fEquipmentIdsIn) delete fEquipmentIdsIn;
   if (fEquipmentIdsOut) delete fEquipmentIdsOut;
+  fErrorLogs.Delete();
 }
 
 Int_t AliRawReader::GetMappedEquipmentId() const
@@ -473,10 +474,27 @@ void AliRawReader::AddErrorLog(AliRawDataErrorLog::ERawDataErrorLevel level,
     return;
   }
 
-  new (fErrorLogs[fErrorLogs.GetEntriesFast()])
-    AliRawDataErrorLog(fEventNumber,
-		       ddlId,
-		       level,
-		       code,
-		       message);
+  Int_t prevEventNumber = -1;
+  Int_t prevDdlId = -1;
+  Int_t prevErrorCode = -1;
+  AliRawDataErrorLog *prevLog = (AliRawDataErrorLog *)fErrorLogs.Last();
+  if (prevLog) {
+    prevEventNumber = prevLog->GetEventNumber();
+    prevDdlId       = prevLog->GetDdlID();
+    prevErrorCode   = prevLog->GetErrorCode();
+  }
+
+  if ((prevEventNumber != fEventNumber) ||
+      (prevDdlId != ddlId) ||
+      (prevErrorCode != code)) {
+    new (fErrorLogs[fErrorLogs.GetEntriesFast()])
+      AliRawDataErrorLog(fEventNumber,
+			 ddlId,
+			 level,
+			 code,
+			 message);
+  }
+  else
+    if (prevLog) prevLog->AddCount();
+
 }

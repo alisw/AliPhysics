@@ -38,7 +38,8 @@ AliRawDataErrorLog::AliRawDataErrorLog() :
   fEventNumber(-1),
   fDdlID(-1),
   fErrorLevel(AliRawDataErrorLog::kMinor),
-  fErrorCode(0)
+  fErrorCode(0),
+  fCount(0)
 {
   // Default constructor
 }
@@ -52,7 +53,8 @@ AliRawDataErrorLog::AliRawDataErrorLog(Int_t eventNumber, Int_t ddlId,
   fEventNumber(eventNumber),
   fDdlID(ddlId),
   fErrorLevel(errorLevel),
-  fErrorCode(errorCode)
+  fErrorCode(errorCode),
+  fCount(1)
 {
   // Constructor that specifies
   // the event number, ddl id, error type and
@@ -65,7 +67,8 @@ AliRawDataErrorLog::AliRawDataErrorLog(const AliRawDataErrorLog & source) :
   fEventNumber(source.fEventNumber),
   fDdlID(source.fDdlID),
   fErrorLevel(source.fErrorLevel),
-  fErrorCode(source.fErrorCode)
+  fErrorCode(source.fErrorCode),
+  fCount(source.fCount)
 {
   // Copy constructor
 }
@@ -81,6 +84,7 @@ AliRawDataErrorLog & AliRawDataErrorLog::operator=(const AliRawDataErrorLog &sou
     fDdlID       = source.GetDdlID();
     fErrorLevel  = source.GetErrorLevel();
     fErrorCode   = source.GetErrorCode();
+    fCount       = source.GetCount();
   }
   return *this;
 }

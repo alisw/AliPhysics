@@ -44,9 +44,12 @@ class AliRawDataErrorLog: public TNamed {
   ERawDataErrorLevel GetErrorLevel()  const { return fErrorLevel; }
   Int_t              GetErrorCode()   const { return fErrorCode; }
   const char *       GetMessage()     const { return fName.Data(); }
+  Int_t              GetCount()       const { return fCount; }
 
   Bool_t            IsSortable() const {return kTRUE;}
   Int_t             Compare(const TObject* obj) const;
+
+  void               AddCount() { fCount++; }
 
  private:
 
@@ -54,8 +57,9 @@ class AliRawDataErrorLog: public TNamed {
   Int_t              fDdlID;       // ID of the DLL in which the error occured
   ERawDataErrorLevel fErrorLevel;  // Level of the raw data error
   Int_t              fErrorCode;   // Code of the raw data error (detector-specific)
+  Int_t              fCount;       // Counter of identical errors (occurances)
 
-  ClassDef(AliRawDataErrorLog, 2)
+  ClassDef(AliRawDataErrorLog, 3)
 };
 
 #endif
