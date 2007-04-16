@@ -37,7 +37,8 @@ ELIBS+=f2c
 ELIBSDIR+=$(FINK_ROOT)/lib
 endif
 
-ifdef WITH_ALIEN
+CHECKALIEN = $(shell root-config --has-alien)
+ifeq (yes,$(CHECKALIEN))
 PACKBLIBS := $(ROOTCLIBS) $(ROOTPLIBS) -lProofPlayer -lProof -lNet -lRAliEn -lXMLIO -lNetx $(SYSLIBS)
 else
 PACKBLIBS := $(ROOTCLIBS) $(ROOTPLIBS) $(SYSLIBS)
