@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.57  2007/04/05 10:18:58  policheh
+ * Introduced distance to nearest bad crystal.
+ *
  * Revision 1.56  2007/03/06 06:47:28  kharlov
  * DP:Possibility to use actual vertex position added
  *
@@ -774,8 +777,8 @@ void AliPHOSEmcRecPoint::EvalLocalPosition(Float_t logWeight, TVector3 &vtx, TCl
   Float_t depthx = 0.; 
   Float_t depthz = 0.;
   if (fAmp>0&&vInc.Y()!=0.) {
-    depthx = ( para * TMath::Log(fAmp) + parb ) * vInc.X()/vInc.Y() ;
-    depthz = ( para * TMath::Log(fAmp) + parb ) * vInc.Z()/vInc.Y() ;
+    depthx = ( para * TMath::Log(fAmp) + parb ) * vInc.X()/TMath::Abs(vInc.Y()) ;
+    depthz = ( para * TMath::Log(fAmp) + parb ) * vInc.Z()/TMath::Abs(vInc.Y()) ;
   }
   else 
     AliError(Form("Wrong amplitude %f\n", fAmp));

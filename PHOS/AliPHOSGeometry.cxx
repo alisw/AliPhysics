@@ -648,10 +648,11 @@ void AliPHOSGeometry::Global2Local(TVector3& localPosition,
 {
   // Transforms a global position of the rec.point to the local coordinate system
   //Return to PHOS local system
-  Double_t posG[3]={globalPosition.X(),globalPosition.Y(),globalPosition.Z()} ;
+  Double_t posG[3]={globalPosition.X(),globalPosition.Y(),-globalPosition.Z()} ;
   Double_t posL[3]={0.,0.,0.} ;
   char path[100] ;
-  sprintf(path,"/ALIC_1/PHOS_%d",module) ;
+  sprintf(path,"/ALIC_1/PHOS_%d/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1",module) ;
+//  sprintf(path,"/ALIC_1/PHOS_%d",module) ;
   if (!gGeoManager->cd(path)){
     AliFatal("Geo manager can not find path \n");
   }
@@ -702,9 +703,6 @@ void AliPHOSGeometry::Local2Global(Int_t mod, Float_t x, Float_t z,
 void AliPHOSGeometry::GetIncidentVector(const TVector3 &vtx, Int_t module, Float_t x,Float_t z, TVector3 &vInc) const {
   //Calculates vector pointing from vertex to current poisition in module local frame
 
-  TVector3 global ;
-  Local2Global(module,x,z,global) ;
-  global-=vtx ;
-  Global2Local(vInc,global,module) ; 
-
+  Global2Local(vInc,vtx,module) ; 
+  vInc.SetXYZ(vInc.X()+x,vInc.Y(),vInc.Z()+z) ;
 }

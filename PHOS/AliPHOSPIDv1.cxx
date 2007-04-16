@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.107  2007/04/02 15:00:16  cvetan
+ * No more calls to gAlice in the reconstruction
+ *
  * Revision 1.106  2007/04/01 15:40:15  kharlov
  * Correction for actual vertex position implemented
  *
@@ -917,8 +920,8 @@ TVector3 AliPHOSPIDv1::GetMomentumDirection(AliPHOSEmcRecPoint * emc, AliPHOSCpv
   Float_t depthzOld = 0.;
   Float_t energy = emc->GetEnergy() ;
   if (energy > 0 && vInc.Y()!=0.) {
-    depthxOld = ( para * TMath::Log(energy) + parb ) * vInc.X()/vInc.Y() ;
-    depthzOld = ( para * TMath::Log(energy) + parb ) * vInc.Z()/vInc.Y() ;
+    depthxOld = ( para * TMath::Log(energy) + parb ) * vInc.X()/TMath::Abs(vInc.Y()) ;
+    depthzOld = ( para * TMath::Log(energy) + parb ) * vInc.Z()/TMath::Abs(vInc.Y()) ;
   }
   else{
     AliError("Cluster with zero energy \n");
