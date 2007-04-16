@@ -378,8 +378,7 @@ Int_t AliRawDB::GetTotalSize()
       TKey *key = dir->GetKey(fTree->GetName());
       if (key) skey = key->GetKeylen();
     }
-    total += skey;
-    if (fTree->GetZipBytes() > 0) total += fTree->GetTotBytes();
+    total += skey + fTree->GetZipBytes();
   }
 
   if(fESDTree)
@@ -390,8 +389,7 @@ Int_t AliRawDB::GetTotalSize()
 	TKey *key = dir->GetKey(fESDTree->GetName());
 	if (key) skey = key->GetKeylen();
       }
-      total += skey;
-      if (fESDTree->GetZipBytes() > 0) total += fESDTree->GetTotBytes();
+      total += skey + fESDTree->GetZipBytes();
     }
 
   return total;
