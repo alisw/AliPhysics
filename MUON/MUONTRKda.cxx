@@ -9,8 +9,6 @@ Framework for gain computing
 Rem:  AliMUON2DMap stores all channels, even those which are not connected
       if pedMean == -1, channel not connected to a pad  
 
-Pb with static root libraries ??
-
 
 */
 extern "C" {
@@ -51,6 +49,8 @@ extern "C" {
 #include "TTimeStamp.h"
 #include "TGraphErrors.h"
 #include "TF1.h"
+#include "TROOT.h"
+#include "TPluginManager.h"
 
 
 // global variables
@@ -338,9 +338,10 @@ void MakeGainStore(TString flatOutputFile)
     TTree* tree = (TTree*)histoFile->Get("t");
     Int_t nEntries = tree->GetEntries();
 
-    //pb with static libraries of Root to read back info
+    // read back info
     for (Int_t i = 0; i < nEntries; ++i) {
-      printf("nEntry %d\n", i);
+      map[i] = 0x0;
+      run[i] = 0x0;
       tree->SetBranchAddress("ped",&map[i]);
       tree->SetBranchAddress("run",&run[i]);
       tree->GetEvent(i);
@@ -348,6 +349,7 @@ void MakeGainStore(TString flatOutputFile)
       
     // Q = f(ADC)
     TF1* func = new TF1("func",fitFunc, 0., 2500., 4);
+    // TF1* func = new TF1("func","pol1");
 
     // iterates over the first pedestal run
     AliMUONVDataIterator* it = map[0]->Iterator();
@@ -363,7 +365,6 @@ void MakeGainStore(TString flatOutputFile)
       Int_t manuId     = pair->GetSecond();
 
       // read back pedestal from the other runs for the given (bupatch, manu)
-      printf("nEntries %d\n", nEntries);
       for (Int_t i = 1; i < nEntries; ++i) {
 	ped[i] = static_cast<AliMUONVCalibParam*>(map[i]->Get(busPatchId, manuId));
       }
@@ -380,14 +381,15 @@ void MakeGainStore(TString flatOutputFile)
 	  injCharge[i]    = (Float_t)run[i]->GetSecond();
 	  injChargeErr[i] = 1.;
 
-	  if (pedMean[i] < 0) n--; // not connected
+	  if (pedMean[i] < 0) continue; // not connected
 
 	  if (pedSigma[i] <= 0) pedSigma[i] = 1.; // should not happen.
 	  n++;
 	}
 
 	if (n > 4) {
-	  //fit if you can.... not working with present static version of Root
+	  // if (n > 1) {
+	  //fit 
 	  TGraph *gain = new TGraphErrors(n, pedMean, pedSigma, injCharge, injChargeErr);
 	  //should set some initial parameters
 	  func->SetParameter(0,-300);  // a0
@@ -396,7 +398,8 @@ void MakeGainStore(TString flatOutputFile)
 	  func->SetParameter(3, 1100.); // xlim in ADC
 
 	  gain->Fit("func","q");
-	
+	  cout	<< setw(8) << func->GetParameter(0)  <<"\t"<< setw(8) << func->GetParameter(1) << endl;
+
 	  if (!flatOutputFile.IsNull()) {
 	    fileout << "\t" << busPatchId << "\t" << manuId <<"\t"<< channelId << "\t"
 		    << setw(8) << func->GetParameter(0)  <<"\t"<< setw(8) << func->GetParameter(1) 
@@ -424,6 +427,14 @@ void MakeGainStore(TString flatOutputFile)
 int main(Int_t argc, Char_t **argv) 
 {
   
+    // needed for streamer application
+    gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
+					  "*",
+					  "TStreamerInfo",
+					  "RIO",
+					  "TStreamerInfo()"); 
+
+
     Int_t printLevel = 0;  // Global variable defined as extern in the others .cxx files
     Int_t skipEvents = 0;
     Int_t maxEvents  = 1000000;
