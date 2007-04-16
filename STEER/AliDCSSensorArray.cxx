@@ -32,21 +32,26 @@ const Double_t  kMaxDelta = 0.00;  // precision parameter for spline fit
 const Int_t  kFitReq = 2;          // fit requirement, 2 = continuous 2nd derivative
 
 //_____________________________________________________________________________
-AliDCSSensorArray::AliDCSSensorArray():TNamed()
+AliDCSSensorArray::AliDCSSensorArray():TNamed(), 
+  fFirstSensor(0),
+  fLastSensor(0),
+  fStartTime (2000,1,1,0,0,0),
+  fEndTime   (2000,1,1,0,0,0),
+  fSensors(0)
 {
   //
   // AliDCSSensorArray default constructor
   //
-  fSensors = 0;
-  fFirstSensor = 0;
-  fLastSensor = 0;
-  TTimeStamp defTime(2000,1,1,0,0,0);
-  fStartTime = defTime;
-  fEndTime = defTime;
 
 }
 //_____________________________________________________________________________
-AliDCSSensorArray::AliDCSSensorArray(Int_t prevRun, const char* dbEntry)
+AliDCSSensorArray::AliDCSSensorArray(Int_t prevRun, const char* dbEntry) : 
+  TNamed(),
+  fFirstSensor(0),
+  fLastSensor(0),
+  fStartTime (2000,1,1,0,0,0),
+  fEndTime   (2000,1,1,0,0,0),
+  fSensors(0)
 {
   //
   // Read positions etc. from data base entry for previous run
@@ -87,7 +92,13 @@ AliDCSSensorArray::AliDCSSensorArray(Int_t prevRun, const char* dbEntry)
 
 
 //_____________________________________________________________________________
-AliDCSSensorArray::AliDCSSensorArray(const AliDCSSensorArray &c):TNamed(c)
+AliDCSSensorArray::AliDCSSensorArray(const AliDCSSensorArray &c):TNamed(c),
+  fFirstSensor(c.fFirstSensor),
+  fLastSensor(c.fLastSensor),
+  fStartTime (c.fStartTime),
+  fEndTime   (c.fEndTime),
+  fSensors(0)
+
 {
   //
   // AliDCSSensorArray copy constructor
@@ -188,10 +199,13 @@ TMap* AliDCSSensorArray::ExtractDCS(TMap *dcsMap, const char *amandaString)
  //
  TMap *values = new TMap;
  TObjArray * valueSet;
- for (Int_t dcsSensor = fFirstSensor; dcsSensor<=fLastSensor; dcsSensor++)
- {
+ Int_t nsensors = fSensors->GetEntries();
+ for ( Int_t isensor=0; isensor<nsensors; isensor++) {
+   AliDCSSensor *entry = (AliDCSSensor*)fSensors->At(isensor);
+   Int_t dcsSensor=entry->GetIdDCS();
    TString DPname = Form (amandaString,dcsSensor);
-   valueSet = (TObjArray*)dcsMap->FindObject(DPname.Data());
+   TPair *pair = (TPair*)dcsMap->FindObject(DPname.Data());
+   valueSet = (TObjArray*)pair->Value();
    TGraph *graph = MakeGraph(valueSet);
    values->Add(new TObjString(DPname.Data()),graph);
  }
