@@ -37,6 +37,11 @@ ELIBS+=f2c
 ELIBSDIR+=$(FINK_ROOT)/lib
 endif
 
+ifdef WITH_ALIEN
 PACKBLIBS := $(ROOTCLIBS) $(ROOTPLIBS) -lProofPlayer -lProof -lNet -lRAliEn -lXMLIO -lNetx $(SYSLIBS)
+else
+PACKBLIBS := $(ROOTCLIBS) $(ROOTPLIBS) $(SYSLIBS)
+endif
+
 
 
