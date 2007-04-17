@@ -255,6 +255,9 @@ void TFluka::Init() {
     // Add ions to PDG Data base
     //
      AddParticlesToPdgDataBase();
+     //
+
+     
 }
 
 
@@ -997,8 +1000,8 @@ Int_t TFluka::PDGFromId(Int_t id) const
     }
 // Error id    
     if (id == 0 || id < kFLUKAcodemin || id > kFLUKAcodemax) {
-        if (fVerbosityLevel >= 3)
-            printf("PDGFromId: Error id = 0\n");
+        if (fVerbosityLevel >= -1)
+            printf("PDGFromId: Error id = 0 %5d %5d\n", id, fCaller);
         return -1;
     }
 // Good id    
@@ -1608,7 +1611,7 @@ Int_t TFluka::CorrectFlukaId() const
    // and there is a call to endraw for energy deposition for each of them
    // and they have the track number of their parent, but different identity (pdg)
    // so we want to assign also their parent identity.
-   if( (IsTrackStop() )
+   if( (IsTrackStop())
         && TRACKR.ispusr[mkbmx2 - 4] == TRACKR.ispusr[mkbmx2 - 1]
         && TRACKR.jtrack != TRACKR.ispusr[mkbmx2 - 3] ) {
       if (fVerbosityLevel >=3)
@@ -1618,7 +1621,7 @@ Int_t TFluka::CorrectFlukaId() const
                << " assign parent PDG=" << PDGFromId(TRACKR.ispusr[mkbmx2 - 3]) << endl;
       return TRACKR.ispusr[mkbmx2 - 3]; // assign parent identity
    }
-   return TRACKR.jtrack;
+      return TRACKR.jtrack;
 }
 
 
@@ -1936,7 +1939,7 @@ Int_t TFluka::StepProcesses(TArrayI &proc) const
         break;
     case kKASOPHrefraction:
         iproc = kPLightRefraction;
-    case kEMSCOlocaledep : 
+    case kEMFSCOlocaldep : 
         iproc = kPPhotoelectric;
         break;
     default:

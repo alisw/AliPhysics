@@ -17,7 +17,7 @@ typedef enum {
     kKASKADpair        = 104,  // pair production
     kKASKADbrems       = 105,  // bremsstrahlung
     kEMFSCO            =   2,  // EMFSCO code first digit
-    kEMSCOlocaledep    =  20,  // local energy deposition (i.e. photoelectric)
+    kEMFSCOlocaldep    =  20,  // local energy deposition (i.e. photoelectric)
     kEMFSCOstopping1   =  21,  // below user-defined cut-off
     kEMFSCOstopping2   =  22,  // below user cut-off
     kEMFSCOescape      =  23,  // escape  
