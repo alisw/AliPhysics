@@ -2,7 +2,7 @@
 #define AliHMPIDCluster_h
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
-
+//
 #include "AliHMPIDDigit.h"  //DigAdd()
 #include <TObjArray.h>     //DigAdd()      
 class TClonesArray;        //Solve()
@@ -49,7 +49,7 @@ public:
          Double_t       Y        (                                         )const{return fY;                                     } //cluster y position in LRS 
          Double_t       Ye       (                                         )const{return fErrY;                                  } //cluster charge in QDC channels 
          Double_t       Chi2     (                                         )const{return fChi2;                                  } //chi2 of the fit
-         void           DoCorrSin(Bool_t doCorrSin                         ){fDoCorrSin=doCorrSin;}                                // Set sinoidal correction
+         void           DoCorrSin(Bool_t doCorrSin                         ){fgDoCorrSin=doCorrSin;}                                // Set sinoidal correction
          void           SetX     (Double_t x                               ){fX=x;}                                                // Setter
          void           SetY     (Double_t y                               ){fY=y;}                                                // Setter
 protected:
@@ -69,7 +69,7 @@ protected:
   Double_t      fErrY;        //error on y postion, [cm]
   Double_t      fChi2;        //some estimator of the fit quality
   TObjArray    *fDigs;        //! list of digits forming this cluster
-  static  Bool_t fDoCorrSin;  //
+  static  Bool_t fgDoCorrSin; //flag to switch on/off correction for Sinusoidal to cluster reco
   ClassDef(AliHMPIDCluster,6) //HMPID cluster class
 };//class AliHMPIDCluster
 

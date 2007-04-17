@@ -18,7 +18,7 @@
 #include <TClonesArray.h>    //Solve()
 #include <TMarker.h>         //Draw()
 
-Bool_t AliHMPIDCluster::fDoCorrSin=kTRUE;
+Bool_t AliHMPIDCluster::fgDoCorrSin=kTRUE;
 
 ClassImp(AliHMPIDCluster)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -50,7 +50,7 @@ void AliHMPIDCluster::CoG()
   
   if ( fQRaw != 0 )   fX/=fQRaw;fY/=fQRaw;                  //final center of gravity
    
-  if(fDigs->GetEntriesFast()>1&&fDoCorrSin)CorrSin();       //correct it by sinoid   
+  if(fDigs->GetEntriesFast()>1&&fgDoCorrSin)CorrSin();       //correct it by sinoid   
   
   fQ  = fQRaw;                                              // Before starting fit procedure, Q and QRaw must be equal
   fCh=pDig->Ch();                                           //initialize chamber number
@@ -76,7 +76,7 @@ void AliHMPIDCluster::Draw(Option_t*)
   TMarker *pMark=new TMarker(X(),Y(),5); pMark->SetUniqueID(fSt);pMark->SetMarkerColor(kBlue); pMark->Draw();
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDCluster::FitFunc(Int_t &iNpars, Double_t *, Double_t &chi2, Double_t *par, Int_t )
+void AliHMPIDCluster::FitFunc(Int_t &iNpars, Double_t* /*deriv*/, Double_t &chi2, Double_t *par, Int_t )
 {
 // Cluster fit function 
 // par[0]=x par[1]=y par[2]=q for the first Mathieson shape
