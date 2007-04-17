@@ -35,6 +35,12 @@ void endraw(Int_t& icode, Int_t& mreg, Double_t& rull, Double_t& xsco, Double_t&
   fluka->SetMreg(mreg, mlttc);
 
   Float_t edep = rull;
+  Int_t ipt = fluka->PDGFromId(TRACKR.jtrack);
+  if (ipt == -1) {
+      if (debug) printf("Unknown particle %5d %5d \n", TRACKR.jtrack, icode);
+      return;
+  }
+  
   
   if (TRACKR.jtrack == -1) {
   // Handle quantum efficiency the G3 way
@@ -80,15 +86,16 @@ void endraw(Int_t& icode, Int_t& mreg, Double_t& rull, Double_t& xsco, Double_t&
       fluka->SetIcode((FlukaProcessCode_t)icode);
       fluka->SetRull(edep);
       if (icode == kKASKADelarecoil && TRACKR.ispusr[mkbmx2-5]) {
-         //  Elastic recoil and in stuprf npprmr > 0,
-         //  the secondary being loaded is actually still the interacting particle
-         cppstack->SetCurrentTrack( TRACKR.ispusr[mkbmx2-4] );
-         //      cout << "endraw elastic recoil track=" << TRACKR.ispusr[mkbmx2-1] << " parent=" << TRACKR.ispusr[mkbmx2-4]
-         //           << endl;
-      }
-      else
+	  //  Elastic recoil and in stuprf npprmr > 0,
+	  //  the secondary being loaded is actually still the interacting particle
+	  cppstack->SetCurrentTrack( TRACKR.ispusr[mkbmx2-4] );
+      } else {
           cppstack->SetCurrentTrack(TRACKR.ispusr[mkbmx2-1] );
-      (TVirtualMCApplication::Instance())->Stepping();
+      }
+
+      if (TRACKR.jtrack != 308 && TRACKR.jtrack != 211) (TVirtualMCApplication::Instance())->Stepping();
+    
+      
   } else {
   //
   // For icode 21,22 the particle has fallen below thresshold.
@@ -102,8 +109,6 @@ void endraw(Int_t& icode, Int_t& mreg, Double_t& rull, Double_t& xsco, Double_t&
       fluka->SetIcode((FlukaProcessCode_t)icode);
       fluka->SetRull(0.);
       (TVirtualMCApplication::Instance())->Stepping();
-//      cppstack->SetCurrentTrack( saveTrackId );
-
   }
 } // end of endraw
 } // end of extern "C"
