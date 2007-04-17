@@ -160,7 +160,7 @@ int AliHLTComponent::Init( AliHLTComponentEnvironment* environ, void* environPar
 	  if (parameter.BeginsWith("0x") &&
 	      parameter.Replace(0,2,"",0).IsHex()) {
 	    AliHLTComponentLogSeverity loglevel=kHLTLogNone;
-	    sscanf(parameter.Data(),"%x", &loglevel);
+	    sscanf(parameter.Data(),"%x", (unsigned int*)&loglevel);
 	    SetLocalLoggingLevel(loglevel);
 	  } else {
 	    HLTError("wrong parameter for argument %s, hex number expected", argument.Data());
@@ -740,7 +740,7 @@ int AliHLTComponent::InsertOutputBlock(void* pBuffer, int iSize, const AliHLTCom
   // see header file for function documentation
   int iResult=0;
   if (pBuffer) {
-    if (fpOutputBuffer && iSize<=(fOutputBufferSize-fOutputBufferFilled)) {
+    if (fpOutputBuffer && iSize<=(int)(fOutputBufferSize-fOutputBufferFilled)) {
       AliHLTUInt8_t* pTgt=fpOutputBuffer+fOutputBufferFilled;
       AliHLTComponentBlockData bd;
       FillBlockData( bd );

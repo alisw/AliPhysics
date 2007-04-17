@@ -349,7 +349,7 @@ AliHLTDataBuffer::AliHLTRawBuffer* AliHLTDataBuffer::CreateRawBuffer(AliHLTUInt3
 {
   // see header file for function documentation
   AliHLTRawBuffer* pRawBuffer=NULL;
-  int reqSize=size+fgkSafetyPatternSize;
+  unsigned int reqSize=size+fgkSafetyPatternSize;
   vector<AliHLTRawBuffer*>::iterator buffer=fgFreeBuffers.begin();
   while (buffer!=fgFreeBuffers.end() && pRawBuffer==NULL) {
     if ((*buffer)->fTotalSize>=reqSize && ((*buffer)->fTotalSize-reqSize)<fgMargin) {
