@@ -86,6 +86,7 @@ AliMpDDLStore::AliMpDDLStore()
   // Create all detection elements
   ReadDDLs();
   SetManus();
+  SetPatchModules();
 }
 
 //______________________________________________________________________________
@@ -349,6 +350,30 @@ Bool_t AliMpDDLStore::SetManus()
 
     return true;
 }
+
+//______________________________________________________________________________
+Bool_t AliMpDDLStore::SetPatchModules()
+{
+/// Compute the number of manu per PCB for each buspatch 
+
+  Bool_t result = true;
+
+  for (Int_t i = 0; i < fBusPatches.GetSize(); ++i) {
+    AliMpBusPatch* busPatch = (AliMpBusPatch*)fBusPatches.GetObject(i);
+    Bool_t newResult = busPatch->SetNofManusPerModule();
+    result = result && newResult;
+
+    if (AliDebugLevel() == 3) {
+      // print out for checking
+      printf("\nbus patch %d\n", busPatch->GetId());
+      for (Int_t i = 0; i < busPatch->GetNofPatchModules(); ++i) 
+        printf("manu per %dth pcb %d\n", i, busPatch->GetNofManusPerModule(i));
+    }    
+  }  
+  
+  return result;
+}
+
 
 //
 // public methods

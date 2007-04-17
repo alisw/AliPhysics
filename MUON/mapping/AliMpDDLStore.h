@@ -64,6 +64,7 @@ class AliMpDDLStore : public  TObject {
     Int_t  GetBusPatchIndex(Int_t detElemId, Int_t manuId) const;
     Bool_t ReadDDLs();
     Bool_t SetManus();
+    Bool_t SetPatchModules();
 
     // static data members	
     static AliMpDDLStore* fgInstance; ///< Singleton instance
