@@ -144,7 +144,8 @@ void AliPMDClusteringV1::DoClust(Int_t idet, Int_t ismn,
 	  j = jd;
 	  i = id+(ndimYr/2-1)-(jd/2);
 
-	  Int_t ij = i + j*kNDIMX;
+	  //PH	  Int_t ij = i + j*kNDIMX;
+	  Int_t ij = i + j*ndimXr;
 
 	  if (ismn < 12)
 	    {
