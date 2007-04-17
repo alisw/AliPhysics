@@ -30,8 +30,8 @@ protected:
   Int_t   fNClusters;                 // number of found rec points
   Int_t   fNHits;                     // number of simulation hits
   Float_t fDigitBuffer[7*4096];       // digits coordinates, etc.
-  Float_t fClusterBuffer[5*128];      // cluster coordinates, etc.
-  Float_t fHitBuffer[3*128];          // hits coordinates
+  Float_t fClusterBuffer[5*256];      // cluster coordinates, etc.
+  Float_t fHitBuffer[3*256];          // hits coordinates
   Float_t fChamberBox[6];             // chamber envelope box
 
 public:

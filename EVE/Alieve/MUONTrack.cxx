@@ -488,31 +488,17 @@ void MUONTrack::MakeMUONTrack(AliMUONTrack *mtrack)
   // middle z between the two detector planes of the trigger chambers
   Float_t zg[4] = { -1603.5, -1620.5, -1703.5, -1720.5 };
 
-  AliMUONTrackParam *mtp = mtrack->GetTrackParamAtVertex();
-  Float_t pt = TMath::Sqrt(mtp->Px()*mtp->Px()+mtp->Py()*mtp->Py());
-  Float_t pv[3];
-  pv[0] = mtp->Px();
-  pv[1] = mtp->Py();
-  pv[2] = mtp->Pz();
-  fP.Set(pv);
+  Float_t pt    = 0.0;
+  Float_t pv[3] = { 0.0 };
 
   if (fIsMUONTrack) {
-    //PH The line below is replaced waiting for a fix in Root
-    //PH which permits to use variable siza arguments in CINT
-    //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
     if (mtrack->GetMatchTrigger()) {
-      //PH      track->SetName(Form("MUONTrack %2d (MT)", fLabel));
       sprintf(form,"MUONTrack %2d (MT)", fLabel);
-      SetName(form);
-      SetLineStyle(1);
-      SetLineColor(ColorIndex(pt));
     } else {
-      //PH      track->SetName(Form("MUONTrack %2d     ", fLabel));
       sprintf(form,"MUONTrack %2d     ", fLabel);
-      SetName(form);
-      SetLineStyle(1);
-      SetLineColor(ColorIndex(pt));
     }
+    SetName(form);
+    SetLineStyle(1);
   }
   
   AliMUONTrackParam *trackParam = mtrack->GetTrackParamAtVertex(); 
@@ -534,13 +520,25 @@ void MUONTrack::MakeMUONTrack(AliMUONTrack *mtrack)
   TClonesArray* trackParamAtHit = mtrack->GetTrackParamAtHit();
 
   for (Int_t iHit = 0; iHit < nTrackHits; iHit++){
+
     trackParam = (AliMUONTrackParam*) trackParamAtHit->At(iHit); 
+    
+    if (iHit == 0) {
+      if (IsMUONTrack()) {
+	pt = TMath::Sqrt(trackParam->Px()*trackParam->Px()+trackParam->Py()*trackParam->Py());
+	SetLineColor(ColorIndex(pt));
+      }
+      pv[0] = trackParam->Px();
+      pv[1] = trackParam->Py();
+      pv[2] = trackParam->Pz();
+      fP.Set(pv);
+    }
+
     xRec  = trackParam->GetNonBendingCoor();
     yRec  = trackParam->GetBendingCoor();
     zRec  = trackParam->GetZ();
     
     iCha = AliMUONConstants::ChamberNumber(zRec);
-    //printf("Hit %d x %f y %f z %f c %2d \n",iHit,xRec,yRec,zRec,iCha);
     
     xr[iHit] = xRec;
     yr[iHit] = yRec;
@@ -910,7 +908,10 @@ void MUONTrack::Propagate(Float_t *xr, Float_t *yr, Float_t *zr, Int_t i1, Int_t
 
   Double_t vect[7], vout[7];
   Double_t step = 1.0;
-  Double_t zMax;
+  Double_t zMax = 0.0;
+  Int_t  charge =   0;
+  AliMUONTrackParam *trackParam = 0;
+  TClonesArray *trackParamAtHit = 0;
 
   if (i2 == 9999) {
     zMax = zr[i1]+1.5*step;
@@ -918,12 +919,18 @@ void MUONTrack::Propagate(Float_t *xr, Float_t *yr, Float_t *zr, Int_t i1, Int_t
     zMax = zr[i2]+1.5*step;
   }
 
-  AliMUONTrackParam *trackParam = fTrack->GetTrackParamAtVertex(); 
-  Int_t charge = (Int_t)TMath::Sign(1.0,trackParam->GetInverseBendingMomentum());
-  
-  TClonesArray* trackParamAtHit = fTrack->GetTrackParamAtHit();
-  trackParam = (AliMUONTrackParam*)trackParamAtHit->At(i1); 
+  trackParamAtHit = fTrack->GetTrackParamAtHit();
 
+  if (IsMUONTrack()) {
+    trackParam = (AliMUONTrackParam*)trackParamAtHit->At(i1); 
+    charge = (Int_t)TMath::Sign(1.0,trackParam->GetInverseBendingMomentum());
+  }
+  if (IsRefTrack()) {
+    trackParam = fTrack->GetTrackParamAtVertex();
+    charge = (Int_t)TMath::Sign(1.0,trackParam->GetInverseBendingMomentum());
+    trackParam = (AliMUONTrackParam*)trackParamAtHit->At(i1); 
+  }
+  
   vect[0] = xr[i1];
   vect[1] = yr[i1];
   vect[2] = zr[i1];
@@ -942,7 +949,7 @@ void MUONTrack::Propagate(Float_t *xr, Float_t *yr, Float_t *zr, Int_t i1, Int_t
       vect[i] = vout[i];
     }
   }
-
+  
 }
 
 //______________________________________________________________________

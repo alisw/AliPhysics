@@ -9,17 +9,8 @@
 
 class TTree;
 class TString;
-class TList;
 
 class AliRawReader;
-class AliMUONRawStreamTracker;
-class AliMUONRawStreamTrigger;
-class AliMUONDigit;
-class AliMpSegFactory;
-class AliMpDDLStore;
-class AliMUONLocalTriggerBoard;
-class AliMUONLocalStruct;
-class AliMUONLocalStruct;
 
 namespace Alieve {
 
@@ -33,24 +24,9 @@ class MUONData : public TObject, public Reve::ReferenceCount
   std::vector<MUONChamberData*>   fChambers;           // vector of 14 chambers
 
   static AliRawReader*            fgRawReader;         // raw reader
-  static AliMUONRawStreamTracker* fgRawStreamTracker;  // tracker raw streamer 
-  static AliMUONRawStreamTrigger* fgRawStreamTrigger;  // trigger raw streamer
-  static AliMpSegFactory*         fgSegFactory;        // segmentation mapping
-  static AliMpDDLStore*           fgBusPatchManager;   // bus mapping
-
-  Int_t GetTrackerMapping(Int_t buspatchId, UShort_t manuId,
-			  UChar_t channelId, AliMUONDigit* digit );
-
-  Int_t GetTriggerMapping(AliMUONLocalTriggerBoard* localBoard, 
-			  AliMUONLocalStruct* localStruct,
-			  TList& digitList);
-
-  void GetTriggerChamber(AliMUONLocalStruct* localStruct,
-                         Int_t& xyPattern, Int_t& iChamber, Int_t& iCath, 
-			 Int_t iCase);
 
   Int_t fNTrackList;      // number of MC tracks which have hits
-  Int_t fTrackList[100];  // list of MC tracks which have hits
+  Int_t fTrackList[256];  // list of MC tracks which have hits
 
  public:
 
@@ -66,8 +42,6 @@ class MUONData : public TObject, public Reve::ReferenceCount
   void LoadRecPoints(TTree* tree);
   void LoadHits(TTree* tree);
   void LoadRaw(TString fileName);
-  void LoadRawTracker();
-  void LoadRawTrigger();
 
   void CreateChamber(Int_t chamber);
   void CreateAllChambers();

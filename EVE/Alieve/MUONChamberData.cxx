@@ -58,10 +58,10 @@ MUONChamberData::MUONChamberData(Int_t chamber)
   for (Int_t i = 0; i < 7*4096; i++) {
     fDigitBuffer[i] = 0.0;
   }
-  for (Int_t i = 0; i < 5*128; i++) {
+  for (Int_t i = 0; i < 5*256; i++) {
     fClusterBuffer[i] = 0.0;
   }
-  for (Int_t i = 0; i < 3*128; i++) {
+  for (Int_t i = 0; i < 3*256; i++) {
     fHitBuffer[i] = 0.0;
   }
 
@@ -165,8 +165,6 @@ void MUONChamberData::Init(Int_t chamber)
     
     } else {
 
-      //AliMpStationType stationType = AliMpDEManager::GetStationType(detElemId);
-
       if (!fgSegmentation->HasDE(detElemId)) {
 	printf("Segmentation has no %d detElemId! \n",detElemId);
 	continue;
@@ -220,11 +218,6 @@ void MUONChamberData::Init(Int_t chamber)
 
   }  // end detElemId loop
 
-  //printf("ChamberBox %d \n",chamber);
-  //printf("%f %f \n",fChamberBox[0],fChamberBox[1]);
-  //printf("%f %f \n",fChamberBox[2],fChamberBox[3]);
-  //printf("%f %f \n",fChamberBox[4],fChamberBox[5]);
-
 }
 
 //______________________________________________________________________
@@ -233,6 +226,8 @@ void MUONChamberData::RegisterDigit(Int_t detElemId, Int_t cathode, Int_t ix, In
   //
   // add a digit to this chamber
   //
+
+  if ((fNDigits/7) == (4096-1)) return;
 
   Float_t locP[3], gloP[3], locD[3], gloD[3];
 
@@ -257,9 +252,6 @@ void MUONChamberData::RegisterDigit(Int_t detElemId, Int_t cathode, Int_t ix, In
   gloD[1] = locD[1];
   gloD[2] = gloP[2];
 
-  //printf("DigitP %f %f %f \n",gloP[0],gloP[1],gloP[2]);
-  //printf("DigitD %f %f \n",gloD[0],gloD[1]);
-
   if (cathode == 0) gloP[2] += 0.1;
   if (cathode == 1) gloP[2] -= 0.1;
 
@@ -272,11 +264,7 @@ void MUONChamberData::RegisterDigit(Int_t detElemId, Int_t cathode, Int_t ix, In
   fDigitBuffer[fNDigits+6] = cathode;
 
   fNDigits += 7;
-  /*
-  if ((fChamberID < 10 && charge > 5) || fChamberID >= 10) {
-    cout << "dig  " << fChamberID << "  cath  " << cathode << "  z  " << gloP[2] << endl;
-  }
-  */
+
 }
 
 //______________________________________________________________________
@@ -288,6 +276,8 @@ void MUONChamberData::RegisterCluster(Int_t /*detElemId*/, Int_t cathode, Float_
   // identical clusters are registered for both cathode planes ...
   //
 
+  if ((fNClusters/5) == (256-1)) return;
+
   fClusterBuffer[fNClusters  ] = clsX;
   fClusterBuffer[fNClusters+1] = clsY;
   fClusterBuffer[fNClusters+2] = clsZ;
@@ -295,8 +285,6 @@ void MUONChamberData::RegisterCluster(Int_t /*detElemId*/, Int_t cathode, Float_
   fClusterBuffer[fNClusters+4] = cathode;
 
   fNClusters += 5;
-
-  //cout << "cls " << fChamberID << "  cath  " << cathode << "  z  " << clsZ << endl;
 
 }
 
@@ -307,11 +295,11 @@ void MUONChamberData::RegisterHit(Int_t /*detElemId*/, Float_t hitX, Float_t hit
   // add a simulation hit to this chamber
   //
 
+  if ((fNHits/3) == (256-1)) return;
+
   fHitBuffer[fNHits  ] = hitX;
   fHitBuffer[fNHits+1] = hitY;
   fHitBuffer[fNHits+2] = hitZ;
-
-  //cout << "hit " << fChamberID << "  z  " << hitZ << endl;
 
   fNHits += 3;
 
