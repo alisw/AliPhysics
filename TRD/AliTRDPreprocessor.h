@@ -26,7 +26,7 @@ class AliTRDPreprocessor : public AliPreprocessor
 
     virtual void   Initialize(Int_t run, UInt_t startTime, UInt_t endTime);
     virtual UInt_t Process(TMap* /*dcsAliasMap*/);
-
+  
   private:
     
     ClassDef(AliTRDPreprocessor,0) // The SHUTTLE preprocessor for TRD

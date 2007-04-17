@@ -90,6 +90,24 @@ UInt_t AliTRDPreprocessor::Process(TMap* /*dcsAliasMap*/)
   TStopwatch timer;
   timer.Start();
 
+  //Run type
+  TString runType = GetRunType();
+  Log(Form("Run type for run %d: %s", fRun, runType.Data()));
+  if (strcmp(runType, "PHYSICS") != 0){
+    Log("Nothing to do!");
+    return 0;
+  }
+
+
+  // note that the parameters are returned as character strings!
+  const char* nEvents = GetRunParameter("totalEvents");
+  if (nEvents) {
+    Log(Form("Number of events for run %d: %s",fRun, nEvents));
+  } else {
+    Log(Form("Number of events not put in logbook!"));
+  }
+
+
   // Metadata for the reference data
   AliCDBMetaData metaData;
   metaData.SetBeamPeriod(1);
@@ -99,12 +117,14 @@ UInt_t AliTRDPreprocessor::Process(TMap* /*dcsAliasMap*/)
   // Take the file from the HLT file exchange server
   TList *filesources = GetFileSources(kHLT,"GAINDRIFTPRF");
   if (!filesources) {
-    AliError(Form("No sources found for GAINDRIFTPRF for run %d !",fRun));
-    return 0;
+    Log(Form("No sources found for GAINDRIFTPRF for run %d !",fRun));
+    return 1;
   }
   if (filesources->GetSize() != 1) {
-    AliError(Form("More than one source found for GAINDRIFTPRF for run %d!",fRun));
-    return 0;
+    Log(Form("More than one source found for GAINDRIFTPRF for run %d!",fRun));
+    filesources->Print();
+    delete filesources;
+    return 1;
   }
 
   // Call a AliTRDCalibra instance for fit
@@ -145,9 +165,9 @@ UInt_t AliTRDPreprocessor::Process(TMap* /*dcsAliasMap*/)
     
     TString filename = GetFile(kHLT,"GAINDRIFTPRF",source->GetName());
     if (filename.Length() == 0) {
-      AliError(Form("Error retrieving file from source %d failed!", source->GetName()));
+      Log(Form("Error retrieving file from source %d failed!", source->GetName()));
       delete filesources;
-      return 0;
+      return 2;
     }
 
     // Take the histos
@@ -155,25 +175,35 @@ UInt_t AliTRDPreprocessor::Process(TMap* /*dcsAliasMap*/)
     histogain = (TH2I *) file->Get("CH2d");
     histogain->SetDirectory(0);
     if (!histogain) {
-      AliError("Error retrieving 2D histos for gain failed!");
+      Log("Error retrieving 2D histos for gain failed!");
+      delete filesources;
+      return 2;
     }
     histodriftvelocity = (TProfile2D *) file->Get("PH2d");
     histodriftvelocity->SetDirectory(0);
     if (!histodriftvelocity) {
-      AliError("Error retrieving 2D Profile for average pulse height failed!");
+      Log("Error retrieving 2D Profile for average pulse height failed!");
+      delete filesources;
+      return 2;
     }
     histoprf = (TProfile2D *) file->Get("PRF2d");
     histoprf->SetDirectory(0);
     if (!histoprf) {
-      AliError("Error retrieving 2D Profile for Pad Response Function failed!");
+      Log("Error retrieving 2D Profile for Pad Response Function failed!");
+      delete filesources;
+      return 2;
     }
     file->Close();
 
     // Set the mode of calibration from the TObject, store the reference data and try to fit them
     if (histogain) {
       calibra->SetModeCalibrationFromTObject((TObject *) histogain,0);
-      StoreReferenceData("HLTData","Gain",(TObject *) histogain,&metaData);
-      AliInfo("Take the CH reference data. Now we will try to fit\n");
+      if(!StoreReferenceData("HLTData","Gain",(TObject *) histogain,&metaData)){
+	Log("Error storing 2D histos for gain as reference data");
+	delete filesources;
+	return 3;
+      }
+      Log("Take the CH reference data. Now we will try to fit\n");
       calibra->SetMinEntries(100); // If there is less than 100 entries in the histo: no fit
       calibra->FitCHOnline(histogain);
       numbertotalgroup[0] = 6*4*18*((Int_t) ((AliTRDCalibraMode *)calibra->GetCalibraMode())->GetDetChamb0(0))
@@ -187,8 +217,12 @@ UInt_t AliTRDPreprocessor::Process(TMap* /*dcsAliasMap*/)
     
     if (histodriftvelocity) {
       calibra->SetModeCalibrationFromTObject((TObject *) histodriftvelocity,1);
-      StoreReferenceData("HLTData","VdriftT0",(TObject *) histodriftvelocity,&metaData);
-      AliInfo("Take the PH reference data. Now we will try to fit\n");
+      if(!StoreReferenceData("HLTData","VdriftT0",(TObject *) histodriftvelocity,&metaData)){
+	Log("Error storing 2D Profile for average pulse height as reference data");
+	delete filesources;
+	return 3;
+      }
+      Log("Take the PH reference data. Now we will try to fit\n");
       calibra->SetMinEntries(100*20); // If there is less than 2000
       calibra->FitPHOnline(histodriftvelocity);
       numbertotalgroup[1] = 6*4*18*((Int_t) ((AliTRDCalibraMode *)calibra->GetCalibraMode())->GetDetChamb0(1))
@@ -204,8 +238,12 @@ UInt_t AliTRDPreprocessor::Process(TMap* /*dcsAliasMap*/)
     
     if (histoprf) {
       calibra->SetModeCalibrationFromTObject((TObject *) histoprf,2);
-      StoreReferenceData("HLTData","PRF",(TObject *) histoprf,&metaData);
-      AliInfo("Take the PRF reference data. Now we will try to fit\n");
+      if(!StoreReferenceData("HLTData","PRF",(TObject *) histoprf,&metaData)){
+	Log("Error storing the 2D Profile for Pad Response Function as reference data");
+	delete filesources;
+	return 3;
+      }
+      Log("Take the PRF reference data. Now we will try to fit\n");
       calibra->SetMinEntries(100*20); // If there is less than 2000
       calibra->SetRangeFitPRF(0.5);
       calibra->FitPRFOnline(histoprf);
@@ -220,13 +258,13 @@ UInt_t AliTRDPreprocessor::Process(TMap* /*dcsAliasMap*/)
   }
   
   // Bilan of the fit statistic
-  AliInfo(Form("The mean number of entries required for a fit is: %d"
+  Log(Form("The mean number of entries required for a fit is: %d"
               ,(Int_t) calibra->GetMinEntries()));
-  AliInfo(Form("FOR THE CH: There is a mean statistic of: %f, with %d fits for %d groups and %d histos with entries"
+  Log(Form("FOR THE CH: There is a mean statistic of: %f, with %d fits for %d groups and %d histos with entries"
               ,statisticmean[0],numberfit[0],numbertotalgroup[0],numberEnt[0]));
-  AliInfo(Form("FOR THE PH: There is a mean statistic of: %f, with %d fits for %d groups and %d histos with entries"
+  Log(Form("FOR THE PH: There is a mean statistic of: %f, with %d fits for %d groups and %d histos with entries"
               ,statisticmean[1],numberfit[1],numbertotalgroup[1],numberEnt[1]));
-  AliInfo(Form("FOR THE PRF: There is a mean statistic of: %f, with %d fits for %d groups and %d histos with entries"
+  Log(Form("FOR THE PRF: There is a mean statistic of: %f, with %d fits for %d groups and %d histos with entries"
               ,statisticmean[2],numberfit[2],numbertotalgroup[2],numberEnt[2]));
   
   
@@ -241,14 +279,34 @@ UInt_t AliTRDPreprocessor::Process(TMap* /*dcsAliasMap*/)
   md1->SetBeamPeriod(1);
   md1->SetAliRootVersion("01-10-06"); // root version
   md1->SetComment("The dummy values in this calibration file are for testing only");
+  // Gain
   if ((numbertotalgroup[0] >                  0) && 
       (numberfit[0]        >= 0.95*numberEnt[0])) {
-    Store("Calib","ChamberGainFactor",(TObject *) objgaindet         ,md1,0,kTRUE);
+    if(!Store("Calib","ChamberGainFactor",(TObject *) objgaindet         ,md1,0,kTRUE)){
+      Log("Error storing the calibration object for the chamber gain");
+      delete filesources;
+      return 4;
+    }
   }
+  else{
+    Log("Not enough statistics for the gain");
+  }
+  // Vdrift and time0
   if ((numbertotalgroup[1] >                  0) && 
       (numberfit[1]        >= 0.95*numberEnt[1])) {
-    Store("Calib","ChamberVdrift"    ,(TObject *) objdriftvelocitydet,md1,0,kTRUE);
-    Store("Calib","ChamberT0"        ,(TObject *) objtime0det        ,md1,0,kTRUE);
+    if(!Store("Calib","ChamberVdrift"    ,(TObject *) objdriftvelocitydet,md1,0,kTRUE)){
+      Log("Error storing the calibration object for the chamber vdrift");
+      delete filesources;
+      return 4;
+    }
+    if(!Store("Calib","ChamberT0"        ,(TObject *) objtime0det        ,md1,0,kTRUE)){
+      Log("Error storing the calibration object for the chamber t0");
+      delete filesources;
+      return 4;
+    }
+  }
+  else{
+    Log("Not enough statistics for the average pulse height");
   }
   
   // Store the infos for the pads
@@ -258,24 +316,46 @@ UInt_t AliTRDPreprocessor::Process(TMap* /*dcsAliasMap*/)
   md2->SetBeamPeriod(1);
   md2->SetAliRootVersion("01-10-06"); //root version
   md2->SetComment("The dummy values in this calibration file are for testing only");
+  // Gain
   if ((numbertotalgroup[0] >                  0) && 
       (numberfit[0]        >= 0.95*numberEnt[0])) {
-    Store("Calib","LocalGainFactor"  ,(TObject *) objgainpad         ,md2,0,kTRUE);
+    if(!Store("Calib","LocalGainFactor"  ,(TObject *) objgainpad         ,md2,0,kTRUE)){
+      Log("Error storing the calibration object for the local gain factor");
+      delete filesources;
+      return 4;
+    }
   }
+  // Vdrift and time0
   if ((numbertotalgroup[1] >                  0) && 
       (numberfit[1]        >= 0.95*numberEnt[1])) {
-    Store("Calib","LocalVdrift"      ,(TObject *) objdriftvelocitypad,md2,0,kTRUE);
-    Store("Calib","LocalT0"          ,(TObject *) objtime0pad        ,md2,0,kTRUE);
+    if(!Store("Calib","LocalVdrift"      ,(TObject *) objdriftvelocitypad,md2,0,kTRUE)){
+      Log("Error storing the calibration object for the local drift velocity");
+      delete filesources;
+      return 4;
+    }
+    if(!Store("Calib","LocalT0"          ,(TObject *) objtime0pad        ,md2,0,kTRUE)){
+      Log("Error storing the calibration object for the local time0");
+      delete filesources;
+      return 4;
+    }
   }
+  // Pad Response Width
   if ((numbertotalgroup[2] >                  0) && 
       (numberfit[2]        >= 0.95*numberEnt[2])) {
-    Store("Calib","PRFWidth"         ,(TObject *) objPRFpad          ,md2,0,kTRUE);
+    if(!Store("Calib","PRFWidth"         ,(TObject *) objPRFpad          ,md2,0,kTRUE)){
+      Log("Error storing the calibration object for the Pad Response Function");
+      delete filesources;
+      return 4;
+    }
+  }
+  else{
+    Log("Not enough statistics for the Pad Response Function");
   }
   
   // End
   delete filesources;
   timer.Stop();
   timer.Print();
-  return 1;  
+  return 0;  
 
 }
