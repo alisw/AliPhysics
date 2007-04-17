@@ -629,7 +629,8 @@ void TrackList::SelectByP(Float_t min_p, Float_t max_p)
   Float_t psq;
 
   for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
-    psq = ((Track*)(*i))->fP.Mag();
+    psq  = ((Track*)(*i))->fP.Mag();
+    psq *= psq;
     (*i)->SetRnrSelf(psq >= minpsq && psq <= maxpsq);
   }
 }
