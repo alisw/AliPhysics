@@ -1,3 +1,12 @@
+2007-04-17  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* MUONChamberData.cxx:
+	* MUONChamberData.h:
+	* MUONData.cxx:
+	* MUONData.h:
+	* MUONTrack.cxx:
+	Bogdan: Updates for the muon display.
+
 2007-04-10  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* MUONChamber.cxx:

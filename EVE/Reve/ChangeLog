@@ -1,3 +1,8 @@
+2007-04-17  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* Track.cxx:
+	Bogdan: fix calculation of squared momentum.
+
 2007-04-11  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
 
 	* StraightLineSet.cxx:
