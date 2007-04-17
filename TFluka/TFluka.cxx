@@ -1000,7 +1000,7 @@ Int_t TFluka::PDGFromId(Int_t id) const
     }
 // Error id    
     if (id == 0 || id < kFLUKAcodemin || id > kFLUKAcodemax) {
-        if (fVerbosityLevel >= -1)
+        if (fVerbosityLevel >= 3)
             printf("PDGFromId: Error id = 0 %5d %5d\n", id, fCaller);
         return -1;
     }
