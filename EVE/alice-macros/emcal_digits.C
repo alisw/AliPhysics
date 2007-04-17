@@ -27,13 +27,17 @@ void emcal_digits()
   Reve::FrameBox* frame_sml = new Reve::FrameBox();
   frame_sml->SetAABoxCenterHalfSize(0, 0, 0, sbbox->GetDX(), sbbox->GetDY(), sbbox->GetDZ());
 
+  gStyle->SetPalette(1, 0);
+  Reve::RGBAPalette* pal = new Reve::RGBAPalette(0, 512);
+  pal->SetLimits(0, 1024);
+
   Reve::QuadSet* smodules[12];
 
   for (Int_t sm=0; sm<12; ++sm)
   {
     Reve::QuadSet* q = new Reve::QuadSet(Form("SM %d", sm+1));
     q->SetOwnIds(kTRUE);
-    q->Reset(Reve::QuadSet::QT_RectangleXYFixedDimZ, kFALSE, 32);
+    q->Reset(Reve::QuadSet::QT_RectangleYZFixedDimX, kFALSE, 32);
     q->SetDefWidth (geom->GetPhiTileSize());
     q->SetDefHeight(geom->GetEtaTileSize());
 
@@ -43,6 +47,7 @@ void emcal_digits()
     q->RefHMTrans().TransposeRotationPart(); // Spook?
 
     q->SetFrame(sm < 10 ? frame_big : frame_sml);
+    q->SetPalette(pal);
 
     gReve->AddRenderElement(l, q);
     smodules[sm] = q;
@@ -94,10 +99,15 @@ void emcal_digits()
       Reve::QuadSet* q = smodules[iSupMod];
       q->AddQuad(y, z);
       q->QuadValue(amp);
-      q->QuadId(dig);      
+      q->QuadId(dig);
     } else {
       cout<<"Digit pointer 0x0"<<endl;
     }
+  }
+
+  for (Int_t sm=0; sm<12; ++sm)
+  {
+    smodules[iSupMod]->RefitPlex();
   }
 
   gReve->Redraw3D();
