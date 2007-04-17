@@ -16,6 +16,8 @@
 #include <AliTPCROC.h>
 class TH1F;
 class TH2F;
+class TArrayI;
+class TLinearFitter;
 //_____________________________________________________________________________
 class AliTPCCalROC : public TObject {
 
@@ -50,8 +52,17 @@ class AliTPCCalROC : public TObject {
   TH1F * MakeHisto1D(Float_t min=4, Float_t max=-4, Int_t type=0);     
   TH2F * MakeHisto2D(Float_t min=4, Float_t max=-4, Int_t type=0);   
   TH2F * MakeHistoOutliers(Float_t delta=4, Float_t fraction=0.7, Int_t mode=0);
+
+  AliTPCCalROC * LocalFit(Int_t rowRadius, Int_t padRadius, AliTPCCalROC* ROCoutliers = 0, Bool_t robust = kFALSE);
+  
+  
   static void Test();
  protected:
+  
+  Double_t GetNeighbourhoodValue(TLinearFitter* fitterQ, Int_t row, Int_t pad, Int_t rRadius, Int_t pRadius, AliTPCCalROC* ROCoutliers, Bool_t robust);
+  void GetNeighbourhood(TArrayI* &rowArray, TArrayI* &padArray, Int_t row, Int_t pad, Int_t rRadius, Int_t pRadius);
+  
+  
   UInt_t     fSector;          // sector number
   UInt_t     fNChannels;       // number of channels
   UInt_t     fNRows;           // number of rows

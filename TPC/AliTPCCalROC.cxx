@@ -22,12 +22,19 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "AliTPCCalROC.h"
+//
+// ROOT includes 
+//
 #include "TMath.h"
 #include "TClass.h"
 #include "TFile.h"
 #include "TH1F.h"
 #include "TH2F.h"
+#include "TLinearFitter.h"
+#include "TArrayI.h"
+//
+//
+#include "AliTPCCalROC.h"
 #include "AliMathBase.h"
 
 ClassImp(AliTPCCalROC)
@@ -376,4 +383,150 @@ void AliTPCCalROC::Test(){
     }
   }   
 }
+
+
+
+AliTPCCalROC * AliTPCCalROC::LocalFit(Int_t rowRadius, Int_t padRadius, AliTPCCalROC* ROCoutliers, Bool_t robust) {
+  //
+  // MakeLocalFit - smoothing
+  // rowRadius  -  radius - rows to be used for smoothing
+  // padradius  -  radius - pads to be used for smoothing
+  // ROCoutlier -  map of outliers - pads not to be used for local smoothing
+  // robust     -  robust method of fitting  - (much slower)
+  
+  AliTPCCalROC * ROCfitted = new AliTPCCalROC(fSector);
+  TLinearFitter fitterQ(6,"x0++x1++x2++x3++x4++x5");
+  fitterQ.StoreData(kTRUE);
+  for (Int_t row=0; row < GetNrows(); row++) {
+    //std::cout << "Entering row " << row << " of " << GetNrows() << " @ sector "<< fSector << " for local fitting... "<< std::endl;
+    for (Int_t pad=0; pad < GetNPads(row); pad++)
+      ROCfitted->SetValue(row, pad, GetNeighbourhoodValue(&fitterQ, row, pad, rowRadius, padRadius, ROCoutliers, robust));
+  }
+  return ROCfitted;
+}
+
+
+Double_t AliTPCCalROC::GetNeighbourhoodValue(TLinearFitter* fitterQ, Int_t row, Int_t pad, Int_t rRadius, Int_t pRadius, AliTPCCalROC* ROCoutliers, Bool_t robust) {
+  //
+  //  AliTPCCalROC::GetNeighbourhoodValue - smoothing (PRIVATE)
+  // rowRadius  -  radius - rows to be used for smoothing
+  // padradius  -  radius - pads to be used for smoothing
+  // ROCoutlier -  map of outliers - pads not to be used for local smoothing
+  // robust     -  robust method of fitting  - (much slower)
+  
+
+
+  fitterQ->ClearPoints();
+  TVectorD fitParam(6);
+  Int_t    npoints=0;
+  Double_t xx[6];
+  Float_t dlx, dly;
+  Float_t lPad[3] = {0};
+  Float_t localXY[3] = {0};
+  
+  AliTPCROC* tpcROCinstance = AliTPCROC::Instance();
+  tpcROCinstance->GetPositionLocal(fSector, row, pad, lPad);  // calculate position lPad by pad and row number
+  
+  TArrayI *neighbourhoodRows = 0;
+  TArrayI *neighbourhoodPads = 0;
+  GetNeighbourhood(neighbourhoodRows, neighbourhoodPads, row, pad, rRadius, pRadius);
+  
+  Int_t r, p;
+  for (Int_t i=0; i < (2*rRadius+1)*(2*pRadius+1); i++) {
+    r = neighbourhoodRows->At(i);
+    p = neighbourhoodPads->At(i);
+    if (r == -1 || p == -1) continue;
+    tpcROCinstance->GetPositionLocal(fSector, r, p, localXY);   // calculate position localXY by pad and row number
+    dlx = lPad[0] - localXY[0];
+    dly = lPad[1] - localXY[1];
+    xx[0] = 1;
+    xx[1] = dlx;
+    xx[2] = dly;
+    xx[3] = dlx*dlx;
+    xx[4] = dly*dly;
+    xx[5] = dlx*dly;
+    if (ROCoutliers && ROCoutliers->GetValue(r,p) != 1) {
+      fitterQ->AddPoint(xx, GetValue(r, p), 1);
+      npoints++;
+    }
+  }
+  if (npoints < 0.5 * ((2*rRadius+1)*(2*pRadius+1)) ) {
+    // std::cerr << "Too few data points for fitting @ row " << row << ", pad " << pad << " in sector " << fSector << std::endl;
+    return 0.;  // for diagnostic
+  }
+  fitterQ->Eval();
+  fitterQ->GetParameters(fitParam);
+  Float_t chi2Q = 0;
+  chi2Q = fitterQ->GetChisquare()/(npoints-6.);
+  //if (robust) chi2Q = fitterQ->GetChisquare()/(npoints-6.);
+  if (robust && chi2Q > 5) {
+    //std::cout << "robust fitter called... " << std::endl;
+    fitterQ->EvalRobust(0.7);
+    fitterQ->GetParameters(fitParam);
+  }
+  Double_t value = fitParam[0];
+  
+  delete neighbourhoodRows;
+  delete neighbourhoodPads;
+  
+  //if (value < 0) std::cerr << "negative fit-value " << value << " in sector "<< this->fSector << " @ row: " << row << " and pad: " << pad << ", with fitter Chi2 = " << chi2Q <<  std::endl;
+  
+  return value;
+}
+
+
+
+
+void AliTPCCalROC::GetNeighbourhood(TArrayI* &rowArray, TArrayI* &padArray, Int_t row, Int_t pad, Int_t rRadius, Int_t pRadius) {
+  //
+  //
+  //
+  rowArray = new TArrayI((2*rRadius+1)*(2*pRadius+1));
+  padArray = new TArrayI((2*rRadius+1)*(2*pRadius+1));
+  Int_t* rowArrayTemp = rowArray->GetArray();
+  Int_t* padArrayTemp = padArray->GetArray();
+  
+  Int_t rmin = row - rRadius;
+  Int_t rmax = row + rRadius;
+  
+  // if window goes out of ROC
+  if (rmin < 0) {
+    rmax = rmax - rmin;
+    rmin = 0;
+  }
+  if (rmax >= GetNrows()) {
+    rmin = rmin - (rmax - GetNrows()+1);
+    rmax = GetNrows() - 1;
+      if (rmin  < 0 ) rmin = 0; // if the window is bigger than the ROC
+  }
+  
+  Int_t pmin, pmax;
+  Int_t i = 0;
+  
+  for (Int_t r = rmin; r <= rmax; r++) {
+    pmin = pad - pRadius;
+    pmax = pad + pRadius;
+    if (pmin < 0) {
+      pmax = pmax - pmin;
+      pmin = 0;
+    }
+    if (pmax >= GetNPads(r)) {
+      pmin = pmin - (pmax - GetNPads(r)+1);
+      pmax = GetNPads(r) - 1;
+      if (pmin  < 0 ) pmin = 0; // if the window is bigger than the ROC
+    }
+    for (Int_t p = pmin; p <= pmax; p++) {
+      rowArrayTemp[i] = r;
+      padArrayTemp[i] = p;
+      i++;
+    }
+  }
+  for (Int_t j = i; j < rowArray->GetSize(); j++){  // unused padArray-entries, in the case that the window is bigger than the ROC
+    //std::cout << "trying to write -1" << std::endl;
+    rowArrayTemp[j] = -1;
+    padArrayTemp[j] = -1;
+    //std::cout << "writing -1" << std::endl;
+  } 
+}
+
 
