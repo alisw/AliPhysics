@@ -15,8 +15,40 @@
 
 /**
  * @class AliHLTAgentSample
- * This is the agent for the AliHLTSample library.
+ * This is the agent for the AliHLTSample library.<br>
+ * The AliHLTSample library illustrates usage of the HLT framework. The
+ * agent provides information on the features of the sample components
+ * and the configuration which should be run during AliRoot reconstruction.
  *
+ * The sample agent implements all interface function provided by @ref
+ * AliHLTModuleAgent :
+ * - @ref CreateConfigurations <br>
+ *   The method gets an instance of the AliHLTConfigurationHanler to add
+ *   configurations, e.g. 
+ *   <pre>
+ *   handler->CreateConfiguration("my-puplisher"  , "FilePublisher", NULL , "data.bin");
+ *   ...
+ *   handler->CreateConfiguration("my-analysis-chain"  , "FileWriter", "my-processor" , "my arguments");
+ *   </pre>
+ * - @ref GetLocalRecConfigurations <br>
+ *   returns a string of blank separated configurations to be run during
+ *   local event reconstruction.
+ *   <pre>
+ *   return "my-data-sink my-analysis-chain";
+ *   </pre>
+ * - @ref GetRequiredComponentLibraries <br>
+ *   returns a string of blank separated libraries which have to be loaded
+ *   in addition
+ *   <pre>
+ *   return "libAliHLTUtil.so";
+ *   </pre>
+ * - not implemented are the in iterface methods
+ *   - @ref AliHLTModuleAgent::GetEventRecConfigurations
+ *   - @ref AliHLTModuleAgent::RegisterComponents
+ *
+ * In order to hook the sample library up to the HLT system on global object
+ * @ref gAliHLTAgentSample of the agent is defined in the source code.
+ * 
  * @ingroup alihlt_system
  */
 class AliHLTAgentSample : public AliHLTModuleAgent {
@@ -30,7 +62,7 @@ class AliHLTAgentSample : public AliHLTModuleAgent {
   virtual ~AliHLTAgentSample();
 
   /**
-   * Register all configurations belonging to this module with the
+   * Register all configurations belonging to the sample library with the
    * AliHLTConfigurationHandler. The agent can adapt the configurations
    * to be registered to the current AliRoot setup by checking the
    * runloader.
@@ -42,15 +74,15 @@ class AliHLTAgentSample : public AliHLTModuleAgent {
 			   AliRunLoader* runloader=NULL) const;
 
   /**
-   * Get the top configurations belonging to this module.
+   * Get the top configurations for local event reconstruction.
    * A top configuration describes a processing chain. It can simply be
    * described by the last configuration(s) in the chain. 
    * The agent can adapt the configurations to be registered to the current
    * AliRoot setup by checking the runloader.
-   * @param runloader    AliRoot runloader
-   * @return number of configurations, neg. error code if failed
+   * @param runloader  [in] AliRoot runloader
+   * @return string containing the top configurations separated by blanks
    */
-  const char* GetTopConfigurations(AliRunLoader* runloader=NULL) const;
+  const char* GetLocalRecConfigurations(AliRunLoader* runloader=NULL) const;
 
   /**
    * Component libraries which the configurations of this agent depend on.
@@ -61,7 +93,14 @@ class AliHLTAgentSample : public AliHLTModuleAgent {
  protected:
 
  private:
-  ClassDef(AliHLTAgentSample, 0);
+  /** file name of the generated test data*/
+  static const char* fgkAliHLTAgentSampleData;                      //!transient
+
+  /** file name of the output file */
+  static const char* fgkAliHLTAgentSampleOut;                       //!transient
+
+  /** ROOT specific member definition */
+  ClassDef(AliHLTAgentSample, 1);
 };
 
 #endif

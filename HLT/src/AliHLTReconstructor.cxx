@@ -7,9 +7,6 @@
 // <loizides@ikf.uni-frankfurt.de>                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-// very ugly but it has to work fast
-#ifdef use_reconstruction
-
 #include <Riostream.h>
 #include <TSystem.h>
 #include <TArrayF.h>
@@ -47,6 +44,7 @@
 using namespace std;
 #endif
 
+/** HLT default component libraries */
 const char* kHLTDefaultLibs[]= {
   "libAliHLTUtil.so", 
   "libAliHLTTPC.so", 
@@ -482,4 +480,3 @@ void AliHLTReconstructor::FillDHLTRecPoint(AliRawReader* rawReader, Int_t nofEve
 
 }
 
-#endif

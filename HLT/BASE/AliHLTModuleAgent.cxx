@@ -99,7 +99,16 @@ int AliHLTModuleAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
   return 0;
 }
 
-const char* AliHLTModuleAgent::GetTopConfigurations(AliRunLoader* runloader) const
+const char* AliHLTModuleAgent::GetLocalRecConfigurations(AliRunLoader* runloader) const
+{
+  // default method, nothing to be done, child classes can overload
+  if (runloader==NULL) {
+    // get rid of 'unused parameter' warning
+  }
+  return NULL;
+}
+
+const char* AliHLTModuleAgent::GetEventRecConfigurations(AliRunLoader* runloader) const
 {
   // default method, nothing to be done, child classes can overload
   if (runloader==NULL) {

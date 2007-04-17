@@ -248,7 +248,8 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
    *          of the consumer, neg. error code if failed <br>
    *          -EINVAL       invalid parameter <br>
    */
-  int FindMatchingDataSegments(const AliHLTComponent* pConsumer, vector<AliHLTDataSegment>& tgtList);
+  int FindMatchingDataSegments(const AliHLTComponent* pConsumer, 
+			       vector<AliHLTDataBuffer::AliHLTDataSegment>& tgtList);
 
   /**
    * Reset the data buffer.

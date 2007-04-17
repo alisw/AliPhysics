@@ -22,9 +22,7 @@
  * of files.<br>
  *
  * Component ID: \b FilePublisher <br>
- * Library: \b libHLTBase (in order to use the component from the external
- * interface, it might be necessary to specify a dummy library with the
- * \em -componentlibrary argument).
+ * Library: \b libAliHLTUtil.
  *
  * Mandatory arguments: <br>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->

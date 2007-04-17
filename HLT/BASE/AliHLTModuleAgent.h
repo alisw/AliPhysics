@@ -25,23 +25,49 @@ class AliRunLoader;
  * @brief Agent helper class for HLT sub modules, e.g. PHOS, TPC, Trigger
  *
  * This class implements the agent base class for the HLT sub modules.
- * The agent of a library gives information on the features of the module,
- * like the configurations to run and other component libraries it depends
- * on.
- * 
+ * The agent of a library gives information on the features of the library/
+ * components, like the configurations to run and other component libraries
+ * it depends on.
+ * @note There must not be more than one agent per module/library.
+ *
  * All HLT component libraries are loaded on demand through the HLT steering
  * instance (@ref AliHLTSystem). A library can implement an agent derived 
  * from this base class, and has to define one global object of this agent
  * in the code. The agent will be registered automatically, and the features
  * can be queried when required.
  *
- * This is usually done during running the AliRoot Reconstruction (see
- * <tt>AliReconstruction</tt>. The HLT implemets the AliHLTReconstructor which
- * holds the HLT steering object. Several flags can be specified as options
- * via the SetOption method of AliReconstruction, including the component
- * libraries to be loaded.
+ * This is usually done during running the AliRoot reconstruction (see AliRoot
+ * documentation on <tt> AliReconstruction</tt>). The HLT implemets the @ref
+ * AliHLTReconstructor which holds the HLT steering object. Several flags can
+ * be specified as options via the <tt>SetOption</tt> method of 
+ * <tt>AliReconstruction</tt>, including the component libraries to be loaded.
  *
- * There must be only one agent per module/library.
+ * @section alihltmoduleagent_interface Agent interface
+ * The child can implement the following functions:
+ * - @ref CreateConfigurations                                              <br>
+ *       create HLT configuration forming an HLT analysis chain.
+ *
+ * - @ref GetLocalRecConfigurations                                         <br>
+ *       configurations run during local event reconstruction. 
+ *       @note Local event reconstruction is the first step of the 
+ *       reconstruction chain. All events are processed at once.
+ *                                                                          <br>
+ * - @ref GetEventRecConfigurations                                         <br>
+ *       configurations run during event reconstruction.
+ *       @note This is the reconstruction on event by event basis.
+ *                                                                          <br>
+ * - @ref GetRequiredComponentLibraries                                     <br>
+ *       can indicate further libraries which are required for running the
+ *       chains (e.g. if components of another library are used).
+ *
+ * - @ref RegisterComponents                                                <br>
+ *       register componens, this can be used to avoid the component
+ *       registration via global objects 
+ *       @see @ref alihltcomponent-handling
+ *                                                                          <br>
+ * @section alihltmoduleagent_references References
+ * @see @ref AliHLTReconstructor interface to the AliRoot reconstruction
+ * @see @ref AliHLTAgentSample agent for the libAliHLTSample library
  *
  * @ingroup alihlt_system
  */
@@ -61,8 +87,8 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
 
   /**
    * Print status info.
-   * Short summary on registered agents. This function acts globally on the list
-   * of agents if no specific agent is specified.
+   * Short summary on registered agents. This function acts globally on the
+   * list of agents if no specific agent is specified.
    */
   static void PrintStatus(const char* agent=NULL);
 
@@ -91,7 +117,7 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
 				   AliRunLoader* runloader=NULL) const;
 
   /**
-   * Get the top configurations belonging to this module.
+   * Get the top configurations for local event reconstruction.
    * A top configuration describes a processing chain. It can simply be
    * described by the last configuration(s) in the chain. 
    * The agent can adapt the configurations to be registered to the current
@@ -99,7 +125,16 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
    * @param runloader  [in] AliRoot runloader
    * @return string containing the top configurations separated by blanks
    */
-  virtual const char* GetTopConfigurations(AliRunLoader* runloader=NULL) const;
+  virtual const char* GetLocalRecConfigurations(AliRunLoader* runloader=NULL) const;
+
+  /**
+   * Get the top configurations for event reconstruction.
+   * The same as for @ref GetLocalRecConfigurations, but for the reconstruction on
+   * event by event basis.
+   * @param runloader  [in] AliRoot runloader
+   * @return string containing the top configurations separated by blanks
+   */
+  virtual const char* GetEventRecConfigurations(AliRunLoader* runloader=NULL) const;
 
   /**
    * Component libraries which the configurations of this agent depend on.
@@ -116,6 +151,14 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
    * it.
    */
   virtual int RegisterComponents(AliRunLoader* runloader=NULL) const;
+
+  /**
+   * Old method kept for backward compatibility, redirected to @ref
+   * GetLocalRecConfigurations.
+   */
+  const char* GetTopConfigurations(AliRunLoader* runloader=NULL) const {
+    return GetLocalRecConfigurations(runloader);
+  }
 
  protected:
 

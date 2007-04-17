@@ -1,3 +1,8 @@
+2007-04-17 HLT sample applications
+	- publisher for AliLoader trees added
+	- sample analysis chain added tp sample lib
+	- tutorial and documentation
+	- benchmark functionality added to AliHLTSystem
 2007-03-14 aliroot integration
 	- AliHLTSystem interface methods to AliHLTReconstructor implemeted
 	- AliHLTModuleAgent introduced for each HLT module, sample

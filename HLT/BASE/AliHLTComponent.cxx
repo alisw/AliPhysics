@@ -32,9 +32,19 @@ using namespace std;
 #include "TString.h"
 #include "TObjArray.h"
 #include "TClass.h"
+#include "TStopwatch.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
-ClassImp(AliHLTComponent)
+ClassImp(AliHLTComponent);
+
+/** stopwatch macro using the stopwatch guard */
+#define ALIHLTCOMPONENT_STOPWATCH(type) AliHLTStopwatchGuard swguard(fpStopwatches!=NULL?reinterpret_cast<TStopwatch*>(fpStopwatches->At((int)type)):NULL)
+//#define ALIHLTCOMPONENT_STOPWATCH(type) 
+
+/** stopwatch macro for operations of the base class */
+#define ALIHLTCOMPONENT_BASE_STOPWATCH() ALIHLTCOMPONENT_STOPWATCH(kSWBase)
+/** stopwatch macro for operations of the detector algorithm (DA) */
+#define ALIHLTCOMPONENT_DA_STOPWATCH() ALIHLTCOMPONENT_STOPWATCH(kSWDA)
 
 AliHLTComponent::AliHLTComponent()
   :
@@ -51,7 +61,8 @@ AliHLTComponent::AliHLTComponent()
   fpOutputBuffer(NULL),
   fOutputBufferSize(0),
   fOutputBufferFilled(0),
-  fOutputBlocks()
+  fOutputBlocks(),
+  fpStopwatches(new TObjArray(kSWTypeCount))
 {
   // see header file for class documentation
   // or
@@ -80,7 +91,8 @@ AliHLTComponent::AliHLTComponent(const AliHLTComponent&)
   fpOutputBuffer(NULL),
   fOutputBufferSize(0),
   fOutputBufferFilled(0),
-  fOutputBlocks()
+  fOutputBlocks(),
+  fpStopwatches(NULL)
 {
   // see header file for class documentation
   HLTFatal("copy constructor untested");
@@ -431,6 +443,7 @@ const TObject* AliHLTComponent::GetFirstInputObject(const AliHLTComponentDataTyp
 						    int bForce)
 {
   // see header file for function documentation
+  ALIHLTCOMPONENT_BASE_STOPWATCH();
   fSearchDataType=dt;
   if (classname) fClassName=classname;
   else fClassName.clear();
@@ -452,6 +465,7 @@ const TObject* AliHLTComponent::GetFirstInputObject(const char* dtID,
 						    int         bForce)
 {
   // see header file for function documentation
+  ALIHLTCOMPONENT_BASE_STOPWATCH();
   AliHLTComponentDataType dt;
   SetDataType(dt, dtID, dtOrigin);
   return GetFirstInputObject(dt, classname, bForce);
@@ -460,6 +474,7 @@ const TObject* AliHLTComponent::GetFirstInputObject(const char* dtID,
 const TObject* AliHLTComponent::GetNextInputObject(int bForce)
 {
   // see header file for function documentation
+  ALIHLTCOMPONENT_BASE_STOPWATCH();
   int idx=FindInputBlock(fSearchDataType, fCurrentInputBlock+1);
   //HLTDebug("found block %d when searching for data type %s", idx, DataType2Text(fSearchDataType).c_str());
   TObject* pObj=NULL;
@@ -550,11 +565,13 @@ int AliHLTComponent::CleanupInputObjects()
     if (pObj) delete pObj;
   }
   delete array;
+  return 0;
 }
 
 AliHLTComponentDataType AliHLTComponent::GetDataType(const TObject* pObject)
 {
   // see header file for function documentation
+  ALIHLTCOMPONENT_BASE_STOPWATCH();
   AliHLTComponentDataType dt=kAliHLTVoidDataType;
   int idx=fCurrentInputBlock;
   if (pObject) {
@@ -576,6 +593,7 @@ AliHLTComponentDataType AliHLTComponent::GetDataType(const TObject* pObject)
 AliHLTUInt32_t AliHLTComponent::GetSpecification(const TObject* pObject)
 {
   // see header file for function documentation
+  ALIHLTCOMPONENT_BASE_STOPWATCH();
   AliHLTUInt32_t iSpec=kAliHLTVoidDataSpec;
   int idx=fCurrentInputBlock;
   if (pObject) {
@@ -597,6 +615,7 @@ AliHLTUInt32_t AliHLTComponent::GetSpecification(const TObject* pObject)
 const AliHLTComponentBlockData* AliHLTComponent::GetFirstInputBlock(const AliHLTComponentDataType& dt)
 {
   // see header file for function documentation
+  ALIHLTCOMPONENT_BASE_STOPWATCH();
   fSearchDataType=dt;
   fClassName.clear();
   int idx=FindInputBlock(fSearchDataType, 0);
@@ -612,6 +631,7 @@ const AliHLTComponentBlockData* AliHLTComponent::GetFirstInputBlock(const char* 
 								    const char* dtOrigin)
 {
   // see header file for function documentation
+  ALIHLTCOMPONENT_BASE_STOPWATCH();
   AliHLTComponentDataType dt;
   SetDataType(dt, dtID, dtOrigin);
   return GetFirstInputBlock(dt);
@@ -620,6 +640,7 @@ const AliHLTComponentBlockData* AliHLTComponent::GetFirstInputBlock(const char* 
 const AliHLTComponentBlockData* AliHLTComponent::GetNextInputBlock()
 {
   // see header file for function documentation
+  ALIHLTCOMPONENT_BASE_STOPWATCH();
   int idx=FindInputBlock(fSearchDataType, fCurrentInputBlock+1);
   const AliHLTComponentBlockData* pBlock=NULL;
   if (idx>=0) {
@@ -648,6 +669,7 @@ int AliHLTComponent::FindInputBlock(const AliHLTComponentBlockData* pBlock)
 AliHLTUInt32_t AliHLTComponent::GetSpecification(const AliHLTComponentBlockData* pBlock)
 {
   // see header file for function documentation
+  ALIHLTCOMPONENT_BASE_STOPWATCH();
   AliHLTUInt32_t iSpec=kAliHLTVoidDataSpec;
   int idx=fCurrentInputBlock;
   if (pBlock) {
@@ -666,6 +688,7 @@ AliHLTUInt32_t AliHLTComponent::GetSpecification(const AliHLTComponentBlockData*
 int AliHLTComponent::PushBack(TObject* pObject, const AliHLTComponentDataType& dt, AliHLTUInt32_t spec)
 {
   // see header file for function documentation
+  ALIHLTCOMPONENT_BASE_STOPWATCH();
   int iResult=0;
   if (pObject) {
     AliHLTMessage msg(kMESS_OBJECT);
@@ -690,6 +713,7 @@ int AliHLTComponent::PushBack(TObject* pObject, const AliHLTComponentDataType& d
 int AliHLTComponent::PushBack(TObject* pObject, const char* dtID, const char* dtOrigin, AliHLTUInt32_t spec)
 {
   // see header file for function documentation
+  ALIHLTCOMPONENT_BASE_STOPWATCH();
   AliHLTComponentDataType dt;
   SetDataType(dt, dtID, dtOrigin);
   return PushBack(pObject, dt, spec);
@@ -698,12 +722,14 @@ int AliHLTComponent::PushBack(TObject* pObject, const char* dtID, const char* dt
 int AliHLTComponent::PushBack(void* pBuffer, int iSize, const AliHLTComponentDataType& dt, AliHLTUInt32_t spec)
 {
   // see header file for function documentation
+  ALIHLTCOMPONENT_BASE_STOPWATCH();
   return InsertOutputBlock(pBuffer, iSize, dt, spec);
 }
 
 int AliHLTComponent::PushBack(void* pBuffer, int iSize, const char* dtID, const char* dtOrigin, AliHLTUInt32_t spec)
 {
   // see header file for function documentation
+  ALIHLTCOMPONENT_BASE_STOPWATCH();
   AliHLTComponentDataType dt;
   SetDataType(dt, dtID, dtOrigin);
   return PushBack(pBuffer, iSize, dt, spec);
@@ -772,6 +798,7 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 				   AliHLTComponentEventDoneData*& edd )
 {
   // see header file for function documentation
+  ALIHLTCOMPONENT_BASE_STOPWATCH();
   int iResult=0;
   fCurrentEvent=evtData.fEventID;
   fCurrentEventData=evtData;
@@ -784,7 +811,10 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
   fOutputBlocks.clear();
   
   vector<AliHLTComponentBlockData> blockData;
-  iResult=DoProcessing(evtData, blocks, trigData, outputPtr, size, blockData, edd);
+  { // dont delete, sets the scope for the stopwatch guard
+    ALIHLTCOMPONENT_DA_STOPWATCH();
+    iResult=DoProcessing(evtData, blocks, trigData, outputPtr, size, blockData, edd);
+  } // end of the scope of the stopwatch guard
   if (iResult>=0) {
     if (fOutputBlocks.size()>0) {
       //HLTDebug("got %d block(s) via high level interface", fOutputBlocks.size());
@@ -811,3 +841,100 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
   return iResult;
 }
 
+AliHLTComponent::AliHLTStopwatchGuard::AliHLTStopwatchGuard()
+  :
+  fpStopwatch(NULL),
+  fpPrec(NULL)
+{
+  // standard constructor (not for use)
+}
+
+AliHLTComponent::AliHLTStopwatchGuard::AliHLTStopwatchGuard(TStopwatch* pStopwatch)
+  :
+  fpStopwatch(pStopwatch),
+  fpPrec(NULL)
+{
+  // constructor
+
+  // check for already existing guard
+  if (fgpCurrent) fpPrec=fgpCurrent;
+  fgpCurrent=this;
+
+  // stop the preceeding guard if it controls a different stopwatch
+  int bStart=1;
+  if (fpPrec && fpPrec!=this) bStart=fpPrec->Hold(fpStopwatch);
+
+  // start the stopwatch if the current guard controls a different one
+  if (fpStopwatch && bStart==1) fpStopwatch->Start(kFALSE);
+}
+
+AliHLTComponent::AliHLTStopwatchGuard::AliHLTStopwatchGuard(AliHLTStopwatchGuard&)
+  :
+  fpStopwatch(NULL),
+  fpPrec(NULL)
+{
+  // copy constructor (not for use)
+}
+
+AliHLTComponent::AliHLTStopwatchGuard* AliHLTComponent::AliHLTStopwatchGuard::fgpCurrent=NULL;
+
+AliHLTComponent::AliHLTStopwatchGuard::~AliHLTStopwatchGuard()
+{
+  // destructor
+
+  // resume the preceeding guard if it controls a different stopwatch
+  int bStop=1;
+  if (fpPrec && fpPrec!=this) bStop=fpPrec->Resume(fpStopwatch);
+
+  // stop the stopwatch if the current guard controls a different one
+  if (fpStopwatch && bStop==1) fpStopwatch->Stop();
+
+  // resume to the preceeding guard
+  fgpCurrent=fpPrec;
+}
+
+int AliHLTComponent::AliHLTStopwatchGuard::Hold(TStopwatch* pSucc)
+{
+  // see header file for function documentation
+  if (fpStopwatch!=NULL && fpStopwatch!=pSucc) fpStopwatch->Stop();
+  return fpStopwatch!=pSucc?1:0;
+}
+
+int AliHLTComponent::AliHLTStopwatchGuard::Resume(TStopwatch* pSucc)
+{
+  // see header file for function documentation
+  if (fpStopwatch!=NULL && fpStopwatch!=pSucc) fpStopwatch->Start(kFALSE);
+  return fpStopwatch!=pSucc?1:0;
+}
+
+int AliHLTComponent::SetStopwatch(TObject* pSW, AliHLTStopwatchType type) 
+{
+  // see header file for function documentation
+  int iResult=0;
+  if (pSW!=NULL && type<kSWTypeCount) {
+    if (fpStopwatches) {
+      TObject* pObj=fpStopwatches->At((int)type);
+      if (pSW==NULL        // explicit reset
+	  || pObj==NULL) { // explicit set
+	fpStopwatches->AddAt(pSW, (int)type);
+      } else if (pObj!=pSW) {
+	HLTWarning("stopwatch %d already set, reset first", (int)type);
+	iResult=-EBUSY;
+      }
+    }
+  } else {
+    iResult=-EINVAL;
+  }
+  return iResult;
+}
+
+int AliHLTComponent::SetStopwatches(TObjArray* pStopwatches)
+{
+  // see header file for function documentation
+  if (pStopwatches==NULL) return -EINVAL;
+
+  int iResult=0;
+  for (int i=0 ; i<(int)kSWTypeCount && pStopwatches->GetEntries(); i++)
+    SetStopwatch(pStopwatches->At(i), (AliHLTStopwatchType)i);
+  return iResult;
+}

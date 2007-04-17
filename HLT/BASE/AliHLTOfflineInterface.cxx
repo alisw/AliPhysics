@@ -143,8 +143,8 @@ int AliHLTOfflineInterface::SetParamsToComponents(AliRunLoader* runLoader, AliRa
     fgCurrentLnk=fgCurrentLnk->Next();
   }
   if (iResult>=0) {
-      log.LoggingVarargs(kHLTLogInfo, "AliHLTOfflineInterface","SetParamsToComponents", __FILE__, __LINE__,
-			"parameters set to %d offline interface component(s)", count);
+//       log.LoggingVarargs(kHLTLogInfo, "AliHLTOfflineInterface","SetParamsToComponents", __FILE__, __LINE__,
+// 			"parameters set to %d offline interface component(s)", count);
   }
   return iResult;
 }

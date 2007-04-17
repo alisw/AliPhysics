@@ -5,11 +5,39 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-#ifdef use_reconstruction
 #include "AliReconstructor.h"
 
 class AliHLTSystem;
 
+/**
+ * @class AliHLTReconstructor
+ * AliHLTReconstructor AliRoot event reconstruction plugin for the HLT.
+ * The AliHLTReconstructor holds an instance of the @ref AliHLTSystem
+ * steering class. The actual reconstruction depends on the loaded component
+ * libraries. Each library must implement a module agent (@ref AliHLTModuleAgent)
+ * in order to provide information on the supported features and the
+ * configurations to be run.
+ *
+ * The default component libraries which are loaded through the initialization
+ * are determined by the @ref kHLTDefaultLibs array. The library loading can
+ * be overridden by an option to the AliHLTReconstructor through the
+ * <tt>SetOption</tt> method of <tt>AliReconstruction</tt>, e.g.
+ * <pre>
+ * AliReconstruction rec;
+ * rec.SetOption("HLT", "libAliHLTSample.so");
+ * </pre>
+ * will only load <tt>libAliHLTSample.so</tt>
+ * 
+ * Optional arguments:<br>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+ * \li loglevel=<i>level</i><br>
+ *     level can be a hex number encoding the @ref AliHLTComponentLogSeverity
+ * \li alilog=off <br>
+ *     disables the logging of HLT log messages through <tt>AliLog</tt> <br>
+ *
+ * For further information on the AliRoot reconstruction refer to the AliRoot
+ * documentation, namely <tt>AliReconstruction</tt>.
+ */
 class AliHLTReconstructor: public AliReconstructor {
 public:
   AliHLTReconstructor();
@@ -74,7 +102,6 @@ private:
 
   ClassDef(AliHLTReconstructor, 1)   // class for the TPC reconstruction
 };
-#endif
 
 typedef AliHLTReconstructor AliL3Reconstructor; // for backward compatibility
 

@@ -39,6 +39,7 @@ typedef AliHLTComponentEventDoneData AliHLTComponent_EventDoneData;
 
 class AliHLTComponentHandler;
 class TObjArray;
+class TStopwatch;
 
 /**
  * @class AliHLTComponent
@@ -68,9 +69,9 @@ class TObjArray;
  * 
  * @subsection alihltcomponent-type Component type
  * Components can be of type
- * - @ref kSource:    components which only produce data 
- * - @ref kProcessor: components which consume and produce data
- * - @ref kSink:      components which only consume data
+ * - @ref kSource     components which only produce data 
+ * - @ref kProcessor  components which consume and produce data
+ * - @ref kSink       components which only consume data
  *
  * where data production and consumption refer to the analysis data stream. In
  * order to indicate the type, a child component can overload the
@@ -367,6 +368,87 @@ class AliHLTComponent : public AliHLTLogging {
    */
   void PrintComponentDataTypeInfo(const AliHLTComponentDataType& dt);
 
+  /**
+   * Stopwatch type for benchmarking.
+   */
+  enum AliHLTStopwatchType {
+    /** total time for event processing */
+    kSWBase,
+    /** detector algorithm w/o interface callbacks */
+    kSWDA,
+    /** data sources */
+    kSWInput,
+    /** data sinks */
+    kSWOutput,
+    /** number of types */
+    kSWTypeCount
+  };
+
+  /**
+   * Helper class for starting and stopping a stopwatch.
+   * The guard can be used by instantiating an object in a function. The
+   * specified stopwatch is started and the previous stopwatch put on
+   * hold. When the function is terminated, the object is deleted automatically
+   * deleted, stopping the stopwatch and starting the one on hold.<br>
+   * \em IMPORTANT: never create dynamic objects from this guard as this violates
+   * the idea of a guard.
+   */
+  class AliHLTStopwatchGuard {
+  public:
+    /** standard constructor (not for use) */
+    AliHLTStopwatchGuard();
+    /** constructor */
+    AliHLTStopwatchGuard(TStopwatch* pStart);
+    /** copy constructor (not for use) */
+    AliHLTStopwatchGuard(AliHLTStopwatchGuard&);
+    /** destructor */
+    ~AliHLTStopwatchGuard();
+
+  private:
+    /**
+     * Hold the previous guard for the existence of this guard.
+     * Checks whether this guard controls a new stopwatch. In that case, the
+     * previous guard and its stopwatch are put on hold.
+     * @param pSucc        instance of the stopwatch of the new guard
+     * @return    1 if pSucc is a different stopwatch which should
+     *            be started<br>
+     *            0 if it controls the same stopwatch
+     */
+    int Hold(TStopwatch* pSucc);
+
+    /**
+     * Resume the previous guard.
+     * Checks whether the peceeding guard controls a different stopwatch. In that
+     * case, the its stopwatch is resumed.
+     * @param pSucc        instance of the stopwatch of the new guard
+     * @return    1 if pSucc is a different stopwatch which should
+     *            be stopped<br>
+     *            0 if it controls the same stopwatch
+     */
+    int Resume(TStopwatch* pSucc);
+
+    /** the stopwatch controlled by this guard */
+    TStopwatch* fpStopwatch;                                                //!transient
+
+    /** previous stopwatch guard, put on hold during existence of the guard */
+    AliHLTStopwatchGuard* fpPrec;                                           //!transient
+
+    /** active stopwatch guard */
+    static AliHLTStopwatchGuard* fgpCurrent;                                //!transient
+  };
+
+  /**
+   * Set a stopwatch for a given purpose.
+   * @param pSW         stopwatch object
+   * @param type        type of the stopwatch
+   */
+  int SetStopwatch(TObject* pSW, AliHLTStopwatchType type=kSWBase);
+
+  /**
+   * Init a set of stopwatches.
+   * @param pStopwatches object array of stopwatches
+   */
+  int SetStopwatches(TObjArray* pStopwatches);
 
  protected:
 
@@ -778,6 +860,9 @@ class AliHLTComponent : public AliHLTLogging {
   /** list of ouput block data descriptors */
   vector<AliHLTComponentBlockData> fOutputBlocks;                  // see above
 
-  ClassDef(AliHLTComponent, 1)
+  /** stopwatch array */
+  TObjArray* fpStopwatches;                                        //! transient
+
+  ClassDef(AliHLTComponent, 2)
 };
 #endif

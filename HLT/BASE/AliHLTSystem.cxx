@@ -37,6 +37,7 @@ using namespace std;
 #include <TObjArray.h>
 #include <TObjString.h>
 #include <TString.h>
+#include <TStopwatch.h>
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTSystem)
@@ -299,7 +300,16 @@ int AliHLTSystem::Run(Int_t iNofEvents)
   int iResult=0;
   int iCount=0;
   SetStatusFlags(kRunning);
-  if ((iResult=InitTasks())>=0) {
+  TStopwatch StopwatchBase; StopwatchBase.Reset();
+  TStopwatch StopwatchDA; StopwatchDA.Reset();
+  TStopwatch StopwatchInput; StopwatchInput.Reset();
+  TStopwatch StopwatchOutput; StopwatchOutput.Reset();
+  TObjArray Stopwatches;
+  Stopwatches.AddAt(&StopwatchBase, (int)AliHLTComponent::kSWBase);
+  Stopwatches.AddAt(&StopwatchDA, (int)AliHLTComponent::kSWDA);
+  Stopwatches.AddAt(&StopwatchInput, (int)AliHLTComponent::kSWInput);
+  Stopwatches.AddAt(&StopwatchOutput, (int)AliHLTComponent::kSWOutput);
+  if ((iResult=InitTasks())>=0 && (iResult=InitBenchmarking(&Stopwatches))>=0) {
     if ((iResult=StartTasks())>=0) {
       for (int i=0; i<iNofEvents && iResult>=0; i++) {
 	iResult=ProcessTasks(i);
@@ -323,7 +333,18 @@ int AliHLTSystem::Run(Int_t iNofEvents)
   } else if (iResult!=-ENOENT) {
     HLTError("can not initialize task list");
   }
-  if (iResult>=0) iResult=iCount;
+  if (iResult>=0) {
+    iResult=iCount;
+    HLTInfo("HLT statistics:\n"
+	    "    base:              R:%.3fs C:%.3fs\n"
+	    "    input:             R:%.3fs C:%.3fs\n"
+	    "    output:            R:%.3fs C:%.3fs\n"
+	    "    event processing : R:%.3fs C:%.3fs"
+	    , StopwatchBase.RealTime(),StopwatchBase.CpuTime()
+	    , StopwatchInput.RealTime(),StopwatchInput.CpuTime()
+	    , StopwatchOutput.RealTime(),StopwatchOutput.CpuTime()
+	    , StopwatchDA.RealTime(),StopwatchDA.CpuTime());
+  }
   ClearStatusFlags(kRunning);
   return iResult;
 }
@@ -347,6 +368,54 @@ int AliHLTSystem::InitTasks()
     lnk = lnk->Next();
   }
   if (iResult<0) {
+  }
+  return iResult;
+}
+
+int AliHLTSystem::InitBenchmarking(TObjArray* pStopwatches)
+{
+  // see header file for class documentation
+  if (pStopwatches==NULL) return -EINVAL;
+
+  int iResult=0;
+  TObjLink *lnk=fTaskList.FirstLink();
+  while (lnk && iResult>=0) {
+    TObject* obj=lnk->GetObject();
+    if (obj) {
+      AliHLTTask* pTask=(AliHLTTask*)obj;
+      AliHLTComponent* pComp=NULL;
+      if (iResult>=0 && (pComp=pTask->GetComponent())!=NULL) {
+	switch (pComp->GetComponentType()) {
+	case AliHLTComponent::kProcessor:
+	  pComp->SetStopwatches(pStopwatches);
+	  break;
+	case AliHLTComponent::kSource:
+	  {
+	    // this switch determines whether the time consumption of the
+	    // AliHLTComponent base methods should be counted to the input
+	    // stopwatch or base stopwatch.
+	    //int inputBase=(int)AliHLTComponent::kSWBase;
+	    int inputBase=(int)AliHLTComponent::kSWInput;
+	    pComp->SetStopwatch(pStopwatches->At(inputBase), AliHLTComponent::kSWBase);
+	    pComp->SetStopwatch(pStopwatches->At((int)AliHLTComponent::kSWInput), AliHLTComponent::kSWDA);
+	  }
+	  break;
+	case AliHLTComponent::kSink:
+	  {
+	    // this switch determines whether the time consumption of the
+	    // AliHLTComponent base methods should be counted to the output
+	    // stopwatch or base stopwatch.
+	    //int outputBase=(int)AliHLTComponent::kSWBase;
+	    int outputBase=(int)AliHLTComponent::kSWOutput;
+	    pComp->SetStopwatch(pStopwatches->At(outputBase), AliHLTComponent::kSWBase);
+	    pComp->SetStopwatch(pStopwatches->At((int)AliHLTComponent::kSWOutput), AliHLTComponent::kSWDA);
+	  }
+	  break;
+	}
+      }
+    } else {
+    }
+    lnk = lnk->Next();
   }
   return iResult;
 }
@@ -575,7 +644,7 @@ int AliHLTSystem::BuildTaskListsFromTopConfigurations(AliRunLoader* runloader)
   int iResult=0;
   AliHLTModuleAgent* pAgent=AliHLTModuleAgent::GetFirstAgent();
   while (pAgent && iResult>=0) {
-    TString tops=pAgent->GetTopConfigurations(runloader);
+    TString tops=pAgent->GetLocalRecConfigurations(runloader);
     HLTDebug("top configurations for agent %s (%p): %s", pAgent->GetName(), pAgent, tops.Data());
     TObjArray* pTokens=tops.Tokenize(" ");
     if (pTokens) {

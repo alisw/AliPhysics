@@ -13,8 +13,8 @@
 /** global instance for agent registration */
 AliHLTAgentSample gAliHLTAgentSample;
 
-const char* gAliHLTAgentSampleData="/tmp/testdata";
-const char* gAliHLTAgentSampleOut="/tmp/hltout";
+const char* AliHLTAgentSample::fgkAliHLTAgentSampleData="/tmp/testdata";
+const char* AliHLTAgentSample::fgkAliHLTAgentSampleOut="/tmp/hltout";
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTAgentSample)
@@ -33,21 +33,21 @@ AliHLTAgentSample::~AliHLTAgentSample()
   // see header file for class documentation
 
   // delete the test data
-  ofstream dump(gAliHLTAgentSampleData, ios::in);
+  ofstream dump(fgkAliHLTAgentSampleData, ios::in);
   if (dump.good()) {
     TString arg("rm -f ");
-    arg+=gAliHLTAgentSampleData;
+    arg+=fgkAliHLTAgentSampleData;
     gSystem->Exec(arg.Data());
   }
 }
 
 int AliHLTAgentSample::CreateConfigurations(AliHLTConfigurationHandler* handler,
-					  AliRunLoader* runloader) const
+					    AliRunLoader* runloader) const
 {
   // see header file for class documentation
 
   // create some test data
-  ofstream dump(gAliHLTAgentSampleData, (ios::openmode)0);
+  ofstream dump(fgkAliHLTAgentSampleData, (ios::openmode)0);
   dump << "This is just some test data for the ALICE HLT analysis example";
   dump << "---- not copied" << endl;
   dump.close();
@@ -55,24 +55,30 @@ int AliHLTAgentSample::CreateConfigurations(AliHLTConfigurationHandler* handler,
   if (handler) {
     // the publisher configuration for the test data
     TString arg("-datafile ");
-    arg+=gAliHLTAgentSampleData;
+    arg+=fgkAliHLTAgentSampleData;
     HLTDebug(arg.Data());
-    handler->CreateConfiguration("fp1"  , "FilePublisher", NULL , arg.Data());
+    handler->CreateConfiguration("sample-fp1"  , "FilePublisher", NULL , arg.Data());
 
     // the configuration for the dummy component
-    handler->CreateConfiguration("cp"   , "Dummy"        , "fp1", "output_percentage 80");
+    handler->CreateConfiguration("sample-cp"   , "Dummy"        , "sample-fp1", "output_percentage 80");
 
     // the writer configuration
-    arg="-datafile "; arg+=gAliHLTAgentSampleOut;
-    handler->CreateConfiguration("sink1", "FileWriter"   , "cp" , arg.Data());
+    arg="-datafile "; arg+=fgkAliHLTAgentSampleOut;
+    handler->CreateConfiguration("sample-sink1", "FileWriter"   , "sample-cp" , arg.Data());
+
+    // sample offline source
+    handler->CreateConfiguration("sample-offsrc", "AliLoaderPublisher"   , NULL , "-loader TPCLoader -tree digits -verbose");
+
+    // sample offline sink
+    handler->CreateConfiguration("sample-offsnk", "SampleOfflineDataSink"   , "sample-offsrc" , NULL);
   }
   return 0;
 }
 
-const char* AliHLTAgentSample::GetTopConfigurations(AliRunLoader* runloader) const
+const char* AliHLTAgentSample::GetLocalRecConfigurations(AliRunLoader* runloader) const
 {
   // see header file for class documentation
-  return "sink1";
+  return "sample-sink1 sample-offsnk";
 }
 
 const char* AliHLTAgentSample::GetRequiredComponentLibraries() const

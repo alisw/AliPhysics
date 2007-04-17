@@ -27,6 +27,8 @@ class AliHLTTask;
 class AliRunLoader;
 class AliRawReader;
 class AliESD;
+class TObjArray;
+class TStopwatch;
 
 /**
  * @class AliHLTSystem
@@ -136,6 +138,14 @@ class AliHLTSystem : public AliHLTLogging {
    * @return neg error code if failed
    */
   int InitTasks();
+
+  /**
+   * Init the stopwatches for all tasks.
+   * @param pStopwatches    object array of stopwatches, for types
+   *                        @see AliHLTComponent::AliHLTStopwatchType
+   * @return neg error code if failed
+   */
+  int InitBenchmarking(TObjArray* pStopwatches);
 
   /**
    * Start task list.

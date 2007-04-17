@@ -557,6 +557,13 @@ fi
 AC_SUBST([HAVE_DOT])
 AC_SUBST([DOT_PATH])
 
+dnl HAVE_SRC_SUBDIR=${abs_top_srcdir}/src
+dnl echo $HAVE_SRC_SUBDIR
+dnl if ! test -d $HAVE_SRC_SUBDIR; then
+dnl   HAVE_SRC_SUBDIR=
+dnl fi
+dnl AC_SUBST([HAVE_SRC_SUBDIR])
+
 dnl ------------------------------------------------------------------
 dnl inatallation directory for libraries
 dnl 

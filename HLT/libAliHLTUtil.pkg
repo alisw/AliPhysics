@@ -6,11 +6,13 @@ include $(MODDIR)/hlt.conf
 MODULE_SRCS= 	AliHLTFilePublisher.cxx \
 		AliHLTRootFilePublisherComponent.cxx \
 		AliHLTRootFileWriterComponent.cxx \
+		AliHLTLoaderPublisherComponent.cxx \
 		AliHLTAgentUtil.cxx
 
 CLASS_HDRS:=  	AliHLTFilePublisher.h \
 		AliHLTRootFilePublisherComponent.h \
 		AliHLTRootFileWriterComponent.h \
+		AliHLTLoaderPublisherComponent.h \
 		AliHLTAgentUtil.h
 
 MODULE_HDRS:= 	$(CLASS_HDRS)
