@@ -1,3 +1,10 @@
+2007-04-17  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* alice-macros/t0_digits.C:
+	* alice-macros/t0_hits.C:
+	* alice-macros/t0_raw.C:
+	Alexey: new macros for T0 visualization.
+
 2007-04-11  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
 
 	* macros/reve_lineset_test.C:
