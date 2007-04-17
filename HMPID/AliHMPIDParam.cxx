@@ -28,7 +28,7 @@ ClassImp(AliHMPIDParam)
 
 AliHMPIDParam* AliHMPIDParam::fgInstance=0x0;        //singleton pointer               
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-AliHMPIDParam::AliHMPIDParam():TNamed("RichParam","default version") 
+AliHMPIDParam::AliHMPIDParam():TNamed("HmpidParam","default version") 
 {
 // Here all the intitializition is taken place when AliHMPIDParam::Instance() is invoked for the first time.
 // In particulare, matrices to be used for LORS<->MARS trasnformations are initialized from TGeo structure.    
@@ -38,7 +38,7 @@ AliHMPIDParam::AliHMPIDParam():TNamed("RichParam","default version")
   for(Int_t i=AliHMPIDDigit::kMinCh;i<=AliHMPIDDigit::kMaxCh;i++) 
     if(gGeoManager && gGeoManager->IsClosed()) {
 //      fM[i]=(TGeoHMatrix*)gGeoManager->GetVolume("ALIC")->GetNode(Form("HMPID_%i",i))->GetMatrix(); // previous style
-      TGeoPNEntry* pne = gGeoManager->GetAlignableEntry(i);
+      TGeoPNEntry* pne = gGeoManager->GetAlignableEntry(Form("/HMPID/Chamber%i",i));
       if (!pne) {
         AliErrorClass(Form("The symbolic volume %s does not correspond to any physical entry!",Form("HMPID_%i",i)));
         fM[i]=new TGeoHMatrix;
