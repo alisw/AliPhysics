@@ -1,5 +1,13 @@
 2007-04-17  Matevz Tadel  <matevz.tadel@cern.ch>
 
+	* alice-macros/emcal_digits.C:
+	Use the y-z mode of QuadSet to represent calo-cells.
+
+	* alice-macros/geom_HMPID_tmp.C:
+	Remove file.
+
+2007-04-17  Matevz Tadel  <matevz.tadel@cern.ch>
+
 	* alice-macros/t0_digits.C:
 	* alice-macros/t0_hits.C:
 	* alice-macros/t0_raw.C:
