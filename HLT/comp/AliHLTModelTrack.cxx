@@ -12,7 +12,9 @@
 
 #include "AliHLTLogging.h"
 #include "AliHLTTransform.h"
+#ifdef HAVE_ALIHLTVERTEX
 #include "AliHLTVertex.h"
+#endif //HAVE_ALIHLTVERTEX
 #include "AliHLTDataCompressorHelper.h"
 
 #include "AliHLTModelTrack.h"
@@ -254,9 +256,14 @@ void AliHLTModelTrack::FillModel()
       return;
     }
   Double_t impact[3];
+  AliHLTVertex* pVertex=NULL;
+#ifdef HAVE_ALIHLTVERTEX
+  // Matthias 16.04.2007: the vertex object is not used
   AliHLTVertex vertex;
+  pVertex=&vertex;
+#endif HAVE_ALIHLTVERTEX
   CalculateHelix();
-  GetClosestPoint(&vertex,impact[0],impact[1],impact[2]);
+  GetClosestPoint(pVertex,impact[0],impact[1],impact[2]);
   fTrackModel->fKappa = GetKappa();
   fTrackModel->fPhi = atan2(impact[1],impact[0]);
   fTrackModel->fD = sqrt(impact[0]*impact[0] + impact[1]*impact[1]);

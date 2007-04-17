@@ -9,7 +9,9 @@
 #include "AliHLTTrackArray.h"
 #include "AliHLTHoughTrack.h"
 #include "AliHLTModelTrack.h"
+#ifdef HAVE_ALIHLTCONFMAPTRACK
 #include "AliHLTConfMapTrack.h"
+#endif //HAVE_ALIHLTCONFMAPTRACK
 #include "AliHLTTrackSegmentData.h"
 #include "AliHLTTransform.h"
 #include "AliHLTConfMapPoint.h"
@@ -118,7 +120,11 @@ Bool_t AliHLTTrackArray::SetSize(Int_t newsize)
         break;
       case 'c':  
         for(Int_t i=0;i<fSize;i++){
+#ifdef HAVE_ALIHLTCONFMAPTRACK
           fTrack[i]   = new AliHLTConfMapTrack();
+#else  //!HAVE_ALIHLTCONFMAPTRACK
+	  fTrack[i]   = NULL;
+#endif //HAVE_ALIHLTCONFMAPTRACK
           fIsPresent[i] = kTRUE;
         }
         break;
@@ -164,7 +170,11 @@ Bool_t AliHLTTrackArray::SetSize(Int_t newsize)
       break;
     case 'c':  
       for(Int_t i=fSize;i<newsize;i++){
+#ifdef HAVE_ALIHLTCONFMAPTRACK
         fTrack[i]   = new AliHLTConfMapTrack();
+#else  //!HAVE_ALIHLTCONFMAPTRACK
+	fTrack[i]   = NULL;
+#endif //HAVE_ALIHLTCONFMAPTRACK
         fIsPresent[i] = kTRUE;
       }
       break;
@@ -356,6 +366,7 @@ UInt_t AliHLTTrackArray::WriteConfMapTracks(AliHLTTrackSegmentData* tr)
   AliHLTTrackSegmentData *tP = tr;
   UInt_t *pP;
   UInt_t size = 0;
+#ifdef HAVE_ALIHLTCONFMAPTRACK
   for(Int_t i=0; i<fNTracks; i++){  //loop over all tracks
     AliHLTConfMapTrack *track =(AliHLTConfMapTrack *) GetCheckedTrack(i); //use only present tracks
     if(!track) continue;                           //use only present tracks
@@ -398,6 +409,8 @@ UInt_t AliHLTTrackArray::WriteConfMapTracks(AliHLTTrackSegmentData* tr)
     size +=sizeof(AliHLTTrackSegmentData)+tP->fNPoints*sizeof(UInt_t);
     tP = (AliHLTTrackSegmentData*)tmpP;
   }
+#else  //!HAVE_ALIHLTCONFMAPTRACK
+#endif //HAVE_ALIHLTCONFMAPTRACK
   return size;
 }
 

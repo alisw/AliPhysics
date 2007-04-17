@@ -8,7 +8,6 @@ hough/AliHLTHistogram1D.cxx \
 hough/AliHLTHistogramAdaptive.cxx \
 hough/AliHLTHough.cxx \
 hough/AliHLTHoughBaseTransformer.cxx \
-hough/AliHLTHoughClusterTransformer.cxx \
 hough/AliHLTHoughDisplay.cxx \
 hough/AliHLTHoughEval.cxx \
 hough/AliHLTHoughGlobalMerger.cxx \
@@ -25,6 +24,7 @@ hough/AliHLTHoughTransformerNew.cxx \
 hough/AliHLTHoughTransformerRow.cxx \
 hough/AliHLTHoughTransformerVhdl.cxx
 
+#hough/AliHLTHoughClusterTransformer.cxx \
 
 HDRS:= $(SRCS:.cxx=.h) $(HLTEHDRS)
 

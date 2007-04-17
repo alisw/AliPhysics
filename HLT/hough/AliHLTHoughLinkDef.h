@@ -25,7 +25,7 @@
 #pragma link C++ typedef AliL3HoughIntMerger;
 #pragma link C++ typedef AliL3HoughGlobalMerger;
 #pragma link C++ typedef AliL3HoughDisplay;
-#pragma link C++ typedef AliL3HoughClusterTransformer;
+//#pragma link C++ typedef AliL3HoughClusterTransformer;
 #pragma link C++ typedef AliL3HistogramAdaptive;
 #ifndef macosx
 #pragma link C++ typedef AliL3HoughTest;
@@ -54,7 +54,7 @@
 #pragma link C++ class AliHLTHoughIntMerger;
 #pragma link C++ class AliHLTHoughGlobalMerger;
 #pragma link C++ class AliHLTHoughDisplay;
-#pragma link C++ class AliHLTHoughClusterTransformer;
+//#pragma link C++ class AliHLTHoughClusterTransformer;
 #pragma link C++ class AliHLTHistogramAdaptive;
 #ifndef macosx
 #pragma link C++ class AliHLTHoughTest;

@@ -13,7 +13,9 @@
 #include "AliHLTHistogram.h"
 #include "AliHLTHough.h"
 #include "AliHLTHoughTransformer.h"
+#ifdef HAVE_ALIHLTHOUGHCLUSTERTRANSFORMER
 #include "AliHLTHoughClusterTransformer.h"
+#endif //HAVE_ALIHLTHOUGHCLUSTERTRANSFORMER
 #include "AliHLTHoughTransformerLUT.h"
 #include "AliHLTHoughTransformerVhdl.h"
 #include "AliHLTHoughTransformerRow.h"
@@ -264,7 +266,9 @@ void AliHLTHough::Init(Bool_t doit, Bool_t addhists)
 	fHoughTransformer[i] = new AliHLTHoughTransformerLUT(0,i,fNEtaSegments);
 	break;
       case 2:
+#ifdef HAVE_ALIHLTHOUGHCLUSTERTRANSFORMER
 	fHoughTransformer[i] = new AliHLTHoughClusterTransformer(0,i,fNEtaSegments);
+#endif //HAVE_ALIHLTHOUGHCLUSTERTRANSFORMER
 	break;
       case 3:
 	fHoughTransformer[i] = new AliHLTHoughTransformerVhdl(0,i,fNEtaSegments,fNSaveIterations);
