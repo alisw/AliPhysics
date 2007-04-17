@@ -46,15 +46,15 @@ void AliITSPreprocessorSPD::Initialize(Int_t run, UInt_t startTime,
 }
 
 //______________________________________________________________________________________________
-UInt_t AliITSPreprocessorSPD::Process(TMap* dcsAliasMap)
+UInt_t AliITSPreprocessorSPD::Process(TMap* /*dcsAliasMap*/)
 {
   // Do the actual preprocessing
 
-  UInt_t result = 1;
 
+  // *** REFERENCE DATA ***
 
-//  // *** REFERENCE DATA ***
-
+// OLD algorithm (commented out)!!!
+// ***********************************************************
 //  // Store the container files as reference data (one for each equipment)
 //  for (UInt_t eq=0; eq<20; eq++) {
 //    Char_t id[20];
@@ -70,33 +70,61 @@ UInt_t AliITSPreprocessorSPD::Process(TMap* dcsAliasMap)
 //      StoreReferenceData("SHUTTLE", refCAT, arr, &metaData, 0, 0);
 //    }
 //  }
+// ***********************************************************
 
+  // Store the container files as reference data (one file for each equipment)
+  for (UInt_t eq=0; eq<20; eq++) {
+    Char_t id[20];
+    sprintf(id,"SPD_reference_%d",eq);
+    TList* list = GetFileSources(kDAQ,id); // (the id should be unique, so always 1 file)
+    if (list) {
+      TObjString* fileNameEntry = (TObjString*) list->First();
+      if (fileNameEntry!=NULL) {
+	TString fileName = GetFile(kDAQ, id, fileNameEntry->GetString().Data());
+	Char_t refCAT[10];
+	sprintf(refCAT,"SPDref_eq_%d.root",eq);
+	if (!StoreReferenceFile(fileName.Data(),refCAT)) {
+	  return 1;
+	}
+      }
+    }
+  }
 
 
   // *** NOISY DATA ***
 
+// OLD algorithm (commented out)!!!
+// ***********************************************************
+//  // Read old calibration
+//  AliCDBEntry* cdbEntry = GetFromOCDB("Calib", "SPDNoisy");
+//  TObjArray* spdEntry;
+//  if(cdbEntry) {
+//    spdEntry = (TObjArray*)cdbEntry->GetObject();
+//    if(!spdEntry) return 0;
+//  }
+//  else {
+//    Log(Form("Old calibration not found in database. A fresh one will be created."));
+//    // Create fresh calibration
+//    spdEntry = new TObjArray(240);
+//    for(Int_t module=0;module<240;module++){
+//      AliITSCalibrationSPD* cal = new AliITSCalibrationSPD();
+//      spdEntry->Add(cal);
+//    }
+//    spdEntry->SetOwner(kTRUE);
+//  }
+// ***********************************************************
+
   // Read old calibration
-  TString runStr = GetRunParameter("run");
-  Int_t run = atoi(runStr);
-  AliCDBStorage* storage = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB());
-  if(!storage) return 0;
-  AliCDBEntry* cdbEntry = storage->Get("ITS/Calib/SPDNoisy", run);
+  AliCDBEntry* cdbEntry = GetFromOCDB("Calib", "SPDNoisy");
   TObjArray* spdEntry;
   if(cdbEntry) {
     spdEntry = (TObjArray*)cdbEntry->GetObject();
-    if(!spdEntry) return 0;
+    if(!spdEntry) return 1;
   }
   else {
-    Log(Form("Old calibration not found in database. A fresh one will be created."));
-    // Create fresh calibration
-    spdEntry = new TObjArray(240);
-    for(Int_t module=0;module<240;module++){
-      AliITSCalibrationSPD* cal = new AliITSCalibrationSPD();
-      spdEntry->Add(cal);
-    }
-    spdEntry->SetOwner(kTRUE);
+    Log("Old calibration not found in database. This is required for further processing.");
+    return 1;
   }
-
 
   TString pwd = gSystem->pwd();  // remember the working directory, to cd back later
   TString tempDir = Form("%s",AliShuttleInterface::GetShuttleTempDir());
@@ -118,8 +146,7 @@ UInt_t AliITSPreprocessorSPD::Process(TMap* dcsAliasMap)
 
   gSystem->cd(pwd.Data());
 
-
-  // Update the database entries
+  // Update the database entries if needed
   UInt_t nrUpdatedMods = 0;
   AliITSOnlineCalibrationSPDhandler* handler = new AliITSOnlineCalibrationSPDhandler();
   Char_t fileLoc[100];
@@ -134,21 +161,21 @@ UInt_t AliITSPreprocessorSPD::Process(TMap* dcsAliasMap)
     }
   }
   delete handler;
-
   if (nrUpdatedMods>0) {
-    Log(Form("Noisy lists for %d modules updated.",nrUpdatedMods));
-
+    Log(Form("Noisy lists for %d modules will be updated and stored...",nrUpdatedMods));
     // Store the cdb entry
     AliCDBMetaData metaData;
     metaData.SetBeamPeriod(0);
     metaData.SetResponsible("Henrik Tydesjo");
     metaData.SetComment("Preprocessor test for SPD.");  
-    result = Store("Calib", "SPDNoisy", spdEntry, &metaData, 0, kTRUE);
-    delete spdEntry;
+    if (!Store("Calib", "SPDNoisy", spdEntry, &metaData, 0, kTRUE)) {
+      return 1;
+    }
+    //    delete spdEntry;
     Log("Database updated.");
   }
 
-  return result;
+  return 0; // 0 means success
 
 
 
