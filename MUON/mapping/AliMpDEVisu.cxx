@@ -77,11 +77,13 @@ AliMpDEVisu::AliMpDEVisu(UInt_t w, UInt_t h)
   fNumberEntry(0x0),
   fPlaneButton(0x0),
   fZoomButton(0x0),
-  fNameDEView(0x0),
+  fNameDECombo(0x0),
   fLogMessage(0x0),
   fLogFile(0x0),
   fTrashList(0x0),
   fDEComboIdx(),
+  fNameDEComboIdx(),
+  fDEOccurrence(1026),
   fCurrentPlane(AliMp::kBendingPlane),
   fCurrentDetElem(100),
   fCurrentDEName(),
@@ -144,7 +146,8 @@ AliMpDEVisu::AliMpDEVisu(UInt_t w, UInt_t h)
   fDECombo->Select(0);
   fDECombo->Associate(this);
   hframe->AddFrame(fDECombo, new TGLayoutHints(kLHintsLeft, 10, 0, 9, 0));
-  
+  fDEOccurrence.Reset(-1);
+
   TGTextButton *next = new TGTextButton(hframe,"&Next");
   next->Connect("Clicked()","AliMpDEVisu",this,"NextDE()");
   hframe->AddFrame(next, new TGLayoutHints(kLHintsLeft | kLHintsCenterY,5,5,3,4));
@@ -155,8 +158,13 @@ AliMpDEVisu::AliMpDEVisu(UInt_t w, UInt_t h)
   
   AliMpDetElement* detElem = AliMpDEManager::GetDetElement(fCurrentDetElem);
   fCurrentDEName = detElem->GetDEName();
-  fNameDEView = new TGTextView(hframe, 180, 25, fCurrentDEName.Data(), kDEName);
-  hframe->AddFrame(fNameDEView, new TGLayoutHints(kLHintsLeft, 10, 0, 9, 0));
+  fNameDECombo = new  TGComboBox(hframe, kDEName);
+
+  UpdateNameView();
+  fNameDECombo->Resize(160, 20);
+  fNameDECombo->Select(0);
+  fNameDECombo->Associate(this);
+  hframe->AddFrame(fNameDECombo, new TGLayoutHints(kLHintsLeft, 10, 0, 9, 0));
 
   // plane type
   fPlaneButton = new TGCheckButton(hframe, "NB Plane", kPlaneType);
@@ -258,7 +266,7 @@ AliMpDEVisu::~AliMpDEVisu()
   fDECombo->Delete();
   fNumberEntry->Delete();
   fPlaneButton->Delete();
-  fNameDEView->Delete();
+  fNameDECombo->Delete();
   fLogMessage->Delete();
   fLogFile->Delete();
   fMain->Cleanup();
@@ -603,6 +611,10 @@ Bool_t AliMpDEVisu::ProcessMessage(Long_t msg, Long_t parm1, Long_t /*parm2*/)
             case kDECombo:
               UpdateNameView();
               break; 
+	     
+	  case kDEName:
+	      UpdateComboCH();
+	      break;
           }
           break;
           
@@ -656,6 +668,29 @@ void AliMpDEVisu::NextDE()
 }
 
 //__________________________________________________________
+void AliMpDEVisu::UpdateComboCH()
+{
+  /// update Chamber/DE in respect to DE Name
+
+    fCurrentDEName = fNameDEComboIdx[fNameDECombo->GetSelected()];
+
+    AliMpDetElement* detElem = AliMpDEManager::GetDetElement(fCurrentDEName);
+
+    Int_t Idx =  AliMpDEManager::GetChamberId(detElem->GetId());
+    fChamberCombo->Select(Idx);
+
+    UpdateComboDE();
+
+    Idx = detElem->GetId() % 100;
+    fDECombo->Select(Idx);
+
+    fCurrentDetElem = fDEComboIdx[fDECombo->GetSelected()];
+
+    fSegmentation = AliMpSegmentation::Instance()
+	->GetMpSegmentation(fCurrentDetElem, detElem->GetCathodType(fCurrentPlane));
+}
+
+//__________________________________________________________
 void AliMpDEVisu::UpdateComboDE()
 {
   /// update DE in respect to selected chamber
@@ -665,11 +700,9 @@ void AliMpDEVisu::UpdateComboDE()
   AliMpDEIterator it;
   Int_t i = 0;
   fDEComboIdx.Reset();
-  Char_t text[20];
   
   for ( it.First(fChamberCombo->GetSelected()); ! it.IsDone(); it.Next() ) {
-    sprintf(text,"%d",it.CurrentDE()->GetId());
-    fDECombo->AddEntry(text,i);
+    fDECombo->AddEntry(Form("%d",it.CurrentDE()->GetId()), i);
     fDEComboIdx[i++] = it.CurrentDE()->GetId();
   }
   fDECombo->Select(0);
@@ -679,16 +712,21 @@ void AliMpDEVisu::UpdateComboDE()
 void AliMpDEVisu::UpdateNameView()
 {
   /// update DE name in respect to selected DE id.
-  
-  fNameDEView->Clear();
-  
+    
   fCurrentDetElem = fDEComboIdx[fDECombo->GetSelected()];
-  AliMpDetElement* detElem = AliMpDEManager::GetDetElement(fCurrentDetElem);
-  fCurrentDEName = detElem->GetDEName();
-  
-  fNameDEView->AddLine(fCurrentDEName.Data());
-  fNameDEView->ShowBottom();
 
+  AliMpDetElement* detElem = AliMpDEManager::GetDetElement(fCurrentDetElem);
+
+  fCurrentDEName = detElem->GetDEName();
+
+  Int_t entry = fNameDECombo->GetNumberOfEntries();
+  if (fDEOccurrence[fCurrentDetElem] == -1) {
+      fNameDECombo->AddEntry(fCurrentDEName.Data(), entry);
+      fNameDEComboIdx[entry] = fCurrentDEName;
+      fDEOccurrence[fCurrentDetElem] = entry;
+  }
+
+  fNameDECombo->Select(fDEOccurrence[fCurrentDetElem]);
   fSegmentation = AliMpSegmentation::Instance()
     ->GetMpSegmentation(fCurrentDetElem, detElem->GetCathodType(fCurrentPlane));
 }

@@ -43,6 +43,7 @@ public:
     virtual ~AliMpDEVisu();
 
 
+    void   UpdateComboCH();
     void   UpdateComboDE();
     Bool_t ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2);
     void   DrawDE(Bool_t info = kTRUE);
@@ -87,12 +88,14 @@ private:
     TGNumberEntry* fNumberEntry;     //!< manu id button
     TGCheckButton* fPlaneButton;     //!< check button for NB plane, defaultwise B plane
     TGCheckButton* fZoomButton;      //!< check button to activate zoom mode, default wise disable
-    TGTextView*    fNameDEView;      //!< name of the DE
+    TGComboBox*    fNameDECombo;     //!< name of the DE
     TGTextView*    fLogMessage;      //!< log message
     TGTextEntry*   fLogFile;         //!< text entry for log file name
     TObjArray      fTrashList;       //!< list of transient windows to delete
 
     TArrayI        fDEComboIdx;      //!< array for index vs DE id
+    TString        fNameDEComboIdx[156];  //!< array for index vs DE names
+    TArrayI        fDEOccurrence;     //!< occurrence of DE
 
     AliMp::PlaneType fCurrentPlane;   //!< current plane type
     Int_t            fCurrentDetElem; //!< current DE
