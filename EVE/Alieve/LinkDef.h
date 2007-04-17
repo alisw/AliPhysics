@@ -43,6 +43,9 @@
 #pragma link C++ class Alieve::PMDModule+;
 #pragma link C++ class Alieve::PMDModuleEditor+;
 
+// T0
+#pragma link C++ class Alieve::T0Module+;
+
 // TPC
 #pragma link C++ class Alieve::TPCData+;
 
