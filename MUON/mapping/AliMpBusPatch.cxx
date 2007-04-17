@@ -23,6 +23,13 @@
 // Author: Ivana Hrivnacova, IPN Orsay
 
 #include "AliMpBusPatch.h"
+#include "AliMpConstants.h"
+#include "AliMpDEManager.h"
+#include "AliMpSegmentation.h"
+#include "AliMpSlatSegmentation.h"
+#include "AliMpSlat.h"
+#include "AliMpPCB.h"
+#include "AliMpMotifPosition.h"
 
 #include "AliLog.h"
 
@@ -60,7 +67,8 @@ AliMpBusPatch::AliMpBusPatch(Int_t id, Int_t detElemId, Int_t ddlId)
     fId(id),
     fDEId(detElemId),
     fDdlId(ddlId),
-    fManus(false)
+    fManus(false),
+    fNofManusPerModule(false)
 {
 /// Standard constructor
 }
@@ -71,7 +79,8 @@ AliMpBusPatch::AliMpBusPatch(TRootIOCtor* /*ioCtor*/)
     fId(),
     fDEId(),
     fDdlId(),
-    fManus()
+    fManus(),
+    fNofManusPerModule(false)
 {
 /// Root IO constructor
 }
@@ -104,6 +113,90 @@ Bool_t AliMpBusPatch::AddManu(Int_t manuId)
 }   
 
 //______________________________________________________________________________
+Bool_t AliMpBusPatch::SetNofManusPerModule()
+{
+/// Set the number of manus per patch module (PCB):
+/// - for stations 12 all manus are connected to one PCB,
+/// - for slat stations there are maximum three PCBs per buspatch
+/// Not correct for station 2
+
+  if ( AliMpDEManager::GetStationType(fDEId) == AliMp::kStation1 ||
+       AliMpDEManager::GetStationType(fDEId) == AliMp::kStation2 ) {
+
+    // simply fill the number of manus, no bridge for station 1
+    // not the case for station 2.
+       
+    fNofManusPerModule.Add(GetNofManus());
+    return true;
+  }
+
+  if ( AliMpDEManager::GetStationType(fDEId) == AliMp::kStation345 ) {
+  
+    const AliMpSlatSegmentation* seg0 
+	= static_cast<const AliMpSlatSegmentation*>(
+            AliMpSegmentation::Instance()->GetMpSegmentation(fDEId, AliMp::kCath0));
+
+    const AliMpSlatSegmentation* seg1 
+	= static_cast<const AliMpSlatSegmentation*>(
+            AliMpSegmentation::Instance()->GetMpSegmentation(fDEId, AliMp::kCath1));
+
+    const AliMpSlat* slat0 = seg0->Slat();
+    const AliMpSlat* slat1 = seg1->Slat();
+
+       
+    Int_t iPcb = 0;
+    Int_t iPcbPrev = -1;
+    Int_t manuPerPcb = 0;
+
+    Double_t x = 0.;
+    Double_t length = 0.;
+
+    // Loop over manu
+    for (Int_t iManu = 0; iManu < GetNofManus(); ++iManu) {
+      Int_t manuId = GetManuId(iManu);
+      AliMpMotifPosition* motifPos0 = slat0->FindMotifPosition(manuId);
+      AliMpMotifPosition* motifPos1 = slat1->FindMotifPosition(manuId);	  
+      
+      if ( !motifPos0 && !motifPos1 ) {
+        // should never happen
+        AliErrorStream() 
+          << "Motif position for manuId = " << manuId << "not found" << endl;
+        return false;
+      }
+
+      // find PCB id
+      if ( motifPos0 ) {
+        x = motifPos0->Position().X();
+        length = slat0->GetPCB(0)->DX()*2.;
+      }
+      if ( motifPos1 ) {
+        x = motifPos1->Position().X();
+        length = slat1->GetPCB(0)->DX()*2.;
+      }
+      
+      iPcb = Int_t(x/length + AliMpConstants::LengthTolerance());
+
+      // check when going to next PCB
+      if ( iPcb == iPcbPrev )
+        manuPerPcb++;
+      else if ( iPcbPrev != -1 ) {
+        //vec.Set(vec.GetSize()+1);
+        //vec[vec.GetSize()-1] = manuPerPcb+1;
+        fNofManusPerModule.Add(manuPerPcb+1);
+        manuPerPcb = 0;
+      }
+      iPcbPrev = iPcb;
+    }
+   
+    // store last PCB
+    //vec.Set(vec.GetSize()+1);
+    //vec[vec.GetSize()-1] = manuPerPcb+1;
+    fNofManusPerModule.Add(manuPerPcb+1);
+    return true;  
+  }  
+}     
+
+//______________________________________________________________________________
 Int_t AliMpBusPatch::GetNofManus() const
 {  
 /// Return the number of detection elements connected to this DDL
@@ -127,4 +220,23 @@ Bool_t  AliMpBusPatch::HasManu(Int_t manuId) const
   return fManus.HasValue(manuId); 
 }
 
+//______________________________________________________________________________
+Int_t  AliMpBusPatch::GetNofPatchModules() const
+{
+/// Return the number of patch modules (PCB) connected to this bus patch.
 
+  return fNofManusPerModule.GetSize();
+}  
+  
+//______________________________________________________________________________
+Int_t  AliMpBusPatch::GetNofManusPerModule(Int_t patchModule) const
+{
+/// Return the number of manus per patch module (PCB)
+
+  if ( patchModule < 0 || patchModule >= GetNofPatchModules() ) {
+    AliErrorStream() << "Invalid patch module number = " << patchModule << endl;
+    return 0;
+  }
+  
+  return fNofManusPerModule.GetValue(patchModule);
+}     

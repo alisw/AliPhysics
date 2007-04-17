@@ -30,6 +30,7 @@ class AliMpBusPatch : public  TObject {
 
     // methods 
     Bool_t AddManu(Int_t manuId);
+    Bool_t SetNofManusPerModule();
 
     // get methods
     Int_t  GetId() const;
@@ -38,6 +39,9 @@ class AliMpBusPatch : public  TObject {
     Int_t  GetNofManus() const;
     Int_t  GetManuId(Int_t index) const;
     Bool_t HasManu(Int_t manuId) const;
+    
+    Int_t  GetNofPatchModules() const;
+    Int_t  GetNofManusPerModule(Int_t patchModule) const;
     
 
   private:
@@ -56,7 +60,8 @@ class AliMpBusPatch : public  TObject {
     Int_t        fDEId;  ///< Detection element to which this bus patch is connected
     Int_t        fDdlId; ///< DDL to which this bus patch is connected
     AliMpArrayI  fManus; ///< Manu Ids connected to this bus patch
-     
+    AliMpArrayI  fNofManusPerModule;///< Nof Manus per patch modules (PCBs)
+    
   ClassDef(AliMpBusPatch,1)  // The class collectiong electronics properties of DDL
 };
 
