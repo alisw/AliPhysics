@@ -23,6 +23,7 @@
 #include "AliMpIntPair.h"
 
 class AliMpDetElement;
+class TString;
 
 class AliMpDEStore : public  TObject {
 
@@ -37,6 +38,8 @@ class AliMpDEStore : public  TObject {
     
     // methods
     AliMpDetElement* GetDetElement(Int_t detElemId, Bool_t warn = true) const;
+    AliMpDetElement* GetDetElement(const TString& detName, Bool_t warn = true) const;
+
     AliMpIntPair     GetDetElemIdManu(Int_t manuSerial) const;
     
   private:

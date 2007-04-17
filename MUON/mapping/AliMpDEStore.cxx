@@ -367,6 +367,29 @@ AliMpDetElement* AliMpDEStore::GetDetElement(Int_t detElemId, Bool_t warn) const
 }    
 
 //______________________________________________________________________________
+AliMpDetElement* AliMpDEStore::GetDetElement(const TString& deName, Bool_t warn) const
+{
+/// Return det element for given deName
+
+  for ( Int_t i = 0; i < fDetElements.GetSize(); i++ ) {
+    
+    AliMpDetElement* detElement 
+      = (AliMpDetElement*)fDetElements.GetObject(i);
+      
+    if (deName.CompareTo(detElement->GetDEName()) == 0) 
+
+      return detElement;
+  }
+
+  if (warn) {  
+    AliErrorClassStream() 
+	<< "Detection element with name" << deName.Data() << " not defined." << endl;
+  }	
+
+  return 0x0;   
+
+}
+//______________________________________________________________________________
 AliMpIntPair  AliMpDEStore::GetDetElemIdManu(Int_t manuSerial) const
 {
 /// Return the detElemId and manuId for given serial manu number
@@ -383,3 +406,4 @@ AliMpIntPair  AliMpDEStore::GetDetElemIdManu(Int_t manuSerial) const
   // manu with this serial number does not exist
   return AliMpIntPair::Invalid();
 }  
+

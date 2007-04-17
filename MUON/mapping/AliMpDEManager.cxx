@@ -63,6 +63,14 @@ AliMpDetElement* AliMpDEManager::GetDetElement(Int_t detElemId, Bool_t warn)
   return AliMpDEStore::Instance()->GetDetElement(detElemId, warn);
 }    
 
+//______________________________________________________________________________
+AliMpDetElement* AliMpDEManager::GetDetElement(const TString& deName, Bool_t warn)
+{
+/// Return det element for given deName
+
+  return AliMpDEStore::Instance()->GetDetElement(deName, warn);
+}    
+
 //
 // static public methods
 //

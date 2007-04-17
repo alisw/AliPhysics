@@ -30,6 +30,7 @@
 #include "AliMpDEIterator.h"
 
 class AliMpDetElement;
+class TString;
 
 class AliMpDEManager : public  TObject {
 
@@ -48,6 +49,8 @@ class AliMpDEManager : public  TObject {
     static AliMp::CathodType  GetCathod(Int_t detElemId, AliMp::PlaneType planeType);
 
     static AliMpDetElement* GetDetElement(Int_t detElemId, Bool_t warn = true);
+    static AliMpDetElement* GetDetElement(const TString& deName, Bool_t warn = true);
+
     static Int_t GetNofDEInChamber(Int_t chamberId, Bool_t warn = true);
 
   private:
