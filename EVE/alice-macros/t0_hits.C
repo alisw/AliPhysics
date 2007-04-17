@@ -1,0 +1,41 @@
+// $Id$
+
+Reve::PointSet*
+t0_hits(const char *varexp    = "T0.fX:T0.fY:T0.fZ",
+	 const char *selection = "")
+{
+  // Extracts  T0 hits.
+
+
+  AliRunLoader* rl =  Alieve::Event::AssertRunLoader();
+  rl->LoadHits("T0");
+
+  TTree* ht = rl->GetTreeH("T0", false);
+
+  Int_t nTracks = ht->GetEntries();
+  // printf("Found %d tracks. \n",nTracks);
+  for (Int_t it = 0; it < nTracks; it++) {
+ 
+    TClonesArray *hits = 0;
+    ht->SetBranchAddress("T0",&hits);
+ 
+    ht->GetEvent(it);
+ Int_t nHits = hits->GetEntriesFast();
+ //  printf("Found %d hits in track %d. \n",nHits,it);
+
+  }
+  Reve::PointSet* points = new Reve::PointSet(Form("T0 Hits '%s'", selection));
+   points->SetSourceCS(TPointSelectorConsumer::TVT_XYZ);
+
+  TPointSelector ps(ht, points, varexp, selection);
+  ps.Select();
+
+  points->SetTitle(Form("N=%d", points->Size()));
+  points->SetMarkerSize(.5);
+  points->SetMarkerColor((Color_t)3);
+
+  gReve->AddRenderElement(points);
+  gReve->Redraw3D();
+
+  return points;
+}
