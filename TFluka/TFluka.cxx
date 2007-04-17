@@ -1611,6 +1611,7 @@ Int_t TFluka::CorrectFlukaId() const
    // and there is a call to endraw for energy deposition for each of them
    // and they have the track number of their parent, but different identity (pdg)
    // so we want to assign also their parent identity.
+
    if( (IsTrackStop())
         && TRACKR.ispusr[mkbmx2 - 4] == TRACKR.ispusr[mkbmx2 - 1]
         && TRACKR.jtrack != TRACKR.ispusr[mkbmx2 - 3] ) {
@@ -1621,7 +1622,11 @@ Int_t TFluka::CorrectFlukaId() const
                << " assign parent PDG=" << PDGFromId(TRACKR.ispusr[mkbmx2 - 3]) << endl;
       return TRACKR.ispusr[mkbmx2 - 3]; // assign parent identity
    }
-      return TRACKR.jtrack;
+   if (TRACKR.jtrack <= 64) {
+       return TRACKR.jtrack;
+   } else {
+       return TRACKR.j0trck;
+   }
 }
 
 
