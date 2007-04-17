@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2007/02/28 18:09:23  arcelli
+Add protection against failed retrieval of the CDB cal object
+
 Revision 1.11  2006/09/19 14:31:26  cvetan
 Bugfixes and clean-up of alignment object classes. Introduction of so called symbolic names used to identify the alignable volumes (Raffaele and Cvetan)
 
@@ -61,51 +64,77 @@ author: Silvia Arcelli, arcelli@bo.infn.it
 
 #include <Rtypes.h>
 
+#include "TMath.h"
+#include "TFile.h"
 #include "TRandom.h"
 
 #include "AliLog.h"
 #include "AliAlignObj.h"
 #include "AliAlignObjAngles.h"
+#include "AliAlignObjMatrix.h"
 #include "AliCDBManager.h"
 #include "AliCDBMetaData.h"
 #include "AliCDBId.h"
 #include "AliCDBEntry.h"
 #include "AliTOFAlignment.h"
 
+
 ClassImp(AliTOFAlignment)
+const Double_t AliTOFAlignment::fgkXsizeTOF  = 124.5; // x size of the TOF ext. volume, cm
+const Double_t AliTOFAlignment::fgkYsizeTOF  = 29.0;  // y size of the TOF ext. volume, cm
+const Double_t AliTOFAlignment::fgkZsizeTOF  = 913.8; // z size of the TOF ext. volume, cm
+const Double_t AliTOFAlignment::fgkRorigTOF  = 384.5; // Mean Radius of the TOF ext. volume, cm
+const Double_t AliTOFAlignment::fgkXFM = 38.0; //x pos, cm 
+const Double_t AliTOFAlignment::fgkYFM = 11.2; //y pos, cm
+const Double_t AliTOFAlignment::fgkZFM = 457.3;//z pos, cm
+const Double_t AliTOFAlignment::fgkZsizeTOFSens=741.2; //z size of the TOF sensitive volume, cm
 
 //_____________________________________________________________________________
 AliTOFAlignment::AliTOFAlignment():
   TTask("AliTOFAlignment",""),
   fNTOFAlignObj(0),
+  fTOFmgr(0x0),
   fTOFAlignObjArray(0x0)
  { 
-  //AliTOFalignment main Ctor
-
+   //AliTOFalignment main Ctor
+   for(Int_t ism=0;ism<18;ism++){
+     for(Int_t iFM=0;iFM<4;iFM++){
+       for(Int_t iFMc=0;iFMc<3;iFMc++){
+	 fTOFSurveyFM[ism][iFM][iFMc]=-1.;
+       }
+     }
+   }
 }
 //_____________________________________________________________________________
 AliTOFAlignment::AliTOFAlignment(const AliTOFAlignment &t):
   TTask("AliTOFAlignment",""),
   fNTOFAlignObj(0),
+  fTOFmgr(0x0),
   fTOFAlignObjArray(0x0)
 { 
   //AliTOFAlignment copy Ctor
 
   fNTOFAlignObj=t.fNTOFAlignObj;
   fTOFAlignObjArray=t.fTOFAlignObjArray;
-
+  //AliTOFalignment main Ctor
+  for(Int_t iSM=0;iSM<18;iSM++){
+     for(Int_t iFM=0;iFM<4;iFM++){
+       for(Int_t iFMc=0;iFMc<3;iFMc++){
+	 fTOFSurveyFM[iSM][iFM][iFMc]=-1.;
+       }
+     }
+  }  
 }
-
 //_____________________________________________________________________________
 AliTOFAlignment& AliTOFAlignment::operator=(const AliTOFAlignment &t){ 
   //AliTOFAlignment assignment operator
 
   this->fNTOFAlignObj=t.fNTOFAlignObj;
+  this->fTOFmgr=t.fTOFmgr;
   this->fTOFAlignObjArray=t.fTOFAlignObjArray;
   return *this;
 
 }
-
 //_____________________________________________________________________________
 AliTOFAlignment::~AliTOFAlignment() {delete fTOFAlignObjArray;}
 
@@ -157,8 +186,6 @@ void AliTOFAlignment::Align( Float_t *tr, Float_t *rot)
   Int_t nSMTOF = 18;
   AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer;
   UShort_t iIndex=0; //dummy volume index
-  //  AliAlignObj::ELayerID iLayer = AliAlignObj::kTOF;
-  //  Int_t iIndex=1; //dummy volume index
   UShort_t dvoluid = AliAlignObj::LayerToVolUID(iLayer,iIndex); //dummy volume identity 
   Int_t i;
   for (i = 0; i<nSMTOF ; i++) {
@@ -265,4 +292,277 @@ void AliTOFAlignment::ReadFromCDBforDC()
   fNTOFAlignObj=fTOFAlignObjArray->GetEntries();
   AliInfo(Form("Number of Alignable Volumes from CDB: %d",fNTOFAlignObj));
 
+}
+//_____________________________________________________________________________
+void AliTOFAlignment::BuildGeomForSurvey()
+{
+
+  //Simulates a Misalignment and generates a list of FM coordinates in the 
+  //global RS, to be passed to the survey-to-alignment algo. 
+  //Highly inspired to Raffaele's example... 
+
+  fTOFmgr = new TGeoManager("Geom","survey to alignment for TOF");
+  TGeoMedium *medium = 0;
+  TGeoVolume *top = fTOFmgr->MakeBox("TOP",medium,1000,1000,1000);
+  fTOFmgr->SetTopVolume(top);
+  // make shape components:  
+  // This is the big box containing the TOF master sensitive volume+services  
+  TGeoBBox *sbox0  = new TGeoBBox(fgkXsizeTOF*0.5,fgkYsizeTOF*0.5,fgkZsizeTOF*0.5);
+  TGeoVolume* box0[18];
+  // This is the big box containing the TOF master sensitive volume  
+  TGeoBBox *sbox1  = new TGeoBBox(fgkXsizeTOF*0.5,fgkYsizeTOF*0.5,fgkZsizeTOFSens*0.5);
+  TGeoVolume* box1 = new TGeoVolume("B1",sbox1);
+  box1->SetLineColor(3);//green
+
+  // Now four fiducial marks on SM, expressed in local coordinates
+  // They are positioned at x=+/- 38 cm, y=11.2, z=+/- 456.94 cm
+
+  TGeoBBox *fmbox  = new TGeoBBox(1,1,1);
+  TGeoVolume* fm = new TGeoVolume("FM",fmbox);
+  fm->SetLineColor(2);//color
+
+  TGeoTranslation* Atr = new TGeoTranslation("Atr",-fgkXFM, fgkYFM ,fgkZFM);
+  TGeoTranslation* Btr = new TGeoTranslation("Btr", fgkXFM, fgkYFM, fgkZFM);
+  TGeoTranslation* Ctr = new TGeoTranslation("Ctr", fgkXFM, fgkYFM,-fgkZFM);
+  TGeoTranslation* Dtr = new TGeoTranslation("Dtr",-fgkXFM, fgkYFM,-fgkZFM);
+
+  // position all this stuff in the global ALICE frame
+
+  char name[16];
+  Double_t smX = 0.;
+  Double_t smY = 0.;
+  Double_t smZ = 0.;
+  Float_t  smR = fgkRorigTOF;
+
+  for (Int_t iSM = 0; iSM < 18; iSM++) {
+    Int_t mod = iSM + 13;
+    if (mod > 17) mod -= 18;
+    sprintf(name, "BTOF%d",mod);
+    box0[iSM] = new TGeoVolume(name,sbox0);
+    Float_t phi  = iSM * 20.;
+    Float_t phirot = 180 + phi;    
+    smX =  TMath::Sin(phi*TMath::Pi()/180.)*smR;
+    smY = -TMath::Cos(phi*TMath::Pi()/180.)*smR;
+    smZ = 0.;
+    TGeoRotation* smRot = new TGeoRotation("smRot",phirot,0,0.);    
+    TGeoCombiTrans trans = *(new TGeoCombiTrans(smX,smY,smZ, smRot));
+    TGeoMatrix* id = new TGeoHMatrix();
+    TGeoHMatrix  transMat = *id * trans;
+    TGeoHMatrix  *smTrans = new TGeoHMatrix(transMat);
+    box0[iSM]->SetVisDaughters();
+    box0[iSM]->SetLineColor(1); //black
+    top->AddNode(box0[iSM],1,smTrans); //place the extended SM volume
+    box0[iSM]->AddNode(box1,1); //place the inner SM volume
+    box0[iSM]->AddNode(fm,1,Atr);
+    box0[iSM]->AddNode(fm,2,Btr);
+    box0[iSM]->AddNode(fm,3,Ctr);
+    box0[iSM]->AddNode(fm,4,Dtr);
+  }  
+
+  fTOFmgr->CloseGeometry();
+  fTOFmgr->GetTopVolume()->Draw();
+  fTOFmgr->SetVisOption(0);
+  fTOFmgr->SetVisLevel(6);
+
+  // Now Store the ideal Matrices for later use....
+
+  for (Int_t iSM = 0; iSM < 18; iSM++) {
+
+    sprintf(name, "TOP_1/BTOF%d_1", iSM);
+    printf("\n\n************  SuperModule N.r: ************** %s \n",name);
+    TGeoPhysicalNode* pn3 = fTOFmgr->MakePhysicalNode(name);
+    fTOFMatrixId[iSM] = pn3->GetMatrix(); //save "ideal" global matrix 
+    printf("\n\n************  Ideal global matrix, 1 **************\n");
+    fTOFMatrixId[iSM]->Print();
+
+  }
+}
+//_____________________________________________________________________________
+void AliTOFAlignment::TestAlignFromSurvey( Float_t *mis)
+{
+  // Now Apply the Displacements and store the misaligned FM positions...
+
+  Double_t A[3]={-fgkXFM,fgkYFM, fgkZFM};
+  Double_t B[3]={ fgkXFM,fgkYFM, fgkZFM};
+  Double_t C[3]={ fgkXFM,fgkYFM,-fgkZFM};
+  Double_t D[3]={-fgkXFM,fgkYFM,-fgkZFM};
+
+  for(Int_t iSM=0;iSM<18;iSM++){
+  // ************* get ideal global matrix *******************
+    char name[16];
+    sprintf(name, "TOP_1/BTOF%d_1", iSM);
+    fTOFmgr->cd(name);
+    printf("\n\n************  SuperModule N.r: ************** %s \n",name);
+
+  // ************* get ideal local matrix *******************
+    TGeoHMatrix g3 = *fTOFmgr->GetCurrentMatrix(); 
+    TGeoNode* n3 = fTOFmgr->GetCurrentNode();
+    TGeoMatrix* l3 = n3->GetMatrix(); 
+
+    Double_t gA[3], gB[3], gC[3], gD[3]; // ideal FM point coord., global RS
+    g3.LocalToMaster(A,gA);
+    g3.LocalToMaster(B,gB);
+    g3.LocalToMaster(C,gC);
+    g3.LocalToMaster(D,gD);
+
+    // We apply a delta transformation to the surveyed vol to represent
+    // its real position, given below by ng3 nl3, which differs from its
+    // ideal position saved above in g3 and l3
+
+
+    Double_t dx     = mis[0]; // shift along x
+    Double_t dy     = mis[1]; // shift along y
+    Double_t dz     = mis[2]; // shift along z
+    Double_t dphi   = mis[3]; // rot around z
+    Double_t dtheta = mis[4]; // rot around x'
+    Double_t dpsi   = mis[5]; // rot around z'
+
+    TGeoRotation* rrot = new TGeoRotation("rot",dphi,dtheta,dpsi);
+    TGeoCombiTrans localdelta = *(new TGeoCombiTrans(dx,dy,dz, rrot));
+  // new local matrix, representing real position
+    TGeoHMatrix nlocal = *l3 * localdelta;
+    TGeoHMatrix* nl3 = new TGeoHMatrix(nlocal);
+
+    TGeoPhysicalNode* pn3 = fTOFmgr->MakePhysicalNode(name);
+    TGeoHMatrix* ng2 = pn3->GetMatrix(); //"real" global matrix, what survey sees 
+    printf("\n\n************  Ideal global matrix, 2 **************\n");
+    ng2->Print();
+
+    pn3->Align(nl3);    //Align....    
+    
+    TGeoHMatrix* ng3 = pn3->GetMatrix(); //"real" global matrix, what survey sees 
+    printf("\n\n************  Misaligned global matrix **************\n");
+    ng3->Print();
+    Double_t ngA[3], ngB[3], ngC[3], ngD[3];// real FM point coord., global RS
+    ng3->LocalToMaster(A,ngA);
+    ng3->LocalToMaster(B,ngB);
+    ng3->LocalToMaster(C,ngC);
+    ng3->LocalToMaster(D,ngD);    
+
+    for(Int_t iFM=0;iFM<3;iFM++){
+      fTOFSurveyFM[iSM][0][iFM]=ngA[iFM];
+      fTOFSurveyFM[iSM][1][iFM]=ngB[iFM];
+      fTOFSurveyFM[iSM][2][iFM]=ngC[iFM];
+      fTOFSurveyFM[iSM][3][iFM]=ngD[iFM];
+    }
+  }
+}
+
+//_____________________________________________________________________________
+void AliTOFAlignment::AlignFromSurvey()
+{
+  //From survey Data, derive the needed transformations to get the 
+  //Alignment Objects. 
+  //Again, highly "inspired" to Raffaele's example... 
+
+  fTOFAlignObjArray = new TObjArray(kMaxAlignObj);
+  Int_t index=0; //let all SM modules have index=0
+  AliAlignObj::ELayerID layer = AliAlignObj::kInvalidLayer;
+  UShort_t dvoluid = AliAlignObj::LayerToVolUID(layer,index); //dummy vol id 
+  
+  for(Int_t iSM=0;iSM<18;iSM++){
+    Double_t ngA[3], ngB[3], ngC[3], ngD[3];// real FM point coord., global RS
+ 
+   // Get the input from the Survey Matrix
+    for(Int_t iFM=0;iFM<3;iFM++){
+      ngA[iFM]=   fTOFSurveyFM[iSM][0][iFM];
+      ngB[iFM]=   fTOFSurveyFM[iSM][1][iFM];
+      ngD[iFM]=   fTOFSurveyFM[iSM][2][iFM];
+      ngC[iFM]=   fTOFSurveyFM[iSM][3][iFM];
+    }
+
+    // From the new fiducial marks coordinates derive back the
+    // new global position of the surveyed volume
+    //*** What follows is the actual survey-to-alignment procedure
+    
+    Double_t ab[3], bc[3], n[3];
+    Double_t plane[4], s=1.;
+    
+    // first vector on the plane of the fiducial marks
+    for(Int_t i=0;i<3;i++){
+      ab[i] = (ngB[i] - ngA[i]);
+    }
+    
+    // second vector on the plane of the fiducial marks
+    for(Int_t i=0;i<3;i++){
+      bc[i] = (ngC[i] - ngB[i]);
+    }
+    
+    // vector normal to the plane of the fiducial marks obtained
+    // as cross product of the two vectors on the plane d0^d1
+    n[0] = (ab[1] * bc[2] - ab[2] * bc[1]);
+    n[1] = (ab[2] * bc[0] - ab[0] * bc[2]);
+    n[2] = (ab[0] * bc[1] - ab[1] * bc[0]);
+    
+    Double_t sizen = TMath::Sqrt( n[0]*n[0] + n[1]*n[1] + n[2]*n[2] );
+    if(sizen>1.e-8){
+      s = Double_t(1.)/sizen ; //normalization factor
+    }else{
+      AliInfo("Problem in normalizing the vector");
+    }
+    
+    // plane expressed in the hessian normal form, see:
+    // http://mathworld.wolfram.com/HessianNormalForm.html
+    // the first three are the coordinates of the orthonormal vector
+    // the fourth coordinate is equal to the distance from the origin
+  
+    for(Int_t i=0;i<3;i++){
+      plane[i] = n[i] * s;
+    }
+    plane[3] = ( plane[0] * ngA[0] + plane[1] * ngA[1] + plane[2] * ngA[2] );
+    
+    // The center of the square with fiducial marks as corners
+    // as the middle point of one diagonal - md
+    // Used below to get the center - orig - of the surveyed box
+
+    Double_t orig[3], md[3];
+    for(Int_t i=0;i<3;i++){
+      md[i] = (ngA[i] + ngC[i]) * 0.5;
+    }
+    
+    // The center of the box, gives the global translation
+
+    for(Int_t i=0;i<3;i++){
+      orig[i] = md[i] - plane[i]*fgkYFM;
+    }
+    
+    // get local directions needed to write the global rotation matrix
+    // for the surveyed volume by normalising vectors ab and bc
+
+    Double_t sx = TMath::Sqrt(ab[0]*ab[0] + ab[1]*ab[1] + ab[2]*ab[2]);
+    if(sx>1.e-8){
+      for(Int_t i=0;i<3;i++){
+	ab[i] /= sx;
+      }
+    }
+    Double_t sy = TMath::Sqrt(bc[0]*bc[0] + bc[1]*bc[1] + bc[2]*bc[2]);
+    if(sy>1.e-8){
+      for(Int_t i=0;i<3;i++){
+	bc[i] /= sy;
+      }
+    }
+        
+    Double_t rot[9] = {ab[0],plane[0],bc[0],ab[1],plane[1],-bc[1],ab[2],plane[2],-bc[2]}; // the rotation matrix
+    TGeoHMatrix ng;
+    ng.SetTranslation(orig);
+    ng.SetRotation(rot);
+    ng.Print();
+    // Calculate the delta transformation wrt Ideal
+    TGeoHMatrix gdelta =fTOFMatrixId[iSM]->Inverse();
+    gdelta.MultiplyLeft(&ng);
+
+  // Now Get the alignment Objects....
+     TString symname(Form("TOF/sm%02d",iSM));
+//  // if the volume is in the look-up table use something like this instead:
+     AliAlignObjMatrix* o = new AliAlignObjMatrix(symname.Data(),dvoluid,gdelta,kTRUE);
+     fTOFAlignObjArray->Add(o);
+  }
+
+  // saving TOF AligObjs from survey on a file, for the moment.. 
+  fNTOFAlignObj=fTOFAlignObjArray->GetEntries();
+  AliInfo(Form("Number of Alignable Volumes: %d",fNTOFAlignObj));
+  TFile f("TOFAlignFromSurvey.root","RECREATE");
+  f.cd();
+  f.WriteObject(fTOFAlignObjArray,"TOFAlignObjs","kSingleKey");
+  f.Close();
 }
