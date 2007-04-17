@@ -243,10 +243,46 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &flags) const
 	{
 	  if (flags.SecSelection()) glLoadName(qi.index());
 	  glBegin(primitiveType);
-	  glVertex3f(q.fX,        q.fY,        q.fZ);
-	  glVertex3f(q.fX + q.fW, q.fY,        q.fZ);
-	  glVertex3f(q.fX + q.fW, q.fY + q.fH, q.fZ);
-	  glVertex3f(q.fX,        q.fY + q.fH, q.fZ);
+	  glVertex3f(q.fA,        q.fB,        q.fC);
+	  glVertex3f(q.fA + q.fW, q.fB,        q.fC);
+	  glVertex3f(q.fA + q.fW, q.fB + q.fH, q.fC);
+	  glVertex3f(q.fA,        q.fB + q.fH, q.fC);
+	  glEnd();
+	}
+      }
+      break;
+    }
+
+    case QuadSet::QT_RectangleXZ:
+    {
+      while (qi.next()) {
+	QuadSet::QRect& q = * (QuadSet::QRect*) qi();
+	if (SetupColor(q))
+	{
+	  if (flags.SecSelection()) glLoadName(qi.index());
+	  glBegin(primitiveType);
+	  glVertex3f(q.fA,        q.fC, q.fB);
+	  glVertex3f(q.fA + q.fW, q.fC, q.fB);
+	  glVertex3f(q.fA + q.fW, q.fC, q.fB + q.fH);
+	  glVertex3f(q.fA,        q.fC, q.fB + q.fH);
+	  glEnd();
+	}
+      }
+      break;
+    }
+
+    case QuadSet::QT_RectangleYZ:
+    {
+      while (qi.next()) {
+	QuadSet::QRect& q = * (QuadSet::QRect*) qi();
+	if (SetupColor(q))
+	{
+	  if (flags.SecSelection()) glLoadName(qi.index());
+	  glBegin(primitiveType);
+	  glVertex3f(q.fC, q.fA,        q.fB);
+	  glVertex3f(q.fC, q.fA + q.fW, q.fB);
+	  glVertex3f(q.fC, q.fA + q.fW, q.fB + q.fH);
+	  glVertex3f(q.fC, q.fA,        q.fB + q.fH);
 	  glEnd();
 	}
       }
@@ -263,10 +299,10 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &flags) const
 	{
 	  if (flags.SecSelection()) glLoadName(qi.index());
 	  glBegin(primitiveType);
-	  glVertex3f(q.fX,     q.fY,     q.fZ);
-	  glVertex3f(q.fX + w, q.fY,     q.fZ);
-	  glVertex3f(q.fX + w, q.fY + h, q.fZ);
-	  glVertex3f(q.fX,     q.fY + h, q.fZ);
+	  glVertex3f(q.fA,     q.fB,     q.fC);
+	  glVertex3f(q.fA + w, q.fB,     q.fC);
+	  glVertex3f(q.fA + w, q.fB + h, q.fC);
+	  glVertex3f(q.fA,     q.fB + h, q.fC);
 	  glEnd();
 	}
       }
@@ -282,10 +318,10 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &flags) const
 	{
 	  if (flags.SecSelection()) glLoadName(qi.index());
 	  glBegin(primitiveType);
-	  glVertex3f(q.fX,        q.fY,        z);
-	  glVertex3f(q.fX + q.fW, q.fY,        z);
-	  glVertex3f(q.fX + q.fW, q.fY + q.fH, z);
-	  glVertex3f(q.fX,        q.fY + q.fH, z);
+	  glVertex3f(q.fA,        q.fB,        z);
+	  glVertex3f(q.fA + q.fW, q.fB,        z);
+	  glVertex3f(q.fA + q.fW, q.fB + q.fH, z);
+	  glVertex3f(q.fA,        q.fB + q.fH, z);
 	  glEnd();
 	}
       }
@@ -294,17 +330,36 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &flags) const
 
     case QuadSet::QT_RectangleXZFixedY:
     {
-      const Float_t& z = mQ.fDefCoord;
+      const Float_t& y = mQ.fDefCoord;
       while (qi.next()) {
 	QuadSet::QRectFixC& q = * (QuadSet::QRectFixC*) qi();
 	if (SetupColor(q))
 	{
 	  if (flags.SecSelection()) glLoadName(qi.index());
 	  glBegin(primitiveType);
-	  glVertex3f(q.fX,        z, q.fY);
-	  glVertex3f(q.fX + q.fW, z, q.fY);
-	  glVertex3f(q.fX + q.fW, z, q.fY + q.fH);
-	  glVertex3f(q.fX,        z, q.fY + q.fH);
+	  glVertex3f(q.fA,        y, q.fB);
+	  glVertex3f(q.fA + q.fW, y, q.fB);
+	  glVertex3f(q.fA + q.fW, y, q.fB + q.fH);
+	  glVertex3f(q.fA,        y, q.fB + q.fH);
+	  glEnd();
+	}
+      }
+      break;
+    }
+
+    case QuadSet::QT_RectangleYZFixedX:
+    {
+      const Float_t& x = mQ.fDefCoord;
+      while (qi.next()) {
+	QuadSet::QRectFixC& q = * (QuadSet::QRectFixC*) qi();
+	if (SetupColor(q))
+	{
+	  if (flags.SecSelection()) glLoadName(qi.index());
+	  glBegin(primitiveType);
+	  glVertex3f(x, q.fA,        q.fB);
+	  glVertex3f(x, q.fA + q.fW, q.fB);
+	  glVertex3f(x, q.fA + q.fW, q.fB + q.fH);
+	  glVertex3f(x, q.fA,        q.fB + q.fH);
 	  glEnd();
 	}
       }
@@ -322,10 +377,10 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &flags) const
 	{
 	  if (flags.SecSelection()) glLoadName(qi.index());
 	  glBegin(primitiveType);
-	  glVertex3f(q.fX,     q.fY,     z);
-	  glVertex3f(q.fX + w, q.fY,     z);
-	  glVertex3f(q.fX + w, q.fY + h, z);
-	  glVertex3f(q.fX,     q.fY + h, z);
+	  glVertex3f(q.fA,     q.fB,     z);
+	  glVertex3f(q.fA + w, q.fB,     z);
+	  glVertex3f(q.fA + w, q.fB + h, z);
+	  glVertex3f(q.fA,     q.fB + h, z);
 	  glEnd();
 	}
       }
@@ -334,7 +389,7 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &flags) const
 
     case QuadSet::QT_RectangleXZFixedDimY:
     {
-      const Float_t& z = mQ.fDefCoord;
+      const Float_t& y = mQ.fDefCoord;
       const Float_t& w = mQ.fDefWidth;
       const Float_t& h = mQ.fDefHeight;
       while (qi.next()) {
@@ -343,10 +398,31 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &flags) const
 	{
 	  if (flags.SecSelection()) glLoadName(qi.index());
 	  glBegin(primitiveType);
-	  glVertex3f(q.fX,     z, q.fY);
-	  glVertex3f(q.fX + w, z, q.fY);
-	  glVertex3f(q.fX + w, z, q.fY + h);
-	  glVertex3f(q.fX,     z, q.fY + h);
+	  glVertex3f(q.fA,     y, q.fB);
+	  glVertex3f(q.fA + w, y, q.fB);
+	  glVertex3f(q.fA + w, y, q.fB + h);
+	  glVertex3f(q.fA,     y, q.fB + h);
+	  glEnd();
+	}
+      }
+      break;
+    }
+
+    case QuadSet::QT_RectangleYZFixedDimX:
+    {
+      const Float_t& x = mQ.fDefCoord;
+      const Float_t& w = mQ.fDefWidth;
+      const Float_t& h = mQ.fDefHeight;
+      while (qi.next()) {
+	QuadSet::QRectFixDimC& q = * (QuadSet::QRectFixDimC*) qi();
+	if (SetupColor(q))
+	{
+	  if (flags.SecSelection()) glLoadName(qi.index());
+	  glBegin(primitiveType);
+	  glVertex3f(x, q.fA,     q.fB);
+	  glVertex3f(x, q.fA + w, q.fB);
+	  glVertex3f(x, q.fA + w, q.fB + h);
+	  glVertex3f(x, q.fA,     q.fB + h);
 	  glEnd();
 	}
       }
@@ -384,8 +460,8 @@ void QuadSetGL::RenderLines(const TGLDrawFlags &flags) const
 	{
 	  if (flags.SecSelection()) glLoadName(qi.index());
 	  glBegin(GL_LINES);
-	  glVertex3f(q.fX,         q.fY,         z);
-	  glVertex3f(q.fX + q.fDx, q.fY + q.fDy, z);
+	  glVertex3f(q.fA,         q.fB,         z);
+	  glVertex3f(q.fA + q.fDx, q.fB + q.fDy, z);
 	  glEnd();
 	}
       }
@@ -401,8 +477,8 @@ void QuadSetGL::RenderLines(const TGLDrawFlags &flags) const
 	{
 	  if (flags.SecSelection()) glLoadName(qi.index());
 	  glBegin(GL_LINES);
-	  glVertex3f(q.fX,         z, q.fY);
-	  glVertex3f(q.fX + q.fDx, z, q.fY + q.fDy);
+	  glVertex3f(q.fA,         z, q.fB);
+	  glVertex3f(q.fA + q.fDx, z, q.fB + q.fDy);
 	  glEnd();
 	}
       }
@@ -447,12 +523,12 @@ void QuadSetGL::RenderHexagons(const TGLDrawFlags &flags) const
 	  const Float_t rs = q.fR * sqr3hf;
 	  if (flags.SecSelection()) glLoadName(qi.index());
 	  glBegin(primitveType);
-	  glVertex3f( q.fR + q.fX,       q.fY, q.fZ);
-	  glVertex3f(   rh + q.fX,  rs + q.fY, q.fZ);
-	  glVertex3f(  -rh + q.fX,  rs + q.fY, q.fZ);
-	  glVertex3f(-q.fR + q.fX,       q.fY, q.fZ);
-	  glVertex3f(  -rh + q.fX, -rs + q.fY, q.fZ);
-	  glVertex3f(   rh + q.fX, -rs + q.fY, q.fZ);
+	  glVertex3f( q.fR + q.fA,       q.fB, q.fC);
+	  glVertex3f(   rh + q.fA,  rs + q.fB, q.fC);
+	  glVertex3f(  -rh + q.fA,  rs + q.fB, q.fC);
+	  glVertex3f(-q.fR + q.fA,       q.fB, q.fC);
+	  glVertex3f(  -rh + q.fA, -rs + q.fB, q.fC);
+	  glVertex3f(   rh + q.fA, -rs + q.fB, q.fC);
 	  glEnd();
 	}
       }
@@ -469,12 +545,12 @@ void QuadSetGL::RenderHexagons(const TGLDrawFlags &flags) const
 	  const Float_t rs = q.fR * sqr3hf;
 	  if (flags.SecSelection()) glLoadName(qi.index());
 	  glBegin(primitveType);
-	  glVertex3f( rs + q.fX,    rh + q.fY, q.fZ);
-	  glVertex3f(      q.fX,  q.fR + q.fY, q.fZ);
-	  glVertex3f(-rs + q.fX,    rh + q.fY, q.fZ);
-	  glVertex3f(-rs + q.fX,   -rh + q.fY, q.fZ);
-	  glVertex3f(      q.fX, -q.fR + q.fY, q.fZ);
-	  glVertex3f( rs + q.fX,   -rh + q.fY, q.fZ);
+	  glVertex3f( rs + q.fA,    rh + q.fB, q.fC);
+	  glVertex3f(      q.fA,  q.fR + q.fB, q.fC);
+	  glVertex3f(-rs + q.fA,    rh + q.fB, q.fC);
+	  glVertex3f(-rs + q.fA,   -rh + q.fB, q.fC);
+	  glVertex3f(      q.fA, -q.fR + q.fB, q.fC);
+	  glVertex3f( rs + q.fA,   -rh + q.fB, q.fC);
 	  glEnd();
 	}
       }

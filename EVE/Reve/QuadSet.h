@@ -92,11 +92,15 @@ public:
     QT_Undef,                // unknown-ignored
     QT_FreeQuad,             // arbitrary quad: specify 4*(x,y,z) quad corners
     QT_RectangleXY,          // rectangle in x-y plane: specify x, y, z, w, h
+    QT_RectangleXZ,          // rectangle in x-z plane: specify x, y, z, w, h
+    QT_RectangleYZ,          // rectangle in y-z plane: specify x, y, z, w, h
     QT_RectangleXYFixedDim,  // rectangle in x-y plane: specify x, y, z; w, h taken from fDefWidth/Height
     QT_RectangleXYFixedZ,    // rectangle in x-y plane: specify x, y, w, h; z taken from fDefCoord
     QT_RectangleXZFixedY,    // rectangle in x-z plane: specify x, z, w, h; y taken from fDefCoord
+    QT_RectangleYZFixedX,    // rectangle in y-z plane: specify y, z, w, h; x taken from fDefWidth/Height/Coord
     QT_RectangleXYFixedDimZ, // rectangle in x-y plane: specify x, y; w, h, z taken from fDefWidth/Height/Coord
     QT_RectangleXZFixedDimY, // rectangle in x-z plane: specify x, z; w, h, y taken from fDefWidth/Height/Coord
+    QT_RectangleYZFixedDimX, // rectangle in y-z plane: specify y, z; w, h, x taken from fDefWidth/Height/Coord
     QT_Rectangle_End,
     // line modes (needed for uniform handling of silicon-strip digits)
     QT_LineXYFixedZ,         // line in x-y plane: specify x, y, w(dx), h(dy); z taken from fDefCoord
@@ -127,11 +131,11 @@ protected:
 
   struct QFreeQuad     : public QuadBase      { Float_t fVertices[12]; };
 
-  struct QOrigin       : public QuadBase      { Float_t fX, fY; };
+  struct QOrigin       : public QuadBase      { Float_t fA, fB; };
 
   struct QRectFixDimC  : public QOrigin       { };
 
-  struct QRectFixDim   : public QRectFixDimC  { Float_t fZ; };
+  struct QRectFixDim   : public QRectFixDimC  { Float_t fC; };
 
   struct QRectFixC     : public QRectFixDimC  { Float_t fW, fH; };
 
@@ -139,7 +143,7 @@ protected:
 
   struct QLineFixC     : public QOrigin       { Float_t fDx, fDy; };
 
-  struct QHex          : public QOrigin       { Float_t fZ, fR; };
+  struct QHex          : public QOrigin       { Float_t fC, fR; };
 
 protected:
   QuadType_e        fQuadType;
@@ -149,9 +153,9 @@ protected:
   VoidCPlex         fPlex;
   QuadBase*         fLastQuad;     //!
 
-  Float_t           fDefWidth;
-  Float_t           fDefHeight;
-  Float_t           fDefCoord;
+  Float_t           fDefWidth;     // Breadth assigned to first coordinate  (A)
+  Float_t           fDefHeight;    // Breadth assigned to second coordinate (B)
+  Float_t           fDefCoord;     // Default value for third coordinate    (C)
 
   FrameBox*         fFrame;
   RGBAPalette*      fPalette;
@@ -212,14 +216,14 @@ public:
 
   void AddQuad(Float_t* verts);
 
-  void AddQuad(Float_t x, Float_t y);
-  void AddQuad(Float_t x, Float_t y, Float_t z);
-  void AddQuad(Float_t x, Float_t y, Float_t w, Float_t h);
-  void AddQuad(Float_t x, Float_t y, Float_t z, Float_t w, Float_t h);
+  void AddQuad(Float_t a, Float_t b);
+  void AddQuad(Float_t a, Float_t b, Float_t c);
+  void AddQuad(Float_t a, Float_t b, Float_t w, Float_t h);
+  void AddQuad(Float_t a, Float_t b, Float_t c, Float_t w, Float_t h);
 
-  void AddLine(Float_t x, Float_t y, Float_t w, Float_t h);
+  void AddLine(Float_t a, Float_t b, Float_t w, Float_t h);
 
-  void AddHexagon(Float_t x, Float_t y, Float_t z, Float_t r);
+  void AddHexagon(Float_t a, Float_t b, Float_t z, Float_t r);
 
   void QuadValue(Int_t value);
   void QuadColor(Color_t ci);

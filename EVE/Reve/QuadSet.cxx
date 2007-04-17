@@ -167,11 +167,14 @@ void OldQuadSet::ComputeBBox()
 // QuadSet
 //
 // Supports various internal formats that result in rendering of a
-// set of rectangular objects.
+// set of planar (lines, rectangles, hegagons with shared normal) objects.
 //
-// Names of internal structures and their variables use fixed
-// assignment to x, z, y coordinates; the render types can override
-// this convention and impose Y as a fixed coordinate.
+// Names of internal structures and their variables use A, B and C as
+// names for coordinate value-holders. Typical assignment is A->X,
+// B->Y, C->Z but each render mode can override this convention and
+// impose y or x as a fixed (third or C) coordinate. Alphabetic order
+// is obeyed in this correspondence.
+//
 // For quad modes the deltas are expected to be positive.
 // For line modes negative deltas are ok.
 
@@ -249,12 +252,16 @@ Int_t QuadSet::SizeofAtom(QuadSet::QuadType_e qt)
   switch (qt) {
     case QT_Undef:                return 0;
     case QT_FreeQuad:             return sizeof(QFreeQuad);
-    case QT_RectangleXY:          return sizeof(QRect);
+    case QT_RectangleXY:
+    case QT_RectangleXZ:
+    case QT_RectangleYZ:          return sizeof(QRect);
     case QT_RectangleXYFixedDim:  return sizeof(QRectFixDim);
+    case QT_RectangleXYFixedZ:
     case QT_RectangleXZFixedY:
-    case QT_RectangleXYFixedZ:    return sizeof(QRectFixC);
+    case QT_RectangleYZFixedX:    return sizeof(QRectFixC);
+    case QT_RectangleXYFixedDimZ:
     case QT_RectangleXZFixedDimY:
-    case QT_RectangleXYFixedDimZ: return sizeof(QRectFixDimC);
+    case QT_RectangleYZFixedDimX: return sizeof(QRectFixDimC);
     case QT_LineXZFixedY:
     case QT_LineXYFixedZ:         return sizeof(QLineFixC);
     case QT_HexagonXY:
@@ -372,47 +379,51 @@ void QuadSet::AddQuad(Float_t* verts)
   memcpy(fq->fVertices, verts, sizeof(fq->fVertices));
 }
 
-void QuadSet::AddQuad(Float_t x, Float_t y)
+void QuadSet::AddQuad(Float_t a, Float_t b)
 {
-  AddQuad(x, y, fDefCoord, fDefWidth, fDefHeight);
+  AddQuad(a, b, fDefCoord, fDefWidth, fDefHeight);
 }
 
-void QuadSet::AddQuad(Float_t x, Float_t y, Float_t z)
+void QuadSet::AddQuad(Float_t a, Float_t b, Float_t c)
 {
-  AddQuad(x, y, z, fDefWidth, fDefHeight);
+  AddQuad(a, b, c, fDefWidth, fDefHeight);
 }
 
-void QuadSet::AddQuad(Float_t x, Float_t y, Float_t w, Float_t h)
+void QuadSet::AddQuad(Float_t a, Float_t b, Float_t w, Float_t h)
 {
-  AddQuad(x, y, fDefCoord, w, h);
+  AddQuad(a, b, fDefCoord, w, h);
 }
 
-void QuadSet::AddQuad(Float_t x, Float_t y, Float_t z, Float_t w, Float_t h)
+void QuadSet::AddQuad(Float_t a, Float_t b, Float_t c, Float_t w, Float_t h)
 {
   static const Exc_t eH("QuadSet::AddAAQuad ");
 
   QOrigin& fq = * (QOrigin*) NewQuad();
-  fq.fX = x; fq.fY = y;
+  fq.fA = a; fq.fB = b;
   switch (fQuadType)
   {
-    case QT_RectangleXY: {
+    case QT_RectangleXY:
+    case QT_RectangleXZ:
+    case QT_RectangleYZ: {
       QRect& q = (QRect&) fq;
-      q.fZ = z; q.fW = w; q.fH = h;
+      q.fC = c; q.fW = w; q.fH = h;
       break;
     }
     case QT_RectangleXYFixedDim: {
       QRectFixDim& q =  (QRectFixDim&) fq;
-      q.fZ = z;
+      q.fC = c;
       break;
     }
+    case QT_RectangleXYFixedZ:
     case QT_RectangleXZFixedY:
-    case QT_RectangleXYFixedZ: {
+    case QT_RectangleYZFixedX: {
       QRectFixC& q = (QRectFixC&) fq;
       q.fW = w; q.fH = h;
       break;
     }
+    case QT_RectangleXYFixedDimZ:
     case QT_RectangleXZFixedDimY:
-    case QT_RectangleXYFixedDimZ: {
+    case QT_RectangleYZFixedDimX: {
       break;
     }
     default:
@@ -420,12 +431,12 @@ void QuadSet::AddQuad(Float_t x, Float_t y, Float_t z, Float_t w, Float_t h)
   }
 }
 
-void QuadSet::AddLine(Float_t x, Float_t y, Float_t w, Float_t h)
+void QuadSet::AddLine(Float_t a, Float_t b, Float_t w, Float_t h)
 {
   static const Exc_t eH("QuadSet::AddLine ");
 
   QOrigin& fq = * (QOrigin*) NewQuad();
-  fq.fX = x; fq.fY = y;
+  fq.fA = a; fq.fB = b;
   switch (fQuadType)
   {
     case QT_LineXZFixedY:
@@ -439,18 +450,18 @@ void QuadSet::AddLine(Float_t x, Float_t y, Float_t w, Float_t h)
   }
 }
 
-void QuadSet::AddHexagon(Float_t x, Float_t y, Float_t z, Float_t r)
+void QuadSet::AddHexagon(Float_t a, Float_t b, Float_t c, Float_t r)
 {
   static const Exc_t eH("QuadSet::AddHexagon ");
 
   QOrigin& fq = * (QOrigin*) NewQuad();
-  fq.fX = x; fq.fY = y;
+  fq.fA = a; fq.fB = b;
   switch (fQuadType)
   {
     case QT_HexagonXY:
     case QT_HexagonYX: {
       QHex& q = (QHex&) fq;
-      q.fZ = z; q.fR = r;
+      q.fC = c; q.fR = r;
       break;
     }
     default:
@@ -546,6 +557,12 @@ void QuadSet::ComputeBBox()
       fBBox[2] = fDefCoord;
       fBBox[3] = fDefCoord;
     }
+    else if (fQuadType == QT_RectangleYZFixedX    ||
+	     fQuadType == QT_RectangleYZFixedDimX)
+    {
+      fBBox[0] = fDefCoord;
+      fBBox[1] = fDefCoord;
+    }
 
     VoidCPlex::iterator qi(fPlex);
   
@@ -568,12 +585,40 @@ void QuadSet::ComputeBBox()
       {
 	while (qi.next()) {
 	  QRect& q = * (QRect*) qi();
-	  if(q.fX        < fBBox[0]) fBBox[0] = q.fX;
-	  if(q.fX + q.fW > fBBox[1]) fBBox[1] = q.fX + q.fW;
-	  if(q.fY        < fBBox[2]) fBBox[2] = q.fY;
-	  if(q.fY + q.fH > fBBox[3]) fBBox[3] = q.fY + q.fH;
-	  if(q.fZ        < fBBox[4]) fBBox[4] = q.fZ;
-	  if(q.fZ        > fBBox[5]) fBBox[5] = q.fZ;
+	  if(q.fA        < fBBox[0]) fBBox[0] = q.fA;
+	  if(q.fA + q.fW > fBBox[1]) fBBox[1] = q.fA + q.fW;
+	  if(q.fB        < fBBox[2]) fBBox[2] = q.fB;
+	  if(q.fB + q.fH > fBBox[3]) fBBox[3] = q.fB + q.fH;
+	  if(q.fC        < fBBox[4]) fBBox[4] = q.fC;
+	  if(q.fC        > fBBox[5]) fBBox[5] = q.fC;
+	}
+	break;
+      }
+
+      case QT_RectangleXZ:
+      {
+	while (qi.next()) {
+	  QRect& q = * (QRect*) qi();
+	  if(q.fA        < fBBox[0]) fBBox[0] = q.fA;
+	  if(q.fA + q.fW > fBBox[1]) fBBox[1] = q.fA + q.fW;
+	  if(q.fB        < fBBox[4]) fBBox[4] = q.fB;
+	  if(q.fB + q.fH > fBBox[5]) fBBox[5] = q.fB + q.fH;
+	  if(q.fC        < fBBox[2]) fBBox[2] = q.fC;
+	  if(q.fC        > fBBox[3]) fBBox[3] = q.fC;
+	}
+	break;
+      }
+
+      case QT_RectangleYZ:
+      {
+	while (qi.next()) {
+	  QRect& q = * (QRect*) qi();
+	  if(q.fA        < fBBox[2]) fBBox[2] = q.fA;
+	  if(q.fA + q.fW > fBBox[3]) fBBox[3] = q.fA + q.fW;
+	  if(q.fB        < fBBox[4]) fBBox[4] = q.fB;
+	  if(q.fB + q.fH > fBBox[5]) fBBox[5] = q.fB + q.fH;
+	  if(q.fC        < fBBox[0]) fBBox[0] = q.fC;
+	  if(q.fC        > fBBox[1]) fBBox[1] = q.fC;
 	}
 	break;
       }
@@ -584,12 +629,12 @@ void QuadSet::ComputeBBox()
 	const Float_t& h = fDefHeight;
 	while (qi.next()) {
 	  QRectFixDim& q = * (QRectFixDim*) qi();
-	  if(q.fX     < fBBox[0]) fBBox[0] = q.fX;
-	  if(q.fX + w > fBBox[1]) fBBox[1] = q.fX + w;
-	  if(q.fY     < fBBox[2]) fBBox[2] = q.fY;
-	  if(q.fY + h > fBBox[3]) fBBox[3] = q.fY + h;
-	  if(q.fZ     < fBBox[4]) fBBox[4] = q.fZ;
-	  if(q.fZ     > fBBox[5]) fBBox[5] = q.fZ;
+	  if(q.fA     < fBBox[0]) fBBox[0] = q.fA;
+	  if(q.fA + w > fBBox[1]) fBBox[1] = q.fA + w;
+	  if(q.fB     < fBBox[2]) fBBox[2] = q.fB;
+	  if(q.fB + h > fBBox[3]) fBBox[3] = q.fB + h;
+	  if(q.fC     < fBBox[4]) fBBox[4] = q.fC;
+	  if(q.fC     > fBBox[5]) fBBox[5] = q.fC;
 	}
 	break;
       }
@@ -598,10 +643,10 @@ void QuadSet::ComputeBBox()
       {
 	while (qi.next()) {
 	  QRectFixC& q = * (QRectFixC*) qi();
-	  if(q.fX        < fBBox[0]) fBBox[0] = q.fX;
-	  if(q.fX + q.fW > fBBox[1]) fBBox[1] = q.fX + q.fW;
-	  if(q.fY        < fBBox[2]) fBBox[2] = q.fY;
-	  if(q.fY + q.fH > fBBox[3]) fBBox[3] = q.fY + q.fH;
+	  if(q.fA        < fBBox[0]) fBBox[0] = q.fA;
+	  if(q.fA + q.fW > fBBox[1]) fBBox[1] = q.fA + q.fW;
+	  if(q.fB        < fBBox[2]) fBBox[2] = q.fB;
+	  if(q.fB + q.fH > fBBox[3]) fBBox[3] = q.fB + q.fH;
 	}
 	break;
       }
@@ -610,10 +655,22 @@ void QuadSet::ComputeBBox()
       {
 	while (qi.next()) {
 	  QRectFixC& q = * (QRectFixC*) qi();
-	  if(q.fX        < fBBox[0]) fBBox[0] = q.fX;
-	  if(q.fX + q.fW > fBBox[1]) fBBox[1] = q.fX + q.fW;
-	  if(q.fY        < fBBox[4]) fBBox[4] = q.fY;
-	  if(q.fY + q.fH > fBBox[5]) fBBox[5] = q.fY + q.fH;
+	  if(q.fA        < fBBox[0]) fBBox[0] = q.fA;
+	  if(q.fA + q.fW > fBBox[1]) fBBox[1] = q.fA + q.fW;
+	  if(q.fB        < fBBox[4]) fBBox[4] = q.fB;
+	  if(q.fB + q.fH > fBBox[5]) fBBox[5] = q.fB + q.fH;
+	}
+	break;
+      }
+
+      case QT_RectangleYZFixedX:
+      {
+	while (qi.next()) {
+	  QRectFixC& q = * (QRectFixC*) qi();
+	  if(q.fA        < fBBox[2]) fBBox[2] = q.fA;
+	  if(q.fA + q.fW > fBBox[3]) fBBox[3] = q.fA + q.fW;
+	  if(q.fB        < fBBox[4]) fBBox[4] = q.fB;
+	  if(q.fB + q.fH > fBBox[5]) fBBox[5] = q.fB + q.fH;
 	}
 	break;
       }
@@ -624,10 +681,10 @@ void QuadSet::ComputeBBox()
 	const Float_t& h = fDefHeight;
 	while (qi.next()) {
 	  QRectFixDimC& q = * (QRectFixDimC*) qi();
-	  if(q.fX     < fBBox[0]) fBBox[0] = q.fX;
-	  if(q.fX + w > fBBox[1]) fBBox[1] = q.fX + w;
-	  if(q.fY     < fBBox[2]) fBBox[2] = q.fY;
-	  if(q.fY + h > fBBox[3]) fBBox[3] = q.fY + h;
+	  if(q.fA     < fBBox[0]) fBBox[0] = q.fA;
+	  if(q.fA + w > fBBox[1]) fBBox[1] = q.fA + w;
+	  if(q.fB     < fBBox[2]) fBBox[2] = q.fB;
+	  if(q.fB + h > fBBox[3]) fBBox[3] = q.fB + h;
 	}
 	break;
       }
@@ -638,20 +695,36 @@ void QuadSet::ComputeBBox()
 	const Float_t& h = fDefHeight;
 	while (qi.next()) {
 	  QRectFixDimC& q = * (QRectFixDimC*) qi();
-	  if(q.fX     < fBBox[0]) fBBox[0] = q.fX;
-	  if(q.fX + w > fBBox[1]) fBBox[1] = q.fX + w;
-	  if(q.fY     < fBBox[4]) fBBox[4] = q.fY;
-	  if(q.fY + h > fBBox[5]) fBBox[5] = q.fY + h;
+	  if(q.fA     < fBBox[0]) fBBox[0] = q.fA;
+	  if(q.fA + w > fBBox[1]) fBBox[1] = q.fA + w;
+	  if(q.fB     < fBBox[4]) fBBox[4] = q.fB;
+	  if(q.fB + h > fBBox[5]) fBBox[5] = q.fB + h;
 	}
 	break;
       }
+
+      case QT_RectangleYZFixedDimX:
+      {
+	const Float_t& w = fDefWidth;
+	const Float_t& h = fDefHeight;
+	while (qi.next()) {
+	  QRectFixDimC& q = * (QRectFixDimC*) qi();
+	  if(q.fA     < fBBox[2]) fBBox[2] = q.fA;
+	  if(q.fA + w > fBBox[3]) fBBox[3] = q.fA + w;
+	  if(q.fB     < fBBox[4]) fBBox[4] = q.fB;
+	  if(q.fB + h > fBBox[5]) fBBox[5] = q.fB + h;
+	}
+	break;
+      }
+
+      // Line modes
 
       case QT_LineXYFixedZ:
       {
 	while (qi.next()) {
 	  QLineFixC& q = * (QLineFixC*) qi();
-	  BBoxCheckPoint(q.fX,         q.fY,         fDefCoord);
-	  BBoxCheckPoint(q.fX + q.fDx, q.fY + q.fDy, fDefCoord);
+	  BBoxCheckPoint(q.fA,         q.fB,         fDefCoord);
+	  BBoxCheckPoint(q.fA + q.fDx, q.fB + q.fDy, fDefCoord);
 	}
 	break;
       }
@@ -660,11 +733,13 @@ void QuadSet::ComputeBBox()
       {
 	while (qi.next()) {
 	  QLineFixC& q = * (QLineFixC*) qi();
-	  BBoxCheckPoint(q.fX,         fDefCoord, q.fY);
-	  BBoxCheckPoint(q.fX + q.fDx, fDefCoord, q.fY + q.fDy);
+	  BBoxCheckPoint(q.fA,         fDefCoord, q.fB);
+	  BBoxCheckPoint(q.fA + q.fDx, fDefCoord, q.fB + q.fDy);
 	}
 	break;
       }
+
+      // Hexagon modes
 
       // Ignore 'slight' difference, assume square box for both cases.
       case QT_HexagonXY:
@@ -672,8 +747,8 @@ void QuadSet::ComputeBBox()
       {
 	while (qi.next()) {
 	  QHex& q = * (QHex*) qi();
-	  BBoxCheckPoint(q.fX-q.fR, q.fY-q.fR, q.fZ);
-	  BBoxCheckPoint(q.fX+q.fR, q.fY+q.fR, q.fZ);
+	  BBoxCheckPoint(q.fA-q.fR, q.fB-q.fR, q.fC);
+	  BBoxCheckPoint(q.fA+q.fR, q.fB+q.fR, q.fC);
 	}
 	break;
       }
