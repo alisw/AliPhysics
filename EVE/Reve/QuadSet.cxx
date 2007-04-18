@@ -198,6 +198,7 @@ QuadSet::QuadSet(const Text_t* n, const Text_t* t) :
   fRenderMode(RM_Fill),
   fDisableLigting(kTRUE),
   fEmitSignals(kFALSE),
+  fHistoButtons(kTRUE),
   fHMTrans()
 {}
 
@@ -220,6 +221,7 @@ QuadSet::QuadSet(QuadType_e quadType, Bool_t valIsCol, Int_t chunkSize,
   fRenderMode(RM_Fill),
   fDisableLigting(kTRUE),
   fEmitSignals(kFALSE),
+  fHistoButtons(kTRUE),
   fHMTrans()
 {}
 

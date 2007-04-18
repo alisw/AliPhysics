@@ -162,6 +162,7 @@ protected:
   RenderMode_e      fRenderMode;
   Bool_t            fDisableLigting;
   Bool_t            fEmitSignals;
+  Bool_t            fHistoButtons;
   ZTrans            fHMTrans;
 
   static Int_t SizeofAtom(QuadType_e qt);
@@ -207,6 +208,9 @@ public:
 
   Bool_t GetEmitSignals() const   { return fEmitSignals; }
   void   SetEmitSignals(Bool_t f) { fEmitSignals = f; }
+
+  Bool_t GetHistoButtons() const   { return fHistoButtons; }
+  void   SetHistoButtons(Bool_t f) { fHistoButtons = f; }
 
   ZTrans& RefHMTrans() { return fHMTrans; }
   void SetTransMatrix(Double_t* carr)        { fHMTrans.SetFrom(carr); }

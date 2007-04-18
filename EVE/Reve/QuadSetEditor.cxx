@@ -9,6 +9,8 @@
 
 #include <TVirtualPad.h>
 #include <TColor.h>
+#include <TH1F.h>
+#include <TStyle.h>
 
 #include <TGLabel.h>
 #include <TGButton.h>
@@ -39,18 +41,31 @@ QuadSetEditor::QuadSetEditor(const TGWindow *p, Int_t width, Int_t height,
   fHMTrans->Connect("TransChanged()", "Reve::QuadSetEditor", this, "Update()");
   AddFrame(fHMTrans, new TGLayoutHints(kLHintsTop | kLHintsExpandX, 2, 0, 0, 0));
 
+
   MakeTitle("Palette controls");
 
   fPalette = new RGBAPaletteSubEditor(this);
   fPalette->Connect("Changed", "Reve::QuadSetEditor", this, "Update()");
   AddFrame(fPalette, new TGLayoutHints(kLHintsTop | kLHintsExpandX, 2, 0, 0, 0));
 
-  // MakeTitle("QuadSet");
 
-  // Create widgets
-  // fXYZZ = new TGSomeWidget(this, ...);
-  // AddFrame(fXYZZ, new TGLayoutHints(...));
-  // fXYZZ->Connect("SignalName()", "Reve::QuadSetEditor", this, "DoXYZZ()");
+  MakeTitle("QuadSet");
+
+  fHistoButtFrame = new TGHorizontalFrame(this);
+  {
+    TGTextButton* b = 0;
+
+    b = new TGTextButton(fHistoButtFrame, "Histo");
+    b->SetToolTipText("Show histogram over full range.");
+    fHistoButtFrame->AddFrame(b, new TGLayoutHints(kLHintsLeft|kLHintsExpandX, 1, 1, 0, 0));
+    b->Connect("Clicked()", "Reve::QuadSetEditor", this, "DoHisto()");
+
+    b = new TGTextButton(fHistoButtFrame, "Range Histo");
+    b->SetToolTipText("Show histogram over selected range.");
+    fHistoButtFrame->AddFrame(b, new TGLayoutHints(kLHintsLeft|kLHintsExpandX, 1, 1, 0, 0));
+    b->Connect("Clicked()", "Reve::QuadSetEditor", this, "DoRangeHisto()");
+  }
+  AddFrame(fHistoButtFrame, new TGLayoutHints(kLHintsExpandX, 2, 0, 0, 0));
 }
 
 QuadSetEditor::~QuadSetEditor()
@@ -71,16 +86,54 @@ void QuadSetEditor::SetModel(TObject* obj)
     fPalette->MapWindow();
   }
 
+
   // Set values of widgets
   // fXYZZ->SetValue(fM->GetXYZZ());
+
+  if (fM->fHistoButtons)
+    fHistoButtFrame->MapWindow();
+  else
+    fHistoButtFrame->UnmapWindow();
 }
 
 /**************************************************************************/
 
-// Implements callback/slot methods
+void QuadSetEditor::DoHisto()
+{
+  printf("beep\n");
+  Int_t min, max;
+  if (fM->fPalette) {
+    min = fM->fPalette->GetLowLimit();
+    max = fM->fPalette->GetHighLimit();
+  } else {
+    fM->ScanMinMaxValues(min, max);
+  }
+  PlotHisto(min, max);
+}
 
-// void QuadSetEditor::DoXYZZ()
-// {
-//   fM->SetXYZZ(fXYZZ->GetValue());
-//   Update();
-// }
+void QuadSetEditor::DoRangeHisto()
+{
+  printf("boop\n");
+  Int_t min, max;
+  if (fM->fPalette) {
+    min = fM->fPalette->GetMinVal();
+    max = fM->fPalette->GetMaxVal();
+  } else {
+    fM->ScanMinMaxValues(min, max);
+  }
+  PlotHisto(min, max);
+}
+
+void QuadSetEditor::PlotHisto(Int_t min, Int_t max)
+{
+  TH1F* h = new TH1F(fM->GetName(), fM->GetTitle(), max-min+1, min-0.5, max+0.5);
+  h->SetDirectory(0);
+  h->SetBit(kCanDelete);
+  VoidCPlex::iterator qi(fM->fPlex);
+  while (qi.next())
+    h->Fill(((QuadSet::QuadBase*)qi())->fValue);
+  gStyle->SetOptStat(1111111);
+  h->Draw();
+  gPad->Modified();
+  gPad->Update();
+}

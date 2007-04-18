@@ -35,7 +35,7 @@ protected:
   RGBAPaletteSubEditor* fPalette;
 
   // Declare widgets
-  // TGSomeWidget*   fXYZZ;
+  TGHorizontalFrame*    fHistoButtFrame;
 
 public:
   QuadSetEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30, UInt_t options = kChildFrame, Pixel_t back=GetDefaultFrameBackground());
@@ -44,7 +44,9 @@ public:
   virtual void SetModel(TObject* obj);
 
   // Declare callback/slot methods
-  // void DoXYZZ();
+  void DoHisto();
+  void DoRangeHisto();
+  void PlotHisto(Int_t min, Int_t max);
 
   ClassDef(QuadSetEditor, 1); // Editor for QuadSet
 }; // endclass QuadSetEditor
