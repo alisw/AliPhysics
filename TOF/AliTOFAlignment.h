@@ -35,21 +35,21 @@ class AliTOFAlignment :public TTask{
   virtual void Align(Float_t *tr=0, Float_t *rot=0); // create a set of AlignObj for TOF
   virtual void WriteOnCDBforDC();
   virtual void ReadFromCDBforDC();
-  virtual void BuildGeomForSurvey(); //Generate needed ideal volumes for Survey
+  virtual void BuildGeomForSurvey(); //Generate ideal volumes for Survey
   virtual void AlignFromSurvey(); //Prototype to get Align Obj from Survey
-  virtual void TestAlignFromSurvey( Float_t *mis); //To test align. from Survey
+  virtual void InsertMisAlignment( Float_t *mis); //To test align. from Survey
   TObjArray * GetTOFAlignArray() const {return fTOFAlignObjArray;}
 
 private:
 
 
-  // This is the big box containing the TOF master sensitive volume+services
+  // This is the extended box (the TOF master sensitive volume+services)
   static const Double_t fgkXsizeTOF;  // x size of the TOF ext. volume, cm
   static const Double_t fgkYsizeTOF;  // y size of the TOF ext. volume, cm
   static const Double_t fgkZsizeTOF;  // x size of the TOF ext. volume, cm
   static const Double_t fgkRorigTOF;  // Radius of the TOF ext. volume, cm
 
-  // Four fiducial marks on SM, expressed in local coordinates
+  // Four fiducial marks on SM, expressed in local coordinates (origin=center of TOF SM)
   // They are positioned at x=+/- 38 cm, y=11.2, z=+/- 456.94 cm
 
   static const Double_t fgkXFM; //x FM pos, cm 
@@ -60,10 +60,10 @@ private:
   static const Double_t fgkZsizeTOFSens; //cm
 
   Int_t fNTOFAlignObj; // Number of Alignable Objects
-  TGeoManager *fTOFmgr;
+  TGeoManager *fTOFmgr; //pointer to TGeoManager
   TObjArray *fTOFAlignObjArray; // Pointer to the TOF alignable objects
-  TGeoHMatrix* fTOFMatrixId[18];
-  Float_t fTOFSurveyFM[18][4][3]; // Vector Containing Survey Marks Position GF
+  TGeoHMatrix* fTOFMatrixId[18]; // Ideal Matrices of TOF Volumes in the GRS
+  Float_t fTOFSurveyFM[18][4][3]; // Temporary container for Survey data xyz (4/TOF SuperModule)
   ClassDef(AliTOFAlignment,2)   // TOF Alignment 
 };
 
