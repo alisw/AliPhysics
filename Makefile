@@ -260,6 +260,8 @@ alimdc-static: $(LIBPATH) $(BINPATH) $(RAWDatabaseALIB) $(MDCALIB) $(ESDALIB) $(
 	 $(ROOTALIBDIR)/libfreetype.a $(ROOTALIBDIR)/libpcre.a \
 	 -ldl
 
+alilibs-static: $(LIBPATH) modules $(ALLALIBS)
+
 include  build/MakefileDA
 
 #-------------------------------------------------------------------------------
