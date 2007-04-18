@@ -25,10 +25,12 @@ contact: alice-datesupport@cern.ch
 
 */
 
+extern "C" {
+#include <daqDA.h>
+}
 
 #include "event.h"
 #include "monitor.h"
-#include "daqDA.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -55,7 +57,7 @@ contact: alice-datesupport@cern.ch
 //AliRoot includes
 //
 #include "AliRawReader.h"
-#include "AliRawReaderRoot.h"
+#include "AliRawReaderDate.h"
 #include "AliTPCRawStream.h"
 #include "AliTPCROC.h"
 #include "AliTPCCalROC.h"
@@ -78,8 +80,8 @@ contact: alice-datesupport@cern.ch
 int main(int argc, char **argv) {
 
   int status;
-  AliTPCCalibSignal   signalCalib;     // pulser calibration 
-  AliTPCCalibPedestal signalPedestal;  // pedestal and nosie calibration
+  AliTPCCalibSignal   calibSignal;     // pulser calibration 
+  AliTPCCalibPedestal calibPedestal;   // pedestal and nosie calibration
 
   if (argc!=2) {
     printf("Wrong number of arguments\n");
@@ -158,13 +160,21 @@ int main(int argc, char **argv) {
     //  PULSER calibration
     //
     //    if (eventT==PULSER_EVENT){   // i don't know the ID
-    calibSignal.ProcessEvent(eventT);
+    {
+      AliRawReader *rawReader = new AliRawReaderDate((void*)event);
+      calibSignal.ProcessEvent(rawReader);
+      delete rawReader;
+    }
     //}
     //
     //  Pedestal calibration calibration
     //
     //    if (eventT==BLACK_EVENT){   // i don't know the ID
-    calibPedestal.ProcessEvent(eventT);
+    {
+      AliRawReader *rawReader = new AliRawReaderDate((void*)event);
+      calibPedestal.ProcessEvent(rawReader);
+      delete rawReader;
+    }
     //}
     
 
@@ -187,8 +197,8 @@ int main(int argc, char **argv) {
     /* exit when last event received, no need to wait for TERM signal */
     if (eventT==END_OF_RUN) {
       printf("EOR event detected\n");
-      calibPedestal.Analyze();
-      calibSignal.Analyze();
+      calibPedestal.Analyse();
+      calibSignal.Analyse();
       break;
     }
   }
