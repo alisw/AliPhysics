@@ -7,7 +7,10 @@ Reve::QuadSet* reve_quad_test(Float_t x=0, Float_t y=0, Float_t z=0,
 
   gStyle->SetPalette(1, 0);
 
+  Reve::RGBAPalette* pal = new Reve::RGBAPalette(0, 130);
+
   Reve::QuadSet* q = new Reve::QuadSet("RectangleXY");
+  q->SetPalette(pal);
   q->Reset(Reve::QuadSet::QT_RectangleXY, kFALSE, 32);
   for (Int_t i=0; i<num; ++i) {
     q->AddQuad(r.Uniform(-10, 10), r.Uniform(-10, 10), r.Uniform(-10, 10),
