@@ -45,7 +45,11 @@ AliHMPIDParam::AliHMPIDParam():TNamed("HmpidParam","default version")
         IdealPosition(i,fM[i]);
       } else {
         TGeoPhysicalNode *pnode = pne->GetPhysicalNode();
-        fM[i]=pnode->GetMatrix();
+        if(pnode) fM[i]=pnode->GetMatrix();
+        else {
+          fM[i]=new TGeoHMatrix;
+          IdealPosition(i,fM[i]);
+        }
       }
     } else{
       fM[i]=new TGeoHMatrix;
