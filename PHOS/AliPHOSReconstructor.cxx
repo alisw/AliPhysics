@@ -224,6 +224,9 @@ void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
     ec->SetEmcCpvDistance(-1);                  //not yet implemented
     ec->SetClusterChi2(-1);                     //not yet implemented
     ec->SetM11(-1) ;                            //not yet implemented
+ 
+    //Distance to the nearest bad crystal
+    ec->SetDistanceToBadChannel(emcRP->GetDistanceToBadCrystal()); 
 
     //Primaries
     ec->SetPrimaryIndex(rp->GetPrimaryIndex());
@@ -307,10 +310,13 @@ void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader,
     ec->SetClusterChi2(-1);                     //not yet implemented
     ec->SetM11(-1) ;                            //not yet implemented
 
+    //Distance to the nearest bad crystal
+    ec->SetDistanceToBadChannel(emcRP->GetDistanceToBadCrystal()); 
+    
     // add the track to the esd object
     esd->AddCaloCluster(ec);
     delete ec;    
-
+    
     }
   }
 
