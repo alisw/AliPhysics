@@ -609,7 +609,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     delete trackTOFin;
 
     //  Store quantities to be used in the TOF Calibration
-    Float_t tToT=fGeom->TdcBinWidth()*c->GetToT()*1E-3; // in ns
+    Float_t tToT=fGeom->ToTBinWidth()*c->GetToT()*1E-3; // in ns
     t->SetTOFsignalToT(tToT);
     Int_t ind[5];
     ind[0]=c->GetDetInd(0);
