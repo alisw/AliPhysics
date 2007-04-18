@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.108  2007/04/16 09:03:37  kharlov
+ * Incedent angle correction fixed
+ *
  * Revision 1.107  2007/04/02 15:00:16  cvetan
  * No more calls to gAlice in the reconstruction
  *
@@ -123,6 +126,7 @@
 #include "AliPHOSGetter.h"
 #include "AliESD.h"
 #include "AliESDVertex.h"
+#include "AliGenerator.h"
 
 ClassImp( AliPHOSPIDv1) 
 
@@ -896,11 +900,6 @@ TVector3 AliPHOSPIDv1::GetMomentumDirection(AliPHOSEmcRecPoint * emc, AliPHOSCpv
   //  However because of the poor position resolution of PPSD the direction is always taken as if we were 
   //  in case 1.
 
-  TVector3 dir(0,0,0) ; 
-  TMatrixF  dummy ;
-  
-  emc->GetGlobalPosition(dir, dummy) ;
-
   TVector3 local ; 
   emc->GetLocalPosition(local) ;
 
@@ -931,16 +930,17 @@ TVector3 AliPHOSPIDv1::GetMomentumDirection(AliPHOSEmcRecPoint * emc, AliPHOSCpv
   Float_t depthx = 0.;
   Float_t depthz = 0.;
   if (energy > 0 && vInc.Y()!=0.) {
-    depthx = ( para * TMath::Log(energy) + parb ) * vInc.X()/vInc.Y() ;
-    depthz = ( para * TMath::Log(energy) + parb ) * vInc.Z()/vInc.Y() ;
+    depthx = ( para * TMath::Log(energy) + parb ) * vInc.X()/TMath::Abs(vInc.Y()) ;
+    depthz = ( para * TMath::Log(energy) + parb ) * vInc.Z()/TMath::Abs(vInc.Y()) ;
   }
 
-  dir.SetXYZ(dir.X()-(depthxOld-depthx)*TMath::Sin(dir.Phi()),
-             dir.Y()-(depthxOld-depthx)*TMath::Cos(dir.Phi()),
-             dir.Z()+depthzOld-depthz) ;
+  //Correct for the vertex position and shower depth
+  Double_t xd=x+(depthxOld-depthx) ;
+  Double_t zd=z+(depthzOld-depthz) ; 
+  TVector3 dir(0,0,0) ; 
+  phosgeom->Local2Global(emc->GetPHOSMod(),xd,zd,dir) ;
 
-  //Correct for the vertex position
-  dir = dir - fVtx ;
+  dir-=fVtx ;
   dir.SetMag(1.) ;
 
   return dir ;  
@@ -1747,10 +1747,16 @@ void AliPHOSPIDv1::GetVertex(void)
   //Try to extract vertex from data
   if(fESD){
     const AliESDVertex *esdVtx = fESD->GetVertex() ;
-    if(esdVtx){
+    if(esdVtx && esdVtx->GetChi2()!=0.){
       fVtx.SetXYZ(esdVtx->GetXv(),esdVtx->GetYv(),esdVtx->GetZv()) ;
       return ;
     }
+  }
+  if(gAlice && gAlice->GetMCApp() && gAlice->Generator()){
+     Float_t ox,oy,oz ;
+     gAlice->Generator()->GetOrigin(ox,oy,oz);
+     fVtx.SetXYZ(ox,oy,oz) ;
+     return ;
   }
  
   AliWarning("Can not read vertex from data, use fixed \n") ;

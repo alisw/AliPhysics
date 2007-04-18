@@ -318,7 +318,7 @@ void AliPHOSGeometry::ImpactOnEmc(Double_t * vtx, Double_t theta, Double_t phi,
   // calculates the impact coordinates on PHOS of a neutral particle  
   // emitted in the vertex vtx[3] with direction theta and phi in the ALICE global coordinate system
   TVector3 p(TMath::Sin(theta)*TMath::Cos(phi),TMath::Sin(theta)*TMath::Sin(phi),TMath::Cos(theta)) ;
-  TVector3 v(vtx[0],vtx[1],vtx[2]) ;
+  TVector3 v(vtx[0],vtx[1],-vtx[2]) ;
 
   //calculate offset to crystal surface
   Float_t * inthermo = fGeometryEMCA->GetInnerThermoHalfSize() ;
@@ -688,7 +688,7 @@ void AliPHOSGeometry::Local2Global(Int_t mod, Float_t x, Float_t z,
   Float_t * pin = fGeometryEMCA->GetAPDHalfSize() ;
   Float_t * preamp = fGeometryEMCA->GetPreampHalfSize() ;
   Float_t dy=-inthermo[1]+strip[1]+splate[1]+crystal[1]-fGeometryEMCA->GetAirGapLed()/2.+pin[1]+preamp[1] ;
-  Double_t posL[3]={x,dy,z} ;
+  Double_t posL[3]={x,-dy,z} ;
   Double_t posG[3] ;
   TGeoHMatrix *mPHOS = gGeoManager->GetCurrentMatrix();
   if (mPHOS) mPHOS->LocalToMaster(posL,posG);
