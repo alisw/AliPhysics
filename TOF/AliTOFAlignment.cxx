@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2007/04/17 16:38:36  arcelli
+Include Methods to derive TOF AlignObjs from Survey Data
+
 Revision 1.12  2007/02/28 18:09:23  arcelli
 Add protection against failed retrieval of the CDB cal object
 
@@ -84,9 +87,9 @@ const Double_t AliTOFAlignment::fgkXsizeTOF  = 124.5; // x size of the TOF ext. 
 const Double_t AliTOFAlignment::fgkYsizeTOF  = 29.0;  // y size of the TOF ext. volume, cm
 const Double_t AliTOFAlignment::fgkZsizeTOF  = 913.8; // z size of the TOF ext. volume, cm
 const Double_t AliTOFAlignment::fgkRorigTOF  = 384.5; // Mean Radius of the TOF ext. volume, cm
-const Double_t AliTOFAlignment::fgkXFM = 38.0; //x pos, cm 
-const Double_t AliTOFAlignment::fgkYFM = 11.2; //y pos, cm
-const Double_t AliTOFAlignment::fgkZFM = 457.3;//z pos, cm
+const Double_t AliTOFAlignment::fgkXFM = 38.0; //x pos of FM in the LRS, cm 
+const Double_t AliTOFAlignment::fgkYFM = 11.2; //y pos of FM in the LRS, cm
+const Double_t AliTOFAlignment::fgkZFM = 457.3;//z pos of FM in the LRS, cm
 const Double_t AliTOFAlignment::fgkZsizeTOFSens=741.2; //z size of the TOF sensitive volume, cm
 
 //_____________________________________________________________________________
@@ -136,7 +139,10 @@ AliTOFAlignment& AliTOFAlignment::operator=(const AliTOFAlignment &t){
 
 }
 //_____________________________________________________________________________
-AliTOFAlignment::~AliTOFAlignment() {delete fTOFAlignObjArray;}
+AliTOFAlignment::~AliTOFAlignment() {
+  delete fTOFAlignObjArray;
+  delete fTOFmgr;
+}
 
 //_____________________________________________________________________________
 void AliTOFAlignment::Smear( Float_t *tr, Float_t *rot)
@@ -297,8 +303,8 @@ void AliTOFAlignment::ReadFromCDBforDC()
 void AliTOFAlignment::BuildGeomForSurvey()
 {
 
-  //Simulates a Misalignment and generates a list of FM coordinates in the 
-  //global RS, to be passed to the survey-to-alignment algo. 
+  //Generates the ideal TOF structure with four Fiducial Marks in each 
+  //supermodule (two on each z side) in their expected position. 
   //Highly inspired to Raffaele's example... 
 
   fTOFmgr = new TGeoManager("Geom","survey to alignment for TOF");
@@ -364,21 +370,21 @@ void AliTOFAlignment::BuildGeomForSurvey()
   fTOFmgr->SetVisOption(0);
   fTOFmgr->SetVisLevel(6);
 
-  // Now Store the ideal Matrices for later use....
+  // Now Store the "Ideal" Matrices for later use....
 
   for (Int_t iSM = 0; iSM < 18; iSM++) {
 
     sprintf(name, "TOP_1/BTOF%d_1", iSM);
-    printf("\n\n************  SuperModule N.r: ************** %s \n",name);
+    printf("\n\n*****************  TOF SuperModule:  %s ****************** \n",name);
     TGeoPhysicalNode* pn3 = fTOFmgr->MakePhysicalNode(name);
     fTOFMatrixId[iSM] = pn3->GetMatrix(); //save "ideal" global matrix 
-    printf("\n\n************  Ideal global matrix, 1 **************\n");
+    printf("\n\n***************  The Ideal Matrix in GRS *****************\n");
     fTOFMatrixId[iSM]->Print();
 
   }
 }
 //_____________________________________________________________________________
-void AliTOFAlignment::TestAlignFromSurvey( Float_t *mis)
+void AliTOFAlignment::InsertMisAlignment( Float_t *mis)
 {
   // Now Apply the Displacements and store the misaligned FM positions...
 
@@ -392,7 +398,7 @@ void AliTOFAlignment::TestAlignFromSurvey( Float_t *mis)
     char name[16];
     sprintf(name, "TOP_1/BTOF%d_1", iSM);
     fTOFmgr->cd(name);
-    printf("\n\n************  SuperModule N.r: ************** %s \n",name);
+    printf("\n\n******Misaligning TOF SuperModule ************** %s \n",name);
 
   // ************* get ideal local matrix *******************
     TGeoHMatrix g3 = *fTOFmgr->GetCurrentMatrix(); 
@@ -404,6 +410,7 @@ void AliTOFAlignment::TestAlignFromSurvey( Float_t *mis)
     g3.LocalToMaster(B,gB);
     g3.LocalToMaster(C,gC);
     g3.LocalToMaster(D,gD);
+
 
     // We apply a delta transformation to the surveyed vol to represent
     // its real position, given below by ng3 nl3, which differs from its
@@ -422,16 +429,12 @@ void AliTOFAlignment::TestAlignFromSurvey( Float_t *mis)
   // new local matrix, representing real position
     TGeoHMatrix nlocal = *l3 * localdelta;
     TGeoHMatrix* nl3 = new TGeoHMatrix(nlocal);
-
     TGeoPhysicalNode* pn3 = fTOFmgr->MakePhysicalNode(name);
-    TGeoHMatrix* ng2 = pn3->GetMatrix(); //"real" global matrix, what survey sees 
-    printf("\n\n************  Ideal global matrix, 2 **************\n");
-    ng2->Print();
 
     pn3->Align(nl3);    //Align....    
     
     TGeoHMatrix* ng3 = pn3->GetMatrix(); //"real" global matrix, what survey sees 
-    printf("\n\n************  Misaligned global matrix **************\n");
+    printf("\n\n*************  The Misaligned Matrix in GRS **************\n");
     ng3->Print();
     Double_t ngA[3], ngB[3], ngC[3], ngD[3];// real FM point coord., global RS
     ng3->LocalToMaster(A,ngA);
@@ -451,7 +454,7 @@ void AliTOFAlignment::TestAlignFromSurvey( Float_t *mis)
 //_____________________________________________________________________________
 void AliTOFAlignment::AlignFromSurvey()
 {
-  //From survey Data, derive the needed transformations to get the 
+  //From Survey data, derive the needed transformations to get the 
   //Alignment Objects. 
   //Again, highly "inspired" to Raffaele's example... 
 
@@ -461,14 +464,17 @@ void AliTOFAlignment::AlignFromSurvey()
   UShort_t dvoluid = AliAlignObj::LayerToVolUID(layer,index); //dummy vol id 
   
   for(Int_t iSM=0;iSM<18;iSM++){
+
+    printf("\n\n******Survey analysis for TOF SuperModule ************** %i \n",iSM);
+
     Double_t ngA[3], ngB[3], ngC[3], ngD[3];// real FM point coord., global RS
  
-   // Get the input from the Survey Matrix
+   // Get the 'realistic' input from the Survey Matrix
     for(Int_t iFM=0;iFM<3;iFM++){
       ngA[iFM]=   fTOFSurveyFM[iSM][0][iFM];
       ngB[iFM]=   fTOFSurveyFM[iSM][1][iFM];
-      ngD[iFM]=   fTOFSurveyFM[iSM][2][iFM];
-      ngC[iFM]=   fTOFSurveyFM[iSM][3][iFM];
+      ngC[iFM]=   fTOFSurveyFM[iSM][2][iFM];
+      ngD[iFM]=   fTOFSurveyFM[iSM][3][iFM];
     }
 
     // From the new fiducial marks coordinates derive back the
@@ -521,14 +527,12 @@ void AliTOFAlignment::AlignFromSurvey()
     }
     
     // The center of the box, gives the global translation
-
     for(Int_t i=0;i<3;i++){
       orig[i] = md[i] - plane[i]*fgkYFM;
     }
     
     // get local directions needed to write the global rotation matrix
     // for the surveyed volume by normalising vectors ab and bc
-
     Double_t sx = TMath::Sqrt(ab[0]*ab[0] + ab[1]*ab[1] + ab[2]*ab[2]);
     if(sx>1.e-8){
       for(Int_t i=0;i<3;i++){
@@ -541,23 +545,31 @@ void AliTOFAlignment::AlignFromSurvey()
 	bc[i] /= sy;
       }
     }
-        
     Double_t rot[9] = {ab[0],plane[0],bc[0],ab[1],plane[1],-bc[1],ab[2],plane[2],-bc[2]}; // the rotation matrix
+
+    // the Aligned matrix for the current TOF SMS in the Global RS, as derived from Survey:
     TGeoHMatrix ng;
     ng.SetTranslation(orig);
     ng.SetRotation(rot);
+    printf("\n\n**** The Misaligned Matrix in GRS, as from Survey data ***\n");
     ng.Print();
-    // Calculate the delta transformation wrt Ideal
+
+    // Calculate the delta transformation wrt Ideal geometry
+    // (Should be gdelta.rot ==I and gdelta.tr=0 if no misalignment is applied.)
+    printf("\n\n**** The ideal matrix ***\n");
+    fTOFMatrixId[iSM]->Print(); 
     TGeoHMatrix gdelta =fTOFMatrixId[iSM]->Inverse();
+    printf("\n\n**** The inverse of the ideal matrix ***\n");
+    gdelta.Print(); 
     gdelta.MultiplyLeft(&ng);
-
-  // Now Get the alignment Objects....
-     TString symname(Form("TOF/sm%02d",iSM));
-//  // if the volume is in the look-up table use something like this instead:
-     AliAlignObjMatrix* o = new AliAlignObjMatrix(symname.Data(),dvoluid,gdelta,kTRUE);
-     fTOFAlignObjArray->Add(o);
+    printf("\n\n**** The Delta Matrix in GRS, as from Survey data ***\n");
+    gdelta.Print(); 
+    
+    // Now Write the Alignment Objects....
+    TString symname(Form("TOF/sm%02d",iSM));
+    AliAlignObjMatrix* o = new AliAlignObjMatrix(symname.Data(),dvoluid,gdelta,kTRUE);
+    fTOFAlignObjArray->Add(o);
   }
-
   // saving TOF AligObjs from survey on a file, for the moment.. 
   fNTOFAlignObj=fTOFAlignObjArray->GetEntries();
   AliInfo(Form("Number of Alignable Volumes: %d",fNTOFAlignObj));
