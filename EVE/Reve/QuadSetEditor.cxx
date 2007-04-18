@@ -100,7 +100,6 @@ void QuadSetEditor::SetModel(TObject* obj)
 
 void QuadSetEditor::DoHisto()
 {
-  printf("beep\n");
   Int_t min, max;
   if (fM->fPalette) {
     min = fM->fPalette->GetLowLimit();
@@ -113,7 +112,6 @@ void QuadSetEditor::DoHisto()
 
 void QuadSetEditor::DoRangeHisto()
 {
-  printf("boop\n");
   Int_t min, max;
   if (fM->fPalette) {
     min = fM->fPalette->GetMinVal();
@@ -126,12 +124,17 @@ void QuadSetEditor::DoRangeHisto()
 
 void QuadSetEditor::PlotHisto(Int_t min, Int_t max)
 {
-  TH1F* h = new TH1F(fM->GetName(), fM->GetTitle(), max-min+1, min-0.5, max+0.5);
+  Int_t nbins = max-min+1;
+  while (nbins > 200)
+    nbins /= 2;
+
+  TH1F* h = new TH1F(fM->GetName(), fM->GetTitle(), nbins, min-0.5, max+0.5);
   h->SetDirectory(0);
   h->SetBit(kCanDelete);
   VoidCPlex::iterator qi(fM->fPlex);
   while (qi.next())
     h->Fill(((QuadSet::QuadBase*)qi())->fValue);
+
   gStyle->SetOptStat(1111111);
   h->Draw();
   gPad->Modified();
