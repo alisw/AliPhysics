@@ -465,7 +465,7 @@ void AliTOFDigitizer::DecalibrateTOFSignal( AliTOFcalib *calib){
     detId[3] = dig->GetPadz();
     detId[4] = dig->GetPadx();
     // For Data with no Miscalibration, set ToT signal == Adc
-    dig->SetToT(dig->GetAdc()/AliTOFGeometry::TdcBinWidth());
+    dig->SetToT(dig->GetAdc()/AliTOFGeometry::ToTBinWidth()*1.E3); 
     if(hToT->GetEntries()>0){  
       Float_t trix = 0;
       Float_t triy = 0;
@@ -479,7 +479,7 @@ void AliTOFDigitizer::DecalibrateTOFSignal( AliTOFcalib *calib){
 	simToT=hToT->GetBinContent(binx);
       }
     // Setting realistic ToT signal (only for Miscalibrated Data)   
-      dig->SetToT(trix/AliTOFGeometry::TdcBinWidth());
+      dig->SetToT(trix/AliTOFGeometry::ToTBinWidth()*1.E3); //In ToT is in ns..
     }
     Int_t index = calib->GetIndex(detId);     
     AliTOFChannel *calChannel = cal->GetChannel(index);
