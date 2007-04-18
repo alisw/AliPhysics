@@ -114,7 +114,7 @@ AliTRDalignment::AliTRDalignment()
   double z[2] = {-(77.9/2.0-2.0),77.9/2.0-1.5}; // lab r, or better tracking-x
 
   for (int j=0; j<2; j++) for (int k=0; k<2; k++) for (int l=0; l<2; l++) {
-    fSurveyX0[j][k][l] = -pow(-1,l) * x[k];
+    fSurveyX0[j][k][l] = -TMath::Power(-1,l) * x[k];
     fSurveyY0[j][k][l] = y[j];
     fSurveyZ0[j][k][l] = z[k];
   }
