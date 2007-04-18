@@ -35,6 +35,7 @@ AliESDCaloCluster::AliESDCaloCluster() :
   fClusterType(-1),
   fEMCALCluster(kFALSE),
   fPHOSCluster(kFALSE),
+  fTrackMatched(kFALSE),
   fEnergy(-1),
   fDispersion(-1),
   fChi2(-1),
@@ -44,6 +45,7 @@ AliESDCaloCluster::AliESDCaloCluster() :
   fM11(0),
   fNExMax(0),
   fEmcCpvDistance(9999),
+  fDistToBadChannel(9999),
   fNumberOfPrimaries(-1),
   fListOfPrimaries(0x0),
   fNumberOfDigits(0),
@@ -65,6 +67,7 @@ AliESDCaloCluster::AliESDCaloCluster(const AliESDCaloCluster& clus) :
   fClusterType(clus.fClusterType),
   fEMCALCluster(clus.fEMCALCluster),
   fPHOSCluster(clus.fPHOSCluster),
+  fTrackMatched(clus.fTrackMatched),
   fEnergy(clus.fEnergy),
   fDispersion(clus.fDispersion),
   fChi2(clus.fChi2),
@@ -74,6 +77,7 @@ AliESDCaloCluster::AliESDCaloCluster(const AliESDCaloCluster& clus) :
   fM11(clus.fM11),
   fNExMax(clus.fNExMax),
   fEmcCpvDistance(clus.fEmcCpvDistance),
+  fDistToBadChannel(clus.fDistToBadChannel),
   fNumberOfPrimaries(clus.fNumberOfPrimaries),
   fListOfPrimaries(0x0),
   fNumberOfDigits(clus.fNumberOfDigits),
@@ -125,6 +129,7 @@ AliESDCaloCluster &AliESDCaloCluster::operator=(const AliESDCaloCluster& source)
   fClusterType = source.fClusterType;
   fEMCALCluster = source.fEMCALCluster;
   fPHOSCluster = source.fPHOSCluster;
+  fTrackMatched = source.fTrackMatched;
   fEnergy = source.fEnergy;
   fDispersion = source.fDispersion;
   fChi2 = source.fChi2;
@@ -134,7 +139,7 @@ AliESDCaloCluster &AliESDCaloCluster::operator=(const AliESDCaloCluster& source)
   fM11 = source.fM11;
   fNExMax = source.fNExMax;
   fEmcCpvDistance = source.fEmcCpvDistance;
-
+  fDistToBadChannel = source.fDistToBadChannel ;
   fNumberOfPrimaries = source.fNumberOfPrimaries;
   delete fListOfPrimaries; fListOfPrimaries=0x0;
 

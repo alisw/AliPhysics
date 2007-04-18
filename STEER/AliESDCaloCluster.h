@@ -44,6 +44,9 @@ public:
   void SetPHOS(Bool_t phos) { fPHOSCluster = phos;}
   Bool_t IsPHOS() const {return fPHOSCluster;}
 
+  void SetTrackMatchedIndex(Int_t match) { fTrackMatched = match;}
+  Int_t GetTrackMatchedIndex() const {return fTrackMatched;}
+
   void SetGlobalPosition(const Float_t *pos) {
     fGlobalPos[0] = pos[0]; fGlobalPos[1] = pos[1]; fGlobalPos[2] = pos[2];
   }
@@ -81,6 +84,9 @@ public:
   void SetEmcCpvDistance(Float_t dEmcCpv) { fEmcCpvDistance = dEmcCpv; }
   Float_t GetEmcCpvDistance() const       { return fEmcCpvDistance; }
 
+  void SetDistanceToBadChannel(Float_t dist) {fDistToBadChannel=dist;}
+  Float_t GetDistanceToBadChannel() const {return fDistToBadChannel;}
+
   void SetNumberOfPrimaries(Int_t nprim)      { fNumberOfPrimaries = nprim; }
   Int_t GetNumberOfPrimaries() const         { return fNumberOfPrimaries; }
   
@@ -107,6 +113,7 @@ protected:
   Int_t     fClusterType;      // Flag for different clustering versions
   Bool_t    fEMCALCluster;     // Is this is an EMCAL cluster?
   Bool_t    fPHOSCluster;      // Is this is a PHOS cluster?
+  Int_t       fTrackMatched;      // Index of track to which the cluster belongs
   Float_t   fGlobalPos[3];     // position in global coordinate system
   Float_t   fEnergy;           // energy measured by calorimeter
   Float_t   fDispersion;       // cluster dispersion, for shape analysis
@@ -118,9 +125,10 @@ protected:
   Float_t   fM11;              // 2-nd mixed moment Mxy
   UShort_t  fNExMax ;          // number of (Ex-)maxima before unfolding
   Float_t   fEmcCpvDistance;   // the distance from PHOS EMC rec.point to the closest CPV rec.point
+ Float_t   fDistToBadChannel; // Distance to nearest bad channel
 
   Int_t     fNumberOfPrimaries;   // number of primaries that generated the cluster
-  UShort_t*   fListOfPrimaries;   //[ fNumberOfPrimaries] list of primaries that generated the cluster
+  UShort_t*   fListOfPrimaries;   //[fNumberOfPrimaries] list of primaries that generated the cluster
 
   Int_t     fNumberOfDigits;   // number of calorimeter digits in cluster
                                // Very important! The streamer needs to
@@ -130,7 +138,7 @@ protected:
   UShort_t* fDigitTime;        //[fNumberOfDigits] time of this digit (integer units)
   UShort_t* fDigitIndex;       //[fNumberOfDigits] calorimeter digit index
 
-  ClassDef(AliESDCaloCluster,1)  //ESDCaloCluster 
+  ClassDef(AliESDCaloCluster,2)  //ESDCaloCluster 
 };
 
 #endif 
