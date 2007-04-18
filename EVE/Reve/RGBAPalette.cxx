@@ -31,7 +31,7 @@ RGBAPalette::RGBAPalette() :
   fColorArray  (0)
 {
   SetLimits(0, 1024);
-  SetMinMax(0, 100);
+  SetMinMax(0,  512);
 }
 
 RGBAPalette::RGBAPalette(Int_t min, Int_t max, Bool_t interp, Bool_t showdef) :
@@ -50,7 +50,7 @@ RGBAPalette::RGBAPalette(Int_t min, Int_t max, Bool_t interp, Bool_t showdef) :
   fOverColor   (2),
   fColorArray  (0)
 {
-  SetLimits(0, 1024);
+  SetLimits(min, max);
   SetMinMax(min, max);
 }
 

@@ -67,6 +67,9 @@ public:
   void   SetMin(Int_t min);
   void   SetMax(Int_t max);
 
+  Int_t  GetLowLimit()  const { return fLowLimit;  }
+  Int_t  GetHighLimit() const { return fHighLimit; }
+
   // ================================================================
 
   Bool_t GetInterpolate() const { return fInterpolate; }
