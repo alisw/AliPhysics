@@ -63,7 +63,8 @@ AliVertex::AliVertex(const AliVertex &source):
   TNamed(source),
   fSigma(source.GetDispersion()),
   fNContributors(source.GetNContributors()),
-  fNIndices(source.GetNIndices())
+  fNIndices(source.GetNIndices()),
+  fIndices(0x0)
 {
   //
   // Copy constructor
@@ -87,6 +88,7 @@ AliVertex &AliVertex::operator=(const AliVertex &source){
   fSigma = source.GetDispersion();
   fNContributors = source.GetNContributors();
   fNIndices = source.GetNIndices();
+  fIndices = 0x0;
   if(source.fNIndices>0) {
     fIndices = new UShort_t[fNIndices];
     memcpy(fIndices,source.fIndices,fNIndices*sizeof(UShort_t));
@@ -120,6 +122,7 @@ void AliVertex::SetIndices(Int_t nindices,UShort_t *indices) {
 //
   if(fNContributors<1)  { printf("fNContributors<1"); return; }
   fNIndices = nindices;
+  delete [] fIndices;
   fIndices = new UShort_t[fNIndices];
   for(Int_t i=0;i<fNIndices;i++) fIndices[i] = indices[i]; 
   return;
