@@ -400,8 +400,8 @@ void TTreeStream::BuildTree(){
   //
   // Build the Tree
   //
-  if (fTree->GetEntries()>0) return;
-  fTree = new TTree(GetName(),GetName());
+  if (fTree && fTree->GetEntries()>0) return;
+  if (!fTree)  fTree = new TTree(GetName(),GetName());
   Int_t entries = fElements->GetEntriesFast();  
   fBranches = new TObjArray(entries);
   
