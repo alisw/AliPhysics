@@ -11,13 +11,26 @@ CXXFLAGS+=-I${ALICE_ROOT}/$(EXTRADAMODULE)
 CXXFLAGS+=$(addprefix -I,$(filter-out %tgt_${ALICE_TARGET},$(filter-out %CVS,$(patsubst %/,%,$(shell ls -d ${ALICE_ROOT}/$(EXTRADAMODULE)/*/)))))
 endif
 
+DATARGETDIR=${DAMODULE}/tgt_${ALICE_TARGET}
 DASRC=${DAMODULE}/${DAMODULE}${DANAME}da.cxx
-DADEP=${DAMODULE}/tgt_${ALICE_TARGET}/${DAMODULE}${DANAME}da.d
-DAOBJ=${DAMODULE}/tgt_${ALICE_TARGET}/${DAMODULE}${DANAME}da.o
+DADEP=${DATARGETDIR}/${DAMODULE}${DANAME}da.d
+DAOBJ=${DATARGETDIR}/${DAMODULE}${DANAME}da.o
 DALIB=${ALICE_ROOT}/lib/tgt_${ALICE_TARGET}/lib${DAMODULE}${DANAME}DA.a
 DAEXE=${ALICE_ROOT}/bin/tgt_${ALICE_TARGET}/${DAMODULE}${DANAME}da.exe
 
-DAMAKEFILE=${DAMODULE}/tgt_${ALICE_TARGET}/${DAMODULE}${DANAME}da.make
+ifeq ($(DAVERSION),)
+DAVERSION=1.0
+endif
+
+ifeq ($(DARELEASE),)
+DARELEASE=1
+endif
+
+DAARC=daqDA-${DAMODULE}-${DAMODULE}${DANAME}da-$(DAVERSION)
+DATAR=${DATARGETDIR}/$(DAARC).src.tar.gz
+DASPECFILE=${DATARGETDIR}/$(DAMODULE)$(DANAME)da.spec
+
+DAMAKEFILE=${DATARGETDIR}/${DAMODULE}${DANAME}da.make
 
 DAQDADIR=${ALICE}/daqDAlib
 DAQDALIB=$(DAQDADIR)/libdaqDA.a
@@ -41,33 +54,38 @@ endif
 static-DA: $(DAEXE)
 
 $(DAEXE): $(LIBPATH) $(DAOBJ) $(DALIB) $(DAQDALIB)
-	@echo "Making $(DAEXE) executable..."
+	@echo "***** Making executable $(DAEXE) *****"
 	$(MUTE)$(LD) $(LDFLAGS) -o $@ $(DAOBJ) $(DALIB) \
 	$(SYSLIBS) \
 	$(ROOTLIBDIR)/libRoot.a \
 	$(ROOTLIBDIR)/libfreetype.a $(ROOTLIBDIR)/libpcre.a \
 	$(MONITORLIBS) $(DAQDALIB)
 
-$(DAOBJ): $(DASRC) $(DAQDADIR) $(DADEP)
-	@echo "Compiling $(DASRC)..."
+$(DAOBJ): $(DASRC) $(DAQDADIR) $(DADEP) $(DATARGETDIR)
+	@echo "***** Compiling $(DASRC) *****"
 	$(MUTE)$(CXX) -c $(CXXFLAGS) -I$(DAQDADIR) $< -o $@
 
-$(DADEP): $(DASRC) $(DAQDADIR)
-	@echo "Making $(DASRC) dependencies..."
+$(DADEP): $(DASRC) $(DAQDADIR) $(DATARGETDIR)
+	@echo "***** Making detector-algorithm dependencies $(DADEP) *****"
 	$(MUTE)$(CPP) -MM $(CXXFLAGS) -I$(DAQDADIR) $< > $@
 
 DAINCLUDES=$(sort $(filter-out %.o:,$(filter-out %.cxx,$(filter-out \,$(shell cat $(DADEP))))))
 
 -include $(DADEP)
 
+$(DATARGETDIR):
+	$(MUTE)if [ ! -d '$@' ]; then echo "***** Making directory $@ *****"; mkdir -p $@; fi
+
 $(DALIB): $(ALIROOTALIBS)
-	@echo "Making $(DALIB)..."
+	@echo "***** Linking static library $(DALIB) *****"
 	$(MUTE)rm -rf $@
 	$(MUTE)rm -rf junk
 	$(MUTE)mkdir junk && cd junk && $(addprefix $(AR) x ../,$(addsuffix &&,$^)) $(AR) r $@ *.o && cd .. && rm -rf junk
 
 clean-DA:
-	@echo "Cleaning $(DAMODULE)$(DANAME) detector-algorithm..."
+	@echo "***** Cleaning $(DAMODULE)$(DANAME) detector-algorithm *****"
+	$(MUTE)rm -f $(DASPECFILE)
+	$(MUTE)rm -f $(DATAR)
 	$(MUTE)rm -f $(DAEXE)
 	$(MUTE)rm -f $(DAOBJ)
 	$(MUTE)rm -f $(DADEP)
@@ -75,8 +93,8 @@ clean-DA:
 	$(MUTE)rm -f $(DALIB)
 	$(MUTE)rm -f $(ALIROOTALIBS)
 
-$(DAMAKEFILE):
-	@echo "Making $(DAMAKEFILE)..."
+$(DAMAKEFILE): $(DATARGETDIR)
+	@echo "***** Making makefile $(DAMAKEFILE) *****"
 	@echo "CXXFLAGS+=""$$""(shell date-config --cflags)" > $@
 	@echo "CXXFLAGS+=-Iinclude" >> $@
 	@echo "DAQDADIR=daqDAlib" >> $@
@@ -93,25 +111,122 @@ $(DAMAKEFILE):
 	@echo "		""$$""(CXX) -c ""$$""(CXXFLAGS) -I""$$""(DAQDADIR) ""$$""< -o ""$$""@" >> $@
 	@echo "clean:" >> $@
 	@echo "		@rm -f ${DAMODULE}${DANAME}da.exe ${DAMODULE}${DANAME}da.o" >> $@
+	@echo "install: ${DAMODULE}${DANAME}da.exe" >> $@
+	@echo "		@if [ '""$$""(INSTALL_PATH)' == '' ]; then \\" >> $@
+	@echo "		echo Environment variable INSTALL_PATH undefined, cannot continue; \\" >> $@
+	@echo "		exit 1; \\" >> $@
+	@echo "		fi" >> $@
+	@echo "		@cp -p ${DAMODULE}${DANAME}da.exe ""$$""(INSTALL_PATH)" >> $@
 
-tar-DA: $(DASRC) $(DALIB) $(DAQDADIR) $(DADEP) $(DAMAKEFILE)
-	@echo "Making $(DAMODULE)$(DANAME) detector-algorithm archive..."
-	$(MUTE)rm -rf $(DAMODULE)${DANAME}da.tar
+$(DATAR): $(DASRC) $(DALIB) $(DAQDADIR) $(DADEP) $(DAMAKEFILE) $(DATARGETDIR)
+	@echo "***** Making archive $(DATAR) *****"
+	$(MUTE)rm -rf $(DATAR)
 	$(MUTE)rm -rf junk
-	$(MUTE)mkdir junk && mkdir junk/lib && mkdir junk/include && \
-	cp -a $(DASRC) $(DAQDADIR) junk && \
-	cp -a $(DALIB) $(ROOTLIBDIR)/libRoot.a $(ROOTLIBDIR)/libfreetype.a $(ROOTLIBDIR)/libpcre.a junk/lib && \
-	$(foreach daincfile,$(DAINCLUDES), cp -a $(daincfile) junk/include &&) \
-	cp -a $(DAMAKEFILE) junk/Makefile && \
+	$(MUTE)mkdir junk && mkdir junk/$(DAARC) && mkdir junk/$(DAARC)/lib && mkdir junk/$(DAARC)/include && \
+	cp -a $(DASRC) $(DAQDADIR) junk/$(DAARC) && \
+	cp -a $(DALIB) $(ROOTLIBDIR)/libRoot.a $(ROOTLIBDIR)/libfreetype.a $(ROOTLIBDIR)/libpcre.a junk/$(DAARC)/lib && \
+	$(foreach daincfile,$(DAINCLUDES), cp -a $(daincfile) junk/$(DAARC)/include &&) \
+	cp -a $(DAMAKEFILE) junk/$(DAARC)/Makefile && \
 	cd junk && \
-	tar cf ../$(DAMODULE)${DANAME}da.tar * && \
+	tar czf ../$(DATAR) * && \
 	cd .. && rm -rf junk
+
+tar-DA: $(DATAR)
+
+$(DASPECFILE): $(DATARGETDIR)
+	@echo "***** Making RPM spec-file $(DASPECFILE) *****"
+	@echo "# RPM specfile for $(DAMODULE)$(DANAME) Detector Algorithm" >> $@
+	@echo "Summary: DAQ Detector Algorithm for $(DAMODULE)" >> $@
+	@echo "Name: daqDA-$(DAMODULE)-$(DAMODULE)$(DANAME)da" >> $@
+	@echo "Version: $(DAVERSION)" >> $@
+	@echo "Release: $(DARELEASE)" >> $@
+	@echo "Copyright: CERN Alice DAQ/Offine" >> $@
+	@echo "Source: %{name}-%{version}.src.tar.gz" >> $@
+	@echo "Group: Applications/Alice" >> $@
+	@echo "Prefix: /opt/%{name}" >> $@
+	@echo "BuildRoot: %{_tmppath}/%{name}-root" >> $@
+	@echo "" >> $@
+	@echo "# automatic dependencies" >> $@
+	@echo "AutoReqProv: yes" >> $@
+	@echo "" >> $@
+	@echo "# list here required RPM packages for compilation" >> $@
+	@echo "BuildRequires: date" >> $@
+	@echo "" >> $@
+	@echo "# list here required RPM packages for runtime" >> $@
+	@echo "Requires: date" >> $@
+	@echo "" >> $@
+	@echo "# You can specify other dependencies in the description tag below." >> $@
+	@echo "" >> $@
+	@echo "# description of the package" >> $@
+	@echo "%description" >> $@
+	@echo "This is the $(DAMODULE)$(DANAME) Detector Algorithm for DAQ." >> $@
+	@echo "" >> $@
+	@echo "#################################################################" >> $@
+	@echo "# Do not modify following scripts" >> $@
+	@echo "#################################################################" >> $@
+	@echo "" >> $@
+	@echo "# here is defined the installation root directory" >> $@
+	@echo "%define pkgname %{name}-%{version}" >> $@
+	@echo "%define destdir %{prefix}" >> $@
+	@echo "" >> $@
+	@echo "# pre-compilation script: extract from tarball" >> $@
+	@echo "%prep" >> $@
+	@echo "# extract archive" >> $@
+	@echo "%setup -n %{pkgname}" >> $@
+	@echo "" >> $@
+	@echo "# compile" >> $@
+	@echo "%build" >> $@
+	@echo "export DATE_SITE=" >> $@
+	@echo ". /date/setup.sh" >> $@
+	@echo "gmake" >> $@
+	@echo "" >> $@
+	@echo "# install runtime files" >> $@
+	@echo "%install" >> $@
+	@echo "#remove install dir if existing" >> $@
+	@echo "[ -d ""$$""RPM_BUILD_ROOT ] && rm -rf ""$$""RPM_BUILD_ROOT" >> $@
+	@echo "#make install in install root directory" >> $@
+	@echo "mkdir -p ""$$""RPM_BUILD_ROOT/%{prefix}" >> $@
+	@echo "make install INSTALL_PATH=""$$""RPM_BUILD_ROOT/%{prefix}" >> $@
+	@echo "" >> $@
+	@echo "# clean RPM build files" >> $@
+	@echo "%clean" >> $@
+	@echo "# remove source files" >> $@
+	@echo "rm -rf ""$$""RPM_BUILD_DIR/%{pkgname}" >> $@
+	@echo "# remove installed files" >> $@
+	@echo "rm -rf ""$$""RPM_BUILD_ROOT" >> $@
+	@echo "" >> $@
+	@echo "# pre-install script" >> $@
+	@echo "%pre" >> $@
+	@echo "" >> $@
+	@echo "# list of files to be installed" >> $@
+	@echo "%files" >> $@
+	@echo "%defattr (-,root,root)" >> $@
+	@echo "%{destdir}" >> $@
+	@echo "" >> $@
+	@echo "# post-install script" >> $@
+	@echo "# launched after rpm installed" >> $@
+	@echo "%post" >> $@
+	@echo "" >> $@
+	@echo "# post-uninstall script" >> $@
+	@echo "# launched after rpm removed" >> $@
+	@echo "%postun" >> $@
+
+rpm-DA: $(DATAR) $(DASPECFILE)
+	@echo "***** Making RPMS for $(DAMODULE)$(DANAME) detector-algorithm *****"
+	$(MUTE)rm -rf junk
+	$(MUTE)mkdir -p junk/SOURCES junk/SPECS junk/BUILD junk/RPMS junk/SRPMS
+	$(MUTE)cp $(DATAR) junk/SOURCES
+	$(MUTE)rpmbuild --quiet --define "_topdir $(ALICE_ROOT)/junk" --nodeps -ba $(DASPECFILE)
+	$(MUTE)find junk/ -name "$(DAARC)-*.rpm" -exec cp -p {} . \;
+	$(MUTE)rm -rf junk
+	@echo "***** RPMS created and put $(ALICE_ROOT) folder *****"
 
 else
 
 static-DA: clean-DA
-clean-DA: tar-DA
-tar-DA:
+clean-DA:  tar-DA
+tar-DA:    rpm-DA
+rpm-DA:
 	@echo
 	@echo "****************************************************************************************************"
 	@echo "* In order to build a detector-algorithm package you have to set the environment variable DAMODULE *"
