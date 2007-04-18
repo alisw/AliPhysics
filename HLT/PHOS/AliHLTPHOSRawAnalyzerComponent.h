@@ -11,14 +11,16 @@
 #include "AliHLTPHOSDefinitions.h"
 #include "AliHLTPHOSCommonDefs.h"
 
+
 class AliHLTPHOSRcuCellEnergyDataStruct;
 
 class AliHLTPHOSRawAnalyzerComponent: public AliHLTProcessor
 {
  public:
 
+
   AliHLTPHOSRawAnalyzerComponent();
-  ~AliHLTPHOSRawAnalyzerComponent();
+  virtual ~AliHLTPHOSRawAnalyzerComponent();
   AliHLTPHOSRawAnalyzerComponent(const AliHLTPHOSRawAnalyzerComponent & );
   AliHLTPHOSRawAnalyzerComponent & operator = (const AliHLTPHOSRawAnalyzerComponent &)
    {
@@ -42,14 +44,14 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTProcessor
   virtual int DoEvent(const AliHLTComponentEventData&, const AliHLTComponentBlockData*, AliHLTComponentTriggerData&, AliHLTUInt8_t*, AliHLTUInt32_t&, std::vector<AliHLTComponentBlockData, std::allocator<AliHLTComponentBlockData> >&);
 
  protected:
-  AliHLTPHOSRawAnalyzer *analyzerPtr; 
+  AliHLTPHOSRawAnalyzer *fAnalyzerPtr; 
 
  private:
   void Reset();
   void ResetDataPtr();
   void ResetDataPtr(int sampleCnt);
   void ResetDataPtr(int startindex, int sampleCnt);
-  static int fEventCount;
+  static int fgEventCount;
   AliHLTUInt16_t fEquippmentID;
   AliHLTUInt8_t  fRcuX;
   AliHLTUInt8_t  fRcuZ;
@@ -61,7 +63,7 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTProcessor
   AliCaloRawStream *fPHOSRawStream;
   AliRawReaderMemory *fRawMemoryReader;
   AliHLTPHOSRcuCellEnergyDataStruct* fOutPtr;
-  static const AliHLTComponentDataType inputDataTypes[];
+  static const AliHLTComponentDataType fgkInputDataTypes[];
 };
 #endif
 

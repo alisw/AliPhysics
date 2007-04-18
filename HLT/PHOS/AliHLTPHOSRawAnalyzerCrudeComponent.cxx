@@ -21,7 +21,7 @@ AliHLTPHOSRawAnalyzerCrudeComponent gAliHLTPHOSRawAnalyzerCrudeComponent;
 
 AliHLTPHOSRawAnalyzerCrudeComponent::AliHLTPHOSRawAnalyzerCrudeComponent()
 {
-  analyzerPtr = new AliHLTPHOSRawAnalyzerCrude();
+  fAnalyzerPtr = new AliHLTPHOSRawAnalyzerCrude();
 } 
 
 AliHLTPHOSRawAnalyzerCrudeComponent::~AliHLTPHOSRawAnalyzerCrudeComponent()

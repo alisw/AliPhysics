@@ -24,8 +24,8 @@
 #include <cstdlib>
 #include "AliHLTPHOSRcuCellEnergyDataStruct.h"
 
-const AliHLTComponentDataType AliHLTPHOSRawAnalyzerComponent::inputDataTypes[]={kAliHLTVoidDataType,{0,"",""}}; //'zero' terminated array
-int   AliHLTPHOSRawAnalyzerComponent::fEventCount = 0; 
+const AliHLTComponentDataType AliHLTPHOSRawAnalyzerComponent::fgkInputDataTypes[]={kAliHLTVoidDataType,{0,"",""}}; //'zero' terminated array
+int   AliHLTPHOSRawAnalyzerComponent::fgEventCount = 0; 
 
 
 /**
@@ -41,7 +41,7 @@ int   AliHLTPHOSRawAnalyzerComponent::fEventCount = 0;
  * - @ref GetComponentID
  * - @ref Spawn
  */
-AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent():AliHLTProcessor(), analyzerPtr(0), fEquippmentID(0), fRcuX(0), 
+AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent():AliHLTProcessor(), fAnalyzerPtr(0), fEquippmentID(0), fRcuX(0), 
 fRcuZ(0),fRcuZOffset(0), fRcuXOffset(0),  fModuleID(0), fPHOSRawStream(0), fRawMemoryReader(0), fOutPtr(0)
 {
 
@@ -62,7 +62,7 @@ AliHLTPHOSRawAnalyzerComponent::~AliHLTPHOSRawAnalyzerComponent()
 
 
 
-AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent(const AliHLTPHOSRawAnalyzerComponent & ) : AliHLTProcessor(), analyzerPtr(0), 
+AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent(const AliHLTPHOSRawAnalyzerComponent & ) : AliHLTProcessor(), fAnalyzerPtr(0), 
 fEquippmentID(0), fRcuX(0), fRcuZ(0),fRcuZOffset(0), fRcuXOffset(0),  fModuleID(0), fPHOSRawStream(0), fRawMemoryReader(0), fOutPtr(0)
 {
 }
@@ -117,7 +117,7 @@ AliHLTPHOSRawAnalyzerComponent::GetComponentID()
 void
 AliHLTPHOSRawAnalyzerComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
 {
-  const AliHLTComponentDataType* pType=inputDataTypes;
+  const AliHLTComponentDataType* pType=fgkInputDataTypes;
   while (pType->fID!=0) {
     list.push_back(*pType);
     pType++;
@@ -171,7 +171,7 @@ int AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evt
 	}
 
       fRawMemoryReader->SetMemory( reinterpret_cast<UChar_t*>( iter->fPtr ), iter->fSize );
-      analyzerPtr->SetData(fTmpChannelData);
+      fAnalyzerPtr->SetData(fTmpChannelData);
       fOutPtr =  (AliHLTPHOSRcuCellEnergyDataStruct*)outBPtr;
       mysize += sizeof(AliHLTPHOSRcuCellEnergyDataStruct);
       fOutPtr->fRcuX = fRcuX;
@@ -185,14 +185,14 @@ int AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evt
 	    {
 	      if(processedChannels > 0)
 		{
-		  analyzerPtr->SetData(fTmpChannelData);
-		  analyzerPtr->Evaluate(0, sampleCnt);
+		  fAnalyzerPtr->SetData(fTmpChannelData);
+		  fAnalyzerPtr->Evaluate(0, sampleCnt);
 		  //		  sampleCnt = 0;
 		  fOutPtr->fValidData[tmpChannelCnt].fGain = tmpGain;
 		  fOutPtr->fValidData[tmpChannelCnt].fZ  = tmpZ;
 		  fOutPtr->fValidData[tmpChannelCnt].fX  = tmpX; 
-		  fOutPtr->fValidData[tmpChannelCnt].fEnergy  = analyzerPtr->GetEnergy();
-		  fOutPtr->fValidData[tmpChannelCnt].fTime    = analyzerPtr->GetTiming();
+		  fOutPtr->fValidData[tmpChannelCnt].fEnergy  = fAnalyzerPtr->GetEnergy();
+		  fOutPtr->fValidData[tmpChannelCnt].fTime    = fAnalyzerPtr->GetTiming();
 		  tmpChannelCnt ++;
 		  ResetDataPtr(tmpStartIndex, sampleCnt);
 		  sampleCnt = 0;
@@ -217,14 +217,14 @@ int AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evt
 	}
    
       tmpChannelCnt ++;
-      analyzerPtr->SetData(fTmpChannelData);
-      analyzerPtr->Evaluate(0, sampleCnt);
+      fAnalyzerPtr->SetData(fTmpChannelData);
+      fAnalyzerPtr->Evaluate(0, sampleCnt);
       //		  sampleCnt = 0;
       fOutPtr->fValidData[tmpChannelCnt].fGain = tmpGain;
       fOutPtr->fValidData[tmpChannelCnt].fZ  = tmpZ;
       fOutPtr->fValidData[tmpChannelCnt].fX  = tmpX; 
-      fOutPtr->fValidData[tmpChannelCnt].fEnergy  = analyzerPtr->GetEnergy();
-      fOutPtr->fValidData[tmpChannelCnt].fTime    = analyzerPtr->GetTiming();
+      fOutPtr->fValidData[tmpChannelCnt].fEnergy  = fAnalyzerPtr->GetEnergy();
+      fOutPtr->fValidData[tmpChannelCnt].fTime    = fAnalyzerPtr->GetTiming();
       //      tmpChannelCnt ++;
    
       ResetDataPtr(tmpStartIndex, sampleCnt);
@@ -252,7 +252,7 @@ int AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evt
 	}
     }
 
-  fEventCount++; 
+  fgEventCount++; 
   size = tSize;
   return 0;
 }//end DoEvent

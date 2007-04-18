@@ -23,7 +23,7 @@ AliHLTPHOSRawAnalyzerPeakFinderComponent gAliHLTPHOSRawAnalyzerPeakFinderCompone
 
 AliHLTPHOSRawAnalyzerPeakFinderComponent::AliHLTPHOSRawAnalyzerPeakFinderComponent():AliHLTPHOSRawAnalyzerComponent()
 {
-  analyzerPtr = new AliHLTPHOSRawAnalyzerPeakFinder();
+  fAnalyzerPtr = new AliHLTPHOSRawAnalyzerPeakFinder();
 
   if(LoadPFVector() == kFALSE)
     {
@@ -84,8 +84,8 @@ AliHLTPHOSRawAnalyzerPeakFinderComponent::LoadPFVector(int startIndex, int nSamp
 	{
 	  	  fscanf(fp, "%lf", &tmpTVector[i]);
 	}
-      analyzerPtr->SetAVector(tmpAVector,  nSamples);
-      analyzerPtr->SetTVector(tmpTVector,  nSamples);
+      fAnalyzerPtr->SetAVector(tmpAVector,  nSamples);
+      fAnalyzerPtr->SetTVector(tmpTVector,  nSamples);
       fclose(fp);
       return kTRUE;
     }
