@@ -1,3 +1,15 @@
+2007-04-18  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* QuadSet.cxx:
+	* QuadSet.h:
+	* QuadSetEditor.cxx:
+	* QuadSetEditor.h:
+	Add support for creation/display of quad-value histograms.
+
+	* RGBAPalette.cxx:
+	* RGBAPalette.h:
+	Added limit-getters, in ctor set limits to match min/max values.
+
 2007-04-17  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* QuadSet.cxx:
