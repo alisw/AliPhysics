@@ -15,6 +15,9 @@
 
 /* 
 $Log$
+Revision 1.20  2007/03/09 09:57:23  arcelli
+ Remove a forgotten include of Riostrem
+
 Revision 1.19  2007/03/08 15:41:20  arcelli
 set uncorrected times when filling RecPoints
 
@@ -780,7 +783,7 @@ void AliTOFClusterFinder::CalibrateRecPoint()
     for (Int_t j = 0; j<6; j++){
       par[j]=calChannel->GetSlewPar(j);
     }
-    tToT = fTofClusters[ii]->GetToT();
+    tToT = fTofClusters[ii]->GetToT()*AliTOFGeometry::ToTBinWidth()*1.E-3;
     Float_t timeCorr=par[0]+par[1]*tToT+par[2]*tToT*tToT+par[3]*tToT*tToT*tToT+par[4]*tToT*tToT*tToT*tToT+par[5]*tToT*tToT*tToT*tToT*tToT+roughDelay;
     tdcCorr=(fTofClusters[ii]->GetTDC()*AliTOFGeometry::TdcBinWidth()+32)*1.E-3-timeCorr;
     tdcCorr=(tdcCorr*1E3-32)/AliTOFGeometry::TdcBinWidth();
