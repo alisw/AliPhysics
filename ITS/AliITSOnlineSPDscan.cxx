@@ -409,6 +409,16 @@ void AliITSOnlineSPDscan::SetRouterNr(UInt_t val) {
   fScanInfo->SetRouterNr(val);
   fInfoModified=kTRUE;
 }
+void AliITSOnlineSPDscan::SetHalfStaveScanned(UInt_t val, Bool_t b) {
+  // set half stave scanned
+  fScanInfo->SetHalfStaveScanned(val,b);
+  fInfoModified=kTRUE;
+}
+void AliITSOnlineSPDscan::SetDataFormat(UInt_t val) {
+  // set data format (0=normal 1=histogram)
+  fScanInfo->SetDataFormat(val);
+  fInfoModified=kTRUE;
+}
 void AliITSOnlineSPDscan::SetTriggers(UInt_t nsi, UInt_t val) {
   // set nr of triggers
   SwitchToStep(nsi);
@@ -465,6 +475,12 @@ UInt_t AliITSOnlineSPDscan::GetRunNr() const {
 }
 UInt_t AliITSOnlineSPDscan::GetRouterNr() const {
   return fScanInfo->GetRouterNr();
+}
+Bool_t AliITSOnlineSPDscan::GetHalfStaveScanned(UInt_t val) const {
+  return fScanInfo->GetHalfStaveScanned(val);
+}
+UInt_t AliITSOnlineSPDscan::GetDataFormat() const {
+  return fScanInfo->GetDataFormat();
 }
 UInt_t AliITSOnlineSPDscan::GetTriggers(UInt_t nsi) const {
   return fScanInfo->GetTriggers(nsi);

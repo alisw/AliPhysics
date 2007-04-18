@@ -37,6 +37,9 @@ void AliITSOnlineSPDscanInfo::ClearThis() {
   fRouterNr=999;
   fRowStart=0;
   fRowEnd=255;
+  for (Int_t hs=0; hs<6; hs++) {
+    fHalfStaveScanned[hs]=kFALSE;
+  }
   for (Int_t i=0; i<10; i++) {
     fChipPresent[i]=kTRUE;
   }
@@ -49,7 +52,6 @@ UInt_t AliITSOnlineSPDscanInfo::AddScanStep() {
   fTriggers.AddAt(0, fNSteps-1);
   return fNSteps-1;
 }
-
 void AliITSOnlineSPDscanInfo::IncrementTriggers(UInt_t nsi) {
   // increment the nr of triggers for step nsi
   if (nsi<fNSteps) {
@@ -62,9 +64,24 @@ void AliITSOnlineSPDscanInfo::SetTriggers(UInt_t nsi, UInt_t val) {
     fTriggers.AddAt(val,nsi);
   }
 }
-
 UInt_t AliITSOnlineSPDscanInfo::GetTriggers(UInt_t nsi) const {
   // get the nr of triggers for step nsi
   if (nsi<fNSteps) return fTriggers.At(nsi);
   else return 0;
+}
+void AliITSOnlineSPDscanInfo::SetHalfStaveScanned(UInt_t val, Bool_t b) {
+  // set half stave scanned
+  if (val<6) {
+    fHalfStaveScanned[val]=b;
+  }
+}
+Bool_t AliITSOnlineSPDscanInfo::GetHalfStaveScanned(UInt_t val) {
+  // set half stave scanned
+  if (val<6) {
+    return fHalfStaveScanned[val];
+  }
+  else {
+    printf("hs requested is out of range (hs=%d)\n",val);
+    return kFALSE;
+  }
 }

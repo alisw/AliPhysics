@@ -34,6 +34,8 @@ class AliITSOnlineSPDscan {
   void     SetType(UInt_t val);
   void     SetRunNr(UInt_t val);
   void     SetRouterNr(UInt_t val);
+  void     SetHalfStaveScanned(UInt_t val, Bool_t b);
+  void     SetDataFormat(UInt_t val);
   void     SetTriggers(UInt_t nsi, UInt_t val);
   void     SetChipPresent(UInt_t hs, UInt_t chipi, Bool_t val);
   void     SetRowStart(UInt_t val);
@@ -54,6 +56,8 @@ class AliITSOnlineSPDscan {
   UInt_t   GetType() const;
   UInt_t   GetRunNr() const;
   UInt_t   GetRouterNr() const;
+  Bool_t   GetHalfStaveScanned(UInt_t val) const;
+  UInt_t   GetDataFormat() const;
   UInt_t   GetTriggers(UInt_t nsi) const;
   Bool_t   GetChipPresent(UInt_t hs, UInt_t chipi) const;
   UInt_t   GetRowStart() const;

@@ -51,26 +51,16 @@ UInt_t AliITSPreprocessorSPD::Process(TMap* /*dcsAliasMap*/)
   // Do the actual preprocessing
 
 
-  // *** REFERENCE DATA ***
+  // *** CHECK RUN TYPE ***
 
-// OLD algorithm (commented out)!!!
-// ***********************************************************
-//  // Store the container files as reference data (one for each equipment)
-//  for (UInt_t eq=0; eq<20; eq++) {
-//    Char_t id[20];
-//    sprintf(id,"SPDref%d",eq);
-//    TList* list = GetFileSources(kDAQ,id); // (the id is actually unique, so always 1 file)
-//    if (list) {
-//      TObjString* fileNameEntry = (TObjString*) list->First();
-//      Char_t* fileName = (Char_t*) GetFile(kDAQ, id, fileNameEntry->GetString().Data());
-//      AliITSOnlineSPDscan *scan = new AliITSOnlineSPDscan((Char_t*)fileName);
-//      TObjArray* arr = scan->GetAsTObjArray();
-//      Char_t refCAT[10];
-//      sprintf(refCAT,"Ref%d",eq);
-//      StoreReferenceData("SHUTTLE", refCAT, arr, &metaData, 0, 0);
-//    }
-//  }
-// ***********************************************************
+  TString runType = GetRunType();
+  if(runType != "SPD_STANDALONE_CALIBRATION") {
+    Log("Nothing to do");
+    return 0;
+  }
+
+
+  // *** REFERENCE DATA ***
 
   // Store the container files as reference data (one file for each equipment)
   for (UInt_t eq=0; eq<20; eq++) {
@@ -93,29 +83,8 @@ UInt_t AliITSPreprocessorSPD::Process(TMap* /*dcsAliasMap*/)
 
   // *** NOISY DATA ***
 
-// OLD algorithm (commented out)!!!
-// ***********************************************************
-//  // Read old calibration
-//  AliCDBEntry* cdbEntry = GetFromOCDB("Calib", "SPDNoisy");
-//  TObjArray* spdEntry;
-//  if(cdbEntry) {
-//    spdEntry = (TObjArray*)cdbEntry->GetObject();
-//    if(!spdEntry) return 0;
-//  }
-//  else {
-//    Log(Form("Old calibration not found in database. A fresh one will be created."));
-//    // Create fresh calibration
-//    spdEntry = new TObjArray(240);
-//    for(Int_t module=0;module<240;module++){
-//      AliITSCalibrationSPD* cal = new AliITSCalibrationSPD();
-//      spdEntry->Add(cal);
-//    }
-//    spdEntry->SetOwner(kTRUE);
-//  }
-// ***********************************************************
-
   // Read old calibration
-  AliCDBEntry* cdbEntry = GetFromOCDB("Calib", "SPDNoisy");
+  AliCDBEntry* cdbEntry = GetFromOCDB("Calib", "CalibSPD");
   TObjArray* spdEntry;
   if(cdbEntry) {
     spdEntry = (TObjArray*)cdbEntry->GetObject();
@@ -168,7 +137,7 @@ UInt_t AliITSPreprocessorSPD::Process(TMap* /*dcsAliasMap*/)
     metaData.SetBeamPeriod(0);
     metaData.SetResponsible("Henrik Tydesjo");
     metaData.SetComment("Preprocessor test for SPD.");  
-    if (!Store("Calib", "SPDNoisy", spdEntry, &metaData, 0, kTRUE)) {
+    if (!Store("Calib", "CalibSPD", spdEntry, &metaData, 0, kTRUE)) {
       return 1;
     }
     //    delete spdEntry;
