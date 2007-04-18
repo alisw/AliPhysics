@@ -10,8 +10,8 @@ class AliESDtrack; //IntTrkCha()
 class AliHMPIDTracker : public AliTracker
 {
 public:
-           AliHMPIDTracker():AliTracker()                               {}
-  virtual ~AliHMPIDTracker()                                            {}
+           AliHMPIDTracker();
+  virtual ~AliHMPIDTracker()                                            {delete fClu;}
 //framework part  
          AliCluster *GetCluster     (Int_t                      )const  {return 0;} //pure virtual from AliTracker 
          Bool_t      GetTrackPoint  (Int_t idx,AliTrackPoint &pt)const;             //             from AliTracker  
@@ -24,7 +24,9 @@ public:
   static Int_t       IntTrkCha(AliESDtrack *pTrk,Double_t &xPc,Double_t &yPc);              //find track-PC intersection, retuns chamber ID
   static Int_t       Recon    (AliESD *pEsd,TObjArray *pCluAll,TObjArray *pNmean=0);        //do actual job, returns status code  
 protected:
-  ClassDef(AliHMPIDTracker,0)
+  TObjArray            *fClu;                     //! each chamber holds it's one list of clusters 
+
+ClassDef(AliHMPIDTracker,0)
 };//class AliHMPIDTracker
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 

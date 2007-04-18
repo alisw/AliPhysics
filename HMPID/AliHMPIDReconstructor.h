@@ -14,19 +14,19 @@ class AliHMPIDCluster;               //Dig2Clu()
 class AliHMPIDReconstructor: public AliReconstructor 
 {
 public:
-           AliHMPIDReconstructor(): AliReconstructor()              {}//default ctor
-  virtual ~AliHMPIDReconstructor()                                  {}//dtor  
+           AliHMPIDReconstructor();              
+  virtual ~AliHMPIDReconstructor()                                  {delete fDig;delete fClu;}//dtor  
 //framework part  
   AliTracker*  CreateTracker         (AliRunLoader*                      )const{return new AliHMPIDTracker;}            //from AliReconstructor for clusters->PID
-  void         Reconstruct           (AliRunLoader* pAL                  )const;                                       //from AliReconstruction for digits->clusters
-  void         Reconstruct           (AliRunLoader* pAL,AliRawReader *pRR)const;                                       //from AliReconstruction for raws->clusters
-  virtual void FillESD               (AliRunLoader* pAL,AliESD *pESD)const;                                    //calculate pid for HMPID
-  virtual void FillESD(AliRunLoader*, AliRawReader*, AliESD*) const { };
-  virtual void FillESD(AliRawReader*, TTree*, AliESD*) const { };
-  virtual void FillESD(TTree*, TTree*, AliESD*) const { };
-
+  void         ConvertDigits         (AliRawReader *pRR, TTree *pDigTree) const;                                        //from AliReconstruction for raw->digit
+  Bool_t       HasDigitConversion()   const {return kTRUE;}                                                             //HMPID digits converted with ConvertDigits 
+  void         Reconstruct           (TTree* digitsTree, TTree* clustersTree) const;                                    //from AliReconstruction for digit->cluster
+  void         Reconstruct           (AliRunLoader *pAL,AliRawReader* pRR)const;                                        //from AliReconstruction for raw->cluster with Digits on fly
+  Bool_t       HasLocalReconstruction() const {return kTRUE;}                                                           // HMPID has local reconstruction algorithm
+  void         FillESD               (AliRunLoader* pAL,AliESD *pESD)const;                                             //calculate pid for HMPID
   
-   using AliReconstructor::Reconstruct;                                                                                 //to get rid of virtual hidden warning 
+  using AliReconstructor::FillESD;                                                                                      //
+  using AliReconstructor::Reconstruct;                                                                                  // 
 
   //private part  
   static        void           Dig2Clu (TObjArray *pDigLst,TObjArray *pCluLst,Bool_t isUnfold=kTRUE                      );//digits->clusters
@@ -34,6 +34,8 @@ public:
   static inline AliHMPIDDigit* UseDig  (Int_t padX,Int_t padY,                    TClonesArray *pDigLst,TMatrixF *pDigMap);//use this pad's digit to form a cluster
 
   protected:
+  TObjArray *fDig;                     // tmp list of digits
+  TObjArray *fClu;                     // tmp list of clusters
   ClassDef(AliHMPIDReconstructor, 0)   //class for the HMPID reconstruction
 };
 

@@ -345,7 +345,7 @@ void HmpConfig::WriteGen(FILE *pF)
      case 3: fprintf(pF,"  AliGenFixed *pG3=new AliGenFixed(1); pG3->SetPart(%i); pG3->SetMomentum(%.1f);\n",pid,pmin);
 	     fprintf(pF,"               pG3->SetTheta(109.5);   pG3->SetPhi(30);  pG->AddGenerator(pG3,\"g3\",1);\n"); break;
      case 4: fprintf(pF,"  AliGenFixed *pG4=new AliGenFixed(1); pG4->SetPart(%i); pG4->SetMomentum(%.1f);\n",pid,pmin);
-             fprintf(pF,"               pG4->SetTheta( 90.0);   pG4->SetPhi(30);  pG->AddGenerator(pG4,\"g4\",1);\n"); break;
+             fprintf(pF,"               pG4->SetTheta( 87.0);   pG4->SetPhi(30);  pG->AddGenerator(pG4,\"g4\",1);\n"); break;
      case 5: fprintf(pF,"  AliGenFixed *pG5=new AliGenFixed(1); pG5->SetPart(%i); pG5->SetMomentum(%.1f);\n",pid,pmin);
              fprintf(pF,"               pG5->SetTheta( 70.5);   pG5->SetPhi(30);  pG->AddGenerator(pG5,\"g5\",1);\n"); break;
      case 6: fprintf(pF,"  AliGenFixed *pG6=new AliGenFixed(1); pG6->SetPart(%i); pG6->SetMomentum(%.1f);\n",pid,pmin);

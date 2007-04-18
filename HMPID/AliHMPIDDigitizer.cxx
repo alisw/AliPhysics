@@ -12,10 +12,13 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
+//
+//
+//
+//
 #include "AliHMPIDDigitizer.h"
+#include "AliHMPIDDigit.h"
 #include "AliHMPID.h"
-#include <AliRun.h>
 #include <AliRunLoader.h>
 #include "AliRunDigitizer.h"
 #include <AliLoader.h>
@@ -24,7 +27,7 @@
 
 ClassImp(AliHMPIDDigitizer)
 
-Bool_t AliHMPIDDigitizer::fDoNoise=kFALSE;
+Bool_t AliHMPIDDigitizer::fgDoNoise=kFALSE;
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDDigitizer::Exec(Option_t*)
 {
@@ -83,7 +86,7 @@ void AliHMPIDDigitizer::Sdi2Dig(TClonesArray *pSdiLst,TObjArray *pDigLst)
 
   // make noise array
   Float_t arrNoise[7][6][80][48];
-  if(fDoNoise) {
+  if(fgDoNoise) {
     for (Int_t iCh=AliHMPIDDigit::kMinCh;iCh<=AliHMPIDDigit::kMaxCh;iCh++)
       for (Int_t iPc=AliHMPIDDigit::kMinPc;iPc<=AliHMPIDDigit::kMaxPc;iPc++)
         for(Int_t iPx=AliHMPIDDigit::kMinPx;iPx<=AliHMPIDDigit::kMaxPx;iPx++)
@@ -105,13 +108,13 @@ void AliHMPIDDigitizer::Sdi2Dig(TClonesArray *pSdiLst,TObjArray *pDigLst)
     iNdigPad=1;
     aTids[0]=pSdig->GetTrack(0);aTids[1]=aTids[2]=-1; 
     q=pSdig->Q();
-    if(fDoNoise) q+=arrNoise[iCh][pSdig->Pc()][pSdig->PadPcX()][pSdig->PadPcY()];
+    if(fgDoNoise) q+=arrNoise[iCh][pSdig->Pc()][pSdig->PadPcX()][pSdig->PadPcY()];
     arrNoise[iCh][pSdig->Pc()][pSdig->PadPcX()][pSdig->PadPcY()]=0;
   }//sdigits loop (sorted)
   
   if(AliHMPIDDigit::IsOverTh(q))  new((*pLst[iCh])[iCnt[iCh]++]) AliHMPIDDigit(iPad,(Int_t)q,aTids);           //add the last one, in case of empty sdigits list q=-1
 // add noise pad above threshold with no signal merged...if any
-  if(!fDoNoise) return;
+  if(!fgDoNoise) return;
   aTids[0]=aTids[1]=aTids[2]=-1;
   for (Int_t iCh=AliHMPIDDigit::kMinCh;iCh<=AliHMPIDDigit::kMaxCh;iCh++)
     for (Int_t iPc=AliHMPIDDigit::kMinPc;iPc<=AliHMPIDDigit::kMaxPc;iPc++)

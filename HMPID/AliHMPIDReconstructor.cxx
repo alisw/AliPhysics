@@ -18,11 +18,24 @@
 #include "AliHMPIDCluster.h"       //Dig2Clu()
 #include "AliHMPIDParam.h"         //FillEsd() 
 #include <AliESD.h>               //FillEsd()
-#include <AliRunLoader.h>         //Reconstruct() for simulated digits
 #include <AliRawReader.h>         //Reconstruct() for raw digits
-#include <AliRun.h>               //Reconstruct()
 ClassImp(AliHMPIDReconstructor)
 
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+AliHMPIDReconstructor::AliHMPIDReconstructor():AliReconstructor()
+{
+//
+//ctor
+//
+  fClu=new TObjArray(AliHMPIDDigit::kMaxCh+1);
+  fDig=new TObjArray(AliHMPIDDigit::kMaxCh+1);
+  fClu->SetOwner(kTRUE);
+  for(int i=AliHMPIDDigit::kMinCh;i<=AliHMPIDDigit::kMaxCh;i++){ 
+    fDig->AddAt(new TClonesArray("AliHMPIDDigit"),i);
+    fClu->AddAt(new TClonesArray("AliHMPIDCluster"),i);
+  }
+  fDig->SetOwner(kTRUE);
+}//AliHMPIDReconstructor
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDReconstructor::Dig2Clu(TObjArray *pDigAll,TObjArray *pCluAll,Bool_t isTryUnfold)
 {
@@ -78,31 +91,26 @@ void  AliHMPIDReconstructor::FormClu(AliHMPIDCluster *pClu,AliHMPIDDigit *pDig,T
   }//neighbours loop  
 }//FormClu()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDReconstructor::Reconstruct(AliRunLoader *pAL)const
+void AliHMPIDReconstructor::Reconstruct(TTree *pDigTree,TTree *pCluTree)const
 {
 //Invoked  by AliReconstruction to convert digits to clusters i.e. reconstruct simulated data
-//Arguments: pAL - ALICE run loader pointer
+//Arguments: pDigTree - pointer to Digit tree
+//           pCluTree - poitner to Cluster tree
 //  Returns: none    
   AliDebug(1,"Start.");
-  AliLoader *pRL=pAL->GetDetectorLoader("HMPID");
-  AliHMPID *pRich=(AliHMPID*)pAL->GetAliRun()->GetDetector("HMPID");//get pointers for HMPID and HMPID loader
-  pRL->LoadDigits();   
-  pRL->LoadRecPoints("recreate");
+  for(Int_t iCh=AliHMPIDDigit::kMinCh;iCh<=AliHMPIDDigit::kMaxCh;iCh++) {
+    pCluTree->Branch(Form("HMPID%d",iCh),&((*fClu)[iCh]),4000,0);
+    pDigTree->SetBranchAddress(Form("HMPID%d",iCh),&((*fDig)[iCh]));
+  }   
+  pDigTree->GetEntry(0);
+  Dig2Clu(fDig,fClu);              //cluster finder 
+  pCluTree->Fill();                //fill tree for current event
   
-  for(Int_t iEvtN=0;iEvtN<pAL->GetNumberOfEvents();iEvtN++){//events loop
-    pAL->GetEvent(iEvtN); AliDebug(1,Form("Processing event %i...",iEvtN)); //switch current directory to next event    
-    pRL->TreeD()->GetEntry(0);  pRL->MakeTree("R");  pRich->MakeBranch("R");  //load digits to memory  and create branches for clusters              
-    
-    Dig2Clu(pRich->DigLst(),pRich->CluLst());//cluster finder 
-      
-    pRL->TreeR()->Fill();            //fill tree for current event
-    pRL->WriteRecPoints("OVERWRITE");//write out clusters for current event
-    pRich->DigReset(); pRich->CluReset();
-  }//events loop  
-
-  pRL->UnloadDigits(); 
-  pRL->UnloadRecPoints();  
-    
+  for(Int_t iCh=AliHMPIDDigit::kMinCh;iCh<=AliHMPIDDigit::kMaxCh;iCh++){
+    fDig->At(iCh)->Clear();
+    fClu->At(iCh)->Clear();
+  }
+  
   AliDebug(1,"Stop.");      
 }//Reconstruct(for simulated digits)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -110,40 +118,66 @@ void AliHMPIDReconstructor::Reconstruct(AliRunLoader *pAL,AliRawReader* pRR)cons
 {
 //Invoked  by AliReconstruction to convert raw digits from DDL files to clusters
 //Arguments: pAL - ALICE run loader pointer
-//           pRR - ALICE raw reader pointer  
-//  Returns: none    
+//           pRR - ALICE raw reader pointer
+//  Returns: none
   AliLoader *pRL=pAL->GetDetectorLoader("HMPID");  AliHMPID *pRich=(AliHMPID*)pAL->GetAliRun()->GetDetector("HMPID");//get pointers for HMPID and HMPID loader
-  
+
   AliHMPIDDigit dig; //tmp digit, raw digit will be converted to it
-  
-  TObjArray digLst; Int_t iDigCnt[7]; for(Int_t i=0;i<7;i++){digLst.AddAt(new TClonesArray("AliHMPIDDigit"),i); iDigCnt[i]=0;} //tmp list of digits for all chambers
-  
+
+  TObjArray digLst; Int_t iDigCnt[7]; for(Int_t i=0;i<7;i++){digLst.AddAt(new TClonesArray("AliHMPIDDigit"),i); iDigCnt[i]=0;} //tmp list of digits for allchambers
+
   Int_t iEvtN=0;
   while(pRR->NextEvent()){//events loop
     pAL->GetEvent(iEvtN++);
     pRL->MakeTree("R");  pRich->MakeBranch("R");
-    
+
     for(Int_t iCh=0;iCh<7;iCh++){//chambers loop
-      pRR->Select("HMPID",2*iCh,2*iCh+1);//select only DDL files for the current chamber      
+      pRR->Select("HMPID",2*iCh,2*iCh+1);//select only DDL files for the current chamber
       UInt_t w32=0;
       while(pRR->ReadNextInt(w32)){//raw records loop (in selected DDL files)
         UInt_t ddl=pRR->GetDDLID(); //returns 0,1,2 ... 13
-        dig.Raw(w32,ddl);  
+        dig.Raw(w32,ddl);
         AliDebug(1,Form("Ch=%i DDL=%i raw=0x%x digit=(%3i,%3i,%3i,%3i) Q=%5.2f",iCh,ddl,w32,dig.Ch(),dig.Pc(),dig.PadPcX(),dig.PadPcY(),dig.Q()));
         new((*((TClonesArray*)digLst.At(iCh)))[iDigCnt[iCh]++]) AliHMPIDDigit(dig); //add this digit to the tmp list
       }//raw records loop
-      pRR->Reset();        
+      pRR->Reset();
     }//chambers loop
-    
+
     Dig2Clu(&digLst,pRich->CluLst());//cluster finder for all chambers
     for(Int_t i=0;i<7;i++){digLst.At(i)->Delete(); iDigCnt[i]=0;}                    //clean up list of digits for all chambers
-    
+
     pRL->TreeR()->Fill();            //fill tree for current event
     pRL->WriteRecPoints("OVERWRITE");//write out clusters for current event
     pRich->CluReset();
-  }//events loop  
-  pRL->UnloadRecPoints();  
+  }//events loop
+  pRL->UnloadRecPoints();
 }//Reconstruct raw data
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void AliHMPIDReconstructor::ConvertDigits(AliRawReader *pRR,TTree *pDigTree)const
+{
+//Invoked  by AliReconstruction to convert raw digits from DDL files to digits
+//Arguments: pRR - ALICE raw reader pointer
+//           pDigTree - pointer to Digit tree
+//  Returns: none    
+  AliDebug(1,"Start.");
+  AliHMPIDDigit dig; //tmp digit, raw digit will be converted to it
+  for(Int_t iCh=AliHMPIDDigit::kMinCh;iCh<=AliHMPIDDigit::kMaxCh;iCh++) {
+    pDigTree->Branch(Form("HMPID%d",iCh),&((*fDig)[iCh]),4000,0);
+    pRR->Select("HMPID",2*iCh,2*iCh+1);//select only DDL files for the current chamber      
+    Int_t iDigCnt=0;
+    UInt_t w32=0;
+                while(pRR->ReadNextInt(w32)){//raw records loop (in selected DDL files)
+      UInt_t ddl=pRR->GetDDLID(); //returns 0,1,2 ... 13
+      dig.Raw(w32,ddl);  
+      AliDebug(1,Form("Ch=%i DDL=%i raw=0x%x digit=(%3i,%3i,%3i,%3i) Q=%5.2f",iCh,ddl,w32,dig.Ch(),dig.Pc(),dig.PadPcX(),dig.PadPcY(),dig.Q()));
+      new((*((TClonesArray*)fDig->At(iCh)))[iDigCnt++]) AliHMPIDDigit(dig); //add this digit to the tmp list
+    }//raw records loop
+    pRR->Reset();        
+  }//chambers loop
+  pDigTree->Fill();
+  for(Int_t iCh=AliHMPIDDigit::kMinCh;iCh<=AliHMPIDDigit::kMaxCh;iCh++)fDig->At(iCh)->Clear();
+  AliDebug(1,"Stop.");
+}//Reconstruct digits from raw digits
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDReconstructor::FillESD(AliRunLoader *, AliESD *pESD) const
 {

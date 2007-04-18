@@ -10,7 +10,14 @@
 #include <AliCDBEntry.h>
 
 ClassImp(AliHMPIDTracker)
-
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+AliHMPIDTracker::AliHMPIDTracker():AliTracker()
+{
+// ctor
+  fClu=new TObjArray(AliHMPIDDigit::kMaxCh+1);
+  fClu->SetOwner(kTRUE);
+  for(int i=AliHMPIDDigit::kMinCh;i<=AliHMPIDDigit::kMaxCh;i++) fClu->AddAt(new TClonesArray("AliHMPIDCluster"),i);
+}
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++    
 Bool_t AliHMPIDTracker::GetTrackPoint(Int_t idx, AliTrackPoint& point) const
 {
@@ -23,8 +30,8 @@ Bool_t AliHMPIDTracker::GetTrackPoint(Int_t idx, AliTrackPoint& point) const
   Int_t iCham=idx/1000000;
   Int_t iClu=idx%1000000;
   point.SetVolumeID(AliAlignObj::LayerToVolUID(AliAlignObj::kHMPID,iCham-1));//layer and chamber number
-  AliHMPID *pRich=((AliHMPID*)gAlice->GetDetector("HMPID"));  
-  AliHMPIDCluster *pClu=(AliHMPIDCluster*)pRich->CluLst(iCham)->UncheckedAt(iClu);//get pointer to cluster
+  TClonesArray *pArr=(TClonesArray*)(*fClu)[iCham];
+  AliHMPIDCluster *pClu=(AliHMPIDCluster*)pArr->UncheckedAt(iClu);//get pointer to cluster
   Double_t mars[3];
   AliHMPIDParam::Instance()->Lors2Mars(iCham,pClu->X(),pClu->Y(),mars);
   point.SetXYZ(mars[0],mars[1],mars[2]);
@@ -36,7 +43,11 @@ Int_t AliHMPIDTracker::LoadClusters(TTree *pCluTree)
 // Interface callback methode invoked from AliReconstruction::RunTracking() to load HMPID clusters before PropagateBack() gets control 
 // Arguments: pCluTree- pointer to clusters tree got by AliHMPIDLoader::LoadRecPoints("read") then AliHMPIDLoader::TreeR()
 //   Returns: error code (currently ignored in AliReconstruction::RunTraking())    
-  AliDebug(1,"Start.");  pCluTree->GetEntry(0);  AliDebug(1,"Stop."); return 0;
+  AliDebug(1,"Start.");
+  for(int i=AliHMPIDDigit::kMinCh;i<=AliHMPIDDigit::kMaxCh;i++) pCluTree->SetBranchAddress(Form("HMPID%d",i),&((*fClu)[i]));
+  pCluTree->GetEntry(0);
+  AliDebug(1,"Stop."); 
+  return 0;  
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Int_t AliHMPIDTracker::PropagateBack(AliESD *pEsd)
@@ -48,7 +59,7 @@ Int_t AliHMPIDTracker::PropagateBack(AliESD *pEsd)
   AliCDBEntry *pQthreEnt =AliCDBManager::Instance()->Get("HMPID/Calib/Qthre",pEsd->GetRunNumber()); //contains TObjArray of 7 TF1
   if(!pNmeanEnt) AliFatal("No Nmean C6F14 ");
   if(!pQthreEnt) AliFatal("No Qthre");
-  
+    
   AliHMPID *pHmpid=((AliHMPID*)gAlice->GetDetector("HMPID"));  
   return Recon(pEsd,pHmpid->CluLst(),(TObjArray*)pNmeanEnt->GetObject());  
 }
