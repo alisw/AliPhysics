@@ -309,8 +309,7 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
 	FindClustersSDD(bins, kMaxBin, kNzBins, NULL, clusters[iModule]);
 	Int_t nClusters = clusters[iModule]->GetEntriesFast();
 	nClustersSDD += nClusters;
-	bins[0] = bins[1] = NULL;
-	
+	bins[0] = bins[1] = NULL;	
       }
 
       if (!next) break;
@@ -322,12 +321,22 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
     }
 
     // fill the current digit into the bins array
-    if(input->GetSignal()>=3) {
+    AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(input->GetModuleID());
+    AliITSresponseSDD* res  = (AliITSresponseSDD*)cal->GetResponse();
+    const char *option=res->ZeroSuppOption();
+    Int_t q=input->GetSignal();
+    if(!((strstr(option,"1D")) || (strstr(option,"2D")))){
+      Float_t baseline = cal->GetBaseline(input->GetCoord1());
+       if(q>baseline) q-=(Int_t)baseline;
+       else q=0;
+     }
+    if(q>=cal->GetThresholdAnode(input->GetCoord1())) {
       Int_t iz = input->GetCoord1()+1;
-      Int_t side = ((iz <= fNzSDD) ? 0 : 1);
-      iz -= side*fNzSDD;
+      //Int_t side = ((iz <= fNzSDD) ? 0 : 1);
+      Int_t side = ((AliITSRawStreamSDD*)input)->GetChannel();
+      //  iz -= side*fNzSDD;
       Int_t index = (input->GetCoord2()+1) * kNzBins + iz;
-      bins[side][index].SetQ(input->GetSignal());
+      bins[side][index].SetQ(q);
       bins[side][index].SetMask(1);
       bins[side][index].SetIndex(index);
     }
@@ -337,7 +346,6 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
   delete[] binsSDDInit;
 
   Info("FindClustersSDD", "found clusters in ITS SDD: %d", nClustersSDD);
-
 }
 
 
@@ -347,18 +355,18 @@ void AliITSClusterFinderV2SDD::CorrectPosition(Float_t &z, Float_t&y){
   //correction of coordinates using the maps stored in the DB
 
   AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(fModule);
-  static const Int_t nbint = cal->GetMapTimeNBin();
-  static const Int_t nbina = cal->Chips()*cal->Channels();
+  static const Int_t knbint = cal->GetMapTimeNBin();
+  static const Int_t knbina = cal->Chips()*cal->Channels();
   Float_t stepa = (GetSeg()->Dpz(0))/10000.; //anode pitch in cm
   Float_t stept = (GetSeg()->Dx()/cal->GetMapTimeNBin()/2.)/10.;
   
   Int_t bint = TMath::Abs((Int_t)(y/stept));
-  if(y>=0) bint+=(Int_t)(nbint/2.);
-  if(bint>nbint) AliError("Wrong bin number!");
+  if(y>=0) bint+=(Int_t)(knbint/2.);
+  if(bint>knbint) AliError("Wrong bin number!");
 
   Int_t bina = TMath::Abs((Int_t)(z/stepa));
-  if(z>=0) bina+=(Int_t)(nbina/2.);
-  if(bina>nbina) AliError("Wrong bin number!");
+  if(z>=0) bina+=(Int_t)(knbina/2.);
+  if(bina>knbina) AliError("Wrong bin number!");
 
   Float_t devz = cal->GetMapACell(bina,bint)/10000.;
   Float_t devx = cal->GetMapTCell(bina,bint)/10000.;

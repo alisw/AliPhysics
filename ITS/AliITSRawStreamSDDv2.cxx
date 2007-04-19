@@ -45,20 +45,20 @@ Bool_t AliITSRawStreamSDDv2::Next()
 // returns kFALSE if there is no digit left
 
   // skip the first 8 words
-  while (fSkip < 8) {
+  while (fSkip[0] < 8) {
     if (!fRawReader->ReadNextInt(fData)) return kFALSE;
     if ((fData >> 30) == 0x01) continue;  // JTAG word
-    if (fSkip == 4) {
+    if (fSkip[0] == 4) {
       if (fData != 0) {
 	Error("Next", "data not valid: %8.8d", fData);
 	return kFALSE;
       }
     }
-    fSkip++;
+    fSkip[0]++;
   }
 
   while (kTRUE) {
-    if ((fChannel < 0) || (fLastBit[fChannel] < fReadBits[fChannel])) {
+    if ((fChannel < 0) || (fLastBit[0][fChannel] < fReadBits[0][fChannel])) {
       if (!fRawReader->ReadNextInt(fData)) return kFALSE;  // read next word
 
       fChannel = -1;
@@ -85,32 +85,32 @@ Bool_t AliITSRawStreamSDDv2::Next()
       }
 
       if (fChannel >= 0) {          // add read word to the data
-	fChannelData[fChannel] += 
-	  (ULong64_t(fData & 0x3FFFFFFF) << fLastBit[fChannel]);
-	fLastBit[fChannel] += 30;
+	fChannelData[0][fChannel] += 
+	  (ULong64_t(fData & 0x3FFFFFFF) << fLastBit[0][fChannel]);
+	fLastBit[0][fChannel] += 30;
       }
 
     } else {  // decode data
-      if (fReadCode[fChannel]) {    // read the next code word
-	fChannelCode[fChannel] = ReadBits();
-	fReadCode[fChannel] = kFALSE;
-	fReadBits[fChannel] = fgkCodeLength[fChannelCode[fChannel]];
+      if (fReadCode[0][fChannel]) {    // read the next code word
+	fChannelCode[0][fChannel] = ReadBits();
+	fReadCode[0][fChannel] = kFALSE;
+	fReadBits[0][fChannel] = fgkCodeLength[fChannelCode[0][fChannel]];
 
       } else {                      // read the next data word
 	UInt_t data = ReadBits();
-	fReadCode[fChannel] = kTRUE;
-	fReadBits[fChannel] = 3;
-	if (fChannelCode[fChannel] == 0) {         // set the time bin
-	  fTimeBin[fChannel] = data;
-	} else if (fChannelCode[fChannel] == 1) {  // next anode
-	  fTimeBin[fChannel] = 0;
-	  fAnode[fChannel]++;
+	fReadCode[0][fChannel] = kTRUE;
+	fReadBits[0][fChannel] = 3;
+	if (fChannelCode[0][fChannel] == 0) {         // set the time bin
+	  fTimeBin[0][fChannel] = data;
+	} else if (fChannelCode[0][fChannel] == 1) {  // next anode
+	  fTimeBin[0][fChannel] = 0;
+	  fAnode[0][fChannel]++;
 	} else {                                   // ADC signal data
-	  fSignal = DecompAmbra(data + (1 << fChannelCode[fChannel]) + 
+	  fSignal = DecompAmbra(data + (1 << fChannelCode[0][fChannel]) + 
 	    fLowThreshold[fChannel]);
-	  fCoord1 = fAnode[fChannel];
-	  fCoord2 = fTimeBin[fChannel];
-	  fTimeBin[fChannel]++;
+	  fCoord1 = fAnode[0][fChannel];
+	  fCoord2 = fTimeBin[0][fChannel];
+	  fTimeBin[0][fChannel]++;
 	  return kTRUE;
 	}
       }

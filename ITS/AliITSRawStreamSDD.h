@@ -9,7 +9,6 @@
 ///
 /// This class provides access to ITS SDD digits in raw data 
 /// (default=simulated data).
-///
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliITSRawStream.h"
@@ -27,15 +26,16 @@ class AliITSRawStreamSDD: public AliITSRawStream {
     virtual Int_t    GetAnode() const {return fCoord1;}
     virtual Int_t    GetTime() const {return fCoord2;}
     virtual Int_t    GetChannel() const {return fChannel;}
-    virtual Int_t    ReadJitter() {return 0;}
-
-    virtual void     SetLowCarlosThreshold(Int_t th, Int_t i) {fLowThreshold[i]=th;}
-
+    virtual Int_t    ReadJitter() const {return 0;}
+    virtual Int_t    GetCarlosId() const {return fCarlosId;}
+    virtual void     SetLowCarlosThreshold(Int_t th, Int_t i) 
+      {fLowThreshold[i]=th;}
     static  Int_t    GetModuleNumber(UInt_t iDDL, UInt_t iModule)
                      {return fgkDDLModuleMap[iDDL][iModule];}
+    virtual void     Reset(); 
 
-    enum {kDDLsNumber = 12};      // number of DDLs in SDD
-    enum {kModulesPerDDL = 22};   // number of modules in each DDL 
+    enum {kDDLsNumber = 24};      // number of DDLs in SDD
+    enum {kModulesPerDDL = 12};   // number of modules in each DDL 
 
  
   protected:
@@ -47,22 +47,27 @@ class AliITSRawStreamSDD: public AliITSRawStream {
     static const UInt_t fgkCodeLength[8]; //code length
 
     UInt_t           fData;         // data read for file
-    Int_t            fSkip;         // number of skipped words
-    Int_t            fEventId;      // event ID from the header
-    Int_t            fCarlosId;     // carlos ID from the header
+    Int_t            fSkip[kDDLsNumber];// number of skipped words
+    Int_t            fCarlosId;     // carlos ID
+    Int_t            fEventId;      // event ID from header
     Int_t            fChannel;      // current channel
     Int_t            fJitter;          // jitter between L0 and pascal stop (x25ns)
-    ULong64_t        fChannelData[2];  // packed data for the 2 channels
-    UInt_t           fLastBit[2];      // last filled bit in fChannelData
-    UInt_t           fChannelCode[2];  // current channel code
-    Bool_t           fReadCode[2];     // next bits are code or data
-    UInt_t           fReadBits[2];     // number of bits to read
-    Int_t            fTimeBin[2];      // current time bin
-    Int_t            fAnode[2];        // current anode number
+    ULong64_t        fChannelData[kModulesPerDDL][2];// packed data for the 2 channels
+    UInt_t           fLastBit[kModulesPerDDL][2];    // last filled bit in fChannelData
+    UInt_t           fChannelCode[kModulesPerDDL][2];// current channel code
+    Bool_t           fReadCode[kModulesPerDDL][2];   // next bits are code or data
+    UInt_t           fReadBits[kModulesPerDDL][2];   // number of bits to read
     Int_t            fLowThreshold[2]; // low Carlos threshold
-    
+    Int_t            fNCarlos;         // number of Carlos 
+    Int_t            fNfifo0;          // fifo n. 0
+    Int_t            fNfifo1;          // fifo n. 1
+    Int_t            fNfifo2;          // fifo n. 2
+    Int_t            fNfifo3;          // fifo n. 3
+    Int_t            fTimeBin[kModulesPerDDL][2];  // current timebin [ncarlos][nchannels]
+    Int_t            fAnode[kModulesPerDDL][2]; // current anode [ncarlos][nchannels]
+    Int_t            fDDL;        //current ddl number
 
-    ClassDef(AliITSRawStreamSDD, 1) // class for reading ITS SDD raw digits
+    ClassDef(AliITSRawStreamSDD, 2) // class for reading ITS SDD raw digits
 };
 
 #endif

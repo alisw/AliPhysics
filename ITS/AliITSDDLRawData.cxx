@@ -114,17 +114,64 @@ void AliITSDDLRawData::GetDigitsSSD(TClonesArray *ITSdigits,Int_t mod,Int_t modR
 //
 
 void AliITSDDLRawData::GetDigitsSDD(TClonesArray *ITSdigits,Int_t mod,Int_t modR,Int_t ddl,UInt_t *buf){  
-  //This method packs the SSD digits in a proper 32 bits structure
+  //This method packs the SDD digits in a proper 32 bits structure
   Int_t ix;
   Int_t iz;
   Int_t is;
-  UInt_t word;
-  UInt_t baseWord;
+  UInt_t word=0;
+  UInt_t baseWord=0;
   Int_t ndigits = ITSdigits->GetEntries();
   AliITSdigit *digs;
   ofstream ftxt;
+  Int_t digarr[512][256];
+  for(Int_t i=0;i<512;i++){
+    for(Int_t j=0;j<256;j++){
+      digarr[i][j]=0;
+    }
+  }
+  //word to select the 12 carlos for the 12 modules
+  UInt_t carlosid=0;
+  if(mod==0) carlosid=805306368;
+  if(mod==1) carlosid=805306369;
+  if(mod==2) carlosid=805306370;
+  if(mod==3) carlosid=805306371;
+  if(mod==4) carlosid=805306372;
+  if(mod==5) carlosid=805306373;
+  if(mod==6) carlosid=805306374;
+  if(mod==7) carlosid=805306375;
+  if(mod==8) carlosid=805306376;
+  if(mod==9) carlosid=805306377;
+  if(mod==10) carlosid=805306378;
+  if(mod==11) carlosid=805306379;
+  
+  fIndex++;
+  buf[fIndex]=carlosid;
+  Int_t first=0;
+  Int_t last=0;
+  Int_t diff=0;
+  Int_t nbit=0;
+  UInt_t word2=0;
+  Bool_t flag = kFALSE;
+  baseWord=0;
+  Int_t bitinfo1[4] = {3,8,3,7}; //vector with info on bit for timebin info 
+  Int_t wordinfo1[4]= {0,0,0,0}; //vector with word info for timebin info 
+  Int_t bitinfo2[2] = {3,18};    //vector with info on bit for EOR (end of row) info
+  Int_t wordinfo2[3]= {1,65593}; //vector with word info for anode info
+
+  /* for time bin info: word          n bits   meaning
+                         0               3      next info is timebin 
+                         8               3      next word is 8 bit long
+                       tb value          8      timebin value
+		       n (2->7)          3      next info is n bit long
+		        signal           n      signal value
+
+     for anode info:     1               3      next 18 bits are for EOR 
+                                                increments the anode value
+
+                         EOR             18     error codes + other info
+  */
+             
   if(ndigits){
-    //cout<<"Mudule "<<mod<<" number of digits "<<ndigits<<endl;
     if (fVerbose==2)
       ftxt.open("SDDdigits.txt",ios::app);
     for (Int_t digit=0;digit<ndigits;digit++) {
@@ -132,37 +179,196 @@ void AliITSDDLRawData::GetDigitsSDD(TClonesArray *ITSdigits,Int_t mod,Int_t modR
       iz=digs->GetCoord1();  // Anode
       ix=digs->GetCoord2();  // Time
       is=digs->GetCompressedSignal();  // ADC Signal
-      if (fVerbose==2)
+      digarr[iz][ix]=is;
+        if (fVerbose==2)
 	ftxt<<"DDL:"<<ddl<<" MID:"<<modR<<" An:"<<iz<<" T:"<<ix<<" A:"<<is<<endl;
-      //      cout<<"Amplitude value:"<<is<<" Time Bucket:"<<ix<<" Anode:"<<iz<<endl;
       if (is>255){Error("GetDigitsSDD", "bits words is needed)!!!");}
-      baseWord=0;
-      /*
-      //10 bits words for amplitude value
-      word=is;
-      AliBitPacking::PackWord(word,baseWord,0,9);//ADC data
-      word=ix;
-      AliBitPacking::PackWord(word,baseWord,10,17);//Time bucket
-      word=iz;
-      AliBitPacking::PackWord(word,baseWord,18,26);//Anode Number
-      word=mod;
-      AliBitPacking::PackWord(word,baseWord,27,31);//Module number
-      */
+    }
       
-      //8bits words for amplitude value
-      word=is;
-      AliBitPacking::PackWord(word,baseWord,0,7);//ADC data
-      word=ix;
-      AliBitPacking::PackWord(word,baseWord,8,15);//Time bucket
-      word=iz;
-      AliBitPacking::PackWord(word,baseWord,16,24);//Anode Number
-      word=mod;
-      AliBitPacking::PackWord(word,baseWord,25,31);//Module number
-     
-      fIndex++;
-      buf[fIndex]=baseWord;
-    }//end for
-  }//end if
+    for(Int_t anode=0;anode<512;anode++){
+      if(flag){            
+	last = first+diff-1;
+	AliBitPacking::PackWord(word2,baseWord,first,last);
+	flag = kFALSE;
+	first = last+1;
+	diff=0;
+      }
+      
+      
+      if(anode == 256){
+	last = 0;
+	first = 0;
+	flag = kFALSE;
+	diff = 0;
+	word2=0;
+	
+      }
+      
+      for(Int_t tb=0;tb<256;tb++){
+	if(digarr[anode][tb]!=0){
+	  if(flag){      
+	    last = first+diff-1;
+	    AliBitPacking::PackWord(word2,baseWord,first,last);
+	    flag = kFALSE;
+	    first = last+1;
+	    diff=0;
+	  }
+	  wordinfo1[1] = tb;
+	  //non lossy compression as it is done in Carlos 
+	  //(data are already 10to8bit compressed by AMBRA
+
+	  /* if value < 8  value = value - (1 << 2) (word is 2 bit long) 
+             if value < 16 value = value - (1 << 3) (word is 3 bit long)
+             if value < 32 value = value - (1 << 4) (word is 4 bit long)
+	     if value < 64 value = value - (1 << 5) (word is 5 bit long)
+	     if value <128 value = value - (1 << 6) (word is 6 bit long)
+	     if value >=128value = value - (1 << 7) (word is 7 bit long)
+
+	  */
+	  if(digarr[anode][tb]<8){
+	    bitinfo1[3] = 2;
+	    wordinfo1[2] = 2;
+	    wordinfo1[3] = digarr[anode][tb]-(1 << bitinfo1[3]);
+	  }	  	  
+	  if(digarr[anode][tb]>=8 && digarr[anode][tb]<16){
+	    bitinfo1[3] = 3;
+	    wordinfo1[2] = 3;
+	    wordinfo1[3] = digarr[anode][tb]-(1 << bitinfo1[3]);
+	  }
+	  if(digarr[anode][tb]>=16 && digarr[anode][tb]<32){
+	    bitinfo1[3] = 4;
+	    wordinfo1[2] = 4;
+	    wordinfo1[3] = digarr[anode][tb]-(1 << bitinfo1[3]);
+	  }
+	  if(digarr[anode][tb]>=32 && digarr[anode][tb]<64){
+	    bitinfo1[3] = 5;
+	    wordinfo1[2] = 5;
+	    wordinfo1[3] = digarr[anode][tb]-(1 << bitinfo1[3]);
+	  }
+	  if(digarr[anode][tb]>=64 && digarr[anode][tb]<128){
+	    bitinfo1[3] = 6;
+	    wordinfo1[2] = 6;
+	    wordinfo1[3] = digarr[anode][tb]-(1 << bitinfo1[3]);
+	  }
+	  if(digarr[anode][tb]>=128){
+	    bitinfo1[3] = 7;
+	    wordinfo1[2] = 7;
+	    wordinfo1[3] = digarr[anode][tb]-(1 << bitinfo1[3]);
+	  }
+	  
+	  for(Int_t ie=0;ie<4;ie++){
+	    
+	    if(flag){      
+	      last = first+diff-1;
+	      AliBitPacking::PackWord(word2,baseWord,first,last);
+	      flag = kFALSE;
+	      first = last+1;
+	      diff=0;
+	    }
+	    last = first+bitinfo1[ie]-1;
+	    if(first < 30 && last < 30){	  	  
+	      AliBitPacking::PackWord(wordinfo1[ie],baseWord,first,last); 
+	      first = last+1;
+	    }
+	    else{
+	      if(first<=29){
+		UInt_t w = AliBitPacking::UnpackWord(wordinfo1[ie],0,29-first);
+		AliBitPacking::PackWord(w,baseWord,first,29);
+		Int_t lb = 29-first+1;
+		diff = bitinfo1[ie]-lb;
+		word2 = AliBitPacking::UnpackWord(wordinfo1[ie],lb,lb+diff-1);
+		flag = kTRUE;
+		if(anode<256) word = 2;//channel 0 of carlos
+		else word = 3; //channel 1 of carlos
+		AliBitPacking::PackWord(word,baseWord,30,31);
+		fIndex++;
+		buf[fIndex]=baseWord;
+		first=0;
+		last = 0;
+		baseWord=0;
+		word = 0;
+	      }
+	      else{
+		word2 = wordinfo1[ie];
+		diff = bitinfo1[ie];
+		flag = kTRUE;
+		if(anode<256) word = 2; //channel 0 of carlos
+		else word = 3; //channel 1 of carlos
+		AliBitPacking::PackWord(word,baseWord,30,31);
+		fIndex++;
+		buf[fIndex]=baseWord;
+		first=0;
+		last=0;
+		baseWord=0;
+		word = 0;
+	      }
+	    }
+	  }
+	  
+	}//END IF
+	
+      }//end loop on tb
+    
+      for(Int_t i=0;i<2;i++){
+	if(flag){      
+	  last = first+diff-1;
+	  AliBitPacking::PackWord(word2,baseWord,first,last);
+	  flag = kFALSE;
+	  first = last+1;
+	  diff=0;
+	}
+	
+	word = wordinfo2[i];
+	nbit = bitinfo2[i];
+	last = first+nbit-1;
+	if(first < 30 && last < 30){	  	  
+	  AliBitPacking::PackWord(word,baseWord,first,last); //3 bit code =1 -> next 18 bits for EOR
+	  first = last+1;
+	}
+	
+	else{
+	  if(first<=29){
+	    UInt_t w = AliBitPacking::UnpackWord(word,0,29-first);
+	    AliBitPacking::PackWord(w,baseWord,first,29);
+	    Int_t lb = 29-first+1;
+	    diff = nbit-lb;	   
+	    word2 = AliBitPacking::UnpackWord(word,lb,lb+diff-1);
+	    flag = kTRUE;
+	    if(anode<256) word = 2;
+	    else word = 3;
+	    AliBitPacking::PackWord(word,baseWord,30,31);
+	    fIndex++;
+	    buf[fIndex]=baseWord;
+	    first=0;
+	    last = 0;
+	    baseWord=0;
+	    if(anode==255){
+	      flag=kFALSE;
+	      word2=0;
+	    }
+	  }
+	  else{
+	    word2 = word;
+	    diff = nbit;
+	    flag = kTRUE;
+	    if(anode<256) word = 2;
+	    else word = 3;
+	    AliBitPacking::PackWord(word,baseWord,30,31);
+	    fIndex++;
+	    buf[fIndex]=baseWord;
+	    first=0;
+	    last=0;
+	    baseWord=0;
+	    if(anode==255){
+	      flag=kFALSE;
+	      word2=0;
+	    }
+	  }
+	}
+      }
+    } //end for
+    
+  }
   if(fVerbose==2)
     ftxt.close();
   return;
@@ -328,6 +534,7 @@ Int_t AliITSDDLRawData::RawDataSPD(TBranch* branch){
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 Int_t AliITSDDLRawData::RawDataSSD(TBranch* branch){
+
   //This method creates the Raw data files for SSD detectors
   const Int_t kSize=1536;//768*2 Number of stripe * number of sides(N and P)
   UInt_t buf[kSize];      
@@ -388,6 +595,7 @@ Int_t AliITSDDLRawData::RawDataSDD(TBranch* branch){
   char fileName[15];
   ofstream outfile;             // logical name of the output file 
   AliRawDataHeader header;
+  UInt_t skippedword = AliBitPacking::PackWord(2,skippedword,0,31);
 
   //loop over DDLs  
   for(Int_t i=0;i<AliDAQ::NumberOfDdls("ITSSDD");i++){
@@ -401,12 +609,18 @@ Int_t AliITSDDLRawData::RawDataSDD(TBranch* branch){
     UInt_t dataHeaderPosition=outfile.tellp();
     outfile.write((char*)(&header),sizeof(header));
 
+    //first 8 "dummy" words to be skipped
+    for(Int_t iw=0;iw<8;iw++){
+	outfile.write((char*)&skippedword,sizeof(skippedword));
+    }
+   
     //Loops over Modules of a particular DDL
     for (Int_t mod=0; mod<AliITSRawStreamSDD::kModulesPerDDL; mod++){
       Int_t moduleNumber = AliITSRawStreamSDD::GetModuleNumber(i, mod);
       if(moduleNumber!=-1){
 	digits->Clear();
 	branch->GetEvent(moduleNumber);
+
 	//For each Module, buf contains the array of data words in Binary format	  
 	//fIndex gives the number of 32 bits words in the buffer for each module
 	//	cout<<"MODULE NUMBER:"<<mapSDD[i][mod]<<endl;
@@ -422,6 +636,7 @@ Int_t AliITSDDLRawData::RawDataSDD(TBranch* branch){
     header.fSize=currentFilePosition-dataHeaderPosition;
     header.SetAttribute(0);  // valid data
     outfile.write((char*)(&header),sizeof(header));
+
     outfile.close();
   }//end for
 
