@@ -71,7 +71,7 @@ void DecodeRecoCocktail(char* dirname=".", char* outFileName = "MuonLight.root",
   
   TFile* esdFile = TFile::Open("AliESDs.root");
   if (!esdFile || !esdFile->IsOpen()) {
-    Error("DecodeRecoCocktailNew", "opening ESD file %s failed", esdFileName);
+    Error("DecodeRecoCocktailNew", "opening ESD file AliESDs.root failed");
     return;
   }
     
@@ -112,7 +112,7 @@ void DecodeRecoCocktail(char* dirname=".", char* outFileName = "MuonLight.root",
   AliITSVertexerPPZ *dovert = 0; 
   if (ITSloader) { 
     dovert = new AliITSVertexerPPZ("default",0,0);
-    dovert->SetDebug(0);
+    // dovert->SetDebug(0);
     dovert->SetDiffPhiMax(0.05);
     dovert->SetWindow(3.);
   }
@@ -121,7 +121,7 @@ void DecodeRecoCocktail(char* dirname=".", char* outFileName = "MuonLight.root",
   TLorentzVector v; 
   
   for(Int_t ievent = 0; ievent < nev; ievent++){ // loop over events 
-    AliHeader *header = runLoader->GetHeader();
+    runLoader->GetHeader();
     if (ITSloader) { 
       vert = dovert->FindVertexForCurrentEvent(ievent);
     }
