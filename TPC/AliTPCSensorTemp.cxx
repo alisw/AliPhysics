@@ -33,7 +33,7 @@
  */
 //
 
-#include <strings.h>
+
 #include "AliTPCSensorTemp.h"
 ClassImp(AliTPCSensorTemp)
 
@@ -79,7 +79,7 @@ TClonesArray * AliTPCSensorTemp::ReadList(const char *fname) {
 
 TClonesArray * AliTPCSensorTemp::ReadListInd(const char *fname, 
                                           Int_t& firstSensor,
-					  Int_t& lastSensor ){
+					  Int_t& lastSensor) {
   //
   // read values from ascii file
   //
@@ -182,9 +182,6 @@ TClonesArray * AliTPCSensorTemp::ReadListInd(const char *fname,
     if((temp->GetType()==1 || temp->GetType()==2) && (num==5)) {
       temp->SetZ(-250);
       }
-    Char_t chname[1000];
-    sprintf(chname,"tpc_temp:PT_%i.Temperature",echa);
-    temp->SetName(chname);
   }
   delete tree;  
   return array;
