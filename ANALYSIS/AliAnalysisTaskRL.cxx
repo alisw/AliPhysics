@@ -28,6 +28,7 @@
 
 
 #include <TTree.h>
+#include <TChain.h>
 #include <TFile.h>
 
 ClassImp(AliAnalysisTaskRL)
@@ -36,7 +37,7 @@ ClassImp(AliAnalysisTaskRL)
 AliAnalysisTaskRL::AliAnalysisTaskRL() :
   AliAnalysisTask(),
   fTree(0), fRunLoader(0),
-  fKinematicsLoaded(kFALSE), fHeaderLoaded(kFALSE) {
+  fKinematicsLoaded(kFALSE), fHeaderLoaded(kFALSE), fTreeNumber(-1) {
   //
   // Constructor. Initialization of pointers
   //
@@ -75,11 +76,20 @@ AliRunLoader *AliAnalysisTaskRL::GetRunLoader() {
   // "galice" in the file path of the ESD file. 
 
   fTree = (TTree *)AliAnalysisTask::GetInputData(0);
+  Int_t iTree = ((TChain *)AliAnalysisTask::GetInputData(0))->GetTreeNumber();
+  if (iTree != fTreeNumber) {
+      DeleteRunLoader();
+      fTreeNumber = iTree;
+  }
+  
+      
   if (!fRunLoader) {
     if (!fTree->GetCurrentFile())
       return 0;
     
     TString fileName(fTree->GetCurrentFile()->GetName());
+    printf("Current file %s \n", fileName.Data());
+    
     fileName.ReplaceAll("AliESDs", "galice");
     
     // temporary workaround for PROOF bug #18505
