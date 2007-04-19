@@ -15,6 +15,9 @@
 
 /* 
 $Log$
+Revision 1.21  2007/04/18 17:28:12  arcelli
+Set the ToT bin width to the one actually used...
+
 Revision 1.20  2007/03/09 09:57:23  arcelli
  Remove a forgotten include of Riostrem
 
@@ -777,7 +780,7 @@ void AliTOFClusterFinder::CalibrateRecPoint()
 
     // Get Rough channel online equalization 
     Float_t roughDelay=calChannel->GetDelay();
-
+    AliDebug(2,Form(" channel delay = %f", roughDelay));
     // Get Refined channel offline calibration parameters
     Float_t par[6];
     for (Int_t j = 0; j<6; j++){
@@ -785,9 +788,12 @@ void AliTOFClusterFinder::CalibrateRecPoint()
     }
     tToT = fTofClusters[ii]->GetToT()*AliTOFGeometry::ToTBinWidth()*1.E-3;
     Float_t timeCorr=par[0]+par[1]*tToT+par[2]*tToT*tToT+par[3]*tToT*tToT*tToT+par[4]*tToT*tToT*tToT*tToT+par[5]*tToT*tToT*tToT*tToT*tToT+roughDelay;
+    AliDebug(2,Form(" time correction (ns) = %f", timeCorr));
+    AliDebug(2,Form(" channel time, uncorr (ns)= %f",fTofClusters[ii]->GetTDC()*AliTOFGeometry::TdcBinWidth()*1.E-3 ));
     tdcCorr=(fTofClusters[ii]->GetTDC()*AliTOFGeometry::TdcBinWidth()+32)*1.E-3-timeCorr;
     tdcCorr=(tdcCorr*1E3-32)/AliTOFGeometry::TdcBinWidth();
     fTofClusters[ii]->SetTDC(tdcCorr);
+    AliDebug(2,Form(" channel time, corr (ns)= %f",fTofClusters[ii]->GetTDC()*AliTOFGeometry::TdcBinWidth()*1.E-3 ));
 
   } // loop on clusters
 
