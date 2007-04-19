@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+
 #include "AliTPCPreprocessor.h"
 
 #include "AliCDBMetaData.h"
@@ -21,6 +22,9 @@
 #include "AliTPCSensorTempArray.h"
 
 #include <TTimeStamp.h>
+
+const char kFname[]="$ALICE_ROOT/TPC";
+const char kAmandaStringTemp[] = "tpc_PT_%d.Temperature";
 
 //
 // This class is the SHUTTLE preprocessor for the TPC detector.
@@ -37,6 +41,18 @@ AliTPCPreprocessor::AliTPCPreprocessor(const char* detector, AliShuttleInterface
 {
   // constructor
 }
+//______________________________________________________________________________________________
+// AliTPCPreprocessor::AliTPCPreprocessor(const AliTPCPreprocessor& org) :
+//   AliPreprocessor(org),
+//   fTemp(0)
+// {
+//   // copy constructor not implemented
+//   //   -- missing underlying copy constructor in AliPreprocessor 
+// 
+//   Fatal("AliTPCPreprocessor", "copy constructor not implemented");
+//   
+// //  fTemp = new AliTPCSensorTempArray(*(org.fTemp)); 
+// }
 
 //______________________________________________________________________________________________
 AliTPCPreprocessor::~AliTPCPreprocessor()
@@ -45,6 +61,13 @@ AliTPCPreprocessor::~AliTPCPreprocessor()
   
   delete fTemp;
 }
+//______________________________________________________________________________________________
+AliTPCPreprocessor& AliTPCPreprocessor::operator = (const AliTPCPreprocessor& )
+{
+  Fatal("operator =", "assignment operator not implemented");
+  return *this;
+}
+
 
 //______________________________________________________________________________________________
 void AliTPCPreprocessor::Initialize(Int_t run, UInt_t startTime,
@@ -58,7 +81,8 @@ void AliTPCPreprocessor::Initialize(Int_t run, UInt_t startTime,
 		TTimeStamp(startTime).AsString(),
 		TTimeStamp(endTime).AsString()));
 
-        fTemp = new AliTPCSensorTempArray(fStartTime, fEndTime);
+        fTemp = new AliTPCSensorTempArray(fStartTime, fEndTime, kFname);
+        fTemp->SetAmandaString(kAmandaStringTemp);
 }
 
 //______________________________________________________________________________________________
@@ -71,7 +95,7 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
   // Amanda servers provide information directly through dcsAliasMap
 
   // Temperature sensors are processed by AliTPCCalTemp
-  
+
   UInt_t tempResult = MapTemperature(dcsAliasMap);
   UInt_t result=tempResult;
   
@@ -92,6 +116,7 @@ UInt_t AliTPCPreprocessor::MapTemperature(TMap* dcsAliasMap)
 
    // extract DCS temperature maps. Perform fits to save space
 
+  UInt_t result=0;
   TMap *map = fTemp->ExtractDCS(dcsAliasMap);
   if (map) {
     fTemp->MakeSplineFit(map);
@@ -99,18 +124,24 @@ UInt_t AliTPCPreprocessor::MapTemperature(TMap* dcsAliasMap)
   } else {
     AliError(Form("No temperature map extracted.\n"));
     Log("AliTPCPreprocsessor: no temperature map extracted. \n");
+    result=9;
   }
   delete map;
   // Now store the final CDB file
   
-  AliCDBMetaData metaData;
+  if ( result == 0 ) { 
+        AliCDBMetaData metaData;
 	metaData.SetBeamPeriod(0);
 	metaData.SetResponsible("Haavard Helstrup");
 	metaData.SetComment("Preprocessor AliTPC data base entries.");
 
-	UInt_t result = Store("TPC/Calib/Temperature", "Data", fTemp, &metaData, 0, 0);
-	delete fTemp;
-	fTemp = 0;
+	result = Store("Calib", "Temperature", fTemp, &metaData, 0, 0);
+        if ( result == 1 ) {                  
+          result = 0;
+	} else {
+	  result = 1;
+	}                      // revert to new return code conventions
+   }
 
    return result;
 }
