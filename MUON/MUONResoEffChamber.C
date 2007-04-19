@@ -1,3 +1,28 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
+//Macro to calculate the resolution and the efficiency of chamber(s) chosen in function
+//of Phi (angle on the chamber between the X axis and the straight line created by the
+//center of the chamber and the impact of particles on this chamber, the azimuthal angle)
+//and Theta (the polar angle), or in function of ThetaI (angle of incidence of particles
+//on the chamber)
+
+
+
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
 // ROOT includes
@@ -48,14 +73,6 @@
 #include "AliMpIntPair.h"
 #include "AliMpDEManager.h"
 #endif
-
-
-//Macro to calculate the resolution and the efficiency of chamber(s) chosen in function
-//of Phi (angle on the chamber between the X axis and the straight line created by the
-//center of the chamber and the impact of particles on this chamber, the azimuthal angle)
-//and Theta (the polar angle), or in function of ThetaI (angle of incidence of particles
-//on the chamber)
-
 
 
 
@@ -310,7 +327,7 @@ void efficiencyThetaPhi( Int_t event2Check=0, char * filename="galice.root" )
 		  //The calculation of theta, theta is in fact 180 - Theta(The polar angle):
 		  theta = 180. * kInvPi * (TMath::ATan2( sqrt(aveX*aveX+aveY*aveY), -hitZ ));
 
-		  if ( phi < 0.) phi = 360 - abs(phi);
+		  if ( phi < 0.) phi = 360 - fabs(phi);
 		  iPhi = int( phi/72. );
 		  iTheta = int( theta );
 		  if( theta > 10 ) iTheta = 9;
@@ -343,7 +360,7 @@ void efficiencyThetaPhi( Int_t event2Check=0, char * filename="galice.root" )
 		  //The calculation of theta, theta is in fact 180 - Theta(The polar angle):
 		  theta = 180. * kInvPi * (TMath::ATan2( sqrt(exXpos*exXpos+exYpos*exYpos), - chamberZpos ));
 
-		  if ( phi < 0.) phi = 360 - abs(phi);
+		  if ( phi < 0.) phi = 360. - fabs(phi);
 		  iPhi = int( phi/72. );
 		  iTheta = int( theta );
 		  if( theta > 10 ) iTheta = 9;
@@ -942,7 +959,7 @@ void resolutionPhi( Int_t event2Check=0, char * filename="galice.root" )
 	      //The calculation of phi:	
 	      phi = 180. * kInvPi * (TMath::ATan2( aveY, aveX ));					      
 
-	      if ( phi < 0.) phi = 360 - abs(phi);
+	      if ( phi < 0.) phi = 360. - fabs(phi);
 	      iPhi = int( phi/72. );
 						      
 	      deltaX = traX - hitX;
