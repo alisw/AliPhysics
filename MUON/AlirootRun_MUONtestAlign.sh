@@ -20,7 +20,9 @@ echo "Generating misalignment ..."
 
 aliroot -b >& testMisalign.out << EOF
 gAlice->Init("$ALICE_ROOT/MUON/Config.C");
-.x $ALICE_ROOT/MUON/MUONCheckMisAligner.C(0., 0.03, 0., 0.03, 0., 0.03, "FullMisAlignCDB");
+gGeoManager->Export("geometry.root");
+.L $ALICE_ROOT/MUON/MUONCheckMisAligner.C+
+MUONCheckMisAligner(0., 0.03, 0., 0.03, 0., 0.03, "FullMisAlignCDB");
 .q
 EOF
 
@@ -60,7 +62,8 @@ EOF
 echo "Running alignment ..."
 
 aliroot -b >& testAlign.out << EOF
-.x $ALICE_ROOT/MUON/MUONAlignment.C
+.L $ALICE_ROOT/MUON/MUONAlignment.C+
+MUONAlignment();
 .q
 EOF
 
