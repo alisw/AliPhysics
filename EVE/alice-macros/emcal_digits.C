@@ -41,10 +41,7 @@ void emcal_digits()
     q->SetDefWidth (geom->GetPhiTileSize());
     q->SetDefHeight(geom->GetEtaTileSize());
 
-    // node->GetDaughter(sm)->GetMatrix()->Print();
-
     q->RefHMTrans().SetFrom(*node->GetDaughter(sm)->GetMatrix());
-    q->RefHMTrans().TransposeRotationPart(); // Spook?
 
     q->SetFrame(sm < 10 ? frame_big : frame_sml);
     q->SetPalette(pal);
