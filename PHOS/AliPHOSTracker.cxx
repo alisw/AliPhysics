@@ -32,7 +32,7 @@ Int_t AliPHOSTracker::PropagateBack(AliESD *esd) {
   AliPHOSPIDv1 pid(headerFile, branchName);
   pid.SetESD(esd) ; 
 
-  SetDebug() ;
+  //PH  SetDebug() ;
 
   // do current event; the loop over events is done by AliReconstruction::Run()
   tsm.SetEventRange(eventNumber, eventNumber) ; 
