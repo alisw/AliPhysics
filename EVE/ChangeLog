@@ -1,3 +1,11 @@
+2007-04-19  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* alice-macros/emcal_digits.C:
+	Do not transpose rotation part of super-module matrix.
+
+	* alice-macros/geom_phos.C:
+	Add common holder for all modules.
+
 2007-04-17  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* alice-macros/emcal_digits.C:
