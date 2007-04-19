@@ -6,6 +6,9 @@ void geom_phos()
 
   gGeoManager = gReve->GetGeometry("$REVESYS/alice-data/alice_fullgeo.root");
 
+  Reve::RenderElementList* list = new Reve::RenderElementList("PHOS");
+  gReve->AddGlobalRenderElement(list);
+
   for(Int_t i=1; i<=5; ++i) {
     //PH The line below is replaced waiting for a fix in Root
     //PH which permits to use variable siza arguments in CINT
@@ -17,7 +20,7 @@ void geom_phos()
 
     Reve::GeoTopNodeRnrEl* re = new Reve::GeoTopNodeRnrEl(gGeoManager, node);
     re->UseNodeTrans();
-    gReve->AddGlobalRenderElement(re);
+    gReve->AddGlobalRenderElement(list, re);
   }
 
   gReve->Redraw3D();
