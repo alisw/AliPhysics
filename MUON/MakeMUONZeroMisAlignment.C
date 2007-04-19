@@ -19,6 +19,22 @@
 //
 // Author: I. Hrivnacova, IPN Orsay
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
+#include "AliMUONGeometryTransformer.h"
+
+#include "AliCDBManager.h"
+#include "AliCDBStorage.h"
+#include "AliCDBId.h"
+
+#include <TGeoManager.h>
+#include <TClonesArray.h>
+#include <TString.h>
+#include <TFile.h>
+#include <Riostream.h>
+
+#endif
+
 void MakeMUONZeroMisAlignment()
 {
   // Check first if geometry is loaded,
@@ -32,15 +48,16 @@ void MakeMUONZeroMisAlignment()
   transformer.ReadGeometryData("volpath.dat", gGeoManager);
   TClonesArray* array = transformer.CreateZeroAlignmentData();;
 
-  if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ) {
+  if ( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ) {
     // save in file
     cout << "Generating zero misalignment data in a file ..." << endl;
 
     // Create a file to store the alignment data
     TFile f("MUONzeroMisalignment.root", "RECREATE");
-    if(!f) {
+    if( !f.IsOpen() ) {
       cerr<<"cannot open file for output\n";
     }
+    
     f.cd();
     f.WriteObject(array,"MUONAlignObjs ","kSingleKey");
     f.Close();

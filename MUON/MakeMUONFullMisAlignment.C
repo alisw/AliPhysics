@@ -20,6 +20,24 @@
 //
 // Author: I. Hrivnacova, IPN Orsay
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
+#include "AliMUONGeometryTransformer.h"
+#include "AliMUONGeometryMisAligner.h"
+
+#include "AliCDBManager.h"
+#include "AliCDBStorage.h"
+#include "AliCDBId.h"
+
+#include <TGeoManager.h>
+#include <TClonesArray.h>
+#include <TString.h>
+#include <TFile.h>
+#include <Riostream.h>
+
+#endif
+
+
 void MakeMUONFullMisAlignment()
 {
   // Check first if geometry is loaded,
@@ -35,19 +53,20 @@ void MakeMUONFullMisAlignment()
   AliMUONGeometryMisAligner misAligner(0.0, 0.03, 0.0, 0.03, 0.0, 0.03);
   AliMUONGeometryTransformer* newTransform 
     = misAligner.MisAlign(&transformer, true);
-  TClonesArray* array = newTransform->GetMisAlignmentData();
+  const TClonesArray* array = newTransform->GetMisAlignmentData();
   
-  if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ) {
+  if ( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ) {
     cout << "Generating full misalignment data in a file" << endl;
 
     // Create a File to store the alignment data
     TFile f("MUONfullMisalignment.root","RECREATE");
-    if(!f) {cerr<<"cannot open file for output\n";}
+    if ( !f.IsOpen() ) {
+      cerr << "cannot open file for output" << endl;
+    }
     
     f.cd();
     f.WriteObject(array,"MUONAlignObjs ","kSingleKey");
     f.Close();
-    array->Delete();
   }
   else {
     cout << "Generating full misalignment data in CDB" << endl;
@@ -62,10 +81,7 @@ void MakeMUONFullMisAlignment()
     cdbData->SetComment("MUON alignment objects with full misalignment");
     cdbData->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
     AliCDBId id("MUON/Align/Data", 0, 9999999); 
-    storage->Put(array, id, cdbData);
-    
-    delete newTransform;
+    storage->Put(const_cast<TClonesArray*>(array), id, cdbData);
   }   
-  
-  
+  delete newTransform;
 }
