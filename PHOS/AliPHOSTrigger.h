@@ -43,7 +43,7 @@ class AliPHOSTrigger : public AliTriggerDetector {
   
   AliPHOSTrigger() ; //  ctor
   AliPHOSTrigger(const AliPHOSTrigger & trig) ; // cpy ctor
-  virtual ~AliPHOSTrigger() {}; //virtual dtor
+  virtual ~AliPHOSTrigger(){}; //virtual dtor
 
 
   virtual void    CreateInputs(); //Define trigger inputs for Central Trigger Processor
@@ -122,9 +122,9 @@ class AliPHOSTrigger : public AliTriggerDetector {
 
   Bool_t IsPatchIsolated(Int_t iPatchType, const TClonesArray * ampmods, const Int_t imod, const Int_t mtru, const Float_t maxamp, const Int_t maxphi, const Int_t maxeta) ;
 
-  void MakeSlidingCell(const TClonesArray * amptrus, const TClonesArray * timeRtrus, Int_t mod, TMatrixD *ampmax2, TMatrixD *ampmaxn) ;
+  void MakeSlidingCell(const TClonesArray * amptrus, const TClonesArray * timeRtrus, Int_t mod, TMatrixD &ampmax2, TMatrixD &ampmaxn) ;
 
-  void SetTriggers(const TClonesArray * amptrus, Int_t iMod, const TMatrixD *ampmax2,const TMatrixD *ampmaxn) ;
+  void SetTriggers(const TClonesArray * amptrus, Int_t iMod, const TMatrixD &ampmax2,const TMatrixD &ampmaxn) ;
 
  private: 
 

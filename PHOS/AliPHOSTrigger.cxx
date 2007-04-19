@@ -164,16 +164,16 @@ void AliPHOSTrigger::FillTRU(const TClonesArray * digits, const AliPHOSGeometry 
 
   //List of TRU matrices initialized to 0.
   for(Int_t k = 0; k < fNTRU*nModules ; k++){
-    TMatrixD  * amptrus   = new TMatrixD(fNCrystalsPhi,fNCrystalsZ) ;
-    TMatrixD  * timeRtrus = new TMatrixD(fNCrystalsPhi,fNCrystalsZ) ;
+    TMatrixD   amptrus(fNCrystalsPhi,fNCrystalsZ) ;
+    TMatrixD   timeRtrus(fNCrystalsPhi,fNCrystalsZ) ;
     for(Int_t i = 0; i < fNCrystalsPhi; i++){
       for(Int_t j = 0; j < fNCrystalsZ; j++){
-	(*amptrus)(i,j)   = 0.0;
-	(*timeRtrus)(i,j) = 0.0;
+	amptrus(i,j)   = 0.0;
+	timeRtrus(i,j) = 0.0;
       }
     }
-    new((*ampmatrixtru)[k])   TMatrixD(*amptrus) ;
-    new((*timeRmatrixtru)[k]) TMatrixD(*timeRtrus) ; 
+    new((*ampmatrixtru)[k])   TMatrixD(amptrus) ;
+    new((*timeRmatrixtru)[k]) TMatrixD(timeRtrus) ; 
   }
 
   //List of Modules matrices initialized to 0.
@@ -181,13 +181,13 @@ void AliPHOSTrigger::FillTRU(const TClonesArray * digits, const AliPHOSGeometry 
   Int_t nmodz = geom->GetNZ();
   
   for(Int_t k = 0; k < nModules ; k++){
-    TMatrixD  * ampmods   = new TMatrixD(nmodphi,nmodz) ;
+    TMatrixD  ampmods(nmodphi,nmodz) ;
     for(Int_t i = 0; i < nmodphi; i++){
       for(Int_t j = 0; j < nmodz; j++){
-	(*ampmods)(i,j)   = 0.0;
+	ampmods(i,j)   = 0.0;
       }
     }
-    new((*ampmatrixmod)[k])   TMatrixD(*ampmods) ;
+    new((*ampmatrixmod)[k])   TMatrixD(ampmods) ;
   }
   
   AliPHOSDigit * dig ;
@@ -343,7 +343,7 @@ Bool_t AliPHOSTrigger::IsPatchIsolated(Int_t iPatchType, const TClonesArray * am
 
 
 //____________________________________________________________________________
-void AliPHOSTrigger::MakeSlidingCell(const TClonesArray * amptrus, const TClonesArray * timeRtrus, const Int_t imod, TMatrixD *ampmax2, TMatrixD *ampmaxn){
+void AliPHOSTrigger::MakeSlidingCell(const TClonesArray * amptrus, const TClonesArray * timeRtrus, const Int_t imod, TMatrixD &ampmax2, TMatrixD &ampmaxn){
   //Sums energy of all possible 2x2 (L0) and nxn (L1) crystals per each TRU. 
   //Fast signal in the experiment is given by 2x2 crystals, 
   //for this reason we loop inside the TRU crystals by 2. 
@@ -353,17 +353,17 @@ void AliPHOSTrigger::MakeSlidingCell(const TClonesArray * amptrus, const TClones
   Float_t ampn = 0 ; 
   for(Int_t i = 0; i < 4; i++){
     for(Int_t j = 0; j < fNTRU; j++){
-      (*ampmax2)(i,j) = -1;
-      (*ampmaxn)(i,j) = -1;
+      ampmax2(i,j) = -1;
+      ampmaxn(i,j) = -1;
     }
   }
 
   //Create matrix that will contain 2x2 amplitude sums
   //used to calculate the nxn sums
-  TMatrixD  * tru2x2 = new TMatrixD(fNCrystalsPhi/2,fNCrystalsZ/2) ;
+  TMatrixD  tru2x2(fNCrystalsPhi/2,fNCrystalsZ/2) ;
   for(Int_t i = 0; i < fNCrystalsPhi/2; i++)
     for(Int_t j = 0; j < fNCrystalsZ/2; j++)
-      (*tru2x2)(i,j) = -1.;
+      tru2x2(i,j) = -1.;
     
   //Loop over all TRUS in a module
   for(Int_t itru = 0 + imod  * fNTRU ; itru < (imod+1)*fNTRU ; itru++){
@@ -377,25 +377,25 @@ void AliPHOSTrigger::MakeSlidingCell(const TClonesArray * amptrus, const TClones
 	amp2 = (*amptru)(irow,icol)+(*amptru)(irow+1,icol)+
 	  (*amptru)(irow,icol+1)+(*amptru)(irow+1,icol+1);
 	//Fill new matrix with added 2x2 crystals for use in nxn sums
-	(*tru2x2)(irow/2,icol/2) = amp2 ;
+	tru2x2(irow/2,icol/2) = amp2 ;
 	//Select 2x2 maximum sums to select L0 
-	if(amp2 > (*ampmax2)(0,mtru)){
-	  (*ampmax2)(0,mtru) = amp2 ; 
-	  (*ampmax2)(1,mtru) = irow;
-	  (*ampmax2)(2,mtru) = icol;
+	if(amp2 > ampmax2(0,mtru)){
+	  ampmax2(0,mtru) = amp2 ; 
+	  ampmax2(1,mtru) = irow;
+	  ampmax2(2,mtru) = icol;
 	}
       }
     }
 
     //Find most recent time in the selected 2x2 cell
-    (*ampmax2)(3,mtru) = 1 ;
-    Int_t row2 =  static_cast <Int_t> ((*ampmax2)(1,mtru));
-    Int_t col2 =  static_cast <Int_t> ((*ampmax2)(2,mtru));
+    ampmax2(3,mtru) = 1 ;
+    Int_t row2 =  static_cast <Int_t> (ampmax2(1,mtru));
+    Int_t col2 =  static_cast <Int_t> (ampmax2(2,mtru));
     for(Int_t i = 0; i<2; i++){
       for(Int_t j = 0; j<2; j++){
 	if((*amptru)(row2+i,col2+j) > 0 &&  (*timeRtru)(row2+i,col2+j)> 0){	  
-	  if((*timeRtru)(row2+i,col2+j) <  (*ampmax2)(3,mtru)  )
-	    (*ampmax2)(3,mtru) =  (*timeRtru)(row2+i,col2+j);
+	  if((*timeRtru)(row2+i,col2+j) <  ampmax2(3,mtru)  )
+	    ampmax2(3,mtru) =  (*timeRtru)(row2+i,col2+j);
 	}
       }
     }
@@ -408,37 +408,37 @@ void AliPHOSTrigger::MakeSlidingCell(const TClonesArray * amptrus, const TClones
 	  if( (irow+fPatchSize) < fNCrystalsPhi/2 && (icol+fPatchSize) < fNCrystalsZ/2){//Avoid exit the TRU
 	    for(Int_t i = 0 ; i <= fPatchSize ; i++)
 	      for(Int_t j = 0 ; j <= fPatchSize ; j++)
-		ampn += (*tru2x2)(irow+i,icol+j);
+		ampn += tru2x2(irow+i,icol+j);
 	    //Select nxn maximum sums to select L1 
-	    if(ampn > (*ampmaxn)(0,mtru)){
-	      (*ampmaxn)(0,mtru) = ampn ; 
-	      (*ampmaxn)(1,mtru) = irow*2;
-	      (*ampmaxn)(2,mtru) = icol*2;
+	    if(ampn > ampmaxn(0,mtru)){
+	      ampmaxn(0,mtru) = ampn ; 
+	      ampmaxn(1,mtru) = irow*2;
+	      ampmaxn(2,mtru) = icol*2;
 	    }
 	  }
 	}
       }
       
       //Find most recent time in selected nxn cell
-      (*ampmaxn)(3,mtru) = 1 ;
-      Int_t rown =  static_cast <Int_t> ((*ampmaxn)(1,mtru));
-      Int_t coln =  static_cast <Int_t> ((*ampmaxn)(2,mtru));
+      ampmaxn(3,mtru) = 1 ;
+      Int_t rown =  static_cast <Int_t> (ampmaxn(1,mtru));
+      Int_t coln =  static_cast <Int_t> (ampmaxn(2,mtru));
       for(Int_t i = 0; i<4*fPatchSize; i++){
 	for(Int_t j = 0; j<4*fPatchSize; j++){
 	  if( (rown+i) < fNCrystalsPhi && (coln+j) < fNCrystalsZ/2){//Avoid exit the TRU
 	    if((*amptru)(rown+i,coln+j) > 0 &&  (*timeRtru)(rown+i,coln+j)> 0){
-	      if((*timeRtru)(rown+i,coln+j) <  (*ampmaxn)(3,mtru)  )
-		(*ampmaxn)(3,mtru) =  (*timeRtru)(rown+i,coln+j);
+	      if((*timeRtru)(rown+i,coln+j) <  ampmaxn(3,mtru)  )
+		ampmaxn(3,mtru) =  (*timeRtru)(rown+i,coln+j);
 	    }
 	  }
 	}
       }
     }
     else {  
-	(*ampmaxn)(0,mtru) =  (*ampmax2)(0,mtru); 
-	(*ampmaxn)(1,mtru) =  (*ampmax2)(1,mtru);
-	(*ampmaxn)(2,mtru) =  (*ampmax2)(2,mtru);
-	(*ampmaxn)(3,mtru) =  (*ampmax2)(3,mtru);
+	ampmaxn(0,mtru) =  ampmax2(0,mtru); 
+	ampmaxn(1,mtru) =  ampmax2(1,mtru);
+	ampmaxn(2,mtru) =  ampmax2(2,mtru);
+	ampmaxn(3,mtru) =  ampmax2(3,mtru);
       }
   }
 }
@@ -498,7 +498,7 @@ void AliPHOSTrigger::Print(const Option_t * opt) const
 }
 
 //____________________________________________________________________________
-void AliPHOSTrigger::SetTriggers(const TClonesArray * ampmatrix, const Int_t iMod, const TMatrixD * ampmax2, const TMatrixD * ampmaxn)  
+void AliPHOSTrigger::SetTriggers(const TClonesArray * ampmatrix, const Int_t iMod, const TMatrixD & ampmax2, const TMatrixD & ampmaxn)  
 {
   //Checks the 2x2 and nxn maximum amplitude per each TRU and compares 
   //with the different L0 and L1 triggers thresholds. It finds if maximum amplitudes are isolated.
@@ -513,18 +513,18 @@ void AliPHOSTrigger::SetTriggers(const TClonesArray * ampmatrix, const Int_t iMo
   //Find maximum summed amplitude of all the TRU 
   //in a Module
   for(Int_t i = 0 ; i < fNTRU ; i++){
-    if(max2[0] < (*ampmax2)(0,i) ){
-      max2[0] =  (*ampmax2)(0,i) ; // 2x2 summed max amplitude
-      max2[1] =  (*ampmax2)(1,i) ; // corresponding phi position in TRU
-      max2[2] =  (*ampmax2)(2,i) ; // corresponding eta position in TRU
-      max2[3] =  (*ampmax2)(3,i) ; // corresponding most recent time
+    if(max2[0] < ampmax2(0,i) ){
+      max2[0] =  ampmax2(0,i) ; // 2x2 summed max amplitude
+      max2[1] =  ampmax2(1,i) ; // corresponding phi position in TRU
+      max2[2] =  ampmax2(2,i) ; // corresponding eta position in TRU
+      max2[3] =  ampmax2(3,i) ; // corresponding most recent time
       mtru2   = i ; // TRU number in module
     }
-    if(maxn[0] < (*ampmaxn)(0,i) ){
-      maxn[0] =  (*ampmaxn)(0,i) ; // nxn summed max amplitude
-      maxn[1] =  (*ampmaxn)(1,i) ; // corresponding phi position in TRU
-      maxn[2] =  (*ampmaxn)(2,i) ; // corresponding eta position in TRU
-      maxn[3] =  (*ampmaxn)(3,i) ; // corresponding most recent time
+    if(maxn[0] < ampmaxn(0,i) ){
+      maxn[0] =  ampmaxn(0,i) ; // nxn summed max amplitude
+      maxn[1] =  ampmaxn(1,i) ; // corresponding phi position in TRU
+      maxn[2] =  ampmaxn(2,i) ; // corresponding eta position in TRU
+      maxn[3] =  ampmaxn(3,i) ; // corresponding most recent time
       mtrun   = i ; // TRU number in module
     }
   }
@@ -659,8 +659,8 @@ void AliPHOSTrigger::Trigger()
   //Do Crystal Sliding and select Trigger
   //Initialize varible that will contain maximum amplitudes and 
   //its corresponding cell position in eta and phi, and time.
-  TMatrixD  * ampmax2 = new TMatrixD(4,fNTRU) ;
-  TMatrixD  * ampmaxn = new TMatrixD(4,fNTRU) ;
+  TMatrixD   ampmax2(4,fNTRU) ;
+  TMatrixD   ampmaxn(4,fNTRU) ;
 
   for(Int_t imod = 0 ; imod < nModules ; imod++) {
 
