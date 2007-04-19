@@ -23,7 +23,7 @@
 
 #include <TTimeStamp.h>
 
-const char kFname[]="$ALICE_ROOT/TPC";
+const char kFname[]="$ALICE_ROOT/TPC/Cal";
 const char kAmandaStringTemp[] = "tpc_PT_%d.Temperature";
 
 //
