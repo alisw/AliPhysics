@@ -63,5 +63,6 @@
 #pragma link C++ class AliPHOSGetterLight+;
 #pragma link C++ class AliPHOSTracker+;
 #pragma link C++ class AliPHOSCalibData+;
+#pragma link C++ class AliPHOSSurvey+;
 
 #endif

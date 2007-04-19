@@ -1,18 +1,22 @@
 void MakePHOSFullMisAlignment(){
   // Create TClonesArray of full misalignment objects for PHOS
   //
-  TClonesArray *array = new TClonesArray("AliAlignObjAngles",11);
+  const AliPHOSGeometry *phosGeom = AliPHOSGeometry::GetInstance("IHEP", "IHEP");
+  if (!phosGeom) {
+    Error("MakePHOSFullMisAlignment", "Cannot obtain AliPHOSGeometry singleton\n");
+    return;
+  }
+
+  AliPHOSEMCAGeometry *emca = phosGeom->GetEMCAGeometry();
+  TClonesArray *array = new TClonesArray("AliAlignObjAngles", 16 + phosGeom->GetNModules() * 
+                                         emca->GetNStripX() * emca->GetNStripZ());
   TClonesArray &alobj = *array;
    
-  AliAlignObjAngles a;
-
   Double_t dpsi=0., dtheta=0., dphi=0.;
   Double_t displacement = 10;
-
   Int_t iIndex=0; //let all modules have index=0 in a layer with no LUT
   AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer;
   UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,iIndex);
-
   Int_t i=0 ;
 
   // Alignment for 5 PHOS modules
@@ -56,9 +60,12 @@ void MakePHOSFullMisAlignment(){
   new(alobj[i++]) AliAlignObjAngles("PHOS/Wheel3",
 	  volid, 0., 0., +displacement, dpsi, dtheta, dphi, kTRUE);
 
+  AliPHOSSurvey geodesicData("phos_mod3_survey.txt");
+  geodesicData.CreateAliAlignObjAngles(alobj);
+
   // *************************    2nd step    ***************
 
-  if(!gSystem->Getenv("$TOCDB")){
+  if(!gSystem->Getenv("TOCDB")){
     // save on file
     TFile f("PHOSfullMisalignment.root","RECREATE");
     if(!f) cerr<<"cannot open file for output\n";
@@ -67,13 +74,13 @@ void MakePHOSFullMisAlignment(){
     f.Close();
   }else{
     // save in CDB storage
-    const char* Storage = gSystem->Getenv("$STORAGE");
+    const char* Storage = gSystem->Getenv("STORAGE");
     AliCDBManager *CDB = AliCDBManager::Instance();
     AliCDBStorage* storage = CDB->GetStorage(Storage);
     AliCDBMetaData *md= new AliCDBMetaData();
     md->SetResponsible("Yuri Kharlov");
     md->SetComment("Alignment objects for fully misaligned geometry");
-    md->SetAliRootVersion(gSystem->Getenv("$ARVERSION"));
+    md->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
     AliCDBId id("PHOS/Align/Data",0,9999999);
     storage->Put(array,id, md);
   }
