@@ -14,7 +14,7 @@ void rec() {
   AliTPCReconstructor::SetRecoParam(tpcRecoParam);
   //  AliTPCReconstructor::SetStreamLevel(1);
 
-  reco.SetRunReconstruction("ITS TPC TRD TOF PHOS EMCAL MUON FMD PMD ZDC T0 VZERO");
+  reco.SetRunReconstruction("ITS TPC TRD TOF HMPID PHOS EMCAL MUON FMD PMD ZDC T0 VZERO");
   reco.SetInput("raw.root");
 
   reco.SetNumberOfEventsPerFile(-1); // all events in one single file
