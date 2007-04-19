@@ -254,14 +254,16 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   rl->GetEvent(readEvent);
 
   TClonesArray * digits = emcalLoader->Digits() ; 
-  digits->Clear() ;
+  digits->Delete() ;  
 
   // Load Geometry
-  // const AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance();
-  rl->LoadgAlice(); 
-  AliRun * gAlice = rl->GetAliRun(); 
-  AliEMCAL * emcal  = (AliEMCAL*)gAlice->GetDetector("EMCAL");
-  AliEMCALGeometry * geom = emcal->GetGeometry();
+  AliEMCALGeometry *geom = 0;
+  if (rl->GetAliRun()) {
+    AliEMCAL * emcal  = (AliEMCAL*)rl->GetAliRun()->GetDetector("EMCAL");
+    geom = emcal->GetGeometry();
+  }
+  else 
+    AliFatal("Could not get AliRun from runLoader");
 
   if(isTrd1Geom < 0) { 
     AliInfo(Form(" get Geometry %s : %s ", geom->GetName(),geom->GetTitle()));
@@ -424,7 +426,6 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   digits->Compress() ;  
   
   Int_t ndigits = digits->GetEntriesFast() ; 
-  digits->Expand(ndigits) ;
   
   //Set indexes in list of digits and fill hists.
   AliEMCALHistoUtilities::FillH1(fHists, 0, Double_t(ndigits));
@@ -513,8 +514,9 @@ void AliEMCALDigitizer::Exec(Option_t *option)
   // Post Digitizer to the white board
   emcalLoader->PostDigitizer(this) ;
   
-  if (fLastEvent == -1) 
+  if (fLastEvent == -1)  {
     fLastEvent = rl->GetNumberOfEvents() - 1 ;
+  }
   else if (fManager) 
     fLastEvent = fFirstEvent ; // what is this ??
 
@@ -670,6 +672,7 @@ void AliEMCALDigitizer::MixWith(TString alirunFileName, TString eventFolderName)
       return ;
     }
     // need to increase the arrays
+    // MvL: This code only works when fInput == 1, I think.
     TString tempo = fInputFileNames[fInput-1] ; 
     delete [] fInputFileNames ; 
     fInputFileNames = new TString[fInput+1] ; 
@@ -815,8 +818,10 @@ void AliEMCALDigitizer::WriteDigits()
   // -- create Digits branch
   Int_t bufferSize = 32000 ;    
   TBranch * digitsBranch = 0;
-  if ((digitsBranch = treeD->GetBranch("EMCAL")))
+  if ((digitsBranch = treeD->GetBranch("EMCAL"))) {
     digitsBranch->SetAddress(&digits);
+    AliWarning("Digits Branch already exists. Not all digits will be visible");
+  }
   else
     treeD->Branch("EMCAL","TClonesArray",&digits,bufferSize);
   //digitsBranch->SetTitle(fEventFolderName);
