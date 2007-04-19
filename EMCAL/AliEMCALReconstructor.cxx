@@ -30,6 +30,7 @@
 
 #include "AliRun.h"
 #include "AliESD.h"
+#include "AliESDtrack.h"
 #include "AliRunLoader.h"
 #include "AliEMCALLoader.h"
 #include "AliEMCALRawUtils.h"
@@ -143,7 +144,9 @@ void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   //  Int_t nRP=0, nPC=0; // in input
   esd->SetFirstEMCALCluster(esd->GetNumberOfCaloClusters()); // Put after Phos clusters 
 
+  //######################################################
   //#########Calculate trigger and set trigger info###########
+  //######################################################
  
   AliEMCALTrigger tr ;
   //   tr.SetPatchSize(1);//create 4x4 patches
@@ -195,9 +198,29 @@ void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   esd->AddEMCALTriggerPosition(triggerPosition);
   esd->AddEMCALTriggerAmplitudes(triggerAmplitudes);
   
-  //######################################
+  //######################################################
+  //#######################TRACK MATCHING###############
+  //######################################################
+  //Fill list of integers, each one is index of track to which the cluster belongs.
 
-  //Fill CaloClusters 
+  // step 1 - initialize array of matched track indexes
+  Int_t *matchedTrack = new Int_t[nClusters];
+  for (Int_t iclus = 0; iclus < nClusters; iclus++)
+    matchedTrack[iclus] = -1;  // neg. index --> no matched track
+  
+  // step 2, change the flag for all matched clusters found in tracks
+  Int_t iemcalMatch = -1;
+  Int_t endtpc = esd->GetNumberOfTracks();
+  for (Int_t itrack = 0; itrack < endtpc; itrack++) {
+    AliESDtrack * track = esd->GetTrack(itrack) ; // retrieve track
+    iemcalMatch = track->GetEMCALcluster();
+    if(iemcalMatch > 0) matchedTrack[iemcalMatch] = itrack;
+  } 
+  
+  //########################################
+  //##############Fill CaloClusters#############
+  //########################################
+
 
   for (Int_t iClust = 0 ; iClust < nClusters ; iClust++) {
     const AliEMCALRecPoint * clust = emcalLoader->RecPoint(iClust);
@@ -287,10 +310,13 @@ void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
         ec->SetM02(elipAxis[0]*elipAxis[0]) ;
         ec->SetM20(elipAxis[1]*elipAxis[1]) ;
         ec->SetM11(-1) ;        //not yet implemented
+        ec->SetTrackMatchedIndex( matchedTrack[iClust]); //track matched 
       } 
-    // add the cluster to the esd object
+
+      // add the cluster to the esd object
       esd->AddCaloCluster(ec);
       delete ec;
+
     } else { // no new ESD cluster
         delete [] amplList;
         delete [] timeList;
