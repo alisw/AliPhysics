@@ -23,10 +23,16 @@
 // By I. Hrivnacova, IPN Orsay
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
+
 #include "AliMpConstants.h"
+
+#include <TFile.h>
+#include <TGeoMatrix.h>
+#include <TClonesArray.h>
+
 #endif
 
-MUONGenerateTestGMS(Bool_t print = kFALSE)
+void MUONGenerateTestGMS(Bool_t print = kFALSE)
 {
   TFile f("data/GMS.root", "RECREATE");
   TClonesArray* array = new TClonesArray("TGeoHMatrix",100);
