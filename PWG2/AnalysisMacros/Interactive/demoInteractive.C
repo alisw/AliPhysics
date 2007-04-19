@@ -8,7 +8,7 @@ void demoInteractive() {
   EvCuts->SetMultiplicityRange(11,12);
   //grid tags
   TAlienCollection* coll = TAlienCollection::Open("tag.xml");
-  TGridResult* TagResult = coll->GetGridResult("");
+  TGridResult* TagResult = coll->GetGridResult("",0,0);
   TagAna->ChainGridTags(TagResult);
   TChain* chain = 0x0;
   chain = TagAna->QueryTags(RunCuts,EvCuts);
