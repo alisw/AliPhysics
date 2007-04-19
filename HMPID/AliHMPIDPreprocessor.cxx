@@ -89,7 +89,7 @@ UInt_t AliHMPIDPreprocessor::Process(TMap* pMap)
 //  Store("Calib", "Tmean" , &arTmean , &metaData); 
 
   if( Store("Calib", "Qthre" , &arQthre , &metaData) == kTRUE && Store("Calib", "Nmean" , &arNmean , &metaData) == kTRUE ) return 0;   //clm: compatibility with new Store and preprocessor requirement
-  else return 0;
+  else return 1;
   
   //  AliInfo("End.");  
 
