@@ -337,7 +337,6 @@ Int_t GeoShapeRnrEl::SubImportShapeExtract(TGeoShapeExtract * gse,
 
   GeoShapeRnrEl* gsre = new GeoShapeRnrEl(gse->GetName(), gse->GetTitle());
   gsre->fHMTrans.SetFromArray(gse->GetTrans());
-  gsre->fHMTrans.TransposeRotationPart(); // Transpose from gled-to-tgeo.
   const Float_t* rgba = gse->GetRGBA();
   gsre->fColor        = TColor::GetColor(rgba[0], rgba[1], rgba[2]);
   gsre->fTransparency = (UChar_t) (100.0f*(1.0f - rgba[3]));
