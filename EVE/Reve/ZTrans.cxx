@@ -713,8 +713,18 @@ void ZTrans::SetGeoHMatrix(TGeoHMatrix& mat)
 void ZTrans::SetBuffer3D(TBuffer3D& buff)
 {
   buff.fLocalFrame = fUseTrans; 
-  if (fUseTrans)
-    memcpy(buff.fLocalMaster, M, 16*sizeof(Double_t));
+  if (fUseTrans) {
+    // In phys-shape ctor the rotation part is transposed, due to
+    // TGeo's convention for rotation matrix. So we have to transpose
+    // it here, also.
+    Double_t *B = buff.fLocalMaster;
+    B[0]  = M[0];  B[1]  = M[4];  B[2]  = M[8];  B[3]  = M[3];
+    B[4]  = M[1];  B[5]  = M[5];  B[6]  = M[9];  B[7]  = M[7];
+    B[8]  = M[2];  B[9]  = M[6];  B[10] = M[10]; B[11] = M[11];
+    B[12] = M[12]; B[13] = M[13]; B[14] = M[14]; B[15] = M[15];
+    // Otherwise this would do:
+    // memcpy(buff.fLocalMaster, M, 16*sizeof(Double_t));
+  }
 }
 
 Bool_t ZTrans::IsScale(Double_t low, Double_t high) const
