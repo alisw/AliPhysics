@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
 #else
 int main(int /*argc*/, char** /*argv*/)
 {
-  ::Fatal("main", "this program was compiled without DATE");
+  ::Error("main", "this program was compiled without DATE");
 
   return 1;
 }
