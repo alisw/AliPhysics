@@ -34,6 +34,34 @@
 // Authors: B. Becker and J. Castillo
 // ---
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
+#include "AliMUONAlignment.h"
+#include "AliMUONTrack.h"
+#include "AliMUONTrackExtrap.h"
+#include "AliMUONTrackParam.h"
+#include "AliMUONGeometryTransformer.h"
+#include "AliMUONDataInterface.h"
+
+#include "AliMagFMaps.h"
+#include "AliTracker.h"
+#include "AliCDBManager.h"
+#include "AliCDBMetaData.h"
+#include "AliCDBId.h"
+
+#include <TString.h>
+#include <TGeoManager.h>
+#include <TError.h>
+#include <TH1.h>
+#include <TGraphErrors.h>
+#include <TFile.h>
+#include <TClonesArray.h>
+#include <Riostream.h>
+
+#include <fstream>
+
+#endif
+
 void MUONAlignment(Int_t nEvents = 100000, char* geoFilename = "geometry.root", TString fileName = "galice.root", TString fileList = "")
 {
  
@@ -65,10 +93,10 @@ void MUONAlignment(Int_t nEvents = 100000, char* geoFilename = "geometry.root", 
 
   Double_t trackParams[8] = {0.,0.,0.,0.,0.,0.,0.,0.};
 
-  Int_t iPar = 0;
   // Set initial values here, good guess may help convergence
   // St 1 
-  //   parameters[iPar++] =  0.010300 ;  parameters[iPar++] =  0.010600 ;  parameters[iPar++] =  0.000396 ;  
+  //  Int_t iPar = 0;
+  //  parameters[iPar++] =  0.010300 ;  parameters[iPar++] =  0.010600 ;  parameters[iPar++] =  0.000396 ;  
 
   bool bLoop = kFALSE;
   ifstream sFileList;
@@ -182,7 +210,7 @@ void MUONAlignment(Int_t nEvents = 100000, char* geoFilename = "geometry.root", 
   Double_t MSDEytErr[156] = {0};
   Int_t lNDetElem = 4*2+4*2+18*2+26*2+26*2;
   Int_t lNDetElemCh[10] = {4,4,4,4,18,18,26,26,26,26};
-  Int_t lSNDetElemCh[10] = {4,8,12,16,34,52,78,104,130,156};
+  // Int_t lSNDetElemCh[10] = {4,8,12,16,34,52,78,104,130,156};
   Int_t idOffset = 0; // 400
   Int_t lSDetElemCh = 0;
   for(Int_t iDE=0; iDE<lNDetElem; iDE++){
@@ -234,7 +262,7 @@ void MUONAlignment(Int_t nEvents = 100000, char* geoFilename = "geometry.root", 
   newTransform->WriteTransformations("transform2ReAlign.dat");
   
   // Generate realigned data in local cdb
-  TClonesArray* array = newTransform->GetMisAlignmentData();
+  const TClonesArray* array = newTransform->GetMisAlignmentData();
    
   // CDB manager
   AliCDBManager* cdbManager = AliCDBManager::Instance();
@@ -244,6 +272,6 @@ void MUONAlignment(Int_t nEvents = 100000, char* geoFilename = "geometry.root", 
   cdbData->SetResponsible("Dimuon Offline project");
   cdbData->SetComment("MUON alignment objects with residual misalignment");
   AliCDBId id("MUON/Align/Data", 0, 0); 
-  cdbManager->Put(array, id, cdbData);
+  cdbManager->Put(const_cast<TClonesArray*>(array), id, cdbData);
 
 } 
