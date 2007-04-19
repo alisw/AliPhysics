@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.87  2007/04/01 07:37:10  kharlov
+ * TGeo RS to Local RS transf matr added
+ *
  * Revision 1.86  2007/03/06 06:55:46  kharlov
  * DP:Misalignment of CPV added
  *
@@ -406,10 +409,10 @@ void AliPHOSv0::CreateGeometryforEMC()
 
   gMC->Gsvolu("PSTR", "BOX ", idtmed[716], emcg->GetStripHalfSize(), 3) ;  //Made of stell
    
-      // --- define air volume (cell of the honeycomb)
-      gMC->Gsvolu("PCEL", "BOX ", idtmed[798], emcg->GetAirCellHalfSize(), 3);
+      // --- define steel volume (cell of the strip unit)
+      gMC->Gsvolu("PCEL", "BOX ", idtmed[716], emcg->GetSteelCellHalfSize(), 3);
 
-      // --- define wrapped crystal and put it into AirCell
+      // --- define wrapped crystal and put it into steel cell
 
       gMC->Gsvolu("PWRA", "BOX ", idtmed[702], emcg->GetWrappedHalfSize(), 3);
       Float_t * pin = emcg->GetAPDHalfSize() ; 
@@ -417,7 +420,7 @@ void AliPHOSv0::CreateGeometryforEMC()
       Float_t y = (emcg->GetAirGapLed()-2*pin[1]-2*preamp[1])/2;
       gMC->Gspos("PWRA", 1, "PCEL", 0.0, y, 0.0, 0, "ONLY") ;
     
-      // --- Define crystall and put it into wrapped crystall ---
+      // --- Define crystal and put it into wrapped crystall ---
       gMC->Gsvolu("PXTL", "BOX ", idtmed[699], emcg->GetCrystalHalfSize(), 3) ;
       gMC->Gspos("PXTL", 1, "PWRA", 0.0, 0.0, 0.0, 0, "ONLY") ;
       
@@ -434,11 +437,11 @@ void AliPHOSv0::CreateGeometryforEMC()
       gMC->Gspos("PREA", 1, "PCEL", 0.0, y, 0.0, 0, "ONLY") ;                    // to ceramics?
    
 
-      // --- Fill strip with wrapped cristalls in Air Cells
+      // --- Fill strip with wrapped cristals in steel cells
 
       Float_t* splate = emcg->GetSupportPlateHalfSize();  
       y = -splate[1] ;
-      Float_t* acel = emcg->GetAirCellHalfSize() ;
+      Float_t* acel = emcg->GetSteelCellHalfSize() ;
 
       for(Int_t lev = 2, icel = 1; icel <= emcg->GetNCellsXInStrip()*emcg->GetNCellsZInStrip(); icel += 2, lev += 2){
          Float_t x = (2*(lev / 2) - 1 - emcg->GetNCellsXInStrip())* acel[0] ;

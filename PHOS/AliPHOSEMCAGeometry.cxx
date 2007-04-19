@@ -124,7 +124,7 @@ AliPHOSEMCAGeometry::AliPHOSEMCAGeometry():
   fStripWallWidthOut = 0.01 ;  // Side to another strip  
   fStripWallWidthIn  = 0.02 ;  // Side betveen crystals in one strip
 
-  fTyvecThickness = 0.01 ;     //Thickness of the tyvec
+  fTyvecThickness = 0.0175 ;     //Thickness of the tyvec
 
   fAirGapLed = 1.5 - 2 * fPreampHalfSize[1] - 2 * fPinDiodeHalfSize[1] ; // Air gap before crystalls for LED system
                                            // Note, that Cell in Strip 1.5 longer then crystall
@@ -135,24 +135,25 @@ AliPHOSEMCAGeometry::AliPHOSEMCAGeometry():
   fWrappedHalfSize[1] = fCrystalHalfSize[1] ;                             //wrapped into tyvec
   fWrappedHalfSize[2] = (2*fTyvecThickness + 2*fCrystalHalfSize[2])/2 ;   //
 
-  fAirCellHalfSize[0] = fWrappedHalfSize[0] ;                     //This is HALF-size of one cell
-  fAirCellHalfSize[1] = (fAirGapLed + 2*fPreampHalfSize[1] + 
-                         2*fPinDiodeHalfSize[1] + 2*fWrappedHalfSize[1])/2 ;  //in strip
-  fAirCellHalfSize[2] = fWrappedHalfSize[2]  ;                    //
+  fSteelCellHalfSize[0] = fWrappedHalfSize[0] + 0.01;
+  fSteelCellHalfSize[1] = (fAirGapLed + 2*fPreampHalfSize[1] + 
+                       2*fPinDiodeHalfSize[1] + 2*fWrappedHalfSize[1])/2 ;  //in strip
+  fSteelCellHalfSize[2] = fWrappedHalfSize[2] + 0.01;
 
-  fSupportPlateHalfSize[0] = ( (fNCellsXInStrip-1)*fStripWallWidthIn + 2*fStripWallWidthOut + 
-			       fNCellsXInStrip * (2*fTyvecThickness + 2*fCrystalHalfSize[0]) )/2 ;
-  fSupportPlateHalfSize[1] =  6.0  /2 ;
-  fSupportPlateHalfSize[2] = ( (fNCellsZInStrip-1)*fStripWallWidthIn + 2*fStripWallWidthOut +
-			       fNCellsZInStrip * (2*fTyvecThickness + 2*fCrystalHalfSize[2]) )/2;
-
+  //  fSupportPlateHalfSize[0] = ( (fNCellsXInStrip-1)*fStripWallWidthIn + 2*fStripWallWidthOut + 
+  //			       fNCellsXInStrip * (2*fTyvecThickness + 2*fCrystalHalfSize[0]) )/2 ;
+  fSupportPlateHalfSize[0] = 18.04  /2 ;
+  fSupportPlateHalfSize[1] =   6.0  /2 ;
+//  fSupportPlateHalfSize[2] = ( (fNCellsZInStrip-1)*fStripWallWidthIn + 2*fStripWallWidthOut +
+//			       fNCellsZInStrip * (2*fTyvecThickness + 2*fCrystalHalfSize[2]) )/2;
+  fSupportPlateHalfSize[2] =  4.51  /2 ;
   fSupportPlateThickness = 0.3 ;  
   fSupportPlateInHalfSize[0] = fSupportPlateHalfSize[0] ;                         //Half-sizes of the air
   fSupportPlateInHalfSize[1] = fSupportPlateHalfSize[1]-fSupportPlateThickness ;  //box in the support plate
   fSupportPlateInHalfSize[2] = fSupportPlateHalfSize[2]-fSupportPlateThickness/2 ;
 
   fStripHalfSize[0]= fSupportPlateHalfSize[0] ;  
-  fStripHalfSize[1]= ( 2*fSupportPlateHalfSize[1] + 2*fAirCellHalfSize[1] )/2;      
+  fStripHalfSize[1]= ( 2*fSupportPlateHalfSize[1] + 2*fSteelCellHalfSize[1] )/2;      
   fStripHalfSize[2]= fSupportPlateHalfSize[2] ;
 
   // ------- Inner hermoinsulation ---------------
