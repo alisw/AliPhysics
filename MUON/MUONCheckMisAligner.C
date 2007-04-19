@@ -53,16 +53,34 @@
 
 */
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
+#include "AliMUONGeometryTransformer.h"
+#include "AliMUONGeometryMisAligner.h"
+
+#include "AliSimulation.h"
+#include "AliCDBManager.h"
+#include "AliCDBMetaData.h"
+#include "AliCDBId.h"
+
+#include <TGeoManager.h>
+#include <TClonesArray.h>
+
+#endif
+
 void MUONCheckMisAligner(Double_t xcartmisaligm = 0.0, Double_t xcartmisaligw = 0.004, 
 			 Double_t ycartmisaligm = 0.0, Double_t ycartmisaligw = 0.003, 
 			 Double_t angmisaligm = 0.0, Double_t angmisaligw = 0.0023,
-			 TString nameCDB = "ResMisAlignCDB")
+			 TString nameCDB = "ResMisAlignCDB", 
+                         const TString& geomFileName = "geometry.root")
 {
   
+  // Load geometry from file 
+  TGeoManager::Import(geomFileName.Data());
+  if ( ! gGeoManager ) return;
+
   AliMUONGeometryTransformer *transform = new AliMUONGeometryTransformer(true);
-  transform->ReadGeometryData("volpath.dat", "transform.dat");
-  if (gSystem->AccessPathName("geometry.root",kFileExists))
-    gGeoManager->Export("geometry.root");
+  transform->ReadGeometryData("volpath.dat", geomFileName.Data());
   AliMUONGeometryMisAligner misAligner(xcartmisaligm,xcartmisaligw,
                                        ycartmisaligm,ycartmisaligw,
 				       angmisaligm,angmisaligw);
@@ -78,8 +96,8 @@ void MUONCheckMisAligner(Double_t xcartmisaligm = 0.0, Double_t xcartmisaligw = 
   newTransform->WriteMisAlignmentData("misalign.root");
 
   // Apply misAlignment via AliRoot framework
-  TGeoManager::Import("geometry.root");
-  AliSimulation::ApplyAlignObjsToGeom(
+  AliSimulation sim;
+  sim.ApplyAlignObjsToGeom(
      const_cast<TClonesArray*>(newTransform->GetMisAlignmentData()));
   // Save new geometry file
   gGeoManager->Export("geometry2.root");
@@ -91,7 +109,7 @@ void MUONCheckMisAligner(Double_t xcartmisaligm = 0.0, Double_t xcartmisaligw = 
                // Check that transform3.dat is equal to transform2.dat
 
   // Generate misaligned data in local cdb
-  TClonesArray* array = newTransform->GetMisAlignmentData();
+  const TClonesArray* array = newTransform->GetMisAlignmentData();
    
   TString sLocCDB("local://");
   sLocCDB += nameCDB;
@@ -103,7 +121,7 @@ void MUONCheckMisAligner(Double_t xcartmisaligm = 0.0, Double_t xcartmisaligw = 
   cdbData->SetResponsible("Dimuon Offline project");
   cdbData->SetComment("MUON alignment objects with residual misalignment");
   AliCDBId id("MUON/Align/Data", 0, 0); 
-  cdbManager->Put(array, id, cdbData);
+  cdbManager->Put(const_cast<TClonesArray*>(array), id, cdbData);
 
   // To run simulation with misaligned geometry, you have to set
   // the Align option in Config.C:
