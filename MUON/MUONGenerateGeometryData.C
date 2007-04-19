@@ -25,6 +25,18 @@
 //
 //  Author: I. Hrivnacova, IPN Orsay
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
+#include "AliMUON.h"
+#include "AliMUONGeometryBuilder.h"
+#include "AliMUONGeometryTransformer.h"
+
+#include "AliRun.h"
+
+#include <Riostream.h>
+
+#endif
+
 void MUONGenerateGeometryData(Bool_t volpaths = true,
                               Bool_t transforms = true, 
                               Bool_t svmaps = true,
@@ -37,8 +49,8 @@ void MUONGenerateGeometryData(Bool_t volpaths = true,
   // Get MUON detector
   AliMUON* muon = (AliMUON*)gAlice->GetModule("MUON");
   if (!muon) {
-    AliFatal("MUON detector not defined.");
-    return 0;
+    cerr << "MUON detector not defined." << endl;
+    return;
   }  
 
   // Get geometry builder
