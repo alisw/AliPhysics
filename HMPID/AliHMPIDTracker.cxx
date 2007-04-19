@@ -55,13 +55,12 @@ Int_t AliHMPIDTracker::PropagateBack(AliESD *pEsd)
 // This method defined as pure virtual in AliTracker. It is invoked from AliReconstruction::RunTracking() after invocation of AliTracker::LoadClusters()
 // Agruments: pEsd - pointer to ESD
 //   Returns: error code    
-  AliCDBEntry *pNmeanEnt =AliCDBManager::Instance()->Get("HMPID/Calib/Nmean",pEsd->GetRunNumber()); //contains TObjArray of 21 TF1
-  AliCDBEntry *pQthreEnt =AliCDBManager::Instance()->Get("HMPID/Calib/Qthre",pEsd->GetRunNumber()); //contains TObjArray of 7 TF1
+  AliCDBEntry *pNmeanEnt =AliCDBManager::Instance()->Get("HMPID/Calib/Nmean"); //contains TObjArray of 21 TF1
+  AliCDBEntry *pQthreEnt =AliCDBManager::Instance()->Get("HMPID/Calib/Qthre"); //contains TObjArray of 7 TF1
   if(!pNmeanEnt) AliFatal("No Nmean C6F14 ");
   if(!pQthreEnt) AliFatal("No Qthre");
     
-  AliHMPID *pHmpid=((AliHMPID*)gAlice->GetDetector("HMPID"));  
-  return Recon(pEsd,pHmpid->CluLst(),(TObjArray*)pNmeanEnt->GetObject());  
+  return Recon(pEsd,fClu,(TObjArray*)pNmeanEnt->GetObject());  
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Int_t AliHMPIDTracker::Recon(AliESD *pEsd,TObjArray *pCluAll,TObjArray *pNmean)
