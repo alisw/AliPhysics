@@ -145,20 +145,8 @@ void AliHALL::CreateGeometry()
   gMC->Gsvolu("HUWA", "TUBS", idtmed[1956], tspar, 5);
   gMC->Gspos("HUWA", 1, "ALIC", 70., 40., -1900 - hullen , 0, "ONLY");
   
-  //     END WALL 
-  //gMC->Gsvolu("HEW1", "BOX ", idtmed[1956], pbox, 0);
-  //pbox[0] = 600.;
-  //pbox[1] = 418.;
-  //pbox[2] = 60.;
-  //gMC->Gsposp("HEW1", 1, "ALIC", 0., -pbox[1]-60., -1960, 0, "ONLY", pbox, 3);
-  //pbox[1] = 822.;
-  //gMC->Gsposp("HEW1", 2, "ALIC", 0.,  pbox[1]+60., -1960, 0, "ONLY", pbox, 3);
-  //pbox[0] = 270.;
-  //pbox[1] =  60.;
-  //gMC->Gsposp("HEW1", 3, "ALIC",  pbox[0]+60.,  0. , -1960, 0, "ONLY", pbox, 3);
-  //gMC->Gsposp("HEW1", 4, "ALIC", -pbox[0]-60.,  0. , -1960, 0, "ONLY", pbox, 3);
 
-  //     hall floor 
+  //     Hall floor 
   
   phid      = 16.197;
   trdpar[0] = 700.;
@@ -169,7 +157,7 @@ void AliHALL::CreateGeometry()
   gMC->Gspos("HHF1", 1, "ALIC", 0., -801., 1350., idrotm[1900], "ONLY");
   gMC->Gspos("HHF1", 2, "ALIC", 0., -801.,-1350., idrotm[1900], "ONLY");
   
-  //     hall side walls 
+  //     Hall side walls 
   
   trapar[0] = 550.;
   trapar[1] = 0.;
@@ -295,14 +283,14 @@ void AliHALL::CreateMaterials()
   Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
   Float_t dAir = 1.20479E-3;
 
+// Steel  
+  Float_t asteel[4] = { 55.847,51.9961,58.6934,28.0855 };
+  Float_t zsteel[4] = { 26.,24.,28.,14. };
+  Float_t wsteel[4] = { .715,.18,.1,.005 };
+
   Float_t epsil, stmin, deemax, tmaxfd, stemax;
 
-  //     FOR CONCRETE 
   
-  AliMaterial(10, "IRON0$     ", 55.85, 26., 7.87, 1.76, 17.1);
-  AliMaterial(30, "IRON1$     ", 55.85, 26., 7.87, 1.76, 17.1);
-  AliMaterial(50, "IRON2$     ", 55.85, 26., 7.87, 1.76, 17.1); 
-
   AliMixture(15, "AIR0$      ", aAir, zAir, dAir, 4, wAir);
   AliMixture(35, "AIR1$      ", aAir, zAir, dAir, 4, wAir);
   AliMixture(55, "AIR2$      ", aAir, zAir, dAir, 4, wAir);
@@ -310,6 +298,11 @@ void AliHALL::CreateMaterials()
   AliMixture(17, "CONCRETE0$", aconc, zconc, 2.35, 10, wconc);
   AliMixture(37, "CONCRETE1$", aconc, zconc, 2.35, 10, wconc);
   AliMixture(57, "CONCRETE2$", aconc, zconc, 2.35, 10, wconc);
+
+  //     Stainless Steel 
+  AliMixture(10, "STAINLESS STEEL1", asteel, zsteel, 7.88, 4, wsteel);
+  AliMixture(30, "STAINLESS STEEL2", asteel, zsteel, 7.88, 4, wsteel);
+  AliMixture(50, "STAINLESS STEEL3", asteel, zsteel, 7.88, 4, wsteel);
   
   // **************** 
   //     Defines tracking media parameters. 
@@ -322,11 +315,10 @@ void AliHALL::CreateMaterials()
   stmin  = -.8;
   // *************** 
   
-  //     IRON 
-  
-  AliMedium(10, "FE_C0             ", 10, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(30, "FE_C1             ", 30, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(50, "FE_C2             ", 50, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  //  Stainless Steel
+  AliMedium(10, "STST_C0             ", 10, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(30, "STST_C1             ", 30, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(50, "STST_C2             ", 50, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
   //    Air 
   
