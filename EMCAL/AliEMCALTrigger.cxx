@@ -127,6 +127,13 @@ AliEMCALTrigger::AliEMCALTrigger(const AliEMCALTrigger & trig)
   // cpy ctor
 }
 
+AliEMCALTrigger::~AliEMCALTrigger() {
+  delete [] fADCValuesHighnxn; 
+  delete [] fADCValuesLownxn;
+  delete [] fADCValuesHigh2x2;
+  delete [] fADCValuesLow2x2;
+}
+
 //----------------------------------------------------------------------
 void AliEMCALTrigger::CreateInputs()
 {
@@ -227,7 +234,7 @@ Bool_t AliEMCALTrigger::IsPatchIsolated(Int_t iPatchType, const TClonesArray * a
 }
 
 //____________________________________________________________________________
-void AliEMCALTrigger::MakeSlidingCell(const TClonesArray * amptrus, const TClonesArray * timeRtrus, const Int_t isupermod,TMatrixD *ampmax2, TMatrixD *ampmaxn){
+void AliEMCALTrigger::MakeSlidingCell(const TClonesArray * amptrus, const TClonesArray * timeRtrus, const Int_t isupermod,TMatrixD &ampmax2, TMatrixD &ampmaxn){
   
   //Sums energy of all possible 2x2 (L0) and nxn (L1) cells per each TRU. 
   //Fast signal in the experiment is given by 2x2 cells, 
@@ -246,17 +253,17 @@ void AliEMCALTrigger::MakeSlidingCell(const TClonesArray * amptrus, const TClone
   Float_t ampn = 0 ; 
   for(Int_t i = 0; i < 4; i++){
     for(Int_t j = 0; j < fNTRU; j++){
-      (*ampmax2)(i,j) = -1;
-      (*ampmaxn)(i,j) = -1;
+      ampmax2(i,j) = -1;
+      ampmaxn(i,j) = -1;
     }
   }
 
   //Create matrix that will contain 2x2 amplitude sums
   //used to calculate the nxn sums
-  TMatrixD  * tru2x2 = new TMatrixD(nCellsPhi/2,nCellsEta/2) ;
+  TMatrixD tru2x2(nCellsPhi/2,nCellsEta/2) ;
   for(Int_t i = 0; i < nCellsPhi/2; i++)
     for(Int_t j = 0; j < nCellsEta/2; j++)
-      (*tru2x2)(i,j) = -1;
+      tru2x2(i,j) = -1;
   
   //Loop over all TRUS in a supermodule
   for(Int_t itru = 0 + isupermod * fNTRU ; itru < (isupermod+1)*fNTRU ; itru++) {
@@ -271,25 +278,25 @@ void AliEMCALTrigger::MakeSlidingCell(const TClonesArray * amptrus, const TClone
 	  (*amptru)(irow,icol+1)+(*amptru)(irow+1,icol+1);
 
 	//Fill matrix with added 2x2 cells for use in nxn sums
-	(*tru2x2)(irow/2,icol/2) = amp2 ;
+	tru2x2(irow/2,icol/2) = amp2 ;
 	//Select 2x2 maximum sums to select L0 
-	if(amp2 > (*ampmax2)(0,mtru)){
-	  (*ampmax2)(0,mtru) = amp2 ; 
-	  (*ampmax2)(1,mtru) = irow;
-	  (*ampmax2)(2,mtru) = icol;
+	if(amp2 > ampmax2(0,mtru)){
+	  ampmax2(0,mtru) = amp2 ; 
+	  ampmax2(1,mtru) = irow;
+	  ampmax2(2,mtru) = icol;
 	}
       }
     }
     
     //Find most recent time in the selected 2x2 cell
-    (*ampmax2)(3,mtru) = 1 ;
-    Int_t row2 =  static_cast <Int_t> ((*ampmax2)(1,mtru));
-    Int_t col2 =  static_cast <Int_t> ((*ampmax2)(2,mtru));
+    ampmax2(3,mtru) = 1 ;
+    Int_t row2 =  static_cast <Int_t> (ampmax2(1,mtru));
+    Int_t col2 =  static_cast <Int_t> (ampmax2(2,mtru));
     for(Int_t i = 0; i<2; i++){
       for(Int_t j = 0; j<2; j++){
 	if((*amptru)(row2+i,col2+j) > 0 &&  (*timeRtru)(row2+i,col2+j)> 0){	  
-	  if((*timeRtru)(row2+i,col2+j) <  (*ampmax2)(3,mtru)  )
-	    (*ampmax2)(3,mtru) =  (*timeRtru)(row2+i,col2+j);
+	  if((*timeRtru)(row2+i,col2+j) <  ampmax2(3,mtru)  )
+	    ampmax2(3,mtru) =  (*timeRtru)(row2+i,col2+j);
 	}
       }
     }
@@ -302,37 +309,37 @@ void AliEMCALTrigger::MakeSlidingCell(const TClonesArray * amptrus, const TClone
 	  if( (irow+fPatchSize) < nCellsPhi/2 && (icol+fPatchSize) < nCellsEta/2){//Avoid exit the TRU
 	    for(Int_t i = 0 ; i <= fPatchSize ; i++)
 	      for(Int_t j = 0 ; j <= fPatchSize ; j++)
-		ampn += (*tru2x2)(irow+i,icol+j);
+		ampn += tru2x2(irow+i,icol+j);
 	    //Select nxn maximum sums to select L1 
-	    if(ampn > (*ampmaxn)(0,mtru)){
-	      (*ampmaxn)(0,mtru) = ampn ; 
-	      (*ampmaxn)(1,mtru) = irow*2;
-	      (*ampmaxn)(2,mtru) = icol*2;
+	    if(ampn > ampmaxn(0,mtru)){
+	      ampmaxn(0,mtru) = ampn ; 
+	      ampmaxn(1,mtru) = irow*2;
+	      ampmaxn(2,mtru) = icol*2;
 	    }
 	  }
 	}
       }
       
       //Find most recent time in selected nxn cell
-      (*ampmaxn)(3,mtru) = 1 ;
-      Int_t rown =  static_cast <Int_t> ((*ampmaxn)(1,mtru));
-      Int_t coln =  static_cast <Int_t> ((*ampmaxn)(2,mtru));
+      ampmaxn(3,mtru) = 1 ;
+      Int_t rown =  static_cast <Int_t> (ampmaxn(1,mtru));
+      Int_t coln =  static_cast <Int_t> (ampmaxn(2,mtru));
       for(Int_t i = 0; i<4*fPatchSize; i++){
 	for(Int_t j = 0; j<4*fPatchSize; j++){
 	  if( (rown+i) < nCellsPhi && (coln+j) < nCellsEta/2){//Avoid exit the TRU
 	    if((*amptru)(rown+i,coln+j) > 0 &&  (*timeRtru)(rown+i,coln+j)> 0){
-	      if((*timeRtru)(rown+i,coln+j) <  (*ampmaxn)(3,mtru)  )
-		(*ampmaxn)(3,mtru) =  (*timeRtru)(rown+i,coln+j);
+	      if((*timeRtru)(rown+i,coln+j) <  ampmaxn(3,mtru)  )
+		ampmaxn(3,mtru) =  (*timeRtru)(rown+i,coln+j);
 	    }
 	  }
 	}
       }
     }
     else {  
-	(*ampmaxn)(0,mtru) =  (*ampmax2)(0,mtru); 
-	(*ampmaxn)(1,mtru) =  (*ampmax2)(1,mtru);
-	(*ampmaxn)(2,mtru) =  (*ampmax2)(2,mtru);
-	(*ampmaxn)(3,mtru) =  (*ampmax2)(3,mtru);
+	ampmaxn(0,mtru) =  ampmax2(0,mtru); 
+	ampmaxn(1,mtru) =  ampmax2(1,mtru);
+	ampmaxn(2,mtru) =  ampmax2(2,mtru);
+	ampmaxn(3,mtru) =  ampmax2(3,mtru);
       }
   }
 }
@@ -393,8 +400,8 @@ void AliEMCALTrigger::Print(const Option_t * opt) const
 
 //____________________________________________________________________________
 void AliEMCALTrigger::SetTriggers(const TClonesArray * ampmatrix,const Int_t iSM, 
-				  const TMatrixD *ampmax2, 
-				  const TMatrixD *ampmaxn, const AliEMCALGeometry *geom)  
+				  const TMatrixD &ampmax2, 
+				  const TMatrixD &ampmaxn, const AliEMCALGeometry *geom)  
 {
 
   //Checks the 2x2 and nxn maximum amplitude per each TRU and 
@@ -407,18 +414,18 @@ void AliEMCALTrigger::SetTriggers(const TClonesArray * ampmatrix,const Int_t iSM
   //Find maximum summed amplitude of all the TRU 
   //in a Super Module
     for(Int_t i = 0 ; i < fNTRU ; i++){
-      if(max2[0] < (*ampmax2)(0,i) ){
-	max2[0] =  (*ampmax2)(0,i) ; // 2x2 summed max amplitude
-	max2[1] =  (*ampmax2)(1,i) ; // corresponding phi position in TRU
-	max2[2] =  (*ampmax2)(2,i) ; // corresponding eta position in TRU
-	max2[3] =  (*ampmax2)(3,i) ; // corresponding most recent time
+      if(max2[0] < ampmax2(0,i) ){
+	max2[0] =  ampmax2(0,i) ; // 2x2 summed max amplitude
+	max2[1] =  ampmax2(1,i) ; // corresponding phi position in TRU
+	max2[2] =  ampmax2(2,i) ; // corresponding eta position in TRU
+	max2[3] =  ampmax2(3,i) ; // corresponding most recent time
 	mtru2   = i ;
       }
-      if(maxn[0] < (*ampmaxn)(0,i) ){
-	maxn[0] =  (*ampmaxn)(0,i) ; // nxn summed max amplitude
-	maxn[1] =  (*ampmaxn)(1,i) ; // corresponding phi position in TRU
-	maxn[2] =  (*ampmaxn)(2,i) ; // corresponding eta position in TRU
-	maxn[3] =  (*ampmaxn)(3,i) ; // corresponding most recent time
+      if(maxn[0] < ampmaxn(0,i) ){
+	maxn[0] =  ampmaxn(0,i) ; // nxn summed max amplitude
+	maxn[1] =  ampmaxn(1,i) ; // corresponding phi position in TRU
+	maxn[2] =  ampmaxn(2,i) ; // corresponding eta position in TRU
+	maxn[3] =  ampmaxn(3,i) ; // corresponding most recent time
 	mtrun   = i ;
       }
     }
@@ -446,8 +453,10 @@ void AliEMCALTrigger::SetTriggers(const TClonesArray * ampmatrix,const Int_t iSM
       fIs2x2Isol =  IsPatchIsolated(0, ampmatrix, iSM, mtru2,  f2x2MaxAmp,  static_cast<Int_t>(max2[1]), static_cast<Int_t>(max2[2])) ;
 
     //Transform digit amplitude in Raw Samples
-    fADCValuesLow2x2  = new Int_t[nTimeBins];
-    fADCValuesHigh2x2 = new Int_t[nTimeBins];
+    if (fADCValuesLow2x2 == 0) {
+      fADCValuesLow2x2  = new Int_t[nTimeBins];
+      fADCValuesHigh2x2 = new Int_t[nTimeBins];
+    }
     rawUtil.RawSampledResponse(maxtimeR2, f2x2MaxAmp, fADCValuesHigh2x2, fADCValuesLow2x2) ; 
     
     //Set Trigger Inputs, compare ADC time bins until threshold is attained
@@ -477,8 +486,10 @@ void AliEMCALTrigger::SetTriggers(const TClonesArray * ampmatrix,const Int_t iSM
       fIsnxnIsol =  IsPatchIsolated(1, ampmatrix, iSM, mtrun,  fnxnMaxAmp,  static_cast<Int_t>(maxn[1]), static_cast<Int_t>(maxn[2])) ;
     
     //Transform digit amplitude in Raw Samples
-    fADCValuesHighnxn = new Int_t[nTimeBins];
-    fADCValuesLownxn  = new Int_t[nTimeBins];
+    if (fADCValuesLownxn == 0) {
+      fADCValuesHighnxn = new Int_t[nTimeBins];
+      fADCValuesLownxn  = new Int_t[nTimeBins];
+    }
     rawUtil.RawSampledResponse(maxtimeRn, fnxnMaxAmp, fADCValuesHighnxn, fADCValuesLownxn) ;
     
     //Set Trigger Inputs, compare ADC time bins until threshold is attained
@@ -508,6 +519,116 @@ void AliEMCALTrigger::SetTriggers(const TClonesArray * ampmatrix,const Int_t iSM
   } 
 }
 
+//____________________________________________________________________________
+void AliEMCALTrigger::FillTRU(const AliEMCALGeometry *geom, const TClonesArray * digits, TClonesArray * ampmatrix, TClonesArray * ampmatrixsmod, TClonesArray * timeRmatrix) {
+
+//  Orders digits ampitudes list in fNTRU TRUs (384 cells) per supermodule. 
+//  Each TRU is a TMatrixD, and they are kept in TClonesArrays. The number of 
+//  TRU in phi is fNTRUPhi, and the number of TRU in eta is fNTRUEta.
+//  Last 2 modules are half size in Phi, I considered that the number of TRU
+//  is maintained for the last modules but decision not taken. If different, 
+//  then this must be changed. Also fill a matrix with all amplitudes in supermodule for isolation studies. 
+ 
+  //Check data members
+
+  if(fNTRUEta*fNTRUPhi != fNTRU)
+    Error("FillTRU"," Wrong number of TRUS per Eta or Phi");
+
+  //Initilize and declare variables
+  //List of TRU matrices initialized to 0.
+  Int_t nPhi = geom->GetNPhi();
+  Int_t nZ = geom->GetNZ();
+  Int_t nCellsPhi  = nPhi*2/fNTRUPhi;
+  Int_t nCellsPhi2 = nPhi/fNTRUPhi; //HalfSize modules
+  Int_t nCellsEta  = nZ*2/fNTRUEta;
+
+  Int_t id       = -1; 
+  Float_t amp    = -1;
+  Float_t timeR  = -1;
+  Int_t iSupMod  = -1;
+  Int_t nModule  = -1;
+  Int_t nIphi    = -1;
+  Int_t nIeta    = -1;
+  Int_t iphi     = -1;
+  Int_t ieta     = -1;
+
+  //List of TRU matrices initialized to 0.
+  Int_t nSup = geom->GetNumberOfSuperModules();
+  for(Int_t k = 0; k < fNTRU*nSup; k++){
+    TMatrixD amptrus(nCellsPhi,nCellsEta) ;
+    TMatrixD timeRtrus(nCellsPhi,nCellsEta) ;
+    // Do we need to initialise? I think TMatrixD does it by itself...
+    for(Int_t i = 0; i < nCellsPhi; i++){
+      for(Int_t j = 0; j < nCellsEta; j++){
+	amptrus(i,j) = 0.0;
+	timeRtrus(i,j) = 0.0;
+      }
+    }
+    new((*ampmatrix)[k])   TMatrixD(amptrus) ;
+    new((*timeRmatrix)[k]) TMatrixD(timeRtrus) ; 
+  }
+  
+  //List of Modules matrices initialized to 0.
+  for(Int_t k = 0; k < nSup ; k++){
+    TMatrixD  ampsmods( nPhi*2, nZ*2) ;
+    for(Int_t i = 0; i <  nPhi*2; i++){
+      for(Int_t j = 0; j < nZ*2; j++){
+	ampsmods(i,j)   = 0.0;
+      }
+    }
+    new((*ampmatrixsmod)[k])   TMatrixD(ampsmods) ;
+  }
+
+  AliEMCALDigit * dig ;
+  
+  //Digits loop to fill TRU matrices with amplitudes.
+  for(Int_t idig = 0 ; idig < digits->GetEntriesFast() ; idig++){
+    
+    dig = dynamic_cast<AliEMCALDigit *>(digits->At(idig)) ;
+    amp    = dig->GetAmp() ;   // Energy of the digit (arbitrary units)
+    id     = dig->GetId() ;    // Id label of the cell
+    timeR  = dig->GetTimeR() ; // Earliest time of the digit
+   
+    //Get eta and phi cell position in supermodule
+    Bool_t bCell = geom->GetCellIndex(id, iSupMod, nModule, nIphi, nIeta) ;
+    if(!bCell)
+      Error("FillTRU","Wrong cell id number") ;
+    
+    geom->GetCellPhiEtaIndexInSModule(iSupMod,nModule,nIphi, nIeta,iphi,ieta);
+
+    //Check to which TRU in the supermodule belongs the cell. 
+    //Supermodules are divided in a TRU matrix of dimension 
+    //(fNTRUPhi,fNTRUEta).
+    //Each TRU is a cell matrix of dimension (nCellsPhi,nCellsEta)
+
+    //First calculate the row and column in the supermodule 
+    //of the TRU to which the cell belongs.
+    Int_t col   = ieta/nCellsEta; 
+    Int_t row   = iphi/nCellsPhi; 
+    if(iSupMod > 9)
+      row   = iphi/nCellsPhi2; 
+    //Calculate label number of the TRU
+    Int_t itru  = row + col*fNTRUPhi + iSupMod*fNTRU ;  
+ 
+    //Fill TRU matrix with cell values
+    TMatrixD * amptrus   = dynamic_cast<TMatrixD *>(ampmatrix->At(itru)) ;
+    TMatrixD * timeRtrus = dynamic_cast<TMatrixD *>(timeRmatrix->At(itru)) ;
+
+    //Calculate row and column of the cell inside the TRU with number itru
+    Int_t irow = iphi - row *  nCellsPhi;
+    if(iSupMod > 9)
+      irow = iphi - row *  nCellsPhi2;
+    Int_t icol = ieta - col *  nCellsEta;
+    
+    (*amptrus)(irow,icol) = amp ;
+    (*timeRtrus)(irow,icol) = timeR ;
+    
+    //####################SUPERMODULE MATRIX ##################
+    TMatrixD * ampsmods   = dynamic_cast<TMatrixD *>(ampmatrixsmod->At(iSupMod)) ;
+    (*ampsmods)(iphi,ieta)   = amp ;
+    
+  }
+}
 //____________________________________________________________________________
 void AliEMCALTrigger::Trigger() 
 {
@@ -553,13 +674,13 @@ void AliEMCALTrigger::Trigger()
   TClonesArray * ampsmods  = new TClonesArray("TMatrixD",1000);
   TClonesArray * timeRtrus = new TClonesArray("TMatrixD",1000);
   
-  geom->FillTRU(fDigitsList, amptrus, ampsmods, timeRtrus) ;
+  FillTRU(geom,fDigitsList, amptrus, ampsmods, timeRtrus) ;
 
   //Do Cell Sliding and select Trigger
   //Initialize varible that will contain maximum amplitudes and 
   //its corresponding cell position in eta and phi, and time.
-  TMatrixD  * ampmax2 = new TMatrixD(4,fNTRU) ;
-  TMatrixD  * ampmaxn = new TMatrixD(4,fNTRU) ;
+  TMatrixD ampmax2(4,fNTRU) ;
+  TMatrixD ampmaxn(4,fNTRU) ;
   
   for(Int_t iSM = 0 ; iSM < nSuperModules ; iSM++) {
     //Do 2x2 and nxn sums, select maximums. 
@@ -572,6 +693,12 @@ void AliEMCALTrigger::Trigger()
       SetTriggers(amptrus,iSM,ampmax2,ampmaxn,geom) ;
   }
   
+  amptrus->Delete();
+  delete amptrus; amptrus = 0;
+  ampsmods->Delete();
+  delete ampsmods; ampsmods = 0;
+  timeRtrus->Delete();
+  delete timeRtrus; timeRtrus = 0;
   //Print();
 
 }

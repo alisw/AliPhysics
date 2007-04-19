@@ -49,7 +49,6 @@ public:
   virtual void Browse(TBrowser* b);
   virtual Bool_t  IsFolder() const;
 
-  void FillTRU(const TClonesArray * digits, TClonesArray * amptru, TClonesArray * ampmod, TClonesArray * timeRtru)  ; //Fills Trigger Unit matrices with digit amplitudes and time
   void GetCellPhiEtaIndexInSModuleFromTRUIndex(Int_t itru, Int_t iphitru, Int_t ietatru, Int_t &ietaSM, Int_t &iphiSM) const ; // Tranforms Eta-Phi Cell index in TRU into Eta-Phi index in Super Module
   
   // Have to call GetTransformationForSM() before calculation global charachteristics 

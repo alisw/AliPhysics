@@ -49,7 +49,7 @@ class AliEMCALTrigger : public AliTriggerDetector {
 
   AliEMCALTrigger() ; //  ctor
   AliEMCALTrigger(const AliEMCALTrigger & trig) ; // cpy ctor
-  virtual ~AliEMCALTrigger() {}; //virtual dtor
+  virtual ~AliEMCALTrigger(); //virtual dtor
 
 
   virtual void    CreateInputs(); //Define trigger inputs for Central Trigger Processor
@@ -115,11 +115,13 @@ class AliEMCALTrigger : public AliTriggerDetector {
 
  private:
 
+  void FillTRU(const AliEMCALGeometry *geom, const TClonesArray * digits, TClonesArray * ampmatrix, TClonesArray * ampmatrixsmod, TClonesArray * timeRmatrix); 
+
   Bool_t IsPatchIsolated(Int_t iPatchType, const TClonesArray * ampmods, const Int_t imod, const Int_t mtru, const Float_t maxamp, const Int_t maxphi, const Int_t maxeta) ;
   
-  void MakeSlidingCell(const TClonesArray * amptrus, const TClonesArray * timeRtrus,const Int_t supermod, TMatrixD *ampmax2, TMatrixD *ampmaxn) ; 
+  void MakeSlidingCell(const TClonesArray * amptrus, const TClonesArray * timeRtrus,const Int_t supermod, TMatrixD &ampmax2, TMatrixD &ampmaxn) ; 
   
-  void SetTriggers(const TClonesArray * amptrus,const Int_t iSM, const TMatrixD *ampmax2, const TMatrixD *ampmaxn, const AliEMCALGeometry * geom) ;
+  void SetTriggers(const TClonesArray * amptrus,const Int_t iSM, const TMatrixD &ampmax2, const TMatrixD &ampmaxn, const AliEMCALGeometry * geom) ;
   
 
  private: 
