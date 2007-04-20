@@ -87,20 +87,15 @@ AliTOFtracker::AliTOFtracker():
  { 
   //AliTOFtracker main Ctor
    
-
-
-
    // Gettimg the geometry 
    fGeom=new AliTOFGeometryV5();
    // Read the reconstruction parameters from the OCDB
    AliTOFcalib *calib = new AliTOFcalib(fGeom);
    fRecoParam = (AliTOFRecoParam*)calib->ReadRecParFromCDB("TOF/Calib",-1);
-   if(!fRecoParam) {AliFatal("Exiting, no Reconstruction Parameters object found!!!");exit(0);}  
    if(fRecoParam->GetApplyPbPbCuts())fRecoParam=fRecoParam->GetPbPbparam();
    Double_t parPID[2];   
    parPID[0]=fRecoParam->GetTimeResolution();
    parPID[1]=fRecoParam->GetTimeNSigma();
-   AliDebug(2,Form("TOF PID pars: Sigma= %f  Range= %f",parPID[0],parPID[1]));
    fPid=new AliTOFpidESD(parPID);
    InitCheckHists();
 
@@ -266,9 +261,9 @@ Int_t AliTOFtracker::PropagateBack(AliESD* event) {
   Bool_t timeZeroFromT0  = fRecoParam->GetTimeZerofromT0();
   Bool_t timeZeroFromTOF = fRecoParam->GetTimeZerofromTOF();
 
-  AliDebug(2,Form("Use Time Zero?: %d",usetimeZero));
-  AliDebug(2,Form("Time Zero from T0? : %d",timeZeroFromT0));
-  AliDebug(2,Form("Time Zero From TOF? : %d",timeZeroFromTOF));
+  AliDebug(1,Form("Use Time Zero?: %d",usetimeZero));
+  AliDebug(1,Form("Time Zero from T0? : %d",timeZeroFromT0));
+  AliDebug(1,Form("Time Zero From TOF? : %d",timeZeroFromTOF));
 
   if(usetimeZero){
     if(timeZeroFromT0){
@@ -358,20 +353,18 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
   Float_t dzMax=fRecoParam->GetWindowSizeMaxZ();
   Float_t dCut=fRecoParam->GetDistanceCut();
   Double_t maxChi2=fRecoParam->GetMaxChi2();
-
   Bool_t timeWalkCorr    = fRecoParam->GetTimeWalkCorr();
-
-  AliDebug(2,Form("Time Walk Correction? : %d",timeWalkCorr));
-
-  AliDebug(2,"TOF RecPars pars: \n");
-  AliDebug(2,Form("TOF sens radius: %f",sensRadius));
-  AliDebug(2,Form("TOF step size: %f",stepSize));
-  AliDebug(2,Form("TOF Window scale factor: %f",scaleFact));
-  AliDebug(2,Form("TOF Window max dy: %f",dyMax));
-  AliDebug(2,Form("TOF Window max dz: %f",dzMax));
-  AliDebug(2,Form("TOF distance Cut: %f",dCut));
-  AliDebug(2,Form("TOF Max Chi2: %f",maxChi2));
-
+  if(!mLastStep){
+    AliDebug(1,"++++++++++++++TOF Reconstruction Parameters:++++++++++++ \n");
+    AliDebug(1,Form("TOF sens radius: %f",sensRadius));
+    AliDebug(1,Form("TOF step size: %f",stepSize));
+    AliDebug(1,Form("TOF Window scale factor: %f",scaleFact));
+    AliDebug(1,Form("TOF Window max dy: %f",dyMax));
+    AliDebug(1,Form("TOF Window max dz: %f",dzMax));
+    AliDebug(1,Form("TOF distance Cut: %f",dCut));
+    AliDebug(1,Form("TOF Max Chi2: %f",maxChi2));
+    AliDebug(1,Form("Time Walk Correction? : %d",timeWalkCorr));   
+  }
   //Match ESD tracks to clusters in TOF
 
 
