@@ -12,11 +12,10 @@
     @note   The class is used in Offline (AliRoot) context
 */
 
-#include <cerrno>
 #include <vector>
 #include "AliHLTLogging.h"
 #include "AliHLTDataTypes.h"
-#include "AliHLTDefinitions.h"
+//#include "AliHLTDefinitions.h"
 #include "TObject.h"
 //#include "TList.h"
 
@@ -193,7 +192,8 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
    * @struct AliHLTDataSegment
    * @brief  Descriptor of a data segment within the buffer.
    */
-  struct AliHLTDataSegment {
+  class AliHLTDataSegment {
+  public:
     AliHLTDataSegment()
       :
       fDataType(),
@@ -226,7 +226,16 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
    * @struct AliHLTRawBuffer
    * @brief  Descriptor of the raw data buffer which can host several segments.
    */
-  struct AliHLTRawBuffer {
+  class AliHLTRawBuffer {
+  public:
+    /** standard constructor */
+    AliHLTRawBuffer() : fSize(0), fTotalSize(0), fPtr(NULL) {}
+    /** not a valid copy constructor, defined according to effective C++ style */
+    AliHLTRawBuffer(const AliHLTRawBuffer&) : fSize(0), fTotalSize(0), fPtr(NULL) {}
+    /** not a valid assignment op, but defined according to effective C++ style */
+      AliHLTRawBuffer& operator=(const AliHLTRawBuffer&) {return *this;}
+    /** standard destructor */
+    virtual ~AliHLTRawBuffer() {}
     /** size of the currently occupied partition of the buffer */
     AliHLTUInt32_t fSize;                                          // see above
     /** total size of the buffer, including safety margin */

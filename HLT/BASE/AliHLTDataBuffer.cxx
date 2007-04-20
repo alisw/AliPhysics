@@ -28,8 +28,9 @@ using namespace std;
 #include "AliHLTDataBuffer.h"
 #include "AliHLTConsumerDescriptor.h"
 #include "AliHLTComponent.h"
-#include <string>
-#include "AliHLTSystem.h"
+#include <cerrno>
+//#include <string>
+//#include "AliHLTSystem.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTDataBuffer)

@@ -25,7 +25,7 @@
 using namespace std;
 #endif
 
-#include "AliHLTStdIncludes.h"
+//#include "AliHLTStdIncludes.h"
 #include "AliHLTComponent.h"
 #include "AliHLTComponentHandler.h"
 #include "AliHLTMessage.h"
@@ -200,12 +200,14 @@ int AliHLTComponent::DoInit( int argc, const char** argv )
   if (argc==0 && argv==NULL) {
     // this is currently just to get rid of the warning "unused parameter"
   }
+  fEventCount=0;
   return 0;
 }
 
 int AliHLTComponent::DoDeinit()
 {
   // see header file for function documentation
+  fEventCount=0;
   return 0;
 }
 
@@ -322,6 +324,7 @@ int AliHLTComponent::FindMatchingDataTypes(AliHLTComponent* pConsumer, vector<Al
 
 void AliHLTComponent::PrintDataTypeContent(AliHLTComponentDataType& dt, const char* format) const
 {
+  // see header file for function documentation
   const char* fmt="publisher \'%s\'";
   if (format) fmt=format;
   HLTMessage(fmt, (DataType2Text(dt)).c_str());
@@ -429,7 +432,7 @@ int AliHLTComponent::IncrementEventCounter()
   return fEventCount;
 }
 
-int AliHLTComponent::GetNumberOfInputBlocks()
+int AliHLTComponent::GetNumberOfInputBlocks() const
 {
   // see header file for function documentation
   if (fpInputBlocks!=NULL) {
@@ -486,7 +489,7 @@ const TObject* AliHLTComponent::GetNextInputObject(int bForce)
   return pObj;
 }
 
-int AliHLTComponent::FindInputBlock(const AliHLTComponentDataType& dt, int startIdx)
+int AliHLTComponent::FindInputBlock(const AliHLTComponentDataType& dt, int startIdx) const
 {
   // see header file for function documentation
   int iResult=-ENOENT;
@@ -512,9 +515,10 @@ TObject* AliHLTComponent::CreateInputObject(int idx, int bForce)
 	if (firstWord==fpInputBlocks[idx].fSize-sizeof(AliHLTUInt32_t)) {
 	  HLTDebug("create object from block %d size %d", idx, fpInputBlocks[idx].fSize);
 	  AliHLTMessage msg(fpInputBlocks[idx].fPtr, fpInputBlocks[idx].fSize);
-	  pObj=msg.ReadObject(msg.GetClass());
-	  if (pObj && msg.GetClass()) {
-	    HLTDebug("object %p type %s created", pObj, msg.GetClass()->GetName());
+	  TClass* objclass=msg.GetClass();
+	  pObj=msg.ReadObject(objclass);
+	  if (pObj && objclass) {
+	    HLTDebug("object %p type %s created", pObj, objclass->GetName());
 	  } else {
 	  }
 	} else {
@@ -557,6 +561,7 @@ TObject* AliHLTComponent::GetInputObject(int idx, const char* classname, int bFo
 
 int AliHLTComponent::CleanupInputObjects()
 {
+  // see header file for function documentation
   if (!fpInputObjects) return 0;
   TObjArray* array=fpInputObjects;
   fpInputObjects=NULL;
@@ -650,7 +655,7 @@ const AliHLTComponentBlockData* AliHLTComponent::GetNextInputBlock()
   return pBlock;
 }
 
-int AliHLTComponent::FindInputBlock(const AliHLTComponentBlockData* pBlock)
+int AliHLTComponent::FindInputBlock(const AliHLTComponentBlockData* pBlock) const
 {
   // see header file for function documentation
   int iResult=-ENOENT;
@@ -773,6 +778,7 @@ int AliHLTComponent::InsertOutputBlock(void* pBuffer, int iSize, const AliHLTCom
 
 int AliHLTComponent::EstimateObjectSize(TObject* pObject) const
 {
+  // see header file for function documentation
   if (!pObject) return -EINVAL;
     AliHLTMessage msg(kMESS_OBJECT);
     msg.WriteObject(pObject);

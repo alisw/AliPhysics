@@ -27,6 +27,7 @@ using namespace std;
 
 #include "AliHLTSystem.h"
 #include "AliHLTDummyComponent.h"
+#include "AliHLTDefinitions.h"
 #include <stdlib.h>
 #include <errno.h>
 

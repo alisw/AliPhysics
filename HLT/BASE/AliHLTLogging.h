@@ -14,6 +14,7 @@
 #include "AliHLTDataTypes.h"
 #include "AliHLTStdIncludes.h"
 #include "TObject.h"
+#include "TArrayC.h"
 
 //#define LOG_PREFIX ""       // logging prefix, for later extensions
 
@@ -83,7 +84,7 @@ public:
   // logging function with two origin parameters, used by the log macros
   //
   int LoggingVarargs(AliHLTComponentLogSeverity severity, 
-		     const char* origin_class, const char* origin_func,
+		     const char* originClass, const char* originFunc,
 		     const char* file, int line, ... ) const;
 
   // apply filter, return 1 if message should pass
@@ -110,7 +111,7 @@ public:
    * Print message through AliRoot log channels.
    */
   static int AliMessage(AliHLTComponentLogSeverity severity,
-			const char* origin_class, const char* origin_func,
+			const char* originClass, const char* originFunc,
 			const char* file, int line, const char* message);
 #endif
 
@@ -122,7 +123,13 @@ public:
    */
   static const char* BuildLogString(const char *format, va_list ap);
 
-  virtual void* GetParameter() {return NULL;}
+  /**
+   * Get parameter given by the external caller.
+   * This functionality is not yet implemented. It is intended
+   * to pass the parameter pointer given to the component at
+   * initialization back to the caller.
+   */
+  virtual void* GetParameter() const {return NULL;}
 
   /**
    * Switch logging through AliLog on or off
@@ -130,23 +137,35 @@ public:
    */
   void SwitchAliLog(int sw) {fgUseAliLog=(sw!=0);}
 
+  /** target stream for AliRoot logging methods */
+  static ostringstream fgLogstr;                                   //! transient
+  
 protected:
 
 private:
   /** the global logging filter */
-  static  AliHLTComponentLogSeverity fGlobalLogFilter;             // see above
+  static  AliHLTComponentLogSeverity fgGlobalLogFilter;            // see above
   /** the local logging filter for one class */
   AliHLTComponentLogSeverity fLocalLogFilter;                      // see above
   /** logging callback from the framework */
-  static AliHLTfctLogging fLoggingFunc;                            // see above
+  static AliHLTfctLogging fgLoggingFunc;                           // see above
   /** default keyword */
   const char* fpDefaultKeyword;                                    //! transient
   /** current keyword */
   const char* fpCurrentKeyword;                                    //! transient
   /** switch for logging through AliLog, default on */
   static int fgUseAliLog;                                          // see above
+  /**
+   * The global logging buffer.
+   * The buffer is created with an initial size and grown dynamically on
+   * demand.
+   */
+  static TArrayC fgAliHLTLoggingTarget;                            //! transient
+  
+  /** the maximum size of the buffer */
+  static const int fgkALIHLTLOGGINGMAXBUFFERSIZE;                  //! transient
 
-  ClassDef(AliHLTLogging, 1)
+  ClassDef(AliHLTLogging, 2)
 };
 
 /* the class AliHLTKeyword is a simple helper class used by the HLTLogKeyword macro
@@ -195,8 +214,8 @@ class AliHLTKeyword {
     }
 
  private:
-  AliHLTLogging* fpParent;
-  const char* fpOriginal;
+  AliHLTLogging* fpParent;                                         //! transient
+  const char* fpOriginal;                                          //! transient
 };
 #endif
 

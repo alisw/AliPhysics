@@ -22,7 +22,7 @@
 #include <string>
 #include "AliHLTLogging.h"
 #include "AliHLTDataTypes.h"
-#include "AliHLTDefinitions.h"
+//#include "AliHLTDefinitions.h"
 
 /* Matthias Dec 2006
  * The names have been changed for Aliroot's coding conventions sake
@@ -550,7 +550,7 @@ class AliHLTComponent : public AliHLTLogging {
    * Get the number of input blocks.
    * @return number of input blocks
    */
-  int GetNumberOfInputBlocks();
+  int GetNumberOfInputBlocks() const;
 
   /**
    * Get the first object of a specific data type from the input data.
@@ -754,7 +754,7 @@ class AliHLTComponent : public AliHLTLogging {
    *
    * @internal
    */
-  int FindInputBlock(const AliHLTComponentDataType& dt, int startIdx=-1);
+  int FindInputBlock(const AliHLTComponentDataType& dt, int startIdx=-1) const;
 
   /**
    * Get index in the array of input bocks.
@@ -764,7 +764,7 @@ class AliHLTComponent : public AliHLTLogging {
    *
    * @internal
    */
-  int FindInputBlock(const AliHLTComponentBlockData* pBlock);
+  int FindInputBlock(const AliHLTComponentBlockData* pBlock) const;
 
   /**
    * Create an object from a specified input block.
