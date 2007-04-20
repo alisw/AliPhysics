@@ -392,12 +392,12 @@ void AliAlignmentTracks::AlignDetector(AliAlignObj::ELayerID firstLayer,
   // Tracks are fitted only within
   // the range defined by the user.
   Int_t nModules = 0;
-  for (Int_t iLayer = firstLayer; iLayer < lastLayer; iLayer++)
+  for (Int_t iLayer = firstLayer; iLayer <= lastLayer; iLayer++)
     nModules += AliAlignObj::LayerSize(iLayer);
   TArrayI volIds(nModules);
 
   Int_t modnum = 0;
-  for (Int_t iLayer = firstLayer; iLayer < lastLayer; iLayer++) {
+  for (Int_t iLayer = firstLayer; iLayer <= lastLayer; iLayer++) {
     for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer); iModule++) {
       UShort_t volId = AliAlignObj::LayerToVolUID(iLayer,iModule);
       volIds.AddAt(volId,modnum);
