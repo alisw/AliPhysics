@@ -97,7 +97,8 @@ void AliHMPIDCluster::FitFunc(Int_t &iNpars, Double_t* /*deriv*/, Double_t &chi2
       dQpadMath+=par[3*j+2]*pClu->Dig(i)->IntMathieson(par[3*j],par[3*j+1]);           // par[3*j+2] is charge par[3*j] is x par[3*j+1] is y of current Mathieson
     }
 //    if(dQpadMath>0)chi2 +=TMath::Power((pClu->Dig(i)->Q()-dQpadMath),2)/dQpadMath;   //
-    if(dQpadMath>0)chi2 +=TMath::Power((pClu->Dig(i)->Q()-dQpadMath),2)/pClu->Dig(i)->Q(); //
+    if(dQpadMath>0 && pClu->Dig(i)->Q())
+      chi2 +=TMath::Power((pClu->Dig(i)->Q()-dQpadMath),2)/pClu->Dig(i)->Q(); //
   }                                                                                    //loop on all pads of the cluster     
 }//FitFunction()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
