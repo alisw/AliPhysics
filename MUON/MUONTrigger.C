@@ -13,18 +13,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 // This macro is to be used to check the trigger algorithm w/o having to
 // (re-)perform simulation and digitalization. 
-// It loads the digits, erase TreeR and store the current trigger output in 
-// TreeR.
-// The different trigger outputs can be compared by looking at the GLT branch 
-// of TreeD (filled during simulation) and the TC branch of TreeR (filled from 
-// a copy of TreeD during reconstruction or with this macro).
-// Note: rec points from tracking chamber will be lost.
-//
-// usage: (to be compiled)
-// MUONTrigger("galice.root",0) -> Default Trigger Code
-// MUONTrigger("galice.root",1) -> New Trigger Code
+// see full description in the REDAME file
+// Author: P.Crochet (LPC)
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "AliRun.h"
@@ -32,14 +26,14 @@
 #include "AliMUONLoader.h"
 #include "AliMUONData.h"
 #include "AliMUONDigit.h"
-#include "AliMUONTriggerDecisionV1.h"
 #include "AliMUONTriggerElectronics.h"
 #include "AliMUONCalibrationData.h"
 #include "AliCDBManager.h"
+#include <TClonesArray.h>
 #endif
-void MUONTrigger(char * FileName="galice.root", Int_t NewTriggerCode=0)
+void MUONTrigger(char * FileName="galice.root")
 {
-  // Creating Run Loader and openning file containing Digits 
+    // Creating Run Loader and openning file containing Digits 
     AliRunLoader * RunLoader = AliRunLoader::Open(FileName,"MUONLoader","UPDATE");
     if (RunLoader ==0x0) {
         printf(">>> Error : Error Opening %s file \n",FileName);
@@ -53,27 +47,21 @@ void MUONTrigger(char * FileName="galice.root", Int_t NewTriggerCode=0)
     AliLoader * MUONLoader = RunLoader->GetLoader("MUONLoader");
     MUONLoader->LoadDigits("READ");
     MUONLoader->LoadRecPoints("UPDATE"); // absolutely essential !!!
-
+    
     Int_t nevents;
     nevents = RunLoader->GetNumberOfEvents();
-
+    
     // Creating MUON data container
     AliMUONData* MUONData = new AliMUONData(MUONLoader,"MUON","MUON");
-
+    
     // Creating MUONTriggerDecision
     TTask *TriggerProcessor;
-    if (NewTriggerCode == 0) {
-	cout << " using default trigger code " << "\n";
-	TriggerProcessor = new AliMUONTriggerDecisionV1(MUONData);	
-    } else {
-	cout << " using new trigger code " << "\n";
-	AliCDBManager* cdbManager = AliCDBManager::Instance();
-	cdbManager->SetDefaultStorage("local://$ALICE_ROOT");
-	Int_t runnumber = gAlice->GetRunNumber();
-	AliMUONCalibrationData *CalibrationData = new AliMUONCalibrationData(runnumber);
-	TriggerProcessor = new AliMUONTriggerElectronics(MUONData,CalibrationData);
-    }
-
+    AliCDBManager* cdbManager = AliCDBManager::Instance();
+    cdbManager->SetDefaultStorage("local://$ALICE_ROOT");
+    Int_t runnumber = gAlice->GetRunNumber();
+    AliMUONCalibrationData *CalibrationData = new AliMUONCalibrationData(runnumber);
+    TriggerProcessor = new AliMUONTriggerElectronics(MUONData,CalibrationData);
+    
     // Testing if Trigger has already been done
     RunLoader->GetEvent(0);    
     if (MUONLoader->TreeR()) {
@@ -83,7 +71,7 @@ void MUONTrigger(char * FileName="galice.root", Int_t NewTriggerCode=0)
 	    printf("Recreating recpoints files\n");
 	}
     }
-
+    
     AliMUONDigit * mDigit;    
     Int_t digits[7];
     
@@ -93,12 +81,11 @@ void MUONTrigger(char * FileName="galice.root", Int_t NewTriggerCode=0)
 	MUONData->SetTreeAddress("D");
 	
 	MUONData->GetDigits();
-	for(Int_t ichamber=10; ichamber<14; ichamber++) {         
-	    Int_t idigit, ndigits;
-	    ndigits = (Int_t) MUONData->Digits(ichamber)->GetEntriesFast();
-
-	    for(idigit=0; idigit<ndigits; idigit++) {
-		mDigit = static_cast<AliMUONDigit*>(MUONData->Digits(ichamber)->At(idigit));
+	for(Int_t ichamber=10; ichamber<14; ichamber++) {	    
+	    Int_t ndigits = (Int_t) MUONData->Digits(ichamber)->GetEntriesFast();
+	    for(Int_t idigit=0; idigit<ndigits; idigit++) {
+		mDigit = static_cast<AliMUONDigit*>(MUONData->Digits(ichamber)->At(idigit));		 
+		
 		digits[0] = mDigit->PadX();
 		digits[1] = mDigit->PadY();
 		digits[2] = mDigit->Cathode();
@@ -107,11 +94,12 @@ void MUONTrigger(char * FileName="galice.root", Int_t NewTriggerCode=0)
 		digits[5] = mDigit->Hit();
 		digits[6] = mDigit->DetElemId();
 		
-                printf("ichamber ix iy %d %d %d \n",ichamber,mDigit->PadX(),mDigit->PadY());
+//		printf("ichamber ix iy %d %d %d \n",ichamber,mDigit->PadX(),mDigit->PadY());
 		
 	    } // loop on digits
 	} // loop on chambers
-
+	
+	
 	if (MUONLoader->TreeR() == 0x0) {	
 	    MUONLoader->MakeRecPointsContainer();
 	} else {

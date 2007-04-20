@@ -16,20 +16,10 @@
 /* $Id$ */
 
 
-/* Macro to produce trigger single muon efficiency versus pt plots for the 
-   3 pt cuts. Results are compared to the reference (red curves).   
-   To be used with (at least) 10000 events as follows
-   AliGenBox * gener = new AliGenBox(1);
-   gener->SetPtRange(0.,10.);
-   gener->SetPhiRange(0., 360.);         
-   gener->SetThetaRange(171.000,178.001);
-   gener->SetPart(13);           // or -13
-   gener->SetOrigin(0.,0., 0.);  
-   gener->SetSigma(0.0, 0.0, 0.0);     
-
-   Author: Fabien Guerin, LPC Clermont-Ferrand, Jan. 2006
-*/
-
+// Macro to produce trigger single muon efficiency versus pt plots for the 
+// 2 pt cuts. 
+// see full description in the README file
+// Author: Fabien Guerin (LPC)
 
 // ROOT includes
 #include "TBranch.h"
@@ -81,7 +71,7 @@ Double_t fitArch(Double_t *x,Double_t *par)
   return h0*TMath::TanH(h1)+par[3];
 }
 
-void MUONTriggerEfficiencyPt(char filename[10]="galice.root")
+void MUONTriggerEfficiencyPt(char filename[10]="galice.root",  Bool_t readFromRP = 0)
 {
 
 // define style
@@ -108,7 +98,7 @@ void MUONTriggerEfficiencyPt(char filename[10]="galice.root")
     st1->SetPadBottomMargin(0.15); 
     st1->cd();
     
-    gROOT->ForceStyle();
+//    gROOT->ForceStyle();
     //TGaxis::SetMaxDigits(3);
     
 // beginning of macro    
@@ -160,7 +150,6 @@ void MUONTriggerEfficiencyPt(char filename[10]="galice.root")
 	
 	if (ievent%500==0) printf("ievent = %d \n",ievent);
 
-
 // kine
 	Int_t iparticle, nparticles;
 	stack = RunLoader->Stack();
@@ -173,8 +162,13 @@ void MUONTriggerEfficiencyPt(char filename[10]="galice.root")
         }
 
 // trigger 
-        muondata.SetTreeAddress("D,GLT");
-        muondata.GetTriggerD();
+	if (!readFromRP) {
+	    muondata.SetTreeAddress("D,GLT"); 
+	    muondata.GetTriggerD();
+	} else {    
+	    muondata.SetTreeAddress("RC,TC"); 
+	    muondata.GetTrigger();
+	}
     
         globalTrigger = muondata.GlobalTrigger();
 
@@ -227,7 +221,7 @@ void MUONTriggerEfficiencyPt(char filename[10]="galice.root")
           }
           data_hits.ResetHits();
         } // end track loop
-        
+
 // 3/4 coincidence 
         SumNbHits=NbHits[0]+NbHits[1]+NbHits[2]+NbHits[3];
 
@@ -239,8 +233,13 @@ void MUONTriggerEfficiencyPt(char filename[10]="galice.root")
       } // end loop on event
       
       MUONLoader->UnloadHits();
-      MUONLoader->UnloadDigits();
-      MUONLoader->UnloadRecPoints();
+      if (!readFromRP) {
+	  muondata.SetTreeAddress("D,GLT"); 
+	  muondata.GetTriggerD();
+      } else {    
+	  muondata.SetTreeAddress("RC,TC"); 
+	  muondata.GetTrigger();
+      }
       RunLoader->UnloadKinematics();   
 
       delete RunLoader;
@@ -346,6 +345,5 @@ void MUONTriggerEfficiencyPt(char filename[10]="galice.root")
       leg->Draw("SAME");
       
       c1->SaveAs("MUONTriggerEfficiencyPt.gif");
-      c1->SaveAs("MUONTriggerEfficiencyPt.eps");
-      
+      c1->SaveAs("MUONTriggerEfficiencyPt.eps");      
 }
