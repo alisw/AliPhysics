@@ -528,6 +528,35 @@ root [0] .L $ALICE_ROOT/MUON/MUONTrigger.C+
 root [1] MUONTrigger()
 
 ===========================================================
+ How to check integrated trigger efficiency
+===========================================================
+The MUONTriggerEfficiency.C macro (included in the check scripts) calculates
+the trigger efficiency for the 2 pt cuts. 
+The output is stored in MUONTriggerEfficiency.out file.
+Usage:
+root [0] .L $ALICE_ROOT/MUON/MUONTriggerEfficiency.C+
+root [1] MUONTriggerEfficiency()
+For the CVS default version of the trigger LUT (i.e. lutAptLpt1Hpt1p7.root),
+The reference for J/psi and Upsilon is as below
+ For 1000 Jpsi events with:
+    AliGenParam *gener = new AliGenParam(1, AliGenMUONlib::kJpsi);
+    gener->SetMomentumRange(0,999);
+    gener->SetPtRange(0,100.);
+    gener->SetPhiRange(0., 360.);
+    gener->SetCutOnChild(1);
+    gener->SetChildPhiRange(0.,360.);
+    gener->SetChildThetaRange(171.0,178.0);
+    gener->SetOrigin(0,0,0);          
+    gener->SetForceDecay(kDiMuon);
+    gener->SetTrackingFlag(1);
+ the output should be 
+  Efficiency Lpt cut = 0.7362 +/- 0.0391
+  Efficiency Hpt cut = 0.2662 +/- 0.0201
+ Similarly, for 1000 Upsilon events, the output should be
+  Efficiency Lpt cut = 0.9806 +/- 0.0457
+  Efficiency Hpt cut = 0.9537 +/- 0.0448
+
+===========================================================
  How to check single muon trigger efficiency versus pt
 ===========================================================
 The MUONTriggerEfficiencyPt.C macro produces trigger single muon efficiency 
@@ -541,7 +570,7 @@ To be used with (at least) 10000 events as follows
    gener->SetPart(13);           // or -13
    gener->SetOrigin(0.,0., 0.);  
    gener->SetSigma(0.0, 0.0, 0.0);     
-Outputs are store in MUONTriggerEfficiencyPt.gif/eps/out files
+Outputs are stored in MUONTriggerEfficiencyPt.gif/eps/out files
 Important note: this macro works with one (real) muon track per event only
 Usage:
 root [0] .L $ALICE_ROOT/MUON/MUONTriggerEfficiencyPt.C+
