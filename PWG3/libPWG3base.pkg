@@ -1,9 +1,8 @@
-# $Id$
-
 SRCS:= AliQuarkoniaAcceptance.cxx \
        AliQuarkoniaEfficiency.cxx \
-       AliPWG3TrackExtrapInterface.cxx
-     
+       AliPWG3TrackExtrapInterface.cxx \
+       AliD0toKpi.cxx  AliD0toKpiAnalysis.cxx \
+       AliBtoJPSItoEle.cxx  AliBtoJPSItoEleAnalysis.cxx
      
 HDRS:= $(SRCS:.cxx=.h)
 
