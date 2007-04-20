@@ -18,8 +18,10 @@ public:
   AliDIPOv3(const char *name, const char *title);
   virtual      ~AliDIPOv3() {}
   virtual Int_t IsVersion() const {return 3;}
+  Float_t GetCenterOfDDIPVolume() {return fCenterOfDDIPVolume;} // This getter is needed for placing the Station 3 of the muon spectromeer inside de Dipole
  private:
   virtual void  CreateSpectrometerDipole();
+  Float_t fCenterOfDDIPVolume;
   ClassDef(AliDIPOv3,1)  //Class manager for magnetic dipole version 2
 };
 

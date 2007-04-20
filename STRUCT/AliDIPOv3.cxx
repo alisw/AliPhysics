@@ -43,7 +43,9 @@ AliDIPOv3::AliDIPOv3()
  
 //_____________________________________________________________________________
 AliDIPOv3::AliDIPOv3(const char *name, const char *title)
-  : AliDIPOv2(name,title)
+  : AliDIPOv2(name,title),
+    fCenterOfDDIPVolume(0.0)
+    
 {
   //
   // Standard constructor for the magnetic dipole version 3    
@@ -449,6 +451,9 @@ void AliDIPOv3::CreateSpectrometerDipole()
 
     top->AddNode(asDipole, 1, new TGeoCombiTrans(0., dipoleL / 2. * TMath::Tan(alhc * kDegrad), -kZDipole, rotxzlhc));
     top->AddNode(voDDIP,   1, new TGeoCombiTrans(0., dipoleL / 2. * TMath::Tan(alhc * kDegrad), -kZDipole, rotxzlhc));
+    // This following value is needed by the MUON module to place the station 3 
+    // in the DDIP volume with respect to the center of this volume.
+    fCenterOfDDIPVolume = kZDipole;  
 }
 
 
