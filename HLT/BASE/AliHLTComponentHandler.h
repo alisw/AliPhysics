@@ -62,6 +62,14 @@ class AliHLTComponentHandler : public AliHLTLogging {
   int LoadLibrary( const char* libraryPath );
 
   /**
+   * Find a symbol in a dynamically loaded library.
+   * @param library      library
+   * @param symbol       the symbol to find
+   * @return void pointer to function
+   */
+  void* FindSymbol(const char* library, const char* symbol);
+
+  /**
    * Unload a component shared library.
    * All components will be de-registered.
    * @param libraryPath  library name as specified to @ref LoadLibrary
@@ -207,6 +215,13 @@ class AliHLTComponentHandler : public AliHLTLogging {
     /** name of the library, casted to TString* before use */
     void* name;                                                    //! transient
   };
+
+  /**
+   * Find a specific library among the loaded libraries.
+   * @param library     library name/path
+   * @return pointer to AliHLTLibHandle
+   */
+  AliHLTLibHandle* FindLibrary(const char* library);
 
   /** list of registered components */
   vector<AliHLTComponent*> fComponentList;                         // see above 

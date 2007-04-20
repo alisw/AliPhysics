@@ -411,6 +411,8 @@ int AliHLTSystem::InitBenchmarking(TObjArray* pStopwatches)
 	    pComp->SetStopwatch(pStopwatches->At((int)AliHLTComponent::kSWOutput), AliHLTComponent::kSWDA);
 	  }
 	  break;
+	default:
+	  HLTWarning("unknown component type %d", (int)pComp->GetComponentType());
 	}
       }
     } else {
@@ -694,4 +696,10 @@ int AliHLTSystem::ClearStatusFlags(int flags)
   // see header file for class documentation
   fState&=~flags;
   return fState;
+}
+
+void* AliHLTSystem::FindDynamicSymbol(const char* library, const char* symbol)
+{
+  if (fpComponentHandler==NULL) return NULL;
+  return fpComponentHandler->FindSymbol(library, symbol);
 }

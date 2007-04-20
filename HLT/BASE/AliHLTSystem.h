@@ -228,6 +228,14 @@ class AliHLTSystem : public AliHLTLogging {
   int LoadComponentLibraries(const char* libs);
 
   /**
+   * Find a symbol in a dynamically loaded library.
+   * @param library      library
+   * @param symbol       the symbol to find
+   * @return void pointer to function
+   */
+  void* FindDynamicSymbol(const char* library, const char* symbol);
+
+  /**
    * Prepare the HLT system for running.
    * - module agents are requested to register configurations
    * - task lists are built from the top configurations of the modules

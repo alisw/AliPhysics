@@ -259,37 +259,35 @@ int AliHLTComponentHandler::LoadLibrary( const char* libraryPath )
   if (libraryPath) {
     AliHLTComponent::SetGlobalComponentHandler(this);
     AliHLTLibHandle hLib;
+    const char* loadtype="";
 #ifdef HAVE_DLFCN_H
     // use interface to the dynamic linking loader
     hLib.handle=dlopen(libraryPath, RTLD_NOW);
+    loadtype="dlopen";
 #else
     // use ROOT dynamic loader
     // check if the library was already loaded, as Load returns
     // 'failure' if the library was already loaded
-    vector<AliHLTLibHandle>::iterator element=fLibraryList.begin();
-    while (element!=fLibraryList.end()) {
-      TString* name=reinterpret_cast<TString*>((*element).name);
-      if (name->CompareTo(libraryPath)==0) {
-	int* pRootHandle=reinterpret_cast<int*>((*element).handle);
+    AliHLTLibHandle* pLib=FindLibrary(libraryPath);
+    if (pLib) {
+	int* pRootHandle=reinterpret_cast<int*>(pLib->handle);
 	(*pRootHandle)++;
 	HLTDebug("instance %d of library %s loaded", (*pRootHandle), libraryPath);
 	hLib.handle=pRootHandle;
-	break;
-      }
-      element++;
     }
     
     if (hLib.handle==NULL && gSystem->Load(libraryPath)==0) {
       int* pRootHandle=new int;
       if (pRootHandle) *pRootHandle=1;
       hLib.handle=pRootHandle;
-      HLTDebug("library %s loaded via gSystem", libraryPath);
+      //HLTDebug("library %s loaded via gSystem", libraryPath);
     }
+    loadtype="gSystem";
 #endif //HAVE_DLFCN_H
     if (hLib.handle!=NULL) {
       // create TString object to store library path and use pointer as handle 
       hLib.name=new TString(libraryPath);
-      HLTInfo("library %s loaded", libraryPath);
+      HLTInfo("library %s loaded (%s)", libraryPath, loadtype);
       fLibraryList.insert(fLibraryList.begin(), hLib);
       iResult=RegisterScheduledComponents();
     } else {
@@ -352,6 +350,37 @@ int AliHLTComponentHandler::UnloadLibraries()
     element=fLibraryList.begin();
   }
   return iResult;
+}
+
+void* AliHLTComponentHandler::FindSymbol(const char* library, const char* symbol)
+{
+  // see header file for class documentation
+  AliHLTLibHandle* hLib=FindLibrary(library);
+  if (hLib==NULL) return NULL;
+  void* pFunc=NULL;
+#ifdef HAVE_DLFCN_H
+  pFunc=dlsym(hLib->handle, symbol);
+#else
+  TString* name=reinterpret_cast<TString*>(hLib->name);
+  pFunc=gSystem->DynFindSymbol(name->Data(), symbol);
+#endif
+  return pFunc;
+}
+
+AliHLTComponentHandler::AliHLTLibHandle* AliHLTComponentHandler::FindLibrary(const char* library)
+{
+  // see header file for class documentation
+  AliHLTLibHandle* hLib=NULL;
+  vector<AliHLTLibHandle>::iterator element=fLibraryList.begin();
+  while (element!=fLibraryList.end()) {
+    TString* name=reinterpret_cast<TString*>((*element).name);
+    if (name->CompareTo(library)==0) {
+      hLib=&(*element);
+      break;
+    }
+    element++;
+  }
+  return hLib;
 }
 
 int AliHLTComponentHandler::AddStandardComponents()
