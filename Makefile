@@ -103,6 +103,10 @@ ifeq ($(findstring TFluka,$(MAKECMDGOALS)),TFluka)
 ALIROOTMODULES += TFluka
 endif
 
+ifeq ($(findstring THydjet,$(MAKECMDGOALS)),THydjet)
+ALIROOTMODULES += THydjet
+endif
+
 ifeq ($(findstring PWG0,$(MAKECMDGOALS)),PWG0)
 ALIROOTMODULES += PWG0
 endif
