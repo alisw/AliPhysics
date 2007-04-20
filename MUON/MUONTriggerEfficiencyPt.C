@@ -210,7 +210,7 @@ void MUONTriggerEfficiencyPt(char filename[10]="galice.root",  Bool_t readFromRP
             mHit = static_cast<AliMUONHit*>(data_hits.Hits()->At(ihit));
             Int_t Nch        = mHit->Chamber(); 
             Int_t hittrack   = mHit->Track();
-            Int_t IdPart     = mHit->Particle();	    
+            Float_t IdPart   = mHit->Particle();	    
 
             for (Int_t j=0;j<4;j++) {
               Int_t kch=11+j;

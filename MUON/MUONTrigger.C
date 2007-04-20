@@ -73,7 +73,7 @@ void MUONTrigger(char * FileName="galice.root")
     }
     
     AliMUONDigit * mDigit;    
-    Int_t digits[7];
+    Float_t digits[7];
     
     for(Int_t ievent = 0; ievent < nevents; ievent++) {
 	printf(">>> Event %i out of %i \n",ievent,nevents);
