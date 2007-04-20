@@ -37,10 +37,10 @@ public:
 
   virtual Int_t ExpandIntoListTree(TGListTree* ltree, TGListTreeItem* parent);
 
-  virtual void UpdateItems();
-
   virtual Bool_t CanEditRnrElement() { return false; }
   virtual void SetRnrSelf(Bool_t rnr);
+  virtual void SetRnrChildren(Bool_t rnr);
+  virtual void SetRnrState(Bool_t rnr);
 
   virtual Bool_t CanEditMainColor()  { return true; }
   virtual void SetMainColor(Color_t color);
@@ -82,8 +82,6 @@ public:
   void  SetVisOption(Int_t visopt);
   Int_t GetVisLevel()  const { return fVisLevel; }
   void  SetVisLevel(Int_t vislvl);
-
-  virtual void UpdateItems();
 
   virtual Bool_t CanEditRnrElement() { return true; }
   virtual void SetRnrSelf(Bool_t rnr);

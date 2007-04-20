@@ -60,18 +60,23 @@ Int_t GeoNodeRnrEl::ExpandIntoListTree(TGListTree* ltree,
 
 /**************************************************************************/
 
-void GeoNodeRnrEl::UpdateItems()
-{
-  fRnrSelf      = fNode->TGeoAtt::IsVisible(); 
-  RenderElement::UpdateItems();
-}
-
-/**************************************************************************/
-
 void GeoNodeRnrEl::SetRnrSelf(Bool_t rnr)
 {
+  RenderElement::SetRnrSelf(rnr);
   fNode->SetVisibility(rnr);
-  UpdateItems();
+}
+
+void GeoNodeRnrEl::SetRnrChildren(Bool_t rnr)
+{
+  RenderElement::SetRnrChildren(rnr);
+  fNode->VisibleDaughters(rnr);
+}
+
+void GeoNodeRnrEl::SetRnrState(Bool_t rnr)
+{
+  RenderElement::SetRnrState(rnr);
+  fNode->SetVisibility(rnr);
+  fNode->VisibleDaughters(rnr);
 }
 
 /**************************************************************************/
@@ -190,13 +195,6 @@ void GeoTopNodeRnrEl::SetVisLevel(Int_t vislvl)
 {
   fVisLevel = vislvl;
   gReve->Redraw3D(); 
-}
-
-/**************************************************************************/
-
-void GeoTopNodeRnrEl::UpdateItems()
-{
-  RenderElement::UpdateItems();
 }
 
 /**************************************************************************/

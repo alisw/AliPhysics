@@ -102,13 +102,13 @@ void GeoNodeRnrElEditor::SetModel(TObject* obj)
 
 void GeoNodeRnrElEditor::DoVizNode()
 {
-  fNodeRE->fNode->SetVisibility(fVizNode->IsOn());
-  fNodeRE->UpdateItems();
+  fNodeRE->SetRnrSelf(fVizNode->IsOn());
+  Update();
 }
 
 void GeoNodeRnrElEditor::DoVizNodeDaughters()
 {
-  fNodeRE->fNode->VisibleDaughters(fVizNodeDaughters->IsOn());
+  fNodeRE->SetRnrChildren(fVizNodeDaughters->IsOn());
   Update();
 }
 
