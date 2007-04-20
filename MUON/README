@@ -513,5 +513,40 @@ aliroot
 .q
 
 ===========================================================
+ How to reprocess trigger decision from already produced digits
+===========================================================
+The MUONTrigger.C macro can be used to check the trigger algorithm w/o 
+having to (re-)perform simulation and digitalization. 
+It loads the digits, erase TreeR and store the current trigger output in 
+TreeR.
+The different trigger outputs can be compared by looking at the GLT branch 
+of TreeD (filled during simulation) and the TC branch of TreeR (filled from 
+a copy of TreeD during reconstruction or with this macro).
+Note: rec points from tracking chamber will be lost.
+Usage:
+root [0] .L $ALICE_ROOT/MUON/MUONTrigger.C+
+root [1] MUONTrigger()
+
+===========================================================
+ How to check single muon trigger efficiency versus pt
+===========================================================
+The MUONTriggerEfficiencyPt.C macro produces trigger single muon efficiency 
+versus pt plots for the 2 pt cuts. 
+Results are compared to the reference (red curves).   
+To be used with (at least) 10000 events as follows
+   AliGenBox * gener = new AliGenBox(1);
+   gener->SetPtRange(0.,10.);
+   gener->SetPhiRange(0., 360.);         
+   gener->SetThetaRange(171.000,178.001);
+   gener->SetPart(13);           // or -13
+   gener->SetOrigin(0.,0., 0.);  
+   gener->SetSigma(0.0, 0.0, 0.0);     
+Outputs are store in MUONTriggerEfficiencyPt.gif/eps/out files
+Important note: this macro works with one (real) muon track per event only
+Usage:
+root [0] .L $ALICE_ROOT/MUON/MUONTriggerEfficiencyPt.C+
+root [1] MUONTriggerEfficiencyPt()
+
+===========================================================
  Still working ..............
 ===========================================================
