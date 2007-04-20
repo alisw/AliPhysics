@@ -46,7 +46,8 @@ class AliTPCCalPad : public TNamed {
   Double_t GetLTM(Double_t *sigma=0, Double_t fraction=0.9);
   TGraph  *MakeGraph(Int_t type=0, Float_t ratio=0.7);
   TH2F    *MakeHisto2D(Int_t side=0);
-  TH1F    *MakeHisto1D(Float_t min=4, Float_t max=-4, Int_t type=0);
+  TH1F    *MakeHisto1D(Float_t min=4, Float_t max=-4, Int_t type=0);  
+  static void MakeTree(const char * fileName, TObjArray * array);
  protected:
   AliTPCCalROC *fROC[kNsec];                    //  Array of ROC objects which contain the values per pad
   ClassDef(AliTPCCalPad,1)                      //  TPC calibration class for parameters which are saved per pad

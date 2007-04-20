@@ -28,6 +28,8 @@
 #include <TGraph.h>
 #include <TGraph2D.h>
 #include <TH2F.h>
+#include "TTreeStream.h"
+
 ClassImp(AliTPCCalPad)
 
 //_____________________________________________________________________________
@@ -410,5 +412,103 @@ TH2F *AliTPCCalPad::MakeHisto2D(Int_t side){
   return his;
 }
 
+
+
+
+void AliTPCCalPad::MakeTree(const char * fileName, TObjArray * array) {
+  //
+  // Write tree with all available information
+  //
+   TTreeSRedirector cstream(fileName);
+   AliTPCROC* tpcROCinstance = AliTPCROC::Instance();
+   
+   TString* names = new TString[array->GetEntries()];
+   for (Int_t ivalue = 0; ivalue < array->GetEntries(); ivalue++)
+      names[ivalue].Append(((AliTPCCalPad*)array->At(ivalue))->GetName());
+
+   for (UInt_t isector = 0; isector < tpcROCinstance->GetNSectors(); isector++) {
+      //
+      // get statistic for given sector
+      //
+      TVectorF median(array->GetEntries());
+      TVectorF mean(array->GetEntries());
+      TVectorF rms(array->GetEntries());
+      TVectorF ltm(array->GetEntries());
+      
+      TVectorF *vectorArray = new TVectorF[array->GetEntries()];
+      for (Int_t ivalue = 0; ivalue < array->GetEntries(); ivalue++)
+         vectorArray[ivalue].ResizeTo(tpcROCinstance->GetNChannels(isector));
+      
+      for (Int_t ivalue = 0; ivalue < array->GetEntries(); ivalue++) {
+         AliTPCCalPad* calPad = (AliTPCCalPad*) array->At(ivalue);
+         AliTPCCalROC* calROC = calPad->GetCalROC(isector);
+         median[ivalue] = calROC->GetMedian();
+         mean[ivalue] = calROC->GetMean();
+         rms[ivalue] = calROC->GetRMS();
+         ltm[ivalue] = calROC->GetLTM();
+      }
+      
+      //
+      // fill vectors of variable per pad
+      //
+      TVectorF *posArray = new TVectorF[6];
+      for (Int_t ivalue = 0; ivalue < 6; ivalue++)
+         posArray[ivalue].ResizeTo(tpcROCinstance->GetNChannels(isector));
+
+      Float_t posG[3] = {0};
+      Float_t posL[3] = {0};
+      Int_t ichannel = 0;
+      for (UInt_t irow = 0; irow < tpcROCinstance->GetNRows(isector); irow++) {
+         for (UInt_t ipad = 0; ipad < tpcROCinstance->GetNPads(isector, irow); ipad++) {
+            tpcROCinstance->GetPositionLocal(isector, irow, ipad, posL);
+            tpcROCinstance->GetPositionGlobal(isector, irow, ipad, posG);
+            posArray[0][ichannel] = irow;
+            posArray[1][ichannel] = ipad;
+            posArray[2][ichannel] = posL[0];
+            posArray[3][ichannel] = posL[1];
+            posArray[4][ichannel] = posG[0];
+            posArray[5][ichannel] = posG[1];
+            
+            // loop over array containing AliTPCCalPads
+            for (Int_t ivalue = 0; ivalue < array->GetEntries(); ivalue++) {
+               AliTPCCalPad* calPad = (AliTPCCalPad*) array->At(ivalue);
+               (vectorArray[ivalue])[ichannel] = calPad->GetCalROC(isector)->GetValue(irow, ipad);
+            }
+            ichannel++;
+         }
+      }
+      
+      cstream << "calPads" <<
+         "sector=" << isector;
+      
+      for  (Int_t ivalue = 0; ivalue < array->GetEntries(); ivalue++) {
+         cstream << "calPads" <<
+            (Char_t*)((names[ivalue] + "Median=").Data()) << median[ivalue] <<
+            (Char_t*)((names[ivalue] + "Mean=").Data()) << mean[ivalue] <<
+            (Char_t*)((names[ivalue] + "RMS=").Data()) << rms[ivalue] <<
+            (Char_t*)((names[ivalue] + "LTM=").Data()) << ltm[ivalue];
+      }
+
+      for  (Int_t ivalue = 0; ivalue < array->GetEntries(); ivalue++) {
+         cstream << "calPads" <<
+            (Char_t*)((names[ivalue] + ".=").Data()) << &vectorArray[ivalue];
+      }
+
+      cstream << "calPads" <<
+         "row.=" << &posArray[0] <<
+         "pad.=" << &posArray[1] <<
+         "lx.=" << &posArray[2] <<
+         "ly.=" << &posArray[3] <<
+         "gx.=" << &posArray[4] <<
+         "gy.=" << &posArray[5];
+         
+      cstream << "calPads" <<
+         "\n";
+
+      delete[] posArray;
+      delete[] vectorArray;
+   }
+   delete[] names;
+}
 
 
