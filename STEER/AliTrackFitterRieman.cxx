@@ -159,27 +159,24 @@ Bool_t AliTrackFitterRieman::Fit(const TArrayI *volIds,const TArrayI *volIdsFit,
   //  Float_t debugRatio = 1./(1.+debugLevel);
   Float_t debugRatio = debugLevel? 1.0/debugLevel : 1.0;
 
-  const Int_t kMinPoints =1;
   Int_t npoints = fPoints->GetNPoints();
   if ( npoints<fMinNPoints) return kFALSE;
   //
   // fast count points
-  Int_t countFit = 0;  
-  for (Int_t ifit=0; ifit<volIdsFit->GetSize(); ifit++){
-    Int_t volIdFit  = volIdsFit->At(ifit);
-    for (Int_t ipoint = 0; ipoint < npoints; ipoint++)
-      if (volIdFit==fPoints->GetVolumeID()[ipoint]) countFit++;    
+  if (volIdsFit != 0x0) {
+    Int_t countFit = 0;
+    Int_t countPoint = 0;
+    for (Int_t ipoint = 0; ipoint < npoints; ipoint++) {
+      if (FindVolId(volIds,fPoints->GetVolumeID()[ipoint]))
+	countPoint++;
+      if (volIdsFit != 0x0) {
+	if (FindVolId(volIdsFit,fPoints->GetVolumeID()[ipoint]))
+	  countFit++;
+      }
+    }
+    if (countPoint==0) return kFALSE;
+    if ((countFit<fMinNPoints) && (volIdsFit != 0x0)) return kFALSE;
   }
-  if (countFit<fMinNPoints) return kFALSE;
-  //
-  Int_t countPoint = 0;  
-  for (Int_t jpoint=0; jpoint<volIds->GetSize(); jpoint++){
-    Int_t volIdPoint  = volIds->At(jpoint);
-    for (Int_t ipoint = 0; ipoint < npoints; ipoint++)
-      if (volIdPoint==fPoints->GetVolumeID()[ipoint]) countPoint++;    
-  }
-  if (countPoint<kMinPoints) return kFALSE;
-  //
   //
 
   Reset();
