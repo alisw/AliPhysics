@@ -14,7 +14,10 @@
 
 /**
  * @class AliHLTSampleComponent2
- * @brief An HLT sample component
+ * @brief An HLT sample component.
+ * This component does not any data processing at all. It just
+ * illustrates the existence of several components in ine library and
+ * allows to set up a very simple chain with different components.
  * @ingroup alihlt_tutorial
  */
 class AliHLTSampleComponent2 : public AliHLTProcessor {

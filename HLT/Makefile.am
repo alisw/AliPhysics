@@ -32,6 +32,7 @@ EXTRA_DIST		= libHLTbase.pkg \
 			  libAliHLTTPC.pkg \
 			  libAliHLTTRD.pkg \
 			  src/AliHLTReconstructor.h \
+			  src/AliHLTReconstructor.cxx \
 			  hlt.conf
 
 DIST_SUBDIRS		= $(SUBDIRS)

@@ -53,8 +53,15 @@
  * chain.
  * This is the original Root TMessage implementation with a few minor
  * modifications.
- * - the AliHLTMessage(void *buf, Int_t bufsize) constructor has been made
- *   public in order to be used externally.
+ * - the <tt> AliHLTMessage(void *buf, Int_t bufsize)</tt> constructor has been
+ *   made public in order to be used externally.
+ *
+ * The class can be used to extract an object from an input data block, or a
+ * data block received via the HOMER interface or from the file writer.
+ * <pre>
+ *  AliHLTMessage msg(buffer, size);
+ *  TObject pObj=msg.ReadObject(msg.GetClass());
+ * </pre>
  */
 class AliHLTMessage 
 :
