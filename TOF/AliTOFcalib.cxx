@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2007/03/23 11:31:16  arcelli
+CDB Entry for TOF Reconstruction Parameters
+
 Revision 1.11  2007/02/28 18:08:26  arcelli
 Add protection against failed retrieval of the CDB cal object
 
@@ -790,15 +793,18 @@ Bool_t AliTOFcalib::ReadParFromCDB(Char_t *sel, Int_t nrun)
   Char_t *sel1 = "Par" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
-  AliCDBEntry *entry = man->Get(out,nrun);
-  if (!entry) { 
-    AliError(Form("Failed to get entry: %s",out));
-    return kFALSE; 
+  if (!man->Get(out,nrun)) { 
+    return kFALSE;
   }
+  AliCDBEntry *entry = man->Get(out,nrun);
+  if(!entry->GetObject()){
+    return kFALSE;
+  }  
+  
   AliTOFCal *cal =(AliTOFCal*)entry->GetObject();
   fTOFCal = cal;
   return kTRUE; 
-  
+   
 }
 //_____________________________________________________________________________
 void AliTOFcalib::WriteSimParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
@@ -880,15 +886,37 @@ void AliTOFcalib::ReadSimParFromCDB(Char_t *sel, Int_t nrun)
   //Read miscalibration parameters from the CDB
   AliCDBManager *man = AliCDBManager::Instance();
   if(!man->IsDefaultStorageSet())man->SetDefaultStorage("local://$ALICE_ROOT");
+
+  // The Slewing Pars
+
   Char_t *sel1 = "SimPar" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
+  if (!man->Get(out,nrun)) { 
+    AliFatal("Exiting, no CDB object (SimPar) found!!!");
+    exit(0);  
+  }
   AliCDBEntry *entry1 = man->Get(out,nrun);
+  if(!entry1->GetObject()){
+    AliFatal("Exiting, no CDB object (SimPar) found!!!");
+    exit(0);  
+  }  
   AliTOFCal *cal =(AliTOFCal*)entry1->GetObject();
   fTOFSimCal=cal;
+
+  // The Tot Histo
+
   Char_t *sel2 = "SimHisto" ;
   sprintf(out,"%s/%s",sel,sel2); 
+  if (!man->Get(out,nrun)) { 
+    AliFatal("Exiting, no CDB object (SimHisto) found!!!");
+    exit(0);  
+  }
   AliCDBEntry *entry2 = man->Get(out,nrun);
+  if(!entry2->GetObject()){
+    AliFatal("Exiting, no CDB object (SimHisto) found!!!");
+    exit(0);  
+  }  
   TH1F *histo =(TH1F*)entry2->GetObject();
   fTOFSimToT=histo;
 }
@@ -918,7 +946,16 @@ AliTOFRecoParam * AliTOFcalib::ReadRecParFromCDB(Char_t *sel, Int_t nrun)
   Char_t *sel1 = "RecPar" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
+  if (!man->Get(out,nrun)) { 
+    AliFatal("Exiting, no CDB object (RecPar) found!!!");
+    exit(0);  
+  }  
   AliCDBEntry *entry = man->Get(out,nrun);
+  if(!entry->GetObject()){
+    AliFatal("Exiting, no CDB object (RecPar) found!!!");
+    exit(0);  
+  }  
+
   AliTOFRecoParam *param=(AliTOFRecoParam*)entry->GetObject();
   return param;
 }
