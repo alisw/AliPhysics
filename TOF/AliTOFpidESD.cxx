@@ -21,6 +21,7 @@
 //-----------------------------------------------------------------//
 
 #include "TMath.h"
+#include "AliLog.h"
 
 #include "AliESDtrack.h"
 #include "AliESD.h"
@@ -59,6 +60,8 @@ Int_t AliTOFpidESD::MakePID(AliESD *event, Double_t timeZero)
   //  This function calculates the "detector response" PID probabilities
   //                Just for a bare hint... 
 
+  AliDebug(1,Form("TOF PID Parameters: Sigma (ps)= %f, Range= %f",fSigma,fRange));
+  AliDebug(1,"++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ \n");
   Int_t ntrk=event->GetNumberOfTracks();
   AliESDtrack **tracks=new AliESDtrack*[ntrk];
 
