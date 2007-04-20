@@ -10,14 +10,14 @@
 //  TPC calibration base class for one ROC      //
 //                                              //
 //////////////////////////////////////////////////
-
 #include <TObject.h>
 #include <TMath.h>
 #include <AliTPCROC.h>
+#include "TLinearFitter.h"
+
 class TH1F;
 class TH2F;
 class TArrayI;
-class TLinearFitter;
 //_____________________________________________________________________________
 class AliTPCCalROC : public TObject {
 
@@ -54,14 +54,16 @@ class AliTPCCalROC : public TObject {
   TH2F * MakeHistoOutliers(Float_t delta=4, Float_t fraction=0.7, Int_t mode=0);
 
   AliTPCCalROC * LocalFit(Int_t rowRadius, Int_t padRadius, AliTPCCalROC* ROCoutliers = 0, Bool_t robust = kFALSE);
-  
+  //
+  void GlobalFit(const AliTPCCalROC* ROCoutliers, Bool_t robust, TVectorD &fitParam, TMatrixD &covMatrix, Float_t & chi2, Int_t fitType = 1);
+  //
+  static AliTPCCalROC* CreateGlobalFitCalROC(TVectorD &fitParam, Int_t sector);
   
   static void Test();
  protected:
   
   Double_t GetNeighbourhoodValue(TLinearFitter* fitterQ, Int_t row, Int_t pad, Int_t rRadius, Int_t pRadius, AliTPCCalROC* ROCoutliers, Bool_t robust);
   void GetNeighbourhood(TArrayI* &rowArray, TArrayI* &padArray, Int_t row, Int_t pad, Int_t rRadius, Int_t pRadius);
-  
   
   UInt_t     fSector;          // sector number
   UInt_t     fNChannels;       // number of channels

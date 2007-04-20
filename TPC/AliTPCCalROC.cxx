@@ -30,7 +30,6 @@
 #include "TFile.h"
 #include "TH1F.h"
 #include "TH2F.h"
-#include "TLinearFitter.h"
 #include "TArrayI.h"
 //
 //
@@ -397,9 +396,9 @@ AliTPCCalROC * AliTPCCalROC::LocalFit(Int_t rowRadius, Int_t padRadius, AliTPCCa
   AliTPCCalROC * ROCfitted = new AliTPCCalROC(fSector);
   TLinearFitter fitterQ(6,"x0++x1++x2++x3++x4++x5");
   fitterQ.StoreData(kTRUE);
-  for (Int_t row=0; row < GetNrows(); row++) {
+  for (UInt_t row=0; row < GetNrows(); row++) {
     //std::cout << "Entering row " << row << " of " << GetNrows() << " @ sector "<< fSector << " for local fitting... "<< std::endl;
-    for (Int_t pad=0; pad < GetNPads(row); pad++)
+    for (UInt_t pad=0; pad < GetNPads(row); pad++)
       ROCfitted->SetValue(row, pad, GetNeighbourhoodValue(&fitterQ, row, pad, rowRadius, padRadius, ROCoutliers, robust));
   }
   return ROCfitted;
@@ -487,7 +486,7 @@ void AliTPCCalROC::GetNeighbourhood(TArrayI* &rowArray, TArrayI* &padArray, Int_
   Int_t* padArrayTemp = padArray->GetArray();
   
   Int_t rmin = row - rRadius;
-  Int_t rmax = row + rRadius;
+  UInt_t rmax = row + rRadius;
   
   // if window goes out of ROC
   if (rmin < 0) {
@@ -503,7 +502,7 @@ void AliTPCCalROC::GetNeighbourhood(TArrayI* &rowArray, TArrayI* &padArray, Int_
   Int_t pmin, pmax;
   Int_t i = 0;
   
-  for (Int_t r = rmin; r <= rmax; r++) {
+  for (UInt_t r = rmin; r <= rmax; r++) {
     pmin = pad - pRadius;
     pmax = pad + pRadius;
     if (pmin < 0) {
@@ -528,5 +527,131 @@ void AliTPCCalROC::GetNeighbourhood(TArrayI* &rowArray, TArrayI* &padArray, Int_
     //std::cout << "writing -1" << std::endl;
   } 
 }
+
+
+
+void AliTPCCalROC::GlobalFit(const AliTPCCalROC* ROCoutliers, Bool_t robust, TVectorD &fitParam, TMatrixD &covMatrix, Float_t & chi2, Int_t fitType){
+  //
+  // Makes global fit  
+  // do GlobalFit for given Secotr and return fit-parameters, covariance, and whatever
+  // fitType == 0: fit plane
+  // fitType == 1: fit parabolic
+  // ROCoutliers - pads signed=1 - not used in fitting procedure
+   
+  TLinearFitter* fitterG = 0;
+  Double_t xx[6];
+  
+  if (fitType  == 1) 
+    fitterG = new TLinearFitter (6,"x0++x1++x2++x3++x4++x5");
+  else 
+    fitterG = new TLinearFitter(3,"x0++x1++x2");
+  //fitterG->StoreData(kTRUE);   
+  fitterG->ClearPoints();
+  Int_t    npoints=0;
+  
+  Float_t dlx, dly;
+  Float_t centerPad[3] = {0};
+  Float_t localXY[3] = {0};
+  
+  AliTPCROC* tpcROCinstance = AliTPCROC::Instance();
+  tpcROCinstance->GetPositionLocal(fSector, GetNrows()/2, GetNPads(GetNrows()/2)/2, centerPad);  // calculate center of ROC 
+  
+  // loop over all channels and read data into fitterG
+  if (fitType == 1) {  // parabolic fit
+    fitParam.ResizeTo(6);
+    covMatrix.ResizeTo(6,6);
+    for (UInt_t irow = 0; irow < GetNrows(); irow++) {
+      for (UInt_t ipad = 0; ipad < GetNPads(irow); ipad++) {
+	// fill fitterG
+	tpcROCinstance->GetPositionLocal(fSector, irow, ipad, localXY);   // calculate position localXY by pad and row number
+	dlx = centerPad[0] - localXY[0];
+	dly = centerPad[1] - localXY[1];
+	xx[0] = 1;
+	xx[1] = dlx;
+	xx[2] = dly;
+	xx[3] = dlx*dlx;
+	xx[4] = dly*dly;
+	xx[5] = dlx*dly;
+	if (ROCoutliers && ROCoutliers->GetValue(irow, ipad) != 1) 
+	  fitterG->AddPoint(xx, GetValue(irow, ipad), 1);  
+      }
+    }
+  }
+  else {   // linear fit
+    fitParam.ResizeTo(3);
+    covMatrix.ResizeTo(3,3);
+    for (UInt_t irow = 0; irow < GetNrows(); irow++) {
+      for (UInt_t ipad = 0; ipad < GetNPads(irow); ipad++) {
+	// fill fitterG
+	tpcROCinstance->GetPositionLocal(fSector, irow, ipad, localXY);   // calculate position localXY by pad and row number
+	dlx = centerPad[0] - localXY[0];
+	dly = centerPad[1] - localXY[1];
+	xx[0] = 1;
+	xx[1] = dlx;
+	xx[2] = dly;
+	if (ROCoutliers && ROCoutliers->GetValue(irow, ipad) != 1) 
+	  fitterG->AddPoint(xx, GetValue(irow, ipad), 1);  
+      }
+    }
+  }
+  fitterG->Eval();
+  fitterG->GetParameters(fitParam);
+  fitterG->GetCovarianceMatrix(covMatrix);
+  if (fitType == 1)
+    chi2 = fitterG->GetChisquare()/(npoints-6.);
+  else chi2 = fitterG->GetChisquare()/(npoints-3.);
+  if (robust && chi2 > 5) {
+    //    std::cout << "robust fitter called... " << std::endl;
+    fitterG->EvalRobust(0.7);
+    fitterG->GetParameters(fitParam);
+  }
+  delete fitterG;
+}
+
+
+//
+AliTPCCalROC* AliTPCCalROC::CreateGlobalFitCalROC(TVectorD &fitParam, Int_t sector)
+{
+  //
+  //
+  // Create ROC with global fit parameters
+  // fitType == 0: fit plane
+  // fitType == 1: fit parabolic
+  // loop over all channels and write fit values into ROCfitted
+  //
+  Float_t dlx, dly;
+  Float_t centerPad[3] = {0};
+  Float_t localXY[3] = {0};
+  AliTPCCalROC * ROCfitted = new AliTPCCalROC(sector);
+  AliTPCROC* tpcROCinstance = AliTPCROC::Instance();
+  Int_t fitType = 1;
+  if (fitParam.GetNoElements() == 6) fitType = 1;
+  else fitType = 0;
+  Double_t value = 0;
+  if (fitType == 1) { // parabolic fit
+    for (UInt_t irow = 0; irow < ROCfitted->GetNrows(); irow++) {
+      for (UInt_t ipad = 0; ipad < ROCfitted->GetNPads(irow); ipad++) {
+	tpcROCinstance->GetPositionLocal(sector, irow, ipad, localXY);   // calculate position localXY by pad and row number
+	dlx = centerPad[0] - localXY[0];
+	dly = centerPad[1] - localXY[1];
+	value = fitParam[0] + fitParam[1]*dlx + fitParam[2]*dly + fitParam[3]*dlx*dlx + fitParam[4]*dly*dly + fitParam[5]*dlx*dly;
+	ROCfitted->SetValue(irow, ipad, value);
+      }
+    }   
+  }
+  else {  // linear fit
+    for (UInt_t irow = 0; irow < ROCfitted->GetNrows(); irow++) {
+      for (UInt_t ipad = 0; ipad < ROCfitted->GetNPads(irow); ipad++) {
+	tpcROCinstance->GetPositionLocal(sector, irow, ipad, localXY);   // calculate position localXY by pad and row number
+	dlx = centerPad[0] - localXY[0];
+	dly = centerPad[1] - localXY[1];
+	value = fitParam[0] + fitParam[1]*dlx + fitParam[2]*dly;
+	ROCfitted->SetValue(irow, ipad, value);
+      }
+    }   
+  }
+  return ROCfitted;
+}
+
 
 
