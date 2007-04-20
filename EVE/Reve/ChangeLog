@@ -1,3 +1,11 @@
+2007-04-19  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	* GeoNode.cxx:
+	* GeoNode.h:
+	* RGeoNodeEditors.cxx:
+	Map SetRnrSelf and SetRnrChildren to node visibility and to node
+	daughters visibility. 
+
 2007-04-19  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* GeoNode.cxx:
