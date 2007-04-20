@@ -1,0 +1,169 @@
+
+      -------------------------------------------------------------
+      HYDJET, fast MC code to simulate flow effects, jet production 
+      and jet quenching in heavy ion AA collisions at the LHC
+      -------------------------------------------------------------
+      This code is merging HYDRO (flow effects), PYTHIA6.4 (hard jet 
+      production) and PYQUEN (jet quenching)
+      --------------------------------------------------------------
+
+      Igor Lokhtin, SINP MSU, Moscow, RU
+      e-mail: Igor.Lokhtin@cern.ch 
+
+      Reference for HYDJET: 
+      I.P. Lokhtin, A.M. Snigirev, 
+      Eur. Phys. J. C 46 (2006) 211.
+
+      References for HYDRO: 
+      N.A.Kruglov, I.P.Lokhtin, L.I.Sarycheva, A.M.Snigirev, 
+      Z. Phys. C 76 (1997) 99;  
+      I.P.Lokhtin, L.I.Sarycheva, A.M.Snigirev, 
+      Phys. Lett. B 537 (2002) 261;   
+      I.P.Lokhtin, A.M.Snigirev, Preprint SINP MSU 2004-14/753, hep-ph/0312204. 
+
+      References for PYQUEN: 
+      I.P.Lokhtin, A.M.Snigirev, Eur.Phys.J. C16 (2000) 527;   
+      I.P.Lokhtin, A.M.Snigirev, Preprint SINP MSU 2004-13/752, hep-ph/0406038.
+
+      References for PYTHIA: 
+      T.Sjostrand et al., Comput.Phys.Commun. 135 (2001) 238; 
+      T.Sjostrand, S. Mrena and P. Skands, hep-ph/0603175.
+      
+      Reference for JETSET event format:  
+      T.Sjostrand, Comput.Phys.Commun. 82 (1994) 74.  
+   
+      -------------------------------------------------------------- 
+      Web-page: 
+      http://cern.ch/lokhtin/hydro
+      --------------------------------------------------------------
+
+      Description of routine
+       
+CALL hydro(A,ifb,bmin,bmax,bfix,nh)  - generates one event
+
+input parameters to fix event configuration : 
+(set in main user routine before hydro call)
+
+  A    - beam and target nucleus atomic weight 
+  ifb  - flag of type of centrality generation 
+         =0 impact parameter is fixed (bfix)  
+	 >0 or <0 impact parameter is generated with standard Glauber geometry 
+	          between minimum (bmin) and maximum (bmax) values 
+  bmin - minimum impact parameter in units of nucleus radius RA
+         (i.e. minimum value in [fm] will be bmin*RA), 
+	  valid only if ifb not equal to zero   
+  bmax - maximum impact parameter in units of nucleus radius RA
+         (i.e. maximum value in [fm] will be bmax*RA),
+	  valid only if ifb not equal to zero 
+  bfix - fixed impact parameter in units of nucleus radius RA 
+         (i.e. fixed value in [fm] will be bfix*RA), 
+	  valid only if ifb=0
+  nh   - mean soft hadron multiplicity in central Pb-Pb collisions 
+	 (multiplicity for other centralities and atomic numbers 
+	 will be calculated automatically).  
+
+      --------------------------------------------------------------
+
+Parameters in COMMON BLOCKS  which can be varied by user: 
+
+COMMON /hyflow/ ytfl,ylfl,fpart 
+ytfl - maximum transverse collective rapidity, controls slope of low-pt spectra 
+(allowed range is 0.01<ytfl<3.0, default value is ytfl=1.).
+ylfl - maximum longitudinal collective rapidity, controls width of eta-spectra
+(allowed range is 0.01<ylfl<7.0, default value is ylfl=5.).
+fpart - fraction of soft multiplicity proportional to the number of nucleon
+participants; then (1.-fpart) will be the fraction of soft multiplicity
+proportional to the number of nucleon-nucleon binary sub-collisions  
+(allowed range is 0.01<fpart<1.0, default value is fpart=1.). 
+
+COMMON /hyjpar/ nhsel,ptmin,njet  
+nhsel - flag to include jet production in hydro event: 
+nhsel=0 - jet production off (pure HYDRO event);
+nhsel=1 - jet production on, jet quenching off (HYDRO+njet*PYTHIA events);
+nhsel=2 - jet production & jet quenching on (HYDRO+njet*PYQUEN events);
+nhsel=3 - jet production on, jet quenching off, HYDRO off (njet*PYTHIA events);
+nhsel=4 - jet production & jet quenching on, HYDRO off (njet*PYQUEN events);
+(default value is nhsel = 0).
+ptmin - minimal pt of parton-parton scattering in PYTHIA event, parameter
+ckin(3) in PYTHIA common block /pysubs/ should be set equal to ptmin 
+(allowed range is 5 GeV < ptmin < 500 GeV, default value ptmin=10 GeV).
+
+      -------------------------------------------------------------- 
+
+Output event parameters in COMMON BLOCKS: 
+
+COMMON /hyjpar/ nhsel,ptmin,njet 
+njet - number of hard parton-parton scatterings with pt>ptmin in event.
+
+common /hyfpar/ bgen,nbcol,npart,npyt,nhyd
+bgen - generated value of impact parameter in units of nucleus radius RA 
+(i.e the value in [fm] will be bgen*RA).
+nbcol - mean number of nucleon-nucleon binary sub-collisions at given 'bgen'. 
+npart - mean number of nucleon participants at given 'bgen'. 
+npyt - multiplicity of hard PYTHIA/PYQUEN-induced particles in event 
+       (including full parton story).  
+nhyd - multiplicity of soft HYDRO-induced hadrons in event. 
+
+      -------------------------------------------------------------- 
+
+Output particle information
+
+COMMON /lujets/ n,k(150000,5),p(150000,5),v(150000,5)
+n - total event multiplicity    
+k(i,1-5) - particle codes       
+p(i,1-5) - particle four-momentum and mass 
+v(i,1-5) - particle vertex, production time and lifetime   
+
+NOTE! First 'npyt' lines in event list correspond to PYTHIA/PYQUEN-induced 
+      particles, last 'nhyd' lines -- HYDRO-induced hadrons.  
+
+COMMON /hyjets/ nl,kl(150000,5),pl(150000,5),vl(150000,5) 
+contains list of parton history of event in the same format as /lujets/ 
+
+      --------------------------------------------------------------  
+    
+NOTE! Main users routine should be compiled with object files obtained by: 
+      - jetset_73.f with extended array size in common block /lujets/; 
+      - pythia6.401.f (or later versions);
+      - pyquen1_1.f;  
+      - hydjet1_1.f. 
+      
+NOTE! Since variables (A-H, O-Z) are described as IMPLICIT DOUBLE PRECISION 
+in 'pythia' and 'pyquen', the corresponding 'pythia' and 'pyquen' variables and
+parameters used in main users routine should be described also as 'double 
+precision'. However variables and parameters from JETSET and HYDRO including
+output event information are supposed to be REAL. 
+      
+NOTE! Since pyquen deals with partonic pythia event, the fragmentation in 
+      subroutine 'hyhard' is switched off before pyquen call using parameter 
+      mstp(111) from pythia common block pypars:     
+      ...
+      mstp(111)=0                           ! fragmentation off  
+c      mstj(41)=0                          ! vacuum showering off 
+      call pyevnt                         ! 'normal' single pythia event 
+      ... 
+      call pyquen(A,ifb,bfix)             ! 'quenched' single pythia event 
+      ... 
+      call pyexec                         ! fragmentation done  
+      ...                            
+      in the case if Pythia final state radiation is switching off (if one set 
+      mstj(41)=0 in 'hyhard'), the Pyquen option "vacuum showering after 
+      in-medium partonic energy loss" is foreseen.
+      
+NOTE! In order to adjust string fragmentation with additional gluons in Pythia, 
+      the parameter paru(14)=1.d0 have to be specified in main users routine. 
+     
+      -------------------------------------------------------------------------    
+        
+      Physics validity of the model 
+      
+1. Internal parameters of the routine were optimized as an estimation 
+for LHC heavy ion beam energies. The result for other beam energy ranges, 
+obtained without additional internal parameters adjusting, is not expected 
+to be reasonable. 
+2. Hydro-type approximation for heavy ion collisions is expected to be 
+applicable for central and semi-central collisions. The result obtained for 
+very peripheral collisions (b~2*RA) can be not adequate. 
+3. We do not expect correct event description for very forward rapidities 
+(|y|>3), where other mechanisms of particle production among hydro-flow and
+jets can be important. 
