@@ -13,19 +13,33 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+// $Id$
+
+#if !defined(__CINT__) || defined(__MAKECINT__)
+// ROOT includes
+#include <Riostream.h>
+#include <TROOT.h>
+#include <TSystem.h>
+#include <TString.h>
+
+// MUON includes
+#include "AliMpBusPatch.h"
+
+#endif
+
+// Generates buspatch id and DDL id for given detection element id
+// station 1 & 2 assuming 24 buspatches per quadrant
+// station345, reading from DetElemIdToSlatType.dat file and calculates
+// the number of bus patches per slat (and also number of Translator and Bridge Boards).
+// Generates an output file DetElemIdToBusPatch.dat.out, preserve from overwriting
+// (Ch. Finck, July 05)
+// (Nov. 05, added DDL)
+// (June 06, correction for St123)
+// (Feb. 07, add 1st manu list for St12 (starting on NB !) and new ddl sharing for station 3)
+
 
 void MUONGenerateBusPatch()
 {
-  // Generates buspatch id and DDL id for given detection element id
-  // station 1 & 2 assuming 24 buspatches per quadrant
-  // station345, reading from DetElemIdToSlatType.dat file and calculates
-  // the number of bus patches per slat (and also number of Translator and Bridge Boards).
-  // Generates an output file DetElemIdToBusPatch.dat.out, preserve from overwriting
-  // (Ch. Finck, July 05)
-  // (Nov. 05, added DDL)
-  // (June 06, correction for St123)
-  // (Feb. 07, add 1st manu list for St12 (starting on NB !) and new ddl sharing for station 3)
-
 
   TString dirPath2 = gSystem->Getenv("ALICE_ROOT");
   dirPath2 += "/MUON/mapping/data/"; 
@@ -42,10 +56,9 @@ void MUONGenerateBusPatch()
   Int_t idDE;
   Int_t i;
   Int_t cursor = 0;
-  Int_t begin[800];
-  Int_t end[800];
+  Int_t begin[900];
+  Int_t end[900];
   Int_t nbBusPatch;
-  Int_t listDE[800];
   Int_t nbTB = 0;
   Int_t nbBB = 0;
   Int_t idSt12[] = {100, 101, 102, 103, 
@@ -97,7 +110,8 @@ void MUONGenerateBusPatch()
     }
 
     end[cursor]     = begin[cursor] + nbBusPatch - 1;
-    begin[++cursor] = end[cursor] + 1;
+    ++cursor; // it seems that vec[++i] does not work in Cint
+    begin[cursor] = end[cursor-1] + 1;
 
     cout << idDE << " " << begin[cursor-1] + nbHalfBusPatch << "-" <<end[cursor-1] << ";" <<
 	begin[cursor-1]	<< "-" << end[cursor-1] - nbHalfBusPatch << " " << iDDL-1 << endl;
@@ -129,7 +143,6 @@ void MUONGenerateBusPatch()
   Int_t iDDLSt3Swap1 = 0;
   Int_t iDDLSt3Swap2 = 0;
   Int_t iDDLSt3Swap3 = 0;
-  Int_t iDDLSt3Swap4 = 0;
 
   Int_t nbBusSt45Tot = 0;
   Int_t nbBusSt45Swap = 0;
@@ -266,7 +279,8 @@ void MUONGenerateBusPatch()
       }
 
       end[cursor]     = begin[cursor] + nbBusPatch - 1;
-      begin[++cursor] = end[cursor] + 1;
+      ++cursor;
+      begin[cursor] = end[cursor-1] + 1;
 
       cout << idDE << " " << begin[cursor-1]<<"-"<<end[cursor-1] << " " << iDDL-1 << " " <<nameSlat <<endl;
       out << idDE << " " << begin[cursor-1]<<"-"<<end[cursor-1] <<" " << iDDL-1 <<endl;
@@ -302,8 +316,10 @@ void MUONGenerateBusPatch()
 	iDDL--;
 	begin[cursor] = AliMpBusPatch::GetGlobalBusID(nbBusSt45Swap, iDDL-1);
       }
+
       end[cursor]     = begin[cursor] + nbBusPatch - 1;
-      begin[++cursor] = end[cursor] + 1;
+      ++cursor;
+      begin[cursor] = end[cursor-1] + 1;
 
       cout << idDE << " " << begin[cursor-1]<<"-"<<end[cursor-1] << " " << iDDL-1 << " " <<nameSlat <<endl;
       out << idDE << " " << begin[cursor-1]<<"-"<<end[cursor-1] <<" " << iDDL-1 <<endl;
