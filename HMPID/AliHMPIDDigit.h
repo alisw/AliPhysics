@@ -4,13 +4,12 @@
  * See cxx source for full Copyright notice                               */
 
 // Class of HMPID to manage digits ---> pads
-//
-//
-
+//.
+//.
+//.
 
 #include <AliDigit.h>      //base class  
 #include "TMath.h"         //Mathieson()
-#include "TRandom.h"       //IsOverTh()  
 #include <AliBitPacking.h> //Raw()
 
 
@@ -86,11 +85,11 @@ protected:                                                                   //A
   static const Float_t fgkMinPcY[6];                                                                                                   //limits PC
   static const Float_t fgkMaxPcX[6];                                                                                                   //limits PC
   static const Float_t fgkMaxPcY[6];                                                                                                   //limits PC
-  static const Float_t fgk1;                                                 //Mathieson parameters
-  static const Float_t fgk2;                                                 //
-  static const Float_t fgkSqrtK3;                                            //
-  static const Float_t fgk4;                                                 //
-  Int_t    fPad;                                                             //absolute pad number
+  static const Float_t fgk1;                                                                                                           //Mathieson parameters
+  static const Float_t fgk2;                                                                                                           //...
+  static const Float_t fgkSqrtK3;                                                                                                      //...
+  static const Float_t fgk4;                                                                                                           //...
+  Int_t    fPad;                                                                                                                       //absolute pad number
   Float_t  fQ;                                                               //QDC value, fractions are permitted for summable procedure  
   ClassDef(AliHMPIDDigit,4)                                                  //HMPID digit class       
 };//class AliHMPIDDigit

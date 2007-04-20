@@ -2,11 +2,12 @@
 #define AliHMPIDDigitizer_h
 /* Copyright(c) 1998-2000, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
-//
+//.
+//.
+//.
 
-#include <AliRun.h>
 #include <AliDigitizer.h>
-class AliRunDigitizer;
+
 class TClonesArray;
 class TObjArray;
 

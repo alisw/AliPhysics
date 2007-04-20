@@ -5,8 +5,9 @@
 
 #include <AliHit.h>           //base class
 #include <TVector3.h>         //ctor
-#include <TRandom.h>          //QdcTot()
 #include "AliHMPIDDigit.h"    //QdcTot() 
+
+#include <TRandom.h>
 
 class AliHMPIDHit : public AliHit //   TObject-AliHit-AliHMPIDHit
 {

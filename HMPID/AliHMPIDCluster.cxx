@@ -76,7 +76,7 @@ void AliHMPIDCluster::Draw(Option_t*)
   TMarker *pMark=new TMarker(X(),Y(),5); pMark->SetUniqueID(fSt);pMark->SetMarkerColor(kBlue); pMark->Draw();
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDCluster::FitFunc(Int_t &iNpars, Double_t* /*deriv*/, Double_t &chi2, Double_t *par, Int_t )
+void AliHMPIDCluster::FitFunc(Int_t &iNpars, Double_t* /*deriv*/, Double_t &chi2, Double_t *par, Int_t /* */)
 {
 // Cluster fit function 
 // par[0]=x par[1]=y par[2]=q for the first Mathieson shape

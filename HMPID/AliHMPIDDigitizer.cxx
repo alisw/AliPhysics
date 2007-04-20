@@ -12,18 +12,21 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-//
-//
-//
-//
-#include "AliHMPIDDigitizer.h"
-#include "AliHMPIDDigit.h"
-#include "AliHMPID.h"
+//.
+//.
+//.
+//.
+//.
+#include <AliRun.h>
 #include <AliRunLoader.h>
 #include "AliRunDigitizer.h"
 #include <AliLoader.h>
 #include <AliLog.h>
+#include "AliHMPIDDigitizer.h"
+#include "AliHMPIDDigit.h"
+#include "AliHMPID.h"
 
+#include <TRandom.h>
 
 ClassImp(AliHMPIDDigitizer)
 
@@ -58,7 +61,8 @@ void AliHMPIDDigitizer::Exec(Option_t*)
   
   AliRunLoader *pOutRunLoader  = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());    //open output stream (only 1 possible)
   AliLoader    *pOutRichLoader = pOutRunLoader->GetLoader("HMPIDLoader");                         //take output HMPID loader
-  AliHMPID      *pOutRich       = (AliHMPID*)pOutRunLoader->GetAliRun()->GetDetector("HMPID");      //take output HMPID
+  AliRun *pArun = pOutRunLoader->GetAliRun();
+  AliHMPID      *pOutRich       = (AliHMPID*)pArun->GetDetector("HMPID");      //take output HMPID
   pOutRichLoader->MakeTree("D");   pOutRich->MakeBranch("D");                                    //create TreeD in output stream
 
   Sdi2Dig(&sdigs,pOutRich->DigLst());
@@ -78,7 +82,8 @@ void AliHMPIDDigitizer::Sdi2Dig(TClonesArray *pSdiLst,TObjArray *pDigLst)
 //   Returns: none  
   
   TClonesArray *pLst[7]; Int_t iCnt[7];
-  
+
+  TRandom *rnd = new TRandom();  
   for(Int_t i=0;i<7;i++){
     pLst[i]=(TClonesArray*)(*pDigLst)[i];
     iCnt[i]=0; if(pLst[i]->GetEntries()!=0) AliErrorClass("Some of digits lists is not empty");         //in principle those lists should be empty                                                                       
@@ -90,7 +95,7 @@ void AliHMPIDDigitizer::Sdi2Dig(TClonesArray *pSdiLst,TObjArray *pDigLst)
     for (Int_t iCh=AliHMPIDDigit::kMinCh;iCh<=AliHMPIDDigit::kMaxCh;iCh++)
       for (Int_t iPc=AliHMPIDDigit::kMinPc;iPc<=AliHMPIDDigit::kMaxPc;iPc++)
         for(Int_t iPx=AliHMPIDDigit::kMinPx;iPx<=AliHMPIDDigit::kMaxPx;iPx++)
-          for(Int_t iPy=AliHMPIDDigit::kMinPy;iPy<=AliHMPIDDigit::kMaxPy;iPy++) arrNoise[iCh][iPc][iPx][iPy] = gRandom->Gaus(0,1);
+          for(Int_t iPy=AliHMPIDDigit::kMinPy;iPy<=AliHMPIDDigit::kMaxPy;iPy++) arrNoise[iCh][iPc][iPx][iPy] = rnd->Gaus(0,1);
   }  
   
   pSdiLst->Sort();  

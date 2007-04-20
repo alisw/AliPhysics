@@ -3,6 +3,13 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 //
+// Implementation class: AliHMPIDCluster
+//   
+//   class to reconstruct clester in HMPID
+//   it is forseen to Solve (split) the raw cluster in 
+//   several clusters (# local maxima in the raw cluster -> deconvolution
+//   according to a Mathieson profile of the charge 
+//
 #include "AliHMPIDDigit.h"  //DigAdd()
 #include <TObjArray.h>     //DigAdd()      
 class TClonesArray;        //Solve()
@@ -28,7 +35,7 @@ public:
 //framework part                   
          void           Draw   (Option_t *opt=""                                  );                       //overloaded TObject::Print() to draw cluster in current canvas
          void           Print  (Option_t *opt=""                                  )const;                  //overloaded TObject::Print() to print cluster info
-  static void           FitFunc(Int_t &, Double_t *, Double_t &, Double_t *, Int_t);                       //fit function to be used by MINUIT
+  static void           FitFunc(Int_t &iNpars, Double_t* /*deriv*/, Double_t &chi2, Double_t *par, Int_t /* */);//fit function to be used by MINUIT
 //private part  
          Int_t          Box      (                                         )const{return fBox;                                  }
          void           CoG      (                                         );                                                      //calculates center of gravity
