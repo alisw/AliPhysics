@@ -6,8 +6,6 @@
 
 #pragma link C++ class TGliteXmlEventlist+;
 
-#pragma link C++ class AliD0toKpi+;
-#pragma link C++ class AliD0toKpiAnalysis+;
 #pragma link C++ class AliRunAnalysis+;
 #pragma link C++ class AliAnalysis+;
 
