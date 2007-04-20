@@ -21,6 +21,17 @@ MODULE_SRCS= 	AliHLTTPCLog.cxx \
 		AliHLTTPCVertexFinder.cxx \
 		AliHLTTPCTrackArray.cxx \
 		AliHLTTPCTrack.cxx \
+		tracking/AliHLTTPCHough.cxx \
+		tracking/AliHLTTPCHoughTrack.cxx \
+		tracking/AliHLTTPCHoughEval.cxx \
+		tracking/AliHLTTPCHoughTracker.cxx \
+		tracking/AliHLTTPCHoughTransformer.cxx \
+		tracking/AliHLTTPCHoughTransformerRow.cxx \
+		tracking/AliHLTTPCHoughKalmanTrack.cxx \
+		tracking/AliHLTTPCHoughMaxFinder.cxx \
+		tracking/AliHLTTPCHistogram.cxx \
+		tracking/AliHLTTPCHistogram1D.cxx \
+		tracking/AliHLTTPCHistogramAdaptive.cxx \
 		AliHLTTPCConfMapFit.cxx \
 		AliHLTTPCConfMapTrack.cxx \
 		AliHLTTPCConfMapPoint.cxx \
@@ -58,6 +69,17 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		AliHLTTPCVertexFinder.h \
 		AliHLTTPCTrackArray.h \
 		AliHLTTPCTrack.h \
+		tracking/AliHLTTPCHough.h \
+		tracking/AliHLTTPCHoughTrack.h \
+		tracking/AliHLTTPCHoughEval.h \
+		tracking/AliHLTTPCHoughTracker.h \
+		tracking/AliHLTTPCHoughTransformer.h \
+		tracking/AliHLTTPCHoughTransformerRow.h \
+		tracking/AliHLTTPCHoughKalmanTrack.h \
+		tracking/AliHLTTPCHoughMaxFinder.h \
+		tracking/AliHLTTPCHistogram.h \
+		tracking/AliHLTTPCHistogram1D.h \
+		tracking/AliHLTTPCHistogramAdaptive.h \
 		AliHLTTPCConfMapFit.h \
 		AliHLTTPCConfMapTrack.h \
 		AliHLTTPCConfMapPoint.h \
@@ -91,8 +113,8 @@ MODULE_HDRS:= 	$(CLASS_HDRS) \
 		AliHLTTPCClusterDataFormat.h \
 		AliHLTTPCModels.h
 
-DHDR:= 		TPCLib/AliHLTTPCLinkDef.h
-CINTAUTOLINK:=
+DHDR:= 		
+CINTAUTOLINK:=  1
 
 SRCS:=$(patsubst %,TPCLib/%,$(MODULE_SRCS))
 CINTHDRS:=$(patsubst %,TPCLib/%,$(CLASS_HDRS))
@@ -103,4 +125,4 @@ PACKCXXFLAGS := ${HLTCXXFLAGS}
 PACKCFLAGS   := ${HLTCLFAGS}
 PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
 
-EINCLUDE := HLT/TPCLib HLT/BASE HLT/BASE/util TPC RAW
+EINCLUDE := HLT/TPCLib HLT/TPCLib/tracking HLT/BASE HLT/BASE/util TPC RAW

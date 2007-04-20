@@ -22,8 +22,11 @@
     @date   
     @brief  Array of AliHLTTPCTracks */
 
+#include "AliLog.h"
+#include "TClass.h"
 #include "AliHLTTPCLogging.h"
 #include "AliHLTTPCTrackArray.h"
+#define INCLUDE_TPC_HOUGH
 #ifdef INCLUDE_TPC_HOUGH
 #include "AliHLTTPCHoughTrack.h"
 #endif
@@ -304,17 +307,26 @@ void AliHLTTPCTrackArray::FillTracks(Int_t ntracks, AliHLTTPCTrackSegmentData* t
       track->SetSector(slice);
     } else {
       // the parameters are in local coordinates, set the sector no
-#ifndef INCLUDE_TPC_HOUGH
+      //#ifndef INCLUDE_TPC_HOUGH
       if (slice<0) track->SetSector(0);
       else track->SetSector(slice);
-#else 
+      //#else 
       // Matthias Feb 2007: this is some kind of legacy ...
       // the INCLUDE_TPC_HOUGH has never been switched on in the new TPCLib
       // and this line was below in the corresponding block. As the slice
       // parameter is very useful but not available if the define is off
       // we distinguish the two cases here. Should be cleaned up.
-      track->SetSector(trs->fSector);
-#endif // INCLUDE_TPC_HOUGH
+      // Matthias April 2007: update, try to integrate Cvetans Hough tracker
+      // so we need the support for the AliHLTTPCHoughTrack. I dont have the
+      // full control of this code (should we use slice or trs->fSector?)
+      // But the FillTracks method is never called from the hough code, so we
+      // take 'slice'
+      if (GetTrackType()=='h') {
+	AliErrorClassStream() << "FillTracks was never used with AliHLTTPCHoughTrack:" 
+			   << " CHECK THIS CODE!!!" << endl;
+      }
+      //track->SetSector(trs->fSector);
+      //#endif // INCLUDE_TPC_HOUGH
     }
 
     // this is currently a quick hack for straight lines of the first version 

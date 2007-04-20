@@ -30,9 +30,7 @@
 #include "AliHLTTPCTrackArray.h"
 #include "AliHLTTPCMemHandler.h"
 #include "AliHLTTPCFitter.h"
-#ifdef use_aliroot
 #include "AliHLTTPCFileHandler.h"
-#endif
 #include "AliHLTTPCBenchmark.h"
 #include "AliHLTTPCDigitData.h"
 #include "AliHLTTPCTrackSegmentData.h"
@@ -139,9 +137,8 @@ void AliHLTTPC::Init(Char_t *path,EFileType filetype,Int_t npatches)
   fEta[1] = 1.1;
 
   fEvent=0;
-#ifdef use_aliroot /*just to be sure*/
+  /*just to be sure*/
   AliHLTTPCFileHandler::CleanStaticIndex();
-#endif
 
   switch(npatches){
   case 0:
@@ -184,7 +181,6 @@ void AliHLTTPC::Init(Char_t *path,EFileType filetype,Int_t npatches)
   fInterMerger = new AliHLTTPCInterMerger();
   fGlobalMerger = new AliHLTTPCGlobalMerger();
   SetMergerParameters();//Set default merger parameters
-#ifdef use_aliroot
   if(filetype==kRoot){
     fFileHandler = new AliHLTTPCFileHandler(kTRUE); //static version
     fFileHandler->SetAliInput(fInputFile);
@@ -202,14 +198,6 @@ void AliHLTTPC::Init(Char_t *path,EFileType filetype,Int_t npatches)
   else{
     fFileHandler = new AliHLTTPCMemHandler();
   }
-#else
-  if(filetype==kRaw){
-    fFileHandler = new AliHLTTPCDDLDataFileHandler();
-    fFileHandler->SetReaderInput(fInputFile);
-  }else{
-    fFileHandler = new AliHLTTPCMemHandler();
-  }
-#endif
   fBenchmark = new AliHLTTPCBenchmark();
 }
 
@@ -224,10 +212,8 @@ void AliHLTTPC::DoBench(char* name)
 void AliHLTTPC::DoMc(char* file)
 { 
   //domc
-#ifdef use_aliroot
   if(!fFileHandler->IsDigit(fEvent))
     fFileHandler->SetMCOutput(file);
-#endif
 }
 
 AliHLTTPC::~AliHLTTPC()
@@ -287,9 +273,7 @@ void AliHLTTPC::ProcessEvent(Int_t first,Int_t last,Int_t event)
   //inner=2 + outer=38.
 
   fGlobalMerger->Setup(first,last);
-#ifdef use_aliroot
   if(fEvent!=event) AliHLTTPCFileHandler::CleanStaticIndex();
-#endif
   fEvent=event;
   for(Int_t i=first; i<=last; i++){
     ProcessSlice(i);
@@ -317,9 +301,7 @@ void AliHLTTPC::ProcessSlice(Int_t slice)
   //process slice
   char name[256];
   Bool_t UseCF = kFALSE;
-#ifdef use_aliroot
   UseCF = fFileHandler->IsDigit(fEvent);
-#endif
   if(fUseBinary)
     UseCF = kTRUE;   //In case you are not using aliroot
   if(fNoCF == kTRUE) //In case you don't want to run with cluster finder
@@ -428,7 +410,6 @@ void AliHLTTPC::ProcessSlice(Int_t slice)
         }
       }//end UseBinary
       else{
-#ifdef use_aliroot
         fBenchmark->Start("Dummy Unpacker");
         if(fNPatch==1)
 	  sprintf(name,"digits_%d_%d_%d.raw",fEvent,slice,-1);
@@ -450,7 +431,6 @@ void AliHLTTPC::ProcessSlice(Int_t slice)
             fFileHandler->CloseBinaryOutput();
           }
         }
-#endif
       }//end else UseBinary
 
       points = (AliHLTTPCSpacePointData *) memory->Allocate(kpointsize);
@@ -490,11 +470,9 @@ void AliHLTTPC::ProcessSlice(Int_t slice)
         LOG(AliHLTTPCLog::kInformational,"AliHLTTPC::ProcessSlice","Read Cluster")
         <<AliHLTTPCLog::kDec<<"Found "<<npoints<<" Points in File"<<ENDLOG;
       }
-#ifdef use_aliroot
       else{
         points = fFileHandler->AliPoints2Memory(npoints);
       }
-#endif
       fBenchmark->Start("Dummy Unpacker");
       fBenchmark->Stop("Dummy Unpacker");
       fBenchmark->Start("Dummy CF");

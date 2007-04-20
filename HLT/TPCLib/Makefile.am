@@ -6,6 +6,8 @@ MODULE 				= AliHLTTPC
 EXTRA_DIST			= AliHLTTPCLinkDef.h
 
 AM_CPPFLAGS			= @ALIROOT_CPPFLAGS@         \
+				  -I$(srcdir)                \
+				  -I$(srcdir)/tracking       \
 				  -I$(top_srcdir)/BASE       \
 				  -I$(top_srcdir)/BASE/util
 
@@ -27,13 +29,13 @@ endif
 lib_LTLIBRARIES			=  libAliHLTTPC.la
 
 # version info for the library
-LIBRARY_VERSION			= '3:0:0'
+LIBRARY_VERSION			= '4:0:1'
 
 # MODDIR is set by the AliRoot build system and denotes the topdir
 # of the module, we must set it since the package definition libAliHLTTPC.pkg
 # includes another common configuration file
 MODDIR				= $(top_srcdir)
-PKGDEF				= $(MODDIR)/libHLTbase.pkg
+PKGDEF				= $(MODDIR)/libAliHLTTPC.pkg
 include $(top_srcdir)/libAliHLTTPC.pkg
 
 # library sources
