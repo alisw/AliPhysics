@@ -406,7 +406,6 @@ void AliTOFDigitizer::CollectSDigit(AliTOFSDigit * sdigit)
 
 //_____________________________________________________________________________
 void AliTOFDigitizer::InitDecalibration( AliTOFcalib *calib) const {
-  // calib->ReadSimParFromCDB("TOF/Calib", 0); // original
   calib->ReadSimParFromCDB("TOF/Calib", -1); // use AliCDBManager's number
 }
 //---------------------------------------------------------------------
@@ -417,16 +416,8 @@ void AliTOFDigitizer::DecalibrateTOFSignal( AliTOFcalib *calib){
   AliTOFCal * cal= calib->GetTOFCalSimArray();
 
   AliDebug(2,Form("Size of AliTOFCal = %i",cal->NPads()));
-  for (Int_t ipad = 0 ; ipad<cal->NPads(); ipad++){
-    AliTOFChannel *calChannel = cal->GetChannel(ipad);
-    Float_t par[6];
-    for (Int_t j = 0; j<6; j++){
-      par[j]=calChannel->GetSlewPar(j);
-    }
-  }
 
   // Initialize Quantities to Simulate ToT Spectra
-
 
   TH1F * hToT= calib->GetTOFSimToT();
   Int_t nbins = hToT->GetNbinsX();
@@ -435,6 +426,7 @@ void AliTOFDigitizer::DecalibrateTOFSignal( AliTOFcalib *calib){
   Float_t minch = hToT->GetBinLowEdge(1);
   Float_t max=0,min=0; //maximum and minimum value of the distribution
   Int_t maxbin=0,minbin=0; //maximum and minimum bin of the distribution
+
   for (Int_t ii=nbins; ii>0; ii--){
     if (hToT->GetBinContent(ii)!= 0) {
       max = maxch - (nbins-ii-1)*delta;
@@ -447,14 +439,16 @@ void AliTOFDigitizer::DecalibrateTOFSignal( AliTOFcalib *calib){
       minbin = j; 
       break;}
   }
+
   Float_t maxToT=max;
   Float_t minToT=min;
   Float_t maxToTDistr=hToT->GetMaximum();
   
-
   // Loop on TOF Digits
 
-  Bool_t dbEntry=kFALSE;
+  Bool_t isToTSimulated=kFALSE;
+  Bool_t misCalibPars=kFALSE;
+  if(hToT->GetEntries()>0)isToTSimulated=kTRUE;  
   Int_t ndigits = fDigits->GetEntriesFast();    
   for (Int_t i=0;i<ndigits;i++){
     AliTOFdigit * dig = (AliTOFdigit*)fDigits->At(i);
@@ -464,12 +458,31 @@ void AliTOFDigitizer::DecalibrateTOFSignal( AliTOFcalib *calib){
     detId[2] = dig->GetStrip();
     detId[3] = dig->GetPadz();
     detId[4] = dig->GetPadx();
-    // For Data with no Miscalibration, set ToT signal == Adc
-    dig->SetToT(dig->GetAdc()/AliTOFGeometry::ToTBinWidth()*1.E3); 
-    if(hToT->GetEntries()>0){  
+    dig->SetTdcND(dig->GetTdc()); // save the non decalibrated time
+    if(isToTSimulated){  
+
+      //A realistic ToT Spectrum was found in input, 
+      //decalibrated TOF Digits likely to be simulated....
+ 
+      Int_t index = calib->GetIndex(detId); // The channel index    
+      AliTOFChannel *calChannel = cal->GetChannel(index); //retrieve the info
+      Float_t timedelay = calChannel->GetDelay(); //The global channel delay
+      Float_t par[6];  // time slewing parameters
+  
+      //check whether we actually ask for miscalibration
+
+      if(timedelay!=0)misCalibPars=kTRUE;
+      for (Int_t j = 0; j<6; j++){
+	par[j]=calChannel->GetSlewPar(j);
+	if(par[j]!=0)misCalibPars=kTRUE;
+      }
+      
+      // Now generate Realistic ToT distribution from TestBeam Data. 
+      // Tot is in ns, assuming a Matching Window of 10 ns.
+
+      Float_t simToT = 0;
       Float_t trix = 0;
       Float_t triy = 0;
-      Float_t simToT = 0;
       while (simToT <= triy){
 	trix = gRandom->Rndm(i);
 	triy = gRandom->Rndm(i);
@@ -478,41 +491,39 @@ void AliTOFDigitizer::DecalibrateTOFSignal( AliTOFcalib *calib){
 	Int_t binx=hToT->FindBin(trix);
 	simToT=hToT->GetBinContent(binx);
       }
-    // Setting realistic ToT signal (only for Miscalibrated Data)   
-      dig->SetToT(trix/AliTOFGeometry::ToTBinWidth()*1.E3); //In ToT is in ns..
+      // the generated ToT (ns)
+      Float_t tToT= trix; // to apply slewing need to go back to ns..
+      // transform TOF signal in ns, factor 1E-3 as bin width is in ps.
+      Float_t tdc = ((dig->GetTdc())*AliTOFGeometry::TdcBinWidth()+32)*1.E-3; 
+      AliDebug(2,Form(" Time before miscalibration (ns) %f: ",tdc));
+      // add slewing effect
+      Float_t timeoffset=par[0] + tToT*(par[1] +tToT*(par[2] +tToT*(par[3] +tToT*(par[4] +tToT*par[5])))); 
+      Float_t timeSlewed = tdc+timeoffset;
+      AliDebug(2,Form(" Time after applying slewing (ns): %f: ",timeSlewed));
+      // add global time shift
+      timeSlewed = timeSlewed + timedelay;
+      AliDebug(2,Form(" Time after applying global delay (ns): %f: ",timeSlewed));
+      // Setting Decalibrated Time signal (TDC counts)    
+      dig->SetTdc((timeSlewed*1E3-32)/AliTOFGeometry::TdcBinWidth());   
+      // Setting realistic ToT signal (TDC counts)   
+      dig->SetToT(trix/AliTOFGeometry::ToTBinWidth()*1.E3); //(factor 1E3 as input ToT is in ns)
     }
-    Int_t index = calib->GetIndex(detId);     
-    AliTOFChannel *calChannel = cal->GetChannel(index);
-    // time slewing parameters
-    Float_t par[6];
-    for (Int_t j = 0; j<6; j++){
-      par[j]=calChannel->GetSlewPar(j);
-      if(par[j]!=0)dbEntry=kTRUE;
+    else{
+    // For Data with no Miscalibration, set ToT signal == Adc
+    dig->SetToT(dig->GetAdc()/AliTOFGeometry::ToTBinWidth()*1.E3); 
     }
-    // the global time shift
-    Float_t timedelay = calChannel->GetDelay();
-    Float_t tToT= dig->GetToT()*AliTOFGeometry::ToTBinWidth()/1.E3; // to apply slewing need to go back to ns..
-    dig->SetTdcND(dig->GetTdc());
-    Float_t tdc = ((dig->GetTdc())*AliTOFGeometry::TdcBinWidth()+32)*1.E-3; //tof signal in ns
-    AliDebug(2,Form(" Time before miscalibration %f: ",tdc));
-    // add slewing effect
-    Float_t timeoffset=par[0] + tToT*(par[1] +tToT*(par[2] +tToT*(par[3] +tToT*(par[4] +tToT*par[5])))); 
-    Float_t timeSlewed = tdc+timeoffset;
-    AliDebug(2,Form(" Time before after offset %f: ",timeSlewed));
-    // add global time shift
-    timeSlewed = timeSlewed + timedelay;
-    AliDebug(2,Form(" Time before after slewing %f: ",timeSlewed));
-
-    // Setting Decalibrated Time signal    
-    dig->SetTdc((timeSlewed*1E3-32)/AliTOFGeometry::TdcBinWidth());   
   }
 
-  if(hToT->GetEntries()<=0 || !dbEntry){
+  if(!isToTSimulated){
     AliDebug(1,"Standard Production, no miscalibrated digits");   
   }else{
-    AliDebug(1,"Miscalibrated digits");   
+    if(!misCalibPars){
+    AliDebug(1,"Standard Production, no miscalibrated digits");   
+    }
+    else {
+      AliDebug(1,"Simulating miscalibrated digits");   
+    } 
   }
-
   return;
 }
 
