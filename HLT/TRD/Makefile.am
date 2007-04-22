@@ -1,111 +1,60 @@
 # $Id$
 # Makefile template for the Alice HLT TRD library
 
-# This files defines the autotools-based build system of the
-# libAliHLTTRD library. All lines starting with a '#' are comments.
-# Note: Source files definitions must be made in libAliHLTTRD.pkg
-# For further information refer to the README.
-
 MODULE 				= AliHLTTRD
 
-EXTRA_DIST			= AliHLTTRDLinkDef.h
+AM_CPPFLAGS			= @ALIROOT_CPPFLAGS@         \
+				  -I$(top_srcdir)/BASE \
+				  -I$(ALICE_ROOT)/TRD
 
-# MODDIR is set by the AliRoot build system and denotes the topdir
-# of the module, we must set it since the package definition libHLTbase.pkg
-# includes another common configuration file
-# include the pkg definition which actually contains the source
-# file definitions
-MODDIR				= $(top_srcdir)
-PKGDEF				= $(MODDIR)/libAliHLTTRD.pkg
-include $(top_srcdir)/libAliHLTTRD.pkg
+# noinst_PROGRAMS			= $(TRD_MAPPING_NOINST_PGM)
+# if USE_TRD_MAPPING
+# mapping2array_SOURCES		= $(TRD_MAPPING_NOINST_SRC)
+# endif
 
 # library definition
-# The lib_LTLIBRARIES variable is a fixed variable of the autotools build
-# system. All libraries defined by the Makefile template have to be added
-# here. Since we aim for separated directories for different libraries
-# there will be only one library.
 lib_LTLIBRARIES			=  libAliHLTTRD.la
 
-# version info for the library
-# The libtool program is used to created the library, a version number can
-# be specified by using the -version-info flag. This flag accepts an argument
-# of the form current[:revision[:age]].
-# If either revision or age are omitted, they default to 0. Also note that
-# age must be less than or equal to the current interface number. Here are a
-# set of rules to help you update your library version information:
-#
-#   1. Start with version information of 0:0:0 for each libtool library.
-#   2. Update the version information only immediately before a public release
-#      of your software. More frequent updates are unnecessary, and only
-#      guarantee that the current interface number gets larger faster.
-#   3. If the library source code has changed at all since the last update,
-#      then increment revision (c:r:a becomes c:r+1:a).
-#   4. If any interfaces have been added, removed, or changed since the last
-#      update, increment current, and set revision to 0.
-#   5. If any interfaces have been added since the last public release, then
-#      increment age.
-#   6. If any interfaces have been removed since the last public release, then
-#      set age to 0. 
-LIBRARY_VERSION			= '0:0:0'
-
 # library sources
-# The source files are specified in libAliHLTTRD.pkg
-libAliHLTTRD_la_SOURCES	=  $(MODULE_SRCS)
+libAliHLTTRD_la_SOURCES		= AliTRDclusterizerV1HLT.cxx \
+				  AliTRDtriggerHLT.cxx \
+				  AliHLTTRDDefinitions.cxx \
+				  AliHLTTRDClusterizerComponent.cxx \
+				  AliHLTTRDTrackerComponent.cxx \
+				  AliHLTTRDCalibrationComponent.cxx \
+				  AliHLTTRDCalibra.cxx \
+				  AliTRDtrackerHLT.cxx
 
-# library headers
-# The header files are specified in libAliHLTTRD.pkg
-noinst_HEADERS			=  $(MODULE_HDRS)
+# class header files, the link definition for the root dictionary
+# will be created from the names of the header files
+CLASS_HDRS			= AliTRDclusterizerV1HLT.h \
+				  AliTRDtriggerHLT.h \
+				  AliHLTTRDDefinitions.h \
+				  AliHLTTRDClusterizerComponent.h \
+				  AliHLTTRDTrackerComponent.h \
+				  AliHLTTRDCalibrationComponent.h \
+				  AliHLTTRDCalibra.h \
+				  AliTRDtrackerHLT.h
 
-# compilation flags of the library
-# This is the place to add further include directories if you are
-# using external modules. The AliRoot, ROOT and HLT base directories
-# are the default include directories.
-AM_CPPFLAGS			= @HLTBASE_CPPFLAGS@ \
-				  @ALIROOT_CPPFLAGS@ \
-				  @ROOTCFLAGS@
+pkginclude_HEADERS		= $(CLASS_HDRS) 
 
-# linking flags of the library
-# This is the place to add further libraries if you are
-# using external modules. The AliRoot, ROOT and HLT base libraries
-# are added by default.
-# Also the version of the library 
+# version info for the library
 libAliHLTTRD_la_LDFLAGS		= -L@ROOTLIBDIR@ \
 				  @ROOTLIBS@ \
-				  @HLTBASE_LDFLAGS@ \
 				  @ALIROOT_LDFLAGS@ \
 				  @ALIROOT_LIBS@ \
-				  -version-info $(LIBRARY_VERSION)
+				  -version-info 1:0:0
 
 # set the file name for the generated root dictionary
 DICTCPP				=  AliHLTTRD-DICT.cxx
 nodist_libAliHLTTRD_la_SOURCES  =  $(DICTCPP)
 
-CLEANFILES			=
+#BUILT_SOURCES			= $(TRD_MAPPING_INC)
+#CLEANFILES			= $(BUILT_SOURCES)
+CLEANFILES			= 
+include $(top_srcdir)/make.dict
 
-###############################################################################
-#
-# do not change anything below this line
-#
-DICTDEF				=  $(MODULE)-LinkDef.h
-DICTFILES			=  $(DICTCPP) $(DICTCPP:.cxx=.h) $(DICTDEF)
-DICTHEADERS			=  $(CLASS_HDRS)
+SUBDIRS 			= . #OnlineDisplay
 
-CLEANFILES			+= $(DICTFILES)
-
-
-$(DICTCPP:.cxx=.h): $(DICTCPP)
-	if test $@ ; then : ; else rm -f $< ; $(MAKE) $(MAKEFLAGS) $< ; fi 
-
-$(DICTCPP): $(DICTHEADERS:%=$(srcdir)/%) $(DICTDEF)
-	if [ -x $(ROOTCINT) ]; then $(ROOTCINT) -f $@ -c $(CPPFLAGS) $(AM_CPPFLAGS) $(DEFS) $(foreach i, $(DICTINCLUDE), $(i)) $^ ; fi
-$(DICTDEF): Makefile.am
-	@echo '//automatically generated ROOT DICT definition' > $@
-	@echo '//!!! DO NOT EDIT THIS FILE !!!' >> $@
-	@echo '//add further class definitions to the CLASS_HDRS variable in Makefile.am' >> $@
-	@echo '#ifdef __CINT__' >> $@
-	@echo '#pragma link off all globals;' >> $@
-	@echo '#pragma link off all classes;' >> $@
-	@echo '#pragma link off all functions;' >> $@
-	@$(foreach i, $(DICTHEADERS), \
-	   echo "#pragma link C++ class `echo $(i) | sed -e "s|.*/||g" -e "s|\.h.*||"`;" >> $@ ;)
-	@echo '#endif' >> $@
+#$(TRD_MAPPING_INC): $(TRD_MAPPING_NOINST_PGM)
+#	./$<

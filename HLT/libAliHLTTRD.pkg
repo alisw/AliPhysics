@@ -9,11 +9,27 @@ include $(MODDIR)/hlt.conf
 # README.
 
 # library sources
-MODULE_SRCS= 	
+MODULE_SRCS= \
+	AliHLTTRDCalibrationComponent.cxx \
+	AliHLTTRDCalibra.cxx \
+        AliHLTTRDClusterizerComponent.cxx \
+        AliHLTTRDDefinitions.cxx \
+        AliHLTTRDTrackerComponent.cxx \
+        AliTRDclusterizerV1HLT.cxx \
+        AliTRDtriggerHLT.cxx \
+	AliTRDtrackerHLT.cxx
 
 # class header files, the link definition for the root dictionary
 # will be created from the names of the header files
-CLASS_HDRS:=  	
+CLASS_HDRS:= \
+	AliHLTTRDCalibrationComponent.h \
+	AliHLTTRDCalibra.h \
+        AliHLTTRDClusterizerComponent.h \
+        AliHLTTRDDefinitions.h \
+        AliHLTTRDTrackerComponent.h \
+        AliTRDclusterizerV1HLT.h \
+        AliTRDtriggerHLT.h \
+	AliTRDtrackerHLT.h
 
 # library headers
 # in most cases you might have already added all the header files to
@@ -41,12 +57,12 @@ PACKCXXFLAGS := ${HLTCXXFLAGS}
 PACKCFLAGS   := ${HLTCLFAGS}
 PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
 
-EINCLUDE := HLT/BASE HLT/TRD TRD
+EINCLUDE := HLT/BASE HLT/TRD TRD RAW
 
 ###############################################################################
 #
 # do not change anything below this line
 #
-SRCS:=$(patsubst %,SampleLib/%,$(MODULE_SRCS))
-CINTHDRS:=$(patsubst %,SampleLib/%,$(CLASS_HDRS))
-HDRS:=$(patsubst %,SampleLib/%,$(MODULE_HDRS))
+SRCS:=$(patsubst %,TRD/%,$(MODULE_SRCS))
+CINTHDRS:=$(patsubst %,TRD/%,$(CLASS_HDRS))
+HDRS:=$(patsubst %,TRD/%,$(MODULE_HDRS))
