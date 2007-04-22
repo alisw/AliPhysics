@@ -29,15 +29,14 @@ using namespace std;
 
 #include "AliHLTTRDTrackerComponent.h"
 #include "AliHLTTRDDefinitions.h"
-
 #include "AliCDBManager.h"
+
 #include "AliTRDclusterizerV1HLT.h"
 #include "AliTRDReconstructor.h"
 #include "AliESD.h"
 #include "AliTRDtrackerHLT.h"
-
 #include "AliTRDCalibraFillHisto.h"
-
+#include "AliMagFMaps.h"
 #include "AliTRDcluster.h"
 #include "TObjArray.h"
 
@@ -157,6 +156,13 @@ int AliHLTTRDTrackerComponent::DoInit( int argc, const char** argv )
 
   fClusterizer = new AliTRDclusterizerV1HLT("TRCclusterizer", "TRCclusterizer");
 
+  //init alifield map - temporarly fixed - should come from a DB
+  fField = new AliMagFMaps("Maps","Maps", 2, 1., 10., 1);
+  if (fField)
+    AliTracker::SetFieldMap(fField,1);
+  else
+    Logging(kHLTLogError, "HLT::TRDTracker::DoInit", "Field", "Unable to init the field");
+    
   fGeometryFile = TFile::Open(fGeometryFileName.c_str());
   if (fGeometryFile)
     {
@@ -188,6 +194,8 @@ int AliHLTTRDTrackerComponent::DoDeinit()
 {
   delete fClusterizer;
   fClusterizer = 0;
+
+  delete fField;
 
   delete fTracker;
   fTracker = 0;

@@ -17,6 +17,7 @@ class AliTRDclusterizerV1HLT;
 class TFile;
 class TGeoManager;
 class AliTRDtrackerHLT;
+class AliMagFMaps;
 
 /**
  * @class AliHLTTRDTrackerComponent
@@ -64,6 +65,8 @@ class AliHLTTRDTrackerComponent : public AliHLTProcessor
 	string fStrorageDBpath;
 	AliTRDclusterizerV1HLT *fClusterizer; //!
 	AliCDBManager *fCDB; //!
+
+	AliMagFMaps* fField; //! magn. field settings
 
 	string fGeometryFileName;
 	TFile *fGeometryFile; //!
