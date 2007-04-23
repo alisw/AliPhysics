@@ -19,12 +19,66 @@
 // comparison is done between the generated and reconstructed resonance
 // Default is Upsilon but Jpsi can be studied if the ResType argument is changed
 // This allows to determine several important quantities 
-// reconstruction efficiency (versus pt,y), invariant mass peak variations (vs pt,y)
+// reconstruction efficiency (vs pt,y), invariant mass peak variations (vs pt,y)
 // reconstructed tracks and trigger tracks  matching efficiency
 
 // Christophe Suire, IPN Orsay
 
-void MUONplotefficiency(Int_t ResType = 553, Int_t fittype = 1){
+#if !defined(__CINT__) || defined(__MAKECINT__)
+// ROOT includes
+#include "TStyle.h"
+#include "TNtuple.h"
+#include "TF1.h"
+#include "TH1.h"
+#include "TH2.h"
+#include "TLatex.h"
+#include "TFile.h"
+#include "TLegend.h"
+#include "TCanvas.h"
+#include "TGraphErrors.h"
+#include <Riostream.h>
+#include "TMath.h"
+
+#endif
+
+
+
+Double_t fitlandau_a(Double_t *x, Double_t *par)
+{
+  Float_t val = -(x[0] - TMath::Abs(par[1])) / TMath::Abs(par[2]);
+  Double_t result = 0.399 *TMath::Abs(par[0]) * exp( -0.5* (val + exp(-val)) );
+  return result;
+}
+
+Double_t fitlandau(Double_t *x, Double_t *par)
+{
+  Float_t val = -x[0] + 2*par[1]; // - TMath::Abs(par[1]) / TMath::Abs(par[2]);
+  Double_t result = par[0] * TMath::Landau(val,par[1],par[2]);
+  return result;
+}
+Double_t fitlandaugauss(Double_t *x,Double_t *par)
+{
+  //cout << "x[0] : " << x[0] << endl ;
+
+   Float_t min=par[4];  Float_t max=par[5]; 
+
+  Int_t NStep;
+  Float_t Step=.1;
+  NStep=(Int_t)((max-min)/Step)+1;
+  Float_t tx;
+  Double_t result=0;
+  for(Int_t iStep=0;iStep<NStep;iStep++){
+    tx=min+iStep*Step;
+    result+=par[0]*TMath::Landau(-tx+2*par[1],par[1],par[2])
+      *TMath::Gaus(x[0]-tx,0.,par[3])
+      *Step;
+    //cout <<"x[0]-tx/2 : " << x[0] - tx << endl ;
+  }
+  return result;
+}
+
+
+Int_t MUONplotefficiency(Int_t ResType = 553, Int_t fittype = 1){
  
   Int_t SAVE=1;
   Int_t WRITE=1;
@@ -33,7 +87,7 @@ void MUONplotefficiency(Int_t ResType = 553, Int_t fittype = 1){
   Double_t UPSILON_MASS = 9.4603 ;
   Double_t JPSI_MASS = 3.096916;
   Double_t PI = 3.14159265358979312; 
-  Double_t RESONANCE_MASS; 
+  Double_t RESONANCE_MASS = 0.; 
 
   if (ResType==553)  
      RESONANCE_MASS = UPSILON_MASS;
@@ -46,19 +100,19 @@ void MUONplotefficiency(Int_t ResType = 553, Int_t fittype = 1){
   Int_t fitfunc = fittype;
   // 0 gaussian fit +/- 450 MeV/c2
   // 1 gaussian fit +/- 250 MeV/c2
-  // the following are not implemented in this version
   // 2 approximated landau fit reverted 
   // 3 landau fit reverted convoluated with a gaussian 
-  // 4 reverted landau fitlanUpsilon
+  // 4 reverted landau fitlan
 
   
   Float_t gaussianFitWidth = 0.450 ; // in GeV/c2
   if (fitfunc==1) gaussianFitWidth = 0.250 ; 
   
   // fit range : very important for LandauGauss Fit
+  Float_t FitRange = 0.9 ; //GeV/c2
   Float_t FitLow = 0.0  ;  Float_t FitHigh = 100. ;
-  if (ResType==443) FitLow = 2.2 ; FitHigh = 3.9 ;
-  if (ResType==553) FitLow = 8.5 ; FitHigh = 10.2 ;
+  FitLow  = RESONANCE_MASS-FitRange ;
+  FitHigh = RESONANCE_MASS+FitRange ;
 
   
   //gStyle->Reset();
@@ -94,6 +148,8 @@ void MUONplotefficiency(Int_t ResType = 553, Int_t fittype = 1){
   //("Ktuple","Kinematics NTuple","ev:npart:id:idmo:idgdmo:p:pt:y:theta:pseudorap:vx:vy:vz");
   TNtuple *ESDtuple = (TNtuple*)effFile->Get("ESDtuple");
   //("ESDtuple","Reconstructed Mu+Mu- pairs","ev:pt:y:theta:minv:pt1:y1:theta1:q1:pt2:y2:theta2:q2");
+  TNtuple *ESDtupleBck = (TNtuple*)effFile->Get("ESDtupleBck");
+  //("ESDtuple","Reconstructed Mu+Mu- pairs","ev:pt:y:theta:minv:pt1:y1:theta1:q1:pt2:y2:theta2:q2");
 
 
   /*********************************/
@@ -106,14 +162,14 @@ void MUONplotefficiency(Int_t ResType = 553, Int_t fittype = 1){
   Float_t etacutmax = -2.54209 ;
 
   Float_t invMassMin = .0 ;   Float_t invMassMax = 15.0 ;   Int_t   invMassBins = 100 ;
-  Float_t ptmin = 0.0;      Float_t ptmax =  20.0;     Int_t ptbins = 10; 
- if (ResType==443){
+
+  if (ResType==443){
     invMassMin = 1.0 ;  invMassMax = 4.5 ;  
     ptmin = 0.0;     ptmax =  10.0; 
   }
   if (ResType==553){
-   invMassMin =  7.0 ;  invMassMax = 11.0 ;  
-   ptmin = 0.0;   ptmax =  20.0; 
+    invMassMin =  7.0 ;  invMassMax = 11.0 ;  
+    ptmin = 0.0;   ptmax =  20.0; 
   }
   
   /*********************************/
@@ -261,7 +317,7 @@ void MUONplotefficiency(Int_t ResType = 553, Int_t fittype = 1){
   //tex->SetLineWidth(2);  
   //tex->Draw();
  
-  sprintf(txt,"Resonance : %d entries",hptyResonanceMCAcc->GetEntries());
+  sprintf(txt,"Resonance : %d entries",(Int_t)hptyResonanceMCAcc->GetEntries());
   tex = new TLatex(-0.854829,0.794436,txt);
   tex->SetLineWidth(2);
   tex->Draw();
@@ -348,7 +404,7 @@ void MUONplotefficiency(Int_t ResType = 553, Int_t fittype = 1){
   }
 
   // if something is wrong 
-  if ( hptyResonanceESD->GetEntries()==0) {cout << " No entries in hptyResonanceESD " << endl ; break ;}
+  if ( hptyResonanceESD->GetEntries()==0) {cout << " No entries in hptyResonanceESD " << endl ; return 0 ;}
 
   //with Acc cuts - Theta and Pt
   TH2F *hptyResonanceESDAcc = new TH2F("hptyResonanceESDAcc", "Reconstructed Resonances",ptbins,ptmin,ptmax,ybins,ymin,ymax);
@@ -371,9 +427,11 @@ void MUONplotefficiency(Int_t ResType = 553, Int_t fittype = 1){
   cout << " Reconstructed Tracks" << endl ;
   cout << " " << hptyResonanceESDAcc->GetEntries() << " Resonance in acceptance cuts " << endl;
 
+
+  TH2F *hptyResonanceESDBckAcc;
   if (REALISTIC_BACKGROUND){
     //with Acc cuts - Theta and Pt
-    TH2F *hptyResonanceESDBckAcc = new TH2F("hptyResonanceESDBckAcc", "Reconstructed Resonances",ptbins,ptmin,ptmax,ybins,ymin,ymax);
+    hptyResonanceESDBckAcc = new TH2F("hptyResonanceESDBckAcc", "Reconstructed Resonances",ptbins,ptmin,ptmax,ybins,ymin,ymax);
     hptyResonanceESDBckAcc->SetLineColor(1);
     hptyResonanceESDBckAcc->SetLineStyle(1);
     hptyResonanceESDBckAcc->SetLineWidth(2);
@@ -401,7 +459,7 @@ void MUONplotefficiency(Int_t ResType = 553, Int_t fittype = 1){
   c100->cd();
   hptyResonanceESDAcc->SetStats(0);
   hptyResonanceESDAcc->Draw("LEGO2ZFB"); 
-  sprintf(txt,"Resonance : %d entries",hptyResonanceESDAcc->GetEntries());
+  sprintf(txt,"Resonance : %d entries",(Int_t)hptyResonanceESDAcc->GetEntries());
   tex = new TLatex(-0.854829,0.794436,txt);
   tex->SetLineWidth(2);
   tex->Draw();
@@ -423,7 +481,7 @@ void MUONplotefficiency(Int_t ResType = 553, Int_t fittype = 1){
     c110->cd();
     hptyResonanceESDBckAcc->SetStats(0);
     hptyResonanceESDBckAcc->Draw("LEGO2ZFB"); 
-    sprintf(txt,"Resonance backround : %d entries",hptyResonanceESDBckAcc->GetEntries());
+    sprintf(txt,"Resonance backround : %d entries",(Int_t)hptyResonanceESDBckAcc->GetEntries());
     tex = new TLatex(-0.854829,0.794436,txt);
     tex->SetLineWidth(2);
     tex->Draw();
@@ -548,9 +606,11 @@ void MUONplotefficiency(Int_t ResType = 553, Int_t fittype = 1){
 
  /*******************************************************************************************************************/
 
-  /*******************************/
-  /* Trigger matching            */
-  /*******************************/
+  /*******************************************/
+  /* Trigger matching                        */
+  /* trigger word is defined in :            */
+  /* /STEER/createTriggerDescriptor_MUON.C   */
+  /*******************************************/
 
 
   Float_t triggerChi2Min = 0.; 
@@ -566,8 +626,8 @@ void MUONplotefficiency(Int_t ResType = 553, Int_t fittype = 1){
   hInvMassNoTriggerCut->GetYaxis()->SetTitle("Counts");
   ESDtuple->Project("hInvMassNoTriggerCut","minv",m1TG.Data());
 
-  //Add trigger UnlikePairAllPt
-  TString  m2TG = m1TG + " && (tw & 0x800) == 2048" ;
+  //Add trigger UnlikeHighPt or UnlikeLowPt
+  TString  m2TG = m1TG + " && ((tw & 0x10) == 16 || (tw & 0x32) == 32)" ;
   TH1F *hInvMassResonanceTrigger= new TH1F("hInvMassResonanceTrigger","hInvMassResonanceTrigger",invMassBins,invMassMin,invMassMax);
   hInvMassResonanceTrigger->GetXaxis()->SetTitle("Mass [GeV/c^{2}]");
   hInvMassResonanceTrigger->GetYaxis()->SetTitle("Counts");
@@ -641,7 +701,7 @@ void MUONplotefficiency(Int_t ResType = 553, Int_t fittype = 1){
   hInvMassResonanceTriggerNoMatch->SetLineColor(46);
   hInvMassResonanceTriggerNoMatch->Draw("same");
 
-  TLegend *leg = new TLegend(0.12,0.6,0.50,0.89);
+  leg = new TLegend(0.12,0.6,0.50,0.89);
   leg->SetHeader("Reconstructed Resonance Invariant Mass");
 
   leg->AddEntry(hInvMassNoTriggerCut,Form("All  (%.0f cnts)",hInvMassNoTriggerCut->GetEntries()),"l");
@@ -693,11 +753,9 @@ void MUONplotefficiency(Int_t ResType = 553, Int_t fittype = 1){
   Char_t  theCut[100];
   
   
-  // Load  the fit functions 
-  //gROOT->ProcessLine(".L /home/suire/AliRoot/macros/FIT/FitFunction.C");
-  
   TF1 *fitFunc ;  
-  
+  TString FitFuncName;
+
   if (fitfunc==0 || fitfunc==1){
     fitFunc = new TF1("gaussian","gaus(0)",FitLow,FitHigh);
     if (!fitFunc)
@@ -708,24 +766,17 @@ void MUONplotefficiency(Int_t ResType = 553, Int_t fittype = 1){
     fitFunc->SetLineStyle(2);
     
     Float_t  *tParams = new Float_t[3] ;
-    if (ResType==553){
-      tParams[0] = 500;
-      tParams[1] = 9.47;
-      tParams[2] = 0.1;
-    }
-    if (ResType==443){
-      tParams[0] = 500;
-      tParams[1] = 3.1;
-      tParams[2] = 0.1;
-    }
+    tParams[0] = 500;
+    tParams[1] = RESONANCE_MASS;
+    tParams[2] = 0.1;
 
     fitFunc->SetParameters(tParams[0],tParams[1],tParams[2]);
     
-    TString FitFuncName = "gaussian";  
+    FitFuncName = "gaussian";  
   }
   
   if (fitfunc==2){
-    fitFunc = new TF1("fitlan_a",fitlan_a,FitLow,FitHigh,3);
+    fitFunc = new TF1("fitlandau_a",fitlandau_a,FitLow,FitHigh,3);
     fitFunc->SetParNames("Constant","Mean value","Width");
     fitFunc->SetLineColor(2);
     fitFunc->SetLineWidth(2);
@@ -733,15 +784,15 @@ void MUONplotefficiency(Int_t ResType = 553, Int_t fittype = 1){
     
     Float_t  *tParams = new Float_t[3] ;
     tParams[0] = 1000;
-    tParams[1] = 9.47;
+    tParams[1] = RESONANCE_MASS;
     tParams[2] = 0.05;
     fitFunc->SetParameters(tParams[0],tParams[1],tParams[2]);
     
-    TString FitFuncName = "fitlan_a";  
+    TString FitFuncName = "fitlandau_a";  
   }
   
   if (fitfunc==3){
-    fitFunc = new TF1("fitlangaussUpsilon",fitlangaussUpsilon,FitLow,FitHigh,6);
+    fitFunc = new TF1("fitlandaugauss",fitlandaugauss,FitLow,FitHigh,6);
     fitFunc->SetParNames("Constant","Mean value","Width","SigmaGauss","LowFitVal","HighFitVal");
     fitFunc->SetLineColor(2);
     fitFunc->SetLineWidth(2);
@@ -749,7 +800,7 @@ void MUONplotefficiency(Int_t ResType = 553, Int_t fittype = 1){
     
     Float_t  *tParams = new Float_t[6] ;
     tParams[0] = 5000;
-    tParams[1] = 9.47;   
+    tParams[1] = RESONANCE_MASS;   
     tParams[2] = 0.05;   //0.5
     tParams[3] = 0.05;   // 1.
     
@@ -767,11 +818,11 @@ void MUONplotefficiency(Int_t ResType = 553, Int_t fittype = 1){
     // for special case one may use 
     //fitFunc->SetParameter(1,9.35);
 
-    TString FitFuncName = "fitlangaussUpsilon"; 
+    TString FitFuncName = "fitlandaugauss"; 
   }
   
   if (fitfunc==4){
-    fitFunc = new TF1("fitlanUpsilon",fitlanUpsilon,FitLow,FitHigh,3);
+    fitFunc = new TF1("fitlandau",fitlandau,FitLow,FitHigh,3);
     fitFunc->SetParNames("Constant","Mean value","Width");
     fitFunc->SetLineColor(2);
     fitFunc->SetLineWidth(2);
@@ -779,11 +830,11 @@ void MUONplotefficiency(Int_t ResType = 553, Int_t fittype = 1){
     
     Float_t  *tParams = new Float_t[3] ;
     tParams[0] = 1000;
-    tParams[1] = 9.47;
+    tParams[1] = RESONANCE_MASS;
     tParams[2] = 0.05;
     fitFunc->SetParameters(tParams[0],tParams[1],tParams[2]);
     
-    TString FitFuncName = "fitlanUpsilon";  
+    TString FitFuncName = "fitlandau";  
   }
 
 
@@ -855,19 +906,19 @@ void MUONplotefficiency(Int_t ResType = 553, Int_t fittype = 1){
   }
   cfit->Modified();
   cfit->Update();
-
+  
   //Fit also the pt-integrated mass histogram 
-   cfit->cd();
-   hInvMassAll->Fit(FitFuncName.Data(),"rv");
-   if (FitFuncName == "gaussian")
-     fitFunc->SetRange(fitFunc->GetParameter(1)-gaussianFitWidth,fitFunc->GetParameter(1)+gaussianFitWidth);
-   hInvMassAll->Fit(FitFuncName.Data(),"rv");
-   cfit->Modified();
-   cfit->Update();
-   
-   cout << " " << endl;
-   cout << "********************************************" << endl;
-   cout << " Fit ("<<FitFuncName.Data()<<" results of the pt-integrated mass peak " << endl ;
+  cfit->cd();
+  hInvMassAll->Fit(FitFuncName.Data(),"rv");
+  if (FitFuncName == "gaussian")
+    fitFunc->SetRange(fitFunc->GetParameter(1)-gaussianFitWidth,fitFunc->GetParameter(1)+gaussianFitWidth);
+  hInvMassAll->Fit(FitFuncName.Data(),"rv");
+  cfit->Modified();
+  cfit->Update();
+  
+  cout << " " << endl;
+  cout << "********************************************" << endl;
+  cout << " Fit ("<<FitFuncName.Data()<<" results of the pt-integrated mass peak " << endl ;
    cout << "   Mean value : " << fitFunc->GetParameter(1) << " +/- " << fitFunc->GetParError(1) << endl ;
    cout << "   Width value : " << fitFunc->GetParameter(2) << " +/- " << fitFunc->GetParError(2) << endl ;
    cout << "   ChiSquare of the fit : " << fitFunc->GetChisquare()<< " / " << fitFunc->GetNDF() << endl ;
@@ -885,7 +936,7 @@ void MUONplotefficiency(Int_t ResType = 553, Int_t fittype = 1){
    Float_t chi2sum = 0.;
   
   for (Int_t qw = 0 ; qw < nofMassHistograms ; qw++){
-    sprintf(theExt,"_%d_%d",ptbinslimits[qw],ptbinslimits[qw+1]);
+    sprintf(theExt,"_%1f_%1f",ptbinslimits[qw],ptbinslimits[qw+1]);
     histExt= theExt;
     hInvMassInPtBins[qw] = new TH1F("hInvMassInPtBins"+histExt,"hInvMassInPtBins"+histExt,invMassBins,invMassMin,invMassMax);
     hInvMassInPtBins[qw]->GetXaxis()->SetTitle("Mass [GeV/c^{2}]");
@@ -924,7 +975,7 @@ void MUONplotefficiency(Int_t ResType = 553, Int_t fittype = 1){
       fitResultsMean[qw] = TMath::Abs(fitFunc->GetParameter(1));
       fitResultsMeanErr[qw] =  fitFunc->GetParError(1);
       
-      if(FitFuncName == "fitlangaussUpsilon"){	
+      if(FitFuncName == "fitlandaugauss"){	
 	// width = gauss_width + width landau
 	fitResultsWidth[qw] = TMath::Abs(fitFunc->GetParameter(2)) +  TMath::Abs(fitFunc->GetParameter(3)); 
 	fitResultsWidthErr[qw] =  TMath::Abs(fitFunc->GetParError(2)) +  TMath::Abs(fitFunc->GetParError(3));
@@ -971,7 +1022,7 @@ void MUONplotefficiency(Int_t ResType = 553, Int_t fittype = 1){
   }
   if (cnt==0) {
     cout << "Fitting procedure didn't work" << endl;  
-    break ;
+    return 0 ;
   }
 
   cout << " Mass : " << meanMass/cnt << " +/- " << meanMassError/cnt << endl ;
@@ -998,13 +1049,6 @@ void MUONplotefficiency(Int_t ResType = 553, Int_t fittype = 1){
   cout << "***********************" << endl;
   cout << "  " << endl;
 
-  
-  
-
-  TH2F *hFrame = new TH2F("hFrame", "A hFrame",ptbins,ptmin,ptmax,100,fitResultsWidth[1]-fitResultsWidth[1]*2,fitResultsWidth[1]+fitResultsWidth[1]*2);
-  hptyResonanceMCAcc->SetLineColor(1);
-  hptyResonanceMCAcc->SetLineStyle(1);
-  hptyResonanceMCAcc->SetLineWidth(2);
   
   
   TCanvas *cA = new TCanvas("cA", "Resonance : Width from fit",30,330,700,500);
@@ -1107,5 +1151,9 @@ void MUONplotefficiency(Int_t ResType = 553, Int_t fittype = 1){
     
     myFile->Close();
   }
+
+  return 1;
   
 } // macro ends
+
+
