@@ -33,6 +33,8 @@ public:
           Bool_t  IsLostByFresnel  (                                 );                                        //checks if the photon lost on Fresnel reflection  
           void    StepCount        (                                 );                                        //counts particles in StepManager()
           void    StepHistory      (                                 );                                        //prints history of tracking in StepManager()
+  static  void    TestGeom         (                                 );                                        //tests the validity of geometry
+  static  void    TestPoint        (Int_t ch,Float_t x,Float_t y     );                                        //tests the validity of geometry
 protected:
   enum EMedia {kAir=1,kRoha=2,kSiO2=3,kC6F14=4,kCH4=5,kCsI=6,kAl=7,kCu=8,kW=9,kNeo=10,kAr=11};                               //media ids, used for geometry creation  
   enum Ecounters {kMipEnterRad=1,kCkovNew,kCkovNewRad,kCkovNewWin,kCkovNewProxGap,kCkovNewAmpGap,kCkovEnterPc,kPhotoEle};    //counters id's

@@ -659,3 +659,20 @@ void AliHMPIDv2::StepManager()
   }//MIP in GAP
 }//StepManager()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void AliHMPIDv2::TestPoint(Int_t ch,Float_t x,Float_t y)
+{
+// Utility method to check the validity of geometry by poviding some crucial points
+// Arguments: ch,x,y- crucial point definition (cm) in LORS
+//   Returns: none    
+  Double_t mars[3];
+  AliHMPIDParam::Instance()->Lors2Mars(ch,x,y,mars);
+  Printf("(ch=%i,locX=%.2f,locY=%.2f) %s",ch,x,y,gGeoManager->FindNode(mars[0],mars[1],mars[2])->GetName());
+}//TestPoint()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void AliHMPIDv2::TestGeom()
+{
+  TGeoManager::Import("geometry.root");
+  for(Int_t ch=AliHMPIDDigit::kMinCh;ch<=AliHMPIDDigit::kMaxCh;ch++)
+    TestPoint(ch,0,0);
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
