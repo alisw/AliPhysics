@@ -15,6 +15,9 @@
 
 /* 
 $Log$
+Revision 1.22  2007/04/19 17:26:32  arcelli
+Fix a bug (add some debug printout
+
 Revision 1.21  2007/04/18 17:28:12  arcelli
 Set the ToT bin width to the one actually used...
 
@@ -72,6 +75,7 @@ Revision 0.01  2005/07/25 A. De Caro
 
 #include "TClonesArray.h"
 //#include "TFile.h"
+#include "TStopwatch.h"
 #include "TTree.h"
 
 #include "AliDAQ.h"
@@ -202,6 +206,9 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent)
   // Converts digits to recpoints for TOF
   //
 
+  TStopwatch stopwatch;
+  stopwatch.Start();
+
   fRunLoader->GetEvent(iEvent);
 
   fTreeD = fTOFLoader->TreeD();
@@ -279,6 +286,9 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent)
   fTOFLoader = fRunLoader->GetLoader("TOFLoader");  
   fTOFLoader->WriteRecPoints("OVERWRITE");
 
+  AliInfo(Form("Execution time to read TOF digits and to write TOF clusters : R:%.4fs C:%.4fs",
+	       stopwatch.RealTime(),stopwatch.CpuTime()));
+
 }
 //______________________________________________________________________________
 
@@ -288,6 +298,9 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
   //
   // Converts RAW data to recpoints for TOF
   //
+
+  TStopwatch stopwatch;
+  stopwatch.Start();
 
   //const Int_t kDDL = fTOFGeometry->NDDL()*fTOFGeometry->NSectors();
   const Int_t kDDL = AliDAQ::NumberOfDdls("TOF");
@@ -444,6 +457,9 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 
   ResetRecpoint();
 
+  AliDebug(1, Form("Execution time to read TOF raw data and to write TOF clusters : R:%.4fs C:%.4fs",
+		   stopwatch.RealTime(),stopwatch.CpuTime()));
+
 }
 //______________________________________________________________________________
 
@@ -452,6 +468,9 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent, AliRawReader *rawReader
   //
   // Converts RAW data to recpoints for TOF
   //
+
+  TStopwatch stopwatch;
+  stopwatch.Start();
 
   //const Int_t kDDL = fTOFGeometry->NDDL()*fTOFGeometry->NSectors();
   const Int_t kDDL = AliDAQ::NumberOfDdls("TOF");
@@ -572,6 +591,9 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent, AliRawReader *rawReader
   fTOFLoader = fRunLoader->GetLoader("TOFLoader");
   fTOFLoader->WriteRecPoints("OVERWRITE");
   
+  AliDebug(1, Form("Execution time to read TOF raw data and to write TOF clusters : R:%.4fs C:%.4fs",
+	       stopwatch.RealTime(),stopwatch.CpuTime()));
+
 }
 //______________________________________________________________________________
 
@@ -582,6 +604,9 @@ void AliTOFClusterFinder::Raw2Digits(Int_t iEvent, AliRawReader *rawReader)
   //
   //             (temporary solution)
   //
+
+  TStopwatch stopwatch;
+  stopwatch.Start();
 
   //const Int_t kDDL = fTOFGeometry->NDDL()*fTOFGeometry->NSectors();
   const Int_t kDDL = fTOFGeometry->NDDL()*fTOFGeometry->NSectors();
@@ -655,6 +680,9 @@ void AliTOFClusterFinder::Raw2Digits(Int_t iEvent, AliRawReader *rawReader)
   fTOFLoader = fRunLoader->GetLoader("TOFLoader");
   fTOFLoader->WriteDigits("OVERWRITE");
   
+  AliDebug(1, Form("Execution time to read TOF raw data and to write TOF clusters : R:%.2fs C:%.2fs",
+		   stopwatch.RealTime(),stopwatch.CpuTime()));
+
 }
 //______________________________________________________________________________
 

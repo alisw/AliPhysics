@@ -46,6 +46,7 @@
 #include <TTask.h>
 #include <TTree.h>
 #include <TVirtualMC.h>
+#include <TStopwatch.h>
 
 #include "AliConst.h"
 #include "AliLoader.h"
@@ -689,6 +690,9 @@ void AliTOF::Digits2Raw()
 // Starting from the TOF digits, writes the Raw Data objects
 //
 
+  TStopwatch stopwatch;
+  stopwatch.Start();
+
   fLoader->LoadDigits();
 
   TTree* digits = fLoader->TreeD();
@@ -697,7 +701,6 @@ void AliTOF::Digits2Raw()
     return;
   }
   
-  //AliRunLoader *rl = AliRunLoader::Open("galice.root",AliConfig::GetDefaultEventFolderName(),"read");
   fRunLoader->CdGAFile();
   TFile *in=(TFile*)gFile;
   in->cd();
@@ -706,7 +709,12 @@ void AliTOF::Digits2Raw()
   AliTOFDDLRawData rawWriter(geometry);
   //AliTOFDDLRawData rawWriter;
   rawWriter.SetVerbose(0);
-  //rawWriter.SetAcquisitionMode(kFALSE);
+  //rawWriter.SetFakeOrphaneProduction(kTRUE);
+  //rawWriter.SetPackedAcquisitionMode(kFALSE);
+  if (rawWriter.GetPackedAcquisitionMode()) {
+    if(rawWriter.GetMatchingWindow()>8192)
+      AliWarning(Form("You are running in packing mode and the matching window is %, i.e. greater than 200. ns", rawWriter.GetMatchingWindow()));
+  }
   
   AliDebug(1,"Formatting raw data for TOF");
   digits->GetEvent(0);
@@ -714,6 +722,9 @@ void AliTOF::Digits2Raw()
 
   fLoader->UnloadDigits();
   
+  AliDebug(1, Form("Execution time to write TOF raw data : R:%.2fs C:%.2fs",
+		   stopwatch.RealTime(),stopwatch.CpuTime()));
+
 }
 
 //____________________________________________________________________________
