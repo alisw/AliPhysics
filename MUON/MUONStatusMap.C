@@ -80,7 +80,7 @@ AliMUONV2DStore* MUONStatusMap(Int_t runNumber=0, Bool_t statusOnly=kFALSE, Int_
   
   if ( statusOnly ) return status;
   
-  AliMUONPadStatusMapMaker statusMapMaker;
+  AliMUONPadStatusMapMaker statusMapMaker(cd);
   
   return statusMapMaker.MakePadStatusMap(*status,mask);
 }
