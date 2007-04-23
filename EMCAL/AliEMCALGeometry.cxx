@@ -88,7 +88,8 @@ AliEMCALGeometry::AliEMCALGeometry()
     fShellThickness(0.),fZLength(0.),fGap2Active(0.),fNZ(0),fNPhi(0),fSampling(0.),fNumberOfSuperModules(0),
     fSteelFrontThick(0.),fFrontSteelStrip(0.),fLateralSteelStrip(0.),fPassiveScintThick(0.),fPhiModuleSize(0.),
     fEtaModuleSize(0.),fPhiTileSize(0.),fEtaTileSize(0.),fLongModuleSize(0.),fNPhiSuperModule(0),fNPHIdiv(0),fNETAdiv(0),
-    fNCells(0),fNCellsInSupMod(0),fNCellsInModule(0),fNTRU(0),fNTRUEta(0),fNTRUPhi(0),fTrd1Angle(0.),f2Trd1Dx2(0.),
+    fNCells(0),fNCellsInSupMod(0),fNCellsInModule(0),fNTRUEta(0),fNTRUPhi(0),
+    fNCellsInTRUEta(0), fNCellsInTRUPhi(0), fTrd1Angle(0.),f2Trd1Dx2(0.),
     fPhiGapForSM(0.),fKey110DEG(0),fPhiBoundariesOfSM(0), fPhiCentersOfSM(0),fEtaMaxOfTRD1(0),
     fTrd2AngleY(0.),f2Trd2Dy2(0.),fEmptySpace(0.),fTubsR(0.),fTubsTurnAngle(0.),fCentersOfCellsEtaDir(0),
     fCentersOfCellsXDir(0),fCentersOfCellsPhiDir(0),fEtaCentersOfCells(0),fPhiCentersOfCells(0),
@@ -108,7 +109,8 @@ AliEMCALGeometry::AliEMCALGeometry(const Text_t* name, const Text_t* title)
     fShellThickness(0.),fZLength(0.),fGap2Active(0.),fNZ(0),fNPhi(0),fSampling(0.),fNumberOfSuperModules(0),
     fSteelFrontThick(0.),fFrontSteelStrip(0.),fLateralSteelStrip(0.),fPassiveScintThick(0.),fPhiModuleSize(0.),
     fEtaModuleSize(0.),fPhiTileSize(0.),fEtaTileSize(0.),fLongModuleSize(0.),fNPhiSuperModule(0),fNPHIdiv(0),fNETAdiv(0),
-    fNCells(0),fNCellsInSupMod(0),fNCellsInModule(0),fNTRU(0),fNTRUEta(0),fNTRUPhi(0),fTrd1Angle(0.),f2Trd1Dx2(0.),
+    fNCells(0),fNCellsInSupMod(0),fNCellsInModule(0),fNTRUEta(0),fNTRUPhi(0),
+    fNCellsInTRUEta(0), fNCellsInTRUPhi(0), fTrd1Angle(0.),f2Trd1Dx2(0.),
     fPhiGapForSM(0.),fKey110DEG(0),fPhiBoundariesOfSM(0), fPhiCentersOfSM(0), fEtaMaxOfTRD1(0),
     fTrd2AngleY(0.),f2Trd2Dy2(0.),fEmptySpace(0.),fTubsR(0.),fTubsTurnAngle(0.),fCentersOfCellsEtaDir(0),
     fCentersOfCellsXDir(0),fCentersOfCellsPhiDir(0),fEtaCentersOfCells(0),fPhiCentersOfCells(0),
@@ -163,9 +165,10 @@ AliEMCALGeometry::AliEMCALGeometry(const AliEMCALGeometry& geom)
     fNCells(geom.fNCells),
     fNCellsInSupMod(geom.fNCellsInSupMod),
     fNCellsInModule(geom.fNCellsInModule),
-    fNTRU(geom.fNTRU),
     fNTRUEta(geom.fNTRUEta),
     fNTRUPhi(geom.fNTRUPhi),
+    fNCellsInTRUEta(geom.fNCellsInTRUEta),
+    fNCellsInTRUPhi(geom.fNCellsInTRUPhi),
     fTrd1Angle(geom.fTrd1Angle),
     f2Trd1Dx2(geom.f2Trd1Dx2),
     fPhiGapForSM(geom.fPhiGapForSM),
@@ -401,9 +404,10 @@ void AliEMCALGeometry::Init(void){
   fPhiCentersOfSM[5]      = (fPhiBoundariesOfSM[10]+fPhiBoundariesOfSM[11])/2.; 
 
   //TRU parameters. These parameters values are not the final ones.
-  fNTRU    = 3 ;
   fNTRUEta = 3 ;
   fNTRUPhi = 1 ;
+  fNCellsInTRUEta = 16 ;
+  fNCellsInTRUPhi = 24 ;
 
       // Define TGeoMatrix of SM - Jan 19, 2007 (just fro TRD1)
   if(fGeoName.Contains("TRD1")) { // copy code from  AliEMCALv0::CreateSmod()
@@ -643,12 +647,8 @@ void AliEMCALGeometry::GetCellPhiEtaIndexInSModuleFromTRUIndex(const Int_t itru,
   Int_t col = itru/ fNTRUPhi ;
   Int_t row = itru - col*fNTRUPhi ;
    
-  //Calculate the (eta,phi) index in SM
-  Int_t nCellsPhi = fNPhi*2/fNTRUPhi;
-  Int_t nCellsEta = fNZ*2/fNTRUEta;
-  
-  iphiSM = nCellsPhi*row + iphitru  ;
-  ietaSM = nCellsEta*col + ietatru  ; 
+  iphiSM = fNCellsInTRUPhi*row + iphitru  ;
+  ietaSM = fNCellsInTRUEta*col + ietatru  ; 
 }
 
 //______________________________________________________________________

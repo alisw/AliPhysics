@@ -115,16 +115,17 @@ class AliEMCALTrigger : public AliTriggerDetector {
 
  private:
 
-  void FillTRU(const AliEMCALGeometry *geom, const TClonesArray * digits, TClonesArray * ampmatrix, TClonesArray * ampmatrixsmod, TClonesArray * timeRmatrix); 
+  void FillTRU(const TClonesArray * digits, TClonesArray * ampmatrix, TClonesArray * ampmatrixsmod, TClonesArray * timeRmatrix); 
 
   Bool_t IsPatchIsolated(Int_t iPatchType, const TClonesArray * ampmods, const Int_t imod, const Int_t mtru, const Float_t maxamp, const Int_t maxphi, const Int_t maxeta) ;
   
   void MakeSlidingCell(const TClonesArray * amptrus, const TClonesArray * timeRtrus,const Int_t supermod, TMatrixD &ampmax2, TMatrixD &ampmaxn) ; 
   
-  void SetTriggers(const TClonesArray * amptrus,const Int_t iSM, const TMatrixD &ampmax2, const TMatrixD &ampmaxn, const AliEMCALGeometry * geom) ;
+  void SetTriggers(const TClonesArray * amptrus,const Int_t iSM, const TMatrixD &ampmax2, const TMatrixD &ampmaxn) ;
   
 
  private: 
+  AliEMCALGeometry *fGeom;
 
   Float_t f2x2MaxAmp ;         //! Maximum 2x2 added amplitude (not overlapped) 
   Int_t   f2x2CellPhi ;        //! upper right cell, row(phi)   
@@ -147,12 +148,6 @@ class AliEMCALTrigger : public AliTriggerDetector {
   Float_t fL1JetMediumPtThreshold ; //! L1 Medium pT trigger energy threshold
   Float_t fL1JetHighPtThreshold ;   //! L1 High pT trigger energy threshold
 
-  Int_t   fNTRU;             //! Number of TRU per SuperModule (3)
-  Int_t   fNTRUEta ;         //! Number of crystal rows per Eta in one TRU (3)
-  Int_t   fNTRUPhi ;         //! Number of crystal rows per Phi in one TRU (1)
-  Int_t   fNCellsPhi;        //! Number of rows in a TRU (24)
-  Int_t   fNCellsEta;        //! Number of columns in a TRU (16)
-
   Int_t fPatchSize;          //! Trigger patch factor, to be multiplied to 2x2 cells
                              //  0 means 2x2, 1 means 4x4, 2 means 6x6 ...
   Int_t fIsolPatchSize ;     //  Isolation patch size, number of rows or columns to add to 
@@ -170,7 +165,7 @@ class AliEMCALTrigger : public AliTriggerDetector {
   Bool_t  fSimulation ;           //! Flag to do the trigger during simulation or reconstruction
   Bool_t  fIsolateInSuperModule;  //! Flag to isolate trigger patch in SuperModule or in TRU acceptance
 
-  ClassDef(AliEMCALTrigger,1)
+  ClassDef(AliEMCALTrigger,0)
 } ;
     
     

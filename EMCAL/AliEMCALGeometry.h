@@ -20,6 +20,7 @@ class TObjArray;
 class TVector3;
 class TGeoMatrix;
 class TParticle ; 
+class AliEMCALGeometry;
 class AliEMCALShishKebabTrd1Module;
 class AliEMCALRecPoint;
 class TClonesArray ;
@@ -120,9 +121,13 @@ public:
   Int_t   GetNETAdiv() const {return fNETAdiv ;}
   Int_t   GetNCells()  const {return fNCells;}
 
-  Int_t   GetNTRU() const    {return fNTRU ; }  
+  Int_t   GetNTRU() const    {return fNTRUEta*fNTRUPhi ; }  
   Int_t   GetNTRUEta() const {return fNTRUEta ; }  
   Int_t   GetNTRUPhi() const {return fNTRUPhi ; }  
+
+  Int_t   GetNCellsInTRU() const    {return fNCellsInTRUEta*fNCellsInTRUPhi; }  
+  Int_t   GetNCellsInTRUEta() const {return fNCellsInTRUEta ; }  
+  Int_t   GetNCellsInTRUPhi() const {return fNCellsInTRUPhi ; }  
 
   Float_t GetSteelFrontThickness() const { return fSteelFrontThick;}
   Float_t GetLongModuleSize() const {return fLongModuleSize;}
@@ -196,7 +201,6 @@ public:
   void SetNZ(Int_t nz) { fNZ= nz ; printf("SetNZ: Number of modules in Z set to %d", fNZ) ; }
   void SetNPhi(Int_t nphi) { fNPhi= nphi ; printf("SetNPhi: Number of modules in Phi set to %d", fNPhi) ; }
 
-  void SetNTRU(Int_t ntru)    {fNTRU    = ntru; printf("SetNTRU: Number of TRUs per SuperModule set to %d", fNTRU) ; }
   void SetNTRUEta(Int_t ntru) {fNTRUEta = ntru; ; printf("SetNTRU: Number of TRUs per SuperModule in Etaset to %d", fNTRUEta) ;}
   void SetNTRUPhi(Int_t ntru) {fNTRUPhi = ntru; ; printf("SetNTRU: Number of TRUs per SuperModule in Phi set to %d", fNTRUPhi) ;}
 
@@ -265,9 +269,11 @@ private:
   Int_t   fNCellsInSupMod;               // number cell in super module
   Int_t   fNCellsInModule;               // number cell in module)
   //TRU parameters
-  Int_t   fNTRU ;                        //! Number of TRUs per module
-  Int_t   fNTRUEta ;                     //! Number of cell rows per Z in one TRU
-  Int_t   fNTRUPhi ;                     //! Number of cell rows per Phi in one TRU
+  Int_t   fNTRUEta ;                     // Number of TRUs per module in eta
+  Int_t   fNTRUPhi ;                     // Number of TRUs per module in phi
+  Int_t   fNCellsInTRUEta;               // Number of cells per TRU in eta 
+  Int_t   fNCellsInTRUPhi;               // Number of cells per TRU in phi 
+
   // TRD1 options - 30-sep-04
   Float_t fTrd1Angle;                    // angle in x-z plane (in degree) 
   Float_t f2Trd1Dx2;                     // 2*dx2 for TRD1
@@ -303,7 +309,7 @@ private:
   Int_t fILOSS;
   Int_t fIHADR;
 
-  ClassDef(AliEMCALGeometry, 11) // EMCAL geometry class 
-  };
+  ClassDef(AliEMCALGeometry, 12) // EMCAL geometry class 
+};
 
 #endif // AliEMCALGEOMETRY_H

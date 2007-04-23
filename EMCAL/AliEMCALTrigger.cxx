@@ -59,7 +59,7 @@ ClassImp(AliEMCALTrigger)
 
 //______________________________________________________________________
 AliEMCALTrigger::AliEMCALTrigger()
-  : AliTriggerDetector(),
+  : AliTriggerDetector(), fGeom(0),
     f2x2MaxAmp(-1), f2x2CellPhi(-1),  f2x2CellEta(-1),
     f2x2SM(0),
     fnxnMaxAmp(-1), fnxnCellPhi(-1),  fnxnCellEta(-1),
@@ -69,8 +69,6 @@ AliEMCALTrigger::AliEMCALTrigger()
     fDigitsList(0),
     fL0Threshold(100),fL1JetLowPtThreshold(200),
     fL1JetMediumPtThreshold(500), fL1JetHighPtThreshold(1000),
-    fNTRU(3), fNTRUEta(3), fNTRUPhi(1), 
-    fNCellsPhi(24), fNCellsEta(16), 
     fPatchSize(1),  fIsolPatchSize(1), 
     f2x2AmpOutOfPatch(-1), fnxnAmpOutOfPatch(-1), 
     f2x2AmpOutOfPatchThres(100000),  fnxnAmpOutOfPatchThres(100000), 
@@ -94,6 +92,7 @@ AliEMCALTrigger::AliEMCALTrigger()
 //____________________________________________________________________________
 AliEMCALTrigger::AliEMCALTrigger(const AliEMCALTrigger & trig) 
   : AliTriggerDetector(trig),
+    fGeom(trig.fGeom),
     f2x2MaxAmp(trig.f2x2MaxAmp), 
     f2x2CellPhi(trig.f2x2CellPhi),  
     f2x2CellEta(trig.f2x2CellEta),
@@ -111,8 +110,6 @@ AliEMCALTrigger::AliEMCALTrigger(const AliEMCALTrigger & trig)
     fL1JetLowPtThreshold(trig.fL1JetLowPtThreshold),
     fL1JetMediumPtThreshold(trig.fL1JetMediumPtThreshold), 
     fL1JetHighPtThreshold(trig.fL1JetHighPtThreshold),
-    fNTRU(trig.fNTRU), fNTRUEta(trig.fNTRUEta), fNTRUPhi(trig.fNTRUPhi), 
-    fNCellsPhi(trig.fNCellsPhi), fNCellsEta(trig.fNCellsEta), 
     fPatchSize(trig.fPatchSize),
     fIsolPatchSize(trig.fIsolPatchSize), 
     f2x2AmpOutOfPatch(trig.f2x2AmpOutOfPatch), 
@@ -167,21 +164,21 @@ Bool_t AliEMCALTrigger::IsPatchIsolated(Int_t iPatchType, const TClonesArray * a
   Float_t amp = 0;
  
   //Get matrix of TRU or Module with maximum amplitude patch.
-  Int_t itru = mtru+iSM*fNTRU ; //number of tru, min 0 max 8*5.
+  Int_t itru = mtru + iSM * fGeom->GetNTRU(); //number of tru, min 0 max 8*5.
   TMatrixD * ampmatrix   = 0x0;
   Int_t colborder = 0;
   Int_t rowborder = 0;
   
   if(fIsolateInSuperModule){
     ampmatrix = dynamic_cast<TMatrixD *>(ampmatrixes->At(iSM)) ;
-    rowborder = fNCellsPhi*fNTRUPhi;
-    colborder = fNCellsEta*fNTRUEta;
+    rowborder = fGeom->GetNPhi()*2; 
+    colborder = fGeom->GetNZ()*2;
     AliDebug(2,"Isolate trigger in Module");
   }
   else{
     ampmatrix = dynamic_cast<TMatrixD *>(ampmatrixes->At(itru)) ;
-    rowborder = fNCellsPhi;
-    colborder = fNCellsEta;
+    rowborder = fGeom->GetNCellsInTRUPhi();
+    colborder = fGeom->GetNCellsInTRUEta();
     AliDebug(2,"Isolate trigger in TRU");
   }
   
@@ -193,13 +190,17 @@ Bool_t AliEMCALTrigger::IsPatchIsolated(Int_t iPatchType, const TClonesArray * a
   Int_t maxrow      = maxphi + isolcells + ipatchcells;
   Int_t maxcol      = maxeta + isolcells + ipatchcells;
 
+  if (minrow < 0)
+    minrow = 0;
+  if (mincol < 0)
+    mincol = 0;
+  if (maxrow > rowborder)
+    maxrow = rowborder;
+  if (maxcol > colborder)
+    maxcol = colborder;
+  
   AliDebug(2,Form("Number of added Isol Cells %d, Patch Size %d",isolcells, ipatchcells));
   AliDebug(2,Form("Patch: minrow %d, maxrow %d, mincol %d, maxcol %d",minrow,maxrow,mincol,maxcol));
-  
-  if(minrow < 0 || mincol < 0 || maxrow > rowborder || maxcol > colborder){
-    AliDebug(1,Form("Out of Module/TRU range, cannot isolate patch"));
-    return kFALSE;
-  }
   
   //Add amplitudes in all isolation patch
   for(Int_t irow = minrow ; irow <  maxrow; irow ++)
@@ -241,18 +242,19 @@ void AliEMCALTrigger::MakeSlidingCell(const TClonesArray * amptrus, const TClone
   //for this reason we loop inside the TRU cells by 2. 
 
   //Declare and initialize variables
-  Int_t nCellsPhi  = fNCellsPhi;//geom->GetNPhi()*2/geom->GetNTRUPhi() ;
+  Int_t nCellsPhi  = fGeom->GetNCellsInTRUPhi();
   if(isupermod > 9)
     nCellsPhi =  nCellsPhi / 2 ; //Half size SM. Not Final.
   // 12(tow)*2(cell)/1 TRU, cells in Phi in one TRU
-  Int_t nCellsEta  = fNCellsEta ;//geom->GetNEta()*2/geom->GetNTRUEta() ;
+  Int_t nCellsEta  = fGeom->GetNCellsInTRUEta();
+  Int_t nTRU  = fGeom->GetNTRU();
   // 24(mod)*2(tower)/3 TRU, cells in Eta in one TRU
   //Int_t nTRU          = geom->GeNTRU();//3 TRU per super module
 
   Float_t amp2 = 0 ;
   Float_t ampn = 0 ; 
   for(Int_t i = 0; i < 4; i++){
-    for(Int_t j = 0; j < fNTRU; j++){
+    for(Int_t j = 0; j < nTRU; j++){
       ampmax2(i,j) = -1;
       ampmaxn(i,j) = -1;
     }
@@ -266,10 +268,10 @@ void AliEMCALTrigger::MakeSlidingCell(const TClonesArray * amptrus, const TClone
       tru2x2(i,j) = -1;
   
   //Loop over all TRUS in a supermodule
-  for(Int_t itru = 0 + isupermod * fNTRU ; itru < (isupermod+1)*fNTRU ; itru++) {
+  for(Int_t itru = 0 + isupermod * nTRU ; itru < (isupermod+1)*nTRU ; itru++) {
     TMatrixD * amptru   = dynamic_cast<TMatrixD *>(amptrus->At(itru)) ;
     TMatrixD * timeRtru = dynamic_cast<TMatrixD *>(timeRtrus->At(itru)) ;
-    Int_t mtru = itru-isupermod*fNTRU ; //Number of TRU in Supermodule
+    Int_t mtru = itru-isupermod*nTRU ; //Number of TRU in Supermodule
    
     //Sliding 2x2, add 2x2 amplitudes (NOT OVERLAP)
     for(Int_t irow = 0 ; irow <  nCellsPhi; irow += 2){ 
@@ -326,7 +328,7 @@ void AliEMCALTrigger::MakeSlidingCell(const TClonesArray * amptrus, const TClone
       Int_t coln =  static_cast <Int_t> (ampmaxn(2,mtru));
       for(Int_t i = 0; i<4*fPatchSize; i++){
 	for(Int_t j = 0; j<4*fPatchSize; j++){
-	  if( (rown+i) < nCellsPhi && (coln+j) < nCellsEta/2){//Avoid exit the TRU
+	  if( (rown+i) < nCellsPhi && (coln+j) < nCellsEta){//Avoid exit the TRU
 	    if((*amptru)(rown+i,coln+j) > 0 &&  (*timeRtru)(rown+i,coln+j)> 0){
 	      if((*timeRtru)(rown+i,coln+j) <  ampmaxn(3,mtru)  )
 		ampmaxn(3,mtru) =  (*timeRtru)(rown+i,coln+j);
@@ -401,7 +403,7 @@ void AliEMCALTrigger::Print(const Option_t * opt) const
 //____________________________________________________________________________
 void AliEMCALTrigger::SetTriggers(const TClonesArray * ampmatrix,const Int_t iSM, 
 				  const TMatrixD &ampmax2, 
-				  const TMatrixD &ampmaxn, const AliEMCALGeometry *geom)  
+				  const TMatrixD &ampmaxn)  
 {
 
   //Checks the 2x2 and nxn maximum amplitude per each TRU and 
@@ -411,9 +413,11 @@ void AliEMCALTrigger::SetTriggers(const TClonesArray * ampmatrix,const Int_t iSM
   Int_t   mtru2  = -1 ;
   Int_t   mtrun  = -1 ;
 
+  Int_t nTRU = fGeom->GetNTRU();
+
   //Find maximum summed amplitude of all the TRU 
   //in a Super Module
-    for(Int_t i = 0 ; i < fNTRU ; i++){
+    for(Int_t i = 0 ; i < nTRU ; i++){
       if(max2[0] < ampmax2(0,i) ){
 	max2[0] =  ampmax2(0,i) ; // 2x2 summed max amplitude
 	max2[1] =  ampmax2(1,i) ; // corresponding phi position in TRU
@@ -441,7 +445,7 @@ void AliEMCALTrigger::SetTriggers(const TClonesArray * ampmatrix,const Int_t iSM
     f2x2MaxAmp  = max2[0] ;
     f2x2SM      = iSM ;
     maxtimeR2   = max2[3] ;
-    geom->GetCellPhiEtaIndexInSModuleFromTRUIndex(mtru2, 
+    fGeom->GetCellPhiEtaIndexInSModuleFromTRUIndex(mtru2, 
 						  static_cast<Int_t>(max2[1]),
 						  static_cast<Int_t>(max2[2]),
 						  f2x2CellPhi,f2x2CellEta) ;
@@ -474,7 +478,7 @@ void AliEMCALTrigger::SetTriggers(const TClonesArray * ampmatrix,const Int_t iSM
     fnxnMaxAmp  = maxn[0] ;
     fnxnSM      = iSM ;
     maxtimeRn   = maxn[3] ;
-    geom->GetCellPhiEtaIndexInSModuleFromTRUIndex(mtrun, 
+    fGeom->GetCellPhiEtaIndexInSModuleFromTRUIndex(mtrun, 
 						  static_cast<Int_t>(maxn[1]),
 						  static_cast<Int_t>(maxn[2]),
 						  fnxnCellPhi,fnxnCellEta) ; 
@@ -520,7 +524,7 @@ void AliEMCALTrigger::SetTriggers(const TClonesArray * ampmatrix,const Int_t iSM
 }
 
 //____________________________________________________________________________
-void AliEMCALTrigger::FillTRU(const AliEMCALGeometry *geom, const TClonesArray * digits, TClonesArray * ampmatrix, TClonesArray * ampmatrixsmod, TClonesArray * timeRmatrix) {
+void AliEMCALTrigger::FillTRU(const TClonesArray * digits, TClonesArray * ampmatrix, TClonesArray * ampmatrixsmod, TClonesArray * timeRmatrix) {
 
 //  Orders digits ampitudes list in fNTRU TRUs (384 cells) per supermodule. 
 //  Each TRU is a TMatrixD, and they are kept in TClonesArrays. The number of 
@@ -529,18 +533,15 @@ void AliEMCALTrigger::FillTRU(const AliEMCALGeometry *geom, const TClonesArray *
 //  is maintained for the last modules but decision not taken. If different, 
 //  then this must be changed. Also fill a matrix with all amplitudes in supermodule for isolation studies. 
  
-  //Check data members
-
-  if(fNTRUEta*fNTRUPhi != fNTRU)
-    Error("FillTRU"," Wrong number of TRUS per Eta or Phi");
-
   //Initilize and declare variables
   //List of TRU matrices initialized to 0.
-  Int_t nPhi = geom->GetNPhi();
-  Int_t nZ = geom->GetNZ();
-  Int_t nCellsPhi  = nPhi*2/fNTRUPhi;
-  Int_t nCellsPhi2 = nPhi/fNTRUPhi; //HalfSize modules
-  Int_t nCellsEta  = nZ*2/fNTRUEta;
+  Int_t nPhi = fGeom->GetNPhi();
+  Int_t nZ = fGeom->GetNZ();
+  Int_t nTRU = fGeom->GetNTRU();
+  Int_t nTRUPhi = fGeom->GetNTRUPhi();
+  Int_t nCellsPhi  = fGeom->GetNCellsInTRUPhi();
+  Int_t nCellsPhi2 = fGeom->GetNCellsInTRUPhi();
+  Int_t nCellsEta  = fGeom->GetNCellsInTRUEta();
 
   Int_t id       = -1; 
   Float_t amp    = -1;
@@ -553,8 +554,8 @@ void AliEMCALTrigger::FillTRU(const AliEMCALGeometry *geom, const TClonesArray *
   Int_t ieta     = -1;
 
   //List of TRU matrices initialized to 0.
-  Int_t nSup = geom->GetNumberOfSuperModules();
-  for(Int_t k = 0; k < fNTRU*nSup; k++){
+  Int_t nSup = fGeom->GetNumberOfSuperModules();
+  for(Int_t k = 0; k < nTRU*nSup; k++){
     TMatrixD amptrus(nCellsPhi,nCellsEta) ;
     TMatrixD timeRtrus(nCellsPhi,nCellsEta) ;
     // Do we need to initialise? I think TMatrixD does it by itself...
@@ -590,11 +591,11 @@ void AliEMCALTrigger::FillTRU(const AliEMCALGeometry *geom, const TClonesArray *
     timeR  = dig->GetTimeR() ; // Earliest time of the digit
    
     //Get eta and phi cell position in supermodule
-    Bool_t bCell = geom->GetCellIndex(id, iSupMod, nModule, nIphi, nIeta) ;
+    Bool_t bCell = fGeom->GetCellIndex(id, iSupMod, nModule, nIphi, nIeta) ;
     if(!bCell)
       Error("FillTRU","Wrong cell id number") ;
     
-    geom->GetCellPhiEtaIndexInSModule(iSupMod,nModule,nIphi, nIeta,iphi,ieta);
+    fGeom->GetCellPhiEtaIndexInSModule(iSupMod,nModule,nIphi, nIeta,iphi,ieta);
 
     //Check to which TRU in the supermodule belongs the cell. 
     //Supermodules are divided in a TRU matrix of dimension 
@@ -608,7 +609,7 @@ void AliEMCALTrigger::FillTRU(const AliEMCALGeometry *geom, const TClonesArray *
     if(iSupMod > 9)
       row   = iphi/nCellsPhi2; 
     //Calculate label number of the TRU
-    Int_t itru  = row + col*fNTRUPhi + iSupMod*fNTRU ;  
+    Int_t itru  = row + col*nTRUPhi + iSupMod*nTRU ;  
  
     //Fill TRU matrix with cell values
     TMatrixD * amptrus   = dynamic_cast<TMatrixD *>(ampmatrix->At(itru)) ;
@@ -638,22 +639,17 @@ void AliEMCALTrigger::Trigger()
     (runLoader->GetDetectorLoader("EMCAL"));
  
   //Load EMCAL Geometry
-  AliEMCALGeometry * geom = 0;
   if (runLoader->GetAliRun() && runLoader->GetAliRun()->GetDetector("EMCAL"))
-    geom = dynamic_cast<AliEMCAL*>(runLoader->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
-  if (geom == 0)
-    geom = AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaulGeometryName());
+    fGeom = dynamic_cast<AliEMCAL*>(runLoader->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
+  if (fGeom == 0)
+    fGeom = AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaulGeometryName());
 
-  if (geom==0)
+  if (fGeom==0)
     AliFatal("Did not get geometry from EMCALLoader");
   
   //Define parameters
-  Int_t nSuperModules = geom->GetNumberOfSuperModules() ; //12 SM in EMCAL
-  fNTRU       = geom->GetNTRU();    //3 TRU per super module
-  fNTRUEta    = geom->GetNTRUEta(); //3 TRU in eta per super module
-  fNTRUPhi    = geom->GetNTRUPhi(); //1 TRU  in phi per super module
-  fNCellsPhi  = geom->GetNPhi()*2/geom->GetNTRUPhi() ;
-  fNCellsEta  = geom->GetNEta()*2/geom->GetNTRUEta() ;
+  Int_t nSuperModules = fGeom->GetNumberOfSuperModules() ; //12 SM in EMCAL
+  Int_t nTRU       = fGeom->GetNTRU();    //3 TRU per super module
 
   //Intialize data members each time the trigger is called in event loop
   f2x2MaxAmp = -1; f2x2CellPhi = -1;  f2x2CellEta = -1;
@@ -674,13 +670,13 @@ void AliEMCALTrigger::Trigger()
   TClonesArray * ampsmods  = new TClonesArray("TMatrixD",1000);
   TClonesArray * timeRtrus = new TClonesArray("TMatrixD",1000);
   
-  FillTRU(geom,fDigitsList, amptrus, ampsmods, timeRtrus) ;
+  FillTRU(fDigitsList, amptrus, ampsmods, timeRtrus) ;
 
   //Do Cell Sliding and select Trigger
   //Initialize varible that will contain maximum amplitudes and 
   //its corresponding cell position in eta and phi, and time.
-  TMatrixD ampmax2(4,fNTRU) ;
-  TMatrixD ampmaxn(4,fNTRU) ;
+  TMatrixD ampmax2(4,nTRU) ;
+  TMatrixD ampmaxn(4,nTRU) ;
   
   for(Int_t iSM = 0 ; iSM < nSuperModules ; iSM++) {
     //Do 2x2 and nxn sums, select maximums. 
@@ -688,9 +684,9 @@ void AliEMCALTrigger::Trigger()
     
     //Set the trigger
     if(fIsolateInSuperModule)
-      SetTriggers(ampsmods,iSM,ampmax2,ampmaxn,geom) ;
+      SetTriggers(ampsmods,iSM,ampmax2,ampmaxn) ;
     if(!fIsolateInSuperModule)
-      SetTriggers(amptrus,iSM,ampmax2,ampmaxn,geom) ;
+      SetTriggers(amptrus,iSM,ampmax2,ampmaxn) ;
   }
   
   amptrus->Delete();
