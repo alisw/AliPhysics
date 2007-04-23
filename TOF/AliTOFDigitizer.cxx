@@ -510,7 +510,8 @@ void AliTOFDigitizer::DecalibrateTOFSignal( AliTOFcalib *calib){
     }
     else{
     // For Data with no Miscalibration, set ToT signal == Adc
-    dig->SetToT(dig->GetAdc()/AliTOFGeometry::ToTBinWidth()*1.E3); 
+      //    dig->SetToT(dig->GetAdc()/AliTOFGeometry::ToTBinWidth()*1.E3); 
+      dig->SetToT(dig->GetAdc()/AliTOFGeometry::ToTBinWidth()); //remove the factor 10^3 just to have a reasonable ToT range for raw data simulation even in the case of non-realistic ToT distribution (n.b. fAdc is practically an arbitrary quantity, and ToT has no impact on the TOF reco for non-miscalibrated digits)
     }
   }
 
