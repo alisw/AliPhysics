@@ -7,15 +7,17 @@
 #include <TGraph.h>           //Process()
 #include <AliLog.h>           //Process() 
 
+//.
+// HMPID Preprocessor base class
+//.
+//.
+//.
 ClassImp(AliHMPIDPreprocessor)
 
-char *AliHMPIDPreprocessor::fP ="HMP_DET/HMP_MP%i/HMP_MP%i_GAS/HMP_MP%i_GAS_PMWC.actual.value";
-char *AliHMPIDPreprocessor::fT1="HMP_DET/HMP_MP%i/HMP_MP%i_LIQ_LOOP.actual.sensors.Rad%iIn_Temp";
-char *AliHMPIDPreprocessor::fT2="HMP_DET/HMP_MP%i/HMP_MP%i_LIQ_LOOP.actual.sensors.Rad%iOut_Temp";
-char *AliHMPIDPreprocessor::fHV="HMP_DET/HMP_MP%i/HMP_MP%i_PW/HMP_MP%i_SEC0/HMP_MP%i_SEC0_HV.actual.vMon";
-
-
-
+char *AliHMPIDPreprocessor::fgP ="HMP_DET/HMP_MP%i/HMP_MP%i_GAS/HMP_MP%i_GAS_PMWC.actual.value";
+char *AliHMPIDPreprocessor::fgT1="HMP_DET/HMP_MP%i/HMP_MP%i_LIQ_LOOP.actual.sensors.Rad%iIn_Temp";
+char *AliHMPIDPreprocessor::fgT2="HMP_DET/HMP_MP%i/HMP_MP%i_LIQ_LOOP.actual.sensors.Rad%iOut_Temp";
+char *AliHMPIDPreprocessor::fgHV="HMP_DET/HMP_MP%i/HMP_MP%i_PW/HMP_MP%i_SEC0/HMP_MP%i_SEC0_HV.actual.vMon";
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDPreprocessor::Initialize(Int_t run, UInt_t startTime,UInt_t endTime)

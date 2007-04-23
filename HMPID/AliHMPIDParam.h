@@ -22,11 +22,11 @@ public:
          void     Print(Option_t *opt="") const;                                         //print current parametrization
   static inline AliHMPIDParam* Instance();                                //pointer to AliHMPIDParam singleton
   
-                Double_t   MeanIdxRad              () {return 1.29204;}   //<--TEMPORAR--> to be removed in future  Mean ref index C6F14
-                Double_t   MeanIdxWin              () {return 1.57819;}   //<--TEMPORAR--> to be removed in future. Mean ref index quartz
-                Float_t    DistCut                 () {return 1.0;}       //<--TEMPORAR--> to be removed in future. Cut for MIP-TRACK residual 
-                Float_t    QCut                    () {return 100;}       //<--TEMPORAR--> to be removed in future. Separation PHOTON-MIP charge 
-                Float_t    MultCut                 () {return 200;}       //<--TEMPORAR--> to be removed in future. Multiplicity cut to activate WEIGHT procedure 
+                Double_t   MeanIdxRad              ()const {return 1.29204;}   //<--TEMPORAR--> to be removed in future  Mean ref index C6F14
+                Double_t   MeanIdxWin              ()const {return 1.57819;}   //<--TEMPORAR--> to be removed in future. Mean ref index quartz
+                Float_t    DistCut                 ()const {return 1.0;}       //<--TEMPORAR--> to be removed in future. Cut for MIP-TRACK residual 
+                Float_t    QCut                    ()const {return 100;}       //<--TEMPORAR--> to be removed in future. Separation PHOTON-MIP charge 
+                Float_t    MultCut                 ()const {return 200;}       //<--TEMPORAR--> to be removed in future. Multiplicity cut to activate WEIGHT procedure 
   static        Int_t      Stack(Int_t evt=-1,Int_t tid=-1);              //Print stack info for event and tid
   static        Int_t      StackCount(Int_t pid,Int_t evt);               //Counts stack particles of given sort in given event  
   static        void       IdealPosition(Int_t iCh,TGeoHMatrix *m);       //ideal position of given chamber 
@@ -45,9 +45,9 @@ public:
 protected:
          AliHMPIDParam();             //default ctor is protected to enforce it to be singleton
   static AliHMPIDParam *fgInstance;   //static pointer  to instance of AliHMPIDParam singleton
-  TGeoHMatrix *fM[7];                //pointers to matrices defining HMPID chambers rotations-translations
-  Float_t fX;                        //x shift of LORS with respect to rotated MARS 
-  Float_t fY;                        //y shift of LORS with respect to rotated MARS   
+  TGeoHMatrix *fM[7];                 //pointers to matrices defining HMPID chambers rotations-translations
+  Float_t fX;                         //x shift of LORS with respect to rotated MARS 
+  Float_t fY;                         //y shift of LORS with respect to rotated MARS   
   ClassDef(AliHMPIDParam,0)           //HMPID main parameters class
 };
 

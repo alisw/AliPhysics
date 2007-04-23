@@ -2,7 +2,10 @@
 #define AliHMPIDHit_h
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
-
+//.
+// HMPID base class to produce hits
+//.
+//.
 #include <AliHit.h>           //base class
 #include <TVector3.h>         //ctor
 #include "AliHMPIDDigit.h"    //QdcTot() 

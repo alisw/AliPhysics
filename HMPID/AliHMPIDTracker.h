@@ -4,7 +4,11 @@
 #include <AliTracker.h> //base class
 #include "AliHMPID.h"   //Recon()
 #include <AliRun.h>     //Recon()
-#include <TF1.h>        //field 
+#include <TF1.h>        //field
+//.
+// HMPID base class fo tracking
+//.
+
 class AliESD;      //Recon()     
 class AliESDtrack; //IntTrkCha()
 class AliHMPIDTracker : public AliTracker
@@ -17,7 +21,7 @@ public:
          Bool_t      GetTrackPoint  (Int_t idx,AliTrackPoint &pt)const;             //             from AliTracker  
          Int_t       Clusters2Tracks(AliESD *                   )       {return 0;} //pure virtual from AliTracker 
          Int_t       LoadClusters   (TTree *pCluTr              );                  //pure virtual from AliTracker   
-         Int_t       PropagateBack  (AliESD *                   );                  //pure virtual from AliTracker   
+         Int_t       PropagateBack  (AliESD *pEsd               );                  //pure virtual from AliTracker   
          Int_t       RefitInward    (AliESD *                   )       {return 0;} //pure virtual from AliTracker 
          void        UnloadClusters (                           )       {         } //pure virtual from AliTracker 
 //private part  

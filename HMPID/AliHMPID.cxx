@@ -26,7 +26,7 @@
 #include <TH1F.h>        //HitQA()
 #include <AliLog.h>      //in many methods to print AliInfo 
 
-Bool_t AliHMPID::fDoFeed=kTRUE;
+Bool_t AliHMPID::fgDoFeed=kTRUE;
  
 ClassImp(AliHMPID)    
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

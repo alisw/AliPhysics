@@ -70,12 +70,12 @@ void AliHMPIDParam::IdealPosition(Int_t iCh, TGeoHMatrix *pMatrix)
 // Construct ideal position matrix for a given chamber
 // Arguments: iCh- chamber ID; pMatrix- pointer to precreated unity matrix where to store the results
 //   Returns: none
-  const Double_t kAngHor=19.5; //  horizontal angle between chambers  19.5 grad
-  const Double_t kAngVer=20;   //  vertical angle between chambers    20   grad     
-  const Double_t kAngCom=30;   //  common HMPID rotation with respect to x axis  30   grad     
-  const Double_t trans[3]={490,0,0}; //center of the chamber is on window-gap surface
-  pMatrix->RotateY(90);           //rotate around y since initial position is in XY plane -> now in YZ plane
-  pMatrix->SetTranslation(trans); //now plane in YZ is shifted along x 
+  const Double_t kAngHor=19.5;        //  horizontal angle between chambers  19.5 grad
+  const Double_t kAngVer=20;          //  vertical angle between chambers    20   grad     
+  const Double_t kAngCom=30;          //  common HMPID rotation with respect to x axis  30   grad     
+  const Double_t kTrans[3]={490,0,0}; //  center of the chamber is on window-gap surface
+  pMatrix->RotateY(90);               //  rotate around y since initial position is in XY plane -> now in YZ plane
+  pMatrix->SetTranslation(kTrans);    //  now plane in YZ is shifted along x 
   switch(iCh){
     case 0:                pMatrix->RotateY(kAngHor);  pMatrix->RotateZ(-kAngVer);  break; //right and down 
     case 1:                                            pMatrix->RotateZ(-kAngVer);  break; //down              

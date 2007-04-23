@@ -3,7 +3,9 @@
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
-
+//
+//HMPID base class of geometry 
+//
 #include "AliHMPID.h"             //base class 
 #include "AliHMPIDDigitizer.h"    //CreateDigitizer()
 
@@ -17,14 +19,14 @@ public:
           void    AddAlignableVolumes(                               )const;                                   //from AliModule invoked from AliMC    
           void    CreateMaterials  (                                 );                                        //from AliModule invoked from AliMC
           void    CreateGeometry   (                                 );                                        //from AliModule invoked from AliMC
-  AliDigitizer*   CreateDigitizer  (AliRunDigitizer *m               )const{return new AliHMPIDDigitizer(m);}   //from AliModule invoked from AliSimulation::RunDigitization()
+  AliDigitizer*   CreateDigitizer  (AliRunDigitizer *m               )const{return new AliHMPIDDigitizer(m);}  //from AliModule invoked from AliSimulation::RunDigitization()
           void    Digits2Raw       (                                 );                                        //from AliModule invoked from AliSimulation::WriteRawFiles()
   virtual void    DefineOpticalProperties();                                                                   //from AliModule invoked from AliMC::ConstructOpGeometry() to set Cerenkov properties
           void    Hits2SDigits     (                                 );                                        //from AliModule invoked from AliSimulation::RunSDigitization()
           void    Init             (                                 );                                        //from AliModule invoked from AliMC::InitGeometry()
           Int_t   IsVersion        (                                 )const{return 1;                      }   //from AliModule not used
           void    Print            (const Option_t *opt=""           )const;                                   //from TObject
-          Bool_t  Raw2SDigits      (AliRawReader *                   );                                        //from AliMOdule invoked from AliSimulation  
+          Bool_t  Raw2SDigits      (AliRawReader *pRR                );                                        //from AliMOdule invoked from AliSimulation  
           void    StepManager      (                                 );                                        //from AliModule invoked from AliMC::Stepping()
 //private part++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
           void    GenFee           (Float_t qtot                     );                                        //generates feedback photons

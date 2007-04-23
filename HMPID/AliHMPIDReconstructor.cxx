@@ -12,7 +12,11 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
+//.
+// HMPID base class to reconstruct an event
+//.
+//.
+//.
 #include "AliHMPIDReconstructor.h" //class header
 #include "AliHMPID.h"              //Reconstruct() 
 #include "AliHMPIDCluster.h"       //Dig2Clu()

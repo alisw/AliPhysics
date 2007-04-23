@@ -8,7 +8,11 @@
 #include <AliAlignObj.h>         //GetTrackPoint()
 #include <AliCDBManager.h>
 #include <AliCDBEntry.h>
-
+//.
+// HMPID base class fo tracking
+//.
+//.
+//.
 ClassImp(AliHMPIDTracker)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDTracker::AliHMPIDTracker():AliTracker()

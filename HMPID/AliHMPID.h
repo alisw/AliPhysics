@@ -7,7 +7,9 @@
 #include <TClonesArray.h> //XxxCreate() 
 #include <TObjArray.h>    //fDig,fClu field
 
-
+//.
+//HMPID base class
+//.
 
 class AliHMPID : public AliDetector //TObject-TNamed-AliModule-AliDetector-AliHMPID
 {
@@ -27,7 +29,7 @@ public:
           void  MakeBranch      (Option_t *opt="");            //from AliModule invokde from AliRun::Tree2Tree() to make requested HMPID branch
           void  SetTreeAddress  (                );            //from AliModule invoked from AliRun::GetEvent(), AliLoader::SetTAddrInDet()
   virtual void  StepManager     (                )=0;          //from AliModule invoked from AliMC
-          void  DoFeed          (Bool_t doFeed   ){fDoFeed=doFeed;} // Set feedback photons
+          void  DoFeed          (Bool_t doFeed   ){fgDoFeed=doFeed;} // Set feedback photons
 //private part +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
   void          HitCreate(         )     {if(fHits)return; fHits=new TClonesArray("AliHMPIDHit"); fNhits=0;     }//create hits list
               
@@ -49,7 +51,7 @@ public:
     fClu=new TObjArray(7); for(Int_t i=0;i<7;i++)fClu->AddAt(new TClonesArray("AliHMPIDCluster"),i);            }//create clusters list
          void   CluReset (         )     {if(fClu)for(int i=0;i<7;i++)fClu->At(i)->Clear();                     }//clean clusters list
 protected:  
-  static  Bool_t fDoFeed;
+  static  Bool_t fgDoFeed;                        //Flag to switch on/off Feedback photon creation
   TClonesArray         *fSdi;                     //! list of sdigits  
   TObjArray            *fDig;                     //! each chamber holds it's one list of digits
   TObjArray            *fClu;                     //! each chamber holds it's one list of clusters 

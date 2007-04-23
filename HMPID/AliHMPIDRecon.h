@@ -46,7 +46,8 @@ public :
   Double_t SigCrom      (Double_t ckovTh,Double_t ckovPh,Double_t beta                      )const;//error due to unknonw photon energy
   Double_t Sigma2       (Double_t ckovTh,Double_t ckovPh                                    )const;//photon candidate sigma
   enum ETrackingFlags {kMipDistCut=-9,kMipQdcCut=-5,kNoPhotAccept=-11};
-  
+
+private:  
   static const Double_t fgkRadThick;                      //radiator thickness
   static const Double_t fgkWinThick;                      //window thickness
   static const Double_t fgkGapThick;                      //proximity gap thickness
