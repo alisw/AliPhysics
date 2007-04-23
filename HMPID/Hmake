@@ -11,6 +11,8 @@ SrcRec   	:=$(SRCS)
 
 RootTarget      :=$(shell $(ROOTSYS)/bin/root-config --arch)
 DirOut	        :=/tmp/$(USER)_$(Module)_obj
+DirInc          := -I$(shell $(ROOTSYS)/bin/root-config --incdir) -I$(ALICE_ROOT)/include
+
 LibBase		:=$(LIB_MY)/lib$(Module)base.so
 LibSim		:=$(LIB_MY)/lib$(Module)sim.so
 LibRec		:=$(LIB_MY)/lib$(Module)rec.so
@@ -35,8 +37,18 @@ ObjBase       := $(patsubst %.cxx,$(DirOut)/%.o,$(SrcBase)) $(DictObjBase)
 ObjSim        := $(patsubst %.cxx,$(DirOut)/%.o,$(SrcSim))  $(DictObjSim)
 ObjRec        := $(patsubst %.cxx,$(DirOut)/%.o,$(SrcRec))  $(DictObjRec)
 
+CodeRules     := $(patsubst %.cxx,$(DirOut)/%.viol,$(SrcBase) $(SrcSim) $(SrcRec))
+
+export IRST_INSTALLDIR=$(ALICE)/local/IRST
+export IRST_CONFIG_DIR=$(IRST_INSTALLDIR)/userConfig/ALICE
+export CLASSPATH=$(IRST_INSTALLDIR)
+
+
+#-------------------------------------------------------------------------------
 
 DepFile	      := $(DirOut)/$(Module).depend
+
+
 
 ifeq ($(RootTarget),linuxicc)
  Compiler    :=icc
@@ -44,7 +56,7 @@ ifeq ($(RootTarget),linuxicc)
  LibOpt      :=-g -shared -Wl
 else
  Compiler    :=g++
- CompilerOpt :=-g -W -Wall -Werror -Woverloaded-virtual -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi -Dlinux -D`uname` -I$(shell $(ROOTSYS)/bin/root-config --incdir) -I$(ALICE_ROOT)/include
+ CompilerOpt :=-g -W -Wall -Werror -Woverloaded-virtual -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi -Dlinux -D`uname` $(DirInc)
  LibOpt      :=-g -shared -Wl
 endif
 
@@ -100,6 +112,9 @@ $(DictObjRec) : $(DictSrcRec)
 	@echo "Compiling $^"        
 	$(Mute)$(Compiler) $(CompilerOpt) -I. -c $^ -o $@
 
+
+rules: $(CodeRules)
+
 show:
 	@echo    "Base Headers: $(HdrBase)"
 	@echo    "Base Sources: $(SrcBase)"
@@ -116,7 +131,9 @@ show:
 	@echo    "Rec Sources: $(SrcRec)"
 	@echo    "Rec Objects: $(ObjRec)"
 	@echo -e "Rec Library: $(LibRec)\n"
-
+	@echo    "Rules check: $(CodeRules)"
+	@echo    "CompilerOpt: $(CompilerOpt)"
+        
 spec:	$(SrcBase)
 	@echo "^ $^"
 	@echo "@ $@"
@@ -130,6 +147,14 @@ clean:
 $(DirOut)/%.o : %.cxx
 	@echo $*.cxx
 	$(Mute)$(Compiler) $(CompilerOpt) -c $*.cxx -o $(DirOut)/$*.o
+
+$(DirOut)/%.i : %.cxx $(DepFile)
+	$(Mute)$(Compiler) -E -g -pipe -fPIC -Wall $(DirInc) $< > $@
+	@cd $(dir $@) ; $(IRST_INSTALLDIR)/patch/patch4alice.prl $(notdir $@)
+       
+$(DirOut)/%.viol : $(DirOut)/%.i
+	@echo $@ ; java rules.ALICE.ALICERuleChecker $< ./ > $@
 ############################ Dependencies #####################################
 
 -include $(DepFile) 
+
