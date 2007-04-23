@@ -33,7 +33,7 @@
 // MUONGenerateGeometryData.C    - ok, comp,  README; Ivana
 // MUONGenerateTestGMS.C         - ok, comp,  x,      Ivana
 // MUONmassPlot_ESD.C            - ok, comp,  x,      Christian
-// MUONplotefficiency.C          - ok, x,     README; Christophe
+// MUONplotefficiency.C          - ok, comp,  README; Christophe
 // MUONRawStreamTracker.C        - x,  comp,  README; Christian
 // MUONRawStreamTrigger.C        - x,  comp,  README; Christian
 // MUONRecoCheck.C               - ok, comp,  README; Hermine, Alessandro
@@ -108,7 +108,7 @@ void loadmacros ()
   gROOT->LoadMacro("MUONGenerateGeometryData.C++"); 
   gROOT->LoadMacro("MUONGenerateTestGMS.C++");      
   gROOT->LoadMacro("MUONmassPlot_ESD.C++");         
-  // gROOT->LoadMacro("MUONplotefficiency.C++");       
+  gROOT->LoadMacro("MUONplotefficiency.C++");       
   gROOT->LoadMacro("MUONRawStreamTracker.C++");     
   gROOT->LoadMacro("MUONRawStreamTrigger.C++");     
   gROOT->LoadMacro("MUONRecoCheck.C++");            
