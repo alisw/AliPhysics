@@ -122,7 +122,7 @@ void HmpConfig::WriteHmp(FILE *pF)
     
     if     (fVerBG->GetButton(kVer0)->GetState())           fprintf(pF,"  new AliHMPIDv0(\"Gel %s\");\n\n",title.Data());    
     else if(fVerBG->GetButton(kVer1)->GetState())           fprintf(pF,"  new AliHMPIDv1(\"HMPID\",\"%s\");\n\n",title.Data());   
-    else if(fVerBG->GetButton(kVer2)->GetState())           fprintf(pF,"  new AliHMPIDv2(\"Tic %s\");\n\n",title.Data());   
+    else if(fVerBG->GetButton(kVer2)->GetState())           fprintf(pF,"  new AliHMPIDv2(\"HMPID\",\"%s\");\n\n",title.Data());   
   }
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
