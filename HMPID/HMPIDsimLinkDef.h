@@ -5,5 +5,6 @@
 
 #pragma link C++ class  AliHMPIDv0+;
 #pragma link C++ class  AliHMPIDv1+;
+#pragma link C++ class  AliHMPIDv2+;
 #pragma link C++ class  AliHMPIDDigitizer+;
 #endif
