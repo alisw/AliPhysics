@@ -38,7 +38,7 @@
 // MUONRawStreamTrigger.C        - x,  comp,  README; Christian
 // MUONRecoCheck.C               - ok, comp,  README; Hermine, Alessandro
 // MUONResoEffChamber.C          - ok, comp,  x,      Nicolas
-// MUONStatusMap.C               - x,  !comp, x,      Laurent
+// MUONStatusMap.C               - x,  comp,  x,      Laurent
 // MUONTracker.C                 - no, !comp, README; Philippe P.
 // MUONTrigger.C                 - ok, comp,  README, Philippe C.
 // MUONTriggerEfficiency.C       - ok, comp,  x,      Philippe C., in test
@@ -86,37 +86,37 @@ void loadmacros ()
 
   // Load libraries not linked with aliroot
   //
-  gSystem->Load("../SHUTTLE/TestShuttle/libTestShuttle.so");
+  gSystem->Load("$ALICE_ROOT/SHUTTLE/TestShuttle/libTestShuttle.so");
   gSystem->Load("libMUONshuttle.so");
   gSystem->Load("libMUONevaluation.so");
 
   // Load macros
   //
-  gROOT->LoadMacro("DecodeRecoCocktail.C++");       
-  // gROOT->LoadMacro("ReadRecoCocktail.C++");         
-  // gROOT->LoadMacro("MergeMuonLight.C++");           
-  gROOT->LoadMacro("MakeMUONFullMisAlignment.C++"); 
-  gROOT->LoadMacro("MakeMUONResMisAlignment.C++");  
-  gROOT->LoadMacro("MakeMUONZeroMisAlignment.C++"); 
-  gROOT->LoadMacro("MUONAlignment.C++");            
-  gROOT->LoadMacro("MUONCheck.C++");                
-  // gROOT->LoadMacro("MUONCheckDI.C++");              
-  gROOT->LoadMacro("MUONCheckMisAligner.C++");      
-  gROOT->LoadMacro("MUONdisplay.C++");              
-  gROOT->LoadMacro("MUONefficiency.C++");           
-  gROOT->LoadMacro("MUONGenerateBusPatch.C++");     
-  gROOT->LoadMacro("MUONGenerateGeometryData.C++"); 
-  gROOT->LoadMacro("MUONGenerateTestGMS.C++");      
-  gROOT->LoadMacro("MUONmassPlot_ESD.C++");         
-  gROOT->LoadMacro("MUONplotefficiency.C++");       
-  gROOT->LoadMacro("MUONRawStreamTracker.C++");     
-  gROOT->LoadMacro("MUONRawStreamTrigger.C++");     
-  gROOT->LoadMacro("MUONRecoCheck.C++");            
-  gROOT->LoadMacro("MUONResoEffChamber.C++");       
-  // gROOT->LoadMacro("MUONStatusMap.C++");            
-  // gROOT->LoadMacro("MUONTracker.C++");              
-  gROOT->LoadMacro("MUONTrigger.C++");              
-  gROOT->LoadMacro("MUONTriggerEfficiency.C++");    
-  gROOT->LoadMacro("MUONTriggerEfficiencyPt.C++");  
-  gROOT->LoadMacro("TestMUONPreprocessor.C++");     
+  gROOT->LoadMacro("$ALICE_ROOT/MUON/DecodeRecoCocktail.C++");      
+  // gROOT->LoadMacro("$ALICE_ROOT/MUON/ReadRecoCocktail.C++");     
+  // gROOT->LoadMacro("$ALICE_ROOT/MUON/MergeMuonLight.C++");       
+  gROOT->LoadMacro("$ALICE_ROOT/MUON/MakeMUONFullMisAlignment.C++");
+  gROOT->LoadMacro("$ALICE_ROOT/MUON/MakeMUONResMisAlignment.C++"); 
+  gROOT->LoadMacro("$ALICE_ROOT/MUON/MakeMUONZeroMisAlignment.C++");
+  gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONAlignment.C++");           
+  gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONCheck.C++");               
+  // gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONCheckDI.C++");          
+  gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONCheckMisAligner.C++");     
+  gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONdisplay.C++");             
+  gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONefficiency.C++");          
+  gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONGenerateBusPatch.C++");    
+  gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONGenerateGeometryData.C++");
+  gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONGenerateTestGMS.C++");     
+  gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONmassPlot_ESD.C++");        
+  gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONplotefficiency.C++");      
+  gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONRawStreamTracker.C++");    
+  gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONRawStreamTrigger.C++");    
+  gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONRecoCheck.C++");           
+  gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONResoEffChamber.C++"); 
+  gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONStatusMap.C++");        
+  // gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONTracker.C++");          
+  gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONTrigger.C++");        
+  gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONTriggerEfficiency.C++");   
+  gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONTriggerEfficiencyPt.C++"); 
+  gROOT->LoadMacro("$ALICE_ROOT/MUON/TestMUONPreprocessor.C++");    
 }
