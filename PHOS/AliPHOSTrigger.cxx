@@ -553,8 +553,10 @@ void AliPHOSTrigger::SetTriggers(const TClonesArray * ampmatrix, const Int_t iMo
       fIs2x2Isol =  IsPatchIsolated(0, ampmatrix, iMod, mtru2,  f2x2MaxAmp,  static_cast<Int_t>(max2[1]), static_cast<Int_t>(max2[2])) ;
 
     //Transform digit amplitude in Raw Samples
-    fADCValuesLow2x2  = new Int_t[nTimeBins];
-    fADCValuesHigh2x2 = new Int_t[nTimeBins];
+    if (fADCValuesLow2x2 == 0) {
+      fADCValuesLow2x2  = new Int_t[nTimeBins];
+      fADCValuesHigh2x2 = new Int_t[nTimeBins];
+    }
     
     pulse->SetAmplitude(f2x2MaxAmp);
     pulse->SetTZero(maxtimeR2);
@@ -588,8 +590,10 @@ void AliPHOSTrigger::SetTriggers(const TClonesArray * ampmatrix, const Int_t iMo
       fIsnxnIsol =  IsPatchIsolated(1, ampmatrix, iMod, mtrun,  fnxnMaxAmp,  static_cast<Int_t>(maxn[1]), static_cast<Int_t>(maxn[2])) ;
 
     //Transform digit amplitude in Raw Samples
-    fADCValuesHighnxn = new Int_t[nTimeBins];
-    fADCValuesLownxn  = new Int_t[nTimeBins];
+    if (fADCValuesHighnxn == 0) {
+      fADCValuesHighnxn = new Int_t[nTimeBins];
+      fADCValuesLownxn  = new Int_t[nTimeBins];
+    }
 
     pulse->SetAmplitude(maxtimeRn);
     pulse->SetTZero(fnxnMaxAmp);
@@ -673,6 +677,12 @@ void AliPHOSTrigger::Trigger()
       SetTriggers(amptrus,imod,ampmax2,ampmaxn) ;
   }
 
+  amptrus->Delete();
+  delete amptrus; amptrus=0;
+  ampmods->Delete();
+  delete ampmods; ampmods=0;
+  timeRtrus->Delete();
+  delete timeRtrus; timeRtrus=0;
   //Print();
 
 }
