@@ -713,7 +713,8 @@ void AliTOF::Digits2Raw()
   //rawWriter.SetPackedAcquisitionMode(kFALSE);
   if (rawWriter.GetPackedAcquisitionMode()) {
     if(rawWriter.GetMatchingWindow()>8192)
-      AliWarning(Form("You are running in packing mode and the matching window is %, i.e. greater than 200. ns", rawWriter.GetMatchingWindow()));
+      AliWarning(Form("You are running in packing mode and the matching window is %.2f ns, i.e. greater than 200. ns",
+		      rawWriter.GetMatchingWindow()*AliTOFGeometry::TdcBinWidth()*1.e-03));
   }
   
   AliDebug(1,"Formatting raw data for TOF");
