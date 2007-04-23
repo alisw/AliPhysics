@@ -31,8 +31,8 @@
 // MUONefficiency.C              - ok, comp,  README; Christophe, in test
 // MUONGenerateBusPatch.C        - ok, comp,  x,      Christian
 // MUONGenerateGeometryData.C    - ok, comp,  README; Ivana
-// MUONGenerateTestGMS.C         - ok, comp,  x,      Ivana
-// MUONmassPlot_ESD.C            - ok, comp,  x,      Christian
+// MUONGenerateTestGMS.C         - ok, comp,  READMEshuttle;  Ivana
+// MUONmassPlot_ESD.C            - ok, comp,  README, Christian
 // MUONplotefficiency.C          - ok, comp,  README; Christophe
 // MUONRawStreamTracker.C        - x,  comp,  README; Christian
 // MUONRawStreamTrigger.C        - x,  comp,  README; Christian
