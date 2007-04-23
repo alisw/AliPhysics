@@ -577,5 +577,38 @@ root [0] .L $ALICE_ROOT/MUON/MUONTriggerEfficiencyPt.C+
 root [1] MUONTriggerEfficiencyPt()
 
 ===========================================================
+ How to process invariant mass spectra for J/psi or Upsilon
+===========================================================
+The macro MUONmassPlot_ESD.C reads back the MUON ESD informations and compute 
+the invariant mass spectra and corresponding uncorelated background. 
+Moreover gives the number of event in the resonance peak and the number of triggers.
+Usage:
+root [0] .L $ALICE_ROOT/MUON/MUONmassPlot_ESD.C+
+root [1] MUONmassPlot_ESD(ExtrapToVertex, 
+			geoFilenam, filename
+                        FirstEvent, LastEvent, 
+	                esdFileName,
+			ResType, Chi2Cut,
+			PtCutMin, PtCutMax,
+        		massMin, massMax)
+
+with:
+ExtrapToVertex (default -1)
+      <0: no extrapolation;
+      =0: extrapolation to (0,0,0);
+      >0: extrapolation to ESDVertex if available, else to (0,0,0)
+geoFilename (default "geometry.root") geometry file name needed to extrap to vertex
+filename    (default "galice.root") galice root file name
+FirstEvent  (default 0)
+LastEvent   (default 10000)
+esdFileName (default "AliESDs.root") esd root file name
+ResType     (default 553):   553 for Upsilon, anything else for J/Psi
+Chi2Cut     (default 100):   keep only tracks with chi2 per d.o.f. < Chi2Cut
+PtCutMin    (default 1):     keep only tracks with transverse momentum > PtCutMin
+PtCutMax    (default 10000): keep only tracks with transverse momentum < PtCutMax
+massMin     (default 9.17 for Upsilon) keep only invariant masses with 
+massMax     (default 9.77 for Upsilon) massMin < mass < massMax
+
+===========================================================
  Still working ..............
 ===========================================================
