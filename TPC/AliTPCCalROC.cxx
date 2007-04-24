@@ -384,7 +384,6 @@ void AliTPCCalROC::Test(){
 }
 
 
-
 AliTPCCalROC * AliTPCCalROC::LocalFit(Int_t rowRadius, Int_t padRadius, AliTPCCalROC* ROCoutliers, Bool_t robust) {
   //
   // MakeLocalFit - smoothing
@@ -545,7 +544,7 @@ void AliTPCCalROC::GlobalFit(const AliTPCCalROC* ROCoutliers, Bool_t robust, TVe
     fitterG = new TLinearFitter (6,"x0++x1++x2++x3++x4++x5");
   else 
     fitterG = new TLinearFitter(3,"x0++x1++x2");
-  //fitterG->StoreData(kTRUE);   
+  fitterG->StoreData(kTRUE);   
   fitterG->ClearPoints();
   Int_t    npoints=0;
   
@@ -572,8 +571,10 @@ void AliTPCCalROC::GlobalFit(const AliTPCCalROC* ROCoutliers, Bool_t robust, TVe
 	xx[3] = dlx*dlx;
 	xx[4] = dly*dly;
 	xx[5] = dlx*dly;
-	if (ROCoutliers && ROCoutliers->GetValue(irow, ipad) != 1) 
-	  fitterG->AddPoint(xx, GetValue(irow, ipad), 1);  
+	if (ROCoutliers && ROCoutliers->GetValue(irow, ipad) != 1) {
+           npoints++;
+	   fitterG->AddPoint(xx, GetValue(irow, ipad), 1);  
+        }
       }
     }
   }
@@ -589,8 +590,10 @@ void AliTPCCalROC::GlobalFit(const AliTPCCalROC* ROCoutliers, Bool_t robust, TVe
 	xx[0] = 1;
 	xx[1] = dlx;
 	xx[2] = dly;
-	if (ROCoutliers && ROCoutliers->GetValue(irow, ipad) != 1) 
-	  fitterG->AddPoint(xx, GetValue(irow, ipad), 1);  
+	if (ROCoutliers && ROCoutliers->GetValue(irow, ipad) != 1) {
+           npoints++;
+	   fitterG->AddPoint(xx, GetValue(irow, ipad), 1);  
+        }
       }
     }
   }
@@ -610,8 +613,7 @@ void AliTPCCalROC::GlobalFit(const AliTPCCalROC* ROCoutliers, Bool_t robust, TVe
 
 
 //
-AliTPCCalROC* AliTPCCalROC::CreateGlobalFitCalROC(TVectorD &fitParam, Int_t sector)
-{
+AliTPCCalROC* AliTPCCalROC::CreateGlobalFitCalROC(TVectorD &fitParam, Int_t sector){
   //
   //
   // Create ROC with global fit parameters
@@ -624,6 +626,7 @@ AliTPCCalROC* AliTPCCalROC::CreateGlobalFitCalROC(TVectorD &fitParam, Int_t sect
   Float_t localXY[3] = {0};
   AliTPCCalROC * ROCfitted = new AliTPCCalROC(sector);
   AliTPCROC* tpcROCinstance = AliTPCROC::Instance();
+  tpcROCinstance->GetPositionLocal(sector, ROCfitted->GetNrows()/2, ROCfitted->GetNPads(ROCfitted->GetNrows()/2)/2, centerPad);  // calculate center of ROC 
   Int_t fitType = 1;
   if (fitParam.GetNoElements() == 6) fitType = 1;
   else fitType = 0;
@@ -652,6 +655,5 @@ AliTPCCalROC* AliTPCCalROC::CreateGlobalFitCalROC(TVectorD &fitParam, Int_t sect
   }
   return ROCfitted;
 }
-
 
 
