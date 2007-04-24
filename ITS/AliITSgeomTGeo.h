@@ -77,6 +77,19 @@ class AliITSgeomTGeo : public TObject {
   static Bool_t GetTrackingMatrix(Int_t lay,Int_t lad,Int_t det, TGeoHMatrix &m)
     { return GetTrackingMatrix(GetModuleIndex(lay,lad,det),m); }
 
+  static Bool_t LocalToGlobal(Int_t index, const Double_t *loc, Double_t *glob);
+  static Bool_t LocalToGlobal(Int_t lay, Int_t lad, Int_t det,
+			      const Double_t *loc, Double_t *glob)
+    { return LocalToGlobal(GetModuleIndex(lay,lad,det), loc, glob);}
+
+  static Bool_t GlobalToLocal(Int_t index, const Double_t *glob, Double_t *loc);
+  static Bool_t GlobalToLocal(Int_t lay, Int_t lad, Int_t det,
+			      const Double_t *glob, Double_t *loc)
+    { return GlobalToLocal(GetModuleIndex(lay,lad,det), glob, loc);}
+
+  static Bool_t LocalToGlobalVect(Int_t index, const Double_t *loc, Double_t *glob);
+  static Bool_t GlobalToLocalVect(Int_t index, const Double_t *glob, Double_t *loc);
+
  private:
 
   enum {kNLayers = 6}; // The number of layers.

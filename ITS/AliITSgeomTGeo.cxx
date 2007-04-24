@@ -327,3 +327,77 @@ TGeoPNEntry* AliITSgeomTGeo::GetPNEntry(Int_t index)
 
   return pne;
 }
+
+//______________________________________________________________________
+Bool_t AliITSgeomTGeo::LocalToGlobal(Int_t index,
+				     const Double_t *loc, Double_t *glob)
+{
+  // Make the conversion from the local sensitive reference system to the global
+  // reference system, for an arbitrary local position. The input is the pointer
+  // to the array of local coordinates, the result is sent to the glob pointer.
+  //
+  // Please don't use this method to get the global coordinates of clusters, use
+  // the direct method of AliCluster instead.
+
+  const TGeoHMatrix *m2 = GetTracking2LocalMatrix(index);
+  if (!m2) return kFALSE;
+
+  // The shift (in local y only) between alignable and sensitive volume
+  // is extracted directly from the Tracking2Local matrix
+  Double_t locSens[] = {loc[0], loc[1]+m2->GetTranslation()[1], loc[2]};
+
+  TGeoHMatrix *ml = GetMatrix(index);
+  if (!ml) return kFALSE;
+  ml->LocalToMaster(locSens,glob);
+  return kTRUE;
+}
+
+//______________________________________________________________________
+Bool_t AliITSgeomTGeo::GlobalToLocal(Int_t index,
+				     const Double_t *glob, Double_t *loc)
+{
+  // Make the conversion from the global reference system to the sensitive local
+  // reference system, for an arbitrary global position. The input is the pointer
+  // to the array of global coordinates, the result is sent to the loc pointer.
+
+  TGeoHMatrix *ml = GetMatrix(index);
+  if (!ml) return kFALSE;
+
+  const TGeoHMatrix *m2 = GetTracking2LocalMatrix(index);
+  if (!m2) return kFALSE;
+  ml->MasterToLocal(glob,loc);
+  // The shift (in local y only) between alignable and sensitive volume
+  // is extracted directly from the Tracking2Local matrix
+  loc[1] -= m2->GetTranslation()[1];
+
+  return kTRUE;
+}
+
+//______________________________________________________________________
+Bool_t AliITSgeomTGeo::LocalToGlobalVect(Int_t index,
+					 const Double_t *loc, Double_t *glob)
+{
+  // Make the conversion from the local sensitive reference system to the global
+  // reference system, for an arbitrary vector. The input is the pointer to the
+  // array of local coordinates, the result is sent to the glob pointer.
+
+  TGeoHMatrix *ml = GetMatrix(index);
+  if (!ml) return kFALSE;
+  ml->LocalToMasterVect(loc,glob);
+  return kTRUE;
+}
+
+//______________________________________________________________________
+Bool_t AliITSgeomTGeo::GlobalToLocalVect(Int_t index,
+					 const Double_t *glob, Double_t *loc)
+{
+  // Make the conversion from the global reference system to the sensitive local
+  // reference system, for an arbitrary vector. The input is the pointer to the
+  // array of global coordinates, the result is sent to the loc pointer.
+
+  TGeoHMatrix *ml = GetMatrix(index);
+  if (!ml) return kFALSE;
+  ml->MasterToLocalVect(glob,loc);
+
+  return kTRUE;
+}
