@@ -80,8 +80,6 @@ void endraw(Int_t& icode, Int_t& mreg, Double_t& rull, Double_t& xsco, Double_t&
         if( mlttc == crtlttc ) cout << "   *************************************************************" << endl;
     }
     // *****************************************************
-
-
   if (icode != kEMFSCOstopping1 && icode != kEMFSCOstopping2) {
       fluka->SetIcode((FlukaProcessCode_t)icode);
       fluka->SetRull(edep);
@@ -93,8 +91,7 @@ void endraw(Int_t& icode, Int_t& mreg, Double_t& rull, Double_t& xsco, Double_t&
           cppstack->SetCurrentTrack(TRACKR.ispusr[mkbmx2-1] );
       }
 
-      if (TRACKR.jtrack != 308 && TRACKR.jtrack != 211) (TVirtualMCApplication::Instance())->Stepping();
-    
+      (TVirtualMCApplication::Instance())->Stepping();
       
   } else {
   //
