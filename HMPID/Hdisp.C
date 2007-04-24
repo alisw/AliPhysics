@@ -1,6 +1,6 @@
 TCanvas *pAll=0;
 AliRunLoader *gAL=0; AliLoader *gHL=0; AliESD *gEsd=0; TTree *gEsdTr=0; AliHMPID *gH=0;
-Int_t gEvt=0; Int_t gMaxEvt=0;
+Int_t gEvt=-1; Int_t gMaxEvt=0;
 TObjArray *pNmean;
 
 TChain *pCosCh=new TChain("cosmic");                                                               //clm: Define TChain for cosmic
@@ -51,22 +51,22 @@ void Hdisp(Int_t cosRun=44)                                                    /
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void ReadCosEvt()
 {// Read curent cosmic event and display it assumes that session is alredy opened
-  if(gEvt>gMaxEvt) gEvt=0; if(gEvt<0) gEvt=gMaxEvt;                                     //clm: set event limits
+  if(gEvt>gMaxEvt) gEvt=-1; if(gEvt<-1) gEvt=gMaxEvt;                                     //clm: set event limits
+  gEvt++;                                                                             
   pCosCh->GetEntry(gEvt);                                                               //clm: read event from chain
   DrawCosEvt(pCosDigAll,pCosCluAll);                                                    //clm: draw cosmic event
-  gEvt++;                                                                             
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void ReadEvt()
 {// Read curent event and display it assumes that session is alredy opened
   TClonesArray hits("AliHMPIDHit");
-  if(gEvt>gMaxEvt) gEvt=0; if(gEvt<0) gEvt=gMaxEvt;
+  if(gEvt>gMaxEvt) gEvt=-1; if(gEvt<-1) gEvt=gMaxEvt;                                     //clm: set event limits
+  gEvt++;                                                                             
   
   gEsdTr->GetEntry(gEvt); gAL->GetEvent(gEvt); 
   ReadHits(&hits); gHL->TreeS()->GetEntry(0); gHL->TreeD()->GetEntry(0); gHL->TreeR()->GetEntry(0);
     
   DrawEvt(&hits,gH->DigLst(),gH->CluLst(),gEsd);
-  gEvt++;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void SimEvt()
@@ -78,6 +78,7 @@ void SimEvt()
   AliESD esd;
   AliHMPIDDigit::fSigmas=4;
   AliHMPIDDigitizer::DoNoise(kFALSE);
+  gEvt++;
   SimEsd(&esd);
   SimHits(&esd,&hits);
              AliHMPIDv1::Hit2Sdi(&hits,&sdig);                               
@@ -87,7 +88,6 @@ void SimEvt()
   
   pAll->cd(3);  gPad->Clear(); TLatex txt;txt.DrawLatex(0.2,0.2,Form("Simulated event %i",gEvt));
   DrawEvt(&hits,&digs,&clus,&esd);  
-  gEvt++;
 }//SimEvt()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void SimEsd(AliESD *pEsd)
