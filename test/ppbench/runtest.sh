@@ -14,8 +14,8 @@
 # export LD_LIBRARY_PATH=$ALICE/geant3/lib/tgt_${ALICE_TARGET}:$LD_LIBRARY_PATH
 
 rm -rf *.root *.dat *.log fort* hlt hough raw* recraw/*.root recraw/*.log
-aliroot -b -q sim.C      2>&1 | tee sim.log
-aliroot -b -q rec.C      2>&1 | tee rec.log
+aliroot -b -q $1sim.C      2>&1 | tee sim.log
+aliroot -b -q $1rec.C      2>&1 | tee rec.log
 aliroot -b -q ${ALICE_ROOT}/STEER/CheckESD.C 2>&1 | tee check.log
 aliroot -b -q ${ALICE_ROOT}/STEER/CreateAODfromESD.C 2>&1 | tee aod.log
 
