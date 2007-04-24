@@ -189,7 +189,7 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
   int Reset();
 
   /**
-   * @struct AliHLTDataSegment
+   * @class AliHLTDataSegment
    * @brief  Descriptor of a data segment within the buffer.
    */
   class AliHLTDataSegment {
@@ -223,7 +223,7 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
   };
 
   /**
-   * @struct AliHLTRawBuffer
+   * @class AliHLTRawBuffer
    * @brief  Descriptor of the raw data buffer which can host several segments.
    */
   class AliHLTRawBuffer {

@@ -288,7 +288,6 @@ int AliHLTDataBuffer::SetSegments(AliHLTUInt8_t* pTgt, AliHLTComponentBlockData*
     if (fpBuffer) {
       if (fpBuffer->fPtr==(void*)pTgt) {
 	AliHLTDataBuffer::AliHLTDataSegment segment;
-	memset(&segment, 0, sizeof(AliHLTDataBuffer::AliHLTDataSegment));
 	for (int i=0; i<iSize; i++) {
 	  if (arrayBlockData[i].fOffset+arrayBlockData[i].fSize<=fpBuffer->fSize) {
 	    segment.fSegmentOffset=arrayBlockData[i].fOffset;
@@ -368,7 +367,6 @@ AliHLTDataBuffer::AliHLTRawBuffer* AliHLTDataBuffer::CreateRawBuffer(AliHLTUInt3
     // no buffer found, create a new one
     pRawBuffer=new AliHLTRawBuffer;
     if (pRawBuffer) {
-      memset(pRawBuffer, 0, sizeof(AliHLTRawBuffer));
       pRawBuffer->fPtr=malloc(reqSize);
       if (pRawBuffer->fPtr) {
 	pRawBuffer->fSize=size;
