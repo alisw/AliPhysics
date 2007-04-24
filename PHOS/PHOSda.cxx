@@ -23,8 +23,9 @@ contact: alice-datesupport@cern.ch
 #include <stdio.h>
 #include <stdlib.h>
 
-// #include "AliRawReader.h"
-// #include "AliRawReaderDate.h"
+#include "AliRawReader.h"
+#include "AliRawReaderDate.h"
+#include "AliPHOSCalibHistoProducer.h"
 
 
 /* Main routine
@@ -40,7 +41,6 @@ int main(int argc, char **argv) {
     return -1;
   }
 
-//   AliRawReader* rawReader = new AliRawReaderDate(argv[1]);
 
   /* open result file */
   FILE *fp=NULL;
@@ -80,6 +80,9 @@ int main(int argc, char **argv) {
   int nevents_physics=0;
   int nevents_total=0;
 
+  AliPHOSCalibHistoProducer hp;
+  hp.SetOldRCUFormat(kTRUE);
+  hp.SetUpdatingRate(500);
   
   /* main loop (infinite) */
   for(;;) {
@@ -118,6 +121,12 @@ int main(int argc, char **argv) {
         EVENT_ID_GET_ORBIT(event->eventId),
         EVENT_ID_GET_PERIOD(event->eventId)
       );
+      
+      AliRawReader *rawReader = new AliRawReaderDate((void*)event);
+
+      hp.SetRawReader(rawReader);
+      hp.Run();
+      
       nevents_physics++;
     }
     nevents_total++;
