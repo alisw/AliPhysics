@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.109  2007/04/18 09:34:05  kharlov
+ * Geometry bug fixes
+ *
  * Revision 1.108  2007/04/16 09:03:37  kharlov
  * Incedent angle correction fixed
  *
@@ -126,7 +129,8 @@
 #include "AliPHOSGetter.h"
 #include "AliESD.h"
 #include "AliESDVertex.h"
-#include "AliGenerator.h"
+#include "AliHeader.h"
+#include "AliGenEventHeader.h"
 
 ClassImp( AliPHOSPIDv1) 
 
@@ -924,7 +928,7 @@ TVector3 AliPHOSPIDv1::GetMomentumDirection(AliPHOSEmcRecPoint * emc, AliPHOSCpv
   }
   else{
     AliError("Cluster with zero energy \n");
-  } 
+  }
   //Apply Real vertex
   phosgeom->GetIncidentVector(fVtx,emc->GetPHOSMod(),x,z,vInc) ;
   Float_t depthx = 0.;
@@ -1752,10 +1756,11 @@ void AliPHOSPIDv1::GetVertex(void)
       return ;
     }
   }
-  if(gAlice && gAlice->GetMCApp() && gAlice->Generator()){
-     Float_t ox,oy,oz ;
-     gAlice->Generator()->GetOrigin(ox,oy,oz);
-     fVtx.SetXYZ(ox,oy,oz) ;
+  if(gAlice && gAlice->GetHeader() && gAlice->GetHeader()->GenEventHeader()){
+     AliGenEventHeader *eh = gAlice->GetHeader()->GenEventHeader() ;
+     TArrayF ftx ;
+     eh->PrimaryVertex(ftx);
+     fVtx.SetXYZ(ftx[0],ftx[1],ftx[2]) ;
      return ;
   }
  
