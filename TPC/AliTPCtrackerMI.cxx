@@ -687,7 +687,7 @@ Double_t AliTPCtrackerMI::ErrY2(AliTPCseed* seed, AliTPCclusterMI * cl){
     return 1.;
   }
   Float_t snoise2;
-  Float_t z = TMath::Abs(fParam->GetZLength()-TMath::Abs(seed->GetZ()));
+  Float_t z = TMath::Abs(fParam->GetZLength(0)-TMath::Abs(seed->GetZ()));
   Int_t ctype = cl->GetType();  
   Float_t padlength= GetPadPitchLength(seed->GetRow());
   Double_t angle2 = seed->GetSnp()*seed->GetSnp();
@@ -821,7 +821,7 @@ Double_t AliTPCtrackerMI::ErrZ2(AliTPCseed* seed, AliTPCclusterMI * cl){
     return 1.;
   }
   Float_t snoise2;
-  Float_t z = TMath::Abs(fParam->GetZLength()-TMath::Abs(seed->GetZ()));
+  Float_t z = TMath::Abs(fParam->GetZLength(0)-TMath::Abs(seed->GetZ()));
   Int_t ctype = cl->GetType();  
   Float_t padlength= GetPadPitchLength(seed->GetRow());
   //
@@ -889,7 +889,7 @@ Double_t AliTPCtrackerMI::ErrZ2(AliTPCseed* seed, AliTPCclusterMI * cl){
   //return 0.1;
 
   Float_t snoise2;
-  Float_t z = TMath::Abs(fParam->GetZLength()-TMath::Abs(seed->GetZ()));
+  Float_t z = TMath::Abs(fParam->GetZLength(0)-TMath::Abs(seed->GetZ()));
   //
   Float_t rsigmaz = cl->GetSigmaZ2()/(seed->fCurrentSigmaZ2);
   Int_t ctype = cl->GetType();
@@ -1517,7 +1517,7 @@ Int_t AliTPCtrackerMI::FollowToNext(AliTPCseed& t, Int_t nr) {
   } 
   else
     {
-      if (TMath::Abs(z)<(AliTPCReconstructor::GetCtgRange()*x+10) && TMath::Abs(z)<fParam->GetZLength() && (TMath::Abs(t.GetSnp())<AliTPCReconstructor::GetMaxSnpTracker())) 
+      if (TMath::Abs(z)<(AliTPCReconstructor::GetCtgRange()*x+10) && TMath::Abs(z)<fParam->GetZLength(0) && (TMath::Abs(t.GetSnp())<AliTPCReconstructor::GetMaxSnpTracker())) 
 	t.SetNFoundable(t.GetNFoundable()+1);
       else
 	return 0;
@@ -6194,7 +6194,7 @@ void  AliTPCtrackerMI::GetShape(AliTPCseed * seed, Int_t row)
 {
   //
   //
-  Float_t sd2 = TMath::Abs((fParam->GetZLength()-TMath::Abs(seed->GetZ())))*fParam->GetDiffL()*fParam->GetDiffL();
+  Float_t sd2 = TMath::Abs((fParam->GetZLength(0)-TMath::Abs(seed->GetZ())))*fParam->GetDiffL()*fParam->GetDiffL();
   //  Float_t padlength =  fParam->GetPadPitchLength(seed->fSector);
   Float_t padlength =  GetPadPitchLength(row);
   //
@@ -6222,7 +6222,7 @@ Float_t  AliTPCtrackerMI::GetSigmaY(AliTPCseed * seed)
 {
   //
   //  
-  Float_t sd2 = TMath::Abs((fParam->GetZLength()-TMath::Abs(seed->GetZ())))*fParam->GetDiffL()*fParam->GetDiffL();
+  Float_t sd2 = TMath::Abs((fParam->GetZLength(0)-TMath::Abs(seed->GetZ())))*fParam->GetDiffL()*fParam->GetDiffL();
   Float_t padlength =  fParam->GetPadPitchLength(seed->GetSector());
   Float_t sres = (seed->GetSector() < fParam->GetNSector()/2) ? 0.2 :0.3;
   Float_t angular  = seed->GetSnp();
@@ -6236,7 +6236,7 @@ Float_t  AliTPCtrackerMI::GetSigmaZ(AliTPCseed * seed)
 {
   //
   //
-  Float_t sd2 = TMath::Abs((fParam->GetZLength()-TMath::Abs(seed->GetZ())))*fParam->GetDiffL()*fParam->GetDiffL();
+  Float_t sd2 = TMath::Abs((fParam->GetZLength(0)-TMath::Abs(seed->GetZ())))*fParam->GetDiffL()*fParam->GetDiffL();
   Float_t padlength =  fParam->GetPadPitchLength(seed->GetSector());
   Float_t sres = fParam->GetZSigma();
   Float_t angular  = seed->GetTgl();

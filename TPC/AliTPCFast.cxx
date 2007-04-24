@@ -233,7 +233,7 @@ void AliTPCFast::Hits2Clusters(AliRunLoader* runLoader) const
           Float_t ymax=xprim*TMath::Tan(0.5*alpha);
           if (TMath::Abs(xyz[0])>ymax) xyz[0]=yprim; 
 	xyz[1]=gRandom->Gaus(tpcHit->Z(),TMath::Sqrt(sigmaZ)); // z
-          if (TMath::Abs(xyz[1])>param->GetZLength()) xyz[1]=tpcHit->Z(); 
+          if (TMath::Abs(xyz[1])>param->GetZLength(isec)) xyz[1]=tpcHit->Z(); 
 	xyz[2]=sigmaRphi;                                     // fSigmaY2
 	xyz[3]=sigmaZ;                                        // fSigmaZ2
 	xyz[4]=tpcHit->fQ;                                    // q
@@ -523,8 +523,8 @@ void AliTPCFast::Hits2ExactClustersSector(AliRunLoader* runLoader,
 	  sigmay2 = TMath::Min(sigmay2,1.);
 	  //
 	  //
-	  z = sign*(param->GetZLength() - z);
-	  if (TMath::Abs(z)< param->GetZLength()-1){
+	  z = sign*(param->GetZLength(isec) - z);
+	  if (TMath::Abs(z)< param->GetZLength(isec)-1){
 	    AliTPCClustersRow * row = (clustersArray->GetRow(isec,lastrow));
 	    if (row!=0) {
 	      AliTPCclusterMI* cl = new((AliTPCclusterMI*)row->Append()) AliTPCclusterMI ;

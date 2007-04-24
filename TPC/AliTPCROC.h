@@ -47,7 +47,7 @@ class AliTPCROC : public TObject {
   UInt_t    GetNInnerSector() const {return fNSectors[0];}
   UInt_t    GetNOuterSector() const {return fNSectors[1];}
   UInt_t    GetNSector() const {return fNSectorsAll;}
-  Float_t  GetZLength() const {return fZLength;}
+  Float_t  GetZLength(Int_t sector) const {return (sector<35) ? fZLength-0.275 : fZLength-0.302;}
   //
   // get pad row parameters
   //

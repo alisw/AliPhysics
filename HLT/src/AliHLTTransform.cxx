@@ -799,7 +799,7 @@ Bool_t AliHLTTransform::Init(AliRunLoader *runLoader)
   fgPadPitchWidthUp=param->GetOuterPadPitchWidth();
   fgZWidth=param->GetZWidth();
   fgZSigma=param->GetZSigma();
-  fgZLength=param->GetZLength();
+  fgZLength=param->GetZLength(0)+0.275;
   fgZOffset=param->GetZOffset();
   fgDiffT=param->GetDiffT();
   fgDiffL=param->GetDiffL();
@@ -1142,7 +1142,7 @@ Bool_t AliHLTTransform::MakeInitFile(Char_t *rootfilename,Char_t *filename)
   fgPadPitchWidthUp=param->GetOuterPadPitchWidth();
   fgZWidth=param->GetZWidth();
   fgZSigma=param->GetZSigma();
-  fgZLength=param->GetZLength();
+  fgZLength=param->GetZLength(0);
   fgZOffset=param->GetZOffset();
   fgDiffT=param->GetDiffT();
   fgDiffL=param->GetDiffL();
@@ -1486,9 +1486,9 @@ Double_t AliHLTTransform::GetParSigmaZ2(Int_t padrow,Float_t z,Float_t tgl)
 
   Double_t drift;
   if(z > 0)
-    drift = AliHLTTransform::GetZLength() - z;
+    drift = AliHLTTransform::GetZLength()-0.275 - z;
   else
-    drift = AliHLTTransform::GetZLength() + z;
+    drift = AliHLTTransform::GetZLength()-0.302 + z;
   
   Double_t t1 = fgZSigma*fgZSigma;
   Double_t t2 = fgDiffL*fgDiffL*drift;

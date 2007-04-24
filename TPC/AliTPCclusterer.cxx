@@ -233,7 +233,7 @@ Int_t AliTPCclusterer::Digits2Clusters(TTree *dTree, TTree *cTree) {
          c.SetY((c.GetY() - 0.5 - 0.5*npads)*fPar->GetPadPitchWidth(sec));
          c.SetZ(fPar->GetZWidth()*(c.GetZ()-1)); 
          c.SetZ(c.GetZ() - 3.*fPar->GetZSigma()); // PASA delay 
-         c.SetZ(sign*(fPar->GetZLength() - c.GetZ()));
+         c.SetZ(sign*(fPar->GetZLength(sec) - c.GetZ()));
 
          if (rx<230./250.*TMath::Abs(c.GetZ())) continue;
 

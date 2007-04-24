@@ -202,7 +202,7 @@ Float_t  AliTPCclustererMI::GetSigmaZ2(Int_t iz){
   //sigma z2 = in digits - angle estimated supposing vertex constraint
   Float_t z = iz*fZWidth+fParam->GetNTBinsL1()*fParam->GetZWidth();
   Float_t sd2 = (z*fParam->GetDiffL()*fParam->GetDiffL())/(fZWidth*fZWidth);
-  Float_t angular = fPadLength*(fParam->GetZLength()-z)/(fRx*fZWidth);
+  Float_t angular = fPadLength*(fParam->GetZLength(fSector)-z)/(fRx*fZWidth);
   angular*=angular;
   angular/=12.;
   Float_t sres = fParam->GetZSigma()/fZWidth;
@@ -557,7 +557,7 @@ void AliTPCclustererMI::AddCluster(AliTPCclusterMI &c, Float_t * matrix, Int_t p
   }
   c.SetZ(fZWidth*(meanj-3)); 
   c.SetZ(c.GetZ() - 3.*fParam->GetZSigma() + fParam->GetNTBinsL1()*fParam->GetZWidth()); // PASA delay + L1 delay
-  c.SetZ(fSign*(fParam->GetZLength() - c.GetZ()));
+  c.SetZ(fSign*(fParam->GetZLength(fSector) - c.GetZ()));
   c.SetX(fRx);
   c.SetDetector(fSector);
   c.SetRow(fRow);
@@ -928,7 +928,7 @@ void AliTPCclustererMI::FindClusters(AliTPCCalROC * noiseROC)
   fNcluster=0;
   fLoop=1;
   Float_t *b=&fBins[-1]+2*fMaxTime;
-  Int_t crtime = Int_t((fParam->GetZLength()-fRecoParam->GetCtgRange()*fRx)/fZWidth-fParam->GetNTBinsL1()-5);
+  Int_t crtime = Int_t((fParam->GetZLength(fSector)-fRecoParam->GetCtgRange()*fRx)/fZWidth-fParam->GetNTBinsL1()-5);
   Float_t minMaxCutAbs       = fRecoParam->GetMinMaxCutAbs();
   Float_t minLeftRightCutAbs = fRecoParam->GetMinLeftRightCutAbs();
   Float_t minUpDownCutAbs    = fRecoParam->GetMinUpDownCutAbs();

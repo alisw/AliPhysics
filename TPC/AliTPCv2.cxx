@@ -409,8 +409,8 @@ void AliTPCv2::CreateGeometry()
   //
   cd1v->AddNode(cd2v,1); cd2v->AddNode(cd3v,1); cflv->AddNode(cd1v,1);
   //
-  v1->AddNode(siv,1,new TGeoTranslation(0.,0.,-70.1));
-  v1->AddNode(siv,2,new TGeoTranslation(0.,0.,70.1));
+  v1->AddNode(siv,1,new TGeoTranslation(0.,0.,-69.9));
+  v1->AddNode(siv,2,new TGeoTranslation(0.,0.,69.9));
   v1->AddNode(sev,1); v1->AddNode(sev,2,ref); v1->AddNode(cflv,1);
   //
   // central membrane - 2 rings and a mylar membrane - assembly
@@ -667,7 +667,8 @@ void AliTPCv2::CreateGeometry()
    // 
    // now iroc and oroc are placed into a sector...
    //
-   TGeoVolumeAssembly *sect = new TGeoVolumeAssembly("TPC_SECT");
+   TGeoVolumeAssembly *secta = new TGeoVolumeAssembly("TPC_SECT"); // a-side
+   TGeoVolumeAssembly *sectc = new TGeoVolumeAssembly("TPC_SECT"); // c-side
    TGeoRotation rot1("rot1",90.,90.,0.);
    TGeoRotation rot2("rot2");
    rot2.RotateY(10.);
@@ -677,31 +678,44 @@ void AliTPCv2::CreateGeometry()
    Double_t x0,y0;
    x0=110.2*TMath::Cos(openingAngle);
    y0=110.2*TMath::Sin(openingAngle);
-   TGeoCombiTrans *combi1 = new TGeoCombiTrans("combi1",x0,y0,1.09,rot);
+   TGeoCombiTrans *combi1a = new TGeoCombiTrans("combi1",x0,y0,1.09+0.222,rot); //a-side 
+   TGeoCombiTrans *combi1c = new TGeoCombiTrans("combi1",x0,y0,1.09+0.195,rot); //c-side
    x0=188.45*TMath::Cos(openingAngle);
    y0=188.45*TMath::Sin(openingAngle);
-   TGeoCombiTrans *combi2 = new TGeoCombiTrans("combi2",x0,y0,0.99,rot);
+   TGeoCombiTrans *combi2a = new TGeoCombiTrans("combi2",x0,y0,0.99+0.222,rot); //a-side
+   TGeoCombiTrans *combi2c = new TGeoCombiTrans("combi2",x0,y0,0.99+0.195,rot); //c-side
    //
-   sect->AddNode(ch,1);
-   sect->AddNode(iroc,1,combi1);
-   sect->AddNode(oroc,1,combi2);
    //
-   // segment is ready...
-   // now I try to make a wheel...
+   // A-side
    //
-   TGeoVolumeAssembly *wheel = new TGeoVolumeAssembly("TPC_ENDCAP");
+   secta->AddNode(ch,1);
+   secta->AddNode(iroc,1,combi1a);
+   secta->AddNode(oroc,1,combi2a);
+   //
+   // C-side
+   //
+   sectc->AddNode(ch,1);
+   sectc->AddNode(iroc,1,combi1c);
+   sectc->AddNode(oroc,1,combi2c);
+   //
+   // now I try to make  wheels...
+   //
+   TGeoVolumeAssembly *wheela = new TGeoVolumeAssembly("TPC_ENDCAP");
+   TGeoVolumeAssembly *wheelc = new TGeoVolumeAssembly("TPC_ENDCAP");
    //
    for(Int_t i =0;i<18;i++){
      Double_t phi = (20.*i);
      TGeoRotation *r = new TGeoRotation();
      r->RotateZ(phi);
-     wheel->AddNode(sect,i+1,r);
+     wheela->AddNode(secta,i+1,r);
+     wheelc->AddNode(sectc,i+1,r); 
     
    }
    // wheels in the drift volume!   
+
    TGeoCombiTrans *combi3 = new TGeoCombiTrans("combi3",0.,0.,256.6,ref);
-   v9->AddNode(wheel,1,combi3);
-   v9->AddNode(wheel,2,new TGeoTranslation(0.,0.,-256.6));
+   v9->AddNode(wheela,1,combi3);
+   v9->AddNode(wheelc,2,new TGeoTranslation(0.,0.,-256.6));
    //_____________________________________________________________
    // service support wheel
    //_____________________________________________________________

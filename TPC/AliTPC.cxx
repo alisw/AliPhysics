@@ -1818,7 +1818,7 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
       }
 
       // Remove hits which arrive before the TPC opening gate signal
-      if(((fTPCParam->GetZLength()-TMath::Abs(tpcHit->Z()))
+      if(((fTPCParam->GetZLength(isec)-TMath::Abs(tpcHit->Z()))
 	  /fTPCParam->GetDriftV()+tpcHit->Time())<fTPCParam->GetGateDelay()) {
 	tpcHit = (AliTPChit*) NextHit();
 	continue;
@@ -1859,7 +1859,7 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
       //---------------------------------------------------
 
 
-      Float_t time = 1.e6*(fTPCParam->GetZLength()-TMath::Abs(tpcHit->Z()))
+      Float_t time = 1.e6*(fTPCParam->GetZLength(isec)-TMath::Abs(tpcHit->Z()))
 	/fTPCParam->GetDriftV(); 
       // in microseconds!	
       Float_t attProb = fTPCParam->GetAttCoef()*

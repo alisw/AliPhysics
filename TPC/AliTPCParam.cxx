@@ -675,7 +675,7 @@ Bool_t AliTPCParam::ReadGeoMatrices(){
       mirrorZ.SetAngles(90,0,90,90,180,0);
       fClusterMatrix[isec]->Multiply(&mirrorZ);
     }
-    TGeoTranslation trans(0,0,GetZLength());
+    TGeoTranslation trans(0,0,GetZLength(isec));
     fClusterMatrix[isec]->MultiplyLeft(&trans);
     fClusterMatrix[isec]->MultiplyLeft((GetGlobalMatrix(isec)));	
     fClusterMatrix[isec]->MultiplyLeft(&(rotMatrix.Inverse()));
