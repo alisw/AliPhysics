@@ -2,7 +2,7 @@
 
 include $(ROOTSYS)/test/Makefile.arch
 
-default-target: libPWG2.so libPWG2ebye.so libPWG0flow.so 
+default-target: libPWG2.so libPWG2ebye.so libPWG2flow.so 
 
 ALICEINC      = -I.
 
