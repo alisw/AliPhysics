@@ -109,6 +109,8 @@ AliHLTComponent::~AliHLTComponent()
 {
   // see header file for function documentation
   CleanupInputObjects();
+  if (fpStopwatches!=NULL) delete fpStopwatches;
+  fpStopwatches=NULL;
 }
 
 AliHLTComponentHandler* AliHLTComponent::fgpComponentHandler=NULL;
