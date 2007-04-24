@@ -22,7 +22,7 @@
 #include "AliRawReader.h"  //Raw2SDigits()
 #include <TVirtualMC.h>    //StepManager() for gMC
 #include <TPDGCode.h>      //StepHistory() 
-#include <AliStack.h>      //StepManager(),Hits2SDigits()
+#include <AliStack.h>      //StepManager(),Hits2SDigits()78.6
 #include <AliLoader.h>        //Hits2SDigits()
 #include <AliRunLoader.h>     //Hits2SDigits()
 #include <AliConst.h>
@@ -117,7 +117,7 @@ void AliHMPIDv2::CreateGeometry()
   TGeoMedium *csi  =gGeoManager->GetMedium("HMPID_CsI");    
   TGeoMedium *ar   =gGeoManager->GetMedium("HMPID_Ar");     
 
-  TGeoVolume *hmp=gGeoManager->MakeBox ("Hmp",ch4,1681*mm/2, 1466*mm/2,(2*80*mm+2*41*mm)/2);//2033P1  z from p84 TDR  
+  TGeoVolume *hmp=gGeoManager->MakeBox ("Hmp",ch4,1681*mm/2, 1466*mm/2,(2*80*mm+2*60*mm)/2);//2033P1  z from p84 TDR  
 
   TString title=GetTitle();
   if(title.Contains("TestBeam")  )
@@ -147,15 +147,24 @@ void AliHMPIDv2::CreateGeometry()
   TGeoVolume *f4a=gGeoManager->MakeBox ("Hf4a",al   , 1407*mm/2 , 1366.00*mm/2 ,   10.0*mm/2); 
   TGeoVolume *f4i=gGeoManager->MakeBox ("Hf4i",ch4  , 1323*mm/2 , 1296.00*mm/2 ,   10.0*mm/2); 
   TGeoVolume *col=gGeoManager->MakeTube("Hcol",cu   ,    0*mm   ,  100.00*um   , 1323.0*mm/2);
-  TGeoVolume *sec=gGeoManager->MakeBox ("Hsec",ch4  ,  648*mm/2 ,  411.00*mm/2 ,   45.5*mm/2);//sec=gap+ppf
-  TGeoVolume *ppf=gGeoManager->MakeBox ("Hppf",al   ,  648*mm/2 ,  411.00*mm/2 ,   40.0*mm/2);//2001P2
-  TGeoVolume *lar=gGeoManager->MakeBox ("Hlar",ar   ,  181*mm/2 ,   89.25*mm/2 ,   38.3*mm/2);//2001P2
-  TGeoVolume *smo=gGeoManager->MakeBox ("Hsmo",ar   ,  114*mm/2 ,   89.25*mm/2 ,   38.3*mm/2);//2001P2
-  TGeoVolume *gap=gGeoManager->MakeBox ("Hgap",ch4  ,  640*mm/2 ,  403.20*mm/2 ,    5.5*mm/2);//gap=pad+ano+cat
+  TGeoVolume *sec=gGeoManager->MakeBox ("Hsec",ch4  ,  648*mm/2 ,  411.00*mm/2 ,   6.2*mm/2);//sec=gap
+ 
+  TGeoVolume *gap=gGeoManager->MakeBox ("Hgap",ch4  ,  640*mm/2 ,  403.20*mm/2 ,    6.2*mm/2);//gap=pad+ano+cat
   TGeoVolume *cat=gGeoManager->MakeTube("Hcat",cu   ,    0*mm   ,   50.00*um   ,    8.0*mm/2); 
   TGeoVolume *ano=gGeoManager->MakeTube("Hano",w    ,    0*mm   ,   20.00*um   ,    8.0*mm/2); 
-  TGeoVolume *pad=gGeoManager->MakeBox ("Hpad",csi  ,    8*mm/2 ,    8.40*mm/2 ,    1.0*mm/2);      
-//
+  TGeoVolume *pad=gGeoManager->MakeBox ("Hpad",csi  ,    8*mm/2 ,    8.40*mm/2 ,    1.7*mm/2);      
+  TGeoVolume *fr1=gGeoManager->MakeBox ("Hfr1",al   , 1463*mm/2 , 1422.00*mm/2 ,   58.3*mm/2);//2040P1
+  TGeoVolume *fr1up=gGeoManager->MakeBox ("Hfr1up",ch4,(1426.00-37.00)*mm/2 , (1385.00-37.00)*mm/2 ,    20.0*mm/2);//2040P1
+  TGeoVolume *fr1perUpBig=gGeoManager->MakeBox ("Hfr1perUpBig",ch4,1389*mm/2,35*mm/2,10*mm/2);    
+  TGeoVolume *fr1perUpSma=gGeoManager->MakeBox ("Hfr1perUpSma",ch4,35*mm/2,(1385-37-2*35)*mm/2,10*mm/2);
+	TGeoVolume *fr1perDowBig=gGeoManager->MakeBox ("Hfr1perDowBig",ch4,1389*mm/2,46*mm/2,2.3*mm/2);    
+  TGeoVolume *fr1perDowSma=gGeoManager->MakeBox ("Hfr1perDowSma",ch4,46*mm/2,(1385-37-2*46)*mm/2,2.3*mm/2);
+	
+	TGeoVolume *ppf=gGeoManager->MakeBox ("Hppf",al   ,  648*mm/2 ,  411.00*mm/2 ,   38.3*mm/2);//2001P2
+  TGeoVolume *lar=gGeoManager->MakeBox ("Hlar",ar   ,  181*mm/2 ,   89.25*mm/2 ,   38.3*mm/2);//2001P2
+  TGeoVolume *smo=gGeoManager->MakeBox ("Hsmo",ar   ,  114*mm/2 ,   89.25*mm/2 ,   38.3*mm/2);//2001P2
+		
+
 // ^ Y   z=         z=-12mm      z=98.25mm               ALIC->7xHmp (virtual)-->1xHsbo (virtual) --->2xHcov (real) 2072P1
 // |  ____________________________________                                    |                   |-->1xHhon (real) 2072P1
 // | |   ______     ____          ______  |                                   |
@@ -168,10 +177,10 @@ void AliHMPIDv2::CreateGeometry()
 //   |  |      |   |    |   *    |      | |                                   |->1xHfr4 (vitual) --->1xHf4a (real)---->1xHf4i(virtual) 2043P1 
 //   |  |  sb  |   | rad|   *    |      | |                                   |                  |-->322xHcol (real) 2043P1
 //   |  |      |   |____|   *    |______| |                                   |
-//   |  |      |    ____    *     ______  |                                   |->6xHsec (virtual) --> 1xHppf(real) ---->8xHlar (virtual) 2001P1
-//   |  |      |   |    |   *    |      | |                                                                        |--->8xHsmo (virtual) 2001P1     
+//   |  |      |    ____    *     ______  |                                   |->1xHfr1 (real) --> 6xHppf(real) ---->8xHlar (virtual) 2001P1
+//   |  |      |   |    |   *    |      | |                                   |                                     |--->8xHsmo (virtual) 2001P1     
 //   |  |      |   |    |   *    |      | |                                   |               
-//   |  |      |   |    |   *    |      | |                                   |-> 1xHgap (virtual) --->48xHrow (virtual) -->80xHcel (virtual) -->4xHcat (real) from p84 TDR 
+//   |  |      |   |    |   *    |      | |                                   |-> 6xHgap (virtual) --->48xHrow (virtual) -->80xHcel (virtual) -->4xHcat (real) from p84 TDR 
 //   |  |______|   |____|   *    |______| |                                                                                                  |-->2xHano (real) from p84 TDR                                  
 //   |____________________________________|                                                                                                  |-->1xHpad (real) from p84 TDR 
 //                                                       --->Z 
@@ -191,10 +200,10 @@ void AliHMPIDv2::CreateGeometry()
   for(int i=1;i<=322;i++)  fr4->AddNode(col,i,new TGeoCombiTrans( 0*mm, -1296/2*mm+i*4*mm,-5*mm,rot)); //F4 2043P1
                            fr4->AddNode(f4a,1,new TGeoTranslation(   0*mm,0*mm, 2.5*mm));    
                                         f4a->AddNode(f4i,1,new TGeoTranslation(   0*mm,0*mm,   0*mm));
-  hmp->AddNode(sec,4,new TGeoTranslation(-335*mm,+433*mm,  98.25*mm)); hmp->AddNode(sec,5,new TGeoTranslation(+335*mm,+433*mm,  98.25*mm));
-  hmp->AddNode(sec,2,new TGeoTranslation(-335*mm,   0*mm,  98.25*mm)); hmp->AddNode(sec,3,new TGeoTranslation(+335*mm,   0*mm,  98.25*mm));
-  hmp->AddNode(sec,0,new TGeoTranslation(-335*mm,-433*mm,  98.25*mm)); hmp->AddNode(sec,1,new TGeoTranslation(+335*mm,-433*mm,  98.25*mm));
-    sec->AddNode(gap,1,new TGeoTranslation(0,0,-20.00*mm));
+  hmp->AddNode(sec,4,new TGeoTranslation(-335*mm,+433*mm,  78.6*mm)); hmp->AddNode(sec,5,new TGeoTranslation(+335*mm,+433*mm,  78.6*mm));
+  hmp->AddNode(sec,2,new TGeoTranslation(-335*mm,   0*mm,  78.6*mm)); hmp->AddNode(sec,3,new TGeoTranslation(+335*mm,   0*mm,  78.6*mm));
+  hmp->AddNode(sec,0,new TGeoTranslation(-335*mm,-433*mm,  78.6*mm)); hmp->AddNode(sec,1,new TGeoTranslation(+335*mm,-433*mm,  78.6*mm));
+    sec->AddNode(gap,1,new TGeoTranslation(0,0,0.*mm));
   TGeoVolume *row=          gap->Divide("Hrow",2,48,0,0);//along Y->48 rows
   TGeoVolume *cel=          row->Divide("Hcel",1,80,0,0);//along X->80 cells
       cel->AddNode(cat,1,new TGeoCombiTrans (0,  3.15*mm , -2.70*mm , rot)); //4 cathode wires
@@ -204,7 +213,30 @@ void AliHMPIDv2::CreateGeometry()
       cel->AddNode(ano,2,new TGeoCombiTrans (0, -2.00*mm , -0.29*mm , rot)); 
       cel->AddNode(cat,4,new TGeoCombiTrans (0, -3.15*mm , -2.70*mm , rot));   
       cel->AddNode(pad,1,new TGeoTranslation(0,  0.00*mm ,  2.25*mm));       //1 pad  
-    sec->AddNode(ppf,1,new TGeoTranslation(0,0,  2.75*mm));
+	    
+  hmp->AddNode(fr1,1,new TGeoTranslation(0.,0.,(80.+1.7)*mm+58.3*mm/2.));
+		fr1->AddNode(fr1up,1,new TGeoTranslation(0.,0.,(58.3*mm-20.00*mm)/2.));
+		
+		fr1->AddNode(fr1perUpBig,0,new TGeoTranslation(0.,(1385-37-35)*mm/2.,(58.3*mm-20.00*2*mm-10.0*mm)/2.));
+		fr1->AddNode(fr1perUpSma,0,new TGeoTranslation((1426-37-35)*mm/2.,0.,(58.3*mm-20.00*2*mm-10.0*mm)/2.));
+		fr1->AddNode(fr1perUpBig,1,new TGeoTranslation(0.,-(1385-37-35)*mm/2.,(58.3*mm-20.00*2*mm-10.0*mm)/2.));
+		fr1->AddNode(fr1perUpSma,1,new TGeoTranslation(-(1426-37-35)*mm/2.,0.,(58.3*mm-20.00*2*mm-10.0*mm)/2.));
+		
+	  fr1->AddNode(fr1perDowBig,0,new TGeoTranslation(0.,(1385-37-46)*mm/2.,(-58.3*mm+2.3*mm)/2.));
+		fr1->AddNode(fr1perDowSma,0,new TGeoTranslation((1426-37-46)*mm/2.,0.,(-58.3*mm+2.3*mm)/2.));
+	  fr1->AddNode(fr1perDowBig,1,new TGeoTranslation(0.,-(1385-37-46)*mm/2.,(-58.3*mm+2.3*mm)/2.));
+		fr1->AddNode(fr1perDowSma,1,new TGeoTranslation(-(1426-37-46)*mm/2.,0.,(-58.3*mm+2.3*mm)/2.));
+		
+			
+	  fr1->AddNode(ppf,4,new TGeoTranslation(-335*mm,433*mm,(-58.3+38.3)*mm/2.));  fr1->AddNode(ppf,5,new TGeoTranslation(335*mm,433*mm,(-58.3+38.3)*mm/2.));	
+	  fr1->AddNode(ppf,2,new TGeoTranslation(-335*mm,0.,(-58.3+38.3)*mm/2.));      fr1->AddNode(ppf,3,new TGeoTranslation(335*mm,0.,(-58.3+38.3)*mm/2.));
+	  fr1->AddNode(ppf,0,new TGeoTranslation(-335*mm,-433*mm,(-58.3+38.3)*mm/2.)); fr1->AddNode(ppf,1,new TGeoTranslation(335*mm,-433*mm,(-58.3+38.3)*mm/2.));
+		
+		
+		
+		
+		
+		
 // ^ Y  single cell                                                5.5mm CH4 = 1*mm CsI + 4.45*mm CsI x cath +0.05*mm safety margin         
 // |      ______________________________           
 // |     |                              |          ^                            ||     
@@ -233,22 +265,22 @@ void AliHMPIDv2::CreateGeometry()
 //       |______________________________|          v                            ||    
 //       <             8 mm             >                          
 //                                   ----->X                                 ----->Z
-  ppf->AddNode(lar,1,new TGeoTranslation(-224.5*mm,-151.875*mm,  0.85*mm));
-  ppf->AddNode(lar,2,new TGeoTranslation(-224.5*mm,- 50.625*mm,  0.85*mm));
-  ppf->AddNode(lar,3,new TGeoTranslation(-224.5*mm,+ 50.625*mm,  0.85*mm));
-  ppf->AddNode(lar,4,new TGeoTranslation(-224.5*mm,+151.875*mm,  0.85*mm));
-  ppf->AddNode(lar,5,new TGeoTranslation(+224.5*mm,-151.875*mm,  0.85*mm));
-  ppf->AddNode(lar,6,new TGeoTranslation(+224.5*mm,- 50.625*mm,  0.85*mm));
-  ppf->AddNode(lar,7,new TGeoTranslation(+224.5*mm,+ 50.625*mm,  0.85*mm));
-  ppf->AddNode(lar,8,new TGeoTranslation(+224.5*mm,+151.875*mm,  0.85*mm));
-  ppf->AddNode(smo,1,new TGeoTranslation(- 65.0*mm,-151.875*mm,  0.85*mm));
-  ppf->AddNode(smo,2,new TGeoTranslation(- 65.0*mm,- 50.625*mm,  0.85*mm));
-  ppf->AddNode(smo,3,new TGeoTranslation(- 65.0*mm,+ 50.625*mm,  0.85*mm));
-  ppf->AddNode(smo,4,new TGeoTranslation(- 65.0*mm,+151.875*mm,  0.85*mm));
-  ppf->AddNode(smo,5,new TGeoTranslation(+ 65.0*mm,-151.875*mm,  0.85*mm));
-  ppf->AddNode(smo,6,new TGeoTranslation(+ 65.0*mm,- 50.625*mm,  0.85*mm));
-  ppf->AddNode(smo,7,new TGeoTranslation(+ 65.0*mm,+ 50.625*mm,  0.85*mm));
-  ppf->AddNode(smo,8,new TGeoTranslation(+ 65.0*mm,+151.875*mm,  0.85*mm)); 
+  ppf->AddNode(lar,0,new TGeoTranslation(-224.5*mm,-151.875*mm,  0.*mm));
+  ppf->AddNode(lar,1,new TGeoTranslation(-224.5*mm,- 50.625*mm,  0.*mm));
+  ppf->AddNode(lar,2,new TGeoTranslation(-224.5*mm,+ 50.625*mm,  0.*mm));
+  ppf->AddNode(lar,3,new TGeoTranslation(-224.5*mm,+151.875*mm,  0.*mm));
+  ppf->AddNode(lar,4,new TGeoTranslation(+224.5*mm,-151.875*mm,  0.*mm));
+  ppf->AddNode(lar,5,new TGeoTranslation(+224.5*mm,- 50.625*mm,  0.*mm));
+  ppf->AddNode(lar,6,new TGeoTranslation(+224.5*mm,+ 50.625*mm,  0.*mm));
+  ppf->AddNode(lar,7,new TGeoTranslation(+224.5*mm,+151.875*mm,  0.*mm));
+  ppf->AddNode(smo,0,new TGeoTranslation(- 65.0*mm,-151.875*mm,  0.*mm));
+  ppf->AddNode(smo,1,new TGeoTranslation(- 65.0*mm,- 50.625*mm,  0.*mm));
+  ppf->AddNode(smo,2,new TGeoTranslation(- 65.0*mm,+ 50.625*mm,  0.*mm));
+  ppf->AddNode(smo,3,new TGeoTranslation(- 65.0*mm,+151.875*mm,  0.*mm));
+  ppf->AddNode(smo,4,new TGeoTranslation(+ 65.0*mm,-151.875*mm,  0.*mm));
+  ppf->AddNode(smo,5,new TGeoTranslation(+ 65.0*mm,- 50.625*mm,  0.*mm));
+  ppf->AddNode(smo,6,new TGeoTranslation(+ 65.0*mm,+ 50.625*mm,  0.*mm));
+  ppf->AddNode(smo,7,new TGeoTranslation(+ 65.0*mm,+151.875*mm,  0.*mm)); 
 
 
 
@@ -622,7 +654,7 @@ void AliHMPIDv2::StepManager()
   if((gMC->TrackPid()==50000050||gMC->TrackPid()==50000051)&&gMC->CurrentVolID(copy)==fIdPad){   //photon (Ckov or feedback) hit PC (fIdPad)
     if(gMC->Edep()>0){                                                                           //photon survided QE test i.e. produces electron
       if(IsLostByFresnel()){ gMC->StopTrack(); return;}                                          //photon lost due to fersnel reflection on PC       
-                       gMC->CurrentVolOffID(5,copy);                                             //current chamber since geomtry tree is Hmp-Hsec-Hgap-Hrow-Hcel-Hpad
+											 gMC->CurrentVolOffID(5,copy);                                             //current chamber since geomtry tree is Hmp-Hsec-Hgap-Hrow-Hcel-Hpad
       Int_t   tid=     gMC->GetStack()->GetCurrentTrackNumber();                                 //take TID
       Int_t   pid=     gMC->TrackPid();                                                          //take PID
       Float_t etot=    gMC->Etot();                                                              //total hpoton energy, [GeV] 
