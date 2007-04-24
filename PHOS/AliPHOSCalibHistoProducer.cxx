@@ -39,14 +39,16 @@
 ClassImp(AliPHOSCalibHistoProducer)
 
 //-----------------------------------------------------------------------------
-AliPHOSCalibHistoProducer::AliPHOSCalibHistoProducer(AliRawReader* rawReader) : 
-  fRawReader(rawReader),fHistoFile(0),fUpdatingRate(100),fIsOldRCUFormat(kFALSE)
+AliPHOSCalibHistoProducer::AliPHOSCalibHistoProducer() : 
+  fRawReader(0),fHistoFile(0),fUpdatingRate(100),fIsOldRCUFormat(kFALSE),
+  fDigits(0),fEvents(0)
 {
-  // Constructor: initializes input data stream supplied by rawReader
+  // Constructor: initializes data members
   // Checks existence of histograms which might have been left
   // from the previous runs to continues their filling
 
   fHistoFile =  new TFile("calibHisto.root","update");
+  fDigits = new TClonesArray("AliPHOSDigit",100);
 
   for(Int_t module=0; module<5; module++) {
     for(Int_t column=0; column<56; column++) {
@@ -64,78 +66,128 @@ AliPHOSCalibHistoProducer::AliPHOSCalibHistoProducer(AliRawReader* rawReader) :
 }
 
 //-----------------------------------------------------------------------------
-AliPHOSCalibHistoProducer::AliPHOSCalibHistoProducer() :
-  fRawReader(0),fHistoFile(0),fUpdatingRate(0),fIsOldRCUFormat(kFALSE)
-{
-  // Default constructor
-}
-
-//-----------------------------------------------------------------------------
 AliPHOSCalibHistoProducer::~AliPHOSCalibHistoProducer()
 {
   // Destructor
+  
+  UpdateHistoFile();
+
   if(fHistoFile) delete fHistoFile;
+  if (fDigits) { fDigits->Delete(); delete fDigits; }
+
 }
 
 //-----------------------------------------------------------------------------
+AliPHOSCalibHistoProducer::AliPHOSCalibHistoProducer(const AliPHOSCalibHistoProducer &histoproducer) :
+  TObject(histoproducer),fRawReader(histoproducer.fRawReader),fHistoFile(histoproducer.fHistoFile),
+  fUpdatingRate(histoproducer.fUpdatingRate),fIsOldRCUFormat(histoproducer.fIsOldRCUFormat),
+  fDigits(histoproducer.fDigits),fEvents(histoproducer.fEvents)
+{
+  //Copy constructor.
+
+  for(Int_t module=0; module<5; module++) {
+    for(Int_t column=0; column<56; column++) {
+      for(Int_t row=0; row<64; row++) {
+	char hname[128];
+	sprintf(hname,"mod%dcol%drow%d",module,column,row);
+	TH1F* hist = (TH1F*)histoproducer.fHistoFile->Get(hname);
+	if(hist) 
+	  fAmpHisto[module][column][row]= new TH1F(*hist);
+	else
+	  fAmpHisto[module][column][row]=0;
+      }
+    }
+  }
+}
+
+//-----------------------------------------------------------------------------
+AliPHOSCalibHistoProducer& AliPHOSCalibHistoProducer::operator= 
+(const AliPHOSCalibHistoProducer &histoproducer)
+{
+  //Assignment operator.
+
+  if(this != &histoproducer) {
+
+    fRawReader = histoproducer.fRawReader;
+    fHistoFile = histoproducer.fHistoFile;
+    fUpdatingRate = histoproducer.fUpdatingRate;
+    fIsOldRCUFormat = histoproducer.fIsOldRCUFormat;
+    fDigits = histoproducer.fDigits;
+    fEvents = histoproducer.fEvents;
+
+    for(Int_t module=0; module<5; module++) {
+      for(Int_t column=0; column<56; column++) {
+	for(Int_t row=0; row<64; row++) {
+	  if(fAmpHisto[module][column][row]){
+	    delete fAmpHisto[module][column][row];
+	    fAmpHisto[module][column][row] = histoproducer.fAmpHisto[module][column][row];
+	  }
+	  else
+	  fAmpHisto[module][column][row] = histoproducer.fAmpHisto[module][column][row];
+	}
+      }
+    }
+
+
+  }
+
+  return *this;
+}
+//-----------------------------------------------------------------------------
 void AliPHOSCalibHistoProducer::Run()
 {
-  // Reads raw data stream and fills amplitude histograms
+  // Reads raw data of current event and fills amplitude histograms
   // The histograms are written to file every fUpdatingRate events
 
-  Int_t iEvent = 0;
-  Int_t runNum = -111;
   Int_t relId[4];
   AliPHOSDigit* digit;
   Double_t energy;
-
-  TClonesArray *digits = new TClonesArray("AliPHOSDigit",100);
-  AliPHOSGeometry* geo = AliPHOSGeometry::GetInstance("IHEP");
+  
+  AliPHOSGeometry* geo = AliPHOSGeometry::GetInstance();
+  if(!geo) geo = AliPHOSGeometry::GetInstance("IHEP");
+  if(!geo) AliFatal(Form("Cannot get PHOS geometry"));
 
   AliPHOSRawDecoder dc(fRawReader);
   if(fIsOldRCUFormat)
     dc.SetOldRCUFormat(kTRUE);
   
-  AliPHOSRawDigiProducer producer;
-
-  // Read raw data event by event
-  
-  while (fRawReader->NextEvent()) {
-    runNum = fRawReader->GetRunNumber();
-    producer.MakeDigits(digits,&dc);
+  AliPHOSRawDigiProducer producer;  
+  producer.MakeDigits(fDigits,&dc);
     
-    for(Int_t iDigit=0; iDigit<digits->GetEntries(); iDigit++) {
-      digit = (AliPHOSDigit*)digits->At(iDigit);
-      energy = digit->GetEnergy(); // no pedestal subtraction!
-      geo->AbsToRelNumbering(digit->GetId(),relId);	    
-      Int_t mod = relId[0]-1;
-      Int_t col = relId[3]-1;
-      Int_t row = relId[2]-1;
+//   printf("% digits.\n",fDigits->GetEntries());
+  for(Int_t iDigit=0; iDigit<fDigits->GetEntries(); iDigit++) {
+    digit = (AliPHOSDigit*)fDigits->At(iDigit);
+    energy = digit->GetEnergy(); // no pedestal subtraction!
+//     printf("[absId,E]: [%d,%.3f]\n",digit->GetId(),digit->GetEnergy());
+    geo->AbsToRelNumbering(digit->GetId(),relId);	    
+    Int_t mod = relId[0]-1;
+    Int_t col = relId[3]-1;
+    Int_t row = relId[2]-1;
+//     printf("\t(mod,col,row): (%d,%d,%d)\n",mod,col,row);
 
-      if(fAmpHisto[mod][col][row]) {
-	fAmpHisto[mod][col][row]->Fill(energy);
-      }
-      else {
-	char hname[128];
-	sprintf(hname,"mod%dcol%drow%d",mod,col,row);
-	fAmpHisto[mod][col][row] = new TH1F(hname,hname,100,0.,1000.);
-      }
-
-      // update histograms in local file every 100th event
-      if(iEvent%fUpdatingRate == 0) {
-	AliInfo(Form("Updating histo file, event %d, run %d\n",iEvent,runNum));
-	UpdateHistoFile();
-      } 
+    if(fAmpHisto[mod][col][row]) {
+      fAmpHisto[mod][col][row]->Fill(energy);
     }
-
-    iEvent++;
+    else {
+      char hname[128];
+      sprintf(hname,"mod%dcol%drow%d",mod,col,row);
+      fAmpHisto[mod][col][row] = new TH1F(hname,hname,100,0.,1000.);
+    }
+    
+    // update histograms in local file every 100th event
+    if(fEvents%fUpdatingRate == 0) {
+      AliInfo(Form("Updating histo file, event %d, run %d\n",fEvents,fRawReader->GetRunNumber()));
+      UpdateHistoFile();
+    } 
   }
+  
+  fDigits->Delete();
+  fEvents++;
 
-  UpdateHistoFile();
-  digits->Delete();
-  delete digits;
-  delete geo;
-  AliInfo(Form("%d events of run %d processed.",iEvent,runNum));
+//   }
+
+//   UpdateHistoFile();
+//   AliInfo(Form("%d events of run %d processed.",iEvent,runNum));
 }
 
 //-----------------------------------------------------------------------------
