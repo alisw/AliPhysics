@@ -219,7 +219,7 @@ public:
   Int_t    GetNInnerSector() const {return fNInnerSector;}
   Int_t    GetNOuterSector() const {return fNOuterSector;}
   Int_t    GetNSector() const {return fNSector;}
-  Float_t  GetZLength(Int_t sector) const {return (sector<35) ? fZLength-0.275 : fZLength-0.302;}
+  Float_t  GetZLength(Int_t sector=0) const {return (sector<35) ? fZLength-0.275 : fZLength-0.302;}
   Int_t    GetGeometryType() const {return fGeometryType;}
 
   //
