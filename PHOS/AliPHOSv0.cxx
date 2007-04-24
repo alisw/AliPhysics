@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.88  2007/04/19 15:28:30  kharlov
+ * Modify strip unit geometry according to the final drawings (Timur)
+ *
  * Revision 1.87  2007/04/01 07:37:10  kharlov
  * TGeo RS to Local RS transf matr added
  *
@@ -923,6 +926,12 @@ void AliPHOSv0::AddAlignableVolumes() const
     volpath = physModulePath;
     volpath += iModule;
     volpath += "/PCPV_1";
+    // Check the volume path
+    if (!gGeoManager->CheckPath(volpath.Data())) {
+      AliError(Form("Volume path %s not valid!",volpath.Data()));
+      continue;
+    }
+
     symname = symbModuleName;
     symname += iModule;
     symname += "/CPV";
