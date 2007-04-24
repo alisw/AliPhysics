@@ -6,7 +6,10 @@ SRCS = AliPHOSQATask.cxx \
        AliT0QATask.cxx \
        AliMUONQATask.cxx \
        AliFMDQATask.cxx \
-       AliTRDQATask.cxx
+       AliTRDQATask.cxx \
+       AliTOFQATask.cxx \
+       AliVZEROQATask.cxx 
+
 
 HDRS:= $(SRCS:.cxx=.h) 
 
