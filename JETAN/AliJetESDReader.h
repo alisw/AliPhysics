@@ -45,8 +45,8 @@ class AliJetESDReader : public AliJetReader
   void InitParameters();
  protected:
   AliJetDummyGeo             *fGeom;             //! EMCAL Geometry 
-  TChain                     *fChain;            //!chain for reconstructed tracks
-  AliESD                     *fESD;              //!pointer to esd
+  TChain                     *fChain;            //! chain for reconstructed tracks
+  AliESD                     *fESD;              //! pointer to esd
   AliJetHadronCorrectionv1   *fHadCorr;          //! Pointer to Hadron Correction Object 
   AliJetGrid                 *fTpcGrid;          //! Pointer to grid object
   AliJetGrid                 *fEmcalGrid;        //! Pointer to grid object

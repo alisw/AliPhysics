@@ -31,7 +31,8 @@ AliAnalysisTaskJets::AliAnalysisTaskJets():
     fDebug(0),
     fJetFinder(0x0),
     fChain(0x0),
-    fESD(0x0)
+    fESD(0x0),
+    fTreeJ(0x0)
 {
   // Default constructor
 }
@@ -41,17 +42,25 @@ AliAnalysisTaskJets::AliAnalysisTaskJets(const char* name):
     fDebug(0),
     fJetFinder(0x0),
     fChain(0x0),
-    fESD(0x0)
+    fESD(0x0),
+    fTreeJ(0x0)
 {
   // Default constructor
     DefineInput (0, TChain::Class());
-//    DefineOutput(0, TTree::Class());
+    DefineOutput(0, TTree::Class());
+}
+
+void AliAnalysisTaskJets::CreateOutputObjects()
+{
+// Create the output container
+    fTreeJ = fJetFinder->MakeTreeJ("TreeJ");
 }
 
 void AliAnalysisTaskJets::Init()
 {
     // Initialization
     if (fDebug > 1) printf("AnalysisTaskJets::Init() \n");
+
     // Call configuration file
     gROOT->LoadMacro("ConfigJetAnalysis.C");
     fJetFinder = (AliJetFinder*) gInterpreter->ProcessLine("ConfigJetAnalysis()");
@@ -64,6 +73,7 @@ void AliAnalysisTaskJets::ConnectInputData(Option_t */*option*/)
 // Connect the input data
 //
     if (fDebug > 1) printf("AnalysisTaskJets::ConnectInputData() \n");
+    
     fChain = (TChain*)GetInputData(0);
     fJetFinder->ConnectTree(fChain);
     fJetFinder->WriteHeaders();
@@ -74,9 +84,9 @@ void AliAnalysisTaskJets::Exec(Option_t */*option*/)
 // Execute analysis for current event
 //
     Long64_t ientry = fChain->GetReadEntry();
-     if (fDebug > 1) printf("Analysing event # %5d \n", (Int_t) ientry);
-    
+    if (fDebug > 1) printf("Analysing event # %5d \n", (Int_t) ientry);
     fJetFinder->ProcessEvent(ientry);
+    PostData(0, fTreeJ);
 }
 
 void AliAnalysisTaskJets::Terminate(Option_t */*option*/)
@@ -84,6 +94,7 @@ void AliAnalysisTaskJets::Terminate(Option_t */*option*/)
 // Terminate analysis
 //
     if (fDebug > 1) printf("AnalysisJets: Terminate() \n");
+   
     if (fJetFinder) fJetFinder->FinishRun();
 }
 

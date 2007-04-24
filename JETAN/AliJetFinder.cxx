@@ -34,7 +34,7 @@
 ClassImp(AliJetFinder)
 
 AliJetFinder::AliJetFinder():
-    fJetT(0),
+    fTreeJ(0),
     fPlotMode(kFALSE),
     fJets(0),
     fGenJets(0),
@@ -75,8 +75,8 @@ AliJetFinder::~AliJetFinder()
 
 void AliJetFinder::SetOutputFile(const char *name)
 {
-  // opens output file 
-  fOut = new TFile(name,"recreate");
+  //  opens output file 
+  //  fOut = new TFile(name,"recreate");
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -100,20 +100,16 @@ void AliJetFinder::SetPlotMode(Bool_t b)
 }
 
 ////////////////////////////////////////////////////////////////////////
-
-void AliJetFinder::WriteJetsToFile(Int_t i)
+TTree* AliJetFinder::MakeTreeJ(char* name)
 {
-  // Writes the jets to file
-  fOut->cd();
-  char hname[30];
-  sprintf(hname,"TreeJ%d",i);
-  fJetT = new TTree(hname,"AliJet");
-  fJetT->Branch("FoundJet",&fJets,1000);
-  fJetT->Branch("GenJet",&fGenJets,1000);
-  fJetT->Branch("LeadingPart",&fLeading,1000);
-  fJetT->Fill();
-  fJetT->Write(hname);
-  delete fJetT;
+    // Create the tree for reconstructed jets
+    fOut = new TFile("jets.root","recreate");
+    fOut->cd();
+    fTreeJ = new TTree(name, "AliJet");
+    fTreeJ->Branch("FoundJet",   &fJets,   1000);
+    fTreeJ->Branch("GenJet",     &fGenJets,1000);
+    fTreeJ->Branch("LeadingPart",&fLeading,1000);
+    return fTreeJ;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -161,7 +157,11 @@ void AliJetFinder::Run()
 	   if(debug > 1) printf("In FindJets() routine: find jets with fUnitArray !!!\n");
 	   FindJets();
       }
-      if (fOut) WriteJetsToFile(i);
+      if (fOut) {
+	  fOut->cd();
+	  fTreeJ->Fill();
+      }
+      
       if (fPlots) fPlots->FillHistos(fJets);
       fLeading->Reset();
       fGenJets->ClearJets();
@@ -207,12 +207,17 @@ Bool_t AliJetFinder::ProcessEvent(Long64_t entry)
 //
 // Process one event
 //
-    printf("<<<<< Processing Event %5d >>>>> \n", (Int_t) entry);
+    Int_t debug  = fReader->GetReaderHeader()->GetDebug();
+    if (debug > 0) printf("<<<<< Processing Event %5d >>>>> \n", (Int_t) entry);
     Bool_t ok = fReader->FillMomentumArray(entry);
     if (!ok) return kFALSE;
     fLeading->FindLeading(fReader);
     FindJets();
-    if (fOut)   WriteJetsToFile(entry);
+    if (fOut) {
+	fOut->cd();
+	fTreeJ->Fill();
+    }
+    
     if (fPlots) fPlots->FillHistos(fJets);
     fLeading->Reset();
     fGenJets->ClearJets();
@@ -223,16 +228,18 @@ Bool_t AliJetFinder::ProcessEvent(Long64_t entry)
 void AliJetFinder::FinishRun()
 {
     // Finish a run
-  if (fPlots) {
-      fPlots->Normalize();
-      fPlots->PlotHistos();
-      if (fOut) {
-	  fOut->cd();
-	  fPlots->Write();
-	  fOut->Close();
-      }   
-  } else {
-      if (fOut) fOut->Close();
-  }
+    if (fPlots) {
+	fPlots->Normalize();
+	fPlots->PlotHistos();
+    }
+    
+    if (fOut) {
+	 fOut->cd();
+	 fTreeJ->Write();
+	 if (fPlots) {
+	     fPlots->Write();
+	 }
+	 fOut->Close();
+    }
 }
 

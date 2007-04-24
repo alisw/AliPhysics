@@ -36,11 +36,9 @@ class AliJetFinder : public TObject
   virtual void SetOutputFile(const char *name="jets.root");
   virtual void SetJetReader(AliJetReader* r) {fReader=r;}
   virtual void SetJetHeader(AliJetHeader* h) {fHeader=h;}
-
   // others
   virtual void   PrintJets();
   virtual void   Run();
-  virtual void   WriteJetsToFile(Int_t i);
   virtual void   WriteRHeaderToFile();  
   // the following have to be implemented for each specific finder
   virtual void Init() {}
@@ -52,13 +50,15 @@ class AliJetFinder : public TObject
   virtual Bool_t ProcessEvent(Long64_t entry);
   virtual void   FinishRun();
   virtual void   ConnectTree(TTree* tree);
+  virtual TTree* MakeTreeJ(char* name);
   virtual void   WriteHeaders();
-
+  virtual void   WriteJetsToFile() {;}
+  virtual void   TestJet() {;}
  protected:
   AliJetFinder(const AliJetFinder& rJetFinder);
   AliJetFinder& operator = (const AliJetFinder& rhsf);
-  TTree* fJetT;                  //! pointer to jet tree
-  Bool_t fPlotMode;              //!  do you want control plots?
+  TTree* fTreeJ;                 //! pointer to jet tree
+  Bool_t fPlotMode;              //! do you want control plots?
   AliJet* fJets;                 //! pointer to jet class
   AliJet* fGenJets;              //! pointer to generated jets
   AliLeading*   fLeading;        //! pointer to leading particle data 

@@ -31,5 +31,7 @@
 
 ClassImp(AliJetHadronCorrection)
 
+AliJetHadronCorrection::AliJetHadronCorrection() {}
+
 AliJetHadronCorrection::AliJetHadronCorrection(const char *name,const char *title) 
 :TNamed(name,title) { }

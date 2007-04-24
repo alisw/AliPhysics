@@ -18,6 +18,7 @@ class AliAnalysisTaskJets : public AliAnalysisTask
     virtual ~AliAnalysisTaskJets() {;}
     // Implementation of interface methods
     virtual void ConnectInputData(Option_t *option = "");
+    virtual void CreateOutputObjects();
     virtual void Init();
     virtual void Exec(Option_t *option);
     virtual void Terminate(Option_t *option);
@@ -28,6 +29,7 @@ class AliAnalysisTaskJets : public AliAnalysisTask
     AliJetFinder* fJetFinder; //  Pointer to the jet finder 
     TChain*       fChain;     //! chained files
     AliESD*       fESD;       //! ESD
+    TTree*        fTreeJ;     //  tree of reconstructed jets
     
     ClassDef(AliAnalysisTaskJets, 1); // Analysis task for standard jet analysis
 };
