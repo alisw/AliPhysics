@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.2  2007/04/01 19:16:52  kharlov
+ * D.P.: Produce EMCTrackSegments using TPC/ITS tracks (no CPV)
+ *
  * Revision 1.50  2007/03/06 06:54:48  kharlov
  * DP:Calculation of cluster properties dep. on vertex added
  *
@@ -30,6 +33,7 @@
 // Unfolds the EMC cluster   
 //                  
 //*-- Author: Dmitri Peressounko (RRC Ki & SUBATECH)
+#include <vector>
 
 // --- ROOT system ---
 #include <TVector3.h>
@@ -61,7 +65,7 @@ public:
   virtual void   Exec(Option_t *option); // Does the job
           void   FillOneModule() ;       // Finds range in which RecPoints belonging current PHOS module are
 
-          void   MakeLinks() const;      //Evaluates distances(links) between EMC and CPV
+          void   MakeLinks() ;           //Evaluates distances(links) between EMC and CPV
           void   MakePairs() ;           //Finds pairs(triplets) with smallest link
   virtual void   Print(const Option_t * = "") const ;
   //Switch to "on flyght" mode, without writing to TreeR and file  
@@ -89,6 +93,13 @@ private:
   void    PrintTrackSegments(Option_t *option) ;
   virtual void   WriteTrackSegments() ;
 
+protected: 
+  struct TrackInPHOS_t {
+     AliESDtrack* track ;
+     Float_t      x ; //Raw X intersection coordinate
+     Float_t      z ; //Raw Z intersection coordinate
+  } ;
+
 private:  
 
   Bool_t  fDefaultInit;               //! Says if the task was created by defaut ctor (only parameters are initialized)
@@ -101,7 +112,8 @@ private:
   TVector3 fVtx ;        //! Vertex in current position
 
   TClonesArray * fLinkUpArray  ;  //!
-  TList *fTPC[5];        //! lists of TPC tracks sorted over PHOS modules
+  std::vector<TrackInPHOS_t> fTPCtracks[5];  //!
+  Int_t fNtpcTracks[5] ;  //!
   Int_t fEmcFirst;     //! Index of first EMC RecPoint belonging to currect PHOS module
   Int_t fEmcLast ;     //!
   Int_t fModule ;      //! number of module being processed

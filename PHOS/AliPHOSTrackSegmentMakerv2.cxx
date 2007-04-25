@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.2  2007/04/01 19:16:52  kharlov
+ * D.P.: Produce EMCTrackSegments using TPC/ITS tracks (no CPV)
+ *
  *
  */
 
@@ -75,16 +78,16 @@ AliPHOSTrackSegmentMakerv2::AliPHOSTrackSegmentMakerv2() :
   fWrite(kFALSE),
   fNTrackSegments(0),
   fRtpc(0.f),
+  fVtx(0.,0.,0.),
   fLinkUpArray(0),
+  fTPCtracks(),
   fEmcFirst(0),
   fEmcLast(0),
   fModule(0),
   fTrackSegmentsInRun(0)
-  
 {
   // default ctor (to be used mainly by Streamer)
   InitParameters() ; 
-  for(Int_t i =0 ; i<5; i++)fTPC[i]=0 ;
 }
 
 //____________________________________________________________________________
@@ -94,7 +97,9 @@ AliPHOSTrackSegmentMakerv2::AliPHOSTrackSegmentMakerv2(const TString & alirunFil
   fWrite(kFALSE),
   fNTrackSegments(0),
   fRtpc(0.f),
+  fVtx(0.,0.,0.),
   fLinkUpArray(0),
+  fTPCtracks(),
   fEmcFirst(0),
   fEmcLast(0),
   fModule(0),
@@ -113,7 +118,9 @@ AliPHOSTrackSegmentMakerv2::AliPHOSTrackSegmentMakerv2(const AliPHOSTrackSegment
   fWrite(kFALSE),
   fNTrackSegments(0),
   fRtpc(0.f),
+  fVtx(0.,0.,0.),
   fLinkUpArray(0),
+  fTPCtracks(),
   fEmcFirst(0),
   fEmcLast(0),
   fModule(0),
@@ -132,9 +139,6 @@ AliPHOSTrackSegmentMakerv2::AliPHOSTrackSegmentMakerv2(const AliPHOSTrackSegment
   // fDefaultInit = kTRUE if TrackSegmentMaker created by default ctor (to get just the parameters)
   if (!fDefaultInit)  
     delete fLinkUpArray ;
-  for(Int_t imod=0; imod<5; imod++){
-    if(fTPC[imod]) delete fTPC[imod] ;
-  }
 }
 
 //____________________________________________________________________________
@@ -166,31 +170,43 @@ void  AliPHOSTrackSegmentMakerv2::FillOneModule()
     //Do it ones, only first time
     if(fModule==1){
       Int_t nTracks = fESD->GetNumberOfTracks();
+
+      Int_t nPHOSmod = geom->GetNModules() ;
+      if(fTPCtracks[0].size()<(UInt_t)nTracks){
+        for(Int_t i=0; i<nPHOSmod; i++) 
+          fTPCtracks[i].resize(nTracks) ;
+      }
+      for(Int_t i=0; i<5; i++)fNtpcTracks[i]=0 ;
       TVector3 inPHOS ;
    
       //In this particular case we use fixed vertex position at zero
       Double_t vtx[3]={0.,0.,0.} ;
       AliESDtrack *track;
       Double_t xyz[3] ;
-      Int_t nPHOSmod = geom->GetNModules() ;
-      for(Int_t imod=0 ; imod< nPHOSmod; imod++){
-        fTPC[imod]->Clear() ;
-      }
       Double_t rEMC = geom->GetIPtoCrystalSurface() ; //Use here ideal geometry 
       for (Int_t iTrack=0; iTrack<nTracks; iTrack++) {
         track = fESD->GetTrack(iTrack);
-        if (!track->GetXYZAt(rEMC, fESD->GetMagneticField(), xyz))
-          continue; //track coord on the cylinder of PHOS radius
-        if ((TMath::Abs(xyz[0])+TMath::Abs(xyz[1])+TMath::Abs(xyz[2]))<=0)
-          continue;
-        //Check if this track hits PHOS
-        inPHOS.SetXYZ(xyz[0],xyz[1],xyz[2]);
-        Int_t modNum ; 
-        Double_t x,z ;
-        geom->ImpactOnEmc(vtx, inPHOS.Theta(), inPHOS.Phi(), modNum, x,z) ;
-        if(modNum>0 && modNum<=nPHOSmod){
-          //Mark this track as one belonging to module
-          fTPC[modNum-1]->AddLast(track) ;
+        for(Int_t iTestMod=1; iTestMod<=nPHOSmod; iTestMod++){
+           Double_t modAngle=270.+geom->GetPHOSAngle(iTestMod) ;
+           modAngle*=TMath::Pi()/180. ;
+           track->Rotate(modAngle);  
+           if (!track->GetXYZAt(rEMC, fESD->GetMagneticField(), xyz))
+             continue; //track coord on the cylinder of PHOS radius
+           if ((TMath::Abs(xyz[0])+TMath::Abs(xyz[1])+TMath::Abs(xyz[2]))<=0)
+             continue;
+           //Check if this track hits PHOS
+           inPHOS.SetXYZ(xyz[0],xyz[1],xyz[2]);
+           Int_t modNum ; 
+           Double_t x,z ;
+           geom->ImpactOnEmc(vtx, inPHOS.Theta(), inPHOS.Phi(), modNum, z, x) ;
+           if(modNum==iTestMod){
+             //Mark this track as one belonging to module
+             TrackInPHOS_t &t = fTPCtracks[modNum-1][fNtpcTracks[modNum-1]++] ; 
+             t.track = track ;
+             t.x = x ;
+             t.z = z ;
+             break ;
+           }
         }
       }
     }
@@ -207,24 +223,29 @@ void  AliPHOSTrackSegmentMakerv2::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * em
   // Clusters are sorted in "rows" and "columns" of width 1 cm
 
   const AliPHOSGeometry * geom = AliPHOSGeometry::GetInstance() ;
-  TVector3 emcGlobal; // Global position of the CPV recpoint
+  TVector3 emcGlobal; // Global position of the EMC recpoint
   geom->GetGlobal((AliRecPoint*)emcClu,emcGlobal);
-  Double_t rEMC = emcGlobal.Pt() ;// Radius from IP to current point 
 
-//  printf("EMC: x=%f, y=%f, z=%f \n",emcGlobal.X(),emcGlobal.Y(),emcGlobal.Z()) ;
-
+  //Calculate actual distance to the PHOS surface
+  Double_t modAngle=270.+geom->GetPHOSAngle(emcClu->GetPHOSMod()) ;
+  modAngle*=TMath::Pi()/180. ;
+  Double_t rEMC = emcGlobal.X()*TMath::Cos(modAngle)+emcGlobal.Y()*TMath::Sin(modAngle) ;
+  track->Rotate(modAngle);
   Double_t xyz[3] ;
-  if (track->GetXYZAt(rEMC, fESD->GetMagneticField(), xyz)){ //calculate distance
-// printf("xyz: x=%f, y=%f, z=%f \n",xyz[0],xyz[1],xyz[2]) ;
-    dx=TMath::Sqrt((emcGlobal.X()-xyz[0])*(emcGlobal.X()-xyz[0])+(emcGlobal.Y()-xyz[1])*(emcGlobal.Y()-xyz[1])) ;
-    dx=TMath::Sign(dx,(Float_t)(emcGlobal.X()-xyz[0])) ; //set direction
-    dz=emcGlobal.Z()-xyz[2] ;
-// printf("  dx=%f, dz=%f \n",dx,dz) ;
+  if(!track->GetXYZAt(rEMC, fESD->GetMagneticField(), xyz)){
+    dx=999. ;
+    dz=999. ;
+    return ; //track coord on the cylinder of PHOS radius
   }
-  else{
+  if((TMath::Abs(xyz[0])+TMath::Abs(xyz[1])+TMath::Abs(xyz[2]))<=0){
     dx=999. ; 
     dz=999. ;
-  }
+    return ;
+  } 
+
+  dx=(emcGlobal.X()-xyz[0])*TMath::Sin(modAngle)-(emcGlobal.Y()-xyz[1])*TMath::Cos(modAngle) ;
+  dx=TMath::Sign(dx,(Float_t)(emcGlobal.X()-xyz[0])) ; //set direction
+  dz=emcGlobal.Z()-xyz[2] ;
 
   return ;
 }
@@ -240,11 +261,6 @@ void  AliPHOSTrackSegmentMakerv2::Init()
   fLinkUpArray  = new TClonesArray("AliPHOSLink", 1000); 
   if ( !gime->TrackSegmentMaker() ) {
     gime->PostTrackSegmentMaker(this);
-  }
-  AliPHOSGeometry * geom = gime->PHOSGeometry() ;
-  Int_t nMod = geom->GetNModules() ;
-  for(Int_t imod=0; imod<nMod ; imod++){
-   fTPC[imod]=new TList() ;
   }
 }
 
@@ -263,7 +279,7 @@ void  AliPHOSTrackSegmentMakerv2::InitParameters()
 
 
 //____________________________________________________________________________
-void  AliPHOSTrackSegmentMakerv2::MakeLinks()const
+void  AliPHOSTrackSegmentMakerv2::MakeLinks()
 { 
   // Finds distances (links) between all EMC and CPV clusters, 
   // which are not further apart from each other than fRcpv 
@@ -281,20 +297,23 @@ void  AliPHOSTrackSegmentMakerv2::MakeLinks()const
   Int_t iEmcRP;
   for(iEmcRP = fEmcFirst; iEmcRP < fEmcLast; iEmcRP++ ) {
     emcclu = dynamic_cast<AliPHOSEmcRecPoint *>(emcRecPoints->At(iEmcRP)) ;
+    TVector3 vecEmc ;
+    emcclu->GetLocalPosition(vecEmc) ;
     Int_t mod=emcclu->GetPHOSMod() ;
-    TIter next(fTPC[mod-1]) ; 
-    AliESDtrack *track ;
-    Int_t itrack=0 ;
-    while((track= static_cast<AliESDtrack *>(next()))){
-      itrack = track->GetID() ;
-      Float_t dx,dz ;
-      GetDistanceInPHOSPlane(emcclu, track, dx,dz) ;     
-      if(TMath::Sqrt(dx*dx+dz*dz) < fRtpc ){ 
+    for(Int_t itr=0; itr<fNtpcTracks[mod-1] ; itr++){
+      TrackInPHOS_t &t = fTPCtracks[mod-1][itr] ;
+      //calculate raw distance
+      Double_t rawdx = t.x - vecEmc.X() ;
+      Double_t rawdz = t.z - vecEmc.Z() ;
+      if(TMath::Sqrt(rawdx*rawdx+rawdz*rawdz)<fRtpc){
+        Float_t dx,dz ;
+        //calculate presize difference accounting misalignment
+        GetDistanceInPHOSPlane(emcclu, t.track, dx,dz) ;     
+        Int_t itrack = t.track->GetID() ;
         new ((*fLinkUpArray)[iLinkUp++])  AliPHOSLink(dx, dz, iEmcRP, itrack, -1) ;
       }      
     }
   } 
-  
   fLinkUpArray->Sort() ;  //first links with smallest distances
 }
 
@@ -321,10 +340,10 @@ void  AliPHOSTrackSegmentMakerv2::MakePairs()
     emcExist[index] = 1 ;
   
   
-  Int_t * tpcExist = 0;
-  Int_t nTracks = fTPC[fModule-1]->GetSize() ;
+  Bool_t * tpcExist = 0;
+  Int_t nTracks = fESD->GetNumberOfTracks();
   if(nTracks>0)
-    tpcExist = new Int_t[nTracks] ;
+    tpcExist = new Bool_t[nTracks] ;
   
   for(index = 0; index <nTracks; index ++)
     tpcExist[index] = 1 ;
