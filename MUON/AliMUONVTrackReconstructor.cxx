@@ -45,6 +45,7 @@
 #include "AliMUONTrack.h"
 #include "AliMUONTrackParam.h"
 #include "AliMUONTrackExtrap.h"
+#include "AliMUONTrackHitPattern.h"
 
 #include "AliLog.h"
 #include "AliTracker.h"
@@ -98,6 +99,8 @@ AliMUONVTrackReconstructor::AliMUONVTrackReconstructor(AliMUONData* data)
   const AliMagF* kField = AliTracker::GetFieldMap();
   if (!kField) AliFatal("No field available");
   AliMUONTrackExtrap::SetField(kField);
+
+  fTrackHitPattern = new AliMUONTrackHitPattern(fMUONData);
 }
 
   //__________________________________________________________________________
@@ -108,6 +111,7 @@ AliMUONVTrackReconstructor::~AliMUONVTrackReconstructor(void)
   delete [] fIndexOfFirstHitForRecPerChamber;
   delete fTriggerTrack;
   delete fHitsForRecPtr;
+  delete fTrackHitPattern;
 }
 
   //__________________________________________________________________________
@@ -122,7 +126,9 @@ void AliMUONVTrackReconstructor::EventReconstruct(void)
   MakeTracks();
   if (fMUONData->IsTriggerTrackBranchesInTree()) 
     ValidateTracksWithTrigger(); 
-  
+
+  fTrackHitPattern->GetHitPattern(fRecTracksPtr);
+
   // Add tracks to MUON data container 
   for(Int_t i=0; i<fNRecTracks; i++) {
     AliMUONTrack * track = (AliMUONTrack*) fRecTracksPtr->At(i);
@@ -251,21 +257,28 @@ void AliMUONVTrackReconstructor::ValidateTracksWithTrigger(void)
   AliMUONTrack *track;
   AliMUONTrackParam trackParam; 
   AliMUONTriggerTrack *triggerTrack;
+  AliMUONLocalTrigger *locTrg;
   
   fMUONData->SetTreeAddress("RL");
   fMUONData->GetRecTriggerTracks();
   TClonesArray *recTriggerTracks = fMUONData->RecTriggerTracks();
-  
-  Bool_t matchTrigger;
+
+  fMUONData->SetTreeAddress("TC");
+  fMUONData->GetTrigger();
+  TClonesArray *localTrigger = fMUONData->LocalTrigger();
+
+  Int_t matchTrigger;
   Int_t loTrgNum;
   Double_t distTriggerTrack[3];
   Double_t xTrack, yTrack, ySlopeTrack, chi2MatchTrigger, minChi2MatchTrigger, chi2;
   
   track = (AliMUONTrack*) fRecTracksPtr->First();
   while (track) {
-    matchTrigger = kFALSE;
+    matchTrigger = -1;
     chi2MatchTrigger = 0.;
     loTrgNum = -1;
+    Int_t doubleMatch=-1; // Check if track matches 2 trigger tracks
+    Double_t doubleChi2 = -1.;
 
     trackParam = *((AliMUONTrackParam*) (track->GetTrackParamAtHit()->Last()));
     AliMUONTrackExtrap::ExtrapToZ(&trackParam, AliMUONConstants::DefaultChamberZ(10)); // extrap to 1st trigger chamber
@@ -283,13 +296,37 @@ void AliMUONVTrackReconstructor::ValidateTracksWithTrigger(void)
       chi2 = 0.;
       for (Int_t iVar = 0; iVar < 3; iVar++) chi2 += distTriggerTrack[iVar]*distTriggerTrack[iVar];
       chi2 /= 3.; // Normalized Chi2: 3 degrees of freedom (X,Y,slopeY)
-      if (chi2 < minChi2MatchTrigger && chi2 < fMaxNormChi2MatchTrigger) {
-        minChi2MatchTrigger = chi2;
-        matchTrigger = kTRUE;
-        chi2MatchTrigger = chi2;
-	loTrgNum=triggerTrack->GetLoTrgNum();
+      if (chi2 < fMaxNormChi2MatchTrigger) {
+	  Bool_t isDoubleTrack = (TMath::Abs(chi2 - minChi2MatchTrigger)<1.);
+	  if (chi2 < minChi2MatchTrigger && chi2 < fMaxNormChi2MatchTrigger) {
+	      if(isDoubleTrack){
+		  doubleMatch = loTrgNum;
+		  doubleChi2 = chi2MatchTrigger;
+	      }
+	      minChi2MatchTrigger = chi2;
+	      chi2MatchTrigger = chi2;
+	      loTrgNum=triggerTrack->GetLoTrgNum();
+	      locTrg = (AliMUONLocalTrigger*)localTrigger->UncheckedAt(loTrgNum);
+	      matchTrigger=0;
+	      if(locTrg->LoLpt()>0)matchTrigger=1;
+	      if(locTrg->LoHpt()>0)matchTrigger=2;
+	  }
+	  else if(isDoubleTrack) {
+	      doubleMatch = triggerTrack->GetLoTrgNum();
+	      doubleChi2 = chi2;
+	  }
       }
       triggerTrack = (AliMUONTriggerTrack*) recTriggerTracks->After(triggerTrack);
+    }
+    if(doubleMatch>=0){ // If two trigger tracks match, select the one passing more trigger cuts
+	AliDebug(1, Form("Two candidates found: %i and %i",loTrgNum,doubleMatch));
+	AliMUONLocalTrigger *locTrg1 = (AliMUONLocalTrigger*)localTrigger->UncheckedAt(doubleMatch);
+	if((locTrg1->LoLpt()>0 && matchTrigger<1) || (locTrg1->LoHpt() && matchTrigger<2)){
+	    if(locTrg1->LoHpt()>0)matchTrigger=2;
+	    else matchTrigger=1;
+	    loTrgNum = doubleMatch;
+	    chi2MatchTrigger=doubleChi2;
+	}
     }
     
     track->SetMatchTrigger(matchTrigger);

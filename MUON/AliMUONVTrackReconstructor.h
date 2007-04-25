@@ -16,6 +16,7 @@
 class TClonesArray;
 class AliMUONData;
 class AliMUONTriggerTrack;
+class AliMUONTrackHitPattern;
 
 class AliMUONVTrackReconstructor : public TObject {
 
@@ -106,6 +107,8 @@ class AliMUONVTrackReconstructor : public TObject {
   virtual void RemoveDoubleTracks(void) = 0;
                /// \todo add comment
   virtual void FillMUONTrack(void) = 0;
+
+  AliMUONTrackHitPattern *fTrackHitPattern; ///< Pointer to class for hit pattern recognition
 
  private:
   

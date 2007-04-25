@@ -35,6 +35,7 @@
 #pragma link C++ class AliMUONClusterFinderCOG+;
 #pragma link C++ class AliMUONClusterFinderMLEM+;
 #pragma link C++ class AliMUONClusterSplitterMLEM+;
+#pragma link C++ class AliMUONTrackHitPattern+;
 
 // calibration
 #pragma link C++ class AliMUONDigitCalibrator+;

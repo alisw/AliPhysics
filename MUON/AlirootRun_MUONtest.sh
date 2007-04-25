@@ -59,12 +59,16 @@ MuonRec.SetLoadAlignData("MUON");
 // Use the following to disconnect the status map creation (only for debug!)
 // as this speeds up startup a bit...
 //MuonRec.SetOption("MUON","NOSTATUSMAP");
+// Use the following to write to disk the digits (from raw data)
+//MuonRec.SetOption("MUON","SAVEDIGITS");
 MuonRec.Run();
 .q
 EOF
 
-echo "Moving Digits files back ..."
-mv MUON.Digits/MUON.Digits.root . 
+if [ ! -e MUON.Digits.root ]; then
+    echo "Moving Digits files back ..."
+    mv MUON.Digits/MUON.Digits.root .
+fi 
 
 echo "Running Trigger efficiency  ..."
 aliroot -b >& testTriggerResults.out << EOF

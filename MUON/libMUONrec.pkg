@@ -36,7 +36,8 @@ SRCS:= AliMUONClusterReconstructor.cxx \
        AliMUONCluster.cxx \
        AliMUONPadStatusMaker.cxx \
        AliMUONPadStatusMapMaker.cxx \
-       AliMUONHVNamer.cxx
+       AliMUONHVNamer.cxx \
+       AliMUONTrackHitPattern.cxx
        
 HDRS:= $(SRCS:.cxx=.h)
 
