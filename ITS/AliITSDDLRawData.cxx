@@ -609,8 +609,8 @@ Int_t AliITSDDLRawData::RawDataSDD(TBranch* branch){
     UInt_t dataHeaderPosition=outfile.tellp();
     outfile.write((char*)(&header),sizeof(header));
 
-    //first 8 "dummy" words to be skipped
-    for(Int_t iw=0;iw<8;iw++){
+    //first 9 "dummy" words to be skipped
+    for(Int_t iw=0;iw<9;iw++){
 	outfile.write((char*)&skippedword,sizeof(skippedword));
     }
    
