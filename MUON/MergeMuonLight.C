@@ -22,6 +22,16 @@
 //                flistname = name of a text file containing the list of files
 //                            to be merged 
 //                saveAll = boolian that allows/forbids saving of events with no muons
+
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include "TFile.h"
+#include "TTree.h"
+#include "TClonesArray.h"
+#include "AliMUONTrackLight.h"
+#include "AliMUONPairLight.h"
+#endif
+
+
 void MergeMuonLight(char *foutname="MuonLightMerged.root",char *flistname="lista.lis", Bool_t saveAll = kTRUE){ 
   // up to 2000 input files 
 
@@ -44,7 +54,7 @@ void MergeMuonLight(char *foutname="MuonLightMerged.root",char *flistname="lista
   while (!outflag) { 
     if (fscanf(pf,"%s",filename)==1) { 
       file[nfiles++] = new TFile (filename); 
-      cout << "Opening for input " << filename << endl;
+      printf("Opening for input %s", filename);
     }
     else outflag = 1; 
   }

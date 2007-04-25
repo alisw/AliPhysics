@@ -19,6 +19,16 @@
 // base macro to read the trees generated with DecodeRecoCocktail.C 
 // 
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include "TFile.h"
+#include "TTree.h"
+#include "TCanvas.h"
+#include "TClonesArray.h"
+
+#include "AliMUONTrackLight.h"
+#include "AliMUONPairLight.h"
+#endif
+
 void ReadRecoCocktail(char* fname="./MuonLight.root"){ 
   TFile *file = new TFile(fname); 
   TClonesArray *muonArray   = new TClonesArray("AliMUONTrackLight",100); 
@@ -31,11 +41,11 @@ void ReadRecoCocktail(char* fname="./MuonLight.root"){
   Int_t ndimuUncorr=0; 
   for (Int_t iev=0; iev<nev; iev++) { 
     tree->GetEvent(iev); 
-    Int_t nmu = muonArray->GetEntries(); 
-    for (Int_t imu=0; imu<nmu; imu++) { 
-      AliMUONTrackLight *mu = (AliMUONTrackLight*) muonArray->At(imu); 
-      //      mu->Dump(); 
-    }
+//     Int_t nmu = muonArray->GetEntries(); 
+//     for (Int_t imu=0; imu<nmu; imu++) { 
+//       AliMUONTrackLight *mu = (AliMUONTrackLight*) muonArray->At(imu); 
+//       mu->Dump(); 
+//     }
     Int_t ndimu = dimuonArray->GetEntriesFast(); 
     for (Int_t idimu=0; idimu<ndimu; idimu++) { 
       AliMUONPairLight *dimu = (AliMUONPairLight*) dimuonArray->At(idimu); 

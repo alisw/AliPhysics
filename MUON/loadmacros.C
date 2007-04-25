@@ -18,8 +18,8 @@
 // Macro which loads and compiles the MUON macros:
 //
 // DecodeRecoCocktail.C          - ok, comp,  README; Hermine, Alessandro
-// ReadRecoCocktail.C            - ok, x,     README; Hermine, Alessandro
-// MergeMuonLight.C              - x,  x,     README; Hermine, Alessandro
+// ReadRecoCocktail.C            - ok, comp,  README; Hermine, Alessandro
+// MergeMuonLight.C              - x,  comp,  README; Hermine, Alessandro
 // MakeMUONFullMisAlignment.C    - ok, comp,  README; Javier, Ivana
 // MakeMUONResMisAlignment.C     - ok, comp,  README; Javier, Ivana
 // MakeMUONZeroMisAlignment.C    - ok, comp,  README; Javier, Ivana
@@ -93,8 +93,8 @@ void loadmacros ()
   // Load macros
   //
   gROOT->LoadMacro("$ALICE_ROOT/MUON/DecodeRecoCocktail.C++");      
-  // gROOT->LoadMacro("$ALICE_ROOT/MUON/ReadRecoCocktail.C++");     
-  // gROOT->LoadMacro("$ALICE_ROOT/MUON/MergeMuonLight.C++");       
+  gROOT->LoadMacro("$ALICE_ROOT/MUON/ReadRecoCocktail.C++");     
+  gROOT->LoadMacro("$ALICE_ROOT/MUON/MergeMuonLight.C++");       
   gROOT->LoadMacro("$ALICE_ROOT/MUON/MakeMUONFullMisAlignment.C++");
   gROOT->LoadMacro("$ALICE_ROOT/MUON/MakeMUONResMisAlignment.C++"); 
   gROOT->LoadMacro("$ALICE_ROOT/MUON/MakeMUONZeroMisAlignment.C++");
