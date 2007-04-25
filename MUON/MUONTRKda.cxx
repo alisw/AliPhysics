@@ -390,7 +390,7 @@ void MakeGainStore(TString flatOutputFile)
 	if (n > 4) {
 	  // if (n > 1) {
 	  //fit 
-	  TGraph *gain = new TGraphErrors(n, pedMean, pedSigma, injCharge, injChargeErr);
+	  TGraph *gain = new TGraphErrors(n, pedMean, injCharge, pedSigma, injChargeErr);
 	  //should set some initial parameters
 	  func->SetParameter(0,-300);  // a0
 	  func->SetParameter(1, 1.);   // a1
