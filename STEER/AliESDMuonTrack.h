@@ -60,10 +60,12 @@ public:
   void     SetNHit(UInt_t NHit) {fNHit = NHit;}
 
  // Get and Set methods for trigger matching
-  Bool_t   GetMatchTrigger() const {return fMatchTrigger;}
-  void     SetMatchTrigger(Bool_t MatchTrigger) {fMatchTrigger = MatchTrigger;}
+  Int_t    GetMatchTrigger() const {return fMatchTrigger;}
+  void     SetMatchTrigger(Int_t MatchTrigger) {fMatchTrigger = MatchTrigger;}
   Double_t GetChi2MatchTrigger() const {return fChi2MatchTrigger;}
   void     SetChi2MatchTrigger(Double_t Chi2MatchTrigger) {fChi2MatchTrigger = Chi2MatchTrigger;}
+  UShort_t GetHitsPatternInTrigCh() const {return fHitsPatternInTrigCh;}
+  void     SetHitsPatternInTrigCh(UShort_t hitsPatternInTrigCh) {fHitsPatternInTrigCh = hitsPatternInTrigCh;}
   
  // Methods to compute track momentum
   Double_t Px() const;
@@ -100,11 +102,16 @@ protected:
   UInt_t   fNHit; // number of hit in the track
 
  // trigger matching
-  Bool_t   fMatchTrigger;     // 1 if track matches with trigger track, 0 if not
-  Double_t fChi2MatchTrigger; // chi2 of trigger/track matching 
+  Int_t   fMatchTrigger; // -1 track does not match trigger
+                         //  0 track match but does not pass pt cut
+                         //  1 track match Low pt cut
+                         //  2 track match High pt cut
+  Double_t fChi2MatchTrigger; // chi2 of trigger/track matching
+  
+  UShort_t fHitsPatternInTrigCh; ///< Word containing info on the hits left in trigger chambers
 
 
-  ClassDef(AliESDMuonTrack,3)  //MUON ESD track class 
+  ClassDef(AliESDMuonTrack,4)  //MUON ESD track class 
 };
 
 #endif 
