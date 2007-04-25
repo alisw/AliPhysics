@@ -2,7 +2,7 @@
 
 include $(ROOTSYS)/test/Makefile.arch
 
-default-target: libPWG2.so libPWG2ebye.so libPWG2flow.so 
+default-target: libPWG2.so libPWG2ebye.so libPWG2flow.so libPWG2femtoscopy.so 
 
 ALICEINC      = -I.
 
@@ -20,7 +20,9 @@ endif
 #  ALICEINC += -I../$(PWG0base_INCLUDE)
 #endif
 
-CXXFLAGS     += $(ALICEINC) -g
+CXXFLAGS     += $(ALICEINC) -g -IFEMTOSCOPY/AliFemto -IFEMTOSCOPY/AliFemto/Base -IFEMTOSCOPY/AliFemto/Infrastructure -IFEMTOSCOPY/AliFemtoUser
+
+ALICEINC += -IFEMTOSCOPY/AliFemto -IFEMTOSCOPY/AliFemto/Base -IFEMTOSCOPY/AliFemto/Infrastructure  -IFEMTOSCOPY/AliFemtoUser
 
 PACKAGE = PWG2
 include lib$(PACKAGE).pkg
@@ -51,7 +53,7 @@ G__PWG2.cxx G__PWG2.h: $(HDRS_PWG2) $(DHDR_PWG2)
 	rootcint -f $@ -c $(ALICEINC) $^
 
 clean:
-	@rm -f $(OBJS_PWG2) $(OBJS_PWG2ebye) $(OBJS_PWG2flow) *.so G__PWG2.* G__PWG2ebye.* G__PWG2flow.* $(PARFILE)
+	@rm -f $(OBJS_PWG2) $(OBJS_PWG2ebye) $(OBJS_PWG2flow) $(OBJS_PWG2femtoscopy) *.so G__PWG2.* G__PWG2ebye.* G__PWG2flow.* G__PWG2femtoscopy.* $(PARFILE)
 
 ### CREATE PAR FILE
 
@@ -131,6 +133,30 @@ endif
 	@echo "done"
 
 G__PWG2flow.cxx G__PWG2flow.h: $(HDRS_PWG2flow) $(DHDR_PWG2flow)
+	@echo "Generating dictionary ..."
+	rootcint -f $@ -c $(ALICEINC) $^
+
+
+## libPWG2femtoscopy part
+include libPWG2femtoscopy.pkg
+
+DHDR_PWG2femtoscopy := $(DHDR)
+HDRS_PWG2femtoscopy := $(HDRS)
+SRCS_PWG2femtoscopy := $(SRCS) G__PWG2femtoscopy.cxx
+OBJS_PWG2femtoscopy := $(SRCS_PWG2femtoscopy:.cxx=.o)
+
+libPWG2femtoscopy.so: $(OBJS_PWG2femtoscopy)
+	@echo "Linking" $@ ...
+	@/bin/rm -f $@
+ifeq ($(PLATFORM),macosx)
+	@$(LD) -bundle -undefined $(UNDEFOPT) $(LDFLAGS) $^ -o $@
+else
+	@$(LD) $(SOFLAGS) $(LDFLAGS) $^ -o $@
+endif
+	@chmod a+x $@
+	@echo "done"
+
+G__PWG2femtoscopy.cxx G__PWG2femtoscopy.h: $(HDRS_PWG2femtoscopy) $(DHDR_PWG2femtoscopy)
 	@echo "Generating dictionary ..."
 	rootcint -f $@ -c $(ALICEINC) $^
 
