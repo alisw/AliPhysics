@@ -13,6 +13,7 @@ AliMCQA.cxx AliPDG.cxx AliDebugVolume.cxx \
 AliGenEventHeader.cxx AliStack.cxx AliConfig.cxx \
 AliRunDigitizer.cxx AliDigitizer.cxx AliStream.cxx \
 AliMergeCombi.cxx AliMagFMaps.cxx AliFieldMap.cxx \
+AliMagFCheb.cxx AliCheb3D.cxx \
 AliGausCorr.cxx AliTrackReference.cxx \
 AliTrackMap.cxx AliTrackMapper.cxx AliCollisionGeometry.cxx \
 AliMemoryWatcher.cxx \
@@ -33,7 +34,9 @@ AliExpression.cxx \
 AliCTPRawData.cxx AliCTPRawStream.cxx \
 AliMathBase.cxx AliSignalProcesor.cxx \
 AliTracker.cxx AliCluster.cxx AliHelix.cxx AliV0.cxx AliKink.cxx \
-AliSelectorRL.cxx AliSplineFit.cxx
+AliSelectorRL.cxx AliSplineFit.cxx \
+AliMagFMapsV1.cxx
+
 
 HDRS:= $(SRCS:.cxx=.h) 
 

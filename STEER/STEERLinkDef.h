@@ -30,7 +30,11 @@
 #pragma link C++ class  AliMagFC+;
 #pragma link C++ class  AliMagFCM+;
 #pragma link C++ class  AliMagFMaps-;
+#pragma link C++ class  AliMagFMapsV1+;
 #pragma link C++ class  AliMagFDM+;
+#pragma link C++ class  AliMagFCheb+;
+#pragma link C++ class  AliCheb3DCalc+;
+#pragma link C++ class  AliCheb3D+;
 #pragma link C++ class  AliLego+;
 #pragma link C++ class  AliLegoGenerator+;
 #pragma link C++ class  AliLegoGeneratorXYZ+;
