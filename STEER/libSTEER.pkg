@@ -17,7 +17,7 @@ AliMagFCheb.cxx AliCheb3D.cxx \
 AliGausCorr.cxx AliTrackReference.cxx \
 AliTrackMap.cxx AliTrackMapper.cxx AliCollisionGeometry.cxx \
 AliMemoryWatcher.cxx \
-AliVertexer.cxx  AliVertexerTracks.cxx AliStrLine.cxx \
+AliVertexer.cxx \
 AliV0vertexer.cxx AliCascadeVertexer.cxx\
 AliMC.cxx AliSimulation.cxx AliReconstruction.cxx AliVertexGenFile.cxx \
 AliReconstructor.cxx AliDetectorEventHeader.cxx TTreeStream.cxx\
