@@ -38,8 +38,7 @@
 // MUONRawStreamTrigger.C        - x,  comp,  README; Christian
 // MUONRecoCheck.C               - ok, comp,  README; Hermine, Alessandro
 // MUONResoEffChamber.C          - ok, comp,  x,      Nicolas
-// MUONStatusMap.C               - x,  comp,  x,      Laurent
-// MUONTracker.C                 - no, !comp, README; Philippe P.
+// MUONStatusMap.C               - ok, comp,  x,      Laurent
 // MUONTrigger.C                 - ok, comp,  README, Philippe C.
 // MUONTriggerEfficiency.C       - ok, comp,  x,      Philippe C., in test
 // MUONTriggerEfficiencyPt.C     - x,  comp,  README, Philippe C.
@@ -114,7 +113,6 @@ void loadmacros ()
   gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONRecoCheck.C++");           
   gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONResoEffChamber.C++"); 
   gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONStatusMap.C++");        
-  // gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONTracker.C++");          
   gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONTrigger.C++");        
   gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONTriggerEfficiency.C++");   
   gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONTriggerEfficiencyPt.C++"); 
