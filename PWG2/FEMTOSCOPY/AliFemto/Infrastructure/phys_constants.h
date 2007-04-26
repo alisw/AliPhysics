@@ -5,7 +5,7 @@
 #ifndef _StHbt_phys_constants_h_
 #define _StHbt_phys_constants_h_
 
-#include "PhysicalConstants.h"  // from StarClassLibrary
+#include "Base/PhysicalConstants.h"  // from StarClassLibrary
 
 // the strangeness guys used a different naming system (of course)
 static const double M_LAMBDA        = lambda_mass_c2;

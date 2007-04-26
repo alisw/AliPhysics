@@ -5,12 +5,12 @@
 #include "AliESD.h"
 #include "AliESDtrack.h"
 
-#include "AliFmPhysicalHelixD.h"
-#include "AliFmThreeVectorF.h"
+#include "Infrastructure/AliFmPhysicalHelixD.h"
+#include "Infrastructure/AliFmThreeVectorF.h"
 
-#include "SystemOfUnits.h"
+#include "Base/SystemOfUnits.h"
 
-#include "AliFemtoEvent.h"
+#include "Infrastructure/AliFemtoEvent.h"
 
 ClassImp(AliFemtoEventReaderESDChain)
 
@@ -94,7 +94,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
 	
   hbtEvent = new AliFemtoEvent;
   //setting basic things
-  hbtEvent->SetEventNumber(fEvent->GetEventNumber());
+  //hbtEvent->SetEventNumber(fEvent->GetEventNumber());
   hbtEvent->SetRunNumber(fEvent->GetRunNumber());
   //hbtEvent->SetNumberOfTracks(fEvent->GetNumberOfTracks());
   hbtEvent->SetMagneticField(fEvent->GetMagneticField()*kilogauss);//to check if here is ok

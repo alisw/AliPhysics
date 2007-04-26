@@ -1,6 +1,9 @@
 /*
  *$Id$
  *$Log$
+ *Revision 1.1.1.1  2007/04/25 15:38:41  panos
+ *Importing the HBT code dir
+ *
  *Revision 1.3  2007/03/13 15:30:03  mchojnacki
  *adding reader for simulated data
  *
@@ -19,8 +22,8 @@
 //made by Marek Chojnacki mchojnacki@knf.pw.edu.pl
 // Version 11 Added AliESDfriend reading
 // Adam Kisiel kisiel@mps.ohio-state.edu
-#include "AliFemtoEventReader.h"
-#include "AliFemtoEnumeration.h"
+#include "Base/AliFemtoEventReader.h"
+#include "Infrastructure/AliFemtoEnumeration.h"
 
 #include <string>
 #include <vector>

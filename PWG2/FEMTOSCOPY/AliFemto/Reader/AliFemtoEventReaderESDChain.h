@@ -3,8 +3,8 @@
 // Adam Kisiel, OSU kisiel@mps.ohio-state.edu
 #ifndef AliFemtoEventReaderESDChain_hh
 #define AliFemtoEventReaderESDChain_hh
-#include "AliFemtoEventReader.h"
-#include "AliFemtoEnumeration.h"
+#include "Base/AliFemtoEventReader.h"
+#include "Infrastructure/AliFemtoEnumeration.h"
 
 #include <string>
 #include <vector>
@@ -43,7 +43,7 @@ class AliFemtoEventReaderESDChain : public AliFemtoEventReader
   list<Int_t>  **fClusterPerPadrow;
 		
 #ifdef __ROOT__
-  ClassDef(AliFemtoEventReaderESDChain, 10)
+  ClassDef(AliFemtoEventReaderESDChain, 1)
 #endif
 
     };
