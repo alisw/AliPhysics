@@ -17,6 +17,7 @@ class AliMUONLocalStruct;
 class AliMUONLocalTriggerBoard;
 class AliMUONTrackParam;
 class AliMUONTriggerCrateStore;
+class AliMUONDigitMaker;
 
 class AliMUONGeometryTransformer;
 
@@ -42,6 +43,7 @@ private:
     TList fTriggerDigitsList[4]; ///< List of trigger digits, one per chamber
     AliMUONGeometryTransformer *fTransformer; //!< pointer to transformation
     AliMUONTriggerCrateStore *fCrateManager; ///< pointer to crate manager
+    AliMUONDigitMaker *fDigitMaker; ///< pointer to digit maker
 
     ClassDef(AliMUONTrackHitPattern, 0) // MUON track hit pattern
 };

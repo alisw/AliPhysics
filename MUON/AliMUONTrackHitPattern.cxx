@@ -75,7 +75,8 @@ AliMUONTrackHitPattern::AliMUONTrackHitPattern(AliMUONData *data)
     : TObject(),
       fMUONData(data),
       fTransformer(new AliMUONGeometryTransformer(kTRUE)),
-      fCrateManager(new AliMUONTriggerCrateStore())
+      fCrateManager(new AliMUONTriggerCrateStore()),
+      fDigitMaker(new AliMUONDigitMaker())
 {
     /// Default constructor
 
@@ -89,6 +90,9 @@ AliMUONTrackHitPattern::AliMUONTrackHitPattern(AliMUONData *data)
 
     // Crate manager to retrieve local boards
     fCrateManager->ReadFromFile();
+
+    // set to digit maker
+    fDigitMaker->SetCrateManager(fCrateManager);
 
     for(Int_t ch=0; ch<4; ch++){
 	fTriggerDigitsList[ch].Clear();
@@ -252,11 +256,12 @@ Bool_t AliMUONTrackHitPattern::TriggerDigits()
     /// make (S)Digit for trigger
     //
 
+
     Int_t nBoard;
 
     TList digitList;
 
-    AliMUONDigitMaker* digitMaker = new AliMUONDigitMaker(); // should be put as member in class
+    digitList.Clear();
 
     AliMUONLocalTrigger *locTrg = 0x0;
 
@@ -283,9 +288,14 @@ Bool_t AliMUONTrackHitPattern::TriggerDigits()
       xyPattern[1].AddAt(locTrg->GetY3Pattern(),2);
       xyPattern[1].AddAt(locTrg->GetY4Pattern(),3);
 
-      digitList.Clear();
+      for(Int_t cath=0; cath<2; cath++){
+	  for(Int_t ch=0; ch<4; ch++){
+	      if(xyPattern[cath][ch]==0) continue;
+	  }
+      }
+
       nBoard    = locTrg->LoCircuit();
-      digitMaker->TriggerDigits(nBoard, xyPattern, digitList);
+      fDigitMaker->TriggerDigits(nBoard, xyPattern, digitList);
 
 
     } // loop on localTriggers
@@ -293,7 +303,7 @@ Bool_t AliMUONTrackHitPattern::TriggerDigits()
     for (Int_t iEntry = 0; iEntry < digitList.GetEntries(); ++iEntry) {
       AliMUONDigit* digit = (AliMUONDigit*)digitList.At(iEntry);
       Int_t detElemId = digit->DetElemId();
-      Int_t iChamber  = detElemId/100 - 1; //FIXEME should be given by mapping
+      Int_t iChamber  = detElemId/100 - 11; //FIXEME should be given by mapping
       fTriggerDigitsList[iChamber].Add(digit);
 
     }
