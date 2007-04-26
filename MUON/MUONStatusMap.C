@@ -16,6 +16,7 @@
 /* $Id$ */
 
 /// Macro to check/test pad status and pad status map makers
+///
 // Laurent Aphecetche
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
@@ -30,6 +31,7 @@
 #include "AliMpIntPair.h"
 #include "Riostream.h"
 #endif
+
 
 void findBad(const AliMUONV2DStore& status)
 {
@@ -55,10 +57,11 @@ void findBad(const AliMUONV2DStore& status)
   }
 }
 
-AliMUONV2DStore* MUONStatusMap(Int_t runNumber=0, Bool_t statusOnly=kFALSE, Int_t mask=0)
-{
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
-  
+AliMUONV2DStore* MUONStatusMap(const TString& cdbStorage = "local://$ALICE_ROOT",
+                               Int_t runNumber=0, Bool_t statusOnly=kFALSE, Int_t mask=0)
+{  
+  AliCDBManager::Instance()->SetDefaultStorage(cdbStorage.Data());
+
   AliMUONCalibrationData cd(runNumber);
   
   AliMUONPadStatusMaker statusMaker(cd);
