@@ -294,7 +294,7 @@ Int_t AliRunLoader::GetEvent(Int_t evno)
    }
 
   //Read Kinematics if loaded
-  fKineDataLoader->GetEvent();
+  retval = fKineDataLoader->GetEvent();
   if (retval)
    {
      AliError(Form("Error occured while GetEvent for Kinematics. Event %d",evno));
