@@ -533,8 +533,8 @@ void AliPHOSTrigger::SetTriggers(const TClonesArray * ampmatrix, const Int_t iMo
   Float_t maxtimeR2 = -1 ;
   Float_t maxtimeRn = -1 ;
   // Create a shaper pulse object
-  AliPHOSPulseGenerator *pulse = new AliPHOSPulseGenerator();
-  Int_t nTimeBins = pulse->GetRawFormatTimeBins() ;
+  AliPHOSPulseGenerator pulse ;
+  Int_t nTimeBins = pulse.GetRawFormatTimeBins() ;
  
   //Set max 2x2 amplitude and select L0 trigger
   if(max2[0] > f2x2MaxAmp ){
@@ -558,10 +558,10 @@ void AliPHOSTrigger::SetTriggers(const TClonesArray * ampmatrix, const Int_t iMo
       fADCValuesHigh2x2 = new Int_t[nTimeBins];
     }
     
-    pulse->SetAmplitude(f2x2MaxAmp);
-    pulse->SetTZero(maxtimeR2);
-    pulse->MakeSamples();
-    pulse->GetSamples(fADCValuesHigh2x2, fADCValuesLow2x2) ; 
+    pulse.SetAmplitude(f2x2MaxAmp);
+    pulse.SetTZero(maxtimeR2);
+    pulse.MakeSamples();
+    pulse.GetSamples(fADCValuesHigh2x2, fADCValuesLow2x2) ; 
     
     //Set Trigger Inputs, compare ADC time bins until threshold is attained
     //Set L0
@@ -595,10 +595,10 @@ void AliPHOSTrigger::SetTriggers(const TClonesArray * ampmatrix, const Int_t iMo
       fADCValuesLownxn  = new Int_t[nTimeBins];
     }
 
-    pulse->SetAmplitude(maxtimeRn);
-    pulse->SetTZero(fnxnMaxAmp);
-    pulse->MakeSamples();
-    pulse->GetSamples(fADCValuesHighnxn, fADCValuesLownxn) ;
+    pulse.SetAmplitude(maxtimeRn);
+    pulse.SetTZero(fnxnMaxAmp);
+    pulse.MakeSamples();
+    pulse.GetSamples(fADCValuesHighnxn, fADCValuesLownxn) ;
     
     //Set Trigger Inputs, compare ADC time bins until threshold is attained
     //SetL1 Low
@@ -630,11 +630,29 @@ void AliPHOSTrigger::Trigger()
 {
 
   //Main Method to select triggers.
-  AliRunLoader *rl = gAlice->GetRunLoader();
-  //Getter
-  AliPHOSGetter * gime = AliPHOSGetter::Instance( rl->GetFileName() ) ;
-  //AliPHOSGetter * gime = AliPHOSGetter::Instance() ;
 
+  AliRunLoader * rl = gAlice->GetRunLoader() ; 
+  TString fileName = rl->GetFileName() ; 
+  DoIt(fileName.Data()) ; 
+}
+
+//____________________________________________________________________________
+void AliPHOSTrigger::Trigger(char * fileName) 
+{
+
+  //Main Method to select triggers.
+
+  
+  DoIt(fileName) ; 
+}
+
+//____________________________________________________________________________
+void AliPHOSTrigger::DoIt(const char * fileName) 
+{
+  // does the trigger job
+
+  AliPHOSGetter * gime = AliPHOSGetter::Instance( fileName ) ;
+  
   //Get Geometry
   const AliPHOSGeometry * geom = AliPHOSGetter::Instance()->PHOSGeometry() ;
    

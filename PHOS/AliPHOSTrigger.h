@@ -49,6 +49,7 @@ class AliPHOSTrigger : public AliTriggerDetector {
   virtual void    CreateInputs(); //Define trigger inputs for Central Trigger Processor
   void            Print(const Option_t * opt ="") const ;  
   virtual void    Trigger();  //Make PHOS trigger
+  void    Trigger(char * fileName);  //Make PHOS trigger
 
   //Getters
   Float_t  Get2x2MaxAmplitude()  const {return f2x2MaxAmp ; }
@@ -126,6 +127,8 @@ class AliPHOSTrigger : public AliTriggerDetector {
 
   void SetTriggers(const TClonesArray * amptrus, Int_t iMod, const TMatrixD &ampmax2,const TMatrixD &ampmaxn) ;
 
+  void DoIt(const char * fileName) ; 
+ 
  private: 
 
   Float_t f2x2MaxAmp ;     //! Maximum 2x2 added amplitude (not overlapped) 
