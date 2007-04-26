@@ -4,6 +4,11 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+//.
+//HMPID class for new geometry based on TGeo
+//.
+//.
+
 #include "AliHMPID.h"             //base class 
 #include "AliHMPIDDigitizer.h"    //CreateDigitizer()
 
@@ -17,19 +22,19 @@ public:
           void    AddAlignableVolumes(                               )const;                                   //from AliModule invoked from AliMC    
           void    CreateMaterials  (                                 );                                        //from AliModule invoked from AliMC
           void    CreateGeometry   (                                 );                                        //from AliModule invoked from AliMC
-  AliDigitizer*   CreateDigitizer  (AliRunDigitizer *m               )const{return new AliHMPIDDigitizer(m);}   //from AliModule invoked from AliSimulation::RunDigitization()
+  AliDigitizer*   CreateDigitizer  (AliRunDigitizer *m               )const{return new AliHMPIDDigitizer(m);}  //from AliModule invoked from AliSimulation::RunDigitization()
           void    Digits2Raw       (                                 );                                        //from AliModule invoked from AliSimulation::WriteRawFiles()
-  virtual void    DefineOpticalProperties();                                                                   //from AliModule invoked from AliMC::ConstructOpGeometry() to set Cerenkov properties
+  virtual void    DefineOpticalProperties(                           );                                        //from AliModule invoked from AliMC::ConstructOpGeometry() to set Cerenkov properties
           void    Hits2SDigits     (                                 );                                        //from AliModule invoked from AliSimulation::RunSDigitization()
           void    Init             (                                 );                                        //from AliModule invoked from AliMC::InitGeometry()
           Int_t   IsVersion        (                                 )const{return 1;                      }   //from AliModule not used
           void    Print            (const Option_t *opt=""           )const;                                   //from TObject
-          Bool_t  Raw2SDigits      (AliRawReader *                   );                                        //from AliMOdule invoked from AliSimulation  
+          Bool_t  Raw2SDigits      (AliRawReader *pRR                );                                        //from AliModule invoked from AliSimulation  
           void    StepManager      (                                 );                                        //from AliModule invoked from AliMC::Stepping()
 //private part++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
           void    GenFee           (Float_t qtot                     );                                        //generates feedback photons
   static  Float_t Fresnel          (Float_t geV,Float_t p, Bool_t pl );                                        //deals with Fresnel absorption on PC          
-  static  void    Hit2Sdi          (TClonesArray *pH,TClonesArray *pS); 
+  static  void    Hit2Sdi          (TClonesArray *pH,TClonesArray *pS);                                        //hits to sdigits conversion
           Bool_t  IsLostByFresnel  (                                 );                                        //checks if the photon lost on Fresnel reflection  
           void    StepCount        (                                 );                                        //counts particles in StepManager()
           void    StepHistory      (                                 );                                        //prints history of tracking in StepManager()

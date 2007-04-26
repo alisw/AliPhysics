@@ -15,18 +15,16 @@
 // **************************************************************************
 
 
-#include "AliHMPIDv2.h"     //class header
-#include "AliHMPIDParam.h"  //StepManager()
-#include "AliHMPIDHit.h"    //Hits2SDigs(),StepManager()
-#include "AliHMPIDDigit.h"  //Digits2Raw(), Raw2SDigits()
-#include "AliRawReader.h"  //Raw2SDigits()
-#include <TVirtualMC.h>    //StepManager() for gMC
-#include <TPDGCode.h>      //StepHistory() 
-#include <AliStack.h>      //StepManager(),Hits2SDigits()78.6
+#include "AliHMPIDv2.h"       //class header
+#include "AliHMPIDParam.h"    //StepManager()
+#include "AliHMPIDHit.h"      //Hits2SDigs(),StepManager()
+#include "AliHMPIDDigit.h"    //Digits2Raw(), Raw2SDigits()
+#include "AliRawReader.h"     //Raw2SDigits()
+#include <TVirtualMC.h>       //StepManager() for gMC
+#include <TPDGCode.h>         //StepHistory() 
+#include <AliStack.h>         //StepManager(),Hits2SDigits()78.6
 #include <AliLoader.h>        //Hits2SDigits()
 #include <AliRunLoader.h>     //Hits2SDigits()
-#include <AliConst.h>
-#include <AliPDG.h>
 #include <AliMC.h>            //StepManager()      
 #include <AliRun.h>           //CreateMaterials()    
 #include <AliMagF.h>          //CreateMaterials()
@@ -703,8 +701,11 @@ void AliHMPIDv2::TestPoint(Int_t ch,Float_t x,Float_t y)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDv2::TestGeom()
 {
+//
+// Test method to check geometry
+//
   TGeoManager::Import("geometry.root");
   for(Int_t ch=AliHMPIDDigit::kMinCh;ch<=AliHMPIDDigit::kMaxCh;ch++)
     TestPoint(ch,0,0);
-}
+}//TestPoint()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
