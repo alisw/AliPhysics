@@ -47,12 +47,6 @@ public :
   Double_t Sigma2       (Double_t ckovTh,Double_t ckovPh                                    )const;//photon candidate sigma
   enum ETrackingFlags {kMipDistCut=-9,kMipQdcCut=-5,kNoPhotAccept=-11};
 
-private:  
-  static const Double_t fgkRadThick;                      //radiator thickness
-  static const Double_t fgkWinThick;                      //window thickness
-  static const Double_t fgkGapThick;                      //proximity gap thickness
-  static const Double_t fgkWinIdx;                        //mean refractive index of WIN material (SiO2) 
-  static const Double_t fgkGapIdx;                        //mean refractive index of GAP material (CH4)
 protected:
   Double_t fRadNmean;                          //C6F14 mean refractive index
   Int_t    fPhotCnt;                           // counter of photons candidate
@@ -69,6 +63,14 @@ protected:
   TVector3 fTrkDir;                           //track direction in LORS at RAD
   TVector2 fTrkPos;                           //track positon in LORS at RAD
   TVector2 fPc;                               //track position at PC
+  
+private:  
+  static const Double_t fgkRadThick;                      //radiator thickness
+  static const Double_t fgkWinThick;                      //window thickness
+  static const Double_t fgkGapThick;                      //proximity gap thickness
+  static const Double_t fgkWinIdx;                        //mean refractive index of WIN material (SiO2) 
+  static const Double_t fgkGapIdx;                        //mean refractive index of GAP material (CH4)
+  
   ClassDef(AliHMPIDRecon,0)
 };
 

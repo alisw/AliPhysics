@@ -3,9 +3,9 @@
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
-//
-//HMPID base class of geometry 
-//
+//.
+//HMPID class of "standard" geometry 
+//.
 #include "AliHMPID.h"             //base class 
 #include "AliHMPIDDigitizer.h"    //CreateDigitizer()
 
