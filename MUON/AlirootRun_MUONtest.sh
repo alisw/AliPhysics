@@ -91,13 +91,13 @@ echo "Running check ..."
 aliroot -b >& testCheck.out << EOF
 gSystem->Load("libMUONevaluation");
 .L $ALICE_ROOT/MUON/MUONCheck.C+
-MUONCheck(0, 9); 
+MUONCheck(0, 9, "galice.root","AliESDs.root"); 
 .q
 EOF
 
 echo "Running dumps for selected event (5) ..."
 
-aliroot -b << EOF
+aliroot -b >& testDump.out << EOF
 AliMUONData data("galice.root");
 data.DumpKine(5);       > dump.kine
 data.DumpHits(5);       > dump.hits
