@@ -61,7 +61,7 @@ class AliVertexerTracks : public TObject {
   void  SetSkipTracks(Int_t n,Int_t *skipped);
   void  SetVtxStart(Double_t x=0,Double_t y=0,Double_t z=0) 
     { fNominalPos[0]=x; fNominalPos[1]=y; fNominalPos[2]=z; return; }
-  void  SetVtxStartSigma(Double_t sx=3,Double_t sy=3,Double_t sz=6) 
+  void  SetVtxStartSigma(Double_t sx=3.,Double_t sy=3.,Double_t sz=15.) 
     { fNominalCov[0]=sx*sx; fNominalCov[2]=sy*sy; fNominalCov[5]=sz*sz;
       fNominalCov[1]=0.; fNominalCov[3]=0.; fNominalCov[4]=0.; return; }
   void  SetVtxStart(AliESDVertex *vtx);
@@ -69,7 +69,7 @@ class AliVertexerTracks : public TObject {
   static Double_t GetDeterminant3X3(Double_t matr[][3]);
   static void GetStrLinDerivMatrix(Double_t *p0,Double_t *p1,Double_t (*m)[3],Double_t *d);
   static void GetStrLinDerivMatrix(Double_t *p0,Double_t *p1,Double_t *sigmasq,Double_t (*m)[3],Double_t *d);
-  static AliVertex TrackletVertexFinder(TClonesArray *lines, Int_t optUseWeights=0);
+  static AliESDVertex TrackletVertexFinder(TClonesArray *lines, Int_t optUseWeights=0);
   void     SetFieldkG(Double_t field=-999.) { fFieldkG=field; return; }
   Double_t GetFieldkG() const { 
     if(fFieldkG<-99.) AliFatal("Field value not set");
@@ -87,7 +87,7 @@ class AliVertexerTracks : public TObject {
   void     TooFewTracks(const AliESD *esdEvent);
 
    
-  AliVertex fVert;         // vertex after vertex finder
+  AliESDVertex fVert;         // vertex after vertex finder
   AliESDVertex *fCurrentVertex;  // ESD vertex after fitter
   Double_t  fFieldkG;         // z component of field (kGauss) 
   Double_t  fNominalPos[3];   // initial knowledge on vertex position
@@ -128,7 +128,7 @@ class AliVertexerTracks : public TObject {
   AliVertexerTracks(const AliVertexerTracks & source);
   AliVertexerTracks & operator=(const AliVertexerTracks & source);
 
-  ClassDef(AliVertexerTracks,7) // 3D Vertexing with ESD tracks 
+  ClassDef(AliVertexerTracks,8) // 3D Vertexing with ESD tracks 
 };
 
 #endif
