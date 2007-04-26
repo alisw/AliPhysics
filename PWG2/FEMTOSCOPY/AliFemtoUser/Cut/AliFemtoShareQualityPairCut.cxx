@@ -13,7 +13,7 @@
  *
  **************************************************************************/
 
-#include "Cut/AliFemtoShareQualityPairCut.h"
+#include "AliFemtoShareQualityPairCut.h"
 #include <string>
 #include <cstdio>
 

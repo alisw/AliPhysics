@@ -13,6 +13,9 @@
  ***************************************************************************
  *
  * $Log$
+ * Revision 1.1.1.1  2007/04/25 15:38:41  panos
+ * Importing the HBT code dir
+ *
  * Revision 1.2  2007-04-03 16:00:08  mchojnacki
  * Changes to iprove memory managing
  *
@@ -127,8 +130,8 @@
 #include "Base/AliFemtoV0Cut.h"
 #include "Base/AliFemtoXiCut.h"
 #include "Base/AliFemtoKinkCut.h"
-#include "PhysicalConstants.h"
-#include "SystemOfUnits.h"
+#include "Base/PhysicalConstants.h"
+#include "Base/SystemOfUnits.h"
 
 // Mike removed all of the AliFemtoTTree stuff here 21apr2006 - it was not used for a long time.
 

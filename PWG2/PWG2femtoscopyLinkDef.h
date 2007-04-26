@@ -26,3 +26,4 @@
 #pragma link C++ class AliFmThreeVectorD;
 #pragma link C++ class AliFmThreeVectorF;
 #pragma link C++ class AliFemtoEventReaderESD;
+#pragma link C++ class AliFemtoEventReaderESDChain;

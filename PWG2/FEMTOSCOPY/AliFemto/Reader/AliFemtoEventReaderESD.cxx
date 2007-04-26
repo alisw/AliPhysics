@@ -1,6 +1,9 @@
 /*
  *$Id$
  *$Log$
+ *Revision 1.1.1.1  2007/04/25 15:38:41  panos
+ *Importing the HBT code dir
+ *
  *Revision 1.5  2007-04-03 16:00:08  mchojnacki
  *Changes to iprove memory managing
  *
@@ -27,12 +30,12 @@
 
 //#include "TSystem.h"
 
-#include "AliFmPhysicalHelixD.h"
-#include "AliFmThreeVectorF.h"
+#include "Infrastructure/AliFmPhysicalHelixD.h"
+#include "Infrastructure/AliFmThreeVectorF.h"
 
-#include "SystemOfUnits.h"
+#include "Base/SystemOfUnits.h"
 
-#include "AliFemtoEvent.h"
+#include "Infrastructure/AliFemtoEvent.h"
 
 ClassImp(AliFemtoEventReaderESD)
 
@@ -196,7 +199,7 @@ AliFemtoEvent* AliFemtoEventReaderESD::ReturnHbtEvent()
 	
   hbtEvent = new AliFemtoEvent;
   //setting basic things
-  hbtEvent->SetEventNumber(fEvent->GetEventNumber());
+  //hbtEvent->SetEventNumber(fEvent->GetEventNumber());
   hbtEvent->SetRunNumber(fEvent->GetRunNumber());
   //hbtEvent->SetNumberOfTracks(fEvent->GetNumberOfTracks());
   hbtEvent->SetMagneticField(fEvent->GetMagneticField()*kilogauss);//to check if here is ok
