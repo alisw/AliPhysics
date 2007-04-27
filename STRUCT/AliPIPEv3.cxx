@@ -2714,7 +2714,7 @@ void AliPIPEv3::CreateMaterials()
   //
   //    Air 
   AliMedium(15, "AIR",     15, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(35, "AIR_HIGH",15, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(35, "AIR_HIGH",35, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   //
   //    Vacuum 
   AliMedium(16, "VACUUM", 16, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
