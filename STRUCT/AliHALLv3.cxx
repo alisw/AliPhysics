@@ -89,6 +89,9 @@ void AliHALLv3::CreateGeometry()
   // Materials
   TGeoMedium* kMedCC     = gGeoManager->GetMedium("HALL_CC_C2");
   TGeoMedium* kMedST     = gGeoManager->GetMedium("HALL_STST_C2");
+  TGeoMedium* kMedAir    = gGeoManager->GetMedium("HALL_AIR_C2");
+  kMedST->Dump();
+  
   // Floor thickness 
   Float_t dyFloor  =  190.;
   // Floor width
@@ -138,16 +141,35 @@ void AliHALLv3::CreateGeometry()
 				      new TGeoTrd1(xl +dl, xl, hullen, dh / 2.),
 				      kMedCC);
   r2 = hullen + zHall26;
-
   asHall->AddNode(voHUFL, 1, new TGeoCombiTrans(70., -100. - dh / 2., -r2, rot000));
+
   //
   // RB24/26 wall 
-  
-  phid     = phi * 57.296;
+  phid     = phi * kRaddeg;
   TGeoVolume* voHUWA = new TGeoVolume("HUWA",
 				      new TGeoTubeSeg(r, r+dr, hullen, phid - 90., 270. - phid),
 				      kMedCC);
   asHall->AddNode(voHUWA, 1, new TGeoTranslation(70., 40., -zHall26 - hullen ));
+  //
+  // Air inside tunnel
+  TGeoTube* shHUWAT1 = new TGeoTube(0., r, hullen);
+  shHUWAT1->SetName("shHUWAT1");
+  //
+  // Space for ZDC
+  TGeoBBox*    shHUWAT2 = new TGeoBBox(70., 110., hullen + 20.);
+  shHUWAT2->SetName("shHUWAT2");
+  TGeoTranslation*   tHUWAT2 = new TGeoTranslation("tHUWAT2", -70., -30., 0.);
+  tHUWAT2->RegisterYourself();
+
+  TGeoBBox*    shHUWAT3 = new TGeoBBox(270., 110., hullen + 20.);
+  shHUWAT3->SetName("shHUWAT3");
+  TGeoTranslation*   tHUWAT3 = new TGeoTranslation("tHUWAT3", 0., -110. - 140., 0.);
+  tHUWAT3->RegisterYourself();
+  
+  TGeoCompositeShape*  shHUWAT = new TGeoCompositeShape("HUWAT", "(shHUWAT1-shHUWAT2:tHUWAT2)-shHUWAT3:tHUWAT3");
+  TGeoVolume* voHUWAT = new TGeoVolume("HUWAT", shHUWAT, kMedAir);
+  asHall->AddNode(voHUWAT, 1, new TGeoTranslation(70., 40., -zHall26 - hullen));
+  
   //
   //  Hall floor 
   //  RB26 side
@@ -204,6 +226,7 @@ void AliHALLv3::CreateGeometry()
 
   //
   // Slanted wall close to L3 magnet 
+  //
   phim =  45.;
   hm   = 790.;
   am   = hm * TMath::Tan(phim / 2. * kDegrad);
