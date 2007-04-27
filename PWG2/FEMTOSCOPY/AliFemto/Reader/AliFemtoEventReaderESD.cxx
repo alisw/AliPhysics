@@ -1,6 +1,9 @@
 /*
  *$Id$
  *$Log$
+ *Revision 1.3  2007/04/27 07:25:16  akisiel
+ *Make revisions needed for compilation from the main AliRoot tree
+ *
  *Revision 1.1.1.1  2007/04/25 15:38:41  panos
  *Importing the HBT code dir
  *
@@ -207,7 +210,7 @@ AliFemtoEvent* AliFemtoEventReaderESD::ReturnHbtEvent()
 	
   hbtEvent = new AliFemtoEvent;
   //setting basic things
-  hbtEvent->SetEventNumber(fEvent->GetEventNumber());
+  //  hbtEvent->SetEventNumber(fEvent->GetEventNumber());
   hbtEvent->SetRunNumber(fEvent->GetRunNumber());
   //hbtEvent->SetNumberOfTracks(fEvent->GetNumberOfTracks());
   hbtEvent->SetMagneticField(fEvent->GetMagneticField()*kilogauss);//to check if here is ok
