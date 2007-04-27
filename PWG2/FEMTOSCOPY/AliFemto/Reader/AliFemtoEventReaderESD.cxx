@@ -164,7 +164,7 @@ AliFemtoEvent* AliFemtoEventReaderESD::ReturnHbtEvent()
 	  fEventFriend = 0;
 	  delete fEvent;//added 1.04.2007
 	  fEvent=new AliESD();
-	  delete fTree;
+	  //	  delete fTree;
 	  //fTree=0;
 	  delete fEsdFile;
 		
@@ -179,6 +179,14 @@ AliFemtoEvent* AliFemtoEventReaderESD::ReturnHbtEvent()
  	  cout << "Reading friend " << tFriendFileName.c_str() << endl;;
   	  fTree->AddFriend("esdFriendTree",tFriendFileName.c_str());
   	  fTree->SetBranchAddress("ESDfriend",&fEventFriend);
+
+// 	  chain->SetBranchStatus("*",0);
+// 	  chain->SetBranchStatus("fUniqueID",1);
+// 	  chain->SetBranchStatus("fTracks",1);
+// 	  chain->SetBranchStatus("fTracks.*",1);
+// 	  chain->SetBranchStatus("fTracks.fTPCindex[160]",1);
+	  fTree->SetBranchStatus("fTracks.fCalibContainer",0);
+
 
 	  fNumberofEvent=fTree->GetEntries();
 	  cout<<"Number of Entries in file "<<fNumberofEvent<<endl;
@@ -199,7 +207,7 @@ AliFemtoEvent* AliFemtoEventReaderESD::ReturnHbtEvent()
 	
   hbtEvent = new AliFemtoEvent;
   //setting basic things
-  //hbtEvent->SetEventNumber(fEvent->GetEventNumber());
+  hbtEvent->SetEventNumber(fEvent->GetEventNumber());
   hbtEvent->SetRunNumber(fEvent->GetRunNumber());
   //hbtEvent->SetNumberOfTracks(fEvent->GetNumberOfTracks());
   hbtEvent->SetMagneticField(fEvent->GetMagneticField()*kilogauss);//to check if here is ok
