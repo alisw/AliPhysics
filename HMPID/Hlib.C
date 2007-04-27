@@ -10,6 +10,8 @@ void Hlib()
 
   gSystem->Load("libEVGEN.so");
   gSystem->Load("libSTRUCT.so");
+  
+  gSystem->Load("libANALYSIS.so");
 
   gSystem->Load("libRAWDatasim.so");
   
