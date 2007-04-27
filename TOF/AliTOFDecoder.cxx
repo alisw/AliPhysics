@@ -1,0 +1,773 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+***************************************************************************/
+
+/*
+$Log$
+  author: Roberto Preghenella (R+), preghenella@bo.infn.it
+*/
+
+
+/*********************************************************************
+ *                                                                   *
+ *                                                                   *
+ *   Class for raw data decoding                                     *
+ *                                                                   *
+ *                                                                   *
+ ********************************************************************/
+                               
+
+
+#include "AliLog.h"
+#include "AliTOFHitData.h"
+#include "AliTOFDecoder.h"
+
+ClassImp(AliTOFDecoder)
+
+//_________________________________________________________________
+
+AliTOFDecoder::AliTOFDecoder() :
+  TObject(),
+  fVerbose(0),
+  fV2718Patch(kFALSE),
+  fDataBuffer(0x0),
+  fPackedDataBuffer(0x0),
+  fTRMGlobalHeader(0x0),
+  fTRMGlobalTrailer(0x0),
+  fTRMChainHeader(0x0),
+  fTRMChainTrailer(0x0),
+  fTDCPackedHit(0x0),
+  fTDCUnpackedHit(0x0),
+  fTRMTDCError(0x0),
+  fTRMDiagnosticErrorWord1(0x0),
+  fTRMDiagnosticErrorWord2(0x0),
+  fSpiderCurrentSlotID(-1),
+  fSpiderCurrentChain(-1),
+  fSpiderCurrentTDC(-1)
+{
+  //default constructor
+}
+
+//_________________________________________________________________
+
+AliTOFDecoder::AliTOFDecoder(AliTOFHitDataBuffer *DataBuffer, AliTOFHitDataBuffer *PackedDataBuffer) :
+  TObject(),
+  fVerbose(0),
+  fV2718Patch(kFALSE),
+  fDataBuffer(DataBuffer),
+  fPackedDataBuffer(PackedDataBuffer),
+  fTRMGlobalHeader(0x0),
+  fTRMGlobalTrailer(0x0),
+  fTRMChainHeader(0x0),
+  fTRMChainTrailer(0x0),
+  fTDCPackedHit(0x0),
+  fTDCUnpackedHit(0x0),
+  fTRMTDCError(0x0),
+  fTRMDiagnosticErrorWord1(0x0),
+  fTRMDiagnosticErrorWord2(0x0),
+  fSpiderCurrentSlotID(-1),
+  fSpiderCurrentChain(-1),
+  fSpiderCurrentTDC(-1)
+{
+  //another constructor
+}
+
+//_________________________________________________________________
+
+AliTOFDecoder::AliTOFDecoder(const AliTOFDecoder &source) : 
+  TObject(),
+  fVerbose(0),
+  fV2718Patch(kFALSE),
+  fDataBuffer(0x0),
+  fPackedDataBuffer(0x0),
+  fTRMGlobalHeader(0x0),
+  fTRMGlobalTrailer(0x0),
+  fTRMChainHeader(0x0),
+  fTRMChainTrailer(0x0),
+  fTDCPackedHit(0x0),
+  fTDCUnpackedHit(0x0),
+  fTRMTDCError(0x0),
+  fTRMDiagnosticErrorWord1(0x0),
+  fTRMDiagnosticErrorWord2(0x0),
+  fSpiderCurrentSlotID(-1),
+  fSpiderCurrentChain(-1),
+  fSpiderCurrentTDC(-1)
+{
+  //copy constructor
+  
+  this->fVerbose = source.fVerbose;
+  this->fV2718Patch = source.fV2718Patch;
+  this->fDataBuffer = source.fDataBuffer;
+  this->fPackedDataBuffer = source.fPackedDataBuffer;
+  this->fTRMGlobalHeader = source.fTRMGlobalHeader;
+  this->fTRMGlobalTrailer = source.fTRMGlobalTrailer;
+  this->fTRMChainHeader = source.fTRMChainHeader;
+  this->fTRMChainTrailer = source.fTRMChainTrailer;
+  this->fTDCPackedHit = source.fTDCPackedHit;
+  this->fTDCUnpackedHit = source.fTDCUnpackedHit;
+  this->fTRMTDCError = source.fTRMTDCError;
+  this->fTRMDiagnosticErrorWord1 = source.fTRMDiagnosticErrorWord1;
+  this->fTRMDiagnosticErrorWord2 = source.fTRMDiagnosticErrorWord2;
+  this->fSpiderCurrentSlotID = source.fSpiderCurrentSlotID;
+  this->fSpiderCurrentChain = source.fSpiderCurrentChain;
+  this->fSpiderCurrentTDC = source.fSpiderCurrentTDC;
+}
+
+//_________________________________________________________________
+
+AliTOFDecoder &
+AliTOFDecoder::operator = (const AliTOFDecoder &source)
+{
+  //operator =
+
+  this->fVerbose = source.fVerbose;
+  this->fV2718Patch = source.fV2718Patch;
+  this->fDataBuffer = source.fDataBuffer;
+  this->fPackedDataBuffer = source.fPackedDataBuffer;
+  this->fTRMGlobalHeader = source.fTRMGlobalHeader;
+  this->fTRMGlobalTrailer = source.fTRMGlobalTrailer;
+  this->fTRMChainHeader = source.fTRMChainHeader;
+  this->fTRMChainTrailer = source.fTRMChainTrailer;
+  this->fTDCPackedHit = source.fTDCPackedHit;
+  this->fTDCUnpackedHit = source.fTDCUnpackedHit;
+  this->fTRMTDCError = source.fTRMTDCError;
+  this->fTRMDiagnosticErrorWord1 = source.fTRMDiagnosticErrorWord1;
+  this->fTRMDiagnosticErrorWord2 = source.fTRMDiagnosticErrorWord2;
+  this->fSpiderCurrentSlotID = source.fSpiderCurrentSlotID;
+  this->fSpiderCurrentChain = source.fSpiderCurrentChain;
+  this->fSpiderCurrentTDC = source.fSpiderCurrentTDC;
+  return *this;
+}
+
+AliTOFDecoder::~AliTOFDecoder()
+{}
+
+//_________________________________________________________________
+
+Bool_t
+AliTOFDecoder::Decode(UInt_t *rawData, Int_t nWords)
+{
+  /* main decoding routine.
+   * it loops over nWords 32-bit words 
+   * starting at *rawData and decodes them.
+   * it also fills some buffers in order to
+   * have the decoded data available for other
+   * classes.
+   */
+
+  AliTOFHitData hitData;
+  
+  //useful variables
+  Int_t   status;
+  Short_t tempPS;
+  Float_t tempTOT; //ns
+  Int_t   tempTOTBin; //TOT_BIN_WIDTH
+
+  //decoder variables
+  UShort_t decodeStatus = 0x0;
+  Short_t  currentDDL = -1;
+  Short_t  currentSlotID = -1;
+  Short_t  currentACQ = -1;
+  Short_t  currentChain = -1;
+  Short_t  currentBunchID = -1;
+
+  /*** V2718 patch ***/
+  if (fV2718Patch){
+    decodeStatus = decodeStatus | DRM_BIT;
+    if (fVerbose)
+      AliInfo("DRM not present: - V2718 patch decoding -");
+  }
+  /*** V2718 patch ***/
+
+  if (fVerbose==2)
+    AliInfo("Initialize SPIDER function");
+  status = InitializeSpider();
+  
+  if (fVerbose)
+    AliInfo("Start decoding");
+  
+  if (fVerbose)
+    AliInfo("Loop over the data and decode");
+  
+  if (fVerbose)
+    AliInfo("  St    Hex Word \t   Decoded Word");
+  
+  //loop over raw data
+  for (Int_t iWord = 0; iWord < nWords; iWord++, rawData++){
+    
+    //switch word type
+    switch (*rawData & WORD_TYPE_MASK){
+      
+    case GLOBAL_HEADER:
+      
+      //switch slot ID
+      switch (*rawData & SLOT_ID_MASK){
+	
+	//DRM global header (slotID=1)
+      case 1:
+	//check decode status
+	if ( decodeStatus != DRM_HEADER_STATUS ){
+	  AliError(Form("  %02x - 0x%08x [ERROR] Unexpected DRM global header",decodeStatus,*rawData));
+	  return kTRUE;
+	}
+	//decode status ok
+	if (fVerbose)
+	  AliInfo(Form("  %02x - 0x%08x \t  DRM global header",decodeStatus,*rawData));
+	//change decode status
+	decodeStatus = decodeStatus | DRM_BIT;
+	
+	//skip DRM data
+	for (Int_t i = 0; i < DRM_DATA_WORDS; i++, iWord++, rawData++){
+	  if (fVerbose)
+	    AliInfo(Form("  %02x - 0x%08x \t  DRM data",decodeStatus,*rawData));
+	}
+	break;
+	
+	//LTM global header (slotID=2)
+      case 2:
+	//check decode status
+	if ( decodeStatus != LTM_HEADER_STATUS ){
+	  AliError(Form("  %02x - 0x%08x [ERROR] Unexpected LTM global header",decodeStatus,*rawData));
+	  return kTRUE;
+	}
+	//decode status ok
+	if (fVerbose)
+	  AliInfo(Form("  %02x - 0x%08x \t  LTM global header",decodeStatus,*rawData));
+	//change decode status
+	decodeStatus = decodeStatus | LTM_BIT;
+	
+	//skip LTM data
+	for (Int_t i = 0; i < LTM_DATA_WORDS; i++, iWord++, rawData++){
+	  if (fVerbose)
+	    AliInfo(Form("  %02x - 0x%08x \t  LTM data",decodeStatus,*rawData));
+	}
+	break;
+	
+	//TRM global header (slotID=3-12)
+      case 3: case 4: case 5: case 6: case 7: case 8: case 9: case 10: case 11: case 12:
+	//check decode status
+	if ( decodeStatus != TRM_HEADER_STATUS ){
+	  AliError(Form("  %02x - 0x%08x [ERROR] Unexpected TRM global header",decodeStatus,*rawData));
+	  return kTRUE;
+	}
+	//decode status ok
+	//set TRM global header
+	fTRMGlobalHeader = (AliTOFTRMGlobalHeader *)rawData;	
+	//set current TRM
+	currentSlotID = fTRMGlobalHeader->GetSlotID();
+	currentACQ = fTRMGlobalHeader->GetACQBits();
+	if (fVerbose)
+	  AliInfo(Form("  %02x - 0x%08x \t  TRM global header \t slotID=%02d ACQ=%01d L=%01d",decodeStatus,*rawData,fTRMGlobalHeader->GetSlotID(),fTRMGlobalHeader->GetACQBits(),fTRMGlobalHeader->GetLBit()));
+	//change decode status
+	decodeStatus = decodeStatus | TRM_BIT;
+	break;
+	
+      default:
+	if (fVerbose)
+	  AliError(Form("  %02x - 0x%08x [ERROR] Not valid slotID in global header",decodeStatus,*rawData));
+	return kTRUE;
+	break;
+	
+      }
+      //end switch slotID
+      break;
+      
+    case GLOBAL_TRAILER:
+      
+      //switch slot ID
+      switch (*rawData & SLOT_ID_MASK){
+	
+	//DRM global trailer (slotID=1)
+      case 1:
+	//check decode status
+	if ( decodeStatus != DRM_TRAILER_STATUS ){
+	  AliError(Form("  %02x - 0x%08x [ERROR] Unexpected DRM global trailer",decodeStatus,*rawData));
+	  return kTRUE;
+	}
+	//decode status ok
+	if (fVerbose)
+	  AliInfo(Form("  %02x - 0x%08x \t  DRM global trailer",decodeStatus,*rawData));
+	//change decode status
+	decodeStatus = decodeStatus & ~DRM_BIT;
+	break;
+	
+	//LTM global trailer (slotID=2)
+      case 2:
+	//check decode status
+	if ( decodeStatus != LTM_TRAILER_STATUS ){
+	  AliError(Form("  %02x - 0x%08x [ERROR] Unexpected LTM global trailer",decodeStatus,*rawData));
+	  return kTRUE;
+	}
+	//decode status ok
+	if (fVerbose)
+	  AliInfo(Form("  %02x - 0x%08x \t  LTM global trailer",decodeStatus,*rawData));
+	//change decode status
+	decodeStatus = decodeStatus & ~LTM_BIT;
+	break;
+	
+	//TRM global trailer (slotID=15)
+      case 15:
+	//check decode status
+	if ( decodeStatus != TRM_TRAILER_STATUS ){
+	  AliError(Form("  %02x - 0x%08x [ERROR] Unexpected TRM global trailer",decodeStatus,*rawData));
+	  return kTRUE;
+	}
+	//decode status ok
+	//set TRM global trailer
+	fTRMGlobalTrailer = (AliTOFTRMGlobalTrailer *)rawData;	
+	if (fVerbose)
+	  AliInfo(Form("  %02x - 0x%08x \t  TRM global trailer \t CRC=%04d eventCounter=%04d",decodeStatus,*rawData,fTRMGlobalTrailer->GetEventCRC(),fTRMGlobalTrailer->GetEventCounter()));
+	//change decode status
+	decodeStatus = decodeStatus & ~TRM_BIT;
+	break; 
+	
+      default:
+	if (fVerbose)
+	  AliError(Form("  %02x - 0x%08x [ERROR] Not valid slotID/pattern in global trailer",decodeStatus,*rawData));
+	return kTRUE;
+	break;
+      }
+      break;
+      
+    case CHAIN_A_HEADER:
+      //check decode status
+      if ( (decodeStatus != CHAIN_A_HEADER_STATUS) ){
+	AliError(Form("  %02x - 0x%08x [ERROR] Unexpected TRM chain A header",decodeStatus,*rawData));
+	return kTRUE;
+      }
+      //decode status ok
+      fTRMChainHeader = (AliTOFTRMChainHeader *)rawData;
+      currentChain = 0;
+      currentBunchID = fTRMChainHeader->GetBunchID();
+      if (fVerbose)
+	AliInfo(Form("  %02x - 0x%08x \t  TRM chain A header \t chain=%01d bunchID=%04d",decodeStatus,*rawData,currentChain,currentBunchID));
+      //change decode status
+      decodeStatus = decodeStatus | CHAIN_A_BIT;
+      break;
+      
+    case CHAIN_A_TRAILER:
+      //check decode status
+      if ( decodeStatus != CHAIN_A_TRAILER_STATUS ){
+	AliError(Form("  %02x - 0x%08x [ERROR] Unexpected TRM chain A trailer",decodeStatus,*rawData));
+	return kTRUE;
+      }
+      //decode status ok
+      if (fVerbose)
+	AliInfo(Form("  %02x - 0x%08x \t  TRM chain A trailer",decodeStatus,*rawData));
+      //change decode status
+      decodeStatus = decodeStatus & ~CHAIN_A_BIT;
+      break;
+      
+    case CHAIN_B_HEADER:
+      //check decode status
+      if ( decodeStatus != CHAIN_B_HEADER_STATUS ){
+	AliError(Form("  %02x - 0x%08x [ERROR] Unexpected TRM chain B header",decodeStatus,*rawData));
+	return kTRUE;
+      }
+      //decode status ok
+      fTRMChainHeader = (AliTOFTRMChainHeader *)rawData;
+      currentChain = 1;
+      currentBunchID = fTRMChainHeader->GetBunchID();
+      if (fVerbose)
+	AliInfo(Form("  %02x - 0x%08x \t  TRM chain B header \t chain=%01d bunchID=%04d",decodeStatus,*rawData,currentChain,currentBunchID));
+      //change decode status
+      decodeStatus = decodeStatus | CHAIN_B_BIT;
+      break;
+      
+    case CHAIN_B_TRAILER:
+      //check decode status
+      if ( decodeStatus != CHAIN_B_TRAILER_STATUS ){
+	AliError(Form("  %02x - 0x%08x [ERROR] Unexpected TRM chain B trailer",decodeStatus,*rawData));
+	return kTRUE;
+      }
+      //decode status ok
+      if (fVerbose)
+	AliInfo(Form("  %02x - 0x%08x \t  TRM chain B trailer",decodeStatus,*rawData));
+      //change decode status
+      decodeStatus = decodeStatus & ~CHAIN_B_BIT;
+      break;
+      
+    case ERROR:
+      if (fVerbose)
+	AliInfo(Form("  %02x - 0x%08x \t  TDC error",decodeStatus,*rawData));
+      break;
+      
+    case FILLER:
+      if (fVerbose)
+	AliInfo(Form("  %02x - 0x%08x \t  Filler",decodeStatus,*rawData));
+      break;
+      
+    default:
+      //check decode status
+      if ( decodeStatus != CHAIN_A_TDC_HIT_STATUS &&
+	   decodeStatus != CHAIN_B_TDC_HIT_STATUS ){
+	AliError(Form("  %02x - 0x%08x [ERROR] Unexpected or unknown word",decodeStatus,*rawData));
+	return kTRUE;
+      }
+      //decode status ok
+      
+      //switch TRM ACQ
+      switch (currentACQ){
+	
+      case PACKING_ENABLED_ACQ:
+	//decode TDC packed hit
+	fTDCPackedHit = (AliTOFTDCPackedHit *)rawData;
+	fTDCUnpackedHit = (AliTOFTDCUnpackedHit *)rawData;
+	//set hit in the equipment data
+	hitData.SetDDLID(currentDDL);
+	hitData.SetSlotID(currentSlotID);
+	hitData.SetACQ(currentACQ);
+	hitData.SetChain(currentChain);
+	hitData.SetPS(fTDCPackedHit->GetPSBits());
+	hitData.SetTDC(fTDCPackedHit->GetTDCID());
+	hitData.SetChan(fTDCPackedHit->GetChan());
+	hitData.SetTime((float)fTDCPackedHit->GetHitTime() * TIME_BIN_WIDTH);
+	hitData.SetTimeBin(fTDCPackedHit->GetHitTime());
+	hitData.SetTOT((float)fTDCPackedHit->GetTOTWidth() * TOT_BIN_WIDTH);
+	hitData.SetTOTBin(fTDCPackedHit->GetTOTWidth());
+	//orphane leading hit
+	if (hitData.GetPS()==LEADING_HIT_PS){
+	  hitData.SetTime((float)fTDCUnpackedHit->GetHitTime() * TIME_BIN_WIDTH);
+	  hitData.SetTimeBin(fTDCUnpackedHit->GetHitTime());
+	  //set TOT to zero
+	  hitData.SetTOT(0);
+	  hitData.SetTOTBin(0);
+	  //push hit data in packed data buffer
+	  if (fPackedDataBuffer != 0x0)
+	    fPackedDataBuffer->Add(hitData);
+	  //set TOT to not measured
+	  hitData.SetTOT(-1);
+	  hitData.SetTOTBin(-1);
+	  //push hit data in packed data buffer
+	  if (fDataBuffer != 0x0)
+	    fDataBuffer->Add(hitData);
+	}
+	//orphane trailing hit
+	else if (hitData.GetPS()==TRAILING_HIT_PS){
+	  hitData.SetTime((float)fTDCUnpackedHit->GetHitTime() * TIME_BIN_WIDTH);
+	  hitData.SetTimeBin(fTDCUnpackedHit->GetHitTime());
+	  //set TOT to not measured
+	  hitData.SetTOT(-1);
+	  hitData.SetTOTBin(-1);
+	  //push hit data in data buffer
+	  if (fDataBuffer != 0x0)
+	    fDataBuffer->Add(hitData);
+	}
+	//packed hit and OVF
+	else{
+	  //push hit data in packed data buffer
+	  if (fPackedDataBuffer != 0x0)
+	    fPackedDataBuffer->Add(hitData);
+	  //save PS temporary
+	  tempPS = hitData.GetPS();
+	  //save TOT temporary
+	  tempTOT = hitData.GetTOT();
+	  tempTOTBin = hitData.GetTOTBin();
+	  //unpack the hit: leading hit
+	  hitData.SetPS(LEADING_HIT_PS);
+	  //set TOT to not measured
+	  hitData.SetTOT(-1);
+	  hitData.SetTOTBin(-1);
+	  //push leading hit data in data buffer
+	  if (fDataBuffer != 0x0)
+	    fDataBuffer->Add(hitData);
+	  //unpack the hit: trailing hit
+	  hitData.SetPS(TRAILING_HIT_PS);
+	  hitData.SetTime(hitData.GetTime() + tempTOT);
+	  hitData.SetTimeBin(hitData.GetTimeBin() + (Int_t)(tempTOTBin * TOT_TO_TIME_BIN_WIDTH));
+	  //push trailing hit data in data buffer
+	  if (fDataBuffer != 0x0)
+	    fDataBuffer->Add(hitData);
+	  //restore packed hit
+	  hitData.SetPS(tempPS);
+	  hitData.SetTime(hitData.GetTime() - tempTOT);
+	  hitData.SetTimeBin(hitData.GetTimeBin() - (Int_t)(tempTOTBin * TOT_TO_TIME_BIN_WIDTH));
+	  hitData.SetTOT(tempTOT);
+	  hitData.SetTOTBin(tempTOTBin);
+	}
+	
+	if (fVerbose)
+	  switch (hitData.GetPS()){
+	  case PACKED_HIT_PS:
+	    AliInfo(Form("  %02x - 0x%08x \t  TDC hit [packed] \t PS=%01d TDC=%01d chan=%01d TOT=%3.1fns (%d) time=%4.1fns (%d)",decodeStatus,*rawData,hitData.GetPS(),hitData.GetTDC(),hitData.GetChan(),hitData.GetTOT(),hitData.GetTOTBin(),hitData.GetTime(),hitData.GetTimeBin()));
+	    break;
+	  case LEADING_HIT_PS:
+	    AliInfo(Form("  %02x - 0x%08x \t  TDC hit [orp.lead] \t PS=%01d TDC=%01d chan=%01d time=%4.1fns (%d)",decodeStatus,*rawData,hitData.GetPS(),hitData.GetTDC(),hitData.GetChan(),hitData.GetTime(),hitData.GetTimeBin()));
+	    break;
+	  case TRAILING_HIT_PS:
+	    AliInfo(Form("  %02x - 0x%08x \t  TDC hit [orp.trai] \t PS=%01d TDC=%01d chan=%01d time=%4.1fns (%d)",decodeStatus,*rawData,hitData.GetPS(),hitData.GetTDC(),hitData.GetChan(),hitData.GetTime(),hitData.GetTimeBin()));
+	    break;
+	  case TOT_OVF_HIT_PS:
+	    AliInfo(Form("  %02x - 0x%08x \t  TDC hit [TOT ovfl] \t PS=%01d TDC=%01d chan=%01d TOT=%3.1fns (%d) time=%4.1fns (%d)",decodeStatus,*rawData,hitData.GetPS(),hitData.GetTDC(),hitData.GetChan(),hitData.GetTOT(),hitData.GetTOTBin(),hitData.GetTime(),hitData.GetTimeBin()));
+	    break;
+	  }
+	break;
+	
+      case LEADING_ONLY_ACQ: case TRAILING_ONLY_ACQ:
+	//decode TDC unpacked hit
+	fTDCUnpackedHit = (AliTOFTDCUnpackedHit *)rawData;
+	//set hit in the equipment data
+	hitData.SetDDLID(currentDDL);
+	hitData.SetSlotID(currentSlotID);
+	hitData.SetACQ(currentACQ);
+	hitData.SetChain(currentChain);
+	hitData.SetPS(fTDCUnpackedHit->GetPSBits());
+	hitData.SetTDC(fTDCUnpackedHit->GetTDCID());
+	hitData.SetChan(fTDCUnpackedHit->GetChan());
+	hitData.SetTime((float)fTDCUnpackedHit->GetHitTime() * TIME_BIN_WIDTH);
+	hitData.SetTimeBin(fTDCUnpackedHit->GetHitTime());
+	hitData.SetTOT(-1.);
+	hitData.SetTOTBin(-1);
+	//push hit data in data buffer
+	  if (fDataBuffer != 0x0)
+	    fDataBuffer->Add(hitData);
+	
+	if (fVerbose)
+	  switch (hitData.GetPS()){
+	  case PACKED_HIT_PS:
+	    AliInfo(Form("  %02x - 0x%08x \t  TDC hit [packed] \t PS=%01d TDC=%01d chan=%01d TOT=%3.1fns (%d) time=%4.1fns (%d)",decodeStatus,*rawData,hitData.GetPS(),hitData.GetTDC(),hitData.GetChan(),hitData.GetTOT(),hitData.GetTOTBin(),hitData.GetTime(),hitData.GetTimeBin()));
+	    break;
+	  case LEADING_HIT_PS:
+	    AliInfo(Form("  %02x - 0x%08x \t  TDC hit [leading] \t PS=%01d TDC=%01d chan=%01d time=%4.1fns (%d)",decodeStatus,*rawData,hitData.GetPS(),hitData.GetTDC(),hitData.GetChan(),hitData.GetTime(),hitData.GetTimeBin()));
+	    break;
+	  case TRAILING_HIT_PS:
+	    AliInfo(Form("  %02x - 0x%08x \t  TDC hit [trailing] \t PS=%01d TDC=%01d chan=%01d time=%4.1fns (%d)",decodeStatus,*rawData,hitData.GetPS(),hitData.GetTDC(),hitData.GetChan(),hitData.GetTime(),hitData.GetTimeBin()));
+	    break;
+	  case TOT_OVF_HIT_PS:
+	    AliInfo(Form("  %02x - 0x%08x \t  TDC hit [TOT ovfl] \t PS=%01d TDC=%01d chan=%01d TOT=%3.1fns (%d) time=%4.1fns (%d)",decodeStatus,*rawData,hitData.GetPS(),hitData.GetTDC(),hitData.GetChan(),hitData.GetTOT(),hitData.GetTOTBin(),hitData.GetTime(),hitData.GetTimeBin()));
+	    break;
+	  }
+	break;
+	
+      case PACKING_DISABLED_ACQ:
+	//decode TDC unpacked hit
+	fTDCUnpackedHit = (AliTOFTDCUnpackedHit *)rawData;
+	//set hit in the equipment data
+	hitData.SetDDLID(currentDDL);
+	hitData.SetSlotID(currentSlotID);
+	hitData.SetACQ(currentACQ);
+	hitData.SetChain(currentChain);
+	hitData.SetPS(fTDCUnpackedHit->GetPSBits());
+	hitData.SetTDC(fTDCUnpackedHit->GetTDCID());
+	hitData.SetChan(fTDCUnpackedHit->GetChan());
+	hitData.SetTime((float)fTDCUnpackedHit->GetHitTime() * TIME_BIN_WIDTH);
+	hitData.SetTimeBin(fTDCUnpackedHit->GetHitTime());
+	hitData.SetTOT(-1.);
+	hitData.SetTOTBin(-1);
+	//push hit data in data buffer
+	  if (fDataBuffer != 0x0)
+	    fDataBuffer->Add(hitData);
+	
+	if (fVerbose)
+	  switch (hitData.GetPS()){
+	  case PACKED_HIT_PS:
+	    AliInfo(Form("  %02x - 0x%08x \t  TDC hit [packed] \t PS=%01d TDC=%01d chan=%01d TOT=%3.1fns (%d) time=%4.1fns (%d)",decodeStatus,*rawData,hitData.GetPS(),hitData.GetTDC(),hitData.GetChan(),hitData.GetTOT(),hitData.GetTOTBin(),hitData.GetTime(),hitData.GetTimeBin()));
+	    break;
+	  case LEADING_HIT_PS:
+	    AliInfo(Form("  %02x - 0x%08x \t  TDC hit [leading] \t PS=%01d TDC=%01d chan=%01d time=%4.1fns (%d)",decodeStatus,*rawData,hitData.GetPS(),hitData.GetTDC(),hitData.GetChan(),hitData.GetTime(),hitData.GetTimeBin()));
+	    break;
+	  case TRAILING_HIT_PS:
+	    AliInfo(Form("  %02x - 0x%08x \t  TDC hit [trailing] \t PS=%01d TDC=%01d chan=%01d time=%4.1fns (%d)",decodeStatus,*rawData,hitData.GetPS(),hitData.GetTDC(),hitData.GetChan(),hitData.GetTime(),hitData.GetTimeBin()));
+	    break;
+	  case TOT_OVF_HIT_PS:
+	    AliInfo(Form("  %02x - 0x%08x \t  TDC hit [TOT ovfl] \t PS=%01d TDC=%01d chan=%01d TOT=%3.1fns (%d) time=%4.1fns (%d)",decodeStatus,*rawData,hitData.GetPS(),hitData.GetTDC(),hitData.GetChan(),hitData.GetTOT(),hitData.GetTOTBin(),hitData.GetTime(),hitData.GetTimeBin()));
+	    break;
+	  }
+	//call spider function
+	if (fVerbose==2)
+	  AliInfo("Calling SPIDER function");
+	Spider(hitData);
+	break;
+      }
+      //end switch TRM ACQ
+      
+      
+    }
+    //end switch word type
+    
+  }
+  //end equipment data loop
+  
+  if (fVerbose)
+    AliInfo("End of data loop");
+  
+  if (fVerbose==2)
+    AliInfo("Reset SPIDER function");
+  status = ResetSpider();
+  
+  if (fVerbose)
+    AliInfo("Decoder is exiting succesfully.");
+
+  return kFALSE;  
+}
+
+//_________________________________________________________________
+
+Bool_t 
+AliTOFDecoder::InitializeSpider(){
+
+  /* SPIDER initialization routine.
+     it initializes SPIDER variables in order
+     to have SPIDER ready to pack tof data 
+     in packed data objects
+  */
+  
+  if (fVerbose==2)
+    AliInfo("Initializing SPIDER");
+  
+  fSpiderCurrentSlotID=-1;
+  fSpiderCurrentChain=-1;
+  fSpiderCurrentTDC=-1;
+  
+  for (Int_t chan=0;chan<N_CHANNEL;chan++)
+    fSpiderLeadingFlag[chan] = kFALSE;
+  
+  return kFALSE;
+}
+
+//_________________________________________________________________
+
+Bool_t 
+AliTOFDecoder::ResetSpider(){
+
+  /* SPIDER reset routine.
+     it resets SPIDER buffers and 
+     variables in order to empty full 
+     buffers a set up SIPDER for new
+     HPTDC data
+  */
+
+  if (fVerbose==2)
+    AliInfo("Resetting SPIDER buffers");
+
+  for (Int_t chan=0;chan<N_CHANNEL;chan++){
+    if (fSpiderLeadingFlag[chan]){
+      if (fVerbose==2)
+	AliInfo("Buffer non empty: put leading hit into buffer as orphane");
+      //set TOT to zero
+      fSpiderLeadingHit[chan].SetACQ(4);
+      fSpiderLeadingHit[chan].SetPS(1);
+      fSpiderLeadingHit[chan].SetTOT(0);
+      fSpiderLeadingHit[chan].SetTOTBin(0);
+      //push hit into packed buffer
+      if (fPackedDataBuffer != 0x0)
+	fPackedDataBuffer->Add(fSpiderLeadingHit[chan]);
+      if (fVerbose==2)
+	AliInfo(Form("Packed hit: slotID=%d chain=%d PS=%01d TDC=%01d chan=%01d TOT=%3.1fns (%d) time=%4.1fns (%d)",fSpiderLeadingHit[chan].GetSlotID(),fSpiderLeadingHit[chan].GetChain(),fSpiderLeadingHit[chan].GetPS(),fSpiderLeadingHit[chan].GetTDC(),fSpiderLeadingHit[chan].GetChan(),fSpiderLeadingHit[chan].GetTOT(),fSpiderLeadingHit[chan].GetTOTBin(),fSpiderLeadingHit[chan].GetTime(),fSpiderLeadingHit[chan].GetTimeBin()));
+      
+    }
+    fSpiderLeadingFlag[chan]=kFALSE;
+  }
+  
+  return kFALSE;
+}
+
+//_________________________________________________________________
+
+Bool_t 
+AliTOFDecoder::Spider(AliTOFHitData hitData){
+
+  /* main SPIDER routine.
+     it receives, reads, stores and packs
+     unpacked HPTDC data in packed data
+     object. it also fills buffers.
+  */
+ 
+  Int_t status;
+
+  if (fVerbose==2)
+    AliInfo("Hit data received");
+
+  //check if TDC is changed (slotID,chain,TDC triplet)
+  if (fSpiderCurrentSlotID!=hitData.GetSlotID() ||
+      fSpiderCurrentChain!=hitData.GetChain() ||
+      fSpiderCurrentTDC!=hitData.GetTDC() ){
+    if (fVerbose==2)
+      AliInfo("Data coming from a new TDC: reset buffers");
+    //reset spider
+    status = ResetSpider();
+    //set current TDC 
+    fSpiderCurrentSlotID=hitData.GetSlotID();
+    fSpiderCurrentChain=hitData.GetChain();
+    fSpiderCurrentTDC=hitData.GetTDC();
+  }
+  
+  //switch PS bits
+  switch (hitData.GetPS()){
+
+  case LEADING_HIT_PS:
+    if (fVerbose==2)
+      AliInfo(Form("Leading hit: slotID=%d chain=%d PS=%01d TDC=%01d chan=%01d TOT=%3.1fns (%d) time=%4.1fns (%d)",hitData.GetSlotID(),hitData.GetChain(),hitData.GetPS(),hitData.GetTDC(),hitData.GetChan(),hitData.GetTOT(),hitData.GetTOTBin(),hitData.GetTime(),hitData.GetTimeBin()));
+    //check spider leading flag
+    if (fSpiderLeadingFlag[hitData.GetChan()]){
+      if (fVerbose==2)
+	AliInfo("Leading hit: buffer full, put previous in buffers as orphane and keep current");
+      //set TOT at zero for previous hit
+      fSpiderLeadingHit[hitData.GetChan()].SetACQ(4);
+      fSpiderLeadingHit[hitData.GetChan()].SetPS(1);
+      fSpiderLeadingHit[hitData.GetChan()].SetTOT(0);
+      fSpiderLeadingHit[hitData.GetChan()].SetTOTBin(0);
+      //push previous hit into packed buffer
+      if (fPackedDataBuffer != 0x0)
+	fPackedDataBuffer->Add(fSpiderLeadingHit[hitData.GetChan()]);
+      //set current hit
+      fSpiderLeadingHit[hitData.GetChan()]=hitData;
+      if (fVerbose==2)
+	AliInfo(Form("Packed hit: slotID=%d chain=%d PS=%01d TDC=%01d chan=%01d TOT=%3.1fns (%d) time=%4.1fns (%d)",fSpiderLeadingHit[hitData.GetChan()].GetSlotID(),fSpiderLeadingHit[hitData.GetChan()].GetChain(),fSpiderLeadingHit[hitData.GetChan()].GetPS(),fSpiderLeadingHit[hitData.GetChan()].GetTDC(),fSpiderLeadingHit[hitData.GetChan()].GetChan(),fSpiderLeadingHit[hitData.GetChan()].GetTOT(),fSpiderLeadingHit[hitData.GetChan()].GetTOTBin(),fSpiderLeadingHit[hitData.GetChan()].GetTime(),fSpiderLeadingHit[hitData.GetChan()].GetTimeBin()));
+    }
+    else{
+      if (fVerbose==2)
+	AliInfo("Leading hit: buffer empty, keep current hit and set flag");
+      fSpiderLeadingHit[hitData.GetChan()]=hitData;
+      //set spider leading flag
+      fSpiderLeadingFlag[hitData.GetChan()]=kTRUE;
+    }
+    break;
+
+  case TRAILING_HIT_PS:
+    if (fVerbose==2)
+      AliInfo(Form("Trailing hit: slotID=%d chain=%d PS=%01d TDC=%01d chan=%01d TOT=%3.1fns (%d) time=%4.1fns (%d)",hitData.GetSlotID(),hitData.GetChain(),hitData.GetPS(),hitData.GetTDC(),hitData.GetChan(),hitData.GetTOT(),hitData.GetTOTBin(),hitData.GetTime(),hitData.GetTimeBin()));
+    //check spider leading flag
+    if (fSpiderLeadingFlag[hitData.GetChan()]){
+      if (fVerbose==2)
+	AliInfo("Trailing hit: buffer full, pack leading and trailing");
+      hitData.SetACQ(4);
+      hitData.SetPS(0);
+      hitData.SetTOT(hitData.GetTime()-fSpiderLeadingHit[hitData.GetChan()].GetTime());
+      hitData.SetTOTBin((Int_t)((hitData.GetTimeBin()-fSpiderLeadingHit[hitData.GetChan()].GetTimeBin())*TIME_TO_TOT_BIN_WIDTH));
+      hitData.SetTime(fSpiderLeadingHit[hitData.GetChan()].GetTime());
+      hitData.SetTimeBin(fSpiderLeadingHit[hitData.GetChan()].GetTimeBin());
+      //check TOT and set TOT overflow if TOT < 0
+      if (hitData.GetTOT() < 0){
+	hitData.SetPS(3);
+	hitData.SetTOT(0);
+	hitData.SetTOTBin(0);
+      }
+      if (fPackedDataBuffer != 0x0)
+	fPackedDataBuffer->Add(hitData);      
+      if (fVerbose==2)
+	AliInfo(Form("Packed hit: slotID=%d chain=%d PS=%01d TDC=%01d chan=%01d TOT=%3.1fns (%d) time=%4.1fns (%d)",hitData.GetSlotID(),hitData.GetChain(),hitData.GetPS(),hitData.GetTDC(),hitData.GetChan(),hitData.GetTOT(),hitData.GetTOTBin(),hitData.GetTime(),hitData.GetTimeBin()));
+      //unset spider leading flag
+      fSpiderLeadingFlag[hitData.GetChan()]=kFALSE;
+    }
+    else{
+      if (fVerbose==2)
+	AliInfo("Trailing hit: buffer empty, throw hit away");
+    }
+    break;
+  }
+  //end switch PS bits
+
+  return kFALSE;
+}
