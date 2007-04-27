@@ -342,6 +342,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
 
   static Float_t corrLen=0.75;
   static Float_t detDepth=15.3;
+  static Float_t padDepth=0.5;
 
   Float_t dY=fGeom->XPad(); 
   Float_t dZ=fGeom->ZPad(); 
@@ -501,9 +502,10 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
 
 
     Int_t nfound = 0;
+    Bool_t accept = kFALSE;
+    Bool_t isInside =kFALSE;
     for (Int_t istep=0; istep<nStepsDone; istep++) {
 
-      Bool_t isInside =kFALSE;
       Float_t ctrackPos[3];	
 
       ctrackPos[0]= trackPos[0][istep];
@@ -512,6 +514,8 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
 
       //now see whether the track matches any of the TOF clusters            
 
+      Float_t dist3d[3];
+      accept=kFALSE;
       for (Int_t i=0; i<nc; i++){
 	Int_t cind[5];
 	cind[0]= clind[0][i];
@@ -519,24 +523,27 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
 	cind[2]= clind[2][i];
 	cind[3]= clind[3][i];
 	cind[4]= clind[4][i];
-        Bool_t accept = kFALSE;
-	if( mLastStep)accept = (fGeom->DistanceToPad(cind,global[i],ctrackPos)<dCut);
-	if(!mLastStep)accept = (fGeom->IsInsideThePad(cind,global[i],ctrackPos));
+        isInside=fGeom->IsInsideThePad(global[i],ctrackPos,dist3d);
+
+        if( mLastStep){
+          Float_t xLoc=dist3d[0];
+          Float_t rLoc=TMath::Sqrt(dist3d[1]*dist3d[1]+dist3d[2]*dist3d[2]);
+	  accept = (TMath::Abs(xLoc)<padDepth*0.5 && rLoc<dCut);
+	}
+	else{
+	  accept = isInside;
+	}
 	if(accept){
-	  if(!mLastStep)isInside=kTRUE;
-          Float_t dist3d[3];
-	  dist[nfound]=fGeom->DistanceToPad(cind,global[i],ctrackPos,dist3d);
+	  dist[nfound]=TMath::Sqrt(dist3d[0]*dist3d[0]+dist3d[1]*dist3d[1]+dist3d[2]*dist3d[2]);
 	  distZ[nfound]=dist3d[2];
 	  crecL[nfound]=trackPos[3][istep];
 	  index[nfound]=clind[5][i]; // store cluster id 	    
 	  cxpos[nfound]=fGeom->RinTOF()+istep*0.1; //store prop.radius
 	  nfound++;
-	  if(isInside)break;
+	  if(accept &&!mLastStep)break;
 	}//end if accept
       } //end for on the clusters
-
-
-      if(isInside)break;
+      if(accept &&!mLastStep)break;
     } //end for on the steps     
 
 
@@ -565,6 +572,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
         recL=crecL[iclus]+corrLen*0.5;
       }
     }
+
 
     AliTOFcluster *c=fClusters[idclus];
     c->Use(); 
