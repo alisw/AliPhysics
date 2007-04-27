@@ -316,7 +316,7 @@ Bool_t AliPHOSTrigger::IsPatchIsolated(Int_t iPatchType, const TClonesArray * am
 
   AliDebug(2,Form("Type %d, Maximum amplitude %f, patch+isol square %f",iPatchType, maxamp, amp));
 
-  if(amp < maxamp){
+  if(TMath::Nint(amp*1E5) < TMath::Nint(maxamp*1E5)){
     AliError(Form("Bad sum: Type %d, Maximum amplitude %f, patch+isol square %f",iPatchType, maxamp, amp));
     return kFALSE;
   }
