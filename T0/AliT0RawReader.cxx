@@ -86,7 +86,7 @@ Bool_t  AliT0RawReader::Next()
   Int_t  TRM_GLOBAL_TRAILER =  0x5000000f;
 
   AliT0Parameters* param = AliT0Parameters::Instance();   
-  param->Init();
+
   Int_t fNTRM = param->GetNumberOfTRMs();
  
  for ( Int_t k=0; k<110; k++) {

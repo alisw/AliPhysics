@@ -53,7 +53,10 @@ AliT0Parameters*
 AliT0Parameters::Instance() 
 {
   // Get static instance 
-  if (!fgInstance) fgInstance = new AliT0Parameters;
+  if (!fgInstance) {
+    fgInstance = new AliT0Parameters;
+    fgInstance->Init();
+  }
   return fgInstance;
 }
 
