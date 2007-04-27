@@ -4,12 +4,15 @@
 include $(MODDIR)/hlt.conf
 
 MODULE_SRCS= 	AliHLTFilePublisher.cxx \
+		AliHLTFileWriter.cxx \
 		AliHLTRootFilePublisherComponent.cxx \
 		AliHLTRootFileWriterComponent.cxx \
 		AliHLTLoaderPublisherComponent.cxx \
+		AliHLTDynamicAliLog.cxx \
 		AliHLTAgentUtil.cxx
 
 CLASS_HDRS:=  	AliHLTFilePublisher.h \
+		AliHLTFileWriter.h \
 		AliHLTRootFilePublisherComponent.h \
 		AliHLTRootFileWriterComponent.h \
 		AliHLTLoaderPublisherComponent.h \

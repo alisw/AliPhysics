@@ -63,7 +63,7 @@ You can run the following macro from the AliRoot promt.
   AliHLTConfiguration publisher("fp1", "FilePublisher", NULL, "-datafile some-data.dat");
   AliHLTConfiguration copy("cp", "Dummy", "fp1", "output_percentage 80");
   AliHLTConfiguration sink1("sink1", "FileWriter", "cp", NULL);
-  gHLT.BuildTaskList(&sink1);
+  gHLT.BuildTaskList("sink1");
   gHLT.Run();
 }
 </pre>

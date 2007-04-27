@@ -34,7 +34,11 @@ libAliHLTUtil_la_SOURCES	= $(MODULE_SRCS)
 pkginclude_HEADERS		= $(MODULE_HDRS)
 
 # linker flags
-libAliHLTUtil_la_LDFLAGS	=  -version-info $(LIBRARY_VERSION)
+libAliHLTUtil_la_LDFLAGS	= -L@ROOTLIBDIR@ \
+				  @ROOTLIBS@ \
+				  @ALIROOT_LDFLAGS@ \
+				  @ALIROOT_LIBS@ \
+				  -version-info $(LIBRARY_VERSION)
 
 # automatic generation of data and time of library build
 COMPILE_INFO			=  HLTBaseCompileInfo.cxx

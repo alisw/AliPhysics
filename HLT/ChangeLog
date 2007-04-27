@@ -1,3 +1,9 @@
+2007-04-27 HLT base
+	- memory leaks corrected
+	- AliLog support moved to libAliHLTUtil in order to keep
+	- libHLTbase free of AliRoot dependencies
+	- dynamic loeding of AliLog support
+	- AliHLTFileWriter moved to libAliHLTUtil
 2007-04-17 HLT sample applications
 	- publisher for AliLoader trees added
 	- sample analysis chain added tp sample lib

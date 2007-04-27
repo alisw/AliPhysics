@@ -82,7 +82,7 @@ class AliHLTSystem : public AliHLTLogging {
   int DeleteConfiguration(AliHLTConfiguration* pConf);
 
   /**
-   * Build a task list from a configuration object.
+   * Build a task list 
    * This method is used to build the tasks from the 'master' configuration
    * objects which are added to the HLT system handler. This is an iterative
    * process since the task might depend upon other configurations. For each
@@ -90,6 +90,14 @@ class AliHLTSystem : public AliHLTLogging {
    * method will be called iteratively. Finally, after building all tasks which
    * the current one depends on have been created, the task is inserted to the
    * list of tasks with the InsertTask method.
+   * @param pConf    configuration name/id
+   */
+  int BuildTaskList(const char* pConf);
+
+  /**
+   * Build task list from a configuration object.
+   * This method is kept for backward compatibility. Use the version
+   * with the configuration name.
    * @param pConf    pointer to configuration to build the task list from
    */
   int BuildTaskList(AliHLTConfiguration* pConf);

@@ -6,7 +6,8 @@ MODULE 				= AliHLTPHOS
 EXTRA_DIST			= AliHLTPHOSLinkDef.h
 
 AM_CPPFLAGS			= @ALIROOT_CPPFLAGS@ \
-				  -I$(top_srcdir)/BASE
+				  -I$(top_srcdir)/BASE \
+				  -I$(top_srcdir)/BASE/util
 
 # library definition
 lib_LTLIBRARIES			=  libAliHLTPHOS.la
@@ -70,6 +71,7 @@ pkginclude_HEADERS		= $(CLASS_HDRS) \
 
 
 # version info and linking flags for the library
+libAliHLTPHOS_la_LIBADD		= $(top_builddir)/BASE/util/libAliHLTUtil.la
 libAliHLTPHOS_la_LDFLAGS	= -L@ROOTLIBDIR@ \
 				  @ROOTLIBS@ \
 				  @ALIROOT_LDFLAGS@ \

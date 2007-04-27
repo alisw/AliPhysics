@@ -64,7 +64,16 @@ AliHLTSystem::AliHLTSystem()
     memset(&env, 0, sizeof(AliHLTComponentEnvironment));
     env.fAllocMemoryFunc=AliHLTSystem::AllocMemory;
     env.fLoggingFunc=NULL;
+    AliHLTComponentLogSeverity loglevel=fpComponentHandler->GetLocalLoggingLevel();
+    fpComponentHandler->SetLocalLoggingLevel(kHLTLogError);
     fpComponentHandler->SetEnvironment(&env);
+    fpComponentHandler->LoadLibrary("libAliHLTUtil.so");
+    fgAliLoggingFunc=(AliHLTLogging::AliHLTDynamicMessage)fpComponentHandler->FindSymbol("libAliHLTUtil.so", "AliDynamicMessage");
+    fpComponentHandler->SetLocalLoggingLevel(loglevel);
+    if (fgAliLoggingFunc==NULL) {
+      HLTError("symbol lookp failure: can not find AliDynamicMessage, switching to HLT logging system");
+    }
+    fpComponentHandler->AnnounceVersion();
   } else {
     HLTFatal("can not create Component Handler");
   }
@@ -152,6 +161,28 @@ int AliHLTSystem::DeleteConfiguration(AliHLTConfiguration* pConf)
   return iResult;
 }
 
+int AliHLTSystem::BuildTaskList(const char* id)
+{
+  // see header file for class documentation
+  int iResult=0;
+  if (id) {
+    if (fpConfigurationHandler) {
+      AliHLTConfiguration* pConf=fpConfigurationHandler->FindConfiguration(id);
+      if (pConf) {
+	iResult=BuildTaskList(pConf);
+      } else {
+	HLTError("unknown configuration \"%s\"", id);
+	iResult=-EEXIST;
+      }
+    } else {
+      iResult=-EFAULT;
+    }
+  } else {
+    iResult=-EINVAL;
+  }
+  return iResult;
+}
+
 int AliHLTSystem::BuildTaskList(AliHLTConfiguration* pConf)
 {
   // see header file for class documentation
@@ -220,9 +251,9 @@ int AliHLTSystem::CleanTaskList()
   // see header file for class documentation
   int iResult=0;
   TObjLink* lnk=NULL;
-  while ((lnk=fTaskList.FirstLink())!=NULL) {
-    fTaskList.Remove(lnk);
+  while ((lnk=fTaskList.LastLink())!=NULL) {
     delete (lnk->GetObject());
+    fTaskList.Remove(lnk);
   }
   return iResult;
 }
@@ -257,7 +288,7 @@ int AliHLTSystem::InsertTask(AliHLTTask* pTask)
       } else {
 	fTaskList.AddFirst(pTask);
       }
-      HLTDebug("task \"%s\" inserted", pTask->GetName());
+      HLTDebug("task \"%s\" (%p) inserted (size %d)", pTask->GetName(), pTask, sizeof(AliHLTTask));
   } else if (iResult>0) {
     HLTError("can not resolve dependencies for configuration \"%s\" (%d unresolved)", pTask->GetName(), iResult);
     iResult=-ENOLINK;

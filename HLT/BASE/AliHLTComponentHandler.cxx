@@ -39,7 +39,7 @@ using namespace std;
 
 // the standard components
 // #include "AliHLTFilePublisher.h"
-#include "AliHLTFileWriter.h"
+// #include "AliHLTFileWriter.h"
 // #include "AliHLTRootFilePublisherComponent.h"
 // #include "AliHLTRootFileWriterComponent.h"
 
@@ -89,8 +89,8 @@ AliHLTComponentHandler::AliHLTComponentHandler(AliHLTComponentEnvironment* pEnv)
 AliHLTComponentHandler::~AliHLTComponentHandler()
 {
   // see header file for class documentation
-  UnloadLibraries();
   DeleteStandardComponents();
+  UnloadLibraries();
 }
 
 int AliHLTComponentHandler::AnnounceVersion()
@@ -106,7 +106,7 @@ int AliHLTComponentHandler::AnnounceVersion()
   if (!time) time="unknown";
   HLTInfo("%s build on %s (%s)", PACKAGE_STRING, date, time);
 #else
-  HLTInfo("ALICE High Level Trigger (embedded AliRoot build)");
+  HLTInfo("ALICE High Level Trigger build on %s (%s) (embedded AliRoot build)", __DATE__, __TIME__);
 #endif
   return iResult;
 }
@@ -313,9 +313,51 @@ int AliHLTComponentHandler::UnloadLibrary( const char* libraryPath )
   // see header file for class documentation
   int iResult=0;
   if (libraryPath) {
+    vector<AliHLTLibHandle>::iterator element=fLibraryList.begin();
+    while (element!=fLibraryList.end()) {
+      TString* pName=reinterpret_cast<TString*>((*element).name);
+      if (pName->CompareTo(libraryPath)==0) {
+	UnloadLibrary(*element);
+	fLibraryList.erase(element);
+	break;
+      }
+      element++;
+  }
   } else {
     iResult=-EINVAL;
   }
+  return iResult;
+}
+
+int AliHLTComponentHandler::UnloadLibrary(AliHLTComponentHandler::AliHLTLibHandle &handle)
+{
+  // see header file for class documentation
+  int iResult=0;
+  fgAliLoggingFunc=NULL;
+  TString* pName=reinterpret_cast<TString*>(handle.name);
+#ifdef HAVE_DLFCN_H
+  dlclose(handle.handle);
+#else
+  int* pCount=reinterpret_cast<int*>(handle.handle);
+  if (--(*pCount)==0) {
+    if (pName) {
+      gSystem->Unload(pName->Data());
+    }
+    else {
+      HLTError("missing library name, can not unload");
+    }
+    delete pCount;
+  }
+#endif //HAVE_DLFCN_H
+  handle.name=NULL;
+  handle.handle=NULL;
+  if (pName) {
+    HLTDebug("unload library %s", pName->Data());
+    delete pName;
+  } else {
+    HLTWarning("missing name for unloaded library");
+  }
+  pName=NULL;
   return iResult;
 }
 
@@ -325,27 +367,7 @@ int AliHLTComponentHandler::UnloadLibraries()
   int iResult=0;
   vector<AliHLTLibHandle>::iterator element=fLibraryList.begin();
   while (element!=fLibraryList.end()) {
-    TString* pName=reinterpret_cast<TString*>((*element).name);
-#ifdef HAVE_DLFCN_H
-    dlclose((*element).handle);
-#else
-    int* pCount=reinterpret_cast<int*>((*element).handle);
-    if (--(*pCount)==0) {
-      if (pName)
-	gSystem->Unload(pName->Data());
-      else {
-	HLTError("missing library name, can not unload");
-      }
-      delete pCount;
-    }
-#endif //HAVE_DLFCN_H
-    if (pName) {
-      HLTDebug("unload library %s", pName->Data());
-      delete pName;
-    } else {
-      HLTWarning("missing name for unloaded library");
-    }
-    pName=NULL;
+    UnloadLibrary(*element);
     fLibraryList.erase(element);
     element=fLibraryList.begin();
   }
@@ -389,7 +411,7 @@ int AliHLTComponentHandler::AddStandardComponents()
   int iResult=0;
   AliHLTComponent::SetGlobalComponentHandler(this);
 //   fStandardList.push_back(new AliHLTFilePublisher);
-  fStandardList.push_back(new AliHLTFileWriter);
+//   fStandardList.push_back(new AliHLTFileWriter);
 //   fStandardList.push_back(new AliHLTRootFilePublisherComponent);
 //   fStandardList.push_back(new AliHLTRootFileWriterComponent);
   AliHLTComponent::UnsetGlobalComponentHandler();

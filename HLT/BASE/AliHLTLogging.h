@@ -16,6 +16,7 @@
 #include "TObject.h"
 #include "TArrayC.h"
 
+class AliHLTComponentHandler;
 //#define LOG_PREFIX ""       // logging prefix, for later extensions
 
 
@@ -52,13 +53,15 @@ public:
   AliHLTLogging& operator=(const AliHLTLogging&);
   virtual ~AliHLTLogging();
 
-  // set the default key word
-  // the keyword is intended to simplify the use of logging macros
-  // 
+  /** set the default key word
+   * the keyword is intended to simplify the use of logging macros
+   */ 
   void SetDefaultKeyword(const char* keyword) { fpDefaultKeyword=keyword; }
 
-  // set a temporary keyword
-  // returns the old key value
+  /**
+   * Set a temporary keyword
+   * returns the old key value
+   */
   const char* SetKeyword(const char* keyword) 
     { 
       const char* currentKeyword=fpCurrentKeyword;
@@ -66,8 +69,9 @@ public:
       return currentKeyword; 
     }
 
-  // get the current keyword
-  //
+  /**
+   * Get the current keyword
+   */
   const char* GetKeyword() const
     {
       if (fpCurrentKeyword) return fpCurrentKeyword;
@@ -75,45 +79,71 @@ public:
       return HLT_DEFAULT_LOG_KEYWORD;
     }
   
+  /**
+   * Init the AliLogging class for use from external package.
+   * This initializes the logging callback. <br>
+   * Only deployed by external users of the C wrapper interface, not used
+   * when running in AliRoot
+   */
   static int Init(AliHLTfctLogging pFun);
 
-  // genaral logging function
-  //
+  /**
+   * Init the message trap in AliLog.
+   * This initializes the AliLog trap, the AliLog class is the logging
+   * mechanism of AliRoot. The trap can fetch log messages written to
+   * AliLog, components and detector algorithms can use the AliLog
+   * mechanism to be as close as possible to Offline habits. <br>
+   * Only used with external users of the C wrapper interface, not used
+   * when running in AliRoot
+   */
+  static int InitAliLogTrap(AliHLTComponentHandler* pHandler);
+
+  /**
+   * Genaral logging function
+   */
   int Logging( AliHLTComponentLogSeverity severity, const char* origin, const char* keyword, const char* message, ... );
 
-  // logging function with two origin parameters, used by the log macros
-  //
+  /*
+   * Logging function with two origin parameters, used by the log macros
+   */
   int LoggingVarargs(AliHLTComponentLogSeverity severity, 
 		     const char* originClass, const char* originFunc,
 		     const char* file, int line, ... ) const;
 
-  // apply filter, return 1 if message should pass
-  //
+  /**
+   * Apply filter
+   * @return 1 if message should pass
+   */
   int CheckFilter(AliHLTComponentLogSeverity severity) const;
 
-  // set global logging level
-  // logging filter for all objects
-  //
+  /**
+   * Set global logging level
+   * logging filter for all objects
+   */
   static void SetGlobalLoggingLevel(AliHLTComponentLogSeverity level);
 
-  // set local logging level
-  // logging filter for individual object
-  //
+  /**
+   * Get global logging level
+   * logging filter for all objects
+   */
+  static AliHLTComponentLogSeverity GetGlobalLoggingLevel();
+
+  /**
+   * Set local logging level
+   * logging filter for individual object
+   */
   void SetLocalLoggingLevel(AliHLTComponentLogSeverity level);
+
+  /**
+   * Get local logging level
+   * logging filter for individual object
+   */
+  AliHLTComponentLogSeverity GetLocalLoggingLevel();
 
   /**
    * Print message to stdout
    */
   static int Message(void * param, AliHLTComponentLogSeverity severity, const char* origin, const char* keyword, const char* message);
-
-#ifndef NOALIROOT_LOGGING
-  /**
-   * Print message through AliRoot log channels.
-   */
-  static int AliMessage(AliHLTComponentLogSeverity severity,
-			const char* originClass, const char* originFunc,
-			const char* file, int line, const char* message);
-#endif
 
   /**
    * Build the log string from format specifier and variadac arguments
@@ -139,8 +169,28 @@ public:
 
   /** target stream for AliRoot logging methods */
   static ostringstream fgLogstr;                                   //! transient
+
+  /** 
+   * The message function for dynamic use.
+   * In order to avoid dependencies on AliRoot libraries, libHLTbase loads
+   * the library dynamically and looks for the symbol.
+   */
+  typedef int (*AliHLTDynamicMessage)(AliHLTComponentLogSeverity severity, 
+				      const char* originClass, 
+				      const char* originFunc,
+				      const char* file, int line, 
+				      const char* message); 
+
+  /**
+   * The init function of the message callback for dynamic use.
+   * In order to avoid dependencies on AliRoot libraries, libHLTbase loads
+   * the library dynamically and looks for the symbol.
+   */
+  typedef int (*InitAliDynamicMessageCallback)();
   
 protected:
+  /** the AliRoot logging function */
+  static AliHLTDynamicMessage fgAliLoggingFunc;                    //! transient
 
 private:
   /** the global logging filter */
@@ -164,7 +214,7 @@ private:
   
   /** the maximum size of the buffer */
   static const int fgkALIHLTLOGGINGMAXBUFFERSIZE;                  //! transient
-
+  
   ClassDef(AliHLTLogging, 2)
 };
 

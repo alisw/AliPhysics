@@ -71,7 +71,8 @@ class AliHLTComponentHandler : public AliHLTLogging {
 
   /**
    * Unload a component shared library.
-   * All components will be de-registered.
+   * All components will be de-registered when the last instance of the
+   * library was unloaded.
    * @param libraryPath  library name as specified to @ref LoadLibrary
    * @return 0 if succeeded, neg. error code if failed
    */
@@ -222,6 +223,15 @@ class AliHLTComponentHandler : public AliHLTLogging {
    * @return pointer to AliHLTLibHandle
    */
   AliHLTLibHandle* FindLibrary(const char* library);
+
+  /**
+   * Unload a component shared library.
+   * All components will be de-registered when the last instance of the
+   * library was unloaded.
+   * @param handle       handle to the library to unload
+   * @return 0 if succeeded, neg. error code if failed
+   */
+  int UnloadLibrary(AliHLTComponentHandler::AliHLTLibHandle &handle);
 
   /** list of registered components */
   vector<AliHLTComponent*> fComponentList;                         // see above 

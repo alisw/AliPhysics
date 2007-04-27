@@ -26,34 +26,17 @@
 using namespace std;
 #endif
 
-#ifndef NOALIROOT_LOGGING
-#include "AliLog.h"
-#endif
 #include "AliHLTStdIncludes.h"
 #include "AliHLTLogging.h"
+#include "AliHLTComponentHandler.h"
 #include "TString.h"
 #include "Varargs.h"
 #include <string>
 #include <sstream>
 #include <iostream>
 
-#ifndef NOALIROOT_LOGGING
-/**
- * Notification callback for AliRoot logging methods
- */
-void LogNotification(AliLog::EType_t level, const char* message)
-{
-  AliHLTLogging hltlog;
-  hltlog.SwitchAliLog(0);
-  hltlog.Logging(kHLTLogInfo, "NotificationHandler", "AliLog", AliHLTLogging::fgLogstr.str().c_str());
-  AliHLTLogging::fgLogstr.clear();
-  string empty("");
-  AliHLTLogging::fgLogstr.str(empty);
-}
-#endif
-
 /** ROOT macro for the implementation of ROOT specific class methods */
-ClassImp(AliHLTLogging)
+ClassImp(AliHLTLogging);
 
 AliHLTLogging::AliHLTLogging()
   :
@@ -89,6 +72,7 @@ AliHLTLogging& AliHLTLogging::operator=(const AliHLTLogging&)
 ostringstream AliHLTLogging::fgLogstr;
 AliHLTComponentLogSeverity AliHLTLogging::fgGlobalLogFilter=kHLTLogAll;
 AliHLTfctLogging AliHLTLogging::fgLoggingFunc=NULL;
+AliHLTLogging::AliHLTDynamicMessage AliHLTLogging::fgAliLoggingFunc=NULL;
 int AliHLTLogging::fgUseAliLog=1;
 
 AliHLTLogging::~AliHLTLogging()
@@ -96,7 +80,9 @@ AliHLTLogging::~AliHLTLogging()
   // see header file for class documentation
 }
 
+// the array will be grown dynamically, this is just an initial size 
 TArrayC AliHLTLogging::fgAliHLTLoggingTarget(200);
+// the maximum size of the array
 const int AliHLTLogging::fgkALIHLTLOGGINGMAXBUFFERSIZE=10000;
 
 int AliHLTLogging::Init(AliHLTfctLogging pFun) 
@@ -106,17 +92,32 @@ int AliHLTLogging::Init(AliHLTfctLogging pFun)
     (*fgLoggingFunc)(NULL/*fParam*/, kHLTLogWarning, "AliHLTLogging::Init", "no key", "overriding previously initialized logging function");    
   }
   fgLoggingFunc=pFun;
-  // older versions of AliLog does not support the notification callback and
-  // stringstreams, but they support the logging macros in general
-#ifndef NOALIROOT_LOGGING
-#ifndef NO_ALILOG_NOTIFICATION
-  AliLog* log=new AliLog;
-  log->SetLogNotification(LogNotification);
-  log->SetStreamOutput(&fgLogstr);
-#endif // NO_ALILOG_NOTIFICATION
-#endif // NOALIROOT_LOGGING
   
   return 0;
+}
+
+int AliHLTLogging::InitAliLogTrap(AliHLTComponentHandler* pHandler)
+{
+  // see header file for class documentation
+  int iResult=0;
+  if (pHandler) {
+    AliHLTComponentLogSeverity loglevel=pHandler->GetLocalLoggingLevel();
+    pHandler->SetLocalLoggingLevel(kHLTLogError);
+    pHandler->LoadLibrary("libAliHLTUtil.so");
+    pHandler->SetLocalLoggingLevel(loglevel);
+    InitAliDynamicMessageCallback pFunc=(InitAliDynamicMessageCallback)pHandler->FindSymbol("libAliHLTUtil.so", "InitAliDynamicMessageCallback"); 
+    if (pFunc) {
+      iResult=(*pFunc)();
+    } else {
+      Message(NULL, kHLTLogError, "AliHLTLogging::InitAliLogTrap", "init logging",
+	      "can not initialize AliLog callback");
+      iResult=-ENOSYS;
+    }
+  } else {
+    iResult=-EINVAL;
+  }
+  
+  return iResult;
 }
 
 int AliHLTLogging::Message(void *param, AliHLTComponentLogSeverity severity,
@@ -163,7 +164,7 @@ int AliHLTLogging::Message(void *param, AliHLTComponentLogSeverity severity,
   return iResult;
 }
 
-#ifndef NOALIROOT_LOGGING
+#if 0
 int AliHLTLogging::AliMessage(AliHLTComponentLogSeverity severity, 
 			      const char* originClass, const char* originFunc,
 			      const char* file, int line, const char* message) 
@@ -260,11 +261,9 @@ int AliHLTLogging::Logging(AliHLTComponentLogSeverity severity,
     if (fgLoggingFunc) {
       iResult = (*fgLoggingFunc)(NULL/*fParam*/, severity, origin, keyword, AliHLTLogging::BuildLogString(format, args ));
     } else {
-#ifndef NOALIROOT_LOGGING
-      if (fgUseAliLog)
-	iResult=AliMessage(severity, NULL, origin, NULL, 0, AliHLTLogging::BuildLogString(format, args ));
+      if (fgUseAliLog!=0 && fgAliLoggingFunc!=NULL)
+	iResult=(*fgAliLoggingFunc)(severity, NULL, origin, NULL, 0, AliHLTLogging::BuildLogString(format, args ));
       else
-#endif
         iResult=Message(NULL/*fParam*/, severity, origin, keyword, AliHLTLogging::BuildLogString(format, args ));
     }
     va_end(args);
@@ -299,11 +298,9 @@ int AliHLTLogging::LoggingVarargs(AliHLTComponentLogSeverity severity,
     if (fgLoggingFunc) {
       iResult=(*fgLoggingFunc)(NULL/*fParam*/, severity, origin.Data(), GetKeyword(), AliHLTLogging::BuildLogString(NULL, args ));
     } else {
-#ifndef NOALIROOT_LOGGING
-      if (fgUseAliLog)
-	iResult=AliMessage(severity, originClass, originFunc, file, line, AliHLTLogging::BuildLogString(NULL, args ));
+      if (fgUseAliLog!=0 && fgAliLoggingFunc!=NULL)
+	iResult=(*fgAliLoggingFunc)(severity, originClass, originFunc, file, line, AliHLTLogging::BuildLogString(NULL, args ));
       else
-#endif
 	iResult=Message(NULL/*fParam*/, severity, origin.Data(), GetKeyword(), AliHLTLogging::BuildLogString(NULL, args ));
     }
     va_end(args);
@@ -326,9 +323,24 @@ void AliHLTLogging::SetGlobalLoggingLevel(AliHLTComponentLogSeverity level)
   fgGlobalLogFilter=level;
 }
 
+AliHLTComponentLogSeverity AliHLTLogging::GetGlobalLoggingLevel()
+{
+  // see header file for class documentation
+
+  return fgGlobalLogFilter;
+}
+
 void AliHLTLogging::SetLocalLoggingLevel(AliHLTComponentLogSeverity level)
 {
   // see header file for class documentation
 
   fLocalLogFilter=level;
+}
+
+
+AliHLTComponentLogSeverity AliHLTLogging::GetLocalLoggingLevel()
+{
+  // see header file for class documentation
+
+  return fLocalLogFilter;
 }
