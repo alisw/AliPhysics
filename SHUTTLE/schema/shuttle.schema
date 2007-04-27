@@ -14,8 +14,8 @@ objectclass ( DETECTOR_CONFIG
         NAME 'AliShuttleDetector'
         DESC 'ALICE: Shuttle configuration object.'
         SUP top
-        MUST (det $ StrictRunOrder $ responsible)
-        MAY  (DCSHost $ DCSPort $ DCSalias $ DCSdatapoint) )
+        MUST (det $ StrictRunOrder)
+        MAY  (DCSHost $ DCSPort $ DCSalias $ DCSdatapoint $ responsible) )
 
 
 objectidentifier SYS_CONFIG SHUTTLE_BASE:2

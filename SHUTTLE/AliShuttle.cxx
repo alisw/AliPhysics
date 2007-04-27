@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.39  2007/04/17 12:43:57  acolla
+Correction in StoreOCDB; change of text in mail to detector expert
+
 Revision 1.38  2007/04/12 08:26:18  jgrosseo
 updated comment
 
@@ -416,15 +419,15 @@ Bool_t AliShuttle::StoreOCDB()
 		return kFALSE;
 	}
 	
+	AliInfo("Storing OCDB data ...");
+	Bool_t resultCDB = StoreOCDB(fgkMainCDB);
+
 	AliInfo("Storing reference data ...");
 	Bool_t resultRef = StoreOCDB(fgkMainRefStorage);
 	
 	AliInfo("Storing reference files ...");
 	Bool_t resultRefFiles = StoreRefFilesToGrid();
 	
-	AliInfo("Storing OCDB data ...");
-	Bool_t resultCDB = StoreOCDB(fgkMainCDB);
-
 	return resultCDB && resultRef && resultRefFiles;
 }
 
@@ -438,9 +441,6 @@ Bool_t AliShuttle::StoreOCDB(const TString& gridURI)
 	TObjArray* gridIds=0;
 
 	Bool_t result = kTRUE;
-	// to check whether all files have been transferred, or some files were left behind
-	// because the run is not first unprocessed
-	Bool_t willDoAgain = kFALSE;  
 
 	const char* type = 0;
 	TString localURI;
@@ -495,7 +495,6 @@ Bool_t AliShuttle::StoreOCDB(const TString& gridURI)
 			Log("SHUTTLE", Form("StoreOCDB - %s: object %s has validity infinite but "
 						"there are previous unprocessed runs!",
 						fCurrentDetector.Data(), aLocId.GetPath().Data()));
-			willDoAgain=kTRUE;
 			continue;
 		}
 
@@ -541,12 +540,6 @@ Bool_t AliShuttle::StoreOCDB(const TString& gridURI)
 		}
 	}
 	localEntries->Clear();
-	
-	if(result && willDoAgain) {
-		Log(fCurrentDetector.Data(), 
-			"Some files have been left on local storage, will try again later!");
-		result = kFALSE;
-	}
 
 	return result;
 }
@@ -610,10 +603,9 @@ Bool_t AliShuttle::StoreRefFilesToGrid()
 	//
 	// Transfers the reference file to the Grid.
 	//
-	// The file is stored under the following location: 
+	// The files are stored under the following location: 
 	// <base folder of reference storage>/<DET>/<RUN#>_<gridFileName>
-	// where <gridFileName> is the second parameter given to the function
-	//	
+	//
 	
 	AliCDBManager* man = AliCDBManager::Instance();
 	AliCDBStorage* sto = man->GetStorage(fgkLocalRefStorage);
@@ -922,8 +914,15 @@ Bool_t AliShuttle::ContinueProcessing()
 	if (fConfig->StrictRunOrder(fCurrentDetector) &&
 		!fFirstUnprocessed[GetDetPos(fCurrentDetector)])
 	{
-		Log("SHUTTLE", Form("ContinueProcessing - %s requires strict run ordering but this is not the first unprocessed run!"));
-		return kFALSE;
+		if (fTestMode == kNone)
+		{
+			Log("SHUTTLE", Form("ContinueProcessing - %s requires strict run ordering but this is not the first unprocessed run!"));
+			return kFALSE;
+		}
+		else
+		{
+			Log("SHUTTLE", Form("ContinueProcessing - In TESTMODE - Although %s requires strict run ordering and this is not the first unprocessed run, the SHUTTLE continues"));
+		}
 	}
 
 	AliShuttleStatus* status = ReadShuttleStatus();
@@ -1868,17 +1867,18 @@ TList* AliShuttle::GetFileSources(Int_t system, const char* detector, const char
 		return 0;
 	}
 
+	TList *list = new TList();
+	list->SetOwner(1);
+	
 	if (aResult->GetRowCount() == 0)
 	{
 		Log(detector,
 			Form("GetFileSources - No entry in %s FXS table for id: %s", GetSystemName(system), id));
 		delete aResult;
-		return 0;
+		return list;
 	}
 
 	TSQLRow* aRow;
-	TList *list = new TList();
-	list->SetOwner(1);
 
 	while ((aRow = aResult->Next()))
 	{
@@ -2478,8 +2478,7 @@ Bool_t AliShuttle::SendMail()
 	to.Remove(to.Length()-1);
 	AliDebug(2, Form("to: %s",to.Data()));
 
-	// TODO this will be removed...
-	if (to.Contains("not_yet_set")) {
+	if (to.IsNull()) {
 		AliInfo("List of detector responsibles not yet set!");
 		return kFALSE;
 	}
@@ -2492,7 +2491,7 @@ Bool_t AliShuttle::SendMail()
 
 	TString body = Form("Dear %s expert(s), \n\n", fCurrentDetector.Data());
 	body += Form("SHUTTLE just detected that your preprocessor "
-			"FAILED after %d retries in run %d!!\n\n", fConfig->GetMaxRetries(), GetCurrentRun());
+			"exited with ERROR state in run %d!!\n\n", GetCurrentRun());
 	body += Form("Please check %s status on the web page asap!\n\n", fCurrentDetector.Data());
 	body += Form("The last 10 lines of %s log file are following:\n\n");
 

@@ -15,6 +15,21 @@
 
 /*
 $Log$
+Revision 1.11  2007/04/04 10:33:36  jgrosseo
+1) Storing of files to the Grid is now done _after_ your preprocessors succeeded. This is transparent, which means that you can still use the same functions (Store, StoreReferenceData) to store files to the Grid. However, the Shuttle first stores them locally and transfers them after the preprocessor finished. The return code of these two functions has changed from UInt_t to Bool_t which gives you the success of the storing.
+In case of an error with the Grid, the Shuttle will retry the storing later, the preprocessor does not need to be run again.
+
+2) The meaning of the return code of the preprocessor has changed. 0 is now success and any other value means failure. This value is stored in the log and you can use it to keep details about the error condition.
+
+3) New function StoreReferenceFile to _directly_ store a file (without opening it) to the reference storage.
+
+4) The memory usage of the preprocessor is monitored. If it exceeds 2 GB it is terminated.
+
+5) New function AliPreprocessor::ProcessDCS(). If you do not need to have DCS data in all cases, you can skip the processing by implemting this function and returning kFALSE under certain conditions. E.g. if there is a certain run type.
+If you always need DCS data (like before), you do not need to implement it.
+
+6) The run type has been added to the monitoring page
+
 Revision 1.10  2007/02/28 10:41:01  acolla
 Run type field added in SHUTTLE framework. Run type is read from "run type" logbook and retrieved by
 AliPreprocessor::GetRunType() function.
@@ -273,8 +288,8 @@ TList* AliTestShuttle::GetFileSources(Int_t system, const char* detector, const 
     sourceList = dynamic_cast<TMap*> (sourceListPair->Value());
   if (!sourceList)
   {
-    AliError(Form("Could not find any file in %s with id %s (%s)", fkSystemNames[system], id, key.Data()));
-    return 0;
+    AliInfo(Form("Could not find any file in %s with id %s (%s)", fkSystemNames[system], id, key.Data()));
+    return new TList;
   }
 
   TIterator* iter = sourceList->GetTable()->MakeIterator();
