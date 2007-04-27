@@ -61,27 +61,30 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
     Int_t nPosTracks = 0;
     for (Int_t iTrack=0; iTrack<nTracks; ++iTrack) 
       if (esd->GetTrack(iTrack)->GetSign()> 0) nPosTracks++;
+    
+    // Access to the header
+    AliAODHeader *header = aod->GetHeader();
 
-    // create the header
-    aod->AddHeader(new AliAODHeader(esd->GetRunNumber(),
-				    esd->GetBunchCrossNumber(),
-				    esd->GetOrbitNumber(),
-				    esd->GetPeriodNumber(),
-				    nTracks,
-				    nPosTracks,
-				    nTracks-nPosTracks,
-				    esd->GetMagneticField(),
-				    -999., // fill muon magnetic field
-				    -999., // centrality; to be filled, still
-				    esd->GetZDCN1Energy(),
-				    esd->GetZDCP1Energy(),
-				    esd->GetZDCN2Energy(),
-				    esd->GetZDCP2Energy(),
-				    esd->GetZDCEMEnergy(),
-				    esd->GetTriggerMask(),
-				    esd->GetTriggerCluster(),
-				    esd->GetEventType()));
-
+    // fill the header
+    *header = AliAODHeader(esd->GetRunNumber(),
+			   esd->GetBunchCrossNumber(),
+			   esd->GetOrbitNumber(),
+			   esd->GetPeriodNumber(),
+			   nTracks,
+			   nPosTracks,
+			   nTracks-nPosTracks,
+			   esd->GetMagneticField(),
+			   -999., // fill muon magnetic field
+			   -999., // centrality; to be filled, still
+			   esd->GetZDCN1Energy(),
+			   esd->GetZDCP1Energy(),
+			   esd->GetZDCN2Energy(),
+			   esd->GetZDCP2Energy(),
+			   esd->GetZDCEMEnergy(),
+			   esd->GetTriggerMask(),
+			   esd->GetTriggerCluster(),
+			   esd->GetEventType());
+  
     Int_t nV0s      = esd->GetNumberOfV0s();
     Int_t nCascades = esd->GetNumberOfCascades();
     Int_t nKinks    = esd->GetNumberOfKinks();
@@ -90,7 +93,6 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
     aod->ResetStd(nTracks, nVertices);
     AliAODTrack *aodTrack;
     
-
     // Array to take into account the tracks already added to the AOD
     Bool_t * usedTrack = NULL;
     if (nTracks>0) {

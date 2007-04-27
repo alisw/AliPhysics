@@ -121,29 +121,29 @@ void CreateAODfromKineTree(const char *inFileName,
     nKPlus = 0;
     nKMinus = 0;
 
-    // create the header
-    aod->AddHeader(new AliAODHeader(aliHeader->GetRun(),
-				    0, // bunchX number
-				    0, // orbit number
-				    0, // period number
-				    nTracks,
-				    nPos,
-				    nNeg,
-				    -999, // mag. field
-				    -999., // muon mag. field
-				    -999., // centrality
-				    -999, // ZDCN1Energy
-				    -999, // ZDCP1Energy
-				    -999, // ZDCN2Energy
-				    -999, // ZDCP2Energy
-				    -999, // ZDCEMEnergy
-				    0, // TriggerMask
-				    0, // TriggerCluster
-				    0)); // EventType
-    
     // Access to the header
     AliAODHeader *header = aod->GetHeader();
 
+    // fill the header
+    *header = AliAODHeader(aliHeader->GetRun(),
+			   0, // bunchX number
+			   0, // orbit number
+			   0, // period number
+			   nTracks,
+			   nPos,
+			   nNeg,
+			   -999, // mag. field
+			   -999., // muon mag. field
+			   -999., // centrality
+			   -999, // ZDCN1Energy
+			   -999, // ZDCP1Energy
+			   -999, // ZDCN2Energy
+			   -999, // ZDCP2Energy
+			   -999, // ZDCEMEnergy
+			   0, // TriggerMask
+			   0, // TriggerCluster
+			   0); // EventType
+  
     // Access to the AOD container of vertices
     TClonesArray &vertices = *(aod->GetVertices());
     jVertices=0;
