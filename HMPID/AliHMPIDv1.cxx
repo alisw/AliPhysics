@@ -24,8 +24,6 @@
 #include <AliStack.h>      //StepManager(),Hits2SDigits()
 #include <AliLoader.h>        //Hits2SDigits()
 #include <AliRunLoader.h>     //Hits2SDigits()
-#include <AliConst.h>
-#include <AliPDG.h>
 #include <AliMC.h>            //StepManager()      
 #include <AliRun.h>           //CreateMaterials()    
 #include <AliMagF.h>          //CreateMaterials()
