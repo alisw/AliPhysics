@@ -25,7 +25,8 @@ public:
   virtual void Initialize(Int_t run, UInt_t startTime, UInt_t endTime);
   virtual UInt_t Process(TMap* dcsAliasMap);
   virtual void Print(Option_t* opt="") const;
-  
+
+  /// Return info whether the current subprocessor(s) needs DCS or not  
   virtual Bool_t ProcessDCS() { return fProcessDCS; }
 
   /// Publish AliPreprocessor::Log function
