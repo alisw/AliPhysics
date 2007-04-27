@@ -20,8 +20,7 @@ class AliTOFGeometryV5: public AliTOFGeometry {
    
   void    ImportGeometry();
   void    Init();
-  Bool_t  IsInsideThePad(Int_t *det, TGeoHMatrix mat, Float_t *pos) const;
-  Float_t DistanceToPad(Int_t *det, TGeoHMatrix mat, Float_t *pos, Float_t *dist3d=0) const;
+  Bool_t  IsInsideThePad(TGeoHMatrix mat, Float_t *pos, Float_t *dist3d=0) const;
   Bool_t  IsInsideThePadPar(Int_t *det, Float_t *pos) const; 
   Float_t DistanceToPadPar(Int_t *det, Float_t *pos, Float_t *dist3d=0) const;
   void    GetVolumePath(Int_t *ind, Char_t *path );

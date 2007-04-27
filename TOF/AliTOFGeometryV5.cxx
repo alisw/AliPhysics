@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2007/02/19 18:55:26  decaro
+Added getter methods for volume path (for Event Display)
+
 Revision 1.17.1  2006/12/15
          Added methods:
             DetToSectorRF(...) to get pad corners
@@ -285,7 +288,7 @@ Bool_t AliTOFGeometryV5::IsInsideThePadPar(Int_t *det, Float_t *pos) const
   //const Float_t klstripx = fgkStripLength;
   */
 
-  const Float_t khsensmy = 0.5;//0.05;//0.11;//0.16;//          // heigth of Sensitive Layer
+  const Float_t padDepth = 0.5;//0.05;//0.11;//0.16;//          // heigth of Sensitive Layer
 
   //Transform pos into Sector Frame
 
@@ -329,7 +332,7 @@ Bool_t AliTOFGeometryV5::IsInsideThePadPar(Int_t *det, Float_t *pos) const
   Float_t yr =  yt;
   Float_t zr = -xt*TMath::Sin(alpha/kRaddeg)+zt*TMath::Cos(alpha/kRaddeg);
 
-  if(TMath::Abs(xr)<=khsensmy*0.5 && TMath::Abs(yr)<= (fgkXPad*0.5) && TMath::Abs(zr)<= (fgkZPad*0.5))
+  if(TMath::Abs(xr)<=padDepth*0.5 && TMath::Abs(yr)<= (fgkXPad*0.5) && TMath::Abs(zr)<= (fgkZPad*0.5))
     isInside=true;
   return isInside;
 
@@ -337,16 +340,14 @@ Bool_t AliTOFGeometryV5::IsInsideThePadPar(Int_t *det, Float_t *pos) const
 
 
 //_____________________________________________________________________________
-Float_t AliTOFGeometryV5::DistanceToPad(Int_t *det, TGeoHMatrix mat, Float_t *pos, Float_t *dist3d) const
+Bool_t AliTOFGeometryV5::IsInsideThePad(TGeoHMatrix mat, Float_t *pos, Float_t *dist3d) const
 {
 //
-// Returns distance of  space point with coor pos (x,y,z) (cm) wrt 
-// pad with Detector Indices idet (iSect,iPlate,iStrip,iPadX,iPadZ) 
+// Returns true if space point with coor pos (x,y,z) (cm) falls 
+// inside pad with Detector Indices idet (iSect,iPlate,iStrip,iPadX,iPadZ) 
 //
-  if (!gGeoManager) {
-    printf("ERROR: no TGeo\n");
-    return 0.;
-  }
+
+  const Float_t padDepth = 0.5;      // heigth of Sensitive Layer
   Double_t vecg[3];
   vecg[0]=pos[0];
   vecg[1]=pos[1];
@@ -357,49 +358,20 @@ Float_t AliTOFGeometryV5::DistanceToPad(Int_t *det, TGeoHMatrix mat, Float_t *po
   vecl[0]=veclr[1];
   vecl[1]=veclr[0];
   //take into account reflections 
-  if(det[1]>-1)vecl[2]=-veclr[2];
+  vecl[2]=-veclr[2];
 
-  Float_t dist = TMath::Sqrt(vecl[0]*vecl[0]+vecl[1]*vecl[1]+vecl[2]*vecl[2]);
-
+  Float_t xr = vecl[0];
+  Float_t yr = vecl[1];
+  Float_t zr = vecl[2];
 
   if (dist3d){
     dist3d[0] = vecl[0];
     dist3d[1] = vecl[1];
     dist3d[2] = vecl[2];
   }
-
-  return dist;
-
-}
-
-
-//_____________________________________________________________________________
-Bool_t AliTOFGeometryV5::IsInsideThePad( Int_t *det, TGeoHMatrix mat, Float_t *pos) const
-{
-//
-// Returns true if space point with coor pos (x,y,z) (cm) falls 
-// inside pad with Detector Indices idet (iSect,iPlate,iStrip,iPadX,iPadZ) 
-//
-
-  const Float_t khsensmy = 0.5;      // heigth of Sensitive Layer
-  Double_t vecg[3];
-  vecg[0]=pos[0];
-  vecg[1]=pos[1];
-  vecg[2]=pos[2];
-  Double_t veclr[3]={-1.,-1.,-1.};
-  Double_t vecl[3]={-1.,-1.,-1.};
-  mat.MasterToLocal(vecg,vecl);  
-  vecl[0]=veclr[1];
-  vecl[1]=veclr[0];
-  //take into account reflections 
-  if(det[1]>-1)vecl[2]=-veclr[2];
-
-  Float_t xr = vecl[0];
-  Float_t yr = vecl[1];
-  Float_t zr = vecl[2];
-
+ 
   Bool_t isInside=false; 
-  if(TMath::Abs(xr)<= khsensmy*0.5 && TMath::Abs(yr)<= (fgkXPad*0.5) && TMath::Abs(zr)<= (fgkZPad*0.5))
+  if(TMath::Abs(xr)<= padDepth*0.5 && TMath::Abs(yr)<= (fgkXPad*0.5) && TMath::Abs(zr)<= (fgkZPad*0.5))
     isInside=true; 
   return isInside;
 

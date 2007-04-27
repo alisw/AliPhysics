@@ -73,8 +73,7 @@ class AliTOFGeometry: public TObject{
   virtual Bool_t  GetHoles() const {return fHoles;};
   virtual Bool_t  IsInsideThePadPar(Int_t */*det*/, Float_t */*pos*/) const {return kFALSE;};
   virtual Float_t DistanceToPadPar(Int_t */*det*/, Float_t */*pos*/, Float_t *dist3d=0) const {return dist3d[0];};
-  virtual Bool_t  IsInsideThePad(Int_t */*det*/,TGeoHMatrix /*mat*/, Float_t */*pos*/) const {return kFALSE;};
-  virtual Float_t DistanceToPad(Int_t */*det*/,TGeoHMatrix /*mat*/, Float_t */*pos*/, Float_t *dist3d=0) const {return dist3d[0];};
+  virtual Bool_t  IsInsideThePad(TGeoHMatrix /*mat*/, Float_t */*pos*/, Float_t *dist3d=0) const {dist3d[0]=0;return kFALSE;};
   virtual void    GetVolumePath(Int_t */*ind*/, Char_t */*path*/ ){};
   virtual void    GetVolumePath(Int_t /*sector*/, Char_t */*path*/ ){};
   virtual void    GetVolumePath(Int_t /*sector*/, Int_t /*plate*/, Int_t /*strip*/, Char_t */*path*/ ){};
