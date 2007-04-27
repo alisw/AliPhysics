@@ -50,7 +50,7 @@ class AliTOFrawData : public TObject {
   
   Int_t fError;      // Error flag
   
-  ClassDef(AliTOFrawData, 0)  // class for TOF raw data
+  ClassDef(AliTOFrawData, 1)  // class for TOF raw data
 };
 
 #endif
