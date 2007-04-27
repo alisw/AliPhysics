@@ -66,12 +66,10 @@ AliTPCCalPad::AliTPCCalPad(const AliTPCCalPad &c):TNamed(c)
   //
 
   for (Int_t isec = 0; isec < kNsec; isec++) {
-    fROC[isec] = 0;
-    if (c.fROC[isec])
-      fROC[isec] = new AliTPCCalROC(*(c.fROC[isec]));
+         fROC[isec] = 0;
+     if (c.fROC[isec])
+       fROC[isec] = new AliTPCCalROC(*(c.fROC[isec]));
   }
-
-
 }
 
 //_____________________________________________________________________________
@@ -426,31 +424,40 @@ void AliTPCCalPad::MakeTree(const char * fileName, TObjArray * array) {
   //
    TTreeSRedirector cstream(fileName);
    AliTPCROC* tpcROCinstance = AliTPCROC::Instance();
+   Int_t arrayEntries = array->GetEntries();
    
-   TString* names = new TString[array->GetEntries()];
-   for (Int_t ivalue = 0; ivalue < array->GetEntries(); ivalue++)
+   TString* names = new TString[arrayEntries];
+   for (Int_t ivalue = 0; ivalue < arrayEntries; ivalue++)
       names[ivalue].Append(((AliTPCCalPad*)array->At(ivalue))->GetName());
 
    for (UInt_t isector = 0; isector < tpcROCinstance->GetNSectors(); isector++) {
       //
       // get statistic for given sector
       //
-      TVectorF median(array->GetEntries());
-      TVectorF mean(array->GetEntries());
-      TVectorF rms(array->GetEntries());
-      TVectorF ltm(array->GetEntries());
+      TVectorF median(arrayEntries);
+      TVectorF mean(arrayEntries);
+      TVectorF rms(arrayEntries);
+      TVectorF ltm(arrayEntries);
       
-      TVectorF *vectorArray = new TVectorF[array->GetEntries()];
-      for (Int_t ivalue = 0; ivalue < array->GetEntries(); ivalue++)
+      TVectorF *vectorArray = new TVectorF[arrayEntries];
+      for (Int_t ivalue = 0; ivalue < arrayEntries; ivalue++)
          vectorArray[ivalue].ResizeTo(tpcROCinstance->GetNChannels(isector));
       
-      for (Int_t ivalue = 0; ivalue < array->GetEntries(); ivalue++) {
+      for (Int_t ivalue = 0; ivalue < arrayEntries; ivalue++) {
          AliTPCCalPad* calPad = (AliTPCCalPad*) array->At(ivalue);
          AliTPCCalROC* calROC = calPad->GetCalROC(isector);
-         median[ivalue] = calROC->GetMedian();
-         mean[ivalue] = calROC->GetMean();
-         rms[ivalue] = calROC->GetRMS();
-         ltm[ivalue] = calROC->GetLTM();
+         if (calROC) {
+            median[ivalue] = calROC->GetMedian();
+            mean[ivalue] = calROC->GetMean();
+            rms[ivalue] = calROC->GetRMS();
+            ltm[ivalue] = calROC->GetLTM();
+         }
+         else {
+            median[ivalue] = 0.;
+            mean[ivalue] = 0.;
+            rms[ivalue] = 0.;
+            ltm[ivalue] = 0.;
+         }
       }
       
       //
@@ -475,9 +482,13 @@ void AliTPCCalPad::MakeTree(const char * fileName, TObjArray * array) {
             posArray[5][ichannel] = posG[1];
             
             // loop over array containing AliTPCCalPads
-            for (Int_t ivalue = 0; ivalue < array->GetEntries(); ivalue++) {
+            for (Int_t ivalue = 0; ivalue < arrayEntries; ivalue++) {
                AliTPCCalPad* calPad = (AliTPCCalPad*) array->At(ivalue);
-               (vectorArray[ivalue])[ichannel] = calPad->GetCalROC(isector)->GetValue(irow, ipad);
+               AliTPCCalROC* calROC = calPad->GetCalROC(isector);
+               if (calROC)
+                  (vectorArray[ivalue])[ichannel] = calROC->GetValue(irow, ipad);
+               else
+                  (vectorArray[ivalue])[ichannel] = 0;
             }
             ichannel++;
          }
@@ -486,15 +497,15 @@ void AliTPCCalPad::MakeTree(const char * fileName, TObjArray * array) {
       cstream << "calPads" <<
          "sector=" << isector;
       
-      for  (Int_t ivalue = 0; ivalue < array->GetEntries(); ivalue++) {
+      for  (Int_t ivalue = 0; ivalue < arrayEntries; ivalue++) {
          cstream << "calPads" <<
-            (Char_t*)((names[ivalue] + "Median=").Data()) << median[ivalue] <<
-            (Char_t*)((names[ivalue] + "Mean=").Data()) << mean[ivalue] <<
-            (Char_t*)((names[ivalue] + "RMS=").Data()) << rms[ivalue] <<
-            (Char_t*)((names[ivalue] + "LTM=").Data()) << ltm[ivalue];
+            (Char_t*)((names[ivalue] + "_Median=").Data()) << median[ivalue] <<
+            (Char_t*)((names[ivalue] + "_Mean=").Data()) << mean[ivalue] <<
+            (Char_t*)((names[ivalue] + "_RMS=").Data()) << rms[ivalue] <<
+            (Char_t*)((names[ivalue] + "_LTM=").Data()) << ltm[ivalue];
       }
 
-      for  (Int_t ivalue = 0; ivalue < array->GetEntries(); ivalue++) {
+      for  (Int_t ivalue = 0; ivalue < arrayEntries; ivalue++) {
          cstream << "calPads" <<
             (Char_t*)((names[ivalue] + ".=").Data()) << &vectorArray[ivalue];
       }
