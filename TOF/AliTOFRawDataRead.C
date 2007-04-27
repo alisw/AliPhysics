@@ -1,7 +1,3 @@
-// gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/RAW -I$ALICE_ROOT/TOF")
-// .L AliTOFRawDataRead.C++
-// AliTOFRawDataRead()
-
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
 // Root include files
@@ -27,6 +23,10 @@ void AliTOFRawDataRead(Int_t iEvent)
   //
   // To read TOF raw data
   //
+
+  AliTOFrawData *tofRawDatum=new AliTOFrawData();
+  TTree *PackedDataTree= new TTree("PackedDataTree", "Decoded Packed Data");
+  PackedDataTree->Branch("HitData", "AliTOFrawData", &tofRawDatum);
 
   TClonesArray *clonesRawData = new TClonesArray("AliTOFrawData",1000);
   Int_t fPackedDigits=0;
@@ -56,7 +56,7 @@ void AliTOFRawDataRead(Int_t iEvent)
 
      for (Int_t iRawData = 0; iRawData<clonesRawData->GetEntriesFast(); iRawData++) {
 
-       AliTOFrawData *tofRawDatum = (AliTOFrawData*)clonesRawData->UncheckedAt(iRawData);
+       tofRawDatum = (AliTOFrawData*)clonesRawData->UncheckedAt(iRawData);
 
        if (tofRawDatum->GetTOT()==-1 || tofRawDatum->GetTOF()==-1) continue;
 
@@ -99,6 +99,7 @@ void AliTOFRawDataRead(Int_t iEvent)
        else if (tofRawDatum->GetTOF()>=100000 && tofRawDatum->GetTOF()<1000000) ftxt << "   " << tofRawDatum->GetTOF() << endl;
        else                                                                     ftxt << "  " << tofRawDatum->GetTOF() << endl;
 
+       PackedDataTree->Fill();
      } // end loop
 
    } // endl loop on DDL files
@@ -108,6 +109,9 @@ void AliTOFRawDataRead(Int_t iEvent)
   } // end while loop on event
 
   ftxt.close();
+  TFile fileOut("TOF_rawQA_OldDecoder.root", "RECREATE");
+  PackedDataTree->Write();
+  fileOut.Close();
 
 }
 
