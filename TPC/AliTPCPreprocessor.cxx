@@ -35,8 +35,8 @@ const char kAmandaStringTemp[] = "tpc_PT_%d.Temperature";
 ClassImp(AliTPCPreprocessor)
 
 //______________________________________________________________________________________________
-AliTPCPreprocessor::AliTPCPreprocessor(const char* detector, AliShuttleInterface* shuttle) :
-  AliPreprocessor(detector, shuttle),
+AliTPCPreprocessor::AliTPCPreprocessor(AliShuttleInterface* shuttle) :
+  AliPreprocessor("TPC",shuttle),
   fTemp(0)
 {
   // constructor
@@ -90,7 +90,7 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
 {
   // Fills data into TPC calibrations objects
 
-  if (!dcsAliasMap) return 0;
+  if (!dcsAliasMap) return 9;
 
   // Amanda servers provide information directly through dcsAliasMap
 

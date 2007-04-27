@@ -12,7 +12,7 @@ class AliTPCSensorTempArray;
 class AliTPCPreprocessor : public AliPreprocessor
 {
   public:
-    AliTPCPreprocessor(const char* detector, AliShuttleInterface* shuttle);
+    AliTPCPreprocessor(AliShuttleInterface* shuttle);
 //    AliTPCPreprocessor(const AliTPCPreprocessor &org);
     virtual ~AliTPCPreprocessor();
 
