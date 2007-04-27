@@ -351,7 +351,14 @@ void AliPIPEv0::CreateGeometry()
     ptube[2] =   hlenQb28;    
 
     gMC->Gsvolu("QB28","TUBE", idtmed[kInox], ptube, 3);
+//
+//
+// Air with high transport cuts outside QB28
+    ptube[0] =   25.;
+    ptube[1] =   100.;
+    ptube[2] =   hlenQb28;    
 
+    gMC->Gsvolu("QA28","TUBE", idtmed[kAirHigh], ptube, 3);
 
 //  Al-Be (40-60 wgt%, rho=2.7 g/cm**3) beam pipe
 //
@@ -538,6 +545,7 @@ void AliPIPEv0::CreateGeometry()
     //last inox section till 800 cm
     zpos = zpos + hlenQb29 + hlenQb28;
     gMC->Gspos("QB28", 1, "QBPM", 0.0, 0.0, zpos, 0, "ONLY"); 
+    gMC->Gspos("QA28", 1, "ALIC", 0.0, 0.0, zpos, 0, "ONLY"); 
     
 //******** end of placement on non-absorber side *********
     //
@@ -732,7 +740,13 @@ void AliPIPEv0::CreateMaterials()
   Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
   Float_t dAir = 1.20479E-3;
   Float_t dAir1 = 1.20479E-10;
-
+  //
+  // Kapton
+  //
+  Float_t aKapton[4]={1.00794,12.0107, 14.010,15.9994};
+  Float_t zKapton[4]={1.,6.,7.,8.};
+  Float_t wKapton[4]={0.026362,0.69113,0.07327,0.209235};
+  Float_t dKapton = 1.42;
   //
   //     Berillium 
   AliMaterial(5, "BERILLIUM$", 9.01, 4., 1.848, 35.3, 36.7);
@@ -744,7 +758,8 @@ void AliPIPEv0::CreateMaterials()
   AliMaterial(9,  "ALUMINIUM$", 26.98, 13., 2.7, 8.9, 37.2);
   //
   //     Air 
-  AliMixture(15, "AIR$      ", aAir, zAir, dAir, 4, wAir);
+  AliMixture(15, "AIR$",      aAir, zAir, dAir, 4, wAir);
+  AliMixture(35, "AIR_HIGH$", aAir, zAir, dAir, 4, wAir);
   //
   //     Vacuum 
   AliMixture(16, "VACUUM$ ", aAir, zAir, dAir1, 4, wAir);
@@ -761,7 +776,9 @@ void AliPIPEv0::CreateMaterials()
   //   
   AliMixture(22, "PA$", aPA, zPA, 1.14, -4, wPA);
   //
-
+  //     Kapton
+  AliMixture(23, "KAPTON", aKapton, zKapton, dKapton, 4, wKapton);
+  //
   // **************** 
   //     Defines tracking media parameters. 
   //
@@ -783,7 +800,8 @@ void AliPIPEv0::CreateMaterials()
   AliMedium(9, "ALU",      9, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   //
   //    Air 
-  AliMedium(15, "AIR",    15, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(15, "AIR",     15, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(35, "AIR_HIFG",35, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   //
   //    Vacuum 
   AliMedium(16, "VACUUM", 16, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
@@ -799,6 +817,9 @@ void AliPIPEv0::CreateMaterials()
   //
   //   Polyamid
   AliMedium(22, "PA"  ,   22, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  //
+  //   KAPTON
+  AliMedium(23, "KAPTON", 23, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
 
 }
 
