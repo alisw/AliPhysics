@@ -631,7 +631,7 @@ void AliPHOSTrigger::Trigger()
 
   //Main Method to select triggers.
 
-  AliRunLoader * rl = gAlice->GetRunLoader() ; 
+  AliRunLoader * rl = AliRunLoader::GetRunLoader(); 
   TString fileName = rl->GetFileName() ; 
   DoIt(fileName.Data()) ; 
 }
