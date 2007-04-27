@@ -927,8 +927,8 @@ Bool_t AliTRDdigitizer::MakeDigits()
       // locT is defined relative to the wire plane (i.e. middle of amplification
       // region), meaming locT = 0, and is negative for hits coming from the
       // drift region. 
-      Double_t locR = loc[0];
-      Double_t locC = loc[1];
+      Double_t locC = loc[0];
+      Double_t locR = loc[1];
       Double_t locT = loc[2];
       if (inDrift) {
 	// locT relative to middle of amplification region
