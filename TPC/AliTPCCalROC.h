@@ -28,6 +28,7 @@ class AliTPCCalROC : public TObject {
   AliTPCCalROC(const AliTPCCalROC &c);
  AliTPCCalROC &operator = (const AliTPCCalROC & param);
   virtual           ~AliTPCCalROC();  
+  UInt_t        GetSector() const { return fSector;}
   UInt_t        GetNrows() const               { return fNRows;};
   UInt_t        GetNchannels()       const     { return fNChannels;};
   UInt_t        GetNPads(UInt_t row)  const     { return (row<fNRows)? AliTPCROC::Instance()->GetNPads(fSector,row):0;};

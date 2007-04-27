@@ -65,7 +65,12 @@ AliTPCCalPad::AliTPCCalPad(const AliTPCCalPad &c):TNamed(c)
   // AliTPCCalPad copy constructor
   //
 
-  ((AliTPCCalPad &) c).Copy(*this);
+  for (Int_t isec = 0; isec < kNsec; isec++) {
+    fROC[isec] = 0;
+    if (c.fROC[isec])
+      fROC[isec] = new AliTPCCalROC(*(c.fROC[isec]));
+  }
+
 
 }
 
