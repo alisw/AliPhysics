@@ -81,14 +81,15 @@ void AliPIPEv3::CreateGeometry()
     TGeoRotation* rot315        = new TGeoRotation("rot315", 90. ,315.,  90.,  45.,   0.,   0.);    
 //
 // Media
-    const TGeoMedium* kMedAir    =  gGeoManager->GetMedium("PIPE_AIR");
-    const TGeoMedium* kMedVac    =  gGeoManager->GetMedium("PIPE_VACUUM");    
-    const TGeoMedium* kMedInsu   =  gGeoManager->GetMedium("PIPE_INS_C0");    
-    const TGeoMedium* kMedSteel  =  gGeoManager->GetMedium("PIPE_INOX");        
-    const TGeoMedium* kMedBe     =  gGeoManager->GetMedium("PIPE_BE");       
-    const TGeoMedium* kMedCu     =  gGeoManager->GetMedium("PIPE_CU");        
-    const TGeoMedium* kMedKapton =  gGeoManager->GetMedium("PIPE_KAPTON");        
-    const TGeoMedium* kMedAco    =  gGeoManager->GetMedium("PIPE_ANTICORODAL");        
+    const TGeoMedium* kMedAir     =  gGeoManager->GetMedium("PIPE_AIR");
+    const TGeoMedium* kMedAirHigh =  gGeoManager->GetMedium("PIPE_AIR_HIGH");
+    const TGeoMedium* kMedVac     =  gGeoManager->GetMedium("PIPE_VACUUM");    
+    const TGeoMedium* kMedInsu    =  gGeoManager->GetMedium("PIPE_INS_C0");    
+    const TGeoMedium* kMedSteel   =  gGeoManager->GetMedium("PIPE_INOX");        
+    const TGeoMedium* kMedBe      =  gGeoManager->GetMedium("PIPE_BE");       
+    const TGeoMedium* kMedCu      =  gGeoManager->GetMedium("PIPE_CU");        
+    const TGeoMedium* kMedKapton  =  gGeoManager->GetMedium("PIPE_KAPTON");        
+    const TGeoMedium* kMedAco     =  gGeoManager->GetMedium("PIPE_ANTICORODAL");        
 // Top volume
     TGeoVolume* top    = gGeoManager->GetVolume("ALIC");
 //
@@ -820,8 +821,10 @@ void AliPIPEv3::CreateGeometry()
     TGeoVolume* voRB24CuTube  = new TGeoVolume("voRB24CuTube", 
 					       new TGeoTube(kRB24CuTubeRi, kRB24CuTubeRo, kRB24CuTubeL/2.), kMedCu);
     voRB24CuTubeM->AddNode(voRB24CuTube, 1, gGeoIdentity);
-    
-   
+    // Air outside tube with higher transport cuts
+    TGeoVolume* voRB24CuTubeA  = new TGeoVolume("voRB24CuTubeA", 
+						new TGeoTube(25., 100., kRB24CuTubeL/2.), kMedAirHigh);
+    voRB24CuTubeA->SetVisibility(0);
 // Warm Module Type VMACA
 // LHCVMACA_0002
 // 
@@ -1590,6 +1593,8 @@ void AliPIPEv3::CreateGeometry()
     TGeoVolumeAssembly* voRB24 = new TGeoVolumeAssembly("RB24");
 
     voRB24->AddNode(voRB24CuTubeM, 1, gGeoIdentity);
+    voRB24->AddNode(voRB24CuTubeA, 1, gGeoIdentity);
+
     z =  kRB24CuTubeL/2;
     voRB24->AddNode(voRB24B1BellowM, 1, new TGeoTranslation(0., 0., z));
     z +=  (kRB24B1L +  kRB24AIpML/2.);
@@ -2658,6 +2663,7 @@ void AliPIPEv3::CreateMaterials()
   //
   //     Air 
   AliMixture(15, "AIR$      ", aAir, zAir, dAir, 4, wAir);
+  AliMixture(35, "AIR_HIGH$ ", aAir, zAir, dAir, 4, wAir);
   //
   //     Vacuum 
   AliMixture(16, "VACUUM$ ", aAir, zAir, dAir1, 4, wAir);
@@ -2707,7 +2713,8 @@ void AliPIPEv3::CreateMaterials()
   AliMedium(10, "CU",      10, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   //
   //    Air 
-  AliMedium(15, "AIR",    15, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(15, "AIR",     15, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(35, "AIR_HIGH",15, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   //
   //    Vacuum 
   AliMedium(16, "VACUUM", 16, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
