@@ -8,6 +8,9 @@ SRCS  = AliTOFGeometry.cxx  \
         AliTOFRawMap.cxx\
         AliTOFrawData.cxx\
         AliTOFRawStream.cxx\
+        AliTOFHitData.cxx\
+        AliTOFHitDataBuffer.cxx\
+        AliTOFDecoder.cxx\
 	AliTOFChannel.cxx  \
 	AliTOFChannelOnline.cxx  \
 	AliTOFChSim.cxx  \

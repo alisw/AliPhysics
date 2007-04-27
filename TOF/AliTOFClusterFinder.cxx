@@ -15,6 +15,9 @@
 
 /* 
 $Log$
+Revision 1.23  2007/04/23 16:51:39  decaro
+Digits-to-raw_data conversion: correction for a more real description (A.De Caro, R.Preghenella)
+
 Revision 1.22  2007/04/19 17:26:32  arcelli
 Fix a bug (add some debug printout
 
@@ -109,7 +112,8 @@ AliTOFClusterFinder::AliTOFClusterFinder():
   fDigits(new TClonesArray("AliTOFdigit", 4000)),
   fRecPoints(new TClonesArray("AliTOFcluster", 4000)),
   fNumberOfTofClusters(0),
-  fVerbose(0)
+  fVerbose(0),
+  fDecoderVersion(0)
 {
 //
 // Constructor
@@ -129,7 +133,8 @@ AliTOFClusterFinder::AliTOFClusterFinder(AliRunLoader* runLoader):
   fDigits(new TClonesArray("AliTOFdigit", 4000)),
   fRecPoints(new TClonesArray("AliTOFcluster", 4000)),
   fNumberOfTofClusters(0),
-  fVerbose(0)
+  fVerbose(0),
+  fDecoderVersion(0)
 {
 //
 // Constructor
@@ -153,12 +158,14 @@ AliTOFClusterFinder::AliTOFClusterFinder(const AliTOFClusterFinder &source)
   fDigits(new TClonesArray("AliTOFdigit", 4000)),
   fRecPoints(new TClonesArray("AliTOFcluster", 4000)),
   fNumberOfTofClusters(0),
-  fVerbose(0)
+   fVerbose(0),
+  fDecoderVersion(0)
 {
   // copy constructor
   this->fDigits=source.fDigits;
   this->fRecPoints=source.fRecPoints;
   this->fTOFGeometry=source.fTOFGeometry;
+  this->fDecoderVersion=source.fDecoderVersion;
 
 }
 
@@ -170,6 +177,7 @@ AliTOFClusterFinder& AliTOFClusterFinder::operator=(const AliTOFClusterFinder &s
   this->fRecPoints=source.fRecPoints;
   this->fTOFGeometry=source.fTOFGeometry;
   this->fVerbose=source.fVerbose;
+  this->fDecoderVersion=source.fDecoderVersion;
   return *this;
 
 }
@@ -329,7 +337,11 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 
     rawReader->Reset();
     AliTOFRawStream tofInput(rawReader);
-    tofInput.LoadRawData(indexDDL);
+    if (fDecoderVersion) {
+      AliInfo("Using New Decoder \n"); 
+      tofInput.LoadRawDataBuffers(indexDDL,fVerbose);
+    }
+    else tofInput.LoadRawData(indexDDL);
 
     clonesRawData = (TClonesArray*)tofInput.GetRawData();
 
@@ -508,7 +520,11 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent, AliRawReader *rawReader
 
     rawReader->Reset();
     AliTOFRawStream tofInput(rawReader);
-    tofInput.LoadRawData(indexDDL);
+    if (fDecoderVersion) {
+      AliInfo("Using New Decoder \n"); 
+      tofInput.LoadRawDataBuffers(indexDDL,fVerbose);
+    }
+    else tofInput.LoadRawData(indexDDL);
 
     clonesRawData = (TClonesArray*)tofInput.GetRawData();
 
@@ -642,7 +658,11 @@ void AliTOFClusterFinder::Raw2Digits(Int_t iEvent, AliRawReader *rawReader)
 
     rawReader->Reset();
     AliTOFRawStream tofInput(rawReader);
-    tofInput.LoadRawData(indexDDL);
+    if (fDecoderVersion) {
+      AliInfo("Using New Decoder \n"); 
+      tofInput.LoadRawDataBuffers(indexDDL,fVerbose);
+    }
+    else tofInput.LoadRawData(indexDDL);
 
     clonesRawData = (TClonesArray*)tofInput.GetRawData();
 
@@ -788,9 +808,7 @@ void AliTOFClusterFinder::CalibrateRecPoint()
   Float_t tdcCorr;
   AliInfo(" Calibrating TOF Clusters: ")
   AliTOFcalib *calib = new AliTOFcalib(fTOFGeometry);
-  // calib->ReadParFromCDB("TOF/Calib",0); // original
-  // Use AliCDBManager's run number
- if(!calib->ReadParFromCDB("TOF/Calib",-1)) {AliFatal("Exiting, no CDB object found!!!");exit(0);}  
+  if(!calib->ReadParFromCDB("TOF/Calib",-1)) {AliFatal("Exiting, no CDB object found!!!");exit(0);}  
   
   AliTOFCal *calTOFArray = calib->GetTOFCalArray();  
 

@@ -81,314 +81,15 @@ Revision 0.01  2005/07/22 A. De Caro
 #include "AliTOFRawStream.h"
 
 
-/******************************************
-GENERAL DATA FORMAT                    
-******************************************/
-
-//filler
-#define FILLER 0x70000000
-
-//word type mask/position
-#define WORD_TYPE_MASK 0xf0000000
-#define WORD_TYPE_POSITION 28
-
-//global header word required bit pattern
-#define GLOBAL_HEADER 0x40000000
-
-//global trailer word required bit pattern
-#define GLOBAL_TRAILER 0x50000000
-
-//error word required bit pattern
-#define ERROR 0x30000000
-
-//header slot ID mask/position
-#define HEADER_SLOT_ID_MASK 0x0000000f
-#define HEADER_SLOT_ID_POSITION 0
-
-//word types
-#define GLOBAL_HEADER_TYPE 4
-#define GLOBAL_TRAILER_TYPE 5
-#define ERROR_TYPE 6
-#define FILLER_TYPE 7
-#define TRM_CHAIN0_HEADER_TYPE 0
-#define TRM_CHAIN0_TRAILER_TYPE 1
-#define TRM_CHAIN1_HEADER_TYPE 2
-#define TRM_CHAIN1_TRAILER_TYPE 3
-
-//slot types
-#define DRM_ID_NUMBER 1
-#define LTM_ID_NUMBER 2
-
-
-/******************************************
-DRM DATA FORMAT                        
-******************************************/
-
-//DRM global header word required bit pattern
-#define DRM_GLOBAL_HEADER 0x40000001
-
-//DRM event words mask/position
-#define DRM_EVENT_WORDS_MASK 0x001ffff0
-#define DRM_EVENT_WORDS_POSITION 4
-
-//DRM DRM ID mask/position
-#define DRM_DRM_ID_MASK 0x0fe00000
-#define DRM_DRM_ID_POSITION 21
-
-//DRM status header 1 word required bit pattern
-#define DRM_STATUS_HEADER_1 0x40000001
-
-//DRM slot ID mask/position
-#define DRM_SLOT_ID_MASK 0x00007ff0
-#define DRM_SLOT_ID_POSITION 4
-
-//DRM C-bit mask/position
-#define DRM_C_BIT_MASK 0x00008000
-#define DRM_C_BIT_POSITION 15
-
-//DRM status header 2 word required bit pattern
-#define DRM_STATUS_HEADER_2 0x40000001
-
-//DRM enable ID mask/position
-#define DRM_ENABLE_ID_MASK 0x00007ff0
-#define DRM_ENABLE_ID_POSITION 4
-
-//DRM fault ID mask/position
-#define DRM_FAULT_ID_MASK 0x07ff0000
-#define DRM_FAULT_ID_POSITION 16
-
-//DRM status header 3 word required bit pattern
-#define DRM_STATUS_HEADER_3 0x40000001
-
-//DRM TTC event counter mask/position
-#define DRM_TTC_EVENT_COUNTER_MASK 0x0ffffff0
-#define DRM_TTC_EVENT_COUNTER_POSITION 4
-
-//DRM event CRC mask/position
-//#define DRM_EVENT_CRC_MASK 0x001ffff0
-#define DRM_EVENT_CRC_MASK 0x000ffff0
-#define DRM_EVENT_CRC_POSITION 4
-
-//DRM global trailer word required bit pattern
-#define DRM_GLOBAL_TRAILER 0x50000001
-
-//DRM local event counter mask/position
-#define DRM_LOCAL_EVENT_COUNTER_MASK 0x0000fff0
-#define DRM_LOCAL_EVENT_COUNTER_POSITION 4
-
-
-/******************************************
-TRM DATA FORMAT                        
-******************************************/
-
-//TRM global header word required bit pattern
-#define TRM_GLOBAL_HEADER 0x40000000
-
-//TRM slot ID mask/position
-#define TRM_SLOT_ID_MASK 0x0000000f
-#define TRM_SLOT_ID_POSITION 0
-
-//TRM event words mask/position
-#define TRM_EVENT_WORDS_MASK 0x0001fff0
-#define TRM_EVENT_WORDS_POSITION 4
-
-//TRM ACQ-bits mask/position
-#define TRM_ACQ_BITS_MASK 0x00060000
-#define TRM_ACQ_BITS_POSITION 17
-
-//TRM L-bit mask/position
-#define TRM_L_BIT_MASK 0x00080000
-#define TRM_L_BIT_POSITION 19
-
-//TRM chain-0 header word required bit pattern
-#define TRM_CHAIN_0_HEADER 0x00000000
-
-//TRM chain-1 header word required bit pattern
-#define TRM_CHAIN_1_HEADER 0x20000000
-
-//TRM bunch ID mask/position
-#define TRM_BUNCH_ID_MASK 0x0000fff0
-#define TRM_BUNCH_ID_POSITION 4
-
-//TRM PB24 temp mask/position
-#define TRM_PB24_TEMP_MASK 0x00ff0000
-#define TRM_PB24_TEMP_POSITION 16
-
-//TRM PB24 ID mask/position
-#define TRM_PB24_ID_MASK 0x07000000
-#define TRM_PB24_ID_POSITION 24
-
-//TRM TS-bit mask/position
-#define TRM_TS_BIT_MASK 0x08000000
-#define TRM_TS_BIT_POSITION 27
-
-//TRM chain-0 trailer word required bit pattern
-#define TRM_CHAIN_0_TRAILER 0x10000000
-
-//TRM chain-1 trailer word required bit pattern
-#define TRM_CHAIN_1_TRAILER 0x30000000
-
-//TRM status mask/position
-#define TRM_STATUS_MASK 0x0000000f
-#define TRM_STATUS_POSITION 0
-
-
-//TDC digit
-
-//TRM TDC digit word required bit pattern
-#define TRM_TDC_DIGIT 0x8000000
-
-//TRM digit time mask/position
-#define TRM_DIGIT_TIME_MASK 0x00001fff
-#define TRM_DIGIT_TIME_POSITION 0
-
-//TRM long digit time mask/position
-#define TRM_LONG_DIGIT_TIME_MASK 0x001fffff
-#define TRM_LONG_DIGIT_TIME_POSITION 0
-
-//TRM TOT width mask/position
-#define TRM_TOT_WIDTH_MASK 0x001fe000
-#define TRM_TOT_WIDTH_POSITION 13
-
-//TRM chan mask/position
-#define TRM_CHAN_MASK 0x00e00000
-#define TRM_CHAN_POSITION 21
-
-//TRM TDC ID mask/position
-#define TRM_TDC_ID_MASK 0x0f000000
-#define TRM_TDC_ID_POSITION 24
-
-//TRM E-bit mask/position
-#define TRM_E_BIT_MASK 0x10000000
-#define TRM_E_BIT_POSITION 28
-
-//TRM PS-bits mask/position
-#define TRM_PS_BITS_MASK 0x60000000
-#define TRM_PS_BITS_POSITION 29
-
-#define TRM_FIRST_SLOT_ID 3
-
-//define hptdc time bin width
-#define TIME_BIN_WIDTH 24.4e-3 //ns
-
-//define hptdc tot bin width
-#define TOT_BIN_WIDTH 48.4e-3 //ns
-
-//TRM errors
-
-//TRM TDC error word required bit pattern
-#define TRM_TDC_ERROR 0x6000000
-
-//TRM TDC diagnostic error word required bit pattern
-#define TRM_TDC_DIAGNOSTIC_ERROR 0x6f00000
-
-//TRM TDC error flags mask/position
-#define TRM_TDC_ERROR_FLAGS_MASK 0x00007fff
-#define TRM_TDC_ERROR_FLAGS_POSITION 0
-
-//TRM TDC error TDC ID mask/position
-#define TRM_TDC_ERROR_TDC_ID_MASK 0x0f00000
-#define TRM_TDC_ERROR_TDC_ID_POSITION 24
-
-//TRM TDC fault chip flag ID mask/position
-#define TRM_TDC_ERROR_FAULT_CHIP_FLAG_ID_MASK 0x00007fff
-#define TRM_TDC_ERROR_FAULT_CHIP_FLAG_ID_POSITION 0
-
-//TRM TDC error C-bit mask/position
-#define TRM_TDC_ERROR_C_BIT_MASK 0x00008000
-#define TRM_TDC_ERROR_C_BIT_POSITION 15
-
-//TRM TDC JTAG error code mask/position
-#define TRM_TDC_ERROR_JTAG_ERROR_CODE_MASK 0x000007ff
-#define TRM_TDC_ERROR_JTAG_ERROR_CODE_POSITION 0
-
-//TRM TDC disgnostic error TDC ID mask/position
-#define TRM_TDC_DIAGNOSTIC_ERROR_TDC_ID_MASK 0x00007800
-#define TRM_TDC_DIAGNOSTIC_ERROR_TDC_ID_POSITION 11 
-
-//TRM global trailer word required bit pattern
-//#define TRM_GLOBAL_TRAILER 0x50000000
-#define TRM_GLOBAL_TRAILER 0x5000000f
-
-//TRM event CRC mask/position
-#define TRM_EVENT_CRC_MASK 0x0000fff0
-#define TRM_EVENT_CRC_POSITION 4
-
-//TRM event counter mask/position
-#define TRM_EVENT_COUNTER_MASK 0x0fff0000
-#define TRM_EVENT_COUNTER_POSITION 16
-
-
-/******************************************
-LTM DATA FORMAT                        
-******************************************/
-
-//LTM global header word required bit pattern
-#define LTM_GLOBAL_HEADER 0x40000002
-
-//LTM event words mask/position
-#define LTM_EVENT_WORDS_MASK 0x0001fff0
-#define LTM_EVENT_WORDS_POSITION 4
-
-//LTM C-bit mask/position
-#define LTM_C_BIT_MASK 0x00020000
-#define LTM_C_BIT_POSITION 17
-
-//LTM fault mask/position
-#define LTM_FAULT_MASK 0x00fc0000
-#define LTM_FAULT_POSITION 18
-
-//PDL data 
-
-//PDL value 1 mask/position
-#define LTM_PDL_VALUE_1_MASK 0x000000ff
-#define LTM_PDL_VALUE_1_POSITION 0
-
-//PDL value 2 mask/position
-#define LTM_PDL_VALUE_2_MASK 0x0000ff00
-#define LTM_PDL_VALUE_2_POSITION 8
-
-//PDL value 3 mask/position
-#define LTM_PDL_VALUE_3_MASK 0x00ff0000
-#define LTM_PDL_VALUE_3_POSITION 16
-
-//PDL value 4 mask/position
-#define LTM_PDL_VALUE_4_MASK 0xff000000
-#define LTM_PDL_VALUE_4_POSITION 24
-
-//ADC data 
-
-//ADC value 1 mask/position
-#define LTM_ADC_VALUE_1_MASK 0x000003ff
-#define LTM_ADC_VALUE_1_POSITION 0
-
-//ADC value 2 mask/position
-#define LTM_ADC_VALUE_2_MASK 0x000ffc00
-#define LTM_ADC_VALUE_2_POSITION 10
-
-//ADC value 3 mask/position
-#define LTM_ADC_VALUE_3_MASK 0x3ff00000
-#define LTM_ADC_VALUE_3_POSITION 20
-
-//LTM global trailer word required bit pattern
-#define LTM_GLOBAL_TRAILER 0x50000002
-
-//LTM event CRC mask/position
-#define LTM_EVENT_CRC_MASK 0x0000fff0
-#define LTM_EVENT_CRC_POSITION 4
-
-//LTM event number mask/position
-#define LTM_EVENT_NUMBER_MASK 0x0fff0000
-#define LTM_EVENT_NUMBER_POSITION 16
-
-
 ClassImp(AliTOFRawStream)
 
 
 //_____________________________________________________________________________
 AliTOFRawStream::AliTOFRawStream(AliRawReader* rawReader):
   fRawReader(rawReader),
-  fTOFrawData(new TClonesArray("AliTOFrawData",1000)),
+  //  fTOFrawData(new TClonesArray("AliTOFrawData",1000)),
+  fTOFrawData(0x0),
+  fDecoder(new AliTOFDecoder()),
   fDDL(-1),
   fTRM(-1),
   fTRMchain(-1),
@@ -421,15 +122,24 @@ AliTOFRawStream::AliTOFRawStream(AliRawReader* rawReader):
   // create an object to read TOF raw digits
   //
 
+  for (Int_t i=0;i<AliDAQ::NumberOfDdls("TOF");i++){
+    fDataBuffer[i]=new AliTOFHitDataBuffer(DATA_BUFFER_SIZE);
+    fPackedDataBuffer[i]=new AliTOFHitDataBuffer(DATA_BUFFER_SIZE);
+  }
+
+  fTOFrawData = new TClonesArray("AliTOFrawData",1000);
+  fTOFrawData->SetOwner();
+
   fRawReader->Reset();
   fRawReader->Select("TOF");
-
 }
 
 //_____________________________________________________________________________
 AliTOFRawStream::AliTOFRawStream():
-  fRawReader(0x0),
-  fTOFrawData(new TClonesArray("AliTOFrawData",1000)),
+  fRawReader(0x0), 
+  //  fTOFrawData(new TClonesArray("AliTOFrawData",1000)),
+  fTOFrawData(0x0),
+  fDecoder(new AliTOFDecoder()),
   fDDL(-1),
   fTRM(-1),
   fTRMchain(-1),
@@ -461,14 +171,22 @@ AliTOFRawStream::AliTOFRawStream():
   //
   // default ctr
   //
+  for (Int_t i=0;i<AliDAQ::NumberOfDdls("TOF");i++){
+    fDataBuffer[i]=new AliTOFHitDataBuffer(DATA_BUFFER_SIZE);
+    fPackedDataBuffer[i]=new AliTOFHitDataBuffer(DATA_BUFFER_SIZE);
+  }
 
+  fTOFrawData = new TClonesArray("AliTOFrawData",1000);
+  fTOFrawData->SetOwner();
 }
 
 //_____________________________________________________________________________
 AliTOFRawStream::AliTOFRawStream(const AliTOFRawStream& stream) :
   TObject(stream),
   fRawReader(0x0),
-  fTOFrawData(new TClonesArray("AliTOFrawData",1000)),
+  //  fTOFrawData(new TClonesArray("AliTOFrawData",1000)),
+  fTOFrawData(0x0),
+  fDecoder(new AliTOFDecoder()),
   fDDL(-1),
   fTRM(-1),
   fTRMchain(-1),
@@ -538,6 +256,13 @@ AliTOFRawStream::AliTOFRawStream(const AliTOFRawStream& stream) :
   fInsideTRMchain0 = stream.fInsideTRMchain0;
   fInsideTRMchain1 = stream.fInsideTRMchain1;
 
+  for (Int_t i=0;i<AliDAQ::NumberOfDdls("TOF");i++){
+    fDataBuffer[i]= new AliTOFHitDataBuffer(*stream.fDataBuffer[i]);
+    fPackedDataBuffer[i]= new AliTOFHitDataBuffer(*stream.fPackedDataBuffer[i]);
+  }
+
+  fTOFrawData = new TClonesArray(*stream.fTOFrawData);
+  
 }
 
 //_____________________________________________________________________________
@@ -582,7 +307,14 @@ AliTOFRawStream& AliTOFRawStream::operator = (const AliTOFRawStream& stream)
   fInsideLTM = stream.fInsideLTM;
   fInsideTRMchain0 = stream.fInsideTRMchain0;
   fInsideTRMchain1 = stream.fInsideTRMchain1;
-
+  
+  for (Int_t i=0;i<AliDAQ::NumberOfDdls("TOF");i++){ 
+    fDataBuffer[i] = stream.fDataBuffer[i];
+    fPackedDataBuffer[i] = stream.fPackedDataBuffer[i];
+  }
+  
+  fTOFrawData = stream.fTOFrawData;
+  
   return *this;
 
 }
@@ -595,9 +327,16 @@ AliTOFRawStream::~AliTOFRawStream()
   fPackedDigits = 0;
 
   delete fTOFGeometry;
+ 
+  for (Int_t i=0;i<72;i++){ 
+    delete fDataBuffer[i];
+    delete fPackedDataBuffer[i];
+  }
 
-  //delete fTOFrawData;
+  delete fDecoder;
 
+  fTOFrawData->Clear();
+  delete fTOFrawData;
 }
 
 
@@ -612,7 +351,8 @@ void AliTOFRawStream::LoadRawData(Int_t indexDDL)
     indexDDL++) {
   */
 
-  fTOFrawData->Clear();
+  fTOFrawData = new TClonesArray("AliTOFrawData",1000); //potential memory leak
+    //fTOFrawData->Clear();
   fPackedDigits = 0;
 
   // create raw data map
@@ -625,6 +365,8 @@ void AliTOFRawStream::LoadRawData(Int_t indexDDL)
   fRawReader->Select("TOF", indexDDL, indexDDL);
     
   Bool_t signal = kFALSE;
+
+  
 
   while(Next()) {
 
@@ -703,6 +445,8 @@ void AliTOFRawStream::LoadRawData(Int_t indexDDL)
     */
 
     //} // closed loop on indexDDL
+
+
 
 }
 
@@ -934,7 +678,7 @@ Bool_t AliTOFRawStream::Next()
 
 
   return kTRUE;
-
+  
 }
 //_____________________________________________________________________________
 
@@ -1310,6 +1054,11 @@ Int_t AliTOFRawStream::GetDDLnumberPerSector(Int_t nDDL) const
 }
 
 //----------------------------------------------------------------------------
+void AliTOFRawStream::EquipmentId2VolumeId(AliTOFHitData *hitData, Int_t *volume) const
+{
+  EquipmentId2VolumeId(hitData->GetDDLID(),hitData->GetSlotID(),hitData->GetChain(),hitData->GetTDC(),hitData->GetChan(),volume);
+}
+//----------------------------------------------------------------------------
 void AliTOFRawStream::EquipmentId2VolumeId(Int_t nDDL, Int_t nTRM, Int_t iChain,
 					Int_t nTDC, Int_t iCH,
 					Int_t *volume) const
@@ -1359,20 +1108,20 @@ void AliTOFRawStream::EquipmentId2VolumeId(Int_t nDDL, Int_t nTRM, Int_t iChain,
 Int_t AliTOFRawStream::GetIndex(Int_t *detId)
 {
   //Retrieve calibration channel index
-  const Int_t kSectors = fTOFGeometry->NSectors();
-  const Int_t kPlates = fTOFGeometry->NPlates();
-  const Int_t kStripA = fTOFGeometry->NStripA();
-  const Int_t kStripB = fTOFGeometry->NStripB();
-  const Int_t kStripC = fTOFGeometry->NStripC();
-  const Int_t kPadX = fTOFGeometry->NpadX();
-  const Int_t kPadZ = fTOFGeometry->NpadZ();
+  const Int_t nSectors = fTOFGeometry->NSectors();
+  const Int_t nPlates = fTOFGeometry->NPlates();
+  const Int_t nStripA = fTOFGeometry->NStripA();
+  const Int_t nStripB = fTOFGeometry->NStripB();
+  const Int_t nStripC = fTOFGeometry->NStripC();
+  const Int_t nPadX = fTOFGeometry->NpadX();
+  const Int_t nPadZ = fTOFGeometry->NpadZ();
 
 
   Int_t isector = detId[0];
-  if (isector >= kSectors)
+  if (isector >= nSectors)
     AliError(Form("Wrong sector number in TOF (%d) !",isector));
   Int_t iplate = detId[1];
-  if (iplate >= kPlates)
+  if (iplate >= nPlates)
     AliError(Form("Wrong plate number in TOF (%d) !",iplate));
   Int_t istrip = detId[2];
   Int_t ipadz = detId[3];
@@ -1383,26 +1132,176 @@ Int_t AliTOFRawStream::GetIndex(Int_t *detId)
     stripOffset = 0;
     break;
   case 1:
-    stripOffset = kStripC;
+    stripOffset = nStripC;
     break;
   case 2:
-    stripOffset = kStripC+kStripB;
+    stripOffset = nStripC+nStripB;
     break;
   case 3:
-    stripOffset = kStripC+kStripB+kStripA;
+    stripOffset = nStripC+nStripB+nStripA;
     break;
   case 4:
-    stripOffset = kStripC+kStripB+kStripA+kStripB;
+    stripOffset = nStripC+nStripB+nStripA+nStripB;
     break;
   default:
     AliError(Form("Wrong plate number in TOF (%d) !",iplate));
     break;
   };
 
-  Int_t idet = ((2*(kStripC+kStripB)+kStripA)*kPadZ*kPadX)*isector +
-               (stripOffset*kPadZ*kPadX)+
-               (kPadZ*kPadX)*istrip+
-	       (kPadX)*ipadz+
+  Int_t idet = ((2*(nStripC+nStripB)+nStripA)*nPadZ*nPadX)*isector +
+               (stripOffset*nPadZ*nPadX)+
+               (nPadZ*nPadX)*istrip+
+	       (nPadX)*ipadz+
 	        ipadx;
   return idet;
 }
+//-----------------------------------------------------------------------------
+Bool_t AliTOFRawStream::DecodeDDL(Int_t DDLMin, Int_t DDLMax, Int_t verbose = 0){
+  Int_t currentEquipment;
+  Int_t currentDDL;
+
+  //pointers
+  UChar_t *data = 0x0;
+  
+  //check and fix valid DDL range
+  if (DDLMin < 0){
+    DDLMin = 0;
+    AliError("Wrong DDL range: setting first DDL ID to 0");
+  }
+  if (DDLMax > 71){
+    DDLMax = 71;
+    AliError("Wrong DDL range: setting last DDL ID to 71");
+  }  
+
+  //select required DDLs
+  fRawReader->Select("TOF", DDLMin, DDLMax);
+
+  if (verbose)
+    AliInfo(Form("Selected TOF DDL range: %d-%d", DDLMin, DDLMax));
+
+  //loop and read DDL headers 
+  while(fRawReader->ReadHeader()){
+
+    //memory leak prevention (actually data should be always 0x0 here)
+    if (data != 0x0)
+      delete [] data;
+
+    //get equipment infos
+    currentEquipment = fRawReader->GetEquipmentId();
+    currentDDL = fRawReader->GetDDLID();
+    const Int_t kDataSize = fRawReader->GetDataSize();
+    const Int_t kDataWords = kDataSize / 4;
+    data = new UChar_t[kDataSize];
+    
+    if (verbose)
+      AliInfo(Form("Found equipment # %d header (DDL # %d): %d bytes (%d words)", currentEquipment, currentDDL, kDataSize, kDataWords));
+    
+    if (verbose)
+      AliInfo(Form("Reading equipment #%d (DDL # %d) data...", currentEquipment, currentDDL));
+    
+    //read equipment payload
+    if (!fRawReader->ReadNext(data, kDataSize))
+      {
+	if (verbose)
+	  AliError("Error while reading DDL data. Go to next equipment");
+	delete [] data;
+	data = 0x0;
+	continue;
+      }
+    
+    if (verbose)
+      AliInfo(Form("Equipment # %d (DDL # %d) data has been readed", currentEquipment, currentDDL));
+    
+    
+    //set up the decoder
+    fDecoder->SetVerbose(verbose);
+    fDecoder->SetDataBuffer(fDataBuffer[currentDDL]);
+    fDecoder->SetPackedDataBuffer(fPackedDataBuffer[currentDDL]);
+    
+    //start decoding
+    if (fDecoder->Decode((UInt_t *)data, kDataWords) == kTRUE)
+      AliError(Form("Error while decoding DDL # %d: decoder returned with errors", currentDDL));
+    
+    delete [] data;
+    data = 0x0;
+  }
+  
+  //reset reader
+  fRawReader->Reset();
+
+  if (verbose)
+    AliInfo("All done");
+    
+  return kFALSE;
+  
+}
+//---------------------------------------------------------------------------
+void
+AliTOFRawStream::ResetBuffers()
+{
+  for (Int_t iDDL = 0; iDDL < AliDAQ::NumberOfDdls("TOF"); iDDL++){
+    ResetDataBuffer(iDDL);
+    ResetPackedDataBuffer(iDDL);
+  }
+}
+  
+//---------------------------------------------------------------------------
+Bool_t
+AliTOFRawStream::LoadRawDataBuffers(Int_t indexDDL, Int_t verbose)
+{
+  fTOFrawData->Clear();
+  fPackedDigits = 0;
+  
+  if (verbose > 0)
+    AliInfo(Form("Decoding raw data for DDL # %d ...", indexDDL));
+
+  if (DecodeDDL(indexDDL, indexDDL, verbose) != 0){ //decode DDL
+    AliError(Form("Error while decoding DDL # %d", indexDDL));
+    return kTRUE;
+  }
+  
+  if (verbose > 0)
+    AliInfo(Form("Done. %d packed %s been found.", fPackedDataBuffer[indexDDL]->GetEntries(), fPackedDataBuffer[indexDDL]->GetEntries() > 1 ? "hits have" : "hit has"));
+  
+  AliTOFHitData *hitData; //hit data pointer
+  
+  if (verbose > 0)
+    AliInfo("Filling TClonesArray ...");
+
+  //loop over DDL packed hits
+  for (Int_t iHit = 0; iHit < fPackedDataBuffer[indexDDL]->GetEntries(); iHit++){
+    hitData = fPackedDataBuffer[indexDDL]->GetHit(iHit); //get hit data
+    Int_t   hitACQ = hitData->GetACQ();
+    Int_t   hitPS = hitData->GetPS();
+    Int_t   hitSlotID = hitData->GetSlotID();
+    Int_t   hitChain = hitData->GetChain();
+    Int_t   hitTDC = hitData->GetTDC();
+    Int_t   hitChan = hitData->GetChan();
+    //    Float_t hitTime = hitData->GetTime();
+    Int_t   hitTimeBin = hitData->GetTimeBin();
+    //    Float_t hitTOT = hitData->GetTOT();
+    Int_t   hitTOTBin = hitData->GetTOTBin();
+    
+    Float_t hitLeading = -1.;
+    Float_t hitTrailing = -1.;
+    Int_t   hitError = -1;
+    
+    TClonesArray &arrayTofRawData =  *fTOFrawData;
+    new (arrayTofRawData[fPackedDigits++]) AliTOFrawData(hitSlotID, hitChain, hitTDC, hitChan, (Float_t)hitTimeBin, (Float_t)hitTOTBin, hitLeading, hitTrailing, hitPS, hitACQ, hitError);
+  }
+
+  if (verbose > 0)
+    AliInfo("Done.");
+
+  if (verbose > 0)
+    AliInfo("Resetting buffers ...");
+
+  fDataBuffer[indexDDL]->Reset();
+  fPackedDataBuffer[indexDDL]->Reset();
+
+  if (verbose > 0)
+    AliInfo("Done.");
+
+  return kFALSE;
+}
+

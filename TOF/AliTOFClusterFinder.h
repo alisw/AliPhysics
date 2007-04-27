@@ -43,6 +43,8 @@ class AliTOFClusterFinder : public TObject
   void UnLoad();
   void UnLoadClusters();
   void SetVerbose(Int_t Verbose){fVerbose=Verbose;} // To set the verbose level
+  void SetDecoderVersion(Int_t version){fDecoderVersion=version;} // To set the decoder version
+  Bool_t GetDecoderVersion() const {return fDecoderVersion;} // To get the decoder version
 
  protected:
   AliRunLoader *fRunLoader;      // Pointer to Run Loader
@@ -68,8 +70,11 @@ class AliTOFClusterFinder : public TObject
   void  CalibrateRecPoint(); // Apply calibration pars to Clusters
 
   Int_t fVerbose;  //Verbose level (0:no msg, 1:msg, 2:digits in txt files)
+  Bool_t fDecoderVersion;   //setting whether to use the new decoder version 
+                            // -true -> new version
+                            // -false ->old version  (default value!!)
 
-  ClassDef(AliTOFClusterFinder,1) // To run TOF clustering
+  ClassDef(AliTOFClusterFinder,2) // To run TOF clustering
 };
 #endif
 

@@ -15,6 +15,9 @@
 #pragma link C++ class  AliTOFRawMap+;
 #pragma link C++ class  AliTOFrawData+;
 #pragma link C++ class  AliTOFRawStream+;
+#pragma link C++ class  AliTOFHitData+;
+#pragma link C++ class  AliTOFHitDataBuffer+;
+#pragma link C++ class  AliTOFDecoder+;
 #pragma link C++ class  AliTOFChannel+;
 #pragma link C++ class  AliTOFChannelOnline+;
 #pragma link C++ class  AliTOFChSim+;
