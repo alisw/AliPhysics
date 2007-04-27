@@ -1,17 +1,17 @@
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+*                                                                        *
+* Author: The ALICE Off-line Project.                                    *
+* Contributors are mentioned in the code where appropriate.              *
+*                                                                        *
+* Permission to use, copy, modify and distribute this software and its   *
+* documentation strictly for non-commercial purposes is hereby granted   *
+* without fee, provided that the above copyright notice appears in all   *
+* copies and that both the copyright notice and this permission notice   *
+* appear in the supporting documentation. The authors make no claims     *
+* about the suitability of this software for any purpose. It is          *
+* provided "as is" without express or implied warranty.                  *
+**************************************************************************/
 
 /* $Id $ */
 
@@ -38,49 +38,64 @@
 #include "AliRawDataHeader.h"
 #include "AliDAQ.h"
 #include "AliLog.h"
+#include "AliMUONPayloadTracker.h"
+#include "AliMUONBlockHeader.h"
+#include "AliMUONDspHeader.h"
+#include "AliMUONBusStruct.h"
+#include "AliMUONDDLTracker.h"
+#include "Riostream.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMUONRawStreamTracker)
 /// \endcond
 
 AliMUONRawStreamTracker::AliMUONRawStreamTracker()
-  : TObject(),
-    fRawReader(0x0),
-    fDDL(0),
-    fBusPatchId(0),
-    fDspId(0),
-    fBlkId(0),
-    fNextDDL(kTRUE),
-    fMaxDDL(20),
-    fPayload(new AliMUONPayloadTracker())
+: TObject(),
+fRawReader(0x0),
+fDDL(0),
+fMaxDDL(20),
+fPayload(new AliMUONPayloadTracker()),
+fCurrentDDL(0),
+fCurrentDDLIndex(fMaxDDL),
+fCurrentBlockHeader(0),
+fCurrentBlockHeaderIndex(0),
+fCurrentDspHeader(0),
+fCurrentDspHeaderIndex(0),
+fCurrentBusStruct(0),
+fCurrentBusStructIndex(0),
+fCurrentDataIndex(0)
 {
   ///
   /// create an object to read MUON raw digits
   /// Default ctor for monitoring purposes
   ///
-
-
+  
+  
 }
 
 //_________________________________________________________________
 AliMUONRawStreamTracker::AliMUONRawStreamTracker(AliRawReader* rawReader)
-  : TObject(),
-    fRawReader(rawReader),
-    fDDL(0),
-    fBusPatchId(0),
-    fDspId(0),
-    fBlkId(0),
-    fNextDDL(kTRUE),
-    fMaxDDL(20),
-    fPayload(new AliMUONPayloadTracker())
-
+: TObject(),
+fRawReader(rawReader),
+fDDL(0),
+fMaxDDL(20),
+fPayload(new AliMUONPayloadTracker()),
+fCurrentDDL(0L),
+fCurrentDDLIndex(fMaxDDL),
+fCurrentBlockHeader(0),
+fCurrentBlockHeaderIndex(0),
+fCurrentDspHeader(0),
+fCurrentDspHeaderIndex(0),
+fCurrentBusStruct(0),
+fCurrentBusStructIndex(0),
+fCurrentDataIndex(0)
 {
   ///
   /// ctor with AliRawReader as argument
   /// for reconstruction purpose
   ///
-
-
+  
+  
 }
 
 //___________________________________
@@ -90,110 +105,268 @@ AliMUONRawStreamTracker::~AliMUONRawStreamTracker()
   /// clean up
   ///
   delete fPayload;
-
 }
 
 //_____________________________________________________________
-Bool_t AliMUONRawStreamTracker::Next()
+Bool_t 
+AliMUONRawStreamTracker::Next(Int_t& busPatchId,
+                              UShort_t& manuId, UChar_t& manuChannel,
+                              UShort_t& adc)
 {
   ///
   /// read the next raw digit (buspatch structure)
   /// returns kFALSE if there is no digit left
-  /// (under development)
+  ///
+  
+  if ( IsDone() ) return kFALSE;
+  
+  if ( fCurrentDataIndex >= fCurrentBusStruct->GetLength()-1 )
+  {
+    Bool_t ok = GetNextBusStruct();
+    if (!ok)
+    {
+      // this is the end
+      return kFALSE;
+    } 
+  }
 
-//      AliMUONDDLTracker*       ddlTracker = 0x0;
-//      AliMUONBlockHeader*      blkHeader  = 0x0;
-//      AliMUONDspHeader*        dspHeader  = 0x0;
-//      Int_t nBusPatch;
-//      Int_t nDsp;
-//      Int_t nBlock;
+  ++fCurrentDataIndex;
 
-//  next:  
-//      if (fNextDDL){
-//        printf("iDDL %d\n", fDDL+1);
-//        fBlkId = 0;
-//        fDspId = 0;
-//        fBusPatchId = 0;
-//        if(!NextDDL()) 
-// 	 return kFALSE;
-//      }
-//      fNextDDL = kFALSE;
+  busPatchId = fCurrentBusStruct->GetBusPatchId();
+  manuId = fCurrentBusStruct->GetManuId(fCurrentDataIndex);
+  manuChannel = fCurrentBusStruct->GetChannelId(fCurrentDataIndex);
+  adc = fCurrentBusStruct->GetCharge(fCurrentDataIndex);
 
-//      ddlTracker = GetDDLTracker();
+  return kTRUE;
+}
 
-//      nBlock = ddlTracker->GetBlkHeaderEntries();
-//      if (fBlkId <  nBlock) {
+//______________________________________________________
+Bool_t
+AliMUONRawStreamTracker::IsDone() const
+{
+  /// Whether the iteration is finished or not
+  return (fCurrentBusStruct==0);
+}
 
-//        blkHeader = ddlTracker->GetBlkHeaderEntry(fBlkId);
-//        nDsp      = blkHeader->GetDspHeaderEntries();
+//______________________________________________________
+void
+AliMUONRawStreamTracker::First()
+{
+  /// Initialize the iteration process
+  
+  fCurrentDDLIndex = -1;
+  fCurrentDspHeaderIndex = -1;
+  fCurrentBusStructIndex = -1;
 
-//        if( fDspId < nDsp) {
-// 	 dspHeader = blkHeader->GetDspHeaderEntry(fDspId);
-// 	 nBusPatch = dspHeader->GetBusPatchEntries();
+  fCurrentDspHeader = 0;
+  fCurrentBusStruct = 0;
+  
+  // Find the first non-empty structure
+  GetNextDDL();
+  GetNextBlockHeader();
+  GetNextDspHeader();
+  GetNextBusStruct();
+}
 
-// 	 if (fBusPatchId < nBusPatch) {
-// 	   fBusStructPtr = dspHeader->GetBusPatchEntry(fBusPatchId++);
-// 	   return kTRUE;
+//______________________________________________________
+Bool_t
+AliMUONRawStreamTracker::GetNextDDL()
+{
+  /// Returns the next DDL present
+  
+  Bool_t kFound(kFALSE);
+  
+  while ( fCurrentDDLIndex < fMaxDDL-1 && !kFound ) 
+  {
+    ++fCurrentDDLIndex;
+    fRawReader->Reset();
+    fRawReader->Select("MUONTRK",fCurrentDDLIndex,fCurrentDDLIndex);
+    if ( fRawReader->ReadHeader() ) 
+    {
+      kFound = kTRUE;
+    }
+  }
+  
+  if ( !kFound ) 
+  {
+    fCurrentDDLIndex = fMaxDDL;
+    return kFALSE;
+  }
+  
+  Int_t totalDataWord  = fRawReader->GetDataSize(); // in bytes
+  
+  AliDebug(3, Form("DDL Number %d totalDataWord %d\n", fCurrentDDLIndex,
+                   totalDataWord));
+  
+  UInt_t *buffer = new UInt_t[totalDataWord/4];
+  
+  if ( !fRawReader->ReadNext((UChar_t*)buffer, totalDataWord) )
+  {
+    fCurrentDDL = 0;
+    return kFALSE;
+  }
+  fPayload->ResetDDL();
+  
+  Bool_t ok = fPayload->Decode(buffer, totalDataWord/4);
+  
+  delete[] buffer;
+  
+  fCurrentDDL = fPayload->GetDDLTracker();
+  
+  fCurrentBlockHeaderIndex = -1;
+  
+  return ok;
+}
 
-// 	 } else {// iBusPatch
-// 	   fDspId++;
-// 	   fBusPatchId = 0;
-// 	   goto next;
-// 	   //	Next();
-// 	 }
+//______________________________________________________
+Bool_t
+AliMUONRawStreamTracker::GetNextBlockHeader()
+{
+  /// Returns the next block Header present
 
-//        } else {// iDsp
-// 	 fBlkId++;
-// 	 fDspId = 0;
-// 	 fBusPatchId = 0;
-// 	 goto next;
-// 	 //      Next();
-//        }
+  fCurrentBlockHeader = 0;
 
-//      } else {// iBlock
-//        fBlkId = 0;
-//        fDspId = 0;
-//        fBusPatchId = 0;
-//        fNextDDL = kTRUE;
-//        //return kTRUE;
-//        goto next; 
-//      }
+  Int_t i(fCurrentBlockHeaderIndex);
+  
+  while ( fCurrentBlockHeader == 0 && i < fCurrentDDL->GetBlkHeaderEntries()-1 ) 
+  {
+    ++i;
+    fCurrentBlockHeader = fCurrentDDL->GetBlkHeaderEntry(i);
+  }
+  
+  if ( !fCurrentBlockHeader ) 
+  {
+    Bool_t ok = GetNextDDL();
+    if (!ok) 
+    {
+      return kFALSE;
+    }
+    else
+    {
+      return GetNextBlockHeader();
+    }
+  }
+  
+  fCurrentBlockHeaderIndex = i;
+  
+  fCurrentDspHeaderIndex = -1;
+  
+  return kTRUE;
+}
 
-     return kFALSE;
+//______________________________________________________
+Bool_t
+AliMUONRawStreamTracker::GetNextDspHeader()
+{
+  /// Returns the next Dsp Header present
+
+  fCurrentDspHeader = 0;
+  
+  Int_t i(fCurrentDspHeaderIndex);
+  
+  while ( fCurrentDspHeader == 0 && i < fCurrentBlockHeader->GetDspHeaderEntries()-1 )
+  {
+    ++i;
+    fCurrentDspHeader = fCurrentBlockHeader->GetDspHeaderEntry(i);
+  }
+  
+  if ( !fCurrentDspHeader ) 
+  {
+    Bool_t ok = GetNextBlockHeader();
+    if (!ok) 
+    {
+      return kFALSE;
+    }
+    else
+    {
+      return GetNextDspHeader();
+    }
+  }
+  
+  fCurrentDspHeaderIndex = i;
+  
+  fCurrentBusStructIndex = -1;
+  
+  return kTRUE;
+}
+
+//______________________________________________________
+Bool_t
+AliMUONRawStreamTracker::GetNextBusStruct()
+{
+  /// Find the next non-empty busPatch structure
+  
+  fCurrentBusStruct = 0;
+
+  Int_t i(fCurrentBusStructIndex);
+  
+  while ( fCurrentBusStruct == 0 && i < fCurrentDspHeader->GetBusPatchEntries()-1 ) 
+  {
+    ++i;
+    fCurrentBusStruct = fCurrentDspHeader->GetBusPatchEntry(i);
+  }
+    
+  if ( !fCurrentBusStruct ) 
+  {
+    Bool_t ok = GetNextDspHeader();
+    if (!ok)
+    {
+      return kFALSE;
+    }
+    else
+    {
+      return GetNextBusStruct();
+    }
+  }
+  
+  fCurrentBusStructIndex = i;
+  
+  fCurrentDataIndex = -1;
+  
+  return kTRUE;
 }
 
 //______________________________________________________
 Bool_t AliMUONRawStreamTracker::NextDDL()
 {
   /// reading tracker DDL
-
+  
   fPayload->ResetDDL();
-
-
-  if (fDDL >= 20) {
+  
+  while ( fDDL < 20 ) 
+  {
+    fRawReader->Reset();
+    fRawReader->Select("MUONTRK", fDDL, fDDL);  //Select the DDL file to be read  
+    if (fRawReader->ReadHeader()) break;
+    AliDebug(3,Form("Skipping DDL %d which does not seem to be there",fDDL));
+    ++fDDL;
+  }
+  
+  if ( fDDL == 20 ) 
+  {
     fDDL = 0;
     return kFALSE;
   }
+  
   AliDebug(3, Form("DDL Number %d\n", fDDL ));
-
-  fRawReader->Reset();
-  fRawReader->Select("MUONTRK", fDDL, fDDL);  //Select the DDL file to be read  
-
-  if(!fRawReader->ReadHeader()) return kFALSE;
-
+  
   Int_t totalDataWord  = fRawReader->GetDataSize(); // in bytes
-
+  
   UInt_t *buffer = new UInt_t[totalDataWord/4];
-
-  if(!fRawReader->ReadNext((UChar_t*)buffer, totalDataWord)) return kFALSE;
-
-  fPayload->Decode(buffer, totalDataWord/4);
-
+  
+  if(!fRawReader->ReadNext((UChar_t*)buffer, totalDataWord))
+  {
+    AliError("a memory leak is here");
+    return kFALSE;
+  }
+  
+  Bool_t ok = fPayload->Decode(buffer, totalDataWord/4);
+  
   delete[] buffer;
-
+  
   fDDL++;
-
-  return kTRUE;
+  
+  return ok;
 }
 
 //______________________________________________________
@@ -202,7 +375,6 @@ void AliMUONRawStreamTracker::SetMaxDDL(Int_t ddl)
   /// set DDL number
   if (ddl > 20) ddl = 20;
   fMaxDDL = ddl;
-
 }
 
 //______________________________________________________

@@ -16,7 +16,9 @@
 
 class AliRawReader;
 class AliMUONDDLTracker;
-
+class AliMUONDspHeader;
+class AliMUONBusStruct;
+class AliMUONBlockHeader;
 
 class AliMUONRawStreamTracker: public TObject {
   public :
@@ -24,8 +26,27 @@ class AliMUONRawStreamTracker: public TObject {
     AliMUONRawStreamTracker(AliRawReader* rawReader);
     virtual ~AliMUONRawStreamTracker();
 
-    virtual Bool_t   Next();
-    virtual Bool_t   NextDDL();
+    /// Initialize iterator
+    void First();
+
+    /// Returns current DDL object during iteration
+    AliMUONDDLTracker* CurrentDDL() const { return fCurrentDDL; }
+    
+    /// Returns current BlockHeader object during iteration
+    AliMUONBlockHeader* CurrentBlockHeader() const { return fCurrentBlockHeader; }
+    
+    /// Returns current DspHeader object during iteration
+    AliMUONDspHeader* CurrentDspHeader() const { return fCurrentDspHeader; }
+    
+    /// Returns current BusStruct object during iteration
+    AliMUONBusStruct* CurrentBusStruct() const { return fCurrentBusStruct; }
+    
+    /// Advance one step in the iteration. Returns false if finished.
+    virtual Bool_t Next(Int_t& busPatchId, 
+                        UShort_t& manuId, UChar_t& manuChannel, 
+                        UShort_t& adc);
+    
+    virtual Bool_t NextDDL();
 
     /// Return maximum number of DDL in DATE file
     Int_t GetMaxDDL()   const {return fMaxDDL;}
@@ -59,26 +80,37 @@ class AliMUONRawStreamTracker: public TObject {
     /// Return number of DDL
     Int_t                   GetDDL()        const {return fDDL - 1;}
 
+    /// Whether the iteration is finished or not
+    Bool_t IsDone() const;
+
   private :
     /// Not implemented
     AliMUONRawStreamTracker(const AliMUONRawStreamTracker& stream);
     /// Not implemented
     AliMUONRawStreamTracker& operator = (const AliMUONRawStreamTracker& stream);
 
-    AliRawReader*    fRawReader;    ///< object for reading the raw data
- 
-    Int_t  fDDL;          ///< number of DDL
-    Int_t  fBusPatchId;   ///< entry of buspatch structure
-    Int_t  fDspId;        ///< entry of Dsp header
-    Int_t  fBlkId;        ///< entry of Block header
+    Bool_t GetNextDDL();
+    Bool_t GetNextBlockHeader();
+    Bool_t GetNextDspHeader();
+    Bool_t GetNextBusStruct();
 
-    Bool_t fNextDDL;      ///< flag for next DDL to be read
-
-    Int_t  fMaxDDL;       ///< maximum number of DDL in DATE file
-
+ private:
+    AliRawReader*    fRawReader;    ///< object for reading the raw data  
+    Int_t  fDDL;          ///< number of DDL    
+    Int_t  fMaxDDL;       ///< maximum number of DDL in DATE file    
     AliMUONPayloadTracker* fPayload; ///< pointer to payload decoder
-
-    ClassDef(AliMUONRawStreamTracker, 2)    // base class for reading MUON raw digits
+    
+    AliMUONDDLTracker* fCurrentDDL; //!< for iterator: current ddl ptr
+    Int_t fCurrentDDLIndex; //!< for iterator: current ddl index
+    AliMUONBlockHeader* fCurrentBlockHeader; //!< for iterator: current block ptr
+    Int_t fCurrentBlockHeaderIndex; //!< for iterator: current block index    
+    AliMUONDspHeader* fCurrentDspHeader; //!< for iterator: current dsp ptr
+    Int_t fCurrentDspHeaderIndex; //!< for iterator: current dsp index    
+    AliMUONBusStruct* fCurrentBusStruct; //!< for iterator: current bus ptr
+    Int_t fCurrentBusStructIndex; //!< for iterator: current bus index    
+    Int_t fCurrentDataIndex; //!< for iterator: current data index
+    
+    ClassDef(AliMUONRawStreamTracker, 3)    // base class for reading MUON raw digits
 };
 
 #endif
