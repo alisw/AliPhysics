@@ -24,11 +24,7 @@ SRCS= FEMTOSCOPY/AliFemto/Analysis/AliFemtoAnalysis.cxx \
       FEMTOSCOPY/AliFemto/Infrastructure/TpcLocalTransform.cxx \
       FEMTOSCOPY/AliFemto/Base/AliFemtoEventReader.cxx \
       FEMTOSCOPY/AliFemto/Reader/AliFemtoEventReaderESD.cxx \
-      FEMTOSCOPY/AliFemto/Reader/AliFemtoEventReaderESDChain.cxx \
-      FEMTOSCOPY/AliFemtoUser/Cut/AliFemtoQPairCut.cxx \
-      FEMTOSCOPY/AliFemtoUser/Cut/AliFemtoShareQualityPairCut.cxx \
-      FEMTOSCOPY/AliFemtoUser/Cut/AliFemtoESDTrackCut.cxx \
-      FEMTOSCOPY/AliFemtoUser/CorrFctn/AliFemtoShareQualityCorrFctn.cxx 
+      FEMTOSCOPY/AliFemto/Reader/AliFemtoEventReaderESDChain.cxx 
 
 HDRS= $(SRCS:.cxx=.h) 
 HDRS += FEMTOSCOPY/AliFemto/Infrastructure/AliFmThreeVector.h \
@@ -42,9 +38,9 @@ HDRS += FEMTOSCOPY/AliFemto/Infrastructure/AliFmThreeVector.h \
         FEMTOSCOPY/AliFemto/Base/AliFemtoXiCut.h 
 
 
-DHDR:=PWG2femtoscopyLinkDef.h
+DHDR:= PWG2femtoscopyLinkDef.h
 
 EXPORT:=
 
-EINCLUDE:= PWG2/FEMTOSCOPY/AliFemto PWG2/FEMTOSCOPY/AliFemto/Base PWG2/FEMTOSCOPY/AliFemto/Infrastructure PWG2/FEMTOSCOPY/AliFemto/Reader PWG2/FEMTOSCOPY/AliFemto/Cut PWG2/FEMTOSCOPY/AliFemto/CorrFctn PWG2/FEMTOSCOPY/AliFemtoUser PWG2/FEMTOSCOPY/AliFemtoUser/Cut PWG2/FEMTOSCOPY/AliFemtoUser/CorrFctn
+EINCLUDE:= PWG2/FEMTOSCOPY/AliFemto PWG2/FEMTOSCOPY/AliFemto/Base PWG2/FEMTOSCOPY/AliFemto/Infrastructure PWG2/FEMTOSCOPY/AliFemto/Reader PWG2/FEMTOSCOPY/AliFemto/Cut PWG2/FEMTOSCOPY/AliFemto/CorrFctn 
 
