@@ -43,7 +43,8 @@ AliTPCRawStream::AliTPCRawStream(AliRawReader* rawReader) :
   fRow(-1),
   fPrevRow(-1),
   fPad(-1),
-  fPrevPad(-1)
+  fPrevPad(-1),
+  fIsMapOwner(kTRUE)
 {
   // create an object to read TPC raw digits
 
@@ -65,21 +66,34 @@ AliTPCRawStream::AliTPCRawStream(AliRawReader* rawReader) :
 //_____________________________________________________________________________
 AliTPCRawStream::AliTPCRawStream(const AliTPCRawStream& stream) :
   AliAltroRawStream(stream),
-  fSector(-1),
-  fPrevSector(-1),
-  fRow(-1),
-  fPrevRow(-1),
-  fPad(-1),
-  fPrevPad(-1)
+  fSector(stream.fSector),
+  fPrevSector(stream.fPrevSector),
+  fRow(stream.fRow),
+  fPrevRow(stream.fPrevRow),
+  fPad(stream.fPad),
+  fPrevPad(stream.fPrevPad),
+  fIsMapOwner(kFALSE)
 {
-  Fatal("AliTPCRawStream", "copy constructor not implemented");
+  for(Int_t i = 0; i < 6; i++) fMapping[i] = stream.fMapping[i];
 }
 
 //_____________________________________________________________________________
-AliTPCRawStream& AliTPCRawStream::operator = (const AliTPCRawStream& 
-					      /* stream */)
+AliTPCRawStream& AliTPCRawStream::operator = (const AliTPCRawStream& stream)
 {
-  Fatal("operator =", "assignment operator not implemented");
+  if(&stream == this) return *this;
+
+  ((AliAltroRawStream *)this)->operator=(stream);
+
+  fSector = stream.fSector;
+  fPrevSector = stream.fPrevSector;
+  fRow = stream.fRow;
+  fPrevRow = stream.fPrevRow;
+  fPad = stream.fPad;
+  fPrevPad = stream.fPrevPad;
+  fIsMapOwner = kFALSE;
+
+  for(Int_t i = 0; i < 6; i++) fMapping[i] = stream.fMapping[i];
+
   return *this;
 }
 
@@ -88,7 +102,8 @@ AliTPCRawStream::~AliTPCRawStream()
 {
 // destructor
 
-  for(Int_t i = 0; i < 6; i++) delete fMapping[i];
+  if (fIsMapOwner)
+    for(Int_t i = 0; i < 6; i++) delete fMapping[i];
 }
 
 //_____________________________________________________________________________

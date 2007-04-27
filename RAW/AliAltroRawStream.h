@@ -70,9 +70,10 @@ class AliAltroRawStream: public TObject {
       kBadAltroMapping = 7
     };
 
-  protected:
-    AliAltroRawStream(const AliAltroRawStream& stream);
     AliAltroRawStream& operator = (const AliAltroRawStream& stream);
+    AliAltroRawStream(const AliAltroRawStream& stream);
+
+  protected:
 
     Bool_t           fNoAltroMapping;  // temporary flag in case of no altro mapping is provided
     Short_t          fSegmentation[3]; // temporary container for the dummy trailer, to be removed
