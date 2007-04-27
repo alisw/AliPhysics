@@ -82,7 +82,7 @@ class AliAODCluster : public AliVirtualParticle {
  
   template <class T> void SetPID(const T *pid) {
     if(pid) for(Int_t i=0; i<9; ++i) fPID[i]=pid[i];
-    else {for(Int_t i=0; i<9; fPID[i++]=0);}}
+    else {for(Int_t i=0; i<9; fPID[i++]=0);} fPID[AliAODCluster::kUnknown]=1.;}
 
   Int_t GetID() const { return fID; }
   Int_t GetLabel() const { return fLabel; } 
