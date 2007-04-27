@@ -637,7 +637,7 @@ void AliPHOSTrigger::Trigger()
 }
 
 //____________________________________________________________________________
-void AliPHOSTrigger::Trigger(char * fileName) 
+void AliPHOSTrigger::Trigger(const char * fileName) 
 {
 
   //Main Method to select triggers.

@@ -49,7 +49,7 @@ class AliPHOSTrigger : public AliTriggerDetector {
   virtual void    CreateInputs(); //Define trigger inputs for Central Trigger Processor
   void            Print(const Option_t * opt ="") const ;  
   virtual void    Trigger();  //Make PHOS trigger
-  void    Trigger(char * fileName);  //Make PHOS trigger
+  void    Trigger(const char * fileName);  //Make PHOS trigger
 
   //Getters
   Float_t  Get2x2MaxAmplitude()  const {return f2x2MaxAmp ; }
