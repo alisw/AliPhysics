@@ -628,7 +628,7 @@ void AliDIPOv2::CreateCompensatorDipole()
     Float_t pbox[3] = {63., 63., 170.};
     
 //  Mother volumes
-    gMC->Gsvolu("DCM0", "BOX", idtmed[1814], pbox, 3);
+    gMC->Gsvolu("DCM0", "BOX", idtmed[1814 + 40], pbox, 3);
     gMC->Gsatt("DCM0", "SEEN", 0);
     
 //
@@ -637,31 +637,31 @@ void AliDIPOv2::CreateCompensatorDipole()
     pbox[1] = 30.0;
     pbox[2] = 152.5;
     
-    gMC->Gsvolu("DCML", "BOX", idtmed[1809], pbox, 3);
+    gMC->Gsvolu("DCML", "BOX", idtmed[1809 + 40], pbox, 3);
 //
 // Base
     pbox[0] = 62.5;
     pbox[1] = 15.0;
-    gMC->Gsvolu("DCBA", "BOX", idtmed[1809], pbox, 3);
+    gMC->Gsvolu("DCBA", "BOX", idtmed[1809 + 40], pbox, 3);
 //
 // Coil: straight sections, horizontal
     pbox[0] =   6.;
     pbox[1] =  11.;
     pbox[2] = 135.;
-    gMC->Gsvolu("DCH1", "BOX", idtmed[1816], pbox, 3);
+    gMC->Gsvolu("DCH1", "BOX", idtmed[1816 + 40], pbox, 3);
 //
 // Coil: straight sections, horizontal
     pbox[0] =   6.;
     pbox[1] =  11.;
     pbox[2] = 135.;
-    gMC->Gsvolu("DCH2", "BOX", idtmed[1816], pbox, 3);
+    gMC->Gsvolu("DCH2", "BOX", idtmed[1816 + 40], pbox, 3);
 
 //
 // Mother volume containing upper coil
     pbox[0] =    8.0;
     pbox[1] =   17.5;
     pbox[2] =  135.0;
-    gMC->Gsvolu("DCMU", "BOX", idtmed[1809], pbox, 3);
+    gMC->Gsvolu("DCMU", "BOX", idtmed[1809 + 40], pbox, 3);
 
 //
 // Coil: straight sections, vertical
@@ -669,7 +669,7 @@ void AliDIPOv2::CreateCompensatorDipole()
     pbox[1] =  9.5;
     pbox[2] = 11.0;
     
-    gMC->Gsvolu("DCCV", "BOX", idtmed[1816], pbox, 3);
+    gMC->Gsvolu("DCCV", "BOX", idtmed[1816 + 40], pbox, 3);
 //
 // Coil: circular section 
 
@@ -685,7 +685,7 @@ void AliDIPOv2::CreateCompensatorDipole()
     ptubs[2] =  6.;
     ptubs[3] =  0.;
     ptubs[4] = 90.;
-    gMC->Gsvolu("DCC1", "TUBS", idtmed[1816], ptubs, 5);
+    gMC->Gsvolu("DCC1", "TUBS", idtmed[1816 + 40], ptubs, 5);
 //
 // Clamps
     Float_t ppgon[10];
@@ -699,7 +699,7 @@ void AliDIPOv2::CreateCompensatorDipole()
     ppgon[7] =  1.;
     ppgon[8] =  0.;
     ppgon[9] = 24.75;
-    gMC->Gsvolu("DCLA", "PGON", idtmed[1809], ppgon, 10);
+    gMC->Gsvolu("DCLA", "PGON", idtmed[1809 + 40], ppgon, 10);
 //
 // Assemble all
 //
@@ -748,8 +748,6 @@ void AliDIPOv2::CreateCompensatorDipole()
     gMC->Gspos("DCBA", 1, "DCM0",  0., -47.5 , 17.5, 0, "ONLY");
     AliMatrix(idrotm[1816], 270., 0., 90., 90.,  180., 0.);  
     gMC->Gspos("DCM0", 1, "ALIC",  0., -6.75,  1080., idrotm[1816], "ONLY");
-
-
 }
 
 //_____________________________________________________________________________
