@@ -51,7 +51,7 @@ public:
 
    Char_t   GetParity(Int_t n) const;
    UShort_t GetManuId(Int_t n) const;
-   Char_t   GetChannelId(Int_t n) const;
+   UChar_t   GetChannelId(Int_t n) const;
    UShort_t GetCharge(Int_t n) const; 
    UInt_t   GetData(Int_t n) const;
 

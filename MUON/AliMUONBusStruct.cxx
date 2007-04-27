@@ -205,7 +205,7 @@ UShort_t AliMUONBusStruct::GetManuId(Int_t n) const
 }
 
 //___________________________________________
-Char_t AliMUONBusStruct::GetChannelId(Int_t n) const  
+UChar_t AliMUONBusStruct::GetChannelId(Int_t n) const  
 {
   /// 
   /// get channel Id
