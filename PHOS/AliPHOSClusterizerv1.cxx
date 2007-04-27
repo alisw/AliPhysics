@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.103  2007/04/11 11:55:45  policheh
+ * SetDistancesToBadChannels() added.
+ *
  * Revision 1.102  2007/03/28 19:18:15  kharlov
  * RecPoints recalculation in TSM removed
  *
@@ -433,27 +436,12 @@ void AliPHOSClusterizerv1::GetCalibrationParameters()
 {
   // Set calibration parameters:
   // if calibration database exists, they are read from database,
-  // otherwise, they are taken from digitizer.
+  // otherwise, reconstruction stops in the constructor of AliPHOSCalibData
   //
   // It is a user responsilibity to open CDB before reconstruction, for example: 
   // AliCDBStorage* storage = AliCDBManager::Instance()->GetStorage("local://CalibDB");
 
-  AliPHOSGetter * gime = AliPHOSGetter::Instance();
-  // fCalibData = new AliPHOSCalibData(gAlice->GetRunNumber()); //original
- 
   fCalibData = new AliPHOSCalibData(-1); //use AliCDBManager's run number
-  
-  if(!fCalibData)
-    {
-      if ( !gime->Digitizer() ) 
-	gime->LoadDigitizer();
-      AliPHOSDigitizer * dig = gime->Digitizer(); 
-      fADCchanelEmc   = dig->GetEMCchannel() ;
-      fADCpedestalEmc = dig->GetEMCpedestal();
-    
-      fADCchanelCpv   = dig->GetCPVchannel() ;
-      fADCpedestalCpv = dig->GetCPVpedestal() ; 
-    }
 }
 
 //____________________________________________________________________________

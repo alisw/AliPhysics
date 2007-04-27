@@ -22,6 +22,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "TRandom.h"
+#include "AliLog.h"
 #include "AliPHOSCalibData.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
@@ -44,15 +45,23 @@ ClassImp(AliPHOSCalibData)
     fCpvDataPath("PHOS/Calib/CpvGainPedestals"),
     fEmcBadChannelsMapPath("PHOS/Calib/EmcBadChannels")
 {
-  // Default constructor
+  // Default constructor.
+  // Open CDB entry, get EMC and CPV calibration data and bad channel map.
+  // If EMC or CPV calibration data does not exist, stop the run
   
    AliCDBEntry* entryEmc = AliCDBManager::Instance()->Get(fEmcDataPath.Data());
   if(entryEmc)
     fCalibDataEmc = (AliPHOSEmcCalibData*)entryEmc->GetObject();
-  
+
+  if(!fCalibDataEmc)
+    AliFatal("Calibration parameters for PHOS EMC not found. Stop reconstruction!\n");
+    
   AliCDBEntry* entryCpv = AliCDBManager::Instance()->Get(fCpvDataPath.Data());
   if(entryCpv)
     fCalibDataCpv = (AliPHOSCpvCalibData*)entryCpv->GetObject();
+
+  if(!fCalibDataCpv)
+    AliFatal("Calibration parameters for PHOS CPV not found. Stop reconstruction!\n");
 
   AliCDBEntry* entryEmcBadMap = AliCDBManager::Instance()->Get(fEmcBadChannelsMapPath.Data());
   if(entryEmcBadMap)
@@ -69,14 +78,23 @@ AliPHOSCalibData::AliPHOSCalibData(Int_t runNumber) :
   fEmcBadChannelsMapPath("PHOS/Calib/EmcBadChannels")
 {
   // Constructor
+  // Open CDB entry, get EMC and CPV calibration data and bad channel map.
+  // If EMC or CPV calibration data does not exist, stop the run
+
   AliCDBEntry* entryEmc = AliCDBManager::Instance()->Get(fEmcDataPath.Data(),runNumber);
   if(entryEmc)
     fCalibDataEmc = (AliPHOSEmcCalibData*)entryEmc->GetObject();
+
+  if(!fCalibDataEmc)
+    AliFatal("Calibration parameters for PHOS EMC not found. Stop reconstruction!\n");
   
   AliCDBEntry* entryCpv = AliCDBManager::Instance()->Get(fCpvDataPath.Data(),runNumber);
   if(entryCpv)
     fCalibDataCpv = (AliPHOSCpvCalibData*)entryCpv->GetObject();
 
+  if(!fCalibDataCpv)
+    AliFatal("Calibration parameters for PHOS CPV not found. Stop reconstruction!\n");
+  
   AliCDBEntry* entryEmcBadMap = AliCDBManager::Instance()->
     Get(fEmcBadChannelsMapPath.Data(),runNumber);
   if(entryEmcBadMap)
