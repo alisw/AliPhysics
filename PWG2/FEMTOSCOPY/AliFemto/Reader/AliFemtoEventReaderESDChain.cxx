@@ -94,7 +94,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
 	
   hbtEvent = new AliFemtoEvent;
   //setting basic things
-  //hbtEvent->SetEventNumber(fEvent->GetEventNumber());
+  hbtEvent->SetEventNumber(fEvent->GetEventNumber());
   hbtEvent->SetRunNumber(fEvent->GetRunNumber());
   //hbtEvent->SetNumberOfTracks(fEvent->GetNumberOfTracks());
   hbtEvent->SetMagneticField(fEvent->GetMagneticField()*kilogauss);//to check if here is ok
