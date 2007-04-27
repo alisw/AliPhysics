@@ -146,11 +146,14 @@ void AliDIPOv3::CreateSpectrometerDipole()
      
     TGeoBBox* shDDIP2 =  new TGeoBBox(164., 182., 36.);
     shDDIP2->SetName("shDDIP2");
-    TGeoTranslation* trDDIP2 = new TGeoTranslation("trDDIP2", 0., 0., kZDipole);
+    TGeoTranslation* trDDIP2 = new TGeoTranslation("trDDIP2", 0., 0., kZDipole - 12.);
     trDDIP2->RegisterYourself();
 
-    TGeoCompositeShape*  shDDIP = new TGeoCompositeShape("shDDIP", "shDDIP1+shDDIP2:trDDIP2");
+    TGeoTube* shDDIP3 =  new TGeoTube(0., 30., 40.);
+    shDDIP3->SetName("shDDIP3");
 
+
+    TGeoCompositeShape*  shDDIP = new TGeoCompositeShape("shDDIP", "shDDIP1+(shDDIP2:trDDIP2-shDDIP3:trDDIP2)");
     TGeoVolume*  voDDIP = new TGeoVolume("DDIP", shDDIP, kMedAir);
 //
 // Yoke
@@ -404,7 +407,7 @@ void AliDIPOv3::CreateSpectrometerDipole()
     
     TGeoVolume* voHS1 = new TGeoVolume("DHS1", new TGeoBBox( 1.5, 12.5, hsLength/2.), kMedSteel);
     TGeoVolume* voHS2 = new TGeoVolume("DHS2", new TGeoBBox(12.5,  1.5, hsLength/2.), kMedSteel);
-    Float_t hsH = gapHeight/2. + blockHeight - (rmax1+rmax2)/2.;
+    Float_t hsH = gapHeight/2. + blockHeight - (rmax1+rmax2)/2. - 2.;
     
     TGeoVolume* voHS3 = new TGeoVolume("DHS3", new TGeoBBox(3.5/2., hsH/2., 25./2.),    kMedSteel);
 
