@@ -171,63 +171,30 @@ Int_t AliMUONDigitMaker::ReadTrackerDDL(AliRawReader* rawReader)
   Int_t    buspatchId;
   UChar_t  channelId;
   UShort_t manuId;
-  Char_t   parity;
   UShort_t charge; 
-  Int_t    dataSize;
 
   Int_t iChamber;
 
-  AliMUONDDLTracker*   ddlTracker = 0x0;
-  AliMUONBlockHeader*  blkHeader  = 0x0;
-  AliMUONDspHeader*    dspHeader  = 0x0;
-  AliMUONBusStruct*    busStruct  = 0x0;
-
   fRawStreamTracker->SetReader(rawReader);
-
-  while(fRawStreamTracker->NextDDL()) {
-    
-    ddlTracker =  fRawStreamTracker->GetDDLTracker();
-
-    Int_t nBlock = ddlTracker->GetBlkHeaderEntries();
-    for(Int_t iBlock = 0; iBlock < nBlock ;iBlock++){
-
-      blkHeader = ddlTracker->GetBlkHeaderEntry(iBlock);
- 
-      Int_t nDsp = blkHeader->GetDspHeaderEntries();
-
-      for(Int_t iDsp = 0; iDsp < nDsp ;iDsp++){   //DSP loop
-
-	dspHeader =  blkHeader->GetDspHeaderEntry(iDsp);
-
-	Int_t nBusPatch = dspHeader->GetBusPatchEntries();
-
-	for(Int_t iBusPatch = 0; iBusPatch < nBusPatch; iBusPatch++) {  
-
-	  busStruct = dspHeader->GetBusPatchEntry(iBusPatch);
-
-	  dataSize   = busStruct->GetLength();
-	  buspatchId = busStruct->GetBusPatchId();
-
-	  for (Int_t iData = 0; iData < dataSize; iData++) {
-
-	    // digits info
-	    parity    = busStruct->GetParity(iData); // test later for parity
-	    manuId    = busStruct->GetManuId(iData);
-	    channelId = busStruct->GetChannelId(iData);
-	    charge    = busStruct->GetCharge(iData);
-	    // set charge
+  fRawStreamTracker->First();
+  
+  while ( fRawStreamTracker->Next(buspatchId,manuId,channelId,charge) )
+  {    
 	    fDigit->SetSignal(charge);
 	    fDigit->SetPhysicsSignal(charge);
 	    fDigit->SetADC(charge);
 
 	    // Get Back the hits at pads
 	    Int_t error = GetMapping(buspatchId,manuId,channelId,fDigit); 
-	    if (error) {
+	    if (error) 
+      {
 	      AliWarning("Mapping Error\n");
 	      continue;
 	    }
-	    // debugging 
-	    if (AliLog::GetGlobalDebugLevel() == 3) {
+	    
+      // debugging 
+	    if (AliLog::GetGlobalDebugLevel() == 3) 
+      {
 	      Int_t padX  = fDigit->PadX();
 	      Int_t padY  = fDigit->PadY();
 	      Int_t iCath = fDigit->Cathode();  
@@ -243,23 +210,21 @@ Int_t AliMUONDigitMaker::ReadTrackerDDL(AliRawReader* rawReader)
 	    // fill digits
 	    iChamber = AliMpDEManager::GetChamberId(fDigit->DetElemId());
 
- 
 	    if (fDigitFlag || fDisplayFlag)
-		fMUONData->AddDigit(iChamber, *fDigit);
+      {
+        fMUONData->AddDigit(iChamber, *fDigit);
+      }
 	    else
-		fMUONData->AddSDigit(iChamber, *fDigit);
-
-
-	  } // iData
-	} // iBusPatch
-      } // iDsp
-    } // iBlock
-  } // NextDDL
-
+      {
+        fMUONData->AddSDigit(iChamber, *fDigit);
+      }
+  }
+  
   fTrackerTimer.Stop();
 
   return kTRUE;
 }
+
 //____________________________________________________________________
 Int_t AliMUONDigitMaker::GetMapping(Int_t busPatchId, UShort_t manuId, 
 					 UChar_t channelId, AliMUONDigit* digit )
