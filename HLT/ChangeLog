@@ -4,6 +4,9 @@
 	- libHLTbase free of AliRoot dependencies
 	- dynamic loeding of AliLog support
 	- AliHLTFileWriter moved to libAliHLTUtil
+	- workaround for ROOT bug: in order to avoid crashes when unloading 
+	  dynamic libraries via gSystem, the libraries are not unloaded
+	  further investigation necessary
 2007-04-17 HLT sample applications
 	- publisher for AliLoader trees added
 	- sample analysis chain added tp sample lib

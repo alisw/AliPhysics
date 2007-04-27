@@ -341,7 +341,24 @@ int AliHLTComponentHandler::UnloadLibrary(AliHLTComponentHandler::AliHLTLibHandl
   int* pCount=reinterpret_cast<int*>(handle.handle);
   if (--(*pCount)==0) {
     if (pName) {
+      /** Matthias 26.04.2007
+       * I spent about a week to investigate a bug which seems to be in ROOT.
+       * Under certain circumstances, TSystem::Unload crashes. The crash occured
+       * for the first time, when libAliHLTUtil was loaded from AliHLTSystem right
+       * after the ComponentHandler was created. It does not occur when dlopen is
+       * used. 
+       * It has most likely to do with the garbage collection and automatic
+       * cleanup in ROOT. The crash occurs when ROOT is terminated and before
+       * an instance of AliHLTSystem was created.
+       *   root [0] AliHLTSystem gHLT
+       * It does not occur when the instance was created dynamically (but not even
+       * deleted)
+       *   root [0] AliHLTSystem* gHLT=new AliHLTSystem
+       *
+       * For that reason, the libraries are not unloaded here, even though there
+       * will be memory leaks.
       gSystem->Unload(pName->Data());
+       */
     }
     else {
       HLTError("missing library name, can not unload");
