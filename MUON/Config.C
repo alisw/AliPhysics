@@ -152,15 +152,15 @@ void Config(char directory[100]="", char option[6]="param")
   //=================== Alice BODY parameters =============================
   AliBODY *BODY = new AliBODY("BODY","Alice envelop");
   //=================== ABSO parameters ============================
-  AliABSO *ABSO = new AliABSOv0("ABSO", "Muon Absorber");
+  AliABSO *ABSO = new AliABSOv3("ABSO", "Muon Absorber");
   //=================== DIPO parameters ============================
-  AliDIPO *DIPO = new AliDIPOv2("DIPO", "Dipole version 2");
+  AliDIPO *DIPO = new AliDIPOv3("DIPO", "Dipole version 2");
   //================== HALL parameters ============================
-  AliHALL *HALL = new AliHALL("HALL", "Alice Hall");
+  AliHALL *HALL = new AliHALLv3("HALL", "Alice Hall");
   //=================== PIPE parameters ============================
-  AliPIPE *PIPE = new AliPIPEv0("PIPE", "Beam Pipe");
+  AliPIPE *PIPE = new AliPIPEv3("PIPE", "Beam Pipe");
   //=================== SHIL parameters ============================
-  AliSHIL *SHIL = new AliSHILv2("SHIL", "Shielding Version 2");
+  AliSHIL *SHIL = new AliSHILv3("SHIL", "Shielding Version 2");
 
   //=================== MUON Subsystem ===========================
   AliMUON *MUON = new AliMUONv1("MUON", "default");
