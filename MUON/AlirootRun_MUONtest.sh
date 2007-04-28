@@ -97,7 +97,7 @@ EOF
 
 echo "Running dumps for selected event (5) ..."
 
-aliroot -b >& testDump.out << EOF
+aliroot -b << EOF
 AliMUONData data("galice.root");
 data.DumpKine(5);       > dump.kine
 data.DumpHits(5);       > dump.hits
