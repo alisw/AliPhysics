@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.95  2007/04/10 07:20:52  kharlov
+ * Decalibration should use the same CDB as calibration in AliPHOSClusterizerv1
+ *
  * Revision 1.94  2007/02/01 10:34:47  hristov
  * Removing warnings on Solaris x86
  *
@@ -482,6 +485,17 @@ void AliPHOSDigitizer::Digitize(Int_t event)
       digit->SetAmp(DigitizeCPV(digit->GetEnergy(),digit->GetId()) ) ;
     }
   }
+
+  Int_t relId[4];
+
+  //set amplitudes in bad channels to zero
+  for(i = 0 ; i <digits->GetEntries(); i++){
+    digit = dynamic_cast<AliPHOSDigit*>( digits->At(i) ) ;
+    gime->PHOSGeometry()->AbsToRelNumbering(digit->GetId(),relId);
+    if(relId[1] == 0) // Emc
+      if(gime->CalibData()->IsBadChannelEmc(relId[0],relId[3],relId[2])) digit->SetEnergy(0.); 
+  }
+
 }
 
 //____________________________________________________________________________
