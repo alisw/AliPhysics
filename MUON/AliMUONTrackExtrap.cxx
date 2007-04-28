@@ -349,6 +349,7 @@ void AliMUONTrackExtrap::ExtrapToVertexUncorrected(AliMUONTrackParam* trackParam
     exit(-1);
   }
   
+/*
   // Check whether the geometry is available and get absorber boundaries
   if (!gGeoManager) {
     cout<<"E-AliMUONTrackExtrap::ExtrapToVertexUncorrected: no TGeo"<<endl;
@@ -364,7 +365,10 @@ void AliMUONTrackExtrap::ExtrapToVertexUncorrected(AliMUONTrackParam* trackParam
   const Double_t *absPos = absNode->GetMatrix()->GetTranslation();
   zAbsBeg = absPos[2] - zAbsBeg; // spectro. (z<0)
   zAbsEnd = absPos[2] - zAbsEnd; // spectro. (z<0)
-  
+*/
+  static const Double_t zAbsBeg = -90.;
+  static const Double_t zAbsEnd = -505.;
+    
   // Check the vertex position relatively to the absorber
   if (zVtx < zAbsBeg && zVtx > zAbsEnd) { // spectro. (z<0)
     cout<<"W-AliMUONTrackExtrap::ExtrapToVertex: Ending Z ("<<zVtx
@@ -592,6 +596,7 @@ void AliMUONTrackExtrap::ExtrapToVertex(AliMUONTrackParam* trackParam, Double_t 
     return;
   }
   
+/*
   // Check whether the geometry is available and get absorber boundaries
   if (!gGeoManager) {
     cout<<"E-AliMUONTrackExtrap::ExtrapToVertex: no TGeo"<<endl;
@@ -607,6 +612,9 @@ void AliMUONTrackExtrap::ExtrapToVertex(AliMUONTrackParam* trackParam, Double_t 
   const Double_t *absPos = absNode->GetMatrix()->GetTranslation();
   zAbsBeg = absPos[2] - zAbsBeg; // spectro. (z<0)
   zAbsEnd = absPos[2] - zAbsEnd; // spectro. (z<0)
+*/
+  static const Double_t zAbsBeg = -90.;
+  static const Double_t zAbsEnd = -505.;
   
   // Check the vertex position relatively to the absorber
   if (zVtx < zAbsBeg && zVtx > zAbsEnd) { // spectro. (z<0)
