@@ -51,6 +51,8 @@ public:
   
   /// Set pointer to transformations
   void  SetTransformer(const AliMUONGeometryTransformer* transformer) {fTransformer = transformer;}
+  /// Get pointer to transformations
+  const AliMUONGeometryTransformer* GetTransformer() {return fTransformer;}
 
 private:
 
