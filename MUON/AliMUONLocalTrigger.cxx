@@ -141,6 +141,21 @@ Char_t AliMUONLocalTrigger::GetLoDecision()
   return fLoDecision;
 }
 
+//___________________________________________
+void AliMUONLocalTrigger::GetXPattern(TArrayS& array) const
+{
+    /// return array of X pattern
+    Short_t vec[4] = {GetX1Pattern(), GetX2Pattern(), GetX3Pattern(), GetX4Pattern()};
+    array.Set(4, vec);
+}
+
+//___________________________________________
+void AliMUONLocalTrigger::GetYPattern(TArrayS& array) const
+{
+    /// return array of Y pattern
+    Short_t vec[4] = {GetY1Pattern(), GetY2Pattern(), GetY3Pattern(), GetY4Pattern()};
+    array.Set(4, vec);
+}
 
 //----------------------------------------------------------------------
 void AliMUONLocalTrigger::SetLocalStruct(Int_t loCircuit, AliMUONLocalStruct& localStruct)
