@@ -39,8 +39,7 @@ class AliTRDgeometry : public AliGeometry {
   virtual Bool_t   Impact(const TParticle *) const                     { return kTRUE;           }
   virtual Bool_t   IsHole(Int_t /*p*/, Int_t /*c*/, Int_t /*s*/) const { return kFALSE;          }
 
-  virtual Bool_t   Rotate(Int_t d, Double_t *pos, Double_t *rot) const;
-  virtual Bool_t   RotateBack(Int_t d, Double_t *rot, Double_t *pos) const;
+  virtual Bool_t   RotateBack(Int_t det, Double_t *loc, Double_t *glb) const;
 
           void     GroupChamber(Int_t iplan, Int_t icham, Int_t *idtmed);
           void     CreateFrame(Int_t *idtmed);
@@ -196,11 +195,6 @@ class AliTRDgeometry : public AliGeometry {
   Float_t               fCwidth[kNplan];                     //  Outer widths of the chambers
   Float_t               fClength[kNplan][kNcham];            //  Outer lengths of the chambers
 
-  Float_t               fRotA11[kNsect];                     //  Matrix elements for the rotation
-  Float_t               fRotA12[kNsect];                     //  Matrix elements for the rotation
-  Float_t               fRotA21[kNsect];                     //  Matrix elements for the rotation
-  Float_t               fRotA22[kNsect];                     //  Matrix elements for the rotation
-
   Float_t               fRotB11[kNsect];                     //  Matrix elements for the backward rotation
   Float_t               fRotB12[kNsect];                     //  Matrix elements for the backward rotation
   Float_t               fRotB21[kNsect];                     //  Matrix elements for the backward rotation
@@ -223,7 +217,7 @@ class AliTRDgeometry : public AliGeometry {
   TObjArray            *fMatrixCorrectionArray;              //! Transformation cluster to tracking system
   TObjArray            *fMatrixGeo;                          //! Geo matrices
 
-  ClassDef(AliTRDgeometry,12)                                //  TRD geometry class
+  ClassDef(AliTRDgeometry,13)                                //  TRD geometry class
 
 };
 

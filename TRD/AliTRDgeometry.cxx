@@ -261,11 +261,6 @@ void AliTRDgeometry::Init()
   Float_t phi = 0.0;
   for (isect = 0; isect < fgkNsect; isect++) {
     phi = 2.0 * TMath::Pi() /  (Float_t) fgkNsect * ((Float_t) isect + 0.5);
-    fRotA11[isect] = TMath::Cos(phi);
-    fRotA12[isect] = TMath::Sin(phi);
-    fRotA21[isect] = TMath::Sin(phi);
-    fRotA22[isect] = TMath::Cos(phi);
-    phi = -1.0 * phi;
     fRotB11[isect] = TMath::Cos(phi);
     fRotB12[isect] = TMath::Sin(phi);
     fRotB21[isect] = TMath::Sin(phi);
@@ -1322,38 +1317,18 @@ void AliTRDgeometry::GroupChamber(Int_t iplan, Int_t icham, Int_t *idtmed)
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDgeometry::Rotate(Int_t d, Double_t *pos, Double_t *rot) const
+Bool_t AliTRDgeometry::RotateBack(Int_t det, Double_t *loc, Double_t *glb) const
 {
   //
-  // Rotates all chambers in the position of sector 0 and transforms
-  // the coordinates in the ALICE restframe <pos> into the 
-  // corresponding local frame <rot>.
+  // Rotates a chambers to transform the corresponding local frame 
+  // coordinates <loc> into the coordinates of the ALICE restframe <glb>.
   //
 
-  Int_t sector = GetSector(d);
+  Int_t sector = GetSector(det);
 
-  rot[0] =  pos[0] * fRotA11[sector] + pos[1] * fRotA12[sector];
-  rot[1] = -pos[0] * fRotA21[sector] + pos[1] * fRotA22[sector];
-  rot[2] =  pos[2];
-
-  return kTRUE;
-
-}
-
-//_____________________________________________________________________________
-Bool_t AliTRDgeometry::RotateBack(Int_t d, Double_t *rot, Double_t *pos) const
-{
-  //
-  // Rotates a chambers from the position of sector 0 into its
-  // original position and transforms the corresponding local frame 
-  // coordinates <rot> into the coordinates of the ALICE restframe <pos>.
-  //
-
-  Int_t sector = GetSector(d);
-
-  pos[0] =  rot[0] * fRotB11[sector] + rot[1] * fRotB12[sector];
-  pos[1] = -rot[0] * fRotB21[sector] + rot[1] * fRotB22[sector];
-  pos[2] =  rot[2];
+  glb[0] = loc[0] * fRotB11[sector] - loc[1] * fRotB12[sector];
+  glb[1] = loc[0] * fRotB21[sector] + loc[1] * fRotB22[sector];
+  glb[2] = loc[2];
 
   return kTRUE;
 
