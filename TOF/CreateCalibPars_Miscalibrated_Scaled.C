@@ -18,21 +18,26 @@ void CreateCalibPars_Miscalibrated_Scaled(){
   Float_t par[6] = {0.,0.,0.,0.,0.,0.};
   for(Int_t i =0;i<6;i++){
     par[i]=fit->GetParameter(i);
-    cout << " Slewing parameters=" << par[i] << endl;
+    cout << " Slewing parameter " <<i<<" =" << par[i] << endl;
   }
 
-  // Global time offset 3 ns
-  Float_t delay=3.;
+  // Global time offset (randomly gen, gaussian with mean = 0.3, sig=0.08 ns)
+
+  Float_t delay=0.;
+  Float_t meanDelay=0.3;
+  Float_t sigmaDelay=0.08;
 
   // ToT spectrum 
+
   TH1F *hToT=  (TH1F*)f.Get("hToTScaled");
 
   // Fill the Sim calibration object
 
-  //  TRandom *rnd   = new TRandom(4357);
+  TRandom *rnd   = new TRandom(4357);
   for (Int_t ipad = 0 ; ipad<tofCal->NPads(); ipad++){
     AliTOFChannel *calChannel = tofCal->GetChannel(ipad);
     calChannel->SetSlewPar(par);
+    delay=rnd->Gaus(meanDelay,sigmaDelay);
     calChannel->SetDelay(delay);
   }
   tofcalib->WriteSimParOnCDB("TOF/Calib",0,0,tofCal,hToT);
