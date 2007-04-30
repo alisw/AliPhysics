@@ -106,7 +106,7 @@ class AliITSv11Hybrid : public AliITS {
  protected:
     void CreateOldGeometry();
     void SetT2Lmatrix(const char *name, Double_t dAlpha, Double_t dxSign,
-		      Double_t yShift, Bool_t yFlip) const; // Set T2L matrix in TGeoPNEntries
+		      Double_t yShift, Bool_t yFlip, Bool_t yRot180=kFALSE) const; // Set T2L matrix in TGeoPNEntries
 
  private:
     AliITSv11Hybrid(const AliITSv11Hybrid &source); // copy constructor

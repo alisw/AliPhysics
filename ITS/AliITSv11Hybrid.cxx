@@ -169,7 +169,7 @@ AliITSv11Hybrid::~AliITSv11Hybrid() {
 
 //______________________________________________________________________
 void AliITSv11Hybrid::SetT2Lmatrix(const char *name, Double_t dAlpha,
-			      Double_t dxSign, Double_t yShift, Bool_t yFlip)
+		      Double_t dxSign, Double_t yShift, Bool_t yFlip, Bool_t yRot180)
   const {
 
   //
@@ -188,6 +188,9 @@ void AliITSv11Hybrid::SetT2Lmatrix(const char *name, Double_t dAlpha,
   Double_t *gtrans = globMatrix->GetTranslation(), rotMatrix[9];
   memcpy(&rotMatrix[0], globMatrix->GetRotationMatrix(), 9*sizeof(Double_t));
   Double_t al = TMath::ATan2(rotMatrix[1],rotMatrix[0]) + dAlpha;
+  if (yRot180) {
+    al = TMath::ATan2(rotMatrix[1],-rotMatrix[0]) + dAlpha;
+  }
 
   TGeoHMatrix *matLtoT = new TGeoHMatrix;
   matLtoT->SetDx( dxSign*(gtrans[0]*TMath::Cos(al)+gtrans[1]*TMath::Sin(al)) ); // translation
@@ -196,7 +199,14 @@ void AliITSv11Hybrid::SetT2Lmatrix(const char *name, Double_t dAlpha,
   rotMatrix[0]= 0;  rotMatrix[1]= 1;  rotMatrix[2]= 0; // + rotation
   rotMatrix[3]= 1;  rotMatrix[4]= 0;  rotMatrix[5]= 0;
   rotMatrix[6]= 0;  rotMatrix[7]= 0;  rotMatrix[8]=-1;
-  if (yFlip) rotMatrix[3] = -1;  // flipping in y ? (for SPD1)
+  if (yFlip) rotMatrix[3] = -1;  // flipping in y  (for SPD1)
+
+  if (yRot180) { // rotation of pi around the axis perpendicular to the wafer
+    matLtoT->SetDy( -yShift );
+    rotMatrix[3] = -1;
+    matLtoT->SetDz(gtrans[2]);
+    rotMatrix[8]=1;
+  }
 
   TGeoRotation rot;
   rot.SetMatrix(rotMatrix);
@@ -381,7 +391,7 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
 	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data()))
 	  AliFatal("Unable to set alignable entry!!");
 
-	SetT2Lmatrix(strEntryName2.Data(), TMath::Pi(), -1, 0, kFALSE);
+	SetT2Lmatrix(strEntryName2.Data(), TMath::Pi(), -1, 0, kFALSE, c2>=3);
       }
     }
 
@@ -414,7 +424,7 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
 	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data()))
 	  AliFatal("Unable to set alignable entry!!");  
 
-  	SetT2Lmatrix(strEntryName2.Data(), TMath::Pi(), -1, 0, kFALSE);
+  	SetT2Lmatrix(strEntryName2.Data(), TMath::Pi(), -1, 0, kFALSE, c2>=4);
       }
     }
 
@@ -622,6 +632,11 @@ void AliITSv11Hybrid::BuildGeometry(){
 //______________________________________________________________________
 void AliITSv11Hybrid::CreateGeometry() {
 
+  // Create the geometry and insert it in ALIC
+  // It calls first the CreateOldGeometry() routine which add the
+  // pieces coming from the old v10 geometry. Then the pieces from
+  // the new geometry are inserting in the mother volume ITSV.
+
   TGeoManager *geoManager = gGeoManager;
 
   CreateOldGeometry();
@@ -635,14 +650,8 @@ void AliITSv11Hybrid::CreateGeometry() {
 
 //______________________________________________________________________
 void AliITSv11Hybrid::CreateOldGeometry(){
-    //    This routine defines and Creates the geometry for version 10 of 
-    // the ITS.
-    // Inputs:
-    //   none.
-    // Outputs:
-    //   none.
-    // Return:
-    //   none.
+  //    This routine defines and creates some pieces of the geometry
+  // of version 10 (AliITSvPPRasymmFMD)
 
     //Begin_Html
     /*
