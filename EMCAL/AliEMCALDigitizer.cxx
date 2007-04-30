@@ -614,11 +614,11 @@ Bool_t AliEMCALDigitizer::Init()
 //____________________________________________________________________________ 
 void AliEMCALDigitizer::InitParameters()
 { 
-  //parameter initialization for digitizer
-  // Tune parameters - 24-nov-04
+  // Parameter initialization for digitizer
+  // Tune parameters - 24-nov-04; Apr 29, 2007
 
-  fMeanPhotonElectron = 3300 ; // electrons per GeV 
-  fPinNoise           = 0.004; 
+  fMeanPhotonElectron = 3300;  // electrons per GeV 
+  fPinNoise           = 0.010; // pin noise in GEV from analysis test beam data 
   if (fPinNoise == 0. ) 
     Warning("InitParameters", "No noise added\n") ; 
   fDigitThreshold     = fPinNoise * 3; // 3 * sigma
