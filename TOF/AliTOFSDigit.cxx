@@ -196,7 +196,7 @@ void AliTOFSDigit::Update(Float_t tdcbin, Int_t tdc, Int_t adc, Int_t track)
   }
   
   if (sameTime >= 0) {
-    (*fAdc)[sameTime] += static_cast<Float_t>(adc);
+    (*fAdc)[sameTime] += adc;
     // update track - find the first -1  value and replace it by the
     // track number
     for (Int_t iTrack=0; iTrack<kMAXDIGITS; iTrack++) {
