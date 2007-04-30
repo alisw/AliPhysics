@@ -2,7 +2,6 @@
 # $Id$
 
 SRCS  = AliTOFGeometry.cxx  \
-	AliTOFGeometryV4.cxx  \
 	AliTOFGeometryV5.cxx  \
         AliTOFdigit.cxx  \
         AliTOFRawMap.cxx\
