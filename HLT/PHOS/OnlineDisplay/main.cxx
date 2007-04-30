@@ -38,7 +38,9 @@ main(int argc, char** argv)
     try 
       {
 	TApplication app("app", 0, 0);
-	AliHLTPHOSOnlineDisplay* phosDisplayPtr = AliHLTPHOSOnlineDisplay::Instance();
+	//	AliHLTPHOSOnlineDisplay* phosDisplayPtr = new AliHLTPHOSOnlineDisplay();
+	//	AliHLTPHOSOnlineDisplay* phosDisplayPtr = AliHLTPHOSOnlineDisplay::Instance();
+	AliHLTPHOSOnlineDisplay::Instance();
 	app.Run();
       }
     

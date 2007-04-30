@@ -12,6 +12,8 @@
 #include "AliHLTPHOSRcuCellAccumulatedEnergyDataStruct.h"
 #include "AliHLTPHOSCommonDefs.h"
 
+//#include "TGMatrixLayout.h"
+
 /**************************************************************************
  * This file is property of and copyright by the Experimental Nuclear     *
  * Physics Group, Dep. of Physics                                         *
@@ -47,6 +49,7 @@ AliHLTPHOSOnlineDisplay*   AliHLTPHOSOnlineDisplay::fgInstancePtr      = 0;     
 HOMERReader*               AliHLTPHOSOnlineDisplay::fgHomerReaderPtr   = 0;           /**<Homer reader that fetches events from the HLT online stream*/
 HOMERReader*               AliHLTPHOSOnlineDisplay::fgHomerReadersPtr[MAX_HOSTS];     /**<Homer reader that fetches events from the HLT online stream*/
 HOMERReader*               AliHLTPHOSOnlineDisplay::fgCalibReadersPtr[MAX_HOSTS];     /**<Homer reader that fetches histograms from the HLT online stream*/
+HOMERReader*               AliHLTPHOSOnlineDisplay::fgChannelRawReadersPtr[MAX_HOSTS];
 TH2D*                      AliHLTPHOSOnlineDisplay::fgLegoPlotLGPtr      = 0;         /**<2D histogram for low gain channels*/
 TH2D*                      AliHLTPHOSOnlineDisplay::fgLegoPlotHGPtr      = 0;         /**<2D histogram for high gain channels*/
 TH2D*                      AliHLTPHOSOnlineDisplay::fgCalibHistPtr[N_GAINS];          /**<2D histogram for low gain channels*/
@@ -57,6 +60,7 @@ char*                      AliHLTPHOSOnlineDisplay::fgDefaultDataType  = "RENELL
 int                        AliHLTPHOSOnlineDisplay::fgEvntCnt          = 0;           /**<Event Counter*/
 TCanvas*                   AliHLTPHOSOnlineDisplay::fgCanvasHGPtr      = 0;           /**<Canvas to plot fgLegoplot for High gain channels*/ 
 TCanvas*                   AliHLTPHOSOnlineDisplay::fgCanvasLGPtr      = 0;           /**<Canvas to plot fgLegoplot for Low gain channels*/ 
+TCanvas*                   AliHLTPHOSOnlineDisplay::fgTestCanvasPtr    = 0;
 Bool_t                     AliHLTPHOSOnlineDisplay::fgAccumulate       = kFALSE ;     /**<If set to kFALSE reset fgLegoplot between event, kTRUE adds current energies to previous plot*/
 Bool_t                     AliHLTPHOSOnlineDisplay::fgSyncronize       = kFALSE ;
 unsigned int               AliHLTPHOSOnlineDisplay::fgNHosts           = 0;
@@ -78,10 +82,24 @@ TGCompositeFrame*          AliHLTPHOSOnlineDisplay::fSubF4             = 0;
 TGCompositeFrame*          AliHLTPHOSOnlineDisplay::fSubF5             = 0;
 TGCompositeFrame*          AliHLTPHOSOnlineDisplay::fSubF6             = 0;
 TGCompositeFrame*          AliHLTPHOSOnlineDisplay::fSubF7             = 0;
+TGCompositeFrame*          AliHLTPHOSOnlineDisplay::fSubF8             = 0;
 
 TGTab*                     AliHLTPHOSOnlineDisplay::fTab               = 0;
 TGTab*                     AliHLTPHOSOnlineDisplay::fSubTab1           = 0;
 TGTab*                     AliHLTPHOSOnlineDisplay::fSubTab2           = 0;
+TGTab*                     AliHLTPHOSOnlineDisplay::fSubTab3           = 0;
+
+TGTab*                     AliHLTPHOSOnlineDisplay::fSubTabModule[N_MODULES];
+TGTab*                     AliHLTPHOSOnlineDisplay::fSubSubTabRcu[N_MODULES][N_RCUS_PER_MODULE]; 
+
+//TH1D*                      AliHLTPHOSOnlineDisplay::fgChannelDataPlotPtr[N_MODULES][N_RCUS_PER_MODULE][N_ZROWS_RCU][N_XCOLUMNS_RCU];
+TH1D*                      AliHLTPHOSOnlineDisplay::fgChannelDataPlotPtr[N_ZROWS_RCU][N_XCOLUMNS_RCU];
+
+//TRootEmbeddedCanvas*       AliHLTPHOSOnlineDisplay::fgChannelDataCanvasPtr[N_MODULES][N_RCUS_PER_MODULE][N_ZROWS_RCU][N_XCOLUMNS_RCU];
+TRootEmbeddedCanvas*       AliHLTPHOSOnlineDisplay::fgChannelDataCanvasPtr[N_ZROWS_RCU][N_XCOLUMNS_RCU];
+TRootEmbeddedCanvas*       AliHLTPHOSOnlineDisplay::fTest              = 0;
+
+TGCompositeFrame*          AliHLTPHOSOnlineDisplay::fgChannelDataCompositeFramePtr[N_MODULES][N_RCUS_PER_MODULE];
 
 TRootEmbeddedCanvas*       AliHLTPHOSOnlineDisplay::fEc1               = 0; 
 TRootEmbeddedCanvas*       AliHLTPHOSOnlineDisplay::fEc2               = 0; 
@@ -118,8 +136,9 @@ AliHLTPHOSOnlineDisplay::AliHLTPHOSOnlineDisplay()
 
   for(int i = 0; i <fgNHosts; i++)
     {
-      fgHomerReadersPtr[i] =  new  HOMERReader(fgHosts[i], fgPorts[i]); 
-      fgCalibReadersPtr[i] =  new  HOMERReader(fgHosts[i], fgPorts[i]);
+      fgHomerReadersPtr[i] =      new  HOMERReader(fgHosts[i], fgPorts[i]); 
+      fgCalibReadersPtr[i] =      new  HOMERReader(fgHosts[i], fgPorts[i]);
+      fgChannelRawReadersPtr[i] = new  HOMERReader(fgHosts[i], fgPorts[i]);
     }
  
  InitDisplay();
@@ -135,13 +154,15 @@ AliHLTPHOSOnlineDisplay::~AliHLTPHOSOnlineDisplay()
 void
 AliHLTPHOSOnlineDisplay::InitDisplay()
 {
-  fgLegoPlotHGPtr = new TH2D("Homer","HLT: #pi^{0} 5 - 30Gev, High gain",  
+  char tmpHistoName[256];
+
+  fgLegoPlotHGPtr = new TH2D("Homer","HLT: #pi^{0} 5 - 30Gev HG, High gain",  
 			     N_XCOLUMNS_MOD*N_MODULES , 0, N_XCOLUMNS_MOD*N_MODULES,  
                              N_ZROWS_MOD,               0, N_ZROWS_MOD);
   fgLegoPlotHGPtr->SetMaximum( MAX_BIN_VALUE);
   fgLegoPlotHGPtr->Reset();
 
-  fgLegoPlotLGPtr = new TH2D("Homer","HLT: #pi^{0} 5 - 30Gev, Low gain",  
+  fgLegoPlotLGPtr = new TH2D("Homer","HLT: #pi^{0} 5 - 30Gev LG, Low gain",  
 			     N_XCOLUMNS_MOD* N_MODULES , 0, N_XCOLUMNS_MOD* N_MODULES,  
 			     N_ZROWS_MOD,          0, N_ZROWS_MOD);
   fgLegoPlotLGPtr->SetMaximum( MAX_BIN_VALUE); 
@@ -149,23 +170,38 @@ AliHLTPHOSOnlineDisplay::InitDisplay()
 
   for(int gain = 0; gain< N_GAINS; gain ++)
     {
-      fgCalibHistPtr[gain] = new TH2D("Homer","HLT:",  
+      sprintf(tmpHistoName, "HLT gain %d", gain);
+      fgCalibHistPtr[gain] = new TH2D(tmpHistoName, tmpHistoName,  
 				      N_XCOLUMNS_MOD*N_MODULES , 0, N_XCOLUMNS_MOD*N_MODULES , 
 				      N_ZROWS_MOD,         0, N_ZROWS_MOD);
       fgCalibHistPtr[gain]->Reset(); 
      
-      fgHitsHistPtr[gain] = new TH2I("Homer","HLT: #pi^{0} 5 - 30Gev",  
+      sprintf(tmpHistoName, "Calibration Data HLT: #pi^{0} 5 - 30GeV gain %d", gain);
+      fgHitsHistPtr[gain] = new TH2I(tmpHistoName, tmpHistoName,  
 				    N_XCOLUMNS_MOD* N_MODULES , 0, N_XCOLUMNS_MOD*N_MODULES,  
 				    N_ZROWS_MOD,          0, N_ZROWS_MOD);
       fgHitsHistPtr[gain]->SetMaximum( MAX_BIN_VALUE); 
       fgHitsHistPtr[gain]->Reset();
 
-      fgAveragePtr[gain] = new TH2D("Homer","HLT: #pi^{0} 5 - 30Gev",  
+      sprintf(tmpHistoName, "Average Data HLT: #pi^{0} 5 - 30GeV gain %d", gain);
+      fgAveragePtr[gain] = new TH2D(tmpHistoName,tmpHistoName,  
 				    N_XCOLUMNS_MOD* N_MODULES , 0, N_XCOLUMNS_MOD*N_MODULES,  
 				    N_ZROWS_MOD,          0, N_ZROWS_MOD);
       fgAveragePtr[gain]->SetMaximum( MAX_BIN_VALUE); 
       fgAveragePtr[gain]->Reset();
+    }
 
+  char tmpChDtaName[256];
+
+  for(int z = 0; z < N_ZROWS_RCU; z ++)
+    {
+      for(int x = 0; x < N_XCOLUMNS_RCU; x ++)
+	{
+	  sprintf(tmpHistoName, "blablaz%d x%d",z, x);
+	  fgChannelDataPlotPtr[z][x] = new TH1D(tmpHistoName, tmpHistoName, 300, 0, 299);
+	  fgChannelDataPlotPtr[z][x]->SetMaximum(MAX_BIN_VALUE); 
+	  fgChannelDataPlotPtr[z][x]->Reset();
+	}
     }
 
   gStyle->SetPalette(1);
@@ -175,7 +211,7 @@ AliHLTPHOSOnlineDisplay::InitDisplay()
 
   TGCompositeFrame *tf = fTab->AddTab("Event display");
            fSubTab1 = new TGTab(tf, 100, 100);
-           TGCompositeFrame *tf2 = fSubTab1->AddTab("FGLEGO");  
+           TGCompositeFrame *tf2 = fSubTab1->AddTab("LEGO");  
 	   fSubF1 = new TGCompositeFrame(tf2, 60, 20, kVerticalFrame);
 	   fEc1 = new TRootEmbeddedCanvas("ec1", fSubF1, 100, 100);
 	   fSubF1->AddFrame(fEc1, fL1);
@@ -202,18 +238,20 @@ AliHLTPHOSOnlineDisplay::InitDisplay()
 	   tf->AddFrame(fSubTab1, fL1);
 
   tf = fTab->AddTab("Calibration data");
-  fF1 = new TGCompositeFrame(tf, 60, 20, kVerticalFrame);
+  // fF1 = new TGCompositeFrame(tf, 60, 20, kVerticalFrame);
      
            fSubTab2 = new TGTab(tf, 100, 100);
 
 	   tf2 = fSubTab2->AddTab("Accumulated energy");   
 	   fSubF4 = new TGCompositeFrame(tf2, 60, 20, kVerticalFrame);
+
 	   fEc7 = new TRootEmbeddedCanvas("ec7", fSubF4, 100, 100);
 	   fSubF4->AddFrame(fEc7, fL1);
+
 	   fEc8 = new TRootEmbeddedCanvas("ec8", fSubF4, 100, 100);
 	   fSubF4->AddFrame(fEc8, fL1);
+
 	   tf2->AddFrame(fSubF4, fL1);
-	   
 	   
 	   tf2 = fSubTab2->AddTab("SCAT (hits)"); 
 	   fSubF5 = new TGCompositeFrame(tf2, 60, 20, kVerticalFrame);
@@ -231,7 +269,6 @@ AliHLTPHOSOnlineDisplay::InitDisplay()
 	   fEc12 = new TRootEmbeddedCanvas("ec12", fSubF6, 100, 100);
 	   fSubF6->AddFrame(fEc12, fL1);
 
-	   
 	   tf2 = fSubTab2->AddTab("acummulated energy / hits"); 
 	   fSubF7 = new TGCompositeFrame(tf2, 60, 20, kVerticalFrame);
 	   tf2->AddFrame(fSubF7, fL1);
@@ -239,24 +276,46 @@ AliHLTPHOSOnlineDisplay::InitDisplay()
 	   fSubF7->AddFrame(fEc13, fL1);
 	   fEc14 = new TRootEmbeddedCanvas("ec14", fSubF7, 100, 100);
 	   fSubF7->AddFrame(fEc14, fL1);
-	   
 
 	   fSubTab2->Resize();
 	   tf->AddFrame(fSubTab2, fL1);
 
 
+  tf = fTab->AddTab("Raw Data Display");
 
+           fSubTab3 = new TGTab(tf, 100, 100);
+	   TGLayoutHints *hints = new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0); 
 
+	   char tmpTabName[256];
+	   char tmpCanvasName[256];
+		   sprintf(tmpTabName, "Raw data");
+		   tf2 = fSubTab3->AddTab(tmpTabName);
 
-  tf = fTab->AddTab("Tab 3");
-  fF2 = new TGCompositeFrame(tf, 60, 20, kVerticalFrame);
-  tf->AddFrame(fF2, fL1);
+		   fgChannelDataCompositeFramePtr[0][0] = new TGCompositeFrame(tf2, 60, 20, kVerticalFrame);
+		   for(int z = 0; z < 4; z ++)
+		     {
+		       for(int x = 0; x < 4; x ++)
+			 { 
+			   hints = new TGLayoutHints(kLHintsNormal, x*100, 0, 0, 0); 
+			   sprintf(tmpCanvasName, "name"); 
+			   fgChannelDataCanvasPtr[z][x] = new TRootEmbeddedCanvas(tmpCanvasName, fgChannelDataCompositeFramePtr[0][0], 100, 100);
+			   fgChannelDataCompositeFramePtr[0][0]->AddFrame(fgChannelDataCanvasPtr[z][x], hints);	  
+			 }
+		     }
+
+		   tf2->AddFrame(fgChannelDataCompositeFramePtr[0][0],hints);  
+	   
+		   fgEventButtPtr = new  AliHLTPHOSGetEventButton(fgChannelDataCompositeFramePtr[0][0], "Get Rawdata", 'r');  
+  
+		   fSubTab3->Resize();
+		   tf->AddFrame(fSubTab3, fL1);
+		   
+
 
   tf = fTab->AddTab("Tab 4");
-  fF4 = new TGCompositeFrame(tf, 60, 20, kVerticalFrame);
-  tf->AddFrame(fF4, fL1);
 
   AddFrame(fTab, fL1);
+
   fgEventButtPtr = new  AliHLTPHOSGetEventButton(fSubF1, "get event", 'e');
   fgEventButtPtr = new  AliHLTPHOSGetEventButton(fSubF4, "update histograms", 'h');
 
@@ -483,6 +542,85 @@ AliHLTPHOSOnlineDisplay::GetNextEvent()
   fgEvntCnt ++;
 }
 
+int 
+AliHLTPHOSOnlineDisplay::GetNextEventRaw()
+{
+  cout << "AliHLTPHOSOnlineDisplay::GetNextEventRaw():updating RawdataDisplay" << endl;
+  int ret = 0;
+  unsigned long ndx;
+  const AliHLTComponentBlockData* iter = NULL;
+  for(int reader = 0; reader <  fgNHosts; reader ++)
+    {
+      ret = fgChannelRawReadersPtr[reader]->ReadNextEvent();  
+      if( ret ) 
+	{
+	  int ndx = fgChannelRawReadersPtr[reader]->GetErrorConnectionNdx();
+	  printf( "------------ TRY AGAIN --------------->Error reading event from source %d: %s (%d)\n", ndx, strerror(ret), ret );
+	  cout << "HOMER getconncetioNdx  status = " << ndx << endl;
+	  return ret; 
+	}
+      
+      unsigned long blockCnt = fgChannelRawReadersPtr[reader]->GetBlockCnt();
+      cout << "AliHLTPHOSOnlineDisplay::NextEventRaw():  blockCnt  = " << blockCnt << endl;
+
+      for ( unsigned long i = 0; i < blockCnt; i++ ) 
+	{
+	  char tmp1[9], tmp2[5];
+	  memset( tmp1, 0, 9 );
+	  memset( tmp2, 0, 5);
+	  void *tmp11 = tmp1;
+	  ULong64_t* tmp12 = (ULong64_t*)tmp11;
+	  *tmp12 =fgChannelRawReadersPtr[reader]->GetBlockDataType( i );
+	  void *tmp21 = tmp2;
+	  ULong_t* tmp22 = (ULong_t*)tmp21;
+	  *tmp22 = fgChannelRawReadersPtr[reader]->GetBlockDataOrigin( i );
+	  cout << "Dataype is: "<< tmp1<<"   "<<tmp2 <<endl;
+	}
+      
+      unsigned long blk = fgChannelRawReadersPtr[reader]->FindBlockNdx("ATADNAHC","SOHP", 0xeFFFFFFF );
+
+      while ( blk != ~(unsigned long)0 ) 
+	{
+	  cout << ":GetNextEventRaw(): updating block " << endl;
+	  AliHLTUInt16_t moduleID;
+	  const AliHLTPHOSRcuChannelDataStruct* rcuChannelDataPtr = (const AliHLTPHOSRcuChannelDataStruct*)fgChannelRawReadersPtr[reader]->GetBlockData( blk ); 
+	  moduleID = rcuChannelDataPtr->fModuleID ;
+	  int tmpx;
+	  int tmpz;
+	  AliHLTUInt32_t tmpChCnt =0;
+	  AliHLTUInt16_t tmpSampleCnt =0;
+
+	  tmpChCnt = rcuChannelDataPtr->fNValidChannels;
+	  cout << "tmpChCnt = " << tmpChCnt << endl; 
+
+	  for( AliHLTUInt32_t ch =0; ch < tmpChCnt; ch ++)
+	    {
+	      {
+		tmpz =  rcuChannelDataPtr->fValidData[ch].fZ;
+		tmpx =  rcuChannelDataPtr->fValidData[ch].fX;	
+		tmpSampleCnt =  rcuChannelDataPtr->fValidData[ch].fNSamples;
+
+		for(AliHLTUInt16_t sample =0; sample <tmpSampleCnt; sample ++)
+		  {
+		    if(  rcuChannelDataPtr->fValidData[ch].fGain  == 0)
+		      {
+			fgChannelDataPlotPtr[tmpz][tmpx]->SetBinContent(sample,  rcuChannelDataPtr->fValidData[ch].fChannelData[sample]);
+			//			cout << " " <<  rcuChannelDataPtr->fValidData[ch].fChannelData[sample];;
+		      }
+		  }
+		cout << endl;
+	      }
+	    }
+	  blk = fgChannelRawReadersPtr[reader]->FindBlockNdx("ATADNAHC","SOHP", 0xeFFFFFFF, blk+1);
+	} 
+    }
+  
+  UpdateChanneRawDataDisplay();
+  fgEvntCnt ++;
+}
+
+
+
 int
 AliHLTPHOSOnlineDisplay::GetHistogram()
 {
@@ -570,7 +708,6 @@ AliHLTPHOSOnlineDisplay::GetHistogram()
 }
 
 
-
 void
 AliHLTPHOSOnlineDisplay::UpdateDisplay()
 {
@@ -605,10 +742,11 @@ AliHLTPHOSOnlineDisplay::UpdateDisplay()
 void
 AliHLTPHOSOnlineDisplay::UpdateHistograms()
 {
- fgCanvasHGPtr =  fEc7->GetCanvas();
+  fgCanvasHGPtr =  fEc7->GetCanvas();
   fgCanvasHGPtr->cd();
   fgCalibHistPtr[HIGH_GAIN]->Draw("LEGO2Z");
   fgCanvasHGPtr->Update();
+
   fgCanvasLGPtr = fEc8->GetCanvas();
   fgCanvasLGPtr->cd();
   fgCalibHistPtr[LOW_GAIN]->Draw("LEGO2Z");
@@ -646,3 +784,28 @@ AliHLTPHOSOnlineDisplay::UpdateHistograms()
   fgCanvasHGPtr->Update();
 
 }
+
+
+void 
+AliHLTPHOSOnlineDisplay::UpdateChanneRawDataDisplay()
+{
+  fgTestCanvasPtr = new TCanvas("TEST", "testcanvas", 1200, 1000);  
+  fgTestCanvasPtr->Divide(N_ZROWS_RCU, N_XCOLUMNS_RCU, 0, 0);
+  //  fgTestCanvasPtr->Divide(N_XCOLUMNS_RCU, N_ZROWS_RCU, 0, 0);
+
+  for(int z = 0; z < N_ZROWS_RCU; z ++)
+    {
+      for(int x = 0; x < N_XCOLUMNS_RCU; x ++)
+	{
+	  fgTestCanvasPtr->cd(x*N_ZROWS_RCU +z + 1);
+	  fgChannelDataPlotPtr[z][x]->Draw();
+	} 
+    }
+
+  fgTestCanvasPtr->Update();
+
+}
+
+
+
+
