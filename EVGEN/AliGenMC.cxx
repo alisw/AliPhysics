@@ -145,6 +145,7 @@ void AliGenMC::Init()
 	break;
     case kOmega:	
     case kAll:
+    case kAllMuonic:
     case kNoDecay:
     case kNoDecayHeavy:
     case kNeutralPion:
