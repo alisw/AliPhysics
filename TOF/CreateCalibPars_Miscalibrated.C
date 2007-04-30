@@ -10,15 +10,15 @@ void CreateCalibPars_Miscalibrated(){
 
   TFile f("$ALICE_ROOT/TOF/data/spectrum.root","READ");  
 
-  TH1F *hTimeToTFit=  (TH1F*)f.Get("TimeToTFit");
-  TF1  *fit=hTimeToTFit->GetFunction("poly5");
+  TH1F *hTimeToTFit=  (TH1F*)f.Get("hTimeToTLim");
+  TF1  *fit=hTimeToTFit->GetFunction("pol5");
   
   // Slewing parameters (same for all channels)
 
   Float_t par[6] = {0.,0.,0.,0.,0.,0.};
   for(Int_t i =0;i<6;i++){
     par[i]=fit->GetParameter(i);
-    //    cout << " Slewing parameters=" << par[i] << endl;
+    cout << " Slewing parameters=" << par[i] << endl;
   }
 
   // Global time offset (randomly gen, gaussian with mean = 0.3, sig=0.08 ns)
@@ -29,7 +29,7 @@ void CreateCalibPars_Miscalibrated(){
 
   // ToT spectrum 
 
-  TH1F *hToT=  (TH1F*)f.Get("ToT");
+  TH1F *hToT=  (TH1F*)f.Get("hToTLim");
 
   // Fill the Sim calibration object
 
@@ -38,7 +38,6 @@ void CreateCalibPars_Miscalibrated(){
     AliTOFChannel *calChannel = tofCal->GetChannel(ipad);
     calChannel->SetSlewPar(par);
     delay=rnd->Gaus(meanDelay,sigmaDelay);
-    // cout << " delay=" << delay << endl;
     calChannel->SetDelay(delay);
   }
   tofcalib->WriteSimParOnCDB("TOF/Calib",0,0,tofCal,hToT);
