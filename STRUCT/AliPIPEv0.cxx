@@ -359,7 +359,7 @@ void AliPIPEv0::CreateGeometry()
     ptube[2] =   hlenQb28;    
 
     gMC->Gsvolu("QA28","TUBE", idtmed[kAirHigh], ptube, 3);
-
+    gMC->Gsatt("QA28", "SEEN", 0);
 //  Al-Be (40-60 wgt%, rho=2.7 g/cm**3) beam pipe
 //
 //  This section is under study (A.M. 1/2/2002)
