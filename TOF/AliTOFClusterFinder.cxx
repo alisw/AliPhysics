@@ -15,6 +15,9 @@
 
 /* 
 $Log$
+Revision 1.25  2007/04/30 15:22:17  arcelli
+Change TOF digit Time, Tot etc to int type
+
 Revision 1.24  2007/04/27 11:19:31  arcelli
 updates for the new decoder
 
@@ -750,8 +753,8 @@ void AliTOFClusterFinder::CalibrateRecPoint()
 
   Int_t detectorIndex[5];
   Int_t digitIndex = -1;
-  Float_t tToT;
-  Float_t timeCorr;
+  Double_t tToT;
+  Double_t timeCorr;
   Int_t   tdcCorr;
   AliInfo(" Calibrating TOF Clusters: ")
   AliTOFcalib *calib = new AliTOFcalib(fTOFGeometry);
@@ -780,15 +783,16 @@ void AliTOFClusterFinder::CalibrateRecPoint()
       AliDebug(2,Form(" Calib Pars = %f, %f, %f, %f, %f, %f ",par[0],par[1],par[2],par[3],par[4],par[5]));
      }
     AliDebug(2,Form(" The ToT and Time, uncorr (counts) = %i , %i", fTofClusters[ii]->GetToT(),fTofClusters[ii]->GetTDC()));
-    tToT = (Float_t)(fTofClusters[ii]->GetToT())*AliTOFGeometry::ToTBinWidth()*1.E-3; //ToT in ns
-    AliDebug(2,Form(" The ToT and Time, uncorr (ns)= %f, %f",fTofClusters[ii]->GetTDC()*AliTOFGeometry::TdcBinWidth()*1.E-3,tToT));
+    tToT = (Double_t)(fTofClusters[ii]->GetToT()*AliTOFGeometry::ToTBinWidth());    tToT*=1.E-3; //ToT in ns
+    AliDebug(2,Form(" The ToT and Time, uncorr (ns)= %e, %e",fTofClusters[ii]->GetTDC()*AliTOFGeometry::TdcBinWidth()*1.E-3,tToT));
     timeCorr=par[0]+par[1]*tToT+par[2]*tToT*tToT+par[3]*tToT*tToT*tToT+par[4]*tToT*tToT*tToT*tToT+par[5]*tToT*tToT*tToT*tToT*tToT+roughDelay; // the time correction
     AliDebug(2,Form(" The time correction (ns) = %f", timeCorr));
-    timeCorr=((Float_t)(fTofClusters[ii]->GetTDC())*AliTOFGeometry::TdcBinWidth()+32)*1.E-3-timeCorr;//redefine the time
-    AliDebug(2,Form(" The channel time, corr (ns)= %f",timeCorr ));
-    tdcCorr=(Int_t)((timeCorr*1E3-32)/AliTOFGeometry::TdcBinWidth()); //the corrected time (tdc counts)
+    timeCorr=(Double_t)(fTofClusters[ii]->GetTDC())*AliTOFGeometry::TdcBinWidth()*1.E-3-timeCorr;//redefine the time
+    timeCorr*=1.E3;
+    AliDebug(2,Form(" The channel time, corr (ps)= %e",timeCorr ));
+    tdcCorr=(Int_t)(timeCorr/AliTOFGeometry::TdcBinWidth()); //the corrected time (tdc counts)
     fTofClusters[ii]->SetTDC(tdcCorr);
-    AliDebug(2,Form(" The channel time, corr (counts) counts= %i",fTofClusters[ii]->GetTDC()));
+    AliDebug(2,Form(" The channel time, corr (counts) = %i",fTofClusters[ii]->GetTDC()));
 
   } // loop on clusters
 
