@@ -25,9 +25,9 @@ class AliTOFSDigit : public TObject {
 
  public:
   AliTOFSDigit();
-  AliTOFSDigit(Int_t tracknum, Int_t* vol, Float_t* digit);
+  AliTOFSDigit(Int_t tracknum, Int_t* vol, Int_t* digit);
 // new ctor for sdigits
-  AliTOFSDigit(Int_t sector, Int_t plate, Int_t strip, Int_t padx, Int_t padz, Float_t tdc, Float_t adc);
+  AliTOFSDigit(Int_t sector, Int_t plate, Int_t strip, Int_t padx, Int_t padz, Int_t tdc, Int_t adc);
 // copy ctor
   AliTOFSDigit(const AliTOFSDigit & digit) ;
   AliTOFSDigit& operator=(const AliTOFSDigit & digit) ;
@@ -40,8 +40,8 @@ class AliTOFSDigit : public TObject {
 
 // getters for AliTOFSDigit object 
   Int_t   GetNDigits() const    {return fNDigits;}
-  Float_t GetTdc(Int_t i) const {return fTdc->At(i);}
-  Float_t GetAdc(Int_t i) const {return fAdc->At(i);}
+  Int_t GetTdc(Int_t i) const {return fTdc->At(i);}
+  Int_t GetAdc(Int_t i) const {return fAdc->At(i);}
 //  Int_t   GetNTracks(Int_t i) const {return fTracks[i]->GetSize();}
   Int_t   GetTrack(Int_t i, Int_t j) const {return fTracks->At(i*kMAXDIGITS+j);}
   Int_t   GetSector() const     {return fSector;}
@@ -62,17 +62,11 @@ protected:
   Int_t   fPadx;    // number of pad along x
   Int_t   fPadz;    // number of pad along z
   Int_t   fNDigits;  // dimension of fTdc array
-  TArrayF *fTdc;     // tdc values for sdigit
-  TArrayF *fAdc;     // adc values for sdigit
+  TArrayI *fTdc;     // tdc values for sdigit
+  TArrayI *fAdc;     // adc values for sdigit
   TArrayI *fTracks;  // contributing tracks, kMAXDIGITS entries per
                      // 1 tdc value
-
-//  Float_t *fTdc;    //[fNDigits] tdc values for sdigit
-//  Float_t *fAdc;    //[fNDigits] adc values for sdigit
-//  Int_t **fTracks;  //[fNDigits] contributing tracks, pointers to
-		      //arrays with track indices
-
-  ClassDef(AliTOFSDigit,1)  // SDigit for Time Of Flight
+  ClassDef(AliTOFSDigit,2)  // SDigit for Time Of Flight
 };
 
 #endif /* ALITOFSDIGIT_H */

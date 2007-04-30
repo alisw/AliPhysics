@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2007/03/28 10:50:33  decaro
+Rounding off problem in rawData coding/decoding: solved
+
 Revision 1.1  2007/02/20 15:57:00  decaro
 Raw data update: to read the TOF raw data defined in UNPACKED mode
 
@@ -56,8 +59,8 @@ AliTOFrawData::AliTOFrawData() :
 }
 
 //_____________________________________________________________________________
-AliTOFrawData::AliTOFrawData(Int_t a, Int_t b, Int_t c, Int_t d, Float_t e,
-			     Float_t f, Int_t g, Int_t h, Int_t l) :
+AliTOFrawData::AliTOFrawData(Int_t a, Int_t b, Int_t c, Int_t d, Int_t e,
+			     Int_t f, Int_t g, Int_t h, Int_t l) :
   TObject(),
   fACQflag(h),
   fPSbit(g),
@@ -77,8 +80,8 @@ AliTOFrawData::AliTOFrawData(Int_t a, Int_t b, Int_t c, Int_t d, Float_t e,
 }
 
 //_____________________________________________________________________________
-AliTOFrawData::AliTOFrawData(Int_t a, Int_t b, Int_t c, Int_t d, Float_t e,
-			     Float_t f, Float_t ee, Float_t ff, Int_t g, Int_t h, Int_t l) :
+AliTOFrawData::AliTOFrawData(Int_t a, Int_t b, Int_t c, Int_t d, Int_t e,
+			     Int_t f, Int_t ee, Int_t ff, Int_t g, Int_t h, Int_t l) :
   TObject(),
   fACQflag(h),
   fPSbit(g),
@@ -151,7 +154,7 @@ AliTOFrawData& AliTOFrawData::operator=(const AliTOFrawData& r)
 }
 
 //_____________________________________________________________________________
-void AliTOFrawData::Update(Float_t tof, Float_t tot, Float_t leading, Float_t trailing, Int_t psBit, Int_t acq, Int_t errorFlag)
+void AliTOFrawData::Update(Int_t tof, Int_t tot, Int_t leading, Int_t trailing, Int_t psBit, Int_t acq, Int_t errorFlag)
 {
   //
   // To update a raw data object:

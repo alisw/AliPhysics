@@ -433,8 +433,8 @@ class AliTOFRawStream: public TObject {
   Int_t         fTDCchannel;   // TDC channel number [0;7]
   Int_t         fTime;         // time-of-flight measurement [0;8191]
   Int_t         fToT;          // time-over-threshould measurement [0;255]
-  Float_t       fLeadingEdge;  // leading edge measurement
-  Float_t       fTrailingEdge; // trailing edge measurement
+  Int_t         fLeadingEdge;  // leading edge measurement
+  Int_t         fTrailingEdge; // trailing edge measurement
   Int_t         fErrorFlag;    // error flag
   
   Int_t         fSector;     // sector number [0;17]
@@ -461,7 +461,7 @@ class AliTOFRawStream: public TObject {
   AliTOFHitDataBuffer *fDataBuffer[72];
   AliTOFHitDataBuffer *fPackedDataBuffer[72];
 
-  ClassDef(AliTOFRawStream, 1)  // class for reading TOF raw digits
+  ClassDef(AliTOFRawStream, 2)  // class for reading TOF raw digits
 };
 
 #endif

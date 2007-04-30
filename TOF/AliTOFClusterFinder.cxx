@@ -15,6 +15,9 @@
 
 /* 
 $Log$
+Revision 1.24  2007/04/27 11:19:31  arcelli
+updates for the new decoder
+
 Revision 1.23  2007/04/23 16:51:39  decaro
 Digits-to-raw_data conversion: correction for a more real description (A.De Caro, R.Preghenella)
 
@@ -251,11 +254,11 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent)
   AliDebug(2,Form("Number of TOF digits: %d",nDigits));
 
   Int_t ii, jj;
-  Int_t dig[5];
-  Float_t g[3];
-  Double_t h[5];
-  Float_t tToT;
-  Double_t tTdcND;
+  Int_t dig[5]; //cluster detector indeces
+  Float_t g[3]; //cluster cartesian coord
+  Double_t h[3]; // the cluster spatial cyl. coordinates
+  Int_t  parTOF[5]; //The TOF signal parameters
+  Bool_t status=kTRUE; // assume all sim channels ok in the beginning...
   for (ii=0; ii<nDigits; ii++) {
     AliTOFdigit *d = (AliTOFdigit*)digits->UncheckedAt(ii);
     dig[0]=d->GetSector();
@@ -264,7 +267,7 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent)
     dig[3]=d->GetPadz();
     dig[4]=d->GetPadx();
 
-    //AliInfo(Form(" %2i  %1i  %2i  %1i  %2i ",dig[0],dig[1],dig[2],dig[3],dig[4]));
+    //    AliDebug(2,Form(" %2i  %1i  %2i  %1i  %2i ",dig[0],dig[1],dig[2],dig[3],dig[4]));
 
     for (jj=0; jj<3; jj++) g[jj] = 0.;
     fTOFGeometry->GetPos(dig,g);
@@ -272,13 +275,13 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent)
     h[0] = TMath::Sqrt(g[0]*g[0]+g[1]*g[1]);
     h[1] = TMath::ATan2(g[1],g[0]);
     h[2] = g[2];
-    h[3] = d->GetTdc();
-    h[4] = d->GetAdc();
-    tToT = d->GetToT();
-    tTdcND = d->GetTdcND();
 
-    AliTOFcluster *tofCluster = new AliTOFcluster(h,d->GetTracks(),dig,ii,tToT, tTdcND);
-    tofCluster->SetTDCRAW(d->GetTdc());
+    parTOF[0] = d->GetTdc(); //the TDC signal
+    parTOF[1] = d->GetToT(); //the ToT signal
+    parTOF[2] = d->GetAdc(); // the adc charge
+    parTOF[3] = d->GetTdcND(); // non decalibrated sim time
+    parTOF[4] = d->GetTdc(); // raw time, == Tdc time for the moment
+    AliTOFcluster *tofCluster = new AliTOFcluster(h,dig,parTOF,status,d->GetTracks(),ii);
     InsertCluster(tofCluster);
 
   }
@@ -325,9 +328,8 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 
   Int_t detectorIndex[5];
   Float_t position[3];
-  Double_t cylindricalPosition[5];
-  Float_t tToT;
-  Double_t tTdcND;
+  Double_t cylindricalPosition[3];
+  Int_t parTOF[5];
 
   ofstream ftxt;
   if (fVerbose==2) ftxt.open("TOFdigitsRead.txt",ios::app);
@@ -385,24 +387,23 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
       cylindricalPosition[0] = TMath::Sqrt(position[0]*position[0] + position[1]*position[1]);
       cylindricalPosition[1] = TMath::ATan2(position[1], position[0]);
       cylindricalPosition[2] = position[2];
-      cylindricalPosition[3] = tofRawDatum->GetTOF();
-      cylindricalPosition[4] = tofRawDatum->GetTOT();
-      tToT = tofRawDatum->GetTOT();
-      tTdcND = -1.;
-      AliTOFcluster *tofCluster = new AliTOFcluster(cylindricalPosition, detectorIndex);
-      tofCluster->SetToT(tToT);
-      tofCluster->SetTDCND(tTdcND);
-      tofCluster->SetTDCRAW(tofRawDatum->GetTOF());
+
+      parTOF[0] = tofRawDatum->GetTOF(); //TDC
+      parTOF[1] = tofRawDatum->GetTOT(); // TOT
+      parTOF[2] = tofRawDatum->GetTOT(); //ADC==TOF
+      parTOF[3] = -1;//raw data: no track of undecalib sim time
+      parTOF[4] = tofRawDatum->GetTOF(); // RAW time
+      AliTOFcluster *tofCluster = new AliTOFcluster(cylindricalPosition, detectorIndex, parTOF);
       InsertCluster(tofCluster);
 
       if (fVerbose==2) {
-	if (cylindricalPosition[4]<10)                        ftxt << "        " << cylindricalPosition[4];
-	else if (cylindricalPosition[4]>=10 && cylindricalPosition[4]<100) ftxt << "       " << cylindricalPosition[4];
-	else                                     ftxt << "      " << cylindricalPosition[4];
-	if (cylindricalPosition[3]<10)                             ftxt << "      " << cylindricalPosition[3] << endl;
-	else if (cylindricalPosition[3]>=10 && cylindricalPosition[3]<100)   ftxt << "     " << cylindricalPosition[3] << endl;
-	else if (cylindricalPosition[3]>=100 && cylindricalPosition[3]<1000) ftxt << "    " << cylindricalPosition[3] << endl;
-	else                                             ftxt << "   " << cylindricalPosition[3] << endl;
+	if (parTOF[1]<10)ftxt << "        " << parTOF[1];
+	else if (parTOF[1]>=10 && parTOF[1]<100) ftxt << "      " << parTOF[1];
+	else ftxt << "      " << parTOF[1];
+	if (parTOF[0]<10) ftxt << "      " << parTOF[0] << endl;
+	else if (parTOF[0]>=10 && parTOF[0]<100)   ftxt << "    " << parTOF[0] << endl;
+	else if (parTOF[0]>=100 && parTOF[0]<1000) ftxt << "    " << parTOF[0] << endl;
+	else ftxt << "   " << parTOF[3] << endl;
       }
 
     } // closed loop on TOF raw data per current DDL file
@@ -410,53 +411,6 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
     clonesRawData->Clear();
 
   } // closed loop on DDL index
-
-  /*
-  Int_t indexDDL = 0;
-  for (indexDDL = 0; indexDDL < kDDL; indexDDL++) {
-
-    rawReader->Reset();
-    AliTOFRawStream tofInput(rawReader);
-    rawReader->Select("TOF", indexDDL, indexDDL);
-
-    while(tofInput.Next()) {
-
-      for (ii=0; ii<5; ii++) detectorIndex[ii] = -1;
-
-      detectorIndex[0] = tofInput.GetSector();
-      detectorIndex[1] = tofInput.GetPlate();
-      detectorIndex[2] = tofInput.GetStrip();
-      detectorIndex[3] = tofInput.GetPadZ();
-      detectorIndex[4] = tofInput.GetPadX();
-      
-      //AliInfo(Form("  %2i  %1i  %2i  %1i  %2i ",detectorIndex[0],detectorIndex[1],detectorIndex[2],detectorIndex[3],detectorIndex[4]));
-
-      if (detectorIndex[0]==-1 ||
-	  detectorIndex[1]==-1 ||
-	  detectorIndex[2]==-1 ||
-	  detectorIndex[3]==-1 ||
-	  detectorIndex[4]==-1) continue;
-
-      for (ii=0; ii<3; ii++) position[ii] =  0.;
-
-      fTOFGeometry->GetPos(detectorIndex, position);
-
-      cylindricalPosition[0] = TMath::Sqrt(position[0]*position[0] + position[1]*position[1]);
-      cylindricalPosition[1] = TMath::ATan2(position[1], position[0]);
-      cylindricalPosition[2] = position[2];
-      cylindricalPosition[3] = tofInput.GetTofBin();
-      cylindricalPosition[4] = tofInput.GetToTbin();
-      tToT = tofInput.GetToTbin();
-      tTdcND = -1.;
-      AliTOFcluster *tofCluster = new AliTOFcluster(cylindricalPosition, detectorIndex);
-      tofCluster->SetToT(tToT);
-      tofCluster->SetTDCND(tTdcND);
-      InsertCluster(tofCluster);
-
-    } // while loop
-
-  } // loop on DDL files
-  */
 
   if (fVerbose==2) ftxt.close();
 
@@ -509,9 +463,7 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent, AliRawReader *rawReader
   Int_t detectorIndex[5] = {-1, -1, -1, -1, -1};
   Float_t position[3];
   Double_t cylindricalPosition[5];
-  Float_t tToT;
-  Double_t tTdcND;
-
+  Int_t parTOF[5];
   ofstream ftxt;
   if (fVerbose==2) ftxt.open("TOFdigitsRead.txt",ios::app);
 
@@ -568,24 +520,22 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent, AliRawReader *rawReader
       cylindricalPosition[0] = TMath::Sqrt(position[0]*position[0] + position[1]*position[1]);
       cylindricalPosition[1] = TMath::ATan2(position[1], position[0]);
       cylindricalPosition[2] = position[2];
-      cylindricalPosition[3] = tofRawDatum->GetTOF();
-      cylindricalPosition[4] = tofRawDatum->GetTOT();
-      tToT = tofRawDatum->GetTOT();
-      tTdcND = -1.;
-      AliTOFcluster *tofCluster = new AliTOFcluster(cylindricalPosition, detectorIndex);
-      tofCluster->SetToT(tToT);
-      tofCluster->SetTDCND(tTdcND);
-      tofCluster->SetTDCRAW(tofRawDatum->GetTOF());
+      parTOF[0] = tofRawDatum->GetTOF(); // TDC
+      parTOF[1] = tofRawDatum->GetTOT(); // TOT
+      parTOF[2] = tofRawDatum->GetTOT(); // raw data have ADC=TOT
+      parTOF[3] = -1; //raw data: no track of the undecalib sim time
+      parTOF[4] = tofRawDatum->GetTOF(); // Raw time == TDC
+      AliTOFcluster *tofCluster = new AliTOFcluster(cylindricalPosition, detectorIndex, parTOF);
       InsertCluster(tofCluster);
 
       if (fVerbose==2) {
-	if (cylindricalPosition[4]<10)                        ftxt << "        " << cylindricalPosition[4];
-	else if (cylindricalPosition[4]>=10 && cylindricalPosition[4]<100) ftxt << "       " << cylindricalPosition[4];
-	else                                     ftxt << "      " << cylindricalPosition[4];
-	if (cylindricalPosition[3]<10)                             ftxt << "      " << cylindricalPosition[3] << endl;
-	else if (cylindricalPosition[3]>=10 && cylindricalPosition[3]<100)   ftxt << "     " << cylindricalPosition[3] << endl;
-	else if (cylindricalPosition[3]>=100 && cylindricalPosition[3]<1000) ftxt << "    " << cylindricalPosition[3] << endl;
-	else                                             ftxt << "   " << cylindricalPosition[3] << endl;
+	if (parTOF[1]<10)ftxt << "        " << parTOF[1];
+	else if (parTOF[1]>=10 && parTOF[1]<100) ftxt << "      " << parTOF[1];
+	else ftxt << "      " << parTOF[1];
+	if (parTOF[0]<10) ftxt << "      " << parTOF[0] << endl;
+	else if (parTOF[0]>=10 && parTOF[0]<100)   ftxt << "    " << parTOF[0] << endl;
+	else if (parTOF[0]>=100 && parTOF[0]<1000) ftxt << "    " << parTOF[0] << endl;
+	else ftxt << "   " << parTOF[3] << endl;
       }
 
     } // closed loop on TOF raw data per current DDL file
@@ -651,7 +601,7 @@ void AliTOFClusterFinder::Raw2Digits(Int_t iEvent, AliRawReader *rawReader)
   Int_t dummy = -1;
 
   Int_t detectorIndex[5];
-  Float_t digit[4];
+  Int_t digit[4];
 
   Int_t indexDDL = 0;
   for (indexDDL = 0; indexDDL < kDDL; indexDDL++) {
@@ -678,10 +628,10 @@ void AliTOFClusterFinder::Raw2Digits(Int_t iEvent, AliRawReader *rawReader)
       detectorIndex[3] = detectorIndex[4];
       detectorIndex[4] = dummy;
 
-      digit[0] = (Float_t)tofInput.GetTofBin();
-      digit[1] = (Float_t)tofInput.GetToTbin();
-      digit[2] = (Float_t)tofInput.GetToTbin();
-      digit[3] = -1.;
+      digit[0] = tofInput.GetTofBin();
+      digit[1] = tofInput.GetToTbin();
+      digit[2] = tofInput.GetToTbin();
+      digit[3] = -1;
 
       Int_t tracknum[3]={-1,-1,-1};
 
@@ -759,13 +709,11 @@ void AliTOFClusterFinder::FillRecPoint()
   Int_t ii, jj;
 
   Int_t detectorIndex[5];
-  Double_t cylindricalPosition[5];
+  Double_t cylindricalPosition[3];
+  Int_t parTOF[5];
   Int_t trackLabels[3];
   Int_t digitIndex = -1;
-  Float_t tToT=0.;
-  Double_t tTdcND=0.;
-  Double_t tTdcRAW=0.;
-  Bool_t cStatus = kTRUE;
+  Bool_t status=kTRUE;
 
   TClonesArray &lRecPoints = *fRecPoints;
   
@@ -777,15 +725,13 @@ void AliTOFClusterFinder::FillRecPoint()
     cylindricalPosition[0] = fTofClusters[ii]->GetR();
     cylindricalPosition[1] = fTofClusters[ii]->GetPhi();
     cylindricalPosition[2] = fTofClusters[ii]->GetZ();
-    cylindricalPosition[3] = fTofClusters[ii]->GetTDC();
-    cylindricalPosition[4] = fTofClusters[ii]->GetADC();
-    tToT = fTofClusters[ii]->GetToT();
-    tTdcND = fTofClusters[ii]->GetTDCND();
-    cStatus=fTofClusters[ii]->GetStatus();
-    tTdcRAW=fTofClusters[ii]->GetTDCRAW();
-    new(lRecPoints[ii]) AliTOFcluster(cylindricalPosition, trackLabels, detectorIndex, digitIndex, tToT, tTdcND, tTdcRAW,cStatus);
-
-    //AliInfo(Form("%3i  %3i  %f %f %f %f %f  %2i %2i %2i %1i %2i",ii,digitIndex, cylindricalPosition[2],cylindricalPosition[0],cylindricalPosition[1],cylindricalPosition[3],cylindricalPosition[4],detectorIndex[0],detectorIndex[1],detectorIndex[2],detectorIndex[3],detectorIndex[4]));
+    parTOF[0] = fTofClusters[ii]->GetTDC(); // TDC
+    parTOF[1] = fTofClusters[ii]->GetToT(); // TOT
+    parTOF[2] = fTofClusters[ii]->GetADC(); // ADC=TOT
+    parTOF[3] = fTofClusters[ii]->GetTDCND(); // TDCND
+    parTOF[4] = fTofClusters[ii]->GetTDCRAW();//RAW
+    status=fTofClusters[ii]->GetStatus();
+    new(lRecPoints[ii]) AliTOFcluster(cylindricalPosition, detectorIndex, parTOF,status,trackLabels,digitIndex);
 
   } // loop on clusters
 
@@ -805,7 +751,8 @@ void AliTOFClusterFinder::CalibrateRecPoint()
   Int_t detectorIndex[5];
   Int_t digitIndex = -1;
   Float_t tToT;
-  Float_t tdcCorr;
+  Float_t timeCorr;
+  Int_t   tdcCorr;
   AliInfo(" Calibrating TOF Clusters: ")
   AliTOFcalib *calib = new AliTOFcalib(fTOFGeometry);
   if(!calib->ReadParFromCDB("TOF/Calib",-1)) {AliFatal("Exiting, no CDB object found!!!");exit(0);}  
@@ -823,7 +770,6 @@ void AliTOFClusterFinder::CalibrateRecPoint()
     // Get channel status 
     Bool_t status=calChannel->GetStatus();
     if(status)fTofClusters[ii]->SetStatus(!status); //odd convention, to avoid conflict with calibration objects currently in the db (temporary solution).
-
     // Get Rough channel online equalization 
     Float_t roughDelay=calChannel->GetDelay();
     AliDebug(2,Form(" channel delay = %f", roughDelay));
@@ -831,15 +777,18 @@ void AliTOFClusterFinder::CalibrateRecPoint()
     Float_t par[6];
     for (Int_t j = 0; j<6; j++){
       par[j]=calChannel->GetSlewPar(j);
-    }
-    tToT = fTofClusters[ii]->GetToT()*AliTOFGeometry::ToTBinWidth()*1.E-3;
-    Float_t timeCorr=par[0]+par[1]*tToT+par[2]*tToT*tToT+par[3]*tToT*tToT*tToT+par[4]*tToT*tToT*tToT*tToT+par[5]*tToT*tToT*tToT*tToT*tToT+roughDelay;
-    AliDebug(2,Form(" time correction (ns) = %f", timeCorr));
-    AliDebug(2,Form(" channel time, uncorr (ns)= %f",fTofClusters[ii]->GetTDC()*AliTOFGeometry::TdcBinWidth()*1.E-3 ));
-    tdcCorr=(fTofClusters[ii]->GetTDC()*AliTOFGeometry::TdcBinWidth()+32)*1.E-3-timeCorr;
-    tdcCorr=(tdcCorr*1E3-32)/AliTOFGeometry::TdcBinWidth();
+      AliDebug(2,Form(" Calib Pars = %f, %f, %f, %f, %f, %f ",par[0],par[1],par[2],par[3],par[4],par[5]));
+     }
+    AliDebug(2,Form(" The ToT and Time, uncorr (counts) = %i , %i", fTofClusters[ii]->GetToT(),fTofClusters[ii]->GetTDC()));
+    tToT = (Float_t)(fTofClusters[ii]->GetToT())*AliTOFGeometry::ToTBinWidth()*1.E-3; //ToT in ns
+    AliDebug(2,Form(" The ToT and Time, uncorr (ns)= %f, %f",fTofClusters[ii]->GetTDC()*AliTOFGeometry::TdcBinWidth()*1.E-3,tToT));
+    timeCorr=par[0]+par[1]*tToT+par[2]*tToT*tToT+par[3]*tToT*tToT*tToT+par[4]*tToT*tToT*tToT*tToT+par[5]*tToT*tToT*tToT*tToT*tToT+roughDelay; // the time correction
+    AliDebug(2,Form(" The time correction (ns) = %f", timeCorr));
+    timeCorr=((Float_t)(fTofClusters[ii]->GetTDC())*AliTOFGeometry::TdcBinWidth()+32)*1.E-3-timeCorr;//redefine the time
+    AliDebug(2,Form(" The channel time, corr (ns)= %f",timeCorr ));
+    tdcCorr=(Int_t)((timeCorr*1E3-32)/AliTOFGeometry::TdcBinWidth()); //the corrected time (tdc counts)
     fTofClusters[ii]->SetTDC(tdcCorr);
-    AliDebug(2,Form(" channel time, corr (ns)= %f",fTofClusters[ii]->GetTDC()*AliTOFGeometry::TdcBinWidth()*1.E-3 ));
+    AliDebug(2,Form(" The channel time, corr (counts) counts= %i",fTofClusters[ii]->GetTDC()));
 
   } // loop on clusters
 

@@ -45,8 +45,8 @@ public:
   virtual void    AddHit(Int_t track, Int_t* vol, Float_t* hits);
   virtual void    AddT0Hit(Int_t track, Int_t* vol, Float_t* hits);
   virtual void    AddDigit(Int_t* /*tracks*/, Int_t* /*vol*/) {};
-  virtual void    AddDigit(Int_t* tracks, Int_t* vol, Float_t* digits);
-  virtual void    AddSDigit(Int_t tracknum, Int_t* vol, Float_t* digits);
+  virtual void    AddDigit(Int_t* tracks, Int_t* vol, Int_t* digits);
+  virtual void    AddSDigit(Int_t tracknum, Int_t* vol, Int_t* digits);
   virtual void    CreateGeometry();
   virtual void    CreateMaterials(){};
   virtual void    Init();
@@ -67,7 +67,7 @@ public:
   //virtual void   DrawDetectorModulesinFrame()=0;
   //virtual void   DrawDetectorStripsinFrame()=0;
           void    CreateTOFFolders();
-  Bool_t    CheckOverlap(Int_t* vol, Float_t* digit, Int_t Track);
+  Bool_t    CheckOverlap(Int_t* vol, Int_t* digit, Int_t Track);
   //virtual void    Hits2Digits();   
   virtual void    Hits2SDigits();
   virtual void    Hits2SDigits(Int_t evNumber1, Int_t evNumber2);
@@ -112,7 +112,7 @@ protected:
  
 private:
 
-  ClassDef(AliTOF,7)  // Time Of Flight base class
+  ClassDef(AliTOF,8)  // Time Of Flight base class
 };
  
 #endif /* ALITOF_H */

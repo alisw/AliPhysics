@@ -54,7 +54,7 @@ AliTOFdigit::AliTOFdigit()
 {
 }
 //______________________________________________________________________________
-AliTOFdigit::AliTOFdigit(Int_t *tracks, Int_t *vol,Float_t *digit)
+AliTOFdigit::AliTOFdigit(Int_t *tracks, Int_t *vol,Int_t *digit)
   :AliDigit(tracks),
    fSector(-1),
    fPlate(-1),
@@ -76,9 +76,9 @@ AliTOFdigit::AliTOFdigit(Int_t *tracks, Int_t *vol,Float_t *digit)
   fPadx   = vol[3];
   fPadz   = vol[4];
   fTdc    = digit[0];
-  fTdcND  = digit[3];
   fAdc    = digit[1];
   fToT    = digit[2];
+  fTdcND  = digit[3];
 
 }
 
@@ -116,7 +116,7 @@ AliTOFdigit::AliTOFdigit(const AliTOFdigit & digit)
 
 //______________________________________________________________________________
 AliTOFdigit::AliTOFdigit(Int_t sector, Int_t plate, Int_t strip, Int_t padx,
-			 Int_t padz, Float_t tdc, Float_t adc):
+			 Int_t padz, Int_t tdc, Int_t adc):
    fSector(-1),
    fPlate(-1),
    fStrip(-1),

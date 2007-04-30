@@ -319,7 +319,7 @@ void AliTOF::AddT0Hit(Int_t track, Int_t *vol, Float_t *hits)
 }
 
 //_____________________________________________________________________________
-void AliTOF::AddDigit(Int_t *tracks, Int_t *vol, Float_t *digits)
+void AliTOF::AddDigit(Int_t *tracks, Int_t *vol, Int_t *digits)
 {
   //
   // Add a TOF digit
@@ -330,7 +330,7 @@ void AliTOF::AddDigit(Int_t *tracks, Int_t *vol, Float_t *digits)
 }
 
 //_____________________________________________________________________________
-void AliTOF::AddSDigit(Int_t tracknum, Int_t *vol, Float_t *digits)
+void AliTOF::AddSDigit(Int_t tracknum, Int_t *vol, Int_t *digits)
 {
      
 //
@@ -630,7 +630,7 @@ AliDigitizer* AliTOF::CreateDigitizer(AliRunDigitizer* manager) const
 }
 
 //___________________________________________________________________________
-Bool_t AliTOF::CheckOverlap(Int_t* vol, Float_t* digit,Int_t Track)
+Bool_t AliTOF::CheckOverlap(Int_t* vol, Int_t* digit,Int_t Track)
 {
 //
 // Checks if 2 or more hits belong to the same pad.
@@ -654,8 +654,8 @@ Bool_t AliTOF::CheckOverlap(Int_t* vol, Float_t* digit,Int_t Track)
       if (vol[i]!=vol2[i]) idem=kFALSE;}
 
     if (idem){  // same pad fired
-      Float_t tdc2 = digit[0];
-      Float_t tdc1 = currentDigit->GetTdc();
+      Int_t tdc2 = digit[0];
+      Int_t tdc1 = currentDigit->GetTdc();
 
       // we separate two digits on the same pad if
       // they are separated in time by at least 25 ns
@@ -675,7 +675,7 @@ Bool_t AliTOF::CheckOverlap(Int_t* vol, Float_t* digit,Int_t Track)
 	overlap = kTRUE;
 	return overlap;
       } else 
-		overlap= kFALSE;
+	overlap= kFALSE;
 
     } // close if (idem) -> two digits on the same TOF pad
 

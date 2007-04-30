@@ -427,7 +427,7 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption) {
 
       for (Int_t hit = 0; hit < nhits; hit++) {
 	Int_t    vol[5];       // location for a digit
-	Float_t  digit[2];     // TOF digit variables
+	Int_t  digit[2];     // TOF digit variables
 	Int_t tracknum;
 	Float_t dxPad;
 	Float_t dzPad;

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2007/04/27 11:11:53  arcelli
+updates for the new decoder
+
 Revision 1.12  2007/02/22 09:43:45  decaro
 Added AliTOFRawStream::GetIndex method for online calibration (C.Zampolli)
 
@@ -1277,17 +1280,15 @@ AliTOFRawStream::LoadRawDataBuffers(Int_t indexDDL, Int_t verbose)
     Int_t   hitChain = hitData->GetChain();
     Int_t   hitTDC = hitData->GetTDC();
     Int_t   hitChan = hitData->GetChan();
-    //    Float_t hitTime = hitData->GetTime();
     Int_t   hitTimeBin = hitData->GetTimeBin();
-    //    Float_t hitTOT = hitData->GetTOT();
     Int_t   hitTOTBin = hitData->GetTOTBin();
     
-    Float_t hitLeading = -1.;
-    Float_t hitTrailing = -1.;
-    Int_t   hitError = -1;
+    Int_t hitLeading = -1;
+    Int_t hitTrailing = -1;
+    Int_t hitError = -1;
     
     TClonesArray &arrayTofRawData =  *fTOFrawData;
-    new (arrayTofRawData[fPackedDigits++]) AliTOFrawData(hitSlotID, hitChain, hitTDC, hitChan, (Float_t)hitTimeBin, (Float_t)hitTOTBin, hitLeading, hitTrailing, hitPS, hitACQ, hitError);
+    new (arrayTofRawData[fPackedDigits++]) AliTOFrawData(hitSlotID, hitChain, hitTDC, hitChan, hitTimeBin, hitTOTBin, hitLeading, hitTrailing, hitPS, hitACQ, hitError);
   }
 
   if (verbose > 0)

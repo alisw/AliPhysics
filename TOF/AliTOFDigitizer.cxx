@@ -263,11 +263,11 @@ void AliTOFDigitizer::CreateDigits()
     
     // start loop on number of slots for current sdigit
     for (Int_t islot = 0; islot < nslot; islot++) {
-      Float_t  digit[4] = {-1.,-1.,-1.,-1.};     // TOF digit variables
+      Int_t  digit[4] = {-1,-1,-1,-1};     // TOF digit variables
       Int_t tracknum[AliTOFSDigit::kMAXDIGITS];     // contributing tracks for the current slot
       
-      Float_t tdc=tofsdigit->GetTdc(islot); digit[0]=tdc;
-      Float_t adc=tofsdigit->GetAdc(islot); digit[1]=adc;
+      Int_t tdc=tofsdigit->GetTdc(islot); digit[0]=tdc;
+      Int_t adc=tofsdigit->GetAdc(islot); digit[1]=adc;
       
       tracknum[0]=tofsdigit->GetTrack(islot,0);
       tracknum[1]=tofsdigit->GetTrack(islot,1);
@@ -442,7 +442,12 @@ void AliTOFDigitizer::DecalibrateTOFSignal( AliTOFcalib *calib){
 
   Float_t maxToT=max;
   Float_t minToT=min;
+ 
   Float_t maxToTDistr=hToT->GetMaximum();
+
+  AliDebug (1, Form(" The minimum ToT = %f", minToT)); 
+  AliDebug (1, Form(" The maximum ToT = %f", maxToT)); 
+  AliDebug (1, Form(" The maximum peak in ToT = %f", maxToTDistr)); 
   
   // Loop on TOF Digits
 
@@ -492,26 +497,36 @@ void AliTOFDigitizer::DecalibrateTOFSignal( AliTOFcalib *calib){
 	simToT=hToT->GetBinContent(binx);
       }
       // the generated ToT (ns)
-      Float_t tToT= trix; // to apply slewing need to go back to ns..
+      Float_t tToT= trix; // to apply slewing we start from ns..
       // transform TOF signal in ns, factor 1E-3 as bin width is in ps.
-      Float_t tdc = ((dig->GetTdc())*AliTOFGeometry::TdcBinWidth()+32)*1.E-3; 
-      AliDebug(2,Form(" Time before miscalibration (ns) %f: ",tdc));
+      AliDebug(2,Form(" Initial Time (counts): %i: ",dig->GetTdc()));
+      Float_t time = ((dig->GetTdc())*AliTOFGeometry::TdcBinWidth()+32)*1.E-3; 
+      AliDebug(2,Form(" Time before miscalibration (ns) %f: ",time));
       // add slewing effect
       Float_t timeoffset=par[0] + tToT*(par[1] +tToT*(par[2] +tToT*(par[3] +tToT*(par[4] +tToT*par[5])))); 
-      Float_t timeSlewed = tdc+timeoffset;
+      Float_t timeSlewed = time+timeoffset;
       AliDebug(2,Form(" Time after applying slewing (ns): %f: ",timeSlewed));
       // add global time shift
       timeSlewed = timeSlewed + timedelay;
-      AliDebug(2,Form(" Time after applying global delay (ns): %f: ",timeSlewed));
+      AliDebug(2,Form(" Time after applying delay (ns): %f: ",timeSlewed));
+      Int_t tdc= (Int_t)((timeSlewed*1E3-32)/AliTOFGeometry::TdcBinWidth());
       // Setting Decalibrated Time signal (TDC counts)    
-      dig->SetTdc((timeSlewed*1E3-32)/AliTOFGeometry::TdcBinWidth());   
+      dig->SetTdc(tdc);   
+      AliDebug(2,Form(" Final Time (counts): %i: ",dig->GetTdc()));
       // Setting realistic ToT signal (TDC counts)   
-      dig->SetToT(trix/AliTOFGeometry::ToTBinWidth()*1.E3); //(factor 1E3 as input ToT is in ns)
+      // Setting Decalibrated Time signal (TDC counts)    
+      Int_t tot=(Int_t)(trix/AliTOFGeometry::ToTBinWidth()*1.E3);//(factor 1E3 as input ToT is in ns)
+      dig->SetToT(tot); 
+      AliDebug(2,Form(" Final Tot (counts): %i: ",dig->GetToT()));
+      if(tdc<0){
+	AliWarning (Form(" The bad Slewed Time(TDC counts)= %i ", tdc)); 
+	AliWarning(Form(" The bad ToT (TDC counts)= %i ", tot)); 
+      }
     }
     else{
     // For Data with no Miscalibration, set ToT signal == Adc
       //    dig->SetToT(dig->GetAdc()/AliTOFGeometry::ToTBinWidth()*1.E3); 
-      dig->SetToT(dig->GetAdc()/AliTOFGeometry::ToTBinWidth()); //remove the factor 10^3 just to have a reasonable ToT range for raw data simulation even in the case of non-realistic ToT distribution (n.b. fAdc is practically an arbitrary quantity, and ToT has no impact on the TOF reco for non-miscalibrated digits)
+      dig->SetToT((Int_t)(dig->GetAdc()/AliTOFGeometry::ToTBinWidth())); //remove the factor 10^3 just to have a reasonable ToT range for raw data simulation even in the case of non-realistic ToT distribution (n.b. fAdc is practically an arbitrary quantity, and ToT has no impact on the TOF reco for non-miscalibrated digits)
     }
   }
 
