@@ -111,6 +111,15 @@ Int_t executeQuery(TChain* chain, TList* inputList, TString selectorName, const 
   return result;
 }
 
+const char* GetAliRootLocation(Int_t aliroot)
+{
+  switch (aliroot)
+  {
+    case 1: return "/afs/cern.ch/alice/caf/sw/ALICE/v4-04-Release/slc4_ia32_gcc34/aliroot"; break;
+    default: return 0;
+  }
+}
+
 void ProofEnableAliRoot(Int_t aliroot)
 {
   // enables a locally deployed AliRoot in a PROOF cluster
@@ -123,14 +132,8 @@ void ProofEnableAliRoot(Int_t aliroot)
      gROOT->Macro("$ALICE_ROOT/macros/loadlibs.C");
   */
 
-  const char* location = 0;
+  const char* location = GetAliRootLocation(aliroot);
 	const char* target = "tgt_linux";
-  
-  switch (aliroot)
-  {
-    case 1: location = "/afs/cern.ch/alice/caf/sw/ALICE/v4-04-Release/slc4_ia32_gcc34/aliroot"; break;
-    default: return;
-  }
 
   gProof->Exec(Form("gSystem->Setenv(\"ALICE_ROOT\", \"%s\")", location), kTRUE);
   gProof->AddIncludePath(Form("%s/include", location));
@@ -139,6 +142,14 @@ void ProofEnableAliRoot(Int_t aliroot)
   // load all libraries
   gProof->Exec("gSystem->Load(\"libMinuit\")");
   gProof->Exec("gROOT->Macro(\"$ALICE_ROOT/macros/loadlibs.C\")");
+}
+
+void ProofAddAliRootIncludePath(Int_t aliroot, const char* dir)
+{
+  // adds an include path inside the aliroot structure
+
+  const char* location = GetAliRootLocation(aliroot);
+  gProof->AddIncludePath(Form("%s/%s", location, dir));
 }
 
 Bool_t EnablePackageLocal(const char* package)
