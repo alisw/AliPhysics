@@ -16,39 +16,49 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+
+/// @class AliHLTPHOSRawAnalyzerComponent
+/// Base class of PHOS HLT online raw analysis component.
+/// The class provides a common interface for the implementation of PHOS 
+/// HLT raw data
+/// processors components. The class is intended for processing of 
+/// arrays of raw data samples to evaluate energy and timing.
+/// The Energy will be given in entities of ADC leves ranging from 0 to
+/// 1023. Timing will be given in entities of samples periods.
+/// Drived clases  must implement the fucntions
+/// - @ref GetComponentID
+/// - @ref Spawn
+
+
+
+#include "AliHLTPHOSRawAnalyzer.h"
 #include "AliHLTPHOSRawAnalyzerComponent.h"
-#include <iostream>
-#include "stdio.h"
 #include "AliRawReaderMemory.h"
 #include "AliCaloRawStream.h"
 #include <cstdlib>
 #include "AliHLTPHOSRcuCellEnergyDataStruct.h"
+#include "AliHLTPHOSRcuChannelDataStruct.h"
 
 const AliHLTComponentDataType AliHLTPHOSRawAnalyzerComponent::fgkInputDataTypes[]={kAliHLTVoidDataType,{0,"",""}}; //'zero' terminated array
 int   AliHLTPHOSRawAnalyzerComponent::fgEventCount = 0; 
 
 
-/**
- * @class AliHLTPHOSRawAnalyzerComponent
- * Base class of PHOS HLT online raw analysis component.
- * The class provides a common interface for the implementation of PHOS 
- * HLT raw data
- * processors components. The class is intended for processing of 
- * arrays of raw data samples to evaluate energy and timing.
- * The Energy will be given in entities of ADC leves ranging from 0 to
- * 1023. Timing will be given in entities of samples periods.
- * Drived clases  must implement the fucntions
- * - @ref GetComponentID
- * - @ref Spawn
- */
-AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent():AliHLTProcessor(), fAnalyzerPtr(0), fEquippmentID(0), fRcuX(0), 
-fRcuZ(0),fRcuZOffset(0), fRcuXOffset(0),  fModuleID(0), fPHOSRawStream(0), fRawMemoryReader(0), fOutPtr(0)
+
+AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent():AliHLTProcessor(), fAnalyzerPtr(0), 
+fEquippmentID(0), fModuleID(0), fRcuX(0), fRcuZ(0),fRcuZOffset(0), fRcuXOffset(0),fPrintInfo(kFALSE),fSendChannelData(kFALSE),fPrintInfoFrequncy(1000), 
+fPHOSRawStream(0), fRawMemoryReader(0), fOutPtr(0)
 {
+
+
+
 
 } 
 
+
 AliHLTPHOSRawAnalyzerComponent::~AliHLTPHOSRawAnalyzerComponent()
 {
+  ///Default destructor
+
   if(fRawMemoryReader != 0)
     {
       delete fRawMemoryReader;
@@ -61,32 +71,25 @@ AliHLTPHOSRawAnalyzerComponent::~AliHLTPHOSRawAnalyzerComponent()
 }
 
 
-
 AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent(const AliHLTPHOSRawAnalyzerComponent & ) : AliHLTProcessor(), fAnalyzerPtr(0), 
-fEquippmentID(0), fRcuX(0), fRcuZ(0),fRcuZOffset(0), fRcuXOffset(0),  fModuleID(0), fPHOSRawStream(0), fRawMemoryReader(0), fOutPtr(0)
+fEquippmentID(0), fModuleID(0), fRcuX(0), fRcuZ(0),fRcuZOffset(0), fRcuXOffset(0),fPrintInfo(kFALSE),fSendChannelData(kFALSE),fPrintInfoFrequncy(1000), 
+fPHOSRawStream(0), fRawMemoryReader(0), fOutPtr(0)
 {
+  //Copy Constructor
 }
 
-
-/*
- *Deinit function called by the HLT framwork at end of run
- *@return 0 if the denitialzation was sucessfull.
- */
 int 
 AliHLTPHOSRawAnalyzerComponent::Deinit()
 {
+  //See base class for documentation
   cout <<  "Deinit" << endl;
   return 0;
 }
 
-
-/*
- *Deinit function called by the HLT framwork at end of run
- *@return 0 if the denitialzation was sucessfull.
- */
 int 
 AliHLTPHOSRawAnalyzerComponent::DoDeinit()
 {
+  //See base class for documentation
   cout << "DoDeinit" << endl;
   Logging(kHLTLogInfo, "HLT", "PHOS", ",AliHLTPHOSRawAnalyzerComponen DoDeinit");
 
@@ -103,13 +106,10 @@ AliHLTPHOSRawAnalyzerComponent::DoDeinit()
 
 }
 
-/*
- *Function called by the HLT framework during initialization
- *@return the ID of the component
- */
 const char* 
 AliHLTPHOSRawAnalyzerComponent::GetComponentID()
 {
+  ///Returns the component ID
   return "AliPhosTestRaw";
 }
 
@@ -117,6 +117,7 @@ AliHLTPHOSRawAnalyzerComponent::GetComponentID()
 void
 AliHLTPHOSRawAnalyzerComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
 {
+  //See Base class for documentation
   const AliHLTComponentDataType* pType=fgkInputDataTypes;
   while (pType->fID!=0) {
     list.push_back(*pType);
@@ -127,6 +128,7 @@ AliHLTPHOSRawAnalyzerComponent::GetInputDataTypes( vector<AliHLTComponentDataTyp
 AliHLTComponentDataType 
 AliHLTPHOSRawAnalyzerComponent::GetOutputDataType()
 {
+  //See Base class for documentation 
   return AliHLTPHOSDefinitions::gkCellEnergyDataType;
 }
 
@@ -134,15 +136,19 @@ void
 AliHLTPHOSRawAnalyzerComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier )
 
 {
+  //See Base class for documentation 
   constBase = 30;
-  inputMultiplier = 0.1;
+  //  inputMultiplier = 0.1;
+  inputMultiplier = 1;
 }
-
 
 int AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
 					      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 					      AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
 {
+  /// Function that proceesses the raw date to give Energy and TOF for the
+  /// Individual cells/crystals.
+
   AliHLTUInt8_t tmpMod    = 0;
   AliHLTUInt8_t tmpZ      = 0;
   AliHLTUInt8_t tmpX      = 0;
@@ -155,6 +161,8 @@ int AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evt
   Int_t tmpChannelCnt     = 0;
   Int_t tmpStartIndex     = 0;
   AliHLTUInt8_t* outBPtr;
+  unsigned long first;
+  unsigned long last;
   outBPtr = outputPtr;
   const AliHLTComponentBlockData* iter = NULL; 
   unsigned long ndx;
@@ -178,7 +186,7 @@ int AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evt
       fOutPtr->fRcuZ = fRcuZ;
       fOutPtr->fModuleID = fModuleID;
       tmpChannelCnt = 0;
- 
+
       while(fPHOSRawStream->Next())
 	{
 	  if (fPHOSRawStream->IsNewHWAddress())
@@ -187,14 +195,13 @@ int AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evt
 		{
 		  fAnalyzerPtr->SetData(fTmpChannelData);
 		  fAnalyzerPtr->Evaluate(0, sampleCnt);
-		  //		  sampleCnt = 0;
 		  fOutPtr->fValidData[tmpChannelCnt].fGain = tmpGain;
 		  fOutPtr->fValidData[tmpChannelCnt].fZ  = tmpZ;
 		  fOutPtr->fValidData[tmpChannelCnt].fX  = tmpX; 
-		  fOutPtr->fValidData[tmpChannelCnt].fEnergy  = fAnalyzerPtr->GetEnergy();
-		  fOutPtr->fValidData[tmpChannelCnt].fTime    = fAnalyzerPtr->GetTiming();
-		  tmpChannelCnt ++;
+		  fOutPtr->fValidData[tmpChannelCnt].fEnergy  = (float)fAnalyzerPtr->GetEnergy();
+		  fOutPtr->fValidData[tmpChannelCnt].fTime    = (float)fAnalyzerPtr->GetTiming();
 		  ResetDataPtr(tmpStartIndex, sampleCnt);
+		  tmpChannelCnt ++;
 		  sampleCnt = 0;
 		}
 
@@ -204,7 +211,6 @@ int AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evt
 	      tmpGain =  fPHOSRawStream->IsLowGain(); 
 	      processedChannels ++;
 	    }
-
 	  
 	  if(sampleCnt == 0)
 	    {
@@ -213,24 +219,19 @@ int AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evt
 	  
 	  fTmpChannelData[fPHOSRawStream->GetTime()] =  fPHOSRawStream->GetSignal();
 	  sampleCnt ++;
-
 	}
-   
+
       tmpChannelCnt ++;
       fAnalyzerPtr->SetData(fTmpChannelData);
       fAnalyzerPtr->Evaluate(0, sampleCnt);
-      //		  sampleCnt = 0;
       fOutPtr->fValidData[tmpChannelCnt].fGain = tmpGain;
       fOutPtr->fValidData[tmpChannelCnt].fZ  = tmpZ;
       fOutPtr->fValidData[tmpChannelCnt].fX  = tmpX; 
       fOutPtr->fValidData[tmpChannelCnt].fEnergy  = fAnalyzerPtr->GetEnergy();
       fOutPtr->fValidData[tmpChannelCnt].fTime    = fAnalyzerPtr->GetTiming();
-      //      tmpChannelCnt ++;
-   
       ResetDataPtr(tmpStartIndex, sampleCnt);
+
       sampleCnt = 0;
-
-
 
       fOutPtr->fCnt =  tmpChannelCnt;
       AliHLTComponentBlockData bd;
@@ -242,36 +243,116 @@ int AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evt
       outputBlocks.push_back( bd );
       tSize += mysize;
       outBPtr += mysize;
-      
+ 
       if( tSize > size )
-	{
-	  Logging( kHLTLogFatal, "HLT::AliHLTPHOSRawAnalyzerComponent::DoEvent", "Too much data",
-		   "Data written over allowed buffer. Amount written: %lu, allowed amount: %lu."
-		   , tSize, size );
-	  return EMSGSIZE;
-	}
-    }
+      	{
+	  cout <<"kHLTLogFatal, HLT::AliHLTPHOSRawAnalyzerComponent::DoEvent Too much data Data written over allowed buffer. Amount written:" << tSize << " allowed" << size << endl;
+      	  Logging( kHLTLogFatal, "HLT::AliHLTPHOSRawAnalyzerComponent::DoEvent", "Too much data",
+      		   "Data written over allowed buffer. Amount written: %lu, allowed amount: %lu."
+      		   , tSize, size );
+      	  return EMSGSIZE;
+      	}
 
+    }
+  
   fgEventCount++; 
+
+  if(fPrintInfo == kTRUE)
+    {
+      if(fgEventCount%fPrintInfoFrequncy == 0)
+      	{
+	  cout <<"Analyzing event " <<  fgEventCount  << "for Equippment " << fEquippmentID << endl; 
+	}  
+    }
   size = tSize;
   return 0;
 }//end DoEvent
 
 
+
 int
 AliHLTPHOSRawAnalyzerComponent::DoInit( int argc, const char** argv )
 {
-  int equippmentID = atoi(argv[6]);
+  /// See base class for documentation
+  fSendChannelData = kFALSE;
+  fPrintInfo = kFALSE;
   Reset();
   fRawMemoryReader = new AliRawReaderMemory();
   fPHOSRawStream = new  AliCaloRawStream(fRawMemoryReader,"PHOS");
   fPHOSRawStream->SetOldRCUFormat(kFALSE);
-  fRawMemoryReader->SetEquipmentID(equippmentID); 
-  SetEquippmentID(equippmentID);
-  SetCoordinates(equippmentID);
-  if (argc==0 && argv==NULL) {
-    // this is currently just to get rid of the warning "unused parameter"
-  }
+  int iResult=0;
+  TString argument="";
+  Bool_t isSetEquippmentID = kFALSE;
+
+  for(int i=0; i<argc && iResult>=0; i++) 
+    {
+      argument=argv[i];
+      
+      if (argument.IsNull()) 
+	{
+	  continue;
+	}
+                         
+    if (argument.CompareTo("-equipmentID") == 0) 
+	{
+	  cout << "AliHLTPHOSRawAnalyzerComponent:DoInit  argument = -equipmentID   "  <<endl;  
+	  if(i+1 <= argc)
+	    {
+	      fEquippmentID = atoi(argv[i+1]);
+	      cout << "AliHLTPHOSRawAnalyzerComponent:DoInit  setting equippment ID to  " << fEquippmentID <<endl;
+	      fRawMemoryReader->SetEquipmentID(fEquippmentID); 
+	      SetEquippmentID(fEquippmentID);
+	      SetCoordinates(fEquippmentID);
+	      isSetEquippmentID = kTRUE;
+	    }
+	  else
+	    {
+	       iResult= -1;
+	       Logging( kHLTLogFatal, "HLT::AliHLTPHOSRcuHistogramProducerComponent::DoInt( int argc, const char** argv )", "Missing argument",
+			"The argument -equippmentID expects a number");
+	       return  iResult;   
+	    }
+	}
+      
+    
+    if (argument.CompareTo("-datatype") == 0) 
+      {
+	if(i+1 <= argc)
+	  {
+	    argument=argv[i+1];
+	    if(argument.CompareTo("channeldata") == 0)
+	      {
+		cout << "AliHLTPHOSRawAnalyzerComponent::DoIni  setting sendChannelData = kTRUE "<< endl; 
+		fSendChannelData = kTRUE;
+	      }
+	  }	
+      }
+
+    if (argument.CompareTo("-printinfo") == 0) 
+      {
+	if(i+1 <= argc)
+	  {
+	    argument=argv[i+1];
+	    fPrintInfoFrequncy = atoi(argv[i+1]);
+	    fPrintInfo = kTRUE;
+	    cout << "AliHLTPHOSRawAnalyzerComponent::DoIni  setting printinfo = kTRUE, with update frequency every  "<< fPrintInfoFrequncy << "th event" <<endl; 
+	  }
+	else
+	  {
+	    cout << "WARNING: asking for event info, but no update frequency is specified, otipn is ignored" << endl;
+	  }
+      }
+ 
+    }
+
+
+  if(isSetEquippmentID == kFALSE)
+    {
+      Logging( kHLTLogFatal, "HLT::AliHLTPHOSRcuHistogramProducerComponent::DoInt( int argc, const char** argv )", "Missing argument",
+	       "The argument equippmentID is not set: set it with a component argumet like this: -equippmentID  <number>");
+      iResult = -2; 
+    }
+
   return 0;
 }
 
@@ -279,6 +360,7 @@ AliHLTPHOSRawAnalyzerComponent::DoInit( int argc, const char** argv )
 void
 AliHLTPHOSRawAnalyzerComponent::DumpData(int gain)
 {
+  //Dumping data to std out
   for(int mod = 0; mod < N_MODULES; mod ++)
     {
       printf("\n ***********  MODULE %d ************\n", mod);
@@ -297,16 +379,9 @@ AliHLTPHOSRawAnalyzerComponent::DumpData(int gain)
 
 
 void
-AliHLTPHOSRawAnalyzerComponent::DumpData()
-{
-  DumpData(0);
-}
-
-void
 AliHLTPHOSRawAnalyzerComponent::DumpChannelData(Double_t *data)
 {
       cout << endl;
-      
       for(int i=0; i<  ALTRO_MAX_SAMPLES; i++)
 	{
 	  if (data[i] != 0)
@@ -345,28 +420,9 @@ AliHLTPHOSRawAnalyzerComponent::Reset()
 	}
     }
 
-  ResetDataPtr();
+  ResetDataPtr(0, ALTRO_MAX_SAMPLES);
 
 } // end Reset
-
-
-void
-AliHLTPHOSRawAnalyzerComponent::ResetDataPtr()
-{
-  for(int i = 0 ; i< ALTRO_MAX_SAMPLES; i++)
-    {
-      fTmpChannelData[i] = 0;
-    }
-}
-
-void
-AliHLTPHOSRawAnalyzerComponent::ResetDataPtr(int sampleCnt)
-{
-  for(int i = 0 ; i< sampleCnt; i++)
-    {
-      fTmpChannelData[i] = 0;
-    }
-}
 
 void
 AliHLTPHOSRawAnalyzerComponent::ResetDataPtr(int startindex, int sampleCnt)
@@ -384,12 +440,11 @@ AliHLTPHOSRawAnalyzerComponent::SetEquippmentID(AliHLTUInt16_t id)
 }
 
 
-AliHLTUInt16_t
+const AliHLTUInt16_t
 AliHLTPHOSRawAnalyzerComponent::GetEquippmentID()
 {
   return  fEquippmentID;
 }
-
 
 void 
 AliHLTPHOSRawAnalyzerComponent::SetCoordinates(AliHLTUInt16_t equippmentID)
@@ -420,8 +475,6 @@ AliHLTPHOSRawAnalyzerComponent::SetCoordinates(AliHLTUInt16_t equippmentID)
       fRcuX = 1; 
       fRcuZ = 1;
     }
-
-
 
   fRcuZOffset =  N_ZROWS_RCU*fRcuZ;
   fRcuXOffset =  N_XCOLUMNS_RCU*fRcuX;
