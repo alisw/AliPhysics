@@ -625,8 +625,10 @@ void AliEMCALDigitizer::InitParameters()
   fTimeResolution     = 0.3e-9 ; // 300 psc
   fTimeSignalLength   = 1.0e-9 ;
 
-  fADCchannelEC    = 0.00305; // 200./65536 - width of one ADC channel in GeV
-  fADCpedestalEC   = 0.009 ;  // GeV
+  // These defaults are normally not used. 
+  // Values are read from calibration database instead
+  fADCchannelEC    = 0.0153; // Update 24 Apr 2007: 250./16/1024 - width of one ADC channel in GeV
+  fADCpedestalEC   = 0.0 ;  // GeV
   fNADCEC          = (Int_t) TMath::Power(2,16) ;  // number of channels in Tower ADC - 65536
 
   fTimeThreshold      = 0.001*10000000 ; // Means 1 MeV in terms of SDigits amplitude ??
