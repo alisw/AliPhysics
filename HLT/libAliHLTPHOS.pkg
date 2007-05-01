@@ -41,7 +41,9 @@ HDRS:=  PHOS/AliHLTPHOSPulseGenerator.h \
 	PHOS/AliHLTPHOSCellEnergiesFileWriter.h \
 	PHOS/AliHLTPHOSHistogramProducerComponent.h \
 	PHOS/AliHLTPHOSModuleCellAccumulatedEnergyDataStruct.h \
-	PHOS/AliHLTPHOSModuleCellAverageEnergyDataStruct.h
+	PHOS/AliHLTPHOSModuleCellAverageEnergyDataStruct.h \
+	PHOS/AliHLTPHOSRcuChannelDataStruct.h \
+	PHOS/AliHLTPHOSValidChannelDataStruct.h 
 
 DHDR=   PHOS/AliHLTPHOSLinkDef.h
  					    
@@ -68,7 +70,10 @@ CLASS_HDRS:=	PHOS/AliHLTPHOSPulseGenerator.h \
 		PHOS/AliHLTPHOSCellEnergiesFileWriter.h \
 		PHOS/AliHLTPHOSHistogramProducerComponent.h \
 		PHOS/AliHLTPHOSModuleCellAccumulatedEnergyDataStruct.h \
-		PHOS/AliHLTPHOSModuleCellAverageEnergyDataStruct.h
+		PHOS/AliHLTPHOSModuleCellAverageEnergyDataStruct.h \
+		PHOS/AliHLTPHOSRcuChannelDataStruct.h \
+		PHOS/AliHLTPHOSValidChannelDataStruct.h 
+
 
 MODULE_SRCS:=   PHOS/AliHLTPHOSPulseGenerator.cxx \
 		PHOS/AliHLTPHOSRawAnalyzer.cxx \
