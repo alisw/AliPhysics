@@ -14,16 +14,17 @@
  **************************************************************************/
 
 #include "AliHLTPHOSModuleMergerComponent.h"
-#include <iostream>
-#include "stdio.h"
+//#include <iostream>
+//#include "stdio.h"
 #include "AliRawReaderMemory.h"
 #include "AliCaloRawStream.h"
-#include <cstdlib>
+//#include <cstdlib>
+#include <cstdio>
 #include "AliHLTPHOSRcuCellEnergyDataStruct.h"
 
 
-const AliHLTComponentDataType  AliHLTPHOSModuleMergerComponent::inputDataTypes[]={kAliHLTVoidDataType,{0,"",""}}; //'zero' terminated array
-const AliHLTComponentDataType  AliHLTPHOSModuleMergerComponent::outputDataType=kAliHLTVoidDataType;
+const AliHLTComponentDataType  AliHLTPHOSModuleMergerComponent::fgkInputDataTypes[]={kAliHLTVoidDataType,{0,"",""}}; //'zero' terminated array
+const AliHLTComponentDataType  AliHLTPHOSModuleMergerComponent::fgkOutputDataType=kAliHLTVoidDataType;
 
 
 AliHLTPHOSModuleMergerComponent gAliHLTPHOSModuleMergerComponent;
@@ -71,7 +72,8 @@ AliHLTPHOSModuleMergerComponent::GetComponentID()
 void
  AliHLTPHOSModuleMergerComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
 {
-  const AliHLTComponentDataType* pType=inputDataTypes;
+  ///
+  const AliHLTComponentDataType* pType=fgkInputDataTypes;
   while (pType->fID!=0) 
     {
       list.push_back(*pType);
@@ -83,6 +85,7 @@ void
 AliHLTComponentDataType 
 AliHLTPHOSModuleMergerComponent::GetOutputDataType()
 {
+  ///
   return AliHLTPHOSDefinitions::gkCellEnergyDataType;
 }
 
@@ -90,6 +93,7 @@ AliHLTPHOSModuleMergerComponent::GetOutputDataType()
 void
 AliHLTPHOSModuleMergerComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier )
 {
+  ///
   constBase = 30;
   inputMultiplier = 1;
 }
@@ -99,6 +103,7 @@ int  AliHLTPHOSModuleMergerComponent::DoEvent( const AliHLTComponentEventData& e
 					      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 					      AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
 {
+  //Merging of data from 4 RCUS to one module
   
   unsigned long ndx;
   const AliHLTComponentBlockData* iter = NULL;   
@@ -142,6 +147,7 @@ int  AliHLTPHOSModuleMergerComponent::DoEvent( const AliHLTComponentEventData& e
 int
 AliHLTPHOSModuleMergerComponent::DoInit( int argc, const char** argv )
 {
+  //See base classs for documenation
   Reset();
 
   if (argc==0 && argv==NULL) {
@@ -154,7 +160,6 @@ AliHLTPHOSModuleMergerComponent::DoInit( int argc, const char** argv )
 void
 AliHLTPHOSModuleMergerComponent::DumpData(int gain)
 {
-
   if(gain < 0 || gain >  N_GAINS)
     {
       cout <<"AliHLTPHOSModuleMergerComponent::DumpDat: Error, gain must be between " << 0 << "and" << N_GAINS << endl;
