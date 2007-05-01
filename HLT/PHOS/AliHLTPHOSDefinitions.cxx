@@ -36,3 +36,4 @@ const AliHLTComponentDataType AliHLTPHOSDefinitions::gkCellAverageEnergyDataType
 const AliHLTComponentDataType AliHLTPHOSDefinitions::gkCellAccumulatedEnergyDataType = { sizeof(AliHLTComponentDataType),       {'E','N','E','R','A','C','C','U'},{'P','H','O','S'}};;
 const AliHLTComponentDataType AliHLTPHOSDefinitions::gkCellTimingHistogramDataType   = { sizeof(AliHLTComponentDataType),       {'T','I','M','E','H','I','S','T'},{'P','H','O','S'}};;    
 const AliHLTComponentDataType AliHLTPHOSDefinitions::gkCellTimingAverageDataType     = { sizeof(AliHLTComponentDataType),       {'T','I','M','E','A','V','E','R'},{'P','H','O','S'}};;
+const AliHLTComponentDataType AliHLTPHOSDefinitions::gkCellChannelDataDataType       = { sizeof(AliHLTComponentDataType),       {'C','H','A','N','D','A','T','A'},{'P','H','O','S'}};;

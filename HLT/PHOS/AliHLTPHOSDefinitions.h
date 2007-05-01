@@ -22,6 +22,7 @@ class AliHLTPHOSDefinitions
       static const AliHLTComponentDataType gkCellAccumulatedEnergyDataType;  /**<Histogram for per cell/gain energy distribution*/
       static const AliHLTComponentDataType gkCellTimingHistogramDataType;  /**<Histogram for per cell/gain time distribution*/      
       static const AliHLTComponentDataType gkCellTimingAverageDataType;  /**<Histogram for per cell/gain time distribution*/  
+      static const AliHLTComponentDataType gkCellChannelDataDataType;  /**<Time dependent signal from the readout channels*/  
     };
 
 #endif
