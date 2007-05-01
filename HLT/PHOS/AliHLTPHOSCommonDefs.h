@@ -25,7 +25,7 @@
 #define N_XCOLUMNS_MOD     N_COLUMNS_MOD                 /**<Number of columns per module*/ 
 
 #define N_GAINS            2                             /**<Number of gains per ALTRO channel*/
-#define N_DATATYPES        10 
+#define N_DATATYPES        10                            /**<Max number of output datatypes for a single component*/
 
 //peakfinder constatnts
 #define PF_MAX_PATH_LENGTH 256

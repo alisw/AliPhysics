@@ -12,25 +12,23 @@ class AliHLTPHOSModuleMergerComponent:public AliHLTProcessor
 {
  public:
   AliHLTPHOSModuleMergerComponent();
-  ~AliHLTPHOSModuleMergerComponent();
+  virtual ~AliHLTPHOSModuleMergerComponent();
   AliHLTPHOSModuleMergerComponent(const AliHLTPHOSModuleMergerComponent & );
   AliHLTPHOSModuleMergerComponent & operator = (const AliHLTPHOSModuleMergerComponent &)
     {
       return *this;
    };
-  virtual int DoInit( int argc, const char** argv );
+  virtual int DoInit(int argc =0, const char** argv = 0);
   virtual int Deinit();
   virtual int DoDeinit();
   virtual int DoEvent(const AliHLTComponentEventData&, const AliHLTComponentBlockData*, AliHLTComponentTriggerData&, AliHLTUInt8_t*, AliHLTUInt32_t&, std::vector<AliHLTComponentBlockData, std::allocator<AliHLTComponentBlockData> >&);
-  
-  void DumpData(int gain);
- 
+  void DumpData(int gain =0);
   int GetEquippmentId();
   virtual const char* GetComponentID();
   virtual void GetInputDataTypes(std::vector<AliHLTComponentDataType, std::allocator<AliHLTComponentDataType> >&);
   virtual AliHLTComponentDataType GetOutputDataType();
   virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
-  void SetEquippmentId(int id);
+  void SetEquippmentId(int id = 0);
   virtual AliHLTComponent* Spawn();
 
  protected:
@@ -38,12 +36,12 @@ class AliHLTPHOSModuleMergerComponent:public AliHLTProcessor
   void ResetDataPtr();
 
  private:
-  int fEventCount;
-  AliHLTUInt32_t fEquippmentID;
-  Double_t fTmpChannelData[ALTRO_MAX_SAMPLES];
-  Double_t fMaxValues[N_MODULES][N_ROWS_MOD][N_COLUMNS_MOD][N_GAINS];
-  static const AliHLTComponentDataType inputDataTypes[];
-  static const AliHLTComponentDataType outputDataType;
+  int fEventCount;                                                    /**<event counter*/
+  AliHLTUInt32_t fEquippmentID;                                       /**<Eguippment ID as given by ALICE*/
+  Double_t fTmpChannelData[ALTRO_MAX_SAMPLES];                        /**<Array to tmporarily store samples from a single ALTRO*/ 
+  Double_t fMaxValues[N_MODULES][N_ROWS_MOD][N_COLUMNS_MOD][N_GAINS]; /**<Tower/Crystal energies*/
+  static const AliHLTComponentDataType fgkInputDataTypes[];           /**<The input datatypes the component can recieve (obsolete ?)*/
+  static const AliHLTComponentDataType fgkOutputDataType;             /**<The type of date the compnent writes to shared memory */
 };
 
 #endif
