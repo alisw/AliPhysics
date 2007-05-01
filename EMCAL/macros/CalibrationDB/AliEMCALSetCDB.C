@@ -76,8 +76,8 @@ void SetCC(Int_t flag=0)
   
   AliEMCALCalibData *calibda=new AliEMCALCalibData("EMCAL");
   
-  Float_t fADCpedestal = 0.009;
-  Float_t fADCchannel  = 0.00305;
+  Float_t fADCpedestal = 0.0;
+  Float_t fADCchannel  = 0.0153;  // 250 GeV / (16*1024)
 
   TRandom rn;
   Int_t nSMod  = 12;
@@ -92,11 +92,9 @@ void SetCC(Int_t flag=0)
       for(Int_t row=0; row< nRow; row++) {
 	if (flag == 1) {
 	  // Decalibration:
-	  // Spread calibration coefficients uniformly with
-	  // Cmax/Cmin = 5, (Cmax-Cmin)/2 = 0.0015
-	  // and pedestals 0.005 +-10%
-	  fADCchannel  =rn.Uniform(0.00075,0.00375);
-	  fADCpedestal=rn.Uniform(0.0045,0.0055);
+	  // Spread calibration coefficients uniformly around central value 
+	  fADCchannel  = rn.Uniform(0.00140,0.00160);
+	  fADCpedestal = 0;
 	}
 	calibda->SetADCchannel (supermodule,column,row,fADCchannel);
 	calibda->SetADCpedestal(supermodule,column,row,fADCpedestal);
