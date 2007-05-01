@@ -1,10 +1,6 @@
 #ifndef ALIHLTPHOSFILEWRITERCOMPONENT_H
 #define ALIHLTPHOSFILEWRITERCOMPONENT_H
 
-#include "AliHLTDataSink.h"
-#include "AliHLTPHOSFileWriterComponent.h"
-#include "AliRawReaderMemory.h"
-#include "AliCaloRawStream.h"
 #include "AliHLTPHOSDefinitions.h"
 #include <string>
 #include "AliHLTPHOSCommonDefs.h"
@@ -14,11 +10,11 @@
 #include "Rtypes.h"
 #include "AliHLTFileWriter.h"
 
-using std::string;
 
-
+class AliRawReaderMemory;
+class AliCaloRawStream;
 class AliHLTPHOSRcuCellEnergyDataStruct;
- 
+class AliHLTPHOSFileWriterComponent;
 
 class AliHLTPHOSFileWriterComponent:public AliHLTFileWriter
 {
