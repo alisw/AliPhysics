@@ -33,8 +33,8 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTProcessor
   virtual int DoInit(int argc =0, const char** argv  = 0);
   virtual int Deinit();
   virtual int DoDeinit();
-  void DumpData(int gain =0);
-  void DumpChannelData(Double_t *data =0); 
+  const void DumpData(int gain =0);
+  const void DumpChannelData(Double_t *data =0); 
   void SetEquippmentID(AliHLTUInt16_t id =0);
   const AliHLTUInt16_t  GetEquippmentID();
   void SetCoordinates(AliHLTUInt16_t equippmentID =0);

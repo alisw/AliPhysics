@@ -357,7 +357,7 @@ AliHLTPHOSRawAnalyzerComponent::DoInit( int argc, const char** argv )
 }
 
 
-void
+const void
 AliHLTPHOSRawAnalyzerComponent::DumpData(int gain)
 {
   //Dumping data to std out
@@ -378,7 +378,7 @@ AliHLTPHOSRawAnalyzerComponent::DumpData(int gain)
 }
 
 
-void
+const void
 AliHLTPHOSRawAnalyzerComponent::DumpChannelData(Double_t *data)
 {
       cout << endl;
