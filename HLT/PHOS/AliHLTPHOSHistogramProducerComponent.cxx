@@ -15,18 +15,20 @@
  **************************************************************************/
 
 #include "AliHLTPHOSHistogramProducerComponent.h"
-#include <iostream>
-#include "stdio.h"
+//#include <iostream>
+//#include "stdio.h"
 #include "AliRawReaderMemory.h"
 #include "AliCaloRawStream.h"
-#include <cstdlib>
+#include "cstdio"
+//#include <cstdlib>
+
 #include "AliHLTPHOSRcuCellEnergyDataStruct.h"
 #include "AliHLTPHOSModuleCellAccumulatedEnergyDataStruct.h"
 
 
 
-const AliHLTComponentDataType  AliHLTPHOSHistogramProducerComponent::inputDataTypes[]={kAliHLTVoidDataType,{0,"",""}}; //'zero' terminated array
-const AliHLTComponentDataType  AliHLTPHOSHistogramProducerComponent::outputDataType=kAliHLTVoidDataType;
+const AliHLTComponentDataType  AliHLTPHOSHistogramProducerComponent::fgkInputDataTypes[]={kAliHLTVoidDataType,{0,"",""}}; //'zero' terminated array
+const AliHLTComponentDataType  AliHLTPHOSHistogramProducerComponent::fgkOutputDataType=kAliHLTVoidDataType;
 
 
 AliHLTPHOSHistogramProducerComponent gAliHLTPHOSHistogramProducerComponent;
@@ -81,7 +83,7 @@ AliHLTPHOSHistogramProducerComponent::GetComponentID()
 void
  AliHLTPHOSHistogramProducerComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
 {
-  const AliHLTComponentDataType* pType=inputDataTypes;
+  const AliHLTComponentDataType* pType=fgkInputDataTypes;
   while (pType->fID!=0) 
     {
       list.push_back(*pType);

@@ -8,10 +8,12 @@
 #include "AliHLTProcessor.h"
 #include "AliHLTPHOSDefinitions.h"
 #include "AliHLTPHOSCommonDefs.h"
-#include "TH2.h"
-#include "AliHLTPHOSCommonDefs.h"
-#include "AliHLTPHOSModuleCellAccumulatedEnergyDataStruct.h"
+//#include "TH2.h"
+//#include "AliHLTPHOSCommonDefs.h"
+//#include "AliHLTPHOSModuleCellAccumulatedEnergyDataStruct.h"
 
+//class TH2;
+class AliHLTPHOSModuleCellAccumulatedEnergyDataStruct;
 
 class AliHLTPHOSHistogramProducerComponent:public AliHLTProcessor
 {
@@ -25,17 +27,17 @@ class AliHLTPHOSHistogramProducerComponent:public AliHLTProcessor
    {
       return *this;
    };
-  virtual int DoInit( int argc, const char** argv );
+  virtual int DoInit( int argc = 0, const char** argv = 0);
   virtual int Deinit();
   virtual int DoDeinit();
   virtual int DoEvent(const AliHLTComponentEventData&, const AliHLTComponentBlockData*, AliHLTComponentTriggerData&, AliHLTUInt8_t*, AliHLTUInt32_t&, std::vector<AliHLTComponentBlockData, std::allocator<AliHLTComponentBlockData> >&);
-  void DumpData(int gain);
+  void DumpData(int gain = 0);
   int GetEquippmentId();
   virtual const char* GetComponentID();
   virtual void GetInputDataTypes(std::vector<AliHLTComponentDataType, std::allocator<AliHLTComponentDataType> >&);
   virtual AliHLTComponentDataType GetOutputDataType();
   virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
-  void SetEquippmentId(int id);
+  void SetEquippmentId(int id = 0);
   virtual AliHLTComponent* Spawn();
   
  protected:
@@ -43,8 +45,6 @@ class AliHLTPHOSHistogramProducerComponent:public AliHLTProcessor
   void ResetDataPtr();
 
  private:
-  // TH2F *fEnergyHistograms[N_ZROWS_MOD][N_XCOLUMNS_MOD][N_GAINS];
-  // TH2F *fTimingHistograms[N_ZROWS_MOD][N_XCOLUMNS_MOD][N_GAINS];
   Double_t fEnergyAverageValues[N_ZROWS_MOD][N_XCOLUMNS_MOD][N_GAINS];  
   Double_t fAccumulatedValues[N_ZROWS_MOD][N_XCOLUMNS_MOD][N_GAINS];
   Double_t fTimingAverageValues[N_ZROWS_MOD][N_XCOLUMNS_MOD][N_GAINS]; 
@@ -52,10 +52,9 @@ class AliHLTPHOSHistogramProducerComponent:public AliHLTProcessor
   int fEventCount;
   AliHLTUInt32_t fEquippmentID;
   Double_t fTmpChannelData[ALTRO_MAX_SAMPLES];
-  //  AliHLTPHOSRcuCellAccumulatedEnergyDataStruct*  fOutPtr;
   AliHLTPHOSModuleCellAccumulatedEnergyDataStruct*  fOutPtr;
-  static const AliHLTComponentDataType inputDataTypes[];
-  static const AliHLTComponentDataType outputDataType;
+  static const AliHLTComponentDataType fgkInputDataTypes[];
+  static const AliHLTComponentDataType fgkOutputDataType;
 };
 
 #endif
