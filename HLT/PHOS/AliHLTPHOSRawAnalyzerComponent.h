@@ -7,16 +7,11 @@
 //
 //Base class for PHOS HLT raw data analysis components
 // see cxx file for more details
-// BBBBBB
-//FFFFFF
-//GGGGG
-//HHHHHHHHHHHHHH
-//HHHHHHHHHHH
 
 #include "AliHLTProcessor.h"
 #include "AliHLTPHOSDefinitions.h"
 #include "AliHLTPHOSCommonDefs.h"
-//#include "AliHLTPHOSRcuChannelDataStruct.h"
+
 
 class AliRawReaderMemory;
 class AliCaloRawStream;
@@ -69,7 +64,7 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTProcessor
   AliCaloRawStream *fPHOSRawStream;                   /**<Streamer for PHOS raw data, used by fPHOSRawMemory reader*/ 
   AliRawReaderMemory *fRawMemoryReader;               /**<Decoder to read PHOS raw data on the altro format*/  
   AliHLTPHOSRcuCellEnergyDataStruct* fOutPtr;         /**<Pointer to outputbuffer to write results from the component into shared memory*/
-  static const AliHLTComponentDataType fgkInputDataTypes[]; /**<list of output datatypes from the component*/
+  static const AliHLTComponentDataType fgkInputDataTypes[]; /**<List of  datatypes that can be given to this component*/
 };
 #endif
 

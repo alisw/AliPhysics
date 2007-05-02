@@ -35,14 +35,10 @@
 #include "AliHLTPHOSRawAnalyzerComponent.h"
 #include "AliRawReaderMemory.h"
 #include "AliCaloRawStream.h"
-
-//#include <cstdlib>
 #include <iostream>
-
 #include "AliHLTPHOSRcuCellEnergyDataStruct.h"
 #include "AliHLTPHOSRcuChannelDataStruct.h"
 
-//using  std::cout;
 using namespace std;
 
 

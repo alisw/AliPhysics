@@ -15,16 +15,14 @@
  **************************************************************************/
 
 #include "AliHLTPHOSHistogramProducerComponent.h"
-//#include <iostream>
-//#include "stdio.h"
 #include "AliRawReaderMemory.h"
 #include "AliCaloRawStream.h"
-#include "cstdio"
-//#include <cstdlib>
-
+//#include "cstdio"
+#include <iostream>
 #include "AliHLTPHOSRcuCellEnergyDataStruct.h"
 #include "AliHLTPHOSModuleCellAccumulatedEnergyDataStruct.h"
 
+using namespace std;
 
 
 const AliHLTComponentDataType  AliHLTPHOSHistogramProducerComponent::fgkInputDataTypes[]={kAliHLTVoidDataType,{0,"",""}}; //'zero' terminated array
@@ -42,25 +40,35 @@ AliHLTPHOSHistogramProducerComponent gAliHLTPHOSHistogramProducerComponent;
 **************************************************************************/
 AliHLTPHOSHistogramProducerComponent:: AliHLTPHOSHistogramProducerComponent():AliHLTProcessor(), fEventCount(0),  fEquippmentID(0)
 {
+  /**
+   *Default constructor
+   */
   Reset();
 } 
 
 
 AliHLTPHOSHistogramProducerComponent::~ AliHLTPHOSHistogramProducerComponent()
 {
-
+  /**
+   *Default destructor
+   */
 }
 
 
 AliHLTPHOSHistogramProducerComponent::AliHLTPHOSHistogramProducerComponent(const  AliHLTPHOSHistogramProducerComponent & ) : AliHLTProcessor(), fEventCount(0),  fEquippmentID(0)
 {
-
+  /**
+   *Copy constructor
+   */
 }
 
 
 int 
 AliHLTPHOSHistogramProducerComponent::Deinit()
 {
+  /**
+   *See base class for documenation
+   */
   return 0;
 }
 
@@ -76,6 +84,9 @@ AliHLTPHOSHistogramProducerComponent::DoDeinit()
 const char* 
 AliHLTPHOSHistogramProducerComponent::GetComponentID()
 {
+  /**
+   *See base class for documenation
+   */
   return "HistogramProducer";
 }
 
@@ -83,6 +94,9 @@ AliHLTPHOSHistogramProducerComponent::GetComponentID()
 void
  AliHLTPHOSHistogramProducerComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
 {
+  /**
+   *See base class for documenation
+   */
   const AliHLTComponentDataType* pType=fgkInputDataTypes;
   while (pType->fID!=0) 
     {
@@ -95,6 +109,9 @@ void
 AliHLTComponentDataType 
 AliHLTPHOSHistogramProducerComponent::GetOutputDataType()
 {
+  /**
+   *See base class for documenation
+   */
   return AliHLTPHOSDefinitions::gkCellEnergyDataType;
 }
 
@@ -102,6 +119,9 @@ AliHLTPHOSHistogramProducerComponent::GetOutputDataType()
 void
 AliHLTPHOSHistogramProducerComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier )
 {
+  /**
+   *See base class for documenation
+   */
   constBase = 30;
   inputMultiplier = 1;
 }
@@ -111,6 +131,14 @@ int  AliHLTPHOSHistogramProducerComponent::DoEvent( const AliHLTComponentEventDa
 					      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 					      AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
 {
+  /**
+   *This fucntion takes as input cell energies as input and accumulates 
+   *Energy and the number of hits on a per channel basis and fills a four
+   *dimensional array [N_MODULES][N_ROWS_MOD][N_COLUMNS_MOD][N_GAINS].
+   *Energy distribution histograms (root) are updatet continioulsy and written to
+   *root files at the end of run command (actually the "stop" command)
+   */
+
   unsigned long ndx;
   UInt_t offset           = 0; 
   UInt_t mysize           = 0;
@@ -285,8 +313,8 @@ AliHLTPHOSHistogramProducerComponent::SetEquippmentId(int id)
   fEquippmentID = id;
 }
 
-int 
-AliHLTPHOSHistogramProducerComponent::GetEquippmentId()
+const int 
+AliHLTPHOSHistogramProducerComponent::GetEquippmentId() const
 {
   return  fEquippmentID;
 }
