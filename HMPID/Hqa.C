@@ -1,9 +1,149 @@
+#include <TSystem.h>
+#include <TFile.h>
+#include <TTree.h>
+#include <TClonesArray.h>
+#include <TObjArray.h>
+#include <TH2F.h>
+#include <TCanvas.h>
+
+#include <AliHMPIDHit.h>
+#include <AliHMPIDCluster.h>
+
+
+
+TH1F *hHitQdc; TH2F *hHitMap[7];  
+
+
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+void BookHits()
+{
+  hHitQdc=new TH1F("HitQdc","Hit Qdc all chamber;QDC",500,0,4000);
+  for(Int_t iCh=0;iCh<7;iCh++)
+    hHitMap[iCh]=new TH2F(Form("HitMap%i",iCh),Form("Ch%i;x_{Hit};y_{Hit}",iCh),1700,-10,160,1700,-10,160);  
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+TObjArray *CreateContainer(const char *classname,TTree *pTree)
+{
+  TObjArray *pOA=new TObjArray(7); pOA->SetOwner();
+  for(Int_t iCh=AliHMPIDDigit::kMinCh;iCh<=AliHMPIDDigit::kMaxCh;iCh++){
+    TClonesArray *pCA=new TClonesArray(classname);
+    pOA->AddAt(pCA,iCh);    
+    pTree->SetBranchAddress(Form("HMPID%i",iCh),&pCA);
+  }
+  pTree->GetEntry(0);
+  return pOA;
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+TH1F *hCluEvt,*hCluChi2,*hCluFlg,*hCluSize;
+
+void Clus(Int_t mode, TTree *pTree=0x0)
+{
+  switch(mode){
+    case 1:
+      hCluEvt=new TH1F("CluPerEvt","# clusters per event",11,-0.5,10.5);
+      hCluChi2  =new TH1F("CluChi2"  ,"Chi2 "               ,1000,0,100);
+      hCluFlg   =new TH1F("CluFlg"   ,"Cluster flag"        ,14,-1.5,12.5);                       hCluFlg->SetFillColor(5);
+      hCluSize  =new TH1F("CluSize"  ,"Raw cluster size    ",100,0,100);
+      return;
+    case 2:      
+      if(pTree==0) return;
+      
+      TObjArray *pLst=CreateContainer("AliHMPIDCluster",pTree); 
+      for(Int_t iCh=AliHMPIDDigit::kMinCh;iCh<=AliHMPIDDigit::kMaxCh;iCh++){//chambers loop
+        TClonesArray *pClus=(TClonesArray *)pLst->UncheckedAt(iCh);
+      
+        hCluEvt->Fill(pClus->GetEntriesFast());
+        for(Int_t iClu=0;iClu<pClus->GetEntriesFast();iClu++){//clusters loop
+          AliHMPIDCluster *pClu=(AliHMPIDCluster*)pClus->UncheckedAt(iClu);
+          hCluFlg->Fill(pClu->Status());
+          hCluChi2->Fill(pClu->Chi2());
+          hCluSize->Fill(pClu->Size());
+        }
+      }
+      delete pLst;           
+      return;  
+    case 3:
+      TCanvas *c1=new TCanvas("CluComCan","Clusters in common",1280,800); c1->Divide(3,3);
+      c1->cd(1); hCluEvt->Draw();  
+      c1->cd(2); hCluChi2->Draw(); 
+      c1->cd(3); hCluFlg->Draw(); 
+      c1->cd(4); hCluSize->Draw(); 
+      return;
+  }//switch
+}//Clus()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+void FillHits(TTree *pHitTree)
+{
+  if(pHitTree==0) return;
+  TClonesArray *pHitLst=new TClonesArray("AliHMPIDHit");
+  pHitTree->SetBranchAddress("HMPID",&pHitLst);
+  
+  for(Int_t iEnt=0;iEnt<pHitTree->GetEntriesFast();iEnt++){
+    pHitTree->GetEntry(iEnt);
+    for(Int_t iHit=0;iHit<pHitLst->GetEntriesFast();iHit++){
+      AliHMPIDHit *pHit = (AliHMPIDHit*)pHitLst->UncheckedAt(iHit);
+      hHitMap[pHit->Ch()]->Fill(pHit->LorsX(),pHit->LorsY());
+      hHitQdc->Fill(pHit->Q());
+    }      
+  }
+  delete pHitLst;
+}    
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+void PlotHits()
+{
+  TCanvas *pHitCan=new TCanvas("HitCan","Hits",1280,800); pHitCan->Divide(3,3);
+  
+  for(Int_t iCh=0;iCh<7;iCh++){
+    if(iCh==6) pHitCan->cd(1); if(iCh==5) pHitCan->cd(2);
+    if(iCh==4) pHitCan->cd(4); if(iCh==3) pHitCan->cd(5); if(iCh==2) pHitCan->cd(6);
+                               if(iCh==1) pHitCan->cd(8); if(iCh==0) pHitCan->cd(9);
+    hHitMap[iCh]->Draw();
+  }  
+  pHitCan->cd(3); gPad->SetLogy(); hHitQdc->Draw();
+}
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 void Hqa()
 {
-  gROOT->LoadMacro("Hdisp.C");
-  HitQA();
-}//Hqa()
-void HitQA()
+
+  TFile *fh=0; if(gSystem->IsFileInIncludePath("HMPID.Hits.root"))      fh=TFile::Open("HMPID.Hits.root"     ,"read");if(fh->IsZombie()) fh=0;
+  TFile *fd=0; if(gSystem->IsFileInIncludePath("HMPID.Digits.root"))    fd=TFile::Open("HMPID.Digits.root"   ,"read");if(fd->IsZombie()) fd=0;
+  TFile *fc=0; if(gSystem->IsFileInIncludePath("HMPID.RecPoints.root")) fc=TFile::Open("HMPID.RecPoints.root","read");if(fc->IsZombie()) fc=0;
+  
+  
+  if(fh==0 && fd==0 && fc==0){Printf("Nothing to do!"); return;}
+  
+  
+  if(fh) BookHits();
+  if(fc) Clus(1); //book
+  
+  Int_t iEvt=0;
+  while(1){
+    TTree *th=0; if(fh) th=(TTree*)fh->Get(Form("Event%i/TreeH",iEvt));
+    TTree *td=0; if(fd) td=(TTree*)fd->Get(Form("Event%i/TreeD",iEvt));
+    TTree *tc=0; if(fc) tc=(TTree*)fc->Get(Form("Event%i/TreeR",iEvt));
+    
+    FillHits(th);
+    Clus(2,tc);
+    if(th==0 && td==0 && tc==0) break;
+    iEvt++;
+    Printf("Event %i processed",iEvt);
+  }
+  
+  if(fh) PlotHits();
+  if(fc) Clus(3); //plot
+}
+
+/*
+
+void BlahQA()
 {
   TFile *pFile = new TFile("Hqa.root","recreate");
   AliHMPIDCluster::DoCorrSin(kFALSE);
@@ -16,10 +156,6 @@ void HitQA()
   TH1F *hQ500eV=new TH1F("hQ500eV","" ,300,-50,2000);     hQ500eV->SetLineColor(kCyan);     lQ->AddEntry(hQ500eV,"mip 500 eV");
   TH1F *hQ900eV=new TH1F("hQ900eV","" ,300,-50,2000);     hQ900eV->SetLineColor(kGreen);    lQ->AddEntry(hQ900eV,"mip 900 eV");
   
-  TH1F *hCluPerEvt=new TH1F("hCluPerEvt","# clusters per event",11,-0.5,10.5);
-  TH1F *hCluChi2  =new TH1F("hChi2","Chi2 ",1000,0,100);
-  TH1F *hCluFlg   =new TH1F("hCluFlg","Cluster flag",14,-1.5,12.5);                       hCluFlg->SetFillColor(5);
-  TH1F *hCluRawSize= new TH1F("hCluRawSize","Raw cluster size ",100,0,100);
   
   gStyle->SetOptStat(10);
   TH2F *pCluMapSi1  =new TH2F("cluMapSi1","Size 1 map"       ,1700,-10,160,1700,-10,160);
@@ -41,7 +177,6 @@ void HitQA()
   TH2F *hHitCluDifXY= new TH2F("hHitCluDifXY",";x_{Hit}-x_{Clu};y_{Hit}-y_{Clu}",1000,-1,1,1000,-1,1);hHitCluDifXY->Sumw2();  
   TH1F *hHitCluDifQ = new TH1F("hHitCluDifQ" ,";entries;(Q_{Clu}-Q_{Hit})/Q_{Hit}" ,200 ,-200,200);   hHitCluDifQ->Sumw2();    hHitCluDifQ->SetFillColor(kYellow);
   
-  TH2F *hHitMap= new TH2F("hHitMap",";x_{Hit};y_{Hit}",1700,-10,160,1700,-10,160);  
  
   Float_t e200=200e-9,e500=500e-9,e900=900e-9,e7=7e-9;//predefined  Eloss
   
@@ -86,10 +221,6 @@ void HitQA()
 
 // From here normal procedure for QA
 
-    for(Int_t iHit=0;iHit<hits.GetEntriesFast();iHit++) {
-      AliHMPIDHit *pHit = (AliHMPIDHit*)hits.UncheckedAt(iHit);
-      hHitMap->Fill(pHit->LorsX(),pHit->LorsY());
-    }
     Int_t kMaxCh=(nHits==1)?0:AliHMPIDDigit::kMaxCh;
     for(Int_t iCh=AliHMPIDDigit::kMinCh;iCh<=kMaxCh;iCh++){//chambers loop
       TClonesArray *pDigs=(TClonesArray *)digs.UncheckedAt(iCh);
@@ -107,19 +238,6 @@ void HitQA()
         hCluRawSize->Fill(pClu->Size());
 	 
         switch(pClu->Status()){
-/*
-    case        kFrm  : status="formed        "   ;break;
-    case        kUnf  : status="unfolded (fit)"   ;break;
-    case        kCoG  : status="coged         "   ;break;
-    case        kLo1  : status="locmax 1 (fit)"   ;break;
-    case        kMax  : status="exceeded (cog)"   ;break;
-    case        kNot  : status="not done (cog)"   ;break;
-    case        kEmp  : status="empty         "   ;break;
-    case        kEdg  : status="edge     (fit)"   ;break;
-    case 	kSi1  : status="size 1   (cog)"   ;break;
-    case 	kNoLoc: status="no LocMax(fit)"   ;break;
-    case 	kAbn  : status="Abnormal fit  "   ;break;
-*/
             case AliHMPIDCluster::kSi1:   pCluMapSi1->Fill(clux,cluy);  break;
             case AliHMPIDCluster::kLo1:   pCluMapLo1->Fill(clux,cluy);  break;
             case AliHMPIDCluster::kUnf:   pCluMapUnf->Fill(clux,cluy);  break; 
@@ -144,55 +262,8 @@ void HitQA()
       
     hits.Delete();  sdigs.Delete();  for(int i = 0;i<7;i++){((TClonesArray*)digs.At(i))->Delete();((TClonesArray*)clus.At(i))->Delete();}
   }//events loop      
-      
-  gStyle->SetPalette(1);
-  TCanvas *pC2=new TCanvas("Digit canvas","Digit canvas",1280,800); pC2->Divide(3,3);
-  pC2->cd(1);hHitCluDifX->Draw("hist");
-  pC2->cd(2);hHitCluDifY->Draw("hist");
-//  pC2->cd(3);hHitCluDifXY->Draw("colz");
-  // Draw CorrSin
-  AliHMPIDCluster c;
-  TPolyLine *pLine = new TPolyLine(500);
-  for(Int_t i=0;i<500;i++) {
-    Double_t x = 0 + i*AliHMPIDDigit::SizePadX()/500.;
-    c.SetX(x);c.SetY(0);c.CorrSin();
-    pLine->SetPoint(i,x-0.5*AliHMPIDDigit::SizePadX(),c.X()-x);
-  }
-  pC2->cd(3);hHitCluDifXv->Draw("colz");pLine->Draw("C");
-  //
-  pC2->cd(4);hHitCluDifQ->Draw("hist");
-  pC2->cd(5);gPad->SetLogy(1);hCluFlg->Draw();
-  pC2->cd(6);hCluChi2->Draw();
-  pC2->cd(7);                 hCluRawSize->Draw();
-  pC2->cd(8);                 hCluPerEvt->Draw();
-  pC2->cd(9);                 hQ7eV->Draw(); hQ200eV->Draw("same"); hQ500eV->Draw("same"); hQ900eV->Draw("same"); lQ->Draw();
-  TCanvas *pC1=new TCanvas("ClusterMaps","Cluster maps",1280,800); pC1->Divide(3,3);
-  pC1->cd(1);  pCluMapSi1->Draw();  DrawCh(-1);
-  pC1->cd(2);  pCluMapLo1->Draw();  DrawCh(-1);
-  pC1->cd(3);  pCluMapUnf->Draw();  DrawCh(-1);
-  pC1->cd(4);     hHitMap->Draw();  DrawCh(-1);
-  pC1->cd(5);  pCluMapMax->Draw();  DrawCh(-1);
-  pC1->cd(6);  pCluMapEdg->Draw();  DrawCh(-1);
-  pC1->cd(7);  pCluMapNot->Draw();  DrawCh(-1);
-  pC1->cd(8);  pCluMapNoLoc->Draw();DrawCh(-1);
-  pC1->cd(9);  pCluMapEmp->Draw();  DrawCh(-1);
-   
-  pC1->SaveAs("$HOME/HitMaps.png");  //?????
-  pC2->SaveAs("$HOME/HitCluDif.gif");  
+}
 
-  pFile->Write();  
-  Printf("Digits - raw -digits conversion...");  
-  
-  AliHMPIDDigit d1,d2; Int_t ddl,r,d,a;UInt_t w32;
 
-  for(Int_t iCh=AliHMPIDDigit::kMinCh;iCh<=AliHMPIDDigit::kMaxCh;iCh++)
-  for(Int_t iPc=AliHMPIDDigit::kMinPc;iPc<=AliHMPIDDigit::kMaxPc;iPc++)
-  for(Int_t iPx=AliHMPIDDigit::kMinPx;iPx<=AliHMPIDDigit::kMaxPx;iPx++)
-  for(Int_t iPy=AliHMPIDDigit::kMinPy;iPy<=AliHMPIDDigit::kMaxPy;iPy++){
-    d1.Set(iCh,iPc,iPx,iPy,3040);   //set digit               
-    d1.Raw(w32,ddl,r,d,a);          //get raw word for this digit 
-    d2.Raw(w32,ddl);                //set another digit from that raw word
-    if(d1.Compare(&d2)) {d1.Print(); d2.Print(); Printf("");}//compare them
-  }
-  Printf("OK");
-}//tst()
+
+*/
