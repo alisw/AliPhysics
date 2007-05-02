@@ -36,7 +36,7 @@ public:
    virtual void        Init(TTree *tree);
    virtual void        Begin(TTree *);
    virtual void        SlaveBegin(TTree *tree);
-   virtual Bool_t      Notify() {return kTRUE;}   
+   virtual Bool_t      Notify();   
    virtual Bool_t      Process(Long64_t entry);
    virtual void        SlaveTerminate();
    virtual void        Terminate();

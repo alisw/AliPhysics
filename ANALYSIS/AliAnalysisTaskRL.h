@@ -24,6 +24,8 @@ class AliAnalysisTaskRL : public AliAnalysisTask {
   AliAnalysisTaskRL();
   AliAnalysisTaskRL(const char *name, const char *title);
   virtual ~AliAnalysisTaskRL();
+  
+  virtual Bool_t Notify();
 
  protected:
   Bool_t        GetEntry(Long64_t ientry);
@@ -35,15 +37,14 @@ class AliAnalysisTaskRL : public AliAnalysisTask {
  private:
   void DeleteRunLoader();
 
-  TTree        *fTree; //pointer to the ESD tree
+  TTree        *fTree; //! pointer to the ESD tree
   AliRunLoader *fRunLoader; //! pointer to the RunLoader if galice.root was opened
   Bool_t        fKinematicsLoaded; // determines if the stack is properly loaded (AliRunLoader::LoadKinematics() succeeded), this is needed because the GetStack returnes a invalid stack object when the function failed
   Bool_t fHeaderLoaded; // determines if the header is properly loaded
-  Int_t  fTreeNumber;   // Number of the tree currently processes (poor man's Notify())
   
   AliAnalysisTaskRL(const AliAnalysisTaskRL&);
   AliAnalysisTaskRL& operator=(const AliAnalysisTaskRL&);
  
-  ClassDef(AliAnalysisTaskRL,1);  // Class describing an analysis task
+  ClassDef(AliAnalysisTaskRL,2);  // Class describing an analysis task
 };
 #endif

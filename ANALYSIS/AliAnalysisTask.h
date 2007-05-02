@@ -79,6 +79,8 @@ public:
   //=====================================================================
   // === OVERLOAD THIS AND CREATE YOUR OUTPUT OBJECTS (HISTOGRAMS,DATA) HERE
   virtual void              CreateOutputObjects();
+  // === OVERLOAD THIS IF YOU NEED TO TREAT INPUT FILE CHANGE
+  virtual Bool_t            Notify();
   // Conect inputs/outputs to data containers (by AliAnalysisModule)
   Bool_t                    ConnectInput(Int_t islot, AliAnalysisDataContainer *cont);
   Bool_t                    ConnectOutput(Int_t islot, AliAnalysisDataContainer *cont);

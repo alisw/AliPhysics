@@ -27,6 +27,7 @@ class TClass;
 class TObjArray;
 class TCollection;
 class AliAnalysisTask;
+class AliAnalysisDataWrapper;
 class AliESD;
 
 class AliAnalysisDataContainer : public TNamed {
@@ -59,6 +60,9 @@ enum ENotifyMessage {
    void                      SetProducer(AliAnalysisTask *prod, Int_t islot);
    void                      AddConsumer(AliAnalysisTask *cons, Int_t islot);
    void                      DeleteData();
+   // Wrapping
+   AliAnalysisDataWrapper   *ExportData() const;
+   void                      ImportData(AliAnalysisDataWrapper *pack);
    // Container status checking
    Bool_t                    IsDataReady() const  {return fDataReady;}
    Bool_t                    IsOwnedData() const  {return fOwnedData;}
@@ -86,4 +90,33 @@ protected:
    
    ClassDef(AliAnalysisDataContainer,1)  // Class describing a data container for analysis
 };
+
+//==============================================================================
+//   AliAnalysysDataWrapper - A basic wrapper for exchanging via the network
+// the data held by AliAnalysisDataContainer between the master and the client
+// in PROOF case. 
+//==============================================================================
+
+class AliAnalysisDataWrapper : public TNamed {
+
+public:
+   AliAnalysisDataWrapper() : TNamed(), fData(NULL) {}
+   AliAnalysisDataWrapper(TObject *data) : TNamed(), fData(data) {}
+   AliAnalysisDataWrapper(const AliAnalysisDataWrapper &other) 
+                        : TNamed(other), fData(other.fData) {}
+   virtual ~AliAnalysisDataWrapper() {}
+   
+   // Assignment
+   AliAnalysisDataWrapper &operator=(const AliAnalysisDataWrapper &other);
+
+   TObject                  *Data() const {return fData;}
+   // Merging
+   virtual Long64_t          Merge(TCollection *list);
+
+protected:
+   TObject                  *fData;       // Wrapped data
+
+   ClassDef(AliAnalysisDataWrapper, 1) // Data wrapper class for exchange via the net
+};
+
 #endif

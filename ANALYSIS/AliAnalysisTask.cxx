@@ -380,7 +380,15 @@ void AliAnalysisTask::ConnectInputData(Option_t *)
 //______________________________________________________________________________
 void AliAnalysisTask::CreateOutputObjects()
 {
-// Overload and create your output objects here.
+// Called once per task either in PROOF or local mode. Overload to put some 
+// task initialization and/or create your output objects here.
+}
+
+//______________________________________________________________________________
+Bool_t AliAnalysisTask::Notify()
+{
+// Overload this IF you need to treat input file change.
+   return kTRUE;
 }
 
 //______________________________________________________________________________

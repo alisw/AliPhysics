@@ -37,7 +37,7 @@ ClassImp(AliAnalysisTaskRL)
 AliAnalysisTaskRL::AliAnalysisTaskRL() :
   AliAnalysisTask(),
   fTree(0), fRunLoader(0),
-  fKinematicsLoaded(kFALSE), fHeaderLoaded(kFALSE), fTreeNumber(-1) {
+  fKinematicsLoaded(kFALSE), fHeaderLoaded(kFALSE) {
   //
   // Constructor. Initialization of pointers
   //
@@ -70,18 +70,19 @@ Bool_t AliAnalysisTaskRL::GetEntry(Long64_t ientry) {
 }
 
 //___________________________________________________________________________
+Bool_t AliAnalysisTaskRL::Notify() {
+// The file has changed or there is a new tree. Delete the run loader.
+   DeleteRunLoader();
+   return kTRUE;
+}   
+
+//___________________________________________________________________________
 AliRunLoader *AliAnalysisTaskRL::GetRunLoader() {
   // Returns AliRun instance corresponding to current ESD active in fTree
   // Loads galice.root, the file is identified by replacing "AliESDs" to
   // "galice" in the file path of the ESD file. 
 
   fTree = (TTree *)AliAnalysisTask::GetInputData(0);
-  Int_t iTree = ((TChain *)AliAnalysisTask::GetInputData(0))->GetTreeNumber();
-  if (iTree != fTreeNumber) {
-      DeleteRunLoader();
-      fTreeNumber = iTree;
-  }
-  
       
   if (!fRunLoader) {
     if (!fTree->GetCurrentFile())

@@ -143,11 +143,11 @@ Bool_t AliAnalysisDataSlot::SetBranchAddress(const char *branchname, void *addre
 // Set a branch address for input tree. To be called during MyTask::Init()
 // only if GetBranchAddress() returns a NULL pointer for a tree-type slot.
    if (GetBranchAddress(branchname)) {
-     cout<<"Branch address for "<<branchname<<" already set by other task. Call first GetBranchAddress() in "<<fParent->GetName()<<"::Init()"<<endl;
-     //AliError(Form("Branch address for %s already set by other task. Call first GetBranchAddress() in %s::Init()",branchname, fParent->GetName()));
+      Error("SetBranchAddress","Branch address for %s already set by other task. Call first GetBranchAddress() in %s::ConnectInputData()",branchname, fParent->GetName());
       return kFALSE;
    }
    TTree *tree = (TTree*)GetData();
+   tree->SetBranchStatus(branchname,1);
    tree->SetBranchAddress(branchname, address);
    return kTRUE;
 }   

@@ -354,4 +354,98 @@ void AliAnalysisDataContainer::SetProducer(AliAnalysisTask *prod, Int_t islot)
       if (!prod->GetListOfTasks()->FindObject(cons)) prod->Add(cons);
    }   
 }   
+
+//______________________________________________________________________________
+AliAnalysisDataWrapper *AliAnalysisDataContainer::ExportData() const
+{
+// Wraps data for sending it through the net.
+   AliAnalysisDataWrapper *pack = 0;
+   if (!fData) return pack;
+   pack = new AliAnalysisDataWrapper(fData);
+   pack->SetName(fName.Data());
+   return pack;
+}
+
+//______________________________________________________________________________
+void AliAnalysisDataContainer::ImportData(AliAnalysisDataWrapper *pack)
+{
+// Unwraps data from a data wrapper.
+   if (pack) {
+      fData = pack->Data();
+      fDataReady = kTRUE;
+   }   
+}      
       
+ClassImp (AliAnalysisDataWrapper)
+
+//______________________________________________________________________________
+AliAnalysisDataWrapper &AliAnalysisDataWrapper::operator=(const AliAnalysisDataWrapper &other)
+{
+// Assignment.
+   if (&other != this) {
+      TNamed::operator=(other);
+      fData = other.fData;
+   }   
+   return *this;
+}
+
+//______________________________________________________________________________
+Long64_t AliAnalysisDataWrapper::Merge(TCollection *list)
+{
+// Merge a list of containers with this one. Containers in the list must have
+// data of the same type.
+   if (!fData) return 0;
+   if (!list || list->IsEmpty()) return 1;
+
+   printf("Merging %d data wrappers %s\n", list->GetSize()+1, GetName());
+   TMethodCall callEnv;
+   if (fData->InheritsFrom(TSeqCollection::Class())) {
+      TSeqCollection *coll = (TSeqCollection*)fData;
+      if (coll->IsEmpty()) return 0;
+      Int_t nentries = coll->GetEntries();
+      AliAnalysisDataWrapper *top;
+      TIter next(list);
+      TSeqCollection *collcrt = 0;
+      TList *list1 = 0;
+      for (Int_t i=0; i<nentries; i++) {
+         list1 = new TList();
+         top = new AliAnalysisDataWrapper(coll->At(i));
+         next.Reset();
+         while ((collcrt=(TSeqCollection*)next())) 
+            list1->Add(new AliAnalysisDataWrapper(collcrt->At(i)));
+         if (!top->Merge(list1)) {
+            list1->Delete();
+            delete list1;
+            return 0;   
+         }   
+         list1->Delete();
+         delete list1;
+      }
+      return nentries;
+   }   
+   
+   if (fData->IsA())
+      callEnv.InitWithPrototype(fData->IsA(), "Merge", "TCollection*");
+   if (!callEnv.IsValid()) {
+      cout << "No merge interface for data stored by " << GetName() << ". Merging not possible !" << endl;
+      return 1;
+   }
+
+   TIter next(list);
+   AliAnalysisDataWrapper *cont;
+   // Make a list where to temporary store the data to be merged.
+   TList *collectionData = new TList();
+   Int_t count = 0; // object counter
+   while ((cont=(AliAnalysisDataWrapper*)next())) {
+      TObject *data = cont->Data();
+      if (!data) continue;
+      if (strcmp(cont->GetName(), GetName())) continue;
+      collectionData->Add(data);
+      count++;
+   }
+   callEnv.SetParam((Long_t) collectionData);
+   callEnv.Execute(fData);
+   delete collectionData;
+
+   return count+1;
+}

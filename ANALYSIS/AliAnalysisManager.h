@@ -102,7 +102,7 @@ enum EAliAnalysisExecMode {
    void                 PrintStatus(Option_t *option="all") const;
 
 protected:
-   void                 ReplaceOutputContainers(TList *source);
+   void                 ImportWrappers(TList *source);
 
 private:
    TTree               *fTree;         //! Input tree in case of TSelector model
