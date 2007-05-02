@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2007/04/04 17:19:19  arcelli
+Moved some printout to debug level
+
 Revision 1.5  2007/02/20 15:57:00  decaro
 Raw data update: to read the TOF raw data defined in UNPACKED mode
 
@@ -107,10 +110,6 @@ AliTOFDataDCS::AliTOFDataDCS():
     fFEEttrm[i]=0x0;
   }
   
-  for(int i=0;i<3;i++) {
-    fT[i]=0;
-    fP[i]=0;
-  }
   
 }
 
@@ -193,12 +192,7 @@ AliTOFDataDCS::AliTOFDataDCS(const AliTOFDataDCS & data):
   for(int i=0;i<kNFEEttrm;i++) {
     fFEEttrm[i]=data.fFEEttrm[i];
   }
-  
-  for(int i=0;i<3;i++) {
-    fT[i]=data.fT[i];
-    fP[i]=data.fP[i];
-  }
-  
+    
 }
 //---------------------------------------------------------------
 
@@ -213,12 +207,6 @@ AliTOFDataDCS& AliTOFDataDCS:: operator=(const AliTOFDataDCS & data) {
   for(int i=0;i<kNAliases;i++) {
     this->fAliasNames[i]=data.GetAliasName(i);
   }
-
-  for(int i=0;i<3;i++) {
-    this->fT[i]=data.GetT(i);
-    this->fP[i]=data.GetP(i);
-  }
-
 
   for(int i=0;i<kNHV;i++) {
     this->fHVvp[i]=data.GetHVvp(i);
@@ -323,29 +311,6 @@ AliTOFDataDCS::~AliTOFDataDCS() {
   }
 }
 
-//-----------------------------------------------------------------------------
-Float_t* AliTOFDataDCS::GetT()const {
-
-  // method to retrieve environment temperature info
-
-  Float_t* t=0;
-  for (Int_t i=0;i<3;i++){
-    t[i]=this->fT[i];
-  }
-  return t;
-}
-//-----------------------------------------------------------------------------
-Float_t* AliTOFDataDCS::GetP() const{
-
-  // method to retrieve environment pressure info
-
-  Float_t* p=0;
-  for (Int_t i=0;i<3;i++){
-    p[i]=this->fP[i];
-  }
-  return p;
-}
-
 //---------------------------------------------------------------
 Bool_t AliTOFDataDCS::ProcessData(TMap& aliasMap){
 
@@ -364,8 +329,6 @@ Bool_t AliTOFDataDCS::ProcessData(TMap& aliasMap){
   TObjArray *aliasArr;
   AliDCSValue* aValue;
   AliDCSValue* aValue1;
-  TH1F * histoT=0x0;
-  TH1F * histoP=0x0;
 
   // starting loop on aliases
   for(int j=0; j<kNAliases; j++){
@@ -393,147 +356,90 @@ Bool_t AliTOFDataDCS::ProcessData(TMap& aliasMap){
     Int_t nentries = aliasArr->GetEntries();
     Int_t deltaTimeStamp = (Int_t) nentries/3;
     Int_t deltaTimeStamp1 = (Int_t) nentries/2;
-    AliDCSValue *lastDCSvalue = (AliDCSValue*) aliasArr->At(nentries-1);
-    Float_t maxTimeStamp = (Float_t) (lastDCSvalue->GetTimeStamp());
-    Float_t minTimeStamp = 0;
 
     // filling aliases with 10 floats+1 Usign
-    if (j < kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48*2+kNFEEthr+kNFEEtfeac+kNFEEttrm){
-      Int_t index = 0;
-      for (Int_t k=0;k<3;k++){
-	index = deltaTimeStamp*k;
-	if (k==0) {
-	  index=0;
-	}
-	else if (k==1) {
-	  index=deltaTimeStamp1;
-	} 
-	else if (k==2) {
-	  index=nentries-1; 
-	}
-	aValue = (AliDCSValue*) aliasArr->At(index);
-	val = aValue->GetFloat();
-	time = (Float_t) (aValue->GetTimeStamp());
-	if (j<kNHV){
-	  fHVvp[j]->SetFloat(k,val);
-	  fHVvp[j]->SetTimeStampFloat(k,time);
-	}
-	else if (j<kNHV*2){
-	  fHVvn[j-kNHV]->SetFloat(k,val);
-	  fHVvn[j-kNHV]->SetTimeStampFloat(k,time);
-	}
-	else if (j<kNHV*3){
-	  fHVip[j-2*kNHV]->SetFloat(k,val);
-	  fHVip[j-2*kNHV]->SetTimeStampFloat(k,time);
-	}
-	else if (j<kNHV*4){
-	  fHVin[j-3*kNHV]->SetFloat(k,val);
-	  fHVin[j-3*kNHV]->SetTimeStampFloat(k,time);
-	}
-	else if (j<kNHV*4+kNLV){
-	  fLVv[j-4*kNHV]->SetFloat(k,val);
-	  fLVv[j-4*kNHV]->SetTimeStampFloat(k,time);
-	}
-	else if (j<kNHV*4+kNLV*2){
-	  fLVi[j-4*kNHV-kNLV]->SetFloat(k,val);
-	  fLVi[j-4*kNHV-kNLV]->SetTimeStampFloat(k,time);
-	}
-	else if (j<kNHV*4+kNLV*2+kNLV33){
-	  fLVv33[j-4*kNHV-2*kNLV]->SetFloat(k,val);
-	  fLVv33[j-4*kNHV-2*kNLV]->SetTimeStampFloat(k,time);
-	}
-	else if (j<kNHV*4+kNLV*2+kNLV33*2){
-	  fLVi33[j-4*kNHV-2*kNLV-kNLV33]->SetFloat(k,val);
-	  fLVi33[j-4*kNHV-2*kNLV-kNLV33]->SetTimeStampFloat(k,time);
-	}
-	else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50){
-	  fLVv50[j-4*kNHV-2*kNLV-2*kNLV33]->SetFloat(k,val);
-	  fLVv50[j-4*kNHV-2*kNLV-2*kNLV33]->SetTimeStampFloat(k,time);
-	}
-	else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50*2){
-	  fLVi50[j-4*kNHV-2*kNLV-2*kNLV33-kNLV50]->SetFloat(k,val);
-	  fLVi50[j-4*kNHV-2*kNLV-2*kNLV33-kNLV50]->SetTimeStampFloat(k,time);
-	}
-	else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48){
-	  fLVv48[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50]->SetFloat(k,val);
-	  fLVv48[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50]->SetTimeStampFloat(k,time);
-	}
-	else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48*2){
-	  fLVi48[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-kNLV48]->SetFloat(k,val);
-	  fLVi48[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-kNLV48]->SetTimeStampFloat(k,time);
-	}
-	else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48*2+kNFEEthr){
-	  fFEEthr[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48]->SetFloat(k,val);
-	  fFEEthr[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48]->SetTimeStampFloat(k,time);
-	}
-	else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48*2+kNFEEthr+kNFEEtfeac){
-	  fFEEtfeac[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48-kNFEEthr]->SetFloat(k,val);
-	  fFEEtfeac[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48-kNFEEthr]->SetTimeStampFloat(k,time);
-	}
-	else {
-	  fFEEttrm[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48-kNFEEthr-kNFEEtfeac]->SetFloat(k,val);
-	  fFEEttrm[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48-kNFEEthr-kNFEEtfeac]->SetTimeStampFloat(k,time);
-	}
+    Int_t index = 0;
+    for (Int_t k=0;k<3;k++){
+      index = deltaTimeStamp*k;
+      if (k==0) {
+	index=0;
+      }
+      else if (k==1) {
+	index=deltaTimeStamp1;
+      } 
+      else if (k==2) {
+	index=nentries-1; 
+      }
+      aValue = (AliDCSValue*) aliasArr->At(index);
+      val = aValue->GetFloat();
+      time = (Float_t) (aValue->GetTimeStamp());
+      if (j<kNHV){
+	fHVvp[j]->SetFloat(k,val);
+	fHVvp[j]->SetTimeStampFloat(k,time);
+      }
+      else if (j<kNHV*2){
+	fHVvn[j-kNHV]->SetFloat(k,val);
+	fHVvn[j-kNHV]->SetTimeStampFloat(k,time);
+      }
+      else if (j<kNHV*3){
+	fHVip[j-2*kNHV]->SetFloat(k,val);
+	fHVip[j-2*kNHV]->SetTimeStampFloat(k,time);
+      }
+      else if (j<kNHV*4){
+	fHVin[j-3*kNHV]->SetFloat(k,val);
+	fHVin[j-3*kNHV]->SetTimeStampFloat(k,time);
+      }
+      else if (j<kNHV*4+kNLV){
+	fLVv[j-4*kNHV]->SetFloat(k,val);
+	fLVv[j-4*kNHV]->SetTimeStampFloat(k,time);
+      }
+      else if (j<kNHV*4+kNLV*2){
+	fLVi[j-4*kNHV-kNLV]->SetFloat(k,val);
+	fLVi[j-4*kNHV-kNLV]->SetTimeStampFloat(k,time);
+      }
+      else if (j<kNHV*4+kNLV*2+kNLV33){
+	fLVv33[j-4*kNHV-2*kNLV]->SetFloat(k,val);
+	fLVv33[j-4*kNHV-2*kNLV]->SetTimeStampFloat(k,time);
+      }
+      else if (j<kNHV*4+kNLV*2+kNLV33*2){
+	fLVi33[j-4*kNHV-2*kNLV-kNLV33]->SetFloat(k,val);
+	fLVi33[j-4*kNHV-2*kNLV-kNLV33]->SetTimeStampFloat(k,time);
+      }
+      else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50){
+	fLVv50[j-4*kNHV-2*kNLV-2*kNLV33]->SetFloat(k,val);
+	fLVv50[j-4*kNHV-2*kNLV-2*kNLV33]->SetTimeStampFloat(k,time);
+      }
+      else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50*2){
+	fLVi50[j-4*kNHV-2*kNLV-2*kNLV33-kNLV50]->SetFloat(k,val);
+	fLVi50[j-4*kNHV-2*kNLV-2*kNLV33-kNLV50]->SetTimeStampFloat(k,time);
+      }
+      else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48){
+	fLVv48[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50]->SetFloat(k,val);
+	fLVv48[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50]->SetTimeStampFloat(k,time);
+      }
+      else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48*2){
+	fLVi48[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-kNLV48]->SetFloat(k,val);
+	fLVi48[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-kNLV48]->SetTimeStampFloat(k,time);
+      }
+      else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48*2+kNFEEthr){
+	fFEEthr[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48]->SetFloat(k,val);
+	fFEEthr[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48]->SetTimeStampFloat(k,time);
+      }
+      else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48*2+kNFEEthr+kNFEEtfeac){
+	fFEEtfeac[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48-kNFEEthr]->SetFloat(k,val);
+	fFEEtfeac[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48-kNFEEthr]->SetTimeStampFloat(k,time);
+      }
+      else {
+	fFEEttrm[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48-kNFEEthr-kNFEEtfeac]->SetFloat(k,val);
+	fFEEttrm[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48-kNFEEthr-kNFEEtfeac]->SetTimeStampFloat(k,time);
       }
     }
   
-    //filling Temperature and Pressure aliases
-    
-    else {
-      Int_t entriesT=0;
-      Int_t entriesP=0;
-      if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48*2+kNFEEthr+kNFEEtfeac+kNFEEttrm+1){
-	histoT=new TH1F("histoT","histoT",nentries,minTimeStamp,maxTimeStamp);
-      }
-      else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48*2+kNFEEthr+kNFEEtfeac+kNFEEttrm+2) {
-	histoP=new TH1F("histoP","histoP",nentries,minTimeStamp,maxTimeStamp);
-      }
-      while ((aValue = (AliDCSValue*) iterarray.Next())) {
-	val = aValue->GetFloat();
-	time = (Float_t) (aValue->GetTimeStamp());
-	if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48*2+kNFEEthr+kNFEEtfeac+kNFEEttrm+1){
-	  histoT->Fill(time,val);
-	  entriesT = (Int_t)(histoT->GetEntries());
-	}
-	else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48*2+kNFEEthr+kNFEEtfeac+kNFEEttrm+2){
-	  histoP->Fill(time,val);
-	  entriesP = (Int_t)(histoP->GetEntries());
-	}
-      }
-    
-      if (j==kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48*2+kNFEEthr+kNFEEtfeac+kNFEEttrm+1){
-	entriesT = (Int_t)(histoT->GetEntries());
-	histoT->Fit("pol1","Q","");
-	histoP->Fit("pol1","Q","");
-      
-	TF1 *tempFunc = histoT->GetFunction("pol1");
-	TF1 *pressFunc = histoP->GetFunction("pol1");
-      
-	SetInterceptT((Float_t)tempFunc->GetParameter(0));
-	SetSlopeT((Float_t)tempFunc->GetParameter(1));
-	SetMaxT((Float_t)histoT->GetMaximum());
-	SetInterceptP((Float_t)pressFunc->GetParameter(0));
-	SetSlopeP((Float_t)pressFunc->GetParameter(1));
-	SetMaxP((Float_t)histoP->GetMaximum());
-      
-	TCanvas *chT;
-	TString canvasHistoNameT="HistosT";
-	chT=new TCanvas(canvasHistoNameT,canvasHistoNameT,20,20,600,600);
-	chT->cd();
-	histoT->Draw();
-	TCanvas *chP;
-	TString canvasHistoNameP="HistosP";
-	chP=new TCanvas(canvasHistoNameP,canvasHistoNameP,20,20,600,600);
-	chP->cd();
-	histoP->Draw();
-      }
-    }
- 
     //computing the most significant variations
 
     Int_t deltamin = (Int_t)(60/(timeMax-timeMin)*nentries);
     Int_t klast = nentries-deltamin;
-    
+      
     for (Int_t k=0;k<klast;k++){
       aValue = (AliDCSValue*) aliasArr->At(k);
       aValue1 = (AliDCSValue*) aliasArr->At(k+deltamin);
@@ -554,82 +460,69 @@ Bool_t AliTOFDataDCS::ProcessData(TMap& aliasMap){
     }
     
     for (Int_t kk=0;kk<2;kk++){
-      if (j < kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48*2+kNFEEthr+kNFEEtfeac){
-	if (j<kNHV){
-	  fHVvp[j]->SetDelta(kk,delta[kk]);
-	  fHVvp[j]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
-	}
-	else if (j<kNHV*2){
-	  fHVvn[j-kNHV]->SetDelta(kk,delta[kk]);
-	  fHVvn[j-kNHV]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
-	}
-	else if (j<kNHV*3){
-	  fHVip[j-2*kNHV]->SetDelta(kk,delta[kk]);
-	  fHVip[j-2*kNHV]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
-	}
-	else if (j<kNHV*4){
-	  fHVin[j-3*kNHV]->SetDelta(kk,delta[kk]);
-	  fHVin[j-3*kNHV]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
-	}
-	else if (j<kNHV*4+kNLV){
-	  fLVv[j-4*kNHV]->SetDelta(kk,delta[kk]);
-	  fLVv[j-4*kNHV]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
-	}
-	else if (j<kNHV*4+kNLV*2){
-	  fLVi[j-4*kNHV-kNLV]->SetDelta(kk,delta[kk]);
-	  fLVi[j-4*kNHV-kNLV]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
-	}
-	else if (j<kNHV*4+kNLV*2+kNLV33){
-	  fLVv33[j-4*kNHV-2*kNLV]->SetDelta(kk,delta[kk]);
-	  fLVv33[j-4*kNHV-2*kNLV]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
-	}
-	else if (j<kNHV*4+kNLV*2+kNLV33*2){
-	  fLVi33[j-4*kNHV-2*kNLV-kNLV33]->SetDelta(kk,delta[kk]);
-	  fLVi33[j-4*kNHV-2*kNLV-kNLV33]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
-	}
-	else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50){
-	  fLVv50[j-4*kNHV-2*kNLV-2*kNLV33]->SetDelta(kk,delta[kk]);
-	  fLVv50[j-4*kNHV-2*kNLV-2*kNLV33]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
-	}
-	else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50*2){
-	  fLVi50[j-4*kNHV-2*kNLV-2*kNLV33-kNLV50]->SetDelta(kk,delta[kk]);
-	  fLVi50[j-4*kNHV-2*kNLV-2*kNLV33-kNLV50]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
-	}
-	else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48){
-	  fLVv48[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50]->SetDelta(kk,delta[kk]);
-	  fLVv48[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
-	}
-	else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48*2){
-	  fLVi48[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-kNLV48]->SetDelta(kk,delta[kk]);
-	  fLVi48[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-kNLV48]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
-	}
-	else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48*2+kNFEEthr){
-	  fFEEthr[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48]->SetDelta(kk,delta[kk]);
-	  fFEEthr[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
-	}
-	else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48*2+kNFEEthr+kNFEEtfeac){
-	  fFEEtfeac[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48-kNFEEthr]->SetDelta(kk,delta[kk]);
-	  fFEEtfeac[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48-kNFEEthr]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
-	}
-	else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48*2+kNFEEthr+kNFEEtfeac+kNFEEttrm){
-	  fFEEttrm[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48-kNFEEthr-kNFEEtfeac]->SetDelta(kk,delta[kk]);
-	  fFEEttrm[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48-kNFEEthr-kNFEEtfeac]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
-	}
+      if (j<kNHV){
+	fHVvp[j]->SetDelta(kk,delta[kk]);
+	fHVvp[j]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
       }
-       
-      
-    //filling for temperature and pressure
-    
-      else if (j==kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48*2+kNFEEthr+kNFEEtfeac+kNFEEttrm){
-	fT[2]=delta[1];
+      else if (j<kNHV*2){
+	fHVvn[j-kNHV]->SetDelta(kk,delta[kk]);
+	fHVvn[j-kNHV]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
       }
-      else if (j==kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48*2+kNFEEthr+kNFEEtfeac+kNFEEttrm+1){
-	fP[2]=delta[1];
+      else if (j<kNHV*3){
+	fHVip[j-2*kNHV]->SetDelta(kk,delta[kk]);
+	fHVip[j-2*kNHV]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
       }
-      
+      else if (j<kNHV*4){
+	fHVin[j-3*kNHV]->SetDelta(kk,delta[kk]);
+	fHVin[j-3*kNHV]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
+      }
+      else if (j<kNHV*4+kNLV){
+	fLVv[j-4*kNHV]->SetDelta(kk,delta[kk]);
+	fLVv[j-4*kNHV]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
+      }
+      else if (j<kNHV*4+kNLV*2){
+	fLVi[j-4*kNHV-kNLV]->SetDelta(kk,delta[kk]);
+	fLVi[j-4*kNHV-kNLV]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
+      }
+      else if (j<kNHV*4+kNLV*2+kNLV33){
+	fLVv33[j-4*kNHV-2*kNLV]->SetDelta(kk,delta[kk]);
+	fLVv33[j-4*kNHV-2*kNLV]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
+      }
+      else if (j<kNHV*4+kNLV*2+kNLV33*2){
+	fLVi33[j-4*kNHV-2*kNLV-kNLV33]->SetDelta(kk,delta[kk]);
+	fLVi33[j-4*kNHV-2*kNLV-kNLV33]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
+      }
+      else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50){
+	fLVv50[j-4*kNHV-2*kNLV-2*kNLV33]->SetDelta(kk,delta[kk]);
+	fLVv50[j-4*kNHV-2*kNLV-2*kNLV33]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
+      }
+      else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50*2){
+	fLVi50[j-4*kNHV-2*kNLV-2*kNLV33-kNLV50]->SetDelta(kk,delta[kk]);
+	fLVi50[j-4*kNHV-2*kNLV-2*kNLV33-kNLV50]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
+      }
+      else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48){
+	fLVv48[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50]->SetDelta(kk,delta[kk]);
+	fLVv48[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
+      }
+      else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48*2){
+	fLVi48[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-kNLV48]->SetDelta(kk,delta[kk]);
+	fLVi48[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-kNLV48]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
+      }
+      else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48*2+kNFEEthr){
+	fFEEthr[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48]->SetDelta(kk,delta[kk]);
+	fFEEthr[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
+      }
+      else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48*2+kNFEEthr+kNFEEtfeac){
+	fFEEtfeac[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48-kNFEEthr]->SetDelta(kk,delta[kk]);
+	fFEEtfeac[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48-kNFEEthr]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
+      }
+      else if (j<kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48*2+kNFEEthr+kNFEEtfeac+kNFEEttrm){
+	fFEEttrm[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48-kNFEEthr-kNFEEtfeac]->SetDelta(kk,delta[kk]);
+	fFEEttrm[j-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48-kNFEEthr-kNFEEtfeac]->SetTimeStampDelta(kk,(Float_t)timedelta[kk]);
+      }
     }
   }
-    
+  
   fIsProcessed=kTRUE;
 
   return kTRUE;
@@ -740,21 +633,10 @@ void AliTOFDataDCS::Init(){
     }
     //FEE trms temperatures
     else if (i<(kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48*2+kNFEEthr+kNFEEtfeac+kNFEEttrm)){
-      AliInfo(Form("**before temperature "));
 	fAliasNames[i] = "tof_fee_ttrm_";
 	sindex.Form("%04i",i-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48-kNFEEthr-kNFEEtfeac);
 	fAliasNames[i] += sindex;
  	fFEEttrm[i-4*kNHV-2*kNLV-2*kNLV33-2*kNLV50-2*kNLV48-kNFEEthr-kNFEEtfeac] = new AliTOFFormatDCS();
-    }
-    //environment temperature
-    else if (i<(kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48*2+kNFEEthr+kNFEEtfeac+kNFEEttrm+1)){
-      AliInfo(Form("**temperature "));
-
-	fAliasNames[i] = "temperature";
-    }
-    //environment pressure
-    else if (i<(kNHV*4+kNLV*2+kNLV33*2+kNLV50*2+kNLV48*2+kNFEEthr+kNFEEtfeac+kNFEEttrm+2)){
-	fAliasNames[i] = "pressure";
     }
   }
 }

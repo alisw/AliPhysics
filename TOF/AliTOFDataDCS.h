@@ -23,10 +23,10 @@ class AliTOFFormatDCS;
 
 class AliTOFDataDCS : public TObject {
 public:
-  enum {kNAliases=10514, kNHV=90, kNLV=576, 
+  enum {kNAliases=10512, kNHV=90, kNLV=576, 
 	kNLV33=72, kNLV50=72, kNLV48=72, 
 	kNFEEthr=1152, kNFEEtfeac=576, kNFEEttrm=6840, 
-	kNFunctions=0, kNT=1, kNP=1};
+	kNFunctions=0};
   
   AliTOFDataDCS();
   AliTOFDataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime);
@@ -45,26 +45,6 @@ public:
   
   const char* GetAliasName(Int_t pos) const 
     {return pos<kNAliases ? fAliasNames[pos].Data() : 0;}
-  
-  
-  Float_t* GetT() const;
-  Float_t* GetP() const;
-  
-  Float_t GetT(Int_t i) const {return fT[i];}
-  Float_t GetP(Int_t i) const {return fP[i];}
-  Float_t GetSlopeT() const {return fT[0];}
-  Float_t GetInterceptT() const {return fT[1];}
-  Float_t GetMaxT()const {return fT[2];}
-  Float_t GetSlopeP() const {return fP[0];}
-  Float_t GetInterceptP() const {return fP[1];}
-  Float_t GetMaxP() const {return fP[2];}
- 
-  void SetSlopeT(Float_t slopeT) {fT[0]=slopeT;}
-  void SetInterceptT(Float_t interceptT) {fT[1]=interceptT;}
-  void SetMaxT(Float_t maxT) {fT[2]=maxT;}
-  void SetSlopeP(Float_t slopeP) {fP[0]=slopeP;}
-  void SetInterceptP(Float_t interceptP) {fP[1]=interceptP;}
-  void SetMaxP(Float_t maxP) {fP[2]=maxP;}
   
   void Draw(const Option_t* option) /*const*/;
   
@@ -125,12 +105,10 @@ private:
   AliTOFFormatDCS *fFEEthr[kNFEEthr];    // FEE thresholds
   AliTOFFormatDCS *fFEEtfeac[kNFEEtfeac];// FEE feac temperatures
   AliTOFFormatDCS *fFEEttrm[kNFEEttrm];  // FEE trm temperatures
-  Float_t fT[3];                         // environment temperature
-  Float_t fP[3];                         // environment pressure
   
   Bool_t fIsProcessed;                   // bool to know processing status
   
-  ClassDef(AliTOFDataDCS, 2);
+  ClassDef(AliTOFDataDCS, 3);
 };
 
 #endif
