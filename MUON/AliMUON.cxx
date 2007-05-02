@@ -55,7 +55,6 @@
 #include "AliMUONChamberTrigger.h"
 #include "AliMUONConstants.h"
 #include "AliMUONHit.h"	
-#include "AliMUONRawCluster.h"
 #include "AliMUONGeometry.h"
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONGeometryBuilder.h"
@@ -485,32 +484,12 @@ AliLoader* AliMUON::MakeLoader(const char* topfoldername)
  AliDebug(1,Form("Creating standard getter for detector %s. Top folder is %s.",
          GetName(),topfoldername));
  fLoader   = new AliLoader(GetName(),topfoldername);
- fMUONData = new AliMUONData(fLoader,GetName(),GetName()); 
+ fMUONData = new AliMUONSimData(fLoader,GetName(),GetName()); 
  fMUONData->SetSplitLevel(fSplitLevel);
 
  fDigitMaker->SetMUONData(fMUONData);
 
  return fLoader;
-}
-//_______________________________________________________________________
-
-AliMUONRawCluster *AliMUON::RawCluster(Int_t ichamber, Int_t icathod, Int_t icluster)
-{
-/// Return rawcluster (icluster) for chamber ichamber and cathode icathod
-/// Obsolete ??
-
-    TClonesArray *muonRawCluster  = GetMUONData()->RawClusters(ichamber);
-    ResetRawClusters();
-    TTree *treeR = fLoader->TreeR();
-    Int_t nent=(Int_t)treeR->GetEntries();
-    treeR->GetEvent(nent-2+icathod-1);
-    //treeR->GetEvent(icathod);
-    //Int_t nrawcl = (Int_t)muonRawCluster->GetEntriesFast();
-
-    AliMUONRawCluster * mRaw = (AliMUONRawCluster*)muonRawCluster->UncheckedAt(icluster);
-    //printf("RawCluster _ nent nrawcl icluster mRaw %d %d %d%p\n",nent,nrawcl,icluster,mRaw);
-    
-    return  mRaw;
 }
 
 //________________________________________________________________________
