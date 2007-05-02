@@ -582,6 +582,12 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree)
    // Disable by default all branches
    if (tree) tree->SetBranchStatus("*",0);
    TChain *chain = dynamic_cast<TChain*>(tree);
+
+   // Initialize locally all tasks
+   TIter next(fTasks);
+   AliAnalysisTask *task;
+   while ((task=(AliAnalysisTask*)next())) task->LocalInit();
+
    switch (fMode) {
       case kLocalAnalysis:
          if (!tree) {

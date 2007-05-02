@@ -62,7 +62,13 @@
 //    }
 // }
 // 
-// The method CreateOutputObjects() has to be overloaded an will contain the
+// The method LocalInit() may be implemented to call locally (on the client)
+// all initialization methods of the class. It is not mandatory and was created
+// in order to minimize the complexity and readability of the analysis macro.
+// DO NOT create in this method the histigrams or task output objects that will
+// go in the task output containers. Use CreateOutputObjects for that.
+//
+// The method CreateOutputObjects() has to be implemented an will contain the
 // objects that should be created only once per session (e.g. output
 // histograms)
 //
@@ -375,6 +381,16 @@ Bool_t AliAnalysisTask::SetBranchAddress(Int_t islot, const char *branch, void *
 void AliAnalysisTask::ConnectInputData(Option_t *)
 {
 // Overload and connect your branches here.
+}
+
+//______________________________________________________________________________
+void AliAnalysisTask::LocalInit()
+{
+// The method LocalInit() may be implemented to call locally (on the client)
+// all initialization methods of the class. It is not mandatory and was created
+// in order to minimize the complexity and readability of the analysis macro.
+// DO NOT create in this method the histigrams or task output objects that will
+// go in the task output containers. Use CreateOutputObjects for that.
 }
 
 //______________________________________________________________________________

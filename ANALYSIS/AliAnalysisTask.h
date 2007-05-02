@@ -79,6 +79,8 @@ public:
   //=====================================================================
   // === OVERLOAD THIS AND CREATE YOUR OUTPUT OBJECTS (HISTOGRAMS,DATA) HERE
   virtual void              CreateOutputObjects();
+  // === OVERLOAD THIS IF YOU NEED TO INITIALIZE YOUR CLASS ON THE CLIENT
+  virtual void              LocalInit();
   // === OVERLOAD THIS IF YOU NEED TO TREAT INPUT FILE CHANGE
   virtual Bool_t            Notify();
   // Conect inputs/outputs to data containers (by AliAnalysisModule)
