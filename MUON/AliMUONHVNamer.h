@@ -6,7 +6,7 @@
 
 // $Id$
 
-/// \ingroup shuttle
+/// \ingroup base
 /// \class AliMUONHVNamer
 /// \brief Collection of methods usefull to HV subprocessor for MUON TRK
 /// 
