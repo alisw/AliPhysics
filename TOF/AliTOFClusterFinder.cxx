@@ -15,6 +15,9 @@
 
 /* 
 $Log$
+Revision 1.26  2007/04/30 19:02:24  arcelli
+hopefully the last refinements for correct type conversion in calibration
+
 Revision 1.25  2007/04/30 15:22:17  arcelli
 Change TOF digit Time, Tot etc to int type
 
@@ -109,7 +112,7 @@ Revision 0.01  2005/07/25 A. De Caro
 
 ClassImp(AliTOFClusterFinder)
 
-AliTOFClusterFinder::AliTOFClusterFinder():
+AliTOFClusterFinder::AliTOFClusterFinder(AliTOFcalib *calib):
   fRunLoader(0),
   fTOFLoader(0),
   fTreeD(0),
@@ -119,7 +122,8 @@ AliTOFClusterFinder::AliTOFClusterFinder():
   fRecPoints(new TClonesArray("AliTOFcluster", 4000)),
   fNumberOfTofClusters(0),
   fVerbose(0),
-  fDecoderVersion(0)
+  fDecoderVersion(0),
+  fTOFcalib(calib)
 {
 //
 // Constructor
@@ -130,7 +134,7 @@ AliTOFClusterFinder::AliTOFClusterFinder():
 }
 //______________________________________________________________________________
 
-AliTOFClusterFinder::AliTOFClusterFinder(AliRunLoader* runLoader):
+AliTOFClusterFinder::AliTOFClusterFinder(AliRunLoader* runLoader, AliTOFcalib *calib):
   fRunLoader(runLoader),
   fTOFLoader(runLoader->GetLoader("TOFLoader")),
   fTreeD(0),
@@ -140,16 +144,12 @@ AliTOFClusterFinder::AliTOFClusterFinder(AliRunLoader* runLoader):
   fRecPoints(new TClonesArray("AliTOFcluster", 4000)),
   fNumberOfTofClusters(0),
   fVerbose(0),
-  fDecoderVersion(0)
+  fDecoderVersion(0),
+  fTOFcalib(calib)
 {
 //
 // Constructor
 //
-
-//  runLoader->CdGAFile();
-//  TFile *in=(TFile*)gFile;
-//  in->cd();
-//  fTOFGeometry = (AliTOFGeometry*)in->Get("TOFgeometry");
 
 }
 
@@ -164,14 +164,16 @@ AliTOFClusterFinder::AliTOFClusterFinder(const AliTOFClusterFinder &source)
   fDigits(new TClonesArray("AliTOFdigit", 4000)),
   fRecPoints(new TClonesArray("AliTOFcluster", 4000)),
   fNumberOfTofClusters(0),
-   fVerbose(0),
-  fDecoderVersion(0)
+  fVerbose(0),
+  fDecoderVersion(0),
+  fTOFcalib(0)
 {
   // copy constructor
   this->fDigits=source.fDigits;
   this->fRecPoints=source.fRecPoints;
   this->fTOFGeometry=source.fTOFGeometry;
   this->fDecoderVersion=source.fDecoderVersion;
+  this->fTOFcalib=source.fTOFcalib;
 
 }
 
@@ -184,6 +186,7 @@ AliTOFClusterFinder& AliTOFClusterFinder::operator=(const AliTOFClusterFinder &s
   this->fTOFGeometry=source.fTOFGeometry;
   this->fVerbose=source.fVerbose;
   this->fDecoderVersion=source.fDecoderVersion;
+  this->fTOFcalib=source.fTOFcalib;
   return *this;
 
 }
@@ -289,7 +292,7 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent)
 
   }
 
-  AliInfo(Form("Number of found clusters: %i", fNumberOfTofClusters));
+  AliInfo(Form("Number of found clusters: %i for event: %i", fNumberOfTofClusters, iEvent));
 
   CalibrateRecPoint();
   FillRecPoint();
@@ -303,6 +306,93 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent)
   AliInfo(Form("Execution time to read TOF digits and to write TOF clusters : R:%.4fs C:%.4fs",
 	       stopwatch.RealTime(),stopwatch.CpuTime()));
 
+  digits->Delete();
+  delete digits;
+}
+
+//______________________________________________________________________________
+
+void AliTOFClusterFinder::Digits2RecPoints(TTree* digitsTree, TTree* clusterTree)
+{
+  //
+  // Converts digits to recpoints for TOF
+  //
+
+  TStopwatch stopwatch;
+  stopwatch.Start();
+
+  ///  fRunLoader->GetEvent(iEvent);
+
+  if (digitsTree == 0x0)
+    {
+      AliFatal("AliTOFClusterFinder: Can not get TreeD");
+    }
+
+  TBranch *branch = digitsTree->GetBranch("TOF");
+  if (!branch) { 
+    AliError("can't get the branch with the TOF digits !");
+    return;
+  }
+
+  TClonesArray *digits = new TClonesArray("AliTOFdigit",10000);
+  branch->SetAddress(&digits);
+
+  ResetRecpoint();
+
+  fTreeR=clusterTree;
+  Int_t bufsize = 32000;
+  fTreeR->Branch("TOF", &fRecPoints, bufsize);
+
+  digitsTree->GetEvent(0);
+  Int_t nDigits = digits->GetEntriesFast();
+  AliDebug(2,Form("Number of TOF digits: %d",nDigits));
+
+  Int_t ii, jj;
+  Int_t dig[5]; //cluster detector indeces
+  Float_t g[3]; //cluster cartesian coord
+  Double_t h[3]; // the cluster spatial cyl. coordinates
+  Int_t  parTOF[5]; //The TOF signal parameters
+  Bool_t status=kTRUE; // assume all sim channels ok in the beginning...
+  for (ii=0; ii<nDigits; ii++) {
+    AliTOFdigit *d = (AliTOFdigit*)digits->UncheckedAt(ii);
+    dig[0]=d->GetSector();
+    dig[1]=d->GetPlate();
+    dig[2]=d->GetStrip();
+    dig[3]=d->GetPadz();
+    dig[4]=d->GetPadx();
+
+    //    AliDebug(2,Form(" %2i  %1i  %2i  %1i  %2i ",dig[0],dig[1],dig[2],dig[3],dig[4]));
+
+    for (jj=0; jj<3; jj++) g[jj] = 0.;
+    fTOFGeometry->GetPos(dig,g);
+
+    h[0] = TMath::Sqrt(g[0]*g[0]+g[1]*g[1]);
+    h[1] = TMath::ATan2(g[1],g[0]);
+    h[2] = g[2];
+
+    parTOF[0] = d->GetTdc(); //the TDC signal
+    parTOF[1] = d->GetToT(); //the ToT signal
+    parTOF[2] = d->GetAdc(); // the adc charge
+    parTOF[3] = d->GetTdcND(); // non decalibrated sim time
+    parTOF[4] = d->GetTdc(); // raw time, == Tdc time for the moment
+    AliTOFcluster *tofCluster = new AliTOFcluster(h,dig,parTOF,status,d->GetTracks(),ii);
+    InsertCluster(tofCluster);
+
+  }
+
+  AliInfo(Form("Number of found clusters: %i", fNumberOfTofClusters));
+
+  CalibrateRecPoint();
+  FillRecPoint();
+
+  clusterTree->Fill();
+  ResetRecpoint();
+
+  AliInfo(Form("Execution time to read TOF digits and to write TOF clusters : R:%.4fs C:%.4fs",
+	       stopwatch.RealTime(),stopwatch.CpuTime()));
+
+  digits->Delete();
+  delete digits;
 }
 //______________________________________________________________________________
 
@@ -549,7 +639,7 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent, AliRawReader *rawReader
 
   if (fVerbose==2) ftxt.close();
 
-  AliInfo(Form("Number of found clusters: %i", fNumberOfTofClusters));
+  AliInfo(Form("Number of found clusters: %i for event: %i", fNumberOfTofClusters, iEvent));
 
   CalibrateRecPoint();
   FillRecPoint();
@@ -657,6 +747,91 @@ void AliTOFClusterFinder::Raw2Digits(Int_t iEvent, AliRawReader *rawReader)
 		   stopwatch.RealTime(),stopwatch.CpuTime()));
 
 }
+
+//______________________________________________________________________________
+
+void AliTOFClusterFinder::Raw2Digits(AliRawReader *rawReader, TTree* digitsTree)
+{
+  //
+  // Converts RAW data to MC digits for TOF for the current event
+  //
+  //
+
+  TStopwatch stopwatch;
+  stopwatch.Start();
+
+  const Int_t kDDL = fTOFGeometry->NDDL()*fTOFGeometry->NSectors();
+
+  if (!digitsTree)
+    {
+    AliError("No input digits Tree");
+    return;
+    }
+
+  TClonesArray *tofDigits = new TClonesArray("AliTOFdigit",10000);
+  Int_t bufsize = 32000;
+  digitsTree->Branch("TOF", &tofDigits, bufsize);
+
+  ///  fRunLoader->GetEvent(iEvent);
+
+  ///  AliDebug(2,Form(" Event number %2i ", iEvent));
+
+  TClonesArray * clonesRawData;
+
+  Int_t dummy = -1;
+
+  Int_t detectorIndex[5];
+  Int_t digit[4];
+
+  Int_t indexDDL = 0;
+  for (indexDDL = 0; indexDDL < kDDL; indexDDL++) {
+
+    rawReader->Reset();
+    AliTOFRawStream tofInput(rawReader);
+    if (fDecoderVersion) {
+      AliInfo("Using New Decoder \n"); 
+      tofInput.LoadRawDataBuffers(indexDDL,fVerbose);
+    }
+    else tofInput.LoadRawData(indexDDL);
+
+    clonesRawData = (TClonesArray*)tofInput.GetRawData();
+
+    for (Int_t iRawData = 0; iRawData<clonesRawData->GetEntriesFast(); iRawData++) {
+
+      AliTOFrawData *tofRawDatum = (AliTOFrawData*)clonesRawData->UncheckedAt(iRawData);
+
+      if (!tofRawDatum->GetTOT() || !tofRawDatum->GetTOF()) continue;
+
+      tofInput.EquipmentId2VolumeId(indexDDL, tofRawDatum->GetTRM(), tofRawDatum->GetTRMchain(),
+				    tofRawDatum->GetTDC(), tofRawDatum->GetTDCchannel(), detectorIndex);
+      dummy = detectorIndex[3];
+      detectorIndex[3] = detectorIndex[4];
+      detectorIndex[4] = dummy;
+
+      digit[0] = tofInput.GetTofBin();
+      digit[1] = tofInput.GetToTbin();
+      digit[2] = tofInput.GetToTbin();
+      digit[3] = -1;
+
+      Int_t tracknum[3]={-1,-1,-1};
+
+      TClonesArray &aDigits = *tofDigits;
+      Int_t last=tofDigits->GetEntriesFast();
+      new (aDigits[last]) AliTOFdigit(tracknum, detectorIndex, digit);
+
+    } // while loop
+
+    clonesRawData->Clear();
+
+  } // DDL Loop
+
+  digitsTree->Fill();
+
+  AliDebug(1, Form("Got %d digits: ", tofDigits->GetEntries()));
+  AliDebug(1, Form("Execution time to read TOF raw data and fill TOF digit tree : R:%.2fs C:%.2fs",
+		   stopwatch.RealTime(),stopwatch.CpuTime()));
+
+}
 //______________________________________________________________________________
 
 Int_t AliTOFClusterFinder::InsertCluster(AliTOFcluster *tofCluster) {
@@ -757,16 +932,14 @@ void AliTOFClusterFinder::CalibrateRecPoint()
   Double_t timeCorr;
   Int_t   tdcCorr;
   AliInfo(" Calibrating TOF Clusters: ")
-  AliTOFcalib *calib = new AliTOFcalib(fTOFGeometry);
-  if(!calib->ReadParFromCDB("TOF/Calib",-1)) {AliFatal("Exiting, no CDB object found!!!");exit(0);}  
   
-  AliTOFCal *calTOFArray = calib->GetTOFCalArray();  
+  AliTOFCal *calTOFArray = fTOFcalib->GetTOFCalArray();  
 
   for (ii=0; ii<fNumberOfTofClusters; ii++) {
     digitIndex = fTofClusters[ii]->GetIndex();
     for(jj=0; jj<5; jj++) detectorIndex[jj] = fTofClusters[ii]->GetDetInd(jj);
 
-    Int_t index = calib->GetIndex(detectorIndex);
+    Int_t index = fTOFcalib->GetIndex(detectorIndex);
      
     AliTOFChannel * calChannel = calTOFArray->GetChannel(index);
 
@@ -796,7 +969,6 @@ void AliTOFClusterFinder::CalibrateRecPoint()
 
   } // loop on clusters
 
-  delete calib;
 }
 //______________________________________________________________________________
 

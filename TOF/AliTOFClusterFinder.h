@@ -18,6 +18,7 @@ class AliRawReader;
 
 class AliTOFGeometry;
 class AliTOFcluster;
+class AliTOFcalib;
 
 class AliTOFClusterFinder : public TObject
 {
@@ -26,16 +27,18 @@ class AliTOFClusterFinder : public TObject
 
  public:
 
-  AliTOFClusterFinder();
-  AliTOFClusterFinder(AliRunLoader* runLoader);
+  AliTOFClusterFinder(AliTOFcalib *calib);
+  AliTOFClusterFinder(AliRunLoader* runLoader, AliTOFcalib *calib);
   AliTOFClusterFinder(const AliTOFClusterFinder &source); // copy constructor
   AliTOFClusterFinder& operator=(const AliTOFClusterFinder &source); // ass. op.
   virtual ~AliTOFClusterFinder();
 
+  void Digits2RecPoints(TTree* digitsTree, TTree* clusterTree);
   void Digits2RecPoints(Int_t ievt);
   void Digits2RecPoints(AliRawReader *rawReader, TTree *clustersTree);
   void Digits2RecPoints(Int_t ievt, AliRawReader *rawReader);
   void Raw2Digits(Int_t ievt, AliRawReader *rawReader); // temporary solution
+  void Raw2Digits(AliRawReader *rawReader, TTree* digitsTree); 
   void FillRecPoint();
   void ResetRecpoint();
   void Load();
@@ -73,8 +76,9 @@ class AliTOFClusterFinder : public TObject
   Bool_t fDecoderVersion;   //setting whether to use the new decoder version 
                             // -true -> new version
                             // -false ->old version  (default value!!)
+  AliTOFcalib *fTOFcalib;       // pointer to the TOF calibration info
 
-  ClassDef(AliTOFClusterFinder,2) // To run TOF clustering
+  ClassDef(AliTOFClusterFinder,3) // To run TOF clustering
 };
 #endif
 
