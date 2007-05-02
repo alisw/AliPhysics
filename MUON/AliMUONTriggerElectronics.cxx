@@ -24,7 +24,6 @@
 #include "AliMUONTriggerElectronics.h"
 #include "AliMUONTriggerCrate.h"
 #include "AliMUONTriggerCrateStore.h"
-#include "AliMUONConstants.h"
 #include "AliMUONLocalTriggerBoard.h"
 #include "AliMUONRegionalTriggerBoard.h"
 #include "AliMUONGlobalTriggerBoard.h"

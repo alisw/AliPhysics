@@ -24,7 +24,6 @@
 #include "AliTrackReference.h" 
 #include "AliMUONHitForRec.h" 
 #include "AliMUONRawCluster.h"
-#include "AliMUONHit.h"
 #include "AliMUONConstants.h"
 #include "AliLog.h"
 #include "Riostream.h"

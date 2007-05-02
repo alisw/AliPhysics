@@ -24,8 +24,6 @@
 /// \author Philippe Crochet (LPCCFd)
 
 #include "AliMUONTriggerCircuit.h"
-#include "AliMUON.h"
-#include "AliMUONConstants.h"
 #include "AliMUONLocalTriggerBoard.h"
 #include "AliMUONTriggerCrateStore.h"
 #include "AliMUONTriggerCrate.h"
@@ -43,6 +41,7 @@
 #include "AliLog.h"
 
 #include <TMath.h>
+#include <Riostream.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONTriggerCircuit)

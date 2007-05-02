@@ -23,7 +23,6 @@
 // Author: Alexander Zinchenko, JINR Dubna
  
 #include "AliMUONDetElement.h"
-#include "AliMUON.h"
 #include "AliMUONSegmentation.h"
 #include "AliMUONDigit.h"
 #include "AliMUONHitMapA1.h"
@@ -34,6 +33,7 @@
 #include "AliMUONClusterFinderAZ.h"
 #include "AliMUONGeometryModuleTransformer.h" 
 #include "AliMUONSegmentation.h"
+#include "AliMUONGeometrySegmentation.h" 
 #include "AliMUONVGeometryDESegmentation.h" 
 #include "AliMpVSegmentation.h" 
 
