@@ -156,12 +156,12 @@ AliEMCALDigit::AliEMCALDigit(const AliEMCALDigit & digit)
   fIparent = new Int_t[fNMaxiparent] ;
   fDEParent = new Float_t[fNMaxiparent] ;
   Int_t i ;
-  for ( i = 0; i < fNprimary ; i++) {
+  for ( i = 0; i < fNMaxPrimary ; i++) {
     fPrimary[i]  = digit.fPrimary[i] ;
     fDEPrimary[i]  = digit.fDEPrimary[i] ;
   }
   Int_t j ;
-  for (j = 0; j< fNiparent ; j++) {
+  for (j = 0; j< fNMaxiparent ; j++) {
     fIparent[j]  = digit.fIparent[j] ;
     fDEParent[j]  = digit.fDEParent[j] ;
   }
