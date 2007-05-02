@@ -6,7 +6,7 @@
 
 // $Id$
 
-/// \ingroup base
+/// \ingroup trigger
 /// \class AliMUONTriggerCrateStore
 /// \brief A container for AliMUONTriggerCrate objects.
 /// 
