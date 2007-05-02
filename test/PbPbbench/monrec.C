@@ -3,13 +3,7 @@ void monrec() {
   gSystem->Load("libNet.so");
   gSystem->Load("libMonaLisa.so");
 
-  SysInfo_t info;
-  gSystem->GetSysInfo(&info);
-
-  TString platform(info.fOS);
-  platform += ".";
-  platform += info.fCpuType;
-  new TMonaLisaWriter(platform.Data(),"Reconstruction PbPb","aliendb3.cern.ch");
+  new TMonaLisaWriter(gSystem->Getenv("TEST_PLATFORMID"),"Reconstruction PbPb","aliendb3.cern.ch");
 
 
   gROOT->LoadMacro("rec.C");
@@ -30,4 +24,5 @@ void monrec() {
   gMonitoringWriter->SendParameters(valuelist);
   delete valuelist;
 
+  printf("#Test finished successfully#\n");
 }

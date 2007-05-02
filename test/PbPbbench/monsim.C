@@ -3,13 +3,7 @@ void monsim(Int_t nev=1){
   gSystem->Load("libNet.so");
   gSystem->Load("libMonaLisa.so");
 
-  SysInfo_t info;
-  gSystem->GetSysInfo(&info);
-
-  TString platform(info.fOS);
-  platform += ".";
-  platform += info.fCpuType;
-  new TMonaLisaWriter(platform.Data(),"Simulation PbPb","aliendb3.cern.ch");
+  new TMonaLisaWriter(gSystem->Getenv("TEST_PLATFORMID"),"Simulation PbPb","aliendb3.cern.ch");
 
   gROOT->LoadMacro("sim.C");
   sim(nev);
@@ -29,4 +23,5 @@ void monsim(Int_t nev=1){
   gMonitoringWriter->SendParameters(valuelist);
   delete valuelist;
 
+  printf("#Test finished successfully#\n");
 } 
