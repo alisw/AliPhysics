@@ -30,6 +30,9 @@ class AliPHOSCalibData: public TNamed {
 
   void Reset();
   virtual void Print(Option_t *option = "") const; 
+
+  AliPHOSEmcCalibData *GetCalibDataEmc() const {return fCalibDataEmc;}
+  AliPHOSCpvCalibData *GetCalibDataCpv() const {return fCalibDataCpv;}
   
   void CreateNew();
   void RandomEmc(Float_t ccMin=0.5   , Float_t ccMax=1.5);

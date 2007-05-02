@@ -54,14 +54,14 @@ ClassImp(AliPHOSCalibData)
     fCalibDataEmc = (AliPHOSEmcCalibData*)entryEmc->GetObject();
 
   if(!fCalibDataEmc)
-    AliFatal("Calibration parameters for PHOS EMC not found. Stop reconstruction!\n");
+    AliWarning("Calibration parameters for PHOS EMC not found. Create a new set.\n");
     
   AliCDBEntry* entryCpv = AliCDBManager::Instance()->Get(fCpvDataPath.Data());
   if(entryCpv)
     fCalibDataCpv = (AliPHOSCpvCalibData*)entryCpv->GetObject();
 
   if(!fCalibDataCpv)
-    AliFatal("Calibration parameters for PHOS CPV not found. Stop reconstruction!\n");
+    AliWarning("Calibration parameters for PHOS CPV not found. Create a new set.\n");
 
   AliCDBEntry* entryEmcBadMap = AliCDBManager::Instance()->Get(fEmcBadChannelsMapPath.Data());
   if(entryEmcBadMap)

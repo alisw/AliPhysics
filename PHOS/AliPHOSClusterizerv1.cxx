@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.104  2007/04/27 16:55:53  kharlov
+ * Calibration stops if PHOS CDB objects do not exist
+ *
  * Revision 1.103  2007/04/11 11:55:45  policheh
  * SetDistancesToBadChannels() added.
  *
@@ -442,6 +445,11 @@ void AliPHOSClusterizerv1::GetCalibrationParameters()
   // AliCDBStorage* storage = AliCDBManager::Instance()->GetStorage("local://CalibDB");
 
   fCalibData = new AliPHOSCalibData(-1); //use AliCDBManager's run number
+  if (fCalibData->GetCalibDataEmc() == 0)
+    AliFatal("Calibration parameters for PHOS EMC not found. Stop reconstruction.\n");
+  if (fCalibData->GetCalibDataCpv() == 0)
+    AliFatal("Calibration parameters for PHOS CPV not found. Stop reconstruction.\n");
+
 }
 
 //____________________________________________________________________________
