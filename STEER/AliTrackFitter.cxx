@@ -233,7 +233,6 @@ AliAlignObj::ELayerID layerRangeMax)
   } else {
      for (Int_t i=0; i<npoints; i++) {
          UShort_t id=fPoints->GetVolumeID()[i]; 
-         if (FindVolId(volIds,id)) countPnt++;
          if (id < AliAlignObj::LayerToVolUID(layerRangeMin,0)) continue;
 	 if (id > AliAlignObj::LayerToVolUID(layerRangeMax,
 		  AliAlignObj::LayerSize(layerRangeMax))) continue;
