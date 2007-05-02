@@ -83,10 +83,10 @@ Int_t MUONplotefficiency(Int_t ResType = 553, Int_t fittype = 1){
   Int_t SAVE=1;
   Int_t WRITE=1;
   
-  Double_t MUON_MASS = 0.105658369;
+  //Double_t MUON_MASS = 0.105658369;
   Double_t UPSILON_MASS = 9.4603 ;
   Double_t JPSI_MASS = 3.096916;
-  Double_t PI = 3.14159265358979312; 
+  //Double_t PI = 3.14159265358979312; 
   Double_t RESONANCE_MASS = 0.; 
 
   if (ResType==553)  
@@ -156,10 +156,10 @@ Int_t MUONplotefficiency(Int_t ResType = 553, Int_t fittype = 1){
   // Histograms limits and binning
   Float_t ptmin = 0.0;      Float_t ptmax =  20.0;     Int_t ptbins = 10; 
   Float_t ymin = -4.5;       Float_t ymax =  -2.;       Int_t ybins = 10;
-  Float_t thetamin = 165.;  Float_t thetamax = 180.;   Int_t thetabins = 100;  
+  // Float_t thetamin = 165.;  Float_t thetamax = 180.;   Int_t thetabins = 100;  
   
-  Float_t etacutmin = -4.04813 ;
-  Float_t etacutmax = -2.54209 ;
+  // Float_t etacutmin = -4.04813 ;
+  // Float_t etacutmax = -2.54209 ;
 
   Float_t invMassMin = .0 ;   Float_t invMassMax = 15.0 ;   Int_t   invMassBins = 100 ;
 
@@ -175,8 +175,8 @@ Int_t MUONplotefficiency(Int_t ResType = 553, Int_t fittype = 1){
   /*********************************/
   // Values used to define the acceptance
   //
-  Float_t thetacutmin = 171.0;  
-  Float_t thetacutmax = 178.;
+  // Float_t thetacutmin = 171.0;  
+  // Float_t thetacutmax = 178.;
   
   Float_t ptcutmin = 0.;
   Float_t ptcutmax = 20.;
@@ -613,8 +613,8 @@ Int_t MUONplotefficiency(Int_t ResType = 553, Int_t fittype = 1){
   /*******************************************/
 
 
-  Float_t triggerChi2Min = 0.; 
-  Float_t triggerChi2Max = 7.5;
+  // Float_t triggerChi2Min = 0.; 
+  // Float_t triggerChi2Max = 7.5;
 
   //TString m1Rec(BckgdCutResonanceESD);
   //TString m2Rec(ResonanceAccCutESD);
@@ -753,7 +753,7 @@ Int_t MUONplotefficiency(Int_t ResType = 553, Int_t fittype = 1){
   Char_t  theCut[100];
   
   
-  TF1 *fitFunc ;  
+  TF1 *fitFunc = 0;  
   TString FitFuncName;
 
   if (fitfunc==0 || fitfunc==1){
