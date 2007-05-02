@@ -5,7 +5,7 @@
 
 /* $Id$ */
 
-/// \ingroup sim
+/// \ingroup trigger
 /// \class AliMUONRegionalTriggerBoard
 /// \brief Regional trigger - real HW algorithm is implemented
 ///

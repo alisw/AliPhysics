@@ -7,7 +7,7 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
-/// \ingroup base
+/// \ingroup trigger
 /// \class AliMUONLocalTrigger
 /// \brief Reconstructed Local Trigger object
 //  Author Ph. Crochet

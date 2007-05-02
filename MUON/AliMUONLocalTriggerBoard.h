@@ -5,7 +5,7 @@
 
 /* $Id$ */
 
-/// \ingroup sim 
+/// \ingroup trigger 
 /// \class AliMUONLocalTriggerBoard
 /// \brief Implementation of local trigger board objects
 ///
