@@ -1673,7 +1673,7 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *t,
      Double_t maxchi2=1000.*kMaxChi2;
 
      Int_t idx=index[i];
-     if (idx>0) {
+     if (idx>=0) {
         const AliITSRecPoint *c=(AliITSRecPoint *)GetCluster(idx); 
 	if (c){
 	  if (idet != c->GetDetectorIndex()) {
@@ -1819,7 +1819,7 @@ AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *t,const Int_t *clindex) {
      Double_t maxchi2=1000.*kMaxChi2;
 
      Int_t idx=index[i];
-     if (idx>0) {
+     if (idx>=0) {
         const AliITSRecPoint *c=(AliITSRecPoint *)GetCluster(idx); 
 	if (c){
 	  if (idet != c->GetDetectorIndex()) {
