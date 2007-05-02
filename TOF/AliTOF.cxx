@@ -717,7 +717,7 @@ void AliTOF::Digits2Raw()
 
   AliTOFDDLRawData rawWriter(geometry);
   //AliTOFDDLRawData rawWriter;
-  rawWriter.SetVerbose(2);
+  rawWriter.SetVerbose(0);
   //rawWriter.SetFakeOrphaneProduction(kTRUE);
   //rawWriter.SetPackedAcquisitionMode(kFALSE);
   if (rawWriter.GetPackedAcquisitionMode()) {
