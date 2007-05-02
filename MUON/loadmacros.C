@@ -111,9 +111,9 @@ void loadmacros ()
   gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONRawStreamTracker.C++");    
   gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONRawStreamTrigger.C++");    
   gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONRecoCheck.C++");           
-  gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONResoEffChamber.C++"); 
+  // gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONResoEffChamber.C++"); 
   gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONStatusMap.C++");        
-  gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONTrigger.C++");        
+  // gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONTrigger.C++");        
   gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONTriggerEfficiency.C++");   
   gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONTriggerEfficiencyPt.C++"); 
   gROOT->LoadMacro("$ALICE_ROOT/MUON/TestMUONPreprocessor.C++");    
