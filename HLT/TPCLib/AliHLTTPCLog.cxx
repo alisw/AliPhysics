@@ -20,6 +20,7 @@ AliHLTLogging AliHLTTPCLog::fgHLTLogging;
 
 const char* AliHLTTPCLog::Flush()
 {
+  // see header file for class documentation
   int severity=0;
   string origin("");
   string keyword("");

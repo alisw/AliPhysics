@@ -47,6 +47,11 @@ AliHLTTPCDigitReaderUnpacked::AliHLTTPCDigitReaderUnpacked()
   fFirstRow(0),
   fLastRow(0)
 {
+  // see header file for class documentation
+  // or
+  // refer to README to build package
+  // or
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
 
 AliHLTTPCDigitReaderUnpacked::AliHLTTPCDigitReaderUnpacked(const AliHLTTPCDigitReaderUnpacked& src)
@@ -61,11 +66,13 @@ AliHLTTPCDigitReaderUnpacked::AliHLTTPCDigitReaderUnpacked(const AliHLTTPCDigitR
   fFirstRow(0),
   fLastRow(0)
 {
+  // see header file for class documentation
   HLTFatal("copy constructor not for use");
 }
 
 AliHLTTPCDigitReaderUnpacked& AliHLTTPCDigitReaderUnpacked::operator=(const AliHLTTPCDigitReaderUnpacked& src)
 {
+  // see header file for class documentation
   fDigitRowData=NULL;
   fActRowData=NULL;
   fData=NULL;
@@ -80,10 +87,12 @@ AliHLTTPCDigitReaderUnpacked& AliHLTTPCDigitReaderUnpacked::operator=(const AliH
 }
 
 AliHLTTPCDigitReaderUnpacked::~AliHLTTPCDigitReaderUnpacked(){
+  // see header file for class documentation
 }
 
 int AliHLTTPCDigitReaderUnpacked::InitBlock(void* ptr,unsigned long size, Int_t patch, Int_t slice){
-  AliHLTTPCUnpackedRawData *tmpptr;
+  // see header file for class documentation
+  AliHLTTPCUnpackedRawData *tmpptr=NULL;
   fPtr = ptr;
   fSize = size;
 
@@ -105,6 +114,7 @@ int AliHLTTPCDigitReaderUnpacked::InitBlock(void* ptr,unsigned long size, Int_t 
 }
 
 bool AliHLTTPCDigitReaderUnpacked::Next(){
+  // see header file for class documentation
   bool rreadvalue = true;
 
   fBin++;
@@ -144,24 +154,28 @@ bool AliHLTTPCDigitReaderUnpacked::Next(){
 }
 
 int AliHLTTPCDigitReaderUnpacked::GetRow(){
+  // see header file for class documentation
   int rrow;
   rrow = fRow;
   return rrow;
 }
 
 int AliHLTTPCDigitReaderUnpacked::GetPad(){
+  // see header file for class documentation
   int rpad;
   rpad = (int)fData[fBin].fPad;
   return rpad   ;
 }
 
 int AliHLTTPCDigitReaderUnpacked::GetSignal(){ 
+  // see header file for class documentation
   int rsignal;
   rsignal = (int)fData[fBin].fCharge;
   return rsignal;
 }
 
 int AliHLTTPCDigitReaderUnpacked::GetTime(){
+  // see header file for class documentation
   int rtime;
   rtime = (int)fData[fBin].fTime;
   return rtime;

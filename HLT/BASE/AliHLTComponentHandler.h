@@ -15,7 +15,7 @@
    
 
 #include <vector>
-#include "TObject.h"
+//#include "TObject.h"
 #include "AliHLTDataTypes.h"
 #include "AliHLTLogging.h"
 
@@ -35,6 +35,10 @@ class AliHLTComponentHandler : public AliHLTLogging {
   AliHLTComponentHandler();
   /** constructor */
   AliHLTComponentHandler(AliHLTComponentEnvironment* pEnv);
+  /** not a valid copy constructor, defined according to effective C++ style */
+  AliHLTComponentHandler(const AliHLTComponentHandler&);
+  /** not a valid assignment op, but defined according to effective C++ style */
+  AliHLTComponentHandler& operator=(const AliHLTComponentHandler&);
   /** destructor */
   virtual ~AliHLTComponentHandler();
 
@@ -210,11 +214,11 @@ class AliHLTComponentHandler : public AliHLTLogging {
    * Compount descriptor for component libraries
    */
   struct AliHLTLibHandle {
-    AliHLTLibHandle() : handle(NULL), name(NULL) {}
+    AliHLTLibHandle() : fHandle(NULL), fName(NULL) {}
     /** dlopen handle */
-    void* handle;                                                  //! transient
+    void* fHandle;                                                 //! transient
     /** name of the library, casted to TString* before use */
-    void* name;                                                    //! transient
+    void* fName;                                                   //! transient
   };
 
   /**

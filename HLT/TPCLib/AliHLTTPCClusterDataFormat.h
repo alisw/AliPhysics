@@ -4,9 +4,10 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+#include "AliHLTTPCSpacePointData.h"
+
 /* AliHLTTPCClusterData
  */
-
 struct AliHLTTPCClusterData
     {
 	AliHLTUInt32_t fSpacePointCnt;

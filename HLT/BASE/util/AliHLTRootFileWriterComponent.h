@@ -13,7 +13,7 @@
 
                                                                           */
 #include "AliHLTFileWriter.h"
-#include "TObject.h" 
+//#include "TObject.h" 
 
 class TFile;
 
@@ -34,7 +34,7 @@ class AliHLTRootFileWriterComponent : public AliHLTFileWriter
   /** not a valid assignment op, but defined according to effective C++ style */
   AliHLTRootFileWriterComponent& operator=(const AliHLTRootFileWriterComponent&);
   /** destructor */
-  ~AliHLTRootFileWriterComponent();
+  virtual ~AliHLTRootFileWriterComponent();
 
   /**
    * The id of the component.

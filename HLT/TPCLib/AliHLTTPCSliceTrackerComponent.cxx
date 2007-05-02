@@ -30,7 +30,6 @@ using namespace std;
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCConfMapper.h"
 #include "AliHLTTPCVertex.h"
-#include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCVertexData.h"
 #include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTTPCTransform.h"
@@ -39,13 +38,15 @@ using namespace std;
 #include "AliHLTTPCTrackletDataFormat.h"
 #include "AliHLTTPCInterMerger.h"
 #include "AliHLTTPCMemHandler.h"
+#include "AliHLTTPCDefinitions.h"
 //#include "AliHLTTPC.h"
-#include <stdlib.h>
-#include <errno.h>
+//#include <stdlib.h>
+//#include <cerrno>
 
 // this is a global object used for automatic component registration, do not use this
 AliHLTTPCSliceTrackerComponent gAliHLTTPCSliceTrackerComponent;
 
+/** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCSliceTrackerComponent)
 
 AliHLTTPCSliceTrackerComponent::AliHLTTPCSliceTrackerComponent()
@@ -98,6 +99,7 @@ AliHLTTPCSliceTrackerComponent& AliHLTTPCSliceTrackerComponent::operator=(const 
 
 AliHLTTPCSliceTrackerComponent::~AliHLTTPCSliceTrackerComponent()
 {
+  // see header file for class documentation
 }
 
 // Public functions to implement AliHLTComponent's interface.
@@ -105,12 +107,14 @@ AliHLTTPCSliceTrackerComponent::~AliHLTTPCSliceTrackerComponent()
 
 const char* AliHLTTPCSliceTrackerComponent::GetComponentID()
 {
+  // see header file for class documentation
 
   return "TPCSliceTracker";
 }
 
 void AliHLTTPCSliceTrackerComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
 {
+  // see header file for class documentation
   list.clear();
   list.push_back( AliHLTTPCDefinitions::fgkClustersDataType );
   list.push_back( AliHLTTPCDefinitions::fgkVertexDataType );
@@ -118,11 +122,13 @@ void AliHLTTPCSliceTrackerComponent::GetInputDataTypes( vector<AliHLTComponentDa
 
 AliHLTComponentDataType AliHLTTPCSliceTrackerComponent::GetOutputDataType()
 {
+  // see header file for class documentation
   return AliHLTTPCDefinitions::fgkTrackSegmentsDataType;
 }
 
 void AliHLTTPCSliceTrackerComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
 {
+  // see header file for class documentation
   // XXX TODO: Find more realistic values.
   constBase = 0;
   inputMultiplier = 0.2;
@@ -130,6 +136,7 @@ void AliHLTTPCSliceTrackerComponent::GetOutputDataSize( unsigned long& constBase
 
 AliHLTComponent* AliHLTTPCSliceTrackerComponent::Spawn()
 {
+  // see header file for class documentation
   return new AliHLTTPCSliceTrackerComponent;
 }
 
@@ -141,6 +148,7 @@ void AliHLTTPCSliceTrackerComponent::SetTrackerParam(Int_t phiSegments, Int_t et
 				   Double_t goodHitChi2, Double_t trackChi2Cut,
 				   Int_t maxdist, Double_t maxphi,Double_t maxeta, bool vertexConstraints )
     {
+  // see header file for class documentation
     //fTracker->SetClusterFinderParam( fXYClusterError, fZClusterError, kTRUE ); // ??
     //Set parameters input to the tracker
     //If no arguments are given, default parameters will be used
@@ -362,6 +370,7 @@ void AliHLTTPCSliceTrackerComponent::SetTrackerParam( bool doPP, int multiplicit
 	
 int AliHLTTPCSliceTrackerComponent::DoInit( int argc, const char** argv )
     {
+  // see header file for class documentation
     Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoInit", "DoInit", "DoInit()" );
 
     if ( fTracker || fVertex )
@@ -474,6 +483,7 @@ int AliHLTTPCSliceTrackerComponent::DoInit( int argc, const char** argv )
 
 int AliHLTTPCSliceTrackerComponent::DoDeinit()
 {
+  // see header file for class documentation
   if ( fTracker )
     delete fTracker;
   fTracker = NULL;
@@ -491,6 +501,7 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
 					      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 					      AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
     {
+  // see header file for class documentation
     Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoEvent", "DoEvent", "DoEvent()" );
     if ( evtData.fBlockCnt<=0 )
       {
@@ -706,7 +717,8 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
       fpInterMerger->Merge();
     } 
     ntracks0=0;
-    mysize = fTracker->GetTracks()->WriteTracks( ntracks0, outPtr->fTracklets );
+    AliHLTTPCTrackArray* pArray=fTracker->GetTracks();
+    mysize = pArray->WriteTracks( ntracks0, outPtr->fTracklets );
     outPtr->fTrackletCnt = ntracks0;
 
     Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoEvent", "Tracks",
@@ -735,5 +747,13 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
     size = tSize;
     return 0;
     }
+
+void AliHLTTPCSliceTrackerComponent::SetTrackerParam1()
+{
+  SetTrackerParam( 10, 20, 5, 10, 2,2,
+		   0, 1.31, 5, 100,
+		   50, 100, 50, 0.1, 0.1,
+		   true );
+}
 
 	

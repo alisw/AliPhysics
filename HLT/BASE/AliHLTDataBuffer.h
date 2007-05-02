@@ -15,9 +15,7 @@
 #include <vector>
 #include "AliHLTLogging.h"
 #include "AliHLTDataTypes.h"
-//#include "AliHLTDefinitions.h"
 #include "TObject.h"
-//#include "TList.h"
 
 class AliHLTComponent;
 class AliHLTConsumerDescriptor;
@@ -193,6 +191,8 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
    * @brief  Descriptor of a data segment within the buffer.
    */
   class AliHLTDataSegment {
+  friend class AliHLTDataBuffer;
+  friend class AliHLTConsumerDescriptor;
   public:
     AliHLTDataSegment()
       :
@@ -212,6 +212,7 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
     {
       memset(&fDataType, 0, sizeof(AliHLTComponentDataType));
     }
+  private:
     /** the data type of this segment */
     AliHLTComponentDataType fDataType;                             // see above
     /** offset in byte within the data buffer */
@@ -227,15 +228,17 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
    * @brief  Descriptor of the raw data buffer which can host several segments.
    */
   class AliHLTRawBuffer {
+  friend class AliHLTDataBuffer;
   public:
     /** standard constructor */
     AliHLTRawBuffer() : fSize(0), fTotalSize(0), fPtr(NULL) {}
     /** not a valid copy constructor, defined according to effective C++ style */
     AliHLTRawBuffer(const AliHLTRawBuffer&) : fSize(0), fTotalSize(0), fPtr(NULL) {}
     /** not a valid assignment op, but defined according to effective C++ style */
-      AliHLTRawBuffer& operator=(const AliHLTRawBuffer&) {return *this;}
+    AliHLTRawBuffer& operator=(const AliHLTRawBuffer&) {return *this;}
     /** standard destructor */
     virtual ~AliHLTRawBuffer() {}
+  private:
     /** size of the currently occupied partition of the buffer */
     AliHLTUInt32_t fSize;                                          // see above
     /** total size of the buffer, including safety margin */

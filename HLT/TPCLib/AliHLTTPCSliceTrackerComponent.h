@@ -13,7 +13,6 @@
 */
 
 #include "AliHLTProcessor.h"
-#include "AliHLTTPCDefinitions.h"
 
 class AliHLTTPCConfMapper;
 class AliHLTTPCVertex;
@@ -43,44 +42,63 @@ public:
   /** destructor */
   virtual ~AliHLTTPCSliceTrackerComponent();
 
-	// Public functions to implement AliHLTComponent's interface.
-	// These functions are required for the registration process
+  // Public functions to implement AliHLTComponent's interface.
+  // These functions are required for the registration process
 
-	const char* GetComponentID();
-	void GetInputDataTypes( vector<AliHLTComponentDataType>& list);
-	AliHLTComponentDataType GetOutputDataType();
-	virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
-	AliHLTComponent* Spawn();
+  /** interface function, see @ref AliHLTComponent for description */
+  const char* GetComponentID();
+  /** interface function, see @ref AliHLTComponent for description */
+  void GetInputDataTypes( vector<AliHLTComponentDataType>& list);
+  /** interface function, see @ref AliHLTComponent for description */
+  AliHLTComponentDataType GetOutputDataType();
+  /** interface function, see @ref AliHLTComponent for description */
+  virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
+  /** interface function, see @ref AliHLTComponent for description */
+  AliHLTComponent* Spawn();
 
 protected:
-	
-	void SetTrackerParam(Int_t phiSegments=50,Int_t etaSegments=100,
-			     Int_t trackletlength=3,Int_t tracklength=5,
-			     Int_t rowscopetracklet=2,Int_t rowscopetrack=3,
-			     Double_t minPtFit=0,Double_t maxangle=1.31,
-			     Double_t goodDist=5,Double_t hitChi2Cut=10,
-			     Double_t goodHitChi2=20,Double_t trackChi2Cut=50,
-			     Int_t maxdist=50,Double_t maxphi=0.1,Double_t maxeta=0.1,
-			     bool vertexconstraint=true);
-	void SetTrackerParam( bool doPP, int multiplicity, double bField );
-	void SetTrackerParam1()
-		{
-		SetTrackerParam( 10, 20, 5, 10, 2,2,
-				 0, 1.31, 5, 100,
-				 50, 100, 50, 0.1, 0.1,
-				 true );
-		}
 
-	// Protected functions to implement AliHLTComponent's interface.
-	// These functions provide initialization as well as the actual processing
-	// capabilities of the component. 
+  /**
+   * Set Tracker parameters
+   * Knowledge on that has been lost, so somebody has to insert more
+   * documentation.
+   */	
+  void SetTrackerParam(Int_t phiSegments=50,Int_t etaSegments=100,
+		       Int_t trackletlength=3,Int_t tracklength=5,
+		       Int_t rowscopetracklet=2,Int_t rowscopetrack=3,
+		       Double_t minPtFit=0,Double_t maxangle=1.31,
+		       Double_t goodDist=5,Double_t hitChi2Cut=10,
+		       Double_t goodHitChi2=20,Double_t trackChi2Cut=50,
+		       Int_t maxdist=50,Double_t maxphi=0.1,Double_t maxeta=0.1,
+		       bool vertexconstraint=true);
 
-	int DoInit( int argc, const char** argv );
-	int DoDeinit();
-	int DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
-		     AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
-		     AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
-	
+  /**
+   * Set Tracker parameters
+   * Knowledge on that has been lost, so somebody has to insert more
+   * documentation.
+   */
+  void SetTrackerParam( bool doPP, int multiplicity, double bField );
+
+  /**
+   * Set default tracker parameters
+   * Knowledge on that has been lost, so somebody has to insert more
+   * documentation.
+   */
+  void SetTrackerParam1();
+
+  // Protected functions to implement AliHLTComponent's interface.
+  // These functions provide initialization as well as the actual processing
+  // capabilities of the component. 
+
+  /** interface function, see @ref AliHLTComponent for description */
+  int DoInit( int argc, const char** argv );
+  /** interface function, see @ref AliHLTComponent for description */
+  int DoDeinit();
+  /** interface function, see @ref AliHLTComponent for description */
+  int DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
+	       AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
+	       AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
+  
 private:
 
   /** instance of the tracker */
