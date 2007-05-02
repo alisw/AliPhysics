@@ -163,3 +163,112 @@ Bool_t AliTrackFitter::FindVolId(const TArrayI *array, UShort_t volid) const
 
   return found;
 }
+
+Bool_t AliTrackFitter::Fit(const TArrayI *volIds,const TArrayI *volIdsFit,
+AliAlignObj::ELayerID layerRangeMin,
+AliAlignObj::ELayerID layerRangeMax)
+{
+  //-------------------------------------------------------------------
+  //
+  //                      Fit the track points. 
+  //
+  // volIds    - the array of IDs of volumes where the residuals 
+  //             will be calculated.
+  // volIdsFit - the array of IDs of volumes having the points
+  //              that will be fitted
+  // 
+  // If volIdsFit==0, the IDs of volumes having the points to fit
+  // are taken in the range defined by the two last parameters
+  // 
+  //
+  // The function fills two track-point arrays: fPVolId and fPTrack.
+  // The first one contains the track points from the volumes with IDs  
+  // taken from the "volIds". The second array is filled with 
+  // the intersection points between the fitted track and the volumes
+  // the points from the first arry belong to.
+  //
+  // The two arrays are used for calculation of the residuals
+  // and for the construction of a chi2 function to be minimized 
+  // in the alignment procedures. 
+  //
+  //--------------------------------------------------------------------
+
+  Int_t npoints=fPoints->GetNPoints();
+  if (npoints<fMinNPoints) return kFALSE;
+
+  // Fast counting the points
+  Int_t countFit=0;
+  Int_t countPnt=0;
+  if (volIdsFit != 0x0) {
+     for (Int_t i=0; i<npoints; i++) {
+         if (FindVolId(volIds,   fPoints->GetVolumeID()[i])) countPnt++;
+         if (FindVolId(volIdsFit,fPoints->GetVolumeID()[i])) countFit++;
+     }
+  } else {
+     for (Int_t i=0; i<npoints; i++) {
+         UShort_t id=fPoints->GetVolumeID()[i]; 
+         if (FindVolId(volIds,id)) countPnt++;
+         if (id < AliAlignObj::LayerToVolUID(layerRangeMin,0)) continue;
+	 if (id > AliAlignObj::LayerToVolUID(layerRangeMax,
+		  AliAlignObj::LayerSize(layerRangeMax))) continue;
+         countFit++;
+     }
+  }
+  if (countPnt==0) return kFALSE;
+  if (countFit<fMinNPoints) return kFALSE;
+
+
+
+  //************* Fit the selected track points
+
+  //Reset();
+
+  AliTrackPoint p;
+  if (volIdsFit != 0x0) {
+     for (Int_t i=0; i<npoints; i++) {
+         if (!FindVolId(volIdsFit,fPoints->GetVolumeID()[i])) continue;
+         fPoints->GetPoint(p,i);
+         if (!AddPoint(&p)) return kFALSE;
+     }
+  } else {
+     for (Int_t i=0; i<npoints; i++) {
+         UShort_t id=fPoints->GetVolumeID()[i]; 
+         if (FindVolId(volIds,id)) countPnt++;
+         if (id < AliAlignObj::LayerToVolUID(layerRangeMin,0)) continue;
+	 if (id > AliAlignObj::LayerToVolUID(layerRangeMax,
+		  AliAlignObj::LayerSize(layerRangeMax))) continue;
+         fPoints->GetPoint(p,i);
+         if (!AddPoint(&p)) continue;
+     }
+  }
+
+  if (!Update()) return kFALSE;
+
+
+
+
+  //************* Calculate the intersection points
+
+  fPVolId = new AliTrackPointArray(countPnt);
+  fPTrack = new AliTrackPointArray(countPnt);
+
+  Int_t n=0;
+  AliTrackPoint p2;
+  for (Int_t i=0; i<npoints; i++) {
+      if (!FindVolId(volIds,fPoints->GetVolumeID()[i])) continue;
+      fPoints->GetPoint(p,i);
+      if (GetPCA(p,p2)) {
+	fPVolId->AddPoint(n,&p);
+	fPTrack->AddPoint(n,&p2);
+        n++;
+      } else {
+	delete fPVolId;
+	fPVolId=0;
+	delete fPTrack;
+	fPTrack=0;
+	return kFALSE;
+      }
+  }
+  
+  return kTRUE;
+}

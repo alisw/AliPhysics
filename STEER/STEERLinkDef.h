@@ -94,6 +94,7 @@
 
 #pragma link C++ class AliTrackFitter+;
 #pragma link C++ class AliTrackFitterRieman+;
+#pragma link C++ class AliTrackFitterKalman+;
 #pragma link C++ class AliTrackFitterStraight+;
 #pragma link C++ class AliTrackResiduals+;
 #pragma link C++ class AliTrackResidualsChi2+;

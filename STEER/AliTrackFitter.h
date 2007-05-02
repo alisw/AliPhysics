@@ -30,7 +30,9 @@ class AliTrackFitter : public TObject {
   virtual void   SetTrackPointArray(AliTrackPointArray *array, Bool_t owner = kTRUE);
   virtual Bool_t Fit(const TArrayI *volIds,const TArrayI *volIdsFit = 0x0,
 		     AliAlignObj::ELayerID layerRangeMin = AliAlignObj::kFirstLayer,
-		     AliAlignObj::ELayerID layerRangeMax = AliAlignObj::kLastLayer) = 0;
+		     AliAlignObj::ELayerID layerRangeMax = AliAlignObj::kLastLayer);
+  virtual Bool_t AddPoint(const AliTrackPoint *p) = 0;
+  virtual Bool_t Update() = 0;
   virtual Bool_t GetPCA(const AliTrackPoint &pIn, AliTrackPoint &pOut) const = 0;
 
   Bool_t         FindVolId(const TArrayI *array, UShort_t volid) const;

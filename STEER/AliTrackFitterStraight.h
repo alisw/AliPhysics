@@ -18,7 +18,7 @@ class AliTrackFitterStraight : public AliTrackFitter{
 
   void Reset();
   void AddPoint(Float_t x, Float_t y, Float_t z, Float_t sy, Float_t sz);
-  void Update();
+  Bool_t Update();
 
   //  Double_t GetC(); 
   Double_t GetYat(Double_t x) const;
@@ -38,6 +38,7 @@ class AliTrackFitterStraight : public AliTrackFitter{
   Bool_t        fConv;      // indicates convergation
 
  private:
+  Bool_t AddPoint(const AliTrackPoint *) {return kTRUE;}
 
   ClassDef(AliTrackFitterStraight,1)  // Fast fit of straight tracks
 

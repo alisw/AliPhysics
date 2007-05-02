@@ -367,7 +367,7 @@ void AliTrackFitterRieman::AddPoint(Float_t x, Float_t y, Float_t z, Float_t sy,
 
 
 
-void AliTrackFitterRieman::Update(){
+Bool_t AliTrackFitterRieman::Update(){
   //
   // 
   //
@@ -400,6 +400,8 @@ void AliTrackFitterRieman::Update(){
   }
   fCorrY[3]=fitY.GetChisquare()/Float_t(fRieman->GetN()-3);   
   fCorrZ[3]=fitZ.GetChisquare()/Float_t(fRieman->GetN()-3);
+
+  return kTRUE;
 }
 
 
