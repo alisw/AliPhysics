@@ -8,7 +8,6 @@
 #include <errno.h>
 #include "TH2.h"
 #include "TCanvas.h"
-//#include "AliHLTPHOSModuleCellAccumulatedEnergyDataStruct.h"
 #include "AliHLTPHOSRcuCellAccumulatedEnergyDataStruct.h"
 #include "AliHLTPHOSCommonDefs.h"
 
@@ -92,14 +91,9 @@ TGTab*                     AliHLTPHOSOnlineDisplay::fSubTab3           = 0;
 TGTab*                     AliHLTPHOSOnlineDisplay::fSubTabModule[N_MODULES];
 TGTab*                     AliHLTPHOSOnlineDisplay::fSubSubTabRcu[N_MODULES][N_RCUS_PER_MODULE]; 
 
-//TH1D*                      AliHLTPHOSOnlineDisplay::fgChannelDataPlotPtr[N_MODULES][N_RCUS_PER_MODULE][N_ZROWS_RCU][N_XCOLUMNS_RCU];
 TH1D*                      AliHLTPHOSOnlineDisplay::fgChannelDataPlotPtr[N_ZROWS_RCU][N_XCOLUMNS_RCU];
 
-//TRootEmbeddedCanvas*       AliHLTPHOSOnlineDisplay::fgChannelDataCanvasPtr[N_MODULES][N_RCUS_PER_MODULE][N_ZROWS_RCU][N_XCOLUMNS_RCU];
-TRootEmbeddedCanvas*       AliHLTPHOSOnlineDisplay::fgChannelDataCanvasPtr[N_ZROWS_RCU][N_XCOLUMNS_RCU];
 TRootEmbeddedCanvas*       AliHLTPHOSOnlineDisplay::fTest              = 0;
-
-TGCompositeFrame*          AliHLTPHOSOnlineDisplay::fgChannelDataCompositeFramePtr[N_MODULES][N_RCUS_PER_MODULE];
 
 TRootEmbeddedCanvas*       AliHLTPHOSOnlineDisplay::fEc1               = 0; 
 TRootEmbeddedCanvas*       AliHLTPHOSOnlineDisplay::fEc2               = 0; 
@@ -238,7 +232,6 @@ AliHLTPHOSOnlineDisplay::InitDisplay()
 	   tf->AddFrame(fSubTab1, fL1);
 
   tf = fTab->AddTab("Calibration data");
-  // fF1 = new TGCompositeFrame(tf, 60, 20, kVerticalFrame);
      
            fSubTab2 = new TGTab(tf, 100, 100);
 
@@ -290,27 +283,9 @@ AliHLTPHOSOnlineDisplay::InitDisplay()
 	   char tmpCanvasName[256];
 		   sprintf(tmpTabName, "Raw data");
 		   tf2 = fSubTab3->AddTab(tmpTabName);
-
-		   fgChannelDataCompositeFramePtr[0][0] = new TGCompositeFrame(tf2, 60, 20, kVerticalFrame);
-		   for(int z = 0; z < 4; z ++)
-		     {
-		       for(int x = 0; x < 4; x ++)
-			 { 
-			   hints = new TGLayoutHints(kLHintsNormal, x*100, 0, 0, 0); 
-			   sprintf(tmpCanvasName, "name"); 
-			   fgChannelDataCanvasPtr[z][x] = new TRootEmbeddedCanvas(tmpCanvasName, fgChannelDataCompositeFramePtr[0][0], 100, 100);
-			   fgChannelDataCompositeFramePtr[0][0]->AddFrame(fgChannelDataCanvasPtr[z][x], hints);	  
-			 }
-		     }
-
-		   tf2->AddFrame(fgChannelDataCompositeFramePtr[0][0],hints);  
-	   
-		   fgEventButtPtr = new  AliHLTPHOSGetEventButton(fgChannelDataCompositeFramePtr[0][0], "Get Rawdata", 'r');  
-  
-		   fSubTab3->Resize();
-		   tf->AddFrame(fSubTab3, fL1);
-		   
-
+		   fgEventButtPtr = new  AliHLTPHOSGetEventButton(tf, "Get Rawdata2xxxxx", 'r');
+		   AliHLTPHOSGetEventButton*	   EventButtPtr2 = new  AliHLTPHOSGetEventButton(tf, "Get Rawdata", 'r'); 
+		   EventButtPtr2->Move(200, 200); 
 
   tf = fTab->AddTab("Tab 4");
 
@@ -605,13 +580,13 @@ AliHLTPHOSOnlineDisplay::GetNextEventRaw()
 		    if(  rcuChannelDataPtr->fValidData[ch].fGain  == 0)
 		      {
 			fgChannelDataPlotPtr[tmpz][tmpx]->SetBinContent(sample,  rcuChannelDataPtr->fValidData[ch].fChannelData[sample]);
-			//			cout << " " <<  rcuChannelDataPtr->fValidData[ch].fChannelData[sample];;
 		      }
 		  }
-		cout << endl;
 	      }
 	    }
+
 	  blk = fgChannelRawReadersPtr[reader]->FindBlockNdx("ATADNAHC","SOHP", 0xeFFFFFFF, blk+1);
+
 	} 
     }
   
@@ -790,14 +765,16 @@ void
 AliHLTPHOSOnlineDisplay::UpdateChanneRawDataDisplay()
 {
   fgTestCanvasPtr = new TCanvas("TEST", "testcanvas", 1200, 1000);  
-  fgTestCanvasPtr->Divide(N_ZROWS_RCU, N_XCOLUMNS_RCU, 0, 0);
-  //  fgTestCanvasPtr->Divide(N_XCOLUMNS_RCU, N_ZROWS_RCU, 0, 0);
+  //  fgTestCanvasPtr->Divide(N_ZROWS_RCU, N_XCOLUMNS_RCU, 0, 0);
+  fgTestCanvasPtr->Divide(N_XCOLUMNS_RCU, N_ZROWS_RCU, 0, 0);
 
   for(int z = 0; z < N_ZROWS_RCU; z ++)
     {
       for(int x = 0; x < N_XCOLUMNS_RCU; x ++)
 	{
-	  fgTestCanvasPtr->cd(x*N_ZROWS_RCU +z + 1);
+	  //	  fgTestCanvasPtr->cd(x*N_ZROWS_RCU +z + 1);
+	  fgTestCanvasPtr->cd(z*N_XCOLUMNS_RCU +x + 1);
+
 	  fgChannelDataPlotPtr[z][x]->Draw();
 	} 
     }

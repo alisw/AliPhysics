@@ -53,10 +53,10 @@ class AliHLTPHOSOnlineDisplay : public  TGMainFrame
   //  static TRootEmbeddedCanvas *fgChannelDataCanvasPtr[N_MODULES][N_RCUS_PER_MODULE];
   //  static TRootEmbeddedCanvas *fgChannelDataCanvasPtr[N_MODULES][N_RCUS_PER_MODULE][N_ZROWS_RCU][N_XCOLUMNS_RCU];
  
-  static TRootEmbeddedCanvas *fgChannelDataCanvasPtr[N_ZROWS_RCU][N_XCOLUMNS_RCU];
+  //  static TRootEmbeddedCanvas *fgChannelDataCanvasPtr[N_ZROWS_RCU][N_XCOLUMNS_RCU];
   static TRootEmbeddedCanvas *fTest;
 
-  static TGCompositeFrame    *fgChannelDataCompositeFramePtr[N_MODULES][N_RCUS_PER_MODULE];
+  //  static TGCompositeFrame    *fgChannelDataCompositeFramePtr[N_MODULES][N_RCUS_PER_MODULE];
   
  //  static TGTab               *fSubTab2;
   static TRootEmbeddedCanvas *fEc1, *fEc2, *fEc3, *fEc4, *fEc5, *fEc6, *fEc7, *fEc8, *fEc9, *fEc10, *fEc11, *fEc12, *fEc13, *fEc14;
