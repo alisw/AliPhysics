@@ -14,7 +14,7 @@
 #include "AliMUONClusterDrawAZ.h"
 
 class TH2D;
-class AliMUONData;
+class AliMUONRecData;
 class AliMUONPixel;
 class AliMUONClusterFinderAZ;
 
@@ -35,7 +35,7 @@ public:
   void     UpdateCluster(Int_t npad); // update cluster after removing non-overlapped pads
 
 private:
-  AliMUONData *fData; //!<  pointer to muon data container
+  AliMUONRecData *fData; //!<  pointer to muon data container
   AliMUONClusterFinderAZ* fFind; //!<  pointer to ClusterFinder
   TH2D*      fHist[4]; //!<  histograms
   Int_t      fnMu; //!<  number of muons passing thru the selected area
@@ -55,7 +55,7 @@ private:
 
   void   Init(); // initialization
   void   ModifyHistos(); // modify histograms
-  void   DrawHits(); // draw simulated and reconstructed hits
+  // void   DrawHits(); // draw simulated and reconstructed hits
   TH2D*  GetBackground(Int_t iHist); // build histogram with bkg. contaminated pads
 
 ClassDef(AliMUONClusterDrawAZ,0) // cluster drawing for MUON arm of ALICE

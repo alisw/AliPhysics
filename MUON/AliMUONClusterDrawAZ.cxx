@@ -26,7 +26,6 @@
 #include <TROOT.h>
 #include <TCanvas.h>
 #include <TLine.h>
-//#include <TTree.h>
 #include <TH2.h>
 #include <TView.h>
 #include <TStyle.h>
@@ -34,17 +33,15 @@
 #include "AliMUONClusterDrawAZ.h"
 #include "AliMUONClusterFinderAZ.h"
 #include "AliMUONGeometryModuleTransformer.h"
+#include "AliMUONGeometrySegmentation.h"
 #include "AliHeader.h"
 #include "AliRun.h"
-#include "AliMUON.h"
-//#include "AliMUONChamber.h"
 #include "AliMUONDigit.h"
-#include "AliMUONHit.h"
 #include "AliMUONRawCluster.h"
 #include "AliMUONClusterInput.h"
 #include "AliMUONPixel.h"
-//#include "AliMC.h"
-#include "AliMUONLoader.h"
+#include "AliMUONRecLoader.h"
+#include "AliMUONRecData.h"
 #include "AliLog.h"
 
 ClassImp(AliMUONClusterDrawAZ)
@@ -104,9 +101,9 @@ void AliMUONClusterDrawAZ::Init()
   //Loaders
   AliRunLoader *rl = AliRunLoader::GetRunLoader();
   AliLoader *gime = rl->GetLoader("MUONLoader");
-  fData = ((AliMUONLoader*)gime)->GetMUONData();
+  fData = ((AliMUONRecLoader*)gime)->GetMUONData();
 
-  gime->LoadHits("READ"); 
+  // gime->LoadHits("READ"); 
   gime->LoadRecPoints("READ"); 
 }
 
@@ -317,9 +314,9 @@ void AliMUONClusterDrawAZ::DrawCluster()
   } // for (Int_t cath = 0;
 
   // Draw simulated and reconstructed hits 
-  DrawHits();
+  // DrawHits();
 }
-
+/*
 //_____________________________________________________________________________
 void AliMUONClusterDrawAZ::DrawHits()
 {
@@ -422,14 +419,14 @@ void AliMUONClusterDrawAZ::DrawHits()
 	  p1[0] > hist->GetXaxis()->GetXmax()) continue;
       if (p1[1] < hist->GetYaxis()->GetXmin() || 
 	  p1[1] > hist->GetYaxis()->GetXmax()) continue;
-      /*
-	treeD->GetEvent(cath);
-	cout << mRaw->fMultiplicity[0] << mRaw->fMultiplicity[1] << endl;
-	for (Int_t j=0; j<mRaw->fMultiplicity[cath]; j++) {
-	Int_t digit = mRaw->fIndexMap[j][cath];
-	cout << ((AliMUONDigit*)fMuonDigits->UncheckedAt(digit))->Signal() << endl;
-	}
-      */
+
+	//treeD->GetEvent(cath);
+	//cout << mRaw->fMultiplicity[0] << mRaw->fMultiplicity[1] << endl;
+	//for (Int_t j=0; j<mRaw->fMultiplicity[cath]; j++) {
+	//Int_t digit = mRaw->fIndexMap[j][cath];
+	//cout << ((AliMUONDigit*)fMuonDigits->UncheckedAt(digit))->Signal() << endl;
+	//}
+
       // Check if track comes thru pads with signal
       iok = 0;
       for (Int_t ihist = 0; ihist < 4; ihist++) {
@@ -456,7 +453,7 @@ void AliMUONClusterDrawAZ::DrawHits()
   if (fData->TreeR()) fData->ResetRawClusters();
   c1->Update();
 }
-
+*/
 //_____________________________________________________________________________
 Int_t AliMUONClusterDrawAZ::Next()
 {
