@@ -73,7 +73,7 @@ AliJetFinder::~AliJetFinder()
 
 ////////////////////////////////////////////////////////////////////////
 
-void AliJetFinder::SetOutputFile(const char *name)
+void AliJetFinder::SetOutputFile(const char */*name*/)
 {
   //  opens output file 
   //  fOut = new TFile(name,"recreate");
@@ -185,10 +185,10 @@ void AliJetFinder::Run()
 // The following methods have been added to allow for event steering from the outside
 //
 
-void AliJetFinder::ConnectTree(TTree* tree)
+void AliJetFinder::ConnectTree(TTree* tree, TObject* data)
 {
     // Connect the input file
-    fReader->ConnectTree(tree);
+    fReader->ConnectTree(tree, data);
 }
 
 void AliJetFinder::WriteHeaders()

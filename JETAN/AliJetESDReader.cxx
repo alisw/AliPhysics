@@ -117,11 +117,11 @@ void AliJetESDReader::OpenInputFiles()
   }
 }
 
-void AliJetESDReader::ConnectTree(TTree* tree) {
+void AliJetESDReader::ConnectTree(TTree* tree, TObject* data) {
     // Connect the tree
      fChain = (TChain*) tree;
+     fESD   = (AliESD*) data;
      
-     fChain->SetBranchAddress("ESD",    &fESD);
      Int_t nMax = fChain->GetEntries(); 
      printf("\n AliJetESDReader: Total number of events in chain= %5d \n", nMax);
      // set number of events in header

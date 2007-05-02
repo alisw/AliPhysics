@@ -49,7 +49,7 @@ class AliJetFinder : public TObject
   // some methods to allow steering from the outside
   virtual Bool_t ProcessEvent(Long64_t entry);
   virtual void   FinishRun();
-  virtual void   ConnectTree(TTree* tree);
+  virtual void   ConnectTree(TTree* tree, TObject* data);
   virtual TTree* MakeTreeJ(char* name);
   virtual void   WriteHeaders();
   virtual void   WriteJetsToFile() {;}

@@ -53,7 +53,7 @@ class AliJetReader : public TObject
 	  
   // Others
   virtual void   OpenInputFiles() {}
-  virtual void   ConnectTree(TTree* /*tree*/) {}
+  virtual void   ConnectTree(TTree* /*tree*/, TObject* /*data*/) {}
   virtual Bool_t GetGenJets(AliJet* /*genJets*/) {return kFALSE;}
   
   void ClearArray();

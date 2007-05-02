@@ -34,7 +34,7 @@ class AliJetESDReader : public AliJetReader
   Bool_t FillMomentumArray(Int_t event); 
   void   OpenInputFiles();
   void   InitUnitArray();
-  void   ConnectTree(TTree* tree);
+  void   ConnectTree(TTree* tree, TObject* data);
   virtual void SetTPCGrid(AliJetGrid *grid)   {fTpcGrid = grid;}
   virtual void SetEMCalGrid(AliJetGrid *grid) {fEmcalGrid = grid;}
   // Correction of hadronic energy

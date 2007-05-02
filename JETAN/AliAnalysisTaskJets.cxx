@@ -73,9 +73,17 @@ void AliAnalysisTaskJets::ConnectInputData(Option_t */*option*/)
 // Connect the input data
 //
     if (fDebug > 1) printf("AnalysisTaskJets::ConnectInputData() \n");
-    
+    char ** address = (char **)GetBranchAddress(0, "ESD");
+
+    if (address)     {
+	fESD = (AliESD*)(*address);
+    }
+    else     {
+	fESD = new AliESD();
+	SetBranchAddress(0, "ESD", &fESD); // first task taking the branch enables it
+    }
     fChain = (TChain*)GetInputData(0);
-    fJetFinder->ConnectTree(fChain);
+    fJetFinder->ConnectTree(fChain, fESD);
     fJetFinder->WriteHeaders();
 }
 
