@@ -100,15 +100,16 @@ void DecodeRecoCocktail(char* dirname=".", char* outFileName = "MuonLight.root",
   // set the magnetic field for track extrapolations
   AliMUONTrackExtrap::SetField(AliTracker::GetFieldMap());
 
-  AliMUONRecoCheck *rc = new AliMUONRecoCheck("galice.root");
+  AliMUONRecoCheck *rc = new AliMUONRecoCheck("galice.root", "galice_sim.root");
   AliRunLoader *runLoader = rc->GetRunLoader();
+  AliRunLoader *runLoaderSim = rc->GetRunLoaderSim();
   
-  runLoader->LoadKinematics("READ");
-  Int_t nev = runLoader->GetNumberOfEvents(); 
+  runLoaderSim->LoadKinematics("READ");
+  Int_t nev = runLoaderSim->GetNumberOfEvents(); 
 //   nevent = nevent +nev;  
 //     printf(" number of files and events = %d - %d \n",irun,nevent);
     
-  AliITSLoader* ITSloader =  (AliITSLoader*) runLoader->GetLoader("ITSLoader");
+  AliITSLoader* ITSloader =  (AliITSLoader*) runLoaderSim->GetLoader("ITSLoader");
   AliITSVertexerPPZ *dovert = 0; 
   if (ITSloader) { 
     dovert = new AliITSVertexerPPZ("default",0,0);
@@ -121,14 +122,15 @@ void DecodeRecoCocktail(char* dirname=".", char* outFileName = "MuonLight.root",
   TLorentzVector v; 
   
   for(Int_t ievent = 0; ievent < nev; ievent++){ // loop over events 
-    runLoader->GetHeader();
+    runLoaderSim->GetHeader();
     if (ITSloader) { 
       vert = dovert->FindVertexForCurrentEvent(ievent);
     }
-    // printf ("Event %d of %d\n",ievent,nev);
+    //printf ("Event %d of %d\n",ievent,nev);
     muonArray->Clear();     // clean muon and dimuon arrays 
     dimuonArray->Clear(); 
     runLoader->GetEvent(ievent);
+    runLoaderSim->GetEvent(ievent);
     treeESD->GetEvent(ievent);
     rc->ResetTracks();
     rc->MakeTrackRef(); // make reconstructable tracks
@@ -143,15 +145,16 @@ void DecodeRecoCocktail(char* dirname=".", char* outFileName = "MuonLight.root",
       // assign parameters concerning the reconstructed tracks
       AliMUONTrackLight muLight;
       AliMUONTrack *trackReco = (AliMUONTrack *)trackRecoArray->At(itrRec);
+      
       muLight.FillFromESD(esd->GetMuonTrack(itrRec));
       // 	muLight.FillFromAliMUONTrack(trackReco);
       
       // find the reference track and store further information	
-      TParticle *part = muLight.FindRefTrack(trackReco,trackRefArray,runLoader); 
+      TParticle *part = muLight.FindRefTrack(trackReco,trackRefArray,runLoaderSim); 
       if (part) { 
 	v.SetPxPyPzE(part->Px(), part->Py(), part->Pz(), part->Energy());
 	muLight.SetPGen(v); 
-	muLight.FillMuonHistory(runLoader, part);
+	muLight.FillMuonHistory(runLoaderSim, part);
 	// 	  muLight.PrintInfo("A");
 	//store the referenced track in the muonArray:
 	TClonesArray &muons = *muonArray;
