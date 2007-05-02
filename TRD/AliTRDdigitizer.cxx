@@ -865,11 +865,11 @@ Bool_t AliTRDdigitizer::MakeDigits()
       Int_t   inDrift  = 1;
 
       // Find the current volume with the geo manager
-      gGeoManager->SetCurrentPoint(pos); 	 
-      gGeoManager->FindNode(); 	 
-      if (strstr(gGeoManager->GetPath(),"/UK")) { 	 
-	inDrift = 0; 	 
-      } 	 
+      gGeoManager->SetCurrentPoint(pos);
+      gGeoManager->FindNode();
+      if (strstr(gGeoManager->GetPath(),"/UK")) {
+	inDrift = 0;
+      }
 
       if (detector != detectorOld) {
 
@@ -918,73 +918,78 @@ Bool_t AliTRDdigitizer::MakeDigits()
       // loc[1] - col  direction in amplification or driftvolume
       // loc[2] - time direction in amplification or driftvolume
       gGeoManager->MasterToLocal(pos,loc);
-      // Now the real local coordinate system of the ROC
-      // row direction:    locR 
-      // column direction: locC
-      // time direction:   locT
-      // locR and locC are identical to the coordinates of the corresponding
-      // volumina of the drift or amplification region.
-      // locT is defined relative to the wire plane (i.e. middle of amplification
-      // region), meaming locT = 0, and is negative for hits coming from the
-      // drift region. 
-      Double_t locC = loc[0];
-      Double_t locR = loc[1];
-      Double_t locT = loc[2];
       if (inDrift) {
-	// locT relative to middle of amplification region
-        locT = locT - kDrWidth/2.0 - kAmWidth/2.0;
+	// Relative to middle of amplification region
+        loc[2] = loc[2] - kDrWidth/2.0 - kAmWidth/2.0;
       } 
 
       // The driftlength [cm] (w/o diffusion yet !).
       // It is negative if the hit is between pad plane and anode wires.
-      Double_t driftlength = -1.0 * locT;
+      Double_t driftlength = -1.0 * loc[2];
+
+      // Stupid patch to take care of TR photons that are absorbed
+      // outside the chamber volume. A real fix would actually need
+      // a more clever implementation of the TR hit generation
+      if (q < 0.0) {
+	if ((loc[1] < padPlane->GetRowEndROC()) ||
+            (loc[1] > padPlane->GetRow0ROC())) {
+          AliDebug(2,Form("Hit outside of sensitive volume, row (z=%f, row0=%f, rowE=%f)\n"
+                         ,loc[1],padPlane->GetRow0ROC(),padPlane->GetRowEndROC()));
+          hit = (AliTRDhit *) fTRD->NextHit();   
+          continue;
+	}
+        if ((driftlength < kDrMin) ||
+            (driftlength > kDrMax)) {
+          AliDebug(2,Form("Hit outside of sensitive volume, time (Q = %d)\n"
+                         ,((Int_t) q)));
+          hit = (AliTRDhit *) fTRD->NextHit();   
+          continue;
+        }
+      }
+
+      // Get row and col of unsmeared electron to retrieve drift velocity
+      // The pad row (z-direction)
+      Int_t    rowE         = padPlane->GetPadRowNumberROC(loc[1]);
+      if (rowE < 0) {
+        hit = (AliTRDhit *) fTRD->NextHit();   
+        continue;
+      }
+      Double_t rowOffset    = padPlane->GetPadRowOffsetROC(rowE,loc[1]);
+
+      // The pad column (rphi-direction)
+      Double_t offsetTilt   = padPlane->GetTiltOffset(rowOffset);
+      Int_t    colE         = padPlane->GetPadColNumber(loc[0]+offsetTilt);
+      if (colE < 0) {
+        hit = (AliTRDhit *) fTRD->NextHit();   
+        continue;	  
+      }
+      Double_t colOffset    = padPlane->GetPadColOffset(colE,loc[0]+offsetTilt);
+
+      Float_t driftvelocity = calVdriftDetValue * calVdriftROC->GetValue(colE,rowE);
+                    
+      // Normalized drift length
+      Double_t absdriftlength = TMath::Abs(driftlength);
+      if (commonParam->ExBOn()) {
+        absdriftlength /= TMath::Sqrt(GetLorentzFactor(driftvelocity));
+      }
 
       // Loop over all electrons of this hit
       // TR photons produce hits with negative charge
       Int_t nEl = ((Int_t) TMath::Abs(q));
       for (Int_t iEl = 0; iEl < nEl; iEl++) {
 
-	// Stupid patch to take care of TR photons that are absorbed
-	// outside the chamber volume. A real fix would actually need
-	// a more clever implementation of the TR hit generation
-        if (q < 0.0) {
-	  if ((locR < padPlane->GetRowEndROC()) ||
-              (locR > padPlane->GetRow0ROC())) {
-            if (iEl == 0) {
-              AliDebug(2,Form("Hit outside of sensitive volume, row (z=%f, row0=%f, rowE=%f)\n"
-                             ,locR,padPlane->GetRow0ROC(),padPlane->GetRowEndROC()));
-	    }
-            continue;
-	  }
-          if ((driftlength < kDrMin) ||
-              (driftlength > kDrMax)) {
-            if (iEl == 0) {
-              AliDebug(2,Form("Hit outside of sensitive volume, time (Q = %d)\n"
-                             ,((Int_t) q)));
-	    }
-            continue;
-	  }
-        }
-
-        // Get row and col of unsmeared electron to retrieve drift velocity
-        // The pad row (z-direction)
-        Int_t    rowE         = padPlane->GetPadRowNumberROC(locR);
-        if (rowE < 0) continue;
-        Double_t rowOffset    = padPlane->GetPadRowOffsetROC(rowE,locR);
-
-        // The pad column (rphi-direction)
-	Double_t offsetTilt   = padPlane->GetTiltOffset(rowOffset);
-        Int_t    colE         = padPlane->GetPadColNumber(locC+offsetTilt);
-        if (colE < 0) continue;	  
-        Double_t colOffset    = padPlane->GetPadColOffset(colE,locC+offsetTilt);
-
-        Float_t driftvelocity = calVdriftDetValue * calVdriftROC->GetValue(colE,rowE);
-                    
-        // Normalized drift length
-        Double_t absdriftlength = TMath::Abs(driftlength);
-        if (commonParam->ExBOn()) {
-          absdriftlength /= TMath::Sqrt(GetLorentzFactor(driftvelocity));
-        }
+        // Now the real local coordinate system of the ROC
+        // column direction: locC
+        // row direction:    locR 
+        // time direction:   locT
+        // locR and locC are identical to the coordinates of the corresponding
+        // volumina of the drift or amplification region.
+        // locT is defined relative to the wire plane (i.e. middle of amplification
+        // region), meaming locT = 0, and is negative for hits coming from the
+        // drift region. 
+        Double_t locC = loc[0];
+        Double_t locR = loc[1];
+        Double_t locT = loc[2];
 
         // Electron attachment
         if (simParam->ElAttachOn()) {
