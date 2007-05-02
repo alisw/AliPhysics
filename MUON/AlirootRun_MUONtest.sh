@@ -1,5 +1,6 @@
 #!/bin/sh
 # $Id$
+# with galice.root, galice_sim.root 
 
 CURDIR=`pwd`
 OUTDIR=test_out
@@ -26,6 +27,7 @@ gRandom->SetSeed($SEED);
 AliCDBManager::Instance()->SetRun($RUN);
 AliSimulation MuonSim("$ALICE_ROOT/MUON/Config.C");
 MuonSim.SetMakeTrigger("MUON");
+// MuonSim.SetWriteRawData("MUON","raw.root");
 MuonSim.SetWriteRawData("MUON");
 MuonSim.Run($NEVENTS);
 .q
@@ -34,6 +36,7 @@ EOF
 echo "Removing Digits files ..."
 mkdir MUON.Digits
 mv MUON.Digits*.root MUON.Digits/ 
+mv galice.root MUON.Digits/ 
 
 echo "Running reconstruction  ..."
 
@@ -49,6 +52,7 @@ MuonRec.SetRunLocalReconstruction("MUON");
 MuonRec.SetRunTracking("MUON");
 MuonRec.SetFillESD("MUON");
 MuonRec.SetLoadAlignData("MUON");
+MuonRec.SetNumberOfEventsPerFile($NEVENTS);
 // Uncoment following line to run reconstruction with the orginal tracking method
 // instead of the kalman one (default)
 //MuonRec.SetOption("MUON","Original");
@@ -69,11 +73,12 @@ if [ ! -e MUON.Digits.root ]; then
     echo "Moving Digits files back ..."
     mv MUON.Digits/MUON.Digits.root .
 fi 
+mv MUON.Digits/galice.root ./galice_sim.root 
 
 echo "Running Trigger efficiency  ..."
 aliroot -b >& testTriggerResults.out << EOF
 .L $ALICE_ROOT/MUON/MUONTriggerEfficiency.C+
-MUONTriggerEfficiency("galice.root",1);
+MUONTriggerEfficiency("galice_sim.root", "galice.root", 1);
 .q
 EOF
 
@@ -82,7 +87,7 @@ echo "Running efficiency  ..."
 aliroot -b >& testResults.out << EOF
 .L $ALICE_ROOT/MUON/MUONefficiency.C+
 // no argument assumes Upsilon but MUONefficiency(443) works on Jpsi
-MUONefficiency();
+MUONefficiency("galice_sim.root");
 .q
 EOF
 
@@ -91,20 +96,22 @@ echo "Running check ..."
 aliroot -b >& testCheck.out << EOF
 gSystem->Load("libMUONevaluation");
 .L $ALICE_ROOT/MUON/MUONCheck.C+
-MUONCheck(0, 9, "galice.root","AliESDs.root"); 
+MUONCheck(0, 9, "galice_sim.root", "galice.root", "AliESDs.root"); 
 .q
 EOF
 
 echo "Running dumps for selected event (5) ..."
 
-aliroot -b << EOF
-AliMUONData data("galice.root");
-data.DumpKine(5);       > dump.kine
-data.DumpHits(5);       > dump.hits
-data.DumpDigits(5);     > dump.digits
-data.DumpSDigits(5);    > dump.sdigits
-data.DumpRecPoints(5);  > dump.recpoints
-data.DumpRecTrigger(5); > dump.rectrigger
+aliroot -b  << EOF
+AliMUONSimData simData("galice_sim.root");
+simData.DumpKine(5);       > dump.kine
+simData.DumpHits(5);       > dump.hits
+simData.DumpDigits(5);     > dump.digits
+simData.DumpSDigits(5);    > dump.sdigits
+
+AliMUONRecData recData("galice.root");
+recData.DumpRecPoints(5);  > dump.recpoints
+recData.DumpRecTrigger(5); > dump.rectrigger
 .q
 EOF
 
