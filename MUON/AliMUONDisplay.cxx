@@ -79,6 +79,8 @@
 #include "AliMUONGeometrySegmentation.h"
 #include "AliMUONConstants.h"
 #include "AliMUONTriggerSegmentation.h"
+#include "AliMUONSimData.h"
+#include "AliMUONRecData.h"
 
 #include "AliMpDEIterator.h"
 #include "AliMpSegmentation.h"
@@ -139,14 +141,17 @@ AliMUONDisplay::AliMUONDisplay()
     fPhits(0),
     fRpoints(0),
     fNextCathode(0),
-    fLoader(0), 
-    fMUONData(0)
+    fSimLoader(0), 
+    fRecLoader(0), 
+    fMUONSimData(0),
+    fMUONRecData(0)
 {
 /// Default constructor
 }
 
 //_____________________________________________________________________________
-AliMUONDisplay::AliMUONDisplay(Int_t size, AliLoader * loader)
+AliMUONDisplay::AliMUONDisplay(Int_t size, 
+                               AliLoader * simLoader, AliLoader * recLoader)
   : AliDisplay(),
     fEvent(0),
     fChamber(1),
@@ -160,8 +165,10 @@ AliMUONDisplay::AliMUONDisplay(Int_t size, AliLoader * loader)
     fPhits(0),
     fRpoints(0),
     fNextCathode(kFALSE),
-    fLoader(loader), 
-    fMUONData(0)
+    fSimLoader(simLoader), 
+    fRecLoader(recLoader), 
+    fMUONSimData(0),
+    fMUONRecData(0)
   
 {
 /// Standard constructor to create an event display object.
@@ -245,10 +252,10 @@ AliMUONDisplay::AliMUONDisplay(Int_t size, AliLoader * loader)
     fCanvas->Update();
  
     // initialize container
-    if(fLoader) 
-      fMUONData = new AliMUONData(fLoader,"MUON","MUON");
-    else
-      fMUONData =0x0;
+    if(fSimLoader) 
+      fMUONSimData = new AliMUONSimData(fSimLoader,"MUON","MUON");
+    if(fRecLoader) 
+      fMUONRecData = new AliMUONRecData(fRecLoader,"MUON","MUON");
 }
 
 //_____________________________________________________________________________
@@ -531,16 +538,16 @@ void AliMUONDisplay::PrintKinematics()
 {
 /// Print kinematic tree
 
-  AliRunLoader * runLoader;
+  if ( !fSimLoader || !fRecLoader ) {
+    AliErrorStream() << "Detector loaders are not defined." << endl;
+    return;
+  }  
+
+  AliRunLoader* runLoader = fSimLoader->GetRunLoader();
   TParticle *particle = new TParticle();
   Int_t nPart;
   Float_t vertex[3], momentum[3];
 
-  if (fLoader)
-    runLoader = fLoader->GetRunLoader();
-  else
-    runLoader = 0x0;
-  
   printf("******  Event # %d ******\n",runLoader->GetEventNumber());
   runLoader->TreeK()->GetBranch("Particles")->SetAddress(&particle);
   nPart = (Int_t)runLoader->TreeK()->GetEntries();
@@ -728,6 +735,11 @@ void AliMUONDisplay::DrawTitle(Option_t *option)
 {
 /// Draw the event title
 
+  if ( !fSimLoader || !fRecLoader ) {
+    AliErrorStream() << "Detector loaders are not defined." << endl;
+    return;
+  }  
+
     Float_t xmin = gPad->GetX1();
     Float_t xmax = gPad->GetX2();
     Float_t ymin = gPad->GetY1();
@@ -735,12 +747,7 @@ void AliMUONDisplay::DrawTitle(Option_t *option)
     Float_t dx   = xmax-xmin;
     Float_t dy   = ymax-ymin;
     
-    AliRunLoader * runLoader;
-    if (fLoader)
-      runLoader = fLoader->GetRunLoader();
-    else
-      runLoader = 0x0;
-
+    AliRunLoader * runLoader = fSimLoader->GetRunLoader();
 
     if (strlen(option) == 0) {
 	TPaveText *title = new TPaveText(xmin +0.01*dx, ymax-0.09*dy, xmin +0.5*dx, ymax-0.01*dy);
@@ -1063,18 +1070,18 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
     
     AliMUON *pMUON  =     (AliMUON*)gAlice->GetModule("MUON");
 
-    GetMUONData()->SetTreeAddress("D");
+    GetMUONSimData()->SetTreeAddress("D");
 
-    TClonesArray *muonDigits  = GetMUONData()->Digits(chamber-1);
+    TClonesArray *muonDigits  = GetMUONSimData()->Digits(chamber-1);
     if (muonDigits == 0) return;
 
     gAlice->ResetDigits();
     Int_t nent = 0;
  
-    if (GetLoader()->TreeD()) {
-	nent = (Int_t) GetLoader()->TreeD()->GetEntries();
+    if (GetSimLoader()->TreeD()) {
+	nent = (Int_t) GetSimLoader()->TreeD()->GetEntries();
 	//     gAlice->TreeD()->GetEvent(nent-2+cathode-1);
-	GetMUONData()->GetDigits();
+	GetMUONSimData()->GetDigits();
     }
     
     Int_t ndigits = muonDigits->GetEntriesFast();    
@@ -1262,15 +1269,15 @@ void AliMUONDisplay::LoadCoG(Int_t chamber, Int_t /*cathode*/)
     
     ResetRpoints();
     
-    GetMUONData()->SetTreeAddress("RC");
-    TClonesArray *muonRawClusters  = GetMUONData()->RawClusters(chamber-1);
+    GetMUONRecData()->SetTreeAddress("RC");
+    TClonesArray *muonRawClusters  = GetMUONRecData()->RawClusters(chamber-1);
 
     if (muonRawClusters == 0) return;
 
     Int_t nent = 0;
-    if (GetMUONData()->TreeR()) {
-	nent=(Int_t) GetMUONData()->TreeR()->GetEntries();
-	GetMUONData()->TreeR()->GetEvent(0);
+    if (GetMUONRecData()->TreeR()) {
+	nent=(Int_t) GetMUONRecData()->TreeR()->GetEntries();
+	GetMUONRecData()->TreeR()->GetEvent(0);
     }
     
     Int_t nrawcl = muonRawClusters->GetEntriesFast();
@@ -1309,10 +1316,10 @@ void AliMUONDisplay::LoadTracks()
 
   ResetRpoints();
 
-  GetMUONData()->SetTreeAddress("RT");
-  TClonesArray* recTracksArray = GetMUONData()->RecTracks();
+  GetMUONRecData()->SetTreeAddress("RT");
+  TClonesArray* recTracksArray = GetMUONRecData()->RecTracks();
   if (recTracksArray == NULL) return;
-  GetMUONData()->GetRecTracks();
+  GetMUONRecData()->GetRecTracks();
 
   Int_t nRecTracks = 0;
   if (recTracksArray)
@@ -1372,15 +1379,8 @@ void AliMUONDisplay::PrintTrack(Int_t iRecTracks, AliMUONTrack *recTrack)
   vertex[0] = trackParam->GetNonBendingCoor();
   vertex[1] = trackParam->GetBendingCoor();
   vertex[2] = trackParam->GetZ();
-  pYZ =  1./TMath::Abs(trackParam->GetInverseBendingMomentum());
-  bendingSlope = trackParam->GetBendingSlope();
-  nonBendingSlope = trackParam->GetNonBendingSlope();
-  momentum[2] = -pYZ / TMath::Sqrt(1.0 + bendingSlope*bendingSlope);
-  momentum[0] = momentum[2] * nonBendingSlope;
-  momentum[1] = momentum[2] * bendingSlope;
   charge = Int_t(TMath::Sign(1.,trackParam->GetInverseBendingMomentum()));
-  chi2dof = recTrack->GetFitFMin()/(2.0 * recTrack->GetNTrackHits() - 5.);
-  
+
   printf("===================================================\n");
   printf("//*****************************************************************//\n");
   printf("// meaningless since the vertex is not known at the tracking level //\n");
@@ -1388,9 +1388,22 @@ void AliMUONDisplay::PrintTrack(Int_t iRecTracks, AliMUONTrack *recTrack)
   printf(" Reconstructed track # %d \n",iRecTracks);
   printf(" charge: %d \n",charge);
   printf(" vertex x,y,z (cm): %f %f %f \n",vertex[0],vertex[1],vertex[2]); 
-  printf(" momentum Px,Py,Pz (GeV/c): %f %f %f \n",momentum[0],momentum[1],momentum[2]);
+
+  if ( trackParam->GetInverseBendingMomentum() != 0. ) {
+    pYZ =  1./TMath::Abs(trackParam->GetInverseBendingMomentum());
+    bendingSlope = trackParam->GetBendingSlope();
+    nonBendingSlope = trackParam->GetNonBendingSlope();
+    momentum[2] = -pYZ / TMath::Sqrt(1.0 + bendingSlope*bendingSlope);
+    momentum[0] = momentum[2] * nonBendingSlope;
+    momentum[1] = momentum[2] * bendingSlope;
+    printf(" momentum Px,Py,Pz (GeV/c): %f %f %f \n",momentum[0],momentum[1],momentum[2]);
+  }
+  else { 
+    AliErrorStream() << "Cannot calculate momentum: pYZ = inf" << endl;
+  }  
+ 
+  chi2dof = recTrack->GetFitFMin()/(2.0 * recTrack->GetNTrackHits() - 5.);
   printf(" track chi2/dof: %f \n",chi2dof); 
-  
 }
 
 //___________________________________________
@@ -1408,23 +1421,23 @@ void AliMUONDisplay::LoadHits(Int_t chamber)
     
     Float_t zpos=AliMUONConstants::DefaultChamberZ(chamber-1);
 
-    if (GetMUONData()->TreeH()) {
-      GetMUONData()->SetTreeAddress("H");
-      Int_t ntracks = (Int_t)GetMUONData()->TreeH()->GetEntries(); //skowron
+    if (GetMUONSimData()->TreeH()) {
+      GetMUONSimData()->SetTreeAddress("H");
+      Int_t ntracks = (Int_t)GetMUONSimData()->TreeH()->GetEntries(); //skowron
       Int_t nthits  = 0;
       for (track = 0; track < ntracks; track++) {
-	GetMUONData()->ResetHits();
-	GetMUONData()->GetTrack(track);//skowron
-	TClonesArray *muonHits  = GetMUONData()->Hits();
+	GetMUONSimData()->ResetHits();
+	GetMUONSimData()->GetTrack(track);//skowron
+	TClonesArray *muonHits  = GetMUONSimData()->Hits();
 	if (muonHits == 0) return;
 	nthits += muonHits->GetEntriesFast();
       } 
       if (fPhits == 0) fPhits = new TObjArray(nthits);
       Int_t nhold=0;
       for (track=0; track<ntracks;track++) {
-	GetMUONData()->ResetHits();
-	GetMUONData()->GetTrack(track);//skowron
-	TClonesArray *muonHits  = GetMUONData()->Hits();
+	GetMUONSimData()->ResetHits();
+	GetMUONSimData()->GetTrack(track);//skowron
+	TClonesArray *muonHits  = GetMUONSimData()->Hits();
 	if (muonHits == 0) return;
 	Int_t nhits = muonHits->GetEntriesFast();
 	if (nhits == 0) continue;
@@ -1529,10 +1542,10 @@ void AliMUONDisplay::Trigger()
 
   AliMUONGlobalTrigger* globalTrig;
 
-  GetMUONData()->SetTreeAddress("GLT");
-  GetMUONData()->GetTriggerD();
+  GetMUONRecData()->SetTreeAddress("GLT");
+  GetMUONRecData()->GetTriggerD();
 
-  globalTrig =  (AliMUONGlobalTrigger*)GetMUONData()->GlobalTrigger()->UncheckedAt(0);
+  globalTrig =  (AliMUONGlobalTrigger*)GetMUONRecData()->GlobalTrigger()->UncheckedAt(0);
   if (globalTrig == 0) return;
 
   globalTrig->Print("full");
@@ -1541,7 +1554,7 @@ void AliMUONDisplay::Trigger()
 //   AliMUONTriggerDecision* decision= new AliMUONTriggerDecision(GetLoader(),1);
 
 //   //  AliMUONTriggerDecision* decision= new AliMUONTriggerDecision(1);
-//   AliMUONData* muonData = decision->GetMUONData();
+//   AliMUONData* muonData = decision->GetMUONRecData();
 //   muonData->SetTreeAddress("D");
 //   decision->Trigger(); 
 }
@@ -1610,18 +1623,22 @@ void AliMUONDisplay::ShowNextEvent(Int_t delta)
 ///  -  delta =  1  shown next event
 ///  -  delta = -1 show previous event
 
-  AliRunLoader * runLoader;
-  if (fLoader)
-    runLoader = fLoader->GetRunLoader();
-  else
-    runLoader = 0x0;
+   if ( !fSimLoader || !fRecLoader ) {
+     AliErrorStream() << "Detector loaders are not defined." << endl;
+     return;
+   }  
     
-    if (delta) {
+   AliRunLoader* runSimLoader =  fSimLoader->GetRunLoader();
+   AliRunLoader* runRecLoader =  fRecLoader->GetRunLoader();
+   
+    
+   if (delta) {
       //runLoader->CleanDetectors();
       //runLoader->CleanKinematics();
-      Int_t currentEvent = runLoader->GetEventNumber();
+      Int_t currentEvent = runSimLoader->GetEventNumber();
       Int_t newEvent     = currentEvent + delta;
-      runLoader->GetEvent(newEvent);
+      runSimLoader->GetEvent(newEvent);
+      runRecLoader->GetEvent(newEvent);
       fEvent=newEvent;
     }
     LoadDigits(fChamber, fCathode);
