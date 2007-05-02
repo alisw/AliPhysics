@@ -1,6 +1,11 @@
 # $Id$
 
-SRCS:= AliMUONCommonGeometryBuilder.cxx \
+SRCS:= AliMUON.cxx \
+       AliMUONv1.cxx \
+       AliMUONSimLoader.cxx \
+       AliMUONSimData.cxx \
+       AliMUONHit.cxx \
+       AliMUONCommonGeometryBuilder.cxx \
        AliMUONSt1GeometryBuilder.cxx \
        AliMUONSt1GeometryBuilderV2.cxx \
        AliMUONSt1SpecialMotif.cxx \
@@ -9,7 +14,8 @@ SRCS:= AliMUONCommonGeometryBuilder.cxx \
        AliMUONSlatGeometryBuilder.cxx \
        AliMUONTriggerGeometryBuilder.cxx \
        AliMUONResponseFactory.cxx \
-       AliMUONHitMapA1.cxx \
+       AliMUONChamber.cxx \
+       AliMUONChamberTrigger.cxx \
        AliMUONResponse.cxx \
        AliMUONResponseV0.cxx \
        AliMUONResponseTrigger.cxx \
@@ -17,14 +23,8 @@ SRCS:= AliMUONCommonGeometryBuilder.cxx \
        AliMUONTrigger.cxx \
        AliMUONSDigitizerV2.cxx \
        AliMUONDigitizerV3.cxx \
-       AliMUONLocalTriggerBoard.cxx \
-       AliMUONRegionalTriggerBoard.cxx \
-       AliMUONTriggerBoard.cxx \
-       AliMUONTriggerCrate.cxx \
        AliMUONTriggerElectronics.cxx \
-       AliMUONGlobalTriggerBoard.cxx \
-       AliMUONRawWriter.cxx
-                            
+                           
 HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= MUONsimLinkDef.h

@@ -16,7 +16,7 @@ SRCS:=  AliMUONVDataIterator.cxx \
         AliMUONTriggerEfficiencyCells.cxx\
         AliMUON2DStoreValidator.cxx \
         AliMUONCheckItem.cxx \
-        AliMUONCheckItemIterator.cxx
+        AliMUONCheckItemIterator.cxx \
 
 HDRS:= $(SRCS:.cxx=.h)
 

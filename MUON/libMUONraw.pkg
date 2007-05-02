@@ -11,7 +11,7 @@ SRCS:= AliMUONDDLTrigger.cxx \
        AliMUONBusStruct.cxx \
        AliMUONPayloadTracker.cxx \
        AliMUONRawStreamTrigger.cxx \
-       AliMUONRawStreamTracker.cxx
+       AliMUONRawStreamTracker.cxx  \
  
 
 HDRS:= $(SRCS:.cxx=.h)

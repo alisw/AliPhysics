@@ -1,6 +1,8 @@
 # $Id$
 
-SRCS:= AliMUONClusterReconstructor.cxx \
+SRCS:= AliMUONRecData.cxx \
+       AliMUONRecLoader.cxx \
+       AliMUONClusterReconstructor.cxx \
        AliMUONDigitMapA1.cxx \
        AliMUONClusterFinderVS.cxx \
        AliMUONClusterFinderAZ.cxx \
@@ -24,8 +26,6 @@ SRCS:= AliMUONClusterReconstructor.cxx \
        AliMUONDigitCalibrator.cxx \
        AliMillepede.cxx \
        AliMUONAlignment.cxx \
-       AliMUONDisplay.cxx \
-       AliMUONRecoCheck.cxx \
        AliMUONVClusterFinder.cxx \
        AliMUONPreClusterFinder.cxx \
        AliMUONClusterFinderMLEM.cxx \
@@ -36,9 +36,8 @@ SRCS:= AliMUONClusterReconstructor.cxx \
        AliMUONCluster.cxx \
        AliMUONPadStatusMaker.cxx \
        AliMUONPadStatusMapMaker.cxx \
-       AliMUONHVNamer.cxx \
-       AliMUONTrackHitPattern.cxx
-       
+       AliMUONTrackHitPattern.cxx \
+
 HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= MUONrecLinkDef.h

@@ -1,34 +1,24 @@
 # $Id$
 
 SRCS:=  AliMUONConstants.cxx \
-        AliMUON.cxx AliMUONv1.cxx \
         AliMUONMathieson.cxx \
-        AliMUONDataInterface.cxx \
-        AliMUONLoader.cxx \
-        AliMUONChamber.cxx \
-        AliMUONTriggerCrateStore.cxx \
-        AliMUONChamberTrigger.cxx \
-        AliMUONTriggerCircuit.cxx \
         AliMUONData.cxx \
         AliMUONDataIterator.cxx \
         AliMUONDataDigitIterator.cxx \
-        AliMUONPoints.cxx \
-        AliMUONHit.cxx \
         AliMUONDigit.cxx \
+        AliMUONHitMapA1.cxx \
         AliMUONRawCluster.cxx \
-        AliMUONGlobalTrigger.cxx  \
-        AliMUONRegionalTrigger.cxx \
-        AliMUONLocalTrigger.cxx \
         AliMUONSt12QuadrantSegmentation.cxx \
         AliMUONSt345SlatSegmentation.cxx \
         AliMUONTriggerSegmentation.cxx \
         AliMUONSegFactory.cxx \
         AliMUONCalibrationData.cxx \
         AliMUONDigitMaker.cxx \
-        AliMUONTriggerChamberEff.cxx \
+        AliMUONRawWriter.cxx \
         AliMUONLogger.cxx \
-        AliMUONCDB.cxx
-
+        AliMUONCDB.cxx \
+        AliMUONHVNamer.cxx \
+ 
 HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= MUONbaseLinkDef.h
