@@ -7,7 +7,7 @@ ELIBSDIR:=
 
 
 
-ELIBS:= MUONgeometry MUONrec MUONsim MUONbase MUONraw MUONcalib MUONmapping \
+ELIBS:= MUONgeometry MUONrec MUONsim MUONbase MUONtrigger MUONraw MUONcalib MUONmapping \
         TPCbase TPCsim TPCrec TPCfast \
 	ITSbase ITSsim ITSrec PMDbase PMDsim PMDrec TRDbase \
         TRDsim TRDrec TRDfast \
@@ -21,7 +21,7 @@ ELIBS:= MUONgeometry MUONrec MUONsim MUONbase MUONraw MUONcalib MUONmapping \
         hijing TMEVSIM mevsim THbtp HBTP TEPEMGEN EPEMGEN \
         FASTSIM microcern \
 	RAWDatabase RAWDatarec RAWDatasim \
-	HLTbase AliHLTSrc AliHLTComp AliHLTMisc AliHLTMUON \
+	HLTbase AliHLTSrc AliHLTComp AliHLTMisc AliHLTMUON MUONevaluation \
 	AliHLTHough AliHLTITS\
 #	THerwig herwig TPHIC
 
