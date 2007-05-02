@@ -38,7 +38,7 @@
 
 
 #include "AliMUONTrackHitPattern.h"
-#include "AliMUONData.h"
+#include "AliMUONRecData.h"
 #include "AliMUONTrack.h"
 #include "AliMUONTrackParam.h"
 #include "AliMUONTrackExtrap.h"
@@ -71,7 +71,7 @@ ClassImp(AliMUONTrackHitPattern) // Class implementation in ROOT context
 
 
 //______________________________________________________________________________
-AliMUONTrackHitPattern::AliMUONTrackHitPattern(AliMUONData *data)
+AliMUONTrackHitPattern::AliMUONTrackHitPattern(AliMUONRecData *data)
     : TObject(),
       fMUONData(data),
       fTransformer(new AliMUONGeometryTransformer(kTRUE)),

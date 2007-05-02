@@ -12,7 +12,7 @@
 #include <TObject.h>
 #include <TList.h>
 
-class AliMUONData;
+class AliMUONRecData;
 class AliMUONLocalStruct;
 class AliMUONLocalTriggerBoard;
 class AliMUONTrackParam;
@@ -25,7 +25,7 @@ class TClonesArray;
 
 class AliMUONTrackHitPattern : public TObject {
 public:
-    AliMUONTrackHitPattern(AliMUONData *MUONData); // Default Constructor
+    AliMUONTrackHitPattern(AliMUONRecData *MUONData); // Default Constructor
     virtual ~AliMUONTrackHitPattern(); // Destructor
     
     void GetHitPattern(TClonesArray *recTracksArray);
@@ -39,7 +39,7 @@ public:
     Bool_t TriggerDigits();
 
 private:
-    AliMUONData *fMUONData; ///< Data container for MUON subsystem
+    AliMUONRecData *fMUONData; ///< Data container for MUON subsystem
     TList fTriggerDigitsList[4]; ///< List of trigger digits, one per chamber
     AliMUONGeometryTransformer *fTransformer; //!< pointer to transformation
     AliMUONTriggerCrateStore *fCrateManager; ///< pointer to crate manager
