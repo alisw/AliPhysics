@@ -1,11 +1,11 @@
-#ifndef ALITOFv5T0_H
-#define ALITOFv5T0_H
+#ifndef ALITOFv6T0_H
+#define ALITOFv6T0_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 //_________________________________________________________________________//
 //                                                                         //
-// Implementation version v5 of TOF Manager class                          //
+// Implementation version v6 of TOF Manager class                          //
 // FULL COVERAGE VERSION + OPTION FOR PHOS HOLES                           //
 //                                                                         //
 // -- Authors: G. Cara Romeo, A. De Caro                                   //
@@ -15,21 +15,20 @@
 #include "AliTOF.h"
  
  
-class AliTOFv5T0 : public AliTOF {
+class AliTOFv6T0 : public AliTOF {
 
 public:
-  AliTOFv5T0();
-  AliTOFv5T0(const char *name, const char *title);
-  virtual ~AliTOFv5T0() {};
+  AliTOFv6T0();
+  AliTOFv6T0(const char *name, const char *title);
+  virtual ~AliTOFv6T0() {};
   virtual void   BuildGeometry();
   virtual void   CreateGeometry();
   virtual void   CreateMaterials();
   virtual void   Init();
-  virtual Int_t  IsVersion() const {return 7;}
+  virtual Int_t  IsVersion() const {return 8;}
   virtual void   AddAlignableVolumes() const;
-  virtual void   TOFpc(Float_t, Float_t, Float_t) {};
-  virtual void   TOFpc(Float_t xtof,  Float_t ytof, Float_t zlenA,
-		       Float_t zlenB);
+  virtual void   TOFpc(Float_t xtof,  Float_t ytof, Float_t zlenA);
+  virtual void   TOFpc(Float_t, Float_t, Float_t, Float_t) {};
   virtual void   TOFpc(Float_t, Float_t, Float_t, Float_t, Float_t, Float_t) {};
   virtual void   StepManager();
   virtual void   DrawModule() const;
@@ -38,7 +37,7 @@ public:
  
  protected:
 
-  void MaterialMixer(Float_t* p,Float_t* a,Float_t* m,Float_t* d,Float_t* s,Int_t n) const;
+  void MaterialMixer(Float_t* p,Float_t* a,Float_t* m,Int_t n) const;
 
 private:
   Int_t fIdFTOA; // FTOA volume identifier (outer plate A)
@@ -49,7 +48,7 @@ private:
   Int_t fIdFLTC; // FLTC volume identifier (inner plate C)
   Bool_t fTOFHoles; // Selecting Geometry with and w/o holes
  
-  ClassDef(AliTOFv5T0,0)  //Time Of Flight version 5
+  ClassDef(AliTOFv6T0,0)  //Time Of Flight version 6
 };
  
-#endif /* ALITOFv5T0_H */
+#endif /* ALITOFv6T0_H */

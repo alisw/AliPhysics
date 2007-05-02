@@ -61,6 +61,7 @@ public:
                         Float_t /*zlenB*/, Float_t /*zlenA*/, Float_t /*ztof0*/){};
   virtual void    TOFpc(Float_t /*xtof*/,  Float_t /*ytof*/, Float_t /*zlenA*/,
 			Float_t /*zlenB*/){};
+  virtual void    TOFpc(Float_t /*xtof*/,  Float_t /*ytof*/, Float_t /*zlenA*/){};
   virtual void    DrawModule() const;
   virtual void    DrawDetectorModules() const {};
   virtual void    DrawDetectorStrips() const {};

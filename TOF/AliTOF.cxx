@@ -404,7 +404,16 @@ void AliTOF::CreateGeometry()
 
   Float_t xTof, yTof;
 
-  if (IsVersion()==7) {
+  if (IsVersion()==8) {
+
+    xTof = 124.5;//fTOFGeometry->StripLength()+2.*(0.3+0.03); // cm,  x-dimension of FTOA volume
+    yTof = fTOFGeometry->Rmax()-fTOFGeometry->Rmin(); // cm,  y-dimension of FTOA volume
+    Float_t zTof = fTOFGeometry->ZlenA();             // cm,  z-dimension of FTOA volume
+    
+    //  TOF module internal definitions
+    TOFpc(xTof, yTof, zTof);
+
+  } else if (IsVersion()==7) {
 
     xTof = 124.5;//fTOFGeometry->StripLength()+2.*(0.3+0.03); // cm,  x-dimension of FTOA volume
     yTof = fTOFGeometry->Rmax()-fTOFGeometry->Rmin(); // cm,  y-dimension of FTOA volume
@@ -708,12 +717,12 @@ void AliTOF::Digits2Raw()
 
   AliTOFDDLRawData rawWriter(geometry);
   //AliTOFDDLRawData rawWriter;
-  rawWriter.SetVerbose(0);
+  rawWriter.SetVerbose(2);
   //rawWriter.SetFakeOrphaneProduction(kTRUE);
   //rawWriter.SetPackedAcquisitionMode(kFALSE);
   if (rawWriter.GetPackedAcquisitionMode()) {
     if(rawWriter.GetMatchingWindow()>8192)
-      AliWarning(Form("You are running in packing mode and the matching window is %.2f ns, i.e. greater than 200. ns",
+      AliWarning(Form("You are running in packing mode and the matching window is %.2f ns, i.e. greater than 199.8848 ns",
 		      rawWriter.GetMatchingWindow()*AliTOFGeometry::TdcBinWidth()*1.e-03));
   }
   
