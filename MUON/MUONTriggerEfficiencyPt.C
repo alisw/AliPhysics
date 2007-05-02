@@ -34,26 +34,20 @@
 #include "TStyle.h"
 #include "TCanvas.h"
 #include "TLegend.h"
-
+#include "Riostream.h"
 
 // STEER includes
 #include "AliRun.h"
-#include "AliDetector.h"
 #include "AliRunLoader.h"
 #include "AliHeader.h"
 #include "AliLoader.h"
 #include "AliStack.h"
-#include "AliSegmentation.h"
-#include "AliMC.h"
 
 // MUON includes
-#include "AliMUON.h"
-#include "AliMUONData.h"
+#include "AliMUONSimData.h"
+#include "AliMUONRecData.h"
 #include "AliMUONHit.h"
-#include "AliMUONChamber.h"
-#include "AliMUONConstants.h"
 #include "AliMUONDigit.h"
-#include "AliMUONRawCluster.h"
 #include "AliMUONGlobalTrigger.h"
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONTrack.h"
@@ -71,7 +65,9 @@ Double_t fitArch(Double_t *x,Double_t *par)
   return h0*TMath::TanH(h1)+par[3];
 }
 
-void MUONTriggerEfficiencyPt(char filename[10]="galice.root",  Bool_t readFromRP = 0)
+void MUONTriggerEfficiencyPt(char filenameSim[10]="galice.root",  
+                             char filenameRec[10]="galice.root",
+                             Bool_t readFromRP = 0)
 {
 
 // define style
@@ -109,6 +105,7 @@ void MUONTriggerEfficiencyPt(char filename[10]="galice.root",  Bool_t readFromRP
     TParticle *particle;
     AliStack* stack; 
     
+    Int_t nevents;
     Double_t coincmuon=0;
     Double_t lptmuon=0;
     Double_t hptmuon=0;
@@ -116,43 +113,59 @@ void MUONTriggerEfficiencyPt(char filename[10]="galice.root",  Bool_t readFromRP
 
 // output file
     char digitdat[100];
+    char currentfile[100];
     sprintf(digitdat,"MUONTriggerEfficiencyPt.out");  
     FILE *fdat=fopen(digitdat,"w");
-
-// Creating Run Loader and openning file containing Hits
-    AliRunLoader * RunLoader = AliRunLoader::Open(filename,"MUONFolder","READ");
     
-    if (RunLoader ==0x0) {
-	printf(">>> Error : Error Opening %s file \n",filename);
+// Initialise AliRoot
+// Creating Run Loader and openning file containing Hits
+    AliRunLoader * RunLoaderSim = AliRunLoader::Open(filenameSim,"MUONFolderSim","READ");
+    
+    if (RunLoaderSim ==0x0) {
+	printf(">>> Error : Error Opening %s file \n",currentfile);
 	return;
     }
     
-    Int_t nevents = RunLoader->GetNumberOfEvents();
+    AliRunLoader * RunLoaderRec = AliRunLoader::Open(filenameRec,"MUONFolder","READ");
     
-// loading hits
-    AliLoader * MUONLoader = RunLoader->GetLoader("MUONLoader");     
-    MUONLoader->LoadHits("READ");
-    AliMUONData data_hits(MUONLoader,"MUON","MUON");
+    if (RunLoaderRec ==0x0) {
+	printf(">>> Error : Error Opening %s file \n",currentfile);
+	return;
+    }
     
+    nevents = RunLoaderSim->GetNumberOfEvents();
+    
+    AliLoader * MUONLoaderSim = RunLoaderSim->GetLoader("MUONLoader");
+    AliLoader * MUONLoaderRec = RunLoaderRec->GetLoader("MUONLoader");
+    
+    if (!readFromRP) {
+	cout << " reading from digits \n";
+	MUONLoaderSim->LoadDigits("READ");
+    } else {
+	cout << " reading from RecPoints \n";
+	MUONLoaderRec->LoadRecPoints("READ");
+   }
+    MUONLoaderSim->LoadHits("READ");
+    RunLoaderSim->LoadKinematics("READ");
+
+
+// Creating MUON data containers
+    AliMUONSimData muondataSim(MUONLoaderSim,"MUON","MUON");
+    AliMUONRecData muondataRec(MUONLoaderRec,"MUON","MUON");
+
     TClonesArray * globalTrigger;
     AliMUONGlobalTrigger * gloTrg;
 
-// loading trigger
-    MUONLoader->LoadDigits("READ");  
-    AliMUONData muondata(MUONLoader,"MUON","MUON");
-
-// Loading kine
-    RunLoader->LoadKinematics("READ");
-    
     for (Int_t ievent=0; ievent<nevents; ievent++) {  // Event loop
 	
-	RunLoader->GetEvent(ievent);
+	RunLoaderSim->GetEvent(ievent);
+	RunLoaderRec->GetEvent(ievent);
 	
 	if (ievent%500==0) printf("ievent = %d \n",ievent);
 
 // kine
 	Int_t iparticle, nparticles;
-	stack = RunLoader->Stack();
+	stack = RunLoaderSim->Stack();
 	nparticles = (Int_t) stack->GetNtrack();        
 	for (iparticle=0; iparticle<nparticles; iparticle++) {             
             particle = stack->Particle(iparticle);   
@@ -163,14 +176,15 @@ void MUONTriggerEfficiencyPt(char filename[10]="galice.root",  Bool_t readFromRP
 
 // trigger 
 	if (!readFromRP) {
-	    muondata.SetTreeAddress("D,GLT"); 
-	    muondata.GetTriggerD();
+	    muondataSim.SetTreeAddress("D,GLT"); 
+	    muondataSim.GetTriggerD();
+	    globalTrigger = muondataSim.GlobalTrigger();
 	} else {    
-	    muondata.SetTreeAddress("RC,TC"); 
-	    muondata.GetTrigger();
+	    muondataRec.SetTreeAddress("RC,TC"); 
+	    muondataRec.GetTrigger();
+	    globalTrigger = muondataRec.GlobalTrigger();
+
 	}
-    
-        globalTrigger = muondata.GlobalTrigger();
 
         Int_t nglobals = (Int_t) globalTrigger->GetEntriesFast(); // should be 1 
         for (Int_t iglobal=0; iglobal<nglobals; iglobal++) { // Global Trigger
@@ -185,29 +199,28 @@ void MUONTriggerEfficiencyPt(char filename[10]="galice.root",  Bool_t readFromRP
 		pthpt->Fill(ptmu);
 	    }
         } // end of loop on Global Trigger      
-        muondata.ResetTrigger();  
+        muondataSim.ResetTrigger();  
+        muondataRec.ResetTrigger();  
 
 // Hits
-        RunLoader->GetEvent(ievent);  
-        data_hits.SetTreeAddress("H");    
-        
+	muondataSim.SetTreeAddress("H");    
+
         Int_t itrack, ntracks, NbHits[4];
         Int_t SumNbHits;
 
         for (Int_t j=0; j<4; j++) NbHits[j]=0;
  
-        ntracks = (Int_t) data_hits.GetNtracks();      
-     
+	ntracks = (Int_t) muondataSim.GetNtracks();
+   
         for (itrack=0; itrack<ntracks; itrack++) { // track loop
-         data_hits.GetTrack(itrack); 
+	    muondataSim.GetTrack(itrack);
 
          Int_t ihit, nhits;
-         nhits = (Int_t) data_hits.Hits()->GetEntriesFast();   
+	 nhits = (Int_t) muondataSim.Hits()->GetEntriesFast();
          AliMUONHit* mHit;
-
     
           for (ihit=0; ihit<nhits; ihit++) {
-            mHit = static_cast<AliMUONHit*>(data_hits.Hits()->At(ihit));
+	      mHit = static_cast<AliMUONHit*>(muondataSim.Hits()->At(ihit));
             Int_t Nch        = mHit->Chamber(); 
             Int_t hittrack   = mHit->Track();
             Float_t IdPart   = mHit->Particle();	    
@@ -219,7 +232,7 @@ void MUONTriggerEfficiencyPt(char filename[10]="galice.root",  Bool_t readFromRP
 		}               
             }    
           }
-          data_hits.ResetHits();
+	  muondataSim.ResetHits();
         } // end track loop
 
 // 3/4 coincidence 
@@ -230,19 +243,25 @@ void MUONTriggerEfficiencyPt(char filename[10]="galice.root",  Bool_t readFromRP
             ptcoinc->Fill(ptmu);
         }            
                 
-      } // end loop on event
-      
-      MUONLoader->UnloadHits();
-      if (!readFromRP) {
-	  muondata.SetTreeAddress("D,GLT"); 
-	  muondata.GetTriggerD();
-      } else {    
-	  muondata.SetTreeAddress("RC,TC"); 
-	  muondata.GetTrigger();
-      }
-      RunLoader->UnloadKinematics();   
+    } // end loop on event
+    
+    if (coincmuon==0) {
+	cout << " >>> <E> coincmuon = 0 after event loop " << "\n";
+	cout << " >>> this probably means that input does not contain one (and only one) " << "\n";
+        cout << " >>> muon track per event as it should " << "\n";
+	cout << " >>> see README for further information " << "\n";
+	cout << " >>> exiting now ! " << "\n";
+	return;
+    }
 
-      delete RunLoader;
+      
+       MUONLoaderSim->UnloadHits();
+       if (!readFromRP) {
+	   MUONLoaderSim->UnloadDigits();  
+       } else {    
+	   MUONLoaderRec->UnloadRecPoints();
+       }
+       RunLoaderSim->UnloadKinematics();
      
       fprintf(fdat,"\n");    
       fprintf(fdat,"\n");
@@ -290,8 +309,7 @@ void MUONTriggerEfficiencyPt(char filename[10]="galice.root",  Bool_t readFromRP
 	      pthpt->SetBinContent(i+1,0.);
 	      pthpt->SetBinError(i+1,0.);     
 	  }              
-      }
-      
+      }      
       
       TF1 *fitlpt = new TF1("fitlpt",fitArc,0.,5.,4); 
       TF1 *fithpt = new TF1("fithpt",fitArc,0.,5.,4);      
