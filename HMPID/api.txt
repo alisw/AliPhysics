@@ -31,7 +31,8 @@ How to deal with the stack of particles?
 	- total amount of primary particles in stack for a given event (after LoadHeader()): 
         	AliStack::GetNprimary() 
 How to retrieve hits:
-	Hits are stored on primary by primary basis. Hits for the given primary is TClonesArray.
+	Hits are stored on primary by primary basis (hits corresponding to primary particles stored in a single entry; total number of entries in hits tree equals
+        to number of primaries; order of primaries is not preserved). Hits for the given primary is TClonesArray.
    	To retrieve all hits one needs to do:
      	-initialize the root tree and containers:   pRich->GetLoader()->LoadHits();  (AliLoader::LoadHits() returns 0 on success)
      	-read number of entries in TreeH:           pRich->GetLoader()->TreeH()->GetEntries()
@@ -66,7 +67,6 @@ What are the meanings of different VMC flags:
 	gMC->IsTrackDisappeared()
 How to get pad number for a local position:
 	use static TVector AliHMPIDParam::Loc2Pad(TVector2 position);
-Why list of chambers belongs to AliHMPIDParam:
 
 How to check if a given stack particle is primary:
 	Stack is TClonesArray of TParticle. TParticle::GetMother(0) returns -1 if it's primary (no mother)         
@@ -75,7 +75,7 @@ How to loop over all possible object:
     for(Int_t iEntryN=0;iEntryN < GetLoader()->TreeH()->GetEntries();iEntryN++){//TreeH loop
       GetLoader()->TreeH()->GetEntry(iEntryN);//get current entry (prim)  
       for(Int_t iHitN=0;iHitN<Hits()->GetEntries();iHitN++){//hits loop
-        AliVHMPIDHit *pHit=(AliVHMPIDHit*)Hits()->At(iHitN);//get current hit 
+        AliHMPIDHit *pHit=(AliHMPIDHit*)Hits()->At(iHitN);//get current hit 
         
       }//hits loop
     }//TreeH loop
@@ -84,29 +84,32 @@ How to loop over all possible object:
 
 HMPID full simulation-reconstruction sequence
 
+hits creation:
+        HMPID uses 2 types fo hits: MIP hit and photon hit. Both types are implemented in the same class AliHMPIDHit.
+        The difference in ctor patterns is only in energy variable: for photon it is full energy, whereas for MIP it's energy lost in amplification gap gas.
+        Hit for photon is created when photon enters the volume representing a single pad of segmeneted photocathode and survives QE test.
+        Hit for MIP is created when MIP exits amplification gap (or disappired for whatever reason). The responsible code is AliHMPIDv1::StepManager().
+        Internally in ctor, the energy is converted to the total charge accamulated for this hit expressed in QCD channels. This is done in a honest manner for photon:
+        photon always produces a single electron, and the response of the chamber to a single electron pulse is parametrized out of test beam data for few HV sets.
+        For MIP the same procedure is generally wrong: the total energy lost by particle is devided by ionization potential, this value is interpreted as number of electrons
+        created, then each electon contribution is sampled according to puasonian distribution with the same single electron pulse mean as fro photons. The final charge is
+        then a sum of all single electon's contributions, it substitutes the value of energy.
 hits->sdigit:
-	Responsible method is AliHMPID::Hits2SDigits
-	One hit may affect one or more pads.
-        Hit position is taken on the anode wires plane as the most of avalanche is developed there.
-        This position is not directly available, track intersections with entrance and exit of amplification gap are only stored.
-        So the position in the middle of the gap is calculated as average out of pHit->In() and pHit->Out() positions.
-        Then, total charge collected for this hit is calculated by AliHMPIDParam::Hit2Qdc.    
-        Area of disintegration is a list of pads affected by current hit. This is a parameter of Mathienson    
+	Due to segmented photocathode, single hit might affect few neighboring pads (up to 9 in our default parametrization). The total charge collected by a single pad
+        is the answer to electrostatic problem solved in article by Mathieson (see ref ???). Actual disintegration is implemented in AliHMPIDHit::Hit2Sdi().
+        The implementation creates by default sdigits only for closest neighbours of a pad containing hit positon (further neighbours might also be checked subject to
+        parameterization flag ?????? but the contribution to them from single hit is such a tiny that only large nubmer of close hits may provide something not negligable). 
 sdigits->digits:
 	The necessety of sdigits is dictated by the fact that transport engine transports tracks in a continuous sequence track by track. 
-  It means that it may happen that the same pad is affected by few tracks. But this might be known only after the transport of full event is finished. 
-
+	It means that it may happen that the same pad is affected by few tracks. But this might be known only after the transport of full event is finished. 
+	So the task of this convertion is to collect all the sdigits for the same pad and sum them up. This is done in AliHMPIDDigitizer::Exec(). This technique also provides
+        the possibility to mix events from seperate simulations facilitating studies of rare signals on top of huge background.
 digits->clusters
-	A set of neighboring digits compose cluster. The aim of this transformation is to construct a list of clusters out of digits list.
-  The calling sequence is:
-  AliReconstruction::Run()
-  
-  	AliHMPIDReconstructor::Reconstruct() creates an empty clusters list,  loops on chambers, retrieves a list of digits for a given chamber, gives it to the method Dig2Clu() and finally serializes
-                                        the list 
-                                        
-    	AliHMPIDReconstructor::Dig2Clu() which knows no details about 
-
-
+	The aim of this conversion is to try to reconstruct the initial position of hits.
+        This it done by 2 steps procedure. On first step so called raw cluster is formed as a composition of all neighboring pads (diagonal pads are not allowed).
+        Then center of gravity of the cluster is calculated and used as a naive estimate of hit position. 
+        On second step, the code tries to improve the hit position  knowledge by fitting by local maxima number of Mathieson shapes. If the procedure failes, the cog
+        position is preserved as hit position.
 clusters+tracks->theta cerenkov 
 
 	
@@ -278,8 +281,13 @@ HMPID 6
 
 
 
+Manual:
+Diclaimer: We call the operator any persons who wants "to operate" HMPID that is to do something reasonalbe to understand current perfomance coming from the detector. 
+This person is not necesarelly an expert in HMPID hardware and or software. 
+Be also aware that analysis of HMPID data can only be perfomed from AliESD (taking also into acount some info which is not specific to HMPID). The task to plot something from
+hits, digits or clusters is called quality assesment.
 
-
+From operator point of view, one needs to do 3 different tasks with HMPID: simulation, reconstruction and QA.
 
 
 

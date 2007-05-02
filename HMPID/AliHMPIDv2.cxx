@@ -34,6 +34,7 @@
 #include <TLorentzVector.h>   //IsLostByFresnel() 
 #include <AliCDBManager.h>    //CreateMaterials()
 #include <AliCDBEntry.h>      //CreateMaterials()
+#include <TGeoPhysicalNode.h> //AddAlignableVolumes()
  
 ClassImp(AliHMPIDv2)    
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -42,8 +43,15 @@ void AliHMPIDv2::AddAlignableVolumes()const
 // Associates the symbolic volume name with the corresponding volume path. Interface method from AliModule invoked from AliMC
 // Arguments: none
 //   Returns: none   
-  for(Int_t i=AliHMPIDDigit::kMinCh;i<=AliHMPIDDigit::kMaxCh;i++)
-    gGeoManager->SetAlignableEntry(Form("/HMPID/Chamber%i",i),Form("ALIC_1/Hmp_%i",i));           //clm ??? 
+  
+  TGeoHMatrix *pGm = new TGeoHMatrix;
+  Double_t trans[3]={0.5*AliHMPIDDigit::SizeAllX(),0.5*AliHMPIDDigit::SizeAllY(),0};                            //clm: translation from tracking RS to TGeo RS 
+  pGm->SetTranslation(trans);
+ 
+  for(Int_t i=AliHMPIDDigit::kMinCh;i<=AliHMPIDDigit::kMaxCh;i++) {
+      TGeoPNEntry *pPn=gGeoManager->SetAlignableEntry(Form("/HMPID/Chamber%i",i),Form("ALIC_1/Hmp_%i",i)); 
+      pPn->SetMatrix(pGm); 
+    }
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDv2::CreateMaterials()
