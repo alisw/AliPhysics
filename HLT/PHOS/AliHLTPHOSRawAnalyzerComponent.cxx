@@ -35,9 +35,16 @@
 #include "AliHLTPHOSRawAnalyzerComponent.h"
 #include "AliRawReaderMemory.h"
 #include "AliCaloRawStream.h"
-#include <cstdlib>
+
+//#include <cstdlib>
+#include <iostream>
+
 #include "AliHLTPHOSRcuCellEnergyDataStruct.h"
 #include "AliHLTPHOSRcuChannelDataStruct.h"
+
+//using  std::cout;
+using namespace std;
+
 
 const AliHLTComponentDataType AliHLTPHOSRawAnalyzerComponent::fgkInputDataTypes[]={kAliHLTVoidDataType,{0,"",""}}; //'zero' terminated array
 int   AliHLTPHOSRawAnalyzerComponent::fgEventCount = 0; 
@@ -48,17 +55,17 @@ AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent():AliHLTProcessor
 fEquippmentID(0), fModuleID(0), fRcuX(0), fRcuZ(0),fRcuZOffset(0), fRcuXOffset(0),fPrintInfo(kFALSE),fSendChannelData(kFALSE),fPrintInfoFrequncy(1000), 
 fPHOSRawStream(0), fRawMemoryReader(0), fOutPtr(0)
 {
-
-
-
-
+  /**
+   *Default constructor
+   */
 } 
 
 
 AliHLTPHOSRawAnalyzerComponent::~AliHLTPHOSRawAnalyzerComponent()
 {
-  ///Default destructor
-
+  /**
+   *Default destructor
+   */
   if(fRawMemoryReader != 0)
     {
       delete fRawMemoryReader;
@@ -67,7 +74,6 @@ AliHLTPHOSRawAnalyzerComponent::~AliHLTPHOSRawAnalyzerComponent()
     {
       delete fPHOSRawStream;
     }
-
 }
 
 
@@ -75,7 +81,9 @@ AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent(const AliHLTPHOSR
 fEquippmentID(0), fModuleID(0), fRcuX(0), fRcuZ(0),fRcuZOffset(0), fRcuXOffset(0),fPrintInfo(kFALSE),fSendChannelData(kFALSE),fPrintInfoFrequncy(1000), 
 fPHOSRawStream(0), fRawMemoryReader(0), fOutPtr(0)
 {
-  //Copy Constructor
+  /**
+   *Copy Constructor
+   */
 }
 
 int 
@@ -357,8 +365,8 @@ AliHLTPHOSRawAnalyzerComponent::DoInit( int argc, const char** argv )
 }
 
 
-const void
-AliHLTPHOSRawAnalyzerComponent::DumpData(int gain)
+void
+AliHLTPHOSRawAnalyzerComponent::DumpData(int gain) const
 {
   //Dumping data to std out
   for(int mod = 0; mod < N_MODULES; mod ++)
@@ -378,10 +386,11 @@ AliHLTPHOSRawAnalyzerComponent::DumpData(int gain)
 }
 
 
-const void
-AliHLTPHOSRawAnalyzerComponent::DumpChannelData(Double_t *data)
+void
+AliHLTPHOSRawAnalyzerComponent::DumpChannelData(Double_t *data) const
 {
-      cout << endl;
+  //shutting up the code checker 
+     cout << endl;
       for(int i=0; i<  ALTRO_MAX_SAMPLES; i++)
 	{
 	  if (data[i] != 0)
@@ -406,6 +415,7 @@ AliHLTPHOSRawAnalyzerComponent::DumpChannelData(Double_t *data)
 void
 AliHLTPHOSRawAnalyzerComponent::Reset()
 {
+  //shutting code checker
   for(int mod = 0; mod < N_MODULES; mod ++)
     {
       for(int row = 0; row < N_ROWS_MOD; row ++)
@@ -427,6 +437,7 @@ AliHLTPHOSRawAnalyzerComponent::Reset()
 void
 AliHLTPHOSRawAnalyzerComponent::ResetDataPtr(int startindex, int sampleCnt)
 {
+  //shutting up the code checker
   for(int i = startindex ; i< sampleCnt; i++)
     {
       fTmpChannelData[i] = 0;
@@ -436,19 +447,22 @@ AliHLTPHOSRawAnalyzerComponent::ResetDataPtr(int startindex, int sampleCnt)
 void 
 AliHLTPHOSRawAnalyzerComponent::SetEquippmentID(AliHLTUInt16_t id)
 {
+  //shutting up the code checker
   fEquippmentID = id;
 }
 
 
 const AliHLTUInt16_t
-AliHLTPHOSRawAnalyzerComponent::GetEquippmentID()
+AliHLTPHOSRawAnalyzerComponent::GetEquippmentID() const
 {
+  //shutting up the code checker
   return  fEquippmentID;
 }
 
 void 
 AliHLTPHOSRawAnalyzerComponent::SetCoordinates(AliHLTUInt16_t equippmentID)
 {
+ //shutting up the code checker
   int rcuIndex =  (fEquippmentID - 1792)%N_RCUS_PER_MODULE;
   fModuleID = (fEquippmentID  -1792 -rcuIndex)/N_RCUS_PER_MODULE;
   

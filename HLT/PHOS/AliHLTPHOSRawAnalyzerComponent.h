@@ -7,12 +7,16 @@
 //
 //Base class for PHOS HLT raw data analysis components
 // see cxx file for more details
-//
+// BBBBBB
+//FFFFFF
+//GGGGG
+//HHHHHHHHHHHHHH
+//HHHHHHHHHHH
 
 #include "AliHLTProcessor.h"
 #include "AliHLTPHOSDefinitions.h"
 #include "AliHLTPHOSCommonDefs.h"
-#include "AliHLTPHOSRcuChannelDataStruct.h"
+//#include "AliHLTPHOSRcuChannelDataStruct.h"
 
 class AliRawReaderMemory;
 class AliCaloRawStream;
@@ -33,17 +37,17 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTProcessor
   virtual int DoInit(int argc =0, const char** argv  = 0);
   virtual int Deinit();
   virtual int DoDeinit();
-  const void DumpData(int gain =0);
-  const void DumpChannelData(Double_t *data =0); 
+  void DumpData(int gain =0) const;
+  void DumpChannelData(Double_t *data =0) const; 
   void SetEquippmentID(AliHLTUInt16_t id =0);
-  const AliHLTUInt16_t  GetEquippmentID();
+  const AliHLTUInt16_t  GetEquippmentID() const;
   void SetCoordinates(AliHLTUInt16_t equippmentID =0);
   virtual const char* GetComponentID() = 0;
   virtual void GetInputDataTypes(std::vector<AliHLTComponentDataType, std::allocator<AliHLTComponentDataType> >&);
   virtual AliHLTComponentDataType GetOutputDataType();
   virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
   virtual AliHLTComponent* Spawn() = 0;
-  virtual int DoEvent(const AliHLTComponentEventData&, const AliHLTComponentBlockData*, AliHLTComponentTriggerData&, AliHLTUInt8_t*, AliHLTUInt32_t&, std::vector<AliHLTComponentBlockData, std::allocator<AliHLTComponentBlockData> >&);
+  virtual int DoEvent(const AliHLTComponentEventData&, const AliHLTComponentBlockData*, AliHLTComponentTriggerData&, AliHLTUInt8_t*, AliHLTUInt32_t&, std::vector<AliHLTComponentBlockData, std::allocator<AliHLTComponentBlockData> >& );
 
  protected:
   AliHLTPHOSRawAnalyzer *fAnalyzerPtr;  /**<Pointer to an analyzer object used for raw data anlysis*/ 
