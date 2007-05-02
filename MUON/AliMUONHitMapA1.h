@@ -7,7 +7,7 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
-/// \ingroup sim
+/// \ingroup base
 /// \class AliMUONHitMapA1
 /// \brief Implements AliHitMap as a 1-dim array
 

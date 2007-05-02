@@ -6,7 +6,7 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
-/// \ingroup base
+/// \ingroup sim
 /// \class AliMUONHit
 /// \brief MonteCarlo hit
 ///

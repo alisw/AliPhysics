@@ -6,7 +6,7 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
-/// \ingroup base
+/// \ingroup sim
 /// \class AliMUONv1
 /// \brief AliDetector class for MUON subsystem which implements
 /// functions for simulation 

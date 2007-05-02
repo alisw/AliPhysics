@@ -5,7 +5,7 @@
 
 /*$Id$*/
 
-/// \ingroup sim
+/// \ingroup base
 /// \class AliMUONRawWriter
 /// \brief Raw data class for trigger and tracker chambers
 ///
