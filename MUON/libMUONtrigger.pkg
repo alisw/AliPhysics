@@ -1,0 +1,18 @@
+# $Id$
+
+SRCS:=  AliMUONLocalTrigger.cxx \
+        AliMUONRegionalTrigger.cxx \
+        AliMUONGlobalTrigger.cxx \
+        AliMUONTriggerBoard.cxx \
+        AliMUONLocalTriggerBoard.cxx \
+        AliMUONRegionalTriggerBoard.cxx \
+        AliMUONGlobalTriggerBoard.cxx \
+        AliMUONTriggerCrate.cxx \
+        AliMUONTriggerCrateStore.cxx \
+        AliMUONTriggerCircuit.cxx
+ 
+HDRS:= $(SRCS:.cxx=.h)
+
+DHDR:= MUONtriggerLinkDef.h
+
+EINCLUDE := MUON/mapping
