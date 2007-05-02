@@ -30,6 +30,7 @@
 #include "AliTOFClusterFinder.h"
 #include "AliTOFGeometry.h"
 #include "AliTOFGeometryV5.h"
+#include "AliTOFcalib.h"
 #include "AliTOFtrackerMI.h"
 #include "AliTOFtracker.h"
 #include "AliTOFReconstructor.h"
@@ -43,15 +44,64 @@ extern TFile *gFile;
 
 ClassImp(AliTOFReconstructor)
 
+ //____________________________________________________________________
+AliTOFReconstructor::AliTOFReconstructor() 
+  : AliReconstructor(),
+    fTOFGeometry(0),
+    fTOFcalib(0)
+{
+//
+// ctor
+//
+  //Retrieving the TOF calibration info  
+  fTOFGeometry = new AliTOFGeometryV5();
+  fTOFcalib    = new AliTOFcalib(fTOFGeometry);
+  if(!fTOFcalib->ReadParFromCDB("TOF/Calib",-1)) {AliFatal("Exiting, no CDB object found!!!");exit(0);}  
+}
+
+//------------------------------------------------------------------------
+AliTOFReconstructor::AliTOFReconstructor(const AliTOFReconstructor &source)
+  : AliReconstructor(),
+    fTOFGeometry(0),
+    fTOFcalib(0)
+{
+//
+// copy ctor
+//
+  this->fTOFGeometry=source.fTOFGeometry;
+  this->fTOFcalib=source.fTOFcalib;
+}
+
+//------------------------------------------------------------------------
+AliTOFReconstructor & AliTOFReconstructor::operator=(const AliTOFReconstructor &source)
+{
+//
+// assignment op.
+//
+  this->fTOFGeometry=source.fTOFGeometry;
+  this->fTOFcalib=source.fTOFcalib;
+  return *this;
+}
+//_____________________________________________________________________________
+AliTOFReconstructor::~AliTOFReconstructor() 
+{
+//
+// dtor
+//
+  delete fTOFGeometry;
+  delete fTOFcalib;
+}
+
 //_____________________________________________________________________________
   void AliTOFReconstructor::Reconstruct(AliRunLoader* runLoader) const
 {
 // reconstruct clusters from digits
 
-  AliTOFClusterFinder tofClus(runLoader);
+  AliTOFClusterFinder tofClus(runLoader, fTOFcalib);
   tofClus.Load();
   for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++)
     {
+      AliDebug(2,Form("Local Event loop mode: Creating Recpoints from Digits, Event n. %i",iEvent)); 
       tofClus.Digits2RecPoints(iEvent);
     }
   tofClus.UnLoad();
@@ -64,12 +114,12 @@ void AliTOFReconstructor::Reconstruct(AliRunLoader* runLoader,
 {
 // reconstruct clusters from Raw Data
 
-  AliTOFClusterFinder tofClus(runLoader);
+  AliTOFClusterFinder tofClus(runLoader, fTOFcalib);
   tofClus.LoadClusters();
   Int_t iEvent = 0;
   while (rawReader->NextEvent()) {
+    AliDebug(2,Form("Local Event loop mode: Creating Recpoints from Raw data, Event n. %i",iEvent)); 
     tofClus.Digits2RecPoints(iEvent,rawReader);
-    //tofClus.Raw2Digits(iEvent,rawReader); // temporary solution
     iEvent++;
   }
   tofClus.UnLoadClusters();
@@ -82,8 +132,30 @@ void AliTOFReconstructor::Reconstruct(AliRawReader *rawReader,
 {
 // reconstruct clusters from Raw Data
 
-  AliTOFClusterFinder tofClus;
+  AliTOFClusterFinder tofClus(fTOFcalib);
   tofClus.Digits2RecPoints(rawReader, clustersTree);
+
+}
+
+//_____________________________________________________________________________
+void AliTOFReconstructor::Reconstruct(TTree *digitsTree,
+                                      TTree *clustersTree) const
+{
+// reconstruct clusters from Raw Data
+
+  AliDebug(2,Form("Global Event loop mode: Creating Recpoints from Digits Tree")); 
+  AliTOFClusterFinder tofClus(fTOFcalib);
+  tofClus.Digits2RecPoints(digitsTree, clustersTree);
+
+}
+//_____________________________________________________________________________
+  void AliTOFReconstructor::ConvertDigits(AliRawReader* reader, TTree* digitsTree) const
+{
+// reconstruct clusters from digits
+
+  AliDebug(2,Form("Global Event loop mode: Converting Raw Data to a Digits Tree")); 
+  AliTOFClusterFinder tofClus(fTOFcalib);
+  tofClus.Raw2Digits(reader, digitsTree);
 
 }
 
