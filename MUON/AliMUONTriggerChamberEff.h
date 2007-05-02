@@ -14,7 +14,7 @@
 #include "AliMUONGeometryTransformer.h"
 
 class AliRunLoader;
-class AliMUONData;
+class AliMUONRecData;
 class AliMUON;
 class AliMUONGlobalTrigger;
 class TString;
@@ -53,7 +53,7 @@ private:
     Int_t   fFirstRun; //!< First run to consider
     Int_t   fLastRun;  //!< Last run to consider
     AliRunLoader* fRunLoader; //!< AliRunLoader pointer
-    AliMUONData*  fData; //!< AliMUONData pointer (to access containers)
+    AliMUONRecData*  fData; //!< AliMUONData pointer (to access containers)
     Bool_t fReproduceTrigResponse;//!< Reproduce trigger response
     Bool_t fPrintInfo;//!< Print informations on event
     AliMUON *fMUON; //!< AliMUON pointer

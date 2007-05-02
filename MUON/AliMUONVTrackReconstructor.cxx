@@ -34,7 +34,7 @@
 ////////////////////////////////////
 
 #include "AliMUONVTrackReconstructor.h"
-#include "AliMUONData.h"
+#include "AliMUONRecData.h"
 #include "AliMUONConstants.h"
 #include "AliMUONHitForRec.h"
 #include "AliMUONObjectPair.h"
@@ -68,7 +68,7 @@ const Double_t AliMUONVTrackReconstructor::fgkDefaultNonBendingVertexDispersion 
 const Double_t AliMUONVTrackReconstructor::fgkDefaultMaxNormChi2MatchTrigger = 16.0;
 
 //__________________________________________________________________________
-AliMUONVTrackReconstructor::AliMUONVTrackReconstructor(AliMUONData* data)
+AliMUONVTrackReconstructor::AliMUONVTrackReconstructor(AliMUONRecData* data)
   : TObject(),
     fMinBendingMomentum(fgkDefaultMinBendingMomentum),
     fMaxBendingMomentum(fgkDefaultMaxBendingMomentum),

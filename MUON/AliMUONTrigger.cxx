@@ -23,7 +23,7 @@
 #include "AliTriggerInput.h"
 
 #include "AliMUON.h"
-#include "AliMUONLoader.h"
+#include "AliMUONSimLoader.h"
 #include "AliMUONData.h"
 #include "AliMUONDigit.h"
 #include "AliMUONGlobalTrigger.h"

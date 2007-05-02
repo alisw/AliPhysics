@@ -29,7 +29,8 @@
 /// \author Frederic Yermia, INFN Torino
 
 #include "AliMUONCheck.h"
-#include "AliMUONData.h"
+#include "AliMUONSimData.h"
+#include "AliMUONRecData.h"
 #include "AliMUONDigit.h"
 #include "AliMUONConstants.h"
 #include "AliMUONTrack.h"
@@ -60,6 +61,7 @@
 /// \cond CLASSIMP
 ClassImp(AliMUONCheck)
 /// \endcond
+
 AliMUONCheck::AliMUONCheck(const char* galiceFile, const char* esdFile,Int_t firstEvent, Int_t lastEvent,const char* outDir) 
 : TObject(),
   fFileName(galiceFile),
@@ -70,8 +72,8 @@ AliMUONCheck::AliMUONCheck(const char* galiceFile, const char* esdFile,Int_t fir
   fLastEvent(lastEvent),
   fRunLoader(0x0),
   fRunLoaderSim(0x0),
-  fData(0x0),
-  fDataSim(0x0),
+  fRecData(0x0),
+  fSimData(0x0),
   fTree(0)
 {
   /// ctor
@@ -86,7 +88,7 @@ AliMUONCheck::AliMUONCheck(const char* galiceFile, const char* esdFile,Int_t fir
     fLoader = fRunLoader->GetLoader("MUONLoader");
     if ( fLoader )
     {
-      fData = new AliMUONData(fLoader,"MUON","MUON");
+      fRecData = new AliMUONRecData(fLoader,"MUON","MUON");
     }
     else
     {
@@ -104,7 +106,7 @@ AliMUONCheck::AliMUONCheck(const char* galiceFile, const char* esdFile,Int_t fir
     fLoaderSim = fRunLoaderSim->GetLoader("MUONLoader");
     if ( fLoaderSim )
     {
-      fDataSim = new AliMUONData(fLoaderSim,"MUON","MUON");
+      fSimData = new AliMUONSimData(fLoaderSim,"MUON","MUON");
     }
     else
     {
@@ -129,8 +131,8 @@ AliMUONCheck::AliMUONCheck(const char* galiceFile, const char* galiceFileSim, co
   fLastEvent(lastEvent),
   fRunLoader(0x0),
   fRunLoaderSim(0x0),
-  fData(0x0),
-  fDataSim(0x0),
+  fRecData(0x0),
+  fSimData(0x0),
   fTree(0)
 {
   /// ctor
@@ -145,7 +147,7 @@ AliMUONCheck::AliMUONCheck(const char* galiceFile, const char* galiceFileSim, co
     fLoader = fRunLoader->GetLoader("MUONLoader");
     if ( fLoader )
     {
-      fData = new AliMUONData(fLoader,"MUON","MUON");
+      fRecData = new AliMUONRecData(fLoader,"MUON","MUON");
     }
     else
     {
@@ -163,7 +165,7 @@ AliMUONCheck::AliMUONCheck(const char* galiceFile, const char* galiceFileSim, co
     fLoaderSim = fRunLoaderSim->GetLoader("MUONLoader");
     if ( fLoaderSim )
     {
-      fDataSim = new AliMUONData(fLoaderSim,"MUON","MUON");
+      fSimData = new AliMUONSimData(fLoaderSim,"MUON","MUON");
     }
     else
     {
@@ -185,9 +187,9 @@ AliMUONCheck::~AliMUONCheck()
   fRunLoader->UnloadAll();
   fRunLoaderSim->UnloadAll();
   delete fRunLoader;
-  delete fData;
+  delete fRecData;
   delete fRunLoaderSim;
-  delete fDataSim;
+  delete fSimData;
 }
 
 //_____________________________________________________________________________
@@ -951,9 +953,9 @@ AliMUONCheck::CheckRecTracks () const
   for (Int_t ievent=fFirstEvent; ievent<endOfLoop; ievent++) {
     fRunLoader->GetEvent(ievent);
     
-    fData->SetTreeAddress("RT");
-    fData->GetRecTracks();
-    TClonesArray* recTracks = fData->RecTracks();
+    fRecData->SetTreeAddress("RT");
+    fRecData->GetRecTracks();
+    TClonesArray* recTracks = fRecData->RecTracks();
     
     Int_t nrectracks = (Int_t) recTracks->GetEntriesFast(); //
     printf(">>> Event %d, Number of Recconstructed tracks %d \n",ievent, nrectracks);
@@ -968,7 +970,7 @@ AliMUONCheck::CheckRecTracks () const
       AliMUONTrackExtrap::ExtrapToZ(trackParam,0.);
       recTrack->Print("full");
     }
-    fData->ResetRecTracks();
+    fRecData->ResetRecTracks();
   }   
   fLoader->UnloadTracks();
 }

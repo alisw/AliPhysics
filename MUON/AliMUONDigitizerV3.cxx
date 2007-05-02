@@ -22,7 +22,7 @@
 #include "AliMUONCalibrationData.h"
 #include "AliCDBManager.h"
 #include "AliMUONConstants.h"
-#include "AliMUONData.h"
+#include "AliMUONSimData.h"
 #include "AliMUONDataIterator.h"
 #include "AliMUONDigit.h"
 #include "AliMUONLogger.h"
@@ -409,7 +409,7 @@ AliMUONDigitizerV3::Exec(Option_t*)
   // files.
   for ( Int_t iFile = 0; iFile < nInputFiles; ++iFile )
   {    
-    AliMUONData* inputData = GetDataAccess(fManager->GetInputFolderName(iFile));
+    AliMUONSimData* inputData = GetDataAccess(fManager->GetInputFolderName(iFile));
     if (!inputData)
     {
       AliFatal(Form("Could not get access to input file #%d",iFile));
@@ -655,10 +655,10 @@ AliMUONDigitizerV3::GenerateNoisyDigitsForOneCathode(Int_t detElemId, Int_t cath
 }
 
 //_____________________________________________________________________________
-AliMUONData* 
+AliMUONSimData* 
 AliMUONDigitizerV3::GetDataAccess(const TString& folderName)
 {
-  /// Create an AliMUONData to deal with data found in folderName.
+  /// Create an AliMUONSimData to deal with data found in folderName.
 
   AliDebug(2,Form("Getting access to folder %s",folderName.Data()));
   AliRunLoader* runLoader = AliRunLoader::GetRunLoader(folderName);
@@ -673,8 +673,8 @@ AliMUONDigitizerV3::GetDataAccess(const TString& folderName)
     AliError(Form("Could not get MuonLoader from folder %s",folderName.Data()));
     return 0x0;
   }
-  AliMUONData* data = new AliMUONData(loader,"MUON","MUONDataForDigitOutput");
-  AliDebug(2,Form("AliMUONData=%p loader=%p",data,loader));
+  AliMUONSimData* data = new AliMUONSimData(loader,"MUON","MUONDataForDigitOutput");
+  AliDebug(2,Form("AliMUONSimData=%p loader=%p",data,loader));
   return data;
 }
 
@@ -775,8 +775,8 @@ AliMUONDigitizerV3::MergeDigits(const AliMUONDigit& src,
 
 //_____________________________________________________________________________
 void 
-AliMUONDigitizerV3::MergeWithSDigits(AliMUONData& outputData, 
-                                     const AliMUONData& inputData, Int_t mask)
+AliMUONDigitizerV3::MergeWithSDigits(AliMUONSimData& outputData, 
+                                     const AliMUONSimData& inputData, Int_t mask)
 {
   /// Merge the sdigits in inputData with the digits already present in outputData
 

@@ -6,7 +6,7 @@
 
 /* $Id$ */
 
-/// \ingroup base
+/// \ingroup evaluation
 /// \class AliMUONRecoCheck
 /// \brief Utility class to check reconstruction
 
@@ -14,21 +14,24 @@
 #include "AliMUONTrack.h"
 
 class TClonesArray;
-class AliMUONData;
+class AliMUONRecData;
+class AliMUONSimData;
 class AliRunLoader;
 
 
 class AliMUONRecoCheck : public TObject 
 {
 public:
-  AliMUONRecoCheck(Char_t *chLoader);
-  AliMUONRecoCheck(AliRunLoader *runloader, AliMUONData *muondata);
+  AliMUONRecoCheck(Char_t *chLoader, Char_t *chLoaderSim);
+  AliMUONRecoCheck(AliRunLoader *runloader, AliMUONRecData *muondata,
+                   AliRunLoader *runloaderSim, AliMUONSimData *muondataSim);
   virtual          ~AliMUONRecoCheck();
 
   /// Return MUON data 	 
-  AliMUONData*  GetMUONData() {return fMUONData;}
+  AliMUONRecData*  GetMUONData() {return fMUONData;}
   /// Return run loader 	 
-  AliRunLoader* GetRunLoader() {return fRunLoader;}
+  AliRunLoader* GetRunLoader()    {return fRunLoader;}
+  AliRunLoader* GetRunLoaderSim() {return fRunLoaderSim;}
 
   void MakeTrackRef();
                 /// Add track reference
@@ -53,10 +56,12 @@ private:
   /// Not implemented
   AliMUONRecoCheck& operator = (const AliMUONRecoCheck& rhs);
   
-  AliRunLoader* fRunLoader;     ///< alice run loader 
-  AliMUONData*  fMUONData;      ///< Data container for MUON subsystem 
-  TClonesArray* fMuonTrackRef;  ///< reference muon tracks
-  TClonesArray* fTrackReco;     ///< reconstructed muon tracks
+  AliRunLoader*   fRunLoader;     ///< alice run loader 
+  AliMUONRecData* fMUONData;      ///< Data container for MUON subsystem 
+  AliRunLoader*   fRunLoaderSim;  ///< alice run loader 
+  AliMUONSimData* fMUONDataSim;   ///< Data container for MUON subsystem 
+  TClonesArray*   fMuonTrackRef;  ///< reference muon tracks
+  TClonesArray*   fTrackReco;     ///< reconstructed muon tracks
   Int_t fReconstructibleTracks; ///< number of reconstructible tracks 
   Int_t fRecoTracks;            ///< number of reconstructed tracks 
   Bool_t fIsLoadConstructor;    //!< \brief boolean to tag the constructor, 

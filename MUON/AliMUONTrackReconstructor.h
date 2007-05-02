@@ -16,7 +16,7 @@ class AliMUONTrack;
 class AliMUONTrackReconstructor : public AliMUONVTrackReconstructor {
 
  public:
-  AliMUONTrackReconstructor(AliMUONData* data); // default Constructor
+  AliMUONTrackReconstructor(AliMUONRecData* data); // default Constructor
   virtual ~AliMUONTrackReconstructor(); // Destructor
 
   virtual void EventDump(void);  // dump reconstructed event

@@ -31,7 +31,7 @@
 #include "AliCDBManager.h"
 #include <TClonesArray.h>
 #endif
-void MUONTrigger(char * FileName="galice.root")
+void MUONTrigger(char * FileNameSim="galice_sim.root", char * FileName="galice.root")
 {
     // Creating Run Loader and openning file containing Digits 
     AliRunLoader * RunLoader = AliRunLoader::Open(FileName,"MUONLoader","UPDATE");

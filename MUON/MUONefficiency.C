@@ -77,8 +77,8 @@
 //   ResType (default 553)
 //      553 for Upsilon, anything else for J/Psi
 
-Bool_t MUONefficiency( Int_t ExtrapToVertex = -1, Int_t ResType = 553, Int_t FirstEvent = 0, Int_t LastEvent = 1000000,
-		       char* geoFilename = "geometry.root", char* esdFileName = "AliESDs.root", char* filename = "galice.root")
+Bool_t MUONefficiency( char* filename = "galice.root", char* geoFilename = "geometry.root", char* esdFileName = "AliESDs.root",
+                       Int_t ExtrapToVertex = -1, Int_t ResType = 553, Int_t FirstEvent = 0, Int_t LastEvent = 1000000 )
 { // MUONefficiency starts
 
   Double_t MUON_MASS = 0.105658369;

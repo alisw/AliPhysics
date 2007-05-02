@@ -28,6 +28,7 @@
 #endif
 
 void MUONCheck(Int_t firstEvent, Int_t lastEvent,
+               TString fileNameSim="$ALICE_ROOT/MUON/test_out/galice_sim.root",
                TString fileName="$ALICE_ROOT/MUON/test_out/galice.root",
                TString esdsFileName="$ALICE_ROOT/MUON/test_out/AliESDs.root",
                TString outDir="$ALICE_ROOT/MUON/test_out/DataQualityControl")
@@ -35,7 +36,7 @@ void MUONCheck(Int_t firstEvent, Int_t lastEvent,
    gSystem->Load("libMUONevaluation");
 
    AliMUONCheck* check
-     = new AliMUONCheck(fileName.Data(), esdsFileName.Data(),
+     = new AliMUONCheck(fileName.Data(), fileNameSim.Data(), esdsFileName.Data(),
                         firstEvent, lastEvent, outDir.Data());
       
    check->CheckESD();

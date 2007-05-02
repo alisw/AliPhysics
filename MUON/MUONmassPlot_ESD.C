@@ -63,7 +63,7 @@
 
 // Add parameters and histograms for analysis 
 
-Bool_t MUONmassPlot(Int_t ExtrapToVertex = -1, char* geoFilename = "geometry.root", char* filename = "galice.root",
+Bool_t MUONmassPlot(char* filename = "galice_sim.root", Int_t ExtrapToVertex = -1, char* geoFilename = "geometry.root", 
 		  Int_t FirstEvent = 0, Int_t LastEvent = 10000, char* esdFileName = "AliESDs.root", Int_t ResType = 553, 
                   Float_t Chi2Cut = 100., Float_t PtCutMin = 1., Float_t PtCutMax = 10000.,
                   Float_t massMin = 9.17,Float_t massMax = 9.77)
@@ -152,12 +152,13 @@ Bool_t MUONmassPlot(Int_t ExtrapToVertex = -1, char* geoFilename = "geometry.roo
     Error("MUONmass_ESD", "getting run loader from file %s failed", filename);
     return kFALSE;
   }
-
+/*  
+  runLoader->LoadgAlice();
   if (!gAlice) {
     Error("MUONmass_ESD", "no galice object found");
     return kFALSE;
   }
-  
+*/  
 
   // open the ESD file
   TFile* esdFile = TFile::Open(esdFileName);

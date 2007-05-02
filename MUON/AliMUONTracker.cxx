@@ -17,7 +17,7 @@
 #include "AliMUONTracker.h"
 #include "AliMUONTrackReconstructorK.h"
 #include "AliMUONTrackReconstructor.h"
-#include "AliMUONData.h"
+#include "AliMUONRecData.h"
 #include "AliLog.h"
 
 //_____________________________________________________________________________

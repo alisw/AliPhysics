@@ -24,7 +24,7 @@
 #include "AliMUON.h"
 #include "AliMUONRecoCheck.h"
 #include "AliMUONTrack.h"
-#include "AliMUONData.h"
+#include "AliMUONRecData.h"
 #include "AliMUONConstants.h"
 
 #include "AliLoader.h" 
@@ -42,10 +42,12 @@ ClassImp(AliMUONRecoCheck)
 /// \endcond
 
 //_____________________________________________________________________________
-  AliMUONRecoCheck::AliMUONRecoCheck(Char_t *chLoader)
+  AliMUONRecoCheck::AliMUONRecoCheck(Char_t *chLoader, Char_t *chLoaderSim)
   : TObject(),
   fRunLoader(0x0),
   fMUONData(0x0),
+  fRunLoaderSim(0x0),
+  fMUONDataSim(0x0),
   fMuonTrackRef(0x0),
   fTrackReco(0x0),
   fReconstructibleTracks(0),
@@ -58,7 +60,7 @@ ClassImp(AliMUONRecoCheck)
   fMuonTrackRef = new TClonesArray("AliMUONTrack", 10);
 
   // run loader
-  fRunLoader = AliRunLoader::Open(chLoader);
+  fRunLoader = AliRunLoader::Open(chLoader,"MUONFolder","READ");
   if (!fRunLoader) {
     AliError(Form("no run loader found " ));
     return;
@@ -68,23 +70,43 @@ ClassImp(AliMUONRecoCheck)
   AliLoader *loader = fRunLoader->GetLoader("MUONLoader");
 
   // container
-  fMUONData  = new AliMUONData(loader,"MUON","MUON");
+  fMUONData  = new AliMUONRecData(loader,"MUON","MUON");
   if (!fMUONData) {
     AliError(Form("no MUONData found " ));
     return;
   }
 
-  fRunLoader->LoadKinematics("READ"); 	 
+  // run loader
+  fRunLoaderSim = AliRunLoader::Open(chLoaderSim,"MUONFolderSim","READ");
+  if (!fRunLoaderSim) {
+    AliError(Form("no run sim loader found " ));
+    return;
+  }
+
+ // initialize loader 	 
+  AliLoader *loaderSim = fRunLoaderSim->GetLoader("MUONLoader");
+
+  // container
+  fMUONDataSim  = new AliMUONSimData(loaderSim,"MUON","MUON");
+  if (!fMUONDataSim) {
+    AliError(Form("no MUONDataSim found " ));
+    return;
+  }
+
+  fRunLoaderSim->LoadKinematics("READ"); 	 
   fRunLoader->LoadTrackRefs("READ"); 	 
   loader->LoadTracks("READ");
 
 }
 
 //_____________________________________________________________________________
-  AliMUONRecoCheck::AliMUONRecoCheck(AliRunLoader *runloader, AliMUONData *muondata)
+  AliMUONRecoCheck::AliMUONRecoCheck(AliRunLoader *runloader, AliMUONRecData *muondata,
+                                     AliRunLoader *runloaderSim, AliMUONSimData *muondataSim)
   : TObject(),
   fRunLoader(0x0),
   fMUONData(0x0),
+  fRunLoaderSim(0x0),
+  fMUONDataSim(0x0),
   fMuonTrackRef(0x0),
   fTrackReco(0x0),
   fReconstructibleTracks(0),
@@ -111,6 +133,20 @@ ClassImp(AliMUONRecoCheck)
     return;
   }
 
+  // run loader
+  fRunLoaderSim = runloaderSim;
+  if (!fRunLoaderSim) {
+    AliError(Form("no run sim loader found " ));
+    return;
+  }
+
+  // container
+  fMUONDataSim  = muondataSim;
+  if (!fMUONDataSim) {
+    AliError(Form("no MUONDataSim found " ));
+    return;
+  }
+
 }
 
 
@@ -120,11 +156,13 @@ AliMUONRecoCheck::~AliMUONRecoCheck()
 /// Destructor
   delete fMuonTrackRef;
   if(fIsLoadConstructor){
-    fRunLoader->UnloadKinematics();
+    fRunLoaderSim->UnloadKinematics();
     fRunLoader->UnloadTrackRefs();
     fRunLoader->UnloadTracks();
     delete fMUONData;
     delete fRunLoader;
+    delete fMUONDataSim;
+    delete fRunLoaderSim;
   }
 }
 
@@ -166,7 +204,7 @@ void AliMUONRecoCheck::MakeTrackRef()
   Int_t charge;
   TParticlePDG *ppdg;
 
-  Int_t max = fRunLoader->GetHeader()->Stack()->GetNtrack();
+  Int_t max = fRunLoaderSim->GetHeader()->Stack()->GetNtrack();
   for (Int_t iTrackRef  = 0; iTrackRef < nTrackRef; iTrackRef++) {
 
     branch->GetEntry(iTrackRef);
@@ -240,7 +278,7 @@ void AliMUONRecoCheck::MakeTrackRef()
       }
 
       // track parameters at vertex 
-      particle = fRunLoader->GetHeader()->Stack()->Particle(muonTrack->GetTrackID());
+      particle = fRunLoaderSim->GetHeader()->Stack()->Particle(muonTrack->GetTrackID());
 
       if (particle) {
 

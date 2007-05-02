@@ -13,7 +13,7 @@
 #include <TObject.h>
 
 class AliMUONClusterFinderVS;
-class AliMUONData;
+class AliMUONRecData;
 class TClonesArray;
 class AliMUONVClusterFinder;
 class AliMUONGeometryTransformer;
@@ -21,7 +21,7 @@ class AliMUONGeometryTransformer;
 class AliMUONClusterReconstructor : public TObject 
 {
  public:
-  AliMUONClusterReconstructor(AliMUONData* data = 0x0,
+  AliMUONClusterReconstructor(AliMUONRecData* data = 0x0,
                               AliMUONVClusterFinder* finder = 0x0,
                               const AliMUONGeometryTransformer* transformer = 0x0
                               ); 
@@ -48,7 +48,7 @@ class AliMUONClusterReconstructor : public TObject
   
 private:
   AliMUONVClusterFinder* fClusterFinder; //!< the object doing the real job (not owner)  
-  AliMUONData*            fMUONData;           //!< Data container for MUON subsystem 
+  AliMUONRecData*         fMUONData;           //!< Data container for MUON subsystem 
   AliMUONClusterFinderVS* fRecModel;           //!< cluster recontruction model
 
   TClonesArray* fDigitsCath0; //!< digits for cathode 0 of the current DE

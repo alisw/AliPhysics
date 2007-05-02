@@ -19,7 +19,8 @@
 #  include "TString.h"
 #endif
 
-class AliMUONData;
+class AliMUONSimData;
+class AliMUONRecData;
 class AliRunLoader;
 class AliLoader;
 class AliESD;
@@ -36,7 +37,7 @@ public:
   virtual ~AliMUONCheck();
  
   /// Return true if contains valid data
-  Bool_t IsValid() const { return (fData!=0); }
+  Bool_t IsValid() const { return (fRecData!=0); }
   
   void CheckESD(Bool_t pdc06TriggerResponse= false);
   void CheckKine();
@@ -68,8 +69,8 @@ private:
   AliLoader*    fLoader;    //!< MUON loader pointer for reconstruction
   AliLoader*    fLoaderSim; //!< MUON loader pointer for simulation
 
-  AliMUONData*  fData;     //!< AliMUONData pointer (to access containers) for recontruction 
-  AliMUONData*  fDataSim;  //!< AliMUONData pointer (to access containers) for simulation
+  AliMUONRecData*  fRecData;  //!< AliMUONData pointer (to access containers) for recontruction 
+  AliMUONSimData*  fSimData;  //!< AliMUONData pointer (to access containers) for simulation
 
   TTree   * fTree ;     //!< pointer to the analyzed TTree or TChain
   AliESD  * fESD ;      //!< Declaration of leave types

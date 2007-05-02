@@ -14,14 +14,14 @@
 #include <TObject.h>
 
 class TClonesArray;
-class AliMUONData;
+class AliMUONRecData;
 class AliMUONTriggerTrack;
 class AliMUONTrackHitPattern;
 
 class AliMUONVTrackReconstructor : public TObject {
 
  public:
-  AliMUONVTrackReconstructor(AliMUONData* data); // default Constructor
+  AliMUONVTrackReconstructor(AliMUONRecData* data); // default Constructor
   virtual ~AliMUONVTrackReconstructor(); // Destructor
 
   // Parameters for track reconstruction: public methods
@@ -48,9 +48,9 @@ class AliMUONVTrackReconstructor : public TObject {
   void EventDumpTrigger(void);  // dump reconstructed trigger event
   
           /// Return MUON data
-  AliMUONData*  GetMUONData() {return fMUONData;}
+  AliMUONRecData*  GetMUONData() {return fMUONData;}
           /// Set MUON data
-  void SetMUONData(AliMUONData* data) {fMUONData = data;}
+  void SetMUONData(AliMUONRecData* data) {fMUONData = data;}
 
           /// Set trigger circuit
   void SetTriggerCircuit(TClonesArray* circuit) {fTriggerCircuit = circuit;}
@@ -86,7 +86,7 @@ class AliMUONVTrackReconstructor : public TObject {
   Int_t fNRecTracks; ///< number of reconstructed tracks
 
   // data container
-  AliMUONData* fMUONData; ///< Data container for MUON subsystem 
+  AliMUONRecData* fMUONData; ///< Data container for MUON subsystem 
 
   // Functions
   AliMUONVTrackReconstructor (const AliMUONVTrackReconstructor& rhs); ///< copy constructor

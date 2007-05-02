@@ -27,19 +27,21 @@
 #include "AliStack.h"
 #include "AliRunLoader.h"
 #include "AliMagFMaps.h"
+#include "AliTracker.h"
 
 // MUON includes
-#include "AliMUON.h"
 #include "AliMUONConstants.h"
 #include "AliMUONTrack.h"
 #include "AliMUONRecoCheck.h"
 #include "AliMUONTrackParam.h"
 #include "AliMUONTrackExtrap.h"
-#include "AliTracker.h"
+#include "AliMUONRecData.h"
+#include "AliMUONSimData.h"
 
 Int_t TrackCheck( Bool_t *compTrack);
 
-void MUONRecoCheck (Int_t nEvent = 1, char* geoFilename = "geometry.root", char * filename="galice.root"){
+void MUONRecoCheck (Int_t nEvent = 1, char* geoFilename = "geometry.root", 
+                    char * filenameSim="galice_sim.root", char * filename="galice.root"){
 
   // Utility macro to check the muon reconstruction. Reconstructed tracks are compared
   // to reference tracks. The reference tracks are built from AliTrackReference for the
@@ -94,15 +96,18 @@ void MUONRecoCheck (Int_t nEvent = 1, char* geoFilename = "geometry.root", char 
   // set the magnetic field for track extrapolations
   AliMUONTrackExtrap::SetField(AliTracker::GetFieldMap());
 
-  AliRunLoader* runLoader = AliRunLoader::Open(filename,"read");
+  AliRunLoader* runLoaderSim = AliRunLoader::Open(filenameSim, "MUONFolderSim", "read");
+  AliRunLoader* runLoader = AliRunLoader::Open(filename, "MUONFolder", "read");
   AliLoader * MUONLoader = runLoader->GetLoader("MUONLoader");
-  AliMUONData * MUONData = new AliMUONData(MUONLoader,"MUON","MUON");
+  AliLoader * MUONLoaderSim = runLoaderSim->GetLoader("MUONLoader");
+  AliMUONRecData * MUONData = new AliMUONRecData(MUONLoader,"MUON","MUON");
+  AliMUONSimData * MUONDataSim = new AliMUONSimData(MUONLoaderSim,"MUON","MUON");
 
-  runLoader->LoadKinematics("READ");
-  runLoader->LoadTrackRefs("READ");
+  runLoaderSim->LoadKinematics("READ");
+  runLoaderSim->LoadTrackRefs("READ");
   MUONLoader->LoadTracks("READ");
   
-  AliMUONRecoCheck rc(runLoader,MUONData);
+  AliMUONRecoCheck rc(runLoader, MUONData, runLoaderSim, MUONDataSim);
     
   Int_t nevents = runLoader->GetNumberOfEvents();
   
@@ -115,7 +120,9 @@ void MUONRecoCheck (Int_t nEvent = 1, char* geoFilename = "geometry.root", char 
 
   for (ievent=0; ievent<nEvent; ievent++) {
     if (!(ievent%10)) printf(" **** event # %d  \n",ievent);
+    runLoaderSim->GetEvent(ievent);
     runLoader->GetEvent(ievent);
+
     rc.ResetTracks();
     rc.MakeTrackRef(); // make reconstructible tracks
 //     rc.PrintEvent();
@@ -166,7 +173,7 @@ void MUONRecoCheck (Int_t nEvent = 1, char* geoFilename = "geometry.root", char 
       if (testTrack == 4) {     // tracking requirements verified, track is found
 	nReconstructibleTracksCheck++;
 	hNHitComp->Fill(nHitOK);
-	particle = runLoader->GetHeader()->Stack()->Particle(trackID);
+	particle = runLoaderSim->GetHeader()->Stack()->Particle(trackID);
 // 	printf(" trackID: %d , PDG code: %d \n",trackID,particle->GetPdgCode());
 	trackParam = trackRef->GetTrackParamAtVertex();
 	x1 = trackParam->GetNonBendingCoor();
@@ -218,15 +225,17 @@ void MUONRecoCheck (Int_t nEvent = 1, char* geoFilename = "geometry.root", char 
 	       
       }
     } // end loop track ref.
-
+    
   } // end loop on event  
 
   MUONLoader->UnloadTracks();
-  runLoader->UnloadKinematics();
+  runLoaderSim->UnloadKinematics();
   runLoader->UnloadTrackRefs();
   delete runLoader;
+  delete runLoaderSim;
   delete field;
   delete MUONData;
+  delete MUONDataSim;
 
   printf(" nb of reconstructible tracks: %d \n", nReconstructibleTracks);
   printf(" nb of reconstructed tracks: %d \n", nReconstructedTracks);

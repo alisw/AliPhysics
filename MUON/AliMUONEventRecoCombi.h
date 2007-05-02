@@ -14,7 +14,7 @@
 #include <TArrayD.h>
 #include <TClonesArray.h>
 
-class AliMUONData;
+class AliMUONRecData;
 class AliMUONDetElement;
 class AliMUONTrackReconstructorK;
 class AliMUONClusterFinderAZ;
@@ -27,8 +27,8 @@ class AliMUONEventRecoCombi : public TObject
  public:
     virtual ~AliMUONEventRecoCombi();
     static AliMUONEventRecoCombi* Instance(AliMUONSegmentation* segmentation = 0);
-    void FillEvent(AliMUONData *data, AliMUONClusterFinderAZ *recModel); // fill event info
-    void FillRecP(AliMUONData *dataCluster, AliMUONTrackReconstructorK *recoTrack) const; // fill used rec. points from det. elems
+    void FillEvent(AliMUONRecData *data, AliMUONClusterFinderAZ *recModel); // fill event info
+    void FillRecP(AliMUONRecData *dataCluster, AliMUONTrackReconstructorK *recoTrack) const; // fill used rec. points from det. elems
 
     Int_t Nz() const { return fNZ; } ///< number of DE different Z-positions
     Double_t Z(Int_t iz) const { return (*fZ)[iz]; } ///< Z of DE

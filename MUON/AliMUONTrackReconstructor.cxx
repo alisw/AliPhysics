@@ -26,7 +26,7 @@
 ///
 
 #include "AliMUONTrackReconstructor.h"
-#include "AliMUONData.h"
+#include "AliMUONRecData.h"
 #include "AliMUONConstants.h"
 #include "AliMUONRawCluster.h"
 #include "AliMUONHitForRec.h"
@@ -56,7 +56,7 @@ const Double_t AliMUONTrackReconstructor::fgkMaxNormChi2 = 100.0;
 const Bool_t AliMUONTrackReconstructor::fgkTrackAllTracks = kFALSE;
 
 //__________________________________________________________________________
-AliMUONTrackReconstructor::AliMUONTrackReconstructor(AliMUONData* data)
+AliMUONTrackReconstructor::AliMUONTrackReconstructor(AliMUONRecData* data)
   : AliMUONVTrackReconstructor(data)
 {
   /// Constructor for class AliMUONTrackReconstructor
