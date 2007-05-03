@@ -28,6 +28,7 @@
 #include "AliITSRawStreamSSD.h"
 #include <TClonesArray.h>
 #include "AliITSdigitSSD.h"
+#include "AliITSCalibrationSSD.h"
 
 ClassImp(AliITSClusterFinderV2SSD)
 
@@ -57,13 +58,23 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(TClonesArray *alldigits) {
   //------------------------------------------------------------
   // Actual SSD cluster finder
   //------------------------------------------------------------
+  AliITSCalibrationSSD* cal = (AliITSCalibrationSSD*)GetResp(fModule);
+  Float_t gain=0;
+
   Int_t smaxall=alldigits->GetEntriesFast();
   if (smaxall==0) return;
   TObjArray *digits = new TObjArray;
   for (Int_t i=0;i<smaxall; i++){
     AliITSdigitSSD *d=(AliITSdigitSSD*)alldigits->UncheckedAt(i);
-    Float_t q=d->GetSignal()/4.29;// temp. fix (for PID purposed - normalis. to be checked)
+
+    if(d->IsSideP()) gain = cal->GetGainP(d->GetStripNumber());  
+    else gain = cal->GetGainN(d->GetStripNumber());
+
+    Float_t q=gain*d->GetSignal(); // calibration brings mip peaks around 120 (in ADC units)
+    q=cal->ADCToKeV(q); // converts the charge in KeV from ADC units
+    //Float_t q=d->GetSignal()/4.29;// temp. fix (for PID purposed - normalis. to be checked)
     d->SetSignal(Int_t(q));
+
     if (d->GetSignal()<3) continue;
     digits->AddLast(d);
   }
@@ -207,7 +218,7 @@ void AliITSClusterFinderV2SSD::RawdataToClusters(AliRawReader* rawReader,TClones
   
 }
 
-void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStream* input, 
+void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input, 
 					TClonesArray** clusters) 
 {
   //------------------------------------------------------------
@@ -224,12 +235,15 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStream* input,
   Int_t prevStrip = -1;
   Int_t prevFlag = -1;
   Int_t prevModule = -1;
+  Float_t gain=0;
+  AliITSCalibrationSSD* cal;
+  
 
   // read raw data input stream
   while (kTRUE) {
     Bool_t next = input->Next();
 
-    if(input->GetSignal()<(3*4.29) && next) continue;
+    if(input->GetSignal()<(3*4.) && next) continue;
     // check if a new cluster starts
     Int_t strip = input->GetCoord2();
     Int_t flag = input->GetCoord1();
@@ -281,11 +295,17 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStream* input,
       nClusters[0] = nClusters[1] = 0;
       y = q = 0.;
       nDigits = 0;
+
+      cal = (AliITSCalibrationSSD*)GetResp(input->GetModuleID());
+
     }
 
+    if(input->GetSideFlag()==0) gain = cal->GetGainP(input->GetStrip());  
+    else gain = cal->GetGainN(input->GetStrip());
+    
     // add digit to current cluster
-    q += input->GetSignal()/4.29;
-    y += strip * input->GetSignal()/4.29;
+    q += cal->ADCToKeV( gain * input->GetSignal() );  // signal is corrected for gain and converted in KeV 
+    y += strip * cal->ADCToKeV( gain * input->GetSignal() );
     nDigits++;
     prevStrip = strip;
     prevFlag = flag;

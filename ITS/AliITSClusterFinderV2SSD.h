@@ -10,10 +10,13 @@
 //   Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //--------------------------------------------------------------
 #include "AliITSClusterFinderV2.h"
+#include "AliITSDetTypeRec.h"
 
 class TClonesArray;
 class AliRawReader;
 class AliITSRawStream;
+class AliITSRawStreamSSD;
+class AliITSCalibrationSSD;
 
 class AliITSClusterFinderV2SSD : public AliITSClusterFinderV2 {
 public:
@@ -28,7 +31,9 @@ public:
 		       Ali1Dcluster* pos, Int_t np,
 		       TClonesArray *clusters=0x0);
 
-  void FindClustersSSD(AliITSRawStream* input,TClonesArray** clusters);
+  void FindClustersSSD(AliITSRawStreamSSD* input,TClonesArray** clusters);
+  virtual AliITSCalibrationSSD* GetResp(Int_t mod)const{
+    return (AliITSCalibrationSSD*) fDetTypeRec->GetCalibrationModel(mod);}
 
   Int_t fLastSSD1;        //index of the last SSD1 detector   
   Float_t fYpitchSSD;     //strip pitch (cm)

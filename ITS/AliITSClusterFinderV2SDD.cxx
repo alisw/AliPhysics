@@ -237,8 +237,7 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
 	 y=-(-xdet+fYshift[fModule]);
 	 z=  -zdet+fZshift[fModule];
 	  
-	 q/=5.039;  //to have MPV 1 MIP = 86.4 KeV
-         q/=16.49;  //to be consistent with SSD - provisional 06-APR-2007
+         q/=5.243;  //to have MPV 1 MIP = 86.4 KeV --> this must go to calibr.
          Float_t hit[5] = {y, z, 0.0030*0.0030, 0.0020*0.0020, q};
          Int_t  info[3] = {maxj-minj+1, maxi-mini+1, fNlayer[fModule]};
 

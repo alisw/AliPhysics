@@ -592,6 +592,7 @@ void AliITSsimulationSSD::ChargeToSignal(Int_t module,AliITSpList *pList) {
 	// if strip is dead -> gain=0
 	if( ((k==0)&&(res->GetGainP(ix)==0)) || ((k==1)&&(res->GetGainN(ix)==0))) continue;
 	
+	signal = fMapA2->GetSignal(k,ix);
 	// signal has to be uncalibrated
 	// In real life, gains are supposed to be calculated from calibration runs,
 	// stored in the calibration DB and used in the reconstruction
@@ -600,7 +601,7 @@ void AliITSsimulationSSD::ChargeToSignal(Int_t module,AliITSpList *pList) {
 	else signal /= res->GetGainN(ix);
 
 	// signal is converted in unit of ADC
-	signal = res->GetDEvToADC(fMapA2->GetSignal(k,ix));
+	signal = res->GetDEvToADC(signal);
 	if(signal>4096.) signal = 4096.;//if exceeding, accumulate last one
 
 	// threshold for zero suppression is set on the basis of the noise
