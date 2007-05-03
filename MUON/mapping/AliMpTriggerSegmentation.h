@@ -4,7 +4,7 @@
 // $Id$
 // $MpId: AliMpTriggerSegmentation.h,v 1.8 2006/05/24 13:58:27 ivana Exp $
 
-/// \ingroup trigger
+/// \ingroup mptrigger
 /// \class AliMpTriggerSegmentation
 /// \brief Implementation of AliMpVSegmentation for trigger slats.
 ///

@@ -4,7 +4,7 @@
 // $Id$
 // $MpId: AliMpTriggerReader.h,v 1.5 2006/05/24 13:58:27 ivana Exp $
 
-/// \ingroup trigger
+/// \ingroup mptrigger
 /// \class AliMpTriggerReader
 /// \brief Read trigger slat ASCII files
 ///
