@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2007/05/03 08:22:22  decaro
+Coding convention: RN17 violation -> suppression
+
 Revision 1.15  2007/04/30 15:22:06  arcelli
 Change TOF digit Time, Tot etc to int type
 
@@ -1165,7 +1168,12 @@ Int_t AliTOFRawStream::GetIndex(Int_t *detId)
   return idet;
 }
 //-----------------------------------------------------------------------------
-Bool_t AliTOFRawStream::DecodeDDL(Int_t DDLMin, Int_t DDLMax, Int_t verbose = 0){
+Bool_t AliTOFRawStream::DecodeDDL(Int_t DDLMin, Int_t DDLMax, Int_t verbose = 0)
+{
+  //
+  // New decoder method
+  //
+
   Int_t currentEquipment;
   Int_t currentDDL;
 
@@ -1248,6 +1256,10 @@ Bool_t AliTOFRawStream::DecodeDDL(Int_t DDLMin, Int_t DDLMax, Int_t verbose = 0)
 void
 AliTOFRawStream::ResetBuffers()
 {
+  //
+  // To reset the buffers
+  //
+
   for (Int_t iDDL = 0; iDDL < AliDAQ::NumberOfDdls("TOF"); iDDL++){
     ResetDataBuffer(iDDL);
     ResetPackedDataBuffer(iDDL);
@@ -1258,6 +1270,10 @@ AliTOFRawStream::ResetBuffers()
 Bool_t
 AliTOFRawStream::LoadRawDataBuffers(Int_t indexDDL, Int_t verbose)
 {
+  //
+  // To load the buffers
+  //
+
   fTOFrawData->Clear();
   fPackedDigits = 0;
   
