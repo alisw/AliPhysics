@@ -10,6 +10,9 @@
  ***************************************************************************
  *
  * $Log$
+ * Revision 1.1.1.1  2007/04/25 15:38:41  panos
+ * Importing the HBT code dir
+ *
  * Revision 1.1.1.1  2007/03/07 10:14:49  mchojnacki
  * First version on CVS
  *
@@ -45,6 +48,10 @@ public:
   AliFemtoPicoEventCollectionVectorHideAway(int bx=1, double lx=-FLT_MAX, double ux=FLT_MAX,
 					 int by=1, double ly=-FLT_MAX, double uy=FLT_MAX,
 					 int bz=1, double lz=-FLT_MAX, double uz=FLT_MAX);
+  AliFemtoPicoEventCollectionVectorHideAway(const AliFemtoPicoEventCollectionVectorHideAway& aColl);
+  ~AliFemtoPicoEventCollectionVectorHideAway();
+  AliFemtoPicoEventCollectionVectorHideAway& operator=(const AliFemtoPicoEventCollectionVectorHideAway& aColl);
+
   AliFemtoPicoEventCollection* PicoEventCollection(int, int, int);
   AliFemtoPicoEventCollection* PicoEventCollection(double x, double y=0, double z=0);
 private:

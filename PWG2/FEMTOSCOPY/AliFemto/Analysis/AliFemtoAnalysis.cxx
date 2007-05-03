@@ -193,36 +193,42 @@ void FillHbtParticleCollection(AliFemtoParticleCut*         partCut,
   }
 }
 //____________________________
-AliFemtoAnalysis::AliFemtoAnalysis(){
+AliFemtoAnalysis::AliFemtoAnalysis() :
+  fPicoEventCollectionVectorHideAway(0), 
+  fPairCut(0),            
+  fCorrFctnCollection(0), 
+  fEventCut(0),           
+  fFirstParticleCut(0),   
+  fSecondParticleCut(0),  
+  fMixingBuffer(0),       
+  fPicoEvent(0),          
+  fNumEventsToMix(0),                     
+  fNeventsProcessed(0),                   
+  fMinSizePartCollection(0)
+{
   //  mControlSwitch     = 0;
-  fEventCut          = 0;
-  fFirstParticleCut  = 0;
-  fSecondParticleCut = 0;
-  fPairCut           = 0;
-  fCorrFctnCollection= 0;
   fCorrFctnCollection = new AliFemtoCorrFctnCollection;
   fMixingBuffer = new AliFemtoPicoEventCollection;
-  fNeventsProcessed = 0;
-  fPicoEvent=0;
-
-  fPicoEventCollectionVectorHideAway = 0;
-
-  fMinSizePartCollection=0;  // minimum # particles in ParticleCollection
-
 }
 //____________________________
 
-AliFemtoAnalysis::AliFemtoAnalysis(const AliFemtoAnalysis& a) : AliFemtoBaseAnalysis() {
+AliFemtoAnalysis::AliFemtoAnalysis(const AliFemtoAnalysis& a) : 
+  AliFemtoBaseAnalysis(),
+  fPicoEventCollectionVectorHideAway(0), 
+  fPairCut(0),            
+  fCorrFctnCollection(0), 
+  fEventCut(0),           
+  fFirstParticleCut(0),   
+  fSecondParticleCut(0),  
+  fMixingBuffer(0),       
+  fPicoEvent(0),          
+  fNumEventsToMix(0),                     
+  fNeventsProcessed(0),                   
+  fMinSizePartCollection(0)
+{
   //AliFemtoAnalysis();
-  fEventCut          = 0;
-  fFirstParticleCut  = 0;
-  fSecondParticleCut = 0;
-  fPairCut           = 0;
-  fCorrFctnCollection= 0;
   fCorrFctnCollection = new AliFemtoCorrFctnCollection;
   fMixingBuffer = new AliFemtoPicoEventCollection;
-  fNeventsProcessed = 0;
-  fPicoEvent=0;
 
   // find the right event cut
   fEventCut = a.fEventCut->Clone();
@@ -289,6 +295,59 @@ AliFemtoAnalysis::~AliFemtoAnalysis(){
     }
     delete fMixingBuffer;
   }
+}
+//______________________
+AliFemtoAnalysis& AliFemtoAnalysis::operator=(const AliFemtoAnalysis& aAna) 
+{
+  if (this == &aAna)
+    return *this;
+
+  fCorrFctnCollection = new AliFemtoCorrFctnCollection;
+  fMixingBuffer = new AliFemtoPicoEventCollection;
+
+  // find the right event cut
+  fEventCut = aAna.fEventCut->Clone();
+  // find the right first particle cut
+  fFirstParticleCut = aAna.fFirstParticleCut->Clone();
+  // find the right second particle cut
+  if (aAna.fFirstParticleCut==aAna.fSecondParticleCut) 
+    SetSecondParticleCut(fFirstParticleCut); // identical particle hbt
+  else
+    fSecondParticleCut = aAna.fSecondParticleCut->Clone();
+
+  fPairCut = aAna.fPairCut->Clone();
+  
+  if ( fEventCut ) {
+      SetEventCut(fEventCut); // this will set the myAnalysis pointer inside the cut
+      cout << " AliFemtoAnalysis::AliFemtoAnalysis(const AliFemtoAnalysis& a) - event cut set " << endl;
+  }
+  if ( fFirstParticleCut ) {
+      SetFirstParticleCut(fFirstParticleCut); // this will set the myAnalysis pointer inside the cut
+      cout << " AliFemtoAnalysis::AliFemtoAnalysis(const AliFemtoAnalysis& a) - first particle cut set " << endl;
+  }
+  if ( fSecondParticleCut ) {
+      SetSecondParticleCut(fSecondParticleCut); // this will set the myAnalysis pointer inside the cut
+      cout << " AliFemtoAnalysis::AliFemtoAnalysis(const AliFemtoAnalysis& a) - second particle cut set " << endl;
+  }  if ( fPairCut ) {
+      SetPairCut(fPairCut); // this will set the myAnalysis pointer inside the cut
+      cout << " AliFemtoAnalysis::AliFemtoAnalysis(const AliFemtoAnalysis& a) - pair cut set " << endl;
+  }
+
+  AliFemtoCorrFctnIterator iter;
+  for (iter=aAna.fCorrFctnCollection->begin(); iter!=aAna.fCorrFctnCollection->end();iter++){
+    cout << " AliFemtoAnalysis::AliFemtoAnalysis(const AliFemtoAnalysis& a) - looking for correlation functions " << endl;
+    AliFemtoCorrFctn* fctn = (*iter)->Clone();
+    if (fctn) AddCorrFctn(fctn);
+    else cout << " AliFemtoAnalysis::AliFemtoAnalysis(const AliFemtoAnalysis& a) - correlation function not found " << endl;
+  }
+
+  fNumEventsToMix = aAna.fNumEventsToMix;
+
+  fMinSizePartCollection = aAna.fMinSizePartCollection;  // minimum # particles in ParticleCollection
+
+  cout << " AliFemtoAnalysis::AliFemtoAnalysis(const AliFemtoAnalysis& a) - analysis copied " << endl;
+
+  return *this;
 }
 //______________________
 AliFemtoCorrFctn* AliFemtoAnalysis::CorrFctn(int n){  // return pointer to n-th correlation function

@@ -10,6 +10,9 @@
  *
  ***************************************************************************
  * $Log$
+ * Revision 1.3  2007/04/27 07:24:34  akisiel
+ * Make revisions needed for compilation from the main AliRoot tree
+ *
  * Revision 1.1.1.1  2007/04/25 15:38:41  panos
  * Importing the HBT code dir
  *
@@ -92,7 +95,16 @@
 //#include "Infrastructure/AliFemtoTTreeTrack.h" 
 
 AliFemtoTrack::AliFemtoTrack():
+  fCharge(0),
+  fPidProbElectron(0),
+  fPidProbPion(0),
+  fPidProbKaon(0),
+  fPidProbProton(0),
+  fPidProbMuon(0),
   fTrackId(0),
+  fP(0,0,0),
+  fPt(0),
+  fHelix(),
   fFlags(0),
   fLabel(0),
   fImpactD(0),
@@ -108,14 +120,42 @@ AliFemtoTrack::AliFemtoTrack():
   fTPCsignalN(0),    
   fTPCsignalS(0),
   fClusters(159),
-  fShared(159)
+  fShared(159),
+  fHiddenInfo(0)
 {
   fHiddenInfo = NULL;
   //  cout << "Created track " << this << endl;
 }
 
 
-AliFemtoTrack::AliFemtoTrack(const AliFemtoTrack& t)
+AliFemtoTrack::AliFemtoTrack(const AliFemtoTrack& t) :
+  fCharge(0),
+  fPidProbElectron(0),
+  fPidProbPion(0),
+  fPidProbKaon(0),
+  fPidProbProton(0),
+  fPidProbMuon(0),
+  fTrackId(0),
+  fP(0,0,0),
+  fPt(0),
+  fHelix(),
+  fFlags(0),
+  fLabel(0),
+  fImpactD(0),
+  fImpactZ(0),
+  fCdd(0),
+  fCdz(0),
+  fCzz(0),
+  fITSchi2(0),       
+  fITSncls(0),        
+  fTPCchi2(0),       
+  fTPCncls(0),       
+  fTPCnclsF(0),      
+  fTPCsignalN(0),    
+  fTPCsignalS(0),
+  fClusters(159),
+  fShared(159),
+  fHiddenInfo(0)
  { // copy constructor
   fCharge = t.fCharge;
   fPidProbElectron = t.fPidProbElectron;
@@ -149,6 +189,46 @@ AliFemtoTrack::AliFemtoTrack(const AliFemtoTrack& t)
     fHiddenInfo = NULL;
   //  cout << "Created track " << this << endl;
 };
+
+AliFemtoTrack& AliFemtoTrack::operator=(const AliFemtoTrack& aTrack)
+{
+  if (this == &aTrack)
+    return *this;
+  fCharge = aTrack.fCharge;
+  fPidProbElectron = aTrack.fPidProbElectron;
+  fPidProbPion = aTrack.fPidProbPion;
+  fPidProbKaon = aTrack.fPidProbKaon;
+  fPidProbProton = aTrack.fPidProbProton;
+  fPidProbMuon=aTrack.fPidProbMuon;
+  fP = aTrack.fP;
+  fPt = aTrack.fPt;
+  fHelix = aTrack.fHelix;
+  fTrackId = aTrack.fTrackId;
+  fFlags=aTrack.fFlags;
+  fLabel=aTrack.fLabel;
+  fImpactD=aTrack.fImpactD;
+  fImpactZ=aTrack.fImpactZ;
+  fCdd=aTrack.fCdd;
+  fCdz=aTrack.fCdz;
+  fCzz=aTrack.fCzz;
+  fITSchi2=aTrack.fITSchi2;       
+  fITSncls=aTrack.fITSncls;        
+  fTPCchi2=aTrack.fTPCchi2;       
+  fTPCncls=aTrack.fTPCncls;       
+  fTPCnclsF=aTrack.fTPCnclsF;      
+  fTPCsignalN=aTrack.fTPCsignalN;    
+  fTPCsignalS=aTrack.fTPCsignalS;  
+  fClusters=aTrack.fClusters;
+  fShared=aTrack.fShared;
+  if (ValidHiddenInfo())
+    delete fHiddenInfo;
+  if (aTrack.ValidHiddenInfo())
+    fHiddenInfo = aTrack.getHiddenInfo()->clone();
+  else 
+    fHiddenInfo = NULL;
+
+  return *this;
+}
 
 void AliFemtoTrack::SetCharge(const short& ch){fCharge=ch;}
 

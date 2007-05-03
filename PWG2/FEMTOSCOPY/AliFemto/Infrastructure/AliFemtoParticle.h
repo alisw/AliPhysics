@@ -14,6 +14,9 @@
  ***************************************************************************
  *
  * $Log$
+ * Revision 1.1.1.1  2007/04/25 15:38:41  panos
+ * Importing the HBT code dir
+ *
  * Revision 1.2  2007-04-03 16:00:08  mchojnacki
  * Changes to iprove memory managing
  *
@@ -110,11 +113,14 @@ class AliFemtoHiddenInfo;
 class AliFemtoParticle{
 public:
   AliFemtoParticle();
+  AliFemtoParticle(const AliFemtoParticle& aParticle);
   AliFemtoParticle(const AliFemtoTrack* const hbtTrack, const double& mass);
   AliFemtoParticle(const AliFemtoV0* const hbtV0, const double& mass);
   AliFemtoParticle(const AliFemtoKink* const hbtKink, const double& mass);
   AliFemtoParticle(const AliFemtoXi* const hbtXi, const double& mass);
   ~AliFemtoParticle();
+
+  AliFemtoParticle& operator=(const AliFemtoParticle& aParticle);
 
   const AliFemtoLorentzVector& FourMomentum() const;
 

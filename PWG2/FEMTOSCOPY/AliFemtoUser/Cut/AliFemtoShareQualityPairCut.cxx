@@ -22,9 +22,11 @@ ClassImp(AliFemtoShareQualityPairCut)
 #endif
 
 //__________________
-AliFemtoShareQualityPairCut::AliFemtoShareQualityPairCut(){
-  fNPairsPassed = fNPairsFailed = 0;
-  fShareQualityMax = 1.0;
+AliFemtoShareQualityPairCut::AliFemtoShareQualityPairCut():
+  fNPairsPassed(0),
+  fNPairsFailed(0),
+  fShareQualityMax(1.0)
+{
 }
 //__________________
 AliFemtoShareQualityPairCut::~AliFemtoShareQualityPairCut(){

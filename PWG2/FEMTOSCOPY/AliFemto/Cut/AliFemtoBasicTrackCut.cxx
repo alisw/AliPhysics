@@ -20,7 +20,11 @@
 ClassImp(AliFemtoBasicTrackCut)
 #endif
 
-AliFemtoBasicTrackCut::AliFemtoBasicTrackCut(){
+AliFemtoBasicTrackCut::AliFemtoBasicTrackCut():
+  fCharge(0),
+  fNTracksPassed(0),
+  fNTracksFailed(0)
+{
   fNTracksPassed = fNTracksFailed = 0;
   fCharge = 1;  // takes both charges 0
   fNSigmaPion[0] = -100.0;   fNSigmaPion[1] = 100.0;

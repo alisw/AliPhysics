@@ -1,6 +1,11 @@
-// AliFemto reader for the ESD objects given back by the chain
-// Version 1:
-// Adam Kisiel, OSU kisiel@mps.ohio-state.edu
+////////////////////////////////////////////////////////////////////////////////
+///                                                                          ///
+/// AliFemtoEventReaderESDChain - the reader class for the Alice ESD         ///
+/// tailored for the Analysis/Task framework                                 ///
+/// Reads in AliESDfriend to create shared hit/quality information           ///
+/// Authors: Adam Kisiel kisiel@mps.ohio-state.edu                           ///
+///                                                                          ///
+////////////////////////////////////////////////////////////////////////////////
 #ifndef AliFemtoEventReaderESDChain_hh
 #define AliFemtoEventReaderESDChain_hh
 #include "Base/AliFemtoEventReader.h"
@@ -19,7 +24,11 @@ class AliFemtoEventReaderESDChain : public AliFemtoEventReader
 {
  public:
   AliFemtoEventReaderESDChain();
+  AliFemtoEventReaderESDChain(const AliFemtoEventReaderESDChain& aReader);
   ~AliFemtoEventReaderESDChain();
+
+  AliFemtoEventReaderESDChain& operator=(const AliFemtoEventReaderESDChain& aReader);
+
   AliFemtoEvent* ReturnHbtEvent();
   AliFemtoString Report();
   void SetConstrained(const bool constrained);
@@ -39,8 +48,8 @@ class AliFemtoEventReaderESDChain : public AliFemtoEventReader
   AliESD*        fEvent;         //ESD event
   AliESDfriend*  fEventFriend;
 
-  list<Int_t>  **fSharedList;
-  list<Int_t>  **fClusterPerPadrow;
+  list<Int_t>  **fSharedList;       //! Table (one list per padrow) of clusters which are shared
+  list<Int_t>  **fClusterPerPadrow; //! Table (one list per padrow) of clusters in each padrow
 		
 #ifdef __ROOT__
   ClassDef(AliFemtoEventReaderESDChain, 1)

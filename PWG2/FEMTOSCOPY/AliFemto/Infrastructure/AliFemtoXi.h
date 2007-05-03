@@ -23,13 +23,13 @@
 
 class AliFemtoXi : public AliFemtoV0 {
 public:
-  AliFemtoXi(){/* no-op */}
+  AliFemtoXi();
 #ifdef __ROOT__
 #ifndef __NO_STAR_DEPENDENCE_ALLOWED__
   AliFemtoXi(StXiMuDst&); // from strangeness Xi micro dst structure
 #endif
 #endif
-  ~AliFemtoXi(){/* no-op */}
+  virtual ~AliFemtoXi(){/* no-op */}
 
   void UpdateXi();
   float decayLengthXi() const;            // 3-d decay distance
@@ -244,6 +244,9 @@ inline void AliFemtoXi::SetdedxBac(float x){fDedxBachelor=x;}
 /***********************************************************************
  *
  * $Log$
+ * Revision 1.1.1.1  2007/04/25 15:38:41  panos
+ * Importing the HBT code dir
+ *
  * Revision 1.1.1.1  2007/03/07 10:14:49  mchojnacki
  * First version on CVS
  *

@@ -16,6 +16,9 @@
  ***************************************************************************
  *
  * $Log$
+ * Revision 1.1.1.1  2007/04/25 15:38:41  panos
+ * Importing the HBT code dir
+ *
  * Revision 1.1.1.1  2007/03/07 10:14:49  mchojnacki
  * First version on CVS
  *
@@ -35,7 +38,10 @@
 class AliFemtoPicoEvent{
 public:
   AliFemtoPicoEvent();
+  AliFemtoPicoEvent(const AliFemtoPicoEvent& aPicoEvent);
   ~AliFemtoPicoEvent();
+
+  AliFemtoPicoEvent& operator=(AliFemtoPicoEvent& aPicoEvent);
 
   /* may want to have other stuff in here, like where is primary vertex */
 
@@ -52,7 +58,5 @@ private:
 inline AliFemtoParticleCollection* AliFemtoPicoEvent::FirstParticleCollection(){return fFirstParticleCollection;}
 inline AliFemtoParticleCollection* AliFemtoPicoEvent::SecondParticleCollection(){return fSecondParticleCollection;}
 inline AliFemtoParticleCollection* AliFemtoPicoEvent::ThirdParticleCollection(){return fThirdParticleCollection;}
-
-
 
 #endif

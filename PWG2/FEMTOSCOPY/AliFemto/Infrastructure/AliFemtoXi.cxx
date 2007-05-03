@@ -2,6 +2,21 @@
 #include "phys_constants.h"
 
 // -----------------------------------------------------------------------
+AliFemtoXi::AliFemtoXi():
+  fCharge(0), fDecayLengthXi(0),
+  fDecayVertexXi(0),
+  fDcaXiDaughters(0), fDcaXiToPrimVertex(0), fDcaBachelorToPrimVertex(0),
+  fMomBachelor(0), fKeyBachelor(0),
+  fTpcHitsBac(0), fChi2Xi(0), fClXi(0), fChi2Bachelor(0), fClBachelor(0),
+  fDedxBachelor(0), fNufDedxBachelor(0), fMomXi(0),
+  fAlphaXi(0), fPtArmXi(0),
+  fEXi(0), fEOmega(0), fEBacPion(0), fEBacKaon(0),
+  fMassXi(0), fMassOmega(0), fRapXi(0), fRapOmega(0),
+  fCTauXi(0), fCTauOmega(0),
+  fPtXi(0), fPtotXi(0), fPtBac(0), fPtotBac(0),
+  fKeyBac(0)
+{/* no-op */}
+// -----------------------------------------------------------------------
 void AliFemtoXi::UpdateXi(){
   //Calc. derived members of the xi class
   float MomV0AlongXi, MomBacAlongXi;

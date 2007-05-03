@@ -1,44 +1,10 @@
-/***************************************************************************
- *
- * $Id$
- *
- * Author: Mike Lisa, Ohio State, lisa@mps.ohio-state.edu
- ***************************************************************************
- *
- * Description: part of STAR HBT Framework: AliFemtoMaker package
- *   a simple Q-invariant correlation function           
- *
- ***************************************************************************
- *
- * $Log$
- * Revision 1.1.1.1  2007/04/25 15:38:41  panos
- * Importing the HBT code dir
- *
- * Revision 1.1.1.1  2007/03/07 10:14:49  mchojnacki
- * First version on CVS
- *
- * Revision 1.4  2000/01/25 17:34:45  laue
- * I. In order to run the stand alone version of the AliFemtoMaker the following
- * changes have been done:
- * a) all ClassDefs and ClassImps have been put into #ifdef __ROOT__ statements
- * b) unnecessary includes of StMaker.h have been removed
- * c) the subdirectory AliFemtoMaker/doc/Make has been created including everything
- * needed for the stand alone version
- *
- * II. To reduce the amount of compiler warning
- * a) some variables have been type casted
- * b) some destructors have been declared as virtual
- *
- * Revision 1.3  1999/07/29 02:47:09  lisa
- * 1) add OpeningAngle correlation function 2) add AliFemtoMcEventReader 3) make histos in CorrFctns do errors correctly
- *
- * Revision 1.2  1999/07/06 22:33:20  lisa
- * Adjusted all to work in pro and new - dev itself is broken
- *
- * Revision 1.1.1.1  1999/06/29 16:02:57  lisa
- * Installation of AliFemtoMaker
- *
- **************************************************************************/
+////////////////////////////////////////////////////////////////////////////////
+///                                                                          ///
+/// AliFemtoShareQualityCorrFctn - A correlation function that saves the     ///
+/// amount of sharing and splitting hits per pair as a function of qinv      ///
+/// Authors: Adam Kisiel kisiel@mps.ohio-state.edu                           ///
+///                                                                          ///
+////////////////////////////////////////////////////////////////////////////////
 
 #include "AliFemtoShareQualityCorrFctn.h"
 //#include "Infrastructure/AliFemtoHisto.hh"
@@ -49,7 +15,12 @@ ClassImp(AliFemtoShareQualityCorrFctn)
 #endif
 
 //____________________________
-AliFemtoShareQualityCorrFctn::AliFemtoShareQualityCorrFctn(char* title, const int& nbins, const float& QinvLo, const float& QinvHi){
+AliFemtoShareQualityCorrFctn::AliFemtoShareQualityCorrFctn(char* title, const int& nbins, const float& QinvLo, const float& QinvHi):
+  fShareNumerator(0),
+  fShareDenominator(0),
+  fQualityNumerator(0),
+  fQualityDenominator(0)
+{
   // set up numerator
   //  title = "Num Qinv (MeV/c)";
   char TitNum[100] = "NumShare";
@@ -86,11 +57,52 @@ AliFemtoShareQualityCorrFctn::AliFemtoShareQualityCorrFctn(char* title, const in
 }
 
 //____________________________
+AliFemtoShareQualityCorrFctn::AliFemtoShareQualityCorrFctn(const AliFemtoShareQualityCorrFctn& aCorrFctn) :
+  fShareNumerator(0),
+  fShareDenominator(0),
+  fQualityNumerator(0),
+  fQualityDenominator(0)
+{
+  if (aCorrFctn.fShareNumerator)
+    fShareNumerator = new TH2D(*aCorrFctn.fShareNumerator);
+  if (aCorrFctn.fShareDenominator)
+    fShareDenominator = new TH2D(*aCorrFctn.fShareDenominator);
+  if (aCorrFctn.fQualityNumerator)
+    fQualityNumerator = new TH2D(*aCorrFctn.fQualityNumerator);
+  if (aCorrFctn.fQualityDenominator)
+    fQualityDenominator = new TH2D(*aCorrFctn.fQualityDenominator);
+}
+//____________________________
 AliFemtoShareQualityCorrFctn::~AliFemtoShareQualityCorrFctn(){
   delete fShareNumerator;
   delete fShareDenominator;
   delete fQualityNumerator;
   delete fQualityDenominator;
+}
+//_________________________
+AliFemtoShareQualityCorrFctn& AliFemtoShareQualityCorrFctn::operator=(const AliFemtoShareQualityCorrFctn& aCorrFctn)
+{
+  if (this == &aCorrFctn)
+    return *this;
+
+  if (aCorrFctn.fShareNumerator)
+    fShareNumerator = new TH2D(*aCorrFctn.fShareNumerator);
+  else
+    fShareNumerator = 0;
+  if (aCorrFctn.fShareDenominator)
+    fShareDenominator = new TH2D(*aCorrFctn.fShareDenominator);
+  else
+    fShareDenominator = 0;
+  if (aCorrFctn.fQualityNumerator)
+    fQualityNumerator = new TH2D(*aCorrFctn.fQualityNumerator);
+  else
+    fQualityNumerator = 0;
+  if (aCorrFctn.fQualityDenominator)
+    fQualityDenominator = new TH2D(*aCorrFctn.fQualityDenominator);
+  else
+    fQualityDenominator = 0;
+
+  return *this;
 }
 //_________________________
 void AliFemtoShareQualityCorrFctn::Finish(){

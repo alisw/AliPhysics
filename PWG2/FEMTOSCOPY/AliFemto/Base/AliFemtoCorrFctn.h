@@ -14,14 +14,15 @@ class AliFemtoCorrFctn{
   friend class AliFemtoBaseAnalysis;
 
 public:
-  AliFemtoCorrFctn(){/* no-op */};
+  AliFemtoCorrFctn();
   AliFemtoCorrFctn(const AliFemtoCorrFctn& aCorrFctn);
   virtual ~AliFemtoCorrFctn(){/* no-op */};
+  AliFemtoCorrFctn& operator=(const AliFemtoCorrFctn& aCorrFctn);
 
   virtual AliFemtoString Report() = 0;
 
-  virtual void AddRealPair(const AliFemtoPair* aPair);
-  virtual void AddMixedPair(const AliFemtoPair* aPir);
+  virtual void AddRealPair(AliFemtoPair* aPair);
+  virtual void AddMixedPair(AliFemtoPair* aPir);
 
   virtual void EventBegin(const AliFemtoEvent* aEvent) { /* no-op */ }
   virtual void EventEnd(const AliFemtoEvent* aEvent) { /* no-op */ }
@@ -39,10 +40,12 @@ private:
 
 };
 
-inline void AliFemtoCorrFctn::AddRealPair(const AliFemtoPair*) { cout << "Not implemented" << endl; }
-inline void AliFemtoCorrFctn::AddMixedPair(const AliFemtoPair*) { cout << "Not implemented" << endl; }
+inline void AliFemtoCorrFctn::AddRealPair(AliFemtoPair*) { cout << "Not implemented" << endl; }
+inline void AliFemtoCorrFctn::AddMixedPair(AliFemtoPair*) { cout << "Not implemented" << endl; }
 
-inline AliFemtoCorrFctn::AliFemtoCorrFctn(const AliFemtoCorrFctn& c) { fyAnalysis =0; }
+inline AliFemtoCorrFctn::AliFemtoCorrFctn(const AliFemtoCorrFctn& c):fyAnalysis(0) {}
+inline AliFemtoCorrFctn::AliFemtoCorrFctn(): fyAnalysis(0) {/* no-op */};
 inline void AliFemtoCorrFctn::SetAnalysis(AliFemtoBaseAnalysis* analysis) { fyAnalysis = analysis; }
+inline AliFemtoCorrFctn& AliFemtoCorrFctn::operator=(const AliFemtoCorrFctn& aCorrFctn) { if (this == &aCorrFctn) return *this; fyAnalysis = aCorrFctn.fyAnalysis; return *this; }
 
 #endif

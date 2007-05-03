@@ -1,26 +1,24 @@
+////////////////////////////////////////////////////////////////////////////////
+///                                                                          ///
+/// AliFemtoEventReaderESD - the reader class for the Alice ESD              ///
+/// Reads in ESD information and converts it into internal AliFemtoEvent     ///
+/// Reads in AliESDfriend to create shared hit/quality information           ///
+/// Authors: Marek Chojnacki mchojnacki@knf.pw.edu.pl                        ///
+///          Adam Kisiel kisiel@mps.ohio-state.edu                           ///
+///                                                                          ///
+////////////////////////////////////////////////////////////////////////////////
+
 /*
  *$Id$
  *$Log$
+ *Revision 1.4  2007/04/27 07:28:34  akisiel
+ *Remove event number reading due to interface changes
+ *
  *Revision 1.3  2007/04/27 07:25:16  akisiel
  *Make revisions needed for compilation from the main AliRoot tree
  *
  *Revision 1.1.1.1  2007/04/25 15:38:41  panos
  *Importing the HBT code dir
- *
- *Revision 1.5  2007-04-03 16:00:08  mchojnacki
- *Changes to iprove memory managing
- *
- *Revision 1.4  2007/03/13 15:30:03  mchojnacki
- *adding reader for simulated data
- *
- *Revision 1.3  2007/03/08 14:58:03  mchojnacki
- *adding some alice stuff
- *
- *Revision 1.2  2007/03/07 13:36:16  mchojnacki
- *Add some comments
- *
- *Revision 1.1.1.1  2007/03/07 10:14:49  mchojnacki
- *First version on CVS
  *
  */
 
@@ -56,10 +54,13 @@ AliFemtoEventReaderESD::AliFemtoEventReaderESD():
   fNumberofEvent(0),
   fCurEvent(0),
   fCurFile(0),
+  fListOfFiles(0x0),
   fTree(0x0),
   fEvent(0x0),
   fEsdFile(0x0),
-  fEventFriend(0)
+  fEventFriend(0),
+  fSharedList(0x0),
+  fClusterPerPadrow(0x0)
 {
   fClusterPerPadrow = (list<Int_t> **) malloc(sizeof(list<Int_t> *) * AliESDfriendTrack::kMaxTPCcluster);
   for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
@@ -71,6 +72,50 @@ AliFemtoEventReaderESD::AliFemtoEventReaderESD():
   }
 }
 
+AliFemtoEventReaderESD::AliFemtoEventReaderESD(const AliFemtoEventReaderESD &aReader) :
+  fInputFile(" "),
+  fFileName(" "),
+  fConstrained(true),
+  fNumberofEvent(0),
+  fCurEvent(0),
+  fCurFile(0),
+  fListOfFiles(0x0),
+  fTree(0x0),
+  fEvent(0x0),
+  fEsdFile(0x0),
+  fEventFriend(0),
+  fSharedList(0x0),
+  fClusterPerPadrow(0x0)
+{
+  fInputFile = aReader.fInputFile;
+  fFileName  = aReader.fFileName;
+  fConstrained = aReader.fConstrained;
+  fNumberofEvent = aReader.fNumberofEvent;
+  fCurEvent = aReader.fCurEvent;
+  fCurFile = aReader.fCurFile;
+  fTree = aReader.fTree->CloneTree();
+  fEvent = new AliESD(*aReader.fEvent);
+  fEsdFile = new TFile(aReader.fEsdFile->GetName());
+  fEventFriend = aReader.fEventFriend;
+  fClusterPerPadrow = (list<Int_t> **) malloc(sizeof(list<Int_t> *) * AliESDfriendTrack::kMaxTPCcluster);
+  for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
+    fClusterPerPadrow[tPad] = new list<Int_t>();
+    list<Int_t>::iterator iter;
+    for (iter=aReader.fClusterPerPadrow[tPad]->begin(); iter!=aReader.fClusterPerPadrow[tPad]->end(); iter++) {
+      fClusterPerPadrow[tPad]->push_back(*iter);
+    }
+  }
+  fSharedList = (list<Int_t> **) malloc(sizeof(list<Int_t> *) * AliESDfriendTrack::kMaxTPCcluster);
+  for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
+    fSharedList[tPad] = new list<Int_t>();
+    list<Int_t>::iterator iter;
+    for (iter=aReader.fSharedList[tPad]->begin(); iter!=aReader.fSharedList[tPad]->end(); iter++) {
+      fSharedList[tPad]->push_back(*iter);
+    }
+  }
+  for (unsigned int veciter = 0; veciter<aReader.fListOfFiles.size(); veciter++)
+    fListOfFiles.push_back(aReader.fListOfFiles[veciter]);
+}
 //__________________
 //Destructor
 AliFemtoEventReaderESD::~AliFemtoEventReaderESD()
@@ -92,6 +137,64 @@ AliFemtoEventReaderESD::~AliFemtoEventReaderESD()
   delete [] fSharedList;
 }
 
+//__________________
+AliFemtoEventReaderESD& AliFemtoEventReaderESD::operator=(const AliFemtoEventReaderESD& aReader)
+{
+  if (this == &aReader)
+    return *this;
+
+  fInputFile = aReader.fInputFile;
+  fFileName  = aReader.fFileName;
+  fConstrained = aReader.fConstrained;
+  fNumberofEvent = aReader.fNumberofEvent;
+  fCurEvent = aReader.fCurEvent;
+  fCurFile = aReader.fCurFile;
+  if (fTree) delete fTree;
+  fTree = aReader.fTree->CloneTree();
+  if (fEvent) delete fEvent;
+  fEvent = new AliESD(*aReader.fEvent);
+  if (fEsdFile) delete fEsdFile;
+  fEsdFile = new TFile(aReader.fEsdFile->GetName());
+
+  fEventFriend = aReader.fEventFriend;
+  
+  if (fClusterPerPadrow) {
+    for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
+      fClusterPerPadrow[tPad]->clear();
+      delete fClusterPerPadrow[tPad];
+    }
+    delete [] fClusterPerPadrow;
+  }
+  
+  if (fSharedList) {
+    for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
+      fSharedList[tPad]->clear();
+      delete fSharedList[tPad];
+    }
+    delete [] fSharedList;
+  }
+
+  fClusterPerPadrow = (list<Int_t> **) malloc(sizeof(list<Int_t> *) * AliESDfriendTrack::kMaxTPCcluster);
+  for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
+    fClusterPerPadrow[tPad] = new list<Int_t>();
+    list<Int_t>::iterator iter;
+    for (iter=aReader.fClusterPerPadrow[tPad]->begin(); iter!=aReader.fClusterPerPadrow[tPad]->end(); iter++) {
+      fClusterPerPadrow[tPad]->push_back(*iter);
+    }
+  }
+  fSharedList = (list<Int_t> **) malloc(sizeof(list<Int_t> *) * AliESDfriendTrack::kMaxTPCcluster);
+  for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
+    fSharedList[tPad] = new list<Int_t>();
+    list<Int_t>::iterator iter;
+    for (iter=aReader.fSharedList[tPad]->begin(); iter!=aReader.fSharedList[tPad]->end(); iter++) {
+      fSharedList[tPad]->push_back(*iter);
+    }
+  }
+  for (unsigned int veciter = 0; veciter<aReader.fListOfFiles.size(); veciter++)
+    fListOfFiles.push_back(aReader.fListOfFiles[veciter]);
+  
+  return *this;
+}
 //__________________
 AliFemtoString AliFemtoEventReaderESD::Report()
 {
@@ -254,7 +357,7 @@ AliFemtoEvent* AliFemtoEventReaderESD::ReturnHbtEvent()
     for (int tNcl=0; tNcl<AliESDfriendTrack::kMaxTPCcluster; tNcl++) {
       if (tTrackIndices[tNcl] >= 0) {
 	tClustIter = find(fClusterPerPadrow[tNcl]->begin(), fClusterPerPadrow[tNcl]->end(), tTrackIndices[tNcl]);
-	if (tClustIter == fClusterPerPadrow[tNcl]->end()) {
+	  if (tClustIter == fClusterPerPadrow[tNcl]->end()) {
 	  fClusterPerPadrow[tNcl]->push_back(tTrackIndices[tNcl]);
 	}
 	else {
@@ -271,7 +374,7 @@ AliFemtoEvent* AliFemtoEventReaderESD::ReturnHbtEvent()
 		
       AliFemtoTrack* trackCopy = new AliFemtoTrack();	
       const AliESDtrack *esdtrack=fEvent->GetTrack(i);//getting next track
-      const AliESDfriendTrack *tESDfriendTrack = esdtrack->GetFriendTrack();
+      //      const AliESDfriendTrack *tESDfriendTrack = esdtrack->GetFriendTrack();
 
       trackCopy->SetCharge((short)esdtrack->GetSign());
 

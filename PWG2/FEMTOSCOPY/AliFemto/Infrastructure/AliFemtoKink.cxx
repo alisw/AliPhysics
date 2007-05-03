@@ -12,6 +12,9 @@
  ***********************************************************************
  *
  * $Log$
+ * Revision 1.3  2007/04/27 07:24:34  akisiel
+ * Make revisions needed for compilation from the main AliRoot tree
+ *
  * Revision 1.1.1.1  2007/04/25 15:38:41  panos
  * Importing the HBT code dir
  *
@@ -49,7 +52,25 @@
 #include "Infrastructure/phys_constants.h"
 #include "Infrastructure/AliFemtoTrack.h"
 // -----------------------------------------------------------------------
-AliFemtoKink::AliFemtoKink(const AliFemtoKink& k){ // copy constructor
+AliFemtoKink::AliFemtoKink():
+  fDcaParentDaughter(0), fDcaDaughterPrimaryVertex(0), 
+  fDcaParentPrimaryVertex(0), fHitDistanceParentDaughter(0),  
+  fHitDistanceParentVertex(0),
+  fDecayAngle(0), fDecayAngleCM(0),             
+  fDaughter(),            
+  mParent(),               
+  mPosition(0,0,0)        
+{/* no-op */}
+// -----------------------------------------------------------------------
+AliFemtoKink::AliFemtoKink(const AliFemtoKink& k):
+  fDcaParentDaughter(0), fDcaDaughterPrimaryVertex(0), 
+  fDcaParentPrimaryVertex(0), fHitDistanceParentDaughter(0),  
+  fHitDistanceParentVertex(0),
+  fDecayAngle(0), fDecayAngleCM(0),             
+  fDaughter(),            
+  mParent(),               
+  mPosition(0,0,0)        
+{ // copy constructor
 
   fDcaParentDaughter          =   k.fDcaParentDaughter;           
   fDcaDaughterPrimaryVertex   =   k.fDcaDaughterPrimaryVertex;    
