@@ -81,7 +81,9 @@ void AliMathBase::EvaluateUni(Int_t nvectors, Double_t *data, Double_t &mean
   Double_t sumx2 =0;
   Int_t    bestindex = -1;
   Double_t bestmean  = 0; 
-  Double_t bestsigma = data[index[nvectors-1]]-data[index[0]];   // maximal possible sigma
+  Double_t bestsigma = (data[index[nvectors-1]]-data[index[0]]+1.);   // maximal possible sigma
+  bestsigma *=bestsigma;
+
   for (Int_t i=0; i<hh; i++){
     sumx  += data[index[i]];
     sumx2 += data[index[i]]*data[index[i]];
