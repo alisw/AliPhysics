@@ -26,7 +26,7 @@ class AliDetectorTag : public TObject {
   
   //____________________________________________________//
   void AliDetectorTag::SetDetectorMask(UInt_t mask) {fMask = mask; Int2Bin();}
-  void PrintDetectorMask();
+  void AliDetectorTag::PrintDetectorMask();
 
   //____________________________________________________//
   Bool_t GetITSSPD() const {return fITSSPD;}
