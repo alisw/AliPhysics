@@ -130,11 +130,13 @@ TChain *AliTagAnalysis::QueryTags(AliRunTagCuts *RunTagCuts, AliEventTagCuts *Ev
   //event tag cuts from the AliEventTagCuts object
   //and returns a TChain along with the associated TEventList
   AliInfo(Form("Querying the tags........"));
-  
+
+  TString fAliceFile = "esdTree";
+
   //ESD file chain
-  TChain *fESDchain = new TChain("esdTree");
-  //Event list
-  TEventList *fEventList = new TEventList();
+  TChain *fESDchain = new TChain(fAliceFile.Data());
+  //global entry list
+  TEntryList *fGlobalList = new TEntryList();
   
   //Defining tag objects
   AliRunTag *tag = new AliRunTag;
@@ -149,6 +151,7 @@ TChain *AliTagAnalysis::QueryTags(AliRunTagCuts *RunTagCuts, AliEventTagCuts *Ev
   for(Int_t iTagFiles = 0; iTagFiles < fChain->GetEntries(); iTagFiles++) {
     fChain->GetEntry(iTagFiles);
     if(RunTagCuts->IsAccepted(tag)) {
+      TEntryList *fLocalList = new TEntryList();
       Int_t iEvents = tag->GetNEvents();
       const TClonesArray *tagList = tag->GetEventTags();
       for(Int_t i = 0; i < iEvents; i++) {
@@ -156,16 +159,19 @@ TChain *AliTagAnalysis::QueryTags(AliRunTagCuts *RunTagCuts, AliEventTagCuts *Ev
 	guid = evTag->GetGUID(); 
 	turl = evTag->GetTURL(); 
 	path = evTag->GetPath();
-	if(EvTagCuts->IsAccepted(evTag)) fEventList->Enter(iAccepted+i);
+	fLocalList->SetTreeName(fAliceFile.Data());
+	fLocalList->SetFileName(turl.Data());
+	if(EvTagCuts->IsAccepted(evTag)) fLocalList->Enter(i);
       }//event loop
-      iAccepted += iEvents;
     
       if(path != "") fESDchain->AddFile(path);
       else if(turl != "") fESDchain->AddFile(turl);
+      fGlobalList->Add(fLocalList);
+      iAccepted += fLocalList->GetN();
     }//run tags cut
   }//tag file loop
-  AliInfo(Form("Accepted events: %d",fEventList->GetN()));
-  fESDchain->SetEventList(fEventList);
+  AliInfo(Form("Accepted events: %d",iAccepted));
+  fESDchain->SetEntryList(fGlobalList,"ne");
    
   return fESDchain;
 }
@@ -177,10 +183,12 @@ TChain *AliTagAnalysis::QueryTags(const char *fRunCut, const char *fEventCut) {
   //and returns a TChain along with the associated TEventList 	 
   AliInfo(Form("Querying the tags........")); 	 
   
-  //ESD file chain 	 
-  TChain *fESDchain = new TChain("esdTree"); 	 
-  //Event list 	 
-  TEventList *fEventList = new TEventList(); 	 
+  TString fAliceFile = "esdTree";
+
+  //ESD file chain
+  TChain *fESDchain = new TChain(fAliceFile.Data());
+  //global entry list
+  TEntryList *fGlobalList = new TEntryList();
   
   //Defining tag objects 	 
   AliRunTag *tag = new AliRunTag; 	 
@@ -204,6 +212,7 @@ TChain *AliTagAnalysis::QueryTags(const char *fRunCut, const char *fEventCut) {
       current = fChain->GetTreeNumber(); 	 
     } 	 
     if(fRunFormula->EvalInstance(iTagFiles) == 1) { 	 
+      TEntryList *fLocalList = new TEntryList();
       Int_t iEvents = fEventFormula->GetNdata(); 	 
       const TClonesArray *tagList = tag->GetEventTags(); 	 
       for(Int_t i = 0; i < iEvents; i++) { 	 
@@ -211,16 +220,20 @@ TChain *AliTagAnalysis::QueryTags(const char *fRunCut, const char *fEventCut) {
 	guid = evTag->GetGUID(); 	 
 	turl = evTag->GetTURL(); 	 
 	path = evTag->GetPath(); 	 
-	if(fEventFormula->EvalInstance(i) == 1) fEventList->Enter(iAccepted+i); 	 
+	fLocalList->SetTreeName(fAliceFile.Data());
+	fLocalList->SetFileName(turl.Data());
+	if(fEventFormula->EvalInstance(i) == 1) fLocalList->Enter(i);
       }//event loop 	 
-      iAccepted += iEvents; 	 
+      iAccepted += fLocalList->GetN(); 	 
       
       if(path != "") fESDchain->AddFile(path); 	 
       else if(turl != "") fESDchain->AddFile(turl); 	 
+      fGlobalList->Add(fLocalList);
+      iAccepted += fLocalList->GetN();
     }//run tag cut 	 
   }//tag file loop 	 
-  AliInfo(Form("Accepted events: %d",fEventList->GetN())); 	 
-  fESDchain->SetEventList(fEventList); 	 
+  AliInfo(Form("Accepted events: %d",iAccepted)); 	 
+  fESDchain->SetEntryList(fGlobalList,"ne"); 	 
   
   return fESDchain; 	 
 }
@@ -236,8 +249,6 @@ Bool_t AliTagAnalysis::CreateXMLCollection(const char* name, AliRunTagCuts *RunT
   collection->SetCollectionName(name);
   collection->WriteHeader();
 
-  //Event list
-  //TEntryList *fEventList = new TEntryList();
   TString guid = 0x0;
   TString turl = 0x0;
   TString lfn = 0x0;
