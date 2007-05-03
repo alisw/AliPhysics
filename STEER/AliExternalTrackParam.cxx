@@ -215,6 +215,7 @@ Bool_t AliExternalTrackParam::CorrectForMaterial
      d*=x0;
      Double_t dE=Bethe(beta2)*d;
      Double_t e=TMath::Sqrt(p2 + mass*mass);
+     if ( TMath::Abs(dE) > 0.3*e ) return kFALSE; //30% energy loss is too much!
      fP4*=(1.- e/p2*dE);
 
      // Approximate energy loss fluctuation (M.Ivanov)
