@@ -1,7 +1,9 @@
 SRCS= FEMTOSCOPY/AliFemtoUser/Cut/AliFemtoQPairCut.cxx \
       FEMTOSCOPY/AliFemtoUser/Cut/AliFemtoShareQualityPairCut.cxx \
       FEMTOSCOPY/AliFemtoUser/Cut/AliFemtoESDTrackCut.cxx \
-      FEMTOSCOPY/AliFemtoUser/CorrFctn/AliFemtoShareQualityCorrFctn.cxx 
+      FEMTOSCOPY/AliFemtoUser/CorrFctn/AliFemtoShareQualityCorrFctn.cxx \
+      FEMTOSCOPY/AliFemtoUser/Model/AliFemtoModelCorrFctnSource.cxx \
+      FEMTOSCOPY/AliFemtoUser/Model/AliFemtoModelGausRinvFreezeOutGenerator.cxx 
 
 HDRS= $(SRCS:.cxx=.h) 
 
@@ -9,5 +11,5 @@ DHDR:= PWG2femtoscopyUserLinkDef.h
 
 EXPORT:=
 
-EINCLUDE:= PWG2/FEMTOSCOPY/AliFemto PWG2/FEMTOSCOPY/AliFemto/Base PWG2/FEMTOSCOPY/AliFemto/Infrastructure PWG2/FEMTOSCOPY/AliFemto/Reader PWG2/FEMTOSCOPY/AliFemto/Cut PWG2/FEMTOSCOPY/AliFemto/CorrFctn PWG2/FEMTOSCOPY/AliFemtoUser PWG2/FEMTOSCOPY/AliFemtoUser/Cut PWG2/FEMTOSCOPY/AliFemtoUser/CorrFctn
+EINCLUDE:= PWG2/FEMTOSCOPY/AliFemto PWG2/FEMTOSCOPY/AliFemto/Base PWG2/FEMTOSCOPY/AliFemto/Infrastructure PWG2/FEMTOSCOPY/AliFemto/Reader PWG2/FEMTOSCOPY/AliFemto/Cut PWG2/FEMTOSCOPY/AliFemto/CorrFctn PWG2/FEMTOSCOPY/AliFemtoUser PWG2/FEMTOSCOPY/AliFemtoUser/Cut PWG2/FEMTOSCOPY/AliFemtoUser/CorrFctn PWG2/FEMTOSCOPY/AliFemtoUser/Model
 

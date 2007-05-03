@@ -17,6 +17,8 @@
 #pragma link C++ class AliFemtoESDTrackCut;
 #pragma link C++ class AliFemtoQPairCut;
 #pragma link C++ class AliFemtoShareQualityCorrFctn;
+#pragma link C++ class AliFemtoModelCorrFctnSource;
+#pragma link C++ class AliFemtoModelGausRinvFreezeOutGenerator;
 //#pragma link C++ class AliStHbtEvent;
 //#pragma link C++ class AliStHbtEventReader;
 //#pragma link C++ class AliStHbtPythiaOnFlyEventReader;

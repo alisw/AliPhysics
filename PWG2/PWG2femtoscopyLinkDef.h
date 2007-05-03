@@ -27,3 +27,10 @@
 #pragma link C++ class AliFmThreeVectorF;
 #pragma link C++ class AliFemtoEventReaderESD;
 #pragma link C++ class AliFemtoEventReaderESDChain;
+#pragma link C++ class AliFemtoModelManager;
+#pragma link C++ class AliFemtoModelWeightGenerator;
+#pragma link C++ class AliFemtoModelWeightGeneratorBasic;
+#pragma link C++ class AliFemtoModelFreezeOutGenerator;
+#pragma link C++ class AliFemtoModelGausLCMSFreezeOutGenerator;
+#pragma link C++ class AliFemtoModelHiddenInfo;
+#pragma link C++ class AliFemtoModelCorrFctn;
