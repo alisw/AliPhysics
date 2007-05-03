@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2007/04/18 14:49:54  arcelli
+Some code cleanup, added more debug info
+
 Revision 1.13  2007/04/17 16:38:36  arcelli
 Include Methods to derive TOF AlignObjs from Survey Data
 
@@ -327,10 +330,10 @@ void AliTOFAlignment::BuildGeomForSurvey()
   TGeoVolume* fm = new TGeoVolume("FM",fmbox);
   fm->SetLineColor(2);//color
 
-  TGeoTranslation* Atr = new TGeoTranslation("Atr",-fgkXFM, fgkYFM ,fgkZFM);
-  TGeoTranslation* Btr = new TGeoTranslation("Btr", fgkXFM, fgkYFM, fgkZFM);
-  TGeoTranslation* Ctr = new TGeoTranslation("Ctr", fgkXFM, fgkYFM,-fgkZFM);
-  TGeoTranslation* Dtr = new TGeoTranslation("Dtr",-fgkXFM, fgkYFM,-fgkZFM);
+  TGeoTranslation* mAtr = new TGeoTranslation("mAtr",-fgkXFM, fgkYFM ,fgkZFM);
+  TGeoTranslation* mBtr = new TGeoTranslation("mBtr", fgkXFM, fgkYFM, fgkZFM);
+  TGeoTranslation* mCtr = new TGeoTranslation("mCtr", fgkXFM, fgkYFM,-fgkZFM);
+  TGeoTranslation* mDtr = new TGeoTranslation("mDtr",-fgkXFM, fgkYFM,-fgkZFM);
 
   // position all this stuff in the global ALICE frame
 
@@ -359,10 +362,10 @@ void AliTOFAlignment::BuildGeomForSurvey()
     box0[iSM]->SetLineColor(1); //black
     top->AddNode(box0[iSM],1,smTrans); //place the extended SM volume
     box0[iSM]->AddNode(box1,1); //place the inner SM volume
-    box0[iSM]->AddNode(fm,1,Atr);
-    box0[iSM]->AddNode(fm,2,Btr);
-    box0[iSM]->AddNode(fm,3,Ctr);
-    box0[iSM]->AddNode(fm,4,Dtr);
+    box0[iSM]->AddNode(fm,1,mAtr);
+    box0[iSM]->AddNode(fm,2,mBtr);
+    box0[iSM]->AddNode(fm,3,mCtr);
+    box0[iSM]->AddNode(fm,4,mDtr);
   }  
 
   fTOFmgr->CloseGeometry();
@@ -388,10 +391,10 @@ void AliTOFAlignment::InsertMisAlignment( Float_t *mis)
 {
   // Now Apply the Displacements and store the misaligned FM positions...
 
-  Double_t A[3]={-fgkXFM,fgkYFM, fgkZFM};
-  Double_t B[3]={ fgkXFM,fgkYFM, fgkZFM};
-  Double_t C[3]={ fgkXFM,fgkYFM,-fgkZFM};
-  Double_t D[3]={-fgkXFM,fgkYFM,-fgkZFM};
+  Double_t lA[3]={-fgkXFM,fgkYFM, fgkZFM};
+  Double_t lB[3]={ fgkXFM,fgkYFM, fgkZFM};
+  Double_t lC[3]={ fgkXFM,fgkYFM,-fgkZFM};
+  Double_t lD[3]={-fgkXFM,fgkYFM,-fgkZFM};
 
   for(Int_t iSM=0;iSM<18;iSM++){
   // ************* get ideal global matrix *******************
@@ -406,10 +409,10 @@ void AliTOFAlignment::InsertMisAlignment( Float_t *mis)
     TGeoMatrix* l3 = n3->GetMatrix(); 
 
     Double_t gA[3], gB[3], gC[3], gD[3]; // ideal FM point coord., global RS
-    g3.LocalToMaster(A,gA);
-    g3.LocalToMaster(B,gB);
-    g3.LocalToMaster(C,gC);
-    g3.LocalToMaster(D,gD);
+    g3.LocalToMaster(lA,gA);
+    g3.LocalToMaster(lB,gB);
+    g3.LocalToMaster(lC,gC);
+    g3.LocalToMaster(lD,gD);
 
 
     // We apply a delta transformation to the surveyed vol to represent
@@ -437,10 +440,10 @@ void AliTOFAlignment::InsertMisAlignment( Float_t *mis)
     printf("\n\n*************  The Misaligned Matrix in GRS **************\n");
     ng3->Print();
     Double_t ngA[3], ngB[3], ngC[3], ngD[3];// real FM point coord., global RS
-    ng3->LocalToMaster(A,ngA);
-    ng3->LocalToMaster(B,ngB);
-    ng3->LocalToMaster(C,ngC);
-    ng3->LocalToMaster(D,ngD);    
+    ng3->LocalToMaster(lA,ngA);
+    ng3->LocalToMaster(lB,ngB);
+    ng3->LocalToMaster(lC,ngC);
+    ng3->LocalToMaster(lD,ngD);    
 
     for(Int_t iFM=0;iFM<3;iFM++){
       fTOFSurveyFM[iSM][0][iFM]=ngA[iFM];
