@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2007/04/27 17:41:01  arcelli
+merge DistanceToPad and IsInsideThePad methods
+
 Revision 1.8  2007/02/19 18:55:26  decaro
 Added getter methods for volume path (for Event Display)
 
@@ -288,7 +291,7 @@ Bool_t AliTOFGeometryV5::IsInsideThePadPar(Int_t *det, Float_t *pos) const
   //const Float_t klstripx = fgkStripLength;
   */
 
-  const Float_t padDepth = 0.5;//0.05;//0.11;//0.16;//          // heigth of Sensitive Layer
+  const Float_t kPadDepth = 0.5;//0.05;//0.11;//0.16;//          // heigth of Sensitive Layer
 
   //Transform pos into Sector Frame
 
@@ -332,7 +335,7 @@ Bool_t AliTOFGeometryV5::IsInsideThePadPar(Int_t *det, Float_t *pos) const
   Float_t yr =  yt;
   Float_t zr = -xt*TMath::Sin(alpha/kRaddeg)+zt*TMath::Cos(alpha/kRaddeg);
 
-  if(TMath::Abs(xr)<=padDepth*0.5 && TMath::Abs(yr)<= (fgkXPad*0.5) && TMath::Abs(zr)<= (fgkZPad*0.5))
+  if(TMath::Abs(xr)<=kPadDepth*0.5 && TMath::Abs(yr)<= (fgkXPad*0.5) && TMath::Abs(zr)<= (fgkZPad*0.5))
     isInside=true;
   return isInside;
 
@@ -347,7 +350,7 @@ Bool_t AliTOFGeometryV5::IsInsideThePad(TGeoHMatrix mat, Float_t *pos, Float_t *
 // inside pad with Detector Indices idet (iSect,iPlate,iStrip,iPadX,iPadZ) 
 //
 
-  const Float_t padDepth = 0.5;      // heigth of Sensitive Layer
+  const Float_t kPadDepth = 0.5;      // heigth of Sensitive Layer
   Double_t vecg[3];
   vecg[0]=pos[0];
   vecg[1]=pos[1];
@@ -371,7 +374,7 @@ Bool_t AliTOFGeometryV5::IsInsideThePad(TGeoHMatrix mat, Float_t *pos, Float_t *
   }
  
   Bool_t isInside=false; 
-  if(TMath::Abs(xr)<= padDepth*0.5 && TMath::Abs(yr)<= (fgkXPad*0.5) && TMath::Abs(zr)<= (fgkZPad*0.5))
+  if(TMath::Abs(xr)<= kPadDepth*0.5 && TMath::Abs(yr)<= (fgkXPad*0.5) && TMath::Abs(zr)<= (fgkZPad*0.5))
     isInside=true; 
   return isInside;
 
