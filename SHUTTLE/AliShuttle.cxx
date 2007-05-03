@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.41  2007/05/03 08:00:48  jgrosseo
+fixing log message when pp want to skip dcs value retrieval
+
 Revision 1.40  2007/04/27 07:06:48  jgrosseo
 GetFileSources returns empty list in case of no files, but successful query
 No mails sent in testmode
@@ -1339,7 +1342,7 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 	{
 		Log(fCurrentDetector, "The preprocessor requested to skip the retrieval of DCS values");
 	}
-	else if (fTestMode & kSkipDCS))
+	else if (fTestMode & kSkipDCS)
 	{
 		Log(fCurrentDetector, "In TESTMODE - Skipping DCS processing!");
 	} 
