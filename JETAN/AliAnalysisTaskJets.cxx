@@ -17,6 +17,7 @@
 #include <TSystem.h>
 #include <TInterpreter.h>
 #include <TChain.h>
+#include <TFile.h>
 #include <TH1.h>
 
 #include "AliAnalysisTaskJets.h"
@@ -53,6 +54,7 @@ AliAnalysisTaskJets::AliAnalysisTaskJets(const char* name):
 void AliAnalysisTaskJets::CreateOutputObjects()
 {
 // Create the output container
+    OpenFile(0);
     fTreeJ = fJetFinder->MakeTreeJ("TreeJ");
 }
 
@@ -66,6 +68,8 @@ void AliAnalysisTaskJets::Init()
     fJetFinder = (AliJetFinder*) gInterpreter->ProcessLine("ConfigJetAnalysis()");
     // Initialise Jet Analysis
     fJetFinder->Init();
+    // Write header information to local file
+    fJetFinder->WriteHeaders();
 }
 
 void AliAnalysisTaskJets::ConnectInputData(Option_t */*option*/)
@@ -73,18 +77,21 @@ void AliAnalysisTaskJets::ConnectInputData(Option_t */*option*/)
 // Connect the input data
 //
     if (fDebug > 1) printf("AnalysisTaskJets::ConnectInputData() \n");
-    char ** address = (char **)GetBranchAddress(0, "ESD");
+    fChain = (TChain*)GetInputData(0);
 
+    char ** address = (char **)GetBranchAddress(0, "ESD");
     if (address)     {
+	
+// Branch has been already connected
 	fESD = (AliESD*)(*address);
     }
     else     {
+// First task taking the branch enables it
 	fESD = new AliESD();
-	SetBranchAddress(0, "ESD", &fESD); // first task taking the branch enables it
+	SetBranchAddress(0, "ESD", &fESD);
     }
-    fChain = (TChain*)GetInputData(0);
+    
     fJetFinder->ConnectTree(fChain, fESD);
-    fJetFinder->WriteHeaders();
 }
 
 void AliAnalysisTaskJets::Exec(Option_t */*option*/)
@@ -92,7 +99,7 @@ void AliAnalysisTaskJets::Exec(Option_t */*option*/)
 // Execute analysis for current event
 //
     Long64_t ientry = fChain->GetReadEntry();
-    if (fDebug > 1) printf("Analysing event # %5d \n", (Int_t) ientry);
+    if (fDebug > 1) printf("Analysing event # %5d\n", (Int_t) ientry);
     fJetFinder->ProcessEvent(ientry);
     PostData(0, fTreeJ);
 }
@@ -102,7 +109,6 @@ void AliAnalysisTaskJets::Terminate(Option_t */*option*/)
 // Terminate analysis
 //
     if (fDebug > 1) printf("AnalysisJets: Terminate() \n");
-   
-    if (fJetFinder) fJetFinder->FinishRun();
+    // if (fJetFinder) fJetFinder->FinishRun();
 }
 

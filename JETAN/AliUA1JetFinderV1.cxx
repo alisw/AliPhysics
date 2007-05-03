@@ -161,6 +161,8 @@ void AliUA1JetFinderV1::FindJets()
   // add jets to list
   Int_t* idxjets = new Int_t[nj];
   Int_t nselectj = 0;
+  printf("Found %d jets \n", nj);
+  
   for(Int_t kj=0; kj<nj; kj++){
      if ((etaJet[kj] > (header->GetJetEtaMax())) ||
           (etaJet[kj] < (header->GetJetEtaMin())) ||
@@ -802,7 +804,6 @@ void AliUA1JetFinderV1::Reset()
 void AliUA1JetFinderV1::WriteJHeaderToFile()
 {
   AliUA1JetHeaderV1* header = (AliUA1JetHeaderV1*) fHeader;
-  fOut->cd();
   header->Write();
 }
 

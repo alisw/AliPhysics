@@ -148,7 +148,7 @@ Bool_t AliJetESDReader::FillMomentumArray(Int_t event)
   ClearArray();
   fDebug = fReaderHeader->GetDebug();
   // get event from chain
-  fChain->GetTree()->GetEntry(event);
+  // fChain->GetTree()->GetEntry(event);
   
   if (!fESD) {
       return kFALSE;

@@ -20,6 +20,7 @@ class AliAnalysisTaskJets : public AliAnalysisTask
     virtual void ConnectInputData(Option_t *option = "");
     virtual void CreateOutputObjects();
     virtual void Init();
+    virtual void LocalInit() {Init();}
     virtual void Exec(Option_t *option);
     virtual void Terminate(Option_t *option);
     virtual void SetDebugLevel(Int_t level) {fDebug = level;}
