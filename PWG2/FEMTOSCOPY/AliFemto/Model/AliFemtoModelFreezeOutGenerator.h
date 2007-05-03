@@ -35,21 +35,6 @@ class AliFemtoModelFreezeOutGenerator
     
 };
 
-inline AliFemtoModelFreezeOutGenerator::AliFemtoModelFreezeOutGenerator(): fRandom(0) { /* no-op */ };
-inline AliFemtoModelFreezeOutGenerator::AliFemtoModelFreezeOutGenerator(AliFemtoModelFreezeOutGenerator &aModel): fRandom(0){/* no-op */};
-inline AliFemtoModelFreezeOutGenerator& AliFemtoModelFreezeOutGenerator::operator=(const AliFemtoModelFreezeOutGenerator& aGen) 
-{ 
-  if (this == &aGen) return *this; 
-  if (aGen.fRandom) 
-    fRandom = new TRandom2(*aGen.fRandom);
-  else 
-    fRandom=0; 
-  return *this; 
-};
-
-inline AliFemtoModelFreezeOutGenerator::AliFemtoModelFreezeOutGenerator* Clone() { return 0; };
-
-
 #endif
 
 
