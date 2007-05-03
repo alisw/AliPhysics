@@ -41,7 +41,7 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTProcessor
   virtual void GetInputDataTypes(std::vector<AliHLTComponentDataType, std::allocator<AliHLTComponentDataType> >&);
   virtual AliHLTComponentDataType GetOutputDataType();
   virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
-  virtual AliHLTComponent* Spawn() = 0;
+  virtual AliHLTComponent* Spawn() = 0; 
   virtual int DoEvent(const AliHLTComponentEventData&, const AliHLTComponentBlockData*, AliHLTComponentTriggerData&, AliHLTUInt8_t*, AliHLTUInt32_t&, std::vector<AliHLTComponentBlockData, std::allocator<AliHLTComponentBlockData> >& );
 
  protected:
@@ -50,7 +50,7 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTProcessor
   void Reset();
   void ResetDataPtr(int startindex = 0, int sampleCnt = 0);
   static int fgEventCount;       /**<Global event counter for this component*/
-  AliHLTUInt16_t fEquippmentID;  /**<Equippment ID as defined by ALICE*/
+  const AliHLTUInt16_t fEquippmentID;  /**<Equippment ID as defined by ALICE*/
   AliHLTUInt8_t  fModuleID;      /**<ID of the module this component read data from (0-4)*/
   AliHLTUInt8_t  fRcuX;          /**<X position of RCU the data from this Equippment comes from (0 or 1)*/
   AliHLTUInt8_t  fRcuZ;          /**<Z position of RCU the data from this Equippment comes from (0 or 1)*/

@@ -302,10 +302,9 @@ AliHLTPHOSRawAnalyzerComponent::DoInit( int argc, const char** argv )
 	  cout << "AliHLTPHOSRawAnalyzerComponent:DoInit  argument = -equipmentID   "  <<endl;  
 	  if(i+1 <= argc)
 	    {
-	      fEquippmentID = atoi(argv[i+1]);
+	      SetEquippmentID((AliHLTUInt16_t)atoi(argv[i+1]));
 	      cout << "AliHLTPHOSRawAnalyzerComponent:DoInit  setting equippment ID to  " << fEquippmentID <<endl;
 	      fRawMemoryReader->SetEquipmentID(fEquippmentID); 
-	      SetEquippmentID(fEquippmentID);
 	      SetCoordinates(fEquippmentID);
 	      isSetEquippmentID = kTRUE;
 	    }
@@ -443,8 +442,12 @@ AliHLTPHOSRawAnalyzerComponent::ResetDataPtr(int startindex, int sampleCnt)
 void 
 AliHLTPHOSRawAnalyzerComponent::SetEquippmentID(AliHLTUInt16_t id)
 {
-  //shutting up the code checker
-  fEquippmentID = id;
+  ///Changing the value of the constant fEquippmentID
+  ///by virue of const_cast as it should only be set once
+  ///and then remain constant. It caannot be set in the class constructor
+  ///because it should be set in the DoInit fucntion.
+  AliHLTUInt16_t  &ref = const_cast<AliHLTUInt16_t&>(fEquippmentID); 
+  ref = id;
 }
 
 
@@ -490,7 +493,7 @@ AliHLTPHOSRawAnalyzerComponent::SetCoordinates(AliHLTUInt16_t equippmentID)
   fRcuXOffset =  N_XCOLUMNS_RCU*fRcuX;
 
   cout <<"********InitInfo************"<< endl;
-  cout <<"AliHLTPHOSRawAnalyzerComponent::SetCoordinate"<< endl;
+  cout <<"AliHLTPHOSRawAnalyzerComponent::SetCoordinate casted"<< endl;
   cout <<"Equpippment ID =\t"<< fEquippmentID <<endl;
   cout <<"Module ID =\t"<<  (int)fModuleID<<endl;
   cout <<"RCUX =\t\t" << (int)fRcuX << endl;
