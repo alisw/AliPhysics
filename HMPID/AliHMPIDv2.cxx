@@ -45,7 +45,7 @@ void AliHMPIDv2::AddAlignableVolumes()const
 //   Returns: none   
   
   TGeoHMatrix *pGm = new TGeoHMatrix;
-  Double_t trans[3]={0.5*AliHMPIDDigit::SizeAllX(),0.5*AliHMPIDDigit::SizeAllY(),0};                            //clm: translation from tracking RS to TGeo RS 
+  Double_t trans[3]={0.5*AliHMPIDDigit::SizeAllX(),0.5*AliHMPIDDigit::SizeAllY(),0};                            //clm: translation from LORS to TGeo RS 
   pGm->SetTranslation(trans);
  
   for(Int_t i=AliHMPIDDigit::kMinCh;i<=AliHMPIDDigit::kMaxCh;i++) {

@@ -12,7 +12,7 @@
 #include "AliHMPID.h"             //base class 
 #include "AliHMPIDDigitizer.h"    //CreateDigitizer()
 
-class AliHMPIDv2 : public AliHMPID //TObject-TNamed-AliModule-AliDetector-AliHMPID-AliHMPIDv0
+class AliHMPIDv2 : public AliHMPID //TObject-TNamed-AliModule-AliDetector-AliHMPID-AliHMPIDv2
 {
 public:
                  AliHMPIDv2()                                   :AliHMPID(          ),fIdPad(-1),fIdCell(-1) {;}          //default ctor
