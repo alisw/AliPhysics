@@ -54,7 +54,6 @@
 #include <TString.h>
 class TTask;
 #include <TTree.h>
-#include <TDirectory.h>
 
 #include "AliLog.h"
 #include "AliRun.h"
@@ -225,9 +224,6 @@ Int_t AliRunLoader::GetEvent(Int_t evno)
 //Reloads all data properly
 //PH  if (fCurrentEvent == evno) return 0;
   
-  // TDirectory::TContext restores the current directory is restored when the scope ends.
-  TDirectory::TContext context(0);
-
   if (evno < 0)
    {
      AliError("Can not give the event with negative number");
@@ -398,18 +394,15 @@ AliRunLoader* AliRunLoader::Open
 //returns the pointer to run Loader which can be further used for accessing data 
 //in case of error returns NULL
  
-  // TDirectory::TContext restores the current directory is restored when the scope ends.
-  TDirectory::TContext context(0);
-
  static const TString kwebaddress("http://alisoft.cern.ch/people/skowron/codedoc/split/index.html");
  AliDebugClass(1,Form("\n\n\nNew I/O strcture: See more info:\n %s\n\n\n",kwebaddress.Data()));
-
+ 
  AliRunLoader* result = 0x0;
-
+ 
  /* ************************************************ */
  /* Chceck if folder with given name already exists  */
  /* ************************************************ */
-
+ 
  TObject* obj = AliConfig::Instance()->GetTopFolder()->FindObject(eventfoldername);
  if(obj)
   {
@@ -793,11 +786,7 @@ Int_t AliRunLoader::LoadTrigger(Option_t* option)
 
 Int_t AliRunLoader::LoadKinematics(Option_t* option)
 {
-  //Loads the kinematics
-
-  // TDirectory::TContext restores the current directory is restored when the scope ends.
-  TDirectory::TContext context(0);
-
+//Loads the kinematics 
  Int_t retval = fKineDataLoader->GetBaseLoader(0)->Load(option);
  if (retval)
   {
@@ -1320,9 +1309,6 @@ Int_t AliRunLoader::LoadHits(Option_t* detectors,Option_t* opt)
 {
 //LoadHits in selected detectors i.e. detectors="ITS TPC TRD" or "all"
 
-  // TDirectory::TContext restores the current directory is restored when the scope ends.
-  TDirectory::TContext context(0);
-
   AliDebug(1, "Loading Hits");
   TObjArray* loaders;
   TObjArray arr;
@@ -1358,9 +1344,6 @@ Int_t AliRunLoader::LoadSDigits(Option_t* detectors,Option_t* opt)
 {
 //LoadHits in selected detectors i.e. detectors="ITS TPC TRD" or "all"
 
-  // TDirectory::TContext restores the current directory is restored when the scope ends.
-  TDirectory::TContext context(0);
-
   TObjArray* loaders;
   TObjArray arr;
 
@@ -1390,9 +1373,6 @@ Int_t AliRunLoader::LoadDigits(Option_t* detectors,Option_t* opt)
 {
 //LoadHits in selected detectors i.e. detectors="ITS TPC TRD" or "all"
 
-  // TDirectory::TContext restores the current directory is restored when the scope ends.
-  TDirectory::TContext context(0);
-
   TObjArray* loaders;
   TObjArray arr;
 
@@ -1420,9 +1400,6 @@ Int_t AliRunLoader::LoadDigits(Option_t* detectors,Option_t* opt)
 Int_t AliRunLoader::LoadRecPoints(Option_t* detectors,Option_t* opt)
 {
 //LoadHits in selected detectors i.e. detectors="ITS TPC TRD" or "all"
-
-  // TDirectory::TContext restores the current directory is restored when the scope ends.
-  TDirectory::TContext context(0);
 
   TObjArray* loaders;
   TObjArray arr;
@@ -1452,9 +1429,6 @@ Int_t AliRunLoader::LoadRecParticles(Option_t* detectors,Option_t* opt)
 {
 //LoadHits in selected detectors i.e. detectors="ITS TPC TRD" or "all"
 
-  // TDirectory::TContext restores the current directory is restored when the scope ends.
-  TDirectory::TContext context(0);
-
   TObjArray* loaders;
   TObjArray arr;
 
@@ -1482,9 +1456,6 @@ Int_t AliRunLoader::LoadRecParticles(Option_t* detectors,Option_t* opt)
 Int_t AliRunLoader::LoadTracks(Option_t* detectors,Option_t* opt)
 {
 //LoadHits in selected detectors i.e. detectors="ITS TPC TRD" or "all"
-
-  // TDirectory::TContext restores the current directory is restored when the scope ends.
-  TDirectory::TContext context(0);
 
   TObjArray* loaders;
   TObjArray arr;
