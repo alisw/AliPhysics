@@ -24,7 +24,13 @@ SRCS= FEMTOSCOPY/AliFemto/Analysis/AliFemtoAnalysis.cxx \
       FEMTOSCOPY/AliFemto/Infrastructure/TpcLocalTransform.cxx \
       FEMTOSCOPY/AliFemto/Base/AliFemtoEventReader.cxx \
       FEMTOSCOPY/AliFemto/Reader/AliFemtoEventReaderESD.cxx \
-      FEMTOSCOPY/AliFemto/Reader/AliFemtoEventReaderESDChain.cxx 
+      FEMTOSCOPY/AliFemto/Reader/AliFemtoEventReaderESDChain.cxx \
+      FEMTOSCOPY/AliFemto/Model/AliFemtoModelHiddenInfo.cxx \
+      FEMTOSCOPY/AliFemto/Model/AliFemtoModelGausLCMSFreezeOutGenerator.cxx \
+      FEMTOSCOPY/AliFemto/Model/AliFemtoModelWeightGenerator.cxx \
+      FEMTOSCOPY/AliFemto/Model/AliFemtoModelWeightGeneratorBasic.cxx\
+      FEMTOSCOPY/AliFemto/Model/AliFemtoModelManager.cxx \
+      FEMTOSCOPY/AliFemto/Model/AliFemtoModelCorrFctn.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 HDRS += FEMTOSCOPY/AliFemto/Infrastructure/AliFmThreeVector.h \
@@ -35,12 +41,13 @@ HDRS += FEMTOSCOPY/AliFemto/Infrastructure/AliFmThreeVector.h \
         FEMTOSCOPY/AliFemto/Infrastructure/AliFmLorentzVectorD.h \
         FEMTOSCOPY/AliFemto/Base/AliFemtoV0Cut.h \
         FEMTOSCOPY/AliFemto/Base/AliFemtoKinkCut.h \
-        FEMTOSCOPY/AliFemto/Base/AliFemtoXiCut.h 
+        FEMTOSCOPY/AliFemto/Base/AliFemtoXiCut.h \
+        FEMTOSCOPY/AliFemto/Model/AliFemtoModelFreezeOutGenerator.h 
 
 
 DHDR:= PWG2femtoscopyLinkDef.h
 
 EXPORT:=
 
-EINCLUDE:= PWG2/FEMTOSCOPY/AliFemto PWG2/FEMTOSCOPY/AliFemto/Base PWG2/FEMTOSCOPY/AliFemto/Infrastructure PWG2/FEMTOSCOPY/AliFemto/Reader PWG2/FEMTOSCOPY/AliFemto/Cut PWG2/FEMTOSCOPY/AliFemto/CorrFctn 
+EINCLUDE:= PWG2/FEMTOSCOPY/AliFemto PWG2/FEMTOSCOPY/AliFemto/Base PWG2/FEMTOSCOPY/AliFemto/Infrastructure PWG2/FEMTOSCOPY/AliFemto/Reader PWG2/FEMTOSCOPY/AliFemto/Cut PWG2/FEMTOSCOPY/AliFemto/CorrFctn PWG2/FEMTOSCOPY/AliFemto/Model
 
