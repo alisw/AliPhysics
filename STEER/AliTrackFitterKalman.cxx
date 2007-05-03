@@ -269,8 +269,8 @@ Bool_t AliTrackFitterKalman::GetPCA(const AliTrackPoint &p, AliTrackPoint &i) co
   tmW+=mC;
   tmW.Invert();
 
-  TMatrixD mW(mC,TMatrixD::kMult,tmW);
-  TMatrixD tW(tC,TMatrixD::kMult,tmW);
+  TMatrixD mW(tC,TMatrixD::kMult,tmW);
+  TMatrixD tW(mC,TMatrixD::kMult,tmW);
 
   TMatrixD mi(mW,TMatrixD::kMult,m);
   TMatrixD ti(tW,TMatrixD::kMult,t);
