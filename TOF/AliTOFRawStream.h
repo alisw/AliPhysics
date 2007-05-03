@@ -458,8 +458,8 @@ class AliTOFRawStream: public TObject {
   Bool_t fInsideTRMchain0;   // inside/outside chain 0
   Bool_t fInsideTRMchain1;   // inside/outside chain 1
 
-  AliTOFHitDataBuffer *fDataBuffer[72];
-  AliTOFHitDataBuffer *fPackedDataBuffer[72];
+  AliTOFHitDataBuffer *fDataBuffer[72]; // pointer to AliTOFHitDataBuffer
+  AliTOFHitDataBuffer *fPackedDataBuffer[72]; // pointer to AliTOFHitDataBuffer
 
   ClassDef(AliTOFRawStream, 2)  // class for reading TOF raw digits
 };
