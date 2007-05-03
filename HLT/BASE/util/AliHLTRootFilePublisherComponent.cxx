@@ -128,10 +128,12 @@ int AliHLTRootFilePublisherComponent::GetEvent( const AliHLTComponentEventData& 
     TH1F *hpx = new TH1F("hpx","px distribution",100,-4,4);
     hpx->FillRandom("gaus",1000);
     PushBack(hpx, "TH1F", "ROOT");
+    delete hpx;
   } else {
     TH1F *hpy = new TH1F("hpy","py distribution",100,-10,10);
     hpy->FillRandom("gaus",10000);
     PushBack(hpy, "TH1F", "ROOT");
+    delete hpy;
   }
 
   return iResult;
