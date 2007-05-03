@@ -36,6 +36,8 @@
 #include "AliTPCCalROC.h"
 #include "AliMathBase.h"
 
+#include "TRandom3.h"      // only needed by the AliTPCCalROCTest() method
+
 ClassImp(AliTPCCalROC)
 
 
@@ -181,18 +183,66 @@ void AliTPCCalROC::Divide(const AliTPCCalROC*  roc) {
   }
 }
 
+Double_t AliTPCCalROC::GetMean(AliTPCCalROC* outlierROC) {
+   if (!outlierROC) return TMath::Mean(fNChannels, fData);
+   Double_t *ddata = new Double_t[fNChannels];
+   Int_t NPoints = 0;
+   for (UInt_t i=0;i<fNChannels;i++) {
+      if (!(outlierROC->GetValue(i))) {
+         ddata[NPoints]= fData[NPoints];
+         NPoints++;
+      }
+   }
+   Double_t mean = TMath::Mean(NPoints, ddata);
+   delete [] ddata;
+   return mean;
+}
 
+Double_t AliTPCCalROC::GetMedian(AliTPCCalROC* outlierROC) {
+   if (!outlierROC) return TMath::Median(fNChannels, fData);
+   Double_t *ddata = new Double_t[fNChannels];
+   Int_t NPoints = 0;
+   for (UInt_t i=0;i<fNChannels;i++) {
+      if (!(outlierROC->GetValue(i))) {
+         ddata[NPoints]= fData[NPoints];
+         NPoints++;
+      }
+   }
+   Double_t mean = TMath::Median(NPoints, ddata);
+   delete [] ddata;
+   return mean;
+}
 
+Double_t AliTPCCalROC::GetRMS(AliTPCCalROC* outlierROC) {
+   if (!outlierROC) return TMath::RMS(fNChannels, fData);
+   Double_t *ddata = new Double_t[fNChannels];
+   Int_t NPoints = 0;
+   for (UInt_t i=0;i<fNChannels;i++) {
+      if (!(outlierROC->GetValue(i))) {
+         ddata[NPoints]= fData[NPoints];
+         NPoints++;
+      }
+   }
+   Double_t mean = TMath::RMS(NPoints, ddata);
+   delete [] ddata;
+   return mean;
+}
 
-Double_t AliTPCCalROC::GetLTM(Double_t *sigma, Double_t fraction){
+Double_t AliTPCCalROC::GetLTM(Double_t *sigma, Double_t fraction, AliTPCCalROC* outlierROC){
   //
   //  Calculate LTM mean and sigma
   //
   Double_t *ddata = new Double_t[fNChannels];
   Double_t mean=0, lsigma=0;
-  Int_t hh = TMath::Min(TMath::Nint(fraction *fNChannels), Int_t(fNChannels));
-  for (UInt_t i=0;i<fNChannels;i++) ddata[i]= fData[i];
-  AliMathBase::EvaluateUni(UInt_t(fNChannels),ddata, mean, lsigma, hh);
+  UInt_t NPoints = 0;
+  for (UInt_t i=0;i<fNChannels;i++) {
+     if (!outlierROC || !(outlierROC->GetValue(i))) {
+        ddata[NPoints]= fData[NPoints];
+        NPoints++;
+     }
+  }
+  Int_t hh = TMath::Min(TMath::Nint(fraction *NPoints), Int_t(NPoints));
+  AliMathBase::EvaluateUni(NPoints,ddata, mean, lsigma, hh);
   if (sigma) *sigma=lsigma;
   delete [] ddata;
   return mean;
@@ -345,10 +395,14 @@ void AliTPCCalROC::Draw(Option_t* opt){
 
 
 
-void AliTPCCalROC::Test(){
+void AliTPCCalROC::Test() {
   //
-  // example function to show functionality and tes AliTPCCalROC
+  // example function to show functionality and test AliTPCCalROC
   //
+
+  Float_t kEpsilon=0.00001;
+  
+  // create CalROC with defined values
   AliTPCCalROC  roc0(0);  
   for (UInt_t irow = 0; irow <roc0.GetNrows(); irow++){
     for (UInt_t ipad = 0; ipad <roc0.GetNPads(irow); ipad++){
@@ -356,31 +410,124 @@ void AliTPCCalROC::Test(){
       roc0.SetValue(irow,ipad,value);
     }
   }
-  //
+  
+  // copy CalROC, readout values and compare to original
   AliTPCCalROC roc1(roc0);
   for (UInt_t irow = 0; irow <roc1.GetNrows(); irow++){
     for (UInt_t ipad = 0; ipad <roc1.GetNPads(irow); ipad++){
       Float_t value  = irow+ipad/1000.;
       if (roc1.GetValue(irow,ipad)!=value){
-	printf("Read/Write error\trow=%d\tpad=%d\n",irow,ipad);
+        printf("Read/Write error\trow=%d\tpad=%d\n",irow,ipad);
       }
     }
-  }  
+  }
+
+  // write original CalROC to file
   TFile f("calcTest.root","recreate");
   roc0.Write("Roc0");
   AliTPCCalROC * roc2 = (AliTPCCalROC*)f.Get("Roc0");
   f.Close();
-  //
+  
+  // read CalROC from file and compare to original CalROC
   for (UInt_t irow = 0; irow <roc0.GetNrows(); irow++){
     if (roc0.GetNPads(irow)!=roc2->GetNPads(irow))
       printf("NPads - Read/Write error\trow=%d\n",irow);
     for (UInt_t ipad = 0; ipad <roc1.GetNPads(irow); ipad++){
       Float_t value  = irow+ipad/1000.;
       if (roc2->GetValue(irow,ipad)!=value){
-	printf("Read/Write error\trow=%d\tpad=%d\n",irow,ipad);
+        printf("Read/Write error\trow=%d\tpad=%d\n",irow,ipad);
       }
     }
-  }   
+  }
+
+  // 
+  // Algebra Tests
+  //
+  
+  // Add constant
+  AliTPCCalROC roc3(roc0);
+  roc3.Add(1.5);
+  for (UInt_t irow = 0; irow <roc3.GetNrows(); irow++){
+    for (UInt_t ipad = 0; ipad <roc3.GetNPads(irow); ipad++){
+      Float_t value  = irow+ipad/1000. + 1.5;
+      if (TMath::Abs(roc3.GetValue(irow,ipad)-value) > kEpsilon){
+        printf("Add constant - error\trow=%d\tpad=%d\n",irow,ipad);
+      }
+    }
+  }
+
+  // Add another CalROC
+  AliTPCCalROC roc4(roc0);
+  roc4.Add(&roc0, -1.5);
+  for (UInt_t irow = 0; irow <roc4.GetNrows(); irow++){
+    for (UInt_t ipad = 0; ipad <roc4.GetNPads(irow); ipad++){
+      Float_t value  = irow+ipad/1000. - 1.5 * (irow+ipad/1000.);
+      if (TMath::Abs(roc4.GetValue(irow,ipad)-value) > kEpsilon){
+        printf("Add CalROC - error\trow=%d\tpad=%d\n",irow,ipad);
+      }
+    }
+  }
+  
+  // Multiply with constant
+  AliTPCCalROC roc5(roc0);
+  roc5.Multiply(-1.4);
+  for (UInt_t irow = 0; irow <roc5.GetNrows(); irow++){
+    for (UInt_t ipad = 0; ipad <roc5.GetNPads(irow); ipad++){
+      Float_t value  = (irow+ipad/1000.) * (-1.4);
+      if (TMath::Abs(roc5.GetValue(irow,ipad)-value) > kEpsilon){
+        printf("Multiply with constant - error\trow=%d\tpad=%d\n",irow,ipad);
+      }
+    }
+  }
+
+  // Multiply another CalROC
+  AliTPCCalROC roc6(roc0);
+  roc6.Multiply(&roc0);
+  for (UInt_t irow = 0; irow <roc6.GetNrows(); irow++){
+    for (UInt_t ipad = 0; ipad <roc6.GetNPads(irow); ipad++){
+      Float_t value  = (irow+ipad/1000.) * (irow+ipad/1000.);
+      if (TMath::Abs(roc6.GetValue(irow,ipad)-value) > kEpsilon*100){
+        printf("Multiply with CalROC - error\trow=%d\tpad=%d\n",irow,ipad);
+      }
+    }
+  }
+
+
+  // Divide by CalROC
+  AliTPCCalROC roc7(roc0);
+  roc7.Divide(&roc0);
+  for (UInt_t irow = 0; irow <roc7.GetNrows(); irow++){
+    for (UInt_t ipad = 0; ipad <roc7.GetNPads(irow); ipad++){
+      Float_t value  = 1.;
+      if (irow+ipad == 0) value = roc0.GetValue(irow,ipad);
+      if (TMath::Abs(roc7.GetValue(irow,ipad)-value) > kEpsilon){
+        printf("Multiply with CalROC - error\trow=%d\tpad=%d\n",irow,ipad);
+      }
+    }
+  }
+
+  //
+  // Statistics Test
+  //
+  
+  // create CalROC with defined values
+  TRandom3 rnd(0);
+  AliTPCCalROC sroc0(0);
+  for (UInt_t ichannel = 0; ichannel < sroc0.GetNchannels(); ichannel++){
+    Float_t value  = rnd.Gaus(10., 2.);
+    sroc0.SetValue(ichannel,value);
+  }
+
+  printf("Mean   (should be close to 10): %f\n", sroc0.GetMean());
+  printf("RMS    (should be close to  2): %f\n", sroc0.GetRMS());
+  printf("Median (should be close to 10): %f\n", sroc0.GetMedian());
+  printf("LTM    (should be close to 10): %f\n", sroc0.GetLTM());
+
+  //AliTPCCalROC* sroc1 = sroc0.LocalFit(4, 8);
+  
+  //delete sroc1;
+
+//        std::cout << TMath::Abs(roc5.GetValue(irow,ipad)-value) << std::endl;
 }
 
 
@@ -427,13 +574,16 @@ Double_t AliTPCCalROC::GetNeighbourhoodValue(TLinearFitter* fitterQ, Int_t row, 
   
   TArrayI *neighbourhoodRows = 0;
   TArrayI *neighbourhoodPads = 0;
+  
+  //std::cerr << "Trying to get neighbourhood for row " << row << ", pad " << pad << std::endl;
   GetNeighbourhood(neighbourhoodRows, neighbourhoodPads, row, pad, rRadius, pRadius);
+  //std::cerr << "Got neighbourhood for row " << row << ", pad " << pad << std::endl;
   
   Int_t r, p;
   for (Int_t i=0; i < (2*rRadius+1)*(2*pRadius+1); i++) {
     r = neighbourhoodRows->At(i);
     p = neighbourhoodPads->At(i);
-    if (r == -1 || p == -1) continue;
+    if (r == -1 || p == -1) continue;   // window is bigger than ROC
     tpcROCinstance->GetPositionLocal(fSector, r, p, localXY);   // calculate position localXY by pad and row number
     dlx = lPad[0] - localXY[0];
     dly = lPad[1] - localXY[1];
@@ -443,11 +593,15 @@ Double_t AliTPCCalROC::GetNeighbourhoodValue(TLinearFitter* fitterQ, Int_t row, 
     xx[3] = dlx*dlx;
     xx[4] = dly*dly;
     xx[5] = dlx*dly;
-    if (ROCoutliers && ROCoutliers->GetValue(r,p) != 1) {
+    if (!ROCoutliers || ROCoutliers->GetValue(r,p) != 1) {
       fitterQ->AddPoint(xx, GetValue(r, p), 1);
       npoints++;
     }
   }
+  
+  delete neighbourhoodRows;
+  delete neighbourhoodPads;
+  
   if (npoints < 0.5 * ((2*rRadius+1)*(2*pRadius+1)) ) {
     // std::cerr << "Too few data points for fitting @ row " << row << ", pad " << pad << " in sector " << fSector << std::endl;
     return 0.;  // for diagnostic
@@ -464,9 +618,6 @@ Double_t AliTPCCalROC::GetNeighbourhoodValue(TLinearFitter* fitterQ, Int_t row, 
   }
   Double_t value = fitParam[0];
   
-  delete neighbourhoodRows;
-  delete neighbourhoodPads;
-  
   //if (value < 0) std::cerr << "negative fit-value " << value << " in sector "<< this->fSector << " @ row: " << row << " and pad: " << pad << ", with fitter Chi2 = " << chi2Q <<  std::endl;
   
   return value;
@@ -481,8 +632,8 @@ void AliTPCCalROC::GetNeighbourhood(TArrayI* &rowArray, TArrayI* &padArray, Int_
   //
   rowArray = new TArrayI((2*rRadius+1)*(2*pRadius+1));
   padArray = new TArrayI((2*rRadius+1)*(2*pRadius+1));
-  Int_t* rowArrayTemp = rowArray->GetArray();
-  Int_t* padArrayTemp = padArray->GetArray();
+  //Int_t* rowArrayTemp = rowArray->GetArray();
+  //Int_t* padArrayTemp = padArray->GetArray();
   
   Int_t rmin = row - rRadius;
   UInt_t rmax = row + rRadius;
@@ -514,17 +665,17 @@ void AliTPCCalROC::GetNeighbourhood(TArrayI* &rowArray, TArrayI* &padArray, Int_
       if (pmin  < 0 ) pmin = 0; // if the window is bigger than the ROC
     }
     for (Int_t p = pmin; p <= pmax; p++) {
-      rowArrayTemp[i] = r;
-      padArrayTemp[i] = p;
+      (*rowArray)[i] = r;
+      (*padArray)[i] = p;
       i++;
     }
   }
   for (Int_t j = i; j < rowArray->GetSize(); j++){  // unused padArray-entries, in the case that the window is bigger than the ROC
     //std::cout << "trying to write -1" << std::endl;
-    rowArrayTemp[j] = -1;
-    padArrayTemp[j] = -1;
+    (*rowArray)[j] = -1;
+    (*padArray)[j] = -1;
     //std::cout << "writing -1" << std::endl;
-  } 
+  }
 }
 
 
@@ -571,7 +722,7 @@ void AliTPCCalROC::GlobalFit(const AliTPCCalROC* ROCoutliers, Bool_t robust, TVe
 	xx[3] = dlx*dlx;
 	xx[4] = dly*dly;
 	xx[5] = dlx*dly;
-	if (ROCoutliers && ROCoutliers->GetValue(irow, ipad) != 1) {
+	if (!ROCoutliers || ROCoutliers->GetValue(irow, ipad) != 1) {
            npoints++;
 	   fitterG->AddPoint(xx, GetValue(irow, ipad), 1);  
         }
@@ -590,7 +741,7 @@ void AliTPCCalROC::GlobalFit(const AliTPCCalROC* ROCoutliers, Bool_t robust, TVe
 	xx[0] = 1;
 	xx[1] = dlx;
 	xx[2] = dly;
-	if (ROCoutliers && ROCoutliers->GetValue(irow, ipad) != 1) {
+	if (!ROCoutliers || ROCoutliers->GetValue(irow, ipad) != 1) {
            npoints++;
 	   fitterG->AddPoint(xx, GetValue(irow, ipad), 1);  
         }
