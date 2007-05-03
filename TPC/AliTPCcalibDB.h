@@ -13,6 +13,7 @@
 #include "TObject.h"
 class AliTPCCalPad;
 class AliTPCSensorTempArray;
+class AliTPCSensorPressureArray;
 class AliCDBEntry;
 class AliTPCParam;
 //class AliCDBStorage;
@@ -32,6 +33,7 @@ class AliTPCcalibDB : public TObject
   AliTPCCalPad* GetPadNoise() {return fPadNoise;}
   AliTPCCalPad* GetPedestals() {return fPedestals;}
   AliTPCSensorTempArray* GetTemperature() {return fTemperature;}
+  AliTPCSensorPressureArray* GetPressure() {return fPressure;}
   AliTPCParam*  GetParameters(){return fParam;}
   //
 protected:
@@ -48,6 +50,7 @@ protected:
   AliTPCCalPad* fPadNoise;
   AliTPCCalPad* fPedestals;
   AliTPCSensorTempArray* fTemperature;
+  AliTPCSensorPressureArray *fPressure;
   //
   //
   AliTPCParam * fParam;
@@ -55,6 +58,9 @@ protected:
   static AliTPCcalibDB* fgInstance;
   static Bool_t       fgTerminated;
   ClassDef(AliTPCcalibDB, 0)
+ private:
+   AliTPCcalibDB (const AliTPCcalibDB& org);
+   AliTPCcalibDB& operator= (const AliTPCcalibDB& rhs);
 };
 
 

@@ -157,3 +157,27 @@ TMap* AliTPCSensorTempArray::ExtractDCS(TMap *dcsMap)
  return values;
 }
 
+//_____________________________________________________________________________
+AliTPCSensorTemp* AliTPCSensorTempArray::GetSensor(Int_t type, Int_t side, Int_t sector, Int_t num) 
+{
+ //
+ //  Return sensor information for sensor specified by type, side, sector and num
+ //
+ Int_t nsensors = fSensors->GetEntries();
+ for (Int_t isensor=0; isensor<nsensors; isensor++) {
+   AliTPCSensorTemp *entry = (AliTPCSensorTemp*)fSensors->At(isensor);
+   if (entry->GetSide() == side &&
+       entry->GetType() == type &&
+       entry->GetSector() == sector &&
+       entry->GetNum() == num ) return entry;
+ }
+ return 0;
+}
+//_____________________________________________________________________________
+AliTPCSensorTemp* AliTPCSensorTempArray::GetSensor(Int_t IdDCS){
+  return dynamic_cast<AliTPCSensorTemp*>(AliDCSSensorArray::GetSensor(IdDCS));
+}
+//_____________________________________________________________________________
+AliTPCSensorTemp* AliTPCSensorTempArray::GetSensor(Double_t x, Double_t y, Double_t z){
+  return dynamic_cast<AliTPCSensorTemp*>(AliDCSSensorArray::GetSensor(x,y,z));
+}

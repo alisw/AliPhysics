@@ -12,8 +12,8 @@
 
 #include "TSystem.h"
 
-#include "AliTPCSensorTemp.h"
 #include "AliDCSSensorArray.h"
+#include "AliTPCSensorTemp.h"
 
 class TTimeStamp;
 class TMap;
@@ -41,6 +41,9 @@ class AliTPCSensorTempArray : public AliDCSSensorArray {
   const char* GetAmandaString() { return fAmandaString.Data(); }
   void SetAmandaString(const char* string) {fAmandaString=string;}
   TMap* ExtractDCS  (TMap *dcsMap);
+  AliTPCSensorTemp* GetSensor (Int_t type, Int_t side, Int_t sector, Int_t num);
+  AliTPCSensorTemp* GetSensor (Int_t IdDCS);
+  AliTPCSensorTemp* GetSensor (Double_t x, Double_t y, Double_t z);
 
  protected:
 
