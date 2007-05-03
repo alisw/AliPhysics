@@ -278,6 +278,14 @@ Bool_t AliTrackFitterKalman::GetPCA(const AliTrackPoint &p, AliTrackPoint &i) co
 
   TMatrixD iC(tC,TMatrixD::kMult,tmW);
   iC*=mC;
+  Double_t sig2=1.;  // Releasing the matrix by 1 cm along the track direction 
+  iC(0,0) += vx*vx*sig2;
+  iC(0,1) += vx*sig2; 
+  iC(1,1) += sig2;
+  iC(0,2) += vx*vz*sig2;
+  iC(1,2) += vz*sig2;
+  iC(2,2) += vz*vz*sig2;
+
 
   Float_t cov[6]={
     iC(0,0), iC(0,1), iC(0,2),
