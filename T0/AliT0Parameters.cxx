@@ -68,7 +68,7 @@ AliT0Parameters::AliT0Parameters()
    fQTmin(0),fQTmax(0),
    fSlewingLED(),fSlewingRec(),
    fPMTeff(),
-   fTimeDelayDA(0),fTimeDelayCFD(0),fTimeDelayTVD(0),fMeanT0(0),
+   fTimeDelayDA(0),fTimeDelayCFD(0),fTimeDelayTVD(0),fMeanT0(499),
    fCalibentry(), fLookUpentry(),fSlewCorr(),
    fLookUp(0), fNumberOfTRMs(0)
 
@@ -137,7 +137,7 @@ AliT0Parameters::GetTimeDelayDA(Int_t ipmt)
   // return time delay for LED channel
   // 
   if (!fCalibentry) {
-    fTimeDelayDA = 0;
+    fTimeDelayDA = 500;
     return  fTimeDelayDA;
   } 
   return fgCalibData ->GetTimeDelayDA(ipmt);

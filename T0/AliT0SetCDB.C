@@ -108,13 +108,25 @@ void SetTimeDelay()
   AliT0CalibData *calibda=new AliT0CalibData("T0");
   
    Float_t fTimeDelay  = 1000;
-  
-  
+
+   //for timeDelayDA now we are using Int mean time (+-3RMS fit) 
+   //in number of channel for time in each chanel for 
+   //1000 Hijingpara nparticles=500 & zvertex=0 produced by readDigits.C
+   // this is way to simulate time positon for vertex=0 
+   //with unknown time delay in channel
+   /*
+   Int_t timedelayDA[24] = {501, 509, 511,510 ,510, 510, 509, 509, 510,
+			    510, 509, 508, 511, 510, 509, 508,510,
+			    510, 511, 510, 510, 510, 509, 510};
+ 
+   */
   for(Int_t ipmt=0; ipmt<24; ipmt++) {
     calibda->SetTimeDelayCFD(fTimeDelay+ipmt*100,ipmt);
-    //   calibda->SetTimeDelayLED(fTimeDelay,ipmt);
-    calibda->SetTimeDelayLED(0,ipmt);
+       //   calibda->SetTimeDelayLED(fTimeDelay,ipmt);
+//    calibda->SetTimeDelayDA(timedelayDA[ipmt],ipmt);
+    calibda->SetTimeDelayDA(500,ipmt);
   }
+  calibda->SetMeanT0(499);
   calibda->Print();
   //Store calibration data into database
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
@@ -202,6 +214,12 @@ void GetTimeDelay()
   
   AliT0CalibData *clb = (AliT0CalibData*)entry->GetObject();
   clb->Print();
+  for (Int_t i=0; i<24; i++) {
+   cout<<clb->GetTimeDelayCFD(i)<<" "<<clb->GetTimeDelayDA(i)<<endl;
+   cout<<" equalizing CFD "<<(clb->GetTimeDelayCFD(i)-clb->GetTimeDelayCFD(0))<<endl;
+  cout<<" equalizing DA "<<(clb->GetTimeDelayDA(i)-clb->GetTimeDelayDA(0))<<endl;
+  }
+  
 }
 //------------------------------------------------------------------------
 void GetWalk()
@@ -304,7 +322,7 @@ void GetLookUp()
   cout<<" AliT0CalibData *clb "<<clb <<endl;
   //cout<<"clb->a="<<clb->GetA()<<endl;
   //  clb->Dump();
-  for (Int_t i=0; i<6; i++) 
-    clb->PrintLookup("all",0,i,4);
+  for (Int_t i=0; i<20; i++) 
+    clb->PrintLookupNames("all",i);
 
 }
