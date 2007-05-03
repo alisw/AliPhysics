@@ -22,45 +22,56 @@
 //-----------------------------------------------------------------
 
 #include "AliDetectorTag.h"
+#include "AliLog.h"
 
 ClassImp(AliDetectorTag)
 
 //___________________________________________________________________________
 AliDetectorTag::AliDetectorTag() :
   TObject(),
-  fITS(kFALSE),
+  fMask(0),
+  fITSSPD(kFALSE),
+  fITSSDD(kFALSE),
+  fITSSSD(kFALSE),
   fTPC(kFALSE),
   fTRD(kFALSE),
   fTOF(kFALSE),
   fHMPID(kFALSE),
   fPHOS(kFALSE),
-  fZDC(kFALSE),
-  fMUON(kFALSE),
   fPMD(kFALSE),
-  fEMCAL(kFALSE),
+  fMUON(kFALSE),
+  fFMD(kFALSE),
+  fTZERO(kFALSE),
   fVZERO(kFALSE),
-  fTZERO(kFALSE)
+  fZDC(kFALSE),
+  fEMCAL(kFALSE)
 {
   // Default constructor
+  for(Int_t k = 0; k < 20; k++) fDetectors[k] = 0;
 }
 
 //___________________________________________________________________________
 AliDetectorTag::AliDetectorTag(const AliDetectorTag & detTag) :
   TObject(detTag),
-  fITS(detTag.fITS),
+  fMask(detTag.fMask),
+  fITSSPD(detTag.fITSSPD),
+  fITSSDD(detTag.fITSSDD),
+  fITSSSD(detTag.fITSSSD),
   fTPC(detTag.fTPC),
   fTRD(detTag.fTRD),
   fTOF(detTag.fTOF),
   fHMPID(detTag.fHMPID),
   fPHOS(detTag.fPHOS),
-  fZDC(detTag.fZDC),
-  fMUON(detTag.fMUON),
   fPMD(detTag.fPMD),
-  fEMCAL(detTag.fEMCAL),
+  fMUON(detTag.fMUON),
+  fFMD(detTag.fFMD),
+  fTZERO(detTag.fTZERO),
   fVZERO(detTag.fVZERO),
-  fTZERO(detTag.fTZERO)
+  fZDC(detTag.fZDC),
+  fEMCAL(detTag.fEMCAL)
  {
   // DetectorTag copy constructor
+  for(Int_t k = 0; k < 20; k++) fDetectors[k] = detTag.fDetectors[k];
 }
 
 //___________________________________________________________________________
@@ -69,24 +80,82 @@ AliDetectorTag & AliDetectorTag::operator=(const AliDetectorTag &detTag) {
   if (this != &detTag) {
     TObject::operator=(detTag);
     
-    fITS = detTag.fITS;
+    fMask = detTag.fMask;   
+    fITSSPD = detTag.fITSSPD;
+    fITSSDD = detTag.fITSSDD;
+    fITSSSD = detTag.fITSSSD;
     fTPC = detTag.fTPC;
     fTRD = detTag.fTRD;
     fTOF = detTag.fTOF;
     fHMPID = detTag.fHMPID;
     fPHOS = detTag.fPHOS;
-    fZDC = detTag.fZDC;
-    fMUON = detTag.fMUON;
     fPMD = detTag.fPMD;
-    fEMCAL = detTag.fEMCAL;
-    fVZERO = detTag.fVZERO;
+    fMUON = detTag.fMUON;
+    fFMD = detTag.fFMD;
     fTZERO = detTag.fTZERO;
+    fVZERO = detTag.fVZERO;
+    fZDC = detTag.fZDC;
+    fEMCAL = detTag.fEMCAL;
+    for(Int_t k = 0; k < 20; k++) fDetectors[k] = detTag.fDetectors[k];
   }
   return *this;
 }
 
-
 //___________________________________________________________________________
 AliDetectorTag::~AliDetectorTag() {
   // Destructor
+}
+
+//___________________________________________________________________________
+void AliDetectorTag::Int2Bin() {
+  // Convert the integer into binary
+  Int_t j=0; 
+  UInt_t mask = fMask;
+  for(Int_t k = 0; k < 20; k++) fDetectors[k] = 0;
+  while(mask > 0) {
+   fDetectors[j] = mask%2;
+   mask = mask/2;
+   j++; 
+  }
+  SetDetectorConfiguration();
+}
+
+//___________________________________________________________________________
+void AliDetectorTag::SetDetectorConfiguration() {
+  //sets the detector configuration
+  if(fDetectors[0] == 1) SetITSSPD();
+  if(fDetectors[1] == 1) SetITSSDD();
+  if(fDetectors[2] == 1) SetITSSSD();
+  if(fDetectors[3] == 1) SetTPC();
+  if(fDetectors[4] == 1) SetTRD();
+  if(fDetectors[5] == 1) SetTOF();
+  if(fDetectors[6] == 1) SetHMPID();
+  if(fDetectors[7] == 1) SetPHOS();
+  if(fDetectors[9] == 1) SetPMD();
+  if(fDetectors[10] == 1) SetMUON();
+  if(fDetectors[12] == 1) SetFMD();
+  if(fDetectors[13] == 1) SetTZERO();
+  if(fDetectors[14] == 1) SetVZERO();
+  if(fDetectors[15] == 1) SetZDC();
+  if(fDetectors[18] == 1) SetEMCAL();
+}
+
+//___________________________________________________________________________
+void AliDetectorTag::PrintDetectorMask() {
+  //prints the detector mask
+  AliInfo( Form( "ITS-SPD: %d", GetITSSPD()) );
+  AliInfo( Form( "ITS-SDD: %d", GetITSSDD()) );
+  AliInfo( Form( "ITS-SSD: %d", GetITSSSD()) );
+  AliInfo( Form( "TPC: %d", GetTPC()) );
+  AliInfo( Form( "TRD: %d", GetTRD()) );
+  AliInfo( Form( "TOF: %d", GetTOF()) );
+  AliInfo( Form( "HMPID: %d", GetHMPID()) );
+  AliInfo( Form( "PHOS: %d", GetPHOS()) );
+  AliInfo( Form( "PMD: %d", GetPMD()) );
+  AliInfo( Form( "MUON: %d", GetMUON()) );
+  AliInfo( Form( "FMD: %d", GetFMD()) );
+  AliInfo( Form( "TZERO: %d", GetTZERO()) );
+  AliInfo( Form( "VZERO: %d", GetVZERO()) );
+  AliInfo( Form( "ZDC: %d", GetZDC()) );
+  AliInfo( Form( "EMCAL: %d", GetEMCAL()) );
 }

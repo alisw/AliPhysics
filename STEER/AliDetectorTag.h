@@ -14,6 +14,7 @@
 //-------------------------------------------------------------------------
 
 #include "TObject.h"
+
 //___________________________________________________________________________
 class AliDetectorTag : public TObject {
  public:
@@ -24,49 +25,67 @@ class AliDetectorTag : public TObject {
   virtual ~AliDetectorTag();
   
   //____________________________________________________//
-  void SetITS() {fITS = kTRUE;}
-  void SetTPC() {fTPC = kTRUE;}
-  void SetTRD() {fTRD = kTRUE;}
-  void SetTOF() {fTOF = kTRUE;}
-  void SetHMPID() {fHMPID = kTRUE;}
-  void SetPHOS() {fPHOS = kTRUE;}
-  void SetZDC() {fZDC = kTRUE;}
-  void SetMUON() {fMUON = kTRUE;}
-  void SetPMD() {fPMD = kTRUE;}
-  void SetEMCAL() {fEMCAL = kTRUE;}
-  void SetVZERO() {fVZERO = kTRUE;}
-  void SetTZERO() {fTZERO = kTRUE;}
-  
+  void AliDetectorTag::SetDetectorMask(UInt_t mask) {fMask = mask; Int2Bin();}
+  void PrintDetectorMask();
+
   //____________________________________________________//
-  Bool_t GetITS() const {return fITS;}
+  Bool_t GetITSSPD() const {return fITSSPD;}
+  Bool_t GetITSSDD() const {return fITSSDD;}
+  Bool_t GetITSSSD() const {return fITSSSD;}
   Bool_t GetTPC() const {return fTPC;}
   Bool_t GetTRD() const {return fTRD;}
   Bool_t GetTOF() const {return fTOF;}
   Bool_t GetHMPID() const {return fHMPID;}
   Bool_t GetPHOS() const {return fPHOS;}
-  Bool_t GetZDC() const {return fZDC;}
-  Bool_t GetMUON() const {return fMUON;}
   Bool_t GetPMD() const {return fPMD;}
-  Bool_t GetEMCAL() const {return fEMCAL;}
-  Bool_t GetVZERO() const {return fVZERO;}
+  Bool_t GetMUON() const {return fMUON;}
+  Bool_t GetFMD() const {return fFMD;}
   Bool_t GetTZERO() const {return fTZERO;}
+  Bool_t GetVZERO() const {return fVZERO;}
+  Bool_t GetZDC() const {return fZDC;}
+  Bool_t GetEMCAL() const {return fEMCAL;}
   
   //____________________________________________________//
  private:
-  Bool_t   fITS;      //ITS active = 1
-  Bool_t   fTPC;      //TPC active = 1
-  Bool_t   fTRD;      //TRD active = 1
-  Bool_t   fTOF;      //TOF active = 1
-  Bool_t   fHMPID;    //HMPID active = 1
-  Bool_t   fPHOS;     //PHOS active = 1
-  Bool_t   fZDC;      //ZDC active = 1
-  Bool_t   fMUON;     //MUON active = 1
-  Bool_t   fPMD;      //PMD active = 1
-  Bool_t   fEMCAL;    //EMCAL active = 1
-  Bool_t   fVZERO;    //VZERO active = 1
-  Bool_t   fTZERO;    //TZERO active = 1
+  void AliDetectorTag::Int2Bin();
+  void AliDetectorTag::SetDetectorConfiguration();
 
-  ClassDef(AliDetectorTag,2)  //(ClassName, ClassVersion)
+  void SetITSSPD() {fITSSPD = kTRUE;}
+  void SetITSSDD() {fITSSDD = kTRUE;}
+  void SetITSSSD() {fITSSSD = kTRUE;}
+  void SetTPC() {fTPC = kTRUE;}
+  void SetTRD() {fTRD = kTRUE;}
+  void SetTOF() {fTOF = kTRUE;}
+  void SetHMPID() {fHMPID = kTRUE;}
+  void SetPHOS() {fPHOS = kTRUE;}
+  void SetPMD() {fPMD = kTRUE;}
+  void SetMUON() {fMUON = kTRUE;}
+  void SetFMD() {fFMD = kTRUE;}
+  void SetTZERO() {fTZERO = kTRUE;}
+  void SetVZERO() {fVZERO = kTRUE;}
+  void SetZDC() {fZDC = kTRUE;}
+  void SetEMCAL() {fEMCAL = kTRUE;}
+  
+
+  UInt_t   fMask;          //detector mask
+  UInt_t   fDetectors[20]; //detector mask
+  Bool_t   fITSSPD;        //ITS-SPD active = 1
+  Bool_t   fITSSDD;        //ITS-SDD active = 1
+  Bool_t   fITSSSD;        //ITS-SSD active = 1
+  Bool_t   fTPC;           //TPC active = 1
+  Bool_t   fTRD;           //TRD active = 1
+  Bool_t   fTOF;           //TOF active = 1
+  Bool_t   fHMPID;         //HMPID active = 1
+  Bool_t   fPHOS;          //PHOS active = 1
+  Bool_t   fPMD;           //PMD active = 1
+  Bool_t   fMUON;          //MUON active = 1
+  Bool_t   fFMD;           //FMD active = 1
+  Bool_t   fTZERO;         //TZERO active = 1
+  Bool_t   fVZERO;         //VZERO active = 1
+  Bool_t   fZDC;           //ZDC active = 1
+  Bool_t   fEMCAL;         //EMCAL active = 1
+
+  ClassDef(AliDetectorTag,3)  //(ClassName, ClassVersion)
 };
 //______________________________________________________________________________
 

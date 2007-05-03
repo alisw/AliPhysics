@@ -45,7 +45,7 @@ ClassImp(AliRunTag)
     fNumEvents(0),
     fNumDetectors(0),
     fEventTag("AliEventTag", 1000),
-    fDetectorTag("AliDetectorTag", 1000),
+    fDetectorTag(),
     fLHCTag()
 {
   //Default constructor
@@ -55,19 +55,18 @@ ClassImp(AliRunTag)
 AliRunTag::~AliRunTag() {
   //Destructor
   fEventTag.Delete();
-  fDetectorTag.Delete();
 }
 
 //___________________________________________________________________________
-void AliRunTag::SetLHCTag(Float_t lumin, char *type) {
+void AliRunTag::SetLHCTag(Float_t lumin, TString type) {
   //Setter for the LHC tags
   fLHCTag.SetLHCTag(lumin,type);
 }
 
 //___________________________________________________________________________
-void AliRunTag::SetDetectorTag(const AliDetectorTag &DetTag) {
+void AliRunTag::SetDetectorTag(UInt_t mask) {
   //Setter for the detector tags
-  new(fDetectorTag[fNumDetectors++]) AliDetectorTag(DetTag);
+  fDetectorTag.SetDetectorMask(mask);
 }
 
 //___________________________________________________________________________
