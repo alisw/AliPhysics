@@ -3,14 +3,17 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+#include <TVectorT.h>
 class TObjArray;
 class TH2S;
 class TTreeSRedirector;
 class AliTPCCalPad;
 class AliTPCROC;
+class AliTPCCalROC;
 class AliTPCParam;
 class AliRawReader;
-
+class AliTPCRawStream;
+struct eventHeaderStruct;
 
 class AliTPCCalibSignal : public TObject {
 
@@ -22,7 +25,9 @@ public:
     AliTPCCalibSignal& operator = (const  AliTPCCalibSignal &source);
 
 
-    Bool_t ProcessEvent(AliRawReader *rawReader);  //center of gravity approach event by event
+    Bool_t ProcessEvent(AliTPCRawStream *rawStream);
+    Bool_t ProcessEvent(AliRawReader    *rawReader);
+    Bool_t ProcessEvent(eventHeaderStruct   *event);
 
     Int_t Update(const Int_t isector, const Int_t iRow, const Int_t iPad,
 	       const Int_t iTimeBin, const Float_t signal);
@@ -46,6 +51,12 @@ public:
     //
     void  SetRangeTime (Int_t firstTimeBin, Int_t lastTimeBin) { fFirstTimeBin=firstTimeBin;   fLastTimeBin=lastTimeBin;  } //Set range in which the pulser signal is expected
     void  SetRangeTime0(Int_t firstTimeBin, Int_t lastTimeBin) { fFirstTimeBinT0=firstTimeBin; fLastTimeBinT0=lastTimeBin;} //Set range for analysis after T0 substraction. Should be smaller than the above and around 0
+    //
+    void  SetRangeRefQ  (Int_t nBins, Float_t xMin, Float_t xMax){ fNbinsQ   = nBins; fXminQ   = xMin; fXmaxQ   = xMax; }   //Set range for Q reference histograms
+    void  SetRangeRefT0 (Int_t nBins, Float_t xMin, Float_t xMax){ fNbinsT0  = nBins; fXminT0  = xMin; fXmaxT0  = xMax; }   //Set range for T0 reference histograms
+    void  SetRangeRefRMS(Int_t nBins, Float_t xMin, Float_t xMax){ fNbinsRMS = nBins; fXminRMS = xMin; fXmaxRMS = xMax; }   //Set range for T0 reference histograms
+
+
     void  SetDebugLevel(Short_t debug=1){ fDebugLevel = debug;}
 
     Int_t GetFirstTimeBin()   const { return fFirstTimeBin;  }
@@ -60,6 +71,17 @@ private:
     Int_t fLastTimeBin;               //  Last Time bin needed for analysis
     Int_t fFirstTimeBinT0;            //  First Time bin after T0 correction
     Int_t fLastTimeBinT0;             //  Last Time bin after T0 correction
+
+    // reference histogram ranges
+    Int_t   fNbinsT0;                 //  Number of bins for T0 reference histogram
+    Float_t fXminT0;                  //  xmin   of T0 reference histogram
+    Float_t fXmaxT0;                  //  xmax   of T0 reference histogram
+    Int_t   fNbinsQ;                  //  Number of bins for T0 reference histogram
+    Float_t fXminQ;                   //  xmin   of T0 reference histogram
+    Float_t fXmaxQ;                   //  xmax   of T0 reference histogram
+    Int_t   fNbinsRMS;                //  Number of bins for T0 reference histogram
+    Float_t fXminRMS;                 //  xmin   of T0 reference histogram
+    Float_t fXmaxRMS;                 //  xmax   of T0 reference histogram
 
     Int_t     fLastSector;            //! Last sector processed
 

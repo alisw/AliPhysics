@@ -25,38 +25,59 @@
 
 /* $Id$ */
 
+/*
+ example: fill pedestal with gausschen noise
+ AliTPCCalibPedestal ped;
+ ped.TestEvent();
+ ped.Analyse();
+ //Draw output;
+ TCanvas* c1 = new TCanvas;
+ c1->Divide(1,2);
+ c1->cd(1);
+ ped.GetHistoPedestal(0)->SetEntries(1); //needed in order for colz to work, reason: fast filling does not increase the entries counter
+ ped.GetHistoPedestal(0)->Draw("colz");
+ c1->cd(2);
+ ped.GetHistoPedestal(36)->SetEntries(1); //needed in order for colz to work, reason: fast filling does not increase the entries counter
+ ped.GetHistoPedestal(36)->Draw("colz");
+ TCanvas* c2 = new TCanvas;
+ c2->Divide(2,2);
+ c2->cd(1);
+ ped.GetCalRocPedestal(0)->Draw("colz");
+ c2->cd(2);
+ ped.GetCalRocRMS(0)->Draw("colz");
+ c2->cd(3);
+ ped.GetCalRocPedestal(36)->Draw("colz");
+ c2->cd(4);
+ ped.GetCalRocRMS(36)->Draw("colz");
 
+
+*/
 
 //Root includes
 #include <TObjArray.h>
 #include <TH1F.h>
-#include <TH1D.h>
 #include <TH2F.h>
-#include <TH2S.h>
-#include <TH1S.h>
 #include <TString.h>
-#include <TVectorF.h>
 #include <TMath.h>
 #include <TF1.h>
 #include <TRandom.h>
-#include <TROOT.h>
 #include <TDirectory.h>
-#include <TSystem.h>
 #include <TFile.h>
-
-
 //AliRoot includes
 #include "AliRawReader.h"
 #include "AliRawReaderRoot.h"
+#include "AliRawReaderDate.h"
 #include "AliTPCRawStream.h"
 #include "AliTPCCalROC.h"
-#include "AliTPCCalPad.h"
 #include "AliTPCROC.h"
-#include "AliTPCCalibPedestal.h"
 #include "AliMathBase.h"
-
 #include "TTreeStream.h"
 
+//date
+#include "event.h"
+
+//header file
+#include "AliTPCCalibPedestal.h"
 
 
 ClassImp(AliTPCCalibPedestal) /*FOLD00*/
@@ -76,27 +97,60 @@ AliTPCCalibPedestal::AliTPCCalibPedestal() : /*FOLD00*/
   fROC(AliTPCROC::Instance()),
   fCalRocArrayPedestal(72),
   fCalRocArrayRMS(72),
-  fHistoPedestalArray(72),
-  fDebugStreamer(0),
-  fDebugLevel(0)
+  fHistoPedestalArray(72)
 {
     //
-    // AliTPCSignal default constructor
+    // default constructor
     //
-    //debug stream
-    TDirectory *backup = gDirectory;
-    fDebugStreamer = new TTreeSRedirector("deb2.root");
-    if ( backup ) backup->cd();  //we don't want to be cd'd to the debug streamer    
 }
+//_____________________________________________________________________
+AliTPCCalibPedestal::AliTPCCalibPedestal(const AliTPCCalibPedestal &ped) : /*FOLD00*/
+  TObject(ped),
+  fFirstTimeBin(ped.GetFirstTimeBin()),
+  fLastTimeBin(ped.GetLastTimeBin()),
+  fAdcMin(ped.GetAdcMin()),
+  fAdcMax(ped.GetAdcMax()),
+  fROC(AliTPCROC::Instance()),
+  fCalRocArrayPedestal(72),
+  fCalRocArrayRMS(72),
+  fHistoPedestalArray(72)
+{
+    //
+    // copy constructor
+    //
+    for (Int_t iSec = 0; iSec < 72; iSec++){
+	const AliTPCCalROC *calPed = (AliTPCCalROC*)ped.fCalRocArrayPedestal.UncheckedAt(iSec);
+	const AliTPCCalROC *calRMS = (AliTPCCalROC*)ped.fCalRocArrayRMS.UncheckedAt(iSec);
+	const TH2F         *hPed   = (TH2F*)ped.fHistoPedestalArray.UncheckedAt(iSec);
 
+	if ( calPed != 0x0 ) fCalRocArrayPedestal.AddAt(new AliTPCCalROC(*calPed), iSec);
+	if ( calRMS != 0x0 ) fCalRocArrayRMS.AddAt(new AliTPCCalROC(*calRMS), iSec);
+
+	if ( hPed != 0x0 ){
+	    TH2F *hNew = new TH2F(*hPed);
+	    hNew->SetDirectory(0);
+	    fHistoPedestalArray.AddAt(hNew,iSec);
+	}
+    }
+}
+//_____________________________________________________________________
+AliTPCCalibPedestal& AliTPCCalibPedestal::operator = (const  AliTPCCalibPedestal &source)
+{
+  //
+  // assignment operator
+  //
+  if (&source == this) return *this;
+  new (this) AliTPCCalibPedestal(source);
+
+  return *this;
+}
 //_____________________________________________________________________
 AliTPCCalibPedestal::~AliTPCCalibPedestal() /*FOLD00*/
 {
   //
   // destructor
   //
-    if ( fDebugStreamer ) delete fDebugStreamer;
-    delete fROC;
+  delete fROC;
 }
 
 
@@ -116,55 +170,73 @@ Int_t AliTPCCalibPedestal::Update(const Int_t icsector, /*FOLD00*/
 
     Int_t iChannel  = fROC->GetRowIndexes(icsector)[icRow]+icPad; //  global pad position in sector
 
-    // dirty and fast filling methode. No boundary checking!!!
+    // fast filling methode.
     // Attention: the entry counter of the histogram is not increased
     //            this means that e.g. the colz draw option gives an empty plot
-    Int_t bin = (iChannel+1)*(fAdcMax-fAdcMin+2)+((Int_t)csignal-fAdcMin+1);
+    Int_t bin = 0;
+    if ( !(((Int_t)csignal>fAdcMax ) || ((Int_t)csignal<fAdcMin)) )
+	bin = (iChannel+1)*(fAdcMax-fAdcMin+2)+((Int_t)csignal-fAdcMin+1);
 
     GetHistoPedestal(icsector,kTRUE)->GetArray()[bin]++;
 
     return 0;
 }
 //_____________________________________________________________________
-Bool_t AliTPCCalibPedestal::ProcessEvent(AliRawReader *rawReader) /*FOLD00*/
+Bool_t AliTPCCalibPedestal::ProcessEvent(AliTPCRawStream *rawStream)
 {
   //
-  //  simple event processing loop
+  // Event Processing loop - AliTPCRawStream
   //
 
-
-    AliTPCRawStream input(rawReader);
-
-  rawReader->Select("TPC");
-
-  input.SetOldRCUFormat(1);
-  printf("start event processing\n");
-
+  rawStream->SetOldRCUFormat(1);
 
   Bool_t withInput = kFALSE;
 
-  while (input.Next()) {
+  while (rawStream->Next()) {
 
-      Int_t isector  = input.GetSector();                       //  current sector
-      Int_t iRow     = input.GetRow();                          //  current row
-      Int_t iPad     = input.GetPad();                          //  current pad
-      Int_t iTimeBin = input.GetTime();                         //  current time bin
-      Float_t signal = input.GetSignal();                       //  current ADC signal
+      Int_t isector  = rawStream->GetSector();                       //  current sector
+      Int_t iRow     = rawStream->GetRow();                          //  current row
+      Int_t iPad     = rawStream->GetPad();                          //  current pad
+      Int_t iTimeBin = rawStream->GetTime();                         //  current time bin
+      Float_t signal = rawStream->GetSignal();                       //  current ADC signal
 
       Update(isector,iRow,iPad,iTimeBin,signal);
       withInput = kTRUE;
   }
 
-  printf("end event processing\n");
-  if ( fDebugLevel>0 )
-      fDebugStreamer->GetFile()->Write();
   return withInput;
+}
+//_____________________________________________________________________
+Bool_t AliTPCCalibPedestal::ProcessEvent(AliRawReader *rawReader)
+{
+  //
+  //  Event processing loop - AliRawReader
+  //
+
+
+  AliTPCRawStream rawStream(rawReader);
+
+  rawReader->Select("TPC");
+
+  return ProcessEvent(&rawStream);
+}
+//_____________________________________________________________________
+Bool_t AliTPCCalibPedestal::ProcessEvent(eventHeaderStruct *event)
+{
+  //
+  //  process date event
+  //
+    AliRawReader *rawReader = new AliRawReaderDate((void*)event);
+    Bool_t result=ProcessEvent(rawReader);
+    delete rawReader;
+    return result;
 }
 //_____________________________________________________________________
 Bool_t AliTPCCalibPedestal::TestEvent() /*FOLD00*/
 {
   //
   //  Test event loop
+  // fill one oroc and one iroc with random gaus
   //
 
     gRandom->SetSeed(0);
@@ -174,7 +246,7 @@ Bool_t AliTPCCalibPedestal::TestEvent() /*FOLD00*/
 	for (UInt_t iRow=0; iRow < fROC->GetNRows(iSec); iRow++){
 	    for (UInt_t iPad=0; iPad < fROC->GetNPads(iSec,iRow); iPad++){
 		for (UInt_t iTimeBin=0; iTimeBin<1024; iTimeBin++){
-		    Float_t signal=(Int_t)(iRow+5+gRandom->Gaus(0,.7));
+		    Float_t signal=(Int_t)(iRow+3+gRandom->Gaus(0,.7));
 		    if ( signal>0 )Update(iSec,iRow,iPad,iTimeBin,signal);
 		}
 	    }
@@ -183,7 +255,7 @@ Bool_t AliTPCCalibPedestal::TestEvent() /*FOLD00*/
     return kTRUE;
 }
 //_____________________________________________________________________
-TH2S* AliTPCCalibPedestal::GetHisto(Int_t sector, TObjArray *arr, /*FOLD00*/
+TH2F* AliTPCCalibPedestal::GetHisto(Int_t sector, TObjArray *arr, /*FOLD00*/
 				  Int_t nbinsY, Float_t ymin, Float_t ymax,
 				  Char_t *type, Bool_t force)
 {
@@ -192,16 +264,16 @@ TH2S* AliTPCCalibPedestal::GetHisto(Int_t sector, TObjArray *arr, /*FOLD00*/
     // if force is true create a new histogram if it doesn't exist allready
     //
     if ( !force || arr->UncheckedAt(sector) )
-	return (TH2S*)arr->UncheckedAt(sector);
+	return (TH2F*)arr->UncheckedAt(sector);
 
     // if we are forced and histogram doesn't yes exist create it
     Char_t name[255], title[255];
 
     sprintf(name,"hCalib%s%.2d",type,sector);
-    sprintf(title,"%s calibration histogram sector %.2d",type,sector);
+    sprintf(title,"%s calibration histogram sector %.2d;ADC channel;Channel (pad)",type,sector);
 
     // new histogram with Q calib information. One value for each pad!
-    TH2S* hist = new TH2S(name,title,
+    TH2F* hist = new TH2F(name,title,
 			  nbinsY, ymin, ymax,
 			  fROC->GetNChannels(sector),0,fROC->GetNChannels(sector)
 			 );
@@ -210,7 +282,7 @@ TH2S* AliTPCCalibPedestal::GetHisto(Int_t sector, TObjArray *arr, /*FOLD00*/
     return hist;
 }
 //_____________________________________________________________________
-TH2S* AliTPCCalibPedestal::GetHistoPedestal(Int_t sector, Bool_t force) /*FOLD00*/
+TH2F* AliTPCCalibPedestal::GetHistoPedestal(Int_t sector, Bool_t force) /*FOLD00*/
 {
     //
     // return pointer to T0 histogram
@@ -269,17 +341,14 @@ void AliTPCCalibPedestal::Analyse() /*FOLD00*/
 
     Int_t nbinsAdc = fAdcMax-fAdcMin;
 
-    TH1F *py = new TH1F("htemp_py","htemp_py", nbinsAdc, fAdcMin, fAdcMax);
-    TF1 *gaus = new TF1("fit","gaus");
     TVectorD param(3);
+    TMatrixD dummy(3,3);
 
-    Float_t *array_py=0;
-    Short_t *array_hP=0;
+    Float_t *array_hP=0;
 
-    array_py = py->GetArray();
 
     for (Int_t iSec=0; iSec<72; iSec++){
-	TH2S *hP = GetHistoPedestal(iSec);
+	TH2F *hP = GetHistoPedestal(iSec);
         if ( !hP ) continue;
 
 	AliTPCCalROC *rocPedestal = GetCalRocPedestal(iSec,kTRUE);
@@ -289,26 +358,17 @@ void AliTPCCalibPedestal::Analyse() /*FOLD00*/
         UInt_t nChannels = fROC->GetNChannels(iSec);
 
 	for (UInt_t iChannel=0; iChannel<nChannels; iChannel++){
-
-            // set bin content of py in a dirty but fast way
-	    for (Int_t iAdc=0;iAdc<nbinsAdc;iAdc++)
-		array_py[iAdc+1] = (Float_t)array_hP[(iChannel+1)*(nbinsAdc+2)+(iAdc+1)];
-
-	    gaus->SetParameters(0,0);
-	    py->Fit(gaus,"nq");
-
-	    rocPedestal->SetValue(iChannel,gaus->GetParameter(1));
-            rocRMS->SetValue(iChannel,gaus->GetParameter(2));
-
-	    //AliMathBase::FitGaus(nbinsAdc,array_hP+(iChannel+1)*(nbinsAdc+2),&param)
-	    //rocPedestal->SetValue(iChannel,param[1]);
-            //rocRMS->SetValue(iChannel,param[2]);
+            Int_t offset = (nbinsAdc+2)*(iChannel+1)+1;
+	    Double_t ret = AliMathBase::FitGaus(array_hP+offset,nbinsAdc,fAdcMin,fAdcMax,&param,&dummy);
+            // if the fitting failed set noise and pedestal to 0
+	    if ( ret == -4 ) {
+		param[1]=0;
+		param[2]=0;
+	    }
+	    rocPedestal->SetValue(iChannel,param[1]);
+            rocRMS->SetValue(iChannel,param[2]);
 	}
     }
-    delete py;
-    delete gaus;
-    delete fDebugStreamer;
-    fDebugStreamer = 0x0;
 }
 //_____________________________________________________________________
 void AliTPCCalibPedestal::DumpToFile(const Char_t *filename, const Char_t *dir, Bool_t append) /*FOLD00*/
@@ -317,7 +377,6 @@ void AliTPCCalibPedestal::DumpToFile(const Char_t *filename, const Char_t *dir, 
     //  Write class to file
     //
 
-    TDirectory *backup = gDirectory;
     TString sDir(dir);
     TString option;
 
@@ -326,14 +385,15 @@ void AliTPCCalibPedestal::DumpToFile(const Char_t *filename, const Char_t *dir, 
     else
         option = "recreate";
 
+    TDirectory *backup = gDirectory;
     TFile f(filename,option.Data());
+    f.cd();
     if ( !sDir.IsNull() ){
 	f.mkdir(sDir.Data());
 	f.cd(sDir);
     }
-    gDirectory->WriteTObject(this);
+    this->Write();
     f.Close();
 
     if ( backup ) backup->cd();
-
 }
