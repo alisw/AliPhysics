@@ -1776,6 +1776,11 @@ void AliReconstruction::WriteESD(AliESD* esd, const char* recStep) const
 //_____________________________________________________________________________
 void AliReconstruction::CreateTag(TFile* file)
 {
+  //GRP
+  Float_t lhcLuminosity = 0.0;
+  TString lhcState = "test";
+  UInt_t detectorMask = 0;
+
   /////////////
   //muon code//
   ////////////
@@ -2035,6 +2040,9 @@ void AliReconstruction::CreateTag(TFile* file)
     evTag->SetMeanPt(meanPt);
     evTag->SetMaxPt(maxPt);
     
+    tag->SetLHCTag(lhcLuminosity,lhcState);
+    tag->SetDetectorTag(detectorMask);
+
     tag->SetRunId(iInitRunNumber);
     tag->AddEventTag(*evTag);
   }
