@@ -81,7 +81,7 @@ void SetCC(Int_t flag=0)
   if      (flag == 0) {
     DBFolder  ="local://InitCalibDB";
     firstRun  =  0;
-    lastRun   =  0;
+    lastRun   =  999999;
     objFormat = "PHOS initial pedestals and ADC gain factors (5x64x56)";
     cdb = new AliPHOSCalibData();
     cdb->CreateNew();
@@ -89,8 +89,8 @@ void SetCC(Int_t flag=0)
 
   else if (flag == 1) {
     DBFolder  ="local://DeCalibDB";
-    firstRun  =  100;
-    lastRun   =  100;
+    firstRun  =  0;
+    lastRun   =  999999;
     objFormat = "PHOS decalibration pedestals and ADC gain factors (5x64x56)";
  
     cdb = new AliPHOSCalibData();    
@@ -101,12 +101,12 @@ void SetCC(Int_t flag=0)
   else if (flag == 2) {
     // First read decalibration DB
     AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
-    AliCDBManager::Instance()->SetSpecificStorage("PHOS","local://DeCalibDB");
+    AliCDBManager::Instance()->SetSpecificStorage("PHOS/*","local://DeCalibDB");
     AliPHOSCalibData* cdbDecalib = new AliPHOSCalibData(100);
 
     DBFolder  ="local://InverseCalibDB";
-    firstRun  = 200;
-    lastRun   = 200;
+    firstRun  = 0;
+    lastRun   = 999999;
     objFormat = "PHOS calibration parameters equal to inverse decalibration ones (5x64x56)";
     cdb = new AliPHOSCalibData();    
 
@@ -155,7 +155,7 @@ void SetCC(Int_t flag=0)
   md.SetResponsible("Boris Polichtchouk");
   
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
-  AliCDBManager::Instance()->SetSpecificStorage("PHOS",DBFolder.Data());
+  AliCDBManager::Instance()->SetSpecificStorage("PHOS/*",DBFolder.Data());
 
   cdb->WriteEmc(firstRun,lastRun,&md);
   cdb->WriteCpv(firstRun,lastRun,&md);
@@ -193,7 +193,7 @@ void GetCC(Int_t flag=0)
   }
 
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
-  AliCDBManager::Instance()->SetSpecificStorage("PHOS",DBFolder.Data());
+  AliCDBManager::Instance()->SetSpecificStorage("PHOS/*",DBFolder.Data());
 
   AliPHOSCalibData* clb  = new AliPHOSCalibData(runNumber);
 
