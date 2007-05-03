@@ -29,6 +29,7 @@
 #include "AliITSDetTypeRec.h"
 #include "AliITSLoader.h"
 #include "AliITStrackerMI.h"
+#include "AliITStrackerV2.h"
 #include "AliITStrackerSA.h"
 #include "AliITSVertexerIons.h"
 #include "AliITSVertexerFast.h"
@@ -168,6 +169,9 @@ AliTracker* AliITSReconstructor::CreateTracker(AliRunLoader* runLoader)const
   AliTracker* tracker;    
   if (selectedTracker.Contains("MI")) {
     tracker = new AliITStrackerMI(0);
+  }  
+  else if (selectedTracker.Contains("V2")) {
+    tracker = new AliITStrackerV2(0);
   }
   else {
     tracker =  new AliITStrackerSA(0);  // inherits from AliITStrackerMI

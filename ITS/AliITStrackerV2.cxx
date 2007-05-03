@@ -1044,7 +1044,7 @@ Bool_t AliITStrackerV2::RefitAt(Double_t xx,AliITStrackV2 *t,
      Double_t maxchi2=kMaxChi2;
 
      Int_t idx=index[i];
-     if (idx>0) {
+     if (idx>=0) {
         const AliITSRecPoint *c=(AliITSRecPoint *)GetCluster(idx); 
         if (idet != c->GetDetectorIndex()) {
            idet=c->GetDetectorIndex();
