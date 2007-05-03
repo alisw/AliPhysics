@@ -199,10 +199,17 @@ AliAlignObj::ELayerID layerRangeMax)
   // Fast counting the points
   Int_t countFit=0;
   Int_t countPnt=0;
+
+  Int_t fst=-1;
+  Int_t lst=-1;
   if (volIdsFit != 0x0) {
      for (Int_t i=0; i<npoints; i++) {
          if (FindVolId(volIds,   fPoints->GetVolumeID()[i])) countPnt++;
-         if (FindVolId(volIdsFit,fPoints->GetVolumeID()[i])) countFit++;
+         if (FindVolId(volIdsFit,fPoints->GetVolumeID()[i])) {
+            countFit++;
+            if (fst<0) fst=i;
+            lst=i;
+         }
      }
   } else {
      for (Int_t i=0; i<npoints; i++) {
@@ -212,6 +219,8 @@ AliAlignObj::ELayerID layerRangeMax)
 	 if (id > AliAlignObj::LayerToVolUID(layerRangeMax,
 		  AliAlignObj::LayerSize(layerRangeMax))) continue;
          countFit++;
+         if (fst<0) fst=i;
+         lst=i;
      }
   }
   if (countPnt==0) return kFALSE;
@@ -221,7 +230,7 @@ AliAlignObj::ELayerID layerRangeMax)
 
   //************* Fit the selected track points
 
-  //Reset();
+  if (!Begin(fst,lst)) return kFALSE;
 
   AliTrackPoint p;
   if (volIdsFit != 0x0) {

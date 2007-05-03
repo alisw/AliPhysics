@@ -42,14 +42,27 @@ const Double_t AliTrackFitterKalman::fgkMaxChi2=33.;
 AliTrackFitterKalman::
 AliTrackFitterKalman(AliTrackPointArray *array, Bool_t owner):
   AliTrackFitter(array,owner),
-  fMaxChi2(fgkMaxChi2)
+  fMaxChi2(fgkMaxChi2),
+  fSeed(kFALSE)
 {
   //
   // Constructor
   //
 }
 
-void AliTrackFitterKalman::
+Bool_t AliTrackFitterKalman::Begin(Int_t first, Int_t last) {
+  //
+  // Make a seed out of the track points with the indices "first" and "last". 
+  // This is the "default" seed.
+  //
+  if (fSeed) return kTRUE;
+  AliTrackPoint fp,lp;
+  fPoints->GetPoint(fp,first); fPoints->GetPoint(lp,last);
+  return MakeSeed(&fp,&lp);
+}
+
+
+Bool_t AliTrackFitterKalman::
 MakeSeed(const AliTrackPoint *p0, const AliTrackPoint *p1) {
   //
   // Make a seed out of the two track points 
@@ -76,6 +89,8 @@ MakeSeed(const AliTrackPoint *p0, const AliTrackPoint *p1) {
   };
 
   SetSeed(par,cov);
+
+  return kTRUE;
 }
 
 Bool_t AliTrackFitterKalman::AddPoint(const AliTrackPoint *p)
@@ -301,4 +316,5 @@ AliTrackFitterKalman::SetSeed(const Double_t par[5], const Double_t cov[15]) {
   cv(0,3)=cv(3,0); cv(1,3)=cv(3,1); cv(2,3)=cv(3,2);
   cv(0,4)=cv(4,0); cv(1,4)=cv(4,1); cv(2,4)=cv(4,2); cv(3,4)=cv(4,3);
 
+  fSeed=kTRUE;
 }

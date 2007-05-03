@@ -59,6 +59,7 @@ class AliTrackFitterRieman : public AliTrackFitter{
   Double_t      fCorrY[4];  // correction polynom coef
   Double_t      fCorrZ[4];  // correction polynom coef
  private:
+  Bool_t Begin(Int_t, Int_t) {Reset(); return kTRUE;}
   Bool_t AddPoint(const AliTrackPoint *) {return kTRUE;}
   TTreeSRedirector *fDebugStream;   //!debug streamer
   ClassDef(AliTrackFitterRieman,2)  // Fast fit of helices on ITS RecPoints

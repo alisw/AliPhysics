@@ -38,6 +38,7 @@ class AliTrackFitterStraight : public AliTrackFitter{
   Bool_t        fConv;      // indicates convergation
 
  private:
+  Bool_t Begin(Int_t, Int_t) {Reset(); return kTRUE;}
   Bool_t AddPoint(const AliTrackPoint *) {return kTRUE;}
 
   ClassDef(AliTrackFitterStraight,1)  // Fast fit of straight tracks
