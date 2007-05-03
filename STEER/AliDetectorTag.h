@@ -14,6 +14,7 @@
 //-------------------------------------------------------------------------
 
 #include "TObject.h"
+#include "TString.h"
 
 //___________________________________________________________________________
 class AliDetectorTag : public TObject {
@@ -26,6 +27,7 @@ class AliDetectorTag : public TObject {
   
   //____________________________________________________//
   void SetDetectorMask(UInt_t mask) {fMask = mask; Int2Bin();}
+  const char *GetDetectorMask() {return fDetectorString.Data();}
   void PrintDetectorMask();
 
   //____________________________________________________//
@@ -66,7 +68,7 @@ class AliDetectorTag : public TObject {
   void SetZDC() {fZDC = kTRUE;}
   void SetEMCAL() {fEMCAL = kTRUE;}
   
-
+  TString  fDetectorString;//detectors' names - active
   UInt_t   fMask;          //detector mask
   UInt_t   fDetectors[20]; //detector mask
   Bool_t   fITSSPD;        //ITS-SPD active = 1

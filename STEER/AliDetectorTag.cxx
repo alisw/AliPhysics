@@ -29,6 +29,7 @@ ClassImp(AliDetectorTag)
 //___________________________________________________________________________
 AliDetectorTag::AliDetectorTag() :
   TObject(),
+  fDetectorString(0),
   fMask(0),
   fITSSPD(kFALSE),
   fITSSDD(kFALSE),
@@ -53,6 +54,7 @@ AliDetectorTag::AliDetectorTag() :
 //___________________________________________________________________________
 AliDetectorTag::AliDetectorTag(const AliDetectorTag & detTag) :
   TObject(detTag),
+  fDetectorString(detTag.fDetectorString),
   fMask(detTag.fMask),
   fITSSPD(detTag.fITSSPD),
   fITSSDD(detTag.fITSSDD),
@@ -80,6 +82,7 @@ AliDetectorTag & AliDetectorTag::operator=(const AliDetectorTag &detTag) {
   if (this != &detTag) {
     TObject::operator=(detTag);
     
+    fDetectorString = detTag.fDetectorString;
     fMask = detTag.fMask;   
     fITSSPD = detTag.fITSSPD;
     fITSSDD = detTag.fITSSDD;
@@ -123,21 +126,21 @@ void AliDetectorTag::Int2Bin() {
 //___________________________________________________________________________
 void AliDetectorTag::SetDetectorConfiguration() {
   //sets the detector configuration
-  if(fDetectors[0] == 1) SetITSSPD();
-  if(fDetectors[1] == 1) SetITSSDD();
-  if(fDetectors[2] == 1) SetITSSSD();
-  if(fDetectors[3] == 1) SetTPC();
-  if(fDetectors[4] == 1) SetTRD();
-  if(fDetectors[5] == 1) SetTOF();
-  if(fDetectors[6] == 1) SetHMPID();
-  if(fDetectors[7] == 1) SetPHOS();
-  if(fDetectors[9] == 1) SetPMD();
-  if(fDetectors[10] == 1) SetMUON();
-  if(fDetectors[12] == 1) SetFMD();
-  if(fDetectors[13] == 1) SetTZERO();
-  if(fDetectors[14] == 1) SetVZERO();
-  if(fDetectors[15] == 1) SetZDC();
-  if(fDetectors[18] == 1) SetEMCAL();
+  if(fDetectors[0] == 1) {SetITSSPD(); fDetectorString += "SPD ";}
+  if(fDetectors[1] == 1) {SetITSSDD(); fDetectorString += "SDD ";}
+  if(fDetectors[2] == 1) {SetITSSSD(); fDetectorString += "SSD ";}
+  if(fDetectors[3] == 1) {SetTPC(); fDetectorString += "TPC ";}
+  if(fDetectors[4] == 1) {SetTRD(); fDetectorString += "TRD ";}
+  if(fDetectors[5] == 1) {SetTOF(); fDetectorString += "TOF ";}
+  if(fDetectors[6] == 1) {SetHMPID(); fDetectorString += "HMPID ";}
+  if(fDetectors[7] == 1) {SetPHOS(); fDetectorString += "PHOS ";}
+  if(fDetectors[9] == 1) {SetPMD(); fDetectorString += "PMD ";}
+  if(fDetectors[10] == 1) {SetMUON(); fDetectorString += "MUON ";}
+  if(fDetectors[12] == 1) {SetFMD(); fDetectorString += "FMD ";}
+  if(fDetectors[13] == 1) {SetTZERO(); fDetectorString += "T0 ";}
+  if(fDetectors[14] == 1) {SetVZERO(); fDetectorString += "VZERO ";}
+  if(fDetectors[15] == 1) {SetZDC(); fDetectorString += "ZDC ";}
+  if(fDetectors[18] == 1) {SetEMCAL(); fDetectorString += "EMCAL";}
 }
 
 //___________________________________________________________________________
