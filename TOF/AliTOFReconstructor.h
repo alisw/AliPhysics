@@ -45,8 +45,8 @@ public:
   virtual void         FillESD(AliRunLoader* runLoader, AliESD* esd) const;
 
 private:
-  AliTOFGeometry *fTOFGeometry;
-  AliTOFcalib    *fTOFcalib;
+  AliTOFGeometry *fTOFGeometry; // pointer to TOF geometry
+  AliTOFcalib    *fTOFcalib;    // pointer to TOF calib class
   AliTOFGeometry*      GetTOFGeometry(AliRunLoader* runLoader) const;
 
   ClassDef(AliTOFReconstructor, 1)   // class for the TOF reconstruction
