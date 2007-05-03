@@ -13,6 +13,9 @@
  ***************************************************************************
  *
  * $Log$
+ * Revision 1.1.1.1  2007/04/25 15:38:41  panos
+ * Importing the HBT code dir
+ *
  * Revision 1.1.1.1  2007/03/07 10:14:49  mchojnacki
  * First version on CVS
  *
@@ -84,7 +87,10 @@ private:
 
 public:
   AliFemtoManager();
+  AliFemtoManager(const AliFemtoManager& aManager);
   virtual ~AliFemtoManager();
+
+  AliFemtoManager& operator=(const AliFemtoManager& aManager);
 
   // Gets and Sets...
   AliFemtoAnalysisCollection* AnalysisCollection();

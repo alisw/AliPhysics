@@ -16,6 +16,9 @@
  ***************************************************************************
  *
  * $Log$
+ * Revision 1.1.1.1  2007/04/25 15:38:41  panos
+ * Importing the HBT code dir
+ *
  * Revision 1.1.1.1  2007/03/07 10:14:49  mchojnacki
  * First version on CVS
  *
@@ -44,16 +47,83 @@
 #include "Infrastructure/AliFemtoPicoEvent.h"
 
 //________________
-AliFemtoPicoEvent::AliFemtoPicoEvent(){
+AliFemtoPicoEvent::AliFemtoPicoEvent() :
+  fFirstParticleCollection(0),
+  fSecondParticleCollection(0),
+  fThirdParticleCollection(0)
+{
   fFirstParticleCollection = new AliFemtoParticleCollection;
   fSecondParticleCollection = new AliFemtoParticleCollection;
   fThirdParticleCollection = new AliFemtoParticleCollection;
 }
 //_________________
-AliFemtoPicoEvent::~AliFemtoPicoEvent(){
+AliFemtoPicoEvent::AliFemtoPicoEvent(const AliFemtoPicoEvent& aPicoEvent) :
+  fFirstParticleCollection(0),
+  fSecondParticleCollection(0),
+  fThirdParticleCollection(0)
+{
   AliFemtoParticleIterator iter;
 
+  fFirstParticleCollection = new AliFemtoParticleCollection;
+  if (aPicoEvent.fFirstParticleCollection) {
+    for (iter=aPicoEvent.fFirstParticleCollection->begin();iter!=aPicoEvent.fFirstParticleCollection->end();iter++){
+      fFirstParticleCollection->push_back(*iter);
+    }
+  }
+  fSecondParticleCollection = new AliFemtoParticleCollection;
+  if (aPicoEvent.fSecondParticleCollection) {
+    for (iter=aPicoEvent.fSecondParticleCollection->begin();iter!=aPicoEvent.fSecondParticleCollection->end();iter++){
+      fSecondParticleCollection->push_back(*iter);
+    }
+  }
+  fThirdParticleCollection = new AliFemtoParticleCollection;
+  if (aPicoEvent.fThirdParticleCollection) {
+    for (iter=aPicoEvent.fThirdParticleCollection->begin();iter!=aPicoEvent.fThirdParticleCollection->end();iter++){
+      fThirdParticleCollection->push_back(*iter);
+    }
+  }
+}
+//_________________
+AliFemtoPicoEvent::~AliFemtoPicoEvent(){
+  AliFemtoParticleIterator iter;
+  
+  if (fFirstParticleCollection){
+    for (iter=fFirstParticleCollection->begin();iter!=fFirstParticleCollection->end();iter++){
+      delete *iter;
+    }
+    fFirstParticleCollection->clear();
+    delete fFirstParticleCollection;
+    fFirstParticleCollection = 0;
+  }
+  
+  if (fSecondParticleCollection){
+    for (iter=fSecondParticleCollection->begin();iter!=fSecondParticleCollection->end();iter++){
+      delete *iter;
+    }
+    fSecondParticleCollection->clear();
+    delete fSecondParticleCollection;
+    fSecondParticleCollection = 0;
+  }
 
+  if (fThirdParticleCollection){
+    if (fThirdParticleCollection->size() != 0 ) {
+      for (iter=fThirdParticleCollection->begin();iter!=fThirdParticleCollection->end();iter++){
+	delete *iter;
+      }
+    }
+    fThirdParticleCollection->clear();
+    delete fThirdParticleCollection;
+    fThirdParticleCollection = 0;
+  }
+}
+//_________________
+ AliFemtoPicoEvent& AliFemtoPicoEvent::operator=(AliFemtoPicoEvent& aPicoEvent) 
+{
+  if (this == &aPicoEvent) 
+    return *this;
+
+  AliFemtoParticleIterator iter;
+   
   if (fFirstParticleCollection){
       for (iter=fFirstParticleCollection->begin();iter!=fFirstParticleCollection->end();iter++){
 	delete *iter;
@@ -82,5 +152,26 @@ AliFemtoPicoEvent::~AliFemtoPicoEvent(){
     delete fThirdParticleCollection;
     fThirdParticleCollection = 0;
   }
+
+  fFirstParticleCollection = new AliFemtoParticleCollection;
+  if (aPicoEvent.fFirstParticleCollection) {
+    for (iter=aPicoEvent.fFirstParticleCollection->begin();iter!=aPicoEvent.fFirstParticleCollection->end();iter++){
+      fFirstParticleCollection->push_back(*iter);
+    }
+  }
+  fSecondParticleCollection = new AliFemtoParticleCollection;
+  if (aPicoEvent.fSecondParticleCollection) {
+    for (iter=aPicoEvent.fSecondParticleCollection->begin();iter!=aPicoEvent.fSecondParticleCollection->end();iter++){
+      fSecondParticleCollection->push_back(*iter);
+    }
+  }
+  fThirdParticleCollection = new AliFemtoParticleCollection;
+  if (aPicoEvent.fThirdParticleCollection) {
+    for (iter=aPicoEvent.fThirdParticleCollection->begin();iter!=aPicoEvent.fThirdParticleCollection->end();iter++){
+      fThirdParticleCollection->push_back(*iter);
+    }
+  }
+
+  return *this;
 }
-//_________________
+

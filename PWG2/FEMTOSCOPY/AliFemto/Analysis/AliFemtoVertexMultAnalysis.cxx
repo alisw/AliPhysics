@@ -13,6 +13,9 @@
  ***************************************************************************
  *
  * $Log$
+ * Revision 1.1.1.1  2007/04/25 15:38:41  panos
+ * Importing the HBT code dir
+ *
  * Revision 1.1.1.1  2007/03/07 10:14:49  mchojnacki
  * First version on CVS
  *
@@ -54,7 +57,14 @@ extern void FillHbtParticleCollection(AliFemtoParticleCut*         partCut,
 //____________________________
 AliFemtoVertexMultAnalysis::AliFemtoVertexMultAnalysis(unsigned int binsVertex, double minVertex, double maxVertex,
 						 unsigned int binsMult, double minMult, double maxMult) 
-  : fVertexZBins(binsVertex), fMultBins(binsMult) {
+  : 
+  fVertexZBins(binsVertex), 
+  fOverFlowVertexZ(0), 
+  fUnderFlowVertexZ(0),
+  fMultBins(binsMult) ,
+  fOverFlowMult(0),    
+  fUnderFlowMult(0)    
+{
   //  mControlSwitch     = 0;
   fEventCut          = 0;
   fFirstParticleCut  = 0;
@@ -76,7 +86,15 @@ AliFemtoVertexMultAnalysis::AliFemtoVertexMultAnalysis(unsigned int binsVertex, 
 };
 //____________________________
 
-AliFemtoVertexMultAnalysis::AliFemtoVertexMultAnalysis(const AliFemtoVertexMultAnalysis& a) : AliFemtoAnalysis() {
+AliFemtoVertexMultAnalysis::AliFemtoVertexMultAnalysis(const AliFemtoVertexMultAnalysis& a) : 
+  AliFemtoAnalysis(),
+  fVertexZBins(a.fVertexZBins), 
+  fOverFlowVertexZ(0), 
+  fUnderFlowVertexZ(0),
+  fMultBins(a.fMultBins) ,
+  fOverFlowMult(0),    
+  fUnderFlowMult(0)    
+{
   //AliFemtoVertexMultAnalysis();
   fEventCut          = 0;
   fFirstParticleCut  = 0;
@@ -84,12 +102,10 @@ AliFemtoVertexMultAnalysis::AliFemtoVertexMultAnalysis(const AliFemtoVertexMultA
   fPairCut           = 0;
   fCorrFctnCollection= 0;
   fCorrFctnCollection = new AliFemtoCorrFctnCollection;
-  fVertexZBins = a.fVertexZBins; 
   fVertexZ[0] = a.fVertexZ[0]; 
   fVertexZ[1] = a.fVertexZ[1];
   fUnderFlowVertexZ = 0; 
   fOverFlowVertexZ = 0; 
-  fMultBins = a.fMultBins; 
   fMult[0] = a.fMult[0]; 
   fMult[1] = a.fMult[1];
   fUnderFlowMult = 0; 

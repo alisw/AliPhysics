@@ -14,6 +14,9 @@
  ***************************************************************************
  *
  * $Log$
+ * Revision 1.3  2007/04/27 07:24:34  akisiel
+ * Make revisions needed for compilation from the main AliRoot tree
+ *
  * Revision 1.1.1.1  2007/04/25 15:38:41  panos
  * Importing the HBT code dir
  *
@@ -56,18 +59,35 @@
 ClassImp(AliFemtoCoulomb)
 #endif
 
-AliFemtoCoulomb::AliFemtoCoulomb() {
+AliFemtoCoulomb::AliFemtoCoulomb() :
+  fFile(""),
+  fRadius(-1.0),
+  fZ1Z2(1.0),
+  fNLines(0)
+{
   fFile = "/afs/rhic/star/hbt/coul/AliFemtoCorrectionFiles/correctionpp.dat";
   if (!fFile) {
     cout << " No file, dummy!" << endl;
     assert(0);
   }
-  fRadius = -1.0;
-  fZ1Z2 = 1.0; // Default has been set up to be same sign charges
   cout << "You have 1 default Coulomb correction!" << endl;
 }
 
-AliFemtoCoulomb::AliFemtoCoulomb(const char* readFile, const double& radius, const double& charge) {
+AliFemtoCoulomb::AliFemtoCoulomb(const AliFemtoCoulomb& aCoul) :
+  fFile(aCoul.fFile),
+  fRadius(aCoul.fRadius),
+  fZ1Z2(aCoul.fZ1Z2),
+  fNLines(0)
+{
+  CreateLookupTable(fRadius);
+}
+
+AliFemtoCoulomb::AliFemtoCoulomb(const char* readFile, const double& radius, const double& charge) :
+  fFile(readFile),
+  fRadius(radius),
+  fZ1Z2(0),
+  fNLines(0)
+{
   fFile = readFile;
   fRadius = radius;
   CreateLookupTable(fRadius);
@@ -78,6 +98,21 @@ AliFemtoCoulomb::AliFemtoCoulomb(const char* readFile, const double& radius, con
 AliFemtoCoulomb::~AliFemtoCoulomb() {
 
 }
+
+AliFemtoCoulomb& AliFemtoCoulomb::operator=(const AliFemtoCoulomb& aCoul)
+{
+  if (this == &aCoul)
+    return *this;
+
+  fFile = aCoul.fFile;
+  fRadius = aCoul.fRadius;
+  fZ1Z2 = aCoul.fZ1Z2;
+
+  CreateLookupTable(fRadius);
+  
+  return *this;
+}
+
 
 void AliFemtoCoulomb::SetRadius(const double& radius) {
   cout << " AliFemtoCoulomb::setRadius() " << endl;

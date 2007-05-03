@@ -13,6 +13,9 @@
  ***************************************************************************
  *
  * $Log$
+ * Revision 1.1.1.1  2007/04/25 15:38:41  panos
+ * Importing the HBT code dir
+ *
  * Revision 1.1.1.1  2007/03/07 10:14:49  mchojnacki
  * First version on CVS
  *
@@ -134,11 +137,34 @@ ClassImp(AliFemtoManager)
 
 
 //____________________________
-AliFemtoManager::AliFemtoManager(){
+AliFemtoManager::AliFemtoManager():
+  fAnalysisCollection(0),
+  fEventReader(0),
+  fEventWriterCollection(0)
+{
   fAnalysisCollection = new AliFemtoAnalysisCollection;
   fEventWriterCollection = new AliFemtoEventWriterCollection;
   fEventReader = 0;
 }
+//____________________________
+AliFemtoManager::AliFemtoManager(const AliFemtoManager& aManager) :
+  fAnalysisCollection(0),
+  fEventReader(0),
+  fEventWriterCollection(0)
+{
+  fEventReader = aManager.fEventReader;
+  AliFemtoAnalysisIterator AnalysisIter;
+  fAnalysisCollection = new AliFemtoAnalysisCollection;
+  for (AnalysisIter=aManager.fAnalysisCollection->begin();AnalysisIter!=aManager.fAnalysisCollection->end();AnalysisIter++){
+    fAnalysisCollection->push_back(*AnalysisIter);
+  }
+  AliFemtoEventWriterIterator EventWriterIter;
+  fEventWriterCollection = new AliFemtoEventWriterCollection;
+  for (EventWriterIter=aManager.fEventWriterCollection->begin();EventWriterIter!=aManager.fEventWriterCollection->end();EventWriterIter++){
+    fEventWriterCollection->push_back(*EventWriterIter);
+  }
+}
+
 //____________________________
 AliFemtoManager::~AliFemtoManager(){
   delete fEventReader;
@@ -157,6 +183,43 @@ AliFemtoManager::~AliFemtoManager(){
   }
   delete fEventWriterCollection;
 }
+//____________________________
+AliFemtoManager& AliFemtoManager::operator=(const AliFemtoManager& aManager)
+{
+  if (this == &aManager)
+    return *this;
+
+  fEventReader = aManager.fEventReader;
+  AliFemtoAnalysisIterator AnalysisIter;
+  if (fAnalysisCollection) {
+    for (AnalysisIter=fAnalysisCollection->begin();AnalysisIter!=fAnalysisCollection->end();AnalysisIter++){
+      delete *AnalysisIter;
+      *AnalysisIter = 0;
+    }
+    delete fAnalysisCollection;
+  }
+  // now delete each EventWriter in the Collection, and then the Collection itself
+  AliFemtoEventWriterIterator EventWriterIter;
+  if (fEventWriterCollection) {
+    for (EventWriterIter=fEventWriterCollection->begin();EventWriterIter!=fEventWriterCollection->end();EventWriterIter++){
+      delete *EventWriterIter;
+      *EventWriterIter = 0;
+    }
+    delete fEventWriterCollection;
+  }
+
+  fAnalysisCollection = new AliFemtoAnalysisCollection;
+  for (AnalysisIter=aManager.fAnalysisCollection->begin();AnalysisIter!=aManager.fAnalysisCollection->end();AnalysisIter++){
+    fAnalysisCollection->push_back(*AnalysisIter);
+  }
+
+  fEventWriterCollection = new AliFemtoEventWriterCollection;
+  for (EventWriterIter=aManager.fEventWriterCollection->begin();EventWriterIter!=aManager.fEventWriterCollection->end();EventWriterIter++){
+    fEventWriterCollection->push_back(*EventWriterIter);
+  }
+  return *this;
+}
+
 //____________________________
 int AliFemtoManager::Init(){
   AliFemtoString readerMessage;
@@ -215,7 +278,7 @@ AliFemtoString AliFemtoManager::Report(){
   // EventReader
   stemp = fEventReader->Report();
   // EventWriters
-  sprintf(ctemp,"\nAliFemtoManager Reporting %u EventWriters\n",fEventWriterCollection->size());
+  sprintf(ctemp,"\nAliFemtoManager Reporting %u EventWriters\n",(unsigned int) fEventWriterCollection->size());
   stemp += ctemp;
   AliFemtoEventWriterIterator EventWriterIter;
   AliFemtoEventWriter* currentEventWriter;
@@ -225,7 +288,7 @@ AliFemtoString AliFemtoManager::Report(){
     stemp+=currentEventWriter->Report();
   }
   // Analyses
-  sprintf(ctemp,"\nAliFemtoManager Reporting %u Analyses\n",fAnalysisCollection->size());
+  sprintf(ctemp,"\nAliFemtoManager Reporting %u Analyses\n",(unsigned int) fAnalysisCollection->size());
   stemp += ctemp;
   AliFemtoAnalysisIterator AnalysisIter;
   AliFemtoBaseAnalysis* currentAnalysis;

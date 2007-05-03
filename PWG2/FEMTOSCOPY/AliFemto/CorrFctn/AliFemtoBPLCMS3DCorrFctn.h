@@ -11,6 +11,9 @@
  ***************************************************************************
  *
  * $Log$
+ * Revision 1.1.1.1  2007/04/25 15:38:41  panos
+ * Importing the HBT code dir
+ *
  * Revision 1.1.1.1  2007/03/07 10:14:49  mchojnacki
  * First version on CVS
  *
@@ -46,7 +49,10 @@
 class AliFemtoBPLCMS3DCorrFctn : public AliFemtoCorrFctn {
 public:
   AliFemtoBPLCMS3DCorrFctn(char* title, const int& nbins, const float& QLo, const float& QHi);
+  AliFemtoBPLCMS3DCorrFctn(const AliFemtoBPLCMS3DCorrFctn& aCorrFctn);
   virtual ~AliFemtoBPLCMS3DCorrFctn();
+
+  AliFemtoBPLCMS3DCorrFctn& operator=(const AliFemtoBPLCMS3DCorrFctn& aCorrFctn);
 
   virtual AliFemtoString Report();
   virtual void AddRealPair(const AliFemtoPair*);

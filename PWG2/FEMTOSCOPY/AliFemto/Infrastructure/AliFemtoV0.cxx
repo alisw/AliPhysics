@@ -2,7 +2,57 @@
 #include "phys_constants.h"
 
 // -----------------------------------------------------------------------
-AliFemtoV0::AliFemtoV0(const AliFemtoV0& v){ // copy constructor
+AliFemtoV0::AliFemtoV0():
+  fDecayLengthV0(0), fDecayVertexV0(0), fPrimaryVertex(0),
+  fDcaV0Daughters(0), fDcaV0ToPrimVertex(0),
+  fDcaPosToPrimVertex(0), fDcaNegToPrimVertex(0),
+  fMomPos(0), fMomNeg(0),
+  fTpcHitsPos(0), fTpcHitsNeg(0),
+  fChi2V0(0),  fClV0(0),  fChi2Pos(0),  fClPos(0),  fChi2Neg(0),  fClNeg(0),
+  fDedxPos(0),  fErrDedxPos(0),  fLenDedxPos(0),
+  fDedxNeg(0),  fErrDedxNeg(0),  fLenDedxNeg(0),
+  fNufDedxPos(0), fNufDedxNeg(0),
+  fHelixPos(), fHelixNeg(), 
+  fMomV0(0),
+  fAlphaV0(0),  fPtArmV0(0),
+  fELambda(0),  fEK0Short(0),  
+  fEPosProton(0),  fEPosPion(0),
+  fENegProton(0),  fENegPion(0),
+  fMassLambda(0),  fMassAntiLambda(0),
+  fMassK0Short(0),  fRapLambda(0),
+  fRapK0Short(0),  fCTauLambda(0),
+  fCTauK0Short(0),  fPtV0(0),  fPtotV0(0),
+  fPtPos(0),  fPtotPos(0),
+  fPtNeg(0),  fPtotNeg(0),
+  fKeyNeg(0),   fKeyPos(0),
+  fHiddenInfo(0)  /***/
+{ /* no-op */}
+// -----------------------------------------------------------------------
+AliFemtoV0::AliFemtoV0(const AliFemtoV0& v) :
+  fDecayLengthV0(0), fDecayVertexV0(0), fPrimaryVertex(0),
+  fDcaV0Daughters(0), fDcaV0ToPrimVertex(0),
+  fDcaPosToPrimVertex(0), fDcaNegToPrimVertex(0),
+  fMomPos(0), fMomNeg(0),
+  fTpcHitsPos(0), fTpcHitsNeg(0),
+  fChi2V0(0),  fClV0(0),  fChi2Pos(0),  fClPos(0),  fChi2Neg(0),  fClNeg(0),
+  fDedxPos(0),  fErrDedxPos(0),  fLenDedxPos(0),
+  fDedxNeg(0),  fErrDedxNeg(0),  fLenDedxNeg(0),
+  fNufDedxPos(0), fNufDedxNeg(0),
+  fHelixPos(), fHelixNeg(), 
+  fMomV0(0),
+  fAlphaV0(0),  fPtArmV0(0),
+  fELambda(0),  fEK0Short(0),  
+  fEPosProton(0),  fEPosPion(0),
+  fENegProton(0),  fENegPion(0),
+  fMassLambda(0),  fMassAntiLambda(0),
+  fMassK0Short(0),  fRapLambda(0),
+  fRapK0Short(0),  fCTauLambda(0),
+  fCTauK0Short(0),  fPtV0(0),  fPtotV0(0),
+  fPtPos(0),  fPtotPos(0),
+  fPtNeg(0),  fPtotNeg(0),
+  fKeyNeg(0),   fKeyPos(0),
+  fHiddenInfo(0)  /***/
+{ // copy constructor
   fDecayLengthV0 = v.fDecayLengthV0;
   fDecayVertexV0 = v.fDecayVertexV0;
   fDcaV0Daughters = v.fDcaV0Daughters;
@@ -44,6 +94,55 @@ AliFemtoV0::AliFemtoV0(const AliFemtoV0& v){ // copy constructor
   fHiddenInfo = v.fHiddenInfo? v.fHiddenInfo->clone() : 0;// GR 11 DEC 02
   UpdateV0();
 }
+AliFemtoV0& AliFemtoV0::operator=(const AliFemtoV0& aV0)
+{
+  if (this == &aV0)
+    return *this;
+  fDecayLengthV0 = aV0.fDecayLengthV0;
+  fDecayVertexV0 = aV0.fDecayVertexV0;
+  fDcaV0Daughters = aV0.fDcaV0Daughters;
+  fDcaV0ToPrimVertex = aV0.fDcaV0ToPrimVertex;
+  fDcaPosToPrimVertex = aV0.fDcaPosToPrimVertex;
+  fDcaNegToPrimVertex = aV0.fDcaNegToPrimVertex;
+  fMomPos = aV0.fMomPos;
+  fMomNeg = aV0.fMomNeg;
+
+  fTrackTopologyMapPos[0] = aV0.fTrackTopologyMapPos[0];
+  fTrackTopologyMapPos[1] = aV0.fTrackTopologyMapPos[1];
+  fTrackTopologyMapNeg[0] = aV0.fTrackTopologyMapNeg[0];
+  fTrackTopologyMapNeg[1] = aV0.fTrackTopologyMapNeg[1];
+   
+  fKeyPos = aV0.fKeyPos;
+  fKeyNeg = aV0.fKeyNeg;
+     
+  fTpcHitsPos = aV0.fTpcHitsPos;
+  fTpcHitsNeg = aV0.fTpcHitsNeg;
+
+  fChi2V0 = aV0.fChi2V0;
+  fClV0 = aV0.fClV0;
+  fChi2Pos = aV0.fChi2Pos;
+  fClPos = aV0.fClPos;
+  fChi2Neg = aV0.fChi2Neg;
+  fClNeg = aV0.fClNeg;
+  fDedxPos = aV0.fDedxPos;
+  fErrDedxPos = aV0.fErrDedxPos;//Gael 04Fev2002
+  fLenDedxPos = aV0.fLenDedxPos;//Gael 04Fev2002
+  fDedxNeg = aV0.fDedxNeg;
+  fErrDedxNeg = aV0.fErrDedxNeg;//Gael 04Fev2002
+  fLenDedxNeg = aV0.fLenDedxNeg;//Gael 04Fev2002
+
+  fNufDedxPos = aV0.fNufDedxPos;
+  fNufDedxNeg = aV0.fNufDedxNeg;
+
+  fHelixPos = aV0.fHelixPos;// Gael 12 Sept
+  fHelixNeg = aV0.fHelixNeg;// Gael 12 Sept
+  if (fHiddenInfo) delete fHiddenInfo;
+  fHiddenInfo = aV0.fHiddenInfo? aV0.fHiddenInfo->clone() : 0;// GR 11 DEC 02
+  UpdateV0();
+  
+  return *this;
+}
+
 // -----------------------------------------------------------------------
 void AliFemtoV0::UpdateV0(){
   //Calc. derived memebers of the v0 class

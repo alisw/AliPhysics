@@ -11,6 +11,9 @@
  ***************************************************************************
  *
  * $Log$
+ * Revision 1.1.1.1  2007/04/25 15:38:41  panos
+ * Importing the HBT code dir
+ *
  * Revision 1.1.1.1  2007/03/07 10:14:49  mchojnacki
  * First version on CVS
  *
@@ -46,7 +49,11 @@ ClassImp(AliFemtoQinvCorrFctn)
 #endif
 
 //____________________________
-AliFemtoQinvCorrFctn::AliFemtoQinvCorrFctn(char* title, const int& nbins, const float& QinvLo, const float& QinvHi){
+AliFemtoQinvCorrFctn::AliFemtoQinvCorrFctn(char* title, const int& nbins, const float& QinvLo, const float& QinvHi):
+  fNumerator(0),
+  fDenominator(0),
+  fRatio(0)
+{
   // set up numerator
   //  title = "Num Qinv (MeV/c)";
   char TitNum[100] = "Num";
@@ -76,11 +83,37 @@ AliFemtoQinvCorrFctn::AliFemtoQinvCorrFctn(char* title, const int& nbins, const 
 }
 
 //____________________________
+AliFemtoQinvCorrFctn::AliFemtoQinvCorrFctn(const AliFemtoQinvCorrFctn& aCorrFctn) :
+  fNumerator(0),
+  fDenominator(0),
+  fRatio(0)
+{
+  fNumerator = new TH1D(*aCorrFctn.fNumerator);
+  fDenominator = new TH1D(*aCorrFctn.fDenominator);
+  fRatio = new TH1D(*aCorrFctn.fRatio);
+}
+//____________________________
 AliFemtoQinvCorrFctn::~AliFemtoQinvCorrFctn(){
   delete fNumerator;
   delete fDenominator;
   delete fRatio;
 }
+//_________________________
+AliFemtoQinvCorrFctn& AliFemtoQinvCorrFctn::operator=(const AliFemtoQinvCorrFctn& aCorrFctn)
+{
+  if (this == &aCorrFctn)
+    return *this;
+
+  if (fNumerator) delete fNumerator;
+  fNumerator = new TH1D(*aCorrFctn.fNumerator);
+  if (fDenominator) delete fDenominator;
+  fDenominator = new TH1D(*aCorrFctn.fDenominator);
+  if (fRatio) delete fRatio;
+  fRatio = new TH1D(*aCorrFctn.fRatio);
+
+  return *this;
+}
+
 //_________________________
 void AliFemtoQinvCorrFctn::Finish(){
   // here is where we should normalize, fit, etc...

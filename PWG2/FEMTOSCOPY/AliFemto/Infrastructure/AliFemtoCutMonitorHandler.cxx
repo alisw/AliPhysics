@@ -6,17 +6,61 @@
 ClassImp(AliFemtoCutMonitorHandler)
 #endif
 // ---------------------------------------------------------------------------
-AliFemtoCutMonitorHandler::AliFemtoCutMonitorHandler() {
+AliFemtoCutMonitorHandler::AliFemtoCutMonitorHandler():
+  fCollectionsEmpty(0), fPassColl(0), fFailColl(0)
+ {
   cout << " *** AliFemtoCutMonitorHandler::AliFemtoCutMonitorHandler() " << endl;
   fCollectionsEmpty = 0;
   fPassColl = new AliFemtoCutMonitorCollection();
   fFailColl = new AliFemtoCutMonitorCollection();
 }
 // ---------------------------------------------------------------------------
+AliFemtoCutMonitorHandler::AliFemtoCutMonitorHandler(const AliFemtoCutMonitorHandler& aHan):
+  fCollectionsEmpty(0), fPassColl(0), fFailColl(0)
+{
+  fCollectionsEmpty = aHan.fCollectionsEmpty;
+  fPassColl = new AliFemtoCutMonitorCollection();
+  AliFemtoCutMonitorIterator iter;
+  for (iter=aHan.fPassColl->begin(); iter!=aHan.fPassColl->end(); iter++){
+    fPassColl->push_back(*iter);
+  }
+  fFailColl = new AliFemtoCutMonitorCollection();
+  for (iter=aHan.fFailColl->begin(); iter!=aHan.fFailColl->end(); iter++){
+    fFailColl->push_back(*iter);
+  }
+}
+
+// ---------------------------------------------------------------------------
 AliFemtoCutMonitorHandler::~AliFemtoCutMonitorHandler() { 
   delete fPassColl;
   delete fFailColl;
 }   
+//__________________________
+AliFemtoCutMonitorHandler& AliFemtoCutMonitorHandler::operator=(const AliFemtoCutMonitorHandler& aHan)
+{
+  if (this == &aHan)
+    return *this;
+
+  AliFemtoCutMonitorIterator iter;
+  if (fPassColl) {
+    fPassColl->clear();
+    delete fPassColl;
+  }
+  if (fFailColl) {
+    fFailColl->clear();
+    delete fFailColl;
+  }
+  fPassColl = new AliFemtoCutMonitorCollection();
+  for (iter=aHan.fPassColl->begin(); iter!=aHan.fPassColl->end(); iter++){
+    fPassColl->push_back(*iter);
+  }
+  fFailColl = new AliFemtoCutMonitorCollection();
+  for (iter=aHan.fFailColl->begin(); iter!=aHan.fFailColl->end(); iter++){
+    fFailColl->push_back(*iter);
+  }
+  return *this;
+}
+
 // ---------------------------------------------------------------------------
 void AliFemtoCutMonitorHandler::FillCutMonitor(const AliFemtoEvent* event, bool pass) { 
   if (fCollectionsEmpty) return;

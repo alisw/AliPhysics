@@ -12,6 +12,9 @@
  ***********************************************************************
  *
  * $Log$
+ * Revision 1.1.1.1  2007/04/25 15:38:41  panos
+ * Importing the HBT code dir
+ *
  * Revision 1.1.1.1  2007/03/07 10:14:49  mchojnacki
  * First version on CVS
  *
@@ -52,7 +55,7 @@ class StKinkVertex;
 
 class AliFemtoKink {
 public:
-  AliFemtoKink(){/* no-op */}
+  AliFemtoKink();
   AliFemtoKink( const AliFemtoKink&); // copy constructor
 #ifndef __NO_STAR_DEPENDENCE_ALLOWED__
 #ifdef __ROOT__

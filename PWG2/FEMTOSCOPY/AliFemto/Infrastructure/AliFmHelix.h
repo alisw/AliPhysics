@@ -18,6 +18,9 @@
  ***************************************************************************
  *
  * $Log$
+ * Revision 1.1.1.1  2007/04/25 15:38:41  panos
+ * Importing the HBT code dir
+ *
  * Revision 1.1.1.1  2007/03/07 10:14:49  mchojnacki
  * First version on CVS
  *
@@ -63,7 +66,7 @@ class AliFmHelix {
 public:
     /// curvature, dip angle, phase, origin, h
     AliFmHelix(double c, double dip, double phase,
-	    const AliFmThreeVector<double>& o, int h=-1);
+	       const AliFmThreeVector<double>& o, int h=-1);
     
     virtual ~AliFmHelix();
     // AliFmHelix(const AliFmHelix&);			// use default

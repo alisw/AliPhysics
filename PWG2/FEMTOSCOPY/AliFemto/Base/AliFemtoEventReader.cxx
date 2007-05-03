@@ -14,6 +14,41 @@
 ClassImp(AliFemtoEventReader)
 #endif
 
+AliFemtoEventReader::AliFemtoEventReader(const AliFemtoEventReader& aReader):
+  fEventCut(0),  
+  fTrackCut(0),    
+  fV0Cut(0),       
+  fXiCut(0),       
+  fKinkCut(0),    
+  fReaderStatus(0),  
+  fDebug(0)
+{
+  fEventCut = aReader.fEventCut;
+  fTrackCut = aReader.fTrackCut;
+  fV0Cut    = aReader.fV0Cut;
+  fXiCut    = aReader.fXiCut;
+  fKinkCut  = aReader.fKinkCut;
+  fReaderStatus = aReader.fReaderStatus;
+  fDebug = aReader.fDebug;
+}
+
+AliFemtoEventReader& AliFemtoEventReader::operator=(const AliFemtoEventReader& aReader)
+{
+  if (this == &aReader) 
+    return *this;
+
+  fEventCut = aReader.fEventCut;
+  fTrackCut = aReader.fTrackCut;
+  fV0Cut    = aReader.fV0Cut;
+  fXiCut    = aReader.fXiCut;
+  fKinkCut  = aReader.fKinkCut;
+  fReaderStatus = aReader.fReaderStatus;
+  fDebug = aReader.fDebug;
+
+  return *this;
+}
+
+
 AliFemtoString AliFemtoEventReader::Report(){
   // Create a simple report from the workings of the reader
   AliFemtoString temp = "\n This is the base class AliFemtoEventReader reporting";

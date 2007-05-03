@@ -11,6 +11,9 @@
  ***********************************************************************
  *
  * $Log$
+ * Revision 1.1.1.1  2007/04/25 15:38:41  panos
+ * Importing the HBT code dir
+ *
  * Revision 1.1.1.1  2007/03/07 10:14:49  mchojnacki
  * First version on CVS
  *
@@ -85,14 +88,15 @@
 
 class AliFemtoV0 {
 public:
-  AliFemtoV0(){/* no-op */}
+  AliFemtoV0();
   AliFemtoV0( const AliFemtoV0&); // copy constructor
 #ifdef __ROOT__
 #ifndef __NO_STAR_DEPENDENCE_ALLOWED__
   AliFemtoV0( StV0MuDst&); // from strangeness V0 micro dst structure
 #endif
 #endif
-  ~AliFemtoV0(){if(fHiddenInfo) delete fHiddenInfo;}
+  virtual ~AliFemtoV0(){if(fHiddenInfo) delete fHiddenInfo;}
+  AliFemtoV0& operator=(const AliFemtoV0& aV0);
 
 
   float decayLengthV0() const;       // 3-d decay distance

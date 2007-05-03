@@ -14,6 +14,9 @@
  ***************************************************************************
  *
  * $Log$
+ * Revision 1.1.1.1  2007/04/25 15:38:41  panos
+ * Importing the HBT code dir
+ *
  * Revision 1.1.1.1  2007/03/07 10:14:49  mchojnacki
  * First version on CVS
  *
@@ -136,9 +139,105 @@ int TpcLocalTransform(AliFmThreeVectorD& xgl,
 
 
 //_____________________
-AliFemtoParticle::AliFemtoParticle() : fTrack(0), fV0(0), fKink(0), fHiddenInfo(0) {
+AliFemtoParticle::AliFemtoParticle() : 
+  fTpcV0NegPosSample(0),
+  fV0NegZ(0),
+  fV0NegU(0),
+  fV0NegSect(0),
+  fTrack(0), fV0(0), fKink(0), fXi(0), 
+  fFourMomentum(0),
+  fHelix(),
+  fNominalTpcExitPoint(0),
+  fNominalTpcEntrancePoint(0),
+  fHiddenInfo(0),
+  fPrimaryVertex(0),
+  fSecondaryVertex(0),
+  fHelixV0Pos(),
+  fTpcV0PosEntrancePoint(0),
+  fTpcV0PosExitPoint(0),
+  fHelixV0Neg(),
+  fTpcV0NegEntrancePoint(0),
+  fTpcV0NegExitPoint(0)
+{
   /* no-op for default */
   //  cout << "Created particle " << this << endl;
+}
+//_____________________
+AliFemtoParticle::AliFemtoParticle(const AliFemtoParticle& aParticle):
+  fTpcV0NegPosSample(0),
+  fV0NegZ(0),
+  fV0NegU(0),
+  fV0NegSect(0),
+  fTrack(0), fV0(0), fKink(0), fXi(0),
+  fFourMomentum(0),
+  fHelix(),
+  fNominalTpcExitPoint(0),
+  fNominalTpcEntrancePoint(0),
+  fHiddenInfo(0), 
+  fPrimaryVertex(0),
+  fSecondaryVertex(0),
+  fHelixV0Pos(),
+  fTpcV0PosEntrancePoint(0),
+  fTpcV0PosExitPoint(0),
+  fHelixV0Neg(),
+  fTpcV0NegEntrancePoint(0),
+  fTpcV0NegExitPoint(0)
+{
+  if (aParticle.fTrack)
+    fTrack = new AliFemtoTrack(*aParticle.fTrack);
+  if (aParticle.fV0)
+    fV0    = new AliFemtoV0(*aParticle.fV0);
+  if (aParticle.fKink)
+    fKink  = new AliFemtoKink(*aParticle.fKink);
+  if (aParticle.fXi)
+    fXi    = new AliFemtoXi(*aParticle.fXi);
+  fFourMomentum = aParticle.fFourMomentum;
+  fHelix = aParticle.fHelix;
+
+  for (int iter=0; iter<11; iter++)
+    fNominalPosSample[iter] = aParticle.fNominalPosSample[iter];
+
+  if (aParticle.fTpcV0NegPosSample) {
+    fTpcV0NegPosSample = (AliFemtoThreeVector *) malloc(sizeof(AliFemtoThreeVector) * 11);
+    for (int iter=0; iter<11; iter++)
+      fTpcV0NegPosSample[iter] = aParticle.fTpcV0NegPosSample[iter];
+  }
+
+  if (aParticle.fV0NegZ) {
+    fV0NegZ = (float *) malloc(sizeof(float) * 45);
+    for (int iter=0; iter<11; iter++)
+      fV0NegZ[iter] = aParticle.fV0NegZ[iter];
+  }
+  if (aParticle.fV0NegU) {
+    fV0NegU = (float *) malloc(sizeof(float) * 45);
+    for (int iter=0; iter<11; iter++)
+      fV0NegU[iter] = aParticle.fV0NegU[iter];
+  }
+  if (aParticle.fV0NegSect) {
+    fV0NegSect = (int *) malloc(sizeof(int) * 45);
+    for (int iter=0; iter<11; iter++)
+      fV0NegSect[iter] = aParticle.fV0NegSect[iter];
+  }
+
+  fPrimaryVertex = aParticle.fPrimaryVertex;
+  fSecondaryVertex = aParticle.fSecondaryVertex;
+  CalculatePurity();
+  if(aParticle.fHiddenInfo){
+    fHiddenInfo= aParticle.HiddenInfo()->clone();
+  }
+  
+  fNominalTpcEntrancePoint = aParticle.fNominalTpcEntrancePoint;
+  fNominalTpcExitPoint     = aParticle.fNominalTpcExitPoint;
+  
+  for (int iter=0; iter<6; iter++)
+    fPurity[iter] = aParticle.fPurity[iter];
+  
+  fHelixV0Pos = aParticle.fHelixV0Pos;
+  fTpcV0PosEntrancePoint = aParticle.fTpcV0PosEntrancePoint;
+  fTpcV0PosExitPoint     = aParticle.fTpcV0PosExitPoint;
+  fHelixV0Neg = aParticle.fHelixV0Neg;
+  fTpcV0NegEntrancePoint = aParticle.fTpcV0NegEntrancePoint;
+  fTpcV0NegExitPoint     = aParticle.fTpcV0NegExitPoint;
 }
 //_____________________
 AliFemtoParticle::~AliFemtoParticle(){
@@ -162,7 +261,26 @@ AliFemtoParticle::~AliFemtoParticle(){
   //  cout << "Deleted particle " << this << endl;
 }
 //_____________________
-AliFemtoParticle::AliFemtoParticle(const AliFemtoTrack* const hbtTrack,const double& mass) : fTrack(0), fV0(0), fKink(0), fHiddenInfo(0) {
+AliFemtoParticle::AliFemtoParticle(const AliFemtoTrack* const hbtTrack,const double& mass) : 
+  fTpcV0NegPosSample(0),
+  fV0NegZ(0),
+  fV0NegU(0),
+  fV0NegSect(0),
+  fTrack(0), fV0(0), fKink(0), fXi(0),
+  fFourMomentum(0),
+  fHelix(),
+  fNominalTpcExitPoint(0),
+  fNominalTpcEntrancePoint(0),
+  fHiddenInfo(0), 
+  fPrimaryVertex(0),
+  fSecondaryVertex(0),
+  fHelixV0Pos(),
+  fTpcV0PosEntrancePoint(0),
+  fTpcV0PosExitPoint(0),
+  fHelixV0Neg(),
+  fTpcV0NegEntrancePoint(0),
+  fTpcV0NegExitPoint(0)
+{
   
   
   // I know there is a better way to do this...
@@ -205,7 +323,26 @@ AliFemtoParticle::AliFemtoParticle(const AliFemtoTrack* const hbtTrack,const dou
 
 }
 //_____________________
-AliFemtoParticle::AliFemtoParticle(const AliFemtoV0* const hbtV0,const double& mass) : fTrack(0), fV0(0), fKink(0), fHiddenInfo(0) {
+AliFemtoParticle::AliFemtoParticle(const AliFemtoV0* const hbtV0,const double& mass) : 
+  fTpcV0NegPosSample(0),
+  fV0NegZ(0),
+  fV0NegU(0),
+  fV0NegSect(0),
+  fTrack(0), fV0(0), fKink(0),  fXi(0),
+  fFourMomentum(0),
+  fHelix(),
+  fNominalTpcExitPoint(0),
+  fNominalTpcEntrancePoint(0),
+  fHiddenInfo(0),
+  fPrimaryVertex(0),
+  fSecondaryVertex(0),
+  fHelixV0Pos(),
+  fTpcV0PosEntrancePoint(0),
+  fTpcV0PosExitPoint(0),
+  fHelixV0Neg(),
+  fTpcV0NegEntrancePoint(0),
+  fTpcV0NegExitPoint(0)
+{
   fV0 = new AliFemtoV0(*hbtV0);
  //fMap[0]= 0;
   //fMap[1]= 0;
@@ -249,7 +386,26 @@ AliFemtoParticle::AliFemtoParticle(const AliFemtoV0* const hbtV0,const double& m
   // ***
 }
 //_____________________
-AliFemtoParticle::AliFemtoParticle(const AliFemtoKink* const hbtKink,const double& mass) : fTrack(0), fV0(0), fHiddenInfo(0) {
+AliFemtoParticle::AliFemtoParticle(const AliFemtoKink* const hbtKink,const double& mass) : 
+  fTpcV0NegPosSample(0),
+  fV0NegZ(0),
+  fV0NegU(0),
+  fV0NegSect(0),
+  fTrack(0), fV0(0), fKink(0), fXi(0),
+  fFourMomentum(0),
+  fHelix(),
+  fNominalTpcExitPoint(0),
+  fNominalTpcEntrancePoint(0),
+  fHiddenInfo(0),
+  fPrimaryVertex(0),
+  fSecondaryVertex(0),
+  fHelixV0Pos(),
+  fTpcV0PosEntrancePoint(0),
+  fTpcV0PosExitPoint(0),
+  fHelixV0Neg(),
+  fTpcV0NegEntrancePoint(0),
+  fTpcV0NegExitPoint(0)
+{
   fKink = new AliFemtoKink(*hbtKink);
  // fMap[0]= 0;
   //fMap[1]= 0;
@@ -261,7 +417,26 @@ AliFemtoParticle::AliFemtoParticle(const AliFemtoKink* const hbtKink,const doubl
 }
 
 //_____________________
-AliFemtoParticle::AliFemtoParticle(const AliFemtoXi* const hbtXi, const double& mass)  {
+AliFemtoParticle::AliFemtoParticle(const AliFemtoXi* const hbtXi, const double& mass) :
+  fTpcV0NegPosSample(0),
+  fV0NegZ(0),
+  fV0NegU(0),
+  fV0NegSect(0),
+  fTrack(0), fV0(0), fKink(0), fXi(0),
+  fFourMomentum(0),
+  fHelix(),
+  fNominalTpcExitPoint(0),
+  fNominalTpcEntrancePoint(0),
+  fHiddenInfo(0), 
+  fPrimaryVertex(0),
+  fSecondaryVertex(0),
+  fHelixV0Pos(),
+  fTpcV0PosEntrancePoint(0),
+  fTpcV0PosExitPoint(0),
+  fHelixV0Neg(),
+  fTpcV0NegEntrancePoint(0),
+  fTpcV0NegExitPoint(0)
+{
   fXi = new AliFemtoXi(*hbtXi);
  // fMap[0]= 0;
   //fMap[1]= 0;
@@ -270,6 +445,78 @@ AliFemtoParticle::AliFemtoParticle(const AliFemtoXi* const hbtXi, const double& 
   double ener = ::sqrt(temp.mag2()+mass*mass);
   fFourMomentum.setE(ener);
   fHiddenInfo = 0;
+}
+//_____________________
+AliFemtoParticle& AliFemtoParticle::operator=(const AliFemtoParticle& aParticle)
+{
+  if (this == &aParticle)
+    return *this;
+
+  if (aParticle.fTrack)
+    fTrack = new AliFemtoTrack(*aParticle.fTrack);
+  if (aParticle.fV0)
+    fV0    = new AliFemtoV0(*aParticle.fV0);
+  if (aParticle.fKink)
+    fKink  = new AliFemtoKink(*aParticle.fKink);
+  if (aParticle.fXi)
+    fXi    = new AliFemtoXi(*aParticle.fXi);
+  fFourMomentum = aParticle.fFourMomentum;
+  fHelix = aParticle.fHelix;
+
+  for (int iter=0; iter<11; iter++)
+    fNominalPosSample[iter] = aParticle.fNominalPosSample[iter];
+
+  if (fTpcV0NegPosSample) delete fTpcV0NegPosSample;
+  if (aParticle.fTpcV0NegPosSample) {
+    fTpcV0NegPosSample = (AliFemtoThreeVector *) malloc(sizeof(AliFemtoThreeVector) * 11);
+    for (int iter=0; iter<11; iter++)
+      fTpcV0NegPosSample[iter] = aParticle.fTpcV0NegPosSample[iter];
+  }
+
+  if (fV0NegZ) delete fV0NegZ;
+  if (aParticle.fV0NegZ) {
+    fV0NegZ = (float *) malloc(sizeof(float) * 45);
+    for (int iter=0; iter<11; iter++)
+      fV0NegZ[iter] = aParticle.fV0NegZ[iter];
+  }
+  if (fV0NegU) delete fV0NegU;
+  if (aParticle.fV0NegU) {
+    fV0NegU = (float *) malloc(sizeof(float) * 45);
+    for (int iter=0; iter<11; iter++)
+      fV0NegU[iter] = aParticle.fV0NegU[iter];
+  }
+  if (fV0NegSect) delete fV0NegSect;
+  if (aParticle.fV0NegSect) {
+    fV0NegSect = (int *) malloc(sizeof(int) * 45);
+    for (int iter=0; iter<11; iter++)
+      fV0NegSect[iter] = aParticle.fV0NegSect[iter];
+  }
+
+  fPrimaryVertex = aParticle.fPrimaryVertex;
+  fSecondaryVertex = aParticle.fSecondaryVertex;
+  CalculatePurity();
+  if(aParticle.fHiddenInfo){
+    fHiddenInfo= aParticle.fHiddenInfo->clone();
+  }
+  
+  fNominalTpcEntrancePoint = aParticle.fNominalTpcEntrancePoint;
+  fNominalTpcExitPoint     = aParticle.fNominalTpcExitPoint;
+  
+  if (fHiddenInfo) delete fHiddenInfo;
+  if (aParticle.fHiddenInfo) 
+    fHiddenInfo = aParticle.HiddenInfo()->clone();
+  
+  for (int iter=0; iter<6; iter++)
+    fPurity[iter] = aParticle.fPurity[iter];
+  
+  fHelixV0Pos = aParticle.fHelixV0Pos;
+  fTpcV0PosEntrancePoint = aParticle.fTpcV0PosEntrancePoint;
+  fTpcV0PosExitPoint     = aParticle.fTpcV0PosExitPoint;
+  fHelixV0Neg = aParticle.fHelixV0Neg;
+  fTpcV0NegEntrancePoint = aParticle.fTpcV0NegEntrancePoint;
+  fTpcV0NegExitPoint     = aParticle.fTpcV0NegExitPoint;
+
+  return *this;
 }
 //_____________________
 const AliFemtoThreeVector& AliFemtoParticle::NominalTpcExitPoint() const{

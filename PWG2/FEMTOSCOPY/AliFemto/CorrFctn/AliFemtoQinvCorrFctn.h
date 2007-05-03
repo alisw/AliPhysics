@@ -11,6 +11,9 @@
  ***************************************************************************
  *
  * $Log$
+ * Revision 1.1.1.1  2007/04/25 15:38:41  panos
+ * Importing the HBT code dir
+ *
  * Revision 1.1.1.1  2007/03/07 10:14:49  mchojnacki
  * First version on CVS
  *
@@ -43,7 +46,10 @@
 class AliFemtoQinvCorrFctn : public AliFemtoCorrFctn {
 public:
   AliFemtoQinvCorrFctn(char* title, const int& nbins, const float& QinvLo, const float& QinvHi);
+  AliFemtoQinvCorrFctn(const AliFemtoQinvCorrFctn& aCorrFctn);
   virtual ~AliFemtoQinvCorrFctn();
+
+  AliFemtoQinvCorrFctn& operator=(const AliFemtoQinvCorrFctn& aCorrFctn);
 
   virtual AliFemtoString Report();
   virtual void AddRealPair(const AliFemtoPair*);

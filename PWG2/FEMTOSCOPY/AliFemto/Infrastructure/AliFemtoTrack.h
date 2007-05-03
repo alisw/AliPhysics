@@ -31,13 +31,11 @@ class StMuDst;
 class StMuTrack;
 #endif
 
-
-
-
 class AliFemtoTrack{
 public:
   AliFemtoTrack();
   AliFemtoTrack(const AliFemtoTrack&);// copy constructor
+  AliFemtoTrack& operator=(const AliFemtoTrack& aTrack);
 #ifndef __NO_STAR_DEPENDENCE_ALLOWED__
 #ifdef __ROOT__
  //AliFemtoTrack(const StTrack*, AliFemtoThreeVector);   // c-tor from StTrack of STAR DSTs

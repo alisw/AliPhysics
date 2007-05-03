@@ -12,6 +12,9 @@
  ***************************************************************************
  *
  * $Log$
+ * Revision 1.1.1.1  2007/04/25 15:38:41  panos
+ * Importing the HBT code dir
+ *
  * Revision 1.1.1.1  2007/03/07 10:14:49  mchojnacki
  * First version on CVS
  *
@@ -102,13 +105,11 @@ inline void AliFemtoBasicEventCut::SetVertZPos(const float& lo, const float& hi)
 inline int  AliFemtoBasicEventCut::NEventsPassed() {return fNEventsPassed;}
 inline int  AliFemtoBasicEventCut::NEventsFailed() {return fNEventsFailed;}
 inline AliFemtoBasicEventCut* AliFemtoBasicEventCut::Clone() { AliFemtoBasicEventCut* c = new AliFemtoBasicEventCut(*this); return c;}
-inline AliFemtoBasicEventCut::AliFemtoBasicEventCut(AliFemtoBasicEventCut& c) : AliFemtoEventCut(c) {
+inline AliFemtoBasicEventCut::AliFemtoBasicEventCut(AliFemtoBasicEventCut& c) : AliFemtoEventCut(c), fNEventsPassed(0), fNEventsFailed(0) {
   fEventMult[0] = c.fEventMult[0];
   fEventMult[1] = c.fEventMult[1];
   fVertZPos[0] = c.fVertZPos[0];
   fVertZPos[1] = c.fVertZPos[1];
-  fNEventsPassed = 0;
-  fNEventsFailed = 0;
 }
 
 

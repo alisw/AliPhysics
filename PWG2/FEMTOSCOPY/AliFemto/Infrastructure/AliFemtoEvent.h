@@ -15,6 +15,9 @@
  *
  *
  * $Log$
+ * Revision 1.1.1.1  2007/04/25 15:38:41  panos
+ * Importing the HBT code dir
+ *
  * Revision 1.1.1.1  2007/03/07 10:14:49  mchojnacki
  * First version on CVS
  *
@@ -127,6 +130,7 @@ public:
 #endif
   AliFemtoEvent(const AliFemtoEvent&, AliFemtoTrackCut* =0, AliFemtoV0Cut* =0,  AliFemtoXiCut* =0, AliFemtoKinkCut* =0); // copy constructor with track and v0 cuts
   ~AliFemtoEvent();
+  AliFemtoEvent& operator=(const AliFemtoEvent& aEvent);
 
   unsigned short EventNumber() const;
   int RunNumber() const;

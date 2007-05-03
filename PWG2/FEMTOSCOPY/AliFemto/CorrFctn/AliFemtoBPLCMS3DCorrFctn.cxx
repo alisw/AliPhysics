@@ -11,6 +11,9 @@
  ***************************************************************************
  *
  * $Log$
+ * Revision 1.1.1.1  2007/04/25 15:38:41  panos
+ * Importing the HBT code dir
+ *
  * Revision 1.1.1.1  2007/03/07 10:14:49  mchojnacki
  * First version on CVS
  *
@@ -47,7 +50,30 @@ ClassImp(AliFemtoBPLCMS3DCorrFctn)
 #endif
 
 //____________________________
-AliFemtoBPLCMS3DCorrFctn::AliFemtoBPLCMS3DCorrFctn(char* title, const int& nbins, const float& QLo, const float& QHi){
+AliFemtoBPLCMS3DCorrFctn::AliFemtoBPLCMS3DCorrFctn(char* title, const int& nbins, const float& QLo, const float& QHi)
+  :
+  fIDNumHisto(0),
+  fIDDenHisto(0),
+  fIDRatHisto(0),
+  fSMNumHisto(0),
+  fSMDenHisto(0),
+  fSMRatHisto(0),
+  fCorrectionHisto(0),
+  fCorrCFHisto(0),
+  fNumerator(0),
+  fDenominator(0),
+  fRatio(0),
+  fQinvHisto(0),
+  fLambda(0),
+  fRout2(0),
+  fRside2(0),
+  fRlong2(0),
+  fPairCut(0), 
+  fQinvNormLo(0),
+  fQinvNormHi(0),
+  fNumRealsNorm(0),
+  fNumMixedNorm(0)
+{
 
   // set some stuff...
   fQinvNormLo = 0.15;
@@ -139,6 +165,51 @@ AliFemtoBPLCMS3DCorrFctn::AliFemtoBPLCMS3DCorrFctn(char* title, const int& nbins
 
 }
 
+AliFemtoBPLCMS3DCorrFctn::AliFemtoBPLCMS3DCorrFctn(const AliFemtoBPLCMS3DCorrFctn& aCorrFctn) :
+  fIDNumHisto(0),
+  fIDDenHisto(0),
+  fIDRatHisto(0),
+  fSMNumHisto(0),
+  fSMDenHisto(0),
+  fSMRatHisto(0),
+  fCorrectionHisto(0),
+  fCorrCFHisto(0),
+  fNumerator(0),
+  fDenominator(0),
+  fRatio(0),
+  fQinvHisto(0),
+  fLambda(0),
+  fRout2(0),
+  fRside2(0),
+  fRlong2(0),
+  fPairCut(0), 
+  fQinvNormLo(0),
+  fQinvNormHi(0),
+  fNumRealsNorm(0),
+  fNumMixedNorm(0)
+{
+  fIDNumHisto = aCorrFctn.fIDNumHisto;
+  fIDDenHisto = aCorrFctn.fIDDenHisto;
+  fIDRatHisto = aCorrFctn.fIDRatHisto;
+  fSMNumHisto = aCorrFctn.fSMNumHisto;
+  fSMDenHisto = aCorrFctn.fSMDenHisto;
+  fSMRatHisto = aCorrFctn.fSMRatHisto;
+  fCorrectionHisto = aCorrFctn.fCorrectionHisto;
+  fCorrCFHisto = aCorrFctn.fCorrCFHisto;
+  fNumerator = aCorrFctn.fNumerator;
+  fDenominator = aCorrFctn.fDenominator;
+  fRatio = aCorrFctn.fRatio;
+  fQinvHisto = aCorrFctn.fQinvHisto;
+  fLambda = aCorrFctn.fLambda;
+  fRout2 = aCorrFctn.fRout2;
+  fRside2 = aCorrFctn.fRside2;
+  fRlong2 = aCorrFctn.fRlong2;
+  fPairCut = aCorrFctn.fPairCut; 
+  fQinvNormLo = aCorrFctn.fQinvNormLo;
+  fQinvNormHi = aCorrFctn.fQinvNormHi;
+  fNumRealsNorm = aCorrFctn.fNumRealsNorm;
+  fNumMixedNorm = aCorrFctn.fNumMixedNorm;
+}
 //____________________________
 AliFemtoBPLCMS3DCorrFctn::~AliFemtoBPLCMS3DCorrFctn(){
   delete fNumerator;
@@ -153,6 +224,49 @@ AliFemtoBPLCMS3DCorrFctn::~AliFemtoBPLCMS3DCorrFctn(){
   delete fSMRatHisto;
   delete fCorrectionHisto;
   delete fCorrCFHisto;
+}
+//_________________________
+AliFemtoBPLCMS3DCorrFctn& AliFemtoBPLCMS3DCorrFctn::operator=(const AliFemtoBPLCMS3DCorrFctn& aCorrFctn)
+{
+  if (this == &aCorrFctn)
+    return *this;
+  if (fIDNumHisto) delete fIDNumHisto;
+  fIDNumHisto = new TH3D(*aCorrFctn.fIDNumHisto);
+  if (fIDDenHisto) delete fIDDenHisto;
+  fIDDenHisto = new TH3D(*aCorrFctn.fIDDenHisto);
+  if (fIDRatHisto) delete fIDRatHisto;
+  fIDRatHisto = new TH3D(*aCorrFctn.fIDRatHisto);
+  if (fSMNumHisto) delete fSMNumHisto;
+  fSMNumHisto = new TH3D(*aCorrFctn.fSMNumHisto);
+  if (fSMDenHisto) delete fSMDenHisto;
+  fSMDenHisto = new TH3D(*aCorrFctn.fSMDenHisto);
+  if (fSMRatHisto) delete fSMRatHisto;
+  fSMRatHisto = new TH3D(*aCorrFctn.fSMRatHisto);
+
+  if (fCorrectionHisto) delete fCorrectionHisto;
+  fCorrectionHisto = new TH3D(*aCorrFctn.fCorrectionHisto);
+  if (fCorrCFHisto) delete fCorrCFHisto;
+  fCorrCFHisto = new TH3D(*aCorrFctn.fCorrCFHisto);
+  if (fNumerator) delete fNumerator;
+  fNumerator = new TH3D(*aCorrFctn.fNumerator);
+  if (fDenominator) delete fDenominator;
+  fDenominator = new TH3D(*aCorrFctn.fDenominator);
+  if (fRatio) delete fRatio;
+  fRatio = new TH3D(*aCorrFctn.fRatio);
+  if (fQinvHisto) delete fQinvHisto;
+  fQinvHisto = new TH3D(*aCorrFctn.fQinvHisto);
+
+  fLambda = aCorrFctn.fLambda;
+  fRout2 = aCorrFctn.fRout2;
+  fRside2 = aCorrFctn.fRside2;
+  fRlong2 = aCorrFctn.fRlong2;
+  fPairCut = aCorrFctn.fPairCut; 
+  fQinvNormLo = aCorrFctn.fQinvNormLo;
+  fQinvNormHi = aCorrFctn.fQinvNormHi;
+  fNumRealsNorm = aCorrFctn.fNumRealsNorm;
+  fNumMixedNorm = aCorrFctn.fNumMixedNorm;
+  
+  return *this;
 }
 
 //_________________________

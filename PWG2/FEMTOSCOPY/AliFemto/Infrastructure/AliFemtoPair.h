@@ -14,6 +14,9 @@
  ***************************************************************************
  *
  * $Log$
+ * Revision 1.1.1.1  2007/04/25 15:38:41  panos
+ * Importing the HBT code dir
+ *
  * Revision 1.1.1.1  2007/03/07 10:14:49  mchojnacki
  * First version on CVS
  *
@@ -101,12 +104,10 @@
 class AliFemtoPair {
 public:
   AliFemtoPair();
+  AliFemtoPair(const AliFemtoPair& aPair);
   AliFemtoPair(AliFemtoParticle*, AliFemtoParticle*);
-  
-
   ~AliFemtoPair();
-  //AliFemtoPair(const AliFemtoPair&);
-  //AliFemtoPair& operator=(const AliFemtoPair&);
+  AliFemtoPair& operator=(const AliFemtoPair& aPair);
 
   // track Gets:
   AliFemtoParticle* track1() const;

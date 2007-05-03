@@ -28,7 +28,9 @@ AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain():
   fCurEvent(0),
   fCurFile(0),
   fEvent(0x0),
-  fEventFriend(0)
+  fEventFriend(0),
+  fSharedList(0x0),
+  fClusterPerPadrow(0x0)
 {
   fClusterPerPadrow = (list<Int_t> **) malloc(sizeof(list<Int_t> *) * AliESDfriendTrack::kMaxTPCcluster);
   for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
@@ -40,6 +42,42 @@ AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain():
   }
 }
 
+//__________________
+// Copy constructor
+AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain(const AliFemtoEventReaderESDChain& aReader):
+  fFileName(" "),
+  fConstrained(true),
+  fNumberofEvent(0),
+  fCurEvent(0),
+  fCurFile(0),
+  fEvent(0x0),
+  fEventFriend(0),
+  fSharedList(0x0),
+  fClusterPerPadrow(0x0)
+{
+  fConstrained = aReader.fConstrained;
+  fNumberofEvent = aReader.fNumberofEvent;
+  fCurEvent = aReader.fCurEvent;
+  fCurFile = aReader.fCurFile;
+  fEvent = new AliESD(*aReader.fEvent);
+  fEventFriend = aReader.fEventFriend;
+  fClusterPerPadrow = (list<Int_t> **) malloc(sizeof(list<Int_t> *) * AliESDfriendTrack::kMaxTPCcluster);
+  for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
+    fClusterPerPadrow[tPad] = new list<Int_t>();
+    list<Int_t>::iterator iter;
+    for (iter=aReader.fClusterPerPadrow[tPad]->begin(); iter!=aReader.fClusterPerPadrow[tPad]->end(); iter++) {
+      fClusterPerPadrow[tPad]->push_back(*iter);
+    }
+  }
+  fSharedList = (list<Int_t> **) malloc(sizeof(list<Int_t> *) * AliESDfriendTrack::kMaxTPCcluster);
+  for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
+    fSharedList[tPad] = new list<Int_t>();
+    list<Int_t>::iterator iter;
+    for (iter=aReader.fSharedList[tPad]->begin(); iter!=aReader.fSharedList[tPad]->end(); iter++) {
+      fSharedList[tPad]->push_back(*iter);
+    }
+  }
+}
 //__________________
 //Destructor
 AliFemtoEventReaderESDChain::~AliFemtoEventReaderESDChain()
@@ -58,6 +96,57 @@ AliFemtoEventReaderESDChain::~AliFemtoEventReaderESDChain()
   delete [] fSharedList;
 }
 
+//__________________
+// Assignment operator
+AliFemtoEventReaderESDChain& AliFemtoEventReaderESDChain::operator=(const AliFemtoEventReaderESDChain& aReader)
+{
+  if (this == &aReader)
+    return *this;
+
+  fConstrained = aReader.fConstrained;
+  fNumberofEvent = aReader.fNumberofEvent;
+  fCurEvent = aReader.fCurEvent;
+  fCurFile = aReader.fCurFile;
+  if (fEvent) delete fEvent;
+  fEvent = new AliESD(*aReader.fEvent);
+
+  fEventFriend = aReader.fEventFriend;
+  
+  if (fClusterPerPadrow) {
+    for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
+      fClusterPerPadrow[tPad]->clear();
+      delete fClusterPerPadrow[tPad];
+    }
+    delete [] fClusterPerPadrow;
+  }
+  
+  if (fSharedList) {
+    for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
+      fSharedList[tPad]->clear();
+      delete fSharedList[tPad];
+    }
+    delete [] fSharedList;
+  }
+
+  fClusterPerPadrow = (list<Int_t> **) malloc(sizeof(list<Int_t> *) * AliESDfriendTrack::kMaxTPCcluster);
+  for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
+    fClusterPerPadrow[tPad] = new list<Int_t>();
+    list<Int_t>::iterator iter;
+    for (iter=aReader.fClusterPerPadrow[tPad]->begin(); iter!=aReader.fClusterPerPadrow[tPad]->end(); iter++) {
+      fClusterPerPadrow[tPad]->push_back(*iter);
+    }
+  }
+  fSharedList = (list<Int_t> **) malloc(sizeof(list<Int_t> *) * AliESDfriendTrack::kMaxTPCcluster);
+  for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
+    fSharedList[tPad] = new list<Int_t>();
+    list<Int_t>::iterator iter;
+    for (iter=aReader.fSharedList[tPad]->begin(); iter!=aReader.fSharedList[tPad]->end(); iter++) {
+      fSharedList[tPad]->push_back(*iter);
+    }
+  }
+  
+  return *this;
+}
 //__________________
 // Simple report
 AliFemtoString AliFemtoEventReaderESDChain::Report()
@@ -155,7 +244,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
 		
       AliFemtoTrack* trackCopy = new AliFemtoTrack();	
       const AliESDtrack *esdtrack=fEvent->GetTrack(i);//getting next track
-      const AliESDfriendTrack *tESDfriendTrack = esdtrack->GetFriendTrack();
+      //      const AliESDfriendTrack *tESDfriendTrack = esdtrack->GetFriendTrack();
 
       trackCopy->SetCharge((short)esdtrack->GetSign());
 

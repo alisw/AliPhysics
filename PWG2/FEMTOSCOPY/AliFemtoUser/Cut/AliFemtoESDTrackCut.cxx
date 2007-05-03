@@ -11,6 +11,9 @@
  ***************************************************************************
  *
  * $Log$
+ * Revision 1.3  2007/04/27 07:25:59  akisiel
+ * Make revisions needed for compilation from the main AliRoot tree
+ *
  * Revision 1.1.1.1  2007/04/25 15:38:41  panos
  * Importing the HBT code dir
  *
@@ -35,7 +38,14 @@
 ClassImp(AliFemtoESDTrackCut)
 #endif
 
-AliFemtoESDTrackCut::AliFemtoESDTrackCut()
+AliFemtoESDTrackCut::AliFemtoESDTrackCut() :
+  fCharge(0),
+  fLabel(0),
+  fStatus(0),
+  fminTPCclsF(0),
+  fminITScls(0),
+  fNTracksPassed(0),
+  fNTracksFailed(0)
 {
     fNTracksPassed = fNTracksFailed = 0;
     fCharge = 0;  // takes both charges 0

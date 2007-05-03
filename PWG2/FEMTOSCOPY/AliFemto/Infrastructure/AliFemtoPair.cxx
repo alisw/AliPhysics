@@ -19,6 +19,9 @@
  * corrected calculation of opening angle 
  **
  * $Log$
+ * Revision 1.1.1.1  2007/04/25 15:38:41  panos
+ * Importing the HBT code dir
+ *
  * Revision 1.1.1.1  2007/03/07 10:14:49  mchojnacki
  * First version on CVS
  *
@@ -115,14 +118,74 @@ double AliFemtoPair::fMaxDuOuter = 1.4;
 double AliFemtoPair::fMaxDzOuter = 3.2;
 
 
-AliFemtoPair::AliFemtoPair(){
+AliFemtoPair::AliFemtoPair() :
+  fTrack1(0), fTrack2(0),
+  fNonIdParNotCalculated(0),
+  fDKSide(0),
+  fDKOut(0),
+  fDKLong(0),
+  fCVK(0),
+  kStarCalc(0),
+  fNonIdParNotCalculatedGlobal(0),
+  fMergingParNotCalculated(0),
+  fWeightedAvSep(0),
+  fFracOfMergedRow(0),
+  fClosestRowAtDCA(0),
+  fMergingParNotCalculatedTrkV0Pos(0),
+  fFracOfMergedRowTrkV0Pos(0),
+  fClosestRowAtDCATrkV0Pos(0),
+  fMergingParNotCalculatedTrkV0Neg(0),
+  fFracOfMergedRowTrkV0Neg(0),
+  fClosestRowAtDCATrkV0Neg(0),
+  fMergingParNotCalculatedV0PosV0Neg(0),
+  fFracOfMergedRowV0PosV0Neg(0),
+  fClosestRowAtDCAV0PosV0Neg(0),
+  fMergingParNotCalculatedV0NegV0Pos(0),
+  fFracOfMergedRowV0NegV0Pos(0),
+  fClosestRowAtDCAV0NegV0Pos(0),
+  fMergingParNotCalculatedV0PosV0Pos(0),
+  fFracOfMergedRowV0PosV0Pos(0),
+  fClosestRowAtDCAV0PosV0Pos(0),
+  fMergingParNotCalculatedV0NegV0Neg(0),
+  fFracOfMergedRowV0NegV0Neg(0),
+  fClosestRowAtDCAV0NegV0Neg(0)
+{
   fTrack1 = 0;
   fTrack2 = 0;
   setDefaultHalfFieldMergingPar();
 }
 
 AliFemtoPair::AliFemtoPair(AliFemtoParticle* a, AliFemtoParticle* b)
-  : fTrack1(a), fTrack2(b)
+  : fTrack1(a), fTrack2(b),
+  fNonIdParNotCalculated(0),
+  fDKSide(0),
+  fDKOut(0),
+  fDKLong(0),
+  fCVK(0),
+  kStarCalc(0),
+  fNonIdParNotCalculatedGlobal(0),
+  fMergingParNotCalculated(0),
+  fWeightedAvSep(0),
+  fFracOfMergedRow(0),
+  fClosestRowAtDCA(0),
+  fMergingParNotCalculatedTrkV0Pos(0),
+  fFracOfMergedRowTrkV0Pos(0),
+  fClosestRowAtDCATrkV0Pos(0),
+  fMergingParNotCalculatedTrkV0Neg(0),
+  fFracOfMergedRowTrkV0Neg(0),
+  fClosestRowAtDCATrkV0Neg(0),
+  fMergingParNotCalculatedV0PosV0Neg(0),
+  fFracOfMergedRowV0PosV0Neg(0),
+  fClosestRowAtDCAV0PosV0Neg(0),
+  fMergingParNotCalculatedV0NegV0Pos(0),
+  fFracOfMergedRowV0NegV0Pos(0),
+  fClosestRowAtDCAV0NegV0Pos(0),
+  fMergingParNotCalculatedV0PosV0Pos(0),
+  fFracOfMergedRowV0PosV0Pos(0),
+  fClosestRowAtDCAV0PosV0Pos(0),
+  fMergingParNotCalculatedV0NegV0Neg(0),
+  fFracOfMergedRowV0NegV0Neg(0),
+  fClosestRowAtDCAV0NegV0Neg(0)
 { 
   setDefaultHalfFieldMergingPar();
 }
@@ -149,9 +212,128 @@ void AliFemtoPair::setMergingPar(double aMaxDuInner, double aMaxDzInner,
 
 AliFemtoPair::~AliFemtoPair() {/* no-op */}
 
-//AliFemtoPair::AliFemtoPair(const AliFemtoPair &a) {/* missing */}
+AliFemtoPair::AliFemtoPair(const AliFemtoPair &aPair):
+  fTrack1(0), fTrack2(0),
+  fNonIdParNotCalculated(0),
+  fDKSide(0),
+  fDKOut(0),
+  fDKLong(0),
+  fCVK(0),
+  kStarCalc(0),
+  fNonIdParNotCalculatedGlobal(0),
+  fMergingParNotCalculated(0),
+  fWeightedAvSep(0),
+  fFracOfMergedRow(0),
+  fClosestRowAtDCA(0),
+  fMergingParNotCalculatedTrkV0Pos(0),
+  fFracOfMergedRowTrkV0Pos(0),
+  fClosestRowAtDCATrkV0Pos(0),
+  fMergingParNotCalculatedTrkV0Neg(0),
+  fFracOfMergedRowTrkV0Neg(0),
+  fClosestRowAtDCATrkV0Neg(0),
+  fMergingParNotCalculatedV0PosV0Neg(0),
+  fFracOfMergedRowV0PosV0Neg(0),
+  fClosestRowAtDCAV0PosV0Neg(0),
+  fMergingParNotCalculatedV0NegV0Pos(0),
+  fFracOfMergedRowV0NegV0Pos(0),
+  fClosestRowAtDCAV0NegV0Pos(0),
+  fMergingParNotCalculatedV0PosV0Pos(0),
+  fFracOfMergedRowV0PosV0Pos(0),
+  fClosestRowAtDCAV0PosV0Pos(0),
+  fMergingParNotCalculatedV0NegV0Neg(0),
+  fFracOfMergedRowV0NegV0Neg(0),
+  fClosestRowAtDCAV0NegV0Neg(0)
+{
+  fTrack1 = aPair.fTrack1;
+  fTrack2 = aPair.fTrack2;
 
-//AliFemtoPair& AliFemtoPair::operator=(const AliFemtoPair &a)
+  fNonIdParNotCalculated = aPair.fNonIdParNotCalculated;
+  fDKSide = aPair.fDKSide;
+  fDKOut = aPair.fDKOut;
+  fDKLong = aPair.fDKLong;
+  fCVK = aPair.fCVK;
+  kStarCalc = aPair.kStarCalc;
+
+  fNonIdParNotCalculatedGlobal = aPair.fNonIdParNotCalculatedGlobal;
+
+  fMergingParNotCalculated = aPair.fMergingParNotCalculated;
+  fWeightedAvSep = aPair.fWeightedAvSep;
+  fFracOfMergedRow = aPair.fFracOfMergedRow;
+  fClosestRowAtDCA = aPair.fClosestRowAtDCA;
+
+  fMergingParNotCalculatedTrkV0Pos = aPair.fMergingParNotCalculatedTrkV0Pos;
+  fFracOfMergedRowTrkV0Pos = aPair.fFracOfMergedRowTrkV0Pos;
+  fClosestRowAtDCATrkV0Pos = aPair.fClosestRowAtDCATrkV0Pos;
+
+  fMergingParNotCalculatedTrkV0Neg = aPair.fMergingParNotCalculatedTrkV0Neg;
+  fFracOfMergedRowTrkV0Neg = aPair.fFracOfMergedRowTrkV0Neg;
+  fClosestRowAtDCATrkV0Neg = aPair.fClosestRowAtDCATrkV0Neg;
+
+  fMergingParNotCalculatedV0PosV0Neg = aPair.fMergingParNotCalculatedV0PosV0Neg;
+  fFracOfMergedRowV0PosV0Neg = aPair.fFracOfMergedRowV0PosV0Neg;
+  fClosestRowAtDCAV0PosV0Neg = aPair.fClosestRowAtDCAV0PosV0Neg;
+
+  fMergingParNotCalculatedV0NegV0Pos = aPair.fMergingParNotCalculatedV0NegV0Pos;
+  fFracOfMergedRowV0NegV0Pos = aPair.fFracOfMergedRowV0NegV0Pos;
+  fClosestRowAtDCAV0NegV0Pos = aPair.fClosestRowAtDCAV0NegV0Pos;
+
+  fMergingParNotCalculatedV0PosV0Pos = aPair.fMergingParNotCalculatedV0PosV0Pos;
+  fFracOfMergedRowV0PosV0Pos = aPair.fFracOfMergedRowV0PosV0Pos;
+  fClosestRowAtDCAV0PosV0Pos = aPair.fClosestRowAtDCAV0PosV0Pos;
+
+  fMergingParNotCalculatedV0NegV0Neg = aPair.fMergingParNotCalculatedV0NegV0Neg;
+  fFracOfMergedRowV0NegV0Neg = aPair.fFracOfMergedRowV0NegV0Neg;
+  fClosestRowAtDCAV0NegV0Neg = aPair.fClosestRowAtDCAV0NegV0Neg;
+}
+
+AliFemtoPair& AliFemtoPair::operator=(const AliFemtoPair &aPair)
+{
+  if (this == &aPair)
+    return *this;
+
+  fTrack1 = aPair.fTrack1;
+  fTrack2 = aPair.fTrack2;
+
+  fNonIdParNotCalculated = aPair.fNonIdParNotCalculated;
+  fDKSide = aPair.fDKSide;
+  fDKOut = aPair.fDKOut;
+  fDKLong = aPair.fDKLong;
+  fCVK = aPair.fCVK;
+  kStarCalc = aPair.kStarCalc;
+
+  fNonIdParNotCalculatedGlobal = aPair.fNonIdParNotCalculatedGlobal;
+
+  fMergingParNotCalculated = aPair.fMergingParNotCalculated;
+  fWeightedAvSep = aPair.fWeightedAvSep;
+  fFracOfMergedRow = aPair.fFracOfMergedRow;
+  fClosestRowAtDCA = aPair.fClosestRowAtDCA;
+
+  fMergingParNotCalculatedTrkV0Pos = aPair.fMergingParNotCalculatedTrkV0Pos;
+  fFracOfMergedRowTrkV0Pos = aPair.fFracOfMergedRowTrkV0Pos;
+  fClosestRowAtDCATrkV0Pos = aPair.fClosestRowAtDCATrkV0Pos;
+
+  fMergingParNotCalculatedTrkV0Neg = aPair.fMergingParNotCalculatedTrkV0Neg;
+  fFracOfMergedRowTrkV0Neg = aPair.fFracOfMergedRowTrkV0Neg;
+  fClosestRowAtDCATrkV0Neg = aPair.fClosestRowAtDCATrkV0Neg;
+
+  fMergingParNotCalculatedV0PosV0Neg = aPair.fMergingParNotCalculatedV0PosV0Neg;
+  fFracOfMergedRowV0PosV0Neg = aPair.fFracOfMergedRowV0PosV0Neg;
+  fClosestRowAtDCAV0PosV0Neg = aPair.fClosestRowAtDCAV0PosV0Neg;
+
+  fMergingParNotCalculatedV0NegV0Pos = aPair.fMergingParNotCalculatedV0NegV0Pos;
+  fFracOfMergedRowV0NegV0Pos = aPair.fFracOfMergedRowV0NegV0Pos;
+  fClosestRowAtDCAV0NegV0Pos = aPair.fClosestRowAtDCAV0NegV0Pos;
+
+  fMergingParNotCalculatedV0PosV0Pos = aPair.fMergingParNotCalculatedV0PosV0Pos;
+  fFracOfMergedRowV0PosV0Pos = aPair.fFracOfMergedRowV0PosV0Pos;
+  fClosestRowAtDCAV0PosV0Pos = aPair.fClosestRowAtDCAV0PosV0Pos;
+
+  fMergingParNotCalculatedV0NegV0Neg = aPair.fMergingParNotCalculatedV0NegV0Neg;
+  fFracOfMergedRowV0NegV0Neg = aPair.fFracOfMergedRowV0NegV0Neg;
+  fClosestRowAtDCAV0NegV0Neg = aPair.fClosestRowAtDCAV0NegV0Neg;
+
+  return *this;
+}
 
 //_________________
 double AliFemtoPair::mInv() const

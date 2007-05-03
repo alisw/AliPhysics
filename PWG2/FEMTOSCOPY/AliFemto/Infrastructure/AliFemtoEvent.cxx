@@ -13,6 +13,9 @@
  ***************************************************************************
  *
  * $Log$
+ * Revision 1.3  2007/04/27 07:24:34  akisiel
+ * Make revisions needed for compilation from the main AliRoot tree
+ *
  * Revision 1.1.1.1  2007/04/25 15:38:41  panos
  * Importing the HBT code dir
  *
@@ -138,7 +141,25 @@
 
 
 //___________________
-AliFemtoEvent::AliFemtoEvent(){
+AliFemtoEvent::AliFemtoEvent():
+  fEventNumber(0),
+  fRunNumber(0),
+  fNumberOfTracks(0),
+  fMagneticField(0),
+  fPrimVertPos(0,0,0),
+  fTrackCollection(0),
+  fV0Collection(0),
+  fXiCollection(0),
+  fKinkCollection(0),
+  fZDCN1Energy(0),   
+  fZDCP1Energy(0),   
+  fZDCN2Energy(0),   
+  fZDCP2Energy(0),   
+  fZDCEMEnergy(0),   
+  fZDCParticipants(0),
+  fTriggerMask(0),  
+  fTriggerCluster(0)
+{
   fPrimVertPos[0]=-999.0;
   fPrimVertPos[1]=-999.0;
   fPrimVertPos[2]=-999.0;
@@ -149,7 +170,25 @@ AliFemtoEvent::AliFemtoEvent(){
   fMagneticField=0.0;
 }
 //___________________
-AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev, AliFemtoTrackCut* tCut, AliFemtoV0Cut* vCut, AliFemtoXiCut* xCut, AliFemtoKinkCut* kCut){ // copy constructor with track and v0 cuts
+AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev, AliFemtoTrackCut* tCut, AliFemtoV0Cut* vCut, AliFemtoXiCut* xCut, AliFemtoKinkCut* kCut):
+  fEventNumber(0),
+  fRunNumber(0),
+  fNumberOfTracks(0),
+  fMagneticField(0),
+  fPrimVertPos(0,0,0),
+  fTrackCollection(0),
+  fV0Collection(0),
+  fXiCollection(0),
+  fKinkCollection(0),
+  fZDCN1Energy(0),   
+  fZDCP1Energy(0),   
+  fZDCN2Energy(0),   
+  fZDCP2Energy(0),   
+  fZDCEMEnergy(0),   
+  fZDCParticipants(0),
+  fTriggerMask(0),  
+  fTriggerCluster(0)
+{ // copy constructor with track and v0 cuts
   //cout << "AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev, AliFemtoTrackCut* tCut, AliFemtoV0Cut* vCut, AliFemtoV0Cut* kCut)" << endl;
   fEventNumber = ev.fEventNumber;
   fRunNumber = ev.fRunNumber;
@@ -200,6 +239,55 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev, AliFemtoTrackCut* tCut, Al
     }
   }
 }
+//______________________________
+AliFemtoEvent& AliFemtoEvent::operator=(const AliFemtoEvent& aEvent)
+{
+  if (this == &aEvent)
+    return *this;
+
+  fEventNumber = aEvent.fEventNumber;
+  fRunNumber = aEvent.fRunNumber;
+  
+  fZDCN1Energy=aEvent.fZDCN1Energy;     
+  fZDCP1Energy=aEvent.fZDCP1Energy;      
+  fZDCN2Energy=aEvent.fZDCN2Energy;      
+  fZDCP2Energy=aEvent.fZDCP2Energy;      
+  fZDCEMEnergy=aEvent.fZDCEMEnergy;
+  fZDCParticipants=aEvent.fZDCParticipants;
+  fNumberOfTracks = aEvent.fNumberOfTracks;
+  fMagneticField= aEvent.fMagneticField;
+  
+  fTriggerMask=aEvent.fTriggerMask;     // Trigger Type (mask)
+  fTriggerCluster=aEvent.fTriggerCluster;
+  // create collections
+  fTrackCollection = new AliFemtoTrackCollection;
+  fV0Collection = new AliFemtoV0Collection;
+  fXiCollection = new AliFemtoXiCollection;
+  fKinkCollection = new AliFemtoKinkCollection;
+  // copy track collection  
+  for ( AliFemtoTrackIterator tIter=aEvent.fTrackCollection->begin(); tIter!=aEvent.fTrackCollection->end(); tIter++) {
+    AliFemtoTrack* trackCopy = new AliFemtoTrack(**tIter);
+    fTrackCollection->push_back(trackCopy);
+  }
+  // copy v0 collection
+  for ( AliFemtoV0Iterator vIter=aEvent.fV0Collection->begin(); vIter!=aEvent.fV0Collection->end(); vIter++) {
+    AliFemtoV0* v0Copy = new AliFemtoV0(**vIter);
+    fV0Collection->push_back(v0Copy);
+  }
+  // copy xi collection
+  for ( AliFemtoXiIterator xIter=aEvent.fXiCollection->begin(); xIter!=aEvent.fXiCollection->end(); xIter++) {
+    AliFemtoXi* xiCopy = new AliFemtoXi(**xIter);
+    fXiCollection->push_back(xiCopy);
+  }
+  // copy kink collection  
+  for ( AliFemtoKinkIterator kIter=aEvent.fKinkCollection->begin(); kIter!=aEvent.fKinkCollection->end(); kIter++) {
+    AliFemtoKink* kinkCopy = new AliFemtoKink(**kIter);
+    fKinkCollection->push_back(kinkCopy);
+  }
+
+  return *this;
+}
+
 //___________________
 AliFemtoEvent::~AliFemtoEvent(){
 #ifdef STHBTDEBUG
