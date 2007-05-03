@@ -35,8 +35,6 @@ class AliT0Reconstructor: public AliReconstructor {
   virtual Bool_t       HasDigitConversion() const {return kFALSE;}
  public:
  
- AliT0digit *fDigits   ; // digits
- TTree*        fTree;
   Float_t fZposition; // vertex position
 
  protected:
