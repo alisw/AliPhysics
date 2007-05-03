@@ -1,54 +1,63 @@
 // $Id$
 // The class categories definitions for Doxygen
 
-/** @defgroup mapping MUON_mapping
- *  Category of mapping classes
+/** @defgroup MUON MUON
+ *  \brief See library hierarchy too
+ *  Category of MUON classes
+ * \image html muon_libs.jpg
  *  @{
  */
 
-/** @defgroup basic MUON_mapping_basic
+/** @defgroup mapping mapping
+ *  Category of mapping classes
+ * \image html mapping_libs.jpg
+ *  @ingroup MUON
+ *  @{
+ */
+
+/** @defgroup basic mp_basic
  *  @ingroup mapping
  *  Category of basic classes in mapping
  *  @{
  */
 /** @} */
 
-/** @defgroup motif MUON_mapping_motif
+/** @defgroup motif mp_motif
  *  @ingroup mapping
  *  Category of motif classes in mapping
  *  @{
  */
 /** @} */
 
-/** @defgroup sector MUON_mapping_sector
+/** @defgroup sector mp_sector
  *  @ingroup mapping
  *  Category of classes for quadrants in mapping
  *  @{
  */
 /** @} */
 
-/** @defgroup slat MUON_mapping_slat
+/** @defgroup slat mp_slat
  *  @ingroup mapping
  *  Category of classes for slats in mapping
  *  @{
  */
 /** @} */
 
-/** @defgroup trigger MUON_mapping_trigger
+/** @defgroup mptrigger mp_trigger
  *  @ingroup mapping
  *  Category of classes for slats in mapping
  *  @{
  */
 /** @} */
 
-/** @defgroup management MUON_mapping_management
+/** @defgroup management mp_management
  *  @ingroup mapping
  *  Category of classes for management in mapping
  *  @{
  */
 /** @} */
 
-/** @defgroup graphics MUON_mapping_graphics
+/** @defgroup graphics mp_graphics
  *  @ingroup mapping
  *  Category of classes for visualization in mapping
  *  @{
@@ -57,54 +66,70 @@
 
 /** @} */
 
-/** @defgroup geometry MUON_geometry
- *  Category of geometry framework classes
- *  @{
- */
-/** @} */
-
-/** @defgroup raw MUON_raw
+/** @defgroup raw raw
  *  Category of classes for raw data
+ *  @ingroup MUON
  *  @{
  */
 /** @} */
 
-/** @defgroup calib MUON_calib
+/** @defgroup calib calib
  *  Category of basic classes for calibration
+ *  @ingroup MUON
  *  @{
  */
 /** @} */
 
-/** @defgroup shuttle MUON_shuttle
- *  Category of classes for shuttle
+/** @defgroup geometry geometry
+ *  Category of geometry framework classes
+ *  @ingroup MUON
  *  @{
  */
 /** @} */
 
-/** @defgroup base MUON_base
+/** @defgroup trigger trigger
+ *  Category of classes for trigger
+ *  @ingroup MUON
+ *  @{
+ */
+/** @} */
+
+/** @defgroup base base
  *  Category of basic classes
+ *  @ingroup MUON
  *  @{
  */
 /** @} */
 
-/** @defgroup sim MUON_sim
+/** @defgroup shuttle shuttle
+ *  Category of classes for shuttle
+ *  @ingroup MUON
+ *  @{
+ */
+/** @} */
+
+/** @defgroup sim sim
  *  Category of classes for simulation
+ *  @ingroup MUON
  *  @{
  */
 /** @} */
 
-/** @defgroup rec MUON_rec
+/** @defgroup rec rec
  *  Category of classes for reconstruction
+ *  @ingroup MUON
  *  @{
  */
 /** @} */
 
-/** @defgroup evaluation MUON_evaluation
+/** @defgroup evaluation evaluation
  *  Category of classes for evaluation
+ *  @ingroup MUON
  *  @{
  */
 /** @} */
 
+/** @} */
 
 
 
