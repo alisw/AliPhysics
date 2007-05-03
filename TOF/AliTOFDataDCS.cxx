@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2007/05/02 14:09:39  arcelli
+Retrieval of Env. Temperature removed (will get it from the GRP)
+
 Revision 1.6  2007/04/04 17:19:19  arcelli
 Moved some printout to debug level
 
@@ -658,7 +661,7 @@ void AliTOFDataDCS::Introduce(UInt_t numAlias, const TObjArray* aliasArr)const
 }
 
 //---------------------------------------------------------------
-void AliTOFDataDCS::Draw(const Option_t* /*option*/) /*const*/
+void AliTOFDataDCS::Draw(const Option_t* /*option*/) const
 {
 // Draw all histos and graphs
 

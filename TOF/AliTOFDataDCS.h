@@ -46,7 +46,7 @@ public:
   const char* GetAliasName(Int_t pos) const 
     {return pos<kNAliases ? fAliasNames[pos].Data() : 0;}
   
-  void Draw(const Option_t* option) /*const*/;
+  void Draw(const Option_t* /*option*/) const;
   
   AliTOFFormatDCS* GetHVvp(Int_t pos) const
     {return pos<kNHV ? fHVvp[pos] : 0;}

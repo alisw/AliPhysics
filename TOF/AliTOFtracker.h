@@ -58,8 +58,8 @@ private:
   Int_t FindClusterIndex(Double_t z) const; // Returns cluster index 
   void  MatchTracks(Bool_t mLastStep); // Matching Algorithm 
   void  CollectESD(); // Select starting Set for Matching 
-  Float_t  GetTimeZerofromTOF(AliESD* event); // T0 from TOF
-  Float_t  GetTimeZerofromT0(AliESD* event); // T0 from T0
+  Float_t  GetTimeZerofromTOF(AliESD* /*event*/) const; // T0 from TOF
+  Float_t  GetTimeZerofromT0(AliESD* event) const; // T0 from T0
   Float_t  CorrectTimeWalk(Float_t dist,Float_t tof); // Time Walk correction
 
   AliTOFRecoParam* fRecoParam;           // Pointer to TOF Recon. Pars

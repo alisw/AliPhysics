@@ -940,14 +940,14 @@ Float_t AliTOFtracker::CorrectTimeWalk( Float_t dist, Float_t tof) {
   return tofcorr;
 }
 //_________________________________________________________________________
-Float_t AliTOFtracker::GetTimeZerofromT0(AliESD *event) {
+Float_t AliTOFtracker::GetTimeZerofromT0(AliESD *event) const {
 
   //Returns TimeZero as measured by T0 detector
 
   return event->GetT0();
 }
 //_________________________________________________________________________
-Float_t AliTOFtracker::GetTimeZerofromTOF(AliESD *event) {
+Float_t AliTOFtracker::GetTimeZerofromTOF(AliESD * /*event*/) const {
 
   //dummy, for the moment. T0 algorithm using tracks on TOF
   {
