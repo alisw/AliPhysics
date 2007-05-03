@@ -208,8 +208,11 @@ void AliAnalysisManager::SlaveBegin(TTree *tree)
    TIter next(fTasks);
    AliAnalysisTask *task;
    // Call CreateOutputObjects for all tasks
-   while ((task=(AliAnalysisTask*)next())) 
+   while ((task=(AliAnalysisTask*)next())) {
+      TDirectory *curdir = gDirectory;
       task->CreateOutputObjects();
+      if (curdir) curdir->cd();
+   }   
    if (fMode == kLocalAnalysis) Init(tree);   
    if (fDebug > 1) {
       cout << "<-AliAnalysisManager::SlaveBegin()" << endl;
@@ -594,7 +597,11 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree)
             TIter next(fTasks);
             AliAnalysisTask *task;
             // Call CreateOutputObjects for all tasks
-            while ((task=(AliAnalysisTask*)next())) task->CreateOutputObjects();
+            while ((task=(AliAnalysisTask*)next())) {
+               TDirectory *curdir = gDirectory;
+               task->CreateOutputObjects();
+               if (curdir) curdir->cd();
+            }   
             ExecAnalysis();
             Terminate();
             return;

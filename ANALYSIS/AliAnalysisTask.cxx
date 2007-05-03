@@ -98,12 +98,13 @@
 //==============================================================================
 
 #include <Riostream.h>
-#include <TDirectory.h>
+#include <TFile.h>
 #include <TClass.h>
 
 #include "AliAnalysisTask.h"
 #include "AliAnalysisDataSlot.h"
 #include "AliAnalysisDataContainer.h"
+#include "AliAnalysisManager.h"
 
 ClassImp(AliAnalysisTask)
 
@@ -119,6 +120,7 @@ AliAnalysisTask::AliAnalysisTask()
                  fOutputs(NULL)
 {
 // Default constructor.
+   TObject::SetBit(kTaskEvtByEvt, kTRUE);
 }
 
 //______________________________________________________________________________
@@ -134,6 +136,7 @@ AliAnalysisTask::AliAnalysisTask(const char *name, const char *title)
                  fOutputs(NULL)                 
 {
 // Constructor.
+   TObject::SetBit(kTaskEvtByEvt, kTRUE);
    fInputs      = new TObjArray(2);
    fOutputs     = new TObjArray(2);
 }
@@ -398,6 +401,36 @@ void AliAnalysisTask::CreateOutputObjects()
 {
 // Called once per task either in PROOF or local mode. Overload to put some 
 // task initialization and/or create your output objects here.
+}
+
+//______________________________________________________________________________
+void AliAnalysisTask::OpenFile(Int_t iout, Option_t *option) const
+{
+// This method has to be called INSIDE the user redefined CreateOutputObjects
+// method, before creating each object corresponding to the output containers
+// that are to be written to a file. This need to be done in general for the big output
+// objects that may not fit memory during processing. 
+// - 'option' is the file opening option.
+//=========================================================================
+// NOTE !: The method call will be ignored in PROOF mode, in which case the 
+// results have to be streamed back to the client and written just before Terminate()
+//=========================================================================
+//
+// Example:
+// void MyAnaTask::CreateOutputObjects() {
+//    OpenFile(0);   // Will open the file for the object to be written at output #0
+//    fAOD = new TTree("AOD for D0toKPi");
+//    OpenFile(1);
+// now some histos that should go in the file of the second output container
+//    fHist1 = new TH1F("my quality check hist1",...);
+//    fHist2 = new TH2F("my quality check hist2",...);
+// }
+   
+   if (iout<0 || iout>=fNoutputs) return;
+   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+   if (!mgr || mgr->GetAnalysisType()==AliAnalysisManager::kProofAnalysis) return;
+   AliAnalysisDataContainer *cont = GetOutputSlot(iout)->GetContainer();
+   if (strlen(cont->GetFileName())) new TFile(cont->GetFileName(), option);
 }
 
 //______________________________________________________________________________

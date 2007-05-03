@@ -66,6 +66,7 @@ AliAnalysisDataContainer::AliAnalysisDataContainer() : TNamed(),
                           fConsumers(NULL)
 {
 // Dummy ctor.
+   TObject::SetBit(kContEvtByEvt, kTRUE);
 }
 
 //______________________________________________________________________________
@@ -81,6 +82,7 @@ AliAnalysisDataContainer::AliAnalysisDataContainer(const char *name, TClass *typ
 {
 // Default constructor.
    SetTitle(fType->GetName());
+   TObject::SetBit(kContEvtByEvt, kTRUE);
 }
 
 //______________________________________________________________________________

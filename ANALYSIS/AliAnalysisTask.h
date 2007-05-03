@@ -29,8 +29,9 @@ class AliAnalysisTask : public TTask {
   enum EAnalysisTaskFlags {
     kTaskUsed    = BIT(14),
     kTaskZombie  = BIT(15),
-    kTaskChecked = BIT(16)
-  };   
+    kTaskChecked = BIT(16),
+    kTaskEvtByEvt = BIT(17)
+  };
 
  protected:
   Bool_t                    fReady;         // Flag if the task is ready
@@ -65,8 +66,9 @@ class AliAnalysisTask : public TTask {
   // === CALL THIS AFTERWARDS IN Init() IF THE BRANCH ADDRESS IS NOT YET SET
   Bool_t                    SetBranchAddress(Int_t islot, const char *branch, void *address) const;
   //=====================================================================
-  // === CALL THIS IN CreateOutputObjects IF THE OUTPUT IS TO BE WRITTEN AT OUTPUT IOUT
-//  void                      OpenFile(Int_t iout, const char *name, Option_t *option) const;
+  // === CALL THIS IN CreateOutputObjects BEFORE CREATING THE OBJECT FOR EACH 
+  // OUTPUT IOUT THAT HAS TO BE WRITTEN TO A FILE
+  void                      OpenFile(Int_t iout, Option_t *option="") const;
   
 public:  
   AliAnalysisTask();
@@ -105,6 +107,7 @@ public:
   TObject                  *GetOutputData(Int_t islot) const;  
   Bool_t                    IsOutputReady(Int_t islot) const {return fOutputReady[islot];}
   Bool_t                    IsChecked() const  {return TObject::TestBit(kTaskChecked);}
+  Bool_t                    IsExecPerEvent() const {return TObject::TestBit(kTaskEvtByEvt);}
   Bool_t                    IsInitialized() const  {return fInitialized;}
   Bool_t                    IsReady() const  {return fReady;}
   Bool_t                    IsUsed() const   {return TObject::TestBit(kTaskUsed);}
@@ -112,6 +115,7 @@ public:
   void                      PrintTask(Option_t *option="all", Int_t indent=0) const;
   void                      PrintContainers(Option_t *option="all", Int_t indent=0) const;
   void                      SetChecked(Bool_t flag=kTRUE) {TObject::SetBit(kTaskChecked,flag);}
+  void                      SetExecPerEvent(Bool_t flag=kTRUE) {TObject::SetBit(kTaskEvtByEvt,flag);}
   void                      SetUsed(Bool_t flag=kTRUE);
   void                      SetZombie(Bool_t flag=kTRUE) {TObject::SetBit(kTaskZombie,flag);}
   // Main task execution 

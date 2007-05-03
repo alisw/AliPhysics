@@ -38,6 +38,9 @@ enum ENotifyMessage {
    kSaveData,
    kFileChange
 };   
+enum EAnalysisContainerFlags {
+   kContEvtByEvt
+};     
    AliAnalysisDataContainer();
    AliAnalysisDataContainer(const AliAnalysisDataContainer &cont);
    AliAnalysisDataContainer(const char *name, TClass *type);
@@ -56,6 +59,7 @@ enum ENotifyMessage {
    void                      ResetDataReady()     {fDataReady = kFALSE;}
    virtual Bool_t            SetData(TObject *data, Option_t *option="");
    void                      SetDataOwned(Bool_t flag) {fOwnedData = flag;}
+   void                      SetEventByEvent(Bool_t flag=kTRUE) {TObject::SetBit(kContEvtByEvt,flag);}
    void                      SetFileName(const char *filename) {fFileName = filename;}
    void                      SetProducer(AliAnalysisTask *prod, Int_t islot);
    void                      AddConsumer(AliAnalysisTask *cons, Int_t islot);
@@ -65,6 +69,7 @@ enum ENotifyMessage {
    void                      ImportData(AliAnalysisDataWrapper *pack);
    // Container status checking
    Bool_t                    IsDataReady() const  {return fDataReady;}
+   Bool_t                    IsEventByEvent() const {return TObject::TestBit(kContEvtByEvt);}
    Bool_t                    IsOwnedData() const  {return fOwnedData;}
    Bool_t                    ClientsExecuted() const;
    Bool_t                    HasConsumers() const {return (fConsumers != 0);}
