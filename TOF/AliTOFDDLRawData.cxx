@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2007/04/23 16:51:39  decaro
+Digits-to-raw_data conversion: correction for a more real description (A.De Caro, R.Preghenella)
+
 Revision 1.14  2007/03/28 10:50:33  decaro
 Rounding off problem in rawData coding/decoding: solved
 
@@ -905,8 +908,8 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
   Int_t nTDC = -1;
   Int_t iCH = -1;
 
-  Int_t numberOfMeasuresPerChannel = 0;
-  Int_t maxMeasuresPerChannelInTDC = 0;
+  //Int_t numberOfMeasuresPerChannel = 0;
+  //Int_t maxMeasuresPerChannelInTDC = 0;
 
   Bool_t outOut = HeadOrTail();
 
@@ -919,8 +922,6 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
   // loop on TDC number
   for (nTDC=AliTOFGeometry::NTdc()-1; nTDC>=0; nTDC--) {
 
-    maxMeasuresPerChannelInTDC = 0;
-
     // the DRM odd (i.e. left) slot number 3 doesn't contain TDC digit data
     // for TDC numbers 3-14
     if (iDDL%2==1 && nTRM==3 && (Int_t)(nTDC/3.)!=0) continue;
@@ -928,10 +929,7 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
     // loop on TDC channel number
     for (iCH=AliTOFGeometry::NCh()-1; iCH>=0; iCH--) {
 
-      if (numberOfMeasuresPerChannel) {
-	maxMeasuresPerChannelInTDC = numberOfMeasuresPerChannel;
-	numberOfMeasuresPerChannel = 0;
-      }
+      //numberOfMeasuresPerChannel = 0;
 
       fTOFrawStream->EquipmentId2VolumeId(nDDL, nTRM, iChain, nTDC, iCH, volume);
 	
@@ -1016,9 +1014,8 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
 
       for (jj=0; jj<3;jj++) {
 
-	numberOfMeasuresPerChannel++;
-
 	if (indexDigit[jj]<0) continue;
+
 	digs = (AliTOFdigit*)fTOFdigitArray->UncheckedAt(indexDigit[jj]);
 	  
 	if (digs->GetSector()!=volume[0] ||
@@ -1030,6 +1027,8 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
 	timeOfFlight = (Int_t)(digs->GetTdc())%8192;
 
 	if (timeOfFlight>fMatchingWindow) continue;
+
+	//numberOfMeasuresPerChannel++;
 
 	// totCharge = (Int_t)digs->GetAdc(); //Use realistic ToT, for Standard production with no miscalibration/Slewing it == fAdC in digit (see AliTOFDigitizer)
 	totCharge = (Int_t)(digs->GetToT());
@@ -1383,7 +1382,12 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
 
       } //end loop on digits in the same volume
 
+      //if (numberOfMeasuresPerChannel>maxMeasuresPerChannelInTDC)
+      //maxMeasuresPerChannelInTDC = numberOfMeasuresPerChannel;
+
     } // end loop on TDC channel number
+
+    //AliInfo(Form(" TDC number %2i:  numberOfMeasuresPerChannel = %2i  ---  maxMeasuresPerChannelInTDC = %2i ", nTDC, numberOfMeasuresPerChannel, maxMeasuresPerChannelInTDC));
 
     if (localIndex==-1) continue;
 
@@ -1398,7 +1402,7 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
 
     }
     else {
-
+      /*
       if (maxMeasuresPerChannelInTDC = 1) {
 
 	for (Int_t jj=0; jj<=localIndex; jj++) {
@@ -1421,9 +1425,9 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
       } // if (maxMeasuresPerChannelInTDC = 1)
       else if (maxMeasuresPerChannelInTDC>1) {
 
-	AliInfo(Form(" In the TOF DDL %2i, TRM %2i, TDC %2i, chain %1i, there are %2i t.o.f. good measurements ",
+	AliInfo(Form(" In the TOF DDL %2i, TRM %2i, TDC %2i, chain %1i, the maximum number of t.o.f. good measurements per channel is %2i",
 		     nDDL, nTRM, iChain, nTDC, iCH, maxMeasuresPerChannelInTDC));
-
+      */
 	for (Int_t jj=0; jj<=localIndex; jj++) {
 	    fIndex++;
 	    buf[fIndex] = localBuffer[jj];
@@ -1431,11 +1435,13 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
 	    psArray[jj] = -1;
 	}
 
-      } // else if (maxMeasuresPerChannelInTDC>1)
+	//} // else if (maxMeasuresPerChannelInTDC>1)
 
     } // else (!fPackedAcquisition)
 
     localIndex = -1;
+
+    //maxMeasuresPerChannelInTDC = 0;
 
   } // end loop on TDC number
 
