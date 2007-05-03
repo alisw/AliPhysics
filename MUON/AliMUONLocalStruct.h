@@ -13,6 +13,8 @@
 
 #include <TObject.h>
 #include <TMath.h>
+#include <TArrayS.h>
+
 
 class AliMUONLocalStruct : public TObject{
  
@@ -36,6 +38,10 @@ public:
    UShort_t GetX4() const {return (fData[1] >> 16) &  0xFFFF;}
             /// Return X3
    UShort_t GetX3() const {return (fData[1])       &  0xFFFF;}
+           /// return X pattern array
+   void    GetXPattern(TArrayS& array) const;
+           /// return Y pattern array
+   void    GetYPattern(TArrayS& array) const;
 
             /// Return Y2
    UShort_t GetY2() const {return (fData[2] >> 16) &  0xFFFF;}
