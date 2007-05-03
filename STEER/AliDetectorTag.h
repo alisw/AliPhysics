@@ -47,8 +47,8 @@ class AliDetectorTag : public TObject {
   
   //____________________________________________________//
  private:
-  void AliDetectorTag::Int2Bin();
-  void AliDetectorTag::SetDetectorConfiguration();
+  void Int2Bin();
+  void SetDetectorConfiguration();
 
   void SetITSSPD() {fITSSPD = kTRUE;}
   void SetITSSDD() {fITSSDD = kTRUE;}
