@@ -13,6 +13,11 @@
 #pragma link C++ class AliBtoJPSItoEle+;
 #pragma link C++ class AliBtoJPSItoEleAnalysis+;
 
+#pragma link C++ class AliAODRecoDecayHF+;
+#pragma link C++ class AliAODRecoDecayHF2Prong+;
+#pragma link C++ class AliAODRecoDecayHF3Prong+;
+#pragma link C++ class AliAODRecoDecayHF4Prong+;
+#pragma link C++ class AliAnalysisVertexingHF+;
 
 #endif
 
