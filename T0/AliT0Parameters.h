@@ -76,7 +76,10 @@ public:
    void SetWalk(Int_t ipmt) ;
    
   Float_t GetTimeDelayCFD(Int_t ipmt);
-  Float_t GetTimeDelayLED(Int_t ipmt);
+  Float_t GetTimeDelayDA(Int_t ipmt);
+
+  void SetMeanT0(Int_t mean=500) { fMeanT0 = mean; };
+  Int_t GetMeanT0 (); //{return fMeanT0;};
 
   //  TMap *LookupTable;
 
@@ -103,10 +106,11 @@ protected:
   TObjArray fPMTeff; //array PMT registration efficiency
   TObjArray fWalk; //array time-amplitude walk
   
-  Float_t fTimeDelayLED;  //  sum time delay for LED channel
+  Float_t fTimeDelayDA;  //  sum time delay for LED channel
   Float_t fTimeDelayCFD;  // sum time delay for CFD channel
   Float_t  fTimeDelayTVD;  //time delay for TVD (vertex trigger channel)
-  
+ Int_t fMeanT0; //mean of T0distribution with vertex=0;
+   
   TMap fLookUp;           //lookup table
   Int_t fNumberOfTRMs;    // number of TRMs in setup
 

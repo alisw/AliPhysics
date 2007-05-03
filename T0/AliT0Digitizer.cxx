@@ -155,7 +155,6 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
   Float_t delayVertex = param->GetTimeDelayTVD();
   for (Int_t i=0; i<24; i++){
     timeDelayCFD[i] = param->GetTimeDelayCFD(i);
-    timeDelayLED[i] = param->GetTimeDelayLED(i);
     TGraph* gr = param ->GetSlew(i);
     slewingLED.AddAtAndExpand(gr,i);
 
@@ -295,9 +294,9 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
 	  qt= 50.*al/ph2Mip;  // 50mv/Mip amp in mV 
 	  //  fill TDC
 	  trCFD = Int_t (timeGaus[i]/channelWidth + (timeDelayCFD[i]-timeDelayCFD[0])); 
-	  trLED= Int_t (timeGaus[i] + timeDelayLED[i]); 
+	  //	  trLED= Int_t (timeGaus[i] + timeDelayLED[i]); 
 	  sl = ((TGraph*)slewingLED.At(i))->Eval(qt);
-	  trLED = Int_t(( trLED + 1000*sl )/channelWidth);
+	  trLED = Int_t(( timeGaus[i] + 1000*sl )/channelWidth);
 	  qtCh=Int_t (1000.*TMath::Log(qt)) / channelWidth;
 	  fADC0->AddAt(0,i);
 	  fADC->AddAt(qtCh,i);

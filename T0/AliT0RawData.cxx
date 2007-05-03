@@ -540,7 +540,7 @@ Int_t AliT0RawData::RawDataT0(AliT0digit *fDigits)
 
   fIndex=-1;
  
-  AliRawDataHeaderSim header;
+
    WriteDataHeader(kTRUE, kFALSE);
   GetDigits(fDigits);
   //write packing digits

@@ -84,6 +84,8 @@ Bool_t  AliT0RawReader::Next()
   Int_t  TRM_CHAIN_0_TRAILER =  0x10000000;
   Int_t  TRM_CHAIN_1_TRAILER =  0x30000000;
   Int_t  TRM_GLOBAL_TRAILER =  0x5000000f;
+ 
+ Int_t  FILLER =  0x70000000;
 
   AliT0Parameters* param = AliT0Parameters::Instance();   
 
@@ -189,8 +191,10 @@ Bool_t  AliT0RawReader::Next()
 	  AliError(Form(" !!!! wrong TRM GLOBAL trailer  %x!!!!", word));
 	  break;
 	}
-     } //TRM loop
+     } //TRM loop end
+
       word = GetNextWord(); //
+      if (word == FILLER )  {cout<< "FIILER "<<endl; word = GetNextWord(); }
       uu = word& fDRM_GLOBAL_TRAILER;
       if(uu != fDRM_GLOBAL_TRAILER )
 	{

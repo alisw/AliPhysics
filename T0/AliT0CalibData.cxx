@@ -48,7 +48,14 @@ ClassImp(AliT0CalibData)
 }
 
 //________________________________________________________________
-AliT0CalibData::AliT0CalibData(const char* name):TNamed(),fTimeDelayTVD(0),fWalk(),fSlewingLED(),fSlewingRec()
+AliT0CalibData::AliT0CalibData(const char* name):TNamed(),
+				      fTimeDelayTVD(0),
+				      fMeanT0(0),
+				      fWalk(0),
+				      fSlewingLED(0),
+				      fSlewingRec(0),
+				      fLookup(0),
+				      fNumberOfTRMs(0)
 {
   TString namst = "Calib_";
   namst += name;
@@ -59,7 +66,15 @@ AliT0CalibData::AliT0CalibData(const char* name):TNamed(),fTimeDelayTVD(0),fWalk
 
 //________________________________________________________________
 AliT0CalibData::AliT0CalibData(const AliT0CalibData& calibda) :
-  TNamed(calibda),fTimeDelayTVD(0),fWalk(),fSlewingLED(),fSlewingRec()
+  TNamed(calibda),		
+  fTimeDelayTVD(0),
+  fMeanT0(0),
+  fWalk(0),
+  fSlewingLED(0),
+  fSlewingRec(0),
+  fLookup(0),
+  fNumberOfTRMs(0)
+
 {
 // copy constructor
   SetName(calibda.GetName());
@@ -87,7 +102,7 @@ AliT0CalibData::~AliT0CalibData()
 void AliT0CalibData::Reset()
 {
     memset(fTimeDelayCFD,1,24*sizeof(Float_t));
-    memset(fTimeDelayLED,1,24*sizeof(Float_t));
+    memset(fTimeDelayDA,1,24*sizeof(Float_t));
 }
 
 
@@ -96,8 +111,8 @@ void  AliT0CalibData::Print(Option_t*) const
 {
 
   printf("\n	----	PM Arrays	----\n\n");
-  printf(" Time delay CFD & LED\n");
-  for (Int_t i=0; i<24; i++) printf(" CFD  %f LED %f ",fTimeDelayCFD[i], fTimeDelayLED[i]);
+  printf(" Time delay CFD & DA\n");
+  for (Int_t i=0; i<24; i++) printf(" CFD  %f DA %f ",fTimeDelayCFD[i], fTimeDelayDA[i]);
 } 
 
 //________________________________________________________________
@@ -117,7 +132,7 @@ void  AliT0CalibData::PrintLookup(Option_t*, Int_t iTRM, Int_t iTDC, Int_t iChan
   printf(" AliT0CalibData::PrintLookup ::start GetValue %i %i %i \n",iTRM, iTDC, iChannel);
   lookkey = (AliT0LookUpKey*) fLookup.GetValue((TObject*)lookvalue);
   
-  cout<<"  AliT0CalibData::PrintLookup :: lookkey "<< lookkey<<endl;
+
   if (lookkey)
     {
       cout<<" lookup KEY!!! "<<lookkey->GetKey()<<" VALUE "<<lookvalue->GetTRM()<<" "
@@ -135,9 +150,9 @@ void AliT0CalibData::SetTimeDelayCFD(Float_t* TimeDelay)
   if(TimeDelay) for(int t=0; t<24; t++) fTimeDelayCFD[t] = TimeDelay[t];
 }  
   //________________________________________________________________
-  void AliT0CalibData::SetTimeDelayLED(Float_t* TimeDelay)
+  void AliT0CalibData::SetTimeDelayDA(Float_t* TimeDelay)
 {
-  if(TimeDelay) for(int t=0; t<24; t++) fTimeDelayLED[t] = TimeDelay[t];
+  if(TimeDelay) for(int t=0; t<24; t++) fTimeDelayDA[t] = TimeDelay[t];
 }
 
 
@@ -175,7 +190,6 @@ void AliT0CalibData::SetWalk(Int_t ipmt)
 	{
 	  sum +=x[ind];
 	  iin++;
-	  //	  cout<<ii<<" "<<ind<<" "<<y[ind]<<" "<<x[ind]<<" "<<sum<<endl;
 	}
       else
 	{
@@ -185,7 +199,6 @@ void AliT0CalibData::SetWalk(Int_t ipmt)
 	    time[isum] =Float_t (x[ind]);
 	  amplitude[isum] = Float_t (amp);
 	  amp=y[ind];
-	  //	  cout<<ii<<" "<<ind<<" "<<y[ind]<<" "<<x[ind]<<" iin "<<iin<<" mean "<<time[isum]<<" amp "<< amplitude[isum]<<" "<<isum<<endl;
 	  iin=0;
 	  isum++;
 	  sum=0;

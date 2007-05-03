@@ -31,8 +31,8 @@ class AliT0CalibData: public TNamed {
   virtual void  Print(Option_t* option= "") const; 
   Float_t  GetTimeDelayCFD(Int_t channel) const {return fTimeDelayCFD[channel];}
   Float_t* GetTimeDelayCFD()  const  {return(float*) fTimeDelayCFD;}
-  Float_t  GetTimeDelayLED(Int_t channel) const {return fTimeDelayLED[channel];}
-  Float_t* GetTimeDelayLED()  const  {return(float*) fTimeDelayLED;}
+  Float_t  GetTimeDelayDA(Int_t channel) const {return fTimeDelayDA[channel];}
+  Float_t* GetTimeDelayDA()  const  {return(float*) fTimeDelayDA;}
 
   
   TGraph *GetWalk(Int_t ipmt )  const {return ((TGraph*)fWalk.At(ipmt));}
@@ -51,8 +51,8 @@ class AliT0CalibData: public TNamed {
 
   void     SetTimeDelayCFD(Float_t val, Int_t channel) {fTimeDelayCFD[channel]=val;}
   void     SetTimeDelayCFD(Float_t* TimeDelay);
-  void     SetTimeDelayLED(Float_t val, Int_t channel) {fTimeDelayLED[channel]=val;}
-  void     SetTimeDelayLED(Float_t* TimeDelay);
+  void     SetTimeDelayDA(Float_t val, Int_t channel) {fTimeDelayDA[channel]=val;}
+  void     SetTimeDelayDA(Float_t* TimeDelay);
 
   void SetTimeDelayTVD(Int_t r=150)   { fTimeDelayTVD = r; };
   Float_t GetTimeDelayTVD()   { return fTimeDelayTVD; }
@@ -63,12 +63,15 @@ class AliT0CalibData: public TNamed {
   TMap *GetMapLookup(void) {return &fLookup;}
   Int_t GetNumberOfTRMs() const {return fNumberOfTRMs;}
   void SetNumberOfTRMs(Int_t ntrms=2) {fNumberOfTRMs = ntrms;}
+  void SetMeanT0(Int_t mean=500) { fMeanT0 = mean; };
+  Int_t GetMeanT0 () {return fMeanT0;};
 
  protected:
 
   Float_t  fTimeDelayCFD[24]; // Coeff. for time delay (24 different cables & CFD )
-  Float_t  fTimeDelayLED[24]; // Coeff. for time delay (24 different cables & CFD )
+  Float_t  fTimeDelayDA[24]; // number of channel with mean time+delay if vertex=0 )
   Float_t fTimeDelayTVD; //time delay for TVD (vertex trigger channel)
+  Int_t fMeanT0; //mean of T0distribution with vertex=0;
   TObjArray fWalk;  //time - amp. walk
   TObjArray fSlewingLED;  //time - amp.LED slew
   TObjArray fSlewingRec;  //time - amp. LED slew for reconstruction
