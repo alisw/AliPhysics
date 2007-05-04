@@ -14,7 +14,7 @@ Bool_t LoadLib( const char* pararchivename)
   if (pararchivename) {
     char processline[1024];
     sprintf(processline,".! tar xvzf %s.par",pararchivename);
-    //gROOT->ProcessLine(processline);
+    gROOT->ProcessLine(processline);
     gSystem->ChangeDirectory(pararchivename);
 
     // check for BUILD.sh and execute
