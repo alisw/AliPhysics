@@ -13,6 +13,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/// \class AliMUONTracker
+/// Interface class for use of global tracking framework;
+/// reconstruct tracks from recpoints
+///
+/// \author Christian Finck, SUBATECH Nantes
 
 #include "AliMUONTracker.h"
 #include "AliMUONTrackReconstructorK.h"
