@@ -22,8 +22,7 @@ class AliDetectorTagCuts : public TObject {
  public:
   AliDetectorTagCuts();
   ~AliDetectorTagCuts();
-  void Reset();
-  
+   
  //____________________________________________________//
   void SetListOfDetectors(const TString& detectors) {fDetectors = detectors; fDetectorsFlag = kTRUE;}
  
