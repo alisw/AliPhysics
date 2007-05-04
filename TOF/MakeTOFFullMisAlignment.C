@@ -118,9 +118,9 @@ void MakeTOFFullMisAlignment(){
   for(i=0; i<18; i++) {
     TString symname(Form("TOF/sm%02d",i));
     tofdx = rnd->Gaus(0.,sigmatr);
-    tofdy = 0;
-    tofdz = rnd->Gaus(0.,sigmatr);
-    dpsi = 0;
+    tofdy = rnd->Gaus(0.,sigmatr);
+    tofdz =0;
+    dpsi = 0.;
     dtheta = rnd->Gaus(0.,sigmarot);
     dphi = 0.;
     new(alobj[j++]) AliAlignObjAngles(symname.Data(), dvoluid, tofdx, tofdy, tofdz, dpsi, dtheta, dphi, kFALSE);
