@@ -68,7 +68,7 @@ class AliAnalysisTask : public TTask {
   //=====================================================================
   // === CALL THIS IN CreateOutputObjects BEFORE CREATING THE OBJECT FOR EACH 
   // OUTPUT IOUT THAT HAS TO BE WRITTEN TO A FILE
-  void                      OpenFile(Int_t iout, Option_t *option="") const;
+  void                      OpenFile(Int_t iout, Option_t *option="RECREATE") const;
   
 public:  
   AliAnalysisTask();

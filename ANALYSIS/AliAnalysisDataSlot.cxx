@@ -43,6 +43,7 @@
 #include <TROOT.h>
 #include <TClass.h>
 #include <TTree.h>
+#include <TLeaf.h>
 
 #include "AliAnalysisDataSlot.h"
 #include "AliAnalysisTask.h"
@@ -147,7 +148,17 @@ Bool_t AliAnalysisDataSlot::SetBranchAddress(const char *branchname, void *addre
       return kFALSE;
    }
    TTree *tree = (TTree*)GetData();
+   // Activate the branch itself
    tree->SetBranchStatus(branchname,1);
+   TBranch *branch = tree->GetBranch(branchname);
+   if (!branch) return kFALSE;
+   TIter next(branch->GetListOfLeaves());
+   TLeaf *leaf;
+   // Activate all sub-branches
+   while ((leaf=(TLeaf*)next())) {
+      branch = (TBranch*)leaf->GetBranch();
+      tree->SetBranchStatus(branch->GetName(),1);
+   }   
    tree->SetBranchAddress(branchname, address);
    return kTRUE;
 }   
