@@ -13,7 +13,7 @@
 #pragma link C++ class  AliAnalysisSelector+;
 
 #ifdef WITHXML
-//#pragma link C++ class  AliAnalysisGoodies+;
+#pragma link C++ class AliAnalysisGoodies+;
 #pragma link C++ class AliTagAnalysis+;
 #pragma link C++ class AliXMLCollection+;
 #endif
