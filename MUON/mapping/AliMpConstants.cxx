@@ -39,6 +39,7 @@ const Int_t    AliMpConstants::fgkStartPadIndex = 1;
 const Int_t    AliMpConstants::fgkNofChambers = 14;
 const Int_t    AliMpConstants::fgkNofTrackingChambers = 10;
 const Int_t    AliMpConstants::fgkNofGeomModules = 20;
+const Int_t    AliMpConstants::fgkNofLocalBoards = 234;
 const Int_t AliMpConstants::fgkNonBendingManuMask(1<<10);
 
 //_____________________________________________________________________________
@@ -73,10 +74,17 @@ Bool_t  AliMpConstants::IsEqual(const TVector2& v1, const TVector2& v2)
 }
 
 //_____________________________________________________________________________
-Int_t
-AliMpConstants::ManuMask(AliMp::PlaneType planeType)
+Int_t AliMpConstants::ManuMask(AliMp::PlaneType planeType)
 {
 /// The manuIDs get an offset if they are in the non-bending plane
 
   return ( planeType == AliMp::kNonBendingPlane ) ? fgkNonBendingManuMask : 0;
+}
+
+//_____________________________________________________________________________
+Int_t AliMpConstants::NofTriggerChambers() 
+{ 
+/// Return number of trigger chambers
+
+  return fgkNofChambers - fgkNofTrackingChambers;
 }

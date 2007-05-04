@@ -34,9 +34,11 @@ class AliMpConstants : public TObject
   static Int_t    StartPadIndex();
   static Int_t    NofChambers();
   static Int_t    NofTrackingChambers();
+  static Int_t    NofTriggerChambers();
   static Int_t    NofGeomModules();
   static Int_t    ManuMask(AliMp::PlaneType planeType);
-  
+  static Int_t    NofLocalBoards();
+
  private:
                   /// unused derived functions
   virtual Bool_t  IsEqual(const TObject*) const { return true; }
@@ -50,8 +52,9 @@ class AliMpConstants : public TObject
   static const Int_t     fgkNofTrackingChambers; ///< number of tracking chambers
   static const Int_t     fgkNofGeomModules; ///< number of geometry modules
   static const Int_t     fgkNonBendingManuMask; ///< bit to set to indicate a manu located in non-bending plane
-  
-  ClassDef(AliMpConstants,4) //Class for globally used constants definition
+  static const Int_t     fgkNofLocalBoards;  ///< number of notified trigger local boards 
+
+  ClassDef(AliMpConstants,5) //Class for globally used constants definition
 };
 
 // inline functions
@@ -68,6 +71,8 @@ inline Int_t    AliMpConstants::NofChambers()     { return fgkNofChambers;}
 inline Int_t    AliMpConstants::NofTrackingChambers() { return fgkNofTrackingChambers;}
                 /// Return number of geometry modules
 inline Int_t    AliMpConstants::NofGeomModules()  { return fgkNofGeomModules;}
+                /// Return number of trigger local boards
+inline Int_t    AliMpConstants::NofLocalBoards()  { return fgkNofLocalBoards;}
 
 #endif //ALI_MP_CONSTANTS_H
 
