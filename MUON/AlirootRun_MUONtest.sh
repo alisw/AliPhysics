@@ -111,6 +111,7 @@ simData.DumpSDigits(5);    > dump.sdigits
 
 AliMUONRecData recData("galice.root");
 recData.DumpRecPoints(5);  > dump.recpoints
+recData.DumpTracks(5);     > dump.tracks
 recData.DumpRecTrigger(5); > dump.rectrigger
 .q
 EOF
