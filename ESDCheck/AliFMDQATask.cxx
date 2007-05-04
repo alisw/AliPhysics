@@ -130,9 +130,9 @@ void AliFMDQATask::Exec(Option_t *)
 	    
   // ************************  FMD *************************************
   
-  AliESDFMD * fmd = fESD->GetFMDData() ;
+ AliESDFMD * fmd = fESD->GetFMDData() ;
   
-  fmd->CheckNeedUShort(currentFile);
+ //fmd->CheckNeedUShort(currentFile);
 
   Int_t nFMD1 = 0, nFMD2i = 0, nFMD2o = 0, nFMD3i = 0, nFMD3o = 0 ;
   
