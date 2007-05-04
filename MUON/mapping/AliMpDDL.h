@@ -26,6 +26,8 @@ class AliMpDDL : public  TObject {
 
     // methods 
     Bool_t AddDE(Int_t detElemId);
+    Bool_t AddTriggerCrate(Int_t crateId);
+
     void   FillBusPatchIds();
 
     // get methods
@@ -40,6 +42,11 @@ class AliMpDDL : public  TObject {
     Int_t  GetNofBusPatches() const;
     Int_t  GetBusPatchId(Int_t index) const;
     Bool_t HasBusPatchId(Int_t busPatchId) const;
+
+    // Trigger crates
+    Int_t  GetNofTriggerCrates() const;
+    Int_t  GetTriggerCrateId(Int_t index) const;
+    Bool_t HasTriggerCrateId(Int_t crateId) const;
     
     // Dsp info
     Int_t  GetMaxDsp() const;
@@ -54,10 +61,11 @@ class AliMpDDL : public  TObject {
     AliMpDDL& operator=(const AliMpDDL& rhs);
 
     // data members	
-    Int_t       fId;          ///< Identifier (unique)
-    AliMpArrayI fDEIds;       ///< Detection element Ids connected to this DDL
-    AliMpArrayI fBusPatchIds; ///< Bus patch Ids connected to this DDL
-    
+    Int_t       fId;            ///< Identifier (unique)
+    AliMpArrayI fDEIds;         ///< Detection element Ids connected to this DDL
+    AliMpArrayI fBusPatchIds;   ///< Bus patch Ids connected to this DDL
+    AliMpArrayI fTriggerCrateIds; ///< Trigger crate Ids connected to this DDL
+
      
   ClassDef(AliMpDDL,1)  // The class collectiong electronics properties of DDL
 };
