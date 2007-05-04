@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.86  2007/04/02 15:00:16  cvetan
+ * No more calls to gAlice in the reconstruction
+ *
  * Revision 1.85  2007/03/28 19:18:15  kharlov
  * RecPoints recalculation in TSM removed
  *
@@ -246,7 +249,7 @@ void  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * em
     
   Double_t xCPV,zCPV ; //EMC-projected coordinates of CPV cluster 
   TVector3 cpvGlobal; // Global position of the CPV recpoint
-  geom->GetGlobal((AliRecPoint*)cpvClu,cpvGlobal);
+  geom->GetGlobalPHOS((AliPHOSRecPoint*)cpvClu,cpvGlobal);
   Double_t vtxCPV[3]={cpvGlobal.X(),cpvGlobal.Y(),cpvGlobal.Z()} ;
 
   if (fESD == 0x0) {

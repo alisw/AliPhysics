@@ -40,24 +40,78 @@ ClassImp(AliPHOSRecPoint)
 
 //____________________________________________________________________________
 AliPHOSRecPoint::AliPHOSRecPoint()
-  : AliRecPoint(),
-    fPHOSMod(0)
+  : AliCluster(),fPHOSMod(0),
+    fMulTrack(0),fMaxDigit(100),fMulDigit(0),fMaxTrack(0),
+    fDigitsList(0),fTracksList(0),fAmp(0),
+    fIndexInList(-1), // to be set when the point is already stored
+    fLocPos(0,0,0),fLocPosM(0)
 {
   // ctor
 
-  fMaxTrack = 0 ;
 }
 
 //____________________________________________________________________________
-AliPHOSRecPoint::AliPHOSRecPoint(const char * opt) 
-  : AliRecPoint(opt),
-    fPHOSMod(0)
+AliPHOSRecPoint::AliPHOSRecPoint(const char * ) 
+  : AliCluster(),fPHOSMod(0),
+    fMulTrack(0),fMaxDigit(100),fMulDigit(0),fMaxTrack(200),
+    fDigitsList(new int[fMaxDigit]),fTracksList(new int[fMaxTrack]),fAmp(0),
+    fIndexInList(-1), // to be set when the point is already stored
+    fLocPos(0,0,0),fLocPosM(new TMatrixF(3,3))
+
 {
   // ctor
   
-  fMaxTrack = 200 ;
 }
+//_______________________________________________________________________
+AliPHOSRecPoint::~AliPHOSRecPoint()
+{
+  // dtor
+  
+  delete fLocPosM ; 
+  delete [] fDigitsList ; 
+  delete [] fTracksList ;  
+  
+}
+//____________________________________________________________________________
+AliPHOSRecPoint::AliPHOSRecPoint(const AliPHOSRecPoint &rp) : 
+  AliCluster(rp),
+  fPHOSMod(rp.fPHOSMod),fMulTrack(rp.fMulTrack),fMaxDigit(rp.fMaxDigit),
+  fMulDigit(rp.fMulDigit),fMaxTrack(rp.fMaxTrack),fDigitsList(new int[rp.fMaxDigit]),
+  fTracksList(new int[rp.fMaxTrack]),fAmp(rp.fAmp),fIndexInList(rp.fIndexInList), 
+  fLocPos(rp.fLocPos),fLocPosM(rp.fLocPosM)
+{
+  //copy ctor
 
+  for(Int_t i=0; i<fMaxDigit; i++)
+    fDigitsList[i] = rp.fDigitsList[i];
+
+  for(Int_t i=0; i<fMaxTrack; i++)
+    fTracksList[i] = rp.fTracksList[i];
+  
+}
+//____________________________________________________________________________
+AliPHOSRecPoint& AliPHOSRecPoint::operator= (const AliPHOSRecPoint &rp)
+{
+  if(&rp == this) return *this;
+
+  fPHOSMod = rp.fPHOSMod;
+  fMulTrack = rp.fMulTrack;
+  fMaxDigit = rp.fMaxDigit;
+  fMulDigit = rp.fMulDigit;
+  fMaxTrack = rp.fMaxTrack;
+  fAmp = rp.fAmp;
+  fIndexInList = rp.fIndexInList; 
+  fLocPos = rp.fLocPos;
+  fLocPosM = rp.fLocPosM;
+
+  for(Int_t i=0; i<fMaxDigit; i++)
+    fDigitsList[i] = rp.fDigitsList[i];
+
+  for(Int_t i=0; i<fMaxTrack; i++)
+    fTracksList[i] = rp.fTracksList[i];
+
+  return *this;
+}
 //____________________________________________________________________________
 Int_t AliPHOSRecPoint::DistancetoPrimitive(Int_t px, Int_t py)
 {
@@ -250,7 +304,14 @@ void AliPHOSRecPoint::GetGlobalPosition(TVector3 & gpos, TMatrixF & gmat) const
 {
   // returns the position of the cluster in the global reference system of ALICE
   // and the uncertainty on this position
-  (AliPHOSGetter::Instance())->PHOSGeometry()->GetGlobal(this, gpos, gmat);
+
+  (AliPHOSGetter::Instance())->PHOSGeometry()->GetGlobalPHOS(this, gpos, gmat);
+
+//   Float_t xyz[3];
+//   GetGlobalXYZ(xyz);
+//   gpos.SetXYZ(xyz[0],xyz[1],xyz[2]);
+
+  
 }
 
 
@@ -276,4 +337,10 @@ void AliPHOSRecPoint::Paint(Option_t *)
   gPad->PaintPolyMarker(1,&x,&y,"") ;
 }
 //______________________________________________________________________________
-
+void AliPHOSRecPoint::GetLocalPosition(TVector3 & pos) const
+{
+  // returns the position of the cluster in the local reference system 
+  // of the sub-detector
+  
+  pos = fLocPos;
+}

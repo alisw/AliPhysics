@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.3  2007/04/25 19:39:42  kharlov
+ * Track extracpolation improved
+ *
  * Revision 1.2  2007/04/01 19:16:52  kharlov
  * D.P.: Produce EMCTrackSegments using TPC/ITS tracks (no CPV)
  *
@@ -224,7 +227,7 @@ void  AliPHOSTrackSegmentMakerv2::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * em
 
   const AliPHOSGeometry * geom = AliPHOSGeometry::GetInstance() ;
   TVector3 emcGlobal; // Global position of the EMC recpoint
-  geom->GetGlobal((AliRecPoint*)emcClu,emcGlobal);
+  geom->GetGlobalPHOS((AliPHOSRecPoint*)emcClu,emcGlobal);
 
   //Calculate actual distance to the PHOS surface
   Double_t modAngle=270.+geom->GetPHOSAngle(emcClu->GetPHOSMod()) ;

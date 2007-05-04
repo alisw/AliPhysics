@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.110  2007/04/24 10:08:03  kharlov
+ * Vertex extraction from GenHeader
+ *
  * Revision 1.109  2007/04/18 09:34:05  kharlov
  * Geometry bug fixes
  *
@@ -1504,7 +1507,7 @@ void  AliPHOSPIDv1::MakeRecParticles()
     AliPHOSTrackSegment * ts  = gime->TrackSegment(rp->GetPHOSTSIndex()) ; 
     AliPHOSEmcRecPoint  * erp = gime->EmcRecPoint(ts->GetEmcIndex()) ; 
     TVector3 pos ; 
-    geom->GetGlobal(erp, pos) ; 
+    geom->GetGlobalPHOS(erp, pos) ; 
     rp->SetPos(pos);
     index++ ; 
   }

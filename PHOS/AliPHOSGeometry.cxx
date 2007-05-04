@@ -262,13 +262,18 @@ Bool_t AliPHOSGeometry::AbsToRelNumbering(Int_t AbsId, Int_t * relid) const
   } 
   return rv ; 
 }
-
 //____________________________________________________________________________
 void AliPHOSGeometry::GetGlobal(const AliRecPoint* recPoint, TVector3 & gpos) const
 {
+  AliFatal(Form("Please use GetGlobalPHOS(recPoint,gpos) instead of GetGlobal!"));
+}
+
+//____________________________________________________________________________
+void AliPHOSGeometry::GetGlobalPHOS(const AliPHOSRecPoint* recPoint, TVector3 & gpos) const
+{
   // Calculates the coordinates of a RecPoint and the error matrix in the ALICE global coordinate system
  
-  AliPHOSRecPoint * tmpPHOS = (AliPHOSRecPoint *) recPoint ;  
+  const AliPHOSRecPoint * tmpPHOS = recPoint ;  
   TVector3 localposition ;
 
   tmpPHOS->GetLocalPosition(gpos) ;

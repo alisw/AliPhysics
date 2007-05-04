@@ -8,19 +8,17 @@
 //*-- Author: Gines Martinez (SUBATECH)
 
 // --- ROOT system ---
-
-//#include "TMarker.h"
-//#include "TGraph.h"
-//#include "TPaveText.h"
-  class TClonesArray ;
-// --- Standard library ---
+#include <TVector3.h>
 
 // --- AliRoot header files ---
+#include "AliCluster.h"
 
-#include "AliRecPoint.h"
-class AliPHOSDigit ; 
+class TClonesArray ;
+class AliPHOSDigit ;
+class AliDigitNew;
+class TMAtrixF; 
 
-class AliPHOSRecPoint : public AliRecPoint {
+class AliPHOSRecPoint : public AliCluster {
 
  public:
   
@@ -28,10 +26,13 @@ class AliPHOSRecPoint : public AliRecPoint {
 
   AliPHOSRecPoint() ;                   // ctor         
   AliPHOSRecPoint(const char * opt) ;   // ctor 
+
+  AliPHOSRecPoint(const AliPHOSRecPoint &rp);
+  AliPHOSRecPoint& operator= (const AliPHOSRecPoint &rp);
+
   
-  virtual ~AliPHOSRecPoint(){
-    // dtor
-  }
+  virtual ~AliPHOSRecPoint();
+
   virtual  void   AddDigit(AliDigitNew &){
    Fatal("AddDigit", "use AddDigit(AliPHOSDigit & digit, Float_t Energy)") ; 
   }
@@ -40,18 +41,24 @@ class AliPHOSRecPoint : public AliRecPoint {
   virtual Int_t   DistancetoPrimitive(Int_t px, Int_t py);
   virtual void    Draw(Option_t * option="") ;
   virtual void    ExecuteEvent(Int_t event, Int_t px, Int_t py) ;
-  void    EvalAll(TClonesArray * digits) ;  
+  void            EvalAll(TClonesArray * digits) ;  
   virtual void    EvalPHOSMod(AliPHOSDigit * digit) ;  
-  virtual void    EvalPrimaries(TClonesArray * digits) ;  
+  virtual void    EvalPrimaries(TClonesArray * digits) ;
+  virtual int *   GetDigitsList(void) const { return fDigitsList ; }  
+  virtual Float_t GetEnergy() const {return fAmp; }
+  virtual void    GetLocalPosition(TVector3 & pos) const ;   
   virtual void    GetGlobalPosition(TVector3 & gpos, TMatrixF & gmat) const ; // return global position in ALICE
   virtual Int_t   GetPHOSMod(void) const {return fPHOSMod ; }
   virtual Int_t * GetPrimaries(Int_t & number) const {number = fMulTrack ; 
                                                       return fTracksList ; }
+  virtual Int_t   GetDigitsMultiplicity(void) const { return fMulDigit ; }
+  Int_t           GetIndexInList() const { return fIndexInList ; }
   virtual Bool_t  IsEmc(void)const { return kTRUE ;  } 
   virtual Bool_t  IsSortable() const { 
     // tells that this is a sortable object
     return kTRUE ; 
   }  
+  void            SetIndexInList(Int_t val) { fIndexInList = val ; }
   virtual void    Paint(Option_t * option="");
   virtual void    Print(Option_t *) const {
     // Print prototype
@@ -59,9 +66,20 @@ class AliPHOSRecPoint : public AliRecPoint {
 
 protected:
   
-  Int_t fPHOSMod ;      // PHOS Module number in which the RecPoint is found
-  
-  ClassDef(AliPHOSRecPoint,1) // RecPoint for PHOS (Base Class)
+  Int_t     fPHOSMod ;    // PHOS Module number in which the RecPoint is found
+  Int_t     fMulTrack ;   // total multiplicity of tracks to which the point was assigned
+  Int_t     fMaxDigit ;   //! max initial size of digits array (not saved)
+  Int_t     fMulDigit ;   // total multiplicity of digits
+  Int_t     fMaxTrack ;   //! max initial size of tracks array (not saved)
+  Int_t*    fDigitsList ; //[fMulDigit] list of digit's indexes from which the point was reconstructed 
+  Int_t*    fTracksList ; //[fMulTrack] list of tracks to which the point was assigned 
+  Float_t   fAmp ;        // summed amplitude of digits 
+  Int_t     fIndexInList ;// the index of this RecPoint in the list stored in TreeR (to be set by analysis)  
+  TVector3  fLocPos ;     // local position in the sub-detector coordinate
+  TMatrixF* fLocPosM ;    // covariance matrix ;
+
+
+  ClassDef(AliPHOSRecPoint,2) // RecPoint for PHOS (Base Class)
  
 };
 
