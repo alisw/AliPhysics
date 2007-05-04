@@ -1,20 +1,21 @@
 #ifndef ALIHLTPHOSFILEWRITERCOMPONENT_H
 #define ALIHLTPHOSFILEWRITERCOMPONENT_H
 
-#include "AliHLTPHOSDefinitions.h"
+//#include "AliHLTPHOSDefinitions.h"
 #include <string>
 #include "AliHLTPHOSCommonDefs.h"
-#include "AliHLTPHOSFileWriter.h"
-#include "AliHLTPHOSCellEnergiesFileWriter.h"
-#include "AliHLTPHOSDDLPackedFileWriter.h"  
 #include "Rtypes.h"
 #include "AliHLTFileWriter.h"
+#include <vector>
 
 
 class AliRawReaderMemory;
 class AliCaloRawStream;
 class AliHLTPHOSRcuCellEnergyDataStruct;
 class AliHLTPHOSFileWriterComponent;
+class AliHLTPHOSDDLPackedFileWriter;  
+class AliHLTPHOSCellEnergiesFileWriter;
+//class AliHLTFileWriter;
 
 class AliHLTPHOSFileWriterComponent:public AliHLTFileWriter
 {
@@ -25,7 +26,7 @@ class AliHLTPHOSFileWriterComponent:public AliHLTFileWriter
   virtual int Deinit();
   virtual int DoDeinit();
   virtual const char* GetComponentID();
-  virtual void GetInputDataTypes(std::vector<AliHLTComponentDataType, std::allocator<AliHLTComponentDataType> >&);
+  virtual void GetInputDataTypes( std::vector <AliHLTComponentDataType>&);
   virtual AliHLTComponentDataType GetOutputDataType();
   virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
   virtual AliHLTComponent* Spawn();
@@ -39,12 +40,12 @@ class AliHLTPHOSFileWriterComponent:public AliHLTFileWriter
     {
       return *this;
     };
-  AliHLTPHOSCellEnergiesFileWriter *fCellEnergiesFileWriterPtr;
-  AliHLTPHOSDDLPackedFileWriter    *fDDLPackedFileWriterPtr ;
-  string  fDirectory; /**<target directory for files*/
-  string  fFilename;  /**<the basename of the output file*/
-  AliHLTComponentDataType fDataTypesToFile[N_DATATYPES];
-  int fEventCount;
-  static const AliHLTComponentDataType fInputDataTypes[];
+  AliHLTPHOSCellEnergiesFileWriter *fCellEnergiesFileWriterPtr;   /**<to write celle energies to files*/
+  AliHLTPHOSDDLPackedFileWriter    *fDDLPackedFileWriterPtr ;     /**<to write untouched DDL raw data to files*/ 
+  string  fDirectory;                                             /**<target directory for files*/
+  string  fFilename;                                              /**<the basename of the output file*/
+  AliHLTComponentDataType fDataTypesToFile[N_DATATYPES];          /**<Array for registering datatypes that should be written to files*/          
+  int fEventCount;                                                /**<Event counter*/
+  static const AliHLTComponentDataType fgkInputDataTypes[];         /**<Datatypes that can be given as input to this component*/
 };
 #endif

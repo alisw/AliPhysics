@@ -20,7 +20,7 @@ class AliHLTPHOSRawAnalyzerKLevel : public AliHLTPHOSRawAnalyzer
   virtual ~AliHLTPHOSRawAnalyzerKLevel();
   virtual void Evaluate(int start = 0, int lenght = 100);
  private:
-  double tKLevel;
+  double fTKLevel; /**<K-Level*/
   ClassDef(AliHLTPHOSRawAnalyzerKLevel, 2) 
   
     };

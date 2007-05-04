@@ -1,8 +1,9 @@
 #ifndef ALIHLTPHOSRAWANALYZERCRUDE_H
 #define ALIHLTPHOSRAWANALYZERCRUDE_H
-#include <Rtypes.h>
-#include "TObject.h"
+//#include <Rtypes.h>
+//#include "TObject.h"
 #include "AliHLTPHOSRawAnalyzer.h"
+
 
 
 /* Copyright(c) 2006, ALICE Experiment at CERN, All rights reserved. *

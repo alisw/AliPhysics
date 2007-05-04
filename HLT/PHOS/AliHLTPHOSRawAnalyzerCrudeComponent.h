@@ -7,6 +7,7 @@
  * See cxx source for full Copyright notice  */ 
 
 
+
 class AliHLTPHOSRawAnalyzerCrudeComponent: public AliHLTPHOSRawAnalyzerComponent
 {
  public:

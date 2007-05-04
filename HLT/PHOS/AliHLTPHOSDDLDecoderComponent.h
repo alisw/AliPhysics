@@ -11,6 +11,7 @@
 #include "AliHLTPHOSDefinitions.h"
 #include "AliHLTPHOSCommonDefs.h"
 #include "AliHLTPHOSRcuChannelDataStruct.h"
+#include <cstdlib>
 
 class AliHLTPHOSRcuCellEnergyDataStruct;
 class AliHLTPHOSRcuChannelDataStruct;
@@ -19,15 +20,13 @@ class AliHLTPHOSDDLDecoderComponent:public AliHLTProcessor
 
 {
  public:
-
-
- AliHLTPHOSDDLDecoderComponent();
+  AliHLTPHOSDDLDecoderComponent();
   virtual ~AliHLTPHOSDDLDecoderComponent();
- AliHLTPHOSDDLDecoderComponent(const AliHLTPHOSDDLDecoderComponent & );
- AliHLTPHOSDDLDecoderComponent & operator = (const AliHLTPHOSDDLDecoderComponent &)
-   {
+  AliHLTPHOSDDLDecoderComponent(const AliHLTPHOSDDLDecoderComponent & );
+  AliHLTPHOSDDLDecoderComponent & operator = (const AliHLTPHOSDDLDecoderComponent &)
+    {
       return *this;
-   };
+    };
 
   virtual int DoInit( int argc, const char** argv );
   virtual int Deinit();
@@ -36,13 +35,15 @@ class AliHLTPHOSDDLDecoderComponent:public AliHLTProcessor
   AliHLTUInt16_t  GetEquippmentID();
   void SetCoordinates(AliHLTUInt16_t equippmentID);
   virtual const char* GetComponentID();
-  virtual void GetInputDataTypes(std::vector<AliHLTComponentDataType, std::allocator<AliHLTComponentDataType> >&);
+  virtual void GetInputDataTypes( std::vector <AliHLTComponentDataType>&);
   virtual AliHLTComponentDataType GetOutputDataType();
   virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
   virtual AliHLTComponent* Spawn();
-
-  virtual int DoEvent(const AliHLTComponentEventData&, const AliHLTComponentBlockData*, AliHLTComponentTriggerData&, AliHLTUInt8_t*, AliHLTUInt32_t&, std::vector<AliHLTComponentBlockData, std::allocator<AliHLTComponentBlockData> >&);
-
+  
+  virtual int DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
+		     AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
+		     AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks ); 
+ 
  private:
   static int fgEventCount;
   AliHLTUInt16_t fEquippmentID;

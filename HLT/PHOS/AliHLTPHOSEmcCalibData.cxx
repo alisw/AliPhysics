@@ -157,7 +157,7 @@ void  AliHLTPHOSEmcCalibData::Print(Option_t *option) const
   }
 }
 
-
+//________________________________________________________________
 void  
 AliHLTPHOSEmcCalibData::MakeADCpedestalCorrectionTable()
 {

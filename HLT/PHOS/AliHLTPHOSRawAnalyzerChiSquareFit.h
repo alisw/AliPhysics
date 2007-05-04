@@ -1,6 +1,6 @@
 #ifndef ALIHLTPHOSRAWANALYZERCHISQUAREFIT_H
 #define ALIHLTPHOSRAWANALYZERCHISQUAREFIT_H
-#include <Rtypes.h>
+//#include <Rtypes.h>
 #include "TObject.h"
 #include "AliHLTPHOSRawAnalyzer.h"
 

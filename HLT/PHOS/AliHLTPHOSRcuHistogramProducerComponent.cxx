@@ -94,7 +94,7 @@ void
 AliHLTComponentDataType 
 AliHLTPHOSRcuHistogramProducerComponent::GetOutputDataType()
 {
-  return AliHLTPHOSDefinitions::gkCellEnergyDataType;
+  return AliHLTPHOSDefinitions::fgkCellEnergyDataType;
 }
 
 
@@ -165,7 +165,7 @@ int  AliHLTPHOSRcuHistogramProducerComponent::DoEvent( const AliHLTComponentEven
   FillBlockData( bd );
   bd.fOffset = offset;
   bd.fSize = mysize;
-  bd.fDataType = AliHLTPHOSDefinitions::gkCellAccumulatedEnergyDataType;
+  bd.fDataType = AliHLTPHOSDefinitions::fgkCellAccumulatedEnergyDataType;
   bd.fSpecification = 0xFFFFFFFF;
   outputBlocks.push_back( bd );
   tSize += mysize;

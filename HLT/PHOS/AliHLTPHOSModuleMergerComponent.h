@@ -21,11 +21,14 @@ class AliHLTPHOSModuleMergerComponent:public AliHLTProcessor
   virtual int DoInit(int argc =0, const char** argv = 0);
   virtual int Deinit();
   virtual int DoDeinit();
-  virtual int DoEvent(const AliHLTComponentEventData&, const AliHLTComponentBlockData*, AliHLTComponentTriggerData&, AliHLTUInt8_t*, AliHLTUInt32_t&, std::vector<AliHLTComponentBlockData, std::allocator<AliHLTComponentBlockData> >&);
+  virtual int DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
+		     AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
+		     AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
+
   void DumpData(int gain =0);
-  int GetEquippmentId();
+  const int GetEquippmentId() const;
   virtual const char* GetComponentID();
-  virtual void GetInputDataTypes(std::vector<AliHLTComponentDataType, std::allocator<AliHLTComponentDataType> >&);
+  virtual void GetInputDataTypes( std::vector <AliHLTComponentDataType>& list);
   virtual AliHLTComponentDataType GetOutputDataType();
   virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
   void SetEquippmentId(int id = 0);
@@ -36,7 +39,7 @@ class AliHLTPHOSModuleMergerComponent:public AliHLTProcessor
   void ResetDataPtr();
 
  private:
-  int fEventCount;                                                    /**<event counter*/
+  int fPhosEventCount;                                                    /**<event counter*/
   AliHLTUInt32_t fEquippmentID;                                       /**<Eguippment ID as given by ALICE*/
   Double_t fTmpChannelData[ALTRO_MAX_SAMPLES];                        /**<Array to tmporarily store samples from a single ALTRO*/ 
   Double_t fMaxValues[N_MODULES][N_ROWS_MOD][N_COLUMNS_MOD][N_GAINS]; /**<Tower/Crystal energies*/

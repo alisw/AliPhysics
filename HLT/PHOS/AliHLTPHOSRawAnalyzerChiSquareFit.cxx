@@ -46,7 +46,7 @@ AliHLTPHOSRawAnalyzerChiSquareFit::~AliHLTPHOSRawAnalyzerChiSquareFit()
 
 
 /**
-* Extraction of timing and energy using the Peakfinde Algorithm.
+* Extraction of timing and energy using Chi Square Fit.
 * The. The parameters "start" and "length" defines a sub array  of the data array
 * that will be used for the the fit. If start+length must not exeed the total length
 * of the Data array. "start" must be chosen as close as possible to t0.

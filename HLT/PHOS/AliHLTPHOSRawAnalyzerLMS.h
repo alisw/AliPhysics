@@ -23,7 +23,7 @@ class AliHLTPHOSRawAnalyzerLMS : public AliHLTPHOSRawAnalyzer
   virtual void Evaluate(int start = 0, int lenght = 100);
 
  private:
-  double   kfMCovarPtrPtr[1008][1008]; /**<Covariance matrix of the measurements*/
+  double   fMCovarPtrPtr[1008][1008]; /**<Covariance matrix of the measurements*/
   double   fPCovarPtrPtr[1008][1008];   /**<Covariance matrix of the estimated parameters*/
   ClassDef(AliHLTPHOSRawAnalyzerLMS, 2) 
   

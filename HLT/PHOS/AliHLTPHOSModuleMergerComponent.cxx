@@ -14,11 +14,8 @@
  **************************************************************************/
 
 #include "AliHLTPHOSModuleMergerComponent.h"
-//#include <iostream>
-//#include "stdio.h"
 #include "AliRawReaderMemory.h"
 #include "AliCaloRawStream.h"
-//#include <cstdlib>
 #include <cstdio>
 #include "AliHLTPHOSRcuCellEnergyDataStruct.h"
 
@@ -26,26 +23,30 @@
 const AliHLTComponentDataType  AliHLTPHOSModuleMergerComponent::fgkInputDataTypes[]={kAliHLTVoidDataType,{0,"",""}}; //'zero' terminated array
 const AliHLTComponentDataType  AliHLTPHOSModuleMergerComponent::fgkOutputDataType=kAliHLTVoidDataType;
 
-
 AliHLTPHOSModuleMergerComponent gAliHLTPHOSModuleMergerComponent;
-AliHLTPHOSModuleMergerComponent:: AliHLTPHOSModuleMergerComponent():AliHLTProcessor(),  fEventCount(0),  fEquippmentID(0)
+
+//_____________________________________________________________________________________________________
+AliHLTPHOSModuleMergerComponent:: AliHLTPHOSModuleMergerComponent():AliHLTProcessor(),  fPhosEventCount(0),  fEquippmentID(0)
 {
 
 } 
 
 
+//_____________________________________________________________________________________________________
 AliHLTPHOSModuleMergerComponent::~ AliHLTPHOSModuleMergerComponent()
 {
 
 }
 
 
-AliHLTPHOSModuleMergerComponent::AliHLTPHOSModuleMergerComponent(const  AliHLTPHOSModuleMergerComponent & ) : AliHLTProcessor(),  fEventCount(0),  fEquippmentID(0)
+//_____________________________________________________________________________________________________
+AliHLTPHOSModuleMergerComponent::AliHLTPHOSModuleMergerComponent(const  AliHLTPHOSModuleMergerComponent & ) : AliHLTProcessor(),  fPhosEventCount(0),  fEquippmentID(0)
 {
 
 }
 
 
+//_____________________________________________________________________________________________________
 int 
 AliHLTPHOSModuleMergerComponent::Deinit()
 {
@@ -53,6 +54,7 @@ AliHLTPHOSModuleMergerComponent::Deinit()
 }
 
 
+//_____________________________________________________________________________________________________
 int 
 AliHLTPHOSModuleMergerComponent::DoDeinit()
 {
@@ -62,6 +64,7 @@ AliHLTPHOSModuleMergerComponent::DoDeinit()
 }
 
 
+//_____________________________________________________________________________________________________
 const char* 
 AliHLTPHOSModuleMergerComponent::GetComponentID()
 {
@@ -69,10 +72,10 @@ AliHLTPHOSModuleMergerComponent::GetComponentID()
 }
 
 
+//_____________________________________________________________________________________________________
 void
- AliHLTPHOSModuleMergerComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
+AliHLTPHOSModuleMergerComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
 {
-  ///
   const AliHLTComponentDataType* pType=fgkInputDataTypes;
   while (pType->fID!=0) 
     {
@@ -82,14 +85,15 @@ void
 }
 
 
+//_____________________________________________________________________________________________________
 AliHLTComponentDataType 
 AliHLTPHOSModuleMergerComponent::GetOutputDataType()
 {
-  ///
-  return AliHLTPHOSDefinitions::gkCellEnergyDataType;
+  return AliHLTPHOSDefinitions::fgkCellEnergyDataType;
 }
 
 
+//_____________________________________________________________________________________________________
 void
 AliHLTPHOSModuleMergerComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier )
 {
@@ -138,12 +142,13 @@ int  AliHLTPHOSModuleMergerComponent::DoEvent( const AliHLTComponentEventData& e
     }
 
   DumpData(1);
-  fEventCount++; 
+  fPhosEventCount++; 
   return 0;
   
 }//end DoEvent
 
 
+//_____________________________________________________________________________________________________
 int
 AliHLTPHOSModuleMergerComponent::DoInit( int argc, const char** argv )
 {
@@ -157,6 +162,7 @@ AliHLTPHOSModuleMergerComponent::DoInit( int argc, const char** argv )
 }
 
 
+//_____________________________________________________________________________________________________
 void
 AliHLTPHOSModuleMergerComponent::DumpData(int gain)
 {
@@ -191,6 +197,7 @@ AliHLTPHOSModuleMergerComponent::DumpData(int gain)
 
 
 
+//_____________________________________________________________________________________________________
 void
 AliHLTPHOSModuleMergerComponent::Reset()
 {
@@ -215,6 +222,8 @@ AliHLTPHOSModuleMergerComponent::Reset()
     }
 } // end Reset
 
+
+//_____________________________________________________________________________________________________
 void
 AliHLTPHOSModuleMergerComponent::ResetDataPtr()
 {
@@ -225,19 +234,23 @@ AliHLTPHOSModuleMergerComponent::ResetDataPtr()
 }
 
 
+//_____________________________________________________________________________________________________
 void 
 AliHLTPHOSModuleMergerComponent::SetEquippmentId(int id)
 {
   fEquippmentID = id;
 }
 
-int 
-AliHLTPHOSModuleMergerComponent::GetEquippmentId()
+
+//_____________________________________________________________________________________________________
+const int 
+AliHLTPHOSModuleMergerComponent::GetEquippmentId() const
 {
   return  fEquippmentID;
 }
 
 
+//_____________________________________________________________________________________________________
 AliHLTComponent*
 AliHLTPHOSModuleMergerComponent::Spawn()
 {

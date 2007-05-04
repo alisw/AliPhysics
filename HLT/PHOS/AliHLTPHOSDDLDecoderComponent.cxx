@@ -30,9 +30,6 @@ const AliHLTComponentDataType AliHLTPHOSDDLDecoderComponent::fgkInputDataTypes[]
 int   AliHLTPHOSDDLDecoderComponent::fgEventCount = 0; 
 
 
-/**
- * @class AliHLTPHOSDDLDecoderComponent
- */
 AliHLTPHOSDDLDecoderComponent::AliHLTPHOSDDLDecoderComponent():AliHLTProcessor(), fEquippmentID(0), fRcuX(0), 
 fRcuZ(0),fRcuZOffset(0), fRcuXOffset(0),  fModuleID(0), fSendChannelData(kFALSE), fPHOSRawStream(0), fRawMemoryReader(0), fOutPtr(0)
 {
@@ -58,10 +55,6 @@ fEquippmentID(0), fRcuX(0), fRcuZ(0),fRcuZOffset(0), fRcuXOffset(0),  fModuleID(
 }
 
 
-/*
- *Deinit function called by the HLT framwork at end of run
- *@return 0 if the denitialzation was sucessfull.
- */
 int 
 AliHLTPHOSDDLDecoderComponent::Deinit()
 {
@@ -70,10 +63,6 @@ AliHLTPHOSDDLDecoderComponent::Deinit()
 }
 
 
-/*
- *Deinit function called by the HLT framwork at end of run
- *@return 0 if the denitialzation was sucessfull.
- */
 int 
 AliHLTPHOSDDLDecoderComponent::DoDeinit()
 {
@@ -93,10 +82,7 @@ AliHLTPHOSDDLDecoderComponent::DoDeinit()
 
 }
 
-/*
- *Function called by the HLT framework during initialization
- *@return the ID of the component
- */
+
 const char* 
 AliHLTPHOSDDLDecoderComponent::GetComponentID()
 {
@@ -104,8 +90,9 @@ AliHLTPHOSDDLDecoderComponent::GetComponentID()
 }
 
 
+
 void
-AliHLTPHOSDDLDecoderComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
+AliHLTPHOSDDLDecoderComponent::GetInputDataTypes(vector<AliHLTComponentDataType>& list)
 {
   const AliHLTComponentDataType* pType=fgkInputDataTypes;
   while (pType->fID!=0) {
@@ -117,7 +104,7 @@ AliHLTPHOSDDLDecoderComponent::GetInputDataTypes( vector<AliHLTComponentDataType
 AliHLTComponentDataType 
 AliHLTPHOSDDLDecoderComponent::GetOutputDataType()
 {
-  return AliHLTPHOSDefinitions::gkCellEnergyDataType;
+  return AliHLTPHOSDefinitions::fgkCellEnergyDataType;
 }
 
 void
@@ -129,7 +116,9 @@ AliHLTPHOSDDLDecoderComponent::GetOutputDataSize(unsigned long& constBase, doubl
 }
 
 
-int AliHLTPHOSDDLDecoderComponent::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
+  
+int
+AliHLTPHOSDDLDecoderComponent::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
 					      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 					      AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
 {
@@ -158,7 +147,7 @@ int AliHLTPHOSDDLDecoderComponent::DoEvent( const AliHLTComponentEventData& evtD
       tmpChannelCnt = 0;
       offset = tSize;
 
-      if ( iter->fDataType != AliHLTPHOSDefinitions::gkDDLPackedRawDataType )
+      if ( iter->fDataType != AliHLTPHOSDefinitions::fgkDDLPackedRawDataType )
 	{
 	  continue;
 	}
@@ -195,7 +184,7 @@ int AliHLTPHOSDDLDecoderComponent::DoEvent( const AliHLTComponentEventData& evtD
       FillBlockData( bd );
       bd.fOffset = offset;
       bd.fSize = mysize;
-      bd.fDataType = AliHLTPHOSDefinitions::gkCellChannelDataDataType;
+      bd.fDataType = AliHLTPHOSDefinitions::fgkCellChannelDataDataType;
       bd.fSpecification = 0xeFFFFFFF;
       outputBlocks.push_back( bd);
       tSize += mysize;

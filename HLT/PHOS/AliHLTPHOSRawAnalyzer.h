@@ -22,8 +22,8 @@ class AliHLTPHOSRawAnalyzer
   void BaselineCorrection(double *dataPtr, int N);
   void BaselineCorrection(double *dataPtr, double baselineValue);  
   int FindStartIndex(double treshold);
-  float GetTiming();
-  float GetEnergy();
+  float GetTiming() const;
+  float GetEnergy() const;
   void SetData(double *data);
   void SetSampleFreq(double freq);
   void SetStartIndex(int startIndex);
@@ -31,8 +31,12 @@ class AliHLTPHOSRawAnalyzer
   void MakeInitialGuess(int treshold);
   virtual void SetTVector(Double_t *tVector, Int_t size);
   virtual void SetAVector(Double_t *aVector, Int_t size);
-  virtual void Evaluate(int start = 0, int lenght = 100) = 0;
-  Double_t GetMaxValue(Double_t *dta, Int_t size);
+
+  /**
+   *Abstratct class documentation
+   */
+  virtual void Evaluate(Int_t start = 0, Int_t lenght = 100) = 0;
+  Double_t GetMaxValue(Double_t *dta, Int_t size) const;
 
  protected:
   Double_t   *fFloatDataPtr;   /**<Float representation of data that should be fitted */

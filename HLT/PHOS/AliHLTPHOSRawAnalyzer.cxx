@@ -36,7 +36,7 @@ AliHLTPHOSRawAnalyzer::AliHLTPHOSRawAnalyzer(AliHLTPHOSRawAnalyzer const&):fFloa
 
 /**
 * Main constructor
-* @param dataPtr Data array for wich a subarray will be taken to perform the fit
+* @param dtaPtr Data array for wich a subarray will be taken to perform the fit
 * @param fs the sampling frequency in entities of MHz. Needed in order to calculate physical time
 **/
 AliHLTPHOSRawAnalyzer::AliHLTPHOSRawAnalyzer(double *dtaPtr, double fs):fFloatDataPtr(0), fSampleFrequency(10), fTau(2), fDTof(99999), fDAmpl(99999), fStartIndex(0)
@@ -66,7 +66,7 @@ AliHLTPHOSRawAnalyzer::BaselineCorrection(double *dataPtr, int N)
 * Shifts the baseline with the amount given by baselineValue
 * If pretrigger samples are not present then the basline correction will be incorrect. 
 * @param dataPtr array for wich to correct the basline 
-* @param BaslineValue the basline value to subtract..
+* @param baselineValue the basline value to subtract..
 **/
 void 
 AliHLTPHOSRawAnalyzer::BaselineCorrection(double *dataPtr, double baselineValue)
@@ -82,7 +82,7 @@ AliHLTPHOSRawAnalyzer::BaselineCorrection(double *dataPtr, double baselineValue)
  * Physical time is found by multiplying  with the sampling intervall (Ts).
  **/
 float
-AliHLTPHOSRawAnalyzer::GetTiming()
+AliHLTPHOSRawAnalyzer::GetTiming() const 
 {
   return fDTof;
 } //end GetTiming
@@ -93,7 +93,7 @@ AliHLTPHOSRawAnalyzer::GetTiming()
  * Absolute enrgy is found by multiplying with offline calibration constants.
  **/
 float
-AliHLTPHOSRawAnalyzer::GetEnergy()
+AliHLTPHOSRawAnalyzer::GetEnergy() const
 {
   return fDAmpl;
 } //end GetEnergy
@@ -150,6 +150,7 @@ AliHLTPHOSRawAnalyzer::SetStartIndex(int index)
   fStartIndex = index;
 }
 
+
 void 
 AliHLTPHOSRawAnalyzer::SetTVector(Double_t *tVector, Int_t size)
 {
@@ -165,7 +166,7 @@ AliHLTPHOSRawAnalyzer::SetAVector(Double_t *aVector, Int_t size)
 
 
 Double_t
-AliHLTPHOSRawAnalyzer::GetMaxValue(Double_t *dta, Int_t size)
+AliHLTPHOSRawAnalyzer::GetMaxValue(Double_t *dta, Int_t size) const
 {
 
   Double_t tmpMax = 0;

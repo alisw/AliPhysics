@@ -45,7 +45,7 @@ AliHLTPHOSRawAnalyzerPeakFinder::AliHLTPHOSRawAnalyzerPeakFinder():AliHLTPHOSRaw
 }
 
 
-
+//___________________________________________________________________
 AliHLTPHOSRawAnalyzerPeakFinder::~AliHLTPHOSRawAnalyzerPeakFinder()
 {
 
@@ -70,6 +70,7 @@ AliHLTPHOSRawAnalyzerPeakFinder::SetTVector(Double_t *tVec, Int_t size)
 }
 
 
+//___________________________________________________________________
 void
 AliHLTPHOSRawAnalyzerPeakFinder::SetAVector(Double_t *aVec, Int_t size)
 {
@@ -89,21 +90,10 @@ AliHLTPHOSRawAnalyzerPeakFinder::SetAVector(Double_t *aVec, Int_t size)
     }
 }
 
-/**
-* Extraction of timing and energy using the Peakfinde Algorithm.
-* The. The parameters "start" and "length" defines a sub array  of the data array
-* that will be used for the the fit. If start+length must not exeed the total length
-* of the Data array. "start" must be chosen as close as possible to t0.
-* The baseline must also be subtracted.
-* The length of "tVector" and "aVector" mus be equal to length.
-* "index + length" must not exeed the length of the data array set in the constructor.
-* @param start the start index of the subarray of the data array. 
-* @param length the number of samples to use starting from index 
-* @param tVector the peakfinder vector for timing
-* @param aVector the peakfinder vector for amplitude (energy)
-**/
+
+//___________________________________________________________________
 void 
-AliHLTPHOSRawAnalyzerPeakFinder::Evaluate(int start, int length)
+AliHLTPHOSRawAnalyzerPeakFinder::Evaluate(Int_t start, Int_t length)
 {
   fDTof = 0;
   fDAmpl = 0;
@@ -111,11 +101,12 @@ AliHLTPHOSRawAnalyzerPeakFinder::Evaluate(int start, int length)
 
   if(fTVectorPtr == 0 || fAVectorPtr == 0)
     {
-      //      printf("\nError: the peakfinder vectors are not specified, aborting !!!\n");
+
     }
   else
     {
-      
+ 
+     
       if(length <  fTVectorSize)
 	{
 	  tmpLength = length;

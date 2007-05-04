@@ -1,28 +1,32 @@
 #include  "AliHLTPHOSFileWriter.h"
-#include <string>
 #include <cstdlib>
 
-using std::string;
+using namespace std;
 
 
+//_________________________________________________________________________________________________
 AliHLTPHOSFileWriter::AliHLTPHOSFileWriter():fCurrentEvntCnt(0), fCurrentFile(0), fDirectory(""), fCurrentFilename("")
 {
 
 }
 
 
+//_________________________________________________________________________________________________
 AliHLTPHOSFileWriter::~AliHLTPHOSFileWriter()
 {
 
 }
 
 
+//_________________________________________________________________________________________________
 void
 AliHLTPHOSFileWriter::SetDirectory(string& directory)
 {
 
 }
 
+
+//_________________________________________________________________________________________________
 void
 AliHLTPHOSFileWriter::MakeFilename(int eventNr, const AliHLTComponentDataType& dataType)
 {

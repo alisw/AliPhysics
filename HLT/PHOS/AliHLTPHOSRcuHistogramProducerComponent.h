@@ -21,9 +21,15 @@ class AliHLTPHOSRcuHistogramProducerComponent:public AliHLTProcessor
   virtual int DoInit( int argc, const char** argv );
   virtual int Deinit();
   virtual int DoDeinit();
-  virtual int DoEvent(const AliHLTComponentEventData&, const AliHLTComponentBlockData*, AliHLTComponentTriggerData&, AliHLTUInt8_t*,
-		      AliHLTUInt32_t&, std::vector<AliHLTComponentBlockData, std::allocator<AliHLTComponentBlockData> >&);
-  virtual void GetInputDataTypes(std::vector<AliHLTComponentDataType, std::allocator<AliHLTComponentDataType> >&);
+  //  virtual int DoEvent(const AliHLTComponentEventData&, const AliHLTComponentBlockData*, AliHLTComponentTriggerData&, AliHLTUInt8_t*,
+  //		      AliHLTUInt32_t&, std::vector<AliHLTComponentBlockData, std::allocator<AliHLTComponentBlockData> >&);
+  virtual int DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
+		     AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
+		     AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
+
+  //  virtual void GetInputDataTypes(std::vector<AliHLTComponentDataType, std::allocator<AliHLTComponentDataType> >&);
+  virtual void GetInputDataTypes( std::vector <AliHLTComponentDataType>&);
+
   virtual AliHLTComponentDataType GetOutputDataType();
   virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
   virtual AliHLTComponent* Spawn();

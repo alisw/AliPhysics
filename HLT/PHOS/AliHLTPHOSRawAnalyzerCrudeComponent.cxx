@@ -14,33 +14,38 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+
 #include "AliHLTPHOSRawAnalyzerCrudeComponent.h"
 #include "AliHLTPHOSRawAnalyzerCrude.h"
 
 AliHLTPHOSRawAnalyzerCrudeComponent gAliHLTPHOSRawAnalyzerCrudeComponent;
 
+//___________________________________________________________________________
 AliHLTPHOSRawAnalyzerCrudeComponent::AliHLTPHOSRawAnalyzerCrudeComponent()
 {
   fAnalyzerPtr = new AliHLTPHOSRawAnalyzerCrude();
 } 
 
+//___________________________________________________________________________
 AliHLTPHOSRawAnalyzerCrudeComponent::~AliHLTPHOSRawAnalyzerCrudeComponent()
 {
 
 }
 
-
+//___________________________________________________________________________
 AliHLTPHOSRawAnalyzerCrudeComponent::AliHLTPHOSRawAnalyzerCrudeComponent(const AliHLTPHOSRawAnalyzerCrudeComponent & ):AliHLTPHOSRawAnalyzerComponent()
 {
 
 }
 
+//___________________________________________________________________________
 const char* 
 AliHLTPHOSRawAnalyzerCrudeComponent::GetComponentID()
 {
   return "PhosRawCrude";
 }
 
+//___________________________________________________________________________
 AliHLTComponent*
 AliHLTPHOSRawAnalyzerCrudeComponent::Spawn()
 {

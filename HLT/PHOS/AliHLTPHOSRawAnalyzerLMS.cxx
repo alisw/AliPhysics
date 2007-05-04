@@ -22,14 +22,14 @@ using std::endl;
 
 ClassImp(AliHLTPHOSRawAnalyzerLMS) 
 
-
+//_____________________________________________________________________________________________________
 AliHLTPHOSRawAnalyzerLMS::AliHLTPHOSRawAnalyzerLMS(const AliHLTPHOSRawAnalyzerLMS&):AliHLTPHOSRawAnalyzer()
 {
 
 }
 
 
-
+//_____________________________________________________________________________________________________
 AliHLTPHOSRawAnalyzerLMS::AliHLTPHOSRawAnalyzerLMS():AliHLTPHOSRawAnalyzer() 
 {
   cout <<"You cannot invoke the Fitter without arguments"<<endl;;
@@ -38,9 +38,10 @@ AliHLTPHOSRawAnalyzerLMS::AliHLTPHOSRawAnalyzerLMS():AliHLTPHOSRawAnalyzer()
 
 /**
 * Main constructor
-* @param dataPtr Data array for wich a subarray will be taken to perform the fit
+* @param dtaPtr Data array for wich a subarray will be taken to perform the fit
 * @param fs the sampling frequency in entities of MHz. Needed in order to calculate physical time
 **/
+//_____________________________________________________________________________________________________
 AliHLTPHOSRawAnalyzerLMS::AliHLTPHOSRawAnalyzerLMS(double *dtaPtr, double fs):AliHLTPHOSRawAnalyzer() 
 {
   fFloatDataPtr = dtaPtr;  
@@ -48,13 +49,14 @@ AliHLTPHOSRawAnalyzerLMS::AliHLTPHOSRawAnalyzerLMS(double *dtaPtr, double fs):Al
 } //end   AliHLTPHOSRawAnalyzerLMS 
 
 
+//_____________________________________________________________________________________________________
 AliHLTPHOSRawAnalyzerLMS::~AliHLTPHOSRawAnalyzerLMS()
 {
 
 } //end AliHLTPHOSRawAnalyzerLMS
 
 
-
+//_____________________________________________________________________________________________________
 void 
 AliHLTPHOSRawAnalyzerLMS::Evaluate(int start, int length)
 {
