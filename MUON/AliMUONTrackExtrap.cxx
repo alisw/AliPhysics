@@ -360,42 +360,42 @@ void AliMUONTrackExtrap::ExtrapToVertexUncorrected(AliMUONTrackParam* trackParam
     cout<<"E-AliMUONTrackExtrap::ExtrapToVertexUncorrected: failed to get absorber node"<<endl;
     return;
   }
-  Double_t zAbsBeg, zAbsEnd;
-  absNode->GetVolume()->GetShape()->GetAxisRange(3,zAbsBeg,zAbsEnd);
+  Double_t kZAbsBeg, kZAbsEnd;
+  absNode->GetVolume()->GetShape()->GetAxisRange(3,kZAbsBeg,kZAbsEnd);
   const Double_t *absPos = absNode->GetMatrix()->GetTranslation();
-  zAbsBeg = absPos[2] - zAbsBeg; // spectro. (z<0)
-  zAbsEnd = absPos[2] - zAbsEnd; // spectro. (z<0)
+  kZAbsBeg = absPos[2] - kZAbsBeg; // spectro. (z<0)
+  kZAbsEnd = absPos[2] - kZAbsEnd; // spectro. (z<0)
 */
-  static const Double_t zAbsBeg = -90.;
-  static const Double_t zAbsEnd = -505.;
+  static const Double_t kZAbsBeg = -90.;
+  static const Double_t kZAbsEnd = -505.;
     
   // Check the vertex position relatively to the absorber
-  if (zVtx < zAbsBeg && zVtx > zAbsEnd) { // spectro. (z<0)
+  if (zVtx < kZAbsBeg && zVtx > kZAbsEnd) { // spectro. (z<0)
     cout<<"W-AliMUONTrackExtrap::ExtrapToVertex: Ending Z ("<<zVtx
-    	<<") inside the front absorber ("<<zAbsBeg<<","<<zAbsEnd<<")"<<endl;
-  } else if (zVtx < zAbsEnd ) { // spectro. (z<0)
+    	<<") inside the front absorber ("<<kZAbsBeg<<","<<kZAbsEnd<<")"<<endl;
+  } else if (zVtx < kZAbsEnd ) { // spectro. (z<0)
     cout<<"W-AliMUONTrackExtrap::ExtrapToVertex: Ending Z ("<<zVtx
-    	<<") downstream the front absorber (zAbsorberEnd = "<<zAbsEnd<<")"<<endl;
+    	<<") downstream the front absorber (zAbsorberEnd = "<<kZAbsEnd<<")"<<endl;
     ExtrapToZCov(trackParam,zVtx);
     return;
   }
   
   // Check the track position relatively to the absorber and extrapolate track parameters to the end of the absorber if needed
-  if (trackParam->GetZ() > zAbsBeg) { // spectro. (z<0)
+  if (trackParam->GetZ() > kZAbsBeg) { // spectro. (z<0)
     cout<<"W-AliMUONTrackExtrap::ExtrapToVertex: Starting Z ("<<trackParam->GetZ()
-    	<<") upstream the front absorber (zAbsorberBegin = "<<zAbsBeg<<")"<<endl;
+    	<<") upstream the front absorber (zAbsorberBegin = "<<kZAbsBeg<<")"<<endl;
     ExtrapToZCov(trackParam,zVtx);
     return;
-  } else if (trackParam->GetZ() > zAbsEnd) { // spectro. (z<0)
+  } else if (trackParam->GetZ() > kZAbsEnd) { // spectro. (z<0)
     cout<<"W-AliMUONTrackExtrap::ExtrapToVertex: Starting Z ("<<trackParam->GetZ()
-    	<<") inside the front absorber ("<<zAbsBeg<<","<<zAbsEnd<<")"<<endl;
+    	<<") inside the front absorber ("<<kZAbsBeg<<","<<kZAbsEnd<<")"<<endl;
   } else {
-    ExtrapToZCov(trackParam,zAbsEnd);
+    ExtrapToZCov(trackParam,kZAbsEnd);
   }
   
   // Then add MCS effect in absorber to the parameters covariances
   AliMUONTrackParam trackParamIn(*trackParam);
-  ExtrapToZ(&trackParamIn, TMath::Min(zVtx, zAbsBeg));
+  ExtrapToZ(&trackParamIn, TMath::Min(zVtx, kZAbsBeg));
   Double_t trackXYZIn[3];
   trackXYZIn[0] = trackParamIn.GetNonBendingCoor();
   trackXYZIn[1] = trackParamIn.GetBendingCoor();
@@ -607,37 +607,37 @@ void AliMUONTrackExtrap::ExtrapToVertex(AliMUONTrackParam* trackParam, Double_t 
     cout<<"E-AliMUONTrackExtrap::ExtrapToVertex: failed to get absorber node"<<endl;
     return;
   }
-  Double_t zAbsBeg, zAbsEnd;
-  absNode->GetVolume()->GetShape()->GetAxisRange(3,zAbsBeg,zAbsEnd);
+  Double_t kZAbsBeg, kZAbsEnd;
+  absNode->GetVolume()->GetShape()->GetAxisRange(3,kZAbsBeg,kZAbsEnd);
   const Double_t *absPos = absNode->GetMatrix()->GetTranslation();
-  zAbsBeg = absPos[2] - zAbsBeg; // spectro. (z<0)
-  zAbsEnd = absPos[2] - zAbsEnd; // spectro. (z<0)
+  kZAbsBeg = absPos[2] - kZAbsBeg; // spectro. (z<0)
+  kZAbsEnd = absPos[2] - kZAbsEnd; // spectro. (z<0)
 */
-  static const Double_t zAbsBeg = -90.;
-  static const Double_t zAbsEnd = -505.;
+  static const Double_t kZAbsBeg = -90.;
+  static const Double_t kZAbsEnd = -505.;
   
   // Check the vertex position relatively to the absorber
-  if (zVtx < zAbsBeg && zVtx > zAbsEnd) { // spectro. (z<0)
+  if (zVtx < kZAbsBeg && zVtx > kZAbsEnd) { // spectro. (z<0)
     cout<<"W-AliMUONTrackExtrap::ExtrapToVertex: Ending Z ("<<zVtx
-    	<<") inside the front absorber ("<<zAbsBeg<<","<<zAbsEnd<<")"<<endl;
-  } else if (zVtx < zAbsEnd ) { // spectro. (z<0)
+    	<<") inside the front absorber ("<<kZAbsBeg<<","<<kZAbsEnd<<")"<<endl;
+  } else if (zVtx < kZAbsEnd ) { // spectro. (z<0)
     cout<<"W-AliMUONTrackExtrap::ExtrapToVertex: Ending Z ("<<zVtx
-    	<<") downstream the front absorber (zAbsorberEnd = "<<zAbsEnd<<")"<<endl;
+    	<<") downstream the front absorber (zAbsorberEnd = "<<kZAbsEnd<<")"<<endl;
     ExtrapToZ(trackParam,zVtx);
     return;
   }
   
   // Check the track position relatively to the absorber and extrapolate track parameters to the end of the absorber if needed
-  if (trackParam->GetZ() > zAbsBeg) { // spectro. (z<0)
+  if (trackParam->GetZ() > kZAbsBeg) { // spectro. (z<0)
     cout<<"W-AliMUONTrackExtrap::ExtrapToVertex: Starting Z ("<<trackParam->GetZ()
-    	<<") upstream the front absorber (zAbsorberBegin = "<<zAbsBeg<<")"<<endl;
+    	<<") upstream the front absorber (zAbsorberBegin = "<<kZAbsBeg<<")"<<endl;
     ExtrapToZ(trackParam,zVtx);
     return;
-  } else if (trackParam->GetZ() > zAbsEnd) { // spectro. (z<0)
+  } else if (trackParam->GetZ() > kZAbsEnd) { // spectro. (z<0)
     cout<<"W-AliMUONTrackExtrap::ExtrapToVertex: Starting Z ("<<trackParam->GetZ()
-    	<<") inside the front absorber ("<<zAbsBeg<<","<<zAbsEnd<<")"<<endl;
+    	<<") inside the front absorber ("<<kZAbsBeg<<","<<kZAbsEnd<<")"<<endl;
   } else {
-    ExtrapToZ(trackParam,zAbsEnd);
+    ExtrapToZ(trackParam,kZAbsEnd);
   }
   
   // Get absorber correction parameters assuming linear propagation from vertex to the track position
@@ -646,7 +646,7 @@ void AliMUONTrackExtrap::ExtrapToVertex(AliMUONTrackParam* trackParam, Double_t 
   trackXYZOut[1] = trackParam->GetBendingCoor();
   trackXYZOut[2] = trackParam->GetZ();
   Double_t trackXYZIn[3];
-  trackXYZIn[2] = TMath::Min(zVtx, zAbsBeg); // spectro. (z<0)
+  trackXYZIn[2] = TMath::Min(zVtx, kZAbsBeg); // spectro. (z<0)
   trackXYZIn[0] = trackXYZOut[0] + (xVtx - trackXYZOut[0]) / (zVtx - trackXYZOut[2]) * (trackXYZIn[2] - trackXYZOut[2]);
   trackXYZIn[1] = trackXYZOut[1] + (yVtx - trackXYZOut[1]) / (zVtx - trackXYZOut[2]) * (trackXYZIn[2] - trackXYZOut[2]);
   Double_t pathLength = 0.;

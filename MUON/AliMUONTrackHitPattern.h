@@ -39,6 +39,11 @@ public:
     Bool_t TriggerDigits();
 
 private:
+    /// Not implemented
+    AliMUONTrackHitPattern(const AliMUONTrackHitPattern& rhs);
+    /// Not implemented
+    AliMUONTrackHitPattern& operator = (const AliMUONTrackHitPattern& rhs);
+
     AliMUONRecData *fMUONData; ///< Data container for MUON subsystem
     TList fTriggerDigitsList[4]; ///< List of trigger digits, one per chamber
     AliMUONGeometryTransformer *fTransformer; //!< pointer to transformation

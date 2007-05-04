@@ -120,7 +120,7 @@ void AliMUONTrackHitPattern::GetHitPattern(TClonesArray *recTracksPtr)
     /// and searches for matching digits
     //
     
-    const Int_t mask[2][4]={{0x80, 0x40, 0x20, 0x10},
+    const Int_t kMask[2][4]={{0x80, 0x40, 0x20, 0x10},
 			    {0x08, 0x04, 0x02, 0x01}};
     Bool_t isMatch[2];
     UShort_t pattern=0;
@@ -134,7 +134,7 @@ void AliMUONTrackHitPattern::GetHitPattern(TClonesArray *recTracksPtr)
 	    AliMUONTrackExtrap::ExtrapToZCov(trackParam, AliMUONConstants::DefaultChamberZ(10+ch));
 	    FindPadMatchingTrack(trackParam, isMatch, ch);
 	    for(Int_t cath=0; cath<2; cath++){
-		if(isMatch[cath]) pattern |= mask[cath][ch];
+		if(isMatch[cath]) pattern |= kMask[cath][ch];
 	    }
 	}
 	muonTrack->SetHitsPatternInTrigCh(pattern);
@@ -221,14 +221,14 @@ void AliMUONTrackHitPattern::GetPosUncertainty(AliMUONTrackParam *trackParam, Fl
     /// Takes into account Branson plane corrections in the iron wall.
     //
 
-    const Float_t alpha = 0.1123; // GeV/c
+    const Float_t kAlpha = 0.1123; // GeV/c
     
     // Find a better way to get such parameters ???
     const Float_t kZFilterIn = 1471.; // From STRUCT/SHILConst2.h
     const Float_t kZFilterOut = kZFilterIn + 120.; // From STRUCT/SHILConst2.h
     
-    const Float_t zBranson = - (kZFilterIn + (kZFilterOut - kZFilterIn)*2./3. ); // - sign because distance are positive
-    Float_t zDistFromWall = TMath::Abs(zChamber - zBranson);
+    const Float_t kZBranson = - (kZFilterIn + (kZFilterOut - kZFilterIn)*2./3. ); // - sign because distance are positive
+    Float_t zDistFromWall = TMath::Abs(zChamber - kZBranson);
     Float_t zDistFromLastTrackCh = TMath::Abs(zChamber - AliMUONConstants::DefaultChamberZ(9));
 
     TMatrixD *covParam = trackParam->GetCovariances();
@@ -242,7 +242,7 @@ void AliMUONTrackHitPattern::GetPosUncertainty(AliMUONTrackParam *trackParam, Fl
     if (sigmaY==0.)sigmaY = 0.004 * zDistFromLastTrackCh;
 
     Float_t p = trackParam->P();
-    Float_t thetaMS = alpha/p;
+    Float_t thetaMS = kAlpha/p;
     sigmaMS = zDistFromWall * TMath::Tan(thetaMS);
 
     return;
