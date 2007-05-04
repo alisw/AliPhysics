@@ -212,7 +212,7 @@ void AliTRDQATask::CreateOutputObjects()
      fOutputContainer->AddAt(fTrdSigMomPID[i], counter++);
   }
 
-  AliInfo(Form("Number of histograms = %d", counter));
+  //AliInfo(Form("Number of histograms = %d", counter));
 
  }
 
@@ -352,7 +352,6 @@ void AliTRDQATask::Exec(Option_t *)
 void AliTRDQATask::Terminate(Option_t *)
 {
   // Processing when the event loop is ended
-  AliInfo("TRD QA module");
   fOutputContainer = (TObjArray*)GetOutputData(0);
   int counter = 0;
   fNTracks     = (TH1D*)fOutputContainer->At(counter++);
@@ -399,14 +398,21 @@ void AliTRDQATask::Terminate(Option_t *)
   }
 
   // create efficiency histograms
+  AliInfo(Form(" *** %s Report:", GetName())) ; 
   
   CalculateEff();
-//  PostData(0, fOutputContainer);
 
   DrawESD() ; 
   DrawGeoESD() ; 
   //DrawConvESD() ; 
   DrawPidESD() ; 
+
+  char line[1024] ; 
+  sprintf(line, ".!tar -zcf %s.tar.gz *.eps", GetName()) ; 
+  gROOT->ProcessLine(line);
+  
+  AliInfo(Form("!!! All the eps files are in %s.tar.gz !!! \n", GetName())) ;
+
 }
 
 //______________________________________________________________________________
@@ -457,8 +463,6 @@ void AliTRDQATask::DrawESD()
 {
   // Makes a few plots
 
-  AliInfo("Plotting....") ; 
-  
   TCanvas * cTRD = new TCanvas("cTRD", "TRD ESD Test", 400, 10, 600, 700) ;
   cTRD->Divide(6,3) ;
 
@@ -500,12 +504,12 @@ void AliTRDQATask::DrawESD()
   cTRD->cd(i+1) ;
   
   //  new TCanvas(names[i], names[nhist], 500, 300);
-    gPad->SetLogy(logy[i]);
       
     for(int j=0; j<nover[i]; j++) {
       TH1D *hist = dynamic_cast<TH1D*>(gDirectory->FindObject(names[nhist++]));
       if (!hist) continue;
-      
+      if (hist->GetMaximum() > 0 ) 
+	gPad->SetLogy(logy[i]);
       if (strstr(hist->GetName(), "eff")) {
 	hist->SetMarkerStyle(20);
 	hist->SetMinimum(0);
@@ -516,15 +520,13 @@ void AliTRDQATask::DrawESD()
       else hist->Draw("SAME");
     }
   }
-  cTRD->Print("TRD_ESD.gif");
+  cTRD->Print("TRD_ESD.eps");
 }
 
 //______________________________________________________________________________
 void AliTRDQATask::DrawGeoESD() 
 {
   // Makes a few plots
-
-  AliInfo("Plotting....") ; 
 
   TCanvas * cTRDGeo = new TCanvas("cTRDGeo", "TRD ESDGeo Test", 400, 10, 600, 700) ;
   cTRDGeo->Divide(4,2) ;
@@ -563,14 +565,15 @@ void AliTRDQATask::DrawGeoESD()
     //if (i<2) new TCanvas(names[i], names[i], 500, 300);
     //else new TCanvas(names[i], names[i], 300, 900);
    
-    gPad->SetLogy(logy[i]);
+    if (hist->GetMaximum() > 0 ) 
+      gPad->SetLogy(logy[i]);
     if (strstr(opt[i],"colz")) gPad->SetRightMargin(0.1);
     
     hist->Draw(opt[i]);    
     AliInfo(Form("%s\t%d", names[i], hist->GetEntries()));
   }
   
-  cTRDGeo->Print("TRD_Geo.gif");
+  cTRDGeo->Print("TRD_Geo.eps");
 }
 
 //______________________________________________________________________________
@@ -613,11 +616,12 @@ void AliTRDQATask::DrawConvESD()
   for(int i=0; i<nplots; i++) {
     cTRDConv->cd(i+1) ;
     //new TCanvas(names[i], names[i], 500, 300);
-    gPad->SetLogy(logy[i]);
     if (strstr(opt[i],"colz")) gPad->SetRightMargin(0.1);
    
     for(int j=0; j<nover[i]; j++) {
       TH1D *hist = dynamic_cast<TH1D*>(gDirectory->FindObject(names[nhist++]));
+      if ( hist->GetMaximum() > 0 ) 
+	gPad->SetLogy(logy[i]);
       if (!j) hist->Draw(opt[i]);
       else hist->Draw("same");
     }
@@ -631,7 +635,6 @@ void AliTRDQATask::DrawPidESD()
 {
   // Makes a few plots
 
-  AliInfo("Plotting....") ; 
   TCanvas * cTRDPid = new TCanvas("cTRDPid", "TRD ESDPid Test", 400, 10, 600, 700) ;
   cTRDPid->Divide(9,3) ;
 
@@ -692,7 +695,8 @@ void AliTRDQATask::DrawPidESD()
     if (!hist) continue;
     
     //new TCanvas(names[i], names[i], 500, 300);
-    gPad->SetLogy(logy[i]);
+    if ( hist->GetMaximum() > 0  ) 
+      gPad->SetLogy(logy[i]);
     if (strstr(opt[i],"colz")) gPad->SetRightMargin(0.1);
     
     if (strstr(names[i],"sigMom")) gPad->SetLogz(1);
@@ -701,5 +705,5 @@ void AliTRDQATask::DrawPidESD()
     hist->Draw(opt[i]);    
     AliInfo(Form("%s\t%d", names[i], hist->GetEntries()));
   }
-   cTRDPid->Print("TRD_Pid.gif");
+   cTRDPid->Print("TRD_Pid.eps");
 }

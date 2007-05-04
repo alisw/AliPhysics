@@ -145,7 +145,7 @@ void AliMUONQATask::CreateOutputObjects()
   fhChi2match = new TH1F("hChi2match","Chi2 of trig/track matching",100, 0.,20.);
   // create output container
   
-  fOutputContainer = new TObjArray(10) ; 
+  fOutputContainer = new TObjArray(12) ; 
   fOutputContainer->SetName(GetName()) ; 
   fOutputContainer->AddAt(fhMUONVertex,             0) ; 
   fOutputContainer->AddAt(fhMUONMult,               1) ; 
@@ -279,7 +279,8 @@ void AliMUONQATask::Terminate(Option_t *)
       effMatch = 100 * fnTrackTrig / ftracktot ;
       fheffMatchT->Fill(effMatch);}
 
-  AliInfo(Form("Terminate %s:", GetName())) ;
+  AliInfo(Form(" *** %s Report:", GetName())) ; 
+
   fOutputContainer = (TObjArray*)GetOutputData(0);
   fhMUONVertex = (TH1F*)fOutputContainer->At(0);
   fhMUONMult   = (TH1F*)fOutputContainer->At(1); 
@@ -291,30 +292,24 @@ void AliMUONQATask::Terminate(Option_t *)
   fhUSHighpt=(TH1F*)fOutputContainer->At(7);
   fhLSLowpt=(TH1F*)fOutputContainer->At(8); 
   fhLSHighpt=(TH1F*)fOutputContainer->At(9);
- //______________________________________________________________________
-  printf("===================================================\n") ;
-  printf("================  %s ESD SUMMARY    ==============\n", GetName()) ;
-  printf("                                                   \n") ;
+
   printf("         Total number of processed events  %d      \n", fnevents) ;
-  printf("\n")  ;
-  printf("\n")  ;
-  printf("Table 1:                                         \n") ;
-   printf("===================================================\n") ;
- printf(" Global Trigger output       Low pt  High pt \n") ;
-  printf(" number of Single      :\t");
-  printf("%i\t", fSLowpt) ;
+  printf("     \n")  ;
+  printf("     \n")  ;
+  printf("     Table 1:                                         \n") ;
+   printf("    ===================================================\n") ;
+ printf("      Global Trigger output       Low pt  High pt \n") ;
+  printf("     number of Single      :\t");
+  printf("     %i\t", fSLowpt) ;
   printf("\n");
-  printf(" number of UnlikeSign pair  :\t"); 
-  printf("%i\t%i\t", fUSLowpt, fUSHighpt) ;
+  printf("     number of UnlikeSign pair  :\t"); 
+  printf("     %i\t%i\t", fUSLowpt, fUSHighpt) ;
   printf("\n");
-  printf(" number of LikeSign pair    :\t");  
-  printf("%i\t%i\t", fLSLowpt, fLSHighpt) ;
+  printf("     number of LikeSign pair    :\t");  
+  printf("     %i\t%i\t", fLSLowpt, fLSHighpt) ;
   printf("\n");
-  printf("===================================================\n") ;
+  printf("     matching efficiency with the trigger for single tracks = %2d %% \n", effMatch);
   printf("\n") ;
-  printf("matching efficiency with the trigger for single tracks = %2d %% \n", effMatch);
-  printf("\n") ;
-  printf("===================================================\n") ;
   
 TCanvas * cMUON1 = new TCanvas("cMUON1", "MUON ESD Vert & Mult", 400, 10, 600, 700) ;
   cMUON1->Divide(1,2) ;
@@ -369,7 +364,7 @@ TCanvas * cMUON1 = new TCanvas("cMUON1", "MUON ESD Vert & Mult", 400, 10, 600, 7
   cMUON4->Print("MUON4.eps") ;
  
   char line[1024] ; 
-  sprintf(line, ".!tar -zcvf %s.tar.gz *.eps", GetName()) ; 
+  sprintf(line, ".!tar -zcf %s.tar.gz *.eps", GetName()) ; 
   gROOT->ProcessLine(line);
   sprintf(line, ".!rm -fR *.eps"); 
   gROOT->ProcessLine(line);

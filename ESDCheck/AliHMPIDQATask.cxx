@@ -183,7 +183,9 @@ void AliHMPIDQATask::Terminate(Option_t *)
   fhHMPIDProb[2] = (TH1F*)fOutputContainer->At(6);
   fhHMPIDProb[3] = (TH1F*)fOutputContainer->At(7);
   fhHMPIDProb[4] = (TH1F*)fOutputContainer->At(8);
-  
+
+  AliInfo(Form(" *** %s Report:", GetName())) ; 
+
   Float_t n = 1.292 ; //mean freon ref idx 
   TF1 * hHMPIDpPi = new TF1("RiPiTheo", "acos(sqrt(x*x+[0]*[0])/(x*[1]))", 1.2, 7) ; 
   hHMPIDpPi->SetLineWidth(1) ; 
@@ -233,7 +235,7 @@ void AliHMPIDQATask::Terminate(Option_t *)
   cHMPID->Print("HMPID.eps");
   
   char line[1024] ; 
-  sprintf(line, ".!tar -zcvf %s.tar.gz *.eps", GetName()) ; 
+  sprintf(line, ".!tar -zcf %s.tar.gz *.eps", GetName()) ; 
   gROOT->ProcessLine(line);
   sprintf(line, ".!rm -fR *.eps"); 
   gROOT->ProcessLine(line);

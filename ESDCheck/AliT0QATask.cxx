@@ -142,6 +142,8 @@ void AliT0QATask::Terminate(Option_t *)
   fhT02 = (TH1F*)fOutputContainer->At(1);
   fhT03 = (TH1F*)fOutputContainer->At(2);
 
+  AliInfo(Form(" *** %s Report:", GetName())) ; 
+
   Float_t mean = fhT02->GetMean();
 
   printf ("mean time T0 ps %f\n", mean) ;
@@ -165,7 +167,7 @@ void AliT0QATask::Terminate(Option_t *)
   cTO1->Print("T0.eps");
 
   char line[1024] ; 
-  sprintf(line, ".!tar -zcvf %s.tar.gz *.eps", GetName()) ; 
+  sprintf(line, ".!tar -zcf %s.tar.gz *.eps", GetName()) ; 
   gROOT->ProcessLine(line);
   sprintf(line, ".!rm -fR *.eps"); 
   gROOT->ProcessLine(line);

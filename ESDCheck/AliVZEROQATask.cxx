@@ -150,8 +150,9 @@ void AliVZEROQATask::Terminate(Option_t *)
   fhVZEROMultA     = (TH1I*)fOutputContainer->At(2);
   fhVZEROMultC     = (TH1I*)fOutputContainer->At(3);
   
-  printf("V0A Multiplicity Mean : %5.3f , RMS : %5.3f \n",fhVZEROMultA->GetMean(),fhVZEROMultA->GetRMS());
-  printf("V0C Multiplicity Mean : %5.3f , RMS : %5.3f \n",fhVZEROMultC->GetMean(),fhVZEROMultC->GetRMS());
+  AliInfo(Form(" *** %s Report:", GetName())) ; 
+  printf("        V0A Multiplicity Mean : %5.3f , RMS : %5.3f \n",fhVZEROMultA->GetMean(),fhVZEROMultA->GetRMS());
+  printf("        V0C Multiplicity Mean : %5.3f , RMS : %5.3f \n",fhVZEROMultC->GetMean(),fhVZEROMultC->GetRMS());
 
   TCanvas  * c1 = new TCanvas("Number of PMs fired in V0A", "Number of PMs fired in V0A", 1);
   fhVZERONbPMA->SetAxisRange(0, 99);
@@ -183,7 +184,7 @@ void AliVZEROQATask::Terminate(Option_t *)
   c4->Print("NumberV0CPMs.eps");
   
   char line[1024] ; 
-  sprintf(line, ".!tar -zcvf %s.tar.gz *.eps", GetName()) ; 
+  sprintf(line, ".!tar -zcf %s.tar.gz *.eps", GetName()) ; 
   gROOT->ProcessLine(line);
   sprintf(line, ".!rm -fR *.eps"); 
   gROOT->ProcessLine(line);

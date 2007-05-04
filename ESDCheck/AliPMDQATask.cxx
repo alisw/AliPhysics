@@ -474,6 +474,8 @@ void AliPMDQATask::Terminate(Option_t *)
   fhPMDSM24 = (TH2F*)fOutputContainer->At(36);
   fhPMDSM   = (TH1F*)fOutputContainer->At(37);
 
+  AliInfo(Form(" *** %s Report:", GetName())) ; 
+
   gStyle->SetOptStat(110000);
   gStyle->SetOptFit(1);
 
@@ -581,7 +583,7 @@ void AliPMDQATask::Terminate(Option_t *)
   cPMD4->Print("CPVPREAdc.eps");
 
   char line[1024] ; 
-  sprintf(line, ".!tar -zcvf %s.tar.gz *.eps", GetName()) ; 
+  sprintf(line, ".!tar -zcf %s.tar.gz *.eps", GetName()) ; 
   gROOT->ProcessLine(line);
   
   AliInfo(Form("!!! All the eps files are in %s.tar.gz !!! \n", GetName())) ;

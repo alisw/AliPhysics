@@ -326,7 +326,7 @@ void AliTOFQATask::Exec(Option_t *)
   fhTOFMatch->Fill(fracM);
 
   PostData(0, fOutputContainer);  
-  AliInfo("Finishing event processing...") ; 
+  // AliInfo("Finishing event processing...") ; 
 
 }
 //______________________________________________________________________________
@@ -468,7 +468,6 @@ void AliTOFQATask::DrawHistos()
   fhTOFeffMom->Draw();
   fhTOFeffMom->Draw("histo,same");
   
-  cTOFeff->Print("TOF_eff.gif");
   cTOFeff->Print("TOF_eff.eps");
 
 
@@ -476,31 +475,34 @@ void AliTOFQATask::DrawHistos()
   TCanvas * cTOFtime = new TCanvas("cTOFtime", "TOF measured Times ", 400, 30, 550, 630) ;  
   cTOFtime->Divide(1,2) ;
   cTOFtime->cd(1);
-  cTOFtime->GetPad(1)->SetLogy(1);
+  if ( fhTOFTime->GetMaximum() > 0 )  
+    cTOFtime->GetPad(1)->SetLogy(1);
   fhTOFTime->GetXaxis()->SetTitle("TOF time (ns)");
   fhTOFTime->GetYaxis()->SetTitle("Entries");
   fhTOFTime->SetFillColor(4);
   fhTOFTime->Draw();
   cTOFtime->cd(2);
-  cTOFtime->GetPad(2)->SetLogy(1);
+  if ( fhTOFDeltaTime->GetMaximum() > 0 )  
+    cTOFtime->GetPad(2)->SetLogy(1);
   fhTOFDeltaTime->GetXaxis()->SetTitle("t^{TOF}-t^{exp}_{#pi} (ns)");
   fhTOFDeltaTime->GetYaxis()->SetTitle("Entries");
   fhTOFDeltaTime->SetFillColor(4);
   fhTOFDeltaTime->Draw();
 
-  cTOFtime->Print("TOF_time.gif");
   cTOFtime->Print("TOF_time.eps");
 
 
   TCanvas * cTOFpid = new TCanvas("cTOFpid", "TOF PID ", 400, 30, 550, 630) ;  
   cTOFpid->Divide(1,3) ;
   cTOFpid->cd(1);
-  cTOFpid->SetLogy(1);
+  if ( fhTOFMass->GetMaximum() > 0 )  
+    cTOFpid->SetLogy(1);
   fhTOFMass->GetXaxis()->SetTitle("Reconstructed Mass (GeV/c^{2})");
   fhTOFMass->GetYaxis()->SetTitle("Entries");
   fhTOFMass->SetFillColor(4);
   fhTOFMass->Draw();
-  cTOFpid->SetLogy(0);
+  if ( fhTOFMassVsMom->GetMaximum() > 0 )  
+    cTOFpid->SetLogy(0);
   cTOFpid->cd(2);
   fhTOFMassVsMom->GetYaxis()->SetRange(0,400);
   fhTOFMassVsMom->GetXaxis()->SetTitle("Reconstructed Mass (GeV/c^{2})");
@@ -555,7 +557,6 @@ void AliTOFQATask::DrawHistos()
   texpr->Draw();
 
 
-  cTOFpid->Print("TOF_pid.gif");
   cTOFpid->Print("TOF_pid.eps");
 
   // draw all 
@@ -572,7 +573,6 @@ void AliTOFQATask::Terminate(Option_t *)
   
   // some plots
 
-  AliInfo("TOF QA Task: End of events loop");
   fOutputContainer = (TObjArray*)GetOutputData(0);
   fhTOFMatch       = (TH1F*)fOutputContainer->At(0);
   fhESDeffPhi      = (TH1F*)fOutputContainer->At(1);
@@ -592,7 +592,16 @@ void AliTOFQATask::Terminate(Option_t *)
   fhTOFIDSpecies   = (TH1F*)fOutputContainer->At(15);
   fhTOFMassVsMom   = (TH2F*)fOutputContainer->At(16);
   fhTOFMass        = (TH1F*)fOutputContainer->At(17);
+
+  AliInfo(Form(" *** %s Report:", GetName())) ; 
+
   GetEfficiency();
 //  PostData(0, fOutputContainer);
   DrawHistos() ; 
+
+  char line[1024] ; 
+  sprintf(line, ".!tar -zcf %s.tar.gz *.eps", GetName()) ; 
+  gROOT->ProcessLine(line);
+  
+  AliInfo(Form("!!! All the eps files are in %s.tar.gz !!! \n", GetName())) ;
 }

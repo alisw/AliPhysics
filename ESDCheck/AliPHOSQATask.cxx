@@ -212,18 +212,20 @@ void AliPHOSQATask::Terminate(Option_t *)
   fhPHOSInvariantMass  = (TH1D*)fOutputContainer->At(6);
   fhPHOSDigitsEvent    = (TH1I*)fOutputContainer->At(7);
 
-  printf("PHOSEnergy Mean         : %5.3f , RMS : %5.3f \n", fhPHOSEnergy->GetMean(),         fhPHOSEnergy->GetRMS()         ) ;
-  printf("PHOSDigits Mean         : %5.3f , RMS : %5.3f \n", fhPHOSDigits->GetMean(),         fhPHOSDigits->GetRMS()         ) ;
-  printf("PHOSRecParticles Mean   : %5.3f , RMS : %5.3f \n", fhPHOSRecParticles->GetMean(),   fhPHOSRecParticles->GetRMS()   ) ;
-  printf("PHOSPhotons Mean        : %5.3f , RMS : %5.3f \n", fhPHOSPhotons->GetMean(),        fhPHOSPhotons->GetRMS()        ) ;
-  printf("PHOSInvariantMass Mean  : %5.3f , RMS : %5.3f \n", fhPHOSInvariantMass->GetMean(),  fhPHOSInvariantMass->GetRMS()  ) ;
-  printf("PHOSDigitsEvent Mean    : %5.3f , RMS : %5.3f \n", fhPHOSDigitsEvent->GetMean(),    fhPHOSDigitsEvent->GetRMS()    ) ;
+  AliInfo(Form(" *** %s Report:", GetName())) ; 
+  printf("        PHOSEnergy Mean         : %5.3f , RMS : %5.3f \n", fhPHOSEnergy->GetMean(),         fhPHOSEnergy->GetRMS()         ) ;
+  printf("        PHOSDigits Mean         : %5.3f , RMS : %5.3f \n", fhPHOSDigits->GetMean(),         fhPHOSDigits->GetRMS()         ) ;
+  printf("        PHOSRecParticles Mean   : %5.3f , RMS : %5.3f \n", fhPHOSRecParticles->GetMean(),   fhPHOSRecParticles->GetRMS()   ) ;
+  printf("        PHOSPhotons Mean        : %5.3f , RMS : %5.3f \n", fhPHOSPhotons->GetMean(),        fhPHOSPhotons->GetRMS()        ) ;
+  printf("        PHOSInvariantMass Mean  : %5.3f , RMS : %5.3f \n", fhPHOSInvariantMass->GetMean(),  fhPHOSInvariantMass->GetRMS()  ) ;
+  printf("        PHOSDigitsEvent Mean    : %5.3f , RMS : %5.3f \n", fhPHOSDigitsEvent->GetMean(),    fhPHOSDigitsEvent->GetRMS()    ) ;
 
   TCanvas  * cPHOS = new TCanvas("cPHOS", "PHOS ESD Test", 400, 10, 600, 700) ;
   cPHOS->Divide(3, 2);
 
   cPHOS->cd(1) ; 
-  gPad->SetLogy();
+  if ( fhPHOSEnergy->GetMaximum() > 0. ) 
+    gPad->SetLogy();
   fhPHOSEnergy->SetAxisRange(0, 25.);
   fhPHOSEnergy->SetLineColor(2);
   fhPHOSEnergy->Draw();
@@ -234,13 +236,15 @@ void AliPHOSQATask::Terminate(Option_t *)
   fhPHOSDigits->Draw();
 
   cPHOS->cd(3) ; 
-  gPad->SetLogy();
+  if ( fhPHOSRecParticles->GetMaximum() > 0. ) 
+    gPad->SetLogy();
   fhPHOSRecParticles->SetAxisRange(0, 25.);
   fhPHOSRecParticles->SetLineColor(2);
   fhPHOSRecParticles->Draw();
 
   cPHOS->cd(4) ; 
-  gPad->SetLogy();
+  if ( fhPHOSPhotons->GetMaximum() > 0. ) 
+    gPad->SetLogy();
   fhPHOSPhotons->SetAxisRange(0,25.);
   fhPHOSPhotons->SetLineColor(2);
   fhPHOSPhotons->Draw();
@@ -250,7 +254,8 @@ void AliPHOSQATask::Terminate(Option_t *)
   fhPHOSInvariantMass->Draw();
  
   cPHOS->cd(6) ; 
-  gPad->SetLogy();
+  if ( fhPHOSDigitsEvent->GetMaximum() > 0. ) 
+    gPad->SetLogy();
   fhPHOSDigitsEvent->SetAxisRange(0,40.);
   fhPHOSDigitsEvent->SetLineColor(2);
   fhPHOSDigitsEvent->Draw();
@@ -258,7 +263,7 @@ void AliPHOSQATask::Terminate(Option_t *)
   cPHOS->Print("PHOS.eps");
  
   char line[1024] ; 
-  sprintf(line, ".!tar -zcvf %s.tar.gz *.eps", GetName()) ; 
+  sprintf(line, ".!tar -zcf %s.tar.gz *.eps", GetName()) ; 
   gROOT->ProcessLine(line);
   sprintf(line, ".!rm -fR *.eps"); 
   gROOT->ProcessLine(line);

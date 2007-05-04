@@ -36,10 +36,10 @@ Bool_t LoadLib( const char* pararchivename)
   }
 
   if ( strstr(pararchivename, "ESD") ) {
-    gSystem->Load("libVMC.so");
+    //gSystem->Load("libVMC.so");
     gSystem->Load("libESD.so");
-    gSystem->Load("libRAliEn.so") ;
-    gSystem->Load("libProof.so") ;
+    //gSystem->Load("libRAliEn.so") ;
+    //gSystem->Load("libProof.so") ;
   }
 
   printf("*** %s library loaded *** %s **\n", pararchivename);
@@ -56,7 +56,6 @@ void ana()
   if (! gIsAnalysisLoaded ) {
     LoadLib("ESD") ; 
     LoadLib("ANALYSIS") ; 
-    printf("Include path = %s\n", gSystem->GetIncludePath()) ; 
     LoadLib("AnalysisCheck") ; 
   }
   
@@ -120,7 +119,11 @@ void ana()
 
   // definition of Tag cuts 
   const char * runCuts = 0x0 ; 
-  const char * evtCuts = 0x0 ; //"fEventTag.fNPHOSClustersMin == 1 && fEventTag.fNEMCALClustersMin == 1" ; 
+  const char * evtCuts = 0x0 ; 
+  const char * lhcCuts = 0x0 ; 
+  const char * detCuts = 0x0 ; 
+  
+//"fEventTag.fNPHOSClustersMin == 1 && fEventTag.fNEMCALClustersMin == 1" ; 
 
   
   TString input = gSystem->Getenv("ANA_INPUT") ; 
@@ -130,7 +133,7 @@ void ana()
       //create the ESD collection from the tag collection 
       input.ReplaceAll("tag?", "") ; 
       const char * collESD = "esdCollection.xml" ;
-      ag->MakeEsdCollectionFromTagCollection(runCuts, evtCuts, input.Data(), collESD) ;
+      ag->MakeEsdCollectionFromTagCollection(runCuts, lhcCuts, detCuts, evtCuts, input.Data(), collESD) ;
       sprintf(argument, "esd?%s", collESD) ; 
     } else if ( input.Contains("esd?") ) 
       sprintf(argument, "%s", input.Data()) ; 
@@ -141,7 +144,7 @@ void ana()
     TChain* analysisChain = new TChain("esdTree") ;
     //   input = "alien:///alice/cern.ch/user/a/aliprod/prod2006_2/output_pp/105/411/AliESDs.root" ; 
     //   analysisChain->AddFile(input);
-    input = "/home/schutz/group/schutz/work/analysis/QA/HEAD/RunV0/AliESDs.root" ; 
+    input = "AliESDs.root" ; 
     analysisChain->AddFile(input);
     ag->Process(analysisChain) ; 
   }
