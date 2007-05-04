@@ -7,6 +7,8 @@
 /// \ingroup rec
 /// \class AliMUONTracker
 /// \brief MUON base Tracker
+///
+//  Author: Christian Finck, SUBATECH Nantes
 
 #include "AliTracker.h"
 class AliESD;
