@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2007/02/19 15:41:55  decaro
+Coding convention: few corrections
+
 Revision 1.14  2006/10/17 15:33:14  arcelli
 Moving some printout from Info to Debug level
 
@@ -253,7 +256,6 @@ void AliTOFv5T0::AddAlignableVolumes() const
     volPath += vpL1;
     volPath += isect;
     volPath += vpL2;
-    volPath += vpL3;
 
     symName  = snSM;
     symName += Form("%02d",isect);

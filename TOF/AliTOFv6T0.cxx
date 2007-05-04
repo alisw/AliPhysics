@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2007/05/02 17:32:58  decaro
+TOF geometry description as installed (G. Cara Romeo, A. De Caro)
+
 Revision 0.1 2007 March G. Cara Romeo and A. De Caro
         Implemented a more realistic TOF geometry description,
 	in terms of:
@@ -210,7 +213,6 @@ void AliTOFv6T0::AddAlignableVolumes() const
     volPath += vpL1;
     volPath += isect;
     volPath += vpL2;
-    volPath += vpL3;
 
     symName  = snSM;
     symName += Form("%02d",isect);
@@ -358,7 +360,7 @@ void AliTOFv6T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenA)
   AliDebug(2,Form(" zlenA*0.5 = %d", zlenA*0.5));
   
   // Definition of the of fibre glass modules (FTOA, FTOB and FTOC)
-  
+    
   Float_t  xcoor, ycoor, zcoor;
   Float_t  par[3];
   Int_t    *idtmed = fIdtmed->GetArray()-499;
@@ -368,7 +370,7 @@ void AliTOFv6T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenA)
   par[1] = ytof * 0.25;
   par[2] = zlenA * 0.5;
   gMC->Gsvolu("FTOA", "BOX ", idtmed[503], par, 3);  // fibre glass
-  
+   
   if (fTOFHoles) {
     par[0] =  xtof * 0.5;
     par[1] =  ytof * 0.25;
@@ -403,7 +405,6 @@ void AliTOFv6T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenA)
 
   //AliMatrix(idrotm[0], 90.,  0., 0., 0., 90.,-90.);
   AliMatrix(idrotm[0], 90.,  0., 0., 0., 90.,270.);
-
   xcoor = 0.;
   for(Int_t isec=0; isec<fTOFGeometry->NSectors(); isec++){
     if(fTOFSectors[isec]==-1)continue;
