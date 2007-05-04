@@ -233,12 +233,13 @@ void AliAnalysisTask::CheckNotify(Bool_t init)
 // accordingly. This method is called automatically for all tasks connected
 // to a container where the data was published.
    if (init) fInitialized = kFALSE;
-   Bool_t execperevent = IsExecPerEvent();
+//   Bool_t execperevent = IsExecPerEvent();
    AliAnalysisDataContainer *cinput;
    for (Int_t islot=0; islot<fNinputs; islot++) {
       cinput = GetInputSlot(islot)->GetContainer();
       if (!cinput) return;
-      if (!cinput->GetData() || execperevent!=cinput->IsEventByEvent()) {
+      if (!cinput->GetData()) {
+//      if (!cinput->GetData() || execperevent!=cinput->IsEventByEvent()) {
          SetActive(kFALSE);
          return;
       }   

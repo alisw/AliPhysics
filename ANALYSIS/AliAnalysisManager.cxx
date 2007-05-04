@@ -360,7 +360,18 @@ void AliAnalysisManager::UnpackOutput(TList *source)
          callEnv.SetParam((Long_t) file);
          callEnv.Execute(output->GetData());
       }
-      output->GetData()->Write();      
+      output->GetData()->Write();
+      // Check if there are client tasks that run in single-shot mode.
+      if (!output->HasConsumers()) continue;
+      output->SetEventByEvent(kFALSE);
+      TObjArray *list = output->GetConsumers();
+      Int_t ncons = list->GetEntriesFast();
+      for (Int_t i=0; i<ncons; i++) {
+         AliAnalysisTask *task = (AliAnalysisTask*)list->At(i);
+         task->CheckNotify(kTRUE);
+         // If task is active, execute it
+         if (task->IsActive()) task->ExecuteTask();         
+      }
    }
    if (fDebug > 1) {
       cout << "<-AliAnalysisManager::UnpackOutput()" << endl;
@@ -585,7 +596,7 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree)
    SetEventLoop(kFALSE);
    // Disable by default all branches and set event loop mode
    if (tree) {
-      tree->SetBranchStatus("*",0);
+//      tree->SetBranchStatus("*",0);
       SetEventLoop(kTRUE);
    }   
    AliAnalysisDataContainer *cont = 0;
@@ -606,8 +617,8 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree)
          cont = 0;
       }
       // All tasks feeding from the top containers must have the same event loop type
-      if (cont) task->SetExecPerEvent(IsEventLoop());
-      else task->SetExecPerEvent(task->IsExecPerEvent());         
+//      if (cont) task->SetExecPerEvent(IsEventLoop());
+//      else task->SetExecPerEvent(task->IsExecPerEvent());         
       task->LocalInit();
    }
    
