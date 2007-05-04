@@ -11,5 +11,13 @@
   gInterpreter->ProcessLine("loadlibs()");
     
   cout << "Setting include path ..." << endl;
-  gSystem->SetIncludePath("-I${ALICE_ROOT}/include -I${ALICE_ROOT}/RAW -I${ALICE_ROOT}/MUON -I${ALICE_ROOT}/MUON/mapping");
+  TString includePath = "-I${ALICE_ROOT}/include ";
+  includePath        += "-I${ALICE_ROOT}/RAW ";
+  includePath        += "-I${ALICE_ROOT}/FASTSIM ";
+  includePath        += "-I${ALICE_ROOT}/EVGEN ";
+  includePath        += "-I${ALICE_ROOT}/SHUTTLE/TestShuttle ";
+  includePath        += "-I${ALICE_ROOT}/ITS ";
+  includePath        += "-I${ALICE_ROOT}/MUON ";
+  includePath        += "-I${ALICE_ROOT}/MUON/mapping";
+  gSystem->SetIncludePath(includePath.Data());
 }
