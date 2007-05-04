@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2007/05/04 12:59:22  arcelli
+Change the TOF SM paths for misalignment (one layer up)
+
 Revision 1.1  2007/05/02 17:32:58  decaro
 TOF geometry description as installed (G. Cara Romeo, A. De Caro)
 
@@ -1247,7 +1250,7 @@ void AliTOFv6T0::CreateMaterials()
   wmatg10[4]= we[4]*0.4;
   AliDebug(1,Form("wg10  %d  %d  %d  %d  %d", wmatg10[0], wmatg10[1], wmatg10[2], wmatg10[3], wmatg10[4]));
   //  Float_t densg10 = 1.7; //old value
-  Float_t densg10 = 2.0; //prova peso (+17.8%)
+  Float_t densg10 = 2.0; // (+17.8%)
 
   // -- Water
   Float_t awa[2] = {  1., 16. };
@@ -1352,7 +1355,7 @@ void AliTOFv6T0::CreateMaterials()
   AliMedium( 6,"Al Frame$",     4, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
   AliMedium( 7,"honeycomb$",    5, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
   AliMedium( 8,"Fre$",          6, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
-  AliMedium( 9,"Cu-S$",        11, 1, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin); //prova peso
+  AliMedium( 9,"Cu-S$",        11, 1, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
   AliMedium(10,"Glass$",        7, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
   AliMedium(11,"Water$",        9, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
   AliMedium(12,"Cable$",       12, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
