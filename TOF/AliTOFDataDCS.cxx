@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2007/05/03 09:45:09  decaro
+Coding convention: RN11 violation -> suppression
+
 Revision 1.7  2007/05/02 14:09:39  arcelli
 Retrieval of Env. Temperature removed (will get it from the GRP)
 
@@ -661,7 +664,7 @@ void AliTOFDataDCS::Introduce(UInt_t numAlias, const TObjArray* aliasArr)const
 }
 
 //---------------------------------------------------------------
-void AliTOFDataDCS::Draw(const Option_t* /*option*/) const
+void AliTOFDataDCS::Draw(const Option_t* /*option*/)
 {
 // Draw all histos and graphs
 
