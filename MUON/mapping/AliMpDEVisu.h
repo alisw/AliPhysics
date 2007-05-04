@@ -53,7 +53,7 @@ public:
     void   DrawSlat(Option_t* option, Bool_t popup = kFALSE);
 
     void   ResetManu();
-    void   UpdateNameView();
+    void   UpdateNameView(Bool_t firstTime = kFALSE);
     void   PopUpManuMotif(AliMpSlat* slat);
     void   PopUpManuMotif(AliMpSector* sector);
     void   PopUpZoom(Int_t ix0, Int_t iy0, Int_t ix1, Int_t iy1);
