@@ -637,6 +637,48 @@ AliMUONRecData::DumpRecPoints(Int_t event2Check, Option_t* opt)
   fLoader->UnloadRecPoints();
 }
 
+//_____________________________________________________________________________
+void 
+AliMUONRecData::DumpTracks(Int_t event2Check, Option_t* opt) 
+{
+  /// Dump tracks
+  
+  fLoader->LoadTracks("READ");
+  
+  // Event loop
+  Int_t nevents = fRunLoader->GetNumberOfEvents();
+  
+  for (Int_t ievent=0; ievent<nevents; ievent++) 
+  {
+    if (event2Check!=0) ievent=event2Check;
+  
+    printf(">>> Event %d \n",ievent);
+    
+    // Getting event ievent
+    fRunLoader->GetEvent(ievent);
+    
+    Int_t nchambers = AliMUONConstants::NTrackingCh();
+    SetTreeAddress("RT"); 
+    GetRecTracks();
+    
+    // Loop on chambers
+    for (Int_t ichamber=0; ichamber<nchambers; ++ichamber) 
+    {
+      // Loop on tracks
+      TClonesArray* tracks = RecTracks();
+      Int_t ntracks = (Int_t) tracks->GetEntriesFast();
+
+      for (Int_t i=0; i<ntracks; ++i) 
+      {
+        AliMUONTrack* mTrack = static_cast<AliMUONTrack*>(tracks->At(i));
+        mTrack->Print(opt);
+      }
+    }
+    ResetRecTracks();
+    if (event2Check!=0) ievent=nevents;
+  }
+  fLoader->UnloadTracks();
+}
 
 //_____________________________________________________________________________
 void 

@@ -84,6 +84,7 @@ class AliMUONRecData : public AliMUONData
 
                    // Methods to dump data
     void DumpRecPoints(Int_t event2Check=0, Option_t* opt="full");
+    void DumpTracks(Int_t event2Check=0, Option_t* opt="full");
     void DumpRecTrigger(Int_t event2Check=0, Int_t write = 0, Bool_t readFromRP = kTRUE);
     
   protected: 
