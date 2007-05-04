@@ -314,7 +314,7 @@ Bool_t AliCentralTrigger::RunTrigger( AliRunLoader* runLoader )
       if( (detStr.CompareTo( "ALL" ) != 0) && !detStr.IsNull() ) {
          AliError( Form("the following detectors were not found: %s",
                    detStr.Data()));
-         return kFALSE;
+         //JF return kFALSE;
       }
 
       // Save trigger mask
@@ -343,7 +343,10 @@ ULong64_t AliCentralTrigger::CheckConditions()
       Int_t ncond = condArray->GetEntriesFast();
       for( Int_t j=0; j<ncond; j++ ) {
          AliTriggerCondition* cond = (AliTriggerCondition*)condArray->At( j );
-         if( !cond->CheckInputs( fInputs ) ) continue;
+         if( !cond->CheckInputs( fInputs ) ) {
+	   AliError( Form("Condition %s is not OK",cond->GetName()));
+	 //JF continue;
+	 }
          cond->Trigger( fInputs );
     //     cond->Print();
          fClassMask |= cond->GetValue();
