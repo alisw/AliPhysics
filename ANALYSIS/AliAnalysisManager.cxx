@@ -581,16 +581,36 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree)
       Warning("StartAnalysis", "GRID analysis mode not implemented. Running local.");
       fMode = kLocalAnalysis;
    }
-   char line[128];   
-   // Disable by default all branches
-   if (tree) tree->SetBranchStatus("*",0);
+   char line[128];
+   SetEventLoop(kFALSE);
+   // Disable by default all branches and set event loop mode
+   if (tree) {
+      tree->SetBranchStatus("*",0);
+      SetEventLoop(kTRUE);
+   }   
+   AliAnalysisDataContainer *cont = 0;
+   TIter nextc(fInputs);
+   // Force top containers have the same event loop type as the analysis
+   while ((cont=(AliAnalysisDataContainer*)nextc())) cont->SetEventByEvent(IsEventLoop());
+   AliAnalysisDataContainer *cont_top = (AliAnalysisDataContainer*)fInputs->First();
+
    TChain *chain = dynamic_cast<TChain*>(tree);
 
    // Initialize locally all tasks
    TIter next(fTasks);
    AliAnalysisTask *task;
-   while ((task=(AliAnalysisTask*)next())) task->LocalInit();
-
+   while ((task=(AliAnalysisTask*)next())) {
+      for (Int_t islot=0; islot<task->GetNinputs(); islot++) {
+         cont = task->GetInputSlot(islot)->GetContainer();
+         if (cont==cont_top) break;
+         cont = 0;
+      }
+      // All tasks feeding from the top containers must have the same event loop type
+      if (cont) task->SetExecPerEvent(IsEventLoop());
+      else task->SetExecPerEvent(task->IsExecPerEvent());         
+      task->LocalInit();
+   }
+   
    switch (fMode) {
       case kLocalAnalysis:
          if (!tree) {
@@ -607,7 +627,7 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree)
             return;
          } 
          // Run tree-based analysis via AliAnalysisSelector  
-         gROOT->ProcessLine(".L AliAnalysisSelector.cxx+");
+         gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/AliAnalysisSelector.cxx+");
          cout << "===== RUNNING LOCAL ANALYSIS " << GetName() << " ON TREE " << tree->GetName() << endl;
          sprintf(line, "AliAnalysisSelector *selector = new AliAnalysisSelector((AliAnalysisManager*)0x%lx);",(ULong_t)this);
          gROOT->ProcessLine(line);

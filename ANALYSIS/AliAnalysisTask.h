@@ -115,7 +115,7 @@ public:
   void                      PrintTask(Option_t *option="all", Int_t indent=0) const;
   void                      PrintContainers(Option_t *option="all", Int_t indent=0) const;
   void                      SetChecked(Bool_t flag=kTRUE) {TObject::SetBit(kTaskChecked,flag);}
-  void                      SetExecPerEvent(Bool_t flag=kTRUE) {TObject::SetBit(kTaskEvtByEvt,flag);}
+  void                      SetExecPerEvent(Bool_t flag=kTRUE);
   void                      SetUsed(Bool_t flag=kTRUE);
   void                      SetZombie(Bool_t flag=kTRUE) {TObject::SetBit(kTaskZombie,flag);}
   // Main task execution 

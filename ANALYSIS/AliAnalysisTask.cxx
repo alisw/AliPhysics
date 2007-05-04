@@ -233,8 +233,12 @@ void AliAnalysisTask::CheckNotify(Bool_t init)
 // accordingly. This method is called automatically for all tasks connected
 // to a container where the data was published.
    if (init) fInitialized = kFALSE;
+   Bool_t execperevent = IsExecPerEvent();
+   AliAnalysisDataContainer *cinput;
    for (Int_t islot=0; islot<fNinputs; islot++) {
-      if (!GetInputData(islot)) {
+      cinput = GetInputSlot(islot)->GetContainer();
+      if (!cinput) return;
+      if (!cinput->GetData() || execperevent!=cinput->IsEventByEvent()) {
          SetActive(kFALSE);
          return;
       }   
@@ -547,6 +551,21 @@ void AliAnalysisTask::PrintContainers(Option_t *option, Int_t indent) const
    Int_t islot;
    for (islot=0; islot<fNoutputs; islot++) {
       cont = GetOutputSlot(islot)->GetContainer();
-      cont->PrintContainer(option, indent);
+      if (cont) cont->PrintContainer(option, indent);
    }   
 }
+
+//______________________________________________________________________________
+void AliAnalysisTask::SetExecPerEvent(Bool_t flag)
+{
+// Set the task execution mode - run in a event loop or single shot. All output
+// containers of this task will get the same type.
+   TObject::SetBit(kTaskEvtByEvt,flag);
+   AliAnalysisDataContainer *cont;
+   Int_t islot;
+   for (islot=0; islot<fNoutputs; islot++) {
+      cont = GetOutputSlot(islot)->GetContainer();
+      if (cont) cont->SetEventByEvent(flag);
+   }   
+}
+   

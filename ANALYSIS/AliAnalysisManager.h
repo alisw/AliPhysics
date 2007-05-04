@@ -38,6 +38,10 @@ enum EAliAnalysisExecMode {
    kGridAnalysis     = 2
 };
 
+enum EAliAnalysisFlags {
+   kEventLoop        = BIT(14)
+};   
+
    AliAnalysisManager();
    AliAnalysisManager(const char *name, const char *title="");
    virtual            ~AliAnalysisManager();
@@ -96,6 +100,7 @@ enum EAliAnalysisExecMode {
    // Analysis initialization and execution, status
    Bool_t               InitAnalysis();
    Bool_t               IsInitialized() const {return fInitOK;}
+   Bool_t               IsEventLoop() const {return TObject::TestBit(kEventLoop);}
    void                 ResetAnalysis();
    void                 ExecAnalysis(Option_t *option="");
    void                 FinishAnalysis();
@@ -103,6 +108,7 @@ enum EAliAnalysisExecMode {
 
 protected:
    void                 ImportWrappers(TList *source);
+   void                 SetEventLoop(Bool_t flag=kTRUE) {TObject::SetBit(kEventLoop,flag);}
 
 private:
    TTree               *fTree;         //! Input tree in case of TSelector model
