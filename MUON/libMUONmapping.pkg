@@ -88,6 +88,8 @@ SRCS +=  \
 	 mapping/AliMpDEIterator.cxx  \
 	 mapping/AliMpDEManager.cxx  \
          mapping/AliMpBusPatch.cxx \
+         mapping/AliMpTriggerCrate.cxx \
+         mapping/AliMpLocalBoard.cxx \
          mapping/AliMpDDL.cxx \
 	 mapping/AliMpDDLStore.cxx
 	 
