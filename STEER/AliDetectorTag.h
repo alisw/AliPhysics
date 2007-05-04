@@ -14,7 +14,7 @@
 //-------------------------------------------------------------------------
 
 #include "TObject.h"
-#include "TString.h"
+#include "TObjArray.h"
 
 //___________________________________________________________________________
 class AliDetectorTag : public TObject {
@@ -27,7 +27,7 @@ class AliDetectorTag : public TObject {
   
   //____________________________________________________//
   void SetDetectorMask(UInt_t mask) {fMask = mask; Int2Bin();}
-  const char *GetDetectorMask() {return fDetectorString.Data();}
+  TObjArray *GetDetectorMask() {return fDetectorArray;}
   void PrintDetectorMask();
 
   //____________________________________________________//
@@ -68,24 +68,24 @@ class AliDetectorTag : public TObject {
   void SetZDC() {fZDC = kTRUE;}
   void SetEMCAL() {fEMCAL = kTRUE;}
   
-  TString  fDetectorString;//detectors' names - active
-  UInt_t   fMask;          //detector mask
-  UInt_t   fDetectors[20]; //detector mask
-  Bool_t   fITSSPD;        //ITS-SPD active = 1
-  Bool_t   fITSSDD;        //ITS-SDD active = 1
-  Bool_t   fITSSSD;        //ITS-SSD active = 1
-  Bool_t   fTPC;           //TPC active = 1
-  Bool_t   fTRD;           //TRD active = 1
-  Bool_t   fTOF;           //TOF active = 1
-  Bool_t   fHMPID;         //HMPID active = 1
-  Bool_t   fPHOS;          //PHOS active = 1
-  Bool_t   fPMD;           //PMD active = 1
-  Bool_t   fMUON;          //MUON active = 1
-  Bool_t   fFMD;           //FMD active = 1
-  Bool_t   fTZERO;         //TZERO active = 1
-  Bool_t   fVZERO;         //VZERO active = 1
-  Bool_t   fZDC;           //ZDC active = 1
-  Bool_t   fEMCAL;         //EMCAL active = 1
+  TObjArray *fDetectorArray; //detectors' names - active
+  UInt_t     fMask;          //detector mask
+  UInt_t     fDetectors[20]; //detector mask
+  Bool_t     fITSSPD;        //ITS-SPD active = 1
+  Bool_t     fITSSDD;        //ITS-SDD active = 1
+  Bool_t     fITSSSD;        //ITS-SSD active = 1
+  Bool_t     fTPC;           //TPC active = 1
+  Bool_t     fTRD;           //TRD active = 1
+  Bool_t     fTOF;           //TOF active = 1
+  Bool_t     fHMPID;         //HMPID active = 1
+  Bool_t     fPHOS;          //PHOS active = 1
+  Bool_t     fPMD;           //PMD active = 1
+  Bool_t     fMUON;          //MUON active = 1
+  Bool_t     fFMD;           //FMD active = 1
+  Bool_t     fTZERO;         //TZERO active = 1
+  Bool_t     fVZERO;         //VZERO active = 1
+  Bool_t     fZDC;           //ZDC active = 1
+  Bool_t     fEMCAL;         //EMCAL active = 1
 
   ClassDef(AliDetectorTag,3)  //(ClassName, ClassVersion)
 };

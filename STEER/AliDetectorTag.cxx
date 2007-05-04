@@ -23,13 +23,14 @@
 
 #include "AliDetectorTag.h"
 #include "AliLog.h"
+#include "TObjString.h"
 
 ClassImp(AliDetectorTag)
 
 //___________________________________________________________________________
 AliDetectorTag::AliDetectorTag() :
   TObject(),
-  fDetectorString(0),
+  fDetectorArray(new TObjArray()),
   fMask(0),
   fITSSPD(kFALSE),
   fITSSDD(kFALSE),
@@ -54,7 +55,7 @@ AliDetectorTag::AliDetectorTag() :
 //___________________________________________________________________________
 AliDetectorTag::AliDetectorTag(const AliDetectorTag & detTag) :
   TObject(detTag),
-  fDetectorString(detTag.fDetectorString),
+  fDetectorArray(detTag.fDetectorArray),
   fMask(detTag.fMask),
   fITSSPD(detTag.fITSSPD),
   fITSSDD(detTag.fITSSDD),
@@ -82,7 +83,7 @@ AliDetectorTag & AliDetectorTag::operator=(const AliDetectorTag &detTag) {
   if (this != &detTag) {
     TObject::operator=(detTag);
     
-    fDetectorString = detTag.fDetectorString;
+    fDetectorArray = detTag.fDetectorArray;
     fMask = detTag.fMask;   
     fITSSPD = detTag.fITSSPD;
     fITSSDD = detTag.fITSSDD;
@@ -107,6 +108,7 @@ AliDetectorTag & AliDetectorTag::operator=(const AliDetectorTag &detTag) {
 //___________________________________________________________________________
 AliDetectorTag::~AliDetectorTag() {
   // Destructor
+  delete fDetectorArray;
 }
 
 //___________________________________________________________________________
@@ -126,21 +128,36 @@ void AliDetectorTag::Int2Bin() {
 //___________________________________________________________________________
 void AliDetectorTag::SetDetectorConfiguration() {
   //sets the detector configuration
-  if(fDetectors[0] == 1) {SetITSSPD(); fDetectorString += "SPD ";}
-  if(fDetectors[1] == 1) {SetITSSDD(); fDetectorString += "SDD ";}
-  if(fDetectors[2] == 1) {SetITSSSD(); fDetectorString += "SSD ";}
-  if(fDetectors[3] == 1) {SetTPC(); fDetectorString += "TPC ";}
-  if(fDetectors[4] == 1) {SetTRD(); fDetectorString += "TRD ";}
-  if(fDetectors[5] == 1) {SetTOF(); fDetectorString += "TOF ";}
-  if(fDetectors[6] == 1) {SetHMPID(); fDetectorString += "HMPID ";}
-  if(fDetectors[7] == 1) {SetPHOS(); fDetectorString += "PHOS ";}
-  if(fDetectors[9] == 1) {SetPMD(); fDetectorString += "PMD ";}
-  if(fDetectors[10] == 1) {SetMUON(); fDetectorString += "MUON ";}
-  if(fDetectors[12] == 1) {SetFMD(); fDetectorString += "FMD ";}
-  if(fDetectors[13] == 1) {SetTZERO(); fDetectorString += "T0 ";}
-  if(fDetectors[14] == 1) {SetVZERO(); fDetectorString += "VZERO ";}
-  if(fDetectors[15] == 1) {SetZDC(); fDetectorString += "ZDC ";}
-  if(fDetectors[18] == 1) {SetEMCAL(); fDetectorString += "EMCAL";}
+  if(fDetectors[0] == 1) {
+    SetITSSPD(); fDetectorArray->Add(new TObjString("SPD"));}
+  if(fDetectors[1] == 1) {
+    SetITSSDD(); fDetectorArray->Add(new TObjString("SDD"));}
+  if(fDetectors[2] == 1) {
+    SetITSSSD(); fDetectorArray->Add(new TObjString("SSD"));}
+  if(fDetectors[3] == 1) {
+    SetTPC(); fDetectorArray->Add(new TObjString("TPC"));}
+  if(fDetectors[4] == 1) {
+    SetTRD(); fDetectorArray->Add(new TObjString("TRD"));}
+  if(fDetectors[5] == 1) {
+    SetTOF(); fDetectorArray->Add(new TObjString("TOF"));}
+  if(fDetectors[6] == 1) {
+    SetHMPID();fDetectorArray->Add(new TObjString("HMPID"));}
+  if(fDetectors[7] == 1) {
+    SetPHOS(); fDetectorArray->Add(new TObjString("PHOS"));}
+  if(fDetectors[9] == 1) {
+    SetPMD(); fDetectorArray->Add(new TObjString("PMD"));}
+  if(fDetectors[10] == 1) {
+    SetMUON(); fDetectorArray->Add(new TObjString("MUON"));}
+  if(fDetectors[12] == 1) {
+    SetFMD(); fDetectorArray->Add(new TObjString("FMD"));}
+  if(fDetectors[13] == 1) {
+    SetTZERO(); fDetectorArray->Add(new TObjString("T0"));}
+  if(fDetectors[14] == 1) {
+    SetVZERO(); fDetectorArray->Add(new TObjString("VZERO"));}
+  if(fDetectors[15] == 1) {
+    SetZDC(); fDetectorArray->Add(new TObjString("ZDC"));}
+  if(fDetectors[18] == 1) {
+    SetEMCAL(); fDetectorArray->Add(new TObjString("EMCAL"));}
 }
 
 //___________________________________________________________________________
