@@ -19,39 +19,41 @@ class TChain ;
 class TClass ; 
 class AliEventTagCuts ;  
 class AliRunTagCuts ;  
+class AliLHCTagCuts ;  
+class AliDetectorTagCuts ;  
 
 class AliAnalysisGoodies : public TObject {
 
 public:
   AliAnalysisGoodies() ; 
+  AliAnalysisGoodies(const AliAnalysisGoodies& ag) ; 
   ~AliAnalysisGoodies() {;} 
 
   virtual void Help() const; 
   Bool_t Alien2Local(const TString collectionNameIn, const TString localDir) ; 
-  Bool_t Make(AliRunTagCuts *runCuts, AliEventTagCuts *evtCuts, const char * in, const char * out) const  ; 
+  Bool_t Make(AliRunTagCuts *runCuts, AliLHCTagCuts *lhcCuts, AliDetectorTagCuts *detCuts, AliEventTagCuts *evtCuts, const char * in, const char * out) const ;
   Bool_t Merge(const char * collection, const char * subFile = 0, const char * outFile = 0) ; 
   Bool_t Register( const char * lfndir, const char * pfndir, const char * file)  ;   
   Bool_t Process(TChain * chain) ;  
   Bool_t Process(const char * esdFile)  ;  
-  Bool_t Process(const char * esdFile, AliRunTagCuts * runCuts, AliEventTagCuts * evtCuts)  ;  
-  Bool_t Process(const char * esdFile, const char * runCuts, const char * evtCuts)  ;  
-  void         SetESDTreeName(const char * name) { fESDTreeName = name ; }
+  Bool_t Process(const char * inFile, AliRunTagCuts *runCuts, AliLHCTagCuts *lhcCuts, AliDetectorTagCuts *detCuts, AliEventTagCuts * evtCuts ) ;
+  Bool_t Process(const char * inFile, const char * runCuts, const char * lhcCuts, const char * detCuts, const char * evtCuts) ;  
+ void         SetESDTreeName(const char * name) { fESDTreeName = name ; }
   void         SetTasks(Int_t nb, AliAnalysisTask ** taskList, TClass ** inputType, TClass ** outputType) ;
-  Bool_t MakeEsdCollectionFromTagFile(AliRunTagCuts * runCuts, AliEventTagCuts * evCuts, const char * in, const char * out) const  ; 
+  Bool_t MakeEsdCollectionFromTagFile(AliRunTagCuts *runCuts, AliLHCTagCuts *lhcCuts, AliDetectorTagCuts *detCuts, AliEventTagCuts *evtCuts, const char * in, const char * out) const ; 
 
 private:
   Bool_t MakeEsdCollectionFromTagFile(const char * , const char * , const char * , const char *) const ;
-  //{ AliError("Not implemented") ; return 0 ;}
-  Bool_t MakeEsdCollectionFromTagCollection(AliRunTagCuts * runCuts, AliEventTagCuts * evtCuts, const char * in, const char * out) const ; 
-  Bool_t MakeEsdCollectionFromTagCollection(const char * , const char * , const char * , const char * ) const ;
-  //{ AliError("Not implemented") ; return 0 ;}
+  Bool_t MakeEsdCollectionFromTagCollection(AliRunTagCuts *runCuts, AliLHCTagCuts *lhcCuts, AliDetectorTagCuts *detCuts, AliEventTagCuts *evtCuts, const char * in, const char * out) const ;
+  Bool_t MakeEsdCollectionFromTagCollection(const char * runCuts, const char *lhcCuts, const char *detCuts, const char * evtCuts, const char * in, const char * out) const ;
   Bool_t ProcessChain(TChain * chain) const ; 
   Bool_t ProcessEsdFile(const char * esdFile) const ;
-  Bool_t ProcessTagFile(const char * tagFile, AliRunTagCuts *runCuts, AliEventTagCuts *evtCuts) const ;
+  Bool_t ProcessEsdXmlCollection(const char * xmlFile) const ;
+  Bool_t ProcessTagFile(const char * tagFile, AliRunTagCuts *runCuts,  AliLHCTagCuts *lhcCuts, AliDetectorTagCuts *detCuts, AliEventTagCuts *evtCuts) const ;  
   Bool_t ProcessTagFile(const char * tagFile, const char * runCuts, const char * evtCuts) const ;
-  Bool_t ProcessEsdXmlCollection(const char * esdFile) const ;
-  Bool_t ProcessTagXmlCollection(const char * esdFile, AliRunTagCuts * runCuts, AliEventTagCuts * evtCuts) const ;
-  Bool_t ProcessTagXmlCollection(const char * esdFile, const char * runCuts, const char * evtCuts) const ;
+  Bool_t ProcessTagFile(const char * tagFile, const char * runCuts, const char * lhcCuts, const char * detCuts, const char * evtCuts) const ;   
+  Bool_t ProcessTagXmlCollection(const char * xmlFile, AliRunTagCuts *runCuts, AliLHCTagCuts *lhcCuts, AliDetectorTagCuts *detCuts, AliEventTagCuts * evtCuts) const ;   
+  Bool_t ProcessTagXmlCollection(const char * xmlFile, const char * runCuts, const char * lhcCuts, const char * detCuts, const char * evtCuts) const ; 
 
   TStopwatch        fTimer         ;   //! stopwatch
   TString           fESDTreeName   ;   //! name of the ESD TTree
