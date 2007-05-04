@@ -29,6 +29,8 @@
 class AliEventTag;
 class TChain;
 class AliEventTagCuts;
+class AliDetectorTagCuts;
+class AliLHCTagCuts;
 class AliRunTagCuts;
 class TGridResult;
 class TTreeFormula;
@@ -43,11 +45,11 @@ class AliTagAnalysis : public TObject {
   void ChainLocalTags(const char *dirname);
   void ChainGridTags(TGridResult *result);
   
-  TChain *QueryTags(AliRunTagCuts *RunTagCuts, AliEventTagCuts *EvTagCuts);
-  TChain *QueryTags(const char *fRunCut, const char *fEventCut);  
+  TChain *QueryTags(AliRunTagCuts *runTagCuts, AliLHCTagCuts *lhcTagCuts, AliDetectorTagCuts *detTagCuts, AliEventTagCuts *evTagCuts);
+  TChain *QueryTags(const char *fRunCut, const char *fLHCCut, const char *fDetectorCut, const char *fEventCut);  
 
-  Bool_t CreateXMLCollection(const char* name, AliRunTagCuts *RunTagCuts, AliEventTagCuts *EvTagCuts);
-  Bool_t CreateXMLCollection(const char* name, const char *fRunCut, const char *fEventCut);
+  Bool_t CreateXMLCollection(const char* name, AliRunTagCuts *runTagCuts, AliLHCTagCuts *lhcTagCuts, AliDetectorTagCuts *detTagCuts, AliEventTagCuts *evTagCuts);
+  Bool_t CreateXMLCollection(const char* name, const char *fRunCut, const char *fLHCCut, const char *fDetectorCut, const char *fEventCut);
 
   TChain *GetInputChain(const char* system, const char *wn);
   TChain *GetChainFromCollection(const char* collectionname, const char* treename);

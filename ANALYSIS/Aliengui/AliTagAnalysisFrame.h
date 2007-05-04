@@ -38,6 +38,8 @@ class TGridResult;
 class TChain;
 
 class AliRunTagCuts;
+class AliLHCTagCuts;
+class AliDetectorTagCuts;
 class AliEventTagCuts;
 class AliTagAnalysis;
 
@@ -105,6 +107,8 @@ public:
   // AliRoot Tag cut analysis 
   AliTagAnalysis      *fAliTagAnalysis; //alitaganalysis object
   AliRunTagCuts       *fAliRunCuts; //run cuts object
+  AliLHCTagCuts       *fAliLHCCuts; //lhc cuts object
+  AliDetectorTagCuts  *fAliDetectorCuts; //detector cuts object
   AliEventTagCuts     *fAliEventCuts; //event cuts object
   
   const char          **fEventTagCutsName; //event tag names
