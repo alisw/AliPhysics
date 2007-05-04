@@ -472,7 +472,7 @@ void AliFRAMEv2::CreateGeometry()
   ptrd1[0] = 50.18;
   ptrd1[1] = 70.35;
   ptrd1[2] = 375.5;
-  ptrd1[3] =  57.2;  
+  ptrd1[3] =  57.7;  
   
   Float_t r      = 341.8;
   Float_t rout1  = 410.564;
@@ -887,9 +887,9 @@ void AliFRAMEv2::CreateGeometry()
 //
 // TOF  mother volumes
 //
-  ptrd1[0] = 63.2061;
-  ptrd1[1] = 68.3192;
-  ptrd1[2] = 375.5;
+  ptrd1[0] = 62.2500; 
+  ptrd1[1] = 67.3631; 
+  ptrd1[2] = 373.6; 
   ptrd1[3] = 14.5;
   for (i = 0; i < 18; i++) {
     char nameCh[16];
