@@ -76,7 +76,7 @@ void SimEvt()
   TObjArray    digs(7); for(Int_t i=0;i<7;i++) digs.AddAt(new TClonesArray("AliHMPIDDigit"),i);
   TObjArray    clus(7); for(Int_t i=0;i<7;i++) clus.AddAt(new TClonesArray("AliHMPIDCluster"),i);
   AliESD esd;
-  AliHMPIDDigit::fSigmas=4;
+  AliHMPIDDigit::fgSigmas=4;
   AliHMPIDDigitizer::DoNoise(kFALSE);
   gEvt++;
   SimEsd(&esd);
