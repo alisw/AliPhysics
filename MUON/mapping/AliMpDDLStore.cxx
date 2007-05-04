@@ -9,7 +9,7 @@
  * without fee, provided that the above copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
+ * about the suitability of this software for any purpose. It is          *Crate
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
@@ -24,8 +24,9 @@
 // via various characteristics.
 // Authors: Ivana Hrivnacova, IPN Orsay
 //          Christian Finck, SUBATECH Nantes
-#include "AliMpConstants.h"
+
 #include "AliMpDDLStore.h"
+#include "AliMpConstants.h"
 #include "AliMpDEStore.h"
 #include "AliMpDDL.h"
 #include "AliMpFiles.h"
@@ -33,6 +34,8 @@
 #include "AliMpDEManager.h"
 #include "AliMpDetElement.h"
 #include "AliMpBusPatch.h"
+#include "AliMpTriggerCrate.h"
+#include "AliMpLocalBoard.h"
 #include "AliMpSegmentation.h"
 #include "AliMpVSegmentation.h"
 
@@ -40,6 +43,9 @@
 
 #include <Riostream.h>
 #include <TList.h>
+#include <TObjArray.h>
+#include <TString.h>
+#include <TObjString.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMpDDLStore)
@@ -47,6 +53,7 @@ ClassImp(AliMpDDLStore)
 
 AliMpDDLStore* AliMpDDLStore::fgInstance = 0;
 const Int_t    AliMpDDLStore::fgkNofDDLs = 20;
+const Int_t    AliMpDDLStore::fgkNofTriggerDDLs = 2;
 
 //
 // static methods
@@ -71,9 +78,11 @@ AliMpDDLStore* AliMpDDLStore::Instance()
 //______________________________________________________________________________
 AliMpDDLStore::AliMpDDLStore()
 : TObject(),
-  fDDLs(fgkNofDDLs),
+  fDDLs(fgkNofDDLs+fgkNofTriggerDDLs), // FIXEME
   fDetElements(AliMpDEStore::Instance()),
   fBusPatches(true),
+  fTriggerCrates(true),
+  fLocalBoards(true),
   fManuList12()
 {  
 /// Standard constructor
@@ -83,8 +92,15 @@ AliMpDDLStore::AliMpDDLStore()
   fBusPatches.SetOwner(true);
   fBusPatches.SetSize(900);
 
+  fTriggerCrates.SetOwner(true);
+  fTriggerCrates.SetSize(16);
+
+  fLocalBoards.SetOwner(true);
+  fLocalBoards.SetSize(242); // included non-identied board
+
   // Create all detection elements
   ReadDDLs();
+  ReadTriggerDDLs();
   SetManus();
   SetPatchModules();
 }
@@ -249,6 +265,159 @@ Bool_t AliMpDDLStore::ReadDDLs()
    in.close();
    return true;
 }
+
+//______________________________________________________________________________
+Bool_t  AliMpDDLStore::ReadTriggerDDLs()
+{
+/// create trigger DDL object ddl<->Crate<->local board
+  
+    Int_t nonNotified = 0;
+
+    Int_t iDDL = -1;
+
+    TString infile = AliMpFiles::LocalTriggerBoardMapping();
+  
+    ifstream in(infile, ios::in);
+    
+    if (!in) {
+      AliError(Form("Local Trigger Board Mapping File %s not found", infile.Data()));
+      return kFALSE;
+    }
+  
+    AliMpLocalBoard* board = 0x0;
+    AliMpTriggerCrate* crate = 0x0;
+
+    TString localNumber;
+    Int_t localNumberId = 0;
+    TArrayI list;
+
+    char line[255];
+    while (in.getline(line, 255))
+    {
+
+      // files contains lines with some blank caracters ???
+      if (line[0] == ' ' && strlen(line) < 12) continue;
+
+      TString tmp(AliMpHelper::Normalize(line));
+      if (tmp.IsNull()) continue; // Ignore empty lines
+ 
+      if (tmp.Contains("Board")) 
+      {
+	// extract id, name, slot & crate name
+	TObjArray* stringList = tmp.Tokenize(TString(" "));
+  
+	TString localNumber = ((TObjString*)stringList->At(1))->GetString();
+
+	if (localNumber.CompareTo("nn") != 0) // Notified cards
+	    localNumberId = localNumber.Atoi();
+	else 
+	    localNumberId = AliMpConstants::NofLocalBoards()  + (++nonNotified);
+
+	TString localName = ((TObjString*)stringList->At(4))->GetString();
+	TString slotName  = ((TObjString*)stringList->At(10))->GetString();
+
+	AliDebug(3, Form("%d %s %d\n", localNumberId, localName.Data(), slotName.Atoi()));
+
+	board = new AliMpLocalBoard(localNumberId, localName.Data(), slotName.Atoi());
+
+	// not notified board
+	if (localNumber.CompareTo("nn") == 0)
+	    board->SetNotified(false);
+
+	// compose name with number and side (Right or Left)
+	TString crateNumber = ((TObjString*)stringList->At(6))->GetString();
+	TString crateSide = ((TObjString*)stringList->At(7))->GetString();
+	TString crateName = crateNumber + crateSide;
+
+	// set crate name
+	board->SetCrate(crateName);
+
+	// determine ddl number vs crate side
+	if (crateName.Contains("R")) 
+	    iDDL = fgkNofDDLs; // starts where tracker ends
+	else 
+	    iDDL = fgkNofDDLs + 1;
+	
+	AliMpDDL* ddl = GetDDL(iDDL, false);
+	if ( !ddl) {
+	  ddl = new AliMpDDL(iDDL);
+	  fDDLs.AddAt(ddl, iDDL);
+	}  
+	
+	Int_t crateId; 
+	if (crateNumber.CompareTo("2-3") != 0)
+	    crateId = crateNumber.Atoi();
+	else
+	    crateId = 23;
+
+	// add trigger crate number for given ddl if not present
+	if ( !ddl->HasTriggerCrateId(crateId) )
+	    ddl->AddTriggerCrate(crateId);
+
+	// if crate not existing then creating
+	if (!GetTriggerCrate(crateName, false)) {
+	    crate = new AliMpTriggerCrate(crateName.Data(), iDDL);
+	    fTriggerCrates.Add(crateName.Data(), crate);
+	}
+
+	// create list of local board in this crate
+	crate->AddLocalBoard(localNumberId);
+
+	delete stringList;
+      }
+
+      if (tmp.Contains("DetElemId")) 
+      {
+	list.Reset();
+	AliMpDDL* ddl = GetDDL(iDDL, true);
+
+	// add  DE for local board and DDL
+	TString detElem = &tmp[tmp.First(" ")+1];
+	AliMpHelper::DecodeName(detElem,' ',list);
+	for (Int_t i = 0; i < list.GetSize(); ++i) {
+	    board->AddDE(list[i]);
+	    if(!ddl->HasDEId(list[i]))
+		ddl->AddDE(list[i]);
+	}
+      }
+
+      if (tmp.Contains("transv")) 
+      {
+	// set transverse connector
+	Int_t blankPos = tmp.Last(' ');
+
+	TString transv(tmp(blankPos+1, tmp.Length()-blankPos));
+	transv.ToUpper();
+	if (transv.CompareTo("NONE") == 0)
+	    board->SetTC(false);
+      }
+
+      if (tmp.Contains("Switch")) 
+      {
+	list.Reset();
+	in.getline(line, 255);// skip one line
+
+	in.getline(line, 255);
+	TString tmp(AliMpHelper::Normalize(line));
+
+	// decode switches
+	AliMpHelper::DecodeName(tmp,' ',list);
+
+	// store switches
+	AliMpArrayI switches;
+
+	for (Int_t i = 0; i < list.GetSize(); ++i)
+	    board->AddSwitch(list[i]);
+
+	// add local board into map
+	fLocalBoards.Add(board->GetId(), board);
+
+      }
+    }
+
+    return kTRUE;
+}
+
 //______________________________________________________________________________
 Bool_t AliMpDDLStore::SetManus()
 {
@@ -374,6 +543,25 @@ Bool_t AliMpDDLStore::SetPatchModules()
   return result;
 }
 
+//________________________________________________________________
+Int_t AliMpDDLStore::GetLocalBoardId(TString name) const
+{
+/// return the first board with a given side and line
+
+   TExMapIter i = fLocalBoards.GetIterator();
+    Long_t key, value;
+    while ( i.Next(key, value) ) {
+      AliMpLocalBoard* local = (AliMpLocalBoard*)value;
+
+      TString tmp(&local->GetName()[4], 2);
+      if (name.Contains(tmp))
+	  if (name[0] == local->GetName()[0])
+	      return local->GetId();
+    }
+
+    return 0;
+
+}
 
 //
 // public methods
@@ -421,6 +609,57 @@ AliMpBusPatch* AliMpDDLStore::GetBusPatch(Int_t busPatchId, Bool_t warn) const
 }    
 
 //______________________________________________________________________________
+AliMpLocalBoard* AliMpDDLStore::GetLocalBoard(Int_t localBoardId, Bool_t warn) const
+{
+/// Return bus patch with given Id
+
+  AliMpLocalBoard* localBoard
+    = (AliMpLocalBoard*) fLocalBoards.GetValue(localBoardId);
+    
+  if ( ! localBoard && warn ) {  
+    AliErrorStream() 
+        << "Local board with Id = " << localBoardId << " not defined." << endl;
+  }	
+
+  return localBoard;
+}    
+
+//______________________________________________________________________________
+AliMpTriggerCrate* AliMpDDLStore::GetTriggerCrate(TString name, Bool_t warn) const
+{
+/// Return trigger crate with given name
+
+  AliMpTriggerCrate* crate
+     = (AliMpTriggerCrate*) fTriggerCrates.GetValue(name.Data());
+    
+  if ( ! crate && warn ) {  
+    AliErrorStream() 
+        << "Trigger crate with name = " << name.Data() << " not defined." << endl;
+  }	
+
+  return crate;
+}  
+
+//______________________________________________________________________________
+AliMpTriggerCrate* AliMpDDLStore::GetTriggerCrate(Int_t ddlId, Int_t index, Bool_t warn) const
+{
+/// Return trigger crate with given ddl and index crate
+
+  AliMpDDL* ddl = GetDDL(ddlId, warn);
+  if ( ! ddl ) return 0; 
+  
+  if ( index >= ddl->GetNofTriggerCrates() ) {
+      AliError(Form("crate id %d greater than array[%d]", index, ddl->GetNofTriggerCrates()));
+      return 0;
+  }    
+   
+  Int_t crateId = ddl->GetTriggerCrateId(index);
+  TString name = AliMpTriggerCrate::GenerateName(crateId, ddlId, fgkNofDDLs);
+  
+  return GetTriggerCrate(name, warn);
+}  
+
+//______________________________________________________________________________
 Int_t  AliMpDDLStore::GetDEfromBus(Int_t busPatchId) const
 {
 /// Return detection element Id for given busPatchId
@@ -435,6 +674,22 @@ Int_t  AliMpDDLStore::GetDEfromBus(Int_t busPatchId) const
 
   return busPatch->GetDEId();
 }  
+
+//______________________________________________________________________________
+Int_t  AliMpDDLStore::GetDEfromLocalBoard(Int_t localBoardId, Int_t chamberId) const
+{
+/// Return detElemId for local board Id and chamber id.
+
+  AliMpLocalBoard* localBoard = GetLocalBoard(localBoardId);
+  
+  if ( ! localBoard ) {
+    AliErrorStream() 
+        << "Loacl board with Id = " << localBoardId << " not defined." << endl;
+    return 0;    
+  }	
+
+   return localBoard->GetDEIdByChamber(chamberId);
+}
 
 //______________________________________________________________________________
 Int_t  AliMpDDLStore::GetDDLfromBus(Int_t busPatchId) const
@@ -515,4 +770,48 @@ void AliMpDDLStore::PrintAllManu() const
   }
 }  
 
+//________________________________________________________________
+Int_t  AliMpDDLStore::GetNextDEfromLocalBoard(Int_t localBoardId, Int_t chamberId ) const
+{
+/// return the next detection element in line
+
+    AliMpLocalBoard* localBoard  =  GetLocalBoard(localBoardId);
+
+    TString name(localBoard->GetName());
+
+    Int_t line = localBoard->GetPosition().GetFirst();
+    ++line;
+    
+    name.Replace(4,1,Form("%d", line));
+
+   Int_t nextLocalId;
+    if ((nextLocalId = GetLocalBoardId(name)))
+	return GetDEfromLocalBoard(nextLocalId, chamberId);
+    else
+	return 0;
+
+    return 0;
+}
+
+//________________________________________________________________
+Int_t  AliMpDDLStore::GetPreviousDEfromLocalBoard(Int_t localBoardId, Int_t chamberId) const
+{
+/// return the previous detection element in line
+
+    AliMpLocalBoard* localBoard  =  GetLocalBoard(localBoardId);
+
+    TString name(localBoard->GetName());
+
+    Int_t line = localBoard->GetPosition().GetFirst();
+    --line;
+    
+    name.Replace(4,1,Form("%d", line));
+
+    Int_t prevLocalId;
+    if ((prevLocalId = GetLocalBoardId(name)))
+	return GetDEfromLocalBoard(prevLocalId, chamberId);
+    else
+	return 0;
+
+}
 
