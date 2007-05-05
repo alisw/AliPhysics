@@ -10,12 +10,33 @@ void Hshuttle(Int_t runTime=1500)
   
   TMap        *pDcsMap = new TMap;       pDcsMap->SetOwner(1);          //DCS archive map
 
+  SimPed();
   SimMap(pDcsMap,runTime);
   TestShuttle(pDcsMap);  
   TCanvas *c=new TCanvas("cc","ff",600,600);  
   DrawInput(c,pDcsMap);
   DrawOutput();
 }//Hshuttle()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void SimPed()
+{
+  ofstream out;
+  for(Int_t ddl=0;ddl<=13;ddl++){
+    out.open(Form("ped_%02i.txt",ddl));
+    out << 3 <<endl;
+    for(Int_t row=1;row<=24;row++)
+      for(Int_t dil=1;dil<=10;dil++)
+        for(Int_t adr=0;adr<=47;adr++){
+          Float_t mean  = 150+200*gRandom->Rndm();
+          Float_t sigma = 1+0.2*gRandom->Rndm();
+          Int_t inhard=((Int_t(mean))<<9)+Int_t(mean+3*sigma);
+          out << Form("%2i %2i %2i %2i %5.2f %5.2f %x\n",ddl,row,dil,adr,mean,sigma,inhard);
+        }
+
+    Printf("file ped %02i created",ddl);
+    out.close();
+  }
+}
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void SimMap(TMap *pDcsMap,Int_t runTime=1500)
 {
@@ -28,17 +49,16 @@ void SimMap(TMap *pDcsMap,Int_t runTime=1500)
     TObjArray *pHV=new TObjArray; pHV->SetOwner(1); 
     for(Int_t time=0;time<runTime;time+=stepTime)  pP->Add(new AliDCSValue((Float_t)1005.0 ,time));   //sample CH4 pressure [mBar]
                                                    pHV->Add(new AliDCSValue((Float_t)2010.0,time));   //sample chamber HV [V]
-      
-    pDcsMap->Add(new TObjString(Form(AliHMPIDPreprocessor::fP,iCh,iCh,iCh)),pP); 
-    pDcsMap->Add(new TObjString(Form(AliHMPIDPreprocessor::fHV,iCh,iCh,iCh)),pHV); 
+    pDcsMap->Add(new TObjString(Form(AliHMPIDPreprocessor::GetP(),iCh,iCh,iCh)),pP); 
+    pDcsMap->Add(new TObjString(Form(AliHMPIDPreprocessor::GetHV(),iCh,iCh,iCh)),pHV); 
         
     for(Int_t iRad=0;iRad<3;iRad++){//radiators loop
       TObjArray *pT1=new TObjArray; pT1->SetOwner(1); 
       TObjArray *pT2=new TObjArray; pT2->SetOwner(1); 
       for (Int_t time=0;time<runTime;time+=stepTime)  pT1->Add(new AliDCSValue(13,time));  //sample inlet temperature    Nmean=1.292 @ 13 degrees
       for (Int_t time=0;time<runTime;time+=stepTime)  pT2->Add(new AliDCSValue(13,time));  //sample outlet temperature
-      pDcsMap->Add(new TObjString(Form(AliHMPIDPreprocessor::fT1,iCh,iCh,iRad)) ,pT1); 
-      pDcsMap->Add(new TObjString(Form(AliHMPIDPreprocessor::fT2,iCh,iCh,iRad)),pT2);
+      pDcsMap->Add(new TObjString(Form(AliHMPIDPreprocessor::GetT1(),iCh,iCh,iRad)) ,pT1); 
+      pDcsMap->Add(new TObjString(Form(AliHMPIDPreprocessor::GetT2(),iCh,iCh,iRad)),pT2);
     }//radiators loop    
   }//chambers loop
 }//SimMap()
@@ -47,7 +67,8 @@ void TestShuttle(TMap *pDcsMap)
 {
   AliTestShuttle* pShuttle = new AliTestShuttle(0,0,1000000);   
   pShuttle->SetDCSInput(pDcsMap);                                                    //DCS map
-  AliPreprocessor* pp = new AliHMPIDPreprocessor(pShuttle);                           //actual ipreprocessor is created here
+  for(Int_t ddl=0;ddl<=13;ddl++) pShuttle->AddInputFile(AliTestShuttle::kDAQ,"HMP","pedestals",Form("DDL%i",ddl),Form("./ped_%02i.txt",ddl));
+  AliPreprocessor* pp = new AliHMPIDPreprocessor(pShuttle);                           //actual preprocessor is created here
   pShuttle->Process();                                                               //run SHUTTLE simulator
   delete pp;
 }
@@ -63,8 +84,8 @@ void DrawInput(TCanvas *c,TMap *pDcsMap)
     if(iCh==4) c->cd(4);  if(iCh==3) c->cd(5);  if(iCh==2) c->cd(6);
                           if(iCh==1) c->cd(8);  if(iCh==0) c->cd(9); 
                           
-    TObjArray *pHV=(TObjArray*)pDcsMap->GetValue(Form(AliHMPIDPreprocessor::fHV,iCh,iCh,iCh,iCh)); //HV
-    TObjArray *pP =(TObjArray*)pDcsMap->GetValue(Form(AliHMPIDPreprocessor::fP,iCh,iCh,iCh)); //P
+    TObjArray *pHV=(TObjArray*)pDcsMap->GetValue(Form(AliHMPIDPreprocessor::GetHV(),iCh,iCh,iCh,iCh)); //HV
+    TObjArray *pP =(TObjArray*)pDcsMap->GetValue(Form(AliHMPIDPreprocessor::GetP(),iCh,iCh,iCh)); //P
     TGraph *pGr=new TGraph; pGr->SetMarkerStyle(5);
     
     TIter nextp(pP); cnt=0; while((pVal=(AliDCSValue*)nextp())){ pGr->SetPoint(cnt++,pVal->GetTimeStamp(),pVal->GetFloat());}//P
@@ -77,14 +98,18 @@ void DrawInput(TCanvas *c,TMap *pDcsMap)
 void DrawOutput()
 {
   AliCDBManager::Instance()->SetDefaultStorage("local://$HOME");
-  AliCDBEntry *pQthreEnt=AliCDBManager::Instance()->Get("HMPID/Calib/Qthre",0);
-  AliCDBEntry *pNmeanEnt=AliCDBManager::Instance()->Get("HMPID/Calib/Nmean",0);
+  AliCDBEntry *pQthreEnt =AliCDBManager::Instance()->Get("HMPID/Calib/Qthre",0);
+  AliCDBEntry *pNmeanEnt =AliCDBManager::Instance()->Get("HMPID/Calib/Nmean",0);
+  AliCDBEntry *pSigCutEnt=AliCDBManager::Instance()->Get("HMPID/Calib/SigCut",0);
+  AliCDBEntry *pDaqSigEnt=AliCDBManager::Instance()->Get("HMPID/Calib/DaqSig",0);
   
-  if(!pQthreEnt || ! pNmeanEnt) return;
+  if(!pQthreEnt || ! pNmeanEnt || !pSigCutEnt || !pDaqSigEnt) return;
   
-  TObjArray *pNmean=(TObjArray*)pNmeanEnt->GetObject(); 
-  TObjArray *pQthre=(TObjArray*)pQthreEnt->GetObject(); 
-  
+  TObjArray *pNmean =(TObjArray*)pNmeanEnt ->GetObject(); 
+  TObjArray *pQthre =(TObjArray*)pQthreEnt ->GetObject(); 
+  TObjArray *pSigCut=(TObjArray*)pSigCutEnt->GetObject(); 
+  TObjArray *pDaqSig=(TObjArray*)pDaqSigEnt->GetObject();
+   
   TF1 *pRad0,*pRad1,*pRad2;  
   TCanvas *c2=new TCanvas("c2","Nmean"); c2->Divide(3,3);
   

@@ -21,25 +21,77 @@
 #include "AliHMPID.h"              //Reconstruct() 
 #include "AliHMPIDCluster.h"       //Dig2Clu()
 #include "AliHMPIDParam.h"         //FillEsd() 
-#include <AliESD.h>               //FillEsd()
-#include <AliRawReader.h>         //Reconstruct() for raw digits
+#include <AliCDBEntry.h>           //ctor
+#include <AliCDBManager.h>         //ctor
+#include <AliESD.h>                //FillEsd()
+#include <AliRawReader.h>          //Reconstruct() for raw digits
 ClassImp(AliHMPIDReconstructor)
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-AliHMPIDReconstructor::AliHMPIDReconstructor():AliReconstructor()
+AliHMPIDReconstructor::AliHMPIDReconstructor():AliReconstructor(),fUserCut(0),fDaqSig(0),fDig(0),fClu(0)
 {
 //
 //ctor
 //
-  fClu=new TObjArray(AliHMPIDDigit::kMaxCh+1);
-  fDig=new TObjArray(AliHMPIDDigit::kMaxCh+1);
-  fClu->SetOwner(kTRUE);
+
+  fClu=new TObjArray(AliHMPIDDigit::kMaxCh+1); fClu->SetOwner(kTRUE);
+  fDig=new TObjArray(AliHMPIDDigit::kMaxCh+1); fDig->SetOwner(kTRUE);
+
   for(int i=AliHMPIDDigit::kMinCh;i<=AliHMPIDDigit::kMaxCh;i++){ 
     fDig->AddAt(new TClonesArray("AliHMPIDDigit"),i);
     fClu->AddAt(new TClonesArray("AliHMPIDCluster"),i);
   }
-  fDig->SetOwner(kTRUE);
+  
+  AliCDBManager::Instance()->SetDefaultStorage("local://$HOME");
+  
+  AliCDBEntry *pUserCutEnt =AliCDBManager::Instance()->Get("HMPID/Calib/UserCut");    //contains TObjArray of 14 TObject with n. of sigmas to cut charge 
+  if(!pUserCutEnt) return;                                                            //No request from User to apply a more severe cut on pad charge  
+  
+  fUserCut = pUserCutEnt->GetObject()->GetUniqueID();
+
+  Printf(" usercut %i ",fUserCut);
+  
+  AliCDBEntry *pDaqCutEnt =AliCDBManager::Instance()->Get("HMPID/Calib/DaqSigCut");     //contains TObjArray of 14 TObject with n. of sigmas to cut charge 
+  if(!pDaqCutEnt) AliFatal("No pedestal sigmas cut!");
+  TObjArray *pDaqCut = (TObjArray*)pDaqCutEnt->GetObject();
+
+
+  for(Int_t ddl=0;ddl<14;ddl++){
+    if(fUserCut<=(Int_t)pDaqCut->At(ddl)->GetUniqueID()) continue;
+    AliCDBEntry *pDaqSigEnt =AliCDBManager::Instance()->Get("HMPID/Calib/DaqSig");  //contains TObjArray of TObjArray 14 TMatrixF sigmas values for pads 
+    if(!pDaqSigEnt) AliFatal("No pedestals from DAQ!");
+    TObjArray *pDaqSig = (TObjArray*)pDaqSigEnt->GetObject();
+    SigConv(pDaqSig);
+    break;
+  }
 }//AliHMPIDReconstructor
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void AliHMPIDReconstructor::SigConv(TObjArray *pDaqSig)
+{
+// Conversion from the pedestal objects in to 7 TMatrixF(padX,padY)
+//Arguments: pDaqSig pointer to the pedestal objects from OCDB
+//   Returs: none
+//
+  fDaqSig = new TObjArray(AliHMPIDDigit::kMaxCh+1);fDaqSig->SetOwner(kTRUE);
+  
+  for(Int_t iCh=AliHMPIDDigit::kMinCh;iCh<=AliHMPIDDigit::kMaxCh;iCh++) fDaqSig->AddAt(new TMatrixF(1,10,0,47),iCh);
+ 
+  AliHMPIDDigit dig;
+   
+  for(Int_t ddl=0;ddl<=13;ddl++){
+    for(Int_t row=1;row<=24;row++)
+      for(Int_t dil=1;dil<=10;dil++)
+        for(Int_t adr=0;adr<=47;adr++){
+          TObjArray *pDdl = (TObjArray*)pDaqSig->At(ddl);
+          TObjArray *pRow = (TObjArray*)pDdl->At(row-1);
+          TMatrixF *pM = (TMatrixF*)pRow;
+          Float_t sigma = (*pM)(dil,adr);
+          dig.Raw(ddl,row,dil,adr);
+          TMatrixF* pMConv = (TMatrixF*)(fDaqSig->At(dig.Ch()));
+          (*pMConv)(dig.PadChX(),dig.PadChY()) = sigma;
+        }
+  }
+}//SigConv()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDReconstructor::Dig2Clu(TObjArray *pDigAll,TObjArray *pCluAll,Bool_t isTryUnfold)
 {
@@ -64,7 +116,6 @@ void AliHMPIDReconstructor::Dig2Clu(TObjArray *pDigAll,TObjArray *pCluAll,Bool_t
     }//digits loop to fill digits map 
     
     AliHMPIDCluster clu;                                                                  //tmp cluster to be used as current
-  
     for(Int_t iDig=0;iDig<pDigCur->GetEntriesFast();iDig++){                              //digits loop for current chamber
       AliHMPIDDigit *pDig=(AliHMPIDDigit*)pDigCur->At(iDig);                              //take current digit
       if(!(pDig=UseDig(pDig->PadChX(),pDig->PadChY(),pDigCur,&padMap))) continue;         //this digit is already taken in FormClu(), go after next digit
@@ -142,6 +193,7 @@ void AliHMPIDReconstructor::Reconstruct(AliRunLoader *pAL,AliRawReader* pRR)cons
         UInt_t ddl=pRR->GetDDLID(); //returns 0,1,2 ... 13
         dig.Raw(w32,ddl);
         AliDebug(1,Form("Ch=%i DDL=%i raw=0x%x digit=(%3i,%3i,%3i,%3i) Q=%5.2f",iCh,ddl,w32,dig.Ch(),dig.Pc(),dig.PadPcX(),dig.PadPcY(),dig.Q()));
+        if(!IsDigSurvive(&dig)) continue;                                             //sigma cut test
         new((*((TClonesArray*)digLst.At(iCh)))[iDigCnt[iCh]++]) AliHMPIDDigit(dig); //add this digit to the tmp list
       }//raw records loop
       pRR->Reset();
@@ -174,6 +226,7 @@ void AliHMPIDReconstructor::ConvertDigits(AliRawReader *pRR,TTree *pDigTree)cons
       UInt_t ddl=pRR->GetDDLID(); //returns 0,1,2 ... 13
       dig.Raw(w32,ddl);  
       AliDebug(1,Form("Ch=%i DDL=%i raw=0x%x digit=(%3i,%3i,%3i,%3i) Q=%5.2f",iCh,ddl,w32,dig.Ch(),dig.Pc(),dig.PadPcX(),dig.PadPcY(),dig.Q()));
+      if(!IsDigSurvive(&dig)) continue;                                       //sigma cut test
       new((*((TClonesArray*)fDig->At(iCh)))[iDigCnt++]) AliHMPIDDigit(dig); //add this digit to the tmp list
     }//raw records loop
     pRR->Reset();        

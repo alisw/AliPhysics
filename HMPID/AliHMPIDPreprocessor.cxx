@@ -1,10 +1,13 @@
 #include "AliHMPIDPreprocessor.h" //header
 
+#include <Riostream.h>
 #include <AliCDBMetaData.h>
 #include <AliDCSValue.h>      
+#include <TObjString.h>       //Process()
 #include <TF1.h>              //Process()
 #include <TF2.h>              //Process()
 #include <TGraph.h>           //Process()
+#include <TMatrixF.h>         //Process()
 #include <AliLog.h>           //Process() 
 
 //.
@@ -31,15 +34,36 @@ UInt_t AliHMPIDPreprocessor::Process(TMap* pMap)
 //          2. CH4 pressure and HV                 stores TObjArray of 7 TF1 where TF1 is thr=f(t), one per chamber
 // Arguments: pDcsMap - map of structure "alias name" - TObjArray of AliDCSValue
 // Assume that: HV is the same during the run for a given chamber, different chambers might have different HV
-//              P=f(t), different for different chambers     
-     
-//  TList* list = GetFileSources(kDAQ, "MAP"); //first analyse a set of pedestal files
-//  if (list){
-//    Log("The following sources produced files with the id MAP");
-//    list->Print();
-//    delete list;
-//  }
-
+//              P=f(t), different for different chambers
+  TObjArray arDaqSig(14); arDaqSig.SetOwner(kTRUE);
+  for(Int_t iddl=0;iddl<14;iddl++){
+    arDaqSig.AddAt(new TObjArray(24),iddl);
+    for(Int_t row=1;row<=24;row++){
+      ((TObjArray*)arDaqSig.At(iddl))->Add(new TMatrixF(1,10,0,47));
+    }
+  }
+  TObjArray arSigCut(14); arSigCut.SetOwner(kTRUE);                                  //14  n. of sigmas for zero suppression
+  Int_t ddl,r,d,a,hard;
+  Float_t mean,sigma;
+  Int_t sigmaCut;
+  for(Int_t iddl=0;iddl<14;iddl++){
+    TObject *sigCut= new TObject; 
+    const char *name=GetFile(kDAQ,"pedestals",Form("DDL%i",iddl));                   //first analyse a set of pedestal files
+    ifstream infile(name);
+    //
+    infile>>sigmaCut;
+    sigCut->SetUniqueID(sigmaCut);arSigCut.AddAt(sigCut,iddl);
+    TObjArray *pTmp = (TObjArray*)arDaqSig.At(iddl);
+    TMatrixF *pM;
+    while(!infile.eof()){
+      infile>>dec>>ddl>>r>>d>>a>>mean>>sigma>>hex>>hard;
+      pM = (TMatrixF*)pTmp->At(r-1);
+      (*pM)(d,a) = sigma;
+    }
+    //
+    infile.close();
+    Printf("file %s read successfully",name);
+  }
 
   if(!pMap)  return 0;                    //no DCS map provided 
   Double_t sor=0,eor=1500;
@@ -50,8 +74,8 @@ UInt_t AliHMPIDPreprocessor::Process(TMap* pMap)
   
 //  TObjArray arTmean(21); arTmean.SetOwner(kTRUE);     //21 Tmean=f(time) one per radiator
 //  TObjArray arPress(7);  arPress.SetOwner(kTRUE);     //7  Press=f(time) one pre chamber
-  TObjArray arNmean(21); arNmean.SetOwner(kTRUE);     //21 Nmean=f(time) one per radiator
-  TObjArray arQthre(7);  arQthre.SetOwner(kTRUE);     //7  Qthre=f(time) one pre chamber
+  TObjArray arNmean(21); arNmean.SetOwner (kTRUE);     //21 Nmean=f(time) one per radiator
+  TObjArray arQthre(7);  arQthre.SetOwner (kTRUE);     //7  Qthre=f(time) one pre chamber
   
 //  AliDCSValue *pVal; Int_t cnt=0;
     
@@ -84,14 +108,17 @@ UInt_t AliHMPIDPreprocessor::Process(TMap* pMap)
   }//chambers loop
   
   AliCDBMetaData metaData; metaData.SetBeamPeriod(0); metaData.SetResponsible("AliHMPIDPreprocessor"); metaData.SetComment("SIMULATED");
-
   
-  arQthre.Print();
+//  arQthre.Print();
 //  Store("Calib", "Press" , &arPress , &metaData); 
-//  Store("Calib", "Tmean" , &arTmean , &metaData); 
-
-  if( Store("Calib", "Qthre" , &arQthre , &metaData) == kTRUE && Store("Calib", "Nmean" , &arNmean , &metaData) == kTRUE ) return 0;   //clm: compatibility with new Store and preprocessor requirement
-  else return 1;
+//  Store("Calib", "Tmean" , &arTmean , &metaData);
+  
+  if(Store("Calib","Qthre"    ,&arQthre , &metaData,0,kTRUE) == kTRUE && 
+     Store("Calib","Nmean"    ,&arNmean , &metaData,0,kTRUE) == kTRUE &&   
+     Store("Calib","DaqSigCut",&arSigCut, &metaData,0,kTRUE) == kTRUE &&
+     Store("Calib","DaqSig"   ,&arDaqSig, &metaData,0,kTRUE) == kTRUE    ) return 0; //all OK
+  else
+    return 1;
   
   //  AliInfo("End.");  
 

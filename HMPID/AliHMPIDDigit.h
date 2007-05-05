@@ -39,7 +39,7 @@ public:
   static Int_t   A2Y         (Int_t pad                      )     {return pad%1000;                                                 } //abs pad -> pad Y 
          void    AddTidOffset(Int_t offset                   )     {for (Int_t i=0; i<3; i++) if (fTracks[i]>0) fTracks[i]+=offset;  } //needed for merging
          Int_t   Ch          (                               )const{return A2C(fPad);                                                } //chamber number
-  static Bool_t  IsOverTh    (Float_t q                      )     {return q >= fgSigmas;                                            } //is digit over threshold????
+  static Bool_t  IsOverTh    (Float_t q                      )     {return q >= fgSigmas;                                            } //is digit over threshold?
   static Bool_t  IsInside    (Float_t x,Float_t y,Float_t margin=0){return x>-margin&&y>-margin&&x<SizeAllX()+margin&&y<SizeAllY()+margin;} //is point inside chamber boundary?
          Float_t LorsX       (                               )const{return LorsX(A2P(fPad),A2X(fPad));                               } //center of the pad x, [cm]
   static Float_t LorsX       (Int_t pc,Int_t padx            )     {return (padx    +0.5)*SizePadX()+(pc  %2)*(SizePcX()+SizeDead());} //center of the pad x, [cm]
@@ -55,9 +55,10 @@ public:
          Float_t Q           (                               )const{return fQ;}                                                        //charge, [QDC]
   inline void    Raw         (UInt_t &w32,Int_t &ddl,Int_t &r,Int_t &d,Int_t &a)const;                                                 //digit->(w32,ddl,r,d,a)
   inline void    Raw         (UInt_t  w32,Int_t  ddl         );                                                                        //(w32,ddl)->digit
+  inline void    Raw         (Int_t ddl,Int_t r,Int_t d,Int_t a);                                                                      //raw->abs pad number
   inline Bool_t  Set         (Int_t c,Int_t p,Int_t x,Int_t y,Int_t tid=0);                                                            //manual creation 
          void    SetQ        (Float_t q                      )     {fQ=q;}                                                             //manual creation 
-         void    SetSigmas   (Int_t sigmas                   )     {fgSigmas=sigmas;}                                                  //manual creation 
+         void    SetNsig     (Int_t sigmas                   )     {fgSigmas=sigmas;}                                                  //set n sigmas 
   static void    WriteRaw    (TObjArray *pDigLst             );                                                                        //write as raw stream     
   
   static Float_t CathAnoCath (                               )     {return 0.445;}                                                     //Cathode-Anode-cathode pitch
@@ -65,7 +66,7 @@ public:
   static Float_t MaxPcY      (Int_t iPc                      )     {return fgkMaxPcY[iPc];}                                            // PC limits
   static Float_t MinPcX      (Int_t iPc                      )     {return fgkMinPcX[iPc];}                                            // PC limits
   static Float_t MinPcY      (Int_t iPc                      )     {return fgkMinPcY[iPc];}                                            // PC limits
-  static Int_t   Sigmas      (                               )     {return fgSigmas;}                                                  // Getter n. sigmas for noise
+  static Int_t   Nsig        (                               )     {return fgSigmas;}                                                  //Getter n. sigmas for noise
   static Float_t SizeAllX    (                               )     {return fgkMaxPcX[5];}                                              //all PCs size x, [cm]        
   static Float_t SizeAllY    (                               )     {return fgkMaxPcY[5];}                                              //all PCs size y, [cm]    
   static Float_t SizeArea    (                               )     {return SizePcX()*SizePcY()*(kMaxPc-kMinPc+1);}                     //sence area, [cm^2]  
@@ -80,7 +81,7 @@ public:
   inline static Bool_t IsInDead(Float_t x,Float_t y        );                                                                          //is point in dead area?
   inline static void   Lors2Pad(Float_t x,Float_t y,Int_t &pc,Int_t &px,Int_t &py);                                                    //(x,y)->(pc,px,py) 
 protected:                                                                   //AliDigit has fTracks[3]
-  static Int_t fgSigmas;                                                                                                               //sigma cut on charge 
+  static Int_t fgSigmas;                                                                                                               //n. sigma to cut on charge 
   static const Float_t fgkMinPcX[6];                                                                                                   //limits PC
   static const Float_t fgkMinPcY[6];                                                                                                   //limits PC
   static const Float_t fgkMaxPcX[6];                                                                                                   //limits PC
@@ -178,17 +179,25 @@ void AliHMPIDDigit::Raw(UInt_t w32,Int_t ddl)
 // Arguments: w32 - 32 bits raw data word
 //            ddl - DDL idx  0 1 2 3 4 ... 13
 //   Returns: none
-  Int_t a2y[6]={3,2,4,1,5,0};//pady for a given address (for single DILOGIC chip)
   Int_t r = AliBitPacking::UnpackWord(w32,22,26); assert(1<=r&&r<=24);   //                                         Row number      (1..24)    
   Int_t d = AliBitPacking::UnpackWord(w32,18,21); assert(1<=d&&d<=10);   // 3322 2222 2222 1111 1111 1000 0000 0000 DILOGIC number  (1..10)
   Int_t a = AliBitPacking::UnpackWord(w32,12,17); assert(0<=a&&a<=47);   // 1098 7654 3210 9876 5432 1098 7654 3210 DILOGIC address (0..47)  
-  Int_t q = AliBitPacking::UnpackWord(w32, 0,11); assert(0<=q&&q<=4095); // 0000 0rrr rrdd ddaa aaaa qqqq qqqq qqqq Qdc             (0..4095)   
+  Int_t q = AliBitPacking::UnpackWord(w32, 0,11); assert(0<=q&&q<=4095); // 0000 0rrr rrdd ddaa aaaa qqqq qqqq qqqq Qdc             (0..4095) 
+  Raw(ddl,r,d,a);
+  fQ=q;
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void AliHMPIDDigit::Raw(Int_t ddl,Int_t r,Int_t d,Int_t a)
+{
+  Int_t a2y[6]={3,2,4,1,5,0};//pady for a given address (for single DILOGIC chip)
                                   Int_t ch=ddl/2;
   Int_t tmp=(r-1)/8;              Int_t pc=(ddl%2)? 5-2*tmp:2*tmp; 
                                   Int_t px=(d-1)*8+a/6;
         tmp=(ddl%2)?(24-r):r-1;   Int_t py=6*(tmp%8)+a2y[a%6];
-  fPad=Abs(ch,pc,px,py);fQ=q;
+  fPad=Abs(ch,pc,px,py);
 }
+
+
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Bool_t AliHMPIDDigit::Set(Int_t ch,Int_t pc,Int_t px,Int_t py,Int_t tid)
 {
