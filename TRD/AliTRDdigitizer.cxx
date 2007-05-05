@@ -914,8 +914,8 @@ Bool_t AliTRDdigitizer::MakeDigits()
       }
 
       // Go to the local coordinate system:
-      // loc[0] - row  direction in amplification or driftvolume
-      // loc[1] - col  direction in amplification or driftvolume
+      // loc[0] - col  direction in amplification or driftvolume
+      // loc[1] - row  direction in amplification or driftvolume
       // loc[2] - time direction in amplification or driftvolume
       gGeoManager->MasterToLocal(pos,loc);
       if (inDrift) {
@@ -1007,7 +1007,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
         // Apply E x B effects (depends on drift direction)
         if (commonParam->ExBOn()) { 
-          if (!(ExB(driftvelocity,driftlength,locR))) {
+          if (!(ExB(driftvelocity,driftlength,locC))) {
             continue;
 	  }
         }
@@ -2706,8 +2706,8 @@ Int_t AliTRDdigitizer::Diffusion(Float_t vdrift, Double_t absdriftlength
   Float_t driftSqrt = TMath::Sqrt(absdriftlength);
   Float_t sigmaT    = driftSqrt * fDiffusionT;
   Float_t sigmaL    = driftSqrt * fDiffusionL;
-  lRow  = gRandom->Gaus(lRow ,sigmaT * GetLorentzFactor(vdrift));
-  lCol  = gRandom->Gaus(lCol ,sigmaT);
+  lRow  = gRandom->Gaus(lRow ,sigmaT);
+  lCol  = gRandom->Gaus(lCol ,sigmaT * GetLorentzFactor(vdrift));
   lTime = gRandom->Gaus(lTime,sigmaL * GetLorentzFactor(vdrift));
 
   return 1;
@@ -2728,7 +2728,7 @@ Float_t AliTRDdigitizer::GetLorentzFactor(Float_t vd)
 }
   
 //_____________________________________________________________________________
-Int_t AliTRDdigitizer::ExB(Float_t vdrift, Double_t driftlength, Double_t &lRow)
+Int_t AliTRDdigitizer::ExB(Float_t vdrift, Double_t driftlength, Double_t &lCol)
 {
   //
   // Applies E x B effects to the position of a single electron.
@@ -2737,7 +2737,7 @@ Int_t AliTRDdigitizer::ExB(Float_t vdrift, Double_t driftlength, Double_t &lRow)
   
   RecalcDiffusion(vdrift);
 
-  lRow = lRow + fOmegaTau * driftlength;
+  lCol = lCol + fOmegaTau * driftlength;
 
   return 1;
 
