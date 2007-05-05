@@ -17,7 +17,10 @@ SRCS:=  PHOS/AliHLTPHOSPulseGenerator.cxx \
 	PHOS/AliHLTPHOSFileWriter.cxx \
 	PHOS/AliHLTPHOSDDLPackedFileWriter.cxx \
 	PHOS/AliHLTPHOSCellEnergiesFileWriter.cxx \
-	PHOS/AliHLTPHOSHistogramProducerComponent.cxx
+	PHOS/AliHLTPHOSHistogramProducerComponent.cxx \
+	PHOS/AliHLTPHOSRcuHistogramProducer.cxx \
+	PHOS/AliHLTPHOSRcuHistogramProducerComponent.cxx \
+	PHOS/AliHLTPHOSDDLDecoderComponent.cxx \
 
 HDRS:=  PHOS/AliHLTPHOSPulseGenerator.h \
 	PHOS/AliHLTPHOSRawAnalyzer.h \
@@ -40,6 +43,9 @@ HDRS:=  PHOS/AliHLTPHOSPulseGenerator.h \
 	PHOS/AliHLTPHOSDDLPackedFileWriter.h \
 	PHOS/AliHLTPHOSCellEnergiesFileWriter.h \
 	PHOS/AliHLTPHOSHistogramProducerComponent.h \
+	PHOS/AliHLTPHOSRcuHistogramProducer.h \
+	PHOS/AliHLTPHOSRcuHistogramProducerComponent.h \
+	PHOS/AliHLTPHOSDDLDecoderComponent.h \
 	PHOS/AliHLTPHOSModuleCellAccumulatedEnergyDataStruct.h \
 	PHOS/AliHLTPHOSModuleCellAverageEnergyDataStruct.h \
 	PHOS/AliHLTPHOSRcuChannelDataStruct.h \
@@ -69,6 +75,9 @@ CLASS_HDRS:=	PHOS/AliHLTPHOSPulseGenerator.h \
 		PHOS/AliHLTPHOSDDLPackedFileWriter.h \
 		PHOS/AliHLTPHOSCellEnergiesFileWriter.h \
 		PHOS/AliHLTPHOSHistogramProducerComponent.h \
+		PHOS/AliHLTPHOSRcuHistogramProducer.h \
+		PHOS/AliHLTPHOSRcuHistogramProducerComponent.h \
+		PHOS/AliHLTPHOSDDLDecoderComponent.h \
 		PHOS/AliHLTPHOSModuleCellAccumulatedEnergyDataStruct.h \
 		PHOS/AliHLTPHOSModuleCellAverageEnergyDataStruct.h \
 		PHOS/AliHLTPHOSRcuChannelDataStruct.h \
@@ -92,8 +101,10 @@ MODULE_SRCS:=   PHOS/AliHLTPHOSPulseGenerator.cxx \
 		PHOS/AliHLTPHOSFileWriter.cxx \
 		PHOS/AliHLTPHOSDDLPackedFileWriter.cxx \
 		PHOS/AliHLTPHOSCellEnergiesFileWriter.cxx \
-		PHOS/AliHLTPHOSHistogramProducerComponent.cxx
-
+		PHOS/AliHLTPHOSHistogramProducerComponent.cxx \
+		PHOS/AliHLTPHOSRcuHistogramProducer.cxx \
+		PHOS/AliHLTPHOSRcuHistogramProducerComponent.cxx \
+		PHOS/AliHLTPHOSDDLDecoderComponent.cxx
 
 EINCLUDE+= HLT/BASE HLT/BASE/util HLT/src HLT/hough HLT/comp HLT/misc HLT/ITS HLT/MUON/src TPC ITS MUON STEER RAW
 
