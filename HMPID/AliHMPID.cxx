@@ -26,16 +26,17 @@
 #include <TH1F.h>        //HitQA()
 #include <AliLog.h>      //in many methods to print AliInfo 
 
-Bool_t AliHMPID::fgDoFeed=kTRUE;
- 
 ClassImp(AliHMPID)    
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-AliHMPID::AliHMPID(const char *name, const char *title):AliDetector(name,title),fSdi(0),fDig(0),fClu(0)
+AliHMPID::AliHMPID(const char *name, const char *title):AliDetector(name,title),fDoFeed(kTRUE),fSdi(0),fDig(0),fClu(0)
 {
 //Named ctor
   AliDebug(1,"Start.");
 //AliDetector ctor deals with Hits and Digits (reset them to 0, does not create them)
   HitCreate();          gAlice->GetMCApp()->AddHitList(fHits);
+  
+  TString ttl=title;
+  fDoFeed=!ttl.Contains("NoFeedBack");
   AliDebug(1,"Stop.");
 }//AliHMPID::AliHMPID(const char *name, const char *title)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

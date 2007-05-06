@@ -25,11 +25,10 @@ public:
          Int_t       RefitInward    (AliESD *                   )       {return 0;} //pure virtual from AliTracker 
          void        UnloadClusters (                           )       {         } //pure virtual from AliTracker 
 //private part  
-  static Int_t       IntTrkCha(AliESDtrack *pTrk,Double_t &xPc,Double_t &yPc);              //find track-PC intersection, retuns chamber ID
-  static Int_t       Recon    (AliESD *pEsd,TObjArray *pCluAll,TObjArray *pNmean=0);        //do actual job, returns status code  
+  static Int_t       IntTrkCha(AliESDtrack *pTrk,Float_t &xPc,Float_t &yPc        );//find track-PC intersection, retuns chamber ID
+  static Int_t       Recon    (AliESD *pEsd,TObjArray *pCluAll,TObjArray *pNmean=0);//do actual job, returns status code  
 protected:
   TObjArray            *fClu;                     //! each chamber holds it's one list of clusters 
-
 ClassDef(AliHMPIDTracker,0)
 };//class AliHMPIDTracker
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

@@ -9,20 +9,6 @@
 #include <AliHMPIDHit.h>
 #include <AliHMPIDCluster.h>
 
-
-
-TH1F *hHitQdc; TH2F *hHitMap[7];  
-
-
-
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-void BookHits()
-{
-  hHitQdc=new TH1F("HitQdc","Hit Qdc all chamber;QDC",500,0,4000);
-  for(Int_t iCh=0;iCh<7;iCh++)
-    hHitMap[iCh]=new TH2F(Form("HitMap%i",iCh),Form("Ch%i;x_{Hit};y_{Hit}",iCh),1700,-10,160,1700,-10,160);  
-}
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 TObjArray *CreateContainer(const char *classname,TTree *pTree)
 {
@@ -32,14 +18,45 @@ TObjArray *CreateContainer(const char *classname,TTree *pTree)
     pOA->AddAt(pCA,iCh);    
     pTree->SetBranchAddress(Form("HMPID%i",iCh),&pCA);
   }
-  pTree->GetEntry(0);
   return pOA;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-
+TH1F *hHitQdc; TH2F *hHitMap[7];  
+void Hits(Int_t mode,TTree *pTree=0x0)
+{
+  switch(mode){
+    case 1:
+      hHitQdc=new TH1F("HitQdc","Hit Qdc all chamber;QDC",500,0,4000);
+      for(Int_t iCh=0;iCh<7;iCh++) hHitMap[iCh]=new TH2F(Form("HitMap%i",iCh),Form("Ch%i;x_{Hit};y_{Hit}",iCh),160,0,160,160,0,160);      
+      return;
+    case 2:
+      if(pTree==0) return;
+      TClonesArray *pHits=new TClonesArray("AliHMPIDHit");  pTree->SetBranchAddress("HMPID",&pHits);  
+      for(Int_t iEnt=0;iEnt<pTree->GetEntriesFast();iEnt++){//entries loop
+        pTree->GetEntry(iEnt);
+        for(Int_t iHit=0;iHit<pHits->GetEntriesFast();iHit++){//hits loop
+          AliHMPIDHit *pHit = (AliHMPIDHit*)pHits->UncheckedAt(iHit);
+          hHitMap[pHit->Ch()]->Fill(pHit->LorsX(),pHit->LorsY());
+          hHitQdc->Fill(pHit->Q());
+        }//hits loop      
+      }//entries loop
+      delete pHits;
+      return;
+    case 3:
+      TCanvas *c1=new TCanvas("HitCan","Hits",1280,800); c1->Divide(3,3);
+  
+      for(Int_t iCh=0;iCh<7;iCh++){
+        if(iCh==6) c1->cd(1); if(iCh==5) c1->cd(2);
+        if(iCh==4) c1->cd(4); if(iCh==3) c1->cd(5); if(iCh==2) c1->cd(6);
+                              if(iCh==1) c1->cd(8); if(iCh==0) c1->cd(9);
+        hHitMap[iCh]->Draw();
+      }  
+      c1->cd(3); gPad->SetLogy(); hHitQdc->Draw();
+      return;
+  }
+}//Hits()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 TH1F *hCluEvt,*hCluChi2,*hCluFlg,*hCluSize;
-
 void Clus(Int_t mode, TTree *pTree=0x0)
 {
   switch(mode){
@@ -51,94 +68,44 @@ void Clus(Int_t mode, TTree *pTree=0x0)
       return;
     case 2:      
       if(pTree==0) return;
-      
-      TObjArray *pLst=CreateContainer("AliHMPIDCluster",pTree); 
+      TObjArray *pLst=CreateContainer("AliHMPIDCluster",pTree); pTree->GetEntry(0);
       for(Int_t iCh=AliHMPIDDigit::kMinCh;iCh<=AliHMPIDDigit::kMaxCh;iCh++){//chambers loop
         TClonesArray *pClus=(TClonesArray *)pLst->UncheckedAt(iCh);
-      
         hCluEvt->Fill(pClus->GetEntriesFast());
         for(Int_t iClu=0;iClu<pClus->GetEntriesFast();iClu++){//clusters loop
           AliHMPIDCluster *pClu=(AliHMPIDCluster*)pClus->UncheckedAt(iClu);
-          hCluFlg->Fill(pClu->Status());
-          hCluChi2->Fill(pClu->Chi2());
-          hCluSize->Fill(pClu->Size());
+          hCluFlg->Fill(pClu->Status());  hCluChi2->Fill(pClu->Chi2());  hCluSize->Fill(pClu->Size());
         }
       }
       delete pLst;           
       return;  
     case 3:
       TCanvas *c1=new TCanvas("CluComCan","Clusters in common",1280,800); c1->Divide(3,3);
-      c1->cd(1); hCluEvt->Draw();  
-      c1->cd(2); hCluChi2->Draw(); 
-      c1->cd(3); hCluFlg->Draw(); 
-      c1->cd(4); hCluSize->Draw(); 
+      c1->cd(1); hCluEvt->Draw();       c1->cd(2); hCluChi2->Draw(); 
+      c1->cd(3); hCluFlg->Draw();       c1->cd(4); hCluSize->Draw(); 
       return;
   }//switch
 }//Clus()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-void FillHits(TTree *pHitTree)
-{
-  if(pHitTree==0) return;
-  TClonesArray *pHitLst=new TClonesArray("AliHMPIDHit");
-  pHitTree->SetBranchAddress("HMPID",&pHitLst);
-  
-  for(Int_t iEnt=0;iEnt<pHitTree->GetEntriesFast();iEnt++){
-    pHitTree->GetEntry(iEnt);
-    for(Int_t iHit=0;iHit<pHitLst->GetEntriesFast();iHit++){
-      AliHMPIDHit *pHit = (AliHMPIDHit*)pHitLst->UncheckedAt(iHit);
-      hHitMap[pHit->Ch()]->Fill(pHit->LorsX(),pHit->LorsY());
-      hHitQdc->Fill(pHit->Q());
-    }      
-  }
-  delete pHitLst;
-}    
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-void PlotHits()
-{
-  TCanvas *pHitCan=new TCanvas("HitCan","Hits",1280,800); pHitCan->Divide(3,3);
-  
-  for(Int_t iCh=0;iCh<7;iCh++){
-    if(iCh==6) pHitCan->cd(1); if(iCh==5) pHitCan->cd(2);
-    if(iCh==4) pHitCan->cd(4); if(iCh==3) pHitCan->cd(5); if(iCh==2) pHitCan->cd(6);
-                               if(iCh==1) pHitCan->cd(8); if(iCh==0) pHitCan->cd(9);
-    hHitMap[iCh]->Draw();
-  }  
-  pHitCan->cd(3); gPad->SetLogy(); hHitQdc->Draw();
-}
-
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
 void Hqa()
 {
 
   TFile *fh=0; if(gSystem->IsFileInIncludePath("HMPID.Hits.root"))      fh=TFile::Open("HMPID.Hits.root"     ,"read");if(fh->IsZombie()) fh=0;
   TFile *fd=0; if(gSystem->IsFileInIncludePath("HMPID.Digits.root"))    fd=TFile::Open("HMPID.Digits.root"   ,"read");if(fd->IsZombie()) fd=0;
   TFile *fc=0; if(gSystem->IsFileInIncludePath("HMPID.RecPoints.root")) fc=TFile::Open("HMPID.RecPoints.root","read");if(fc->IsZombie()) fc=0;
-  
-  
   if(fh==0 && fd==0 && fc==0){Printf("Nothing to do!"); return;}
-  
-  
-  if(fh) BookHits();
-  if(fc) Clus(1); //book
-  
+  if(fh) Hits(1); if(fc) Clus(1);  //book
   Int_t iEvt=0;
   while(1){
     TTree *th=0; if(fh) th=(TTree*)fh->Get(Form("Event%i/TreeH",iEvt));
     TTree *td=0; if(fd) td=(TTree*)fd->Get(Form("Event%i/TreeD",iEvt));
     TTree *tc=0; if(fc) tc=(TTree*)fc->Get(Form("Event%i/TreeR",iEvt));
-    
-    FillHits(th);
-    Clus(2,tc);
+    Hits(2,th);   Clus(2,tc); //fill
     if(th==0 && td==0 && tc==0) break;
     iEvt++;
     Printf("Event %i processed",iEvt);
   }
-  
-  if(fh) PlotHits();
-  if(fc) Clus(3); //plot
+  if(fh) Hits(3);  if(fc) Clus(3); //plot
 }
 
 /*

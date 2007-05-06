@@ -15,8 +15,8 @@ class AliHMPID : public AliDetector //TObject-TNamed-AliModule-AliDetector-AliHM
 {
 public:
 //ctor & dtor    
-            AliHMPID(const char *nm,const char *ttl);                                              //named ctor
-            AliHMPID(                              ):AliDetector(    ),fSdi(0),fDig(0),fClu(0) {}  //default ctor          
+            AliHMPID(const char *nm,const char *ttl);                                                           //named ctor
+            AliHMPID(                              ):AliDetector(    ),fDoFeed(kTRUE),fSdi(0),fDig(0),fClu(0) {}  //default ctor          
   virtual  ~AliHMPID();                                            
 //framework part  
           void  BuildGeometry   (                ) {}          //from AliModule invoked from AliMC::InitGeometry() to build geometry for old event display
@@ -29,7 +29,6 @@ public:
           void  MakeBranch      (Option_t *opt="");            //from AliModule invokde from AliRun::Tree2Tree() to make requested HMPID branch
           void  SetTreeAddress  (                );            //from AliModule invoked from AliRun::GetEvent(), AliLoader::SetTAddrInDet()
   virtual void  StepManager     (                )=0;          //from AliModule invoked from AliMC
-          void  DoFeed          (Bool_t doFeed   ){fgDoFeed=doFeed;} // Set feedback photons
 //private part +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
   void          HitCreate(         )     {if(fHits)return; fHits=new TClonesArray("AliHMPIDHit"); fNhits=0;     }//create hits list
               
@@ -51,7 +50,7 @@ public:
     fClu=new TObjArray(7); for(Int_t i=0;i<7;i++)fClu->AddAt(new TClonesArray("AliHMPIDCluster"),i);            }//create clusters list
          void   CluReset (         )     {if(fClu)for(int i=0;i<7;i++)fClu->At(i)->Clear();                     }//clean clusters list
 protected:  
-  static  Bool_t fgDoFeed;                        //Flag to switch on/off Feedback photon creation
+  Bool_t                fDoFeed;                  //! Flag to switch on/off Feedback photon creation
   TClonesArray         *fSdi;                     //! list of sdigits  
   TObjArray            *fDig;                     //! each chamber holds it's one list of digits
   TObjArray            *fClu;                     //! each chamber holds it's one list of clusters 

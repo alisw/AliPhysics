@@ -324,13 +324,16 @@ void AliHMPIDv2::DefineOpticalProperties()
   TF1 *pGaAF=new TF1("HabsGap","(x<7.75)*6512.399+(x>=7.75)*3.90743e-2/(-1.655279e-1+6.307392e-2*x-8.011441e-3*x*x+3.392126e-4*x*x*x)",emin,emax);  //????? from where  
   
   TF1 *pQeF =new TF1("Hqe"    ,"0+(x>6.07267)*0.344811*(1-exp(-1.29730*(x-6.07267)))"                                                 ,emin,emax);  //fit from DiMauro data 28.10.03  
-                            
+                   
+  TString title=GetTitle();
+  Bool_t isFlatIdx=title.Contains("FlatIdx"); 
+  
   for(Int_t i=0;i<kNbins;i++){
     Float_t eV=emin+0.1*i;  //Ckov energy in eV
     aEckov [i] =1e-9*eV;    //Ckov energy in GeV
-    aAbsRad[i]=pRaAF->Eval(eV); aIdxRad[i]=1.292;//pRaIF->Eval(eV,20);      //Simulation for 20 degress C       
-    aAbsWin[i]=pWiAF->Eval(eV); aIdxWin[i]=1.5787;//pWiIF->Eval(eV);
-    aAbsGap[i]=pGaAF->Eval(eV); aIdxGap[i]=1.0005;//pGaIF->Eval(eV);   
+    aAbsRad[i]=pRaAF->Eval(eV); (isFlatIdx)? aIdxRad[i]=1.292: aIdxRad[i]=pRaIF->Eval(eV,20);     
+    aAbsWin[i]=pWiAF->Eval(eV);              aIdxWin[i]=pWiIF->Eval(eV);
+    aAbsGap[i]=pGaAF->Eval(eV);              aIdxGap[i]=pGaIF->Eval(eV);   
     aQeAll[i] =1;                     //QE for all other materials except for PC must be 1.  
     aAbsMet[i] =0.0001;                aIdxMet[i]=0;                                             //metal ref idx must be 0 in order to reflect photon
                                        aIdxPc [i]=1;           aQePc [i]=pQeF->Eval(eV);         //PC ref idx must be 1 in order to apply photon to QE conversion 
@@ -660,15 +663,14 @@ void AliHMPIDv2::StepManager()
   if((gMC->TrackPid()==50000050||gMC->TrackPid()==50000051)&&gMC->CurrentVolID(copy)==fIdPad){   //photon (Ckov or feedback) hit PC (fIdPad)
     if(gMC->Edep()>0){                                                                           //photon survided QE test i.e. produces electron
       if(IsLostByFresnel()){ gMC->StopTrack(); return;}                                          //photon lost due to fersnel reflection on PC       
-											 gMC->CurrentVolOffID(5,copy);                                             //current chamber since geomtry tree is Hmp-Hsec-Hgap-Hrow-Hcel-Hpad
+                       gMC->CurrentVolOffID(5,copy);                                             //current chamber since geomtry tree is Hmp-Hsec-Hgap-Hrow-Hcel-Hpad
       Int_t   tid=     gMC->GetStack()->GetCurrentTrackNumber();                                 //take TID
       Int_t   pid=     gMC->TrackPid();                                                          //take PID
       Float_t etot=    gMC->Etot();                                                              //total hpoton energy, [GeV] 
       Double_t x[3];   gMC->TrackPosition(x[0],x[1],x[2]);                                       //take MARS position at entrance to PC
       Float_t xl,yl;   AliHMPIDParam::Instance()->Mars2Lors(copy,x,xl,yl);                       //take LORS position
-       if ( yl < 0  ) Printf("-------------------> SUPER PROBLEM PHOTON>>> Ch: %d, x[]: %f %f %f (MARS)-> xl: %f yl: %f",copy,x[0],x[1],x[2],xl,yl);
       new((*fHits)[fNhits++])AliHMPIDHit(copy,etot,pid,tid,xl,yl,x);                             //HIT for photon, position at P, etot will be set to Q
-      GenFee(etot);                                                                              //generate feedback photons etot is modified in hit ctor to Q of hit
+      if(fDoFeed) GenFee(etot);                                                                  //generate feedback photons etot is modified in hit ctor to Q of hit
     }//photon hit PC and DE >0 
   }//photon hit PC
   
@@ -689,9 +691,8 @@ void AliHMPIDv2::StepManager()
       out[1]=0.5*(out[1]+in[1]);                                                                  //take hit position at the anod plane
       out[2]=0.5*(out[2]+in[2]);                                                                  //>
       Float_t xl,yl;AliHMPIDParam::Instance()->Mars2Lors(copy,out,xl,yl);                         //take LORS position
-       if ( yl < 0  ) Printf("-------------------> SUPER PROBLEM CHARGED>>> Ch: %d, x[]: %f %f %f (MARS)-> xl: %f yl: %f",copy,out[0],out[1],out[2],xl,yl);
       new((*fHits)[fNhits++])AliHMPIDHit(copy,eloss,pid,tid,xl,yl,out);                           //HIT for MIP, position near anod plane, eloss will be set to Q 
-      GenFee(eloss);                                                                              //generate feedback photons 
+      if(fDoFeed) GenFee(eloss);                                                                  //generate feedback photons 
     }else                                                                                         //just going inside
       eloss          += gMC->Edep();                                                              //collect this step eloss 
   }//MIP in GAP

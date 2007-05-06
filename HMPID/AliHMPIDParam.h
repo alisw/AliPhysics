@@ -33,14 +33,14 @@ public:
   //trasformation methodes
   void     Lors2Mars   (Int_t c,Float_t x,Float_t y,Double_t *m,Int_t pl=kPc)const{Double_t z=0; switch(pl){case kPc:z=8.0;break; case kAnod:z=7.806;break; case kRad:z=-1.25; break;}   Double_t l[3]={x-fX,y-fY,z};  fM[c]->LocalToMaster(l,m); }    
   TVector3 Lors2Mars   (Int_t c,Float_t x,Float_t y,            Int_t pl=kPc)const{Double_t m[3];Lors2Mars(c,x,y,m,pl); return TVector3(m);    }//MRS->LRS  
-  void     Mars2Lors   (Int_t c,Double_t *m,Float_t &x,Float_t &y           )const{Double_t l[3];fM[c]->MasterToLocal(m,l);x=l[0]+fX;y=l[1]+fY;}//MRS->LRS
+  void     Mars2Lors   (Int_t c,Double_t *m,Float_t &x ,Float_t &y          )const{Double_t l[3];fM[c]->MasterToLocal(m,l);x=l[0]+fX;y=l[1]+fY;}//MRS->LRS
   void     Mars2LorsVec(Int_t c,Double_t *m,Float_t &th,Float_t &ph         )const{Double_t l[3]; fM[c]->MasterToLocalVect(m,l); 
                                                                                    Float_t pt=TMath::Sqrt(l[0]*l[0]+l[1]*l[1]); 
                                                                                            th=TMath::ATan(pt/l[2]); 
                                                                                            ph=TMath::ATan2(l[1],l[0]);}    
   TVector3 Norm        (Int_t c                                             )const{Double_t n[3]; Norm(c,n); return TVector3(n);               }//norm 
   void     Norm        (Int_t c,Double_t *n                                 )const{Double_t l[3]={0,0,1};fM[c]->LocalToMasterVect(l,n);        }//norm
-  
+  void     Point       (Int_t c,Double_t *p,Int_t plane                     )const{Lors2Mars(c,0,0,p,plane);}      //point of given chamber plane
   enum EPlaneId {kPc,kRad,kAnod};            //3 planes in chamber 
 protected:
          AliHMPIDParam();             //default ctor is protected to enforce it to be singleton
