@@ -76,7 +76,7 @@ ClassImp(AliTRDgeometry)
   const Float_t  AliTRDgeometry::fgkCH        = AliTRDgeometry::fgkCraH
                                               + AliTRDgeometry::fgkCdrH
                                               + AliTRDgeometry::fgkCamH
-                                              + AliTRDgeometry::fgkCroH;  
+                                              + AliTRDgeometry::fgkCroH;
 
   // Vertical spacing of the chambers
   const Float_t  AliTRDgeometry::fgkVspace    =   1.784;
@@ -112,13 +112,13 @@ ClassImp(AliTRDgeometry)
   // Thickness of the the material layers
   //
   const Float_t  AliTRDgeometry::fgkMyThick   = 0.005;
-  const Float_t  AliTRDgeometry::fgkRaThick   = 0.3233;  
+  const Float_t  AliTRDgeometry::fgkRaThick   = 0.3233;
   const Float_t  AliTRDgeometry::fgkDrThick   = AliTRDgeometry::fgkCdrH;    
   const Float_t  AliTRDgeometry::fgkAmThick   = AliTRDgeometry::fgkCamH;
   const Float_t  AliTRDgeometry::fgkXeThick   = AliTRDgeometry::fgkDrThick
                                               + AliTRDgeometry::fgkAmThick;
   const Float_t  AliTRDgeometry::fgkWrThick   = 0.0002;
-  const Float_t  AliTRDgeometry::fgkCuThick   = 0.0072; 
+  const Float_t  AliTRDgeometry::fgkCuThick   = 0.0072;
   const Float_t  AliTRDgeometry::fgkGlThick   = 0.05;
   const Float_t  AliTRDgeometry::fgkSuThick   = 0.0919; 
   const Float_t  AliTRDgeometry::fgkRcThick   = 0.0058;
@@ -139,18 +139,19 @@ ClassImp(AliTRDgeometry)
   const Float_t  AliTRDgeometry::fgkRpZpos    =  1.0;
   const Float_t  AliTRDgeometry::fgkRoZpos    =  1.05;
 
-  const Int_t    AliTRDgeometry::fgkMCMmax    = 16;   
-  const Int_t    AliTRDgeometry::fgkMCMrow    = 4;   
-  const Int_t    AliTRDgeometry::fgkROBmaxC0  = 6; 
-  const Int_t    AliTRDgeometry::fgkROBmaxC1  = 8; 
+  const Int_t    AliTRDgeometry::fgkMCMmax    = 16;
+  const Int_t    AliTRDgeometry::fgkMCMrow    = 4;  
+  const Int_t    AliTRDgeometry::fgkROBmaxC0  = 6;
+  const Int_t    AliTRDgeometry::fgkROBmaxC1  = 8;
   const Int_t    AliTRDgeometry::fgkADCmax    = 21;   
   const Int_t    AliTRDgeometry::fgkTBmax     = 60;   
-  const Int_t    AliTRDgeometry::fgkPadmax    = 18;   
+  const Int_t    AliTRDgeometry::fgkPadmax    = 18;
   const Int_t    AliTRDgeometry::fgkColmax    = 144;
   const Int_t    AliTRDgeometry::fgkRowmaxC0  = 12;
   const Int_t    AliTRDgeometry::fgkRowmaxC1  = 16;
 
-  const Double_t AliTRDgeometry::fgkTime0Base = 300.65;
+//const Double_t AliTRDgeometry::fgkTime0Base = 300.65;
+  const Double_t AliTRDgeometry::fgkTime0Base = 299.95;
   const Float_t  AliTRDgeometry::fgkTime0[6]  = { fgkTime0Base + 0 * (Cheight() + Cspace()) 
                                                 , fgkTime0Base + 1 * (Cheight() + Cspace()) 
                                                 , fgkTime0Base + 2 * (Cheight() + Cspace()) 
@@ -1512,27 +1513,21 @@ AliTRDgeometry *AliTRDgeometry::GetGeometry(AliRunLoader *runLoader)
 Bool_t AliTRDgeometry::ReadGeoMatrices()
 {
   //
-  // Read the geo matrices from the current gGeoManager for each TRD detector
-  //
-  // This fill three arrays of TGeoHMatrix, ordered by detector numbers 
-  // for fast access:
-  //   fMatrixArray:           Used for transformation local <-> global ???
-  //   fMatrixCorrectionArray: Used for transformation local <-> tracking system
-  //   fMatrixGeo:             Alignable objects
+  // Read geo matrices from current gGeoManager for each TRD sector
   //
 
   if (!gGeoManager) {
     return kFALSE;
   }
 
-  fMatrixArray           = new TObjArray(kNdet); 
+  fMatrixArray           = new TObjArray(kNdet);
   fMatrixCorrectionArray = new TObjArray(kNdet);
   fMatrixGeo             = new TObjArray(kNdet);
+  AliAlignObjAngles o;
 
   for (Int_t iLayer = AliAlignObj::kTRD1; iLayer <= AliAlignObj::kTRD6; iLayer++) {
     for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer); iModule++) {
 
-      // Find the path to the different alignable objects (ROCs)
       UShort_t     volid   = AliAlignObj::LayerToVolUID(iLayer,iModule);
       const char  *symname = AliAlignObj::SymName(volid);
       TGeoPNEntry *pne     = gGeoManager->GetAlignableEntry(symname);
@@ -1543,43 +1538,40 @@ Bool_t AliTRDgeometry::ReadGeoMatrices()
       if (!gGeoManager->cd(path)) {
         return kFALSE;
       }
+      TGeoHMatrix *m         = gGeoManager->GetCurrentMatrix();
+      Int_t        iLayerTRD = iLayer - AliAlignObj::kTRD1;
+      Int_t        isector   = Nsect() - 1 - (iModule/Ncham());
+      Int_t        ichamber  = Ncham() - 1 - (iModule%Ncham());
+      Int_t        lid       = GetDetector(iLayerTRD,ichamber,isector);
 
-      // Get the geo matrix of the current alignable object
-      // and add it to the corresponding list
-      TGeoHMatrix *matrix   = gGeoManager->GetCurrentMatrix();
-      Int_t        iplane   = iLayer - AliAlignObj::kTRD1;
-      Int_t        isector  = iModule / Ncham();
-      Int_t        ichamber = iModule % Ncham();
-      Int_t        idet     = GetDetector(iplane,ichamber,isector);
-      fMatrixGeo->AddAt(new TGeoHMatrix(* matrix),idet);
+      //
+      // Local geo system z-x-y  to x-y--z
+      //
+      fMatrixGeo->AddAt(new TGeoHMatrix(*m),lid);
 
-      // Construct the geo matrix for the local <-> global transformation
-      // and add it to the corresponding list.
-      // In addition to the original geo matrix also a rotation of the
-      // kind z-x-y to x-y--z is applied.
-      TGeoRotation rotMatrixA;
-      rotMatrixA.RotateY(90); 
-      rotMatrixA.RotateX(90);
-      TGeoHMatrix matrixGlobal(rotMatrixA.Inverse());
-      matrixGlobal.MultiplyLeft(matrix);
-      fMatrixArray->AddAt(new TGeoHMatrix(matrixGlobal),idet);
+      TGeoRotation mchange;
+      mchange.RotateY(90);
+      mchange.RotateX(90);
 
-      // Construct the geo matrix for the cluster transformation
-      // and add it to the corresponding list.
-      // In addition to the original geo matrix also a rotation of the
-      // kind x-y--z to z-x-y and a rotation by the sector angle is applied.
+      TGeoHMatrix gMatrix(mchange.Inverse());
+      gMatrix.MultiplyLeft(m);
+      fMatrixArray->AddAt(new TGeoHMatrix(gMatrix),lid);
+
+      //
+      // Cluster transformation matrix
+      //
+      TGeoHMatrix  rotMatrix(mchange.Inverse());
+      rotMatrix.MultiplyLeft(m);
       Double_t sectorAngle = 20.0 * (isector % 18) + 10.0;
-      TGeoHMatrix rotMatrixB(rotMatrixA.Inverse());
-      rotMatrixB.MultiplyLeft(matrix);
-      TGeoHMatrix rotSector;
+      TGeoHMatrix  rotSector;
       rotSector.RotateZ(sectorAngle);
-      rotMatrixB.MultiplyLeft(&rotSector);      
-      fMatrixCorrectionArray->AddAt(new TGeoHMatrix(rotMatrixB),idet);
+      rotMatrix.MultiplyLeft(&rotSector);
 
-    }    
+      fMatrixCorrectionArray->AddAt(new TGeoHMatrix(rotMatrix),lid);
+
+    }
   }
 
   return kTRUE;
 
 }
-
