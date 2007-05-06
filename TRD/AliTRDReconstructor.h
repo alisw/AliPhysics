@@ -22,23 +22,25 @@ class AliTRDReconstructor: public AliReconstructor {
   AliTRDReconstructor(): AliReconstructor()                             { };
   virtual ~AliTRDReconstructor()                                        { };
 
-  virtual void     Reconstruct(AliRunLoader *runLoader, AliRawReader *rawReader) const;
-  virtual void     Reconstruct(AliRawReader*, TTree*) const             { };
-  virtual void     Reconstruct(TTree*, TTree*) const                    { };
-  virtual void     Reconstruct(AliRunLoader *runLoader) const;
+  virtual void        ConvertDigits(AliRawReader *rawReader, TTree *digitsTree) const;
+
+  virtual void        Reconstruct(AliRunLoader *runLoader, AliRawReader *rawReader) const;
+  virtual void        Reconstruct(AliRawReader *rawReader, TTree *clusterTree) const;
+  virtual void        Reconstruct(TTree *digitsTree, TTree *clusterTree) const;
+  virtual void        Reconstruct(AliRunLoader *runLoader) const;
 
   virtual AliTracker *CreateTracker(AliRunLoader *runLoader) const;
 
-  virtual void     FillESD(AliRunLoader*, AliRawReader*, AliESD*) const { };
-  virtual void     FillESD(AliRawReader*, TTree*, AliESD*) const        { };
-  virtual void     FillESD(TTree*, TTree*, AliESD*) const { };
-  virtual void     FillESD(AliRunLoader *runLoader, AliESD *esd) const;
+  virtual void        FillESD(AliRunLoader *runLoader, AliRawReader *rawReader, AliESD *esd) const;
+  virtual void        FillESD(AliRawReader *rawReader, TTree *clusterTree, AliESD *esd) const;
+  virtual void        FillESD(TTree *digitsTree, TTree *clusterTree, AliESD *esd) const;
+  virtual void        FillESD(AliRunLoader *runLoader, AliESD *esd) const;
 
-  static  void     SetSeedingOn(Bool_t seeding)               { fgkSeedingOn  = seeding; }  
-  static  void     SetStreamLevel(Int_t level)                { fgStreamLevel = level;   }
+  static  void        SetSeedingOn(Bool_t seeding)               { fgkSeedingOn  = seeding; }  
+  static  void        SetStreamLevel(Int_t level)                { fgStreamLevel = level;   }
 
-  static  Bool_t   SeedingOn()                                { return fgkSeedingOn;     }
-  static  Int_t    StreamLevel()                              { return fgStreamLevel;    }
+  static  Bool_t      SeedingOn()                                { return fgkSeedingOn;     }
+  static  Int_t       StreamLevel()                              { return fgStreamLevel;    }
 
  private:
 

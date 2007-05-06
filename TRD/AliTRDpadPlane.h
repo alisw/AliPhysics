@@ -33,18 +33,10 @@ class AliTRDpadPlane : public TObject {
   virtual void       Copy(TObject &p) const;
 
   Int_t    GetPadRowNumber(Double_t z) const;
-  Int_t    GetPadRowNumberROC(Double_t z) const;
-  Int_t    GetPadColNumber(Double_t rphi) const;
-
+  Int_t    GetPadColNumber(Double_t rphi, Double_t rowOffset) const;
   Double_t GetTiltOffset(Double_t rowOffset) const 
                                              { return fTiltingTan * (rowOffset - 0.5*fLengthIPad); };
-
   Double_t GetPadRowOffset(Int_t row, Double_t z) const
-                                             { if ((row < 0) || (row >= fNrows))
-                                                 return -1.0;
-                                               else 
-                                                 return fPadRow[row] + fPadRowSMOffset - z;        };
-  Double_t GetPadRowOffsetROC(Int_t row, Double_t z) const
                                              { if ((row < 0) || (row >= fNrows))
                                                  return -1.0;
                                                else 
@@ -61,16 +53,13 @@ class AliTRDpadPlane : public TObject {
   Int_t    GetNrows() const                  { return fNrows;        };
   Int_t    GetNcols() const                  { return fNcols;        };
 
-  Double_t GetRow0() const                   { return fPadRow[0] + fPadRowSMOffset;    };
-  Double_t GetRow0ROC() const                { return fPadRow[0];    };
+  Double_t GetRow0() const                   { return fPadRow[0];    };
   Double_t GetCol0() const                   { return fPadCol[0];    };
 
-  Double_t GetRowEnd() const                 { return fPadRow[fNrows-1] - fLengthOPad + fPadRowSMOffset; };
-  Double_t GetRowEndROC() const              { return fPadRow[fNrows-1] - fLengthOPad; };
+  Double_t GetRowEnd() const                 { return fPadRow[fNrows-1] - fLengthOPad; };
   Double_t GetColEnd() const                 { return fPadCol[fNcols-1] - fWidthOPad;  };
 
-  Double_t GetRowPos(Int_t row) const        { return fPadRow[row] + fPadRowSMOffset;  };
-  Double_t GetRowPosROC(Int_t row) const     { return fPadRow[row];  };
+  Double_t GetRowPos(Int_t row) const        { return fPadRow[row];  };
   Double_t GetColPos(Int_t col) const        { return fPadCol[col];  };
   
   Double_t GetRowSize(Int_t row) const       { if ((row == 0) || (row == fNrows-1))
@@ -114,9 +103,7 @@ class AliTRDpadPlane : public TObject {
   Double_t *fPadRow;          //! Pad border positions in row direction
   Double_t *fPadCol;          //! Pad border positions in column direction
 
-  Double_t  fPadRowSMOffset;  //  To be added to translate local ROC system to local SM system
-
-  ClassDef(AliTRDpadPlane,3)  //  TRD ROC pad plane
+  ClassDef(AliTRDpadPlane,2)  //  TRD ROC pad plane
 
 };
 

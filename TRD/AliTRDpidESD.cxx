@@ -82,9 +82,9 @@ void AliTRDpidESD::Copy(TObject &p) const
   // Copy function
   //
 
- ((AliTRDpidESD &) p).fCheckTrackStatus          = fCheckTrackStatus;
- ((AliTRDpidESD &) p).fCheckKinkStatus           = fCheckKinkStatus;
- ((AliTRDpidESD &) p).fMinPlane                  = fMinPlane;
+  ((AliTRDpidESD &) p).fCheckTrackStatus          = fCheckTrackStatus;
+  ((AliTRDpidESD &) p).fCheckKinkStatus           = fCheckKinkStatus;
+  ((AliTRDpidESD &) p).fMinPlane                  = fMinPlane;
 
 }
 

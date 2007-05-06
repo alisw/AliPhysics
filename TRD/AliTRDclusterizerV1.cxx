@@ -147,6 +147,18 @@ Bool_t AliTRDclusterizerV1::ReadDigits()
 }
 
 //_____________________________________________________________________________
+Bool_t AliTRDclusterizerV1::ReadDigits(TTree *digitsTree)
+{
+  //
+  // Reads the digits arrays from the input tree
+  //
+
+  // Read in the digit arrays
+  return (fDigitsManager->ReadDigits(digitsTree));
+
+}
+
+//_____________________________________________________________________________
 Bool_t AliTRDclusterizerV1::ReadDigits(AliRawReader *rawReader)
 {
   //

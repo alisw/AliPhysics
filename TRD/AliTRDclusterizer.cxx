@@ -164,6 +164,22 @@ Bool_t AliTRDclusterizer::OpenOutput()
 }
 
 //_____________________________________________________________________________
+Bool_t AliTRDclusterizer::OpenOutput(TTree *clusterTree)
+{
+  //
+  // Connect the output tree
+  //
+
+  TObjArray *ioArray = 0;
+
+  fClusterTree = clusterTree;
+  fClusterTree->Branch("TRDcluster","TObjArray",&ioArray,32000,0);
+
+  return kTRUE;
+
+}
+
+//_____________________________________________________________________________
 Bool_t AliTRDclusterizer::OpenInput(Int_t nEvent)
 {
   //

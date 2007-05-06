@@ -67,9 +67,8 @@ class AliTRDdigitizer : public AliDigitizer {
           Float_t  GetLorentzFactor(Float_t vdrift);
 
   virtual Double_t TimeStruct(Float_t vdrift, Double_t time, Double_t z);
-  virtual Int_t    Diffusion(Float_t vdrift, Double_t absdriftlength
-                           , Double_t &lRow, Double_t &lCol, Double_t &lTime);
-  virtual Int_t    ExB(Float_t vdrift, Double_t driftlength, Double_t &lRow);
+  virtual Int_t    Diffusion(Float_t vdrift, Double_t driftlength, Double_t *xyz);
+  virtual Int_t    ExB(Float_t vdrift, Double_t driftlength, Double_t *xyz);  
 
   AliTRDdigitsManager *Digits() const                   { return fDigitsManager;  }
   

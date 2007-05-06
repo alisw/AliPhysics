@@ -43,53 +43,14 @@ Bool_t AliTRDReconstructor::fgkSeedingOn  = kFALSE;
 Int_t  AliTRDReconstructor::fgStreamLevel = 0;      // Stream (debug) level
 
 //_____________________________________________________________________________
-void AliTRDReconstructor::Reconstruct(AliRunLoader *runLoader) const
+void AliTRDReconstructor::ConvertDigits(AliRawReader* /*rawReader*/
+				      , TTree* /*digitsTree*/) const
 {
   //
-  // Reconstruct clusters
+  // Convert raw data digits into digit objects in a root tree
   //
 
-  AliLoader *loader = runLoader->GetLoader("TRDLoader");
-  loader->LoadRecPoints("recreate");
-
-  runLoader->CdGAFile();
-  Int_t nEvents = runLoader->GetNumberOfEvents();
-
-  for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
-    AliTRDclusterizerV1 clusterer("clusterer","TRD clusterizer");
-    clusterer.Open(runLoader->GetFileName(),iEvent);
-    clusterer.ReadDigits();
-    clusterer.MakeClusters();
-    clusterer.WriteClusters(-1);
-  }
-
-  loader->UnloadRecPoints();
-
-  //
-  // Trigger (tracklets, LTU)
-  //
-  loader->LoadTracks("RECREATE");
-  AliInfo("Trigger tracklets will be produced");
-
-  AliTRDtrigger trdTrigger("Trigger","Trigger class"); 
-
-  AliTRDtrigParam *trigp = new AliTRDtrigParam("TRDtrigParam"
-                                              ,"TRD Trigger parameters");
-
-  Float_t field = AliTracker::GetBz() * 0.1; // Tesla
-  AliInfo(Form("Trigger set for magnetic field = %f Tesla \n",field));
-  trigp->SetField(field);
-  trigp->Init();
-  trdTrigger.SetParameter(trigp);
-
-  for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
-    trdTrigger.Open(runLoader->GetFileName(),iEvent);
-    trdTrigger.ReadDigits();
-    trdTrigger.MakeTracklets();
-    trdTrigger.WriteTracklets(-1);
-  }
-
-  loader->UnloadTracks();
+  AliError("conversion of raw data digits into digit objects not implemented");
 
 }
 
@@ -154,6 +115,97 @@ void AliTRDReconstructor::Reconstruct(AliRunLoader *runLoader
 //   loader->UnloadTracks();
 
 }
+//_____________________________________________________________________________
+void AliTRDReconstructor::Reconstruct(AliRawReader *rawReader
+                                    , TTree *clusterTree) const
+{
+  //
+  // Reconstruct clusters
+  //
+
+  AliInfo("Reconstruct TRD clusters from RAW data");
+
+  AliTRDclusterizerV1 clusterer("clusterer","TRD clusterizer");
+  clusterer.OpenOutput(clusterTree);
+  clusterer.ReadDigits(rawReader);
+  clusterer.MakeClusters();
+  clusterer.WriteClusters(-1);
+
+  //
+  // No trigger, since we don't have the output tree for tracklets
+  //
+
+}
+
+//_____________________________________________________________________________
+void AliTRDReconstructor::Reconstruct(TTree *digitsTree, TTree *clusterTree) const
+{
+  //
+  // Reconstruct clusters
+  //
+
+  AliTRDclusterizerV1 clusterer("clusterer","TRD clusterizer");
+  clusterer.OpenOutput(clusterTree);
+  clusterer.ReadDigits(digitsTree);
+  clusterer.MakeClusters();
+  clusterer.WriteClusters(-1);
+
+  //
+  // No trigger, since we don't have the output tree for tracklets
+  //
+
+}
+
+//_____________________________________________________________________________
+void AliTRDReconstructor::Reconstruct(AliRunLoader *runLoader) const
+{
+  //
+  // Reconstruct clusters
+  //
+
+  AliLoader *loader = runLoader->GetLoader("TRDLoader");
+  loader->LoadRecPoints("recreate");
+
+  runLoader->CdGAFile();
+  Int_t nEvents = runLoader->GetNumberOfEvents();
+
+  for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
+    AliTRDclusterizerV1 clusterer("clusterer","TRD clusterizer");
+    clusterer.Open(runLoader->GetFileName(),iEvent);
+    clusterer.ReadDigits();
+    clusterer.MakeClusters();
+    clusterer.WriteClusters(-1);
+  }
+
+  loader->UnloadRecPoints();
+
+  //
+  // Trigger (tracklets, LTU)
+  //
+  loader->LoadTracks("RECREATE");
+  AliInfo("Trigger tracklets will be produced");
+
+  AliTRDtrigger trdTrigger("Trigger","Trigger class"); 
+
+  AliTRDtrigParam *trigp = new AliTRDtrigParam("TRDtrigParam"
+                                              ,"TRD Trigger parameters");
+
+  Float_t field = AliTracker::GetBz() * 0.1; // Tesla
+  AliInfo(Form("Trigger set for magnetic field = %f Tesla \n",field));
+  trigp->SetField(field);
+  trigp->Init();
+  trdTrigger.SetParameter(trigp);
+
+  for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
+    trdTrigger.Open(runLoader->GetFileName(),iEvent);
+    trdTrigger.ReadDigits();
+    trdTrigger.MakeTracklets();
+    trdTrigger.WriteTracklets(-1);
+  }
+
+  loader->UnloadTracks();
+
+}
 
 //_____________________________________________________________________________
 AliTracker *AliTRDReconstructor::CreateTracker(AliRunLoader *runLoader) const
@@ -165,6 +217,60 @@ AliTracker *AliTRDReconstructor::CreateTracker(AliRunLoader *runLoader) const
   runLoader->CdGAFile();
 
   return new AliTRDtracker(gFile);
+
+}
+
+//_____________________________________________________________________________
+void AliTRDReconstructor::FillESD(AliRunLoader* /*runLoader*/
+				, AliRawReader* /*rawReader*/
+		         	, AliESD *esd) const
+{
+  //
+  // Make PID
+  //
+
+  AliTRDpidESD trdPID;
+  trdPID.MakePID(esd);
+
+  //
+  // No trigger, since we don't have the output tree for tracklets
+  //
+
+}
+
+//_____________________________________________________________________________
+void AliTRDReconstructor::FillESD(AliRawReader* /*rawReader*/
+				, TTree* /*clusterTree*/
+				, AliESD *esd) const
+{
+  //
+  // Make PID
+  //
+
+  AliTRDpidESD trdPID;
+  trdPID.MakePID(esd);
+
+  //
+  // No trigger, since we don't have the output tree for tracklets
+  //
+
+}
+
+//_____________________________________________________________________________
+void AliTRDReconstructor::FillESD(TTree* /*digitsTree*/
+				, TTree* /*clusterTree*/
+				, AliESD *esd) const
+{
+  //
+  // Make PID
+  //
+
+  AliTRDpidESD trdPID;
+  trdPID.MakePID(esd);
+
+  //
+  // No trigger, since we don't have the output tree for tracklets
+  //
 
 }
 

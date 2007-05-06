@@ -297,12 +297,11 @@ void AliTRDv1::CreateTRhit(Int_t det)
 
     // Add the hit to the array. TR photon hits are marked 
     // by negative charge
-    // The hit time is needed for pile-up events
     AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber()
           ,det
           ,posHit
           ,-q
-	  ,gMC->TrackTime()*1.0e06
+          ,gMC->TrackTime()*1.0e06
           ,kTRUE);
 
   }
@@ -498,7 +497,7 @@ void AliTRDv1::StepManagerGeant()
       cIdChamber[0]   = cIdCurrent[2];
       cIdChamber[1]   = cIdCurrent[3];
       Int_t idChamber = (atoi(cIdChamber) % kNdetsec);
-      cha = ((Int_t) idChamber / kNplan);
+      cha = kNcham - ((Int_t) idChamber / kNplan) - 1;
       pla = ((Int_t) idChamber % kNplan);
 
       // The detector number
@@ -595,12 +594,11 @@ void AliTRDv1::StepManagerGeant()
         qTot = ((Int_t) (eDelta / kWion) + 1);
 
         // Create a new dEdx hit
-        // The hit time is needed for pile-up events
         AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber()
               ,det
               ,hits
               ,qTot
-	      ,gMC->TrackTime()*1.0e06
+              ,gMC->TrackTime()*1.0e06
               ,drRegion);
 
       }
@@ -746,7 +744,7 @@ void AliTRDv1::StepManagerErmilova()
       cIdChamber[0] = cIdCurrent[2];
       cIdChamber[1] = cIdCurrent[3];
       Int_t idChamber = (atoi(cIdChamber) % kNdetsec);
-      cha = ((Int_t) idChamber / kNplan);
+      cha = kNcham - ((Int_t) idChamber / kNplan) - 1;
       pla = ((Int_t) idChamber % kNplan);
 
       // The detector number
@@ -789,13 +787,12 @@ void AliTRDv1::StepManagerErmilova()
         qTot = ((Int_t) (eDelta / kWion) + 1);
 
 	// Create a new dEdx hit
-        // The hit time is needed for pile-up events
         if (drRegion) {
           AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber()
                 ,det
                 ,hits
                 ,qTot
-		,gMC->TrackTime()*1.0e06
+                ,gMC->TrackTime()*1.0e06
                 ,kTRUE);
 	}
         else {
@@ -803,7 +800,7 @@ void AliTRDv1::StepManagerErmilova()
                 ,det
                 ,hits
                 ,qTot
-		,gMC->TrackTime()*1.0e06
+                ,gMC->TrackTime()*1.0e06
                 ,kFALSE);
 	}
 
@@ -939,13 +936,13 @@ void AliTRDv1::StepManagerFixedStep()
   cIdChamber[0]   = cIdCurrent[2];
   cIdChamber[1]   = cIdCurrent[3];
   Int_t idChamber = (atoi(cIdChamber) % kNdetsec);
-  cha = ((Int_t) idChamber / kNplan);
+  cha = kNcham - ((Int_t) idChamber / kNplan) - 1;
   pla = ((Int_t) idChamber % kNplan);
 
   // The detector number
   det = fGeometry->GetDetector(pla,cha,sec);
 
-  // 0:InFlight 1:Entering 2:Exiting
+  // 0: InFlight 1:Entering 2:Exiting
   Int_t trkStat = 0;
 
   // Special hits only in the drift region
@@ -979,7 +976,6 @@ void AliTRDv1::StepManagerFixedStep()
   
   // Calculate the charge according to GEANT Edep
   // Create a new dEdx hit
-  // The hit time is needed for pile-up events
   eDep = TMath::Max(gMC->Edep(),0.0) * 1.0e+09;
   qTot = (Int_t) (eDep / kWion);
   if ((qTot) ||
@@ -988,7 +984,7 @@ void AliTRDv1::StepManagerFixedStep()
           ,det
           ,hits
           ,qTot
-	  ,gMC->TrackTime()*1.0e06
+          ,gMC->TrackTime()*1.0e06
           ,drRegion);
   }
 

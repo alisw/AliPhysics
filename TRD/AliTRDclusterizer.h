@@ -36,6 +36,7 @@ class AliTRDclusterizer : public TNamed {
   virtual Bool_t   Open(const Char_t *name, Int_t nEvent = 0);
   virtual Bool_t   OpenInput(Int_t nEvent = 0);
   virtual Bool_t   OpenOutput();
+  virtual Bool_t   OpenOutput(TTree *clusterTree);
   virtual Bool_t   MakeClusters() = 0;
   virtual Bool_t   WriteClusters(Int_t det);
           void     ResetRecPoints();
