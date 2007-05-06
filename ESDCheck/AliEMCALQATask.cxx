@@ -211,6 +211,7 @@ void AliEMCALQATask::Terminate(Option_t *)
   fhEMCALInvariantMass = (TH1D*)fOutputContainer->At(6);
   fhEMCALDigitsEvent = (TH1I*)fOutputContainer->At(7);
  
+  Bool_t problem = kFALSE ; 
   AliInfo(Form(" *** %s Report:", GetName())) ; 
   printf("        EMCALEnergy Mean        : %5.3f , RMS : %5.3f \n", fhEMCALEnergy->GetMean(),        fhEMCALEnergy->GetRMS()        ) ;
   printf("        EMCALDigits Mean        : %5.3f , RMS : %5.3f \n", fhEMCALDigits->GetMean(),        fhEMCALDigits->GetRMS()        ) ;
@@ -269,5 +270,13 @@ void AliEMCALQATask::Terminate(Option_t *)
   sprintf(line, ".!rm -fR *.eps"); 
   gROOT->ProcessLine(line);
  
-  AliInfo(Form("!!! All the eps files are in %s.tar.gz !!! \n", GetName())) ;
+  AliInfo(Form("!!! All the eps files are in %s.tar.gz !!!", GetName())) ;
+
+  char * report ; 
+  if(problem)
+    report="Problems found, please check!!!";  
+  else 
+    report="OK";
+
+  AliInfo(Form("*** %s Summary Report: %s \n",GetName(), report)) ; 
 }

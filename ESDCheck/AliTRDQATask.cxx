@@ -398,6 +398,7 @@ void AliTRDQATask::Terminate(Option_t *)
   }
 
   // create efficiency histograms
+  Bool_t problem = kFALSE ; 
   AliInfo(Form(" *** %s Report:", GetName())) ; 
   
   CalculateEff();
@@ -411,7 +412,15 @@ void AliTRDQATask::Terminate(Option_t *)
   sprintf(line, ".!tar -zcf %s.tar.gz *.eps", GetName()) ; 
   gROOT->ProcessLine(line);
   
-  AliInfo(Form("!!! All the eps files are in %s.tar.gz !!! \n", GetName())) ;
+  AliInfo(Form("!!! All the eps files are in %s.tar.gz !!!", GetName())) ;
+
+  char * report ; 
+  if(problem)
+    report="Problems found, please check!!!";  
+  else 
+    report="OK";
+
+  AliInfo(Form("*** %s Summary Report: %s\n",GetName(), report)) ; 
 
 }
 

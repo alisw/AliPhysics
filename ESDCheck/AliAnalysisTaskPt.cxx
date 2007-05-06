@@ -121,6 +121,8 @@ void AliAnalysisTaskPt::Terminate(Option_t *)
 {
   // Processing when the event loop is ended
 
+  Bool_t problem=kFALSE;
+
   AliInfo(Form(" *** %s Report:", GetName())) ; 
 
   TCanvas *c1 = new TCanvas("c1","Pt",10,10,310,310);
@@ -143,5 +145,13 @@ void AliAnalysisTaskPt::Terminate(Option_t *)
   sprintf(line, ".!rm -fR *.eps"); 
   gROOT->ProcessLine(line);
 
-  AliInfo(Form("!!! All the eps files are in %s.tar.gz !!! \n", GetName())) ;
+  AliInfo(Form("!!! All the eps files are in %s.tar.gz !!!", GetName())) ;
+ 
+  char * report ; 
+  if(problem)
+    report="Problems found, please check!!!";  
+  else 
+    report="OK";
+  
+  AliInfo(Form("*** %s Summary Report: %s \n",GetName(), report)) ; 
 }

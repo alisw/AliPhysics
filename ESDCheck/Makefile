@@ -59,7 +59,7 @@ $(PARFILE): $(patsubst %,$(PACKAGE)/%,$(filter-out G__%, $(HDRS_AnalysisCheck) $
 	@echo "Creating archive" $@ ...
 	@tar cfzh $@ $(PACKAGE)
 	@rm -rf $(PACKAGE)
-	@echo "done"
+	@echo $@ "done"
 
 $(PACKAGE)/Makefile: Makefile #.$(PACKAGE)
 	@echo Copying $< to $@ with transformations

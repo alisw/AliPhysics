@@ -37,17 +37,21 @@ Bool_t LoadLib( const char* pararchivename)
 
   if ( strstr(pararchivename, "ESD") ) {
     //gSystem->Load("libVMC.so");
-    gSystem->Load("libESD.so");
-    //gSystem->Load("libRAliEn.so") ;
+    //gSystem->Load("libRAliEn.so");
+    gSystem->Load("libESD.so") ;
     //gSystem->Load("libProof.so") ;
   }
 
-  printf("*** %s library loaded *** %s **\n", pararchivename);
+  if ( strstr(pararchivename, "AnalysisCheck") ) {
+    gSystem->Load("libSpectrum.so");
+  }
+  
+  printf("lib%s done\n", pararchivename);
 
   gSystem->ChangeDirectory(cdir);
 
   gIsAnalysisLoaded = kTRUE ; 
-  return rv ;  ; 
+  return rv ; 
 }
 
 //______________________________________________________________________
@@ -148,6 +152,7 @@ void ana()
     analysisChain->AddFile(input);
     ag->Process(analysisChain) ; 
   }
+  return ;
 }
 
 //______________________________________________________________________
@@ -160,17 +165,3 @@ void Merge(const char * xml, const char * sub, const char * out)
   ag->Merge(xml, sub, out) ;
 }
 
-//______________________________________________________________________
-void test(const char * fcollection1) 
-{
-  AliXMLCollection collection1(fcollection1);
- TChain* analysisChain = new TChain("esdTree");
- 
- collection1.Reset();
- while (collection1.Next()) {
-   cout<<"Adding "<<collection1.GetTURL()<<endl;
-   analysisChain->Add(collection1.GetTURL());
- }
- 
- return ;
-}

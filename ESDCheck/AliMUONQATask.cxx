@@ -279,95 +279,104 @@ void AliMUONQATask::Terminate(Option_t *)
       effMatch = 100 * fnTrackTrig / ftracktot ;
       fheffMatchT->Fill(effMatch);}
 
-  AliInfo(Form(" *** %s Report:", GetName())) ; 
+    Bool_t problem = kFALSE ; 
+    AliInfo(Form(" *** %s Report:", GetName())) ; 
 
-  fOutputContainer = (TObjArray*)GetOutputData(0);
-  fhMUONVertex = (TH1F*)fOutputContainer->At(0);
-  fhMUONMult   = (TH1F*)fOutputContainer->At(1); 
-  fhPt  = (TH1F*)fOutputContainer->At(2); 
-  fhY  = (TH1F*)fOutputContainer->At(3); 
-  fheffMatchT=(TH1F*)fOutputContainer->At(4); 
-  fhSLowpt=(TH1F*)fOutputContainer->At(5); 
-  fhUSLowpt=(TH1F*)fOutputContainer->At(6); 
-  fhUSHighpt=(TH1F*)fOutputContainer->At(7);
-  fhLSLowpt=(TH1F*)fOutputContainer->At(8); 
-  fhLSHighpt=(TH1F*)fOutputContainer->At(9);
-
-  printf("         Total number of processed events  %d      \n", fnevents) ;
-  printf("     \n")  ;
-  printf("     \n")  ;
-  printf("     Table 1:                                         \n") ;
-   printf("    ===================================================\n") ;
- printf("      Global Trigger output       Low pt  High pt \n") ;
-  printf("     number of Single      :\t");
-  printf("     %i\t", fSLowpt) ;
-  printf("\n");
-  printf("     number of UnlikeSign pair  :\t"); 
-  printf("     %i\t%i\t", fUSLowpt, fUSHighpt) ;
-  printf("\n");
-  printf("     number of LikeSign pair    :\t");  
-  printf("     %i\t%i\t", fLSLowpt, fLSHighpt) ;
-  printf("\n");
-  printf("     matching efficiency with the trigger for single tracks = %2d %% \n", effMatch);
-  printf("\n") ;
-  
-TCanvas * cMUON1 = new TCanvas("cMUON1", "MUON ESD Vert & Mult", 400, 10, 600, 700) ;
-  cMUON1->Divide(1,2) ;
-  cMUON1->cd(1) ;
- fhMUONVertex->SetXTitle("Vz (cm)");
-  fhMUONVertex->Draw() ;
-  cMUON1->cd(2) ;
-  fhMUONMult->SetXTitle(" Track Multiplicity");
-  fhMUONMult->Draw() ;
-  cMUON1->Print("MUON1.eps") ; 
-
-  TCanvas * cMUON2 = new TCanvas("cMUON2", "MUON ESD Pt & Y", 400, 10, 600, 700) ;
-  cMUON2->Divide(1,2) ;
-  cMUON2->cd(1) ;
-  fhPt->SetXTitle("Pt (GeV)");
-  fhPt->Draw() ;
-  cMUON2->cd(2) ;
-  fhY->SetXTitle("Y");
-  fhY->Draw() ;
-  cMUON2->Print("MUON2.eps") ;
-  
-  TCanvas * cMUON3 = new TCanvas("cMUON3", "Track Chi2 by dof and Chi2 of trigger/track matching ", 400, 10, 600, 700) ;
-  cMUON3->Divide(1,2) ;
-  cMUON3->cd(1) ;
-  fhChi2->SetXTitle("Chi2 by d.o.f.");
-  fhChi2->Draw();
-  cMUON3->cd(2) ;
-  fhChi2match->SetXTitle("Chi2 of trig/track matching");
-  fhChi2match->Draw();
-  cMUON3->Print("MUON3.eps") ;
-  
-  TCanvas * cMUON4 = new TCanvas("cMUON4", "Trigger Matching and Trigger Response (%)", 400, 10, 600, 700) ;
-  cMUON4->Divide(2,3) ;
-  cMUON4->cd(1) ;
-  fheffMatchT->SetXTitle("%");
-  fheffMatchT->Draw() ;
-  cMUON4->cd(2) ;
-  fhSLowpt->SetXTitle("%");
-  fhSLowpt->Draw() ;
-  cMUON4->cd(3) ;
-  fhUSLowpt->SetXTitle("%");
-  fhUSLowpt->Draw() ;
-  cMUON4->cd(4) ;
-  fhUSHighpt->SetXTitle("%");
-  fhUSHighpt->Draw() ;
-  cMUON4->cd(5) ;
-  fhLSLowpt->SetXTitle("%");
-  fhLSLowpt->Draw() ;
-  cMUON4->cd(6) ;
-  fhLSHighpt->SetXTitle("%");
-  fhLSHighpt->Draw() ;
-  cMUON4->Print("MUON4.eps") ;
+    fOutputContainer = (TObjArray*)GetOutputData(0);
+    fhMUONVertex = (TH1F*)fOutputContainer->At(0);
+    fhMUONMult   = (TH1F*)fOutputContainer->At(1); 
+    fhPt  = (TH1F*)fOutputContainer->At(2); 
+    fhY  = (TH1F*)fOutputContainer->At(3); 
+    fheffMatchT=(TH1F*)fOutputContainer->At(4); 
+    fhSLowpt=(TH1F*)fOutputContainer->At(5); 
+    fhUSLowpt=(TH1F*)fOutputContainer->At(6); 
+    fhUSHighpt=(TH1F*)fOutputContainer->At(7);
+    fhLSLowpt=(TH1F*)fOutputContainer->At(8); 
+    fhLSHighpt=(TH1F*)fOutputContainer->At(9);
+    
+    printf("         Total number of processed events  %d      \n", fnevents) ;
+    printf("     \n")  ;
+    printf("     \n")  ;
+    printf("     Table 1:                                         \n") ;
+    printf("    ===================================================\n") ;
+    printf("      Global Trigger output       Low pt  High pt \n") ;
+    printf("     number of Single      :\t");
+    printf("     %i\t", fSLowpt) ;
+    printf("\n");
+    printf("     number of UnlikeSign pair  :\t"); 
+    printf("     %i\t%i\t", fUSLowpt, fUSHighpt) ;
+    printf("\n");
+    printf("     number of LikeSign pair    :\t");  
+    printf("     %i\t%i\t", fLSLowpt, fLSHighpt) ;
+    printf("\n");
+    printf("     matching efficiency with the trigger for single tracks = %2d %% \n", effMatch);
+    printf("\n") ;
+    
+    TCanvas * cMUON1 = new TCanvas("cMUON1", "MUON ESD Vert & Mult", 400, 10, 600, 700) ;
+    cMUON1->Divide(1,2) ;
+    cMUON1->cd(1) ;
+    fhMUONVertex->SetXTitle("Vz (cm)");
+    fhMUONVertex->Draw() ;
+    cMUON1->cd(2) ;
+    fhMUONMult->SetXTitle(" Track Multiplicity");
+    fhMUONMult->Draw() ;
+    cMUON1->Print("MUON1.eps") ; 
+    
+    TCanvas * cMUON2 = new TCanvas("cMUON2", "MUON ESD Pt & Y", 400, 10, 600, 700) ;
+    cMUON2->Divide(1,2) ;
+    cMUON2->cd(1) ;
+    fhPt->SetXTitle("Pt (GeV)");
+    fhPt->Draw() ;
+    cMUON2->cd(2) ;
+    fhY->SetXTitle("Y");
+    fhY->Draw() ;
+    cMUON2->Print("MUON2.eps") ;
+    
+    TCanvas * cMUON3 = new TCanvas("cMUON3", "Track Chi2 by dof and Chi2 of trigger/track matching ", 400, 10, 600, 700) ;
+    cMUON3->Divide(1,2) ;
+    cMUON3->cd(1) ;
+    fhChi2->SetXTitle("Chi2 by d.o.f.");
+    fhChi2->Draw();
+    cMUON3->cd(2) ;
+    fhChi2match->SetXTitle("Chi2 of trig/track matching");
+    fhChi2match->Draw();
+    cMUON3->Print("MUON3.eps") ;
+    
+    TCanvas * cMUON4 = new TCanvas("cMUON4", "Trigger Matching and Trigger Response (%)", 400, 10, 600, 700) ;
+    cMUON4->Divide(2,3) ;
+    cMUON4->cd(1) ;
+    fheffMatchT->SetXTitle("%");
+    fheffMatchT->Draw() ;
+    cMUON4->cd(2) ;
+    fhSLowpt->SetXTitle("%");
+    fhSLowpt->Draw() ;
+    cMUON4->cd(3) ;
+    fhUSLowpt->SetXTitle("%");
+    fhUSLowpt->Draw() ;
+    cMUON4->cd(4) ;
+    fhUSHighpt->SetXTitle("%");
+    fhUSHighpt->Draw() ;
+    cMUON4->cd(5) ;
+    fhLSLowpt->SetXTitle("%");
+    fhLSLowpt->Draw() ;
+    cMUON4->cd(6) ;
+    fhLSHighpt->SetXTitle("%");
+    fhLSHighpt->Draw() ;
+    cMUON4->Print("MUON4.eps") ;
+    
+    char line[1024] ; 
+    sprintf(line, ".!tar -zcf %s.tar.gz *.eps", GetName()) ; 
+    gROOT->ProcessLine(line);
+    sprintf(line, ".!rm -fR *.eps"); 
+    gROOT->ProcessLine(line);
+    
+    AliInfo(Form("!!! All the eps files are in %s.tar.gz !!!", GetName())) ;
  
-  char line[1024] ; 
-  sprintf(line, ".!tar -zcf %s.tar.gz *.eps", GetName()) ; 
-  gROOT->ProcessLine(line);
-  sprintf(line, ".!rm -fR *.eps"); 
-  gROOT->ProcessLine(line);
- 
-  AliInfo(Form("!!! All the eps files are in %s.tar.gz !!! \n", GetName())) ;
+   char * report ; 
+   if(problem)
+      report="Problems found, please check!!!";  
+    else 
+      report="OK";
+    
+    AliInfo(Form("*** %s Summary Report: %s \n",GetName(), report)) ; 
 }
