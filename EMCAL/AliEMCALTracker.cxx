@@ -39,6 +39,7 @@
 #include <TString.h>
 #include <TVector3.h>
 #include <TClonesArray.h>
+#include <TGeoMatrix.h>
 
 #include "AliLog.h"
 #include "AliESD.h"
@@ -48,6 +49,8 @@
 #include "AliRunLoader.h"
 #include "AliEMCALTrack.h"
 #include "AliEMCALLoader.h"
+#include "AliEMCALGeometry.h"
+
 #include "AliEMCALTracker.h"
 
 ClassImp(AliEMCALTracker)
@@ -69,7 +72,8 @@ AliEMCALTracker::AliEMCALTracker()
     fX0(1.0),
     fTracks(0),
     fClusters(0),
-    fMatches(0)
+    fMatches(0),
+    fGeom(0)
 {
 	//
 	// Default constructor.
@@ -96,7 +100,8 @@ AliEMCALTracker::AliEMCALTracker(const AliEMCALTracker& copy)
     fX0(copy.fX0),
     fTracks((TObjArray*)copy.fTracks->Clone()),
     fClusters((TObjArray*)copy.fClusters->Clone()),
-    fMatches((TList*)copy.fMatches->Clone())
+    fMatches((TList*)copy.fMatches->Clone()),
+    fGeom(copy.fGeom)
 {
 	//
 	// Copy constructor
@@ -125,7 +130,46 @@ AliEMCALTracker& AliEMCALTracker::operator=(const AliEMCALTracker& copy)
 	fClusters = (TObjArray*)copy.fClusters->Clone();
 	fMatches = (TList*)copy.fMatches->Clone();
 	
+	fGeom = copy.fGeom;
+	
 	return (*this);
+}
+//
+//------------------------------------------------------------------------------
+//
+TTree* AliEMCALTracker::SearchTrueMatches()
+{
+	if (!fClusters) return 0;
+	if (fClusters->IsEmpty()) return 0;
+	if (!fTracks) return 0;
+	if (fTracks->IsEmpty()) return 0;
+	
+	TTree *outTree = new TTree("tree", "True matches from event");
+	Int_t indexT, indexC, label;
+	outTree->Branch("indexC", &indexC, "indexC/I");
+	outTree->Branch("indexT", &indexT, "indexT/I");
+	outTree->Branch("label",  &label , "label/I");
+	
+	Double_t dist;
+	Int_t ic, nClusters = (Int_t)fClusters->GetEntries();
+	Int_t it, nTracks = fTracks->GetEntries();
+	
+	for (ic = 0; ic < nClusters; ic++) {
+		AliEMCALMatchCluster *cluster = (AliEMCALMatchCluster*)fClusters->At(ic);
+		label = cluster->Label();
+		indexC = cluster->Index();
+		for (it = 0; it < nTracks; it++) {
+			AliEMCALTrack *track = (AliEMCALTrack*)fTracks->At(it);
+			if (TMath::Abs(track->GetSeedLabel()) != label) continue;
+			dist = CheckPair(track, cluster);
+			if (dist <= fMaxDist) {
+				indexT = track->GetSeedIndex();
+				outTree->Fill();
+			}
+		}
+	}
+	
+	return outTree;
 }
 //
 //------------------------------------------------------------------------------
@@ -138,6 +182,7 @@ void AliEMCALTracker::Clear(Option_t* option)
 	//
 
 	TString opt(option);
+	Bool_t doDelete = opt.Contains("DELETE");
 	Bool_t clearTracks = opt.Contains("TRACKS");
 	Bool_t clearClusters = opt.Contains("CLUSTERS");
 	Bool_t clearMatches = opt.Contains("MATCHES");
@@ -148,19 +193,34 @@ void AliEMCALTracker::Clear(Option_t* option)
 	}
 	
 	if (fTracks != 0x0 && clearTracks) {
-		if (!fTracks->IsEmpty()) fTracks->Delete();
-		delete fTracks;
-		fTracks = 0;
+		if (!doDelete) {
+			fTracks->Clear();
+		}
+		else {
+			if (!fTracks->IsEmpty()) fTracks->Delete();
+			delete fTracks;
+			fTracks = 0;
+		}
 	}
 	if (fClusters != 0x0 && clearClusters) {
-		if (!fClusters->IsEmpty()) fClusters->Delete();
-		delete fClusters;
-		fClusters = 0;
+		if (!doDelete) {
+			fClusters->Clear();
+		}
+		else {
+			if (!fClusters->IsEmpty()) fClusters->Delete();
+			delete fClusters;
+			fClusters = 0;
+		}
 	}
 	if (fMatches != 0x0 && clearMatches) {
-		if (!fMatches->IsEmpty()) fMatches->Delete();
-		delete fMatches;
-		fMatches = 0;
+		if (!doDelete) {
+			fMatches->Clear();
+		}
+		else {
+			if (!fMatches->IsEmpty()) fMatches->Delete();
+			delete fMatches;
+			fMatches = 0;
+		}
 	}
 }
 //
@@ -178,7 +238,7 @@ Int_t AliEMCALTracker::LoadClusters(TTree *cTree)
 
 	TBranch *branch = cTree->GetBranch("EMCALECARP");
 	if (!branch) {
-		AliError("can't get the branch with the EMCAL clusters");
+		AliError("Can't get the branch with the EMCAL clusters");
 		return 1;
 	}
 	
@@ -261,21 +321,26 @@ Int_t AliEMCALTracker::LoadTracks(AliESD *esd)
 	for (i = 0; i < nTracks; i++) {
 		AliESDtrack *esdTrack = esd->GetTrack(i);
 		// set by default the value corresponding to "no match"
-		esdTrack->SetEMCALcluster(-99999);
+		esdTrack->SetEMCALcluster(kUnmatched);
 //		if (esdTrack->GetLabel() < 0) continue;
 //		if (!(esdTrack->GetStatus() & AliESDtrack::kTOFout)) continue;
 		isKink = kFALSE;
 		for (j = 0; j < 3; j++) {
-			if (esdTrack->GetKinkIndex(j) > 0) isKink = kTRUE;
+			if (esdTrack->GetKinkIndex(j) != 0) isKink = kTRUE;
 		}
 		if (isKink) continue;
 		AliEMCALTrack *track = new AliEMCALTrack(*esdTrack);
+		track->SetMass(0.13957018);
 		// check alpha and reject the tracks which fall outside EMCAL acceptance
 		alpha = track->GetAlpha() * TMath::RadToDeg();
 		if (alpha >  -155.0 && alpha < 67.0) {
 			delete track;
 			continue;
 		}
+//		if (!PropagateToEMCAL(track)) {
+//			delete track;
+//			continue;
+//		}
 		track->SetSeedIndex(i);
 		track->SetSeedLabel(esdTrack->GetLabel());
 		fTracks->AddLast(track);
@@ -309,17 +374,18 @@ Int_t AliEMCALTracker::PropagateBack(AliESD* esd)
 	// step 1: 
 	// if cluster array is empty, cluster are collected
 	// from the passed ESD, and work is done with ESDCaloClusters
-	Int_t okLoadClusters;
+	Int_t okLoadClusters, nClusters;
 	if (!fClusters || (fClusters && fClusters->IsEmpty())) {
-		AliInfo("Cluster array is empty. Loading clusters...");
 		okLoadClusters = LoadClusters(esd);
 		if (okLoadClusters) return 2;
 	}
+	nClusters = fClusters->GetEntries();
 	
 	// step 2:
 	// collect ESD tracks
-	Int_t okLoadTracks = LoadTracks(esd);
+	Int_t okLoadTracks = LoadTracks(esd), nTracks;
 	if (okLoadTracks) return 3;
+	nTracks = fTracks->GetEntries();
 	
 	// step 3:
 	// each track is propagated to the "R" position of each cluster.
@@ -327,11 +393,11 @@ Int_t AliEMCALTracker::PropagateBack(AliESD* esd)
 	// IF no clusters lie within the maximum allowed distance, no matches are assigned.
 	Int_t nMatches = CreateMatches();
 	if (!nMatches) {
-		AliInfo("No good matches found.");
+		AliInfo(Form("#clusters = %d -- #tracks = %d --> No good matches found.", nClusters, nTracks));
 		return 4;
 	}
 	else {
-		AliInfo(Form("Found %d matches", nMatches));
+		AliInfo(Form("#clusters = %d -- #tracks = %d --> Found %d matches.", nClusters, nTracks, nMatches));
 	}
 	
 	// step 4:
@@ -345,7 +411,7 @@ Int_t AliEMCALTracker::PropagateBack(AliESD* esd)
 	
 	// step 5:
 	// save obtained information setting the 'fEMCALindex' field of AliESDtrack object
-	Int_t nSaved = 0, trackID;
+	Int_t nSaved = 0, trackID, nGood = 0, nFake = 0;
 	TListIter iter(fMatches);
 	AliEMCALMatch *match = 0;
 	while ( (match = (AliEMCALMatch*)iter.Next()) ) {
@@ -355,11 +421,13 @@ Int_t AliEMCALTracker::PropagateBack(AliESD* esd)
 		trackID = track->GetSeedIndex();
 		AliESDtrack *esdTrack = esd->GetTrack(trackID);
 		if (!esdTrack) continue;
-		if (esdTrack->GetLabel() == cluster->Label()) {
+		if (TMath::Abs(esdTrack->GetLabel()) == cluster->Label()) {
 			esdTrack->SetEMCALcluster(cluster->Index());
+			nGood++;
 		}
 		else {
 			esdTrack->SetEMCALcluster(-cluster->Index());
+			nFake++;
 		}
 		nSaved++;
 	}
@@ -372,7 +440,7 @@ Int_t AliEMCALTracker::PropagateBack(AliESD* esd)
 		AliESDtrack *esdTrack = esd->GetTrack(trackID);
 		if (!esdTrack) continue;
 		if (clusterID < 0) {
-			esdTrack->SetEMCALcluster(-99999);
+			esdTrack->SetEMCALcluster(kUnmatched);
 		}
 		else {
 			AliEMCALMatchCluster *cluster = (AliEMCALMatchCluster*)fClusters->At(clusterID);
@@ -388,7 +456,7 @@ Int_t AliEMCALTracker::PropagateBack(AliESD* esd)
 		}
 	}
 	*/
-	AliInfo(Form("Saved %d matches", nSaved));
+	AliInfo(Form("Saved %d matches [%d good + %d fake]", nSaved, nGood, nFake));
 
 	return 0;
 }
@@ -463,7 +531,6 @@ Double_t AliEMCALTracker::CheckPair
 	Bool_t isTrue = kFALSE;
 //	if (tr->GetSeedLabel() == cl->Label()) {
 //		isTrue = kTRUE;
-//		cout << "TRUE MATCH!!!" << endl;
 //	}
 	
 	// copy track into temporary variable
@@ -520,7 +587,25 @@ Double_t AliEMCALTracker::CheckPair
 	}
 	else {
 		// when no steps are used, no correction makes sense
-		if (!tr->PropagateTo(rc, 0.0, 0.0)) return distance;
+		//if (!tr->PropagateTo(rc, 0.0, 0.0)) return distance;
+		if (!tr->PropagateToGlobal(cl->X(), cl->Y(), cl->Z(), 0.0, 0.0)) return distance;
+		/*
+		Bool_t propOK = kFALSE;
+		cout << "START" << endl;
+		Double_t dist, rCHK, bestDist = 10000000.0;
+		for (Double_t rTMP = rc; rTMP> rc*0.95; rTMP -= 0.1) {
+			if (!tr->PropagateTo(rTMP)) continue;
+			propOK = kTRUE;
+			tr->GetXYZ(pos);
+			rCHK = TMath::Sqrt(x*x + y*y);
+			dist = TMath::Abs(rCHK - rc);
+			cout << rCHK << " vs. " << rc << endl;
+			
+			if (TMath::Abs(rCHK - rc) < 0.01) break;
+		}
+		cout << "STOP" << endl;
+		if (!propOK) return distance;
+		*/
 	}
 	
 	// get global propagation of track at end of propagation
@@ -530,6 +615,13 @@ Double_t AliEMCALTracker::CheckPair
 	TVector3 vc(cl->X(), cl->Y(), cl->Z());
 	TVector3 vt(x, y, z);
 	Double_t angle = TMath::Abs(vc.Angle(vt)) * TMath::RadToDeg();
+	// check: where is the track?
+	Double_t r, phiT, phiC;
+	r = TMath::Sqrt(pos[0]*pos[0] + pos[1]*pos[1]);
+	phiT = TMath::ATan2(pos[1], pos[0]) * TMath::RadToDeg();
+	phiC = vc.Phi() * TMath::RadToDeg();
+	//cout << "Propagated R, phiT, phiC = " << r << ' ' << phiT << ' ' << phiC << endl;
+	
 	if (angle > fCutAngle) {
 		//cout << "angle" << endl;
 		return distance;
@@ -537,17 +629,17 @@ Double_t AliEMCALTracker::CheckPair
 		
 	// compute differences wr to each coordinate
 	x -= cl->X();
-	if (x > fCutX) {
+	if (TMath::Abs(x) > fCutX) {
 		//cout << "cut X" << endl;
 		return distance;
 	}
 	y -= cl->Y();
-	if (y > fCutY) {
+	if (TMath::Abs(y) > fCutY) {
 		//cout << "cut Y" << endl;
 		return distance;
 	}
 	z -= cl->Z();
-	if (z > fCutZ) {
+	if (TMath::Abs(z) > fCutZ) {
 		//cout << "cut Z" << endl;
 		return distance;
 	}
@@ -675,6 +767,97 @@ Double_t AliEMCALTracker::CheckPairV2
 //
 //------------------------------------------------------------------------------
 //
+Double_t AliEMCALTracker::CheckPairV3
+(AliEMCALTrack *track, AliEMCALMatchCluster *cl)
+{
+	//
+	// Given a track and a cluster,
+	// propagates the first to the radius of the second.
+	// Then, checks the propagation point against all cuts.
+	// If at least a cut is not passed, a valuer equal to 
+	// twice the maximum allowed distance is passed (so the value returned
+	// will not be taken into account when creating matches)
+	//
+	
+	AliEMCALTrack tr(*track);
+	
+	Int_t    sector;
+	Double_t distance = 2.0 * fMaxDist;
+	Double_t dx, dy, dz;
+	Double_t phi, alpha, slope, tgtXnum, tgtXden, sectorWidth = 20.0 * TMath::DegToRad();
+	Double_t xcurr, xprop, param[6] = {0., 0., 0., 0., 0., 0.}, d, x0, rho, bz;
+	Double_t x[3], x1[3], x2[3];
+	
+	// get initial track position
+	xcurr = tr.GetX();
+	
+	// evaluate the EMCAL sector number
+	phi = cl->Phi();
+	if (phi < 0.0) phi += TMath::TwoPi();
+	sector = (Int_t)(phi / sectorWidth);
+	alpha = ((Double_t)sector + 0.5) * sectorWidth;
+	// evaluate the corresponding X for track propagation
+	slope = TMath::Tan(alpha - 0.5*TMath::Pi());
+	tgtXnum = cl->Y() - slope * cl->X();
+	tgtXden = TMath::Sqrt(1.0 + slope*slope);
+	xprop = TMath::Abs(tgtXnum / tgtXden);
+	
+	// propagate by small steps
+	tr.GetXYZ(x1);
+	bz = tr.GetBz();
+	if (!tr.GetXYZAt(xprop, bz, x2)) return distance;
+	//AliKalmanTrack::MeanMaterialBudget(x1, x2, param);
+	d = param[4];
+	rho = param[0];
+	x0 = param[1];
+	if (!tr.PropagateTo(xprop, d*rho/x0, x0)) return distance;
+	//if (!tr.PropagateTo(xprop, 0.0, 0.0)) return distance;
+	
+	// get propagated position at the end
+	tr.GetXYZ(x);
+	dx = TMath::Abs(x[0] - cl->X());
+	dy = TMath::Abs(x[1] - cl->Y());
+	dz = TMath::Abs(x[2] - cl->Z());
+	if (dx > fCutX || dy > fCutY || dz > fCutZ) return distance;
+	
+	distance = TMath::Sqrt(dx*dx + dy*dy + dz*dz);
+	
+	return distance;
+}
+//
+//------------------------------------------------------------------------------
+//
+Bool_t AliEMCALTracker::PropagateToEMCAL(AliEMCALTrack *tr)
+{
+	//
+	// Propagates the track to the proximity of the EMCAL surface
+	//
+	
+	Double_t xcurr, xtemp, xprop = 438.0, step = 10.0, param[6], d, x0, rho, bz;
+	Double_t x1[3], x2[3];
+	
+	// get initial track position
+	xcurr = tr->GetX();
+	
+	// propagate by small steps
+	for (xtemp = xcurr + step; xtemp < xprop; xtemp += step) {
+		// to compute material budget, take current position and 
+		// propagated hypothesis without energy loss
+		tr->GetXYZ(x1);
+		bz = tr->GetBz();
+		if (!tr->GetXYZAt(xtemp, bz, x2)) return kFALSE;
+		AliKalmanTrack::MeanMaterialBudget(x1, x2, param);
+		d = param[4];
+		rho = param[0];
+		x0 = param[1];
+		if (!tr->PropagateTo(xtemp, d*rho/x0, x0)) return kFALSE;
+	}
+	
+	return kTRUE;
+}
+//
+//------------------------------------------------------------------------------
+//
 Int_t AliEMCALTracker::CreateMatches()
 {
 	//
@@ -702,23 +885,23 @@ Int_t AliEMCALTracker::CreateMatches()
 	// external loop on clusters, internal loop on tracks
 	Double_t dist;
 	for (ic = 0; ic < nClusters; ic++) {
-		cout << "\rMatching cluster " << ic+1 << " of " << nClusters << flush;
 		AliEMCALMatchCluster *cluster = (AliEMCALMatchCluster*)fClusters->At(ic);
 		for (it = 0; it < nTracks; it++) {
 			AliEMCALTrack *track = (AliEMCALTrack*)fTracks->At(it);
 			dist = CheckPair(track, cluster);
+			//cout << dist << endl;
 			if (dist <= fMaxDist) {
 				AliEMCALMatch *candidate = new AliEMCALMatch;
 				candidate->SetIndexT(it);
 				candidate->SetIndexC(ic);
 				candidate->SetDistance(dist);
+				candidate->SetPt(track->GetPt());
 				fMatches->Add(candidate);
 				count++;
 			}
 		}
 	}
-	cout << endl;		
-	
+		
 	/*
 	// loop on clusters and tracks
 	Int_t icBest;
@@ -884,8 +1067,8 @@ Int_t AliEMCALTracker::AliEMCALMatch::Compare(const TObject *obj) const
 	
 	AliEMCALTracker::AliEMCALMatch *that = (AliEMCALTracker::AliEMCALMatch*)obj;
 	
-	Double_t thisDist = fDistance;
-	Double_t thatDist = that->GetDistance();
+	Double_t thisDist = fPt;//fDistance;
+	Double_t thatDist = that->fPt;//that->GetDistance();
 	
 	if (thisDist > thatDist) return 1;
 	else if (thisDist < thatDist) return -1;
@@ -897,7 +1080,8 @@ AliEMCALTracker::AliEMCALMatch::AliEMCALMatch()
     fCanBeSaved(kFALSE), 
     fIndexC(0), 
     fIndexT(0), 
-    fDistance(0.)
+    fDistance(0.),
+    fPt(0.)
 {
   //default constructor
 
@@ -908,7 +1092,8 @@ AliEMCALTracker::AliEMCALMatch::AliEMCALMatch(const AliEMCALMatch& copy)
     fCanBeSaved(copy.fCanBeSaved),
     fIndexC(copy.fIndexC),
     fIndexT(copy.fIndexT),
-    fDistance(copy.fDistance)
+    fDistance(copy.fDistance),
+    fPt(copy.fPt)
 {
   //copy ctor
 }

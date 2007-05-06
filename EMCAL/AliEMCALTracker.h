@@ -25,11 +25,13 @@
 #include "AliTracker.h"
 
 class TList;
+class TTree;
 class TObjArray;
 class AliESD;
 class AliESDCaloCluster;
 class AliEMCALTrack;
 class AliEMCALRecPoint;
+class AliEMCALGeometry;
 
 class AliEMCALTracker : public AliTracker 
 {
@@ -50,27 +52,35 @@ public:
 	virtual Int_t       RefitInward(AliESD*) {return -1;}
 	virtual void        UnloadClusters();
 	virtual AliCluster* GetCluster(Int_t) const {return NULL;};
+	TTree*              SearchTrueMatches();
 	void                SetCorrection(Double_t rho, Double_t x0) {fRho=rho;fX0=x0;}
 	void                SetCutAlpha(Double_t min, Double_t max) {fCutAlphaMin=min;fCutAlphaMax=max;}
 	void                SetCutAngle(Double_t value) {fCutAngle=value;}
 	void                SetCutX(Double_t value) {fCutX=value;}
 	void                SetCutY(Double_t value) {fCutY=value;}
 	void                SetCutZ(Double_t value) {fCutZ=value;}
+	void                SetGeometry(AliEMCALGeometry *geom) {fGeom=geom;}
 	void                SetMaxDistance(Double_t value) {fMaxDist=value;}
 	void                SetNumberOfSteps(Int_t n) {fNPropSteps=n;if(!n)SetTrackCorrectionMode("NONE");}
 	void                SetTrackCorrectionMode(Option_t *option);
 	
+	enum {
+		kUnmatched = -99999
+	};
+	
 	class  AliEMCALMatchCluster : public TObject
 	{
 	public:
-		           AliEMCALMatchCluster(Int_t ID, AliEMCALRecPoint *recPoint);
-				   AliEMCALMatchCluster(Int_t ID, AliESDCaloCluster *caloCluster);
-		virtual   ~AliEMCALMatchCluster() { }
+		AliEMCALMatchCluster(Int_t ID, AliEMCALRecPoint *recPoint);
+		AliEMCALMatchCluster(Int_t ID, AliESDCaloCluster *caloCluster);
+		virtual ~AliEMCALMatchCluster() { }
+		//----------------------------------------------------------------------------
 		Int_t&     Index() {return fIndex;}
 		Int_t&     Label() {return fLabel;}
 		Double_t&  X() {return fX;}
 		Double_t&  Y() {return fY;}
 		Double_t&  Z() {return fZ;}
+		Double_t   Phi() {return TMath::ATan2(fY, fX);}
 	private:
 		Int_t     fIndex;  // index of cluster in its native container (ESD or TClonesArray)
 		Int_t     fLabel;  // track label of assigned cluster
@@ -82,23 +92,27 @@ public:
 	class  AliEMCALMatch : public TObject
 	{
 	public:
-	                  AliEMCALMatch();
-			  AliEMCALMatch(const AliEMCALMatch& copy);
-		         ~AliEMCALMatch() { }
+		AliEMCALMatch();
+		AliEMCALMatch(const AliEMCALMatch& copy);
+		virtual ~AliEMCALMatch() { }
+		//----------------------------------------------------------------------------
 		Bool_t&   CanBeSaved() {return fCanBeSaved;}
 		Int_t     Compare(const TObject *obj) const;
 		Double_t  GetDistance() {return fDistance;}
+		Double_t  GetPt() {return fPt;}
 		Int_t     GetIndexC() {return fIndexC;}
 		Int_t     GetIndexT() {return fIndexT;}
 		Bool_t    IsSortable() const {return kTRUE;}
 		void      SetIndexC(Int_t icl) {fIndexC=icl;}
 		void      SetIndexT(Int_t itr) {fIndexT=itr;}
 		void      SetDistance(Double_t dist) {fDistance=dist;}
+		void      SetPt(Double_t pt) {fPt=pt;}
 	private:
 		Bool_t     fCanBeSaved;  // when true, this match can be saved, otherwise it will not be
 		Int_t      fIndexC;      // cluster index in 'fClusters' array
 		Int_t      fIndexT;      // track index in 'fTracks' array
 		Double_t   fDistance;    // track - cluster distance
+		Double_t   fPt;          // track pt
 	};
 
 private:
@@ -106,7 +120,9 @@ private:
 	Double_t   AngleDiff(Double_t angle1, Double_t angle2);
 	Double_t   CheckPair(AliEMCALTrack *tr, AliEMCALMatchCluster *cluster);
 	Double_t   CheckPairV2(AliEMCALTrack *tr, AliEMCALMatchCluster *cluster);
+	Double_t   CheckPairV3(AliEMCALTrack *tr, AliEMCALMatchCluster *cluster);
 	Int_t      CreateMatches();
+	Bool_t     PropagateToEMCAL(AliEMCALTrack *tr);
 	Int_t      SolveCompetitions();
 	
 	enum ETrackCorr { 
@@ -129,9 +145,11 @@ private:
 	Double_t    fRho;             // energy correction: density
 	Double_t    fX0;              // energy correction: radiation length
 
-	TObjArray  *fTracks;          //! collection of ESD tracks
+	TObjArray  *fTracks;          //! collection of tracks
 	TObjArray  *fClusters;        //! collection of EMCAL clusters (ESDCaloCluster or EMCALRecPoint)
 	TList      *fMatches;         //! collection of matches between tracks and clusters
+	
+	AliEMCALGeometry *fGeom;      //! EMCAL geometry
 	
 	ClassDef(AliEMCALTracker, 1)  // EMCAL "tracker"
 };
