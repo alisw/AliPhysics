@@ -150,8 +150,9 @@ ClassImp(AliTRDgeometry)
   const Int_t    AliTRDgeometry::fgkRowmaxC0  = 12;
   const Int_t    AliTRDgeometry::fgkRowmaxC1  = 16;
 
-//const Double_t AliTRDgeometry::fgkTime0Base = 300.65;
-  const Double_t AliTRDgeometry::fgkTime0Base = 299.95;
+  const Double_t AliTRDgeometry::fgkTime0Base = 300.65;
+  // New value  
+  //const Double_t AliTRDgeometry::fgkTime0Base = 299.95;
   const Float_t  AliTRDgeometry::fgkTime0[6]  = { fgkTime0Base + 0 * (Cheight() + Cspace()) 
                                                 , fgkTime0Base + 1 * (Cheight() + Cspace()) 
                                                 , fgkTime0Base + 2 * (Cheight() + Cspace()) 
