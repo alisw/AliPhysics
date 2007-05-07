@@ -428,7 +428,7 @@ smell-@MODULE@: $(@PACKAGE@SMELL)
 	@echo "Creating archive" $@ ...
 	@cd @MODULE@; tar cfzh ../$@ @PACKAGE@
 	@rm -rf @MODULE@/@PACKAGE@
-	@echo "done"
+	@echo $@ "done"
 
 @MODULE@/@PACKAGE@/Makefile: @MODULE@/Makefile
 	@echo Copying $< to $@ with transformations
