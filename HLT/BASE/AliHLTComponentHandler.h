@@ -1,3 +1,4 @@
+//-*- Mode: C++ -*-
 // @(#) $Id$
 
 #ifndef ALIHLTCOMPONENTHANDLER_H
@@ -12,7 +13,12 @@
     @note   The handler is part of the interface and both used in the
             Online (PubSub) and Offline (AliRoot) context.
                                                                           */
-   
+
+// see below for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
 
 #include <vector>
 //#include "TObject.h"

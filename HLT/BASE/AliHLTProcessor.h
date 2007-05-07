@@ -11,6 +11,12 @@
     @date   
     @brief  Base class declaration for HLT analysis components. */
 
+// see below for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
+
 #include "AliHLTComponent.h"
 
 /**

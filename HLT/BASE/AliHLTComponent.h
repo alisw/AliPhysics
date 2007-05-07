@@ -12,6 +12,12 @@
     @brief  Base class declaration for HLT components. 
     @note   The class is both used in Online (PubSub) and Offline (AliRoot)
             context
+
+// see below for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
                                                                           */
 /**
  * @defgroup alihlt_component Component handling of the HLT module

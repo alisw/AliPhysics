@@ -1,3 +1,4 @@
+//-*- Mode: C++ -*-
 // @(#) $Id$
 
 #ifndef ALIHLTSYSTEM_H
@@ -11,6 +12,12 @@
     @brief  Global HLT module management and AliRoot integration.
     @note   The class is used in Offline (AliRoot) context
 */
+
+// see below for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
 
 /**
  * @defgroup alihlt_system HLT integration into AliRoot

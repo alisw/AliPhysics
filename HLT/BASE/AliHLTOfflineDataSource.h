@@ -12,6 +12,12 @@
     @brief  AliRoot data sink component base class.
 */
 
+// see below for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
+
 #include "AliHLTDataSource.h"
 #include "AliHLTOfflineInterface.h"
 

@@ -21,6 +21,12 @@
     @brief  Handling of Data Buffers for HLT components.
 */
 
+// see header file for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
 #if __GNUC__>= 3
 using namespace std;
 #endif

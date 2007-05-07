@@ -1,3 +1,4 @@
+//-*- Mode: C++ -*-
 // @(#) $Id$
 
 #ifndef ALIHLTCONFIGURATION_H
@@ -11,6 +12,12 @@
     @brief  Base class and handling of HLT configurations.
     @note   The class is used in Offline (AliRoot) context
 */
+
+// see below for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
 
 #include <cerrno>
 #include <vector>
