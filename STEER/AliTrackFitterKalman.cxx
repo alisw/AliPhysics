@@ -240,13 +240,13 @@ Bool_t AliTrackFitterKalman::GetPCA(const AliTrackPoint &p, AliTrackPoint &i) co
   TMatrixDSym tC(3);
   {
   Double_t sig2=s*s/12.;
-  TMatrixDSym &cv=*fCov;
-  tC(0,0) = cv(0,0) + 2*s*cv(3,0) + s*s*cv(3,3) + vx*vx*sig2;
-  tC(1,0) = cv(1,0) + s*cv(1,3) + vx*sig2; 
-  tC(1,1) = cv(1,1) + sig2;
-  tC(2,0) = cv(2,0) + s*(cv(4,0) + cv(2,3)) + s*s*cv(4,3) + vx*vz*sig2;
-  tC(2,1) = cv(2,1) + s*cv(4,1) + vz*sig2;
-  tC(2,2) = cv(2,2) + 2*s*cv(4,2) + s*s*cv(4,4) + vz*vz*sig2;
+
+  tC(0,0) = vx*vx*sig2;
+  tC(1,0) = vx*sig2; 
+  tC(1,1) = sig2;
+  tC(2,0) = vx*vz*sig2;
+  tC(2,1) = vz*sig2;
+  tC(2,2) = vz*vz*sig2;
 
   tC(0,1) = tC(1,0); tC(0,2) = tC(2,0);
                      tC(1,2) = tC(2,1);
