@@ -156,12 +156,7 @@ DEPINC     += $(GENINC)
 # Libraries will be linked against SHLIB
 # ROOT libraries 
 
-CHECKALIEN = $(shell root-config --has-alien)
-ifeq (yes,$(CHECKALIEN))
-ROOTCLIBS     := $(shell root-config --glibs) -lThread -lMinuit -lHtml -lVMC -lEG -lGeom -lTreePlayer -lXMLIO -lProof -lProofPlayer -lNetx -lRAliEn 
-else
-ROOTCLIBS     := $(shell root-config --glibs) -lThread -lMinuit -lHtml -lVMC -lEG -lGeom -lTreePlayer -lXMLIO 
-endif
+ROOTCLIBS     := $(shell root-config --glibs) -lThread -lMinuit -lHtml -lVMC -lEG -lGeom -lTreePlayer -lXMLIO -lProof -lProofPlayer
 
 ROOTPLIBS     := -lEGPythia6
 
