@@ -30,7 +30,6 @@
 
 #include <Riostream.h>
 #ifdef WITHALIEN
-#include <TAlienCollection.h>
 #include <TGridResult.h>
 #include <TFileMerger.h>
 #endif
@@ -237,7 +236,7 @@ Bool_t AliAnalysisGoodies::MakeEsdCollectionFromTagCollection(AliRunTagCuts *run
 
 #ifdef WITHALIEN
   
-  TGridCollection * collection = TAlienCollection::Open(in);
+  TGridCollection * collection = (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(%s)",in));
   TGridResult* result = collection->GetGridResult("");
   AliTagAnalysis * tagAna = new AliTagAnalysis(); 
   tagAna->ChainGridTags(result);
@@ -264,17 +263,17 @@ Bool_t AliAnalysisGoodies::MakeEsdCollectionFromTagCollection(const char * runCu
   
 #ifdef WITHALIEN
 
-  TGridCollection * collection = TAlienCollection::Open(in);
+  TGridCollection * collection = (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(%s)",in));
   TGridResult* result = collection->GetGridResult("");
   AliTagAnalysis * tagAna = new AliTagAnalysis(); 
   tagAna->ChainGridTags(result);
   
   tagAna->CreateXMLCollection(out, runCuts, lhcCuts, detCuts, evtCuts) ;
 
-  return rv ;
 #else
-  return kFALSE;
+  rv = kFALSE;
 #endif
+  return rv ;
 }
 
 //______________________________________________________________________
@@ -300,7 +299,7 @@ Bool_t AliAnalysisGoodies::Merge(const char * collectionFile, const char * subFi
   
 #ifdef WITHALIEN
 
-  TGridCollection * collection = TAlienCollection::Open(collectionFile);
+  TGridCollection * collection = (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(%s)",collectionFile));
   TGridResult* result = collection->GetGridResult("");
   
   Int_t index = 0  ;
@@ -336,10 +335,10 @@ Bool_t AliAnalysisGoodies::Merge(const char * collectionFile, const char * subFi
   fTimer.Stop();
   fTimer.Print();
   
-  return rv ;
 #else
-  return kFALSE;
+  rv = kFALSE;
 #endif
+  return rv ;
 }
 
 //______________________________________________________________________
@@ -601,7 +600,7 @@ Bool_t AliAnalysisGoodies::ProcessEsdXmlCollection(const char * xmlFile) const
 
 #ifdef WITHALIEN
 
-  TGridCollection * collection = TAlienCollection::Open(xmlFile) ; 
+  TGridCollection * collection = (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(%s)",xmlFile));
   if (! collection) {
     AliError(Form("%s not found", xmlFile)) ; 
     return kFALSE ; 
@@ -618,10 +617,10 @@ Bool_t AliAnalysisGoodies::ProcessEsdXmlCollection(const char * xmlFile) const
   // Process the events
   rv = ProcessChain(analysisChain) ; 
 
-  return rv ; 
 #else
-  return kFALSE;
+  rv = kFALSE;
 #endif
+  return rv ; 
 }
 
 //______________________________________________________________________
@@ -648,7 +647,7 @@ Bool_t AliAnalysisGoodies::ProcessTagXmlCollection(const char * xmlFile, AliRunT
 
 #ifdef WITHALIEN
 
-  TGridCollection * collection = TAlienCollection::Open(xmlFile) ; 
+  TGridCollection * collection = (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(%s)",xmlFile));
   if (! collection) {
     AliError(Form("%s not found", xmlFile)) ; 
     return kFALSE ; 
@@ -665,10 +664,10 @@ Bool_t AliAnalysisGoodies::ProcessTagXmlCollection(const char * xmlFile, AliRunT
   // Process the events
   rv = ProcessChain(analysisChain) ; 
 
-  return rv ; 
 #else
-  return kFALSE;
+  rv = kFALSE;
 #endif
+  return rv ; 
 }
 
 //______________________________________________________________________
@@ -695,7 +694,7 @@ Bool_t AliAnalysisGoodies::ProcessTagXmlCollection(const char * xmlFile, const c
   if ( gSystem->AccessPathName(xmlFile) ) 
     TGrid::Connect("alien://"); 
 
-  TGridCollection * collection = TAlienCollection::Open(xmlFile) ; 
+  TGridCollection * collection = (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(%s)",xmlFile));
   if (! collection) {
     AliError(Form("%s not found", xmlFile)) ; 
     return kFALSE ; 
@@ -712,10 +711,10 @@ Bool_t AliAnalysisGoodies::ProcessTagXmlCollection(const char * xmlFile, const c
   // Process the events
   rv = ProcessChain(analysisChain) ; 
 
-  return rv ; 
 #else
-  return kFALSE;
+  rv = kFALSE;
 #endif
+  return rv ; 
 }
 
 //______________________________________________________________________
