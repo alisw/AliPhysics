@@ -31,6 +31,7 @@
 #include "AliITSsegmentationSDD.h"
 #include <TClonesArray.h>
 #include "AliITSdigitSDD.h"
+#include "AliITSgeomTGeo.h"
 
 ClassImp(AliITSClusterFinderV2SDD)
 
@@ -111,6 +112,9 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
   //------------------------------------------------------------
   // Actual SDD cluster finder
   //------------------------------------------------------------
+
+  const TGeoHMatrix *mT2L=AliITSgeomTGeo::GetTracking2LocalMatrix(fModule);
+
   AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(fModule);
   Int_t ncl=0; 
   TClonesArray &cl=*clusters;
@@ -234,9 +238,12 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
 	 
 	 CorrectPosition(zdet,xdet);
 
-	 y=-(-xdet+fYshift[fModule]);
-	 z=  -zdet+fZshift[fModule];
-	  
+         {
+         Double_t loc[3]={xdet,0.,zdet},trk[3]={0.,0.,0.};
+         mT2L->MasterToLocal(loc,trk);
+         y=trk[1];
+         z=trk[2]; 
+         }
          q/=5.243;  //to have MPV 1 MIP = 86.4 KeV --> this must go to calibr.
          Float_t hit[5] = {y, z, 0.0030*0.0030, 0.0020*0.0020, q};
          Int_t  info[3] = {maxj-minj+1, maxi-mini+1, fNlayer[fModule]};

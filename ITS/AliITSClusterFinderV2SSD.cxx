@@ -236,7 +236,7 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
   Int_t prevFlag = -1;
   Int_t prevModule = -1;
   Float_t gain=0;
-  AliITSCalibrationSSD* cal;
+  AliITSCalibrationSSD* cal=NULL;
   
 
   // read raw data input stream
@@ -323,6 +323,9 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
   //------------------------------------------------------------
   // Actual SSD cluster finder
   //------------------------------------------------------------
+
+  const TGeoHMatrix *mT2L=AliITSgeomTGeo::GetTracking2LocalMatrix(fModule);
+
   TClonesArray &cl=*clusters;
   //
   Float_t tanp=fTanP, tann=fTanN;
@@ -414,8 +417,12 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
       zt-=fHlSSD; yt-=fHwSSD;
       ybest=yt; zbest=zt; 
       qbest=0.5*(pos[ip].GetQ()+neg[j].GetQ());
-      lp[0]=-(-ybest+fYshift[fModule]);
-      lp[1]=  -zbest+fZshift[fModule];
+      {
+      Double_t loc[3]={ybest,0.,zbest},trk[3]={0.,0.,0.};
+      mT2L->MasterToLocal(loc,trk);
+      lp[0]=trk[1];
+      lp[1]=trk[2];
+      }
       lp[2]=0.0025*0.0025;  //SigmaY2
       lp[3]=0.110*0.110;  //SigmaZ2
       
@@ -481,8 +488,12 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	  zt-=fHlSSD; yt-=fHwSSD;
 	  ybest =yt;  zbest=zt; 
 	  qbest =pos[ip].GetQ();
-	  lp[0]=-(-ybest+fYshift[fModule]);
-	  lp[1]=  -zbest+fZshift[fModule];
+          {
+          Double_t loc[3]={ybest,0.,zbest},trk[3]={0.,0.,0.};
+          mT2L->MasterToLocal(loc,trk);
+          lp[0]=trk[1];
+          lp[1]=trk[2];
+          }
 	  lp[2]=0.0025*0.0025;  //SigmaY2
 	  lp[3]=0.110*0.110;  //SigmaZ2
 	  
@@ -536,8 +547,12 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	  zt-=fHlSSD; yt-=fHwSSD;
 	  ybest =yt;  zbest=zt; 
 	  qbest =pos[ip2].GetQ();
-	  lp[0]=-(-ybest+fYshift[fModule]);
-	  lp[1]=  -zbest+fZshift[fModule];
+          {
+          Double_t loc[3]={ybest,0.,zbest},trk[3]={0.,0.,0.};
+          mT2L->MasterToLocal(loc,trk);
+          lp[0]=trk[1];
+          lp[1]=trk[2];
+          }
 	  lp[2]=0.0025*0.0025;  //SigmaY2
 	  lp[3]=0.110*0.110;  //SigmaZ2
 	  
@@ -608,8 +623,12 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	  zt-=fHlSSD; yt-=fHwSSD;
 	  ybest =yt;  zbest=zt; 
 	  qbest =neg[jn].GetQ();
-	  lp[0]=-(-ybest+fYshift[fModule]);
-	  lp[1]=  -zbest+fZshift[fModule];
+          {
+          Double_t loc[3]={ybest,0.,zbest},trk[3]={0.,0.,0.};
+          mT2L->MasterToLocal(loc,trk);
+          lp[0]=trk[1];
+          lp[1]=trk[2];
+          }
 	  lp[2]=0.0025*0.0025;  //SigmaY2
 	  lp[3]=0.110*0.110;  //SigmaZ2
 	  
@@ -662,8 +681,12 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 	  zt-=fHlSSD; yt-=fHwSSD;
 	  ybest =yt;  zbest=zt; 
 	  qbest =neg[jn2].GetQ();
-	  lp[0]=-(-ybest+fYshift[fModule]);
-	  lp[1]=  -zbest+fZshift[fModule];
+          {
+          Double_t loc[3]={ybest,0.,zbest},trk[3]={0.,0.,0.};
+          mT2L->MasterToLocal(loc,trk);
+          lp[0]=trk[1];
+          lp[1]=trk[2];
+          }
 	  lp[2]=0.0025*0.0025;  //SigmaY2
 	  lp[3]=0.110*0.110;  //SigmaZ2
 	  
@@ -764,8 +787,12 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
       zt-=fHlSSD; yt-=fHwSSD;
       ybest=yt; zbest=zt; 
       qbest=0.5*(pos[ip].GetQ()+neg[j].GetQ());
-      lp[0]=-(-ybest+fYshift[fModule]);
-      lp[1]=  -zbest+fZshift[fModule];
+      {
+      Double_t loc[3]={ybest,0.,zbest},trk[3]={0.,0.,0.};
+      mT2L->MasterToLocal(loc,trk);
+      lp[0]=trk[1];
+      lp[1]=trk[2];
+      }
       lp[2]=0.0025*0.0025;  //SigmaY2
       lp[3]=0.110*0.110;  //SigmaZ2	
       lp[4]=qbest;        //Q
@@ -831,8 +858,12 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
       if (TMath::Abs(zt)<fHlSSD+0.01*(neg[j].GetNd()+pos[i].GetNd())) {
         ybest=yt; zbest=zt; 
         qbest=0.5*(pos[i].GetQ()+neg[j].GetQ());
-        lp[0]=-(-ybest+fYshift[fModule]);
-        lp[1]=  -zbest+fZshift[fModule];
+        {
+        Double_t loc[3]={ybest,0.,zbest},trk[3]={0.,0.,0.};
+        mT2L->MasterToLocal(loc,trk);
+        lp[0]=trk[1];
+        lp[1]=trk[2];
+        }
         lp[2]=0.0025*0.0025;  //SigmaY2
         lp[3]=0.110*0.110;  //SigmaZ2
 

@@ -159,9 +159,6 @@ void AliITSClusterFinder::InitGeometry(){
   Int_t mmax=AliITSgeomTGeo::GetNModules();
   for (Int_t m=0; m<mmax; m++) {
     Int_t lay,lad,det; AliITSgeomTGeo::GetModuleId(m,lay,lad,det);
-    const TGeoHMatrix *tm=AliITSgeomTGeo::GetTracking2LocalMatrix(m);
-    fYshift[m] = (tm->Inverse()).GetTranslation()[1];
-    fZshift[m] = (tm->Inverse()).GetTranslation()[2];
     fNdet[m] = (lad-1)*AliITSgeomTGeo::GetNDetectors(lay) + (det-1);
     fNlayer[m] = lay-1;
   }

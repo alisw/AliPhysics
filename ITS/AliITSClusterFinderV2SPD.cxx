@@ -84,6 +84,8 @@ Int_t AliITSClusterFinderV2SPD::ClustersSPD(AliBin* bins, TClonesArray* digits,T
   
   //Cluster finder for SPD (from digits and from rawdata)
 
+  const TGeoHMatrix *mT2L=AliITSgeomTGeo::GetTracking2LocalMatrix(iModule);
+  
   Int_t nclu=0;
   for(Int_t iBin =0; iBin < maxBins;iBin++){
     if(bins[iBin].IsUsed()) continue;
@@ -187,15 +189,18 @@ Int_t AliITSClusterFinderV2SPD::ClustersSPD(AliBin* bins, TClonesArray* digits,T
 	z /= q;
 	y -= fHwSPD;
 	z -= fHlSPD;
+
 	Float_t hit[5]; //y,z,sigma(y)^2, sigma(z)^2, charge
-
-	if (iModule <= fLastSPD1) hit[0] = -y+fYshift[iModule];
-        else hit[0] = y+fYshift[iModule];
-
-	hit[1] = -z+fZshift[iModule];
+        {
+        Double_t loc[3]={y,0.,z},trk[3]={0.,0.,0.};
+        mT2L->MasterToLocal(loc,trk);
+        hit[0]=trk[1];
+        hit[1]=trk[2];
+	}
 	hit[2] = fYpitchSPD*fYpitchSPD/12.;
 	hit[3] = fZ1pitchSPD*fZ1pitchSPD/12.;
 	hit[4] = 1.;
+
 	if(!rawdata) milab[3]=fNdet[iModule];
 	Int_t info[3] = {ymax-ymin+1,zmax-zmin+1,fNlayer[iModule]};
 	if(!rawdata){
