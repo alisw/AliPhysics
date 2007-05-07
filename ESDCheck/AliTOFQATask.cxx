@@ -20,6 +20,7 @@
 //-TOF Time info and (TOF - expected time) plots
 //-Summary Plots on TOF Pid
 //////////////////////////////////////////////////////////////////////////////
+#include <TMath.h>
 #include <TChain.h>
 #include <TFile.h> 
 #include <TObject.h> 
@@ -384,7 +385,7 @@ void AliTOFQATask::CreateOutputObjects()
   fhTOFMassVsMom = 
     new TH2F("hTOFMassVsMom","TOF, Mass Vs Momentum ",280,-0.2,1.2,600,0.,6.);
   fhTOFMass = 
-    new TH1F("hTOFMass","TOF, reconstructed mass ",280,-0.2,1.2);
+    new TH1F("hTOFMass","TOF, reconstructed mass ",240,0.,1.2);
 
   
   // create the output container
@@ -502,8 +503,8 @@ Bool_t AliTOFQATask::DrawHistos()
   fhTOFDeltaTime->GetYaxis()->SetTitle("Entries");
   fhTOFDeltaTime->SetFillColor(4);
   Int_t ntimepeak=1;
-  TSpectrum *timeDiff = new TSpectrum(2*ntimepeak);
-  Int_t ntime = timeDiff->Search(fhTOFDeltaTime,ntimepeak," ",0.1);
+  TSpectrum *timeDiff = new TSpectrum(ntimepeak);
+  Int_t ntime = timeDiff->Search(fhTOFDeltaTime,ntimepeak,"new",0.1);
   fhTOFDeltaTime->Draw();
 
   cTOFtime->Print("TOF_time.eps");
@@ -519,8 +520,8 @@ Bool_t AliTOFQATask::DrawHistos()
   fhTOFMass->SetFillColor(4);
   Int_t npmass=1;
   if(fhTOFMass->GetEntries()>1000)npmass=3;
-  TSpectrum *mass = new TSpectrum(2*npmass);
-  Int_t nmass = mass->Search(fhTOFMass,npmass," ",0.02);
+  TSpectrum *mass = new TSpectrum(npmass);
+  Int_t nmass = mass->Search(fhTOFMass,npmass,"new",0.02);
   fhTOFMass->Draw();
   if ( fhTOFMassVsMom->GetMaximum() > 0 ) 
     cTOFpid->SetLogy(0);
@@ -587,21 +588,23 @@ Bool_t AliTOFQATask::DrawHistos()
   gROOT->ProcessLine(line);
   AliInfo(Form("*** TOF QA plots saved in %s.tar.gz...", GetName())) ;
 
-  Bool_t problem=kFALSE;
+  Bool_t hardProblem=kFALSE;
+  Bool_t softProblem=kFALSE;
   //------------------------------Matching Efficiency
 
   //Overall Fraction:
   Float_t matchFrac= fhTOFMatch->GetMean();
   if(matchFrac<fmatchFracMin){
     AliWarning(Form("*** Overall Fraction of matched tracks too low! Fraction = %f", matchFrac)) ;
-    problem=kTRUE;
+    softProblem=kTRUE;
   }else{
     AliInfo(Form("*** Fraction of matched tracks  = %f", matchFrac)) ; 
   } 
 
   if(fhTOFeffMom->GetEntries()<1.){
     AliWarning(Form("*** No tracks matching with TOF! Fraction is = %f", matchFrac)) ; 
-    problem=kTRUE;
+    hardProblem=kTRUE;
+    return hardProblem;
   }
 
   
@@ -610,7 +613,7 @@ Bool_t AliTOFQATask::DrawHistos()
   Float_t deff=  fitMom->GetParError(0);
   if(eff+3*deff<fmatchEffMin){
     AliWarning(Form("*** Fraction of matched tracks vs Momentum is too low! Fraction= %f", eff)) ;
-    problem=kTRUE;
+    softProblem=kTRUE;
   }else{
     AliInfo(Form("*** Fraction of matched tracks for p>0.5 GeV is = %f", eff)) ;
   } 
@@ -619,48 +622,68 @@ Bool_t AliTOFQATask::DrawHistos()
   for(Int_t isec=1;isec<=18;isec++){
     if(fhTOFsector->GetBinContent(isec)<1 && TOFsectors[isec-1]>0){
       AliWarning(Form("*** Missing Entries in sector %i", isec)); 
-      problem=kTRUE;
+      softProblem=kTRUE;
     }
     if(fhTOFsector->GetBinContent(isec)>0 && TOFsectors[isec-1]==0){
       AliWarning(Form("*** Unexpected Entries in sector %i", isec)); 
-      problem=kTRUE;
+      softProblem=kTRUE;
     }
   }
 
   //-----------------------------Pid Quality
 
   // Look at the time - expected time: 
-  if(ntime==0)AliWarning("*** No peak was found in time difference spectrum!");
-  Float_t *timePos = timeDiff->GetPositionX();
-  if(TMath::Abs(timePos[0])>ftimePeakMax){
-    AliWarning(Form("*** Main Peak position in tTOF-TEXP spectrum is sitting far from where expected! Tpeak = %f ps",timePos[0]*1.E3));  
-    problem=kTRUE;
-  }else{
-    AliInfo(Form("*** Main Peak position in tTOF-TEXP found at = %f ps",timePos[0]*1.E3));  
+  if(ntime==0){
+    AliWarning("*** No peak was found in time difference spectrum!");
   }
-  // Look at the Mass Spectrum: 
-  if(nmass==0)AliWarning("*** No peak was found in Mass difference spectrum!");
-  Float_t *massPos = mass->GetPositionX();
-  for(Int_t imass=0;imass<nmass;imass++){   
-    AliInfo(Form("*** the Mass peak for %s found at  = %f GeV/c^2",part[imass],massPos[imass]));
-    if(TMath::Abs( massPos[imass]-masses[imass])> fmassPeakMax){
-      AliWarning(Form("*** the Mass peak position for %s is not in the right place, found at  = %f GeV/c^2",part[imass],massPos[imass]));
-      problem=kTRUE;
+  else if (ntime>0){
+    Float_t *timePos = timeDiff->GetPositionX();
+    if(TMath::Abs(timePos[0])>3*ftimePeakMax){
+      AliWarning(Form("*** Main Peak position in tTOF-TEXP spectrum is sitting very far from where expected! Tpeak = %f ps",timePos[0]*1.E3));  
+      hardProblem=kTRUE;
+    }
+    else if(TMath::Abs(timePos[0])>ftimePeakMax){
+      AliWarning(Form("*** Main Peak position in tTOF-TEXP spectrum is sitting far from where expected! Tpeak = %f ps",timePos[0]*1.E3));  
+      softProblem=kTRUE;
+    }else{
+      AliInfo(Form("*** Main Peak position in tTOF-TEXP found at = %f ps",timePos[0]*1.E3));  
     }
   }
 
+  // Look at the Mass Spectrum: 
+  if(nmass==0){
+    AliWarning("*** No peak was found in Mass difference spectrum!");
+    softProblem=kTRUE;
+  }
+  else if(nmass>0){
+    Int_t massind[3];
+    Float_t *massPos = mass->GetPositionX();
+    //check the found peaks (sorted in ascending mass order)
+    TMath::Sort(nmass,massPos,massind,kFALSE);
+    for(Int_t imass=0;imass<TMath::Min(nmass,3);imass++){   
+      AliInfo(Form("*** the Mass peak for %s found at  = %f GeV/c^2",part[imass],massPos[massind[imass]]));
+      if(TMath::Abs( massPos[massind[imass]]-masses[imass])> fmassPeakMax){
+	AliWarning(Form("*** the Mass peak position for %s is not in the right place, found at  = %f GeV/c^2",part[imass],massPos[massind[imass]]));
+	softProblem=kTRUE;
+      }
+    }
+    // harder check on the pion peak (more statistically significant)
+    if(TMath::Abs( massPos[massind[0]]-masses[0])> 3*fmassPeakMax){
+      hardProblem=kTRUE;
+    }
+  }
   // Look at the ID Species: 
 
   if(fhTOFIDSpecies->GetEntries()>1000){
     if(pifrac<0.8 || (kafrac<0.01 || kafrac>0.2) || (prfrac<0.01 || prfrac>0.2)){
       AliWarning(Form("*** Unexpected Id fractions: pions = %f, kaons = %f, protons %f", pifrac,kafrac,prfrac));
-      problem=kTRUE;
+      softProblem=kTRUE;
     }
   }
 
   delete mass;
   delete timeDiff;
-  return problem ; 
+  return hardProblem || softProblem ; 
 }
 
 //______________________________________________________________________________
