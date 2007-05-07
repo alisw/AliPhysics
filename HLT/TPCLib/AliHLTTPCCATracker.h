@@ -1,38 +1,39 @@
 // @(#) $Id$
-// Original: AliL3ConfMapper.h,v 1.11 2004/07/05 09:03:11 loizides 
 
 #ifndef ALIHLTTPCCATRACKER_H
 #define ALIHLTTPCCATRACKER_H
 
 //
 // CA Tracking class 
-//
+// !
+// !
 // Author: Ivan Kisel 
 //*-- Copyright &copy ALICE HLT Group
 
 #include <vector>
 
-#include "TFile.h"
-#include "TH1.h"
-#include "TH2.h"
-#include "TProfile.h"
-#include "TProfile2D.h"
-#include "TCanvas.h"
-
-#include "AliHLTTPCTrackSegmentData.h"
-
+class AliHLTTPCTrackSegmentData;
 class AliHLTTPCConfMapPoint;
 class AliHLTTPCConfMapTrack;
 class AliHLTTPCVertex;
 class AliHLTTPCTrackArray;
 class AliHLTTPCSpacePointData;
+class TApplication;
+class TCanvas;
+class TList;
+class TH1F;
+class TH2F;
+
+#include "TCanvas.h"
 
 class AliHLTTPCCATracker {
 
  public:
 
   AliHLTTPCCATracker();
-  //  AliHLTTPCCATracker(AliTPCParam *param,AliHLTTPCVertex *vertex,Bool_t bench=(Bool_t)false);
+  AliHLTTPCCATracker( const AliHLTTPCCATracker &x );
+  AliHLTTPCCATracker &operator=( const AliHLTTPCCATracker &x );
+
   virtual ~AliHLTTPCCATracker();
 
   Bool_t ReadHits(UInt_t count, AliHLTTPCSpacePointData* hits );
@@ -65,7 +66,7 @@ class AliHLTTPCCATracker {
   void SetMaxAngleTracklet(Double_t f, Bool_t vc){fMaxAngleTracklet[(Int_t)vc] = f;}
 #endif
 
-  void CACreateHistos();
+  void CACreateHistos() ;
   void CAWriteHistos();
 
   void CAInitialize();
@@ -76,55 +77,44 @@ class AliHLTTPCCATracker {
 
   // JMT 2006/11/13
   void SetOutPtr( AliHLTTPCTrackSegmentData* tr ){fOutputPtr = tr;}
-  UInt_t GetOutputSize() { return fOutputSize; }
-  UInt_t GetOutputNTracks() { return fOutputNTracks; }
+  UInt_t GetOutputSize()  const { return fOutputSize; }
+  UInt_t GetOutputNTracks()  const { return fOutputNTracks; }
 
 
  private:
 
-  AliHLTTPCTrackSegmentData* fOutputPtr;
-  UInt_t fOutputNTracks;
-  UInt_t fOutputSize;
+  AliHLTTPCTrackSegmentData* fOutputPtr; //!
+  UInt_t fOutputNTracks; //!
+  UInt_t fOutputSize;    //!
 
-  struct CAHit{
-    Double_t x, y, z;
-    Double_t errx, erry, errz;
-    Int_t index, counter;
+  struct AliHLTTPCCAHit{
+    Double_t fX, fY, fZ;          // position
+    Double_t fErrx, fErry, fErrz; // position errors 
+    Int_t fIndex, fCounter;       // addidtional
   };
   
-  std::vector<CAHit> vec_hits; 
-  Int_t patch_first_hit_ind, patch_last_hit_ind; // indices of the first and the last hits in the current patch
+  std::vector<AliHLTTPCCAHit> fVecHits; //!
+  Int_t fPatchFirstHitInd, fPatchLastHitInd; // indices of the first and the last hits in the current patch
 
-  struct CATrack{
-    Int_t patch, nhits, ndf, good, used, next;
-    //parameters
-    Double_t x, y, z, ty, tz;
-    //cov matrix
-    Double_t cov_y, cov_ty, cov_yty, cov_z, cov_tz, cov_ztz, chi2;
-    //indices of hits
-    std::vector<Int_t> vec_ihits;
+  struct AliHLTTPCCATrack{
+    Int_t fPatch, fNhits, fNdf, fGood, fUsed, fNext; // flags    
+    Double_t fX, fY, fZ, fTy, fTz;//parameters    
+    Double_t fCovy, fCovty, fCovyty, fCovz, fCovtz, fCovztz, fChi2;//cov matrix    
+    std::vector<Int_t> fVecIHits;//indices of hits
   };
 
-  std::vector<CATrack> vec_patch_tracks; 
-  Int_t patch_first_track_ind, patch_last_track_ind; // indices of the first and the last tracks in the current patch
-  std::vector<CATrack> vec_slice_tracks; 
+  std::vector<AliHLTTPCCATrack> fVecPatchTracks; //!
+  Int_t fPatchFirstTrackInd, fPatchLastTrackInd; // indices of the first and the last tracks in the current patch
+  std::vector<AliHLTTPCCATrack> fVecSliceTracks; // tracks
 
-  static bool compareCATracks(const CATrack &a, const CATrack &b){
-    if (a.patch != b.patch)
-      return (a.patch < b.patch);
-    else
-      return (a.nhits > b.nhits);
+  static bool CompareCATracks(const AliHLTTPCCATrack &a, const AliHLTTPCCATrack &b){
+    if (a.fPatch != b.fPatch) return (a.fPatch < b.fPatch);
+    else return (a.fNhits > b.fNhits);
   }
 
-  static bool compareCAHitsX(const Int_t &i, const Int_t &j){
+  static bool CompareCAHitsX(const Int_t &i, const Int_t &j){
     return (i < j);
   }
-
-  struct AliHLTTPCConfMapContainer 
-  {
-    void *first; // first track
-    void *last;  // last track
-  };
 
   Bool_t fBench; //run-time measurements
   Int_t fNTracks; //number of tracks build.
@@ -138,9 +128,6 @@ class AliHLTTPCCATracker {
   AliHLTTPCTrackArray *fTrack;  //!
   Double_t fMaxDca;      //cut value for momentum fit
   
-  AliHLTTPCConfMapContainer *fVolume;  //!  Segment volume
-  AliHLTTPCConfMapContainer *fRow;     //!  Row volume
-
    //Number of cells (segments)
   Int_t  fNumRowSegment;          // Total number of padrows
   Int_t  fNumPhiSegment;          // number of phi segments 
@@ -178,10 +165,22 @@ class AliHLTTPCCATracker {
   Double_t fMaxEta;               //Maximum eta
 
   // Tracking informtion
-  Int_t fMainVertexTracks; //number of tracks coming from the main vertex
-  Int_t fClustersUnused;   //number of unused clusters
+  Int_t fMainVertexTracks;  //number of tracks coming from the main vertex
+  Int_t fClustersUnused;    //number of unused clusters
 
-  ClassDef(AliHLTTPCCATracker,1) //Base class for conformal mapping tracking
+  Int_t fHistEvent;         //!
+  Bool_t fDRAW;             //!
+  Bool_t fAsk;              //!
+
+  TApplication *fMyapp;     //!
+  TCanvas *fYX, *fZX;       //!
+  
+  TList *fListHisto;        //!
+  TH1F *fHistNClusters;     //!
+  TH2F *fHistClustersXY[10];//!
+
+
+  ClassDef(AliHLTTPCCATracker,1) //class for cellular automaton tracking
 };
 
 #endif

@@ -1,8 +1,13 @@
+// @(#) $Id$
 /** \class AliHLTTPCCATracker
 <pre>
 //_____________________________________________________________
 // AliHLTTPCCATracker
-//
+// !
+// !
+// !
+// !
+// !
 //
 // Author: Ivan Kisel
 // Copyright &copy ALICE HLT Group
@@ -11,52 +16,32 @@
 
 #define WRITETRACKS 1
 
-#include <sys/time.h>
-
-
-#include "AliHLTTPCRootTypes.h"
 #include "AliHLTTPCSpacePointData.h"
-#include "AliHLTTPCLogging.h" 
-#include "AliHLTTPCVertex.h"
-#include "AliHLTTPCConfMapTrack.h"
-#include "AliHLTTPCConfMapPoint.h"
-#include "AliHLTTPCTrackArray.h"
-#include "AliHLTTPCTransform.h"
 #include "AliHLTTPCCATracker.h"
 #include "AliHLTTPCTrackSegmentData.h"
 
-#include "TApplication.h"
-#include "TStyle.h"
-#include "TCanvas.h"
-#include "TFrame.h"
-#include "TMarker.h"
-#include "TPaveText.h"
-#include "TEllipse.h"
-#include "TText.h"
-#include "TROOT.h"
+#include "TH1.h"
+#include "TH2.h"
 
-#include <iostream>
+#include "TFile.h"
+#include "TMath.h"
 
 #if __GNUC__ >= 3
 using namespace std;
 #endif
 
-static TList *listHisto;
-static TH1F *h_NClusters;
-static TH2F *h_ClustersXY[10];
+#include "TROOT.h"
 
-static Int_t h_Event;
 
-//#define DRAW
+#include "TCanvas.h"
+#include "TMarker.h"
+#include "TLine.h"
+#include "TStyle.h"
+#include "TApplication.h"
 
-#ifdef DRAW
-
-static TApplication *myapp;
-static TCanvas *YX, *ZX;
-
-static bool ask = false;
-
-#endif //DRAW
+#include "AliHLTTPCConfMapPoint.h"
+#include "AliHLTTPCTrackArray.h"
+#include <iostream>
 
 ClassImp(AliHLTTPCCATracker)
 
@@ -67,8 +52,6 @@ AliHLTTPCCATracker::AliHLTTPCCATracker()
   fVertex = NULL;
   fTrack = NULL;
   fHit = NULL;
-  fVolume = NULL;
-  fRow = NULL;
   fBench = (Bool_t)true;
   fVertexConstraint = (Bool_t)true;
   fParamSet[0]=0;
@@ -77,18 +60,54 @@ AliHLTTPCCATracker::AliHLTTPCCATracker()
   fOutputPtr= NULL;
   fOutputNTracks=0;
   fOutputSize=0;
+  fDRAW = 0;
+  fAsk = 0;
+}
+
+
+// ----------------------------------------------------------------------------------
+AliHLTTPCCATracker::AliHLTTPCCATracker(const AliHLTTPCCATracker &x )
+{
+  //Copy constructor
+  fVertex = x.fVertex;
+  fTrack = x.fTrack;
+  fHit = x.fHit;
+  fBench = x.fBench;
+  fVertexConstraint = x.fVertexConstraint;
+  fParamSet[0]=x.fParamSet[0];
+  fParamSet[1]=x.fParamSet[1];
+  //JMT 2006/11/13
+  fOutputPtr= x.fOutputPtr;
+  fOutputNTracks=x.fOutputNTracks;
+  fOutputSize=x.fOutputSize;
+  fDRAW = x.fDRAW;
+  fAsk = x.fAsk;
+}
+
+// ----------------------------------------------------------------------------------
+AliHLTTPCCATracker & AliHLTTPCCATracker::operator=( const AliHLTTPCCATracker &x )
+{
+  //Copy operator
+  fVertex = x.fVertex;
+  fTrack = x.fTrack;
+  fHit = x.fHit;
+  fBench = x.fBench;
+  fVertexConstraint = x.fVertexConstraint;
+  fParamSet[0]=x.fParamSet[0];
+  fParamSet[1]=x.fParamSet[1];
+  //JMT 2006/11/13
+  fOutputPtr= x.fOutputPtr;
+  fOutputNTracks=x.fOutputNTracks;
+  fOutputSize=x.fOutputSize;
+  fDRAW = x.fDRAW;
+  fAsk = x.fAsk;
+  return *this;
 }
 
 // ----------------------------------------------------------------------------------
 AliHLTTPCCATracker::~AliHLTTPCCATracker()
 {
   // Destructor.
-  if(fVolume) {
-    delete [] fVolume;
-  }
-  if(fRow) {
-    delete [] fRow;
-  }
   if(fHit) {
     delete [] fHit;
   }
@@ -106,65 +125,64 @@ AliHLTTPCCATracker::~AliHLTTPCCATracker()
 // ----------------------------------------------------------------------------------
 void AliHLTTPCCATracker::CACreateHistos()
 {
-
     // IK histogramming
-    static bool first_call = true;
-    if (first_call){
-      first_call = false;
+    static bool firstCall = kTRUE;
+    if (firstCall){
+      firstCall = kFALSE;
 
-      h_Event = 0;
+      fHistEvent = 0;
 
       TDirectory *curdir = gDirectory;
       TDirectory *histodir = gROOT->mkdir("histodir");
       histodir->cd();
       
-      h_NClusters  = new TH1F("h_NClusters", "Number of clusters in event", 100, 0.0, 1000.0);
+      fHistNClusters  = new TH1F("h_NClusters", "Number of clusters in event", 100, 0.0, 1000.0);
 
-      h_ClustersXY[0] = new TH2F("h_ClustersXY_0", "Clusters in XY plane Ev 0", 100, 50.0, 300.0, 100, -100.0, 100.0);
-      h_ClustersXY[1] = new TH2F("h_ClustersXY_1", "Clusters in XY plane Ev 1", 100, 50.0, 300.0, 100, -100.0, 100.0);
-      h_ClustersXY[2] = new TH2F("h_ClustersXY_2", "Clusters in XY plane Ev 2", 100, 50.0, 300.0, 100, -100.0, 100.0);
-      h_ClustersXY[3] = new TH2F("h_ClustersXY_3", "Clusters in XY plane Ev 3", 100, 50.0, 300.0, 100, -100.0, 100.0);
-      h_ClustersXY[4] = new TH2F("h_ClustersXY_4", "Clusters in XY plane Ev 4", 100, 50.0, 300.0, 100, -100.0, 100.0);
-      h_ClustersXY[5] = new TH2F("h_ClustersXY_5", "Clusters in XY plane Ev 5", 100, 50.0, 300.0, 100, -100.0, 100.0);
-      h_ClustersXY[6] = new TH2F("h_ClustersXY_6", "Clusters in XY plane Ev 6", 100, 50.0, 300.0, 100, -100.0, 100.0);
-      h_ClustersXY[7] = new TH2F("h_ClustersXY_7", "Clusters in XY plane Ev 7", 100, 50.0, 300.0, 100, -100.0, 100.0);
-      h_ClustersXY[8] = new TH2F("h_ClustersXY_8", "Clusters in XY plane Ev 8", 100, 50.0, 300.0, 100, -100.0, 100.0);
-      h_ClustersXY[9] = new TH2F("h_ClustersXY_9", "Clusters in XY plane Ev 9", 100, 50.0, 300.0, 100, -100.0, 100.0);
+      fHistClustersXY[0] = new TH2F("h_ClustersXY_0", "Clusters in XY plane Ev 0", 100, 50.0, 300.0, 100, -100.0, 100.0);
+      fHistClustersXY[1] = new TH2F("h_ClustersXY_1", "Clusters in XY plane Ev 1", 100, 50.0, 300.0, 100, -100.0, 100.0);
+      fHistClustersXY[2] = new TH2F("h_ClustersXY_2", "Clusters in XY plane Ev 2", 100, 50.0, 300.0, 100, -100.0, 100.0);
+      fHistClustersXY[3] = new TH2F("h_ClustersXY_3", "Clusters in XY plane Ev 3", 100, 50.0, 300.0, 100, -100.0, 100.0);
+      fHistClustersXY[4] = new TH2F("h_ClustersXY_4", "Clusters in XY plane Ev 4", 100, 50.0, 300.0, 100, -100.0, 100.0);
+      fHistClustersXY[5] = new TH2F("h_ClustersXY_5", "Clusters in XY plane Ev 5", 100, 50.0, 300.0, 100, -100.0, 100.0);
+      fHistClustersXY[6] = new TH2F("h_ClustersXY_6", "Clusters in XY plane Ev 6", 100, 50.0, 300.0, 100, -100.0, 100.0);
+      fHistClustersXY[7] = new TH2F("h_ClustersXY_7", "Clusters in XY plane Ev 7", 100, 50.0, 300.0, 100, -100.0, 100.0);
+      fHistClustersXY[8] = new TH2F("h_ClustersXY_8", "Clusters in XY plane Ev 8", 100, 50.0, 300.0, 100, -100.0, 100.0);
+      fHistClustersXY[9] = new TH2F("h_ClustersXY_9", "Clusters in XY plane Ev 9", 100, 50.0, 300.0, 100, -100.0, 100.0);
 
-      listHisto = gDirectory->GetList();
+      fListHisto = gDirectory->GetList();
       curdir->cd();
 
-#ifdef DRAW
+      if( fDRAW ){
 
-      myapp = new TApplication("myapp", 0, 0);
+      fMyapp = new TApplication("myapp", 0, 0);
       
       gStyle->SetCanvasBorderMode(0);
       gStyle->SetCanvasBorderSize(1);
       gStyle->SetCanvasColor(0);
 
 
-      YX = new TCanvas ("YX", "YX (Pad-Row) window", -10, 0, 680, 400);
-      YX->Range(-50.0, 80.0, 50.0, 250.0);
-      YX->Clear();
-      YX->Draw();
+      fYX = new TCanvas ("YX", "YX (Pad-Row) window", -10, 0, 680, 400);
+      fYX->Range(-50.0, 80.0, 50.0, 250.0);
+      fYX->Clear();
+      fYX->Draw();
 
-      ZX = new TCanvas ("ZX", "ZX window", -700, 0, 680, 400);
-      ZX->Range(-250.0, 80.0, 250.0, 250.0);
-      ZX->Clear();
-      ZX->Draw();
+      fZX = new TCanvas ("ZX", "ZX window", -700, 0, 680, 400);
+      fZX->Range(-250.0, 80.0, 250.0, 250.0);
+      fZX->Clear();
+      fZX->Draw();
 
 #ifdef XXX
       char symbol;
-      if (ask){
+      if (fAsk){
         do{
           std::cin.get(symbol);
           if (symbol == 'r')
-            ask = false;
+            fAsk = 0;
         } while (symbol != '\n');
       }
 #endif //XXX
 
-#endif //DRAW
+} //fDRAW
 
     } 
 }
@@ -175,7 +193,7 @@ void AliHLTTPCCATracker::CAWriteHistos()
     // IK Open the output file and write histogramms
 
     TFile *outfile = new TFile("ConfMapper_histo.root", "RECREATE");
-    TIter hiter(listHisto);
+    TIter hiter(fListHisto);
     while (TObject *obj = hiter()) obj->Write();
     outfile->Close();
 }
@@ -187,8 +205,8 @@ Bool_t AliHLTTPCCATracker::ReadHits(UInt_t count, AliHLTTPCSpacePointData* hits 
   //read hits
   Int_t nhit=(Int_t)count; 
 
-  vector<CAHit> vec_hits; 
-  vec_hits.clear();
+  vector<AliHLTTPCCAHit> fVecHits; 
+  fVecHits.clear();
 
   for (Int_t i=0;i<nhit;i++)
     {	
@@ -204,9 +222,10 @@ Bool_t AliHLTTPCCATracker::ReadHits(UInt_t count, AliHLTTPCSpacePointData* hits 
 // ----------------------------------------------------------------------------------
 void AliHLTTPCCATracker::CAInitialize()
 {
-  vec_hits.clear();
-  vec_patch_tracks.clear();
-  vec_slice_tracks.clear();
+  //!
+  fVecHits.clear();
+  fVecPatchTracks.clear();
+  fVecSliceTracks.clear();
 
   return;
 }
@@ -217,51 +236,51 @@ void AliHLTTPCCATracker::CAReadPatchHits(Int_t patch, UInt_t count, AliHLTTPCSpa
   //read hits
   Int_t nhit=(Int_t)count; 
 
-  patch_first_hit_ind = vec_hits.size();
-  patch_last_hit_ind  = patch_first_hit_ind + nhit - 1;
+  fPatchFirstHitInd = fVecHits.size();
+  fPatchLastHitInd  = fPatchFirstHitInd + nhit - 1;
 
   for (Int_t i=0;i<nhit;i++)
     {	
       AliHLTTPCSpacePointData* pSP = &(hits[i]);
 
-      CAHit hit;
-      hit.x = pSP->fX;
-      hit.y = pSP->fY;
-      hit.z = pSP->fZ;
+      AliHLTTPCCAHit hit;
+      hit.fX = pSP->fX;
+      hit.fY = pSP->fY;
+      hit.fZ = pSP->fZ;
 
-      hit.errx = 1.0;//pSP->fSigmaY2;
+      hit.fErrx = 1.0;//pSP->fSigmaY2;
       if (patch <= 3)
-	hit.erry = 10.0;//1.0;//pSP->fSigmaY2;
+	hit.fErry = 10.0;//1.0;//pSP->fSigmaY2;
       else
-	hit.erry = 10.0;//pSP->fSigmaY2;
-      hit.errz = 1.0;//pSP->fSigmaZ2;
+	hit.fErry = 10.0;//pSP->fSigmaY2;
+      hit.fErrz = 1.0;//pSP->fSigmaZ2;
 
-      hit.index = i;
-      hit.counter = 0;
+      hit.fIndex = i;
+      hit.fCounter = 0;
 
-      vec_hits.push_back(hit);
+      fVecHits.push_back(hit);
     }
 
-#ifdef DRAW
+  if( fDRAW ){
 
   TMarker *mhit = new TMarker(0.0, 0.0, 6);
   mhit->SetMarkerColor(kBlue);
 
-  for (Int_t i = patch_first_hit_ind; i <= patch_last_hit_ind; i++)
+  for (Int_t i = fPatchFirstHitInd; i <= fPatchLastHitInd; i++)
     {
-      YX->cd();
-      mhit->DrawMarker(vec_hits[i].y, vec_hits[i].x);
+      fYX->cd();
+      mhit->DrawMarker(fVecHits[i].fY, fVecHits[i].fX);
       
-      ZX->cd();
-      mhit->DrawMarker(vec_hits[i].z, vec_hits[i].x);
+      fZX->cd();
+      mhit->DrawMarker(fVecHits[i].fZ, fVecHits[i].fX);
     }
 
   delete mhit;
 
-  YX->cd(); YX->Update(); YX->Draw(); 
-  ZX->cd(); ZX->Update(); ZX->Draw();     
+  fYX->cd(); fYX->Update(); fYX->Draw(); 
+  fZX->cd(); fZX->Update(); fZX->Draw();     
 
-#endif //DRAW
+  } //fDRAW
 
   return;
 }
@@ -269,74 +288,75 @@ void AliHLTTPCCATracker::CAReadPatchHits(Int_t patch, UInt_t count, AliHLTTPCSpa
 // ----------------------------------------------------------------------------------
 void AliHLTTPCCATracker::CAFindPatchTracks(Int_t patch)
 {
+//!
 
-#ifdef DRAW
+//if(fDRAW){
 
-  TLine *line = new TLine();
-  line->SetLineColor(kBlack);
+TLine *line = new TLine();
+line->SetLineColor(kBlack);
 
-#endif //DRAW
+//} //fDRAW
 
   Double_t dist01, dist12, dist02, mindist, chi2, minchi2;
-  CAHit *ph0, *ph1, *ph2, *phbest, *next;
+  AliHLTTPCCAHit *ph0, *ph1, *ph2, *phbest, *next;
 
-  Double_t x, y, z, ty, tz, cov_y, cov_ty, cov_yty, cov_z, cov_tz, cov_ztz, ye, ze, dx, dy, dz, sy2, sz2; 
+  Double_t x, y, z, ty, tz, fCovy, fCovty, fCovyty, fCovz, fCovtz, fCovztz, ye, ze, dx, dy, dz, sy2, sz2; 
 
-  for (Int_t i1 = patch_first_hit_ind; i1 < patch_last_hit_ind; i1++) // <nhit-1
+  for (Int_t i1 = fPatchFirstHitInd; i1 < fPatchLastHitInd; i1++) // <nhit-1
     {	
-      ph1  = &(vec_hits[i1]);
-      next = &(vec_hits[i1+1]);
+      ph1  = &(fVecHits[i1]);
+      next = &(fVecHits[i1+1]);
 
       mindist = 20.0;
       minchi2 = 1.0;
       phbest = NULL;
 
-      if (ph1->counter != 0){ // the previous hit exists
-	x = ph1->x;
-	y = ph1->y;
-	z = ph1->z;
+      if (ph1->fCounter != 0){ // the previous hit exists
+	x = ph1->fX;
+	y = ph1->fY;
+	z = ph1->fZ;
 
-	dx = (ph1->x-ph0->x); // assume different x !!!
-	if (abs(dx) < 0.0001) dx = 0.0001;
-	ty = (ph1->y-ph0->y)/dx;
-	tz = (ph1->z-ph0->z)/dx;
+	dx = (ph1->fX-ph0->fX); // assume different x !!!
+	if (TMath::Abs(dx) < 0.0001) dx = 0.0001;
+	ty = (ph1->fY-ph0->fY)/dx;
+	tz = (ph1->fZ-ph0->fZ)/dx;
 
-	cov_y   = ph1->erry*ph1->erry;
-	cov_ty  = (ph0->erry*ph0->erry + ph1->erry*ph1->erry)/(dx*dx);
-	cov_yty = (ph1->erry*ph1->erry)/dx;
+	fCovy   = ph1->fErry*ph1->fErry;
+	fCovty  = (ph0->fErry*ph0->fErry + ph1->fErry*ph1->fErry)/(dx*dx);
+	fCovyty = (ph1->fErry*ph1->fErry)/dx;
 
-	cov_z   = ph1->errz*ph1->errz;
-	cov_tz  = (ph0->errz*ph0->errz + ph1->errz*ph1->errz)/(dx*dx);
-	cov_ztz = (ph1->errz*ph1->errz)/dx;
+	fCovz   = ph1->fErrz*ph1->fErrz;
+	fCovtz  = (ph0->fErrz*ph0->fErrz + ph1->fErrz*ph1->fErrz)/(dx*dx);
+	fCovztz = (ph1->fErrz*ph1->fErrz)/dx;
 
       }
 
-      for (Int_t i2 = i1+1; i2 <= patch_last_hit_ind; i2++)
+      for (Int_t i2 = i1+1; i2 <= fPatchLastHitInd; i2++)
 	{	
-	  ph2 = &(vec_hits[i2]);
-	  if (ph2->x < ph1->x) continue; // no backward direction!
+	  ph2 = &(fVecHits[i2]);
+	  if (ph2->fX < ph1->fX) continue; // no backward direction!
 
-	  dist12 = sqrt((ph1->x-ph2->x)*(ph1->x-ph2->x) + (ph1->y-ph2->y)*(ph1->y-ph2->y) + (ph1->z-ph2->z)*(ph1->z-ph2->z));
+	  dist12 = TMath::Sqrt((ph1->fX-ph2->fX)*(ph1->fX-ph2->fX) + (ph1->fY-ph2->fY)*(ph1->fY-ph2->fY) + (ph1->fZ-ph2->fZ)*(ph1->fZ-ph2->fZ));
 	  if (dist12 < mindist){
-	    if (ph1->counter == 0){
+	    if (ph1->fCounter == 0){
 	      mindist = dist12;
 	      phbest  = ph2;
 	    }
 	    else{
 	      // calculate chi2 distance between the hit and the line
-	      dx = (ph2->x-x); // assume different x !!!
-	      if (abs(dx) < 0.0001) dx = 0.0001;
+	      dx = (ph2->fX-x); // assume different x !!!
+	      if (TMath::Abs(dx) < 0.0001) dx = 0.0001;
 	      
 	      ye = y + ty*dx;
 	      ze = z + tz*dx;
 
-	      sy2 = cov_y + 2.0*cov_yty*dx + cov_ty*dx*dx;
-	      sz2 = cov_z + 2.0*cov_ztz*dx + cov_tz*dx*dx;
+	      sy2 = fCovy + 2.0*fCovyty*dx + fCovty*dx*dx;
+	      sz2 = fCovz + 2.0*fCovztz*dx + fCovtz*dx*dx;
 
-	      dy = ph2->y - ye;
-	      dz = ph2->z - ze;
+	      dy = ph2->fY - ye;
+	      dz = ph2->fZ - ze;
 	      
-	      chi2 = (dy*dy)/(sy2+ph2->erry*ph2->erry) + (dz*dz)/(sz2+ph2->errz*ph2->errz);
+	      chi2 = (dy*dy)/(sy2+ph2->fErry*ph2->fErry) + (dz*dz)/(sz2+ph2->fErrz*ph2->fErrz);
 
 	      // check the straight line model
 	      if (chi2 < minchi2){
@@ -351,224 +371,226 @@ void AliHLTTPCCATracker::CAFindPatchTracks(Int_t patch)
       if (phbest != NULL){// closest hit found 
 
 	// exchange jbest with the next hit
-	Double_t x_tmp = next->x;
-	Double_t y_tmp = next->y;
-	Double_t z_tmp = next->z;
+	Double_t xtmp = next->fX;
+	Double_t ytmp = next->fY;
+	Double_t ztmp = next->fZ;
 
-	Double_t errx_tmp = next->errx;
-	Double_t erry_tmp = next->erry;
-	Double_t errz_tmp = next->errz;
+	Double_t errxtmp = next->fErrx;
+	Double_t errytmp = next->fErry;
+	Double_t errztmp = next->fErrz;
 
-	Int_t index_tmp = next->index;
-	Int_t counter_tmp = next->counter;
+	Int_t indextmp = next->fIndex;
+	Int_t countertmp = next->fCounter;
 
-	next->x = phbest->x;
-	next->y = phbest->y;
-	next->z = phbest->z;
+	next->fX = phbest->fX;
+	next->fY = phbest->fY;
+	next->fZ = phbest->fZ;
 
-	next->errx = phbest->errx;
-	next->erry = phbest->erry;
-	next->errz = phbest->errz;
+	next->fErrx = phbest->fErrx;
+	next->fErry = phbest->fErry;
+	next->fErrz = phbest->fErrz;
 
-	next->index = phbest->index;
-	next->counter = phbest->counter;
+	next->fIndex = phbest->fIndex;
+	next->fCounter = phbest->fCounter;
 
-	phbest->x = x_tmp;
-	phbest->y = y_tmp;
-	phbest->z = z_tmp;
+	phbest->fX = xtmp;
+	phbest->fY = ytmp;
+	phbest->fZ = ztmp;
 
-	phbest->errx = errx_tmp;
-	phbest->erry = erry_tmp;
-	phbest->errz = errz_tmp;
+	phbest->fErrx = errxtmp;
+	phbest->fErry = errytmp;
+	phbest->fErrz = errztmp;
 
-	phbest->index = index_tmp;
-	phbest->counter = counter_tmp;
+	phbest->fIndex = indextmp;
+	phbest->fCounter = countertmp;
 
-	if (ph1->counter == 0)
-	  ph1->counter = 1;
-	next->counter = ph1->counter+1;
+	if (ph1->fCounter == 0)
+	  ph1->fCounter = 1;
+	next->fCounter = ph1->fCounter+1;
 
 	ph0 = ph1;
 	dist01 = mindist;
 
-#ifdef DRAW
+if(fDRAW){
 
-	YX->cd();
-	line->DrawLine(ph1->y, ph1->x, next->y, next->x);
+	fYX->cd();
+	line->DrawLine(ph1->fY, ph1->fX, next->fY, next->fX);
 	
-	ZX->cd();
-	line->DrawLine(ph1->z, ph1->x, next->z, next->x);
+	fZX->cd();
+	line->DrawLine(ph1->fZ, ph1->fX, next->fZ, next->fX);
 
-#endif //DRAW
+}//fDRAW
 
       }
 
     }
 
-#ifdef DRAW
+  if(fDRAW){
 
   delete line;
 
-  YX->cd(); YX->Update(); YX->Draw(); 
-  ZX->cd(); ZX->Update(); ZX->Draw();     
+  fYX->cd(); fYX->Update(); fYX->Draw(); 
+  fZX->cd(); fZX->Update(); fZX->Draw();     
 
-#endif //DRAW
+}//fDRAW
   
-  CATrack tr;
-  tr.nhits = 0; 
-  tr.chi2  = 0.0; 
-  tr.ndf   = -4; 
-  tr.vec_ihits.clear();
+  AliHLTTPCCATrack tr;
+  tr.fNhits = 0; 
+  tr.fChi2  = 0.0; 
+  tr.fNdf   = -4; 
+  tr.fVecIHits.clear();
 
-  patch_first_track_ind = vec_patch_tracks.size(); 
-  patch_last_track_ind  = patch_first_track_ind - 1;
+  fPatchFirstTrackInd = fVecPatchTracks.size(); 
+  fPatchLastTrackInd  = fPatchFirstTrackInd - 1;
 
-  CAHit *my_phf; 
+  AliHLTTPCCAHit *myphf; 
 
   // collect tracks
-  for (Int_t ihr = patch_last_hit_ind; ihr >= patch_first_hit_ind; ihr--){
+  for (Int_t ihr = fPatchLastHitInd; ihr >= fPatchFirstHitInd; ihr--){
 
-    CAHit* phit = &(vec_hits[ihr]);
+    AliHLTTPCCAHit* phit = &(fVecHits[ihr]);
 
-    if ((phit->counter < 5)&&(tr.nhits == 0))
+    if ((phit->fCounter < 5)&&(tr.fNhits == 0))
       continue; // do not collect short tracks
 
-    if ((phit->counter != 0)&&(tr.nhits == 0))// store the first hit
-	my_phf = phit;
+    if ((phit->fCounter != 0)&&(tr.fNhits == 0))// store the first hit
+	myphf = phit;
 
-    if (phit->counter != 0){//add hit to the track
-      tr.nhits++;
-      tr.vec_ihits.push_back(ihr);
+    if (phit->fCounter != 0){//add hit to the track
+      tr.fNhits++;
+      tr.fVecIHits.push_back(ihr);
 
-      if (tr.nhits == 2){ // calculate initial track parameters
-	CAHit* phit0 = &(vec_hits[tr.vec_ihits[0]]);
-	CAHit* phit1 = &(vec_hits[tr.vec_ihits[1]]);
+      if (tr.fNhits == 2){ // calculate initial track parameters
+	AliHLTTPCCAHit* phit0 = &(fVecHits[tr.fVecIHits[0]]);
+	AliHLTTPCCAHit* phit1 = &(fVecHits[tr.fVecIHits[1]]);
 
-	tr.x = phit1->x;
-	tr.y = phit1->y;
-	tr.z = phit1->z;
+	tr.fX = phit1->fX;
+	tr.fY = phit1->fY;
+	tr.fZ = phit1->fZ;
 
-	Double_t dx = (phit1->x-phit0->x); // assume different x !!!
-	if (abs(dx) < 0.0001) dx = 0.0001;
-	tr.ty = (phit1->y-phit0->y)/dx;
-	tr.tz = (phit1->z-phit0->z)/dx;
+	Double_t dx = (phit1->fX-phit0->fX); // assume different x !!!
+	if (TMath::Abs(dx) < 0.0001) dx = 0.0001;
+	tr.fTy = (phit1->fY-phit0->fY)/dx;
+	tr.fTz = (phit1->fZ-phit0->fZ)/dx;
 
-	tr.cov_y   = phit1->erry*phit1->erry;
-	tr.cov_ty  = (phit0->erry*phit0->erry + phit1->erry*phit1->erry)/(dx*dx);
-	tr.cov_yty = (phit1->erry*phit1->erry)/dx;
+	tr.fCovy   = phit1->fErry*phit1->fErry;
+	tr.fCovty  = (phit0->fErry*phit0->fErry + phit1->fErry*phit1->fErry)/(dx*dx);
+	tr.fCovyty = (phit1->fErry*phit1->fErry)/dx;
 
-	tr.cov_z   = phit1->errz*phit1->errz;
-	tr.cov_tz  = (phit0->errz*phit0->errz + phit1->errz*phit1->errz)/(dx*dx);
-	tr.cov_ztz = (phit1->errz*phit1->errz)/dx;
+	tr.fCovz   = phit1->fErrz*phit1->fErrz;
+	tr.fCovtz  = (phit0->fErrz*phit0->fErrz + phit1->fErrz*phit1->fErrz)/(dx*dx);
+	tr.fCovztz = (phit1->fErrz*phit1->fErrz)/dx;
       }
 
-      if (tr.nhits > 2){ 
+      if (tr.fNhits > 2){ 
 	// propagate the track
-	Double_t dx = (phit->x-tr.x); // assume different x !!!
-	if (abs(dx) < 0.0001) dx = 0.0001;
+	Double_t dx = (phit->fX-tr.fX); // assume different x !!!
+	if (TMath::Abs(dx) < 0.0001) dx = 0.0001;
 	
-	Double_t ye = tr.y + tr.ty*dx;
-	Double_t ze = tr.z + tr.tz*dx;
+	Double_t ye = tr.fY + tr.fTy*dx;
+	Double_t ze = tr.fZ + tr.fTz*dx;
 	
-	Double_t cov_y   = tr.cov_y + 2.0*tr.cov_yty*dx + tr.cov_ty*dx*dx;
-	Double_t cov_yty = tr.cov_yty + tr.cov_ty*dx;
-	Double_t cov_ty  = tr.cov_ty;
+	Double_t fCovy   = tr.fCovy + 2.0*tr.fCovyty*dx + tr.fCovty*dx*dx;
+	Double_t fCovyty = tr.fCovyty + tr.fCovty*dx;
+	Double_t fCovty  = tr.fCovty;
 
-	Double_t cov_z   = tr.cov_z + 2.0*tr.cov_ztz*dx + tr.cov_tz*dx*dx;
-	Double_t cov_ztz = tr.cov_ztz + tr.cov_tz*dx;
-	Double_t cov_tz  = tr.cov_tz;
+	Double_t fCovz   = tr.fCovz + 2.0*tr.fCovztz*dx + tr.fCovtz*dx*dx;
+	Double_t fCovztz = tr.fCovztz + tr.fCovtz*dx;
+	Double_t fCovtz  = tr.fCovtz;
 
 	
-	Double_t dy = phit->y - ye;
-	Double_t dz = phit->z - ze;
+	Double_t dy = phit->fY - ye;
+	Double_t dz = phit->fZ - ze;
 	
 	// add the measurement
 
-	Double_t w = 1.0/(phit->erry*phit->erry + cov_y);
+	Double_t w = 1.0/(phit->fErry*phit->fErry + fCovy);
 
-	tr.y  = ye + cov_y*dy*w;
-	tr.ty = tr.ty + cov_yty*dy*w;
+	tr.fY  = ye + fCovy*dy*w;
+	tr.fTy = tr.fTy + fCovyty*dy*w;
 
-	tr.cov_y   = cov_y - cov_y*cov_y*w;
-	tr.cov_yty = cov_yty - cov_y*cov_yty*w;
-	tr.cov_ty  = cov_ty -cov_yty*cov_yty*w;
+	tr.fCovy   = fCovy - fCovy*fCovy*w;
+	tr.fCovyty = fCovyty - fCovy*fCovyty*w;
+	tr.fCovty  = fCovty -fCovyty*fCovyty*w;
 
-	tr.chi2 += dy*dy*w;
-	tr.ndf  += 1;
+	tr.fChi2 += dy*dy*w;
+	tr.fNdf  += 1;
 
-	w = 1.0/(phit->errz*phit->errz + cov_z);
+	w = 1.0/(phit->fErrz*phit->fErrz + fCovz);
 
-	tr.z  = ze + cov_z*dz*w;
-	tr.tz = tr.tz + cov_ztz*dz*w;
+	tr.fZ  = ze + fCovz*dz*w;
+	tr.fTz = tr.fTz + fCovztz*dz*w;
 
-	tr.cov_z   = cov_z - cov_z*cov_z*w;
-	tr.cov_ztz = cov_ztz - cov_z*cov_ztz*w;
-	tr.cov_tz  = cov_tz -cov_ztz*cov_ztz*w;
+	tr.fCovz   = fCovz - fCovz*fCovz*w;
+	tr.fCovztz = fCovztz - fCovz*fCovztz*w;
+	tr.fCovtz  = fCovtz -fCovztz*fCovztz*w;
 
-	tr.x += dx;
+	tr.fX += dx;
 
-	tr.chi2 += dz*dz*w;
-	tr.ndf  += 1;
+	tr.fChi2 += dz*dz*w;
+	tr.fNdf  += 1;
       }
     }
-    if (phit->counter == 1){// store the track
+    if (phit->fCounter == 1){// store the track
 
-      tr.good  =  1;
-      tr.used  =  0;
-      tr.next  = -1;
-      tr.patch = patch;
+      tr.fGood  =  1;
+      tr.fUsed  =  0;
+      tr.fNext  = -1;
+      tr.fPatch = patch;
 
-      Double_t trdist = sqrt((my_phf->x-phit->x)*(my_phf->x-phit->x)+
-			     (my_phf->y-phit->y)*(my_phf->y-phit->y)+
-			     (my_phf->z-phit->z)*(my_phf->z-phit->z));
+      Double_t trdist = TMath::Sqrt((myphf->fX-phit->fX)*(myphf->fX-phit->fX)+
+			     (myphf->fY-phit->fY)*(myphf->fY-phit->fY)+
+			     (myphf->fZ-phit->fZ)*(myphf->fZ-phit->fZ));
 
-      if ((trdist > 1.0)&&(tr.chi2/tr.ndf < 10.0)){
-	vec_patch_tracks.push_back(tr);
-	patch_last_track_ind++;
+      if ((trdist > 1.0)&&(tr.fChi2/tr.fNdf < 10.0)){
+	fVecPatchTracks.push_back(tr);
+	fPatchLastTrackInd++;
       }
 
       // reset the track
-      tr.nhits = 0;
-      tr.chi2  = 0.0;
-      tr.ndf   = -4;
-      tr.vec_ihits.clear();
+      tr.fNhits = 0;
+      tr.fChi2  = 0.0;
+      tr.fNdf   = -4;
+      tr.fVecIHits.clear();
     }
   }
   
   // sort tracks according (currently) to number of hits
-  //sort(vec_patch_tracks.begin(), vec_patch_tracks.end(), compareNhits); //don't need to sort here
+  //sort(fVecPatchTracks.begin(), fVecPatchTracks.end(), compareNhits); //don't need to sort here
 
 
-#ifdef DRAW
+ 
+
+ if(fDRAW){
 
   TLine *trline = new TLine();
   trline->SetLineColor(kGreen);
 
-  for (Int_t itr = patch_first_track_ind; itr <= patch_last_track_ind; itr++){
+  for (Int_t itr = fPatchFirstTrackInd; itr <= fPatchLastTrackInd; itr++){
 
-    CATrack *ptr = &(vec_patch_tracks[itr]);    
+    AliHLTTPCCATrack *ptr = &(fVecPatchTracks[itr]);    
 
-    CAHit* phitf = &(vec_hits[ptr->vec_ihits.back()]);
-    CAHit* phitl = &(vec_hits[ptr->vec_ihits.front()]);
+    AliHLTTPCCAHit* phitf = &(fVecHits[ptr->fVecIHits.back()]);
+    AliHLTTPCCAHit* phitl = &(fVecHits[ptr->fVecIHits.front()]);
 
-    YX->cd();
-    Double_t yf = ptr->y + ptr->ty*(phitf->x-ptr->x);
-    Double_t yl = ptr->y + ptr->ty*(phitl->x-ptr->x);
-    trline->DrawLine(yf, phitf->x, yl, phitl->x);
+    fYX->cd();
+    Double_t yf = ptr->fY + ptr->fTy*(phitf->fX-ptr->fX);
+    Double_t yl = ptr->fY + ptr->fTy*(phitl->fX-ptr->fX);
+    trline->DrawLine(yf, phitf->fX, yl, phitl->fX);
 
-    ZX->cd();
-    Double_t zf = ptr->z + ptr->tz*(phitf->x-ptr->x);
-    Double_t zl = ptr->z + ptr->tz*(phitl->x-ptr->x);
-    trline->DrawLine(zf, phitf->x, zl, phitl->x);
+    fZX->cd();
+    Double_t zf = ptr->fZ + ptr->fTz*(phitf->fX-ptr->fX);
+    Double_t zl = ptr->fZ + ptr->fTz*(phitl->fX-ptr->fX);
+    trline->DrawLine(zf, phitf->fX, zl, phitl->fX);
 
   }
 
   delete trline;
 
-  YX->cd(); YX->Update(); YX->Draw();
-  ZX->cd(); ZX->Update(); ZX->Draw();     
+  fYX->cd(); fYX->Update(); fYX->Draw();
+  fZX->cd(); fZX->Update(); fZX->Draw();     
 
-#endif //DRAW
+}//fDRAW
 
   return;
 }
@@ -576,18 +598,19 @@ void AliHLTTPCCATracker::CAFindPatchTracks(Int_t patch)
 // ----------------------------------------------------------------------------------
 void AliHLTTPCCATracker::CAFindSliceTracks()
 {
+  //!
 
-  Int_t ntracks = vec_patch_tracks.size();
+  Int_t ntracks = fVecPatchTracks.size();
 
   // merge patch tracks into slice tracks
   // start with the longest tracks in the first patches
 
   // sort tracks according (currently) to patch and within patch - number of hits
-  sort(vec_patch_tracks.begin(), vec_patch_tracks.end(), compareCATracks);
+  sort(fVecPatchTracks.begin(), fVecPatchTracks.end(), CompareCATracks);
 
   for (Int_t itr1 = 0; itr1 < ntracks-1; itr1++){
 
-    CATrack *ptr1 = &(vec_patch_tracks[itr1]);    
+    AliHLTTPCCATrack *ptr1 = &(fVecPatchTracks[itr1]);    
 
     Double_t maxdisty = 10.0;
     Double_t maxdistz =  5.0;
@@ -598,29 +621,29 @@ void AliHLTTPCCATracker::CAFindSliceTracks()
 #ifdef XXX
     for (Int_t itr2 = itr1+1; itr2 < ntracks; itr2++){
 
-      CATrack *ptr2 = &(vec_patch_tracks[itr2]);    
+      AliHLTTPCCATrack *ptr2 = &(fVecPatchTracks[itr2]);    
 
       if (ptr2->patch == ptr1->patch) continue; // the same patch - no prolongation
       if (ptr2->patch >  ptr1->patch+1) break;  // sorted tracks  - no prolongation skippeng over patches
 
-      if (ptr2->used == 1) continue; // already matched
+      if (ptr2->fUsed == 1) continue; // already matched
 
-      CAHit* phitf2 = &(vec_hits[ptr2->vec_ihits.back()]);
-      CAHit* phitl2 = &(vec_hits[ptr2->vec_ihits.front()]);
+      AliHLTTPCCAHit* phitf2 = &(fVecHits[ptr2->fVecIHits.back()]);
+      AliHLTTPCCAHit* phitl2 = &(fVecHits[ptr2->fVecIHits.front()]);
 	
       // extrapolate tr1 to the both ends of tr2
 
-      Double_t dyf = ptr1->y + ptr1->ty*(phitf2->x-ptr1->x) - phitf2->y; 
-      Double_t dyl = ptr1->y + ptr1->ty*(phitl2->x-ptr1->x) - phitl2->y; 
+      Double_t dyf = ptr1->fY + ptr1->fty*(phitf2->fX-ptr1->fX) - phitf2->fY; 
+      Double_t dyl = ptr1->fY + ptr1->fTy*(phitl2->fX-ptr1->fX) - phitl2->fY; 
 
-      Double_t dzf = ptr1->z + ptr1->tz*(phitf2->x-ptr1->x) - phitf2->z; 
-      Double_t dzl = ptr1->z + ptr1->tz*(phitl2->x-ptr1->x) - phitl2->z;
+      Double_t dzf = ptr1->fZ + ptr1->fTz*(phitf2->fX-ptr1->fX) - phitf2->fZ; 
+      Double_t dzl = ptr1->fZ + ptr1->fTz*(phitl2->fX-ptr1->fX) - phitl2->fZ;
 
       // roughly similar tracks ?
-      if ((abs(dyf) > maxdisty)||(abs(dyl) > maxdisty)||(abs(dzf) > maxdistz)||(abs(dzl) > maxdistz)) continue; 
+      if ((TMath::Abs(dyf) > maxdisty)||(TMath::Abs(dyl) > maxdisty)||(TMath::Abs(dzf) > maxdistz)||(TMath::Abs(dzl) > maxdistz)) continue; 
 
       // roughly parallel tracks ?
-      Double_t dist = sqrt((dyf-dyl)*(dyf-dyl)+(dzf-dzl)*(dzf-dzl));
+      Double_t dist = TMath::Sqrt((dyf-dyl)*(dyf-dyl)+(dzf-dzl)*(dzf-dzl));
       if (dist > mindist) continue; 
 
       mindist = dist;
@@ -631,28 +654,28 @@ void AliHLTTPCCATracker::CAFindSliceTracks()
     
     // found track prolongations?
     if (next != -1){
-      CATrack *ptr2 = &(vec_patch_tracks[next]);    
+      AliHLTTPCCATrack *ptr2 = &(fVecPatchTracks[next]);    
 
-      ptr1->next = next;
-      ptr2->used = 1;
+      ptr1->fNext = next;
+      ptr2->fUsed = 1;
 
 
     }
 
   }
 
-  CATrack tr;
-  tr.nhits = 0; 
-  tr.chi2  = 0.0; 
-  tr.ndf   = -4; 
-  tr.vec_ihits.clear();
+  AliHLTTPCCATrack tr;
+  tr.fNhits = 0; 
+  tr.fChi2  = 0.0; 
+  tr.fNdf   = -4; 
+  tr.fVecIHits.clear();
 
 
   //collect tracks
   for (Int_t itr = 0; itr < ntracks; itr++){
 
-    CATrack *ptr = &(vec_patch_tracks[itr]);    
-    if (ptr->used) continue; // start with a track not used in prolongations
+    AliHLTTPCCATrack *ptr = &(fVecPatchTracks[itr]);    
+    if (ptr->fUsed) continue; // start with a track not used in prolongations
 
     Int_t first = 1;
     do{
@@ -660,33 +683,33 @@ void AliHLTTPCCATracker::CAFindSliceTracks()
 	first = 0;
       }
       else{
-	ptr = &(vec_patch_tracks[ptr->next]);    
+	ptr = &(fVecPatchTracks[ptr->fNext]);    
       }
       
-      for (Int_t ih = 0; ih < ptr->nhits; ih++){
-	tr.vec_ihits.push_back(ptr->vec_ihits[ih]);
-	tr.nhits++;
+      for (Int_t ih = 0; ih < ptr->fNhits; ih++){
+	tr.fVecIHits.push_back(ptr->fVecIHits[ih]);
+	tr.fNhits++;
       }
-    }while(ptr->next != -1);
+    }while(ptr->fNext != -1);
 
     //sort hits according to increasing x
-    sort(tr.vec_ihits.begin(), tr.vec_ihits.end(), compareCAHitsX);
+    sort(tr.fVecIHits.begin(), tr.fVecIHits.end(), CompareCAHitsX);
 
-    vec_slice_tracks.push_back(tr);
+    fVecSliceTracks.push_back(tr);
 
-    tr.nhits = 0; 
-    tr.chi2  = 0.0; 
-    tr.ndf   = -4; 
-    tr.vec_ihits.clear();
+    tr.fNhits = 0; 
+    tr.fChi2  = 0.0; 
+    tr.fNdf   = -4; 
+    tr.fVecIHits.clear();
     
   }
 
-#ifdef DRAW
+  //if(fDRAW){
 
   TLine *trline = new TLine();
   trline->SetLineColor(kRed);
 
-#endif //DRAW
+  //} //fDRAW
 
 #if WRITETRACKS
   UInt_t size = 0;
@@ -694,83 +717,83 @@ void AliHLTTPCCATracker::CAFindSliceTracks()
 #endif
 
 
-  for (vector<CATrack>::iterator trIt = vec_slice_tracks.begin(); trIt != vec_slice_tracks.end(); trIt++){
+  for (vector<AliHLTTPCCATrack>::iterator trIt = fVecSliceTracks.begin(); trIt != fVecSliceTracks.end(); trIt++){
     
-    CAHit* phit0 = &(vec_hits[trIt->vec_ihits[trIt->nhits-1]]);
-    CAHit* phit1 = &(vec_hits[trIt->vec_ihits[trIt->nhits-2]]);
+    AliHLTTPCCAHit* phit0 = &(fVecHits[trIt->fVecIHits[trIt->fNhits-1]]);
+    AliHLTTPCCAHit* phit1 = &(fVecHits[trIt->fVecIHits[trIt->fNhits-2]]);
     
-    trIt->x = phit1->x;
-    trIt->y = phit1->y;
-    trIt->z = phit1->z;
+    trIt->fX = phit1->fX;
+    trIt->fY = phit1->fY;
+    trIt->fZ = phit1->fZ;
     
-    Double_t dx = (phit1->x-phit0->x); // assume different x !!!
-    if (abs(dx) < 0.0001) dx = 0.0001;
-    trIt->ty = (phit1->y-phit0->y)/dx;
-    trIt->tz = (phit1->z-phit0->z)/dx;
+    Double_t dx = (phit1->fX-phit0->fX); // assume different x !!!
+    if (TMath::Abs(dx) < 0.0001) dx = 0.0001;
+    trIt->fTy = (phit1->fY-phit0->fY)/dx;
+    trIt->fTz = (phit1->fZ-phit0->fZ)/dx;
     
-    trIt->cov_y   = phit1->erry*phit1->erry;
-    trIt->cov_ty  = (phit0->erry*phit0->erry + phit1->erry*phit1->erry)/(dx*dx);
-    trIt->cov_yty = (phit1->erry*phit1->erry)/dx;
+    trIt->fCovy   = phit1->fErry*phit1->fErry;
+    trIt->fCovty  = (phit0->fErry*phit0->fErry + phit1->fErry*phit1->fErry)/(dx*dx);
+    trIt->fCovyty = (phit1->fErry*phit1->fErry)/dx;
     
-    trIt->cov_z   = phit1->errz*phit1->errz;
-    trIt->cov_tz  = (phit0->errz*phit0->errz + phit1->errz*phit1->errz)/(dx*dx);
-    trIt->cov_ztz = (phit1->errz*phit1->errz)/dx;
+    trIt->fCovz   = phit1->fErrz*phit1->fErrz;
+    trIt->fCovtz  = (phit0->fErrz*phit0->fErrz + phit1->fErrz*phit1->fErrz)/(dx*dx);
+    trIt->fCovztz = (phit1->fErrz*phit1->fErrz)/dx;
 
-    for (Int_t ih = trIt->nhits-3; ih >= 0; ih--){
+    for (Int_t ih = trIt->fNhits-3; ih >= 0; ih--){
 
-      CAHit* phit = &(vec_hits[trIt->vec_ihits[ih]]);
+      AliHLTTPCCAHit* phit = &(fVecHits[trIt->fVecIHits[ih]]);
 
       // propagate the track
-      Double_t dx = (phit->x-trIt->x); // assume different x !!!
-      if (abs(dx) < 0.0001) dx = 0.0001;
+      Double_t dx = (phit->fX-trIt->fX); // assume different x !!!
+      if (TMath::Abs(dx) < 0.0001) dx = 0.0001;
       
-      Double_t ye = trIt->y + trIt->ty*dx;
-      Double_t ze = trIt->z + trIt->tz*dx;
+      Double_t ye = trIt->fY + trIt->fTy*dx;
+      Double_t ze = trIt->fZ + trIt->fTz*dx;
       
-      Double_t cov_y   = trIt->cov_y + 2.0*trIt->cov_yty*dx + trIt->cov_ty*dx*dx;
-      Double_t cov_yty = trIt->cov_yty + trIt->cov_ty*dx;
-      Double_t cov_ty  = trIt->cov_ty;
+      Double_t fCovy   = trIt->fCovy + 2.0*trIt->fCovyty*dx + trIt->fCovty*dx*dx;
+      Double_t fCovyty = trIt->fCovyty + trIt->fCovty*dx;
+      Double_t fCovty  = trIt->fCovty;
       
-      Double_t cov_z   = trIt->cov_z + 2.0*trIt->cov_ztz*dx + trIt->cov_tz*dx*dx;
-      Double_t cov_ztz = trIt->cov_ztz + trIt->cov_tz*dx;
-      Double_t cov_tz  = trIt->cov_tz;
+      Double_t fCovz   = trIt->fCovz + 2.0*trIt->fCovztz*dx + trIt->fCovtz*dx*dx;
+      Double_t fCovztz = trIt->fCovztz + trIt->fCovtz*dx;
+      Double_t fCovtz  = trIt->fCovtz;
       
-      Double_t dy = phit->y - ye;
-      Double_t dz = phit->z - ze;
+      Double_t dy = phit->fY - ye;
+      Double_t dz = phit->fZ - ze;
       
       // add the measurement
       
-      Double_t w = 1.0/(phit->erry*phit->erry + cov_y);
+      Double_t w = 1.0/(phit->fErry*phit->fErry + fCovy);
       
-      trIt->y  = ye + cov_y*dy*w;
-      trIt->ty = trIt->ty + cov_yty*dy*w;
+      trIt->fY  = ye + fCovy*dy*w;
+      trIt->fTy = trIt->fTy + fCovyty*dy*w;
       
-      trIt->cov_y   = cov_y - cov_y*cov_y*w;
-      trIt->cov_yty = cov_yty - cov_y*cov_yty*w;
-      trIt->cov_ty  = cov_ty -cov_yty*cov_yty*w;
+      trIt->fCovy   = fCovy - fCovy*fCovy*w;
+      trIt->fCovyty = fCovyty - fCovy*fCovyty*w;
+      trIt->fCovty  = fCovty -fCovyty*fCovyty*w;
       
-      trIt->chi2 += dy*dy*w;
-      trIt->ndf  += 1;
+      trIt->fChi2 += dy*dy*w;
+      trIt->fNdf  += 1;
       
-      w = 1.0/(phit->errz*phit->errz + cov_z);
+      w = 1.0/(phit->fErrz*phit->fErrz + fCovz);
       
-      trIt->z  = ze + cov_z*dz*w;
-      trIt->tz = trIt->tz + cov_ztz*dz*w;
+      trIt->fZ  = ze + fCovz*dz*w;
+      trIt->fTz = trIt->fTz + fCovztz*dz*w;
       
-      trIt->cov_z   = cov_z - cov_z*cov_z*w;
-      trIt->cov_ztz = cov_ztz - cov_z*cov_ztz*w;
-      trIt->cov_tz  = cov_tz -cov_ztz*cov_ztz*w;
+      trIt->fCovz   = fCovz - fCovz*fCovz*w;
+      trIt->fCovztz = fCovztz - fCovz*fCovztz*w;
+      trIt->fCovtz  = fCovtz -fCovztz*fCovztz*w;
       
-      trIt->chi2 += dz*dz*w;
-      trIt->ndf  += 1;
+      trIt->fChi2 += dz*dz*w;
+      trIt->fNdf  += 1;
 
-      trIt->x    += dx;
+      trIt->fX    += dx;
     }
 
-    trIt->good  =  1;
-    trIt->used  =  0;
-    trIt->next  = -1;
-    trIt->patch = -1;
+    trIt->fGood  =  1;
+    trIt->fUsed  =  0;
+    trIt->fNext  = -1;
+    trIt->fPatch = -1;
     
     //if (trIt->chi2/trIt->ndf < 1.0)
     //trIt->good  =  0;
@@ -778,16 +801,16 @@ void AliHLTTPCCATracker::CAFindSliceTracks()
 
     // JMT 2006/11/13 Write Tracks to container
 #if WRITETRACKS
-    CAHit* firstHit = &(vec_hits[trIt->vec_ihits[0]]);
-    CAHit* lastHit = &(vec_hits[trIt->vec_ihits[trIt->nhits-1]]);
+    AliHLTTPCCAHit* firstHit = &(fVecHits[trIt->fVecIHits[0]]);
+    AliHLTTPCCAHit* lastHit = &(fVecHits[trIt->fVecIHits[trIt->fNhits-1]]);
     
-    Float_t xFirst = (Float_t) firstHit->x;
-    Float_t yFirst = (Float_t) trIt->y + trIt->ty*(xFirst-trIt->x);
-    float_t zFirst = (Float_t) trIt->z + trIt->tz*(xFirst-trIt->x);
+    Float_t xFirst = (Float_t) firstHit->fX;
+    Float_t yFirst = (Float_t) trIt->fY + trIt->fTy*(xFirst-trIt->fX);
+    Float_t zFirst = (Float_t) trIt->fZ + trIt->fTz*(xFirst-trIt->fX);
 
-    Float_t xLast = (Float_t) lastHit->x;
-    Float_t yLast = (Float_t) trIt->y + trIt->ty*(xLast-trIt->x);
-    Float_t zLast = (Float_t) trIt->z + trIt->tz*(xLast-trIt->x);
+    Float_t xLast = (Float_t) lastHit->fX;
+    Float_t yLast = (Float_t) trIt->fY + trIt->fTy*(xLast-trIt->fX);
+    Float_t zLast = (Float_t) trIt->fZ + trIt->fTz*(xLast-trIt->fX);
 
     fOutputPtr->fX = xFirst;
     fOutputPtr->fY = yFirst;
@@ -797,8 +820,8 @@ void AliHLTTPCCATracker::CAFindSliceTracks()
     fOutputPtr->fLastX = xLast;
     fOutputPtr->fLastY = yLast;
     fOutputPtr->fLastZ = zLast;    
-    fOutputPtr->fPsi = atan(trIt->ty);
-    fOutputPtr->fTgl = trIt->tz;
+    fOutputPtr->fPsi = atan(trIt->fTy);
+    fOutputPtr->fTgl = trIt->fTz;
     fOutputPtr->fPsierr = 1;
     fOutputPtr->fTglerr = 1;
     fOutputPtr->fCharge = 1;
@@ -812,25 +835,25 @@ void AliHLTTPCCATracker::CAFindSliceTracks()
     nTracks++;
 #endif
 
-#ifdef DRAW
-    CAHit* phitf = &(vec_hits[trIt->vec_ihits[0]]);
-    CAHit* phitl = &(vec_hits[trIt->vec_ihits[trIt->nhits-1]]);
+if(fDRAW){
+    AliHLTTPCCAHit* phitf = &(fVecHits[trIt->fVecIHits[0]]);
+    AliHLTTPCCAHit* phitl = &(fVecHits[trIt->fVecIHits[trIt->fNhits-1]]);
     
-    Double_t xf = phitf->x;
-    Double_t yf = trIt->y + trIt->ty*(xf-trIt->x);
-    Double_t zf = trIt->z + trIt->tz*(xf-trIt->x);
+    Double_t xf = phitf->fX;
+    Double_t yf = trIt->fY + trIt->fTy*(xf-trIt->fX);
+    Double_t zf = trIt->fZ + trIt->fTz*(xf-trIt->fX);
 
-    Double_t xl = phitl->x;
-    Double_t yl = trIt->y + trIt->ty*(xl-trIt->x);
-    Double_t zl = trIt->z + trIt->tz*(xl-trIt->x);
+    Double_t xl = phitl->fX;
+    Double_t yl = trIt->fY + trIt->fTy*(xl-trIt->fX);
+    Double_t zl = trIt->fZ + trIt->fTz*(xl-trIt->fX);
 
-    YX->cd();
+    fYX->cd();
     trline->DrawLine(yf, xf, yl, xl);
     
-    ZX->cd();
+    fZX->cd();
     trline->DrawLine(zf, xf, zl, xl);
 
-#endif //DRAW
+} //fDRAW
       
   }
 
@@ -842,14 +865,14 @@ void AliHLTTPCCATracker::CAFindSliceTracks()
   cout << "SIZE=" << fOutputSize << endl;
 #endif
 
-#ifdef DRAW
+if(fDRAW){
     
   delete trline;
 
-  YX->cd(); YX->Update(); YX->Draw();
-  ZX->cd(); ZX->Update(); ZX->Draw();     
+  fYX->cd(); fYX->Update(); fYX->Draw();
+  fZX->cd(); fZX->Update(); fZX->Draw();     
 
-#endif //DRAW
+ }//fDRAW
   
   return;
 }
