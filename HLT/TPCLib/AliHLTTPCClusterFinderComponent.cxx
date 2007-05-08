@@ -18,7 +18,7 @@
  **************************************************************************/
 
 /** @file   AliHLTTPCClusterFinderComponent.cxx
-    @author Timm Steinbeck, Matthias Richter, Jochen Thaeder
+    @author Timm Steinbeck, Matthias Richter, Jochen Thaeder, Kenneth Aamodt
     @date   
     @brief  The TPC cluster finder processing component
 */
@@ -140,7 +140,7 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
     Int_t rawreadermode =  -1;
     Int_t sigthresh = -1;
     Float_t occulimit = 1.0;
-
+    Int_t oldRCUFormat=0;
     // Data Format version numbers:
     // 0: RCU Data format as delivered during TPC commissioning, pads/padrows are sorted, RCU trailer is one 32 bit word.
     // 1: As 0, but pads/padrows are delivered "as is", without sorting
@@ -217,6 +217,18 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
 	continue;
       }
 
+      // -- checking for rcu format
+      if ( !strcmp( argv[i], "oldrcuformat" ) ) {
+      	oldRCUFormat = strtoul( argv[i+1], &cpErr ,0);
+      	if ( *cpErr ){
+      	  HLTError("Cannot convert oldrcuformat specifier '%s'. Should  be 0(off) or 1(on), must be integer", argv[i+1]);
+      	  return EINVAL;
+      	}
+      	i+=2;
+      	continue;
+      }
+      
+
       Logging(kHLTLogError, "HLT::TPCClusterFinder::DoInit", "Unknown Option", "Unknown option '%s'", argv[i] );
       return EINVAL;
 
@@ -228,6 +240,12 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
       if (rawreadermode == -2) {
 #if defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
 	fReader = new AliHLTTPCDigitReaderPacked();
+	if(oldRCUFormat==1){
+	  fReader->SetOldRCUFormat(kTRUE);
+	}
+	else if(oldRCUFormat!=0){
+	  HLTWarning("Wrong oldrcuformat specifier %d; oldrcuformat set to default(kFALSE)",oldRCUFormat);
+	}
 	fClusterFinder->SetReader(fReader);
 #else // ! defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
 	HLTFatal("DigitReaderPacked not available - check your build");

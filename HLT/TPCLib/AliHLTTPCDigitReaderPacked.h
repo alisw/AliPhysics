@@ -8,7 +8,7 @@
  * See cxx source for full Copyright notice                               */
 
 /** @file   AliHLTTPCDigitReaderPacked.h
-    @author Timm Steinbeck, Jochen Thaeder, Matthias Richter
+    @author Timm Steinbeck, Jochen Thaeder, Matthias Richter, Kenneth Aamodt
     @date   
     @brief  A digit reader implementation for simulated, packed TPC 'raw' data.
 */
@@ -50,6 +50,7 @@ public:
    * @param slice   sector no (0 to 35)
    */
   Int_t InitBlock(void* ptr,ULong_t size, Int_t patch, Int_t slice);
+  void SetOldRCUFormat(bool oldrcuformat){fOldRCUFormat=oldrcuformat;}
   Bool_t Next();
   Int_t GetRow();
   Int_t GetPad();
@@ -59,26 +60,29 @@ public:
 protected:
     
 private:
-    // Initialize AliROOT TPC raw stream parsing class
-    AliRawReaderMemory *fRawMemoryReader;
+  // Initialize AliROOT TPC raw stream parsing class
+  AliRawReaderMemory *fRawMemoryReader;
 
-    AliTPCRawStream *fTPCRawStream;
+  AliTPCRawStream *fTPCRawStream;
     
 #if ENABLE_PAD_SORTING 
-    Int_t fCurrentRow;
-    Int_t fCurrentPad;
-    Int_t fCurrentBin;
+  Int_t fCurrentRow;
+  Int_t fCurrentPad;
+  Int_t fCurrentBin;
  
-    Int_t fRowOffset;
-    Int_t fNRows;
+  Int_t fRowOffset;
+  Int_t fNRows;
 
-    Int_t fNMaxRows;
-    Int_t fNMaxPads;
-    Int_t fNTimeBins;
+  Int_t fNMaxRows;
+  Int_t fNMaxPads;
+  Int_t fNTimeBins;
 
-    Int_t *fData;
+  Int_t *fData;
 #endif // ENABLE_PAD_SORTING
-    ClassDef(AliHLTTPCDigitReaderPacked, 0)
+
+  Bool_t fOldRCUFormat;
+
+  ClassDef(AliHLTTPCDigitReaderPacked, 0)
 	
 };
 

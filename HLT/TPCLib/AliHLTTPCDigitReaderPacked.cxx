@@ -18,7 +18,7 @@
  **************************************************************************/
 
 /** @file   AliHLTTPCDigitReaderPacked.cxx
-    @author Timm Steinbeck, Jochen Thaeder, Matthias Richter
+    @author Timm Steinbeck, Jochen Thaeder, Matthias Richter, Kenneth Aamodt
     @date   
     @brief  A digit reader implementation for simulated, packed TPC 'raw' data.
 */
@@ -55,7 +55,8 @@ AliHLTTPCDigitReaderPacked::AliHLTTPCDigitReaderPacked()
   fData(NULL),
 #endif // ENABLE_PAD_SORTING  
   fRawMemoryReader(NULL),
-  fTPCRawStream(NULL)
+  fTPCRawStream(NULL),
+  fOldRCUFormat(kFALSE)
 {
   fRawMemoryReader = new AliRawReaderMemory;
   
@@ -97,7 +98,8 @@ AliHLTTPCDigitReaderPacked::AliHLTTPCDigitReaderPacked(const AliHLTTPCDigitReade
   fData(NULL),
 #endif // ENABLE_PAD_SORTING  
   fRawMemoryReader(NULL),
-  fTPCRawStream(NULL)
+  fTPCRawStream(NULL),
+  fOldRCUFormat(kFALSE)
 {
   HLTFatal("copy constructor not for use");
 }
@@ -117,6 +119,7 @@ AliHLTTPCDigitReaderPacked& AliHLTTPCDigitReaderPacked::operator=(const AliHLTTP
 #endif // ENABLE_PAD_SORTING  
   fRawMemoryReader=NULL;
   fTPCRawStream=NULL;
+  fOldRCUFormat=kFALSE;
   HLTFatal("assignment operator not for use");
   return (*this);
 }
@@ -142,14 +145,14 @@ Int_t AliHLTTPCDigitReaderPacked::InitBlock(void* ptr,unsigned long size, Int_t 
   //get DDL ID in order to tell the memory reader which slice/patch to use
   Int_t DDLid= 0;
   if (patch < 2)
-    DDLid = 2 *slice + patch;
+    DDLid = 768 + 2*slice + patch;
   else 
-    DDLid = 70 + 4*slice + patch;
+    DDLid = 840 + 4*slice + patch;
 
-  //fRawMemoryReader->SetEquipmentID(DDLid);
-//fRawMemoryReader->SetEquipmentID(1);
-
-// fTPCRawStream->SetOldRCUFormat(kTRUE);
+  fRawMemoryReader->SetEquipmentID(DDLid);
+  //fRawMemoryReader->SetEquipmentID(1);
+  if(fOldRCUFormat)
+    fTPCRawStream->SetOldRCUFormat(kTRUE);
 
 #if ENABLE_PAD_SORTING
 
