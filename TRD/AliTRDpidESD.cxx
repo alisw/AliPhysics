@@ -247,7 +247,7 @@ Bool_t AliTRDpidESD::GetTrackSegmentKine(AliESDtrack *t, Int_t plan, Float_t &mo
 	alpha = param->GetAlpha();
 	param->PropagateTo(TRDgeom->GetTime0(plan)-kAmHalfWidth-kDrWidth, field);
 	// eliminate track segments which are crossing SM boundaries along chamber
-	if(fabs(alpha-param->GetAlpha())>.01){
+	if(TMath::Abs(alpha-param->GetAlpha())>.01){
 		delete param;
 		if(kSelfGeom) delete TRDgeom;
 		return kFALSE;
