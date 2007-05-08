@@ -22,13 +22,13 @@ TOF Raw Data decoder
 */
 
 
-//////////////////////////////////////////////////////////////////////
-//                                                                  /
-//                                                                  //
-//   Class for raw data decoding                                    //
-//                                                                  //
-//                                                                  //
-//////////////////////////////////////////////////////////////////////
+/*********************************************************************
+ *                                                                   *
+ *                                                                   *
+ *   Class for raw data decoding                                     *
+ *                                                                   *
+ *                                                                   *
+ ********************************************************************/
                                
 
 
@@ -277,8 +277,7 @@ AliTOFDecoder::Decode(UInt_t *rawData, Int_t nWords)
 	break;
 	
       default:
-	if (fVerbose)
-	  AliError(Form("  %02x - 0x%08x [ERROR] Not valid slotID in global header",decodeStatus,*rawData));
+	AliError(Form("  %02x - 0x%08x [ERROR] Not valid slotID in global header",decodeStatus,*rawData));
 	return kTRUE;
 	break;
 	
@@ -336,8 +335,7 @@ AliTOFDecoder::Decode(UInt_t *rawData, Int_t nWords)
 	break; 
 	
       default:
-	if (fVerbose)
-	  AliError(Form("  %02x - 0x%08x [ERROR] Not valid slotID/pattern in global trailer",decodeStatus,*rawData));
+	AliError(Form("  %02x - 0x%08x [ERROR] Not valid slotID/pattern in global trailer",decodeStatus,*rawData));
 	return kTRUE;
 	break;
       }
