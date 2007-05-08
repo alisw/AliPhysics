@@ -133,4 +133,7 @@
 #pragma link C++ class AliDCSSensor+;
 #pragma link C++ class AliDCSSensorArray+;
 
+#pragma link C++ class AliSurveyObj+;
+#pragma link C++ class AliSurveyPoint+;
+
 #endif
