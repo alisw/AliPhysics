@@ -32,7 +32,9 @@ void HESDfromKin()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void SimEsd(AliLoader *pHL,AliESD *pEsd)
 {
-  Printf("---------okokokok");
+  Printf("---------------------------------------");
+  Printf("| Utility to embed ESD from kinematics|");
+  Printf("---------------------------------------");
   AliHMPIDTracker::SetFieldMap(gAL->GetAliRun()->Field(),kTRUE);
   AliHMPID *pH=(AliHMPID*)gAL->GetAliRun()->GetDetector("HMPID");
   Int_t mtid=-1;
