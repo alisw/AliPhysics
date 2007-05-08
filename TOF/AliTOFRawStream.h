@@ -402,6 +402,10 @@ class AliTOFRawStream: public TObject {
   Int_t GetSectorNumber(Int_t nDDL) const;
 
   Bool_t DecodeDDL(Int_t DDLMin, Int_t DDLMax, Int_t verbose);
+  Bool_t Decode(Int_t verbose);
+  AliTOFDecoder *GetDecoder() {return fDecoder;};
+  void SetV2718Patch(Bool_t V2718Patch = kTRUE) {fDecoder->SetV2718Patch(V2718Patch);};
+
 
   AliTOFHitDataBuffer *GetDataBuffer(Int_t DDL) {return fDataBuffer[DDL];};
   AliTOFHitDataBuffer *GetPackedDataBuffer(Int_t DDL) {return fPackedDataBuffer[DDL];};

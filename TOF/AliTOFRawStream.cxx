@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2007/05/03 08:53:50  decaro
+Coding convention: RS3 violation -> suppression
+
 Revision 1.16  2007/05/03 08:22:22  decaro
 Coding convention: RN17 violation -> suppression
 
@@ -135,8 +138,8 @@ AliTOFRawStream::AliTOFRawStream(AliRawReader* rawReader):
   //
 
   for (Int_t i=0;i<AliDAQ::NumberOfDdls("TOF");i++){
-    fDataBuffer[i]=new AliTOFHitDataBuffer(DATA_BUFFER_SIZE);
-    fPackedDataBuffer[i]=new AliTOFHitDataBuffer(DATA_BUFFER_SIZE);
+    fDataBuffer[i]=new AliTOFHitDataBuffer();
+    fPackedDataBuffer[i]=new AliTOFHitDataBuffer();
   }
 
   fTOFrawData = new TClonesArray("AliTOFrawData",1000);
@@ -184,8 +187,8 @@ AliTOFRawStream::AliTOFRawStream():
   // default ctr
   //
   for (Int_t i=0;i<AliDAQ::NumberOfDdls("TOF");i++){
-    fDataBuffer[i]=new AliTOFHitDataBuffer(DATA_BUFFER_SIZE);
-    fPackedDataBuffer[i]=new AliTOFHitDataBuffer(DATA_BUFFER_SIZE);
+    fDataBuffer[i]=new AliTOFHitDataBuffer();
+    fPackedDataBuffer[i]=new AliTOFHitDataBuffer();
   }
 
   fTOFrawData = new TClonesArray("AliTOFrawData",1000);
@@ -1168,18 +1171,7 @@ Int_t AliTOFRawStream::GetIndex(Int_t *detId)
   return idet;
 }
 //-----------------------------------------------------------------------------
-Bool_t AliTOFRawStream::DecodeDDL(Int_t DDLMin, Int_t DDLMax, Int_t verbose = 0)
-{
-  //
-  // New decoder method
-  //
-
-  Int_t currentEquipment;
-  Int_t currentDDL;
-
-  //pointers
-  UChar_t *data = 0x0;
-  
+Bool_t AliTOFRawStream::DecodeDDL(Int_t DDLMin, Int_t DDLMax, Int_t verbose = 0){
   //check and fix valid DDL range
   if (DDLMin < 0){
     DDLMin = 0;
@@ -1196,6 +1188,16 @@ Bool_t AliTOFRawStream::DecodeDDL(Int_t DDLMin, Int_t DDLMax, Int_t verbose = 0)
   if (verbose)
     AliInfo(Form("Selected TOF DDL range: %d-%d", DDLMin, DDLMax));
 
+  return(Decode(verbose));
+}
+//-----------------------------------------------------------------------------
+Bool_t AliTOFRawStream::Decode(Int_t verbose = 0){
+  Int_t currentEquipment;
+  Int_t currentDDL;
+
+  //pointers
+  UChar_t *data = 0x0;
+  
   //loop and read DDL headers 
   while(fRawReader->ReadHeader()){
 
