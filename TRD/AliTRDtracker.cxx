@@ -3468,57 +3468,65 @@ Double_t AliTRDtracker::GetTiltFactor(const AliTRDcluster *c)
 void AliTRDtracker::CookdEdxTimBin(AliTRDtrack &TRDtrack)
 {
   //
-  // This is setting fdEdxPlane and fTimBinPlane
-  // Sums up the charge in each plane for track TRDtrack and also get the 
-  // Time bin for Max. Cluster
-  // Prashant Shukla (shukla@physi.uni-heidelberg.de)
+  // Build the information needed for TRD PID calculations. This are:
+  // - dE/dx - total
+  // - dE/dx - slices (0-14, 15-22, NONE). The Edep per slice is
+  //    calculated as the sum of clusters charge weighted with average
+  //    value from the <PH> spectrum
+  // - Time bin for Max. Cluster
   //
+  // Authors:
+  // Prashant Shukla (shukla@physi.uni-heidelberg.de)
+  // Alex Bercuci (a.bercuci@gsi.de)
 
   Double_t  clscharge[AliESDtrack::kNPlane][AliESDtrack::kNSlice];
   Double_t  maxclscharge[AliESDtrack::kNPlane];
   Int_t     nCluster[AliESDtrack::kNPlane][AliESDtrack::kNSlice];
   Int_t     timebin[AliESDtrack::kNPlane];
 
-  // Initialization of cluster charge per plane.  
+  // Initialization of variables  
   for (Int_t iPlane = 0; iPlane < AliESDtrack::kNPlane; iPlane++) {
     for (Int_t iSlice = 0; iSlice < AliESDtrack::kNSlice; iSlice++) {
-      clscharge[iPlane][iSlice] = 0.0;
+      clscharge[iPlane][iSlice] = 0.;
       nCluster[iPlane][iSlice]  = 0;
     }
-  }
-
-  // Initialization of cluster charge per plane.  
-  for (Int_t iPlane = 0; iPlane < AliESDtrack::kNPlane; iPlane++) {
     timebin[iPlane]      =  -1;
     maxclscharge[iPlane] = 0.0;
   }
 
+	// Average PH spectrum used for weighting the edep. It has to
+	// come eather from caligration DB or as parameter of the class. To
+	// be discuss with software responsibles
+	const Float_t fAveragePH[] = { 5.010e-03, 2.017e-02, 6.221e-02, 6.706e-02
+                                     , 5.551e-02, 4.812e-02, 4.395e-02, 4.219e-02
+                                     , 4.172e-02, 4.156e-02, 4.162e-02, 4.204e-02
+                                     , 4.278e-02, 4.367e-02, 4.460e-02, 4.554e-02
+                                     , 4.674e-02, 4.810e-02, 5.005e-02, 5.258e-02
+                                     , 5.587e-02, 5.892e-02, 5.587e-02, 5.258e-02 };
+	
   // Loop through all clusters associated to track TRDtrack
-  Int_t nClus = TRDtrack.GetNumberOfClusters();  // from Kalmantrack
-  for (Int_t iClus = 0; iClus < nClus; iClus++) {
+  AliTRDcluster *pTRDcluster = 0x0;
+  for (Int_t iClus = 0; iClus < TRDtrack.GetNumberOfClusters(); iClus++) {
     Double_t charge = TRDtrack.GetClusterdQdl(iClus);
     Int_t    index  = TRDtrack.GetClusterIndex(iClus);
-    AliTRDcluster *pTRDcluster = (AliTRDcluster *) GetCluster(index); 
-    if (!pTRDcluster) {
-      continue;
-    }
-    Int_t    tb     = pTRDcluster->GetLocalTimeBin();
-    if (!tb) {
-      continue;
-    }
+    if (!(pTRDcluster = (AliTRDcluster*)GetCluster(index))) continue;
+    
+		// check negative time bins ?!?!?
+		Int_t    tb     = pTRDcluster->GetLocalTimeBin();
+
+		// temporary until fix in GetT0
+		if(tb<0){
+			Warning("CookdEdxTimBin()", Form("Negative time bin value in track %d cluster %d", TRDtrack.GetLabel(), iClus));
+			continue;
+		}
+		
     Int_t detector  = pTRDcluster->GetDetector();
     Int_t iPlane    = fGeom->GetPlane(detector);
-    if (iPlane >= AliESDtrack::kNPlane) {
-      AliError(Form("Wrong plane %d",iPlane));
-      continue;
-    }
-    Int_t iSlice    = tb * AliESDtrack::kNSlice 
-                         / AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
-    if (iSlice >= AliESDtrack::kNSlice) {
-      AliError(Form("Wrong slice %d",iSlice));
-      continue;
-    }
-    clscharge[iPlane][iSlice] = clscharge[iPlane][iSlice] + charge;
+
+		// 2 slices method
+		Int_t iSlice = (tb < AliTRDtrack::kMidTimeBin) ? 0 : 1;
+		// weighted edep with <PH>
+		clscharge[iPlane][iSlice] += charge * fAveragePH[tb];
     if (charge > maxclscharge[iPlane]) {
       maxclscharge[iPlane] = charge;
       timebin[iPlane]      = tb;
@@ -3526,31 +3534,18 @@ void AliTRDtracker::CookdEdxTimBin(AliTRDtrack &TRDtrack)
     nCluster[iPlane][iSlice]++;
   } // End of loop over cluster
 
-  // Setting the fdEdxPlane and fTimBinPlane variabales 
-  Double_t totalCharge = 0.0;
-
+  // Setting the fdEdxPlane and fTimBinPlane variables
+  Double_t totalCharge = 0.;
   for (Int_t iPlane = 0; iPlane < AliESDtrack::kNPlane; iPlane++) {
-    for (Int_t iSlice = 0; iSlice < AliESDtrack::kNSlice; iSlice++) {
-      if (nCluster[iPlane][iSlice]) {
-        clscharge[iPlane][iSlice] /= nCluster[iPlane][iSlice];
-      }
+		for (Int_t iSlice = 0; iSlice < AliESDtrack::kNSlice; iSlice++) {
+      //if (nCluster[iPlane][iSlice]) {
+      //  clscharge[iPlane][iSlice] /= nCluster[iPlane][iSlice];
+      //}
       TRDtrack.SetPIDsignals(clscharge[iPlane][iSlice],iPlane,iSlice);
-      totalCharge = totalCharge+clscharge[iPlane][iSlice];
+      totalCharge += clscharge[iPlane][iSlice];
     }
-    TRDtrack.SetPIDTimBin(timebin[iPlane],iPlane);     
+    TRDtrack.SetPIDTimBin(timebin[iPlane],iPlane);
   }
-
-  // Still needed ????
-  //  Int_t i;
-  //  Int_t nc=TRDtrack.GetNumberOfClusters(); 
-  //  Float_t dedx=0;
-  //  for (i=0; i<nc; i++) dedx += TRDtrack.GetClusterdQdl(i);
-  //  dedx /= nc;
-  //  for (Int_t iPlane = 0; iPlane < kNPlane; iPlane++) {
-  //    TRDtrack.SetPIDsignals(dedx, iPlane);
-  //    TRDtrack.SetPIDTimBin(timbin[iPlane], iPlane);
-  //  }
-
 }
 
 //_____________________________________________________________________________

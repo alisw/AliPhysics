@@ -16,7 +16,7 @@
 #include <TObject.h>
 
 class AliESD;
-
+class AliESDtrack;
 class AliTRDpidESD : public TObject {
 
  public:
@@ -27,7 +27,7 @@ class AliTRDpidESD : public TObject {
   AliTRDpidESD &operator=(const AliTRDpidESD &p);
 
   virtual void    Copy(TObject &p) const;
-
+  static  Bool_t  CheckTrack(AliESDtrack *t);
   static  Int_t   MakePID(AliESD *event);
 
           void    SetCheckTrackStatus(Bool_t status = kTRUE) { fCheckTrackStatus = status; };
@@ -37,7 +37,7 @@ class AliTRDpidESD : public TObject {
 	  Bool_t  GetCheckTrackStatus()                      { return fCheckTrackStatus;   };      
 	  Bool_t  GetCheckKinkStatus()                       { return fCheckKinkStatus;    };      
           Int_t   GetMinPlane()                              { return fMinPlane;           };
-
+  static  Bool_t  GetTrackSegmentKine(AliESDtrack *t, Int_t plan, Float_t &mom, Float_t &length);
  private:
 
   static  Bool_t  fCheckTrackStatus;    // Enable check on ESD track status

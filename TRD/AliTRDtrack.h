@@ -18,6 +18,7 @@
 
 class AliESDtrack;
 class AliTrackReference;
+class AliTRDcluster;
 
 const unsigned kMAXCLUSTERSPERTRACK = 210; 
 
@@ -30,7 +31,8 @@ class AliTRDtrack : public AliKalmanTrack {
        , kNplane    =   6
        , kNcham     =   5
        , kNsect     =  18
-       , kNslice    =   3 };
+       , kNslice    =   3
+       , kMidTimeBin=  14};
 
    AliTRDtrack();
    AliTRDtrack(const AliTRDcluster *c, Int_t index, const Double_t xx[5]
