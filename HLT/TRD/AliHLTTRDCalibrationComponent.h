@@ -57,20 +57,20 @@ class AliHLTTRDCalibrationComponent : public AliHLTProcessor
 
 	// The size of the output data produced, as a percentage of the input data's size.
 	// Can be greater than 100 (%)
-	unsigned fOutputPercentage;
+	unsigned fOutputPercentage; // The size of the output data produced in %
 
-	string fStrorageDBpath;
+	string fStrorageDBpath; // Path to DB
 
-	AliHLTTRDCalibra  *calibra; //!
+	AliHLTTRDCalibra  *fCalibra; //! Calibration - Class for TRD tracklets
 
-	AliTRDtriggerHLT *fMCMtrigger; //!
-	AliTRDtrigParam   *fMCMtriggerParams; //!
-	int fTriggerParDebugLevel;
-	double fLTUpTcut;
-	double fBField;
+	AliTRDtriggerHLT *fMCMtrigger; //! Tracklet producer
+	AliTRDtrigParam   *fMCMtriggerParams; //! Trigger parameters
+	int fTriggerParDebugLevel; // Debug level for fMCMtriggerParams
+	double fLTUpTcut; // pT cut of LTU
+	double fBField; // Magnetic field magnitude
 
-	AliCDBManager *cdb; //!
-	AliRawReaderMemory *rmem; //!
+	AliCDBManager *fCDB; //! Pointer to OCDB 
+	AliRawReaderMemory *fRmem; //! Mem reader
 	
 	ClassDef(AliHLTTRDCalibrationComponent, 0)
 

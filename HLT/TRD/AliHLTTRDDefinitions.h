@@ -10,26 +10,28 @@
  */
 
 #include "AliHLTDataTypes.h"
-#include "TObject.h"
+#include "Rtypes.h"
+
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+//  The HLT definitions for TRD                                              //  
+//                                                                           //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
+
 
 class AliHLTTRDDefinitions
-    {
+{
     public:
 
-      static const AliHLTComponentDataType gkDDLRawDataType;
-      static const AliHLTComponentDataType gkClusterDataType;
-      static const AliHLTComponentDataType gkTRDSATracksDataType; // Stand Alone tracks
-      static const AliHLTComponentDataType gkMCMtrackletDataType;
-      static const AliHLTComponentDataType gkMCMcalibrationDataType;
+      static const AliHLTComponentDataType fgkDDLRawDataType;
+      static const AliHLTComponentDataType fgkClusterDataType;
+      static const AliHLTComponentDataType fgkTRDSATracksDataType; // Stand Alone tracks
+      static const AliHLTComponentDataType fgkMCMtrackletDataType;
+      static const AliHLTComponentDataType fgkMCMcalibrationDataType;
       
       ClassDef(AliHLTTRDDefinitions, 0)
 
-    };
-
-typedef struct AliTRDDummyData
-{
-  char str[50];
-  long int val;
 };
 
 #endif

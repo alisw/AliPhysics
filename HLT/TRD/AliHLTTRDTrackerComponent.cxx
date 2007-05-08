@@ -74,12 +74,12 @@ const char* AliHLTTRDTrackerComponent::GetComponentID()
 void AliHLTTRDTrackerComponent::GetInputDataTypes( vector<AliHLTComponent_DataType>& list)
 {
   list.clear(); // We do not have any requirements for our input data type(s).
-  list.push_back( AliHLTTRDDefinitions::gkClusterDataType );
+  list.push_back( AliHLTTRDDefinitions::fgkClusterDataType );
 }
 
 AliHLTComponent_DataType AliHLTTRDTrackerComponent::GetOutputDataType()
 {
-  return AliHLTTRDDefinitions::gkClusterDataType;
+  return AliHLTTRDDefinitions::fgkClusterDataType;
 }
 
 void AliHLTTRDTrackerComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
@@ -224,7 +224,7 @@ int AliHLTTRDTrackerComponent::DoEvent( const AliHLTComponentEventData & evtData
 
   AliHLTUInt32_t fDblock_Specification = 0;
 
-  AliHLTComponentBlockData *dblock = (AliHLTComponentBlockData *)GetFirstInputBlock( AliHLTTRDDefinitions::gkClusterDataType );
+  AliHLTComponentBlockData *dblock = (AliHLTComponentBlockData *)GetFirstInputBlock( AliHLTTRDDefinitions::fgkClusterDataType );
   if (dblock != 0)
     {
       fDblock_Specification = dblock->fSpecification;
@@ -236,7 +236,7 @@ int AliHLTTRDTrackerComponent::DoEvent( const AliHLTComponentEventData & evtData
     }
 
   int ibForce = 0;
-  TObject *tobjin = (TObject *)GetFirstInputObject( AliHLTTRDDefinitions::gkClusterDataType, "TObjArray", ibForce);
+  TObject *tobjin = (TObject *)GetFirstInputObject( AliHLTTRDDefinitions::fgkClusterDataType, "TObjArray", ibForce);
   Logging( kHLTLogInfo, "HLT::TRDTracker::DoEvent", "1stBLOCK", "Pointer = 0x%x", tobjin);
 
 //   int iTotalClusterCounter = 0;
@@ -267,7 +267,7 @@ int AliHLTTRDTrackerComponent::DoEvent( const AliHLTComponentEventData & evtData
 // 	    }
 	  
 	  //Pass the data further...
-	  //PushBack(clusters, AliHLTTRDDefinitions::gkClusterDataType, fDblock_Specification);
+	  //PushBack(clusters, AliHLTTRDDefinitions::fgkClusterDataType, fDblock_Specification);
 	}
       else
 	{

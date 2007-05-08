@@ -48,6 +48,9 @@ ClassImp(AliHLTTRDCalibrationComponent)
     
 AliHLTTRDCalibrationComponent::AliHLTTRDCalibrationComponent()
 {
+  //
+  // default contructor
+  //
   fMCMtrigger = 0;
 
   fOutputPercentage = 100; // By default we copy to the output exactly what we got as input
@@ -62,26 +65,41 @@ AliHLTTRDCalibrationComponent::AliHLTTRDCalibrationComponent()
 
 AliHLTTRDCalibrationComponent::~AliHLTTRDCalibrationComponent()
 {
+  //
+  // default decontructor
+  //
 }
 
 const char* AliHLTTRDCalibrationComponent::GetComponentID()
 {
+  //
+  // return component id
+  //
   return "TRDCalibration"; // The ID of this component
 }
 
 void AliHLTTRDCalibrationComponent::GetInputDataTypes( vector<AliHLTComponent_DataType>& list)
 {
+  //
+  // insert input data type
+  //
   list.clear(); // We do not have any requirements for our input data type(s).
-  list.push_back( AliHLTTRDDefinitions::gkDDLRawDataType );
+  list.push_back( AliHLTTRDDefinitions::fgkDDLRawDataType );
 }
 
 AliHLTComponent_DataType AliHLTTRDCalibrationComponent::GetOutputDataType()
 {
-  return AliHLTTRDDefinitions::gkClusterDataType;
+  //
+  // get the output data type
+  //
+  return AliHLTTRDDefinitions::fgkClusterDataType;
 }
 
 void AliHLTTRDCalibrationComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
 {
+  //
+  // get the ouput data size
+  //
   constBase = 0;
   inputMultiplier = ((double)fOutputPercentage)/100.0;
 }
@@ -90,12 +108,17 @@ void AliHLTTRDCalibrationComponent::GetOutputDataSize( unsigned long& constBase,
 // Spawn function, return new instance of this class
 AliHLTComponent* AliHLTTRDCalibrationComponent::Spawn()
 {
+  //
+  // spawn implementation
+  //
   return new AliHLTTRDCalibrationComponent;
 };
 
 int AliHLTTRDCalibrationComponent::DoInit( int argc, const char** argv )
 {
+  //
   // perform initialization. We check whether our relative output size is specified in the arguments.
+  //
   fOutputPercentage = 100;
   int i = 0;
   char* cpErr;
@@ -192,32 +215,32 @@ int AliHLTTRDCalibrationComponent::DoInit( int argc, const char** argv )
       return EINVAL;
     }
 
-  cdb = AliCDBManager::Instance();
-  if (!cdb)
+  fCDB = AliCDBManager::Instance();
+  if (!fCDB)
     {
-      Logging(kHLTLogError, "HLT::TRDCalibration::DoInit", "Could not get CDB instance", "cdb 0x%x", cdb);
+      Logging(kHLTLogError, "HLT::TRDCalibration::DoInit", "Could not get CDB instance", "fCDB 0x%x", fCDB);
     }
   else
     {
-      cdb->SetRun(0); // THIS HAS TO BE RETRIEVED !!!
-      cdb->SetDefaultStorage(fStrorageDBpath.c_str());
-      Logging(kHLTLogDebug, "HLT::TRDCalibration::DoInit", "CDB instance", "cdb 0x%x", cdb);
+      fCDB->SetRun(0); // THIS HAS TO BE RETRIEVED !!!
+      fCDB->SetDefaultStorage(fStrorageDBpath.c_str());
+      Logging(kHLTLogDebug, "HLT::TRDCalibration::DoInit", "CDB instance", "fCDB 0x%x", fCDB);
     }
 
-  calibra = AliHLTTRDCalibra::Instance();
-  if (!calibra) 
+  fCalibra = AliHLTTRDCalibra::Instance();
+  if (!fCalibra) 
     {
-      Logging(kHLTLogError, "HLT::TRDCalibration::DoInit", "Could not get Calibra instance", "calibra 0x%x", calibra);
+      Logging(kHLTLogError, "HLT::TRDCalibration::DoInit", "Could not get Calibra instance", "calibra 0x%x", fCalibra);
     }
   else
     {
       // init the histograms for output!
-      calibra->SetOn();
-      calibra->Init2Dhistos();
-      Logging(kHLTLogDebug, "HLT::TRDCalibration::DoInit", "Calibra instance", "calibra 0x%x", calibra);
+      fCalibra->SetOn();
+      fCalibra->Init2Dhistos();
+      Logging(kHLTLogDebug, "HLT::TRDCalibration::DoInit", "Calibra instance", "calibra 0x%x", fCalibra);
     }  
 
-  rmem = new AliRawReaderMemory;
+  fRmem = new AliRawReaderMemory;
 
   fMCMtriggerParams = new AliTRDtrigParam("TRDMCMtriggerParams", "TRDMCMtriggerParams");
   fMCMtriggerParams->SetDebugLevel(fTriggerParDebugLevel);
@@ -233,11 +256,14 @@ int AliHLTTRDCalibrationComponent::DoInit( int argc, const char** argv )
 
 int AliHLTTRDCalibrationComponent::DoDeinit()
 {
+  //
+  // deinit component
+  //
   Logging( kHLTLogDebug, "HLT::TRDCalibration::DoDeinit", "destruct", "start");
 
-  Logging( kHLTLogDebug, "HLT::TRDCalibration::DoDeinit", "delete", "rmem");
-  delete rmem;
-  rmem = 0;
+  Logging( kHLTLogDebug, "HLT::TRDCalibration::DoDeinit", "delete", "fRmem");
+  delete fRmem;
+  fRmem = 0;
 
   Logging( kHLTLogDebug, "HLT::TRDCalibration::DoDeinit", "delete", "fMCMtriggerParams");
   delete fMCMtriggerParams;
@@ -247,18 +273,18 @@ int AliHLTTRDCalibrationComponent::DoDeinit()
   delete fMCMtrigger;
   fMCMtrigger = 0;
 
-  if (calibra)
+  if (fCalibra)
     {
-      Logging( kHLTLogDebug, "HLT::TRDCalibration::DoDeinit", "destroy", "calibra");
-      calibra->Destroy();
-      calibra = 0;
+      Logging( kHLTLogDebug, "HLT::TRDCalibration::DoDeinit", "destroy", "fCalibra");
+      fCalibra->Destroy();
+      fCalibra = 0;
     }
 
-  if (cdb)
+  if (fCDB)
     {
-      Logging( kHLTLogDebug, "HLT::TRDCalibration::DoDeinit", "destroy", "cdb");
-      cdb->Destroy();
-      cdb = 0;
+      Logging( kHLTLogDebug, "HLT::TRDCalibration::DoDeinit", "destroy", "fCDB");
+      fCDB->Destroy();
+      fCDB = 0;
     }
 
   Logging( kHLTLogDebug, "HLT::TRDCalibration::DoDeinit", "destruct", "all done!");
@@ -269,29 +295,32 @@ int AliHLTTRDCalibrationComponent::DoEvent( const AliHLTComponent_EventData& evt
 					    AliHLTComponent_TriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 					    AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks )
 {
+  //
+  // analyze
+  //
   Logging( kHLTLogInfo, "HLT::TRDCalibration::DoEvent", "Output percentage set", "Output percentage set to %lu %%", fOutputPercentage );
   Logging( kHLTLogInfo, "HLT::TRDCalibration::DoEvent", "BLOCKS", "NofBlocks %lu", evtData.fBlockCnt );
   // Process an event
   unsigned long totalSize = 0;
-  AliHLTUInt32_t fDblock_Specification = 0;
+  AliHLTUInt32_t fDblockSpecification = 0;
 
   // Loop over all input blocks in the event
   for ( unsigned long i = 0; i < evtData.fBlockCnt; i++ )
     {
       char tmp1[14], tmp2[14];
       DataType2Text( blocks[i].fDataType, tmp1 );
-      DataType2Text( AliHLTTRDDefinitions::gkDDLRawDataType, tmp2 );      
+      DataType2Text( AliHLTTRDDefinitions::fgkDDLRawDataType, tmp2 );      
       Logging( kHLTLogDebug, "HLT::TRDCalibration::DoEvent", "Event received", 
 	       "Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s",
 	       evtData.fEventID, evtData.fEventID, tmp1, tmp2 );
 
-      if ( blocks[i].fDataType != AliHLTTRDDefinitions::gkDDLRawDataType ) 
+      if ( blocks[i].fDataType != AliHLTTRDDefinitions::fgkDDLRawDataType ) 
 	{
  	  Logging (kHLTLogError, "HLT::TRDCalibration::DoEvent", "COMPARE FAILED", "type=%d is type=%d",
- 		   blocks[i].fDataType, AliHLTTRDDefinitions::gkDDLRawDataType);
+ 		   blocks[i].fDataType, AliHLTTRDDefinitions::fgkDDLRawDataType);
 	  continue;
 	}
-      fDblock_Specification = blocks[i].fSpecification;
+      fDblockSpecification = blocks[i].fSpecification;
       unsigned long blockSize = blocks[i].fSize;
       totalSize += blockSize;
     }
@@ -308,7 +337,7 @@ int AliHLTTRDCalibrationComponent::DoEvent( const AliHLTComponent_EventData& evt
   unsigned long copied = 0;
   for ( unsigned long i = 0; i < evtData.fBlockCnt; i++ )
     {
-      if ( blocks[i].fDataType != AliHLTTRDDefinitions::gkDDLRawDataType ) 
+      if ( blocks[i].fDataType != AliHLTTRDDefinitions::fgkDDLRawDataType ) 
 	continue;
 
       void *pos = (void*)(pBuf + copied);
@@ -323,10 +352,10 @@ int AliHLTTRDCalibrationComponent::DoEvent( const AliHLTComponent_EventData& evt
 
   Logging( kHLTLogInfo, "HLT::TRDCalibration::DoEvent", "COPY STATS", "total=%lu copied=%lu", totalSize, copied);
 
-  rmem->Reset();
-  rmem->SetMemory((UChar_t*)memBufIn, totalSize);
-  //rmem->Reset();
-  Bool_t ihead = rmem->ReadHeader();
+  fRmem->Reset();
+  fRmem->SetMemory((UChar_t*)memBufIn, totalSize);
+  //fRmem->Reset();
+  Bool_t ihead = fRmem->ReadHeader();
   if (ihead == kTRUE)
     {
       Logging( kHLTLogInfo, "HLT::TRDCalibration::DoEvent", "HEADER", "Header read successfully");
@@ -338,7 +367,7 @@ int AliHLTTRDCalibrationComponent::DoEvent( const AliHLTComponent_EventData& evt
     }
 
   fMCMtrigger->ResetTree();
-  Bool_t ireadD = fMCMtrigger->ReadDigits(rmem);
+  Bool_t ireadD = fMCMtrigger->ReadDigits(fRmem);
   if (ireadD == kTRUE)
     {
       Logging( kHLTLogInfo, "HLT::TRDCalibration::DoEvent", "DIGITS", "Digits read successfully");
@@ -377,7 +406,7 @@ int AliHLTTRDCalibrationComponent::DoEvent( const AliHLTComponent_EventData& evt
       for (Int_t icb = 0; icb < tb->GetEntries(); icb++)
 	{
 	  tb->GetEntry(icb);
-	  PushBack(detTracklets, AliHLTTRDDefinitions::gkMCMtrackletDataType, fDblock_Specification);
+	  PushBack(detTracklets, AliHLTTRDDefinitions::fgkMCMtrackletDataType, fDblockSpecification);
 	}
     }
 
@@ -385,7 +414,7 @@ int AliHLTTRDCalibrationComponent::DoEvent( const AliHLTComponent_EventData& evt
   //gkMCMCalibrationDataType
 
   //AliHLTTRDCalibra *calibra = AliHLTTRDCalibra::Instance();
-  if (!calibra) 
+  if (!fCalibra) 
     {
       Logging( kHLTLogError, "HLT::TRDCalibration::DoEvent", "OUTPUT", "Calibra not valid");
     }
@@ -393,23 +422,23 @@ int AliHLTTRDCalibrationComponent::DoEvent( const AliHLTComponent_EventData& evt
     {
       Logging( kHLTLogDebug, "HLT::TRDCalibration::DoEvent", "OUTPUT", "Here we should put the histos...");
 //       //   TH2I            *GetCH2d();
-//       TH2I *chtmp = calibra->GetCH2d();
+//       TH2I *chtmp = fCalibra->GetCH2d();
 //       if (chtmp)
-// 	PushBack(chtmp, AliHLTTRDDefinitions::gkMCMcalibrationDataType, fDblock_Specification);
+// 	PushBack(chtmp, AliHLTTRDDefinitions::fgkMCMcalibrationDataType, fDblockSpecification);
 //       else
-// 	Logging( kHLTLogError, "HLT::TRDCalibration::DoEvent", "OUTPUT", "Could not calibra->GetCH2d()");
+// 	Logging( kHLTLogError, "HLT::TRDCalibration::DoEvent", "OUTPUT", "Could not fCalibra->GetCH2d()");
 //       //   TProfile2D      *GetPH2d();
-//       TProfile2D *phtmp = calibra->GetPH2d();
+//       TProfile2D *phtmp = fCalibra->GetPH2d();
 //       if (phtmp)
-// 	PushBack(phtmp, AliHLTTRDDefinitions::gkMCMcalibrationDataType, fDblock_Specification);
+// 	PushBack(phtmp, AliHLTTRDDefinitions::fgkMCMcalibrationDataType, fDblockSpecification);
 //       else
-//  	Logging( kHLTLogError, "HLT::TRDCalibration::DoEvent", "OUTPUT", "Could not calibra->GetPH2d()");
+//  	Logging( kHLTLogError, "HLT::TRDCalibration::DoEvent", "OUTPUT", "Could not fCalibra->GetPH2d()");
 //       //   TProfile2D      *GetPRF2d();
-//       TProfile2D *prf = calibra->GetPRF2d();
+//       TProfile2D *prf = fCalibra->GetPRF2d();
 //       if (prf)
-// 	PushBack(prf, AliHLTTRDDefinitions::gkMCMcalibrationDataType, fDblock_Specification);      
+// 	PushBack(prf, AliHLTTRDDefinitions::fgkMCMcalibrationDataType, fDblockSpecification);      
 //       else
-// 	Logging( kHLTLogError, "HLT::TRDCalibration::DoEvent", "OUTPUT", "Could not calibra->GetPRF2d()");
+// 	Logging( kHLTLogError, "HLT::TRDCalibration::DoEvent", "OUTPUT", "Could not fCalibra->GetPRF2d()");
     }
 
   return 0;

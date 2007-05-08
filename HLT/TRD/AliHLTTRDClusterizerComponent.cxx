@@ -62,12 +62,12 @@ const char* AliHLTTRDClusterizerComponent::GetComponentID()
 void AliHLTTRDClusterizerComponent::GetInputDataTypes( vector<AliHLTComponent_DataType>& list)
 {
   list.clear(); // We do not have any requirements for our input data type(s).
-  list.push_back( AliHLTTRDDefinitions::gkDDLRawDataType );
+  list.push_back( AliHLTTRDDefinitions::fgkDDLRawDataType );
 }
 
 AliHLTComponent_DataType AliHLTTRDClusterizerComponent::GetOutputDataType()
 {
-  return AliHLTTRDDefinitions::gkClusterDataType;
+  return AliHLTTRDDefinitions::fgkClusterDataType;
 }
 
 void AliHLTTRDClusterizerComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
@@ -193,15 +193,15 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponent_EventData& evt
     {
       char tmp1[14], tmp2[14];
       DataType2Text( blocks[i].fDataType, tmp1 );
-      DataType2Text( AliHLTTRDDefinitions::gkDDLRawDataType, tmp2 );      
+      DataType2Text( AliHLTTRDDefinitions::fgkDDLRawDataType, tmp2 );      
       Logging( kHLTLogDebug, "HLT::TRDClusterizer::DoEvent", "Event received", 
 	       "Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s",
 	       evtData.fEventID, evtData.fEventID, tmp1, tmp2 );
 
-      if ( blocks[i].fDataType != AliHLTTRDDefinitions::gkDDLRawDataType ) 
+      if ( blocks[i].fDataType != AliHLTTRDDefinitions::fgkDDLRawDataType ) 
 	{
  	  Logging (kHLTLogError, "HLT::TRDClusterizer::DoEvent", "COMPARE FAILED", "type=%d is type=%d",
- 		   blocks[i].fDataType, AliHLTTRDDefinitions::gkDDLRawDataType);
+ 		   blocks[i].fDataType, AliHLTTRDDefinitions::fgkDDLRawDataType);
 	  continue;
 	}
       fDblock_Specification = blocks[i].fSpecification;
@@ -221,7 +221,7 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponent_EventData& evt
   unsigned long copied = 0;
   for ( unsigned long i = 0; i < evtData.fBlockCnt; i++ )
     {
-      if ( blocks[i].fDataType != AliHLTTRDDefinitions::gkDDLRawDataType ) 
+      if ( blocks[i].fDataType != AliHLTTRDDefinitions::fgkDDLRawDataType ) 
 	continue;
 
       void *pos = (void*)(pBuf + copied);
@@ -293,7 +293,7 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponent_EventData& evt
       for (Int_t icb = 0; icb < tb->GetEntries(); icb++)
 	{
 	  tb->GetEntry(icb);
-	  PushBack(clusters, AliHLTTRDDefinitions::gkClusterDataType, fDblock_Specification);
+	  PushBack(clusters, AliHLTTRDDefinitions::fgkClusterDataType, fDblock_Specification);
 	}
     }
 
