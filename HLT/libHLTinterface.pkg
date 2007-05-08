@@ -1,0 +1,22 @@
+#-*- Mode: Makefile -*-
+# $Id$
+
+MODULE_SRCS= 	AliHLTExternalInterface.cxx
+
+CLASS_HDRS:=  	
+
+MODULE_HDRS:= 	$(CLASS_HDRS)
+
+DHDR:= 		
+CINTAUTOLINK:=  1
+
+# SRCS:=$(patsubst %,BASE/interface/%,$(MODULE_SRCS))
+# CINTHDRS:=$(patsubst %,BASE/interface/%,$(CLASS_HDRS))
+# HDRS:=$(patsubst %,BASE/interface/%,$(MODULE_HDRS))
+
+EDEFINE      :=
+PACKCXXFLAGS :=
+PACKCFLAGS   :=
+PACKDCXXFLAGS:=
+
+EINCLUDE := HLT/BASE/interface HLT/BASE
