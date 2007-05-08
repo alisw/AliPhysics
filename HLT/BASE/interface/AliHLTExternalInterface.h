@@ -5,7 +5,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/** @file   AliHLT_C_Component_WrapperInterface.h
+/** @file   AliHLTExternalInterface.h
     @author Matthias Richter, Timm Steinbeck
     @date   
     @brief  Pure and dynamic C interface to the AliRoot HLT component handler

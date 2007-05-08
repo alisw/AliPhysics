@@ -52,6 +52,9 @@ MODULE_SRCS= 	AliHLTTPCLog.cxx \
 		AliHLTTPCCATrackerComponent.cxx \
 		AliHLTTPCEsdWriterComponent.cxx
 
+#		AliHLTTPCCalibPedestalComponent.cxx \
+#		AliHLTTPCCalibSignalComponent.cxx
+
 CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		AliHLTTPCMemHandler.h \
 		AliHLTTPCDataCompressorHelper.h \
@@ -100,6 +103,9 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		AliHLTTPCGlobalMergerComponent.h \
 		AliHLTTPCCATrackerComponent.h \
 		AliHLTTPCEsdWriterComponent.h
+
+#		AliHLTTPCCalibPedestalComponent.h \
+#		AliHLTTPCCalibSignalComponent.h
 
 MODULE_HDRS:= 	$(CLASS_HDRS) \
 		AliHLTTPCLog.h \

@@ -73,6 +73,10 @@ public:
   static const AliHLTComponentDataType fgkTracksDataType;          // see above
   /** vertex data structure */
   static const AliHLTComponentDataType fgkVertexDataType;          // see above
+  /** pedestal calibration data */
+  static const AliHLTComponentDataType fgkCalibPedestalDataType;   // see above
+  /** signal calibration data */
+  static const AliHLTComponentDataType fgkCalibSignalDataType;     // see above
 
   ClassDef(AliHLTTPCDefinitions, 0);
 

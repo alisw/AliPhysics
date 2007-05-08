@@ -36,6 +36,10 @@ const AliHLTComponentDataType AliHLTTPCDefinitions::fgkVertexDataType = { sizeof
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkTrackSegmentsDataType = { sizeof(AliHLTComponentDataType), {'T','R','A','K','S','E','G','S'},{'T','P','C',' '}};;
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkTracksDataType = { sizeof(AliHLTComponentDataType), {'T','R','A','C','K','S',' ',' '},{'T','P','C',' '}};;
 
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkCalibPedestalDataType = { sizeof(AliHLTComponentDataType), {'C','A','L','_','P','E','D',' '},{'T','P','C',' '}};;
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkCalibSignalDataType = { sizeof(AliHLTComponentDataType), {'C','A','L','_','S','I','G',' '},{'T','P','C',' '}};;
+
+
 AliHLTTPCDefinitions::AliHLTTPCDefinitions()
 {
   // see header file for class documentation
