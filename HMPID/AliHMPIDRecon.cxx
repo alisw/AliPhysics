@@ -53,6 +53,12 @@ AliHMPIDRecon::AliHMPIDRecon():TTask("RichRec","RichPat"),
     fPhotPhi [i] = -1;
     fPhotWei [i] =  0;
   }
+//hidden algorithm
+  fMipX=fMipY=fThTrkFit=fPhTrkFit=fCkovFit=-999;
+  fIdxMip=fNClu=0;
+  for (Int_t i=0; i<1000; i++) {
+    fXClu[i] = fYClu[i] = 0;
+  }
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t nmean)
@@ -67,10 +73,10 @@ void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t n
   if(pCluLst->GetEntries()>pParam->MultCut()) fIsWEIGHT = kTRUE; // offset to take into account bkg in reconstruction
   else                                        fIsWEIGHT = kFALSE;
 
-  Float_t xRa,yRa,th,ph;       
+  Float_t xRa,yRa,th,ph;
   pTrk->GetHMPIDtrk(xRa,yRa,th,ph);        //initialize this track: th and ph angles at middle of RAD 
   SetTrack(xRa,yRa,th,ph);
-  
+
   fRadNmean=nmean;
 
   Float_t dMin=999,mipX=-1,mipY=-1;Int_t chId=-1,mipId=-1,mipQ=-1;                                                                           
@@ -98,7 +104,7 @@ void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t n
   pTrk->SetHMPIDcluIdx(chId,mipId);                                                           //set index of cluster
   if(iNacc<1)    pTrk->SetHMPIDsignal(kNoPhotAccept);                                         //no photon candidates is accepted
   else           pTrk->SetHMPIDsignal(FindRingCkov(pCluLst->GetEntries()));                   //find best Theta ckov for ring i.e. track
-  
+
   pTrk->SetHMPIDchi2(fCkovSigma2);                                                            //errors squared 
 
 }//CkovAngle()
@@ -297,7 +303,8 @@ void AliHMPIDRecon::Refract(TVector3 &dir,Double_t n1,Double_t n2)const
 Double_t AliHMPIDRecon::HoughResponse()
 {
 //
-//
+//    fIdxMip = mipId;
+
 //       
   Double_t kThetaMax=0.75;
   Int_t nChannels = (Int_t)(kThetaMax/fDTheta+0.5);
@@ -429,32 +436,20 @@ Double_t AliHMPIDRecon::SigGeom(Double_t thetaC, Double_t phiC,Double_t betaM)co
 }//SigGeom()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-// From here Hidden track algorithm....
-//
-//
-//
-//
-//
-//
+// From here HTA....
 //
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDRecon::CkovHiddenTrk(TClonesArray *pCluLst,Double_t nmean)
+Int_t AliHMPIDRecon::CkovHiddenTrk(AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t nmean)
 {
-// Pattern recognition method without any infos from tracking...
+// Pattern recognition method without any infos from tracking:HTA (Hidden Track Algorithm)...
 // The method finds in the chmber the cluster with the highest charge
 // compatibile with a MIP, then the strategy is applied
-// Arguments:  pCluLst  - list of clusters for this chamber   
-//   Returns:           - track ckov angle, [rad], 
+// Arguments:  pTrk     - pointer to ESD track
+//             pCluLs   - list of clusters for a given chamber 
+//             nmean    - mean freon ref. index
+//   Returns:           - 0=ok,1=not fitted 
+  
+  AliHMPIDParam *pParam=AliHMPIDParam::Instance();
     
   fRadNmean=nmean;
 
@@ -470,27 +465,32 @@ void AliHMPIDRecon::CkovHiddenTrk(TClonesArray *pCluLst,Double_t nmean)
       mipId=iClu; mipX=pClu->X();mipY=pClu->Y();mipQ=(Int_t)pClu->Q();
     }                                                                                    
   }//clusters loop
-  
-  fIdxMip = mipId;
-  fMipX = mipX; fMipY=mipY;
-  DoRecHiddenTrk();  
 
+  if(qRef>pParam->QCut()){                                                                       //charge compartible with MIP clusters      
+    fIdxMip = mipId;
+    fMipX = mipX; fMipY=mipY; fMipQ = qRef;
+    if(!DoRecHiddenTrk()) return 1;                                                               //Do track and ring reconstruction,if problems returns 1
+    pTrk->SetHMPIDtrk(fRadX,fRadY,fThTrkFit,fPhTrkFit);                                          //store track intersection info
+    pTrk->SetHMPIDmip(fMipX,fMipY,(Int_t)fMipQ,fNClu);                                           //store mip info 
+    pTrk->SetHMPIDcluIdx(pCluLst->GetUniqueID(),fIdxMip);                                        //set cham number and index of cluster
+    pTrk->SetHMPIDsignal(fCkovFit);                                                              //find best Theta ckov for ring i.e. track
+  }
+  return 0;
 }//CkovHiddenTrk()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDRecon::DoRecHiddenTrk()
+Bool_t AliHMPIDRecon::DoRecHiddenTrk()
 {
 // Pattern recognition method without any infos from tracking...
-// Before a preclustering filter to avoid part of the noise
+// First a preclustering filter to avoid part of the noise
 // Then only ellipsed-rings are fitted (no possibility, 
-// for the moment, to reconstruct very inclined tracks
-// Finally a fitting with (th,ph) free starting by very close values
+// for the moment, to reconstruct very inclined tracks)
+// Finally a fitting with (th,ph) free, starting by very close values
 // previously evaluated.
 // Arguments:   none
 //   Returns:   none
   Double_t phiRec;
   CluPreFilter();
-  if(!FitEllipse(phiRec)) {Printf("Not an ellipse, bye!");return;}
-  Printf("--->now it starts the free fit with phi = %f",phiRec*TMath::RadToDeg());
+  if(!FitEllipse(phiRec)) {return kFALSE;}
   return FitFree(phiRec);
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -527,9 +527,9 @@ Bool_t AliHMPIDRecon::FitEllipse(Double_t &phiRec)
   //       AB - H^2
   
   Double_t cA,cB,cF,cG,cH;
-  Double_t aArg=-1,parStep,parLow,parHigh;      Int_t iErrFlg;                         //tmp vars for TMinuit
+  Double_t aArg=-1;      Int_t iErrFlg;                                                //tmp vars for TMinuit
 
-  if(!gMinuit) gMinuit = new TMinuit(100);                                             //init MINUIT with this number of parameters (5 params)
+  if(!gMinuit) gMinuit = new TMinuit(5);                                               //init MINUIT with this number of parameters (5 params)
   gMinuit->mncler();                                                                   // reset Minuit list of paramters
   gMinuit->SetObjectFit((TObject*)this);  gMinuit->SetFCN(AliHMPIDRecon::FunMinEl);    //set fit function
   gMinuit->mnexcm("SET PRI",&aArg,1,iErrFlg);                                          //suspend all printout from TMinuit 
@@ -538,11 +538,11 @@ Bool_t AliHMPIDRecon::FitEllipse(Double_t &phiRec)
   Double_t d1,d2,d3;
   TString sName;
 
-  gMinuit->mnparm(0," A ",1,parStep=0.01,parLow=0,parHigh=0,iErrFlg);
-  gMinuit->mnparm(1," B ",1,parStep=0.01,parLow=0,parHigh=0,iErrFlg);
-  gMinuit->mnparm(2," H ",1,parStep=0.01,parLow=0,parHigh=0,iErrFlg);
-  gMinuit->mnparm(3," G ",1,parStep=0.01,parLow=0,parHigh=0,iErrFlg);
-  gMinuit->mnparm(4," F ",1,parStep=0.01,parLow=0,parHigh=0,iErrFlg);
+  gMinuit->mnparm(0," A ",1,0.01,0,0,iErrFlg);
+  gMinuit->mnparm(1," B ",1,0.01,0,0,iErrFlg);
+  gMinuit->mnparm(2," H ",1,0.01,0,0,iErrFlg);
+  gMinuit->mnparm(3," G ",1,0.01,0,0,iErrFlg);
+  gMinuit->mnparm(4," F ",1,0.01,0,0,iErrFlg);
 
   gMinuit->mnexcm("SIMPLEX" ,&aArg,0,iErrFlg);
   gMinuit->mnexcm("MIGRAD" ,&aArg,0,iErrFlg);   
@@ -575,7 +575,7 @@ Bool_t AliHMPIDRecon::FitEllipse(Double_t &phiRec)
 //
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDRecon::FitFree(Double_t phiRec)
+Bool_t AliHMPIDRecon::FitFree(Double_t phiRec)
 {
 // Fit performed by minimizing RMS/sqrt(n) of the
 // photons reconstructed. First phi is fixed and theta
@@ -583,8 +583,8 @@ void AliHMPIDRecon::FitFree(Double_t phiRec)
 // as free parameters
 // Arguments:    PhiRec phi of the track
 //   Returns:    none
-  Double_t aArg=-1,parStep,parLow,parHigh;              Int_t iErrFlg;                 //tmp vars for TMinuit
-  if(!gMinuit) gMinuit = new TMinuit(100);                                             //init MINUIT with this number of parameters (5 params)
+  Double_t aArg=-1;  Int_t iErrFlg;                                                    //tmp vars for TMinuit
+  if(!gMinuit) gMinuit = new TMinuit(2);                                               //init MINUIT with this number of parameters (5 params)
   gMinuit->mncler();                                                                   // reset Minuit list of paramters
   gMinuit->SetObjectFit((TObject*)this);  gMinuit->SetFCN(AliHMPIDRecon::FunMinPhot);  //set fit function
   gMinuit->mnexcm("SET PRI",&aArg,1,iErrFlg);                                          //suspend all printout from TMinuit 
@@ -597,8 +597,8 @@ void AliHMPIDRecon::FitFree(Double_t phiRec)
   gMinuit->mnexcm("SET PRI",&aArg,1,iErrFlg);                                          //suspend all printout from TMinuit
   gMinuit->mnexcm("SET NOW",&aArg,0,iErrFlg);
 
-  gMinuit->mnparm(0," theta ",0.01,parStep=0.01,parLow=0,parHigh=TMath::PiOver2(),iErrFlg);
-  gMinuit->mnparm(1," phi   ",phiRec,parStep=0.01,parLow=0,parHigh=TMath::TwoPi(),iErrFlg);
+  gMinuit->mnparm(0," theta ",  0.01,0.01,0,TMath::PiOver2(),iErrFlg);
+  gMinuit->mnparm(1," phi   ",phiRec,0.01,0,TMath::TwoPi()  ,iErrFlg);
   
   gMinuit->FixParameter(1);
   gMinuit->mnexcm("SIMPLEX" ,&aArg,0,iErrFlg);   
@@ -608,8 +608,13 @@ void AliHMPIDRecon::FitFree(Double_t phiRec)
   
   gMinuit->mnpout(0,sName,th,d1,d2,d3,iErrFlg);
   gMinuit->mnpout(1,sName,ph,d1,d2,d3,iErrFlg);   
+
+  Double_t outPar[2] = {th,ph}; Double_t g; Double_t f;Int_t flag = 3;
+  gMinuit->Eval(2, &g, f, outPar,flag);  
+
+  SetTrkFit(th,ph);
   
-  Printf(" reconstr. theta %f  phi %f",th*TMath::RadToDeg(),ph*TMath::RadToDeg());
+  return kTRUE;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Double_t AliHMPIDRecon::FunConSect(Double_t *c,Double_t x,Double_t y)
@@ -630,16 +635,15 @@ void AliHMPIDRecon::FunMinEl(Int_t &/* */,Double_t* /* */,Double_t &f,Double_t *
   f = minFun;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDRecon::FunMinPhot(Int_t &/* */,Double_t* /* */,Double_t &f,Double_t *par,Int_t /* */)
+void AliHMPIDRecon::FunMinPhot(Int_t &/* */,Double_t* /* */,Double_t &f,Double_t *par,Int_t iflag)
 {
   AliHMPIDRecon *pRec=(AliHMPIDRecon*)gMinuit->GetObjectFit();
-  
-  Double_t sizeCh = fgkRadThick+fgkWinThick+fgkGapThick;
+  Double_t sizeCh = 0.5*fgkRadThick+fgkWinThick+fgkGapThick;
   Double_t thTrk = par[0]; 
   Double_t phTrk = par[1]; 
   Double_t xrad = pRec->MipX() - sizeCh*TMath::Tan(thTrk)*TMath::Cos(phTrk);
   Double_t yrad = pRec->MipY() - sizeCh*TMath::Tan(thTrk)*TMath::Sin(phTrk);
-  
+  pRec->SetRadXY(xrad,yrad);
   pRec->SetTrack(xrad,yrad,thTrk,phTrk);
 
   Double_t meanCkov=0;
@@ -654,5 +658,12 @@ void AliHMPIDRecon::FunMinPhot(Int_t &/* */,Double_t* /* */,Double_t &f,Double_t
   meanCkov/=pRec->NClu();
   Double_t rms = TMath::Sqrt(meanCkov2/pRec->NClu() - meanCkov*meanCkov);
   f = rms/TMath::Sqrt(pRec->NClu());
-  pRec->SetCkovFit(meanCkov);
+  Printf(" mean %f rms/sqrt(n) %f",meanCkov,f);  
+  if(iflag==3) pRec->SetCkovFit(meanCkov);
+  
 }//FunMinPhot()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//
+// ended Hidden track algorithm....
+//
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

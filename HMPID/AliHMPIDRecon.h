@@ -25,7 +25,7 @@ public :
              AliHMPIDRecon();
     virtual ~AliHMPIDRecon()                                                          {}
 
-  
+
   void     CkovAngle    (AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t nmean             );     //reconstructed Theta Cerenkov
   Bool_t   FindPhotCkov (Double_t cluX,Double_t cluY,Double_t &thetaCer,Double_t &phiCer    );     //find ckov angle for single photon candidate
   Double_t FindRingCkov (Int_t iNclus                                                       );     //best ckov for ring formed by found photon candidates
@@ -46,20 +46,24 @@ public :
   Double_t SigCrom      (Double_t ckovTh,Double_t ckovPh,Double_t beta                      )const;//error due to unknonw photon energy
   Double_t Sigma2       (Double_t ckovTh,Double_t ckovPh                                    )const;//photon candidate sigma
   enum ETrackingFlags {kMipDistCut=-9,kMipQdcCut=-5,kNoPhotAccept=-11};
-// hidden track algorithm
-  void     CkovHiddenTrk    (TClonesArray *pCluLst,Double_t nmean);                                //Pattern recognition without trackinf information
+// HTA hidden track algorithm
+  Int_t    CkovHiddenTrk    (AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t nmean);              //Pattern recognition without trackinf information
   void     CluPreFilter     (                                    );                                //Pre clustering filter to cut bkg clusters
-  void     DoRecHiddenTrk   (                                    );                                //Calling to the fitted procedures
+  Bool_t   DoRecHiddenTrk   (                                    );                                //Calling to the fitted procedures
   Bool_t   FitEllipse       (Double_t &phiRec                    );                                //Fit clusters with a conical section (kTRUE only for ellipses)
-  void     FitFree          (Double_t phiRec                     );                                //Fit (th,ph) of the track and ckovFit as result
+  Bool_t   FitFree          (Double_t phiRec                     );                                //Fit (th,ph) of the track and ckovFit as result
   Double_t FunConSect       (Double_t *c,Double_t x,Double_t y   );                                //Function of a general conical section
   void     SetCkovFit       (Double_t ckov                       ) {fCkovFit=ckov;}                //Setter for ckof fitted
   void     SetTrkFit        (Double_t th,Double_t ph             ) {fThTrkFit = th;fPhTrkFit = ph;}//Setter for (th,ph) of the track
+  void     SetRadXY         (Double_t  x,Double_t y              ) {fRadX = x;fRadY = y;}          //Setter for (th,ph) of the track
   static void     FunMinEl  (Int_t&/* */,Double_t* /* */,Double_t &f,Double_t *par,Int_t /* */);   //Fit function to find ellipes parameters
-  static void     FunMinPhot(Int_t&/* */,Double_t* /* */,Double_t &f,Double_t *par,Int_t /* */);   //Fit function to minimize thetaCer RMS/Sqrt(n) of n clusters
+  static void     FunMinPhot(Int_t&/* */,Double_t* /* */,Double_t &f,Double_t *par,Int_t iflag);   //Fit function to minimize thetaCer RMS/Sqrt(n) of n clusters
   Int_t    IdxMip       ()const {return fIdxMip;}                                                  //Getter index of MIP
   Double_t MipX         ()const {return fMipX;}                                                    //Getter of x MIP in LORS
   Double_t MipY         ()const {return fMipY;}                                                    //Getter of y MIP in LORS
+  Double_t MipQ         ()const {return fMipQ;}                                                    //Getter of Q MIP
+  Double_t RadX         ()const {return fRadX;}                                                    //Getter of x at RAD in LORS
+  Double_t RadY         ()const {return fRadY;}                                                    //Getter of y at RAD in LORS
   Int_t    NClu         ()const {return fNClu;}                                                    //Getter of cluster multiplicity
   Double_t XClu         (Int_t i)const {return fXClu[i];}                                          //Getter of x clu
   Double_t YClu         (Int_t i)const {return fYClu[i];}                                          //Getter of y clu
@@ -83,9 +87,12 @@ protected:
   TVector3 fTrkDir;                            //track direction in LORS at RAD
   TVector2 fTrkPos;                            //track positon in LORS at RAD
   TVector2 fPc;                                //track position at PC
-// hidden track algorithm
+// HTA hidden track algorithm
   Double_t fMipX;                              //mip X position for Hidden Track Algorithm  
   Double_t fMipY;                              //mip Y position for Hidden Track Algorithm
+  Double_t fMipQ;                              //mip Q          for Hidden Track Algorithm
+  Double_t fRadX;                              //rad X position for Hidden Track Algorithm  
+  Double_t fRadY;                              //rad Y position for Hidden Track Algorithm
   Int_t    fIdxMip;                            //mip index in the clus list
   Int_t    fNClu;                              //n clusters to fit
   Double_t fXClu[1000];                        //container for x clus position
@@ -94,13 +101,13 @@ protected:
   Double_t fPhTrkFit;                          //phi   fitted of the track
   Double_t fCkovFit;                           //estimated ring Cherenkov angle
 //
-private:  
+private:
   static const Double_t fgkRadThick;                      //radiator thickness
   static const Double_t fgkWinThick;                      //window thickness
   static const Double_t fgkGapThick;                      //proximity gap thickness
   static const Double_t fgkWinIdx;                        //mean refractive index of WIN material (SiO2) 
   static const Double_t fgkGapIdx;                        //mean refractive index of GAP material (CH4)
-  
+
   ClassDef(AliHMPIDRecon,0)
 };
 

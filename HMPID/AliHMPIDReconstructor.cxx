@@ -39,7 +39,9 @@ AliHMPIDReconstructor::AliHMPIDReconstructor():AliReconstructor(),fUserCut(0),fD
 
   for(int i=AliHMPIDDigit::kMinCh;i<=AliHMPIDDigit::kMaxCh;i++){ 
     fDig->AddAt(new TClonesArray("AliHMPIDDigit"),i);
-    fClu->AddAt(new TClonesArray("AliHMPIDCluster"),i);
+    TClonesArray *pClus = new TClonesArray("AliHMPIDCluster");
+    pClus->SetUniqueID(i);
+    fClu->AddAt(pClus,i);
   }
   
   AliCDBEntry *pUserCutEnt =AliCDBManager::Instance()->Get("HMPID/Calib/UserCut");    //contains TObjArray of 14 TObject with n. of sigmas to cut charge 
