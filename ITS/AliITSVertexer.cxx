@@ -112,10 +112,12 @@ void AliITSVertexer::FindMultiplicity(Int_t evnumber){
   Float_t *tht = new Float_t [notracks];
   Float_t *phi = new Float_t [notracks];
   Float_t *dphi = new Float_t [notracks];
+  Int_t *labels = new Int_t[notracks];
   for(Int_t i=0;i<multReco->GetNTracklets();i++){
     tht[i] = multReco->GetTracklet(i)[0];
     phi[i] =  multReco->GetTracklet(i)[1];
     dphi[i] = multReco->GetTracklet(i)[2];
+    labels[i] = multReco->GetTracklet(i)[3];
   }
   Int_t nosingleclus=multReco->GetNSingleClusters();
   Float_t *ths = new Float_t [nosingleclus];
@@ -124,7 +126,7 @@ void AliITSVertexer::FindMultiplicity(Int_t evnumber){
     ths[i] = multReco->GetCluster(i)[0];
     phs[i] =  multReco->GetCluster(i)[1];
   }
-  fMult = new AliMultiplicity(notracks,tht,phi,dphi,nosingleclus,ths,phs);
+  fMult = new AliMultiplicity(notracks,tht,phi,dphi,labels,nosingleclus,ths,phs);
   delete [] tht;
   delete [] phi;
   delete [] dphi;
@@ -189,3 +191,4 @@ void AliITSVertexer::WriteCurrentVertex(){
   Int_t rc = itsLoader->PostVertex(fCurrentVertex);
   rc = itsLoader->WriteVertices();
 }
+

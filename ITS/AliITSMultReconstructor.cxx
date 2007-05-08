@@ -27,7 +27,7 @@
 // differencies in Phi (azimuth) and Zeta (longitudinal) are inside 
 // a fiducial volume. In case of multiple candidates it is selected the
 // candidate with minimum distance in Phi. 
-// The parameter AssociationChoice allows to control if two clusters 
+// The parameter AssociationChoice allows to control if two clusters
 // in layer 2 can be associated to the same cluster in layer 1 or not.
 //
 // Two methods return the number of traklets and the number of clusters 
@@ -106,9 +106,9 @@ fhphiClustersLay1(0){
   fAssociationFlag    = new Bool_t[300000];
 
   for(Int_t i=0; i<300000; i++) {
-    fClustersLay1[i]       = new Float_t[3];
-    fClustersLay2[i]       = new Float_t[3];
-    fTracklets[i]          = new Float_t[3];
+    fClustersLay1[i]       = new Float_t[6];
+    fClustersLay2[i]       = new Float_t[6];
+    fTracklets[i]          = new Float_t[4];
     fSClusters[i]           = new Float_t[2];
     fAssociationFlag[i]    = kFALSE;
   }
@@ -259,13 +259,13 @@ AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* 
     
     fClustersLay1[iC1][0] = TMath::ACos(z/r);  // Store Theta
     fClustersLay1[iC1][1] = TMath::ATan2(x,y);  // Store Phi
-    fClustersLay1[iC1][2] = z/r;               // Store scaled z 
+    fClustersLay1[iC1][2] = z/r;               // Store scaled z
     if (fHistOn) {
       Float_t eta=fClustersLay1[iC1][0];
       eta= TMath::Tan(eta/2.);
       eta=-TMath::Log(eta);
       fhetaClustersLay1->Fill(eta);    
-      fhphiClustersLay1->Fill(fClustersLay1[iC1][1]);    
+      fhphiClustersLay1->Fill(fClustersLay1[iC1][1]);
     }      
 }
   
@@ -311,7 +311,7 @@ AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* 
 	// find the difference in z (between linear projection from layer 1
 	// and the actual point: Dzeta= z1/r1*r2 -z2) 	
 	Float_t r2   = fClustersLay2[iC2][2]/TMath::Cos(fClustersLay2[iC2][0]);
-        Float_t dZeta  = fClustersLay1[iC1][2]*r2 - fClustersLay2[iC2][2]; 
+        Float_t dZeta  = fClustersLay1[iC1][2]*r2 - fClustersLay2[iC2][2];
 
  	if (fHistOn) {
 	  fhClustersDPhiAll->Fill(dPhi);    
@@ -339,7 +339,7 @@ AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* 
     if (distmin<100) { // This means that a cluster in layer 2 was found that mathes with iC1
 
       if (fHistOn) {
-	fhClustersDPhiAcc->Fill(dPhimin);    
+	fhClustersDPhiAcc->Fill(dPhimin);
 	fhClustersDThetaAcc->Fill(dThetamin);    
 	fhClustersDZetaAcc->Fill(dZetamin);    
 	fhDPhiVsDThetaAcc->Fill(dThetamin, dPhimin);
@@ -350,13 +350,40 @@ AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* 
       
       // store the tracklet
       
-      // use the theta from the clusters in the first layer 
+      // use the theta from the clusters in the first layer
       fTracklets[fNTracklets][0] = fClustersLay1[iC1][0];
-      // use the phi from the clusters in the first layer 
+      // use the phi from the clusters in the first layer
       fTracklets[fNTracklets][1] = fClustersLay1[iC1][1];
       // Store the difference between phi1 and phi2
-      fTracklets[fNTracklets][2] = fClustersLay1[iC1][1] - fClustersLay2[iC2WithBestDist][1];       
-  
+      fTracklets[fNTracklets][2] = fClustersLay1[iC1][1] - fClustersLay2[iC2WithBestDist][1];
+
+      // find label
+      Int_t label1 = 0;
+      Int_t label2 = 0;
+      while (label2 < 3)
+      {
+        if ((Int_t) fClustersLay1[iC1][3+label1] != -2 && (Int_t) fClustersLay1[iC1][3+label1] == (Int_t) fClustersLay2[iC2WithBestDist][3+label2])
+          break;
+
+        label1++;
+        if (label1 == 3)
+        {
+          label1 = 0;
+          label2++;
+        }
+      }
+
+      if (label2 < 3)
+      {
+        AliDebug(AliLog::kDebug, Form("Found label %d == %d for tracklet candidate %d\n", (Int_t) fClustersLay1[iC1][3+label1], (Int_t) fClustersLay2[iC2WithBestDist][3+label2], fNTracklets));
+        fTracklets[fNTracklets][3] = fClustersLay1[iC1][3+label1];
+      }
+      else
+      {
+        AliDebug(AliLog::kDebug, Form("Did not find label %d %d %d %d %d %d for tracklet candidate %d\n", (Int_t) fClustersLay1[iC1][3], (Int_t) fClustersLay1[iC1][4], (Int_t) fClustersLay1[iC1][5], (Int_t) fClustersLay2[iC2WithBestDist][3], (Int_t) fClustersLay2[iC2WithBestDist][4], (Int_t) fClustersLay2[iC2WithBestDist][5], fNTracklets));
+        fTracklets[fNTracklets][3] = -2;
+      }
+
       if (fHistOn) {
 	Float_t eta=fTracklets[fNTracklets][0];
 	eta= TMath::Tan(eta/2.);
@@ -373,13 +400,13 @@ AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* 
 
     // Delete the following else if you do not want to save Clusters! 
 
-    else { // This means that the cluster has not been associated 
+    else { // This means that the cluster has not been associated
 
       // store the cluster
        
       fSClusters[fNSingleCluster][0] = fClustersLay1[iC1][0];
       fSClusters[fNSingleCluster][1] = fClustersLay1[iC1][1];
-      AliDebug(1,Form(" Adding a single cluster %d (cluster %d  of layer 1)", 
+      AliDebug(1,Form(" Adding a single cluster %d (cluster %d  of layer 1)",
 		      fNSingleCluster, iC1));
       fNSingleCluster++;
     }
@@ -437,7 +464,7 @@ AliITSMultReconstructor::LoadClusterArrays(TTree* itsClusterTree) {
     
     // loop over clusters
     while(nClusters--) {
-      AliITSRecPoint* cluster = (AliITSRecPoint*)itsClusters->UncheckedAt(nClusters);	
+      AliITSRecPoint* cluster = (AliITSRecPoint*)itsClusters->UncheckedAt(nClusters);
       
       if (cluster->GetLayer()>1) 
 	continue;            
@@ -450,12 +477,16 @@ AliITSMultReconstructor::LoadClusterArrays(TTree* itsClusterTree) {
 	fClustersLay1[fNClustersLay1][0] = x;
 	fClustersLay1[fNClustersLay1][1] = y;
 	fClustersLay1[fNClustersLay1][2] = z;
+	for (Int_t i=0; i<3; i++)
+		fClustersLay1[fNClustersLay1][3+i] = cluster->GetLabel(i);
 	fNClustersLay1++;
       }
-      if (cluster->GetLayer()==1) {	
+      if (cluster->GetLayer()==1) {
 	fClustersLay2[fNClustersLay2][0] = x;
 	fClustersLay2[fNClustersLay2][1] = y;
 	fClustersLay2[fNClustersLay2][2] = z;
+	for (Int_t i=0; i<3; i++)
+		fClustersLay2[fNClustersLay2][3+i] = cluster->GetLabel(i);
 	fNClustersLay2++;
       }
       
@@ -490,3 +521,4 @@ AliITSMultReconstructor::SaveHists() {
   fhetaClustersLay1->Write();
   fhphiClustersLay1->Write();
 }
+
