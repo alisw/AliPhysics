@@ -14,8 +14,8 @@ class AliMultiplicity : public TObject {
 
   AliMultiplicity();               // default constructor
   // standard constructor
-  AliMultiplicity(Int_t ntr,Float_t *t, Float_t *ph, Float_t *df,
-                  Int_t ns, Float_t *ts, Float_t *ps); 
+  AliMultiplicity(Int_t ntr,Float_t *t, Float_t *ph, Float_t *df, Int_t *labels,
+                  Int_t ns, Float_t *ts, Float_t *ps);
   AliMultiplicity(const AliMultiplicity& m);
   AliMultiplicity& operator=(const AliMultiplicity& m);
   virtual ~AliMultiplicity();
@@ -27,6 +27,8 @@ class AliMultiplicity : public TObject {
   else {Error("GetPhi","Invalid track number %d",i); return -9999.;}}
   Float_t GetDeltaPhi(Int_t i) const {if(i>=0 && i<fNtracks) {return fDeltPhi[i];}
   else {Error("GetDeltaPhi","Invalid track number %d",i); return -9999.;}}
+  Int_t GetLabel(Int_t i) const {if(i>=0 && i<fNtracks) {return fLabels[i];}
+  else {Error("GetLabel","Invalid track number %d",i); return -9999;}}
 // methods to access single cluster information
   Int_t GetNumberOfSingleClusters() const {return fNsingle;}
   Float_t GetThetaSingle(Int_t i) const { if(i>=0 && i<fNsingle) {return fThsingle[i];}
@@ -36,16 +38,17 @@ class AliMultiplicity : public TObject {
 
   protected:
   void Duplicate(const AliMultiplicity &m);  // used by copy ctr.
-  Int_t fNtracks;         // Number of tracklets 
+  Int_t fNtracks;         // Number of tracklets
   Float_t *fTh;           //[fNtracks] array with theta values
   Float_t *fPhi;          //[fNtracks] array with phi values
   Float_t *fDeltPhi;      //[fNtracks] array with delta phi values
+  Int_t   *fLabels;       //[fNtracks] array with labels of tracklets
   Int_t fNsingle;         // Number of clusters on SPD layer 1, not associated
                           // with a tracklet on SPD layer 2
   Float_t *fThsingle;     //[fNsingle] array with theta values of L1 clusters
   Float_t *fPhisingle;    //[fNsingle] array with phi values of L2 clusters
 
-  ClassDef(AliMultiplicity,2);
+  ClassDef(AliMultiplicity,3);
 };
 
 #endif
