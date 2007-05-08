@@ -129,4 +129,8 @@
 
 #pragma link C++ class  AliSplineFit+;
 
+#pragma link C++ class AliDCSValue+;
+#pragma link C++ class AliDCSSensor+;
+#pragma link C++ class AliDCSSensorArray+;
+
 #endif
