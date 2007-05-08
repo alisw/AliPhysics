@@ -85,8 +85,6 @@
 #define MAX_TDC_ERROR_NUMBER 1000
 //max hit number in a TRM
 #define MAX_TRM_HIT_NUMBER 2400
-//data buffer size
-#define DATA_BUFFER_SIZE 1000
 
 #include "TObject.h"
 #include "AliTOFRawDataFormat.h"
