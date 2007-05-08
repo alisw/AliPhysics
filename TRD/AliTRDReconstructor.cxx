@@ -36,6 +36,8 @@
 #include "AliTRDtrigger.h"
 #include "AliTRDtrigParam.h"
 #include "AliTRDgtuTrack.h"
+#include "AliTRDrawData.h"
+#include "AliTRDdigitsManager.h"
 
 ClassImp(AliTRDReconstructor)
 
@@ -43,14 +45,17 @@ Bool_t AliTRDReconstructor::fgkSeedingOn  = kFALSE;
 Int_t  AliTRDReconstructor::fgStreamLevel = 0;      // Stream (debug) level
 
 //_____________________________________________________________________________
-void AliTRDReconstructor::ConvertDigits(AliRawReader* /*rawReader*/
-				      , TTree* /*digitsTree*/) const
+void AliTRDReconstructor::ConvertDigits(AliRawReader *rawReader
+				      , TTree *digitsTree) const
 {
   //
   // Convert raw data digits into digit objects in a root tree
   //
 
-  AliError("conversion of raw data digits into digit objects not implemented");
+  AliTRDrawData rawData;
+  AliTRDdigitsManager *manager = rawData.Raw2Digits(rawReader);
+  manager->MakeBranch(digitsTree);
+  manager->WriteDigits();
 
 }
 
@@ -115,6 +120,7 @@ void AliTRDReconstructor::Reconstruct(AliRunLoader *runLoader
 //   loader->UnloadTracks();
 
 }
+
 //_____________________________________________________________________________
 void AliTRDReconstructor::Reconstruct(AliRawReader *rawReader
                                     , TTree *clusterTree) const
@@ -129,7 +135,6 @@ void AliTRDReconstructor::Reconstruct(AliRawReader *rawReader
   clusterer.OpenOutput(clusterTree);
   clusterer.ReadDigits(rawReader);
   clusterer.MakeClusters();
-  clusterer.WriteClusters(-1);
 
   //
   // No trigger, since we don't have the output tree for tracklets
@@ -138,7 +143,8 @@ void AliTRDReconstructor::Reconstruct(AliRawReader *rawReader
 }
 
 //_____________________________________________________________________________
-void AliTRDReconstructor::Reconstruct(TTree *digitsTree, TTree *clusterTree) const
+void AliTRDReconstructor::Reconstruct(TTree *digitsTree
+                                    , TTree *clusterTree) const
 {
   //
   // Reconstruct clusters
@@ -148,7 +154,6 @@ void AliTRDReconstructor::Reconstruct(TTree *digitsTree, TTree *clusterTree) con
   clusterer.OpenOutput(clusterTree);
   clusterer.ReadDigits(digitsTree);
   clusterer.MakeClusters();
-  clusterer.WriteClusters(-1);
 
   //
   // No trigger, since we don't have the output tree for tracklets

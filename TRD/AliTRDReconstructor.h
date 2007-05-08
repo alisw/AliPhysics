@@ -19,11 +19,13 @@ class AliTRDReconstructor: public AliReconstructor {
 
  public:
 
-  AliTRDReconstructor(): AliReconstructor()                             { };
-  virtual ~AliTRDReconstructor()                                        { };
+  AliTRDReconstructor():AliReconstructor()                       { };
+  virtual ~AliTRDReconstructor()                                 { };
 
+  virtual Bool_t      HasDigitConversion() const                 { return kTRUE; };
   virtual void        ConvertDigits(AliRawReader *rawReader, TTree *digitsTree) const;
 
+  virtual Bool_t      HasLocalReconstruction() const             { return kTRUE; };
   virtual void        Reconstruct(AliRunLoader *runLoader, AliRawReader *rawReader) const;
   virtual void        Reconstruct(AliRawReader *rawReader, TTree *clusterTree) const;
   virtual void        Reconstruct(TTree *digitsTree, TTree *clusterTree) const;
