@@ -189,6 +189,7 @@ void AliHMPIDDigit::Raw(UInt_t w32,Int_t ddl)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDDigit::Raw(Int_t ddl,Int_t r,Int_t d,Int_t a)
 {
+  assert(0<=r&&r<=13); assert(1<=r&&r<=24); assert(1<=d&&d<=10);   assert(0<=a&&a<=47);  
   Int_t a2y[6]={3,2,4,1,5,0};//pady for a given address (for single DILOGIC chip)
                                   Int_t ch=ddl/2;
   Int_t tmp=(r-1)/8;              Int_t pc=(ddl%2)? 5-2*tmp:2*tmp; 
