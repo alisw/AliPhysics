@@ -36,7 +36,8 @@ class AliITS : public AliDetector {
  public:
     //================= Standard Classes ===============================
     AliITS();  // Default creator.
-    AliITS(const char *name, const char *title); // standard Creator
+    AliITS(const Char_t *title); // standard Creator
+    AliITS(const char *name, const char *title); // extended standard Creator
     virtual ~AliITS(); // destructor
     virtual Int_t IsVersion() const {return 1;}
     virtual Int_t DistancetoPrimitive(Int_t , Int_t )  {return 999;}
@@ -156,11 +157,12 @@ class AliITS : public AliDetector {
     Int_t        *fIdSens;     //[fIdN] layer identifier
     TString      *fIdName;     //[fIdN] layer identifier
     TObjArray    *fITSmodules; //! Pointer to ITS modules
+    Bool_t        fTiming;     // flag to turn on/off timers.
 
  private:
     AliITS(const AliITS &source); // copy constructor. Not to be used!
     AliITS& operator=(const AliITS &source); // = operator. Not to be used!
-    ClassDef(AliITS,6) // Base class for ITS
+    ClassDef(AliITS,7) // Base class for ITS
 
 };
 

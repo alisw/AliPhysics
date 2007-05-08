@@ -23,6 +23,7 @@
 #include <TBRIK.h>
 #include <TVirtualMC.h>
 #include <TGeoMatrix.h>
+#include <TGeoManager.h>
 
 #include "AliRun.h"
 #include "AliMagF.h"
@@ -50,7 +51,18 @@
 ClassImp(AliITSvSSD03)
 
 //______________________________________________________________________
-AliITSvSSD03::AliITSvSSD03() {
+AliITSvSSD03::AliITSvSSD03():
+AliITS(),                  // Base Class
+fGeomDetOut(kFALSE),       // Flag to write .det file out
+fGeomDetIn(kFALSE),        // Flag to read .det file or directly from Geat.
+fMajorVersion(IsVersion()),// Major version number == IsVersion
+fMinorVersion(-1),         // Minor version number 
+fGeomNumber(2003),         // Geometry version number (year)
+fEuclidGeomDet(),          // file where detector transormation are define.
+fRead(),                   //! file name to read .det file
+fWrite(),                  //! file name to write .det file 
+fIDMother(0),              //! ITS Mother Volume id.
+fIgm(kvSSD03){             //! AliITSInitGeometry object {
     ////////////////////////////////////////////////////////////////////////
     // Standard default constructor for the ITS SSD test beam 2003 version 1.
     // Inputs:
@@ -65,18 +77,23 @@ AliITSvSSD03::AliITSvSSD03() {
     fIdN          = 0;
     fIdName       = 0;
     fIdSens       = 0;
-    fEuclidOut    = kFALSE; // Don't write Euclide file
-    fGeomDetOut   = kFALSE; // Don't write .det file
-    fGeomDetIn    = kFALSE; // Don't Read .det file
-    fMajorVersion = IsVersion();
-    fMinorVersion = -1;
-    fGeomNumber   = 2003; // default value
     for(i=0;i<60;i++) fRead[i] = '\0';
     for(i=0;i<60;i++) fWrite[i] = '\0';
     for(i=0;i<60;i++) fEuclidGeomDet[i] = '\0';
 }
 //______________________________________________________________________
-AliITSvSSD03::AliITSvSSD03(const char *title,Int_t gn) : AliITS("ITS", title){
+AliITSvSSD03::AliITSvSSD03(const char *title,Int_t gn) :
+AliITS("ITS",title),       // Base Class
+fGeomDetOut(kFALSE),       // Flag to write .det file out
+fGeomDetIn(kFALSE),        // Flag to read .det file or directly from Geat.
+fMajorVersion(IsVersion()),// Major version number == IsVersion
+fMinorVersion(2),         // Minor version number 
+fGeomNumber(gn),         // Geometry version number (year)
+fEuclidGeomDet(),          // file where detector transormation are define.
+fRead(),                   //! file name to read .det file
+fWrite(),                  //! file name to write .det file 
+fIDMother(0),              //! ITS Mother Volume id.
+fIgm(kvSSD03){             //! AliITSInitGeometry object {
     ////////////////////////////////////////////////////////////////////////
     //    Standard constructor for the ITS SSD testbeam 2003 version 1.
     // Inputs:
@@ -89,24 +106,12 @@ AliITSvSSD03::AliITSvSSD03(const char *title,Int_t gn) : AliITS("ITS", title){
     ////////////////////////////////////////////////////////////////////////
     Int_t i;
 
-    fGeomNumber = gn;
 
     fIdN = 1; 
     fIdName = new TString[fIdN];
     fIdName[0] = "ITST";
     fIdSens    = new Int_t[fIdN];
-    for(i=0;i<fIdN;i++) fIdSens[i] = 0;
-
-    fMajorVersion = IsVersion();
-    fMinorVersion = 2;
-    fEuclidOut    = kFALSE; // Don't write Euclide file
-    fGeomDetOut   = kFALSE; // Don't write .det file
-    fGeomDetIn    = kFALSE; // Don't Read .det file
-
-    SetThicknessDet1();
-    SetThicknessDet2();
-    SetThicknessChip1();
-    SetThicknessChip2();	 	 	 
+    for(i=0;i<fIdN;i++) fIdSens[i] = 0;	 	 	 
 
     fEuclidGeometry="$ALICE_ROOT/ITS/ITSgeometry_vSSD03.euc";
     strncpy(fEuclidGeomDet,"$ALICE_ROOT/ITS/ITSgeometry_vSSD03.det",60);
@@ -227,49 +232,75 @@ void AliITSvSSD03::CreateGeometry(){
 }
 //______________________________________________________________________
 void AliITSvSSD03::CreateGeometry2003(){
-  ////////////////////////////////////////////////////////////////////////
-  //
-  //    ALIC    ALICE Mother Volume
-  //     |- ITSV     Beamtest Mother Volume
-  //         |
-  //         |- ITSA       Aluminum cover for scintillator
-  //         |    |-ITSS    first Trieste trigger plastic scintillator 
-  //         |- ITSA       Aluminum cover for scintillator
-  //         |    |-ITSS    second Trieste's trigger plastic scintillator
-  //         |
-  //         |- IGAR       Black box around ITST       
-  //         |    |-IAIR    Air inside the black box
-  //         |        |-ITST    Detector under Test 
-  //         |
-  //         |- IFRA       Aluminum cover for scintillator
-  //         |    |-IFRS    French plastic scintillator 
-  //         |
-  //         |- ITSA       Aluminum cover for scintillator
-  //         |    |-ITSS    third Trieste's plastic scintillator
-  // Inputs:
-  //    none.
-  // Outputs:
-  //    none.
-  // Return:
-  //    none.
-  ////////////////////////////////////////////////////////////////////////
-  
-  Float_t data[49];
-  // Define media off-set
-  Int_t *idtmed = fIdtmed->GetArray()+1; // array of media indexes
-  Int_t idrotm[4]; // Array of rotation matrix indexes
-   //Float_t yposition= 0.0;
+    ////////////////////////////////////////////////////////////////////////
+    //
+    //    ALIC    ALICE Mother Volume
+    //     |- ITSV     Beamtest Mother Volume
+    //         |
+    //         |- ITSA       Aluminum cover for scintillator
+    //         |    |-ITSS    first Trieste trigger plastic scintillator 
+    //         |- ITSA       Aluminum cover for scintillator
+    //         |    |-ITSS    second Trieste's trigger plastic scintillator
+    //         |
+    //         |- IGAR       Black box around ITST       
+    //         |    |-IAIR    Air inside the black box
+    //         |        |-ITST    Detector under Test 
+    //         |
+    //         |- IFRA       Aluminum cover for scintillator
+    //         |    |-IFRS    French plastic scintillator 
+    //         |
+    //         |- ITSA       Aluminum cover for scintillator
+    //         |    |-ITSS    third Trieste's plastic scintillator
+    //
+    //      ITSA ITSA IGAR IFRA ITSA
+    // Z->  -282 -280   0   16   270
+    //        |    |    |    |    |
+    // cpn0   1    2    1    1    3
+    //
+    // Inputs:
+    //    none.
+    // Outputs:
+    //    none.
+    // Return:
+    //    none.
+    ////////////////////////////////////////////////////////////////////////
+    Float_t data[49];
+    // Define media off-set
+    Int_t *idtmed = fIdtmed->GetArray()+1; // array of media indexes
+    Int_t idrotm[4]; // Array of rotation matrix indexes
+    // These constant character strings are set by cvs during commit
+    // do not change them unless you know what you are doing!
+    const Char_t *cvsDate="$Date$";
+    const Char_t *cvsRevision="$Revision$";
+    //Float_t yposition= 0.0;
   
   if(gMC==0) return;
   // Define Rotation-reflextion Matrixes needed
   // 0 is the unit matrix
 
+  /*
   // Beamtest mother volume (air) positioned in ALIC mother volume
   data[0] = 500.0;
   data[1] = 500.0;
   data[2] = 1000.0;
   gMC->Gsvolu("ITSV","BOX",idtmed[0],data,3);
   gMC->Gspos("ITSV",1,"ALIC",0.0,0.0,0.0,0,"ONLY");
+  */
+    TGeoVolumeAssembly *itsV = gGeoManager->MakeVolumeAssembly("ITSV");
+    const Int_t length=100;
+    Char_t vstrng[length];
+    if(fIgm.WriteVersionString(vstrng,length,(AliITSVersion_t)IsVersion(),
+                               fMinorVersion,cvsDate,cvsRevision))
+        itsV->SetTitle(vstrng);
+    else Error("CreateGeometry","Error writing/setting version string");
+    //printf("Title set to %s\n",vstrng);
+    TGeoVolume *alic = gGeoManager->GetVolume("ALIC");
+    if(alic==0) {
+        Error("CreateGeometry","alic=0");
+        return;
+    } // end if
+    // See idrotm[199] for angle definitions.
+    alic->AddNode(itsV,1,0);
   
   // Trieste's plastic scintillators for the trigger (2 at beam enter)
   // ...define them (aluminum cover + scintillator inside)
@@ -446,7 +477,7 @@ void AliITSvSSD03::CreateMaterials2003(){
     // Kapton
     AliMaterial(5, "Kapton$", 12.011, 6., 1.3, 31.27, 999.);
     AliMedium(5, "Kapton$",    5, 0,ifield,fieldm, 10., .01, .1, .003, .003);
-}
+}/*
 //______________________________________________________________________
 void AliITSvSSD03::InitAliITSgeom(){
   // sturture.
@@ -474,7 +505,7 @@ void AliITSvSSD03::InitAliITSgeom(){
     geom->SetRotMatrix(0,materix.GetRotationMatrix());
     geom->GetGeomMatrix(0)->SetPath(kname.Data());
     return;
-}
+}*/
 //______________________________________________________________________
 void AliITSvSSD03::Init(){
     ////////////////////////////////////////////////////////////////////////
@@ -486,28 +517,21 @@ void AliITSvSSD03::Init(){
     // Return:
     //    none.
     ////////////////////////////////////////////////////////////////////////
-    Int_t i;
 
-    cout << endl;
-    for(i=0;i<26;i++) cout << "*";
-    cout << " ITSvSSD03" << fMinorVersion << "_Init ";
-    for(i=0;i<25;i++) cout << "*";cout << endl;
-//
-    if(fRead[0]=='\0') strncpy(fRead,fEuclidGeomDet,60);
-    if(fWrite[0]=='\0') strncpy(fWrite,fEuclidGeomDet,60);
-    if(GetITSgeom()!=0) SetITSgeom(0x0);
-    AliITSgeom* geom = new AliITSgeom();
-    SetITSgeom(geom);
-    if(fGeomDetIn) GetITSgeom()->ReadNewFile(fRead);
-    if(!fGeomDetIn) this->InitAliITSgeom();
-    if(fGeomDetOut) GetITSgeom()->WriteNewFile(fWrite);
+
+    Info("Init","**********AliITSvSSD03 %d _Init *************",fMinorVersion);
+
+    AliDebug(1,Form("Init: Major version %d Minor version %d",fMajorVersion,
+                 fMinorVersion));
+    //
+    UpdateInternalGeometry();
     AliITS::Init();
-//
-    for(i=0;i<72;i++) cout << "*";
-    cout << endl;
-    if(gMC) fIDMother = gMC->VolId("ITSV"); // ITS Mother Volume ID.
-    else fIDMother = 0;
-}
+    if(fGeomDetOut) GetITSgeom()->WriteNewFile(fWrite);
+
+    //
+    fIDMother = gMC->VolId("ITSV"); // ITS Mother Volume ID.
+
+}/*
 //______________________________________________________________________
 void AliITSvSSD03::SetDefaults(){
     // sets the default segmentation, rerponse, digit and raw cluster classes
@@ -549,15 +573,15 @@ void AliITSvSSD03::SetDefaults(){
 //    SetSimulationModel(kSSD,new AliITSsimulationSSD(seg0,resp0));
 //    iDetType->ReconstructionModel(new AliITSClusterFinderSSD());
 
-/*
-    SetResponseModel(kSPD,new AliITSCalibrationSPD());
-    SetSegmentationModel(kSPD,new AliITSsegmentationSPD());
-    fDetTypeSim->SetDigitClassName(kSPD,"AliITSdigitSPD");
 
-    SetResponseModel(kSDD,new AliITSCalibrationSDD());
-    SetSegmentationModel(kSDD,new AliITSsegmentationSDD());
-    fDetTypeSim->SetDigitClassName(kSDD,"AliITSdigitSDD");
-*/
+    //SetResponseModel(kSPD,new AliITSCalibrationSPD());
+    //SetSegmentationModel(kSPD,new AliITSsegmentationSPD());
+    //fDetTypeSim->SetDigitClassName(kSPD,"AliITSdigitSPD");
+
+    //SetResponseModel(kSDD,new AliITSCalibrationSDD());
+    //SetSegmentationModel(kSDD,new AliITSsegmentationSDD());
+    //fDetTypeSim->SetDigitClassName(kSDD,"AliITSdigitSDD");
+
 
 
     if(fgkNTYPES>3){
@@ -581,46 +605,45 @@ void AliITSvSSD03::SetDefaultSimulation(){
   AliITSsimulation *sim;
   //  AliITSsegmentation *seg;
   // AliITSCalibration *res;
-  /*
+
   //SPD
-  if(fDetTypeSim){
-    sim = fDetTypeSim->GetSimulationModel(kSPD);
-    if (!sim) {
-      seg = (AliITSsegmentation*)fDetTypeSim->GetSegmentationModel(kSPD);
-      res = (AliITSCalibration*)fDetTypeSim->GetResponseModel(nspd);
-      sim = new AliITSsimulationSPDdubna(seg,res,1);
-      SetSimulationModel(kSPD,sim);
-    }else{ // simulation exists, make sure it is set up properly.
-      sim->SetSegmentationModel((AliITSsegmentation*)fDetTypeSim->GetSegmentationModel(kSPD));
-      sim->SetResponseModel((AliITSCalibration*)fDetTypeSim->GetResponseModel(nspd));
-      ((AliITSsimulation*)sim)->Init();
+  //if(fDetTypeSim){
+    //sim = fDetTypeSim->GetSimulationModel(kSPD);
+    //if (!sim) {
+      //seg = (AliITSsegmentation*)fDetTypeSim->GetSegmentationModel(kSPD);
+      //res = (AliITSCalibration*)fDetTypeSim->GetResponseModel(nspd);
+      //sim = new AliITSsimulationSPDdubna(seg,res,1);
+      //SetSimulationModel(kSPD,sim);
+    //}else{ // simulation exists, make sure it is set up properly.
+      //sim->SetSegmentationModel((AliITSsegmentation*)fDetTypeSim->GetSegmentationModel(kSPD));
+      //sim->SetResponseModel((AliITSCalibration*)fDetTypeSim->GetResponseModel(nspd));
+      //((AliITSsimulation*)sim)->Init();
       //        if(sim->GetResponseModel()==0) sim->SetResponseModel(
       //            (AliITSCalibration*)iDetType->GetResponseModel());
       //        if(sim->GetSegmentationModel()==0) sim->SetSegmentationModel(
       //            (AliITSsegmentation*)iDetType->GetSegmentationModel());
-    } // end if
-  } // end if !fDetTypeSim
+    //} // end if
+  //} // end if !fDetTypeSim
 
   //SDD
-  if(fDetTypeSim){
-    sim = fDetTypeSim->GetSimulationModel(kSDD);
-    if (!sim) {
-      seg = (AliITSsegmentation*)fDetTypeSim->GetSegmentationModel(kSDD);
-      res = (AliITSCalibration*)fDetTypeSim->GetResponseModel(nsdd);
-      sim = new AliITSsimulationSDD(seg,res);
-      SetSimulationModel(kSDD,sim);
-    }else{ // simulation exists, make sure it is set up properly.
-      sim->SetSegmentationModel((AliITSsegmentation*)fDetTypeSim->GetSegmentationModel(kSDD));
-      sim->SetResponseModel((AliITSCalibration*)fDetTypeSim->GetResponseModel(nsdd));
+  //if(fDetTypeSim){
+    //sim = fDetTypeSim->GetSimulationModel(kSDD);
+    //if (!sim) {
+      //seg = (AliITSsegmentation*)fDetTypeSim->GetSegmentationModel(kSDD);
+      //res = (AliITSCalibration*)fDetTypeSim->GetResponseModel(nsdd);
+      //sim = new AliITSsimulationSDD(seg,res);
+      //SetSimulationModel(kSDD,sim);
+    //}else{ // simulation exists, make sure it is set up properly.
+      //sim->SetSegmentationModel((AliITSsegmentation*)fDetTypeSim->GetSegmentationModel(kSDD));
+      //sim->SetResponseModel((AliITSCalibration*)fDetTypeSim->GetResponseModel(nsdd));
 
-      ((AliITSsimulation*)sim)->Init();
+      //((AliITSsimulation*)sim)->Init();
       //        if(sim->GetResponseModel()==0) sim->SetResponseModel(
       //            (AliITSCalibration*)iDetType->GetResponseModel());
       //        if(sim->GetSegmentationModel()==0) sim->SetSegmentationModel(
       //            (AliITSsegmentation*)iDetType->GetSegmentationModel());
-    } //end if
-  } // end if !iDetType
-  */
+    //} //end if
+  //} // end if !iDetType
   //SSD
   if(fDetTypeSim){
     sim = fDetTypeSim->GetSimulationModel(kSSD);
@@ -640,7 +663,7 @@ void AliITSvSSD03::SetDefaultSimulation(){
     } // end if
   } // end if !iDetType
 }
-
+*/
 //______________________________________________________________________
 void AliITSvSSD03::DrawModule() const {
     ////////////////////////////////////////////////////////////////////////
@@ -682,63 +705,60 @@ void AliITSvSSD03::StepManager(){
     // Return:
     //    none.
     ////////////////////////////////////////////////////////////////////////
-    Int_t         copy=0, id;
-    TLorentzVector position, momentum;
-    static TLorentzVector position0;
-    static Int_t stat0=0;
-
-    if((id=gMC->CurrentVolID(copy) == fIDMother)&&
-       (gMC->IsTrackEntering()||gMC->IsTrackExiting())){
-	copy = fTrackReferences->GetEntriesFast();
-	TClonesArray &lTR = *fTrackReferences;
-	// Fill TrackReference structure with this new TrackReference.
-	new(lTR[copy]) AliTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
-    } // if Outer ITS mother Volume
-
     if(!(this->IsActive())){
-	return;
+        return;
     } // end if !Active volume.
+    if(!(gMC->TrackCharge())) return;
 
-
-    Int_t   vol[5];
-    TClonesArray &lhits = *fHits;
+    Int_t cpy0,mod,id,status;
+    TLorentzVector position, momentum;
+    static AliITShit hit;// Saves on calls to construtors
+    //TClonesArray &lhits = *(GetDetTypeSim()->GetHits());
+    TClonesArray &lhits = *(Hits());
     //
     // Track status
-    vol[3] = 0;
-    vol[4] = 0;
-    if(gMC->IsTrackInside())      vol[3] +=  1;
-    if(gMC->IsTrackEntering())    vol[3] +=  2;
-    if(gMC->IsTrackExiting())     vol[3] +=  4;
-    if(gMC->IsTrackOut())         vol[3] +=  8;
-    if(gMC->IsTrackDisappeared()) vol[3] += 16;
-    if(gMC->IsTrackStop())        vol[3] += 32;
-    if(gMC->IsTrackAlive())       vol[3] += 64;
+    // Track status
+    status = 0;
+    if(gMC->IsTrackInside())      status +=  1;
+    if(gMC->IsTrackEntering())    status +=  2;
+    if(gMC->IsTrackExiting())     status +=  4;
+    if(gMC->IsTrackOut())         status +=  8;
+    if(gMC->IsTrackDisappeared()) status += 16;
+    if(gMC->IsTrackStop())        status += 32;
+    if(gMC->IsTrackAlive())       status += 64;
     //
     // Fill hit structure.
-    if(!(gMC->TrackCharge())) return;
-    id = gMC->CurrentVolID(copy);
+    id = gMC->CurrentVolID(cpy0);
     if(id==fIdSens[0]){  // Volume name "ITST"
-	vol[2] = vol[1] = vol[0] = 1; // Det, ladder
+	mod=2; // Det, ladder
     } else return; // end if
     //
+    //
+    // Fill hit structure.
+    //
+    hit.SetModule(mod);
+    hit.SetTrack(gAlice->GetMCApp()->GetCurrentTrackNumber());
     gMC->TrackPosition(position);
     gMC->TrackMomentum(momentum);
-    vol[4] = stat0;
+    hit.SetPosition(position);
+    hit.SetTime(gMC->TrackTime());
+    hit.SetMomentum(momentum);
+    hit.SetStatus(status);
+    hit.SetEdep(gMC->Edep());
+    hit.SetShunt(GetIshunt());
     if(gMC->IsTrackEntering()){
-	position0 = position;
-	stat0 = vol[3];
-	return;
+        hit.SetStartPosition(position);
+        hit.SetStartTime(gMC->TrackTime());
+        hit.SetStartStatus(status);
+        return; // don't save entering hit.
     } // end if IsEntering
-
-    // Fill hit structure with this new hit only for non-entrerance hits.
-    else new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->GetMCApp()->GetCurrentTrackNumber(),vol,
-					gMC->Edep(),gMC->TrackTime(),position,
-					position0,momentum);
-    //cout<<gMC->Edep()<<endl;
-    //
-    position0 = position;
-    stat0 = vol[3];
-
+    // Fill hit structure with this new hit.
+    //Info("StepManager","Calling Copy Constructor");
+    new(lhits[fNhits++]) AliITShit(hit); // Use Copy Construtor.
+    // Save old position... for next hit.
+    hit.SetStartPosition(position);
+    hit.SetStartTime(gMC->TrackTime());
+    hit.SetStartStatus(status);
     return;
 }
 

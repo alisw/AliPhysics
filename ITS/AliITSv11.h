@@ -10,7 +10,7 @@
 //
 // B. Nilsen, L. Gaudichet
 //************************************************************************
- 
+#include "AliITSInitGeometry.h"
 #include "AliITS.h"
 class AliITSv11GeometrySPD;
 class AliITSv11GeometrySDD;
@@ -34,7 +34,7 @@ class AliITSv11 : public AliITS {
     //virtual AliITSv11GeometrySPD*     GetSPDGeometry(){return fSPDgeom;}
     virtual AliITSv11GeometrySDD*    GetSDDGeometry(){return fSDDgeom;}
     //virtual AliITSv11GeometrySupport* GetSupGeometry(){return fSupgeom;}
-    virtual Int_t  IsVersion() const { return fMajorVersion;}  // ITS version number 
+    virtual Int_t  IsVersion() const { return kv11;}  // ITS version number 
     virtual Int_t  GetMajorVersion() const {// return Major Version Number
                     return fMajorVersion;}
     virtual Int_t  GetMinorVersion() const {// return Major Version Number
@@ -76,22 +76,21 @@ class AliITSv11 : public AliITS {
  private:
     AliITSv11(const AliITSv11 &source);            // copy constructor
     AliITSv11& operator=(const AliITSv11 &source); // assignment operator
-    void InitAliITSgeom();
+    //void InitAliITSgeom();
 
-    Bool_t   fGeomDetOut;       // Flag to write .det file out
-    Bool_t   fGeomDetIn;        // Flag to read .det file or directly from Geat.
-    Bool_t   fByThick;          // Flag to use services materials by thickness
+    Bool_t fGeomDetOut;       // Flag to write .det file out
+    Bool_t fGeomDetIn;        // Flag to read .det file or directly from Geat.
+    Bool_t fByThick;          // Flag to use services materials by thickness
                                 // ture, or mass false.
-    Int_t    fMajorVersion;     // Major version number == IsVersion
-    Int_t    fMinorVersion;     // Minor version number
-    char     fEuclidGeomDet[60];// file where detector transormation are define.
-    char     fRead[60];         //! file name to read .det file
-    char     fWrite[60];        //! file name to write .det file
-
-
+    Int_t  fMajorVersion;     // Major version number == IsVersion
+    Int_t  fMinorVersion;     // Minor version number
+    char   fEuclidGeomDet[60];// file where detector transormation are define.
+    char   fRead[60];         //! file name to read .det file
+    char   fWrite[60];        //! file name to write .det file
     //AliITSv11GeometrySPD *fSPDgeom;      //SPD Geometry
     AliITSv11GeometrySDD *fSDDgeom;      //! SDD Geometry
     //AliITSv11GeometrySupport /fSupgeom;  //Support Geometry
+    AliITSInitGeometry fIgm; //! Geometry initlization object
 
     ClassDef(AliITSv11,1)  // ITS version 11 
 };

@@ -107,7 +107,8 @@ fOpt("All"),
 fIdN(0),
 fIdSens(0),
 fIdName(0),
-fITSmodules(0)
+fITSmodules(0),
+fTiming(kFALSE)
 {
   // Default initializer for ITS
   //      The default constructor of the AliITS class. In addition to
@@ -120,6 +121,42 @@ fITSmodules(0)
 //PH    SetMarkerColor(kRed);
 }
 //______________________________________________________________________
+AliITS::AliITS(const Char_t *title):AliDetector("ITS",title),
+fDetTypeSim(0),
+fEuclidOut(0),
+fOpt("All"),
+fIdN(0),
+fIdSens(0),
+fIdName(0),
+fITSmodules(0),
+fTiming(kFALSE)
+{
+    //     The standard Constructor for the ITS class. 
+    // It also zeros the variables
+    // fIshunt (a member of AliDetector class), fEuclidOut, and zeros
+    // the pointers fIdSens and fIdName. To help in displaying hits via the
+    // ROOT macro display.C AliITS also sets the marker color to red. The
+    // variables passes with this constructor, const char *name and *title,
+    // are used by the constructor of AliDetector class. See AliDetector
+    // class for a description of these parameters and its constructor
+    // functions.
+    // Inputs:
+    //   Char_t *title  Simulation title for the ITS
+    // Outputs:
+    //   none.
+    // Return:
+    //   none.
+  
+    fHits = new TClonesArray("AliITShit",1560); // from AliDetector
+    if(gAlice->GetMCApp()) gAlice->GetMCApp()->AddHitList(fHits);
+    //fNhits=0;  //done in AliDetector(name,title)
+    SetDetectors(); // default to fOpt="All". This variable not written out.
+    fDetTypeSim   = new AliITSDetTypeSim();
+    //PH  SetMarkerColor(kRed);
+    if(!fLoader) MakeLoader(AliConfig::GetDefaultEventFolderName());
+    fDetTypeSim->SetLoader((AliITSLoader*)fLoader);
+}
+//______________________________________________________________________
 AliITS::AliITS(const char *name, const char *title):AliDetector(name,title),
 fDetTypeSim(0),
 fEuclidOut(0),
@@ -127,7 +164,8 @@ fOpt("All"),
 fIdN(0),
 fIdSens(0),
 fIdName(0),
-fITSmodules(0)
+fITSmodules(0),
+fTiming(kFALSE)
 {
   //     The standard Constructor for the ITS class. 
   // It also zeros the variables
@@ -1239,12 +1277,13 @@ Bool_t AliITS::Raw2SDigits(AliRawReader* rawReader)
 void AliITS::UpdateInternalGeometry(){
 
   //reads new geometry from TGeo 
-  AliDebug(1,"Delete ITSgeom and create a new one reading TGeo");
+//   AliDebug(1,"Delete ITSgeom and create a new one reading TGeo");
+
   AliITSVersion_t version = (AliITSVersion_t)IsVersion();
   Int_t minor = 0;
-  if(version==kvPPRasymmFMD)minor=2;  // default minor version for this geom.
-  AliITSInitGeometry initgeom(version,minor);
-  AliITSgeom* geom = initgeom.CreateAliITSgeom();
+  if(version==kvPPRasymmFMD) minor=2;  // default minor version for this geom.
+  AliITSInitGeometry initgeom;
+  AliITSgeom* geom = initgeom.CreateAliITSgeom(version,minor);
   SetITSgeom(geom);
 }
 

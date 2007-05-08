@@ -11,7 +11,7 @@
 // proper geometry of the 2003 test beam. In addition, because the SSD
 // used in the test beam are single sided, the second side needs be ignored.
 // This can cause some problems with the SSD reconstruction code.
-
+#include "AliITSInitGeometry.h"
 #include "AliITS.h"
 
 typedef enum {
@@ -28,9 +28,9 @@ class AliITSvSDD03 : public AliITS{
     virtual void   CreateGeometry();
     virtual void   CreateMaterials();
     virtual Int_t  IsVersion() const {// returns the ITS version number 
-                                      return 1;} 
+                                      return (Int_t)kvSDD03;} 
     virtual void   Init(); 
-    virtual void   SetDefaults();
+    //virtual void   SetDefaults();
     virtual void   DrawModule() const;
     virtual void   StepManager(); 
     virtual void   SetTargMat(TargTyp_t tt=kNoTarg){ // set target material 
@@ -48,47 +48,31 @@ class AliITSvSDD03 : public AliITS{
     virtual void   SetEUCLIDFileName(const char *f){ // set write file
                              fEuclidGeometry=f;fEuclidOut = kTRUE;}
     virtual void   SetMinorVersion(Int_t v=22){ // Choose between existing minor versions
-        fMinorVersion = v;} 
-    virtual void   SetThicknessDet1(Float_t v=300.){
-         // Set detector thickness in layer 1
-         fDet1 = v;}
-    virtual void   SetThicknessDet2(Float_t v=300.){
-         // Set detector thickness in layer 2
-         fDet2 = v;}
-    virtual void   SetThicknessChip1(Float_t v=300.){
-         // Set chip thickness in layer 1
-         fChip1 = v;}
-    virtual void   SetThicknessChip2(Float_t v=300.){
-         // Set chip thickness in layer 2
-         fChip2 = v;}
+        fMinorVersion = v;}
     // Replacement default simulation initilization.
-    virtual void SetDefaultSimulation();
+    //virtual void SetDefaultSimulation();
     TargTyp_t GetTargMat() const {return fTarg;}
     // Decodes the id and copy nuber to give the layer, ladder, and detector 
     // numbers . Returns the module number.
-    virtual Int_t DecodeDetector(Int_t id,Int_t cpy,Int_t &lay,
-                                 Int_t &lad,Int_t &det) const;
+    //virtual Int_t DecodeDetector(Int_t id,Int_t cpy,Int_t &lay,
+    //                             Int_t &lad,Int_t &det) const;
          //
  private:  
     AliITSvSDD03(const AliITSvSDD03 &source); // Copy constructor
     AliITSvSDD03& operator=(const AliITSvSDD03 &source); // = operator
-    void InitAliITSgeom();
     Bool_t fGeomDetOut;       // Flag to write .det file out
     Bool_t fGeomDetIn;        // Flag to read .det file or directly from Geat.
     Int_t  fMajorVersion;     // Major version number == IsVersion
     Int_t  fMinorVersion;     // Minor version number 
     char   fEuclidGeomDet[60];// file where detector transormation are define.
     char   fRead[60];         //! file name to read .det file
-    char   fWrite[60];        //! file name to write .det file 
-    Float_t  fDet1;           // thickness of detector in SDD layer 1
-    Float_t  fDet2;           // thickness of detector in SDD layer 2
-    Float_t  fChip1;          // thickness of chip in SDD layer 1
-    Float_t  fChip2;          // thickness of chip in SDD layer 2 
+    char   fWrite[60];        //! file name to write .det file
     Int_t fIDMother;          //! ITS Mother Volume id.
     Int_t fYear;              // Year flag to select different geometries.
     TargTyp_t fTarg;          // Target material
     Float_t fTargThick;       // TargetThickness in mm
+    AliITSInitGeometry fIgm;  //! Get Access to decoding an dAliITSgeom init functions
 
-    ClassDef(AliITSvSDD03,2) // Hits manager and geometry for SDD testbeam
+    ClassDef(AliITSvSDD03,3) // Hits manager and geometry for SDD testbeam
 };
 #endif

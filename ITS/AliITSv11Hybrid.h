@@ -3,6 +3,10 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+// $Id$
+
+// $Log$
+
 //========================================================================
 //
 //            Geometry of the Inner Tracking System
@@ -15,6 +19,7 @@
 //========================================================================
  
 #include "AliITS.h"
+#include "AliITSInitGeometry.h"
 
 class  AliITSv11GeometrySDD;
 
@@ -113,7 +118,6 @@ class AliITSv11Hybrid : public AliITS {
     AliITSv11Hybrid& operator=(const AliITSv11Hybrid &source); // assignment operator
     void InitAliITSgeom();
 
-    // TString fEuclidGeomtery,fEuclidMaterial defined in AliModule.
     Bool_t fGeomDetOut;       // Flag to write .det file out
     Bool_t fGeomDetIn;        // Flag to read .det file or directly from Geat.
     Bool_t fByThick;          // Flag to use services materials by thickness
@@ -131,9 +135,10 @@ class AliITSv11Hybrid : public AliITS {
     Int_t    fFluid;          // flag to switch between water (=1) and freon (=0)
     Int_t fIDMother;          //! ITS Mother Volume id.
 
-    AliITSv11GeometrySDD *fSDDgeom;    //! SDD Geometry
+    AliITSInitGeometry fInitGeom;   //! Get access to decoding and AliITSgeom init functins
+    AliITSv11GeometrySDD *fSDDgeom; //! SDD Geometry
 
-    ClassDef(AliITSv11Hybrid,1)                          
+    ClassDef(AliITSv11Hybrid,2)                          
 };
  
 #endif

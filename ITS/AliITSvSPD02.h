@@ -15,7 +15,7 @@
 // geometry of summer 2002
 // 
 ///////////////////////////////////////////////////////////////////////
-
+#include "AliITSInitGeometry.h"
 #include "AliITS.h"
 
 class AliITSvSPD02 : public AliITS{
@@ -26,12 +26,10 @@ class AliITSvSPD02 : public AliITS{
     virtual void   BuildGeometry();
     virtual void   CreateGeometry();
     virtual void   CreateMaterials();
-    virtual Int_t  DecodeDetector(Int_t id,Int_t cpy,Int_t &lay,Int_t &lad,
-				  Int_t &det)const;
     virtual Int_t  IsVersion() const {// returns the ITS version number 
-                                      return 1;} 
+                                      return (Int_t)kvSPD02;} 
     virtual void   Init();
-    virtual void   SetDefaults();
+    //virtual void   SetDefaults();
     virtual void   DrawModule() const;
     virtual void   StepManager(); 
     virtual void   SetWriteDet(Bool_t det=kTRUE){ // set .det write
@@ -59,7 +57,7 @@ class AliITSvSPD02 : public AliITS{
          // Set chip thickness in layer 2
          fChip2 = v;}
     // Replacement default simulation initilization.
-    virtual void SetDefaultSimulation();
+    //virtual void SetDefaultSimulation();
     //
   private:
     void BuildGeometry2002();
@@ -69,7 +67,6 @@ class AliITSvSPD02 : public AliITS{
  private:  
     AliITSvSPD02(const AliITSvSPD02 &source); // Copy constructor
     AliITSvSPD02& operator=(const AliITSvSPD02 &source); // = operator
-    void InitAliITSgeom();
     Bool_t fGeomDetOut;       // Flag to write .det file out
     Bool_t fGeomDetIn;        // Flag to read .det file or directly from Geat.
     Int_t  fMajorVersion;     // Major version number == IsVersion
@@ -83,7 +80,8 @@ class AliITSvSPD02 : public AliITS{
     Float_t  fChip1;          // thickness of chip in SPD layer 1
     Float_t  fChip2;          // thickness of chip in SPD layer 2 
     Int_t fIDMother;          //! ITS Mother Volume id.
+    AliITSInitGeometry fIgm;//! Get access to decoding and AliITSgeom init functins
 
-    ClassDef(AliITSvSPD02,2) // Hits manager and geometry for SPD testbeam
+    ClassDef(AliITSvSPD02,3) // Hits manager and geometry for SPD testbeam
 };
 #endif

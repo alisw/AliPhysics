@@ -17,7 +17,8 @@
 
 #include <Riostream.h>
 
-#include<TLorentzVector.h>
+#include <TLorentzVector.h>
+#include <TParticle.h>
 
 #include "AliRun.h"
 #include "AliITS.h"
@@ -190,20 +191,19 @@ ClassImp(AliITShit)
 ////////////////////////////////////////////////////////////////////////
 //_____________________________________________________________________________
 AliITShit::AliITShit():AliHit(),
-fStatus(0),
-fLayer(0),
-fLadder(0),
-fDet(0),
-fPx(0.0),
-fPy(0.0),
-fPz(0.0),
-fDestep(0.0),
-fTof(0.0),
-fStatus0(0),
-fx0(0.0),
-fy0(0.0),
-fz0(0.0),
-ft0(0.0){
+fStatus(0), // Track Status
+fModule(0),  // Module number 
+fPx(0.0),     // PX of particle at the point of the hit
+fPy(0.0),     // PY of particle at the point of the hit
+fPz(0.0),     // PZ of particle at the point of the hit
+fDestep(0.0), // Energy deposited in the current step
+fTof(0.0),    // Time of flight at the point of the hit
+fStatus0(0),// Track Status of Starting point
+fx0(0.0),     // Starting point of this step
+fy0(0.0),     // Starting point of this step
+fz0(0.0),     // Starting point of this step
+ft0(0.0)     // Starting point of this step
+{
     // Default Constructor
     // Zero data member just to be safe.
     // Intputs:
@@ -214,84 +214,85 @@ ft0(0.0){
     //    A default created AliITShit class.
 
 }
+//----------------------------------------------------------------------
 AliITShit::AliITShit(Int_t shunt,Int_t track,Int_t *vol,Float_t edep,
-		     Float_t tof,TLorentzVector &x,TLorentzVector &x0,
-		     TLorentzVector &p) : AliHit(shunt, track),
-fStatus(vol[3]),
-fLayer(vol[0]),
-fLadder(vol[2]),
-fDet(vol[1]),
-fPx(p.Px()),
-fPy(p.Py()),
-fPz(p.Pz()),
-fDestep(edep),
-fTof(tof),
-fStatus0(vol[4]),
-fx0(x0.X()),
-fy0(x0.Y()),
-fz0(x0.Z()),
-ft0(x0.T()){
-////////////////////////////////////////////////////////////////////////
-// Create ITS hit
-//     The creator of the AliITShit class. The variables shunt and
-// track are passed to the creator of the AliHit class. See the AliHit
-// class for a full description. In the units of the Monte Carlo
-////////////////////////////////////////////////////////////////////////
-    // Intputs:
+                     Float_t tof,TLorentzVector &x,TLorentzVector &x0,
+                     TLorentzVector &p) :
+AliHit(shunt, track), // AliHit
+fStatus(vol[3]), // Track Status
+fModule(vol[0]),  // Module number 
+fPx(p.Px()),     // PX of particle at the point of the hit
+fPy(p.Py()),     // PY of particle at the point of the hit
+fPz(p.Pz()),     // PZ of particle at the point of the hit
+fDestep(edep), // Energy deposited in the current step
+fTof(tof),    // Time of flight at the point of the hit
+fStatus0(vol[4]),// Track Status of Starting point
+fx0(x0.X()),     // Starting point of this step
+fy0(x0.Y()),     // Starting point of this step
+fz0(x0.Z()),     // Starting point of this step
+ft0(x0.T())     // Starting point of this step
+{
+    // Create ITS hit
+    //     The creator of the AliITShit class. The variables shunt and
+    // track are passed to the creator of the AliHit class. See the AliHit
+    // class for a full description. In the units of the Monte Carlo
+    // Inputs:
     //    Int_t shunt   See AliHit
     //    Int_t track   Track number, see AliHit
     //    Int_t *vol     Array of integer hit data,
-    //                     vol[0] Layer where the hit is, 1-6 typicaly
-    //                     vol[1] Ladder where the hit is.
-    //                     vol[2] Detector number where the hit is
+    //                     vol[0] module
+    //                     vol[1] not used
+    //                     vol[2] not used
     //                     vol[3] Set of status bits
     //                     vol[4] Set of status bits at start
+    //    Float_t edep       The energy deposited GeV during the transport
+    //                       of this step
+    //    Float_t tof        The time of flight of this particle at this step
+    //    TLorenzVector &x   The Global position of this step [cm]
+    //    TLorenzVector &x0  The Global position of where this step 
+    //                       started from [cm]
+    //    TLorenzVector &p   The Global momentum of the particle at this
+    //                       step [GeV/c]
     // Outputs:
     //    none.
     // Return:
     //    A default created AliITShit class.
 
-
-
-    fX          = x.X();   // Track X global position
-    fY          = x.Y();   // Track Y global position
-    fZ          = x.Z();   // Track Z global position
+    SetPosition(x);
 }
 //______________________________________________________________________
 AliITShit::AliITShit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits):
-    AliHit(shunt, track),
-fStatus(vol[3]),
-fLayer(vol[0]),
-fLadder(vol[2]),
-fDet(vol[1]),
-fPx(hits[3]),
-fPy(hits[4]),
-fPz(hits[5]),
-fDestep(hits[6]),
-fTof(hits[7]),
-fStatus0(0),
-fx0(0.0),
-fy0(0.0),
-fz0(0.0),
-ft0(0.0){
-////////////////////////////////////////////////////////////////////////
-// Create ITS hit
-//     The creator of the AliITShit class. The variables shunt and
-// track are passed to the creator of the AliHit class. See the AliHit
-// class for a full description. the integer array *vol contains, in order,
-// fLayer = vol[0], fDet = vol[1], fLadder = vol[2], fStatus = vol[3].
-// The array *hits contains, in order, fX = hits[0], fY = hits[1],
-// fZ = hits[2], fPx = hits[3], fPy = hits[4], fPz = hits[5],
-// fDestep = hits[6], and fTof = hits[7]. In the units of the Monte Carlo
-////////////////////////////////////////////////////////////////////////
+    AliHit(shunt, track), // AliHit
+fStatus(vol[3]), // Track Status
+fModule(vol[0]),  // Module number 
+fPx(hits[3]),     // PX of particle at the point of the hit
+fPy(hits[4]),     // PY of particle at the point of the hit
+fPz(hits[5]),     // PZ of particle at the point of the hit
+fDestep(hits[6]), // Energy deposited in the current step
+fTof(hits[7]),    // Time of flight at the point of the hit
+fStatus0(vol[4]),// Track Status of Starting point
+fx0(hits[8]),     // Starting point of this step
+fy0(hits[9]),     // Starting point of this step
+fz0(hits[10]),     // Starting point of this step
+ft0(hits[11])     // Starting point of this step
+{
+    // Create ITS hit
+    //     The creator of the AliITShit class. The variables shunt and
+    // track are passed to the creator of the AliHit class. See the AliHit
+    // class for a full description. the integer array *vol contains, in order,
+    // fLayer = vol[0], fDet = vol[1], fLadder = vol[2], fStatus = vol[3].
+    // The array *hits contains, in order, fX = hits[0], fY = hits[1],
+    // fZ = hits[2], fPx = hits[3], fPy = hits[4], fPz = hits[5],
+    // fDestep = hits[6], and fTof = hits[7]. In the units of the Monte Carlo
     // Intputs:
     //    Int_t shunt   See AliHit
     //    Int_t track   Track number, see AliHit
     //    Int_t *vol     Array of integer hit data,
-    //                     vol[0] Layer where the hit is, 1-6 typicaly
-    //                     vol[1] Ladder where the hit is.
-    //                     vol[2] Detector number where the hit is
+    //                     vol[0] module number
+    //                     vol[1] not used
+    //                     vol[2] not used
     //                     vol[3] Set of status bits
+    //                     vol[4] Set of status bits at start
     //    Float_t *hits   Array of hit information
     //                     hits[0] X global position of this hit
     //                     hits[1] Y global position of this hit
@@ -301,46 +302,123 @@ ft0(0.0){
     //                     hits[5] Pz global position of this hit
     //                     hits[6] Energy deposited by this step
     //                     hits[7] Time of flight of this particle at this step
+    //                     hits[8] X0 global position of start of step
+    //                     hits[9] Y0 global position of start of step
+    //                     hits[10] Z0 global position of start of step
+    //                     hits[11] Time of flight of this particle before step
     // Outputs:
     //    none.
     // Return:
     //    A standard created AliITShit class.
-  fX          = hits[0];  // Track X global position
-  fY          = hits[1];  // Track Y global position
-  fZ          = hits[2];  // Track Z global position
+
+    fX          = hits[0];  // Track X global position
+    fY          = hits[1];  // Track Y global position
+    fZ          = hits[2];  // Track Z global position
 }
 //______________________________________________________________________
-void AliITShit::GetPositionL(Float_t &x,Float_t &y,Float_t &z){
-////////////////////////////////////////////////////////////////////////
-//     Returns the position of this hit in the local coordinates of this
-// module, and in the units of the Monte Carlo.
-////////////////////////////////////////////////////////////////////////
-    AliITSgeom *gm = ((AliITS*)gAlice->GetDetector("ITS"))->GetITSgeom();
-    Float_t g[3],l[3];
+AliITShit::AliITShit(const AliITShit &h):
+AliHit(h), // AliHit
+fStatus(h.fStatus), // Track Status
+fModule(h.fModule),  // Module number 
+fPx(h.fPx),     // PX of particle at the point of the hit
+fPy(h.fPy),     // PY of particle at the point of the hit
+fPz(h.fPz),     // PZ of particle at the point of the hit
+fDestep(h.fDestep), // Energy deposited in the current step
+fTof(h.fTof),    // Time of flight at the point of the hit
+fStatus0(h.fStatus0),// Track Status of Starting point
+fx0(h.fx0),     // Starting point of this step
+fy0(h.fy0),     // Starting point of this step
+fz0(h.fz0),     // Starting point of this step
+ft0(h.ft0)     // Starting point of this step
+{
+    // The standard copy constructor
+    // Inputs:
+    //   AliITShit   &h the sourse of this copy
+    // Outputs:
+    //   none.
+    // Return:
+    //  A copy of the sourse hit h
 
-    g[0] = fX;
-    g[1] = fY;
-    g[2] = fZ;
-    if(gm) {
-      gm->GtoL(fLayer,fLadder,fDet,g,l);
-      x = l[0];
-      y = l[1];
-      z = l[2];
-    } else {
-      Error("AliITShit","NULL pointer to the geometry! return smth else",gm);
-      // AliITSv7 - SDD case
-      x=fX;
-      y=fY;
-      z=fZ;
-    }
+    //Info("CopyConstructor","Coping hit");
+
+    if(this == &h) return;
     return;
 }
 //______________________________________________________________________
+AliITShit& AliITShit::operator=(const AliITShit &h){
+    // The standard = operator
+    // Inputs:
+    //   AliITShit   &h the sourse of this copy
+    // Outputs:
+    //   none.
+    // Return:
+    //  A copy of the sourse hit h
+
+    if(this == &h) return *this;
+    this->fStatus  = h.fStatus;
+    this->fModule  = h.fModule;
+    this->fPx      = h.fPx;
+    this->fPy      = h.fPy;
+    this->fPz      = h.fPz;
+    this->fDestep  = h.fDestep;
+    this->fTof     = h.fTof;
+    this->fStatus0 = h.fStatus0;
+    this->fx0      = h.fx0;
+    this->fy0      = h.fy0;
+    this->fz0      = h.fz0;
+    this->ft0      = h.ft0;
+    return *this;
+}
+//______________________________________________________________________
+void AliITShit::SetShunt(Int_t shunt){
+    // Sets track flag based on shunt value. Code copied from
+    // AliHit standar constructor.
+    // Inputs:
+    //   Int_t shunt    A flag to indecate what to do with track numbers
+    // Outputs:
+    //   none.
+    // Return:
+    //   none.
+    Int_t primary,track,current,parent;
+    TParticle *part;
+
+    track = fTrack;
+    if(shunt == 1) {
+        primary = gAlice->GetMCApp()->GetPrimary(track);
+        gAlice->GetMCApp()->Particle(primary)->SetBit(kKeepBit);
+        fTrack=primary;
+    }else if (shunt == 2) {
+        // the "primary" particle associated to the hit is
+        // the last track that has been flagged in the StepManager
+        // used by PHOS to associate the hit with the decay gamma
+        // rather than with the original pi0
+        parent=track;
+        while (1) {
+            current=parent;
+            part = gAlice->GetMCApp()->Particle(current);
+            parent=part->GetFirstMother();
+            if(parent<0 || part->TestBit(kKeepBit))
+                break;
+        }
+        fTrack=current;
+    }else {
+        fTrack=track;
+        gAlice->GetMCApp()->FlagTrack(fTrack);
+    } // end if shunt
+}
+//______________________________________________________________________
 void AliITShit::GetPositionL(Float_t &x,Float_t &y,Float_t &z,Float_t &tof){
-////////////////////////////////////////////////////////////////////////
-//     Returns the position and time of flight of this hit in the local
-// coordinates of this module, and in the units of the Monte Carlo.
-////////////////////////////////////////////////////////////////////////
+    //     Returns the position and time of flight of this hit in the local
+    // coordinates of this module, and in the units of the Monte Carlo.
+    // Inputs:
+    //   none.
+    // Outputs:
+    //   Float_t x   Global position of this hit [cm]
+    //   Float_t y   Global position of this hit [cm]
+    //   Float_t z   Global poistion of this hit [cm]
+    //   Float_t tof Time of flight of particle at this hit
+    // Return:
+    //   none.
     AliITSgeom *gm = ((AliITS*)gAlice->GetDetector("ITS"))->GetITSgeom();
     Float_t g[3],l[3];
 
@@ -348,27 +426,35 @@ void AliITShit::GetPositionL(Float_t &x,Float_t &y,Float_t &z,Float_t &tof){
     g[1] = fY;
     g[2] = fZ;
     if(gm) {
-      gm->GtoL(fLayer,fLadder,fDet,g,l);
-      x = l[0];
-      y = l[1];
-      z = l[2];
+        gm->GtoL(fModule,g,l);
+        x = l[0];
+        y = l[1];
+        z = l[2];
     } else {
-      Error("AliITShit","NULL pointer to the geometry! return smth else",gm);
-      // AliITSv7 - SDD case
-      x=fX;
-      y=fY;
-      z=fZ;
-    }
+        Error("AliITShit","NULL pointer to the geometry! return smth else",gm);
+        // AliITSv7 - SDD case
+        x=fX;
+        y=fY;
+        z=fZ;
+    } // end if
     tof = fTof;
     return;
 }
 //______________________________________________________________________
 void AliITShit::GetPositionL0(Double_t &x,Double_t &y,Double_t &z,
-			      Double_t &tof){
-////////////////////////////////////////////////////////////////////////
-//     Returns the initial position and time of flight of this hit in the local
-// coordinates of this module, and in the units of the Monte Carlo.
-////////////////////////////////////////////////////////////////////////
+                              Double_t &tof){
+    //     Returns the initial position and time of flight of this hit 
+    // in the local coordinates of this module, and in the units of the 
+    // Monte Carlo.
+    // Inputs:
+    //   none.
+    // Outputs:
+    //   Double_t x   Global position of this hit [cm]
+    //   Double_t y   Global position of this hit [cm]
+    //   Double_t z   Global poistion of this hit [cm]
+    //   Double_t tof Time of flight of particle at this hit
+    // Return:
+    //   none.
     AliITSgeom *gm = ((AliITS*)gAlice->GetDetector("ITS"))->GetITSgeom();
     Float_t g[3],l[3];
 
@@ -376,86 +462,31 @@ void AliITShit::GetPositionL0(Double_t &x,Double_t &y,Double_t &z,
     g[1] = fy0;
     g[2] = fz0;
     if(gm) {
-      gm->GtoL(fLayer,fLadder,fDet,g,l);
-      x = l[0];
-      y = l[1];
-      z = l[2];
+        gm->GtoL(fModule,g,l);
+        x = l[0];
+        y = l[1];
+        z = l[2];
     } else {
-      Error("AliITShit","NULL pointer to the geometry! return smth else",gm);
-      // AliITSv7 - SDD case
-      x=fx0;
-      y=fy0;
-      z=fz0;
+        Error("AliITShit","NULL pointer to the geometry! return smth else",gm);
+        x=fx0;
+        y=fy0;
+        z=fz0;
     }
     tof = ft0;
     return;
 }
 //______________________________________________________________________
-Float_t AliITShit::GetXL(){
-////////////////////////////////////////////////////////////////////////
-//     Returns the x position of this hit in the local coordinates of this
-// module, and in the units of the Monte Carlo.
-////////////////////////////////////////////////////////////////////////
-    AliITSgeom *gm = ((AliITS*)gAlice->GetDetector("ITS"))->GetITSgeom();
-    Float_t g[3],l[3];
-
-    g[0] = fX;
-    g[1] = fY;
-    g[2] = fZ;
-    if(gm) {
-      gm->GtoL(fLayer,fLadder,fDet,g,l);
-      return l[0];
-    } else {
-      Error("AliITShit","NULL pointer to the geometry! return smth else",gm);
-      return fX;
-    }
-}
-//______________________________________________________________________
-Float_t AliITShit::GetYL(){
-////////////////////////////////////////////////////////////////////////
-//     Returns the y position of this hit in the local coordinates of this
-// module, and in the units of the Monte Carlo.
-////////////////////////////////////////////////////////////////////////
-    AliITSgeom *gm = ((AliITS*)gAlice->GetDetector("ITS"))->GetITSgeom();
-    Float_t g[3],l[3];
-
-    g[0] = fX;
-    g[1] = fY;
-    g[2] = fZ;
-    if (gm) {
-      gm->GtoL(fLayer,fLadder,fDet,g,l);
-      return l[1];
-    } else {
-      Error("AliITShit","NULL pointer to the geometry! return smth else",gm);
-      return fZ;
-    }
-}
-//______________________________________________________________________
-Float_t AliITShit::GetZL(){
-////////////////////////////////////////////////////////////////////////
-//     Returns the z position of this hit in the local coordinates of this
-// module, and in the units of the Monte Carlo.
-////////////////////////////////////////////////////////////////////////
-    AliITSgeom *gm = ((AliITS*)gAlice->GetDetector("ITS"))->GetITSgeom();
-    Float_t g[3],l[3];
-
-    g[0] = fX;
-    g[1] = fY;
-    g[2] = fZ;
-    if(gm) {
-      gm->GtoL(fLayer,fLadder,fDet,g,l);
-      return l[2];
-    } else {
-      Error("AliITShit","NULL pointer to the geometry! return smth else",gm);
-      return fY;
-    }
-}
-//______________________________________________________________________
 void AliITShit::GetMomentumL(Float_t &px,Float_t &py,Float_t &pz){
-////////////////////////////////////////////////////////////////////////
-//     Returns the momentum of this hit in the local coordinates of this
-// module, and in the units of the Monte Carlo.
-////////////////////////////////////////////////////////////////////////
+    //     Returns the momentum of this hit in the local coordinates of this
+    // module, and in the units of the Monte Carlo.
+    // Inputs:
+    //   none.
+    // Outputs:
+    //   Float_t px   Track x momentum at this hit [GeV/c]
+    //   Float_t py   Track y momentum at this hit [GeV/c]
+    //   Float_t pz   Track z momentum at this hit [GeV/c]
+    // Return:
+    //   none.
     AliITSgeom *gm = ((AliITS*)gAlice->GetDetector("ITS"))->GetITSgeom();
     Float_t g[3],l[3];
 
@@ -463,107 +494,60 @@ void AliITShit::GetMomentumL(Float_t &px,Float_t &py,Float_t &pz){
     g[1] = fPy;
     g[2] = fPz;
     if (gm) {
-      gm->GtoLMomentum(fLayer,fLadder,fDet,g,l);
-      px = l[0];
-      py = l[1];
-      pz = l[2];
+        gm->GtoLMomentum(fModule,g,l);
+        px = l[0];
+        py = l[1];
+        pz = l[2];
     } else {
-      Error("AliITShit","NULL pointer to the geometry! return smth else",gm);
-      px=fPx;
-      py=fPy;
-      pz=fPz;
-    }
+        Error("AliITShit","NULL pointer to the geometry! return smth else",gm);
+        px=fPx;
+        py=fPy;
+        pz=fPz;
+    } // end if
     return;
 }
 //______________________________________________________________________
-Float_t AliITShit::GetPXL(){
-////////////////////////////////////////////////////////////////////////
-//     Returns the X momentum of this hit in the local coordinates of this
-// module, and in the units of the Monte Carlo.
-////////////////////////////////////////////////////////////////////////
-    AliITSgeom *gm = ((AliITS*)gAlice->GetDetector("ITS"))->GetITSgeom();
-    Float_t g[3],l[3];
-
-    g[0] = fPx;
-    g[1] = fPy;
-    g[2] = fPz;
-    if (gm) {
-      gm->GtoLMomentum(fLayer,fLadder,fDet,g,l);
-      return l[0];
-    } else {
-      Error("AliITShit","NULL pointer to the geometry! return smth else",gm);
-      return fPx;
-    }
-}
-//______________________________________________________________________
-Float_t AliITShit::GetPYL(){
-////////////////////////////////////////////////////////////////////////
-//     Returns the Y momentum of this hit in the local coordinates of this
-// module, and in the units of the Monte Carlo.
-////////////////////////////////////////////////////////////////////////
-    AliITSgeom *gm = ((AliITS*)gAlice->GetDetector("ITS"))->GetITSgeom();
-    Float_t g[3],l[3];
-
-    g[0] = fPx;
-    g[1] = fPy;
-    g[2] = fPz;
-    if (gm) {
-      gm->GtoLMomentum(fLayer,fLadder,fDet,g,l);
-      return l[1];
-    } else {
-      Error("AliITShit","NULL pointer to the geometry! return smth else",gm);
-      return fPy;
-    }
-
-}
-//______________________________________________________________________
-Float_t AliITShit::GetPZL(){
-////////////////////////////////////////////////////////////////////////
-//     Returns the Z momentum of this hit in the local coordinates of this
-// module, and in the units of the Monte Carlo.
-////////////////////////////////////////////////////////////////////////
-    AliITSgeom *gm = ((AliITS*)gAlice->GetDetector("ITS"))->GetITSgeom();
-    Float_t g[3],l[3];
-
-    g[0] = fPx;
-    g[1] = fPy;
-    g[2] = fPz;
-    if (gm) {
-      gm->GtoLMomentum(fLayer,fLadder,fDet,g,l);
-      return l[2];
-    } else {
-      Error("AliITShit","NULL pointer to the geometry! return smth else",gm);
-      return fPz;
-    }
-
-}
-//___________________________________________________________________________;
-Int_t AliITShit::GetModule(){
-////////////////////////////////////////////////////////////////////////
-//     Returns the module index number of the module where this hit was in.
-////////////////////////////////////////////////////////////////////////
-    AliITSgeom *gm = ((AliITS*)gAlice->GetDetector("ITS"))->GetITSgeom();
-
-    if (gm) return gm->GetModuleIndex(fLayer,fLadder,fDet);
-    else {
-      Error("AliITShit","NULL pointer to the geometry! return smth else",gm);
-      return 0;
-    }
-}
-//______________________________________________________________________
 TParticle * AliITShit::GetParticle() const {
-////////////////////////////////////////////////////////////////////////
-//     Returns the pointer to the TParticle for the particle that created
-// this hit. From the TParticle all kinds of information about this 
-// particle can be found. See the TParticle class.
-////////////////////////////////////////////////////////////////////////
+    //     Returns the pointer to the TParticle for the particle that created
+    // this hit. From the TParticle all kinds of information about this 
+    // particle can be found. See the TParticle class.
+    // Inputs:
+    //   none.
+    // Outputs:
+    //   none.
+    // Return:
+    //   The TParticle of the track that created this hit.
+
     return gAlice->GetMCApp()->Particle(GetTrack());
+}
+//----------------------------------------------------------------------
+void AliITShit::GetDetectorID(Int_t &layer,Int_t &ladder,Int_t &det)const{
+    // Returns the layer ladder and detector number lables for this
+    // ITS module. The use of layer, ladder and detector number for
+    // discribing the ITS is obsoleate.
+    // Inputs:
+    //   none.
+    // Outputs:
+    //   Int_t   &layer   Layer lable
+    //   Int_t   &ladder  Ladder lable
+    //   Int_t   &det     Detector lable
+    // Return:
+    //    none.
+    AliITSgeom *gm = ((AliITS*)gAlice->GetDetector("ITS"))->GetITSgeom();
+
+    gm->GetModuleId(fModule,layer,ladder,det);
+    return;
 }  
 //----------------------------------------------------------------------
 void AliITShit::Print(ostream *os) const {
-////////////////////////////////////////////////////////////////////////
-// Standard output format for this class.
-////////////////////////////////////////////////////////////////////////
+    // Standard output format for this class.
+    // Inputs:
+    //   ostream *os   The output stream
+    // Outputs:
+    //   none.
+    // Return:
+    //   none.
+
 #if defined __GNUC__
 #if __GNUC__ > 2
     ios::fmtflags fmt;
@@ -583,7 +567,7 @@ void AliITShit::Print(ostream *os) const {
     fmt = os->setf(ios::hex); // set hex for fStatus only.
     *os << fStatus << " ";
     fmt = os->setf(ios::dec); // every thing else decimel.
-    *os << fLayer << " " << fLadder << " " << fDet << " ";;
+    *os << fModule << " ";
     *os << fPx << " " << fPy << " " << fPz << " ";
     *os << fDestep << " " << fTof;
     *os << " " << fx0 << " " << fy0 << " " << fz0;
@@ -593,32 +577,44 @@ void AliITShit::Print(ostream *os) const {
 }
 //----------------------------------------------------------------------
 void AliITShit::Read(istream *is) {
-////////////////////////////////////////////////////////////////////////
-// Standard input format for this class.
-////////////////////////////////////////////////////////////////////////
- 
+    // Standard input format for this class.
+    // Inputs:
+    //   istream *is  the input stream
+    // Outputs:
+    //   none.
+    // Return:
+    //   none.
 
     *is >> fTrack >> fX >> fY >> fZ;
-    *is >> fStatus >> fLayer >> fLadder >> fDet >> fPx >> fPy >> fPz >>
-	   fDestep >> fTof;
+    *is >> fStatus >> fModule >> fPx >> fPy >> fPz >> fDestep >> fTof;
     *is >> fx0 >> fy0 >> fz0;
     return;
 }
 //----------------------------------------------------------------------
 ostream &operator<<(ostream &os,AliITShit &p){
-////////////////////////////////////////////////////////////////////////
-// Standard output streaming function.
-////////////////////////////////////////////////////////////////////////
- 
+    // Standard output streaming function.
+    // Inputs:
+    //   ostream os  The output stream
+    //   AliITShit p The his to be printed out
+    // Outputs:
+    //   none.
+    // Return:
+    //   The input stream
+
     p.Print(&os);
     return os;
 }
 //----------------------------------------------------------------------
 istream &operator>>(istream &is,AliITShit &r){
-////////////////////////////////////////////////////////////////////////
-// Standard input streaming function.
-////////////////////////////////////////////////////////////////////////
- 
+    // Standard input streaming function.
+    // Inputs:
+    //   istream is  The input stream
+    //   AliITShit p The AliITShit class to be filled from this input stream
+    // Outputs:
+    //   none.
+    // Return:
+    //   The input stream
+
     r.Read(&is);
     return is;
 }

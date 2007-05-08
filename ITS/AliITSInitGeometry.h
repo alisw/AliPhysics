@@ -14,25 +14,35 @@ $Id$
 
 #include <TObject.h>
 #include <TString.h>
+#include "AliITSgeom.h"
 
 typedef enum {
-  kvPPRasymmFMD=10,kv11=11,kv11Hybrid=110,kvDefault=1
+    kvtest=-1,kvDefault=0,
+    kvSPD02=1,kvSDD03=2,kvSSD03=3,kvITS04=4,
+    kvPPRcourseasymm=6,kvPPRasymmFMD=10,
+    kv11=11,kv11Hybrid=110
 } AliITSVersion_t;
 
-
-class AliITSgeom;
 class TArrayD;
 class TGeoHMatrix;
+class TDatime;
 
 class AliITSInitGeometry : public TObject{
  public:
-    AliITSInitGeometry(AliITSVersion_t 
-       version=kvPPRasymmFMD,Int_t minorversion=2);//Standard Constructor
+
+    AliITSInitGeometry();//Default Constructor
+    AliITSInitGeometry(AliITSVersion_t version,
+		       Int_t minorversion=2);//Standard Constructor
     //virtual ~AliITSInitGeometry(); // Destructor
     //
-    AliITSgeom* CreateAliITSgeom(); // Create and intilize geometry from TGeom
-    Bool_t InitAliITSgeom(AliITSgeom *geom);//Initilize goemetry from gGeoManager
+    // Create and initialize geometry from TGeo
+    AliITSgeom* CreateAliITSgeom();
+    AliITSgeom* CreateAliITSgeom(Int_t major,Int_t minor); 
+    Bool_t InitAliITSgeom(AliITSgeom *geom);//Initilize geometry from gGeoManager
     // Getters and Setters
+    // Getters and Setters
+    void    SetVersion(AliITSVersion_t maj,Int_t min) {// Set Major and Minor versions
+        fMajorVersion=maj;fMinorVersion=min;}
     TString GetGeometryName()const {return fName;}// Return geometry name
     void    SetGeometryName(const Char_t *name){fName = name;}// Set Geometry name
     Int_t   GetMajorVersion()const {return (Int_t)fMajorVersion;} // Return geometry major version
@@ -43,21 +53,135 @@ class AliITSInitGeometry : public TObject{
     void    SetSegGeom(Bool_t seg=kTRUE){fSegGeom = seg;}// Set the use of AliITSsegmentation class' instead of AliITSgeomS?D class in fShape
     Bool_t  GetDecoding()const{return fDecode;}// Return flag indecating wether to use new/old decoding
     void    SetDecoding(Bool_t newdec=kFALSE){fDecode = newdec;}// Set flag to use new/old decoding
+     // Set debug level. debug=0 no debug info outputted.
+    void    SetDebug(Int_t debug=0){fDebug=debug;};
+    // Retrun debug value
+    Int_t   GetDebug()const{return fDebug;};
+    // Decode module number into old layer, ladder, and detector numbers
+    void DecodeDetectorLayers(Int_t mod,Int_t &lay,Int_t &lad,Int_t &det);
+    // find module number by layer, and copy numbers
+    void DecodeDetector(Int_t &mod,Int_t lay,Int_t cpn0,
+                        Int_t cpn1,Int_t cpn2) const;
+    // Given module number, find copy numbers.
+    void RecodeDetector(Int_t mod,Int_t &cpn0,Int_t &cpn1,Int_t &cpn2);
+   // fills the string str with the major and minor version number
+    Bool_t WriteVersionString(Char_t *str,Int_t length,
+                              AliITSVersion_t maj,Int_t min,
+                              const Char_t *cvsDate,const Char_t *cvsRev)const;
+    // decodes the string str with the major and minor version number
+    Bool_t ReadVersionString(const Char_t *str,Int_t length,
+                             AliITSVersion_t &maj,Int_t &min,TDatime &dt)const;
 
-    static const Bool_t SPDIsTGeoNative() {return !fgkOldSPDbarrel;}
-    static const Bool_t SDDIsTGeoNative() {return !fgkOldSDDbarrel;}
-    static const Bool_t SSDIsTGeoNative() {return !fgkOldSSDbarrel;}
+    static Bool_t SPDIsTGeoNative() {return !fgkOldSPDbarrel;}
+    static Bool_t SDDIsTGeoNative() {return !fgkOldSDDbarrel;}
+    static Bool_t SSDIsTGeoNative() {return !fgkOldSSDbarrel;}
 
-    static const Bool_t SDDconeIsTGeoNative()   {return ! fgkOldSDDcone;} 
-    static const Bool_t SSDconeIsTGeoNative()   {return ! fgkOldSSDcone;}
-    static const Bool_t SPDshieldIsTGeoNative() {return ! fgkOldSPDshield;}
-    static const Bool_t SDDshieldIsTGeoNative() {return ! fgkOldSDDshield; }
-    static const Bool_t SSDshieldIsTGeoNative() {return ! fgkOldSSDshield;}
-    static const Bool_t ServicesAreTGeoNative() {return ! fgkOldServices;}
-    static const Bool_t SupportIsTGeoNative()   {return ! fgkOldSupports;}
+    static Bool_t SDDconeIsTGeoNative()   {return ! fgkOldSDDcone;} 
+    static Bool_t SSDconeIsTGeoNative()   {return ! fgkOldSSDcone;}
+    static Bool_t SPDshieldIsTGeoNative() {return ! fgkOldSPDshield;}
+    static Bool_t SDDshieldIsTGeoNative() {return ! fgkOldSDDshield; }
+    static Bool_t SSDshieldIsTGeoNative() {return ! fgkOldSSDshield;}
+    static Bool_t ServicesAreTGeoNative() {return ! fgkOldServices;}
+    static Bool_t SupportIsTGeoNative()   {return ! fgkOldSupports;}
 
- private:		   
+ private:
+    // Decode module number into old layer, ladder, and detector numbers
+    void DecodeDetectorLayersvtest2(Int_t mod,Int_t &lay,
+                                   Int_t &lad,Int_t &det){
+        lay=mod+1;lad=det=1;};
+    // find module number by layer, and copy numbers
+    void DecodeDetectorvtest2(Int_t &mod,Int_t lay,Int_t cpn0,
+                             Int_t cpn1,Int_t cpn2) const{
+        mod=lay-1;cpn0=cpn1=cpn2=1;};
+    // Given module number, find copy numbers.
+    void RecodeDetectorvtest2(Int_t mod,Int_t &cpn0,Int_t &cpn1,
+                             Int_t &cpn2){
+        mod=cpn0=cpn1=cpn2=1;};
+    // Decode module number into old layer, ladder, and detector numbers
+    void DecodeDetectorLayersvSPD02(Int_t mod,Int_t &lay,
+                                   Int_t &lad,Int_t &det);
+    // find module number by layer, and copy numbers
+    void DecodeDetectorvSPD02(Int_t &mod,Int_t lay,Int_t cpn0,
+                             Int_t cpn1,Int_t cpn2) const;
+    // Given module number, find copy numbers.
+    void RecodeDetectorvSPD02(Int_t mod,Int_t &cpn0,Int_t &cpn1,
+                             Int_t &cpn2);
+    // Decode module number into old layer, ladder, and detector numbers
+    void DecodeDetectorLayersvSDD03(Int_t mod,Int_t &lay,
+                                   Int_t &lad,Int_t &det);
+    // find module number by layer, and copy numbers
+    void DecodeDetectorvSDD03(Int_t &mod,Int_t lay,Int_t cpn0,
+                             Int_t cpn1,Int_t cpn2) const;
+    // Given module number, find copy numbers.
+    void RecodeDetectorvSDD03(Int_t mod,Int_t &cpn0,Int_t &cpn1,
+                             Int_t &cpn2);
+    // Decode module number into old layer, ladder, and detector numbers
+    void DecodeDetectorLayersvSSD03(Int_t mod,Int_t &lay,
+                                   Int_t &lad,Int_t &det);
+    // find module number by layer, and copy numbers
+    void DecodeDetectorvSSD03(Int_t &mod,Int_t lay,Int_t cpn0,
+                             Int_t cpn1,Int_t cpn2) const;
+    // Given module number, find copy numbers.
+    void RecodeDetectorvSSD03(Int_t mod,Int_t &cpn0,Int_t &cpn1,
+                             Int_t &cpn2);
+    // Decode module number into old layer, ladder, and detector numbers
+    void DecodeDetectorLayersvITS04(Int_t mod,Int_t &lay,
+                                   Int_t &lad,Int_t &det);
+    // find module number by layer, and copy numbers
+    void DecodeDetectorvITS04(Int_t &mod,Int_t lay,Int_t cpn0,
+                             Int_t cpn1,Int_t cpn2) const;
+    // Given module number, find copy numbers.
+    void RecodeDetectorvITS04(Int_t mod,Int_t &cpn0,Int_t &cpn1,
+                             Int_t &cpn2);
+    // Decode module number into old layer, ladder, and detector numbers
+    void DecodeDetectorLayersvPPRcourseasymm(Int_t mod,Int_t &lay,
+                                   Int_t &lad,Int_t &det){
+        lay=lad=det=mod;/*Dummy*/};
+    // find module number by layer, and copy numbers
+    void DecodeDetectorvPPRcourseasymm(Int_t &mod,Int_t lay,Int_t cpn0,
+                             Int_t cpn1,Int_t cpn2) const{
+        mod=lay=cpn0=cpn1=cpn2;/*Dummy*/};
+    // Given module number, find copy numbers.
+    void RecodeDetectorvPPRcourseasymm(Int_t mod,Int_t &cpn0,Int_t &cpn1,
+                             Int_t &cpn2){
+        cpn0=cpn1=cpn2=mod;/*Dummy*/};
+    // Decode module number into old layer, ladder, and detector numbers
+    void DecodeDetectorLayersvPPRasymmFMD(Int_t mod,Int_t &lay,
+                                         Int_t &lad,Int_t &det);
+    // find module number by layer, and copy numbers
+    void DecodeDetectorvPPRasymmFMD(Int_t &mod,Int_t lay,Int_t cpn0,
+                                    Int_t cpn1,Int_t cpn2) const;
+    // Given module number, find copy numbers.
+    void RecodeDetectorvPPRasymmFMD(Int_t mod,Int_t &cpn0,Int_t &cpn1,
+                                    Int_t &cpn2);
+    // Decode module number into old layer, ladder, and detector numbers
+    void DecodeDetectorLayersv11(Int_t mod,Int_t &lay,
+                                         Int_t &lad,Int_t &det)const{
+        lay=lad=det=mod;};
+    // find module number by layer, and copy numbers
+    void DecodeDetectorv11(Int_t &mod,Int_t lay,Int_t cpn0,
+                                    Int_t cpn1,Int_t cpn2) const{
+        mod=lay=cpn0=cpn1=cpn2;};
+    // Given module number, find copy numbers.
+    void RecodeDetectorv11(Int_t mod,Int_t &cpn0,Int_t &cpn1,
+                                    Int_t &cpn2)const{
+        cpn0=cpn1=cpn2=mod;};
+    // Decode module number into old layer, ladder, and detector numbers
+    void DecodeDetectorv11Hybrid(Int_t &mod,Int_t lay,Int_t cpn0,Int_t cpn1,
+                                 Int_t cpn2)const;
+    // find module number by layer, and copy numbers
+    void RecodeDetectorv11Hybrid(Int_t mod,Int_t &cpn0,Int_t &cpn1,
+                                    Int_t &cpn2);
+    // Given module number, find copy numbers.
+    void DecodeDetectorLayersv11Hybrid(Int_t mod,Int_t &lay,Int_t &lad,
+                                    Int_t &det);
+		   
     // Virtual MC code reproduction
+    Bool_t InitAliITSgeomSPD02(AliITSgeom *geom);
+    Bool_t InitAliITSgeomSDD03(AliITSgeom *geom);
+    Bool_t InitAliITSgeomSSD03(AliITSgeom *geom);
+    Bool_t InitAliITSgeomITS04(AliITSgeom *geom);
+    Bool_t InitAliITSgeomtest2(AliITSgeom *geom);
     Bool_t InitAliITSgeomPPRasymmFMD(AliITSgeom *geom);
     Bool_t InitAliITSgeomV11Hybrid(AliITSgeom *geom);
     Bool_t InitAliITSgeomV11(AliITSgeom *geom);
@@ -67,19 +191,17 @@ class AliITSInitGeometry : public TObject{
 				       TArrayD &shapePar,AliITSgeom *geom);
     Bool_t GetTransformation(const TString &volumePath,TGeoHMatrix &mat);
     Bool_t GetShape(const TString &volumePath,TString &shapeType,TArrayD &par);
-    void DecodeDetectorLayers(Int_t mod,Int_t &lay,Int_t &lad,Int_t &det);
-    void DecodeDetector(Int_t &mod,Int_t lay,Int_t cpn0,
-                        Int_t cpn1,Int_t cpn2) const;
-    void RecodeDetector(Int_t mod,Int_t &cpn0,Int_t &cpn1,Int_t &cpn2);
+    void TransposeTGeoHMatrix(TGeoHMatrix *m) const;
 
-    TString   fName;          // Geometry name
-    Int_t           fMinorVersion;  // Geometry minor version
-    AliITSVersion_t fMajorVersion;  // Geometry swich value
-    Bool_t          fTiming;        // Flag to start inilization timing
-    Bool_t          fSegGeom;       // Flag to switch between the old use of
-                              // AliITSgeomS?D class, or AliITSsegmentation
-                              // class in fShape of AliITSgeom class.
-    Bool_t          fDecode;        // Flag for new/old decoding
+    TString         fName;         // Geometry name
+    Int_t           fMinorVersion; // Geometry minor version
+    AliITSVersion_t fMajorVersion; // Geometry swich value
+    Bool_t          fTiming;       // Flag to start inilization timing
+    Bool_t          fSegGeom;      // Flag to switch between the old use of
+                                   // AliITSgeomS?D class, or AliITSsegmentation
+                                   // class in fShape of AliITSgeom class.
+    Bool_t          fDecode;       // Flag for new/old decoding
+    Int_t           fDebug;        // Debug flag
 
     static const Bool_t fgkOldSPDbarrel;   // use old geo for SPD ?
     static const Bool_t fgkOldSDDbarrel;   // use old geo for SDD ?

@@ -70,19 +70,26 @@
 ClassImp(AliITSvPPRasymmFMD)
  
 //______________________________________________________________________
-AliITSvPPRasymmFMD::AliITSvPPRasymmFMD(): AliITS(),
-fGeomDetOut(kFALSE),
-fGeomDetIn(kFALSE),
-fByThick(kTRUE),
-fMajorVersion(IsVersion()),
-fMinorVersion(-1),
-fDet1(0),
-fDet2(0),
-fChip1(0),
-fChip2(0),
-fRails(0),
-fFluid(0),
-fIDMother(0)
+AliITSvPPRasymmFMD::AliITSvPPRasymmFMD():
+AliITS(),                    // Default AliITS Constructor
+fGeomDetOut(kFALSE),         // Flag to write .det file out
+fGeomDetIn(kFALSE),          // Flag to read .det file or directly from Geat.
+fByThick(kTRUE),             // Flag to use services materials by thickness
+                             // ture, or mass false.
+fMajorVersion(IsVersion()),  // Major version number == IsVersion
+fMinorVersion(2),           // Minor version number
+fEuclidGeomDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det"),// file where detector transormation are define.
+fRead("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm.det"),//! file name to read .det file
+fWrite("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det"),//! file name to write .det file
+fDet1(200.0),	   // thickness of detector in SPD layer 1 [microns]
+fDet2(200.0),	   // thickness of detector in SPD layer 2 [microns]
+fChip1(150.0),	   // thickness of chip in SPD layer 1 [microns]
+fChip2(150.0),	   // thickness of chip in SPD layer 2 [microns]
+fRails(0),         // flag to switch rails on (=1) and off (=0)
+fFluid(1),         // flag to switch between water (=1)& freon (=0)
+fIDMother(0),      //! ITS Mother Volume id.
+fIgm((AliITSVersion_t)fMajorVersion,fMinorVersion)//! Get access to decoding 
+                                               // and AliITSgeom init functions
  {
     //    Standard default constructor for the ITS version 10.
     // Inputs:
@@ -91,40 +98,48 @@ fIDMother(0)
     //   none.
     // Return:
     //   none.
-    Int_t i;
-    for(i=0;i<60;i++) fRead[i] = '\0';
-    for(i=0;i<60;i++) fWrite[i] = '\0';
-    for(i=0;i<60;i++) fEuclidGeomDet[i] = '\0';
-    strncpy(fRead,"$ALICE_ROOT/ITS/ITSgeometry_vPPRasymmFMD.det",60);
+    fIgm.SetGeometryName("");
 }
 //______________________________________________________________________
-AliITSvPPRasymmFMD::AliITSvPPRasymmFMD(const char *name, const char *title) 
-  : AliITS("ITS", title),
-    fGeomDetOut(kFALSE),
-    fGeomDetIn(kFALSE),
-    fByThick(kTRUE),
-    fMajorVersion(IsVersion()),
-    fMinorVersion(2),
-    fDet1(0),
-    fDet2(0),
-    fChip1(0),
-    fChip2(0),
-    fRails(0),
-    fFluid(0),
-    fIDMother(0) {
+AliITSvPPRasymmFMD::AliITSvPPRasymmFMD(const Char_t *title):
+AliITS(title),               // Standard AliITS Constructor
+fGeomDetOut(kFALSE),         // Flag to write .det file out
+fGeomDetIn(kFALSE),          // Flag to read .det file or directly from Geat.
+fByThick(kTRUE),             // Flag to use services materials by thickness
+                             // ture, or mass false.
+fMajorVersion(IsVersion()),  // Major version number == IsVersion
+fMinorVersion(2),            // Minor version number
+fEuclidGeomDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det"),// file where detector transormation are define.
+fRead("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm.det"),//! file name to read .det file
+fWrite("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det"),//! file name to write .det file
+fDet1(200.0),	   // thickness of detector in SPD layer 1 [microns]
+fDet2(200.0),	   // thickness of detector in SPD layer 2 [microns]
+fChip1(150.0),	   // thickness of chip in SPD layer 1 [microns]
+fChip2(150.0),	   // thickness of chip in SPD layer 2 [microns]
+fRails(0),         // flag to switch rails on (=1) and off (=0)
+fFluid(1),         // flag to switch between water (=1)& freon (=0)
+fIDMother(0),      //! ITS Mother Volume id.
+fIgm((AliITSVersion_t)fMajorVersion,fMinorVersion)//! Get access to decoding 
+                                               // and AliITSgeom init functions
+{
     //    Standard constructor for the ITS version 10.
     // Inputs:
-    //   const char * name   Ignored, set to "ITS"
-    //   const char * title  Arbitrary title
+    //   const Char_t * title  Arbitrary title
     // Outputs:
     //   none.
     // Return:
     //   none.
     Int_t i;
 
+    fIgm.SetDecoding(kFALSE);// Use Alice compliant naming/numbering system
+    fIgm.SetTiming(kFALSE);// default no timing
+    fIgm.SetSegGeom(kFALSE);// use AliITSgeomS?D classes instead 
+                            // of segmentation AliITSsegmentationS?D class
+    fIgm.SetGeometryName("ITS PPR aymmetric services with course"
+                         " cables on cones");
+    // Set some AliITS class veriables.
     fIdN = 6;
     fIdName = new TString[fIdN];
-    fIdName[0] = name; // removes warning message
     fIdName[0] = "ITS1";
     fIdName[1] = "ITS2";
     fIdName[2] = "ITS3";
@@ -133,17 +148,119 @@ AliITSvPPRasymmFMD::AliITSvPPRasymmFMD(const char *name, const char *title)
     fIdName[5] = "ITS6";
     fIdSens    = new Int_t[fIdN];
     for(i=0;i<fIdN;i++) fIdSens[i] = 0;
+}
+//______________________________________________________________________
+AliITSvPPRasymmFMD::AliITSvPPRasymmFMD(const char *name, const char *title):
+AliITS(name,title),          // Extended AliITS Constructor
+fGeomDetOut(kFALSE),         // Flag to write .det file out
+fGeomDetIn(kFALSE),          // Flag to read .det file or directly from Geat.
+fByThick(kTRUE),             // Flag to use services materials by thickness
+                             // ture, or mass false.
+fMajorVersion(IsVersion()),  // Major version number == IsVersion
+fMinorVersion(2),            // Minor version number
+fEuclidGeomDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det"),// file where detector transormation are define.
+fRead("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm.det"),//! file name to read .det file
+fWrite("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det"),//! file name to write .det file
+fDet1(200.0),	   // thickness of detector in SPD layer 1 [microns]
+fDet2(200.0),	   // thickness of detector in SPD layer 2 [microns]
+fChip1(150.0),	   // thickness of chip in SPD layer 1 [microns]
+fChip2(150.0),	   // thickness of chip in SPD layer 2 [microns]
+fRails(0),         // flag to switch rails on (=1) and off (=0)
+fFluid(1),         // flag to switch between water (=1)& freon (=0)
+fIDMother(0),      //! ITS Mother Volume id.
+fIgm((AliITSVersion_t)fMajorVersion,fMinorVersion)//! Get access to decoding 
+                                               // and AliITSgeom init functions
+{
+    //    Standard constructor for the ITS version 10.
+    // Inputs:
+    //   const char * name   Ignored, set to "ITS"
+    //   const char * title  Arbitrary title
+    // Outputs:
+    //   none.
+    // Return:
+    //   none.
+
+    Int_t i;
+
+    fIgm.SetDecoding(kFALSE);// Use Alice compliant naming/numbering system
+    fIgm.SetTiming(kFALSE);// default no timing
+    fIgm.SetSegGeom(kFALSE);// use AliITSgeomS?D classes instead 
+                            // of segmentation AliITSsegmentationS?D class
+    fIgm.SetGeometryName("ITS PPR aymmetric services with course"
+                         " cables on cones");
+    // Set some AliITS class veriables.
+    fIdN = 6;
+    fIdName = new TString[fIdN];
+    fIdName[0] = "ITS1";
+    fIdName[1] = "ITS2";
+    fIdName[2] = "ITS3";
+    fIdName[3] = "ITS4";
+    fIdName[4] = "ITS5";
+    fIdName[5] = "ITS6";
+    fIdSens    = new Int_t[fIdN];
+    for(i=0;i<fIdN;i++) fIdSens[i] = 0;
+
     SetThicknessDet1();
     SetThicknessDet2();
     SetThicknessChip1();
     SetThicknessChip2();
     SetDensityServicesByThickness();
+}
+//______________________________________________________________________
+AliITSvPPRasymmFMD::AliITSvPPRasymmFMD(const AliITSvPPRasymmFMD &source):
+AliITS(source.GetName(),source.GetTitle()),// Extended AliITS Constructor
+fGeomDetOut(source.GetWriteDet()),// Flag to write .det file out
+fGeomDetIn(source.GetReadDet()),  // Flag to read .det file or directly 
+                                  // from Geat.
+fByThick(source.IsDensityServicesByThickness()),// Flag to use services 
+                                                // materials by thickness
+                                                // ture, or mass false.
+fMajorVersion(source.IsVersion()),  // Major version number == IsVersion
+fMinorVersion(source.GetMinorVersion()),// Minor version number
+fEuclidGeomDet(source.GetEuclidFile()),// file where detector transormation 
+                                       // are define.
+fRead(source.GetReadDetFileName()),  //! file name to read .det file
+fWrite(source.GetWriteDetFileName()),//! file name to write .det file
+fDet1(source.GetThicknessDet1()),//thickness of detector in SPD layer 1[micron]
+fDet2(source.GetThicknessDet2()),//thickness of detector in SPD layer 2[micron]
+fChip1(source.GetThicknessChip1()),//thickness of chip in SPD layer 1 [microns]
+fChip2(source.GetThicknessChip2()),//thickness of chip in SPD layer 2 [microns]
+fRails(source.GetRails()),         // flag to switch rails on (=1) and off (=0)
+fFluid(source.GetCoolingFluid()),// flag to switch between water (1)& freon (0)
+fIDMother(source.GetMotherID()),      //! ITS Mother Volume id.
+fIgm(source.GetGeomInit())//! Get access to decoding 
+                          // and AliITSgeom init functions
+{
+    //     Copy Constructor for ITS version 10. This function is not to be
+    // used. If any other instance of this function, other than "this" is
+    // passed, an error message is returned.
+    // Inputs:
+    //   const AliITSvPPRasymmFMD &source This class
+    // Outputs:
+    //   none.
+    // Return:
+    //   an error message
 
-    fEuclidGeometry="$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.euc";
-    strncpy(fEuclidGeomDet,"$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det",60);
-    strncpy(fRead,fEuclidGeomDet,60);
-    strncpy(fWrite,fEuclidGeomDet,60);
-    strncpy(fRead,"$ALICE_ROOT/ITS/ITSgeometry_vPPRasymmFMD.det",60);
+    if(&source == this) return;
+    Warning("Copy Constructor","Not allowed to copy AliITSvPPRasymmFMD");
+    return;
+}
+//______________________________________________________________________
+AliITSvPPRasymmFMD& AliITSvPPRasymmFMD::operator=(const AliITSvPPRasymmFMD 
+						  &source){
+    //    Assignment operator for the ITS version 10. This function is not 
+    // to be used. If any other instance of this function, other than "this" 
+    // is passed, an error message is returned.
+    // Inputs:
+    //   const AliITSvPPRasymmFMD &source This class
+    // Outputs:
+    //   none.
+    // Return:
+    //   an error message
+
+    if(&source == this) return *this;
+    Warning("= operator","Not allowed to copy AliITSvPPRasymmFMD");
+    return *this; // return null pointer, copy not allowed.
 }
 //______________________________________________________________________
 AliITSvPPRasymmFMD::~AliITSvPPRasymmFMD() {
@@ -717,6 +834,11 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
     Float_t dchip2=200.;    // total chip thickness on layer 2 (micron)
 
     Float_t dbus=300.;      // total bus thickness on both layers (micron)
+
+    // These constant character strings are set by cvs during commit
+    // do not change them unless you know what you are doing!
+    const Char_t *cvsDate="$Date$";
+    const Char_t *cvsRevision="$Revision$";
 
     ddet1 = GetThicknessDet1();
     ddet2 = GetThicknessDet2();
@@ -1296,64 +1418,76 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
     ztpc = 284.;
     // --- Define ghost volume containing the whole ITS (including services) 
     //     and fill it with air
-    dgh[0] = 0.;
-    dgh[1] = 360.;
-    dgh[2] = 16.;
-    dgh[3] = -ztpc-5.-0.1;
-    dgh[4] = 46;   
-    dgh[5] = 85.;
-    dgh[6] = -ztpc;
-    dgh[7] = 46;   
-    dgh[8] = 85.;
-    dgh[9] = -ztpc;
-    dgh[10] = 46;  
-    dgh[11] = rlim+7.5;
-    dgh[12] = -97.5;
-    dgh[13] = 46;  
-    dgh[14] = rlim+7.5;
-    dgh[15] = -zmax;
-    dgh[16] = 46;  
-    dgh[17] = rlim+7.5;
-    dgh[18] = -48;   
-    dgh[19] = 6;
-    dgh[20] = rlim+7.5;
-    dgh[21] = -28.6;   
-    dgh[22] = 6;
-    dgh[23] = rlim+7.5;    
-    dgh[24] = -27.6;  
-    dgh[25] = 3.295;
-    dgh[26] = rlim+7.5; 
-    dgh[27] = 27.6;   
-    dgh[28] = 3.295;
-    dgh[29] = rlim+7.5;
-    dgh[30] = 28.6;   
-    dgh[31] = 6;
-    dgh[32] = rlim+7.5;
-    dgh[33] = 48;   
-    dgh[34] = 6;
-    dgh[35] = rlim+7.5;  
-    dgh[36] = zmax;
-    dgh[37] = 46;
-    dgh[38] = rlim+7.5;
-    dgh[39] = 97.5;
-    dgh[40] = 46;  
-    dgh[41] = rlim+7.5;
-    dgh[42] = ztpc;
-    dgh[43] = 62;     
-    dgh[44] = 62+4.;  
-    dgh[45] = ztpc;
-    dgh[46] = 62;     
-    dgh[47] = 85.;
-    dgh[48] = ztpc+4.+0.1;
-    dgh[49] = 62.0;//62.4;
-    dgh[50] = 85.;
-    gMC->Gsvolu("ITSV", "PCON", idtmed[205], dgh, 51);
 
+//     dgh[0] = 0.;
+//     dgh[1] = 360.;
+//     dgh[2] = 16.;
+//     dgh[3] = -ztpc-5.-0.1;
+//     dgh[4] = 46;   
+//     dgh[5] = 85.;
+//     dgh[6] = -ztpc;
+//     dgh[7] = 46;   
+//     dgh[8] = 85.;
+//     dgh[9] = -ztpc;
+//     dgh[10] = 46;  
+//     dgh[11] = rlim+7.5;
+//     dgh[12] = -97.5;
+//     dgh[13] = 46;  
+//     dgh[14] = rlim+7.5;
+//     dgh[15] = -zmax;
+//     dgh[16] = 46;  
+//     dgh[17] = rlim+7.5;
+//     dgh[18] = -48;   
+//     dgh[19] = 6;
+//     dgh[20] = rlim+7.5;
+//     dgh[21] = -28.6;   
+//     dgh[22] = 6;
+//     dgh[23] = rlim+7.5;    
+//     dgh[24] = -27.6;  
+//     dgh[25] = 3.295;
+//     dgh[26] = rlim+7.5; 
+//     dgh[27] = 27.6;   
+//     dgh[28] = 3.295;
+//     dgh[29] = rlim+7.5;
+//     dgh[30] = 28.6;   
+//     dgh[31] = 6;
+//     dgh[32] = rlim+7.5;
+//     dgh[33] = 48;   
+//     dgh[34] = 6;
+//     dgh[35] = rlim+7.5;  
+//     dgh[36] = zmax;
+//     dgh[37] = 46;
+//     dgh[38] = rlim+7.5;
+//     dgh[39] = 97.5;
+//     dgh[40] = 46;  
+//     dgh[41] = rlim+7.5;
+//     dgh[42] = ztpc;
+//     dgh[43] = 62;     
+//     dgh[44] = 62+4.;  
+//     dgh[45] = ztpc;
+//     dgh[46] = 62;     
+//     dgh[47] = 85.;
+//     dgh[48] = ztpc+4.+0.1;
+//     dgh[49] = 62.0;//62.4;
+//     dgh[50] = 85.;
+//     gMC->Gsvolu("ITSV", "PCON", idtmed[205], dgh, 51);
+    TGeoVolumeAssembly *itsV = gGeoManager->MakeVolumeAssembly("ITSV");
+    const Int_t length=100;
+    Char_t vstrng[length];
+    if(fIgm.WriteVersionString(vstrng,length,(AliITSVersion_t)IsVersion(),
+                               fMinorVersion,cvsDate,cvsRevision))
+      itsV->SetTitle(vstrng);
+    
     // --- Place the ghost volume in its mother volume (ALIC) and make it 
     //     invisible
-    //    gMC->Gspos("ITSV", 1, "ALIC", 0., 0., 0., 0, "ONLY");
-    gMC->Gspos("ITSV", 1, "ALIC", 0., 0., 0., idrotm[199], "MANY");
-    //gMC->Gsatt("ITSV", "SEEN", 0);
+    //    gMC->Gspos("ITSV", 1, "ALIC", 0., 0., 0., idrotm[199], "MANY");
+    TGeoVolume *alic = gGeoManager->GetVolume("ALIC");
+    if(alic==0) {
+        Error("CreateGeometry","alic=0");
+        return;
+    } // end if
+    // See idrotm[199] for angle definitions.
+    alic->AddNode(itsV,1,new TGeoRotation("", 90.,180., 90.,90., 180.,0.));
 
     // --- Define ghost volume containing the six layers and fill it with air 
   
@@ -5930,6 +6064,7 @@ void AliITSvPPRasymmFMD::DrawModule() const{
     gMC->Gdhead(1111, "Inner Tracking System Version 1");
     gMC->Gdman(17, 6, "MAN");
 }
+/*
 //______________________________________________________________________
 void AliITSvPPRasymmFMD::StepManager(){
     //    Called for every step in the ITS, then calles the AliITShit class
@@ -6062,4 +6197,259 @@ void AliITSvPPRasymmFMD::StepManager(){
     stat0 = vol[3];
 
     return;
+}
+
+*/
+//______________________________________________________________________
+void AliITSvPPRasymmFMD::StepManager(){
+    //    Called for every step in the ITS, then calles the AliITShit class
+    // creator with the information to be recoreded about that hit.
+    //     The value of the macro ALIITSPRINTGEOM if set to 1 will allow the
+    // printing of information to a file which can be used to create a .det
+    // file read in by the routine CreateGeometry(). If set to 0 or any other
+    // value except 1, the default behavior, then no such file is created nor
+    // it the extra variables and the like used in the printing allocated.
+    // Inputs:
+    //   none.
+    // Outputs:
+    //   none.
+    // Return:
+    //   none.
+
+    if(!(this->IsActive())) return;
+    if(!(gMC->TrackCharge())) return;
+
+    Int_t  copy, id,kk;
+    Bool_t sensvol = kFALSE;
+
+    id = gMC->CurrentVolID(copy);
+    for(kk=0;kk<fIdN;kk++)if(id == fIdSens[kk]){
+        sensvol=kTRUE;
+        break;
+    } // end for if
+    if(sensvol && (gMC->IsTrackExiting())){
+        copy = fTrackReferences->GetEntriesFast();
+        TClonesArray &lTR = *fTrackReferences;
+        // Fill TrackReference structure with this new TrackReference.
+        new(lTR[copy]) AliTrackReference(
+            gAlice->GetMCApp()->GetCurrentTrackNumber());
+    } // if Outer ITS mother Volume
+    //if(!sensvol) return; // not an ITS tracking volume;
+
+    static TLorentzVector position, momentum; // Saves on calls to construtors
+    static AliITShit hit;// Saves on calls to construtors
+    Int_t   cpn0,cpn1,cpn2,status,mod;
+    //TClonesArray &lhits = *(GetDetTypeSim()->GetHits());
+    TClonesArray &lhits = *(Hits());
+    //
+    // Track status
+    status = 0;
+    if(gMC->IsTrackInside())      status +=  1;
+    if(gMC->IsTrackEntering())    status +=  2;
+    if(gMC->IsTrackExiting())     status +=  4;
+    if(gMC->IsTrackOut())         status +=  8;
+    if(gMC->IsTrackDisappeared()) status += 16;
+    if(gMC->IsTrackStop())        status += 32;
+    if(gMC->IsTrackAlive())       status += 64;
+    //
+    switch (kk){
+    case 0:case 1: // SPD
+        gMC->CurrentVolOffID(2,cpn2);
+        gMC->CurrentVolOffID(3,cpn1);
+        gMC->CurrentVolOffID(4,cpn0);
+        break;
+    case 2:case 3: // SDD
+        cpn2 = 1;
+        gMC->CurrentVolOffID(1,cpn1);
+        gMC->CurrentVolOffID(2,cpn0);
+        break;
+    case 4:case 5: // SSD
+        cpn2 = 1;
+        gMC->CurrentVolOffID(1,cpn1);
+        gMC->CurrentVolOffID(2,cpn0);
+        break;
+    default:
+        Error("StepManager","Unknown volume kk=%d",kk);
+        return; // not an ITS sensitive volume.
+    } //
+    fIgm.DecodeDetector(mod,kk+1,cpn0,cpn1,cpn2);
+    //Info("StepManager","lay=%d mod=%d cpn0=%d cpn1=%d cpn2=%d",kk+1,mod,cpn0,cpn1,cpn2);
+    Int_t lay,lad,det,cpy0,cpy1,cpy2;
+    fIgm.DecodeDetectorLayers(mod,lay,lad,det);
+    fIgm.RecodeDetector(mod,cpy0,cpy1,cpy2);
+    printf("gMC: kk=%d cpn0=%d cpn1=%d cpn2=%d -> mod=%d -> "
+           "lay=%d lad=%d det=%d -> cpn0=%d cpn1=%d cpn2=%d\n",
+           kk,cpn0,cpn1,cpn2,mod,lay,lad,det,cpy0,cpy1,cpy2);
+    //
+    // Fill hit structure.
+    //
+    hit.SetModule(mod);
+    hit.SetTrack(gAlice->GetMCApp()->GetCurrentTrackNumber());
+    gMC->TrackPosition(position);
+    gMC->TrackMomentum(momentum);
+    hit.SetPosition(position);
+    hit.SetTime(gMC->TrackTime());
+    hit.SetMomentum(momentum);
+    hit.SetStatus(status);
+    hit.SetEdep(gMC->Edep());
+    hit.SetShunt(GetIshunt());
+    if(gMC->IsTrackEntering()){
+        hit.SetStartPosition(position);
+        hit.SetStartTime(gMC->TrackTime());
+        hit.SetStartStatus(status);
+        return; // don't save entering hit.
+    } // end if IsEntering
+    // Fill hit structure with this new hit.
+    //Info("StepManager","Calling Copy Constructor");
+    new(lhits[fNhits++]) AliITShit(hit); // Use Copy Construtor.
+    // Save old position... for next hit.
+    hit.SetStartPosition(position);
+    hit.SetStartTime(gMC->TrackTime());
+    hit.SetStartStatus(status);
+    //
+    /*
+    Int_t idettype,ix,iz;
+    Float_t lx,lz;
+    Double_t g0[4],l0[4],g1[4];
+    position.GetXYZT(g0);
+    gMC->Gmtod(g0,l0,1); // flag=1 convert coordiantes
+    gMC->Gdtom(l0,g1,1); // flag=1 convert coordinates
+    switch(idettype=(Int_t)GetITSgeom()->GetModuleType(mod)){
+    case kSPD:
+        AliITSsegmentationSPD *segspd = (AliITSsegmentationSPD *)GetSegmentationModelByModule(mod);
+        segspd->LocalToDet((Float_t)l0[0],(Float_t)l0[2],ix,iz);
+        segspd->DetToLocal(ix,iz,lx,lz);
+        break;
+    case kSDD:
+        AliITSsegmentationSDD *segsdd = (AliITSsegmentationSDD *)GetSegmentationModelByModule(mod);
+        segsdd->LocalToDet((Float_t)l0[0],(Float_t)l0[2],ix,iz);
+        segsdd->DetToLocal(ix,iz,lx,lz);
+        break;
+    case kSSD:
+        AliITSsegmentationSSD *segssd = (AliITSsegmentationSSD *)GetSegmentationModelByModule(mod);
+        segssd->LocalToDet((Float_t)l0[0],(Float_t)l0[2],ix,iz);
+        segssd->DetToLocal(ix,iz,lx,lz);
+        break;
+    default:
+        ix = iz = -1;
+        lx = lz = 0.0;
+        Warning("StepManager","Unknown module type id=%d mod=%d",
+                (Int_t)(GetITSgeom()->GetModuleType(mod)),mod);
+    } // end if
+    printf("    gMC: mod=%d g=%g %g %g %g -> "
+                           "l=%g %g %g %g -> "
+                           "g=%g %g %g %g -> "
+                           "ix=%d iz=%d -> lx=%g lz=%g\n",
+           mod,g0[0],g0[1],g0[2],g0[3],
+               l0[0],l0[1],l0[2],l0[3],
+               g1[0],g1[1],g1[2],g1[3],ix,iz,lx,lz);
+    GetITSgeom()->GtoL(mod,g0,l0);
+    GetITSgeom()->LtoG(mod,l0,g1);
+    printf("ITSgeom: mod=%d g=%g %g %g %g -> "
+                           "l=%g %g %g %g -> "
+                           "g=%g %g %g %g -> "
+                           "ix=%d iz=%d -> lx=%g lz=%g\n",
+           mod,g0[0],g0[1],g0[2],g0[3],
+               l0[0],l0[1],l0[2],l0[3],
+               g1[0],g1[1],g1[2],g1[3],ix,iz,lx,lz);
+    TGeoNode *cur = gGeoManager->GetCurrentNode();
+    cur->MasterToLocal(g0,l0);
+    cur->LocalToMaster(l0,g1);
+    printf("   TGeo: mod=%d g=%g %g %g %g -> "
+                           "l=%g %g %g %g -> "
+                           "g=%g %g %g %g\n",
+           mod,g0[0],g0[1],g0[2],g0[3],
+               l0[0],l0[1],l0[2],l0[3],
+               g1[0],g1[1],g1[2],g1[3]);
+    printf("=====================\n");
+    //
+    */
+    return;
+}
+//______________________________________________________________________
+void AliITSvPPRasymmFMD::PrintAscii(ostream *os)const{
+    // Print out class data values in Ascii Form to output stream
+    // Inputs:
+    //   ostream *os   Output stream where Ascii data is to be writen
+    // Outputs:
+    //   none.
+    // Return:
+    //   none.
+#if defined __GNUC__
+#if __GNUC__ > 2
+    ios::fmtflags fmt;
+#else
+    Int_t fmt;
+#endif
+#else
+#if defined __ICC || defined __ECC || defined __xlC__
+    ios::fmtflags fmt;
+#else
+    Int_t fmt;
+#endif
+#endif
+
+    *os << fGeomDetOut << " " << fGeomDetIn << " " << fByThick << " ";
+    *os << fMajorVersion << " " << fMinorVersion << " ";
+    *os << "\"" << fEuclidGeomDet.Data() << "\"" << " ";
+    *os << "\"" << fRead.Data() << "\"" << " ";
+    *os << "\"" << fWrite.Data() << "\"" << " ";
+    fmt = os->setf(ios::scientific); // set scientific floating point output
+    *os << fDet1 << " "  << fDet2 << " " << fChip1 << " " << fChip2 << " ";
+    *os << fRails << " " << fFluid << " " << fIDMother;
+    os->flags(fmt); // reset back to old Formating.
+    return;
+}
+//______________________________________________________________________
+void AliITSvPPRasymmFMD::ReadAscii(istream *is){
+    // Read in class data values in Ascii Form to output stream
+    // Inputs:
+    //   istream *is   Input stream where Ascii data is to be read in from
+    // Outputs:
+    //   none.
+    // Return:
+    //   none.
+    Char_t name[120];
+
+    *is >> fGeomDetOut >> fGeomDetIn >> fByThick;
+    *is >> fMajorVersion >> fMinorVersion;
+    *is >> name;
+    fEuclidGeomDet = name;
+    *is >> name;
+    fRead = name;
+    *is >> name;
+    fWrite = name;
+    *is >> fDet1 >> fDet2 >> fChip1 >> fChip2;
+    *is >> fRails >> fFluid >> fIDMother;
+    fIgm.SetVersion((AliITSVersion_t)fMajorVersion,fMinorVersion);
+    fIgm.SetGeometryName("ITS PPR aymmetric services with course"
+                         " cables on cones");
+}
+//______________________________________________________________________
+ostream &operator<<(ostream &os,const AliITSvPPRasymmFMD &s){
+    // Standard output streaming function
+    // Inputs:
+    //   ostream            &os  output steam
+    //   AliITSvPPRasymmFMD &s class to be streamed.
+    // Output:
+    //   none.
+    // Return:
+    //   ostream &os  The stream pointer
+
+    s.PrintAscii(&os);
+    return os;
+}
+//______________________________________________________________________
+istream &operator>>(istream &is,AliITSvPPRasymmFMD &s){
+    // Standard inputput streaming function
+    // Inputs:
+    //   istream            &is  input steam
+    //   AliITSvPPRasymmFMD &s class to be streamed.
+    // Output:
+    //   none.
+    // Return:
+    //   ostream &os  The stream pointer
+
+    s.ReadAscii(&is);
+    return is;
 }

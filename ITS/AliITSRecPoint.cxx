@@ -155,11 +155,16 @@ void AliITSRecPoint::Print(ostream *os){
  
     fmt = os->setf(ios::fixed);  // set fixed floating point output
     *os << GetLabel(0) << " " << GetLabel(1) << " " << GetLabel(2) << " ";
-    *os << fXloc << " " << fZloc << " " << fQ << " ";
     fmt = os->setf(ios::scientific); // set scientific for dEdX.
-    *os << fdEdX << " ";
+    *os << GetX() <<" " << GetY() << " " << GetZ() << " " ;
+    *os << GetSigmaY2() << " " << GetSigmaZ2() << " " << GetSigmaYZ() << " ";
+    fmt = os->setf(ios::fixed);
+    *os << GetVolumeId() << " "<< Misalign() /*fIsMisaligned*/ << " ";
+    fmt = os->setf(ios::scientific); // set scientific for dEdX.
+    *os << fXloc << " " << fZloc << " " << fdEdX << " ";
     fmt = os->setf(ios::fixed); // every fixed
-    *os << GetSigmaY2() << " " << GetSigmaZ2();
+    *os << fIndex <<" " << fQ << " "<<fLayer <<" "<<fNz<<" "<<fNy<<" ";
+    *os << fChargeRatio<<" " << fType << " " << fDeltaProb;
     os->flags(fmt); // reset back to old formating.
     return;
 }
@@ -168,17 +173,22 @@ void AliITSRecPoint::Read(istream *is){
 ////////////////////////////////////////////////////////////////////////
 // Standard input format for this class.
 ////////////////////////////////////////////////////////////////////////
- 
-  Int_t lab[4];
-  Float_t hit[5];
-  lab[3] = 0; // ??
-  *is >> lab[0] >> lab[1] >> lab[2] >> hit[0] >> hit[1] >> hit[4];
-  *is >> fdEdX >> hit[2] >> hit[3];
-  Int_t info[3] = {0,0,0};
-  AliITSRecPoint rp(lab,hit,info,kTRUE);
-  *this = rp;
+    Bool_t mis;
+    Int_t lab[4];
+    Float_t hit[6];
+    lab[3] = 0; // ??
+    *is >> lab[0] >> lab[1] >> lab[2];
+    SetLabel(lab[0],0); SetLabel(lab[1],1); SetLabel(lab[2],2);
+    *is >> hit[0] >> hit[1] >> hit[2] >> hit[3] >> hit[4] >> hit[5];
+    SetX(hit[0]);SetY(hit[1]);SetZ(hit[2]);SetSigmaY2(hit[3]);
+    SetSigmaZ2(hit[4]);//fSigmaYZ=hit[5];
+    *is >> lab[0] >> mis;
+    SetVolumeId(lab[0]);// fIsMisalinged = mis;
+    *is >> fXloc >> fZloc >> fdEdX;
+    *is >> fIndex >> fQ >> fLayer >> fNz >> fNy >> fChargeRatio >> fType;
+    *is >> fDeltaProb;
 
-  return;
+    return;
 }
 //----------------------------------------------------------------------
 ostream &operator<<(ostream &os,AliITSRecPoint &p){

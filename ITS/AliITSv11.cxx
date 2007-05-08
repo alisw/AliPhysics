@@ -62,20 +62,26 @@ ClassImp(AliITSv11)
 
 
 //______________________________________________________________________
-AliITSv11::AliITSv11() : AliITS(),
-  fGeomDetOut(kFALSE),
-  fGeomDetIn(kFALSE),
-  fByThick(kTRUE),
-  fMajorVersion(11),
-  fMinorVersion(0),
-  fSDDgeom(0)
+AliITSv11::AliITSv11() : 
+AliITS(),
+fGeomDetOut(kFALSE),
+fGeomDetIn(kFALSE),
+fByThick(kTRUE),
+fMajorVersion(IsVersion()),
+fMinorVersion(0),
+fEuclidGeomDet(),
+fRead(),
+fWrite(),
+//fSPDgeom(),
+fSDDgeom(0),
+//fSupgeom(),
+fIgm(kv11)
 {
   //    Standard default constructor for the ITS version 11.
 
     fIdN          = 0;
     fIdName       = 0;
     fIdSens       = 0;
-    fEuclidOut    = kFALSE; // Don't write Euclide file
     Int_t i;
     for(i=0;i<60;i++) fRead[i] = '\0';
     for(i=0;i<60;i++) fWrite[i] = '\0';
@@ -85,14 +91,20 @@ AliITSv11::AliITSv11() : AliITS(),
 
 
 //______________________________________________________________________
-AliITSv11::AliITSv11(const char *name, const char *title)
-  : AliITS("ITS", title),
-    fGeomDetOut(kFALSE),
-    fGeomDetIn(kFALSE),
-    fByThick(kTRUE),
-    fMajorVersion(11),
-    fMinorVersion(0),
-    fSDDgeom(0)
+AliITSv11::AliITSv11(const char *name, const char *title): 
+AliITS("ITS", title),
+fGeomDetOut(kFALSE),
+fGeomDetIn(kFALSE),
+fByThick(kTRUE),
+fMajorVersion(IsVersion()),
+fMinorVersion(0),
+fEuclidGeomDet(),
+fRead(),
+fWrite(),
+//fSPDgeom(),
+fSDDgeom(0),
+//fSupgeom(),
+fIgm(kv11)
 {
   //    Standard constructor for the ITS version 11.
 
@@ -110,8 +122,6 @@ AliITSv11::AliITSv11(const char *name, const char *title)
   fIdName[5] = "ITS6";
   fIdSens    = new Int_t[fIdN];
   for(i=0;i<fIdN;i++) fIdSens[i] = 0;
-  fEuclidOut    = kFALSE; // Don't write Euclide file
-  //SetDensityServicesByThickness();
   // not needed, fByThick set to kTRUE in in the member initialization lis
   
 
@@ -121,19 +131,23 @@ AliITSv11::AliITSv11(const char *name, const char *title)
   strncpy(fWrite,fEuclidGeomDet,60);
   strncpy(fRead,"$ALICE_ROOT/ITS/ITSgeometry_vPPRasymmFMD.det",60);
 }
-
-
 //______________________________________________________________________
 AliITSv11::AliITSv11(Int_t debugITS,Int_t debugSPD,Int_t debugSDD,
 		   Int_t debugSSD,Int_t debugSUP) :
-  AliITS("ITS","ITS geometry v11"),
-    fGeomDetOut(kFALSE),
-    fGeomDetIn(kFALSE),
-    fByThick(kTRUE),
-    fMajorVersion(11),
-    fMinorVersion(0),
-    fSDDgeom(0)
- {
+AliITS("ITS","ITS geometry v11"),
+fGeomDetOut(kFALSE),
+fGeomDetIn(kFALSE),
+fByThick(kTRUE),
+fMajorVersion(IsVersion()),
+fMinorVersion(0),
+fEuclidGeomDet(),
+fRead(),
+fWrite(),
+//fSPDgeom(),
+fSDDgeom(0),
+//fSuppgeom(),
+fIgm(kv11)
+{
   // Standard default constructor for the ITS version 11.
 
 
@@ -154,7 +168,6 @@ AliITSv11::AliITSv11(Int_t debugITS,Int_t debugSPD,Int_t debugSDD,
   fIdSens    = new Int_t[fIdN];
   for(i=0;i<fIdN;i++) fIdSens[i] = 0;
   fEuclidOut    = kFALSE; // Don't write Euclide file
-  //SetDensityServicesByThickness();
   
   fEuclidGeometry="$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.euc";
   strncpy(fEuclidGeomDet,"$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det",60);
@@ -164,40 +177,44 @@ AliITSv11::AliITSv11(Int_t debugITS,Int_t debugSPD,Int_t debugSDD,
 
   debugITS = (debugSPD && debugSSD && debugSUP && debugSDD); //remove temp. warnings
 }
-
-
 //______________________________________________________________________
 AliITSv11::~AliITSv11() {
   delete fSDDgeom;
 }
-
-
 //______________________________________________________________________
 void AliITSv11::BuildGeometry(){
 
 }
-
-
 //______________________________________________________________________
 void AliITSv11::CreateGeometry(){
-  //
-  // Create ROOT geometry
-  //
+    //
+    // Create ROOT geometry
+    //
+    // These constant character strings are set by cvs during commit
+    // do not change them unless you know what you are doing!
+    const Char_t *cvsDate="$Date$";
+    const Char_t *cvsRevision="$Revision$";
 
-  TGeoManager *geoManager = gGeoManager;
-  TGeoVolume *vALIC = geoManager->GetTopVolume();
+    TGeoManager *geoManager = gGeoManager;
+    TGeoVolume *vALIC = geoManager->GetTopVolume();
 
-  TGeoPcon *sITS = new TGeoPcon("ITS Top Volume",0.0,360.0,2);
+    TGeoPcon *sITS = new TGeoPcon("ITS Top Volume",0.0,360.0,2);
 
-  // DefineSection(section number, Z, Rmin, Rmax).
-  const Double_t kcm = 1.0;
-  sITS->DefineSection(0,-300.0*kcm,0.01*kcm,50.0*kcm);
-  sITS->DefineSection(1,+300.0*kcm,0.01*kcm,50.0*kcm);
+    // DefineSection(section number, Z, Rmin, Rmax).
+    const Double_t kcm = 1.0;
+    sITS->DefineSection(0,-300.0*kcm,0.01*kcm,50.0*kcm);
+    sITS->DefineSection(1,+300.0*kcm,0.01*kcm,50.0*kcm);
 
-  TGeoMedium *air = gGeoManager->GetMedium("ITS_AIR$");
-  TGeoVolume *vITS = new TGeoVolume("ITSV",sITS,air);
-  vITS->SetVisibility(kFALSE);
-  vALIC->AddNode(vITS,1,0);
+    TGeoMedium *air = gGeoManager->GetMedium("ITS_AIR$");
+    TGeoVolume *vITS = new TGeoVolume("ITSV",sITS,air);
+    vITS->SetVisibility(kFALSE);
+    const Int_t length=100;
+    Char_t vstrng[length];
+    if(fIgm.WriteVersionString(vstrng,length,(AliITSVersion_t)IsVersion(),
+                               fMinorVersion,cvsDate,cvsRevision))
+        vITS->SetTitle(vstrng);
+    //printf("Title set to %s\n",vstrng);
+    vALIC->AddNode(vITS,1,0);
 
 //   fSPDgeom->CenteralSPD(vITS);
 
@@ -1198,7 +1215,7 @@ void AliITSv11::CreateMaterials(){
     AliMaterial(96, "SSD cone$",63.546, 29., 1.15, 1.265, 999);
     AliMedium(96,"SSD cone$",96,0,ifield,fieldm,tmaxfdServ,stemaxServ,deemaxServ,epsilServ,stminServ);
 }
-
+/*
 //______________________________________________________________________
 void AliITSv11::InitAliITSgeom(){
   //
@@ -1311,7 +1328,7 @@ void AliITSv11::InitAliITSgeom(){
 
 //   fSDDgeom->ExportSensorGeometry(GetITSgeom(), +3, 0);  //SDD
 }
-
+*/
 //______________________________________________________________________
 void AliITSv11::Init(){
   //
@@ -1320,6 +1337,12 @@ void AliITSv11::Init(){
 
   //AliInfo(Form("Minor version %d",fMinorVersion));
     //
+    UpdateInternalGeometry();
+    AliITS::Init();
+    if(fGeomDetOut) GetITSgeom()->WriteNewFile(fWrite);
+
+    //
+/*
     if(fRead[0]=='\0') strncpy(fRead,fEuclidGeomDet,60);
     if(fWrite[0]=='\0') strncpy(fWrite,fEuclidGeomDet,60);
     if(GetITSgeom()!=0) SetITSgeom(0x0);
@@ -1329,7 +1352,7 @@ void AliITSv11::Init(){
     else this->InitAliITSgeom();
     if(fGeomDetOut) GetITSgeom()->WriteNewFile(fWrite);
     AliITS::Init();
-    //
+*/    //
 }
 
 // //______________________________________________________________________

@@ -16,6 +16,7 @@
 /* $Id$ */
 
 #include <TGeometry.h>
+#include <TGeoManager.h>
 #include <TNode.h>
 #include <TLorentzVector.h>
 #include <TClonesArray.h>
@@ -54,7 +55,7 @@ AliITSvSPD02::AliITSvSPD02():
 AliITS(),
 fGeomDetOut(kFALSE),
 fGeomDetIn(kFALSE),
-fMajorVersion(1),
+fMajorVersion((Int_t)kvSPD02),
 fMinorVersion(2),
 fGeomNumber(2002),
 fEuclidGeomDet(),
@@ -63,7 +64,9 @@ fWrite(),
 fDet1(300.0),
 fDet2(300.0),
 fChip1(300.0),
-fChip2(300.0){
+fChip2(300.0),
+fIDMother(0),
+fIgm(kvSPD02){
     ////////////////////////////////////////////////////////////////////////
     // Standard default constructor for the ITS SPD test beam 2002 version 1.
     // Inputs:
@@ -92,7 +95,9 @@ fWrite(),
 fDet1(300.0),
 fDet2(300.0),
 fChip1(300.0),
-fChip2(300.0){
+fChip2(300.0),
+fIDMother(0),
+fIgm(kvSPD02){
     ////////////////////////////////////////////////////////////////////////
     //    Standard constructor for the ITS SPD testbeam 2002 version 1.
     // Inputs:
@@ -347,6 +352,11 @@ void AliITSvSPD02::CreateGeometry2002(){
     //             |- IMB0       SPD Si Chip
     //             |   |- IMBS     SPD Sensitive volume
     //             |- ICMB       Chip MiniBus.
+    //
+    //      ITEL ITEL IDET ITEL ITEL
+    // Z->  -38  -36   02  36.5 38.5
+    //       |    |     |    |    |
+    // cpn1  1    2     1    3    4
     // Inputs:
     //    none.
     // Outputs:
@@ -361,16 +371,36 @@ void AliITSvSPD02::CreateGeometry2002(){
     Float_t ddettest=200.0E-4,ddettelescope=300.0E-4;
     Float_t dchipMiniBus=750.0E-4,dchiptest=300.0E-4;
     Float_t yposition= 0.0;
+    // These constant character strings are set by cvs during commit
+    // do not change them unless you know what you are doing!
+    const Char_t *cvsDate="$Date$";
+    const Char_t *cvsRevision="$Revision$";
 
     if(gMC==0) return;
     // Define Rotation-reflextion Matrixes needed
     // 0 is the unit matrix
     AliMatrix(idrotm[0], 90.0,0.0, 0.0,0.0, 90.0,270.0);
+    /*
     data[0] = 10.0;
     data[1] = 50.0;
     data[2] = 100.0;
     gMC->Gsvolu("ITSV","BOX",idtmed[0],data,3);
     gMC->Gspos("ITSV",1,"ALIC",0.0,0.0,0.0,0,"ONLY");
+    */
+    TGeoVolumeAssembly *itsV = gGeoManager->MakeVolumeAssembly("ITSV");
+    const Int_t length=100;
+    Char_t vstrng[length];
+    if(fIgm.WriteVersionString(vstrng,length,(AliITSVersion_t)IsVersion(),
+                               fMinorVersion,cvsDate,cvsRevision))
+        itsV->SetTitle(vstrng);
+    else Error("CreateGeometry","Error writing/setting version string");
+    TGeoVolume *alic = gGeoManager->GetVolume("ALIC");
+    if(alic==0) {
+        Error("CreateGeometry","alic=0");
+        return;
+    } // end if
+    // See idrotm[199] for angle definitions.
+    alic->AddNode(itsV,1,0);
 
     //cout << "idtmed[0]=" << idtmed[0]<<endl;
     //cout << "idtmed[1]=" << idtmed[1]<<endl;
@@ -523,108 +553,27 @@ void AliITSvSPD02::CreateMaterials2002(){
               epsilSi,stminSi);
 }
 //______________________________________________________________________
-Int_t AliITSvSPD02::DecodeDetector(Int_t id,Int_t cpy,Int_t &lay,Int_t &lad,
-    Int_t &det)const{
-    //     Based on the geometry tree defined in Geant 3.21, this
-    // routine initilizes the Class AliITSgeom from the Geant 3.21 ITS geometry
-    // sturture.
-    // Inputs:
-    //    Int_t id   Detector volume id
-    //    Int_t cpy  Detector copy number
-    // Outputs:
-    //    Int_t lay  layer number
-    //    Int_t lad  ladder number
-    //    Int_t det  detector number
-    // Return:
-    //    The module number
-    Int_t mod;
-
-    lad = det = 1;
-    lay = cpy;
-    if(cpy>2 && id==fIdSens[0]) lay = cpy + 1;
-    if(id==fIdSens[1]) lay = 3;
-    mod = lay - 1;
-    return mod;
-}
-//______________________________________________________________________
-void AliITSvSPD02::InitAliITSgeom(){
-    //     Based on the geometry tree defined in Geant 3.21, this
-    // routine initilizes the Class AliITSgeom from the Geant 3.21 ITS geometry
-    // sturture.
-    // Inputs:
-    //    none.
-    // Outputs:
-    //    none.
-    // Return:
-    //    none.
-    const Int_t kltypess=2;
-    const Int_t knlayers=5;
-    const TString knames[kltypess]=
-        {"ALIC_1/ITSV_1/ITEL_%d/IMB0_1/IMBS_1",//lay=1,2,4,5
-         "ALIC_1/ITSV_1/IDET_%d/ITS0_1/ITST_1"};// lay=3
-    const Int_t kitsGeomTreeCopys[2]={4,1};
-    const Int_t knlad[knlayers]={knlayers*1},kndet[knlayers]={knlayers*1};
-    TString path,shapeName;
-    TGeoHMatrix matrix;
-    TArrayD shapePar;
-    TArrayF shapeParF;
-    Double_t trans[3]={3*0.0},rot[10]={10*0.0};
-    Int_t npar=3,mod,i,j,lay,lad,det,cpy;
-    Float_t par[20];
-
-    par[0]=0.64;par[1]=0.5*300.0E-4;par[2]=3.48;
-    mod=5;
-    AliITSgeom* geom = new AliITSgeom(0,knlayers,knlad,kndet,mod);
-    SetITSgeom(geom);
-    for(i=0;i<kltypess;i++)for(cpy=1;cpy<=kitsGeomTreeCopys[i];cpy++){
-        path.Form(knames[i].Data(),cpy);
-        gMC->GetTransformation(path.Data(),matrix);
-        gMC->GetShape(path.Data(),shapeName,shapePar);
-        shapeParF.Set(shapePar.GetSize());
-        for(j=0;j<shapePar.GetSize();j++) shapeParF[j]=shapePar[j];
-        mod = DecodeDetector(fIdSens[i],cpy,lay,lad,det);
-        geom->CreateMatrix(mod,lay,lad,det,kSPD,trans,rot);
-        geom->SetTrans(mod,matrix.GetTranslation());
-        geom->SetRotMatrix(mod,matrix.GetRotationMatrix());
-        geom->GetGeomMatrix(mod)->SetPath(path.Data());
-        if(!(geom->IsShapeDefined((Int_t)kSPD)))
-            geom->ReSetShape(kSPD,new AliITSgeomSPD425Short(npar,par));
-    } // end for i,cpy/
-    return;
-}
-//______________________________________________________________________
 void AliITSvSPD02::Init(){
-    ////////////////////////////////////////////////////////////////////////
     //     Initialise the ITS after it has been created.
     // Inputs:
-    //    none.
+    //   none.
     // Outputs:
-    //    none.
+    //   none.
     // Return:
-    //    none.
-    ////////////////////////////////////////////////////////////////////////
-    Int_t i;
+    //   none.
 
-    cout << endl;
-    for(i=0;i<26;i++) cout << "*";
-    cout << " ITSvSPD02" << fMinorVersion << "_Init ";
-    for(i=0;i<25;i++) cout << "*";cout << endl;
-
-    if(fRead[0]=='\0') strncpy(fRead,fEuclidGeomDet,60);
-    if(fWrite[0]=='\0') strncpy(fWrite,fEuclidGeomDet,60);
-    if(GetITSgeom()!=0) SetITSgeom(0x0);
-    AliITSgeom* geom = new AliITSgeom();
-    SetITSgeom(geom);
-    if(fGeomDetIn) GetITSgeom()->ReadNewFile(fRead);
-    if(!fGeomDetIn) this->InitAliITSgeom();
-    if(fGeomDetOut) GetITSgeom()->WriteNewFile(fWrite);
+    AliDebug(1,Form("Init: Major version %d Minor version %d",fMajorVersion,
+                 fMinorVersion));
+    //
+    UpdateInternalGeometry();
     AliITS::Init();
+    if(fGeomDetOut) GetITSgeom()->WriteNewFile(fWrite);
 
-    for(i=0;i<72;i++) cout << "*";
-    cout << endl;
-    if(gMC) fIDMother = gMC->VolId("ITSV"); // ITS Mother Volume ID.
-    else fIDMother = 0;
+    //
+    fIDMother = gMC->VolId("ITSV"); // ITS Mother Volume ID.
+
 }
+/*
 //______________________________________________________________________
 void AliITSvSPD02::SetDefaults(){
     // sets the default segmentation, response, digit and raw cluster classes
@@ -676,15 +625,15 @@ void AliITSvSPD02::SetDefaults(){
 //    SetSimulationModel(kSPD,new AliITSsimulationSPDdubna(seg0,resp0));
 //    iDetType->ReconstructionModel(new AliITSClusterFinderSPD());
    
-/*
-    SetResponseModel(kSDD,new AliITSCalibrationSDD());
-    SetSegmentationModel(kSDD,new AliITSsegmentationSDD());
-    DetType(kSDD)->ClassNames("AliITSdigitSDD","AliITSRawClusterSDD");
 
-    SetResponseModel(kSSD,new AliITSCalibrationSSD());
-    SetSegmentationModel(kSSD,new AliITSsegmentationSSD());
-    DetType(kSSD)->ClassNames("AliITSdigitSSD","AliITSRawClusterSSD");
-*/
+//    SetResponseModel(kSDD,new AliITSCalibrationSDD());
+//    SetSegmentationModel(kSDD,new AliITSsegmentationSDD());
+//    DetType(kSDD)->ClassNames("AliITSdigitSDD","AliITSRawClusterSDD");
+
+//    SetResponseModel(kSSD,new AliITSCalibrationSSD());
+//    SetSegmentationModel(kSSD,new AliITSsegmentationSSD());
+//    DetType(kSSD)->ClassNames("AliITSdigitSSD","AliITSRawClusterSSD");
+
     if(fgkNTYPES>3){
 	Warning("SetDefaults",
 		"Only the four basic detector types are initialised!");
@@ -723,36 +672,35 @@ void AliITSvSPD02::SetDefaultSimulation(){
       sim->Init();
     } // end if
   } // end if iDetType
-  
-    /*
-      if(fDetTypeSim){
-        sim = fDetTypeSim->GetSimulationModel(kSDD);
-        if (!sim) {
-            seg = (AliITSsegmentation*)fDetTypeSim->GetSegmentationModel(kSDD);
-            res = (AliITSCalibration*)fDetTypeSim->GetResponseModel(GetITSgeom()->GetStartSDD());
-            sim = new AliITSsimulationSDD(seg,res);
-            SetSimulationModel(kSDD,sim);
-        }else{ // simulation exists, make sure it is set up properly.
-	  sim->SetResponseModel((AliITSCalibration*)fDetTypeSim->GetResponseModel(GetITSgeom()->GetStartSDD()));
-	  sim->SetSegmentationModel((AliITSsegmentation*)fDetTypeSim->GetSegmentationModel(kSDD));
-	  sim->Init();
-        } //end if
-    } // end if iDetType
-    if(fDetTypeSim){
-        sim = fDetTypeSim->GetSimulationModel(kSSD);
-        if (!sim) {
-            seg = (AliITSsegmentation*)fDetTypeSim->GetSegmentationModel(kSSD);
-            res = (AliITSCalibration*)fDetTypeSim->GetResponseModel(GetITSgeom()->GetStartSSD());
-            sim = new AliITSsimulationSSD(seg,res);
-            SetSimulationModel(kSSD,sim);
-        }else{ // simulation exists, make sure it is set up properly.
-	  sim->SetResponseModel((AliITSCalibration*)fDetTypeSim->GetResponseModel(GetITSgeom()->GetStartSSD()));
-	  sim->SetSegmentationModel((AliITSsegmentation*)fDetTypeSim->GetSegmentationModel(kSSD));
-	  sim->Init();
-        } // end if
-    } //
-    */ 
+
+//      if(fDetTypeSim){
+//        sim = fDetTypeSim->GetSimulationModel(kSDD);
+//        if (!sim) {
+//            seg = (AliITSsegmentation*)fDetTypeSim->GetSegmentationModel(kSDD);
+//            res = (AliITSCalibration*)fDetTypeSim->GetResponseModel(GetITSgeom()->GetStartSDD());
+//            sim = new AliITSsimulationSDD(seg,res);
+//           SetSimulationModel(kSDD,sim);
+//        }else{ // simulation exists, make sure it is set up properly.
+//	  sim->SetResponseModel((AliITSCalibration*)fDetTypeSim->GetResponseModel(GetITSgeom()->GetStartSDD()));
+//	  sim->SetSegmentationModel((AliITSsegmentation*)fDetTypeSim->GetSegmentationModel(kSDD));
+//	  sim->Init();
+//        } //end if
+//    } // end if iDetType
+//    if(fDetTypeSim){
+//        sim = fDetTypeSim->GetSimulationModel(kSSD);
+//        if (!sim) {
+//            seg = (AliITSsegmentation*)fDetTypeSim->GetSegmentationModel(kSSD);
+//            res = (AliITSCalibration*)fDetTypeSim->GetResponseModel(GetITSgeom()->GetStartSSD());
+//            sim = new AliITSsimulationSSD(seg,res);
+//            SetSimulationModel(kSSD,sim);
+//        }else{ // simulation exists, make sure it is set up properly.
+//	  sim->SetResponseModel((AliITSCalibration*)fDetTypeSim->GetResponseModel(GetITSgeom()->GetStartSSD()));
+//	  sim->SetSegmentationModel((AliITSsegmentation*)fDetTypeSim->GetSegmentationModel(kSSD));
+//	  sim->Init();
+//        } // end if
+//    } //
 }
+*/
 //______________________________________________________________________
 void AliITSvSPD02::DrawModule() const {
     ////////////////////////////////////////////////////////////////////////
@@ -801,69 +749,64 @@ void AliITSvSPD02::StepManager(){
     // Return:
     //    none.
     ////////////////////////////////////////////////////////////////////////
-    Int_t         copy=0, id;
-    TLorentzVector position, momentum;
-    static TLorentzVector position0;
-    static Int_t stat0=0;
-    if((id=gMC->CurrentVolID(copy) == fIDMother)&&
-       (gMC->IsTrackEntering()||gMC->IsTrackExiting())){
-        copy = fTrackReferences->GetEntriesFast();
-        TClonesArray &lTR = *fTrackReferences;
-        // Fill TrackReference structure with this new TrackReference.
-        new(lTR[copy]) AliTrackReference(gAlice->GetMCApp()->
-                                         GetCurrentTrackNumber());
-    } // if Outer ITS mother Volume
+
     if(!(this->IsActive())){
         return;
     } // end if !Active volume.
-    Int_t   vol[5];
-    TClonesArray &lhits = *fHits;
+    if(!(gMC->TrackCharge())) return;
+
+    Int_t cpy0=0,cpy1=0,id,mod,ncpys,status;
+    TLorentzVector position, momentum;
+    static AliITShit hit;// Saves on calls to construtors
+    //TClonesArray &lhits = *(GetDetTypeSim()->GetHits());
+    TClonesArray &lhits = *(Hits());
     //
     // Track status
-    vol[3] = 0;
-    vol[4] = 0;
-    if(gMC->IsTrackInside())      vol[3] +=  1;
-    if(gMC->IsTrackEntering())    vol[3] +=  2;
-    if(gMC->IsTrackExiting())     vol[3] +=  4;
-    if(gMC->IsTrackOut())         vol[3] +=  8;
-    if(gMC->IsTrackDisappeared()) vol[3] += 16;
-    if(gMC->IsTrackStop())        vol[3] += 32;
-    if(gMC->IsTrackAlive())       vol[3] += 64;
+    // Track status
+    status = 0;
+    if(gMC->IsTrackInside())      status +=  1;
+    if(gMC->IsTrackEntering())    status +=  2;
+    if(gMC->IsTrackExiting())     status +=  4;
+    if(gMC->IsTrackOut())         status +=  8;
+    if(gMC->IsTrackDisappeared()) status += 16;
+    if(gMC->IsTrackStop())        status += 32;
+    if(gMC->IsTrackAlive())       status += 64;
     //
     // Fill hit structure.
-    if(!(gMC->TrackCharge())) return;
-    id = gMC->CurrentVolID(copy);
-    if(id==fIdSens[0]){  // Volume name "IMBS"
-        vol[2] = vol[1] = 1; // Det, ladder
-        id = gMC->CurrentVolOffID(2,copy);
-        //detector copy in the ladder = 1<->4  (ITS1 < I101 < I103 < I10A)
-        vol[0] = copy; // Lay
-        if(copy>2) vol[0]++;
+    id = gMC->CurrentVolID(cpy0);
+    if(id==fIdSens[0]){  // Volume name "IMBS". Det=1, ladder=1
+        ncpys = 4;
     } else if(id == fIdSens[1]){ // Volume name "ITST"
-        vol[0] = 3; // layer
-        vol[1] = 1; // ladder
-        id = gMC->CurrentVolOffID(2,copy);
-        //detector copy in the ladder = 1<->4  (ITS2 < I1D1 < I1D3 < I20A)
-        vol[2] = 1;  // detector
+        ncpys = 1;
     } else return; // end if
+    id = gMC->CurrentVolOffID(2,cpy1);
+    fIgm.DecodeDetector(mod,ncpys,cpy0,cpy1,0);
     //
+    // Fill hit structure.
+    //
+    hit.SetModule(mod);
+    hit.SetTrack(gAlice->GetMCApp()->GetCurrentTrackNumber());
     gMC->TrackPosition(position);
     gMC->TrackMomentum(momentum);
-    vol[4] = stat0;
+    hit.SetPosition(position);
+    hit.SetTime(gMC->TrackTime());
+    hit.SetMomentum(momentum);
+    hit.SetStatus(status);
+    hit.SetEdep(gMC->Edep());
+    hit.SetShunt(GetIshunt());
     if(gMC->IsTrackEntering()){
-        position0 = position;
-        stat0 = vol[3];
-        return;
+        hit.SetStartPosition(position);
+        hit.SetStartTime(gMC->TrackTime());
+        hit.SetStartStatus(status);
+        return; // don't save entering hit.
     } // end if IsEntering
-    // Fill hit structure with this new hit only for non-entrerance hits.
-    else new(lhits[fNhits++]) AliITShit(fIshunt,
-                                  gAlice->GetMCApp()->GetCurrentTrackNumber(),
-                                        vol,gMC->Edep(),gMC->TrackTime(),
-                                        position,position0,momentum);
-    //
-    position0 = position;
-    stat0 = vol[3];
-
+    // Fill hit structure with this new hit.
+    //Info("StepManager","Calling Copy Constructor");
+    new(lhits[fNhits++]) AliITShit(hit); // Use Copy Construtor.
+    // Save old position... for next hit.
+    hit.SetStartPosition(position);
+    hit.SetStartTime(gMC->TrackTime());
+    hit.SetStartStatus(status);
     return;
 }
 

@@ -10,11 +10,14 @@
 /////////////////////////////////////////////////////////
  
 #include "AliITS.h"
- 
+#include "AliITSInitGeometry.h"
+
 class AliITSvPPRasymmFMD : public AliITS {
 
  public:
     AliITSvPPRasymmFMD();
+    AliITSvPPRasymmFMD(const Char_t *title); // Standard Constructor
+    // Extended Standard constructor
     AliITSvPPRasymmFMD(const char *name, const char *title);
     virtual       ~AliITSvPPRasymmFMD() ;
     virtual void   BuildGeometry();
@@ -27,16 +30,17 @@ class AliITSvPPRasymmFMD : public AliITS {
     virtual void   DrawModule() const;
     virtual void   StepManager();
     virtual void   AddAlignableVolumes() const;
-    virtual void   SetWriteDet(Bool_t det=kFALSE){ // set .det write
-	                                         fGeomDetOut = det;}
-    virtual void   SetWriteDet(const char *f){ // set write file
-	                             strncpy(fWrite,f,60);fGeomDetOut = kTRUE;}
-    virtual void   SetReadDet(Bool_t det=kFALSE){ //set .det read
-	                                        fGeomDetIn = det;}
-    virtual void   SetReadDet(const char *f){ // set read file
-	                               strncpy(fRead,f,60);fGeomDetIn = kTRUE;}
-    virtual void   SetEUCLIDFileName(const char *f){ // set write file
-	                     fEuclidGeometry=f; SetEUCLID();}
+    //set .det write
+    virtual void  SetWriteDet(Bool_t det=kFALSE){fGeomDetOut=det;}
+    // set write file
+    virtual void   SetWriteDet(const Char_t *f){fWrite=f;fGeomDetOut=kTRUE;}
+    //set .det read
+    virtual void   SetReadDet(Bool_t det=kFALSE){fGeomDetIn = det;}
+    // set read file
+    virtual void   SetReadDet(const Char_t *f){fRead=f;fGeomDetIn=kTRUE;}
+    // set write file
+    virtual void   SetEUCLIDFileName(const Char_t *f){fEuclidGeometry=f;
+                                                          SetEUCLID();}
     virtual void   SetMinorVersion(Int_t v=2){ // Choose between existing minor versions
 	fMinorVersion = v;}
     virtual void   SetThicknessDet1(Float_t v=200.){ 
@@ -63,16 +67,18 @@ class AliITSvPPRasymmFMD : public AliITS {
     virtual void SetDensityServicesByMass(){// uses services density
 	// calculation based on the Mass of the services.
 	fByThick = kFALSE;}
-    virtual const char  *GetEULIIDFileName() const{ // return .euc file name
-	                               return fEuclidGeometry.Data();}
-    virtual Bool_t GetWriteDet() const { // returns value GeomDetOut flag.
-	                          return fGeomDetOut;}
-    virtual Bool_t GetReadDet() const { // returns value GeomDetIn flag.
-	                         return fGeomDetIn;}
-    virtual char  *GetReadDetFileName(){ // return .det read file name
-	          if(fRead[0]!='\0') return fRead; else return fEuclidGeomDet;}
-    virtual char  *GetWriteDetFileName(){ // return .det write file name
-	        if(fWrite[0]!='\0') return fWrite; else return fEuclidGeomDet;}
+    virtual const Char_t *GetEULIIDFileName() const{ // return .euc file name
+        return fEuclidGeometry.Data();}
+    // returns value GeomDetOut flag.
+    virtual Bool_t GetWriteDet() const {return fGeomDetOut;}
+    // returns value GeomDetIn flag.
+    virtual Bool_t GetReadDet() const{return fGeomDetIn;} 
+    virtual const Char_t *GetReadDetFileName()const{//return .det read file name
+        if(fRead.IsNull()) return fRead.Data();
+        else return GetEULIIDFileName();}
+    virtual const Char_t *GetWriteDetFileName()const{//return .det write file name
+        if(fWrite.IsNull()) return fWrite.Data();
+        else return GetEULIIDFileName();}
     virtual Int_t GetMajorVersion() const {// return Major Version Number
 	return fMajorVersion;}
     virtual Int_t GetMinorVersion() const {// return Major Version Number
@@ -95,32 +101,50 @@ class AliITSvPPRasymmFMD : public AliITS {
     virtual Int_t GetCoolingFluid() const{ 
 	 // Get flag for cooling fluid
 	 return fFluid;}
+    //
+    // Print class in ascii form to stream
+    virtual void PrintAscii(ostream *os)const;
+    // Read in class in ascii form from stream
+    virtual void ReadAscii(istream *is);
 
  private:
-    AliITSvPPRasymmFMD(const AliITSvPPRasymmFMD &source); // copy constructor
-    AliITSvPPRasymmFMD& operator=(const AliITSvPPRasymmFMD &source); // assignment operator
+    // copy constructor. Will not copy class, just gives warning.
+    AliITSvPPRasymmFMD(const AliITSvPPRasymmFMD &source);
+    // assignment operator. Will not copy class, just gives warning.
+    AliITSvPPRasymmFMD& operator=(const AliITSvPPRasymmFMD &source);
     void InitAliITSgeom();
+    Bool_t IsDensityServicesByThickness()const {return fByThick;}
+    // returns Euclid file name with where Euclid geometry is kept.
+    const TString & GetEuclidFile()const{return fEuclidGeomDet;}
+    // Return Mother volume ID
+    Int_t GetMotherID()const {return fIDMother;}
+    // Return AliITSInitGeometry object
+    const AliITSInitGeometry & GetGeomInit()const{return fIgm;}
 
     // TString fEuclidGeomtery,fEuclidMaterial defined in AliModule.
-    Bool_t fGeomDetOut;       // Flag to write .det file out
-    Bool_t fGeomDetIn;        // Flag to read .det file or directly from Geat.
-    Bool_t fByThick;          // Flag to use services materials by thickness
-                              // ture, or mass false.
-    Int_t  fMajorVersion;     // Major version number == IsVersion
-    Int_t  fMinorVersion;     // Minor version number
-    char   fEuclidGeomDet[60];// file where detector transormation are define.
-    char   fRead[60];         //! file name to read .det file
-    char   fWrite[60];        //! file name to write .det file
-    Float_t  fDet1;	      // thickness of detector in SPD layer 1
-    Float_t  fDet2;	      // thickness of detector in SPD layer 2
-    Float_t  fChip1;	      // thickness of chip in SPD layer 1   
-    Float_t  fChip2;	      // thickness of chip in SPD layer 2   
-    Int_t    fRails;          // flag to switch rails on (=1) and off (=0)
-    Int_t    fFluid;          // flag to switch between water (=1) and freon (=0)
-    Int_t fIDMother;          //! ITS Mother Volume id.
+    Bool_t  fGeomDetOut;    // Flag to write .det file out
+    Bool_t  fGeomDetIn;     // Flag to read .det file or directly from Geat.
+    Bool_t  fByThick;       // Flag to use services materials by thickness
+                            // ture, or mass false.
+    Int_t   fMajorVersion;  // Major version number == IsVersion
+    Int_t   fMinorVersion;  // Minor version number
+    TString fEuclidGeomDet; // file where detector transormation are define.
+    TString fRead;          //! file name to read .det file
+    TString fWrite;         //! file name to write .det file
+    Float_t fDet1;	    // thickness of detector in SPD layer 1
+    Float_t fDet2;          // thickness of detector in SPD layer 2
+    Float_t fChip1;         // thickness of chip in SPD layer 1   
+    Float_t fChip2;         // thickness of chip in SPD layer 2   
+    Int_t   fRails;         // flag to switch rails on (=1) and off (=0)
+    Int_t   fFluid;         // flag to switch between water (=1) and freon (=0)
+    Int_t   fIDMother;      //! ITS Mother Volume id.
+    AliITSInitGeometry fIgm;//! Get access to decoding and AliITSgeom init functins
 
-    ClassDef(AliITSvPPRasymmFMD,3)  //Hits manager for set:ITS version 8 
-                                 // PPR detailed Geometry asymmetric
+    ClassDef(AliITSvPPRasymmFMD,4) //Hits manager for set:ITS version 10
+                                   // PPR detailed Geometry asymmetric
 };
- 
+// Input and output function for standard C++ input/output.
+ostream &operator<<(ostream &os,const AliITSvPPRasymmFMD &s);
+istream &operator>>(istream &is,AliITSvPPRasymmFMD &s);
+
 #endif

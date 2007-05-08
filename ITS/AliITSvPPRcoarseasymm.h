@@ -8,7 +8,7 @@
 /////////////////////////////////////////////////////////
 //  Manager and hits classes for set: ITS version 6    //
 /////////////////////////////////////////////////////////
- 
+#include "AliITSInitGeometry.h" 
 #include "AliITS.h"
  
 class AliITSvPPRcoarseasymm : public AliITS {
@@ -22,7 +22,7 @@ class AliITSvPPRcoarseasymm : public AliITS {
     virtual void   CreateMaterials();
     virtual void   Init(); 
     virtual Int_t  IsVersion() const {// returns the ITS version number 
-	return 6;}
+	return (Int_t)kvPPRcourseasymm;}
     virtual void   DrawModule() const;
     virtual void   StepManager();
     virtual void   SetRails(Int_t v=1){ 
@@ -52,8 +52,9 @@ class AliITSvPPRcoarseasymm : public AliITS {
     Int_t  fRails;            // flag to switch rails on (=1) and off (=0)
     Int_t  fSuppMat;          // flag to change the material of the services
                               // supports (=0 copper, =1 aluminum, =2 carbon)
+    AliITSInitGeometry fIgm;  //! Geometry initlization object
 			          
-    ClassDef(AliITSvPPRcoarseasymm,1)  //Hits manager for set:ITS version 6 
+    ClassDef(AliITSvPPRcoarseasymm,2)  //Hits manager for set:ITS version 6 
                                        // PPR coarse Geometry asymmetric
 };
  

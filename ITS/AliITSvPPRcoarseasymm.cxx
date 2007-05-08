@@ -39,7 +39,7 @@
 #include <TVector.h>
 #include <TVirtualMC.h>
 #include <TGeometry.h>
-
+#include <TGeoManager.h>
 
 #include "AliMagF.h"
 #include "AliConst.h"
@@ -52,10 +52,12 @@ ClassImp(AliITSvPPRcoarseasymm)
  
 //_____________________________________________________________________________
 AliITSvPPRcoarseasymm::AliITSvPPRcoarseasymm():
-fMajorVersion(9),
+AliITS(),
+fMajorVersion(IsVersion()),
 fMinorVersion(0),
 fRails(0),
-fSuppMat(0) {
+fSuppMat(0),
+fIgm(kvPPRcourseasymm) {
 ////////////////////////////////////////////////////////////////////////
 //    Standard default constructor for the ITS version 6.
 ////////////////////////////////////////////////////////////////////////
@@ -65,11 +67,13 @@ fSuppMat(0) {
     fIdSens    = 0;
 }
 //_____________________________________________________________________________
-AliITSvPPRcoarseasymm::AliITSvPPRcoarseasymm(const char *name, const char *title) : AliITS(name, title),
-fMajorVersion(9),
+AliITSvPPRcoarseasymm::AliITSvPPRcoarseasymm(const char *name, const char *title) : 
+AliITS(name, title),
+fMajorVersion(IsVersion()),
 fMinorVersion(0),
 fRails(0),
-fSuppMat(0) {
+fSuppMat(0),
+fIgm(kvPPRcourseasymm) {
 ////////////////////////////////////////////////////////////////////////
 //    Standard constructor for the ITS version 6.
 ////////////////////////////////////////////////////////////////////////
@@ -140,137 +144,161 @@ void AliITSvPPRcoarseasymm::BuildGeometry(){
 }
 //_____________________________________________________________________________
 void AliITSvPPRcoarseasymm::CreateGeometry(){
-////////////////////////////////////////////////////////////////////////
-//    This routine defines and Creates the geometry for version 6 of the ITS.
-////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+    // This routine defines and Creates the geometry for version 6 of the ITS.
+    ////////////////////////////////////////////////////////////////////////
   
-  //INNER RADII OF THE SILICON LAYERS 
-  Float_t rl[6]    = { 3.8095,7.,15.,24.,38.5,43.5765 };   
-  //THICKNESSES OF LAYERS (in % radiation length)
-  Float_t drl[6]   = { 1.03,1.03,0.94,0.95,0.91,0.87 };   
-  //HALF LENGTHS OF LAYERS  
-  Float_t dzl[6]   = { 14.35,14.35,25.1,32.1,49.405,55.27 };
-  //LENGTHS OF END-LADDER BOXES (ALL INCLUDED)
-  Float_t dzb[6]   = { 12.4,12.4,13.5,15.,7.5,7.5 };   
-  //THICKNESSES OF END-LADDER BOXES (ALL INCLUDED)
-  Float_t drb[6]   = { rl[1]-rl[0],0.2,5.,5.,4.,4. };        
+    //INNER RADII OF THE SILICON LAYERS 
+    Float_t rl[6]    = { 3.8095,7.,15.,24.,38.5,43.5765 };   
+    //THICKNESSES OF LAYERS (in % radiation length)
+    Float_t drl[6]   = { 1.03,1.03,0.94,0.95,0.91,0.87 };   
+    //HALF LENGTHS OF LAYERS  
+    Float_t dzl[6]   = { 14.35,14.35,25.1,32.1,49.405,55.27 };
+    //LENGTHS OF END-LADDER BOXES (ALL INCLUDED)
+    Float_t dzb[6]   = { 12.4,12.4,13.5,15.,7.5,7.5 };   
+    //THICKNESSES OF END-LADDER BOXES (ALL INCLUDED)
+    Float_t drb[6]   = { rl[1]-rl[0],0.2,5.,5.,4.,4. };        
 
  
-  Float_t dits[3], rlim, zmax;
-  Float_t zpos;
-  Float_t pcits[100], ztpc;
-  Int_t idrotm[1999], i;
-  Float_t dgh[100];
+    Float_t dits[3], rlim, zmax;
+    Float_t zpos;
+    Float_t pcits[100], ztpc;
+    Int_t idrotm[1999], i;
+    Float_t dgh[100];
   
-  Int_t rails = 1;       // flag for rails (1 --> rails in; 0 --> rails out)
-  Int_t suppmat = 0;     // flag to change the material of the services
-                         // supports (=0 copper, =1 aluminum, =2 carbon)  
-  rails = GetRails();
+    Int_t rails = 1;       // flag for rails (1 --> rails in; 0 --> rails out)
+    Int_t suppmat = 0;     // flag to change the material of the services
+                           // supports (=0 copper, =1 aluminum, =2 carbon)
+    // These constant character strings are set by cvs during commit
+    // do not change them unless you know what you are doing!
+    const Char_t *cvsDate="$Date$";
+    const Char_t *cvsRevision="$Revision$";
+    rails = GetRails();
   
-  if(rails != 0 && rails != 1) {
-     cout << "ITS - WARNING: the switch for rails is not set neither to 0 (rails out) nor to 1 (rails in)." 
-     " The default value of 1 (rails in) will be used." << endl;
-  }  
+    if(rails != 0 && rails != 1) {
+        cout << "ITS - WARNING: the switch for rails is not set "
+            "neither to 0 (rails out) nor to 1 (rails in)." 
+            " The default value of 1 (rails in) will be used." << endl;
+    }  // end if
   
-  if (rails == 0 ) {
-     cout << "ITS: Rails are out." << endl; 
-  } else {
-     cout << "ITS: Rails are in." << endl;
-  }      
+    if (rails == 0 ) {
+        cout << "ITS: Rails are out." << endl; 
+    } else {
+        cout << "ITS: Rails are in." << endl;
+    } // end if 
+    suppmat = GetSupportMaterial();   
   
-  suppmat = GetSupportMaterial();   
+    if (suppmat != 0 && suppmat != 1 && suppmat != 2) {
+        cout << "ITS - WARNING: the flag for the material of "
+            "services supports is not set neither to 0 (copper) "
+            "nor to 1 (aluminum) nor to 2 (carbon)." 
+            " The default value of 0 (copper) will be used." << endl;
+    }   // end if
   
-  if (suppmat != 0 && suppmat != 1 && suppmat != 2) {
-     cout << "ITS - WARNING: the flag for the material of services supports is not set neither to 0 (copper) nor to 1 (aluminum) nor to 2 (carbon)." 
-     " The default value of 0 (copper) will be used." << endl;
-  }  
-  
-  if (suppmat == 0) {
-     cout << "ITS: The material of the services supports is copper." << endl; 
-  } else if (suppmat == 1){
-     cout << "ITS: The material of the services supports is aluminum." << endl;
-  } else {
-     cout << "ITS: The material of the services supports is carbon." << endl;
-  }      
+    if (suppmat == 0) {
+        cout << "ITS: The material of the services supports is copper." 
+             << endl; 
+    } else if (suppmat == 1){
+        cout << "ITS: The material of the services supports is aluminum." 
+             << endl;
+    } else {
+        cout << "ITS: The material of the services supports is carbon." 
+             << endl;
+    } // end if
       
 
-  Int_t *idtmed = fIdtmed->GetArray()-199;
+    Int_t *idtmed = fIdtmed->GetArray()-199;
   
-  //     CONVERT INTO CM (RL(SI)=9.36 CM) 
-  for (i = 0; i < 6; ++i) {
-    drl[i] = drl[i] / 100. * 9.36;
-  }
+    //     CONVERT INTO CM (RL(SI)=9.36 CM) 
+    for (i = 0; i < 6; ++i) {
+        drl[i] = drl[i] / 100. * 9.36;
+    } // end if
     
-  //     FIELD CAGE HALF LENGTH 
+    //     FIELD CAGE HALF LENGTH 
   
-  rlim  = 50.;
-  zmax  = 74.;
-  ztpc = 284.;
+    rlim  = 50.;
+    zmax  = 74.;
+    ztpc = 284.;
   
-  // --- Define ghost volume containing the whole ITS (including services) 
-  //     and fill it with air 
+    // --- Define ghost volume containing the whole ITS (including services) 
+    //     and fill it with air 
+    /*
+    dgh[0] = 0.;
+    dgh[1] = 360.;
+    dgh[2] = 16.;
+    dgh[3] = -ztpc-5.-0.1;
+    dgh[4] = 46;   
+    dgh[5] = 85.;
+    dgh[6] = -ztpc;
+    dgh[7] = 46;   
+    dgh[8] = 85.;
+    dgh[9] = -ztpc;
+    dgh[10] = 46;  
+    dgh[11] = rlim+6;
+    dgh[12] = -97.5;
+    dgh[13] = 46;  
+    dgh[14] = rlim+6;
+    dgh[15] = -zmax;
+    dgh[16] = 46;  
+    dgh[17] = rlim+6;
+    dgh[18] = -48;   
+    dgh[19] = 6;
+    dgh[20] = rlim+6;
+    dgh[21] = -28.6;   
+    dgh[22] = 6;
+    dgh[23] = rlim+6;    
+    dgh[24] = -27.6;  
+    dgh[25] = 3.295;
+    dgh[26] = rlim+6; 
+    dgh[27] = 27.6;   
+    dgh[28] = 3.295;
+    dgh[29] = rlim+6;
+    dgh[30] = 28.6;   
+    dgh[31] = 6;
+    dgh[32] = rlim+6;
+    dgh[33] = 48;   
+    dgh[34] = 6;
+    dgh[35] = rlim+6;  
+    dgh[36] = zmax;
+    dgh[37] = 46;
+    dgh[38] = rlim+6;
+    dgh[39] = 97.5;
+    dgh[40] = 46;  
+    dgh[41] = rlim+6;
+    dgh[42] = ztpc;
+    dgh[43] = 62;     
+    dgh[44] = 62+4.;  
+    dgh[45] = ztpc;
+    dgh[46] = 62;     
+    dgh[47] = 85.;
+    dgh[48] = ztpc+4.+0.1;
+    dgh[49] = 62.4;
+    dgh[50] = 85.;
+    gMC->Gsvolu("ITSV", "PCON", idtmed[275], dgh, 51);
   
-  dgh[0] = 0.;
-  dgh[1] = 360.;
-  dgh[2] = 16.;
-  dgh[3] = -ztpc-5.-0.1;
-  dgh[4] = 46;   
-  dgh[5] = 85.;
-  dgh[6] = -ztpc;
-  dgh[7] = 46;   
-  dgh[8] = 85.;
-  dgh[9] = -ztpc;
-  dgh[10] = 46;  
-  dgh[11] = rlim+6;
-  dgh[12] = -97.5;
-  dgh[13] = 46;  
-  dgh[14] = rlim+6;
-  dgh[15] = -zmax;
-  dgh[16] = 46;  
-  dgh[17] = rlim+6;
-  dgh[18] = -48;   
-  dgh[19] = 6;
-  dgh[20] = rlim+6;
-  dgh[21] = -28.6;   
-  dgh[22] = 6;
-  dgh[23] = rlim+6;    
-  dgh[24] = -27.6;  
-  dgh[25] = 3.295;
-  dgh[26] = rlim+6; 
-  dgh[27] = 27.6;   
-  dgh[28] = 3.295;
-  dgh[29] = rlim+6;
-  dgh[30] = 28.6;   
-  dgh[31] = 6;
-  dgh[32] = rlim+6;
-  dgh[33] = 48;   
-  dgh[34] = 6;
-  dgh[35] = rlim+6;  
-  dgh[36] = zmax;
-  dgh[37] = 46;
-  dgh[38] = rlim+6;
-  dgh[39] = 97.5;
-  dgh[40] = 46;  
-  dgh[41] = rlim+6;
-  dgh[42] = ztpc;
-  dgh[43] = 62;     
-  dgh[44] = 62+4.;  
-  dgh[45] = ztpc;
-  dgh[46] = 62;     
-  dgh[47] = 85.;
-  dgh[48] = ztpc+4.+0.1;
-  dgh[49] = 62.4;
-  dgh[50] = 85.;
-  gMC->Gsvolu("ITSV", "PCON", idtmed[275], dgh, 51);
+    // --- Place the ghost volume in its mother volume (ALIC) and make it 
+    //     invisible 
   
-  // --- Place the ghost volume in its mother volume (ALIC) and make it 
-  //     invisible 
-  
-  gMC->Gspos("ITSV", 1, "ALIC", 0., 0., 0., 0, "ONLY");
-  //gMC->Gsatt("ITSV", "SEEN", 0); 
+    gMC->Gspos("ITSV", 1, "ALIC", 0., 0., 0., 0, "ONLY");
+    //gMC->Gsatt("ITSV", "SEEN", 0);
+    */
+    TGeoVolumeAssembly *itsV = gGeoManager->MakeVolumeAssembly("ITSV");
+    const Int_t length=100;
+    Char_t vstrng[length];
+    if(fIgm.WriteVersionString(vstrng,length,(AliITSVersion_t)IsVersion(),
+                               fMinorVersion,cvsDate,cvsRevision))
+        itsV->SetTitle(vstrng);
 
+    TGeoVolume *alic = gGeoManager->GetVolume("ALIC");
+    if(alic==0) {
+        Error("CreateGeometry","alic=0");
+        return;
+    } // end if
+    // See idrotm[199] for angle definitions.
+    //alic->AddNode(itsV,1,new TGeoRotation("", 90.,180., 90.,90., 180.,0.));
+    alic->AddNode(itsV,1,0);
 
-  // --- Define ghost volume containing the six layers and fill it with air 
+    // --- Define ghost volume containing the six layers and fill it with air 
   
   dgh[0] = 0.;
   dgh[1] = 360.;

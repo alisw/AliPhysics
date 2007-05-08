@@ -90,21 +90,24 @@ const Double_t AliITSvBeamTestITS04::fgkSSD1y = 80.6;
 ClassImp(AliITSvBeamTestITS04)
     
 //_____________________________________________________________
-  AliITSvBeamTestITS04::AliITSvBeamTestITS04() : AliITS(),
-fITSmotherVolume(0),
-fNspd(fgkNumberOfSPD),
-fNsdd(fgkNumberOfSDD),
-fNssd(fgkNumberOfSSD),
-fGeomDetOut(kFALSE),
-fGeomDetIn(kFALSE){
+  AliITSvBeamTestITS04::AliITSvBeamTestITS04() : 
+AliITS(),              // Base class
+fITSmotherVolume(0),   // Pointer to ITS mother volume.
+fNspd(fgkNumberOfSPD), //Number of SPD modules
+fNsdd(fgkNumberOfSDD), //Number of SDD modules
+fNssd(fgkNumberOfSSD), //Number of SSD modules
+fGeomDetOut(kFALSE),   // Flag to write .det file out
+fGeomDetIn(kFALSE),    // Flag to read geometry file (JC)
+fWrite(),              //! file name to write .det file 
+fRead(),               // file name to read .det file (JC)
+fMajorVersion(kvITS04),// Major Version
+fMinorVersion(1),      // Minor Version
+fIgm(kvITS04)          //! Init geometry object
+{
     //
     // Constructor
     //
-    
-  // SetNumberOfSPD(fgkNumberOfSPD);
-  //  SetNumberOfSDD(fgkNumberOfSDD);
-  //  SetNumberOfSSD(fgkNumberOfSSD);
-    
+
     fIdN = 3;         
     fIdName    = new TString[fIdN];
     fIdName[0] = fgSPDsensitiveVolName;
@@ -113,33 +116,27 @@ fGeomDetIn(kFALSE){
     fIdSens    = new Int_t[fIdN];
     for(Int_t i=0; i<fIdN; i++) fIdSens[i] = 0;
     
-    //for writing out geometry
-    //fGeomDetOut   = kFALSE; 
-
-    // for reading in geometry (JC)
-    //fGeomDetIn = kFALSE;
-
     for(Int_t a=0;a<60;a++) fWrite[a] = '\0';
 }
-
 //_____________________________________________________________
-AliITSvBeamTestITS04::AliITSvBeamTestITS04(const char* name,const char *title)
-  : AliITS(name,title),
-fITSmotherVolume(0),
-fNspd(fgkNumberOfSPD),
-fNsdd(fgkNumberOfSDD),
-fNssd(fgkNumberOfSSD),
-fGeomDetOut(kFALSE),
-fGeomDetIn(kFALSE)
+AliITSvBeamTestITS04::AliITSvBeamTestITS04(const char* name,const char *title):
+AliITS(name,title),   // Base class
+fITSmotherVolume(0),   // Pointer to ITS mother volume.
+fNspd(fgkNumberOfSPD), //Number of SPD modules
+fNsdd(fgkNumberOfSDD), //Number of SDD modules
+fNssd(fgkNumberOfSSD), //Number of SSD modules
+fGeomDetOut(kFALSE),   // Flag to write .det file out
+fGeomDetIn(kFALSE),    // Flag to read geometry file (JC)
+fWrite(),              //! file name to write .det file 
+fRead(),               // file name to read .det file (JC)
+fMajorVersion(kvITS04),// Major Version
+fMinorVersion(1),       // Minor Version
+fIgm(kvITS04)          //! Init geometry object
 {
     //
     // Constructor
     //
-    
-    //SetNumberOfSPD(fgkNumberOfSPD);
-    //SetNumberOfSDD(fgkNumberOfSDD);
-    //SetNumberOfSSD(fgkNumberOfSSD);
-    
+
     fIdN = 3;         
     fIdName    = new TString[fIdN];
     fIdName[0] = fgSPDsensitiveVolName;
@@ -147,30 +144,18 @@ fGeomDetIn(kFALSE)
     fIdName[2] = fgSSDsensitiveVolName;
     fIdSens    = new Int_t[fIdN];
     for(Int_t i=0; i<fIdN; i++) fIdSens[i] = 0;
-    
-    //for writing out geometry
-    //fGeomDetOut   = kFALSE; // Don't write .det file
-
-    // for reading in geometry (JC)
-    //fGeomDetIn = kFALSE;
-
     for(Int_t a=0;a<60;a++) fWrite[a] = '\0';    
 }
-
 //__________________________________________________________________
-AliITSvBeamTestITS04::~AliITSvBeamTestITS04()
-{
+AliITSvBeamTestITS04::~AliITSvBeamTestITS04(){
     //
     // Destructor
     //
 }
-
 //______________________________________________________________________
-void AliITSvBeamTestITS04::CreateMaterials()
-{
+void AliITSvBeamTestITS04::CreateMaterials(){
     // Media defined here should correspond to the one defined in galice.cuts
     // This file is read in (AliMC*) fMCApp::Init() { ReadTransPar(); }
-    
     // Create ITS materials
     Int_t   ifield = gAlice->Field()->Integ();
     Float_t fieldm = gAlice->Field()->Max();
@@ -210,9 +195,12 @@ void AliITSvBeamTestITS04::CreateMaterials()
 }
 
 //______________________________________________________________________
-void AliITSvBeamTestITS04::CreateGeometry()
-{    
-  //Creates geometry
+void AliITSvBeamTestITS04::CreateGeometry(){    
+    //Creates geometry
+    // These constant character strings are set by cvs during commit
+    // do not change them unless you know what you are doing!
+    const Char_t *cvsDate="$Date$";
+    const Char_t *cvsRevision="$Revision$";
     TGeoManager *geoManager = gGeoManager;
     TGeoVolume *vALIC = geoManager->GetTopVolume();
     
@@ -224,8 +212,19 @@ void AliITSvBeamTestITS04::CreateGeometry()
     sITS->DefineSection(0,-100.0,0.01,100.0); // Units in cms
     sITS->DefineSection(1,+100.0,0.01,100.0);
     
-    TGeoMedium *air = gGeoManager->GetMedium("ITSair");
-    fITSmotherVolume = new TGeoVolume("vITS",sITS,air);
+    TGeoMedium *air = geoManager->GetMedium("ITSair");
+    fITSmotherVolume = new TGeoVolume("ITSV",sITS,air);
+    const Int_t length=100;
+    Char_t vstrng[length];
+    if(fIgm.WriteVersionString(vstrng,length,(AliITSVersion_t)IsVersion(),
+                               fMinorVersion,cvsDate,cvsRevision))
+        fITSmotherVolume->SetTitle(vstrng);
+    else Error("CreateGeometry","Error writing/setting version string");
+    //printf("Title set to %s\n",vstrng);
+    if(vALIC==0) {
+        Error("CreateGeometry","alic=0");
+        return;
+    } // end if
     fITSmotherVolume->SetVisibility(kFALSE);
     vALIC->AddNode(fITSmotherVolume,1,0);
     
@@ -251,20 +250,23 @@ void AliITSvBeamTestITS04::CreateGeometry()
 void AliITSvBeamTestITS04::Init()
 {
     // Initialize the ITS after it has been created.
-    Int_t i;
-    for(i=0;i<20;i++) printf("*");
-    printf( " ITSbeamtest_Init " );
-    for(i=0;i<20;i++) printf("*"); printf("\n");
+    // Inputs:
+    //   none.
+    // Outputs:
+    //   none.
+    // Return:
+    //   none.
 
-//    // Create geometry
-//    if(!fGeomDetIn) this->InitAliITSgeom();
-
-    // Initialize AliITS
+    AliDebug(1,Form("Init: Major version %d Minor version %d",fMajorVersion,
+                 fMinorVersion));
+    //
+    UpdateInternalGeometry();
     AliITS::Init();
-    for(i=0;i<40+16;i++) printf("*"); printf("\n");
+    if(fGeomDetOut) GetITSgeom()->WriteNewFile(fWrite);
 
+    //
 }
-
+/*
 //______________________________________________________________________
 void AliITSvBeamTestITS04::InitAliITSgeom()
 {    
@@ -283,7 +285,7 @@ void AliITSvBeamTestITS04::InitAliITSgeom()
     if (GetITSgeom()) SetITSgeom(0x0);
     AliITSgeom* geom = new AliITSgeom(0,knlayers,nlad,ndet,nModTot);
     SetITSgeom(geom);
-    //*** Set default shapes 
+    // *** Set default shapes 
     const Float_t kDxyzSPD[] = {fgkSPDwidthSens/2, fgkSPDthickSens/2,fgkSPDlengthSens/2};  
     if(!(GetITSgeom()->IsShapeDefined(kSPD)))
 	GetITSgeom()->ReSetShape(kSPD,new AliITSgeomSPD425Short(3,(Float_t *)kDxyzSPD));
@@ -366,7 +368,6 @@ void AliITSvBeamTestITS04::InitAliITSgeom()
     
     return;
 }
-
 //______________________________________________________________________
 void AliITSvBeamTestITS04::SetDefaults()
 {
@@ -469,7 +470,7 @@ void AliITSvBeamTestITS04::SetDefaults()
   if(fgkNTYPES>3){Warning("SetDefaults","Only the four basic detector types are initialised!");}
   return;
 }
-
+*/
 //______________________________________________________________________
 void AliITSvBeamTestITS04::AddSPDGeometry(TGeoVolume *moth) const
 {
@@ -573,78 +574,62 @@ void AliITSvBeamTestITS04::StepManager()
     // creator with the information to be recoreded about that hit.
 
     // "Standard" StepManager. (Similar to AliITSv11) mln
-    Int_t copy, id;
+    Int_t cpy0,mod,status,id,kk;
     TLorentzVector position, momentum;
-    static TLorentzVector position0;
-    static Int_t stat0=0;
+    static AliITShit hit;// Saves on calls to construtors
     
-    if(!(this->IsActive())){
-	return;
-    } // end if !Active volume.
-    
+    if(!(this->IsActive())) return;
     if(!(gMC->TrackCharge())) return;
-    
-    id=gMC->CurrentVolID(copy);
-    
-    Bool_t sensvol = kFALSE;
-    for(Int_t kk = 0; kk < fIdN; kk++)
-	if(id == fIdSens[kk]) sensvol = kTRUE;
-    
-    if (sensvol && (gMC->IsTrackExiting())) {
-	copy = fTrackReferences->GetEntriesFast();
-	TClonesArray &lTR = *fTrackReferences;
-	// Fill TrackReference structure with this new TrackReference.
-	new(lTR[copy]) AliTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
-    } // if Outer ITS mother Volume
-    
-    Int_t   vol[5];
-    TClonesArray &lhits = *fHits;
+    //TClonesArray &lhits = *(GetDetTypeSim()->GetHits());
+    TClonesArray &lhits = *(Hits());
     //
     // Track status
-    vol[3] = 0;
-    vol[4] = 0;
+    // Track status
+    status = 0;
+    if(gMC->IsTrackInside())      status +=  1;
+    if(gMC->IsTrackEntering())    status +=  2;
+    if(gMC->IsTrackExiting())     status +=  4;
+    if(gMC->IsTrackOut())         status +=  8;
+    if(gMC->IsTrackDisappeared()) status += 16;
+    if(gMC->IsTrackStop())        status += 32;
+    if(gMC->IsTrackAlive())       status += 64;
+    
+    id=gMC->CurrentVolID(cpy0);
+    
+    Bool_t sensvol = kFALSE;
+    for(kk=0;kk<fIdN;kk++) if(id == fIdSens[kk]) sensvol = kTRUE;
+    if(!sensvol) return;
+
+    fIgm.DecodeDetector(mod,gGeoManager->GetMother(1)->GetNumber(),1,1,1);
+    //
     // Fill hit structure.
-    if(gMC->IsTrackInside())      vol[3] +=  1;
-    if(gMC->IsTrackEntering())    vol[3] +=  2;
-    if(gMC->IsTrackExiting())     vol[3] +=  4;
-    if(gMC->IsTrackOut())         vol[3] +=  8;
-    if(gMC->IsTrackDisappeared()) vol[3] += 16;
-    if(gMC->IsTrackStop())        vol[3] += 32;
-    if(gMC->IsTrackAlive())       vol[3] += 64;
-    
-    // Only entering charged tracks
-    if(!(gMC->TrackCharge())) return;
-    
-    if( ((id = gMC->CurrentVolID(copy)) == fIdSens[0]) ||
-	((id = gMC->CurrentVolID(copy)) == fIdSens[1]) ||
-	((id = gMC->CurrentVolID(copy)) == fIdSens[2]) )
-    {
-	GetCurrentLayLaddDet(vol[0], vol[2], vol[1]);
-	// vol[2], vol[1]) : in this order because the ladder
-	// index and the det. index are exchanged in the constructor
-	// of AliITShit...
-    } else {
-	return; // not an ITS volume?
-    };
-    
+    //
+    hit.SetModule(mod);
+    hit.SetTrack(gAlice->GetMCApp()->GetCurrentTrackNumber());
     gMC->TrackPosition(position);
     gMC->TrackMomentum(momentum);
-    vol[4] = stat0;
+    hit.SetPosition(position);
+    hit.SetTime(gMC->TrackTime());
+    hit.SetMomentum(momentum);
+    hit.SetStatus(status);
+    hit.SetEdep(gMC->Edep());
+    hit.SetShunt(GetIshunt());
     if(gMC->IsTrackEntering()){
-	position0 = position;
-	stat0 = vol[3];
-	return;
+        hit.SetStartPosition(position);
+        hit.SetStartTime(gMC->TrackTime());
+        hit.SetStartStatus(status);
+        return; // don't save entering hit.
     } // end if IsEntering
     // Fill hit structure with this new hit.
-    new(lhits[fNhits++]) AliITShit(fIshunt,gAlice->GetMCApp()->GetCurrentTrackNumber(),
-				   vol, gMC->Edep(),gMC->TrackTime(),position,
-				   position0,momentum);
-    //
-    position0 = position;
-    stat0 = vol[3];
+    //Info("StepManager","Calling Copy Constructor");
+    new(lhits[fNhits++]) AliITShit(hit); // Use Copy Construtor.
+    // Save old position... for next hit.
+    hit.SetStartPosition(position);
+    hit.SetStartTime(gMC->TrackTime());
+    hit.SetStartStatus(status);
     return;
 }
-
+/*
 //______________________________________________________________________
 Int_t AliITSvBeamTestITS04::GetCurrentLayLaddDet(Int_t &lay,Int_t &ladd, Int_t &det) const
 { 
@@ -678,7 +663,7 @@ Int_t AliITSvBeamTestITS04::GetCurrentLayLaddDet(Int_t &lay,Int_t &ladd, Int_t &
     
     return kTRUE;
 }
-
+*/
 //_____________________________________________________________
 
  Int_t AliITSvBeamTestITS04::GetNumberOfSubDet(const TString& det) const{
