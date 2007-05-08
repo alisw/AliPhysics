@@ -42,8 +42,6 @@ AliHMPIDReconstructor::AliHMPIDReconstructor():AliReconstructor(),fUserCut(0),fD
     fClu->AddAt(new TClonesArray("AliHMPIDCluster"),i);
   }
   
-  AliCDBManager::Instance()->SetDefaultStorage("local://$HOME");
-  
   AliCDBEntry *pUserCutEnt =AliCDBManager::Instance()->Get("HMPID/Calib/UserCut");    //contains TObjArray of 14 TObject with n. of sigmas to cut charge 
   if(!pUserCutEnt) return;                                                            //No request from User to apply a more severe cut on pad charge  
   
