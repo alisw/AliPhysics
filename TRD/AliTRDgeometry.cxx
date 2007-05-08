@@ -1509,8 +1509,10 @@ AliTRDgeometry *AliTRDgeometry::GetGeometry(AliRunLoader *runLoader)
 
   if (!geom) {
     // If it is not in the file, try to get it from the run loader 
-    AliTRD *trd = (AliTRD *) runLoader->GetAliRun()->GetDetector("TRD");
-    geom = trd->GetGeometry();
+    if (runLoader->GetAliRun()) {
+      AliTRD *trd = (AliTRD *) runLoader->GetAliRun()->GetDetector("TRD");
+      geom = trd->GetGeometry();
+    }
   }
   if (!geom) {
     AliErrorGeneral("AliTRDgeometry::GetGeometry","Geometry not found");
