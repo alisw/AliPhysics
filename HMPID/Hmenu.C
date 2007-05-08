@@ -201,9 +201,6 @@ void t1(Int_t case=1)
   cl->Print();  
 }//t1()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void hp(Int_t iEvt=0)
 {
 //Prints a list of HMPID hits for a given event. Default is event number 0.
@@ -264,16 +261,3 @@ void cp(Int_t iEvt=0)
   Printf("totally %i clusters for event %i",iCluCnt,iEvt);
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-void ttt()
-{
-  TClonesArray hits ("AliHMPIDDigit");
-  TClonesArray sdigs("AliHMPIDDigit");
-  
-  AliHMPIDHit hit(0,45e-9,kProton,33,0,0);
-  hit.Hit2Sdi(&sdigs);
-  sdigs.Print();
-}
-
-
-#include "Hdisp.C"

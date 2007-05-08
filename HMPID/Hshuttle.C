@@ -1,28 +1,24 @@
 void Hshuttle(Int_t runTime=1500)
-{
-// this macro is to simulate the functionality of SHUTTLE.
-// Here the list of DCS aliases is created and packed in TMap of structure "alias name" - TObjArray of AliDCSValue; AliDCSValue is a pair value-time stamp     
-// currently simulated: freon temperature 2 per radiator (inlet,outlet)
-//                      methane pressure 1 per chamber   
+{// this macro is to simulate the functionality of SHUTTLE.
   gSystem->Load("libTestShuttle.so");
-  
   AliTestShuttle::SetMainCDB(TString("local://$HOME"));
   
-  TMap        *pDcsMap = new TMap;       pDcsMap->SetOwner(1);          //DCS archive map
+  TMap *pDcsMap = new TMap;       pDcsMap->SetOwner(1);          //DCS archive map
+  
+  AliTestShuttle* pShuttle = new AliTestShuttle(0,0,1000000);   
+  SimPed();   for(Int_t ldc=1;ldc<=4;ldc++) pShuttle->AddInputFile(AliTestShuttle::kDAQ,"HMP","pedestals",Form("LDC%i",ldc),Form("HmpidPeds%i.tgz",ldc));
+  SimMap(pDcsMap,runTime); pShuttle->SetDCSInput(pDcsMap);                                    //DCS map
+  
+  AliPreprocessor* pp = new AliHMPIDPreprocessor(pShuttle); pShuttle->Process();  delete pp;  //here goes preprocessor 
 
-  SimPed();
-  SimMap(pDcsMap,runTime);
-  TestShuttle(pDcsMap);  
-  TCanvas *c=new TCanvas("cc","ff",600,600);  
-  DrawInput(c,pDcsMap);
-  DrawOutput();
+  TCanvas *c=new TCanvas("cc","ff",600,600);  DrawInput(c,pDcsMap); DrawOutput();
 }//Hshuttle()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void SimPed()
 {
   ofstream out;
   for(Int_t ddl=0;ddl<=13;ddl++){
-    out.open(Form("ped_%02i.txt",ddl));
+    out.open(Form("HmpidPedDdl%02i.txt",ddl));
     out << 3 <<endl;
     for(Int_t row=1;row<=24;row++)
       for(Int_t dil=1;dil<=10;dil++)
@@ -30,12 +26,17 @@ void SimPed()
           Float_t mean  = 150+200*gRandom->Rndm();
           Float_t sigma = 1+0.2*gRandom->Rndm();
           Int_t inhard=((Int_t(mean))<<9)+Int_t(mean+3*sigma);
-          out << Form("%2i %2i %2i %2i %5.2f %5.2f %x\n",ddl,row,dil,adr,mean,sigma,inhard);
+          out << Form("%2i %2i %2i %5.2f %5.2f %x\n",row,dil,adr,mean,sigma,inhard);
         }
 
     Printf("file ped %02i created",ddl);
     out.close();
   }
+  gSystem->Exec("tar czf HmpidPeds1.tgz HmpidPedDdl00.txt HmpidPedDdl01.txt HmpidPedDdl02.txt HmpidPedDdl03.txt");
+  gSystem->Exec("tar czf HmpidPeds2.tgz HmpidPedDdl04.txt HmpidPedDdl05.txt HmpidPedDdl06.txt HmpidPedDdl07.txt");
+  gSystem->Exec("tar czf HmpidPeds3.tgz HmpidPedDdl08.txt HmpidPedDdl09.txt HmpidPedDdl10.txt HmpidPedDdl11.txt");
+  gSystem->Exec("tar czf HmpidPeds4.tgz HmpidPedDdl12.txt HmpidPedDdl13.txt");
+  gSystem->Exec("rm -rf ped*.txt");
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void SimMap(TMap *pDcsMap,Int_t runTime=1500)
@@ -49,29 +50,19 @@ void SimMap(TMap *pDcsMap,Int_t runTime=1500)
     TObjArray *pHV=new TObjArray; pHV->SetOwner(1); 
     for(Int_t time=0;time<runTime;time+=stepTime)  pP->Add(new AliDCSValue((Float_t)1005.0 ,time));   //sample CH4 pressure [mBar]
                                                    pHV->Add(new AliDCSValue((Float_t)2010.0,time));   //sample chamber HV [V]
-    pDcsMap->Add(new TObjString(Form(AliHMPIDPreprocessor::GetP(),iCh,iCh,iCh)),pP); 
-    pDcsMap->Add(new TObjString(Form(AliHMPIDPreprocessor::GetHV(),iCh,iCh,iCh)),pHV); 
+    pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_MP%i/HMP_MP%i_GAS/HMP_MP%i_GAS_PMWC.actual.value"           ,iCh,iCh,iCh)),pP); 
+    pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_MP%i/HMP_MP%i_PW/HMP_MP%i_SEC0/HMP_MP%i_SEC0_HV.actual.vMon",iCh,iCh,iCh)),pHV); 
         
     for(Int_t iRad=0;iRad<3;iRad++){//radiators loop
       TObjArray *pT1=new TObjArray; pT1->SetOwner(1); 
       TObjArray *pT2=new TObjArray; pT2->SetOwner(1); 
       for (Int_t time=0;time<runTime;time+=stepTime)  pT1->Add(new AliDCSValue(13,time));  //sample inlet temperature    Nmean=1.292 @ 13 degrees
       for (Int_t time=0;time<runTime;time+=stepTime)  pT2->Add(new AliDCSValue(13,time));  //sample outlet temperature
-      pDcsMap->Add(new TObjString(Form(AliHMPIDPreprocessor::GetT1(),iCh,iCh,iRad)) ,pT1); 
-      pDcsMap->Add(new TObjString(Form(AliHMPIDPreprocessor::GetT2(),iCh,iCh,iRad)),pT2);
+      pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_MP%i/HMP_MP%i_LIQ_LOOP.actual.sensors.Rad%iIn_Temp",iCh,iCh,iRad)) ,pT1); 
+      pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_MP%i/HMP_MP%i_LIQ_LOOP.actual.sensors.Rad%iOut_Temp",iCh,iCh,iRad)),pT2);
     }//radiators loop    
   }//chambers loop
 }//SimMap()
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void TestShuttle(TMap *pDcsMap)
-{
-  AliTestShuttle* pShuttle = new AliTestShuttle(0,0,1000000);   
-  pShuttle->SetDCSInput(pDcsMap);                                                    //DCS map
-  for(Int_t ddl=0;ddl<=13;ddl++) pShuttle->AddInputFile(AliTestShuttle::kDAQ,"HMP","pedestals",Form("DDL%i",ddl),Form("./ped_%02i.txt",ddl));
-  AliPreprocessor* pp = new AliHMPIDPreprocessor(pShuttle);                           //actual preprocessor is created here
-  pShuttle->Process();                                                               //run SHUTTLE simulator
-  delete pp;
-}
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void DrawInput(TCanvas *c,TMap *pDcsMap)
 {
@@ -84,8 +75,8 @@ void DrawInput(TCanvas *c,TMap *pDcsMap)
     if(iCh==4) c->cd(4);  if(iCh==3) c->cd(5);  if(iCh==2) c->cd(6);
                           if(iCh==1) c->cd(8);  if(iCh==0) c->cd(9); 
                           
-    TObjArray *pHV=(TObjArray*)pDcsMap->GetValue(Form(AliHMPIDPreprocessor::GetHV(),iCh,iCh,iCh,iCh)); //HV
-    TObjArray *pP =(TObjArray*)pDcsMap->GetValue(Form(AliHMPIDPreprocessor::GetP(),iCh,iCh,iCh)); //P
+    TObjArray *pHV=(TObjArray*)pDcsMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_PW/HMP_MP%i_SEC0/HMP_MP%i_SEC0_HV.actual.vMon",iCh,iCh,iCh,iCh)); //HV
+    TObjArray *pP =(TObjArray*)pDcsMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_GAS/HMP_MP%i_GAS_PMWC.actual.value",iCh,iCh,iCh)); //P
     TGraph *pGr=new TGraph; pGr->SetMarkerStyle(5);
     
     TIter nextp(pP); cnt=0; while((pVal=(AliDCSValue*)nextp())){ pGr->SetPoint(cnt++,pVal->GetTimeStamp(),pVal->GetFloat());}//P
@@ -97,17 +88,15 @@ void DrawInput(TCanvas *c,TMap *pDcsMap)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void DrawOutput()
 {
-  AliCDBManager::Instance()->SetDefaultStorage("local://$HOME");
-  AliCDBEntry *pQthreEnt =AliCDBManager::Instance()->Get("HMPID/Calib/Qthre",0);
-  AliCDBEntry *pNmeanEnt =AliCDBManager::Instance()->Get("HMPID/Calib/Nmean",0);
-  AliCDBEntry *pSigCutEnt=AliCDBManager::Instance()->Get("HMPID/Calib/SigCut",0);
-  AliCDBEntry *pDaqSigEnt=AliCDBManager::Instance()->Get("HMPID/Calib/DaqSig",0);
+  AliCDBManager::Instance()->SetDefaultStorage("local://$HOME"); AliCDBManager::Instance()->SetRun(0);
+  AliCDBEntry *pQthreEnt =AliCDBManager::Instance()->Get("HMPID/Calib/Qthre");
+  AliCDBEntry *pNmeanEnt =AliCDBManager::Instance()->Get("HMPID/Calib/Nmean");
+  AliCDBEntry *pDaqSigEnt=AliCDBManager::Instance()->Get("HMPID/Calib/DaqSig");
   
-  if(!pQthreEnt || ! pNmeanEnt || !pSigCutEnt || !pDaqSigEnt) return;
+  if(!pQthreEnt || !pNmeanEnt || !pDaqSigEnt) return;
   
   TObjArray *pNmean =(TObjArray*)pNmeanEnt ->GetObject(); 
   TObjArray *pQthre =(TObjArray*)pQthreEnt ->GetObject(); 
-  TObjArray *pSigCut=(TObjArray*)pSigCutEnt->GetObject(); 
   TObjArray *pDaqSig=(TObjArray*)pDaqSigEnt->GetObject();
    
   TF1 *pRad0,*pRad1,*pRad2;  
@@ -124,3 +113,4 @@ void DrawOutput()
     TF1 *pRad2=(TF1*)pNmean->At(iCh*3+2); pRad2->Draw("same");
   }//chambers loop  
 }
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
