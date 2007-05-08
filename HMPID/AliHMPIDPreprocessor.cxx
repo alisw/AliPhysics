@@ -107,11 +107,11 @@ Bool_t AliHMPIDPreprocessor::ProcPed()
     while(!infile.eof()){
       infile>>dec>>r>>d>>a>>mean>>sigma>>hex>>hard;      
       dig.Raw(ddl,r,d,a);
-      (*pM)(dig.PadPcX(),dig.PadPcY()) = sigma;
+      (*pM)(dig.PadChX(),dig.PadChY()) = sigma;
     }
     infile.close();
   }
-  gSystem->Exec("rm -rf HmpidPed*");
+//  gSystem->Exec("rm -rf HmpidPed*");
   AliCDBMetaData metaData; metaData.SetBeamPeriod(0); metaData.SetResponsible("AliHMPIDPreprocessor"); metaData.SetComment("SIMULATED");
   return Store("Calib","DaqSig",&aDaqSig,&metaData,0,kTRUE);
 }//ProcPed()  

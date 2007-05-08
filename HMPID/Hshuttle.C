@@ -1,7 +1,7 @@
 void Hshuttle(Int_t runTime=1500)
 {// this macro is to simulate the functionality of SHUTTLE.
   gSystem->Load("libTestShuttle.so");
-  AliTestShuttle::SetMainCDB(TString("local://$HOME"));
+  AliTestShuttle::SetMainCDB(TString("local://$HOME/CDB"));
   
   TMap *pDcsMap = new TMap;       pDcsMap->SetOwner(1);          //DCS archive map
   
@@ -11,7 +11,7 @@ void Hshuttle(Int_t runTime=1500)
   
   AliPreprocessor* pp = new AliHMPIDPreprocessor(pShuttle); pShuttle->Process();  delete pp;  //here goes preprocessor 
 
-  TCanvas *c=new TCanvas("cc","ff",600,600);  DrawInput(c,pDcsMap); DrawOutput();
+  DrawInput(pDcsMap); DrawOutput();
 }//Hshuttle()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void SimPed()
@@ -24,7 +24,7 @@ void SimPed()
       for(Int_t dil=1;dil<=10;dil++)
         for(Int_t adr=0;adr<=47;adr++){
           Float_t mean  = 150+200*gRandom->Rndm();
-          Float_t sigma = 1+0.2*gRandom->Rndm();
+          Float_t sigma = ddl+gRandom->Gaus();
           Int_t inhard=((Int_t(mean))<<9)+Int_t(mean+3*sigma);
           out << Form("%2i %2i %2i %5.2f %5.2f %x\n",row,dil,adr,mean,sigma,inhard);
         }
@@ -57,18 +57,18 @@ void SimMap(TMap *pDcsMap,Int_t runTime=1500)
       TObjArray *pT1=new TObjArray; pT1->SetOwner(1); 
       TObjArray *pT2=new TObjArray; pT2->SetOwner(1); 
       for (Int_t time=0;time<runTime;time+=stepTime)  pT1->Add(new AliDCSValue(13,time));  //sample inlet temperature    Nmean=1.292 @ 13 degrees
-      for (Int_t time=0;time<runTime;time+=stepTime)  pT2->Add(new AliDCSValue(13,time));  //sample outlet temperature
+      for (Int_t time=0;time<runTime;time+=stepTime)  pT2->Add(new AliDCSValue(14,time));  //sample outlet temperature
       pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_MP%i/HMP_MP%i_LIQ_LOOP.actual.sensors.Rad%iIn_Temp",iCh,iCh,iRad)) ,pT1); 
       pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_MP%i/HMP_MP%i_LIQ_LOOP.actual.sensors.Rad%iOut_Temp",iCh,iCh,iRad)),pT2);
     }//radiators loop    
   }//chambers loop
 }//SimMap()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void DrawInput(TCanvas *c,TMap *pDcsMap)
+void DrawInput(TMap *pDcsMap)
 {
-  c->Divide(3,3);
+  TCanvas *c=new TCanvas("cc","Input data",600,600);    c->Divide(3,3);
   
-  AliDCSValue *pVal; Int_t cnt=0;
+  AliDCSValue *pVal; Int_t cnt;
   
   for(Int_t iCh=0;iCh<7;iCh++){//chambers loop
     if(iCh==6) c->cd(1);  if(iCh==5) c->cd(2);                          
@@ -77,18 +77,24 @@ void DrawInput(TCanvas *c,TMap *pDcsMap)
                           
     TObjArray *pHV=(TObjArray*)pDcsMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_PW/HMP_MP%i_SEC0/HMP_MP%i_SEC0_HV.actual.vMon",iCh,iCh,iCh,iCh)); //HV
     TObjArray *pP =(TObjArray*)pDcsMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_GAS/HMP_MP%i_GAS_PMWC.actual.value",iCh,iCh,iCh)); //P
-    TGraph *pGr=new TGraph; pGr->SetMarkerStyle(5);
+    TGraph *pGrHV=new TGraph; pGrHV->SetMarkerStyle(5); TIter nextHV(pHV);
+    TGraph *pGrP =new TGraph; pGrP ->SetMarkerStyle(5); TIter nextP (pP );
     
-    TIter nextp(pP); cnt=0; while((pVal=(AliDCSValue*)nextp())){ pGr->SetPoint(cnt++,pVal->GetTimeStamp(),pVal->GetFloat());}//P
-
-    
-    pGr->Draw("AP");
-  }  
-}
+    for(Int_t iRad=0;iRad<3;iRad++){
+      TObjArray *pT1=(TObjArray*)pDcsMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_LIQ_LOOP.actual.sensors.Rad%iIn_Temp",iCh,iCh,iRad));  TIter nextT1(pT1);
+      TObjArray *pT2=(TObjArray*)pDcsMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_LIQ_LOOP.actual.sensors.Rad%iOut_Temp",iCh,iCh,iRad)); TIter nextT2(pT2);
+      TGraph *pGrT1=new TGraph; pGrT1->SetMarkerStyle(5); 
+      TGraph *pGrT2=new TGraph; pGrT2->SetMarkerStyle(5); 
+      cnt=0; while((pVal=(AliDCSValue*)nextT1())) pGrT1->SetPoint(cnt++,pVal->GetTimeStamp(),pVal->GetFloat());
+      cnt=0; while((pVal=(AliDCSValue*)nextT2())) pGrT2->SetPoint(cnt++,pVal->GetTimeStamp(),pVal->GetFloat());
+      pGrT1->Draw("AP");  pGrT2->Draw("same");
+    }//radiators loop
+  }//chambers loop  
+}//DrawInput()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void DrawOutput()
 {
-  AliCDBManager::Instance()->SetDefaultStorage("local://$HOME"); AliCDBManager::Instance()->SetRun(0);
+  AliCDBManager::Instance()->SetDefaultStorage("local://$HOME/CDB"); AliCDBManager::Instance()->SetRun(0);
   AliCDBEntry *pQthreEnt =AliCDBManager::Instance()->Get("HMPID/Calib/Qthre");
   AliCDBEntry *pNmeanEnt =AliCDBManager::Instance()->Get("HMPID/Calib/Nmean");
   AliCDBEntry *pDaqSigEnt=AliCDBManager::Instance()->Get("HMPID/Calib/DaqSig");
@@ -100,10 +106,18 @@ void DrawOutput()
   TObjArray *pDaqSig=(TObjArray*)pDaqSigEnt->GetObject();
    
   TF1 *pRad0,*pRad1,*pRad2;  
-  TCanvas *c2=new TCanvas("c2","Nmean"); c2->Divide(3,3);
+  TCanvas *c2=new TCanvas("c2","Output"); c2->Divide(3,3);
   
+  TH1F *pSig[7];
   
   for(Int_t iCh=0;iCh<7;iCh++){//chambers loop
+    TMatrix *pM=(TMatrix*)pDaqSig->At(iCh);
+    
+    pSig[iCh]=new TH1F(Form("sig%i",iCh),"Sigma;[QDC]",100,-5,20); //pSig[iCh]->SetLineColor(iCh+kRed);
+    for(Int_t padx=0;padx<160;padx++) for(Int_t pady=0;pady<144;pady++) pSig[iCh]->Fill((*pM)(padx,pady));
+    
+    c2->cd(7);    if(iCh==0) pSig[iCh]->Draw(); else pSig[iCh]->Draw("same");
+    
     if(iCh==6) c2->cd(1);  if(iCh==5) c2->cd(2);                          
     if(iCh==4) c2->cd(4);  if(iCh==3) c2->cd(5);  if(iCh==2) c2->cd(6);
                            if(iCh==1) c2->cd(8);  if(iCh==0) c2->cd(9); 
@@ -111,6 +125,6 @@ void DrawOutput()
     TF1 *pRad0=(TF1*)pNmean->At(iCh*3+0); pRad0->Draw();  pRad0->GetXaxis()->SetTimeDisplay(kTRUE); pRad0->GetYaxis()->SetRangeUser(1.28,1.3);
     TF1 *pRad1=(TF1*)pNmean->At(iCh*3+1); pRad1->Draw("same");
     TF1 *pRad2=(TF1*)pNmean->At(iCh*3+2); pRad2->Draw("same");
-  }//chambers loop  
-}
+  }//chambers loop    
+}//DrawOutput()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
