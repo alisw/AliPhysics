@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2007/05/03 08:04:19  decaro
+Coding convention: RN17 violation -> suppression
+
 Revision 1.9  2007/04/27 17:41:01  arcelli
 merge DistanceToPad and IsInsideThePad methods
 
@@ -1557,11 +1560,8 @@ void AliTOFGeometryV5::GetVolumePath(Int_t *ind, Char_t *path ) {
   
   Int_t icopy=-1;
   icopy=sector;
-  // Old 6h convention
-  // if(sector<13){
-  //    icopy=sector+5;}  
-  // else{ icopy=sector-13;}
-  sprintf(string1,"/ALIC_1/B077_1/BSEGMO%i_1/BTOF%i_1/FTOA_0/FLTA_0",icopy,icopy);
+ 
+  sprintf(string1,"/ALIC_1/B077_1/BSEGMO%i_1/BTOF%i_1",icopy,icopy);
   
   Int_t iplate=ind[1];
   Int_t istrip=ind[2];
@@ -1571,13 +1571,12 @@ void AliTOFGeometryV5::GetVolumePath(Int_t *ind, Char_t *path ) {
   if( iplate==3) icopy=istrip+NStripC()+NStripB()+NStripA(); 
   if( iplate==4) icopy=istrip+NStripC()+2*NStripB()+NStripA(); 
   icopy++;
-  sprintf(string2,"FSTR_%i",icopy);
+  sprintf(string2,"FTOA_0/FLTA_0/FSTR_%i",icopy);
   if(fHoles && (sector==11 || sector==12)){
     if(iplate<2)  sprintf(string2,"FTOB_0/FLTB_0/FSTR_%i",icopy);
     if(iplate>2)  sprintf(string2,"FTOC_0/FLTC_0/FSTR_%i",icopy);
   }
  
-
   Int_t padz = ind[3]+1; 
   Int_t padx = ind[4]+1;
   sprintf(string3,"FPCB_1/FSEN_1/FSEZ_%i/FPAD_%i",padz,padx);
