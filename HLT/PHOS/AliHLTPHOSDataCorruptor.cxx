@@ -48,7 +48,7 @@ AliHLTPHOSDataCorruptor::MakeCorruptedDataTest(Double_t *dataArray, int N)
 {
   //  double testPulse[300];
   //  dataArray[300];
-  int quantisized[N];
+  int* quantisized = new int[N];
 
   fPulseGeneratorPtr->SetSampleFreq(10);
   fPulseGeneratorPtr->SetAmplitude(100);
@@ -87,6 +87,7 @@ AliHLTPHOSDataCorruptor::MakeCorruptedDataTest(Double_t *dataArray, int N)
     }
   cout << endl;
   cout << endl;
+  delete [] quantisized;
 }
 
 
