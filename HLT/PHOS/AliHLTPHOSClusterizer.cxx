@@ -234,7 +234,7 @@ AliHLTPHOSClusterizer::CalculateCenterOfGravity(AliHLTPHOSRecPointDataStruct* re
 	{			  
 	  xi = x + i;
 	  zj = z + j;
-	  w = TMath::Max( 0., w0 + log( fEnergyArray[x+i][z+j] / fEnergyArray[x][z] ) ) ;
+	  w = TMath::Max( (Float_t)0., w0 + log( fEnergyArray[x+i][z+j] / fEnergyArray[x][z] ) ) ;
 	  xt += xi * w ;
 	  zt += zj * w ;
 	  wtot += w ;
