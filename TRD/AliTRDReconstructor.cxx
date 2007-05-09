@@ -293,48 +293,48 @@ void AliTRDReconstructor::FillESD(AliRunLoader *runLoader
   //
   // Trigger (tracks, GTU)
   //
-  AliTRDtrigger trdTrigger("Trigger","Trigger class"); 
+//   AliTRDtrigger trdTrigger("Trigger","Trigger class"); 
 
-  AliTRDtrigParam *trigp = new AliTRDtrigParam("TRDtrigParam"
-                                              ,"TRD Trigger parameters");
+//   AliTRDtrigParam *trigp = new AliTRDtrigParam("TRDtrigParam"
+//                                               ,"TRD Trigger parameters");
 
-  Float_t field = AliTracker::GetBz() * 0.1; // Tesla
-  AliInfo(Form("Trigger set for magnetic field = %f Tesla \n",field));
-  trigp->SetField(field);
-  trigp->Init();
+//   Float_t field = AliTracker::GetBz() * 0.1; // Tesla
+//   AliInfo(Form("Trigger set for magnetic field = %f Tesla \n",field));
+//   trigp->SetField(field);
+//   trigp->Init();
 
-  trdTrigger.SetParameter(trigp);
-  trdTrigger.SetRunLoader(runLoader);
-  trdTrigger.Init();
+//   trdTrigger.SetParameter(trigp);
+//   trdTrigger.SetRunLoader(runLoader);
+//   trdTrigger.Init();
 
-  Int_t iEvent = runLoader->GetEventNumber(); 
-  runLoader->GetEvent(iEvent);
-  trdTrigger.ReadTracklets(runLoader);
+//   Int_t iEvent = runLoader->GetEventNumber(); 
+//   runLoader->GetEvent(iEvent);
+//   trdTrigger.ReadTracklets(runLoader);
 
-  AliESDTrdTrack *TrdTrack = new AliESDTrdTrack();
-  AliTRDgtuTrack *GtuTrack;
+//   AliESDTrdTrack *TrdTrack = new AliESDTrdTrack();
+//   AliTRDgtuTrack *GtuTrack;
 
-  Int_t nTracks = trdTrigger.GetNumberOfTracks();
-  for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
+//   Int_t nTracks = trdTrigger.GetNumberOfTracks();
+//   for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
 
-    GtuTrack = trdTrigger.GetTrack(iTrack);
+//     GtuTrack = trdTrigger.GetTrack(iTrack);
 
-    TrdTrack->SetYproj(GtuTrack->GetYproj());
-    TrdTrack->SetZproj(GtuTrack->GetZproj());
-    TrdTrack->SetSlope(GtuTrack->GetSlope());
-    TrdTrack->SetDetector(GtuTrack->GetDetector());
-    TrdTrack->SetTracklets(GtuTrack->GetTracklets());
-    TrdTrack->SetPlanes(GtuTrack->GetPlanes());
-    TrdTrack->SetClusters(GtuTrack->GetClusters());
-    TrdTrack->SetPt(GtuTrack->GetPt());
-    TrdTrack->SetPhi(GtuTrack->GetPhi());
-    TrdTrack->SetEta(GtuTrack->GetEta());
-    TrdTrack->SetLabel(GtuTrack->GetLabel());
-    TrdTrack->SetPID(GtuTrack->GetPID());
-    TrdTrack->SetIsElectron(GtuTrack->IsElectron());
+//     TrdTrack->SetYproj(GtuTrack->GetYproj());
+//     TrdTrack->SetZproj(GtuTrack->GetZproj());
+//     TrdTrack->SetSlope(GtuTrack->GetSlope());
+//     TrdTrack->SetDetector(GtuTrack->GetDetector());
+//     TrdTrack->SetTracklets(GtuTrack->GetTracklets());
+//     TrdTrack->SetPlanes(GtuTrack->GetPlanes());
+//     TrdTrack->SetClusters(GtuTrack->GetClusters());
+//     TrdTrack->SetPt(GtuTrack->GetPt());
+//     TrdTrack->SetPhi(GtuTrack->GetPhi());
+//     TrdTrack->SetEta(GtuTrack->GetEta());
+//     TrdTrack->SetLabel(GtuTrack->GetLabel());
+//     TrdTrack->SetPID(GtuTrack->GetPID());
+//     TrdTrack->SetIsElectron(GtuTrack->IsElectron());
 
-    esd->AddTrdTrack(TrdTrack);
+//     esd->AddTrdTrack(TrdTrack);
 
-  }
+//   }
 
 }
