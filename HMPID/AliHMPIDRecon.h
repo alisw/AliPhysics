@@ -47,12 +47,14 @@ public :
   Double_t Sigma2       (Double_t ckovTh,Double_t ckovPh                                    )const;//photon candidate sigma
   enum ETrackingFlags {kMipDistCut=-9,kMipQdcCut=-5,kNoPhotAccept=-11};
 // HTA hidden track algorithm
-  Int_t    CkovHiddenTrk    (AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t nmean);              //Pattern recognition without trackinf information
-  void     CluPreFilter     (                                    );                                //Pre clustering filter to cut bkg clusters
-  Bool_t   DoRecHiddenTrk   (                                    );                                //Calling to the fitted procedures
+  Bool_t   CkovHiddenTrk    (AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t nmean);              //Pattern recognition without trackinf information
+  Bool_t   CluPreFilter     (TClonesArray *pClu               );                                   //Pre clustering filter to cut bkg clusters
+  Bool_t   DoRecHiddenTrk   (TClonesArray *pClu               );                                   //Calling to the fitted procedures
   Bool_t   FitEllipse       (Double_t &phiRec                    );                                //Fit clusters with a conical section (kTRUE only for ellipses)
   Bool_t   FitFree          (Double_t phiRec                     );                                //Fit (th,ph) of the track and ckovFit as result
   Double_t FunConSect       (Double_t *c,Double_t x,Double_t y   );                                //Function of a general conical section
+  void     SetNClu          (Int_t nclu                          ) {fNClu=nclu;}                   //Setter for # of clusters
+  void     SetClCk          (Int_t i,Bool_t what                 ) {fClCk[i]=what;}                //Setter for cluster flags 
   void     SetCkovFit       (Double_t ckov                       ) {fCkovFit=ckov;}                //Setter for ckof fitted
   void     SetTrkFit        (Double_t th,Double_t ph             ) {fThTrkFit = th;fPhTrkFit = ph;}//Setter for (th,ph) of the track
   void     SetRadXY         (Double_t  x,Double_t y              ) {fRadX = x;fRadY = y;}          //Setter for (th,ph) of the track
@@ -67,6 +69,7 @@ public :
   Int_t    NClu         ()const {return fNClu;}                                                    //Getter of cluster multiplicity
   Double_t XClu         (Int_t i)const {return fXClu[i];}                                          //Getter of x clu
   Double_t YClu         (Int_t i)const {return fYClu[i];}                                          //Getter of y clu
+  Bool_t   ClCk         (Int_t i)const {return fClCk[i];}                                          //Getter of cluster flags
   Double_t CkovFit      ()const {return fCkovFit;}                                                 //Getter of ckov angle fitted
   Double_t ThTrkFit     ()const {return fThTrkFit;}                                                //Getter of theta fitted of the track
   Double_t PhTrkFit     ()const {return fPhTrkFit;}                                                //Getter of phi fitted of the track
@@ -95,8 +98,9 @@ protected:
   Double_t fRadY;                              //rad Y position for Hidden Track Algorithm
   Int_t    fIdxMip;                            //mip index in the clus list
   Int_t    fNClu;                              //n clusters to fit
-  Double_t fXClu[1000];                        //container for x clus position
-  Double_t fYClu[1000];                        //container for y clus position
+  Double_t fXClu[100];                         //container for x clus position
+  Double_t fYClu[100];                         //container for y clus position
+  Bool_t   fClCk[100];                         //flag if cluster is used in fitting
   Double_t fThTrkFit;                          //theta fitted of the track
   Double_t fPhTrkFit;                          //phi   fitted of the track
   Double_t fCkovFit;                           //estimated ring Cherenkov angle

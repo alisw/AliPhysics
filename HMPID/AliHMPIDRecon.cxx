@@ -54,10 +54,11 @@ AliHMPIDRecon::AliHMPIDRecon():TTask("RichRec","RichPat"),
     fPhotWei [i] =  0;
   }
 //hidden algorithm
-  fMipX=fMipY=fThTrkFit=fPhTrkFit=fCkovFit=-999;
+  fMipX=fMipY=fThTrkFit=fPhTrkFit=fCkovFit=fMipQ=fRadX=fRadY=-999;
   fIdxMip=fNClu=0;
-  for (Int_t i=0; i<1000; i++) {
+  for (Int_t i=0; i<100; i++) {
     fXClu[i] = fYClu[i] = 0;
+    fClCk[i] = kTRUE;
   }
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -439,7 +440,7 @@ Double_t AliHMPIDRecon::SigGeom(Double_t thetaC, Double_t phiC,Double_t betaM)co
 // From here HTA....
 //
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Int_t AliHMPIDRecon::CkovHiddenTrk(AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t nmean)
+Bool_t AliHMPIDRecon::CkovHiddenTrk(AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t nmean)
 {
 // Pattern recognition method without any infos from tracking:HTA (Hidden Track Algorithm)...
 // The method finds in the chmber the cluster with the highest charge
@@ -454,31 +455,34 @@ Int_t AliHMPIDRecon::CkovHiddenTrk(AliESDtrack *pTrk,TClonesArray *pCluLst,Doubl
   fRadNmean=nmean;
 
   Float_t mipX=-1,mipY=-1;Int_t mipId=-1,mipQ=-1;                                                                           
-  fPhotCnt=0;                                                      
   Double_t qRef = 0;
-  fNClu = pCluLst->GetEntriesFast();
-  for (Int_t iClu=0;iClu<fNClu;iClu++){                                                       //clusters loop
+  for (Int_t iClu=0;iClu<pCluLst->GetEntriesFast();iClu++){                                   //clusters loop
     AliHMPIDCluster *pClu=(AliHMPIDCluster*)pCluLst->UncheckedAt(iClu);                       //get pointer to current cluster    
     fXClu[iClu] = pClu->X();fYClu[iClu] = pClu->Y();                                          //store x,y for fitting procedure
+    fClCk[iClu] = kTRUE;                                                                      //all cluster are accepted at this stage to be reconstructed
     if(pClu->Q()>qRef){                                                                       //searching the highest charge to select a MIP      
       qRef = pClu->Q();
       mipId=iClu; mipX=pClu->X();mipY=pClu->Y();mipQ=(Int_t)pClu->Q();
     }                                                                                    
   }//clusters loop
 
-  if(qRef>pParam->QCut()){                                                                       //charge compartible with MIP clusters      
+  fNClu = pCluLst->GetEntriesFast();
+  if(qRef>pParam->QCut()){                                                                       //charge compartible with MIP clusters
     fIdxMip = mipId;
+    fClCk[mipId] = kFALSE;
     fMipX = mipX; fMipY=mipY; fMipQ = qRef;
-    if(!DoRecHiddenTrk()) return 1;                                                               //Do track and ring reconstruction,if problems returns 1
+    if(!DoRecHiddenTrk(pCluLst)) return kFALSE;                                                  //Do track and ring reconstruction,if problems returns 1
     pTrk->SetHMPIDtrk(fRadX,fRadY,fThTrkFit,fPhTrkFit);                                          //store track intersection info
     pTrk->SetHMPIDmip(fMipX,fMipY,(Int_t)fMipQ,fNClu);                                           //store mip info 
-    pTrk->SetHMPIDcluIdx(pCluLst->GetUniqueID(),fIdxMip);                                        //set cham number and index of cluster
+    pTrk->SetHMPIDcluIdx(pCluLst->GetEntriesFast(),fIdxMip);                                     //set cham number and index of cluster
     pTrk->SetHMPIDsignal(fCkovFit);                                                              //find best Theta ckov for ring i.e. track
+    Printf(" n clusters tot %i accepted %i",pCluLst->GetEntriesFast(),fNClu);
+    return kTRUE;
   }
-  return 0;
+  return kFALSE;
 }//CkovHiddenTrk()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Bool_t AliHMPIDRecon::DoRecHiddenTrk()
+Bool_t AliHMPIDRecon::DoRecHiddenTrk(TClonesArray *pCluLst)
 {
 // Pattern recognition method without any infos from tracking...
 // First a preclustering filter to avoid part of the noise
@@ -489,17 +493,27 @@ Bool_t AliHMPIDRecon::DoRecHiddenTrk()
 // Arguments:   none
 //   Returns:   none
   Double_t phiRec;
-  CluPreFilter();
+  if(!CluPreFilter(pCluLst)) {return kFALSE;}
   if(!FitEllipse(phiRec)) {return kFALSE;}
-  return FitFree(phiRec);
-}
+  Int_t nClTmp1 = pCluLst->GetEntriesFast()-1;  //minus MIP...
+  Int_t nClTmp2 = 0;
+  while(nClTmp1 != nClTmp2){
+    SetNClu(pCluLst->GetEntriesFast());
+    if(!FitFree(phiRec)) {return kFALSE;}
+    nClTmp2 = NClu();
+    if(nClTmp2!=nClTmp1) {nClTmp1=nClTmp2;nClTmp2=0;}
+  }
+  fNClu = nClTmp2;
+  return kTRUE;
+}//DoRecHiddenTrk()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDRecon::CluPreFilter()
+Bool_t AliHMPIDRecon::CluPreFilter(TClonesArray *pCluLst)
 {
 // Filter of bkg clusters
 // based on elliptical-shapes...
 //
-    ;
+  if(pCluLst->GetEntriesFast()>50||pCluLst->GetEntriesFast()<4) return kFALSE; 
+  else return kTRUE;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Bool_t AliHMPIDRecon::FitEllipse(Double_t &phiRec)
@@ -525,7 +539,6 @@ Bool_t AliHMPIDRecon::FitEllipse(Double_t &phiRec)
   //       HG - AF
   //  b = --------
   //       AB - H^2
-  
   Double_t cA,cB,cF,cG,cH;
   Double_t aArg=-1;      Int_t iErrFlg;                                                //tmp vars for TMinuit
 
@@ -594,9 +607,6 @@ Bool_t AliHMPIDRecon::FitFree(Double_t phiRec)
   TString sName;
   Double_t th,ph;
   
-  gMinuit->mnexcm("SET PRI",&aArg,1,iErrFlg);                                          //suspend all printout from TMinuit
-  gMinuit->mnexcm("SET NOW",&aArg,0,iErrFlg);
-
   gMinuit->mnparm(0," theta ",  0.01,0.01,0,TMath::PiOver2(),iErrFlg);
   gMinuit->mnparm(1," phi   ",phiRec,0.01,0,TMath::TwoPi()  ,iErrFlg);
   
@@ -646,21 +656,42 @@ void AliHMPIDRecon::FunMinPhot(Int_t &/* */,Double_t* /* */,Double_t &f,Double_t
   pRec->SetRadXY(xrad,yrad);
   pRec->SetTrack(xrad,yrad,thTrk,phTrk);
 
-  Double_t meanCkov=0;
+  Double_t meanCkov =0;
   Double_t meanCkov2=0;
   Double_t thetaCer,phiCer;
-  for(Int_t i=0;i<pRec->NClu();i++) {
+  Int_t nClAcc = 0;
+  Int_t nClTot=pRec->NClu();
+    
+  for(Int_t i=0;i<nClTot;i++) {
+    if(!(pRec->ClCk(i))) continue;
     pRec->FindPhotCkov(pRec->XClu(i),pRec->YClu(i),thetaCer,phiCer);  
-
     meanCkov  += thetaCer;
     meanCkov2 += thetaCer*thetaCer;
+    nClAcc++;
   }
-  meanCkov/=pRec->NClu();
-  Double_t rms = TMath::Sqrt(meanCkov2/pRec->NClu() - meanCkov*meanCkov);
-  f = rms/TMath::Sqrt(pRec->NClu());
-  Printf(" mean %f rms/sqrt(n) %f",meanCkov,f);  
-  if(iflag==3) pRec->SetCkovFit(meanCkov);
+  if(nClAcc==0) {f=0;return;}
+  meanCkov/=nClAcc;
+  Double_t rms = TMath::Sqrt(meanCkov2/nClAcc - meanCkov*meanCkov);
+  f = rms/TMath::Sqrt(nClAcc);
   
+  
+  if(iflag==3) {
+    Printf("FunMinPhot before: photons candidates %i used %i",nClTot,nClAcc);
+    nClAcc = 0;
+    Double_t meanCkov1=0;
+    for(Int_t i=0;i<nClTot;i++) {
+      if(!(pRec->ClCk(i))) continue;
+      pRec->FindPhotCkov(pRec->XClu(i),pRec->YClu(i),thetaCer,phiCer);  
+      if(TMath::Abs(thetaCer-meanCkov)<2*rms) {
+        meanCkov1  += thetaCer;
+        nClAcc++;
+      } else pRec->SetClCk(i,kFALSE);
+    }
+    meanCkov1/=nClAcc;
+    Printf("FunMinPhot after: photons candidates %i used %i thetaCer %f",nClTot,nClAcc,meanCkov1);
+    pRec->SetCkovFit(meanCkov1);
+    pRec->SetNClu(nClAcc);
+  }
 }//FunMinPhot()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //

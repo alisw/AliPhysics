@@ -106,16 +106,15 @@ Int_t AliHMPIDTracker::Recon(AliESD *pEsd,TObjArray *pClus,TObjArray *pNmean)
   return 0; // error code: 0=no error;
 }//Recon()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Int_t AliHMPIDTracker::ReconHiddenTrk(Int_t iCh,AliESDtrack *pTrk,TObjArray *pClusObj,TObjArray *pNmean)
+Int_t AliHMPIDTracker::ReconHiddenTrk(Int_t iCh,AliESDtrack *pTrk,TClonesArray *pCluLst,TObjArray *pNmean)
 {
 // Static method to reconstruct Theta Ckov for all valid tracks of a given event.
 // Arguments: pEsd- pointer ESD; pClu- pointer to clusters for all chambers; pNmean - pointer to all function Nmean=f(time)
 //   Returns: error code, 0 if no errors
   AliHMPIDRecon recon;                                                                          //instance of reconstruction class, nothing important in ctor
   Double_t nmean=((TF1*)pNmean->At(3*iCh))->Eval(0);                                            //C6F14 Nmean for this chamber
-  TClonesArray *pCluLst = (TClonesArray *)pClusObj->At(iCh);
   if(pCluLst->GetEntriesFast()<4) return 1;                                                     //min 4 clusters (3 + 1 mip) to find a ring! 
-  return recon.CkovHiddenTrk(pTrk,pCluLst,nmean);                                               //search for track parameters and Cerenkov angle of this track
-                                                                                                // error code: 0=no error,1=fit not performed;
+  if(recon.CkovHiddenTrk(pTrk,pCluLst,nmean)) return 0;                                         //search for track parameters and Cerenkov angle of this track
+  else return 1;                                                                                // error code: 0=no error,1=fit not performed;
 }//Recon()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
