@@ -17,8 +17,8 @@ class AliITSPreprocessorSDD : public AliPreprocessor {
 
  public:
  
-  AliITSPreprocessorSDD(const char* detector, AliShuttleInterface* shuttle):
-    AliPreprocessor(detector,shuttle){SetName("SDD");}
+  AliITSPreprocessorSDD( AliShuttleInterface* shuttle):
+    AliPreprocessor("SDD", shuttle){}
   virtual ~AliITSPreprocessorSDD(){;}
 
 
