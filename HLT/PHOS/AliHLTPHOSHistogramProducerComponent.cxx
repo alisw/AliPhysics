@@ -38,7 +38,7 @@ AliHLTPHOSHistogramProducerComponent gAliHLTPHOSHistogramProducerComponent;
 * and it fills the histograms with amplitudes per channel.               * 
 * Usage example see in PHOS/macros/Shuttle/AliPHOSCalibHistoProducer.C   *
 **************************************************************************/
-AliHLTPHOSHistogramProducerComponent:: AliHLTPHOSHistogramProducerComponent():AliHLTProcessor(), fPhosEventCount(0),  fEquippmentID(0)
+AliHLTPHOSHistogramProducerComponent:: AliHLTPHOSHistogramProducerComponent():AliHLTPHOSProcessor()
 {
   Reset();
 } 
@@ -50,7 +50,7 @@ AliHLTPHOSHistogramProducerComponent::~ AliHLTPHOSHistogramProducerComponent()
 }
 
 //________________________________________________________________________________________
-AliHLTPHOSHistogramProducerComponent::AliHLTPHOSHistogramProducerComponent(const  AliHLTPHOSHistogramProducerComponent & ) : AliHLTProcessor(), fPhosEventCount(0),  fEquippmentID(0)
+AliHLTPHOSHistogramProducerComponent::AliHLTPHOSHistogramProducerComponent(const  AliHLTPHOSHistogramProducerComponent & ) : AliHLTPHOSProcessor()
 {
 
 }
@@ -62,13 +62,6 @@ AliHLTPHOSHistogramProducerComponent::Deinit()
   return 0;
 }
 
-//________________________________________________________________________________________
-int 
-AliHLTPHOSHistogramProducerComponent::DoDeinit()
-{
-  Logging(kHLTLogInfo, "HLT", "PHOS", ",AliHLTPHOSHistogramProducer DoDeinit");
-  return 0;
-}
 
 //________________________________________________________________________________________
 const char* 
@@ -149,7 +142,6 @@ AliHLTPHOSHistogramProducerComponent::DoEvent( const AliHLTComponentEventData& e
       int tmpZ;
       int tmpX;
 
-      //      for(int i= 0; i< tmpCnt; i ++)
       for(int i= 0; i <= tmpCnt; i ++)
 	{
 	  tmpZ =  cellDataPtr->fValidData[i].fZ + N_ZROWS_RCU*tmpRcuZ;
@@ -168,7 +160,6 @@ AliHLTPHOSHistogramProducerComponent::DoEvent( const AliHLTComponentEventData& e
 	}
     }
 
-
   for(int z=0;  z < N_ZROWS_MOD; z ++ )
     {
       for(int x = 0; x < N_XCOLUMNS_MOD; x ++)
@@ -180,7 +171,6 @@ AliHLTPHOSHistogramProducerComponent::DoEvent( const AliHLTComponentEventData& e
 	    }
 	} 
     }
-
 
   //pushing data to shared output memory
   mysize += sizeof(AliHLTPHOSModuleCellAccumulatedEnergyDataStruct);
@@ -201,7 +191,7 @@ AliHLTPHOSHistogramProducerComponent::DoEvent( const AliHLTComponentEventData& e
 	       , tSize, size );
       return EMSGSIZE;
     }
-
+  //  fPhosEventCount;
   fPhosEventCount++; 
   return 0;
 }//end DoEvent
@@ -289,22 +279,6 @@ AliHLTPHOSHistogramProducerComponent::ResetDataPtr()
     {
       fTmpChannelData[i] = 0;
     }
-}
-
-
-//________________________________________________________________________________________
-void 
-AliHLTPHOSHistogramProducerComponent::SetEquippmentId(int id)
-{
-  fEquippmentID = id;
-}
-
-
-//________________________________________________________________________________________
-const int 
-AliHLTPHOSHistogramProducerComponent::GetEquippmentId() const
-{
-  return  fEquippmentID;
 }
 
 //________________________________________________________________________________________

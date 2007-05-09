@@ -5,14 +5,14 @@
 /* Copyright(c) 2006, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice  */ 
 
-#include "AliHLTProcessor.h"
+#include "AliHLTPHOSProcessor.h"
 #include "AliHLTPHOSDefinitions.h"
 #include "AliHLTPHOSCommonDefs.h"
 
 
 class AliHLTPHOSModuleCellAccumulatedEnergyDataStruct;
 
-class AliHLTPHOSHistogramProducerComponent:public AliHLTProcessor
+class AliHLTPHOSHistogramProducerComponent:public AliHLTPHOSProcessor
 {
  public:
   AliHLTPHOSHistogramProducerComponent();
@@ -24,20 +24,16 @@ class AliHLTPHOSHistogramProducerComponent:public AliHLTProcessor
    };
   virtual int DoInit( int argc = 0, const char** argv = 0);
   virtual int Deinit();
-  virtual int DoDeinit();
   virtual int DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
 		     AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 		     AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
 
   void DumpData(int gain = 0);
-  const int GetEquippmentId() const;
   virtual const char* GetComponentID();
   virtual void GetInputDataTypes( std::vector <AliHLTComponentDataType>& list);
   virtual AliHLTComponentDataType GetOutputDataType();
   virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
-  void SetEquippmentId(int id = 0);
   virtual AliHLTComponent* Spawn();
-  
  protected:
   void Reset();
   void ResetDataPtr();
@@ -47,8 +43,6 @@ class AliHLTPHOSHistogramProducerComponent:public AliHLTProcessor
   Double_t fAccumulatedValues[N_ZROWS_MOD][N_XCOLUMNS_MOD][N_GAINS];   /**<Accumulated energy for each readout channel of one RCU*/
   //  Double_t fTimingAverageValues[N_ZROWS_MOD][N_XCOLUMNS_MOD][N_GAINS]; 
   AliHLTUInt32_t fHits[N_ZROWS_MOD][N_XCOLUMNS_MOD][N_GAINS];         /**<Total number of hits for each cell of one RCU*/
-  int fPhosEventCount;                                                    /**<Event counter, (mainly used for debugging)*/
-  AliHLTUInt32_t fEquippmentID;                                       /**<Eguippment ID as defined by ALICE*/
   Double_t fTmpChannelData[ALTRO_MAX_SAMPLES];                        /**<Array to temporarily store dat fro a single altro channel*/                        
   AliHLTPHOSModuleCellAccumulatedEnergyDataStruct*  fOutPtr;          /**<Pointer to outputbuffer to write results from the component into shared memory*/
   static const AliHLTComponentDataType fgkInputDataTypes[];           /**<List of  datatypes that can be given to this component*/  
