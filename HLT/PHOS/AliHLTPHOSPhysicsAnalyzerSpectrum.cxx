@@ -2,7 +2,7 @@
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
- * Authors: Øystein Djuvsland <oysteind@ift.uib.no>                       *
+ * Authors: Ãystein Djuvsland <oysteind@ift.uib.no>                       *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
@@ -17,7 +17,6 @@
 #include "AliHLTPHOSPhysicsAnalyzerSpectrum.h"
 #include "AliHLTPHOSClusterDataStruct.h"
 #include <cmath>
-#include "math.h"
 #include <iostream>
 
 ClassImp(AliHLTPHOSPhysicsAnalyzerSpectrum);
