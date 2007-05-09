@@ -16,10 +16,13 @@
 
 #include "AliHLTPHOSRcuHistogramProducer.h"
 #include <iostream>
-#include "stdio.h"
-#include <cstdlib>
+//#include "stdio.h"
+#//include <cstdlib>
 #include "AliHLTPHOSRcuCellEnergyDataStruct.h"
 #include "TFile.h"
+
+using  namespace std;
+
 
 /*************************************************************************
 * Class AliHLTPHOSRcuHistogramProducer accumulating histograms     *
@@ -28,16 +31,20 @@
 * and it fills the histograms with amplitudes per channel.               * 
 * Usage example see in PHOS/macros/Shuttle/AliPHOSCalibHistoProducer.C   *
 **************************************************************************/
-AliHLTPHOSRcuHistogramProducer:: AliHLTPHOSRcuHistogramProducer(): fEventCount(0), fEquippmentID(0), fModuleID(0), fRcuX(0), fRcuZ(0)
+
+
+AliHLTPHOSRcuHistogramProducer:: AliHLTPHOSRcuHistogramProducer(): fModuleID(0), fRcuX(0), fRcuZ(0)
+
 {
+  //Default constructor
   cout << "WARNING: You cannot invoke the AliHLTPHOSRcuHistogramProducer without arguments" << endl;
   cout << "Usage AliHLTPHOSRcuHistogramProducer(ModuleID, X. Z)" << endl;
-  //  Reset();
-  //  Init();
 } 
 
+//AliHLTPHOSRcuHistogramProducer::AliHLTPHOSRcuHistogramProducer(AliHLTUInt8_t moduleID, AliHLTUInt8_t rcuX, AliHLTUInt8_t rcuZ)
 AliHLTPHOSRcuHistogramProducer::AliHLTPHOSRcuHistogramProducer(AliHLTUInt8_t moduleID, AliHLTUInt8_t rcuX, AliHLTUInt8_t rcuZ)
 {
+  //Se header file for documentation
   SetModuleID(moduleID);
   SetRcuX(rcuX); 
   SetRcuZ(rcuZ); 
@@ -46,13 +53,14 @@ AliHLTPHOSRcuHistogramProducer::AliHLTPHOSRcuHistogramProducer(AliHLTUInt8_t mod
 
 AliHLTPHOSRcuHistogramProducer::~ AliHLTPHOSRcuHistogramProducer()
 {
-
+  //Destructor
 }
 
 
 void
 AliHLTPHOSRcuHistogramProducer::Init()
 {
+  //See header file for documentation
   char tmpHistoName[256];
   int geomx;
   int geomz;
@@ -92,46 +100,40 @@ AliHLTPHOSRcuHistogramProducer::Init()
     } 
 }
 
-int 
-AliHLTPHOSRcuHistogramProducer::GetEquippmentId()
-{
-  return  fEquippmentID;
-}
-
 
 void 
 AliHLTPHOSRcuHistogramProducer::SetRcuX(AliHLTUInt8_t X)
 {
+  //See header file for documentation
   fRcuX = X; 
   fCellAccEnergy.fRcuX = X;
 }
 
 
+
 void 
 AliHLTPHOSRcuHistogramProducer::SetRcuZ(AliHLTUInt8_t Z)
 {
+  //See header file for documentation
   fRcuZ = Z; 
   fCellAccEnergy.fRcuZ = Z;
 }
 
 
+
+
 void 
 AliHLTPHOSRcuHistogramProducer::SetModuleID(AliHLTUInt8_t moduleID)
 {
+  //See header file for documentation
  fModuleID = moduleID;
-}
-
-
-void 
-AliHLTPHOSRcuHistogramProducer::SetEquippmentId(int id)
-{
-  fEquippmentID = id;
 }
 
 
 void 
 AliHLTPHOSRcuHistogramProducer::FillEnergy(AliHLTUInt8_t x, AliHLTUInt8_t z,  AliHLTUInt8_t gain, float energy)
 {
+  //See header file for documentation
   fCellAccEnergy.fAccumulatedEnergies[x][z][gain] += energy;
   fCellAccEnergy.fHits[x][z][gain] ++; 
   fEnergyHistogramPtrs[x][z][gain]->Fill(energy);
@@ -141,6 +143,7 @@ AliHLTPHOSRcuHistogramProducer::FillEnergy(AliHLTUInt8_t x, AliHLTUInt8_t z,  Al
 void 
 AliHLTPHOSRcuHistogramProducer::FillTime(AliHLTUInt8_t x, AliHLTUInt8_t z, AliHLTUInt8_t gain, float time)
 {
+  //See header file for documentation
   fTimingHistogramPtrs[x][z][gain]->Fill(time);
 }
 
@@ -151,17 +154,11 @@ AliHLTPHOSRcuHistogramProducer::GetCellAccumulatedEnergies()
   return fCellAccEnergy ;
 }
 
-int 
-AliHLTPHOSRcuHistogramProducer::IncrementEventCounter()
-{
-   fEventCount ++;
-   return  fEventCount;
-}
-
 
 void
 AliHLTPHOSRcuHistogramProducer::Reset()
 {
+  //See header file for documentation
   for(int x = 0; x < N_XCOLUMNS_RCU; x ++)
     {
       for(int z = 0; z < N_ZROWS_RCU; z ++)
@@ -182,9 +179,11 @@ AliHLTPHOSRcuHistogramProducer::Reset()
     }
 }
 
+
 void 
 AliHLTPHOSRcuHistogramProducer::WriteEnergyHistograms()
 {
+  //See header file for documentation
   char tmpFileName[256];
   sprintf(tmpFileName,"/home/aliphoshlt/rundir/outdata/calibHisto_%d_%d_%d.root", (int)fModuleID, (int)fRcuX, (int)fRcuZ);
   TFile *histoFile =  new TFile(tmpFileName,"update");

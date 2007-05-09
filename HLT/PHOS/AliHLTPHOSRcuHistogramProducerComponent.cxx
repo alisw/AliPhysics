@@ -15,20 +15,19 @@
  **************************************************************************/
 
 #include <iostream>
-#include "stdio.h"
-#include <cstdlib>
 #include "AliHLTPHOSRcuCellEnergyDataStruct.h"
-//#include "AliHLTPHOSModuleCellAccumulatedEnergyDataStruct.h"
 #include "AliHLTPHOSRcuHistogramProducer.h"
 #include "AliHLTPHOSRcuHistogramProducerComponent.h"
+#include "AliHLTPHOSRcuCellAccumulatedEnergyDataStruct.h"
 
 
+//const AliHLTComponentDataType  AliHLTPHOSRcuHistogramProducerComponent::fgkInputDataTypes[]={kAliHLTVoidDataType,{0,"",""}}; //'zero' terminated array
+//const AliHLTComponentDataType  AliHLTPHOSRcuHistogramProducerComponent::fgkOutputDataType=kAliHLTVoidDataType;
 
-const AliHLTComponentDataType  AliHLTPHOSRcuHistogramProducerComponent::inputDataTypes[]={kAliHLTVoidDataType,{0,"",""}}; //'zero' terminated array
-const AliHLTComponentDataType  AliHLTPHOSRcuHistogramProducerComponent::outputDataType=kAliHLTVoidDataType;
 AliHLTPHOSRcuHistogramProducerComponent gAliHLTPHOSRcuHistogramProducerComponent;
 
-//AliHLTPHOSHistogramProducerComponent gAliHLTPHOSHistogramProducerComponent;
+
+
 /*************************************************************************
 * Class AliHLTPHOSRcuHistogramProducerComponent accumulating histograms  *
 * with amplitudes per PHOS channel                                       *
@@ -36,20 +35,19 @@ AliHLTPHOSRcuHistogramProducerComponent gAliHLTPHOSRcuHistogramProducerComponent
 * and it fills the histograms with amplitudes per channel.               * 
 * Usage example see in PHOS/macros/Shuttle/AliPHOSCalibHistoProducer.C   *
 **************************************************************************/
-AliHLTPHOSRcuHistogramProducerComponent:: AliHLTPHOSRcuHistogramProducerComponent():AliHLTProcessor(), fEventCount(0), fRcuHistoProducerPtr(0)
+AliHLTPHOSRcuHistogramProducerComponent:: AliHLTPHOSRcuHistogramProducerComponent():AliHLTPHOSProcessor(), fRcuHistoProducerPtr(0)
 {
-  //  Reset();
+  //Default constructor
 } 
-
 
 
 AliHLTPHOSRcuHistogramProducerComponent::~ AliHLTPHOSRcuHistogramProducerComponent()
 {
-
+  //Destructor
 }
 
 
-AliHLTPHOSRcuHistogramProducerComponent::AliHLTPHOSRcuHistogramProducerComponent(const  AliHLTPHOSRcuHistogramProducerComponent & ) : AliHLTProcessor(), fEventCount(0), fRcuHistoProducerPtr(0)
+AliHLTPHOSRcuHistogramProducerComponent::AliHLTPHOSRcuHistogramProducerComponent(const  AliHLTPHOSRcuHistogramProducerComponent & ) : AliHLTPHOSProcessor(), fRcuHistoProducerPtr(0)
 {
 
 }
@@ -58,16 +56,9 @@ AliHLTPHOSRcuHistogramProducerComponent::AliHLTPHOSRcuHistogramProducerComponent
 int 
 AliHLTPHOSRcuHistogramProducerComponent::Deinit()
 {
+  //See html documentation of base class
   cout << "AliHLTPHOSRcuHistogramProducerComponent::Deinit()" << endl;
   fRcuHistoProducerPtr->WriteEnergyHistograms();
-  return 0;
-}
-
-
-int 
-AliHLTPHOSRcuHistogramProducerComponent::DoDeinit()
-{
-  Logging(kHLTLogInfo, "HLT", "PHOS", ",AliHLTPHOSRcuHistogramProducer DoDeinit");
   return 0;
 }
 
@@ -75,14 +66,16 @@ AliHLTPHOSRcuHistogramProducerComponent::DoDeinit()
 const char* 
 AliHLTPHOSRcuHistogramProducerComponent::GetComponentID()
 {
+  //See html documentation of base class
   return "RcuHistogramProducer";
 }
 
 
 void
- AliHLTPHOSRcuHistogramProducerComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
+AliHLTPHOSRcuHistogramProducerComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
 {
-  const AliHLTComponentDataType* pType=inputDataTypes;
+  //See html documentation of base class
+  const AliHLTComponentDataType* pType=fgkInputDataTypes;
   while (pType->fID!=0) 
     {
       list.push_back(*pType);
@@ -94,6 +87,7 @@ void
 AliHLTComponentDataType 
 AliHLTPHOSRcuHistogramProducerComponent::GetOutputDataType()
 {
+  //See html documentation of base class  
   return AliHLTPHOSDefinitions::fgkCellEnergyDataType;
 }
 
@@ -101,6 +95,7 @@ AliHLTPHOSRcuHistogramProducerComponent::GetOutputDataType()
 void
 AliHLTPHOSRcuHistogramProducerComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier )
 {
+  //See html documentation of base class
   constBase = 30;
   inputMultiplier = 1;
 }
@@ -110,6 +105,7 @@ int  AliHLTPHOSRcuHistogramProducerComponent::DoEvent( const AliHLTComponentEven
 					      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 					      AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
 {
+  //See html documentation of base class
   unsigned long ndx       = 0;
   UInt_t offset           = 0; 
   UInt_t mysize           = 0;
@@ -117,9 +113,6 @@ int  AliHLTPHOSRcuHistogramProducerComponent::DoEvent( const AliHLTComponentEven
   const AliHLTComponentBlockData* iter = NULL;   
   AliHLTPHOSRcuCellEnergyDataStruct *cellDataPtr;
   AliHLTUInt8_t* outBPtr;
- 
-  // outBPtr = outputPtr;
-  // fOutPtr =  (AliHLTPHOSRcuCellAccumulatedEnergyDataStruct*)outBPtr;
   int tmpCnt;
 
   for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
@@ -179,139 +172,38 @@ int  AliHLTPHOSRcuHistogramProducerComponent::DoEvent( const AliHLTComponentEven
       return EMSGSIZE;
     }
 
-  fEventCount++; 
+  fPhosEventCount++; 
   return 0;
+  
 }//end DoEvent
 
 
 int
 AliHLTPHOSRcuHistogramProducerComponent::DoInit( int argc, const char** argv )
 {
+  //See html documentation of base class
+  fPrintInfo = kFALSE;
   int iResult=0;
   TString argument="";
-  //  fRcuHistoProducerPtr = new AliHLTPHOSRcuHistogramProducer();
-  AliHLTUInt8_t tmpRcuX;
-  AliHLTUInt8_t tmpRcuZ; 
-  AliHLTUInt8_t tmpModuleID;
-  Bool_t isSetEquippmentID = kFALSE;
+  iResult = ScanArguments(argc, argv);
 
-  for(int i=0; i<argc && iResult>=0; i++) 
+  if(fIsSetEquippmentID == kFALSE)
     {
-      argument=argv[i];
-      
-      if (argument.IsNull()) 
-	{
-	  continue;
-	}
-      if (argument.CompareTo("-equipmentID") == 0) 
-	{
-	  if(i+1 <= argc)
-	    {
-	      fEquippmentID = atoi(argv[i+1]);
-	      isSetEquippmentID = kTRUE;
-	    }
-	  else
-	    {
-	       iResult= -1;
-	       Logging( kHLTLogFatal, "HLT::AliHLTPHOSRcuHistogramProducerComponent::DoInt( int argc, const char** argv )", "Missing argument",
-			"The argument -equippmentID expects a number");
-	       return  iResult;   
-	    }
-	}
-
-      int rcuIndex =  (fEquippmentID - 1792)%N_RCUS_PER_MODULE;
-      //     fModuleID = (fEquippmentID  -1792 -rcuIndex)/N_RCUS_PER_MODULE;
-      tmpModuleID = ((fEquippmentID -1792 -rcuIndex)/N_RCUS_PER_MODULE);
-      SetModuleID(tmpModuleID);
-
-      if(rcuIndex == 0)
-	{
-	  tmpRcuX = 0; 
-	  tmpRcuZ = 0;
-	}
-      
-      if(rcuIndex == 1)
-	{
-	 tmpRcuX = 0; 
-	 tmpRcuZ = 1;
-	}
-      
-      if(rcuIndex == 2)
-	{
-	  tmpRcuX = 1; 
-	  tmpRcuZ = 0;
-	}
-      
-      if(rcuIndex == 3)
-	{
-	  tmpRcuX = 1; 
-	  tmpRcuZ = 1;
-	}
-
-      SetRcuX(tmpRcuX);
-      SetRcuZ(tmpRcuZ); 
-      cout <<"********InitInfo************"<< endl;
-      cout <<"AliHLTPHOSRcuHistogramProducerComponent::SetCoordinate"<< endl;
-      cout <<"Equpippment ID =\t"<< fEquippmentID <<endl;
-      cout <<"Module ID =\t"<<  (int) tmpModuleID<<endl;
-      cout <<"RCUX =\t\t" << (int)tmpRcuX << endl;
-      cout <<"RCUZ =\t\t" << (int)tmpRcuZ << endl;
-     }
-
-  if(isSetEquippmentID == kFALSE)
-    {
-       Logging( kHLTLogFatal, "HLT::AliHLTPHOSRcuHistogramProducerComponent::DoInt( int argc, const char** argv )", "Missing argument",
-			"The argument equippmentID is not set: set it with a component argumet like this: -equippmentID  <number>");
-       iResult = -2; 
+      Logging( kHLTLogFatal, "HLT::AliHLTPHOSRcuHistogramProducerComponent::DoInt( int argc, const char** argv )", "Missing argument",
+	       "The argument equippmentID is not set: set it with a component argumet like this: -equippmentID  <number>");
+      iResult = -2; 
     }
+  fRcuHistoProducerPtr = new AliHLTPHOSRcuHistogramProducer( fModuleID, fRcuX, fRcuZ);
 
+  return iResult; 
   
-  fRcuHistoProducerPtr = new AliHLTPHOSRcuHistogramProducer( tmpModuleID, tmpRcuX, tmpRcuZ);
-
-
-  return  iResult;
-}
-
-
-void 
-AliHLTPHOSRcuHistogramProducerComponent::SetRcuX(AliHLTUInt8_t X)
-{
-  fRcuX = X;
-}
-
-
-void 
-AliHLTPHOSRcuHistogramProducerComponent::SetRcuZ(AliHLTUInt8_t Z)
-{
-  fRcuZ = Z;
-}
-
-
-void 
-AliHLTPHOSRcuHistogramProducerComponent::SetModuleID(AliHLTUInt8_t moduleID)
-{
-  fModuleID = moduleID;
-}
-
-
-void 
-AliHLTPHOSRcuHistogramProducerComponent::SetEquippmentId(int id)
-{
-  fEquippmentID = id;
-  fRcuHistoProducerPtr->SetEquippmentId(id);
-}
-
-
-int 
-AliHLTPHOSRcuHistogramProducerComponent::GetEquippmentId()
-{
-  return  fEquippmentID;
 }
 
 
 AliHLTComponent*
 AliHLTPHOSRcuHistogramProducerComponent::Spawn()
 {
+  //See html documentation of base class
   return new AliHLTPHOSRcuHistogramProducerComponent;
 }
 
