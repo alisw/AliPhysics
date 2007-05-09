@@ -11,6 +11,9 @@
 /*
  *$Id$
  *$Log$
+ *Revision 1.5  2007/05/03 09:45:20  akisiel
+ *Fixing Effective C++ warnings
+ *
  *Revision 1.4  2007/04/27 07:28:34  akisiel
  *Remove event number reading due to interface changes
  *
@@ -94,7 +97,8 @@ AliFemtoEventReaderESD::AliFemtoEventReaderESD(const AliFemtoEventReaderESD &aRe
   fCurEvent = aReader.fCurEvent;
   fCurFile = aReader.fCurFile;
   fTree = aReader.fTree->CloneTree();
-  fEvent = new AliESD(*aReader.fEvent);
+  //fEvent = new AliESD(*aReader.fEvent);
+  fEvent = new AliESD();
   fEsdFile = new TFile(aReader.fEsdFile->GetName());
   fEventFriend = aReader.fEventFriend;
   fClusterPerPadrow = (list<Int_t> **) malloc(sizeof(list<Int_t> *) * AliESDfriendTrack::kMaxTPCcluster);
@@ -152,7 +156,8 @@ AliFemtoEventReaderESD& AliFemtoEventReaderESD::operator=(const AliFemtoEventRea
   if (fTree) delete fTree;
   fTree = aReader.fTree->CloneTree();
   if (fEvent) delete fEvent;
-  fEvent = new AliESD(*aReader.fEvent);
+  //fEvent = new AliESD(*aReader.fEvent);
+  fEvent = new AliESD();
   if (fEsdFile) delete fEsdFile;
   fEsdFile = new TFile(aReader.fEsdFile->GetName());
 
