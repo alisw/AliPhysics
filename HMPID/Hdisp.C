@@ -114,8 +114,8 @@ void SimHits(AliESD *pEsd, TClonesArray *pHits)
   Int_t hc=0; 
   for(Int_t iTrk=0;iTrk<pEsd->GetNumberOfTracks();iTrk++){//tracks loop
     AliESDtrack *pTrk=pEsd->GetTrack(iTrk);
-    Float_t xRa,yRa;
-    Int_t ch=AliHMPIDTracker::IntTrkCha(pTrk,xRa,yRa);
+    Float_t xPc,yPc;
+    Int_t ch=AliHMPIDTracker::IntTrkCha(pTrk,xPc,yPc);
     if(ch<0) continue; //this track does not hit HMPID
     Float_t beta = pTrk->GetP()/(TMath::Sqrt(pTrk->GetP()*pTrk->GetP()+0.938*0.938));
     Float_t ckov=TMath::ACos(1./(beta*1.292));
@@ -360,7 +360,9 @@ void PrintEsd()
   
   for(Int_t iTrk=0;iTrk<nTrks;iTrk++){
     AliESDtrack *pTrk = gEsd->GetTrack(iTrk);
-    Printf("Track %02i with p %7.2f with ThetaCer %5.3f",iTrk,pTrk->GetP(),pTrk->GetHMPIDsignal());
+    Float_t x,y;Int_t q,nacc;
+    pTrk->GetHMPIDmip(x,y,q,nacc);
+    Printf("Track %02i with p %7.2f with ThetaCer %5.3f with %i photons",iTrk,pTrk->GetP(),pTrk->GetHMPIDsignal(),nacc);
   }
   
 }
