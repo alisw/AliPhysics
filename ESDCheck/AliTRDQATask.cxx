@@ -96,19 +96,19 @@ void AliTRDQATask::CreateOutputObjects()
   fXIn  = new TH1D("xIn", ";X at the inner plane (cm)", 200, 50, 250);
   fXOut = new TH1D("xOut", ";X at the outer plane (cm)", 300, 50, 400);
   
-  const int nNameAlpha = 4;
-  const char *namesAlpha[nNameAlpha] = {"alphaTPCi", "alphaTPCo", "alphaTRDo", "alphaTRDr"};
+  const int knNameAlpha = 4;
+  const char *namesAlpha[knNameAlpha] = {"alphaTPCi", "alphaTPCo", "alphaTRDo", "alphaTRDr"};
   //TH1D *fAlpha[4];
-  for(int i=0; i<nNameAlpha; i++) {
+  for(int i=0; i<knNameAlpha; i++) {
     fAlpha[i] = new TH1D(namesAlpha[i], "alpha", 100, -4, 4);
   }
   fSectorTRD = new TH1D ("sectorTRD", ";sector TRD", 20, -0.5, 19.5);
 
 
   // track parameters
-  const int nbits = 6;
-  const char *suf[nbits] = {"TPCi", "TPCo", "TPCz", "TRDo", "TRDr", "TRDz"};
-  for(int i=0; i<nbits; i++) {
+  const int knbits = 6;
+  const char *suf[knbits] = {"TPCi", "TPCo", "TPCz", "TRDo", "TRDr", "TRDz"};
+  for(int i=0; i<knbits; i++) {
     fPt[i]      = new TH1D(Form("pt%s",suf[i]), ";p_{T} (GeV/c);entries TPC", 50, 0, 10);
     fTheta[i]   = new TH1D(Form("theta%s", suf[i]), "theta (rad)", 100, -4, 4); 
     fSigmaY[i]  = new TH1D(Form("sigmaY%s",suf[i]),  ";sigma Y (cm)", 200, 0, 1);
@@ -184,7 +184,7 @@ void AliTRDQATask::CreateOutputObjects()
   fOutputContainer->AddAt(fAlpha[3],    counter++);
 
   fOutputContainer->AddAt(fSectorTRD,   counter++);
-  for(int i=0; i<nbits; i++) {
+  for(int i=0; i<knbits; i++) {
      fOutputContainer->AddAt(fPt[i],      counter++);
      fOutputContainer->AddAt(fTheta[i],   counter++);
      fOutputContainer->AddAt(fSigmaY[i],  counter++);
@@ -263,7 +263,7 @@ void AliTRDQATask::Exec(Option_t *)
     for(int bit=0; bit<32; bit++) 
       if (u<<bit & status) fTrackStatus->Fill(bit);
 
-    const int nbits = 6; 
+    const int knbits = 6; 
     int bit[6] = {0,0,0,0,0,0};    
     bit[0] = status & AliESDtrack::kTPCin;
     bit[1] = status & AliESDtrack::kTPCout;
@@ -277,7 +277,7 @@ void AliTRDQATask::Exec(Option_t *)
     const double *val = track->GetParameter(); // parameters at the vertex
     double pt = 1./TMath::Abs(val[4]);
 
-    for(int b=0; b<nbits; b++) {
+    for(int b=0; b<knbits; b++) {
       if (bit[b]) {
 	fPt[b]->Fill(pt); 
 	fTheta[b]->Fill(val[3]);
@@ -318,7 +318,7 @@ void AliTRDQATask::Exec(Option_t *)
       // fill pid histograms
       double trdr0 = 0, tpcr0 = 0;
       int trdBestPid = 5, tpcBestPid = 5;  // charged
-      const double minPidValue =  0.9;
+      const double kminPidValue =  0.9;
 
       double pp[5];
       track->GetTPCpid(pp); // ESD inconsequence
@@ -331,8 +331,8 @@ void AliTRDQATask::Exec(Option_t *)
 	fTrdPID[pid]->Fill(track->GetTRDpid(pid));
 	fTpcPID[pid]->Fill(pp[pid]);
 	
-	if (track->GetTRDpid(pid) > minPidValue) trdBestPid = pid;
-	if (pp[pid] > minPidValue) tpcBestPid = pid;
+	if (track->GetTRDpid(pid) > kminPidValue) trdBestPid = pid;
+	if (pp[pid] > kminPidValue) tpcBestPid = pid;
       }
       
       fTrdPID[5]->Fill(trdr0); // check unitarity
@@ -368,8 +368,8 @@ void AliTRDQATask::Terminate(Option_t *)
   fAlpha[3]    = (TH1D*)fOutputContainer->At(counter++);
 
   fSectorTRD   = (TH1D*)fOutputContainer->At(counter++);
-  const int nbits = 6;
-  for(int i=0; i<nbits; i++) {
+  const int knbits = 6;
+  for(int i=0; i<knbits; i++) {
      fPt[i]      = (TH1D*)fOutputContainer->At(counter++);
      fTheta[i]   = (TH1D*)fOutputContainer->At(counter++);
      fSigmaY[i]  = (TH1D*)fOutputContainer->At(counter++);
@@ -425,7 +425,7 @@ void AliTRDQATask::Terminate(Option_t *)
 }
 
 //______________________________________________________________________________
-int AliTRDQATask::GetSector(double alpha) 
+const int AliTRDQATask::GetSector(const double alpha) const
 {
   // Gets the sector number 
 
@@ -435,13 +435,13 @@ int AliTRDQATask::GetSector(double alpha)
 }
 
 //______________________________________________________________________________
-int AliTRDQATask::CheckSector(int sector) 
+const int AliTRDQATask::CheckSector(const int sector) const  
 {  
   // Checks the sector number
-  const int nSec = 8;
+  const int knSec = 8;
   int sec[] = {2,3,5,6,11,12,13,15};
   
-  for(int i=0; i<nSec; i++) 
+  for(int i=0; i<knSec; i++) 
     if (sector == sec[i]) return 1;
   
   return 0;
@@ -468,7 +468,7 @@ void AliTRDQATask::CalculateEff()
 }
 
 //______________________________________________________________________________
-void AliTRDQATask::DrawESD() 
+void AliTRDQATask::DrawESD() const 
 {
   // Makes a few plots
 
@@ -487,10 +487,10 @@ void AliTRDQATask::DrawESD()
 
   // draw all 
   
-  const int nplots = 18;
-  const int nover[nplots] = {1,1,1,4,1,1,1,1,1,1,2,1,1,3,1,1,1,1};
-  const int nnames = 24;
-  const char *names[nnames] = {
+  const int knplots = 18;
+  const int knover[knplots] = {1,1,1,4,1,1,1,1,1,1,2,1,1,3,1,1,1,1};
+  const int knnames = 24;
+  const char *names[knnames] = {
     "ntracks", "kinkIndex", "trackStatus", 
     "ptTPCi", "ptTPCo", "ptTRDo", "ptTRDr",  "ptTPCz", "ptTRDz",
     "eff_TPCi_TPCo",  "eff_TPCo_TRDo", "eff_TRDo_TRDr",  "eff_TPCo_TRDr",
@@ -499,7 +499,7 @@ void AliTRDQATask::DrawESD()
     "time", "budget", "signal"
   };
   
-  const int logy[nnames] = {
+  const int klogy[knnames] = {
     1,1,1,
     1,1,1,
     0,0,0,0,
@@ -509,16 +509,16 @@ void AliTRDQATask::DrawESD()
   };
 
   int nhist=0;
-  for(int i=0; i<nplots; i++) {
+  for(int i=0; i<knplots; i++) {
   cTRD->cd(i+1) ;
   
   //  new TCanvas(names[i], names[nhist], 500, 300);
       
-    for(int j=0; j<nover[i]; j++) {
+    for(int j=0; j<knover[i]; j++) {
       TH1D *hist = dynamic_cast<TH1D*>(gDirectory->FindObject(names[nhist++]));
       if (!hist) continue;
       if (hist->GetMaximum() > 0 ) 
-	gPad->SetLogy(logy[i]);
+	gPad->SetLogy(klogy[i]);
       if (strstr(hist->GetName(), "eff")) {
 	hist->SetMarkerStyle(20);
 	hist->SetMinimum(0);
@@ -533,7 +533,7 @@ void AliTRDQATask::DrawESD()
 }
 
 //______________________________________________________________________________
-void AliTRDQATask::DrawGeoESD() 
+void AliTRDQATask::DrawGeoESD() const
 {
   // Makes a few plots
 
@@ -550,23 +550,23 @@ void AliTRDQATask::DrawGeoESD()
   gStyle->SetTitleBorderSize(0);
   
   // draw all   
-  const int nnames = 7;
-  const char *names[nnames] = {
+  const int knnames = 7;
+  const char *names[knnames] = {
     "xIn", "xOut",
     "planeYZTPCo", "planeYZTPCz", "planeYZTRDo", "planeYZTRDr", "planeYZTRDz",
   };
   
-  const char *opt[nnames] = {
+  const char *opt[knnames] = {
     "", "",
     "colz","colz", "colz", "colz", "colz"
   };
   
-  const int logy[nnames] = {
+  const int klogy[knnames] = {
     1,1,
     0,0,0,0,0
   };
   
-  for(int i=0; i<nnames; i++) {
+  for(int i=0; i<knnames; i++) {
   cTRDGeo->cd(i+1) ;
     TH1D *hist = dynamic_cast<TH1D*>(gDirectory->FindObject(names[i]));
     if (!hist) continue;
@@ -575,7 +575,7 @@ void AliTRDQATask::DrawGeoESD()
     //else new TCanvas(names[i], names[i], 300, 900);
    
     if (hist->GetMaximum() > 0 ) 
-      gPad->SetLogy(logy[i]);
+      gPad->SetLogy(klogy[i]);
     if (strstr(opt[i],"colz")) gPad->SetRightMargin(0.1);
     
     hist->Draw(opt[i]);    
@@ -586,7 +586,7 @@ void AliTRDQATask::DrawGeoESD()
 }
 
 //______________________________________________________________________________
-void AliTRDQATask::DrawConvESD() 
+void AliTRDQATask::DrawConvESD() const
 {
   // Makes a few plots
 
@@ -604,33 +604,33 @@ void AliTRDQATask::DrawConvESD()
   gStyle->SetTitleFont(62, "XYZ");
   gStyle->SetPadRightMargin(0.02);
 
-  const int nnames = 9;
-  const int nplots = 5;
-  const int nover[nplots] = {3,1,1,3,1}; 
+  const int knnames = 9;
+  const int knplots = 5;
+  const int knover[knplots] = {3,1,1,3,1}; 
   
-  const char *names[nnames] = {
+  const char *names[knnames] = {
     "sigmaYTPCo","sigmaYTRDo", "sigmaYTRDr", "sigmaYTPCz", "sigmaYTRDz",
     "Chi2TPCo", "Chi2TRDo", "Chi2TRDr", "Chi2TRDz"
   };
   
-  const char *opt[nplots] = {
+  const char *opt[knplots] = {
     "", "", "","","",
   };
   
-  const int logy[nplots] = {
+  const int klogy[knplots] = {
     0,0,0,1,1
   };
 
   int nhist = 0;
-  for(int i=0; i<nplots; i++) {
+  for(int i=0; i<knplots; i++) {
     cTRDConv->cd(i+1) ;
     //new TCanvas(names[i], names[i], 500, 300);
     if (strstr(opt[i],"colz")) gPad->SetRightMargin(0.1);
    
-    for(int j=0; j<nover[i]; j++) {
+    for(int j=0; j<knover[i]; j++) {
       TH1D *hist = dynamic_cast<TH1D*>(gDirectory->FindObject(names[nhist++]));
       if ( hist->GetMaximum() > 0 ) 
-	gPad->SetLogy(logy[i]);
+	gPad->SetLogy(klogy[i]);
       if (!j) hist->Draw(opt[i]);
       else hist->Draw("same");
     }
@@ -640,7 +640,7 @@ void AliTRDQATask::DrawConvESD()
 }
 
 //______________________________________________________________________________
-void AliTRDQATask::DrawPidESD() 
+void AliTRDQATask::DrawPidESD() const
 {
   // Makes a few plots
 
@@ -662,8 +662,8 @@ void AliTRDQATask::DrawPidESD()
 
   // draw all 
  
-  const int nnames = 27;
-  const char *names[nnames] = {
+  const int knnames = 27;
+  const char *names[knnames] = {
 
     "signal", "trdSigMom", "tpcSigMom",
 
@@ -675,7 +675,7 @@ void AliTRDQATask::DrawPidESD()
 
   };
   
-  const char *opt[nnames] = {
+  const char *opt[knnames] = {
 
     "", "colz", "colz",
 
@@ -686,7 +686,7 @@ void AliTRDQATask::DrawPidESD()
     "colz", "colz", "colz", "colz", "colz", "colz" 
   };
   
-  const int logy[nnames] = {
+  const int klogy[knnames] = {
 
     0,0,0,
 
@@ -697,7 +697,7 @@ void AliTRDQATask::DrawPidESD()
     0,0,0,0,0,0    
   };
 
-  for(int i=0; i<nnames; i++) {
+  for(int i=0; i<knnames; i++) {
     cTRDPid->cd(i+1) ;
 
     TH1D *hist = dynamic_cast<TH1D*>(gDirectory->FindObject(names[i]));
@@ -705,7 +705,7 @@ void AliTRDQATask::DrawPidESD()
     
     //new TCanvas(names[i], names[i], 500, 300);
     if ( hist->GetMaximum() > 0  ) 
-      gPad->SetLogy(logy[i]);
+      gPad->SetLogy(klogy[i]);
     if (strstr(opt[i],"colz")) gPad->SetRightMargin(0.1);
     
     if (strstr(names[i],"sigMom")) gPad->SetLogz(1);
