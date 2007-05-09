@@ -611,6 +611,30 @@ Float_t AliTRDcalibDB::GetGainFactorAverage(Int_t det)
 }
 
 //_____________________________________________________________________________
+AliTRDCalROC *AliTRDcalibDB::GetPRFROC(Int_t det)
+{
+  //
+  // Returns the PRF calibration object for a given ROC
+  // containing one number per pad 
+  //
+  
+  const AliTRDCalPad     *calPad     = dynamic_cast<const AliTRDCalPad *> 
+                                       (GetCachedCDBObject(kIDPRFWidth));
+  if (!calPad) {
+    return 0;
+  }
+
+  AliTRDCalROC           *roc        = calPad->GetCalROC(det);
+  if (!roc) {
+    return 0;
+  }
+  else {
+    return roc;
+  }
+
+}
+
+//_____________________________________________________________________________
 Float_t AliTRDcalibDB::GetPRFWidth(Int_t det, Int_t col, Int_t row)
 {
   //

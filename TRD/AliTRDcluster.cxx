@@ -31,11 +31,11 @@ ClassImp(AliTRDcluster)
 AliTRDcluster::AliTRDcluster() 
   :AliCluster() 
   ,fDetector(0)
-  ,fX(0)
   ,fTimeBin(0)
   ,fQ(0)
   ,fNPads(0)
   ,fCenter(0)
+  ,fPad(0)
 { 
   //
   // Default constructor
@@ -51,11 +51,11 @@ AliTRDcluster::AliTRDcluster()
 AliTRDcluster::AliTRDcluster(const AliTRDrecPoint &p)
   :AliCluster()
   ,fDetector(p.GetDetector())
-  ,fX(0)
   ,fTimeBin(p.GetLocalTimeBin())
   ,fQ(p.GetEnergy())
   ,fNPads(0)
   ,fCenter(0)
+  ,fPad(0)
 {
   //
   // Constructor from AliTRDrecPoint
@@ -79,11 +79,11 @@ AliTRDcluster::AliTRDcluster(const AliTRDrecPoint &p)
 AliTRDcluster::AliTRDcluster(const AliTRDcluster &c)
   :AliCluster()
   ,fDetector(c.fDetector)
-  ,fX(c.fX)
   ,fTimeBin(c.fTimeBin)
   ,fQ(c.fQ)
   ,fNPads(c.fNPads)
   ,fCenter(c.fCenter)
+  ,fPad(c.fPad)
 {
   //
   // Copy constructor 

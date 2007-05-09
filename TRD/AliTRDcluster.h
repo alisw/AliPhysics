@@ -38,8 +38,8 @@ class AliTRDcluster : public AliCluster {
   virtual void     SetDetector(Int_t d)         { fDetector = d;    } 
           void     SetLocalTimeBin(Int_t t)     { fTimeBin  = t;    }
           void     SetQ(Float_t q)              { fQ        = q;    }
-  virtual void     SetX(Float_t x)              { fX        = x;    }
           void     SetCenter(Float_t c)         { fCenter   = c;    }
+	  void     SetPad(UChar_t pad)          { fPad      = pad;  }
           void     SetSignals(Short_t *signals);
           void     Set2pad()                    { SetBit(k2pad);  fNPads = 2; }
           void     Set3pad()                    { SetBit(k3pad);  fNPads = 3; }
@@ -50,9 +50,9 @@ class AliTRDcluster : public AliCluster {
   virtual Int_t    GetDetector() const          { return fDetector; }
           Int_t    GetLocalTimeBin() const      { return fTimeBin;  }
           Float_t  GetQ() const                 { return fQ;        }
-  virtual Float_t  GetX() const                 { return fX;        }
           Int_t    GetNPads() const             { return fNPads;    }
           Float_t  GetCenter() const            { return fCenter;   }
+	  Int_t    GetPad() const               { return fPad;      }
           Short_t *GetSignals()                 { return fSignals;  }
           Float_t  GetSumS() const;
 
@@ -67,14 +67,14 @@ class AliTRDcluster : public AliCluster {
           };
   
           Int_t   fDetector;       //  TRD detector number
-          Float_t fX;              //  Local x position (first order proportional to time bin)
           Char_t  fTimeBin;        //  Time bin number within the detector
           Float_t fQ;              //  Amplitude 
           Char_t  fNPads;          //  Number of pads in cluster
           Float_t fCenter;         //  Center of the cluster relative to the pad 
+	  UChar_t fPad;            //  Central pad number
           Short_t fSignals[7];     //  Signals in the cluster
   
-  ClassDef(AliTRDcluster,3)        //  Cluster for the TRD
+  ClassDef(AliTRDcluster,4)        //  Cluster for the TRD
  
 };
 

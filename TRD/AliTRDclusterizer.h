@@ -44,7 +44,8 @@ class AliTRDclusterizer : public TNamed {
           TObjArray     *RecPoints();
   virtual AliTRDcluster *AddCluster(Double_t *pos, Int_t timebin, Int_t det
                                   , Double_t amp, Int_t *tracks
-			          , Double_t *sig, Int_t iType, Float_t center = 0);
+			          , Double_t *sig, Int_t iType
+                                  , Int_t col, Float_t center = 0);
 
  protected:
 
