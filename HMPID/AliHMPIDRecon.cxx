@@ -567,6 +567,7 @@ Bool_t AliHMPIDRecon::FitEllipse(Double_t &phiRec)
   delete gMinuit;
 
   Double_t i2 = cA*cB-cH*cH;                                       //quartic invariant : i2 > 0  ellipse, i2 < 0 hyperbola
+  if(i2<=0) return kFALSE;
   Double_t aX = (cH*cF-cB*cG)/i2;                                  //x centre of the canonical section 
   Double_t bY = (cH*cG-cA*cF)/i2;                                  //y centre of the canonical section 
   Double_t alfa1 = TMath::ATan(2*cH/(cA-cB));                      //alpha = angle of rotation of the conical section
@@ -584,7 +585,7 @@ Bool_t AliHMPIDRecon::FitEllipse(Double_t &phiRec)
   if(TMath::Abs(alfa1-phiref)<TMath::Abs(alfa2-phiref)) phiRec = alfa1; else phiRec = alfa2;  
   
 //  cout << " phi reconstructed " << phiRec*TMath::RadToDeg() << endl;
-  return (i2>0);
+  return kTRUE;
 //
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -669,9 +670,11 @@ void AliHMPIDRecon::FunMinPhot(Int_t &/* */,Double_t* /* */,Double_t &f,Double_t
     meanCkov2 += thetaCer*thetaCer;
     nClAcc++;
   }
-  if(nClAcc==0) {f=0;return;}
+  if(nClAcc==0) {f=999;return;}
   meanCkov/=nClAcc;
-  Double_t rms = TMath::Sqrt(meanCkov2/nClAcc - meanCkov*meanCkov);
+  Double_t rms = (meanCkov2 - meanCkov*meanCkov*nClAcc)/nClAcc;
+  if(rms<0) Printf(" rms2 = %f, strange!!!",rms);
+  rms = TMath::Sqrt(rms);
   f = rms/TMath::Sqrt(nClAcc);
   
   
