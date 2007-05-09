@@ -2136,34 +2136,36 @@ void AliITSInitGeometry::DecodeDetectorv11Hybrid(Int_t &mod,Int_t layer,Int_t cp
     //                   of copy numbers.
     // Return:
     //    none.
-    const Int_t kDetPerLadderSPD[2]={2,4};
-    const Int_t kDetPerLadder[6]={4,4,6,8,22,25};
-    const Int_t kLadPerLayer[6]={20,40,14,22,34,38};
-    Int_t lay=-1,lad=-1,det=-1,i;
-
-    switch(layer){
-    case 1: case 2:{
-        lay = layer;
-        lad = cpn1+kDetPerLadderSPD[layer-1]*(cpn0-1);
-        det = cpn2;
-        }break;
-    case 3: case 4:{
-        lay = layer;
-        lad = cpn0;
-        det = cpn1;
-        }break;
-    case 5: case 6:{
-        lay = layer;
-        lad = cpn0;
-        det = cpn1;
-        }break;
-    default:{
-        }break;
-    } // end switch
-    mod = 0;
-    for(i=0;i<layer-1;i++) mod += kLadPerLayer[i]*kDetPerLadder[i];
-    mod += kDetPerLadder[layer-1]*(lad-1)+det-1;// module start at zero.
-    return;
+  const Int_t kDetPerLadderSPD[2]={2,4};
+  const Int_t kDetPerLadder[6]={4,4,6,8,22,25};
+  const Int_t kLadPerLayer[6]={20,40,14,22,34,38};
+  Int_t lad=-1,det=-1,i;
+  
+  switch(layer) {
+  case 1: case 2:{
+    lad = cpn1+kDetPerLadderSPD[layer-1]*(cpn0-1);
+    det = cpn2;
+  } break;
+  case 3: case 4:{
+    if (SDDIsTGeoNative()) {
+      lad = cpn0+1;
+      det = cpn1+1;
+    } else {
+      lad = cpn0;
+      det = cpn1;
+    }
+  } break;
+  case 5: case 6:{
+    lad = cpn0;
+    det = cpn1;
+  } break;
+  default:{
+  } break;
+  } // end switch
+  mod = 0;
+  for(i=0;i<layer-1;i++) mod += kLadPerLayer[i]*kDetPerLadder[i];
+  mod += kDetPerLadder[layer-1]*(lad-1)+det-1;// module start at zero.
+  return;
 }
 //______________________________________________________________________
 void AliITSInitGeometry::RecodeDetectorv11Hybrid(Int_t mod,Int_t &cpn0,
