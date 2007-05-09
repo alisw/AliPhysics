@@ -56,15 +56,13 @@ ClassImp(AliTRDCalPIDLQ)
 
 Char_t* AliTRDCalPIDLQ::fpartName[AliPID::kSPECIES] = {"electron", "muon", "pion", "kaon", "proton"};
 Char_t* AliTRDCalPIDLQ::fpartSymb[AliPID::kSPECIES] = {"EL", "MU", "PI", "KA", "PR"};
-//const Int_t AliTRDCalPIDLQ::fNMom = 11;
-//const Int_t AliTRDCalPIDLQ::fNLength = 4;
     
 //_________________________________________________________________________
 AliTRDCalPIDLQ::AliTRDCalPIDLQ()
   :TNamed("pid", "PID for TRD")
-  //,fNMom(0)
+  ,fNMom(0)
   ,fTrackMomentum(0x0)
-  //,fNLength(0)
+  ,fNLength(0)
   ,fTrackSegLength(0x0)
   ,fNTimeBins(0)
   ,fMeanChargeRatio(0)
@@ -84,9 +82,9 @@ AliTRDCalPIDLQ::AliTRDCalPIDLQ()
 //_________________________________________________________________________
 AliTRDCalPIDLQ::AliTRDCalPIDLQ(const Text_t *name, const Text_t *title) 
   :TNamed(name,title)
-  //,fNMom(0)
+  ,fNMom(0)
   ,fTrackMomentum(0x0)
-  //,fNLength(0)
+  ,fNLength(0)
   ,fTrackSegLength(0x0)
   ,fNTimeBins(0)
   ,fMeanChargeRatio(0)
@@ -107,9 +105,9 @@ AliTRDCalPIDLQ::AliTRDCalPIDLQ(const Text_t *name, const Text_t *title)
 //_____________________________________________________________________________
 AliTRDCalPIDLQ::AliTRDCalPIDLQ(const AliTRDCalPIDLQ &c) 
   :TNamed(c)
-  //,fNMom(c.fNMom)
+  ,fNMom(c.fNMom)
   ,fTrackMomentum(0x0)
-  //,fNLength(c.fNLength)
+  ,fNLength(c.fNLength)
   ,fTrackSegLength(0x0)
   ,fNTimeBins(c.fNTimeBins)
   ,fMeanChargeRatio(c.fMeanChargeRatio)
