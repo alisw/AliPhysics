@@ -34,7 +34,7 @@
 #include "STRUCT/AliPIPEv0.h"
 #include "ITS/AliITSvPPRasymmFMD.h"
 #include "TPC/AliTPCv2.h"
-#include "TOF/AliTOFv5T0.h"
+#include "TOF/AliTOFv6T0.h"
 #include "HMPID/AliHMPIDv1.h"
 #include "ZDC/AliZDCv1.h"
 #include "TRD/AliTRDv1.h"
@@ -439,7 +439,7 @@ void Config()
 
   if(iTOF) {
     //=================== TOF parameters ============================
-    AliTOF *TOF  = new AliTOFv5T0("TOF","normal TOF");
+    AliTOF *TOF  = new AliTOFv6T0("TOF","normal TOF");
   }
 
   if(iHMPID) {

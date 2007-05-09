@@ -29,7 +29,7 @@
 #include "STRUCT/AliPIPEv0.h"
 #include "ITS/AliITSvPPRasymmFMD.h"
 #include "TPC/AliTPCv2.h"
-#include "TOF/AliTOFv5T0.h"
+#include "TOF/AliTOFv6T0.h"
 #include "HMPID/AliHMPIDv1.h"
 #include "ZDC/AliZDCv2.h"
 #include "TRD/AliTRDv1.h"
@@ -415,7 +415,7 @@ void Config()
 
     if (iTOF) {
         //=================== TOF parameters ============================
-	AliTOF *TOF = new AliTOFv5T0("TOF", "normal TOF");
+	AliTOF *TOF = new AliTOFv6T0("TOF", "normal TOF");
 	// Partial geometry: modules at 2,3,4,6,7,11,12,14,15,16
 	// starting at 6h in positive direction
 	Int_t TOFSectors[18]={-1,-1,0,0,0,-1,0,0,-1,-1,-1,0,0,-1,0,0,0,0};
