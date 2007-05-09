@@ -159,6 +159,19 @@ AliPID::AliPID(const AliPID& pid) :
 }
 
 //_______________________________________________________________________
+void AliPID::SetProbabilities(const Double_t* probDensity, Bool_t charged) 
+{
+  //
+  // Set the probability densities
+  //
+  for (Int_t i = 0; i < kSPECIES; i++) 
+    fProbDensity[i] = probDensity[i];
+
+  for (Int_t i = kSPECIES; i < kSPECIESN; i++) 
+    fProbDensity[i] = ((charged) ? 0 : probDensity[i]);
+}
+
+//_______________________________________________________________________
 AliPID& AliPID::operator = (const AliPID& pid)
 {
 // assignment operator

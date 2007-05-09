@@ -57,6 +57,9 @@ class AliPID : public TObject {
   EParticleType        GetMostProbable(const Double_t* prior) const;
   EParticleType        GetMostProbable() const;
   
+  void                 SetProbabilities(const Double_t* probabilities,
+                                        Bool_t charged = kTRUE);
+
   static void          SetPriors(const Double_t* prior,
 				 Bool_t charged = kTRUE);
   static void          SetPrior(EParticleType iType, Double_t prior);
