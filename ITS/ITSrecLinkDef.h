@@ -41,7 +41,7 @@
 
 #pragma link C++ class  AliITSVertexer+;
 #pragma link C++ class  AliITSVertexerIons+;
-#pragma link C++ class  AliITSVertexerPPZ+;
+#pragma link C++ class  AliITSVertexerCosmics+;
 #pragma link C++ class  AliITSVertexerZ+;
 #pragma link C++ class  AliITSVertexer3D+;
 #pragma link C++ class  AliITSZPoint+;
