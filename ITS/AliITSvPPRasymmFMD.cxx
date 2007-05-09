@@ -6277,9 +6277,9 @@ void AliITSvPPRasymmFMD::StepManager(){
     Int_t lay,lad,det,cpy0,cpy1,cpy2;
     fIgm.DecodeDetectorLayers(mod,lay,lad,det);
     fIgm.RecodeDetector(mod,cpy0,cpy1,cpy2);
-    printf("gMC: kk=%d cpn0=%d cpn1=%d cpn2=%d -> mod=%d -> "
-           "lay=%d lad=%d det=%d -> cpn0=%d cpn1=%d cpn2=%d\n",
-           kk,cpn0,cpn1,cpn2,mod,lay,lad,det,cpy0,cpy1,cpy2);
+//     printf("gMC: kk=%d cpn0=%d cpn1=%d cpn2=%d -> mod=%d -> "
+//            "lay=%d lad=%d det=%d -> cpn0=%d cpn1=%d cpn2=%d\n",
+//            kk,cpn0,cpn1,cpn2,mod,lay,lad,det,cpy0,cpy1,cpy2);
     //
     // Fill hit structure.
     //
