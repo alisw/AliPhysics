@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2007/05/09 08:37:40  arcelli
+Fix a bug in getting the pad volume path (in case of holes for PHOS)
+
 Revision 1.10  2007/05/03 08:04:19  decaro
 Coding convention: RN17 violation -> suppression
 
@@ -1592,10 +1595,6 @@ void AliTOFGeometryV5::GetVolumePath(Int_t sector, Char_t *path ){
   Char_t string[100];
 
   Int_t icopy = sector;
-  // Old 6h convention
-  // if(sector<13){
-  //    icopy=sector+5;}  
-  // else{ icopy=sector-13;}
 
   sprintf(string,"/ALIC_1/B077_1/BSEGMO%i_1/BTOF%i_1",icopy,icopy);
   sprintf(path,"%s",string);
@@ -1612,11 +1611,8 @@ void AliTOFGeometryV5::GetVolumePath(Int_t sector, Int_t plate, Int_t strip, Cha
   Char_t string3[100];
   
   Int_t icopy = sector;
-  // Old 6h convention
-  // if(sector<13){
-  //    icopy=sector+5;}  
-  // else{ icopy=sector-13;}
-  sprintf(string1,"/ALIC_1/B077_1/BSEGMO%i_1/BTOF%i_1/FTOA_0/FLTA_0",icopy,icopy);
+
+  sprintf(string1,"/ALIC_1/B077_1/BSEGMO%i_1/BTOF%i_1",icopy,icopy);
   
   if(plate==0) icopy=strip; 
   if(plate==1) icopy=strip+NStripC(); 
@@ -1624,7 +1620,7 @@ void AliTOFGeometryV5::GetVolumePath(Int_t sector, Int_t plate, Int_t strip, Cha
   if(plate==3) icopy=strip+NStripC()+NStripB()+NStripA(); 
   if(plate==4) icopy=strip+NStripC()+2*NStripB()+NStripA(); 
   icopy++;
-  sprintf(string2,"FSTR_%i",icopy);
+  sprintf(string2,"FTOA_0/FLTA_0/FSTR_%i",icopy);
   if(fHoles && (sector==11 || sector==12)) {
     if(plate<2)  sprintf(string2,"FTOB_0/FLTB_0/FSTR_%i",icopy);
     if(plate>2)  sprintf(string2,"FTOC_0/FLTC_0/FSTR_%i",icopy);
