@@ -18,6 +18,7 @@
 #endif
 
 class TClass;
+class TTree;
 class AliAnalysisDataContainer;
 class AliAnalysisTask;
 
@@ -33,6 +34,7 @@ public:
    AliAnalysisDataSlot &operator=(const AliAnalysisDataSlot &slot);
    // Connect some container to the slot
    Bool_t                    ConnectContainer(AliAnalysisDataContainer *cont);
+   static Int_t              EnableBranch(const char *bname, TTree *tree);
    // Getters
    void                     *GetBranchAddress(const char *branch) const;
    Bool_t                    SetBranchAddress(const char *branch, void *address);

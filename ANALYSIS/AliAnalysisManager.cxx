@@ -59,6 +59,7 @@ AliAnalysisManager::AliAnalysisManager()
 {
 // Dummy constructor.
    fgAnalysisManager = this;
+   SetEventLoop(kTRUE);
 }
 
 //______________________________________________________________________________
@@ -84,6 +85,7 @@ AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
    fContainers = new TObjArray();
    fInputs     = new TObjArray();
    fOutputs    = new TObjArray();
+   SetEventLoop(kTRUE);
 }
 
 //______________________________________________________________________________
@@ -345,6 +347,24 @@ void AliAnalysisManager::UnpackOutput(TList *source)
    AliAnalysisDataContainer *output;
    while ((output=(AliAnalysisDataContainer*)next())) {
       if (!output->GetData()) continue;
+      // Check if there are client tasks that run post event loop
+      if (output->HasConsumers()) {
+         // Disable event loop semaphore
+         output->SetPostEventLoop(kTRUE);
+         TObjArray *list = output->GetConsumers();
+         Int_t ncons = list->GetEntriesFast();
+         for (Int_t i=0; i<ncons; i++) {
+            AliAnalysisTask *task = (AliAnalysisTask*)list->At(i);
+            task->CheckNotify(kTRUE);
+            // If task is active, execute it
+            if (task->IsPostEventLoop() && task->IsActive()) {
+               if (fDebug > 1) {
+                  cout << "== Executing post event loop task " << task->GetName() << endl;
+               }                  
+               task->ExecuteTask();
+            }   
+         }
+      }   
       // Check if the output need to be written to a file.
       const char *filename = output->GetFileName();
       if (!filename || !strlen(filename)) continue;
@@ -361,17 +381,6 @@ void AliAnalysisManager::UnpackOutput(TList *source)
          callEnv.Execute(output->GetData());
       }
       output->GetData()->Write();
-      // Check if there are client tasks that run in single-shot mode.
-      if (!output->HasConsumers()) continue;
-      output->SetEventByEvent(kFALSE);
-      TObjArray *list = output->GetConsumers();
-      Int_t ncons = list->GetEntriesFast();
-      for (Int_t i=0; i<ncons; i++) {
-         AliAnalysisTask *task = (AliAnalysisTask*)list->At(i);
-         task->CheckNotify(kTRUE);
-         // If task is active, execute it
-         if (task->IsActive()) task->ExecuteTask();         
-      }
    }
    if (fDebug > 1) {
       cout << "<-AliAnalysisManager::UnpackOutput()" << endl;
@@ -420,6 +429,10 @@ AliAnalysisDataContainer *AliAnalysisManager::CreateContainer(const char *name,
 //   kExchangeContainer  = 0, used to exchange date between tasks
 //   kInputContainer   = 1, used to store input data
 //   kOutputContainer  = 2, used for posting results
+   if (fContainers->FindObject(name)) {
+      Error("CreateContainer","A container named %s already defined !\n",name);
+      return NULL;
+   }   
    AliAnalysisDataContainer *cont = new AliAnalysisDataContainer(name, datatype);
    fContainers->Add(cont);
    switch (type) {
@@ -427,7 +440,6 @@ AliAnalysisDataContainer *AliAnalysisManager::CreateContainer(const char *name,
          fInputs->Add(cont);
          break;
       case kOutputContainer:
-         if (fOutputs->FindObject(name)) printf("CreateContainer: warning: a container named %s existing !\n",name);
          fOutputs->Add(cont);
          if (filename && strlen(filename)) cont->SetFileName(filename);
          break;
@@ -549,6 +561,22 @@ Bool_t AliAnalysisManager::InitAnalysis()
          return kFALSE;
       }   
    }
+   // Check that all containers feeding post-event loop tasks are in the outputs list
+   TIter nextcont(fContainers); // loop over all containers
+   while ((cont=(AliAnalysisDataContainer*)nextcont())) {
+      if (!cont->IsPostEventLoop() && !fOutputs->FindObject(cont)) {
+         if (cont->HasConsumers()) {
+         // Check if one of the consumers is post event loop
+            TIter nextconsumer(cont->GetConsumers());
+            while ((task=(AliAnalysisTask*)nextconsumer())) {
+               if (task->IsPostEventLoop()) {
+                  fOutputs->Add(cont);
+                  break;
+               }
+            }
+         }
+      }
+   }   
    fInitOK = kTRUE;
    return kTRUE;
 }   
@@ -594,16 +622,14 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree)
    }
    char line[128];
    SetEventLoop(kFALSE);
-   // Disable by default all branches and set event loop mode
+   // Disable all branches if requested and set event loop mode
    if (tree) {
-//      tree->SetBranchStatus("*",0);
+      if (TestBit(kDisableBranches)) {
+         printf("Disabling all branches...\n");
+//         tree->SetBranchStatus("*",0); // not yet working
+      }   
       SetEventLoop(kTRUE);
    }   
-   AliAnalysisDataContainer *cont = 0;
-   TIter nextc(fInputs);
-   // Force top containers have the same event loop type as the analysis
-   while ((cont=(AliAnalysisDataContainer*)nextc())) cont->SetEventByEvent(IsEventLoop());
-   AliAnalysisDataContainer *cont_top = (AliAnalysisDataContainer*)fInputs->First();
 
    TChain *chain = dynamic_cast<TChain*>(tree);
 
@@ -611,14 +637,6 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree)
    TIter next(fTasks);
    AliAnalysisTask *task;
    while ((task=(AliAnalysisTask*)next())) {
-      for (Int_t islot=0; islot<task->GetNinputs(); islot++) {
-         cont = task->GetInputSlot(islot)->GetContainer();
-         if (cont==cont_top) break;
-         cont = 0;
-      }
-      // All tasks feeding from the top containers must have the same event loop type
-//      if (cont) task->SetExecPerEvent(IsEventLoop());
-//      else task->SetExecPerEvent(task->IsExecPerEvent());         
       task->LocalInit();
    }
    

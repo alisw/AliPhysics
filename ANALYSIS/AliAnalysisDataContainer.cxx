@@ -66,7 +66,6 @@ AliAnalysisDataContainer::AliAnalysisDataContainer() : TNamed(),
                           fConsumers(NULL)
 {
 // Dummy ctor.
-   TObject::SetBit(kContEvtByEvt, kTRUE);
 }
 
 //______________________________________________________________________________
@@ -82,7 +81,6 @@ AliAnalysisDataContainer::AliAnalysisDataContainer(const char *name, TClass *typ
 {
 // Default constructor.
    SetTitle(fType->GetName());
-   TObject::SetBit(kContEvtByEvt, kTRUE);
 }
 
 //______________________________________________________________________________
@@ -268,7 +266,7 @@ void AliAnalysisDataContainer::PrintContainer(Option_t *option, Int_t indent) co
    opt.ToLower();
    Bool_t dep = (opt.Contains("dep"))?kTRUE:kFALSE;
    if (!dep) {
-      printf("%sContainer: %s  type: %s", ind.Data(), GetName(), GetTitle());
+      printf("%sContainer: %s  type: %s POST_LOOP=%i", ind.Data(), GetName(), GetTitle(), IsPostEventLoop());
       if (fProducer) 
          printf("%s = Data producer: task %s",ind.Data(),fProducer->GetName());
       else

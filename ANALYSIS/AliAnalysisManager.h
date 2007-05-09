@@ -39,7 +39,8 @@ enum EAliAnalysisExecMode {
 };
 
 enum EAliAnalysisFlags {
-   kEventLoop        = BIT(14)
+   kEventLoop        = BIT(14),
+   kDisableBranches  = BIT(15)
 };   
 
    AliAnalysisManager();
@@ -79,6 +80,7 @@ enum EAliAnalysisFlags {
    void                SetAnalysisType(EAliAnalysisExecMode mode) {fMode = mode;}
    void                SetCurrentEntry(Long64_t entry) {fCurrentEntry = entry;}
    void                SetDebugLevel(UInt_t level) {fDebug = level;}
+   void                SetDisableBranches(Bool_t disable=kTRUE) {TObject::SetBit(kDisableBranches,disable);}
 
    // Container handling
    AliAnalysisDataContainer *CreateContainer(const char *name, TClass *datatype, 

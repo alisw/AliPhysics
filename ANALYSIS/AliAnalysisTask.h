@@ -30,7 +30,7 @@ class AliAnalysisTask : public TTask {
     kTaskUsed    = BIT(14),
     kTaskZombie  = BIT(15),
     kTaskChecked = BIT(16),
-    kTaskEvtByEvt = BIT(17)
+    kTaskPostEventLoop = BIT(17)
   };
 
  protected:
@@ -60,11 +60,14 @@ class AliAnalysisTask : public TTask {
   Bool_t                    PostData(Int_t iout, TObject *data, Option_t *option="");
   //=====================================================================
   
-  // === USE THIS FIRST IN YOUR Init() TO CHECH IF A BRANCH IS ALREADY CONNECTED
+  // === USE THIS FIRST IN YOUR ConnectInputData() TO CHECH IF A BRANCH IS ALREADY CONNECTED
   // TO SOME ADDRESS.
   char                     *GetBranchAddress(Int_t islot, const char *branch) const;
-  // === CALL THIS AFTERWARDS IN Init() IF THE BRANCH ADDRESS IS NOT YET SET
+  // === CALL THIS AFTERWARDS IN ConnectInputData() IF THE BRANCH ADDRESS IS NOT YET SET
   Bool_t                    SetBranchAddress(Int_t islot, const char *branch, void *address) const;
+  //=====================================================================
+  //=== CALL IN ConnectInputData() TO ENABLE ONLY EXPLICIT BRANCHES NEEDED FOR THIS TASK EXECUTION
+  void                      EnableBranch(Int_t islot, const char *bname) const;
   //=====================================================================
   // === CALL THIS IN CreateOutputObjects BEFORE CREATING THE OBJECT FOR EACH 
   // OUTPUT IOUT THAT HAS TO BE WRITTEN TO A FILE
@@ -107,7 +110,7 @@ public:
   TObject                  *GetOutputData(Int_t islot) const;  
   Bool_t                    IsOutputReady(Int_t islot) const {return fOutputReady[islot];}
   Bool_t                    IsChecked() const  {return TObject::TestBit(kTaskChecked);}
-  Bool_t                    IsExecPerEvent() const {return TObject::TestBit(kTaskEvtByEvt);}
+  Bool_t                    IsPostEventLoop() const {return TObject::TestBit(kTaskPostEventLoop);}
   Bool_t                    IsInitialized() const  {return fInitialized;}
   Bool_t                    IsReady() const  {return fReady;}
   Bool_t                    IsUsed() const   {return TObject::TestBit(kTaskUsed);}
@@ -115,7 +118,7 @@ public:
   void                      PrintTask(Option_t *option="all", Int_t indent=0) const;
   void                      PrintContainers(Option_t *option="all", Int_t indent=0) const;
   void                      SetChecked(Bool_t flag=kTRUE) {TObject::SetBit(kTaskChecked,flag);}
-  void                      SetExecPerEvent(Bool_t flag=kTRUE);
+  void                      SetPostEventLoop(Bool_t flag=kTRUE);
   void                      SetUsed(Bool_t flag=kTRUE);
   void                      SetZombie(Bool_t flag=kTRUE) {TObject::SetBit(kTaskZombie,flag);}
   // Main task execution 
