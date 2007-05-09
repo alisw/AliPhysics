@@ -381,7 +381,7 @@ Double_t p[3], Double_t bz) const {
   //+++++++++++++++++++++++++++++++++++++++++    
   GetXYZ(x);
     
-  if (TMath::Abs(Get1Pt()) < kAlmost0){ //straight-line tracks
+  if (TMath::Abs(Get1Pt()) < kAlmost0 || TMath::Abs(bz) < kAlmost0Field ){ //straight-line tracks
      Double_t unit[3]; GetDirection(unit);
      x[0]+=unit[0]*len;   
      x[1]+=unit[1]*len;   
