@@ -72,7 +72,7 @@ AliHLTComponent::AliHLTComponent()
   memset(&fEnvironment, 0, sizeof(AliHLTComponentEnvironment));
   if (fgpComponentHandler)
     fgpComponentHandler->ScheduleRegister(this);
-  SetLocalLoggingLevel(kHLTLogDefault);
+  //SetLocalLoggingLevel(kHLTLogDefault);
 }
 
 AliHLTComponent::AliHLTComponent(const AliHLTComponent&)
