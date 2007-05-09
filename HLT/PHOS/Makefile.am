@@ -34,6 +34,17 @@ libAliHLTPHOS_la_SOURCES	= AliHLTPHOSPulseGenerator.cxx \
 				  AliHLTPHOSRcuHistogramProducer.cxx \
 				  AliHLTPHOSRcuHistogramProducerComponent.cxx \
 				  AliHLTPHOSDDLDecoderComponent.cxx \
+				  AliHLTPHOSDataCorruptor.cxx \
+				  AliHLTPHOSDataQualityMonitor.cxx \
+				  AliHLTPHOSRcuDataQualityMonitorComponent.cxx \
+				  AliHLTPHOSProcessor.cxx \
+				  AliHLTPHOSClusterizer.cxx \
+				  AliHLTPHOSClusterizerComponent.cxx \
+				  AliHLTPHOSPhysicsAnalyzerSpectrum.cxx \
+				  AliHLTPHOSPhysicsAnalyzerSpectrumComponent.cxx \
+				  AliHLTPHOSPhysicsAnalyzer.cxx \
+				  AliHLTPHOSPhysicsDefinitions.cxx \
+				  AliHLTPHOSPhysicsAnalyzerPeakFitter.cxx
 				  PeakFinderTest.cxx
 
 # class header files, the link definition for the root dictionary
@@ -57,7 +68,19 @@ CLASS_HDRS			= AliHLTPHOSPulseGenerator.h \
 				  AliHLTPHOSRcuHistogramProducer.h \
 				  AliHLTPHOSRcuHistogramProducerComponent.h \
 				  AliHLTPHOSHistogramProducerComponent.h \
-				  AliHLTPHOSDDLDecoderComponent.h
+				  AliHLTPHOSDDLDecoderComponent.h \
+				  AliHLTPHOSDataCorruptor.h \
+				  AliHLTPHOSDataQualityMonitor.h \
+				  AliHLTPHOSRcuDataQualityMonitorComponent.h \
+				  AliHLTPHOSProcessor.h \
+				  AliHLTPHOSClusterizer.h \
+				  AliHLTPHOSClusterizerComponent.h \
+				  AliHLTPHOSPhysicsAnalyzerSpectrum.h \
+				  AliHLTPHOSPhysicsAnalyzerSpectrumComponent.h \
+				  AliHLTPHOSPhysicsAnalyzer.h \
+				  AliHLTPHOSPhysicsDefinitions.h \
+				  AliHLTPHOSPhysicsAnalyzerPeakFitter.h
+
 
 pkginclude_HEADERS		= $(CLASS_HDRS) \
 				  AliHLTPHOSCommonDefs.h \
@@ -72,6 +95,10 @@ pkginclude_HEADERS		= $(CLASS_HDRS) \
 			 	  AliHLTPHOSRcuCellAverageEnergyDataStruct.h \
 				  AliHLTPHOSRcuChannelDataStruct.h \
 				  AliHLTPHOSValidChannelDataStruct.h
+				  AliHLTPHOSClusterDataStruct.h \
+				  AliHLTPHOSRecPointDataStruct.h \
+				  AliHLTPHOSPhysicsDefinitions.h \
+				  AliHLTPHOSRecPointListDataStruct.h
 
 # version info and linking flags for the library
 libAliHLTPHOS_la_LIBADD		= $(top_builddir)/BASE/util/libAliHLTUtil.la

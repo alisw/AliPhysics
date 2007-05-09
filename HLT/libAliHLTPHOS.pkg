@@ -21,6 +21,17 @@ SRCS:=  PHOS/AliHLTPHOSPulseGenerator.cxx \
 	PHOS/AliHLTPHOSRcuHistogramProducer.cxx \
 	PHOS/AliHLTPHOSRcuHistogramProducerComponent.cxx \
 	PHOS/AliHLTPHOSDDLDecoderComponent.cxx \
+	PHOS/AliHLTPHOSDataCorruptor.cxx \
+	PHOS/AliHLTPHOSDataQualityMonitor.cxx \
+	PHOS/AliHLTPHOSRcuDataQualityMonitorComponent.cxx \
+	PHOS/AliHLTPHOSProcessor.cxx \
+	PHOS/AliHLTPHOSClusterizer.cxx \
+	PHOS/AliHLTPHOSClusterizerComponent.cxx \
+	PHOS/AliHLTPHOSPhysicsAnalyzerSpectrum.cxx \
+	PHOS/AliHLTPHOSPhysicsAnalyzerSpectrumComponent.cxx \
+	PHOS/AliHLTPHOSPhysicsAnalyzer.cxx \
+	PHOS/AliHLTPHOSPhysicsDefinitions.cxx \
+	PHOS/AliHLTPHOSPhysicsAnalyzerPeakFitter.cxx
 
 HDRS:=  PHOS/AliHLTPHOSPulseGenerator.h \
 	PHOS/AliHLTPHOSRawAnalyzer.h \
@@ -49,7 +60,21 @@ HDRS:=  PHOS/AliHLTPHOSPulseGenerator.h \
 	PHOS/AliHLTPHOSModuleCellAccumulatedEnergyDataStruct.h \
 	PHOS/AliHLTPHOSModuleCellAverageEnergyDataStruct.h \
 	PHOS/AliHLTPHOSRcuChannelDataStruct.h \
-	PHOS/AliHLTPHOSValidChannelDataStruct.h 
+	PHOS/AliHLTPHOSValidChannelDataStruct.h \
+	PHOS/AliHLTPHOSDataCorruptor.h \
+	PHOS/AliHLTPHOSDataQualityMonitor.h \
+	PHOS/AliHLTPHOSRcuDataQualityMonitorComponent.h \
+	PHOS/AliHLTPHOSProcessor.h \
+	PHOS/AliHLTPHOSClusterizer.h \
+	PHOS/AliHLTPHOSClusterizerComponent.h \
+	PHOS/AliHLTPHOSPhysicsAnalyzerSpectrum.h \
+	PHOS/AliHLTPHOSPhysicsAnalyzerSpectrumComponent.h \
+	PHOS/AliHLTPHOSPhysicsAnalyzer.h \
+	PHOS/AliHLTPHOSPhysicsDefinitions.h \
+	PHOS/AliHLTPHOSPhysicsAnalyzerPeakFitter.h \
+	PHOS/AliHLTPHOSRecPointDataStruct.h \
+	PHOS/AliHLTPHOSRecPointListDataStruct.h \
+	PHOS/AliHLTPHOSClusterDataStruct.h
 
 DHDR=   PHOS/AliHLTPHOSLinkDef.h
  					    
@@ -81,7 +106,21 @@ CLASS_HDRS:=	PHOS/AliHLTPHOSPulseGenerator.h \
 		PHOS/AliHLTPHOSModuleCellAccumulatedEnergyDataStruct.h \
 		PHOS/AliHLTPHOSModuleCellAverageEnergyDataStruct.h \
 		PHOS/AliHLTPHOSRcuChannelDataStruct.h \
-		PHOS/AliHLTPHOSValidChannelDataStruct.h 
+		PHOS/AliHLTPHOSValidChannelDataStruct.h \
+		PHOS/AliHLTPHOSDataCorruptor.h \
+		PHOS/AliHLTPHOSDataQualityMonitor.h \
+		PHOS/AliHLTRcuPHOSDataQualityMonitorComponent.h \
+		PHOS/AliHLTPHOSProcessor.h \
+		PHOS/AliHLTPHOSClusterizer.h \
+		PHOS/AliHLTPHOSClusterizerComponent.h \
+		PHOS/AliHLTPHOSPhysicsAnalyzerSpectrum.h \
+		PHOS/AliHLTPHOSPhysicsAnalyzerSpectrumComponent.h \
+		PHOS/AliHLTPHOSPhysicsAnalyzer.h \
+		PHOS/AliHLTPHOSPhysicsDefinitions.h \
+		PHOS/AliHLTPHOSPhysicsAnalyzerPeakFitter.h \
+		PHOS/AliHLTPHOSRecPointDataStruct.h \
+		PHOS/AliHLTPHOSRecPointListDataStruct.h \
+		PHOS/AliHLTPHOSClusterDataStruct.h
 
 
 MODULE_SRCS:=   PHOS/AliHLTPHOSPulseGenerator.cxx \
@@ -104,7 +143,18 @@ MODULE_SRCS:=   PHOS/AliHLTPHOSPulseGenerator.cxx \
 		PHOS/AliHLTPHOSHistogramProducerComponent.cxx \
 		PHOS/AliHLTPHOSRcuHistogramProducer.cxx \
 		PHOS/AliHLTPHOSRcuHistogramProducerComponent.cxx \
-		PHOS/AliHLTPHOSDDLDecoderComponent.cxx
+		PHOS/AliHLTPHOSDDLDecoderComponent.cxx \
+		PHOS/AliHLTPHOSDataCorruptor.cxx \
+		PHOS/AliHLTPHOSDataQualityMonitor.cxx \
+		PHOS/AliHLTPHOSRcuDataQualityMonitorComponent.cxx \
+		PHOS/AliHLTPHOSProcessor.cxx \
+		PHOS/AliHLTPHOSClusterizer.cxx \
+		PHOS/AliHLTPHOSClusterizerComponent.cxx \
+		PHOS/AliHLTPHOSPhysicsAnalyzerSpectrum.cxx \
+		PHOS/AliHLTPHOSPhysicsAnalyzerSpectrumComponent.cxx \
+		PHOS/AliHLTPHOSPhysicsAnalyzer.cxx \
+		PHOS/AliHLTPHOSPhysicsDefinitions.cxx \
+		PHOS/AliHLTPHOSPhysicsAnalyzerPeakFitter.cxx
 
 EINCLUDE+= HLT/BASE HLT/BASE/util HLT/src HLT/hough HLT/comp HLT/misc HLT/ITS HLT/MUON/src TPC ITS MUON STEER RAW
 
