@@ -6,6 +6,7 @@ MODULE 				= AliHLTPHOS
 EXTRA_DIST			= AliHLTPHOSLinkDef.h
 
 AM_CPPFLAGS			= @ALIROOT_CPPFLAGS@ \
+				  -I@ALICE_ROOT@/PHOS \
 				  -I$(top_srcdir)/BASE \
 				  -I$(top_srcdir)/BASE/util
 
@@ -106,6 +107,10 @@ libAliHLTPHOS_la_LDFLAGS	= -L@ROOTLIBDIR@ \
 				  @ROOTLIBS@ \
 				  @ALIROOT_LDFLAGS@ \
 				  @ALIROOT_LIBS@ \
+				  -lRAWDatasim \
+				  -lPHOSbase \
+				  -lPHOSsim \
+				  -lPHOSrec \
 				  -version-info 0:0:0
 
 # automatic generation of data and time of library build

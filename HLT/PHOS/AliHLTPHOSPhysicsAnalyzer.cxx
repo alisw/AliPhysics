@@ -19,7 +19,7 @@
 #include "TFile.h"
 #include "TMath.h"
 #include <cmath>
-#include "../../PHOS/AliPHOSGeometry.h"
+#include "AliPHOSGeometry.h"
 #include <iostream>
 
 ClassImp(AliHLTPHOSPhysicsAnalyzer);
