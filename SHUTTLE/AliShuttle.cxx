@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.42  2007/05/03 08:01:39  jgrosseo
+typo in last commit :-(
+
 Revision 1.41  2007/05/03 08:00:48  jgrosseo
 fixing log message when pp want to skip dcs value retrieval
 
@@ -552,6 +555,42 @@ Bool_t AliShuttle::StoreOCDB(const TString& gridURI)
 }
 
 //______________________________________________________________________________________________
+Bool_t AliShuttle::CleanReferenceStorage(const char* detector)
+{
+  // clears the directory used to store reference files of a given subdetector
+  
+	AliCDBManager* man = AliCDBManager::Instance();
+	AliCDBStorage* sto = man->GetStorage(fgkLocalRefStorage);
+  TString localBaseFolder = sto->GetBaseFolder();
+
+  TString targetDir;
+  targetDir.Form("%s/%s", localBaseFolder.Data(), detector);
+	
+  Log("SHUTTLE", Form("Cleaning %s", targetDir.Data()));
+
+  Int_t result = gSystem->GetPathInfo(targetDir, 0, (Long64_t*) 0, 0, 0);
+  if (result == 0)
+  {
+    // delete directory
+    result = gSystem->Exec(Form("rm -r %s", targetDir.Data()));
+    if (result != 0)
+    {  
+      Log("SHUTTLE", Form("StoreReferenceFile - Could not clear directory %s", targetDir.Data()));
+      return kFALSE;
+    }
+  }
+
+  result = gSystem->mkdir(targetDir, kTRUE);
+  if (result != 0)
+  {
+    Log("SHUTTLE", Form("StoreReferenceFile - Error creating base directory %s", targetDir.Data()));
+    return kFALSE;
+  }
+	
+  return kTRUE;
+}
+
+//______________________________________________________________________________________________
 Bool_t AliShuttle::StoreReferenceFile(const char* detector, const char* localFile, const char* gridFileName)
 {
 	//
@@ -574,22 +613,18 @@ Bool_t AliShuttle::StoreReferenceFile(const char* detector, const char* localFil
 	TString localBaseFolder = sto->GetBaseFolder();
 	
 	TString targetDir;
-	targetDir.Form("%s/%s", localBaseFolder.Data(), detector);
+	targetDir.Form("%s/%s", localBaseFolder.Data(), GetOfflineDetName(detector));
 	
 	TString target;
 	target.Form("%s/%d_%s", targetDir.Data(), GetCurrentRun(), gridFileName);
 	
-	Int_t result = gSystem->GetPathInfo(targetDir, 0, (Long64_t*) 0, 0, 0);
+	Int_t result = gSystem->GetPathInfo(localFile, 0, (Long64_t*) 0, 0, 0);
 	if (result)
 	{
-		result = gSystem->mkdir(targetDir, kTRUE);
-		if (result != 0)
-		{
-			Log("SHUTTLE", Form("StoreReferenceFile - Error creating base directory %s", targetDir.Data()));
-			return kFALSE;
-		}
+		Log("SHUTTLE", Form("StoreReferenceFile - %s does not exist", localFile));
+		return kFALSE;
 	}
-		
+
 	result = gSystem->CopyFile(localFile, target);
 
 	if (result == 0)
@@ -599,7 +634,8 @@ Bool_t AliShuttle::StoreReferenceFile(const char* detector, const char* localFil
 	}
 	else
 	{
-		Log("SHUTTLE", Form("StoreReferenceFile - Storing file %s locally to %s failed", localFile, target.Data()));
+		Log("SHUTTLE", Form("StoreReferenceFile - Storing file %s locally to %s failed. Error code = %d", 
+				localFile, target.Data(), result));
 		return kFALSE;
 	}	
 }
@@ -630,9 +666,6 @@ Bool_t AliShuttle::StoreRefFilesToGrid()
 	TString alienDir;
 	alienDir.Form("%s%s", gridBaseFolder.Data(), GetOfflineDetName(fCurrentDetector));
 	
-	if (!gGrid) 
-		return kFALSE;
-	
 	TString begin;
 	begin.Form("%d_", GetCurrentRun());
 	
@@ -648,6 +681,17 @@ Bool_t AliShuttle::StoreRefFilesToGrid()
 	}
 		
 	Int_t nDirs               = dirList->GetEntries();
+	
+	Log("SHUTTLE", Form("There are %d reference files in folder %s to be transferred to Grid",
+		nDirs, GetOfflineDetName(fCurrentDetector)));
+		
+	if(nDirs < 1) return kTRUE;
+		
+	if (!gGrid)
+	{ 
+		Log("SHUTTLE", "Connection to Grid failed: Cannot continue!");
+		return kFALSE;
+	}
 	
 	Bool_t success = kTRUE;
 	Bool_t first = kTRUE;
@@ -674,7 +718,7 @@ Bool_t AliShuttle::StoreRefFilesToGrid()
 			if (!result)
 				return kFALSE;
 			
-			if (!result->GetFileName(0)) 
+			if (!result->GetFileName(1)) // TODO: It looks like element 0 is always 0!!
 			{
 				if (!gGrid->Mkdir(alienDir.Data(),"",0))
 				{
@@ -682,8 +726,12 @@ Bool_t AliShuttle::StoreRefFilesToGrid()
 							alienDir.Data()));
 					delete baseDir;
 					return kFALSE;
+				} else {
+					Log("SHUTTLE",Form("Folder %s created", alienDir.Data()));
 				}
 				
+			} else {
+					Log("SHUTTLE",Form("Folder %s found", alienDir.Data()));
 			}
 		}
 			
@@ -726,7 +774,7 @@ void AliShuttle::CleanLocalStorage(const TString& uri)
 	if(uri == fgkLocalCDB) {
 		type = "OCDB";
 	} else if(uri == fgkLocalRefStorage) {
-		type = "reference";
+		type = "Reference";
 	} else {
 		AliError(Form("Invalid storage URI: %s", uri.Data()));
 		return;
@@ -743,7 +791,7 @@ void AliShuttle::CleanLocalStorage(const TString& uri)
 	}
 
 	TString filename(Form("%s/%s/*/Run*_v%d_s*.root",
-		localSto->GetBaseFolder().Data(), fCurrentDetector.Data(), GetCurrentRun()));
+		localSto->GetBaseFolder().Data(), GetOfflineDetName(fCurrentDetector.Data()), GetCurrentRun()));
 
 	AliInfo(Form("filename = %s", filename.Data()));
 
@@ -1220,7 +1268,7 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 
 			AliInfo("Redirecting output...");
 
-			if ((freopen(GetLogFileName(fCurrentDetector), "w", stdout)) == 0)
+			if ((freopen(GetLogFileName(fCurrentDetector), "a", stdout)) == 0)
 			{
 				Log("SHUTTLE", "Could not freopen stdout");
 			}
@@ -1325,6 +1373,9 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 
 	AliInfo(Form("Retrieving values for %s, run %d", fCurrentDetector.Data(), GetCurrentRun()));
 
+	if (!CleanReferenceStorage(GetOfflineDetName(fCurrentDetector)))
+		return kFALSE;
+
 	TMap dcsMap;
 	dcsMap.SetOwner(1);
 
@@ -1361,7 +1412,7 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 
 		// Retrieval of Aliases
 		TObjString* anAlias = 0;
-		Int_t iAlias = 1;
+		Int_t iAlias = 0;
 		Int_t nTotAliases= ((TMap*)fConfig->GetDCSAliases(fCurrentDetector))->GetEntries();
 		TIter iterAliases(fConfig->GetDCSAliases(fCurrentDetector));
 		while ((anAlias = (TObjString*) iterAliases.Next()))
@@ -1369,9 +1420,10 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 			TObjArray *valueSet = new TObjArray();
 			valueSet->SetOwner(1);
 
+			iAlias++;
 			if (((iAlias-1) % 500) == 0 || iAlias == nTotAliases)
 				AliInfo(Form("Querying DCS archive: alias %s (%d of %d)",
-						anAlias->GetName(), iAlias++, nTotAliases));
+						anAlias->GetName(), iAlias, nTotAliases));
 			aDCSError = (GetValueSet(host, port, anAlias->String(), valueSet, kAlias) == 0);
 
 			if(!aDCSError)
@@ -2496,14 +2548,18 @@ Bool_t AliShuttle::SendMail()
 
 	TString cc="alberto.colla@cern.ch";
 
-	TString subject = Form("%s Shuttle preprocessor error in run %d !",
+	TString subject = Form("%s Shuttle preprocessor FAILED in run %d !",
 				fCurrentDetector.Data(), GetCurrentRun());
 	AliDebug(2, Form("subject: %s", subject.Data()));
 
 	TString body = Form("Dear %s expert(s), \n\n", fCurrentDetector.Data());
 	body += Form("SHUTTLE just detected that your preprocessor "
-			"exited with ERROR state in run %d!!\n\n", GetCurrentRun());
-	body += Form("Please check %s status on the web page asap!\n\n", fCurrentDetector.Data());
+			"failed processing run %d!!\n\n", GetCurrentRun());
+	body += Form("Please check %s status on the SHUTTLE monitoring page: \n\n", fCurrentDetector.Data());
+	body += Form("\thttp://pcalimonitor.cern.ch:8889/shuttle.jsp?time=168 \n\n");
+	body += Form("Find the %s log for the current run on \n\n"
+		"\thttp://pcalishuttle01.cern.ch:8880/logs/%s_%d.log \n\n", 
+		fCurrentDetector.Data(), fCurrentDetector.Data(), GetCurrentRun());
 	body += Form("The last 10 lines of %s log file are following:\n\n");
 
 	AliDebug(2, Form("Body begin: %s", body.Data()));
@@ -2522,7 +2578,7 @@ Bool_t AliShuttle::SendMail()
 	TString endBody = Form("------------------------------------------------------\n\n");
 	endBody += Form("In case of problems please contact the SHUTTLE core team.\n\n");
 	endBody += "Please do not answer this message directly, it is automatically generated.\n\n";
-	endBody += "Sincerely yours,\n\n \t\t\tthe SHUTTLE\n";
+	endBody += "Greetings,\n\n \t\t\tthe SHUTTLE\n";
 
 	AliDebug(2, Form("Body end: %s", endBody.Data()));
 

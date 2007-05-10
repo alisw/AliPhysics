@@ -104,6 +104,7 @@ private:
 	Bool_t StoreOCDB(const TString& uri);
 	Bool_t StoreRefFilesToGrid();
 	void CleanLocalStorage(const TString& uri);
+	Bool_t CleanReferenceStorage(const char* detector);
 	void RemoveFile(const char* filename);
 
 	AliShuttleStatus* ReadShuttleStatus();
