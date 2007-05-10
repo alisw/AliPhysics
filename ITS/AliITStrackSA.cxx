@@ -138,7 +138,8 @@ fNSA(0)
 
 
   // dealing with the case B=0 (taken from AliTPCtrack.cxx)
-  Double_t p0=TMath::Sign(1/kMostProbablePt,sP[4]);
+  Double_t mostProbablePt=AliExternalTrackParam::GetMostProbablePt();
+  Double_t p0=TMath::Sign(1/mostProbablePt,sP[4]);
   Double_t w0=sC[14]/(sC[14] + p0*p0), w1=p0*p0/(sC[14] + p0*p0);
   sP[4] = w0*p0 + w1*sP[4];
   sC[14]*=w1;
@@ -211,17 +212,4 @@ void AliITStrackSA::ResetMarked(){
     for(Int_t k=0; k<fgkMaxNumberOfClustersL; k++) fCluMark[nlay][k]=0;
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
