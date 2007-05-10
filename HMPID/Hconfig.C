@@ -336,7 +336,7 @@ void HmpConfig::WriteGen(FILE *pF)
   fprintf(pF,"  AliGenCocktail *pG=new AliGenCocktail();\n\n");
   
   if(fGenBG->GetButton(kGunZ)->GetState()==kButtonDown)//1 particle along Z axis 
-    fprintf(pF,"  AliGenFixed *pGz=new AliGenFixed(1); pGz->SetPart(%i); pGz->SetMomentum(%.1f); pGz->SetOrigin(0,0,-200); pG->AddGenerator(pGz,\"Gz\",1);\n",pid,p);
+    fprintf(pF,"  AliGenFixed *pGz=new AliGenFixed(1); pGz->SetPart(%i); pGz->SetMomentum(%.1f); pGz->SetOrigin(0,0,-200); pG->AddGenerator(pGz,\"Gz\",1);\n",pid,pmin);
   
   if(fGenBG->GetButton(kGun1)->GetState()==kButtonDown){//1 gun towards 1 HMPID chamber
     switch(fGenChamCO->GetSelected()){
