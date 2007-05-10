@@ -10,6 +10,7 @@ AM_CPPFLAGS			= @ALIROOT_CPPFLAGS@ \
 				  -I$(top_srcdir)/BASE \
 				  -I$(top_srcdir)/BASE/util
 
+
 # library definition
 lib_LTLIBRARIES			=  libAliHLTPHOS.la
 
