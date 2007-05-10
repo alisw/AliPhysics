@@ -31,6 +31,8 @@
 
 ClassImp(AliExternalTrackParam)
 
+Double32_t AliExternalTrackParam::fgMostProbablePt=kMostProbablePt;
+ 
 //_____________________________________________________________________________
 AliExternalTrackParam::AliExternalTrackParam() :
   TObject(),
@@ -219,8 +221,8 @@ Bool_t AliExternalTrackParam::CorrectForMaterial
      fP4*=(1.- e/p2*dE);
 
      // Approximate energy loss fluctuation (M.Ivanov)
-     const Double_t cnst=0.07; // To be tuned.  
-     Double_t sigmadE=cnst*TMath::Sqrt(TMath::Abs(dE)); 
+     const Double_t knst=0.07; // To be tuned.  
+     Double_t sigmadE=knst*TMath::Sqrt(TMath::Abs(dE)); 
      fC44+=((sigmadE*e/p2*fP4)*(sigmadE*e/p2*fP4)); 
  
   }

@@ -43,14 +43,12 @@ class AliExternalTrackParam: public TObject {
 
   void Set(Double_t x,Double_t alpha,
 			const Double_t param[5], const Double_t covar[15]);
+
+  static void SetMostProbablePt(Double_t pt) { fgMostProbablePt=pt; }
+  static Double_t GetMostProbablePt() { return fgMostProbablePt; }
+
   void Reset();
-  void ResetCovariance(Double_t s2) {
-    fC[0]*= s2;
-    fC[1] = 0.;  fC[2]*= s2;
-    fC[3] = 0.;  fC[4] = 0.;  fC[5]*= s2;
-    fC[6] = 0.;  fC[7] = 0.;  fC[8] = 0.;  fC[9]*= s2;
-    fC[10]= 0.;  fC[11]= 0.;  fC[12]= 0.;  fC[13]= 0.;  fC[14]*=s2;
-  }
+  void ResetCovariance(Double_t s2);
 
   const Double_t *GetParameter() const {return fP;}
   const Double_t *GetCovariance() const {return fC;}
@@ -130,7 +128,20 @@ private:
   Double32_t           fP[5];  // The track parameters
   Double32_t           fC[15]; // The track parameter covariance matrix
 
-  ClassDef(AliExternalTrackParam, 5)
+  static Double32_t    fgMostProbablePt; // "Most probable" pt
+                                         // (to be used if Bz=0)
+  ClassDef(AliExternalTrackParam, 6)
 };
+
+inline void AliExternalTrackParam::ResetCovariance(Double_t s2) {
+  //
+  // Reset the covarince matrix to "something big"
+  //
+    fC[0]*= s2;
+    fC[1] = 0.;  fC[2]*= s2;
+    fC[3] = 0.;  fC[4] = 0.;  fC[5]*= s2;
+    fC[6] = 0.;  fC[7] = 0.;  fC[8] = 0.;  fC[9]*= s2;
+    fC[10]= 0.;  fC[11]= 0.;  fC[12]= 0.;  fC[13]= 0.;  fC[14]*=s2;
+}
 
 #endif
