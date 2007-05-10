@@ -1181,6 +1181,9 @@ Bool_t AliReconstruction::RunTracking(AliESD*& esd)
 
   AliInfo("running tracking");
 
+  //Fill the ESD with the T0 info (will be used by the TOF) 
+  GetReconstructor(11)->FillESD(fRunLoader, esd);
+
   // pass 1: TPC + ITS inwards
   for (Int_t iDet = 1; iDet >= 0; iDet--) {
     if (!fTracker[iDet]) continue;
