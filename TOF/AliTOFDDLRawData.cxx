@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2007/05/03 09:07:22  decaro
+Double digit in the same TDC channel. Wrong sequence during the raw data writing in unpacked mode: solved
+
 Revision 1.15  2007/04/23 16:51:39  decaro
 Digits-to-raw_data conversion: correction for a more real description (A.De Caro, R.Preghenella)
 
@@ -151,6 +154,12 @@ AliTOFDDLRawData& AliTOFDDLRawData::operator=(const AliTOFDDLRawData &source) {
   return *this;
 }
 
+//----------------------------------------------------------------------------
+AliTOFDDLRawData::~AliTOFDDLRawData()
+{
+  delete fTOFdigitMap;
+  delete fTOFrawStream;
+}
 //----------------------------------------------------------------------------
 Int_t AliTOFDDLRawData::RawDataTOF(TBranch* branch)
 {

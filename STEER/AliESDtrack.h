@@ -187,6 +187,10 @@ public:
   Float_t GetTOFsignal() const {return fTOFsignal;}
   void    SetTOFsignalToT(Double_t ToT) {fTOFsignalToT=ToT;}
   Float_t GetTOFsignalToT() const {return fTOFsignalToT;}
+  void    SetTOFsignalRaw(Double_t tof) {fTOFsignalRaw=tof;}
+  Float_t GetTOFsignalRaw() const {return fTOFsignalRaw;}
+  void    SetTOFsignalDz(Double_t dz) {fTOFsignalDz=dz;}
+  Float_t GetTOFsignalDz() const {return fTOFsignalDz;}
   Float_t GetTOFchi2() const {return fTOFchi2;}
   void    SetTOFpid(const Double_t *p);
   void    SetTOFLabel(const Int_t *p);
@@ -328,6 +332,8 @@ protected:
   Int_t   fTOFCalChannel;  // Channel Index of the TOF Signal 
   Float_t fTOFsignal;      // detector's PID signal
   Float_t fTOFsignalToT;   // detector's ToT signal
+  Float_t fTOFsignalRaw;   // detector's uncorrected time signal
+  Float_t fTOFsignalDz;    // local z  of track's impact on the TOF pad 
   Float_t fTOFr[AliPID::kSPECIES]; // "detector response probabilities" (for the PID)
   Int_t   fTOFLabel[3];    // TOF label 
   Float_t fTOFInfo[10];    //! TOF informations
@@ -354,7 +360,7 @@ protected:
 
   AliESDtrack & operator=(const AliESDtrack & ) {return *this;}
 
-  ClassDef(AliESDtrack,34)  //ESDtrack 
+  ClassDef(AliESDtrack,35)  //ESDtrack 
 };
 
 #endif 

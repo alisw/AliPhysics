@@ -26,7 +26,7 @@ class AliTOFDDLRawData:public TObject {
 
   AliTOFDDLRawData();                               // default constructor
   AliTOFDDLRawData(AliTOFGeometry *tofGeom);        // constructor
-  virtual ~AliTOFDDLRawData(){;}                    // destructor
+  virtual ~AliTOFDDLRawData();                              // destructor
   AliTOFDDLRawData(const AliTOFDDLRawData &source); // copy constructor
   AliTOFDDLRawData& operator=(const AliTOFDDLRawData &source); // ass. op.
   void SetVerbose(Int_t Verbose){fVerbose=Verbose;} // To set the verbose level

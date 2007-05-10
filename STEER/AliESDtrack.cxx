@@ -97,6 +97,8 @@ AliESDtrack::AliESDtrack() :
   fTOFCalChannel(-1),
   fTOFsignal(-1),
   fTOFsignalToT(0),
+  fTOFsignalRaw(0),
+  fTOFsignalDz(0),
   fHMPIDchi2(1e10),
   fHMPIDqn(-1),
   fHMPIDcluIdx(-1),
@@ -176,6 +178,8 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fTOFCalChannel(track.fTOFCalChannel),
   fTOFsignal(track.fTOFsignal),
   fTOFsignalToT(track.fTOFsignalToT),
+  fTOFsignalRaw(track.fTOFsignalRaw),
+  fTOFsignalDz(track.fTOFsignalDz),
   fHMPIDchi2(track.fHMPIDchi2),
   fHMPIDqn(track.fHMPIDqn),
   fHMPIDcluIdx(track.fHMPIDcluIdx),
@@ -260,6 +264,8 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   fTOFCalChannel(-1),
   fTOFsignal(-1),
   fTOFsignalToT(0),
+  fTOFsignalRaw(0),
+  fTOFsignalDz(0),
   fHMPIDchi2(1e10),
   fHMPIDqn(-1),
   fHMPIDcluIdx(-1),
@@ -488,6 +494,8 @@ void AliESDtrack::MakeMiniESDtrack(){
   fTOFsignal = 0;      
   fTOFCalChannel = -1;
   fTOFsignalToT = 0;
+  fTOFsignalRaw = 0;
+  fTOFsignalDz = 0;
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fTOFr[i] = 0;
   for (Int_t i=0;i<3;i++) fTOFLabel[i] = 0;
   for (Int_t i=0;i<10;i++) fTOFInfo[i] = 0;

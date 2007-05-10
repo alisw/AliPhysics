@@ -242,16 +242,12 @@ Int_t AliTOFtracker::PropagateBack(AliESD* event) {
     AliESDtrack *seed =(AliESDtrack*)fSeeds->UncheckedAt(i);
     if(seed->GetTOFsignal()>0){
       Float_t info[10];
-      seed->GetTOFInfo(info);
       t->SetTOFsignal(seed->GetTOFsignal());
       t->SetTOFcluster(seed->GetTOFcluster());
       t->SetTOFsignalToT(seed->GetTOFsignalToT());
+      t->SetTOFsignalRaw(seed->GetTOFsignalRaw());
+      t->SetTOFsignalDz(seed->GetTOFsignalDz());
       t->SetTOFCalChannel(seed->GetTOFCalChannel());
-      AliDebug(2,Form(" Setting TOF info: %f %f %f = ",info[0],info[1],info[2]));    
-      t->SetTOFInfo(info);
-
-      t->GetTOFInfo(info);
-      AliDebug(2,Form(" Getting again TOF info: %f %f %f = ",info[0],info[1],info[2]));    
       Int_t tlab[3]; seed->GetTOFLabel(tlab);    
       t->SetTOFLabel(tlab);
       AliTOFtrack *track = new AliTOFtrack(*seed); 
@@ -627,9 +623,9 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     Float_t tToT=fGeom->ToTBinWidth()*c->GetToT()*1E-3; // in ns
     t->SetTOFsignalToT(tToT);
     Float_t rawTime=fGeom->TdcBinWidth()*c->GetTDCRAW()+32; // RAW time,in ps
-    Float_t info[10];
-    info[0]=rawTime;
-    info[1]=mindistZ;
+    t->SetTOFsignalRaw(rawTime);
+    t->SetTOFsignalDz(mindistZ);
+    AliDebug(2,Form(" Setting TOF raw time: %f  z distance: %f time: %f = ",rawTime,mindistZ));    
     Int_t ind[5];
     ind[0]=c->GetDetInd(0);
     ind[1]=c->GetDetInd(1);
@@ -647,19 +643,12 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     AliDebug(2,Form(" tdc time of the matched track %i = ",c->GetTDC()));    
     Double_t tof=fGeom->TdcBinWidth()*c->GetTDC()+32; // in ps
     AliDebug(2,Form(" tof time of the matched track: %f = ",tof));    
-    info[2]=tof;
-    AliDebug(2,Form(" Setting TOF info. raw time: %f  z distance: %f time: %f = ",info[0],info[1],info[2]));    
-    t->SetTOFInfo(info);
-
     Double_t tofcorr=tof;
     if(timeWalkCorr)tofcorr=CorrectTimeWalk(mindistZ,tof);
     AliDebug(2,Form(" tof time of the matched track, after TW corr: %f = ",tofcorr));    
     //Set TOF time signal and pointer to the matched cluster
     t->SetTOFsignal(tofcorr);
     t->SetTOFcluster(idclus); // pointing to the recPoints tree
-
-    //Auxiliary info...
-
 
     //Tracking info
     Double_t time[AliPID::kSPECIES]; t->GetIntegratedTimes(time);
@@ -938,7 +927,7 @@ void AliTOFtracker::SaveCheckHists() {
   fHRecSigZVsP->Write(fHRecSigZVsP->GetName(), TObject::kOverwrite);
   fHRecSigYVsPWin->Write(fHRecSigYVsPWin->GetName(), TObject::kOverwrite);
   fHRecSigZVsPWin->Write(fHRecSigZVsPWin->GetName(), TObject::kOverwrite);
-  fCalTree->Write(fCalTree->GetName(),TObject::kOverwrite);
+  //fCalTree->Write(fCalTree->GetName(),TObject::kOverwrite);
   logFile->Flush();  
 
   if(!isThere)logFileTOF = new TFile( "TOFQA.root","RECREATE");
