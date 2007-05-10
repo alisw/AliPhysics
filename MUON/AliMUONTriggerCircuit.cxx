@@ -285,7 +285,7 @@ void AliMUONTriggerCircuit::LoadXPos(const AliMUONTriggerCrateStore& crates)
 
   // check if one needs a strip doubling or not
   if ( (x2u == 1 || x2m == 1 || x2d == 1) && x2m == 1) doubling = kTRUE;
-  
+
   // check if one starts at strip = 0 or 8 (boards 26-29 and 143-146)
   if (zeroAllYLSB == 1) iStripCircuit = 8;
   
@@ -297,7 +297,7 @@ void AliMUONTriggerCircuit::LoadXPos(const AliMUONTriggerCrateStore& crates)
   const AliMpPCB* pcb = slat->GetPCB(icol-1);
   iFirstStrip = pcb->Ixmin();
   
-  if (doubling) iLastStrip = iFirstStrip + 8;
+  if (doubling || zeroAllYLSB == 1) iLastStrip = iFirstStrip + 8;
   else iLastStrip = iFirstStrip + 16;
   
   FillYstrips(seg,detElemId, 
@@ -313,7 +313,9 @@ void AliMUONTriggerCircuit::FillYstrips(
 {    
 /// fill
   Double_t xyGlobal[4]={0.,0.,0.,0.};
+
   for (Int_t istrip=iFirstStrip; istrip<iLastStrip; istrip++) {
+
     AliMpPad pad = seg->PadByIndices(AliMpIntPair(istrip,0),kTRUE);
     if ( !pad.IsValid() )
     {
@@ -323,9 +325,9 @@ void AliMUONTriggerCircuit::FillYstrips(
 			 );
     }
     XYGlobal(detElemId,pad,xyGlobal);
-    
-    if (!doubling) {	    
-      fXpos11[liStripCircuit]=xyGlobal[0];
+
+    if (!doubling) {
+	fXpos11[liStripCircuit]=xyGlobal[0];
     } else if (doubling) {	    
       fXpos11[2*liStripCircuit]=TMath::Sign(1.,xyGlobal[0]) * 
 	(TMath::Abs(xyGlobal[0]) - xyGlobal[2]/2.);
