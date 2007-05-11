@@ -26,12 +26,12 @@
 #include "STEER/AliMagFMaps.h"
 #include "STRUCT/AliBODY.h"
 #include "STRUCT/AliMAG.h"
-#include "STRUCT/AliABSOv0.h"
-#include "STRUCT/AliDIPOv2.h"
-#include "STRUCT/AliHALL.h"
+#include "STRUCT/AliABSOv3.h"
+#include "STRUCT/AliDIPOv3.h"
+#include "STRUCT/AliHALLv3.h"
 #include "STRUCT/AliFRAMEv2.h"
-#include "STRUCT/AliSHILv2.h"
-#include "STRUCT/AliPIPEv0.h"
+#include "STRUCT/AliSHILv3.h"
+#include "STRUCT/AliPIPEv3.h"
 #include "ITS/AliITSvPPRasymmFMD.h"
 #include "TPC/AliTPCv2.h"
 #include "TOF/AliTOFv6T0.h"
@@ -337,19 +337,19 @@ void Config()
 
   if(iABSO) {
     //=================== ABSO parameters ============================
-    AliABSO *ABSO  = new AliABSOv0("ABSO","Muon Absorber");
+    AliABSO *ABSO  = new AliABSOv3("ABSO","Muon Absorber");
   }
 
   if(iDIPO) {
     //=================== DIPO parameters ============================
 
-    AliDIPO *DIPO  = new AliDIPOv2("DIPO","Dipole version 2");
+    AliDIPO *DIPO  = new AliDIPOv3("DIPO","Dipole version 3");
   }
 
   if(iHALL) {
     //=================== HALL parameters ============================
 
-    AliHALL *HALL  = new AliHALL("HALL","Alice Hall");
+    AliHALL *HALL  = new AliHALLv3("HALL","Alice Hall");
   }
 
 
@@ -363,14 +363,14 @@ void Config()
   if(iSHIL) {
     //=================== SHIL parameters ============================
 
-    AliSHIL *SHIL  = new AliSHILv2("SHIL","Shielding");
+    AliSHIL *SHIL  = new AliSHILv3("SHIL","Shielding");
   }
 
 
   if(iPIPE) {
     //=================== PIPE parameters ============================
 
-    AliPIPE *PIPE  = new AliPIPEv0("PIPE","Beam Pipe");
+    AliPIPE *PIPE  = new AliPIPEv3("PIPE","Beam Pipe");
   }
 
 
