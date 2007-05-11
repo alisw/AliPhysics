@@ -12,7 +12,11 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "TNamed.h"
-#include "AliTRDgeometry.h"
+#include "TMath.h"
+#include "../AliTRDgeometry.h"
+
+class TH1F;
+class TH2F;
 
 class AliTRDCalDet : public TNamed {
 
@@ -35,7 +39,26 @@ class AliTRDCalDet : public TNamed {
   void          SetValue(Int_t d, Float_t value) { fData[d] = value; };
   void          SetValue(Int_t p, Int_t c, Int_t s, Float_t value) 
                                                  { fData[AliTRDgeometry::GetDetector(p,c,s)] = value; };
-  
+
+  // statistic
+  Double_t GetMean(AliTRDCalDet *outlierDet=0);
+  Double_t GetRMS(AliTRDCalDet *outlierDet=0);
+  Double_t GetMedian(AliTRDCalDet *outlierDet=0);
+  Double_t GetLTM(Double_t *sigma=0, Double_t fraction=0.9, AliTRDCalDet *outlierDet=0);     
+
+  // Plot functions
+  TH1F * MakeHisto1Distribution(Float_t min=4, Float_t max=-4, Int_t type=0);     
+  TH1F * MakeHisto1DAsFunctionOfDet(Float_t min=4, Float_t max=-4, Int_t type=0);
+  TH2F * MakeHisto2DCh(Int_t ch, Float_t min=4, Float_t max=-4, Int_t type=0);  
+  TH2F * MakeHisto2DSmPl(Int_t sm, Int_t pl, Float_t min=4, Float_t max=-4, Int_t type=0); 
+
+  // algebra functions
+  void Add(Float_t c1);
+  void Multiply(Float_t c1);
+  void Add(const AliTRDCalDet * calDet, Double_t c1 = 1);
+  void Multiply(const AliTRDCalDet * calDet);
+  void Divide(const AliTRDCalDet * calDet);
+    
  protected:
 
   Float_t  fData[kNdet];       //[kNdet] Data

@@ -7,7 +7,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-//  TRD calibration class for parameters which are saved per pad                 //
+//  TRD calibration class for parameters which are saved per pad             //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -15,8 +15,11 @@
 
 class AliTRDCalROC;
 class AliTRDCalDet;
+class TH2F;
+class TH1F;
 
-class AliTRDCalPad : public TNamed {
+class AliTRDCalPad : public TNamed 
+{
 
  public:
  
@@ -36,7 +39,26 @@ class AliTRDCalPad : public TNamed {
   AliTRDCalROC       *GetCalROC(Int_t p, Int_t c, Int_t s) const
                                                         { return fROC[GetDet(p,c,s)]; };
   
-  void                ScaleROCs(AliTRDCalDet* values);
+  Bool_t              ScaleROCs(const AliTRDCalDet* values);
+
+  // Statistic
+  Double_t GetMeanRMS(Double_t &rms, const AliTRDCalDet *calDet = 0, Int_t type = 0);
+  Double_t GetMean(const AliTRDCalDet *calDet = 0, Int_t type = 0, AliTRDCalPad* outlierPad = 0);
+  Double_t GetRMS(const AliTRDCalDet *calDet = 0, Int_t type = 0, AliTRDCalPad* outlierPad = 0) ;
+  Double_t GetMedian(const AliTRDCalDet *calDet = 0, Int_t type = 0, AliTRDCalPad* outlierPad = 0) ;
+  Double_t GetLTM(Double_t *sigma=0, Double_t fraction=0.9, const AliTRDCalDet *calDet = 0, Int_t type = 0, AliTRDCalPad* outlierPad = 0);
+
+  // Plot functions
+  TH1F    *MakeHisto1D(const AliTRDCalDet *calDet = 0, Int_t typedet=0, Float_t min=4, Float_t max=-4,Int_t type=0);
+  TH2F    *MakeHisto2DSmPl(Int_t sm, Int_t pl, const AliTRDCalDet *calDet = 0, Int_t typedet=0, Float_t min=4, Float_t max=-4,Int_t type=0);
+  TH2F    *MakeHisto2DCh(Int_t ch, const AliTRDCalDet *calDet = 0, Int_t typedet=0, Float_t min=4, Float_t max=-4,Int_t type=0);
+
+  // Algebra functions
+  Bool_t Add(Float_t c1);
+  Bool_t Multiply(Float_t c1);
+  Bool_t Add(const AliTRDCalPad * pad, Double_t c1 = 1, const AliTRDCalDet * calDet1 = 0, const AliTRDCalDet *calDet2 = 0, Int_t type = 0);
+  Bool_t Multiply(const AliTRDCalPad * pad, const AliTRDCalDet * calDet1 = 0, const AliTRDCalDet *calDet2 = 0, Int_t type = 0);
+  Bool_t Divide(const AliTRDCalPad * pad, const AliTRDCalDet * calDet1 = 0, const AliTRDCalDet *calDet2 = 0, Int_t type = 0);
 
  protected:
 

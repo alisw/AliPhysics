@@ -21,7 +21,15 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <TMath.h>
+#include <TH1F.h>
+#include <TH2F.h>
+#include <TStyle.h>
+
 #include "AliTRDCalDet.h"
+#include "AliTRDgeometry.h"
+#include "AliMathBase.h"
+#include "AliTRDpadPlane.h"
 
 ClassImp(AliTRDCalDet)
 
@@ -99,3 +107,385 @@ void AliTRDCalDet::Copy(TObject &c) const
 
 }
 
+//___________________________________________________________________________________
+Double_t AliTRDCalDet::GetMean(AliTRDCalDet* outlierDet) 
+{
+  //
+  // Calculate the mean
+  //
+
+  if (!outlierDet) return TMath::Mean(kNdet,fData);
+  Double_t *ddata = new Double_t[kNdet];
+  Int_t NPoints = 0;
+  for (Int_t i=0;i<kNdet;i++) {
+    if (!(outlierDet->GetValue(i))) {
+      ddata[NPoints]= fData[NPoints];
+      NPoints++;
+    }
+  }
+  Double_t mean = TMath::Mean(NPoints,ddata);
+  delete [] ddata;
+  return mean;
+}
+
+//_______________________________________________________________________________________
+Double_t AliTRDCalDet::GetMedian(AliTRDCalDet* outlierDet) 
+{
+  //
+  // Calculate the median
+  //
+
+  if (!outlierDet) return (Double_t) TMath::Median(kNdet,fData);
+  Double_t *ddata = new Double_t[kNdet];
+  Int_t NPoints = 0;
+  for (Int_t i=0;i<kNdet;i++) {
+    if (!(outlierDet->GetValue(i))) {
+      ddata[NPoints]= fData[NPoints];
+      NPoints++;
+    }
+  }
+  Double_t mean = TMath::Median(NPoints,ddata);
+  delete [] ddata;
+  return mean;
+
+}
+
+//____________________________________________________________________________________________
+Double_t AliTRDCalDet::GetRMS(AliTRDCalDet* outlierDet) 
+{
+  //
+  // Calculate the RMS
+  //
+
+  if (!outlierDet) return TMath::RMS(kNdet,fData);
+  Double_t *ddata = new Double_t[kNdet];
+  Int_t NPoints = 0;
+  for (Int_t i=0;i<kNdet;i++) {
+    if (!(outlierDet->GetValue(i))) {
+      ddata[NPoints]= fData[NPoints];
+      NPoints++;
+    }
+  }
+  Double_t mean = TMath::RMS(NPoints,ddata);
+  delete [] ddata;
+  return mean;
+}
+
+//______________________________________________________________________________________________
+Double_t AliTRDCalDet::GetLTM(Double_t *sigma, Double_t fraction, AliTRDCalDet* outlierDet)
+{
+  //
+  //  Calculate LTM mean and sigma
+  //
+
+  Double_t *ddata = new Double_t[kNdet];
+  Double_t mean=0, lsigma=0;
+  UInt_t NPoints = 0;
+  for (Int_t i=0;i<kNdet;i++) {
+     if (!outlierDet || !(outlierDet->GetValue(i))) {
+        ddata[NPoints]= fData[NPoints];
+        NPoints++;
+     }
+  }
+  Int_t hh = TMath::Min(TMath::Nint(fraction *NPoints), Int_t(NPoints));
+  AliMathBase::EvaluateUni(NPoints,ddata, mean, lsigma, hh);
+  if (sigma) *sigma=lsigma;
+  delete [] ddata;
+  return mean;
+}
+
+//_________________________________________________________________________
+TH1F * AliTRDCalDet::MakeHisto1Distribution(Float_t min, Float_t max,Int_t type)
+{
+  //
+  // make 1D histo
+  // type -1 = user defined range
+  //       0 = nsigma cut nsigma=min
+  //       1 = delta cut around median delta=min
+  //
+
+  if (type>=0){
+    if (type==0){
+      // nsigma range
+      Float_t mean  = GetMean();
+      Float_t sigma = GetRMS();
+      Float_t nsigma = TMath::Abs(min);
+      min = mean-nsigma*sigma;
+      max = mean+nsigma*sigma;
+    }
+    if (type==1){
+      // fixed range
+      Float_t mean   = GetMedian();
+      Float_t  delta = min;
+      min = mean-delta;
+      max = mean+delta;
+    }
+    if (type==2){
+      //
+      // LTM mean +- nsigma
+      //
+      Double_t sigma;
+      Float_t mean  = GetLTM(&sigma,max);
+      sigma*=min;
+      min = mean-sigma;
+      max = mean+sigma;
+    }
+  }
+  char  name[1000];
+  sprintf(name,"%s CalDet 1Distribution",GetTitle());
+  TH1F * his = new TH1F(name,name,100, min,max);
+  for (Int_t idet=0; idet<kNdet; idet++){
+    his->Fill(GetValue(idet));
+  }
+  return his;
+}
+
+//________________________________________________________________________________
+TH1F * AliTRDCalDet::MakeHisto1DAsFunctionOfDet(Float_t min, Float_t max,Int_t type)
+{
+  //
+  // make 1D histo
+  // type -1 = user defined range
+  //       0 = nsigma cut nsigma=min
+  //       1 = delta cut around median delta=min
+  //
+
+  if (type>=0){
+    if (type==0){
+      // nsigma range
+      Float_t mean  = GetMean();
+      Float_t sigma = GetRMS();
+      Float_t nsigma = TMath::Abs(min);
+      min = mean-nsigma*sigma;
+      max = mean+nsigma*sigma;
+    }
+    if (type==1){
+      // fixed range
+      Float_t mean   = GetMedian();
+      Float_t  delta = min;
+      min = mean-delta;
+      max = mean+delta;
+    }
+    if (type==2){
+      Double_t sigma;
+      Float_t mean  = GetLTM(&sigma,max);
+      sigma*=min;
+      min = mean-sigma;
+      max = mean+sigma;
+
+    }
+  }
+ 
+  char  name[1000];
+  sprintf(name,"%s CalDet as function of det",GetTitle());
+  TH1F * his = new TH1F(name,name,kNdet, 0, kNdet);
+  for(Int_t det = 0; det< kNdet; det++){
+    his->Fill(det+0.5,GetValue(det));
+  }
+
+  his->SetMaximum(max);
+  his->SetMinimum(min);
+  return his;
+}
+
+//_____________________________________________________________________________
+TH2F *AliTRDCalDet::MakeHisto2DCh(Int_t ch, Float_t min, Float_t max, Int_t type)
+{
+  //
+  // Make 2D graph
+  // ch    - chamber
+  // type -1 = user defined range
+  //       0 = nsigma cut nsigma=min
+  //       1 = delta cut around median delta=min
+  //
+
+  gStyle->SetPalette(1);
+  if (type>=0){
+    if (type==0){
+      // nsigma range
+      Float_t mean  = GetMean();
+      Float_t sigma = GetRMS();
+      Float_t nsigma = TMath::Abs(min);
+      min = mean-nsigma*sigma;
+      max = mean+nsigma*sigma;
+    }
+    if (type==1){
+      // fixed range
+      Float_t mean   = GetMedian();
+      Float_t  delta = min;
+      min = mean-delta;
+      max = mean+delta;
+    }
+    if (type==2){
+      Double_t sigma;
+      Float_t mean  = GetLTM(&sigma,max);
+      sigma*=min;
+      min = mean-sigma;
+      max = mean+sigma;
+
+    }
+  }
+    
+  AliTRDgeometry *TRDgeo = new AliTRDgeometry();
+  TRDgeo->Init();
+      
+
+  Double_t poslocal[3]  = {0.0,0.0,0.0};
+  Double_t posglobal[3] = {0.0,0.0,0.0};
+  
+  char  name[1000];
+  sprintf(name,"%s CalDet 2D ch %d",GetTitle(),ch);
+  TH2F * his = new TH2F(name, name, 400,-400.0,400.0,400,-400.0,400.0);
+
+  // Where we begin
+  Int_t offsetch = 6*ch;
+  
+
+  for (Int_t isec = 0; isec < kNsect; isec++){
+    for(Int_t ipl = 0; ipl < kNplan; ipl++){
+      Int_t det   = offsetch+isec*30+ipl;
+      AliTRDpadPlane *padPlane = new AliTRDpadPlane(ipl,ch);
+      for (Int_t icol=0; icol<padPlane->GetNcols(); icol++){
+	poslocal[0] = TRDgeo->GetTime0(ipl);
+	poslocal[2] = padPlane->GetRowPos(0);
+	poslocal[1] = padPlane->GetColPos(icol);
+	TRDgeo->RotateBack(det,poslocal,posglobal);
+	Int_t binx = 1+TMath::Nint((posglobal[0]+400.0)*0.5);
+	Int_t biny = 1+TMath::Nint((posglobal[1]+400.0)*0.5);
+	his->SetBinContent(binx,biny,fData[det]);
+      }
+    }    
+  }
+  his->SetXTitle("x (cm)");
+  his->SetYTitle("y (cm)");
+  his->SetStats(0);
+  his->SetMaximum(max);
+  his->SetMinimum(min);
+  return his;
+}
+
+//_____________________________________________________________________________
+TH2F *AliTRDCalDet::MakeHisto2DSmPl(Int_t sm, Int_t pl, Float_t min, Float_t max, Int_t type)
+{
+  //
+  // Make 2D graph
+  // sm    - supermodule number
+  // pl    - plane number
+  // type -1 = user defined range
+  //       0 = nsigma cut nsigma=min
+  //       1 = delta cut around median delta=min
+  //
+
+  gStyle->SetPalette(1);
+  if (type>=0){
+    if (type==0){
+      // nsigma range
+      Float_t mean  = GetMean();
+      Float_t sigma = GetRMS();
+      Float_t nsigma = TMath::Abs(min);
+      min = mean-nsigma*sigma;
+      max = mean+nsigma*sigma;
+    }
+    if (type==1){
+      // fixed range
+      Float_t mean   = GetMedian();
+      Float_t  delta = min;
+      min = mean-delta;
+      max = mean+delta;
+    }
+    if (type==2){
+      Double_t sigma;
+      Float_t mean  = GetLTM(&sigma,max);
+      sigma*=min;
+      min = mean-sigma;
+      max = mean+sigma;
+
+    }
+  }
+     
+  AliTRDpadPlane *padPlane0 = new AliTRDpadPlane(pl,0);
+  Double_t row0    = padPlane0->GetRow0();
+  Double_t col0    = padPlane0->GetCol0();
+
+
+  char  name[1000];
+  sprintf(name,"%s CalDet 2D sm %d and pl %d",GetTitle(),sm,pl);
+  TH2F * his = new TH2F( name, name, 5,  -TMath::Abs(row0),  TMath::Abs(row0)
+                                   , 4,-2*TMath::Abs(col0),2*TMath::Abs(col0));
+
+  // Where we begin
+  Int_t offsetsmpl = 30*sm+pl;
+  
+
+  for (Int_t k = 0; k < kNcham; k++){
+    Int_t det = offsetsmpl+k*6;
+    Int_t kb  = kNcham-1-k;
+    his->SetBinContent(kb+1,2,fData[det]);
+    his->SetBinContent(kb+1,3,fData[det]);
+  }
+  his->SetXTitle("z (cm)");
+  his->SetYTitle("y (cm)");
+  his->SetStats(0);
+  his->SetMaximum(max);
+  his->SetMinimum(min);
+  return his;
+}
+
+//_____________________________________________________________________________
+void AliTRDCalDet::Add(Float_t c1)
+{
+  //
+  // Add constant for all detectors
+  //
+
+  for (Int_t idet = 0; idet < kNdet; idet++) {
+     fData[idet] += c1;
+  }
+}
+
+//_____________________________________________________________________________
+void AliTRDCalDet::Multiply(Float_t c1)
+{
+    //
+    // multiply constant for all detectors
+    //
+    for (Int_t idet = 0; idet < kNdet; idet++) {
+      fData[idet] *= c1;
+    }
+}
+
+//_____________________________________________________________________________
+void AliTRDCalDet::Add(const AliTRDCalDet * calDet, Double_t c1)
+{
+    //
+    // add caldet channel by channel multiplied by c1
+    //
+    for (Int_t idet = 0; idet < kNdet; idet++) {
+      fData[idet] += calDet->GetValue(idet)*c1;
+    }
+}
+
+//_____________________________________________________________________________
+void AliTRDCalDet::Multiply(const AliTRDCalDet * calDet)
+{
+    //
+    // multiply caldet channel by channel 
+    //
+    for (Int_t idet = 0; idet < kNdet; idet++) {
+      fData[idet] *= calDet->GetValue(idet);
+    }
+}
+
+//_____________________________________________________________________________
+void AliTRDCalDet::Divide(const AliTRDCalDet * calDet)
+{
+    //
+    // divide caldet channel by channel 
+    //
+ Float_t kEpsilon=0.00000000000000001;
+    for (Int_t idet = 0; idet < kNdet; idet++) {
+      if (TMath::Abs(calDet->GetValue(idet))>kEpsilon){
+	fData[idet] /= calDet->GetValue(idet);
+	}
+    }
+}

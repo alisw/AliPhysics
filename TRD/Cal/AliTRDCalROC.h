@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id: AliTRDCalROC.h,v */
+/* $Id$ */
 
 //////////////////////////////////////////////////
 //                                              //
@@ -12,9 +12,19 @@
 //////////////////////////////////////////////////
 
 #include <TObject.h>
+#include <TMath.h>
+#include <TLinearFitter.h>
+
+class TArrayI;
+class TArrayF;
+class TH2F;
+class TH1F;
+class TGraph2D;
+class TH2D;
 
 //_____________________________________________________________________________
-class AliTRDCalROC : public TObject {
+class AliTRDCalROC : public TObject 
+{
 
  public:
 
@@ -39,8 +49,24 @@ class AliTRDCalROC : public TObject {
   void          SetValue(Int_t col, Int_t row, Float_t value) 
                                                 { SetValue(GetChannel(col,row), value);    };
 
-  void          Scale(Float_t value);
+  // statistic
+  //
+  Double_t GetMean(AliTRDCalROC *outlierROC=0); 
+  Double_t GetRMS(AliTRDCalROC *outlierROC=0);
+  Double_t GetMedian(AliTRDCalROC *outlierROC=0);
+  Double_t GetLTM(Double_t *sigma=0, Double_t fraction=0.9, AliTRDCalROC *outlierROC=0);
 
+  // algebra
+  Bool_t Add(Float_t c1);
+  Bool_t Multiply(Float_t c1);
+  Bool_t Add(const AliTRDCalROC * roc, Double_t c1 = 1);
+  Bool_t Multiply(const AliTRDCalROC * roc);   
+  Bool_t Divide(const AliTRDCalROC * roc);   
+  
+  //Plots
+  TH2F *   MakeHisto2D(Float_t min, Float_t max,Int_t type);
+  TH1F *   MakeHisto1D(Float_t min, Float_t max,Int_t type);
+  
  protected:
 
   Int_t     fPla;              //  Plane number
