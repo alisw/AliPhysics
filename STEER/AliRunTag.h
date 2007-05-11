@@ -86,7 +86,7 @@ class AliRunTag : public TObject {
   AliDetectorTag fDetectorTag;             //array with all the detector tags
   AliLHCTag    fLHCTag;                  //LHC tag object
   
-  ClassDef(AliRunTag,3)  //(ClassName, ClassVersion)
+  ClassDef(AliRunTag,4)  //(ClassName, ClassVersion)
 };
 //___________________________________________________________________________
 
