@@ -32,6 +32,8 @@ class AliDCSSensorArray : public TNamed {
   virtual void Copy (TObject &c) const;
   void SetStartTime (const TTimeStamp& start) { fStartTime = start; }
   void SetEndTime   (const TTimeStamp& end) { fEndTime = end; }
+  TTimeStamp GetStartTime () const { return fStartTime; } 
+  TTimeStamp GetEndTime () const { return fEndTime; } 
   void SetGraph     (TMap *map, const char* amandaString);
   void MakeSplineFit(TMap *map, const char* amandaString);
   TMap* ExtractDCS  (TMap *dcsMap, const char* amandaString);
