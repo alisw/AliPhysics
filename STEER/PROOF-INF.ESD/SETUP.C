@@ -3,6 +3,7 @@ void SETUP()
    // Load some ROOT libraries
    gSystem->Load("libEG");
    gSystem->Load("libGeom");
+   gSystem->Load("libProof");
 
    // Load the ESD library
    gSystem->Load("libESD");
