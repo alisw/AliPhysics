@@ -31,6 +31,7 @@ public:
   AliMUONRecData*  GetMUONData() {return fMUONData;}
   /// Return run loader 	 
   AliRunLoader* GetRunLoader()    {return fRunLoader;}
+  /// Return run loader for sim data	 
   AliRunLoader* GetRunLoaderSim() {return fRunLoaderSim;}
 
   void MakeTrackRef();

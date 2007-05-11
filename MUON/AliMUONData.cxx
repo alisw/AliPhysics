@@ -569,10 +569,10 @@ void AliMUONData::SetDataContainer(Option_t* option)
 //____________________________________________________________________________
 void AliMUONData::SetTreeAddress(Option_t* option)
 {
+/// Setting Addresses to the events trees
+
   // Setting Data containers
   SetDataContainer(option);
-
-/// Setting Addresses to the events trees
 
   const char *cS   = strstr(option,"S");   // SDigits branches in TreeS
   const char *cD   = strstr(option,"D");   // Digits branches in TreeD

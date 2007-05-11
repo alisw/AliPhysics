@@ -553,6 +553,8 @@ void AliMUONRecData::SetDataContainer(Option_t* option)
 //____________________________________________________________________________
 void AliMUONRecData::SetTreeAddress(Option_t* option)
 {
+/// Setting Addresses to the events trees
+
   AliMUONData::SetTreeAddress(option);
   SetOwnTreeAddress(option);
 }  

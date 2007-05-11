@@ -329,6 +329,8 @@ void AliMUONSimData::SetDataContainer(Option_t* option)
 //____________________________________________________________________________
 void AliMUONSimData::SetTreeAddress(Option_t* option)
 {
+/// Setting Addresses to the events trees
+
   // Setting Data containers
   SetDataContainer(option);
   
