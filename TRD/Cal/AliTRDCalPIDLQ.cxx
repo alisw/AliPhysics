@@ -61,8 +61,8 @@ Char_t* AliTRDCalPIDLQ::fpartSymb[AliPID::kSPECIES] = {"EL", "MU", "PI", "KA", "
 AliTRDCalPIDLQ::AliTRDCalPIDLQ()
   :TNamed("pid", "PID for TRD")
   ,fNMom(0)
-  ,fTrackMomentum(0x0)
   ,fNLength(0)
+  ,fTrackMomentum(0x0)
   ,fTrackSegLength(0x0)
   ,fNTimeBins(0)
   ,fMeanChargeRatio(0)
@@ -83,8 +83,8 @@ AliTRDCalPIDLQ::AliTRDCalPIDLQ()
 AliTRDCalPIDLQ::AliTRDCalPIDLQ(const Text_t *name, const Text_t *title) 
   :TNamed(name,title)
   ,fNMom(0)
-  ,fTrackMomentum(0x0)
   ,fNLength(0)
+  ,fTrackMomentum(0x0)
   ,fTrackSegLength(0x0)
   ,fNTimeBins(0)
   ,fMeanChargeRatio(0)
@@ -106,8 +106,8 @@ AliTRDCalPIDLQ::AliTRDCalPIDLQ(const Text_t *name, const Text_t *title)
 AliTRDCalPIDLQ::AliTRDCalPIDLQ(const AliTRDCalPIDLQ &c) 
   :TNamed(c)
   ,fNMom(c.fNMom)
-  ,fTrackMomentum(0x0)
   ,fNLength(c.fNLength)
+  ,fTrackMomentum(0x0)
   ,fTrackSegLength(0x0)
   ,fNTimeBins(c.fNTimeBins)
   ,fMeanChargeRatio(c.fMeanChargeRatio)
@@ -420,13 +420,15 @@ Double_t AliTRDCalPIDLQ::GetProbability(Int_t spec, Double_t mom, Double_t *dedx
 	}
 	ax = hist->GetXaxis(); nbinsx = ax->GetNbins();
 	ay = hist->GetYaxis(); nbinsy = ay->GetNbins();
-	Bool_t kX = (dedx[0] < ax->GetBinUpEdge(nbinsx));
-	Bool_t kY = (dedx[1] < ay->GetBinUpEdge(nbinsy));
+	Float_t x = dedx[0]+dedx[1], y = dedx[2];
+  Bool_t kX = (x < ax->GetBinUpEdge(nbinsx));
+	Bool_t kY = (y < ay->GetBinUpEdge(nbinsy));
 	if(kX)
-		if(kY) LQ1 = hist->GetBinContent( hist->FindBin(dedx[0], dedx[1])); //fEstimator->Estimate2D2(hist, (Float_t&)dedx[0], (Float_t&)dedx[1]);
-		else LQ1 = hist->GetBinContent(ax->FindBin(dedx[0]), nbinsy);
+		if(kY) LQ1 = hist->GetBinContent( hist->FindBin(x, y)); 
+    //fEstimator->Estimate2D2(hist, x, y);
+		else LQ1 = hist->GetBinContent(ax->FindBin(x), nbinsy);
 	else
-		if(kY) LQ1 = hist->GetBinContent(nbinsx, ay->FindBin(dedx[1]));
+		if(kY) LQ1 = hist->GetBinContent(nbinsx, ay->FindBin(y));
 	 	else LQ1 = hist->GetBinContent(nbinsx, nbinsy);
 
 
@@ -436,10 +438,11 @@ Double_t AliTRDCalPIDLQ::GetProbability(Int_t spec, Double_t mom, Double_t *dedx
 		return LQ1;
 	}
 	if(kX)
-		if(kY) LQ2 = hist->GetBinContent( hist->FindBin(dedx[0], dedx[1])); //fEstimator->Estimate2D2(hist, (Float_t&)dedx[0], (Float_t&)dedx[1]);
-		else LQ2 = hist->GetBinContent(ax->FindBin(dedx[0]), nbinsy);
+		if(kY) LQ2 = hist->GetBinContent( hist->FindBin(x, y)); 
+    //fEstimator->Estimate2D2(hist, x, y);
+		else LQ2 = hist->GetBinContent(ax->FindBin(x), nbinsy);
 	else
-		if(kY) LQ2 = hist->GetBinContent(nbinsx, ay->FindBin(dedx[1]));
+		if(kY) LQ2 = hist->GetBinContent(nbinsx, ay->FindBin(y));
 	 	else LQ2 = hist->GetBinContent(nbinsx, nbinsy);
 
 	
