@@ -190,7 +190,7 @@ AliTracker* AliITSReconstructor::CreateTracker(AliRunLoader* runLoader)const
     loader->AdoptITSpid(new AliITSpidESD2((AliITStrackerMI*)tracker,loader));
   }
   else{
-    Double_t parITS[] = {34., 0.15, 10.};
+    Double_t parITS[] = {76., 0.15, 10.}; //PH positions of the MIP peak
     loader->AdoptITSpid(new AliITSpidESD1(parITS));
   }
   return tracker;
