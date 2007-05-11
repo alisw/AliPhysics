@@ -117,6 +117,10 @@ void AliTRDCalPad::Copy(TObject &c) const
   //
 
   for (Int_t idet = 0; idet < kNdet; idet++) {
+    if (((AliTRDCalPad &) c).fROC[idet]) {
+      delete ((AliTRDCalPad &) c).fROC[idet];
+    }
+    ((AliTRDCalPad &) c).fROC[idet] = new AliTRDCalROC();
     if (fROC[idet]) {
       fROC[idet]->Copy(*((AliTRDCalPad &) c).fROC[idet]);
     }
