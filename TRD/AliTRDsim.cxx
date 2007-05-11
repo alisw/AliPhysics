@@ -476,11 +476,13 @@ Int_t AliTRDsim::TrPhotons(Float_t p, Float_t mass
   
   // Link the MC stack and get info about parent electron
   TVirtualMCStack *stack       = gMC->GetStack();
-  TParticle       *trGenerator = stack->GetCurrentTrack();
   Int_t    track = stack->GetCurrentTrackNumber();
-  Double_t px    = trGenerator->Px() / trGenerator->P();
-  Double_t py    = trGenerator->Py() / trGenerator->P();
-  Double_t pz    = trGenerator->Pz() / trGenerator->P();
+  Double_t px,py,pz,ptot;
+  gMC->TrackMomentum(px,py,pz,ptot);
+  ptot = TMath::Sqrt(px*px+py*py+pz*pz);
+  px /= ptot;
+  py /= ptot;
+  pz /= ptot;
 
   // Current position of electron
   Double_t x;
