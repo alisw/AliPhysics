@@ -106,6 +106,7 @@ private:
 	void CleanLocalStorage(const TString& uri);
 	Bool_t CleanReferenceStorage(const char* detector);
 	void RemoveFile(const char* filename);
+	const char* GetRefFilePrefix(const char* base, const char* detector);
 
 	AliShuttleStatus* ReadShuttleStatus();
 	Bool_t WriteShuttleStatus(AliShuttleStatus* status);

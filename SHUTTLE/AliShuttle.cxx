@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.43  2007/05/10 09:59:51  acolla
+Various bug fixes in StoreRefFilesToGrid; Cleaning of reference storage before processing detector (CleanReferenceStorage)
+
 Revision 1.42  2007/05/03 08:01:39  jgrosseo
 typo in last commit :-(
 
@@ -429,13 +432,13 @@ Bool_t AliShuttle::StoreOCDB()
 		return kFALSE;
 	}
 	
-	AliInfo("Storing OCDB data ...");
+	Log("SHUTTLE","Storing OCDB data ...");
 	Bool_t resultCDB = StoreOCDB(fgkMainCDB);
 
-	AliInfo("Storing reference data ...");
+	Log("SHUTTLE","Storing reference data ...");
 	Bool_t resultRef = StoreOCDB(fgkMainRefStorage);
 	
-	AliInfo("Storing reference files ...");
+	Log("SHUTTLE","Storing reference files ...");
 	Bool_t resultRefFiles = StoreRefFilesToGrid();
 	
 	return resultCDB && resultRef && resultRefFiles;
@@ -534,6 +537,9 @@ Bool_t AliShuttle::StoreOCDB(const TString& gridURI)
 				Log("SHUTTLE",
 					Form("StoreOCDB - Object <%s> successfully put into %s storage",
 						aLocId.ToString().Data(), type));
+				Log(fCurrentDetector.Data(),
+					Form("StoreOCDB - Object <%s> successfully put into %s storage",
+						aLocId.ToString().Data(), type));
 			}
 
 			// removing local filename...
@@ -544,6 +550,9 @@ Bool_t AliShuttle::StoreOCDB(const TString& gridURI)
 			continue;
 		} else	{
 			Log("SHUTTLE",
+				Form("StoreOCDB - Grid %s storage of object <%s> failed",
+					type, aLocId.ToString().Data()));
+			Log(fCurrentDetector.Data(),
 				Form("StoreOCDB - Grid %s storage of object <%s> failed",
 					type, aLocId.ToString().Data()));
 			result = kFALSE;
@@ -557,16 +566,75 @@ Bool_t AliShuttle::StoreOCDB(const TString& gridURI)
 //______________________________________________________________________________________________
 Bool_t AliShuttle::CleanReferenceStorage(const char* detector)
 {
-  // clears the directory used to store reference files of a given subdetector
+	// clears the directory used to store reference files of a given subdetector
   
 	AliCDBManager* man = AliCDBManager::Instance();
 	AliCDBStorage* sto = man->GetStorage(fgkLocalRefStorage);
-  TString localBaseFolder = sto->GetBaseFolder();
+  	TString localBaseFolder = sto->GetBaseFolder();
 
-  TString targetDir;
-  targetDir.Form("%s/%s", localBaseFolder.Data(), detector);
+  	TString targetDir = GetRefFilePrefix(localBaseFolder.Data(), detector);
 	
-  Log("SHUTTLE", Form("Cleaning %s", targetDir.Data()));
+  	Log("SHUTTLE", Form("Cleaning %s", targetDir.Data()));
+
+	TString begin;
+	begin.Form("%d_", GetCurrentRun());
+	
+	TSystemDirectory* baseDir = new TSystemDirectory("/", targetDir);
+	if (!baseDir)
+		return kTRUE;
+		
+	TList* dirList = baseDir->GetListOfFiles();
+	delete baseDir;
+	
+	if (!dirList) return kTRUE;
+			
+	if (dirList->GetEntries() < 3) 
+	{
+		delete dirList;
+		return kTRUE;
+	}
+				
+	Int_t nDirs = 0, nDel = 0;
+	TIter dirIter(dirList);
+	TSystemFile* entry = 0;
+
+	Bool_t success = kTRUE;
+	
+	while ((entry = dynamic_cast<TSystemFile*> (dirIter.Next())))
+	{					
+		if (entry->IsDirectory())
+			continue;
+		
+		TString fileName(entry->GetName());
+		if (!fileName.BeginsWith(begin))
+			continue;
+			
+		nDirs++;
+						
+    		// delete file
+    		Int_t result = gSystem->Unlink(fileName.Data());
+		
+		if (result)
+		{
+			Log("SHUTTLE", Form("Could not delete file %s!", fileName.Data()));
+			success = kFALSE;
+		} else {
+			nDel++;
+		}
+	}
+
+	if(nDirs > 0)
+		Log("SHUTTLE", Form("CleanReferenceStorage - %d (over %d) reference files in folder %s were deleted.", 
+			nDel, nDirs, targetDir.Data()));
+
+		
+	delete dirList;
+	return success;
+
+
+
+
+
 
   Int_t result = gSystem->GetPathInfo(targetDir, 0, (Long64_t*) 0, 0, 0);
   if (result == 0)
@@ -612,9 +680,20 @@ Bool_t AliShuttle::StoreReferenceFile(const char* detector, const char* localFil
 	
 	TString localBaseFolder = sto->GetBaseFolder();
 	
-	TString targetDir;
-	targetDir.Form("%s/%s", localBaseFolder.Data(), GetOfflineDetName(detector));
+	TString targetDir = GetRefFilePrefix(localBaseFolder.Data(), detector);	
 	
+	//try to open folder, if does not exist
+	void* dir = gSystem->OpenDirectory(targetDir.Data());
+	if (dir == NULL) {
+		if (gSystem->mkdir(targetDir.Data(), kTRUE)) {
+			Log("SHUTTLE", Form("Can't open directory <%s>", targetDir.Data()));
+			return kFALSE;
+		}
+
+	} else {
+		gSystem->FreeDirectory(dir);
+	}
+
 	TString target;
 	target.Form("%s/%d_%s", targetDir.Data(), GetCurrentRun(), gridFileName);
 	
@@ -629,12 +708,12 @@ Bool_t AliShuttle::StoreReferenceFile(const char* detector, const char* localFil
 
 	if (result == 0)
 	{
-		Log("SHUTTLE", Form("StoreReferenceFile - Stored file %s locally to %s", localFile, target.Data()));
+		Log("SHUTTLE", Form("StoreReferenceFile - File %s stored locally to %s", localFile, target.Data()));
 		return kTRUE;
 	}
 	else
 	{
-		Log("SHUTTLE", Form("StoreReferenceFile - Storing file %s locally to %s failed. Error code = %d", 
+		Log("SHUTTLE", Form("StoreReferenceFile - Could not store file %s to %s!. Error code = %d", 
 				localFile, target.Data(), result));
 		return kFALSE;
 	}	
@@ -656,15 +735,15 @@ Bool_t AliShuttle::StoreRefFilesToGrid()
 		return kFALSE;
 	TString localBaseFolder = sto->GetBaseFolder();
 		
-	TString dir;
-	dir.Form("%s/%s", localBaseFolder.Data(), GetOfflineDetName(fCurrentDetector));
-	
+	TString dir = GetRefFilePrefix(localBaseFolder.Data(), fCurrentDetector.Data());
+		
 	AliCDBStorage* gridSto = man->GetStorage(fgkMainRefStorage);
 	if (!gridSto)
 		return kFALSE;
+	
 	TString gridBaseFolder = gridSto->GetBaseFolder();
-	TString alienDir;
-	alienDir.Form("%s%s", gridBaseFolder.Data(), GetOfflineDetName(fCurrentDetector));
+
+	TString alienDir = GetRefFilePrefix(gridBaseFolder.Data(), fCurrentDetector.Data());
 	
 	TString begin;
 	begin.Form("%d_", GetCurrentRun());
@@ -673,41 +752,41 @@ Bool_t AliShuttle::StoreRefFilesToGrid()
 	if (!baseDir)
 		return kTRUE;
 		
-	TList* dirList            = baseDir->GetListOfFiles();
-	if (!dirList)
+	TList* dirList = baseDir->GetListOfFiles();
+	delete baseDir;
+	
+	if (!dirList) return kTRUE;
+		
+	if (dirList->GetEntries() < 3) 
 	{
-		delete baseDir;
+		delete dirList;
 		return kTRUE;
 	}
-		
-	Int_t nDirs               = dirList->GetEntries();
-	
-	Log("SHUTTLE", Form("There are %d reference files in folder %s to be transferred to Grid",
-		nDirs, GetOfflineDetName(fCurrentDetector)));
-		
-	if(nDirs < 1) return kTRUE;
-		
+			
 	if (!gGrid)
 	{ 
 		Log("SHUTTLE", "Connection to Grid failed: Cannot continue!");
+		delete dirList;
 		return kFALSE;
 	}
 	
+	Int_t nDirs = 0, nTransfer = 0;
+	TIter dirIter(dirList);
+	TSystemFile* entry = 0;
+
 	Bool_t success = kTRUE;
 	Bool_t first = kTRUE;
 	
-	for (Int_t iDir=0; iDir<nDirs; ++iDir)
-	{
-		TSystemFile* entry = dynamic_cast<TSystemFile*> (dirList->At(iDir));
-		if (!entry)
-			continue;
-			
+	while ((entry = dynamic_cast<TSystemFile*> (dirIter.Next())))
+	{			
 		if (entry->IsDirectory())
 			continue;
 			
 		TString fileName(entry->GetName());
 		if (!fileName.BeginsWith(begin))
 			continue;
+			
+		nDirs++;
 			
 		if (first)
 		{
@@ -716,7 +795,10 @@ Bool_t AliShuttle::StoreRefFilesToGrid()
 			TGridResult* result = gGrid->Ls(alienDir.Data(), "a");
 			
 			if (!result)
+			{
+				delete dirList;
 				return kFALSE;
+			}
 			
 			if (!result->GetFileName(1)) // TODO: It looks like element 0 is always 0!!
 			{
@@ -724,7 +806,7 @@ Bool_t AliShuttle::StoreRefFilesToGrid()
 				{
 					Log("SHUTTLE", Form("StoreRefFilesToGrid - Cannot create directory %s",
 							alienDir.Data()));
-					delete baseDir;
+					delete dirList;
 					return kFALSE;
 				} else {
 					Log("SHUTTLE",Form("Folder %s created", alienDir.Data()));
@@ -741,28 +823,49 @@ Bool_t AliShuttle::StoreRefFilesToGrid()
 		TString fullGridPath;
 		fullGridPath.Form("alien://%s/%s", alienDir.Data(), fileName.Data());
 
-		Log("SHUTTLE", Form("StoreRefFilesToGrid - Copying local file %s to %s", fullLocalPath.Data(), fullGridPath.Data()));
-		
 		TFileMerger fileMerger;
 		Bool_t result = fileMerger.Cp(fullLocalPath, fullGridPath);
 		
 		if (result)
 		{
-			Log("SHUTTLE", Form("StoreRefFilesToGrid - Copying local file %s to %s succeeded", fullLocalPath.Data(), fullGridPath.Data()));
+			Log("SHUTTLE", Form("StoreRefFilesToGrid - Copying local file %s to %s succeeded!", fullLocalPath.Data(), fullGridPath.Data()));
 			RemoveFile(fullLocalPath);
+			nTransfer++;
 		}
 		else
 		{
-			Log("SHUTTLE", Form("StoreRefFilesToGrid - Copying local file %s to %s failed", fullLocalPath.Data(), fullGridPath.Data()));
+			Log("SHUTTLE", Form("StoreRefFilesToGrid - Copying local file %s to %s FAILED!", fullLocalPath.Data(), fullGridPath.Data()));
 			success = kFALSE;
 		}
 	}
-	
-	delete baseDir;
-	
+
+	Log("SHUTTLE", Form("StoreRefFilesToGrid - %d (over %d) reference files in folder %s copied to Grid.", nTransfer, nDirs, dir.Data()));
+
+		
+	delete dirList;
 	return success;
 }
 
+//______________________________________________________________________________________________
+const char* AliShuttle::GetRefFilePrefix(const char* base, const char* detector)
+{
+	//
+	// Get folder name of reference files 
+	//
+
+	TString offDetStr(GetOfflineDetName(detector));
+	TString dir;
+	if (offDetStr == "ITS" || offDetStr == "MUON" || offDetStr == "PHOS")
+	{
+		dir.Form("%s/%s/%s", base, offDetStr.Data(), detector);
+	} else {
+		dir.Form("%s/%s", base, offDetStr.Data());
+	}
+	
+	return dir.Data();
+	
+
+}
 //______________________________________________________________________________________________
 void AliShuttle::CleanLocalStorage(const TString& uri)
 {
@@ -1373,7 +1476,7 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 
 	AliInfo(Form("Retrieving values for %s, run %d", fCurrentDetector.Data(), GetCurrentRun()));
 
-	if (!CleanReferenceStorage(GetOfflineDetName(fCurrentDetector)))
+	if (!CleanReferenceStorage(fCurrentDetector.Data()))
 		return kFALSE;
 
 	TMap dcsMap;
@@ -1421,13 +1524,13 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 			valueSet->SetOwner(1);
 
 			iAlias++;
-			if (((iAlias-1) % 500) == 0 || iAlias == nTotAliases)
-				AliInfo(Form("Querying DCS archive: alias %s (%d of %d)",
-						anAlias->GetName(), iAlias, nTotAliases));
 			aDCSError = (GetValueSet(host, port, anAlias->String(), valueSet, kAlias) == 0);
 
 			if(!aDCSError)
 			{
+				if (((iAlias-1) % 500) == 0 || iAlias == nTotAliases)
+					AliInfo(Form("Alias %s (%d of %d) - %d values collected",
+							anAlias->GetName(), iAlias, nTotAliases, valueSet->GetEntriesFast()));
 				dcsMap.Add(anAlias->Clone(), valueSet);
 			} else {
 				Log(fCurrentDetector,
