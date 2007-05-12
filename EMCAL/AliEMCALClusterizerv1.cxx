@@ -438,8 +438,8 @@ Int_t AliEMCALClusterizerv1::AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * d
   rowdiff = TMath::Abs(iphi1 - iphi2);  
   coldiff = TMath::Abs(ieta1 - ieta2) ;  
   
-  //  if (( coldiff <= 1 )  && ( rowdiff <= 1 )) rv = 1;  // neighbours with at least commom vertex
-  if(coldiff + rowdiff <= 1) rv = 1;  // neighbours with at least commom side; Nov 6,2006
+  // neighbours with at least commom side; May 11, 2007
+  if ((coldiff==0 && abs(rowdiff)==1) || (rowdiff==0 && abs(coldiff)==1)) rv = 1;  
  
   if (gDebug == 2 && rv==1) 
   printf("AreNeighbours: neighbours=%d, id1=%d, relid1=%d,%d \n id2=%d, relid2=%d,%d \n", 
