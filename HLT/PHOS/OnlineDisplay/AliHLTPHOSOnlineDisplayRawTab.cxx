@@ -48,6 +48,7 @@ AliHLTPHOSOnlineDisplayRawTab::ReadBlockData(HOMERReader *homerReaderPtr)
       AliHLTUInt16_t moduleID;
       const AliHLTPHOSRcuChannelDataStruct* rcuChannelDataPtr = (const AliHLTPHOSRcuChannelDataStruct*)homerReaderPtr->GetBlockData( blk ); 
       moduleID = rcuChannelDataPtr->fModuleID ;
+      cout << "GetNextEventRaw() Module ID =" << moduleID << endl; 
       int tmpx;
       int tmpz;
       AliHLTUInt32_t tmpChCnt =0;
@@ -62,6 +63,10 @@ AliHLTPHOSOnlineDisplayRawTab::ReadBlockData(HOMERReader *homerReaderPtr)
 	    tmpz =  rcuChannelDataPtr->fValidData[ch].fZ;
 	    tmpx =  rcuChannelDataPtr->fValidData[ch].fX;	
 	    tmpSampleCnt =  rcuChannelDataPtr->fValidData[ch].fNSamples;
+
+	    //	    fgChannelDataPlotPtr[tmpz][tmpx]->SetFillColor(3);
+
+	    fgChannelDataPlotPtr[tmpz][tmpx]->SetFillColor(1);
 
 	    for(AliHLTUInt16_t sample =0; sample <tmpSampleCnt; sample ++)
 	      {
@@ -133,9 +138,26 @@ AliHLTPHOSOnlineDisplayRawTab::InitDisplay(TGTab *tabPtr)
 void 
 AliHLTPHOSOnlineDisplayRawTab::UpdateDisplay()
 {
-  
   fgTestCanvasPtr = new TCanvas("TEST", "testcanvas", 1200, 1000);  
-  //  fgTestCanvasPtr->Divide(N_ZROWS_RCU, N_XCOLUMNS_RCU, 0, 0);
+
+
+  /*
+  fgTestCanvasPtr->Divide(N_XCOLUMNS_RCU, N_ZROWS_RCU, 0, 0);
+
+  for(int z = 0; z < N_ZROWS_RCU; z ++)
+    {
+      for(int x = 0; x < N_XCOLUMNS_RCU; x ++)
+	{
+	  //	  fgTestCanvasPtr->cd(x*N_ZROWS_RCU +z + 1);
+	  fgTestCanvasPtr->cd(z*N_XCOLUMNS_RCU +x + 1);
+
+	  fgChannelDataPlotPtr[z][x]->Draw();
+	} 
+    }
+  */
+
+
+
   fgTestCanvasPtr->Divide(N_XCOLUMNS_RCU, N_ZROWS_RCU, 0, 0);
 
   for(int z = 0; z < N_ZROWS_RCU; z ++)
