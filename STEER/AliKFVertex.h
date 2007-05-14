@@ -54,11 +54,6 @@ class AliKFVertex :public AliKFParticle
   //*
 
 
-  //* Simple way to construct vertices ex. D0 = Pion + Kaon; 
-
-  AliKFParticle operator +( const AliKFParticle &Daughter ) const;
-
-  void operator +=( const AliKFParticle &Daughter );  
 
   //* Subtract particle from vertex
 
@@ -70,6 +65,14 @@ class AliKFVertex :public AliKFParticle
 
   void ConstructPrimaryVertex( const AliKFParticle *vDaughters[], int NDaughters, 
 			       Double_t ChiCut=3.5  );
+
+private:
+
+  //* Simple way to construct vertices ex. D0 = Pion + Kaon - NOT IMPLEMENTED 
+
+  AliKFParticle operator +( const AliKFParticle &Daughter ) const;
+
+  void operator +=( const AliKFParticle &Daughter );  
 
   ClassDef( AliKFVertex, 1 );
 
