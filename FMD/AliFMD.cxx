@@ -93,7 +93,7 @@
 #include <TTUBE.h>		// ROOT_TTUBE
 #include <TTree.h>		// ROOT_TTree
 #include <TBrowser.h>		// ROOT_TBrowser
-// #include <TVirtualMC.h>	// ROOT_TVirtualMC
+#include <TVirtualMC.h>	        // ROOT_TVirtualMC
 #include <TVector2.h>           // ROOT_TVector2 
 #include <TGeoManager.h>        // ROOT_TGeoManager
 
@@ -420,7 +420,21 @@ AliFMD::Init()
   // Initialize the detector 
   // 
   AliFMDDebug(1, ("Initialising FMD detector object"));
-  // AliFMDGeometry*  fmd = AliFMDGeometry::Instance();
+  TVirtualMC*      mc     = TVirtualMC::GetMC();
+  AliFMDGeometry*  fmd    = AliFMDGeometry::Instance();
+  const TArrayI&   actGeo = fmd->ActiveIds();
+  TArrayI          actVmc(actGeo.fN);
+  for (Int_t i = 0; i < actGeo.fN; i++) {
+    TGeoVolume *sens = gGeoManager->GetVolume(actGeo[i]);
+    if (!sens) {
+      AliError(Form("No TGeo volume for sensitive volume ID=%d",actGeo[i]));
+      continue;
+    }   
+    actVmc[i] = mc->VolId(sens->GetName());
+    AliFMDDebug(1, ("Active vol id # %d: %d changed to %d", 
+		    i, actGeo[i], actVmc[i]));
+  }
+  fmd->SetActive(actVmc.fArray, actVmc.fN);
   // fmd->InitTransformations();
 }
 

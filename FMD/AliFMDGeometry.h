@@ -176,6 +176,9 @@ public:
   void   SetActive(Int_t* active, Int_t n);
   /** @param id Register volume @a id to be active */
   void   AddActive(Int_t id);
+  /** Get Array of active volume numbers 
+      @return constant reference to active volume numbers */ 
+  const TArrayI& ActiveIds() const { return fActive; }
   /** Set an external geometry builder
       @param b Geometry builder */
   void   SetBuilder(AliFMDGeometryBuilder* b) { fBuilder = b; }
