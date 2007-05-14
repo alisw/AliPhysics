@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2007/05/04 12:59:26  arcelli
+Change the TOF SM paths for misalignment (one layer up)
+
 Revision 1.15  2007/02/19 15:41:55  decaro
 Coding convention: few corrections
 
@@ -444,7 +447,13 @@ void AliTOFv5T0::TOFpc(Float_t xtof,  Float_t ytof, Float_t zlenA,
       gMC->Gspos("FTOB", 0, name, xcoor, ycoor, zcoor, idrotm[0], "ONLY");
       gMC->Gspos("FTOC", 0, name, xcoor,-ycoor, zcoor, idrotm[0], "ONLY");
     }
-    else gMC->Gspos("FTOA", 0,name, xcoor, ycoor, zcoor, idrotm[0], "ONLY");
+    else {
+      xcoor = 0.;
+      ycoor = 0.;
+      zcoor = 0.;
+      gMC->Gspos("FTOA", 0,name, xcoor, ycoor, zcoor, idrotm[0], "ONLY");
+    }
+
   }
   // Large not sensitive volumes with Insensitive Freon (FLTA, FLTB and FLTC)
   
