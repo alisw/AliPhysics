@@ -21,6 +21,7 @@ AliVertexer.cxx \
 AliV0vertexer.cxx AliCascadeVertexer.cxx\
 AliMC.cxx AliSimulation.cxx AliReconstruction.cxx AliVertexGenFile.cxx \
 AliReconstructor.cxx AliDetectorEventHeader.cxx TTreeStream.cxx\
+AliGeomManager.cxx \
 AliAlignObj.cxx AliAlignObjAngles.cxx AliAlignObjMatrix.cxx \
 AliTriggerInput.cxx \
 AliTriggerDetector.cxx \

@@ -88,6 +88,7 @@
 
 #pragma link C++ class  AliDetectorEventHeader+;
 
+#pragma link C++ class AliGeomManager+;
 #pragma link C++ class AliAlignObj+;
 #pragma link C++ class AliAlignObjAngles+;
 #pragma link C++ class AliAlignObjMatrix+;
