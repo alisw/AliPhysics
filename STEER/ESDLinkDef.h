@@ -27,6 +27,10 @@
 #pragma link C++ class  AliESDV0Params+;
 #pragma link C++ class  AliESDCaloCluster+;
 
+#pragma link C++ class  AliKFParticleBase+;
+#pragma link C++ class  AliKFParticle+;
+#pragma link C++ class  AliKFVertex+;
+
 #pragma link C++ class  AliKalmanTrack+;
 #pragma link C++ class  AliExternalTrackParam+;
 #pragma link C++ class  AliVertexerTracks+;
