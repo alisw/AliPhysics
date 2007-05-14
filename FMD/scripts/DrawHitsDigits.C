@@ -20,6 +20,7 @@
 #include <TStyle.h>
 #include <TArrayF.h>
 #include <AliLog.h>
+#include <TMath.h>
 
 /** @class DrawHitsDigits
     @brief Draw hit energy loss versus digit ADC

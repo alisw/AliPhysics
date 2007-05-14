@@ -29,7 +29,7 @@
 // Latest changes by Christian Holm Christensen
 //
 #include "AliFMDInput.h"	// ALIFMDHIT_H
-#include "AliLog.h"		// ALILOG_H
+#include "AliFMDDebug.h"		// ALIFMDDEBUG_H ALILOG_H
 #include "AliLoader.h"          // ALILOADER_H
 #include "AliRunLoader.h"       // ALIRUNLOADER_H
 #include "AliRun.h"             // ALIRUN_H
@@ -268,13 +268,13 @@ AliFMDInput::Begin(Int_t event)
   AliInfo(Form("Now in event %d/%d", event, NEvents()));
 
   // Possibly load global kinematics information 
-  if (TESTBIT(fTreeMask, kKinematics)) {
+  if (TESTBIT(fTreeMask, kKinematics) || TESTBIT(fTreeMask, kTracks)) {
     AliInfo("Getting kinematics");
     if (fLoader->LoadKinematics()) return kFALSE;
     fStack = fLoader->Stack();
   }
   // Possibly load FMD Hit information 
-  if (TESTBIT(fTreeMask, kHits)) {
+  if (TESTBIT(fTreeMask, kHits) || TESTBIT(fTreeMask, kTracks)) {
     AliInfo("Getting FMD hits");
     if (fFMDLoader->LoadHits()) return kFALSE;
     fTreeH = fFMDLoader->TreeH();
@@ -352,6 +352,8 @@ AliFMDInput::Event()
   // 
   if (TESTBIT(fTreeMask, kHits)) 
     if (!ProcessHits()) return kFALSE; 
+  if (TESTBIT(fTreeMask, kTracks)) 
+    if (!ProcessTracks()) return kFALSE; 
   if (TESTBIT(fTreeMask, kDigits)) 
     if (!ProcessDigits()) return kFALSE;
   if (TESTBIT(fTreeMask, kSDigits)) 
@@ -396,6 +398,43 @@ AliFMDInput::ProcessHits()
       }
       if (!ProcessHit(hit, track)) return kFALSE;
     }    
+  }
+  return kTRUE;
+}
+
+//____________________________________________________________________
+Bool_t 
+AliFMDInput::ProcessTracks()
+{
+  // Read the hit tree, and pass each hit to the member function
+  // ProcessHit.
+  if (!fStack) {
+    AliError("No track tree defined");
+    return kFALSE;
+  }
+  if (!fTreeH) {
+    AliError("No hit tree defined");
+    return kFALSE;
+  }
+  Int_t nTracks = fTreeH->GetEntries();
+  for (Int_t i = 0; i < nTracks; i++) {
+    TParticle* track = fStack->Particle(i);
+    if (!track) continue;
+    Int_t hitRead  = fTreeH->GetEntry(i);
+    if (hitRead <= 0) continue;
+    if (!fArrayH) {
+      AliError("No hit array defined");
+      return kFALSE;
+    }
+    Int_t nHit = fArrayH->GetEntries();
+    if (nHit <= 0) continue;
+
+    for (Int_t j = 0; j < nHit; j++) {
+      AliFMDHit* hit = static_cast<AliFMDHit*>(fArrayH->At(j));
+      if (!hit) continue;
+      if (!ProcessTrack(i, track, hit)) return kFALSE;
+    }    
+    // if (!ProcessTrack(i, track, fArrayH)) return kFALSE;
   }
   return kTRUE;
 }
@@ -518,13 +557,13 @@ AliFMDInput::End()
     return fIsInit;
   }
   // Possibly unload global kinematics information 
-  if (TESTBIT(fTreeMask, kKinematics)) {
+  if (TESTBIT(fTreeMask, kKinematics) || TESTBIT(fTreeMask, kTracks)) {
     fLoader->UnloadKinematics();
     // fTreeK = 0;
     fStack = 0;
   }
   // Possibly unload FMD Hit information 
-  if (TESTBIT(fTreeMask, kHits)) {
+  if (TESTBIT(fTreeMask, kHits) || TESTBIT(fTreeMask, kTracks)) {
     fFMDLoader->UnloadHits();
     fTreeH = 0;
   }

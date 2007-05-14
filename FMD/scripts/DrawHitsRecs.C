@@ -47,6 +47,7 @@ private:
   TH2D* fHitEvsRecE;  // Histogram 
   TH1D* fDiffE;       // Histogram 
   TH2D* fHitsVsRecM;  // Histogram 
+  TH2D* fDiffM;       // Histogram 
   AliFMDEdepMap  fMap;
   AliFMDFloatMap fEta;
   AliFMDFloatMap fPhi;
@@ -109,6 +110,14 @@ public:
 			   o, omin, omax, m, mmin, mmax);
     fHitsVsRecM->SetXTitle("# of Hits");
     fHitsVsRecM->SetYTitle("M_{rec}");
+
+    fDiffM = new TH2D("diffM", "M_{sim} - M_{rec}", 
+		      41, -20.5, 20.5, 70, 1.5, 5);
+    // 36, -TMath::Pi(),TMath::Pi());
+    fDiffM->SetXTitle("M_{sim} - M_{rec}");
+    fDiffM->SetYTitle("|#eta|");
+    // fDiffM->SetYTitle("Detector");
+    
   }
   //__________________________________________________________________
   /** Begining of event
@@ -182,6 +191,7 @@ public:
       fDiffE->Fill((single->Edep() - edep) / edep);
     }
     if (nhit > 0) fHitsVsRecM->Fill(nhit, single->Particles());
+    fDiffM->Fill(nhit - single->Particles(), TMath::Abs(single->Eta()));
     return kTRUE;
   }
   //__________________________________________________________________
@@ -193,25 +203,35 @@ public:
     gStyle->SetCanvasBorderSize(0);
     gStyle->SetPadColor(0);
     gStyle->SetPadBorderSize(0);
+    TCanvas* c = 0;
 
-    new TCanvas("c0", fHitEvsAdc->GetTitle());
+    c = new TCanvas("c0", fHitEvsAdc->GetTitle());
     fHitEvsAdc->SetStats(kFALSE);
     fHitEvsAdc->Draw("COLZ");
 
-    new TCanvas("c1", fHitEvsRecM->GetTitle());
+    c = new TCanvas("c1", fHitEvsRecM->GetTitle());
     fHitEvsRecM->SetStats(kFALSE);
     fHitEvsRecM->Draw("COLZ");
 
-    new TCanvas("c2", fHitEvsRecE->GetTitle());
+    c = new TCanvas("c2", fHitEvsRecE->GetTitle());
     fHitEvsRecE->SetStats(kFALSE);
     fHitEvsRecE->Draw("COLZ");
 
-    new TCanvas("c3", fDiffE->GetTitle());
+    c = new TCanvas("c3", fDiffE->GetTitle());
+    c->SetLogz();
     fDiffE->Draw();
 
-    new TCanvas("c4", fHitsVsRecM->GetTitle());
+    c = new TCanvas("c4", fHitsVsRecM->GetTitle());
+    c->SetLogz();
     fHitsVsRecM->SetStats(kFALSE);
     fHitsVsRecM->Draw("COLZ");
+
+    c = new TCanvas("c5", fDiffM->GetTitle());
+    fDiffM->SetFillColor(2);
+    fDiffM->SetFillStyle(3001);
+    c->SetLogz();
+    fDiffM->Draw("colz");
+
 
     return kTRUE;
   }

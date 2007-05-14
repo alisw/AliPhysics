@@ -29,28 +29,30 @@
 // Latest changes by Christian Holm Christensen
 //
 
-#include <iostream>
+// #include <iostream>
 
-#include <TApplication.h>
-#include <TButton.h>
+// #include <TApplication.h>
+// #include <TButton.h>
 #include <TCanvas.h>
 #include <TH2F.h>
 #include <TMath.h>
 #include <TPad.h>
 #include <TRandom.h>
-#include <TSlider.h>
+// #include <TSlider.h>
 #include <TStyle.h>
-#include <TSystem.h>
+// #include <TSystem.h>
 #include <TVector2.h>
-#include <TView.h>
-
+// #include <TView.h>
+#include <TGraph.h>
 #include "AliFMDPattern.h"	// ALIFMDDISPLAY_H
 #include "AliFMDGeometry.h"	// ALIFMDGEOMETRY_H
-#include "AliFMDParameters.h"	// ALIFMDPARAMETERS_H
+//#include "AliFMDParameters.h"	// ALIFMDPARAMETERS_H
 #include "AliFMDRing.h"
-#include "AliFMDDetector.h"
+// #include "AliFMDDetector.h"
 #include "AliFMDHit.h"
-#include <AliLog.h>
+// #include <AliLog.h>
+#include "AliFMDDebug.h" // Better debug macros
+class AliFMDDetector;
 
 //____________________________________________________________________
 ClassImp(AliFMDPattern)
@@ -59,23 +61,38 @@ ClassImp(AliFMDPattern)
 #endif
 
 //____________________________________________________________________
-AliFMDPattern::Detector::Detector(UShort_t id) 
+AliFMDPattern::AliFMDPatternDetector::AliFMDPatternDetector(UShort_t id) 
   : fId(id),
     fCounts(0), 
     fGraphs(0), 
     fFrame(0)
-{}
+{
+  // CTOR 
+  // 
+  // Parameters: 
+  // 
+  //   ID 	Identifier 
+}
 
 //____________________________________________________________________
-AliFMDPattern::Detector::~Detector()
+AliFMDPattern::AliFMDPatternDetector::~AliFMDPatternDetector()
 {
+  // DTOR 
+  // Destructor - 
+  // deletes mother frame 
   if (fFrame) delete fFrame;
 }
 
 //____________________________________________________________________
 void
-AliFMDPattern::Detector::DrawShape(TObjArray& a) 
+AliFMDPattern::AliFMDPatternDetector::DrawShape(TObjArray& a) 
 {
+  // Draw all shapes. 
+  // 
+  // Paramters 
+  // 
+  //	a	Array of shapes 
+  //
   TIter next(&a);
   TGraph* g = 0;
   while ((g = static_cast<TGraph*>(next()))) {
@@ -86,12 +103,26 @@ AliFMDPattern::Detector::DrawShape(TObjArray& a)
 
 //____________________________________________________________________
 void
-AliFMDPattern::Detector::Begin(Int_t nlevel, Double_t r, 
+AliFMDPattern::AliFMDPatternDetector::Begin(Int_t nlevel, Double_t r, 
 			       TObjArray& inners, TObjArray& outers)
 {
-  if (nlevel < 1) nlevel = gStyle->GetNumberOfColors();
+  // Start of a run. 
+  // 
+  // Parameters 
+  // 
+  //	nlevel		Number of levels 
+  //    r		Radius 
+  //	inners		Array of inner shapes 
+  //	outers		Array of outer shapes 
+  //
+
+  // To make code-checker shut up
+  TStyle* style = gStyle;  
+  if (nlevel < 1) nlevel = style->GetNumberOfColors();
   fCounts.Set(nlevel);
   if (!fFrame) {
+    // The code-checker thinks this is not using the declaration of
+    // TH2F - what a morron!   
     fFrame = new TH2F(Form("fmd%dFrame", fId), Form("FMD%d", fId), 
 		      10, -r, r, 10, -r, r);
     fFrame->SetStats(kFALSE);
@@ -101,8 +132,8 @@ AliFMDPattern::Detector::Begin(Int_t nlevel, Double_t r,
   if (fId != 1) DrawShape(outers);
   for (Int_t i = 0; i < nlevel; i++) { 
     TGraph* g = new TGraph;
-    Int_t idx = Int_t(Float_t(i) / nlevel * gStyle->GetNumberOfColors());
-    Int_t col = gStyle->GetColorPalette(idx);
+    Int_t idx = Int_t(Float_t(i) / nlevel * style->GetNumberOfColors());
+    Int_t col = style->GetColorPalette(idx);
     g->SetName(Form("FMD%d_L%02d", fId, i));
     g->SetMarkerColor(col);
     g->SetLineColor(col);
@@ -117,15 +148,22 @@ AliFMDPattern::Detector::Begin(Int_t nlevel, Double_t r,
 
 //____________________________________________________________________
 void
-AliFMDPattern::Detector::Clear() 
+AliFMDPattern::AliFMDPatternDetector::Clear() 
 {
+  // Clear this display.  
+  // Simply reset counters to zero. 
+  // Avoid deleting memory. 
   fCounts.Reset(0);
 }
 
 //____________________________________________________________________
 void
-AliFMDPattern::Detector::End()
+AliFMDPattern::AliFMDPatternDetector::End()
 {
+  // Called when displaying the data.  
+  // Simply resets number of points at each level to 
+  // the seen number of hits at that level. 
+  // Avoid deleting memory. 
   TIter   next(&fGraphs);
   TGraph* g = 0;
   Int_t   i = 0;
@@ -133,10 +171,20 @@ AliFMDPattern::Detector::End()
 }
 //____________________________________________________________________
 void
-AliFMDPattern::Detector::AddMarker(Double_t x, Double_t y, Float_t s, 
+AliFMDPattern::AliFMDPatternDetector::AddMarker(Double_t x, Double_t y, Float_t s, 
 				   Float_t max)
 {
-  Int_t i = TMath::Min(Int_t(fCounts.fN * s / max), 
+  // Add a marker at (X,Y,Z).  The marker color and size is chosen
+  // relative to the MAX argument. 
+  // 
+  // Parameters 
+  // 
+  //	X,Y,Z		Coordiantes 
+  //	MAX		Maximum value. 
+  // 
+  /** Sigh, for some odd reason, the code-checker does not recognise
+      this a usage of the TMath namespace declaration! Idiot */
+  Int_t i = TMath::Min(Int_t(fCounts.fN * s / max),  
 		       Int_t(fGraphs.GetEntries()-1));
   TGraph* g = static_cast<TGraph*>(fGraphs.At(i));
   if (!g) return;
@@ -162,6 +210,13 @@ AliFMDPattern::AliFMDPattern(const char* gAliceFile)
     fLine(.15, .47, .85, .47),
     fTotal(.2, .35, "Total:   ")
 {
+  // Constructor. 
+  // 
+  // Parameters 
+  // 
+  //   gAliceFile	The galice.root file to use - if any. 
+  // 
+
   // RemoveLoad(kGeometry);
   fEvent.SetBit(TLatex::kTextNDC);
   fFMD1Sum.SetBit(TLatex::kTextNDC);
@@ -174,6 +229,10 @@ AliFMDPattern::AliFMDPattern(const char* gAliceFile)
 //____________________________________________________________________
 AliFMDPattern::~AliFMDPattern()
 {
+  // DTOR 
+  // Free all allocated shapes. 
+  // note, that most members are real objects, so we do not need to
+  // deal with them here. 
   fInners.Delete();
   fOuters.Delete();
 }
@@ -183,7 +242,7 @@ AliFMDPattern::~AliFMDPattern()
 Bool_t 
 AliFMDPattern::Init()
 {
-  // Initialize.  GEt transforms and such, 
+  // Initialize.  Get transforms and such, 
   if (!AliFMDInput::Init()) return kFALSE;
   AliFMDGeometry* geom = AliFMDGeometry::Instance();
   geom->Init();
@@ -231,28 +290,34 @@ AliFMDPattern::Init()
 Bool_t 
 AliFMDPattern::Begin(Int_t event) 
 {
+  // Called at the begining of an event. 
+  // 
+  // Parameters 
+  //
+  //	EVENT		The event number 
+  // 
   MakeAux();
   if (!fCanvas) {
     const char* which[] = { "Continue", "Redisplay", 0 };
     MakeCanvas(which);
     
     AliFMDGeometry* geom = AliFMDGeometry::Instance();
-    AliFMDDetector* det;
-    if ((det = geom->GetDetector(1))) {
+    // AliFMDDetector* det;
+    if ((/* det = */ geom->GetDetector(1))) {
       fPad->cd();
       fFMD1Pad = new TPad("FMD1", "FMD1", 0.0, 0.50, 0.5, 1.0, 0, 0);
       fFMD1Pad->Draw();
       fFMD1Pad->cd();
       fFMD1.Begin(-1, fInnerMax, fInners, fOuters);
     }
-    if ((det = geom->GetDetector(2))) {
+    if ((/* det = */ geom->GetDetector(2))) {
       fPad->cd();
       fFMD2Pad = new TPad("FMD2", "FMD2", 0.5, 0.50, 1.0, 1.0, 0, 0);
       fFMD2Pad->Draw();
       fFMD2Pad->cd();
       fFMD2.Begin(-1, fOuterMax, fInners, fOuters);
     }
-    if ((det = geom->GetDetector(3))) {
+    if ((/* det = */ geom->GetDetector(3))) {
       fPad->cd();
       fFMD3Pad = new TPad("FMD3", "FMD3", 0.0, 0.0, .5, .5, 0, 0);
       fFMD3Pad->Draw();
@@ -285,6 +350,7 @@ AliFMDPattern::Begin(Int_t event)
 void
 AliFMDPattern::Redisplay()
 {
+  // Redraw the displayu 
   fFMD1.Clear();
   fFMD2.Clear();
   fFMD3.Clear();
@@ -295,6 +361,7 @@ AliFMDPattern::Redisplay()
 void
 AliFMDPattern::AtEnd()
 {
+  // Called at the end of an event. 
   DrawAux();
   
   Int_t total = 0;
@@ -326,6 +393,13 @@ AliFMDPattern::AtEnd()
 Bool_t 
 AliFMDPattern::ProcessHit(AliFMDHit* hit, TParticle*) 
 {
+  // Process a hit. 
+  // 
+  // Parameters 
+  // 
+  //	HIT		The hit to process. 
+  // 
+  // The TParticle argument is never used. 
   switch (hit->Detector()) {
   case 1: fFMD1.AddMarker(hit->X(), hit->Y(), hit->Edep(), 1); break;
   case 2: fFMD2.AddMarker(hit->X(), hit->Y(), hit->Edep(), 1); break;
@@ -337,7 +411,8 @@ AliFMDPattern::ProcessHit(AliFMDHit* hit, TParticle*)
 
 //____________________________________________________________________
 void
-AliFMDPattern::AddMarker(UShort_t det, Char_t rng, UShort_t sec, UShort_t str,
+AliFMDPattern::AddMarker(UShort_t det, Char_t rng, 
+			 UShort_t sec, UShort_t str,
 			 TObject*, Float_t s, Float_t max)
 {
   // Add a marker to the display
@@ -350,7 +425,7 @@ AliFMDPattern::AddMarker(UShort_t det, Char_t rng, UShort_t sec, UShort_t str,
   //    s   	Signal 
   //    max 	Maximum of signal 
   //
-  Detector* d = 0;
+  AliFMDPatternDetector* d = 0;
   switch (det) {
   case 1: d = &fFMD1; break;
   case 2: d = &fFMD2; break;
@@ -360,10 +435,12 @@ AliFMDPattern::AddMarker(UShort_t det, Char_t rng, UShort_t sec, UShort_t str,
   AliFMDGeometry*   geom = AliFMDGeometry::Instance();
   Double_t x, y, z;
   geom->Detector2XYZ(det, rng, sec, str, x, y, z);
+  // Make code-checker shut the f**k up 
+  TRandom* rand = gRandom;
   if (true) {
     AliFMDRing* r  = geom->GetRing(rng);
     Double_t    t  = .9 * r->GetTheta() / 2;
-    Double_t    a  = gRandom->Uniform(-t,t) * TMath::Pi() / 180;
+    Double_t    a  = rand->Uniform(-t,t) * TMath::Pi() / 180;
     Double_t    x1 = x * TMath::Cos(a) - y * TMath::Sin(a);
     Double_t    y1 = x * TMath::Sin(a) + y * TMath::Cos(a);
     x = x1;

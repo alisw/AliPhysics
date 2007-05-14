@@ -27,7 +27,7 @@ class TCanvas;
 class TPad;
 class TH1;
 class TH2;
-class TH3;
+// class TH3;
 
 
 //___________________________________________________________________
@@ -38,31 +38,58 @@ class TH3;
 class AliFMDFancy : public AliFMDDisplay
 {
 public:
-  struct Detector 
+  /** Sigh! the code checker thinks that all structs are POD - morron
+      */ 
+  class AliFancyDetector 
   {
-    Detector(UShort_t id);
-    ~Detector();
-    
+  public:
+    /** CTOR */
+    AliFancyDetector(UShort_t id);
+    /** DTOR */
+    ~AliFancyDetector();
+    /** Initialise */
     void Init();
+    /** Called at the beginning of an event */
     void Begin(Int_t event=0);
+    /** Clear display */
     void Clear(Int_t event=0);
+    /** Called that the end of an event */
     void End();
+    /** Add a marker */
     void AddMarker(Char_t rng, UShort_t sec, UShort_t str, 
 		   Float_t v, Float_t max);
-    TH1*      fFrame;
-    Int_t     fId;
-    TObjArray fShapes;
-    Int_t     fNInnerHits;
-    TGraph2D  fInnerHits;
-    Int_t     fNOuterHits;
-    TGraph2D  fOuterHits;
-    Double_t  fMaxR;
-    Double_t  fMinZ;
-    Double_t  fMaxZ;
+    /** Mother frame */
+    TH1*      fFrame;	// Mother frame
+    /** Identifier */
+    Int_t     fId;	// Identifier
+    /** Array of shapes */
+    TObjArray fShapes;	// Array of shapes
+    /** Number of inner hits */
+    Int_t     fNInnerHits;	// Number of inner hits
+    /** Graph of inner hits */
+    TGraph2D  fInnerHits;	// Graph of inner hits
+    /** Number of outer hits */
+    Int_t     fNOuterHits;	// Number of outer hits
+    /** Graph  of outer hits */
+    TGraph2D  fOuterHits;	// Graph  of outer hits
+    /** Maximum radius */
+    Double_t  fMaxR;	// Maximum radius
+    /** Minimum Z */
+    Double_t  fMinZ;	// Minimum Z
+    /** Maximum Z */
+    Double_t  fMaxZ;	// Maximum Z
   private:
-    void AddHistogram(TGraph2D& g, const char* opt="");
-    Detector(const Detector& );
-    Detector& operator=(const Detector& ) { return *this; }
+    /** Add a histogram to a 2D graph.  For some reason the code
+	checker thinks that this function can be made const - well, it
+	cannot, since the graph passed down is a member of this
+	object, and would be const in the this context if the member
+	function is const.   Since we modify the graph, we cannot make
+	it a const reference, no matter how much we'd like to. */
+    void AddHistogram(TGraph2D& g, const char* toopt="");
+    /** Copy ctor */
+    AliFancyDetector(const AliFancyDetector& );
+    /** Assignement operator */
+    AliFancyDetector& operator=(const AliFancyDetector& ) { return *this; }
   };
     
   /** Constructor
@@ -81,8 +108,10 @@ public:
   /** Called at end of an event 
       @return @c false on error  */
   virtual Bool_t End();
- protected:
+protected:
+  /** Copy ctor */
   AliFMDFancy(const AliFMDFancy& );
+  /** Assignement operator */
   AliFMDFancy& operator=(const AliFMDFancy& ) { return *this; }
   /** Add a marker to the display
       @param det Detector
@@ -92,33 +121,42 @@ public:
       @param o   Object to refer to
       @param s   Signal 
       @param max Maximum of signal */
-  virtual void AddMarker(UShort_t det, Char_t rng, UShort_t sec, UShort_t str, 
-			 TObject* o, Float_t s, Float_t max);
-
+  virtual void AddMarker(UShort_t det, Char_t rng, UShort_t sec,
+			 UShort_t str, TObject* o, Float_t s, Float_t max);
+  /** Process a hit 
+      @param hit hit to process */
   virtual Bool_t ProcessHit(AliFMDHit* hit, TParticle*);
+
   /** FMD1 Pad */
-  TPad*  fFMD1Pad;
-  /** FMD1 Frame */ 
-  Detector fFMD1;
+  TPad*  fFMD1Pad;		// FMD1 Pad
+  /** FMD1 Frame */
+  AliFancyDetector fFMD1;	// FMD1 Frame
   /** FMD2 Pad  */
-  TPad*  fFMD2Pad;
-  /** FMD2 Frame */ 
-  Detector fFMD2;
+  TPad*  fFMD2Pad;		// FMD2 Pad 
+  /** FMD2 Frame */
+  AliFancyDetector fFMD2;	// FMD2 Frame
   /** FMD3 Pad */
-  TPad*  fFMD3Pad;
-  /** FMD3 Frame */ 
-  Detector fFMD3;
+  TPad*  fFMD3Pad;		// FMD3 Pad
+  /** FMD3 Frame */
+  AliFancyDetector fFMD3;	// FMD3 Frame
   /** Summary pad */
-  TPad*    fSummary;
+  TPad*    fSummary;		// Summary pad
   /** Text fields */
-  TLatex fEvent;
-  TLatex fFMD1IHits;
-  TLatex fFMD2IHits;
-  TLatex fFMD2OHits;
-  TLatex fFMD3IHits;
-  TLatex fFMD3OHits;
-  TLine  fLine;
-  TLatex fTotal;
+  TLatex fEvent;		// Text fields
+  /** Number of hits in FMD1i */
+  TLatex fFMD1IHits;		// Number of hits in FMD1i
+  /** Number of hits in FMD2i */
+  TLatex fFMD2IHits;		// Number of hits in FMD2i
+  /** Number of hits in FMD2o */
+  TLatex fFMD2OHits;		// Number of hits in FMD2o
+  /** Number of hits in FMD3i */
+  TLatex fFMD3IHits;		// Number of hits in FMD3i
+  /** Number of hits in FMD3o */
+  TLatex fFMD3OHits;		// Number of hits in FMD3o
+  /** Just a line */
+  TLine  fLine;			// Just a line
+  /** Number of hits in FMD */
+  TLatex fTotal;		// Number of hits in FMD
   
   ClassDef(AliFMDFancy,0)
 };

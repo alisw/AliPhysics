@@ -134,12 +134,12 @@ AliFMDAltroReader::ReadChannel(UShort_t& hwaddr, UShort_t& last,
 			       UShort_t* data) 
 {
   Int_t ret, tmp;
-  AliDebug(15, Form("Reading a channel"));
+  AliFMDDebug(15, ("Reading a channel"));
   if ((ret = ExtractTrailer(hwaddr, last)) < 0) { 
     AliError(Form("Failed to read trailer: %s", ErrorString(-ret)));
     return ret;
   }
-  AliDebug(15, Form("Now extracting bunches from %d 10 bit words", last));
+  AliFMDDebug(15, ("Now extracting bunches from %d 10 bit words", last));
   tmp     =  ExtractBunches(last, data); 
   if (tmp < 0) {
     AliError(Form("Failed to read bunches: %s", ErrorString(-tmp)));
@@ -154,7 +154,7 @@ AliFMDAltroReader::ReadChannel(UShort_t& hwaddr, UShort_t& last,
 Int_t
 AliFMDAltroReader::ExtractTrailer(UShort_t& hwaddr, UShort_t& last)
 {
-  AliDebug(15, "Extracting trailer");
+  AliFMDDebug(15, ("Extracting trailer"));
   W40_t trailer = GetNextW40();
   if (trailer < 0) {
     AliError(Form("Trailer 0x%x is bad: %s", trailer, ErrorString(-trailer)));
@@ -227,7 +227,7 @@ AliFMDAltroReader::ExtractBunch(UShort_t* data)
       AliError(Form("Failed to read bunch data: %s", ErrorString(-s)));
       return 2;
     }
-    AliDebug(50,Form("Assigning to data[%d - (%d - 1)] = 0x%X", t, i, s));
+    AliFMDDebug(50, ("Assigning to data[%d - (%d - 1)] = 0x%X", t, i, s));
     data[t - (i-1)] = s;
     ret++;
   }
@@ -259,7 +259,7 @@ AliFMDAltroReader::ReadW40()
   fInput.read((char*)&fBuffer, 5 * sizeof(char));
   if (fInput.bad()) return -kBadRead;
   fIBuffer = 4;
-  AliDebug(15, Form("  0x%03x  0x%03x  0x%03x  0x%03x    0x%010x  %6d", 
+  AliFMDDebug(15, ("  0x%03x  0x%03x  0x%03x  0x%03x    0x%010x  %6d", 
 		    ExtractW10(3, fBuffer), ExtractW10(2, fBuffer), 
 		    ExtractW10(1, fBuffer), ExtractW10(0, fBuffer), 
 		    fBuffer, fCurrent));
@@ -303,7 +303,7 @@ ClassImp(AliFMDAltroWriter)
 AliFMDAltroWriter::AliFMDAltroWriter(std::ostream& stream) 
   : fThreshold(0), fTotal(0), fOutput(stream)
 {
-  AliDebug(15, "New AliFMDAltroWriter object");
+  AliFMDDebug(15, ("New AliFMDAltroWriter object"));
   fTime   = 0;
   fLength = 0;
   fLast   = 0;
@@ -344,7 +344,7 @@ AliFMDAltroWriter::Close()
   if (fOutput.bad()) return -kBadSeek;
   AliRawDataHeader header;
   header.fSize = (UShort_t(end) - fHeader);
-  AliDebug(15, Form("Size set to %d (%d)", header.fSize, fTotal));
+  AliFMDDebug(15, ("Size set to %d (%d)", header.fSize, fTotal));
   header.SetAttribute(0);
   fOutput.write((char*)(&header), sizeof(header));
   if (fOutput.bad()) return -kBadWrite;

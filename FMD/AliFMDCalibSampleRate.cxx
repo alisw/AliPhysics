@@ -28,7 +28,8 @@
 //
 #include "AliFMDCalibSampleRate.h"	// ALIFMDCALIBGAIN_H
 // #include "AliFMDParameters.h"           // ALIFMDPARAMETERS_H
-#include <AliLog.h>
+// #include <AliLog.h>
+#include "AliFMDDebug.h" // Better debug macros
 
 //____________________________________________________________________
 ClassImp(AliFMDCalibSampleRate)
@@ -80,7 +81,7 @@ AliFMDCalibSampleRate::Rate(UShort_t det, Char_t ring,
   // Get the sample rate 
   UInt_t nSec  = (ring == 'I' ? 20 : 40);
   UInt_t board = sec / nSec;
-  AliDebug(10, Form("Getting sample rate for FMD%d%c[%2d,0] (board %d)", 
+  AliFMDDebug(10, ("Getting sample rate for FMD%d%c[%2d,0] (board %d)", 
 		    det, ring, sec, board));
   return fRates(det, ring, board, 0);
 }

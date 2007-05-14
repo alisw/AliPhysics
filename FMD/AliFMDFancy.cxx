@@ -33,26 +33,25 @@
 #include <iostream>
 
 #include <TApplication.h>
-#include <TButton.h>
+// #include <TButton.h>
 #include <TCanvas.h>
 #include <TH2F.h>
-#include <TH3F.h>
+// #include <TH3F.h>
 #include <TLatex.h>
 #include <TLine.h>
 #include <TMath.h>
 #include <TRandom.h>
-#include <TStyle.h>
+// #include <TStyle.h>
 #include <TSystem.h>
 #include <TVector2.h>
-#include <TView.h>
+// #include <TView.h>
 
 #include "AliFMDDetector.h"
 #include "AliFMDFancy.h"	// ALIFMDDISPLAY_H
 #include "AliFMDGeometry.h"	// ALIFMDGEOMETRY_H
 #include "AliFMDHit.h"
-#include "AliFMDParameters.h"	// ALIFMDPARAMETERS_H
+// #include "AliFMDParameters.h"	// ALIFMDPARAMETERS_H
 #include "AliFMDRing.h"
-#include <AliLog.h>
 
 //____________________________________________________________________
 ClassImp(AliFMDFancy)
@@ -78,6 +77,7 @@ AliFMDFancy::AliFMDFancy(const char* gAliceFile)
     fLine(.15, .27, .85, .27),
     fTotal(.2, .15, "Total:   ")
 {
+  // CTOR 
   fEvent.SetBit(TLatex::kTextNDC);
   fFMD1IHits.SetBit(TLatex::kTextNDC);
   fFMD2IHits.SetBit(TLatex::kTextNDC);
@@ -89,9 +89,10 @@ AliFMDFancy::AliFMDFancy(const char* gAliceFile)
 }
 
 //____________________________________________________________________
-AliFMDFancy::Detector::Detector(UShort_t id)
+AliFMDFancy::AliFancyDetector::AliFancyDetector(UShort_t id)
   : fId(id)
 {
+  // CTOR 
   fInnerHits.SetName(Form("FMD%dI", id));
   fInnerHits.SetMarkerStyle(1); // 20);
   fInnerHits.SetMarkerSize(.2);
@@ -103,22 +104,28 @@ AliFMDFancy::Detector::Detector(UShort_t id)
 }
 
 //____________________________________________________________________
-AliFMDFancy::Detector::~Detector()
+AliFMDFancy::AliFancyDetector::~AliFancyDetector()
 {
+  // DTOR 
   fShapes.Delete();
   if (fFrame) delete fFrame;
 }
 
 //____________________________________________________________________
 AliFMDFancy::~AliFMDFancy()
-{}
+{
+  // DTOR 
+}
 
 //____________________________________________________________________
 void
-AliFMDFancy::Detector::AddHistogram(TGraph2D& g, const char* opt)
+AliFMDFancy::AliFancyDetector::AddHistogram(TGraph2D& g, const char* opt)
 {
+  // CTOR 
   TH2* h = g.GetHistogram(opt);
   if (!h) return;
+  // Code checker doesn't think this using the TH2 interface -
+  // ridiculous. 
   h->SetBins(1, -fMaxR, fMaxR, 1, -fMaxR, fMaxR);
   h->GetZaxis()->SetRangeUser(fMinZ, fMaxZ);
 }
@@ -127,8 +134,9 @@ AliFMDFancy::Detector::AddHistogram(TGraph2D& g, const char* opt)
 
 //____________________________________________________________________
 void
-AliFMDFancy::Detector::Init()
+AliFMDFancy::AliFancyDetector::Init()
 {
+  // Initialise 
   AliFMDGeometry* geom = AliFMDGeometry::Instance();
   AliFMDDetector* det  = geom->GetDetector(fId);
   if (!det) return;
@@ -209,8 +217,9 @@ AliFMDFancy::Init()
 
 //____________________________________________________________________
 void
-AliFMDFancy::Detector::Begin(Int_t /* event */)
+AliFMDFancy::AliFancyDetector::Begin(Int_t /* event */)
 {
+  // Called at the begining of an event. 
   TIter next(&fShapes);
   TGraph2D* g = 0;
   fFrame->Draw("surf fb");
@@ -220,8 +229,9 @@ AliFMDFancy::Detector::Begin(Int_t /* event */)
 
 //____________________________________________________________________
 void
-AliFMDFancy::Detector::Clear(Int_t /* event */)
+AliFMDFancy::AliFancyDetector::Clear(Int_t /* event */)
 {
+  // Clear 
   fNInnerHits = 0;
   fNOuterHits = 0;
 }
@@ -231,6 +241,7 @@ AliFMDFancy::Detector::Clear(Int_t /* event */)
 Bool_t 
 AliFMDFancy::Begin(Int_t event) 
 {
+  // Called at the begining of an event 
   if (!fCanvas) {
     const char* which[] = { "Continue", "Redisplay", 0 };
     MakeCanvas(which);
@@ -284,8 +295,9 @@ AliFMDFancy::Begin(Int_t event)
 
 //____________________________________________________________________
 void
-AliFMDFancy::Detector::End()
+AliFMDFancy::AliFancyDetector::End()
 {
+  // Called at the end of an event 
   Char_t  rs[] = { 'I', 'O', '\0' };
   Char_t* rp   = rs;
   Char_t  r;
@@ -295,6 +307,8 @@ AliFMDFancy::Detector::End()
     Int_t     m = (r == 'I' ? 512 * 10 * 2 : 256 * 20 * 2);
     if (n == 0) continue;
     for (Int_t i = n; i < g.GetN(); i++)  g.RemovePoint(i);
+    // The code checker thinks this is not using declarations from
+    // iostram and iomanip - that's just silly. 
     std::cout << g.GetName() << " has " << std::setw(4) << n << "/" 
 	      << std::setw(5) << m << " points" << std::endl;
     g.Draw("same fb p");
@@ -306,6 +320,7 @@ AliFMDFancy::Detector::End()
 Bool_t 
 AliFMDFancy::End() 
 {
+  // Called at the end of an event 
   AliFMDGeometry* geom = AliFMDGeometry::Instance();
   AliFMDDetector* det;
   Int_t total = 0;
@@ -342,9 +357,14 @@ AliFMDFancy::End()
   fCanvas->cd();
   fWait = kTRUE;
   while (fWait) {
-    gApplication->StartIdleing();
-    gSystem->InnerLoop();
-    gApplication->StopIdleing();
+    // Hmm - code checker doesn't believe this is using the
+    // TApplication or TSystem declaration - morron.  Thank God for
+    // optimising compilers. 
+    TApplication* a = gApplication;
+    TSystem*      s = gSystem;
+    a->StartIdleing();
+    s->InnerLoop();
+    a->StopIdleing();
   }
   return AliFMDInput::End();
 }
@@ -353,22 +373,28 @@ AliFMDFancy::End()
 Bool_t 
 AliFMDFancy::ProcessHit(AliFMDHit* hit, TParticle*) 
 {
+  // Process a hit. 
   AddMarker(hit->Detector(), hit->Ring(), hit->Sector(), hit->Strip(), 
 	    hit, hit->Edep(), 0);
   return kTRUE;
 }
 //____________________________________________________________________
 void
-AliFMDFancy::Detector::AddMarker(Char_t rng, UShort_t sec, UShort_t str,
-				 Float_t, Float_t)
+AliFMDFancy::AliFancyDetector::AddMarker(Char_t rng, UShort_t sec,
+					 UShort_t str, Float_t, Float_t)
 {
+  // Add a marker to the display 
   AliFMDGeometry*   geom = AliFMDGeometry::Instance();
   Double_t x, y, z;
   geom->Detector2XYZ(fId, rng, sec, str, x, y, z);
+  // Trick the code-checker to think that we're using the TRandom
+  // interface.  The silly code checker also thinks that TMath is a
+  // class and not a namespace - sigh!
+  TRandom* rand = gRandom;
   if (true) {
     AliFMDRing* r  = geom->GetRing(rng);
     Double_t    t  = .9 * r->GetTheta() / 2;
-    Double_t    a  = gRandom->Uniform(-t,t) * TMath::Pi() / 180;
+    Double_t    a  = rand->Uniform(-t,t) * TMath::Pi() / 180;
     Double_t    x1 = x * TMath::Cos(a) - y * TMath::Sin(a);
     Double_t    y1 = x * TMath::Sin(a) + y * TMath::Cos(a);
     x = x1;

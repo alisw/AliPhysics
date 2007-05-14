@@ -25,7 +25,7 @@
 void 
 Reconstruct()
 {
-  AliLog::SetModuleDebugLevel("FMD", 1);
+  // AliLog::SetModuleDebugLevel("FMD", 1);
   AliReconstruction rec;   
   rec.SetRunLocalReconstruction("FMD");
   rec.SetRunVertexFinder(kFALSE);

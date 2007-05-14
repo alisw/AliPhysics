@@ -199,7 +199,8 @@
 #include <TMath.h>
 #include <TTree.h>		// ROOT_TTree
 //#include <TRandom.h>		// ROOT_TRandom
-#include <AliLog.h>		// ALILOG_H
+// #include <AliLog.h>		// ALILOG_H
+#include "AliFMDDebug.h" // Better debug macros
 #include "AliFMDBaseDigitizer.h" // ALIFMDDIGITIZER_H
 #include "AliFMD.h"		// ALIFMD_H
 #include "AliFMDGeometry.h"	// ALIFMDGEOMETRY_H
@@ -242,7 +243,7 @@ AliFMDBaseDigitizer::AliFMDBaseDigitizer(AliRunDigitizer* manager)
     fShapingTime(0)
 {
   // Normal CTOR
-  AliDebug(1," processed");
+  AliFMDDebug(1, (" processed"));
   SetShapingTime();
 }
 
@@ -257,7 +258,7 @@ AliFMDBaseDigitizer::AliFMDBaseDigitizer(const Char_t* name,
 	  AliFMDMap::kMaxStrips)
 {
   // Normal CTOR
-  AliDebug(1," processed");
+  AliFMDDebug(1, (" processed"));
   SetShapingTime();
 }
 
@@ -347,21 +348,23 @@ AliFMDBaseDigitizer::SumContributions(AliFMD* fmd)
       // UShort_t minstrip = param->GetMinStrip(detector, ring, sector, strip);
       // UShort_t maxstrip = param->GetMaxStrip(detector, ring, sector, strip);
       // Check if strip is `dead' 
+      AliFMDDebug(2, ("Hit in FMD%d%c[%2d,%3d]=%f",
+		      detector, ring, sector, strip, edep));
       if (param->IsDead(detector, ring, sector, strip)) { 
-	AliDebug(5, Form("FMD%d%c[%2d,%3d] is marked as dead", 
+	AliFMDDebug(1, ("FMD%d%c[%2d,%3d] is marked as dead", 
 			 detector, ring, sector, strip));
 	continue;
       }
       // Check if strip is out-side read-out range 
       // if (strip < minstrip || strip > maxstrip) {
-      //   AliDebug(5, Form("FMD%d%c[%2d,%3d] is outside range [%3d,%3d]", 
+      //   AliFMDDebug(5, ("FMD%d%c[%2d,%3d] is outside range [%3d,%3d]", 
       //		    detector,ring,sector,strip,minstrip,maxstrip));
       //   continue;
       // }
 	
       // Give warning in case of double hit 
       if (fEdep(detector, ring, sector, strip).fEdep != 0)
-	AliDebug(5, Form("Double hit in %d%c(%d,%d)", 
+	AliFMDDebug(5, ("Double hit in %d%c(%d,%d)", 
 			 detector, ring, sector, strip));
       
       // Sum energy deposition
@@ -370,7 +373,7 @@ AliFMDBaseDigitizer::SumContributions(AliFMD* fmd)
       // Add this to the energy deposited for this strip
     }  // hit loop
   } // track loop
-  AliDebug(1, Form("Size of cache: %d bytes, read %d bytes", 
+  AliFMDDebug(1, ("Size of cache: %d bytes, read %d bytes", 
 		   sizeof(fEdep), read));
 }
 
@@ -386,11 +389,13 @@ AliFMDBaseDigitizer::DigitizeHits(AliFMD* fmd) const
   
   TArrayI counts(3);
   for (UShort_t detector=1; detector <= 3; detector++) {
+    AliFMDDebug(5, ("Processing hits in FMD%d", detector));
     // Get pointer to subdetector 
     AliFMDDetector* det = geometry->GetDetector(detector);
     if (!det) continue;
     for (UShort_t ringi = 0; ringi <= 1; ringi++) {
       Char_t ring = ringi == 0 ? 'I' : 'O';
+      AliFMDDebug(5, (" Processing hits in FMD%d%c", detector,ring));
       // Get pointer to Ring
       AliFMDRing* r = det->GetRing(ring);
       if (!r) continue;
@@ -399,6 +404,8 @@ AliFMDBaseDigitizer::DigitizeHits(AliFMD* fmd) const
       UShort_t nSectors = UShort_t(360. / r->GetTheta());
       // Loop over the number of sectors 
       for (UShort_t sector = 0; sector < nSectors; sector++) {
+	AliFMDDebug(5, ("  Processing hits in FMD%d%c[%2d]", 
+			detector,ring,sector));
 	// Get number of strips 
 	UShort_t nStrips = r->GetNStrips();
 	// Loop over the stips 
@@ -416,6 +423,8 @@ AliFMDBaseDigitizer::DigitizeHits(AliFMD* fmd) const
 	  AddDigit(fmd, detector, ring, sector, strip, edep, 
 		   UShort_t(counts[0]), Short_t(counts[1]), 
 		   Short_t(counts[2]));
+	  AliFMDDebug(10, ("   Adding digit in FMD%d%c[%2d,%3d]=%d", 
+			  detector,ring,sector,strip,counts[0]));
 #if 0
 	  // This checks if the digit created will give the `right'
 	  // number of particles when reconstructed, using a naiive
@@ -493,7 +502,7 @@ AliFMDBaseDigitizer::ConvertToCount(Float_t   edep,
     Float_t    a = edep * convF + ped;
     if (a < 0) a = 0;
     counts[0]    = UShort_t(TMath::Min(a, Float_t(maxAdc)));
-    AliDebug(2, Form("FMD%d%c[%2d,%3d]: converting ELoss %f to "
+    AliFMDDebug(2, ("FMD%d%c[%2d,%3d]: converting ELoss %f to "
 		     "ADC %4d (%f,%d)",
 		     detector,ring,sector,strip,edep,counts[0],convF,ped));
     return;

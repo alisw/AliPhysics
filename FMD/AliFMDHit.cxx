@@ -39,7 +39,7 @@
 #include <TString.h>
 
 #include "AliFMDHit.h"		// ALIFMDHIT_H
-// #include "AliLog.h"		// ALILOG_H
+// #include "AliFMDDebug.h"		// ALIFMDDEBUG_H ALILOG_H
 
 //____________________________________________________________________
 ClassImp(AliFMDHit)

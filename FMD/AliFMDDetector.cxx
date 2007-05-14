@@ -41,7 +41,7 @@
 
 #include "AliFMDDetector.h"	// ALIFMDSUBDETECTOR_H
 #include "AliFMDRing.h"		// ALIFMDRING_H
-#include "AliLog.h"             // ALILOG_H
+#include "AliFMDDebug.h"		// ALIFMDDEBUG_H ALILOG_H
 
 //====================================================================
 ClassImp(AliFMDDetector)
@@ -177,10 +177,10 @@ AliFMDDetector::InitTransformations()
   // Find all local<->global transformations for this detector. 
   if ((!fInner || (fInner && fInnerTransforms)) && 
       (!fOuter || (fOuter && fOuterTransforms))) {
-    AliDebug(5, Form("Transforms for FMD%d already registered", fId));
+    AliFMDDebug(5, ("Transforms for FMD%d already registered", fId));
     return;
   }
-  AliDebug(5, Form("Initializing transforms for FMD%d", fId));
+  AliFMDDebug(5, ("Initializing transforms for FMD%d", fId));
   if (!gGeoManager) {
     AliFatal("No TGeoManager defined");
     return;
@@ -211,17 +211,17 @@ AliFMDDetector::InitTransformations()
     // Get nodes names 
     const Char_t* name = node->GetName();
     if (!name) continue;
-    AliDebug(50, Form("Got volume %s", name));
+    AliFMDDebug(50, ("Got volume %s", name));
     // Check if this node is this detector 
     // The base offset for numbers in the ASCII table is 48
     if (IS_NODE_THIS(name)) {
-      AliDebug(20, Form("Found detector node '%s' for FMD%d", name, fId));
+      AliFMDDebug(20, ("Found detector node '%s' for FMD%d", name, fId));
       thisNodeFound = kTRUE;
     }
     // if the detector was found, then we're on that branch, and we
     // check if this node represents a module in that branch.
     if (thisNodeFound && IS_NODE_SENSOR(name)) {
-      AliDebug(20, Form("Found sensor node '%s' for FMD%d", name, fId));
+      AliFMDDebug(20, ("Found sensor node '%s' for FMD%d", name, fId));
       // Get the ring Id.
       Char_t ringid = name[1];
 
@@ -233,7 +233,7 @@ AliFMDDetector::InitTransformations()
       // and if so, go on to the next node. 
       Bool_t& done = (ring == fInner ? allInners : allOuters);
       if ((done = HasAllTransforms(ringid))) {
-	AliDebug(20, Form("Already has all module transforms for ring %c", 
+	AliFMDDebug(20, ("Already has all module transforms for ring %c", 
 			 ringid));
 	continue;
       }
@@ -263,7 +263,7 @@ AliFMDDetector::InitTransformations()
 void
 AliFMDDetector::SetAlignableVolumes() const
 {
-  AliDebug(10, Form("Making alignable volumes for FMD%d", fId));
+  AliFMDDebug(10, ("Making alignable volumes for FMD%d", fId));
   if (!gGeoManager) {
     AliFatal("No TGeoManager defined");
     return;
@@ -298,25 +298,25 @@ AliFMDDetector::SetAlignableVolumes() const
     // Get nodes names 
     const Char_t* name = node->GetName();
     if (!name) continue;
-    AliDebug((name[0] == 'F' ? 40 : 50), Form("Got volume %s", name));
+    AliFMDDebug((name[0] == 'F' ? 40 : 50), ("Got volume %s", name));
     // Check if this node is this detector 
     // The base offset for numbers in the ASCII table is 48
     if (IS_NODE_THIS(name)) {
-      AliDebug(20, Form("Found detector node '%s' for FMD%d", name, fId));
+      AliFMDDebug(20, ("Found detector node '%s' for FMD%d", name, fId));
       thisNodeFound = kTRUE;
     }
 
     // if a half ring is found, then we're on that branch, and we
     // check if this node represents a half ring on that branch 
     if (thisNodeFound && IS_NODE_HALF(name)) {
-      AliDebug(30, Form("Found half node '%s' for FMD%d", name, fId));
+      AliFMDDebug(30, ("Found half node '%s' for FMD%d", name, fId));
       // Get the half Id.
       thisHalf = name[3];
 
       // Check if we're done 
       Bool_t done = (thisHalf == 'T' ? hasTop : hasBottom);
       if (done) {
-	AliDebug(20,Form("Already has all halves for detector %c",name[1]));
+	AliFMDDebug(20, ("Already has all halves for detector %c",name[1]));
 	continue;
       }
 
@@ -336,7 +336,7 @@ AliFMDDetector::SetAlignableVolumes() const
     // if the detector was found, then we're on that branch, and we
     // check if this node represents a module in that branch.
     if (thisNodeFound && thisHalf && IS_NODE_SENSOR(name)) {
-      AliDebug(30, Form("Found sensor node '%s' for FMD%d", name, fId));
+      AliFMDDebug(30, ("Found sensor node '%s' for FMD%d", name, fId));
       // Get the ring Id.
       Char_t ringid = name[1];
 
@@ -354,7 +354,7 @@ AliFMDDetector::SetAlignableVolumes() const
       default: continue;
       }
       if (done) {
-	AliDebug(20,Form("Already has all sensor volumes for ring %c",ringid));
+	AliFMDDebug(20, ("Already has all sensor volumes for ring %c",ringid));
 	continue;
       }
       // Get the copy (module) number, and check that it hasn't
@@ -370,7 +370,7 @@ AliFMDDetector::SetAlignableVolumes() const
       }
     }
     if (!align.IsNull() && !path.IsNull()) {
-      AliDebug(20, Form("Got %s -> %s", path.Data(), align.Data()));
+      AliFMDDebug(20, ("Got %s -> %s", path.Data(), align.Data()));
       TGeoPNEntry* entry = 
 	gGeoManager->SetAlignableEntry(align.Data(),path.Data());
       if(!entry)
@@ -386,7 +386,7 @@ AliFMDDetector::SetAlignableVolumes() const
 #endif
       align = "";
     }
-    AliDebug(20, Form("FMD%d: top: %d bottom: %d Inner: %d/%d Outer %d/%d", 
+    AliFMDDebug(20, ("FMD%d: top: %d bottom: %d Inner: %d/%d Outer %d/%d", 
 		      fId, hasTop, hasBottom, iInnerSensor,  nInnerSensor, 
 		      iOuterSensor, nOuterSensor));
   }
@@ -477,15 +477,15 @@ AliFMDDetector::Detector2XYZ(Char_t   ring,
 		       + r->GetCopperThickness()
 		       + r->GetChipThickness()
 		       + r->GetSpacing());
-  AliDebug(30,Form("Rho %7.3f, angle %7.3f", rho, phi));
+  AliFMDDebug(30, ("Rho %7.3f, angle %7.3f", rho, phi));
 # define DEGRAD TMath::Pi() / 180. 
   Double_t local[]  = { rho * TMath::Cos(phi * DEGRAD), 
 		        rho * TMath::Sin(phi * DEGRAD), 
 		        -modThick + siThick / 2 };
   Double_t master[3];
-  AliDebug(30, Form("Local (%7.3f,%7.3f,%7.3f)",local[0], local[1], local[2]));
+  AliFMDDebug(30, ("Local (%7.3f,%7.3f,%7.3f)",local[0], local[1], local[2]));
   m->LocalToMaster(local, master);
-  AliDebug(30, Form("Master (%7.3f,%7.3f,%7.3f)",
+  AliFMDDebug(30, ("Master (%7.3f,%7.3f,%7.3f)",
 		    master[0],master[1],master[2]));
   x = master[0];
   y = master[1];

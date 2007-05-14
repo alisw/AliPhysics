@@ -35,7 +35,8 @@
 #include <TVirtualMC.h>		// ROOT_TVirtualMC
 #include <AliRun.h>		// ALIRUN_H
 #include <AliMC.h>		// ALIMC_H
-#include <AliLog.h>		// ALILOG_H
+// #include <AliLog.h>		// ALILOG_H
+#include "AliFMDDebug.h" // Better debug macros
 #include "AliFMDv1.h"		// ALIFMDV1_H
 // #include "AliFMDGeometryBuilder.h"
 #include "AliFMDGeometry.h"
@@ -91,7 +92,7 @@ AliFMDv1::VMC2FMD(TLorentzVector& v, UShort_t& detector,
   if (t < 0 || t > 2 * theta) return kFALSE;
   else if (t > theta)         sector += 1;
 
-  AliDebug(40, Form("<1> Inside an active FMD volume FMD%d%c[%2d,%3d] %s",
+  AliFMDDebug(40, ("<1> Inside an active FMD volume FMD%d%c[%2d,%3d] %s",
 		    detector, ring, sector, strip, mc->CurrentVolPath()));
   return kTRUE;
 }
@@ -114,7 +115,7 @@ AliFMDv1::VMC2FMD(Int_t copy, TLorentzVector& v,
   }
   else 
     sector = sectordiv;
-  AliDebug(30, Form("Getting ring volume with offset %d -> %s", 
+  AliFMDDebug(30, ("Getting ring volume with offset %d -> %s", 
 		    fmd->GetRingOff(), 
 		    mc->CurrentVolOffName(fmd->GetRingOff())));
   Int_t iring;     mc->CurrentVolOffID(fmd->GetRingOff(), iring); 
@@ -135,7 +136,7 @@ AliFMDv1::VMC2FMD(Int_t copy, TLorentzVector& v,
 #if 0
   if (rz < 0) {
     Int_t s = ((n - sector + n / 2) % n) + 1;
-    AliDebug(1, Form("Recalculating sector to %d (=%d-%d+%d/2%%%d+1 z=%f)",
+    AliFMDDebug(1, ("Recalculating sector to %d (=%d-%d+%d/2%%%d+1 z=%f)",
 		     s, n, sector, n, n, rz));
     sector = s;
   }
@@ -147,7 +148,7 @@ AliFMDv1::VMC2FMD(Int_t copy, TLorentzVector& v,
   sector--;
   // Get track position
   mc->TrackPosition(v);
-  AliDebug(15, Form("<2> Inside an active FMD volume FMD%d%c[%2d,%3d] %s",
+  AliFMDDebug(15, ("<2> Inside an active FMD volume FMD%d%c[%2d,%3d] %s",
 		    detector, ring, sector, strip, mc->CurrentVolPath()));
 
   return kTRUE;
@@ -191,7 +192,7 @@ AliFMDv1::CheckHit(Int_t trackno, Int_t pdg, Float_t absQ,
   if (mc->IsTrackOut())         what.Append("out ");
       
   Int_t mother = gAlice->GetMCApp()->GetPrimary(trackno);
-  AliDebug(15, Form("Track # %5d deposits a lot of energy\n" 
+  AliFMDDebug(15, ("Track # %5d deposits a lot of energy\n" 
 		    "  Volume:    %s\n" 
 		    "  Momentum:  (%7.4f,%7.4f,%7.4f)\n"
 		    "  PDG:       %d (%s)\n" 
@@ -249,7 +250,7 @@ AliFMDv1::StepManager()
   Int_t vol = mc->CurrentVolID(copy);
   AliFMDGeometry*  fmd = AliFMDGeometry::Instance();
   if (!fmd->IsActive(vol)) {
-    AliDebug(50, Form("Not an FMD volume %d '%s'",vol,mc->CurrentVolName()));
+    AliFMDDebug(50, ("Not an FMD volume %d '%s'",vol,mc->CurrentVolName()));
     return;
   }
   TLorentzVector v;
@@ -278,7 +279,7 @@ AliFMDv1::StepManager()
   // Reset the energy deposition for this track, and update some of
   // our parameters.
   if (entering) {
-    AliDebug(15, Form("Track # %8d entering active FMD volume %s: "
+    AliFMDDebug(15, ("Track # %8d entering active FMD volume %s: "
 		      "Edep=%f (%f,%f,%f)", trackno, mc->CurrentVolPath(),
 		      edep, v.X(), v.Y(), v.Z()));
     fCurrentP      = p;
@@ -289,7 +290,7 @@ AliFMDv1::StepManager()
   // If the track is inside, then update the energy deposition
   if (inside && fCurrentDeltaE >= 0) {
     fCurrentDeltaE += edep;
-    AliDebug(15, Form("Track # %8d inside active FMD volume %s: Edep=%f, "
+    AliFMDDebug(15, ("Track # %8d inside active FMD volume %s: Edep=%f, "
 		      "Accumulated Edep=%f  (%f,%f,%f)", trackno, 
 		      mc->CurrentVolPath(), edep, fCurrentDeltaE, 
 		      v.X(), v.Y(), v.Z()));
@@ -300,7 +301,7 @@ AliFMDv1::StepManager()
   if (out) {
     if (fCurrentDeltaE >= 0) {
       fCurrentDeltaE += edep;
-      AliDebug(15, Form("Track # %8d exiting active FMD volume %s: Edep=%g, "
+      AliFMDDebug(15, ("Track # %8d exiting active FMD volume %s: Edep=%g, "
 			"Accumulated Edep=%g (%f,%f,%f)", trackno, 
 			mc->CurrentVolPath(), edep, fCurrentDeltaE, 
 			v.X(), v.Y(), v.Z()));
@@ -321,7 +322,7 @@ AliFMDv1::StepManager()
 #ifdef CHECK_TRANS
       Double_t x, y, z;
       fmd->Detector2XYZ(detector, ring, sector, strip, x, y ,z);
-      AliDebug(1, Form("Hit at (%f,%f,%f), geometry says (%f,%f,%f)", 
+      AliFMDDebug(1, ("Hit at (%f,%f,%f), geometry says (%f,%f,%f)", 
 		       fCurrentV.X(), fCurrentV.Y(), fCurrentV.Z(), x, y, z));
 #endif
     }

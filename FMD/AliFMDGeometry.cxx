@@ -66,7 +66,7 @@
 #include "AliFMD2.h"		// ALIFMD2_H
 #include "AliFMD3.h"		// ALIFMD2_H
 #include "AliRecPoint.h"	// ALIRECPOINT_H
-#include "AliLog.h"		// ALIRECPOINT_H
+#include "AliFMDDebug.h"		   // ALILOG_H
 #include <TVector3.h>           // ROOT_TVector3
 // #include <TMatrix.h>            // ROOT_TMatrix
 // #include <TParticle.h>          // ROOT_TParticle
@@ -201,7 +201,7 @@ AliFMDGeometry::InitTransformations()
     AliError("No TGeoManager defined");
     return;
   }
-  AliDebug(0, "Initialising transforms for FMD geometry");
+  AliFMDDebug(0, ("Initialising transforms for FMD geometry"));
   if (fFMD1) fFMD1->InitTransformations();
   if (fFMD2) fFMD2->InitTransformations();
   if (fFMD3) fFMD3->InitTransformations();
@@ -225,7 +225,7 @@ AliFMDGeometry::SetActive(Int_t* active, Int_t n)
   // Set active volumes 
   fActive.Set(n);
   for (Int_t i = 0; i < n; i++) { 
-    AliDebug(1, Form("Active vol id # %d: %d", i, active[i]));
+    AliFMDDebug(1, ("Active vol id # %d: %d", i, active[i]));
     fActive[i] = active[i];
   }
 }
@@ -428,7 +428,7 @@ AliFMDGeometry::ExtractGeomInfo()
   Int_t moduleDepth   = FindNodeDepth("FIFV_0", "ALIC");
   Int_t sectorDepth   = FindNodeDepth("FISE_1", "ALIC");
   fActive.Reset(-1);
-  AliDebug(1, Form("Geometry depths:\n"
+  AliFMDDebug(1, ("Geometry depths:\n"
 		   "   Sector:     %d\n"
 		   "   Module:     %d\n"
 		   "   Ring:       %d\n"
@@ -468,7 +468,7 @@ AliFMDGeometry::ExtractGeomInfo()
     if (striVol) AddActive(striVol->GetNumber());
     if (stroVol) AddActive(stroVol->GetNumber());
   }    
-  AliDebug(1, Form("Geometry offsets:\n"
+  AliFMDDebug(1, ("Geometry offsets:\n"
 		   "   Sector:     %d\n"
 		   "   Module:     %d\n"
 		   "   Ring:       %d\n"

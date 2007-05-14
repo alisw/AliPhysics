@@ -102,7 +102,8 @@
 #include <AliRun.h>		// ALIRUN_H
 #include <AliMC.h>		// ALIMC_H
 #include <AliMagF.h>		// ALIMAGF_H
-#include <AliLog.h>		// ALILOG_H
+// #include <AliLog.h>		// ALILOG_H
+#include "AliFMDDebug.h" // Better debug macros
 #include "AliFMD.h"		// ALIFMD_H
 #include "AliFMDDigit.h"	// ALIFMDDIGIT_H
 #include "AliFMDSDigit.h"	// ALIFMDSDIGIT_H
@@ -135,7 +136,7 @@ AliFMD::AliFMD()
   //
   // Default constructor for class AliFMD
   //
-  AliDebug(10, "\tDefault CTOR");
+  AliFMDDebug(10, ("\tDefault CTOR"));
   fHits        = 0;
   fDigits      = 0;
   fIshunt      = 0;
@@ -155,7 +156,7 @@ AliFMD::AliFMD(const char *name, const char *title)
   //
   // Standard constructor for Forward Multiplicity Detector
   //
-  AliDebug(10, "\tStandard CTOR");
+  AliFMDDebug(10, ("\tStandard CTOR"));
   fBad         = new TClonesArray("AliFMDHit");
   
   // Initialise Hit array
@@ -242,7 +243,7 @@ void AliFMD::CreateMaterials()
   // TGeoManager, and registers the mediums here.  Alas, it's not
   // really that easy. 
   //
-  AliDebug(10, "\tCreating materials");
+  AliFMDDebug(10, ("\tCreating materials"));
   // Get pointer to geometry singleton object. 
   AliFMDGeometry* geometry = AliFMDGeometry::Instance();
   geometry->Init();
@@ -418,7 +419,7 @@ AliFMD::Init()
 {
   // Initialize the detector 
   // 
-  AliDebug(1, "Initialising FMD detector object");
+  AliFMDDebug(1, ("Initialising FMD detector object"));
   // AliFMDGeometry*  fmd = AliFMDGeometry::Instance();
   // fmd->InitTransformations();
 }
@@ -452,7 +453,7 @@ AliFMD::BuildGeometry()
   //
   // Build simple ROOT TNode geometry for event display. With the new
   // geometry modeller, TGeoManager, this seems rather redundant. 
-  AliDebug(10, "\tCreating a simplified geometry");
+  AliFMDDebug(10, ("\tCreating a simplified geometry"));
 
   AliFMDGeometry* fmd = AliFMDGeometry::Instance();
   
@@ -650,7 +651,7 @@ AliFMD::DrawDetector()
 {
   // Draw a shaded view of the Forward multiplicity detector.  This
   // isn't really useful anymore. 
-  AliDebug(10, "\tDraw detector");
+  AliFMDDebug(10, ("\tDraw detector"));
 }
 
 //____________________________________________________________________
@@ -826,7 +827,7 @@ AliFMD::AddHitByFields(Int_t    track,
 	&& hit->Sector() == sector 
 	&& hit->Strip() == strip
 	&& hit->Track() == track) {
-      AliDebug(1, Form("already had a hit in FMD%d%c[%2d,%3d] for track # %d,"
+      AliFMDDebug(1, ("already had a hit in FMD%d%c[%2d,%3d] for track # %d,"
 		       " adding energy (%f) to that hit (%f) -> %f", 
 		       detector, ring, sector, strip, track, edep, hit->Edep(),
 		       hit->Edep() + edep));
@@ -892,6 +893,10 @@ AliFMD::AddDigitByFields(UShort_t detector,
   
   new (a[fNdigits++]) 
     AliFMDDigit(detector, ring, sector, strip, count1, count2, count3);
+  AliFMDDebug(15, ("Adding digit # %5d/%5d for FMD%d%c[%2d,%3d]=(%d,%d,%d)",
+		   fNdigits-1, a.GetEntriesFast(),
+		   detector, ring, sector, strip, count1, count2, count3));
+  
 }
 
 //____________________________________________________________________
@@ -1069,7 +1074,7 @@ AliFMD::Browse(TBrowser* b)
 {
   // Browse this object. 
   //
-  AliDebug(30, "\tBrowsing the FMD");
+  AliFMDDebug(30, ("\tBrowsing the FMD"));
   AliDetector::Browse(b);
   b->Add(AliFMDGeometry::Instance());
 }

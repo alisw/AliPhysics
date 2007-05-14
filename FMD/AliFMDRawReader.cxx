@@ -46,7 +46,8 @@
 //      | AliAltroStream |
 //      +----------------+
 //
-#include <AliLog.h>		// ALILOG_H
+// #include <AliLog.h>		// ALILOG_H
+#include "AliFMDDebug.h" // Better debug macros
 #include "AliFMDParameters.h"	// ALIFMDPARAMETERS_H
 #include "AliFMDDigit.h"	// ALIFMDDIGIT_H
 #include "AliFMDRawStream.h"	// ALIFMDRAWSTREAM_H 
@@ -88,7 +89,7 @@ AliFMDRawReader::Exec(Option_t*)
   fTree->Branch("FMD", &array);
   ReadAdcs(array);
   Int_t nWrite = fTree->Fill();
-  AliDebug(1, Form("Got a grand total of %d digits, wrote %d bytes to tree", 
+  AliFMDDebug(1, ("Got a grand total of %d digits, wrote %d bytes to tree", 
 		   array->GetEntries(), nWrite));
 }
 
@@ -122,7 +123,7 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
   // Data array is approx twice the size needed. 
   UShort_t data[2048];
   while (input.ReadChannel(ddl, hwaddr, last, data)) {
-    AliDebug(5, Form("Read channel 0x%x of size %d", hwaddr, last));
+    AliFMDDebug(5, ("Read channel 0x%x of size %d", hwaddr, last));
     UShort_t det, sec, str;
     Char_t   ring;
     if (!pars->Hardware2Detector(ddl, hwaddr, det, ring, sec, str)) {
@@ -133,7 +134,7 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
     rate     = pars->GetSampleRate(det, ring, sec, str);
     stripMin = pars->GetMinStrip(det, ring, sec, str);
     stripMax = pars->GetMaxStrip(det, ring, sec, str);
-    AliDebug(5, Form("DDL 0x%04x, address 0x%03x maps to FMD%d%c[%2d,%3d]", 
+    AliFMDDebug(5, ("DDL 0x%04x, address 0x%03x maps to FMD%d%c[%2d,%3d]", 
 		       ddl, hwaddr, det, ring, sec, str));
     
     // Loop over the `timebins', and make the digits
@@ -145,7 +146,7 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
 	AliError(Form("Current strip is %d but DB says max is %d", 
 		      curStr, stripMax));
       }
-      AliDebug(5, Form("making digit for FMD%d%c[%2d,%3d] from sample %4d", 
+      AliFMDDebug(5, ("making digit for FMD%d%c[%2d,%3d] from sample %4d", 
 		       det, ring, sec, curStr, i));
       new ((*array)[n]) AliFMDDigit(det, ring, sec, curStr, data[i], 
 				    (rate >= 2 ? data[i+1] : 0),
@@ -186,7 +187,7 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
     size_t   nchar = fReader->GetDataSize();
     UShort_t ddl   = fReader->GetDDLID();
     UShort_t rate  = 0;
-    AliDebug(1, Form("Reading %d bytes (%d 10bit words) from %d", 
+    AliFMDDebug(1, ("Reading %d bytes (%d 10bit words) from %d", 
 		     nchar, nchar * 8 / 10, ddl));
     // Make a stream to read from 
     std::string str((char*)(cdata), nchar);
@@ -196,7 +197,7 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
     // Data array is approx twice the size needed. 
     UShort_t data[2048], hwaddr, last;
     while (r.ReadChannel(hwaddr, last, data) > 0) {
-      AliDebug(5, Form("Read channel 0x%x of size %d", hwaddr, last));
+      AliFMDDebug(5, ("Read channel 0x%x of size %d", hwaddr, last));
       UShort_t det, sec, str;
       Char_t   ring;
       if (!pars->Hardware2Detector(ddl, hwaddr, det, ring, sec, str)) {
@@ -207,7 +208,7 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
       rate     = pars->GetSampleRate(det, ring, sec, str);
       stripMin = pars->GetMinStrip(det, ring, sec, str);
       stripMax = pars->GetMaxStrip(det, ring, sec, str);
-      AliDebug(5, Form("DDL 0x%04x, address 0x%03x maps to FMD%d%c[%2d,%3d]", 
+      AliFMDDebug(5, ("DDL 0x%04x, address 0x%03x maps to FMD%d%c[%2d,%3d]", 
 		       ddl, hwaddr, det, ring, sec, str));
 
       // Loop over the `timebins', and make the digits
@@ -219,7 +220,7 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
 	  AliError(Form("Current strip is %d but DB says max is %d", 
 			curStr, stripMax));
 	}
-	AliDebug(5, Form("making digit for FMD%d%c[%2d,%3d] from sample %4d", 
+	AliFMDDebug(5, ("making digit for FMD%d%c[%2d,%3d] from sample %4d", 
 			 det, ring, sec, curStr, i));
 	new ((*array)[n]) AliFMDDigit(det, ring, sec, curStr, data[i], 
 				      (rate >= 2 ? data[i+1] : 0),
@@ -277,14 +278,14 @@ AliFMDRawReader::Exec(Option_t*)
 
     count++; 
     Int_t ddl = fReader->GetDDLID();
-    AliDebug(10, Form("Current DDL is %d", ddl));
+    AliFMDDebug(10, ("Current DDL is %d", ddl));
     if (ddl != oldDDL || input.IsNewStrip() || !next) {
       // Make a new digit, if we have some data (oldDetector == 0,
       // means that we haven't really read anything yet - that is,
       // it's the first time we get here). 
       if (oldDetector > 0) {
 	// Got a new strip. 
-	AliDebug(10, Form("Add a new strip: FMD%d%c[%2d,%3d] "
+	AliFMDDebug(10, ("Add a new strip: FMD%d%c[%2d,%3d] "
 			  "(current: FMD%d%c[%2d,%3d])", 
 			  oldDetector, input.PrevRing(), 
 			  input.PrevSector() , input.PrevStrip(),
@@ -304,7 +305,7 @@ AliFMDRawReader::Exec(Option_t*)
       }
 	
       if (!next) { 
-	AliDebug(10, Form("Read %d channels for FMD%d", 
+	AliFMDDebug(10, ("Read %d channels for FMD%d", 
 			  count + 1, detector));
 	break;
       }
@@ -313,7 +314,7 @@ AliFMDRawReader::Exec(Option_t*)
       // If we got a new DDL, it means we have a new detector. 
       if (ddl != oldDDL) {
 	if (detector != 0) 
-	  AliDebug(10, Form("Read %d channels for FMD%d", count + 1, detector));
+	  AliFMDDebug(10, ("Read %d channels for FMD%d", count + 1, detector));
 	// Reset counts, and update the DDL cache 
 	count       = 0;
 	oldDDL      = ddl;
@@ -334,7 +335,7 @@ AliFMDRawReader::Exec(Option_t*)
 	  AliError(Form("Unknown DDL 0x%x for FMD", ddl));
 	  return;
 	}
-	AliDebug(10, Form("Reading ADCs for 0x%x  - That is FMD%d",
+	AliFMDDebug(10, ("Reading ADCs for 0x%x  - That is FMD%d",
 			  fReader->GetEquipmentId(), detector));
       }
       counts.Reset(-1);
@@ -342,7 +343,7 @@ AliFMDRawReader::Exec(Option_t*)
     
     counts[input.Sample()] = input.Count();
     
-    AliDebug(10, Form("ADC of FMD%d%c[%2d,%3d] += %d",
+    AliFMDDebug(10, ("ADC of FMD%d%c[%2d,%3d] += %d",
 		      detector, input.Ring(), input.Sector(), 
 		      input.Strip(), input.Count()));
     oldDetector = detector;

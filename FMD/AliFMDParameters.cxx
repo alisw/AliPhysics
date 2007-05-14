@@ -29,7 +29,7 @@
 // `Init'.  Optionally, the class can serve hard-coded constants, if
 // no CDB is available. 
 //                                                       
-#include "AliLog.h"		   // ALILOG_H
+#include "AliFMDDebug.h"		   // ALILOG_H
 #include "AliFMDParameters.h"	   // ALIFMDPARAMETERS_H
 #include "AliFMDGeometry.h"	   // ALIFMDGEOMETRY_H
 #include "AliFMDRing.h"	           // ALIFMDRING_H
@@ -442,14 +442,14 @@ AliFMDParameters::InitPulseGain()
   AliCDBManager* cdb      = AliCDBManager::Instance();
   AliCDBEntry*   gain     = cdb->Get(fgkPulseGain);
   if (!gain) {
-    AliWarning(Form("No %s found in CDB, perhaps you need to "
+    AliFatal(Form("No %s found in CDB, perhaps you need to "
 		    "use AliFMDCalibFaker?", fgkPulseGain));
     return;
   }
   
-  AliDebug(1, Form("Got gain from CDB"));
+  AliFMDDebug(1, ("Got gain from CDB"));
   fPulseGain = dynamic_cast<AliFMDCalibGain*>(gain->GetObject());
-  if (!fPulseGain) AliWarning("Invalid pulser gain object from CDB");
+  if (!fPulseGain) AliFatal("Invalid pulser gain object from CDB");
 }
 //__________________________________________________________________
 void
@@ -459,13 +459,13 @@ AliFMDParameters::InitPedestal()
   AliCDBManager* cdb      = AliCDBManager::Instance();
   AliCDBEntry*   pedestal = cdb->Get(fgkPedestal);
   if (!pedestal) {
-    AliWarning(Form("No %s found in CDB, perhaps you need to "
+    AliFatal(Form("No %s found in CDB, perhaps you need to "
 		    "use AliFMDCalibFaker?", fgkPedestal));
     return;
   }
-  AliDebug(1, Form("Got pedestal from CDB"));
+  AliFMDDebug(1, ("Got pedestal from CDB"));
   fPedestal = dynamic_cast<AliFMDCalibPedestal*>(pedestal->GetObject());
-  if (!fPedestal) AliWarning("Invalid pedestal object from CDB");
+  if (!fPedestal) AliFatal("Invalid pedestal object from CDB");
 }
 
 //__________________________________________________________________
@@ -476,13 +476,13 @@ AliFMDParameters::InitDeadMap()
   AliCDBManager* cdb      = AliCDBManager::Instance();
   AliCDBEntry*   deadMap  = cdb->Get(fgkDead);
   if (!deadMap) {
-    AliWarning(Form("No %s found in CDB, perhaps you need to "
+    AliFatal(Form("No %s found in CDB, perhaps you need to "
 		    "use AliFMDCalibFaker?", fgkDead));
     return;
   }
-  AliDebug(1, Form("Got dead map from CDB"));
+  AliFMDDebug(1, ("Got dead map from CDB"));
   fDeadMap = dynamic_cast<AliFMDCalibDeadMap*>(deadMap->GetObject());
-  if (!fDeadMap) AliWarning("Invalid dead map object from CDB");
+  if (!fDeadMap) AliFatal("Invalid dead map object from CDB");
 }
 
 //__________________________________________________________________
@@ -493,14 +493,14 @@ AliFMDParameters::InitZeroSuppression()
   AliCDBManager* cdb      = AliCDBManager::Instance();
   AliCDBEntry*   zeroSup  = cdb->Get(fgkZeroSuppression);
   if (!zeroSup) {
-    AliWarning(Form("No %s found in CDB, perhaps you need to "
+    AliFatal(Form("No %s found in CDB, perhaps you need to "
 		    "use AliFMDCalibFaker?", fgkZeroSuppression));
     return;
   }
-  AliDebug(1, Form("Got zero suppression from CDB"));
+  AliFMDDebug(1, ("Got zero suppression from CDB"));
   fZeroSuppression = 
     dynamic_cast<AliFMDCalibZeroSuppression*>(zeroSup->GetObject());
-  if (!fZeroSuppression)AliWarning("Invalid zero suppression object from CDB");
+  if (!fZeroSuppression)AliFatal("Invalid zero suppression object from CDB");
 }
 
 //__________________________________________________________________
@@ -511,13 +511,13 @@ AliFMDParameters::InitSampleRate()
   AliCDBManager* cdb      = AliCDBManager::Instance();
   AliCDBEntry*   sampRat  = cdb->Get(fgkSampleRate);
   if (!sampRat) {
-    AliWarning(Form("No %s found in CDB, perhaps you need to "
+    AliFatal(Form("No %s found in CDB, perhaps you need to "
 		    "use AliFMDCalibFaker?", fgkSampleRate));
     return;
   }
-  AliDebug(1, Form("Got zero suppression from CDB"));
+  AliFMDDebug(1, ("Got zero suppression from CDB"));
   fSampleRate = dynamic_cast<AliFMDCalibSampleRate*>(sampRat->GetObject());
-  if (!fSampleRate) AliWarning("Invalid zero suppression object from CDB");
+  if (!fSampleRate) AliFatal("Invalid zero suppression object from CDB");
 }
 
 //__________________________________________________________________
@@ -528,15 +528,15 @@ AliFMDParameters::InitAltroMap()
   AliCDBManager* cdb      = AliCDBManager::Instance();
   AliCDBEntry*   hwMap    = cdb->Get(fgkAltroMap);       
   if (!hwMap) {
-    AliWarning(Form("No %s found in CDB, perhaps you need to "
+    AliFatal(Form("No %s found in CDB, perhaps you need to "
 		    "use AliFMDCalibFaker?", fgkAltroMap));
     fAltroMap = new AliFMDAltroMapping;
     return;
   }
-  AliDebug(1, Form("Got ALTRO map from CDB"));
+  AliFMDDebug(1, ("Got ALTRO map from CDB"));
   fAltroMap = dynamic_cast<AliFMDAltroMapping*>(hwMap->GetObject());
   if (!fAltroMap) {
-    AliWarning("Invalid ALTRO map object from CDB");
+    AliFatal("Invalid ALTRO map object from CDB");
     fAltroMap = new AliFMDAltroMapping;
   }
 }
@@ -549,13 +549,13 @@ AliFMDParameters::InitStripRange()
   AliCDBManager* cdb      = AliCDBManager::Instance();
   AliCDBEntry*   range    = cdb->Get(fgkStripRange);
   if (!range) {
-    AliWarning(Form("No %s found in CDB, perhaps you need to "
+    AliFatal(Form("No %s found in CDB, perhaps you need to "
 		    "use AliFMDCalibFaker?", fgkStripRange));
     return;
   }
-  AliDebug(1, Form("Got strip range from CDB"));
+  AliFMDDebug(1, ("Got strip range from CDB"));
   fStripRange = dynamic_cast<AliFMDCalibStripRange*>(range->GetObject());
-  if (!fStripRange) AliWarning("Invalid strip range object from CDB");
+  if (!fStripRange) AliFatal("Invalid strip range object from CDB");
 }
 
 
@@ -587,7 +587,7 @@ AliFMDParameters::GetPulseGain(UShort_t detector, Char_t ring,
       fFixedPulseGain = fVA1MipRange * GetEdepMip() / fAltroChannelSize;
     return fFixedPulseGain;
   }  
-  AliDebug(50, Form("pulse gain for FMD%d%c[%2d,%3d]=%f",
+  AliFMDDebug(50, ("pulse gain for FMD%d%c[%2d,%3d]=%f",
 		    detector, ring, sector, strip,
 		    fPulseGain->Value(detector, ring, sector, strip)));
   return fPulseGain->Value(detector, ring, sector, strip);
@@ -600,7 +600,7 @@ AliFMDParameters::IsDead(UShort_t detector, Char_t ring,
 {
   // Check if the channel is dead 
   if (!fDeadMap) return kFALSE;
-  AliDebug(50, Form("Dead for FMD%d%c[%2d,%3d]=%s",
+  AliFMDDebug(50, ("Dead for FMD%d%c[%2d,%3d]=%s",
 		    detector, ring, sector, strip,
 		    fDeadMap->operator()(detector, ring, sector, strip) ? 
 		    "no" : "yes"));
@@ -615,7 +615,7 @@ AliFMDParameters::GetZeroSuppression(UShort_t detector, Char_t ring,
   // Get zero suppression threshold 
   if (!fZeroSuppression) return fFixedZeroSuppression;
   // Need to map strip to ALTRO chip. 
-  AliDebug(50, Form("zero sup. for FMD%d%c[%2d,%3d]=%f",
+  AliFMDDebug(50, ("zero sup. for FMD%d%c[%2d,%3d]=%f",
 		    detector, ring, sector, strip,
 		    fZeroSuppression->operator()(detector, ring, 
 						 sector, strip)));
@@ -631,7 +631,7 @@ AliFMDParameters::GetSampleRate(UShort_t det, Char_t ring, UShort_t sector,
   if (!fSampleRate) return fFixedSampleRate;
   // Need to map sector to digitizier card. 
   UInt_t ret = fSampleRate->Rate(det, ring, sector, str);
-  AliDebug(50, Form("Sample rate for FMD%d%c[%2d,%3d]=%d", 
+  AliFMDDebug(50, ("Sample rate for FMD%d%c[%2d,%3d]=%d", 
 		    det, ring, sector, str, ret));
   return ret;
 }
@@ -645,7 +645,7 @@ AliFMDParameters::GetMinStrip(UShort_t det, Char_t ring, UShort_t sector,
   if (!fStripRange) return fFixedMinStrip;
   // Need to map sector to digitizier card. 
   UInt_t ret = fStripRange->Min(det, ring, sector, str);
-  AliDebug(50, Form("Min strip # for FMD%d%c[%2d,%3d]=%d", 
+  AliFMDDebug(50, ("Min strip # for FMD%d%c[%2d,%3d]=%d", 
 		    det, ring, sector, str, ret));
   return ret;
 }
@@ -659,7 +659,7 @@ AliFMDParameters::GetMaxStrip(UShort_t det, Char_t ring, UShort_t sector,
   if (!fStripRange) return fFixedMaxStrip;
   // Need to map sector to digitizier card. 
   UInt_t ret = fStripRange->Max(det, ring, sector, str);
-  AliDebug(50, Form("Max strip # for FMD%d%c[%2d,%3d]=%d", 
+  AliFMDDebug(50, ("Max strip # for FMD%d%c[%2d,%3d]=%d", 
 		    det, ring, sector, str, ret));
   return ret;
 }
@@ -671,7 +671,7 @@ AliFMDParameters::GetPedestal(UShort_t detector, Char_t ring,
 {
   // Get the pedesal 
   if (!fPedestal) return fFixedPedestal;
-  AliDebug(50, Form("pedestal for FMD%d%c[%2d,%3d]=%f",
+  AliFMDDebug(50, ("pedestal for FMD%d%c[%2d,%3d]=%f",
 		    detector, ring, sector, strip,
 		    fPedestal->Value(detector, ring, sector, strip)));
   return fPedestal->Value(detector, ring, sector, strip);
@@ -684,7 +684,7 @@ AliFMDParameters::GetPedestalWidth(UShort_t detector, Char_t ring,
 {
   // Get the pedesal 
   if (!fPedestal) return fFixedPedestalWidth;
-  AliDebug(50, Form("pedetal width for FMD%d%c[%2d,%3d]=%f",
+  AliFMDDebug(50, ("pedetal width for FMD%d%c[%2d,%3d]=%f",
 		    detector, ring, sector, strip,
 		    fPedestal->Width(detector, ring, sector, strip)));
   return fPedestal->Width(detector, ring, sector, strip);

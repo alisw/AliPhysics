@@ -33,7 +33,7 @@
 #include <TMath.h>		// ROOT_TMath
 
 #include "AliFMD3.h"		// ALIFMD3_H 
-#include "AliLog.h"		// ALILOG_H
+#include "AliFMDDebug.h"		// ALIFMDDEBUG_H ALILOG_H
 #include "AliFMDRing.h"		// ALIFMDRING_H 
 
 //====================================================================

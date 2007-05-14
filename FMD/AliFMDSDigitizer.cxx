@@ -198,7 +198,8 @@
 
 // #include <TTree.h>		// ROOT_TTree
 //#include <TRandom.h>		// ROOT_TRandom
-#include <AliLog.h>		// ALILOG_H
+// #include <AliLog.h>		// ALILOG_H
+#include "AliFMDDebug.h" // Better debug macros
 #include "AliFMDSDigitizer.h"	// ALIFMDDIGITIZER_H
 #include "AliFMD.h"		// ALIFMD_H
 // #include "AliFMDGeometry.h"	// ALIFMDGEOMETRY_H
@@ -227,7 +228,7 @@ AliFMDSDigitizer::AliFMDSDigitizer(const Char_t* headerFile,
   : AliFMDBaseDigitizer("FMDSDigitizer", "FMD SDigitizer")
 {
   // Normal CTOR
-  AliDebug(1," processed");
+  AliFMDDebug(1, (" processed"));
 
   fRunLoader = AliRunLoader::GetRunLoader(); // Open(headerFile);
   if (!fRunLoader) 
@@ -275,7 +276,7 @@ AliFMDSDigitizer::Exec(Option_t*)
 
   Int_t nEvents = Int_t(fRunLoader->TreeE()->GetEntries());
   for (Int_t event = 0; event < nEvents; event++) {
-    AliDebug(1,Form(" Digitizing event number %d", event));
+    AliFMDDebug(1, (" Digitizing event number %d", event));
     // Get the current loader 
     fRunLoader->GetEvent(event);
 

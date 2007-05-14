@@ -38,7 +38,7 @@
 // storage `local://cdb' which is a directory in the current
 // directory. 
 //                                                       
-#include "AliLog.h"		   // ALILOG_H
+#include "AliFMDDebug.h"		// ALIFMDDEBUG_H ALILOG_H
 #include "AliFMDAlignFaker.h"      // ALIFMDALIGNFAKER_H
 #include <AliCDBManager.h>         // ALICDBMANAGER_H
 #include <AliCDBStorage.h>         // ALICDBSTORAGE_H
@@ -198,7 +198,7 @@ AliFMDAlignFaker::Exec(Option_t*)
 		      alignName.Data(), path.Data()));
       alignName = path;
     }
-    AliDebug(1, Form("Making alignment for %s -> %s (%d)", 
+    AliFMDDebug(1, ("Making alignment for %s -> %s (%d)", 
 		     alignName.Data(), path.Data(), id));
     if (IS_NODE_HALF(name))   MakeAlignHalf(alignName, id);
     if (IS_NODE_SENSOR(name)) MakeAlignSensor(alignName, id);
@@ -249,7 +249,7 @@ AliFMDAlignFaker::MakeAlign(const TString& path, Int_t id,
   //   rotX      Rotation about X-axis 
   //   rotY      Rotation about Y-axis
   //   rotZ      Rotation about Z-axis 
-  AliDebug(3, Form("Make alignment for %s (volume %d): (%f,%f,%f) (%f,%f,%f)", 
+  AliFMDDebug(3, ("Make alignment for %s (volume %d): (%f,%f,%f) (%f,%f,%f)", 
 		   path.Data(), id, transX, transY, transZ, rotX, rotY, rotZ));
   Int_t nAlign = fArray->GetEntries();
   id = 0;
@@ -272,7 +272,7 @@ Bool_t
 AliFMDAlignFaker::MakeAlignHalf(const TString& path, Int_t id)
 {
   // Make alignment of a half ring/cone 
-  AliDebug(15, Form("Make alignment for half-ring/cone %s", path.Data()));
+  AliFMDDebug(15, ("Make alignment for half-ring/cone %s", path.Data()));
   Double_t transX = gRandom->Uniform(fHalfTransMin.X(), fHalfTransMax.X());
   Double_t transY = gRandom->Uniform(fHalfTransMin.Y(), fHalfTransMax.Y());
   Double_t transZ = gRandom->Uniform(fHalfTransMin.Z(), fHalfTransMax.Z());
@@ -288,7 +288,7 @@ Bool_t
 AliFMDAlignFaker::MakeAlignSensor(const TString& path, Int_t id)
 {
   // Make alignment of a sensor 
-  AliDebug(15, Form("Make alignment for sensor %s", path.Data()));
+  AliFMDDebug(15, ("Make alignment for sensor %s", path.Data()));
   Double_t transX = gRandom->Uniform(fSensorTransMin.X(), fSensorTransMax.X());
   Double_t transY = gRandom->Uniform(fSensorTransMin.Y(), fSensorTransMax.Y());
   Double_t transZ = gRandom->Uniform(fSensorTransMin.Z(), fSensorTransMax.Z());

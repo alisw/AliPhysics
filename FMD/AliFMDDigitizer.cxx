@@ -198,7 +198,8 @@
 
 #include <TTree.h>		// ROOT_TTree
 #include <TRandom.h>		// ROOT_TRandom
-#include <AliLog.h>		// ALILOG_H
+// #include <AliLog.h>		// ALILOG_H
+#include "AliFMDDebug.h" // Better debug macros
 #include "AliFMDDigitizer.h"	// ALIFMDDIGITIZER_H
 #include "AliFMD.h"		// ALIFMD_H
 // #include "AliFMDGeometry.h"	// ALIFMDGEOMETRY_H
@@ -227,7 +228,7 @@ AliFMDDigitizer::AliFMDDigitizer(AliRunDigitizer* manager)
   : AliFMDBaseDigitizer(manager)
 {
   // Normal CTOR
-  AliDebug(1," processed");
+  AliFMDDebug(1, (" processed"));
 }
 
 //____________________________________________________________________
@@ -262,7 +263,7 @@ AliFMDDigitizer::Exec(Option_t*)
 
   Int_t nFiles= fManager->GetNinputs();
   for (Int_t inputFile = 0; inputFile < nFiles; inputFile++) {
-    AliDebug(1,Form(" Digitizing event number %d",
+    AliFMDDebug(1, (" Digitizing event number %d",
 		    fManager->GetOutputEventNr()));
     // Get the current loader 
     fRunLoader = 
@@ -290,7 +291,7 @@ AliFMDDigitizer::Exec(Option_t*)
   // Fill the tree 
   Int_t write = 0;
   write = digitTree->Fill();
-  AliDebug(1, Form("Wrote %d bytes to digit tree", write));
+  AliFMDDebug(1, ("Wrote %d bytes to digit tree", write));
   
   // Write the digits to disk 
   outFMD->WriteDigits("OVERWRITE");

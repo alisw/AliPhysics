@@ -36,7 +36,8 @@
 // ALTRO format.  See the Exec member function for more information on
 // that format.  
 //
-#include <AliLog.h>		// ALILOG_H
+// #include <AliLog.h>		// ALILOG_H
+#include "AliFMDDebug.h" // Better debug macros
 #include <AliLoader.h>		// ALILOADER_H
 #include <AliAltroBuffer.h>     // ALIALTROBUFFER_H
 #include "AliFMD.h"		// ALIFMD_H
@@ -146,6 +147,7 @@ AliFMDRawWriter::Exec(Option_t*)
   digitBranch->SetAddress(&digits);
   
   Int_t nEvents = Int_t(digitTree->GetEntries());
+  AliFMDDebug(5, ("Got a total of %5d events from tree", nEvents));
   for (Int_t event = 0; event < nEvents; event++) {
     fFMD->ResetDigits();
     digitTree->GetEvent(event);
@@ -164,10 +166,11 @@ AliFMDRawWriter::WriteDigits(TClonesArray* digits)
   // WRite an array of digits to disk file 
   Int_t nDigits = digits->GetEntries();
   if (nDigits < 1) return;
+  AliFMDDebug(5, ("Got a total of %5d digits from tree", nDigits));
 
   AliFMDParameters* pars = AliFMDParameters::Instance();
   UShort_t threshold    = 0;
-  UInt_t   prevddl      = 0;
+  UInt_t   prevddl      = 0xFFFF;
   UInt_t   prevaddr     = 0xFFF;
   // UShort_t prevStrip    = 0;
   
@@ -189,43 +192,51 @@ AliFMDRawWriter::WriteDigits(TClonesArray* digits)
   // the digits are in order in the branch.   If they were not, we'd
   // have to cache all channels before we could write the data to
   // the ALTRO buffer, or we'd have to set up a map of the digits. 
+  UShort_t oldDet = 1000;
   for (Int_t i = 0; i < nDigits; i++) {
     // Get the digit
     AliFMDDigit* digit = static_cast<AliFMDDigit*>(digits->At(i));
-
     UShort_t det    = digit->Detector();
     Char_t   ring   = digit->Ring();
     UShort_t sector = digit->Sector();
     UShort_t strip  = digit->Strip();
     UInt_t   ddl;
     UInt_t   addr;  
+    if (det != oldDet) {
+      AliFMDDebug(5, ("Got new detector: %d (was %d)", det, oldDet));
+      oldDet = det;
+    }
+    AliFMDDebug(10, ("Processing digit # %5d FMD%d%c[%2d,%3d]", 
+		    i, det, ring, sector, strip));
     threshold       = pars->GetZeroSuppression(det, ring, sector, strip);
     if (!pars->Detector2Hardware(det, ring, sector, strip, ddl, addr)) {
       AliError(Form("Failed to get hardware address for FMD%d%c[%2d,%3d]", 
 		    det, ring, sector, strip));
       continue;
     }
+    AliFMDDebug(10, ("FMD%d%c[%2d,%3d]-> ddl: 0x%x addr: 0x%x", 
+		    det, ring, sector, strip, ddl, addr));
     if (addr != prevaddr) {
       // Flush a channel to output 
-      AliDebug(15, Form("Now hardware address 0x%x from FMD%d%c[%2d,%3d] "
-			"(board 0x%x, chip 0x%x, channel 0x%x), flushing old "
-			"channel at 0x%x with %d words", 
-			addr, det, ring, sector, strip, 
-			(addr >> 7), (addr >> 4) & 0x7, addr & 0xf, 
-			prevaddr, nWords));
+      AliFMDDebug(15, ("Now hardware address 0x%x from FMD%d%c[%2d,%3d] "
+		       "(board 0x%x, chip 0x%x, channel 0x%x), flushing old "
+		       "channel at 0x%x with %d words", 
+		       addr, det, ring, sector, strip, 
+		       (addr >> 7), (addr >> 4) & 0x7, addr & 0xf, 
+		       prevaddr, nWords));
       if (altro) altro->WriteChannel(prevaddr,nWords,data.fArray,threshold);
       nWords   = preSamples;
       prevaddr = addr;
       for (size_t i = 0; i < nWords; i++) data[i] = digit->Count(0);
     }
     if (ddl != prevddl) {
-      AliDebug(15, Form("FMD: New DDL, was %d, now %d", prevddl, ddl));
+      AliFMDDebug(5, ("FMD: New DDL, was %d, now %d", prevddl, ddl));
       // If an altro exists, delete the object, flushing the data to
       // disk, and closing the file. 
       if (altro) { 
 	// When the first argument is false, we write the real
 	// header. 
-	AliDebug(15, Form("Closing output"));
+	AliFMDDebug(15, ("Closing output"));
 	altro->Flush();
 	altro->WriteDataHeader(kFALSE, kFALSE);
 	delete altro;
@@ -234,7 +245,7 @@ AliFMDRawWriter::WriteDigits(TClonesArray* digits)
       prevddl = ddl;
       // Need to open a new DDL! 
       TString filename(AliDAQ::DdlFileName(fFMD->GetName(),  ddl));
-      AliDebug(15, Form("New altro buffer with DDL file %s", filename.Data()));
+      AliFMDDebug(5, ("New altro buffer with DDL file %s", filename.Data()));
       // Create a new altro buffer - a `1' as the second argument
       // means `write mode' 
       altro = new AliAltroBuffer(filename.Data());
@@ -289,11 +300,11 @@ AliFMDRawWriter::WriteDigits(TClonesArray* digits)
 		    det, ring, sector, strip));
       continue;
     }
-    AliDebug(40, Form("Got DDL=%d and address=%d from FMD%d%c[%2d,%3d]", 
+    AliFMDDebug(40, ("Got DDL=%d and address=%d from FMD%d%c[%2d,%3d]", 
 		     thisDDL, thisHwaddr, det, ring, sector, strip));
     // Check if we're still in the same channel
     if (thisHwaddr != hwaddr) {
-      AliDebug(30, Form("Now hardware address 0x%x from FMD%d%c[%2d,%3d] "
+      AliFMDDebug(30, ("Now hardware address 0x%x from FMD%d%c[%2d,%3d] "
 		       "(board 0x%x, chip 0x%x, channel 0x%x)",
 		       thisHwaddr, det, ring, sector, strip, 
 		       (thisHwaddr >> 7), (thisHwaddr >> 4) & 0x7, 
@@ -304,7 +315,7 @@ AliFMDRawWriter::WriteDigits(TClonesArray* digits)
     // Check if we're still in the same detector (DDL)
     if (ddl != thisDDL) {
       if (writer) {
-	AliDebug(1, Form("Closing altro writer %p", writer));
+	AliFMDDebug(1, ("Closing altro writer %p", writer));
 	if ((ret = writer->Close()) < 0) {
 	  AliError(Form("Error: %s", writer->ErrorString(ret)));
 	  return;
@@ -320,10 +331,12 @@ AliFMDRawWriter::WriteDigits(TClonesArray* digits)
     // If we haven't got a writer (either because none were made so
     // far, or because we've switch DDL), make one. 
     if (!writer) {
-      AliDebug(1, Form("Opening new ALTRO writer w/file %s", AliDAQ::DdlFileName("FMD",ddl)));
+      AliFMDDebug(1, ("Opening new ALTRO writer w/file %s", 
+		      AliDAQ::DdlFileName("FMD",ddl)));
       file   = new std::ofstream(AliDAQ::DdlFileName("FMD",ddl));
       if (!file || !*file) {
-	AliFatal(Form("Failed to open file %s", AliDAQ::DdlFileName("FMD",ddl)));
+	AliFatal(Form("Failed to open file %s", 
+		      AliDAQ::DdlFileName("FMD",ddl)));
 	return;
       }
       writer  = new AliFMDAltroWriter(*file);

@@ -50,7 +50,8 @@
 #include "AliFMDGeometry.h"	// ALIFMDGEOMETRY_H
 #include "AliFMDParameters.h"	// ALIFMDPARAMETERS_H
 #include <AliESDFMD.h>          // ALIESDFMD_H
-#include <AliLog.h>
+// #include <AliLog.h>
+#include "AliFMDDebug.h" // Better debug macros
 
 //____________________________________________________________________
 ClassImp(AliFMDDisplay)
@@ -505,7 +506,7 @@ AliFMDDisplay::ProcessDigit(AliFMDDigit* digit)
   Double_t pedW          =  parm->GetPedestalWidth(det,ring, sec, str);
   Double_t threshold     =  ped + fPedestalFactor * pedW;
   Float_t  counts        =  digit->Counts();
-  AliDebug(10, Form("FMD%d%c[%2d,%3d] ADC: %d > %d (=%4.2f+%4.2f*%4.2f)", 
+  AliFMDDebug(10, ("FMD%d%c[%2d,%3d] ADC: %d > %d (=%4.2f+%4.2f*%4.2f)", 
 		    digit->Detector(), digit->Ring(), digit->Sector(), 
 		    digit->Strip(), Int_t(counts), Int_t(threshold), 
 		    ped, fPedestalFactor, pedW));

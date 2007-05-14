@@ -53,7 +53,7 @@
 #include "AliFMD2.h"		// ALIFMD2_H
 #include "AliFMD3.h"		// ALIFMD3_H
 // #include "AliFMD.h"		// ALIFMD_H
-#include "AliLog.h"		// ALILOG_H
+#include "AliFMDDebug.h"		// ALILOG_H
 
 //====================================================================
 ClassImp(AliFMDGeometryBuilder)
@@ -312,7 +312,7 @@ AliFMDGeometryBuilder::RingGeometry(AliFMDRing* r)
 
   // Adding modules to half-rings
   Int_t    nmod =  r->GetNModules();
-  AliDebug(10, Form("making %d modules in ring %c", nmod, id));
+  AliFMDDebug(10, ("making %d modules in ring %c", nmod, id));
   for (Int_t i = 0; i < nmod; i++) {
     if (i == nmod / 2) halfRing = ringBotVolume;
     Bool_t      front =  (i % 2 == 0);
@@ -320,7 +320,7 @@ AliFMDGeometryBuilder::RingGeometry(AliFMDRing* r)
     Double_t    z2    =  z1 + siThick / 2 + space;
     Double_t    th    =  (2 * i + 1) * theta;
     TGeoVolume* vol   =  (front ? frontVolume : backVolume);
-    AliDebug(20, Form("Placing copy %d of %s and %s in %s at z=%f and %f, "
+    AliFMDDebug(20, ("Placing copy %d of %s and %s in %s at z=%f and %f, "
 		      "and theta=%f", i, sensorVolume->GetName(), 
 		      vol->GetName(), halfRing->GetName(), z1, z2, th));
     TGeoMatrix* mat1  =  new TGeoCombiTrans(0,0,z1,0); 
@@ -395,7 +395,7 @@ AliFMDGeometryBuilder::DetectorGeometry(AliFMDDetector* d,
 
     // Place ring in mother volume
     // TGeoMatrix*matrix=new TGeoTranslation(Form("FMD%d%c trans",id,c),0,0,0);
-    AliDebug(5, Form("Placing volumes %s and %s in %s and %s at z=%f", 
+    AliFMDDebug(5, ("Placing volumes %s and %s in %s and %s at z=%f", 
 		     tvol->GetName(), bvol->GetName(), 
 		     topMother->GetName(), botMother->GetName(), z));
     topMother->AddNode(tvol, Int_t(c), new TGeoTranslation(0,0,z));
@@ -421,7 +421,7 @@ AliFMDGeometryBuilder::DetectorGeometry(AliFMDDetector* d,
 	  r->GetLegLength() + 
 	  hcThick / 2); 
 
-    AliDebug(15, Form("Placing a copy of %s in %s and %s at z=%f", 
+    AliFMDDebug(15, ("Placing a copy of %s in %s and %s at z=%f", 
 		      hcVol->GetName(), topMother->GetName(), 
 		      botMother->GetName(), z));
     // Add to top 
@@ -460,7 +460,7 @@ AliFMDGeometryBuilder::FMD1Geometry(AliFMD1* fmd1,
   // Must add this after filling the assembly.
   TGeoVolume* top    = gGeoManager->GetVolume("ALIC");
   TGeoMatrix* matrix = new TGeoTranslation("FMD1 trans", 0, 0, z);
-  AliDebug(5, Form("Placing volumes %s and %s in ALIC at z=%f", 
+  AliFMDDebug(5, ("Placing volumes %s and %s in ALIC at z=%f", 
 		   fmd1TopVolume->GetName(), fmd1BotVolume->GetName(), z));
   top->AddNode(fmd1TopVolume, fmd1->GetId(), matrix);
   top->AddNode(fmd1BotVolume, fmd1->GetId(), matrix);
@@ -494,7 +494,7 @@ AliFMDGeometryBuilder::FMD2Geometry(AliFMD2* fmd2,
   // Must be done after filling the assemblies 
   TGeoVolume* top = gGeoManager->GetVolume("ALIC");
   TGeoMatrix* matrix = new TGeoTranslation("FMD2 trans", 0, 0, z);
-  AliDebug(5, Form("Placing volumes %s and %s in ALIC at z=%f", 
+  AliFMDDebug(5, ("Placing volumes %s and %s in ALIC at z=%f", 
 		   fmd2TopVolume->GetName(), fmd2BotVolume->GetName(), z));
   top->AddNode(fmd2TopVolume, fmd2->GetId(), matrix);
   top->AddNode(fmd2BotVolume, fmd2->GetId(), matrix);
@@ -578,7 +578,7 @@ AliFMDGeometryBuilder::FMD3Geometry(AliFMD3* fmd3,
     Double_t phi       = 360. / n * i + 180. / n;
     Double_t x         = r * TMath::Cos(TMath::Pi() / 180 * phi);
     Double_t y         = r * TMath::Sin(TMath::Pi() / 180 * phi);
-    AliDebug(15, Form("Placing flange %d in %s at (%f,%f,%f) r=%f, phi=%f", 
+    AliFMDDebug(15, ("Placing flange %d in %s at (%f,%f,%f) r=%f, phi=%f", 
 		      i, mother->GetName(), x, y, zi, r, phi));
     TGeoRotation* rot    = new TGeoRotation;
     rot->RotateZ(phi);
@@ -614,7 +614,7 @@ AliFMDGeometryBuilder::FMD3Geometry(AliFMD3* fmd3,
   rot->RotateY(180);
   TGeoVolume* top = gGeoManager->GetVolume("ALIC");
   TGeoMatrix* mmatrix = new TGeoCombiTrans("FMD3 trans", 0, 0, z, rot);
-  AliDebug(5, Form("Placing volumes %s and %s in ALIC at z=%f", 
+  AliFMDDebug(5, ("Placing volumes %s and %s in ALIC at z=%f", 
 		   fmd3TopVolume->GetName(), fmd3BotVolume->GetName(), z));
   top->AddNode(fmd3TopVolume, fmd3->GetId(), mmatrix);
   top->AddNode(fmd3BotVolume, fmd3->GetId(), mmatrix);
@@ -627,7 +627,7 @@ void
 AliFMDGeometryBuilder::Exec(Option_t*) 
 {
   // Setup up the FMD geometry. 
-  AliDebug(1,  Form("\tGeometry options: %s",
+  AliFMDDebug(1, ("\tGeometry options: %s",
 		    (fDetailed  ? "divided into strips" : "one volume")));
   if (!gGeoManager) {
     AliFatal("No TGeoManager defined");

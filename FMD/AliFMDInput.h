@@ -107,7 +107,8 @@ public:
     kRecPoints,       // Reconstructed points
     kESD,             // Load ESD's
     kRaw,             // Read raw data 
-    kGeometry         // Not really a tree 
+    kGeometry,        // Not really a tree 
+    kTracks	      // Hits and tracs - for BG study	
   };
   /** CTOR  */
   AliFMDInput();
@@ -155,6 +156,10 @@ public:
       optionally the corresponding kinematics track. 
       @return @c false on error  */
   virtual Bool_t ProcessHits();
+  /** Loop over all tracks, and call ProcessTrack with each hit for
+      that track
+      @return @c false on error  */
+  virtual Bool_t ProcessTracks();
   /** Loop over all digits, and call ProcessDigit for each digit.
       @return @c false on error  */
   virtual Bool_t ProcessDigits();
@@ -180,6 +185,13 @@ public:
       @param p Associated track
       @return  @c false on error   */
   virtual Bool_t ProcessHit(AliFMDHit* h, TParticle* p);
+  /** Process one hit per track. Users should over this to process
+      each hit. 
+      @param i Track number 
+      @param p Track  
+      @param h Associated Hit
+      @return  @c false on error   */
+  virtual Bool_t ProcessTrack(Int_t i, TParticle* p, AliFMDHit* h);
   /** Process one digit.  Users should over this to process each
       digit. 
       @param digit Digit
@@ -276,6 +288,8 @@ protected:
 };
 
 inline Bool_t AliFMDInput::ProcessHit(AliFMDHit*,TParticle*) { return kTRUE; }
+inline Bool_t AliFMDInput::ProcessTrack(Int_t,TParticle*,
+					AliFMDHit*) { return kTRUE; }
 inline Bool_t AliFMDInput::ProcessDigit(AliFMDDigit*) { return kTRUE; }
 inline Bool_t AliFMDInput::ProcessSDigit(AliFMDSDigit*) { return kTRUE; }
 inline Bool_t AliFMDInput::ProcessRawDigit(AliFMDDigit*) { return kTRUE; }

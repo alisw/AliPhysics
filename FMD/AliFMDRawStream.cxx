@@ -28,7 +28,8 @@
 #include "AliFMDRawStream.h"		// ALIFMDRAWSTREAM_H
 // #include <AliRawReader.h>		// ALIRAWREADER_H
 #include "AliFMDParameters.h"
-#include <AliLog.h>
+// #include <AliLog.h>
+#include "AliFMDDebug.h" // Better debug macros
 // #include <iomanip>
 // #include <iostream>
 
@@ -61,12 +62,12 @@ AliFMDRawStream::ReadChannel(UInt_t& ddl, UInt_t& addr,
   do {
     Int_t signal = last;
     if (last > 0x3FF) {
-      AliDebug(30, Form("Last is 0x%x, so reading a new word", last));
+      AliFMDDebug(30, ("Last is 0x%x, so reading a new word", last));
       next   = Next();
       if (!next) break;
       signal = GetSignal();
       if (GetHWAddress() != GetPrevHWAddress() && GetPrevHWAddress() >= 0) {
-	AliDebug(15, Form("New hardware address, was 0x%x, now 0x%x", 
+	AliFMDDebug(15, ("New hardware address, was 0x%x, now 0x%x", 
 			  GetPrevHWAddress(), GetHWAddress()));
 	addr = GetPrevHWAddress();
 	ddl  = GetPrevDDLNumber();
