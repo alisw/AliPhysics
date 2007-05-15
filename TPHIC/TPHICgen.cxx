@@ -26,6 +26,7 @@
 #include "TPHICgen.h"
 #include "TClonesArray.h"
 #include "TParticle.h"
+#define IN_TPHICGEN_CXX
 #include "TPHICcommon.h"
 
 #ifndef WIN32

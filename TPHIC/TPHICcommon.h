@@ -47,8 +47,10 @@ extern "C" {
     Int_t   kv2;
     Float_t qvpar[4];
   } GGiniCommon;
+#ifdef IN_TPHICGEN_CXX
 #define GGINI  COMMON_BLOCK(GGINI,ggini)
   COMMON_BLOCK_DEF(GGiniCommon,GGINI);
+#endif
 
 //       COMMON /ggevnt/ nrun,ievent,wsq,ygg,xmg1,xmg2, p2g(5),
 //      &                ptag1(4),ptag2(4), ngg, kgg(10),pgg(20,5)
@@ -67,7 +69,9 @@ extern "C" {
     Float_t pgg[5][20];
   } GGevntCommon;
 #define GGEVNT COMMON_BLOCK(GGEVNT,ggevnt)
+#ifdef IN_TPHICGEN_CXX
   COMMON_BLOCK_DEF(GGevntCommon,GGEVNT);
+#endif
 
 //       COMMON /ggxs/ xsmax0, xscur0, xscur, xsbra, xssum, ntry, xstot,
 //      &  xstote, ssbr(10)
@@ -82,8 +86,10 @@ extern "C" {
     Float_t xstote;
     Float_t ssbr[10];
   } GGxsCommon;
+#ifdef IN_TPHICGEN_CXX
 #define GGXS   COMMON_BLOCK(GGXS,ggxs)
   COMMON_BLOCK_DEF(GGxsCommon,GGXS);
+#endif
 
 }
 
