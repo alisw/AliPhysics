@@ -23,7 +23,6 @@
 //-----------------------------------------------------------------
 
 #include <TMath.h>
-#include <TMinuit.h>
 #include <TGeoMatrix.h>
 
 #include "AliLog.h"
