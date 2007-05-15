@@ -117,7 +117,7 @@ void AliITSVertexer::FindMultiplicity(Int_t evnumber){
     tht[i] = multReco->GetTracklet(i)[0];
     phi[i] =  multReco->GetTracklet(i)[1];
     dphi[i] = multReco->GetTracklet(i)[2];
-    labels[i] = multReco->GetTracklet(i)[3];
+    labels[i] = static_cast<Int_t>(multReco->GetTracklet(i)[3]);
   }
   Int_t nosingleclus=multReco->GetNSingleClusters();
   Float_t *ths = new Float_t [nosingleclus];
