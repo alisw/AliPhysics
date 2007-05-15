@@ -20,7 +20,7 @@
 #include <assert.h>
 #include <ctype.h>
 #include <time.h>
-
+#include <cassert>
 #include "event.h"
 
 #define DESCRIPTION "DATE raw data stream simulator"

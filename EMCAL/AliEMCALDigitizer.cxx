@@ -68,6 +68,7 @@
 #include <TBrowser.h>
 #include <TObjectTable.h>
 #include <TRandom.h>
+#include <cassert>
 
 // --- AliRoot header files ---
 #include "AliLog.h"
