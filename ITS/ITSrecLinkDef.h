@@ -93,6 +93,7 @@
 #pragma link C++ class AliITSOnlineCalibrationSPDhandler+;
 #pragma link C++ class AliITSOnlineSPDHitArray+;
 #pragma link C++ class AliITSOnlineSPDHitEvent+;
+#pragma link C++ class AliITSOnlineSPDscanAnalyzer+;
 #pragma link C++ class AliITSOnlineSPDscan+;
 #pragma link C++ class AliITSOnlineSPDscanInfo+;
 #pragma link C++ class AliITSOnlineSPDscanInfoMeanTh+;

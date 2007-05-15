@@ -57,6 +57,7 @@ SRCS = 	AliITSDetTypeRec.cxx \
 		AliITSOnlineCalibrationSPDhandler.cxx \
 		AliITSOnlineSPDHitArray.cxx \
 		AliITSOnlineSPDHitEvent.cxx \
+		AliITSOnlineSPDscanAnalyzer.cxx \
 		AliITSOnlineSPDscan.cxx \
 		AliITSOnlineSPDscanInfo.cxx \
 		AliITSOnlineSPDscanInfoMeanTh.cxx \
@@ -67,7 +68,7 @@ SRCS = 	AliITSDetTypeRec.cxx \
 		AliITSBadChannelsAuxSPD.cxx \
 		AliITSBadChannelsSPD.cxx  \
 		AliITSChannelSPD.cxx  \
-		AliITSPreprocessorSDD.cxx   
+		AliITSPreprocessorSDD.cxx
 
 HDRS:=  $(SRCS:.cxx=.h)
 
