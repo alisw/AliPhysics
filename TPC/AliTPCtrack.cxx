@@ -100,7 +100,8 @@ AliTPCtrack::AliTPCtrack(Double_t x, Double_t alpha, const Double_t p[5],
     cov[10]*cnv, cov[11]*cnv, c42*cnv, cov[13]*cnv, cov[14]*cnv*cnv
   };
 
-  Double_t p0=TMath::Sign(1/kMostProbablePt,pp[4]);
+  Double_t mostProbablePt=AliExternalTrackParam::GetMostProbablePt();
+  Double_t p0=TMath::Sign(1/mostProbablePt,pp[4]);
   Double_t w0=cc[14]/(cc[14] + p0*p0), w1=p0*p0/(cc[14] + p0*p0);
   pp[4] = w0*p0 + w1*pp[4]; 
   cc[10]*=w1; cc[11]*=w1; cc[12]*=w1; cc[13]*=w1; cc[14]*=w1;
