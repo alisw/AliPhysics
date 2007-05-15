@@ -396,7 +396,9 @@
 #include <TClonesArray.h>
 
 #include "TMevSim.h"
+#define IN_TMEVSIM_CXX
 #include "TMevSimPartTypeParams.h"
+#include "TParticle.h"
 
 #ifndef WIN32
 # define multgen multgen_
