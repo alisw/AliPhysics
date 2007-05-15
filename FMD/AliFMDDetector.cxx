@@ -36,6 +36,7 @@
 //
 
 #include <TGeoManager.h>	// ROOT_TGeoManager 
+#include <TGeoPhysicalNode.h>   // ROOT_TGeoPhysicalNode
 #include <TGeoMatrix.h>		// ROOT_TGeoMatrix 
 #include <TMath.h>              // ROOT_TMath
 
@@ -169,6 +170,8 @@ AliFMDDetector::HasAllTransforms(Char_t ring) const
   (name[0] == 'F' && name[2] == 'S' && name[3] == 'E')
 #define IS_NODE_HALF(name) \
   (name[0] == 'F' && name[2] == 'M' && (name[3] == 'B' || name[3] == 'T'))
+#define HALF_FORMAT   "FMD/FMD%d_%c"
+#define SENSOR_FORMAT "FMD/FMD%d_%c/FMD%c_%02d"
 
 //____________________________________________________________________
 void
@@ -185,17 +188,73 @@ AliFMDDetector::InitTransformations()
     AliFatal("No TGeoManager defined");
     return;
   }
-  TGeoVolume* topVolume = gGeoManager->GetTopVolume();
-  if (!topVolume) {
-    AliFatal("No top-level volume defined");
-    return;
-  }
+
+  // Implementation using alignable volume names. 
   // Make container of transforms 
   if (fInner && !fInnerTransforms) 
     fInnerTransforms = new TObjArray(fInner->GetNModules());
   if (fOuter && !fOuterTransforms) 
     fOuterTransforms = new TObjArray(fOuter->GetNModules());
   
+  // Loop over rings 
+  for (size_t iring = 0; iring < 2; iring++) {
+    char ring = (iring == 0 ? 'I' : 'O');
+    TObjArray*  trans = 0;
+    AliFMDRing* r     = 0; 
+    switch (ring) {
+    case 'I': r = fInner; trans = fInnerTransforms; break;
+    case 'O': r = fOuter; trans = fOuterTransforms; break; 
+    }
+    if (!r || !trans) continue;
+
+    Int_t nModules = r->GetNModules();
+    if (nModules <= 0) continue;
+
+    // Loop over bottom/top 
+    for (size_t ihalf = 0; ihalf < 2; ihalf++) {
+      char  half = (ihalf == 0 ? 'T' : 'B');
+      Int_t base = (half == 'T' ? 0 : nModules / 2);
+      
+      // Loop over modules in this half ring 
+      for (Int_t imod = 0; imod < nModules / 2; imod++) {
+	// Find physical node entry
+	TString path(Form(SENSOR_FORMAT, fId, half, ring, base+imod));
+	TGeoPNEntry* entry = gGeoManager->GetAlignableEntry(path.Data());
+	if (!entry) {
+	  AliError(Form("Alignable entry for sensor \"%s\" not found!", 
+			path.Data()));
+	  continue;
+	}
+	TGeoPhysicalNode* pn = entry->GetPhysicalNode();
+	if (!pn) {
+	  AliWarning(Form("Making physical volume for \"%s\"", path.Data()));
+	  pn = gGeoManager->MakeAlignablePN(entry);
+	  if (!pn) {
+	    AliError(Form("No physical node for \"%s\"", path.Data()));
+	    continue;
+	  }
+	}
+	
+	const TGeoMatrix* pm = pn->GetMatrix();
+	if (!pm) {
+	  AliError(Form("No matrix for path \"%s\"", path.Data()));
+	  continue;
+	}
+	// Get transformation matrix for this node, and store it. 
+	TGeoMatrix*  t = new TGeoHMatrix(*pm);
+	trans->AddAt(t, base+imod);
+	AliFMDDebug(1, ("Found matrix for path \"%s\": %p",path.Data(),pm));
+      }
+    }
+  }
+  if (HasAllTransforms('I') && HasAllTransforms('O')) return;
+
+  // Alternative implementation using TGeoIter. 
+  TGeoVolume* topVolume = gGeoManager->GetTopVolume();
+  if (!topVolume) {
+    AliFatal("No top-level volume defined");
+    return;
+  }
   // Make an iterator
   TGeoIterator next(topVolume);
   TGeoNode* node = 0;
@@ -330,7 +389,7 @@ AliFMDDetector::SetAlignableVolumes() const
       
       // Get the node path 
       next.GetPath(path);
-      align = Form("FMD/FMD%d_%c", fId, thisHalf);
+      align = Form(HALF_FORMAT, fId, thisHalf);
     }
     
     // if the detector was found, then we're on that branch, and we
@@ -362,7 +421,7 @@ AliFMDDetector::SetAlignableVolumes() const
       Int_t copy  = node->GetNumber();
       next.GetPath(path);
       // path.Replace("ALIC", "/ALIC_1");
-      align = Form("FMD/FMD%d_%c/FMD%c_%02d", fId, thisHalf, ringid, copy);
+      align = Form(SENSOR_FORMAT, fId, thisHalf, ringid, copy);
       
       switch (ringid) {
       case 'I': iInnerSensor++; break;

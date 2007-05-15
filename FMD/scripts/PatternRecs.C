@@ -10,8 +10,11 @@
 void
 PatternRecs()
 {
+  AliLog::SetModuleDebugLevel("FMD", 1);
   AliCDBManager* cdb = AliCDBManager::Instance();
   cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  cdb->SetRun(0);
+  AliFMDParameters::Instance()->Init();
   gSystem->Load("libFMDutil.so");
   AliFMDPattern* d = new AliFMDPattern;
   d->AddLoad(AliFMDInput::kRecPoints);
