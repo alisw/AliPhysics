@@ -5,7 +5,9 @@ EINCLUDE :=
 ELIBSDIR :=
 ELIBS    := Reve
 
-PACKBLIBS := $(ROOTCLIBS) -lTreePlayer -lGeomPainter -lGed -lRGL $(SYSLIBS)
+PACKBLIBS := $(ROOTCLIBS) -lTreePlayer -lGeomPainter -lGed \
+	     -L$(shell root-config --libdir)/$(dir $(shell root-config --version)) -lRGL \
+	     $(SYSLIBS)
 
 ifeq (macosx,$(ALICE_TARGET))
 
