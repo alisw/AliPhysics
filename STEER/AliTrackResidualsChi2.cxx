@@ -19,7 +19,7 @@
 //
 //-----------------------------------------------------------------
 
-#include <TMinuit.h>
+#include <TVirtualFitter.h>
 #include <TGeoMatrix.h>
 
 #include "AliAlignObj.h"
@@ -28,7 +28,9 @@
 
 void Fcn(Int_t &npar, Double_t *gin, Double_t &f, Double_t *x, Int_t iflag);
 
+
 ClassImp(AliTrackResidualsChi2)
+
 
 //______________________________________________________________________________
 void Fcn(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag)
@@ -36,7 +38,7 @@ void Fcn(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag)
   // This function is called by minuit
   // The corresponding member method is called
   // using SetObjectFit/GetObjectFit methods of TMinuit
-  AliTrackResidualsChi2* dummy = (AliTrackResidualsChi2 *)gMinuit->GetObjectFit();
+  AliTrackResidualsChi2* dummy = (AliTrackResidualsChi2 *)TVirtualFitter::GetFitter()->GetObjectFit();
   dummy->Chi2(npar, gin, f, par, iflag);
 }
 
@@ -45,37 +47,41 @@ Bool_t AliTrackResidualsChi2::Minimize()
 {
   // Implementation of Chi2 based minimization
   // of track residuala sum
+  // 
+  // CHOLM: Modified to use the TVirtualFitter interface only.  This
+  // makes it possible other fitters than TMinuit (say TMinuit2,
+  // TFumili) by simply changing ones configuration file, or setting
+  // it up in a script.  Much more robust and flexible. 
   Double_t arglist[10];
   Int_t ierflg = 0;
-  gMinuit = new TMinuit(6);  //initialize TMinuit
+  TVirtualFitter *fitter = TVirtualFitter::Fitter(this,6);  //initialize TMinuit
   arglist[0] = -1;
-  gMinuit->mnexcm("SET PRINT", arglist, 1, ierflg);
+  ierflg = fitter->ExecuteCommand("SET PRINT", arglist, 1);
 
-  gMinuit->SetObjectFit(this);
-  gMinuit->SetFCN(Fcn);
+  fitter->SetFCN(Fcn);
 
   arglist[0] = 1;
-  gMinuit->mnexcm("SET ERR", arglist ,1,ierflg);
+  ierflg = fitter->ExecuteCommand("SET ERR", arglist ,1);
 
   // Set starting values and step sizes for parameters
   Double_t pars[6] = {0,0,0,0,0,0};
   Double_t step[6] = {0.0001,0.0001,0.0001,0.0001,0.0001,0.0001};
-  gMinuit->mnparm(0, "dx", pars[0], step[0], 0,0,ierflg);
-  gMinuit->mnparm(1, "dy", pars[1], step[1], 0,0,ierflg);
-  gMinuit->mnparm(2, "dz", pars[2], step[2], 0,0,ierflg);
-  gMinuit->mnparm(3, "psi", pars[3], step[3], 0,0,ierflg);
-  gMinuit->mnparm(4, "theta", pars[4], step[4], 0,0,ierflg);
-  gMinuit->mnparm(5, "phi", pars[5], step[5], 0,0,ierflg);
+  ierflg = fitter->SetParameter(0, "dx", pars[0], step[0], 0,0);
+  ierflg = fitter->SetParameter(1, "dy", pars[1], step[1], 0,0);
+  ierflg = fitter->SetParameter(2, "dz", pars[2], step[2], 0,0);
+  ierflg = fitter->SetParameter(3, "psi", pars[3], step[3], 0,0);
+  ierflg = fitter->SetParameter(4, "theta", pars[4], step[4], 0,0);
+  ierflg = fitter->SetParameter(5, "phi", pars[5], step[5], 0,0);
 
   // Now ready for minimization step
   arglist[0] = 500;
   arglist[1] = 1.;
-  gMinuit->mnexcm("MIGRAD", arglist ,2,ierflg);
+  fitter->ExecuteCommand("MIGRAD", arglist ,2);
 
   // Print results
   Double_t amin,edm,errdef;
   Int_t nvpar,nparx,icstat;
-  gMinuit->mnstat(amin,edm,errdef,nvpar,nparx,icstat);
+  icstat = fitter->GetStats(amin,edm,errdef,nvpar,nparx);
   fChi2 = amin; fNdf -= nvpar;
 
   return kTRUE;
