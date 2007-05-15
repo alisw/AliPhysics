@@ -9,8 +9,8 @@ void MakeTOFFullMisAlignment(){
   AliAlignObjAngles a;
   Double_t sfdpsi=0.,sfdtheta=0.,sfdphi=0.;
   Int_t iIndex=0; //let all modules have index=0 in a layer with no LUT
-  AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer;
-  UShort_t dvoluid = AliAlignObj::LayerToVolUID(iLayer,iIndex); //dummy vol id 
+  AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
+  UShort_t dvoluid = AliGeomManager::LayerToVolUID(iLayer,iIndex); //dummy vol id 
 
   // FRAME part !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   const char* basepath ="ALIC_1/B077_1/BSEGMO";
@@ -138,7 +138,7 @@ void MakeTOFFullMisAlignment(){
   gGeoManager=0x0;
   TGeoManager::Import("/home/rgrosso/MacroAllineamento010207/geom_misalBSEGMO_tofSM.root");
   // tof strips as in residual
-  AliAlignObj::ELayerID idTOF = AliAlignObj::kTOF;
+  AliGeomManager::ELayerID idTOF = AliGeomManager::kTOF;
 
   Double_t sdx=0.; 
   Double_t sdy=0.; 
@@ -147,14 +147,14 @@ void MakeTOFFullMisAlignment(){
   TRandom *rnds   = new TRandom(4357);
   sigmatr = 0.1; // max shift in cm w.r.t. local ideal RS
 
-  for(i=0; i<AliAlignObj::LayerSize(idTOF); i++) {
+  for(i=0; i<AliGeomManager::LayerSize(idTOF); i++) {
     sdx = 0;
     sdy = rnds->Gaus(0.,sigmatr);
     sdz = rnds->Gaus(0.,sigmatr);
     sdpsi = 0.;
     sdtheta = 0.;
     sdphi = 0.;
-    new(alobj[j++]) AliAlignObjAngles(AliAlignObj::SymName(idTOF,i), AliAlignObj::LayerToVolUID(idTOF,i), sdx, sdy, sdz, sdpsi, sdtheta, sdphi, kFALSE);
+    new(alobj[j++]) AliAlignObjAngles(AliGeomManager::SymName(idTOF,i), AliGeomManager::LayerToVolUID(idTOF,i), sdx, sdy, sdz, sdpsi, sdtheta, sdphi, kFALSE);
   }
 
   if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){

@@ -44,8 +44,8 @@ void MakePMDZeroMisAlignment(){
   AliAlignObjAngles o;
   
   Int_t iIndex=0; //  let all modules have index=0 in a layer with no LUT
-  AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer;
-  UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,iIndex);
+  AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
+  UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iIndex);
   Double_t dx=0., dy=0., dz=0., dpsi=0., dtheta=0., dphi=0.;
   Int_t i, j=0;
 

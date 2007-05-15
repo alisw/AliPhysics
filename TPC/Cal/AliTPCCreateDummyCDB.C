@@ -135,8 +135,8 @@ void GenerateRndTPC(Float_t sigmatrx=0., Float_t sigmatry=0, Float_t sigmatrz=0,
   TRandom *rnd   = new TRandom(4357);
   AliAlignObjAngles o;
   Int_t j = 0;
-  for (Int_t iLayer = AliAlignObj::kTPC1; iLayer <= AliAlignObj::kTPC2; iLayer++) {
-    for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer); iModule++) {
+  for (Int_t iLayer = AliGeomManager::kTPC1; iLayer <= AliGeomManager::kTPC2; iLayer++) {
+    for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(iLayer); iModule++) {
 
       Float_t dx = (rnd->Uniform()-0.5)*sigmatrx;
       Float_t dy = (rnd->Uniform()-0.5)*sigmatry;
@@ -145,8 +145,8 @@ void GenerateRndTPC(Float_t sigmatrx=0., Float_t sigmatry=0, Float_t sigmatrz=0,
       Float_t dtheta = (rnd->Uniform()-0.5)*sigmarot;
       Float_t dphi = (rnd->Uniform()-0.5)*sigmarot;
 
-      UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,iModule);
-      const char *path = AliAlignObj::GetVolPath(volid);
+      UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iModule);
+      const char *path = AliGeomManager::GetVolPath(volid);
       new(alobj[j]) AliAlignObjAngles(path, volid, dx, dy, dz, dpsi, dtheta, dphi);
       j++;
     }

@@ -594,31 +594,31 @@ Bool_t AliITStrackerMI::GetTrackPoint(Int_t index, AliTrackPoint& p) const {
   cl->GetGlobalCov(cov);
   p.SetXYZ(xyz, cov);
 
-  AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer; 
+  AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer; 
   switch (l) {
   case 0:
-    iLayer = AliAlignObj::kSPD1;
+    iLayer = AliGeomManager::kSPD1;
     break;
   case 1:
-    iLayer = AliAlignObj::kSPD2;
+    iLayer = AliGeomManager::kSPD2;
     break;
   case 2:
-    iLayer = AliAlignObj::kSDD1;
+    iLayer = AliGeomManager::kSDD1;
     break;
   case 3:
-    iLayer = AliAlignObj::kSDD2;
+    iLayer = AliGeomManager::kSDD2;
     break;
   case 4:
-    iLayer = AliAlignObj::kSSD1;
+    iLayer = AliGeomManager::kSSD1;
     break;
   case 5:
-    iLayer = AliAlignObj::kSSD2;
+    iLayer = AliGeomManager::kSSD2;
     break;
   default:
     AliWarning(Form("Wrong layer index in ITS (%d) !",l));
     break;
   };
-  UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,idet);
+  UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,idet);
   p.SetVolumeID((UShort_t)volid);
   return kTRUE;
 }

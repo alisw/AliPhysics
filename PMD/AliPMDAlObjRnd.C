@@ -92,9 +92,9 @@ void AliPMDAlObjRnd(Float_t max_trans=1.0, Float_t max_rot=0.1)
   AliAlignObjAngles o;
   
   UShort_t iIndex=0;
-//   AliAlignObj::ELayerID iLayer = AliAlignObj::kTOF;
+//   AliGeomManager::ELayerID iLayer = AliGeomManager::kTOF;
 
-//   UShort_t dvoluid = AliAlignObj::LayerToVolUID(iLayer,iIndex); //dummy volume identity 
+//   UShort_t dvoluid = AliGeomManager::LayerToVolUID(iLayer,iIndex); //dummy volume identity 
 
   new(alobj[0]) AliAlignObjAngles(Sector1, iIndex, dx14, dy14, dz14, dpsi14, dtheta14, dphi14);
   new(alobj[1]) AliAlignObjAngles(Sector2, iIndex, dx14, dy14, dz14, dpsi14, dtheta14, dphi14);

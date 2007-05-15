@@ -233,7 +233,7 @@ void SurveyToAlignmentExampleA(){
 //  gdelta.MultiplyLeft(&ng);
 //  Int_t index = 0;
 //  // if the volume is in the look-up table use something like this instead:
-//  // AliAlignObj::LayerToVolUID(AliAlignObj::kTOF,i); 
+//  // AliGeomManager::LayerToVolUID(AliGeomManager::kTOF,i); 
 //  AliAlignObjMatrix* mobj = new AliAlignObjMatrix("symname",index,gdelta,kTRUE);
  
 }

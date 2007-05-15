@@ -1540,11 +1540,11 @@ Bool_t AliTRDgeometry::ReadGeoMatrices()
   fMatrixGeo             = new TObjArray(kNdet);
   AliAlignObjAngles o;
 
-  for (Int_t iLayer = AliAlignObj::kTRD1; iLayer <= AliAlignObj::kTRD6; iLayer++) {
-    for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer); iModule++) {
+  for (Int_t iLayer = AliGeomManager::kTRD1; iLayer <= AliGeomManager::kTRD6; iLayer++) {
+    for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(iLayer); iModule++) {
 
-      UShort_t     volid   = AliAlignObj::LayerToVolUID(iLayer,iModule);
-      const char  *symname = AliAlignObj::SymName(volid);
+      UShort_t     volid   = AliGeomManager::LayerToVolUID(iLayer,iModule);
+      const char  *symname = AliGeomManager::SymName(volid);
       TGeoPNEntry *pne     = gGeoManager->GetAlignableEntry(symname);
       const char  *path    = symname;
       if (pne) {
@@ -1554,7 +1554,7 @@ Bool_t AliTRDgeometry::ReadGeoMatrices()
         return kFALSE;
       }
       TGeoHMatrix *m         = gGeoManager->GetCurrentMatrix();
-      Int_t        iLayerTRD = iLayer - AliAlignObj::kTRD1;
+      Int_t        iLayerTRD = iLayer - AliGeomManager::kTRD1;
       Int_t        isector   = Nsect() - 1 - (iModule/Ncham());
       Int_t        ichamber  = Ncham() - 1 - (iModule%Ncham());
       Int_t        lid       = GetDetector(iLayerTRD,ichamber,isector);    

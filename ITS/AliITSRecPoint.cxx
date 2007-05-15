@@ -55,7 +55,7 @@ fDeltaProb(0)
 
 //________________________________________________________________________
 AliITSRecPoint::AliITSRecPoint(Int_t *lab,Float_t *hit, Int_t *info, Bool_t local):
-AliCluster(AliAlignObj::LayerToVolUID((info[2]+AliAlignObj::kSPD1),lab[3]&0x3FF),hit,0,0,lab),
+AliCluster(AliGeomManager::LayerToVolUID((info[2]+AliGeomManager::kSPD1),lab[3]&0x3FF),hit,0,0,lab),
 fXloc(0),
 fZloc(0),
 fdEdX(0),

@@ -628,20 +628,20 @@ Bool_t AliTPCParam::ReadGeoMatrices(){
     fGlobalMatrix[isec] = 0;
     fClusterMatrix[isec]= 0;
     fTrackingMatrix[isec]=0;   
-    AliAlignObj::ELayerID iLayer;
+    AliGeomManager::ELayerID iLayer;
     Int_t iModule;
 
     if(isec<fNInnerSector) {
-      iLayer = AliAlignObj::kTPC1;
+      iLayer = AliGeomManager::kTPC1;
       iModule = isec;
     }
     else {
-      iLayer = AliAlignObj::kTPC2;
+      iLayer = AliGeomManager::kTPC2;
       iModule = isec - fNInnerSector;
     }
 
-    UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,iModule);
-    const char *symname = AliAlignObj::SymName(volid);
+    UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iModule);
+    const char *symname = AliGeomManager::SymName(volid);
     TGeoPNEntry* pne = gGeoManager->GetAlignableEntry(symname);
     const char *path = symname;
     if(pne) path=pne->GetTitle();

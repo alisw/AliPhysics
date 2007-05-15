@@ -9,7 +9,7 @@ void MakeTOFResMisAlignment(){
 
   AliAlignObjAngles a;
 
-  AliAlignObj::ELayerID idTOF = AliAlignObj::kTOF;
+  AliGeomManager::ELayerID idTOF = AliGeomManager::kTOF;
   Int_t i;
   Int_t j=0;
   Double_t dx=0.; 
@@ -19,14 +19,14 @@ void MakeTOFResMisAlignment(){
   TRandom *rnd   = new TRandom(4357);
   Double_t sigmatr = 0.1; // max shift in cm w.r.t. local ideal RS
 
-  for(i=0; i<AliAlignObj::LayerSize(idTOF); i++) {
+  for(i=0; i<AliGeomManager::LayerSize(idTOF); i++) {
     dx = 0;
     dy = rnd->Gaus(0.,sigmatr);
     dz = rnd->Gaus(0.,sigmatr);
     dpsi = 0.;
     dtheta = 0.;
     dphi = 0.;
-    new(alobj[j]) AliAlignObjAngles(AliAlignObj::SymName(idTOF,i), AliAlignObj::LayerToVolUID(idTOF,i), dx, dy, dz, dpsi, dtheta, dphi, kFALSE);
+    new(alobj[j]) AliAlignObjAngles(AliGeomManager::SymName(idTOF,i), AliGeomManager::LayerToVolUID(idTOF,i), dx, dy, dz, dpsi, dtheta, dphi, kFALSE);
     j++;
   }
 

@@ -18,8 +18,8 @@ void MakeTPCFullMisAlignment(){
   Float_t sigmatr=0.01;
   Float_t sigmarot = 0.006;
 
-  for (Int_t iLayer = AliAlignObj::kTPC1; iLayer <= AliAlignObj::kTPC2; iLayer++) {
-    for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer); iModule++) {
+  for (Int_t iLayer = AliGeomManager::kTPC1; iLayer <= AliGeomManager::kTPC2; iLayer++) {
+    for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(iLayer); iModule++) {
 
       dx = rnd->Gaus(0,sigmatr);
       dy = rnd->Gaus(0,sigmatr);
@@ -28,8 +28,8 @@ void MakeTPCFullMisAlignment(){
       dtheta = rnd->Gaus(0,sigmarot);
       dphi = rnd->Gaus(0,sigmarot);
 
-      UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,iModule);
-      const char *symname = AliAlignObj::SymName(volid);
+      UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iModule);
+      const char *symname = AliGeomManager::SymName(volid);
       new(alobj[j++]) AliAlignObjAngles(symname, volid, dx, dy, dz, dpsi, dtheta, dphi, kFALSE);
     }
   }

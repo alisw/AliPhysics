@@ -16,8 +16,8 @@ void MakeT0FullMisAlignment(){
   TString symName, sn;
 
   Int_t iIndex=0;
-  AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer;
-  UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,iIndex);
+  AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
+  UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iIndex);
 
   Int_t j=0;
   for (Int_t imod=0; imod<24; imod++){

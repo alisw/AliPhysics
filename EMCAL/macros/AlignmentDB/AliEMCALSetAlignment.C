@@ -66,8 +66,8 @@ void IdealAlignment()
   // null shifts and rotations
 
   UShort_t iIndex=0;
-  AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer;
-  UShort_t dvoluid = AliAlignObj::LayerToVolUID(iLayer,iIndex); //dummy volume identity 
+  AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
+  UShort_t dvoluid = AliGeomManager::LayerToVolUID(iLayer,iIndex); //dummy volume identity 
 
   TString basePath = "EMCAL/FullSupermodule"; 
   const Int_t nModules=10;
@@ -114,8 +114,8 @@ void ResidualAlignment()
   AliAlignObjAngles a;
 
   UShort_t iIndex=0;
-  AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer;
-  UShort_t dvoluid = AliAlignObj::LayerToVolUID(iLayer,iIndex); //dummy volume identity 
+  AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
+  UShort_t dvoluid = AliGeomManager::LayerToVolUID(iLayer,iIndex); //dummy volume identity 
 
   Double_t sigmaTrans = 0.01; Double_t sigmaRot = 0.001;
   Double_t dx=0., dy=0., dz=0., dpsi=0., dtheta=0., dphi=0.;
@@ -169,8 +169,8 @@ void FullMisalignment()
   AliAlignObjAngles a;
 
   UShort_t iIndex=0;
-  AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer;
-  UShort_t dvoluid = AliAlignObj::LayerToVolUID(iLayer,iIndex); //dummy volume identity 
+  AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
+  UShort_t dvoluid = AliGeomManager::LayerToVolUID(iLayer,iIndex); //dummy volume identity 
 
 
   Double_t sigmaTrans = 10.; Double_t sigmaRot = 0.1;

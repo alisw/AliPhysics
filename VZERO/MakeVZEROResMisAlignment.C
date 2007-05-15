@@ -18,8 +18,8 @@ void MakeVZEROResMisAlignment(){
   const char *V0left="VZERO/V0A";
 
   Int_t iIndex=0;
-  AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer;
-  UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,iIndex);
+  AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
+  UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iIndex);
 
   dx = rnd->Gaus(0.,sigmatr);
   dy = rnd->Gaus(0.,sigmatr);

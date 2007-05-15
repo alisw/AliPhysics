@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.1  2007/04/19 15:47:20  kharlov
+ * Add misalignment of strip units with AliPHOSSurvey class
+ *
  */
 
 // Objects of this class read txt file with survey (photogrammetry) data
@@ -148,8 +151,8 @@ void AliPHOSSurvey::CreateAliAlignObjAngles(TClonesArray &array)
 
   AliPHOSEMCAGeometry * emcaGeom = phosGeom->GetEMCAGeometry();
   Int_t arrayInd = array.GetEntries(), iIndex = 0;
-  AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer;
-  UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,iIndex);
+  AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
+  UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iIndex);
 
   for (Int_t module = 1; module <= phosGeom->GetNModules(); ++module) {
     for (Int_t i = 0, stripNum = 0; i < emcaGeom->GetNStripX(); ++i) {
@@ -175,8 +178,8 @@ void AliPHOSSurvey::CreateNullObjects(TClonesArray &array, const AliPHOSGeometry
   //Create null shifts and rotations.
   const AliPHOSEMCAGeometry * emcaGeom = phosGeom->GetEMCAGeometry();
   Int_t arrayInd = array.GetEntries(), iIndex = 0;
-  AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer;
-  UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,iIndex);
+  AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
+  UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iIndex);
 
   for (Int_t module = 1; module <= phosGeom->GetNModules(); ++module)
     for (Int_t i = 0; i < emcaGeom->GetNStripX(); ++i)

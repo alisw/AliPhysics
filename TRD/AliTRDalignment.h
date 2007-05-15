@@ -88,9 +88,9 @@ class AliTRDalignment : public TObject {
   // module number, 0-89
   int GetMod(int ch) const                           {return 5*GetSec(ch)+GetSta(ch);                           } 
   // layer number, 9-14
-  int GetLay(int ch) const                           {return AliAlignObj::kTRD1+GetPla(ch);                     }
+  int GetLay(int ch) const                           {return AliGeomManager::kTRD1+GetPla(ch);                     }
   // volume id
-  UShort_t GetVoi(int ch) const                      {return AliAlignObj::LayerToVolUID(GetLay(ch),GetMod(ch)); }
+  UShort_t GetVoi(int ch) const                      {return AliGeomManager::LayerToVolUID(GetLay(ch),GetMod(ch)); }
   // symbolic name of a supermodule
   char *GetSmName(int sm) const                      {return Form("TRD/sm%02d",sm);                             }
   // symbolic name of a chamber

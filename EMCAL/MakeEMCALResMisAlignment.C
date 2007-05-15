@@ -16,8 +16,8 @@ void MakeEMCALResMisAlignment(){
   TString pathstr;
 
   Int_t iIndex=0; // let all modules have index=0 in a layer with no LUT
-  AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer;
-  UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,iIndex);
+  AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
+  UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iIndex);
 
   Int_t i;
   Int_t j=0;

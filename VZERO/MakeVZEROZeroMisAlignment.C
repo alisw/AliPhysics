@@ -12,8 +12,8 @@ void MakeVZEROZeroMisAlignment(){
   Double_t dx, dy, dz, dpsi, dtheta, dphi;
 
   Int_t iIndex=0;
-  AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer;
-  UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,iIndex);
+  AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
+  UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iIndex);
 
   TString V0right("VZERO/V0C");
   new(alobj[0]) AliAlignObjAngles(V0right.Data(), volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);

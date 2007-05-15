@@ -7,9 +7,9 @@ void MakeHMPIDZeroMisAlignment(){
 
   Double_t dX=0.,dY=0.,dZ=0.,dPsi=0.,dTheta=0.,dPhi=0.;
  
-  Int_t idHMPID =  AliAlignObj::kHMPID;
+  Int_t idHMPID =  AliGeomManager::kHMPID;
   for (Int_t iCh = 0; iCh < 7; iCh++) {
-    new((*pCA)[iCh]) AliAlignObjMatrix(AliAlignObj::SymName(idHMPID,iCh),AliAlignObj::LayerToVolUID(idHMPID,iCh),dX,dY,dZ,dPsi,dTheta,dPhi,kTRUE);
+    new((*pCA)[iCh]) AliAlignObjMatrix(AliGeomManager::SymName(idHMPID,iCh),AliGeomManager::LayerToVolUID(idHMPID,iCh),dX,dY,dZ,dPsi,dTheta,dPhi,kTRUE);
   }
 
 //   pCA->Print();

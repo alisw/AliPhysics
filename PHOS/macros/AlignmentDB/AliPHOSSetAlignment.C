@@ -66,8 +66,8 @@ void IdealAlignment()
   // null shifts and rotations
 
   UShort_t iIndex=0;
-  AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer;
-  UShort_t dvoluid = AliAlignObj::LayerToVolUID(iLayer,iIndex); //dummy volume identity 
+  AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
+  UShort_t dvoluid = AliGeomManager::LayerToVolUID(iLayer,iIndex); //dummy volume identity 
 
   TString basePath = "PHOS/Module"; 
   const Int_t nModules=5;
@@ -110,8 +110,8 @@ void ResidualAlignment()
   Double_t displacement = 0.2;
 
   UShort_t iIndex=0;
-  AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer;
-  UShort_t dvoluid = AliAlignObj::LayerToVolUID(iLayer,iIndex); //dummy volume identity 
+  AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
+  UShort_t dvoluid = AliGeomManager::LayerToVolUID(iLayer,iIndex); //dummy volume identity 
 
   // Alignment for 5 PHOS modules
   new(alobj[0]) AliAlignObjAngles("PHOS/Module1",
@@ -171,8 +171,8 @@ void FullMisalignment()
   Double_t displacement = 10;
 
   UShort_t iIndex=0;
-  AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer;
-  UShort_t dvoluid = AliAlignObj::LayerToVolUID(iLayer,iIndex); //dummy volume identity 
+  AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
+  UShort_t dvoluid = AliGeomManager::LayerToVolUID(iLayer,iIndex); //dummy volume identity 
 
   // Alignment for 5 PHOS modules
   new(alobj[0]) AliAlignObjAngles("PHOS/Module1",

@@ -11,11 +11,11 @@ void MakeHMPIDResMisAlignment(){
 
   AliAlignObjMatrix o;
  
-  Int_t idHMPID =  AliAlignObj::kHMPID;
+  Int_t idHMPID =  AliGeomManager::kHMPID;
   for (Int_t iCh = 0; iCh < 7; iCh++) {
     dX     = (pRnd->Uniform()-0.5)*sigmaTrans;    dY     = (pRnd->Uniform()-0.5)*sigmaTrans;    dZ     = (pRnd->Uniform()-0.5)*sigmaTrans;
     dPsi   = (pRnd->Uniform()-0.5)*sigmaRot;    dTheta = (pRnd->Uniform()-0.5)*sigmaRot;    dPhi   = (pRnd->Uniform()-0.5)*sigmaRot;
-    new((*pCA)[iCh]) AliAlignObjMatrix(AliAlignObj::SymName(idHMPID,iCh),AliAlignObj::LayerToVolUID(idHMPID,iCh),dX,dY,dZ,dPsi,dTheta,dPhi,kTRUE);
+    new((*pCA)[iCh]) AliAlignObjMatrix(AliGeomManager::SymName(idHMPID,iCh),AliGeomManager::LayerToVolUID(idHMPID,iCh),dX,dY,dZ,dPsi,dTheta,dPhi,kTRUE);
   }
 
 //   pCA->Print();

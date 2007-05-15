@@ -16,10 +16,10 @@ void MakeTRDZeroMisAlignment(){
   const char *symname;
 
   // create the chambers' alignment objects
-  for (Int_t iLayer = AliAlignObj::kTRD1; iLayer <= AliAlignObj::kTRD6; iLayer++) {
-    for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer); iModule++) {
-      volid = AliAlignObj::LayerToVolUID(iLayer,iModule);
-      symname = AliAlignObj::SymName(volid);
+  for (Int_t iLayer = AliGeomManager::kTRD1; iLayer <= AliGeomManager::kTRD6; iLayer++) {
+    for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(iLayer); iModule++) {
+      volid = AliGeomManager::LayerToVolUID(iLayer,iModule);
+      symname = AliGeomManager::SymName(volid);
       new(alobj[j++]) AliAlignObjAngles(symname,volid,dx,dy,dz,rx,ry,rz,kTRUE);
     }
   }

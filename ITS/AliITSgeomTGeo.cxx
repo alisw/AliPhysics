@@ -166,7 +166,7 @@ const char* AliITSgeomTGeo::GetSymName(Int_t index)
   Int_t lay, index2;
   if (!GetLayer(index,lay,index2)) return NULL;
 
-  return AliAlignObj::SymName((AliAlignObj::ELayerID)((lay-1)+AliAlignObj::kSPD1),index2);
+  return AliGeomManager::SymName((AliGeomManager::ELayerID)((lay-1)+AliGeomManager::kSPD1),index2);
 }
 
 //______________________________________________________________________
@@ -232,7 +232,7 @@ Bool_t AliITSgeomTGeo::GetOrigMatrix(Int_t index, TGeoHMatrix &m)
   const char *symname = GetSymName(index);
   if (!symname) return kFALSE;
 
-  return AliAlignObj::GetOrigGlobalMatrix(symname,m);
+  return AliGeomManager::GetOrigGlobalMatrix(symname,m);
 }
 
 //______________________________________________________________________

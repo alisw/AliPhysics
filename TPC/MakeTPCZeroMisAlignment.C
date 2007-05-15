@@ -12,11 +12,11 @@ void MakeTPCZeroMisAlignment(){
   Int_t j = 0;
 
   // RS = local
-  for (Int_t iLayer = AliAlignObj::kTPC1; iLayer <= AliAlignObj::kTPC2; iLayer++) {
-    for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer); iModule++) {
+  for (Int_t iLayer = AliGeomManager::kTPC1; iLayer <= AliGeomManager::kTPC2; iLayer++) {
+    for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(iLayer); iModule++) {
 
-      UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,iModule);
-      const char *symname = AliAlignObj::SymName(volid);
+      UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iModule);
+      const char *symname = AliGeomManager::SymName(volid);
       new(alobj[j]) AliAlignObjAngles(symname, volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
       j++;
     }

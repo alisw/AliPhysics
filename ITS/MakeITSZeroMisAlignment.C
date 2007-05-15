@@ -10,43 +10,43 @@ void MakeITSZeroMisAlignment(){
   AliAlignObjAngles a;
 
   Double_t dx=0., dy=0., dz=0., dpsi=0., dtheta=0., dphi=0., globalZ=0.;
-  AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer; 
+  AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer; 
 
   Int_t j = 0;
 
   new(alobj[j]) AliAlignObjAngles("ITS", 0, dx, dy, globalZ, dpsi, dtheta, dphi, kTRUE);
   j++;
 
-  for ( Int_t l = AliAlignObj::kSPD1; l <= AliAlignObj::kSSD2; l++) {
+  for ( Int_t l = AliGeomManager::kSPD1; l <= AliGeomManager::kSSD2; l++) {
     
-    printf("%i modules in layer %i\n", AliAlignObj::LayerSize(l), l);
-    for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(l); iModule++) {
+    printf("%i modules in layer %i\n", AliGeomManager::LayerSize(l), l);
+    for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(l); iModule++) {
 
-      iLayer = AliAlignObj::kInvalidLayer; 
+      iLayer = AliGeomManager::kInvalidLayer; 
 
       switch (l) {
       case 1: {
-	iLayer = AliAlignObj::kSPD1;
+	iLayer = AliGeomManager::kSPD1;
       }; break;
       case 2: {
-	iLayer = AliAlignObj::kSPD2;
+	iLayer = AliGeomManager::kSPD2;
       }; break;
       case 3: {
-	iLayer = AliAlignObj::kSDD1;
+	iLayer = AliGeomManager::kSDD1;
       }; break;
       case 4: {
-	iLayer = AliAlignObj::kSDD2;
+	iLayer = AliGeomManager::kSDD2;
       }; break;
       case 5: {
-	iLayer = AliAlignObj::kSSD1;
+	iLayer = AliGeomManager::kSSD1;
       }; break;
       case 6: {
-	iLayer = AliAlignObj::kSSD2;
+	iLayer = AliGeomManager::kSSD2;
       }; break;
       default: Printf("Wrong layer index in ITS (%d) !",l);
       };
-      UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,iModule);
-      const char *symname = AliAlignObj::SymName(volid);
+      UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iModule);
+      const char *symname = AliGeomManager::SymName(volid);
 
       new(alobj[j]) AliAlignObjAngles(symname, volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
       j++;

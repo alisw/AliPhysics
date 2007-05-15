@@ -9,13 +9,13 @@ void MakeTOFZeroMisAlignment(){
 
   AliAlignObjAngles a;
 
-  AliAlignObj::ELayerID idTOF = AliAlignObj::kTOF;
+  AliGeomManager::ELayerID idTOF = AliGeomManager::kTOF;
   Int_t i;
   Int_t j=0;
   Double_t dx=0., dy=0., dz=0., dpsi=0., dtheta=0., dphi=0.;
 
-  for(i=0; i<AliAlignObj::LayerSize(idTOF); i++) {
-    new(alobj[j++]) AliAlignObjAngles(AliAlignObj::SymName(idTOF,i), AliAlignObj::LayerToVolUID(idTOF,i), dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
+  for(i=0; i<AliGeomManager::LayerSize(idTOF); i++) {
+    new(alobj[j++]) AliAlignObjAngles(AliGeomManager::SymName(idTOF,i), AliGeomManager::LayerToVolUID(idTOF,i), dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
   }
 
   if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){

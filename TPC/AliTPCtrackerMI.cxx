@@ -1669,17 +1669,17 @@ Bool_t AliTPCtrackerMI::GetTrackPoint(Int_t index, AliTrackPoint &p ) const
   cov[4] = 0.;
   cov[5] = sigmaZ2;
   p.SetXYZ(x,y,xyz[2],cov);
-  AliAlignObj::ELayerID iLayer;
+  AliGeomManager::ELayerID iLayer;
   Int_t idet;
   if (sector < fParam->GetNInnerSector()) {
-    iLayer = AliAlignObj::kTPC1;
+    iLayer = AliGeomManager::kTPC1;
     idet = sector;
   }
   else {
-    iLayer = AliAlignObj::kTPC2;
+    iLayer = AliGeomManager::kTPC2;
     idet = sector - fParam->GetNInnerSector();
   }
-  UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,idet);
+  UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,idet);
   p.SetVolumeID(volid);
   return kTRUE;
 }

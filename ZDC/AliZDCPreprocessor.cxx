@@ -85,8 +85,8 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   const char *ZDCn2="ZDC/NeutronZDC2";
   const char *ZDCp2="ZDC/ProtonZDC2";
   UShort_t iIndex=0;
-  AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer;
-  UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,iIndex);
+  AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
+  UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iIndex);
   //
   new(alobj[0]) AliAlignObjAngles(ZDCn1, volid, dx, dyZN1, dz, dpsi, dtheta, dphi, kTRUE);
   new(alobj[1]) AliAlignObjAngles(ZDCp1, volid, dx, dyZP1, dz, dpsi, dtheta, dphi, kTRUE);

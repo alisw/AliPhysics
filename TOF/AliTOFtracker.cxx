@@ -858,7 +858,7 @@ Bool_t AliTOFtracker::GetTrackPoint(Int_t index, AliTrackPoint& p) const
   Int_t idet = (2*(nStripC+nStripB)+nStripA)*isector +
                stripOffset +
                istrip;
-  UShort_t volid = AliAlignObj::LayerToVolUID(AliAlignObj::kTOF,idet);
+  UShort_t volid = AliGeomManager::LayerToVolUID(AliGeomManager::kTOF,idet);
   p.SetVolumeID((UShort_t)volid);
   return kTRUE;
 }

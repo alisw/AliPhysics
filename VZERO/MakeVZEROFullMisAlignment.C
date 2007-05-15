@@ -20,8 +20,8 @@ void MakeVZEROFullMisAlignment(){
   const char *V0left="VZERO/V0A";
 
   Int_t iIndex=0; //let all modules have index=0 in a layer with no LUT
-  AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer;
-  UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,iIndex);
+  AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
+  UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iIndex);
 
   dx = rnd->Gaus(0.,sigmatr);
   dy = rnd->Gaus(0.,sigmatr);

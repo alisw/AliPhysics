@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2007/05/03 09:25:10  decaro
+Coding convention: RN13 violation -> suppression
+
 Revision 1.14  2007/04/18 14:49:54  arcelli
 Some code cleanup, added more debug info
 
@@ -157,11 +160,11 @@ void AliTOFAlignment::Smear( Float_t *tr, Float_t *rot)
   TRandom *rnd   = new TRandom(1567);
  
   Int_t nSMTOF = 18;
-  AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer;
+  AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
   UShort_t iIndex=0; //dummy volume index
-  //  AliAlignObj::ELayerID iLayer = AliAlignObj::kTOF;
+  //  AliGeomManager::ELayerID iLayer = AliGeomManager::kTOF;
   //  Int_t iIndex=1; //dummy volume index
-  UShort_t dvoluid = AliAlignObj::LayerToVolUID(iLayer,iIndex); //dummy volume identity 
+  UShort_t dvoluid = AliGeomManager::LayerToVolUID(iLayer,iIndex); //dummy volume identity 
   Int_t i;
   for (i = 0; i<nSMTOF ; i++) {
     Char_t  path[100];
@@ -193,9 +196,9 @@ void AliTOFAlignment::Align( Float_t *tr, Float_t *rot)
 
 
   Int_t nSMTOF = 18;
-  AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer;
+  AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
   UShort_t iIndex=0; //dummy volume index
-  UShort_t dvoluid = AliAlignObj::LayerToVolUID(iLayer,iIndex); //dummy volume identity 
+  UShort_t dvoluid = AliGeomManager::LayerToVolUID(iLayer,iIndex); //dummy volume identity 
   Int_t i;
   for (i = 0; i<nSMTOF ; i++) {
 
@@ -463,8 +466,8 @@ void AliTOFAlignment::AlignFromSurvey()
 
   fTOFAlignObjArray = new TObjArray(kMaxAlignObj);
   Int_t index=0; //let all SM modules have index=0
-  AliAlignObj::ELayerID layer = AliAlignObj::kInvalidLayer;
-  UShort_t dvoluid = AliAlignObj::LayerToVolUID(layer,index); //dummy vol id 
+  AliGeomManager::ELayerID layer = AliGeomManager::kInvalidLayer;
+  UShort_t dvoluid = AliGeomManager::LayerToVolUID(layer,index); //dummy vol id 
   
   for(Int_t iSM=0;iSM<18;iSM++){
 

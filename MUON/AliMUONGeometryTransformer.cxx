@@ -830,7 +830,7 @@ void  AliMUONGeometryTransformer::AddMisAlignModule(Int_t moduleId,
   }   
   
   // Get unique align object ID
-  Int_t volId = AliAlignObj::LayerToVolUID(AliAlignObj::kMUON, moduleId); 
+  Int_t volId = AliGeomManager::LayerToVolUID(AliGeomManager::kMUON, moduleId); 
 
   // Create mis align matrix
   TClonesArray& refArray =*fMisAlignArray;
@@ -858,7 +858,7 @@ void  AliMUONGeometryTransformer::AddMisAlignDetElement(Int_t detElemId,
   }   
   
   // Get unique align object ID
-  Int_t volId = AliAlignObj::LayerToVolUID(AliAlignObj::kMUON, detElemId); 
+  Int_t volId = AliGeomManager::LayerToVolUID(AliGeomManager::kMUON, detElemId); 
 
   // Create mis align matrix
   TClonesArray& refArray =*fMisAlignArray;
@@ -935,7 +935,7 @@ TClonesArray* AliMUONGeometryTransformer::CreateZeroAlignmentData() const
     Int_t moduleId = module->GetModuleId();
   
     // Align object ID
-    Int_t volId = AliAlignObj::LayerToVolUID(AliAlignObj::kMUON, moduleId); 
+    Int_t volId = AliGeomManager::LayerToVolUID(AliGeomManager::kMUON, moduleId); 
 
     // Create mis align matrix
     Int_t pos = array->GetEntriesFast();
@@ -955,7 +955,7 @@ TClonesArray* AliMUONGeometryTransformer::CreateZeroAlignmentData() const
       Int_t detElemId = detElement->GetId();
   
       // Align object ID
-      Int_t volId = AliAlignObj::LayerToVolUID(AliAlignObj::kMUON, detElemId); 
+      Int_t volId = AliGeomManager::LayerToVolUID(AliGeomManager::kMUON, detElemId); 
 
       // Create mis align matrix
       Int_t pos = array->GetEntriesFast();

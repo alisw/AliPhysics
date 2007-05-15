@@ -30,57 +30,57 @@ void MakeITSFullMisAlignment(){
   AliAlignObjAngles* its_alobj = (AliAlignObjAngles*) array->UncheckedAt(0);
   its_alobj->ApplyToGeometry();
 
-  for ( Int_t l = AliAlignObj::kSPD1; l <= AliAlignObj::kSSD2; l++) {
+  for ( Int_t l = AliGeomManager::kSPD1; l <= AliGeomManager::kSSD2; l++) {
     
-    printf("%i modules in layer %i\n", AliAlignObj::LayerSize(l), l);
-    for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(l); iModule++) {
+    printf("%i modules in layer %i\n", AliGeomManager::LayerSize(l), l);
+    for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(l); iModule++) {
 
       dpsi   = rnd->Gaus(0., rot);
       dtheta = rnd->Gaus(0., rot);
       dphi   = rnd->Gaus(0., rot);
 
-      AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer; 
+      AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer; 
       switch (l) {
       case 1: {
-	iLayer = AliAlignObj::kSPD1;
+	iLayer = AliGeomManager::kSPD1;
 	dx = rnd->Gaus(0., spdXY + mecanicalPrec);
 	dy = rnd->Gaus(0., spdXY + mecanicalPrec);
 	dz = rnd->Gaus(0., spdZ + mecanicalPrec);
       }; break;
       case 2: {
-	iLayer = AliAlignObj::kSPD2;
+	iLayer = AliGeomManager::kSPD2;
 	dx = rnd->Gaus(0., spdXY + mecanicalPrec);
 	dy = rnd->Gaus(0., spdXY + mecanicalPrec);
 	dz = rnd->Gaus(0., spdZ + mecanicalPrec);
       }; break;
       case 3: {
-	iLayer = AliAlignObj::kSDD1;
+	iLayer = AliGeomManager::kSDD1;
 	dx = rnd->Gaus(0., sddXYZ + mecanicalPrec);
 	dy = rnd->Gaus(0., sddXYZ + mecanicalPrec);
 	dz = rnd->Gaus(0., sddXYZ + mecanicalPrec);
       }; break;
       case 4: {
-	iLayer = AliAlignObj::kSDD2;
+	iLayer = AliGeomManager::kSDD2;
 	dx = rnd->Gaus(0., sddXYZ + mecanicalPrec);
 	dy = rnd->Gaus(0., sddXYZ + mecanicalPrec);
 	dz = rnd->Gaus(0., sddXYZ + mecanicalPrec);
       }; break;
       case 5: {
-	iLayer = AliAlignObj::kSSD1;
+	iLayer = AliGeomManager::kSSD1;
 	dx = rnd->Gaus(0., ssdXY + mecanicalPrec);
 	dy = rnd->Gaus(0., ssdXY + mecanicalPrec);
 	dz = rnd->Gaus(0., ssdZ + mecanicalPrec);
       }; break;
       case 6: {
-	iLayer = AliAlignObj::kSSD2;
+	iLayer = AliGeomManager::kSSD2;
 	dx = rnd->Gaus(0., ssdXY + mecanicalPrec);
 	dy = rnd->Gaus(0., ssdXY + mecanicalPrec);
 	dz = rnd->Gaus(0., ssdZ + mecanicalPrec);
       }; break;
       default: Printf("Wrong layer index in ITS (%d) !",l);
       };
-      UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,iModule);
-      const char *symname = AliAlignObj::SymName(volid);
+      UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iModule);
+      const char *symname = AliGeomManager::SymName(volid);
 
       new(alobj[j++]) AliAlignObjAngles(symname, volid, dx, dy, dz, dpsi, dtheta, dphi, kFALSE);
 
