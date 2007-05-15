@@ -1041,8 +1041,10 @@ Bool_t AliReconstruction::RunVertexFinder(AliESD*& esd)
   }
   esd->SetVertex(vertex);
   // if SPD multiplicity has been determined, it is stored in the ESD
+  if (fVertexer) {
   AliMultiplicity *mult= fVertexer->GetMultiplicity();
   if(mult)esd->SetMultiplicity(mult);
+  }
 
   for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
     if (fTracker[iDet]) fTracker[iDet]->SetVertex(vtxPos, vtxErr);
