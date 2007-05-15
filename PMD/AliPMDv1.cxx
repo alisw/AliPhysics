@@ -158,7 +158,6 @@ void AliPMDv1::CreateSupermodule()
   hexd2[9] =  fgkCellRadius - fgkCellWall;
   
   gMC->Gsvolu("ECAR", "PGON", idtmed[604], hexd2,10);
-  gMC->Gsatt("ECAR", "SEEN", 0);
   //******************************************************//
 
   // STEP - II
@@ -173,8 +172,6 @@ void AliPMDv1::CreateSupermodule()
   hexd1[9] =  fgkCellRadius;
 
   gMC->Gsvolu("ECCU", "PGON", idtmed[614], hexd1,10);
-  gMC->Gsatt("ECCU", "SEEN", 0);
-  gMC->Gsatt("ECCU", "COLO", 4);
 
   // Place  inner hex (sensitive volume) inside outer hex (copper)
   
@@ -194,7 +191,6 @@ void AliPMDv1::CreateSupermodule()
   dbox1[2] = fgkCellDepth/2.;
   
   gMC->Gsvolu("EST1","BOX", idtmed[698], dbox1, 3);
-  gMC->Gsatt("EST1", "SEEN", 0);
 
   // volume for second strip EST2 
 
@@ -205,7 +201,6 @@ void AliPMDv1::CreateSupermodule()
   dbox2[2] = dbox1[2];
 
   gMC->Gsvolu("EST2","BOX", idtmed[698], dbox2, 3);
-  gMC->Gsatt("EST2", "SEEN", 0);
 
   // Place hexagonal cells ECCU placed inside EST1 
   xb = 0.; 
@@ -255,7 +250,6 @@ void AliPMDv1::CreateSupermodule()
 
   //Create a BOX, Material AIR
   gMC->Gsvolu("EHC1","BOX", idtmed[698], dbox3, 3);
-  gMC->Gsatt("EHC1", "SEEN", 0);  
   // Place rectangular strips EST1 inside EHC1 unit module
   xb = dbox3[0]-dbox1[0];  
   
@@ -303,7 +297,6 @@ void AliPMDv1::CreateSupermodule()
   
   //Create a BOX of AIR
   gMC->Gsvolu("EHC2","BOX", idtmed[698], dbox4, 3);
-  gMC->Gsatt("EHC2", "SEEN", 0);
 
   // Place rectangular strips EST2 inside EHC2 unit module
   xb = dbox4[0]-dbox2[0]; 
@@ -358,7 +351,6 @@ void AliPMDv1::CreateSupermodule()
   
   //Top and Bottom PCB is a BOX of Material G10
   gMC->Gsvolu("EPCA","BOX", idtmed[607], dboxPcbA, 3);
-  gMC->Gsatt("EPCA", "SEEN", 0);
   //--------------------------------------------------------//  
   //Back Plane : EBKA
   //==================
@@ -374,7 +366,6 @@ void AliPMDv1::CreateSupermodule()
   
   //Back PLane PCB of MAterial G10
   gMC->Gsvolu("EBKA","BOX", idtmed[607], dboxBPlaneA, 3);
-  gMC->Gsatt("EBKA", "SEEN", 0);
   //-------------------------------------------------------------//  
 
  //---------- That was all in the Z -direction of Unit Module A----//
@@ -402,12 +393,10 @@ void AliPMDv1::CreateSupermodule()
   //FOR PRESHOWER
   //Air gap is a BOX of Material Air
   gMC->Gsvolu("ECGA","BOX", idtmed[698], dboxAir3A, 3);
-  gMC->Gsatt("ECGA", "SEEN", 0);
 
   //FOR VETO
   //Air gap is a BOX of Material Air
   gMC->Gsvolu("ECVA","BOX", idtmed[698], dboxAir3A, 3);
-  gMC->Gsatt("ECVA", "SEEN", 0);
   //-------------------------------------------------//  
 
  //-------------------------------------------------//
@@ -425,12 +414,10 @@ void AliPMDv1::CreateSupermodule()
   //FOR PRESHOWER
   //G10 BOX 
   gMC->Gsvolu("EDGA","BOX", idtmed[607], dboxGGA, 3);
-  gMC->Gsatt("EDGA", "SEEN", 0);
 
   //FOR VETO
   //G10 BOX 
   gMC->Gsvolu("EDVA","BOX", idtmed[607], dboxGGA, 3);
-  gMC->Gsatt("EDVA", "SEEN", 0);
 
   //-------------------------------------------------//  
   //----------------------------------------------------------//
@@ -452,12 +439,10 @@ void AliPMDv1::CreateSupermodule()
 
   //Stainless Steel boundary - Material Stainless Steel
   gMC->Gsvolu("ESSA","BOX", idtmed[618], dboxSS1, 3);
-  gMC->Gsatt("ESSA", "SEEN", 0);
 
   //FOR VETO
   //Stainless Steel boundary - Material Stainless Steel
   gMC->Gsvolu("ESVA","BOX", idtmed[618], dboxSS1, 3);
-  gMC->Gsatt("ESVA", "SEEN", 0);
 
   //----------------------------------------------------------------//
 
@@ -549,10 +534,8 @@ void AliPMDv1::CreateSupermodule()
   //FOR PRESHOWER
   //Create a Unit module of above dimensions Material : AIR
   gMC->Gsvolu("EUM1","BOX", idtmed[698], dboxUM1, 3);
-  gMC->Gsatt("EUM1", "SEEN", 0);
   //FOR VETO
   gMC->Gsvolu("EUV1","BOX", idtmed[698], dboxUM1, 3);
-  gMC->Gsatt("EUV1", "SEEN", 0);
 
   //----------------------------------------------------------------//
 
@@ -568,7 +551,6 @@ void AliPMDv1::CreateSupermodule()
   
   //Base Blate is a G10 BOX
   gMC->Gsvolu("EBPA","BOX", idtmed[607], dboxBaseA, 3);
-  gMC->Gsatt("EBPA", "SEEN", 0);
   //----------------------------------------------------//  
 
   //FOR VETO
@@ -617,7 +599,6 @@ void AliPMDv1::CreateSupermodule()
   
   //Top and Bottom PCB is a BOX of Material G10
   gMC->Gsvolu("EPCB","BOX", idtmed[607], dboxPcbB, 3);
-  gMC->Gsatt("EPCB", "SEEN", 0);
   //--------------------------------------------------------//  
   //Back Plane : EBKB
   //==================
@@ -633,7 +614,6 @@ void AliPMDv1::CreateSupermodule()
   
   //Back PLane PCB of MAterial G10
   gMC->Gsvolu("EBKB","BOX", idtmed[607], dboxBPlaneB, 3);
-  gMC->Gsatt("EBKB", "SEEN", 0);
   //-------------------------------------------------------------//  
 
  //---------- That was all in the Z -direction of Unit Module B----//
@@ -659,10 +639,8 @@ void AliPMDv1::CreateSupermodule()
   //PRESHOWER
   //Air gap is a BOX of Material Air
   gMC->Gsvolu("ECGB","BOX", idtmed[698], dboxAir3B, 3);
-  gMC->Gsatt("ECGB", "SEEN", 0);
   //VETO
   gMC->Gsvolu("ECVB","BOX", idtmed[698], dboxAir3B, 3);
-  gMC->Gsatt("ECVB", "SEEN", 0);
 
   //-------------------------------------------------//  
 
@@ -681,10 +659,8 @@ void AliPMDv1::CreateSupermodule()
   //PRESHOWER
   //G10 BOX 
   gMC->Gsvolu("EDGB","BOX", idtmed[607], dboxGGB, 3);
-  gMC->Gsatt("EDGB", "SEEN", 0);
   //VETO
   gMC->Gsvolu("EDVB","BOX", idtmed[607], dboxGGB, 3);
-  gMC->Gsatt("EDVB", "SEEN", 0);
   //-------------------------------------------------//  
   //----------------------------------------------------------//
   //Stainless Steel Bounadry : ESSB
@@ -704,10 +680,8 @@ void AliPMDv1::CreateSupermodule()
   //PRESHOWER
   //Stainless Steel boundary - Material Stainless Steel
   gMC->Gsvolu("ESSB","BOX", idtmed[618], dboxSS2, 3);
-  gMC->Gsatt("ESSB", "SEEN", 0);
   //VETO
   gMC->Gsvolu("ESVB","BOX", idtmed[618], dboxSS2, 3);
-  gMC->Gsatt("ESVB", "SEEN", 0);
   //----------------------------------------------------------------//
 
   //----------------------------------------------------------------//
@@ -796,11 +770,9 @@ void AliPMDv1::CreateSupermodule()
   //PRESHOWER
   //Create a Unit module of above dimensions Material : AIR
   gMC->Gsvolu("EUM2","BOX", idtmed[698], dboxUM2, 3);
-  gMC->Gsatt("EUM2", "SEEN", 0);
 
   //VETO
   gMC->Gsvolu("EUV2","BOX", idtmed[698], dboxUM2, 3);
-  gMC->Gsatt("EUV2", "SEEN", 0);
   //----------------------------------------------------------------//
 
   //BASE PLATE : EBPB
@@ -815,7 +787,6 @@ void AliPMDv1::CreateSupermodule()
   
   //Base Blate is a G10 BOX
   gMC->Gsvolu("EBPB","BOX", idtmed[607], dboxBaseB, 3);
-  gMC->Gsatt("EBPB", "SEEN", 0);
   //----------------------------------------------------//  
 
   //VETO
@@ -862,7 +833,6 @@ void AliPMDv1::CreateSupermodule()
   dboxPba[2] = fgkThLead/2.;
   // Lead of UM dimension
   gMC->Gsvolu("EPB1","BOX", idtmed[600], dboxPba, 3);
-  gMC->Gsatt ("EPB1", "SEEN", 0);
 
   Float_t dboxPbb[3];
   dboxPbb[0] = dboxUM2[0];
@@ -870,7 +840,6 @@ void AliPMDv1::CreateSupermodule()
   dboxPbb[2] = fgkThLead/2.;
   // Lead of UM dimension
   gMC->Gsvolu("EPB2","BOX", idtmed[600], dboxPbb, 3);
-  gMC->Gsatt ("EPB2", "SEEN", 0);
 
   //----------------------------------------------------------------//
 
@@ -889,11 +858,9 @@ void AliPMDv1::CreateSupermodule()
 
   //FOR PRESHOWER  
   gMC->Gsvolu("ESMA","BOX", idtmed[698], dboxSM1, 3);
-  gMC->Gsatt("ESMA", "SEEN", 0);
   
   //FOR VETO
   gMC->Gsvolu("EMVA","BOX", idtmed[698], dboxSM1, 3);
-  gMC->Gsatt("EMVA", "SEEN", 0);
 
   //Position the 6 unit modules in EMSA
   Float_t xa1,xa2,xa3,ya1,ya2; 
@@ -929,10 +896,8 @@ void AliPMDv1::CreateSupermodule()
   
   //PRESHOWER
   gMC->Gsvolu("ESMB","BOX", idtmed[698], dboxSM2, 3);
-  gMC->Gsatt("ESMB", "SEEN", 0);
   //VETO 
   gMC->Gsvolu("EMVB","BOX", idtmed[698], dboxSM2, 3);
-  gMC->Gsatt("EMVB", "SEEN", 0);
 
   //Position the 6 unit modules in EMSB
   Float_t xb1,xb2,yb1,yb2,yb3; 
@@ -974,7 +939,6 @@ void AliPMDv1::CreateSupermodule()
   dboxSMPb1[2] = fgkThLead/2.;
   
   gMC->Gsvolu("ESPA","BOX", idtmed[698], dboxSMPb1, 3);
-  gMC->Gsatt("ESPA", "SEEN", 0);
   
 
   //Position the 6 unit modules in ESMPbA
@@ -1002,7 +966,6 @@ void AliPMDv1::CreateSupermodule()
   dboxSMPb2[2] = fgkThLead/2.;
 
   gMC->Gsvolu("ESPB","BOX", idtmed[698], dboxSMPb2, 3);
-  gMC->Gsatt("ESPB", "SEEN", 0);
  
   //Position the 6 unit modules in ESMPbB
   Float_t xpb1,xpb2,ypb1,ypb2,ypb3; 
@@ -1036,8 +999,6 @@ void AliPMDv1::CreateSupermodule()
   dboxFEE[2] = 1.20;
 
   gMC->Gsvolu("EFEE","BOX", idtmed[607], dboxFEE, 3);
-  gMC->Gsatt("EFEE", "SEEN", 0);
-  gMC->Gsatt("EFEE", "COLO", 4);
 
   //Mother volume to accomodate FEE boards
   // It should have the dimension 
@@ -1053,7 +1014,6 @@ void AliPMDv1::CreateSupermodule()
   
   //Volume of same dimension as Back PLane of Material AIR
   gMC->Gsvolu("EFBA","BOX", idtmed[698], dboxFEEBPlaneA, 3);
-  gMC->Gsatt("EFBA", "SEEN", 0);
 
   //TYPE B
   Float_t dboxFEEBPlaneB[3];
@@ -1063,7 +1023,6 @@ void AliPMDv1::CreateSupermodule()
   
   //Back PLane PCB of MAterial G10
   gMC->Gsvolu("EFBB","BOX", idtmed[698], dboxFEEBPlaneB, 3);
-  gMC->Gsatt("EFBB", "SEEN", 0);
 
   //Placing the FEE boards in the Mother volume of AIR
 
@@ -1118,7 +1077,6 @@ void AliPMDv1::CreateSupermodule()
 
   //Type A
   gMC->Gsvolu("EFSA","BOX", idtmed[698],dboxEFSA, 3);
-  gMC->Gsatt("EFSA", "SEEN", 0);
 
   //Distance between the two backplanes of two UMs
   //in x-direction is 0.92 and ydirection is 0.95
@@ -1129,7 +1087,6 @@ void AliPMDv1::CreateSupermodule()
 
   //Type A
   gMC->Gsvolu("EFSB","BOX", idtmed[698],dboxEFSB, 3);
-  gMC->Gsatt("EFSB", "SEEN", 0);
 
 
   Float_t xfs1,xfs2,xfs3,yfs1,yfs2,yfs3; 
@@ -1191,7 +1148,6 @@ void AliPMDv1::CreatePMD()
   dboxFea[2] = fgkThSteel/2.;
   
   gMC->Gsvolu("EFEA","BOX", idtmed[618], dboxFea, 3);
-  gMC->Gsatt ("EFEA", "SEEN", 0);
 
   // --- DEFINE Iron volumes  for SM B
   
@@ -1202,7 +1158,6 @@ void AliPMDv1::CreatePMD()
   dboxFeb[2] = fgkThSteel/2.;
   
   gMC->Gsvolu("EFEB","BOX", idtmed[618], dboxFeb, 3);
-  gMC->Gsatt ("EFEB", "SEEN", 0);
 
   AliMatrix(irotdm, 90., 0.,  90.,  90., 180., 0.);
   AliMatrix(jhrot12, 90., 180., 90., 270., 0., 0.);
@@ -1219,9 +1174,7 @@ void AliPMDv1::CreatePMD()
   gaspmd[2] = fSMthick;
 
   gMC->Gsvolu("EPM1", "BOX", idtmed[698], gaspmd, 3);
-  gMC->Gsatt("EPM1", "SEEN", 1);
   gMC->Gsvolu("EPM2", "BOX", idtmed[698], gaspmd, 3);
-  gMC->Gsatt("EPM2", "SEEN", 1);
 
   //Complete detector for Type A
   //Position Super modules type A for both CPV and PMD in EPMD  
@@ -1265,9 +1218,7 @@ void AliPMDv1::CreatePMD()
   gaspmd[2] = fSMthick; 
 
   gMC->Gsvolu("EPM3", "BOX", idtmed[698], gaspmd, 3);
-  gMC->Gsatt("EPM3", "SEEN", 1);
   gMC->Gsvolu("EPM4", "BOX", idtmed[698], gaspmd, 3);
-  gMC->Gsatt("EPM4", "SEEN", 1);
 
   //Complete detector for Type B
   //Position Super modules type B for both CPV and PMD in EPMD  
@@ -1514,6 +1465,56 @@ void AliPMDv1::Init()
   gMC->Gstpar(idtmed[604], "CUTNEU", 1e-5);
   gMC->Gstpar(idtmed[604], "CUTHAD", 1e-5);
   gMC->Gstpar(idtmed[604], "CUTMUO", 1e-5);
+  // Visualization of volumes
+  gMC->Gsatt("ECAR", "SEEN", 0);
+  gMC->Gsatt("ECCU", "SEEN", 0);
+  gMC->Gsatt("ECCU", "COLO", 4);
+  gMC->Gsatt("EST1", "SEEN", 0);
+  gMC->Gsatt("EST2", "SEEN", 0);
+  gMC->Gsatt("EHC1", "SEEN", 0);  
+  gMC->Gsatt("EHC2", "SEEN", 0);
+  gMC->Gsatt("EPCA", "SEEN", 0);
+  gMC->Gsatt("EBKA", "SEEN", 0);
+  gMC->Gsatt("ECGA", "SEEN", 0);
+  gMC->Gsatt("ECVA", "SEEN", 0);
+  gMC->Gsatt("EDGA", "SEEN", 0);
+  gMC->Gsatt("EDVA", "SEEN", 0);
+  gMC->Gsatt("ESSA", "SEEN", 0);
+  gMC->Gsatt("ESVA", "SEEN", 0);
+  gMC->Gsatt("EUM1", "SEEN", 0);
+  gMC->Gsatt("EUV1", "SEEN", 0);
+  gMC->Gsatt("EBPA", "SEEN", 0);
+  gMC->Gsatt("EPCB", "SEEN", 0);
+  gMC->Gsatt("EBKB", "SEEN", 0);
+  gMC->Gsatt("ECGB", "SEEN", 0);
+  gMC->Gsatt("ECVB", "SEEN", 0);
+  gMC->Gsatt("EDGB", "SEEN", 0);
+  gMC->Gsatt("EDVB", "SEEN", 0);
+  gMC->Gsatt("ESSB", "SEEN", 0);
+  gMC->Gsatt("ESVB", "SEEN", 0);
+  gMC->Gsatt("EUM2", "SEEN", 0);
+  gMC->Gsatt("EUV2", "SEEN", 0);
+  gMC->Gsatt("EBPB", "SEEN", 0);
+  gMC->Gsatt("EPB1", "SEEN", 0);
+  gMC->Gsatt("EPB2", "SEEN", 0);
+  gMC->Gsatt("ESMA", "SEEN", 0);
+  gMC->Gsatt("EMVA", "SEEN", 0);
+  gMC->Gsatt("ESMB", "SEEN", 0);
+  gMC->Gsatt("EMVB", "SEEN", 0);
+  gMC->Gsatt("ESPA", "SEEN", 0);
+  gMC->Gsatt("ESPB", "SEEN", 0);
+  gMC->Gsatt("EFEE", "SEEN", 0);
+  gMC->Gsatt("EFEE", "COLO", 4);
+  gMC->Gsatt("EFBA", "SEEN", 0);
+  gMC->Gsatt("EFBB", "SEEN", 0);
+  gMC->Gsatt("EFSA", "SEEN", 0);
+  gMC->Gsatt("EFSB", "SEEN", 0);
+  gMC->Gsatt("EFEA", "SEEN", 0);
+  gMC->Gsatt("EFEB", "SEEN", 0);
+  gMC->Gsatt("EPM1", "SEEN", 1);
+  gMC->Gsatt("EPM2", "SEEN", 1);
+  gMC->Gsatt("EPM3", "SEEN", 1);
+  gMC->Gsatt("EPM4", "SEEN", 1);
 }
 
 //_____________________________________________________________________________
