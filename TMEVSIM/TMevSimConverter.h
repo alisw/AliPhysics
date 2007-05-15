@@ -19,7 +19,7 @@ class TMevSimConverter : public TObject {
 
   public:
 
-    TMevSimConverter() {DefineParticles();}
+    TMevSimConverter() : fNPDGCodes(0) {DefineParticles();}
     virtual ~TMevSimConverter() {}
 
     Int_t PDGFromId(Int_t gpid);
