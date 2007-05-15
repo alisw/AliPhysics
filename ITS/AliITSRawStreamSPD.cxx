@@ -27,6 +27,7 @@
 ClassImp(AliITSRawStreamSPD)
 
 
+  // this map has to change, waiting for the new geometry
 const Int_t AliITSRawStreamSPD::fgkDDLModuleMap[kDDLsNumber][kModulesPerDDL] = {
   { 0, 1, 4, 5, 80, 81, 84, 85, 88, 89, 92, 93},
   { 8, 9,12,13, 96, 97,100,101,104,105,108,109},
@@ -53,26 +54,24 @@ const Int_t AliITSRawStreamSPD::fgkDDLModuleMap[kDDLsNumber][kModulesPerDDL] = {
 
 AliITSRawStreamSPD::AliITSRawStreamSPD(AliRawReader* rawReader) :
   AliITSRawStream(rawReader),
-  fData(0),
-  fDDLNumber(-1),
-  fEventNumber(-1),
-  fOffset(0),
-  fHitCount(0),
-  fDataChar1(0),
-  fDataChar2(0),
-  fDataChar3(0),
-  fDataChar4(0),
-  fFirstWord(kTRUE)
+  fEventNumber(-1),fChipAddr(0),fHalfStaveNr(0),
+  fData(0),fOffset(0),fHitCount(0),
+  fDataChar1(0),fDataChar2(0),fDataChar3(0),fDataChar4(0),
+  fFirstWord(kTRUE),fPrevEventId(0xffffffff)
 {
-// create an object to read ITS SPD raw digits
-
+  // create an object to read ITS SPD raw digits
   fRawReader->Select("ITSSPD");
+  // reset calib header words
+  for (UInt_t iword=0; iword<kCalHeadLenMax; iword++) {
+    fCalHeadWord[iword]=0xffffffff;
+  }
+  NewEvent();
 }
 
 Bool_t AliITSRawStreamSPD::ReadNextShort() 
 {
+  // read next 16 bit word into fData
   if (fFirstWord) {
-    fFirstWord=kFALSE;
     Bool_t b1 = fRawReader->ReadNextChar(fDataChar1);
     if (!b1) return kFALSE;
     Bool_t  b2, b3, b4;
@@ -83,6 +82,11 @@ Bool_t AliITSRawStreamSPD::ReadNextShort()
       return kFALSE;
     }
     fData = fDataChar3+(fDataChar4<<8);
+    if ((*fRawReader->GetEventId())!=fPrevEventId) { // if new event...
+      NewEvent();
+      fPrevEventId=(*fRawReader->GetEventId());
+    }
+    fFirstWord=kFALSE;
   }
   else {
     fFirstWord=kTRUE;
@@ -92,29 +96,68 @@ Bool_t AliITSRawStreamSPD::ReadNextShort()
   return kTRUE;
 }
 
-void AliITSRawStreamSPD::SkipCalibHeader()
+Bool_t AliITSRawStreamSPD::ReadNextInt() 
 {
-  // Checks if there is an extra calibration header 
-  // present in the raw data. Reads past this in that case.
+  // reads next 32 bit into fDataChar1..4 
+  // (if first 16 bits read already, just completes the present word)
+  if (fFirstWord) {
+    if (ReadNextShort() && ReadNextShort()) {
+      return kTRUE;
+    }
+  }
+  else {
+    if (ReadNextShort()) {
+      return kTRUE;
+    }
+  }
+  return kFALSE;
+}
 
-  fRawReader->ReadHeader(); // need this to get access to the block attributes
+void AliITSRawStreamSPD::NewEvent()
+{
+  // call this to reset flags for a new event
+  for (UInt_t eqId=0; eqId<20; eqId++) {
+    fCalHeadRead[eqId]=kFALSE;
+  }
+  fEventNumber=-1;
+}
+
+Bool_t AliITSRawStreamSPD::ReadCalibHeader()
+{
+  // read the extra calibration header
+  // returns kTRUE if the header is present and has length > 0
+
+  Int_t ddlID = fRawReader->GetDDLID();
+  if (ddlID==-1) { // we may need to read one word to get the blockAttr
+    if (!ReadNextShort()) return kFALSE;
+    ddlID = fRawReader->GetDDLID();
+  }
   UChar_t attr = fRawReader->GetBlockAttributes();
+  if (ddlID>=0 && ddlID<20) fCalHeadRead[ddlID]=kTRUE;
   if ((attr & 0x40) == 0x40) { // is the header present?
-    Bool_t  b1, b2, b3, b4;
-    b1 = fRawReader->ReadNextChar(fDataChar1);
-    b2 = fRawReader->ReadNextChar(fDataChar2);
-    b3 = fRawReader->ReadNextChar(fDataChar3);
-    b4 = fRawReader->ReadNextChar(fDataChar4);
-    if (b1 && b2 && b3 && b4) {
+    if (ReadNextInt()) {
       // length of cal header:
       UInt_t calLen = fDataChar1+(fDataChar2<<8)+(fDataChar3<<16)+(fDataChar4<<24);
-      // read past the cal header:
-      UInt_t tmpData;
-      for (UInt_t iword=0; iword<calLen; iword++) {
-	fRawReader->ReadNextInt(tmpData);
+      if (calLen>kCalHeadLenMax) {
+	Error("ReadCalibHeader", "Header length problem. %d > %d (max)",calLen,kCalHeadLenMax);
+	return kFALSE;
+      }
+      else if (calLen>0) {
+	for (UInt_t iword=0; iword<calLen; iword++) {
+	  if (ReadNextInt()) {
+	    fCalHeadWord[iword] = fDataChar1+(fDataChar2<<8)+(fDataChar3<<16)+(fDataChar4<<24);
+	  }
+	  else {
+	    Error("ReadCalibHeader", "header length problem");
+	    return kFALSE;
+	  }
+	}
+	return kTRUE;
       }
     }
   }
+
+  return kFALSE;
 }
 
 Bool_t AliITSRawStreamSPD::Next()
@@ -122,9 +165,22 @@ Bool_t AliITSRawStreamSPD::Next()
 // read the next raw digit
 // returns kFALSE if there is no digit left
 
+  Int_t ddlID=-1;
   fPrevModuleID = fModuleID;
-  //  while (fRawReader->ReadNextShort(fData)) {
+
   while (ReadNextShort()) {
+
+    ddlID = fRawReader->GetDDLID();
+    if (ddlID>=0 && ddlID<20) {
+      if (!fCalHeadRead[ddlID]) {
+	ReadCalibHeader();
+      }
+    }
+    else {
+      Error("Next", "DDL number error (= %d) , setting it to 19", ddlID);
+      ddlID=19;
+    }
+
     if ((fData & 0xC000) == 0x4000) {         // header
       fHitCount = 0;
       UShort_t eventNumber = (fData >> 4) & 0x007F;
@@ -132,26 +188,22 @@ Bool_t AliITSRawStreamSPD::Next()
 	fEventNumber = eventNumber;
       } 
       else if (eventNumber != fEventNumber) {
-	Warning("Next", "mismatching event numbers: %d != %d", 
+	Error("Next", "mismatching event numbers: %d != %d", 
 		eventNumber, fEventNumber);
       }
-      UShort_t chipAddr = fData & 0x000F;
-      if (chipAddr>9) {
-	Error("Next", "overflow chip addr (= %d) , setting it to 9", chipAddr);
-	chipAddr=9;
+      fChipAddr = fData & 0x000F;
+      if (fChipAddr>9) {
+	Error("Next", "overflow chip addr (= %d) , setting it to 9", fChipAddr);
+	fChipAddr=9;
       }
-      UShort_t halfStaveNr = (fData & 0x3800)>>11;
-      if (halfStaveNr>5 || fRawReader->TestBlockAttribute(halfStaveNr)) {
-	Error("Next", "half stave number error(= %d) , setting it to 5", halfStaveNr);
-	halfStaveNr=5;
+      fHalfStaveNr = (fData & 0x3800)>>11;
+      if (fHalfStaveNr>5 || fRawReader->TestBlockAttribute(fHalfStaveNr)) {
+	Error("Next", "half stave number error(=%d) , setting it to 5", fHalfStaveNr);
+	fHalfStaveNr=5;
       }
-      fDDLNumber = fRawReader->GetDDLID();
-      if (fDDLNumber>19 || fDDLNumber<0) {
-	Error("Next", "DDL number error (= %d) , setting it to 19", fDDLNumber);
-	fDDLNumber=19;
-      }
-      fModuleID = fgkDDLModuleMap[fDDLNumber][halfStaveNr*2+chipAddr/5];
-      fOffset = 32 * (chipAddr % 5);
+      // translate  ("online") ddl, hs, chip nr  to  ("offline") module id :
+      fModuleID = fgkDDLModuleMap[ddlID][fHalfStaveNr*2+fChipAddr/5];
+      fOffset = 32 * (fChipAddr % 5);
     } 
     else if ((fData & 0xC000) == 0x0000) {    // trailer
       UShort_t hitCount = fData & 0x1FFF;
@@ -159,8 +211,19 @@ Bool_t AliITSRawStreamSPD::Next()
     } 
     else if ((fData & 0xC000) == 0x8000) {    // pixel hit
       fHitCount++;
-      fCoord1 = (fData & 0x001F) + fOffset;
-      fCoord2 = (fData >> 5) & 0x00FF;
+      fCol = (fData & 0x001F);
+      fRow = (fData >> 5) & 0x00FF;
+
+      // translate  ("online") chipcol, chiprow  to  ("offline") col (coord1), row (coord2): 
+      // This will change, waiting for new geometry!!!
+      fCoord1 = fCol;
+      //      if      (fModuleID < 80 && ddlID < 10) fCoord1=31-fCoord1;
+      //      else if (fModuleID >=80 && ddlID >=10) fCoord1=31-fCoord1;
+      fCoord1 += fOffset;
+      //      if (ddlID>=10) fCoord1=159-fCoord1;
+      fCoord2 = fRow;
+      //      if (fModuleID<80) fCoord2=255-fCoord2;
+
       return kTRUE;
     } 
     else {                                    // fill word
@@ -170,4 +233,47 @@ Bool_t AliITSRawStreamSPD::Next()
   }
 
   return kFALSE;
+}
+
+Bool_t AliITSRawStreamSPD::GetHalfStavePresent(UInt_t hs) {
+  // Reads the half stave present status from the block attributes
+  Int_t ddlID = fRawReader->GetDDLID();
+  if (ddlID==-1) {
+    Warning("GetHalfStavePresent", "DDL ID = -1. Cannot read block attributes. Return kFALSE.");
+    return kFALSE;
+  }
+  else {
+    if (hs>=6) {
+      Warning("GetHalfStavePresent", "HS >= 6 requested (%d). Return kFALSE.",hs);
+      return kFALSE;
+    }
+    UChar_t attr = fRawReader->GetBlockAttributes();
+    if (((attr>>hs) & 0x01) == 0x01) { // bit set means not present
+      return kFALSE;
+    }
+    else {
+      return kTRUE;
+    }
+  }
+}
+
+Bool_t AliITSRawStreamSPD::GetHhalfStaveScanned(UInt_t hs) const {
+  if (hs<6) return (Bool_t)((fCalHeadWord[0]>>(6+hs)) & (0x00000001));
+  else return kFALSE;
+}
+Bool_t AliITSRawStreamSPD::GetHchipPresent(UInt_t hs, UInt_t chip) const {
+  if (hs<6 && chip<10) return ((( fCalHeadWord[hs/3+3]>>((hs%3)*10+chip)) & 0x00000001) == 1);
+  else return kFALSE;
+}
+UInt_t AliITSRawStreamSPD::GetHdacHigh(UInt_t hs) const {
+  if (hs<6) return (fCalHeadWord[hs/2+7]>>(24-16*(hs%2)) & 0x000000ff);
+  else return 0;
+}
+UInt_t AliITSRawStreamSPD::GetHdacLow(UInt_t hs) const {
+  if (hs<6) return (fCalHeadWord[hs/2+7]>>(16-16*(hs%2)) & 0x000000ff);
+  else return 0;
+}
+UInt_t AliITSRawStreamSPD::GetHTPAmp(UInt_t hs) const {
+  if (hs<6) return fCalHeadWord[hs+10];
+  else return 0;
 }
