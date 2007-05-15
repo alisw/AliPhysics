@@ -18,7 +18,9 @@ contact: alice-datesupport@cern.ch
 
 #include "event.h"
 #include "monitor.h"
+extern "C" {
 #include "daqDA.h"
+}
 
 #include <stdio.h>
 #include <stdlib.h>

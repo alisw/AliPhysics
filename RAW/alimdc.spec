@@ -4,10 +4,14 @@
 # static libs needed by mStreamRecorder
 # in order to ROOT-ify the incoming raw
 # data
+# Example:
+# in $ALICE_ROOT: mkdir RPMS; mkdir RPMS/i386;
+# then: rpmbuild --verbose --define "_topdir $ALICE_ROOT" --define "_tmppath $ALICE_ROOT" -bb RAW/alimdc.spec
+# then: cp $ALICE_ROOT/RPMS/i386/alimdc-*.rpm <destination>
 
 Summary: AliMDC static libraries
 Name: alimdc
-Version: 4.05.03
+Version: 4.05.11
 Release: 1
 # Copyright: CERN Alice Off-line
 License: CERN Alice Off-line
