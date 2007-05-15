@@ -101,7 +101,7 @@ void AliHMPIDv2::CreateMaterials()
     AliMaterial(++matId,"Al"  ,aAl  ,zAl  ,dAl  ,radAl  ,absAl  );  AliMedium(kAl  ,"Al"  , matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
     AliMaterial(++matId,"Ar"  ,aAr  ,zAr  ,dAr  ,radAr  ,absAr  );  AliMedium(kAr  ,"Ar"  , matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
     
-    DefineOpticalProperties();
+//    DefineOpticalProperties(); // NOT TO BE CALLED BY USER CODE !!!
 }//void AliHMPID::CreateMaterials()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDv2::CreateGeometry()
