@@ -90,13 +90,11 @@ public:
 
   Bool_t SetRunNumber();
 
-  Bool_t SetAlignObjArraySingleDet(const char* detName);
   Bool_t MisalignGeometry(const TString& detectors);
 
   void           SetAlignObjArray(TObjArray *array)
                    {fAlignObjArray = array;
 		   fLoadAlignFromCDB = kFALSE;}
-  Bool_t         ApplyAlignObjsToGeom(TObjArray* alObjArray);
 
   virtual Bool_t Run(const char* input = NULL);
 

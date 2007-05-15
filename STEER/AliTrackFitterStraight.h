@@ -12,8 +12,8 @@ class AliTrackFitterStraight : public AliTrackFitter{
   virtual ~AliTrackFitterStraight();
 
   Bool_t Fit(const TArrayI *volIdx,const TArrayI *volIdsFit = 0x0,
-	     AliAlignObj::ELayerID layerRangeMin = AliAlignObj::kFirstLayer,
-	     AliAlignObj::ELayerID layerRangeMax = AliAlignObj::kLastLayer);
+	     AliGeomManager::ELayerID layerRangeMin = AliGeomManager::kFirstLayer,
+	     AliGeomManager::ELayerID layerRangeMax = AliGeomManager::kLastLayer);
   Bool_t GetPCA(const AliTrackPoint &p, AliTrackPoint &p2) const;
 
   void Reset();

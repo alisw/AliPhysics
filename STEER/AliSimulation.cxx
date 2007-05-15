@@ -114,6 +114,7 @@
 #include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
+#include "AliGeomManager.h"
 #include "AliAlignObj.h"
 #include "AliCentralTrigger.h"
 #include "AliDAQ.h"
@@ -144,7 +145,7 @@ AliSimulation::AliSimulation(const char* configFileName, const char* cdbUri,
   fRunGeneration(kTRUE),
   fRunSimulation(kTRUE),
   fLoadAlignFromCDB(kTRUE),
-  fLoadAlignData("ALL"),
+  fLoadAlObjsListOfDets("ALL"),
   fMakeSDigits("ALL"),
   fMakeDigits("ALL"),
   fMakeTrigger(""),
@@ -178,7 +179,7 @@ AliSimulation::AliSimulation(const AliSimulation& sim) :
   fRunGeneration(sim.fRunGeneration),
   fRunSimulation(sim.fRunSimulation),
   fLoadAlignFromCDB(sim.fLoadAlignFromCDB),
-  fLoadAlignData(sim.fLoadAlignData),
+  fLoadAlObjsListOfDets(sim.fLoadAlObjsListOfDets),
   fMakeSDigits(sim.fMakeSDigits),
   fMakeDigits(sim.fMakeDigits),
   fMakeTrigger(sim.fMakeTrigger),
@@ -354,148 +355,6 @@ void AliSimulation::SetEventsPerFile(const char* detector, const char* type,
 }
 
 //_____________________________________________________________________________
-Bool_t AliSimulation::ApplyAlignObjsToGeom(TObjArray* alObjArray)
-{
-  // Read collection of alignment objects (AliAlignObj derived) saved
-  // in the TClonesArray ClArrayName and apply them to the geometry
-  // manager singleton.
-  //
-  alObjArray->Sort();
-  Int_t nvols = alObjArray->GetEntriesFast();
-
-  Bool_t flag = kTRUE;
-
-  for(Int_t j=0; j<nvols; j++)
-    {
-      AliAlignObj* alobj = (AliAlignObj*) alObjArray->UncheckedAt(j);
-      if (alobj->ApplyToGeometry() == kFALSE) flag = kFALSE;
-    }
-
-  if (AliDebugLevelClass() >= 1) {
-    gGeoManager->GetTopNode()->CheckOverlaps(1);
-    TObjArray* ovexlist = gGeoManager->GetListOfOverlaps();
-    if(ovexlist->GetEntriesFast()){  
-      AliError("The application of alignment objects to the geometry caused huge overlaps/extrusions!");
-   }
-  }
-
-  return flag;
-
-}
-
-//_____________________________________________________________________________
-Bool_t AliSimulation::ApplyAlignObjsToGeom(const char* fileName, const char* clArrayName)
-{
-  // read collection of alignment objects (AliAlignObj derived) saved
-  // in the TClonesArray ClArrayName in the file fileName and apply
-  // them to the TGeo geometry passed as argument
-  //
-
-  TFile* inFile = TFile::Open(fileName,"READ");
-  if (!inFile || !inFile->IsOpen()) {
-    AliErrorClass(Form("Could not open file %s !",fileName));
-    return kFALSE;
-  }
-
-  TClonesArray* alObjArray = ((TClonesArray*) inFile->Get(clArrayName));
-  inFile->Close();
-  if (!alObjArray) {
-    AliErrorClass(Form("Could not get array (%s) from file (%s) !",clArrayName,fileName));
-    return kFALSE;
-  }
-
-  return ApplyAlignObjsToGeom(alObjArray);
-
-}
-
-//_____________________________________________________________________________
-Bool_t AliSimulation::ApplyAlignObjsToGeom(AliCDBParam* param, AliCDBId& Id)
-{
-  // read collection of alignment objects (AliAlignObj derived) saved
-  // in the TClonesArray ClArrayName in the AliCDBEntry identified by
-  // param (to get the AliCDBStorage) and Id; apply the alignment objects
-  // to the TGeo geometry passed as argument
-  //
-
-  AliCDBStorage* storage = AliCDBManager::Instance()->GetStorage(param);
-  AliCDBEntry* entry = storage->Get(Id);
-  TClonesArray* AlObjArray = ((TClonesArray*) entry->GetObject());
-
-  return ApplyAlignObjsToGeom(AlObjArray);
-
-}
-
-//_____________________________________________________________________________
-Bool_t AliSimulation::ApplyAlignObjsToGeom(const char* uri, const char* path, Int_t runnum, Int_t version, Int_t sversion)
-{
-  // read collection of alignment objects (AliAlignObj derived) saved
-  // in the TClonesArray ClArrayName in the AliCDBEntry identified by
-  // param (to get the AliCDBStorage) and Id; apply the alignment objects
-  // to the TGeo geometry passed as argument
-  //
-
-  AliCDBParam* param = AliCDBManager::Instance()->CreateParameter(uri);
-  AliCDBId id(path, runnum, runnum, version, sversion);
-
-  return ApplyAlignObjsToGeom(param, id);
-
-}
-
-//_____________________________________________________________________________
-Bool_t AliSimulation::ApplyAlignObjsToGeom(const char* detName, Int_t runnum, Int_t version, Int_t sversion)
-{
-  // read collection of alignment objects (AliAlignObj derived) saved
-  // in the TClonesArray ClArrayName in the AliCDBEntry identified by
-  // param (to get the AliCDBStorage) and Id; apply the alignment objects
-  // to the TGeo geometry passed as argument
-  //
-
-  AliCDBPath path(detName,"Align","Data");
-  AliCDBEntry* entry = AliCDBManager::Instance()->Get(path.GetPath(),runnum,version,sversion);
-
-  if(!entry) return kFALSE;
-  TClonesArray* AlObjArray = ((TClonesArray*) entry->GetObject());
-
-  return ApplyAlignObjsToGeom(AlObjArray);
-}
-
-//_____________________________________________________________________________
-Bool_t AliSimulation::SetAlignObjArraySingleDet(const char* detName)
-{
-  // Fills array of single detector's alignable objects from CDB
-  
-  AliDebug(2, Form("Loading alignment data for detector: %s",detName));
-  
-  AliCDBEntry *entry;
-  	
-  AliCDBPath path(detName,"Align","Data");
-	
-  entry=AliCDBManager::Instance()->Get(path.GetPath());
-  if(!entry){ 
-  	AliDebug(2,Form("Couldn't load alignment data for detector %s",detName));
-	return kFALSE;
-  }
-  entry->SetOwner(1);
-  TClonesArray *alignArray = (TClonesArray*) entry->GetObject();	
-  alignArray->SetOwner(0);
-  AliDebug(2,Form("Found %d alignment objects for %s",
-			alignArray->GetEntries(),detName));
-
-  AliAlignObj *alignObj=0;
-  TIter iter(alignArray);
-	
-  // loop over align objects in detector
-  while( ( alignObj=(AliAlignObj *) iter.Next() ) ){
-  	fAlignObjArray->Add(alignObj);
-  }
-  // delete entry --- Don't delete, it is cached!
-	
-  AliDebug(2, Form("fAlignObjArray entries: %d",fAlignObjArray->GetEntries() ));
-  return kTRUE;
-
-}
-
-//_____________________________________________________________________________
 Bool_t AliSimulation::MisalignGeometry(AliRunLoader *runLoader)
 {
   // Read the alignment objects from CDB.
@@ -513,63 +372,46 @@ Bool_t AliSimulation::MisalignGeometry(AliRunLoader *runLoader)
     delRunLoader = kTRUE;
   }
 
-  // Load alignment data from CDB and fill fAlignObjArray 
+  // Load alignment data from CDB and apply to geometry through AliGeomManager
   if(fLoadAlignFromCDB){
-  	if(!fAlignObjArray) fAlignObjArray = new TObjArray();
-  	
-	//fAlignObjArray->RemoveAll(); 
- 	fAlignObjArray->Clear();  	
-	fAlignObjArray->SetOwner(0);
- 
-  	TString detStr = fLoadAlignData;
-  	TString dataNotLoaded="";
-  	TString dataLoaded="";
-  
-  	TObjArray* detArray = runLoader->GetAliRun()->Detectors();
-  	for (Int_t iDet = 0; iDet < detArray->GetEntriesFast(); iDet++) {
-  		AliModule* det = (AliModule*) detArray->At(iDet);
-  		if (!det || !det->IsActive()) continue;
-  		if (IsSelected(det->GetName(), detStr)) {
-  			if(!SetAlignObjArraySingleDet(det->GetName())){
-  				dataNotLoaded += det->GetName();
-  				dataNotLoaded += " ";
-  			} else {
-				dataLoaded += det->GetName();
-				dataLoaded += " ";
-			}
-  		}
-  	} // end loop over detectors
-  
-  	if ((detStr.CompareTo("ALL") == 0)) detStr = "";
-  	dataNotLoaded += detStr;
-  	if(!dataLoaded.IsNull()) AliInfo(Form("Alignment data loaded for: %s",
-  			  dataLoaded.Data()));
-  	if(!dataNotLoaded.IsNull()) AliInfo(Form("Didn't/couldn't load alignment data for: %s",
-  			  dataNotLoaded.Data()));
-  } // fLoadAlignFromCDB flag
- 
-  // Check if the array with alignment objects was
-  // provided by the user. If yes, apply the objects
-  // to the present TGeo geometry
-  if (fAlignObjArray) {
-    if (gGeoManager && gGeoManager->IsClosed()) {
-      if (ApplyAlignObjsToGeom(fAlignObjArray) == kFALSE) {
-	AliError("The misalignment of one or more volumes failed!"
-		 "Compare the list of simulated detectors and the list of detector alignment data!");
+    
+    TString detStr = fLoadAlObjsListOfDets;
+    TString loadAlObjsListOfDets = "";
+    
+    TObjArray* detArray = runLoader->GetAliRun()->Detectors();
+    for (Int_t iDet = 0; iDet < detArray->GetEntriesFast(); iDet++) {
+      AliModule* det = (AliModule*) detArray->At(iDet);
+      if (!det || !det->IsActive()) continue;
+      if (IsSelected(det->GetName(), detStr)) {
+	//add det to list of dets to be aligned from CDB
+	loadAlObjsListOfDets += det->GetName();
+	loadAlObjsListOfDets += " ";
+      }
+    } // end loop over detectors
+    (AliGeomManager::Instance())->ApplyAlignObjsFromCDB(loadAlObjsListOfDets.Data());
+  }else{
+    // Check if the array with alignment objects was
+    // provided by the user. If yes, apply the objects
+    // to the present TGeo geometry
+    if (fAlignObjArray) {
+      if (gGeoManager && gGeoManager->IsClosed()) {
+	if ((AliGeomManager::Instance())->ApplyAlignObjsToGeom(fAlignObjArray) == kFALSE) {
+	  AliError("The misalignment of one or more volumes failed!"
+		   "Compare the list of simulated detectors and the list of detector alignment data!");
+	  if (delRunLoader) delete runLoader;
+	  return kFALSE;
+	}
+      }
+      else {
+	AliError("Can't apply the misalignment! gGeoManager doesn't exist or it is still opened!");
 	if (delRunLoader) delete runLoader;
 	return kFALSE;
       }
     }
-    else {
-      AliError("Can't apply the misalignment! gGeoManager doesn't exist or it is still opened!");
-      if (delRunLoader) delete runLoader;
-      return kFALSE;
-    }
   }
 
-
   // Update the internal geometry of modules (ITS needs it)
-  TString detStr = fLoadAlignData;
+  TString detStr = fLoadAlObjsListOfDets;
   TObjArray* detArray = runLoader->GetAliRun()->Detectors();
   for (Int_t iDet = 0; iDet < detArray->GetEntriesFast(); iDet++) {
 
@@ -643,13 +485,14 @@ Bool_t AliSimulation::Run(Int_t nEvents)
   // Set run number in CDBManager (if it is not already set in RunSimulation)
   if (!SetRunNumber()) if (fStopOnError) return kFALSE;
 
-  // Load and misalign the geometry
+  // If RunSimulation was not called, load the geometry and misalign it
   if (!gGeoManager) {
     TGeoManager::Import("geometry.root");
     if (!gGeoManager) if (fStopOnError) return kFALSE;
-    if (!MisalignGeometry()) if (fStopOnError) return kFALSE;
+    // Initialize the geometry manager (if not already done)
+    if(!MisalignGeometry()) if (fStopOnError) return kFALSE;
   }
-  
+
   // hits -> summable digits
   if (!fMakeSDigits.IsNull()) {
     if (!RunSDigitization(fMakeSDigits)) if (fStopOnError) return kFALSE;
@@ -795,10 +638,6 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   if (gGeoManager) gGeoManager->Export("geometry.root");
 
   // Misalign geometry
-//   if (!MisalignGeometry(runLoader)) {
-//     delete runLoader;
-//     return kFALSE;
-//   }
   MisalignGeometry(runLoader);
 
   // Export (mis)aligned geometry 

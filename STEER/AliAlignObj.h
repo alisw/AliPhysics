@@ -14,6 +14,8 @@
 #include "TObject.h"
 #include "TString.h"
 #include "TGeoMatrix.h"
+#include "AliGeomManager.h"
+
 
 class AliTrackPoint;
 class AliTrackPointArray;
@@ -22,21 +24,9 @@ class AliAlignObj : public TObject {
 
  public:
 
-  enum ELayerID{kInvalidLayer=0,
-		kFirstLayer=1,
-		kSPD1=1, kSPD2=2,
-		kSDD1=3, kSDD2=4,
-		kSSD1=5, kSSD2=6,
-		kTPC1=7, kTPC2=8,
-		kTRD1=9, kTRD2=10, kTRD3=11, kTRD4=12, kTRD5=13, kTRD6=14,
-		kTOF=15,
-		kPHOS1=16, kPHOS2=17,
-		kHMPID=18,
-		kMUON=19,
-		kLastLayer=20};
   AliAlignObj();
   AliAlignObj(const char* symname, UShort_t voluid);
-  AliAlignObj(const char* symname, ELayerID detId, Int_t modId);
+  AliAlignObj(const char* symname, AliGeomManager::ELayerID detId, Int_t modId);
   AliAlignObj(const AliAlignObj& theAlignObj);
   AliAlignObj& operator= (const AliAlignObj& theAlignObj);
   AliAlignObj& operator*=(const AliAlignObj& theAlignObj);
@@ -59,12 +49,12 @@ class AliAlignObj : public TObject {
   virtual Bool_t SetLocalMatrix(const TGeoMatrix& m);
   void  SetSymName(const TString& symname) {fVolPath=symname;}
   void  SetVolUID(UShort_t voluid) {fVolUID=voluid;}
-  void  SetVolUID(ELayerID layerId, Int_t modId);
+  void  SetVolUID(AliGeomManager::ELayerID layerId, Int_t modId);
 
   //Getters
   const char  *GetSymName()    const {return fVolPath.Data();}
   UShort_t     GetVolUID()     const {return fVolUID;}
-  void         GetVolUID(ELayerID &layerId, Int_t &modId) const;
+  void         GetVolUID(AliGeomManager::ELayerID &layerId, Int_t &modId) const;
   virtual void GetTranslation(Double_t* tr)  const=0;
   virtual Bool_t GetLocalTranslation(Double_t* tr) const;
   virtual Bool_t GetAngles(Double_t* angles) const=0;
@@ -85,43 +75,38 @@ class AliAlignObj : public TObject {
 
   void  Print(Option_t *) const;
 
-  static Int_t       LayerSize(Int_t layerId);
-  static const char* LayerName(Int_t layerId);
+  static Int_t       LayerSize(Int_t layerId) {return AliGeomManager::LayerSize(layerId);}
+  static const char* LayerName(Int_t layerId) {return AliGeomManager::LayerName(layerId);}
 
-  static UShort_t LayerToVolUID(ELayerID layerId, Int_t modId);
-  static UShort_t LayerToVolUID(Int_t    layerId, Int_t modId);
-  static ELayerID VolUIDToLayer(UShort_t voluid, Int_t &modId);
-  static ELayerID VolUIDToLayer(UShort_t voluid);
+  static UShort_t LayerToVolUID(AliGeomManager::ELayerID layerId, Int_t modId) {return AliGeomManager::LayerToVolUID(layerId, modId);}
+  static UShort_t LayerToVolUID(Int_t layerId, Int_t modId) {return AliGeomManager::LayerToVolUID(layerId, modId);}
+  static AliGeomManager::ELayerID VolUIDToLayer(UShort_t voluid, Int_t &modId) {return AliGeomManager::VolUIDToLayer(voluid, modId);}
+  static AliGeomManager::ELayerID VolUIDToLayer(UShort_t voluid) {return AliGeomManager::VolUIDToLayer(voluid);}
+  static UShort_t LayerToVolUIDSafe(AliGeomManager::ELayerID layerId, Int_t modId) {return AliGeomManager::LayerToVolUIDSafe(layerId, modId);}
+  static UShort_t LayerToVolUIDSafe(Int_t layerId, Int_t modId) {return AliGeomManager::LayerToVolUIDSafe(layerId, modId);}
+  static AliGeomManager::ELayerID VolUIDToLayerSafe(UShort_t voluid, Int_t &modId) {return AliGeomManager::VolUIDToLayerSafe(voluid, modId);}
+  static AliGeomManager::ELayerID VolUIDToLayerSafe(UShort_t voluid) {return AliGeomManager::VolUIDToLayerSafe(voluid);}
 
-  static const char* SymName(UShort_t voluid);
-  static const char* SymName(ELayerID layerId, Int_t modId);
+  static const char* SymName(UShort_t voluid) {return AliGeomManager::SymName(voluid);}
+  static const char* SymName(AliGeomManager::ELayerID layerId, Int_t modId) {return AliGeomManager::SymName(layerId, modId);}
 
   Bool_t ApplyToGeometry();
-  static Bool_t   GetFromGeometry(const char *symname, AliAlignObj &alobj);
+  static Bool_t   GetFromGeometry(const char *symname, AliAlignObj &alobj) {return AliGeomManager::GetFromGeometry(symname, alobj);}
 
-  static AliAlignObj* GetAlignObj(UShort_t voluid);
-  static AliAlignObj* GetAlignObj(ELayerID layerId, Int_t modId);
+  static AliAlignObj* GetAlignObj(UShort_t voluid) {return AliGeomManager::GetAlignObj(voluid);}
+  static AliAlignObj* GetAlignObj(AliGeomManager::ELayerID layerId, Int_t modId) {return AliGeomManager::GetAlignObj(layerId, modId);}
 
-  static Bool_t   GetOrigGlobalMatrix(const char *symname, TGeoHMatrix &m);
+  static Bool_t   GetOrigGlobalMatrix(const char *symname, TGeoHMatrix &m) {return AliGeomManager::GetOrigGlobalMatrix(symname, m);}
 
  protected:
 
   void AnglesToMatrix(const Double_t *angles, Double_t *rot) const;
   Bool_t MatrixToAngles(const Double_t *rot, Double_t *angles) const;
 
-  static void InitSymNames();
-  static void InitAlignObjFromGeometry();
-
   //Volume identifiers
   TString  fVolPath; // Symbolic volume name; in case could coincide with
       // the volume path inside TGeo geometry (for non-alignable volumes)
   UShort_t fVolUID;  // Unique volume ID
-
-  static Int_t       fgLayerSize[kLastLayer - kFirstLayer]; // Size of layers
-  static const char* fgLayerName[kLastLayer - kFirstLayer]; // Name of layers
-
-  static TString*    fgVolPath[kLastLayer - kFirstLayer]; // Symbolic volume names
-  static AliAlignObj** fgAlignObjs[kLastLayer - kFirstLayer]; // Alignment objects
 
   ClassDef(AliAlignObj, 2)
 };

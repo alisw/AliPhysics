@@ -135,8 +135,8 @@ void AliTrackFitterRieman::Reset()
 }
 
 Bool_t AliTrackFitterRieman::Fit(const TArrayI *volIds,const TArrayI *volIdsFit,
-				 AliAlignObj::ELayerID layerRangeMin,
-			 AliAlignObj::ELayerID layerRangeMax)
+				 AliGeomManager::ELayerID layerRangeMin,
+			 AliGeomManager::ELayerID layerRangeMax)
 {
   // Fit the track points. The method takes as an input
   // the set of id's (volids) of the volumes in which
@@ -214,9 +214,9 @@ Bool_t AliTrackFitterRieman::Fit(const TArrayI *volIds,const TArrayI *volIdsFit,
 	if (!FindVolId(volIdsFit,iVolId)) continue;
       }
       else {
-	if (iVolId < AliAlignObj::LayerToVolUID(layerRangeMin,0) ||
-	    iVolId > AliAlignObj::LayerToVolUID(layerRangeMax,
-						AliAlignObj::LayerSize(layerRangeMax))) continue;
+	if (iVolId < AliGeomManager::LayerToVolUID(layerRangeMin,0) ||
+	    iVolId > AliGeomManager::LayerToVolUID(layerRangeMax,
+						AliGeomManager::LayerSize(layerRangeMax))) continue;
       }
       if (!isAlphaCalc) {
 	fAlpha = p.GetAngle();
@@ -325,10 +325,10 @@ Bool_t AliTrackFitterRieman::Fit(const TArrayI *volIds,const TArrayI *volIdsFit,
     Int_t nVolFit = volIdsFit->GetSize();
     Int_t volId   = volIds->At(0);   
     Int_t modId   =0;
-    Int_t layer   =  AliAlignObj::VolUIDToLayer(volId,modId);
+    Int_t layer   =  AliGeomManager::VolUIDToLayer(volId,modId);
     Int_t volIdFit   = volIdsFit->At(0);   
     Int_t modIdFit   =0;
-    Int_t layerFit   =  AliAlignObj::VolUIDToLayer(volIdFit,modIdFit);
+    Int_t layerFit   =  AliGeomManager::VolUIDToLayer(volIdFit,modIdFit);
     
     (*fDebugStream)<<"Fit"<<
       "VolId="<<volId<<        // volume ID

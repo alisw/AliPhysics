@@ -41,7 +41,7 @@ public:
   void           SetRunSimulation(Bool_t run) {fRunSimulation = run;};
   void           SetLoadAlignFromCDB(Bool_t load)  {fLoadAlignFromCDB = load;};
   void           SetLoadAlignData(const char* detectors) 
-                   {fLoadAlignData = detectors;};
+                   {fLoadAlObjsListOfDets = detectors;};
   void           SetMakeSDigits(const char* detectors) 
                    {fMakeSDigits = detectors;};
   void           MergeWith(const char* fileName, Int_t nSignalPerBkgrd = 0);
@@ -60,23 +60,9 @@ public:
 				 Bool_t deleteIntermediateFiles = kFALSE)
                    {fWriteRawData = detectors; fRawDataFileName = fileName;
 		   fDeleteIntermediateFiles = deleteIntermediateFiles;};
-
-  Bool_t         ApplyAlignObjsToGeom(TObjArray* alObjArray);
-
-  Bool_t         ApplyAlignObjsToGeom(const char* fileName,
-				      const char* clArrayName);
-  Bool_t         ApplyAlignObjsToGeom(AliCDBParam* param,
-				      AliCDBId& Id);
-  Bool_t         ApplyAlignObjsToGeom(const char* uri, const char* path,
-				      Int_t runnum, Int_t version,
-				      Int_t sversion);
-  Bool_t         ApplyAlignObjsToGeom(const char* detName, Int_t runnum, Int_t version,
-				      Int_t sversion);
   void           SetAlignObjArray(TObjArray *array)
                    {fAlignObjArray = array;
 		   fLoadAlignFromCDB = kFALSE;}
-
-  Bool_t         SetAlignObjArraySingleDet(const char* detName); 		   
 
   Bool_t         MisalignGeometry(AliRunLoader *runLoader = NULL);
 
@@ -113,7 +99,7 @@ private:
   Bool_t         fRunGeneration;      // generate prim. particles or not
   Bool_t         fRunSimulation;      // simulate detectors (hits) or not
   Bool_t         fLoadAlignFromCDB;   // Load alignment data from CDB and apply it to geometry or not
-  TString        fLoadAlignData;      // Load alignment data from CDB for these detectors
+  TString        fLoadAlObjsListOfDets;   // Load alignment data from CDB for these detectors
   TString        fMakeSDigits;        // create sdigits for these detectors
   TString        fMakeDigits;         // create digits for these detectors
   TString        fMakeTrigger;        // run trigger for these descriptors

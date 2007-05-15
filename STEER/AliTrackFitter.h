@@ -29,8 +29,8 @@ class AliTrackFitter : public TObject {
   virtual void   Reset();
   virtual void   SetTrackPointArray(AliTrackPointArray *array, Bool_t owner = kTRUE);
   virtual Bool_t Fit(const TArrayI *volIds,const TArrayI *volIdsFit = 0x0,
-		     AliAlignObj::ELayerID layerRangeMin = AliAlignObj::kFirstLayer,
-		     AliAlignObj::ELayerID layerRangeMax = AliAlignObj::kLastLayer);
+		     AliGeomManager::ELayerID layerRangeMin = AliGeomManager::kFirstLayer,
+		     AliGeomManager::ELayerID layerRangeMax = AliGeomManager::kLastLayer);
 
   virtual Bool_t Begin(Int_t, Int_t) = 0;
   virtual Bool_t AddPoint(const AliTrackPoint *p) = 0;

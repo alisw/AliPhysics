@@ -42,25 +42,25 @@ class AliAlignmentTracks : public TObject {
   void SetTrackFitter(AliTrackFitter *fitter) { fTrackFitter = fitter; }
   void SetMinimizer(AliTrackResiduals *minimizer) { fMinimizer = minimizer; }
 
-  void AlignDetector(AliAlignObj::ELayerID firstLayer,
-		     AliAlignObj::ELayerID lastLayer,
-		     AliAlignObj::ELayerID layerRangeMin = AliAlignObj::kFirstLayer,
-		     AliAlignObj::ELayerID layerRangeMax = AliAlignObj::kLastLayer,Int_t iterations = 1);
-  void AlignLayer(AliAlignObj::ELayerID layer,
-		  AliAlignObj::ELayerID layerRangeMin = AliAlignObj::kFirstLayer,
-		  AliAlignObj::ELayerID layerRangeMax = AliAlignObj::kLastLayer,
+  void AlignDetector(AliGeomManager::ELayerID firstLayer,
+		     AliGeomManager::ELayerID lastLayer,
+		     AliGeomManager::ELayerID layerRangeMin = AliGeomManager::kFirstLayer,
+		     AliGeomManager::ELayerID layerRangeMax = AliGeomManager::kLastLayer,Int_t iterations = 1);
+  void AlignLayer(AliGeomManager::ELayerID layer,
+		  AliGeomManager::ELayerID layerRangeMin = AliGeomManager::kFirstLayer,
+		  AliGeomManager::ELayerID layerRangeMax = AliGeomManager::kLastLayer,
 		  Int_t iterations = 1);
   void AlignVolume(UShort_t volId, UShort_t volIdFit,
 		   Int_t iterations);
   void AlignVolumes(const TArrayI *volids, const TArrayI *volidsfit = 0x0,
-		   AliAlignObj::ELayerID layerRangeMin = AliAlignObj::kFirstLayer,
-		   AliAlignObj::ELayerID layerRangeMax = AliAlignObj::kLastLayer,
+		   AliGeomManager::ELayerID layerRangeMin = AliGeomManager::kFirstLayer,
+		   AliGeomManager::ELayerID layerRangeMax = AliGeomManager::kLastLayer,
 		   Int_t iterations = 1);
 
   AliAlignObj* GetAlignObj(UShort_t volid) const {
     Int_t iModule;
-    AliAlignObj::ELayerID iLayer = AliAlignObj::VolUIDToLayer(volid,iModule);
-    return fAlignObjs[iLayer-AliAlignObj::kFirstLayer][iModule];
+    AliGeomManager::ELayerID iLayer = AliGeomManager::VolUIDToLayer(volid,iModule);
+    return fAlignObjs[iLayer-AliGeomManager::kFirstLayer][iModule];
   }
   void    SetUpdate(Bool_t update){fDoUpdate = update;}
   Bool_t  GetUpdate() const { return fDoUpdate;}

@@ -245,14 +245,14 @@ void AliAlignmentTracks::BuildIndex()
       for (Int_t ipoint = 0; ipoint < array->GetNPoints(); ipoint++) {
 	UShort_t volId = array->GetVolumeID()[ipoint];
 	// check if the volId is valid
-	if (!AliAlignObj::SymName(volId)) {
+	if (!AliGeomManager::SymName(volId)) {
 	  AliError(Form("The volume id %d has no default volume name !",
 			volId));
 	  continue;
 	}
 	Int_t modId;
-	Int_t layerId = AliAlignObj::VolUIDToLayer(volId,modId)
-	              - AliAlignObj::kFirstLayer;
+	Int_t layerId = AliGeomManager::VolUIDToLayer(volId,modId)
+	              - AliGeomManager::kFirstLayer;
 	if (!fArrayIndex[layerId][modId]) {
 	  //first entry for this volume
 	  fArrayIndex[layerId][modId] = new TArrayI(1000);
@@ -284,13 +284,13 @@ void AliAlignmentTracks::BuildIndex()
 void AliAlignmentTracks::InitIndex()
 {
   // Initialize the index arrays
-  Int_t nLayers = AliAlignObj::kLastLayer - AliAlignObj::kFirstLayer;
+  Int_t nLayers = AliGeomManager::kLastLayer - AliGeomManager::kFirstLayer;
   fLastIndex = new Int_t*[nLayers];
   fArrayIndex = new TArrayI**[nLayers];
-  for (Int_t iLayer = 0; iLayer < (AliAlignObj::kLastLayer - AliAlignObj::kFirstLayer); iLayer++) {
-    fLastIndex[iLayer] = new Int_t[AliAlignObj::LayerSize(iLayer + AliAlignObj::kFirstLayer)];
-    fArrayIndex[iLayer] = new TArrayI*[AliAlignObj::LayerSize(iLayer + AliAlignObj::kFirstLayer)];
-    for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer + AliAlignObj::kFirstLayer); iModule++) {
+  for (Int_t iLayer = 0; iLayer < (AliGeomManager::kLastLayer - AliGeomManager::kFirstLayer); iLayer++) {
+    fLastIndex[iLayer] = new Int_t[AliGeomManager::LayerSize(iLayer + AliGeomManager::kFirstLayer)];
+    fArrayIndex[iLayer] = new TArrayI*[AliGeomManager::LayerSize(iLayer + AliGeomManager::kFirstLayer)];
+    for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(iLayer + AliGeomManager::kFirstLayer); iModule++) {
       fLastIndex[iLayer][iModule] = 0;
       fArrayIndex[iLayer][iModule] = 0;
     }
@@ -305,8 +305,8 @@ void AliAlignmentTracks::ResetIndex()
 
   fIsIndexBuilt = kFALSE;
   
-  for (Int_t iLayer = 0; iLayer < AliAlignObj::kLastLayer - AliAlignObj::kFirstLayer; iLayer++) {
-    for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer + AliAlignObj::kFirstLayer); iModule++) {
+  for (Int_t iLayer = 0; iLayer < AliGeomManager::kLastLayer - AliGeomManager::kFirstLayer; iLayer++) {
+    for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(iLayer + AliGeomManager::kFirstLayer); iModule++) {
       fLastIndex[iLayer][iModule] = 0;
     }
   }
@@ -317,8 +317,8 @@ void AliAlignmentTracks::DeleteIndex()
 {
   // Delete the index arrays
   // Called by the destructor
-  for (Int_t iLayer = 0; iLayer < (AliAlignObj::kLastLayer - AliAlignObj::kFirstLayer); iLayer++) {
-    for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer + AliAlignObj::kFirstLayer); iModule++) {
+  for (Int_t iLayer = 0; iLayer < (AliGeomManager::kLastLayer - AliGeomManager::kFirstLayer); iLayer++) {
+    for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(iLayer + AliGeomManager::kFirstLayer); iModule++) {
       if (fArrayIndex[iLayer][iModule]) {
 	delete fArrayIndex[iLayer][iModule];
 	fArrayIndex[iLayer][iModule] = 0;
@@ -345,13 +345,13 @@ Bool_t AliAlignmentTracks::ReadAlignObjs(const char *alignObjFileName, const cha
 void AliAlignmentTracks::InitAlignObjs()
 {
   // Initialize the alignment objects array
-  Int_t nLayers = AliAlignObj::kLastLayer - AliAlignObj::kFirstLayer;
+  Int_t nLayers = AliGeomManager::kLastLayer - AliGeomManager::kFirstLayer;
   fAlignObjs = new AliAlignObj**[nLayers];
-  for (Int_t iLayer = 0; iLayer < (AliAlignObj::kLastLayer - AliAlignObj::kFirstLayer); iLayer++) {
-    fAlignObjs[iLayer] = new AliAlignObj*[AliAlignObj::LayerSize(iLayer + AliAlignObj::kFirstLayer)];
-    for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer + AliAlignObj::kFirstLayer); iModule++) {
-      UShort_t volid = AliAlignObj::LayerToVolUID(iLayer+ AliAlignObj::kFirstLayer,iModule);
-      fAlignObjs[iLayer][iModule] = new AliAlignObjAngles(AliAlignObj::SymName(volid),volid,0,0,0,0,0,0,kTRUE);
+  for (Int_t iLayer = 0; iLayer < (AliGeomManager::kLastLayer - AliGeomManager::kFirstLayer); iLayer++) {
+    fAlignObjs[iLayer] = new AliAlignObj*[AliGeomManager::LayerSize(iLayer + AliGeomManager::kFirstLayer)];
+    for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(iLayer + AliGeomManager::kFirstLayer); iModule++) {
+      UShort_t volid = AliGeomManager::LayerToVolUID(iLayer+ AliGeomManager::kFirstLayer,iModule);
+      fAlignObjs[iLayer][iModule] = new AliAlignObjAngles(AliGeomManager::SymName(volid),volid,0,0,0,0,0,0,kTRUE);
     }
   }
 }
@@ -360,8 +360,8 @@ void AliAlignmentTracks::InitAlignObjs()
 void AliAlignmentTracks::ResetAlignObjs()
 {
   // Reset the alignment objects array
-  for (Int_t iLayer = 0; iLayer < (AliAlignObj::kLastLayer - AliAlignObj::kFirstLayer); iLayer++) {
-    for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer + AliAlignObj::kFirstLayer); iModule++)
+  for (Int_t iLayer = 0; iLayer < (AliGeomManager::kLastLayer - AliGeomManager::kFirstLayer); iLayer++) {
+    for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(iLayer + AliGeomManager::kFirstLayer); iModule++)
       fAlignObjs[iLayer][iModule]->SetPars(0,0,0,0,0,0);
   }
 }
@@ -370,8 +370,8 @@ void AliAlignmentTracks::ResetAlignObjs()
 void AliAlignmentTracks::DeleteAlignObjs()
 {
   // Delete the alignment objects array
-  for (Int_t iLayer = 0; iLayer < (AliAlignObj::kLastLayer - AliAlignObj::kFirstLayer); iLayer++) {
-    for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer + AliAlignObj::kFirstLayer); iModule++)
+  for (Int_t iLayer = 0; iLayer < (AliGeomManager::kLastLayer - AliGeomManager::kFirstLayer); iLayer++) {
+    for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(iLayer + AliGeomManager::kFirstLayer); iModule++)
       if (fAlignObjs[iLayer][iModule])
 	delete fAlignObjs[iLayer][iModule];
     delete [] fAlignObjs[iLayer];
@@ -380,10 +380,10 @@ void AliAlignmentTracks::DeleteAlignObjs()
   fAlignObjs = 0;
 }
 
-void AliAlignmentTracks::AlignDetector(AliAlignObj::ELayerID firstLayer,
-				       AliAlignObj::ELayerID lastLayer,
-				       AliAlignObj::ELayerID layerRangeMin,
-				       AliAlignObj::ELayerID layerRangeMax,
+void AliAlignmentTracks::AlignDetector(AliGeomManager::ELayerID firstLayer,
+				       AliGeomManager::ELayerID lastLayer,
+				       AliGeomManager::ELayerID layerRangeMin,
+				       AliGeomManager::ELayerID layerRangeMax,
 				       Int_t iterations)
 {
   // Align detector volumes within
@@ -393,13 +393,13 @@ void AliAlignmentTracks::AlignDetector(AliAlignObj::ELayerID firstLayer,
   // the range defined by the user.
   Int_t nModules = 0;
   for (Int_t iLayer = firstLayer; iLayer <= lastLayer; iLayer++)
-    nModules += AliAlignObj::LayerSize(iLayer);
+    nModules += AliGeomManager::LayerSize(iLayer);
   TArrayI volIds(nModules);
 
   Int_t modnum = 0;
   for (Int_t iLayer = firstLayer; iLayer <= lastLayer; iLayer++) {
-    for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer); iModule++) {
-      UShort_t volId = AliAlignObj::LayerToVolUID(iLayer,iModule);
+    for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(iLayer); iModule++) {
+      UShort_t volId = AliGeomManager::LayerToVolUID(iLayer,iModule);
       volIds.AddAt(volId,modnum);
       modnum++;
     }
@@ -412,19 +412,19 @@ void AliAlignmentTracks::AlignDetector(AliAlignObj::ELayerID firstLayer,
 }
 
 //______________________________________________________________________________
-void AliAlignmentTracks::AlignLayer(AliAlignObj::ELayerID layer,
-				    AliAlignObj::ELayerID layerRangeMin,
-				    AliAlignObj::ELayerID layerRangeMax,
+void AliAlignmentTracks::AlignLayer(AliGeomManager::ELayerID layer,
+				    AliGeomManager::ELayerID layerRangeMin,
+				    AliGeomManager::ELayerID layerRangeMax,
 				    Int_t iterations)
 {
   // Align detector volumes within
   // a given layer.
   // Tracks are fitted only within
   // the range defined by the user.
-  Int_t nModules = AliAlignObj::LayerSize(layer);
+  Int_t nModules = AliGeomManager::LayerSize(layer);
   TArrayI volIds(nModules);
   for (Int_t iModule = 0; iModule < nModules; iModule++) {
-    UShort_t volId = AliAlignObj::LayerToVolUID(layer,iModule);
+    UShort_t volId = AliGeomManager::LayerToVolUID(layer,iModule);
     volIds.AddAt(volId,iModule);
   }
 
@@ -455,8 +455,8 @@ void AliAlignmentTracks::AlignVolume(UShort_t volId, UShort_t volIdFit,
 
 //______________________________________________________________________________
 void AliAlignmentTracks::AlignVolumes(const TArrayI *volids, const TArrayI *volidsfit,
-				     AliAlignObj::ELayerID layerRangeMin,
-				     AliAlignObj::ELayerID layerRangeMax,
+				     AliGeomManager::ELayerID layerRangeMin,
+				     AliGeomManager::ELayerID layerRangeMax,
 				     Int_t iterations)
 {
   // Align a set of detector volumes.
@@ -499,8 +499,8 @@ void AliAlignmentTracks::AlignVolumes(const TArrayI *volids, const TArrayI *voli
     if (fDoUpdate) for (Int_t iVolId = 0; iVolId < nVolIds; iVolId++) {
       UShort_t volid = (*volids)[iVolId];
       Int_t iModule;
-      AliAlignObj::ELayerID iLayer = AliAlignObj::VolUIDToLayer(volid,iModule);
-      AliAlignObj *alignObj = fAlignObjs[iLayer-AliAlignObj::kFirstLayer][iModule];      
+      AliGeomManager::ELayerID iLayer = AliGeomManager::VolUIDToLayer(volid,iModule);
+      AliAlignObj *alignObj = fAlignObjs[iLayer-AliGeomManager::kFirstLayer][iModule];      
       *alignObj *= *minimizer->GetAlignObj();
       alignObj->Print("");
     }
@@ -537,14 +537,14 @@ Int_t AliAlignmentTracks::LoadPoints(const TArrayI *volids, AliTrackPointArray**
   for (Int_t iVolId = 0; iVolId < nVolIds; iVolId++) {
     UShort_t volid = (*volids)[iVolId];
     Int_t iModule;
-    AliAlignObj::ELayerID iLayer = AliAlignObj::VolUIDToLayer(volid,iModule);
+    AliGeomManager::ELayerID iLayer = AliGeomManager::VolUIDToLayer(volid,iModule);
 
     // In case of empty index
-    if (fLastIndex[iLayer-AliAlignObj::kFirstLayer][iModule] == 0) {
+    if (fLastIndex[iLayer-AliGeomManager::kFirstLayer][iModule] == 0) {
       AliWarning(Form("There are no space-points belonging to the volume which is to be aligned (Volume ID =%d)!",volid));
       continue;
     }
-    nArrays += fLastIndex[iLayer-AliAlignObj::kFirstLayer][iModule];
+    nArrays += fLastIndex[iLayer-AliGeomManager::kFirstLayer][iModule];
   }
 
   if (nArrays == 0) {
@@ -570,10 +570,10 @@ Int_t AliAlignmentTracks::LoadPoints(const TArrayI *volids, AliTrackPointArray**
   for (Int_t iVolId = 0; iVolId < nVolIds; iVolId++) {
     UShort_t volid = (*volids)[iVolId];
     Int_t iModule;
-    AliAlignObj::ELayerID iLayer = AliAlignObj::VolUIDToLayer(volid,iModule);
+    AliGeomManager::ELayerID iLayer = AliGeomManager::VolUIDToLayer(volid,iModule);
 
-    Int_t nArraysId = fLastIndex[iLayer-AliAlignObj::kFirstLayer][iModule];
-    TArrayI *index = fArrayIndex[iLayer-AliAlignObj::kFirstLayer][iModule];
+    Int_t nArraysId = fLastIndex[iLayer-AliGeomManager::kFirstLayer][iModule];
+    TArrayI *index = fArrayIndex[iLayer-AliGeomManager::kFirstLayer][iModule];
     AliTrackPoint p;
 
     for (Int_t iArrayId = 0; iArrayId < nArraysId; iArrayId++) {
@@ -594,18 +594,18 @@ Int_t AliAlignmentTracks::LoadPoints(const TArrayI *volids, AliTrackPointArray**
       for (Int_t iPoint = 0; iPoint < nPoints; iPoint++) {
 	array->GetPoint(p,iPoint);
 	Int_t modnum;
-	AliAlignObj::ELayerID layer = AliAlignObj::VolUIDToLayer(p.GetVolumeID(),modnum);
+	AliGeomManager::ELayerID layer = AliGeomManager::VolUIDToLayer(p.GetVolumeID(),modnum);
 	// check if the layer id is valid
-	if ((layer < AliAlignObj::kFirstLayer) ||
-	    (layer >= AliAlignObj::kLastLayer)) {
+	if ((layer < AliGeomManager::kFirstLayer) ||
+	    (layer >= AliGeomManager::kLastLayer)) {
 	  AliError(Form("Layer index is invalid: %d (%d -> %d) !",
-			layer,AliAlignObj::kFirstLayer,AliAlignObj::kLastLayer-1));
+			layer,AliGeomManager::kFirstLayer,AliGeomManager::kLastLayer-1));
 	  continue;
 	}
-	if ((modnum >= AliAlignObj::LayerSize(layer)) ||
+	if ((modnum >= AliGeomManager::LayerSize(layer)) ||
 	    (modnum < 0)) {
 	  AliError(Form("Module number inside layer %d is invalid: %d (0 -> %d)",
-			layer,modnum,AliAlignObj::LayerSize(layer)));
+			layer,modnum,AliGeomManager::LayerSize(layer)));
 	  continue;
 	}
 
@@ -613,13 +613,13 @@ Int_t AliAlignmentTracks::LoadPoints(const TArrayI *volids, AliTrackPointArray**
 	// Switch it off in case of real
 	// alignment job!
 	if (fMisalignObjs) {
-	  AliAlignObj *misalignObj = fMisalignObjs[layer-AliAlignObj::kFirstLayer][modnum];
+	  AliAlignObj *misalignObj = fMisalignObjs[layer-AliGeomManager::kFirstLayer][modnum];
 	  if (misalignObj)
 	    misalignObj->Transform(p);
 	}
 	// End of misalignment
 
-	AliAlignObj *alignObj = fAlignObjs[layer-AliAlignObj::kFirstLayer][modnum];
+	AliAlignObj *alignObj = fAlignObjs[layer-AliGeomManager::kFirstLayer][modnum];
 	alignObj->Transform(p);
 	points[iArray]->AddPoint(iPoint,&p);
       }
@@ -678,11 +678,11 @@ Bool_t AliAlignmentTracks::Misalign(const char *misalignObjFileName, const char*
   // scenario since it will bias the results.
 
   // Initialize the misalignment objects array
-  Int_t nLayers = AliAlignObj::kLastLayer - AliAlignObj::kFirstLayer;
+  Int_t nLayers = AliGeomManager::kLastLayer - AliGeomManager::kFirstLayer;
   fMisalignObjs = new AliAlignObj**[nLayers];
-  for (Int_t iLayer = 0; iLayer < (AliAlignObj::kLastLayer - AliAlignObj::kFirstLayer); iLayer++) {
-    fMisalignObjs[iLayer] = new AliAlignObj*[AliAlignObj::LayerSize(iLayer + AliAlignObj::kFirstLayer)];
-    for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer + AliAlignObj::kFirstLayer); iModule++)
+  for (Int_t iLayer = 0; iLayer < (AliGeomManager::kLastLayer - AliGeomManager::kFirstLayer); iLayer++) {
+    fMisalignObjs[iLayer] = new AliAlignObj*[AliGeomManager::LayerSize(iLayer + AliGeomManager::kFirstLayer)];
+    for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(iLayer + AliGeomManager::kFirstLayer); iModule++)
       fMisalignObjs[iLayer][iModule] = 0x0;
   }
 
@@ -704,13 +704,13 @@ Bool_t AliAlignmentTracks::Misalign(const char *misalignObjFileName, const char*
 
   // Store the misalignment objects for further usage  
   Int_t nObjs = array->GetEntriesFast();
-  AliAlignObj::ELayerID layerId; // volume layer
+  AliGeomManager::ELayerID layerId; // volume layer
   Int_t modId; // volume ID inside the layer
   for(Int_t i=0; i<nObjs; i++)
     {
       AliAlignObj* alObj = (AliAlignObj*)array->UncheckedAt(i);
       alObj->GetVolUID(layerId,modId);
-      fMisalignObjs[layerId-AliAlignObj::kFirstLayer][modId] = alObj;
+      fMisalignObjs[layerId-AliGeomManager::kFirstLayer][modId] = alObj;
     }
   return kTRUE;
 }

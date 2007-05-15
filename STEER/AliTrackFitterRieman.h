@@ -28,8 +28,8 @@ class AliTrackFitterRieman : public AliTrackFitter{
   virtual ~AliTrackFitterRieman();
 
   Bool_t Fit(const TArrayI *volIds,const TArrayI *volIdsFit = 0x0,
-	     AliAlignObj::ELayerID layerRangeMin = AliAlignObj::kFirstLayer,
-	     AliAlignObj::ELayerID layerRangeMax = AliAlignObj::kLastLayer);
+	     AliGeomManager::ELayerID layerRangeMin = AliGeomManager::kFirstLayer,
+	     AliGeomManager::ELayerID layerRangeMax = AliGeomManager::kLastLayer);
   Bool_t GetPCA(const AliTrackPoint &p, AliTrackPoint &p2) const;
   void SetMaxDelta(Float_t maxDelta) { fMaxDelta = maxDelta;}
   Float_t GetMaxDelta() const { return fMaxDelta;}

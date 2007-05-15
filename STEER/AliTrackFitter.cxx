@@ -165,8 +165,8 @@ Bool_t AliTrackFitter::FindVolId(const TArrayI *array, UShort_t volid) const
 }
 
 Bool_t AliTrackFitter::Fit(const TArrayI *volIds,const TArrayI *volIdsFit,
-AliAlignObj::ELayerID layerRangeMin,
-AliAlignObj::ELayerID layerRangeMax)
+AliGeomManager::ELayerID layerRangeMin,
+AliGeomManager::ELayerID layerRangeMax)
 {
   //-------------------------------------------------------------------
   //
@@ -215,9 +215,9 @@ AliAlignObj::ELayerID layerRangeMax)
      for (Int_t i=0; i<npoints; i++) {
          UShort_t id=fPoints->GetVolumeID()[i]; 
          if (FindVolId(volIds,id)) countPnt++;
-         if (id < AliAlignObj::LayerToVolUID(layerRangeMin,0)) continue;
-	 if (id > AliAlignObj::LayerToVolUID(layerRangeMax,
-		  AliAlignObj::LayerSize(layerRangeMax))) continue;
+         if (id < AliGeomManager::LayerToVolUID(layerRangeMin,0)) continue;
+	 if (id > AliGeomManager::LayerToVolUID(layerRangeMax,
+		  AliGeomManager::LayerSize(layerRangeMax))) continue;
          countFit++;
          if (fst<0) fst=i;
          lst=i;
@@ -242,9 +242,9 @@ AliAlignObj::ELayerID layerRangeMax)
   } else {
      for (Int_t i=0; i<npoints; i++) {
          UShort_t id=fPoints->GetVolumeID()[i]; 
-         if (id < AliAlignObj::LayerToVolUID(layerRangeMin,0)) continue;
-	 if (id > AliAlignObj::LayerToVolUID(layerRangeMax,
-		  AliAlignObj::LayerSize(layerRangeMax))) continue;
+         if (id < AliGeomManager::LayerToVolUID(layerRangeMin,0)) continue;
+	 if (id > AliGeomManager::LayerToVolUID(layerRangeMax,
+		  AliGeomManager::LayerSize(layerRangeMax))) continue;
          fPoints->GetPoint(p,i);
          if (!AddPoint(&p)) continue;
      }

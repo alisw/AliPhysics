@@ -151,6 +151,7 @@
 #include "AliDetectorTag.h"
 #include "AliEventTag.h"
 
+#include "AliGeomManager.h"
 #include "AliTrackPointArray.h"
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
@@ -418,72 +419,6 @@ Bool_t AliReconstruction::SetRunNumber()
 }
 
 //_____________________________________________________________________________
-Bool_t AliReconstruction::ApplyAlignObjsToGeom(TObjArray* alObjArray)
-{
-  // Read collection of alignment objects (AliAlignObj derived) saved
-  // in the TClonesArray ClArrayName and apply them to the geometry
-  // manager singleton.
-  //
-  alObjArray->Sort();
-  Int_t nvols = alObjArray->GetEntriesFast();
-
-  Bool_t flag = kTRUE;
-
-  for(Int_t j=0; j<nvols; j++)
-    {
-      AliAlignObj* alobj = (AliAlignObj*) alObjArray->UncheckedAt(j);
-      if (alobj->ApplyToGeometry() == kFALSE) flag = kFALSE;
-    }
-
-  if (AliDebugLevelClass() >= 1) {
-    gGeoManager->GetTopNode()->CheckOverlaps(20);
-    TObjArray* ovexlist = gGeoManager->GetListOfOverlaps();
-    if(ovexlist->GetEntriesFast()){  
-      AliError("The application of alignment objects to the geometry caused huge overlaps/extrusions!");
-   }
-  }
-
-  return flag;
-
-}
-
-//_____________________________________________________________________________
-Bool_t AliReconstruction::SetAlignObjArraySingleDet(const char* detName)
-{
-  // Fills array of single detector's alignable objects from CDB
-  
-  AliDebug(2, Form("Loading alignment data for detector: %s",detName));
-  
-  AliCDBEntry *entry;
-  	
-  AliCDBPath path(detName,"Align","Data");
-	
-  entry=AliCDBManager::Instance()->Get(path.GetPath());
-  if(!entry){ 
-  	AliDebug(2,Form("Couldn't load alignment data for detector %s",detName));
-	return kFALSE;
-  }
-  entry->SetOwner(1);
-  TClonesArray *alignArray = (TClonesArray*) entry->GetObject();	
-  alignArray->SetOwner(0);
-  AliDebug(2,Form("Found %d alignment objects for %s",
-			alignArray->GetEntries(),detName));
-
-  AliAlignObj *alignObj=0;
-  TIter iter(alignArray);
-	
-  // loop over align objects in detector
-  while( ( alignObj=(AliAlignObj *) iter.Next() ) ){
-  	fAlignObjArray->Add(alignObj);
-  }
-  // delete entry --- Don't delete, it is cached!
-	
-  AliDebug(2, Form("fAlignObjArray entries: %d",fAlignObjArray->GetEntries() ));
-  return kTRUE;
-
-}
-
-//_____________________________________________________________________________
 Bool_t AliReconstruction::MisalignGeometry(const TString& detectors)
 {
   // Read the alignment objects from CDB.
@@ -496,52 +431,35 @@ Bool_t AliReconstruction::MisalignGeometry(const TString& detectors)
 
   // Load alignment data from CDB and fill fAlignObjArray 
   if(fLoadAlignFromCDB){
-  	if(!fAlignObjArray) fAlignObjArray = new TObjArray();
   	
-	//fAlignObjArray->RemoveAll(); 
- 	fAlignObjArray->Clear();  	
-	fAlignObjArray->SetOwner(0);
- 
-  	TString detStr = detectors;
-  	TString dataNotLoaded="";
-  	TString dataLoaded="";
-  
-	for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
-	  if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
-	  if(!SetAlignObjArraySingleDet(fgkDetectorName[iDet])){
-	    dataNotLoaded += fgkDetectorName[iDet];
-	    dataNotLoaded += " ";
-	  } else {
-	    dataLoaded += fgkDetectorName[iDet];
-	    dataLoaded += " ";
-	  }
-  	} // end loop over detectors
-  
-  	if ((detStr.CompareTo("ALL") == 0)) detStr = "";
-  	dataNotLoaded += detStr;
-  	if(!dataLoaded.IsNull()) AliInfo(Form("Alignment data loaded for: %s",
-  			  dataLoaded.Data()));
-  	if(!dataNotLoaded.IsNull()) AliInfo(Form("Didn't/couldn't load alignment data for: %s",
-  			  dataNotLoaded.Data()));
-  } // fLoadAlignFromCDB flag
- 
-  // Check if the array with alignment objects was
-  // provided by the user. If yes, apply the objects
-  // to the present TGeo geometry
-  if (fAlignObjArray) {
-    if (gGeoManager && gGeoManager->IsClosed()) {
-      if (ApplyAlignObjsToGeom(fAlignObjArray) == kFALSE) {
-	AliError("The misalignment of one or more volumes failed!"
-		 "Compare the list of simulated detectors and the list of detector alignment data!");
+    TString detStr = detectors;
+    TString loadAlObjsListOfDets = "";
+    
+    for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+      if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
+      loadAlObjsListOfDets += fgkDetectorName[iDet];
+      loadAlObjsListOfDets += " ";
+    } // end loop over detectors
+    (AliGeomManager::Instance())->ApplyAlignObjsFromCDB(loadAlObjsListOfDets.Data());
+  }else{
+    // Check if the array with alignment objects was
+    // provided by the user. If yes, apply the objects
+    // to the present TGeo geometry
+    if (fAlignObjArray) {
+      if (gGeoManager && gGeoManager->IsClosed()) {
+	if ((AliGeomManager::Instance())->ApplyAlignObjsToGeom(fAlignObjArray) == kFALSE) {
+	  AliError("The misalignment of one or more volumes failed!"
+		   "Compare the list of simulated detectors and the list of detector alignment data!");
+	  return kFALSE;
+	}
+      }
+      else {
+	AliError("Can't apply the misalignment! gGeoManager doesn't exist or it is still opened!");
 	return kFALSE;
       }
     }
-    else {
-      AliError("Can't apply the misalignment! gGeoManager doesn't exist or it is still opened!");
-      return kFALSE;
-    }
   }
-
+  
   delete fAlignObjArray; fAlignObjArray=0;
 
   // Update the TGeoPhysicalNodes
@@ -1041,10 +959,8 @@ Bool_t AliReconstruction::RunVertexFinder(AliESD*& esd)
   }
   esd->SetVertex(vertex);
   // if SPD multiplicity has been determined, it is stored in the ESD
-  if (fVertexer) {
-  AliMultiplicity *mult= fVertexer->GetMultiplicity();
+  AliMultiplicity *mult = fVertexer->GetMultiplicity();
   if(mult)esd->SetMultiplicity(mult);
-  }
 
   for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
     if (fTracker[iDet]) fTracker[iDet]->SetVertex(vtxPos, vtxErr);

@@ -289,11 +289,11 @@ TGeoHMatrix* AliCluster::GetMatrix(Bool_t original) const
     return gGeoManager->GetCurrentMatrix();
   }
   else {
-    const char* symname = AliAlignObj::SymName(fVolumeId);
+    const char* symname = AliGeomManager::SymName(fVolumeId);
     if (!symname) return NULL;
 
     static TGeoHMatrix m;
-    if (AliAlignObj::GetOrigGlobalMatrix(symname,m))
+    if (AliGeomManager::GetOrigGlobalMatrix(symname,m))
       return &m;
     else
       return NULL;
@@ -328,7 +328,7 @@ TGeoPNEntry* AliCluster::GetPNEntry() const
     return NULL;
   }
 
-  const char* symname = AliAlignObj::SymName(fVolumeId);
+  const char* symname = AliGeomManager::SymName(fVolumeId);
   if (!symname) return NULL;
 
   TGeoPNEntry* pne = gGeoManager->GetAlignableEntry(symname);
