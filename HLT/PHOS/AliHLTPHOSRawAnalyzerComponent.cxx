@@ -169,10 +169,12 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 
       while(fPHOSRawStream->Next())
 	{
+	  //	  cout << "rawanalyze fPHOSRawStream->Next()" <<endl;
 	  if (fPHOSRawStream->IsNewHWAddress())
 	    {
 	      if(processedChannels > 0)
 		{
+		  //		  cout << "rawanalyzer fPHOSRawStream->IsNewHWAddress()" <<endl; 
 		  fAnalyzerPtr->SetData(fTmpChannelData);
 		  fAnalyzerPtr->Evaluate(0, sampleCnt);
 		  fOutPtr->fValidData[tmpChannelCnt].fGain = tmpGain;
@@ -266,6 +268,7 @@ AliHLTPHOSRawAnalyzerComponent::DoInit( int argc, const char** argv )
 
   if(fIsSetEquippmentID == kFALSE)
     {
+      cout << "The argument equippmentID is not set: set it with a component argumet like this: -equippmentID  <number>" << endl;
       Logging( kHLTLogFatal, "HLT::AliHLTPHOSRcuHistogramProducerComponent::DoInt( int argc, const char** argv )", "Missing argument",
 	       "The argument equippmentID is not set: set it with a component argumet like this: -equippmentID  <number>");
       iResult = -2; 

@@ -101,7 +101,7 @@ AliHLTComponentDataType
 AliHLTPHOSDDLDecoderComponent::GetOutputDataType()
 {
   //See html documentation of base class
-  return AliHLTPHOSDefinitions::fgkCellEnergyDataType;
+  return AliHLTPHOSDefinitions::fgkCellChannelDataDataType;
 }
 
 void
@@ -119,14 +119,6 @@ AliHLTPHOSDDLDecoderComponent::DoEvent( const AliHLTComponentEventData& evtData,
 					      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 					      AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
 {
-  //See html documentation of base class
-  double testPulse[70];
-  fDataCorruptorPtr->MakeCorruptedDataTest(testPulse,70);
-
-  //  AliHLTUInt8_t tmpMod    = 0;
-  //  AliHLTUInt8_t tmpZ      = 0;
-  //  AliHLTUInt8_t tmpX      = 0;
-  // AliHLTUInt8_t tmpGain   = 0;
   Int_t sampleCnt         = 0;
   Int_t processedChannels = 0;
   UInt_t offset           = 0; 
@@ -134,38 +126,41 @@ AliHLTPHOSDDLDecoderComponent::DoEvent( const AliHLTComponentEventData& evtData,
   UInt_t tSize            = 0;
 
   Int_t tmpChannelCnt     = 0;
-  //  Int_t tmpStartIndex     = 0;
-
+ 
   AliHLTUInt8_t* outBPtr;
-  //unsigned long first;
-  // unsigned long last;
+ 
   outBPtr = outputPtr;
   const AliHLTComponentBlockData* iter = NULL; 
   unsigned long ndx;
 
+  cout << "evtData.fBlockCnt = " <<   evtData.fBlockCnt  << endl;
+
   for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
+      cout << "AliHLTPHOSDDLDecoderComponent::DoEven ndx = " <<  ndx   <<endl;
       iter = blocks+ndx;
       mysize = 0;
       tmpChannelCnt = 0;
       offset = tSize;
 
+      
       if ( iter->fDataType != AliHLTPHOSDefinitions::fgkDDLPackedRawDataType )
 	{
+	  cout << "iter->fDataType != AliHLTPHOSDefinitions::fgkDDLPackedRawDataType" << endl;
 	  continue;
 	}
 
       fRawMemoryReader->SetMemory( reinterpret_cast<UChar_t*>( iter->fPtr ), iter->fSize );
       fOutPtr =  (AliHLTPHOSRcuChannelDataStruct*)outBPtr;
       mysize += sizeof(AliHLTPHOSRcuChannelDataStruct);
-
       fOutPtr->fRcuX = fRcuX;
       fOutPtr->fRcuZ = fRcuZ;
       fOutPtr->fModuleID = fModuleID;
 
+      tmpChannelCnt = 0;
+
       while(fPHOSRawStream->Next())
 	{
-	  
 	  if (fPHOSRawStream->IsNewHWAddress())
 	    {
 	      sampleCnt = 0;
@@ -180,7 +175,8 @@ AliHLTPHOSDDLDecoderComponent::DoEvent( const AliHLTComponentEventData& evtData,
 	  sampleCnt ++; 
 	}
 
-      fOutPtr->fNValidChannels = tmpChannelCnt-1;;
+      fOutPtr->fNValidChannels = tmpChannelCnt-1;
+      cout <<  "AliHLTPHOSDDLDecoderComponent::DoEven: setting  fOutPtr->fNValidChannels ="  << tmpChannelCnt-1<<endl;
 
       int tmpSampleCnt=0;
       AliHLTComponentBlockData bd;
@@ -193,7 +189,6 @@ AliHLTPHOSDDLDecoderComponent::DoEvent( const AliHLTComponentEventData& evtData,
       tSize += mysize;
       outBPtr += mysize;
     }
-
   
   if( tSize > size )
     {
@@ -231,9 +226,14 @@ AliHLTPHOSDDLDecoderComponent::DoInit( int argc, const char** argv )
   if(fIsSetEquippmentID == kFALSE)
 
     {
+      cout << "The argument equippmentID is not set: set it with a component argumet like this: -equippmentID  <number>" << endl;
       Logging( kHLTLogFatal, "HLT::AliHLTPHOSRcuHistogramProducerComponent::DoInt( int argc, const char** argv )", "Missing argument",
 	       "The argument equippmentID is not set: set it with a component argumet like this: -equippmentID  <number>");
       iResult = -2; 
+    }
+  else
+    {
+      fRawMemoryReader->SetEquipmentID(fkEquippmentID);
     }
 
   return iResult;
