@@ -1,5 +1,5 @@
-#ifndef ALIHLTPHOSCLUSTERDATASTRUCT
-#define ALIHLTPHOSCLUSTERDATASTRUCT
+#ifndef ALIHLTPHOSCLUSTERDATASTRUCT_H
+#define ALIHLTPHOSCLUSTERDATASTRUCT_H
 
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
@@ -17,7 +17,6 @@
 
 
 #include "Rtypes.h"
-#include "AliHLTPHOSCommonDefs.h"
 #include "AliHLTDataTypes.h"
 
 struct AliHLTPHOSClusterDataStruct

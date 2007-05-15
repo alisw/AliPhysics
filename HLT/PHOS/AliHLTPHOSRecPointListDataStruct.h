@@ -1,5 +1,5 @@
-#ifndef ALIHLTPHOSRECPOINTLISTDATASTRUCT
-#define ALIHLTPHOSRECPOINTLISTDATASTRUCT
+#ifndef ALIHLTPHOSRECPOINTLISTDATASTRUCT_H
+#define ALIHLTPHOSRECPOINTLISTDATASTRUCT_H
 
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *

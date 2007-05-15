@@ -1,4 +1,3 @@
-
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -13,57 +12,87 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
 #include "AliHLTPHOSPhysicsAnalyzerSpectrumComponent.h"
-#include "AliHLTPHOSPhysicsAnalyzerSpectrum.h"
 #include "AliHLTPHOSPhysicsAnalyzerPeakFitter.h"
 #include "AliHLTPHOSPhysicsDefinitions.h"
-#include "AliHLTPHOSDefinitions.h"
-#include "TCanvas.h"
-#include "TFile.h"
-#include <iostream>
-#include "stdio.h"			    
-#include <cstdlib>
+#include "AliHLTPHOSPhysicsAnalyzerSpectrum.h"
+#include "AliHLTPHOSPhysicsAnalyzerSpectrumComponent.h"
+#include "Rtypes.h"
 
-const AliHLTComponentDataType AliHLTPHOSPhysicsAnalyzerSpectrumComponent::inputDataTypes[]={kAliHLTVoidDataType,{0,"",""}};
-int AliHLTPHOSPhysicsAnalyzerSpectrumComponent::fEventCount = 0; 
+class AliHLTPHOSDefinitions;
+
+const AliHLTComponentDataType AliHLTPHOSPhysicsAnalyzerSpectrumComponent::fgkInputDataTypes[]={kAliHLTVoidDataType,{0,"",""}};
+UInt_t AliHLTPHOSPhysicsAnalyzerSpectrumComponent::fgCount = 0; 
 
 AliHLTPHOSPhysicsAnalyzerSpectrumComponent gAliHLTPHOSPhysicsAnalyzerSpectrumComponent;
 
 AliHLTPHOSPhysicsAnalyzerSpectrumComponent::AliHLTPHOSPhysicsAnalyzerSpectrumComponent():AliHLTProcessor(), fAnalyzerPtr(0), 
 											       fRootHistPtr(0)
 {
+  //Constructor
 }
 
 AliHLTPHOSPhysicsAnalyzerSpectrumComponent::~AliHLTPHOSPhysicsAnalyzerSpectrumComponent()
 {
+  //Destructor
+  if(fPeakFitter)
+    {
+      delete fPeakFitter;
+      fPeakFitter = 0;
+    }
+
+  if(fAnalyzerPtr)
+    {
+      delete fAnalyzerPtr;
+      fAnalyzerPtr = 0;
+    }
+  
+  if(fRootHistPtr)
+    {
+      delete fRootHistPtr;
+      fRootHistPtr = 0;
+    }
+      
 }
 
 AliHLTPHOSPhysicsAnalyzerSpectrumComponent::AliHLTPHOSPhysicsAnalyzerSpectrumComponent(const AliHLTPHOSPhysicsAnalyzerSpectrumComponent &):AliHLTProcessor(),
 																		    fAnalyzerPtr(0),
 																		    fRootHistPtr(0)
 {
-  
-  cout << "AliHLTPHOSPhysicsAnalyzerSpectrumComponent: Copy constructor not implemented yet!" << endl;
-  
+  //Copy constructor not implemented 
 }
 
 Int_t
 AliHLTPHOSPhysicsAnalyzerSpectrumComponent::Deinit()
 {
+  //Deinitialize the component
+  if(fPeakFitter)
+    {
+      fPeakFitter->SetHistogram(fRootHistPtr);
+      fPeakFitter->FitLorentzian();
+      delete fPeakFitter;
+      fPeakFitter = 0;
+    }
 
- 
-  fPeakFitter->SetHistogram(fRootHistPtr);
-  cout << "Fitting..." << endl;
-  //pf->FitGaussian();
-  fPeakFitter->FitLorentzian();
-
+  if(fAnalyzerPtr)
+    {
+      delete fAnalyzerPtr;
+      fAnalyzerPtr = 0;
+    }
+  
+  if(fRootHistPtr)
+    {
+      delete fRootHistPtr;
+      fRootHistPtr = 0;
+    }
+      
   return 0;
 }
 
 Int_t
 AliHLTPHOSPhysicsAnalyzerSpectrumComponent::DoDeinit()
 {
+  //Deinitialize the component
   Logging(kHLTLogInfo, "HLT", "PHOS", ",AliHLTPHOSPhysicsAnalyzerSpectrumComponent DoDeinit");
 
   return 0;
@@ -79,7 +108,8 @@ AliHLTPHOSPhysicsAnalyzerSpectrumComponent::GetComponentID()
 void
 AliHLTPHOSPhysicsAnalyzerSpectrumComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
 {
-  const AliHLTComponentDataType* pType=inputDataTypes;
+  //Get the input data types
+  const AliHLTComponentDataType* pType=fgkInputDataTypes;
   while (pType->fID!=0) {
     list.push_back(*pType);
     pType++;
@@ -96,6 +126,7 @@ void
 AliHLTPHOSPhysicsAnalyzerSpectrumComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier )
   
 {
+  //Get the data size of the output
   constBase = 30;
   inputMultiplier = 1;
 }
@@ -103,10 +134,10 @@ AliHLTPHOSPhysicsAnalyzerSpectrumComponent::GetOutputDataSize(unsigned long& con
 
 Int_t 
 AliHLTPHOSPhysicsAnalyzerSpectrumComponent::DoEvent(const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks,
-					AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size,
-					std::vector<AliHLTComponentBlockData>& outputBlocks)
+						    AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* /*outputPtr*/, AliHLTUInt32_t& /*size*/,
+						    std::vector<AliHLTComponentBlockData>& /*outputBlocks*/)
 {
-
+  //Do event
   const AliHLTComponentBlockData* iter = NULL; 
   unsigned long ndx; 
   
@@ -126,12 +157,12 @@ AliHLTPHOSPhysicsAnalyzerSpectrumComponent::DoEvent(const AliHLTComponentEventDa
   
   fAnalyzerPtr->Analyze(fClusterArrayPtr, ndx);
 
-  if(fEventCount%fWriteInterval == 0 && fEventCount != 0)
+  if(fgCount%fWriteInterval == 0 && fgCount != 0)
     {
       PushBack(fRootHistPtr, kAliHLTAnyDataType, (AliHLTUInt32_t)0);
     }
 
-  fEventCount++; 
+  fgCount++; 
   
   return 0;
   
@@ -140,7 +171,7 @@ AliHLTPHOSPhysicsAnalyzerSpectrumComponent::DoEvent(const AliHLTComponentEventDa
 Int_t
 AliHLTPHOSPhysicsAnalyzerSpectrumComponent::DoInit(Int_t argc, const Char_t** argv )
 {
-
+  //Initialize the component
   Float_t firstThreshold = atof(argv[0]);
   Float_t secondThreshold = atof(argv[1]);
   fWriteInterval = atoi(argv[2]);
@@ -164,5 +195,6 @@ AliHLTPHOSPhysicsAnalyzerSpectrumComponent::DoInit(Int_t argc, const Char_t** ar
 AliHLTComponent*
 AliHLTPHOSPhysicsAnalyzerSpectrumComponent::Spawn()
 {
+  //Spawn a new AliHLTPHOSPhysicsAnalyzerSpectrumComponent, for the HLT framework
   return new AliHLTPHOSPhysicsAnalyzerSpectrumComponent();
 }

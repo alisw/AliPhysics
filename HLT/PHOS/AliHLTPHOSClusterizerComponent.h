@@ -1,13 +1,25 @@
-#ifndef ALIHLTPHOSCLUSTERIZERCOMPONENT
-#define ALIHLTPHOSCLUSTERIZERCOMPONENT
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/** @file   AliHLTPHOSClusterizer.h
+    @author Øystein Djuvsland
+    @date   
+    @brief  A clusterizer component for PHOS HLT
+*/
+
+
+#ifndef ALIHLTPHOSCLUSTERIZERCOMPONENT_H
+#define ALIHLTPHOSCLUSTERIZERCOMPONENT_H
 
 #include "AliHLTProcessor.h"
 
-#include "AliHLTPHOSClusterizer.h"
-#include "AliHLTPHOSRcuCellEnergyDataStruct.h"
-#include "AliHLTPHOSClusterDataStruct.h"
-#include "AliHLTPHOSRecPointDataStruct.h"
-#include "Rtypes.h"
+
+class AliHLTPHOSClusterizer;
+class Rtypes;
+struct AliHLTPHOSRcuCellEnergyDataStruct;
+struct AliHLTPHOSClusterDataStruct;
+struct AliHLTPHOSRecPointDataStruct;
+struct AliHLTPHOSRecPointListDataStruct;
 
 
 class AliHLTPHOSClusterizerComponent: public AliHLTProcessor
@@ -41,12 +53,11 @@ class AliHLTPHOSClusterizerComponent: public AliHLTProcessor
   Int_t DoDeinit();
 
  private:
-  AliHLTPHOSClusterizer* fClusterizerPtr;
-  AliHLTPHOSClusterDataStruct* fOutPtr;
-  AliHLTPHOSRecPointDataStruct* fRecPointStructArrayPtr;
-  AliHLTPHOSRecPointListDataStruct* fRecPointListPtr;
-  static const AliHLTComponentDataType inputDataTypes[];
-  static int fEventCount;
+  AliHLTPHOSClusterizer* fClusterizerPtr;                       //Pointer to the clusterizer
+  AliHLTPHOSClusterDataStruct* fOutPtr;                         //Pointer to the struct of output clusters
+  AliHLTPHOSRecPointDataStruct* fRecPointStructArrayPtr;        //Pointer to the struct of output recpoints
+  AliHLTPHOSRecPointListDataStruct* fRecPointListPtr;           //Pointer to the struct of list of output recpoints
+  static const AliHLTComponentDataType fgkInputDataTypes[];     //HLT input data type
 
 };
 

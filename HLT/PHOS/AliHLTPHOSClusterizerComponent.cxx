@@ -1,27 +1,62 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Authors: Øystein Djuvsland <oysteind@ift.uib.no>                       *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 
 #include "AliHLTPHOSClusterizerComponent.h"
-
 #include "AliHLTPHOSClusterizer.h"
 #include "AliHLTPHOSPhysicsDefinitions.h"
 #include "AliHLTPHOSDefinitions.h"
-#include <iostream>
-#include "stdio.h"
-#include <cstdlib>
+#include "AliHLTPHOSRecPointDataStruct.h"
+#include "AliHLTPHOSClusterDataStruct.h"
+#include "AliHLTPHOSRecPointListDataStruct.h"
+
+using namespace std;
 
 
-const AliHLTComponentDataType AliHLTPHOSClusterizerComponent::inputDataTypes[]={kAliHLTVoidDataType,{0,"",""}};
-int AliHLTPHOSClusterizerComponent::fEventCount = 0; 
+const AliHLTComponentDataType AliHLTPHOSClusterizerComponent::fgkInputDataTypes[]={kAliHLTVoidDataType,{0,"",""}};
 
 AliHLTPHOSClusterizerComponent gAliHLTPHOSClusterizerComponent;
 
 AliHLTPHOSClusterizerComponent::AliHLTPHOSClusterizerComponent():AliHLTProcessor(), fClusterizerPtr(0), fOutPtr(0), 
 								 fRecPointStructArrayPtr(0), fRecPointListPtr(0)
 {
+  //Constructor
 
 }
 
 AliHLTPHOSClusterizerComponent::~AliHLTPHOSClusterizerComponent()
 {
+  //Destructor
+
+  if(fClusterizerPtr)
+    {
+      delete fClusterizerPtr;
+      fClusterizerPtr = 0;
+    }
+  
+  if(fRecPointListPtr)
+    {
+      delete fRecPointListPtr;
+      fRecPointListPtr = 0;
+    }
+
+  if(fRecPointStructArrayPtr)
+    {
+      delete fRecPointStructArrayPtr;
+      fRecPointStructArrayPtr = 0;
+    }
+
 }
 
 AliHLTPHOSClusterizerComponent::AliHLTPHOSClusterizerComponent(const AliHLTPHOSClusterizerComponent &):AliHLTProcessor(), 
@@ -30,18 +65,39 @@ AliHLTPHOSClusterizerComponent::AliHLTPHOSClusterizerComponent(const AliHLTPHOSC
 												       fRecPointStructArrayPtr(0),
 												       fRecPointListPtr(0)
 {
-
+  //Copy constructor, not implemented
 }
 
 Int_t
 AliHLTPHOSClusterizerComponent::Deinit()
 {
+  //Deinitialization
+
+  if(fClusterizerPtr)
+    {
+      delete fClusterizerPtr;
+      fClusterizerPtr = 0;
+    }
+  
+  if(fRecPointListPtr)
+    {
+      delete fRecPointListPtr;
+      fRecPointListPtr = 0;
+    }
+
+  if(fRecPointStructArrayPtr)
+    {
+      delete fRecPointStructArrayPtr;
+      fRecPointStructArrayPtr = 0;
+    }
+
   return 0;
 }
 
 Int_t
 AliHLTPHOSClusterizerComponent::DoDeinit()
 {
+  //Do deinitialization
   Logging(kHLTLogInfo, "HLT", "PHOS", ",AliHLTPHOSClusterizerComponent DoDeinit");
 
   return 0;
@@ -57,7 +113,8 @@ AliHLTPHOSClusterizerComponent::GetComponentID()
 void
 AliHLTPHOSClusterizerComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
 {
-  const AliHLTComponentDataType* pType=inputDataTypes;
+  //Get datatypes for input
+  const AliHLTComponentDataType* pType=fgkInputDataTypes;
   while (pType->fID!=0) {
     list.push_back(*pType);
     pType++;
@@ -80,9 +137,10 @@ AliHLTPHOSClusterizerComponent::GetOutputDataSize(unsigned long& constBase, doub
 
 Int_t 
 AliHLTPHOSClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks,
-					AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size,
+					AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size,
 					std::vector<AliHLTComponentBlockData>& outputBlocks)
 {
+  //Do event
    
   UInt_t tSize            = 0;
   UInt_t offset           = 0; 
@@ -142,8 +200,6 @@ AliHLTPHOSClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
 	}
     }
 
-  fEventCount++; 
-  if(fEventCount%100==0) cout << "Analyzing event: " << fEventCount << endl;
   size = tSize;
   fClusterizerPtr->ResetCellEnergyArray();
 
@@ -154,6 +210,7 @@ AliHLTPHOSClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
 Int_t
 AliHLTPHOSClusterizerComponent::DoInit(Int_t argc, const Char_t** argv )
 {
+  //Do initialization
   
   fClusterizerPtr = new AliHLTPHOSClusterizer();
   fClusterizerPtr->SetThreshold(atof(argv[0]));
@@ -175,5 +232,6 @@ AliHLTPHOSClusterizerComponent::DoInit(Int_t argc, const Char_t** argv )
 AliHLTComponent*
 AliHLTPHOSClusterizerComponent::Spawn()
 {
+  //Spawn a new AliHLTPHOSClusterizerComponent, for HLT framework
   return new AliHLTPHOSClusterizerComponent();
 }

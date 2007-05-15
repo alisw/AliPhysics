@@ -1,18 +1,21 @@
-
-#ifndef ALIHLTPHOSPHYSICSANALYZERSPECTRUMCOMPONENT
-#define ALIHLTPHOSPHYSICSANALYZERSPECTRUMCOMPONENT
-
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+ * See cxx source for full Copyright notice                              */
+//Component for create an invariant mass spectrum for pi0's
 
+#ifndef ALIHLTPHOSPHYSICSANALYZERSPECTRUMCOMPONENT_H
+#define ALIHLTPHOSPHYSICSANALYZERSPECTRUMCOMPONENT_H
 
 #include "AliHLTProcessor.h"
-#include "AliHLTPHOSPhysicsAnalyzerPeakFitter.h"
-#include "AliHLTPHOSPhysicsAnalyzerSpectrum.h"
-#include "AliHLTPHOSClusterDataStruct.h"
-#include "TH1F.h"
-#include "TH2F.h"
-#include "Rtypes.h"
+
+class TH1F;
+class AliHLTPHOSPhysicsAnalyzerSpectrum;
+class AliHLTPHOSPhysicsAnalyzerPeakFitter;
+class Rtypes;
+class AliHLTPHOSDefinitions;
+class AliHLTPHOSPhysicsDefinitions;
+class TFile;
+
+struct AliHLTPHOSClusterDataStruct;
 
 
 class AliHLTPHOSPhysicsAnalyzerSpectrumComponent: public AliHLTProcessor
@@ -49,15 +52,14 @@ class AliHLTPHOSPhysicsAnalyzerSpectrumComponent: public AliHLTProcessor
   
  private:
   
-  AliHLTPHOSPhysicsAnalyzerSpectrum* fAnalyzerPtr;
-  AliHLTPHOSPhysicsAnalyzerPeakFitter* fPeakFitter;
-  TH1F* fRootHistPtr;
-  AliHLTPHOSClusterDataStruct* fClusterArrayPtr[10000];
-  Int_t fWriteInterval;
+  AliHLTPHOSPhysicsAnalyzerSpectrum* fAnalyzerPtr;                //! /**<Pointer to spectrum analyzer*
+  AliHLTPHOSPhysicsAnalyzerPeakFitter* fPeakFitter;               //! /**<Pointer to peak fitter*/
+  TH1F* fRootHistPtr;                                             //! /**<Pointer to histogram*/
+  AliHLTPHOSClusterDataStruct* fClusterArrayPtr[10000];           //! /**<Pointer to array of clusters*/
+  Int_t fWriteInterval;                                               /**<Interval for writing to disk*/
 
-  static const AliHLTComponentDataType inputDataTypes[];
-  static int fEventCount;
-
+  static const AliHLTComponentDataType fgkInputDataTypes[];           /**<Data types*/                          
+  static UInt_t fgCount;                                              /**<Event count*/
 };
 
 #endif

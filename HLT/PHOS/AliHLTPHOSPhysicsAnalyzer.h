@@ -5,16 +5,18 @@
 /* Copyright(c) 2006, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                          */
 
+//Intended to be a base class for analysis
 
-#include <TObjArray.h>
-#include <TH1F.h>
-#include "TH2F.h"
-#include "AliHLTPHOSClusterDataStruct.h"
+#include "Rtypes.h"
 
-const Float_t CRYSTAL_SIZE = 2.25;
+class TObjArray;
+class TH1F;
+class AliHLTPHOSClusterDataStruct;
+
+const Float_t kCRYSTAL_SIZE = 2.25;
 
 class AliHLTPHOSPhysicsAnalyzer
-{
+{ 
  public:
   AliHLTPHOSPhysicsAnalyzer();
   virtual ~AliHLTPHOSPhysicsAnalyzer();
@@ -33,13 +35,13 @@ class AliHLTPHOSPhysicsAnalyzer
 
  protected:
   
-  TObjArray* fClustersPtr;
-  TH1F* fRootHistPtr;
+  TObjArray* fClustersPtr;                         //! /**<Pointer to the clusters to be analyzed*/
+  TH1F* fRootHistPtr;                              //! /**<Pointer to the histograms which is to be filled*/
 
  private:
-  Float_t fRotParametersCos[5];
-  Float_t fRotParametersSin[5];
-  Float_t fPHOSRadius;
+  Float_t fRotParametersCos[5];                        /**<Parameters for calculating global position*/
+  Float_t fRotParametersSin[5];                        /**<Parameters for calculating global position*/
+  Float_t fPHOSRadius;                                 /**<Distance from the IP to the crystals*/
 
   ClassDef(AliHLTPHOSPhysicsAnalyzer,1);
 };

@@ -1,8 +1,7 @@
-
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
- * Authors: Ãystein Djuvsland <oysteind@ift.uib.no>                       *
+ * Authors: Øystein Djuvsland <oysteind@ift.uib.no>                       *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
@@ -17,12 +16,17 @@
 #include "AliHLTPHOSPhysicsAnalyzerSpectrum.h"
 #include "AliHLTPHOSClusterDataStruct.h"
 #include <cmath>
-#include <iostream>
+#include "math.h"
+#include "TH1F.h"
+
 
 ClassImp(AliHLTPHOSPhysicsAnalyzerSpectrum);
 
+
+
 AliHLTPHOSPhysicsAnalyzerSpectrum::AliHLTPHOSPhysicsAnalyzerSpectrum():AliHLTPHOSPhysicsAnalyzer()
 {
+  //Constructor
 
   fEnergyPtr = new Float_t[2];
   fPos0Ptr = new Float_t[3];
@@ -35,13 +39,12 @@ AliHLTPHOSPhysicsAnalyzerSpectrum::AliHLTPHOSPhysicsAnalyzerSpectrum():AliHLTPHO
 
 AliHLTPHOSPhysicsAnalyzerSpectrum::AliHLTPHOSPhysicsAnalyzerSpectrum(const AliHLTPHOSPhysicsAnalyzerSpectrum &):AliHLTPHOSPhysicsAnalyzer()
 {
-
-  cout << "AliHLTPHOSPhysicsAnalyzerSpectrum: Copy constructor not implemented yet!" << endl;
-
+  //Copy constructor not implemented
 }
 
 AliHLTPHOSPhysicsAnalyzerSpectrum::~AliHLTPHOSPhysicsAnalyzerSpectrum()
 {
+  //Destructor
 
   if(fClustersPtr) fClustersPtr = 0;
 
@@ -73,10 +76,9 @@ AliHLTPHOSPhysicsAnalyzerSpectrum::~AliHLTPHOSPhysicsAnalyzerSpectrum()
 void
 AliHLTPHOSPhysicsAnalyzerSpectrum::Analyze(AliHLTPHOSClusterDataStruct* clustersPtr[10000], Int_t nClusters)
 {
+  //Analyzing a set of clusters
 
   Float_t cosOpeningAngle = 0;
-
-  cout << "number of clusters: " << nClusters << endl;
 
   if(nClusters > 1)
     {
@@ -122,27 +124,19 @@ AliHLTPHOSPhysicsAnalyzerSpectrum::Analyze(AliHLTPHOSClusterDataStruct* clusters
 Float_t 
 AliHLTPHOSPhysicsAnalyzerSpectrum::EvalDistance()
 {
-  
-  return sqrt(pow(fPos1Ptr[0]-fPos0Ptr[0],2) + pow(fPos1Ptr[1]-fPos0Ptr[1],2) + pow(fPos1Ptr[2]-fPos0Ptr[2],2));
+  //Evaluate the distance between the two clusters
 
-}
+  if(fPos0Ptr && fPos1Ptr)
+    return sqrt(pow(fPos1Ptr[0]-fPos0Ptr[0],2) + pow(fPos1Ptr[1]-fPos0Ptr[1],2) + pow(fPos1Ptr[2]-fPos0Ptr[2],2));
+  return -1;
 
-Float_t 
-AliHLTPHOSPhysicsAnalyzerSpectrum::EvalCutDistance(Float_t cutMass)
-{
-
-  Float_t cosCutOpeningAngle = 0;
-  
-  cosCutOpeningAngle = 1 - cutMass*cutMass/(2*fEnergyPtr[0]*fEnergyPtr[1]);
-
-  return 1.5*2*sin(acos(cosCutOpeningAngle));
-  
 }
 
 Int_t
 AliHLTPHOSPhysicsAnalyzerSpectrum::SetThreshold(Float_t photonEnergy0, Float_t photonEnergy1)
 {
-  
+  //Setting the cut thresholds
+
   if(!fThresholdPtr) fThresholdPtr = new Float_t[2];
 
   fThresholdPtr[0] = photonEnergy0;

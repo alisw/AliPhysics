@@ -9,15 +9,13 @@
 
 #include "AliHLTDataTypes.h"
 #include "Rtypes.h"
-#include "TROOT.h"
-#include "TH1F.h"
 
 class AliHLTPHOSPhysicsDefinitions
     {
     public:
-      static const AliHLTComponentDataType fgkAliHLTClusterDataType;  
-      static const AliHLTComponentDataType fgkAliHLTHistDataType;
-      static const AliHLTComponentDataType fgkAliHLTSpectrumDataType;
+      static const AliHLTComponentDataType fgkAliHLTClusterDataType;  //Cluster data type
+      static const AliHLTComponentDataType fgkAliHLTHistDataType;     //hist data type
+      static const AliHLTComponentDataType fgkAliHLTSpectrumDataType; //spectrum data type
     };
 
 #endif

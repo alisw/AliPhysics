@@ -18,9 +18,12 @@
 #include "TVector3.h"
 #include "TFile.h"
 #include "TMath.h"
-#include <cmath>
+#include "TH1F.h"
 #include "AliPHOSGeometry.h"
-#include <iostream>
+#include "Rtypes.h"
+#include "AliHLTPHOSCommonDefs.h"
+#include "AliHLTPHOSClusterDataStruct.h"
+ 
 
 ClassImp(AliHLTPHOSPhysicsAnalyzer);
 
@@ -28,6 +31,7 @@ AliHLTPHOSPhysicsAnalyzer::AliHLTPHOSPhysicsAnalyzer():fClustersPtr(NULL)
 						    
 						       
 {
+  //Constructor
 
   AliPHOSGeometry *geom=AliPHOSGeometry::GetInstance("noCPV");
 
@@ -44,6 +48,8 @@ AliHLTPHOSPhysicsAnalyzer::AliHLTPHOSPhysicsAnalyzer():fClustersPtr(NULL)
 AliHLTPHOSPhysicsAnalyzer::AliHLTPHOSPhysicsAnalyzer(const AliHLTPHOSPhysicsAnalyzer &):fClustersPtr(NULL)
 
 {
+  //Cooy constructor
+
   AliPHOSGeometry *geom=AliPHOSGeometry::GetInstance("noCPV");
 
   fPHOSRadius = geom->GetIPtoCrystalSurface();
@@ -54,18 +60,22 @@ AliHLTPHOSPhysicsAnalyzer::AliHLTPHOSPhysicsAnalyzer(const AliHLTPHOSPhysicsAnal
       
       fRotParametersSin[i] = sin((geom->GetPHOSAngle(i+1))*2*TMath::Pi()/360);
     }
-  cout << "Copy constructor not tested!\n";
+
 }
 
 
 AliHLTPHOSPhysicsAnalyzer::~AliHLTPHOSPhysicsAnalyzer()
 {
+  //Destructor
 
+  fClustersPtr = 0;
+  fRootHistPtr = 0;
 }
 
 void
 AliHLTPHOSPhysicsAnalyzer::LocalPosition(AliHLTPHOSClusterDataStruct* clusterPtr, Float_t* locPositionPtr)
 {
+  //Get local position for a cluster
 
   locPositionPtr[0] = clusterPtr->fLocalPositionPtr[0];
   locPositionPtr[1] = clusterPtr->fLocalPositionPtr[1];
@@ -75,41 +85,48 @@ AliHLTPHOSPhysicsAnalyzer::LocalPosition(AliHLTPHOSClusterDataStruct* clusterPtr
 void
 AliHLTPHOSPhysicsAnalyzer::GlobalPosition(AliHLTPHOSClusterDataStruct* clusterPtr, Float_t* positionPtr)
 {
+  //Get global position for a cluster
   
   Float_t tempPosX = 0;
 
   Int_t module = clusterPtr->fPHOSModule;
 
-  tempPosX = CRYSTAL_SIZE*(clusterPtr->fLocalPositionPtr[0]-N_COLUMNS_MOD/2) + CRYSTAL_SIZE/2;
+  tempPosX = kCRYSTAL_SIZE*(clusterPtr->fLocalPositionPtr[0]-N_COLUMNS_MOD/2) + kCRYSTAL_SIZE/2;
 
   positionPtr[0] = tempPosX*fRotParametersSin[module] + fPHOSRadius*fRotParametersCos[module];
 
   positionPtr[1] = tempPosX*fRotParametersCos[module] - fPHOSRadius*fRotParametersSin[module];
 
-  positionPtr[2] = CRYSTAL_SIZE*(clusterPtr->fLocalPositionPtr[1]-N_ROWS_MOD/2) + CRYSTAL_SIZE/2;
+  positionPtr[2] = kCRYSTAL_SIZE*(clusterPtr->fLocalPositionPtr[1]-N_ROWS_MOD/2) + kCRYSTAL_SIZE/2;
 
 }
 
 void
 AliHLTPHOSPhysicsAnalyzer::GlobalPosition(Float_t* locPositionPtr, Float_t* positionPtr, Int_t module)
 { 
-  
-  positionPtr[0] = CRYSTAL_SIZE*(locPositionPtr[0]-N_COLUMNS_MOD/2)*fRotParametersCos[module-1] + fPHOSRadius*fRotParametersSin[module-1];
+  //Get global position from local postion and module number
 
-  positionPtr[1] = CRYSTAL_SIZE*(locPositionPtr[0]-N_COLUMNS_MOD/2)*fRotParametersSin[module-1] - fPHOSRadius*fRotParametersCos[module-1];
+  positionPtr[0] = kCRYSTAL_SIZE*(locPositionPtr[0]-N_COLUMNS_MOD/2)*fRotParametersCos[module-1] + fPHOSRadius*fRotParametersSin[module-1];
+
+  positionPtr[1] = kCRYSTAL_SIZE*(locPositionPtr[0]-N_COLUMNS_MOD/2)*fRotParametersSin[module-1] - fPHOSRadius*fRotParametersCos[module-1];
   
-  positionPtr[2] = CRYSTAL_SIZE*(locPositionPtr[1]-N_ROWS_MOD);
+  positionPtr[2] = kCRYSTAL_SIZE*(locPositionPtr[1]-N_ROWS_MOD);
 
 }
 
 void
 AliHLTPHOSPhysicsAnalyzer::WriteHistogram(Char_t* fileName)
 {
+  //Write the histogram
+
   TFile *outfile = new TFile(fileName,"recreate");  
   
   fRootHistPtr->Write();
   
   outfile->Close();
+  
+  delete outfile;
+  outfile = 0;
 
 }
 

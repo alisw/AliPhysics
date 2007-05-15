@@ -1,6 +1,3 @@
-
-
-
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -28,8 +25,12 @@
 #include "AliHLTPHOSClusterizer.h"
 #include "AliHLTPHOSCommonDefs.h"
 #include "TVector3.h"
-#include <iostream>
 #include "TMath.h"
+#include "AliHLTPHOSRcuCellEnergyDataStruct.h"
+#include "AliHLTPHOSRecPointListDataStruct.h"
+#include "AliHLTPHOSValidCellDataStruct.h"
+#include "AliHLTPHOSRecPointDataStruct.h"
+#include "AliHLTPHOSClusterDataStruct.h"
 
 
 ClassImp(AliHLTPHOSClusterizer);
@@ -37,23 +38,24 @@ ClassImp(AliHLTPHOSClusterizer);
 /**
 * Main constructor
 **/
-AliHLTPHOSClusterizer::AliHLTPHOSClusterizer():fStructArray(NULL), fPHOSModule(-1), fThreshold(0),
-					       fClusterThreshold(0), fHighGainFactor(0.005), fLowGainFactor(0.08),
+AliHLTPHOSClusterizer::AliHLTPHOSClusterizer():fPHOSModule(-1), fThreshold(0), fClusterThreshold(0), 
+					       fHighGainFactor(0.005), fLowGainFactor(0.08),
 					       fArraySize(3), fMultiplicity(fArraySize*fArraySize)
 {
+  //Main constructor
   
 }//end
 
-AliHLTPHOSClusterizer::AliHLTPHOSClusterizer(const AliHLTPHOSClusterizer &):fStructArray(NULL), fPHOSModule(-1), fThreshold(0),
-									    fClusterThreshold(0), fHighGainFactor(0.005), fLowGainFactor(0.08),
+AliHLTPHOSClusterizer::AliHLTPHOSClusterizer(const AliHLTPHOSClusterizer &):fPHOSModule(-1), fThreshold(0), fClusterThreshold(0), 
+									    fHighGainFactor(0.005), fLowGainFactor(0.08),
 									    fArraySize(3), fMultiplicity(fArraySize*fArraySize)
 {
-
+  //Copy constructor, not implemented
 }//end
 
 AliHLTPHOSClusterizer:: ~AliHLTPHOSClusterizer()  
 {
-  
+  //Destructor
 }
 
 /**
@@ -66,6 +68,7 @@ Int_t
 AliHLTPHOSClusterizer::BuildCellEnergyArray(AliHLTPHOSRcuCellEnergyDataStruct* cellData, 
 					    AliHLTPHOSRecPointListDataStruct* recPointList)
 {
+  //Build the cell energy array of the detector
 
   Int_t x = 0;
   Int_t z = 0;
@@ -138,6 +141,8 @@ AliHLTPHOSClusterizer::CreateRecPointStructArray(AliHLTPHOSRecPointDataStruct* r
 						 Int_t nPoints) 
 
 {
+  //Create the rec point struct array
+
   Int_t flag = 0;
   Int_t edgeFlagRows = 0;
   Int_t edgeFlagCols = 0;
@@ -217,6 +222,8 @@ AliHLTPHOSClusterizer::CreateRecPointStructArray(AliHLTPHOSRecPointDataStruct* r
 Int_t
 AliHLTPHOSClusterizer::CalculateCenterOfGravity(AliHLTPHOSRecPointDataStruct* recPointPtr)
 {
+  //Calculate the center of gravity
+
   Float_t xt = 0;
   Float_t zt = 0;
   Float_t xi = 0;
@@ -262,6 +269,7 @@ AliHLTPHOSClusterizer::CalculateCenterOfGravity(AliHLTPHOSRecPointDataStruct* re
 Int_t
 AliHLTPHOSClusterizer::ClusterizeStruct(AliHLTPHOSRecPointDataStruct* recPointPtr, AliHLTPHOSClusterDataStruct* clusterStructPtr)
 {
+  //Simplify the rec points
 
   Float_t clusterEnergy = 0;
   Float_t* energiesListPtr = recPointPtr->fEnergiesListPtr;
@@ -290,6 +298,8 @@ Int_t
 AliHLTPHOSClusterizer::ResetCellEnergyArray()
 
 {
+  //Reset the cell energy array
+
   for(Int_t x = 0; x < N_ROWS_MOD; x++)
     {
       for(Int_t z = 0; z < N_COLUMNS_MOD; z++)
