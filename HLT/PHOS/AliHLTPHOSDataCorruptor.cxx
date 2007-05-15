@@ -10,7 +10,7 @@ using namespace std;
 
 AliHLTPHOSDataCorruptor::AliHLTPHOSDataCorruptor():fPulseGeneratorPtr(0), fRandomGeneratorPtr(0)
 {
-  cout << " AliHLTPHOSDataCorruptor::AliHLTPHOSDataCorruptor()  creating new datacorruptor" << endl;
+  //  cout << " AliHLTPHOSDataCorruptor::AliHLTPHOSDataCorruptor()  creating new datacorruptor" << endl;
   fPulseGeneratorPtr = new AliHLTPHOSPulseGenerator(100, 0, 300, 2, 10);
   fRandomGeneratorPtr = new TRandom();
 }
