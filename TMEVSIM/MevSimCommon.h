@@ -43,8 +43,10 @@ extern "C" {
      Float_t pout[NPID*4*FACTORIAL_MAX];
   }  TrackCommon;
   
+#ifdef IN_TMEVSIM_CXX
 #define TRACK COMMON_BLOCK(TRACK,track)
 COMMON_BLOCK_DEF(TrackCommon,TRACK);
+#endif 
 }
 #endif 
 
