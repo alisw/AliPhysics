@@ -22,6 +22,10 @@ ELIBS    := Aliengui \
   AliHLTHough AliHLTITS \
   ANALYSIS
 
+CHECKXML = $(shell root-config --has-xml)
+ifeq (yes,$(CHECKXML))
+PACKCXXFLAGS += $(CXXFLAGS) -DWITHXML
+endif
 
 ifeq (macosx,$(ALICE_TARGET))
 
