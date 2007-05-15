@@ -9,4 +9,5 @@ DHDR:=TPHICLinkDef.h
 ifeq ($(ALICE_TARGET),linux)
 FFLAGS += -fno-automatic
 endif
+EINCLUDE = $(ALICE_ROOT)/PYTHIA6
 #PACKFFLAGS := $(filter-out -O%,$(FFLAGS))
