@@ -25,6 +25,12 @@ class AliPMDRawStream: public TObject {
 
     enum {kDDLOffset = 0xC00};      // offset for DDL numbers
 
+    enum EPMDRawStreamError {
+      kDDLIndexMismatch = 1,
+      kNoMappingFile = 2,
+      kParityError = 3
+    };
+
   private :
     AliPMDRawStream(const AliPMDRawStream& stream);
     AliPMDRawStream& operator = (const AliPMDRawStream& stream);

@@ -96,7 +96,8 @@ Bool_t AliPMDRawStream::DdlData(Int_t indexDDL, TObjArray *pmdddlcont)
   if (dataSize <= 0) return kFALSE;
   if (indexDDL != iddl)
     {
-      AliError("Mismatch in the DDL index");
+      AliWarning("Mismatch in the DDL index");
+      fRawReader->AddFatalErrorLog(kDDLIndexMismatch);
       return kFALSE;
     }
 
@@ -139,8 +140,10 @@ Bool_t AliPMDRawStream::DdlData(Int_t indexDDL, TObjArray *pmdddlcont)
 
   ifstream infile;
   infile.open(fileName.Data(), ios::in); // ascii file
-  if(!infile)
+  if(!infile) {
     AliError(Form("Could not read the mapping file for DDL No = %d",iddl));
+    fRawReader->AddFatalErrorLog(kNoMappingFile,Form("ddl=%d",iddl));
+  }
   
   Int_t modulePerDDL = 0;
   if (iddl < 4)
@@ -271,6 +274,7 @@ Bool_t AliPMDRawStream::DdlData(Int_t indexDDL, TObjArray *pmdddlcont)
 		  if (ibit != parity)
 		    {
 		      AliWarning("ComputeParity:: Parity Error");
+		      fRawReader->AddMajorErrorLog(kParityError);
 		    }
 		  GetRowCol(iddl, pbusid, imcm, ich, 
 			    startRowBus, endRowBus,
