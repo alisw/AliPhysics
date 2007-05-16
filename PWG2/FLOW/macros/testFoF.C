@@ -7,6 +7,7 @@ void testFoF(const Char_t* dataDir=".", Int_t nRuns = 10, Int_t offset = 0)
 {
  // include path (to find the .h files when compiling)
  gSystem->AddIncludePath("-I$ALICE_ROOT/include") ;
+ gSystem->AddIncludePath("-I$ROOTSYS/include") ;
 
  // load needed libraries
  gSystem->Load("libESD");
@@ -17,27 +18,26 @@ void testFoF(const Char_t* dataDir=".", Int_t nRuns = 10, Int_t offset = 0)
  gSystem->Load("libPWG2flow.so");
 
  // Selector
-  char *loadSelector = gSystem->ExpandPathName("$ALICE_ROOT/PWG2/FLOW/AliSelectorFoF.cxx+") ;
-  //gInterpreter->AddIncludePath(inc) ;
+ char *loadSelector = gSystem->ExpandPathName("$ALICE_ROOT/PWG2/FLOW/AliSelectorFoF.cxx+") ;
 
  // create the TChain. CreateESDChain() is defined in CreateESDChain.C
-  TChain* chain = CreateESDChain(dataDir, nRuns, offset);
+ TChain* chain = CreateESDChain(dataDir, nRuns, offset);
 
-  cout << " * " << chain->GetEntries() << " * " << endl ;
+ cout << " * " << chain->GetEntries() << " * " << endl ;
 
  // enable debugging
-  AliLog::SetClassDebugLevel("AliSelectorFoF", AliLog::kInfo);
+ AliLog::SetClassDebugLevel("AliSelectorFoF", AliLog::kInfo);
 
  // run selector on chain
-  Long64_t result = chain->Process(loadSelector);
+ Long64_t result = chain->Process(loadSelector);
 
-  if (result != 0)
-  {
-    printf("ERROR: Executing process failed with %d.\n", result);
-    return;
-  }
+ if (result != 0)
+ {
+   printf("ERROR: Executing process failed with %d.\n", result);
+   return;
+ }
 
-  printf("Execution complete.\n");
+ printf("Execution complete.\n");
 }
 
 // Helper macros for creating chains

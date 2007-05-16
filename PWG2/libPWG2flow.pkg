@@ -5,6 +5,7 @@ SRCS= FLOW/AliFlowEvent.cxx \
       FLOW/AliFlowSelection.cxx \
       FLOW/AliFlowAnalyser.cxx \
       FLOW/AliFlowMaker.cxx \
+      FLOW/AliFlowKineMaker.cxx \
       FLOW/AliFlowWeighter.cxx 
 
 HDRS= $(SRCS:.cxx=.h) 

@@ -56,9 +56,9 @@ Bool_t  AliFlowEvent::fgPtWgt	       = kFALSE ;  // gives pT-based weights
 Bool_t  AliFlowEvent::fgEtaWgt	       = kFALSE ;  // gives eta-based weights
 Bool_t  AliFlowEvent::fgOnePhiWgt      = kTRUE  ;  // kTRUE --> ENABLEs SINGLE WEIGHT ISTOGRAM , kFALSE --> ENABLEs 3 WEIGHT ISTOGRAMS
 Bool_t  AliFlowEvent::fgNoWgt	       = kFALSE ;  // No Weight is used
-// - Eta Sub-Events (later used to calculate the resolution)
-Bool_t  AliFlowEvent::fgEtaSubs        = kFALSE ;  // makes eta subevents
 Bool_t  AliFlowEvent::fgCustomRespFunc = kFALSE ;  // custom "detector response function" is used for P.Id (see AliFlowTrack)
+// - Eta Sub-Events (later used to calculate the resolution)
+Int_t   AliFlowEvent::fgEtaSubs        = 0 ;       // makes random subevents (0 = random , 1 = eta , -1 = charged)
 
 ClassImp(AliFlowEvent) 
 //-----------------------------------------------------------
@@ -73,8 +73,9 @@ AliFlowEvent::AliFlowEvent(Int_t lenght):
   fV0Collection(0x0), 
   fDone(kFALSE)	
 {
- // Default constructor: initializes the ObjArray of FlowTracks and FlowV0s, 
+ // not-Default constructor: initializes the ObjArray of FlowTracks and FlowV0s, 
  // cleans the internal variables, sets all the weights to 1, sets default flags.
+ // USE THIS WHEN CREATING ALIFLOWEVENTS
  
  for(int zz=0;zz<3;zz++) { fZDCenergy[zz] = 0. ; }
  for(int i=0;i<AliFlowConstants::kHars;i++) { fExtPsi[i] = 0. ; fExtRes[i] = 0.; }
@@ -105,12 +106,43 @@ AliFlowEvent::AliFlowEvent(Int_t lenght):
  
 }
 //-----------------------------------------------------------
+AliFlowEvent::AliFlowEvent():
+  fEventID(0), 
+  fRunID(0), 
+  fOrigMult(0), 
+  fL0Trigger(0), 
+  fZDCpart(0), 
+  fCentrality(-1), 
+  fTrackCollection(0x0), 
+  fV0Collection(0x0), 
+  fDone(kFALSE)	
+{
+ // Default constructor :  USE THIS WHEN READING ALIFLOWEVENTS
+
+ // Set Weights Arrays to 1 (default)
+ for(int nS=0;nS<AliFlowConstants::kSels;nS++)
+ {
+  for(int nH=0;nH<AliFlowConstants::kHars;nH++) 
+  {
+   for(int nP=0;nP<AliFlowConstants::kPhiBins;nP++) 
+   { 
+    // enable this with: SetOnePhiWgt()  
+    fPhiWgt[nS][nH][nP] = 1.	  ; // cout << nS << nH << nP << "  val  " << fPhiWgt[nS][nH][nP] << endl ; 
+    // enable these with: SetFirstLastPhiWgt()  
+    fPhiWgtPlus[nS][nH][nP]  = 1. ; // cout << nS << nH << nP << "  val  " << fPhiWgtPlus[nS][nH][nP] << endl ; 
+    fPhiWgtMinus[nS][nH][nP] = 1. ; // cout << nS << nH << nP << "  val  " << fPhiWgtMinus[nS][nH][nP] << endl ; 
+    fPhiWgtCross[nS][nH][nP] = 1. ; // cout << nS << nH << nP << "  val  " << fPhiWgtCross[nS][nH][nP] << endl ; 
+   }
+  }
+ }
+}
+//-----------------------------------------------------------
 AliFlowEvent::~AliFlowEvent() 
 {
  // Default distructor: deletes the ObjArrays. 
  
- fTrackCollection->Delete() ; delete fTrackCollection ;
- fV0Collection->Delete()    ; delete fV0Collection ;
+ if(fTrackCollection) { delete fTrackCollection ; } // fTrackCollection->Delete() ; 
+ if(fV0Collection)    { delete fV0Collection ; }    // fV0Collection->Delete()    ; 
 }
 //-------------------------------------------------------------
 
@@ -601,8 +633,9 @@ void AliFlowEvent::MakeSubEvents() const
 {
  // Make random or eta sub-events
  
- if(fgEtaSubs)  { MakeEtaSubEvents() ; }
- else 		{ MakeRndSubEvents() ; }
+ if(fgEtaSubs == 1)        { MakeEtaSubEvents() ; }
+ else if(fgEtaSubs == -1)  { MakeChrSubEvents() ; }
+ else if(fgEtaSubs == 0)   { MakeRndSubEvents() ; }
 } 
 //-------------------------------------------------------------
 void AliFlowEvent::MakeRndSubEvents() const 
@@ -655,8 +688,7 @@ void AliFlowEvent::MakeRndSubEvents() const
 void AliFlowEvent::MakeEtaSubEvents() const
 {
  // Make subevents for positive and negative eta 
- // (when done, fgEtaSubs flag setted to kTRUE).
- 
+
  int harN, selN = 0;
  // loop to set the SubEvent member
  for (selN = 0; selN < AliFlowConstants::kSels; selN++) 
@@ -672,6 +704,31 @@ void AliFlowEvent::MakeEtaSubEvents() const
      float eta = pFlowTrack->Eta();
      if (eta > 0.) { pFlowTrack->SetSubevent(harN, selN, 0) ; } 
      else          { pFlowTrack->SetSubevent(harN, selN, 1) ; }
+    }
+   }
+  }
+ }
+}
+//-------------------------------------------------------------
+void AliFlowEvent::MakeChrSubEvents() const
+{
+ // Make subevents for positive and negative charged tracks
+ 
+ int harN, selN = 0;
+ // loop to set the SubEvent member
+ for (selN = 0; selN < AliFlowConstants::kSels; selN++) 
+ {
+  for (harN = 0; harN < AliFlowConstants::kHars; harN++) 
+  {
+   for(Int_t itr=0;itr<TrackCollection()->GetEntries();itr++) 
+   {
+    AliFlowTrack* pFlowTrack ;
+    pFlowTrack = (AliFlowTrack*)TrackCollection()->At(itr) ;
+    if(pFlowTrack->Select(harN, selN)) 
+    {
+     float charge = pFlowTrack->Charge();
+     if (charge > 0.) { pFlowTrack->SetSubevent(harN, selN, 0) ; } 
+     else             { pFlowTrack->SetSubevent(harN, selN, 1) ; }
     }
    }
   }
@@ -829,7 +886,7 @@ Int_t AliFlowEvent::UncorrNegMult(Float_t eta)  const
   AliFlowTrack* pFlowTrack ;
   pFlowTrack = (AliFlowTrack*)TrackCollection()->At(itr) ;
   if((pFlowTrack->Charge()<0) && (TMath::Abs(pFlowTrack->Eta())<TMath::Abs(eta))) { negMult++ ; }
-  delete pFlowTrack ;
+  //delete pFlowTrack ;
  }
  return negMult; 
 }
@@ -845,7 +902,7 @@ Int_t AliFlowEvent::UncorrPosMult(Float_t eta)  const
   AliFlowTrack* pFlowTrack ;
   pFlowTrack = (AliFlowTrack*)TrackCollection()->At(itr) ;
   if((pFlowTrack->Charge()>0) && (TMath::Abs(pFlowTrack->Eta())<TMath::Abs(eta))) { posMult++ ; }
-  delete pFlowTrack ;
+  //delete pFlowTrack ;
  }
  return posMult; 
 }

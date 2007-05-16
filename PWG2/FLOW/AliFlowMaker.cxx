@@ -41,6 +41,8 @@
 
 // ANSI things
 #include <stdlib.h>
+#include <vector>
+
 using namespace std; //required for resolving the 'cout' symbol
 
 ClassImp(AliFlowMaker) 
@@ -48,8 +50,8 @@ ClassImp(AliFlowMaker)
 AliFlowMaker::AliFlowMaker():
   fEventNumber(0), fTrackNumber(0), fV0Number(0), fGoodTracks(0), fGoodV0s(0),
   fGoodTracksEta(0), fPosiTracks(0), fNegaTracks(0), fUnconstrained(0),
-  fSumAll(0), fCutEvts(0), fCutTrks(0), fCutV0s(0), fNewAli(kFALSE), 
-  fLoopTrks(kTRUE), fLoopV0s(kTRUE), fCounter(0), 
+  fSumAll(0), fCutEvts(0), fCutTrks(0), fCutV0s(0), fCounter(0), fMovedTr(0x0),
+  fNewAli(kFALSE), fLoopTrks(kTRUE), fLoopV0s(kTRUE),
   fESD(0x0), fTrack(0x0), fV0(0x0), fVertex(0x0),
   fRunID(0), fNumberOfEvents(0), fNumberOfTracks(0), 
   fNumberOfV0s(0), fMagField(0), 
@@ -78,7 +80,7 @@ AliFlowEvent* AliFlowMaker::FillFlowEvent(AliESD* fESD)
  // It loops on track & v0 and calls the methods to fill the arrays . 
  // ... . 
 
- fFlowEvent = new AliFlowEvent() ; if(!fFlowEvent) { return 0 ; }
+ fFlowEvent = new AliFlowEvent(10000) ; if(!fFlowEvent) { return 0 ; }
  //cout << " -evt- " << fFlowEvent << endl ;
 
  fRunID = fESD->GetRunNumber() ;
@@ -88,6 +90,9 @@ AliFlowEvent* AliFlowMaker::FillFlowEvent(AliESD* fESD)
  fNumberOfV0s = fESD->GetNumberOfV0s() ;
  //
  cout << " *evt n. " << fEventNumber << " (run " << fRunID << ")  -  tracks: " << fNumberOfTracks << " ,   v0s " << fNumberOfV0s << endl ;
+ 
+ // Clean the vector of links esd-flowEvt
+ fMovedTr.clear(); // Remove all elements
 
  // Event id 
  fFlowEvent->SetRunID(fRunID) ;  	       
@@ -130,8 +135,9 @@ AliFlowEvent* AliFlowMaker::FillFlowEvent(AliESD* fESD)
    {
     FillFlowTrack(fTrack) ;   
     fGoodTracks++ ;				      
+    fMovedTr.push_back(fFlowEvent->TrackCollection()->GetLast()) ; 
    }
-   else { badTrks++ ; continue ; }
+   else { fMovedTr.push_back(-1) ; badTrks++ ; continue ; }
   }
   fCutTrks += badTrks ;
  } // cout << " -track number- :  " << fTrackNumber << endl ;
@@ -218,7 +224,7 @@ AliFlowTrack* AliFlowMaker::FillFlowTrack(AliESDtrack* fTrack)
   fFlowTrack->SetEta(eta) ; 				
  
   // number of constrainable tracks with |eta| < AliFlowConstants::fgEtaGood (0.9)
-  if(TMath::Abs(eta) < AliFlowConstants::fgEtaGood)  { fGoodTracksEta++ ; }
+  if(TMath::Abs(eta) < AliFlowConstants::fgEtaMid)  { fGoodTracksEta++ ; }
  }
  else  // in case Constriction impossible for track, fill the UnConstrained (global)
  {
@@ -428,9 +434,7 @@ AliFlowV0* AliFlowMaker::FillFlowV0(AliESDv0* fV0)
  // daughters 
  Int_t pN = fV0->GetPindex() ;
  Int_t nN = fV0->GetNindex() ;
- AliFlowTrack* pos = (AliFlowTrack*)fFlowEvent->TrackCollection()->At(pN) ; 
- AliFlowTrack* neg = (AliFlowTrack*)fFlowEvent->TrackCollection()->At(nN) ; 
- fFlowV0->SetDaughters(pos,neg) ;
+ fFlowV0->SetDaughters(fMovedTr[pN],fMovedTr[nN]) ;
 
  return fFlowV0 ;
 }
@@ -438,6 +442,8 @@ AliFlowV0* AliFlowMaker::FillFlowV0(AliESDv0* fV0)
 Bool_t AliFlowMaker::CheckTrack(AliESDtrack* fTrack) const
 {
  // applies track cuts (pE , nHits , label)
+
+ if(!fTrack) { return kFALSE ; }
 
  Int_t idXt[180] ;  // used for Cluster Map ( see AliESDtrack::GetTPCclusters() )
  Int_t   nHits = fTrack->GetTPCclusters(idXt) ;
@@ -454,9 +460,17 @@ Bool_t AliFlowMaker::CheckTrack(AliESDtrack* fTrack) const
 //-----------------------------------------------------------------------
 Bool_t AliFlowMaker::CheckV0(AliESDv0* fV0) const
 {
- // applies v0 cuts (dummy)
+ // applies v0 cuts (mass>fElow, daughters included in the tracks)
  
  if(!fV0) { return kFALSE ; }
+ 
+ Int_t pN = fV0->GetPindex() ;
+ Int_t nN = fV0->GetNindex() ;
+ Float_t iMass = (Float_t)fV0->GetEffMass() ;
+ 
+ if(iMass < fElow)      { return kFALSE ; }
+ if(fMovedTr[pN] < 0)   { return kFALSE ; }
+ if(fMovedTr[nN] < 0)   { return kFALSE ; }
 
  return kTRUE ;
 }
@@ -486,6 +500,10 @@ void AliFlowMaker::PrintCutList()
  if(fElow<fEup)
  { 
   cout << "  Track Energy (P_total) [ " << fElow << " , " << fEup << " ] " << endl ; 
+ }
+ if(fElow>0.)
+ { 
+  cout << "  V0 invariant mass > " << fElow << endl ; 
  }
  cout << " *               * " << endl ;
 }

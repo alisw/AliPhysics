@@ -15,6 +15,9 @@
 #ifndef ALIFLOWMAKER_H
 #define ALIFLOWMAKER_H
 
+#include <vector>
+using namespace std; //required for resolving the 'cout' symbol
+
 class AliFlowEvent ;
 class AliFlowTrack ;
 class AliFlowV0 ;
@@ -62,6 +65,10 @@ class AliFlowMaker  {
     Int_t          GetBayesian(Int_t i = 2) const     	    { return fBayesianAll[i] ; }
     Float_t        GetBayesianNorm(Int_t i = 2) const 	    { return (Float_t)fBayesianAll[i] / (Float_t)fSumAll ; }
 
+  // Flags
+    void           DoTracks(Bool_t dt = kTRUE)  	    { fLoopTrks = dt ; }    // loop over tracks 
+    void           DoV0s(Bool_t dv = kTRUE)  	    	    { fLoopV0s = dv ; }     // loop over v0s 
+
  protected:
  
   // enumerators 			    
@@ -81,13 +88,14 @@ class AliFlowMaker  {
     Int_t            fCutEvts ; 	  		    //! total enumerator for discarded events
     Int_t            fCutTrks ; 	  		    //! total enumerator for discarded tracks
     Int_t            fCutV0s ;  	  		    //! total enumerator for discarded V0s
+
+    Int_t 	     fCounter ;        	  		    //! number of processed events
+    vector<int>      fMovedTr ;                             //! tracks wich number has been changed (for cutting away something)
  
   // Flags
     Bool_t           fNewAli ;	  	  		    //! enables the new ESD features (since AliRoot 12/2006) 
     Bool_t           fLoopTrks ;	  		    //! flag to loop over tracks 
     Bool_t           fLoopV0s ; 	  		    //! flag to loop over v0s 
-
-    Int_t 	     fCounter ;        	  		    //! number of processed events
 
  private:
 
@@ -114,8 +122,8 @@ class AliFlowMaker  {
 
   // Tracks cuts
     Int_t   fNHits;            	        		    // exclude tracks with less than .. TPC hits 
-    Float_t fElow ;		        		    // exclude tracks below .. GeV (~total Momentum)
-    Float_t fEup ;		        		    // exclude tracks above .. GeV (~total Momentum)
+    Float_t fElow ;		        		    // exclude tracks with total Momentum < .. GeV & v0 with mass < .. GeV
+    Float_t fEup ;		        		    // exclude tracks with total Momentum > .. GeV
     Int_t   fLabel[2] ;	                		    // exclude tracks outside label interval
  
   ClassDef(AliFlowMaker,0);

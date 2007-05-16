@@ -44,8 +44,8 @@ public:
   Float_t       Dca()          const { return fDca ; }
   Float_t       Chi2()         const { return fChi2; }
   Float_t       Mass()         const { return fMass ; }
-  AliFlowTrack* DaughterP()    const { return fDaughterP ; } 
-  AliFlowTrack* DaughterN()    const { return fDaughterN ; } 
+  Int_t         DaughterP()    const { return fDaughterP ; } 
+  Int_t         DaughterN()    const { return fDaughterN ; } 
   Float_t       V0Lenght()     const { return TMath::Sqrt(fCrossPoint[0]*fCrossPoint[0] + fCrossPoint[1]*fCrossPoint[1] + fCrossPoint[2]*fCrossPoint[2]) ; }
   Float_t       Sigma()        const { return fSigma ; }
   Float_t       CrossPointX()  const { return fCrossPoint[0] ; }
@@ -58,7 +58,6 @@ public:
   void          CrossPoint(Float_t Pxyz[3]) const { for(Int_t ii=0;ii<3;ii++) { Pxyz[ii] = fCrossPoint[ii] ; } }
 
  // Sets
-  void SetPid(const Char_t* pid);
   void SetPhi(Float_t phi) 		{ fPhi = phi; }   
   void SetEta(Float_t eta) 		{ fEta = eta; }   
   void SetPt(Float_t pt)   		{ fPt = pt; }     
@@ -71,7 +70,7 @@ public:
   void SetCosPointingAngle(Float_t cos) { fPointAngle = cos ; }
   void SetMostLikelihoodPID(Int_t pdgCode) 		  { fMostLikelihoodPID = pdgCode ; }
   void SetCrossPoint(Float_t pox,Float_t poy,Float_t poz) { fCrossPoint[0] = pox ; fCrossPoint[1] = poy ; fCrossPoint[2] = poz ; }
-  void SetDaughters(AliFlowTrack* pos, AliFlowTrack* neg) { fDaughterP = pos ; fDaughterN = neg ; }
+  void SetDaughters(Int_t pos, Int_t neg) 		  { fDaughterP = pos ; fDaughterN = neg ; }
 
 
 private:
@@ -93,8 +92,8 @@ private:
   Int_t     	fLabel ;     	    		// Label of the V0 (link: KineTree-ESD) 
   Int_t    	fMostLikelihoodPID; 		// most probable P.Id. hypotesis
   Float_t   	fPointAngle;	    		// cosine of the pointing angle
-  AliFlowTrack* fDaughterP ;		       	// daughter tracks (pointers to the TracksCollection())
-  AliFlowTrack* fDaughterN ;		       	// daughter tracks (pointers to the TracksCollection())
+  Int_t         fDaughterP ;		       	// positive daughter track (position in the TracksCollection())
+  Int_t         fDaughterN ;		       	// negative daughter track (position in the TracksCollection())
   
   ClassDef(AliFlowV0,2) ;                  	// macro for rootcint
 };

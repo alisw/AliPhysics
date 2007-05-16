@@ -27,14 +27,12 @@ class TH3F;
 class TProfile;
 class TProfile2D;
 class TOrdCollection;
-
 class TClonesArray;
 
 class AliFlowTrack;
 class AliFlowV0;
 class AliFlowEvent;
 class AliFlowSelection;
-class AliFlowConstants;
 
 class AliFlowAnalyser {
 
@@ -58,7 +56,8 @@ public:
   void     Weightening() ;  					// Calculates weights and fills PhiWgt histograms
 
  // Options
-  void	   SetEtaSub(Bool_t es = kTRUE)          		{ fEtaSub = es ; }		// Set eta subevents
+  void	   SetSub(Int_t sub = 0)          			{ fSub = sub ; }		// Set subevents (1=eta,0=rnd,-1=charged)
+  void	   SetEtaSub()          			 	{ SetSub(1) ; }		// Set subevents (1=eta,0=rnd,-1=charged)
   void     SetV1Ep1Ep2(Bool_t v1Ep1Ep2 = kTRUE) 		{ fV1Ep1Ep2 = v1Ep1Ep2 ; }	// Switches the v_1{EP1,EP2} calculation on/off
   void	   SetShuffle(Bool_t sh = kTRUE)  			{ fShuffle = sh ; }		// Set to re-shuffle evt tracks
   void     SetUsePhiWgt(Bool_t pw = kTRUE)  			{ fReadPhiWgt = pw ; }		// Set to use phi weights (true by default...if there)
@@ -131,6 +130,7 @@ public:
   Bool_t   	   fBayWgt ;		     			//! Bayesian Weights are applied to P.Id. (default is false) 
   Bool_t   	   fRePid ;		     			//! Re-Calculates the P.Id. basing on the bayesian wgts (if plugged in)
   Bool_t   	   fCustomRespFunc ;		     		//! A custom "detector response function" is used for P.Id (default is false -> the combined response function from the ESD will be used)
+  Int_t   	   fSub;		     			//! subevents (1=eta,0=rnd,-1=charged)
 
   Bool_t   	   fPtWgt ;		     			//! flag to use pT as a weight for RP determination
   Bool_t   	   fEtaWgt ;		     			//! flag to use eta as a weight for RP determination
@@ -152,6 +152,10 @@ public:
   Int_t            fPidId ;	  		    		//! Particle Id hypothesys of the track (0..4 for e,mu,pi,k,p)
   Int_t            fSelParts ;	  		    		//! n. of tracks selected for correlation analysis
   Int_t            fSelV0s ;	  		    		//! n. of v0s selected for correlation analysis
+
+  Int_t 	   fTotalNumberOfEvents ;			//! total number of analyzed AliFlowEvents
+  Int_t 	   fTotalNumberOfTracks ;			//! total number of analyzed tracks
+  Int_t 	   fTotalNumberOfV0s ;			    	//! total number of analyzed v0s
 
  // Internal pointers
   AliFlowEvent*     fFlowEvent ;      				//! pointer to AliFlowEvent

@@ -6,13 +6,13 @@
 #define ALISELECTORFOF_H
 
 #include <TSelector.h>
+#include "AliFlowConstants.h"
 
 class AliFlowEvent;
 class AliFlowSelection;
 class AliFlowMaker;
 class AliFlowAnalyser; 
 class AliFlowWeighter;
-class AliFlowConstants;
 
 class AliESD;
 class AliESDtrack;

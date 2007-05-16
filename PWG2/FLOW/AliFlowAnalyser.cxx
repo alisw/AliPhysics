@@ -94,6 +94,7 @@ AliFlowAnalyser::AliFlowAnalyser(const AliFlowSelection* flowSelect):
   fBayWgt(kFALSE), 
   fRePid(kFALSE), 
   fCustomRespFunc(kFALSE), 
+  fSub(0),
   fPtWgt(kFALSE),
   fEtaWgt(kFALSE), 
   fOnePhiWgt(kTRUE), 
@@ -107,6 +108,9 @@ AliFlowAnalyser::AliFlowAnalyser(const AliFlowSelection* flowSelect):
   fPidId(0), 
   fSelParts(0), 
   fSelV0s(0),
+  fTotalNumberOfEvents(0),
+  fTotalNumberOfTracks(0),
+  fTotalNumberOfV0s(0),
   fFlowEvent(0x0), 
   fFlowTrack(0x0), 
   fFlowV0(0x0), 
@@ -346,7 +350,11 @@ Bool_t AliFlowAnalyser::Init()
  fFlowV0s    = 0 ;
  fSelParts = 0 ;
  fSelV0s   = 0 ;
- for(Int_t ii=0;ii<3;ii++) { fVertex[ii] = 0 ; }
+ for(Int_t ii=0;ii<3;ii++) { fVertex[ii] = 0 ; }  
+ 
+ fTotalNumberOfEvents = 0 ;
+ fTotalNumberOfTracks = 0 ;
+ fTotalNumberOfV0s = 0 ;
 
  // Check for Reading weights: if weight file is not there, wgt arrays are not used (phiwgt & bayesian)
  if(!fPhiWgtFile) 
@@ -413,7 +421,7 @@ Bool_t AliFlowAnalyser::Init()
  float logpMin         =  -2.5 ;
  float logpMax         =   2.5 ;
  float pMin	       =    0. ;
- float pMax	       =  100. ;
+ float pMax	       =   10. ;
  float dEdxMax         = 1000. ;
  float dEdxMaxTPC      = 1500. ;
  float tofmin	       = 10000. ;
@@ -451,7 +459,7 @@ Bool_t AliFlowAnalyser::Init()
 	kDedxBins	  = 1000,
 	kTofBins	  = 1000,
 	kTrdBins	  = 100,
-	kMomenBins	  = 500,
+	kMomenBins	  = 100,
 	kQbins 	 	  =  50,
 	kLgBins 	  = 500,
 	kMassBins	  = 2200,
@@ -1276,7 +1284,7 @@ Bool_t AliFlowAnalyser::Init()
   fHistV0EtaPtPhi3D->SetYTitle("Pt (GeV/c)");
   fHistV0EtaPtPhi3D->SetZTitle("Phi (rad)");
  // Yield for all v0s
-  fHistV0YieldAll2D = new TH2D("FlowV0_YieldAll2D", "FlowV0_YieldAll2D", fEtaBins, fEtaMin, fEtaMax, fPtBins, fPtMin, fPtMax);
+  fHistV0YieldAll2D = new TH2D("FlowV0_PtEta2Dall", "FlowV0_PtEta2Dall", fEtaBins, fEtaMin, fEtaMax, fPtBins, fPtMin, fPtMax);
   fHistV0YieldAll2D->Sumw2();
   fHistV0YieldAll2D->SetXTitle("Pseudorapidty");
   fHistV0YieldAll2D->SetYTitle("Pt (GeV/c)");
@@ -1293,7 +1301,7 @@ Bool_t AliFlowAnalyser::Init()
 
  // Selected V0s ...  
  // Yield 
-  fHistV0YieldPart2D = new TH2D("FlowV0_Yield2Dsel", "FlowV0_Yield2Dsel", fEtaBins, fEtaMin, fEtaMax, fPtBins, fPtMin, fPtMax);
+  fHistV0YieldPart2D = new TH2D("FlowV0_PtEta2Dpart", "FlowV0_PtEta2Dpart", fEtaBins, fEtaMin, fEtaMax, fPtBins, fPtMin, fPtMax);
   fHistV0YieldPart2D->Sumw2();
   fHistV0YieldPart2D->SetXTitle("Pseudorapidty");
   fHistV0YieldPart2D->SetYTitle("Pt (GeV/c)");
@@ -1877,6 +1885,9 @@ Bool_t AliFlowAnalyser::Finish()
 
  fHistFile->Close() ;
 
+ cout << endl ;
+ cout << "    Finish()  -  tot. " << fTotalNumberOfEvents << " have been analyzed (with " << fTotalNumberOfTracks << " tracks and " << fTotalNumberOfV0s << " v0s) ."  << endl ; 
+ cout << endl ; 
  cout << "    Finish()  -  Histograms saved : " << fHistFileName.Data() << endl ; cout << endl ; 
 
  return kTRUE ;
@@ -2159,7 +2170,13 @@ Bool_t AliFlowAnalyser::Analyze(AliFlowEvent* flowEvent)
   if(fShuffle)    { fFlowEvent->RandomShuffle() ; }	    // tracks re-shuffling
 
   fFlowEvent->SetSelections(fFlowSelect) ;		    // does the selection of tracks for r.p. calculation (sets flags in AliFlowTrack)
-  fFlowEvent->SetEtaSubs(fEtaSub) ;			    // setting for the subevents (eta or random)
+  
+  if(fSub == 1)       { fFlowEvent->SetEtaSubs() ; }	    // setting for the subevents (eta, random, charged)
+  else if(fSub == -1) { fFlowEvent->SetChrSubs() ; }	    // 
+  else 		      { fFlowEvent->SetRndSubs() ; }	    // ...
+  
+  fEtaSub = fFlowEvent->EtaSubs() ;
+
   fFlowEvent->MakeSubEvents() ; 			    // makes the subevent, eta or random basing on the previous flag
 
   cout << " * 2 . Calculating event quantities all in one shoot . " << endl ; 
@@ -2326,7 +2343,8 @@ void AliFlowAnalyser::FillEventHistograms(AliFlowEvent* fFlowEvent)
    fHistFull[k].fHistFullHar[j].fHistMult->Fill((float)fMult[k][j]) ;
    fHistFull[k].fHistFullHar[j].fHistQnorm->Fill(fQnorm[k][j]) ;
   }
- }
+ } 
+ fTotalNumberOfEvents++ ;
  
  return ;
 }
@@ -2737,6 +2755,8 @@ void AliFlowAnalyser::FillParticleHistograms(TClonesArray* fFlowTracks)
  corrMultUnit /= (float)(AliFlowConstants::kHars * AliFlowConstants::kSels) ; 
  fHistMultPartUnit->Fill(corrMultUnit) ;
 
+ fTotalNumberOfTracks += fNumberOfTracks ;
+
  return ;
 }
 //-----------------------------------------------------------------------
@@ -2762,7 +2782,7 @@ Int_t AliFlowAnalyser::HarmonicsLoop(AliFlowTrack* fFlowTrack)
    fFlowSelect->SetHarmonic(j);
    double order  = (double)(j+1);
    float psii = 0. ; float psi2 = 0. ;
-   if(fFlowEvent->EtaSubs())	       // particles with the opposite subevent
+   if(fEtaSub)	       // particles with the opposite subevent
    {
     if(eta > 0) { psii = fPsiSub[1][k][j] ; }     //check
     else	{ psii = fPsiSub[0][k][j] ; }
@@ -2826,7 +2846,7 @@ Int_t AliFlowAnalyser::HarmonicsLoop(AliFlowTrack* fFlowTrack)
 
     // Remove autocorrelations
     TVector2 qi;
-    if(!fFlowEvent->EtaSubs())   // random subevents
+    if(!fEtaSub)   // random subevents (or other)
     {
      if(order > 3. && !oddHar) // 2nd harmonic event plane
      { 
@@ -2990,8 +3010,8 @@ void AliFlowAnalyser::FillV0Histograms(TClonesArray* fFlowV0s)
   Char_t pid[10] ; strcpy(pid, fFlowV0->Pid()) ;    
   int labelPlus =  -1 ; 
   int labelMinus = -1 ;   	    
-  AliFlowTrack* daughterPlus = fFlowV0->DaughterP() ;  
-  AliFlowTrack* daughterMinus = fFlowV0->DaughterN() ; 
+  AliFlowTrack* daughterPlus = (AliFlowTrack*)(fFlowTracks->AddrAt(fFlowV0->DaughterP())) ;
+  AliFlowTrack* daughterMinus = (AliFlowTrack*)(fFlowTracks->AddrAt(fFlowV0->DaughterN())) ; ; 
   if(daughterPlus)  { labelPlus = daughterPlus->Label() ; }		    
   if(daughterMinus) { labelMinus = daughterMinus->Label() ; }			    
 
@@ -3184,6 +3204,7 @@ void AliFlowAnalyser::FillV0Histograms(TClonesArray* fFlowV0s)
   //delete daughterMinus ; daughterMinus = 0 ;  
  }
  fHistV0MultPart->Fill(fSelV0s) ;
+ fTotalNumberOfV0s += fNumberOfV0s ;
 
  return ;
 }

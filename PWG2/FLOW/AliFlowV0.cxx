@@ -26,17 +26,17 @@ using namespace std; //required for resolving the 'cout' symbol
 ClassImp(AliFlowV0) 
 //////////////////////////////////////////////////////////////////////////////
 AliFlowV0::AliFlowV0():
-  fPhi(0.), fPt(0.), fEta(0.), fChi2(0.), fMass(0.), fDca(0.), fCrossDCA(0.), fSigma(1.), fLabel(0), fMostLikelihoodPID(0), fPointAngle(0.),
-fDaughterP(0x0), fDaughterN(0x0)
+ fPhi(0.), fPt(0.), fEta(0.), fChi2(0.), fMass(0.), fDca(0.), fCrossDCA(0.), fSigma(1.), fLabel(0), fMostLikelihoodPID(0), fPointAngle(0.),
+ fDaughterP(-1), fDaughterN(-1)
 {
  // default constructor  
   for(Int_t dd=0;dd<3;dd++) { fCrossPoint[dd] = 0. ; }
- // fDaughterP = 0  ; fDaughterN = 0  ;
+  // fDaughterP = -1  ; fDaughterN = -1  ;
 }
 //////////////////////////////////////////////////////////////////////////////
 AliFlowV0::AliFlowV0(const Char_t* name):
-  fPhi(0.), fPt(0.), fEta(0.), fChi2(0.), fMass(0.), fDca(0.), fCrossDCA(0.), fSigma(1.), fLabel(0), fMostLikelihoodPID(0), fPointAngle(0.),
-fDaughterP(0x0), fDaughterN(0x0)
+ fPhi(0.), fPt(0.), fEta(0.), fChi2(0.), fMass(0.), fDca(0.), fCrossDCA(0.), fSigma(1.), fLabel(0), fMostLikelihoodPID(0), fPointAngle(0.),
+ fDaughterP(-1), fDaughterN(-1)
 {
  // TNamed constructor 
  
@@ -67,7 +67,7 @@ Float_t  AliFlowV0::Y() const
  // Rapidity of the v0
 
  if(TMath::Abs((Float_t)P()) == TMath::Abs((Float_t)Pt())) 	{ return 0. ; }
- else if(TMath::Abs((Float_t)P()) < TMath::Abs((Float_t)Pt()))	{ cout << "v0: " << GetName() << "has  Pt() > P() !!!" << endl ; return -1000. ; }
+ else if(TMath::Abs((Float_t)P()) < TMath::Abs((Float_t)Pt()))	{ cout << "v0: " << GetName() << " has  Pt() > P() !!!" << endl ; return -1000. ; }
  // -
  Float_t mass = Mass() ; 
  Double_t pz = TMath::Sqrt(P()*P() - Pt()*Pt()); 
@@ -96,17 +96,17 @@ const char* AliFlowV0::Pid() const
  return pId.Data() ; 
 }
 //////////////////////////////////////////////////////////////////////////////
-void AliFlowV0::SetPid(const Char_t* pid)	   	
-{ 
- // Sets the P.Id. hypotesis of the track from a char* imput ("K0","Lambda0",...). 
- // The string itself is not stored, what is stored is the PDG code.
- 
- if(strstr(pid,"gamma"))        { fMostLikelihoodPID = 22   ; }
- else if(strstr(pid,"K0"))      { fMostLikelihoodPID = 311  ; }
- else if(strstr(pid,"K0s"))     { fMostLikelihoodPID = 310  ; }
- else if(strstr(pid,"K0l"))     { fMostLikelihoodPID = 130  ; }
- else if(strstr(pid,"Lambda0")) { fMostLikelihoodPID = 3122 ; }
- // ...
- else { fMostLikelihoodPID = 0 ; cout << "AliFlowV0 - !BAD IMPUT!" << endl ; }
-}
+// void AliFlowV0::SetPid(const Char_t* pid)	   	
+// { 
+//  // Sets the P.Id. hypotesis of the track from a char* imput ("K0","Lambda0",...). 
+//  // The string itself is not stored, what is stored is the PDG code.
+//  
+//  if(strstr(pid,"gamma"))        { fMostLikelihoodPID = 22   ; }
+//  else if(strstr(pid,"K0"))      { fMostLikelihoodPID = 311  ; }
+//  else if(strstr(pid,"K0s"))     { fMostLikelihoodPID = 310  ; }
+//  else if(strstr(pid,"K0l"))     { fMostLikelihoodPID = 130  ; }
+//  else if(strstr(pid,"Lambda0")) { fMostLikelihoodPID = 3122 ; }
+//  // ...
+//  else { fMostLikelihoodPID = 0 ; cout << "AliFlowV0 - !BAD IMPUT!" << endl ; }
+// }
 //////////////////////////////////////////////////////////////////////////////

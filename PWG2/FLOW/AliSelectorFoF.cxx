@@ -172,19 +172,19 @@ void AliSelectorFoF::Begin(TTree*)
   // R.P. calculation cuts
   for(int j=0;j<AliFlowConstants::kHars;j++)
   {
-   fFlowSelect->SetEtaCut(0., 1.1, j, 1) ;
+   fFlowSelect->SetEtaCut(0., 0.9, j, 1) ;
    fFlowSelect->SetPtCut(0.1, 10. , j, 1);
   }
   fFlowSelect->SetConstrainCut(kTRUE) ;
   fFlowSelect->SetDcaGlobalCut(0.,0.1);
   // Correlation analysis cuts (not all of them)
-  fFlowSelect->SetEtaPart(-1.1,1.1);
+  fFlowSelect->SetEtaPart(-0.9,0.9);
   fFlowSelect->SetPtPart(0.1,10.);
   fFlowSelect->SetConstrainablePart(kTRUE);
   fFlowSelect->SetDcaGlobalPart(0.,0.1);
   // V0 analysis cuts (not all of them ... they are useless anyway)
   fFlowSelect->SetV0Mass(0.4875,0.5078) ;	 // Mk0 = 0.49765
-  fFlowSelect->SetV0SideBands(0.08) ;
+  fFlowSelect->SetV0SideBands(0.1) ;
   fFlowSelect->SetV0Pt(0.1,10.) ;
   fFlowSelect->SetV0Eta(-2.1,2.1) ;
   // print list :
@@ -231,7 +231,7 @@ void AliSelectorFoF::Begin(TTree*)
 
   // Analysis settings
    fFlowAnal->SetFlowForV0() ;         // default kTRUE.
-   fFlowAnal->SetEtaSub() ;            // default kFALSE
+   fFlowAnal->SetSub(1) ; //eta  // ->SetChrSub() ; //charge  // ->SetRndSub() ; //random (default)
    //fFlowAnal->SetV1Ep1Ep2() ;          // default kFALSE.
    //fFlowAnal->SetShuffle() ;           // default kFALSE. shuffles track array
    //fFlowAnal->SetRedoWgt();      	 // default kFALSE. recalculates phiWgt (even if phiWgt file is already there)

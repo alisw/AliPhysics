@@ -7,8 +7,8 @@
 //////////////////////////////////////////////////////////////////////
 //
 // Description: parser class from KineTree (pure MC simulation) to 
-//  AliFlowEvent . Nothing else to say at this point, but 3 lines of 
-//  comments (at least) must be there to make the code checker happy.
+//  AliFlowEvent . It does not use the AliRunLoades, but simply 
+//  gets the KineTree as an imput (a macro mast provide them).
 //
 //////////////////////////////////////////////////////////////////////
 

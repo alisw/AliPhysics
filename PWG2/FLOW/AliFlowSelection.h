@@ -18,13 +18,12 @@
 
 #include "TObject.h"
 #include "TMath.h"
-
 #include "AliFlowConstants.h"
+
 
 class AliFlowTrack ;
 class AliFlowV0 ;
 class AliFlowEvent ;
-class AliFlowConstants ;
 
 class AliFlowSelection : public TObject {
 
@@ -107,7 +106,6 @@ class AliFlowSelection : public TObject {
   void    SetDcaGlobalPart(Float_t lo, Float_t hi)     { fDcaGlobalPart[0] = lo; fDcaGlobalPart[1] = hi; }		     // Sets d.c.a. for particles wrt Reaction plane	     
   void    SetDcaOverSigma(Float_t lo, Float_t hi)      { fDcaOverSigma[0] = lo; fDcaOverSigma[1] = hi; }		     // Sets d.c.a. for particles wrt Reaction plane	     
   void    SetConstrainablePart(Bool_t constr)	       { fConstrainablePart = constr ; }				     // Sets constrainability for particles wrt Reaction plane
-  void    SetV0Pid(const Char_t* pid)		       { strncpy(fV0Pid, pid, 9) ; fV0Pid[9] = '\0' ; } 		     // Sets PID for v0 wrt plane (...)
   void    SetV0Mass(Float_t lo, Float_t hi)	       { fV0Mass[0] = lo ; fV0Mass[1] = hi; }				     // Sets invariant mass cut for v0 wrt plane 
   void    SetV0Pt(Float_t lo, Float_t hi)	       { fV0Pt[0] = lo ; fV0Pt[1] = hi; }				     // Sets pT for v0 wrt plane 
   void    SetV0P(Float_t lo, Float_t hi)	       { fV0P[0] = lo ; fV0P[1] = hi; } 				     // Sets Momentum for v0 wrt plane 
@@ -120,6 +118,7 @@ class AliFlowSelection : public TObject {
   void    SetV0LenghtOverSigma(Float_t lo, Float_t hi) { fV0LenghtOverSigma[0] = lo ; fV0LenghtOverSigma[1] = hi; }	     // Sets closest approach (between the 2 daughter tracks) for v0 wrt plane  
   void    SetV0SideBands()			       { SetV0SideBands(TMath::Abs((fV0Mass[1]-fV0Mass[0])/2)) ; }	     // Includes the v0 sideband analysis wrt plane	     
   void    SetV0SideBands(Float_t sb)		       { fV0SideBand = sb ; }						     // Includes the v0 sideband analysis and a width		     
+  //void    SetV0Pid(const Char_t* pid)		       { strncpy(fV0Pid, pid, 9) ; fV0Pid[9] = '\0' ; } 		     // Sets PID for v0 wrt plane (...)
 
   void    SetPtBinsPart(Int_t bins)		       { fPtBinsPart = bins; }						     // Sets N. of bins from fPtPart[0] to fPtPart[1]		     
 
@@ -138,7 +137,6 @@ class AliFlowSelection : public TObject {
   Int_t  fRun ;           	        			// Run number 
 
  // Cuts for V0 correlated to the Raction Plane (new)
-  Char_t  fV0Pid[10];           	        		// PID for v0 wrt plane (...)
   Float_t fV0SideBand ;						// width of the sidebands (using the sidebands' candidates)
   Float_t fV0Mass[2] ;						// mass cut for v0 wrt plane
   Float_t fV0Pt[2];                        			// pT for v0 wrt plane 
@@ -150,6 +148,7 @@ class AliFlowSelection : public TObject {
   Float_t fV0Lenght[2];                 			// distance to the main vertex for v0 wrt plane
   Float_t fV0LenghtOverSigma[2];                 		// distance to the main vertex in sigma units for v0 wrt plane
   Float_t fV0DcaCross[2];                 			// closest approach (between the 2 daughter tracks) for v0 wrt plane
+  //Char_t  fV0Pid[10];           	        		// PID for v0 wrt plane (...)
 
  // Cuts for Tracks that will be related to the Raction Plane (original strategy from STAR)
   Char_t  fPidPart[10];           	        		// PID for parts. wrt plane (h+, h-, pi-, pi+, pi, k+, k-, k, pr+, pr-, pr, d+, d-, d, e+, e-, e)

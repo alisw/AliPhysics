@@ -27,7 +27,6 @@ class AliFlowTrack;
 class AliFlowV0;
 class AliFlowEvent;
 class AliFlowSelection;
-class AliFlowConstants;
 
 class AliFlowWeighter {
 
