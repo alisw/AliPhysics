@@ -7,6 +7,9 @@
  ***************************************************************************
  *
  * $Log$
+ * Revision 1.4  2007/05/03 09:46:10  akisiel
+ * Fixing Effective C++ warnings
+ *
  * Revision 1.3  2007/04/27 07:25:59  akisiel
  * Make revisions needed for compilation from the main AliRoot tree
  *
@@ -48,17 +51,17 @@ bool AliFemtoQPairCut::Pass(const AliFemtoPair* pair)
 {
   //bool temp = true;
   //temp ? fNPairsPassed++ : fNPairsFailed++;
-  if ((fabs(pair->qLongCMS())<fQlong[0])||(fabs(pair->qLongCMS())>fQlong[1]))
+  if ((fabs(pair->QLongCMS())<fQlong[0])||(fabs(pair->QLongCMS())>fQlong[1]))
   {
 	fNPairsFailed++;
 	return false;
   }
-  if ((fabs(pair->qOutCMS())<fQout[0])||(fabs(pair->qOutCMS())>fQout[1]))
+  if ((fabs(pair->QOutCMS())<fQout[0])||(fabs(pair->QOutCMS())>fQout[1]))
   {
 	fNPairsFailed++;
 	return false;
   }
-  if ((fabs(pair->qSideCMS())<fQside[0])||(fabs(pair->qSideCMS())>fQside[1]))
+  if ((fabs(pair->QSideCMS())<fQside[0])||(fabs(pair->QSideCMS())>fQside[1]))
   {
 	fNPairsFailed++;
 	return false;

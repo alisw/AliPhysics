@@ -40,13 +40,13 @@ bool AliFemtoShareQualityPairCut::Pass(const AliFemtoPair* pair){
   Int_t an = 0;
   Int_t ns = 0;
   
-  for (unsigned int imap=0; imap<pair->track1()->Track()->TPCclusters().GetNbits(); imap++) {
+  for (unsigned int imap=0; imap<pair->Track1()->Track()->TPCclusters().GetNbits(); imap++) {
     // If both have clusters in the same row
-    if (pair->track1()->Track()->TPCclusters().TestBitNumber(imap) && 
-	pair->track2()->Track()->TPCclusters().TestBitNumber(imap)) {
+    if (pair->Track1()->Track()->TPCclusters().TestBitNumber(imap) && 
+	pair->Track2()->Track()->TPCclusters().TestBitNumber(imap)) {
       // Do they share it ?
-      if (pair->track1()->Track()->TPCsharing().TestBitNumber(imap) &&
-	  pair->track2()->Track()->TPCsharing().TestBitNumber(imap))
+      if (pair->Track1()->Track()->TPCsharing().TestBitNumber(imap) &&
+	  pair->Track2()->Track()->TPCsharing().TestBitNumber(imap))
 	{
 	  //	  cout << "A shared cluster !!!" << endl;
 	  //	cout << "imap idx1 idx2 " 
@@ -63,8 +63,8 @@ bool AliFemtoShareQualityPairCut::Pass(const AliFemtoPair* pair){
 	nh+=2;
       }
     }
-    else if (pair->track1()->Track()->TPCclusters().TestBitNumber(imap) ||
-	     pair->track2()->Track()->TPCclusters().TestBitNumber(imap)) {
+    else if (pair->Track1()->Track()->TPCclusters().TestBitNumber(imap) ||
+	     pair->Track2()->Track()->TPCclusters().TestBitNumber(imap)) {
       // One track has a hit, the other does not
       an++;
       nh++;
@@ -80,9 +80,9 @@ bool AliFemtoShareQualityPairCut::Pass(const AliFemtoPair* pair){
   }
   //  if (hsmval > -0.4) {
   cout << "Pair quality: " << hsmval << " " << an << " " << nh << " " 
-       << (pair->track1()->Track()) << " " 
-       << (pair->track2()->Track()) << endl;
-  cout << "Bits: " << pair->track1()->Track()->TPCclusters().GetNbits() << endl;
+       << (pair->Track1()->Track()) << " " 
+       << (pair->Track2()->Track()) << endl;
+  cout << "Bits: " << pair->Track1()->Track()->TPCclusters().GetNbits() << endl;
     //  }
   if (hsfval > 0.0) {
     cout << "Pair sharity: " << hsfval << " " << ns << " " << nh << "    " << hsmval << " " << an << " " << nh << endl;
