@@ -280,7 +280,7 @@ void AliTRDReconstructor::FillESD(TTree* /*digitsTree*/
 }
 
 //_____________________________________________________________________________
-void AliTRDReconstructor::FillESD(AliRunLoader *runLoader
+void AliTRDReconstructor::FillESD(AliRunLoader* /*runLoader*/
 				, AliESD *esd) const
 {
   //
