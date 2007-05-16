@@ -131,7 +131,10 @@ Bool_t AliZDCRawStream::Next()
         fSector[1] = vADCChannel-8;
       } 
     }
-    else Warning("AliZDCRawStream","\t No valid ADC module!\n");
+    else {
+      AliWarning("No valid ADC module!");
+      fRawReader->AddMajorErrorLog(kInvalidADCModule);
+    }      
     
   }
   return kTRUE;

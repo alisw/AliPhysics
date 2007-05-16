@@ -29,6 +29,10 @@ class AliZDCRawStream: public TObject {
     Int_t            GetADCGain() const {return fADCGain;};
     Bool_t           IsADCDataWord() const {return fIsADCDataWord;};
 
+  enum EZDCRawStreamError {
+    kInvalidADCModule = 1
+  };
+
   private :
     AliZDCRawStream(const AliZDCRawStream& stream);
     AliZDCRawStream& operator = (const AliZDCRawStream& stream);
