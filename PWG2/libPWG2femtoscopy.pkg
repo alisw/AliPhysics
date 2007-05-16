@@ -1,53 +1,53 @@
-SRCS= FEMTOSCOPY/AliFemto/Analysis/AliFemtoAnalysis.cxx \
-      FEMTOSCOPY/AliFemto/Analysis/AliFemtoLikeSignAnalysis.cxx \
-      FEMTOSCOPY/AliFemto/Analysis/AliFemtoVertexAnalysis.cxx \
-      FEMTOSCOPY/AliFemto/Analysis/AliFemtoVertexMultAnalysis.cxx \
-      FEMTOSCOPY/AliFemto/CorrFctn/AliFemtoBPLCMS3DCorrFctn.cxx \
-      FEMTOSCOPY/AliFemto/CorrFctn/AliFemtoQinvCorrFctn.cxx \
-      FEMTOSCOPY/AliFemto/Cut/AliFemtoBasicEventCut.cxx \
-      FEMTOSCOPY/AliFemto/Cut/AliFemtoBasicTrackCut.cxx \
-      FEMTOSCOPY/AliFemto/Cut/AliFemtoDummyPairCut.cxx \
-      FEMTOSCOPY/AliFemto/Infrastructure/AliFemtoCoulomb.cxx \
-      FEMTOSCOPY/AliFemto/Infrastructure/AliFemtoCutMonitorHandler.cxx \
-      FEMTOSCOPY/AliFemto/Infrastructure/AliFemtoEvent.cxx \
-      FEMTOSCOPY/AliFemto/Infrastructure/AliFemtoKink.cxx \
-      FEMTOSCOPY/AliFemto/Infrastructure/AliFemtoManager.cxx \
-      FEMTOSCOPY/AliFemto/Infrastructure/AliFemtoPair.cxx \
-      FEMTOSCOPY/AliFemto/Infrastructure/AliFemtoParticle.cxx \
-      FEMTOSCOPY/AliFemto/Infrastructure/AliFemtoPicoEvent.cxx \
-      FEMTOSCOPY/AliFemto/Infrastructure/AliFemtoPicoEventCollectionVectorHideAway.cxx \
-      FEMTOSCOPY/AliFemto/Infrastructure/AliFemtoTrack.cxx \
-      FEMTOSCOPY/AliFemto/Infrastructure/AliFemtoV0.cxx \
-      FEMTOSCOPY/AliFemto/Infrastructure/AliFemtoXi.cxx \
-      FEMTOSCOPY/AliFemto/Infrastructure/AliFmHelix.cxx \
-      FEMTOSCOPY/AliFemto/Infrastructure/AliFmPhysicalHelix.cxx \
-      FEMTOSCOPY/AliFemto/Infrastructure/TpcLocalTransform.cxx \
-      FEMTOSCOPY/AliFemto/Base/AliFemtoEventReader.cxx \
-      FEMTOSCOPY/AliFemto/Reader/AliFemtoEventReaderESD.cxx \
-      FEMTOSCOPY/AliFemto/Reader/AliFemtoEventReaderESDChain.cxx \
-      FEMTOSCOPY/AliFemto/Model/AliFemtoModelHiddenInfo.cxx \
-      FEMTOSCOPY/AliFemto/Model/AliFemtoModelGausLCMSFreezeOutGenerator.cxx \
-      FEMTOSCOPY/AliFemto/Model/AliFemtoModelWeightGenerator.cxx \
-      FEMTOSCOPY/AliFemto/Model/AliFemtoModelWeightGeneratorBasic.cxx\
-      FEMTOSCOPY/AliFemto/Model/AliFemtoModelManager.cxx \
-      FEMTOSCOPY/AliFemto/Model/AliFemtoModelCorrFctn.cxx \
-      FEMTOSCOPY/AliFemto/Model/AliFemtoModelFreezeOutGenerator.cxx
+SRCS= FEMTOSCOPY/AliFemto/AliFemtoAnalysis.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoLikeSignAnalysis.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoVertexAnalysis.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoVertexMultAnalysis.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoBPLCMS3DCorrFctn.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoQinvCorrFctn.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoBasicEventCut.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoBasicTrackCut.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoDummyPairCut.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoCoulomb.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoCutMonitorHandler.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoEvent.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoKink.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoManager.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoPair.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoParticle.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoPicoEvent.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoPicoEventCollectionVectorHideAway.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoTrack.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoV0.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoXi.cxx \
+      FEMTOSCOPY/AliFemto/AliFmHelix.cxx \
+      FEMTOSCOPY/AliFemto/AliFmPhysicalHelix.cxx \
+      FEMTOSCOPY/AliFemto/TpcLocalTransform.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoEventReader.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoEventReaderESD.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoEventReaderESDChain.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoModelHiddenInfo.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoModelGausLCMSFreezeOutGenerator.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoModelWeightGenerator.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoModelWeightGeneratorBasic.cxx\
+      FEMTOSCOPY/AliFemto/AliFemtoModelManager.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoModelCorrFctn.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoModelFreezeOutGenerator.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
-HDRS += FEMTOSCOPY/AliFemto/Infrastructure/AliFmThreeVector.h \
-        FEMTOSCOPY/AliFemto/Infrastructure/AliFmThreeVectorF.h \
-        FEMTOSCOPY/AliFemto/Infrastructure/AliFmThreeVectorD.h \
-        FEMTOSCOPY/AliFemto/Infrastructure/AliFmPhysicalHelixD.h \
-        FEMTOSCOPY/AliFemto/Infrastructure/AliFmHelixD.h \
-        FEMTOSCOPY/AliFemto/Infrastructure/AliFmLorentzVectorD.h \
-        FEMTOSCOPY/AliFemto/Base/AliFemtoV0Cut.h \
-        FEMTOSCOPY/AliFemto/Base/AliFemtoKinkCut.h \
-        FEMTOSCOPY/AliFemto/Base/AliFemtoXiCut.h 
+HDRS += FEMTOSCOPY/AliFemto/AliFmThreeVector.h \
+        FEMTOSCOPY/AliFemto/AliFmThreeVectorF.h \
+        FEMTOSCOPY/AliFemto/AliFmThreeVectorD.h \
+        FEMTOSCOPY/AliFemto/AliFmPhysicalHelixD.h \
+        FEMTOSCOPY/AliFemto/AliFmHelixD.h \
+        FEMTOSCOPY/AliFemto/AliFmLorentzVectorD.h \
+        FEMTOSCOPY/AliFemto/AliFemtoV0Cut.h \
+        FEMTOSCOPY/AliFemto/AliFemtoKinkCut.h \
+        FEMTOSCOPY/AliFemto/AliFemtoXiCut.h 
 
 
 DHDR:= PWG2femtoscopyLinkDef.h
 
 EXPORT:=
 
-EINCLUDE:= PWG2/FEMTOSCOPY/AliFemto PWG2/FEMTOSCOPY/AliFemto/Base PWG2/FEMTOSCOPY/AliFemto/Infrastructure PWG2/FEMTOSCOPY/AliFemto/Reader PWG2/FEMTOSCOPY/AliFemto/Cut PWG2/FEMTOSCOPY/AliFemto/CorrFctn PWG2/FEMTOSCOPY/AliFemto/Model
+EINCLUDE:= PWG2/FEMTOSCOPY/AliFemto 
 
