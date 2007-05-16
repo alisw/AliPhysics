@@ -397,7 +397,7 @@ void Hdisp()
   }
     
       
-//  NextEvent();           
+  NextEvent();           
   
       
 }//Hdisp()

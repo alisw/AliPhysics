@@ -40,11 +40,12 @@ public:
          void    AddTidOffset(Int_t offset                   )     {for (Int_t i=0; i<3; i++) if (fTracks[i]>0) fTracks[i]+=offset;  } //needed for merging
          Int_t   Ch          (                               )const{return A2C(fPad);                                                } //chamber number
   static Bool_t  IsOverTh    (Float_t q                      )     {return q >= fgSigmas;                                            } //is digit over threshold?
-  static Bool_t  IsInside    (Float_t x,Float_t y,Float_t margin=0){return x>-margin&&y>-margin&&x<SizeAllX()+margin&&y<SizeAllY()+margin;} //is point inside chamber boundary?
+  inline static Bool_t IsInDead(Float_t x,Float_t y        );                                                                          //is point in dead area?
+  static Bool_t  IsInside    (Float_t x,Float_t y,Float_t d=0)     {return x>-d&&y>-d&&x<fgkMaxPcX[kMaxPc]+d&&y<fgkMaxPcY[kMaxPc]+d; } //is point inside chamber boundary?
          Float_t LorsX       (                               )const{return LorsX(A2P(fPad),A2X(fPad));                               } //center of the pad x, [cm]
-  static Float_t LorsX       (Int_t pc,Int_t padx            )     {return (padx    +0.5)*SizePadX()+(pc  %2)*(SizePcX()+SizeDead());} //center of the pad x, [cm]
+  static Float_t LorsX       (Int_t pc,Int_t padx            )     {return (padx    +0.5)*SizePadX()+fgkMinPcX[pc];                  } //center of the pad x, [cm]
          Float_t LorsY       (                               )const{return LorsY(A2P(fPad),A2Y(fPad));                               } //center of the pad y, [cm]
-  static Float_t LorsY       (Int_t pc,Int_t pady            )     {return (pady    +0.5)*SizePadY()+(pc  /2)*(SizePcY()+SizeDead());} //center of the pad y, [cm]
+  static Float_t LorsY       (Int_t pc,Int_t pady            )     {return (pady    +0.5)*SizePadY()+fgkMinPcY[pc];                  } //center of the pad y, [cm]
   inline Float_t IntMathieson(Float_t x,Float_t y            )const;                                                                   //Mathieson distribution 
          Int_t   PadPcX      (                               )const{return A2X(fPad);}                                                 //pad pc x # 0..79
          Int_t   PadPcY      (                               )const{return A2Y(fPad);}                                                 //pad pc y # 0..47
@@ -61,7 +62,6 @@ public:
          void    SetNsig     (Int_t sigmas                   )     {fgSigmas=sigmas;}                                                  //set n sigmas 
   static void    WriteRaw    (TObjArray *pDigLst             );                                                                        //write as raw stream     
   
-  static Float_t CathAnoCath (                               )     {return 0.445;}                                                     //Cathode-Anode-cathode pitch
   static Float_t MaxPcX      (Int_t iPc                      )     {return fgkMaxPcX[iPc];}                                            // PC limits
   static Float_t MaxPcY      (Int_t iPc                      )     {return fgkMaxPcY[iPc];}                                            // PC limits
   static Float_t MinPcX      (Int_t iPc                      )     {return fgkMinPcX[iPc];}                                            // PC limits
@@ -69,16 +69,8 @@ public:
   static Int_t   Nsig        (                               )     {return fgSigmas;}                                                  //Getter n. sigmas for noise
   static Float_t SizeAllX    (                               )     {return fgkMaxPcX[5];}                                              //all PCs size x, [cm]        
   static Float_t SizeAllY    (                               )     {return fgkMaxPcY[5];}                                              //all PCs size y, [cm]    
-  static Float_t SizeArea    (                               )     {return SizePcX()*SizePcY()*(kMaxPc-kMinPc+1);}                     //sence area, [cm^2]  
-  static Float_t SizeDead    (                               )     {return 2.6;}                                                       //dead zone size x, [cm]         
-  static Float_t SizeGap     (                               )     {return 8;  }
   static Float_t SizePadX    (                               )     {return 0.8;}                                                       //pad size x, [cm]  
   static Float_t SizePadY    (                               )     {return 0.84;}                                                      //pad size y, [cm]  
-  static Float_t SizePcX     (                               )     {return fgkMaxPcX[0];}                                              //PC size x, [cm]        
-  static Float_t SizePcY     (                               )     {return fgkMaxPcY[0];}                                              //PC size y, [cm]    
-  static Float_t SizeWin     (                               )     {return 0.5;}                                                       //Quartz window width
-  static Float_t SizeRad     (                               )     {return 1.5;}                                                       //Rad width   
-  inline static Bool_t IsInDead(Float_t x,Float_t y        );                                                                          //is point in dead area?
   inline static void   Lors2Pad(Float_t x,Float_t y,Int_t &pc,Int_t &px,Int_t &py);                                                    //(x,y)->(pc,px,py) 
 protected:                                                                   //AliDigit has fTracks[3]
   static Int_t fgSigmas;                                                                                                               //n. sigma to cut on charge 
@@ -86,10 +78,6 @@ protected:                                                                   //A
   static const Float_t fgkMinPcY[6];                                                                                                   //limits PC
   static const Float_t fgkMaxPcX[6];                                                                                                   //limits PC
   static const Float_t fgkMaxPcY[6];                                                                                                   //limits PC
-  static const Float_t fgk1;                                                                                                           //Mathieson parameters
-  static const Float_t fgk2;                                                                                                           //...
-  static const Float_t fgkSqrtK3;                                                                                                      //...
-  static const Float_t fgk4;                                                                                                           //...
   Int_t    fPad;                                                                                                                       //absolute pad number
   Float_t  fQ;                                                               //QDC value, fractions are permitted for summable procedure  
   ClassDef(AliHMPIDDigit,4)                                                  //HMPID digit class       
@@ -102,12 +90,12 @@ void AliHMPIDDigit::Lors2Pad(Float_t x,Float_t y,Int_t &pc,Int_t &px,Int_t &py)
 // Arguments: x,y- position [cm] in LORS; pc,px,py- pad where to store the result
 //   Returns: none
   pc=px=py=-1;
-  if     (x>=          0          && x<=  SizePcX()            ) {pc=0; px=Int_t( x                           / SizePadX());}//PC 0 or 2 or 4
-  else if(x>=SizePcX()+SizeDead() && x<=  SizeAllX()           ) {pc=1; px=Int_t((x-  SizePcX()-  SizeDead()) / SizePadX());}//PC 2 or 4 or 6
+  if     (x>fgkMinPcX[0] && x<fgkMaxPcX[0]) {pc=0; px=Int_t( x               / SizePadX());}//PC 0 or 2 or 4
+  else if(x>fgkMinPcX[1] && x<fgkMaxPcX[1]) {pc=1; px=Int_t((x-fgkMinPcX[1]) / SizePadX());}//PC 1 or 3 or 5
   else return;
-  if     (y>=          0          && y<=  SizePcY()            ) {      py=Int_t( y                           / SizePadY());}//PC 0 or 1
-  else if(y>=SizePcY()+SizeDead() && y<=2*SizePcY()+SizeDead() ) {pc+=2;py=Int_t((y-  SizePcY()-  SizeDead()) / SizePadY());}//PC 2 or 3
-  else if(y>=SizeAllY()-SizePcY() && y<=  SizeAllY()           ) {pc+=4;py=Int_t((y-2*SizePcY()-2*SizeDead()) / SizePadY());}//PC 4 or 5
+  if     (y>fgkMinPcY[0] && y<fgkMaxPcY[0]) {      py=Int_t( y               / SizePadY());}//PC 0 or 1
+  else if(y>fgkMinPcY[2] && y<fgkMaxPcY[2]) {pc+=2;py=Int_t((y-fgkMinPcY[2]) / SizePadY());}//PC 2 or 3
+  else if(y>fgkMinPcY[4] && y<fgkMaxPcY[4]) {pc+=4;py=Int_t((y-fgkMinPcY[4]) / SizePadY());}//PC 4 or 5
   else return;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -127,13 +115,10 @@ Bool_t AliHMPIDDigit::IsInDead(Float_t x,Float_t y)
 // Check is the current point is outside of sensitive area or in dead zones
 // Arguments: x,y -position
 //   Returns: 1 if not in sensitive zone           
-  if(x<0 || x>SizeAllX() || y<0 || y>SizeAllY()) return kTRUE; //out of pc 
+  for(Int_t iPc=0;iPc<=6;iPc++)
+    if(x>fgkMinPcX[iPc] && x<fgkMaxPcX[iPc] && y>fgkMinPcY[iPc] && y<fgkMaxPcY [iPc]) return kFALSE; //in current pc
   
-  if(x>SizePcX()  && x<SizePcX()+SizeDead())   return kTRUE; //in dead zone along x  
-  
-  if(y>SizePcY()                       && y<SizePcY()+SizeDead())      return kTRUE; //in first dead zone along y   
-  if(y>SizeAllY()-SizePcY()-SizeDead() && y<SizeAllY()-SizePcY())      return kTRUE; //in second dead zone along y   
-  return kFALSE;
+  return kTRUE;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Float_t AliHMPIDDigit::IntMathieson(Float_t x,Float_t y)const
@@ -142,16 +127,13 @@ Float_t AliHMPIDDigit::IntMathieson(Float_t x,Float_t y)const
 // This is the answer to electrostatic problem of charge distrubution in MWPC described elsewhere. (NIM A370(1988)602-603)
 // Arguments: x,y- position of the center of Mathieson distribution
 //  Returns: a charge fraction [0-1] imposed into the pad
-//  K1    =0.28278796
-//  K2    =0.96242952
-//  SqrtK3=0.77459667
-//  K4    =0.37932926
+  Float_t  kK2=0.96242952, kSqrtK3 =0.77459667, kK4=0.37932926;
 
-  Float_t ux1=fgkSqrtK3*TMath::TanH(fgk2*(x-LorsX()+0.5*SizePadX())/CathAnoCath());
-  Float_t ux2=fgkSqrtK3*TMath::TanH(fgk2*(x-LorsX()-0.5*SizePadX())/CathAnoCath());
-  Float_t uy1=fgkSqrtK3*TMath::TanH(fgk2*(y-LorsY()+0.5*SizePadY())/CathAnoCath());
-  Float_t uy2=fgkSqrtK3*TMath::TanH(fgk2*(y-LorsY()-0.5*SizePadY())/CathAnoCath());
-  return 4*fgk4*(TMath::ATan(ux2)-TMath::ATan(ux1))*fgk4*(TMath::ATan(uy2)-TMath::ATan(uy1));
+  Float_t ux1=kSqrtK3*TMath::TanH(kK2*(x-LorsX()+0.5*SizePadX())/0.445);
+  Float_t ux2=kSqrtK3*TMath::TanH(kK2*(x-LorsX()-0.5*SizePadX())/0.445);
+  Float_t uy1=kSqrtK3*TMath::TanH(kK2*(y-LorsY()+0.5*SizePadY())/0.445);
+  Float_t uy2=kSqrtK3*TMath::TanH(kK2*(y-LorsY()-0.5*SizePadY())/0.445);
+  return 4*kK4*(TMath::ATan(ux2)-TMath::ATan(ux1))*kK4*(TMath::ATan(uy2)-TMath::ATan(uy1));
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDDigit::Raw(UInt_t &w32,Int_t &ddl,Int_t &r,Int_t &d,Int_t &a)const
