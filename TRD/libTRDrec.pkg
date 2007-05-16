@@ -10,7 +10,8 @@ SRCS= AliTRDrecPoint.cxx \
       AliTRDseed.cxx \
       AliTRDpidESD.cxx \
       AliTRDRecParam.cxx \
-      AliTRDReconstructor.cxx 
+      AliTRDReconstructor.cxx \
+      AliTRDtrackingAnalysis.cxx
 
 HDRS= $(SRCS:.cxx=.h)                
 

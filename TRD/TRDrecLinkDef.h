@@ -27,4 +27,6 @@
 #pragma link C++ class  AliTRDReconstructor+;
 #pragma link C++ class  AliTRDRecParam+;
 
+#pragma link C++ class  AliTRDtrackingAnalysis+;
+
 #endif
