@@ -111,7 +111,8 @@ Bool_t  AliT0RawReader::Next()
       uu = word&fDRM_GLOBAL_HEADER;
       if(uu != fDRM_GLOBAL_HEADER ) 
 	{
-	  AliError(Form(" !!!! wrong  DRM header  %x!!!!", word));
+	  AliWarning(Form(" !!!! wrong  DRM header  %x!!!!", word));
+	  fRawReader->AddFatalErrorLog(kWrongDRMHeader,Form("w=%x",word));
 	  break;
       }
     }
@@ -123,7 +124,8 @@ Bool_t  AliT0RawReader::Next()
       uu = word&TRM_GLOBAL_HEADER;
       if(uu != TRM_GLOBAL_HEADER )
 	{
-	  AliError(Form(" !!!! wrong TRM header  %x!!!!", word));
+	  AliWarning(Form(" !!!! wrong TRM header  %x!!!!", word));
+	  fRawReader->AddMajorErrorLog(kWrongTRMHeader,Form("w=%x",word));
 	  break;
 	}
       numberOfWordsInTRM=AliBitPacking::UnpackWord(word,4,16);
@@ -134,7 +136,8 @@ Bool_t  AliT0RawReader::Next()
       uu = word & TRM_CHAIN_0_HEADER;
       if(uu != TRM_CHAIN_0_HEADER) 
 	{
-	  AliError(Form(" !!!! wrong CHAIN  0  header %x!!!!", word));
+	  AliWarning(Form(" !!!! wrong CHAIN  0  header %x!!!!", word));
+	  fRawReader->AddMajorErrorLog(kWrongChain0Header,Form("w=%x",word));
 	  break;
 	}
       Int_t ichain=AliBitPacking::UnpackWord(word,0,3);
@@ -150,7 +153,8 @@ Bool_t  AliT0RawReader::Next()
 	    time=AliBitPacking::UnpackWord(word,0,20);
 	    koef = param->GetChannel(iTRM,itdc,ichain,ichannel);
 	    if (koef ==-1 ){
-	      AliError(Form("Incorrect lookup table ! "));
+	      AliWarning(Form("Incorrect lookup table ! "));
+	      fRawReader->AddMajorErrorLog(kIncorrectLUT);
 	      break;
 	    }
 	    hit=koefhits[koef];
@@ -164,7 +168,8 @@ Bool_t  AliT0RawReader::Next()
       uu = word&TRM_CHAIN_0_TRAILER;
       if(uu != TRM_CHAIN_0_TRAILER )
 	{
-	AliError(Form(" !!!! wrong CHAIN 0 trailer %x !!!!", word));
+	AliWarning(Form(" !!!! wrong CHAIN 0 trailer %x !!!!", word));
+	fRawReader->AddMajorErrorLog(kWrongChain0Trailer,Form("w=%x",word));
 	break;
 	}
       
@@ -173,32 +178,36 @@ Bool_t  AliT0RawReader::Next()
       uu = word & TRM_CHAIN_1_HEADER;
       if(uu != TRM_CHAIN_1_HEADER) 
 	{
-	  AliError(Form(" !!!! wrong CHAIN 1  header %x !!!!", word));
+	  AliWarning(Form(" !!!! wrong CHAIN 1  header %x !!!!", word));
+	  fRawReader->AddMajorErrorLog(kWrongChain1Header,Form("w=%x",word));
 	  break;
 	}
       word = GetNextWord(); //chain trailer
       uu = word&TRM_CHAIN_1_TRAILER;
       if(uu != TRM_CHAIN_1_TRAILER )
 	{
-	  AliError(Form(" !!!! wrong CHAIN 1 trailer  %x!!!!", word));
-	break;
+	  AliWarning(Form(" !!!! wrong CHAIN 1 trailer  %x!!!!", word));
+	  fRawReader->AddMajorErrorLog(kWrongChain1Trailer,Form("w=%x",word));
+	  break;
 	}
       
       word = GetNextWord(); //TRM trailer
       uu = word& TRM_GLOBAL_TRAILER;
       if(uu != TRM_GLOBAL_TRAILER )
 	{
-	  AliError(Form(" !!!! wrong TRM GLOBAL trailer  %x!!!!", word));
+	  AliWarning(Form(" !!!! wrong TRM GLOBAL trailer  %x!!!!", word));
+	  fRawReader->AddMajorErrorLog(kWrongTRMTrailer,Form("w=%x",word));
 	  break;
 	}
      } //TRM loop end
 
       word = GetNextWord(); //
-      if (word == FILLER )  {cout<< "FIILER "<<endl; word = GetNextWord(); }
+      if (word == FILLER )  { word = GetNextWord(); }
       uu = word& fDRM_GLOBAL_TRAILER;
       if(uu != fDRM_GLOBAL_TRAILER )
 	{
-	  AliError(Form(" !!!! wrong DRM GLOBAL trailer  %x!!!!", word));
+	  AliWarning(Form(" !!!! wrong DRM GLOBAL trailer  %x!!!!", word));
+	  fRawReader->AddFatalErrorLog(kWrongDRMTrailer,Form("w=%x",word));
 	  //	  break;
 	}
   
@@ -209,8 +218,10 @@ Int_t AliT0RawReader::GetPosition()
 {
   // Sets the position in the
   // input stream
-  if (((fRawReader->GetDataSize() * 8) % 32) != 0)
-    AliFatal(Form("Incorrect raw data size ! %d words are found !",fRawReader->GetDataSize()));
+  if (((fRawReader->GetDataSize() * 8) % 32) != 0) {
+    AliWarning(Form("Incorrect raw data size ! %d words are found !",fRawReader->GetDataSize()));
+    fRawReader->AddFatalErrorLog(kIncorrectDataSize,Form("s=%d",fRawReader->GetDataSize()));
+  }
   return (fRawReader->GetDataSize() * 8) / 32;
 }
 //_____________________________________________________________________________

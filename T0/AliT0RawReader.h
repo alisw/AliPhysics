@@ -24,7 +24,21 @@ class AliT0RawReader : public TTask {
   UInt_t         GetNextWord();
   Int_t GetData(Int_t channel, Int_t hit) {return fAllData[channel][hit];}
   //  void SetNumberOfTRM(Int_t trm=2) {fNTRM=trm;}
-  
+
+  enum ET0RawReaderError {
+    kIncorrectDataSize = 1,
+    kWrongDRMHeader = 2,
+    kWrongDRMTrailer = 3,
+    kWrongTRMHeader = 4,
+    kWrongTRMTrailer = 5,
+    kWrongChain0Header = 6,
+    kWrongChain0Trailer = 7,
+    kWrongChain1Header = 8,
+    kWrongChain1Trailer = 9,
+    kIncorrectLUT = 10
+  };
+
+   
   protected :
 
   AliRawReader*    fRawReader;    // object for reading the raw data
