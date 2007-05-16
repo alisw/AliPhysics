@@ -1,95 +1,220 @@
-TCanvas *pAll=0;
-AliRunLoader *gAL=0; AliLoader *gHL=0; AliESD *gEsd=0; TTree *gEsdTr=0; AliHMPID *gH=0;
-Int_t gEvt=-1; Int_t gMaxEvt=0;
-TObjArray *pNmean;
+#include <TSystem.h>
+#include <TFile.h>
+#include <TTree.h>
+#include <TButton.h>
+#include <TCanvas.h>
+#include <TClonesArray.h>
+#include <TParticle.h>
+#include <TRandom.h>
+#include <TLatex.h>
+#include <TLegend.h>
+#include <TPolyMarker.h>
+#include <TBox.h>
+#include <AliESD.h>
+#include <AliCDBManager.h>
+#include <AliCDBEntry.h>
+#include "AliHMPIDHit.h"
+#include "AliHMPIDv2.h"
+#include "AliHMPIDReconstructor.h"
+#include "AliHMPIDRecon.h"
+#include "AliHMPIDParam.h"
+#include "AliHMPIDCluster.h"
+#include <TChain.h>
 
-TChain *pCosCh=new TChain("cosmic");                                                               //clm: Define TChain for cosmic
-TObjArray *pCosDigAll=0;                                                                           //clm: Define global Digits
-TObjArray *pCosCluAll=0;                                                                           //clm: Define global Clusters
-Int_t gCosRun=0;                                                                                   //clm: global cosmic event number
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void Hdisp(Int_t cosRun=44)                                                    //clm: Select cosmic file for display
-{//display events from files if any in current directory or simulated events
-  pAll=new TCanvas("all","",1300,900); pAll->Divide(3,3,0,0);
-//  pAll->ToggleEditor();
-  pAll->Connect("ProcessedEvent(Int_t,Int_t,Int_t,TObject*)",0,"","DoZoom(Int_t,Int_t,Int_t,TObject*)");
-
-  OpenCalib();  
-     if(gSystem->IsFileInIncludePath("galice.root")){// tries to open session
-      if(gAlice) delete gAlice;                                               //in case we execute this in aliroot delete default AliRun object 
-      gAL=AliRunLoader::Open();                                                                    //try to open galice.root from current dir 
-      gAL->LoadgAlice();                                                                           //take new AliRun object from galice.root   
-      gHL=gAL->GetDetectorLoader("HMPID");  gH=(AliHMPID*)gAL->GetAliRun()->GetDetector("HMPID");  //get HMPID object from galice.root
-      gMaxEvt=gAL->GetNumberOfEvents()-1;
-      gHL->LoadHits(); gHL->LoadSDigits(); gHL->LoadDigits(); gHL->LoadRecPoints();
-
-      AliHMPIDTracker::SetFieldMap(gAL->GetAliRun()->Field(),kTRUE);
-      
-      TFile *pEsdFl=TFile::Open("AliESDs.root"); gEsdTr=(TTree*) pEsdFl->Get("esdTree"); gEsdTr->SetBranchAddress("ESD", &gEsd);
-      pAll->cd(7); TButton *pBtn=new TButton("Next","ReadEvt()",0,0,0.2,0.1);   pBtn->Draw();
-                   TButton *pHitBtn=new TButton("Print hits","PrintHits()",0  ,0.2,0.3,0.3);   pHitBtn->Draw();
-                   TButton *pSdiBtn=new TButton("Print sdis","PrintSdis()",0  ,0.4,0.3,0.5);   pSdiBtn->Draw();
-                   TButton *pDigBtn=new TButton("Print digs","PrintDigs()",0  ,0.6,0.3,0.7);   pDigBtn->Draw();
-                   TButton *pCluBtn=new TButton("Print clus","PrintClus()",0  ,0.8,0.3,0.9);   pCluBtn->Draw();  
-                   TButton *pEsdBtn=new TButton("Print  ESD"," PrintEsd()",0.4,0.8,0.7,0.9);  pEsdBtn->Draw();  
-      ReadEvt();
-    }
-    else if ( gSystem->IsFileInIncludePath(Form("cosmic%d.root",cosRun))){                          //clm: Check if cosmic file is in the folder
-    gCosRun=cosRun;
-    pCosCh->Add(Form("cosmic%d.root",gCosRun));                                                      //clm: Add cosmic file to chain
-    pCosCh->SetBranchAddress("Digs",&pCosDigAll);                                                   //clm: Set digit branch address
-    pCosCh->SetBranchAddress("Clus",&pCosCluAll);                                                   //clm: Set cluster branch address    
-    gMaxEvt=pCosCh->GetEntries()-1;                                                                 //clm: Get number of events from the cosmic chain
-    pAll->cd(7); TButton *pCosBtn=new TButton("Next Cosmic","ReadCosEvt()",0,0,0.3,0.1);   pCosBtn->Draw();   //clm: define next button
-    ReadCosEvt();                                                                                   //clm: Read first cosmic event  
-    }            
-    else{
-      pAll->cd(7); TButton *pBtn=new TButton("Next","SimEvt()",0,0,0.2,0.1);   pBtn->Draw(); 
-      SimEvt();
-          }      
-}
+TCanvas *fCanvas=0; Int_t fType=3; Int_t fEvt=0; Int_t fNevt=0;                      
+TFile *fHitFile; TTree *fHitTree; TClonesArray *fHitLst; TPolyMarker *fRenMip[7]; TPolyMarker *fRenCko[7]; TPolyMarker *fRenFee[7];
+                                  TClonesArray *fSdiLst; 
+TFile *fDigFile; TTree *fDigTree; TObjArray    *fDigLst; TPolyMarker *fRenDig[7];    
+TFile *fCluFile; TTree *fCluTree; TObjArray    *fCluLst; TPolyMarker *fRenClu[7];    
+TFile *fEsdFile; TTree *fEsdTree;  AliESD      *fEsd;    TPolyMarker *fRenTxC[7]; TPolyMarker *fRenRin[7];  
+TFile *fCosFile; TTree *fCosTree;
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void ReadCosEvt()
-{// Read curent cosmic event and display it assumes that session is alredy opened
-  if(gEvt>gMaxEvt) gEvt=-1; if(gEvt<-1) gEvt=gMaxEvt;                                     //clm: set event limits
-  gEvt++;                                                                             
-  pCosCh->GetEntry(gEvt);                                                               //clm: read event from chain
-  DrawCosEvt(pCosDigAll,pCosCluAll);                                                    //clm: draw cosmic event
+void CreateContainers()
+{//to create all containers
+  fHitLst=new TClonesArray("AliHMPIDHit");
+  fSdiLst=new TClonesArray("AliHMPIDDigit");
+  fDigLst=new TObjArray(7); for(Int_t i=0;i<7;i++) fDigLst->AddAt(new TClonesArray("AliHMPIDDigit"),i);       fDigLst->SetOwner(kTRUE);
+  fCluLst=new TObjArray(7); for(Int_t i=0;i<7;i++) fCluLst->AddAt(new TClonesArray("AliHMPIDCluster"),i);     fCluLst->SetOwner(kTRUE); 
+  fEsd   =new AliESD;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void ReadEvt()
-{// Read curent event and display it assumes that session is alredy opened
-  TClonesArray hits("AliHMPIDHit");
-  if(gEvt>gMaxEvt) gEvt=-1; if(gEvt<-1) gEvt=gMaxEvt;                                     //clm: set event limits
-  gEvt++;                                                                             
-  
-  gEsdTr->GetEntry(gEvt); gAL->GetEvent(gEvt); 
-  ReadHits(&hits); gHL->TreeS()->GetEntry(0); gHL->TreeD()->GetEntry(0); gHL->TreeR()->GetEntry(0);
-    
-  DrawEvt(&hits,gH->DigLst(),gH->CluLst(),gEsd);
-}
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void SimEvt()
+void CreateRenders()
 {
-  TClonesArray hits("AliHMPIDHit"); 
-  TClonesArray sdig("AliHMPIDDigit"); 
-  TObjArray    digs(7); for(Int_t i=0;i<7;i++) digs.AddAt(new TClonesArray("AliHMPIDDigit"),i);
-  TObjArray    clus(7); for(Int_t i=0;i<7;i++) clus.AddAt(new TClonesArray("AliHMPIDCluster"),i);
-  AliESD esd;
-  gEvt++;
-  SimEsd(&esd);
-  SimHits(&esd,&hits);
-             AliHMPIDv1::Hit2Sdi(&hits,&sdig);                               
-      AliHMPIDDigitizer::Sdi2Dig(&sdig,&digs);     
-      AliHMPIDReconstructor::Dig2Clu(&digs,&clus);
-      AliHMPIDTracker::Recon(&esd,&clus,pNmean);
-  
-  pAll->cd(3);  gPad->Clear(); TLatex txt;txt.DrawLatex(0.2,0.2,Form("Simulated event %i",gEvt));
-  DrawEvt(&hits,&digs,&clus,&esd);  
-}//SimEvt()
+  for(Int_t ch=0;ch<7;ch++){
+    fRenMip[ch]=new TPolyMarker; fRenMip[ch]->SetMarkerStyle(kOpenTriangleUp);  fRenMip[ch]->SetMarkerColor(kRed);
+    fRenCko[ch]=new TPolyMarker; fRenCko[ch]->SetMarkerStyle(kOpenCircle);      fRenCko[ch]->SetMarkerColor(kRed);
+    fRenFee[ch]=new TPolyMarker; fRenFee[ch]->SetMarkerStyle(kOpenDiamond);     fRenFee[ch]->SetMarkerColor(kRed);
+    fRenDig[ch]=new TPolyMarker; fRenDig[ch]->SetMarkerStyle(kOpenSquare);      fRenDig[ch]->SetMarkerColor(kGreen);
+    fRenClu[ch]=new TPolyMarker; fRenClu[ch]->SetMarkerStyle(kStar);            fRenClu[ch]->SetMarkerColor(kBlue);
+    fRenTxC[ch]=new TPolyMarker; fRenTxC[ch]->SetMarkerStyle(kPlus);            fRenTxC[ch]->SetMarkerColor(kRed);      fRenTxC[ch]->SetMarkerSize(3);
+    fRenRin[ch]=new TPolyMarker; fRenRin[ch]->SetMarkerStyle(kFullDotSmall);    fRenRin[ch]->SetMarkerColor(kMagenta);
+  }
+}//CreateRenders()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void SimEsd(AliESD *pEsd)
+void ClearRenders()
+{
+  for(Int_t ch=0;ch<7;ch++){
+    fRenTxC[ch]->SetPolyMarker(0); 
+    fRenRin[ch]->SetPolyMarker(0); 
+    fRenMip[ch]->SetPolyMarker(0); 
+    fRenCko[ch]->SetPolyMarker(0); 
+    fRenFee[ch]->SetPolyMarker(0); 
+    fRenDig[ch]->SetPolyMarker(0); 
+    fRenClu[ch]->SetPolyMarker(0); 
+  }
+}//ClearRenders()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void PrintHits()
+{
+//Prints a list of HMPID hits for a given event. Default is event number 0.
+  if(!fHitTree) return;
+  Printf("List of HMPID hits for event %i",fEvt);
+  Int_t iTot=0;
+  for(Int_t iEnt=0;iEnt<fHitTree->GetEntries();iEnt++){//entries loop
+    fHitTree->GetEntry(iEnt);      
+    fHitLst->Print();
+    iTot+=fHitLst->GetEntries();
+  }
+  Printf("totally %i hits for event %i",iTot,fEvt);
+}//PrintHits();
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void PrintSdis()
+{//prints a list of HMPID sdigits  for a given event
+  Printf("List of HMPID sdigits for event %i",fEvt);
+  fSdiLst->Print();
+  Printf("totally %i sdigits for event %i",fSdiLst->GetEntries(),fEvt);
+}//PrintSdis()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void PrintDigs()
+{//prints a list of HMPID digits
+  Printf("List of HMPID digits for event %i",fEvt);  
+  fDigLst->Print();
+  Int_t iTot=0;  for(Int_t i=0;i<7;i++) {iTot+=((TClonesArray*)fDigLst->At(i))->GetEntries();}
+  Printf("totally %i digits for event %i",iTot,fEvt);
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void PrintClus()
+{//prints a list of HMPID clusters  for a given event
+  Printf("List of HMPID clusters for event %i",fEvt);
+  
+  fCluLst->Print();
+  Int_t iTot=0; for(Int_t iCh=0;iCh<7;iCh++) iTot+=((TClonesArray*)fCluLst->At(iCh))->GetEntries();
+  
+  Printf("totally %i clusters for event %i",iTot,fEvt);
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void PrintEsd()
+{//prints a list of HMPID Esd  for a given event
+  Printf("List of HMPID ESD summary for event %i",fEvt);
+  for(Int_t iTrk=0;iTrk<fEsd->GetNumberOfTracks();iTrk++){
+    AliESDtrack *pTrk = fEsd->GetTrack(iTrk);
+    Float_t x,y;Int_t q,nacc;   pTrk->GetHMPIDmip(x,y,q,nacc);
+    Printf("Track %02i with p %7.2f with ThetaCer %5.3f with %i photons",iTrk,pTrk->GetP(),pTrk->GetHMPIDsignal(),nacc);
+  }  
+}//PrintEsd()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void DrawChamber(Int_t iCh) 
+{//used by Draw() to Draw() chamber structure
+  gPad->Range(-10,-10,AliHMPIDDigit::SizeAllX()+5,AliHMPIDDigit::SizeAllY()+5); 
+  if(iCh>=0){TLatex txt; txt.SetTextSize(0.1); txt.DrawLatex(-5,-5,Form("%i",iCh));}
+  
+  for(Int_t iPc=AliHMPIDDigit::kMinPc;iPc<=AliHMPIDDigit::kMaxPc;iPc++){
+    TBox *pBox=new TBox(AliHMPIDDigit::MinPcX(iPc),AliHMPIDDigit::MinPcY(iPc),
+                        AliHMPIDDigit::MaxPcX(iPc),AliHMPIDDigit::MaxPcY(iPc));
+    pBox->SetFillStyle(0);  pBox->Draw();
+  }//PC loop      
+}//DrawChamber()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void DrawLegend()
+{//used by Draw() to draw legend
+  Int_t nTxC=0,nMip=0,nCko=0,nFee=0,nDig=0,nClu=0;
+  for(Int_t ch=0;ch<7;ch++){
+    nTxC+=fRenTxC[ch]->GetN();
+    nMip+=fRenMip[ch]->GetN();
+    nCko+=fRenCko[ch]->GetN();
+    nFee+=fRenFee[ch]->GetN();
+    nDig+=fRenDig[ch]->GetN();
+    nClu+=fRenClu[ch]->GetN();
+  }
+  TLegend *pLeg=new TLegend(0.2,0.2,0.8,0.8);
+  pLeg->SetHeader(Form("Event %i Total %i",fEvt,fNevt));
+  pLeg->AddEntry(fRenTxC[0],Form("TRKxPC %i"     ,nTxC),"p");
+  pLeg->AddEntry(fRenMip[0],Form("Mip hits %i"   ,nMip),"p");    
+  pLeg->AddEntry(fRenCko[0],Form("Ckov hits %i"  ,nCko),"p");    
+  pLeg->AddEntry(fRenFee[0],Form("Feed hits %i"  ,nFee),"p");    
+  pLeg->AddEntry(fRenDig[0],Form("Digs %i"       ,nDig),"p");    
+  pLeg->AddEntry(fRenClu[0],Form("Clus %i"       ,nClu),"p");    
+  pLeg->Draw();
+}//DrawLegend()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void Draw()
+{//draws all the objects of current event in given canvas
+  for(Int_t iCh=0;iCh<7;iCh++){//chambers loop    
+    switch(iCh){
+      case 6: fCanvas->cd(1); break; case 5: fCanvas->cd(2); break;
+      case 4: fCanvas->cd(4); break; case 3: fCanvas->cd(5); break; case 2: fCanvas->cd(6); break;
+                                     case 1: fCanvas->cd(8); break; case 0: fCanvas->cd(9); break;
+    }
+    gPad->SetEditable(kTRUE); gPad->Clear(); DrawChamber(iCh);
+    fRenTxC[iCh]->Draw();        
+    fRenMip[iCh]->Draw();        
+    fRenFee[iCh]->Draw();        
+    fRenCko[iCh]->Draw();       
+    fRenRin[iCh]->Draw("CLP");   
+    fRenDig[iCh]->Draw();        
+    fRenClu[iCh]->Draw();        
+    gPad->SetEditable(kFALSE);
+  }//chambers loop
+  
+  fCanvas->cd(3);  gPad->Clear(); DrawLegend();
+}//Draw()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void RenderHit(TClonesArray *pHitLst)
+{//used by ReadEvent() and SimulateEvent() to render hits to polymarker structures, one per chamber
+  for(Int_t iHit=0;iHit<pHitLst->GetEntries();iHit++){       //hits loop
+    AliHMPIDHit *pHit = (AliHMPIDHit*)pHitLst->At(iHit); Int_t ch=pHit->Ch(); Float_t x=pHit->LorsX(); Float_t y=pHit->LorsY();    //get current hit        
+    switch(pHit->Pid()){
+      case 50000050: fRenCko[ch]->SetNextPoint(x,y);break; 
+      case 50000051: fRenFee[ch]->SetNextPoint(x,y);break;
+      default:       fRenMip[ch]->SetNextPoint(x,y);break;
+    }//switch hit PID      
+  }//hits loop for this entry
+}//RenderHits()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void RenderClu(TObjArray *pClus,TPolyMarker **pMark)
+{//used by ReadEvent() and SimulateEvent() to render clusters to polymarker structures, one per chamber
+  for(Int_t iCh=0;iCh<=6;iCh++){                                     //chambers loop   
+    TClonesArray *pClusCham=(TClonesArray*)pClus->At(iCh);           //get clusters list for this chamber
+    for(Int_t iClu=0;iClu<pClusCham->GetEntries();iClu++){           //clusters loop
+      AliHMPIDCluster *pClu = (AliHMPIDCluster*)pClusCham->At(iClu); //get current cluster        
+      pMark[iCh]->SetNextPoint(pClu->X(),pClu->Y()); 
+    }//switch hit PID      
+  }//hits loop for this entry
+}//RenderClus()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void RenderEsd(AliESD *pEsd)
+{//used by ReadEvent() or SimulateEvent() to render ESD to polymarker structures for rings and intersections one per chamber
+  AliHMPIDRecon rec;
+  for(Int_t iTrk=0;iTrk<pEsd->GetNumberOfTracks();iTrk++){//tracks loop to collect cerenkov rings and intersection points
+    AliESDtrack *pTrk=pEsd->GetTrack(iTrk);    Int_t ch=pTrk->GetHMPIDcluIdx(); //get track and chamber intersected by it
+    if(ch<0) continue;                                                          //this track does not intersect any chamber
+    Float_t thRa,phRa,xRa,yRa; pTrk->GetHMPIDtrk(xRa,yRa,thRa,phRa);            //get info on current track
+    ch/=1000000;                                                                //actual chamber number 
+    Float_t xPc=0,yPc=0; AliHMPIDTracker::IntTrkCha(pTrk,xPc,yPc);              //find again intersection of track with PC--> it is not stored in ESD!
+    fRenTxC[ch]->SetNextPoint(xPc,yPc);                                            //add this intersection point
+    Float_t ckov=pTrk->GetHMPIDsignal();                                        //get ckov angle stored for this track  
+    if(ckov>0){
+      rec.SetTrack(xRa,yRa,thRa,phRa);
+      for(Int_t j=0;j<100;j++){ 
+        TVector2 pos; pos=rec.TracePhot(ckov,j*0.0628);
+       if(!AliHMPIDDigit::IsInDead(pos.X(),pos.Y())) fRenRin[ch]->SetNextPoint(pos.X(),pos.Y());
+      }      
+    }//if ckov is valid
+  }//tracks loop  
+}//RenEsd()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void SimulateEsd(AliESD *pEsd)
 {
   TParticle part; TLorentzVector mom;
   for(Int_t iTrk=0;iTrk<100;iTrk++){//stack loop
@@ -104,190 +229,39 @@ void SimEsd(AliESD *pEsd)
   }//stack loop  
 }//EsdFromStack()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void SimHits(AliESD *pEsd, TClonesArray *pHits)
-{
+void SimulateHits(AliESD *pEsd, TClonesArray *pHits)
+{//used by SimulateEvent to simulate hits out from provided ESD
   const Int_t kCerenkov=50000050;
   const Int_t kFeedback=50000051;
   
   AliHMPIDRecon rec;
-  
+  Float_t eMip=200e-9,ePho=7.5e-9; 
   Int_t hc=0; 
   for(Int_t iTrk=0;iTrk<pEsd->GetNumberOfTracks();iTrk++){//tracks loop
     AliESDtrack *pTrk=pEsd->GetTrack(iTrk);
-    Float_t xPc,yPc;
-    Int_t ch=AliHMPIDTracker::IntTrkCha(pTrk,xPc,yPc);
+    Float_t xRa,yRa;
+    Int_t ch=AliHMPIDTracker::IntTrkCha(pTrk,xRa,yRa);
     if(ch<0) continue; //this track does not hit HMPID
     Float_t beta = pTrk->GetP()/(TMath::Sqrt(pTrk->GetP()*pTrk->GetP()+0.938*0.938));
     Float_t ckov=TMath::ACos(1./(beta*1.292));
 
-    Float_t theta,phi,xPc,yPc,; 
-    pTrk->GetHMPIDtrk(xPc,yPc,theta,phi); 
-    rec.SetTrack(xRa,yRa,theta,phi); 
+    Float_t theta,phi,xPc,yPc,; pTrk->GetHMPIDtrk(xPc,yPc,theta,phi); rec.SetTrack(xRa,yRa,theta,phi); 
     
-    if(!AliHMPIDDigit::IsInDead(xPc,yPc)) new((*pHits)[hc++]) AliHMPIDHit(ch,200e-9,kProton  ,iTrk,xPc,yPc);                 //mip hit
+    if(!AliHMPIDDigit::IsInDead(xPc,yPc)) new((*pHits)[hc++]) AliHMPIDHit(ch,eMip,kProton  ,iTrk,xPc,yPc);                 //mip hit
     Int_t nPhots = (Int_t)(20.*TMath::Power(TMath::Sin(ckov),2)/TMath::Power(TMath::Sin(TMath::ACos(1./1.292)),2));
     for(int i=0;i<nPhots;i++){
       TVector2 pos;
       pos=rec.TracePhot(ckov,gRandom->Rndm()*TMath::TwoPi());
-      if(!AliHMPIDDigit::IsInDead(pos.X(),pos.Y())) new((*pHits)[hc++]) AliHMPIDHit(ch,7.5e-9,kCerenkov,iTrk,pos.X(),pos.Y());
+      if(!AliHMPIDDigit::IsInDead(pos.X(),pos.Y())) new((*pHits)[hc++]) AliHMPIDHit(ch,ePho,kCerenkov,iTrk,pos.X(),pos.Y());
     }                      //photon hits  
+    for(int i=0;i<3;i++){//feedback photons
+      Float_t x=gRandom->Rndm()*160; Float_t y=gRandom->Rndm()*150;
+      if(!AliHMPIDDigit::IsInDead(x,y)) new((*pHits)[hc++]) AliHMPIDHit(ch,ePho,kFeedback,iTrk,x,y);                 //feedback hits  
+    }//photon hits loop                      
   }//tracks loop    
-}//SimHits()
+}//SimulateHits()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void ReadHits(TClonesArray *pHitLst)
-{
-  pHitLst->Delete();  Int_t cnt=0;
-  for(Int_t iEnt=0;iEnt<gHL->TreeH()->GetEntries();iEnt++){       //TreeH loop
-    gHL->TreeH()->GetEntry(iEnt);                                 //get current entry (prim)                
-    for(Int_t iHit=0;iHit<gH->Hits()->GetEntries();iHit++){       //hits loop
-      AliHMPIDHit *pHit = (AliHMPIDHit*)gH->Hits()->At(iHit);     //get current hit        
-      new((*pHitLst)[cnt++]) AliHMPIDHit(*pHit);
-    }//hits loop for this entry
-  }//tree entries loop
-  
-}//ReadHits()
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void DrawCh(Int_t iCh) 
-{ 
-  gPad->Range(-10,-10,AliHMPIDDigit::SizeAllX()+5,AliHMPIDDigit::SizeAllY()+5); 
-  if(iCh>=0){TLatex txt; txt.SetTextSize(0.1); txt.DrawLatex(-5,-5,Form("%i",iCh));}
-  
-  for(Int_t iPc=AliHMPIDDigit::kMinPc;iPc<=AliHMPIDDigit::kMaxPc;iPc++){
-    TBox *pBox=new TBox(AliHMPIDDigit::MinPcX(iPc),AliHMPIDDigit::MinPcY(iPc),
-                        AliHMPIDDigit::MaxPcX(iPc),AliHMPIDDigit::MaxPcY(iPc));
-    
-    pBox->SetFillStyle(0);
-    pBox->Draw();
-    
-  }//PC loop      
-}//DrawCh()
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void DrawEvt(TClonesArray *pHitLst,TObjArray *pDigLst,TObjArray *pCluLst,AliESD *pEsd)
-{//draws all the objects of current event in given canvas
-  
-  AliHMPIDParam *pParam=AliHMPIDParam::Instance();
-  
-  AliHMPIDRecon rec;  
-  TPolyMarker *pTxC[7], *pRin[7]; TMarker *pMip,*pCko,*pFee,*pDig,*pClu;
-  pMip=new TMarker; pMip->SetMarkerColor(kRed);  pMip->SetMarkerStyle(kOpenTriangleUp);
-  pCko=new TMarker; pCko->SetMarkerColor(kRed);  pCko->SetMarkerStyle(kOpenCircle);
-  pFee=new TMarker; pFee->SetMarkerColor(kRed);  pFee->SetMarkerStyle(kOpenDiamond);
-  pDig=new TMarker; pDig->SetMarkerColor(kGreen);pDig->SetMarkerStyle(kOpenSquare);
-  pClu=new TMarker; pClu->SetMarkerColor(kBlue); pClu->SetMarkerStyle(kStar);
-  for(Int_t ch=0;ch<7;ch++){
-    pTxC[ch]=new TPolyMarker; pTxC[ch]->SetMarkerStyle(2); pTxC[ch]->SetMarkerColor(kRed); pTxC[ch]->SetMarkerSize(3);
-    pRin[ch]=new TPolyMarker; pRin[ch]->SetMarkerStyle(6); pRin[ch]->SetMarkerColor(kMagenta);
-  }
-  
-  for(Int_t iTrk=0;iTrk<pEsd->GetNumberOfTracks();iTrk++){//tracks loop to collect cerenkov rings and intersection points
-    AliESDtrack *pTrk=pEsd->GetTrack(iTrk);
-    Int_t ch=pTrk->GetHMPIDcluIdx();
-    if(ch<0) continue; //this track does not hit HMPID
-    ch/=1000000; 
-    Float_t th,ph,xRad,yRad; pTrk->GetHMPIDtrk(xRad,yRad,th,ph);//get info on current track
-//
-//Find again intersection of track with PC--> it is not stored in ESD!
-//    
-    Float_t xPc=0,yPc=0;                                                                                               //track intersection point with PC  
-    Double_t pMom[3],nCh[3]; pTrk->GetPxPyPz(pMom);pParam->Norm(ch,nCh); pParam->Lors2Mars(ch,0,0,pMom,AliHMPIDParam::kPc);  //point & norm  for PC
-    if(pTrk->Intersect(pMom,nCh,-AliHMPIDTracker::GetBz())==kTRUE){                                                      //try to intersect track with PC
-      pParam->Mars2Lors   (ch,pMom,xPc,yPc);                                                                             //TRKxPC position
-      pTxC[ch]->SetNextPoint(xPc,yPc);
-    }
-// end of point intersection @ PC    
-    Float_t ckov=pTrk->GetHMPIDsignal();  Float_t err=TMath::Sqrt(pTrk->GetHMPIDchi2());
-    if(ckov>0){
-//      Printf("theta %f phi %f ckov %f",th*TMath::RadToDeg(),ph*TMath::RadToDeg(),ckov);
-      rec.SetTrack(xRad,yRad,th,ph);
-      for(Int_t j=0;j<100;j++){ 
-        TVector2 pos;
-        pos=rec.TracePhot(ckov,j*0.0628);
-       if(!AliHMPIDDigit::IsInDead(pos.X(),pos.Y())) pRin[ch]->SetNextPoint(pos.X(),pos.Y());
-      }      
-    }
-  }//tracks loop
-      
-  Int_t totHit=pHitLst->GetEntriesFast(),totDig=0,totClu=0,totTxC=0;
-  Int_t totCkov=0, totFeed=0,totMip=0;
-  for(Int_t iCh=0;iCh<7;iCh++){//chambers loop    
-    totTxC+=pTxC[iCh]->GetN();
-    totDig+=((TClonesArray*)pDigLst->At(iCh))->GetEntriesFast();
-    totClu+=((TClonesArray*)pCluLst->At(iCh))->GetEntriesFast();
-    
-    switch(iCh){
-      case 6: pAll->cd(1); break; case 5: pAll->cd(2); break;
-      case 4: pAll->cd(4); break; case 3: pAll->cd(5); break; case 2: pAll->cd(6); break;
-                                  case 1: pAll->cd(8); break; case 0: pAll->cd(9); break;
-    }
-    gPad->SetEditable(kTRUE); gPad->Clear(); 
-    DrawCh(iCh);
-                           
-    ((TClonesArray*)pDigLst->At(iCh))->Draw();               //draw digits
-    
-    totCkov=0;totFeed=0;totMip=0;
-    for(Int_t iHit=0;iHit<pHitLst->GetEntriesFast();iHit++){ // Draw hits
-      AliHMPIDHit *pHit=(AliHMPIDHit*)pHitLst->At(iHit);
-      if(pHit->Ch()==iCh) pHit->Draw();
-      if(pHit->Pid()==50000050) totCkov++;
-      else if(pHit->Pid()==50000051) totFeed++;
-      else totMip++;
-    }    
-           
-    ((TClonesArray*)pCluLst->At(iCh))->Draw();              //draw clusters
-                            pTxC[iCh]->Draw();              //draw intersections
-                            pRin[iCh]->Draw("CLP");         //draw rings
-    gPad->SetEditable(kFALSE);
-  }//chambers loop
-  
-  pAll->cd(3);  gPad->Clear(); TLegend *pLeg=new TLegend(0.2,0.2,0.8,0.8);
-                                        pLeg->SetHeader(Form("Event %i Total %i",gEvt,gMaxEvt+1));
-                                        pLeg->AddEntry(pTxC[0],Form("TRKxPC %i"     ,totTxC),"p");
-                                        pLeg->AddEntry(pMip   ,Form("Mip hits %i"   ,totMip),"p");    
-                                        pLeg->AddEntry(pCko   ,Form("Ckov hits %i"  ,totCkov),"p");    
-                                        pLeg->AddEntry(pFee   ,Form("Feed hits %i"  ,totFeed),"p");    
-                                        pLeg->AddEntry(pDig   ,Form("Digs %i"       ,totDig),"p");    
-                                        pLeg->AddEntry(pClu   ,Form("Clus %i"       ,totClu),"p");    
-                                        pLeg->Draw();
-}//DrawEvt()
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void DrawCosEvt(TObjArray *pCosDigLst,TObjArray *pCosCluLst)                              //clm: new method to read and display cosmic events 
-{//draws all the objects of current event in given canvas
-  TMarker *pDig,*pClu;
-  pDig=new TMarker; pDig->SetMarkerColor(kGreen);pDig->SetMarkerStyle(kOpenSquare);
-  pClu=new TMarker; pClu->SetMarkerColor(kBlue); pClu->SetMarkerStyle(kStar);
-  
-      
-  Int_t totDig=0,totClu=0;
-  for(Int_t iCh=0;iCh<7;iCh++){//chambers loop                                            //clm: chambers loop is now not needed since iCh=0 but kept for provision
-    totDig+=((TClonesArray*)pCosDigLst->At(iCh))->GetEntriesFast();
-    totClu+=((TClonesArray*)pCosCluLst->At(iCh))->GetEntriesFast();
-    
-    switch(iCh){
-      case 6: pAll->cd(1); break; case 5: pAll->cd(2); break;
-      case 4: pAll->cd(4); break; case 3: pAll->cd(5); break; case 2: pAll->cd(6); break;
-                                  case 1: pAll->cd(8); break; case 0: pAll->cd(9); break;
-    }
-   gPad->SetEditable(kTRUE); gPad->Clear(); 
-   DrawCh(iCh);
-  if(gCosRun < 500 && iCh == 6) {                           //clm: hard coded selection since raw data does not contain ch info which is set to 0
-  ((TClonesArray*)pCosDigLst->At(0))->Draw();               //draw digits
-  ((TClonesArray*)pCosCluLst->At(0))->Draw();              //draw clusters
-  }
-  if (gCosRun >= 500 && iCh == 5) { 
-  ((TClonesArray*)pCosDigLst->At(0))->Draw();               //draw digits
-  ((TClonesArray*)pCosCluLst->At(0))->Draw();              //draw clusters
-  }
-   
-   gPad->SetEditable(kFALSE);
-  }//chambers loop
-  pAll->cd(3);  gPad->Clear(); TLegend *pLeg=new TLegend(0.2,0.2,0.8,0.8);
-                                        pLeg->SetHeader(Form("Cosmic Run %i Event %i Total %i",gCosRun,gEvt,gMaxEvt+1));
-                                        pLeg->AddEntry(pDig   ,Form("Digs %i"       ,totDig),"p");    
-                                        pLeg->AddEntry(pClu   ,Form("Clus %i"       ,totClu),"p");    
-                                        pLeg->Draw();
-}//DrawCosEvt()
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void DoZoom(Int_t evt, Int_t px, Int_t py, TObject *obj)
+void DoZoom(Int_t evt, Int_t px, Int_t py, TObject *)
 {
   if(evt!=5 && evt!=6) return; //5- zoom in 6-zoom out
   const Int_t minZoom=64;
@@ -312,69 +286,119 @@ void DoZoom(Int_t evt, Int_t px, Int_t py, TObject *obj)
   pPad->Update();                                              
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void PrintHits()
-{
-//Prints a list of HMPID hits for a given event. Default is event number 0.
-  Printf("List of HMPID hits for event %i",gEvt);
+void ReadEvent()
+{//used by NextEvent()  to read curent event and construct all render elements
+  if(fNevt && fEvt>=fNevt) fEvt=0; //loop over max event
   
-  Int_t iTotHits=0;
-  for(Int_t iPrim=0;iPrim<gHL->TreeH()->GetEntries();iPrim++){//prims loop
-    gHL->TreeH()->GetEntry(iPrim);      
-    gH->Hits()->Print();
-    iTotHits+=gH->Hits()->GetEntries();
+  if(fHitFile){ 
+    if(fHitTree) delete fHitTree;   fHitTree=(TTree*)fHitFile->Get(Form("Event%i/TreeH",fEvt));
+    
+                          fHitTree->SetBranchAddress("HMPID",&fHitLst);
+    for(Int_t iEnt=0;iEnt<fHitTree->GetEntries();iEnt++){    
+                          fHitTree->GetEntry(iEnt);                              
+      RenderHit(fHitLst);   
+    }//prim loop
+  }//if hits file
+  
+  if(fCluFile){ 
+    if(fCluTree) delete fCluTree; fCluTree=(TTree*)fCluFile->Get(Form("Event%i/TreeR",fEvt));
+    for(Int_t iCh=AliHMPIDDigit::kMinCh;iCh<=AliHMPIDDigit::kMaxCh;iCh++) fCluTree->SetBranchAddress(Form("HMPID%i",iCh),&(*fCluLst)[iCh]);      
+    fCluTree->GetEntry(0);
+    RenderClu(fCluLst,fRenClu);   
+  }//if clus file
+  
+  if(fEsdFile){//if ESD file open
+    fEsdTree->GetEntry(fEvt);  
+    RenderEsd(fEsd);
+  }//if ESD file 
+}//ReadEvent()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void SimulateEvent()
+{// used by NextEvent() to simulate all info
+  AliCDBManager* pCDB = AliCDBManager::Instance();  pCDB->SetDefaultStorage("local://$HOME"); pCDB->SetRun(0);
+  AliCDBEntry *pNmeanEnt=pCDB->Get("HMPID/Calib/Nmean");
+
+  SimulateEsd(fEsd);
+  SimulateHits(fEsd,fHitLst);
+                 AliHMPIDv2::Hit2Sdi(fHitLst,fSdiLst);                               
+          AliHMPIDDigitizer::Sdi2Dig(fSdiLst,fDigLst);     
+      AliHMPIDReconstructor::Dig2Clu(fDigLst,fCluLst);
+            AliHMPIDTracker::Recon(fEsd,fCluLst,(TObjArray*)pNmeanEnt->GetObject());
+            
+  RenderHit(fHitLst);
+  RenderClu(fCluLst,fRenClu);
+  RenderEsd(fEsd);            
+}//SimulateEvent()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void NextEvent()
+{
+  fEvt++;
+  ClearRenders();
+  switch(fType){
+    case 1: ReadEvent();break;
+//    case 2: ReadCosmic(); break;
+    case 3: SimulateEvent();     break;
+    default:                 return;
+  }  
+  Draw();
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void Hdisp()                                  
+{//display events from files if any in current directory or simulated events
+  CreateContainers();
+  CreateRenders();
+  
+  TString title="Session with";
+  if(gSystem->IsFileInIncludePath("HMPID.Hits.root")){// tries to open hits
+    fHitFile=TFile::Open("HMPID.Hits.root");       fNevt=fHitFile->GetNkeys(); fType=1; title+=Form(" HITS-%i ",fNevt);
   }
-  Printf("totally %i hits for event %i",iTotHits,gEvt);
-}
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void PrintSdis()
-{
-//prints a list of HMPID sdigits  for a given event
-  Printf("List of HMPID sdigits for event %i",gEvt);
-  gH->SdiLst()->Print();
-  Printf("totally %i sdigits for event %i",gH->SdiLst()->GetEntries(),gEvt);
-}
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void PrintDigs()
-{
-//prints a list of HMPID digits
-  Printf("List of HMPID digits for event %i",gEvt);  
-  gH->DigLst()->Print();
-  Int_t totDigs=0;  for(Int_t i=0;i<7;i++) {totDigs+=gH->DigLst(i)->GetEntries();}
-  Printf("totally %i digits for event %i",totDigs,gEvt);
-}
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void PrintClus()
-{//prints a list of HMPID clusters  for a given event
-  Printf("List of HMPID clusters for event %i",gEvt);
-  gH->CluLst()->Print();
   
-  Int_t iCluCnt=0; for(Int_t iCh=0;iCh<7;iCh++) iCluCnt+=gH->CluLst(iCh)->GetEntries();
-  
-  Printf("totally %i clusters for event %i",iCluCnt,gEvt);
-}
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void PrintEsd()
-{//prints a list of HMPID Esd  for a given event
-  Printf("List of HMPID ESD summary for event %i",gEvt);
-  Int_t nTrks = gEsd->GetNumberOfTracks();
-  
-  for(Int_t iTrk=0;iTrk<nTrks;iTrk++){
-    AliESDtrack *pTrk = gEsd->GetTrack(iTrk);
-    Float_t x,y;Int_t q,nacc;
-    pTrk->GetHMPIDmip(x,y,q,nacc);
-    Printf("Track %02i with p %7.2f with ThetaCer %5.3f with %i photons",iTrk,pTrk->GetP(),pTrk->GetHMPIDsignal(),nacc);
+  if(gSystem->IsFileInIncludePath("HMPID.Digits.root")){// tries to open clusters
+    fDigFile=TFile::Open("HMPID.Digits.root");  fNevt=fDigFile->GetNkeys(); fType=1;  title+=Form(" DIGITS-%i ",fNevt);
   }
   
-}
+  if(gSystem->IsFileInIncludePath("HMPID.RecPoints.root")){// tries to open clusters
+    fCluFile=TFile::Open("HMPID.RecPoints.root");  fNevt=fCluFile->GetNkeys(); fType=1;  title+=Form(" CLUSTERS-%i ",fNevt);
+  }
+  
+  if(gSystem->IsFileInIncludePath("AliESDs.root")){     
+    fEsdFile=TFile::Open("AliESDs.root"); fEsdTree=(TTree*)fEsdFile->Get("esdTree");  fNevt=fEsdTree->GetEntries(); fType=1;  title+=Form(" ESD-%i ",fNevt);
+                                          fEsdTree->SetBranchAddress("ESD", &fEsd);    
+  }
+
+  if(gSystem->IsFileInIncludePath("cosmic.root")){                          //clm: Check if cosmic file is in the folder
+    fCosFile=TFile::Open("cosmic.root");  fCosTree=(TTree*)fCosFile->Get("cosmic");  fNevt=fCosTree->GetEntries();  fType=2;
+    fCosTree->SetBranchAddress("Digs",&fDigLst);   fCosTree->SetBranchAddress("Clus",&fCluLst); 
+  }            
+
+  fCanvas=new TCanvas("all","",600,400); fCanvas->Divide(3,3,0,0);//  pAll->ToggleEditor();
+  fCanvas->Connect("ProcessedEvent(Int_t,Int_t,Int_t,TObject*)",0,0,"DoZoom(Int_t,Int_t,Int_t,TObject*)");
+  fCanvas->cd(7); 
+  switch(fType){
+    case 1: fCanvas->SetTitle(title.Data());                      
+                         TButton *pNxtBtn=new TButton("Next"      ,"NextEvent()",0.0,0.0,0.3,0.1); pNxtBtn->Draw(); 
+            if(fHitFile){TButton *pHitBtn=new TButton("Print hits","PrintHits()",0.0,0.2,0.3,0.3); pHitBtn->Draw();}  
+            if(fDigFile){TButton *pDigBtn=new TButton("Print digs","PrintDigs()",0.0,0.4,0.3,0.5); pDigBtn->Draw();}  
+            if(fCluFile){TButton *pCluBtn=new TButton("Print clus","PrintClus()",0.0,0.6,0.3,0.7); pCluBtn->Draw();} 
+            if(fEsdFile){TButton *pEsdBtn=new TButton("Print ESD" ,"PrintEsd()" ,0.0,0.8,0.3,0.9); pEsdBtn->Draw();}
+           
+    break;
+    case 2: fCanvas->SetTitle("COSMIC");
+                         TButton *pCosBtn=new TButton("Next"      ,"NextEvent()",0.0,0.0,0.3,0.1); pCosBtn->Draw(); 
+             
+    break;
+    case 3: fCanvas->SetTitle("SIMULATION"); 
+            TButton *pSimBtn=new TButton("Simulate"  ,"NextEvent()",0.0,0.0,0.3,0.1); pSimBtn->Draw(); 
+            TButton *pHitBtn=new TButton("Print hits","PrintHits()",0.0,0.2,0.3,0.3); pHitBtn->Draw();  
+            TButton *pDigBtn=new TButton("Print digs","PrintDigs()",0.0,0.4,0.3,0.5); pDigBtn->Draw();
+            TButton *pCluBtn=new TButton("Print clus","PrintClus()",0.0,0.6,0.3,0.7); pCluBtn->Draw(); 
+            TButton *pEsdBtn=new TButton("Print ESD" ,"PrintEsd()" ,0.0,0.8,0.3,0.9); pEsdBtn->Draw();
+    break;
+  }
+    
+      
+//  NextEvent();           
+  
+      
+}//Hdisp()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void OpenCalib()
-{
-  AliCDBManager* pCDB = AliCDBManager::Instance();
-  pCDB->SetDefaultStorage("local://$HOME");
-  AliCDBEntry *pQthreEnt=pCDB->Get("HMPID/Calib/Qthre",0);
-  AliCDBEntry *pNmeanEnt=pCDB->Get("HMPID/Calib/Nmean",0);
-  
-  if(!pQthreEnt || ! pNmeanEnt) return;
-  
-  pNmean=(TObjArray*)pNmeanEnt->GetObject(); 
-}
