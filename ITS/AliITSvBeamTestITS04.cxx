@@ -3,24 +3,23 @@
 //   integrated ITS test beam of Nov. 04              //
 //  Author: mercedes.lopez.noriega@cern.ch            //
 ////////////////////////////////////////////////////////
+
+#include <TLorentzVector.h>
+
+#include <TGeoManager.h>
+#include <TGeoVolume.h>
+#include <TGeoPcon.h>
 #include "AliRun.h"
 #include "AliITSvBeamTestITS04.h"
 #include <TClonesArray.h>
 #include <TString.h>
 #include "AliITS.h"
-#include "AliITSDetTypeSim.h"
-#include "AliITSgeom.h"
-#include "AliITShit.h"
-#include "AliITSresponseSDD.h"
-#include "AliITSCalibrationSDD.h"
-#include "AliITSCalibrationSPD.h"
-#include "AliITSCalibrationSSD.h"
-#include "AliITSsegmentationSDD.h"
-#include "AliITSsegmentationSPD.h"
-#include "AliITSsegmentationSSD.h"
 #include "AliMagF.h"
 #include "TVirtualMC.h"
 #include "AliMC.h"
+#include "AliTrackReference.h"
+#include "AliITSgeom.h"
+#include "AliITShit.h"
 
 const Int_t AliITSvBeamTestITS04::fgkNumberOfSPD = 4;
 const Int_t AliITSvBeamTestITS04::fgkNumberOfSDD = 2;
@@ -68,24 +67,6 @@ const Double_t AliITSvBeamTestITS04::fgkSSD1y = 80.6;
 //===============================================================
 
 
-#include <TLorentzVector.h>
-#include "AliTrackReference.h"
-#include "AliITSDetTypeSim.h"
-#include "AliITSgeom.h"
-#include "AliITSgeomSDD.h"
-#include "AliITSgeomSPD.h"
-#include "AliITSgeomSSD.h"
-#include "AliITShit.h"
-#include "AliITSCalibrationSDD.h"
-#include "AliITSCalibrationSPD.h"
-#include "AliITSCalibrationSSD.h"
-#include "AliITSsegmentationSDD.h"
-#include "AliITSsegmentationSPD.h"
-#include "AliITSsegmentationSSD.h"
-
-#include <TGeoManager.h>
-#include <TGeoVolume.h>
-#include <TGeoPcon.h>
 
 ClassImp(AliITSvBeamTestITS04)
     
@@ -214,9 +195,9 @@ void AliITSvBeamTestITS04::CreateGeometry(){
     
     TGeoMedium *air = geoManager->GetMedium("ITSair");
     fITSmotherVolume = new TGeoVolume("ITSV",sITS,air);
-    const Int_t length=100;
-    Char_t vstrng[length];
-    if(fIgm.WriteVersionString(vstrng,length,(AliITSVersion_t)IsVersion(),
+    const Int_t kLength=100;
+    Char_t vstrng[kLength];
+    if(fIgm.WriteVersionString(vstrng,kLength,(AliITSVersion_t)IsVersion(),
                                fMinorVersion,cvsDate,cvsRevision))
         fITSmotherVolume->SetTitle(vstrng);
     else Error("CreateGeometry","Error writing/setting version string");

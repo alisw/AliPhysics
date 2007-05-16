@@ -43,6 +43,7 @@ class AliITSvBeamTestITS04 : public AliITS {
     void AddSPDGeometry(TGeoVolume *moth) const;
     void AddSDDGeometry(TGeoVolume *moth) const;
     void AddSSDGeometry(TGeoVolume *moth) const;
+ protected:
            //! ITS mother volume
     static const Int_t fgkNumberOfSPD;       //number of SPD
     static const Int_t fgkNumberOfSDD;       //number of SDD
@@ -84,7 +85,7 @@ class AliITSvBeamTestITS04 : public AliITS {
     //=operator
     AliITSvBeamTestITS04& operator=(const AliITSvBeamTestITS04 &source);
     //
-    TGeoVolume *fITSmotherVolume; 
+    TGeoVolume *fITSmotherVolume;       //Pointer to mother volume 
     Int_t     fNspd;                    //Number of SPD modules
     Int_t     fNsdd;                    //Number of SDD modules
     Int_t     fNssd;                    //Number of SSD modules
