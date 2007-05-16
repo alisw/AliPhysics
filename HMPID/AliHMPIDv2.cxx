@@ -50,7 +50,7 @@ void AliHMPIDv2::AddAlignableVolumes()const
  
   for(Int_t i=AliHMPIDDigit::kMinCh;i<=AliHMPIDDigit::kMaxCh;i++) {
       TGeoPNEntry *pPn=gGeoManager->SetAlignableEntry(Form("/HMPID/Chamber%i",i),Form("ALIC_1/Hmp_%i",i)); 
-      pPn->SetMatrix(pGm); 
+      if(pPn) pPn->SetMatrix(pGm); 
     }
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -100,8 +100,6 @@ void AliHMPIDv2::CreateMaterials()
     AliMaterial(++matId,"W"   ,aW   ,zW   ,dW   ,radW   ,absW   );  AliMedium(kW   ,"W"   , matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
     AliMaterial(++matId,"Al"  ,aAl  ,zAl  ,dAl  ,radAl  ,absAl  );  AliMedium(kAl  ,"Al"  , matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
     AliMaterial(++matId,"Ar"  ,aAr  ,zAr  ,dAr  ,radAr  ,absAr  );  AliMedium(kAr  ,"Ar"  , matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
-    
-//    DefineOpticalProperties(); // NOT TO BE CALLED BY USER CODE !!!
 }//void AliHMPID::CreateMaterials()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDv2::CreateGeometry()
@@ -126,18 +124,15 @@ void AliHMPIDv2::CreateGeometry()
   TGeoVolume *hmp=gGeoManager->MakeBox ("Hmp",ch4,1681*mm/2, 1466*mm/2,(2*80*mm+2*60*mm)/2);//2033P1  z from p84 TDR  
 
   TString title=GetTitle();
-  if(title.Contains("TestBeam")  )
-      {
-        gGeoManager->GetVolume("ALIC")->AddNode(hmp,0,new TGeoTranslation(5.0*mm/2 ,  5.0*mm/2, 1000.0*mm));
-      }
-  else
-    {
-      for(Int_t iCh=AliHMPIDDigit::kMinCh;iCh<=AliHMPIDDigit::kMaxCh;iCh++){//place 7 chambers
+  if(title.Contains("TestBeam")){
+    gGeoManager->GetVolume("ALIC")->AddNode(hmp,0);
+  }else{
+    for(Int_t iCh=AliHMPIDDigit::kMinCh;iCh<=AliHMPIDDigit::kMaxCh;iCh++){//place 7 chambers
       TGeoHMatrix *pMatrix=new TGeoHMatrix;
-      AliHMPIDParam::IdealPosition(iCh,pMatrix);
+      IdealPosition(iCh,pMatrix);
       gGeoManager->GetVolume("ALIC")->AddNode(hmp,iCh,pMatrix);
-       }
-     }
+    }
+  }
 
   TGeoRotation *rot=new TGeoRotation("HwireRot"); rot->RotateY(90); //rotate wires around Y to be along X (initially along Z)
   TGeoVolume *sbo=gGeoManager->MakeBox ("Hsbo",ch4  , 1419*mm/2 , 1378.00*mm/2 ,   50.5*mm/2);//2072P1
@@ -155,10 +150,13 @@ void AliHMPIDv2::CreateGeometry()
   TGeoVolume *col=gGeoManager->MakeTube("Hcol",cu   ,    0*mm   ,  100.00*um   , 1323.0*mm/2);
   TGeoVolume *sec=gGeoManager->MakeBox ("Hsec",ch4  ,  648*mm/2 ,  411.00*mm/2 ,   6.2*mm/2);//sec=gap
  
-  TGeoVolume *gap=gGeoManager->MakeBox ("Hgap",ch4  ,  640*mm/2 ,  403.20*mm/2 ,    6.2*mm/2);//gap=pad+ano+cat
-  TGeoVolume *cat=gGeoManager->MakeTube("Hcat",cu   ,    0*mm   ,   50.00*um   ,    8.0*mm/2); 
-  TGeoVolume *ano=gGeoManager->MakeTube("Hano",w    ,    0*mm   ,   20.00*um   ,    8.0*mm/2); 
-  TGeoVolume *pad=gGeoManager->MakeBox ("Hpad",csi  ,    8*mm/2 ,    8.40*mm/2 ,    1.7*mm/2);      
+  Double_t cellx=8.04*mm,celly=8.4*mm;	Int_t nPadX=80, nPadY=48; 
+  TGeoVolume *gap=gGeoManager->MakeBox ("Hgap",ch4  ,  cellx*nPadX/2 ,  celly*nPadY/2 ,    6.2*mm/2); //x=8.04*80 y=8.4*48 z=pad+pad-ano+marign 2006p1  
+  TGeoVolume *row=        gap->Divide  ("Hrow",2,nPadY,0,0);//along Y->48 rows
+  TGeoVolume *cel=        row->Divide  ("Hcel",1,nPadX,0,0);//along X->80 cells
+  TGeoVolume *cat=gGeoManager->MakeTube("Hcat",cu   ,    0.00*mm   ,   50.00*um   ,    cellx/2); 
+  TGeoVolume *ano=gGeoManager->MakeTube("Hano",w    ,    0.00*mm   ,   20.00*um   ,    cellx/2); 
+  TGeoVolume *pad=gGeoManager->MakeBox ("Hpad",csi  ,    7.54*mm/2 ,    7.90*mm/2 ,    1.7*mm/2); //2006P1     
   TGeoVolume *fr1=gGeoManager->MakeBox ("Hfr1",al   , 1463*mm/2 , 1422.00*mm/2 ,   58.3*mm/2);//2040P1
   TGeoVolume *fr1up=gGeoManager->MakeBox ("Hfr1up",ch4,(1426.00-37.00)*mm/2 , (1385.00-37.00)*mm/2 ,    20.0*mm/2);//2040P1
   TGeoVolume *fr1perUpBig=gGeoManager->MakeBox ("Hfr1perUpBig",ch4,1389*mm/2,35*mm/2,10*mm/2);    
@@ -210,8 +208,6 @@ void AliHMPIDv2::CreateGeometry()
   hmp->AddNode(sec,2,new TGeoTranslation(-335*mm,   0*mm,  78.6*mm)); hmp->AddNode(sec,3,new TGeoTranslation(+335*mm,   0*mm,  78.6*mm));
   hmp->AddNode(sec,0,new TGeoTranslation(-335*mm,-433*mm,  78.6*mm)); hmp->AddNode(sec,1,new TGeoTranslation(+335*mm,-433*mm,  78.6*mm));
     sec->AddNode(gap,1,new TGeoTranslation(0,0,0.*mm));
-  TGeoVolume *row=          gap->Divide("Hrow",2,48,0,0);//along Y->48 rows
-  TGeoVolume *cel=          row->Divide("Hcel",1,80,0,0);//along X->80 cells
       cel->AddNode(cat,1,new TGeoCombiTrans (0,  3.15*mm , -2.70*mm , rot)); //4 cathode wires
       cel->AddNode(ano,1,new TGeoCombiTrans (0,  2.00*mm , -0.29*mm , rot)); //2 anod wires
       cel->AddNode(cat,2,new TGeoCombiTrans (0,  1.05*mm , -2.70*mm , rot)); 
@@ -717,4 +713,27 @@ void AliHMPIDv2::TestGeom()
   for(Int_t ch=AliHMPIDDigit::kMinCh;ch<=AliHMPIDDigit::kMaxCh;ch++)
     TestPoint(ch,0,0);
 }//TestPoint()
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+void  AliHMPIDv2::IdealPosition(Int_t iCh,TGeoHMatrix *pMatrix)       //ideal position of given chamber 
+{
+// Construct ideal position matrix for a given chamber
+// Arguments: iCh- chamber ID; pMatrix- pointer to precreated unity matrix where to store the results
+//   Returns: none
+  const Double_t kAngHor=19.5;        //  horizontal angle between chambers  19.5 grad
+  const Double_t kAngVer=20;          //  vertical angle between chambers    20   grad     
+  const Double_t kAngCom=30;          //  common HMPID rotation with respect to x axis  30   grad     
+  const Double_t kTrans[3]={490,0,0}; //  center of the chamber is on window-gap surface
+  pMatrix->RotateY(90);               //  rotate around y since initial position is in XY plane -> now in YZ plane
+  pMatrix->SetTranslation(kTrans);    //  now plane in YZ is shifted along x 
+  switch(iCh){
+    case 0:                pMatrix->RotateY(kAngHor);  pMatrix->RotateZ(-kAngVer);  break; //right and down 
+    case 1:                                            pMatrix->RotateZ(-kAngVer);  break; //down              
+    case 2:                pMatrix->RotateY(kAngHor);                               break; //right 
+    case 3:                                                                         break; //no rotation
+    case 4:                pMatrix->RotateY(-kAngHor);                              break; //left   
+    case 5:                                            pMatrix->RotateZ(kAngVer);   break; //up
+    case 6:                pMatrix->RotateY(-kAngHor); pMatrix->RotateZ(kAngVer);   break; //left and up 
+  }
+  pMatrix->RotateZ(kAngCom);     //apply common rotation  in XY plane    
+}

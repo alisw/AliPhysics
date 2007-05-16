@@ -11,7 +11,7 @@
 
 #include "AliHMPID.h"             //base class 
 #include "AliHMPIDDigitizer.h"    //CreateDigitizer()
-
+#include <TGeoManager.h>     
 class AliHMPIDv2 : public AliHMPID //TObject-TNamed-AliModule-AliDetector-AliHMPID-AliHMPIDv2
 {
 public:
@@ -19,8 +19,9 @@ public:
                  AliHMPIDv2(const char *name, const char *title):AliHMPID(name,title),fIdPad(-1),fIdCell(-1) {;}          //named ctor
   virtual       ~AliHMPIDv2()                                                         {;}          //dtor
 //framework part++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++   
-          void    AddAlignableVolumes(                               )const;                                   //from AliModule invoked from AliMC    
+          void    AddAlignableVolumes(                               )const;                                   //from AliModule invoked from AliMC           
           void    CreateMaterials  (                                 );                                        //from AliModule invoked from AliMC
+static    void    IdealPosition(Int_t iCh,TGeoHMatrix *m);                                                     //ideal position of a given chamber 
           void    CreateGeometry   (                                 );                                        //from AliModule invoked from AliMC
   AliDigitizer*   CreateDigitizer  (AliRunDigitizer *m               )const{return new AliHMPIDDigitizer(m);}  //from AliModule invoked from AliSimulation::RunDigitization()
           void    Digits2Raw       (                                 );                                        //from AliModule invoked from AliSimulation::WriteRawFiles()
