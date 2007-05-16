@@ -50,39 +50,21 @@ using namespace std; //required for resolving the 'cout' symbol
 ClassImp(AliFlowKineMaker) 
 //-----------------------------------------------------------------------
 AliFlowKineMaker::AliFlowKineMaker():
-  fKTree(0x0), fParticle(0x0), fParticlePDG(0x0),
-  fFlowEvent(0x0), fFlowTrack(0x0), fFlowV0(0x0)
+  fEventNumber(0), fPartNumber(0), fGoodTracks(0), fGoodV0s(0),
+  fGoodTracksEta(0), fPosiTracks(0), fNegaTracks(0), fUnconstrained(0),
+  fSumAll(0), fCutEvts(0), fCutParts(0), fNewAli(kFALSE), fLoopParts(kTRUE), fCounter(0), 
+  fKTree(0x0), fParticle(0x0), fParticlePDG(0x0), fCharge(0),
+  fRunID(0), fNumberOfEvents(0), fNumberOfParticles(0), fMagField(0), 
+  fFlowEvent(0x0), fFlowTrack(0x0), fFlowV0(0x0), 
+  fAbsEta(2.1), fElow(0.001), fEup(1000.), fPrimary(kTRUE)
 {
  // default constructor 
  // resets counters , sets defaults
  
- fNewAli = kFALSE ;
- // flags
- fLoopParts = kTRUE ;
- fCounter = 0 ; 
- // loop variable
- fRunID = 0 ;       
- fNumberOfParticles = 0 ;
- fEventNumber = 0 ; 
- fPartNumber = 0 ; 
- fEventNumber = 0 ;
- fMagField = 0. ;
- // counters
- fGoodTracks = 0  ;  
- fGoodV0s    = 0  ;	
- fGoodTracksEta = 0  ;
- fPosiTracks = 0  ;  
- fNegaTracks = 0  ;  
- fUnconstrained = 0  ;
- fCutParts   = 0  ;	
- for(Int_t bb=0;bb<5;bb++) { fBayesianAll[bb] = 0 ; } ;
- fSumAll = 0 ; 
- fCharge = 0 ;
+ for(Int_t bb=0;bb<5;bb++) { fBayesianAll[bb] = 0 ; }
+ for(Int_t vv=0;vv<3;vv++) { fVertex[vv] = 0. ; }
 
- // trak cuts
- fPrimary = kTRUE ;
- fAbsEta = 2.1 ;			
- fElow = 0.001 ; fEup = 1000. ;   
+ // particle cut
  fLabel[0] = 0 ; fLabel[1] = -1 ;
 
 //  // TGeant3::AddParticlesToPdgDataBase() ---  Stolen From TGeant3.cxx ----(
@@ -118,7 +100,7 @@ AliFlowEvent* AliFlowKineMaker::FillFlowEvent(TTree* fKTree)
  // It loops on the stored TParticles and calls the methods to fill the 
  // arrays in the AliFlowEvent (charged -> tracks , neutral -> v0s) . 
 
- fFlowEvent = new AliFlowEvent() ; if(!fFlowEvent) { return 0 ; }
+ fFlowEvent = new AliFlowEvent(10000) ; if(!fFlowEvent) { return 0 ; }
  //cout << " -evt- " << fFlowEvent << endl ;
 
  fRunID = -1 ;
@@ -210,7 +192,7 @@ AliFlowTrack* AliFlowKineMaker::FillFlowTrack(TParticle* fParticle)
  Float_t y = fParticle->Vy() ; 
  Float_t z = fParticle->Vz() ; 
  Float_t xy = TMath::Sqrt(x*x + y*y) ; 
- fFlowTrack->SetDcaSigned(xy,z) ; 		    
+ fFlowTrack->SetDcaSigned(xy,z) ;     // cout << "DCA :   xy = " << xy << "   z = " << z << endl ;	    
 
  // error on the DCA = 0
  fFlowTrack->SetDcaError(0.,0.,0.) ; 		    
@@ -235,7 +217,7 @@ AliFlowTrack* AliFlowKineMaker::FillFlowTrack(TParticle* fParticle)
   fFlowTrack->SetEta(etaGl) ; 				
 
   // number of constrainable tracks with |eta| < AliFlowConstants::fgEtaGood (0.9)
-  if(TMath::Abs(etaGl) < AliFlowConstants::fgEtaGood)  { fGoodTracksEta++ ; }
+  if(TMath::Abs(etaGl) < AliFlowConstants::fgEtaMid)  { fGoodTracksEta++ ; }
  }
  else  // in case Constriction impossible for track, fill the UnConstrained (global)
  {
@@ -259,15 +241,15 @@ AliFlowTrack* AliFlowKineMaker::FillFlowTrack(TParticle* fParticle)
  Float_t pAt = (Float_t)Norm(pVecAt) ;
  
  Int_t nClus[9] ; Int_t nHits[9] ; 
- nClus[0] = 1 ;   nHits[0] = 0 ; 			    // ITS - pixel
- nClus[1] = 1 ;   nHits[1] = 0 ;  
- nClus[2] = 1 ;   nHits[2] = 0 ; 			    // ITS - drift
- nClus[3] = 1 ;   nHits[3] = 0 ;  
- nClus[4] = 1 ;   nHits[4] = 0 ; 			    // ITS - strips
- nClus[5] = 1 ;   nHits[5] = 0 ;  
- nClus[6] = 160 ; nHits[6] = 0 ; 			    // TPC
- nClus[7] = 130 ; nHits[7] = 0 ; 			    // TRD
- nClus[8] = 1 ;   nHits[8] = 0 ; 			    // TOF
+ nClus[0] = 1 ;   nHits[0] = 1 ; 			    // ITS - pixel
+ nClus[1] = 1 ;   nHits[1] = 1 ;  
+ nClus[2] = 1 ;   nHits[2] = 1 ; 			    // ITS - drift
+ nClus[3] = 1 ;   nHits[3] = 1 ;  
+ nClus[4] = 1 ;   nHits[4] = 1 ; 			    // ITS - strips
+ nClus[5] = 1 ;   nHits[5] = 1 ;  
+ nClus[6] = 160 ; nHits[6] = 1 ; 			    // TPC
+ nClus[7] = 130 ; nHits[7] = 1 ; 			    // TRD
+ nClus[8] = 1 ;   nHits[8] = 1 ; 			    // TOF
 
  Int_t pdgcode = 0 ;
  Float_t dEdx[4] ; for(Int_t de=0;de<4;de++) { dEdx[de] = -1. ; }
@@ -439,9 +421,9 @@ AliFlowV0* AliFlowKineMaker::FillFlowV0(TParticle* fParticle)
  fFlowV0->SetVmass((Float_t)fParticle->GetMass()) ; 
  
  // daughters (should be taken on puprose from the KineTree, and wrote into the flow event)
- Int_t nDaughters = fParticle->GetNDaughters() ;
- Int_t d1 = fParticle->GetDaughter(nDaughters-1) ;
- Int_t d2 = fParticle->GetDaughter(nDaughters-2) ;
+ //Int_t nDaughters = fParticle->GetNDaughters() ;
+ //Int_t d1 = fParticle->GetDaughter(nDaughters-1) ;
+ //Int_t d2 = fParticle->GetDaughter(nDaughters-2) ;
 //
 // AliFlowTrack* pos = (AliFlowTrack*)fFlowEvent->TrackCollection()->At(pN) ; 
 // AliFlowTrack* neg = (AliFlowTrack*)fFlowEvent->TrackCollection()->At(nN) ; 

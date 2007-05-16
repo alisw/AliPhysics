@@ -16,7 +16,6 @@
 
 #include "AliFlowConstants.h"
 
-ClassImp(AliFlowConstants)
   
   Float_t  AliFlowConstants::fgEtaMin    = -2. ;
   Float_t  AliFlowConstants::fgEtaMax    =  2. ;

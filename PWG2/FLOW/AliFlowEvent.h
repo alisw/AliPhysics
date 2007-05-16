@@ -34,7 +34,8 @@ class AliFlowEvent : public TNamed {
 
 public: 									   
 										   
-  AliFlowEvent(Int_t length = 20000) ; 						   
+  AliFlowEvent() ; 				   // default constructor (to read events)		   
+  AliFlowEvent(Int_t length) ;		           // (new) constructor (to create events) 						   
   virtual        ~AliFlowEvent();						   
 										   
  // Arrays
@@ -56,6 +57,7 @@ public:
   void              MakeSubEvents() const ;					 // Makes sub-events, eta based (if EtaSubs()) or Random (otherwise)
   void              MakeRndSubEvents() const ;					 // Makes random sub-events
   void              MakeEtaSubEvents() const ;					 // Makes eta sub-events
+  void              MakeChrSubEvents() const ;				 	 // Makes charged (+/-) sub-events
   void 	            SetPids() ; 						 // Re-sets the tracks P.id. (using the current fBayesianCs[] array)
   void              RandomShuffle() ;						 // Randomly re-shuffles the ObjArray of tracks
   Double_t          NewG(AliFlowSelection* pFlowSelect,Double_t Zx,Double_t Zy) const ;  // Generating function for the new cumulant method (eq.3 in the Practical Guide)
@@ -74,8 +76,11 @@ public:
   Bool_t     FirstLastPhiWgt() const  { return !fgOnePhiWgt ; }			      // Returns flag for using z of first and last points for phi weights (TPC +/-)
   Bool_t     OnePhiWgt() const	      { return fgOnePhiWgt ; }  		      // Returns flag for using just one phi weight
   Bool_t     NoWgt() const	      { return fgNoWgt; }       		      // returns kTRUE if weight are NOT used
-  Bool_t     EtaSubs() const	      { return fgEtaSubs ; }    		      // Returns flag for eta sub-events
   Bool_t     CustomRespFunc() const   { return fgCustomRespFunc ; }
+  Bool_t     EtaSubs() const	      { if(fgEtaSubs == 1)  { return kTRUE ; } return kFALSE ; }   // Returns flag for charged (+/-) sub-events
+  Bool_t     RndSubs() const	      { if(fgEtaSubs == 0)  { return kTRUE ; } return kFALSE ; }   // Returns flag for random sub-events
+  Bool_t     ChrSubs() const          { if(fgEtaSubs == -1) { return kTRUE ; } return kFALSE ; }   // Returns flag for eta sub-events
+  Int_t      Subs() const             { return fgEtaSubs ; }   			      // Returns flag for sub-events type (0 = random , 1 = eta , -1 = charged)
 
  // Gets
   Int_t      EventID() const		    { return fEventID; }			  // Returns ID of the event
@@ -117,7 +122,9 @@ public:
   void     SetCentrality(Int_t cent) 		          	    { fCentrality = cent ; } // Set the Centrality Classes to "cent"
   void     SetCentrality() ; 				  	    // Sets the Centrality Classes basing on Multiplicity at mid rapidity
 
-  static void SetEtaSubs(Bool_t etasub = kTRUE) 	      	    { fgEtaSubs = etasub ; }
+  static void SetChrSubs()		    			    { fgEtaSubs = -1 ; }
+  static void SetRndSubs() 	      	    			    { fgEtaSubs = 0 ; }
+  static void SetEtaSubs() 	      	    			    { fgEtaSubs = 1 ; }
   static void SetOnePhiWgt()				      	    { fgOnePhiWgt = kTRUE ; }
   static void SetFirstLastPhiWgt()			      	    { fgOnePhiWgt = kFALSE ; }
   static void SetPtWgt(Bool_t ptWgt = kTRUE)		      	    { fgPtWgt = ptWgt; }
@@ -174,8 +181,9 @@ private:
   static Bool_t       fgEtaWgt;                                  //! flag for eta weighting for odd harmonics
   static Bool_t       fgOnePhiWgt;                               //! flag for phi weights (just one hist)
   static Bool_t       fgNoWgt;                          	 //! No Weights (Wgt == 1)
-  static Bool_t       fgEtaSubs;                                 //! Flag for making Eta Subevents
   static Bool_t       fgCustomRespFunc ;  		 	 //! A custom "detector response function" is used for P.Id
+  static Int_t        fgEtaSubs;                                 //! Flag type of Sub-Events (0 = random , 1 = eta , -1 = charged)
+
 
  // shortcuts (to speed up the execution)
   Bool_t   fDone ;										//! flag setted kTRUE when the loop is done

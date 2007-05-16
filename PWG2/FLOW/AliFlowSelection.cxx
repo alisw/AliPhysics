@@ -52,7 +52,6 @@ AliFlowSelection::AliFlowSelection():
 {
  // Default constructor: when initialized all selection cuts are disabled (lo>hi).
 
- // -
  fPidPart[0] = '\0' ;
  fPidProbPart[0]       = 1 ;    	// = 0.  
  fPidProbPart[1]       = 0 ;    	// = 1.  
@@ -79,7 +78,6 @@ AliFlowSelection::AliFlowSelection():
  fYPart[0]	       = 1 ; 		// = 0.  
  fYPart[1]	       = 0 ; 		// = 0.  
  // -
- fV0Pid[10] = '\0' ;
  fV0Pt[0]	       = 1 ;  
  fV0Pt[1]	       = 0 ;  
  fV0P[0]	       = 1 ;  
@@ -201,7 +199,7 @@ Bool_t AliFlowSelection::SelectPart(AliFlowTrack* pFlowTrack) const
  float globdca = pFlowTrack->Dca();
  if(fDcaGlobalPart[1] > fDcaGlobalPart[0] && (globdca < fDcaGlobalPart[0] || globdca > fDcaGlobalPart[1])) return kFALSE;
  
- // DCA Global
+ // DCA / error
  float dcaSigma = 1. ;
  if(pFlowTrack->TransDcaError() != 0) { dcaSigma = pFlowTrack->TransDca() / pFlowTrack->TransDcaError() ; }
  if(fDcaOverSigma[1] > fDcaOverSigma[0] && (dcaSigma < fDcaOverSigma[0] || dcaSigma > fDcaOverSigma[1])) return kFALSE;
@@ -218,21 +216,6 @@ Bool_t AliFlowSelection::SelectPart(AliFlowV0* pFlowV0) const
  // Make v0 selection for Correlation Analysis & Vn (neutral particles 
  // to correlate with the event plane).  
  // Returns kTRUE if the v0 is selected.
-
- // PID
- if(fV0Pid[0] != '\0') 
- {
-  if(strstr(fV0Pid, '\0')!=0)
-  {
-   int charge = pFlowV0->Charge();
-   if(strcmp("0", fV0Pid)==0 && charge != 0) return kFALSE;
-  } 
-  else 
-  {
-   const Char_t* pid = pFlowV0->Pid() ;
-   if(strstr(pid, fV0Pid)==0) return kFALSE;
-  }
- }
 
  // InvMass
  float mass = pFlowV0->Mass() ;
@@ -282,6 +265,17 @@ Bool_t AliFlowSelection::SelectPart(AliFlowV0* pFlowV0) const
  // Rapidity
  float y = pFlowV0->Y();
  if(fV0Y[1] > fV0Y[0] && (y < fV0Y[0] || y > fV0Y[1])) return kFALSE;
+
+//  // PID (useless)
+//  if(fV0Pid[0] != '\0')
+//  {
+//   int numPid = TMath::Abs(pFlowV0->MostLikelihoodPID()) ;
+//   if((fV0Pid = "gamma") && (fMostLikelihoodPID != 22))          { return kFALSE ; }
+//   else if((fV0Pid = "K0") && (fMostLikelihoodPID != 311))       { return kFALSE ; }
+//   else if((fV0Pid = "K0s") && (fMostLikelihoodPID != 310))      { return kFALSE ; }
+//   else if((fV0Pid = "K0l") && (fMostLikelihoodPID != 130))      { return kFALSE ; }
+//   else if((fV0Pid = "Lambda0") && (fMostLikelihoodPID != 3122)) { return kFALSE ; }
+//  }
 
  return kTRUE;
 }
@@ -374,8 +368,7 @@ void AliFlowSelection::PrintV0List() const
  cout << "#################################################################" << endl;
  cout << "# Selection List (V0s correlated with the event plane):" << endl;
  cout << "# " << endl;
- if(fV0Pid[0]!='\0') 
- { cout << "# P.id for V0s correlated to the event plane: " << fV0Pid << "  " << endl ; }
+ // if(fV0Pid[0]!='\0') { cout << "# P.id for V0s correlated to the event plane: " << fV0Pid << "  " << endl ; }
  if(fV0Mass[1]>fV0Mass[0]) 
  {
   if(!fV0SideBand)

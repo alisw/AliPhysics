@@ -20,30 +20,48 @@
 
 using namespace std; //required for resolving the 'cout' symbol
 
-TChain* CreateESDChain(const char* aDataDir = "ESDfiles.txt", Int_t aRuns = 10, Int_t offset = 0) ;
+TChain* CreateESDChain(const char* aDataDir = "ESDfiles.txt", Int_t aRuns = -1, Int_t offset = 0) ;
 void LookupWrite(TChain* chain, const char* target) ;
 
-void testMaker(TString output = "flowEvts.root")
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+
+int testMaker(int cen = -1)
 {
- cout << " . Here the new flow maker (2007b) ... " << endl ;
+ cout << " . Here the new flow maker (2007 rs) ... " << endl ;
  cout << endl ;
 
  bool kOne = kFALSE ;
+ int limit = -1 ;
+
+ if(limit>0)
+ {
+  cout << " . limited to " << limit << "events . " << endl ;
+  cout << endl ;
+ }
+ 
+ // flowEvents file (output) //
+
+ TString output = "flowEvts" ;
+ if(cen >= 0) { output += cen ; }
+ output += ".root" ;
+ 
+ // start, load libs //
 
  TStopwatch timer;
  timer.Start();
 
+ //gSystem->Load("libPhysics.so");
  gSystem->Load("libPWG2flow.so");
 
- // output file //
+ // open output file //
 
  TFile * fFlowfile = new TFile(output.Data(),"RECREATE") ;
  //fFlowfile->cd() ; 
 
- // esd chain //
+ // esd chain (imput) //
 
- // TString fESDfileName = "AliESDs.root" ; TString fESDtree = "esdTree" ; 
- TChain* pESDchain = CreateESDChain(".",10,0);
+ TString baseDir = "." ; 
+ TChain* pESDchain = CreateESDChain(baseDir.Data(),limit,0);
  Int_t fNumberOfEvents = (Int_t)pESDchain->GetEntries() ;
  cout << " tot. " << fNumberOfEvents << " events in the TChain ... " << endl ; cout << endl ;
 
@@ -54,6 +72,11 @@ void testMaker(TString output = "flowEvts.root")
  // flow maker //
 
  AliFlowMaker * flowMaker = new  AliFlowMaker() ;
+
+ // flags 
+ flowMaker->DoTracks(kTRUE) ;
+ flowMaker->DoV0s(kFALSE) ;     // kTRUE
+
  // cuts, etc.
  flowMaker->SetNHitsCut(1) ;
  flowMaker->SetECut(0.01,100.) ;
@@ -63,39 +86,38 @@ void testMaker(TString output = "flowEvts.root")
  // loop //
 
  Int_t evtN = 0 ;
+ Int_t count = 0 ;
  AliFlowEvent * flowEvt = 0 ;
  for(evtN=0;evtN<fNumberOfEvents;evtN++)
  {
   pESDchain->GetEntry(evtN,1) ;
 
   Int_t evtNN = -1 ;
-  //  Int_t evtNN = pEsd->GetEventNumber() ;
+  // Int_t evtNN = pEsd->GetEventNumber() ;
   Int_t nTrk = pEsd->GetNumberOfTracks() ;
   Int_t nV0s = pEsd->GetNumberOfV0s() ;
   cout << endl ; cout << " Event " << evtN << "  ( " << evtNN << " )  : " << nTrk << " tracks  &  " << nV0s << " v0s ." << endl ;
 
   flowEvt = flowMaker->FillFlowEvent(pEsd) ;
-  cout << " Event filled " << flowEvt << " ... " << endl ;
-  // cout << endl ; cout << " trks : " << flowEvt->TrackCollection()->GetEntries() << endl ;
-  // flowEvt->Dump() ; cout << endl ;
+  // cout << " Event filled " << flowEvt << " ... " << endl ; // flowEvt->Dump() ; cout << endl ;
 
   TString evtID = "" ; evtID += evtN ; 
-  fFlowfile->cd() ; 
-  flowEvt->Write(evtID.Data()) ;
+  fFlowfile->cd() ; flowEvt->Write(evtID.Data()) ;
   cout <<  " Event " << evtN << "  ( " << evtID.Data() << " )  -  written on disk (" << output << ") ." << endl;
   delete flowEvt ;
+
+  if(count == limit) { break ; }  
+  count++ ;  
  }
  
  fFlowfile->Close() ; 
  
  cout <<  endl ;
  cout << " Finished ... " << endl ;
- cout << "  nTracks:  " << flowMaker->GetNgoodTracks() << endl ;   
- cout << "  nV0s:  " << flowMaker->GetNgoodV0s()  << endl ;  	     
+ cout << "  nTracks:  " << flowMaker->GetNgoodTracks() << " (" << flowMaker->GetNposiTracks() << "+ , " << flowMaker->GetNnegaTracks() << "-) " << endl ;   
+ cout << "  nV0s:  " << flowMaker->GetNgoodV0s() << endl ;  	     
  cout << "  nTracks (|eta|<0.5):  " << flowMaker->GetNgoodTracksEta() << endl ; 
- cout << "  nTracks+:  " << flowMaker->GetNposiTracks() << endl ; 	     
- cout << "  nTracks-:  " << flowMaker->GetNnegaTracks() << endl ; 	     
- cout << "  nTracks unconstrained:  " << flowMaker->GetNunconstrained() << endl ; 	 
+ // cout << "  nTracks unconstrained:  " << flowMaker->GetNunconstrained() << endl ; 	 
  cout << "  Bayesian :  " ; 
  for(int ii=0;ii<5;ii++) { cout << flowMaker->GetBayesianNorm(ii) << "   " ; } 
  cout << " . " << endl ; 
@@ -103,13 +125,17 @@ void testMaker(TString output = "flowEvts.root")
  timer.Stop() ;
  cout << endl ;
  timer.Print() ;
- cout << " . here it was (maker) ... " << endl ;  //juice!
+ cout << " . here it was (maker rs) ... " << endl ;  //juice!
  cout << endl ;
+ 
+ // cout << endl ; cout << " Memory Check (from Paul)" << endl ; 
+ // gObjectTable->Print();
+ // cout << endl ; cout << endl ;
 
- // break ;
-
+ return cen ;
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Helper macros for creating chains (from: CreateESDChain.C,v 1.10 jgrosseo Exp)
 TChain* CreateESDChain(const char* aDataDir, Int_t aRuns, Int_t offset)
@@ -141,22 +167,34 @@ TChain* CreateESDChain(const char* aDataDir, Int_t aRuns, Int_t offset)
     Int_t nDirs               = dirList->GetEntries();
     gSystem->cd(execDir);
 
+    cout << "* Reading :  " << aDataDir << "   (+" << nDirs << ")" << endl ;
+      
     Int_t count = 0;
 
     for (Int_t iDir=0; iDir<nDirs; ++iDir)
     {
       TSystemFile* presentDir = (TSystemFile*) dirList->At(iDir);
       if (!presentDir || !presentDir->IsDirectory() || strcmp(presentDir->GetName(), ".") == 0 || strcmp(presentDir->GetName(), "..") == 0)
+      {
+        cout << " Skip : " << presentDir->GetName() << endl ;
+      
         continue;
+      }
 
       if (offset > 0)
       {
+        cout << " OffSet : " << offset << endl ;
+      
         --offset;
         continue;
       }
 
       if (count++ == aRuns)
+      {
+        cout << " aRuns : " << aRuns << endl ;
+	
         break;
+      }
 
       TString presentDirName(aDataDir);
       presentDirName += "/";
@@ -198,6 +236,8 @@ TChain* CreateESDChain(const char* aDataDir, Int_t aRuns, Int_t offset)
   return chain;
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+
 void LookupWrite(TChain* chain, const char* target)
 {
   // looks up the chain and writes the remaining files to the text file target
@@ -218,3 +258,5 @@ void LookupWrite(TChain* chain, const char* target)
 
   delete iter;
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////
