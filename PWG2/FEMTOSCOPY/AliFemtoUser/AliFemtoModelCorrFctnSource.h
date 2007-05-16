@@ -9,10 +9,10 @@
 #ifndef AliFemtoModelCorrFctnSource_hh
 #define AliFemtoModelCorrFctnSource_hh
 
-#include "Base/AliFemtoCorrFctn.h"
-#include "Infrastructure/AliFemtoPair.h"
-#include "Model/AliFemtoModelManager.h"
-#include "Model/AliFemtoModelCorrFctn.h"
+#include "AliFemtoCorrFctn.h"
+#include "AliFemtoPair.h"
+#include "AliFemtoModelManager.h"
+#include "AliFemtoModelCorrFctn.h"
 
 class AliFemtoModelCorrFctnSource: public AliFemtoModelCorrFctn {
 
@@ -31,7 +31,7 @@ public:
 
   virtual void Write();
 
-  virtual AliFemtoModelCorrFctnSource* Clone();
+  virtual AliFemtoModelCorrFctn* Clone();
 
 protected:
 

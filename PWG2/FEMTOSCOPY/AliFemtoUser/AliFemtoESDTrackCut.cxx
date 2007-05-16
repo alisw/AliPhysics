@@ -11,6 +11,9 @@
  ***************************************************************************
  *
  * $Log$
+ * Revision 1.4  2007/05/03 09:46:10  akisiel
+ * Fixing Effective C++ warnings
+ *
  * Revision 1.3  2007/04/27 07:25:59  akisiel
  * Make revisions needed for compilation from the main AliRoot tree
  *

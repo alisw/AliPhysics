@@ -7,7 +7,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "AliFemtoShareQualityCorrFctn.h"
-//#include "Infrastructure/AliFemtoHisto.hh"
+//#include "AliFemtoHisto.hh"
 #include <cstdio>
 
 #ifdef __ROOT__ 
@@ -129,19 +129,19 @@ AliFemtoString AliFemtoShareQualityCorrFctn::Report(){
   return returnThis;
 }
 //____________________________
-void AliFemtoShareQualityCorrFctn::AddRealPair(const AliFemtoPair* pair){
-  double Qinv = fabs(pair->qInv());   // note - qInv() will be negative for identical pairs...
+void AliFemtoShareQualityCorrFctn::AddRealPair( AliFemtoPair* pair){
+  double Qinv = fabs(pair->QInv());   // note - qInv() will be negative for identical pairs...
   Int_t nh = 0;
   Int_t an = 0;
   Int_t ns = 0;
   
-  for (unsigned int imap=0; imap<pair->track1()->Track()->TPCclusters().GetNbits(); imap++) {
+  for (unsigned int imap=0; imap<pair->Track1()->Track()->TPCclusters().GetNbits(); imap++) {
     // If both have clusters in the same row
-    if (pair->track1()->Track()->TPCclusters().TestBitNumber(imap) && 
-	pair->track2()->Track()->TPCclusters().TestBitNumber(imap)) {
+    if (pair->Track1()->Track()->TPCclusters().TestBitNumber(imap) && 
+	pair->Track2()->Track()->TPCclusters().TestBitNumber(imap)) {
       // Do they share it ?
-      if (pair->track1()->Track()->TPCsharing().TestBitNumber(imap) ||
-	  pair->track2()->Track()->TPCsharing().TestBitNumber(imap))
+      if (pair->Track1()->Track()->TPCsharing().TestBitNumber(imap) &&
+	  pair->Track2()->Track()->TPCsharing().TestBitNumber(imap))
 	{
 	  if (Qinv < 0.01) {
 	    cout << "Shared cluster in row " << imap << endl; 
@@ -157,8 +157,8 @@ void AliFemtoShareQualityCorrFctn::AddRealPair(const AliFemtoPair* pair){
 	nh+=2;
       }
     }
-    else if (pair->track1()->Track()->TPCclusters().TestBitNumber(imap) ||
-	     pair->track2()->Track()->TPCclusters().TestBitNumber(imap)) {
+    else if (pair->Track1()->Track()->TPCclusters().TestBitNumber(imap) ||
+	     pair->Track2()->Track()->TPCclusters().TestBitNumber(imap)) {
       // One track has a hit, the other does not
       an++;
       nh++;
@@ -167,16 +167,16 @@ void AliFemtoShareQualityCorrFctn::AddRealPair(const AliFemtoPair* pair){
   if (Qinv < 0.01) {
     cout << "Qinv of the pair is " << Qinv << endl;
     cout << "Clusters: " << endl;
-    for (unsigned int imap=0; imap<pair->track1()->Track()->TPCclusters().GetNbits(); imap++) {
+    for (unsigned int imap=0; imap<pair->Track1()->Track()->TPCclusters().GetNbits(); imap++) {
       cout << imap ;
-      if (pair->track1()->Track()->TPCclusters().TestBitNumber(imap)) cout << " 1 ";
+      if (pair->Track1()->Track()->TPCclusters().TestBitNumber(imap)) cout << " 1 ";
       else cout << " 0 " ;
-      if (pair->track2()->Track()->TPCclusters().TestBitNumber(imap)) cout << " 1 ";
+      if (pair->Track2()->Track()->TPCclusters().TestBitNumber(imap)) cout << " 1 ";
       else cout << " 0 " ;
       cout << "     ";
-      if (pair->track1()->Track()->TPCsharing().TestBitNumber(imap)) cout << " S ";
+      if (pair->Track1()->Track()->TPCsharing().TestBitNumber(imap)) cout << " S ";
       else cout << " X ";
-      if (pair->track2()->Track()->TPCsharing().TestBitNumber(imap)) cout << " S ";
+      if (pair->Track2()->Track()->TPCsharing().TestBitNumber(imap)) cout << " S ";
       else cout << " X ";
       cout << endl;
     }
@@ -191,29 +191,29 @@ void AliFemtoShareQualityCorrFctn::AddRealPair(const AliFemtoPair* pair){
   }
 
   if (Qinv < 0.01) {
-    cout << "Quality  Sharity " << hsmval << " " << hsfval << " " << pair->track1()->Track() << " " << pair->track2()->Track() << endl;
+    cout << "Quality  Sharity " << hsmval << " " << hsfval << " " << pair->Track1()->Track() << " " << pair->Track2()->Track() << endl;
   }
 
   fShareNumerator->Fill(Qinv, hsfval);
   fQualityNumerator->Fill(Qinv, hsmval);
   //  cout << "AliFemtoShareQualityCorrFctn::AddRealPair : " << pair->qInv() << " " << Qinv <<
-  //" " << pair->track1().FourMomentum() << " " << pair->track2().FourMomentum() << endl;
+  //" " << pair->Track1().FourMomentum() << " " << pair->Track2().FourMomentum() << endl;
 }
 //____________________________
-void AliFemtoShareQualityCorrFctn::AddMixedPair(const AliFemtoPair* pair){
+void AliFemtoShareQualityCorrFctn::AddMixedPair( AliFemtoPair* pair){
   double weight = 1.0;
-  double Qinv = fabs(pair->qInv());   // note - qInv() will be negative for identical pairs...
+  double Qinv = fabs(pair->QInv());   // note - qInv() will be negative for identical pairs...
   Int_t nh = 0;
   Int_t an = 0;
   Int_t ns = 0;
   
-  for (unsigned int imap=0; imap<pair->track1()->Track()->TPCclusters().GetNbits(); imap++) {
+  for (unsigned int imap=0; imap<pair->Track1()->Track()->TPCclusters().GetNbits(); imap++) {
     // If both have clusters in the same row
-    if (pair->track1()->Track()->TPCclusters().TestBitNumber(imap) && 
-	pair->track2()->Track()->TPCclusters().TestBitNumber(imap)) {
+    if (pair->Track1()->Track()->TPCclusters().TestBitNumber(imap) && 
+	pair->Track2()->Track()->TPCclusters().TestBitNumber(imap)) {
       // Do they share it ?
-      if (pair->track1()->Track()->TPCsharing().TestBitNumber(imap) ||
-	  pair->track2()->Track()->TPCsharing().TestBitNumber(imap))
+      if (pair->Track1()->Track()->TPCsharing().TestBitNumber(imap) ||
+	  pair->Track2()->Track()->TPCsharing().TestBitNumber(imap))
 	{
 	  //	  cout << "A shared cluster !!!" << endl;
 	  //	cout << "imap idx1 idx2 " 
@@ -230,8 +230,8 @@ void AliFemtoShareQualityCorrFctn::AddMixedPair(const AliFemtoPair* pair){
 	nh+=2;
       }
     }
-    else if (pair->track1()->Track()->TPCclusters().TestBitNumber(imap) ||
-	     pair->track2()->Track()->TPCclusters().TestBitNumber(imap)) {
+    else if (pair->Track1()->Track()->TPCclusters().TestBitNumber(imap) ||
+	     pair->Track2()->Track()->TPCclusters().TestBitNumber(imap)) {
       // One track has a hit, the other does not
       an++;
       nh++;

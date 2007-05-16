@@ -11,7 +11,7 @@
 
 #include "TH1D.h"
 #include "TH2D.h"
-#include "Base/AliFemtoCorrFctn.h"
+#include "AliFemtoCorrFctn.h"
 
 class AliFemtoShareQualityCorrFctn : public AliFemtoCorrFctn {
 public:
@@ -22,8 +22,8 @@ public:
   AliFemtoShareQualityCorrFctn& operator=(const AliFemtoShareQualityCorrFctn& aCorrFctn);
 
   virtual AliFemtoString Report();
-  virtual void AddRealPair(const AliFemtoPair*);
-  virtual void AddMixedPair(const AliFemtoPair*);
+  virtual void AddRealPair(AliFemtoPair*);
+  virtual void AddMixedPair(AliFemtoPair*);
 
   virtual void Finish();
 

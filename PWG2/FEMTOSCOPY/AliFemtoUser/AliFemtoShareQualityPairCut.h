@@ -22,7 +22,7 @@
 //#include "StMaker.h"
 //#endif
 
-#include "Base/AliFemtoPairCut.h"
+#include "AliFemtoPairCut.h"
 
 class AliFemtoShareQualityPairCut : public AliFemtoPairCut{
 public:

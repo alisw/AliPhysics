@@ -10,9 +10,9 @@
   ClassImp(AliFemtoModelCorrFctnSource, 1)
 #endif
 
-#include "Model/AliFemtoModelGausLCMSFreezeOutGenerator.h"
-#include "Model/AliFemtoModelHiddenInfo.h"
-#include "Model/AliFemtoModelCorrFctnSource.h"
+#include "AliFemtoModelGausLCMSFreezeOutGenerator.h"
+#include "AliFemtoModelHiddenInfo.h"
+#include "AliFemtoModelCorrFctnSource.h"
     
 //_______________________
 AliFemtoModelCorrFctnSource::AliFemtoModelCorrFctnSource(): 
@@ -137,7 +137,7 @@ void AliFemtoModelCorrFctnSource::Write()
   AliFemtoModelCorrFctn::Write();
 }
 //_______________________
-AliFemtoModelCorrFctnSource* AliFemtoModelCorrFctnSource::Clone()
+AliFemtoModelCorrFctn* AliFemtoModelCorrFctnSource::Clone()
 {
   AliFemtoModelCorrFctnSource *tCopy = new AliFemtoModelCorrFctnSource(*this);
   

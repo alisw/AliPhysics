@@ -8,7 +8,7 @@
 #ifndef AliFemtoModelGausRinvFreezeOutGenerator_hh
 #define AliFemtoModelGausRinvFreezeOutGenerator_hh
 
-#include "Model/AliFemtoModelFreezeOutGenerator.h"
+#include "AliFemtoModelFreezeOutGenerator.h"
 
 #include "TRandom.h"
 

@@ -11,6 +11,9 @@
  ***************************************************************************
  *
  * $Log$
+ * Revision 1.1.1.1  2007/04/25 15:38:41  panos
+ * Importing the HBT code dir
+ *
  * Revision 1.4  2007/03/20 09:37:13  mchojnacki
  * *** empty log message ***
  *
@@ -32,7 +35,7 @@
 //#include "StMaker.h"
 //#endif
 
-#include "Base/AliFemtoTrackCut.h"
+#include "AliFemtoTrackCut.h"
 
 class AliFemtoESDTrackCut : public AliFemtoTrackCut 
 {
