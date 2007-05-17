@@ -46,25 +46,27 @@ ClassImp(AliPHOSSurvey)
 
 //____________________________________________________________________________
 AliPHOSSurvey::AliPHOSSurvey()
-                : fStripData()
+                : fStrNum(0),
+                  fStripData(0)
 {
   //Default constructor.
 }
 
 namespace {
 
-  struct Strip_t {
-    Double_t fX1;
-    Double_t fZ1;
-    Double_t fX2;
-    Double_t fZ2;
+  struct AliPHOSStripCoords {
+    Double_t fX1; //x coordinate of the first strip point
+    Double_t fZ1; //z coordinate of the first strip point
+    Double_t fX2; //x coordinate of the second strip point
+    Double_t fZ2; //z coordinate of the second strip point
   };
 
 }
 
 //____________________________________________________________________________
 AliPHOSSurvey::AliPHOSSurvey(const TString &txtFileName)
-                : fStripData()
+                : fStrNum(0),
+                  fStripData(0)
 {
   //Read survey data from txt file.
   const AliPHOSGeometry *phosGeom = AliPHOSGeometry::GetInstance("IHEP", "IHEP");
@@ -79,15 +81,15 @@ AliPHOSSurvey::AliPHOSSurvey(const TString &txtFileName)
     return;
   }
 
-  AliPHOSEMCAGeometry  * emcaGeom = phosGeom->GetEMCAGeometry();
-  const Int_t strNum   = emcaGeom->GetNStripX() * emcaGeom->GetNStripZ();
+  AliPHOSEMCAGeometry * emcaGeom = phosGeom->GetEMCAGeometry();
+  fStrNum = emcaGeom->GetNStripX() * emcaGeom->GetNStripZ();
   const Float_t *strip = emcaGeom->GetStripHalfSize();
-  const Float_t *cell  = emcaGeom->GetSteelCellHalfSize(); 
+  const Float_t *cell = emcaGeom->GetSteelCellHalfSize(); 
 
-  std::vector<Strip_t> idealStrips(strNum);
+  AliPHOSStripCoords *idealStrips = new AliPHOSStripCoords[fStrNum];//1
   for (Int_t ix = 0, stripNumber = 0; ix < emcaGeom->GetNStripX(); ++ix) {
     for (Int_t iz = 0; iz < emcaGeom->GetNStripZ(); ++iz) {
-      Strip_t &str = idealStrips[stripNumber++];
+      AliPHOSStripCoords &str = idealStrips[stripNumber++];
       str.fX1 = ix * 2 * strip[0];
       str.fX2 = str.fX1 + 14 * cell[0];
       str.fZ1 = iz * 2 * strip[2];
@@ -97,10 +99,15 @@ AliPHOSSurvey::AliPHOSSurvey(const TString &txtFileName)
 
   Int_t dummyInt = 0;
   Double_t dummyY = 0.;
-  std::vector<Double_t> xReal(strNum * 2), zReal(strNum * 2);
-  for (Int_t i = 0; i < strNum * 2; ++i) {
+  Double_t *xReal = new Double_t[fStrNum * 2];//2
+  Double_t *zReal = new Double_t[fStrNum * 2];//3
+
+  for (Int_t i = 0; i < fStrNum * 2; ++i) {
     if (!inputFile) {
       AliError("Error while reading input file.");
+      delete [] idealStrips;
+      delete [] xReal;
+      delete [] zReal;
       return;
     }
     inputFile>>dummyInt>>xReal[i]>>dummyY>>zReal[i];
@@ -108,10 +115,11 @@ AliPHOSSurvey::AliPHOSSurvey(const TString &txtFileName)
     zReal[i] *= 0.1;
   }
 
-  std::vector<Strip_t> realStrips(strNum);
+  AliPHOSStripCoords *realStrips = new AliPHOSStripCoords[fStrNum];//4
+
   for (Int_t j = 0, stripNumber = 0; j < emcaGeom->GetNStripX() * 2; j += 2) {
     for (Int_t i = 0; i < emcaGeom->GetNStripZ(); ++i) {
-      Strip_t &str = realStrips[stripNumber++];
+      AliPHOSStripCoords &str = realStrips[stripNumber++];
       str.fX1 = xReal[i + j * emcaGeom->GetNStripZ()];
       str.fZ1 = zReal[i + j * emcaGeom->GetNStripZ()];
       str.fX2 = xReal[i + (j + 1) * emcaGeom->GetNStripZ()];
@@ -119,11 +127,12 @@ AliPHOSSurvey::AliPHOSSurvey(const TString &txtFileName)
     }
   }
 
-  fStripData.resize(strNum);
-  for (Int_t i = 0; i < strNum; ++i) {
-    const Strip_t &real = realStrips[i];
-    const Strip_t &ideal = idealStrips[i];
-    Transformation_t &t = fStripData[i];
+  fStripData = new AliPHOSStripDelta[fStrNum];
+  
+  for (Int_t i = 0; i < fStrNum; ++i) {
+    const AliPHOSStripCoords &real = realStrips[i];
+    const AliPHOSStripCoords &ideal = idealStrips[i];
+    AliPHOSStripDelta &t = fStripData[i];
     t.fTheta = TMath::ATan((real.fZ2 - real.fZ1)  / (real.fX2 - real.fX1)) - 
                TMath::ATan((ideal.fZ2 - ideal.fZ1) / (ideal.fX2 - ideal.fX1));
     t.fTheta *= TMath::RadToDeg();
@@ -131,6 +140,17 @@ AliPHOSSurvey::AliPHOSSurvey(const TString &txtFileName)
     t.fZShift = (real.fZ1 + real.fZ2) / 2 - (ideal.fZ1 + ideal.fZ2) / 2;
     t.fYShift = 0., t.fPsi = 0., t.fPhi = 0.;
   }
+  
+  delete [] realStrips;
+  delete [] zReal;
+  delete [] xReal;
+  delete [] idealStrips;
+}
+
+//____________________________________________________________________________
+AliPHOSSurvey::~AliPHOSSurvey()
+{
+  delete [] fStripData;
 }
 
 //____________________________________________________________________________
@@ -151,20 +171,20 @@ void AliPHOSSurvey::CreateAliAlignObjAngles(TClonesArray &array)
 
   AliPHOSEMCAGeometry * emcaGeom = phosGeom->GetEMCAGeometry();
   Int_t arrayInd = array.GetEntries(), iIndex = 0;
-  AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
-  UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iIndex);
+  AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer;
+  UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,iIndex);
 
   for (Int_t module = 1; module <= phosGeom->GetNModules(); ++module) {
     for (Int_t i = 0, stripNum = 0; i < emcaGeom->GetNStripX(); ++i) {
       for (Int_t j = 0; j < emcaGeom->GetNStripZ(); ++j) {
         TString stripName(TString::Format("PHOS/Module%d/Strip_%d_%d", module, i, j));
-        Transformation_t t(GetStripTransformation(stripNum++, module));
+        AliPHOSStripDelta t(GetStripTransformation(stripNum++, module));
         new(array[arrayInd])
           AliAlignObjAngles(
                             stripName.Data(), volid, 
                             t.fXShift, t.fYShift, t.fZShift, 
                             -t.fPsi, -t.fTheta, -t.fPhi, 
-                            kFALSE
+                            false
                            );
         ++arrayInd;
       }
@@ -178,24 +198,24 @@ void AliPHOSSurvey::CreateNullObjects(TClonesArray &array, const AliPHOSGeometry
   //Create null shifts and rotations.
   const AliPHOSEMCAGeometry * emcaGeom = phosGeom->GetEMCAGeometry();
   Int_t arrayInd = array.GetEntries(), iIndex = 0;
-  AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
-  UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iIndex);
+  AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer;
+  UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,iIndex);
 
   for (Int_t module = 1; module <= phosGeom->GetNModules(); ++module)
     for (Int_t i = 0; i < emcaGeom->GetNStripX(); ++i)
       for (Int_t j = 0; j < emcaGeom->GetNStripZ(); ++j) {
         TString stripName(TString::Format("PHOS/Module%d/Strip_%d_%d", module, i, j));
-        new(array[arrayInd]) AliAlignObjAngles(stripName.Data(), volid, 0., 0., 0., 0., 0., 0., kTRUE);
+        new(array[arrayInd]) AliAlignObjAngles(stripName.Data(), volid, 0., 0., 0., 0., 0., 0., true);
         ++arrayInd;
       }
 }
 
 //____________________________________________________________________________
-AliPHOSSurvey::Transformation_t AliPHOSSurvey::GetStripTransformation(Int_t stripIndex, Int_t module)const
+AliPHOSSurvey::AliPHOSStripDelta AliPHOSSurvey::GetStripTransformation(Int_t stripIndex, Int_t module)const
 {
   //Strip 'stripIndex' transformation.
-  const Transformation_t t = {0., 0., 0., 0., 0., 0.};
-  if (module != 3 || !fStripData.size())
+  AliPHOSStripDelta t = {0., 0., 0., 0., 0., 0.};
+  if (module != 3 || !fStripData)
     return t;
   return fStripData[stripIndex];
 }

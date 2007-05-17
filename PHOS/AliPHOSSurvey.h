@@ -9,6 +9,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.1  2007/04/19 15:47:20  kharlov
+ * Add misalignment of strip units with AliPHOSSurvey class
+ *
  */
 
 #include <vector>
@@ -33,30 +36,34 @@ public:
   AliPHOSSurvey();
   AliPHOSSurvey(const TString &txtFileName);
 
+  virtual ~AliPHOSSurvey();
+
   //Create AliAlignObjAngles for strips.
   void CreateAliAlignObjAngles(TClonesArray &array);
   //Create AliAlignObjAngles with null shifts and rotations.
-  void CreateNullObjects(TClonesArray &, const AliPHOSGeometry *)const;
+  void CreateNullObjects(TClonesArray &alObj, const AliPHOSGeometry *geom)const;
 
 protected:
-  struct Transformation_t {
-    Float_t fXShift;
-    Float_t fYShift;
-    Float_t fZShift;
-    Float_t fPsi;
-    Float_t fTheta;
-    Float_t fPhi;
+
+  struct AliPHOSStripDelta {
+    Float_t fXShift; //x shift
+    Float_t fYShift; //y shift
+    Float_t fZShift; //z shift
+    Float_t fPsi;    //psi
+    Float_t fTheta;  //theta
+    Float_t fPhi;    //phi
   };
 
 private:
   //Calculate shifts and rotations for strip number stripIndex in a module moduleIndex.
-  virtual Transformation_t GetStripTransformation(Int_t stripIndex, Int_t moduleIndex)const;
+  virtual AliPHOSStripDelta GetStripTransformation(Int_t stripIndex, Int_t moduleIndex)const;
 
   AliPHOSSurvey(const AliPHOSSurvey &);
   AliPHOSSurvey &operator = (const AliPHOSSurvey &);
 
 private:
-  std::vector<Transformation_t> fStripData; // Strip unit transformation data
+  Int_t 	     fStrNum; // Number of strips.
+  AliPHOSStripDelta *fStripData; // Strip unit transformation data
 
   ClassDef(AliPHOSSurvey, 1) //Survey data reader
 };
