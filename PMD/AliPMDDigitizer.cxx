@@ -81,11 +81,11 @@ AliPMDDigitizer::AliPMDDigitizer() :
 	{
 	  for (Int_t k = 0; k < fgkCol; k++)
 	    {
-	      fCPV[i][j][k] = 0.; 
-	      fPRE[i][j][k] = 0.; 
-	      fPRECounter[i][j][k] =  0; 
-	      fPRETrackNo[i][j][k] = -1; 
-	      fCPVTrackNo[i][j][k] = -1; 
+	      fCPV[i][j][k] = 0.;
+	      fPRE[i][j][k] = 0.;
+	      fPRECounter[i][j][k] =  0;
+	      fPRETrackNo[i][j][k] = -1;
+	      fCPVTrackNo[i][j][k] = -1;
 	    }
 	}
     }
@@ -113,7 +113,6 @@ AliPMDDigitizer::AliPMDDigitizer(const AliPMDDigitizer& digitizer):
   
 }
 //____________________________________________________________________________
-
 AliPMDDigitizer & AliPMDDigitizer::operator=(const AliPMDDigitizer& /*digitizer*/)
 {
   // Assignment operator
@@ -146,11 +145,11 @@ AliPMDDigitizer::AliPMDDigitizer(AliRunDigitizer* manager):
 	{
 	  for (Int_t k = 0; k < fgkCol; k++)
 	    {
-	      fCPV[i][j][k] = 0.; 
-	      fPRE[i][j][k] = 0.; 
-	      fPRECounter[i][j][k] =  0; 
-	      fPRETrackNo[i][j][k] = -1; 
-	      fCPVTrackNo[i][j][k] = -1; 
+	      fCPV[i][j][k] = 0.;
+	      fPRE[i][j][k] = 0.;
+	      fPRECounter[i][j][k] =  0;
+	      fPRETrackNo[i][j][k] = -1;
+	      fCPVTrackNo[i][j][k] = -1;
 	    }
 	}
     }
@@ -186,8 +185,7 @@ void AliPMDDigitizer::OpengAliceFile(const char *file, Option_t *option)
   TString evfoldname = AliConfig::GetDefaultEventFolderName();
   fRunLoader = AliRunLoader::GetRunLoader(evfoldname);
   if (!fRunLoader)
-    fRunLoader = AliRunLoader::Open(file,AliConfig::GetDefaultEventFolderName(),
-				    "UPDATE");
+      fRunLoader = AliRunLoader::Open(file,AliConfig::GetDefaultEventFolderName(), "UPDATE");
   
   if (!fRunLoader)
    {
@@ -285,21 +283,21 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
       treeS = fPMDLoader->TreeS();
     }
   Int_t bufsize = 16000;
-  treeS->Branch("PMDSDigit", &fSDigits, bufsize); 
+  treeS->Branch("PMDSDigit", &fSDigits, bufsize);
   
   TClonesArray* hits = 0;
   if (fPMD) hits = fPMD->Hits();
 
   // Start loop on tracks in the hits containers
 
-  for (Int_t track=0; track<ntracks;track++) 
+  for (Int_t track=0; track<ntracks;track++)
     {
       gAlice->ResetHits();
       treeH->GetEvent(track);
-      if (fPMD) 
+      if (fPMD)
 	{
 	  npmd = hits->GetEntriesFast();
-	  for (int ipmd = 0; ipmd < npmd; ipmd++) 
+	  for (int ipmd = 0; ipmd < npmd; ipmd++)
 	    {
 	      fPMDHit = (AliPMDhit*) hits->UncheckedAt(ipmd);
 	      trackno = fPMDHit->GetTrack();
@@ -423,7 +421,6 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
 		  fPRECounter[smn][ixx][iyy]++;
 
 		  AliPMDcell* cell = new AliPMDcell(mtrackno,smn,ixx,iyy,edep);
-
 		  fCell.Add(cell);
 		}
 	      else if(fDetNo == 1)
@@ -499,7 +496,7 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
   if (!fDigits) fDigits = new TClonesArray("AliPMDdigit", 1000);
   ResetDigit();
 
-  AliDebug(1,Form("Event Number =  %d",ievt)); 
+  AliDebug(1,Form("Event Number =  %d",ievt));
   Int_t nparticles = fRunLoader->GetHeader()->GetNtrack();
   AliDebug(1,Form("Number of Particles = %d", nparticles));
   fRunLoader->GetEvent(ievt);
@@ -525,22 +522,22 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
       treeD = fPMDLoader->TreeD();
     }
   Int_t bufsize = 16000;
-  treeD->Branch("PMDDigit", &fDigits, bufsize); 
+  treeD->Branch("PMDDigit", &fDigits, bufsize);
   
   TClonesArray* hits = 0;
   if (fPMD) hits = fPMD->Hits();
 
   // Start loop on tracks in the hits containers
 
-  for (Int_t track=0; track<ntracks;track++) 
+  for (Int_t track=0; track<ntracks;track++)
     {
       gAlice->ResetHits();
       treeH->GetEvent(track);
       
-      if (fPMD) 
+      if (fPMD)
 	{
 	  npmd = hits->GetEntriesFast();
-	  for (int ipmd = 0; ipmd < npmd; ipmd++) 
+	  for (int ipmd = 0; ipmd < npmd; ipmd++)
 	    {
 	      fPMDHit = (AliPMDhit*) hits->UncheckedAt(ipmd);
 	      trackno = fPMDHit->GetTrack();
@@ -687,39 +684,49 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
   Int_t detno = 0;
   Int_t trno = 1;
   for (Int_t idet = 0; idet < 2; idet++)
-    {
+  {
       for (Int_t ism = 0; ism < fgkTotUM; ism++)
-	{
+      {
 	  for (Int_t jrow = 0; jrow < fgkRow; jrow++)
-	    {
+	  {
 	      for (Int_t kcol = 0; kcol < fgkCol; kcol++)
-		{
+	      {
 		  if (idet == 0)
-		    {
-		      gain1 = Gain(idet,ism,jrow,kcol);
-
-		      deltaE = fPRE[ism][jrow][kcol]*gain1;
+		  {
+		      deltaE = fPRE[ism][jrow][kcol];
 		      trno   = fPRETrackNo[ism][jrow][kcol];
 		      detno = 0;
-		    }
+		  }
 		  else if (idet == 1)
-		    {
-		      gain1 = Gain(idet,ism,jrow,kcol);
-		      deltaE = fCPV[ism][jrow][kcol]*gain1;
+		  {
+		      deltaE = fCPV[ism][jrow][kcol];
 		      trno   = fCPVTrackNo[ism][jrow][kcol];
 		      detno = 1;
-		    }
+		  }
 		  if (deltaE > 0.)
-		    {
+		  {
 		      MeV2ADC(deltaE,adc);
+
+		      // To decalibrate the adc values
+		      //
+		      gain1 = Gain(idet,ism,jrow,kcol);
+		      if (gain1 != 0.)
+		      {
+			  Int_t adcDecalib = (Int_t)(adc/gain1);
+			  adc = (Float_t) adcDecalib;
+		      }
+		      else if(gain1 == 0.)
+		      {
+			  adc = 0.;
+		      }
 		      AddDigit(trno,detno,ism,jrow,kcol,adc);
-		    }
-		} // column loop
-	    } // row    loop
+		  }
+	      } // column loop
+	  } // row    loop
 	  treeD->Fill();
 	  ResetDigit();
-	} // supermodule loop
-    } // detector loop
+      } // supermodule loop
+  } // detector loop
   
   fPMDLoader->WriteDigits("OVERWRITE");
   ResetCellADC();
@@ -755,7 +762,7 @@ void AliPMDDigitizer::SDigits2Digits(Int_t ievt)
     }
   Int_t bufsize = 16000;
   if (!fDigits) fDigits = new TClonesArray("AliPMDdigit", 1000);
-  treeD->Branch("PMDDigit", &fDigits, bufsize); 
+  treeD->Branch("PMDDigit", &fDigits, bufsize);
 
   Int_t   trno, det, smn;
   Int_t   irow, icol;
@@ -766,7 +773,7 @@ void AliPMDDigitizer::SDigits2Digits(Int_t ievt)
 
   for (Int_t imodule = 0; imodule < nmodules; imodule++)
     {
-      treeS->GetEntry(imodule); 
+      treeS->GetEntry(imodule);
       Int_t nentries = fSDigits->GetLast();
       AliDebug(2,Form("Number of entries per module = %d",nentries+1));
       for (Int_t ient = 0; ient < nentries+1; ient++)
@@ -780,7 +787,21 @@ void AliPMDDigitizer::SDigits2Digits(Int_t ievt)
 	  edep   = pmdsdigit->GetCellEdep();
 
 	  MeV2ADC(edep,adc);
-	  AddDigit(trno,det,smn,irow,icol,adc);      
+
+	  // To decalibrte the adc values
+	  //
+	  Float_t gain1 = Gain(det,smn,irow,icol);
+	  if (gain1 != 0.)
+	  {
+	      Int_t adcDecalib = (Int_t)(adc/gain1);
+	      adc = (Float_t) adcDecalib;
+	  }
+	  else if(gain1 == 0.)
+	  {
+	      adc = 0.;
+	  }
+
+	  AddDigit(trno,det,smn,irow,icol,adc);
 	}
       treeD->Fill();
       ResetDigit();
@@ -824,7 +845,7 @@ void AliPMDDigitizer::Exec(Option_t *option)
     }
   Int_t bufsize = 16000;
   if (!fDigits) fDigits = new TClonesArray("AliPMDdigit", 1000);
-  treeD->Branch("PMDDigit", &fDigits, bufsize); 
+  treeD->Branch("PMDDigit", &fDigits, bufsize);
 
   Float_t adc;
   Float_t deltaE = 0.;
@@ -862,7 +883,7 @@ void AliPMDDigitizer::Exec(Option_t *option)
 	  ResetDigit();
 	} // supermodule loop
     } // detector loop
-  fPMDLoader->WriteDigits("OVERWRITE");  
+  fPMDLoader->WriteDigits("OVERWRITE");
   fPMDLoader->UnloadDigits();
   ResetCellADC();
 }
@@ -888,7 +909,7 @@ void AliPMDDigitizer::MergeSDigits(Int_t filenumber, Int_t troffset)
   AliDebug(1,Form("Track Offset = %d",troffset));
   for (Int_t imodule = 0; imodule < nmodules; imodule++)
     {
-      treeS->GetEntry(imodule); 
+      treeS->GetEntry(imodule);
       Int_t nentries = fSDigits->GetLast();
       AliDebug(2,Form("Number of Entries per Module = %d",nentries));
       for (Int_t ient = 0; ient < nentries+1; ient++)
@@ -974,7 +995,7 @@ void AliPMDDigitizer::TrackAssignment2Cell()
 		  nn = 1;
 		  pmdTrack[i][j][k] = new Int_t[nn];
 		  pmdEdep[i][j][k] = new Float_t[nn];
-		}		      
+		}
 	      fPRECounter[i][j][k] = 0;
 	    }
 	}
@@ -1033,7 +1054,7 @@ void AliPMDDigitizer::TrackAssignment2Cell()
 			{
 			  trnarray[trCount] = track;
 			  trCount++;
-			}			      
+			}
 		      trackOld = track;
 		    }
 		  delete [] status1;
@@ -1160,8 +1181,8 @@ void AliPMDDigitizer::MeV2ADC(Float_t mev, Float_t & adc) const
 
 }
 //____________________________________________________________________________
-void AliPMDDigitizer::AddSDigit(Int_t trnumber, Int_t det, Int_t smnumber, 
-  Int_t irow, Int_t icol, Float_t adc)
+void AliPMDDigitizer::AddSDigit(Int_t trnumber, Int_t det, Int_t smnumber,
+				Int_t irow, Int_t icol, Float_t adc)
 {
   // Add SDigit
   //
@@ -1171,8 +1192,8 @@ void AliPMDDigitizer::AddSDigit(Int_t trnumber, Int_t det, Int_t smnumber,
 }
 //____________________________________________________________________________
 
-void AliPMDDigitizer::AddDigit(Int_t trnumber, Int_t det, Int_t smnumber, 
-  Int_t irow, Int_t icol, Float_t adc)
+void AliPMDDigitizer::AddDigit(Int_t trnumber, Int_t det, Int_t smnumber,
+			       Int_t irow, Int_t icol, Float_t adc)
 {
   // Add Digit
   //
@@ -1205,7 +1226,7 @@ void AliPMDDigitizer::ResetCell()
 	{
 	  for (Int_t k = 0; k < fgkCol; k++)
 	    {
-	      fPRECounter[i][j][k] = 0; 
+	      fPRECounter[i][j][k] = 0;
 	    }
 	}
     }
@@ -1235,15 +1256,14 @@ void AliPMDDigitizer::ResetCellADC()
 	{
 	  for (Int_t k = 0; k < fgkCol; k++)
 	    {
-	      fCPV[i][j][k] = 0.; 
-	      fPRE[i][j][k] = 0.; 
+	      fCPV[i][j][k] = 0.;
+	      fPRE[i][j][k] = 0.;
 	      fPRETrackNo[i][j][k] = 0;
 	      fCPVTrackNo[i][j][k] = 0;
 	    }
 	}
     }
 }
-//------------------------------------------------------
 //____________________________________________________________________________
 
 void AliPMDDigitizer::UnLoad(Option_t *option)
@@ -1298,14 +1318,14 @@ AliPMDCalibData* AliPMDDigitizer::GetCalibData() const
   if(!entry){
     AliWarning("Calibration object retrieval failed! Dummy calibration will be used.");
     
-    // this just remembers the actual default storage. No problem if it is null.
+    // this just remembers the actual default storage. No problem if it is null
     AliCDBStorage *origStorage = AliCDBManager::Instance()->GetDefaultStorage();
     AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
     
     entry = AliCDBManager::Instance()->Get("PMD/Calib/Data");
     
     // now reset the original default storage to AliCDBManager...
-    AliCDBManager::Instance()->SetDefaultStorage(origStorage);  
+    AliCDBManager::Instance()->SetDefaultStorage(origStorage);
   }
   
   AliPMDCalibData *calibdata=0;
