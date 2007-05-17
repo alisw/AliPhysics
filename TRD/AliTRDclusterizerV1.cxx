@@ -31,6 +31,7 @@
 #include "AliLoader.h"
 #include "AliRawReader.h"
 #include "AliLog.h"
+#include "AliAlignObj.h"
 
 #include "AliTRDclusterizerV1.h"
 #include "AliTRDgeometry.h"
@@ -268,7 +269,10 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
     for (iplan = planBeg; iplan < planEnd; iplan++) {
       for (isect = sectBeg; isect < sectEnd; isect++) {
 
-        Int_t idet = geo->GetDetector(iplan,icham,isect);
+        Int_t    idet    = geo->GetDetector(iplan,icham,isect);
+        Int_t    ilayer  = AliGeomManager::kTRD1 + iplan;
+        Int_t    imodule = icham + chamEnd * isect;
+        UShort_t volid   = AliGeomManager::LayerToVolUID(ilayer,imodule); 
 
         // Get the digits
         digitsIn = fDigitsManager->GetDigits(idet);
@@ -517,6 +521,7 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 			                           ,clusterSig
 			                           ,iType
                                                    ,col
+						   ,volid
     		                                   ,clusterPads[1]);
 		
 		// Store the amplitudes of the pads in the cluster for later analysis

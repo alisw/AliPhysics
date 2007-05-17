@@ -274,6 +274,7 @@ AliTRDcluster* AliTRDclusterizer::AddCluster(Double_t *pos, Int_t timebin
                                            , Int_t det, Double_t amp
 				           , Int_t *tracks, Double_t *sig
                                            , Int_t iType, Int_t col
+					   , UShort_t volid
                                            , Float_t center)
 {
   //
@@ -292,6 +293,7 @@ AliTRDcluster* AliTRDclusterizer::AddCluster(Double_t *pos, Int_t timebin
   c->SetLocalTimeBin(timebin);
   c->SetCenter(center);
   c->SetPad(col);
+  c->SetVolumeId(volid);
 
   if (tracks) {
     c->AddTrackIndex(tracks);
