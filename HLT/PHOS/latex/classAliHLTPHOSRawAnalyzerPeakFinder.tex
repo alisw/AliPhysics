@@ -19,54 +19,11 @@ Inheritance diagram for Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder::\begin{figure}[
 \item 
 virtual {\bf $\sim$Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder} ()
 \item 
-virtual void {\bf Set\-TVector} (Double\_\-t $\ast$t\-Vect, Int\_\-t size)
+virtual void {\bf Set\-TVector} (Double\_\-t $\ast$t\-Vect\-Ptr=0, Int\_\-t size=0)
 \item 
-virtual void {\bf Set\-AVector} (Double\_\-t $\ast$a\-Vect, Int\_\-t size)
+virtual void {\bf Set\-AVector} (Double\_\-t $\ast$a\-Vect\-Ptr=0, Int\_\-t size=0)
 \item 
-virtual void {\bf Evaluate} (Int\_\-t start=0, Int\_\-t lenght=100)
-\item 
-void {\bf Baseline\-Correction} (double $\ast$data\-Ptr, int N)
-\item 
-void {\bf Baseline\-Correction} (double $\ast$data\-Ptr, double baseline\-Value)
-\item 
-int {\bf Find\-Start\-Index} (double treshold)
-\item 
-float {\bf Get\-Timing} ()
-\item 
-float {\bf Get\-Energy} ()
-\item 
-void {\bf Set\-Data} (double $\ast$data)
-\item 
-void {\bf Set\-Sample\-Freq} (double freq)
-\item 
-void {\bf Set\-Start\-Index} (int start\-Index)
-\item 
-void {\bf Make\-Initial\-Guess} ()
-\item 
-void {\bf Make\-Initial\-Guess} (int treshold)
-\item 
-virtual void {\bf Evaluate} (int start=0, int lenght=100)=0
-\item 
-Double\_\-t {\bf Get\-Max\-Value} (Double\_\-t $\ast$dta, Int\_\-t size)
-\end{CompactItemize}
-\subsection*{Protected Attributes}
-\begin{CompactItemize}
-\item 
-Double\_\-t $\ast$ {\bf f\-Float\-Data\-Ptr}
-\item 
-double {\bf f\-Sample\-Frequency}
-\item 
-double {\bf f\-DTof\-Guess}
-\item 
-double {\bf f\-DAmpl\-Guess}
-\item 
-double {\bf f\-Tau}
-\item 
-double {\bf f\-DTof}
-\item 
-double {\bf f\-DAmpl}
-\item 
-int {\bf f\-Start\-Index}
+virtual void {\bf Evaluate} (Int\_\-t start=0, Int\_\-t length=100)
 \end{CompactItemize}
 \subsection*{Private Attributes}
 \begin{CompactItemize}
@@ -84,7 +41,7 @@ Int\_\-t {\bf f\-AVector\-Size}
 \subsection{Constructor \& Destructor Documentation}
 \index{AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}!AliHLTPHOSRawAnalyzerPeakFinder@{AliHLTPHOSRawAnalyzerPeakFinder}}
 \index{AliHLTPHOSRawAnalyzerPeakFinder@{AliHLTPHOSRawAnalyzerPeakFinder}!AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder::Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder ()}\label{classAliHLTPHOSRawAnalyzerPeakFinder_AliHLTPHOSRawAnalyzerPeakFindera0}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder::Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder ()}\label{classAliHLTPHOSRawAnalyzerPeakFinder_a0}
 
 
 The Ali\-HLTPHOSPeakfinder class is the class for extracting the basic signal parameters \char`\"{}timing\char`\"{} and \char`\"{}energy\char`\"{} from the PHOS raw data. Physical data will for a given readout channel be a sequense of ADC digitized 10 bit integer values, however for performance reasons all values used in calculation is of type double. 
@@ -100,12 +57,12 @@ Definition at line 42 of file Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder.cxx.
 
 \index{AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}!AliHLTPHOSRawAnalyzerPeakFinder@{AliHLTPHOSRawAnalyzerPeakFinder}}
 \index{AliHLTPHOSRawAnalyzerPeakFinder@{AliHLTPHOSRawAnalyzerPeakFinder}!AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder::Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder (const {\bf Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder} \&)}\label{classAliHLTPHOSRawAnalyzerPeakFinder_AliHLTPHOSRawAnalyzerPeakFindera1}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder::Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder (const {\bf Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder} \&)}\label{classAliHLTPHOSRawAnalyzerPeakFinder_a1}
 
 
 \index{AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}!~AliHLTPHOSRawAnalyzerPeakFinder@{$\sim$AliHLTPHOSRawAnalyzerPeakFinder}}
 \index{~AliHLTPHOSRawAnalyzerPeakFinder@{$\sim$AliHLTPHOSRawAnalyzerPeakFinder}!AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder::$\sim${\bf Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder} ()\hspace{0.3cm}{\tt  [virtual]}}\label{classAliHLTPHOSRawAnalyzerPeakFinder_AliHLTPHOSRawAnalyzerPeakFindera3}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder::$\sim${\bf Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder} ()\hspace{0.3cm}{\tt  [virtual]}}\label{classAliHLTPHOSRawAnalyzerPeakFinder_a3}
 
 
 
@@ -121,206 +78,102 @@ Definition at line 49 of file Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder.cxx.
 
 
 \subsection{Member Function Documentation}
-\index{AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}!BaselineCorrection@{BaselineCorrection}}
-\index{BaselineCorrection@{BaselineCorrection}!AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSRaw\-Analyzer::Baseline\-Correction (double $\ast$ {\em data\-Ptr}, double {\em baseline\-Value})\hspace{0.3cm}{\tt  [inherited]}}\label{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerPeakFindera8}
-
-
-Shifts the baseline with the amount given by baseline\-Value If pretrigger samples are not present then the basline correction will be incorrect. \begin{Desc}
-\item[Parameters:]
-\begin{description}
-\item[{\em data\-Ptr}]array for wich to correct the basline \item[{\em Basline\-Value}]the basline value to subtract.. \end{description}
-\end{Desc}
-
-
-Definition at line 75 of file Ali\-HLTPHOSRaw\-Analyzer.cxx.
-
-References Ali\-HLTPHOSRaw\-Analyzer::f\-Float\-Data\-Ptr.
-
-\footnotesize\begin{verbatim}76 {
-77   fFloatDataPtr = dataPtr;   
-78   printf("\nbaselineValue = %f\n", baselineValue);
-79   cout << "Baseline correction not yet implemeted" << endl;
-80 } //end BaslineCorrection
-\end{verbatim}\normalsize 
-
-
-\index{AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}!BaselineCorrection@{BaselineCorrection}}
-\index{BaselineCorrection@{BaselineCorrection}!AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSRaw\-Analyzer::Baseline\-Correction (double $\ast$ {\em data\-Ptr}, int {\em N})\hspace{0.3cm}{\tt  [inherited]}}\label{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerPeakFindera7}
-
-
-Attemps to level the basline to zero. The baseline will be calculated from the pretrigger samples and subtracted from the data array. If pretrigger samples are not present then the basline correction will be incorrect. \begin{Desc}
-\item[Parameters:]
-\begin{description}
-\item[{\em data\-Ptr}]array for wich to correct the basline \item[{\em N}]the number of pretrigger samples used to calculate the baseline. \end{description}
-\end{Desc}
-
-
-Definition at line 60 of file Ali\-HLTPHOSRaw\-Analyzer.cxx.
-
-References Ali\-HLTPHOSRaw\-Analyzer::f\-Float\-Data\-Ptr.
-
-\footnotesize\begin{verbatim}61 {
-62   fFloatDataPtr = dataPtr;  
-63   //  n=N;
-64   cout << "Baseline correction not yet implemeted" << endl;
-65 } //end BaselineCorrection
-\end{verbatim}\normalsize 
-
-
 \index{AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}!Evaluate@{Evaluate}}
 \index{Evaluate@{Evaluate}!AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual void Ali\-HLTPHOSRaw\-Analyzer::Evaluate (int {\em start} = {\tt 0}, int {\em lenght} = {\tt 100})\hspace{0.3cm}{\tt  [pure virtual, inherited]}}\label{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerPeakFindera17}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder::Evaluate (Int\_\-t {\em start} = {\tt 0}, Int\_\-t {\em length} = {\tt 100})\hspace{0.3cm}{\tt  [virtual]}}\label{classAliHLTPHOSRawAnalyzerPeakFinder_a6}
 
 
-
-
-Implemented in {\bf Ali\-HLTPHOSRaw\-Analyzer\-Chi\-Square\-Fit} {\rm (p.\,\pageref{classAliHLTPHOSRawAnalyzerChiSquareFit_AliHLTPHOSRawAnalyzerChiSquareFita4})}, {\bf Ali\-HLTPHOSRaw\-Analyzer\-Crude} {\rm (p.\,\pageref{classAliHLTPHOSRawAnalyzerCrude_AliHLTPHOSRawAnalyzerCrudea4})}, {\bf Ali\-HLTPHOSRaw\-Analyzer\-KLevel} {\rm (p.\,\pageref{classAliHLTPHOSRawAnalyzerKLevel_AliHLTPHOSRawAnalyzerKLevela4})}, and {\bf Ali\-HLTPHOSRaw\-Analyzer\-LMS} {\rm (p.\,\pageref{classAliHLTPHOSRawAnalyzerLMS_AliHLTPHOSRawAnalyzerLMSa5})}.\index{AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}!Evaluate@{Evaluate}}
-\index{Evaluate@{Evaluate}!AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual void Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder::Evaluate (Int\_\-t {\em start} = {\tt 0}, Int\_\-t {\em lenght} = {\tt 100})\hspace{0.3cm}{\tt  [virtual]}}\label{classAliHLTPHOSRawAnalyzerPeakFinder_AliHLTPHOSRawAnalyzerPeakFindera6}
-
-
-
-
-Referenced by main().\index{AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}!FindStartIndex@{FindStartIndex}}
-\index{FindStartIndex@{FindStartIndex}!AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int Ali\-HLTPHOSRaw\-Analyzer::Find\-Start\-Index (double {\em treshold})\hspace{0.3cm}{\tt  [inherited]}}\label{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerPeakFindera9}
-
-
-
-
-Definition at line 124 of file Ali\-HLTPHOSRaw\-Analyzer.cxx.
-
-\footnotesize\begin{verbatim}125 {
-126   printf("\ntreshold = %f \n", treshold);
-127   cout << "Find Start index not yet implemented" << endl;
-128   return 0;
-129 } //end FindStartIndex
-\end{verbatim}\normalsize 
-
-
-\index{AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}!GetEnergy@{GetEnergy}}
-\index{GetEnergy@{GetEnergy}!AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float Ali\-HLTPHOSRaw\-Analyzer::Get\-Energy ()\hspace{0.3cm}{\tt  [inherited]}}\label{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerPeakFindera11}
-
-
-Gives the time in entities of ADC channels (quantization levels). Absolute enrgy is found by multiplying with offline calibration constants. 
-
-Definition at line 99 of file Ali\-HLTPHOSRaw\-Analyzer.cxx.
-
-Referenced by main().
-
-\footnotesize\begin{verbatim}100 {
-101   return fDAmpl;
-102 } //end GetEnergy
-\end{verbatim}\normalsize 
-
-
-\index{AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}!GetMaxValue@{GetMaxValue}}
-\index{GetMaxValue@{GetMaxValue}!AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Double\_\-t Ali\-HLTPHOSRaw\-Analyzer::Get\-Max\-Value (Double\_\-t $\ast$ {\em dta}, Int\_\-t {\em size})\hspace{0.3cm}{\tt  [inherited]}}\label{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerPeakFindera18}
-
-
-
-
-Definition at line 176 of file Ali\-HLTPHOSRaw\-Analyzer.cxx.
-
-\footnotesize\begin{verbatim}177 {
-178 
-179   Double_t tmpMax = 0;
-180 
-181   for(int i = 0; i < size; i++)
-182     {
-183       if(dta[i] > tmpMax)
-184         {
-185           tmpMax = dta[i];
-186         }
-187 
-188     }
-189   
-190   return tmpMax;
-191 
-192 }
-\end{verbatim}\normalsize 
-
-
-\index{AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}!GetTiming@{GetTiming}}
-\index{GetTiming@{GetTiming}!AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float Ali\-HLTPHOSRaw\-Analyzer::Get\-Timing ()\hspace{0.3cm}{\tt  [inherited]}}\label{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerPeakFindera10}
-
-
-Gives the timing in entities of sample indexes Physical time is found by multiplying with the sampling intervall (Ts). 
-
-Definition at line 88 of file Ali\-HLTPHOSRaw\-Analyzer.cxx.
-
-Referenced by main().
-
-\footnotesize\begin{verbatim}89 {
-90   return fDTof;
-91 } //end GetTiming
-\end{verbatim}\normalsize 
-
-
-\index{AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}!MakeInitialGuess@{MakeInitialGuess}}
-\index{MakeInitialGuess@{MakeInitialGuess}!AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSRaw\-Analyzer::Make\-Initial\-Guess (int {\em treshold})\hspace{0.3cm}{\tt  [inherited]}}\label{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerPeakFindera16}
-
-
-This function applies only to the Chi and Least mean square fit. An initial guess is made based on the average of the first 5 samples and the first value exeeding threshold + this value. \begin{Desc}
+Extraction of timing and energy using the Peakfinde Algorithm. The. The parameters \char`\"{}start\char`\"{} and \char`\"{}length\char`\"{} defines a sub array of the data array that will be used for the the fit. If start+length must not exeed the total length of the Data array. \char`\"{}start\char`\"{} must be chosen as close as possible to t0. The baseline must also be subtracted. The length of \char`\"{}t\-Vector\char`\"{} and \char`\"{}a\-Vector\char`\"{} mus be equal to length. \char`\"{}index + length\char`\"{} must not exeed the length of the data array set in the constructor. \begin{Desc}
 \item[Parameters:]
 \begin{description}
-\item[{\em treshold}]The index of the first value above treshold is ntaken to be the first value. \end{description}
+\item[{\em start}]the start index of the subarray of the data array. \item[{\em length}]the number of samples to use starting from index \end{description}
 \end{Desc}
 
 
-Definition at line 149 of file Ali\-HLTPHOSRaw\-Analyzer.cxx.
+Implements {\bf Ali\-HLTPHOSRaw\-Analyzer} {\rm (p.\,\pageref{classAliHLTPHOSRawAnalyzer_a17})}.
 
-\footnotesize\begin{verbatim}150 {
-151   printf("\ntreshold = %d\n", treshold);
-152   cout << "Make initial guess not yet implemeted" << endl;  
-153 }
-\end{verbatim}\normalsize 
+Definition at line 93 of file Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder.cxx.
 
+References f\-AVector\-Ptr, f\-TVector\-Ptr, and Ali\-HLTPHOSRaw\-Analyzer::Get\-Max\-Value().
 
-\index{AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}!MakeInitialGuess@{MakeInitialGuess}}
-\index{MakeInitialGuess@{MakeInitialGuess}!AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSRaw\-Analyzer::Make\-Initial\-Guess ()\hspace{0.3cm}{\tt  [inherited]}}\label{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerPeakFindera15}
+Referenced by main().
 
-
-This function applies only to the Chi and Least mean square fit. An initial guess is made based on the average of the first 5 samples and the first value exeeding this value. 
-
-Definition at line 137 of file Ali\-HLTPHOSRaw\-Analyzer.cxx.
-
-\footnotesize\begin{verbatim}138 {
-139   cout << "Make initial guess not yet implemeted" << endl;
-140 }
+\footnotesize\begin{verbatim}94 {
+95   fDTof = 0;
+96   fDAmpl = 0;
+97   Int_t tmpLength;
+98 
+99   if(fTVectorPtr == 0 || fAVectorPtr == 0)
+100     {
+101 
+102     }
+103   else
+104     {
+105  
+106      
+107       if(length <  fTVectorSize)
+108         {
+109           tmpLength = length;
+110         }
+111       else
+112         {
+113           tmpLength = fTVectorSize;
+114         }
+115       
+116       for(int i=0; i < tmpLength; i++)
+117         {  
+118           fDAmpl += fAVectorPtr[i]*fFloatDataPtr[i];    
+119         }
+120 
+121       for(int i=0; i < tmpLength; i++)
+122         {   
+123           fDTof += fTVectorPtr[i]*fFloatDataPtr[i]; 
+124         }
+125       
+126       if(fDAmpl > 900)
+127         {
+128           Double_t tmpMax = GetMaxValue(fFloatDataPtr, tmpLength);
+129           if(tmpMax == 1023)
+130             {
+131               fDAmpl = tmpMax;
+132             }
+133         }
+134 
+135       fDTof = fDTof/fDAmpl;
+136 
+137     }
+138 } //end Evaluate
 \end{verbatim}\normalsize 
 
 
 \index{AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}!operator=@{operator=}}
 \index{operator=@{operator=}!AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}{\bf Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}\& Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder::operator= (const  {\em Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder})\hspace{0.3cm}{\tt  [inline]}}\label{classAliHLTPHOSRawAnalyzerPeakFinder_AliHLTPHOSRawAnalyzerPeakFindera2}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}{\bf Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}\& Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder::operator= (const  {\em Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder})\hspace{0.3cm}{\tt  [inline]}}\label{classAliHLTPHOSRawAnalyzerPeakFinder_a2}
 
 
 
 
-Definition at line 16 of file Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder.h.
+Definition at line 15 of file Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder.h.
 
-\footnotesize\begin{verbatim}17     {
-18       return *this; 
-19     }
+\footnotesize\begin{verbatim}16     {
+17       return *this; 
+18     }
 \end{verbatim}\normalsize 
 
 
 \index{AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}!SetAVector@{SetAVector}}
 \index{SetAVector@{SetAVector}!AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder::Set\-AVector (Double\_\-t $\ast$ {\em a\-Vect}, Int\_\-t {\em size})\hspace{0.3cm}{\tt  [virtual]}}\label{classAliHLTPHOSRawAnalyzerPeakFinder_AliHLTPHOSRawAnalyzerPeakFindera5}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder::Set\-AVector (Double\_\-t $\ast$ {\em a\-Vect\-Ptr} = {\tt 0}, Int\_\-t {\em size} = {\tt 0})\hspace{0.3cm}{\tt  [virtual]}}\label{classAliHLTPHOSRawAnalyzerPeakFinder_a5}
 
 
+Extraction of timing and energy using the Peakfinde Algorithm. The. The parameters \char`\"{}start\char`\"{} and \char`\"{}length\char`\"{} defines a sub array of the data array that will be used for the the fit. If start+length must not exeed the total length of the Data array. \char`\"{}start\char`\"{} must be chosen as close as possible to t0. The baseline must also be subtracted. The length of \char`\"{}t\-Vector\char`\"{} and \char`\"{}a\-Vector\char`\"{} mus be equal to length. \char`\"{}index + length\char`\"{} must not exeed the length of the data array set in the constructor. \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em a\-Vect\-Ptr}]the peakfinder vector for timing \item[{\em size}]size in number of values of the time vector \end{description}
+\end{Desc}
 
 
-Reimplemented from {\bf Ali\-HLTPHOSRaw\-Analyzer} {\rm (p.\,\pageref{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerLMSa17})}.
+Reimplemented from {\bf Ali\-HLTPHOSRaw\-Analyzer} {\rm (p.\,\pageref{classAliHLTPHOSRawAnalyzer_a16})}.
 
 Definition at line 74 of file Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder.cxx.
 
@@ -347,72 +200,19 @@ Referenced by main().
 \end{verbatim}\normalsize 
 
 
-\index{AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}!SetData@{SetData}}
-\index{SetData@{SetData}!AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSRaw\-Analyzer::Set\-Data (double $\ast$ {\em data})\hspace{0.3cm}{\tt  [inherited]}}\label{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerPeakFindera12}
-
-
-Set data array. Overrides data data array set in the constructor. 
-
-Definition at line 109 of file Ali\-HLTPHOSRaw\-Analyzer.cxx.
-
-References Ali\-HLTPHOSRaw\-Analyzer::f\-Float\-Data\-Ptr.
-
-Referenced by main().
-
-\footnotesize\begin{verbatim}110 {
-111   //  double *dta;
-112   //  dta = data;
-113   fFloatDataPtr = data;
-114   //  cout << "Set data not yet implemented" << endl;
-115 }
-\end{verbatim}\normalsize 
-
-
-\index{AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}!SetSampleFreq@{SetSampleFreq}}
-\index{SetSampleFreq@{SetSampleFreq}!AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSRaw\-Analyzer::Set\-Sample\-Freq (double {\em freq})\hspace{0.3cm}{\tt  [inherited]}}\label{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerPeakFindera13}
-
-
-
-
-Definition at line 118 of file Ali\-HLTPHOSRaw\-Analyzer.cxx.
-
-References Ali\-HLTPHOSRaw\-Analyzer::f\-Sample\-Frequency.
-
-Referenced by main().
-
-\footnotesize\begin{verbatim}119 {
-120   fSampleFrequency = freq;
-121 }
-\end{verbatim}\normalsize 
-
-
-\index{AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}!SetStartIndex@{SetStartIndex}}
-\index{SetStartIndex@{SetStartIndex}!AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSRaw\-Analyzer::Set\-Start\-Index (int {\em start\-Index})\hspace{0.3cm}{\tt  [inherited]}}\label{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerPeakFindera14}
-
-
-
-
-Definition at line 156 of file Ali\-HLTPHOSRaw\-Analyzer.cxx.
-
-References Ali\-HLTPHOSRaw\-Analyzer::f\-Start\-Index.
-
-\footnotesize\begin{verbatim}157 {
-158   fStartIndex = index;
-159 }
-\end{verbatim}\normalsize 
-
-
 \index{AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}!SetTVector@{SetTVector}}
 \index{SetTVector@{SetTVector}!AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder::Set\-TVector (Double\_\-t $\ast$ {\em t\-Vect}, Int\_\-t {\em size})\hspace{0.3cm}{\tt  [virtual]}}\label{classAliHLTPHOSRawAnalyzerPeakFinder_AliHLTPHOSRawAnalyzerPeakFindera4}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder::Set\-TVector (Double\_\-t $\ast$ {\em t\-Vect\-Ptr} = {\tt 0}, Int\_\-t {\em size} = {\tt 0})\hspace{0.3cm}{\tt  [virtual]}}\label{classAliHLTPHOSRawAnalyzerPeakFinder_a4}
 
 
+Extraction of timing and energy using the Peakfinde Algorithm. The. The parameters \char`\"{}start\char`\"{} and \char`\"{}length\char`\"{} defines a sub array of the data array that will be used for the the fit. If start+length must not exeed the total length of the Data array. \char`\"{}start\char`\"{} must be chosen as close as possible to t0. The baseline must also be subtracted. The length of \char`\"{}t\-Vector\char`\"{} and \char`\"{}a\-Vector\char`\"{} mus be equal to length. \char`\"{}index + length\char`\"{} must not exeed the length of the data array set in the constructor. \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em t\-Vect\-Ptr}]the peakfinder vector for timing \item[{\em size}]size in number of values of the time vector \end{description}
+\end{Desc}
 
 
-Reimplemented from {\bf Ali\-HLTPHOSRaw\-Analyzer} {\rm (p.\,\pageref{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerLMSa16})}.
+Reimplemented from {\bf Ali\-HLTPHOSRaw\-Analyzer} {\rm (p.\,\pageref{classAliHLTPHOSRawAnalyzer_a15})}.
 
 Definition at line 55 of file Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder.cxx.
 
@@ -443,101 +243,39 @@ Referenced by main().
 \subsection{Member Data Documentation}
 \index{AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}!fAVectorPtr@{fAVectorPtr}}
 \index{fAVectorPtr@{fAVectorPtr}!AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Double\_\-t$\ast$ {\bf Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder::f\-AVector\-Ptr}\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSRawAnalyzerPeakFinder_AliHLTPHOSRawAnalyzerPeakFinderr1}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Double\_\-t$\ast$ {\bf Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder::f\-AVector\-Ptr}\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSRawAnalyzerPeakFinder_r1}
 
 
 
 
-Definition at line 26 of file Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder.h.
+Definition at line 65 of file Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder.h.
 
-Referenced by Set\-AVector().\index{AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}!fAVectorSize@{fAVectorSize}}
+Referenced by Evaluate(), and Set\-AVector().\index{AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}!fAVectorSize@{fAVectorSize}}
 \index{fAVectorSize@{fAVectorSize}!AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Int\_\-t {\bf Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder::f\-AVector\-Size}\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSRawAnalyzerPeakFinder_AliHLTPHOSRawAnalyzerPeakFinderr3}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Int\_\-t {\bf Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder::f\-AVector\-Size}\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSRawAnalyzerPeakFinder_r3}
 
 
 
 
-Definition at line 28 of file Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder.h.
+Definition at line 67 of file Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder.h.
 
-Referenced by Set\-AVector().\index{AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}!fDAmpl@{fDAmpl}}
-\index{fDAmpl@{fDAmpl}!AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double {\bf Ali\-HLTPHOSRaw\-Analyzer::f\-DAmpl}\hspace{0.3cm}{\tt  [protected, inherited]}}\label{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerPeakFinderp6}
-
-
-Amplitude in entities of ADC levels 
-
-Definition at line 44 of file Ali\-HLTPHOSRaw\-Analyzer.h.\index{AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}!fDAmplGuess@{fDAmplGuess}}
-\index{fDAmplGuess@{fDAmplGuess}!AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double {\bf Ali\-HLTPHOSRaw\-Analyzer::f\-DAmpl\-Guess}\hspace{0.3cm}{\tt  [protected, inherited]}}\label{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerPeakFinderp3}
-
-
-Initial guess for amplitude 
-
-Definition at line 41 of file Ali\-HLTPHOSRaw\-Analyzer.h.\index{AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}!fDTof@{fDTof}}
-\index{fDTof@{fDTof}!AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double {\bf Ali\-HLTPHOSRaw\-Analyzer::f\-DTof}\hspace{0.3cm}{\tt  [protected, inherited]}}\label{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerPeakFinderp5}
-
-
-Time of flight in entities of sample intervals 
-
-Definition at line 43 of file Ali\-HLTPHOSRaw\-Analyzer.h.\index{AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}!fDTofGuess@{fDTofGuess}}
-\index{fDTofGuess@{fDTofGuess}!AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double {\bf Ali\-HLTPHOSRaw\-Analyzer::f\-DTof\-Guess}\hspace{0.3cm}{\tt  [protected, inherited]}}\label{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerPeakFinderp2}
-
-
-Initial guess for t0 
-
-Definition at line 40 of file Ali\-HLTPHOSRaw\-Analyzer.h.\index{AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}!fFloatDataPtr@{fFloatDataPtr}}
-\index{fFloatDataPtr@{fFloatDataPtr}!AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Double\_\-t$\ast$ {\bf Ali\-HLTPHOSRaw\-Analyzer::f\-Float\-Data\-Ptr}\hspace{0.3cm}{\tt  [protected, inherited]}}\label{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerPeakFinderp0}
-
-
-Float representation of data that should be fitted 
-
-Definition at line 38 of file Ali\-HLTPHOSRaw\-Analyzer.h.
-
-Referenced by Ali\-HLTPHOSRaw\-Analyzer::Ali\-HLTPHOSRaw\-Analyzer(), Ali\-HLTPHOSRaw\-Analyzer::Baseline\-Correction(), and Ali\-HLTPHOSRaw\-Analyzer::Set\-Data().\index{AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}!fSampleFrequency@{fSampleFrequency}}
-\index{fSampleFrequency@{fSampleFrequency}!AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double {\bf Ali\-HLTPHOSRaw\-Analyzer::f\-Sample\-Frequency}\hspace{0.3cm}{\tt  [protected, inherited]}}\label{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerPeakFinderp1}
-
-
-The ADC sample frequency in MHz used under data taking 
-
-Definition at line 39 of file Ali\-HLTPHOSRaw\-Analyzer.h.
-
-Referenced by Ali\-HLTPHOSRaw\-Analyzer::Ali\-HLTPHOSRaw\-Analyzer(), and Ali\-HLTPHOSRaw\-Analyzer::Set\-Sample\-Freq().\index{AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}!fStartIndex@{fStartIndex}}
-\index{fStartIndex@{fStartIndex}!AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int {\bf Ali\-HLTPHOSRaw\-Analyzer::f\-Start\-Index}\hspace{0.3cm}{\tt  [protected, inherited]}}\label{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerPeakFinderp7}
-
-
-
-
-Definition at line 46 of file Ali\-HLTPHOSRaw\-Analyzer.h.
-
-Referenced by Ali\-HLTPHOSRaw\-Analyzer::Set\-Start\-Index().\index{AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}!fTau@{fTau}}
-\index{fTau@{fTau}!AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double {\bf Ali\-HLTPHOSRaw\-Analyzer::f\-Tau}\hspace{0.3cm}{\tt  [protected, inherited]}}\label{classAliHLTPHOSRawAnalyzer_AliHLTPHOSRawAnalyzerPeakFinderp4}
-
-
-The risetime in micro seconds 
-
-Definition at line 42 of file Ali\-HLTPHOSRaw\-Analyzer.h.\index{AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}!fTVectorPtr@{fTVectorPtr}}
+Referenced by Set\-AVector().\index{AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}!fTVectorPtr@{fTVectorPtr}}
 \index{fTVectorPtr@{fTVectorPtr}!AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Double\_\-t$\ast$ {\bf Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder::f\-TVector\-Ptr}\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSRawAnalyzerPeakFinder_AliHLTPHOSRawAnalyzerPeakFinderr0}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Double\_\-t$\ast$ {\bf Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder::f\-TVector\-Ptr}\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSRawAnalyzerPeakFinder_r0}
 
 
 
 
-Definition at line 25 of file Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder.h.
+Definition at line 64 of file Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder.h.
 
-Referenced by Set\-TVector().\index{AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}!fTVectorSize@{fTVectorSize}}
+Referenced by Evaluate(), and Set\-TVector().\index{AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}!fTVectorSize@{fTVectorSize}}
 \index{fTVectorSize@{fTVectorSize}!AliHLTPHOSRawAnalyzerPeakFinder@{Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Int\_\-t {\bf Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder::f\-TVector\-Size}\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSRawAnalyzerPeakFinder_AliHLTPHOSRawAnalyzerPeakFinderr2}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Int\_\-t {\bf Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder::f\-TVector\-Size}\hspace{0.3cm}{\tt  [private]}}\label{classAliHLTPHOSRawAnalyzerPeakFinder_r2}
 
 
 
 
-Definition at line 27 of file Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder.h.
+Definition at line 66 of file Ali\-HLTPHOSRaw\-Analyzer\-Peak\-Finder.h.
 
 Referenced by Set\-TVector().
 
