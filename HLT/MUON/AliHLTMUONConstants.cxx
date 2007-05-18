@@ -25,11 +25,16 @@
 
 #include "AliHLTMUONConstants.h"
 
+
 const AliHLTMUONRecHitStruct
 AliHLTMUONConstants::fgkNilRecHitStruct = {0, 0, 0};
 
-const AliHLTMUONChannelInfoStruct
-AliHLTMUONConstants::fgkNilChannelInfoStruct = {0, 0, 0, 0};
+const AliHLTMUONClusterStruct
+AliHLTMUONConstants::fgkNilClusterStruct = {0, {0, 0, 0}, 0, 0};
+
+const AliHLTMUONChannelStruct
+AliHLTMUONConstants::fgkNilChannelStruct = {0, 0, 0, 0, 0};
+
 
 const AliHLTComponentDataType
 AliHLTMUONConstants::fgkTriggerDDLStreamDataType = {
@@ -46,20 +51,6 @@ AliHLTMUONConstants::fgkTrackingDDLStreamDataType = {
 };
 
 const AliHLTComponentDataType
-AliHLTMUONConstants::fgkRecHitsBlockDataType = {
-	sizeof(AliHLTComponentDataType),
-	{'R','E','C','H','I','T','S',' '},
-	{'D','I','M','U'}
-};
-
-const AliHLTComponentDataType
-AliHLTMUONConstants::fgkRecHitsDebugBlockDataType = {
-	sizeof(AliHLTComponentDataType),
-	{'R','H','I','T','S','d','b','g'},
-	{'D','I','M','U'}
-};
-
-const AliHLTComponentDataType
 AliHLTMUONConstants::fgkTriggerRecordsBlockDataType = {
 	sizeof(AliHLTComponentDataType),
 	{'T','R','I','G','R','E','C','S'},
@@ -67,9 +58,37 @@ AliHLTMUONConstants::fgkTriggerRecordsBlockDataType = {
 };
 
 const AliHLTComponentDataType
-AliHLTMUONConstants::fgkTriggerRecordsDebugBlockDataType = {
+AliHLTMUONConstants::fgkTrigRecsDebugBlockDataType = {
 	sizeof(AliHLTComponentDataType),
-	{'T','R','I','G','R','d','b','g'},
+	{'T','R','I','G','R','D','B','G'},
+	{'D','I','M','U'}
+};
+
+const AliHLTComponentDataType
+AliHLTMUONConstants::fgkTriggerChannelBlockDataType = {
+	sizeof(AliHLTComponentDataType),
+	{'T','R','I','G','C','H','N','L'},
+	{'D','I','M','U'}
+};
+
+const AliHLTComponentDataType
+AliHLTMUONConstants::fgkRecHitsBlockDataType = {
+	sizeof(AliHLTComponentDataType),
+	{'R','E','C','H','I','T','S',' '},
+	{'D','I','M','U'}
+};
+
+const AliHLTComponentDataType
+AliHLTMUONConstants::fgkClusterBlockDataType = {
+	sizeof(AliHLTComponentDataType),
+	{'C','L','U','S','T','E','R','S'},
+	{'D','I','M','U'}
+};
+
+const AliHLTComponentDataType
+AliHLTMUONConstants::fgkChannelBlockDataType = {
+	sizeof(AliHLTComponentDataType),
+	{'C','H','A','N','N','E','L','S'},
 	{'D','I','M','U'}
 };
 
@@ -81,9 +100,16 @@ AliHLTMUONConstants::fgkMansoTracksBlockDataType = {
 };
 
 const AliHLTComponentDataType
-AliHLTMUONConstants::fgkMansoTracksDebugBlockDataType = {
+AliHLTMUONConstants::fgkMansoRoIBlockDataType = {
 	sizeof(AliHLTComponentDataType),
-	{'M','N','T','R','K','d','b','g'},
+	{'M','A','N','S','O','R','O','I'},
+	{'D','I','M','U'}
+};
+
+const AliHLTComponentDataType
+AliHLTMUONConstants::fgkMansoTrialsBlockDataType = {
+	sizeof(AliHLTComponentDataType),
+	{'M','A','N','T','R','I','A','L'},
 	{'D','I','M','U'}
 };
 
@@ -97,6 +123,6 @@ AliHLTMUONConstants::fgkDecisionBlockDataType = {
 const AliHLTComponentDataType
 AliHLTMUONConstants::fgkDecisionDebugBlockDataType = {
 	sizeof(AliHLTComponentDataType),
-	{'D','E','C','I','S','d','b','g'},
+	{'D','E','C','I','S','D','B','G'},
 	{'D','I','M','U'}
 };
