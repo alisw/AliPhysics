@@ -99,13 +99,13 @@ void MatchComparison()
 		for (Int_t it = 0; it < nTracks; it++) {
 			AliESDtrack *track = esd->GetTrack(it);
 			ic = track->GetEMCALcluster();
-			if (ic == -999999999) continue;
+			if (ic == AliEMCALTracker::kUnmatched) continue;
 			ic = TMath::Abs(ic);
 			AliESDCaloCluster *cl = esd->GetCaloCluster(ic);
 			if (!cl) continue;
-			trkLabel = track->GetLabel();
+			trkLabel = TMath::Abs(track->GetLabel());
 			cluLabel = cl->GetPrimaryIndex();
-			if (trkLabel == cluLabel && trkLabel > 0) {
+			if (trkLabel == cluLabel && trkLabel >= 0) {
 				TParticle *p = stack->Particle(TMath::Abs(trkLabel));
 				hgood->Fill(p->Pt());
 				hfound->Fill(p->Pt());

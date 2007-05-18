@@ -55,12 +55,12 @@ void FindMatches(const char *fileOut = "matchESD.root")
 	// Distances are in centimeters, angles in degrees.
 	//
 	AliEMCALTracker *mf = new AliEMCALTracker;
-	mf->SetCutX(5.0);
-	mf->SetCutY(5.0);
-	mf->SetCutZ(5.0);
+	mf->SetCutX(50.0);
+	mf->SetCutY(50.0);
+	mf->SetCutZ(50.0);
 	mf->SetCutAlpha(-50., 50.);  // --> i.e. exclude this cut
-	mf->SetCutAngle(10.);
-	mf->SetMaxDistance(5.0);
+	mf->SetCutAngle(10000.);
+	mf->SetMaxDistance(50.0);
 	
 	//
 	// Define how to manage energy loss correction.
@@ -90,8 +90,9 @@ void FindMatches(const char *fileOut = "matchESD.root")
 	//
 	Int_t nTracks, nStep1, nStep2, nSaved;
 	for (Long64_t iev = 0; iev < nEvents; iev++) {
-		cout << "Finding matches in event " << iev + 1 << "/" << nEvents << endl;
+		//cout << "Finding matches in event " << iev + 1 << "/" << nEvents << endl;
 		esdTree->GetEntry(iev);
+		mf->Clear("ALL");
 		mf->PropagateBack(esd);
 		outTree->Fill();
 	}
