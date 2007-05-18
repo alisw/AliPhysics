@@ -133,11 +133,11 @@ AliHLTPHOSDDLDecoderComponent::DoEvent( const AliHLTComponentEventData& evtData,
   const AliHLTComponentBlockData* iter = NULL; 
   unsigned long ndx;
 
-  cout << "evtData.fBlockCnt = " <<   evtData.fBlockCnt  << endl;
+  //  cout << "evtData.fBlockCnt = " <<   evtData.fBlockCnt  << endl;
 
   for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
-      cout << "AliHLTPHOSDDLDecoderComponent::DoEven ndx = " <<  ndx   <<endl;
+      //     cout << "AliHLTPHOSDDLDecoderComponent::DoEven ndx = " <<  ndx   <<endl;
       iter = blocks+ndx;
       mysize = 0;
       tmpChannelCnt = 0;
@@ -146,7 +146,7 @@ AliHLTPHOSDDLDecoderComponent::DoEvent( const AliHLTComponentEventData& evtData,
       
       if ( iter->fDataType != AliHLTPHOSDefinitions::fgkDDLPackedRawDataType )
 	{
-	  cout << "iter->fDataType != AliHLTPHOSDefinitions::fgkDDLPackedRawDataType" << endl;
+	  //	  cout << "iter->fDataType != AliHLTPHOSDefinitions::fgkDDLPackedRawDataType" << endl;
 	  continue;
 	}
 
@@ -176,7 +176,7 @@ AliHLTPHOSDDLDecoderComponent::DoEvent( const AliHLTComponentEventData& evtData,
 	}
 
       fOutPtr->fNValidChannels = tmpChannelCnt-1;
-      cout <<  "AliHLTPHOSDDLDecoderComponent::DoEven: setting  fOutPtr->fNValidChannels ="  << tmpChannelCnt-1<<endl;
+      //      cout <<  "AliHLTPHOSDDLDecoderComponent::DoEven: setting  fOutPtr->fNValidChannels ="  << tmpChannelCnt-1<<endl;
 
       int tmpSampleCnt=0;
       AliHLTComponentBlockData bd;
