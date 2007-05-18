@@ -132,7 +132,6 @@ void AliGeomManager::Init()
 AliGeomManager::AliGeomManager():
   TObject(),
 
-  //  fgGeometry(NULL),
   fAlignObjArray(NULL)
 {
   // default constructor
@@ -330,8 +329,6 @@ Bool_t AliGeomManager::GetFromGeometry(const char *symname, AliAlignObj &alobj)
     return kFALSE;
   }
 
-  ReactIfChangedGeom();
-  
   const char *path;
   TGeoPNEntry* pne = gGeoManager->GetAlignableEntry(symname);
   if(pne){
@@ -382,8 +379,6 @@ void  AliGeomManager::InitAlignObjFromGeometry()
  // the TGeo geometry
 
   if(fgAlignObjs[0]) return;
-  
-  ReactIfChangedGeom();
   
   for (Int_t iLayer = kFirstLayer; iLayer < AliGeomManager::kLastLayer; iLayer++) {
     fgAlignObjs[iLayer-kFirstLayer] = new AliAlignObj*[LayerSize(iLayer)];
@@ -440,7 +435,7 @@ const char* AliGeomManager::SymName(ELayerID layerId, Int_t modId)
     AliWarningClass(Form("Module number %d not in the valid range (0->%d) !",modId,fgLayerSize[layerId-kFirstLayer]-1));
     return NULL;
   }
-  ReactIfChangedGeom();
+  InitSymNamesLUT();
 
   return fgSymName[layerId-kFirstLayer][modId].Data();
 }
@@ -454,6 +449,8 @@ void AliGeomManager::InitSymNamesLUT()
   // The LUTs are static; they are created at the creation of the
   // AliGeomManager instance and recreated if the geometry has changed
   //
+
+  if(fgSymName[0]) return;
 
   for (Int_t iLayer = 0; iLayer < (kLastLayer - kFirstLayer); iLayer++){
     if(!fgSymName[iLayer]) fgSymName[iLayer]=new TString[fgLayerSize[iLayer]];
@@ -718,13 +715,17 @@ void AliGeomManager::InitPNEntriesLUT()
   // AliGeomManager instance and recreated if the geometry has changed
   //
 
+  if(!gGeoManager) AliErrorClass("Impossible to initialize PNEntries LUT without an active geometry");
+
+  InitSymNamesLUT();
+  
   for (Int_t iLayer = 0; iLayer < (kLastLayer - kFirstLayer); iLayer++){
     if(!fgPNEntry[iLayer]) fgPNEntry[iLayer] = new TGeoPNEntry*[fgLayerSize[iLayer]];
   }
 
   for (Int_t iLayer = 0; iLayer < (kLastLayer-kFirstLayer); iLayer++){
-    for(Int_t modnum=0; modnum<LayerSize(iLayer); modnum++){
-      fgPNEntry[iLayer-kFirstLayer][modnum] = gGeoManager->GetAlignableEntry(fgSymName[iLayer-kFirstLayer][modnum].Data());
+    for(Int_t modnum=0; modnum<fgLayerSize[iLayer]; modnum++){
+      fgPNEntry[iLayer][modnum] = gGeoManager->GetAlignableEntry(fgSymName[iLayer][modnum].Data());
     }
   }
 }
@@ -735,6 +736,11 @@ TGeoHMatrix* AliGeomManager::GetMatrix(TGeoPNEntry* pne)
   // Get the transformation matrix for a given PNEntry
   // by quering the TGeoManager
 
+  if (!gGeoManager || !gGeoManager->IsClosed()) {
+    AliErrorClass("Can't get the global matrix! gGeoManager doesn't exist or it is still opened!");
+    return NULL;
+  }
+  
   TGeoPhysicalNode *pnode = pne->GetPhysicalNode();
   if (pnode) return pnode->GetMatrix();
 
@@ -752,8 +758,6 @@ TGeoHMatrix* AliGeomManager::GetMatrix(Int_t index)
   // Get the global transformation matrix for a given alignable volume
   // identified by its unique ID 'index' by quering the TGeoManager
 
-  ReactIfChangedGeom();
-
   TGeoPNEntry *pne = GetPNEntry(index);
   if (!pne) return NULL;
 
@@ -766,7 +770,7 @@ TGeoHMatrix* AliGeomManager::GetMatrix(const char* symname)
   // Get the global transformation matrix for a given alignable volume
   //  identified by its symbolic name 'symname' by quering the TGeoManager
 
-  ReactIfChangedGeom();
+  if(!ReactIfChangedGeom()) return NULL;
   TGeoPNEntry* pne = gGeoManager->GetAlignableEntry(symname);
   if (!pne) return NULL;
 
@@ -882,7 +886,6 @@ Bool_t AliGeomManager::GetOrigGlobalMatrix(Int_t index, TGeoHMatrix &m)
 
   m.Clear();
 
-  ReactIfChangedGeom();
   const char *symname = SymName(index);
   if (!symname) return kFALSE;
 
@@ -922,10 +925,9 @@ Bool_t AliGeomManager::GetOrigRotation(Int_t index, Double_t r[9])
 //______________________________________________________________________
 const TGeoHMatrix* AliGeomManager::GetTracking2LocalMatrix(Int_t index)
 {
-  // Get the matrix which transforms from the tracking to local r.s.
+  // Get the matrix which transforms from the tracking to the local RS
   // The method queries directly the TGeoPNEntry
 
-  ReactIfChangedGeom();
   TGeoPNEntry *pne = GetPNEntry(index);
   if (!pne) return NULL;
 
@@ -981,7 +983,10 @@ TGeoPNEntry* AliGeomManager::GetPNEntry(ELayerID layerId, Int_t modId)
   // Returns the TGeoPNEntry for a given layer
   // and module ID
   //
-  ReactIfChangedGeom();
+
+  if(!fgPNEntry[0]) InitPNEntriesLUT();
+  if(!ReactIfChangedGeom()) return NULL;
+
   if(modId<0 || modId>=fgLayerSize[layerId-kFirstLayer]){
     AliWarningClass(Form("Module number %d not in the valid range (0->%d) !",modId,fgLayerSize[layerId-kFirstLayer]-1));
     return NULL;
@@ -1185,15 +1190,22 @@ Bool_t AliGeomManager::ApplyAlignObjsToGeom(const char* detName, Int_t runnum, I
 }
 
 //_____________________________________________________________________________
-void AliGeomManager::ReactIfChangedGeom()
+Bool_t AliGeomManager::ReactIfChangedGeom()
 {
   // Check if the TGeo geometry has changed. In that case reinitialize the
-  // look-up tables
+  // look-up table mapping volume indexes to TGeoPNEntries
   //
+
+  if (!gGeoManager || !gGeoManager->IsClosed()) {
+    AliErrorClass("No active geometry or geometry not yet closed!");
+    return kFALSE;
+  }
+
   if(HasGeomChanged())
     {
       fgGeometry = gGeoManager;
-      InitSymNamesLUT();
       InitPNEntriesLUT();
     }
+
+  return kTRUE;
 }

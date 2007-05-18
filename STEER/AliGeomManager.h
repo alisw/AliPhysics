@@ -58,6 +58,7 @@ public:
   static AliAlignObj* GetAlignObj(UShort_t voluid);
   static AliAlignObj* GetAlignObj(ELayerID layerId, Int_t modId);
 
+  //to be used making a copy of the returned pointer to TGeoHMatrix!!
   static TGeoHMatrix* GetMatrix(TGeoPNEntry* pne);
   static TGeoHMatrix* GetMatrix(Int_t index);
   static TGeoHMatrix* GetMatrix(const char *symname);
@@ -108,7 +109,7 @@ public:
   AliGeomManager(const AliGeomManager&);
   AliGeomManager& operator=(const AliGeomManager&);
 
-  static void        ReactIfChangedGeom();
+  static Bool_t      ReactIfChangedGeom();
   static Bool_t      HasGeomChanged(){return fgGeometry!=gGeoManager;} 
   static TGeoManager* fgGeometry;
 
