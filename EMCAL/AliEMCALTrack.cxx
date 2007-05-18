@@ -274,7 +274,7 @@ Bool_t AliEMCALTrack::PropagateToGlobal(Double_t x, Double_t y, Double_t z, Doub
 	
 	Int_t    isector = (Int_t)(phi / width);
 	Double_t rotation = ((Double_t)isector + 0.5) * width;
-	vc.RotateZ(rotation * TMath::DegToRad());
+	vc.RotateZ(-rotation * TMath::DegToRad());
 	
 	return PropagateTo(vc.X(), d, x0);
 }
