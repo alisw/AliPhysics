@@ -259,6 +259,10 @@ Int_t AliEMCALTracker::LoadClusters(TTree *cTree)
 		return 1;
 	}
 	
+	branch->SetAddress(0);
+        clusters->Delete();
+        delete clusters;
+
 	AliInfo(Form("Collected %d clusters", fClusters->GetEntries()));
 
 	return 0;
