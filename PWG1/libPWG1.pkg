@@ -1,0 +1,9 @@
+
+SRCS:= AliTreeDraw.cxx \
+       AliGenInfo.cxx
+
+HDRS:= $(SRCS:.cxx=.h)
+
+DHDR:= PWG1LinkDef.h
+
+EINCLUDE:= TPC
