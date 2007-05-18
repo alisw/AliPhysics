@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2007/05/08 11:53:29  arcelli
+Improved class flexibility for further use (R.Preghenella)
+
 Revision 1.17  2007/05/03 08:53:50  decaro
 Coding convention: RS3 violation -> suppression
 
@@ -1034,9 +1037,10 @@ Int_t AliTOFRawStream::Equip2VolNpad(Int_t iDDL, Int_t iChain, Int_t nTDC,
   iPadAlongTheStrip = iTDClocal*AliTOFGeometry::NCh() + iCHlocal;
 
   if (((iDDL==1 || iDDL==2) && iPadAlongTheStrip< AliTOFGeometry::NpadX()) ||
-      ((iDDL==0 || iDDL==3) && iPadAlongTheStrip>=AliTOFGeometry::NpadX()))
-    AliError("Problems with the padX number!");
-
+      ((iDDL==0 || iDDL==3) && iPadAlongTheStrip>=AliTOFGeometry::NpadX())) {
+    fRawReader->AddMajorErrorLog(kPadXError);
+    AliWarning("Problems with the padX number!");
+  }
   return iPadAlongTheStrip;
 
 }
@@ -1099,14 +1103,22 @@ void AliTOFRawStream::EquipmentId2VolumeId(Int_t nDDL, Int_t nTRM, Int_t iChain,
   Int_t iSector = GetSectorNumber(nDDL);
 
   Int_t iPlate = Equip2VolNplate(iDDL, nTRM, nTDC);
-  if (iPlate==-1) AliError("Problems with the plate number!");
+  if (iPlate==-1) {
+    fRawReader->AddMajorErrorLog(kPlateError,"plate = -1");
+    AliWarning("Problems with the plate number!");
+  }
 
   Int_t iStrip = Equip2VolNstrip(iDDL, nTRM, nTDC);
-  if (iStrip==-1) AliError("Problems with the strip number!");
+  if (iStrip==-1) {
+    fRawReader->AddMajorErrorLog(kStripError,"strip = -1");
+    AliWarning("Problems with the strip number!");
+  }
 
   Int_t iPadAlongTheStrip  = Equip2VolNpad(iDDL, iChain, nTDC, iCH);
-  if (iPadAlongTheStrip==-1)
-    AliError("Problems with the pad number along the strip!");
+  if (iPadAlongTheStrip==-1){
+    fRawReader->AddMajorErrorLog(kPadAlongStripError,"pad = -1");
+    AliWarning("Problems with the pad number along the strip!");
+  }
 
   Int_t iPadX  = (Int_t)(iPadAlongTheStrip/(Float_t(AliTOFGeometry::NpadZ())));
   Int_t iPadZ  = iPadAlongTheStrip%AliTOFGeometry::NpadZ();
@@ -1133,11 +1145,15 @@ Int_t AliTOFRawStream::GetIndex(Int_t *detId)
 
 
   Int_t isector = detId[0];
-  if (isector >= kSectors)
-    AliError(Form("Wrong sector number in TOF (%d) !",isector));
+  if (isector >= kSectors){
+    fRawReader->AddMajorErrorLog(kSectorError, Form("sector = %i",isector));
+    AliWarning(Form("Wrong sector number in TOF (%d) !",isector));
+  }
   Int_t iplate = detId[1];
-  if (iplate >= kPlates)
-    AliError(Form("Wrong plate number in TOF (%d) !",iplate));
+  if (iplate >= kPlates){
+    fRawReader->AddMajorErrorLog(kPlateError, Form("plate = %i",iplate));
+    AliWarning(Form("Wrong plate number in TOF (%d) !",iplate));
+  }
   Int_t istrip = detId[2];
   Int_t ipadz = detId[3];
   Int_t ipadx = detId[4];
@@ -1159,7 +1175,8 @@ Int_t AliTOFRawStream::GetIndex(Int_t *detId)
     stripOffset = kStripC+kStripB+kStripA+kStripB;
     break;
   default:
-    AliError(Form("Wrong plate number in TOF (%d) !",iplate));
+    fRawReader->AddMajorErrorLog(kPlateError, Form("plate = %i",iplate));
+    AliWarning(Form("Wrong plate number in TOF (%d) !",iplate));
     break;
   };
 
@@ -1171,27 +1188,37 @@ Int_t AliTOFRawStream::GetIndex(Int_t *detId)
   return idet;
 }
 //-----------------------------------------------------------------------------
-Bool_t AliTOFRawStream::DecodeDDL(Int_t DDLMin, Int_t DDLMax, Int_t verbose = 0){
+Bool_t AliTOFRawStream::DecodeDDL(Int_t nDDLMin, Int_t nDDLMax, Int_t verbose = 0) {
+  //
+  // To decode raw data for DDL number in [nDDLmin; nDDLmax]
+  //
+
   //check and fix valid DDL range
-  if (DDLMin < 0){
-    DDLMin = 0;
-    AliError("Wrong DDL range: setting first DDL ID to 0");
+  if (nDDLMin < 0){
+    nDDLMin = 0;
+    fRawReader->AddMinorErrorLog(kDDLMinError);
+    AliWarning("Wrong DDL range: setting first DDL ID to 0");
   }
-  if (DDLMax > 71){
-    DDLMax = 71;
-    AliError("Wrong DDL range: setting last DDL ID to 71");
+  if (nDDLMax > 71){
+    nDDLMax = 71;
+    fRawReader->AddMinorErrorLog(kDDLMaxError);
+    AliWarning("Wrong DDL range: setting last DDL ID to 71");
   }  
 
   //select required DDLs
-  fRawReader->Select("TOF", DDLMin, DDLMax);
+  fRawReader->Select("TOF", nDDLMin, nDDLMax);
 
   if (verbose)
-    AliInfo(Form("Selected TOF DDL range: %d-%d", DDLMin, DDLMax));
+    AliInfo(Form("Selected TOF DDL range: %d-%d", nDDLMin, nDDLMax));
 
   return(Decode(verbose));
 }
 //-----------------------------------------------------------------------------
-Bool_t AliTOFRawStream::Decode(Int_t verbose = 0){
+Bool_t AliTOFRawStream::Decode(Int_t verbose = 0) {
+  //
+  // New decoder method
+  //
+
   Int_t currentEquipment;
   Int_t currentDDL;
 
@@ -1221,8 +1248,9 @@ Bool_t AliTOFRawStream::Decode(Int_t verbose = 0){
     //read equipment payload
     if (!fRawReader->ReadNext(data, kDataSize))
       {
+	fRawReader->AddMajorErrorLog(kDDLdataReading);
 	if (verbose)
-	  AliError("Error while reading DDL data. Go to next equipment");
+	  AliWarning("Error while reading DDL data. Go to next equipment");
 	delete [] data;
 	data = 0x0;
 	continue;
@@ -1238,8 +1266,10 @@ Bool_t AliTOFRawStream::Decode(Int_t verbose = 0){
     fDecoder->SetPackedDataBuffer(fPackedDataBuffer[currentDDL]);
     
     //start decoding
-    if (fDecoder->Decode((UInt_t *)data, kDataWords) == kTRUE)
-      AliError(Form("Error while decoding DDL # %d: decoder returned with errors", currentDDL));
+    if (fDecoder->Decode((UInt_t *)data, kDataWords) == kTRUE) {
+      fRawReader->AddMajorErrorLog(kDDLDecoder,Form("DDL # = %d",currentDDL));
+      AliWarning(Form("Error while decoding DDL # %d: decoder returned with errors", currentDDL));
+    }
     
     delete [] data;
     data = 0x0;
@@ -1283,7 +1313,8 @@ AliTOFRawStream::LoadRawDataBuffers(Int_t indexDDL, Int_t verbose)
     AliInfo(Form("Decoding raw data for DDL # %d ...", indexDDL));
 
   if (DecodeDDL(indexDDL, indexDDL, verbose) != 0){ //decode DDL
-    AliError(Form("Error while decoding DDL # %d", indexDDL));
+    fRawReader->AddMajorErrorLog(kDDLDecoder,Form("DDL # = %d",indexDDL));
+    AliWarning(Form("Error while decoding DDL # %d", indexDDL));
     return kTRUE;
   }
   

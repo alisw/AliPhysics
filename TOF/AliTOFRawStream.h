@@ -417,6 +417,18 @@ class AliTOFRawStream: public TObject {
 
   Bool_t LoadRawDataBuffers(Int_t indexDDL, Int_t verbose = 0);
   
+  enum ETOFRawStreamError {
+    kPadXError = 0,
+    kPadAlongStripError = 1,
+    kPlateError = 2,
+    kStripError = 3,
+    kSectorError = 4,
+    kDDLMinError = 5,
+    kDDLMaxError = 6,
+    kDDLdataReading = 7,
+    kDDLDecoder = 8
+  };
+
  private:
   
   Int_t GetField(UInt_t word, Int_t fieldMask, Int_t fieldPosition) const;
