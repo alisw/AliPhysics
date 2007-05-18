@@ -23,6 +23,7 @@ class TLorentzVector;
 
 class AliRun;
 class AliDigit;
+class AliRawReader;
 
 class AliTRDhit;
 class AliTRDsim;
@@ -51,6 +52,7 @@ class AliTRD : public AliDetector {
   virtual void     Hits2SDigits();
   virtual void     SDigits2Digits();
   virtual void     Digits2Raw();
+  virtual Bool_t   Raw2SDigits(AliRawReader* rawReader);
   virtual void     MakeBranch(Option_t *option);
 
   virtual void     AddHit(Int_t, Int_t*, Float_t*)       { }; 
@@ -88,6 +90,7 @@ class AliTRD : public AliDetector {
           Int_t    fDisplayType;        //  Display type (0: normal, 1: detailed) 
 
  private:
+
   AliTRD(const AliTRD &trd);
   AliTRD  &operator=(const AliTRD &trd);
 

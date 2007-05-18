@@ -46,6 +46,7 @@
 #include "AliMagF.h"
 #include "AliRun.h"
 #include "AliTrackReference.h"
+#include "AliRawReader.h"
 
 #include "AliTRD.h"
 #include "AliTRDdigit.h"
@@ -633,6 +634,10 @@ void AliTRD::CreateMaterials()
   fFoilDensity = dmy;
   fGasDensity  = dgm;
 
+  gMC->Gstpar((* fIdtmed)[9],"LOSS", 13); // specific energy loss
+  gMC->Gstpar((* fIdtmed)[9],"PRIMIO_E", 23.53); // 1st ionisation potential
+  gMC->Gstpar((* fIdtmed)[9],"PRIMIO_N", 19.344431); // Number of
+
 }
 
 //_____________________________________________________________________________
@@ -907,6 +912,40 @@ void AliTRD::SetTreeAddress()
 }
 
 //_____________________________________________________________________________
+Bool_t AliTRD::Raw2SDigits(AliRawReader *rawReader)
+{
+  //
+  // Converts RAW data to SDigits
+  //
+
+  AliLoader *loader = fRunLoader->GetLoader("TRDLoader");
+  if (!loader) {
+    AliError("Can not get TRD loader from Run Loader");
+    return kFALSE;
+  }
+    
+  TTree *tree = 0;
+  tree = loader->TreeS();
+  if (!tree) {
+    loader->MakeTree("S");
+    tree = loader->TreeS();
+  }
+
+  AliTRDrawData       *rawdata        = new AliTRDrawData();
+  AliTRDdigitsManager *sdigitsManager = rawdata->Raw2Digits(rawReader);
+  if (sdigitsManager) {
+    sdigitsManager->SetSDigits(kTRUE);
+    sdigitsManager->MakeBranch(tree);
+    sdigitsManager->WriteDigits();
+    return kTRUE;
+  } 
+  else {
+    return kFALSE;
+  }
+
+}
+
+//_____________________________________________________________________________
 AliTRD &AliTRD::operator=(const AliTRD &trd)
 {
   //
@@ -919,339 +958,4 @@ AliTRD &AliTRD::operator=(const AliTRD &trd)
 
   return *this;
 
-} 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+}
