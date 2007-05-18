@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.3  2007/05/08 11:56:05  arcelli
+improved verbosity in verbose mode (R.Preghenella)
+
+Revision 1.2  2007/05/03 11:34:43  decaro
+Coding convention: RS1 violation -> suppression
+
 Revision 1.1  2007/04/27 11:00:32  arcelli
 TOF Raw Data decoder
 
@@ -22,13 +28,13 @@ TOF Raw Data decoder
 */
 
 
-/*********************************************************************
- *                                                                   *
- *                                                                   *
- *   Class for raw data decoding                                     *
- *                                                                   *
- *                                                                   *
- ********************************************************************/
+//////////////////////////////////////////////////////////////////////
+//                                                                  //
+//                                                                  //
+//   Class for raw data decoding                                    //
+//                                                                  //
+//                                                                  //
+//////////////////////////////////////////////////////////////////////
                                
 
 
