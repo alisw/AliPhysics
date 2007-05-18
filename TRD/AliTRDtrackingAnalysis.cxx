@@ -12,6 +12,7 @@
 #include "TStyle.h"
 #include "TGraphErrors.h"
 #include "TF1.h"
+#include "TMath.h"
 
 #include "AliRunLoader.h"
 #include "AliTRDgeometry.h"
@@ -118,7 +119,7 @@ void AliTRDtrackingAnalysis::DrawResolutionPt(int startEvent, int stopEvent) {
 
       if (!(status & AliESDtrack::kTRDout)) continue;
       if (!(status & AliESDtrack::kTRDrefit)) continue;
-      if (fabs(esdTrack->GetOuterParam()->GetPt()) < 1.0) continue;
+      if (TMath::Abs(esdTrack->GetOuterParam()->GetPt()) < 1.0) continue;
 
       int ch=0;
       while(param->GetX() > fGeo->GetTime0(ch)+2) ch++;
@@ -138,7 +139,7 @@ void AliTRDtrackingAnalysis::DrawResolutionPt(int startEvent, int stopEvent) {
       
 	lastX = (aRef->LocalX() < lastX)? lastX : aRef->LocalX();
 	double dx = aRef->LocalX() - param->GetX();
-	if (fabs(dx) > 1.) continue; 
+	if (TMath::Abs(dx) > 1.) continue; 
 	ngood++;
       
 	double bz=fESD->GetMagneticField();
@@ -599,7 +600,7 @@ int AliTRDtrackingAnalysis::GetMCPosition(Int_t label, Double_t x, Double_t &Y, 
 	highX = dX;
       }
     } else {
-      dX = fabs(dX);
+      dX = TMath::Abs(dX);
       if (dX < lowX) {
 	idLow = i;
 	lowX = dX;
