@@ -241,12 +241,11 @@ Int_t AliEMCALTracker::LoadClusters(TTree *cTree)
 		return 1;
 	}
 	
-	TClonesArray dummy("AliEMCALRecPoint", 10000);
-	TClonesArray *clusters = &dummy;
+	TClonesArray *clusters = new TClonesArray("AliEMCALRecPoint", 1000);
 	branch->SetAddress(&clusters);
-	Int_t nClusters = (Int_t)clusters->GetEntries();
 	
 	cTree->GetEvent(0);
+	Int_t nClusters = (Int_t)clusters->GetEntries();
 	fClusters = new TObjArray(0);
 	for (Int_t i = 0; i < nClusters; i++) {
 		AliEMCALRecPoint *cluster = (AliEMCALRecPoint*)clusters->At(i);
