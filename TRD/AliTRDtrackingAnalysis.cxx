@@ -35,11 +35,39 @@
 
 AliTRDtrackingAnalysis::AliTRDtrackingAnalysis():
   TObject(),
+  fPath(0),
+  fRefTPC(0),
+  fRefTRD(0),
   fLoader(0),
   fEsdTree(0),
   fESD(0),
-  fRefTPC(0),
-  fRefTRD(0)
+  fTracker(0),
+  fDeltaPt(0),
+  fDeltaZ(0),
+  fDeltaX(0),
+  fDeltaYPos(0),
+  fDeltaYNeg(0),
+  fNPoints(0),
+  fNGood(0),
+  fRefSpace(0),
+  fGeo(0),
+  fClY2(0),
+  fClY3(0),
+  fTgPhi(0),
+  fGrResTgPhi(0),
+  fGrMeanTgPhi(0),
+  fTrklY(0),
+  fTrklZ(0),
+  fClZ(0),
+  fClZZ(0),
+  fClYY(0),
+  fClYX(0),
+  fNLabels(0),
+  fBits(0),
+  fRefDx(0),
+  fClZXref(0),
+  fClZXcl(0),
+  fClPos(0)
 {
 
   fDeltaX = new TH1D("deltaX", ";delta X (cm)", 100, -1, 1);
