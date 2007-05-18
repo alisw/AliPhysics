@@ -305,7 +305,7 @@ const TGeoHMatrix* AliCluster::GetTracking2LocalMatrix() const
 {
   // Get the matrix which is stored with the PN entries in TGeo.
   // The matrix makes the transformation from the tracking c.s. to
-  // global one.
+  // the local one.
   TGeoPNEntry *pne = GetPNEntry();
   if (!pne) return NULL;
 
