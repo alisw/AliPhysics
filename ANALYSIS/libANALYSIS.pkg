@@ -1,7 +1,6 @@
 SRCS = AliAnalysisDataContainer.cxx AliAnalysisDataSlot.cxx \
        AliAnalysisManager.cxx AliAnalysisTask.cxx \
-       AliAnalysisSelector.cxx \
-       AliAnalysisGoodies.cxx
+       AliAnalysisSelector.cxx
 
 CHECKALIEN = $(shell root-config --has-alien)
 ifeq (yes,$(CHECKALIEN))
@@ -12,7 +11,7 @@ CHECKXML = $(shell root-config --has-xml)
 ifeq (yes,$(CHECKXML))
 PACKCXXFLAGS += $(CXXFLAGS) -DWITHXML
 CINTFLAGS += -DWITHXML
-SRCS += AliTagAnalysis.cxx AliXMLCollection.cxx #AliAnalysisGoodies.cxx
+SRCS += AliTagAnalysis.cxx AliXMLCollection.cxx AliAnalysisGoodies.cxx
 endif
 
 HDRS:= $(SRCS:.cxx=.h) 
