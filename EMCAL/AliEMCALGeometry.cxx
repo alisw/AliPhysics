@@ -710,6 +710,7 @@ Bool_t AliEMCALGeometry::IsInEMCAL(Double_t x, Double_t y, Double_t z) const {
        return 0;
  
      Double_t phi = TMath::ATan2(y,x) * 180./TMath::Pi();
+     if (phi < 0) phi += 360;  // phi should go from 0 to 360 in this case
      if (phi > fArm1PhiMin && phi < fArm1PhiMax)
        return 1;
   }
