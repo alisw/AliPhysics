@@ -400,14 +400,14 @@ void AliEMCALClusterizerv1::InitParameters()
 
   fNTowerInGroup = 36;  //Produces maximum of 80 pseudoclusters per event
 
-  fECAClusteringThreshold   = 0.1;  // value obtained from Aleksei
+  fECAClusteringThreshold   = 0.5;  // Best value for 2 GeV gamma merged with Ideal HIJING. Retune later? 
   fECALocMaxCut = 0.03; // ??
 
   fECAW0    = 4.5;
   fTimeCut = 300e-9 ; // 300 ns time cut (to be tuned) 
   fToUnfold = kFALSE ;
   fRecPointsInRun  = 0 ;
-  fMinECut = 0.01; // have to be tune
+  fMinECut = 0.45; // Best value for 2 GeV gamma merged with Ideal HIJING. Retune later? 
 
   fCalibData               = 0 ;
 }
