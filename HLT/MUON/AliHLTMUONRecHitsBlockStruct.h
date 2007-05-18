@@ -1,19 +1,7 @@
 #ifndef ALIHLTMUONRECHITSBLOCKSTRUCT_H
 #define ALIHLTMUONRECHITSBLOCKSTRUCT_H
-/**************************************************************************
- * Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+/* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
 
@@ -22,7 +10,7 @@
  * @author Indranil Das <indra.das@saha.ac.in>,
  *         Artur Szostak <artursz@iafrica.com>
  * @date   
- * @brief  Definition of internal dimuon HLT reconstructed hit block structure.
+ * @brief  Definition of internal dimuon HLT reconstructed hit data block structure.
  * 
  * The structures are defined with C linkage since C generally gives us more
  * binary compatibility between compilers.
@@ -52,8 +40,10 @@ struct AliHLTMUONRecHitStruct
  */
 struct AliHLTMUONRecHitsBlockStruct
 {
-	AliHLTUInt32_t fNhits;                   // Number of hits in this block.
-	AliHLTMUONRecHitStruct fHit[/*fNhits*/]; // Array of reconstructed hits.
+	AliHLTMUONDataBlockHeader fHeader; // Common data block header
+
+	// Array of reconstructed hits.
+	AliHLTMUONRecHitStruct fHit[/*fHeader.fNrecords*/];
 };
 
 } // extern "C"
@@ -75,19 +65,11 @@ inline std::ostream& operator << (
 /**
  * Stream operator for usage with std::ostream classes which prints the
  * AliHLTMUONRecHitsBlockStruct in the following format:
- *   {fNhits = xx, fHit[] = [{..}, {..}, ...]}
+ *   {fHeader = xx, fHit[] = [{..}, {..}, ...]}
  */
-inline std::ostream& operator << (
+std::ostream& operator << (
 		std::ostream& stream, const AliHLTMUONRecHitsBlockStruct& block
-	)
-{
-	stream << "{fNhits = " << block.fNhits << ", fHit[] = [";
-	if (block.fNhits > 0) stream << block.fHit[0];
-	for (AliHLTUInt32_t i = 1; i < block.fNhits; i++)
-		stream << ", " << block.fHit[i];
-	stream << "]}";
-	return stream;
-}
+	);
 
 
 inline bool operator == (
@@ -105,21 +87,14 @@ inline bool operator != (
 }
 
 
-inline bool operator == (
-		const AliHLTMUONRecHitsBlockStruct& a, const AliHLTMUONRecHitsBlockStruct& b
-	)
-{
-	// First check if the blocks have the same number of hits. If they do then
-	// check if every hit is the same. In either case if we find a difference
-	// return false.
-	if (a.fNhits != b.fNhits) return false;
-	for (AliHLTUInt32_t i = 0; i < a.fNhits; i++)
-		if (a.fHit[i] != b.fHit[i]) return false;
-	return true;
-}
+bool operator == (
+		const AliHLTMUONRecHitsBlockStruct& a,
+		const AliHLTMUONRecHitsBlockStruct& b
+	);
 
 inline bool operator != (
-		const AliHLTMUONRecHitsBlockStruct& a, const AliHLTMUONRecHitsBlockStruct& b
+		const AliHLTMUONRecHitsBlockStruct& a,
+		const AliHLTMUONRecHitsBlockStruct& b
 	)
 {
 	return not operator == (a, b);
