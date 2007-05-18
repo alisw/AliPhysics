@@ -23,33 +23,156 @@
  */
 
 #include "AliHLTMUONUtils.h"
+#include "AliHLTMUONConstants.h"
 
 
-bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONRecHitsDebugBlockStruct& block)
+AliHLTUInt32_t AliHLTMUONUtils::PackTriggerRecordFlags(
+		AliHLTMUONParticleSign sign, bool hitset[4]
+	)
 {
-	// Perform some sanity checks:
-	// We expect the start and end offsets to correspond to the number
-	// of elements in the array. The offsets should not overlap and
-	// the arrays should be consecutive.
-	if (block.fClustersEndOffset < block.fClustersStartOffset) return false;
-	if (block.fChannelsEndOffset < block.fChannelsStartOffset) return false;
+	AliHLTUInt32_t flags;
+	switch (sign)
+	{
+	case kSignMinus: flags = 0x80000000; break;
+	case kSignPlus:  flags = 0x40000000; break;
+	default:         flags = 0x00000000; break;
+	}
 
-	if ((block.fClustersEndOffset - block.fClustersStartOffset)
-		/ sizeof(AliHLTMUONClusterInfoStruct) != block.fNclusters
-	   )
+	return flags | (hitset[0] ? 0x1 : 0) | (hitset[1] ? 0x2 : 0)
+		| (hitset[2] ? 0x4 : 0) | (hitset[3] ? 0x8 : 0);
+}
+
+
+void AliHLTMUONUtils::UnpackTriggerRecordFlags(
+		AliHLTUInt32_t flags, // [in]
+		AliHLTMUONParticleSign& sign, // [out]
+		bool hitset[4] // [out]
+	)
+{
+	AliHLTUInt32_t signbits = flags & 0xC0000000;
+	switch (signbits)
+	{
+	case 0x80000000: sign = kSignMinus;   break;
+	case 0x40000000: sign = kSignPlus;    break;
+	default:         sign = kSignUnknown; break;
+	}
+	hitset[0] = (flags & 0x1) == 1;
+	hitset[1] = (flags & 0x2) == 1;
+	hitset[2] = (flags & 0x4) == 1;
+	hitset[3] = (flags & 0x8) == 1;
+}
+
+
+bool AliHLTMUONUtils::HeaderOk(const AliHLTMUONTriggerRecordsBlockStruct& block)
+{
+	// The block must have the correct type.
+	if (block.fHeader.fType != kTriggerRecordsDataBlock) return false;
+	// The block's record widths must be the correct size.
+	if (block.fHeader.fRecordWidth != sizeof(AliHLTMUONTriggerRecordStruct))
+		return false;
+	return true;
+}
+
+bool AliHLTMUONUtils::HeaderOk(const AliHLTMUONRecHitsBlockStruct& block)
+{
+	// The block must have the correct type.
+	if (block.fHeader.fType != kRecHitsDataBlock) return false;
+	// The block's record widths must be the correct size.
+	if (block.fHeader.fRecordWidth != sizeof(AliHLTMUONRecHitStruct))
+		return false;
+	return true;
+}
+
+bool AliHLTMUONUtils::HeaderOk(const AliHLTMUONClustersBlockStruct& block)
+{
+	// The block must have the correct type.
+	if (block.fHeader.fType != kClustersDataBlock) return false;
+	// The block's record widths must be the correct size.
+	if (block.fHeader.fRecordWidth != sizeof(AliHLTMUONClusterStruct))
+		return false;
+	return true;
+}
+
+bool AliHLTMUONUtils::HeaderOk(const AliHLTMUONChannelsBlockStruct& block)
+{
+	// The block must have the correct type.
+	if (block.fHeader.fType != kChannelsDataBlock) return false;
+	// The block's record widths must be the correct size.
+	if (block.fHeader.fRecordWidth != sizeof(AliHLTMUONChannelStruct))
+		return false;
+	return true;
+}
+
+
+bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONTriggerRecordsBlockStruct& block)
+{
+	if (not HeaderOk(block)) return false;
+
+	// Check if any ID is duplicated.
+	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
+	{
+		AliHLTUInt32_t id = block.fTriggerRecord[i].fId;
+		for (AliHLTUInt32_t j = i+1; i < block.fHeader.fNrecords; j++)
+		{
+			if (id == block.fTriggerRecord[j].fId)
+				return false;
+		}
+	}
+
+	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
+	{
+		const AliHLTMUONTriggerRecordStruct& tr = block.fTriggerRecord[i];
+
+		// Make sure that the reserved bits in the fFlags field are set
+		// to zero.
+		if ((tr.fFlags & 0x3FFFFFF0) != 0) return false;
+
+		// Make sure the sign is not invalid.
+		if ((tr.fFlags & 0xC0000000) == 3) return false;
+
+		// Check that fHit[i] is nil if the corresponding bit in the
+		// flags word is zero.
+		const AliHLTMUONRecHitStruct& nilhit
+			= AliHLTMUONConstants::NilRecHitStruct();
+		if ((tr.fFlags & 0x1) == 0 and tr.fHit[0] != nilhit) return false;
+		if ((tr.fFlags & 0x2) == 0 and tr.fHit[1] != nilhit) return false;
+		if ((tr.fFlags & 0x4) == 0 and tr.fHit[2] != nilhit) return false;
+		if ((tr.fFlags & 0x8) == 0 and tr.fHit[3] != nilhit) return false;
+	}
+
+	return true;
+}
+
+
+bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONRecHitsBlockStruct& block)
+{
+	if (not HeaderOk(block)) return false;
+	return true;
+}
+
+
+bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONClustersBlockStruct& block)
+{
+	if (not HeaderOk(block)) return false;
+	// The block must have the correct type.
+	if (block.fHeader.fType != kClustersDataBlock) return false;
+	
+	// The block's record widths must be the correct size.
+	if (block.fHeader.fRecordWidth != sizeof(AliHLTMUONClusterStruct))
 		return false;
 
-	if ((block.fChannelsEndOffset - block.fChannelsStartOffset)
-		/ sizeof(AliHLTMUONChannelInfoStruct) != block.fNchannels
-	   )
+	return true;
+}
+
+bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONChannelsBlockStruct& block)
+{
+	if (not HeaderOk(block)) return false;
+	// The block must have the correct type.
+	if (block.fHeader.fType != kChannelsDataBlock) return false;
+	
+	// The block's record widths must be the correct size.
+	if (block.fHeader.fRecordWidth != sizeof(AliHLTMUONChannelStruct))
 		return false;
-
-	if (block.fClustersEndOffset != block.fChannelsStartOffset) return false;
-
-	if (block.fClustersStartOffset != sizeof(AliHLTMUONRecHitsDebugBlockStruct))
-		return false;
-
-	// TODO: check the channel ID's etc...
 
 	return true;
 }
