@@ -1,5 +1,5 @@
-#ifndef ALIHLTMUONRECHITSDEBUGBLOCKSTRUCT_H
-#define ALIHLTMUONRECHITSDEBUGBLOCKSTRUCT_H
+#ifndef ALIHLTMUONCHANNELSBLOCKSTRUCT_H
+#define ALIHLTMUONCHANNELSBLOCKSTRUCT_H
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -29,8 +29,8 @@ extern "C"
  */
 struct AliHLTMUONChannelStruct
 {
-	AliHLTUInt32_t fClusterId;   // ID corresponding to the cluster this
-	                             // channel is part of.
+	AliHLTInt32_t fClusterId;   // ID corresponding to the cluster this
+	                            // channel is part of. -1 == invalid.
 
 	AliHLTUInt16_t fManu;        // The MANU address on electronics.
 	AliHLTUInt16_t fChannelAddress; // The channel address on electronics.
@@ -46,7 +46,7 @@ struct AliHLTMUONChannelsBlockStruct
 {
 	AliHLTMUONDataBlockHeader fHeader; // Common data block header
 
-	// Array of trigger records.
+	// Array of cluster channels/pads.
 	AliHLTMUONChannelStruct fChannel[/*fHeader.fNrecords*/];
 };
 
@@ -105,4 +105,4 @@ inline bool operator != (
 	return not operator == (a, b);
 }
 
-#endif // ALIHLTMUONRECHITSDEBUGBLOCKSTRUCT_H
+#endif // ALIHLTMUONCHANNELSBLOCKSTRUCT_H

@@ -26,8 +26,8 @@ extern "C"
  */
 struct AliHLTMUONTriggerRecordStruct
 {
-	AliHLTUInt32_t fId; // Each trigger record should have an ID number unique
-	                    // for a given event.
+	AliHLTInt32_t fId; // Each trigger record should have an ID number unique
+	                   // for a given event. -1 == invalid.
 
 	// The flags word constains the following bit fields (bit 31 is most
 	// significant):

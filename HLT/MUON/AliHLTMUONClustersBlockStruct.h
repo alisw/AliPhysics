@@ -29,8 +29,8 @@ extern "C"
  */
 struct AliHLTMUONClusterStruct
 {
-	AliHLTUInt32_t fId; // Unique ID for the cluster. It must be at
-	                    // least unique for any given event.
+	AliHLTInt32_t fId; // Unique ID for the cluster. It must be at
+	                   // least unique for any given event. -1 == invalid.
 
 	AliHLTMUONRecHitStruct fHit; // Corresponding reconstructed hit.
 
