@@ -168,6 +168,8 @@ private:
   Float_t                 *fPHOSAngle ;      //[fNModules] Position angles of modules
   Float_t                  fPHOSParams[4] ;  // Half-sizes of PHOS trapecoid
   Float_t                  fIPtoUpperCPVsurface; // Minimal distance from IP to PHOS
+  Float_t                  fCrystalShift ;   //Distance from crystal center to front surface
+  Float_t                  fCryCellShift ;   //Distance from crystal center to front surface
   TObjArray               *fRotMatrixArray ; // Liste of rotation matrices (one per phos module)
   AliPHOSEMCAGeometry     *fGeometryEMCA ;   // Geometry object for Electromagnetic calorimeter
   AliPHOSCPVGeometry      *fGeometryCPV ;    // Geometry object for CPV  (IHEP)

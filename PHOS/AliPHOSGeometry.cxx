@@ -139,7 +139,17 @@ void AliPHOSGeometry::Init(void)
   fPHOSParams[3] = emcParams[3] + fGeometryCPV->GetCPVBoxSize(1)/2. ;
   
   fIPtoUpperCPVsurface = fGeometryEMCA->GetIPtoOuterCoverDistance() - fGeometryCPV->GetCPVBoxSize(1) ;
-  
+
+  //calculate offset to crystal surface
+  Float_t * inthermo = fGeometryEMCA->GetInnerThermoHalfSize() ;
+  Float_t * strip = fGeometryEMCA->GetStripHalfSize() ;
+  Float_t* splate = fGeometryEMCA->GetSupportPlateHalfSize();
+  Float_t * crystal = fGeometryEMCA->GetCrystalHalfSize() ;
+  Float_t * pin = fGeometryEMCA->GetAPDHalfSize() ;
+  Float_t * preamp = fGeometryEMCA->GetPreampHalfSize() ;
+  fCrystalShift=-inthermo[1]+strip[1]+splate[1]+crystal[1]-fGeometryEMCA->GetAirGapLed()/2.+pin[1]+preamp[1] ;
+  fCryCellShift=crystal[1]-(fGeometryEMCA->GetAirGapLed()-2*pin[1]-2*preamp[1])/2;
+ 
   Int_t index ;
   for ( index = 0; index < fNModules; index++ )
     fPHOSAngle[index] = 0.0 ; // Module position angles are set in CreateGeometry()
@@ -286,34 +296,29 @@ void AliPHOSGeometry::GetGlobalPHOS(const AliPHOSRecPoint* recPoint, TVector3 & 
   Double_t dy ;
   if(tmpPHOS->IsEmc()){
     sprintf(path,"/ALIC_1/PHOS_%d/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1",tmpPHOS->GetPHOSMod()) ;
-    //calculate offset to crystal surface
-    Float_t * inthermo = fGeometryEMCA->GetInnerThermoHalfSize() ;
-    Float_t * strip = fGeometryEMCA->GetStripHalfSize() ;
-    Float_t* splate = fGeometryEMCA->GetSupportPlateHalfSize();
-    Float_t * crystal = fGeometryEMCA->GetCrystalHalfSize() ;
-    Float_t * pin = fGeometryEMCA->GetAPDHalfSize() ;
-    Float_t * preamp = fGeometryEMCA->GetPreampHalfSize() ;
-    dy=-inthermo[1]+strip[1]+splate[1]+crystal[1]-fGeometryEMCA->GetAirGapLed()/2.+pin[1]+preamp[1] ;
+//    sprintf(path,"/ALIC_1/PHOS_%d",tmpPHOS->GetPHOSMod()) ;
+    dy=fCrystalShift ;
   }
   else{
     sprintf(path,"/ALIC_1/PHOS_%d/PCPV_1",tmpPHOS->GetPHOSMod()) ;
     dy= GetCPVBoxSize(1)/2. ; //center of CPV module 
   }
   Double_t pos[3]={gpos.X(),gpos.Y()-dy,gpos.Z()} ;
+  if(tmpPHOS->IsEmc())
+    pos[2]=-pos[2] ; //Opposite z directions in EMC matrix and local frame!!!
   Double_t posC[3];
   //now apply possible shifts and rotations
   if (!gGeoManager->cd(path)){
     AliFatal("Geo manager can not find path \n");
   }
   TGeoHMatrix *m = gGeoManager->GetCurrentMatrix();
-  if (m) m->LocalToMaster(pos,posC);
+  if (m){
+     m->LocalToMaster(pos,posC);
+  }
   else{
     AliFatal("Geo matrixes are not loaded \n") ;
   }
-  if(tmpPHOS->IsEmc())
-    gpos.SetXYZ(posC[0],posC[1],-posC[2]) ;
-  else
-    gpos.SetXYZ(posC[0],posC[1],posC[2]) ;
+  gpos.SetXYZ(posC[0],posC[1],posC[2]) ;
 
 }
 //____________________________________________________________________________
@@ -325,22 +330,13 @@ void AliPHOSGeometry::ImpactOnEmc(Double_t * vtx, Double_t theta, Double_t phi,
   TVector3 p(TMath::Sin(theta)*TMath::Cos(phi),TMath::Sin(theta)*TMath::Sin(phi),TMath::Cos(theta)) ;
   TVector3 v(vtx[0],vtx[1],vtx[2]) ;
 
-  //calculate offset to crystal surface
-  Float_t * inthermo = fGeometryEMCA->GetInnerThermoHalfSize() ;
-  Float_t * strip = fGeometryEMCA->GetStripHalfSize() ;
-  Float_t* splate = fGeometryEMCA->GetSupportPlateHalfSize();
-  Float_t * crystal = fGeometryEMCA->GetCrystalHalfSize() ;
-  Float_t * pin = fGeometryEMCA->GetAPDHalfSize() ;
-  Float_t * preamp = fGeometryEMCA->GetPreampHalfSize() ;
-  Float_t dy=-inthermo[1]+strip[1]+splate[1]+crystal[1]-fGeometryEMCA->GetAirGapLed()/2.+pin[1]+preamp[1] ;
- 
   if (!gGeoManager){
     AliFatal("Geo manager not initialized\n");
   }
  
   for(Int_t imod=1; imod<=GetNModules() ; imod++){
     //create vector from (0,0,0) to center of crystal surface of imod module
-    Double_t tmp[3]={0.,-dy,0.} ;
+    Double_t tmp[3]={0.,-fCrystalShift,0.} ;
  
     char path[100] ;
     sprintf(path,"/ALIC_1/PHOS_%d/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1",imod) ;
@@ -431,8 +427,7 @@ void AliPHOSGeometry::RelPosInAlice(Int_t id, TVector3 & pos ) const
   char path[100] ;
   if(relid[1]==0){ //this is EMC
  
-    Float_t * xls = fGeometryEMCA->GetCrystalHalfSize() ; 
-    Double_t ps[3]= {0.0,-xls[1],0.}; //Position incide the crystal 
+    Double_t ps[3]= {0.0,-fCryCellShift,0.}; //Position incide the crystal 
     Double_t psC[3]={0.0,0.0,0.}; //Global position
  
     //Shift and possibly apply misalignment corrections
@@ -653,7 +648,7 @@ void AliPHOSGeometry::Global2Local(TVector3& localPosition,
 {
   // Transforms a global position of the rec.point to the local coordinate system
   //Return to PHOS local system
-  Double_t posG[3]={globalPosition.X(),globalPosition.Y(),-globalPosition.Z()} ;
+  Double_t posG[3]={globalPosition.X(),globalPosition.Y(),globalPosition.Z()} ;
   Double_t posL[3]={0.,0.,0.} ;
   char path[100] ;
   sprintf(path,"/ALIC_1/PHOS_%d/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1",module) ;
@@ -666,7 +661,7 @@ void AliPHOSGeometry::Global2Local(TVector3& localPosition,
   else{
     AliFatal("Geo matrixes are not loaded \n") ;
   }
-  localPosition.SetXYZ(posL[0],posL[1],posL[2]) ;  
+  localPosition.SetXYZ(posL[0],posL[1]+fCrystalShift,-posL[2]) ;  
  
 /*
   Float_t angle = GetPHOSAngle(module); // (40,20,0,-20,-40) degrees
@@ -682,27 +677,20 @@ void AliPHOSGeometry::Local2Global(Int_t mod, Float_t x, Float_t z,
 {
   char path[100] ;
   sprintf(path,"/ALIC_1/PHOS_%d/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1",mod) ;
+//  sprintf(path,"/ALIC_1/PHOS_%d",mod) ;
   if (!gGeoManager->cd(path)){
     AliFatal("Geo manager can not find path \n");
   }
-  //calculate offset to crystal surface
-  Float_t * inthermo = fGeometryEMCA->GetInnerThermoHalfSize() ;
-  Float_t * strip = fGeometryEMCA->GetStripHalfSize() ;
-  Float_t* splate = fGeometryEMCA->GetSupportPlateHalfSize();
-  Float_t * crystal = fGeometryEMCA->GetCrystalHalfSize() ;
-  Float_t * pin = fGeometryEMCA->GetAPDHalfSize() ;
-  Float_t * preamp = fGeometryEMCA->GetPreampHalfSize() ;
-  Float_t dy=-inthermo[1]+strip[1]+splate[1]+crystal[1]-fGeometryEMCA->GetAirGapLed()/2.+pin[1]+preamp[1] ;
-  Double_t posL[3]={x,-dy,z} ;
+  Double_t posL[3]={x,-fCrystalShift,-z} ; //Only for EMC!!!
   Double_t posG[3] ;
   TGeoHMatrix *mPHOS = gGeoManager->GetCurrentMatrix();
-  if (mPHOS) mPHOS->LocalToMaster(posL,posG);
+  if (mPHOS){
+     mPHOS->LocalToMaster(posL,posG);
+  }    
   else{
     AliFatal("Geo matrixes are not loaded \n") ;
   }
-  globalPosition.SetXYZ(posG[0],posG[1],-posG[2]) ;
- 
-
+  globalPosition.SetXYZ(posG[0],posG[1],posG[2]) ;
 }
 //____________________________________________________________________________
 void AliPHOSGeometry::GetIncidentVector(const TVector3 &vtx, Int_t module, Float_t x,Float_t z, TVector3 &vInc) const {
@@ -710,5 +698,5 @@ void AliPHOSGeometry::GetIncidentVector(const TVector3 &vtx, Int_t module, Float
   //Note that PHOS local system and ALICE global have opposite z directions
 
   Global2Local(vInc,vtx,module) ; 
-  vInc.SetXYZ(vInc.X()+x,vInc.Y(),vInc.Z()-z) ;
+  vInc.SetXYZ(vInc.X()+x,vInc.Y(),vInc.Z()+z) ;
 }
