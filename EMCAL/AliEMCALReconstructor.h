@@ -15,6 +15,7 @@
 // --- ROOT system ---
 
 #include "AliReconstructor.h" 
+#include "AliEMCALTracker.h" 
 class AliEMCALDigitizer ;
 class AliEMCALClusterizer ;
 class AliEMCALSDigitizer ;
@@ -38,7 +39,7 @@ public:
 
   using AliReconstructor::FillESD;
   virtual void FillESD(AliRunLoader* runLoader, AliESD* esd) const ;
-
+  AliTracker*  CreateTracker         (AliRunLoader*                      )const{return new AliEMCALTracker;} 
   using AliReconstructor::Reconstruct;
   virtual void Reconstruct(AliRunLoader* runLoader) const ;
   virtual void Reconstruct(AliRunLoader* runLoader, AliRawReader* rawReader) const ;
