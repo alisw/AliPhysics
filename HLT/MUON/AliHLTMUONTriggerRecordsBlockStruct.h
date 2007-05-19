@@ -21,8 +21,8 @@ extern "C"
 {
 
 /**
- * Trigger record structures containing information decodes from the dimuon
- * hardware trigger electronics.
+ * Trigger record structures containing information decoded from the dimuon
+ * spectrometer's hardware trigger electronics.
  */
 struct AliHLTMUONTriggerRecordStruct
 {
