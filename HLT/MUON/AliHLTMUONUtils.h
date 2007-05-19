@@ -12,10 +12,17 @@
  * @brief  Class containing various dimuon HLT utility routines and macros.
  */
 
-#include "AliHLTMUONTriggerRecordsBlockStruct.h"
-#include "AliHLTMUONRecHitsBlockStruct.h"
-#include "AliHLTMUONClustersBlockStruct.h"
-#include "AliHLTMUONChannelsBlockStruct.h"
+#include "AliHLTMUONDataTypes.h"
+
+// Forward declare structures.
+extern "C" {
+struct AliHLTMUONTriggerRecordsBlockStruct;
+struct AliHLTMUONTrigRecsDebugBlockStruct;
+struct AliHLTMUONTriggerChannelsBlockStruct;
+struct AliHLTMUONRecHitsBlockStruct;
+struct AliHLTMUONClustersBlockStruct;
+struct AliHLTMUONChannelsBlockStruct;
+} // extern "C"
 
 /**
  * AliHLTMUONUtils contains arbitrary utility methods to be used in various
@@ -89,6 +96,8 @@ public:
 	 * supposed type of the data block.
 	 */
 	static bool HeaderOk(const AliHLTMUONTriggerRecordsBlockStruct& block);
+	static bool HeaderOk(const AliHLTMUONTrigRecsDebugBlockStruct& block);
+	static bool HeaderOk(const AliHLTMUONTriggerChannelsBlockStruct& block);
 	static bool HeaderOk(const AliHLTMUONRecHitsBlockStruct& block);
 	static bool HeaderOk(const AliHLTMUONClustersBlockStruct& block);
 	static bool HeaderOk(const AliHLTMUONChannelsBlockStruct& block);
@@ -99,6 +108,8 @@ public:
 	 * These can be slow and should generally only be used for debugging.
 	 */
 	static bool IntegrityOk(const AliHLTMUONTriggerRecordsBlockStruct& block);
+	static bool IntegrityOk(const AliHLTMUONTrigRecsDebugBlockStruct& block);
+	static bool IntegrityOk(const AliHLTMUONTriggerChannelsBlockStruct& block);
 	static bool IntegrityOk(const AliHLTMUONRecHitsBlockStruct& block);
 	static bool IntegrityOk(const AliHLTMUONClustersBlockStruct& block);
 	static bool IntegrityOk(const AliHLTMUONChannelsBlockStruct& block);

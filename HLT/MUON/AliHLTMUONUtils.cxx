@@ -24,6 +24,12 @@
 
 #include "AliHLTMUONUtils.h"
 #include "AliHLTMUONConstants.h"
+#include "AliHLTMUONTriggerRecordsBlockStruct.h"
+#include "AliHLTMUONTrigRecsDebugBlockStruct.h"
+#include "AliHLTMUONTriggerChannelsBlockStruct.h"
+#include "AliHLTMUONRecHitsBlockStruct.h"
+#include "AliHLTMUONClustersBlockStruct.h"
+#include "AliHLTMUONChannelsBlockStruct.h"
 
 
 AliHLTUInt32_t AliHLTMUONUtils::PackTriggerRecordFlags(
@@ -69,6 +75,26 @@ bool AliHLTMUONUtils::HeaderOk(const AliHLTMUONTriggerRecordsBlockStruct& block)
 	if (block.fHeader.fType != kTriggerRecordsDataBlock) return false;
 	// The block's record widths must be the correct size.
 	if (block.fHeader.fRecordWidth != sizeof(AliHLTMUONTriggerRecordStruct))
+		return false;
+	return true;
+}
+
+bool AliHLTMUONUtils::HeaderOk(const AliHLTMUONTrigRecsDebugBlockStruct& block)
+{
+	// The block must have the correct type.
+	if (block.fHeader.fType != kTrigRecsDebugDataBlock) return false;
+	// The block's record widths must be the correct size.
+	if (block.fHeader.fRecordWidth != sizeof(AliHLTMUONTrigRecInfoStruct))
+		return false;
+	return true;
+}
+
+bool AliHLTMUONUtils::HeaderOk(const AliHLTMUONTriggerChannelsBlockStruct& block)
+{
+	// The block must have the correct type.
+	if (block.fHeader.fType != kTriggerChannelsDataBlock) return false;
+	// The block's record widths must be the correct size.
+	if (block.fHeader.fRecordWidth != sizeof(AliHLTMUONTriggerChannelStruct))
 		return false;
 	return true;
 }
@@ -143,6 +169,17 @@ bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONTriggerRecordsBlockStruct& blo
 	return true;
 }
 
+bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONTrigRecsDebugBlockStruct& block)
+{
+	if (not HeaderOk(block)) return false;
+	return true;
+}
+
+bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONTriggerChannelsBlockStruct& block)
+{
+	if (not HeaderOk(block)) return false;
+	return true;
+}
 
 bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONRecHitsBlockStruct& block)
 {
@@ -154,25 +191,23 @@ bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONRecHitsBlockStruct& block)
 bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONClustersBlockStruct& block)
 {
 	if (not HeaderOk(block)) return false;
-	// The block must have the correct type.
-	if (block.fHeader.fType != kClustersDataBlock) return false;
-	
-	// The block's record widths must be the correct size.
-	if (block.fHeader.fRecordWidth != sizeof(AliHLTMUONClusterStruct))
-		return false;
 
+	// Check if any ID is duplicated.
+	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
+	{
+		AliHLTUInt32_t id = block.fCluster[i].fId;
+		for (AliHLTUInt32_t j = i+1; i < block.fHeader.fNrecords; j++)
+		{
+			if (id == block.fCluster[j].fId)
+				return false;
+		}
+	}
+	
 	return true;
 }
 
 bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONChannelsBlockStruct& block)
 {
 	if (not HeaderOk(block)) return false;
-	// The block must have the correct type.
-	if (block.fHeader.fType != kChannelsDataBlock) return false;
-	
-	// The block's record widths must be the correct size.
-	if (block.fHeader.fRecordWidth != sizeof(AliHLTMUONChannelStruct))
-		return false;
-
 	return true;
 }

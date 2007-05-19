@@ -93,7 +93,7 @@ enum AliHLTMUONDataBlockType
 	kUnknownDataBlock = 0,
 	kTriggerRecordsDataBlock = 1000,
 	kTrigRecsDebugDataBlock = 1001,
-	kTriggerChannelDataBlock = 1002,
+	kTriggerChannelsDataBlock = 1002,
 	kRecHitsDataBlock = 2000,
 	kClustersDataBlock = 2001,
 	kChannelsDataBlock = 2002,
@@ -156,19 +156,19 @@ inline std::ostream& operator << (std::ostream& stream, AliHLTMUONDataBlockType 
 {
 	switch (type)
 	{
-	case kUnknownDataBlock:        stream << "kUnknownDataBlock";        break;
-	case kTriggerRecordsDataBlock: stream << "kTriggerRecordsDataBlock"; break;
-	case kTrigRecsDebugDataBlock:  stream << "kTrigRecsDebugDataBlock";  break;
-	case kTriggerChannelDataBlock: stream << "kTriggerChannelDataBlock"; break;
-	case kRecHitsDataBlock:        stream << "kRecHitsDataBlock";        break;
-	case kClustersDataBlock:       stream << "kClustersDataBlock";       break;
-	case kChannelsDataBlock:       stream << "kChannelsDataBlock";       break;
-	case kMansoTracksDataBlock:    stream << "kMansoTracksDataBlock";    break;
-	case kMansoRoIDataBlock:       stream << "kMansoRoIDataBlock";       break;
-	case kMansoTrialsDataBlock:    stream << "kMansoTrialsDataBlock";    break;
-	case kDecisionDataBlock:       stream << "kDecisionDataBlock";       break;
-	case kDecisionDebugDataBlock:  stream << "kDecisionDebugDataBlock";  break;
-	default:                       stream << "INVALID";
+	case kUnknownDataBlock:         stream << "kUnknownDataBlock";         break;
+	case kTriggerRecordsDataBlock:  stream << "kTriggerRecordsDataBlock";  break;
+	case kTrigRecsDebugDataBlock:   stream << "kTrigRecsDebugDataBlock";   break;
+	case kTriggerChannelsDataBlock: stream << "kTriggerChannelsDataBlock"; break;
+	case kRecHitsDataBlock:         stream << "kRecHitsDataBlock";         break;
+	case kClustersDataBlock:        stream << "kClustersDataBlock";        break;
+	case kChannelsDataBlock:        stream << "kChannelsDataBlock";        break;
+	case kMansoTracksDataBlock:     stream << "kMansoTracksDataBlock";     break;
+	case kMansoRoIDataBlock:        stream << "kMansoRoIDataBlock";        break;
+	case kMansoTrialsDataBlock:     stream << "kMansoTrialsDataBlock";     break;
+	case kDecisionDataBlock:        stream << "kDecisionDataBlock";        break;
+	case kDecisionDebugDataBlock:   stream << "kDecisionDebugDataBlock";   break;
+	default:                        stream << "INVALID";
 	}
 	return stream;
 }

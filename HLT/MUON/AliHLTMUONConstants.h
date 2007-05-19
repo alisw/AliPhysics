@@ -14,6 +14,8 @@
  */
 
 #include "AliHLTMUONTriggerRecordsBlockStruct.h"
+#include "AliHLTMUONTrigRecsDebugBlockStruct.h"
+#include "AliHLTMUONTriggerChannelsBlockStruct.h"
 #include "AliHLTMUONRecHitsBlockStruct.h"
 #include "AliHLTMUONClustersBlockStruct.h"
 #include "AliHLTMUONChannelsBlockStruct.h"
@@ -26,6 +28,21 @@
 class AliHLTMUONConstants
 {
 public:
+
+	static const AliHLTMUONTriggerRecordStruct& NilTriggerRecordStruct()
+	{
+		return fgkNilTriggerRecordStruct;
+	}
+
+	static const AliHLTMUONTrigRecInfoStruct& NilTrigRecInfoStruct()
+	{
+		return fgkNilTrigRecInfoStruct;
+	}
+
+	static const AliHLTMUONTriggerChannelStruct& NilTriggerChannelStruct()
+	{
+		return fgkNilTriggerChannelStruct;
+	}
 
 	static const AliHLTMUONRecHitStruct& NilRecHitStruct()
 	{
@@ -111,14 +128,13 @@ private:
 	// Should never have to create or destroy this object.
 	AliHLTMUONConstants();
 	~AliHLTMUONConstants();
-
-	// Sentinel structure for a reconstructed hit.
+	
+	// The following are null/nil structures that can also be used as sentinels.
+	static const AliHLTMUONTriggerRecordStruct fgkNilTriggerRecordStruct;
+	static const AliHLTMUONTrigRecInfoStruct fgkNilTrigRecInfoStruct;
+	static const AliHLTMUONTriggerChannelStruct fgkNilTriggerChannelStruct;
 	static const AliHLTMUONRecHitStruct fgkNilRecHitStruct;
-
-	// Sentinel structure for channel information.
 	static const AliHLTMUONChannelStruct fgkNilChannelStruct;
-
-	// Sentinel structure for cluster information.
 	static const AliHLTMUONClusterStruct fgkNilClusterStruct;
 
 	// DDL packed data block type from dimuon trigger stations.

@@ -26,6 +26,18 @@
 #include "AliHLTMUONConstants.h"
 
 
+const AliHLTMUONTriggerRecordStruct
+AliHLTMUONConstants::fgkNilTriggerRecordStruct = {
+	0, 0, 0, 0, 0,
+	{{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}}
+};
+
+const AliHLTMUONTrigRecInfoStruct
+AliHLTMUONConstants::fgkNilTrigRecInfoStruct = {0, 0, 0, 0};
+
+const AliHLTMUONTriggerChannelStruct
+AliHLTMUONConstants::fgkNilTriggerChannelStruct = {0, 0, 0, 0};
+	
 const AliHLTMUONRecHitStruct
 AliHLTMUONConstants::fgkNilRecHitStruct = {0, 0, 0};
 
