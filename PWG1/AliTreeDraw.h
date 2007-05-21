@@ -25,6 +25,7 @@ class AliTreeDraw: public TObject{
 public:
   AliTreeDraw();
   ~AliTreeDraw(){;}
+  TTree * T() { return fTree;}
   void SetTree(TTree *tree){fTree=tree;}
   const TH1 * GetRes() const{ return (TH1*)fRes;}
   const TH1 * GetMean() const{ return (TH1*)fMean;}
@@ -51,6 +52,9 @@ public:
   static TH1F*  CreateEffHisto(TH1F* hGen, TH1F* hRec);
   static TH1F*  CreateResHisto(TH2F* hRes2, TH1F **phMean, 
 				Bool_t drawBinFits = kTRUE,Bool_t overflowBinFits = kFALSE);
+
+  AliTreeDraw(const AliTreeDraw& t):fTree(0),fRes(0),fMean(0),fPoints(0){;}
+  AliTreeDraw & operator=(const AliTreeDraw & t){return *this;}
 
   TTree * fTree;    //the tree for visualization - NOT OWNER
   TH1F  * fRes;     //temporary histogram        - OWNER  
