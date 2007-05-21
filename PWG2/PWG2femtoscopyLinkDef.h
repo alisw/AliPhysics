@@ -34,3 +34,4 @@
 #pragma link C++ class AliFemtoModelGausLCMSFreezeOutGenerator;
 #pragma link C++ class AliFemtoModelHiddenInfo;
 #pragma link C++ class AliFemtoModelCorrFctn;
+#pragma link C++ class AliFemtoModelWeightGeneratorLednicky;
