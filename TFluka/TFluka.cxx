@@ -268,9 +268,10 @@ void TFluka::FinishGeometry() {
 //
   if (fVerbosityLevel >=3) {
     cout << "==> TFluka::FinishGeometry() called." << endl;
-    printf("----FinishGeometry - nothing to do with TGeo\n");
+    printf("----FinishGeometry - applying misalignment if any\n");
     cout << "<== TFluka::FinishGeometry() called." << endl;
   }  
+  TVirtualMCApplication::Instance()->MisalignGeometry();
 } 
 
 //______________________________________________________________________________ 
