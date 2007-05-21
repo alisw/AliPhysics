@@ -27,8 +27,7 @@ gRandom->SetSeed($SEED);
 AliCDBManager::Instance()->SetRun($RUN);
 AliSimulation MuonSim("$ALICE_ROOT/MUON/Config.C");
 MuonSim.SetMakeTrigger("MUON");
-// MuonSim.SetWriteRawData("MUON","raw.root");
-MuonSim.SetWriteRawData("MUON");
+MuonSim.SetWriteRawData("MUON","raw.root", kTRUE);
 MuonSim.Run($NEVENTS);
 .q
 EOF
@@ -46,7 +45,7 @@ gRandom->SetSeed($SEED);
 AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5kG);
 AliTracker::SetFieldMap(field, kFALSE);
 AliReconstruction MuonRec("galice.root");
-MuonRec.SetInput("$FULLPATH/");
+MuonRec.SetInput("$FULLPATH/raw.root");
 MuonRec.SetRunVertexFinder(kFALSE);
 MuonRec.SetRunLocalReconstruction("MUON");
 MuonRec.SetRunTracking("MUON");
