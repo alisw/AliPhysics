@@ -3,7 +3,7 @@ dn: det=MCH,o=alice,dc=cern,dc=ch
 objectClass: AliShuttleDetector
 det: MCH
 StrictRunOrder: 1
-responsible: not_yet_set
+responsible: aphecetc@in2p3.fr
 DCSHost: aldcs053.cern.ch
 DCSPort: 4242
 DCSalias: MchHvLvRight/Chamber[01..04]Right/Quad1Sect[1..3].actual.vMon

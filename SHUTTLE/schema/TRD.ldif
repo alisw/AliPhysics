@@ -6,7 +6,7 @@ StrictRunOrder: 0
 responsible: not_yet_set
 DCSHost: aldcs053.cern.ch
 DCSPort: 4242
-DCSalias: trd_chamberByteStatus[000..540]
+DCSalias: trd_chamberByteStatus[000..539]
 DCSalias: trd_preTrigger
 DCSalias: trd_goofyHv
 DCSalias: trd_goofyPeakPos00
@@ -20,11 +20,11 @@ DCSalias: trd_goofyCO2
 DCSalias: trd_goofyN2
 DCSalias: trd_gasO2
 DCSalias: trd_gasOverpressure
-DCSalias: trd_envTemp[000..540]
-DCSalias: trd_hvAnodeImon[000..540]
-DCSalias: trd_hvDriftImon[000..540]
-DCSalias: trd_hvAnodeUmon[000..540]
-DCSalias: trd_hvDriftUmon[000..540]
+DCSalias: trd_envTemp[000..539]
+DCSalias: trd_hvAnodeImon[000..539]
+DCSalias: trd_hvDriftImon[000..539]
+DCSalias: trd_hvAnodeUmon[000..539]
+DCSalias: trd_hvDriftUmon[000..539]
 DCSalias: trd_adcClkPhase
 DCSalias: trd_atmPressure
 DCSalias: trd_luminosity
