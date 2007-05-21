@@ -63,11 +63,17 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
 {
   // *************** From DCS ******************
   // Fills data into a AliZDCDataDCS object
-  if(!dcsAliasMap) return 0;
+  if(!dcsAliasMap) return 1;
 
   // The processing of the DCS input data is forwarded to AliZDCDataDCS
   Float_t DCSValues[26];
   fData->ProcessData(*dcsAliasMap, DCSValues);
+  // Store DCS data for reference
+  AliCDBMetaData metadata;
+  metadata.SetResponsible("Chiara Oppedisano");
+  metadata.SetComment("DCS data for ZDC");
+  Bool_t resStore = kFALSE;
+  resStore = StoreReferenceData("DCS","Data",fData,&metadata);
   //dcsAliasMap->Print("");
   //
   // --- Writing ZDC table positions into alignment object
@@ -96,7 +102,7 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   AliCDBMetaData md;
   md.SetResponsible("Chiara Oppedisano");
   md.SetComment("Alignment object for ZDC");
-  UInt_t resultAl = 0;
+  Bool_t resultAl = kFALSE;
   resultAl = Store("Align","Data", array, &md, 0, 0);
   
   // --- Writing ZDC PTMs HV values into calibration object
@@ -214,7 +220,7 @@ if (runType != "PEDESTALS") {
   metaData.SetResponsible("Chiara");
   metaData.SetComment("Filling AliZDCCalibData object");
 
-  UInt_t resultCal = 0;
+  Bool_t resultCal = kFALSE;
   resultCal = Store("Calib","Data",calibdata, &metaData, 0, 1);
  
   UInt_t result = 0;
@@ -226,4 +232,3 @@ if (runType != "PEDESTALS") {
   return result;
   
 }
-
