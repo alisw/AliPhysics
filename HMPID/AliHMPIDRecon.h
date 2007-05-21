@@ -44,7 +44,7 @@ public :
   Double_t SigLoc       (Double_t ckovTh,Double_t ckovPh,Double_t beta                      )const;//error due to cathode segmetation
   Double_t SigGeom      (Double_t ckovTh,Double_t ckovPh,Double_t beta                      )const;//error due to unknown photon origin
   Double_t SigCrom      (Double_t ckovTh,Double_t ckovPh,Double_t beta                      )const;//error due to unknonw photon energy
-  Double_t Sigma2       (Double_t ckovTh,Double_t ckovPh                                    )const;//photon candidate sigma
+  Double_t Sigma2       (Double_t ckovTh,Double_t ckovPh                                    )const;//photon candidate sigma^2
   enum ETrackingFlags {kMipDistCut=-9,kMipQdcCut=-5,kNoPhotAccept=-11};
 // HTA hidden track algorithm
   Bool_t   CkovHiddenTrk    (AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t nmean);              //Pattern recognition without trackinf information
@@ -55,7 +55,8 @@ public :
   Double_t FunConSect       (Double_t *c,Double_t x,Double_t y   );                                //Function of a general conical section
   void     SetNClu          (Int_t nclu                          ) {fNClu=nclu;}                   //Setter for # of clusters
   void     SetClCk          (Int_t i,Bool_t what                 ) {fClCk[i]=what;}                //Setter for cluster flags 
-  void     SetCkovFit       (Double_t ckov                       ) {fCkovFit=ckov;}                //Setter for ckof fitted
+  void     SetCkovFit       (Double_t ckov                       ) {fCkovFit=ckov;}                //Setter for ckov fitted
+  void     SetCkovSig2      (Double_t rms                       ) {fCkovSig2=rms;}                 //Setter for sigma2 ckov fitted
   void     SetTrkFit        (Double_t th,Double_t ph             ) {fThTrkFit = th;fPhTrkFit = ph;}//Setter for (th,ph) of the track
   void     SetRadXY         (Double_t  x,Double_t y              ) {fRadX = x;fRadY = y;}          //Setter for (th,ph) of the track
   static void     FunMinEl  (Int_t&/* */,Double_t* /* */,Double_t &f,Double_t *par,Int_t /* */);   //Fit function to find ellipes parameters
@@ -104,6 +105,7 @@ protected:
   Double_t fThTrkFit;                          //theta fitted of the track
   Double_t fPhTrkFit;                          //phi   fitted of the track
   Double_t fCkovFit;                           //estimated ring Cherenkov angle
+  Double_t fCkovSig2;                          //estimated error^2 on ring Cherenkov angle
 //
 private:
   static const Double_t fgkRadThick;                      //radiator thickness

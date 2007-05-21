@@ -24,8 +24,8 @@ void HESDfromKin()
 
   OpenCalib();
     
-  SimEsd(pHL,pEsd);
-//  SimEsdHidden(pHL,pEsd);
+//  SimEsd(pHL,pEsd);
+  SimEsdHidden(pHL,pEsd);
   
   pEsdFl->Write();pEsdFl->Close();        
 }
@@ -59,10 +59,14 @@ void SimEsd(AliLoader *pHL,AliESD *pEsd)
   }// event loop
   Printf("Events processed %i",iEvt);
   gAL->UnloadHeader();  gAL->UnloadKinematics();
-}//EsdFromStack()
+}//Esd()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void SimEsdHidden(AliLoader *pHL,AliESD *pEsd)
-{  
+{
+  Double_t rd=TMath::RadToDeg();
+  Printf("---------------------------------------");
+  Printf("| Utility to embed ESD from kinematics|");
+  Printf("---------------------------------------");
   AliHMPIDTracker::SetFieldMap(gAL->GetAliRun()->Field(),kTRUE);
   AliHMPID *pH=(AliHMPID*)gAL->GetAliRun()->GetDetector("HMPID");
   Int_t mtid=-1;
@@ -70,25 +74,37 @@ void SimEsdHidden(AliLoader *pHL,AliESD *pEsd)
   Printf("Number of events to process: %i",iNevt);
   for(Int_t iEvt=0;iEvt<iNevt;iEvt++){//events loop
     if(!(iEvt%50)) Printf("Events processed %i",iEvt);
-    gAL->GetEvent(iEvt);
+    gAL->GetEvent(iEvt);    
     pHL->TreeR()->GetEntry(0);
-    AliESDtrack trk;
-// Hidden Track
-    for(int iCh=AliHMPIDDigit::kMinCh;iCh<=AliHMPIDDigit::kMaxCh;iCh++){
-      AliESDtrack trk;
-       if(AliHMPIDTracker::ReconHiddenTrk(iCh,&trk,pH->CluLst(),pNmean);) continue;
-       pEsd->AddTrack(&trk);
-       Printf(" theta Cerenkov reconstructed %f",trk.GetHMPIDsignal());
-    }
-//    AliHMPIDTracker::Recon(pEsd,pH->CluLst(),pNmean);
-//      
+    AliStack *pStack=gAL->Stack();
+    for(Int_t i=0;i<pStack->GetNtrack();i++){
+      TParticle *pTrack=pStack->Particle(i); 
+      mtid=pTrack->GetFirstMother();
+      if(mtid>=0) continue; // only primaries
+      //find the chamber that intersects HMPID
+      AliESDtrack trk(pTrack);
+      Float_t xPc,yPc;
+      Int_t iCh=AliHMPIDTracker::IntTrkCha(&trk,xPc,yPc);                           //get chamber intersected by this track 
+      if(iCh<0) continue;                                                           //no intersection at all, go after next track
+      Float_t radX,radY,thetaTrk,phiTrk;
+      trk.GetHMPIDtrk(radX,radY,thetaTrk,phiTrk);
+      Printf("simulated track theta %f phi %f",thetaTrk*rd,phiTrk*rd);
+      TObjArray *pClus = pH->CluLst();
+      if(AliHMPIDTracker::ReconHiddenTrk(iCh,&trk,(TClonesArray *)pClus->At(iCh),pNmean)!=0) continue;
+      trk.GetHMPIDtrk(radX,radY,thetaTrk,phiTrk);
+      Printf("reconstr. track theta %f phi %f",thetaTrk*rd,phiTrk*rd);
+      pEsd->AddTrack(&trk);
+      Double_t thetaCerSim = TMath::ACos(pTrack->Energy()/(1.292*pTrack->P()));
+      Printf(" theta Cerenkov simulated     %f",thetaCerSim);
+      Printf(" theta Cerenkov reconstructed %f",trk.GetHMPIDsignal());
+    }// track loop
     pEsd->SetMagneticField(AliHMPIDTracker::GetBz());
     gEsdTr->Fill();
     pEsd->Reset();
   }// event loop
   Printf("Events processed %i",iEvt);
   gAL->UnloadHeader();  gAL->UnloadKinematics();
-}//EsdFromStack()
+}//EsdHidden()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void OpenCalib()
 {

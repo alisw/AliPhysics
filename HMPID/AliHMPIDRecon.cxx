@@ -56,6 +56,7 @@ AliHMPIDRecon::AliHMPIDRecon():TTask("RichRec","RichPat"),
 //hidden algorithm
   fMipX=fMipY=fThTrkFit=fPhTrkFit=fCkovFit=fMipQ=fRadX=fRadY=-999;
   fIdxMip=fNClu=0;
+  fCkovSig2=0;
   for (Int_t i=0; i<100; i++) {
     fXClu[i] = fYClu[i] = 0;
     fClCk[i] = kTRUE;
@@ -454,10 +455,13 @@ Bool_t AliHMPIDRecon::CkovHiddenTrk(AliESDtrack *pTrk,TClonesArray *pCluLst,Doub
     
   fRadNmean=nmean;
 
+  if(pCluLst->GetEntriesFast()>100) return kFALSE;                                            //boundary check for CluX,CluY...
   Float_t mipX=-1,mipY=-1;Int_t mipId=-1,mipQ=-1;                                                                           
   Double_t qRef = 0;
+  Int_t nCh=0;
   for (Int_t iClu=0;iClu<pCluLst->GetEntriesFast();iClu++){                                   //clusters loop
     AliHMPIDCluster *pClu=(AliHMPIDCluster*)pCluLst->UncheckedAt(iClu);                       //get pointer to current cluster    
+    nCh = pClu->Ch();
     fXClu[iClu] = pClu->X();fYClu[iClu] = pClu->Y();                                          //store x,y for fitting procedure
     fClCk[iClu] = kTRUE;                                                                      //all cluster are accepted at this stage to be reconstructed
     if(pClu->Q()>qRef){                                                                       //searching the highest charge to select a MIP      
@@ -467,18 +471,23 @@ Bool_t AliHMPIDRecon::CkovHiddenTrk(AliESDtrack *pTrk,TClonesArray *pCluLst,Doub
   }//clusters loop
 
   fNClu = pCluLst->GetEntriesFast();
-  if(qRef>pParam->QCut()){                                                                       //charge compartible with MIP clusters
+  if(qRef>pParam->QCut()){                                                                     //charge compartible with MIP clusters
     fIdxMip = mipId;
     fClCk[mipId] = kFALSE;
     fMipX = mipX; fMipY=mipY; fMipQ = qRef;
-    if(!DoRecHiddenTrk(pCluLst)) return kFALSE;                                                  //Do track and ring reconstruction,if problems returns 1
-    pTrk->SetHMPIDtrk(fRadX,fRadY,fThTrkFit,fPhTrkFit);                                          //store track intersection info
-    pTrk->SetHMPIDmip(fMipX,fMipY,(Int_t)fMipQ,fNClu);                                           //store mip info 
-    pTrk->SetHMPIDcluIdx(pCluLst->GetEntriesFast(),fIdxMip);                                     //set cham number and index of cluster
-    pTrk->SetHMPIDsignal(fCkovFit);                                                              //find best Theta ckov for ring i.e. track
-    Printf(" n clusters tot %i accepted %i",pCluLst->GetEntriesFast(),fNClu);
+    if(!DoRecHiddenTrk(pCluLst)) {
+      pTrk->SetHMPIDsignal(kNoPhotAccept);
+      return kFALSE;
+    }                                                                           //Do track and ring reconstruction,if problems returns 1
+    pTrk->SetHMPIDtrk(fRadX,fRadY,fThTrkFit,fPhTrkFit);                                        //store track intersection info
+    pTrk->SetHMPIDmip(fMipX,fMipY,(Int_t)fMipQ,fNClu);                                         //store mip info 
+    pTrk->SetHMPIDcluIdx(nCh,fIdxMip);                                                         //set cham number and index of cluster
+    pTrk->SetHMPIDsignal(fCkovFit);                                                            //find best Theta ckov for ring i.e. track
+    pTrk->SetHMPIDchi2(fCkovSig2);                                                             //errors squared
+//    Printf(" n clusters tot %i accepted %i",pCluLst->GetEntriesFast(),fNClu);
     return kTRUE;
   }
+  
   return kFALSE;
 }//CkovHiddenTrk()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -545,8 +554,8 @@ Bool_t AliHMPIDRecon::FitEllipse(Double_t &phiRec)
   if(!gMinuit) gMinuit = new TMinuit(5);                                               //init MINUIT with this number of parameters (5 params)
   gMinuit->mncler();                                                                   // reset Minuit list of paramters
   gMinuit->SetObjectFit((TObject*)this);  gMinuit->SetFCN(AliHMPIDRecon::FunMinEl);    //set fit function
-  gMinuit->mnexcm("SET PRI",&aArg,1,iErrFlg);                                          //suspend all printout from TMinuit 
-  gMinuit->mnexcm("SET NOW",&aArg,0,iErrFlg);                                          //suspend all warning printout from TMinuit
+//  gMinuit->mnexcm("SET PRI",&aArg,1,iErrFlg);                                          //suspend all printout from TMinuit 
+//  gMinuit->mnexcm("SET NOW",&aArg,0,iErrFlg);                                          //suspend all warning printout from TMinuit
   
   Double_t d1,d2,d3;
   TString sName;
@@ -557,7 +566,7 @@ Bool_t AliHMPIDRecon::FitEllipse(Double_t &phiRec)
   gMinuit->mnparm(3," G ",1,0.01,0,0,iErrFlg);
   gMinuit->mnparm(4," F ",1,0.01,0,0,iErrFlg);
 
-  gMinuit->mnexcm("SIMPLEX" ,&aArg,0,iErrFlg);
+  gMinuit->mnexcm("SIMPLEX",&aArg,0,iErrFlg);
   gMinuit->mnexcm("MIGRAD" ,&aArg,0,iErrFlg);   
   gMinuit->mnpout(0,sName,cA,d1,d2,d3,iErrFlg);
   gMinuit->mnpout(1,sName,cB,d1,d2,d3,iErrFlg);
@@ -573,18 +582,19 @@ Bool_t AliHMPIDRecon::FitEllipse(Double_t &phiRec)
   Double_t alfa1 = TMath::ATan(2*cH/(cA-cB));                      //alpha = angle of rotation of the conical section
   if(alfa1<0) alfa1+=TMath::Pi(); 
   alfa1*=0.5;
-  Double_t alfa2 = alfa1+TMath::Pi();
-  Double_t phiref = TMath::ATan2(bY-fMipY,aX-fMipX);               //evaluate in a unique way the angle of rotation comapring it
-  if(phiref<0) phiref+=TMath::TwoPi();                             //with the vector that poinst to the centre from the mip 
+//  Double_t alfa2 = alfa1+TMath::Pi();
+  Double_t phiref = TMath::ATan2(bY-fMipY,aX-fMipX);               //evaluate in a unique way the angle of rotation comparing it
+  if(phiref<0) phiref+=TMath::TwoPi();                             //with the vector that points to the centre from the mip 
   if(i2<0) phiref+=TMath::Pi();
   if(phiref>TMath::TwoPi()) phiref-=TMath::TwoPi();
 
 //  Printf(" alfa1 %f",alfa1*TMath::RadToDeg());
 //  Printf(" alfa2 %f",alfa2*TMath::RadToDeg());
 //  Printf(" firef %f",phiref*TMath::RadToDeg());
-  if(TMath::Abs(alfa1-phiref)<TMath::Abs(alfa2-phiref)) phiRec = alfa1; else phiRec = alfa2;  
+//  if(TMath::Abs(alfa1-phiref)<TMath::Abs(alfa2-phiref)) phiRec = alfa1; else phiRec = alfa2;  
   
-//  cout << " phi reconstructed " << phiRec*TMath::RadToDeg() << endl;
+//  Printf("FitEllipse: phi reconstructed %f",phiRec*TMath::RadToDeg());
+  phiRec=phiref;
   return kTRUE;
 //
 }
@@ -682,17 +692,21 @@ void AliHMPIDRecon::FunMinPhot(Int_t &/* */,Double_t* /* */,Double_t &f,Double_t
     Printf("FunMinPhot before: photons candidates %i used %i",nClTot,nClAcc);
     nClAcc = 0;
     Double_t meanCkov1=0;
+    Double_t meanCkov2=0;
     for(Int_t i=0;i<nClTot;i++) {
       if(!(pRec->ClCk(i))) continue;
       pRec->FindPhotCkov(pRec->XClu(i),pRec->YClu(i),thetaCer,phiCer);  
       if(TMath::Abs(thetaCer-meanCkov)<2*rms) {
-        meanCkov1  += thetaCer;
+        meanCkov1 += thetaCer;
+        meanCkov2 += thetaCer*thetaCer;
         nClAcc++;
       } else pRec->SetClCk(i,kFALSE);
     }
     meanCkov1/=nClAcc;
+    Double_t rms2 = (meanCkov2 - meanCkov*meanCkov*nClAcc)/nClAcc;
     Printf("FunMinPhot after: photons candidates %i used %i thetaCer %f",nClTot,nClAcc,meanCkov1);
     pRec->SetCkovFit(meanCkov1);
+    pRec->SetCkovSig2(rms2);
     pRec->SetNClu(nClAcc);
   }
 }//FunMinPhot()
