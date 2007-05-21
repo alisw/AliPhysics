@@ -1281,27 +1281,27 @@ Int_t AliESDComparisonMI::TreeTLoop()
   }  
   // --sort reconstructed V0
   //
-  AliV0 * v0MI=0;
-  for (Int_t iEntry=0; iEntry<nV0MIs;iEntry++){
-    v0MI = (AliV0*)fEvent->GetV0(iEntry);
-    if (!v0MI) continue;
-    //
-    Int_t label0 = TMath::Abs(v0MI->GetLabel(0));
-    Int_t label1 = TMath::Abs(v0MI->GetLabel(1));
-    //
-    for (Int_t i=0;i<2;i++){
-      Int_t absLabel =  TMath::Abs(v0MI->GetLabel(i));
-      if (absLabel < fNParticles) {
-	if (fMultiRecV0[absLabel]>0){
-	  if (fMultiRecV0[absLabel]<20)
-	    fIndexRecV0[absLabel*20+fMultiRecV0[absLabel]] =  iEntry; 	
-	}
-	else      
-	  fIndexRecV0[absLabel*20] =  iEntry;
-	fMultiRecV0[absLabel]++;
-      }
-    }
-  }  
+//   AliV0 * v0MI=0;
+//   for (Int_t iEntry=0; iEntry<nV0MIs;iEntry++){
+//     v0MI = (AliV0*)fEvent->GetV0(iEntry);
+//     if (!v0MI) continue;
+//     //
+//     Int_t label0 = TMath::Abs(v0MI->GetLabel(0));
+//     Int_t label1 = TMath::Abs(v0MI->GetLabel(1));
+//     //
+//     for (Int_t i=0;i<2;i++){
+//       Int_t absLabel =  TMath::Abs(v0MI->GetLabel(i));
+//       if (absLabel < fNParticles) {
+// 	if (fMultiRecV0[absLabel]>0){
+// 	  if (fMultiRecV0[absLabel]<20)
+// 	    fIndexRecV0[absLabel*20+fMultiRecV0[absLabel]] =  iEntry; 	
+// 	}
+// 	else      
+// 	  fIndexRecV0[absLabel*20] =  iEntry;
+// 	fMultiRecV0[absLabel]++;
+//       }
+//     }
+//   }  
 
 
   printf("Time spended in TreeTLoop\n");
@@ -1678,21 +1678,21 @@ Int_t AliESDComparisonMI::BuildV0Info(Int_t eventNr)
     if (fMultiRecV0[label]>0 || fMultiRecV0[label2]>0){
 
       //      for (Int_t j=0;j<TMath::Min(fMultiRecV0s[label],100);j++){
-      for (Int_t j=TMath::Min(fMultiRecV0[label],Short_t(20))-1;j>=0;j--){
-	Int_t index = fIndexRecV0[label*20+j];
-	if (index<0) continue;
-	AliV0 *v0MI2  = (AliV0*)fEvent->GetV0(index);
-	if (TMath::Abs(v0MI2->GetLabel(0))==label &&TMath::Abs(v0MI2->GetLabel(1))==label2) {
-	  v0MI =v0MI2;
-	  fRecV0Info->fV0Multiple++;
-	  fSignedV0[index]=1;
-	}
-	if (TMath::Abs(v0MI2->GetLabel(1))==label &&TMath::Abs(v0MI2->GetLabel(0))==label2) {
-	  v0MI =v0MI2;
-	  fRecV0Info->fV0Multiple++;
-	  fSignedV0[index]=1;
-	}
-      }
+     //  for (Int_t j=TMath::Min(fMultiRecV0[label],Short_t(20))-1;j>=0;j--){
+// 	Int_t index = fIndexRecV0[label*20+j];
+// 	if (index<0) continue;
+// 	AliV0 *v0MI2  = (AliV0*)fEvent->GetV0(index);
+// 	if (TMath::Abs(v0MI2->GetLabel(0))==label &&TMath::Abs(v0MI2->GetLabel(1))==label2) {
+// 	  v0MI =v0MI2;
+// 	  fRecV0Info->fV0Multiple++;
+// 	  fSignedV0[index]=1;
+// 	}
+// 	if (TMath::Abs(v0MI2->GetLabel(1))==label &&TMath::Abs(v0MI2->GetLabel(0))==label2) {
+// 	  v0MI =v0MI2;
+// 	  fRecV0Info->fV0Multiple++;
+// 	  fSignedV0[index]=1;
+// 	}
+//       }
     }
     if (v0MI){
       fRecV0Info->fV0rec = v0MI;
