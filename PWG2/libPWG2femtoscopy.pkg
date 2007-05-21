@@ -31,7 +31,8 @@ SRCS= FEMTOSCOPY/AliFemto/AliFemtoAnalysis.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoModelWeightGeneratorBasic.cxx\
       FEMTOSCOPY/AliFemto/AliFemtoModelManager.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoModelCorrFctn.cxx \
-      FEMTOSCOPY/AliFemto/AliFemtoModelFreezeOutGenerator.cxx
+      FEMTOSCOPY/AliFemto/AliFemtoModelFreezeOutGenerator.cxx \
+      FEMTOSCOPY/AliFemto/AliFemtoModelWeightGeneratorLednicky.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 HDRS += FEMTOSCOPY/AliFemto/AliFmThreeVector.h \
@@ -44,6 +45,8 @@ HDRS += FEMTOSCOPY/AliFemto/AliFmThreeVector.h \
         FEMTOSCOPY/AliFemto/AliFemtoKinkCut.h \
         FEMTOSCOPY/AliFemto/AliFemtoXiCut.h 
 
+FSRCS= FEMTOSCOPY/AliFemto/AliFemtoFsiTools.F \
+       FEMTOSCOPY/AliFemto/AliFemtoFsiWeightLednicky.F
 
 DHDR:= PWG2femtoscopyLinkDef.h
 
