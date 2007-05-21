@@ -16,12 +16,20 @@
 
 // Forward declare structures.
 extern "C" {
+struct AliHLTMUONTriggerRecordStruct;
 struct AliHLTMUONTriggerRecordsBlockStruct;
 struct AliHLTMUONTrigRecsDebugBlockStruct;
 struct AliHLTMUONTriggerChannelsBlockStruct;
 struct AliHLTMUONRecHitsBlockStruct;
 struct AliHLTMUONClustersBlockStruct;
 struct AliHLTMUONChannelsBlockStruct;
+struct AliHLTMUONMansoTrackStruct;
+struct AliHLTMUONMansoTracksBlockStruct;
+struct AliHLTMUONMansoCandidatesBlockStruct;
+struct AliHLTMUONTrackDecisionStruct;
+struct AliHLTMUONSinglesDecisionBlockStruct;
+struct AliHLTMUONPairDecisionStruct;
+struct AliHLTMUONPairsDecisionBlockStruct;
 } // extern "C"
 
 /**
@@ -90,6 +98,70 @@ public:
 	{
 		UnpackTriggerRecordFlags(flags, sign, hitset);
 	}
+	
+	/**
+	 * This packs the given parameters into the bits of a word appropriate
+	 * for AliHLTMUONTrackDecisionStruct::fTriggerBits.
+	 * @param highPt  Has the track passed the high pt cut.
+	 * @param lowPt   Has the track passed the low pt cut.
+	 * @return  Returns the 32 bit packed word.
+	 */
+	static AliHLTUInt32_t PackTrackDecisionBits(bool highPt, bool lowPt);
+	
+	/**
+	 * This unpacks the AliHLTMUONTrackDecisionStruct::fTriggerBits bits into
+	 * its component fields.
+	 * @param bits  The trigger bits from an AliHLTMUONTrackDecisionStruct
+	 *              structure.
+	 * @param highPt Sets this to the value of the high pt cut bit.
+	 * @param lowPt  Sets this to the value of the low pt cut bit.
+	 */
+	static void UnpackTrackDecisionBits(
+			AliHLTUInt32_t bits, // [in]
+			bool& highPt, // [out]
+			bool& lowPt // [out]
+		);
+	
+	/**
+	 * This packs the given parameters into the bits of a word appropriate
+	 * for AliHLTMUONPairDecisionStruct::fTriggerBits.
+	 *
+	 * @param highMass Has the track pair passed the high invariant mass cut.
+	 * @param lowMass  Has the track pair passed the low invariant mass cut.
+	 * @param unlike   Does the track pair have unlike signs.
+	 * @param highPtCount The number of tracks that passed the high pt cut
+	 *                    in the pair.
+	 * @param lowPtCount  The number of tracks that passed the low pt cut
+	 *                    in the pair.
+	 * @return  Returns the 32 bit packed word.
+	 *
+	 * Note: Must have highPtCount + lowPtCount <= 2 and unlike == true if
+	 * highMass or lowMass is true.
+	 */
+	static AliHLTUInt32_t PackPairDecisionBits(
+			bool highMass, bool lowMass, bool unlike,
+			AliHLTUInt8_t highPtCount, AliHLTUInt8_t lowPtCount
+		);
+	
+	/**
+	 * This unpacks the AliHLTMUONPairDecisionStruct::fTriggerBits bits into
+	 * its component fields.
+	 * @param bits  The trigger bits from an AliHLTMUONPairDecisionStruct
+	 *              structure.
+	 * @param highMass Sets this to the value of the high invariant mass cut bit.
+	 * @param lowMass  Sets this to the value of the low invariant mass cut bit.
+	 * @param unlike   Sets this if the pair is unlike sign.
+	 * @param highPtCount Sets this to the high pt count bits.
+	 * @param lowPtCount  Sets this to the low pt count bits.
+	 */
+	static void UnpackPairDecisionBits(
+			AliHLTUInt32_t bits, // [in]
+			bool& highMass, // [out]
+			bool& lowMass, // [out]
+			bool& unlike, // [out]
+			AliHLTUInt8_t& highPtCount, // [out]
+			AliHLTUInt8_t& lowPtCount // [out]
+		);
 
 	/**
 	 * Methods used to check if the header information corresponds to the
@@ -101,18 +173,30 @@ public:
 	static bool HeaderOk(const AliHLTMUONRecHitsBlockStruct& block);
 	static bool HeaderOk(const AliHLTMUONClustersBlockStruct& block);
 	static bool HeaderOk(const AliHLTMUONChannelsBlockStruct& block);
+	static bool HeaderOk(const AliHLTMUONMansoTracksBlockStruct& block);
+	static bool HeaderOk(const AliHLTMUONMansoCandidatesBlockStruct& block);
+	static bool HeaderOk(const AliHLTMUONSinglesDecisionBlockStruct& block);
+	static bool HeaderOk(const AliHLTMUONPairsDecisionBlockStruct& block);
 
 	/**
-	 * Methods used to check extensively if the integrity of various types
-	 * of data blocks are Ok and returns true in that case.
+	 * Methods used to check more extensively if the integrity of various
+	 * types of data blocks are Ok and returns true in that case.
 	 * These can be slow and should generally only be used for debugging.
 	 */
+	static bool IntegrityOk(const AliHLTMUONTriggerRecordStruct& tr);
 	static bool IntegrityOk(const AliHLTMUONTriggerRecordsBlockStruct& block);
 	static bool IntegrityOk(const AliHLTMUONTrigRecsDebugBlockStruct& block);
 	static bool IntegrityOk(const AliHLTMUONTriggerChannelsBlockStruct& block);
 	static bool IntegrityOk(const AliHLTMUONRecHitsBlockStruct& block);
 	static bool IntegrityOk(const AliHLTMUONClustersBlockStruct& block);
 	static bool IntegrityOk(const AliHLTMUONChannelsBlockStruct& block);
+	static bool IntegrityOk(const AliHLTMUONMansoTrackStruct& track);
+	static bool IntegrityOk(const AliHLTMUONMansoTracksBlockStruct& block);
+	static bool IntegrityOk(const AliHLTMUONMansoCandidatesBlockStruct& block);
+	static bool IntegrityOk(const AliHLTMUONTrackDecisionStruct& decision);
+	static bool IntegrityOk(const AliHLTMUONSinglesDecisionBlockStruct& block);
+	static bool IntegrityOk(const AliHLTMUONPairDecisionStruct& decision);
+	static bool IntegrityOk(const AliHLTMUONPairsDecisionBlockStruct& block);
 
 private:
 	// Should never have to create or destroy this object.

@@ -33,6 +33,10 @@
 #include "AliHLTMUONRecHitsBlockStruct.h"
 #include "AliHLTMUONClustersBlockStruct.h"
 #include "AliHLTMUONChannelsBlockStruct.h"
+#include "AliHLTMUONMansoTracksBlockStruct.h"
+#include "AliHLTMUONMansoCandidatesBlockStruct.h"
+#include "AliHLTMUONSinglesDecisionBlockStruct.h"
+#include "AliHLTMUONPairsDecisionBlockStruct.h"
 
 /**
  * A light weight class for reading the contents of an internal dimuon HLT
@@ -105,9 +109,17 @@ public:
 	/**
 	 * Returns the common data block header.
 	 */
-	const AliHLTMUONDataBlockHeader& BlockHeader() const
+	const AliHLTMUONDataBlockHeader& CommonBlockHeader() const
 	{
 		return fBlock->fHeader;
+	}
+	
+	/**
+	 * Returns the whole data block header.
+	 */
+	const DataBlockType& BlockHeader() const
+	{
+		return fBlock;
 	}
 
 	/**
@@ -186,5 +198,25 @@ typedef AliHLTMUONDataBlockReader<
 		AliHLTMUONChannelsBlockStruct,
 		AliHLTMUONChannelStruct
 	> AliHLTMUONChannelsBlockReader;
+
+typedef AliHLTMUONDataBlockReader<
+		AliHLTMUONMansoTracksBlockStruct,
+		AliHLTMUONMansoTrackStruct
+	> AliHLTMUONMansoTracksBlockReader;
+
+typedef AliHLTMUONDataBlockReader<
+		AliHLTMUONMansoCandidatesBlockStruct,
+		AliHLTMUONMansoCandidateStruct
+	> AliHLTMUONMansoCandidatesBlockReader;
+
+typedef AliHLTMUONDataBlockReader<
+		AliHLTMUONSinglesDecisionBlockStruct,
+		AliHLTMUONTrackDecisionStruct
+	> AliHLTMUONSinglesDecisionBlockReader;
+
+typedef AliHLTMUONDataBlockReader<
+		AliHLTMUONPairsDecisionBlockStruct,
+		AliHLTMUONPairDecisionStruct
+	> AliHLTMUONPairsDecisionBlockReader;
 
 #endif // ALIHLTMUONDATABLOCKREADER_H

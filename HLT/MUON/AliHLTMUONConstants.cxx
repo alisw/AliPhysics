@@ -29,7 +29,12 @@
 const AliHLTMUONTriggerRecordStruct
 AliHLTMUONConstants::fgkNilTriggerRecordStruct = {
 	0, 0, 0, 0, 0,
-	{{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}}
+	{
+	 AliHLTMUONConstants::fgkNilRecHitStruct,
+	 AliHLTMUONConstants::fgkNilRecHitStruct,
+	 AliHLTMUONConstants::fgkNilRecHitStruct,
+	 AliHLTMUONConstants::fgkNilRecHitStruct
+	}
 };
 
 const AliHLTMUONTrigRecInfoStruct
@@ -42,10 +47,43 @@ const AliHLTMUONRecHitStruct
 AliHLTMUONConstants::fgkNilRecHitStruct = {0, 0, 0};
 
 const AliHLTMUONClusterStruct
-AliHLTMUONConstants::fgkNilClusterStruct = {0, {0, 0, 0}, 0, 0};
+AliHLTMUONConstants::fgkNilClusterStruct = {
+	0, AliHLTMUONConstants::fgkNilRecHitStruct, 0, 0
+};
 
 const AliHLTMUONChannelStruct
 AliHLTMUONConstants::fgkNilChannelStruct = {0, 0, 0, 0, 0};
+
+const AliHLTMUONMansoTrackStruct
+AliHLTMUONConstants::fgkNilMansoTrackStruct = {
+	0, 0, 0, 0, 0, 0, 0,
+	{
+	 AliHLTMUONConstants::fgkNilRecHitStruct,
+	 AliHLTMUONConstants::fgkNilRecHitStruct,
+	 AliHLTMUONConstants::fgkNilRecHitStruct,
+	 AliHLTMUONConstants::fgkNilRecHitStruct
+	}
+};
+	
+const AliHLTMUONMansoRoIStruct
+AliHLTMUONConstants::fgkNilMansoRoIStruct = {0, 0, 0, 0};
+
+const AliHLTMUONMansoCandidateStruct
+AliHLTMUONConstants::fgkNilMansoCandidateStruct = {
+	AliHLTMUONConstants::fgkNilMansoTrackStruct,
+	{
+	 AliHLTMUONConstants::fgkNilMansoRoIStruct,
+	 AliHLTMUONConstants::fgkNilMansoRoIStruct,
+	 AliHLTMUONConstants::fgkNilMansoRoIStruct,
+	 AliHLTMUONConstants::fgkNilMansoRoIStruct
+	}
+};
+
+const AliHLTMUONTrackDecisionStruct
+AliHLTMUONConstants::fgkNilTrackDecisionStruct = {0, 0};
+
+const AliHLTMUONPairDecisionStruct
+AliHLTMUONConstants::fgkNilPairDecisionStruct = {0, 0, 0, 0};
 
 
 const AliHLTComponentDataType
@@ -112,29 +150,22 @@ AliHLTMUONConstants::fgkMansoTracksBlockDataType = {
 };
 
 const AliHLTComponentDataType
-AliHLTMUONConstants::fgkMansoRoIBlockDataType = {
+AliHLTMUONConstants::fgkMansoCandidatesBlockDataType = {
 	sizeof(AliHLTComponentDataType),
-	{'M','A','N','S','O','R','O','I'},
+	{'M','N','C','A','N','D','I','D'},
 	{'D','I','M','U'}
 };
 
 const AliHLTComponentDataType
-AliHLTMUONConstants::fgkMansoTrialsBlockDataType = {
+AliHLTMUONConstants::fgkSinglesDecisionBlockDataType = {
 	sizeof(AliHLTComponentDataType),
-	{'M','A','N','T','R','I','A','L'},
+	{'D','E','C','I','D','S','G','L'},
 	{'D','I','M','U'}
 };
 
 const AliHLTComponentDataType
-AliHLTMUONConstants::fgkDecisionBlockDataType = {
+AliHLTMUONConstants::fgkPairsDecisionBlockDataType = {
 	sizeof(AliHLTComponentDataType),
-	{'D','E','C','I','S','I','O','N'},
-	{'D','I','M','U'}
-};
-
-const AliHLTComponentDataType
-AliHLTMUONConstants::fgkDecisionDebugBlockDataType = {
-	sizeof(AliHLTComponentDataType),
-	{'D','E','C','I','S','D','B','G'},
+	{'D','E','C','I','D','P','A','R'},
 	{'D','I','M','U'}
 };

@@ -33,6 +33,10 @@
 #include "AliHLTMUONRecHitsBlockStruct.h"
 #include "AliHLTMUONClustersBlockStruct.h"
 #include "AliHLTMUONChannelsBlockStruct.h"
+#include "AliHLTMUONMansoTracksBlockStruct.h"
+#include "AliHLTMUONMansoCandidatesBlockStruct.h"
+#include "AliHLTMUONSinglesDecisionBlockStruct.h"
+#include "AliHLTMUONPairsDecisionBlockStruct.h"
 
 /**
  * A light weight class for writing an internal dimuon HLT data block.
@@ -113,11 +117,11 @@ public:
 	}
 
 	/**
-	 * Initialises the data block header by setting the type and record width
-	 * fields. If the buffer size was to small to create the header then this
-	 * method returns false, otherwise true on success.
+	 * Initialises the common data block header by setting the type and record
+	 * width fields. If the buffer size was to small to create the header then
+	 * this method returns false, otherwise true on success.
 	 */
-	bool InitHeader() const
+	bool InitCommonHeader() const
 	{
 		// The block size must be at least sizeof(DataBlockType) bytes.
 		if (fSize < sizeof(DataBlockType)) return false;
@@ -130,11 +134,24 @@ public:
 	}
 	
 	/**
-	 * Returns the data block header.
+	 * Returns the common data block header.
 	 */
-	const AliHLTMUONDataBlockHeader& BlockHeader() const
+	const AliHLTMUONDataBlockHeader& CommonBlockHeader() const
 	{
 		return fBlock->fHeader;
+	}
+	
+	/**
+	 * Returns the whole data block header.
+	 */
+	DataBlockType& BlockHeader()
+	{
+		return fBlock;
+	}
+	
+	const DataBlockType& BlockHeader() const
+	{
+		return fBlock;
 	}
 	
 	/**
@@ -281,5 +298,29 @@ typedef AliHLTMUONDataBlockWriter<
 		AliHLTMUONChannelStruct,
 		kChannelsDataBlock
 	> AliHLTMUONChannelsBlockWriter;
+
+typedef AliHLTMUONDataBlockWriter<
+		AliHLTMUONMansoTracksBlockStruct,
+		AliHLTMUONMansoTrackStruct,
+		kMansoTracksDataBlock
+	> AliHLTMUONMansoTracksBlockWriter;
+
+typedef AliHLTMUONDataBlockWriter<
+		AliHLTMUONMansoCandidatesBlockStruct,
+		AliHLTMUONMansoCandidateStruct,
+		kMansoCandidatesDataBlock
+	> AliHLTMUONMansoCandidatesBlockWriter;
+	
+typedef AliHLTMUONDataBlockWriter<
+		AliHLTMUONSinglesDecisionBlockStruct,
+		AliHLTMUONTrackDecisionStruct,
+		kSinglesDecisionDataBlock
+	> AliHLTMUONSinglesDecisionBlockWriter;
+	
+typedef AliHLTMUONDataBlockWriter<
+		AliHLTMUONPairsDecisionBlockStruct,
+		AliHLTMUONPairDecisionBlockStruct,
+		kPairsDecisionDataBlock
+	> AliHLTMUONPairsDecisionBlockWriter;
 
 #endif // ALIHLTMUONDATABLOCKWRITER_H
