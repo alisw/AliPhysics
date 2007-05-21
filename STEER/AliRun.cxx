@@ -283,7 +283,7 @@ void AliRun::SetRootGeometry(Bool_t flag)
 {
 // Instruct application that the geometry is to be retreived from a root file.
    fIsRootGeometry = flag;
-   if (flag) gMC->SetRootGeometry();
+   if (flag && gMC) gMC->SetRootGeometry();
 }
 //_______________________________________________________________________
 void AliRun::SetField(Int_t type, Int_t version, Float_t scale,
