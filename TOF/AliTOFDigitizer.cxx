@@ -510,7 +510,7 @@ void AliTOFDigitizer::DecalibrateTOFSignal( AliTOFcalib *calib){
       timeCorr = timeCorr + timedelay;
       AliDebug(2,Form(" The Time Slewing+ delay (ns): %f: ",timeCorr));
       //convert to ps
-      timeCorr*=1E-3;
+      timeCorr*=1E3;
       Double_t timeMis = (Double_t)(dig->GetTdc())*AliTOFGeometry::TdcBinWidth();
       timeMis = timeMis+timeCorr;
       AliDebug(2,Form(" The Miscalibrated time (ps): %e: ",timeMis));
