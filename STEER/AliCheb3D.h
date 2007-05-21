@@ -89,6 +89,13 @@ class AliCheb3DCalc: public TNamed
  public:
   AliCheb3DCalc();
   AliCheb3DCalc(FILE* stream); // read coefs from text file
+  AliCheb3DCalc(const AliCheb3DCalc &cheb);
+  AliCheb3DCalc& operator= (const AliCheb3DCalc &cheb) {
+      // Assignment operator
+      cheb.Copy(*this);
+      return *this;
+  }
+  
   ~AliCheb3DCalc() {Clear();}
   //
   void       Print(Option_t* opt="")                                   const;
@@ -101,6 +108,8 @@ class AliCheb3DCalc: public TNamed
 #endif
   //
   static void ReadLine(TString& str,FILE* stream);
+ private:
+  void Copy (TObject &mc) const;
   //
  protected:
   //
@@ -141,6 +150,13 @@ class AliCheb3D: public TNamed
     AliCheb3D();
     AliCheb3D(const char* inpFile); // read coefs from text file
     AliCheb3D(FILE*);               // read coefs from stream
+    AliCheb3D(const AliCheb3D &cheb);
+    AliCheb3D& operator= (const AliCheb3D &cheb) {
+	// Assignment operator
+	cheb.Copy(*this);
+	return *this;
+    }
+  
   //
 #ifdef _INC_CREATION_ALICHEB3D_
   AliCheb3D(const char* funName, Int_t DimOut, Float_t  *bmin,Float_t  *bmax, Int_t *npoints, Float_t  prec=1E-6);
@@ -191,7 +207,9 @@ class AliCheb3D: public TNamed
   //
   Float_t      MapToInternal(Float_t  x,Int_t d) const {return (x-fBOffset[d])*fBScale[d];} // map x to [-1:1]
   Float_t      MapToExternal(Float_t  x,Int_t d) const {return x/fBScale[d]+fBOffset[d];}   // map from [-1:1] to x
-  //  
+  //
+ private:
+  void Copy (TObject &mc) const;
  protected:
   Int_t        fDimOut;            // dimension of the ouput array
   Float_t      fPrec;              // requested precision

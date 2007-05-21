@@ -35,6 +35,7 @@
 //                                                                               //
 ///////////////////////////////////////////////////////////////////////////////////
 
+#include "AliLog.h"
 #include "AliMagFCheb.h"
 
 ClassImp(AliMagFCheb)
@@ -42,6 +43,24 @@ ClassImp(AliMagFCheb)
 
 
 //__________________________________________________________________________________________
+AliMagFCheb::AliMagFCheb() :
+    TNamed(),
+    fNParamsSol(0),
+    fNSegZSol(0),
+    fNParamsDip(0),
+    fSegZSol(0),
+    fSegRSol(0),
+    fNSegRSol(0),
+    fSegZIdSol(0),
+    fMinZSol(0.),
+    fMaxZSol(0.),
+    fMaxRSol(0.),
+    fParamsSol(0),
+    fParamsDip(0)
+{
+  Init0();
+}
+
 AliMagFCheb::AliMagFCheb(const char* inputFile) :
     TNamed("Field Map", inputFile),
     fNParamsSol(0),
@@ -53,10 +72,40 @@ AliMagFCheb::AliMagFCheb(const char* inputFile) :
     fSegZIdSol(0),
     fMinZSol(0.),
     fMaxZSol(0.),
-    fMaxRSol(0.)
+    fMaxRSol(0.),
+    fParamsSol(0),
+    fParamsDip(0)
 {
   Init0();
   LoadData(inputFile);
+}
+
+AliMagFCheb::AliMagFCheb(const AliMagFCheb &cheb) :
+    TNamed(),
+    fNParamsSol(0),
+    fNSegZSol(0),
+    fNParamsDip(0),
+    fSegZSol(0),
+    fSegRSol(0),
+    fNSegRSol(0),
+    fSegZIdSol(0),
+    fMinZSol(0.),
+    fMaxZSol(0.),
+    fMaxRSol(0.),
+    fParamsSol(0),
+    fParamsDip(0)
+{
+  //
+  // Copy constructor for AliMC
+  //
+  cheb.Copy(*this);
+}
+
+//_______________________________________________________________________
+void AliMagFCheb::Copy(TObject &) const
+{
+  //dummy Copy function
+  AliFatal("Not implemented!");
 }
 
 //__________________________________________________________________________________________

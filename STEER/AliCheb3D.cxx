@@ -82,6 +82,7 @@
 #include <TRandom.h>
 #include <TROOT.h>
 #include "AliCheb3D.h"
+#include "AliLog.h"
 
 
 
@@ -123,6 +124,30 @@ AliCheb3DCalc::AliCheb3DCalc(FILE* stream):
     // Default constructor
     Init0();
     LoadData(stream);
+}
+
+AliCheb3DCalc::AliCheb3DCalc(const AliCheb3DCalc& cheb):
+    TNamed("", ""),
+    fNCoefs(0),  
+    fNRows(0),
+    fNCols(0),
+    fNElemBound2D(0),
+    fNColsAtRow(0),
+    fColAtRowBg(0),
+    fCoefBound2D0(0),
+    fCoefBound2D1(0),
+    fCoefs(0),
+    fTmpCf1(0),
+    fTmpCf0(0)
+{
+    // Copy constructor
+    cheb.Copy(*this);
+}
+
+void AliCheb3DCalc::Copy(TObject &) const
+{
+  //dummy Copy function
+  AliFatal("Not implemented!");
 }
 
 //__________________________________________________________________________________________
@@ -339,9 +364,11 @@ AliCheb3D::AliCheb3D():
     TNamed("", ""),
     fDimOut(0),
     fPrec(0.),
+    fChebCalc(),
     fMaxCoefs(0),
     fResTmp(0),
     fGrid(0),
+    fUsrFunName(),
     fUsrMacro(0)	     
 {
     // Default constructor
@@ -352,9 +379,11 @@ AliCheb3D::AliCheb3D(const char* inputFile):
     TNamed("", ""),
     fDimOut(0),
     fPrec(0.),
+    fChebCalc(),
     fMaxCoefs(0),
     fResTmp(0),
     fGrid(0),
+    fUsrFunName(),
     fUsrMacro(0)	     
 {
     // Default constructor
@@ -368,9 +397,11 @@ AliCheb3D::AliCheb3D(FILE* stream):
     TNamed("", ""),
     fDimOut(0),
     fPrec(0.),
+    fChebCalc(),
     fMaxCoefs(0),
     fResTmp(0),
     fGrid(0),
+    fUsrFunName(),
     fUsrMacro(0)	     
 {
     // Default constructor
@@ -378,6 +409,20 @@ AliCheb3D::AliCheb3D(FILE* stream):
     LoadData(stream);
 }
 
+AliCheb3D::AliCheb3D(const AliCheb3D& cheb):
+    TNamed("", ""),
+    fDimOut(0),
+    fPrec(0.),
+    fChebCalc(),
+    fMaxCoefs(0),
+    fResTmp(0),
+    fGrid(0),
+    fUsrFunName(),
+    fUsrMacro(0)	     
+{
+    // Copy constructor
+    cheb.Copy(*this);
+}
 
 //__________________________________________________________________________________________
 #ifdef _INC_CREATION_ALICHEB3D_
@@ -426,6 +471,13 @@ AliCheb3D::AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Floa
   //
 }
 #endif
+
+
+void AliCheb3D::Copy(TObject &) const
+{
+  //dummy Copy function
+  AliFatal("Not implemented!");
+}
 
 //__________________________________________________________________________________________
 void AliCheb3D::Clear(Option_t*)

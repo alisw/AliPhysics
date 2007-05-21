@@ -36,9 +36,16 @@
 class AliMagFCheb: public TNamed
 {
  public:
-  AliMagFCheb()                                                  {Init0();}
-  AliMagFCheb(const char* inputFile);
-  ~AliMagFCheb();
+    AliMagFCheb();
+    AliMagFCheb(const char* inputFile);
+    AliMagFCheb(const AliMagFCheb &cheb);
+    AliMagFCheb& operator= (const AliMagFCheb &cheb) {
+	// Assignment operator
+	cheb.Copy(*this);
+	return *this;
+    }
+
+   ~AliMagFCheb();
   //
   void       AddParamSol(AliCheb3D* param);
   void       AddParamDip(AliCheb3D* param);
@@ -70,6 +77,8 @@ class AliMagFCheb: public TNamed
  protected:
   void         Init0();
   virtual void FieldCylSol(Float_t *rphiz, Float_t *b)    const;
+ private:
+  void Copy (TObject &cheb) const;
   //
  protected:
   //
