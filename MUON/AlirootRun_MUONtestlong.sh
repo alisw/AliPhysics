@@ -9,10 +9,10 @@ mkdir $OUTDIR
 cp $ALICE_ROOT/MUON/.rootrc $ALICE_ROOT/MUON/rootlogon.C $OUTDIR
 cd $OUTDIR
 
-FULLPATH="$CURDIR/$OUTDIR"
+RUN=0
 # Minimum number of events to have enough stat. for invariant mass fit
 # 10000 is ok, 20000 is really fine
-NEVENTS=100
+NEVENTS=10000
 SEED=1234567
 
 
@@ -25,6 +25,7 @@ aliroot -b >& testSim.out << EOF
 // man->SetDefaultStorage("local://$ALICE_ROOT");
 // man->SetSpecificStorage("MUON/Align/Data","local://$ALICE_ROOT/MUON/ResMisAlignCDB");
 gRandom->SetSeed($SEED);
+AliCDBManager::Instance()->SetRun($RUN);
 AliSimulation MuonSim("$ALICE_ROOT/MUON/Config.C");
 MuonSim.SetMakeTrigger("MUON");
 MuonSim.Run($NEVENTS); 
@@ -34,15 +35,17 @@ EOF
 echo "Running reconstruction  ..."
 
 aliroot -b >& testReco.out << EOF 
+AliCDBManager::Instance()->SetRun($RUN);
 gRandom->SetSeed($SEED);
 AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5kG);
 AliTracker::SetFieldMap(field, kFALSE);
 AliReconstruction MuonRec("galice.root"); 
-MuonRec.SetRunTracking("");
 MuonRec.SetRunVertexFinder(kFALSE);
 MuonRec.SetRunLocalReconstruction("MUON");
+MuonRec.SetRunTracking("MUON");
 MuonRec.SetFillESD("MUON");
-MuonRec.SetLoadAlignData("MUON")
+MuonRec.SetLoadAlignData("MUON");
+MuonRec.SetNumberOfEventsPerFile($NEVENTS);
 MuonRec.Run(); 
 .q
 EOF
@@ -51,7 +54,7 @@ echo "Running Trigger efficiency  ..."
 
 aliroot -b >& testTriggerResults.out << EOF
 .L $ALICE_ROOT/MUON/MUONTriggerEfficiency.C+
-MUONTriggerEfficiency("galice.root",0);
+MUONTriggerEfficiency("galice.root", "galice.root",0);
 .q
 EOF
 
@@ -60,14 +63,15 @@ echo "Running efficiency  ..."
 aliroot -b >& testEfficiency.out << EOF 
 .L $ALICE_ROOT/MUON/MUONefficiency.C+
 // no argument assumes Upsilon but MUONefficiency(443) handles Jpsi
-MUONefficiency();
+MUONefficiency("galice.root");
 .q
 EOF
 
 
 aliroot -b >& testResults.out << EOF 
 // no argument assumes Upsilon but MUONplotefficiency(443) handles Jpsi
-.x $ALICE_ROOT/MUON/MUONplotefficiency.C
+.L $ALICE_ROOT/MUON/MUONplotefficiency.C+
+MUONplotefficiency();
 .q
 EOF
 
