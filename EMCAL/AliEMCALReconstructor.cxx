@@ -214,7 +214,7 @@ void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   for (Int_t itrack = 0; itrack < endtpc; itrack++) {
     AliESDtrack * track = esd->GetTrack(itrack) ; // retrieve track
     iemcalMatch = track->GetEMCALcluster();
-    if(iemcalMatch > 0) matchedTrack[iemcalMatch] = itrack;
+    if(iemcalMatch >= 0) matchedTrack[iemcalMatch] = itrack;
   } 
   
   //########################################
