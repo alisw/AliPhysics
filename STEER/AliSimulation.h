@@ -31,6 +31,8 @@ public:
   AliSimulation& operator = (const AliSimulation& sim);
   virtual ~AliSimulation();
 
+  static AliSimulation *GetInstance() {return fgInstance;}
+
   void           SetNumberOfEvents(Int_t nEvents);
   void           SetConfigFile(const char* fileName);
   void           SetGAliceFile(const char* fileName);
@@ -96,6 +98,8 @@ private:
   Int_t          GetNSignalPerBkgrd(Int_t nEvents = 0) const;
   Bool_t         IsSelected(TString detName, TString& detectors) const;
 
+  static AliSimulation *fgInstance;    // Static pointer to object
+
   Bool_t         fRunGeneration;      // generate prim. particles or not
   Bool_t         fRunSimulation;      // simulate detectors (hits) or not
   Bool_t         fLoadAlignFromCDB;   // Load alignment data from CDB and apply it to geometry or not
@@ -122,7 +126,7 @@ private:
   TString 	 fCDBUri;	      // Uri of the default CDB storage
   TObjArray      fSpecCDBUri;         // Array with detector specific CDB storages
   Bool_t         fEmbeddingFlag;      // Flag for embedding
-  ClassDef(AliSimulation, 3)  // class for running generation, simulation and digitization
+  ClassDef(AliSimulation, 4)  // class for running generation, simulation and digitization
 };
 
 #endif

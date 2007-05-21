@@ -105,6 +105,7 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <TVirtualMCApplication.h>
 #include <TGeoManager.h>
 #include <TObjString.h>
 #include <TStopwatch.h>
@@ -133,9 +134,11 @@
 #include "AliESD.h"
 #include "AliHeader.h"
 #include "AliGenEventHeader.h"
+#include "AliMC.h"
 
 ClassImp(AliSimulation)
 
+AliSimulation *AliSimulation::fgInstance = 0;
 
 //_____________________________________________________________________________
 AliSimulation::AliSimulation(const char* configFileName, const char* cdbUri,
@@ -168,7 +171,7 @@ AliSimulation::AliSimulation(const char* configFileName, const char* cdbUri,
   fEmbeddingFlag(kFALSE)
 {
 // create simulation object with default parameters
-
+  fgInstance = this;
   SetGAliceFile("galice.root");
 }
 
@@ -217,7 +220,7 @@ AliSimulation::AliSimulation(const AliSimulation& sim) :
   for (Int_t i = 0; i < sim.fSpecCDBUri.GetEntriesFast(); i++) {
     if (sim.fSpecCDBUri[i]) fSpecCDBUri.Add(sim.fSpecCDBUri[i]->Clone());
   }
-
+  fgInstance = this;
 }
 
 //_____________________________________________________________________________
@@ -245,6 +248,7 @@ AliSimulation::~AliSimulation()
   }
 
   fSpecCDBUri.Delete();
+  if (fgInstance==this) fgInstance = 0;
 }
 
 
@@ -371,6 +375,9 @@ Bool_t AliSimulation::MisalignGeometry(AliRunLoader *runLoader)
     if (!runLoader) return kFALSE;
     delRunLoader = kTRUE;
   }
+
+  // Export ideal geometry 
+  if (gGeoManager) gGeoManager->Export("geometry.root");
 
   // Load alignment data from CDB and apply to geometry through AliGeomManager
   if(fLoadAlignFromCDB){
@@ -634,11 +641,8 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   }
   SetGAliceFile(runLoader->GetFileName());
  
-  // Export ideal geometry 
-  if (gGeoManager) gGeoManager->Export("geometry.root");
-
   // Misalign geometry
-  MisalignGeometry(runLoader);
+//  MisalignGeometry(runLoader);
 
   // Export (mis)aligned geometry 
   if (gGeoManager) gGeoManager->Export("misaligned_geometry.root");
