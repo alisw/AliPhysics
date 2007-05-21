@@ -1,16 +1,30 @@
+#ifndef ALIESDCOMPARISONMI_H
+#define ALIESDCOMPARISONMI_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 
-class AliESDComparisonDraw: public AliComparisonDraw{
-public:
-  AliESDComparisonDraw(){fTree = 0;}
-  void SetIO(const char *fname = "cmpESDTracks.root");  
-  ClassDef(AliESDComparisonDraw,1)
-};
-ClassImp(AliESDComparisonDraw)
+
+
+//////////////////////////////////////////////////////////////////////////////
+//                          Class AliESDComparisonMI                        //
+//   collect together MC info and Rec info for comparison purposes 
+//                                           - effieciency studies and so on//                                                                 //
+//   marian.ivanov@cern.ch                                                  //
+//////////////////////////////////////////////////////////////////////////////
+
+
+#include "TObject.h"
+#include "AliESDtrack.h"
+#include "AliESD.h"
+#include "AliV0.h"
+#include "AliESDfriendTrack.h"
+#include "AliITStrackMI.h"
+#include "AliTRDtrack.h"
 
 
 /////////////////////////////////////////////////////////////////////////
 class AliESDRecInfo: public TObject {
-
+  
 public:
   AliESDRecInfo(){}
   ~AliESDRecInfo(){}
@@ -52,14 +66,7 @@ public:
   Int_t fLabels[2];         // labels
   ClassDef(AliESDRecInfo,2)  // container for 
 };
-ClassImp(AliESDRecInfo)
 
-void AliESDRecInfo::Reset()
-{
-  fMultiple =0; 
-  fFake     =0;
-  fReconstructed=0;
-}
 
 
 /////////////////////////////////////////////////////////
@@ -98,7 +105,6 @@ public:
   ClassDef(AliESDRecV0Info,2)   // container for  
 };
 
-ClassImp(AliESDRecV0Info)
 
 
 class AliESDRecKinkInfo: public TObject {
@@ -130,25 +136,24 @@ public:
   ClassDef(AliESDRecKinkInfo,1)   // container for  
 };
 
-ClassImp(AliESDRecKinkInfo)
 
 
 
 ////////////////////////////////////////////////////////////////////////
 // 
-// Start of implementation of the class ESDCmpTr
+// Start of implementation of the class AliESDComparisonMI
 //
 ////////////////////////////////////////////////////////////////////////
 
-class ESDCmpTr {
+class AliESDComparisonMI {
 
 public:
-  ESDCmpTr();
-  ESDCmpTr(const char* fnGenTracks,
+  AliESDComparisonMI();
+  AliESDComparisonMI(const char* fnGenTracks,
 	   const char* fnCmpRes      ="cmpTracks.root", 
 	   const char* fnGalice      ="galice.root", Int_t direction=0,
 	   Int_t nEvents=1, Int_t firstEvent=0);
-  virtual ~ESDCmpTr();
+  virtual ~AliESDComparisonMI();
   void Reset();
   Int_t Exec();
   Int_t Exec(Int_t nEvents, Int_t firstEventNr);
@@ -225,9 +230,8 @@ private:
   AliESDRecV0Info* fRecV0Info;    //! reconstructed kink info
   //
 
-  ClassDef(ESDCmpTr,1)    // class which creates and fills tree with ESDGenTrack objects
+  ClassDef(AliESDComparisonMI,1)    // class which creates and fills tree with ESDGenTrack objects
 };
-ClassImp(ESDCmpTr)
 
 
-
+#endif
