@@ -3,7 +3,7 @@ Int_t gEvt=0; Int_t gMaxEvt=0;
 TObjArray *pNmean;
 TTree *gEsdTr;
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void HESDfromKin()
+void HESDfromKin(const char *name)
 {//simulate ESD from kinematics
 
   if(gSystem->IsFileInIncludePath("galice.root")){// tries to open session
@@ -24,17 +24,17 @@ void HESDfromKin()
 
   OpenCalib();
     
-//  SimEsd(pHL,pEsd);
-  SimEsdHidden(pHL,pEsd);
-  
+  TString ttl=name;
+  Bool_t htaCheck=ttl.Contains("HTA");
+  if(!htaCheck) SimEsd(pHL,pEsd); else SimEsdHidden(pHL,pEsd);
   pEsdFl->Write();pEsdFl->Close();        
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void SimEsd(AliLoader *pHL,AliESD *pEsd)
 {
-  Printf("---------------------------------------");
-  Printf("| Utility to embed ESD from kinematics|");
-  Printf("---------------------------------------");
+  Printf("-----------------------------------------------");
+  Printf("| SimESD: Utility to embed ESD from kinematics|");
+  Printf("-----------------------------------------------");
   AliHMPIDTracker::SetFieldMap(gAL->GetAliRun()->Field(),kTRUE);
   AliHMPID *pH=(AliHMPID*)gAL->GetAliRun()->GetDetector("HMPID");
   Int_t mtid=-1;
@@ -64,9 +64,10 @@ void SimEsd(AliLoader *pHL,AliESD *pEsd)
 void SimEsdHidden(AliLoader *pHL,AliESD *pEsd)
 {
   Double_t rd=TMath::RadToDeg();
-  Printf("---------------------------------------");
-  Printf("| Utility to embed ESD from kinematics|");
-  Printf("---------------------------------------");
+  Printf("----------------------------------------------");
+  Printf("| SimHTA:Utility to embed ESD from kinematics|");
+  Printf("|     with  Hidden Track Algorithm (HTA)     |");
+  Printf("----------------------------------------------");
   AliHMPIDTracker::SetFieldMap(gAL->GetAliRun()->Field(),kTRUE);
   AliHMPID *pH=(AliHMPID*)gAL->GetAliRun()->GetDetector("HMPID");
   Int_t mtid=-1;

@@ -1,3 +1,5 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
 #include <TSystem.h>
 #include <TFile.h>
 #include <TTree.h>
@@ -20,6 +22,8 @@
 #include "AliHMPIDParam.h"
 #include "AliHMPIDCluster.h"
 #include <TChain.h>
+
+#endif
 
 TCanvas *fCanvas=0; Int_t fType=3; Int_t fEvt=0; Int_t fNevt=0;                      
 TFile *fHitFile; TTree *fHitTree; TClonesArray *fHitLst; TPolyMarker *fRenMip[7]; TPolyMarker *fRenCko[7]; TPolyMarker *fRenFee[7];

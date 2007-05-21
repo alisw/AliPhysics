@@ -554,8 +554,8 @@ Bool_t AliHMPIDRecon::FitEllipse(Double_t &phiRec)
   if(!gMinuit) gMinuit = new TMinuit(5);                                               //init MINUIT with this number of parameters (5 params)
   gMinuit->mncler();                                                                   // reset Minuit list of paramters
   gMinuit->SetObjectFit((TObject*)this);  gMinuit->SetFCN(AliHMPIDRecon::FunMinEl);    //set fit function
-//  gMinuit->mnexcm("SET PRI",&aArg,1,iErrFlg);                                          //suspend all printout from TMinuit 
-//  gMinuit->mnexcm("SET NOW",&aArg,0,iErrFlg);                                          //suspend all warning printout from TMinuit
+  gMinuit->mnexcm("SET PRI",&aArg,1,iErrFlg);                                          //suspend all printout from TMinuit 
+  gMinuit->mnexcm("SET NOW",&aArg,0,iErrFlg);                                          //suspend all warning printout from TMinuit
   
   Double_t d1,d2,d3;
   TString sName;
