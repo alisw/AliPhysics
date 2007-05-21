@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2007/05/10 09:29:34  hristov
+Last moment fixes and changes from v4-05-Release (Silvia)
+
 Revision 1.16  2007/05/03 09:07:22  decaro
 Double digit in the same TDC channel. Wrong sequence during the raw data writing in unpacked mode: solved
 
@@ -1033,9 +1036,9 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
 	    digs->GetPadx()  !=volume[3] ||
 	    digs->GetPadz()  !=volume[4]) AliWarning(" --- ERROR --- ");
 
-	timeOfFlight = (Int_t)(digs->GetTdc())%8192;
+	timeOfFlight = (Int_t)(digs->GetTdc());
 
-	if (timeOfFlight>fMatchingWindow) continue;
+	if (timeOfFlight>=fMatchingWindow) continue;
 
 	//numberOfMeasuresPerChannel++;
 
