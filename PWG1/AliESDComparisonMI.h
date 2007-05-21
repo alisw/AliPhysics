@@ -14,23 +14,33 @@
 
 
 #include "TObject.h"
-#include "AliESDtrack.h"
 #include "AliESD.h"
+
+#include "AliESDtrack.h"
 #include "AliV0.h"
 #include "AliESDfriendTrack.h"
 #include "AliITStrackMI.h"
 #include "AliTRDtrack.h"
-
+class AliTPCseed;
 
 /////////////////////////////////////////////////////////////////////////
 class AliESDRecInfo: public TObject {
   
 public:
-  AliESDRecInfo(){}
-  ~AliESDRecInfo(){}
+  AliESDRecInfo();
+  AliESDRecInfo(const AliESDRecInfo& recinfo);
+  ~AliESDRecInfo();
   void UpdatePoints(AliESDtrack* track);
   void Update(AliMCInfo* info,AliTPCParam * par, Bool_t reconstructed, AliESD *event);
   void Reset();
+  //
+  void SetESDtrack(const AliESDtrack *track);
+  AliESDtrack *GetESDtrack() const { return fESDtrack;}
+  AliESDfriendTrack *GetTrackF() const  { return fTrackF;}
+  AliTPCseed *GetTPCtrack() const { return fTPCtrack;}
+  AliITStrackMI *GetITStrack() const { return fITStrack;}
+  AliTRDtrack   *GetTRDtrack() const { return fTRDtrack;}
+  //
   Float_t  fTPCPoints[10]; //start , biggest end points,max density .. density at the last 30 pad-rows
   Double_t fTPCinR0[5];   //generated position of the track at inner tpc - radius [3] and fi [4]
   Double_t fTPCinR1[5];   //reconstructed postion of the track           - radius [3] and fi [
@@ -48,22 +58,27 @@ public:
   Double_t fITSAngle1[2]; //refconstructed angle
   Double_t fITSDelta[5];  // deltas
   Double_t fITSPools[5];  // pools
-  AliESDtrack fESDTrack;          // tpc track
-  AliESDfriendTrack fTrackF;      // friend track
-  AliITStrackMI fITStrack;        //its track
-  AliTRDtrack fTRDtrack;        //its track
-  Float_t fBestTOFmatch;        //best matching between times
-  Float_t fTRLocalCoord[3];       //local coordinates of the track ref.
-  Int_t   fReconstructed;         //flag if track was reconstructed
-  Int_t fFake;             // fake track
-  Int_t fMultiple;         // number of reconstructions
-  Bool_t fTPCOn;           // TPC refitted inward
-  Int_t  fStatus[4];        // status -0 not found - 1 -only in - 2 -in-out -3 -in -out-refit
-  Bool_t fITSOn;           // ITS refitted inward
-  Bool_t fTRDOn;           // ITS refitted inward
-  Float_t fDeltaP;          //delta of momenta
+  Float_t  fTRLocalCoord[3];       //local coordinates of the track ref.
+  Int_t    fStatus[4];        // status -0 not found - 1 -only in - 2 -in-out -3 -in -out-refit
+  Int_t    fLabels[2];         // labels
+
+  Bool_t   fITSOn;           // ITS refitted inward
+  Bool_t   fTRDOn;           // ITS refitted inward
+  Float_t  fDeltaP;          //delta of momenta
   Double_t fSign;           // sign
-  Int_t fLabels[2];         // labels
+  Int_t    fReconstructed;         //flag if track was reconstructed
+  Int_t    fFake;             // fake track
+  Int_t    fMultiple;         // number of reconstructions
+  Bool_t   fTPCOn;           // TPC refitted inward
+  Float_t  fBestTOFmatch;        //best matching between times
+
+private:
+  AliESDtrack   *fESDtrack;        // esd track
+  AliESDfriendTrack *fTrackF;      // friend track
+  AliTPCseed *fTPCtrack;        // tpc track
+  AliITStrackMI *fITStrack;        // its track
+  AliTRDtrack   *fTRDtrack;        // trd track
+  
   ClassDef(AliESDRecInfo,2)  // container for 
 };
 
@@ -96,9 +111,9 @@ public:
   Float_t        fPointAngleTh; //point angle theta
   Float_t        fPointAngle;   //point angle full
   Int_t          fV0Status;       // status of the kink
-  AliV0          fV0tpc;           // Vo information from reconsturction according TPC
-  AliV0          fV0its;           // Vo information from reconsturction according ITS
-  AliV0          fV0rec;           // V0 information form the reconstruction
+  AliV0*         fV0tpc;           // Vo information from reconsturction according TPC
+  AliV0*         fV0its;           // Vo information from reconsturction according ITS
+  AliV0*         fV0rec;           // V0 information form the reconstruction
   Int_t          fMultiple;
   Int_t          fV0Multiple;
   Int_t          fRecStatus;    // status form the reconstuction
