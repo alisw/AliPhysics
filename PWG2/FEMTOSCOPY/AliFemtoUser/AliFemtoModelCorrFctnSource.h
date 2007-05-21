@@ -6,8 +6,8 @@
 /// Authors: Adam Kisiel, kisiel@mps.ohio-state.edu                          ///
 ///                                                                          ///
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef AliFemtoModelCorrFctnSource_hh
-#define AliFemtoModelCorrFctnSource_hh
+#ifndef ALIFEMTOMODELCORRFCTNSOURCE_H
+#define ALIFEMTOMODELCORRFCTNSOURCE_H
 
 #include "AliFemtoCorrFctn.h"
 #include "AliFemtoPair.h"
@@ -35,11 +35,11 @@ public:
 
 protected:
 
-  TH1D *fHistROut;
-  TH1D *fHistRSide;
-  TH1D *fHistRLong;
-  TH1D *fHistRStar;
-  TH1D *fHistdNdR;
+  TH1D *fHistROut;     // Distribution of Rout
+  TH1D *fHistRSide;    // Distribution of Rside
+  TH1D *fHistRLong;    // Distribution of Rlong
+  TH1D *fHistRStar;    // Distribution of RStar
+  TH1D *fHistdNdR;     // Distribution of RStar weighted by Jacobian 
 
 private:
 

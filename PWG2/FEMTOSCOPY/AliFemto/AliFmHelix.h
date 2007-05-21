@@ -80,7 +80,7 @@ public:
     /// move the origin along the helix to s which becomes then s=0
     virtual void MoveOrigin(double s);
     
-    static const double fgkNoSolution;
+    static const double fgkNoSolution;  // coinstant indicating lack of solution
     
 protected:
     AliFmHelix();

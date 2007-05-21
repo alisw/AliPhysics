@@ -22,19 +22,19 @@ public:
   AliFemtoShareQualityCorrFctn& operator=(const AliFemtoShareQualityCorrFctn& aCorrFctn);
 
   virtual AliFemtoString Report();
-  virtual void AddRealPair(AliFemtoPair*);
-  virtual void AddMixedPair(AliFemtoPair*);
+  virtual void AddRealPair(AliFemtoPair* aPair);
+  virtual void AddMixedPair(AliFemtoPair* aPair);
 
   virtual void Finish();
 
   void WriteHistos();
 private:
   
-  TH2D *fShareNumerator;
-  TH2D *fShareDenominator;
-
-  TH2D *fQualityNumerator;
-  TH2D *fQualityDenominator;
+  TH2D *fShareNumerator;        // Share fraction for real pairs
+  TH2D *fShareDenominator;      // share fraction for mixed pairs
+ 
+  TH2D *fQualityNumerator;      // quality for real pairs
+  TH2D *fQualityDenominator;    // quality for mixed pairs 
 
 #ifdef __ROOT__
   ClassDef(AliFemtoShareQualityCorrFctn, 1)

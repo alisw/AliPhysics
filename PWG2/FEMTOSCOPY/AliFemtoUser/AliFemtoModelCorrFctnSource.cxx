@@ -23,6 +23,25 @@ AliFemtoModelCorrFctnSource::AliFemtoModelCorrFctnSource():
   fHistRStar(0),
   fHistdNdR(0)
 {
+  // default constructor
+  char buf[100];
+  char title[100] = "CFSource";
+  sprintf(buf, "%sOut", title);
+  fHistROut = new TH1D(buf,buf,100,-50.0,50.0);
+  sprintf(buf, "%sSide", title);
+  fHistRSide = new TH1D(buf,buf,100,-50.0,50.0);
+  sprintf(buf, "%sLong", title);
+  fHistRLong = new TH1D(buf,buf,100,-50.0,50.0);
+  sprintf(buf, "%sInv", title);
+  fHistRStar = new TH1D(buf,buf,100,-50.0,50.0);
+  sprintf(buf, "%sdNdR", title);
+  fHistdNdR = new TH1D(buf,buf,100,-50.0,50.0);
+
+  fHistROut->Sumw2();
+  fHistRSide->Sumw2();
+  fHistRLong->Sumw2();
+  fHistRStar->Sumw2();
+  fHistdNdR->Sumw2();
 }
 //_______________________
 AliFemtoModelCorrFctnSource::AliFemtoModelCorrFctnSource(const char *title, Int_t aNbins, Double_t aQinvLo, Double_t aQinvHi):
@@ -33,6 +52,7 @@ AliFemtoModelCorrFctnSource::AliFemtoModelCorrFctnSource(const char *title, Int_
   fHistRStar(0),
   fHistdNdR(0)
 {
+  // basic constructor
   char buf[100];
   sprintf(buf, "%sOut", title);
   fHistROut = new TH1D(buf,buf,100,-50.0,50.0);
@@ -60,6 +80,7 @@ AliFemtoModelCorrFctnSource::AliFemtoModelCorrFctnSource(const AliFemtoModelCorr
   fHistRStar(0),
   fHistdNdR(0)
 {
+  // copy constructor
   fHistROut = new TH1D (*aCorrFctn.fHistROut);
   fHistRSide = new TH1D(*aCorrFctn.fHistRSide);
   fHistRLong = new TH1D(*aCorrFctn.fHistRLong);
@@ -69,6 +90,7 @@ AliFemtoModelCorrFctnSource::AliFemtoModelCorrFctnSource(const AliFemtoModelCorr
 //_______________________
 AliFemtoModelCorrFctnSource::~AliFemtoModelCorrFctnSource()
 {
+  // destructor
   if (fHistROut) delete fHistROut;
   if (fHistRSide) delete fHistRSide;
   if (fHistRLong) delete fHistRLong;
@@ -82,6 +104,7 @@ AliFemtoModelCorrFctnSource::~AliFemtoModelCorrFctnSource()
 //_______________________
 AliFemtoModelCorrFctnSource& AliFemtoModelCorrFctnSource::operator=(const AliFemtoModelCorrFctnSource& aCorrFctn)
 {
+  // assignment operator
   if (this == &aCorrFctn) 
     return *this;
   if (aCorrFctn.fHistROut)
@@ -105,6 +128,7 @@ AliFemtoModelCorrFctnSource& AliFemtoModelCorrFctnSource::operator=(const AliFem
 //_______________________
 AliFemtoString AliFemtoModelCorrFctnSource::Report()
 {
+  // construct report
   AliFemtoString tStr = "AliFemtoModelCorrFctnSource report";
 
   return tStr;
@@ -113,12 +137,15 @@ AliFemtoString AliFemtoModelCorrFctnSource::Report()
 //_______________________
 void AliFemtoModelCorrFctnSource::AddRealPair(AliFemtoPair* aPair)
 {
+  // add real (effect) pair
   AliFemtoModelCorrFctn::AddRealPair(aPair);
 }
 //_______________________
 void AliFemtoModelCorrFctnSource::AddMixedPair(AliFemtoPair* aPair)
 {
+  // add mixed (background) pair
   AliFemtoModelCorrFctn::AddMixedPair(aPair);
+  // save the generated positions
   fHistROut->Fill (fManager->GetWeightGenerator()->GetRStarOut());
   fHistRSide->Fill(fManager->GetWeightGenerator()->GetRStarSide());
   fHistRLong->Fill(fManager->GetWeightGenerator()->GetRStarLong());
@@ -128,6 +155,7 @@ void AliFemtoModelCorrFctnSource::AddMixedPair(AliFemtoPair* aPair)
 //_______________________
 void AliFemtoModelCorrFctnSource::Write()
 {
+  // write out all the histograms
   fHistROut->Write();
   fHistRSide->Write();
   fHistRLong->Write();
@@ -139,6 +167,7 @@ void AliFemtoModelCorrFctnSource::Write()
 //_______________________
 AliFemtoModelCorrFctn* AliFemtoModelCorrFctnSource::Clone()
 {
+  // Clone the correlation function
   AliFemtoModelCorrFctnSource *tCopy = new AliFemtoModelCorrFctnSource(*this);
   
   return tCopy;

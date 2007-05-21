@@ -23,23 +23,23 @@ AliFemtoShareQualityCorrFctn::AliFemtoShareQualityCorrFctn(char* title, const in
 {
   // set up numerator
   //  title = "Num Qinv (MeV/c)";
-  char TitNum[100] = "NumShare";
-  strcat(TitNum,title);
-  fShareNumerator = new TH2D(TitNum,title,nbins,QinvLo,QinvHi,50,0.0,1.00001);
+  char tTitNum[100] = "NumShare";
+  strcat(tTitNum,title);
+  fShareNumerator = new TH2D(tTitNum,title,nbins,QinvLo,QinvHi,50,0.0,1.00001);
   // set up denominator
   //title = "Den Qinv (MeV/c)";
-  char TitDen[100] = "DenShare";
-  strcat(TitDen,title);
-  fShareDenominator = new TH2D(TitDen,title,nbins,QinvLo,QinvHi,50,0.0,1.00001);
+  char tTitDen[100] = "DenShare";
+  strcat(tTitDen,title);
+  fShareDenominator = new TH2D(tTitDen,title,nbins,QinvLo,QinvHi,50,0.0,1.00001);
 
-  char Tit2Num[100] = "NumQuality";
-  strcat(Tit2Num,title);
-  fQualityNumerator = new TH2D(Tit2Num,title,nbins,QinvLo,QinvHi,75,-0.500001,1.000001);
+  char tTit2Num[100] = "NumQuality";
+  strcat(tTit2Num,title);
+  fQualityNumerator = new TH2D(tTit2Num,title,nbins,QinvLo,QinvHi,75,-0.500001,1.000001);
   // set up denominator
   //title = "Den Qinv (MeV/c)";
-  char Tit2Den[100] = "DenQuality";
-  strcat(Tit2Den,title);
-  fQualityDenominator = new TH2D(Tit2Den,title,nbins,QinvLo,QinvHi,75,-0.500001,1.000001);
+  char tTit2Den[100] = "DenQuality";
+  strcat(tTit2Den,title);
+  fQualityDenominator = new TH2D(tTit2Den,title,nbins,QinvLo,QinvHi,75,-0.500001,1.000001);
   // set up ratio
   //title = "Ratio Qinv (MeV/c)";
   // this next bit is unfortunately needed so that we can have many histos of same "title"
@@ -63,6 +63,7 @@ AliFemtoShareQualityCorrFctn::AliFemtoShareQualityCorrFctn(const AliFemtoShareQu
   fQualityNumerator(0),
   fQualityDenominator(0)
 {
+  // copy constructor
   if (aCorrFctn.fShareNumerator)
     fShareNumerator = new TH2D(*aCorrFctn.fShareNumerator);
   if (aCorrFctn.fShareDenominator)
@@ -74,6 +75,7 @@ AliFemtoShareQualityCorrFctn::AliFemtoShareQualityCorrFctn(const AliFemtoShareQu
 }
 //____________________________
 AliFemtoShareQualityCorrFctn::~AliFemtoShareQualityCorrFctn(){
+  // destructor
   delete fShareNumerator;
   delete fShareDenominator;
   delete fQualityNumerator;
@@ -82,6 +84,7 @@ AliFemtoShareQualityCorrFctn::~AliFemtoShareQualityCorrFctn(){
 //_________________________
 AliFemtoShareQualityCorrFctn& AliFemtoShareQualityCorrFctn::operator=(const AliFemtoShareQualityCorrFctn& aCorrFctn)
 {
+  // assignment operator
   if (this == &aCorrFctn)
     return *this;
 
@@ -118,6 +121,7 @@ void AliFemtoShareQualityCorrFctn::Finish(){
 
 //____________________________
 AliFemtoString AliFemtoShareQualityCorrFctn::Report(){
+  // create report
   string stemp = "Qinv Correlation Function Report:\n";
   char ctemp[100];
   sprintf(ctemp,"Number of entries in numerator:\t%E\n",fShareNumerator->GetEntries());
@@ -130,7 +134,8 @@ AliFemtoString AliFemtoShareQualityCorrFctn::Report(){
 }
 //____________________________
 void AliFemtoShareQualityCorrFctn::AddRealPair( AliFemtoPair* pair){
-  double Qinv = fabs(pair->QInv());   // note - qInv() will be negative for identical pairs...
+  // add real (effect) pair
+  double tQinv = fabs(pair->QInv());   // note - qInv() will be negative for identical pairs...
   Int_t nh = 0;
   Int_t an = 0;
   Int_t ns = 0;
@@ -143,7 +148,7 @@ void AliFemtoShareQualityCorrFctn::AddRealPair( AliFemtoPair* pair){
       if (pair->Track1()->Track()->TPCsharing().TestBitNumber(imap) &&
 	  pair->Track2()->Track()->TPCsharing().TestBitNumber(imap))
 	{
-	  if (Qinv < 0.01) {
+	  if (tQinv < 0.01) {
 	    cout << "Shared cluster in row " << imap << endl; 
 	  }
 	  an++;
@@ -164,8 +169,8 @@ void AliFemtoShareQualityCorrFctn::AddRealPair( AliFemtoPair* pair){
       nh++;
     }
   }
-  if (Qinv < 0.01) {
-    cout << "Qinv of the pair is " << Qinv << endl;
+  if (tQinv < 0.01) {
+    cout << "Qinv of the pair is " << tQinv << endl;
     cout << "Clusters: " << endl;
     for (unsigned int imap=0; imap<pair->Track1()->Track()->TPCclusters().GetNbits(); imap++) {
       cout << imap ;
@@ -190,19 +195,20 @@ void AliFemtoShareQualityCorrFctn::AddRealPair( AliFemtoPair* pair){
     hsfval = ns*1.0/nh;
   }
 
-  if (Qinv < 0.01) {
+  if (tQinv < 0.01) {
     cout << "Quality  Sharity " << hsmval << " " << hsfval << " " << pair->Track1()->Track() << " " << pair->Track2()->Track() << endl;
   }
 
-  fShareNumerator->Fill(Qinv, hsfval);
-  fQualityNumerator->Fill(Qinv, hsmval);
-  //  cout << "AliFemtoShareQualityCorrFctn::AddRealPair : " << pair->qInv() << " " << Qinv <<
+  fShareNumerator->Fill(tQinv, hsfval);
+  fQualityNumerator->Fill(tQinv, hsmval);
+  //  cout << "AliFemtoShareQualityCorrFctn::AddRealPair : " << pair->qInv() << " " << tQinv <<
   //" " << pair->Track1().FourMomentum() << " " << pair->Track2().FourMomentum() << endl;
 }
 //____________________________
 void AliFemtoShareQualityCorrFctn::AddMixedPair( AliFemtoPair* pair){
+  // add mixed (background) pair
   double weight = 1.0;
-  double Qinv = fabs(pair->QInv());   // note - qInv() will be negative for identical pairs...
+  double tQinv = fabs(pair->QInv());   // note - qInv() will be negative for identical pairs...
   Int_t nh = 0;
   Int_t an = 0;
   Int_t ns = 0;
@@ -246,8 +252,8 @@ void AliFemtoShareQualityCorrFctn::AddMixedPair( AliFemtoPair* pair){
     hsfval = ns*1.0/nh;
   }
 
-  fShareDenominator->Fill(Qinv,hsfval,weight);
-  fQualityDenominator->Fill(Qinv,hsmval,weight);
+  fShareDenominator->Fill(tQinv,hsfval,weight);
+  fQualityDenominator->Fill(tQinv,hsmval,weight);
 }
 
 

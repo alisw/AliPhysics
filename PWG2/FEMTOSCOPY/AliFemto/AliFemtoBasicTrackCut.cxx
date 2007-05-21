@@ -18,6 +18,7 @@ AliFemtoBasicTrackCut::AliFemtoBasicTrackCut():
   fNTracksPassed(0),
   fNTracksFailed(0)
 {
+  // Default constructor
   fNTracksPassed = fNTracksFailed = 0;
   fCharge = 1;  // takes both charges 0
   fNSigmaPion[0] = -100.0;   fNSigmaPion[1] = 100.0;
@@ -35,7 +36,9 @@ AliFemtoBasicTrackCut::AliFemtoBasicTrackCut():
 //}
 //------------------------------
 bool AliFemtoBasicTrackCut::Pass(const AliFemtoTrack* track){
-
+  // test the particle and return 
+  // true if it meets all the criteria
+  // false if it doesn't meet at least one of the criteria
 
   //  return true ;  // THIS CUT IS A STHBTDUMMY!!
 
@@ -60,11 +63,11 @@ bool AliFemtoBasicTrackCut::Pass(const AliFemtoTrack* track){
     goodPID = (goodPID&&(track->Charge() == fCharge));
   }
   if (goodPID){
-    float TEnergy = ::sqrt(track->P().mag2()+fMass*fMass);
-    float TRapidity = 0.5*::log((TEnergy+track->P().z())/
-			    (TEnergy-track->P().z()));
+    float tEnergy = ::sqrt(track->P().mag2()+fMass*fMass);
+    float tRapidity = 0.5*::log((tEnergy+track->P().z())/
+			    (tEnergy-track->P().z()));
 
-    float Pt = ::sqrt((track->P().x())*(track->P().x())+
+    float tPt = ::sqrt((track->P().x())*(track->P().x())+
                     (track->P().y())*(track->P().y()));
 
     
@@ -74,8 +77,8 @@ bool AliFemtoBasicTrackCut::Pass(const AliFemtoTrack* track){
       cout << " * fDCA[1] " << fDCA[1];
       cout << " * track->DCAxy " << track->DCAxy();
       cout << " * NHits " <<  (track->NHits() > fNHits[0]) && (track->NHits() < fNHits[1]); 
-      cout << " * Pt " << (Pt > fPt[0]) && (Pt < fPt[1]);
-      cout << " * y " << (TRapidity > fRapidity[0]) && (TRapidity < fRapidity[1]);
+      cout << " * tPt " << (tPt > fPt[0]) && (tPt < fPt[1]);
+      cout << " * y " << (tRapidity > fRapidity[0]) && (tRapidity < fRapidity[1]);
       cout << endl;
     */
 
@@ -84,15 +87,15 @@ bool AliFemtoBasicTrackCut::Pass(const AliFemtoTrack* track){
      //  (track->DCAxy()  < fDCA[1]) &&
   //     (track->NHits() > fNHits[0]) &&
     //   (track->NHits() < fNHits[1]) &&
-       (Pt             > fPt[0]) &&
-       (Pt             < fPt[1]) &&
-       (TRapidity      > fRapidity[0]) &&
-       (TRapidity      < fRapidity[1]))&&
+       (tPt             > fPt[0]) &&
+       (tPt             < fPt[1]) &&
+       (tRapidity      > fRapidity[0]) &&
+       (tRapidity      < fRapidity[1]))&&
        (track->PidProbPion()>0.5)&&//moje
        (track->PidProbMuon()<0.47)&&//moje
        (track->Label()>0);//moje
 
-    //    cout << track->DCAxy() << " " << track->NHits() << " " << Pt << " " << TRapidity << " " << TEnergy << endl;
+    //    cout << track->DCAxy() << " " << track->NHits() << " " << Pt << " " << tRapidity << " " << tEnergy << endl;
 
     goodTrack ? fNTracksPassed++ : fNTracksFailed++;
     return (goodTrack);
@@ -104,28 +107,29 @@ bool AliFemtoBasicTrackCut::Pass(const AliFemtoTrack* track){
 }
 //------------------------------
 AliFemtoString AliFemtoBasicTrackCut::Report(){
-  string Stemp;
-  char Ctemp[100];
-  sprintf(Ctemp,"Particle mass:\t%E\n",this->Mass());
-  Stemp=Ctemp;
-  sprintf(Ctemp,"Particle charge:\t%d\n",fCharge);
-  Stemp=Ctemp;
-  sprintf(Ctemp,"Particle Nsigma from pion:\t%E - %E\n",fNSigmaPion[0],fNSigmaPion[1]);
-  Stemp+=Ctemp;
-  sprintf(Ctemp,"Particle Nsigma from kaon:\t%E - %E\n",fNSigmaKaon[0],fNSigmaKaon[1]);
-  Stemp+=Ctemp;
-  sprintf(Ctemp,"Particle Nsigma from proton:\t%E - %E\n",fNSigmaProton[0],fNSigmaProton[1]);
-  Stemp+=Ctemp;
-  sprintf(Ctemp,"Particle #hits:\t%d - %d\n",fNHits[0],fNHits[1]);
-  Stemp+=Ctemp;
-  sprintf(Ctemp,"Particle pT:\t%E - %E\n",fPt[0],fPt[1]);
-  Stemp+=Ctemp;
-  sprintf(Ctemp,"Particle rapidity:\t%E - %E\n",fRapidity[0],fRapidity[1]);
-  Stemp+=Ctemp;
-  sprintf(Ctemp,"Particle DCA:\t%E - %E\n",fDCA[0],fDCA[1]);
-  Stemp+=Ctemp;
-  sprintf(Ctemp,"Number of tracks which passed:\t%ld  Number which failed:\t%ld\n",fNTracksPassed,fNTracksFailed);
-  Stemp += Ctemp;
-  AliFemtoString returnThis = Stemp;
+  // construct report
+  string tStemp;
+  char tCtemp[100];
+  sprintf(tCtemp,"Particle mass:\t%E\n",this->Mass());
+  tStemp=tCtemp;
+  sprintf(tCtemp,"Particle charge:\t%d\n",fCharge);
+  tStemp=tCtemp;
+  sprintf(tCtemp,"Particle Nsigma from pion:\t%E - %E\n",fNSigmaPion[0],fNSigmaPion[1]);
+  tStemp+=tCtemp;
+  sprintf(tCtemp,"Particle Nsigma from kaon:\t%E - %E\n",fNSigmaKaon[0],fNSigmaKaon[1]);
+  tStemp+=tCtemp;
+  sprintf(tCtemp,"Particle Nsigma from proton:\t%E - %E\n",fNSigmaProton[0],fNSigmaProton[1]);
+  tStemp+=tCtemp;
+  sprintf(tCtemp,"Particle #hits:\t%d - %d\n",fNHits[0],fNHits[1]);
+  tStemp+=tCtemp;
+  sprintf(tCtemp,"Particle pT:\t%E - %E\n",fPt[0],fPt[1]);
+  tStemp+=tCtemp;
+  sprintf(tCtemp,"Particle rapidity:\t%E - %E\n",fRapidity[0],fRapidity[1]);
+  tStemp+=tCtemp;
+  sprintf(tCtemp,"Particle DCA:\t%E - %E\n",fDCA[0],fDCA[1]);
+  tStemp+=tCtemp;
+  sprintf(tCtemp,"Number of tracks which passed:\t%ld  Number which failed:\t%ld\n",fNTracksPassed,fNTracksFailed);
+  tStemp += tCtemp;
+  AliFemtoString returnThis = tStemp;
   return returnThis;
 }

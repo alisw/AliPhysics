@@ -6,8 +6,8 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef AliFemtoBasicTrackCut_hh
-#define AliFemtoBasicTrackCut_hh
+#ifndef ALIFEMTOBASICTRACKCUT_H
+#define ALIFEMTOBASICTRACKCUT_H
 
 //#ifndef StMaker_H
 //#include "StMaker.h"
@@ -22,7 +22,7 @@ public:
   AliFemtoBasicTrackCut();
   //~mikesTrackCut();
 
-  virtual bool Pass(const AliFemtoTrack*);
+  virtual bool Pass(const AliFemtoTrack* tr);
 
   virtual AliFemtoString Report();
 
@@ -35,22 +35,22 @@ public:
   void SetPt(const float& lo, const float& hi);
   void SetRapidity(const float& lo, const float& hi);
   void SetDCA(const float& lo, const float& hi);
-  void SetCharge(const int&);
+  void SetCharge(const int& ch);
 
 
 private:   // here are the quantities I want to cut on...
 
-  int               fCharge;
-  float             fNSigmaPion[2];
-  float             fNSigmaKaon[2];
-  float             fNSigmaProton[2];
-  int               fNHits[2];
-  float             fPt[2];
-  float             fRapidity[2];
-  float             fDCA[2];
+  int               fCharge;             // charge of the track
+  float             fNSigmaPion[2];      // bounds for nsigma dEdx from pion band 
+  float             fNSigmaKaon[2];      // bounds for nsigma dEdx from kaon band
+  float             fNSigmaProton[2];    // bounds for nsigma dEdx from proton band
+  int               fNHits[2];           // bounds for number of hits
+  float             fPt[2];              // bounds for transverse momentum
+  float             fRapidity[2];        // bounds for rapidity
+  float             fDCA[2];             // bounds for DCA to primary vertex
 
-  long              fNTracksPassed;
-  long              fNTracksFailed;
+  long              fNTracksPassed;      // passed tracks counter
+  long              fNTracksFailed;      // falied tracks counter
 
 #ifdef __ROOT__ 
   ClassDef(AliFemtoBasicTrackCut, 1)

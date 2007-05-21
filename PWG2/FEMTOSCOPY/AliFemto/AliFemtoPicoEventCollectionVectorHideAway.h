@@ -1,38 +1,13 @@
-/***************************************************************************
- *
- * $Id$
- *
- * Author: Mike Lisa, Ohio State, lisa@mps.ohio-state.edu
- ***************************************************************************
- *
- * Description: part of STAR HBT Framework: AliFemtoMaker package
- *
- ***************************************************************************
- *
- * $Log$
- * Revision 1.2  2007/05/03 09:42:29  akisiel
- * Fixing Effective C++ warnings
- *
- * Revision 1.1.1.1  2007/04/25 15:38:41  panos
- * Importing the HBT code dir
- *
- * Revision 1.1.1.1  2007/03/07 10:14:49  mchojnacki
- * First version on CVS
- *
- * Revision 1.3  2002/02/04 18:58:33  laue
- * *** empty log message ***
- *
- * Revision 1.2  2001/11/11 18:34:13  laue
- * AliFemtoPicoEventCollectionVectorHideAway: updated for 3d grid
- * AliFemtoVertexMultAnalysis: new
- *
- * Revision 1.1  2000/07/16 21:44:11  laue
- * Collection and analysis for vertex dependent event mixing
- *
- *
- **************************************************************************/
-#ifndef AliFemtoPicoEventCollectionVectorHideAway_hh
-#define AliFemtoPicoEventCollectionVectorHideAway_hh
+///////////////////////////////////////////////////////////////////////////
+//                                                                       //
+// AliFemtoPicoEventCollectionVectorHideAway: a helper class for         //
+// managing many mixing buffers with up to three variables used for      //
+// binning.                                                              //
+//                                                                       //
+///////////////////////////////////////////////////////////////////////////
+
+#ifndef ALIFEMTOPICOEVENTCOLLECTIONVECTORHIDEAWAY_H
+#define ALIFEMTOPICOEVENTCOLLECTIONVECTORHIDEAWAY_H
 #include "AliFemtoPicoEvent.h"
 #include "AliFemtoPicoEventCollection.h"
 #include "AliFemtoPicoEventCollectionVector.h"
@@ -49,22 +24,22 @@ using std::list;
 class AliFemtoPicoEventCollectionVectorHideAway {
 public:
   AliFemtoPicoEventCollectionVectorHideAway(int bx=1, double lx=-FLT_MAX, double ux=FLT_MAX,
-					 int by=1, double ly=-FLT_MAX, double uy=FLT_MAX,
-					 int bz=1, double lz=-FLT_MAX, double uz=FLT_MAX);
+					    int by=1, double ly=-FLT_MAX, double uy=FLT_MAX,
+					    int bz=1, double lz=-FLT_MAX, double uz=FLT_MAX);
   AliFemtoPicoEventCollectionVectorHideAway(const AliFemtoPicoEventCollectionVectorHideAway& aColl);
   ~AliFemtoPicoEventCollectionVectorHideAway();
   AliFemtoPicoEventCollectionVectorHideAway& operator=(const AliFemtoPicoEventCollectionVectorHideAway& aColl);
 
-  AliFemtoPicoEventCollection* PicoEventCollection(int, int, int);
+  AliFemtoPicoEventCollection* PicoEventCollection(int bx, int by, int bz);
   AliFemtoPicoEventCollection* PicoEventCollection(double x, double y=0, double z=0);
 private:
-  int fBinsTot;
-  int fBinsx,fBinsy,fBinsz;
-  double fMinx,fMiny,fMinz;
-  double fMaxx,fMaxy,fMaxz;
-  double fStepx,fStepy,fStepz;
-  AliFemtoPicoEventCollection* fCollection;
-  AliFemtoPicoEventCollectionVector fCollectionVector;
+  int fBinsTot;                                        // Total number of bins 
+  int fBinsx,fBinsy,fBinsz;                            // Number of bins on x, y, z axis
+  double fMinx,fMiny,fMinz;                            // Minima on x, y, z axis
+  double fMaxx,fMaxy,fMaxz;                            // Maxima on x, y, z axis
+  double fStepx,fStepy,fStepz;                         // Steps on x, y, z axis
+  AliFemtoPicoEventCollection* fCollection;            // Pico event collection
+  AliFemtoPicoEventCollectionVector fCollectionVector; // Collection vector
 };
 
 #endif

@@ -11,6 +11,9 @@
  ***************************************************************************
  *
  * $Log$
+ * Revision 1.1  2007/05/16 10:22:11  akisiel
+ * Making the directory structure of AliFemto flat. All files go into one common directory
+ *
  * Revision 1.2  2007/05/03 09:40:42  akisiel
  * Fixing Effective C++ warnings
  *
@@ -40,8 +43,8 @@
  *
  **************************************************************************/
 
-#ifndef AliFemtoQinvCorrFctn_hh
-#define AliFemtoQinvCorrFctn_hh
+#ifndef ALIFEMTOQINVCORRFCTN_H
+#define ALIFEMTOQINVCORRFCTN_H
 
 #include "TH1D.h"
 #include "AliFemtoCorrFctn.h"
@@ -55,8 +58,8 @@ public:
   AliFemtoQinvCorrFctn& operator=(const AliFemtoQinvCorrFctn& aCorrFctn);
 
   virtual AliFemtoString Report();
-  virtual void AddRealPair(AliFemtoPair*);
-  virtual void AddMixedPair(AliFemtoPair*);
+  virtual void AddRealPair(AliFemtoPair* aPair);
+  virtual void AddMixedPair(AliFemtoPair* aPair);
 
   virtual void Finish();
 
@@ -65,9 +68,9 @@ public:
   TH1D* Ratio();
 
 private:
-  TH1D* fNumerator;
-  TH1D* fDenominator;
-  TH1D* fRatio;
+  TH1D* fNumerator;          // numerator - real pairs
+  TH1D* fDenominator;        // denominator - mixed pairs
+  TH1D* fRatio;              // ratio - correlation function
 
 #ifdef __ROOT__
   ClassDef(AliFemtoQinvCorrFctn, 1)
