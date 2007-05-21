@@ -73,10 +73,10 @@ AliJetFinder::~AliJetFinder()
 
 ////////////////////////////////////////////////////////////////////////
 
-void AliJetFinder::SetOutputFile(const char */*name*/)
+void AliJetFinder::SetOutputFile(const char* name)
 {
   //  opens output file 
-  //  fOut = new TFile(name,"recreate");
+    fOut = new TFile(name,"recreate");
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -151,8 +151,8 @@ void AliJetFinder::Run()
 	      printf("In FindJetsTPC() routine: find jets with fMomentumArray !!!\n");
 	  FindJetsTPC();
       } else {
-	   if(debug > 1) printf("In FindJets() routine: find jets with fUnitArray !!!\n");
-	   FindJets();
+	  if(debug > 1) printf("In FindJets() routine: find jets with fUnitArray !!!\n");
+	  FindJets();
       }
       if (fOut) {
 	  fOut->cd();
