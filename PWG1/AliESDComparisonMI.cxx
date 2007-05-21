@@ -58,7 +58,7 @@ TCut cteta05("cteta05","abs(MC.fParticle.Theta()/3.1415-0.5)<0.1");
 TCut cpos1("cpos1","abs(MC.fParticle.fVz/sqrt(MC.fParticle.fVx*MC.fParticle.fVx+MC.fParticle.fVy*MC.fParticle.fVy))<1");
 TCut csens("csens","abs(sqrt(fVDist[0]**2+fVDist[1]**2)-170)<50");
 TCut cmuon("cmuon","abs(MC.fParticle.fPdgCode==-13)");
-TCut cchi2("cchi2","fESDTrack.fITSchi2MIP[0]<7.&&fESDTrack.fITSchi2MIP[1]<5.&&fESDTrack.fITSchi2MIP[2]<7.&&fESDTrack.fITSchi2MIP[3]<7.5&&fESDTrack.fITSchi2MIP[4]<6.")
+TCut cchi2("cchi2","fESDtrack.fITSchi2MIP[0]<7.&&fESDtrack.fITSchi2MIP[1]<5.&&fESDtrack.fITSchi2MIP[2]<7.&&fESDtrack.fITSchi2MIP[3]<7.5&&fESDtrack.fITSchi2MIP[4]<6.")
 
 
 //
@@ -87,12 +87,12 @@ comp.fRes->Draw();
 comp.Eff("fTPCinP0[3]","fRowsWithDigits>120"+cteta1+cpos1+cprim,"fTPCOn",20,0.2,1.5)
 comp.fRes->Draw();
 
-comp.Eff("fTPCinP0[3]","fRowsWithDigits>120"+cteta1+cpos1+cprim,"fTPCOn&&fITSOn&&fESDTrack.fITSFakeRatio<0.1",10,0.2,1.5)
+comp.Eff("fTPCinP0[3]","fRowsWithDigits>120"+cteta1+cpos1+cprim,"fTPCOn&&fITSOn&&fESDtrack.fITSFakeRatio<0.1",10,0.2,1.5)
 comp.fRes->Draw();
-comp.Eff("fTPCinP0[3]","fRowsWithDigits>120"+cteta1+cpos1+cprim,"fTPCOn&&fITSOn&&fESDTrack.fITSFakeRatio>0.1",10,0.2,1.5)
+comp.Eff("fTPCinP0[3]","fRowsWithDigits>120"+cteta1+cpos1+cprim,"fTPCOn&&fITSOn&&fESDtrack.fITSFakeRatio>0.1",10,0.2,1.5)
 comp.fRes->Draw();
 
-comp.fTree->Draw("fESDTrack.fITSsignal/fESDTrack.fTPCsignal","fITSOn&&fTPCOn&&fESDTrack.fITSFakeRatio==0") 
+comp.fTree->Draw("fESDtrack.fITSsignal/fESDtrack.fTPCsignal","fITSOn&&fTPCOn&&fESDtrack.fITSFakeRatio==0") 
 
 TH1F his("his","his",100,0,20);
 TH1F hpools("hpools","hpools",100,-7,7);
@@ -102,21 +102,21 @@ TH2F * hdedx1 = new TH2F("dEdx1","dEdx1",100, 0,2,200,0,550); hdedx1->SetMarkerC
 TH2F * hdedx2 = new TH2F("dEdx2","dEdx2",100, 0,2,200,0,550); hdedx2->SetMarkerColor(3);
 TH2F * hdedx3 = new TH2F("dEdx3","dEdx3",100, 0,2,200,0,550); hdedx3->SetMarkerColor(2);
 
-comp.fTree->Draw("fESDTrack.fITSsignal:MC.fParticle.P()>>dEdx0","fITSOn&&abs(fPdg)==211&&fITStrack.fN==6"+cprim) 
-comp.fTree->Draw("fESDTrack.fITSsignal:MC.fParticle.P()>>dEdx1","fITSOn&&abs(fPdg)==2212&&fITStrack.fN==6"+cprim) 
-comp.fTree->Draw("fESDTrack.fITSsignal:MC.fParticle.P()>>dEdx2","fITSOn&&abs(fPdg)==321&&fITStrack.fN==6"+cprim) 
-comp.fTree->Draw("fESDTrack.fITSsignal:MC.fParticle.P()>>dEdx3","fITSOn&&abs(fPdg)==11&&fITStrack.fN==6"+cprim) 
+comp.fTree->Draw("fESDtrack.fITSsignal:MC.fParticle.P()>>dEdx0","fITSOn&&abs(fPdg)==211&&fITStrack.fN==6"+cprim) 
+comp.fTree->Draw("fESDtrack.fITSsignal:MC.fParticle.P()>>dEdx1","fITSOn&&abs(fPdg)==2212&&fITStrack.fN==6"+cprim) 
+comp.fTree->Draw("fESDtrack.fITSsignal:MC.fParticle.P()>>dEdx2","fITSOn&&abs(fPdg)==321&&fITStrack.fN==6"+cprim) 
+comp.fTree->Draw("fESDtrack.fITSsignal:MC.fParticle.P()>>dEdx3","fITSOn&&abs(fPdg)==11&&fITStrack.fN==6"+cprim) 
 
 
-comp.fTree->Draw("fESDTrack.fTRDsignal:MC.fParticle.P()>>dEdx0","fTRDOn&&abs(fPdg)==211&&fTRDtrack.fN>40&&fStatus[2]>1") 
-comp.fTree->Draw("fESDTrack.fTRDsignal:MC.fParticle.P()>>dEdx1","fTRDOn&&abs(fPdg)==2212&&fTRDtrack.fN>40&&fStatus[2]>1") 
-comp.fTree->Draw("fESDTrack.fTRDsignal:MC.fParticle.P()>>dEdx2","fTRDOn&&abs(fPdg)==321&&fTRDtrack.fN>40&&fStatus[2]>1") 
-comp.fTree->Draw("fESDTrack.fTRDsignal:MC.fParticle.P()>>dEdx3","fTRDOn&&abs(fPdg)==11&&fTRDtrack.fN>40&&fStatus[2]>1") 
+comp.fTree->Draw("fESDtrack.fTRDsignal:MC.fParticle.P()>>dEdx0","fTRDOn&&abs(fPdg)==211&&fTRDtrack.fN>40&&fStatus[2]>1") 
+comp.fTree->Draw("fESDtrack.fTRDsignal:MC.fParticle.P()>>dEdx1","fTRDOn&&abs(fPdg)==2212&&fTRDtrack.fN>40&&fStatus[2]>1") 
+comp.fTree->Draw("fESDtrack.fTRDsignal:MC.fParticle.P()>>dEdx2","fTRDOn&&abs(fPdg)==321&&fTRDtrack.fN>40&&fStatus[2]>1") 
+comp.fTree->Draw("fESDtrack.fTRDsignal:MC.fParticle.P()>>dEdx3","fTRDOn&&abs(fPdg)==11&&fTRDtrack.fN>40&&fStatus[2]>1") 
 
-comp.fTree->Draw("fESDTrack.fTPCsignal:fTPCinP0[4]>>dEdx0","fTPCOn&&abs(fPdg)==211&&fESDTrack.fTPCncls>180&&fESDTrack.fTPCsignal>10"+cteta1); 
-comp.fTree->Draw("fESDTrack.fTPCsignal:fTPCinP0[4]>>dEdx1","fTPCOn&&abs(fPdg)==2212&&fESDTrack.fTPCncls>180&&fESDTrack.fTPCsignal>10"+cteta1); 
-comp.fTree->Draw("fESDTrack.fTPCsignal:fTPCinP0[4]>>dEdx2","fTPCOn&&abs(fPdg)==321&&fESDTrack.fTPCncls>180&&fESDTrack.fTPCsignal>10"+cteta1); 
-comp.fTree->Draw("fESDTrack.fTPCsignal:fTPCinP0[4]>>dEdx3","fTPCOn&&abs(fPdg)==11&&fESDTrack.fTPCncls>180&&fESDTrack.fTPCsignal>10"+cteta1); 
+comp.fTree->Draw("fESDtrack.fTPCsignal:fTPCinP0[4]>>dEdx0","fTPCOn&&abs(fPdg)==211&&fESDtrack.fTPCncls>180&&fESDtrack.fTPCsignal>10"+cteta1); 
+comp.fTree->Draw("fESDtrack.fTPCsignal:fTPCinP0[4]>>dEdx1","fTPCOn&&abs(fPdg)==2212&&fESDtrack.fTPCncls>180&&fESDtrack.fTPCsignal>10"+cteta1); 
+comp.fTree->Draw("fESDtrack.fTPCsignal:fTPCinP0[4]>>dEdx2","fTPCOn&&abs(fPdg)==321&&fESDtrack.fTPCncls>180&&fESDtrack.fTPCsignal>10"+cteta1); 
+comp.fTree->Draw("fESDtrack.fTPCsignal:fTPCinP0[4]>>dEdx3","fTPCOn&&abs(fPdg)==11&&fESDtrack.fTPCncls>180&&fESDtrack.fTPCsignal>10"+cteta1); 
 
 hdedx3->SetXTitle("P(GeV/c)");
 hdedx3->SetYTitle("dEdx(unit)");
@@ -173,6 +173,7 @@ TProfile prof("prof","prof",10,0.5,5);
 #include "AliESD.h"
 #include "AliESDfriend.h"
 #include "AliESDtrack.h"
+#include "AliTPCseed.h"
 #include "AliITStrackMI.h"
 #include "AliTRDtrack.h"
 #include "AliHelix.h"
@@ -210,20 +211,68 @@ void MakeAliases(AliTreeDraw&comp)
   comp.T()->SetAlias("trdchi2","fTRDtrack.fChi2/fTRDtrack.fN");
   comp.T()->SetAlias("trdchi2","fTRDtrack.fChi2/fTRDtrack.fN");
   
-  comp.T()->SetAlias("trddedx","(RC.fESDTrack.fTRDsignals[0]+RC.fESDTrack.fTRDsignals[1]+RC.fESDTrack.fTRDsignals[2]+RC.fESDTrack.fTRDsignals[3]+RC.fESDTrack.fTRDsignals[4]+RC.fESDTrack.fTRDsignals[5])/6.");
+  comp.T()->SetAlias("trddedx","(RC.fESDtrack.fTRDsignals[0]+RC.fESDtrack.fTRDsignals[1]+RC.fESDtrack.fTRDsignals[2]+RC.fESDtrack.fTRDsignals[3]+RC.fESDtrack.fTRDsignals[4]+RC.fESDtrack.fTRDsignals[5])/6.");
   
-  comp.T()->SetAlias("dtofmc2","fESDTrack.fTrackTime[2]-(10^12*MC.fTOFReferences[0].fTime)");
-  comp.T()->SetAlias("dtofrc2","(fESDTrack.fTrackTime[2]-fESDTrack.fTOFsignal)");
+  comp.T()->SetAlias("dtofmc2","fESDtrack.fTrackTime[2]-(10^12*MC.fTOFReferences[0].fTime)");
+  comp.T()->SetAlias("dtofrc2","(fESDtrack.fTrackTime[2]-fESDtrack.fTOFsignal)");
 
-  comp.T()->SetAlias("psum","fESDTrack.fTOFr[4]+fESDTrack.fTOFr[3]+fESDTrack.fTOFr[2]+fESDTrack.fTOFr[1]+fESDTrack.fTOFr[0]");
-  comp.T()->SetAlias("P0","fESDTrack.fTOFr[0]/psum");
-  comp.T()->SetAlias("P1","fESDTrack.fTOFr[1]/psum");
-  comp.T()->SetAlias("P2","fESDTrack.fTOFr[2]/psum");
-  comp.T()->SetAlias("P3","fESDTrack.fTOFr[3]/psum");
-  comp.T()->SetAlias("P4","fESDTrack.fTOFr[4]/psum");
+  comp.T()->SetAlias("psum","fESDtrack.fTOFr[4]+fESDtrack.fTOFr[3]+fESDtrack.fTOFr[2]+fESDtrack.fTOFr[1]+fESDtrack.fTOFr[0]");
+  comp.T()->SetAlias("P0","fESDtrack.fTOFr[0]/psum");
+  comp.T()->SetAlias("P1","fESDtrack.fTOFr[1]/psum");
+  comp.T()->SetAlias("P2","fESDtrack.fTOFr[2]/psum");
+  comp.T()->SetAlias("P3","fESDtrack.fTOFr[3]/psum");
+  comp.T()->SetAlias("P4","fESDtrack.fTOFr[4]/psum");
   comp.T()->SetAlias("MaxP","max(max(max(P0,P1),max(P2,P3)),P4)");
 }
 
+
+AliESDRecInfo::AliESDRecInfo(): 
+  fITSOn(0),           // ITS refitted inward
+  fTRDOn(0),           // ITS refitted inward
+  fDeltaP(0),          //delta of momenta
+  fSign(0),           // sign
+  fReconstructed(0),         //flag if track was reconstructed
+  fFake(0),             // fake track
+  fMultiple(0),         // number of reconstructions
+  fTPCOn(0),           // TPC refitted inward
+  fBestTOFmatch(0),        //best matching between times
+  fESDtrack(0),        // esd track
+  fTrackF(0),      // friend track
+  fTPCtrack(0),        // tpc track
+  fITStrack(0),        // its track
+  fTRDtrack(0)        // trd track  
+{
+  //
+  //  default constructor
+  //
+}
+
+
+AliESDRecInfo::AliESDRecInfo(const AliESDRecInfo& recinfo):
+  TObject()
+{
+  //
+  //
+  //
+  memcpy(this,&recinfo, sizeof(recinfo));
+  fESDtrack=0; fTrackF=0; fTPCtrack=0;fITStrack=0;fTRDtrack=0;
+  SetESDtrack(recinfo.GetESDtrack());
+}
+
+
+AliESDRecInfo::~AliESDRecInfo()
+
+{
+  //
+  //  destructor
+  //
+  if (fESDtrack) { delete fESDtrack; fESDtrack=0;}
+  if (fTrackF)   { delete fTrackF;   fTrackF=0;}
+  if (fTPCtrack) { delete fTPCtrack; fTPCtrack=0;}
+  if (fITStrack) { delete fITStrack; fITStrack=0;}
+  if (fTRDtrack) { delete fTRDtrack; fTRDtrack=0;}
+
+}
 
 
 
@@ -235,9 +284,25 @@ void AliESDRecInfo::Reset()
   fMultiple =0; 
   fFake     =0;
   fReconstructed=0;
+  if (fESDtrack) { delete fESDtrack; fESDtrack=0;}
+  if (fTrackF)   { delete fTrackF;   fTrackF=0;}
+  if (fTPCtrack) { delete fTPCtrack; fTPCtrack=0;}
+  if (fITStrack) { delete fITStrack; fITStrack=0;}
+  if (fTRDtrack) { delete fTRDtrack; fTRDtrack=0;}
+} 
+
+void AliESDRecInfo::SetESDtrack(const AliESDtrack *track){
+  //
+  //
+  //
+  if (fESDtrack) delete fESDtrack;
+  fESDtrack = (AliESDtrack*)track->Clone();
+  if (track->GetFriendTrack()){
+    if (fTrackF) delete fTrackF;
+    fTrackF = (AliESDfriendTrack*)track->GetFriendTrack()->Clone();
+  }
+  
 }
-
-
 
 void  AliESDRecInfo::UpdatePoints(AliESDtrack*track)
 {
@@ -313,15 +378,6 @@ void  AliESDRecInfo::UpdatePoints(AliESDtrack*track)
   fTPCPoints[4] = Float_t(ngood)/Float_t(nall);
   //
   if ((track->GetStatus()&AliESDtrack::kITSrefit)>0) fTPCPoints[0]=-1;
-  //
-  //
-  // check TRDPoints
-  /*
-  nclusters=track->GetTRDclusters(iclusters);
-  for (Int_t i=nclusters;i>0;i--){
-    
-  }
-  */
 
 
 }
@@ -335,7 +391,7 @@ void AliESDRecInfo::Update(AliMCInfo* info,AliTPCParam * /*par*/, Bool_t reconst
   //calculates derived variables
   //  
   //
-  UpdatePoints(&fESDTrack);
+  UpdatePoints(fESDtrack);
   fBestTOFmatch=1000;
   AliTrackReference * ref = &(info->fTrackRef);
   fTPCinR0[0] = info->fTrackRef.X();	
@@ -386,29 +442,29 @@ void AliESDRecInfo::Update(AliMCInfo* info,AliTPCParam * /*par*/, Bool_t reconst
   fLabels[0] = info->fLabel;
   fLabels[1] = info->fPrimPart;
   fReconstructed = kTRUE;
-  fTPCOn = ((fESDTrack.GetStatus()&AliESDtrack::kTPCrefit)>0) ? kTRUE : kFALSE;
-  fITSOn = ((fESDTrack.GetStatus()&AliESDtrack::kITSrefit)>0) ? kTRUE : kFALSE;
-  fTRDOn = ((fESDTrack.GetStatus()&AliESDtrack::kTRDrefit)>0) ? kTRUE : kFALSE;
+  fTPCOn = ((fESDtrack->GetStatus()&AliESDtrack::kTPCrefit)>0) ? kTRUE : kFALSE;
+  fITSOn = ((fESDtrack->GetStatus()&AliESDtrack::kITSrefit)>0) ? kTRUE : kFALSE;
+  fTRDOn = ((fESDtrack->GetStatus()&AliESDtrack::kTRDrefit)>0) ? kTRUE : kFALSE;
   //
   //  
-  if ((fESDTrack.GetStatus()&AliESDtrack::kTPCrefit)>0){
+  if ((fESDtrack->GetStatus()&AliESDtrack::kTPCrefit)>0){
     fStatus[1] =3;
   }
   else{
-    if ((fESDTrack.GetStatus()&AliESDtrack::kTPCout)>0){
+    if ((fESDtrack->GetStatus()&AliESDtrack::kTPCout)>0){
       fStatus[1] =2;
     }
     else{
-      if ((fESDTrack.GetStatus()&AliESDtrack::kTPCin)>0)
+      if ((fESDtrack->GetStatus()&AliESDtrack::kTPCin)>0)
 	fStatus[1]=1;
     }      
   }
   //
-  if ((fESDTrack.GetStatus()&AliESDtrack::kITSout)>0){
+  if ((fESDtrack->GetStatus()&AliESDtrack::kITSout)>0){
     fStatus[0] =2;
   }
   else{
-    if ((fESDTrack.GetStatus()&AliESDtrack::kITSrefit)>0){
+    if ((fESDtrack->GetStatus()&AliESDtrack::kITSrefit)>0){
       fStatus[0] =1;
     }
     else{
@@ -418,38 +474,38 @@ void AliESDRecInfo::Update(AliMCInfo* info,AliTPCParam * /*par*/, Bool_t reconst
 
   //
   //
-  if ((fESDTrack.GetStatus()&AliESDtrack::kTRDrefit)>0){
+  if ((fESDtrack->GetStatus()&AliESDtrack::kTRDrefit)>0){
     fStatus[2] =2;
   }
   else{
-    if ((fESDTrack.GetStatus()&AliESDtrack::kTRDout)>0){
+    if ((fESDtrack->GetStatus()&AliESDtrack::kTRDout)>0){
       fStatus[2] =1;
     }
   }
-  if ((fESDTrack.GetStatus()&AliESDtrack::kTRDStop)>0){
+  if ((fESDtrack->GetStatus()&AliESDtrack::kTRDStop)>0){
     fStatus[2] =10;
   }
 
   //
   //TOF 
   // 
-  if (((fESDTrack.GetStatus()&AliESDtrack::kTOFout)>0)){
+  if (((fESDtrack->GetStatus()&AliESDtrack::kTOFout)>0)){
     //
     // best tof match
     Double_t times[5];
-    fESDTrack.GetIntegratedTimes(times);    
+    fESDtrack->GetIntegratedTimes(times);    
     for (Int_t i=0;i<5;i++){
-      if ( TMath::Abs(fESDTrack.GetTOFsignal()-times[i]) <TMath::Abs(fBestTOFmatch) ){
-	fBestTOFmatch = fESDTrack.GetTOFsignal()-times[i];
+      if ( TMath::Abs(fESDtrack->GetTOFsignal()-times[i]) <TMath::Abs(fBestTOFmatch) ){
+	fBestTOFmatch = fESDtrack->GetTOFsignal()-times[i];
       }
     }
     Int_t toflabel[3];
-    fESDTrack.GetTOFLabel(toflabel);
+    fESDtrack->GetTOFLabel(toflabel);
     Bool_t toffake=kTRUE;
     Bool_t tofdaughter=kFALSE;
     for (Int_t i=0;i<3;i++){
       if (toflabel[i]<0) continue;      
-      if (toflabel[i]== TMath::Abs(fESDTrack.GetLabel()))  toffake=kFALSE;	
+      if (toflabel[i]== TMath::Abs(fESDtrack->GetLabel()))  toffake=kFALSE;	
       if (toflabel[i]==info->fParticle.GetDaughter(0) || (toflabel[i]==info->fParticle.GetDaughter(1))) tofdaughter=kTRUE;  // decay product of original particle
       fStatus[3]=1;
     }
@@ -462,10 +518,10 @@ void AliESDRecInfo::Update(AliMCInfo* info,AliTPCParam * /*par*/, Bool_t reconst
 
   if (fStatus[1]>0 &&info->fNTPCRef>0&&TMath::Abs(fTPCinP0[3])>0.0001){
     //TPC
-    fESDTrack.GetInnerXYZ(fTPCinR1);
+    fESDtrack->GetInnerXYZ(fTPCinR1);
     fTPCinR1[3] = TMath::Sqrt(fTPCinR1[0]*fTPCinR1[0]+fTPCinR1[1]*fTPCinR1[1]);
     fTPCinR1[4] = TMath::ATan2(fTPCinR1[1],fTPCinR1[0]);	
-    fESDTrack.GetInnerPxPyPz(fTPCinP1);
+    fESDtrack->GetInnerPxPyPz(fTPCinP1);
     fTPCinP1[3] = TMath::Sqrt(fTPCinP1[0]*fTPCinP1[0]+fTPCinP1[1]*fTPCinP1[1]);
     fTPCinP1[4] = TMath::Sqrt(fTPCinP1[3]*fTPCinP1[3]+fTPCinP1[2]*fTPCinP1[2]);
     //
@@ -475,8 +531,8 @@ void AliESDRecInfo::Update(AliMCInfo* info,AliTPCParam * /*par*/, Bool_t reconst
       fTPCAngle1[1] = TMath::ATan(fTPCinP1[2]/fTPCinP1[3]);  
     }    
     Double_t cov[15], param[5],x, alpha;
-    fESDTrack.GetInnerExternalCovariance(cov);
-    fESDTrack.GetInnerExternalParameters(alpha, x,param);
+    fESDtrack->GetInnerExternalCovariance(cov);
+    fESDtrack->GetInnerExternalParameters(alpha, x,param);
     if (x<50) return ;
     //
     fTPCDelta[0] = (fTPCinR0[4]-fTPCinR1[4])*fTPCinR1[3];  //delta rfi
@@ -495,15 +551,15 @@ void AliESDRecInfo::Update(AliMCInfo* info,AliTPCParam * /*par*/, Bool_t reconst
   if (fITSOn){
     // ITS 
     Double_t param[5],x;
-    fESDTrack.GetExternalParameters(x,param);   
-    //    fESDTrack.GetConstrainedExternalParameters(x,param);   
+    fESDtrack->GetExternalParameters(x,param);   
+    //    fESDtrack->GetConstrainedExternalParameters(x,param);   
     Double_t cov[15];
-    fESDTrack.GetExternalCovariance(cov);
-    //fESDTrack.GetConstrainedExternalCovariance(cov);
+    fESDtrack->GetExternalCovariance(cov);
+    //fESDtrack->GetConstrainedExternalCovariance(cov);
     if (TMath::Abs(param[4])<0.0000000001) return;
 
-    fESDTrack.GetXYZ(fITSinR1);
-    fESDTrack.GetPxPyPz(fITSinP1);
+    fESDtrack->GetXYZ(fITSinR1);
+    fESDtrack->GetPxPyPz(fITSinP1);
     fITSinP1[3] = TMath::Sqrt(fITSinP1[0]*fITSinP1[0]+fITSinP1[1]*fITSinP1[1]);
     //
     fITSinR1[3] = TMath::Sqrt(fITSinR1[0]*fITSinR1[0]+fITSinR1[1]*fITSinR1[1]);
@@ -656,12 +712,12 @@ void  AliESDRecV0Info::Update(Float_t vertex[3])
     if (fDist2<10.5){
       Double_t x,alpha,param[5],cov[15];
       //
-      fT1.fESDTrack.GetInnerExternalParameters(alpha,x,param);
-      fT1.fESDTrack.GetInnerExternalCovariance(cov);
+      fT1.GetESDtrack()->GetInnerExternalParameters(alpha,x,param);
+      fT1.GetESDtrack()->GetInnerExternalCovariance(cov);
       AliExternalTrackParam paramm(x,alpha,param,cov);
       //
-      fT2.fESDTrack.GetInnerExternalParameters(alpha,x,param);
-      fT2.fESDTrack.GetInnerExternalCovariance(cov);
+      fT2.GetESDtrack()->GetInnerExternalParameters(alpha,x,param);
+      fT2.GetESDtrack()->GetInnerExternalCovariance(cov);
       AliExternalTrackParam paramd(x,alpha,param,cov);
     }    
     //            
@@ -787,12 +843,12 @@ void  AliESDRecKinkInfo::Update()
     if (fDist2<10.5){
       Double_t x,alpha,param[5],cov[15];
       //
-      fT1.fESDTrack.GetInnerExternalParameters(alpha,x,param);
-      fT1.fESDTrack.GetInnerExternalCovariance(cov);
+      fT1.GetESDtrack()->GetInnerExternalParameters(alpha,x,param);
+      fT1.GetESDtrack()->GetInnerExternalCovariance(cov);
       AliExternalTrackParam paramm(x,alpha,param,cov);
       //
-      fT2.fESDTrack.GetInnerExternalParameters(alpha,x,param);
-      fT2.fESDTrack.GetInnerExternalCovariance(cov);
+      fT2.GetESDtrack()->GetInnerExternalParameters(alpha,x,param);
+      fT2.GetESDtrack()->GetInnerExternalCovariance(cov);
       AliExternalTrackParam paramd(x,alpha,param,cov);
       /*
       AliESDkink kink;
@@ -1016,7 +1072,7 @@ Int_t AliESDComparisonMI::Exec()
     if (fDebug>2) cout<<"\tStart loop over tree genTracks"<<endl;
     if (TreeGenLoop(eventNr)>0) return 1;
     BuildKinkInfo0(eventNr);
-    BuildV0Info(eventNr);
+    //BuildV0Info(eventNr); // no V0 info for a moment
     fRecArray->Delete();
 
     if (fDebug>2) cout<<"\tEnd loop over tree genTracks"<<endl;
@@ -1346,29 +1402,12 @@ Int_t AliESDComparisonMI::TreeGenLoop(Int_t eventNr)
       }	
       //
       if (track) {
-	new (&(fRecInfo->fESDTrack)) AliESDtrack(*track);
-	if (track->GetFriendTrack()){
-	  new( &(fRecInfo->fTrackF)) AliESDfriendTrack(*(track->GetFriendTrack()));
-	}
+	fRecInfo->SetESDtrack(track);
       }else{
-	fRecInfo->fESDTrack = dummytrack;
-	fRecInfo->fTrackF = dummytrackF;
+	fRecInfo->SetESDtrack(&dummytrack);
       }
+      //
 
-
-
-      if (track->GetITStrack())
-	//fRecInfo->fITStrack = *((AliITStrackMI*)track->GetITStrack());
-	new (&(fRecInfo->fITStrack)) AliITStrackMI(*((AliITStrackMI*)track->GetITStrack()));
-      else{
-	fRecInfo->fITStrack = *track;
-      }
-      if (track->GetTRDtrack()){
-	fRecInfo->fTRDtrack = *((AliTRDtrack*)track->GetTRDtrack());
-      }
-      else{
-	fRecInfo->fTRDtrack.SetdEdx(-1);
-      }
       fRecInfo->fReconstructed = 1;
       fRecInfo->fFake     = fFakeRecTracks[fMCInfo->fLabel];
       fRecInfo->fMultiple = fMultiRecTracks[fMCInfo->fLabel];
@@ -1376,7 +1415,7 @@ Int_t AliESDComparisonMI::TreeGenLoop(Int_t eventNr)
       fRecInfo->Update(fMCInfo,fParamTPC,kTRUE, fEvent);          
     }
     else{
-      fRecInfo->fESDTrack = dummytrack;
+      fRecInfo->SetESDtrack(&dummytrack);
       fRecInfo->Update(fMCInfo,fParamTPC,kFALSE, fEvent);
     }
     fRecArray->AddAt(new AliESDRecInfo(*fRecInfo),fMCInfo->fLabel);
@@ -1581,40 +1620,40 @@ Int_t AliESDComparisonMI::BuildV0Info(Int_t eventNr)
 	//
 	// TPC V0 Info
 	Double_t x,alpha, param[5],cov[15];
-	if ( fRecV0Info->fT1.fESDTrack.GetInnerParam() && fRecV0Info->fT2.fESDTrack.GetInnerParam()){
-	  fRecV0Info->fT1.fESDTrack.GetInnerExternalParameters(alpha,x,param);
-	  fRecV0Info->fT1.fESDTrack.GetInnerExternalCovariance(cov);
+	if ( fRecV0Info->fT1.GetESDtrack()->GetInnerParam() && fRecV0Info->fT2.GetESDtrack()->GetInnerParam()){
+	  fRecV0Info->fT1.GetESDtrack()->GetInnerExternalParameters(alpha,x,param);
+	  fRecV0Info->fT1.GetESDtrack()->GetInnerExternalCovariance(cov);
 	  AliExternalTrackParam paramP(x,alpha,param,cov);
 	  //
-	  fRecV0Info->fT2.fESDTrack.GetInnerExternalParameters(alpha,x,param);
-	  fRecV0Info->fT2.fESDTrack.GetInnerExternalCovariance(cov);
+	  fRecV0Info->fT2.GetESDtrack()->GetInnerExternalParameters(alpha,x,param);
+	  fRecV0Info->fT2.GetESDtrack()->GetInnerExternalCovariance(cov);
 	  AliExternalTrackParam paramM(x,alpha,param,cov);
 	  //
-	  fRecV0Info->fV0tpc.SetParamN(paramM);
-	  fRecV0Info->fV0tpc.SetParamP(paramP);
+	  fRecV0Info->fV0tpc->SetParamN(paramM);
+	  fRecV0Info->fV0tpc->SetParamP(paramP);
 	  Double_t pid1[5],pid2[5];
-	  fRecV0Info->fT1.fESDTrack.GetESDpid(pid1);
-	  fRecV0Info->fT1.fESDTrack.GetESDpid(pid2);
+	  fRecV0Info->fT1.GetESDtrack()->GetESDpid(pid1);
+	  fRecV0Info->fT1.GetESDtrack()->GetESDpid(pid2);
 	  //
 	  //fRecV0Info->fV0tpc.UpdatePID(pid1,pid2);
-	  fRecV0Info->fV0tpc.Update(vertex);
+	  fRecV0Info->fV0tpc->Update(vertex);
 	
 	  //
 	  //
-	  fRecV0Info->fT1.fESDTrack.GetExternalParameters(x,param);
-	  fRecV0Info->fT1.fESDTrack.GetExternalCovariance(cov);
-	  alpha = fRecV0Info->fT1.fESDTrack.GetAlpha();
+	  fRecV0Info->fT1.GetESDtrack()->GetExternalParameters(x,param);
+	  fRecV0Info->fT1.GetESDtrack()->GetExternalCovariance(cov);
+	  alpha = fRecV0Info->fT1.GetESDtrack()->GetAlpha();
 	  new (&paramP) AliExternalTrackParam(x,alpha,param,cov);
 	  //
-	  fRecV0Info->fT2.fESDTrack.GetExternalParameters(x,param);
-	  fRecV0Info->fT2.fESDTrack.GetExternalCovariance(cov);
-	  alpha = fRecV0Info->fT2.fESDTrack.GetAlpha();
+	  fRecV0Info->fT2.GetESDtrack()->GetExternalParameters(x,param);
+	  fRecV0Info->fT2.GetESDtrack()->GetExternalCovariance(cov);
+	  alpha = fRecV0Info->fT2.GetESDtrack()->GetAlpha();
 	  new (&paramM) AliExternalTrackParam(x,alpha,param,cov);
 	  //
-	  fRecV0Info->fV0its.SetParamN(paramM);
-	  fRecV0Info->fV0its.SetParamP(paramP);
+	  fRecV0Info->fV0its->SetParamN(paramM);
+	  fRecV0Info->fV0its->SetParamP(paramP);
 	  //	  fRecV0Info->fV0its.UpdatePID(pid1,pid2);
-	  fRecV0Info->fV0its.Update(vertex);
+	  fRecV0Info->fV0its->Update(vertex);
 	}
       }
       if (TMath::Abs(fGenV0Info->fMCm.fPdg)==11 &&TMath::Abs(fGenV0Info->fMCd.fPdg)==11){
@@ -1656,7 +1695,7 @@ Int_t AliESDComparisonMI::BuildV0Info(Int_t eventNr)
       }
     }
     if (v0MI){
-      fRecV0Info->fV0rec = *v0MI;
+      fRecV0Info->fV0rec = v0MI;
       fRecV0Info->fRecStatus=1;
     }
 
@@ -1671,7 +1710,7 @@ Int_t AliESDComparisonMI::BuildV0Info(Int_t eventNr)
       AliV0 *v0MI  = (AliV0*)fEvent->GetV0(i);
       if (!v0MI) continue;
       //
-      fRecV0Info->fV0rec = *v0MI;
+      fRecV0Info->fV0rec = v0MI;
       fRecV0Info->fV0Status  =-10;
       fRecV0Info->fRecStatus =-2;
       //
