@@ -34,11 +34,11 @@ public:
   AliTPCdigitRow();
   virtual ~AliTPCdigitRow(){;}
   void SetRow(Int_t row);
-  Bool_t TestRow(Int_t row);
+  Bool_t TestRow(Int_t row) const ;
   AliTPCdigitRow & operator=(const AliTPCdigitRow &digOld);
-  Int_t RowsOn(Int_t upto=8*kgRowBytes);
-  Int_t Last();
-  Int_t First();
+  Int_t RowsOn(Int_t upto=8*kgRowBytes) const;
+  Int_t Last() const;
+  Int_t First() const ;
   void Reset();
 
 //private:
@@ -57,8 +57,11 @@ class AliMCInfo: public TObject {
 
 public:
   AliMCInfo();
-  ~AliMCInfo();
+  ~AliMCInfo();   
+  AliMCInfo(const AliMCInfo& info);
   void Update();
+
+
   AliTrackReference  fTrackRef;      // track reference saved in the output tree
   AliTrackReference  fTrackRefOut;   // decay track reference saved in the output tree
   AliTrackReference  fTRdecay;       // track reference at decay point
@@ -95,8 +98,9 @@ public:
 
 class AliGenV0Info: public TObject {
 public:
-  AliMCInfo fMCd;                   //info about daughter particle - second particle for V0
-  AliMCInfo fMCm;      //info about mother particle   - first particle for V0
+  AliGenV0Info();       //
+  AliMCInfo fMCd;       //info about daughter particle - second particle for V0
+  AliMCInfo fMCm;       //info about mother particle   - first particle for V0
   TParticle fMotherP;   //particle info about mother particle
   void Update(Float_t vertex[3]);        // put some derived info to special field 
   Double_t    fMCDist1;    //info about closest distance according closest MC - linear DCA
@@ -126,10 +130,12 @@ public:
 
 class AliGenKinkInfo: public TObject {
 public:
-  AliMCInfo fMCd;            //info about daughter particle - second particle for V0
-  AliMCInfo fMCm;            //info about mother particle   - first particle for V0
-  void Update();             // put some derived info to special field 
+  AliGenKinkInfo();          //default cosntructor
+  void    Update();          // put some derived info to special field 
   Float_t GetQt();           //
+
+  AliMCInfo   fMCd;          //info about daughter particle - second particle for V0
+  AliMCInfo   fMCm;          //info about mother particle   - first particle for V0
   Double_t    fMCDist1;      //info about closest distance according closest MC - linear DCA
   Double_t    fMCDist2;      //info about closest distance parabolic DCA
   //
@@ -162,7 +168,6 @@ public:
   AliGenInfoMaker(const char * fnGalice, const char* fnRes    ="genTracks.root",
 		   Int_t nEvents=1, Int_t firstEvent=0);
   virtual ~AliGenInfoMaker();
-  void Reset();
   Int_t Exec();
   Int_t Exec(Int_t nEvents, Int_t firstEventNr);
   void CreateTreeGenTracks();
@@ -173,7 +178,6 @@ public:
   Int_t BuildKinkInfo();  // build information about MC kinks
   Int_t BuildV0Info();  // build information about MC kinks
   Int_t BuildHitLines();  // build information about MC kinks
-  //void  FillInfo(Int_t iParticle);
   void SetFirstEventNr(Int_t i) {fFirstEventNr = i;}
   void SetNEvents(Int_t i) {fNEvents = i;}
   void SetDebug(Int_t level) {fDebug = level;}
@@ -182,22 +186,22 @@ public:
   Int_t CloseIO();
   Int_t SetIO();
   Float_t TR2LocalX(AliTrackReference *trackRef,
-		    AliTPCParam *paramTPC);
-  AliMCInfo * GetInfo(UInt_t i){return (i<fNParticles)? fGenInfo[i]:0;}
+		    AliTPCParam *paramTPC) const;
+  AliMCInfo * GetInfo(UInt_t i) const {return (i<fNParticles)? fGenInfo[i]:0;}
   AliMCInfo * MakeInfo(UInt_t i);
 
-public:
-  Int_t fDebug;                   //! debug flag  
-  Int_t fEventNr;                 //! current event number
-  Int_t fLabel;                   //! track label
-  Int_t fNEvents;                 //! number of events to process
-  Int_t fFirstEventNr;            //! first event to process
+private:
+  Int_t  fDebug;                   //! debug flag  
+  Int_t  fEventNr;                 //! current event number
+  Int_t  fLabel;                   //! track label
+  Int_t  fNEvents;                 //! number of events to process
+  Int_t  fFirstEventNr;            //! first event to process
   UInt_t fNParticles;              //! number of particles in TreeK
-  TTree * fTreeGenTracks;          //! output tree with generated tracks
-  TTree * fTreeKinks;             //!  output tree with Kinks
-  TTree * fTreeV0;                //!  output tree with V0
-  TTree * fTreeHitLines;          //! tree with hit lines
-  char  fFnRes[1000];             //! output file name with stored tracks
+  TTree *fTreeGenTracks;          //! output tree with generated tracks
+  TTree *fTreeKinks;             //!  output tree with Kinks
+  TTree *fTreeV0;                //!  output tree with V0
+  TTree *fTreeHitLines;          //! tree with hit lines
+  char   fFnRes[1000];             //! output file name with stored tracks
   TFile *fFileGenTracks;          //! output file with stored fTreeGenTracks
   //
   AliRunLoader * fLoader;         //! pointer to the run loader
@@ -206,25 +210,19 @@ public:
   AliStack *fStack;               //! current stack
   // 
   AliMCInfo **   fGenInfo;    //! array with pointers to gen info
-  Int_t fNInfos;                  //! number of tracks with infos
+  Int_t   fNInfos;                  //! number of tracks with infos
   //
   AliTPCParam* fParamTPC;         //! AliTPCParam
-  Float_t fVPrim[3];             //! primary vertex position
+  Float_t  fVPrim[3];             //! primary vertex position
                                   // the fVDist[3] contains size of the 3-vector
-
-private:
-  static const Int_t seedRow11 = 158;  // nRowUp - 1
-  static const Int_t seedRow12 = 139;  // nRowUp - 1 - (Int_t) 0.125*nRowUp
-  static const Int_t seedRow21 = 149;  // seedRow11 - shift
-  static const Int_t seedRow22 = 130;  // seedRow12 - shift
-  static const Double_t kRaddeg = 180./3.14159265358979312;
-  // 
-  static const Double_t fgTPCPtCut = 0.03; // do not store particles with generated pT less than this
-  static const Double_t fgITSPtCut = 0.2; // do not store particles with generated pT less than this
-  static const Double_t fgTRDPtCut = 0.2; // do not store particles with generated pT less than this
-  static const Double_t fgTOFPtCut = 0.15; // do not store particles with generated pT less than this
+  // cuts
+  //
+  Double_t fTPCPtCut; // do not store particles with generated pT less than this
+  Double_t fITSPtCut; // do not store particles with generated pT less than this
+  Double_t fTRDPtCut; // do not store particles with generated pT less than this
+  Double_t fTOFPtCut; // do not store particles with generated pT less than this
  
-  ClassDef(AliGenInfoMaker,1)    // class which creates and fills tree with TPCGenTrack objects
+  ClassDef(AliGenInfoMaker,0)    // class which creates and fills tree with TPCGenTrack objects
 };
 
 

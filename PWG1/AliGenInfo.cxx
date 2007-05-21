@@ -22,7 +22,7 @@ Origin: marian.ivanov@cern.ch
 Generate complex MC information - used for Comparison later on
 How to use it?
 
-.L 
+gSystem->Load("libPWG1.so")
 AliGenInfoMaker *t = new AliGenInfoMaker("galice.root","genTracks.root",0,0)
 t->Exec();
 
@@ -39,19 +39,10 @@ t->Exec();
 #include "TChain.h"
 #include "TCut.h"
 #include "TString.h"
-#include "TBenchmark.h"
 #include "TStopwatch.h"
 #include "TParticle.h"
 #include "TSystem.h"
-#include "TTimer.h"
-#include "TVector3.h"
-#include "TH1F.h"
-#include "TH2F.h"
 #include "TCanvas.h"
-#include "TPad.h"
-#include "TF1.h"
-#include "TView.h"
-#include "TView3D.h"
 #include "TGeometry.h"
 #include "TPolyLine3D.h"
 
@@ -68,7 +59,6 @@ t->Exec();
 #include "AliTracker.h"
 #include "AliMagF.h"
 #include "AliHelix.h"
-#include "AliPoints.h"
 #include "AliTrackPointArray.h"
 
 #endif
@@ -120,7 +110,32 @@ Float_t TPCBetheBloch(Float_t bg)
 
 
 ////////////////////////////////////////////////////////////////////////
-AliMCInfo::AliMCInfo()
+AliMCInfo::AliMCInfo():
+  fTrackRef(),
+  fTrackRefOut(),
+  fTRdecay(),
+  fPrimPart(0),
+  fParticle(),
+  fMass(0),
+  fCharge(0),
+  fLabel(0),
+  fEventNr(),
+  fMCtracks(),
+  fPdg(0),
+  fTPCdecay(0),
+  fRowsWithDigitsInn(0),
+  fRowsWithDigits(0),
+  fRowsTrackLength(0),
+  fPrim(0),
+  fTPCRow(), 
+  fNTPCRef(0),                    // tpc references counter
+  fNITSRef(0),                    // ITS references counter
+  fNTRDRef(0),                    // TRD references counter
+  fNTOFRef(0),                    // TOF references counter
+  fTPCReferences(0),
+  fITSReferences(0),
+  fTRDReferences(0),
+  fTOFReferences(0)
 {
   fTPCReferences  = new TClonesArray("AliTrackReference",10);
   fITSReferences  = new TClonesArray("AliTrackReference",10);
@@ -129,6 +144,41 @@ AliMCInfo::AliMCInfo()
   fTRdecay.SetTrack(-1);
   fCharge = 0;
 }
+
+AliMCInfo::AliMCInfo(const AliMCInfo& info):
+  TObject(),
+  fTrackRef(info.fTrackRef),
+  fTrackRefOut(info.fTrackRefOut),
+  fTRdecay(info.fTRdecay),
+  fPrimPart(info.fPrimPart),
+  fParticle(info.fParticle),
+  fMass(info.fMass),
+  fCharge(info.fCharge),
+  fLabel(info.fLabel),
+  fEventNr(info.fEventNr),
+  fMCtracks(info.fMCtracks),
+  fPdg(info.fPdg),
+  fTPCdecay(info.fTPCdecay),
+  fRowsWithDigitsInn(info.fRowsWithDigitsInn),
+  fRowsWithDigits(info.fRowsWithDigits),
+  fRowsTrackLength(info.fRowsTrackLength),
+  fPrim(info.fPrim),
+  fTPCRow(info.fTPCRow), 
+  fNTPCRef(info.fNTPCRef),                    // tpc references counter
+  fNITSRef(info.fNITSRef),                    // ITS references counter
+  fNTRDRef(info.fNTRDRef),                    // TRD references counter
+  fNTOFRef(info.fNTOFRef),                    // TOF references counter
+  fTPCReferences(0),
+  fITSReferences(0),
+  fTRDReferences(0),
+  fTOFReferences(0)
+{
+  fTPCReferences = (TClonesArray*)info.fTPCReferences->Clone();
+  fITSReferences = (TClonesArray*)info.fITSReferences->Clone();
+  fTRDReferences = (TClonesArray*)info.fTRDReferences->Clone();
+  fTOFReferences = (TClonesArray*)info.fTOFReferences->Clone();
+}
+
 
 AliMCInfo::~AliMCInfo()
 {
@@ -224,30 +274,40 @@ void AliMCInfo::Update()
 }
 
 /////////////////////////////////////////////////////////////////////////////////
-/*
-void AliGenV0Info::Update()
+AliGenV0Info::AliGenV0Info():
+  fMCd(),      //info about daughter particle - 
+  fMCm(),      //info about mother particle   - first particle for V0
+  fMotherP(),   //particle info about mother particle
+  fMCDist1(0), //info about closest distance according closest MC - linear DCA
+  fMCDist2(0),    //info about closest distance parabolic DCA
+  fMCRr(0),       // rec position of the vertex 
+  fMCR(0),        //exact r position of the vertex
+  fInvMass(0),  //reconstructed invariant mass -
+  fPointAngleFi(0), //point angle fi
+  fPointAngleTh(0), //point angle theta
+  fPointAngle(0)   //point angle full
 {
-  fMCPd[0] = fMCd.fParticle.Px();
-  fMCPd[1] = fMCd.fParticle.Py();
-  fMCPd[2] = fMCd.fParticle.Pz();
-  fMCPd[3] = fMCd.fParticle.P();
-  //
-  fMCX[0]  = fMCd.fParticle.Vx();
-  fMCX[1]  = fMCd.fParticle.Vy();
-  fMCX[2]  = fMCd.fParticle.Vz();
-  fMCR       = TMath::Sqrt( fMCX[0]*fMCX[0]+fMCX[1]*fMCX[1]);
-  //
-  fPdg[0]    = fMCd.fParticle.GetPdgCode();
-  fPdg[1]    = fMCm.fParticle.GetPdgCode();
-  //
-  fLab[0]    = fMCd.fParticle.GetUniqueID();
-  fLab[1]    = fMCm.fParticle.GetUniqueID();
-  //  
+  for (Int_t i=0;i<3; i++){
+   fMCPdr[i]=0;    
+   fMCX[i]=0;     
+   fMCXr[i]=0;    
+   fMCPm[i]=0;    
+   fMCAngle[i]=0; 
+   fMCPd[i]=0;    
+  }
+  fMCPd[3]=0;     
+  for (Int_t i=0; i<2;i++){
+    fPdg[i]=0;   
+    fLab[i]=0;  
+  }
 }
-*/
 
 void AliGenV0Info::Update(Float_t vertex[3])
 {
+  //
+  // Update information - calculates derived variables
+  //
+  
   fMCPd[0] = fMCd.fParticle.Px();
   fMCPd[1] = fMCd.fParticle.Py();
   fMCPd[2] = fMCd.fParticle.Pz();
@@ -386,16 +446,43 @@ void AliGenV0Info::Update(Float_t vertex[3])
   
   //  fInvMass = TMath::Sqrt((e1+e2)*(e1+e2)-fInvMass);
   fInvMass = (e1+e2)*(e1+e2)-fInvMass;
-  if (fInvMass>0) fInvMass = TMath::Sqrt(fInvMass);
-
-    
+  if (fInvMass>0) fInvMass = TMath::Sqrt(fInvMass);    
 }
 
 
 
 /////////////////////////////////////////////////////////////////////////////////
+
+AliGenKinkInfo::AliGenKinkInfo():
+  fMCd(),       //info about daughter particle - second particle for V0
+  fMCm(),       //info about mother particle   - first particle for V0
+  fMCDist1(0),  //info about closest distance according closest MC - linear DCA
+  fMCDist2(0),  //info about closest distance parabolic DCA
+  fMCRr(0),     // rec position of the vertex 
+  fMCR(0)       //exact r position of the vertex
+{
+  //
+  // default constructor
+  //
+  for (Int_t i=0;i<3;i++){
+    fMCPdr[i]=0;
+    fMCPd[i]=0;
+    fMCX[i]=0;
+    fMCPm[i]=0;
+    fMCAngle[i]=0;
+  }
+  for (Int_t i=0; i<2; i++) {
+    fPdg[i]= 0;
+    fLab[i]=0;
+  }
+}
+
 void AliGenKinkInfo::Update()
 {
+  //
+  // Update information
+  //  some redundancy - faster acces to the values in analysis code
+  //
   fMCPd[0] = fMCd.fParticle.Px();
   fMCPd[1] = fMCd.fParticle.Py();
   fMCPd[2] = fMCd.fParticle.Pz();
@@ -514,16 +601,6 @@ Float_t AliGenKinkInfo::GetQt(){
 
 
 
-  
-////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////
-//
-// End of implementation of the class AliMCInfo
-//
-////////////////////////////////////////////////////////////////////////
-
-
 
 ////////////////////////////////////////////////////////////////////////
 AliTPCdigitRow::AliTPCdigitRow()
@@ -549,7 +626,7 @@ void AliTPCdigitRow::SetRow(Int_t row)
 }
 
 ////////////////////////////////////////////////////////////////////////
-Bool_t AliTPCdigitRow::TestRow(Int_t row)
+Bool_t AliTPCdigitRow::TestRow(Int_t row) const
 {
 //
 // return kTRUE if row is on
@@ -559,7 +636,7 @@ Bool_t AliTPCdigitRow::TestRow(Int_t row)
   return TESTBIT(fDig[iC],iB);
 }
 ////////////////////////////////////////////////////////////////////////
-Int_t AliTPCdigitRow::RowsOn(Int_t upto)
+Int_t AliTPCdigitRow::RowsOn(Int_t upto) const
 {
 //
 // returns number of rows with a digit  
@@ -585,7 +662,7 @@ void AliTPCdigitRow::Reset()
   }
 }
 ////////////////////////////////////////////////////////////////////////
-Int_t AliTPCdigitRow::Last()
+Int_t AliTPCdigitRow::Last() const
 {
 //
 // returns the last row number with a digit
@@ -599,7 +676,7 @@ Int_t AliTPCdigitRow::Last()
   return -1;
 }
 ////////////////////////////////////////////////////////////////////////
-Int_t AliTPCdigitRow::First()
+Int_t AliTPCdigitRow::First() const
 {
 //
 // returns the first row number with a digit
@@ -613,27 +690,68 @@ Int_t AliTPCdigitRow::First()
   return -1;
 }
 
-////////////////////////////////////////////////////////////////////////
-//
-// end of implementation of a class AliTPCdigitRow
-//
-////////////////////////////////////////////////////////////////////////
+
   
 ////////////////////////////////////////////////////////////////////////
-AliGenInfoMaker::AliGenInfoMaker()
-{
-  Reset();
+AliGenInfoMaker::AliGenInfoMaker():
+  fDebug(0),                   //! debug flag  
+  fEventNr(0),                 //! current event number
+  fLabel(0),                   //! track label
+  fNEvents(0),                 //! number of events to process
+  fFirstEventNr(0),            //! first event to process
+  fNParticles(0),              //! number of particles in TreeK
+  fTreeGenTracks(0),           //! output tree with generated tracks
+  fTreeKinks(0),               //!  output tree with Kinks
+  fTreeV0(0),                  //!  output tree with V0
+  fTreeHitLines(0),            //! tree with hit lines
+  fFileGenTracks(0),           //! output file with stored fTreeGenTracks
+  fLoader(0),                  //! pointer to the run loader
+  fTreeD(0),                   //! current tree with digits
+  fTreeTR(0),                  //! current tree with TR
+  fStack(0),                   //! current stack
+  fGenInfo(0),                 //! array with pointers to gen info
+  fNInfos(0),                  //! number of tracks with infos
+  fParamTPC(0),                //! AliTPCParam
+  fTPCPtCut(0.03),            
+  fITSPtCut(0.1),  
+  fTRDPtCut(0.1), 
+  fTOFPtCut(0.1)
+{   
 }
 
 ////////////////////////////////////////////////////////////////////////
 AliGenInfoMaker::AliGenInfoMaker(const char * fnGalice, const char* fnRes,
-				   Int_t nEvents, Int_t firstEvent)
+				 Int_t nEvents, Int_t firstEvent):
+  fDebug(0),                   //! debug flag  
+  fEventNr(0),                 //! current event number
+  fLabel(0),                   //! track label
+  fNEvents(0),                 //! number of events to process
+  fFirstEventNr(0),            //! first event to process
+  fNParticles(0),              //! number of particles in TreeK
+  fTreeGenTracks(0),           //! output tree with generated tracks
+  fTreeKinks(0),               //!  output tree with Kinks
+  fTreeV0(0),                  //!  output tree with V0
+  fTreeHitLines(0),            //! tree with hit lines
+  fFileGenTracks(0),           //! output file with stored fTreeGenTracks
+  fLoader(0),                  //! pointer to the run loader
+  fTreeD(0),                   //! current tree with digits
+  fTreeTR(0),                  //! current tree with TR
+  fStack(0),                   //! current stack
+  fGenInfo(0),                 //! array with pointers to gen info
+  fNInfos(0),                  //! number of tracks with infos
+  fParamTPC(0),                //! AliTPCParam 
+  fTPCPtCut(0.03),  
+  fITSPtCut(0.1),  
+  fTRDPtCut(0.1), 
+  fTOFPtCut(0.1)
+
 {
-  Reset();
+  //
+  // 
+  //
   fFirstEventNr = firstEvent;
   fEventNr = firstEvent;
   fNEvents = nEvents;
-  //   fFnRes = fnRes;
   sprintf(fFnRes,"%s",fnRes);
   //
   fLoader = AliRunLoader::Open(fnGalice);
@@ -679,23 +797,6 @@ AliMCInfo * AliGenInfoMaker::MakeInfo(UInt_t i)
     return 0;  
 }
 
-////////////////////////////////////////////////////////////////////////
-void AliGenInfoMaker::Reset()
-{
-  fEventNr = 0;
-  fNEvents = 0;
-  fTreeGenTracks = 0;
-  fFileGenTracks = 0;
-  fGenInfo = 0;
-  fNInfos  = 0;
-  //
-  //
-  fDebug = 0;
-  fVPrim[0] = -1000.;
-  fVPrim[1] = -1000.;
-  fVPrim[2] = -1000.;
-  fParamTPC = 0;
-}
 ////////////////////////////////////////////////////////////////////////
 AliGenInfoMaker::~AliGenInfoMaker()
 {
@@ -1225,17 +1326,17 @@ Int_t AliGenInfoMaker::TreeTRLoop()
   //
   //
   //track references for TPC
-  TClonesArray* TPCArrayTR = new TClonesArray("AliTrackReference");
-  TClonesArray* ITSArrayTR = new TClonesArray("AliTrackReference");
-  TClonesArray* TRDArrayTR = new TClonesArray("AliTrackReference");
-  TClonesArray* TOFArrayTR = new TClonesArray("AliTrackReference");
-  TClonesArray* RunArrayTR = new TClonesArray("AliTrackReference");
+  TClonesArray* tpcArrayTR = new TClonesArray("AliTrackReference");
+  TClonesArray* itsArrayTR = new TClonesArray("AliTrackReference");
+  TClonesArray* trdArrayTR = new TClonesArray("AliTrackReference");
+  TClonesArray* tofArrayTR = new TClonesArray("AliTrackReference");
+  TClonesArray* runArrayTR = new TClonesArray("AliTrackReference");
   //
-  if (treeTR->GetBranch("TPC"))    treeTR->GetBranch("TPC")->SetAddress(&TPCArrayTR);
-  if (treeTR->GetBranch("ITS"))    treeTR->GetBranch("ITS")->SetAddress(&ITSArrayTR);
-  if (treeTR->GetBranch("TRD"))    treeTR->GetBranch("TRD")->SetAddress(&TRDArrayTR);
-  if (treeTR->GetBranch("TOF"))    treeTR->GetBranch("TOF")->SetAddress(&TOFArrayTR);
-  if (treeTR->GetBranch("AliRun")) treeTR->GetBranch("AliRun")->SetAddress(&RunArrayTR);
+  if (treeTR->GetBranch("TPC"))    treeTR->GetBranch("TPC")->SetAddress(&tpcArrayTR);
+  if (treeTR->GetBranch("ITS"))    treeTR->GetBranch("ITS")->SetAddress(&itsArrayTR);
+  if (treeTR->GetBranch("TRD"))    treeTR->GetBranch("TRD")->SetAddress(&trdArrayTR);
+  if (treeTR->GetBranch("TOF"))    treeTR->GetBranch("TOF")->SetAddress(&tofArrayTR);
+  if (treeTR->GetBranch("AliRun")) treeTR->GetBranch("AliRun")->SetAddress(&runArrayTR);
   //
   //
   //
@@ -1244,19 +1345,19 @@ Int_t AliGenInfoMaker::TreeTRLoop()
     //
     // Loop over TPC references
     //
-    for (Int_t iTrackRef = 0; iTrackRef < TPCArrayTR->GetEntriesFast(); iTrackRef++) {
-      AliTrackReference *trackRef = (AliTrackReference*)TPCArrayTR->At(iTrackRef);            
+    for (Int_t iTrackRef = 0; iTrackRef < tpcArrayTR->GetEntriesFast(); iTrackRef++) {
+      AliTrackReference *trackRef = (AliTrackReference*)tpcArrayTR->At(iTrackRef);            
       //
       if (trackRef->TestBit(BIT(2))){  
 	//if decay 
-	if (trackRef->P()<fgTPCPtCut) continue;
+	if (trackRef->P()<fTPCPtCut) continue;
 	Int_t label = trackRef->GetTrack(); 
 	AliMCInfo * info = GetInfo(label);
 	if (!info) info = MakeInfo(label);
 	info->fTRdecay = *trackRef;      
       }
       //
-      if (trackRef->P()<fgTPCPtCut) continue;
+      if (trackRef->P()<fTPCPtCut) continue;
       Int_t label = trackRef->GetTrack();      
       AliMCInfo * info = GetInfo(label);
       if (!info) info = MakeInfo(label);
@@ -1268,14 +1369,14 @@ Int_t AliGenInfoMaker::TreeTRLoop()
     //
     // Loop over ITS references
     //
-    for (Int_t iTrackRef = 0; iTrackRef < ITSArrayTR->GetEntriesFast(); iTrackRef++) {
-      AliTrackReference *trackRef = (AliTrackReference*)ITSArrayTR->At(iTrackRef);            
+    for (Int_t iTrackRef = 0; iTrackRef < itsArrayTR->GetEntriesFast(); iTrackRef++) {
+      AliTrackReference *trackRef = (AliTrackReference*)itsArrayTR->At(iTrackRef);            
       // 
       //
-      if (trackRef->P()<fgTPCPtCut) continue;
+      if (trackRef->P()<fTPCPtCut) continue;
       Int_t label = trackRef->GetTrack();      
       AliMCInfo * info = GetInfo(label);
-      if ( (!info) && trackRef->Pt()<fgITSPtCut) continue;
+      if ( (!info) && trackRef->Pt()<fITSPtCut) continue;
       if (!info) info = MakeInfo(label);
       if (!info) continue;
       info->fPrimPart =  iPrimPart;
@@ -1285,13 +1386,13 @@ Int_t AliGenInfoMaker::TreeTRLoop()
     //
     // Loop over TRD references
     //
-    for (Int_t iTrackRef = 0; iTrackRef < TRDArrayTR->GetEntriesFast(); iTrackRef++) {
-      AliTrackReference *trackRef = (AliTrackReference*)TRDArrayTR->At(iTrackRef);            
+    for (Int_t iTrackRef = 0; iTrackRef < trdArrayTR->GetEntriesFast(); iTrackRef++) {
+      AliTrackReference *trackRef = (AliTrackReference*)trdArrayTR->At(iTrackRef);            
       //
-      if (trackRef->P()<fgTPCPtCut) continue;
+      if (trackRef->P()<fTPCPtCut) continue;
       Int_t label = trackRef->GetTrack();      
       AliMCInfo * info = GetInfo(label);
-      if ( (!info) && trackRef->Pt()<fgTRDPtCut) continue;
+      if ( (!info) && trackRef->Pt()<fTRDPtCut) continue;
       if (!info) info = MakeInfo(label);
       if (!info) continue;
       info->fPrimPart =  iPrimPart;
@@ -1301,13 +1402,13 @@ Int_t AliGenInfoMaker::TreeTRLoop()
     //
     // Loop over TOF references
     //
-    for (Int_t iTrackRef = 0; iTrackRef < TOFArrayTR->GetEntriesFast(); iTrackRef++) {
-      AliTrackReference *trackRef = (AliTrackReference*)TOFArrayTR->At(iTrackRef);            
+    for (Int_t iTrackRef = 0; iTrackRef < tofArrayTR->GetEntriesFast(); iTrackRef++) {
+      AliTrackReference *trackRef = (AliTrackReference*)tofArrayTR->At(iTrackRef);            
       Int_t label = trackRef->GetTrack();      
       AliMCInfo * info = GetInfo(label);
       if (!info){
-	if (trackRef->Pt()<fgTPCPtCut) continue;
-	if ( (!info) && trackRef->Pt()<fgTOFPtCut) continue;
+	if (trackRef->Pt()<fTPCPtCut) continue;
+	if ( (!info) && trackRef->Pt()<fTOFPtCut) continue;
       }
       if (!info) info = MakeInfo(label);
       if (!info) continue;
@@ -1317,8 +1418,8 @@ Int_t AliGenInfoMaker::TreeTRLoop()
     }
     //
     // get dacay position
-    for (Int_t iTrackRef = 0; iTrackRef < RunArrayTR->GetEntriesFast(); iTrackRef++) {
-      AliTrackReference *trackRef = (AliTrackReference*)RunArrayTR->At(iTrackRef);      
+    for (Int_t iTrackRef = 0; iTrackRef < runArrayTR->GetEntriesFast(); iTrackRef++) {
+      AliTrackReference *trackRef = (AliTrackReference*)runArrayTR->At(iTrackRef);      
       //
       Int_t label = trackRef->GetTrack();
       AliMCInfo * info = GetInfo(label);
@@ -1329,24 +1430,23 @@ Int_t AliGenInfoMaker::TreeTRLoop()
     }
   }
   //
-  TPCArrayTR->Delete();
-  delete  TPCArrayTR;
-  TRDArrayTR->Delete();
-  delete  TRDArrayTR;
-  TOFArrayTR->Delete();
-  delete  TOFArrayTR;
-
-  ITSArrayTR->Delete();
-  delete  ITSArrayTR;
-  RunArrayTR->Delete();
-  delete  RunArrayTR;
+  tpcArrayTR->Delete();
+  delete  tpcArrayTR;
+  trdArrayTR->Delete();
+  delete  trdArrayTR;
+  tofArrayTR->Delete();
+  delete  tofArrayTR;
+  itsArrayTR->Delete();
+  delete  itsArrayTR;
+  runArrayTR->Delete();
+  delete  runArrayTR;
   //
   return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////
 Float_t AliGenInfoMaker::TR2LocalX(AliTrackReference *trackRef,
-				    AliTPCParam *paramTPC) {
+				    AliTPCParam *paramTPC) const {
 
   Float_t x[3] = { trackRef->X(),trackRef->Y(),trackRef->Z()};
   Int_t index[4];
