@@ -117,7 +117,7 @@ AliFemtoEventReaderESDChain& AliFemtoEventReaderESDChain::operator=(const AliFem
   fCurEvent = aReader.fCurEvent;
   fCurFile = aReader.fCurFile;
   if (fEvent) delete fEvent;
-  fEvent = new AliESD(*aReader.fEvent);
+  fEvent = new AliESD();
 
   fEventFriend = aReader.fEventFriend;
   
