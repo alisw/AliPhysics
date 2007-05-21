@@ -1,16 +1,9 @@
-/***************************************************************************
- *
- * $Id$
- *
- * Author: Frank Laue, Ohio State, Laue@mps.ohio-state.edu
- ***************************************************************************
- *
- * Description: part of STAR HBT Framework: AliFemtoMaker package
- *      This is the Class for Analysis objects.  Each of the simultaneous
- *      Analyses running should have one of these instantiated.  They link
- *      into the Manager in an Analysis Collection.
- *
- ***************************************************************************/
+///////////////////////////////////////////////////////////////////////////
+//                                                                       //
+// This is an analysis which calculated the background from like sign    //
+// pairs in the same event                                               //
+//                                                                       //
+///////////////////////////////////////////////////////////////////////////
 
 #include "AliFemtoLikeSignAnalysis.h"
 #include "AliFemtoParticleCollection.h"
@@ -37,6 +30,7 @@ AliFemtoLikeSignAnalysis::AliFemtoLikeSignAnalysis(unsigned int bins, double min
   fOverFlow(0),  
   fUnderFlow(0)  
 {
+  // standard constructor
   fVertexBins = bins;
   fVertexZ[0] = min;
   fVertexZ[1] = max;
@@ -53,6 +47,7 @@ AliFemtoLikeSignAnalysis::AliFemtoLikeSignAnalysis(const AliFemtoLikeSignAnalysi
   fOverFlow(0),  
   fUnderFlow(0)  
 {
+  // copy constructor
   fVertexBins = a.fVertexBins; 
   fVertexZ[0] = a.fVertexZ[0]; 
   fVertexZ[1] = a.fVertexZ[1];
@@ -63,22 +58,24 @@ AliFemtoLikeSignAnalysis::AliFemtoLikeSignAnalysis(const AliFemtoLikeSignAnalysi
  }
 //____________________________ 
 AliFemtoLikeSignAnalysis::~AliFemtoLikeSignAnalysis(){
+  // destructor
   delete fPicoEventCollectionVectorHideAway; fPicoEventCollectionVectorHideAway=0;
 }
 //____________________________
 AliFemtoString AliFemtoLikeSignAnalysis::Report()
 {  
-  char Ctemp[200];
+  // prepare report
+  char tCtemp[200];
   cout << "AliFemtoLikeSignAnalysis - constructing Report..."<<endl;
   AliFemtoString temp = "-----------\nHbt Analysis Report:\n";
-  sprintf(Ctemp,"Events are mixed in %d bins in the range %E cm to %E cm.\n",fVertexBins,fVertexZ[0],fVertexZ[1]);
-  temp += Ctemp;
-  sprintf(Ctemp,"Events underflowing: %d\n",fUnderFlow);
-  temp += Ctemp;
-  sprintf(Ctemp,"Events overflowing: %d\n",fOverFlow);
-  temp += Ctemp;
-  sprintf(Ctemp,"Now adding AliFemtoAnalysis(base) Report\n");
-  temp += Ctemp; 
+  sprintf(tCtemp,"Events are mixed in %d bins in the range %E cm to %E cm.\n",fVertexBins,fVertexZ[0],fVertexZ[1]);
+  temp += tCtemp;
+  sprintf(tCtemp,"Events underflowing: %d\n",fUnderFlow);
+  temp += tCtemp;
+  sprintf(tCtemp,"Events overflowing: %d\n",fOverFlow);
+  temp += tCtemp;
+  sprintf(tCtemp,"Now adding AliFemtoAnalysis(base) Report\n");
+  temp += tCtemp; 
   temp += "Adding AliFemtoAnalysis(base) Report now:\n";
   temp += AliFemtoAnalysis::Report();
   temp += "-------------\n";
@@ -87,6 +84,7 @@ AliFemtoString AliFemtoLikeSignAnalysis::Report()
 }
 //_________________________
 void AliFemtoLikeSignAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
+  // perform all the analysis tasks for a single event
   // get right mixing buffer
   double vertexZ = hbtEvent->PrimVertPos().z();
   fMixingBuffer = fPicoEventCollectionVectorHideAway->PicoEventCollection(vertexZ); 
@@ -125,42 +123,42 @@ void AliFemtoLikeSignAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
       // Fabrice points out that we do not need to keep creating/deleting pairs all the time
       // We only ever need ONE pair, and we can just keep changing internal pointers
       // this should help speed things up
-      AliFemtoPair* ThePair = new AliFemtoPair;
+      AliFemtoPair* tThePair = new AliFemtoPair;
       
-      AliFemtoParticleIterator PartIter1;
-      AliFemtoParticleIterator PartIter2;
-      AliFemtoCorrFctnIterator CorrFctnIter;
-      AliFemtoParticleIterator StartOuterLoop = picoEvent->FirstParticleCollection()->begin();  // always
-      AliFemtoParticleIterator EndOuterLoop   = picoEvent->FirstParticleCollection()->end();    // will be one less if identical
-      AliFemtoParticleIterator StartInnerLoop;
-      AliFemtoParticleIterator EndInnerLoop;
+      AliFemtoParticleIterator tPartIter1;
+      AliFemtoParticleIterator tPartIter2;
+      AliFemtoCorrFctnIterator tCorrFctnIter;
+      AliFemtoParticleIterator tStartOuterLoop = picoEvent->FirstParticleCollection()->begin();  // always
+      AliFemtoParticleIterator tEndOuterLoop   = picoEvent->FirstParticleCollection()->end();    // will be one less if identical
+      AliFemtoParticleIterator tStartInnerLoop;
+      AliFemtoParticleIterator tEndInnerLoop;
       if (AnalyzeIdenticalParticles()) {             // only use First collection
-	EndOuterLoop--;                                               // outer loop goes to next-to-last particle in First collection
-	EndInnerLoop = picoEvent->FirstParticleCollection()->end() ;  // inner loop goes to last particle in First collection
+	tEndOuterLoop--;                                               // outer loop goes to next-to-last particle in First collection
+	tEndInnerLoop = picoEvent->FirstParticleCollection()->end() ;  // inner loop goes to last particle in First collection
       }
       else {                                                          // nonidentical - loop over First and Second collections
-	StartInnerLoop = picoEvent->SecondParticleCollection()->begin(); // inner loop starts at first particle in Second collection
-	EndInnerLoop   = picoEvent->SecondParticleCollection()->end() ;  // inner loop goes to last particle in Second collection
+	tStartInnerLoop = picoEvent->SecondParticleCollection()->begin(); // inner loop starts at first particle in Second collection
+	tEndInnerLoop   = picoEvent->SecondParticleCollection()->end() ;  // inner loop goes to last particle in Second collection
       }
       // real pairs
-      for (PartIter1=StartOuterLoop;PartIter1!=EndOuterLoop;PartIter1++){
+      for (tPartIter1=tStartOuterLoop;tPartIter1!=tEndOuterLoop;tPartIter1++){
 	if (AnalyzeIdenticalParticles()){
-	  StartInnerLoop = PartIter1;
-	  StartInnerLoop++;
+	  tStartInnerLoop = tPartIter1;
+	  tStartInnerLoop++;
 	}
-	ThePair->SetTrack1(*PartIter1);
-	for (PartIter2 = StartInnerLoop; PartIter2!=EndInnerLoop;PartIter2++){
-	  ThePair->SetTrack2(*PartIter2);
+	tThePair->SetTrack1(*tPartIter1);
+	for (tPartIter2 = tStartInnerLoop; tPartIter2!=tEndInnerLoop;tPartIter2++){
+	  tThePair->SetTrack2(*tPartIter2);
 	  // The following lines have to be uncommented if you want pairCutMonitors
 	  // they are not in for speed reasons
-	  // bool tmpPassPair = mPairCut->Pass(ThePair);
-          // mPairCut->FillCutMonitor(ThePair, tmpPassPair);
+	  // bool tmpPassPair = mPairCut->Pass(tThePair);
+          // mPairCut->FillCutMonitor(tThePair, tmpPassPair);
 	  // if ( tmpPassPair ) {
-	  if (fPairCut->Pass(ThePair)){
-	    for (CorrFctnIter=fCorrFctnCollection->begin();
-		 CorrFctnIter!=fCorrFctnCollection->end();CorrFctnIter++){
-	      AliFemtoLikeSignCorrFctn* CorrFctn = dynamic_cast<AliFemtoLikeSignCorrFctn*>(*CorrFctnIter);
-	      if (CorrFctn) CorrFctn->AddRealPair(ThePair);
+	  if (fPairCut->Pass(tThePair)){
+	    for (tCorrFctnIter=fCorrFctnCollection->begin();
+		 tCorrFctnIter!=fCorrFctnCollection->end();tCorrFctnIter++){
+	      AliFemtoLikeSignCorrFctn* tCorrFctn = dynamic_cast<AliFemtoLikeSignCorrFctn*>(*tCorrFctnIter);
+	      if (tCorrFctn) tCorrFctn->AddRealPair(tThePair);
 	    }
 	  }  // if passed pair cut
 	}    // loop over second particle
@@ -173,24 +171,24 @@ void AliFemtoLikeSignAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
       AliFemtoParticleIterator prevIter;
 
       // like sign first partilce collection pairs
-      prevIter = EndOuterLoop;
+      prevIter = tEndOuterLoop;
       prevIter--;
-      for (PartIter1=StartOuterLoop;PartIter1!=prevIter;PartIter1++){
-	ThePair->SetTrack1(*PartIter1);
-	nextIter = PartIter1;
+      for (tPartIter1=tStartOuterLoop;tPartIter1!=prevIter;tPartIter1++){
+	tThePair->SetTrack1(*tPartIter1);
+	nextIter = tPartIter1;
 	nextIter++;
-	for (PartIter2 = nextIter; PartIter2!=EndOuterLoop;PartIter2++){
-	  ThePair->SetTrack2(*PartIter2);
+	for (tPartIter2 = nextIter; tPartIter2!=tEndOuterLoop;tPartIter2++){
+	  tThePair->SetTrack2(*tPartIter2);
 	  // The following lines have to be uncommented if you want pairCutMonitors
 	  // they are not in for speed reasons
-	  // bool tmpPassPair = mPairCut->Pass(ThePair);
-          // mPairCut->FillCutMonitor(ThePair, tmpPassPair);
+	  // bool tmpPassPair = mPairCut->Pass(tThePair);
+          // mPairCut->FillCutMonitor(tThePair, tmpPassPair);
 	  // if ( tmpPassPair ) {
-	  if (fPairCut->Pass(ThePair)){
-	    for (CorrFctnIter=fCorrFctnCollection->begin();
-		 CorrFctnIter!=fCorrFctnCollection->end();CorrFctnIter++){
-	      AliFemtoLikeSignCorrFctn* CorrFctn = dynamic_cast<AliFemtoLikeSignCorrFctn*>(*CorrFctnIter);
-	      if (CorrFctn) CorrFctn->AddLikeSignPositivePair(ThePair);
+	  if (fPairCut->Pass(tThePair)){
+	    for (tCorrFctnIter=fCorrFctnCollection->begin();
+		 tCorrFctnIter!=fCorrFctnCollection->end();tCorrFctnIter++){
+	      AliFemtoLikeSignCorrFctn* CorrFctn = dynamic_cast<AliFemtoLikeSignCorrFctn*>(*tCorrFctnIter);
+	      if (CorrFctn) CorrFctn->AddLikeSignPositivePair(tThePair);
 	    }
 	  }  // if passed pair cut
 	}    // loop over second particle
@@ -199,24 +197,24 @@ void AliFemtoLikeSignAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
       cout << "AliFemtoLikeSignAnalysis::ProcessEvent() - like sign first collection done" << endl;
 #endif
       // like sign second partilce collection pairs
-      prevIter = EndInnerLoop;
+      prevIter = tEndInnerLoop;
       prevIter--;
-      for (PartIter1=StartInnerLoop;PartIter1!=prevIter;PartIter1++){
-	ThePair->SetTrack1(*PartIter1);
-	nextIter = PartIter1;
+      for (tPartIter1=tStartInnerLoop;tPartIter1!=prevIter;tPartIter1++){
+	tThePair->SetTrack1(*tPartIter1);
+	nextIter = tPartIter1;
 	nextIter++;
-	for (PartIter2 = nextIter; PartIter2!=EndInnerLoop;PartIter2++){
-	  ThePair->SetTrack2(*PartIter2);
+	for (tPartIter2 = nextIter; tPartIter2!=tEndInnerLoop;tPartIter2++){
+	  tThePair->SetTrack2(*tPartIter2);
 	  // The following lines have to be uncommented if you want pairCutMonitors
 	  // they are not in for speed reasons
-	  // bool tmpPassPair = mPairCut->Pass(ThePair);
-          // mPairCut->FillCutMonitor(ThePair, tmpPassPair);
+	  // bool tmpPassPair = mPairCut->Pass(tThePair);
+          // mPairCut->FillCutMonitor(tThePair, tmpPassPair);
 	  // if ( tmpPassPair ) {
-	  if (fPairCut->Pass(ThePair)){
-	    for (CorrFctnIter=fCorrFctnCollection->begin();
-		 CorrFctnIter!=fCorrFctnCollection->end();CorrFctnIter++){
-	      AliFemtoLikeSignCorrFctn* CorrFctn = dynamic_cast<AliFemtoLikeSignCorrFctn*>(*CorrFctnIter);
-	      if (CorrFctn) CorrFctn->AddLikeSignNegativePair(ThePair);
+	  if (fPairCut->Pass(tThePair)){
+	    for (tCorrFctnIter=fCorrFctnCollection->begin();
+		 tCorrFctnIter!=fCorrFctnCollection->end();tCorrFctnIter++){
+	      AliFemtoLikeSignCorrFctn* tCorrFctn = dynamic_cast<AliFemtoLikeSignCorrFctn*>(*tCorrFctnIter);
+	      if (tCorrFctn) tCorrFctn->AddLikeSignNegativePair(tThePair);
 	    }
 	  }  // if passed pair cut
 	}    // loop over second particle
@@ -234,33 +232,33 @@ void AliFemtoLikeSignAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
 	cout << "Mixing Buffer not full -gotta wait " << MixingBuffer()->size() << endl;
       }
       if (MixingBufferFull()){
-	StartOuterLoop = picoEvent->FirstParticleCollection()->begin();
-	EndOuterLoop   = picoEvent->FirstParticleCollection()->end();
+	tStartOuterLoop = picoEvent->FirstParticleCollection()->begin();
+	tEndOuterLoop   = picoEvent->FirstParticleCollection()->end();
 	AliFemtoPicoEvent* storedEvent;
 	AliFemtoPicoEventIterator picoEventIter;
 	for (picoEventIter=MixingBuffer()->begin();picoEventIter!=MixingBuffer()->end();picoEventIter++){
 	  storedEvent = *picoEventIter;
 	  if (AnalyzeIdenticalParticles()){
-	    StartInnerLoop = storedEvent->FirstParticleCollection()->begin();
-	    EndInnerLoop = storedEvent->FirstParticleCollection()->end();
+	    tStartInnerLoop = storedEvent->FirstParticleCollection()->begin();
+	    tEndInnerLoop = storedEvent->FirstParticleCollection()->end();
 	  }
 	  else{
-	    StartInnerLoop = storedEvent->SecondParticleCollection()->begin();
-	    EndInnerLoop = storedEvent->SecondParticleCollection()->end();
+	    tStartInnerLoop = storedEvent->SecondParticleCollection()->begin();
+	    tEndInnerLoop = storedEvent->SecondParticleCollection()->end();
 	  }
-	  for (PartIter1=StartOuterLoop;PartIter1!=EndOuterLoop;PartIter1++){
-	    ThePair->SetTrack1(*PartIter1);
-	    for (PartIter2=StartInnerLoop;PartIter2!=EndInnerLoop;PartIter2++){
-	      ThePair->SetTrack2(*PartIter2);
-	      // testing...	      cout << "ThePair defined... going to pair cut... ";
-	      if (fPairCut->Pass(ThePair)){
-		// testing...		cout << " ThePair passed PairCut... ";
-		for (CorrFctnIter=fCorrFctnCollection->begin();
-		     CorrFctnIter!=fCorrFctnCollection->end();CorrFctnIter++){
-		  AliFemtoLikeSignCorrFctn* CorrFctn = dynamic_cast<AliFemtoLikeSignCorrFctn*>(*CorrFctnIter);
-		  if (CorrFctn) { 
-		    CorrFctn->AddMixedPair(ThePair);
-		    //cout << " ThePair has been added to MixedPair method " << endl;
+	  for (tPartIter1=tStartOuterLoop;tPartIter1!=tEndOuterLoop;tPartIter1++){
+	    tThePair->SetTrack1(*tPartIter1);
+	    for (tPartIter2=tStartInnerLoop;tPartIter2!=tEndInnerLoop;tPartIter2++){
+	      tThePair->SetTrack2(*tPartIter2);
+	      // testing...	      cout << "tThePair defined... going to pair cut... ";
+	      if (fPairCut->Pass(tThePair)){
+		// testing...		cout << " tThePair passed PairCut... ";
+		for (tCorrFctnIter=fCorrFctnCollection->begin();
+		     tCorrFctnIter!=fCorrFctnCollection->end();tCorrFctnIter++){
+		  AliFemtoLikeSignCorrFctn* tCorrFctn = dynamic_cast<AliFemtoLikeSignCorrFctn*>(*tCorrFctnIter);
+		  if (tCorrFctn) { 
+		    tCorrFctn->AddMixedPair(tThePair);
+		    //cout << " tThePair has been added to MixedPair method " << endl;
 		  }
 		}
 	      }  // if passed pair cut
@@ -272,7 +270,7 @@ void AliFemtoLikeSignAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
 	delete MixingBuffer()->back();
 	MixingBuffer()->pop_back();
       }  // if mixing buffer is full
-      delete ThePair;
+      delete tThePair;
       MixingBuffer()->push_front(picoEvent);  // store the current pico-event in buffer
     }   // if currentEvent is accepted by currentAnalysis
     EventEnd(hbtEvent);  // cleanup for EbyE 

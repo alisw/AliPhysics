@@ -1,36 +1,10 @@
-/***************************************************************************
- *
- * $Id$
- *
- * Author: Mike Lisa, Ohio State, lisa@mps.ohio-state.edu
- ***************************************************************************
- *
- * Description: part of STAR HBT Framework: AliFemtoMaker package
- *
- ***************************************************************************
- *
- * $Log$
- * Revision 1.2  2007/05/03 09:42:29  akisiel
- * Fixing Effective C++ warnings
- *
- * Revision 1.1.1.1  2007/04/25 15:38:41  panos
- * Importing the HBT code dir
- *
- * Revision 1.1.1.1  2007/03/07 10:14:49  mchojnacki
- * First version on CVS
- *
- * Revision 1.3  2002/11/01 20:45:53  magestro
- * Fixed bug in 3rd dimension of event collection vector, probably never encountered
- *
- * Revision 1.2  2001/11/11 18:34:13  laue
- * AliFemtoPicoEventCollectionVectorHideAway: updated for 3d grid
- * AliFemtoVertexMultAnalysis: new
- *
- * Revision 1.1  2000/07/16 21:44:11  laue
- * Collection and analysis for vertex dependent event mixing
- *
- *
- **************************************************************************/
+///////////////////////////////////////////////////////////////////////////
+//                                                                       //
+// AliFemtoPicoEventCollectionVectorHideAway: a helper class for         //
+// managing many mixing buffers with up to three variables used for      //
+// binning.                                                              //
+//                                                                       //
+///////////////////////////////////////////////////////////////////////////
 #include "AliFemtoPicoEventCollectionVectorHideAway.h"
 
 // -----------------------------------
@@ -45,6 +19,7 @@ AliFemtoPicoEventCollectionVectorHideAway::AliFemtoPicoEventCollectionVectorHide
   fCollection(0),
   fCollectionVector(0)
 {
+  // basic constructor
   fBinsTot = fBinsx * fBinsy * fBinsz;
   fStepx=0;  fStepx = (fMaxx-fMinx)/fBinsx;
   fStepy=0;  fStepy = (fMaxy-fMiny)/fBinsy;
@@ -60,6 +35,7 @@ AliFemtoPicoEventCollectionVectorHideAway::AliFemtoPicoEventCollectionVectorHide
 }
 // -----------------------------------
 AliFemtoPicoEventCollection* AliFemtoPicoEventCollectionVectorHideAway::PicoEventCollection(int ix, int iy, int iz) { 
+  // return mixing event collection from a given bin
   if ( ix<0 || ix >= fBinsx) return 0;
   if ( iy<0 || iy >= fBinsy) return 0;
   if ( iz<0 || iz >= fBinsz) return 0;
@@ -70,6 +46,7 @@ AliFemtoPicoEventCollection* AliFemtoPicoEventCollectionVectorHideAway::PicoEven
 }
 // -----------------------------------
 AliFemtoPicoEventCollection* AliFemtoPicoEventCollectionVectorHideAway::PicoEventCollection(double x, double y, double z) {
+  // return mixing event collection for given values on x, y, z axes
   int ix,iy,iz;
   ix=0;iy=0;iz=0;
 
@@ -89,7 +66,7 @@ AliFemtoPicoEventCollectionVectorHideAway::AliFemtoPicoEventCollectionVectorHide
   fCollection(0),
   fCollectionVector(0)
 {
-
+  // copy constructor
   fBinsTot = aColl.fBinsTot;
   fBinsx = aColl.fBinsx;
   fBinsy = aColl.fBinsy;
@@ -113,11 +90,13 @@ AliFemtoPicoEventCollectionVectorHideAway::AliFemtoPicoEventCollectionVectorHide
 //___________________________________
 AliFemtoPicoEventCollectionVectorHideAway::~AliFemtoPicoEventCollectionVectorHideAway()
 {
+  // destructor
   fCollectionVector.clear();
 }
 //___________________________________
 AliFemtoPicoEventCollectionVectorHideAway& AliFemtoPicoEventCollectionVectorHideAway::operator=(const AliFemtoPicoEventCollectionVectorHideAway& aColl)
 {
+  // assignment operator
   if (this == &aColl)
     return *this;
 

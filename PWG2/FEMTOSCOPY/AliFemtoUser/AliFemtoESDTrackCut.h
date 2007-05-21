@@ -1,35 +1,15 @@
-/***************************************************************************
- *
- * $Id$
- *
- * 
- ***************************************************************************
- *
- * 
- *              
- *
- ***************************************************************************
- *
- * $Log$
- * Revision 1.1.1.1  2007/04/25 15:38:41  panos
- * Importing the HBT code dir
- *
- * Revision 1.4  2007/03/20 09:37:13  mchojnacki
- * *** empty log message ***
- *
- * Revision 1.3  2007/03/13 15:30:03  mchojnacki
- * adding reader for simulated data
- *
- * Revision 1.2  2007/03/08 14:58:03  mchojnacki
- * adding some alice stuff
- *
- * Revision 1.1.1.1  2007/03/07 10:14:49  mchojnacki
- * First version on CVS
- *
- **************************************************************************/
+///////////////////////////////////////////////////////////////////////////
+//                                                                       //
+// AliFemtoESDTrackCut: A basic track cut that used information from     //
+// ALICE ESD to accept or reject the track.                              //  
+// Enables the selection on charge, transverse momentum, rapidity,       //
+// pid probabilities, number of ITS and TPC clusters                     //
+// Author: Marek Chojnacki (WUT), mchojnacki@knf.pw.edu.pl               //
+//                                                                       //
+///////////////////////////////////////////////////////////////////////////
 
-#ifndef AliFemtoESDTrackCut_hh
-#define AliFemtoESDTrackCut_hh
+#ifndef ALIFEMTOESDTRACKCUT_H
+#define ALIFEMTOESDTRACKCUT_H
 
 //#ifndef StMaker_H
 //#include "StMaker.h"
@@ -40,48 +20,48 @@
 class AliFemtoESDTrackCut : public AliFemtoTrackCut 
 {
 
-    public:
-           AliFemtoESDTrackCut();
-	   //~AliFemtoESDTrackCut();
+ public:
+  AliFemtoESDTrackCut();
+  //~AliFemtoESDTrackCut();
 
-	   virtual bool Pass(const AliFemtoTrack*);
+  virtual bool Pass(const AliFemtoTrack* aTrack);
 
-	   virtual AliFemtoString Report();
+  virtual AliFemtoString Report();
 
-	   void SetPt(const float& lo, const float& hi);
-	   void SetRapidity(const float& lo, const float& hi);
-	   void SetCharge(const int&);
-	   void SetPidProbElectron(const float& lo, const float& hi);
-	   void SetPidProbPion(const float& lo, const float& hi);
-	   void SetPidProbKaon(const float& lo, const float& hi);
-	   void SetPidProbProton(const float& lo, const float& hi);
-	   void SetPidProbMuon(const float& lo, const float& hi);
-	   void SetLabel(const bool& flag);
-	   void SetStatus(const long& );
-	   void SetminTPCclsF(const short& );
-	   void SetminITScls(const int& );
+  void SetPt(const float& lo, const float& hi);
+  void SetRapidity(const float& lo, const float& hi);
+  void SetCharge(const int&);
+  void SetPidProbElectron(const float& lo, const float& hi);
+  void SetPidProbPion(const float& lo, const float& hi);
+  void SetPidProbKaon(const float& lo, const float& hi);
+  void SetPidProbProton(const float& lo, const float& hi);
+  void SetPidProbMuon(const float& lo, const float& hi);
+  void SetLabel(const bool& flag);
+  void SetStatus(const long& w);
+  void SetminTPCclsF(const short& s);
+  void SetminITScls(const int& s);
   
-	   private:   // here are the quantities I want to cut on...
+ private:   // here are the quantities I want to cut on...
 
-	   int               fCharge;
-	   float             fPt[2];
-	   float             fRapidity[2];
-	   float             fPidProbElectron[2]; // new
-	   float             fPidProbPion[2]; // new
-	   float             fPidProbKaon[2]; // new
-	   float             fPidProbProton[2]; // new
-	   float             fPidProbMuon[2]; //new 
-	   bool              fLabel;//if true label<0 will not pass throught 
-	   long              fStatus;//staus flag
-	   short             fminTPCclsF;//min number of findable clusters in the TPC
-	   int               fminITScls;//min number of clusters assigned in the ITS 
-	   long              fNTracksPassed;
-	   long              fNTracksFailed;
+  int               fCharge;             // particle charge
+  float             fPt[2];              // bounds for transverse momentum
+  float             fRapidity[2];        // bounds for rapidity
+  float             fPidProbElectron[2]; // bounds for electron probability
+  float             fPidProbPion[2];     // bounds for pion probability
+  float             fPidProbKaon[2];     // bounds for kaon probability
+  float             fPidProbProton[2];   // bounds for proton probability
+  float             fPidProbMuon[2];     // bounds for muon probability 
+  bool              fLabel;              // if true label<0 will not pass throught 
+  long              fStatus;             // staus flag
+  short             fminTPCclsF;         // min number of findable clusters in the TPC
+  int               fminITScls;          // min number of clusters assigned in the ITS 
+  long              fNTracksPassed;      // passed tracks count
+  long              fNTracksFailed;      // failed tracks count
 
 #ifdef __ROOT__ 
   ClassDef(AliFemtoESDTrackCut, 1)
 #endif
-};
+    };
 
 
 inline void AliFemtoESDTrackCut::SetPt(const float& lo, const float& hi){fPt[0]=lo; fPt[1]=hi;}

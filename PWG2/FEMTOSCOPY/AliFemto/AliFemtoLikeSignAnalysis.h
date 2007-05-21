@@ -1,12 +1,11 @@
-/***************************************************************************
- *      This is an analysis which calculated the background from like sign
- *      pairs in the same event
- *      Frank Laue, Ohio State, 2000
- ***************************************************************************/
-
-
-#ifndef AliFemtoLikeSignAnalysis_hh
-#define AliFemtoLikeSignAnalysis_hh
+///////////////////////////////////////////////////////////////////////////
+//                                                                       //
+// This is an analysis which calculated the background from like sign    //
+// pairs in the same event                                               //
+//                                                                       //
+///////////////////////////////////////////////////////////////////////////
+#ifndef ALIFEMTOLIKESIGNANALYSIS_H
+#define ALIFEMTOLIKESIGNANALYSIS_H
 //#ifndef StMaker_H
 //#include "StMaker.h"
 //#endif

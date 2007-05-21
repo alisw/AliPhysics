@@ -68,19 +68,101 @@ void AliFemtoModelManager::AcceptWeightGenerator(AliFemtoModelWeightGenerator *a
 //_____________________________________________
 Double_t AliFemtoModelManager::GetWeight(AliFemtoPair *aPair)
 {
+  if (!fWeightGenerator) {
+    cout << "No weight generator set! Cannot calculate weight" << endl;
+    exit(0);
+  }
   // Return femtoscopic weight for a fiven pair
   if (fCreateCopyHiddenInfo) {
+    // Try to gess particle masses and pid from the weight generator
+    Double_t tMass1, tMass2;
+    Int_t tPid1, tPid2;
+    if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::fgkPionPlusPionPlus) {
+      tMass1 = 0.13957;
+      tMass2 = 0.13957;
+      tPid1 = 211;
+      tPid2 = 211;
+    }
+    if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::fgkPionPlusPionMinus) {
+      tMass1 = 0.13957;
+      tMass2 = 0.13957;
+      tPid1 = 211;
+      tPid2 = -211;
+    }
+    if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::fgkKaonPlusKaonPlus) {
+      tMass1 = 0.493677;
+      tMass2 = 0.493677;
+      tPid1 = 321;
+      tPid2 = 321;
+    }
+    if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::fgkKaonPlusKaonMinus) {
+      tMass1 = 0.493677;
+      tMass2 = 0.493677;
+      tPid1 = 321;
+      tPid2 = -321;
+    }
+    if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::fgkProtonProton) {
+      tMass1 = 0.938272;
+      tMass2 = 0.938272;
+      tPid1 = 2212;
+      tPid2 = 2212;
+    }
+    if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::fgkProtonAntiproton) {
+      tMass1 = 0.938272;
+      tMass2 = 0.938272;
+      tPid1 = 2212;
+      tPid2 = -2212;
+    }
+    if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::fgkPionPlusKaonPlus) {
+      tMass1 = 0.13957;
+      tMass2 = 0.493677;
+      tPid1 = 211;
+      tPid2 = 321;
+    }
+    if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::fgkPionPlusKaonMinus) {
+      tMass1 = 0.13957;
+      tMass2 = 0.493677;
+      tPid1 = 211;
+      tPid2 = -321;
+    }
+    if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::fgkPionPlusProton) {
+      tMass1 = 0.13957;
+      tMass2 = 0.938272;
+      tPid1 = 211;
+      tPid2 = 2212;
+    }
+    if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::fgkPionPlusAntiproton) {
+      tMass1 = 0.13957;
+      tMass2 = 0.938272;
+      tPid1 = 211;
+      tPid2 = -2212;
+    }
+    if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::fgkKaonPlusProton) {
+      tMass1 = 0.493677;
+      tMass2 = 0.938272;
+      tPid1 = 321;
+      tPid2 = 2212;
+    }
+    if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::fgkKaonPlusAntiproton) {
+      tMass1 = 0.493677;
+      tMass2 = 0.938272;
+      tPid1 = 321;
+      tPid2 = -2212;
+    }
+
     if (!(aPair->Track1()->HiddenInfo())) {
       AliFemtoModelHiddenInfo *inf1 = new AliFemtoModelHiddenInfo();
       inf1->SetTrueMomentum(aPair->Track1()->Track()->P());
-      inf1->SetMass(0.13957);
+      inf1->SetMass(tMass1);
+      inf1->SetPDGPid(tPid1);
       aPair->Track1()->SetHiddenInfo(inf1);
       delete inf1;
     }
     if (!(aPair->Track2()->HiddenInfo())) {
       AliFemtoModelHiddenInfo *inf2 = new AliFemtoModelHiddenInfo();
       inf2->SetTrueMomentum(aPair->Track2()->Track()->P());
-      inf2->SetMass(0.13957);
+      inf2->SetMass(tMass2);
+      inf2->SetPDGPid(tPid2);
       aPair->Track2()->SetHiddenInfo(inf2);
       delete inf2;
     }
