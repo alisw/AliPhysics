@@ -38,6 +38,7 @@ public:
 //  MC Application
 //
    virtual  void  ConstructGeometry();
+   virtual  Bool_t  MisalignGeometry();
    virtual  void  ConstructOpGeometry();
    virtual  void  InitGeometry();     
    virtual  void  SetAllAlignableVolumes();     

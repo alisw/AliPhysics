@@ -40,6 +40,7 @@
 #include "AliStack.h"
 #include "AliMagF.h"
 #include "AliTrackReference.h"
+#include "AliSimulation.h"
 
 
 ClassImp(AliMC)
@@ -177,6 +178,14 @@ void  AliMC::ConstructGeometry()
   }
   
 }
+
+//_______________________________________________________________________
+Bool_t  AliMC::MisalignGeometry() 
+{
+// Call misalignment code if AliSimulation object was defined.
+   if (!AliSimulation::GetInstance()) return kFALSE;
+   return AliSimulation::GetInstance()->MisalignGeometry(gAlice->GetRunLoader());
+}   
 
 //_______________________________________________________________________
 void  AliMC::ConstructOpGeometry() 
