@@ -536,8 +536,8 @@ void AliTPCCalPad::MakeTree(const char * fileName, TObjArray * array, const char
       //
       // fill vectors of variable per pad
       //
-      TVectorF *posArray = new TVectorF[6];
-      for (Int_t ivalue = 0; ivalue < 6; ivalue++)
+      TVectorF *posArray = new TVectorF[8];
+      for (Int_t ivalue = 0; ivalue < 8; ivalue++)
          posArray[ivalue].ResizeTo(tpcROCinstance->GetNChannels(isector));
 
       Float_t posG[3] = {0};
@@ -553,6 +553,8 @@ void AliTPCCalPad::MakeTree(const char * fileName, TObjArray * array, const char
             posArray[3][ichannel] = posL[1];
             posArray[4][ichannel] = posG[0];
             posArray[5][ichannel] = posG[1];
+            posArray[6][ichannel] = (Int_t)(ipad - (Double_t)(tpcROCinstance->GetNPads(isector, irow))/2);
+            posArray[7][ichannel] = ichannel;
             
             // loop over array containing AliTPCCalPads
             for (Int_t ivalue = 0; ivalue < arrayEntries; ivalue++) {
@@ -609,7 +611,9 @@ void AliTPCCalPad::MakeTree(const char * fileName, TObjArray * array, const char
          "lx.=" << &posArray[2] <<
          "ly.=" << &posArray[3] <<
          "gx.=" << &posArray[4] <<
-         "gy.=" << &posArray[5];
+         "gy.=" << &posArray[5] <<
+         "rpad.=" << &posArray[6] <<
+         "channel.=" << &posArray[7];
          
       cstream << "calPads" <<
          "\n";
@@ -617,6 +621,7 @@ void AliTPCCalPad::MakeTree(const char * fileName, TObjArray * array, const char
       delete[] posArray;
       delete[] vectorArray;
    }
+   
    delete[] names;
    if (mapFileName) {
       delete mapIROCs;
