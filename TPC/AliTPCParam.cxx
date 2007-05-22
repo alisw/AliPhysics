@@ -683,6 +683,19 @@ Bool_t AliTPCParam::ReadGeoMatrices(){
   return kTRUE;
 }
 
+TGeoHMatrix *  AliTPCParam::Tracking2LocalMatrix(const TGeoHMatrix * geoMatrix, Int_t sector) const{
+  //
+  // make local to tracking matrix
+  //
+  Double_t sectorAngle = 20.*(sector%18)+10;
+  TGeoHMatrix *newMatrix = new TGeoHMatrix();
+  newMatrix->RotateZ(sectorAngle);
+  newMatrix->MultiplyLeft(&(geoMatrix->Inverse()));
+  return newMatrix;
+}
+
+
+
 
 Bool_t AliTPCParam::GetStatus() const
 {

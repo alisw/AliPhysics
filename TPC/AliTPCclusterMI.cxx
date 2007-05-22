@@ -28,6 +28,7 @@
 
 #include "AliTPCclusterMI.h"
 #include "AliTPCclusterInfo.h"
+#include "AliGeomManager.h"
 #include "AliLog.h"
 
 ClassImp(AliTPCclusterMI)
@@ -134,4 +135,16 @@ Int_t AliTPCclusterMI::Compare(const TObject* obj) const
   // compare according y
   AliTPCclusterMI * o2 = (AliTPCclusterMI*)obj;
   return (o2->GetY()>GetY())? -1:1; 
+}
+
+
+void AliTPCclusterMI::SetDetector(Int_t detector){
+  //
+  // set volume ID 
+  //  
+  fDetector = (UChar_t)(detector%72);
+  AliGeomManager::ELayerID id = (fDetector<36) ? 
+    AliGeomManager::kTPC1 :AliGeomManager::kTPC2 ;
+  Int_t modId = (fDetector<36)?fDetector: fDetector-36;
+  SetVolumeId(AliGeomManager::LayerToVolUID(id,modId));  
 }

@@ -1,7 +1,7 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "alles.h"
 #include "AliTPCtracker.h"
-#include "TView.h"
+#include "TView3D.h"
 #include "TPolyMarker3D.h"
 #include "AliSimDigits.h"
 #include "AliTPCParam.h"
@@ -13,6 +13,7 @@
   Author:   marian.ivanov@cern.ch
 
   How to use ?
+  TGeoManager::Import("geometry.root");
   .L AliTPCDisplayClustersMI.C+
   AliTPCDisplayClusters disp;
   disp.Init(0,0);   //specify event number, and threshold for the noise
@@ -123,7 +124,7 @@ void AliTPCDisplayClusters::DisplayClusters(Int_t first, Int_t last)
   Int_t MASK = 10000000;
 
   TCanvas *c1=new TCanvas("cdisplay", "Cluster display",0,0,700,730);
-  TView *v=new TView(1);
+  TView3D *v=new TView3D();
   v->SetRange(-330,-360,-330,360,360,1710);
   c1->Clear();
   c1->SetFillColor(1);
@@ -152,14 +153,17 @@ void AliTPCDisplayClusters::DisplayClusters(Int_t first, Int_t last)
 	Float_t cs, sn, tmp;
 	fParam->AdjustCosSin(sec,cs,sn);
 	tmp = x*cs-y*sn; y= x*sn+y*cs; x=tmp; 
+	Float_t clxyz[3];
+	cl->GetGlobalXYZ(clxyz);
+
 	Int_t trackId = cl->GetLabel(0);
 	if ( (last>0) &&trackId>last) continue;
 	if (trackId<first) continue;
 	if (trackId < MASK-1) {
-	  pmSignal->SetPoint(imarSignal,x,y,z);
+	  pmSignal->SetPoint(imarSignal,clxyz[0],clxyz[1],clxyz[2]);
 	  imarSignal++;
 	} else {
-	  pm->SetPoint(imarBgr,x,y,z);
+	  pm->SetPoint(imarBgr,clxyz[0],clxyz[1],clxyz[2]);
 	  imarBgr++;
 	}          
       }
@@ -178,21 +182,21 @@ void AliTPCDisplayClusters::DisplayClusters(Int_t first, Int_t last)
   }
   
   
-  TNode * main = (TNode*)((fGeom->GetListOfNodes())->First());
-  TIter next(main->GetListOfNodes());
-  TNode  *module=0;
-  while((module = (TNode*)next())) {
-    char ch[100];
-    sprintf(ch,"%s\n",module->GetTitle());
-    //printf("%s\n",module->GetTitle());
-    if (ch[0]=='T'&&ch[1]=='P' && ch[2]=='C')  //if TPC draw
-      module->SetVisibility(3);
-    else
-      module->SetVisibility(-1);
-  }
+ //  TNode * main = (TNode*)((fGeom->GetListOfNodes())->First());
+//   TIter next(main->GetListOfNodes());
+//   TNode  *module=0;
+//   while((module = (TNode*)next())) {
+//     char ch[100];
+//     sprintf(ch,"%s\n",module->GetTitle());
+//     //printf("%s\n",module->GetTitle());
+//     if (ch[0]=='T'&&ch[1]=='P' && ch[2]=='C')  //if TPC draw
+//       module->SetVisibility(3);
+//     else
+//       module->SetVisibility(-1);
+//   }
   
   
-  fGeom->Draw("same");
+//   fGeom->Draw("same");
   c1->Modified(); c1->Update(); 
   
   

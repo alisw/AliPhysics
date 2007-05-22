@@ -24,7 +24,7 @@ class AliTPCParam : public AliDetectorParam {
 public:
   AliTPCParam(); 
   virtual ~AliTPCParam();
-  
+  TGeoHMatrix *  Tracking2LocalMatrix(const TGeoHMatrix * geoMatrix, Int_t sector) const;  
   virtual Bool_t  Transform(Float_t *xyz, Int_t *index, Int_t* oindex);
   //transformation from input coodination system to output coordination system  
   Int_t  Transform0to1(Float_t *xyz, Int_t *index) const;

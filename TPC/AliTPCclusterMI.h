@@ -26,7 +26,7 @@ public:
   inline  void Use(Int_t inc=10);
   virtual Int_t GetDetector() const {return fDetector;}
   virtual Int_t GetRow() const {return fRow;}
-  virtual void SetDetector(Int_t detector){fDetector = (UChar_t)(detector%256);}
+  virtual void SetDetector(Int_t detector);
   virtual void SetRow(Int_t row){fRow = (UChar_t)(row%256);}  
   virtual void SetTimeBin(Float_t timeBin){ fTimeBin= timeBin;}
   virtual void SetPad(Float_t pad){ fPad = pad;}
