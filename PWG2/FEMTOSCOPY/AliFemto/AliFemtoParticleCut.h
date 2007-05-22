@@ -1,13 +1,17 @@
 ////////////////////////////////////////////////////////////////////////////////
-/// AliFemtoParticleCut - the pure virtual base class for the particle cut   ///
-/// All particle cuts must inherit from this one                             ///
+//                                                                            //
+// AliFemtoParticleCut - the pure virtual base class for the particle cut     //
+// All particle cuts must inherit from this one                               //
+//                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef AliFemtoParticleCut_hh
-#define AliFemtoParticleCut_hh
+#ifndef ALIFEMTOPARTICLECUT_H
+#define ALIFEMTOPARTICLECUT_H
 
 #include "AliFemtoTypes.h"
 #include "AliFemtoCutMonitorHandler.h"
+#include <TObjString.h>
+#include <TList.h>
 
 class AliFemtoBaseAnalysis;
 
@@ -22,6 +26,7 @@ public:
   AliFemtoParticleCut& operator=(const AliFemtoParticleCut& aCut);
 
   virtual AliFemtoString Report() =0;    // user-written method to return string describing cuts
+  virtual TList* ListSettings();      // user-written list of settings which is stored in the result file
 
   double Mass(){return fMass;};       // mass of the particle being selected
   virtual void SetMass(const double& mass) {fMass = mass;};
@@ -54,4 +59,13 @@ inline AliFemtoParticleCut::AliFemtoParticleCut(const AliFemtoParticleCut& c): A
 }
 inline void AliFemtoParticleCut::SetAnalysis(AliFemtoBaseAnalysis* analysis) { fyAnalysis = analysis; }
 inline AliFemtoParticleCut& AliFemtoParticleCut::operator=(const AliFemtoParticleCut& aCut) { if (this == &aCut) return *this; fyAnalysis = aCut.fyAnalysis; fMass=aCut.fMass; return *this; }
+  inline TList *AliFemtoParticleCut::ListSettings() { 
+    TList *tListSetttings = new TList(); 
+    char buf[100];
+    snprintf(buf, 100, "AliFemtoParticleCut.mass=%lf", fMass);
+    TObjString *str = new TObjString(buf);
+    tListSetttings->Add(str);
+    return tListSetttings;
+  }
+  
 #endif

@@ -501,3 +501,40 @@ void AliFemtoAnalysis::AddEventProcessed() {
   // Increase count of processed events
   fNeventsProcessed++;
 }
+//_________________________
+TList* AliFemtoAnalysis::ListSettings()
+{
+  TList *tListSettings = new TList();
+
+  TList *p1Cut = fFirstParticleCut->ListSettings();
+
+  TListIter nextp1(p1Cut);
+  while (TObject *obj = nextp1.Next()) {
+    TString cuts(obj->GetName());
+    cuts.Prepend("AliFemtoAnalysis.");
+    tListSettings->Add(new TObjString(cuts.Data()));
+  }
+
+  if (fSecondParticleCut != fFirstParticleCut) {
+    TList *p2Cut = fSecondParticleCut->ListSettings();
+    
+    TIter nextp2(p2Cut);
+    while (TObject *obj = nextp2()) {
+      TString cuts(obj->GetName());
+      cuts.Prepend("AliFemtoAnalysis.");
+      tListSettings->Add(new TObjString(cuts.Data()));
+    }
+  }
+
+  TList *pairCut = fPairCut->ListSettings();
+
+  TIter nextpair(pairCut);
+  while (TObject *obj = nextpair()) {
+    TString cuts(obj->GetName());
+    cuts.Prepend("AliFemtoAnalysis.");
+    tListSettings->Add(new TObjString(cuts.Data()));
+  }
+
+  return tListSettings;
+  
+}

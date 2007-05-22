@@ -27,6 +27,7 @@ class AliFemtoESDTrackCut : public AliFemtoTrackCut
   virtual bool Pass(const AliFemtoTrack* aTrack);
 
   virtual AliFemtoString Report();
+  virtual TList *ListSettings();
 
   void SetPt(const float& lo, const float& hi);
   void SetRapidity(const float& lo, const float& hi);

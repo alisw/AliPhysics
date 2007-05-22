@@ -8,6 +8,9 @@
  ***************************************************************************
  *
  * $Log$
+ * Revision 1.1  2007/05/16 10:25:06  akisiel
+ * Making the directory structure of AliFemtoUser flat. All files go into one common directory
+ *
  * Revision 1.1.1.1  2007/04/25 15:38:41  panos
  * Importing the HBT code dir
  *
@@ -35,6 +38,8 @@ public:
 
   virtual bool Pass(const AliFemtoPair*);
   virtual AliFemtoString Report();
+  virtual TList *ListSettings();
+
   void Setqlong(const float& lo, const float& hi);
   void Setqout(const float& lo, const float& hi);
   void Setqside(const float& lo, const float& hi);

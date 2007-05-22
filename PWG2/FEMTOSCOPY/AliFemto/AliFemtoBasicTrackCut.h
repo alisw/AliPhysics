@@ -25,7 +25,7 @@ public:
   virtual bool Pass(const AliFemtoTrack* tr);
 
   virtual AliFemtoString Report();
-
+  virtual TList *ListSettings();
 
   void SetNSigmaPion(const float& lo, const float& hi);
   void SetNSigmaKaon(const float& lo, const float& hi);

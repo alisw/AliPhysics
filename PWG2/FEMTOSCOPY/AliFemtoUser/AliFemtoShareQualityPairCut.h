@@ -32,6 +32,7 @@ public:
 
   virtual bool Pass(const AliFemtoPair*);
   virtual AliFemtoString Report();
+  virtual TList *ListSettings();
   AliFemtoShareQualityPairCut* Clone();
   void SetShareQualityMax(Double_t aAliFemtoShareQualityMax);
   Double_t GetAliFemtoShareQualityMax();

@@ -11,6 +11,9 @@
  ***************************************************************************
  *
  * $Log$
+ * Revision 1.1  2007/05/16 10:22:11  akisiel
+ * Making the directory structure of AliFemto flat. All files go into one common directory
+ *
  * Revision 1.2  2007/05/03 09:41:06  akisiel
  * Fixing Effective C++ warnings
  *
@@ -79,6 +82,7 @@ public:
 
   virtual bool Pass(const AliFemtoPair*);
   virtual AliFemtoString Report();
+  virtual TList *ListSettings();
   AliFemtoDummyPairCut* Clone();
 
 

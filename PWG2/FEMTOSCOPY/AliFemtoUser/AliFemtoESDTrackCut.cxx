@@ -11,6 +11,9 @@
  ***************************************************************************
  *
  * $Log$
+ * Revision 1.2  2007/05/21 10:38:25  akisiel
+ * More coding rule conformance
+ *
  * Revision 1.1  2007/05/16 10:25:06  akisiel
  * Making the directory structure of AliFemtoUser flat. All files go into one common directory
  *
@@ -211,4 +214,49 @@ AliFemtoString AliFemtoESDTrackCut::Report()
   tStemp += tCtemp;
   AliFemtoString returnThis = tStemp;
   return returnThis;
+}
+TList *AliFemtoESDTrackCut::ListSettings()
+{
+  // return a list of settings in a writable form
+  TList *tListSetttings = new TList();
+  char buf[200];
+  snprintf(buf, 200, "AliFemtoESDTrackCut.mass=%lf", this->Mass());
+  tListSetttings->AddLast(new TObjString(buf));
+
+  snprintf(buf, 200, "AliFemtoESDTrackCut.charge=%i", fCharge);
+  tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobpion.minimum=%lf", fPidProbPion[0]);
+  tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobpion.maximum=%lf", fPidProbPion[1]);
+  tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobkaon.minimum=%lf", fPidProbKaon[0]);
+  tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobkaon.maximum=%lf", fPidProbKaon[1]);
+  tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobproton.minimum=%lf", fPidProbProton[0]);
+  tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobproton.maximum=%lf", fPidProbProton[1]);
+  tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobelectron.minimum=%lf", fPidProbElectron[0]);
+  tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobelectron.maximum=%lf", fPidProbElectron[1]);
+  tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobMuon.minimum=%lf", fPidProbMuon[0]);
+  tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobMuon.maximum=%lf", fPidProbMuon[1]);
+  tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoESDTrackCut.minimumtpcclusters=%i", fminTPCclsF);
+  tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoESDTrackCut.minimumitsclusters=%i", fminTPCclsF);
+  tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoESDTrackCut.pt.minimum=%lf", fPt[0]);
+  tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoESDTrackCut.pt.maximum=%lf", fPt[1]);
+  tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoESDTrackCut.rapidity.minimum=%lf", fRapidity[0]);
+  tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoESDTrackCut.rapidity.maximum=%lf", fRapidity[1]);
+  tListSetttings->AddLast(new TObjString(buf));
+
+  return tListSetttings;
 }
