@@ -35,7 +35,7 @@ AliESDCaloCluster::AliESDCaloCluster() :
   fClusterType(-1),
   fEMCALCluster(kFALSE),
   fPHOSCluster(kFALSE),
-  fTrackMatched(kFALSE),
+  fTrackMatched(-1),
   fEnergy(-1),
   fDispersion(-1),
   fChi2(-1),
