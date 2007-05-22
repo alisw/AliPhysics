@@ -153,18 +153,6 @@ Bool_t AliSurveyObj::Connect(const char *gridUrl, const char *user) {
 }
 
 
-/*
-//_____________________________________________________________________________
-AliCDBGrid::~AliCDBGrid()
-{
-// destructor
-	delete gGrid; gGrid=0;
-
-}
-*/
-
-
-
 //_____________________________________________________________________________
 Bool_t AliSurveyObj::OpenFile(TString openString) {
   TString storage = "alien://alice.cern.ch";
@@ -184,7 +172,7 @@ Bool_t AliSurveyObj::OpenFile(TString openString) {
   char *buf = new Char_t[size];
   memset(buf, '\0', size);
 
-  --size;
+  //--size;
 
   file->Seek(0);  
   if ( file->ReadBuffer(buf, size) ) {
@@ -209,7 +197,7 @@ Bool_t AliSurveyObj::OpenFile(TString openString) {
 
 
 //_____________________________________________________________________________
-Bool_t AliSurveyObj::Get(TString detector, Int_t reportNumber,
+Bool_t AliSurveyObj::Fill(TString detector, Int_t reportNumber,
                          Int_t reportVersion) {
   TString baseFolder = "/alice/cern.ch/user/r/rsilva/";
 
@@ -222,7 +210,7 @@ Bool_t AliSurveyObj::Get(TString detector, Int_t reportNumber,
 
 
 //_____________________________________________________________________________
-Bool_t AliSurveyObj::GetFromLocalFile(const Char_t* filename) {
+Bool_t AliSurveyObj::FillFromLocalFile(const Char_t* filename) {
   TString fullOpenString = "file://" + TString(filename) + "?filetype=raw";
 
   return OpenFile(fullOpenString);
@@ -233,6 +221,11 @@ Bool_t AliSurveyObj::GetFromLocalFile(const Char_t* filename) {
 TString &AliSurveyObj::Sanitize(TString str) {
   str.Remove(TString::kTrailing, '\r');
   str.Remove(TString::kTrailing, '\n');
+  str.Remove(TString::kTrailing, '\r');
+  if (!str.IsAscii()) {
+    AliWarning("Warning: Non-ASCII characters!\n");
+    str = "";
+  }
   return str.Remove(TString::kBoth, ' ');
 }
 
@@ -264,7 +257,7 @@ Bool_t AliSurveyObj::ParseBuffer(const Char_t* buf) {
     nextLine = ((i + 1) < nrLines ? ((TObjString *)(lines->At(i + 1)))->GetString().Data() : "");
     currLine = Sanitize(currLine);
     nextLine = Sanitize(nextLine);
-    Printf("\n%d: \"\"%s\"\"\"\n", i + 1, currLine.Data());
+    //Printf("\n%d: \"\"%s\"\"\"\n", i + 1, currLine.Data());
     
     if (0 == currLine.Length()) {
       Printf("Info: Empty line skipped\n\n");
@@ -291,15 +284,20 @@ Bool_t AliSurveyObj::ParseBuffer(const Char_t* buf) {
 	// Report URL in EDMS
 	if (nextLine.BeginsWith("http://edms.cern.ch/document/", TString::kIgnoreCase) ||
 	    nextLine.BeginsWith("https://edms.cern.ch/document/", TString::kIgnoreCase)) {
-	  fURL = nextLine;
+ 	  fURL = nextLine;
 	  nextLine.Remove(TString::kTrailing, '/');
 	  nextLine = nextLine(nextLine.Last('/') + 1, nextLine.Length() - nextLine.Last('/') + 1);
-	  // Printf(nextLine);
-	  if (!nextLine.IsDigit()) {
+	  
+	  Printf("## %s ##\n", nextLine.Data());
+	  Int_t sscanf_tmp = 0;
+	  //if (!nextLine.IsDigit()) {
+	  if (1 != sscanf(nextLine.Data(), "%d", &sscanf_tmp)) {
+	    AliError("Survey text file sintax error! (incorrectly formated Report URL)");
 	    lines->Delete();
 	    return kFALSE;
 	  }
 	  fReportNr = nextLine.Atoi();
+	  //Printf(" $$ %d $$\n", fReportNr);
 	  ++i;
 	} else { // URL incorrectly formated
 	  AliError("Survey text file sintax error! (incorrectly formated Report URL)");
@@ -308,6 +306,7 @@ Bool_t AliSurveyObj::ParseBuffer(const Char_t* buf) {
       } else if (currLine.BeginsWith("Version", TString::kIgnoreCase)) {
 	if (!nextLine.IsDigit()) {
 	  lines->Delete();
+	  AliError("Survey text file sintax error! (incorrectly formated Report Version)");
 	  return kFALSE;
 	}
 	fVersion = nextLine.Atoi();
@@ -330,6 +329,7 @@ Bool_t AliSurveyObj::ParseBuffer(const Char_t* buf) {
       } else if (currLine.BeginsWith("Nr Columns", TString::kIgnoreCase)) {
 	if (!nextLine.IsDigit()) {
 	  lines->Delete();
+	  AliError("Survey text file sintax error! (incorrectly formated Number of Columns)");
 	  return kFALSE;
 	}
 	fNrColumns = nextLine.Atoi();
@@ -338,17 +338,29 @@ Bool_t AliSurveyObj::ParseBuffer(const Char_t* buf) {
 	fColNames = nextLine;
 	colLine = nextLine.Tokenize(',');
 	if (colLine->GetEntries() != fNrColumns) {
+	  AliError("Survey text file sintax error! (Declared number of Columns doesn't match number of column names)");
 	  colLine->Delete();
 	  lines->Delete();
 	  return kFALSE;
 	}
 	++i;
       } else if (currLine.BeginsWith("Data", TString::kIgnoreCase)) {
-	while (('>' != nextLine[0]) && nextLine.Length() > 0) {
-	  Printf("Data LINE: \"%s\"\n", nextLine.Data());
+	while ((nextLine.Length() > 0) && ('>' != nextLine[0])) {
+	  Printf("Data LINE: \"%s\": %d\n", nextLine.Data(), nextLine.Length());
+	  if (2 == nextLine.Length()) for(Int_t g = 0; g < 2; ++g) Printf("'%c'", nextLine[g]);
 
-	  dataLine = nextLine.Tokenize(' ');
+          if (fNrColumns == nextLine.CountChar(' ') + 1) dataLine = nextLine.Tokenize(' ');
+          else if (fNrColumns == nextLine.CountChar(',') + 1) dataLine = nextLine.Tokenize(',');
+          else if (fNrColumns == nextLine.CountChar('\t') + 1) dataLine = nextLine.Tokenize('\t');
+          else {
+            //Error
+            AliError("Survey text file syntax error! Error processing data line!");
+            lines->Delete();
+            return kFALSE;
+          }
+
 	  if (dataLine->GetEntries() != fNrColumns) {
+	    AliError("Survey text file sintax error! (Number of entries in line is different from declared Number of Columns)");
 	    dataLine->Delete();
 	    lines->Delete();
 	    return kFALSE;
@@ -405,7 +417,7 @@ Bool_t AliSurveyObj::ParseBuffer(const Char_t* buf) {
 	      check[5] = kTRUE;
 	    }
 
-	    Printf("--> %s\n", ((TObjString *)(dataLine->At(j)))->GetString().Data());
+	    //Printf("--> %s\n", ((TObjString *)(dataLine->At(j)))->GetString().Data());
 	  }
 	  Bool_t res = kTRUE, precInd = kTRUE;
 
@@ -420,7 +432,7 @@ Bool_t AliSurveyObj::ParseBuffer(const Char_t* buf) {
 	  if ((kFALSE == check[6]) && (kTRUE == precInd)) check[6] = kTRUE;
 
 	  for (Int_t t = 0; t < kFieldCheck - 3; ++t) {
-	    Printf("RES(%d): %d\n", t, check[t]);
+	    //Printf("RES(%d): %d\n", t, check[t]);
 	    res &= check[t];
 	  }
 	  if (kTRUE == res) {
@@ -441,8 +453,8 @@ Bool_t AliSurveyObj::ParseBuffer(const Char_t* buf) {
 	  nextLine = Sanitize(nextLine);
 	}
       }
-    } else { // 2 lines in a row start with ">"
-      AliError("Survey text file sintax error! (2 consecutive lines start with \'>\')");
+    } else {
+      AliError("Survey text file sintax error!");
       lines->Delete();
       return kFALSE;
     }

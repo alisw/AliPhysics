@@ -25,11 +25,25 @@ class AliSurveyObj: public TObject {
  public:
   AliSurveyObj();
   ~AliSurveyObj();
-  Bool_t GetFromLocalFile(const Char_t* filename);
-  Bool_t Get(TString detector, Int_t reportNumber, Int_t reportVersion);
+  Bool_t FillFromLocalFile(const Char_t* filename);
+  Bool_t Fill(TString detector, Int_t reportNumber, Int_t reportVersion);
 
   
   Int_t GetEntries() const {return fDataPoints->GetEntries();};
+
+  TString GetReportTitle() const {return fTitle;};
+  TString GetReportDate() const {return fDate;};
+  TString GetDetector() const {return fDetector;};
+  TString GetURL() const {return fURL;};
+  Int_t GetReportNumber() const {return fReportNr;};
+  Int_t GetReportVersion() const {return fVersion;};
+  TString GetObservations() const {return fObs;};
+  TString GetCoordSys() const {return fCoordSys;};
+  TString GetUnits() const {return fUnits;};
+  Int_t GetNrColumns() const {return fNrColumns;};
+  TObjArray *GetColumnNames() const {return fColNames.Tokenize(',');};
+  TObjArray *GetData() const {return fDataPoints;};
+
   Bool_t IsValid() const {return fIsValid;};
 
   
