@@ -114,6 +114,7 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   // *************** From DAQ ******************
   // [a] PEDESTALS
 TString runType = GetRunType();
+if (runType != "PEDESTALS") {
   TList* daqSources = GetFileSources(kDAQ, "PEDESTALS");
   if(!daqSources){
     Log(Form("No source for PEDESTALS run %d !", fRun));
@@ -168,8 +169,9 @@ TString runType = GetRunType();
       //calibdata->Print("");
   }
   delete daqSources; daqSources = 0;
-  // [a] EMD EVENTS
-if (runType != "PEDESTALS") {
+}
+  // [b] EMD EVENTS
+else if (runType == "EMDCALIB") {
   TList* daqSources = GetFileSources(kDAQ, "EMDCALIB");
   if(!daqSources){
     AliError(Form("No sources for EMDCALIB run %d !", fRun));
@@ -224,9 +226,9 @@ if (runType != "PEDESTALS") {
   resultCal = Store("Calib","Data",calibdata, &metaData, 0, 1);
  
   UInt_t result = 0;
-  if(resultAl!=0 && resultCal!=0){
-    if(resultAl==1 && resultCal==1) result = 1;
-    else result = 2;
+  if(resultAl == kFALSE || resultCal == kFALSE){
+    if(resultAl == kFALSE  && resultCal == kFALSE ) result = 2;
+    else result = 1;
   }
   
   return result;
