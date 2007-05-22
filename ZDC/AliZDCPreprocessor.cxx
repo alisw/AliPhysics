@@ -114,11 +114,11 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   // *************** From DAQ ******************
   // [a] PEDESTALS
 TString runType = GetRunType();
-if (runType != "PEDESTALS") {
+if (runType = "PEDESTALS") {
   TList* daqSources = GetFileSources(kDAQ, "PEDESTALS");
   if(!daqSources){
     Log(Form("No source for PEDESTALS run %d !", fRun));
-    return 0;
+    return 1;
   }
   Log("\t List of sources for PEDESTALS");
   daqSources->Print();
@@ -131,7 +131,7 @@ if (runType != "PEDESTALS") {
        TString stringPedFileName = GetFile(kDAQ, "PEDESTALS", source->GetName());
        if(stringPedFileName.Length() <= 0){
           Log(Form("No PEDESTAL file from source %s!", source->GetName()));
-	  return 0;
+	  return 1;
        }
        const char* PedFileName = stringPedFileName.Data();
        const Int_t NZDCch = 44;
@@ -139,7 +139,7 @@ if (runType != "PEDESTALS") {
          FILE *file;
          if((file = fopen(PedFileName,"r")) == NULL){
            printf("Cannot open file %s \n",PedFileName);
-	   return 0;
+	   return 1;
          }
          Log(Form("File %s connected to analyze pedestal events", PedFileName));
          Float_t PedVal[(3*NZDCch)][2];
@@ -163,7 +163,7 @@ if (runType != "PEDESTALS") {
        }
        else{
           Log(Form("File %s not found", PedFileName));
-          return 0;
+          return 1;
        }
        //
       //calibdata->Print("");
@@ -171,13 +171,13 @@ if (runType != "PEDESTALS") {
   delete daqSources; daqSources = 0;
 }
   // [b] EMD EVENTS
-else if (runType == "EMDCALIB") {
-  TList* daqSources = GetFileSources(kDAQ, "EMDCALIB");
+else if (runType == "PHYSICS") {
+  TList* daqSources = GetFileSources(kDAQ, "PHYSICS");
   if(!daqSources){
-    AliError(Form("No sources for EMDCALIB run %d !", fRun));
-    return 0;
+    AliError(Form("No sources for PHYSICS run %d !", fRun));
+    return 1;
   }
-  Log("\t List of sources for EMDCALIB");
+  Log("\t List of sources for PHYSICS");
   daqSources->Print();
   //
   TIter iter2(daqSources);
@@ -185,17 +185,17 @@ else if (runType == "EMDCALIB") {
   Int_t j=0;
   while((source = dynamic_cast<TObjString*> (iter2.Next()))){
        Log(Form("\n\t Getting file #%d\n",++j));
-       TString stringEMDFileName = GetFile(kDAQ, "EMDCALIB", source->GetName());
+       TString stringEMDFileName = GetFile(kDAQ, "PHYSICS", source->GetName());
        if(stringEMDFileName.Length() <= 0){
-         Log(Form("No EMDCALIB file from source %s!", source->GetName()));
-	 return 0;
+         Log(Form("No PHYSICS file from source %s!", source->GetName()));
+	 return 1;
        }
        const char* EMDFileName = stringEMDFileName.Data();
        if(EMDFileName){
     	 FILE *file;
     	 if((file = fopen(EMDFileName,"r")) == NULL){
     	   printf("Cannot open file %s \n",EMDFileName);
-	   return 0;
+	   return 1;
     	 }
     	 Log(Form("File %s connected to analyze EM dissociation events", EMDFileName));
     	 Float_t EMDFitVal[2];
@@ -206,11 +206,15 @@ else if (runType == "EMDCALIB") {
        }
        else{
          Log(Form("File %s not found", EMDFileName));
-         return 0;
+         return 1;
        }
        //calibdata->Print("");
   }
-}  
+} 
+else {
+	Log(Form("Nothing to do: run type is %s", runType.Data()))
+	return 0;
+} 
   // note that the parameters are returned as character strings!
   const char* nEvents = GetRunParameter("totalEvents");
   if(nEvents) Log(Form("Number of events for run %d: %s",fRun, nEvents));
@@ -227,8 +231,8 @@ else if (runType == "EMDCALIB") {
  
   UInt_t result = 0;
   if(resultAl == kFALSE || resultCal == kFALSE){
-    if(resultAl == kFALSE  && resultCal == kFALSE ) result = 2;
-    else result = 1;
+    if(resultAl == kFALSE  && resultCal == kFALSE ) result = 3;
+    else result = 2;
   }
   
   return result;
