@@ -113,37 +113,37 @@ void AliZDCDataDCS::Init()
 
    fGraphs.SetOwner(1);
 
-   fAliasNames[0] = "ZNA_POS.actual.position";
-   fAliasNames[1] = "ZPA_POS.actual.position";
-   fAliasNames[2] = "ZNC_POS.actual.position";
-   fAliasNames[3] = "ZPC_POS.actual.position";
+   fAliasNames[0] = "ZDC_ZNA_POS.actual.position";
+   fAliasNames[1] = "ZDC_ZPA_POS.actual.position";
+   fAliasNames[2] = "ZDC_ZNC_POS.actual.position";
+   fAliasNames[3] = "ZDC_ZPC_POS.actual.position";
    //
-   fAliasNames[4]  = "ZNA_HV0.actual.vMon";
-   fAliasNames[5]  = "ZNA_HV1.actual.vMon";
-   fAliasNames[6]  = "ZNA_HV2.actual.vMon";
-   fAliasNames[7]  = "ZNA_HV3.actual.vMon";
-   fAliasNames[8]  = "ZNA_HV4.actual.vMon";
+   fAliasNames[4]  = "ZDC_ZNA_HV0.actual.vMon";
+   fAliasNames[5]  = "ZDC_ZNA_HV1.actual.vMon";
+   fAliasNames[6]  = "ZDC_ZNA_HV2.actual.vMon";
+   fAliasNames[7]  = "ZDC_ZNA_HV3.actual.vMon";
+   fAliasNames[8]  = "ZDC_ZNA_HV4.actual.vMon";
    //
-   fAliasNames[9]   = "ZPA_HV0.actual.vMon";
-   fAliasNames[10]  = "ZPA_HV1.actual.vMon";
-   fAliasNames[11]  = "ZPA_HV2.actual.vMon";
-   fAliasNames[12]  = "ZPA_HV3.actual.vMon";
-   fAliasNames[13]  = "ZPA_HV4.actual.vMon";
+   fAliasNames[9]   = "ZDC_ZPA_HV0.actual.vMon";
+   fAliasNames[10]  = "ZDC_ZPA_HV1.actual.vMon";
+   fAliasNames[11]  = "ZDC_ZPA_HV2.actual.vMon";
+   fAliasNames[12]  = "ZDC_ZPA_HV3.actual.vMon";
+   fAliasNames[13]  = "ZDC_ZPA_HV4.actual.vMon";
    //
-   fAliasNames[14]  = "ZNC_HV0.actual.vMon";
-   fAliasNames[15]  = "ZNC_HV1.actual.vMon";
-   fAliasNames[16]  = "ZNC_HV2.actual.vMon";
-   fAliasNames[17]  = "ZNC_HV3.actual.vMon";
-   fAliasNames[18]  = "ZNC_HV4.actual.vMon";
+   fAliasNames[14]  = "ZDC_ZNC_HV0.actual.vMon";
+   fAliasNames[15]  = "ZDC_ZNC_HV1.actual.vMon";
+   fAliasNames[16]  = "ZDC_ZNC_HV2.actual.vMon";
+   fAliasNames[17]  = "ZDC_ZNC_HV3.actual.vMon";
+   fAliasNames[18]  = "ZDC_ZNC_HV4.actual.vMon";
    //
-   fAliasNames[19]  = "ZPC_HV0.actual.vMon";
-   fAliasNames[20]  = "ZPC_HV1.actual.vMon";
-   fAliasNames[21]  = "ZPC_HV2.actual.vMon";
-   fAliasNames[22]  = "ZPC_HV3.actual.vMon";
-   fAliasNames[23]  = "ZPC_HV4.actual.vMon";
+   fAliasNames[19]  = "ZDC_ZPC_HV0.actual.vMon";
+   fAliasNames[20]  = "ZDC_ZPC_HV1.actual.vMon";
+   fAliasNames[21]  = "ZDC_ZPC_HV2.actual.vMon";
+   fAliasNames[22]  = "ZDC_ZPC_HV3.actual.vMon";
+   fAliasNames[23]  = "ZDC_ZPC_HV4.actual.vMon";
    //
-   fAliasNames[24]  = "ZEM_HV0.actual.vMon";
-   fAliasNames[25]  = "ZEM_HV1.actual.vMon";
+   fAliasNames[24]  = "ZDC_ZEM_HV0.actual.vMon";
+   fAliasNames[25]  = "ZDC_ZEM_HV1.actual.vMon";
  
 }
 
