@@ -11,6 +11,9 @@
 /*
  *$Id$
  *$Log$
+ *Revision 1.1  2007/05/16 10:22:11  akisiel
+ *Making the directory structure of AliFemto flat. All files go into one common directory
+ *
  *Revision 1.5  2007/05/03 09:45:20  akisiel
  *Fixing Effective C++ warnings
  *
@@ -247,6 +250,7 @@ void AliFemtoEventReaderESD::SetInputFile(const char* inputFile)
 //setting the next file to read	
 bool AliFemtoEventReaderESD::GetNextFile()
 { 	
+  // Begin reading the next file
   if (fCurFile>=fListOfFiles.size())
     return false;
   fFileName=fListOfFiles.at(fCurFile);	

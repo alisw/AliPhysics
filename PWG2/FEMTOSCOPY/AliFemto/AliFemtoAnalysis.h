@@ -58,6 +58,7 @@ class AliFemtoAnalysis : public AliFemtoBaseAnalysis {
 
   bool AnalyzeIdenticalParticles() const;
   virtual AliFemtoString Report();       //! returns reports of all cuts applied and correlation functions being done
+  virtual TList* ListSettings();         // return list of cut settings for the analysis
 
   virtual void EventBegin(const AliFemtoEvent* TheEventToBegin); // startup for EbyE
   virtual void ProcessEvent(const AliFemtoEvent* EventToProcess);

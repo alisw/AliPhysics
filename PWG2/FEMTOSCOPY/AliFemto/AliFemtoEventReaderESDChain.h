@@ -1,13 +1,14 @@
 ////////////////////////////////////////////////////////////////////////////////
-///                                                                          ///
-/// AliFemtoEventReaderESDChain - the reader class for the Alice ESD         ///
-/// tailored for the Task framework                                 ///
-/// Reads in AliESDfriend to create shared hit/quality information           ///
-/// Authors: Adam Kisiel kisiel@mps.ohio-state.edu                           ///
-///                                                                          ///
+//                                                                            //
+// AliFemtoEventReaderESDChain - the reader class for the Alice ESD           //
+// tailored for the Task framework                                            //
+// Reads in AliESDfriend to create shared hit/quality information             //
+// Authors: Adam Kisiel kisiel@mps.ohio-state.edu                             //
+//                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef AliFemtoEventReaderESDChain_hh
-#define AliFemtoEventReaderESDChain_hh
+#ifndef ALIFEMTOEVENTREADERESDCHAIN_H
+#define ALIFEMTOEVENTREADERESDCHAIN_H
+
 #include "AliFemtoEventReader.h"
 #include "AliFemtoEnumeration.h"
 

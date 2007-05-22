@@ -109,3 +109,14 @@ void AliFemtoShareQualityPairCut::SetShareQualityMax(Double_t aShareQualityMax) 
 Double_t AliFemtoShareQualityPairCut::GetAliFemtoShareQualityMax() {
   return fShareQualityMax;
 }
+
+TList *AliFemtoShareQualityPairCut::ListSettings()
+{
+  // return a list of settings in a writable form
+  TList *tListSetttings = new TList();
+  char buf[200];
+  snprintf(buf, 200, "AliFemtoShareQualityPairCut.sharequalitymax=%lf", fShareQualityMax);
+  tListSetttings->AddLast(new TObjString(buf));
+
+  return tListSetttings;
+}

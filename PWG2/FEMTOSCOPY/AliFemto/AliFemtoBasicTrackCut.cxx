@@ -133,3 +133,45 @@ AliFemtoString AliFemtoBasicTrackCut::Report(){
   AliFemtoString returnThis = tStemp;
   return returnThis;
 }
+
+TList *AliFemtoBasicTrackCut::ListSettings()
+{
+  // return a list of settings in a writable form
+  TList *tListSetttings = new TList();
+  char buf[200];
+  snprintf(buf, 200, "AliFemtoBasicTrackCut.mass=%lf", this->Mass());
+  tListSetttings->AddLast(new TObjString(buf));
+
+  snprintf(buf, 200, "AliFemtoBasicTrackCut.charge=%i", fCharge);
+  tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoBasicTrackCut.nsigmapion.minimum=%lf", fNSigmaPion[0]);
+  tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoBasicTrackCut.nsigmapion.maximum=%lf", fNSigmaPion[1]);
+  tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoBasicTrackCut.nsigmakaon.minimum=%lf", fNSigmaKaon[0]);
+  tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoBasicTrackCut.nsigmakaon.maximum=%lf", fNSigmaKaon[1]);
+  tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoBasicTrackCut.nsigmaproton.minimum=%lf", fNSigmaProton[0]);
+  tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoBasicTrackCut.nsigmaproton.maximum=%lf", fNSigmaProton[1]);
+  tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoBasicTrackCut.nhits.minimum=%i", fNHits[0]);
+  tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoBasicTrackCut.nhits.maximum=%i", fNHits[1]);
+  tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoBasicTrackCut.pt.minimum=%lf", fPt[0]);
+  tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoBasicTrackCut.pt.maximum=%lf", fPt[1]);
+  tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoBasicTrackCut.rapidity.minimum=%lf", fRapidity[0]);
+  tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoBasicTrackCut.rapidity.maximum=%lf", fRapidity[1]);
+  tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoBasicTrackCut.dca.minimum=%lf", fDCA[0]);
+  tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoBasicTrackCut.dca.maximum=%lf", fDCA[1]);
+  tListSetttings->AddLast(new TObjString(buf));
+
+  return tListSetttings;
+}

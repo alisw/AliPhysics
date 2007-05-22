@@ -7,6 +7,9 @@
  ***************************************************************************
  *
  * $Log$
+ * Revision 1.1  2007/05/16 10:25:06  akisiel
+ * Making the directory structure of AliFemtoUser flat. All files go into one common directory
+ *
  * Revision 1.4  2007/05/03 09:46:10  akisiel
  * Fixing Effective C++ warnings
  *
@@ -85,3 +88,34 @@ AliFemtoString AliFemtoQPairCut::Report()
   return returnThis;
 }
 //__________________
+TList *AliFemtoQPairCut::ListSettings()
+{
+  // return a list of settings in a writable form
+  TList *tListSetttings = new TList();
+  char buf[200];
+  snprintf(buf, 200, "AliFemtoQPairCut.qout.maximum=%lf", fQout[0]);
+  tListSetttings->AddLast(new TObjString(buf));
+
+  snprintf(buf, 200, "AliFemtoQPairCut.qout.minimum=%lf", fQout[1]);
+  tListSetttings->AddLast(new TObjString(buf));
+
+  snprintf(buf, 200, "AliFemtoQPairCut.qside.maximum=%lf", fQside[0]);
+  tListSetttings->AddLast(new TObjString(buf));
+
+  snprintf(buf, 200, "AliFemtoQPairCut.qside.minimum=%lf", fQside[1]);
+  tListSetttings->AddLast(new TObjString(buf));
+
+  snprintf(buf, 200, "AliFemtoQPairCut.qlong.maximum=%lf", fQlong[0]);
+  tListSetttings->AddLast(new TObjString(buf));
+
+  snprintf(buf, 200, "AliFemtoQPairCut.qlong.minimum=%lf", fQlong[1]);
+  tListSetttings->AddLast(new TObjString(buf));
+
+  snprintf(buf, 200, "AliFemtoQPairCut.qinv.maximum=%lf", fQinv[0]);
+  tListSetttings->AddLast(new TObjString(buf));
+
+  snprintf(buf, 200, "AliFemtoQPairCut.qinv.minimum=%lf", fQinv[1]);
+  tListSetttings->AddLast(new TObjString(buf));
+
+  return tListSetttings;
+}
