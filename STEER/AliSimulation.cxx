@@ -642,7 +642,9 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   SetGAliceFile(runLoader->GetFileName());
  
   // Misalign geometry
-//  MisalignGeometry(runLoader);
+#if ROOT_VERSION_CODE < 331527
+  MisalignGeometry(runLoader);
+#endif
 
   // Export (mis)aligned geometry 
   if (gGeoManager) gGeoManager->Export("misaligned_geometry.root");
