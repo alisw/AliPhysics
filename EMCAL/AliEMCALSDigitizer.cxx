@@ -177,9 +177,9 @@ void AliEMCALSDigitizer::InitParameters()
   fB         = 1.e+6;  // Changed 24 Apr 2007. Dynamic range now 2 TeV
   fSampling  = geom->GetSampling();
 
- // threshold for deposit energy of hit
-  fECPrimThreshold  = 0.; // 24-nov-04 - was 1.e-6;
-
+  // threshold for deposit energy of hit
+  fECPrimThreshold  = 0.05;// GeV // 22-may-07 was 0// 24-nov-04 - was 1.e-6;
+  
   AliDebug(2,Form("Print: \n------------------- %s -------------\n",GetName()));
   AliDebug(2,Form("   fInit                                 %i\n", int(fInit)));
   AliDebug(2,Form("   fFirstEvent                           %i\n", fFirstEvent));
