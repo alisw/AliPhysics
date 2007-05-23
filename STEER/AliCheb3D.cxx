@@ -126,28 +126,80 @@ AliCheb3DCalc::AliCheb3DCalc(FILE* stream):
     LoadData(stream);
 }
 
-AliCheb3DCalc::AliCheb3DCalc(const AliCheb3DCalc& cheb):
-    TNamed("", ""),
-    fNCoefs(0),  
-    fNRows(0),
-    fNCols(0),
-    fNElemBound2D(0),
-    fNColsAtRow(0),
-    fColAtRowBg(0),
-    fCoefBound2D0(0),
-    fCoefBound2D1(0),
-    fCoefs(0),
-    fTmpCf1(0),
+
+AliCheb3DCalc::AliCheb3DCalc(const AliCheb3DCalc& src) :
+    TNamed(src), 
+    fNCoefs(src.fNCoefs), 
+    fNRows(src.fNRows), 
+    fNCols(src.fNCols),
+    fNElemBound2D(src.fNElemBound2D), 
+    fNColsAtRow(0), 
+    fColAtRowBg(0), 
+    fCoefBound2D0(0), 
+    fCoefBound2D1(0), 
+    fCoefs(0), 
+    fTmpCf1(0), 
     fTmpCf0(0)
 {
     // Copy constructor
-    cheb.Copy(*this);
+    if (src.fNColsAtRow) {
+	fNColsAtRow = new Int_t[fNRows]; 
+	for (int i=fNRows;i--;) fNColsAtRow[i] = src.fNColsAtRow[i];
+    }
+    if (src.fColAtRowBg) {
+	fColAtRowBg = new Int_t[fNRows]; 
+	for (int i=fNRows;i--;) fColAtRowBg[i] = src.fColAtRowBg[i];
+    }
+    if (src.fCoefBound2D0) {
+	fCoefBound2D0 = new Int_t[fNElemBound2D];
+	for (int i=fNElemBound2D;i--;) fCoefBound2D0[i] = src.fCoefBound2D0[i];
+    }
+    if (src.fCoefBound2D1) {
+	fCoefBound2D1 = new Int_t[fNElemBound2D];
+	for (int i=fNElemBound2D;i--;) fCoefBound2D1[i] = src.fCoefBound2D1[i];
+    }
+    if (src.fCoefs) {
+	fCoefs = new Float_t[fNCoefs];
+	for (int i=fNCoefs;i--;) fCoefs[i] = src.fCoefs[i];
+    }
+    if (src.fTmpCf1) fTmpCf1 = new Float_t[fNCols];
+    if (src.fTmpCf0) fTmpCf0 = new Float_t[fNRows];
 }
 
-void AliCheb3DCalc::Copy(TObject &) const
+AliCheb3DCalc& AliCheb3DCalc::operator=(const AliCheb3DCalc& rhs)
 {
-  //dummy Copy function
-  AliFatal("Not implemented!");
+    // Assignment operator
+    if (this != &rhs) {
+	Clear();
+	SetName(rhs.GetName());
+	SetTitle(rhs.GetTitle());
+	fNCoefs = rhs.fNCoefs;
+	fNRows  = rhs.fNRows;
+	fNCols  = rhs.fNCols;    
+	if (rhs.fNColsAtRow) {
+	    fNColsAtRow = new Int_t[fNRows]; 
+	    for (int i=fNRows;i--;) fNColsAtRow[i] = rhs.fNColsAtRow[i];
+	}
+	if (rhs.fColAtRowBg) {
+	    fColAtRowBg = new Int_t[fNRows]; 
+	    for (int i=fNRows;i--;) fColAtRowBg[i] = rhs.fColAtRowBg[i];
+	}
+	if (rhs.fCoefBound2D0) {
+	    fCoefBound2D0 = new Int_t[fNElemBound2D];
+	    for (int i=fNElemBound2D;i--;) fCoefBound2D0[i] = rhs.fCoefBound2D0[i];
+	}
+	if (rhs.fCoefBound2D1) {
+	    fCoefBound2D1 = new Int_t[fNElemBound2D];
+	    for (int i=fNElemBound2D;i--;) fCoefBound2D1[i] = rhs.fCoefBound2D1[i];
+	}
+	if (rhs.fCoefs) {
+	    fCoefs = new Float_t[fNCoefs];
+	    for (int i=fNCoefs;i--;) fCoefs[i] = rhs.fCoefs[i];
+	}
+	if (rhs.fTmpCf1) fTmpCf1 = new Float_t[fNCols];
+	if (rhs.fTmpCf0) fTmpCf0 = new Float_t[fNRows];    
+    }
+    return *this;
 }
 
 //__________________________________________________________________________________________
@@ -409,20 +461,58 @@ AliCheb3D::AliCheb3D(FILE* stream):
     LoadData(stream);
 }
 
-AliCheb3D::AliCheb3D(const AliCheb3D& cheb):
-    TNamed("", ""),
-    fDimOut(0),
-    fPrec(0.),
-    fChebCalc(),
-    fMaxCoefs(0),
-    fResTmp(0),
-    fGrid(0),
-    fUsrFunName(),
-    fUsrMacro(0)	     
+AliCheb3D::AliCheb3D(const AliCheb3D& src) : 
+    TNamed(src),
+    fDimOut(src.fDimOut), 
+    fPrec(src.fPrec), 
+    fChebCalc(1), 
+    fMaxCoefs(src.fMaxCoefs), 
+					   fResTmp(0),
+    fGrid(0), 
+    fUsrFunName(src.fUsrFunName), 
+    fUsrMacro(0)
 {
     // Copy constructor
-    cheb.Copy(*this);
+    // read coefs from text file
+    for (int i=3;i--;) {
+	fBMin[i]    = src.fBMin[i];
+	fBMax[i]    = src.fBMax[i];
+	fBScale[i]  = src.fBScale[i];
+	fBOffset[i] = src.fBOffset[i];
+	fNPoints[i] = src.fNPoints[i];
+    }
+    for (int i=0;i<fDimOut;i++) {
+	AliCheb3DCalc* cbc = src.GetChebCalc(i);
+	if (cbc) fChebCalc.AddAtAndExpand(new AliCheb3DCalc(*cbc),i);
+    }
 }
+
+AliCheb3D& AliCheb3D::operator=(const AliCheb3D& rhs)
+{
+    // Assignment operator
+    if (this != &rhs) {
+	Clear();
+	fDimOut   = rhs.fDimOut;
+	fPrec     = rhs.fPrec;
+	fMaxCoefs = rhs.fMaxCoefs;
+	fUsrFunName = rhs.fUsrFunName;
+	fUsrMacro   = 0;
+	for (int i=3;i--;) {
+	    fBMin[i]    = rhs.fBMin[i];
+	    fBMax[i]    = rhs.fBMax[i];
+	    fBScale[i]  = rhs.fBScale[i];
+	    fBOffset[i] = rhs.fBOffset[i];
+	    fNPoints[i] = rhs.fNPoints[i];
+	} 
+	for (int i=0;i<fDimOut;i++) {
+	    AliCheb3DCalc* cbc = rhs.GetChebCalc(i);
+	    if (cbc) fChebCalc.AddAtAndExpand(new AliCheb3DCalc(*cbc),i);
+	}    
+    }
+    return *this;
+    //
+}
+
 
 //__________________________________________________________________________________________
 #ifdef _INC_CREATION_ALICHEB3D_
@@ -472,12 +562,6 @@ AliCheb3D::AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Floa
 }
 #endif
 
-
-void AliCheb3D::Copy(TObject &) const
-{
-  //dummy Copy function
-  AliFatal("Not implemented!");
-}
 
 //__________________________________________________________________________________________
 void AliCheb3D::Clear(Option_t*)

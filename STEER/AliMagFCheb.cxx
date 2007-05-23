@@ -80,33 +80,109 @@ AliMagFCheb::AliMagFCheb(const char* inputFile) :
   LoadData(inputFile);
 }
 
-AliMagFCheb::AliMagFCheb(const AliMagFCheb &cheb) :
-    TNamed(),
-    fNParamsSol(0),
-    fNSegZSol(0),
-    fNParamsDip(0),
-    fSegZSol(0),
-    fSegRSol(0),
-    fNSegRSol(0),
-    fSegZIdSol(0),
-    fMinZSol(0.),
-    fMaxZSol(0.),
-    fMaxRSol(0.),
-    fParamsSol(0),
-    fParamsDip(0)
+//__________________________________________________________________________________________
+AliMagFCheb::AliMagFCheb(const AliMagFCheb& src)
+    : TNamed(src), 
+      fNParamsSol(src.fNParamsSol),
+      fNSegZSol(src.fNSegZSol), 
+      fNParamsDip(src.fNParamsDip), 
+      fSegZSol(0), 
+      fSegRSol(0), 
+      fNSegRSol(0), 
+      fSegZIdSol(0),
+      fMinZSol(src.fMinZSol), 
+      fMaxZSol(src.fMaxZSol), 
+      fMaxRSol(src.fMaxRSol), 
+      fParamsSol(0), 
+      fParamsDip(0)
 {
+// Copy constructor
+  if (src.fSegZSol) {
+    fSegZSol = new Float_t[fNSegZSol];
+    for (int i=fNSegZSol;i--;) fSegZSol[i] = src.fSegZSol[i];
+  }
+  if (src.fSegRSol) {
+    fSegRSol = new Float_t[fNParamsSol];
+    for (int i=fNParamsSol;i--;) fSegRSol[i] = src.fSegRSol[i];
+  }
+  if (src.fNSegRSol) {
+    fNSegRSol = new Int_t[fNSegZSol];
+    for (int i=fNSegZSol;i--;) fNSegRSol[i] = src.fNSegRSol[i];
+  }
+  if (src.fSegZIdSol) {
+    fSegZIdSol = new Int_t[fNSegZSol];
+    for (int i=fNSegZSol;i--;) fSegZIdSol[i] = src.fSegZIdSol[i];
+  }
+  if (src.fParamsSol) {
+    fParamsSol = new TObjArray(fNParamsSol);
+    for (int i=0;i<fNParamsSol;i++) {
+      AliCheb3D* pr = src.GetParamSol(i);
+      if (pr) fParamsSol->AddAtAndExpand(new AliCheb3D(*pr),i);
+    }
+  }
+  if (src.fParamsDip) {
+    fParamsDip = new TObjArray(fNParamsDip);
+    for (int i=0;i<fNParamsDip;i++) {
+      AliCheb3D* pr = src.GetParamDip(i);
+      if (pr) fParamsDip->AddAtAndExpand(new AliCheb3D(*pr),i);
+    }
+  }
   //
-  // Copy constructor for AliMC
-  //
-  cheb.Copy(*this);
 }
 
-//_______________________________________________________________________
-void AliMagFCheb::Copy(TObject &) const
+
+AliMagFCheb& AliMagFCheb::operator=(const AliMagFCheb& rhs)
 {
-  //dummy Copy function
-  AliFatal("Not implemented!");
+// Assignment operator
+    if (this != &rhs) {  
+	Clear();
+	SetName(rhs.GetName());
+	SetTitle(rhs.GetTitle());
+	fNParamsSol = rhs.fNParamsSol;
+	fNSegZSol   = rhs.fNSegZSol;
+	fMinZSol    = rhs.fMinZSol;
+	fMaxZSol    = rhs.fMaxZSol;
+	fMaxRSol    = rhs.fMaxRSol;
+	fNParamsDip = rhs.fNParamsDip;
+	fSegZSol    = fSegRSol    = 0; 
+	fNSegRSol   = fSegZIdSol  = 0;
+	fParamsSol  = fParamsDip  = 0;  
+	//
+	if (rhs.fSegZSol) {
+	    fSegZSol = new Float_t[fNSegZSol];
+	    for (int i=fNSegZSol;i--;) fSegZSol[i] = rhs.fSegZSol[i];
+	}
+	if (rhs.fSegRSol) {
+	    fSegRSol = new Float_t[fNParamsSol];
+	    for (int i=fNParamsSol;i--;) fSegRSol[i] = rhs.fSegRSol[i];
+	}
+	if (rhs.fNSegRSol) {
+	    fNSegRSol = new Int_t[fNSegZSol];
+	    for (int i=fNSegZSol;i--;) fNSegRSol[i] = rhs.fNSegRSol[i];
+	}
+	if (rhs.fSegZIdSol) {
+	    fSegZIdSol = new Int_t[fNSegZSol];
+	    for (int i=fNSegZSol;i--;) fSegZIdSol[i] = rhs.fSegZIdSol[i];
+	}
+	if (rhs.fParamsSol) {
+	    fParamsSol = new TObjArray(fNParamsSol);
+	    for (int i=0;i<fNParamsSol;i++) {
+		AliCheb3D* pr = rhs.GetParamSol(i);
+		if (pr) fParamsSol->AddAtAndExpand(new AliCheb3D(*pr),i);
+	    }
+	}
+	if (rhs.fParamsDip) {
+	    fParamsDip = new TObjArray(fNParamsDip);
+	    for (int i=0;i<fNParamsDip;i++) {
+		AliCheb3D* pr = rhs.GetParamDip(i);
+		if (pr) fParamsDip->AddAtAndExpand(new AliCheb3D(*pr),i);
+	    }
+	}
+    }
+    return *this;  
+    //
 }
+
 
 //__________________________________________________________________________________________
 AliMagFCheb::~AliMagFCheb()
