@@ -59,7 +59,7 @@ class AliVertexerTracks : public TObject {
   void  SetOnlyFitter() { if(!fConstraint) AliFatal("Set constraint first!"); 
      fOnlyFitter=kTRUE; return; }
   void  SetSkipTracks(Int_t n,Int_t *skipped);
-  void  SetVtxStart(Double_t x=0,Double_t y=0,Double_t z=0) 
+  void  SetVtxStartPos(Double_t x=0,Double_t y=0,Double_t z=0) 
     { fNominalPos[0]=x; fNominalPos[1]=y; fNominalPos[2]=z; return; }
   void  SetVtxStartSigma(Double_t sx=3.,Double_t sy=3.,Double_t sz=15.) 
     { fNominalCov[0]=sx*sx; fNominalCov[2]=sy*sy; fNominalCov[5]=sz*sz;
@@ -80,13 +80,13 @@ class AliVertexerTracks : public TObject {
   void     OneTrackVertFinder();
   Int_t    PrepareTracks(TTree &trkTree,Int_t optImpParCut);
   Bool_t   TrackToPoint(AliESDtrack *t,
-		        TMatrixD &ri,TMatrixD &wWi) const;     
+		        TMatrixD &ri,TMatrixD &wWi,
+			Bool_t uUi3by3=kFALSE) const;     
   void     VertexFinder(Int_t optUseWeights=0);
   void     VertexFitter(Bool_t useConstraint=kFALSE);
   void     StrLinVertexFinderMinDist(Int_t optUseWeights=0);
   void     TooFewTracks(const AliESD *esdEvent);
 
-   
   AliESDVertex fVert;         // vertex after vertex finder
   AliESDVertex *fCurrentVertex;  // ESD vertex after fitter
   Double_t  fFieldkG;         // z component of field (kGauss) 

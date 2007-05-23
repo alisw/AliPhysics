@@ -90,7 +90,7 @@ void AliVertexerTracksTest(Double_t nSigma=3.,
   AliVertexerTracks *vertexer = new AliVertexerTracks(AliTracker::GetBz());
   vertexer->SetDebug(1); // set to 1 to see what it does
   vertexer->SetVtxStart(initVertex);
-  if(!useMeanVtx) vertexer->SetNoConstraint();
+  if(!useMeanVtx) vertexer->SetConstraintOff();
   if(onlyfit) vertexer->SetOnlyFitter();
   vertexer->SetNSigmad0(nSigma);
   if(!itsrefit) vertexer->SetITSrefitNotRequired();
@@ -311,7 +311,7 @@ void VertexForOneEvent(Int_t iev=0,
   AliVertexerTracks *vertexer = new AliVertexerTracks(AliTracker::GetBz());
   //vertexer->SetITSrefitNotRequired();
   vertexer->SetVtxStart(initVertex);
-  if(!useMeanVtx) vertexer->SetNoConstraint();
+  if(!useMeanVtx) vertexer->SetConstraintOff();
   //vertexer->SetMinTracks(2);
   //vertexer->SetNSigmad0(nSigma);
   //cout<<" Nsigma:  "<<vertexer->GetNSigmad0()<<endl;

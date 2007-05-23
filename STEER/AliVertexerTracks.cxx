@@ -61,7 +61,7 @@ fDebug(0)
 //
 // Default constructor
 //
-  SetVtxStart();
+  SetVtxStartPos();
   SetVtxStartSigma();
   SetMinTracks();
   SetMinITSClusters();
@@ -92,7 +92,7 @@ fDebug(0)
 //
 // Standard constructor
 //
-  SetVtxStart();
+  SetVtxStartPos();
   SetVtxStartSigma();
   SetMinTracks();
   SetMinITSClusters();
@@ -838,7 +838,8 @@ AliESDVertex AliVertexerTracks::TrackletVertexFinder(TClonesArray *lines, Int_t 
 }
 //---------------------------------------------------------------------------
 Bool_t AliVertexerTracks::TrackToPoint(AliESDtrack *t,
-				       TMatrixD &ri,TMatrixD &wWi) const 
+				       TMatrixD &ri,TMatrixD &wWi,
+				       Bool_t uUi3by3) const 
 {
 //
 // Extract from the AliESDtrack the global coordinates ri and covariance matrix
@@ -855,31 +856,97 @@ Bool_t AliVertexerTracks::TrackToPoint(AliESDtrack *t,
   ri(1,0) = t->GetX()*sinRot+t->GetY()*cosRot;
   ri(2,0) = t->GetZ();
 
-  // matrix to go from global (x,y,z) to local (y,z);
-  TMatrixD qQi(2,3);
-  qQi(0,0) = -sinRot;
-  qQi(0,1) = cosRot;
-  qQi(0,2) = 0.;
-  qQi(1,0) = 0.;
-  qQi(1,1) = 0.;
-  qQi(1,2) = 1.;
 
-  // covariance matrix of local (y,z) - inverted
-  TMatrixD uUi(2,2);
-  Double_t cc[15];
-  t->GetExternalCovariance(cc);
-  uUi(0,0) = cc[0];
 
-  uUi(0,1) = cc[1];
-  uUi(1,0) = cc[1];
-  uUi(1,1) = cc[2];
-  if(uUi.Determinant() <= 0.) return kFALSE;
-  TMatrixD uUiInv(TMatrixD::kInverted,uUi);
+  if(!uUi3by3) {
+    // matrix to go from global (x,y,z) to local (y,z);
+    TMatrixD qQi(2,3);
+    qQi(0,0) = -sinRot;
+    qQi(0,1) = cosRot;
+    qQi(0,2) = 0.;
+    qQi(1,0) = 0.;
+    qQi(1,1) = 0.;
+    qQi(1,2) = 1.;
+
+    // covariance matrix of local (y,z) - inverted
+    Double_t cc[15];
+    t->GetExternalCovariance(cc);
+    TMatrixD uUi(2,2);
+    uUi(0,0) = cc[0];
+    uUi(0,1) = cc[1];
+    uUi(1,0) = cc[1];
+    uUi(1,1) = cc[2];
+    //printf(" Ui :\n");
+    //printf(" %f   %f\n",uUi(0,0),uUi(0,1));
+    //printf(" %f   %f\n",uUi(1,0),uUi(1,1));
+
+    if(uUi.Determinant() <= 0.) return kFALSE;
+    TMatrixD uUiInv(TMatrixD::kInverted,uUi);
   
-  // weights matrix: wWi = qQiT * uUiInv * qQi
-  TMatrixD uUiInvQi(uUiInv,TMatrixD::kMult,qQi);
-  TMatrixD m(qQi,TMatrixD::kTransposeMult,uUiInvQi);
-  wWi = m;
+    // weights matrix: wWi = qQiT * uUiInv * qQi
+    TMatrixD uUiInvQi(uUiInv,TMatrixD::kMult,qQi);
+    TMatrixD m(qQi,TMatrixD::kTransposeMult,uUiInvQi);
+    wWi = m;
+  } else {
+    if(fVert.GetNContributors()<1) AliFatal("Vertex from finder is empty");
+    // matrix to go from global (x,y,z) to local (x,y,z);
+    TMatrixD qQi(3,3);
+    qQi(0,0) = cosRot;
+    qQi(0,1) = sinRot;
+    qQi(0,2) = 0.;
+    qQi(1,0) = -sinRot;
+    qQi(1,1) = cosRot;
+    qQi(1,2) = 0.;
+    qQi(2,0) = 0.;
+    qQi(2,1) = 0.;
+    qQi(2,2) = 1.;
+   
+    // covariance of fVert along the track  
+    Double_t p[3],pt,ptot;
+    t->GetPxPyPz(p);
+    pt = TMath::Sqrt(p[0]*p[0]+p[1]*p[1]);
+    ptot = TMath::Sqrt(pt*pt+p[2]*p[2]);
+    Double_t cp = p[0]/pt;               //cos(phi)=px/pt
+    Double_t sp = p[1]/pt;               //sin(phi)=py/pt
+    Double_t ct = p[2]/ptot;             //cos(theta)=pz/ptot
+    Double_t st = TMath::Sqrt(1.-ct*ct); //sin(theta)
+    Double_t covfVert[6];
+    fVert.GetCovMatrix(covfVert);
+    Double_t covfVertalongt = 
+       covfVert[0]*cp*cp*ct*ct 
+      +covfVert[1]*2.*cp*sp*ct*ct
+      +covfVert[3]*2.*cp*ct*st 
+      +covfVert[2]*sp*sp*ct*ct 
+      +covfVert[4]*2.*sp*ct*st 
+      +covfVert[5]*st*st; 
+    Double_t cc[15];
+    t->GetExternalCovariance(cc);
+    // covariance matrix of local (x,y,z) - inverted
+    TMatrixD uUi(3,3);
+    Double_t nSigma = 2.;
+    uUi(0,0) = covfVertalongt * nSigma * nSigma;
+    if(fDebug) printf("=====> sqrtUi00 cm  %f\n",TMath::Sqrt(uUi(0,0)));
+    uUi(0,1) = 0.;
+    uUi(0,2) = 0.;
+    uUi(1,0) = 0.;
+    uUi(1,1) = cc[0];
+    uUi(1,2) = cc[1];
+    uUi(2,0) = 0.;
+    uUi(2,1) = cc[1];
+    uUi(2,2) = cc[2];
+    //printf(" Ui :\n");
+    //printf(" %f   %f\n",uUi(0,0),uUi(0,1));
+    //printf(" %f   %f\n",uUi(1,0),uUi(1,1));
+  
+    if(uUi.Determinant() <= 0.) return kFALSE;
+    TMatrixD uUiInv(TMatrixD::kInverted,uUi);
+  
+    // weights matrix: wWi = qQiT * uUiInv * qQi
+    TMatrixD uUiInvQi(uUiInv,TMatrixD::kMult,qQi);
+    TMatrixD m(qQi,TMatrixD::kTransposeMult,uUiInvQi);
+    wWi = m;
+  }
+
 
   return kTRUE;
 } 
@@ -1027,20 +1094,30 @@ void AliVertexerTracks::VertexFitter(Bool_t useConstraint)
 {
 //
 // The optimal estimate of the vertex position is given by a "weighted 
-// average of tracks positions"
+// average of tracks positions".
 // Original method: V. Karimaki, CMS Note 97/0051
 //
   Double_t initPos[3];
-  fVert.GetXYZ(initPos);
-  Int_t arrEntries = (Int_t)fTrkArray.GetEntries();
-  if(arrEntries==1) useConstraint=kTRUE;
+  if(!fOnlyFitter) {
+    fVert.GetXYZ(initPos);
+  } else {
+    initPos[0]=fNominalPos[0];
+    initPos[1]=fNominalPos[1];
+    initPos[2]=fNominalPos[2];
+  }
+
+  Int_t nTrks = (Int_t)fTrkArray.GetEntries();
+  if(nTrks==1) useConstraint=kTRUE;
   if(fDebug) { 
-    printf(" VertexFitter(): start\n");
-    printf(" Number of tracks in array: %d\n",(Int_t)fTrkArray.GetEntriesFast());
+    printf("--- VertexFitter(): start\n");
+    printf(" Number of tracks in array: %d\n",nTrks);
     printf(" Minimum # tracks required in fit: %d\n",fMinTracks);
-    printf("Vertex position after finder: %f,%f,%f\n",initPos[0],initPos[1],initPos[2]);
+    if(!fOnlyFitter) printf(" Vertex position after finder: %f,%f,%f\n",initPos[0],initPos[1],initPos[2]);
     if(useConstraint) printf(" This vertex will be used in fit: (%f+-%f,%f+-%f)\n",fNominalPos[0],TMath::Sqrt(fNominalCov[0]),fNominalPos[1],TMath::Sqrt(fNominalCov[2])); 
   }
+
+  // special treatment for few-tracks fits (e.g. secondary vertices)
+  Bool_t uUi3by3 = kFALSE; if(nTrks<5 && !useConstraint) uUi3by3 = kTRUE;
 
   Int_t i,j,k,step=0;
   TMatrixD rv(3,1);
@@ -1081,6 +1158,8 @@ void AliVertexerTracks::VertexFitter(Bool_t useConstraint)
     chi2 = 0.;
     nUsedTrks = 0;
 
+    if(step==1) { initPos[0]=rv(0,0); initPos[0]=rv(1,0); }
+
     TMatrixD sumWiri(3,1);
     TMatrixD sumWi(3,3);
     for(i=0; i<3; i++) {
@@ -1103,9 +1182,8 @@ void AliVertexerTracks::VertexFitter(Bool_t useConstraint)
       chi2 += chi2b;
     }
 
-
     // loop on tracks  
-    for(k=0; k<arrEntries; k++) {
+    for(k=0; k<nTrks; k++) {
       // get track from track array
       t = (AliESDtrack*)fTrkArray.At(k);
       alpha = t->GetAlpha();
@@ -1113,14 +1191,13 @@ void AliVertexerTracks::VertexFitter(Bool_t useConstraint)
       // to vtxSeed (from finder)
       t->AliExternalTrackParam::PropagateTo(xlStart,GetFieldkG());   
  
-
       // vector of track global coordinates
       TMatrixD ri(3,1);
       // covariance matrix of ri
       TMatrixD wWi(3,3);
 
       // get space point from track
-      if(!TrackToPoint(t,ri,wWi)) continue;
+      if(!TrackToPoint(t,ri,wWi,uUi3by3)) continue;
       TMatrixD wWiri(wWi,TMatrixD::kMult,ri); 
 
       // track chi2
@@ -1152,16 +1229,14 @@ void AliVertexerTracks::VertexFitter(Bool_t useConstraint)
       continue;
     }
 
-    // inverted of weights matrix
-    TMatrixD invsumWi(TMatrixD::kInverted,sumWi);
-    vV = invsumWi;
-     
-    // position of primary vertex
-    rv.Mult(vV,sumWiri);
-
+    if(step==0) { 
+      // inverted of weights matrix
+      TMatrixD invsumWi(TMatrixD::kInverted,sumWi);
+      vV = invsumWi;
+      // position of primary vertex
+      rv.Mult(vV,sumWiri);
+    }
   } // end loop on the 2 steps
-
-  // delete t;
 
   if(failed) { 
     if(fDebug) printf("TooFewTracks\n");
@@ -1187,9 +1262,9 @@ void AliVertexerTracks::VertexFitter(Bool_t useConstraint)
   fCurrentVertex = new AliESDVertex(position,covmatrix,chi2,nUsedTrks);
 
   if(fDebug) {
-    printf(" VertexFitter(): finish\n");
-    printf(" rv = ( %f , %f , %f )\n\n",rv(0,0),rv(1,0),rv(2,0));
+    printf(" Vertex after fit:\n");
     fCurrentVertex->PrintStatus();
+    printf("--- VertexFitter(): finish\n");
   }
 
   return;
