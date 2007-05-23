@@ -212,8 +212,8 @@ else if (runType == "PHYSICS") {
   }
 } 
 else {
-	Log(Form("Nothing to do: run type is %s", runType.Data()))
-	return 0;
+  Log(Form("Nothing to do: run type is %s", runType.Data()));
+  return 0;
 } 
   // note that the parameters are returned as character strings!
   const char* nEvents = GetRunParameter("totalEvents");
