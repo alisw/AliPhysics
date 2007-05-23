@@ -68,7 +68,12 @@ SRCS = 	AliITSDetTypeRec.cxx \
 		AliITSBadChannelsAuxSPD.cxx \
 		AliITSBadChannelsSPD.cxx  \
 		AliITSChannelSPD.cxx  \
-		AliITSPreprocessorSDD.cxx
+		AliITSPreprocessorSDD.cxx \
+		AliITSOnlineSDD.cxx \
+		AliITSOnlineSDDBase.cxx \
+		AliITSOnlineSDDTP.cxx \
+		AliITSOnlineSDDBTP.cxx \
+		AliITSOnlineSDDInjectors.cxx
 
 HDRS:=  $(SRCS:.cxx=.h)
 
