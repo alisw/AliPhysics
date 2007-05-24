@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.89  2007/04/24 14:34:39  hristov
+ * Additional protection: do not search for alignable object if the CPV is not in the geometry
+ *
  * Revision 1.88  2007/04/19 15:28:30  kharlov
  * Modify strip unit geometry according to the final drawings (Timur)
  *
@@ -910,6 +913,7 @@ void AliPHOSv0::AddAlignableVolumes() const
   TString physModulePath="/ALIC_1/PHOS_";
   TString symbModuleName="PHOS/Module";
   Int_t nModules = GetGeometry()->GetNModules();
+  Double_t rotMatrix[9] ;
 
   for(Int_t iModule=1; iModule<=nModules; iModule++){
     volpath = physModulePath;
@@ -917,11 +921,35 @@ void AliPHOSv0::AddAlignableVolumes() const
     symname = symbModuleName;
     symname += iModule;
     gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data());
-  }
+
+    // Creates the Local to Tracking transformation matrix for PHOS modules
+    TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntry(symname.Data()) ;
+    const char *path = alignableEntry->GetTitle();
+    if (!gGeoManager->cd(path))
+       AliFatal(Form("Volume path %s not valid!",path));
+    TGeoHMatrix *matLtoT = new TGeoHMatrix;
+    matLtoT->SetDx(0.) ;
+    matLtoT->SetDy(0.) ;
+    matLtoT->SetDz(0.) ;
+    //Local to Tracking transformation matrix for PHOS modules:
+    //rotation aroung global Z to -pi/2.     x->-y, y->x, z->z.
+    //From PPR-II_1 Chapter 5 p.18 (36 in pdf):
+    //  - It is a right handed-Cartesian coordinate system;
+    //  - its origin and the z axis coincide with those of the global
+    //    ALICE coordinate system;
+    //  - the x axis is perpendicular to the sub-detector's `sensitive
+    //    plane' (TPC pad row, ITS ladder etc).
+    rotMatrix[0]= 0;  rotMatrix[1]=-1;  rotMatrix[2]= 0;  
+    rotMatrix[3]= 1;  rotMatrix[4]= 0;  rotMatrix[5]= 0; 
+    rotMatrix[6]= 0;  rotMatrix[7]= 0;  rotMatrix[8]= 1;
+    TGeoRotation rot;
+    rot.SetMatrix(rotMatrix);
+    matLtoT->MultiplyLeft(&rot);
+    alignableEntry->SetMatrix(matLtoT);
+ }
 
   //Aligning of CPV should be done for volume PCPV_1
   symbModuleName="PHOS/Module";
-  Double_t rotMatrix[9] ;
   for(Int_t iModule=1; iModule<=nModules; iModule++){
     volpath = physModulePath;
     volpath += iModule;
