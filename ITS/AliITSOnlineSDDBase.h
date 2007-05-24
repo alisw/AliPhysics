@@ -7,8 +7,8 @@
 // Origin: F.Prino, Torino, prino@to.infn.it                     //
 //                                                               //
 ///////////////////////////////////////////////////////////////////
-#include"AliITSOnlineSDD.h"
-#include<TMath.h>
+#include "AliITSOnlineSDD.h"
+#include <TMath.h>
 
 class TH2F;
 class TGraph;
