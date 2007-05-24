@@ -45,7 +45,7 @@ Int_t AliGeomManager::fgLayerSize[kLastLayer - kFirstLayer] = {
   36, 36,   // TPC inner and outer chambers
   90, 90, 90, 90, 90, 90,  // 6 TRD chambers' layers
   1638,     // TOF
-  1, 1,     // PHOS ??
+  5, 5,     // PHOS,CPV
   7,        // HMPID ??
   1         // MUON ??
 };
@@ -58,7 +58,7 @@ const char* AliGeomManager::fgLayerName[kLastLayer - kFirstLayer] = {
   "TRD chambers layer 1", "TRD chambers layer 2", "TRD chambers layer 3",
   "TRD chambers layer 4", "TRD chambers layer 5", "TRD chambers layer 6",
   "TOF layer",
-  "?","?",
+  "PHOS EMC layer","PHOS CPV layer",
   "HMPID layer",
   "?"
 };
@@ -703,6 +703,20 @@ void AliGeomManager::InitSymNamesLUT()
       }
     }
   }
+
+  /*********************      PHOS EMC layer   ***********************/
+  {
+    TString str = "PHOS/Module";
+    modnum=0;
+
+    for (Int_t iModule=1; iModule <= 5; iModule++) {
+      symname = str;
+      symname += iModule;
+      modnum = iModule-1;
+      fgSymName[kPHOS1-kFirstLayer][modnum] = symname.Data();
+    }
+  }
+
 }
 
 //_____________________________________________________________________________
