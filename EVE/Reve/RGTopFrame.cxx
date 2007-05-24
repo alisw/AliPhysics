@@ -33,6 +33,8 @@
 #include <TPolyMarker3D.h>
 #include <TEnv.h>
 #include <TStyle.h>
+#include <TColor.h>
+#include <TGeoShape.h>
 #include <KeySymbols.h>
 #include "TVirtualGL.h"
 #include "TPluginManager.h"
@@ -472,9 +474,17 @@ TGeoManager* RGTopFrame::GetGeometry(const TString& filename)
       TObjArray* collist = (TObjArray*) f.Get("ColorList");
       f.Close();
       if(collist != 0) {
-	TSeqCollection* glist = gROOT->GetListOfColors();
-	glist->Clear();
-	glist->AddAll(collist);
+	TIter next(gGeoManager->GetListOfVolumes());
+	TGeoVolume* vol;
+	while ((vol = (TGeoVolume*) next()) != 0)
+	{
+          Int_t oldID = vol->GetLineColor();
+          TColor* col = (TColor*)collist->At(oldID);
+          Float_t r, g, b;
+	  col->GetRGB(r, g, b);
+          Int_t  newID = TColor::GetColor(r,g,b);
+          vol->SetLineColor(newID);
+	} 
       }
     }
 
