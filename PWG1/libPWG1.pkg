@@ -1,7 +1,7 @@
 
-SRCS:= AliTreeDraw.cxx \
-       AliGenInfo.cxx  \
-       AliESDComparisonMI.cxx 
+SRCS:= 	AliTreeDraw.cxx \
+	AliGenInfo.cxx  AliGenInfoMaker.cxx  \
+	AliRecInfo.cxx  AliRecInfoMaker.cxx  
 
 HDRS:= $(SRCS:.cxx=.h)
 

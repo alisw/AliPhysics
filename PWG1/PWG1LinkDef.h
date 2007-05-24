@@ -7,14 +7,15 @@
 #pragma link C++ class AliTreeDraw+;
 //
 #pragma link C++ class AliTPCdigitRow+;
+#pragma link C++ class AliMCInfo+;
 #pragma link C++ class AliGenV0Info+;
 #pragma link C++ class AliGenKinkInfo+;
 #pragma link C++ class AliGenInfoMaker+;
-#pragma link C++ class AliMCInfo+;
 //
 #pragma link C++ class AliESDRecInfo+;
 #pragma link C++ class AliESDRecV0Info+;
 #pragma link C++ class AliESDRecKinkInfo+;
-#pragma link C++ class AliESDComparisonMI+;
+//
+#pragma link C++ class AliRecInfoMaker+;
 
 #endif
