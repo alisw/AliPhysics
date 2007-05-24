@@ -42,6 +42,7 @@ class AliPHOSRecPoint : public AliCluster {
   virtual void    Draw(Option_t * option="") ;
   virtual void    ExecuteEvent(Int_t event, Int_t px, Int_t py) ;
   void            EvalAll(TClonesArray * digits) ;  
+  void            EvalLocal2TrackingCSTransform();
   virtual void    EvalPHOSMod(AliPHOSDigit * digit) ;  
   virtual void    EvalPrimaries(TClonesArray * digits) ;
   virtual int *   GetDigitsList(void) const { return fDigitsList ; }  

@@ -34,6 +34,7 @@
 #include "AliPHOSDigit.h"
 #include "AliPHOSRecPoint.h"
 #include "AliPHOSGetter.h"
+#include "AliGeomManager.h"
 
 ClassImp(AliPHOSRecPoint)
 
@@ -343,4 +344,29 @@ void AliPHOSRecPoint::GetLocalPosition(TVector3 & pos) const
   // of the sub-detector
   
   pos = fLocPos;
+}
+
+//____________________________________________________________________________
+void AliPHOSRecPoint::EvalLocal2TrackingCSTransform()
+{
+  //Evaluates local to "tracking" c.s. transformation (B.P.).
+  //All evaluations should be completed before calling for this function.
+  //See ALICE PPR Chapter 5 p.18 for "tracking" c.s. definition,
+  //or just ask Jouri Belikov. :)
+
+  if(IsEmc()) {
+    SetVolumeId(AliGeomManager::LayerToVolUID(AliGeomManager::kPHOS1,GetPHOSMod()-1));
+  }
+  else
+    return;
+
+  Double_t lxyz[3] = {fLocPos.X(),0,fLocPos.Z()};
+  Double_t txyz[3] = {0,0,0};
+
+  const TGeoHMatrix* tr2loc = GetTracking2LocalMatrix();
+  if(!tr2loc) AliFatal(Form("No Tracking2LocalMatrix found."));
+
+  tr2loc->MasterToLocal(lxyz,txyz);
+  SetX(0.); SetY(txyz[1]); SetY(txyz[2]);
+
 }
