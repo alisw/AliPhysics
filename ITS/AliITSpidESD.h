@@ -18,7 +18,7 @@ public:
   AliITSpidESD();
   virtual ~AliITSpidESD() {}
   virtual Int_t MakePID(AliESD *event) =0;
-  static Double_t Bethe(Double_t bg);
+  static Double_t Bethe(Double_t p,Double_t mass);
 private:
   ClassDef(AliITSpidESD,1)   // ITS PID class
 };

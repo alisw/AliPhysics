@@ -20,10 +20,9 @@ public:
   virtual Int_t MakePID(AliESD *event);
 
 private:
-  Double_t fMIP;          // dEdx for MIP
   Double_t fRes;          // relative dEdx resolution
   Double_t fRange;        // one particle type PID range (in sigmas)
-  ClassDef(AliITSpidESD1,1)   // ITS PID class
+  ClassDef(AliITSpidESD1,2)   // ITS PID class
 };
 
 #endif

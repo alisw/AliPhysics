@@ -27,7 +27,6 @@
 ClassImp(AliITSpidESD1)
 
 AliITSpidESD1::AliITSpidESD1(): AliITSpidESD(),
-fMIP(0),
 fRes(0),
 fRange(0) 
 {
@@ -35,9 +34,8 @@ fRange(0)
 }
 //_________________________________________________________________________
 AliITSpidESD1::AliITSpidESD1(Double_t *param): AliITSpidESD(),
-fMIP(param[0]),
-fRes(param[1]),
-fRange(param[2])
+fRes(param[0]),
+fRange(param[1])
 {
   //
   //  The main constructor
@@ -57,12 +55,12 @@ Int_t AliITSpidESD1::MakePID(AliESD *event)
     if ((t->GetStatus()&AliESDtrack::kITSin )==0)
       if ((t->GetStatus()&AliESDtrack::kITSout)==0) continue;
     Double_t mom=t->GetP();
-    Double_t dedx=t->GetITSsignal()/fMIP;
+    Double_t dedx=t->GetITSsignal();
     Int_t ns=AliPID::kSPECIES;
     Double_t p[10];
     for (Int_t j=0; j<ns; j++) {
-      Double_t mass=AliPID::ParticleMass(j);
-      Double_t bethe=AliITSpidESD::Bethe(mom/mass); 
+      Double_t mass=AliPID::ParticleMass(j);//GeV/c^2
+      Double_t bethe=AliITSpidESD::Bethe(mom,mass);
       Double_t sigma=fRes*bethe;
       if (TMath::Abs(dedx-bethe) > fRange*sigma) {
 	p[j]=TMath::Exp(-0.5*fRange*fRange)/sigma;
