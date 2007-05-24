@@ -53,7 +53,7 @@ public:
   static TH1F*  CreateResHisto(TH2F* hRes2, TH1F **phMean, 
 				Bool_t drawBinFits = kTRUE,Bool_t overflowBinFits = kFALSE);
 
-  AliTreeDraw(const AliTreeDraw& t):fTree(0),fRes(0),fMean(0),fPoints(0){;}
+  AliTreeDraw(const AliTreeDraw& t):TObject(),fTree(0),fRes(0),fMean(0),fPoints(0){;}
   AliTreeDraw & operator=(const AliTreeDraw & t){return *this;}
 
   TTree * fTree;    //the tree for visualization - NOT OWNER
