@@ -595,8 +595,8 @@ void AliPHOSTrigger::SetTriggers(const TClonesArray * ampmatrix, const Int_t iMo
       fADCValuesLownxn  = new Int_t[nTimeBins];
     }
 
-    pulse.SetAmplitude(maxtimeRn);
-    pulse.SetTZero(fnxnMaxAmp);
+    pulse.SetAmplitude(fnxnMaxAmp);
+    pulse.SetTZero(maxtimeRn);
     pulse.MakeSamples();
     pulse.GetSamples(fADCValuesHighnxn, fADCValuesLownxn) ;
     
