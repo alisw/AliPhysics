@@ -60,6 +60,16 @@ class AliITSRawStreamSPD: public AliITSRawStream {
     enum {kDDLsNumber = 20};      // number of DDLs in SPD
     enum {kModulesPerDDL = 12};   // number of modules in each DDL
     enum {kCalHeadLenMax = 16};   // maximum number of calib header words
+    enum ESPDRawStreamError {
+      kCalHeaderLengthErr = 1,
+      kDDLNumberErr = 2,
+      kEventNumberErr = 3,
+      kChipAddrErr = 4,
+      kStaveNumberErr = 5,
+      kNumbHitsErr = 6,
+      kWrongWordErr = 7,
+      kHalfStaveStatusErr = 8
+    };
 
   private :
     static const Int_t fgkDDLModuleMap[kDDLsNumber][kModulesPerDDL];  // mapping DDL/module -> module number

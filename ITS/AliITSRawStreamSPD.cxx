@@ -23,6 +23,7 @@
 
 #include "AliITSRawStreamSPD.h"
 #include "AliRawReader.h"
+#include "AliLog.h"
 
 ClassImp(AliITSRawStreamSPD)
 
@@ -54,7 +55,7 @@ const Int_t AliITSRawStreamSPD::fgkDDLModuleMap[kDDLsNumber][kModulesPerDDL] = {
 
 AliITSRawStreamSPD::AliITSRawStreamSPD(AliRawReader* rawReader) :
   AliITSRawStream(rawReader),
-  fEventNumber(-1),fChipAddr(0),fHalfStaveNr(0),
+  fEventNumber(-1),fChipAddr(0),fHalfStaveNr(0),fCol(0),fRow(0),
   fData(0),fOffset(0),fHitCount(0),
   fDataChar1(0),fDataChar2(0),fDataChar3(0),fDataChar4(0),
   fFirstWord(kTRUE),fPrevEventId(0xffffffff)
@@ -139,7 +140,8 @@ Bool_t AliITSRawStreamSPD::ReadCalibHeader()
       // length of cal header:
       UInt_t calLen = fDataChar1+(fDataChar2<<8)+(fDataChar3<<16)+(fDataChar4<<24);
       if (calLen>kCalHeadLenMax) {
-	Error("ReadCalibHeader", "Header length problem. %d > %d (max)",calLen,kCalHeadLenMax);
+	fRawReader->AddMajorErrorLog(kCalHeaderLengthErr,Form("Header length %d > max = %d",calLen,kCalHeadLenMax));
+	AliWarning(Form("Header length problem. %d > %d (max)",calLen,kCalHeadLenMax));
 	return kFALSE;
       }
       else if (calLen>0) {
@@ -148,7 +150,8 @@ Bool_t AliITSRawStreamSPD::ReadCalibHeader()
 	    fCalHeadWord[iword] = fDataChar1+(fDataChar2<<8)+(fDataChar3<<16)+(fDataChar4<<24);
 	  }
 	  else {
-	    Error("ReadCalibHeader", "header length problem");
+	    fRawReader->AddMajorErrorLog(kCalHeaderLengthErr,"header length problem");
+	    AliWarning("header length problem");
 	    return kFALSE;
 	  }
 	}
@@ -177,7 +180,8 @@ Bool_t AliITSRawStreamSPD::Next()
       }
     }
     else {
-      Error("Next", "DDL number error (= %d) , setting it to 19", ddlID);
+      fRawReader->AddMajorErrorLog(kDDLNumberErr,Form("Wrong DDL number %d",ddlID)); 
+      AliWarning(Form("DDL number error (= %d) , setting it to 19", ddlID));
       ddlID=19;
     }
 
@@ -188,17 +192,19 @@ Bool_t AliITSRawStreamSPD::Next()
 	fEventNumber = eventNumber;
       } 
       else if (eventNumber != fEventNumber) {
-	Error("Next", "mismatching event numbers: %d != %d", 
-		eventNumber, fEventNumber);
+	fRawReader->AddMajorErrorLog(kEventNumberErr,Form("Reading event number %d instead of %d",eventNumber,fEventNumber));
+	AliWarning(Form("mismatching event numbers: %d != %d",eventNumber, fEventNumber));
       }
       fChipAddr = fData & 0x000F;
       if (fChipAddr>9) {
-	Error("Next", "overflow chip addr (= %d) , setting it to 9", fChipAddr);
+	fRawReader->AddMajorErrorLog(kChipAddrErr,Form("Overflow chip address %d - set to 9",fChipAddr));
+	AliWarning(Form("overflow chip addr (= %d) , setting it to 9", fChipAddr));
 	fChipAddr=9;
       }
       fHalfStaveNr = (fData & 0x3800)>>11;
       if (fHalfStaveNr>5 || fRawReader->TestBlockAttribute(fHalfStaveNr)) {
-	Error("Next", "half stave number error(=%d) , setting it to 5", fHalfStaveNr);
+	fRawReader->AddMajorErrorLog(kStaveNumberErr,Form("Half stave number error %d - set to 5",fHalfStaveNr));
+	AliWarning(Form("half stave number error(=%d) , setting it to 5", fHalfStaveNr));
 	fHalfStaveNr=5;
       }
       // translate  ("online") ddl, hs, chip nr  to  ("offline") module id :
@@ -207,8 +213,11 @@ Bool_t AliITSRawStreamSPD::Next()
     } 
     else if ((fData & 0xC000) == 0x0000) {    // trailer
       UShort_t hitCount = fData & 0x1FFF;
-      if (hitCount != fHitCount) Error("Next", "wrong number of hits: %d != %d", fHitCount, hitCount);
-    } 
+      if (hitCount != fHitCount){
+	fRawReader->AddMajorErrorLog(kNumbHitsErr,Form("Number of hits %d instead of %d",hitCount,fHitCount));
+	AliWarning(Form("wrong number of hits: %d != %d", fHitCount, hitCount));
+      }
+    }
     else if ((fData & 0xC000) == 0x8000) {    // pixel hit
       fHitCount++;
       fCol = (fData & 0x001F);
@@ -227,24 +236,28 @@ Bool_t AliITSRawStreamSPD::Next()
       return kTRUE;
     } 
     else {                                    // fill word
-      if ((fData & 0xC000) != 0xC000) Error("Next", "wrong fill word!");
+      if ((fData & 0xC000) != 0xC000) {
+	fRawReader->AddMajorErrorLog(kWrongWordErr,"Wrong fill word");
+	AliWarning("wrong fill word!");
+      }
     }
 
   }
 
   return kFALSE;
 }
-
 Bool_t AliITSRawStreamSPD::GetHalfStavePresent(UInt_t hs) {
   // Reads the half stave present status from the block attributes
   Int_t ddlID = fRawReader->GetDDLID();
   if (ddlID==-1) {
-    Warning("GetHalfStavePresent", "DDL ID = -1. Cannot read block attributes. Return kFALSE.");
+    fRawReader->AddMinorErrorLog(kHalfStaveStatusErr,"DDL ID = -1. Cannot read block attributes.");
+    AliWarning("DDL ID = -1. Cannot read block attributes. Return kFALSE.");
     return kFALSE;
   }
   else {
     if (hs>=6) {
-      Warning("GetHalfStavePresent", "HS >= 6 requested (%d). Return kFALSE.",hs);
+      fRawReader->AddMinorErrorLog(kHalfStaveStatusErr,Form( "HS >= 6 requested (%d). Return kFALSE.",hs));
+      AliWarning(Form("HS >= 6 requested (%d). Return kFALSE.",hs));
       return kFALSE;
     }
     UChar_t attr = fRawReader->GetBlockAttributes();
