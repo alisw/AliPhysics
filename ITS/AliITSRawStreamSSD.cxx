@@ -23,6 +23,7 @@
 
 #include "AliITSRawStreamSSD.h"
 #include "AliRawReader.h"
+#include "AliLog.h"
 
 ClassImp(AliITSRawStreamSSD)
 
@@ -226,6 +227,11 @@ Bool_t AliITSRawStreamSSD::Next()
   if (!fRawReader->ReadNextInt(fData)) return kFALSE;
   
   UInt_t relModuleID = (fData >> 21) & 0x000007FF;
+  if(relModuleID > kModulesPerDDL){
+    fRawReader->AddMajorErrorLog(kWrongModuleIdErr,Form("Module ID = %d > %d (max)",relModuleID,kModulesPerDDL));
+    AliWarning(Form("Module ID = %d > %d (max)",relModuleID,kModulesPerDDL));
+    return kFALSE;
+  }
   fModuleID = fgkDDLModuleMap[fRawReader->GetDDLID()][relModuleID];
   fCoord1 = (fData >> 20) & 0x00000001;
   fCoord2 = (fData >> 10) & 0x000003FF;

@@ -31,6 +31,9 @@ class AliITSRawStreamSSD: public AliITSRawStream {
 
     static Int_t     GetModuleNumber(UInt_t iDDL, UInt_t iModule)
       {return fgkDDLModuleMap[iDDL][iModule];}
+    enum ESSDRawStreamError {
+      kWrongModuleIdErr = 1
+    };
 
   protected :
     static const Int_t fgkDDLModuleMap[kDDLsNumber][kModulesPerDDL];  // mapping DDL/module -> module number
