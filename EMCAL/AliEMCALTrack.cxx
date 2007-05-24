@@ -219,7 +219,7 @@ Bool_t AliEMCALTrack::PropagateTo(Double_t xk, Double_t d, Double_t x0)
 		if (Rotate(alpha)) {
 			if (GetYAt(xk, field, y)) {
 				if (TMath::Abs(y) <= ymax) {
-					AliInfo(Form("Required change from sector %d to sector %d to succeed in propagation", istart, i));
+				  AliDebug(1,Form("Required change from sector %d to sector %d to succeed in propagation", istart, i));
 					return SimplePropagation(xk, d, x0);
 				}
 			}
