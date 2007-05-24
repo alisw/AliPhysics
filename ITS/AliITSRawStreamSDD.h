@@ -36,8 +36,10 @@ class AliITSRawStreamSDD: public AliITSRawStream {
 
     enum {kDDLsNumber = 24};      // number of DDLs in SDD
     enum {kModulesPerDDL = 12};   // number of modules in each DDL 
-
- 
+    enum ESDDRawStreamError {
+      kDataError = 1,
+      kDataFormatErr = 2
+    };
   protected:
     static const Int_t fgkDDLModuleMap[kDDLsNumber][kModulesPerDDL]; //  mapping DDL/module -> module number
 

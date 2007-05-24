@@ -23,6 +23,7 @@
 
 #include "AliITSRawStreamSDD.h"
 #include "AliRawReader.h"
+#include "AliLog.h"
 
 ClassImp(AliITSRawStreamSDD)
 
@@ -227,8 +228,8 @@ Bool_t AliITSRawStreamSDD::Next()
       } else if ((fData >> 29) == 0x00) {    // error
 
 	if ((fData & 0x00000163) != 0) {
-	 
-	  Error("Next", "error codes = %8.8x",fData);
+	  fRawReader->AddMajorErrorLog(kDataError,Form("Error code = %8.8x",fData));	 
+	  AliWarning(Form("error codes = %8.8x",fData));
 	  return kFALSE; 
 	  
 	}
@@ -240,7 +241,8 @@ Bool_t AliITSRawStreamSDD::Next()
       } else if ((fData >> 30) == 0x03) {    // channel 1 data
 	fChannel = 1;
       } else {                               // unknown data format
-	Error("Next", "invalid data: %8.8x\n", fData);
+	fRawReader->AddMajorErrorLog(kDataFormatErr,Form("Invalid data %8.8x",fData));
+	AliWarning(Form("invalid data: %8.8x\n", fData));
 	return kFALSE;
       }
       
