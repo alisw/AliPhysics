@@ -683,11 +683,11 @@ AliESDVertex* AliAnalysisVertexingHF::OwnPrimaryVertex(Int_t ntrks,
       if(strstr(fV1->GetTitle(),"VertexerTracksWithConstraintOnlyFitter")) 
 	vertexer1->SetOnlyFitter();
     }
-    Int_t skipped[ntrks];
+    Int_t skipped[10];
     AliESDtrack *t = 0;
     for(Int_t i=0; i<ntrks; i++) {
       t = (AliESDtrack*)trkArray->UncheckedAt(i);
-      skipped[i] = t->GetID();
+      skipped[i] = (Int_t)t->GetID();
     }
     vertexer1->SetSkipTracks(ntrks,skipped);
     ownPrimVertex = (AliESDVertex*)vertexer1->FindPrimaryVertex(esd); 
