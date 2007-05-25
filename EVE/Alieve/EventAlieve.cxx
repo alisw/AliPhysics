@@ -24,6 +24,12 @@ using namespace Alieve;
 //______________________________________________________________________
 // Event
 //
+// Provide interface for loading and navigating standard AliRoot data
+// (AliRunLoader) and ESDs.
+//
+// Missing support for raw-data. For now this is handled individually
+// by each sub-detector.
+// 
 
 ClassImp(Event)
 

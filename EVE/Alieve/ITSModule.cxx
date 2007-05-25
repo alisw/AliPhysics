@@ -338,10 +338,16 @@ void ITSModule::LoadQuads()
 
 void ITSModule::SetTrans()
 {
+  // Set transformation matrix based on module id (use geometry to
+  // retrieve this information).
+
   Double_t x[9];
   fHMTrans.UnitTrans();
 
-   // column major
+  // !!!! Here should use AliITSgeomTGeo ... but can i be sure
+  // the geometry has been loaded?
+
+  // column major
   fInfo->fGeom->GetRotMatrix(fID, x);
   fHMTrans.SetBaseVec(1, x[0], x[3], x[6]);
   fHMTrans.SetBaseVec(2, x[1], x[4], x[7]);
