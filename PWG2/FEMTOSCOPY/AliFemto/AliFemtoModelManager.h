@@ -23,7 +23,7 @@ class AliFemtoModelManager
 
   void AcceptFreezeOutGenerator(AliFemtoModelFreezeOutGenerator *aFreeze);
   void AcceptWeightGenerator(AliFemtoModelWeightGenerator *aWeight);
-  void CreateCopyHiddenInfo();
+  void CreateCopyHiddenInfo(Bool_t aCopy=kTRUE);
 
   AliFemtoModelFreezeOutGenerator* GetFreezeOutGenerator();
   AliFemtoModelWeightGenerator*    GetWeightGenerator();
