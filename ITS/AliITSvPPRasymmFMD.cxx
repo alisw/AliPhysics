@@ -6269,7 +6269,9 @@ void AliITSvPPRasymmFMD::StepManager(){
         gMC->CurrentVolOffID(2,cpn0);
         break;
     default:
-        Error("StepManager","Unknown volume kk=%d",kk);
+      //PH The code below is commented out because when the loop 
+      //PH that searches for kk doesn't find anything, kk is equal to 6
+      //PH        Error("StepManager","Unknown volume kk=%d",kk);
         return; // not an ITS sensitive volume.
     } //
     fIgm.DecodeDetector(mod,kk+1,cpn0,cpn1,cpn2);
