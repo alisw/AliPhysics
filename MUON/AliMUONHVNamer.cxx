@@ -57,7 +57,7 @@ const char* AliMUONHVNamer::fgHVChannelSt12Pattern[] =
   "MchHvLvLeft/Chamber%02dLeft/Quad%dSect%d.actual.vMon",
   "MchHvLvRight/Chamber%02dRight/Quad%dSect%d.actual.vMon",
 };
-  
+
 const char* AliMUONHVNamer::fgHVSwitchSt345Pattern = "MchDE%04dsw%d.inValue";
 
 //_____________________________________________________________________________
@@ -73,6 +73,39 @@ AliMUONHVNamer::~AliMUONHVNamer()
 }
 
 //_____________________________________________________________________________
+void 
+AliMUONHVNamer::AliasesAsLdif(const char* ldiffile) const
+{
+/// Export the aliases in LDIF format
+
+  ofstream out(ldiffile);
+  
+  TObjArray* a = CompactAliases();
+  
+  TIter next(a);
+  TObjString* s;
+
+  // Some header. host name and port probably not up to date.
+  out << "#MCH config" << endl
+    << "dn: det=MCH,o=alice,dc=cern,dc=ch" << endl
+    << "objectClass: AliShuttleDetector" << endl
+    << "det: MCH" << endl
+    << "StrictRunOrder: 1" << endl
+    << "responsible: aphecetc@in2p3.fr" << endl
+    << "DCSHost: aldcs053.cern.ch" << endl
+    << "DCSPort: 4242" <<endl;
+  
+  while ( ( s = (TObjString*)(next()) ) )
+  {
+    out << "DCSalias: " << s->String().Data() << endl;
+  }
+  
+  out.close();
+  
+  delete a;
+}
+
+//_____________________________________________________________________________
 TObjArray*
 AliMUONHVNamer::CompactAliases() const
 {
@@ -84,18 +117,18 @@ AliMUONHVNamer::CompactAliases() const
   a->SetOwner(kTRUE);
   
   // St 12 (HV Channels)
-  a->Add(new TObjString("MchHvLvRight/Chamber[01..04]Right/Quad1Sect[1..3].actual.vMon"));
-  a->Add(new TObjString("MchHvLvLeft/Chamber[01..04]Left/Quad2Sect[1..3].actual.vMon"));
-  a->Add(new TObjString("MchHvLvLeft/Chamber[01..04]Left/Quad3Sect[1..3].actual.vMon"));
-  a->Add(new TObjString("MchHvLvRight/Chamber[01..04]Right/Quad4Sect[1..3].actual.vMon"));
+  a->Add(new TObjString("MchHvLvRight/Chamber[00..03]Right/Quad0Sect[0..2].actual.vMon"));
+  a->Add(new TObjString("MchHvLvLeft/Chamber[00..03]Left/Quad1Sect[0..2].actual.vMon"));
+  a->Add(new TObjString("MchHvLvLeft/Chamber[00..03]Left/Quad2Sect[0..2].actual.vMon"));
+  a->Add(new TObjString("MchHvLvRight/Chamber[00..03]Right/Quad3Sect[0..2].actual.vMon"));
   
   // St345 (HV Channels)
   
-  a->Add(new TObjString("MchHvLvRight/Chamber[05..10]Right/Slat[01..09].actual.vMon"));
-  a->Add(new TObjString("MchHvLvLeft/Chamber[05..10]Left/Slat[01..09].actual.vMon"));
+  a->Add(new TObjString("MchHvLvRight/Chamber[04..09]Right/Slat[00..08].actual.vMon"));
+  a->Add(new TObjString("MchHvLvLeft/Chamber[04..09]Left/Slat[00..08].actual.vMon"));
 
-  a->Add(new TObjString("MchHvLvRight/Chamber[07..10]Right/Slat[10..13].actual.vMon"));
-  a->Add(new TObjString("MchHvLvLeft/Chamber[07..10]Left/Slat[10..13].actual.vMon"));
+  a->Add(new TObjString("MchHvLvRight/Chamber[06..09]Right/Slat[09..12].actual.vMon"));
+  a->Add(new TObjString("MchHvLvLeft/Chamber[06..09]Left/Slat[09..12].actual.vMon"));
 
   // St345 (HV Switches)
   AliMpDEIterator it;
@@ -107,7 +140,7 @@ AliMUONHVNamer::CompactAliases() const
     Int_t detElemId = it.CurrentDEId();
     if ( AliMpDEManager::GetStationType(detElemId) == AliMp::kStation345 )
     {
-          a->Add(new TObjString(Form("MchDE%04dsw[1..%d].inValue",detElemId,NumberOfPCBs(detElemId))));
+          a->Add(new TObjString(Form("MchDE%04dsw[0..%d].inValue",detElemId,NumberOfPCBs(detElemId)-1)));
      }
     it.Next();
   }
@@ -120,17 +153,17 @@ AliMUONHVNamer::DCS2DE(Int_t chamberId, Int_t side, Int_t dcsNumber) const
 {
   /// Convert DCS "slat number" (old convention) to DE (new) convention.
   ///
-  /// \param chamberId : chamber number (starting at 1)
+  /// \param chamberId : chamber number (starting at 0)
   /// \param side : 0 for Left, 1 for Right
   /// \param dcsNumber : slat number in DCS HV convention
   ///
-  /// note that dcsNumber should be >=1 and <= number of DEs/2 in chamber
+  /// note that dcsNumber should be >=0 and < number of DEs/2 in chamber
 
   Int_t nofDE = AliMpDEManager::GetNofDEInChamber(chamberId);
   
   Int_t half = nofDE/2;
   
-  dcsNumber = half + 1 - dcsNumber;
+  dcsNumber = half - dcsNumber;
   
   Int_t quarter = nofDE/4;
   Int_t threeQuarter = half + quarter;
@@ -163,13 +196,13 @@ AliMUONHVNamer::DetElemId2DCS(Int_t detElemId, Int_t& side) const
   /// Convert DE to DCS "slat number"
   /// @see DCS2DE
   
-  Int_t chamberId = 1 + AliMpDEManager::GetChamberId(detElemId);
-  if ( chamberId < 1 ) 
+  Int_t chamberId = AliMpDEManager::GetChamberId(detElemId);
+  if ( chamberId < 0 ) 
   {
     AliDebug(1,Form("DetElemId %d invalid",detElemId));
     return -1;
   }
-  Int_t dcsNumber = (detElemId-chamberId*100);
+  Int_t dcsNumber = (detElemId-(chamberId+1)*100);
 
   switch ( AliMpDEManager::GetStationType(detElemId) )
   {
@@ -181,12 +214,10 @@ AliMUONHVNamer::DetElemId2DCS(Int_t detElemId, Int_t& side) const
         case 0:
         case 3:
           side = 1; // right
-          ++dcsNumber;
           break;
         case 1:
         case 2:
           side = 0; // left
-          ++dcsNumber;
         default:
           break;
       }
@@ -194,7 +225,7 @@ AliMUONHVNamer::DetElemId2DCS(Int_t detElemId, Int_t& side) const
       break;
     case AliMp::kStation345:
     {
-      Int_t nofDE = AliMpDEManager::GetNofDEInChamber(chamberId-1);
+      Int_t nofDE = AliMpDEManager::GetNofDEInChamber(chamberId);
       
       Int_t quarter = nofDE/4;
       
@@ -224,7 +255,7 @@ AliMUONHVNamer::DetElemId2DCS(Int_t detElemId, Int_t& side) const
         AliFatal("oups");
       }  
       // dcs convention change : numbering from top, not from bottom
-      dcsNumber = half+1-dcsNumber;
+      dcsNumber = half-dcsNumber;
     }
       break;
     default:
@@ -241,8 +272,8 @@ AliMUONHVNamer::DCSHVChannelName(Int_t detElemId, Int_t sector) const
   /// \param detElemId 
   /// \param sector = 0,1 or 2 for St12, and is unused for st345
   
-  Int_t chamberId = 1 + AliMpDEManager::GetChamberId(detElemId);
-  if ( chamberId < 1 ) return 0x0;
+  Int_t chamberId = AliMpDEManager::GetChamberId(detElemId);
+  if ( chamberId < 0 ) return 0x0;
 
   Int_t side(-1);
   Int_t dcsNumber = DetElemId2DCS(detElemId,side);
@@ -251,7 +282,7 @@ AliMUONHVNamer::DCSHVChannelName(Int_t detElemId, Int_t sector) const
   {
     case AliMp::kStation1:
     case AliMp::kStation2:
-      return Form(fgHVChannelSt12Pattern[side],chamberId,dcsNumber,sector+1);
+      return Form(fgHVChannelSt12Pattern[side],chamberId,dcsNumber,sector);
       break;
     case AliMp::kStation345:
       return Form(fgHVChannelSt345Pattern[side],chamberId,dcsNumber);
@@ -271,7 +302,7 @@ AliMUONHVNamer::DCSHVSwitchName(Int_t detElemId, Int_t pcbNumber) const
   
   if (AliMpDEManager::GetStationType(detElemId) == AliMp::kStation345)
   {
-    return Form(fgHVSwitchSt345Pattern,detElemId,pcbNumber+1);
+    return Form(fgHVSwitchSt345Pattern,detElemId,pcbNumber);
   }
   return 0x0;
 }

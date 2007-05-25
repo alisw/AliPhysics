@@ -44,6 +44,7 @@ public:
 
   TObjArray* GenerateAliases() const;
   TObjArray* CompactAliases() const;
+  void AliasesAsLdif(const char* ldiffile) const;
   
 private:
   /// Not implemented
