@@ -63,6 +63,7 @@ class AliT0CalibData: public TNamed {
   TMap *GetMapLookup(void) {return &fLookup;}
   Int_t GetNumberOfTRMs() const {return fNumberOfTRMs;}
   void SetNumberOfTRMs(Int_t ntrms=2) {fNumberOfTRMs = ntrms;}
+
   void SetMeanT0(Int_t mean=500) { fMeanT0 = mean; };
   Int_t GetMeanT0 () {return fMeanT0;};
 
@@ -79,7 +80,7 @@ class AliT0CalibData: public TNamed {
   Int_t fNumberOfTRMs;    // number of TRMs in setup
 
   //
-  ClassDef(AliT0CalibData,4)    // T0 Sensor Calibration data
+  ClassDef(AliT0CalibData,5)    // T0 Sensor Calibration data
 };
 
 typedef AliT0CalibData AliSTARTCalibData; // for backward compatibility
