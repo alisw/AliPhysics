@@ -23,4 +23,4 @@
 //#pragma link C++ class AliStHbtEventReader;
 //#pragma link C++ class AliStHbtPythiaOnFlyEventReader;
 //#pragma link C++ class AliStHbtTrack;
-
+#pragma link C++ class AliFemtoEventReaderESDKine;

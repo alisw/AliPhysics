@@ -3,7 +3,8 @@ SRCS= FEMTOSCOPY/AliFemtoUser/AliFemtoQPairCut.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoESDTrackCut.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoShareQualityCorrFctn.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoModelCorrFctnSource.cxx \
-      FEMTOSCOPY/AliFemtoUser/AliFemtoModelGausRinvFreezeOutGenerator.cxx 
+      FEMTOSCOPY/AliFemtoUser/AliFemtoModelGausRinvFreezeOutGenerator.cxx \
+      FEMTOSCOPY/AliFemtoUser/AliFemtoEventReaderESDKine.cxx 
 
 HDRS= $(SRCS:.cxx=.h) 
 
