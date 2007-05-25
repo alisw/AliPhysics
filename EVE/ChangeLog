@@ -1,3 +1,8 @@
+2007-05-25  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* Reve/Track.cxx:
+	* alice-macros/its_raw.C:
+
 2007-04-19  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* alice-macros/emcal_digits.C:
