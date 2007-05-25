@@ -56,12 +56,13 @@ fNSigma(3),
 fMaxd0z0(0.5),
 fITSin(kTRUE),
 fITSrefit(kTRUE),
+fnSigmaForUi00(1.5),
 fDebug(0)
 {
 //
 // Default constructor
 //
-  SetVtxStartPos();
+  SetVtxStart();
   SetVtxStartSigma();
   SetMinTracks();
   SetMinITSClusters();
@@ -87,12 +88,13 @@ fNSigma(3),
 fMaxd0z0(0.5),
 fITSin(kTRUE),
 fITSrefit(kTRUE),
+fnSigmaForUi00(1.5),
 fDebug(0)
 {
 //
 // Standard constructor
 //
-  SetVtxStartPos();
+  SetVtxStart();
   SetVtxStartSigma();
   SetMinTracks();
   SetMinITSClusters();
@@ -232,11 +234,6 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliESD *esdEvent)
     if(iter==0) fTrkArray.Delete();
   } // end loop on the two iterations
 
-
-  // take true pos from SPD vertex in ESD and write it in tracks' vertex
-  Double_t tp[3];
-  esdEvent->GetVertex()->GetTruePos(tp);
-  fCurrentVertex->SetTruePos(tp);
 
   if(fConstraint) {
     if(fOnlyFitter) {
@@ -646,9 +643,6 @@ AliESDVertex* AliVertexerTracks::RemoveTracksFromVertex(AliESDVertex *inVtx,
   // store data in the vertex object
   AliESDVertex *outVtx = new AliESDVertex(position,cov,chi2,nUsedTrks);
   outVtx->SetTitle(inVtx->GetTitle());
-  Double_t tp[3];
-  inVtx->GetTruePos(tp);
-  outVtx->SetTruePos(tp);
   UShort_t *inindices = inVtx->GetIndices();
   UShort_t *outindices = new UShort_t[outVtx->GetNContributors()];
   Int_t j=0;
@@ -906,25 +900,24 @@ Bool_t AliVertexerTracks::TrackToPoint(AliESDtrack *t,
     t->GetPxPyPz(p);
     pt = TMath::Sqrt(p[0]*p[0]+p[1]*p[1]);
     ptot = TMath::Sqrt(pt*pt+p[2]*p[2]);
-    Double_t cp = p[0]/pt;               //cos(phi)=px/pt
-    Double_t sp = p[1]/pt;               //sin(phi)=py/pt
-    Double_t ct = p[2]/ptot;             //cos(theta)=pz/ptot
-    Double_t st = TMath::Sqrt(1.-ct*ct); //sin(theta)
+    Double_t cphi = p[0]/pt;               //cos(phi)=px/pt
+    Double_t sphi = p[1]/pt;               //sin(phi)=py/pt
+    Double_t clambda = pt/ptot;            //cos(lambda)=pt/ptot
+    Double_t slambda = p[2]/ptot;            //sin(lambda)=pz/ptot
     Double_t covfVert[6];
     fVert.GetCovMatrix(covfVert);
     Double_t covfVertalongt = 
-       covfVert[0]*cp*cp*ct*ct 
-      +covfVert[1]*2.*cp*sp*ct*ct
-      +covfVert[3]*2.*cp*ct*st 
-      +covfVert[2]*sp*sp*ct*ct 
-      +covfVert[4]*2.*sp*ct*st 
-      +covfVert[5]*st*st; 
+       covfVert[0]*cphi*cphi*clambda*clambda 
+      +covfVert[1]*2.*cphi*sphi*clambda*clambda
+      +covfVert[3]*2.*cphi*clambda*slambda 
+      +covfVert[2]*sphi*sphi*clambda*clambda 
+      +covfVert[4]*2.*sphi*clambda*slambda 
+      +covfVert[5]*slambda*slambda; 
     Double_t cc[15];
     t->GetExternalCovariance(cc);
     // covariance matrix of local (x,y,z) - inverted
     TMatrixD uUi(3,3);
-    Double_t nSigma = 2.;
-    uUi(0,0) = covfVertalongt * nSigma * nSigma;
+    uUi(0,0) = covfVertalongt * fnSigmaForUi00 * fnSigmaForUi00;
     if(fDebug) printf("=====> sqrtUi00 cm  %f\n",TMath::Sqrt(uUi(0,0)));
     uUi(0,1) = 0.;
     uUi(0,2) = 0.;
@@ -978,9 +971,6 @@ void AliVertexerTracks::TooFewTracks(const AliESD* esdEvent)
   fCurrentVertex = new AliESDVertex(pos,err);
   fCurrentVertex->SetNContributors(ncontr);
 
-  Double_t tp[3];
-  esdEvent->GetVertex()->GetTruePos(tp);
-  fCurrentVertex->SetTruePos(tp);
   if(fConstraint) {
     fCurrentVertex->SetTitle("VertexerTracksWithConstraint");
   } else {
@@ -1112,7 +1102,7 @@ void AliVertexerTracks::VertexFitter(Bool_t useConstraint)
     printf("--- VertexFitter(): start\n");
     printf(" Number of tracks in array: %d\n",nTrks);
     printf(" Minimum # tracks required in fit: %d\n",fMinTracks);
-    if(!fOnlyFitter) printf(" Vertex position after finder: %f,%f,%f\n",initPos[0],initPos[1],initPos[2]);
+    printf(" Vertex position after finder: %f,%f,%f\n",initPos[0],initPos[1],initPos[2]);
     if(useConstraint) printf(" This vertex will be used in fit: (%f+-%f,%f+-%f)\n",fNominalPos[0],TMath::Sqrt(fNominalCov[0]),fNominalPos[1],TMath::Sqrt(fNominalCov[2])); 
   }
 
@@ -1299,6 +1289,7 @@ AliESDVertex* AliVertexerTracks::VertexForSelectedTracks(TTree *trkTree,Bool_t o
 
   // vertex fitter
   if(optUseFitter){
+    //SetVtxStart(&fVert);
     VertexFitter(fConstraint);
     if(fDebug) printf(" Vertex fit completed\n");
   }else{

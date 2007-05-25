@@ -59,7 +59,7 @@ class AliVertexerTracks : public TObject {
   void  SetOnlyFitter() { if(!fConstraint) AliFatal("Set constraint first!"); 
      fOnlyFitter=kTRUE; return; }
   void  SetSkipTracks(Int_t n,Int_t *skipped);
-  void  SetVtxStartPos(Double_t x=0,Double_t y=0,Double_t z=0) 
+  void  SetVtxStart(Double_t x=0,Double_t y=0,Double_t z=0) 
     { fNominalPos[0]=x; fNominalPos[1]=y; fNominalPos[2]=z; return; }
   void  SetVtxStartSigma(Double_t sx=3.,Double_t sy=3.,Double_t sz=15.) 
     { fNominalCov[0]=sx*sx; fNominalCov[2]=sy*sy; fNominalCov[5]=sz*sz;
@@ -74,6 +74,8 @@ class AliVertexerTracks : public TObject {
   Double_t GetFieldkG() const { 
     if(fFieldkG<-99.) AliFatal("Field value not set");
     return fFieldkG; } 
+  void SetNSigmaForUi00(Double_t n=1.5) { fnSigmaForUi00=n; return; }
+  Double_t GetNSigmaForUi00() const { return fnSigmaForUi00; }
 
  protected:
   void     HelixVertexFinder();
@@ -110,6 +112,7 @@ class AliVertexerTracks : public TObject {
                               // if kFALSE, use all tracks (also TPC only)
   Bool_t    fITSrefit;        // if kTRUE (default), use only kITSrefit tracks
                               // if kFALSE, use all tracks (also TPC only)
+  Double_t  fnSigmaForUi00;   // n. sigmas from finder in TrackToPoint
   Int_t     fDebug;           //! debug flag - verbose printing if >0
   // fAlgo=1 (default) finds minimum-distance point among all selected tracks
   //         approximated as straight lines 
@@ -124,11 +127,12 @@ class AliVertexerTracks : public TObject {
   // fAlgo=5 finds the average point among DCA points of all pairs of tracks
   //         approximated as straight lines 
 
+
  private:
   AliVertexerTracks(const AliVertexerTracks & source);
   AliVertexerTracks & operator=(const AliVertexerTracks & source);
 
-  ClassDef(AliVertexerTracks,8) // 3D Vertexing with ESD tracks 
+  ClassDef(AliVertexerTracks,9) // 3D Vertexing with ESD tracks 
 };
 
 #endif
