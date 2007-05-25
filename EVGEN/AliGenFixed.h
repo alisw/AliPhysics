@@ -20,7 +20,6 @@ class AliGenFixed : public AliGenerator
   virtual ~AliGenFixed() {}
   virtual void Generate();
   virtual void Init() {}
-  virtual void SetSigma(Float_t sx, Float_t sy, Float_t sz);
   virtual void SetMomentum(Float_t pmom) {fPMin=pmom; fPMax=pmom; SetBit(kMomentumRange);}
   virtual void SetPhi(Float_t phi) {fPhiMin=phi*TMath::Pi()/180; fPhiMax=phi*TMath::Pi()/180; SetBit(kPhiRange);}
   virtual void SetTheta(Float_t theta) {fThetaMin=theta*TMath::Pi()/180; fThetaMax=theta*TMath::Pi()/180; SetBit(kThetaRange);}

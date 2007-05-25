@@ -60,29 +60,19 @@ void AliGenFixed::Generate()
   //
   Float_t polar[3]= {0,0,0};
   if(!fExplicit) {
-    fP[0] = fPMin*TMath::Cos(fPhiMin)*TMath::Sin(fThetaMin);
-    fP[1] = fPMin*TMath::Sin(fPhiMin)*TMath::Sin(fThetaMin);
-    fP[2] = fPMin*TMath::Cos(fThetaMin);
+    fP[0] = fPMin * TMath::Cos(fPhiMin) * TMath::Sin(fThetaMin);
+    fP[1] = fPMin * TMath::Sin(fPhiMin) * TMath::Sin(fThetaMin);
+    fP[2] = fPMin * TMath::Cos(fThetaMin);
   }
-  Int_t i, nt;
+  Int_t i, j, nt;
   //
   Float_t o[3];
-  o[0] = fOrigin[0];
-  o[1] = fOrigin[1];
-  o[2] = fOrigin[2];
-
-  printf("Origin %f %f %f \n", o[0], o[1], o[2]);
+  if(fVertexSmear == kPerEvent) {
+      Vertex();
+      for (j = 0;j < 3; j++) o[j] = fVertex[j];
+  }
   
-  
-  for(i=0;i<fNpart;i++) 
-    PushTrack(fTrackIt,-1,fIpart,fP,o ,polar,0,kPPrimary,nt);
+  for(i = 0; i < fNpart; i++) 
+    PushTrack(fTrackIt, -1, fIpart, fP, o , polar, 0, kPPrimary, nt);
 }
   
-//_____________________________________________________________________________
-void AliGenFixed::SetSigma(Float_t /*sx*/, Float_t /*sy*/, Float_t /*sz*/)
-{
-  //
-  // Set the interaction point sigma
-  //
-  printf("Vertex smearing not implemented for fixed generator\n");
-}
