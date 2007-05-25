@@ -18,6 +18,7 @@
 #include <AliITSsegmentationSDD.h>
 #include <AliITSsegmentationSSD.h>
 
+class AliRawReader;
 
 namespace Alieve {
 /**************************************************************************/
@@ -49,6 +50,8 @@ class ITSDigitsInfo : public TObject, public Reve::ReferenceCount
 private:
   Float_t fSPDZCoord[192];
 
+  void InitInternals();
+
 protected:
   map<Int_t,  TClonesArray*> fSPDmap;
   map<Int_t,  TClonesArray*> fSDDmap;
@@ -60,7 +63,6 @@ public:
   TTree*                   fTree;
 
   AliITSgeom*              fGeom;
-
   AliITSsegmentationSPD*   fSegSPD;
   AliITSsegmentationSDD*   fSegSDD;
   AliITSsegmentationSSD*   fSegSSD;
@@ -86,7 +88,8 @@ public:
   virtual ~ITSDigitsInfo();
 
   void SetTree(TTree* tree);
- 
+  void ReadRaw(AliRawReader* raw);
+
   TClonesArray* GetDigits(Int_t moduleID, Int_t detector);
 
   void GetSPDLocalZ(Int_t j, Float_t& z);

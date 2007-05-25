@@ -242,11 +242,11 @@ void ITSModule::LoadQuads()
 
   // printf("its module load quads \n");
 
-  TClonesArray *digits;
+  TClonesArray *digits  = fInfo->GetDigits(fID, fDetID);
+  Int_t         ndigits = digits ? digits->GetEntriesFast() : 0;
+
   Float_t       x, z, dpx, dpz; 
-  Int_t         i, j, ndigits;
-  digits  = fInfo->GetDigits(fID, fDetID);
-  ndigits = digits->GetEntriesFast(); 
+  Int_t         i, j;
 
   switch(fDetID)
   {
@@ -258,7 +258,7 @@ void ITSModule::LoadQuads()
 
       for (Int_t k=0; k<ndigits; ++k)
       {
-	AliITSdigitSPD *d = (AliITSdigitSPD*) digits->UncheckedAt(k);
+	AliITSdigit *d = (AliITSdigit*) digits->UncheckedAt(k);
 	j = d->GetCoord1();
 	i = d->GetCoord2();
 	x  = -0.5*seg->Dx() + i*seg->Dpx(0);
@@ -281,7 +281,7 @@ void ITSModule::LoadQuads()
 
       for (Int_t k=0; k<ndigits; ++k)
       {
-	AliITSdigitSDD* d = (AliITSdigitSDD*) digits->UncheckedAt(k);
+	AliITSdigit* d = (AliITSdigit*) digits->UncheckedAt(k);
 
 	// if (d->GetSignal() > fgSDDThreshold)
 	{
@@ -311,7 +311,7 @@ void ITSModule::LoadQuads()
 
       for (Int_t k=0; k<ndigits; ++k)
       {
-	AliITSdigitSSD *d = (AliITSdigitSSD*) digits->UncheckedAt(k);
+	AliITSdigit *d = (AliITSdigit*) digits->UncheckedAt(k);
 	// if(d->GetSignal() > fgSSDThreshold)
 	{
 	  j = d->GetCoord1();

@@ -15,6 +15,10 @@
 #include <AliITSdigit.h>
 #include <AliITSdigitSPD.h>
 
+#include <AliRawReader.h>
+#include <AliITSRawStreamSPD.h>
+#include <AliITSRawStreamSDD.h>
+#include <AliITSRawStreamSSD.h>
 
 using namespace Reve;
 using namespace Alieve;
@@ -30,8 +34,8 @@ ITSModuleSelection::ITSModuleSelection():
   fMaxPhi(2*TMath::Pi()),
   fMinTheta(0),
   fMaxTheta(2*TMath::Pi())
-{
-}
+{}
+
 
 ClassImp(ITSDigitsInfo)
 
@@ -44,39 +48,18 @@ ITSDigitsInfo::ITSDigitsInfo() :
   fTree (0),
   fGeom (0),
   fSegSPD(0), fSegSDD(0), fSegSSD(0)
-{}
-
-/**************************************************************************/
-
-ITSDigitsInfo:: ~ITSDigitsInfo() 
 {
-  map<Int_t, TClonesArray*>::iterator j;
-  for(j = fSPDmap.begin(); j != fSPDmap.end(); ++j)
-    delete j->second;
-  for(j = fSDDmap.begin(); j != fSDDmap.end(); ++j)
-    delete j->second;
-  for(j = fSSDmap.begin(); j != fSSDmap.end(); ++j)
-    delete j->second;
-
-  delete fSegSPD; delete fSegSDD; delete fSegSSD; 
-  delete fGeom;
-  delete fTree;
+  InitInternals();
 }
 
-/**************************************************************************/
-
-void ITSDigitsInfo::SetTree(TTree* tree)
+void ITSDigitsInfo::InitInternals()
 {
-  static const Exc_t eH("ITSDigitsInfo::SetTree ");
+  static const Exc_t eH("ITSDigitsInfo::InitInternals ");
 
-  if(fGeom == 0) {
-    fGeom = new AliITSgeom();
-    fGeom->ReadNewFile("$REVESYS/alice-data/ITSgeometry.det");
-    if(fGeom == 0)
-      throw(eH + "can not load ITS geometry \n");
-  }
-
-  fTree = tree;
+  fGeom = new AliITSgeom();
+  fGeom->ReadNewFile("$REVESYS/alice-data/ITSgeometry.det");
+  if(fGeom == 0)
+    throw(eH + "can not load ITS geometry \n");
 
   SetITSSegmentation();
 
@@ -100,10 +83,9 @@ void ITSDigitsInfo::SetTree(TTree* tree)
   fSDDScaleZ[0] = 1;
   fSSDScale [0] = 1;
 
-  // spd lows resolution is in the level of 8x2 readout chips
+  // spd lowest resolution
   Int_t nx = 8; // fSegSPD->Npx()/8; // 32
   Int_t nz = 6; // fSegSPD->Npz()/2; // 128
-
   fSPDScaleX[1] = Int_t(nx); 
   fSPDScaleZ[1] = Int_t(nz); 
   fSPDScaleX[2] = Int_t(nx*2); 
@@ -126,6 +108,148 @@ void ITSDigitsInfo::SetTree(TTree* tree)
   fSSDScale[2] = 9;
   fSSDScale[3] = 20;
   fSSDScale[4] = 30;
+}
+
+/**************************************************************************/
+
+ITSDigitsInfo:: ~ITSDigitsInfo() 
+{
+  map<Int_t, TClonesArray*>::iterator j;
+  for(j = fSPDmap.begin(); j != fSPDmap.end(); ++j)
+    delete j->second;
+  for(j = fSDDmap.begin(); j != fSDDmap.end(); ++j)
+    delete j->second;
+  for(j = fSSDmap.begin(); j != fSSDmap.end(); ++j)
+    delete j->second;
+
+  delete fSegSPD; delete fSegSDD; delete fSegSSD; 
+  delete fGeom;
+  delete fTree;
+}
+
+/**************************************************************************/
+
+void ITSDigitsInfo::SetTree(TTree* tree)
+{
+  // Set digit-tree to be used for digit retrieval. Data is loaded on
+  // demand.
+
+  fTree = tree;
+}
+
+void ITSDigitsInfo::ReadRaw(AliRawReader* raw)
+{
+  // Read raw-data into internal structures. AliITSdigit is used to
+  // store raw-adata for all sub-detectors.
+
+  static const Int_t cloneGrow = 128;
+
+  {
+    AliITSRawStreamSPD inputSPD(raw);
+    TClonesArray* digits = 0;
+    Int_t         count  = 0;
+    while (inputSPD.Next())
+    {
+      Int_t module = inputSPD.GetModuleID();
+      Int_t column = inputSPD.GetColumn();
+      Int_t row    = inputSPD.GetRow();
+    
+      if (inputSPD.IsNewModule())
+      {
+	if (digits)
+	  digits->Expand(count);
+
+	digits = new TClonesArray("AliITSdigit", 0);
+	fSPDmap[module] = digits;
+	count = 0;
+      }
+
+      if (count % cloneGrow == 0)
+	digits->Expand(digits->GetEntriesFast() + cloneGrow);
+
+      AliITSdigit* d = new ((*digits)[count]) AliITSdigit();
+      d->SetCoord1(column);
+      d->SetCoord2(row);
+      d->SetSignal(1);
+      ++count;
+
+      // printf("SPD: %d %d %d\n",module,column,row);
+    }
+    if (digits) digits->Expand(count);
+    raw->Reset();
+  }
+
+  {
+    AliITSRawStreamSDD input(raw);
+    TClonesArray* digits = 0;
+    Int_t         count  = 0;
+    while (input.Next())
+    {
+      Int_t module = input.GetModuleID();
+      Int_t anode  = input.GetAnode();
+      Int_t time   = input.GetTime();
+      Int_t signal = input.GetSignal();
+
+      if (input.IsNewModule())
+      {
+	if (digits)
+	  digits->Expand(count);
+
+	digits = new TClonesArray("AliITSdigit", 0);
+	fSDDmap[module] = digits;
+	count = 0;
+      }
+
+      if (count % cloneGrow == 0)
+	digits->Expand(digits->GetEntriesFast() + cloneGrow);
+
+      AliITSdigit* d = new ((*digits)[count]) AliITSdigit();
+      d->SetCoord1(anode);
+      d->SetCoord2(time);
+      d->SetSignal(signal);
+      ++count;
+
+      // printf("SDD: %d %d %d %d\n",module,anode,time,signal);
+    }
+    if (digits) digits->Expand(count);
+    raw->Reset();
+  }
+
+  {
+    AliITSRawStreamSSD input(raw);
+    TClonesArray* digits = 0;
+    Int_t         count  = 0;
+    while (input.Next())
+    {
+      Int_t module  = input.GetModuleID();
+      Int_t side    = input.GetSideFlag();
+      Int_t strip   = input.GetStrip();
+      Int_t signal  = input.GetSignal();
+
+      if (input.IsNewModule())
+      {
+	if (digits)
+	  digits->Expand(count);
+
+	digits = new TClonesArray("AliITSdigit", 0);
+	fSSDmap[module] = digits;
+	count = 0;
+      }
+
+      if (count % cloneGrow == 0)
+	digits->Expand(digits->GetEntriesFast() + cloneGrow);
+
+      AliITSdigit* d = new ((*digits)[count]) AliITSdigit();
+      d->SetCoord1(side);
+      d->SetCoord2(strip);
+      d->SetSignal(signal);
+      ++count;
+
+      // printf("SSD: %d %d %d %d\n",module,side,strip,signal);
+    }
+    if (digits) digits->Expand(count);
+    raw->Reset();
+  }
 }
 
 /**************************************************************************/
@@ -182,6 +306,7 @@ TClonesArray* ITSDigitsInfo::GetDigits(Int_t mod, Int_t subdet)
       TClonesArray* digitsSPD = 0;
       map<Int_t, TClonesArray*>::iterator i = fSPDmap.find(mod);
       if(i == fSPDmap.end()) {
+	if (fTree == 0) return 0;
         TBranch* br =  fTree->GetBranch("ITSDigitsSPD");
         br->SetAddress(&digitsSPD);
 	br->GetEntry(mod);
@@ -196,6 +321,7 @@ TClonesArray* ITSDigitsInfo::GetDigits(Int_t mod, Int_t subdet)
       TClonesArray* digitsSDD = 0;
       map<Int_t, TClonesArray*>::iterator i = fSDDmap.find(mod);
       if(i == fSDDmap.end()) {
+	if (fTree == 0) return 0;
 	TBranch* br =  fTree->GetBranch("ITSDigitsSDD");
         br->SetAddress(&digitsSDD);
 	br->GetEntry(mod);
@@ -210,6 +336,7 @@ TClonesArray* ITSDigitsInfo::GetDigits(Int_t mod, Int_t subdet)
       TClonesArray* digitsSSD = 0;
       map<Int_t, TClonesArray*>::iterator i = fSSDmap.find(mod);
       if(i == fSSDmap.end()) {
+	if (fTree == 0) return 0;
 	TBranch* br =  fTree->GetBranch("ITSDigitsSSD");
         br->SetAddress(&digitsSSD);
 	br->GetEntry(mod);
