@@ -174,9 +174,9 @@ Double_t AliFemtoModelManager::GetWeight(AliFemtoPair *aPair)
   return fWeightGenerator->GenerateWeight(aPair);
 }
 //_____________________________________________
-void AliFemtoModelManager::CreateCopyHiddenInfo()
+void AliFemtoModelManager::CreateCopyHiddenInfo(Bool_t aCopy)
 {
-  fCreateCopyHiddenInfo = kTRUE;
+  fCreateCopyHiddenInfo = aCopy;
 }
 //_____________________________________________
 AliFemtoModelFreezeOutGenerator* AliFemtoModelManager::GetFreezeOutGenerator()
