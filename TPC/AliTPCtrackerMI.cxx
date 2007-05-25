@@ -2015,23 +2015,20 @@ void  AliTPCtrackerMI::SignShared(AliTPCseed * s1, AliTPCseed * s2)
 {
   //
   //
-  if (TMath::Abs(s1->GetC()-s2->GetC())>0.004) return;
-  if (TMath::Abs(s1->GetTgl()-s2->GetTgl())>0.6) return;
-
-  Float_t dz2 =(s1->GetZ() - s2->GetZ());
-  dz2*=dz2;
-  Float_t dy2 =(s1->GetY() - s2->GetY());
-  dy2*=dy2;
-  Float_t distance = dz2+dy2;
-  if (distance>325.) return ; // if there are far away  - not overlap - to reduce combinatorics
+  Float_t thetaCut = 0.2;//+10.*TMath::Sqrt(s1->GetSigmaTglZ()+ s2->GetSigmaTglZ());
+  if (TMath::Abs(s1->GetTgl()-s2->GetTgl())>thetaCut) return;
+  Float_t minCl = TMath::Min(s1->GetNumberOfClusters(),s2->GetNumberOfClusters());
+  Int_t cutN0 = TMath::Max(5,TMath::Nint(0.1*minCl));
   
   //
   Int_t sumshared=0;
   //
-  Int_t firstpoint = TMath::Max(s1->GetFirstPoint(),s2->GetFirstPoint());
-  Int_t lastpoint = TMath::Min(s1->GetLastPoint(),s2->GetLastPoint());
+  //Int_t firstpoint = TMath::Max(s1->GetFirstPoint(),s2->GetFirstPoint());
+  //Int_t lastpoint = TMath::Min(s1->GetLastPoint(),s2->GetLastPoint());
+  Int_t firstpoint = 0;
+  Int_t lastpoint = 160;
   //
-  if (firstpoint>=lastpoint-5) return;;
+  //  if (firstpoint>=lastpoint-5) return;;
 
   for (Int_t i=firstpoint;i<lastpoint;i++){
     //    if ( (s1->GetClusterIndex2(i)&0xFFFF8FFF)==(s2->GetClusterIndex2(i)&0xFFFF8FFF) && s1->GetClusterIndex2(i)>0) {
@@ -2039,7 +2036,7 @@ void  AliTPCtrackerMI::SignShared(AliTPCseed * s1, AliTPCseed * s2)
       sumshared++;
     }
   }
-  if (sumshared>4){
+  if (sumshared>cutN0){
     // sign clusters
     //
     for (Int_t i=firstpoint;i<lastpoint;i++){
@@ -2055,7 +2052,7 @@ void  AliTPCtrackerMI::SignShared(AliTPCseed * s1, AliTPCseed * s2)
     }
   }
   //  
-  if (sumshared>10){
+  if (sumshared>cutN0){
     for (Int_t i=0;i<4;i++){
       if (s1->GetOverlapLabel(3*i)==0){
 	s1->SetOverlapLabel(3*i,  s2->GetLabel());
@@ -2631,6 +2628,11 @@ Int_t AliTPCtrackerMI::RefitInward(AliESD *event)
   fIteration=2;
   //PrepareForProlongation(fSeeds,1);
   PropagateForward2(fSeeds);
+  TObjArray arraySeed(fSeeds->GetEntries());
+  for (Int_t i=0;i<fSeeds->GetEntries();i++) {
+    arraySeed.AddAt(fSeeds->At(i),i);    
+  }
+  SignShared(&arraySeed);
 
   Int_t ntracks=0;
   Int_t nseed = fSeeds->GetEntriesFast();
@@ -2769,6 +2771,7 @@ void AliTPCtrackerMI::ReadSeeds(AliESD *event, Int_t direction)
     t.SetNumberOfClusters(0);
     //    AliTPCseed *seed = new AliTPCseed(t,t.GetAlpha());
     AliTPCseed *seed = new AliTPCseed(t/*,t.GetAlpha()*/);
+    seed->SetUniqueID(esd->GetID());
     for (Int_t ikink=0;ikink<3;ikink++) {
       Int_t index = esd->GetKinkIndex(ikink);
       seed->GetKinkIndexes()[ikink] = index;
