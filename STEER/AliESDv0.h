@@ -31,6 +31,7 @@ public:
   Double_t ChangeMassHypothesis(Int_t code=kK0Short); 
 
   Int_t    GetPdgCode() const {return fPdgCode;}
+  Float_t  GetEffMass(UInt_t p1, UInt_t p2);
   Float_t  GetEffMass() const {return fEffMass;}
   Float_t  GetChi2V0()  const {return fChi2V0;}
   void     GetPxPyPz(Double_t &px, Double_t &py, Double_t &pz) const;

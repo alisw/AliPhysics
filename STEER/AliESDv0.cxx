@@ -550,3 +550,38 @@ void  AliESDv0::SetClusters(Int_t *clp, Int_t *clm)
   for (Int_t i=0;i<6;i++) fClusters[0][i] = clp[i]; 
   for (Int_t i=0;i<6;i++) fClusters[1][i] = clm[i]; 
 }
+
+Float_t AliESDv0::GetEffMass(UInt_t p1, UInt_t p2){
+  //
+  // calculate effective mass
+  //
+  const Float_t kpmass[5] = {5.10000000000000037e-04,1.05660000000000004e-01,1.39570000000000000e-01,
+		      4.93599999999999983e-01, 9.38270000000000048e-01};
+  if (p1>4) return -1;
+  if (p2>4) return -1;
+  Float_t mass1 = kpmass[p1]; 
+  Float_t mass2 = kpmass[p2];   
+  Double_t *m1 = fPmom;
+  Double_t *m2 = fNmom;
+  //
+  //if (fRP[p1]+fRM[p2]<fRP[p2]+fRM[p1]){
+  //  m1 = fPM;
+  //  m2 = fPP;
+  //}
+  //
+  Float_t e1    = TMath::Sqrt(mass1*mass1+
+                              m1[0]*m1[0]+
+                              m1[1]*m1[1]+
+                              m1[2]*m1[2]);
+  Float_t e2    = TMath::Sqrt(mass2*mass2+
+                              m2[0]*m2[0]+
+                              m2[1]*m2[1]+
+                              m2[2]*m2[2]);  
+  Float_t mass =  
+    (m2[0]+m1[0])*(m2[0]+m1[0])+
+    (m2[1]+m1[1])*(m2[1]+m1[1])+
+    (m2[2]+m1[2])*(m2[2]+m1[2]);
+  
+  mass = TMath::Sqrt((e1+e2)*(e1+e2)-mass);
+  return mass;
+}
