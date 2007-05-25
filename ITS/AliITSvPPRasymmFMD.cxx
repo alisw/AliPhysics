@@ -6227,14 +6227,16 @@ void AliITSvPPRasymmFMD::StepManager(){
         sensvol=kTRUE;
         break;
     } // end for if
-    if(sensvol && (gMC->IsTrackExiting())){
+
+    if(!sensvol) return; // not an ITS tracking volume;
+
+    if(gMC->IsTrackExiting()){
         copy = fTrackReferences->GetEntriesFast();
         TClonesArray &lTR = *fTrackReferences;
         // Fill TrackReference structure with this new TrackReference.
         new(lTR[copy]) AliTrackReference(
             gAlice->GetMCApp()->GetCurrentTrackNumber());
     } // if Outer ITS mother Volume
-    //if(!sensvol) return; // not an ITS tracking volume;
 
     static TLorentzVector position, momentum; // Saves on calls to construtors
     static AliITShit hit;// Saves on calls to construtors
@@ -6269,10 +6271,8 @@ void AliITSvPPRasymmFMD::StepManager(){
         gMC->CurrentVolOffID(2,cpn0);
         break;
     default:
-      //PH The code below is commented out because when the loop 
-      //PH that searches for kk doesn't find anything, kk is equal to 6
-      //PH        Error("StepManager","Unknown volume kk=%d",kk);
-        return; // not an ITS sensitive volume.
+      AliError(Form("Invalid value: kk= %d . Not an ITS sensitive volume",kk));
+      return; // not an ITS sensitive volume.
     } //
     fIgm.DecodeDetector(mod,kk+1,cpn0,cpn1,cpn2);
     //Info("StepManager","lay=%d mod=%d cpn0=%d cpn1=%d cpn2=%d",kk+1,mod,cpn0,cpn1,cpn2);
