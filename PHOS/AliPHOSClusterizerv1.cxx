@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.106  2007/05/24 13:01:22  policheh
+ * Local to tracking CS transformation invoked for each EMC rec.point
+ *
  * Revision 1.105  2007/05/02 13:41:22  kharlov
  * Mode protection against absence of calib.data from AliPHOSCalibData to AliPHOSClusterizerv1::GetCalibrationParameters()
  *
@@ -662,6 +665,7 @@ void AliPHOSClusterizerv1::WriteRecPoints()
   for(index = 0; index < cpvRecPoints->GetEntries(); index++){
     AliPHOSCpvRecPoint * rp = dynamic_cast<AliPHOSCpvRecPoint *>( cpvRecPoints->At(index) );
     rp->EvalAll(fW0CPV,digits) ;
+    rp->EvalLocal2TrackingCSTransform();
   }
 //  cpvRecPoints->Sort() ;
   

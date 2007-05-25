@@ -358,7 +358,7 @@ void AliPHOSRecPoint::EvalLocal2TrackingCSTransform()
     SetVolumeId(AliGeomManager::LayerToVolUID(AliGeomManager::kPHOS1,GetPHOSMod()-1));
   }
   else
-    return;
+    SetVolumeId(AliGeomManager::LayerToVolUID(AliGeomManager::kPHOS2,GetPHOSMod()-1));
 
   Double_t lxyz[3] = {fLocPos.X(),0,fLocPos.Z()};
   Double_t txyz[3] = {0,0,0};
