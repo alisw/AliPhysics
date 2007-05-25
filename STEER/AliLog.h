@@ -190,9 +190,44 @@ class AliLog: public TObject {
 #define AliDebugClass(level, message)
 #define AliDebugGeneral(scope, level, message)
 #else
-#define AliDebug(level, message) {if (AliLog::IsDebugEnabled()) AliLog::Debug(level, message, MODULENAME(), ClassName(), FUNCTIONNAME(), __FILE__, __LINE__);}
-#define AliDebugClass(level, message) {if (AliLog::IsDebugEnabled()) AliLog::Debug(level, message, MODULENAME(), Class()->GetName(), FUNCTIONNAME(), __FILE__, __LINE__);}
-#define AliDebugGeneral(scope, level, message) {if (AliLog::IsDebugEnabled()) AliLog::Debug(level, message, MODULENAME(), scope, FUNCTIONNAME(), __FILE__, __LINE__);}
+/** @defn AliDebug 
+    @param N Debug level - always evaluated 
+    @param A Argument Form(including paranthesis) - the message to
+    print.  Note, that @a A should contain balanced paranthesis, like 
+    @verbatim 
+      AliDebug(1, Form("Failed to decode line %d of %s", line, filename));
+    @endverbatim 
+    The point is, if the current log level isn't high enough, as
+    returned by the AliLog object, then we do not want to evalute the
+    call to Form, since that is an expensive call.  We should always
+    put macros like this into a @c do ... @c while loop, since that
+    makes sure that evaluations are local, and that we can safely put
+    a @c ; after the macro call.  Note, that @c do ... @c while loop
+    and the call with extra paranthis, are an old tricks used by many
+    C coders (see for example Bison, the Linux kernel, and the like).
+    Christian Holm Christensen
+*/
+#define AliDebug(N, A) \
+  do { \
+    if (!AliLog::IsDebugEnabled() || \
+      AliLog::GetDebugLevel(MODULENAME(), ClassName()) < N)  break; \
+    AliLog::Debug(N, A, MODULENAME(), ClassName(), FUNCTIONNAME(), \
+	  	  __FILE__, __LINE__); } while (false)
+//#define AliDebug(level, message) {if (AliLog::IsDebugEnabled()) AliLog::Debug(level, message, MODULENAME(), ClassName(), FUNCTIONNAME(), __FILE__, __LINE__);}
+#define AliDebugClass(N, A) \
+  do { \
+    if (!AliLog::IsDebugEnabled() || \
+      AliLog::GetDebugLevel(MODULENAME(), Class()->GetName()) < N)  break; \
+    AliLog::Debug(N, A, MODULENAME(), Class()->GetName(), FUNCTIONNAME(), \
+	  	  __FILE__, __LINE__); } while (false)
+//#define AliDebugClass(level, message) {if (AliLog::IsDebugEnabled()) AliLog::Debug(level, message, MODULENAME(), Class()->GetName(), FUNCTIONNAME(), __FILE__, __LINE__);}
+#define AliDebugGeneral(scope, N, A) \
+  do { \
+    if (!AliLog::IsDebugEnabled() || \
+      AliLog::GetDebugLevel(MODULENAME(), scope) < N)  break; \
+    AliLog::Debug(N, A, MODULENAME(), scope, FUNCTIONNAME(), \
+	  	  __FILE__, __LINE__); } while (false)
+//#define AliDebugGeneral(scope, level, message) {if (AliLog::IsDebugEnabled()) AliLog::Debug(level, message, MODULENAME(), scope, FUNCTIONNAME(), __FILE__, __LINE__);}
 #endif
 
 // redirection to debug
