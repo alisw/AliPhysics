@@ -34,6 +34,7 @@
 #include "AliTRDgeometry.h"
 #include "AliTRDdataArrayI.h"
 #include "AliTRDRawStream.h"
+
 #include "AliTRDCommonParam.h"
 #include "AliTRDcalibDB.h"
 
@@ -141,8 +142,7 @@ Bool_t AliTRDrawData::Digits2Raw(TTree *digitsTree, TTree *tracks )
   Int_t retval = kTRUE;
 
   // Call appropriate Raw Simulator
-  if      ( fRawVersion == 0 )                    retval = Digits2RawV0(digitsManager); 
-  else if ( fRawVersion > 0 && fRawVersion <= 2 ) retval = Digits2RawVx(digitsManager); 
+  if ( fRawVersion > 0 && fRawVersion <= 2 ) retval = Digits2Raw(digitsManager); 
   else {
     retval = kFALSE;
     AliWarning(Form("Unsupported raw version (fRawVersion=%d).",fRawVersion));
@@ -157,201 +157,7 @@ Bool_t AliTRDrawData::Digits2Raw(TTree *digitsTree, TTree *tracks )
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDrawData::Digits2RawV0(AliTRDdigitsManager* digitsManager)
-{
-  //
-  // Bogdan's raw simulator (offline use only)
-  //
-  // Convert the digits to raw data byte stream. The output is written
-  // into the the binary files TRD_<DDL number>.ddl.
-  //
-  // The pseudo raw data format is currently defined like this:
-  //
-  //          DDL data header
-  //
-  //          Subevent (= single chamber) header (8 bytes)
-  //                  FLAG
-  //                  Detector number (2 bytes)
-  //                  Number of data bytes (2 bytes)
-  //                  Number of pads with data (2 bytes)
-  //                  1 empty byte
-  //
-  //          Data bank
-  //
-
-  const Int_t kSubeventHeaderLength = 8;
-  const Int_t kSubeventDummyFlag    = 0xBB;
-  Int_t       headerSubevent[3];
-
-  ofstream     **outputFile = new ofstream* [fNumberOfDDLs];
-  UInt_t        *bHPosition = new UInt_t    [fNumberOfDDLs];
-  Int_t         *ntotalbyte = new Int_t     [fNumberOfDDLs];
-  Int_t          nbyte = 0;
-  Int_t          npads = 0;
-  unsigned char *bytePtr;
-  unsigned char *headerPtr;
-
-  AliTRDdataArrayI *digits;
-  AliRawDataHeader  header;   // The event header
-
-  // Open the output files
-  for (Int_t iDDL = 0; iDDL < fNumberOfDDLs; iDDL++) {
-
-    char name[20];
-    sprintf(name, "TRD_%d.ddl", iDDL + AliTRDRawStream::kDDLOffset);
-#ifndef __DECCXX
-    outputFile[iDDL] = new ofstream(name, ios::binary);
-#else
-    outputFile[iDDL] = new ofstream(name);
-#endif
-
-    // Write a dummy data header
-    bHPosition[iDDL] = outputFile[iDDL]->tellp();
-    outputFile[iDDL]->write((char *) (& header),sizeof(header));
-    ntotalbyte[iDDL] = 0;
-
-  }
-
-  // Loop through all detectors
-  for (Int_t det = 0; det < AliTRDgeometry::Ndet(); det++) {
-
-    Int_t cham      = fGeo->GetChamber(det);
-    Int_t plan      = fGeo->GetPlane(det);
-    Int_t sect      = fGeo->GetSector(det);
-    Int_t rowMax    = fCommonParam->GetRowMax(plan,cham,sect);
-    Int_t colMax    = fCommonParam->GetColMax(plan);
-    Int_t timeTotal = fCalibration->GetNumberOfTimeBins();
-    Int_t bufferMax = rowMax * colMax * timeTotal;
-    Int_t *buffer   = new Int_t[bufferMax];
-
-    npads   = 0;
-    nbyte   = 0;
-    bytePtr = (unsigned char *) buffer;
-
-    Int_t iDDL = sect;
-
-    // Get the digits array
-    digits = digitsManager->GetDigits(det);
-    digits->Expand();
-    // This is to take care of switched off super modules
-    if (digits->GetNtime() == 0) {
-      continue;
-    }
-
-    // Loop through the detector pixel
-    for (Int_t col = 0; col < colMax; col++) {
-      for (Int_t row = 0; row < rowMax; row++) {
-
-	// Check whether data exists for this pad
-        Bool_t dataflag = kFALSE;
-        for (Int_t time = 0; time < timeTotal; time++) {
-          Int_t data = digits->GetDataUnchecked(row,col,time);
-          if (data) {
-            dataflag = kTRUE;
-            break;
-	  }
-	}
-
-        if (dataflag) {
-
-          npads++;
-
-	  // The pad row number
-          *bytePtr++ = row + 1;
-	  // The pad column number
-          *bytePtr++ = col + 1;
-          nbyte += 2;
-
-          Int_t nzero = 0;
-          for (Int_t time = 0; time < timeTotal; time++) {
-
-            Int_t data = digits->GetDataUnchecked(row,col,time);
-
-            if (!data) {
-              nzero++;
-              if ((nzero ==       256) || 
-                  (time  == timeTotal-1)) {
-                *bytePtr++ = 0;
-                *bytePtr++ = nzero-1;
-                nbyte += 2;
-                nzero  = 0;
-      	      }
-	    }
-            else {
-              if (nzero) {
-                *bytePtr++ = 0;
-                *bytePtr++ = nzero-1;
-                nbyte += 2;
-                nzero  = 0;
-	      }
-              // High byte (MSB always set)
-              *bytePtr++ = ((data >> 8) | 128);
-              // Low byte
-              *bytePtr++ = (data & 0xff);
-              nbyte += 2;
-	    }
-
-	  }
-
-	}
-
-      }
-
-    }
-
-    // Fill the end of the buffer with zeros
-    while (nbyte % 4) {  
-      *bytePtr++ = 0;
-      nbyte++;
-    }
-
-    AliDebug(1,Form("det = %d, nbyte = %d (%d)",det,nbyte,bufferMax));
-
-    // Write the subevent header
-    bytePtr    = (unsigned char *) headerSubevent;
-    headerPtr  = bytePtr;
-    *bytePtr++ = kSubeventDummyFlag;
-    *bytePtr++ = (det   & 0xff);
-    *bytePtr++ = (det   >> 8);
-    *bytePtr++ = (nbyte & 0xff);
-    *bytePtr++ = (nbyte >> 8);
-    *bytePtr++ = (nbyte >> 16);
-    *bytePtr++ = (npads & 0xff);
-    *bytePtr++ = (npads >> 8);
-    outputFile[iDDL]->write((char *) headerPtr,kSubeventHeaderLength);
-
-    // Write the buffer to the file
-    bytePtr = (unsigned char *) buffer;
-    outputFile[iDDL]->write((char *) bytePtr,nbyte);
-
-    ntotalbyte[iDDL] += nbyte + kSubeventHeaderLength;
-
-    delete buffer;
-
-  }
-
-  // Update the data headers and close the output files
-  for (Int_t iDDL = 0; iDDL < fNumberOfDDLs; iDDL++) {
-
-    header.fSize = UInt_t(outputFile[iDDL]->tellp()) - bHPosition[iDDL];
-    header.SetAttribute(0);  // valid data
-    outputFile[iDDL]->seekp(bHPosition[iDDL]);
-    outputFile[iDDL]->write((char *) (&header),sizeof(header));
-
-    outputFile[iDDL]->close();
-    delete outputFile[iDDL];
-
-  }
-
-  delete [] outputFile;
-  delete [] bHPosition;
-  delete [] ntotalbyte;
-
-  return kTRUE;
-}
-
-//_____________________________________________________________________________
-Bool_t AliTRDrawData::Digits2RawVx(AliTRDdigitsManager *digitsManager)
+Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
 {
   //
   // Raw data simulator for all versions > 0. This is prepared for real data.
@@ -625,23 +431,7 @@ Int_t AliTRDrawData::ProduceHcDataV1andV2(AliTRDdataArrayI *digits, Int_t side
 AliTRDdigitsManager *AliTRDrawData::Raw2Digits(AliRawReader *rawReader)
 {
   //
-  // Read raw data and convert to digits
-  //
-
-  if ( fRawVersion == 0 ) {
-    return Raw2DigitsV0(rawReader);  // fRawVersion == 0
-  }
-  else {
-    return Raw2DigitsVx(rawReader);  // fRawVersion > 0
-  }
-
-}
-
-//_____________________________________________________________________________
-AliTRDdigitsManager *AliTRDrawData::Raw2DigitsV0(AliRawReader *rawReader)
-{
-  //
-  // Bogdan's raw data reader (for offline only).
+  // Vx of the raw data reading
   //
 
   AliTRDdataArrayI *digits = 0;
@@ -649,126 +439,70 @@ AliTRDdigitsManager *AliTRDrawData::Raw2DigitsV0(AliRawReader *rawReader)
   AliTRDdataArrayI *track1 = 0;
   AliTRDdataArrayI *track2 = 0; 
 
-  AliTRDgeometry *geo = new AliTRDgeometry();
-
-  AliTRDCommonParam* commonParam = AliTRDCommonParam::Instance();
-  if (!commonParam) {
-    AliError("Could not get common parameters");
-    return 0;
-  }
-
-  AliTRDcalibDB* calibration = AliTRDcalibDB::Instance();
-  if (!calibration) {
-    AliError("Could not get calibration object");
-    return 0;
-  }
-
   // Create the digits manager
   AliTRDdigitsManager* digitsManager = new AliTRDdigitsManager();
   digitsManager->CreateArrays();
 
   AliTRDRawStream input(rawReader);
+  input.SetRawVersion( fRawVersion );
+  input.Init();
 
   // Loop through the digits
-  while (input.Next()) {
+  Int_t lastdet = -1;
+  Int_t det    = 0;
+  Int_t it = 0;
+  while (input.Next()) 
+    {
 
-    Int_t det    = input.GetDetectorV0();
-    Int_t npads  = input.GetNPadsV0();
+      det    = input.GetDet();
 
-    if (input.IsNewDetectorV0()) {
+      if (det != lastdet) 
+	{	
+	
+	  lastdet = det;
 
-      if (digits) digits->Compress(1,0);
-      if (track0) track0->Compress(1,0);
-      if (track1) track1->Compress(1,0);
-      if (track2) track2->Compress(1,0);
+	  if (digits) digits->Compress(1,0);
+	  if (track0) track0->Compress(1,0);
+	  if (track1) track1->Compress(1,0);
+	  if (track2) track2->Compress(1,0);
+	
+	  // Add a container for the digits of this detector
+	  digits = digitsManager->GetDigits(det);
+	  track0 = digitsManager->GetDictionary(det,0);
+	  track1 = digitsManager->GetDictionary(det,1);
+	  track2 = digitsManager->GetDictionary(det,2);
 
-      AliDebug(2,"Subevent header:");
-      AliDebug(2,Form("\tdet   = %d",det));
-      AliDebug(2,Form("\tnpads = %d",npads));
+	  // Allocate memory space for the digits buffer
+	  if (digits->GetNtime() == 0) 
+	    {
+	      digits->Allocate(input.GetMaxRow(),input.GetMaxCol(), input.GetNumberOfTimeBins());
+	      track0->Allocate(input.GetMaxRow(),input.GetMaxCol(), input.GetNumberOfTimeBins());
+	      track1->Allocate(input.GetMaxRow(),input.GetMaxCol(), input.GetNumberOfTimeBins());
+	      track2->Allocate(input.GetMaxRow(),input.GetMaxCol(), input.GetNumberOfTimeBins());
+	    }
+	}
+    
+      for (it = 0; it < 3; it++)
+	{
+	  if ( input.GetTimeBin() + it < input.GetNumberOfTimeBins() )
+	    {
+	      digits->SetDataUnchecked(input.GetRow(), input.GetCol(),
+				       input.GetTimeBin() + it, input.GetSignals()[it]);
+	      track0->SetDataUnchecked(input.GetRow(), input.GetCol(),
+				       input.GetTimeBin() + it, 0);
+	      track1->SetDataUnchecked(input.GetRow(), input.GetCol(),
+				       input.GetTimeBin() + it, 0);
+	      track2->SetDataUnchecked(input.GetRow(), input.GetCol(),
+				       input.GetTimeBin() + it, 0);
 
-      // Create the data buffer
-      Int_t cham      = geo->GetChamber(det);
-      Int_t plan      = geo->GetPlane(det);
-      Int_t sect      = geo->GetSector(det);
-      Int_t rowMax    = commonParam->GetRowMax(plan,cham,sect);
-      Int_t colMax    = commonParam->GetColMax(plan);
-      Int_t timeTotal = calibration->GetNumberOfTimeBins();
-
-      // Add a container for the digits of this detector
-      digits = digitsManager->GetDigits(det);
-      track0 = digitsManager->GetDictionary(det,0);
-      track1 = digitsManager->GetDictionary(det,1);
-      track2 = digitsManager->GetDictionary(det,2);
-      // Allocate memory space for the digits buffer
-      if (digits->GetNtime() == 0) {
-        digits->Allocate(rowMax,colMax,timeTotal);
-        track0->Allocate(rowMax,colMax,timeTotal);
-        track1->Allocate(rowMax,colMax,timeTotal);
-        track2->Allocate(rowMax,colMax,timeTotal);
-      }
-
-    }
-
-    digits->SetDataUnchecked(input.GetRowV0(), input.GetColumnV0(),
-			     input.GetTimeV0(), input.GetSignalV0());
-    track0->SetDataUnchecked(input.GetRowV0(), input.GetColumnV0(),
-                             input.GetTimeV0(), 0);
-    track1->SetDataUnchecked(input.GetRowV0(), input.GetColumnV0(),
-                             input.GetTimeV0(), 0);
-    track2->SetDataUnchecked(input.GetRowV0(), input.GetColumnV0(),
-                             input.GetTimeV0(), 0);
-
+	    }
+	}
   }
 
   if (digits) digits->Compress(1,0);
   if (track0) track0->Compress(1,0);
   if (track1) track1->Compress(1,0);
   if (track2) track2->Compress(1,0);
-
-  delete geo;
-
-  return digitsManager;
-
-}
-
-//_____________________________________________________________________________
-AliTRDdigitsManager *AliTRDrawData::Raw2DigitsVx(AliRawReader *rawReader)
-{
-
-  //
-  // This is executed for all Raw Data Versions > 0. Raw data is read and filled
-  // into digits array. Next function is not used.
-  //
-
-  AliTRDdataArrayI  *digits      = 0;
-
-  AliTRDCommonParam *commonParam = AliTRDCommonParam::Instance();
-  if (!commonParam) {
-    AliError("Could not get common params");
-    return 0;
-  }
-
-  AliTRDcalibDB     *calibration = AliTRDcalibDB::Instance();
-  if (!calibration) {
-    AliError("Could not get calibration object");
-    return 0;
-  }
-
-  // Create the digits manager
-  AliTRDdigitsManager* digitsManager = new AliTRDdigitsManager();
-  digitsManager->CreateArrays();
-
-  AliTRDRawStream input(rawReader, digitsManager, digits);
-  input.SetRawVersion( fRawVersion );
-
-  Int_t ret = 0;
-
-  ret = input.ReadAll();      // Loop through the digits
-
-  if ( ret == 0 ) AliError("Reading of TRD data failed!");
-  if ( ret == 2 ) AliWarning("TRD data seems empty!");
-
-  delete digits;
 
   return digitsManager;
 

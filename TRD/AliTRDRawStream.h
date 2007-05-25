@@ -15,12 +15,13 @@
 
 class AliTRDgeometry;
 class AliRawReader;
-class AliTRDdigitsManager;
-class AliTRDdataArrayI;
+class AliTRDCommonParam;
+class AliTRDcalibDB;
 
 // Some constants:
 const UInt_t kEndoftrackletmarker = 0xAAAAAAAA; /*This marks the end of tracklet data words*/
 const UInt_t kEndofrawdatamarker  = 0x00000000; /*This marks the end of half-chamber-data*/
+const UInt_t kSizeWord = sizeof(UInt_t);
 
 class AliTRDRawStream: public TObject {
 
@@ -28,34 +29,16 @@ class AliTRDRawStream: public TObject {
 
     AliTRDRawStream();
     AliTRDRawStream(AliRawReader *rawReader);
-    AliTRDRawStream(AliRawReader *rawReader, AliTRDdigitsManager *man, AliTRDdataArrayI *dig);
     virtual ~AliTRDRawStream();
 
-    virtual Bool_t       Next();              // Next function (for fRawVersion = 0 (Bogdans first version))
-    virtual Int_t        ReadAll();           // Read function (for fRawVersion > 0)
-
-    Int_t                GetDetectorV0() const     /* only for v0 */  { return fDetector;       };
-    Int_t                GetPrevDetectorV0() const /* only for v0 */  { return fPrevDetector;   };
-    Bool_t               IsNewDetectorV0() const   /* only for v0 */  { return fDetector != fPrevDetector; };
-    Int_t                GetNPadsV0() const        /* only for v0 */  { return fNPads;          };
-    Int_t                GetRowV0() const          /* only for v0 */  { return fRow;            };
-    Int_t                GetPrevRowV0() const      /* only for v0 */  { return fPrevRow;        };
-    Bool_t               IsNewRowV0() const        /* only for v0 */  { return (fRow != fPrevRow) || IsNewDetectorV0();  };
-    Int_t                GetColumnV0() const       /* only for v0 */  { return fColumn;         };
-    Int_t                GetPrevColumnV0() const   /* only for v0 */  { return fPrevColumn;     };
-    Bool_t               IsNewColumnV0() const     /* only for v0 */  { return (fColumn != fPrevColumn) || IsNewRowV0(); };
-    Int_t                GetTimeV0() const         /* only for v0 */  { return fTime-1;         };
-    Int_t                GetSignalV0() const       /* only for v0 */  { return fSignal;         };
+    virtual Bool_t       Next();              // Read the next data
+    virtual Int_t        Init();              // Init for the fRawVersion > 1
 
     enum { kDDLOffset = 0x400 };              // Offset for DDL numbers
 
-    void                 SetDigitsManager(AliTRDdigitsManager *man) { fDigitsManager   = man; };
-    void                 SetDigits(AliTRDdataArrayI *dig)           { fDigits          = dig; };
-
-    AliTRDdigitsManager *GetDigitsManager() const                   { return fDigitsManager;  };
-
     Bool_t               SetRawVersion(Int_t rv);
     Int_t                GetRawVersion() const                      { return fRawVersion;     };
+    void                 SetRawReader(AliRawReader *rawReader);
 
     // Get Filter settings (does not make a lot of sense):
     Int_t                TRAPfilterTCon() const                     { return fTCon;           };
@@ -73,6 +56,24 @@ class AliTRDRawStream: public TObject {
     Bool_t               IsGTULinkActive(Int_t sm, Int_t la, Int_t sta, Int_t side)
       { return ( ((fGTUlinkMask[sm][sta]) >> (2*la+side)) & 0x1 ); };
 
+    Int_t *GetSignals() { return fSig;}                         //  Signals in the three time bins from Data Word
+    Int_t GetADC() const { return fADC;}                            //  MCM ADC channel and Time Bin of word 1
+    Int_t GetTimeBin() const { return fTB - 3;}                             //  MCM ADC channel and Time Bin of word 1
+    Int_t GetEventNumber() const { return fEv;}                             //  MCM Event number and position of current MCM on TRD chamber
+    Int_t GetROB() const { return fROB;}                            //  MCM Event number and position of current MCM on TRD chamber
+    Int_t GetMCM() const { return fMCM;}                           //  MCM Event number and position of current MCM on TRD chamber
+    Int_t GetSM() const { return fSM;}                             //  Position of CURRENT half chamber in full TRD
+    Int_t GetLayer() const { return fLAYER;}                          //  PLANE = Position of CURRENT half chamber in full TRD
+    Int_t GetStack() const { return fSTACK;}                          //  CHAMBER = Position of CURRENT half chamber in full TRD
+    Int_t GetROC() const { return fROC;}                            //  Position of CURRENT half chamber in full TRD
+    Int_t GetSide() const { return fSIDE;}                           //  Position of CURRENT half chamber in full TRD
+    Int_t GetDCS() const { return fDCS;}                            //  DCS board number read from data (HC header)
+    Int_t GetRow() const { return fROW;}
+    Int_t GetCol() const { return fCOL;}                            //  Detector Pad coordinates
+    Int_t GetDet() const { return fDET;} // helper
+    Int_t GetMaxRow() const { return fRowMax;}
+    Int_t GetMaxCol() const { return fColMax;}
+    Int_t GetNumberOfTimeBins() const {return fTBins;}
 
   private :
 
@@ -88,8 +89,9 @@ class AliTRDRawStream: public TObject {
     Int_t    fROC;                            //  Position of CURRENT half chamber in full TRD
     Int_t    fSIDE;                           //  Position of CURRENT half chamber in full TRD
     Int_t    fDCS;                            //  DCS board number read from data (HC header)
-    Int_t    fROW;
+    Int_t    fROW;                            //  Detector Row coordinates
     Int_t    fCOL;                            //  Detector Pad coordinates
+    Int_t    fDET;                            //  Current detector - version > 1
 
     Int_t    fBCctr;                          //  Counters from HC header (>=V2)
     Int_t    fPTctr;                          //  Counters from HC header (>=V2)
@@ -128,22 +130,9 @@ class AliTRDRawStream: public TObject {
 
     AliRawReader *fRawReader;              //  Object for reading the raw data
 
-    // The following is used for v0:
-    Int_t    fCount;                       //  Counter of bytes to be read for current detector
-    Int_t    fDetector;                    //  Index of current detector
-    Int_t    fPrevDetector;                //  Index of previous detector
-    Int_t    fNPads;                       //  Number of active pads
-    Int_t    fRow;                         //  Index of current pad row
-    Int_t    fPrevRow;                     //  Index of previous pad row
-    Int_t    fColumn;                      //  Index of current pad column
-    Int_t    fPrevColumn;                  //  Index of previous pad column
-    Int_t    fTime;                        //  Index of current time bin
-    Int_t    fSignal;                      //  Signal in ADC counts
-
-    // This is again new:
     Int_t    fRawVersion;                  //  Which version of raw data decoding is used
-    UInt_t   fDataWord;                    //  The current 32 bit data word
-    Int_t    fStatus;                      //  Status word used by some functions
+
+    Int_t    fNextStatus;                  //  Navigation in raw versions > 1
     UInt_t   fTbSwitch;                    //  Time Bin Switch for internal use
     UInt_t   fTbSwitchCtr;                 //  Counter for internal use
     UInt_t   fTimeWords;                   //  Number of Words needed to store the data of 1 ADC ch.
@@ -155,34 +144,57 @@ class AliTRDRawStream: public TObject {
     Bool_t   fADCmask[21];                 //  Mask of active ADCs for zero suppression
     UShort_t fChamberDone[540];            //  Chamber was processed already (1=1HC, 2=full chamber)
 
+    Int_t    fRetVal;                         //  Datadecode return
+    Int_t    fEqID;                           //  Equipment id
+    UInt_t   fDataSize;                       //  Size of the data available in the current buffer
+    Bool_t   fSizeOK;                         //  Did we read anything
+    UInt_t   fCountBytes;                  //  Bytes traversed in the buffer
+    UInt_t   fBufSize;                     //  Size of the current RawReader buffer
+    Bool_t   fkBufferSet;                  //  Is the RawReader buffer available
+    UChar_t  *fPos;                        //  Position in the buffer of the RawReader
+    UInt_t   *fDataWord;                   //  The pointer to the current 32 bit data word
+    UInt_t   fTimeBinsCalib;               //  N of time bins retrieved from calibration
+
+    enum ETRDzRawStreamError {
+       kHCWordMissing = 1                  //
+      ,kMCMADCMaskMissing = 2              //
+      ,kWrongMCMorROB = 3                  //
+      ,kGTULinkMaskMissing = 4             //
+      ,kHCHeaderCorrupt = 5                //
+      ,kHCHeaderMissing = 6                //
+      ,kROBSideMismatch = 7                //
+      ,kWrongPadrow = 8                    //
+      ,kWrongPadcolumn = 9                 //
+      ,kTrackletRowMismatch = 10           //
+      ,kDataMaskError = 11                 //
+      ,kADCNumberOverflow = 12             //
+      ,kADCChannelOverflow = 13            //
+    };
+
  protected:
 
     AliTRDgeometry *fGeo;                  //  TRD geometry
 
-    AliTRDdigitsManager *fDigitsManager;   // Manager for the output digits
-    AliTRDdataArrayI    *fDigits;          // Output digits
-    AliTRDdataArrayI    *fTrack0;          // Track dictionary
-    AliTRDdataArrayI    *fTrack1;          // Track dictionary
-    AliTRDdataArrayI    *fTrack2;          // Track dictionary
+    AliTRDCommonParam *fCommonParam;
+    AliTRDcalibDB     *fCalibration;
 
     void  DecodeHCheader(Int_t timeBins);
-    void  DecodeHCheaderV1();                  // Valid for fRawversion = 1
-    void  DecodeHCheaderV2V3(Int_t timeBins);  // Valid for fRawversion = 2,3,?
 
     void  DecodeMCMheader();
-    void  DecodeMCMheaderVx();                 // So far valid for all fRawversion = 1,2,3, ...
 
     void  DecodeTracklet();
-    void  DecodeTrackletVx();                  // So far valid for all fRawversion = 1,2,3, ...
 
     void  DecodeGTUlinkMask();
-    void  DecodeGTUlinkMaskVx();               // So far valid for all fRawversion = 1,2,3, ...
 
     Int_t DecodeDataWord();
-    Int_t DecodeDataWordV1V2();                // Valid for fRawversion = 1, 2, ...
-    Int_t DecodeDataWordV3();                  // Valid for fRawversion = 3, ...
+    Int_t DecodeDataWordV1V2();                // Valid for fRawversion = 1, 2, ... 
+    Int_t DecodeDataWordV3();                  // Valid for fRawversion = 3, ... 
 
-    ClassDef(AliTRDRawStream, 3)               // Class for reading TRD raw digits
+    Int_t NextData(); // get the next piece of memory
+
+    enum { fkStart, fkStop, fkWordOK, fkNoMoreData, fkNextSM, fkNextHC, fkSeekNonEoTracklet, fkDecodeHC, fkNextMCM, fkNextData, fkReading};
+    
+    ClassDef(AliTRDRawStream, 4)               // Class for reading TRD raw digits
 
 };
 #endif

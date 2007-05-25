@@ -23,12 +23,6 @@ class AliTRDcalibDB;
 class AliTRDgeometry;
 class AliTRDdataArrayI;
 
-//
-// The following are defined in AliTRDRawStream.h:
-//const Int_t end_of_tracklet_marker = 0xAAAAAAAA; /*This marks the end of tracklet data words*/
-//const Int_t end_of_event_marker    = 0x00000000; /*This marks the end of half-chamber-data*/
-//
-
 class AliTRDrawData : public TObject {
 
  public:
@@ -46,15 +40,10 @@ class AliTRDrawData : public TObject {
 
  protected:
 
-  virtual Bool_t       Digits2RawV0(AliTRDdigitsManager* digitsManager); // for fRawVersion == 0
-  virtual Bool_t       Digits2RawVx(AliTRDdigitsManager* digitsManager); // for fRawVersion > 0
+  virtual Bool_t       Digits2Raw(AliTRDdigitsManager* digitsManager); // for fRawVersion > 0
+
   virtual Int_t        ProduceHcDataV1andV2(AliTRDdataArrayI *digits, Int_t side, Int_t det, UInt_t *buf, Int_t maxSize);
-  //virtual Int_t        ProduceHcDataV3(AliTRDdataArrayI *digits, Int_t side, Int_t det, UInt_t *buf, Int_t maxSize);
-  //virtual Int_t        ProduceHcDataV4(AliTRDdataArrayI *digits, Int_t side, Int_t det, UInt_t *buf, Int_t maxSize);
-
-  virtual AliTRDdigitsManager* Raw2DigitsV0(AliRawReader* rawReader);
-  virtual AliTRDdigitsManager* Raw2DigitsVx(AliRawReader* rawReader);
-
+  
   Int_t                fRawVersion;     //  Which version of raw simulator is used
   AliTRDCommonParam   *fCommonParam;    //! Common parameters
   AliTRDcalibDB       *fCalibration;    //! Offline database interface
