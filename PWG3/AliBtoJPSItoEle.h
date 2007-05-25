@@ -36,7 +36,6 @@ class AliBtoJPSItoEle : public TObject {
 	     Double_t v1[3],Double_t v2[3],Double_t dca,
 	     Double_t mom[6],Double_t d0[2]);
   virtual ~AliBtoJPSItoEle();
-  AliBtoJPSItoEle(const AliBtoJPSItoEle& btoJpsi);
 
   Double_t Alpha() const { return (Ql(0)-Ql(1))/(Ql(0)+Ql(1)); }
   void     ApplyPID(TString pidScheme="TRDTPCparam");

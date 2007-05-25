@@ -32,23 +32,29 @@
 ClassImp(AliD0toKpi)
 
 //----------------------------------------------------------------------------
-AliD0toKpi::AliD0toKpi() {
+AliD0toKpi::AliD0toKpi():
+fSignal(kFALSE),
+fEvent(0),
+fV1x(0.),
+fV1y(0.),
+fV1z(0.),
+fV2x(0.),
+fV2y(0.),
+fV2z(0.),
+fDCA(0.),
+fWgtAD0(0.),
+fWgtAD0bar(0.),
+fWgtBD0(0.),
+fWgtBD0bar(0.),
+fWgtCD0(0.),
+fWgtCD0bar(0.),
+fWgtDD0(0.),
+fWgtDD0bar(0.)
+{
   // Default constructor
-  
-  fSignal = kFALSE;
-
-  fEvent = 0;
 
   fTrkNum[0] = 0;
   fTrkNum[1] = 0;
-
-  fV1x = 0.;
-  fV1y = 0.;
-  fV1z = 0.;
-  fV2x = 0.;
-  fV2y = 0.;
-  fV2z = 0.;
-  fDCA = 0.;
 
   fPx[0] = 0.;
   fPy[0] = 0.;
@@ -72,29 +78,34 @@ AliD0toKpi::AliD0toKpi() {
   fTagNid[0] = 0.;
   fTagNid[1] = 0.;
 
-  fWgtAD0=fWgtAD0bar=fWgtBD0=fWgtBD0bar=fWgtCD0=fWgtCD0bar=fWgtDD0=fWgtDD0bar=0;
-
 }
 //----------------------------------------------------------------------------
 AliD0toKpi::AliD0toKpi(Int_t ev,Int_t trkNum[2],
 		       Double_t v1[3],Double_t v2[3], 
 		       Double_t dca,
-		       Double_t mom[6],Double_t d0[2]) {
+		       Double_t mom[6],Double_t d0[2]): 
+fSignal(kFALSE),
+fEvent(ev),
+fV1x(v1[0]),
+fV1y(v1[1]),
+fV1z(v1[2]),
+fV2x(v2[0]),
+fV2y(v2[1]),
+fV2z(v2[2]),
+fDCA(dca),
+fWgtAD0(0.),
+fWgtAD0bar(0.),
+fWgtBD0(0.),
+fWgtBD0bar(0.),
+fWgtCD0(0.),
+fWgtCD0bar(0.),
+fWgtDD0(0.),
+fWgtDD0bar(0.)
+{
   // Constructor
 
-  fSignal = kFALSE;
-
-  fEvent = ev;
   fTrkNum[0] = trkNum[0];
   fTrkNum[1] = trkNum[1];
-
-  fV1x = v1[0];
-  fV1y = v1[1];
-  fV1z = v1[2];
-  fV2x = v2[0];
-  fV2y = v2[1];
-  fV2z = v2[2];
-  fDCA = dca;
 
   fPx[0] = mom[0];
   fPy[0] = mom[1];
@@ -117,15 +128,9 @@ AliD0toKpi::AliD0toKpi(Int_t ev,Int_t trkNum[2],
   fTagKa[1]  = 0.;
   fTagNid[0] = 0.;
   fTagNid[1] = 0.;
-
-  fWgtAD0=fWgtAD0bar=fWgtBD0=fWgtBD0bar=fWgtCD0=fWgtCD0bar=fWgtDD0=fWgtDD0bar=0;
 }
 //----------------------------------------------------------------------------
 AliD0toKpi::~AliD0toKpi() {}
-//____________________________________________________________________________
-AliD0toKpi::AliD0toKpi( const AliD0toKpi& d0toKpi):TObject(d0toKpi) {
-  // dummy copy constructor
-}
 //----------------------------------------------------------------------------
 void AliD0toKpi::ApplyPID(TString pidScheme) {
   // Applies particle identification
