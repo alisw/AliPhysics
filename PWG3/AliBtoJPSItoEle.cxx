@@ -35,24 +35,23 @@
 ClassImp(AliBtoJPSItoEle)
 
 //----------------------------------------------------------------------------
-AliBtoJPSItoEle::AliBtoJPSItoEle() {
+AliBtoJPSItoEle::AliBtoJPSItoEle():
+fSignal(kFALSE),
+fJpsiPrimary(kFALSE),
+fEvent(0),
+fV1x(0.),
+fV1y(0.),
+fV1z(0.),
+fV2x(0.),
+fV2y(0.),
+fV2z(0.),
+fDCA(0.),
+fWgtJPsi(0.)
+{
   // Default constructor
   
-  fSignal = kFALSE;
-  fJpsiPrimary = kFALSE;
-
-  fEvent = 0;
-
   fTrkNum[0] = 0;
   fTrkNum[1] = 0;
-
-  fV1x = 0.;
-  fV1y = 0.;
-  fV1z = 0.;
-  fV2x = 0.;
-  fV2y = 0.;
-  fV2z = 0.;
-  fDCA = 0.;
 
   fPx[0] = 0.;
   fPy[0] = 0.;
@@ -78,30 +77,28 @@ AliBtoJPSItoEle::AliBtoJPSItoEle() {
   fTagNid[0] = 0.;
   fTagNid[1] = 0.;
 
-  fWgtJPsi=0;
-
 }
 //----------------------------------------------------------------------------
 AliBtoJPSItoEle::AliBtoJPSItoEle(Int_t ev,Int_t trkNum[2],
 		       Double_t v1[3],Double_t v2[3], 
 		       Double_t dca,
-		       Double_t mom[6],Double_t d0[2]) {
+		       Double_t mom[6],Double_t d0[2]):
+fSignal(kFALSE),
+fJpsiPrimary(kFALSE),
+fEvent(ev),
+fV1x(v1[0]),
+fV1y(v1[1]),
+fV1z(v1[2]),
+fV2x(v2[0]),
+fV2y(v2[1]),
+fV2z(v2[2]),
+fDCA(dca),
+fWgtJPsi(0.)
+{
   // Constructor
 
-  fSignal = kFALSE;
-  fJpsiPrimary = kFALSE;
-
-  fEvent = ev;
   fTrkNum[0] = trkNum[0];
   fTrkNum[1] = trkNum[1];
-
-  fV1x = v1[0];
-  fV1y = v1[1];
-  fV1z = v1[2];
-  fV2x = v2[0];
-  fV2y = v2[1];
-  fV2z = v2[2];
-  fDCA = dca;
 
   fPx[0] = mom[0];
   fPy[0] = mom[1];
@@ -126,15 +123,9 @@ AliBtoJPSItoEle::AliBtoJPSItoEle(Int_t ev,Int_t trkNum[2],
   fTagKa[1]  = 0.;
   fTagNid[0] = 0.;
   fTagNid[1] = 0.;
-
-  fWgtJPsi=0;
 }
 //----------------------------------------------------------------------------
 AliBtoJPSItoEle::~AliBtoJPSItoEle() {}
-//____________________________________________________________________________
-AliBtoJPSItoEle::AliBtoJPSItoEle( const AliBtoJPSItoEle& btoJpsi):TObject(btoJpsi) {
-  // dummy copy constructor
-}
 //----------------------------------------------------------------------------
 void AliBtoJPSItoEle::ApplyPID(TString pidScheme) {
   // Applies particle identification
