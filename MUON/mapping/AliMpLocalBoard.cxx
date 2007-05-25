@@ -194,9 +194,7 @@ AliMpIntPair AliMpLocalBoard::GetPosition() const
     const Char_t* boardName = GetName();
     Int_t iLine = boardName[4] - '0';
     Int_t iCol = boardName[2] - '0';
-    if ( iLine == 5 ) --iCol;
 
     return (AliMpIntPair(iLine, iCol));
-
 }
 
