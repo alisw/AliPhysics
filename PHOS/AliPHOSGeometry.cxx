@@ -238,7 +238,7 @@ void AliPHOSGeometry::SetPHOSAngles()
 }
 
 //____________________________________________________________________________
-Bool_t AliPHOSGeometry::AbsToRelNumbering(Int_t AbsId, Int_t * relid) const
+Bool_t AliPHOSGeometry::AbsToRelNumbering(Int_t absId, Int_t * relid) const
 {
   // Converts the absolute numbering into the following array
   //  relid[0] = PHOS Module number 1:fNModules 
@@ -248,7 +248,7 @@ Bool_t AliPHOSGeometry::AbsToRelNumbering(Int_t AbsId, Int_t * relid) const
   //  relid[3] = Column number inside a PHOS module
 
   Bool_t rv  = kTRUE ; 
-  Float_t id = AbsId ;
+  Float_t id = absId ;
 
   Int_t phosmodulenumber = (Int_t)TMath:: Ceil( id / GetNCristalsInModule() ) ; 
   
@@ -383,25 +383,25 @@ Bool_t  AliPHOSGeometry::Impact(const TParticle * particle) const
 }
 
 //____________________________________________________________________________
-Bool_t AliPHOSGeometry::RelToAbsNumbering(const Int_t * relid, Int_t &  AbsId) const
+Bool_t AliPHOSGeometry::RelToAbsNumbering(const Int_t * relid, Int_t &  absId) const
 {
   // Converts the relative numbering into the absolute numbering
   // EMCA crystals:
-  //  AbsId = from 1 to fNModules * fNPhi * fNZ
+  //  absId = from 1 to fNModules * fNPhi * fNZ
   // CPV pad:
-  //  AbsId = from N(total PHOS crystals) + 1
+  //  absId = from N(total PHOS crystals) + 1
   //          to NCPVModules * fNumberOfCPVPadsPhi * fNumberOfCPVPadsZ
 
   Bool_t rv = kTRUE ; 
   
   if ( relid[1] ==  0 ) {                            // it is a Phos crystal
-    AbsId =
+    absId =
       ( relid[0] - 1 ) * GetNPhi() * GetNZ()         // the offset of PHOS modules
       + ( relid[2] - 1 ) * GetNZ()                   // the offset along phi
       +   relid[3] ;                                 // the offset along z
   }
   else { // it is a CPV pad
-    AbsId =    GetNPhi() * GetNZ() *  GetNModules()         // the offset to separate EMCA crystals from CPV pads
+    absId =    GetNPhi() * GetNZ() *  GetNModules()         // the offset to separate EMCA crystals from CPV pads
       + ( relid[0] - 1 ) * GetNumberOfCPVPadsPhi() * GetNumberOfCPVPadsZ()   // the pads offset of PHOS modules 
       + ( relid[2] - 1 ) * GetNumberOfCPVPadsZ()                             // the pads offset of a CPV row
       +   relid[3] ;                                                         // the column number
@@ -431,9 +431,13 @@ void AliPHOSGeometry::RelPosInAlice(Int_t id, TVector3 & pos ) const
     Double_t psC[3]={0.0,0.0,0.}; //Global position
  
     //Shift and possibly apply misalignment corrections
-    Int_t nCellsInStrip=fGeometryEMCA->GetNCellsXInStrip() ;
-    Int_t strip=1+(relid[3]-1)/fGeometryEMCA->GetNCellsZInStrip()+((relid[2]-1)/nCellsInStrip)*fGeometryEMCA->GetNStripZ() ;
-    Int_t cell=fGeometryEMCA->GetNCellsZInStrip()*(1+(relid[2]-1)%nCellsInStrip)-(relid[3]-1)%fGeometryEMCA->GetNCellsZInStrip() ;
+    Int_t nCellsXInStrip=fGeometryEMCA->GetNCellsXInStrip() ;
+    Int_t nCellsZInStrip=fGeometryEMCA->GetNCellsZInStrip() ;
+    Int_t strip=1+((Int_t) TMath::Ceil((Double_t)relid[2]/nCellsXInStrip))*fGeometryEMCA->GetNStripZ()-
+                (Int_t) TMath::Ceil((Double_t)relid[3]/nCellsZInStrip) ;
+    Int_t cellraw= relid[3]%nCellsZInStrip ;
+    if(cellraw==0)cellraw=nCellsZInStrip ;
+    Int_t cell= ((relid[2]-1)%nCellsXInStrip)*nCellsZInStrip + cellraw ;
     sprintf(path,"/ALIC_1/PHOS_%d/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1/PSTR_%d/PCEL_%d",
             relid[0],strip,cell) ;
     if (!gGeoManager->cd(path)){
@@ -444,7 +448,7 @@ void AliPHOSGeometry::RelPosInAlice(Int_t id, TVector3 & pos ) const
     else{
       AliFatal("Geo matrixes are not loaded \n") ;
     }
-    pos.SetXYZ(psC[0],psC[1],-psC[2]) ; 
+    pos.SetXYZ(psC[0],psC[1],psC[2]) ; 
   }
   else{
     //first calculate position with respect to CPV plain
@@ -470,7 +474,7 @@ void AliPHOSGeometry::RelPosInAlice(Int_t id, TVector3 & pos ) const
 } 
 
 //____________________________________________________________________________
-void AliPHOSGeometry::RelPosToAbsId(Int_t module, Double_t x, Double_t z, Int_t & AbsId) const
+void AliPHOSGeometry::RelPosToAbsId(Int_t module, Double_t x, Double_t z, Int_t & absId) const
 {
   // converts local PHOS-module (x, z) coordinates to absId 
 
@@ -478,20 +482,23 @@ void AliPHOSGeometry::RelPosToAbsId(Int_t module, Double_t x, Double_t z, Int_t 
   if (!gGeoManager){
     AliFatal("Geo manager not initialized\n");
   }
-  Int_t relid[4] ;
+  Double_t posL[3]={x,-fCrystalShift,-z} ; //Only for EMC!!!
+  Double_t posG[3] ;
   char path[100] ;
   sprintf(path,"/ALIC_1/PHOS_%d/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1",module) ;
-  Double_t lpos[3]={x,0.0,z} ;
-  Double_t gpos[3]={0.,0.,0.} ;
   if (!gGeoManager->cd(path)){
-     AliFatal("Geo manager can not find path \n");
+    AliFatal("Geo manager can not find path \n");
   }
-  TGeoHMatrix *m = gGeoManager->GetCurrentMatrix();
-  if (m) m->LocalToMaster(lpos,gpos);
+  TGeoHMatrix *mPHOS = gGeoManager->GetCurrentMatrix();
+  if (mPHOS){
+     mPHOS->LocalToMaster(posL,posG);
+  }
   else{
     AliFatal("Geo matrixes are not loaded \n") ;
   }
-  gGeoManager->FindNode(gpos[0],gpos[1],gpos[2]) ;
+
+  Int_t relid[4] ;
+  gGeoManager->FindNode(posG[0],posG[1],posG[2]) ;
   //Check that path contains PSTR and extract strip number
   TString cpath(gGeoManager->GetPath()) ;
   Int_t indx = cpath.Index("PCEL") ;
@@ -504,6 +511,7 @@ void AliPHOSGeometry::RelPosToAbsId(Int_t module, Double_t x, Double_t z, Int_t 
     if(relid[3]<1)relid[3]=1 ;
     if(relid[2]>GetNPhi())relid[2]=GetNPhi() ;
     if(relid[3]>GetNZ())relid[3]=GetNZ() ;
+    RelToAbsNumbering(relid,absId) ;
   }
   else{
     Int_t indx2 = cpath.Index("/",indx) ;
@@ -515,18 +523,16 @@ void AliPHOSGeometry::RelPosToAbsId(Int_t module, Double_t x, Double_t z, Int_t 
     indx2 = cpath.Index("/",indx) ;
     TString strip=cpath(indx+5,indx2-indx-5) ;
     Int_t iStrip = strip.Atoi() ; 
-    relid[0] = module ;
-    relid[1] = 0 ;
-    Int_t raw = fGeometryEMCA->GetNCellsXInStrip()*((iStrip-1)/fGeometryEMCA->GetNStripZ()) +
-                1 + (icell-1)/fGeometryEMCA->GetNCellsZInStrip() ;
-    Int_t col = fGeometryEMCA->GetNCellsZInStrip()*(1+(iStrip-1)%fGeometryEMCA->GetNStripZ()) - 
-                (icell-1)%fGeometryEMCA->GetNCellsZInStrip() ;
-    if(col==0) col=GetNZ() ;
-    relid[2] = raw ;
-    relid[3] = col ;
+
+    Int_t row = fGeometryEMCA->GetNStripZ() - (iStrip - 1) % (fGeometryEMCA->GetNStripZ()) ;
+    Int_t col = (Int_t) TMath::Ceil((Double_t) iStrip/(fGeometryEMCA->GetNStripZ())) -1 ;
+ 
+    // Absid for 8x2-strips. Looks nice :)
+    absId = (module-1)*GetNCristalsInModule() +
+                  row * 2 + (col*fGeometryEMCA->GetNCellsXInStrip() + (icell - 1) / 2)*GetNZ() - (icell & 1 ? 1 : 0);
+ 
   }
  
-  RelToAbsNumbering(relid,AbsId) ;
 }
 
 //____________________________________________________________________________
@@ -547,14 +553,18 @@ void AliPHOSGeometry::RelPosInModule(const Int_t * relid, Float_t & x, Float_t &
 //    x = - ( GetNPhi()/2. - relid[2]    + 0.5 ) *  GetCellStep() ; // position of Xtal with respect
 //    z = - ( GetNZ()  /2. - relid[3] + 0.5 ) *  GetCellStep() ; // of center of PHOS module  
 
-    Double_t pos[3]= {0.0,0.0,0.}; //Position incide the crystal (Y coordinalte is not important)
+    Double_t pos[3]= {0.0,-fCryCellShift,0.}; //Position incide the crystal 
     Double_t posC[3]={0.0,0.0,0.}; //Global position
 
     //Shift and possibly apply misalignment corrections
-    Int_t nCellsInStrip=fGeometryEMCA->GetNCellsXInStrip() ;
-    Int_t strip=1+(relid[3]-1)/fGeometryEMCA->GetNCellsZInStrip()+((relid[2]-1)/nCellsInStrip)*fGeometryEMCA->GetNStripZ() ;
-    Int_t sellRaw = (relid[2]-1)%nCellsInStrip ; 
-    Int_t cell=fGeometryEMCA->GetNCellsZInStrip()*(sellRaw+1)  -(relid[3]-1)%fGeometryEMCA->GetNCellsZInStrip() ;
+    Int_t nCellsXInStrip=fGeometryEMCA->GetNCellsXInStrip() ;
+    Int_t nCellsZInStrip=fGeometryEMCA->GetNCellsZInStrip() ;
+//    Int_t strip=1+(relid[3]-1)/fGeometryEMCA->GetNCellsZInStrip()+((relid[2]-1)/nCellsInStrip)*fGeometryEMCA->GetNStripZ() ;
+    Int_t strip=1+((Int_t) TMath::Ceil((Double_t)relid[2]/nCellsXInStrip))*fGeometryEMCA->GetNStripZ()-
+                (Int_t) TMath::Ceil((Double_t)relid[3]/nCellsZInStrip) ;
+    Int_t cellraw= relid[3]%nCellsZInStrip ;
+    if(cellraw==0)cellraw=nCellsZInStrip ;
+    Int_t cell= ((relid[2]-1)%nCellsXInStrip)*nCellsZInStrip + cellraw ; 
     sprintf(path,"/ALIC_1/PHOS_%d/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1/PSTR_%d/PCEL_%d",
             relid[0],strip,cell) ;
     if (!gGeoManager->cd(path)){
@@ -576,10 +586,10 @@ void AliPHOSGeometry::RelPosInModule(const Int_t * relid, Float_t & x, Float_t &
     else{
       AliFatal("Geo matrixes are not loaded \n") ;
     }
+//printf("RelPosInMod: posL=[%f,%f,%f]\n",posL[0],posL[1],posL[2]) ;
 //printf("old: x=%f, z=%f \n",x,z);
     x=posL[0] ;
-    z=-posL[1];
-//printf("Geo: x=%f, z=%f \n",x,z);
+    z=posL[1];
     return ;
   }
   else{//CPV
