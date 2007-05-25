@@ -50,18 +50,19 @@ typedef struct {
 ClassImp(AliD0toKpiAnalysis)
 
 //----------------------------------------------------------------------------
-AliD0toKpiAnalysis::AliD0toKpiAnalysis() {
+AliD0toKpiAnalysis::AliD0toKpiAnalysis():
+fVertexOnTheFly(kFALSE),
+fSim(kFALSE),
+fOnlySignal(kFALSE),
+fPID("TOFparam_PbPb"),
+fPtCut(0.),
+fd0Cut(0.), 
+fMassCut(1000.)
+ {
   // Default constructor
 
-  SetPtCut();
-  Setd0Cut();
-  SetMassCut();
   SetD0Cuts();
   SetVertex1();
-  SetPID();
-  fVertexOnTheFly = kFALSE;
-  fSim = kFALSE;
-  fOnlySignal = kFALSE;
 }
 //----------------------------------------------------------------------------
 AliD0toKpiAnalysis::~AliD0toKpiAnalysis() {}
@@ -162,7 +163,7 @@ void AliD0toKpiAnalysis::FindCandidates(Int_t evFirst,Int_t evLast,
 
   // create the AliVertexerTracks object
   // (it will be used only if fVertexOnTheFly=kTrue)
-  AliVertexerTracks *vertexer1 = new AliVertexerTracks;
+  AliVertexerTracks *vertexer1 = new AliVertexerTracks();
   if(fVertexOnTheFly) {
     // open the mean vertex
     TFile *invtx = new TFile("AliESDVertexMean.root");
@@ -264,6 +265,7 @@ void AliD0toKpiAnalysis::FindCandidates(Int_t evFirst,Int_t evLast,
 	  goodVtx1 = kFALSE;
 	  if(SelectInvMass(mom)) {
 	    // primary vertex from *other* tracks in the event
+	    vertexer1->SetFieldkG(event->GetMagneticField());
 	    skipped[0] = trkEntryP[iTrkP];
 	    skipped[1] = trkEntryN[iTrkN];
 	    vertexer1->SetSkipTracks(2,skipped);
