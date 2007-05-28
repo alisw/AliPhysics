@@ -68,11 +68,6 @@ void AliITSFindPrimaryVertex(Int_t evNumber1=0,Int_t NumbofEv=1, const char *fil
     cout << "True vertex coordinates (cm) = " << vtrue.X() << " " << vtrue.Y() << " " << vtrue.Z() << endl;
     cout << "Found vertex coordinates  (cm) = " << vfound.X() << " " << vfound.Y() << " " << vfound.Z() << endl;    cout << "Difference true - found (cm) = " << dif.Mag() << " " << dif.X() << " " << dif.Y() << " " << dif.Z() << endl;
     
-    if(V){
-      Double_t pos[3];
-      for(Int_t kk=0;kk<3;kk++)pos[kk]=(Double_t)primaryVertex[kk];
-      V->SetTruePos(pos);
-    }
     timer.Stop();
     timer.Print();
     

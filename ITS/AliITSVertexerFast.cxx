@@ -89,7 +89,6 @@ AliESDVertex* AliITSVertexerFast::FindVertexForCurrentEvent(Int_t evnumb){
   char name[30];
   sprintf(name,"Vertex_%d",evnumb);
   fCurrentVertex = new AliESDVertex(vrtx,fSmear,name);
-  fCurrentVertex->SetTruePos(vrttrue);
   return fCurrentVertex;
   
 }

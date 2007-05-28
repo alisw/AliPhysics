@@ -77,9 +77,6 @@ void AliITSVertexerZTest(Float_t delphi=0.05,Float_t window=3.,Float_t initx=0.,
       }
     }
     if(vert){
-      Double_t pos[3];
-      for(Int_t kk=0;kk<3;kk++)pos[kk]=(Double_t)primaryVertex[kk];
-      vert->SetTruePos(pos);
       Float_t found = vert->GetZv();
       diff2->Fill(primaryVertex[2],found);
       found = 10000.*(found-primaryVertex[2]);
