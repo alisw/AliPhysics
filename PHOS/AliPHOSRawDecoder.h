@@ -12,6 +12,9 @@
 #include "AliRawReader.h"
 #include "AliCaloRawStream.h"
 
+class TArrayI;
+class AliPHOSPulseGenerator;
+
 class AliPHOSRawDecoder {
 
 public:
@@ -47,6 +50,8 @@ private:
   Int_t fModule;    // PHOS module number (1-5)
   Int_t fColumn;    // column in the module
   Int_t fRow;       // row
+  TArrayI* fSamples;// array of samples
+  AliPHOSPulseGenerator* fPulseGenerator; // ALTRO pulse simulator
   
   ClassDef(AliPHOSRawDecoder,1)
 };

@@ -20,8 +20,8 @@
 // 
 // Typical use case:
 //     AliRawReader* rf = new AliRawReaderDate("2006run2211.raw");
+//     AliPHOSRawDecoder dc(rf);
 //     while (rf->NextEvent()) {
-//       AliPHOSRawDecoder dc(rf);
 //       dc.SetOldRCUFormat(kTRUE);
 //       dc.SubtractPedestals(kTRUE);
 //       while ( dc.NextDigit() ) {
@@ -38,7 +38,7 @@
 // Author: Boris Polichtchouk
 
 // --- ROOT system ---
-#include "TH1.h"
+#include "TArrayI.h"
 
 // --- AliRoot header files ---
 #include "AliPHOSRawDecoder.h"
@@ -48,14 +48,14 @@ ClassImp(AliPHOSRawDecoder)
 
 //-----------------------------------------------------------------------------
 AliPHOSRawDecoder::AliPHOSRawDecoder():
-  fRawReader(0),fCaloStream(0),fPedSubtract(kFALSE),fEnergy(-111),fTime(-111),fModule(-1),fColumn(-1),fRow(-1)
+  fRawReader(0),fCaloStream(0),fPedSubtract(kFALSE),fEnergy(-111),fTime(-111),fModule(-1),fColumn(-1),fRow(-1),fSamples(0),fPulseGenerator(0)
 {
   //Default constructor.
 }
 
 //-----------------------------------------------------------------------------
 AliPHOSRawDecoder::AliPHOSRawDecoder(AliRawReader* rawReader):
-  fRawReader(0),fCaloStream(0),fPedSubtract(kFALSE),fEnergy(-111),fTime(-111),fModule(-1),fColumn(-1),fRow(-1)
+  fRawReader(0),fCaloStream(0),fPedSubtract(kFALSE),fEnergy(-111),fTime(-111),fModule(-1),fColumn(-1),fRow(-1),fSamples(0),fPulseGenerator(0)
 {
   //Construct a decoder object.
   //Is is user responsibility to provide next raw event 
@@ -64,6 +64,8 @@ AliPHOSRawDecoder::AliPHOSRawDecoder(AliRawReader* rawReader):
   fRawReader =  rawReader;
   fCaloStream = new AliCaloRawStream(rawReader,"PHOS");
   fCaloStream->SetOldRCUFormat(kFALSE);
+  fSamples = new TArrayI(100);
+  fPulseGenerator = new AliPHOSPulseGenerator();
 }
 
 //-----------------------------------------------------------------------------
@@ -72,6 +74,8 @@ AliPHOSRawDecoder::~AliPHOSRawDecoder()
   //Destructor.
 
   if(fCaloStream) delete fCaloStream;
+  if(fSamples) delete fSamples;
+  if(fPulseGenerator) delete fPulseGenerator;
 }
 
 //-----------------------------------------------------------------------------
@@ -80,7 +84,8 @@ AliPHOSRawDecoder::AliPHOSRawDecoder(const AliPHOSRawDecoder &phosDecoder ):
   fPedSubtract(phosDecoder.fPedSubtract),
   fEnergy(phosDecoder.fEnergy),fTime(phosDecoder.fTime),
   fModule(phosDecoder.fModule),fColumn(phosDecoder.fColumn),
-  fRow(phosDecoder.fRow)
+  fRow(phosDecoder.fRow),fSamples(phosDecoder.fSamples),
+  fPulseGenerator(phosDecoder.fPulseGenerator)
 {
   //Copy constructor.
 }
@@ -101,6 +106,12 @@ AliPHOSRawDecoder& AliPHOSRawDecoder::operator = (const AliPHOSRawDecoder &phosD
     fModule = phosDecode.fModule;
     fColumn = phosDecode.fColumn;
     fRow = phosDecode.fRow;
+
+    if(fSamples) delete fSamples;
+    fSamples = phosDecode.fSamples;
+
+    if(fPulseGenerator) delete fPulseGenerator;
+    fPulseGenerator = phosDecode.fPulseGenerator;
   }
 
   return *this;
@@ -113,53 +124,58 @@ Bool_t AliPHOSRawDecoder::NextDigit()
   //Extract an energy deposited in the crystal,
   //crystal' position (module,column,row),
   //time and gain (high or low).
-
+  
   AliCaloRawStream* in = fCaloStream;
- 
-  // Create a shaper pulse object
-  AliPHOSPulseGenerator pulse; 
-
+  
   Bool_t   lowGainFlag = kFALSE ; 
   Int_t    iBin     = 0;
-
-  // Create histogram to store samples
-  TH1F hSamples("hSamples","ALTRO samples",in->GetTimeLength(),0,in->GetTimeLength());
+  Int_t    mxSmps   = fSamples->GetSize();
+  Int_t    tLength  = -1;
+  fEnergy = -111;
+  
+  fSamples->Reset();
   
   while ( in->Next() ) { 
 
+    tLength = in->GetTimeLength();
+    if(tLength>mxSmps) { 
+      fSamples->Set(tLength);
+      mxSmps = fSamples->GetSize();
+    }
+
     lowGainFlag = in->IsLowGain();
-    // Fill histograms with samples
-    hSamples.SetBinContent(in->GetTimeLength()-iBin-1,in->GetSignal());
+    
+    // Fill array with samples
+    fSamples->AddAt(in->GetSignal(),tLength-iBin-1);
+    if((Double_t)in->GetSignal() > fEnergy) fEnergy = (Double_t)in->GetSignal();
     iBin++;
 
     // Fit the full sample
-    if(iBin==in->GetTimeLength()) {
+    if(iBin==tLength) {
       iBin=0;
 
-      // Temporarily we do not fit the sample graph, but
-      // take the energy from the graph maximum, and the pedestal 
-      // from the 0th point (30 Aug 2006).
+      // Temporarily we take the energy as a maximum amplitude
+      // and the pedestal from the 0th point (30 Aug 2006).
       // Time is not evaluated for the moment (12.01.2007). 
       // Take is as a first time bin multiplied by the sample tick time
 
-      fTime = pulse.GetRawFormatTimeTrigger() * in->GetTime();
+      fTime = fPulseGenerator->GetRawFormatTimeTrigger() * in->GetTime();
 
       fModule = in->GetModule()+1;
       fRow = in->GetRow()   +1;
       fColumn = in->GetColumn()+1;
 
-      fEnergy = hSamples.GetMaximum();       // "digit amplitude"
       if(fPedSubtract) 
-	fEnergy-= hSamples.GetBinContent(0); // "pedestal subtraction"
-
+	fEnergy -= (Double_t)fSamples->At(0); // "pedestal subtraction"
+      
       if(lowGainFlag)
-	fEnergy *= pulse.GetRawFormatHighLowGainFactor(); // *16 
+	fEnergy *= fPulseGenerator->GetRawFormatHighLowGainFactor(); // *16 
       
       return kTRUE;
     }
 
   } // in.Next()
-
-
+  
+  
   return kFALSE;
 }
