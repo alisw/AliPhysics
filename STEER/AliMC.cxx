@@ -183,6 +183,10 @@ void  AliMC::ConstructGeometry()
 Bool_t  AliMC::MisalignGeometry() 
 {
 // Call misalignment code if AliSimulation object was defined.
+
+   //Set alignable volumes for the whole geometry
+   SetAllAlignableVolumes();
+   // Misalign geometry via AliSimulation instance
    if (!AliSimulation::GetInstance()) return kFALSE;
    return AliSimulation::GetInstance()->MisalignGeometry(gAlice->GetRunLoader());
 }   
@@ -664,8 +668,6 @@ void AliMC::Init()
 
    //=================Create Materials and geometry
    gMC->Init();
-   //Set alignable volumes for the whole geometry
-   SetAllAlignableVolumes();
    //Read the cuts for all materials
    ReadTransPar();
    //Build the special IMEDIA table

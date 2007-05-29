@@ -369,6 +369,10 @@ Bool_t AliSimulation::MisalignGeometry(AliRunLoader *runLoader)
   // then applied to the TGeo geometry.
   // Finally an overlaps check is performed.
 
+  if (!gGeoManager || !gGeoManager->IsClosed()) {
+    AliError("Can't apply the misalignment! gGeoManager doesn't exist or it is still opened!");
+    return kFALSE;
+  }  
   Bool_t delRunLoader = kFALSE;
   if (!runLoader) {
     runLoader = LoadRun("READ");
@@ -377,7 +381,7 @@ Bool_t AliSimulation::MisalignGeometry(AliRunLoader *runLoader)
   }
 
   // Export ideal geometry 
-  if (gGeoManager) gGeoManager->Export("geometry.root");
+  gGeoManager->Export("geometry.root");
 
   // Load alignment data from CDB and apply to geometry through AliGeomManager
   if(fLoadAlignFromCDB){
@@ -390,9 +394,9 @@ Bool_t AliSimulation::MisalignGeometry(AliRunLoader *runLoader)
       AliModule* det = (AliModule*) detArray->At(iDet);
       if (!det || !det->IsActive()) continue;
       if (IsSelected(det->GetName(), detStr)) {
-	//add det to list of dets to be aligned from CDB
-	loadAlObjsListOfDets += det->GetName();
-	loadAlObjsListOfDets += " ";
+        //add det to list of dets to be aligned from CDB
+        loadAlObjsListOfDets += det->GetName();
+        loadAlObjsListOfDets += " ";
       }
     } // end loop over detectors
     (AliGeomManager::Instance())->ApplyAlignObjsFromCDB(loadAlObjsListOfDets.Data());
@@ -401,18 +405,11 @@ Bool_t AliSimulation::MisalignGeometry(AliRunLoader *runLoader)
     // provided by the user. If yes, apply the objects
     // to the present TGeo geometry
     if (fAlignObjArray) {
-      if (gGeoManager && gGeoManager->IsClosed()) {
-	if ((AliGeomManager::Instance())->ApplyAlignObjsToGeom(fAlignObjArray) == kFALSE) {
-	  AliError("The misalignment of one or more volumes failed!"
-		   "Compare the list of simulated detectors and the list of detector alignment data!");
-	  if (delRunLoader) delete runLoader;
-	  return kFALSE;
-	}
-      }
-      else {
-	AliError("Can't apply the misalignment! gGeoManager doesn't exist or it is still opened!");
-	if (delRunLoader) delete runLoader;
-	return kFALSE;
+      if ((AliGeomManager::Instance())->ApplyAlignObjsToGeom(fAlignObjArray) == kFALSE) {
+        AliError("The misalignment of one or more volumes failed!"
+                 "Compare the list of simulated detectors and the list of detector alignment data!");
+        if (delRunLoader) delete runLoader;
+        return kFALSE;
       }
     }
   }
@@ -434,6 +431,9 @@ Bool_t AliSimulation::MisalignGeometry(AliRunLoader *runLoader)
 
   // Update the TGeoPhysicalNodes
   gGeoManager->RefreshPhysicalNodes();
+
+  // Export (mis)aligned geometry 
+  gGeoManager->Export("misaligned_geometry.root");
 
   return kTRUE;
 }
@@ -645,9 +645,6 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
 #if ROOT_VERSION_CODE < 331527
   MisalignGeometry(runLoader);
 #endif
-
-  // Export (mis)aligned geometry 
-  if (gGeoManager) gGeoManager->Export("misaligned_geometry.root");
 
 //   AliRunLoader* runLoader = gAlice->GetRunLoader();
 //   if (!runLoader) {
