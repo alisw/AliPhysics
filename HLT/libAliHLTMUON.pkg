@@ -1,12 +1,17 @@
 #-*- Mode: Makefile -*-
 # $Id$ 
 
-include HLT/hlt.conf
+include $(MODDIR)/hlt.conf
 
 ###############################################################################
 
+CLASS_HDRS := 	OnlineAnalysis/AliHLTMUONHitReconstructorComponent.h \
+		OfflineInterface/AliHLTMUONAgent.h \
+		OfflineInterface/AliHLTMUONRecHitsSource.h
+
 # Sources that are ROOT classes:
-MODULE_SRCS :=	AliHLTMUONUtils.cxx \
+MODULE_SRCS :=	$(CLASS_HDRS:.h=.cxx) \
+		AliHLTMUONUtils.cxx \
 		AliHLTMUONConstants.cxx \
 		AliHLTMUONTriggerRecordsBlockStruct.cxx \
 		AliHLTMUONTrigRecsDebugBlockStruct.cxx \
@@ -18,19 +23,13 @@ MODULE_SRCS :=	AliHLTMUONUtils.cxx \
 		AliHLTMUONMansoCandidatesBlockStruct.cxx \
 		AliHLTMUONSinglesDecisionBlockStruct.cxx \
 		AliHLTMUONPairsDecisionBlockStruct.cxx \
-		OnlineAnalysis/AliHLTMUONHitReconstructor.cxx \
-		OnlineAnalysis/AliHLTMUONHitReconstructorComponent.cxx \
-		OfflineInterface/AliHLTMUONAgent.cxx \
-		OfflineInterface/AliHLTMUONRecHitsSource.cxx
+		OnlineAnalysis/AliHLTMUONHitReconstructor.cxx
 
-#		OnlineAnalysis/AliHLTMUONMansoTrackerComponent.cxx \
+#		OnlineAnalysis/AliHLTMUONMansoTrackerComponent.cxx
 
 MODULE_HDRS := 	$(MODULE_SRCS:.cxx=.h) \
 		AliHLTMUONDataBlockReader.h \
 		AliHLTMUONDataBlockWriter.h
-
-CLASS_HDRS := 	OfflineInterface/AliHLTMUONAgent.h \
-		OfflineInterface/AliHLTMUONRecHitsSource.h
 
 # The dictionary linkdef header for rootcint:
 DICTIONARY := 	HLTMUONLinkDef.h
@@ -47,5 +46,5 @@ PACKCXXFLAGS := ${HLTCXXFLAGS}
 PACKCFLAGS   := ${HLTCLFAGS}
 PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
 
-EINCLUDE += 	HLT/BASE HLT/MUON HLT/MUON/OnlineAnalysis HLT/MUON/OfflineInterface \
-		HLT/MUON/src MUON STEER RAW
+EINCLUDE := 	HLT/BASE HLT/MUON HLT/MUON/OnlineAnalysis HLT/MUON/OfflineInterface MUON STEER RAW
+

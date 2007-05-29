@@ -492,6 +492,22 @@ AM_CONDITIONAL(EN_HLT_TRD, test x$enable_trd = xyes)
 AC_MSG_RESULT([$enable_trd])
 
 dnl ------------------------------------------------------------------
+AC_MSG_CHECKING([whether to compile dimuon library])
+AH_TEMPLATE([HLT_MUON],[hlt dimuon library])
+AC_ARG_ENABLE(dimuon,
+  [AC_HELP_STRING([--enable-dimuon],
+      [compile the dimuon library ])],
+  [],[enable_dimuon=yes])
+if test "x$have_aliroot" = "xno" ; then
+   enable_dimuon="no...requires.AliRoot"
+fi
+if test "x$enable_dimuon" = "xyes" ; then 
+  AC_DEFINE(HLT_MUON)
+fi
+AM_CONDITIONAL(EN_HLT_MUON, test x$enable_dimuon = xyes)
+AC_MSG_RESULT([$enable_dimuon])
+
+dnl ------------------------------------------------------------------
 AC_MSG_CHECKING([whether to disable AliRoot logging])
 AH_TEMPLATE([NOALIROOT_LOGGING],[disable AliRoot logging])
 AC_ARG_ENABLE(aliroot-logging,
@@ -586,6 +602,7 @@ AC_CONFIG_FILES([Makefile
 		 TPCLib/OnlineDisplay/Makefile
 		 PHOS/Makefile
 		 TRD/Makefile
+		 MUON/Makefile
 		 doc/Makefile
 		 doc/doxygen.conf])
 
