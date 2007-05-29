@@ -18,11 +18,16 @@ if EN_HLT_TRD
 TRD_DIR=TRD
 endif
 
+if EN_HLT_MUON
+MUON_DIR=MUON
+endif
+
 SUBDIRS 		= BASE \
 			  $(SAMPLE_DIR) \
 			  $(TPC_DIR) \
 			  $(PHOS_DIR) \
 			  $(TRD_DIR) \
+			  $(MUON_DIR) \
 			  doc
 
 EXTRA_DIST		= libHLTbase.pkg \
@@ -32,6 +37,7 @@ EXTRA_DIST		= libHLTbase.pkg \
 			  libAliHLTPHOS.pkg \
 			  libAliHLTTPC.pkg \
 			  libAliHLTTRD.pkg \
+			  libAliHLTMUON.pkg \
 			  src/AliHLTReconstructor.h \
 			  src/AliHLTReconstructor.cxx \
 			  hlt.conf

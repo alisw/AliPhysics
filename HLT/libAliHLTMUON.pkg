@@ -6,7 +6,7 @@ include HLT/hlt.conf
 ###############################################################################
 
 # Sources that are ROOT classes:
-SOURCES :=	AliHLTMUONUtils.cxx \
+MODULE_SRCS :=	AliHLTMUONUtils.cxx \
 		AliHLTMUONConstants.cxx \
 		AliHLTMUONTriggerRecordsBlockStruct.cxx \
 		AliHLTMUONTrigRecsDebugBlockStruct.cxx \
@@ -25,18 +25,22 @@ SOURCES :=	AliHLTMUONUtils.cxx \
 
 #		OnlineAnalysis/AliHLTMUONMansoTrackerComponent.cxx \
 
-HEADERS := 	$(SOURCES:.cxx=.h) \
+MODULE_HDRS := 	$(MODULE_SRCS:.cxx=.h) \
 		AliHLTMUONDataBlockReader.h \
 		AliHLTMUONDataBlockWriter.h
 
+CLASS_HDRS := 	OfflineInterface/AliHLTMUONAgent.h \
+		OfflineInterface/AliHLTMUONRecHitsSource.h
+
 # The dictionary linkdef header for rootcint:
-DICTNRY := 	HLTMUONLinkDef.h
+DICTIONARY := 	HLTMUONLinkDef.h
 
 ###############################################################################
 
-SRCS := 	$(patsubst %,MUON/%,$(SOURCES))
-HDRS := 	$(patsubst %,MUON/%,$(HEADERS))
-DHDR:= 		$(patsubst %,MUON/%,$(DICTNRY))
+CINTHDRS:= 	$(patsubst %,MUON/%,$(CLASS_HDRS))
+SRCS := 	$(patsubst %,MUON/%,$(MODULE_SRCS))
+HDRS := 	$(patsubst %,MUON/%,$(MODULE_HDRS))
+DHDR:= 		$(patsubst %,MUON/%,$(DICTIONARY))
 
 EDEFINE      := ${HLTDEFS}
 PACKCXXFLAGS := ${HLTCXXFLAGS}

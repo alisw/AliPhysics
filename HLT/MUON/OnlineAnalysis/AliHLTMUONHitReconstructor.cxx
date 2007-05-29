@@ -24,7 +24,7 @@
 //         sukalyan.chattopadhyay@saha.ac.in 
 ///////////////////////////////////////////////
 
-#include "AliHLTMUONHitReconstructoronstructor.h"
+#include "AliHLTMUONHitReconstructor.h"
 
 
 const int AliHLTMUONHitReconstructor::fgkDetectorId = 0xA00;
