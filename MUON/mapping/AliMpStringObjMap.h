@@ -7,6 +7,8 @@
 /// \class AliMpStringObjMap
 /// \brief Substitutes map <string, TObject> which ALICE does not allow to use 
 ///
+/// The map is not optimised for large data size
+///
 /// \author Ivana Hrivnacova, IPN Orsay
 
 #ifndef ALI_MP_STRING_OBJ_MAP_H
@@ -30,16 +32,27 @@ class AliMpStringObjMap : public TObject
     virtual void Print(const char* /*option*/ = "") const;
     void Print(const TString& key, ofstream& out) const;
     
+    // iterating over elements
+    void  First();
+    void  Next();
+    TObject*  CurrentItem();
+    TString   CurrentKey();
+    Bool_t  IsDone() const;
+    
   private:
     /// Not implemented
     AliMpStringObjMap(const AliMpStringObjMap& rhs);
     /// Not implemented
     AliMpStringObjMap& operator = (const AliMpStringObjMap& rhs);
+    
+    // static data members
+    static const TString fgkUndefinedKey; ///< Undefined key string
 
     // data members
-    Int_t      fNofItems;    ///<  number of items
-    TObjArray  fFirstArray;  ///<  first item array
-    TObjArray  fSecondArray; ///<  second item array
+    Int_t      fNofItems;     ///<  number of items
+    TObjArray  fFirstArray;   ///<  first item array
+    TObjArray  fSecondArray;  ///<  second item array
+    Int_t      fCurrentIndex; ///<  current item index (for iteration)
  
   ClassDef(AliMpStringObjMap,1)  // motif map
 };    

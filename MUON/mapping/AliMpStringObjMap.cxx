@@ -34,6 +34,8 @@
 ClassImp(AliMpStringObjMap)
 /// \endcond
 
+const TString AliMpStringObjMap::fgkUndefinedKey = "Undefined";
+
 //______________________________________________________________________________
 AliMpStringObjMap::AliMpStringObjMap(Bool_t isOwner)
  : TObject(),
@@ -138,3 +140,53 @@ void AliMpStringObjMap::Print(const TString& key, ofstream& out) const
 	 << endl;
   }
 }  	 
+
+//______________________________________________________________________________
+void  AliMpStringObjMap::First()
+{
+/// Set iterator to the first item and return its object
+
+  fCurrentIndex = 0; 
+}  
+  
+
+//______________________________________________________________________________
+void  AliMpStringObjMap::Next()
+{
+/// Set iterator to the next item and return its object
+/// Return 0 if there are no more items
+
+  ++fCurrentIndex;
+}  
+    
+
+//______________________________________________________________________________
+TObject* AliMpStringObjMap::CurrentItem()
+{
+/// Set iterator to the first item and return its object
+
+  if ( fCurrentIndex >= fNofItems ) return 0;
+
+  return fSecondArray.At(fCurrentIndex);
+}  
+  
+
+//______________________________________________________________________________
+TString AliMpStringObjMap::CurrentKey()
+{
+/// Set iterator to the first item and return its object
+
+  if ( fCurrentIndex >= fNofItems ) return fgkUndefinedKey;
+  
+  return ((TObjString*)fFirstArray.At(fCurrentIndex))->GetString();
+}  
+  
+
+//______________________________________________________________________________
+Bool_t  AliMpStringObjMap::IsDone() const
+{
+/// Return true if the iterator reached the end of map
+
+  return fCurrentIndex >= fNofItems;
+}   
+    
