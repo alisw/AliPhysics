@@ -18,6 +18,7 @@ SOURCES :=	AliHLTMUONUtils.cxx \
 		AliHLTMUONMansoCandidatesBlockStruct.cxx \
 		AliHLTMUONSinglesDecisionBlockStruct.cxx \
 		AliHLTMUONPairsDecisionBlockStruct.cxx \
+		OnlineAnalysis/AliHLTMUONHitReconstructor.cxx \
 		OnlineAnalysis/AliHLTMUONHitReconstructorComponent.cxx \
 		OfflineInterface/AliHLTMUONAgent.cxx \
 		OfflineInterface/AliHLTMUONRecHitsSource.cxx
