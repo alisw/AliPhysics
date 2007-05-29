@@ -442,23 +442,10 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
   AliCDBEntry *entry2SSD = AliCDBManager::Instance()->Get("ITS/Calib/RespSSD", run);
 
   if(!entrySPD || !entrySDD || !entrySSD || !entry2SPD || !entry2SDD || !entry2SSD){
-  	AliWarning("Calibration object retrieval failed! Dummy calibration will be used.");
-	AliCDBStorage *localStor = 
-		AliCDBManager::Instance()->GetStorage("local://$ALICE_ROOT");
-	
-  	entrySPD = localStor->Get("ITS/Calib/CalibSPD", run);
-  	entrySDD = localStor->Get("ITS/Calib/CalibSDD", run);
-  	entrySSD = localStor->Get("ITS/Calib/CalibSSD", run);
- 	entry2SPD = localStor->Get("ITS/Calib/RespSPD", run);
-  	entry2SDD = localStor->Get("ITS/Calib/RespSDD", run);
-  	entry2SSD = localStor->Get("ITS/Calib/RespSSD", run);
-  }
-
-  if(!entrySPD || !entrySDD || !entrySSD || !entry2SPD || !entry2SDD || !entry2SSD){
-    AliError("Calibration data was not found in $ALICE_ROOT!");
+    AliFatal("Calibration object retrieval failed! ");
     return kFALSE;
-  }
- 
+  }  	
+
   TObjArray *calSPD = (TObjArray *)entrySPD->GetObject();
   if(!isCacheActive)entrySPD->SetObject(NULL);
   entrySPD->SetOwner(kTRUE);

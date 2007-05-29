@@ -31,6 +31,8 @@
 #include "AliRunLoader.h"
 #include "AliITSLoader.h"
 #include "AliHeader.h"
+#include "AliCDBManager.h"
+#include "AliCDBStorage.h"
 #endif
 void GetHitsCoor(TObject *its, Int_t mod, TObjArray & histos, Int_t subd,Bool_t verb);
 Int_t GetRecCoor(TObject *ge, TClonesArray *ITSrec, Int_t mod, TH2F *h2, TH1F *h1, Bool_t verb);
@@ -94,7 +96,6 @@ Int_t AliITSGeoPlot (Int_t evesel=0, char *opt="All+ClustersV2", TString filenam
   Bool_t userec=choice.Contains("Rec");
   Bool_t useclustersv2=choice.Contains("ClustersV2");
   Int_t retcode=1; //return code
- 
   if (gClassTable->GetID("AliRun") < 0) {
     gInterpreter->ExecuteMacro("loadlibs.C");
   }
@@ -104,6 +105,15 @@ Int_t AliITSGeoPlot (Int_t evesel=0, char *opt="All+ClustersV2", TString filenam
       delete gAlice;
       gAlice=0;
     }
+  }
+  // Set OCDB if needed
+  AliCDBManager* man = AliCDBManager::Instance();
+  if (!man->IsDefaultStorageSet()) {
+    printf("Setting a local default storage\n");
+    man->SetDefaultStorage("local://$ALICE_ROOT");
+  }
+  else {
+    printf("Using deafult storage \n");
   }
   // retrives geometry 
   TString geof(gSystem->DirName(filename));

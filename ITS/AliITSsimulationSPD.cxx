@@ -206,14 +206,8 @@ void AliITSsimulationSPD::GetCalibrationObjects(Int_t RunNr) {
   entrySPD = man->Get("ITS/Calib/CalibSPD", RunNr);
 
   if(!entrySPD){
-    AliWarning("Cannot find SPD calibration entry in default storage! Using local storage $ALICE_ROOT");
-    AliCDBStorage *localStor = 
-		AliCDBManager::Instance()->GetStorage("local://$ALICE_ROOT");
-    entrySPD = localStor->Get("ITS/Calib/CalibSPD", RunNr);
-    if(!entrySPD){
-      AliFatal("Cannot find SPD calibration entry!");
-      return;
-    }
+    AliFatal("Cannot find SPD calibration entry in default storage!");
+    return;
   }
   
   TObjArray *respSPD = (TObjArray *)entrySPD->GetObject();
