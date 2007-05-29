@@ -35,8 +35,8 @@
 #include "AliITS.h"
 #include "AliHLTITStracker.h"
 #include "AliHLTTPCtracker.h"
-#include "MUON/src/AliRoot/AliHLTMUONTracker.h"
-#include "MUON/src/AliRoot/AliHLTMUONHitReconstructor.h"
+//#include "MUON/src/AliRoot/AliHLTMUONTracker.h"
+//#include "MUON/src/AliRoot/AliHLTMUONHitReconstructor.h"
 #include "AliRawReader.h"
 #include "AliHLTSystem.h"
 
@@ -441,6 +441,7 @@ void AliHLTReconstructor::FillESDforHoughTransform(AliESD* esd,Int_t iEvent) con
   delete fTracks;
 }
 
+/* The following functions are deprecated and need to be removed.
 AliTracker* AliHLTReconstructor::CreateTracker(AliRunLoader* runLoader) const
 {
   //Create HLT trackers for TPC and ITS
@@ -480,3 +481,4 @@ void AliHLTReconstructor::FillDHLTRecPoint(AliRawReader* rawReader, Int_t nofEve
 
 }
 
+*/
