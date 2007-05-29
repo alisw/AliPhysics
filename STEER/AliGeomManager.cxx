@@ -717,6 +717,21 @@ void AliGeomManager::InitSymNamesLUT()
     }
   }
 
+  /*********************      PHOS CPV layer   ***********************/
+  {
+    TString str = "PHOS/Module";
+    modnum=0;
+
+    for (Int_t iModule=1; iModule <= 5; iModule++) {
+      symname = str;
+      symname += iModule;
+      symname += "/CPV";
+      modnum = iModule-1;
+      fgSymName[kPHOS2-kFirstLayer][modnum] = symname.Data();
+    }
+  }
+
+
 }
 
 //_____________________________________________________________________________
