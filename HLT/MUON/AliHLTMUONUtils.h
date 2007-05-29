@@ -225,6 +225,7 @@ private:
 // If we do not already have them, then define logical operators that are easier
 // to read. 'and' = &&, 'or' = ||, 'not' = !
 #if ! defined(__GNUC__) && ! defined(__CINT__)
+// TODO: Should use iso646.h
 #	define and &&
 #	define or ||
 #	define not !
@@ -246,7 +247,7 @@ private:
 //
 //  // statements...
 //  int x, y;
-//  DebugMsg("x = " << x << " and y = 0x" << std::hex << y );
+//  DebugTrace("x = " << x << " and y = 0x" << std::hex << y );
 //  // statements...
 //
 #ifdef DEBUG

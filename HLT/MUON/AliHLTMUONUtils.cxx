@@ -33,6 +33,7 @@
 #include "AliHLTMUONMansoTracksBlockStruct.h"
 #include "AliHLTMUONMansoCandidatesBlockStruct.h"
 #include "AliHLTMUONSinglesDecisionBlockStruct.h"
+#include "AliHLTMUONPairsDecisionBlockStruct.h"
 #include <cassert>
 
 
@@ -252,7 +253,7 @@ bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONTriggerRecordsBlockStruct& blo
 	// Check if any ID is duplicated.
 	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
 	{
-		AliHLTUInt32_t id = block.fTriggerRecord[i].fId;
+		AliHLTInt32_t id = block.fTriggerRecord[i].fId;
 		for (AliHLTUInt32_t j = i+1; i < block.fHeader.fNrecords; j++)
 		{
 			if (id == block.fTriggerRecord[j].fId)
@@ -298,7 +299,7 @@ bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONClustersBlockStruct& block)
 	// Check if any ID is duplicated.
 	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
 	{
-		AliHLTUInt32_t id = block.fCluster[i].fId;
+		AliHLTInt32_t id = block.fCluster[i].fId;
 		for (AliHLTUInt32_t j = i+1; i < block.fHeader.fNrecords; j++)
 		{
 			if (id == block.fCluster[j].fId)
@@ -346,7 +347,7 @@ bool AliHLTMUONUtils::IntegrityOk(const AliHLTMUONMansoTracksBlockStruct& block)
 	// Check if any ID is duplicated.
 	for (AliHLTUInt32_t i = 0; i < block.fHeader.fNrecords; i++)
 	{
-		AliHLTUInt32_t id = block.fTrack[i].fId;
+		AliHLTInt32_t id = block.fTrack[i].fId;
 		for (AliHLTUInt32_t j = i+1; i < block.fHeader.fNrecords; j++)
 		{
 			if (id == block.fTrack[j].fId)

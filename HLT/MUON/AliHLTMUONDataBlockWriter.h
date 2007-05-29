@@ -54,7 +54,7 @@
  *   block(buffer, size);
  *   
  *   // Initialise the block header
- *   if (not block.InitHeader())
+ *   if (not block.InitCommonHeader())
  *   {
  *      // handle error and exit...
  *   }
@@ -77,7 +77,7 @@
  *
  *   AliHLTMUONDataBlockWriter<block_type, entries_type, type_code>
  *   block(buffer, size);
- *   if (not block.InitHeader())
+ *   if (not block.InitCommonHeader())
  *   {
  *      // handle error and exit...
  *   }
@@ -86,6 +86,10 @@
  *   while (HaveMoreEntries())
  *   {
  *      entries_type* entry = block.AddEntry();
+ *      if (entry == NULL)
+ *      {
+ *         // handle buffer overflow and exit...
+ *      }
  *      // fill the new entry...
  *      entry->somefield = somevalue;
  *   }
@@ -98,6 +102,8 @@ template <
 class AliHLTMUONDataBlockWriter
 {
 public:
+	typedef DataBlockType HeaderType;
+	typedef DataElementType ElementType;
 
 	/**
 	 * Constructor that sets the internal pointer to the start of the buffer
@@ -230,8 +236,8 @@ public:
 	
 	/**
 	 * Calculates the number of bytes used for the data block in the buffer.
-	 * This value will only make sense if a call to InitHeader() was made
-	 * and it returned true.
+	 * This value will only make sense if a call to InitCommonHeader() was
+	 * made and it returned true.
 	 */
 	AliHLTUInt32_t BytesUsed() const
 	{
@@ -250,6 +256,8 @@ public:
 	{
 		return fMaxArraySize / sizeof(DataElementType);
 	}
+	
+	AliHLTUInt32_t BufferSize() { return fSize; }
 	
 private:
 
@@ -319,7 +327,7 @@ typedef AliHLTMUONDataBlockWriter<
 	
 typedef AliHLTMUONDataBlockWriter<
 		AliHLTMUONPairsDecisionBlockStruct,
-		AliHLTMUONPairDecisionBlockStruct,
+		AliHLTMUONPairDecisionStruct,
 		kPairsDecisionDataBlock
 	> AliHLTMUONPairsDecisionBlockWriter;
 

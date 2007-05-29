@@ -24,6 +24,16 @@
  */
 
 #include "AliHLTMUONConstants.h"
+#include "AliHLTMUONTriggerRecordsBlockStruct.h"
+#include "AliHLTMUONTrigRecsDebugBlockStruct.h"
+#include "AliHLTMUONTriggerChannelsBlockStruct.h"
+#include "AliHLTMUONRecHitsBlockStruct.h"
+#include "AliHLTMUONClustersBlockStruct.h"
+#include "AliHLTMUONChannelsBlockStruct.h"
+#include "AliHLTMUONMansoTracksBlockStruct.h"
+#include "AliHLTMUONMansoCandidatesBlockStruct.h"
+#include "AliHLTMUONSinglesDecisionBlockStruct.h"
+#include "AliHLTMUONPairsDecisionBlockStruct.h"
 
 
 const AliHLTMUONTriggerRecordStruct
@@ -87,14 +97,14 @@ AliHLTMUONConstants::fgkNilPairDecisionStruct = {0, 0, 0, 0};
 
 
 const AliHLTComponentDataType
-AliHLTMUONConstants::fgkTriggerDDLStreamDataType = {
+AliHLTMUONConstants::fgkTriggerDDLRawDataType = {
 	sizeof(AliHLTComponentDataType),
 	{'D','D','L','T','R','I','G','R'},
 	{'D','I','M','U'}
 };
 
 const AliHLTComponentDataType
-AliHLTMUONConstants::fgkTrackingDDLStreamDataType = {
+AliHLTMUONConstants::fgkTrackingDDLRawDataType = {
 	sizeof(AliHLTComponentDataType),
 	{'D','D','L','T','R','A','C','K'},
 	{'D','I','M','U'}
@@ -169,3 +179,5 @@ AliHLTMUONConstants::fgkPairsDecisionBlockDataType = {
 	{'D','E','C','I','D','P','A','R'},
 	{'D','I','M','U'}
 };
+
+const char* AliHLTMUONConstants::fgkRecHitsSourceId = "DimuRecHitsSource";

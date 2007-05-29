@@ -14,8 +14,8 @@
  */
 
 #include "AliHLTProcessor.h"
-#include "Tracking/AliHLTMUONMansoTracker.h"
-#include "Util/AliHLTMUONCoreTriggerRecord.h"
+#include "AliHLTMUONConstants.h"
+#include "AliHLTMUONMansoTracker.h"
 
 /**
  * @class AliHLTMUONMansoTrackerComponent

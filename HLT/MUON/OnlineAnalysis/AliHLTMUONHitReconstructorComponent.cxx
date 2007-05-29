@@ -30,6 +30,7 @@ using namespace std;
 #endif
 
 #include "AliHLTMUONHitReconstructorComponent.h"
+#include "AliHLTMUONHitReconstructor.h"
 #include "AliHLTLogging.h"
 #include "AliHLTSystem.h"
 #include "AliHLTDefinitions.h"
@@ -42,7 +43,6 @@ namespace
 	// Note DO NOT use this component for calculation!
 	AliHLTMUONHitReconstructorComponent gAliHLTMUONHitReconstructorComponent;
 }
-
 
 ClassImp(AliHLTMUONHitReconstructorComponent)
 
@@ -63,7 +63,7 @@ AliHLTMUONHitReconstructorComponent::~AliHLTMUONHitReconstructorComponent()
 int AliHLTMUONHitReconstructorComponent::DoInit( int argc, const char** argv ){
   // see header file for class documentation
 
-  fHitRec = new AliHLTMUONHitRec();
+  fHitRec = new AliHLTMUONHitReconstructor();
 
   HLTInfo("dHLT hitrec");
   if (argc==0 && argv==NULL) {
@@ -175,7 +175,7 @@ int AliHLTMUONHitReconstructorComponent::DoEvent( const AliHLTComponentEventData
   unsigned long totalSize = 0;
   unsigned long mySize;
   //cout<<"Block Count : "<<evtData.fBlockCnt<<endl;
-  for(Int_t i=0;i<evtData.fBlockCnt;i++){
+  for(UInt_t i=0;i<evtData.fBlockCnt;i++){
 
     cout<<"0: totalsize : "<<totalSize<<"\tkAliHLTBlockAlignment :"<<kAliHLTBlockAlignment<<"\t size :"<<size<<endl;
 
@@ -192,21 +192,21 @@ int AliHLTMUONHitReconstructorComponent::DoEvent( const AliHLTComponentEventData
     
 
     int totalDDLSize = blocks[i].fSize/4;
-    int ddlRawDataSize = totalDDLSize - AliHLTMUONHitRec::fgkDDLHeaderSize;
+    int ddlRawDataSize = totalDDLSize - AliHLTMUONHitReconstructor::fgkDDLHeaderSize;
     int ddlHeader[8];
-    memcpy((char *) & ddlHeader,blocks[i].fPtr,(size_t)4*(AliHLTMUONHitRec::fgkDDLHeaderSize));
+    memcpy((char *) & ddlHeader,blocks[i].fPtr,(size_t)4*(AliHLTMUONHitReconstructor::fgkDDLHeaderSize));
 
 //     for(int j=0;j<8;j++)
 //       HLTDebug("ddlHeader[%d] : %d\n",j,ddlHeader[j]);
 
     int* buffer = new int[ddlRawDataSize];
-    memcpy((int*)buffer,((int*)blocks[i].fPtr + AliHLTMUONHitRec::fgkDDLHeaderSize),(sizeof(int)*ddlRawDataSize));
+    memcpy((int*)buffer,((int*)blocks[i].fPtr + AliHLTMUONHitReconstructor::fgkDDLHeaderSize),(sizeof(int)*ddlRawDataSize));
 
 //     for(int j=0;j<ddlRawDataSize;j++)
 //       HLTDebug("buffer[%d] : %x\n",j,buffer[j]);
 
     
-    AliHLTMUONRecPoint recHit[300];
+    AliHLTMUONRecHitStruct recHit[300];
     int nofHit = 300;
    
     if(! (fHitRec->Run(buffer,&ddlRawDataSize,recHit,&nofHit))){
@@ -214,7 +214,7 @@ int AliHLTMUONHitReconstructorComponent::DoEvent( const AliHLTComponentEventData
       return EIO;
     }
 
-    mySize = sizeof(AliHLTMUONRecPoint)*nofHit;
+    mySize = sizeof(AliHLTMUONRecHitStruct)*nofHit;
     
     HLTInfo("mySize set (1) mySize == %lu B - blocks[%lu].fSize == %lu", 
 	     mySize, i, blocks[i].fSize);
@@ -263,10 +263,10 @@ int AliHLTMUONHitReconstructorComponent::DoEvent( const AliHLTComponentEventData
 // 	     i,outPtr->fRecPoint[j].fDetElemId,outPtr->fRecPoint[j].fX,
 // 	     outPtr->fRecPoint[j].fY,outPtr->fRecPoint[j].fZ);
 //       printf("1 : %d\t\t%d\t\t%f\t%f\t%f\n",
-// 	     i,(((AliHLTMUONRecPoint*)bd.fPtr) + j)->fDetElemId,
-// 	     (((AliHLTMUONRecPoint*)bd.fPtr) + j)->fX,
-// 	     (((AliHLTMUONRecPoint*)bd.fPtr) + j)->fY,
-// 	     (((AliHLTMUONRecPoint*)bd.fPtr) + j)->fZ);
+// 	     i,(((AliHLTMUONRecHitStruct*)bd.fPtr) + j)->fDetElemId,
+// 	     (((AliHLTMUONRecHitStruct*)bd.fPtr) + j)->fX,
+// 	     (((AliHLTMUONRecHitStruct*)bd.fPtr) + j)->fY,
+// 	     (((AliHLTMUONRecHitStruct*)bd.fPtr) + j)->fZ);
 //    }// nof RecHits
 
 
@@ -288,8 +288,8 @@ bool AliHLTMUONHitReconstructorComponent::ReadLookUpTable(
 		DHLTLut* lookupTable, const char* lutpath, int iDDL
 	)
 {
-	if (iDDL < AliHLTMUONHitRec::fgkDDLOffSet ||
-		iDDL >= AliHLTMUONHitRec::fgkDDLOffSet + AliHLTMUONHitRec::fgkNofDDL)
+	if (iDDL < AliHLTMUONHitReconstructor::fgkDDLOffSet ||
+		iDDL >= AliHLTMUONHitReconstructor::fgkDDLOffSet + AliHLTMUONHitReconstructor::fgkNofDDL)
 	{
 // 		Logging(kHLTLogError, "AliHLTMUONHitReconstructorComponent::ReadLookUpTable", "Invalid DDL")
 // 			<< "DDL number is out of range (must be " << AliHLTLog::kDec << HLTMUONHitRec::fgkDDLOffSet

@@ -12,9 +12,10 @@
  */
 
 #include "AliHLTProcessor.h"
-#include "HitRec/AliHLTMUONHitRec.h"
-#include "Util/AliHLTMUONHitData.h"
-#include "Util/AliHLTMUONDefinitions.h"
+#include "AliHLTMUONConstants.h"
+#include "AliHLTMUONHitReconstructor.h"
+
+//class AliHLTMUONHitReconstructor;
 
 class AliHLTMUONHitReconstructorComponent : public AliHLTProcessor {
 
@@ -26,10 +27,10 @@ public:
 
   void GetInputDataTypes( vector<AliHLTComponentDataType>& list) {
     list.clear();
-    list.push_back( AliHLTMUONDefinitions::fgkDDLPackedRawDataType );
+    list.push_back( AliHLTMUONConstants::TrackingDDLRawDataType() );
   }
   
-  AliHLTComponentDataType GetOutputDataType() {return AliHLTMUONDefinitions::fgkHitRecDataType;}
+  AliHLTComponentDataType GetOutputDataType() {return AliHLTMUONConstants::RecHitsBlockDataType();}
   virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) {constBase = 0;inputMultiplier = 0;};
 
   // Spawn function, return new class instance
@@ -46,7 +47,7 @@ public:
 private:
   /** array of input data types */
 
-  AliHLTMUONHitRec* fHitRec;
+  AliHLTMUONHitReconstructor* fHitRec;
   bool ReadLookUpTable(DHLTLut* lookupTable, const char* lutpath, int iDDL);
   bool ReadBusPatchToDetElemFile(BusToDetElem& busToDetElem, const char* buspatchmappath);
 

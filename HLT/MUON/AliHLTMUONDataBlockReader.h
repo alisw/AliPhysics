@@ -72,6 +72,8 @@ template <class DataBlockType, class DataElementType>
 class AliHLTMUONDataBlockReader
 {
 public:
+	typedef DataBlockType HeaderType;
+	typedef DataElementType ElementType;
 
 	/**
 	 * Constructor that sets the internal pointer to the start of the data
@@ -158,6 +160,8 @@ public:
 	 */
 	const DataElementType* GetArray() const { return fData; }
 
+	AliHLTUInt32_t BufferSize() { return fSize; }
+	
 private:
 
 	AliHLTUInt32_t fSize;   // Size of the data block in bytes.
