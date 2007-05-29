@@ -1,7 +1,7 @@
 #-*- Mode: Makefile -*-
 
-DAMODULE=$(firstword $(subst -, ,$(subst -da,,$(subst -da-tar,,$(subst -da-rpm,,$(subst -da-clean,,$(filter %-da %-da-tar %-da-rpm %-da-clean,$(MAKECMDGOALS))))))))
-DANAME=$(word 2,$(subst -, ,$(subst -da,,$(subst -da-tar,,$(subst -da-rpm,,$(subst -da-clean,,$(filter %-da %-da-tar %-da-rpm %-da-clean,$(MAKECMDGOALS))))))))
+DAMODULE=$(firstword $(subst -, ,$(subst -da,,$(subst -da-rpm,,$(subst -da-clean,,$(filter %-da %-da-rpm %-da-clean,$(MAKECMDGOALS)))))))
+DANAME=$(word 2,$(subst -, ,$(subst -da,,$(subst -da-rpm,,$(subst -da-clean,,$(filter %-da %-da-rpm %-da-clean,$(MAKECMDGOALS)))))))
 
 ifeq ($(DANAME),)
 DATARGETNAME=$(DAMODULE)-da
@@ -176,8 +176,6 @@ $(DATAR): $(DASRC) $(DAMAKEFILE) $(DASPECFILE)
 	tar czf ../$(DATAR) * && \
 	cd .. && rm -rf junk
 
-$(DATARGETNAME)-tar: $(DATAR)
-
 $(DASPECFILE): $(DATARGETDIR)
 	$(MUTE)rm -f $(DASPECFILE)
 	@echo "***** Making RPM spec-file $(DASPECFILE) *****"
@@ -275,8 +273,7 @@ $(DATARGETNAME)-rpm: $(DATAR) $(DASPECFILE) $(DALIB) $(DADEP) $(EXTRAROOTLIB)
 else
 
 $(DATARGETNAME):        $(DATARGETNAME)-clean
-$(DATARGETNAME)-clean:  $(DATARGETNAME)-tar
-$(DATARGETNAME)-tar:    $(DATARGETNAME)-rpm
+$(DATARGETNAME)-clean:  $(DATARGETNAME)-rpm
 $(DATARGETNAME)-rpm:
 	@echo
 	@echo "*******************************************************************************************************"
@@ -285,10 +282,10 @@ $(DATARGETNAME)-rpm:
 	@echo "*              make MUON-TRK-da (MUON is the AliRoot module, TRK is the name of the DA algorithm,     *"
 	@echo "*                                this target will compile and link MUON/MUONTRKda.cxx and will        *"
 	@echo "*                                produce MUONTRKda.exe)                                               *"
-	@echo "* In case you want to build the corresponding DA tar archive or binary RPM, you have to add -tar or   *"
-	@echo "* -rpm to your target name, for example:                                                              *"
+	@echo "* In case you want to build the corresponding DA binary RPM, you have to add -rpm to your target name,*"
+	@echo "* for example:                                                                                        *"
 	@echo "*              make TOF-da-rpm  (compiles, links TOF/TOFda.cxx and builds the TOF DA binary RPM)      *"
-	@echo "*              make ITS-SPD-da-tar (compiles, link ITS/ITSSPDda.cxx and builds ITS SPD DA archive)    *"
+	@echo "*              make ITS-SPD-da-rpm (compiles, link ITS/ITSSPDda.cxx and builds ITS SPD DA binary RPM) *"
 	@echo "*******************************************************************************************************"
 	@echo
 
