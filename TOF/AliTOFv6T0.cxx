@@ -15,6 +15,20 @@
 
 /*
 $Log$
+Revision 1.3.2  2007/05/29  decaro
+FEA+cooling zone description: update
+     FEA+cooling orientation (side A/ side C) -> correction
+Revision 1.3.1  2007/05/24  decaro
+Change the FEA+cooling zone description:
+     - FCA1/FCA2, air boxes, contain:
+                 FFEA volume, G10 box,
+	         FAL1/FAL2/FAL3 volumes, aluminium boxes;
+     - FRO1/FRO2/FRO3/FRO4/FBAR, aluminum boxes;
+     - changed FTUB positions;
+
+Revision 1.3  2007/05/04 14:05:42  decaro
+Ineffective comment cleanup
+
 Revision 1.2  2007/05/04 12:59:22  arcelli
 Change the TOF SM paths for misalignment (one layer up)
 
@@ -768,12 +782,58 @@ void AliTOFv6T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenA)
   // (3 volumes)
 
   // card volume definition
-  Float_t carpar[3] = {9.5, 5.75, 0.5};
-  gMC->Gsvolu("FCA1", "BOX ", idtmed[514], carpar, 3);   // PCB+Alu small Card 
+  //Float_t carpar[3] = {9.5, 5.75, 0.5};
+  Float_t carpar[3] = {9.5, 5.6, 0.55};
+  //gMC->Gsvolu("FCA1", "BOX ", idtmed[514], carpar, 3);   // PCB+Alu small Card 
+  gMC->Gsvolu("FCA1", "BOX ", idtmed[500], carpar, 3);   // air
   carpar[0] = 19.25;
-  //carpar[1] =  5.75;
-  //carpar[2] =  0.5;
-  gMC->Gsvolu("FCA2", "BOX ", idtmed[514], carpar, 3);   // PCB+Alu long Card 
+  //carpar[1] =  5.6;//5.75;
+  //carpar[2] =  0.55;//0.5;
+  //gMC->Gsvolu("FCA2", "BOX ", idtmed[514], carpar, 3);   // PCB+Alu long Card 
+  gMC->Gsvolu("FCA2", "BOX ", idtmed[500], carpar, 3);   // air
+
+
+  Float_t feaParam1[3] = {9.5, 5.6, 0.1};
+  gMC->Gsvolu("FFEA", "BOX ", idtmed[502], feaParam1, 3);   // G10
+
+  Float_t al1[3] = {9.5, 0.5, 0.25};
+  gMC->Gsvolu("FAL1", "BOX ", idtmed[505], al1, 3);   // Aluminium
+  Float_t al2[3] = {7.2, 0.8, 0.25};
+  gMC->Gsvolu("FAL2", "BOX ", idtmed[505], al2, 3);   // Aluminium
+  Float_t al3[3] = {3.35, 3.7, 0.1};
+  gMC->Gsvolu("FAL3", "BOX ", idtmed[505], al3, 3);   // Aluminium
+
+  gMC->Gspos("FFEA", 1, "FCA1", 0., 0., -carpar[2]+feaParam1[2], 0, "ONLY");
+  gMC->Gspos("FAL1", 1, "FCA1", 0., carpar[1]-al1[1], -carpar[2]+2.*feaParam1[2]+al1[2], 0, "ONLY");
+  gMC->Gspos("FAL3", 1, "FCA1", 0., carpar[1]-al3[1],  carpar[2]-al3[2], 0, "ONLY");
+  gMC->Gspos("FAL2", 1, "FCA1", 0., carpar[1]-2.*al3[1],  carpar[2]-2.*al3[2]-al2[2], 0, "ONLY");
+
+
+  gMC->Gspos("FFEA", 2, "FCA2", -(feaParam1[0]+0.25), 0., -carpar[2]+feaParam1[2], 0, "ONLY");
+  gMC->Gspos("FAL1", 2, "FCA2", -(feaParam1[0]+0.25), carpar[1]-al1[1], -carpar[2]+2.*feaParam1[2]+al1[2], 0, "ONLY");
+  gMC->Gspos("FAL3", 2, "FCA2", -(feaParam1[0]+0.25), carpar[1]-al3[1],  carpar[2]-al3[2], 0, "ONLY");
+  gMC->Gspos("FAL2", 2, "FCA2", -(feaParam1[0]+0.25), carpar[1]-2.*al3[1],  carpar[2]-2.*al3[2]-al2[2], 0, "ONLY");
+
+  gMC->Gspos("FFEA", 3, "FCA2",  (feaParam1[0]+0.25), 0., -carpar[2]+feaParam1[2], 0, "ONLY");
+  gMC->Gspos("FAL1", 3, "FCA2",  (feaParam1[0]+0.25), carpar[1]-al1[1], -carpar[2]+2.*feaParam1[2]+al1[2], 0, "ONLY");
+  gMC->Gspos("FAL3", 3, "FCA2",  (feaParam1[0]+0.25), carpar[1]-al3[1],  carpar[2]-al3[2], 0, "ONLY");
+  gMC->Gspos("FAL2", 3, "FCA2",  (feaParam1[0]+0.25), carpar[1]-2.*al3[1],  carpar[2]-2.*al3[2]-al2[2], 0, "ONLY");
+
+  Float_t feaRoof1[3] = {9.5, 0.25, 1.7};
+  gMC->Gsvolu("FRO1", "BOX ", idtmed[505], feaRoof1, 3);   // Aluminium
+  Float_t feaRoof2[3] = {3.35, 0.05, 1.5};
+  gMC->Gsvolu("FRO2", "BOX ", idtmed[505], feaRoof2, 3);   // Aluminium
+  Float_t feaRoof3[3] = {3.35, feaRoof1[1]+feaRoof2[1], 0.1};
+  gMC->Gsvolu("FRO3", "BOX ", idtmed[505], feaRoof3, 3);   // Aluminium
+
+  Float_t feaRoof4[3] = {3.35,
+			 0.05,
+			 carpar[2]-feaParam1[2]-al1[2]-al3[2]};
+  gMC->Gsvolu("FRO4", "BOX ", idtmed[505], feaRoof4, 3);   // Aluminium
+
+  Float_t bar[3] = {8.575, 0.6, 0.15};
+  gMC->Gsvolu("FBAR", "BOX ", idtmed[505], bar, 3);   // Aluminium
+
 
   // tube volume definition
   Float_t tubepar[3] = {0., 0.4, xFLT*0.5-15.};
@@ -799,6 +859,7 @@ void AliTOFv6T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenA)
 
   // rotation matrix
   AliMatrix(idrotm[99], 180., 90., 90., 90., 90., 0.);
+  AliMatrix(idrotm[98],  90.,180., 90., 90.,180., 0.);
 
   // cards, tubes, cables  positioning
   Float_t carpos[3], rowstep = 6.66, ytub= 3.65, ycab= ytub-3.;
@@ -813,12 +874,88 @@ void AliTOFv6T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenA)
       carpos[2] = carpos[2] - sg*(rowgap[nb] - rowstep);
       nrow = row + rowb[nb];
       for ( ; row < nrow ; ++row) {
+
         carpos[2] -= sg*rowstep;
-        gMC->Gspos("FCA1",2*row-1, "FAIA", carpos[0],carpos[1],carpos[2], 0,"ONLY");
-        gMC->Gspos("FCA1",  2*row, "FAIA",-carpos[0],carpos[1],carpos[2], 0,"ONLY");
-        gMC->Gspos("FCA2", row, "FAIA", 0., carpos[1], carpos[2], 0, "ONLY");
-        gMC->Gspos("FTUB", row, "FAIA", 0., ytub, carpos[2]-sg, idrotm[99], "ONLY");
-        gMC->Gspos("FCAB", row, "FAIA", 0., ycab, carpos[2]-sg, idrotm[99], "ONLY");
+
+	if (nb==4) {
+	  gMC->Gspos("FCA1",2*row,  "FAIA", carpos[0],carpos[1],carpos[2], 0,"ONLY");
+	  gMC->Gspos("FCA1",2*row-1,"FAIA",-carpos[0],carpos[1],carpos[2], 0,"ONLY");
+	  gMC->Gspos("FCA2", row,   "FAIA", 0., carpos[1], carpos[2], 0, "ONLY");
+
+	  //gMC->Gspos("FTUB", row, "FAIA", 0., ytub, carpos[2]-sg, idrotm[99], "ONLY");
+	  gMC->Gspos("FTUB", row, "FAIA", 0., carpos[1]+carpar[1]-bar[1], carpos[2]-(carpar[2]-2.*feaParam1[2]-2.*al1[2]+2.*feaRoof1[2]-bar[1]), idrotm[99], "ONLY");
+	  gMC->Gspos("FCAB", row, "FAIA", 0., ycab, carpos[2]-1.1, idrotm[99], "ONLY");
+
+	  gMC->Gspos("FRO1",4*row,  "FAIA", carpos[0],carpos[1]+carpar[1]+feaRoof1[1],carpos[2]-(carpar[2]-2.*feaParam1[2]-2.*al1[2]+feaRoof1[2]), 0,"ONLY");
+	  gMC->Gspos("FRO1",4*row-1,"FAIA", (feaParam1[0]+0.25),carpos[1]+carpar[1]+feaRoof1[1],carpos[2]-(carpar[2]-2.*feaParam1[2]-2.*al1[2]+feaRoof1[2]), 0,"ONLY");
+	  gMC->Gspos("FRO1",4*row-2,"FAIA",-(feaParam1[0]+0.25),carpos[1]+carpar[1]+feaRoof1[1],carpos[2]-(carpar[2]-2.*feaParam1[2]-2.*al1[2]+feaRoof1[2]), 0,"ONLY");
+	  gMC->Gspos("FRO1",4*row-3,"FAIA",-carpos[0],carpos[1]+carpar[1]+feaRoof1[1],carpos[2]-(carpar[2]-2.*feaParam1[2]-2.*al1[2]+feaRoof1[2]), 0,"ONLY");
+
+	  gMC->Gspos("FRO2",4*row,  "FAIA", carpos[0],carpos[1]+carpar[1]+2.*feaRoof1[1]+feaRoof2[1],carpos[2]+(carpar[2]-2.*feaRoof3[2]-feaRoof2[2]), 0,"ONLY");
+	  gMC->Gspos("FRO2",4*row-1,"FAIA", (feaParam1[0]+0.25),carpos[1]+carpar[1]+2.*feaRoof1[1]+feaRoof2[1],carpos[2]+(carpar[2]-2.*feaRoof3[2]-feaRoof2[2]), 0,"ONLY");
+	  gMC->Gspos("FRO2",4*row-2,"FAIA",-(feaParam1[0]+0.25),carpos[1]+carpar[1]+2.*feaRoof1[1]+feaRoof2[1],carpos[2]+(carpar[2]-2.*feaRoof3[2]-feaRoof2[2]), 0,"ONLY");
+	  gMC->Gspos("FRO2",4*row-3,"FAIA",-carpos[0],carpos[1]+carpar[1]+2.*feaRoof1[1]+feaRoof2[1],carpos[2]+(carpar[2]-2.*feaRoof3[2]-feaRoof2[2]), 0,"ONLY");
+
+	  gMC->Gspos("FRO3",4*row,  "FAIA", carpos[0],carpos[1]+carpar[1]+feaRoof3[1],carpos[2]+(carpar[2]-feaRoof3[2]), 0,"ONLY");
+	  gMC->Gspos("FRO3",4*row-1,"FAIA", (feaParam1[0]+0.25),carpos[1]+carpar[1]+feaRoof3[1],carpos[2]+(carpar[2]-feaRoof3[2]), 0,"ONLY");
+	  gMC->Gspos("FRO3",4*row-2,"FAIA",-(feaParam1[0]+0.25),carpos[1]+carpar[1]+feaRoof3[1],carpos[2]+(carpar[2]-feaRoof3[2]), 0,"ONLY");
+	  gMC->Gspos("FRO3",4*row-3,"FAIA",-carpos[0],carpos[1]+carpar[1]+feaRoof3[1],carpos[2]+(carpar[2]-feaRoof3[2]), 0,"ONLY");
+
+	  gMC->Gspos("FRO4",4*row,  "FAIA", carpos[0],          carpos[1]+carpar[1]+2.*feaRoof1[1]-feaRoof4[1],carpos[2]+(carpar[2]-2.*al3[2]-feaRoof4[2]), 0,"ONLY");
+	  gMC->Gspos("FRO4",4*row-1,"FAIA", (feaParam1[0]+0.25),carpos[1]+carpar[1]+2.*feaRoof1[1]-feaRoof4[1],carpos[2]+(carpar[2]-2.*al3[2]-feaRoof4[2]), 0,"ONLY");
+	  gMC->Gspos("FRO4",4*row-2,"FAIA",-(feaParam1[0]+0.25),carpos[1]+carpar[1]+2.*feaRoof1[1]-feaRoof4[1],carpos[2]+(carpar[2]-2.*al3[2]-feaRoof4[2]), 0,"ONLY");
+	  gMC->Gspos("FRO4",4*row-3,"FAIA",-carpos[0],          carpos[1]+carpar[1]+2.*feaRoof1[1]-feaRoof4[1],carpos[2]+(carpar[2]-2.*al3[2]-feaRoof4[2]), 0,"ONLY");
+
+	  gMC->Gspos("FBAR",4*row,  "FAIA", carpos[0],carpos[1]+carpar[1]-bar[1],carpos[2]-(carpar[2]-2.*feaParam1[2]-2.*al1[2]+2.*feaRoof1[2]-2.*bar[1]), 0,"ONLY");
+	  gMC->Gspos("FBAR",4*row-1,"FAIA", (feaParam1[0]+0.25),carpos[1]+carpar[1]+-bar[1],carpos[2]-(carpar[2]-2.*feaParam1[2]-2.*al1[2]+2.*feaRoof1[2]-2.*bar[1]), 0,"ONLY");
+	  gMC->Gspos("FBAR",4*row-2,"FAIA",-(feaParam1[0]+0.25),carpos[1]+carpar[1]+-bar[1],carpos[2]-(carpar[2]-2.*feaParam1[2]-2.*al1[2]+2.*feaRoof1[2]-2.*bar[1]), 0,"ONLY");
+	  gMC->Gspos("FBAR",4*row-3,"FAIA",-carpos[0],carpos[1]+carpar[1]-bar[1],carpos[2]-(carpar[2]-2.*feaParam1[2]-2.*al1[2]+2.*feaRoof1[2]-2.*bar[1]), 0,"ONLY");
+
+	}
+	else {
+	  switch (sg) {
+	  case 1:
+	    gMC->Gspos("FCA1",2*row,  "FAIA", carpos[0],carpos[1],carpos[2], 0,"ONLY");
+	    gMC->Gspos("FCA1",2*row-1,"FAIA",-carpos[0],carpos[1],carpos[2], 0,"ONLY");
+	    gMC->Gspos("FCA2", row,   "FAIA", 0., carpos[1], carpos[2], 0, "ONLY");
+	    break;
+	  case -1:
+	    gMC->Gspos("FCA1",2*row,  "FAIA", carpos[0],carpos[1],carpos[2], idrotm[98],"ONLY");
+	    gMC->Gspos("FCA1",2*row-1,"FAIA",-carpos[0],carpos[1],carpos[2], idrotm[98],"ONLY");
+	    gMC->Gspos("FCA2", row,   "FAIA", 0., carpos[1], carpos[2], idrotm[98], "ONLY");
+	    break;
+	  }
+
+	  //gMC->Gspos("FTUB", row, "FAIA", 0., ytub, carpos[2]-sg, idrotm[99], "ONLY");
+	  gMC->Gspos("FTUB", row, "FAIA", 0., carpos[1]+carpar[1]-bar[1], carpos[2]-sg*(carpar[2]-2.*feaParam1[2]-2.*al1[2]+2.*feaRoof1[2]-bar[1]), idrotm[99], "ONLY");
+	  gMC->Gspos("FCAB", row, "FAIA", 0., ycab, carpos[2]-sg*1.1, idrotm[99], "ONLY");
+
+	  gMC->Gspos("FRO1",4*row,  "FAIA", carpos[0],carpos[1]+carpar[1]+feaRoof1[1],carpos[2]-sg*(carpar[2]-2.*feaParam1[2]-2.*al1[2]+feaRoof1[2]), 0,"ONLY");
+	  gMC->Gspos("FRO1",4*row-1,"FAIA", (feaParam1[0]+0.25),carpos[1]+carpar[1]+feaRoof1[1],carpos[2]-sg*(carpar[2]-2.*feaParam1[2]-2.*al1[2]+feaRoof1[2]), 0,"ONLY");
+	  gMC->Gspos("FRO1",4*row-2,"FAIA",-(feaParam1[0]+0.25),carpos[1]+carpar[1]+feaRoof1[1],carpos[2]-sg*(carpar[2]-2.*feaParam1[2]-2.*al1[2]+feaRoof1[2]), 0,"ONLY");
+	  gMC->Gspos("FRO1",4*row-3,"FAIA",-carpos[0],carpos[1]+carpar[1]+feaRoof1[1],carpos[2]-sg*(carpar[2]-2.*feaParam1[2]-2.*al1[2]+feaRoof1[2]), 0,"ONLY");
+
+	  gMC->Gspos("FRO2",4*row,  "FAIA", carpos[0],carpos[1]+carpar[1]+2.*feaRoof1[1]+feaRoof2[1],carpos[2]+sg*(carpar[2]-2.*feaRoof3[2]-feaRoof2[2]), 0,"ONLY");
+	  gMC->Gspos("FRO2",4*row-1,"FAIA", (feaParam1[0]+0.25),carpos[1]+carpar[1]+2.*feaRoof1[1]+feaRoof2[1],carpos[2]+sg*(carpar[2]-2.*feaRoof3[2]-feaRoof2[2]), 0,"ONLY");
+	  gMC->Gspos("FRO2",4*row-2,"FAIA",-(feaParam1[0]+0.25),carpos[1]+carpar[1]+2.*feaRoof1[1]+feaRoof2[1],carpos[2]+sg*(carpar[2]-2.*feaRoof3[2]-feaRoof2[2]), 0,"ONLY");
+	  gMC->Gspos("FRO2",4*row-3,"FAIA",-carpos[0],carpos[1]+carpar[1]+2.*feaRoof1[1]+feaRoof2[1],carpos[2]+sg*(carpar[2]-2.*feaRoof3[2]-feaRoof2[2]), 0,"ONLY");
+
+	  gMC->Gspos("FRO3",4*row,  "FAIA", carpos[0],carpos[1]+carpar[1]+feaRoof3[1],carpos[2]+sg*(carpar[2]-feaRoof3[2]), 0,"ONLY");
+	  gMC->Gspos("FRO3",4*row-1,"FAIA", (feaParam1[0]+0.25),carpos[1]+carpar[1]+feaRoof3[1],carpos[2]+sg*(carpar[2]-feaRoof3[2]), 0,"ONLY");
+	  gMC->Gspos("FRO3",4*row-2,"FAIA",-(feaParam1[0]+0.25),carpos[1]+carpar[1]+feaRoof3[1],carpos[2]+sg*(carpar[2]-feaRoof3[2]), 0,"ONLY");
+	  gMC->Gspos("FRO3",4*row-3,"FAIA",-carpos[0],carpos[1]+carpar[1]+feaRoof3[1],carpos[2]+sg*(carpar[2]-feaRoof3[2]), 0,"ONLY");
+
+	  gMC->Gspos("FRO4",4*row,  "FAIA", carpos[0],          carpos[1]+carpar[1]+2.*feaRoof1[1]-feaRoof4[1],carpos[2]+sg*(carpar[2]-2.*al3[2]-feaRoof4[2]), 0,"ONLY");
+	  gMC->Gspos("FRO4",4*row-1,"FAIA", (feaParam1[0]+0.25),carpos[1]+carpar[1]+2.*feaRoof1[1]-feaRoof4[1],carpos[2]+sg*(carpar[2]-2.*al3[2]-feaRoof4[2]), 0,"ONLY");
+	  gMC->Gspos("FRO4",4*row-2,"FAIA",-(feaParam1[0]+0.25),carpos[1]+carpar[1]+2.*feaRoof1[1]-feaRoof4[1],carpos[2]+sg*(carpar[2]-2.*al3[2]-feaRoof4[2]), 0,"ONLY");
+	  gMC->Gspos("FRO4",4*row-3,"FAIA",-carpos[0],          carpos[1]+carpar[1]+2.*feaRoof1[1]-feaRoof4[1],carpos[2]+sg*(carpar[2]-2.*al3[2]-feaRoof4[2]), 0,"ONLY");
+
+	  gMC->Gspos("FBAR",4*row,  "FAIA", carpos[0],carpos[1]+carpar[1]-bar[1],carpos[2]-sg*(carpar[2]-2.*feaParam1[2]-2.*al1[2]+2.*feaRoof1[2]-2.*bar[1]), 0,"ONLY");
+	  gMC->Gspos("FBAR",4*row-1,"FAIA", (feaParam1[0]+0.25),carpos[1]+carpar[1]+-bar[1],carpos[2]-sg*(carpar[2]-2.*feaParam1[2]-2.*al1[2]+2.*feaRoof1[2]-2.*bar[1]), 0,"ONLY");
+	  gMC->Gspos("FBAR",4*row-2,"FAIA",-(feaParam1[0]+0.25),carpos[1]+carpar[1]+-bar[1],carpos[2]-sg*(carpar[2]-2.*feaParam1[2]-2.*al1[2]+2.*feaRoof1[2]-2.*bar[1]), 0,"ONLY");
+	  gMC->Gspos("FBAR",4*row-3,"FAIA",-carpos[0],carpos[1]+carpar[1]-bar[1],carpos[2]-sg*(carpar[2]-2.*feaParam1[2]-2.*al1[2]+2.*feaRoof1[2]-2.*bar[1]), 0,"ONLY");
+
+	}
       }
     }
     gMC->Gspos("FTLN", 5+4*sg, "FAIA", 0., -0.1, 369.9*sg, 0, "ONLY");
@@ -826,13 +963,43 @@ void AliTOFv6T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenA)
     gMC->Gspos("FTLN", 5+2*sg, "FAIA", 0., -0.1, 198.8*sg, 0, "ONLY");
     gMC->Gspos("FTLN",   5+sg, "FAIA", 0., -0.1, 56.82*sg, 0, "ONLY");
   }
-  gMC->Gspos("FCA1", 181, "FAIA", carpos[0],carpos[1],0., 0,"ONLY");
-  gMC->Gspos("FCA1", 182, "FAIA",-carpos[0],carpos[1],0., 0,"ONLY");
+  gMC->Gspos("FCA1", 182, "FAIA", carpos[0],carpos[1],0., 0,"ONLY");
+  gMC->Gspos("FCA1", 181, "FAIA",-carpos[0],carpos[1],0., 0,"ONLY");
   gMC->Gspos("FCA2",  91, "FAIA",  0., carpos[1], 0., 0, "ONLY");
-  gMC->Gspos("FTUB",  91, "FAIA",  0., ytub, 1., idrotm[99], "ONLY");
-  gMC->Gspos("FCAB",  91, "FAIA",  0., ycab, 1., idrotm[99], "ONLY");
-  gMC->Gspos("FLON",   1, "FAIA",-24., ytub+1.4, 0., 0, "MANY");
-  gMC->Gspos("FLON",   2, "FAIA", 24., ytub+1.4, 0., 0, "MANY");
+
+  //gMC->Gspos("FTUB",  91, "FAIA",  0., ytub, -1., idrotm[99], "ONLY");
+  gMC->Gspos("FTUB", 91, "FAIA", 0., carpos[1]+carpar[1]-bar[1],-(carpar[2]-2.*feaParam1[2]-2.*al1[2]+2.*feaRoof1[2]-bar[1]), idrotm[99], "ONLY");
+  gMC->Gspos("FCAB", 91, "FAIA",  0., ycab, -1.1, idrotm[99], "ONLY");
+
+  gMC->Gspos("FRO1",364, "FAIA", carpos[0],carpos[1]+carpar[1]+feaRoof1[1],-(carpar[2]-2.*feaParam1[2]-2.*al1[2]+feaRoof1[2]), 0,"ONLY");
+  gMC->Gspos("FRO1",363, "FAIA", (feaParam1[0]+0.25),carpos[1]+carpar[1]+feaRoof1[1],-(carpar[2]-2.*feaParam1[2]-2.*al1[2]+feaRoof1[2]), 0,"ONLY");
+  gMC->Gspos("FRO1",362, "FAIA",-(feaParam1[0]+0.25),carpos[1]+carpar[1]+feaRoof1[1],-(carpar[2]-2.*feaParam1[2]-2.*al1[2]+feaRoof1[2]), 0,"ONLY");
+  gMC->Gspos("FRO1",361, "FAIA",-carpos[0],carpos[1]+carpar[1]+feaRoof1[1],-(carpar[2]-2.*feaParam1[2]-2.*al1[2]+feaRoof1[2]), 0,"ONLY");
+
+  gMC->Gspos("FRO2",364, "FAIA", carpos[0],carpos[1]+carpar[1]+2.*feaRoof1[1]+feaRoof2[1],(carpar[2]-2.*feaRoof3[2]-feaRoof2[2]), 0,"ONLY");
+  gMC->Gspos("FRO2",363, "FAIA", (feaParam1[0]+0.25),carpos[1]+carpar[1]+2.*feaRoof1[1]+feaRoof2[1],(carpar[2]-2.*feaRoof3[2]-feaRoof2[2]), 0,"ONLY");
+  gMC->Gspos("FRO2",362, "FAIA",-(feaParam1[0]+0.25),carpos[1]+carpar[1]+2.*feaRoof1[1]+feaRoof2[1],(carpar[2]-2.*feaRoof3[2]-feaRoof2[2]), 0,"ONLY");
+  gMC->Gspos("FRO2",361, "FAIA",-carpos[0],carpos[1]+carpar[1]+2.*feaRoof1[1]+feaRoof2[1],(carpar[2]-2.*feaRoof3[2]-feaRoof2[2]), 0,"ONLY");
+
+  gMC->Gspos("FRO3",364, "FAIA", carpos[0],carpos[1]+carpar[1]+feaRoof3[1],(carpar[2]-feaRoof3[2]), 0,"ONLY");
+  gMC->Gspos("FRO3",363, "FAIA", (feaParam1[0]+0.25),carpos[1]+carpar[1]+feaRoof3[1],(carpar[2]-feaRoof3[2]), 0,"ONLY");
+  gMC->Gspos("FRO3",362, "FAIA",-(feaParam1[0]+0.25),carpos[1]+carpar[1]+feaRoof3[1],(carpar[2]-feaRoof3[2]), 0,"ONLY");
+  gMC->Gspos("FRO3",361, "FAIA",-carpos[0],carpos[1]+carpar[1]+feaRoof3[1],(carpar[2]-feaRoof3[2]), 0,"ONLY");
+
+  gMC->Gspos("FRO4",364, "FAIA", carpos[0],          carpos[1]+carpar[1]+2.*feaRoof1[1]-feaRoof4[1],(carpar[2]-2.*al3[2]-feaRoof4[2]), 0,"ONLY");
+  gMC->Gspos("FRO4",363, "FAIA", (feaParam1[0]+0.25),carpos[1]+carpar[1]+2.*feaRoof1[1]-feaRoof4[1],(carpar[2]-2.*al3[2]-feaRoof4[2]), 0,"ONLY");
+  gMC->Gspos("FRO4",362, "FAIA",-(feaParam1[0]+0.25),carpos[1]+carpar[1]+2.*feaRoof1[1]-feaRoof4[1],(carpar[2]-2.*al3[2]-feaRoof4[2]), 0,"ONLY");
+  gMC->Gspos("FRO4",361, "FAIA",-carpos[0],          carpos[1]+carpar[1]+2.*feaRoof1[1]-feaRoof4[1],(carpar[2]-2.*al3[2]-feaRoof4[2]), 0,"ONLY");
+
+  gMC->Gspos("FBAR",364, "FAIA", carpos[0],carpos[1]+carpar[1]-bar[1],-(carpar[2]-2.*feaParam1[2]-2.*al1[2]+2.*feaRoof1[2]-2.*bar[1]), 0,"ONLY");
+  gMC->Gspos("FBAR",363, "FAIA", (feaParam1[0]+0.25),carpos[1]+carpar[1]+-bar[1],-(carpar[2]-2.*feaParam1[2]-2.*al1[2]+2.*feaRoof1[2]-2.*bar[1]), 0,"ONLY");
+  gMC->Gspos("FBAR",362, "FAIA",-(feaParam1[0]+0.25),carpos[1]+carpar[1]+-bar[1],-(carpar[2]-2.*feaParam1[2]-2.*al1[2]+2.*feaRoof1[2]-2.*bar[1]), 0,"ONLY");
+  gMC->Gspos("FBAR",361, "FAIA",-carpos[0],carpos[1]+carpar[1]-bar[1],-(carpar[2]-2.*feaParam1[2]-2.*al1[2]+2.*feaRoof1[2]-2.*bar[1]), 0,"ONLY");
+
+  gMC->Gspos("FLON",  2, "FAIA",-24., ytub+1.4, 0., 0, "MANY");
+  gMC->Gspos("FLON",  1, "FAIA", 24., ytub+1.4, 0., 0, "MANY");
+
+
   if (fTOFHoles) {
     row = 1;
     for (Int_t sg= -1; sg< 2; sg+= 2) {
@@ -842,11 +1009,49 @@ void AliTOFv6T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenA)
         nrow = row + rowb[nb];
         for ( ; row < nrow ; ++row) {
           carpos[2] -= sg*rowstep;
-          gMC->Gspos("FCA1",2*row-1, "FAIB", carpos[0],carpos[1],carpos[2], 0,"ONLY");
-          gMC->Gspos("FCA1",  2*row, "FAIB",-carpos[0],carpos[1],carpos[2], 0,"ONLY");
-          gMC->Gspos("FCA2", row, "FAIB", 0., carpos[1], carpos[2], 0, "ONLY");
-          gMC->Gspos("FTUB", row, "FAIB", 0., ytub,carpos[2]-sg, idrotm[99], "ONLY");
-          gMC->Gspos("FCAB", row, "FAIB", 0., ycab,carpos[2]-sg, idrotm[99], "ONLY");
+
+	  switch (sg) {
+	  case 1:
+	    gMC->Gspos("FCA1",2*row,  "FAIB", carpos[0],carpos[1],carpos[2], 0,"ONLY");
+	    gMC->Gspos("FCA1",2*row-1,"FAIB",-carpos[0],carpos[1],carpos[2], 0,"ONLY");
+	    gMC->Gspos("FCA2", row,   "FAIB", 0., carpos[1], carpos[2], 0, "ONLY");
+	    break;
+	  case -1:
+	    gMC->Gspos("FCA1",2*row,  "FAIB", carpos[0],carpos[1],carpos[2], idrotm[98],"ONLY");
+	    gMC->Gspos("FCA1",2*row-1,"FAIB",-carpos[0],carpos[1],carpos[2], idrotm[98],"ONLY");
+	    gMC->Gspos("FCA2", row,   "FAIB", 0., carpos[1], carpos[2], idrotm[98], "ONLY");
+	    break;
+	  }
+
+          //gMC->Gspos("FTUB", row, "FAIB", 0., ytub,carpos[2]-sg, idrotm[99], "ONLY");
+	  gMC->Gspos("FTUB", row, "FAIB", 0., carpos[1]+carpar[1]-bar[1], carpos[2]-sg*(carpar[2]-2.*feaParam1[2]-2.*al1[2]+2.*feaRoof1[2]-bar[1]), idrotm[99], "ONLY");
+          gMC->Gspos("FCAB", row, "FAIB", 0., ycab,carpos[2]-sg*1.1, idrotm[99], "ONLY");
+
+	  gMC->Gspos("FRO1",4*row,  "FAIB", carpos[0],carpos[1]+carpar[1]+feaRoof1[1],carpos[2]-sg*(carpar[2]-2.*feaParam1[2]-2.*al1[2]+feaRoof1[2]), 0,"ONLY");
+	  gMC->Gspos("FRO1",4*row-1,"FAIB", (feaParam1[0]+0.25),carpos[1]+carpar[1]+feaRoof1[1],carpos[2]-sg*(carpar[2]-2.*feaParam1[2]-2.*al1[2]+feaRoof1[2]), 0,"ONLY");
+	  gMC->Gspos("FRO1",4*row-2,"FAIB",-(feaParam1[0]+0.25),carpos[1]+carpar[1]+feaRoof1[1],carpos[2]-sg*(carpar[2]-2.*feaParam1[2]-2.*al1[2]+feaRoof1[2]), 0,"ONLY");
+	  gMC->Gspos("FRO1",4*row-3,"FAIB",-carpos[0],carpos[1]+carpar[1]+feaRoof1[1],carpos[2]-sg*(carpar[2]-2.*feaParam1[2]-2.*al1[2]+feaRoof1[2]), 0,"ONLY");
+
+	  gMC->Gspos("FRO2",4*row,  "FAIB", carpos[0],carpos[1]+carpar[1]+2.*feaRoof1[1]+feaRoof2[1],carpos[2]+sg*(carpar[2]-2.*feaRoof3[2]-feaRoof2[2]), 0,"ONLY");
+	  gMC->Gspos("FRO2",4*row-1,"FAIB", (feaParam1[0]+0.25),carpos[1]+carpar[1]+2.*feaRoof1[1]+feaRoof2[1],carpos[2]+sg*(carpar[2]-2.*feaRoof3[2]-feaRoof2[2]), 0,"ONLY");
+	  gMC->Gspos("FRO2",4*row-2,"FAIB",-(feaParam1[0]+0.25),carpos[1]+carpar[1]+2.*feaRoof1[1]+feaRoof2[1],carpos[2]+sg*(carpar[2]-2.*feaRoof3[2]-feaRoof2[2]), 0,"ONLY");
+	  gMC->Gspos("FRO2",4*row-3,"FAIB",-carpos[0],carpos[1]+carpar[1]+2.*feaRoof1[1]+feaRoof2[1],carpos[2]+sg*(carpar[2]-2.*feaRoof3[2]-feaRoof2[2]), 0,"ONLY");
+
+	  gMC->Gspos("FRO3",4*row,  "FAIB", carpos[0],carpos[1]+carpar[1]+feaRoof3[1],carpos[2]+sg*(carpar[2]-feaRoof3[2]), 0,"ONLY");
+	  gMC->Gspos("FRO3",4*row-1,"FAIB", (feaParam1[0]+0.25),carpos[1]+carpar[1]+feaRoof3[1],carpos[2]+sg*(carpar[2]-feaRoof3[2]), 0,"ONLY");
+	  gMC->Gspos("FRO3",4*row-2,"FAIB",-(feaParam1[0]+0.25),carpos[1]+carpar[1]+feaRoof3[1],carpos[2]+sg*(carpar[2]-feaRoof3[2]), 0,"ONLY");
+	  gMC->Gspos("FRO3",4*row-3,"FAIB",-carpos[0],carpos[1]+carpar[1]+feaRoof3[1],carpos[2]+sg*(carpar[2]-feaRoof3[2]), 0,"ONLY");
+
+	  gMC->Gspos("FRO4",4*row,  "FAIB", carpos[0],          carpos[1]+carpar[1]+2.*feaRoof1[1]-feaRoof4[1],carpos[2]+sg*(carpar[2]-2.*al3[2]-feaRoof4[2]), 0,"ONLY");
+	  gMC->Gspos("FRO4",4*row-1,"FAIB", (feaParam1[0]+0.25),carpos[1]+carpar[1]+2.*feaRoof1[1]-feaRoof4[1],carpos[2]+sg*(carpar[2]-2.*al3[2]-feaRoof4[2]), 0,"ONLY");
+	  gMC->Gspos("FRO4",4*row-2,"FAIB",-(feaParam1[0]+0.25),carpos[1]+carpar[1]+2.*feaRoof1[1]-feaRoof4[1],carpos[2]+sg*(carpar[2]-2.*al3[2]-feaRoof4[2]), 0,"ONLY");
+	  gMC->Gspos("FRO4",4*row-3,"FAIB",-carpos[0],          carpos[1]+carpar[1]+2.*feaRoof1[1]-feaRoof4[1],carpos[2]+sg*(carpar[2]-2.*al3[2]-feaRoof4[2]), 0,"ONLY");
+
+	  gMC->Gspos("FBAR",4*row,  "FAIB", carpos[0],carpos[1]+carpar[1]-bar[1],carpos[2]-sg*(carpar[2]-2.*feaParam1[2]-2.*al1[2]+2.*feaRoof1[2]-2.*bar[1]), 0,"ONLY");
+	  gMC->Gspos("FBAR",4*row-1,"FAIB", (feaParam1[0]+0.25),carpos[1]+carpar[1]+-bar[1],carpos[2]-sg*(carpar[2]-2.*feaParam1[2]-2.*al1[2]+2.*feaRoof1[2]-2.*bar[1]), 0,"ONLY");
+	  gMC->Gspos("FBAR",4*row-2,"FAIB",-(feaParam1[0]+0.25),carpos[1]+carpar[1]+-bar[1],carpos[2]-sg*(carpar[2]-2.*feaParam1[2]-2.*al1[2]+2.*feaRoof1[2]-2.*bar[1]), 0,"ONLY");
+	  gMC->Gspos("FBAR",4*row-3,"FAIB",-carpos[0],carpos[1]+carpar[1]-bar[1],carpos[2]-sg*(carpar[2]-2.*feaParam1[2]-2.*al1[2]+2.*feaRoof1[2]-2.*bar[1]), 0,"ONLY");
+
         }
       }
       gMC->Gspos("FTLN", 5+4*sg, "FAIB", 0., -0.1, 369.9*sg, 0, "ONLY");
@@ -854,8 +1059,8 @@ void AliTOFv6T0::TOFpc(Float_t xtof, Float_t ytof, Float_t zlenA)
       gMC->Gspos("FTLN", 5+2*sg, "FAIB", 0., -0.1, 198.8*sg, 0, "ONLY");
       gMC->Gspos("FTLN",   5+sg, "FAIB", 0., -0.1, 56.82*sg, 0, "ONLY");
     }
-  gMC->Gspos("FLON", 1, "FAIB",-24., ytub+1.4, 0., 0, "MANY");
-  gMC->Gspos("FLON", 2, "FAIB", 24., ytub+1.4, 0., 0, "MANY");
+  gMC->Gspos("FLON", 2, "FAIB",-24., ytub+1.4, 0., 0, "MANY");
+  gMC->Gspos("FLON", 1, "FAIB", 24., ytub+1.4, 0., 0, "MANY");
   }
 
   // Cables and tubes on the side blocks
@@ -1281,18 +1486,30 @@ void AliTOFv6T0::CreateMaterials()
   Int_t nfre     = 4;
 
   // --- Al + Cu + G10  {Al, Cu, Si, O, C, H, O}
-  Float_t acar[7]= {26.98,63.55,28.09,16.00,12.01,1.01,16.00};
-  Float_t zcar[7]= {13., 29., 14., 8., 6., 1., 8.};
-  Float_t wcar[7];
-  wcar[0]= 0.7;
-  wcar[1]= 0.05;
-  wcar[2]= 0.25*wmatg10[0];
-  wcar[3]= 0.25*wmatg10[1];
-  wcar[4]= 0.25*wmatg10[2];
-  wcar[5]= 0.25*wmatg10[3];
-  wcar[6]= 0.25*wmatg10[4];
-  AliDebug(1,Form("wcar  %d  %d  %d  %d  %d  %d  %d", wcar[0], wcar[1], wcar[2], wcar[3], wcar[4], wcar[5], wcar[6]));
-  Float_t dcar= 1.9;
+  Float_t acar[10]= {26.98,
+		     /*63.55,*/
+		     ag10[0], ag10[1], ag10[2], ag10[3], ag10[4],
+		     aAir[0], aAir[1], aAir[2], aAir[3]};
+  Float_t zcar[10]= {13.,
+		     /*29.,*/
+		     zg10[0], zg10[1], zg10[2], zg10[3], zg10[4],
+		     zAir[0], zAir[1], zAir[2], zAir[3]};
+  Float_t wcar[10];
+  wcar[0]= 0.4732;//0.7;
+  //wcar[1]= 0.04;//0.05;
+  wcar[1]= 0.2854*wmatg10[0];//0.25*wmatg10[0];
+  wcar[2]= 0.2854*wmatg10[1];//0.25*wmatg10[1];
+  wcar[3]= 0.2854*wmatg10[2];//0.25*wmatg10[2];
+  wcar[4]= 0.2854*wmatg10[3];//0.25*wmatg10[3];
+  wcar[5]= 0.2854*wmatg10[4];//0.25*wmatg10[4];
+  wcar[6]= 0.2414*wAir[0];
+  wcar[7]= 0.2414*wAir[1];
+  wcar[8]= 0.2414*wAir[2];
+  wcar[9]= 0.2414*wAir[3];
+
+  AliDebug(1,Form("wcar  %f  %f  %f  %f  %f  %f  %f  %f  %f  %f", wcar[0], wcar[1], wcar[2], wcar[3], wcar[4],
+		  wcar[5], wcar[6], wcar[7], wcar[8], wcar[9]));
+  Float_t dcar = 1.85;//1.9;
 
   // --- Cables, tubes {Al, Cu} ---
   Float_t acbt[2]= {26.98,63.55};
@@ -1328,10 +1545,11 @@ void AliTOFv6T0::CreateMaterials()
   AliMixture ( 8, "glass-freon$", agfr, zgfr, dgfr, ngfr, wgfr);
   AliMixture ( 9, "Water$",  awa, zwa, dwa, nwa, wwa);
   AliMixture (10, "Al+Cu$", acbt, zcbt, decbt, 2, wcbt);
-  AliMaterial(11, "Cu $", 63.54, 29., 3.392, 1.43, 10.);
+  AliMaterial(11, "Cu $", 63.54, 29., 8.96, 1.43, 10.);
   AliMixture (12, "Al+Cu (cable)$", acbt, zcbt, decb, 2, wcb);
-  AliMixture (13, "Al+Cu+G10$", acar, zcar, dcar, 7, wcar);
+  AliMixture (13, "Al+Cu+G10$", acar, zcar, dcar, 10/*7*/, wcar);
   AliMixture (14, "Al+Cu+steel$", acra, zcra, dcra, 5, wcra);
+  AliMaterial(15, "Cu_sensitive$", 63.54, 29., 3.392, 1.43, 10.);
 
   Float_t epsil, stmin, deemax, stemax;
 
@@ -1355,7 +1573,7 @@ void AliTOFv6T0::CreateMaterials()
   AliMedium( 6,"Al Frame$",     4, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
   AliMedium( 7,"honeycomb$",    5, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
   AliMedium( 8,"Fre$",          6, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
-  AliMedium( 9,"Cu-S$",        11, 1, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  AliMedium( 9,"Cu-S$",        15, 1, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
   AliMedium(10,"Glass$",        7, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
   AliMedium(11,"Water$",        9, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
   AliMedium(12,"Cable$",       12, 0, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
