@@ -1,53 +1,44 @@
 /*
 
-DAcase2.c
-
-This program connects to the DAQ data source passed as argument
-and populates local "./result.txt" file with the ids of events received
-during the run.
-
-The program exits when being asked to shut down (daqDA_checkshutdown)
-or End of Run event.
-
-Messages on stdout are exported to DAQ log system.
-
-contact: alice-datesupport@cern.ch
+TOF DA for online calibration
 
 */
+
+#define FILE_TOTAL "TOFdaTotal.root"
+#define FILE_RUN "TOFdaRun.root"
+
+// DATE
 extern "C" {
 #include <daqDA.h>
 }
-
-#include "event.h"
-#include "monitor.h"
-//#include "daqDA.h"
-
-#include <Riostream.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <event.h>
+#include <monitor.h>
 
 //AliRoot
-#include "AliTOFRawStream.h"
-#include "AliRawReaderDate.h"
-#include "AliTOFGeometry.h"
-#include "AliTOFGeometryV5.h"
-#include "AliT0digit.h"
-#include "AliT0RawReader.h"
+#include <AliTOFRawStream.h>
+#include <AliRawReaderDate.h>
+#include <AliRawReader.h>
+#include <AliTOFGeometry.h>
+#include <AliTOFGeometryV5.h>
+#include <AliT0RawReader.h>
+#include <AliDAQ.h>
+#include <AliTOFHitData.h>
+#include <AliTOFHitDataBuffer.h>
 
 //ROOT
-#include "TFile.h"
-#include "TKey.h"
-#include "TH2S.h"
-#include "TObject.h"
-#include "TBenchmark.h"
-#include "TMath.h"
-#include "TRandom.h"
+#include <TFile.h>
+#include <TKey.h>
+#include <TH2S.h>
+#include <TObject.h>
+#include <TMath.h>
+#include <TSystem.h>
 
 
 /* Main routine
       Arguments: 
       1- monitoring data source
 */
+
 int main(int argc, char **argv) {
   
   AliTOFGeometry * geomV5 = new AliTOFGeometryV5();
@@ -60,25 +51,11 @@ int main(int argc, char **argv) {
   TH1F::AddDirectory(0);
   TH2S * htofPartial = new TH2S("htof","histo with delays", size,-0.5,size*1.-0.5,nbins,binmin-0.5,nbins*1.+binmin-0.5);
   
-  TRandom *rand = new TRandom();  //to be used for testing with cosmic data
-  rand->SetSeed(0);               //to be used for testing with cosmic data
-
-  //TTree *tree = 0x0;  // tree for T0 decoder
-      
   // decoding the events
   
   int status;
-  bool decodeStatus;
   if (argc!=2) {
     printf("Wrong number of arguments\n");
-    return -1;
-  }
-
-  /* open result file */
-  FILE *fp=NULL;
-  fp=fopen("./result.txt","a");
-  if (fp==NULL) {
-    printf("Failed to open file\n");
     return -1;
   }
 
@@ -101,18 +78,12 @@ int main(int argc, char **argv) {
   monitorSetNoWaitNetworkTimeout(1000);
   
   /* log start of process */
-  printf("DA example case2 monitoring program started\n");  
+  printf("TOF DA started\n");  
 
   /* init some counters */
   int nevents_physics=0;
   int nevents_total=0;
 
-  struct equipmentStruct *equipment;
-  int *eventEnd;
-  int *eventData;
-  int *equipmentEnd;
-  int *equipmentData;
-  int *equipmentID;
   struct eventHeaderStruct *event;
   eventTypeType eventT;
   Int_t iev=0;
@@ -143,6 +114,7 @@ int main(int argc, char **argv) {
     iev++; 
 
    /* use event - here, just write event id to result file */
+    nevents_total++;
     eventT=event->eventType;
     switch (event->eventType){
       
@@ -156,95 +128,106 @@ int main(int argc, char **argv) {
       break;
       
     case PHYSICS_EVENT:
-      printf(" event number = %i \n",iev);
-      //if (iev%10000 ==0) printf(" event number = %i \n",iev);
-      //if (iev > 50000) break;
+      nevents_physics++;
       AliRawReader *rawReader = new AliRawReaderDate((void*)event);
-      //      rawReader->RequireHeader(kFALSE);
-      //rawReader->LoadEquipmentIdsMap("TOFmap.txt");  //to be used if no exact mapping implemented 
-      Int_t meantime = 0;     
+      //rawReader->RequireHeader(kFALSE);
 
-            
-      //      TTree *tree = new TTree();  // tree for T0 decoder
+      //T0 event
+      Int_t meantime = 0;     
       AliT0RawReader *rawReaderT0 = new AliT0RawReader(rawReader);
-      //      printf("rawReaderT0 = %p \n", rawReaderT0);
-      //printf("rawReader = %p \n", rawReader);
-      //printf("event = %p \n", event);
-      //      AliT0digit *digit = 0x0;
-      //tree->SetBranchAddress("T0",&digit);
-      
-      if (!rawReaderT0->Next())
-       printf(" no raw data found!! %i", rawReaderT0->Next());
-      Int_t allData[110][5];
-      for (Int_t i=0; i<110; i++) {
-	allData[i][0]=rawReaderT0->GetData(i,0);
+      if (!rawReaderT0->Next()) {
+        printf("T0: no raw data found!\n");
+      } else {
+        Int_t allData[110][5];
+        for (Int_t i=0; i<110; i++) {
+	  allData[i][0]=rawReaderT0->GetData(i,0);
+        }
+        meantime = allData[49][0];
+        //printf("time zero (ns) = %i (%f) \n", meantime, meantime*25*1E-3-200);
       }
-      meantime = allData[49][0];
-      printf("time zero (ns) = %i (%f) \n", meantime, meantime*25*1E-3-200);
       
       delete rawReaderT0;
       rawReaderT0 = 0x0;
       rawReader->Reset();
-      
+
+      //TOF event
+      Int_t dummy = -1;
+      Int_t Volume[5];
+      AliTOFHitData *HitData;
+      AliTOFHitDataBuffer *DataBuffer;
+      AliTOFHitDataBuffer *PackedDataBuffer;
       AliTOFRawStream *rawStreamTOF = new AliTOFRawStream(rawReader);
-      
-      //loop the event data	  	  
-      Int_t detectorIndex[5] = {-1, -1, -1, -1, -1};
-      
-      printf("before T0 \n");
-      
-      while(rawStreamTOF->Next()){
-	for (Int_t ii=0; ii<5; ii++) detectorIndex[ii] = -1;
+      //      rawReader->ReadHeader();
+      rawStreamTOF->ResetBuffers();
+      rawStreamTOF->DecodeDDL(0, AliDAQ::NumberOfDdls("TOF") - 1,0);
+      Int_t nPDBEntriesToT = 0;
+      Int_t nDBEntriesToT = 0;
+      for (Int_t iDDL = 0; iDDL < AliDAQ::NumberOfDdls("TOF"); iDDL++){
 	
-	detectorIndex[0] = (Int_t)rawStreamTOF->GetSector();
-	detectorIndex[1] = (Int_t)rawStreamTOF->GetPlate();
-	detectorIndex[2] = (Int_t)rawStreamTOF->GetStrip();
-	detectorIndex[3] = (Int_t)rawStreamTOF->GetPadZ();
-	detectorIndex[4] = (Int_t)rawStreamTOF->GetPadX();
+	/* read decoded data */
+	DataBuffer = rawStreamTOF->GetDataBuffer(iDDL);
+	PackedDataBuffer = rawStreamTOF->GetPackedDataBuffer(iDDL);
 	
-	if (detectorIndex[0]==-1 ||
-	    detectorIndex[1]==-1 ||
-	    detectorIndex[2]==-1 ||
-	    detectorIndex[3]==-1 ||
-	    detectorIndex[4]==-1) continue;
-	else {
-	  Float_t tdc = (Float_t)rawStreamTOF->GetTDC();
-	  Int_t tof = (Int_t)rawStreamTOF->GetTofBin();
-	  Int_t detID[5]={0,0,0,0,0};
-	  detectorIndex[0] = rawStreamTOF->GetSector(); 
-	  detectorIndex[1] = rawStreamTOF->GetPlate();
-	  detectorIndex[2] = rawStreamTOF->GetStrip(); 
-	  detectorIndex[3] = rawStreamTOF->GetPadZ(); 
-	  detectorIndex[4] = rawStreamTOF->GetPadX(); 
-	  Int_t index = rawStreamTOF->GetIndex(detectorIndex);
-	  Float_t pos[3];
- 	  geomV5->GetPosPar(detectorIndex,pos);
-	  Float_t texp=TMath::Sqrt(pos[0]*pos[0]+pos[1]*pos[1]+pos[2]*pos[2])/c*1E9; //expected time in ns
-	  Float_t texpBin=(texp*1E3-32)/AliTOFGeometry::TdcBinWidth(); //expected time in number of TDC bin
-	  //to be uded with cosmics
-	  //Float_t tsim = (Float_t)rand->Gaus(texp,1E-1); //TDC measured time in ns, simulated to be used for testing with cosmic data  
-	  //Float_t delta = tsim-texp;  
-	  //Int_t deltabin = (Int_t)((delta*1E3-32)/AliTOFGeometry::TdcBinWidth());    //to be used for testing with cosmics data
-	  Int_t deltabin = tof-TMath::Nint(texpBin);   //to be used with real data; rounding expected time to Int_t
-	  htofPartial->Fill(index,deltabin); //channel index start from 0, bin index from 1
-	  //debugging printings
-	  printf("sector %i, plate %i, strip %i, padz %i, padx %i \n",detectorIndex[0],detectorIndex[1],detectorIndex[2],detectorIndex[3],detectorIndex[4]);
-	  //printf("pos x = %f, pos y = %f, pos z = %f \n",pos[0],pos[1],pos[2]);
-	  //printf ("expected time = %f (ns)\n",texp);
-	  //printf ("expected time bin = %f (TDC bin)\n",texpBin);
-	  printf ("measured time bin = %i (TDC bin)\n",tof);
-	  //	  printf("index = %i, deltabin = %i , filling index = %i, and bin = % i\n",index, deltabin, index, deltabin);
+	/* get buffer entries */
+	Int_t nDBEntries = DataBuffer->GetEntries();
+	Int_t nPDBEntries = PackedDataBuffer->GetEntries();
+	nPDBEntriesToT+=nPDBEntries;
+	nDBEntriesToT+=nDBEntries;
+	
+	//for (Int_t iHit = 0; iHit < nDBEntries; iHit++){
+	// HitData = DataBuffer->GetHit(iHit);
+	  /* store volume information */
+	//  rawStreamTOF->EquipmentId2VolumeId(HitData, Volume);
+	//}
+	/* reset buffer */
+	DataBuffer->Reset();
+	
+	/* read data buffer hits */
+	for (Int_t iHit = 0; iHit < nPDBEntries; iHit++){
+	  HitData = PackedDataBuffer->GetHit(iHit);
+	  /* add volume information */
+	  HitData->SetDDLID(iDDL);
+	  rawStreamTOF->EquipmentId2VolumeId(HitData, Volume);
+	  if (Volume[0]==-1 ||
+	      Volume[1]==-1 ||
+	      Volume[2]==-1 ||
+	      Volume[3]==-1 ||
+	      Volume[4]==-1) continue;
+	  else {
+	    dummy = Volume[3];
+	    Volume[3] = Volume[4];
+	    Volume[4] = dummy;
+	    Int_t tof = (Int_t)((Double_t)HitData->GetTime()*1E3/AliTOFGeometry::TdcBinWidth());
+	    Int_t index = rawStreamTOF->GetIndex(Volume);
+	    Float_t pos[3];
+	    geomV5->GetPosPar(Volume,pos);
+	    Float_t texp=TMath::Sqrt(pos[0]*pos[0]+pos[1]*pos[1]+pos[2]*pos[2])/c*1E9; //expected time in ns
+	    Float_t texpBin=(texp*1E3-32)/AliTOFGeometry::TdcBinWidth(); //expected time in number of TDC bin
+	    Int_t deltabin = tof-TMath::Nint(texpBin);   //to be used with real data; rounding expected time to Int_t
+	    htofPartial->Fill(index,deltabin); //channel index start from 0, bin index from 1
+	    //debugging printings
+	    //printf("sector %i, plate %i, strip %i, padz %i, padx %i \n",Volume[0],Volume[1],Volume[2],Volume[3],Volume[4]);
+	    //printf("pos x = %f, pos y = %f, pos z = %f \n",pos[0],pos[1],pos[2]);
+	    //printf ("expected time = %f (ns)\n",texp);
+	    //printf ("expected time bin = %f (TDC bin)\n",texpBin);
+	    //printf ("measured time bin = %i (TDC bin) with %f (ns) and ACQ bit = %i \n",tof, HitData->GetTime(), HitData->GetACQ());
+	    //	  printf("index = %i, deltabin = %i , filling index = %i, and bin = % i\n",index, deltabin, index, deltabin);
+	    
+	  }
+	  /* reset buffer */
+	  PackedDataBuffer->Reset();
 	}
       }
-      
+      //printf(" Packed Hit Buffer Entries = %i \n",nPDBEntriesToT);
+      //printf(" Hit Buffer Entries = %i \n",nDBEntriesToT);
+   
       delete rawStreamTOF;
       rawStreamTOF = 0x0;
- 
+      
       delete rawReader;
       rawReader = 0x0;
-
     }
-       
+    
     /* free resources */
     free(event);
     
@@ -261,65 +244,80 @@ int main(int argc, char **argv) {
   geom = 0x0;
 
   //write the Run level file   
-  TFile * fileRun = new TFile ("outciccioTOFT0daRun.root","RECREATE"); 
-  TBenchmark *bench = new TBenchmark();
-  bench->Start("t0");
+  TFile * fileRun = new TFile (FILE_RUN,"RECREATE"); 
   htofPartial->Write();
-  bench->Stop("t0");
-  bench->Print("t0");
   fileRun->Close();
 
-  TFile * filetot = new TFile ("outciccioTOFT0daTotal.root","READ"); 
-  printf("dopo aver aperto il file in modalita' lettura \n");
+  //write the Total file
   TH2S *htoftot = 0x0;
-  //look for the file
-  if (!filetot->IsZombie()){
-    printf("il file non e' zombie \n");
-    TIter next(filetot->GetListOfKeys());
-    TKey *key;
-    //look for the histogram
-    while ((key=(TKey*)next())){
-      const char * namekey = key->GetName();
-      if (strcmp(namekey,"htoftot")==0){
-	printf(" histo found \n");
-	htoftot = (TH2S*) filetot->Get("htoftot");
-	htoftot->AddDirectory(0);
-	htoftot->Add(htofPartial);
-	break;
+  TFile * filetot = 0x0;
+  Bool_t isThere=kFALSE;
+  const char *dirname = "./";
+  TString filename = FILE_TOTAL;
+  if((gSystem->FindFile(dirname,filename))!=NULL){
+    isThere=kTRUE;
+    printf("%s found \n",FILE_TOTAL);
+  }
+  if(isThere){
+
+    TFile * filetot1 = new TFile (FILE_TOTAL,"READ"); 
+    //look for the file
+    if (!filetot1->IsZombie()){
+      printf("updating file %s \n",FILE_TOTAL);
+      TIter next(filetot1->GetListOfKeys());
+      TKey *key;
+      //look for the histogram
+      while ((key=(TKey*)next())){
+	const char * namekey = key->GetName();
+	if (strcmp(namekey,"htoftot")==0){
+	  printf(" histo found \n");
+	  htoftot = (TH2S*) filetot1->Get("htoftot");
+	  htoftot->AddDirectory(0);
+	  htoftot->Add(htofPartial);
+	  break;
+	}
       }
     }
-  filetot->Close();
+    filetot1->Close();
+    delete filetot1;
+    filetot1=0x0;
   }
   else {
-    printf(" no file found \n");
+    printf(" no %s file found \n",FILE_TOTAL);
     htoftot = new TH2S(*htofPartial);
     htoftot->SetName("htoftot");
     htoftot->AddDirectory(0);
   }
-  filetot=0x0;
-  filetot = new TFile ("outciccioTOFT0daTotal.root","RECREATE");
+
+  filetot = new TFile (FILE_TOTAL,"RECREATE");
   filetot->cd();
   htoftot->Write();
   filetot->Close();
   
   delete fileRun;
   delete filetot;
-  delete bench;
   delete htofPartial;
   delete htoftot;
 
   fileRun = 0x0;
   filetot = 0x0;
-  bench = 0x0;
   htofPartial = 0x0;
   htoftot = 0x0;
 
   /* write report */
-  fprintf(fp,"Run #%s, received %d physics events out of %d\n",getenv("DATE_RUN_NUMBER"),nevents_physics,nevents_total);
+  printf("Run #%s, received %d physics events out of %d\n",getenv("DATE_RUN_NUMBER"),nevents_physics,nevents_total);
 
-  /* close result file */
-  fclose(fp);
+  status=0;
 
+  /* export file to FXS */
+  if (daqDA_FES_storeFile(FILE_RUN, FILE_RUN)) {
+    status=-2;
+  }
+  if (daqDA_FES_storeFile(FILE_TOTAL, FILE_TOTAL)) {
+    status=-2;
+  }
 
+  
   return status;
 }
+
