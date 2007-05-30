@@ -4,6 +4,7 @@
 #include <TTask.h>
 #include <Riostream.h>
 #include "AliRawReader.h"
+#include "AliT0Parameters.h"
  
 class AliT0RawReader : public TTask {
   public :
@@ -12,9 +13,11 @@ class AliT0RawReader : public TTask {
 
   virtual  ~AliT0RawReader();
   AliT0RawReader(const AliT0RawReader& o): TTask(o),
-       fData(NULL),
-       fPosition(0)
- {}
+    fRawReader(0),
+    fData(NULL),
+    fPosition(0),
+    fParam(0)
+    {}
   
   AliT0RawReader& operator=(const AliT0RawReader&) { return *this; }
 
@@ -42,14 +45,14 @@ class AliT0RawReader : public TTask {
   protected :
 
   AliRawReader*    fRawReader;    // object for reading the raw data
-
   UChar_t*         fData;         // raw data
   Int_t            fPosition;     // current (32 bit) position in fData
+  AliT0Parameters *fParam;
   //  Int_t            fNTRM; //number of TRMs, 1 - testbeam; 2 - simulation
- 
+  
   Int_t fAllData[110][5];
   
- ClassDef(AliT0RawReader, 0) //class for reading T0 Raw data
+ ClassDef(AliT0RawReader,1) //class for reading T0 Raw data
 };
 
 typedef AliT0RawReader AliSTARTRawReader; // for backward compatibility
