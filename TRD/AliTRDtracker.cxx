@@ -344,12 +344,11 @@ Int_t  AliTRDtracker::GlobalToLocalID(Int_t gid)
 Bool_t  AliTRDtracker::Transform(AliTRDcluster *cluster)
 {
   //
-  // Transform something ... whatever ...
+  // Transform from cluster system to tracking system
   //
 
   // Magic constants for geo manager transformation
   const Double_t kX0shift  = 2.52;
-  const Double_t kX0shift5 = 3.05;
 
   //
   // Apply alignment and calibration to transform cluster
@@ -403,13 +402,7 @@ Bool_t  AliTRDtracker::Transform(AliTRDcluster *cluster)
                        << "\n";
   }
 
-  if (plane == 5) {
-    cluster->SetX(localPosTracker[0]+kX0shift5);
-  }
-  else {
-    cluster->SetX(localPosTracker[0]+kX0shift);
-  }    
-
+  cluster->SetX(localPosTracker[0]+kX0shift);
   cluster->SetY(localPosTracker[1]);
   cluster->SetZ(localPosTracker[2]);
 
