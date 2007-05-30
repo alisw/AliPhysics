@@ -45,7 +45,8 @@ public:
   Double_t    GetR()   	   const {return TMath::Sqrt(fX*fX+fY*fY);}
   Double_t    GetPhi() 	   const {return TMath::ATan2(fY,fX);    }
   
-  UInt_t      GetStartTime() const {return fStartTime;}
+  UInt_t      GetStartTime() const {return fStartTime;} 
+  UInt_t      GetEndTime() const { return fEndTime; }
   TGraph*     GetGraph()   const {return fGraph; }
   AliSplineFit* GetFit()   const {return fFit; }
 
@@ -60,8 +61,14 @@ public:
   void SetFit     (AliSplineFit *f) {fFit = f; }
   void SetStartTime (UInt_t stime)  {fStartTime = stime; }
   void SetStartTime (TTimeStamp time)  {fStartTime = time.GetSec(); }
+  void SetEndTime (UInt_t stime)  {fEndTime = stime; }
+  void SetEndTime (TTimeStamp time)  {fEndTime = time.GetSec(); }
   Double_t GetValue(UInt_t timeSec);
   Double_t GetValue(TTimeStamp time);
+  Double_t Eval(const TTimeStamp& time) const;
+  TGraph *MakeGraph (Int_t nPoints=100) const;
+  
+  
 //  static TClonesArray * ReadList(const char *fname);
 //  static TClonesArray * ReadListInd(const char *fname,
 //                                 Int_t& firstSensor, Int_t& lastSensor);
@@ -69,13 +76,14 @@ public:
 protected:
   Int_t fId;        // Internal number of sensor id  (array index)
   Int_t fIdDCS;     // ID number in DCS
-  UInt_t   fStartTime;  // starting time
+  UInt_t   fStartTime;  // start time for DCS map/fit
+  UInt_t   fEndTime;    // end time for DCS map/fit
   TGraph * fGraph;      // graph with values
   AliSplineFit *fFit;   // fit to graph values
   Double_t fX;      //X-position of the sensor
   Double_t fY;      //Y-position of the sensor
   Double_t fZ;      //Z-position of the sensor
 
-  ClassDef(AliDCSSensor,1);
+  ClassDef(AliDCSSensor,2);
 };
 #endif

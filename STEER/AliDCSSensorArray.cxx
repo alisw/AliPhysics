@@ -30,11 +30,10 @@ const Int_t  kMinPoints = 10;      // minimum number of points per knot in fit
 const Int_t  kIter = 10;           // number of iterations for spline fit
 const Double_t  kMaxDelta = 0.00;  // precision parameter for spline fit
 const Int_t  kFitReq = 2;          // fit requirement, 2 = continuous 2nd derivative
+const Double_t kSecInHour = 3600.; // seconds in one hour
 
 //_____________________________________________________________________________
 AliDCSSensorArray::AliDCSSensorArray():TNamed(), 
-  fFirstSensor(0),
-  fLastSensor(0),
   fStartTime (2000,1,1,0,0,0),
   fEndTime   (2000,1,1,0,0,0),
   fSensors(0)
@@ -47,8 +46,6 @@ AliDCSSensorArray::AliDCSSensorArray():TNamed(),
 //_____________________________________________________________________________
 AliDCSSensorArray::AliDCSSensorArray(Int_t prevRun, const char* dbEntry) : 
   TNamed(),
-  fFirstSensor(0),
-  fLastSensor(0),
   fStartTime (2000,1,1,0,0,0),
   fEndTime   (2000,1,1,0,0,0),
   fSensors(0)
@@ -93,8 +90,6 @@ AliDCSSensorArray::AliDCSSensorArray(Int_t prevRun, const char* dbEntry) :
 
 //_____________________________________________________________________________
 AliDCSSensorArray::AliDCSSensorArray(const AliDCSSensorArray &c):TNamed(c),
-  fFirstSensor(c.fFirstSensor),
-  fLastSensor(c.fLastSensor),
   fStartTime (c.fStartTime),
   fEndTime   (c.fEndTime),
   fSensors(0)
@@ -157,7 +152,8 @@ void AliDCSSensorArray::SetGraph(TMap *map, const char *amandaString)
   } 
 }  
 //_____________________________________________________________________________
-void AliDCSSensorArray::MakeSplineFit(TMap *map, const char *amandaString) 
+void AliDCSSensorArray::MakeSplineFit(TMap *map, const char *amandaString,
+                                                               Bool_t keepMap) 
 {
   // 
   // Make spline fits from DCS maps 
@@ -174,8 +170,10 @@ void AliDCSSensorArray::MakeSplineFit(TMap *map, const char *amandaString)
     fit->InitKnots(gr,kMinPoints,kIter,kMaxDelta);
     fit->SplineFit(kFitReq);
     entry->SetStartTime(fStartTime);
+    entry->SetEndTime(fEndTime);
     fit->Cleanup();
     entry->SetFit(fit);
+    if (keepMap) entry->SetGraph(gr);
   } 
 }  
 
@@ -239,7 +237,7 @@ TGraph* AliDCSSensorArray::MakeGraph(TObjArray* valueSet){
     }                                          
     skipped=0;					      
     if (val->GetTimeStamp()-time0>1000000) continue;
-    x[out] = (val->GetTimeStamp()-time0)/3600.0; // give times in fractions of hours 
+    x[out] = (val->GetTimeStamp()-time0)/kSecInHour; // give times in fractions of hours 
     y[out] = val->GetFloat();
     out++;
     
@@ -286,6 +284,39 @@ AliDCSSensor* AliDCSSensorArray::GetSensor(Double_t x, Double_t y, Double_t z)
  }
  if ( ind >= 0 ) {
     return (AliDCSSensor*)fSensors->At(ind);
+ } else {
+    return 0;
+ }
+}
+
+AliDCSSensor* AliDCSSensorArray::GetSensorNum(Int_t ind) 
+{
+ //
+ //  Return sensor given by array index
+ //
+ return (AliDCSSensor*)fSensors->At(ind);
+}
+
+Int_t AliDCSSensorArray::GetFirstIdDCS() const
+{
+ //
+ //  Return DCS Id of first sensor
+ //
+ if ( fSensors != 0 ) {
+    return ((AliDCSSensor*)fSensors->At(0))->GetIdDCS();
+ } else {
+    return 0;
+ }
+}
+
+Int_t AliDCSSensorArray::GetLastIdDCS() const 
+{
+ //
+ //  Return DCS Id of last sensor
+ //
+ if ( fSensors != 0 ) {
+    Int_t last = fSensors->GetEntries();
+    return ((AliDCSSensor*)fSensors->At(last-1))->GetIdDCS();
  } else {
     return 0;
  }

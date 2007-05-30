@@ -35,21 +35,24 @@ class AliDCSSensorArray : public TNamed {
   TTimeStamp GetStartTime () const { return fStartTime; } 
   TTimeStamp GetEndTime () const { return fEndTime; } 
   void SetGraph     (TMap *map, const char* amandaString);
-  void MakeSplineFit(TMap *map, const char* amandaString);
+  void MakeSplineFit(TMap *map, const char* amandaString, Bool_t keepMap=kFALSE);
   TMap* ExtractDCS  (TMap *dcsMap, const char* amandaString);
   TGraph* MakeGraph (TObjArray *valueSet);
   Double_t GetValue  (UInt_t timeSec, Int_t sensor);
   AliDCSSensor* GetSensor (Int_t IdDCS);
   AliDCSSensor* GetSensor (Double_t x, Double_t y, Double_t z);
+  AliDCSSensor* GetSensorNum (Int_t ind);
+  Int_t NumSensors() const { return fSensors->GetEntries(); }
+   
+  Int_t GetFirstIdDCS() const;
+  Int_t GetLastIdDCS()  const; 
 
  protected:
-  Int_t fFirstSensor;             // DCS ID of first sensor
-  Int_t fLastSensor;              // DCS ID of last sensor
   TTimeStamp  fStartTime;         // start time for measurements in this entry
   TTimeStamp  fEndTime;           // end time for measurements in this entry
   TClonesArray *fSensors;         // Array of sensors
 
-  ClassDef(AliDCSSensorArray,1)       //  TPC calibration class for parameters which are saved per pad
+  ClassDef(AliDCSSensorArray,2)       //  TPC calibration class for parameters which are saved per pad
 
 };
 
