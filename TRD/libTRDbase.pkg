@@ -28,6 +28,7 @@ SRCS= AliTRDarrayI.cxx \
       AliTRDCalibraFit.cxx \
       AliTRDCalibraMode.cxx \
       AliTRDCalibraVector.cxx \
+      AliTRDCalibPadStatus.cxx \
       AliTRDPreprocessor.cxx \
       AliTRDalignment.cxx \
       AliTRDTriggerL1.cxx \

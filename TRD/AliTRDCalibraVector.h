@@ -55,7 +55,8 @@ class AliTRDCalibraVector : public TObject {
 
   void           SetNumberBinCharge(Short_t numberbincharge)   { fNumberBinCharge = numberbincharge;            } 
   void           SetNumberBinPRF(Short_t numberbinprf)         { fNumberBinPRF    = numberbinprf;               } 
-  void           SetTimeMax(Int_t timemax)                     { fTimeMax         = timemax;                    }  
+  void           SetTimeMax(Int_t timemax)                     { fTimeMax         = timemax;                    } 
+  void           SetPRFRange(Float_t prfrange)                 { fPRFRange        = prfrange;                   }  
   void           SetVectorPH(TObjArray *vectorPH)              { fVectorPH        = vectorPH;                   }
   void           SetPlaPH(TObjArray *plaPH)                    { fPlaPH           = plaPH;                      }
   void           SetVectorCH(TObjArray *vectorCH)              { fVectorCH        = vectorCH;                   }
@@ -66,6 +67,7 @@ class AliTRDCalibraVector : public TObject {
   Short_t        GetNumberBinCharge()const                     { return fNumberBinCharge;                       }
   Short_t        GetNumberBinPRF()const                        { return fNumberBinPRF;                          }
   Int_t          GetTimeMax()const                             { return fTimeMax;                               } 
+  Float_t        GetPRFRange()const                            { return fPRFRange;                              } 
   TObjArray*     GetVectorPH()const                            { return fVectorPH;                              } 
   TObjArray*     GetPlaPH()const                               { return fPlaPH;                                 } 
   TObjArray*     GetVectorCH()const                            { return fVectorCH;                              } 
@@ -171,6 +173,7 @@ class AliTRDCalibraVector : public TObject {
 	  Short_t          fNumberBinCharge;        // Number of bins for the gain factor
 	  Short_t          fNumberBinPRF;           // Number of bin for the PRF
 	  Int_t            fTimeMax;                // Number of time bins
+	  Float_t          fPRFRange;               // Range PRF
 
   // Some functions
 

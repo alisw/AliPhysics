@@ -55,6 +55,7 @@ AliTRDCalibraVector::AliTRDCalibraVector()
   ,fNumberBinCharge(0)
   ,fNumberBinPRF(0)
   ,fTimeMax(0)
+  ,fPRFRange(1.5)
 {
   //
   // Default constructor
@@ -71,16 +72,70 @@ AliTRDCalibraVector::AliTRDCalibraVector(const AliTRDCalibraVector &c)
   ,fPlaCH(new TObjArray())
   ,fVectorPRF(new TObjArray())
   ,fPlaPRF(new TObjArray())
-  ,fNumberBinCharge(0)
-  ,fNumberBinPRF(0)
-  ,fTimeMax(0)
+  ,fNumberBinCharge(c.fNumberBinCharge)
+  ,fNumberBinPRF(c.fNumberBinPRF)
+  ,fTimeMax(c.fTimeMax)
+  ,fPRFRange(c.fPRFRange)
 {
   //
   // Copy constructor
   //
+  for(Int_t k = 0; k < c.fVectorPH->GetEntriesFast(); k++){
+    AliTRDPInfo *obj = new AliTRDPInfo();
+    UShort_t  *entries    = new UShort_t[fTimeMax];
+    Float_t   *sum        = new Float_t[fTimeMax];
+    Float_t   *sumsquare  = new Float_t[fTimeMax];
+    for(Int_t i = 0; i < fTimeMax; i++){
+      entries[i]    = ((AliTRDPInfo *)c.fVectorPH->UncheckedAt(k))->GetEntries()[i];
+      sum[i]        = ((AliTRDPInfo *)c.fVectorPH->UncheckedAt(k))->GetSum()[i];
+      sumsquare[i]  = ((AliTRDPInfo *)c.fVectorPH->UncheckedAt(k))->GetSumSquare()[i];
+    }
+    obj->SetEntries(entries);
+    obj->SetSum(sum);
+    obj->SetSumSquare(sumsquare);
+    fVectorPH->AddAt((TObject *)obj,k);
+  } 
+  for(Int_t k = 0; k < c.fVectorPRF->GetEntriesFast(); k++){
+    AliTRDPInfo *obj = new AliTRDPInfo();
+    UShort_t  *entries    = new UShort_t[fNumberBinPRF];
+    Float_t   *sum        = new Float_t[fNumberBinPRF];
+    Float_t   *sumsquare  = new Float_t[fNumberBinPRF];
+    for(Int_t i = 0; i < fNumberBinPRF; i++){
+      entries[i]    = ((AliTRDPInfo *)c.fVectorPRF->UncheckedAt(k))->GetEntries()[i];
+      sum[i]        = ((AliTRDPInfo *)c.fVectorPRF->UncheckedAt(k))->GetSum()[i];
+      sumsquare[i]  = ((AliTRDPInfo *)c.fVectorPRF->UncheckedAt(k))->GetSumSquare()[i];
+    }
+    obj->SetEntries(entries);
+    obj->SetSum(sum);
+    obj->SetSumSquare(sumsquare);   
+    fVectorPRF->AddAt((TObject *)obj,k);
+  } 
+  for(Int_t k = 0; k < c.fVectorCH->GetEntriesFast(); k++){
+    AliTRDCTInfo *obj = new AliTRDCTInfo();
+    UShort_t  *entries = new UShort_t[fNumberBinCharge];
+    for(Int_t i = 0; i < fNumberBinCharge; i++){
+      entries[i] = ((AliTRDCTInfo *)c.fVectorCH->UncheckedAt(k))->GetEntries()[i];
+    }
+    obj->SetEntries(entries);
+    fVectorCH->AddAt((TObject *)obj,k);
+  } 
+  for(Int_t k = 0; k < c.fPlaPH->GetEntriesFast(); k++){
+    AliTRDPlace *obj = new AliTRDPlace();
+    obj->SetPlace(((AliTRDPlace *)c.fPlaPH->UncheckedAt(k))->GetPlace());
+    fPlaPH->AddAt((TObject *)obj,k);
+  } 
+  for(Int_t k = 0; k < c.fPlaCH->GetEntriesFast(); k++){
+    AliTRDPlace *obj = new AliTRDPlace();
+    obj->SetPlace(((AliTRDPlace *)c.fPlaCH->UncheckedAt(k))->GetPlace());
+    fPlaCH->AddAt((TObject *)obj,k);
+  } 
+  for(Int_t k = 0; k < c.fPlaPRF->GetEntriesFast(); k++){
+    AliTRDPlace *obj = new AliTRDPlace();
+    obj->SetPlace(((AliTRDPlace *)c.fPlaPRF->UncheckedAt(k))->GetPlace());
+    fPlaPRF->AddAt((TObject *)obj,k);
+  } 
 
 }
-
 //____________________________________________________________________________________
 AliTRDCalibraVector::~AliTRDCalibraVector()
 {
@@ -97,22 +152,22 @@ Int_t AliTRDCalibraVector::SearchBin(Float_t value, Int_t i) const
   // Search the bin
   //
 
-  Int_t reponse      = 0;
-  Int_t fbinmin      = 0;
-  Int_t fbinmax      = (Int_t) value;
-  Int_t fNumberOfBin = -1;
+  Int_t reponse        = 0;
+  Float_t fbinmin      = 0;
+  Float_t fbinmax      = value;
+  Int_t fNumberOfBin   = -1;
 
   // Charge
   if (i == 0) {
-    fbinmax      = 300;
-    fbinmin      = 0;
+    fbinmax      = 300.0;
+    fbinmin      = 0.0;
     fNumberOfBin = fNumberBinCharge;
   }
 
   // PRF
   if (i == 2) {
-    fbinmax      =   1;
-    fbinmin      =  -1;
+    fbinmax      =   TMath::Abs(fPRFRange);
+    fbinmin      =  -TMath::Abs(fPRFRange);
     fNumberOfBin = fNumberBinPRF;
   }
 
@@ -473,7 +528,7 @@ TGraphErrors *AliTRDCalibraVector::ConvertVectorPHistoI(AliTRDPInfo *pInfo
     ntimes = fTimeMax;
   }
   x  = new Double_t[ntimes]; // Xaxis
-  y  = new Double_t[ntimes]; // Mean
+  y  = new Double_t[ntimes]; // Sum
   ex = new Double_t[ntimes]; // Nentries
   ey = new Double_t[ntimes]; // Sum of square/nentries
 
@@ -483,8 +538,8 @@ TGraphErrors *AliTRDCalibraVector::ConvertVectorPHistoI(AliTRDPInfo *pInfo
     min  = 0.0;
   }
   else {
-    step = (1.0 - (-1.0)) / fNumberBinPRF;
-    min  = -1.0 + step / 2.0;
+    step = (2*TMath::Abs(fPRFRange)) / fNumberBinPRF;
+    min  = -TMath::Abs(fPRFRange) + step / 2.0;
   }
 
   // Fill histo

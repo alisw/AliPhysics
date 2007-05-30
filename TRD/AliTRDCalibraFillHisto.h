@@ -14,23 +14,36 @@
 #ifndef ROOT_TObject
 #  include <TObject.h>
 #endif
+#ifndef ROOT_TLinearFitter
+#  include <TLinearFitter.h> 
+#endif
+#ifndef ROOT_TProfile2D
+#  include <TProfile2D.h> 
+#endif
+#ifndef ROOT_TH2I
+#  include <TH2I.h> 
+#endif
 
-class TTree;
 class TProfile2D;
-class TGraphErrors;
-class TGraph;
 class TObjArray;
 class TH1F;
 class TH2I;
+class TH2F;
 class TH2;
+class TLinearFitter;
 
 class AliLog;
 class AliTRDCalibraMode;
 class AliTRDCalibraVector;
 
+class AliRawReader;
+class AliTRDRawStream;
 class AliTRDcluster;
 class AliTRDtrack;
 class AliTRDmcmTracklet;
+class TTreeSRedirector;
+
+struct eventHeaderStruct;
 
 class AliTRDCalibraFillHisto : public TObject {
 
@@ -52,17 +65,34 @@ class AliTRDCalibraFillHisto : public TObject {
           Bool_t   UpdateHistograms(AliTRDcluster *cl, AliTRDtrack *t);
           Bool_t   UpdateHistogramcm(AliTRDmcmTracklet *trk);
  
+ // Process events DAQ
+	  Bool_t   ProcessEventDAQ(AliTRDRawStream *rawStream);
+	  Bool_t   ProcessEventDAQ(AliRawReader *rawReader);
+	  Bool_t   ProcessEventDAQ(eventHeaderStruct *event);
+
+	  Bool_t   UpdateDAQ(Int_t det, Int_t /*row*/, Int_t /*col*/, Int_t timebin, Int_t signal, Int_t nbtimebins);
+
+ 
   // Is Pad on
           Bool_t   IsPadOn(Int_t detector, Int_t col, Int_t row) const;
 
   // Functions for plotting the 2D
           void     Plot2d();
 
-  // Functions for writting the 2D
-          Bool_t   Write2d();
+  // Functions for write
+	  void     Write2d(const Char_t *filename = "TRD.calibration.root", Bool_t append = kFALSE);
+
+  // Reset the linearfitter objects
+	  void     ResetLinearFitter();
+	  void     ResetCHHisto()                                   { if(fCH2d)  fCH2d->Reset(); }
+	  void     ResetPHHisto()                                   { if(fPH2d)  fPH2d->Reset(); }
+	  void     ResetPRFHisto()                                  { if(fPRF2d) fPRF2d->Reset();}
 
   //For the statistics
 	  Double_t *StatH(TH2 *ch, Int_t i);
+	  Double_t *GetMeanMedianRMSNumberCH();
+	  Double_t *GetMeanMedianRMSNumberLinearFitter() const;
+       
      	 
   //
   // Set of Get the variables
@@ -77,6 +107,9 @@ class AliTRDCalibraFillHisto : public TObject {
           void     SetPRF2dOn()                                              { fPRF2dOn         = kTRUE;       }
           void     SetHisto2d()                                              { fHisto2d         = kTRUE;       }
           void     SetVector2d()                                             { fVector2d        = kTRUE;       }
+	  void     SetLinearFitterOn()                                       { fLinearFitterOn      = kTRUE;       }
+	  void     SetLinearFitterDebugOn()                                  { fLinearFitterDebugOn = kTRUE;       }
+	  
   
           Bool_t   GetMITracking() const                                     { return fMITracking;             }
           Bool_t   GetMcmTracking() const                                    { return fMcmTracking;            }
@@ -87,44 +120,40 @@ class AliTRDCalibraFillHisto : public TObject {
           Bool_t   GetHisto2d() const                                        { return fHisto2d;                }
           Bool_t   GetVector2d() const                                       { return fVector2d;               }
   TH2I            *GetCH2d() const                                           { return fCH2d;                   }
-  TProfile2D      *GetPH2d() const                                           { return fPH2d;                   }
-  TProfile2D      *GetPRF2d() const                                          { return fPRF2d;                  }
-  
+  TProfile2D      *GetPH2d(Int_t nbtimebin=24, Float_t samplefrequency= 10.0, Bool_t force=kFALSE);
+  TProfile2D      *GetPRF2d() const                                          { return fPRF2d;                  } 
+  TObjArray        GetLinearFitterArray() const                              { return fLinearFitterArray;      }
+  TLinearFitter   *GetLinearFitter(Int_t detector, Bool_t force=kFALSE);
+  TH2F            *GetLinearFitterHisto(Int_t detector, Bool_t force=kFALSE);
+ 
   // How to fill the 2D
-          void     SetRelativeScaleAuto()                                    { fRelativeScaleAuto    = kTRUE;                }
           void     SetRelativeScale(Float_t relativeScale);                      
-	  void     SetThresholdClusterPRF1(Float_t thresholdClusterPRF1)     { fThresholdClusterPRF1 = thresholdClusterPRF1; }
           void     SetThresholdClusterPRF2(Float_t thresholdClusterPRF2)     { fThresholdClusterPRF2 = thresholdClusterPRF2; }
-          void     SetCenterOfflineCluster()                                 { fCenterOfflineCluster = kTRUE;                }
-          void     SetNz(Int_t i, Short_t nz);
+	  void     SetNz(Int_t i, Short_t nz);
           void     SetNrphi(Int_t i, Short_t nrphi);
           void     SetProcent(Float_t procent)                               { fProcent              = procent;              }
           void     SetDifference(Short_t difference)                         { fDifference           = difference;           }
           void     SetNumberClusters(Short_t numberClusters)                 { fNumberClusters       = numberClusters;       }
           void     SetNumberBinCharge(Short_t numberBinCharge)               { fNumberBinCharge      = numberBinCharge;      }
           void     SetNumberBinPRF(Short_t numberBinPRF)                     { fNumberBinPRF         = numberBinPRF;         }
+	  void     SetNumberGroupsPRF(Short_t numberGroupsPRF);
   
           Float_t  GetRelativeScale() const                                  { return fRelativeScale;          }
-          Bool_t   GetRelativeScaleAuto() const                              { return fRelativeScaleAuto;      }
-	  Float_t  GetThresholdClusterPRF1() const                           { return fThresholdClusterPRF1;   }
           Float_t  GetThresholdClusterPRF2() const                           { return fThresholdClusterPRF2;   }
 	  Float_t  GetProcent() const                                        { return fProcent;                }
           Short_t  GetDifference() const                                     { return fDifference;             }
           Short_t  GetNumberClusters() const                                 { return fNumberClusters;         }
           Short_t  GetNumberBinCharge() const                                { return fNumberBinCharge;        }
           Short_t  GetNumberBinPRF() const                                   { return fNumberBinPRF;           }
-  
-  // Write
-	  void     SetWrite(Int_t i)                                         { fWrite[i]      = kTRUE;         }
-          void     SetWriteName(TString writeName)                           { fWriteName     = writeName;     }
-  
-	  Bool_t   GetWrite(Int_t i) const                                   { return fWrite[i];               }
-          TString  GetWriteName() const                                      { return fWriteName;              }
-
- //  Calibration mode
+	  Short_t  GetNumberGroupsPRF() const                                { return fNgroupprf;              }
+	  Int_t    *GetEntriesLinearFitter() const                           { return fEntriesLinearFitter;    }
+  // Calibration mode
 AliTRDCalibraMode  *GetCalibraMode() const                                   { return fCalibraMode;            }
 
-// Vector method
+ // Debug
+          void     SetDebugLevel(Short_t level)                              { fDebugLevel = level;           }
+
+  // Vector method
 AliTRDCalibraVector *GetCalibraVector() const                                { return fCalibraVector;          }   
   
  private:
@@ -144,35 +173,26 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
           Bool_t   fPRF2dOn;                // Chose to fill the 2D histos or vectors for the pad response function calibration
           Bool_t   fHisto2d;                // Chose to fill the 2D histos
           Bool_t   fVector2d;               // Chose to fill vectors
+	  Bool_t   fLinearFitterOn;         // Method with linear fit for drift velocity
+	  Bool_t   fLinearFitterDebugOn;    // Method with linear fit for drift velocity
 
   // How to fill the 2D
           Float_t  fRelativeScale;          // Scale of the deposited charge
-          Int_t    fCountRelativeScale;     // fCountRelativeScale first data used for the scaling
-          Bool_t   fRelativeScaleAuto;      // Scaling with the first fCountRelativeScale objects
-	  Float_t  fThresholdClusterPRF1;   // Threshold on cluster pad signals for PRF peripherique
-          Float_t  fThresholdClusterPRF2;   // Threshold on cluster pad signals for PRF peripherique
-          Bool_t   fCenterOfflineCluster;   // Choose to use the offline determination of the center of the cluster
-	
-  // Write
-	  Bool_t   fWrite[3];               // Do you want to write the 2D histo or vectors converted in a tree
-          TString  fWriteName;              // Where the 2D or trees are written
-
-	  // Calibration mode
+          Float_t  fThresholdClusterPRF2;   // Threshold on cluster pad signals
+  // Calibration mode
 	  AliTRDCalibraMode *fCalibraMode;  // Calibration mode
 
+  //For debugging
+	  TTreeSRedirector          *fDebugStreamer;                 //!Debug streamer
+          Short_t     fDebugLevel;                                   // Flag for debugging
   //
   // Internal variables
   //
 
   // Fill the 2D histos in the offline tracking
           Bool_t   fDetectorAliTRDtrack;    // Change of track
-          Int_t    fChamberAliTRDtrack;     // Change of chamber
-          Int_t    fDetectorPreviousTrack;  // Change of detector
-          Bool_t   fGoodTrack;              // If goes through a kaputt pad
-          Float_t *fAmpTotal;               // Energy deposited in the calibration group by the track
-          Short_t *fPHPlace;                // Calibration group of PH
-          Float_t *fPHValue;                // PH
-          Short_t  fNumberClusters;         // Minimum number of clusters in the tracklets
+	  Int_t    fDetectorPreviousTrack;  // Change of detector
+	  Short_t  fNumberClusters;         // Minimum number of clusters in the tracklets
           Float_t  fProcent;                // Limit to take the info of the most important calibration group if the track goes through 2 groups (CH)
           Short_t  fDifference;             // Limit to take the info of the most important calibration group if the track goes through 2 groups (CH)
           Int_t    fNumberTrack;            // How many tracks could be used (Debug for the moment)
@@ -182,6 +202,26 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
           Float_t  fSf;                     // Sampling frequence
 	  Short_t  fNumberBinCharge;        // Number of bins for the gain factor
 	  Short_t  fNumberBinPRF;           // Number of bin for the PRF
+	  Short_t  fNgroupprf;              // Number of groups in tnp bins for PRF /2.0
+
+  // Variables per tracklet
+	  TObjArray     *fListClusters;              // List of clusters
+	  Double_t      *fPar0;                      // List of track parameter fP[0]
+	  Double_t      *fPar1;                      // List of track parameter fP[1]
+	  Double_t      *fPar2;                      // List of track parameter fP[2]
+	  Double_t      *fPar3;                      // List of track parameter fP[3]
+	  Double_t      *fPar4;                      // List of track paarmeter fP[4]
+	  Float_t       *fAmpTotal;                  // Energy deposited in the calibration group by the track
+          Short_t       *fPHPlace;                   // Calibration group of PH
+          Float_t       *fPHValue;                   // PH
+	  Bool_t         fGoodTracklet;              // Good tracklet
+ // Variables per track
+	  Bool_t         fGoodTrack;                 // no return
+
+ //Statistics
+	  Int_t         *fEntriesCH;                 // Number of entries CH
+	  Int_t         *fEntriesLinearFitter;       // Number of entries LinearFitter
+
 
   //
   // Vector method
@@ -194,15 +234,13 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
   // Histograms to store the info from the digits, from the tracklets or from the tracks
   TProfile2D      *fPH2d;                   // 2D average pulse height
   TProfile2D      *fPRF2d;                  // 2D PRF
-  TH2I            *fCH2d;                   // 2D deposited charge 
+  TH2I            *fCH2d;                   // 2D deposited charge
+  TObjArray       fLinearFitterArray;      // TObjArray of Linear Fitters for the detectors 
+  TObjArray       fLinearFitterHistoArray; // TObjArray of histo2D for debugging Linear Fitters
           
   //
   // A lot of internal functions......
   //
-
-  // Init AliTRDCalibraFillHisto
-          void     Init();
-
   // Create the 2D histo to be filled Online
           void     CreateCH2d(Int_t nn);
           void     CreatePH2d(Int_t nn);
@@ -211,9 +249,18 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
   // Fill the 2D
           void     FillTheInfoOfTheTrackPH();
           void     FillTheInfoOfTheTrackCH();
+	  void     FillCH2d(Int_t x, Float_t y);
+	  void     FillCHSm(Int_t supermodule, Float_t y);
+	  Bool_t   FindP1TrackPH();
           void     ResetfVariables();
           Bool_t   LocalisationDetectorXbins(Int_t detector);
- 
+	  Int_t   *CalculateRowCol(AliTRDcluster *cl) const;
+	  void     CheckGoodTracklet(Int_t detector, Int_t *rowcol);
+	  Int_t    CalculateCalibrationGroup(Int_t i, Int_t *rowcol) const;
+	  Int_t    CalculateTotalNumberOfBins(Int_t i);
+	  void     StoreInfoCHPH(AliTRDcluster *cl, AliTRDtrack *t, Int_t *group);
+	  Bool_t   HandlePRF();
+	  
   // Clear
           void     ClearHistos();
       
@@ -224,10 +271,11 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
  
 
   // Instance of this class and so on
-  static  AliTRDCalibraFillHisto *fgInstance;        // Instance
-  static  Bool_t   fgTerminated;                     // If terminated
+  static  AliTRDCalibraFillHisto *fgInstance;                // Instance
+  static  Bool_t   fgTerminated;                             // If terminated
+ 
     
-  ClassDef(AliTRDCalibraFillHisto,1)                 // TRD Calibration class
+  ClassDef(AliTRDCalibraFillHisto,2)                         // TRD Calibration class
 
 };
   
