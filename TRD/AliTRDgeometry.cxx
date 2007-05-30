@@ -197,13 +197,21 @@ AliTRDgeometry::~AliTRDgeometry()
   //
 
   if (fMatrixArray) {
+    fMatrixArray->Delete();
     delete fMatrixArray;
-    fMatrixArray           = 0;
+    fMatrixArray = 0;
   }
 
   if (fMatrixCorrectionArray) {
+    fMatrixCorrectionArray->Delete();
     delete fMatrixCorrectionArray;
     fMatrixCorrectionArray = 0;
+  }
+
+  if (fMatrixGeo) {
+    fMatrixGeo->Delete();
+    delete fMatrixGeo;
+    fMatrixGeo = 0;
   }
 
 }
@@ -1505,7 +1513,7 @@ AliTRDgeometry *AliTRDgeometry::GetGeometry(AliRunLoader *runLoader)
   runLoader->CdGAFile();
 
   // Try from the galice.root file
-  AliTRDgeometry *geom = (AliTRDgeometry *) gDirectory->Get("TRDgeometry");
+  static AliTRDgeometry *geom = (AliTRDgeometry *) gDirectory->Get("TRDgeometry");
 
   if (!geom) {
     // If it is not in the file, try to get it from the run loader 
