@@ -51,9 +51,6 @@ AliHLTModuleAgent& AliHLTModuleAgent::operator=(const AliHLTModuleAgent&)
   return *this;
 }
 
-TList AliHLTModuleAgent::fgAgentList;
-TObjLink* AliHLTModuleAgent::fgCurrentLnk=NULL;
-
 AliHLTModuleAgent::~AliHLTModuleAgent()
 {
   // see header file for function documentation
@@ -64,28 +61,29 @@ void AliHLTModuleAgent::PrintStatus(const char* agent)
 {
   // see header file for function documentation
   AliHLTLogging log;
-  if (agent) {
-    TObject* pAgent=fgAgentList.FindObject(agent);
-    if (pAgent) {
-      log.Logging(kHLTLogInfo, "AliHLTModuleAgent::PrintStatus", "module agents", 
-		  "agent %s available", pAgent->GetName());
-    } else {
-      log.Logging(kHLTLogInfo, "AliHLTModuleAgent::PrintStatus", "module agents", 
-		  "agent %s not found", agent);
-    }
+ if (agent) {
+   AliHLTModuleAgent* pCurrent=fAnchor;
+   while (pCurrent!=NULL && strcmp(pCurrent->GetName(), agent)!=0) pCurrent=pCurrent->fpNext;
+   if (pCurrent) {
+     log.Logging(kHLTLogInfo, "AliHLTModuleAgent::PrintStatus", "module agents", 
+		 "agent %s available", pCurrent->GetName());
+   } else {
+     log.Logging(kHLTLogInfo, "AliHLTModuleAgent::PrintStatus", "module agents", 
+		 "agent %s not found", agent);
+   }
   } else {
-    TObjLink* lnk=fgAgentList.FirstLink();
-    log.Logging(kHLTLogInfo, "AliHLT", "", "-----------------------");
-    log.Logging(kHLTLogInfo, "AliHLT", "", "available module agents");
-    if (lnk==NULL) 
-      log.Logging(kHLTLogInfo, "AliHLT", "", "   none");
-    while (lnk) {
-      TString msg;
-      msg.Form("   %s : %p", ((AliHLTModuleAgent*)lnk->GetObject())->GetName(), lnk->GetObject());
-      log.Logging(kHLTLogInfo, "AliHLT", "", msg.Data());
-      lnk=lnk->Next();
-    }
-    log.Logging(kHLTLogInfo, "AliHLT", "", "-----------------------");
+   AliHLTModuleAgent* pCurrent=fAnchor;
+   log.Logging(kHLTLogInfo, "AliHLT", "", "-----------------------");
+   log.Logging(kHLTLogInfo, "AliHLT", "", "available module agents");
+   if (pCurrent==NULL)
+     log.Logging(kHLTLogInfo, "AliHLT", "", "   none");
+   while (pCurrent) {
+     TString msg;
+     msg.Form("   %s : %p", pCurrent->GetName(), pCurrent);
+     log.Logging(kHLTLogInfo, "AliHLT", "", msg.Data());
+     pCurrent=pCurrent->fpNext;
+   }
+   log.Logging(kHLTLogInfo, "AliHLT", "", "-----------------------");
   }
 }
 
@@ -132,21 +130,22 @@ int AliHLTModuleAgent::RegisterComponents(AliRunLoader* runloader) const
   return 0;
 }
 
+AliHLTModuleAgent* AliHLTModuleAgent::fAnchor=NULL;
+AliHLTModuleAgent* AliHLTModuleAgent::fCurrent=NULL;
+int AliHLTModuleAgent::fCount=0;
+
 AliHLTModuleAgent* AliHLTModuleAgent::GetFirstAgent()
 {
   // see header file for function documentation
-  fgCurrentLnk=fgAgentList.FirstLink();
-  if (fgCurrentLnk==NULL) return NULL;
-  return (AliHLTModuleAgent*)fgCurrentLnk->GetObject();
+  fCurrent=fAnchor;
+  return fAnchor;
 }
 
 AliHLTModuleAgent* AliHLTModuleAgent::GetNextAgent()
 {
   // see header file for function documentation
-  if (fgCurrentLnk==NULL) return NULL;
-  fgCurrentLnk=fgCurrentLnk->Next();
-  if (fgCurrentLnk==NULL) return NULL;
-  return (AliHLTModuleAgent*)fgCurrentLnk->GetObject();
+  if (fCurrent!=NULL) fCurrent=fCurrent->fpNext;
+  return fCurrent;
 }
 
 int AliHLTModuleAgent::Register(AliHLTModuleAgent* pAgent)
@@ -154,11 +153,15 @@ int AliHLTModuleAgent::Register(AliHLTModuleAgent* pAgent)
   // see header file for function documentation
   AliHLTLogging log;
   if (!pAgent) return -EINVAL;
-  if (fgAgentList.FindObject(pAgent)==NULL) {
-    log.Logging(kHLTLogDebug, "AliHLTModuleAgent::Register", "", "module agent %p registered", pAgent);
-    fgAgentList.Add(pAgent);
+  if (fAnchor==NULL) {
+    fAnchor=pAgent;
+  } else {
+    pAgent->fpNext=fAnchor;
+    fAnchor=pAgent;
   }
-  return 0;
+  //  log.Logging(kHLTLogDebug, "AliHLTModuleAgent::Register", "", "module agent %p registered", pAgent);
+  fCount++;
+  return 0;	
 }
 
 int AliHLTModuleAgent::Unregister(AliHLTModuleAgent* pAgent)
@@ -166,10 +169,21 @@ int AliHLTModuleAgent::Unregister(AliHLTModuleAgent* pAgent)
   // see header file for function documentation
   AliHLTLogging log;
   if (!pAgent) return -EINVAL;
-  if (fgAgentList.FindObject(pAgent)!=NULL) {
+  fCurrent=NULL;
+  AliHLTModuleAgent* prev=NULL;
+  AliHLTModuleAgent* handler=fAnchor;
+  while (handler!=NULL && handler!=pAgent) {
+    prev=handler;
+    handler=handler->fpNext;
+  }
+  if (handler) {
+    if (prev==NULL) {
+      fAnchor=handler->fpNext;
+    } else {
+      prev->fpNext=handler->fpNext;
+    }
     log.Logging(kHLTLogDebug, "AliHLTModuleAgent::Unregister", "", "module agent %p removed", pAgent);
-    fgAgentList.Remove(pAgent);
-  } else {
+    fCount--;
   }
   return 0;
 }

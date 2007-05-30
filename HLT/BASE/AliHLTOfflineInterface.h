@@ -149,12 +149,6 @@ protected:
   static int Unregister(AliHLTOfflineInterface* me);
 
  private:
-  /** the list of active interfaces */
-  static TList fgList;                                            // see above
-
-  /** the current object link (list position) */
-  static TObjLink* fgCurrentLnk;                                  // see above
-
   /** global AliRoot run loader instance (for all components) */
   static AliRunLoader* fgpRunLoader;                              //! transient
   /** global AliRoot raw reader instance (for all components) */
@@ -167,7 +161,19 @@ protected:
   /** AliRoot HLT ESD instance */
   AliESD* fpESD;                                                  //! transient
 
-  ClassDef(AliHLTOfflineInterface, 1);
+  /** the list of active interfaces */
+  static AliHLTOfflineInterface* fAnchor;                         //! transient
+
+  /** next element in the list */
+  AliHLTOfflineInterface* fpNext;                                 //! transient
+
+  /** the current element */
+  static AliHLTOfflineInterface* fCurrent;                        //! transient
+
+  /** number of interfaces */
+  static int fCount;                                              //! see above
+
+  ClassDef(AliHLTOfflineInterface, 2);
 };
 
 #endif

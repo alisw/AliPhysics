@@ -40,8 +40,9 @@ AliHLTOfflineInterface::AliHLTOfflineInterface()
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
 
-TList AliHLTOfflineInterface::fgList;
-TObjLink* AliHLTOfflineInterface::fgCurrentLnk=NULL;
+AliHLTOfflineInterface* AliHLTOfflineInterface::fAnchor=NULL;
+AliHLTOfflineInterface* AliHLTOfflineInterface::fCurrent=NULL;
+int AliHLTOfflineInterface::fCount=0;
 AliRunLoader* AliHLTOfflineInterface::fgpRunLoader=NULL;
 AliRawReader* AliHLTOfflineInterface::fgpRawReader=NULL;
 
@@ -129,18 +130,17 @@ int AliHLTOfflineInterface::SetParamsToComponents(AliRunLoader* runLoader, AliRa
   int count=0;
   fgpRunLoader=runLoader;
   fgpRawReader=rawReader;
-  fgCurrentLnk=fgList.FirstLink();
-  while (fgCurrentLnk!=NULL) {
-    AliHLTOfflineInterface* pComponent=reinterpret_cast<AliHLTOfflineInterface*>(fgCurrentLnk->GetObject());
+  AliHLTOfflineInterface* pCurrent=fAnchor;
+  while (pCurrent!=NULL) {
     int iLocal=0;
-    if (pComponent) iLocal=pComponent->SetParams(runLoader, rawReader);
+    if (pCurrent) iLocal=pCurrent->SetParams(runLoader, rawReader);
     if (iLocal<0) {
       log.LoggingVarargs(kHLTLogWarning, "AliHLTOfflineInterface","SetParamsToComponents", __FILE__, __LINE__,
-			"parameter initialization failed for component %p with result %d", pComponent, iLocal);
+			"parameter initialization failed for component %p with result %d", pCurrent, iLocal);
       if (iResult>=0) iResult=iLocal;
     }
     count++;
-    fgCurrentLnk=fgCurrentLnk->Next();
+    pCurrent=pCurrent->fpNext;
   }
   if (iResult>=0) {
 //       log.LoggingVarargs(kHLTLogInfo, "AliHLTOfflineInterface","SetParamsToComponents", __FILE__, __LINE__,
@@ -153,15 +153,14 @@ int AliHLTOfflineInterface::ResetComponents()
 {
   // see header file for class documentation
   int iResult=0;
-  fgCurrentLnk=fgList.FirstLink();
-  while (fgCurrentLnk!=NULL) {
-    AliHLTOfflineInterface* pComponent=reinterpret_cast<AliHLTOfflineInterface*>(fgCurrentLnk->GetObject());
+  AliHLTOfflineInterface* pCurrent=fAnchor;
+  while (pCurrent!=NULL) {
     int iLocal=0;
-    if (pComponent) iLocal=pComponent->Reset();
+    if (pCurrent) iLocal=pCurrent->Reset();
     if (iLocal<0) {
       if (iResult>=0) iResult=iLocal;
     }
-    fgCurrentLnk=fgCurrentLnk->Next();
+    pCurrent=pCurrent->fpNext;
   }
   return iResult;
 }
@@ -170,21 +169,20 @@ int AliHLTOfflineInterface::FillComponentESDs(int eventNo, AliRunLoader* runLoad
 {
   // see header file for class documentation
   int iResult=0;
-  fgCurrentLnk=fgList.FirstLink();
-  while (fgCurrentLnk!=NULL) {
-    AliHLTOfflineInterface* pComponent=reinterpret_cast<AliHLTOfflineInterface*>(fgCurrentLnk->GetObject());
+  AliHLTOfflineInterface* pCurrent=fAnchor;
+  while (pCurrent!=NULL) {
     int iLocal=0;
-    if (pComponent) {
-      pComponent->SetESD(eventNo, esd);
-      if (pComponent->GetRunLoader()!=runLoader) {
-	//HLTWarning("runLoader missmatch: component %p was reconstructed with runLoader %p, but got %p now", pComponent, pComponent->GetRunLoader(), runLoader);
+    if (pCurrent) {
+      pCurrent->SetESD(eventNo, esd);
+      if (pCurrent->GetRunLoader()!=runLoader) {
+	//HLTWarning("runLoader missmatch: component %p was reconstructed with runLoader %p, but got %p now", pCurrent, pCurrent->GetRunLoader(), runLoader);
       }
-      iLocal=pComponent->FillESD(eventNo, runLoader, esd);
+      iLocal=pCurrent->FillESD(eventNo, runLoader, esd);
     }
     if (iLocal<0) {
       if (iResult>=0) iResult=iLocal;
     }
-    fgCurrentLnk=fgCurrentLnk->Next();
+    pCurrent=pCurrent->fpNext;
   }
   return iResult;
 }
@@ -193,10 +191,13 @@ int AliHLTOfflineInterface::Register(AliHLTOfflineInterface* me)
 {
   // see header file for function documentation
   int iResult=0;
-  if (fgList.FindObject(me->GetName())==NULL) {
-    fgList.Add(me);
+  if (fAnchor==NULL) {
+    fAnchor=me;
   } else {
+    me->fpNext=fAnchor;
+    fAnchor=me;
   }
+  fCount++;
   return iResult;
 }
 
@@ -204,9 +205,20 @@ int AliHLTOfflineInterface::Unregister(AliHLTOfflineInterface* me)
 {
   // see header file for function documentation
   int iResult=0;
-  if (fgList.FindObject(me)!=NULL) {
-    fgList.Remove(me);
-  } else {
+  fCurrent=NULL;
+  AliHLTOfflineInterface* prev=NULL;
+  AliHLTOfflineInterface* handler=fAnchor;
+  while (handler!=NULL && handler!=me) {
+    prev=handler;
+    handler=handler->fpNext;
+  }
+  if (handler) {
+    if (prev==NULL) {
+      fAnchor=handler->fpNext;
+    } else {
+      prev->fpNext=handler->fpNext;
+    }
+    fCount--;
   }
   return iResult;
 }

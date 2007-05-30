@@ -183,12 +183,18 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
   static int Unregister(AliHLTModuleAgent* pAgent);
 
   /** the list of active agents */
-  static TList fgAgentList;
+  static AliHLTModuleAgent* fAnchor;                               //! transient
+
+  /** next element in the list */
+  AliHLTModuleAgent* fpNext;                                       //! transient
 
   /** the current object link (list position) */
-  static TObjLink* fgCurrentLnk;
+  static AliHLTModuleAgent* fCurrent;                              //! transient
 
-  ClassDef(AliHLTModuleAgent, 0);
+  /** number of agents */
+  static int fCount;                                               //! transient
+
+  ClassDef(AliHLTModuleAgent, 1);
 };
 
 #endif
