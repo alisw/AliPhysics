@@ -94,7 +94,7 @@ UInt_t AliTestPreprocessor::Process(TMap* dcsAliasMap)
   // Now we will loop on the list and we'll query the files one by one. 
   Log("The following sources produced files with the id DRIFTVELOCITY");
   sourceList->Print();
-  
+
   TIter iter(sourceList);
   TObjString *source = 0;
   while((source=dynamic_cast<TObjString*> (iter.Next()))){
@@ -105,6 +105,30 @@ UInt_t AliTestPreprocessor::Process(TMap* dcsAliasMap)
 
   delete sourceList;
 
+  // Example of how to retrieve the list of sources that produced files
+  sourceList = GetFileSources(kDAQ);
+  if (!sourceList)
+  {
+  	Log("Error: No sources found!");
+	return 1;
+  }
+  
+  Log("The following sources produced files");
+  sourceList->Print();
+  delete sourceList;
+  
+  // Example of how to retrieve the list of ids from a given source
+  TList* idList = GetFileIDs(kDAQ, "LDC0");
+  if (!idList)
+  {
+  	Log("Error: No IDs found!");
+	return 1;
+  }
+  
+  Log("The following ids are available");
+  idList->Print();
+  delete idList;
+  
   // Example to store a file directly to the reference storage
   // Suppose we have queried the file from the FXS. Now the file is available locally and is called "file1.root".
   const char* refFileName="file1.root";

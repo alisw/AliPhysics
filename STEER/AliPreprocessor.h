@@ -44,7 +44,8 @@ class AliPreprocessor : public TNamed
     Bool_t StoreReferenceFile(const char* localFile, const char* gridFileName);
     
     const char* GetFile(Int_t system, const char* id, const char* source);
-    TList* GetFileSources(Int_t system, const char* id);
+    TList* GetFileSources(Int_t system, const char* id = 0);
+    TList* GetFileIDs(Int_t system, const char* source);
     const char* GetRunParameter(const char* param);
     AliCDBEntry* GetFromOCDB(const char* pathLevel2, const char* pathLevel3);
     const char* GetRunType();

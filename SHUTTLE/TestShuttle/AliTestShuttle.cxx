@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.12  2007/04/27 07:06:48  jgrosseo
+GetFileSources returns empty list in case of no files, but successful query
+No mails sent in testmode
+
 Revision 1.11  2007/04/04 10:33:36  jgrosseo
 1) Storing of files to the Grid is now done _after_ your preprocessors succeeded. This is transparent, which means that you can still use the same functions (Store, StoreReferenceData) to store files to the Grid. However, the Shuttle first stores them locally and transfers them after the preprocessor finished. The return code of these two functions has changed from UInt_t to Bool_t which gives you the success of the storing.
 In case of an error with the Grid, the Shuttle will retry the storing later, the preprocessor does not need to be run again.
@@ -260,8 +264,10 @@ const char* AliTestShuttle::GetFile(Int_t system, const char* detector, const ch
     return 0;
   }
 
+  TObjString* fileName = 0;
   TPair* fileNamePair = dynamic_cast<TPair*> (sourceList->FindObject(source));
-  TObjString* fileName = dynamic_cast<TObjString*> (fileNamePair->Value());
+  if (fileNamePair)
+  	fileName = dynamic_cast<TObjString*> (fileNamePair->Value());
   if (!fileName)
   {
     AliError(Form("Could not find files from source %s in %s with id %s",
@@ -281,29 +287,118 @@ TList* AliTestShuttle::GetFileSources(Int_t system, const char* detector, const 
   // takes files from the local disks, files are passen in a TMap in the constructor
 
   TString key;
-  key.Form("%s-%s-%s", fkSystemNames[system], detector, id);
-  TPair* sourceListPair = dynamic_cast<TPair*> (fInputFiles->FindObject(key.Data()));
-  TMap* sourceList = 0;
-  if (sourceListPair)
-    sourceList = dynamic_cast<TMap*> (sourceListPair->Value());
-  if (!sourceList)
-  {
-    AliInfo(Form("Could not find any file in %s with id %s (%s)", fkSystemNames[system], id, key.Data()));
-    return new TList;
-  }
-
-  TIterator* iter = sourceList->GetTable()->MakeIterator();
-  TObject* obj = 0;
+  if (id)
+    key.Form("%s-%s-%s", fkSystemNames[system], detector, id);
+  else
+    key.Form("%s-%s", fkSystemNames[system], detector);
+  
   TList* list = new TList;
+  
+  TIterator* iter = fInputFiles->MakeIterator();
+  TObject* obj = 0;
   while ((obj = iter->Next()))
   {
-    TPair* pair = dynamic_cast<TPair*> (obj);
-    if (pair)
-      list->Add(pair->Key());
+	TObjString* objStr = dynamic_cast<TObjString*> (obj);
+	if (objStr)
+	{
+		Bool_t found = kFALSE;
+ 		if (id)
+		{
+			found = (objStr->String().CompareTo(key) == 0);
+		}
+		else
+			found = objStr->String().BeginsWith(key);
+		
+		if (found)
+		{
+			TPair* sourceListPair = dynamic_cast<TPair*> (fInputFiles->FindObject(objStr->String().Data()));
+			TMap* sourceList = dynamic_cast<TMap*> (sourceListPair->Value());
+	
+			TIterator* iter2 = sourceList->GetTable()->MakeIterator();
+			TObject* obj2 = 0;
+			while ((obj2 = iter2->Next()))
+			{
+				TPair* pair = dynamic_cast<TPair*> (obj2);
+				if (pair)
+				{
+					if (!list->FindObject(pair->Key()))
+						list->Add(new TObjString(pair->Key()->GetName()));
+				}
+			}
+			
+			delete iter2;
+		}
+	}
   }
+  
+  if (list->GetEntries() == 0)
+    AliInfo(Form("Could not find any file in %s with id %s (%s)", fkSystemNames[system], id, key.Data()));
+  
+  return list;
+}
 
-  delete iter;
+//______________________________________________________________________________________________
+TList* AliTestShuttle::GetFileIDs(Int_t system, const char* detector, const char* source)
+{
+  // Returns a list of ids in a given system that saved a file with the given source
+  //
+  // test implementation of GetFileSources
+  // takes files from the local disks, files are passen in a TMap in the constructor
 
+
+  TString key;
+  key.Form("%s-%s", fkSystemNames[system], detector);
+  
+  TList* list = new TList;
+  
+  TIterator* iter = fInputFiles->MakeIterator();
+  TObject* obj = 0;
+  while ((obj = iter->Next()))
+  {
+	TObjString* objStr = dynamic_cast<TObjString*> (obj);
+	if (objStr)
+	{
+		if (objStr->String().BeginsWith(key))
+		{
+			Bool_t found = kFALSE;
+		
+			TPair* sourceListPair = dynamic_cast<TPair*> (fInputFiles->FindObject(objStr->String().Data()));
+			TMap* sourceList = dynamic_cast<TMap*> (sourceListPair->Value());
+	
+			TIterator* iter2 = sourceList->GetTable()->MakeIterator();
+			TObject* obj2 = 0;
+			while ((obj2 = iter2->Next()))
+			{
+				TPair* pair = dynamic_cast<TPair*> (obj2);
+				if (pair)
+				{
+					if (strcmp(pair->Key()->GetName(), source) == 0)
+						found = kTRUE;
+				}
+			}
+			
+			delete iter2;
+			
+			if (found)
+			{
+				TObjArray* tokens = objStr->String().Tokenize("-");
+				if (tokens->GetEntries() == 3)
+				{
+					TObjString* id = dynamic_cast<TObjString*> (tokens->At(2));
+					if (id && !list->FindObject(id->String()))
+						list->Add(new TObjString(id->String()));
+				}
+				
+				delete tokens;
+	
+			}
+		}
+	}
+  }
+  
+  if (list->GetEntries() == 0)
+    AliInfo(Form("Could not find any file in %s with source %s (%s)", fkSystemNames[system], source, key.Data()));
+  
   return list;
 }
 
@@ -319,8 +414,14 @@ void AliTestShuttle::Log(const char* detector, const char* message)
 //______________________________________________________________________________________________
 void AliTestShuttle::AddInputFile(Int_t system, const char* detector, const char* id, const char* source, const char* fileName)
 {
+  //
   // This function adds a file to the list of input files
-
+  // the list is stored in fInputFiles 
+  // fInputFiles: TMap (key -> value)
+  //    <system>-<detector>-<id> -> TMap (key -> value)
+  //                                <source> -> <filename>
+  //  
+  
   TString key;
   key.Form("%s-%s-%s", fkSystemNames[system], detector, id);
   TPair* sourceListPair = dynamic_cast<TPair*> (fInputFiles->FindObject(key.Data()));

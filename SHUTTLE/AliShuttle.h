@@ -57,7 +57,8 @@ public:
 	virtual Bool_t StoreReferenceFile(const char* detector, const char* localFile, const char* gridFileName);
 	virtual const char* GetFile(Int_t system, const char* detector,
 		const char* id, const char* source);
-	virtual TList* GetFileSources(Int_t system, const char* detector, const char* id);
+	virtual TList* GetFileSources(Int_t system, const char* detector, const char* id = 0);
+	virtual TList* GetFileIDs(Int_t system, const char* detector, const char* source);
 	virtual const char* GetRunParameter(const char* lbEntry);
 	virtual AliCDBEntry* GetFromOCDB(const char* detector, const AliCDBPath& path);
 	virtual const char* GetRunType();

@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.44  2007/05/11 16:09:32  acolla
+Reference files for ITS, MUON and PHOS are now stored in OfflineDetName/OnlineDetName/run_...
+example: ITS/SPD/100_filename.root
+
 Revision 1.43  2007/05/10 09:59:51  acolla
 Various bug fixes in StoreRefFilesToGrid; Cleaning of reference storage before processing detector (CleanReferenceStorage)
 
@@ -1985,6 +1989,7 @@ TList* AliShuttle::GetFileSources(Int_t system, const char* detector, const char
 {
 	//
 	// Get sources producing the condition file Id from file exchange servers
+	// if id is NULL all sources are returned (distinct)
 	//
 	
 	// check if test mode should simulate a FXS error
@@ -2004,7 +2009,7 @@ TList* AliShuttle::GetFileSources(Int_t system, const char* detector, const char
 	// check connection, in case connect
 	if (!Connect(system))
 	{
-		Log(detector, Form("GetFile - Couldn't connect to %s FXS database", GetSystemName(system)));
+		Log(detector, Form("GetFileSources - Couldn't connect to %s FXS database", GetSystemName(system)));
 		return NULL;
 	}
 
@@ -2017,9 +2022,11 @@ TList* AliShuttle::GetFileSources(Int_t system, const char* detector, const char
 		sourceName = "DDLnumbers";
 	}
 
-	TString sqlQueryStart = Form("select %s from %s where", sourceName.Data(), fConfig->GetFXSdbTable(system));
-	TString whereClause = Form("run=%d and detector=\"%s\" and fileId=\"%s\"",
-				GetCurrentRun(), detector, id);
+	TString sqlQueryStart = Form("select distinct %s from %s where", sourceName.Data(), fConfig->GetFXSdbTable(system));
+	TString whereClause = Form("run=%d and detector=\"%s\"",
+				GetCurrentRun(), detector);
+	if (id)
+		whereClause += Form(" and fileId=\"%s\"", id);
 	TString sqlQuery = Form("%s %s", sqlQueryStart.Data(), whereClause.Data());
 
 	AliDebug(2, Form("SQL query: \n%s",sqlQuery.Data()));
@@ -2052,6 +2059,81 @@ TList* AliShuttle::GetFileSources(Int_t system, const char* detector, const char
 		TString source(aRow->GetField(0), aRow->GetFieldLength(0));
 		AliDebug(2, Form("%s = %s", sourceName.Data(), source.Data()));
 		list->Add(new TObjString(source));
+		delete aRow;
+	}
+
+	delete aResult;
+
+	return list;
+}
+
+//______________________________________________________________________________________________
+TList* AliShuttle::GetFileIDs(Int_t system, const char* detector, const char* source)
+{
+	//
+	// Get all ids of condition files produced by a given source from file exchange servers
+	//
+	
+	// check if test mode should simulate a FXS error
+	if (fTestMode & kErrorFXSSources)
+	{
+		Log(detector, Form("GetFileIDs - In TESTMODE - Simulating error while connecting to %s FXS", GetSystemName(system)));
+		return 0;
+	}
+
+	// check connection, in case connect
+	if (!Connect(system))
+	{
+		Log(detector, Form("GetFileIDs - Couldn't connect to %s FXS database", GetSystemName(system)));
+		return NULL;
+	}
+
+	TString sourceName = 0;
+	if (system == kDAQ)
+	{
+		sourceName = "DAQsource";
+	} else if (system == kHLT)
+	{
+		sourceName = "DDLnumbers";
+	}
+
+	TString sqlQueryStart = Form("select fileId from %s where", fConfig->GetFXSdbTable(system));
+	TString whereClause = Form("run=%d and detector=\"%s\"",
+				GetCurrentRun(), detector);
+	if (sourceName.Length() > 0 && source)
+		whereClause += Form(" and %s=\"%s\"", sourceName.Data(), source);
+	TString sqlQuery = Form("%s %s", sqlQueryStart.Data(), whereClause.Data());
+
+	AliDebug(2, Form("SQL query: \n%s",sqlQuery.Data()));
+
+	// Query execution
+	TSQLResult* aResult;
+	aResult = fServer[system]->Query(sqlQuery);
+	if (!aResult) {
+		Log(detector, Form("GetFileIDs - Can't execute SQL query to %s database for source: %s",
+				GetSystemName(system), source));
+		return 0;
+	}
+
+	TList *list = new TList();
+	list->SetOwner(1);
+	
+	if (aResult->GetRowCount() == 0)
+	{
+		Log(detector,
+			Form("GetFileIDs - No entry in %s FXS table for source: %s", GetSystemName(system), source));
+		delete aResult;
+		return list;
+	}
+
+	TSQLRow* aRow;
+
+	while ((aRow = aResult->Next()))
+	{
+
+		TString id(aRow->GetField(0), aRow->GetFieldLength(0));
+		AliDebug(2, Form("fileId = %s", id.Data()));
+		list->Add(new TObjString(id));
 		delete aRow;
 	}
 

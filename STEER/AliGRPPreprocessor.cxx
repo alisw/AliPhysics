@@ -83,6 +83,23 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   const char* detectorMask = GetRunParameter("detectorMask");
   const char* lhcPeriod = GetRunParameter("LHCperiod");
 
+  TList* list = GetFileSources(kDAQ);
+  TIterator* iter = list->MakeIterator();
+  TObject* obj = 0;
+  while ((obj = iter->Next()))
+  {
+	TObjString* objStr = dynamic_cast<TObjString*> (obj);
+	if (objStr)
+	{
+		Log(Form("Found source %s", objStr->String().Data()));
+		TList* list2 = GetFileIDs(kDAQ, objStr->String());
+		list2->Print();
+		delete list2;
+	}
+   }
+   delete iter;
+   delete list;  
+  
   //===========//
   //DCS data points
   //===========//

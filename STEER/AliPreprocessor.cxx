@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2007/04/12 08:26:33  jgrosseo
+updated commment
+
 Revision 1.12  2007/04/05 08:05:55  acolla
 Conversion from online to offline detector name in StoreReferenceFile
 
@@ -245,10 +248,21 @@ const char* AliPreprocessor::GetFile(Int_t system, const char* id, const char* s
 TList* AliPreprocessor::GetFileSources(Int_t system, const char* id)
 {
   // Returns a list of sources in a given system that saved a file with the given id
+  // if id is not given all sources are returned
   //
   // The call is delegated to AliShuttleInterface
 
   return fShuttle->GetFileSources(system, GetName(), id);
+}
+
+//______________________________________________________________________________________________
+TList* AliPreprocessor::GetFileIDs(Int_t system, const char* source)
+{
+  // Returns a list of ids in a given system that saved a file with the given source
+  //
+  // The call is delegated to AliShuttleInterface
+
+  return fShuttle->GetFileIDs(system, GetName(), source);
 }
 
 //______________________________________________________________________________________________
