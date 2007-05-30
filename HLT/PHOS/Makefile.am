@@ -96,7 +96,7 @@ pkginclude_HEADERS		= $(CLASS_HDRS) \
 				  AliHLTPHOSRcuCellAccumulatedEnergyDataStruct.h \
 			 	  AliHLTPHOSRcuCellAverageEnergyDataStruct.h \
 				  AliHLTPHOSRcuChannelDataStruct.h \
-				  AliHLTPHOSValidChannelDataStruct.h
+				  AliHLTPHOSValidChannelDataStruct.h \
 				  AliHLTPHOSClusterDataStruct.h \
 				  AliHLTPHOSRecPointDataStruct.h \
 				  AliHLTPHOSPhysicsDefinitions.h \

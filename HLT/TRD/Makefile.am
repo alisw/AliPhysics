@@ -3,6 +3,8 @@
 
 MODULE 				= AliHLTTRD
 
+EXTRA_DIST			= AliHLTTRDLinkDef.h
+
 AM_CPPFLAGS			= @ALIROOT_CPPFLAGS@         \
 				  -I$(top_srcdir)/BASE \
 				  -I$(ALICE_ROOT)/TRD

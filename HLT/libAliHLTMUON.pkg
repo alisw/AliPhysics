@@ -7,7 +7,8 @@ include $(MODDIR)/hlt.conf
 
 CLASS_HDRS := 	OnlineAnalysis/AliHLTMUONHitReconstructorComponent.h \
 		OfflineInterface/AliHLTMUONAgent.h \
-		OfflineInterface/AliHLTMUONRecHitsSource.h
+		OfflineInterface/AliHLTMUONRecHitsSource.h \
+		OnlineAnalysis/AliHLTMUONHitReconstructor.h
 
 # Sources that are ROOT classes:
 MODULE_SRCS :=	$(CLASS_HDRS:.h=.cxx) \
@@ -22,8 +23,7 @@ MODULE_SRCS :=	$(CLASS_HDRS:.h=.cxx) \
 		AliHLTMUONMansoTracksBlockStruct.cxx \
 		AliHLTMUONMansoCandidatesBlockStruct.cxx \
 		AliHLTMUONSinglesDecisionBlockStruct.cxx \
-		AliHLTMUONPairsDecisionBlockStruct.cxx \
-		OnlineAnalysis/AliHLTMUONHitReconstructor.cxx
+		AliHLTMUONPairsDecisionBlockStruct.cxx
 
 #		OnlineAnalysis/AliHLTMUONMansoTrackerComponent.cxx
 
