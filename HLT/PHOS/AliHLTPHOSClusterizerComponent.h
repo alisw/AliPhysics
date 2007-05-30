@@ -1,7 +1,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/** @file   AliHLTPHOSClusterizer.h
+/** @file   AliHLTPHOSClusterizerComponent.h
     @author Øystein Djuvsland
     @date   
     @brief  A clusterizer component for PHOS HLT

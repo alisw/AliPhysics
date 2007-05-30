@@ -263,6 +263,34 @@ Int_t  AliTRDtrackerHLT::LocalToGlobalID(Int_t lid)
   Int_t  ichamber = fGeom->GetChamber(lid);
   Int_t  iplan    = fGeom->GetPlane(lid);
 
+#ifdef HAVNT_ALIGEOMMANAGER
+  // this was introcuced for backward compatibility with AliRoot v4-05-Release
+  AliAlignObj::ELayerID iLayer = AliAlignObj::kTRD1;
+  switch (iplan) {
+  case 0:
+    iLayer = AliAlignObj::kTRD1;
+    break;
+  case 1:
+    iLayer = AliAlignObj::kTRD2;
+    break;
+  case 2:
+    iLayer = AliAlignObj::kTRD3;
+    break;
+  case 3:
+    iLayer = AliAlignObj::kTRD4;
+    break;
+  case 4:
+    iLayer = AliAlignObj::kTRD5;
+    break;
+  case 5:
+    iLayer = AliAlignObj::kTRD6;
+    break;
+  };
+
+  Int_t    modId = isector * fGeom->Ncham() + ichamber;
+  UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,modId);
+#else //HAVNT_ALIGEOMMANAGER
+
   AliGeomManager::ELayerID iLayer = AliGeomManager::kTRD1;
   switch (iplan) {
   case 0:
@@ -287,6 +315,7 @@ Int_t  AliTRDtrackerHLT::LocalToGlobalID(Int_t lid)
 
   Int_t    modId = isector * fGeom->Ncham() + ichamber;
   UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,modId);
+#endif //HAVNT_ALIGEOMMANAGER
 
   return volid;
 
@@ -298,6 +327,45 @@ Int_t  AliTRDtrackerHLT::GlobalToLocalID(Int_t gid)
   //
   // Transform global detector ID to local detector ID
   // 
+
+#ifdef HAVNT_ALIGEOMMANAGER
+  // this was introcuced for backward compatibility with AliRoot v4-05-Release
+  Int_t modId    = 0;
+  AliAlignObj::ELayerID layerId = AliAlignObj::VolUIDToLayer(gid,modId);
+
+  Int_t isector  = modId / fGeom->Ncham();
+  Int_t ichamber = modId % fGeom->Ncham();
+  Int_t iLayer   = -1;
+
+  switch (layerId) {
+  case AliAlignObj::kTRD1:
+    iLayer = 0;
+    break;
+  case AliAlignObj::kTRD2:
+    iLayer = 1;
+    break;
+  case AliAlignObj::kTRD3:
+    iLayer = 2;
+    break;
+  case AliAlignObj::kTRD4:
+    iLayer = 3;
+    break;
+  case AliAlignObj::kTRD5:
+    iLayer = 4;
+    break;
+  case AliAlignObj::kTRD6:
+    iLayer = 5;
+    break;
+  default:
+    iLayer =-1;
+  }
+
+  if (iLayer < 0) {
+    return -1;
+  }
+
+  Int_t lid = fGeom->GetDetector(iLayer,ichamber,isector);
+#else //HAVNT_ALIGEOMMANAGER
 
   Int_t modId    = 0;
   AliGeomManager::ELayerID layerId = AliGeomManager::VolUIDToLayer(gid,modId);
@@ -334,6 +402,7 @@ Int_t  AliTRDtrackerHLT::GlobalToLocalID(Int_t gid)
   }
 
   Int_t lid = fGeom->GetDetector(iLayer,ichamber,isector);
+#endif //HAVNT_ALIGEOMMANAGER
 
   return lid;
 
@@ -2776,6 +2845,32 @@ Bool_t AliTRDtrackerHLT::GetTrackPoint(Int_t index, AliTrackPoint &p) const
   Double_t global[3];
   fGeom->RotateBack(idet,local,global);
   p.SetXYZ(global[0],global[1],global[2]);
+#ifdef HAVNT_ALIGEOMMANAGER
+  // this was introcuced for backward compatibility with AliRoot v4-05-Release
+  AliAlignObj::ELayerID iLayer = AliAlignObj::kTRD1;
+  switch (iplan) {
+  case 0:
+    iLayer = AliAlignObj::kTRD1;
+    break;
+  case 1:
+    iLayer = AliAlignObj::kTRD2;
+    break;
+  case 2:
+    iLayer = AliAlignObj::kTRD3;
+    break;
+  case 3:
+    iLayer = AliAlignObj::kTRD4;
+    break;
+  case 4:
+    iLayer = AliAlignObj::kTRD5;
+    break;
+  case 5:
+    iLayer = AliAlignObj::kTRD6;
+    break;
+  };
+  Int_t    modId = isector * fGeom->Ncham() + ichamber;
+  UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,modId);
+#else //HAVNT_ALIGEOMMANAGER
   AliGeomManager::ELayerID iLayer = AliGeomManager::kTRD1;
   switch (iplan) {
   case 0:
@@ -2799,6 +2894,7 @@ Bool_t AliTRDtrackerHLT::GetTrackPoint(Int_t index, AliTrackPoint &p) const
   };
   Int_t    modId = isector * fGeom->Ncham() + ichamber;
   UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,modId);
+#endif //HAVNT_ALIGEOMMANAGER
   p.SetVolumeID(volid);
 
   return kTRUE;

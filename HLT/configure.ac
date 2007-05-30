@@ -230,10 +230,36 @@ if test ! "x$have_aliroot" = "xno" ; then
   AC_MSG_CHECKING(for version of AliExternalTrackParam)
   AC_MSG_RESULT($externaltrackparam_version)
 
+  dnl
+  dnl required header files and libraries for the AliHLTPHOS library  
+  dnl
+  have_alicalorawstream=no
+  if test ! "x$have_aliroot" = "xno" ; then
+    # this can not be used as AliCaloRawStream.h indirectly depends on TString.h
+    #AC_CHECK_HEADERS([AliCaloRawStream.h], [have_alicalorawstream=yes])
+    AC_MSG_CHECKING([for AliCaloRawStream.h usability])
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <TString.h>
+  				     #include <AliCaloRawStream.h>], 
+                                    [int i])],
+                                    [AC_DEFINE(HAVE_ALICALORAWSTREAM)
+				     have_alicalorawstream=yes], 
+  				    [])
+    AC_MSG_RESULT([$have_alicalorawstream])
+  fi
+
+  dnl
+  dnl required header files and libraries for the AliHLTTRD library  
+  dnl
+  AC_CHECK_HEADERS([AliGeomManager.h], [], [AC_DEFINE([HAVNT_ALIGEOMMANAGER])])
+
+  dnl
+  dnl required header files and libraries for the AliHLTTPC library  
+  dnl
   if test ! "x$have_aliroot" = "xno" ; then
     # the HLTTPCLib needs to link agains TPCbase and TPCrec
     # TPC library for AliTPCParam and AliSimDigits used in 
     # AliHLTTPCFileHandler.h and AliHLTTPCDisplay.cxx
+    # fram May 07 TPCbase depends on libGui.so
     saveALIROOT_CPPFLAGS="$ALIROOT_CPPFLAGS"
     ALIROOT_CPPFLAGS="$saveALIROOT_CPPFLAGS -I${ALICE_ROOT}/TPC"
     CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS"
@@ -241,7 +267,7 @@ if test ! "x$have_aliroot" = "xno" ; then
     AC_MSG_CHECKING(for required classes in TPC libraries)
     if test ! "x$have_alitpc" = "xno" ; then
       save_ALIROOT_LIBS=$ALIROOT_LIBS
-      ALIROOT_LIBS="$save_ALIROOT_LIBS -lTPCbase -lTPCrec"
+      ALIROOT_LIBS="$save_ALIROOT_LIBS -lTPCbase -lTPCrec -lGui"
       LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
       AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliSimDigits.h>
   				       #include <AliTPCParam.h>
@@ -292,23 +318,6 @@ if test ! "x$have_aliroot" = "xno" ; then
   fi
   AC_MSG_CHECKING([for TPC mapping layout])
   AC_MSG_RESULT([$have_tpc_mapping])
-
-  dnl
-  dnl required header files and libraries for the AliHLTPHOS library  
-  dnl
-  have_alicalorawstream=no
-  if test ! "x$have_aliroot" = "xno" ; then
-    # this can not be used as AliCaloRawStream.h indirectly depends on TString.h
-    #AC_CHECK_HEADERS([AliCaloRawStream.h], [have_alicalorawstream=yes])
-    AC_MSG_CHECKING([for AliCaloRawStream.h usability])
-    AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <TString.h>
-  				     #include <AliCaloRawStream.h>], 
-                                    [int i])],
-                                    [AC_DEFINE(HAVE_ALICALORAWSTREAM)
-				     have_alicalorawstream=yes], 
-  				    [])
-    AC_MSG_RESULT([$have_alicalorawstream])
-  fi
 
   if test "x$have_aliroot" = "xno" ; then
     ALIROOT_CPPFLAGS=
@@ -367,8 +376,24 @@ if test "x$with_pubsub" != "xno" ; then
     HOMER_INCDIRS="${with_pubsub}/src/Util/HOMER/reader/include ${with_pubsub}/src/Util/HOMER/data/include"
   fi
   HOMER_CPPFLAGS=`for i in ${HOMER_INCDIRS}; do echo -n "-I$i " ; done`
-  HOMER_BINDIR="${with_pubsub}/bin/`uname -s`-`uname -m`"
-  HOMER_LIBDIR="${with_pubsub}/lib/`uname -s`-`uname -m`"
+
+  AC_ARG_ENABLE(pubsub-debug,
+    [AC_HELP_STRING([--disable-pubsub-debug],
+        [force the production version of the PubSub framework])],
+    [],[enable_pubsub_debug=yes])
+  homer_type="none"
+  HOMER_TARGET="`uname -s`-`uname -m`"
+  AC_MSG_CHECKING([for HLT PubSub Framework release type])
+  if test -d "${with_pubsub}/lib/${HOMER_TARGET}-release" ; then
+    homer_type="production"
+    HOMER_TARGET="${HOMER_TARGET}-release"
+  elif test "x$enable_pubsub_debug" = "xyes" && test -d "${with_pubsub}/lib/${HOMER_TARGET}-debug" ; then
+    homer_type="debug"
+    HOMER_TARGET="${HOMER_TARGET}-debug"
+  fi
+  AC_MSG_RESULT([${homer_type}])
+  HOMER_BINDIR="${with_pubsub}/bin/${HOMER_TARGET}"
+  HOMER_LIBDIR="${with_pubsub}/lib/${HOMER_TARGET}"
   HOMER_LDFLAGS="-L${HOMER_LIBDIR}"
   CPPFLAGS="$save_CPPFLAGS $HOMER_CPPFLAGS"
   LDFLAGS="$save_LDFLAGS $HOMER_LDFLAGS"
@@ -565,10 +590,14 @@ AC_ARG_VAR(DOXYGEN, The Documentation Generator)
 AC_PATH_PROG(PERL, perl)
 AC_PATH_PROG(DOXYGEN, doxygen)
 AM_CONDITIONAL(HAVE_DOXYGEN, test ! "x$DOXYGEN" = "x")
+AC_ARG_ENABLE(dot,
+  [AC_HELP_STRING([--enable-dot],
+      [enable dot documentation generator])],
+  [],[enable_dot=no])
 HAVE_DOT=NO
 DOT_PATH=
 AC_PATH_PROG(DOT, dot)
-if ! test "x$DOT" = "x" ; then
+if test "x$DOT" != "x" && test "x$enable_dot" = "xyes" ; then
    HAVE_DOT=YES
    DOT_PATH=`dirname $DOT`
 fi

@@ -16,7 +16,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/** @file   AliHLTTPCCalibSignallComponent.cxx
+/** @file   AliHLTTPCCalibSignalComponent.cxx
     @author Jochen Thaeder, Sorina Popescu
     @date   8 may 2007
     @brief  HLT pulser calibration component for the TPC.
