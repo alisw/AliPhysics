@@ -269,11 +269,6 @@ void AliTRDgeometry::Init()
   Float_t phi = 0.0;
   for (isect = 0; isect < fgkNsect; isect++) {
     phi = 2.0 * TMath::Pi() /  (Float_t) fgkNsect * ((Float_t) isect + 0.5);
-    fRotA11[isect] = TMath::Cos(phi);
-    fRotA12[isect] = TMath::Sin(phi);
-    fRotA21[isect] = TMath::Sin(phi);
-    fRotA22[isect] = TMath::Cos(phi);
-    phi = -1.0 * phi;
     fRotB11[isect] = TMath::Cos(phi);
     fRotB12[isect] = TMath::Sin(phi);
     fRotB21[isect] = TMath::Sin(phi);
@@ -595,12 +590,12 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
 
       // Position the frames of the chambers in the TRD mother volume
       xpos  = 0.0;
-      ypos  = - fClength[iplan][0] - fClength[iplan][1] - fClength[iplan][2]/2.0;
+      ypos  = fClength[iplan][0] + fClength[iplan][1] + fClength[iplan][2]/2.0;
       for (Int_t ic = 0; ic < icham; ic++) {
-        ypos += fClength[iplan][ic];        
+        ypos -= fClength[iplan][ic];
       }
-      ypos += fClength[iplan][icham]/2.0;
-      zpos  = fgkVrocsm + fgkSMpltT + fgkCraH/2.0 + fgkCdrH/2.0 - fgkSheight/2.0 
+      ypos -= fClength[iplan][icham]/2.0;
+      zpos  = fgkVrocsm + fgkSMpltT + fgkCraH/2.0 + fgkCdrH/2.0 - fgkSheight/2.0
             + iplan * (fgkCH + fgkVspace);
       // The lower aluminum frame, radiator + drift region
       sprintf(cTagV,"UA%02d",iDet);      
@@ -1051,12 +1046,12 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
       gMC->Gsvolu(cTagV,"BOX",idtmed[1302-1],parServ,kNparServ);
 
       xpos  = 0.0;
-      ypos  = - fClength[iplan][0] - fClength[iplan][1] - fClength[iplan][2]/2.0;
+      ypos  = fClength[iplan][0] + fClength[iplan][1] + fClength[iplan][2]/2.0;
       for (Int_t ic = 0; ic < icham; ic++) {
-        ypos += fClength[iplan][ic];        
+        ypos -= fClength[iplan][ic];
       }
-      ypos += fClength[iplan][icham]/2.0;
-      zpos  = fgkVrocsm + fgkSMpltT + fgkCH + fgkVspace/2.0 - fgkSheight/2.0 
+      ypos -= fClength[iplan][icham]/2.0;
+      zpos  = fgkVrocsm + fgkSMpltT + fgkCH + fgkVspace/2.0 - fgkSheight/2.0
             + iplan * (fgkCH + fgkVspace);
       zpos -= 0.742/2.0;
       fChamberUUorig[iDet][0] = xpos;
@@ -1330,25 +1325,6 @@ void AliTRDgeometry::GroupChamber(Int_t iplan, Int_t icham, Int_t *idtmed)
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDgeometry::Rotate(Int_t d, Double_t *pos, Double_t *rot) const
-{
-  //
-  // Rotates all chambers in the position of sector 0 and transforms
-  // the coordinates in the ALICE restframe <pos> into the 
-  // corresponding local frame <rot>.
-  //
-
-  Int_t sector = GetSector(d);
-
-  rot[0] =  pos[0] * fRotA11[sector] + pos[1] * fRotA12[sector];
-  rot[1] = -pos[0] * fRotA21[sector] + pos[1] * fRotA22[sector];
-  rot[2] =  pos[2];
-
-  return kTRUE;
-
-}
-
-//_____________________________________________________________________________
 Bool_t AliTRDgeometry::RotateBack(Int_t d, Double_t *rot, Double_t *pos) const
 {
   //
@@ -1563,8 +1539,8 @@ Bool_t AliTRDgeometry::ReadGeoMatrices()
       }
       TGeoHMatrix *m         = gGeoManager->GetCurrentMatrix();
       Int_t        iLayerTRD = iLayer - AliGeomManager::kTRD1;
-      Int_t        isector   = Nsect() - 1 - (iModule/Ncham());
-      Int_t        ichamber  = Ncham() - 1 - (iModule%Ncham());
+      Int_t        isector   = iModule/Ncham();
+      Int_t        ichamber  = iModule%Ncham();
       Int_t        lid       = GetDetector(iLayerTRD,ichamber,isector);    
 
       //
@@ -1588,7 +1564,7 @@ Bool_t AliTRDgeometry::ReadGeoMatrices()
       Double_t sectorAngle = 20.0 * (isector % 18) + 10.0;
       TGeoHMatrix  rotSector;
       rotSector.RotateZ(sectorAngle);
-      rotMatrix.MultiplyLeft(&rotSector);      
+      rotMatrix.MultiplyLeft(&rotSector.Inverse());
 
       fMatrixCorrectionArray->AddAt(new TGeoHMatrix(rotMatrix),lid);       
 
