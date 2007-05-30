@@ -49,13 +49,12 @@ ClassImp(AliT0Parameters)
 //____________________________________________________________________
 AliT0Parameters* AliT0Parameters::fgInstance = 0;
 //____________________________________________________________________
-AliT0Parameters* 
-AliT0Parameters::Instance() 
+AliT0Parameters* AliT0Parameters::Instance() 
 {
   // Get static instance 
   if (!fgInstance) {
     fgInstance = new AliT0Parameters;
-    fgInstance->Init();
+    //   fgInstance->Init();
   }
   return fgInstance;
 }
@@ -119,16 +118,29 @@ AliT0Parameters::Init()
   if (fSlewCorr){
     fgSlewCorr  = (AliT0CalibData*)fSlewCorr->GetObject();
   }
+  else {
+    AliError(" ALARM !!!! No slewing correction in CDB "); 
+    fIsInit = kFALSE;
+    return;
+  }
+
   fLookUpentry  = stor->Get("T0/Calib/LookUp_Table");
   if (fLookUpentry){
     fgLookUp  = (AliT0CalibData*)fLookUpentry->GetObject();
   }
   else {
+    AliError(" ALARM !!!! No Lookup table  in CDB "); 
+    fIsInit = kFALSE;
+    return;
+  }
+
+  /*
+  else {
   const char * filename = gSystem->ExpandPathName("$ALICE_ROOT/T0/lookUpTable.txt");
   ifstream inFile(filename);
   fgLookUp->ReadAsciiLookup(filename);
   }
-
+  */
   fIsInit = kTRUE;
 }
 
