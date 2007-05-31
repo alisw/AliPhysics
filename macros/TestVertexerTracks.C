@@ -51,8 +51,10 @@ void TestVertexerTracks(){
 
   rl->GetEvent(e);
   AliESDVertex *vertESD = event->GetVertex();
-  Double_t mcVertex[3], recVertex[3];
-  vertESD->GetTruePos(mcVertex);
+  Double_t recVertex[3];
+  AliGenEventHeader *header=rl->GetHeader()->GenEventHeader();
+  TArrayF mcVertex(3);
+  header->PrimaryVertex(mcVertex);
   cout<<"Primary vertex (MC) ";
   for(Int_t kk=0;kk<3;kk++)cout<<mcVertex[kk]<<" ";
   cout<<endl;

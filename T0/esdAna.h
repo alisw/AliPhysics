@@ -61,7 +61,6 @@ public :
    Double_t        fSPDVertex_fCovZZ;
    Double_t        fSPDVertex_fSNR[3];
    Double_t        fSPDVertex_fChi2;
-   Double_t        fSPDVertex_fTruePos[3];
    UInt_t          fPrimaryVertex_fUniqueID;
    UInt_t          fPrimaryVertex_fBits;
    TString         fPrimaryVertex_fName;
@@ -77,7 +76,6 @@ public :
    Double_t        fPrimaryVertex_fCovZZ;
    Double_t        fPrimaryVertex_fSNR[3];
    Double_t        fPrimaryVertex_fChi2;
-   Double_t        fPrimaryVertex_fTruePos[3];
    UInt_t          fSPDMult_fUniqueID;
    UInt_t          fSPDMult_fBits;
    Int_t           fSPDMult_fNtracks;
@@ -414,7 +412,6 @@ public :
    TBranch        *b_ESD_fSPDVertex_fCovZZ;   //!
    TBranch        *b_ESD_fSPDVertex_fSNR;   //!
    TBranch        *b_ESD_fSPDVertex_fChi2;   //!
-   TBranch        *b_ESD_fSPDVertex_fTruePos;   //!
    TBranch        *b_ESD_fPrimaryVertex_fUniqueID;   //!
    TBranch        *b_ESD_fPrimaryVertex_fBits;   //!
    TBranch        *b_ESD_fPrimaryVertex_fName;   //!
@@ -430,7 +427,6 @@ public :
    TBranch        *b_ESD_fPrimaryVertex_fCovZZ;   //!
    TBranch        *b_ESD_fPrimaryVertex_fSNR;   //!
    TBranch        *b_ESD_fPrimaryVertex_fChi2;   //!
-   TBranch        *b_ESD_fPrimaryVertex_fTruePos;   //!
    TBranch        *b_ESD_fSPDMult_fUniqueID;   //!
    TBranch        *b_ESD_fSPDMult_fBits;   //!
    TBranch        *b_ESD_fSPDMult_fNtracks;   //!
@@ -804,7 +800,6 @@ void esdAna::Init(TTree *tree)
    fChain->SetBranchAddress("fSPDVertex.fCovZZ",&fSPDVertex_fCovZZ);
    fChain->SetBranchAddress("fSPDVertex.fSNR[3]",fSPDVertex_fSNR);
    fChain->SetBranchAddress("fSPDVertex.fChi2",&fSPDVertex_fChi2);
-   fChain->SetBranchAddress("fSPDVertex.fTruePos[3]",fSPDVertex_fTruePos);
    fChain->SetBranchAddress("fPrimaryVertex.fUniqueID",&fPrimaryVertex_fUniqueID);
    fChain->SetBranchAddress("fPrimaryVertex.fBits",&fPrimaryVertex_fBits);
    fChain->SetBranchAddress("fPrimaryVertex.fName",&fPrimaryVertex_fName);
@@ -820,7 +815,6 @@ void esdAna::Init(TTree *tree)
    fChain->SetBranchAddress("fPrimaryVertex.fCovZZ",&fPrimaryVertex_fCovZZ);
    fChain->SetBranchAddress("fPrimaryVertex.fSNR[3]",fPrimaryVertex_fSNR);
    fChain->SetBranchAddress("fPrimaryVertex.fChi2",&fPrimaryVertex_fChi2);
-   fChain->SetBranchAddress("fPrimaryVertex.fTruePos[3]",fPrimaryVertex_fTruePos);
    fChain->SetBranchAddress("fSPDMult.fUniqueID",&fSPDMult_fUniqueID);
    fChain->SetBranchAddress("fSPDMult.fBits",&fSPDMult_fBits);
    fChain->SetBranchAddress("fSPDMult.fNtracks",&fSPDMult_fNtracks);
@@ -1174,7 +1168,6 @@ Bool_t esdAna::Notify()
    b_ESD_fSPDVertex_fCovZZ = fChain->GetBranch("fSPDVertex.fCovZZ");
    b_ESD_fSPDVertex_fSNR = fChain->GetBranch("fSPDVertex.fSNR[3]");
    b_ESD_fSPDVertex_fChi2 = fChain->GetBranch("fSPDVertex.fChi2");
-   b_ESD_fSPDVertex_fTruePos = fChain->GetBranch("fSPDVertex.fTruePos[3]");
    b_ESD_fPrimaryVertex_fUniqueID = fChain->GetBranch("fPrimaryVertex.fUniqueID");
    b_ESD_fPrimaryVertex_fBits = fChain->GetBranch("fPrimaryVertex.fBits");
    b_ESD_fPrimaryVertex_fName = fChain->GetBranch("fPrimaryVertex.fName");
@@ -1190,7 +1183,6 @@ Bool_t esdAna::Notify()
    b_ESD_fPrimaryVertex_fCovZZ = fChain->GetBranch("fPrimaryVertex.fCovZZ");
    b_ESD_fPrimaryVertex_fSNR = fChain->GetBranch("fPrimaryVertex.fSNR[3]");
    b_ESD_fPrimaryVertex_fChi2 = fChain->GetBranch("fPrimaryVertex.fChi2");
-   b_ESD_fPrimaryVertex_fTruePos = fChain->GetBranch("fPrimaryVertex.fTruePos[3]");
    b_ESD_fSPDMult_fUniqueID = fChain->GetBranch("fSPDMult.fUniqueID");
    b_ESD_fSPDMult_fBits = fChain->GetBranch("fSPDMult.fBits");
    b_ESD_fSPDMult_fNtracks = fChain->GetBranch("fSPDMult.fNtracks");

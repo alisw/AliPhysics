@@ -80,9 +80,6 @@ void copyGeneralESDInfo(AliESD* esdIn, AliESD* esdOut) {
     vtxOut = new AliESDVertex(pos,cov,
 					     vtxIn->GetChi2(),
 					     vtxIn->GetNContributors());
-    Double_t tp[3];
-    vtxIn->GetTruePos(tp);
-    vtxOut->SetTruePos(tp);
   }
   else
     vtxOut = new AliESDVertex();
