@@ -941,7 +941,6 @@ Bool_t AliReconstruction::RunVertexFinder(AliESD*& esd)
       vertex->SetName("default");
     }
     else {
-      vertex->SetTruePos(vtxPos);  // store also the vertex from MC
       vertex->SetName("reconstructed");
     }
 

@@ -154,7 +154,6 @@ AliESDVertex::AliESDVertex(const AliESDVertex &source):
   //
   for(Int_t i=0;i<3;i++) {
     fSNR[i] = source.fSNR[i];
-    fTruePos[i] = source.fTruePos[i];
   }
 }
 //--------------------------------------------------------------------------
@@ -167,7 +166,6 @@ AliESDVertex &AliESDVertex::operator=(const AliESDVertex &source){
   this->SetTitle(source.GetTitle());
   for(Int_t i=0;i<3;i++) {
     fPosition[i] = source.fPosition[i];
-    fTruePos[i] = source.fTruePos[i];
     fSNR[i] = source.fSNR[i];
   }
   fCovXX = source.fCovXX;
@@ -192,7 +190,6 @@ void AliESDVertex::SetToZero() {
   // Set the content of arrays to 0. Used by constructors
   //
   for(Int_t i=0; i<3; i++){
-    fTruePos[i] = 0;
     fSNR[i] = 0.;
   }
 }
@@ -245,8 +242,6 @@ void AliESDVertex::Print(Option_t* /*option*/) const {
   printf(" S/N = (%f, %f, %f)\n",fSNR[0],fSNR[1],fSNR[2]);
   printf(" chi2 = %f\n",fChi2);
   printf(" # tracks (or tracklets) = %d\n",fNContributors);
-
-  printf(" True vertex position - for comparison: %12.10f  %12.10f  %12.10f\n ",fTruePos[0],fTruePos[1],fTruePos[2]);
 
   return;
 }

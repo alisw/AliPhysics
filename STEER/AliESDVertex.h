@@ -67,24 +67,20 @@ class AliESDVertex : public AliVertex {
 
   void     Print(Option_t* option = "") const;
   void     PrintStatus() const {Print();}
-  void     SetTruePos(Double_t *tp){for(Int_t i=0;i<3;i++)fTruePos[i]=tp[i];}
-  void     GetTruePos(Double_t *tp) const 
-    {for(Int_t i=0;i<3;i++)tp[i]=fTruePos[i];}
 
   void     Reset() { SetToZero(); SetName("Vertex"); }
 
  protected:
 
-  Double_t fCovXX,fCovXY,fCovYY,fCovXZ,fCovYZ,fCovZZ;  // vertex covariance matrix
-  Double_t fSNR[3];  // S/N ratio
-  Double_t fChi2;  // chi2 of vertex fit
-  Double_t fTruePos[3];   //true vertex position (for comparison purposes)
+  Double32_t fCovXX,fCovXY,fCovYY,fCovXZ,fCovYZ,fCovZZ;  // vertex covariance matrix
+  Double32_t fSNR[3];  // S/N ratio
+  Double32_t fChi2;  // chi2 of vertex fit
 
  private:
 
   void SetToZero();
 
-  ClassDef(AliESDVertex,5)  // Class for Primary Vertex
+  ClassDef(AliESDVertex,6)  // Class for Primary Vertex
 };
 
 #endif
