@@ -64,7 +64,7 @@
 
 #include "AliTRDalignment.h"
 
-void Fcn(Int_t &npar, Double_t *gin, Double_t &f, Double_t *x, Int_t iflag);
+void TRDalignmentFcn(Int_t &npar, Double_t *gin, Double_t &f, Double_t *x, Int_t iflag);
 
 ClassImp(AliTRDalignment)
 
@@ -753,7 +753,7 @@ double AliTRDalignment::SurveyChi2(int i, double *a) {
 }
 
 //_____________________________________________________________________________
-void Fcn(int &npar, double *g, double &f, double *par, int iflag) {
+void TRDalignmentFcn(int &npar, double *g, double &f, double *par, int iflag) {
 
   // 
   // Standard function as needed by Minuit-like minimization procedures. 
@@ -790,7 +790,7 @@ void AliTRDalignment::SurveyToAlignment(int i,char *flag) {
 
   TFitter fitter(100);
   gMinuit->SetObjectFit(this);
-  fitter.SetFCN(Fcn);
+  fitter.SetFCN(TRDalignmentFcn);
   fitter.SetParameter(0,"dx",0,0.5,0,0);
   fitter.SetParameter(1,"dy",0,0.5,0,0);
   fitter.SetParameter(2,"dz",0,0.5,0,0);
