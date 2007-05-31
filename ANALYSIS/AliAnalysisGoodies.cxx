@@ -31,6 +31,7 @@
 #include <Riostream.h>
 #ifdef WITHALIEN
 #include <TGridResult.h>
+#include <TAlienCollection.h>
 #include <TFileMerger.h>
 #endif
 #include <TChain.h>
@@ -472,13 +473,15 @@ Bool_t AliAnalysisGoodies::ProcessChain(TChain * chain) const
   AliAnalysisDataContainer * taskInput  = mgr->CreateContainer("InputContainer", classIn, AliAnalysisManager::kInputContainer) ;
   Int_t index ; 
   for (index = 0; index < fnumberOfTasks; index++) {
+ 
+    TClass * classOu = fTaskOuType[index] ;    
     AliAnalysisTask * task = fTaskList[index] ;
+
+    AliAnalysisDataContainer * taskOutput = mgr->CreateContainer(Form("OutputContainer%d",index), classOu, AliAnalysisManager::kOutputContainer, Form("%s.root",task->GetName())) ;
     mgr->AddTask(task) ;
-  
+    
     // Create containers for input/output
-    TClass * classOu = fTaskOuType[index] ; 
-    AliAnalysisDataContainer * taskOutput = mgr->CreateContainer(Form("OutputContainer%d",index), classOu, AliAnalysisManager::kOutputContainer,
-                                            Form("%s.root",task->GetName())) ;
+   
     mgr->ConnectInput (task, 0, taskInput);
     mgr->ConnectOutput(task, 0, taskOutput);
   }
@@ -599,8 +602,8 @@ Bool_t AliAnalysisGoodies::ProcessEsdXmlCollection(const char * xmlFile) const
   printf("***  Coll   = |%s|             \n",xmlFile);              	
 
 #ifdef WITHALIEN
-
-  TGridCollection * collection = (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(%s)",xmlFile));
+  //AliXMLCollection * collection = AliXMLCollection::Open(xmlFile,0) ;
+  TGridCollection * collection =  (TGridCollection*) TAlienCollection::Open(xmlFile, 0);//(TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(%s)");
   if (! collection) {
     AliError(Form("%s not found", xmlFile)) ; 
     return kFALSE ; 
@@ -613,13 +616,15 @@ Bool_t AliAnalysisGoodies::ProcessEsdXmlCollection(const char * xmlFile) const
   printf("*** Getting the Chain       ***\n");
   TChain* analysisChain = new TChain(fESDTreeName);
   analysisChain->AddFileInfoList(analysisfilelist);
- 
+
   // Process the events
   rv = ProcessChain(analysisChain) ; 
 
 #else
   rv = kFALSE;
+
 #endif
+
   return rv ; 
 }
 

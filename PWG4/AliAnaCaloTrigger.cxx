@@ -163,7 +163,8 @@ void AliAnaCaloTrigger::Exec(Option_t *)
     firstCaloCluster     = fESD->GetFirstEMCALCluster() ;
     numberOfCaloClusters = fESD->GetNumberOfEMCALClusters() ;
   }
-  
+
+  if( triggerAmplitudes && triggerPosition ){
   // trigger amplitudes
   const Float_t a22    = static_cast<Float_t>(triggerAmplitudes->At(0)) ; 
   const Float_t a22O   = static_cast<Float_t>(triggerAmplitudes->At(1)) ; 
@@ -178,8 +179,6 @@ void AliAnaCaloTrigger::Exec(Option_t *)
   const Float_t yNN  =  static_cast<Float_t>(triggerPosition->At(4)) ;
   const Float_t zNN  =  static_cast<Float_t>(triggerPosition->At(5)) ; 
   
- 
-   
   Float_t enMax       = 0. ;
   Float_t phEnMax     = 0. ;
   Float_t etaMax      = 0.5 ;
@@ -201,7 +200,7 @@ void AliAnaCaloTrigger::Exec(Option_t *)
   for(icaloCluster = firstCaloCluster ; icaloCluster < firstCaloCluster + numberOfCaloClusters ; icaloCluster++) {
     AliESDCaloCluster * cluster = fESD->GetCaloCluster(icaloCluster) ;
     if (cluster) {
-
+      
       Float_t cluEnergy = cluster->GetClusterEnergy() ; 
       Float_t pos[3] ;
       TVector3 vpos ;
@@ -225,12 +224,13 @@ void AliAnaCaloTrigger::Exec(Option_t *)
 	  phPhiMax = vpos.Phi() ; 
 	}
       }
-    }
+    }//if cluster
     
     fNtTrigger22->Fill(a22, a22O, enMax, phEnMax, eta22, phi22, etaMax, phiMax * TMath::RadToDeg() + 360., phEtaMax, phPhiMax * TMath::RadToDeg() + 360.);
     fNtTriggerNN->Fill(aNN, aNNO, enMax, phEnMax, etaNN, phiNN, etaMax, phiMax * TMath::RadToDeg() + 360., phEtaMax, phPhiMax * TMath::RadToDeg() + 360.);
- }
+  }//CaloCluster loop
   
+  }//If trigger arrays filled
   
   PostData(0, fOutputContainer);
   
