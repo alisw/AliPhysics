@@ -39,7 +39,7 @@ class AliTRDgeometry : public AliGeometry {
   virtual Bool_t   Impact(const TParticle* ) const                     { return kTRUE;           }
   virtual Bool_t   IsHole(Int_t /*p*/, Int_t /*c*/, Int_t /*s*/) const { return kFALSE;          }
 
-  virtual Bool_t   RotateBack(Int_t d, Double_t *rot, Double_t *pos) const;
+  virtual Bool_t   RotateBack(Int_t det, Double_t *loc, Double_t *glb) const;
 
           void     GroupChamber(Int_t iplan, Int_t icham, Int_t *idtmed);
           void     CreateFrame(Int_t *idtmed);

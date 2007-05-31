@@ -1325,19 +1325,18 @@ void AliTRDgeometry::GroupChamber(Int_t iplan, Int_t icham, Int_t *idtmed)
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDgeometry::RotateBack(Int_t d, Double_t *rot, Double_t *pos) const
+Bool_t AliTRDgeometry::RotateBack(Int_t det, Double_t *loc, Double_t *glb) const
 {
   //
-  // Rotates a chambers from the position of sector 0 into its
-  // original position and transforms the corresponding local frame 
-  // coordinates <rot> into the coordinates of the ALICE restframe <pos>.
+  // Rotates a chambers to transform the corresponding local frame
+  // coordinates <loc> into the coordinates of the ALICE restframe <glb>.
   //
 
-  Int_t sector = GetSector(d);
+  Int_t sector = GetSector(det);
 
-  pos[0] =  rot[0] * fRotB11[sector] + rot[1] * fRotB12[sector];
-  pos[1] = -rot[0] * fRotB21[sector] + rot[1] * fRotB22[sector];
-  pos[2] =  rot[2];
+  glb[0] = loc[0] * fRotB11[sector] - loc[1] * fRotB12[sector];
+  glb[1] = loc[0] * fRotB21[sector] + loc[1] * fRotB22[sector];
+  glb[2] = loc[2];
 
   return kTRUE;
 
