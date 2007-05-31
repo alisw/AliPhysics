@@ -1,3 +1,9 @@
+2007-05-31  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* ITSDigitsInfo.cxx:
+	Reimplemented ReadRaw() so that several events can be merged
+	together (with Cvetan's help).
+
 2007-05-25  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* ITSDigitsInfo.cxx:

@@ -1,3 +1,9 @@
+2007-05-31  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* alice-macros/its_raw.C:
+	Added new argument event number and an option to accumulate
+	several events.
+
 2007-05-25  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* alice-macros/its_raw.C:
