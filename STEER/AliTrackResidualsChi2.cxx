@@ -26,14 +26,14 @@
 #include "AliTrackPointArray.h"
 #include "AliTrackResidualsChi2.h"
 
-void Fcn(Int_t &npar, Double_t *gin, Double_t &f, Double_t *x, Int_t iflag);
+void TrackResidualsChi2Fcn(Int_t &npar, Double_t *gin, Double_t &f, Double_t *x, Int_t iflag);
 
 
 ClassImp(AliTrackResidualsChi2)
 
 
 //______________________________________________________________________________
-void Fcn(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag)
+void TrackResidualsChi2Fcn(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag)
 {
   // This function is called by minuit
   // The corresponding member method is called
@@ -58,7 +58,7 @@ Bool_t AliTrackResidualsChi2::Minimize()
   arglist[0] = -1;
   ierflg = fitter->ExecuteCommand("SET PRINT", arglist, 1);
 
-  fitter->SetFCN(Fcn);
+  fitter->SetFCN(TrackResidualsChi2Fcn);
 
   arglist[0] = 1;
   ierflg = fitter->ExecuteCommand("SET ERR", arglist ,1);
