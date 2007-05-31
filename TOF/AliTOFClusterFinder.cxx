@@ -15,6 +15,9 @@
 
 /* 
 $Log$
+Revision 1.27  2007/05/02 16:31:49  arcelli
+Add methods to handle single event reconstruction. retrieval of Calib info moved to AliTOFReconstructor ctor, and passed via a pointer to AliTOFcalib
+
 Revision 1.26  2007/04/30 19:02:24  arcelli
 hopefully the last refinements for correct type conversion in calibration
 
@@ -427,11 +430,12 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
   ofstream ftxt;
   if (fVerbose==2) ftxt.open("TOFdigitsRead.txt",ios::app);
 
+  AliTOFRawStream tofInput(rawReader);
+
   Int_t indexDDL = 0;
   for (indexDDL = 0; indexDDL < kDDL; indexDDL++) {
 
     rawReader->Reset();
-    AliTOFRawStream tofInput(rawReader);
     if (fDecoderVersion) {
       AliInfo("Using New Decoder \n"); 
       tofInput.LoadRawDataBuffers(indexDDL,fVerbose);
@@ -560,11 +564,12 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent, AliRawReader *rawReader
   ofstream ftxt;
   if (fVerbose==2) ftxt.open("TOFdigitsRead.txt",ios::app);
 
+  AliTOFRawStream tofInput(rawReader);
+
   Int_t indexDDL = 0;
   for (indexDDL = 0; indexDDL < kDDL; indexDDL++) {
 
     rawReader->Reset();
-    AliTOFRawStream tofInput(rawReader);
     if (fDecoderVersion) {
       AliInfo("Using New Decoder \n"); 
       tofInput.LoadRawDataBuffers(indexDDL,fVerbose);
@@ -696,11 +701,12 @@ void AliTOFClusterFinder::Raw2Digits(Int_t iEvent, AliRawReader *rawReader)
   Int_t detectorIndex[5];
   Int_t digit[4];
 
+  AliTOFRawStream tofInput(rawReader);
+
   Int_t indexDDL = 0;
   for (indexDDL = 0; indexDDL < kDDL; indexDDL++) {
 
     rawReader->Reset();
-    AliTOFRawStream tofInput(rawReader);
     if (fDecoderVersion) {
       AliInfo("Using New Decoder \n"); 
       tofInput.LoadRawDataBuffers(indexDDL,fVerbose);
@@ -783,11 +789,12 @@ void AliTOFClusterFinder::Raw2Digits(AliRawReader *rawReader, TTree* digitsTree)
   Int_t detectorIndex[5];
   Int_t digit[4];
 
+  AliTOFRawStream tofInput(rawReader);
+
   Int_t indexDDL = 0;
   for (indexDDL = 0; indexDDL < kDDL; indexDDL++) {
 
     rawReader->Reset();
-    AliTOFRawStream tofInput(rawReader);
     if (fDecoderVersion) {
       AliInfo("Using New Decoder \n"); 
       tofInput.LoadRawDataBuffers(indexDDL,fVerbose);
