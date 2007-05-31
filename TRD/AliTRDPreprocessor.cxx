@@ -21,9 +21,13 @@
 // It takes data from HLT and computes the parameters                     //
 // and stores both reference data and online calibration                  //
 // parameters in the CDB                                                  //
+// It alsotakes DCS data, does spline fits                                //
+// and stores both reference data and spline fits results                 //
+// in the CDB                                                             //
 //                                                                        //
 // Author:                                                                //
 //   R. Bailhache (R.Bailhache@gsi.de)                                    //
+//   W. Monange   (wilfried.monange@free.fr)                              //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -45,6 +49,7 @@
 
 #include "AliTRDCalibraFit.h"
 #include "AliTRDCalibraMode.h"
+#include "AliTRDDataDCS.h"
 #include "Cal/AliTRDCalDet.h"
 
 ClassImp(AliTRDPreprocessor)
@@ -80,8 +85,50 @@ void AliTRDPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
 }
 
 //______________________________________________________________________________________________
-UInt_t AliTRDPreprocessor::Process(TMap* /*dcsAliasMap*/)
+UInt_t AliTRDPreprocessor::Process(TMap* dcsAliasMap)
 {
+  //
+  // Process DCS and calibration part for HLT
+  //
+
+  UInt_t result = 0;
+
+  //
+  // DCS
+  //
+  AliTRDDataDCS dataRef;
+
+  AliCDBMetaData metaData;
+  metaData.SetBeamPeriod(0);
+  metaData.SetResponsible("Wilfried Monange/Raphaelle Bailhache");
+  metaData.SetComment("TRD calib test");
+
+  if (dataRef.ExtractDCS (dcsAliasMap)) {
+
+    if (!StoreReferenceData("Calib", "DataRef", &dataRef, &metaData)) {
+      AliError("Problem during StoreRef DCS");
+      result |= EStoreRefDCS;
+    }
+
+    if (dataRef.PerformFit()) {
+      if(!Store("Calib", "Data", &dataRef, &metaData, 0, 0)) {
+        AliError("Problem during Store DCS");
+        result |=EStoreDCS;
+      }
+    }else {
+      AliError("Problem during PerformFit DCS");
+      result |= EFitDCS;
+    }
+
+    dataRef.ClearFits();
+
+  }else {
+    AliError ("Problem during ExtractDCS");
+    result |= EExtractDCS;
+  }
+
+  dataRef.ClearGraphs();
+
   //
   // Process the calibration data for the HLT part
   //
@@ -106,13 +153,6 @@ UInt_t AliTRDPreprocessor::Process(TMap* /*dcsAliasMap*/)
   } else {
     Log(Form("Number of events not put in logbook!"));
   }
-
-
-  // Metadata for the reference data
-  AliCDBMetaData metaData;
-  metaData.SetBeamPeriod(1);
-  metaData.SetResponsible("Raphaelle Bailhache");
-  metaData.SetComment("This preprocessor fills reference data.");
 
   // Take the file from the HLT file exchange server
   TList *filesources = GetFileSources(kHLT,"GAINDRIFTPRF");
