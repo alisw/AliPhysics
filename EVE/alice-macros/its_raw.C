@@ -1,4 +1,7 @@
-void its_raw(const char *input="rawdata.root", Int_t mode=63)
+void its_raw(const char *input = "rawdata.root",
+	     Int_t  mode       = 63,
+	     Int_t  event      = 0,
+	     Bool_t accumulate = kFALSE)
 {
   if (gSystem->AccessPathName(input, kReadPermission))
   {
@@ -17,10 +20,24 @@ void its_raw(const char *input="rawdata.root", Int_t mode=63)
     rawReader->SelectEvents(7);
   }
 
-  rawReader->NextEvent();
-
   Alieve::ITSDigitsInfo* di = new Alieve::ITSDigitsInfo();
-  di->ReadRaw(rawReader);
+
+  if (accumulate) AliLog::SetGlobalLogLevel(AliLog::kError);
+  Int_t ev = 0;
+  do {
+    if (ev % 100 == 0) printf("Event: %d\n", ev);
+    if (rawReader->NextEvent() == kFALSE)
+    {
+      Error("its_raw", "Reading event %d failed (requested event %d).", ev, event);
+      if (accumulate)
+	break;
+      else
+	return;
+    }
+    if (accumulate) di->ReadRaw(rawReader);
+  } while (++ev < event);
+
+
   di->Dump();
 
   delete rawReader;
@@ -60,9 +77,14 @@ void its_raw(const char *input="rawdata.root", Int_t mode=63)
 	Reve::RenderElementList* relStave = new Reve::RenderElementList(sStave.Data());
 	relStave->SetMainColor((Color_t)2);
 	gReve->AddRenderElement(relSector, relStave);
-	for(nMod=0; nMod<4; nMod++) {
-	  Alieve::ITSModule* m = new Alieve::ITSModule(i++, di);
-	  gReve->AddRenderElement(relStave, m);
+	for(nMod=0; nMod<4; nMod++)
+	{
+	  if (di->GetDigits(i, 0) && di->GetDigits(i, 0)->GetEntriesFast() > 0)
+	  {
+	    Alieve::ITSModule* m = new Alieve::ITSModule(i, di);
+	    gReve->AddRenderElement(relStave, m);
+	  }
+	  ++i;
 	}
       }
     }
@@ -88,9 +110,14 @@ void its_raw(const char *input="rawdata.root", Int_t mode=63)
 	Reve::RenderElementList* relStave = new Reve::RenderElementList(sStave.Data());
 	relStave->SetMainColor((Color_t)2);
 	gReve->AddRenderElement(relSector, relStave);
-	for(nMod=0; nMod<4; nMod++) {
-	  Alieve::ITSModule* m = new Alieve::ITSModule(i++, di);
-	  gReve->AddRenderElement(relStave, m);
+	for(nMod=0; nMod<4; nMod++)
+	{
+	  if (di->GetDigits(i, 0) && di->GetDigits(i, 0)->GetEntriesFast() > 0)
+	  {
+	    Alieve::ITSModule* m = new Alieve::ITSModule(i, di);
+	    gReve->AddRenderElement(relStave, m);
+	  }
+	  ++i;
 	}
       }
     }
