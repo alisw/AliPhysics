@@ -9,6 +9,8 @@
 //.
 
 #include <AliDigit.h>      //base class  
+#include <AliRawReader.h>
+#include <AliLog.h>
 #include "TMath.h"         //Mathieson()
 #include <AliBitPacking.h> //Raw()
 
@@ -55,7 +57,7 @@ public:
          Int_t   Pc          (                               )const{return A2P(fPad);}                                                 //PC position number
          Float_t Q           (                               )const{return fQ;}                                                        //charge, [QDC]
   inline void    Raw         (UInt_t &w32,Int_t &ddl,Int_t &r,Int_t &d,Int_t &a)const;                                                 //digit->(w32,ddl,r,d,a)
-  inline void    Raw         (UInt_t  w32,Int_t  ddl         );                                                                        //(w32,ddl)->digit
+  inline Bool_t  Raw         (UInt_t  w32,Int_t  ddl,AliRawReader *pRR);                                                               //(w32,ddl)->digit
   inline void    Raw         (Int_t ddl,Int_t r,Int_t d,Int_t a);                                                                      //raw->abs pad number
   inline Bool_t  Set         (Int_t c,Int_t p,Int_t x,Int_t y,Int_t tid=0);                                                            //manual creation 
          void    SetQ        (Float_t q                      )     {fQ=q;}                                                             //manual creation 
@@ -72,6 +74,9 @@ public:
   static Float_t SizePadX    (                               )     {return 0.8;}                                                       //pad size x, [cm]  
   static Float_t SizePadY    (                               )     {return 0.84;}                                                      //pad size y, [cm]  
   inline static void   Lors2Pad(Float_t x,Float_t y,Int_t &pc,Int_t &px,Int_t &py);                                                    //(x,y)->(pc,px,py) 
+  enum EHMPIDRawError {
+    kInvalidRawDataWord = 1
+  };
 protected:                                                                   //AliDigit has fTracks[3]
   static Int_t fgSigmas;                                                                                                               //n. sigma to cut on charge 
   static const Float_t fgkMinPcX[6];                                                                                                   //limits PC
@@ -155,7 +160,7 @@ void AliHMPIDDigit::Raw(UInt_t &w32,Int_t &ddl,Int_t &r,Int_t &d,Int_t &a)const
   AliBitPacking::PackWord(        r ,w32,22,26);  //                                                Row number        bits (22..26) counts (1..24)  
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDDigit::Raw(UInt_t w32,Int_t ddl)
+Bool_t AliHMPIDDigit::Raw(UInt_t w32,Int_t ddl, AliRawReader *pRR)
 {
 // Converts a given raw data word to a digit
 // Arguments: w32 - 32 bits raw data word
@@ -165,8 +170,14 @@ void AliHMPIDDigit::Raw(UInt_t w32,Int_t ddl)
   Int_t d = AliBitPacking::UnpackWord(w32,18,21); assert(1<=d&&d<=10);   // 3322 2222 2222 1111 1111 1000 0000 0000 DILOGIC number  (1..10)
   Int_t a = AliBitPacking::UnpackWord(w32,12,17); assert(0<=a&&a<=47);   // 1098 7654 3210 9876 5432 1098 7654 3210 DILOGIC address (0..47)  
   Int_t q = AliBitPacking::UnpackWord(w32, 0,11); assert(0<=q&&q<=4095); // 0000 0rrr rrdd ddaa aaaa qqqq qqqq qqqq Qdc             (0..4095) 
+  if (r<1 || r>24 || d<1 || d>10 || a<0 || a>47 || q<0 || q>4095) {
+    AliWarning(Form("Invalid raw data word %x",w32));
+    pRR->AddMajorErrorLog(kInvalidRawDataWord,Form("w=%x",w32));
+    return kFALSE;
+  }
   Raw(ddl,r,d,a);
   fQ=q;
+  return kTRUE;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDDigit::Raw(Int_t ddl,Int_t r,Int_t d,Int_t a)

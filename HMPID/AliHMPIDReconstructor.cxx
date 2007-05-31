@@ -191,7 +191,7 @@ void AliHMPIDReconstructor::Reconstruct(AliRunLoader *pAL,AliRawReader* pRR)cons
       UInt_t w32=0;
       while(pRR->ReadNextInt(w32)){//raw records loop (in selected DDL files)
         UInt_t ddl=pRR->GetDDLID(); //returns 0,1,2 ... 13
-        dig.Raw(w32,ddl);
+        dig.Raw(w32,ddl,pRR);
         AliDebug(1,Form("Ch=%i DDL=%i raw=0x%x digit=(%3i,%3i,%3i,%3i) Q=%5.2f",iCh,ddl,w32,dig.Ch(),dig.Pc(),dig.PadPcX(),dig.PadPcY(),dig.Q()));
         if(!IsDigSurvive(&dig)) continue;                                             //sigma cut test
         new((*((TClonesArray*)digLst.At(iCh)))[iDigCnt[iCh]++]) AliHMPIDDigit(dig); //add this digit to the tmp list
@@ -222,9 +222,9 @@ void AliHMPIDReconstructor::ConvertDigits(AliRawReader *pRR,TTree *pDigTree)cons
     pRR->Select("HMPID",2*iCh,2*iCh+1);//select only DDL files for the current chamber      
     Int_t iDigCnt=0;
     UInt_t w32=0;
-                while(pRR->ReadNextInt(w32)){//raw records loop (in selected DDL files)
+    while(pRR->ReadNextInt(w32)){//raw records loop (in selected DDL files)
       UInt_t ddl=pRR->GetDDLID(); //returns 0,1,2 ... 13
-      dig.Raw(w32,ddl);  
+      if (!dig.Raw(w32,ddl,pRR)) continue;
       AliDebug(1,Form("Ch=%i DDL=%i raw=0x%x digit=(%3i,%3i,%3i,%3i) Q=%5.2f",iCh,ddl,w32,dig.Ch(),dig.Pc(),dig.PadPcX(),dig.PadPcY(),dig.Q()));
       if(!IsDigSurvive(&dig)) continue;                                       //sigma cut test
       new((*((TClonesArray*)fDig->At(iCh)))[iDigCnt++]) AliHMPIDDigit(dig); //add this digit to the tmp list

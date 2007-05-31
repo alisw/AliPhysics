@@ -1153,7 +1153,7 @@ Bool_t AliReconstruction::RunTracking(AliESD*& esd)
     // run tracking
     if (fTracker[iDet]->PropagateBack(esd) != 0) {
       AliError(Form("%s backward propagation failed", fgkDetectorName[iDet]));
-      return kFALSE;
+      //      return kFALSE;
     }
     if (fCheckPointLevel > 1) {
       WriteESD(esd, Form("%s.back", fgkDetectorName[iDet]));
@@ -1185,7 +1185,7 @@ Bool_t AliReconstruction::RunTracking(AliESD*& esd)
     // run tracking
     if (fTracker[iDet]->RefitInward(esd) != 0) {
       AliError(Form("%s inward refit failed", fgkDetectorName[iDet]));
-      return kFALSE;
+      //      return kFALSE;
     }
     if (fCheckPointLevel > 1) {
       WriteESD(esd, Form("%s.refit", fgkDetectorName[iDet]));

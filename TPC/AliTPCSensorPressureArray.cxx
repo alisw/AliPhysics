@@ -61,7 +61,7 @@ AliTPCSensorPressureArray::AliTPCSensorPressureArray(UInt_t startTime, UInt_t en
   TString filename(expPath);
   filename.Append('/');
   filename.Append(kFname);
-  fSensors =  AliTPCSensorPressure::ReadListInd(filename.Data(),fFirstSensor,fLastSensor);
+  fSensors =  AliTPCSensorPressure::ReadList(filename.Data());
   fStartTime = TTimeStamp(startTime);
   fEndTime   = TTimeStamp(endTime);
   delete expPath;
@@ -75,7 +75,7 @@ AliTPCSensorPressureArray::AliTPCSensorPressureArray(const char *fname) :
   //
   // AliTPCSensorPressureArray constructor
   //
-  fSensors = AliTPCSensorPressure::ReadListInd(fname,fFirstSensor,fLastSensor);
+  fSensors = AliTPCSensorPressure::ReadList(fname);
   fSensors->BypassStreamer(kFALSE);
 }
 
@@ -126,7 +126,7 @@ void AliTPCSensorPressureArray::ReadSensors(const char *fname)
   //
   // Read list of temperature sensors from text file
   //
-  fSensors = AliTPCSensorPressure::ReadListInd(fname,fFirstSensor,fLastSensor);
+  fSensors = AliTPCSensorPressure::ReadList(fname);
 }  
 //_____________________________________________________________________________
 void AliTPCSensorPressureArray::SetGraph(TMap *map) 

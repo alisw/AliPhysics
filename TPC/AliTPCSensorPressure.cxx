@@ -72,15 +72,9 @@ AliTPCSensorPressure& AliTPCSensorPressure::operator=(const AliTPCSensorPressure
   return *this;  
 }
 
-TClonesArray * AliTPCSensorPressure::ReadList(const char *fname) {
    
-   Int_t firstSensor, lastSensor;
-   return ReadListInd(fname,firstSensor,lastSensor);
-}  
 
-TClonesArray * AliTPCSensorPressure::ReadListInd(const char *fname, 
-                                          Int_t& firstSensor,
-					  Int_t& lastSensor) {
+TClonesArray * AliTPCSensorPressure::ReadList(const char *fname) {
   //
   // read values from ascii file
   //
@@ -109,8 +103,8 @@ TClonesArray * AliTPCSensorPressure::ReadListInd(const char *fname,
   //tree->SetBranchAddress("Y",&y);
   //tree->SetBranchAddress("Z",&z);
 
-  firstSensor = (Int_t)tree->GetMinimum("ECha");
-  lastSensor = (Int_t)tree->GetMaximum("ECha");
+  // firstSensor = (Int_t)tree->GetMinimum("ECha");
+  // lastSensor = (Int_t)tree->GetMaximum("ECha");
 
   TClonesArray * array = new TClonesArray("AliTPCSensorPressure",nentries);
 

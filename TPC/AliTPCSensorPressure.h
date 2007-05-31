@@ -48,8 +48,6 @@ public:
 
 
   static TClonesArray * ReadList(const char *fname);
-  static TClonesArray * ReadListInd(const char *fname,
-                                 Int_t& firstSensor, Int_t& lastSensor);
 
 protected:
   Int_t fType;      // Position of sensors on fieldcage

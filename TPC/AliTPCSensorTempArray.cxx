@@ -61,7 +61,7 @@ AliTPCSensorTempArray::AliTPCSensorTempArray(UInt_t startTime, UInt_t endTime,
   TString filename(expPath);
   filename.Append('/');
   filename.Append(kFname);
-  fSensors =  AliTPCSensorTemp::ReadListInd(filename.Data(),fFirstSensor,fLastSensor);
+  fSensors =  AliTPCSensorTemp::ReadList(filename.Data());
   fStartTime = TTimeStamp(startTime);
   fEndTime   = TTimeStamp(endTime);
   delete expPath;
@@ -75,7 +75,7 @@ AliTPCSensorTempArray::AliTPCSensorTempArray(const char *fname) :
   //
   // AliTPCSensorTempArray constructor
   //
-  fSensors = AliTPCSensorTemp::ReadListInd(fname,fFirstSensor,fLastSensor);
+  fSensors = AliTPCSensorTemp::ReadList(fname);
   fSensors->BypassStreamer(kFALSE);
 }
 
@@ -126,7 +126,7 @@ void AliTPCSensorTempArray::ReadSensors(const char *fname)
   //
   // Read list of temperature sensors from text file
   //
-  fSensors = AliTPCSensorTemp::ReadListInd(fname,fFirstSensor,fLastSensor);
+  fSensors = AliTPCSensorTemp::ReadList(fname);
 }  
 //_____________________________________________________________________________
 void AliTPCSensorTempArray::SetGraph(TMap *map) 
@@ -174,10 +174,12 @@ AliTPCSensorTemp* AliTPCSensorTempArray::GetSensor(Int_t type, Int_t side, Int_t
  return 0;
 }
 //_____________________________________________________________________________
+
 AliTPCSensorTemp* AliTPCSensorTempArray::GetSensor(Int_t IdDCS){
   return dynamic_cast<AliTPCSensorTemp*>(AliDCSSensorArray::GetSensor(IdDCS));
 }
 //_____________________________________________________________________________
+
 AliTPCSensorTemp* AliTPCSensorTempArray::GetSensor(Double_t x, Double_t y, Double_t z){
   return dynamic_cast<AliTPCSensorTemp*>(AliDCSSensorArray::GetSensor(x,y,z));
 }
