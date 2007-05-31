@@ -142,12 +142,9 @@ void ITSDigitsInfo::ReadRaw(AliRawReader* raw)
   // Read raw-data into internal structures. AliITSdigit is used to
   // store raw-adata for all sub-detectors.
 
-  static const Int_t cloneGrow = 128;
-
   {
     AliITSRawStreamSPD inputSPD(raw);
     TClonesArray* digits = 0;
-    Int_t         count  = 0;
     while (inputSPD.Next())
     {
       Int_t module = inputSPD.GetModuleID();
@@ -156,33 +153,24 @@ void ITSDigitsInfo::ReadRaw(AliRawReader* raw)
     
       if (inputSPD.IsNewModule())
       {
-	if (digits)
-	  digits->Expand(count);
-
-	digits = new TClonesArray("AliITSdigit", 0);
-	fSPDmap[module] = digits;
-	count = 0;
+	digits = fSPDmap[module];
+	if (digits == 0)
+	  fSPDmap[module] = digits = new TClonesArray("AliITSdigit", 16);
       }
 
-      if (count % cloneGrow == 0)
-	digits->Expand(digits->GetEntriesFast() + cloneGrow);
-
-      AliITSdigit* d = new ((*digits)[count]) AliITSdigit();
+      AliITSdigit* d = new ((*digits)[digits->GetEntriesFast()]) AliITSdigit();
       d->SetCoord1(column);
       d->SetCoord2(row);
       d->SetSignal(1);
-      ++count;
 
       // printf("SPD: %d %d %d\n",module,column,row);
     }
-    if (digits) digits->Expand(count);
     raw->Reset();
   }
 
   {
     AliITSRawStreamSDD input(raw);
     TClonesArray* digits = 0;
-    Int_t         count  = 0;
     while (input.Next())
     {
       Int_t module = input.GetModuleID();
@@ -192,33 +180,24 @@ void ITSDigitsInfo::ReadRaw(AliRawReader* raw)
 
       if (input.IsNewModule())
       {
-	if (digits)
-	  digits->Expand(count);
-
-	digits = new TClonesArray("AliITSdigit", 0);
-	fSDDmap[module] = digits;
-	count = 0;
+	digits = fSDDmap[module];
+	if (digits == 0)
+	  fSDDmap[module] = digits = new TClonesArray("AliITSdigit", 0);
       }
 
-      if (count % cloneGrow == 0)
-	digits->Expand(digits->GetEntriesFast() + cloneGrow);
-
-      AliITSdigit* d = new ((*digits)[count]) AliITSdigit();
+      AliITSdigit* d = new ((*digits)[digits->GetEntriesFast()]) AliITSdigit();
       d->SetCoord1(anode);
       d->SetCoord2(time);
       d->SetSignal(signal);
-      ++count;
 
       // printf("SDD: %d %d %d %d\n",module,anode,time,signal);
     }
-    if (digits) digits->Expand(count);
     raw->Reset();
   }
 
   {
     AliITSRawStreamSSD input(raw);
     TClonesArray* digits = 0;
-    Int_t         count  = 0;
     while (input.Next())
     {
       Int_t module  = input.GetModuleID();
@@ -228,26 +207,18 @@ void ITSDigitsInfo::ReadRaw(AliRawReader* raw)
 
       if (input.IsNewModule())
       {
-	if (digits)
-	  digits->Expand(count);
-
-	digits = new TClonesArray("AliITSdigit", 0);
-	fSSDmap[module] = digits;
-	count = 0;
+	digits = fSSDmap[module];
+	if (digits == 0)
+	  fSSDmap[module] = digits = new TClonesArray("AliITSdigit", 0);
       }
 
-      if (count % cloneGrow == 0)
-	digits->Expand(digits->GetEntriesFast() + cloneGrow);
-
-      AliITSdigit* d = new ((*digits)[count]) AliITSdigit();
+      AliITSdigit* d = new ((*digits)[digits->GetEntriesFast()]) AliITSdigit();
       d->SetCoord1(side);
       d->SetCoord2(strip);
       d->SetSignal(signal);
-      ++count;
 
       // printf("SSD: %d %d %d %d\n",module,side,strip,signal);
     }
-    if (digits) digits->Expand(count);
     raw->Reset();
   }
 }
