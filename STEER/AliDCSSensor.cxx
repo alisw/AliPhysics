@@ -36,7 +36,7 @@
 
 
 #include "AliDCSSensor.h"
-ClassImp(AliDCSSensor);
+ClassImp(AliDCSSensor)
 
 const Double_t kSmall = -9e99;     // invalid small value
 const Double_t kLarge = 9e99;      // invalid large value
