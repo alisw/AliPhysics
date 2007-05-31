@@ -182,7 +182,7 @@ int AliHLTModuleAgent::Unregister(AliHLTModuleAgent* pAgent)
     } else {
       prev->fpNext=handler->fpNext;
     }
-    log.Logging(kHLTLogDebug, "AliHLTModuleAgent::Unregister", "", "module agent %p removed", pAgent);
+    //log.Logging(kHLTLogDebug, "AliHLTModuleAgent::Unregister", "", "module agent %p removed", pAgent);
     fCount--;
   }
   return 0;
