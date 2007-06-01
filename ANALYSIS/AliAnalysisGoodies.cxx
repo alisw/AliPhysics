@@ -31,7 +31,6 @@
 #include <Riostream.h>
 #ifdef WITHALIEN
 #include <TGridResult.h>
-#include <TAlienCollection.h>
 #include <TFileMerger.h>
 #endif
 #include <TChain.h>
@@ -603,7 +602,7 @@ Bool_t AliAnalysisGoodies::ProcessEsdXmlCollection(const char * xmlFile) const
 
 #ifdef WITHALIEN
   //AliXMLCollection * collection = AliXMLCollection::Open(xmlFile,0) ;
-  TGridCollection * collection =  (TGridCollection*) TAlienCollection::Open(xmlFile, 0);//(TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(%s)");
+  TGridCollection * collection =  (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(%s,0)",xmlFile));
   if (! collection) {
     AliError(Form("%s not found", xmlFile)) ; 
     return kFALSE ; 
