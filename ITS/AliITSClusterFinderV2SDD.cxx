@@ -32,7 +32,6 @@
 #include <TClonesArray.h>
 #include "AliITSdigitSDD.h"
 #include "AliITSgeomTGeo.h"
-
 ClassImp(AliITSClusterFinderV2SDD)
 
 AliITSClusterFinderV2SDD::AliITSClusterFinderV2SDD(AliITSDetTypeRec* dettyp):AliITSClusterFinderV2(dettyp),
@@ -114,7 +113,6 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
   //------------------------------------------------------------
 
   const TGeoHMatrix *mT2L=AliITSgeomTGeo::GetTracking2LocalMatrix(fModule);
-
   AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(fModule);
   Int_t ncl=0; 
   TClonesArray &cl=*clusters;
@@ -164,31 +162,29 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
 	 Int_t maxi=0,mini=0,maxj=0,minj=0;
 	 //AliBin *bmax=&bins[s][idx[k]];
 	 //Float_t max = TMath::Max(TMath::Abs(bmax->GetQ())/5.,3.);
-	 Float_t max=3;
+    
 	 for (Int_t di=-2; di<=2;di++)
 	   for (Int_t dj=-3;dj<=3;dj++){
 	     Int_t index = idx[k]+di+dj*nzBins;
 	     if (index<0) continue;
 	     if (index>=nMaxBin) continue;
 	     AliBin *b=&bins[s][index];
-	     if (TMath::Abs(b->GetQ())>max){
-	       if (di>maxi) maxi=di;
-	       if (di<mini) mini=di;
-	       if (dj>maxj) maxj=dj;
-	       if (dj<minj) minj=dj;
-	       //
-	       if(digits) {
-		 if (TMath::Abs(di)<2&&TMath::Abs(dj)<2){
-		   AliITSdigitSDD* d=(AliITSdigitSDD*)digits->UncheckedAt(b->GetIndex());
-		   for (Int_t itrack=0;itrack<10;itrack++){
-		     Int_t track = (d->GetTracks())[itrack];
-		     if (track>=0) {
-		       AddLabel(milab, track); 
-		     }
+	     if (di>maxi) maxi=di;
+	     if (di<mini) mini=di;
+	     if (dj>maxj) maxj=dj;
+	     if (dj<minj) minj=dj;
+	     //
+	     if(digits) {
+	       if (TMath::Abs(di)<2&&TMath::Abs(dj)<2){
+		 AliITSdigitSDD* d=(AliITSdigitSDD*)digits->UncheckedAt(b->GetIndex());
+		 for (Int_t itrack=0;itrack<10;itrack++){
+		   Int_t track = (d->GetTracks())[itrack];
+		   if (track>=0) {
+		     AddLabel(milab, track); 
 		   }
 		 }
 	       }
-	     }
+	     }   
 	   }
 	 
 	 /* 
@@ -247,8 +243,6 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
          q/=5.243;  //to have MPV 1 MIP = 86.4 KeV --> this must go to calibr.
          Float_t hit[5] = {y, z, 0.0030*0.0030, 0.0020*0.0020, q};
          Int_t  info[3] = {maxj-minj+1, maxi-mini+1, fNlayer[fModule]};
-
-         if (c.GetQ() < 20.) continue; //noise cluster
 	 
 	 if (digits) {	  
 	   //	   AliBin *b=&bins[s][idx[k]];
@@ -274,6 +268,7 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
 	 ncl++;
       }
     }
+  
 }
 
 
