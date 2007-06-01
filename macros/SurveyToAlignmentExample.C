@@ -1,4 +1,4 @@
-void SurveyToAlignmentExampleA(){
+void SurveyToAlignmentExample(){
   // Macro to show an example of conversion of survey data into alignment
   // data. The position of four fiducial marks, sticked above one surface
   // of a box is converted into the global position of the box.
