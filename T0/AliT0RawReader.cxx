@@ -16,7 +16,8 @@ ClassImp(AliT0RawReader)
        fRawReader(rawReader),
        fData(NULL),
        fPosition(0),
-       fParam(NULL)
+       fParam(NULL),
+       fIsOnline(kFALSE)
 {
   //
 // create an object to read T0raw digits
@@ -24,9 +25,15 @@ ClassImp(AliT0RawReader)
  
   fRawReader->Reset();
   fRawReader->Select("T0");
-  AliT0Parameters* fParam = AliT0Parameters::Instance();   
-  fParam->Init();
+ // AliT0Parameters* fParam = AliT0Parameters::Instance();  
  
+ // fIsOnline = isOnline; 
+  // fIsOnline=kTRUE;
+ /* if (fIsOnline)
+    fParam->InitIfOnline();
+  else 
+    fParam->Init();
+ */
 }
  AliT0RawReader::~AliT0RawReader ()
 {
@@ -91,17 +98,20 @@ Bool_t  AliT0RawReader::Next()
   Bool_t correct=kTRUE;
   Int_t header;
   
-  //  AliT0Parameters* param = AliT0Parameters::Instance();   
-  // param->Init();
-  
-  Int_t fNTRM = fParam->GetNumberOfTRMs();
-  
-  for ( Int_t k=0; k<110; k++) {
+    AliT0Parameters* fParam = AliT0Parameters::Instance();   
+   if (fIsOnline)
+   fParam->InitIfOnline();
+ 	else
+   fParam->Init();
+
+   Int_t fNTRM = fParam->GetNumberOfTRMs();
+
+   for ( Int_t k=0; k<110; k++) {
     koefhits[k]=0;
     for ( Int_t jj=0; jj<5; jj++) {
       fAllData[k][jj]=0;
-    }
-  }
+     }
+   }
     do {
       if (!fRawReader->ReadNextData(fData)) return kFALSE;
     } while (fRawReader->GetDataSize() == 0);

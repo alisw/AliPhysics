@@ -16,7 +16,8 @@ class AliT0RawReader : public TTask {
     fRawReader(0),
     fData(NULL),
     fPosition(0),
-    fParam(0)
+    fParam(0),
+    fIsOnline(kFALSE)
     {}
   
   AliT0RawReader& operator=(const AliT0RawReader&) { return *this; }
@@ -41,18 +42,21 @@ class AliT0RawReader : public TTask {
     kIncorrectLUT = 10
   };
 
-   
+  void SetOnlineMode(Bool_t on=kFALSE) {fIsOnline=on;}
+  Bool_t IsOnlineMode () {return fIsOnline;}
+     
   protected :
 
   AliRawReader*    fRawReader;    // object for reading the raw data
   UChar_t*         fData;         // raw data
   Int_t            fPosition;     // current (32 bit) position in fData
   AliT0Parameters *fParam;
-  //  Int_t            fNTRM; //number of TRMs, 1 - testbeam; 2 - simulation
+//  Int_t            fNTRM; //number of TRMs, 1 - testbeam; 2 - simulation
+  Bool_t           fIsOnline;
   
   Int_t fAllData[110][5];
   
- ClassDef(AliT0RawReader,1) //class for reading T0 Raw data
+ ClassDef(AliT0RawReader,2) //class for reading T0 Raw data
 };
 
 typedef AliT0RawReader AliSTARTRawReader; // for backward compatibility

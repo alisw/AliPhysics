@@ -69,7 +69,7 @@ AliT0Parameters::AliT0Parameters()
    fPMTeff(),
    fTimeDelayDA(0),fTimeDelayCFD(0),fTimeDelayTVD(0),fMeanT0(499),
    fCalibentry(), fLookUpentry(),fSlewCorr(),
-   fLookUp(0), fNumberOfTRMs(0)
+   fLookUp(0), fNumberOfTRMs(2)
 
 {
   // Default constructor 
@@ -146,6 +146,39 @@ AliT0Parameters::Init()
 
 
 //__________________________________________________________________
+
+void AliT0Parameters::InitIfOnline()
+{
+// should be used in online
+// for switching to this one should write
+  // AliT0RawReader myrawreader(rawReader);
+//	myrawreader.SetOnlineMode(kTRUE);
+     
+
+  if (fIsInit) return;
+ 
+  Int_t trm=0; Int_t tdc=0; Int_t chain=0; Int_t channel=0;
+  for (Int_t ik=0; ik<110; ik++)
+        {
+         AliT0LookUpKey * lookkey= new AliT0LookUpKey();
+         AliT0LookUpValue * lookvalue= new AliT0LookUpValue();
+
+
+          lookvalue->SetTRM(trm);
+          lookvalue->SetTDC(tdc);
+          lookvalue->SetChain(chain);
+          lookvalue->SetChannel(channel);
+          lookkey->SetKey(ik);
+          if(ik==55) { trm=1; tdc=0; channel=0;}
+          if (channel<6) channel +=2;
+          else {channel = 0; tdc++;}
+          fLookUp.Add((TObject*)lookvalue,(TObject*)lookkey);	
+       }
+
+       fIsInit=kTRUE;
+}
+//__________________________________________________________________
+
 Float_t
 AliT0Parameters::GetTimeDelayDA(Int_t ipmt) 
 {
@@ -372,8 +405,11 @@ AliT0Parameters::GetChannel(Int_t trm,  Int_t tdc, Int_t chain, Int_t channel)
   
   AliT0LookUpKey * lookkey;  //= new AliT0LookUpKey();
   AliT0LookUpValue * lookvalue= new AliT0LookUpValue(trm,tdc,chain,channel);
-    
-   lookkey = (AliT0LookUpKey*) fgLookUp->GetMapLookup()->GetValue((TObject*)lookvalue);
+  if (fgLookUp)
+       lookkey = (AliT0LookUpKey*) fgLookUp->GetMapLookup()->GetValue((TObject*)lookvalue);
+   else
+   lookkey = (AliT0LookUpKey*) fLookUp.GetValue((TObject*)lookvalue);
+
   if (!lookkey ) {
     cout<<" no such address "<<endl; return -1;
   }

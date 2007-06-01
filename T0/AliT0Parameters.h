@@ -28,6 +28,8 @@ public:
   static AliT0Parameters* Instance();
 
   void Init();  
+  void InitIfOnline();
+
   // Set various `Fixed' parameters 
   void SetPh2Mip(Int_t r=300)          { fPh2Mip = r; }
   void SetmV2Mip(Int_t r=50)          { fmV2Mip = r; }
@@ -113,6 +115,7 @@ protected:
    
   TMap fLookUp;           //lookup table
   Int_t fNumberOfTRMs;    // number of TRMs in setup
+  
 
   static AliT0CalibData * fgCalibData; // singleton for Calibration data
   static AliT0CalibData * fgLookUp; // singleton for Calibration data
@@ -122,7 +125,7 @@ protected:
   AliCDBEntry*   fLookUpentry ;  // pointer to T0 lokkup table
   AliCDBEntry*   fSlewCorr ;  // pointer to slewing correction
   
-  ClassDef(AliT0Parameters,2)
+  ClassDef(AliT0Parameters,3)
     private:
   AliT0Parameters(const  AliT0Parameters&);
   AliT0Parameters& operator=(const AliT0Parameters&);

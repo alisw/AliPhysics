@@ -22,7 +22,7 @@ class AliT0LookUpValue: public TObject
    void SetChain(Int_t n) {fChain=n;};
    void SetChannel(Int_t n) {fChannel=n;};
    virtual void Clear (void) {fTRM = -1; fTDC=-1; fChain=-1;  fChannel=-1;}
-//   void Clear();
+   void Clear(const Option_t*) {};
 
  protected:
 
@@ -39,13 +39,18 @@ class AliT0LookUpKey: public TObject
  public:
   AliT0LookUpKey();
   AliT0LookUpKey(Int_t key); 
+  AliT0LookUpKey(TString name); 
   Int_t GetKey(void) const {return fKey;};
   void SetKey(Int_t n)  {fKey=n;};
- virtual Bool_t IsEqual(const TObject *obj) const;
-  virtual ULong_t Hash(void) const {return fKey;};
-//   virtual void Clear(void) {fKey=0;}
+  TString GetChannelName() {return fName;};
+  void SetChannelName(TString name) {fName = name;};
+  virtual Bool_t IsEqual(const TObject *obj) const;
+  virtual ULong_t Hash(void) const {return TString::Hash(this, sizeof(*this));};
+  //   virtual void Clear(void) {fKey=0;}
  protected:
-  Int_t fKey;   //logical channel name
+  Int_t fKey;   //logical channel number
+  TString fName; //logical channel name
+  
    ClassDef(AliT0LookUpKey,1)  //Hits for detector T0
 };
 
