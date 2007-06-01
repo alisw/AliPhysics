@@ -261,6 +261,7 @@ void AliMUONLocalTriggerBoard::BP(Option_t *option) const
    if (op.Contains("X"))
    {
       printf("-------- TRIGGER INPUT ---------\n");
+      printf("--- warning: switchs not activated at this level ---\n");
       printf("===============================================================\n");
       printf("                            5432109876543210");
 
@@ -476,6 +477,8 @@ void AliMUONLocalTriggerBoard::TrigX(Int_t ch1q[16], Int_t ch2q[16], Int_t ch3q[
    }
 
 //--- inititialize che using chq 
+//--- switch zero_down, zero_middle & zero_up added 30/05/07
+//--- fSwitch[7/8/9] = zero_down/zero_middle/zero_up
    for (i=0; i<19; i++) {
       if (i<1||i>16)  ch1e[i]=0; 
       else            ch1e[i]=ch1q[i-1]; 
@@ -486,13 +489,16 @@ void AliMUONLocalTriggerBoard::TrigX(Int_t ch1q[16], Int_t ch2q[16], Int_t ch3q[
    }
    for (i=0; i<35; i++) {
       if (i<1||i>32) ch3e[i]=0; 
-      else           ch3e[i]=ch3q[i-1];
+      else if (i>=1 && i<=8)   ch3e[i]=ch3q[i-1]&!fSwitch[7];
+      else if (i>=9 && i<=24)  ch3e[i]=ch3q[i-1]&!fSwitch[8];
+      else if (i>=25 && i<=32) ch3e[i]=ch3q[i-1]&!fSwitch[9];
    }
    for (i=0; i<36; i++) {
       if (i<2||i>33) ch4e[i]=0; 
-      else           ch4e[i]=ch4q[i-2];
+      else if (i>=2 && i<=9)   ch4e[i]=ch4q[i-2]&!fSwitch[7];
+      else if (i>=10 && i<=25) ch4e[i]=ch4q[i-2]&!fSwitch[8];
+      else if (i>=26 && i<=33) ch4e[i]=ch4q[i-2]&!fSwitch[9];
    }
-
 
 //--- calculate dble & sgle first station
    for (i=0; i<=15; i++) {                   
