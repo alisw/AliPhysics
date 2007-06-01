@@ -33,9 +33,13 @@ class AliKFParticle :public AliKFParticleBase
   //*  INITIALIZATION
   //*
 
+  //* Set magnetic field for all particles
+  
+  static void SetField( Double_t Bz );
+
   //* Constructor (empty)
 
-  AliKFParticle():AliKFParticleBase(), fBz(0) {} 
+  AliKFParticle():AliKFParticleBase(){} 
 
   //* Destructor (empty)
 
@@ -43,14 +47,11 @@ class AliKFParticle :public AliKFParticleBase
 
   //* Initialisation from ALICE track, PID hypothesis can be provided 
 
-  AliKFParticle( const AliExternalTrackParam &track, Double_t bz, Int_t PID = 211 );
+  AliKFParticle( const AliExternalTrackParam &track, Int_t PID = 211 );
 
   //* Initialisation from ESD vertex 
 
-  AliKFParticle( const AliESDVertex &vertex, Double_t bz );
-
-  void SetBz(Double_t bz) {fBz=bz;}
-  Double_t GetBz() const  {return fBz;}
+  AliKFParticle( const AliESDVertex &vertex );
 
   //* Copy vertex part to ESD vertex 
 
@@ -217,7 +218,7 @@ class AliKFParticle :public AliKFParticleBase
 
   //* Method to access ALICE field 
  
-  Double_t GetFieldAlice() const ;
+  static Double_t GetFieldAlice();
   
   //* Other methods required by the abstract AliKFParticleBase class 
   
@@ -225,10 +226,11 @@ class AliKFParticle :public AliKFParticleBase
   void GetDStoParticle( const AliKFParticleBase &p, Double_t &DS, Double_t &DSp )const ;
   void Transport( Double_t dS, Double_t P[], Double_t C[] ) const ;
 
-private:
-  Double_t fBz;  // Bz compoment of the magnetic field
+ private:
 
-  ClassDef( AliKFParticle, 2 );
+  static Double_t fgBz;  //* Bz compoment of the magnetic field
+
+  ClassDef( AliKFParticle, 3 );
 
 };
 
@@ -241,6 +243,10 @@ private:
 //---------------------------------------------------------------------
 
 
+inline void AliKFParticle::SetField( Double_t Bz )
+{ 
+  fgBz = Bz;
+}
 
 inline void AliKFParticle::Initialize()
 { 
@@ -465,7 +471,7 @@ inline void AliKFParticle::TransportToPoint( const Double_t xyz[] )
 
 inline void AliKFParticle::TransportToVertex( const AliESDVertex &v )
 {       
-  TransportToPoint( AliKFParticle(v,fBz).fP );
+  TransportToPoint( AliKFParticle(v).fP );
 }
 
 inline void AliKFParticle::TransportToParticle( const AliKFParticle &p )
@@ -484,9 +490,10 @@ inline Double_t AliKFParticle::GetDStoPoint( const Double_t xyz[] ) const
 {
   return AliKFParticleBase::GetDStoPointBz( GetFieldAlice(), xyz );
 }
+
   
 inline void AliKFParticle::GetDStoParticle( const AliKFParticle &p, 
-				     Double_t &DS, Double_t &DSp ) const 
+					    Double_t &DS, Double_t &DSp ) const 
 {
   return AliKFParticleBase::GetDStoParticleBz( GetFieldAlice(), p, DS,DSp);
 }
@@ -515,12 +522,12 @@ inline Double_t AliKFParticle::GetDeviationFromVertex( const AliKFParticle &Vtx 
 
 inline Double_t AliKFParticle::GetDistanceFromVertex( const AliESDVertex &Vtx ) const
 {
-  return GetDistanceFromVertex( AliKFParticle(Vtx,fBz) );
+  return GetDistanceFromVertex( AliKFParticle(Vtx) );
 }
 
 inline Double_t AliKFParticle::GetDeviationFromVertex( const AliESDVertex &Vtx ) const
 {
-  return GetDeviationFromVertex( AliKFParticle(Vtx,fBz) );
+  return GetDeviationFromVertex( AliKFParticle(Vtx) );
 }
   
 inline Double_t AliKFParticle::GetDistanceFromParticle( const AliKFParticle &p ) const 
@@ -540,7 +547,7 @@ inline void AliKFParticle::SubtractFromVertex( AliKFParticle &v ) const
 
 inline void AliKFParticle::SubtractFromVertex( AliESDVertex &v ) const 
 {
-  AliKFParticle vTmp(v,fBz);
+  AliKFParticle vTmp(v);
   SubtractFromVertex( vTmp );
   v = AliESDVertex( vTmp.fP, vTmp.fC, vTmp.fChi2, (vTmp.fNDF +3)/2, v.GetName() );
 }
@@ -551,9 +558,9 @@ inline void AliKFParticle::CopyToESDVertex( AliESDVertex &v ) const
   v = AliESDVertex( vTmp.fP, vTmp.fC, vTmp.fChi2, (vTmp.fNDF +3)/2 );
 }
 
-inline Double_t AliKFParticle::GetFieldAlice() const 
+inline Double_t AliKFParticle::GetFieldAlice()
 { 
-  return fBz; 
+  return fgBz; 
 }
 
 inline void AliKFParticle::GetFieldValue( const Double_t * /*xyz*/, Double_t B[] ) const 
@@ -563,7 +570,7 @@ inline void AliKFParticle::GetFieldValue( const Double_t * /*xyz*/, Double_t B[]
 }
 
 inline void AliKFParticle::GetDStoParticle( const AliKFParticleBase &p, 
-				     Double_t &DS, Double_t &DSp )const
+					    Double_t &DS, Double_t &DSp )const
 {
   return AliKFParticleBase::GetDStoParticleBz( GetFieldAlice(), p, DS,DSp);
 }

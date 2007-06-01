@@ -24,8 +24,9 @@
 
 ClassImp(AliKFParticle)
 
+Double_t AliKFParticle::fgBz = 5.;  //* Bz compoment of the magnetic field
 
-  AliKFParticle::AliKFParticle( const AliExternalTrackParam &track, Double_t bz, Int_t PID ) : fBz(bz)
+AliKFParticle::AliKFParticle( const AliExternalTrackParam &track, Int_t PID )
 {
   // Constructor from ALICE track, PID hypothesis can be provided
 
@@ -63,7 +64,7 @@ ClassImp(AliKFParticle)
   fC[35] = 1.;
 }
 
-AliKFParticle::AliKFParticle( const AliESDVertex &vertex, Double_t bz): fBz(bz)
+AliKFParticle::AliKFParticle( const AliESDVertex &vertex )
 {
   // Constructor from ALICE vertex
 

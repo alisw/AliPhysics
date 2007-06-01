@@ -19,7 +19,6 @@
 #include "AliKFParticleBase.h"
 #include "TMath.h"
 
-
 ClassImp(AliKFParticleBase)
 
 
@@ -30,7 +29,6 @@ AliKFParticleBase::AliKFParticleBase() :fQ(0), fNDF(-3), fChi2(0), fSFromDecay(0
   Initialize();
 }
  
-
 void AliKFParticleBase::Initialize()
 {
   //* Initialise covariance matrix and set current parameters to 0.0 
@@ -97,7 +95,7 @@ Int_t AliKFParticleBase::GetMass( Double_t &M, Double_t &Error ) const
     return 0;
   }
   M     = 0;
-  Error = 0;
+  Error = 1.e20;
   return 1;
 }
 
@@ -122,7 +120,7 @@ Int_t AliKFParticleBase::GetDecayLength( Double_t &L, Double_t &Error ) const
     Error = TMath::Sqrt(TMath::Abs(Error));
     return 0;
   }
-  Error = 0;
+  Error = 1.e20;
   return 1;
 }
 
@@ -139,7 +137,7 @@ Int_t AliKFParticleBase::GetLifeTime( Double_t &TauC, Double_t &Error ) const
     Error = TMath::Sqrt( Error );
     return 0;
   }
-  Error = 0;
+  Error = 1.e20;
   return 1;
 }
 
@@ -151,7 +149,6 @@ void AliKFParticleBase::operator +=( const AliKFParticleBase &Daughter )
   AddDaughter( Daughter );
 }
   
-
 void AliKFParticleBase::AddDaughter( const AliKFParticleBase &Daughter )
 {
   //* Add daughter 
@@ -180,19 +177,20 @@ void AliKFParticleBase::AddDaughter( const AliKFParticleBase &Daughter )
       const Double_t kCLight =  0.000299792458;
       b[0]*=kCLight; b[1]*=kCLight; b[2]*=kCLight;
     }
-    if( fNDF==-1 ){
-      TransportToDS( GetDStoPoint(fVtxGuess) );
-    }
-    fSFromDecay = 0;
+    if( fNDF==-1 ) TransportToDS( GetDStoPoint(fVtxGuess) );
     
+    fSFromDecay = 0;
+
     Double_t m[8];
     Double_t mCd[36];
+    
+    Double_t dds = Daughter.GetDStoPoint(fVtxGuess);
     
     Daughter.Transport( Daughter.GetDStoPoint(fVtxGuess), m, mCd );
 
     Double_t d[3] = { fVtxGuess[0]-m[0], fVtxGuess[1]-m[1], fVtxGuess[2]-m[2] };
     Double_t sigmaS = .1+10.*TMath::Sqrt( (d[0]*d[0]+d[1]*d[1]+d[2]*d[2])/
-				   (m[3]*m[3]+m[4]*m[4]+m[5]*m[5])  );
+					  (m[3]*m[3]+m[4]*m[4]+m[5]*m[5])  );
 
     Double_t h[6];
 
@@ -243,7 +241,7 @@ void AliKFParticleBase::AddDaughter( const AliKFParticleBase &Daughter )
       h[4] = ( h[2]*b[0]-h[0]*b[2] )*Daughter.GetQ();
       h[5] = ( h[0]*b[1]-h[1]*b[0] )*Daughter.GetQ();
     }
-    
+   
     Double_t mV[28];
     
     mV[ 0] = mCd[ 0] + h[0]*h[0];
@@ -279,7 +277,7 @@ void AliKFParticleBase::AddDaughter( const AliKFParticleBase &Daughter )
     mV[26] = mCd[26];
     mV[27] = mCd[27];
   
-    //* 
+   //* 
 	    
     if( fNDF<-1 ){ // first daughter -> just copy
       fNDF   = -1;
@@ -342,7 +340,7 @@ void AliKFParticleBase::AddDaughter( const AliKFParticleBase &Daughter )
       k2[i] = mCHt0[i]*mS[3] + mCHt1[i]*mS[4] + mCHt2[i]*mS[5];
     }
 
-    //* New estimation of the vertex position 
+   //* New estimation of the vertex position 
 
     if( iter<maxIter-1 ){
       for(Int_t i=0; i<3; ++i) 
@@ -376,7 +374,7 @@ void AliKFParticleBase::AddDaughter( const AliKFParticleBase &Daughter )
       fP[i] += k0[i]*zeta[0] + k1[i]*zeta[1] + k2[i]*zeta[2];
     
     //* New covariance matrix C -= K*(mCH')'
-    
+   
     for(Int_t i=0, k=0;i<7;++i){
       for(Int_t j=0;j<=i;++j,++k) 
 	fC[k] -= k0[i]*mCHt0[j] + k1[i]*mCHt1[j] + k2[i]*mCHt2[j];
@@ -579,7 +577,7 @@ void AliKFParticleBase::SetMassConstraint( Double_t Mass )
 
 
 void AliKFParticleBase::Construct( const AliKFParticleBase* vDaughters[], Int_t NDaughters,
-			    const AliKFParticleBase *Parent,  Double_t Mass         )
+				   const AliKFParticleBase *Parent,  Double_t Mass         )
 { 
   //* Full reconstruction in one go
 
@@ -592,7 +590,6 @@ void AliKFParticleBase::Construct( const AliKFParticleBase* vDaughters[], Int_t 
   }
 
   for( Int_t iter=0; iter<maxIter; iter++ ){
-
     fAtProductionVertex = 0;
     fSFromDecay = 0;
     fP[0] = fVtxGuess[0];
@@ -613,7 +610,9 @@ void AliKFParticleBase::Construct( const AliKFParticleBase* vDaughters[], Int_t 
     fChi2 =  0.;
     fQ = 0;
 
-    for( Int_t itr =0; itr<NDaughters; itr++ ) AddDaughter( *vDaughters[itr] );    
+    for( Int_t itr =0; itr<NDaughters; itr++ ){
+      AddDaughter( *vDaughters[itr] );    
+    }
     if( iter<maxIter-1){
       for( Int_t i=0; i<3; i++ ) fVtxGuess[i] = fP[i];  
     }
@@ -740,7 +739,6 @@ Double_t AliKFParticleBase::GetDStoPointBz( Double_t B, const Double_t xyz[] )
   const
 { 
   //* Get dS to a certain space point for Bz field
-
   const Double_t kCLight = 0.000299792458;
   Double_t bq = B*fQ*kCLight;
   Double_t pt2 = fP[3]*fP[3] + fP[4]*fP[4];
@@ -758,7 +756,6 @@ void AliKFParticleBase::GetDStoParticleBz( Double_t B, const AliKFParticleBase &
   const
 { 
   //* Get dS to another particle for Bz field
-
   Double_t px = fP[3];
   Double_t py = fP[4];
   Double_t pz = fP[5];
@@ -771,10 +768,10 @@ void AliKFParticleBase::GetDStoParticleBz( Double_t B, const AliKFParticleBase &
 
   Double_t bq = B*fQ*kCLight;
   Double_t bq1 = B*p.fQ*kCLight;
-  
   Double_t s=0, ds=0, s1=0, ds1=0;
   
   if( TMath::Abs(bq)>1.e-8 || TMath::Abs(bq1)>1.e-8 ){
+
     Double_t dx = (p.fP[0] - fP[0]);
     Double_t dy = (p.fP[1] - fP[1]);
     Double_t d2 = (dx*dx+dy*dy);
@@ -820,7 +817,6 @@ void AliKFParticleBase::GetDStoParticleBz( Double_t B, const AliKFParticleBase &
       ds1 = TMath::Sqrt(ds1);
     }
   }
-
 
   Double_t ss[2], ss1[2], g[2][5],g1[2][5];
   

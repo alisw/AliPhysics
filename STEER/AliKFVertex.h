@@ -54,6 +54,9 @@ class AliKFVertex :public AliKFParticle
   //*
 
 
+  //* Simple way to construct vertices ex. D0 = Pion + Kaon;   
+
+  void operator +=( const AliKFParticle &Daughter );  
 
   //* Subtract particle from vertex
 
@@ -63,16 +66,8 @@ class AliKFVertex :public AliKFParticle
 
   //* Construct vertex with selection of tracks (primary vertex)
 
-  void ConstructPrimaryVertex( const AliKFParticle *vDaughters[], int NDaughters, 
-			       Double_t ChiCut=3.5  );
-
-private:
-
-  //* Simple way to construct vertices ex. D0 = Pion + Kaon - NOT IMPLEMENTED 
-
-  AliKFParticle operator +( const AliKFParticle &Daughter ) const;
-
-  void operator +=( const AliKFParticle &Daughter );  
+  void ConstructPrimaryVertex( const AliKFParticle *vDaughters[], int NDaughters,
+			       Bool_t vtxFlag[], Double_t ChiCut=3.5  );
 
   ClassDef( AliKFVertex, 1 );
 
@@ -92,6 +87,11 @@ inline void AliKFVertex::CopyToESDVertex( AliESDVertex &v ) const
   v = AliESDVertex( vTmp.fP, vTmp.fC, vTmp.fChi2, (vTmp.fNDF +3)/2 );
 }
 
+inline void AliKFVertex::operator +=( const AliKFParticle &Daughter )
+{
+  AliKFParticle::operator +=( Daughter );
+}
+  
 
 inline void AliKFVertex::operator -=( const AliKFParticle &Daughter )
 {
