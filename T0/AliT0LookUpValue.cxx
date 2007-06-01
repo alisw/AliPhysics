@@ -67,21 +67,31 @@ void AliT0LookUpValue:: Clear()
 
 ClassImp(AliT0LookUpKey)
 
- AliT0LookUpKey::AliT0LookUpKey():TObject(),
- fKey(0)  
+ AliT0LookUpKey::AliT0LookUpKey():
+   TObject(),
+   fKey(0),
+   fName("")
  {
  
  }
 
- AliT0LookUpKey::AliT0LookUpKey(Int_t key):TObject(),
- fKey(key)  
+ AliT0LookUpKey::AliT0LookUpKey(Int_t key):
+   TObject(),
+   fKey(key),
+   fName("")
  {
  
  }
 
+ AliT0LookUpKey::AliT0LookUpKey(TString name):
+   TObject(),
+   fKey(),
+   fName(name)
+ {
+ 
+ }
 
-
-  Bool_t AliT0LookUpKey:: IsEqual(const TObject* obj) const
+Bool_t AliT0LookUpKey:: IsEqual(const TObject* obj) const
 {
   Int_t k;
 //  printf("IsEqual\n");
