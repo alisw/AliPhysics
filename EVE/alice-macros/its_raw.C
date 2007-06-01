@@ -37,6 +37,7 @@ void its_raw(const char *input = "rawdata.root",
     if (accumulate) di->ReadRaw(rawReader);
   } while (++ev < event);
 
+  if ( ! accumulate) di->ReadRaw(rawReader);
 
   di->Dump();
 
