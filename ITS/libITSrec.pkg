@@ -73,7 +73,8 @@ SRCS = 	AliITSDetTypeRec.cxx \
 		AliITSOnlineSDDBase.cxx \
 		AliITSOnlineSDDTP.cxx \
 		AliITSOnlineSDDBTP.cxx \
-		AliITSOnlineSDDInjectors.cxx
+		AliITSOnlineSDDInjectors.cxx \
+                AliITSOnlineSDDCMN.cxx 
 
 HDRS:=  $(SRCS:.cxx=.h)
 

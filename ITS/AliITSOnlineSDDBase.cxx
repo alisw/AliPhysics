@@ -149,7 +149,7 @@ void AliITSOnlineSDDBase::WriteToFXS(){
   FILE* outf=fopen(outfilnam,"w");
   Float_t corrnoise=2.;
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
-    fprintf(outf,"%d %d %8.3f %8.3f %8.3f %8.3f\n",ian,IsAnodeGood(ian),GetAnodeBaseline(ian),GetAnodeRawNoise(ian),GetAnodeCommonMode(ian),corrnoise);
+    fprintf(outf,"%d %d %11.6f %11.6f %11.6f %11.6f\n",ian,IsAnodeGood(ian),GetAnodeBaseline(ian),GetAnodeRawNoise(ian),GetAnodeCommonMode(ian),corrnoise);
   }
   fclose(outf);  
 }

@@ -12,7 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-#include "AliITSOnlineSDDTP.h"
+#include "AliITSOnlineSDDCMN.h"
 #include "AliLog.h"
 #include <TH2F.h>
 #include <TMath.h>
@@ -20,69 +20,52 @@
 
 ///////////////////////////////////////////////////////////////////
 //                                                               //
-// Implemetation of the class SDD Test Pulse analysis            //
+// Implementation of the class used for analysis of SDD noise    //
+// corrected for common mode                                     //
 // Origin: F.Prino, Torino, prino@to.infn.it                     //
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 
 
-ClassImp(AliITSOnlineSDDTP)
-
+ClassImp(AliITSOnlineSDDCMN)
 //______________________________________________________________________
-AliITSOnlineSDDTP::AliITSOnlineSDDTP():AliITSOnlineSDD(),fNEvents(0),fDAQ(0.),fNSigmaGain(0.)
+  AliITSOnlineSDDCMN::AliITSOnlineSDDCMN():AliITSOnlineSDD(),fNEvents(0),fMinCorrNoise(0.),fMaxCorrNoise(0.),fNSigmaNoise(0.)
 {
   // default constructor
   Reset();
-  SetNSigmaGain();
+  SetMinNoise();
+  SetMaxNoise();
+  SetNSigmaNoise();
 }
 //______________________________________________________________________
-AliITSOnlineSDDTP::AliITSOnlineSDDTP(Int_t mod, Int_t sid, Float_t xDAQ):AliITSOnlineSDD(mod,sid),fNEvents(0),fDAQ(xDAQ),fNSigmaGain(0.)
+  AliITSOnlineSDDCMN::AliITSOnlineSDDCMN(Int_t mod, Int_t sid):AliITSOnlineSDD(mod,sid),fNEvents(0),fMinCorrNoise(0.),fMaxCorrNoise(0.),fNSigmaNoise(0.)
 {
-  // standard constructor
+  // default constructor
   Reset();
-  SetNSigmaGain();
+  SetMinNoise();
+  SetMaxNoise();
+  SetNSigmaNoise();
 }
 //______________________________________________________________________
-AliITSOnlineSDDTP::~AliITSOnlineSDDTP(){
+AliITSOnlineSDDCMN::~AliITSOnlineSDDCMN(){
   // Destructor
 }
 //______________________________________________________________________
-void AliITSOnlineSDDTP::Reset(){
+void AliITSOnlineSDDCMN::Reset(){
   fNEvents=0;
   for(Int_t i=0;i<fgkNAnodes;i++){
     fGoodAnode[i]=1;
     fBaseline[i]=0.;
-    fSumTPPeak[i]=0.;
-    fTPPos[i]=0.;
+    fCMN[i]=0.;
+    fSumCorrNoise[i]=0.;
   }
   ReadBaselines();
 }
-
 //______________________________________________________________________
-void AliITSOnlineSDDTP::AddEvent(TH2F* hrawd){
-  // 
-  fNEvents++;
-  Double_t tbmax=(Double_t)hrawd->GetNbinsX();
-  for(Int_t ian=0;ian<fgkNAnodes;ian++){
-    Float_t auxmax=0.;
-    Int_t auxtb=0;
-    if(!fGoodAnode[ian]) continue;
-    for(Int_t itb=0;itb<tbmax;itb++){
-      Float_t cnt=hrawd->GetBinContent(itb+1,ian+1);
-      if(cnt>auxmax){ 
-	auxmax=cnt;
-	auxtb=itb;
-      }
-    }
-    fSumTPPeak[ian]+=auxmax-fBaseline[ian];
-    fTPPos[ian]+=auxtb;
-  }
-}
-//______________________________________________________________________
-void AliITSOnlineSDDTP::ReadBaselines(){
+void AliITSOnlineSDDCMN::ReadBaselines(){
   // assume baselines and good anodes are taken from previous run
   Char_t basfilnam[100];
-  sprintf(basfilnam,"SDDbase_step2_mod%03d_sid%d.data",fModuleId,fSide);
+  sprintf(basfilnam,"SDDbase_step1_mod%03d_sid%d.data",fModuleId,fSide);
   FILE* basf=fopen(basfilnam,"r");
   if(basf==0){
     AliWarning("Baselinefile not present, Set all baselines to 50\n");
@@ -96,72 +79,82 @@ void AliITSOnlineSDDTP::ReadBaselines(){
   Float_t base,rms,cmn,corrnoi;
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
     fscanf(basf,"%d %d %f %f %f %f\n",&n,&ok,&base,&rms,&cmn,&corrnoi);
-    fBaseline[ian]=base;
     fGoodAnode[ian]=ok;
+    fBaseline[ian]=base;
+    fRawNoise[ian]=rms;
+    fCMN[ian]=cmn;
   }
   fclose(basf);
 }
-
 //______________________________________________________________________
-void AliITSOnlineSDDTP::ValidateAnodes(){
-  Float_t meang,rmsg;
-  StatGain(meang,rmsg);
-  Float_t lowlim=meang-fNSigmaGain*rmsg;
-  Float_t hilim=meang+fNSigmaGain*rmsg;
-
+void  AliITSOnlineSDDCMN::ValidateAnodes(){
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
     if(!fGoodAnode[ian]) continue;
-    if(GetChannelGain(ian)<lowlim||GetChannelGain(ian)>hilim) fGoodAnode[ian]=0;
+    if(GetAnodeCorrNoise(ian)>fMaxCorrNoise || GetAnodeCorrNoise(ian)<fMinCorrNoise) fGoodAnode[ian]=0;
+    if(GetAnodeCorrNoise(ian)>fNSigmaNoise*CalcMeanNoise()) fGoodAnode[ian]=0;
   }
 }
 
-
 //______________________________________________________________________
-void AliITSOnlineSDDTP::StatGain(Float_t &mean, Float_t  &rms){
-  Float_t sum=0.,sumq=0.;
+void AliITSOnlineSDDCMN::AddEvent(TH2F* hrawd){
+  // 
+  fNEvents++;
+  Float_t tbmax=(Float_t)hrawd->GetNbinsX();
+  TH2F* hcorrd=new TH2F("hcorrd","",hrawd->GetNbinsX(),hrawd->GetXaxis()->GetXmin(),hrawd->GetXaxis()->GetXmax(),hrawd->GetNbinsY(),hrawd->GetYaxis()->GetXmin(),hrawd->GetYaxis()->GetXmax());
+  for(Int_t itb=0;itb<tbmax;itb++){
+    Float_t sumEven=0., sumOdd=0.;
+    Int_t countEven=0, countOdd=0;
+    for(Int_t ian=0;ian<fgkNAnodes;ian+=2){
+      if(!fGoodAnode[ian]) continue;
+      sumEven+=hrawd->GetBinContent(itb+1,ian+1)-fBaseline[ian];
+      countEven++;
+    }
+    for(Int_t ian=1;ian<fgkNAnodes;ian+=2){
+      if(!fGoodAnode[ian]) continue;
+      sumOdd+=hrawd->GetBinContent(itb+1,ian+1)-fBaseline[ian];
+      countOdd++;
+    }
+    for(Int_t ian=0;ian<fgkNAnodes;ian++){
+      if(!fGoodAnode[ian]) continue;
+      Float_t meanN;
+      if(ian%2==0) meanN=sumEven/(Float_t)countEven;
+      else meanN=sumOdd/(Float_t)countOdd;
+      Float_t cntCorr=hrawd->GetBinContent(itb+1,ian+1)-fCMN[ian]*meanN;
+      hcorrd->SetBinContent(itb+1,ian+1,cntCorr);
+    }
+  }
+
+  for(Int_t ian=0;ian<fgkNAnodes;ian++){
+    if(!fGoodAnode[ian]) continue;
+    Float_t sumQ=0.;
+     for(Int_t itb=0;itb<tbmax;itb++){
+      sumQ+=TMath::Power(hcorrd->GetBinContent(itb+1,ian+1)-fBaseline[ian],2);      
+    }
+    fSumCorrNoise[ian]+=TMath::Sqrt(sumQ/tbmax);
+  }
+  delete hcorrd;
+}
+//______________________________________________________________________
+Float_t AliITSOnlineSDDCMN::CalcMeanNoise(){
+  //
+  Float_t meanns=0.;
   Int_t cnt=0;
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
-    if(!fGoodAnode[ian]) continue;
-    sum+=GetChannelGain(ian);
-    sumq+=TMath::Power(GetChannelGain(ian),2);
+    if(!fGoodAnode[ian]) continue;  
+    meanns+=GetAnodeCorrNoise(ian);
     cnt++;
   }
-  if(cnt>0){ 
-    mean=sum/(Float_t)cnt;
-    rms=TMath::Sqrt(sumq/(Float_t)cnt-mean*mean);
-  }else{ 
-    mean=0.;
-    rms=0.;
-  }
-  return;
+  if(cnt>0) meanns/=(Float_t)cnt;
+  return meanns;
 }
-
 //______________________________________________________________________
-void AliITSOnlineSDDTP::WriteToFXS(){
+void AliITSOnlineSDDCMN::WriteToFXS(){
   //
-  Char_t basfilnam[100];
-  sprintf(basfilnam,"SDDbase_step2_mod%03d_sid%d.data",fModuleId,fSide);
-  FILE* basf=fopen(basfilnam,"r");
-  if(basf==0){
-    AliWarning("Baseline file not present, launch baseline analysis first\n");
-    return;
-  }
-  Int_t n,ok;
-  Float_t base,rms,cmn,corrnoi;
-  Float_t noise[fgkNAnodes],cmncoef[fgkNAnodes],corrnoise[fgkNAnodes];
-  for(Int_t ian=0;ian<fgkNAnodes;ian++){
-    fscanf(basf,"%d %d %f %f %f %f\n",&n,&ok,&base,&rms,&cmn,&corrnoi);
-    noise[ian]=rms;
-    cmncoef[ian]=cmn;
-    corrnoise[ian]=corrnoi;
-  }
-  fclose(basf);
   Char_t outfilnam[100];
-  sprintf(outfilnam,"SDDbase_mod%03d_sid%d.data",fModuleId,fSide);
+  sprintf(outfilnam,"SDDbase_step2_mod%03d_sid%d.data",fModuleId,fSide);
   FILE* outf=fopen(outfilnam,"w");
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
-    fprintf(outf,"%d %d %8.3f %8.3f %8.3f %8.3f %8.3f\n",ian,IsAnodeGood(ian),fBaseline[ian], noise[ian],cmncoef[ian],corrnoise[ian],GetChannelGain(ian));
+    fprintf(outf,"%d %d %8.3f %8.3f %8.3f %8.3f\n",ian,IsAnodeGood(ian),GetAnodeBaseline(ian),GetAnodeRawNoise(ian),GetAnodeCommonMode(ian),GetAnodeCorrNoise(ian));
   }
   fclose(outf);  
 }
-
