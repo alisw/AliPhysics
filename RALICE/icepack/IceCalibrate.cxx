@@ -84,10 +84,6 @@ void IceCalibrate::SetCalibFile(TString name)
 // Set the calibration ROOT file as created with IceCal2Root.
 // Note : this will overrule a previously attached database. 
  fCalfile=new TFile(name.Data());
- if (fCalfile)
- {
-  fOmdb=(AliObjMatrix*)fCalfile->Get("Cal-OMDBASE");
- }
 }
 ///////////////////////////////////////////////////////////////////////////
 void IceCalibrate::Exec(Option_t* opt)
@@ -101,6 +97,23 @@ void IceCalibrate::Exec(Option_t* opt)
 
  IceEvent* evt=(IceEvent*)parent->GetObject("IceEvent");
  if (!evt) return;
+
+ Int_t mudaq=0;
+ Int_t twrdaq=0;
+ AliSignal* daq=(AliSignal*)evt->GetDevice("Daq");
+ mudaq=daq->GetSignal("Muon");
+ twrdaq=daq->GetSignal("TWR");
+
+ if (fCalfile)
+ {
+  if (mudaq)
+  {
+   fOmdb=(AliObjMatrix*)fCalfile->Get("MuDaq-OMDBASE");
+   // Next statement for compatibility with old calibration file format
+   if (!fOmdb) fOmdb=(AliObjMatrix*)fCalfile->Get("Cal-OMDBASE");
+  }
+  if (twrdaq) fOmdb=(AliObjMatrix*)fCalfile->Get("TWRDaq-OMDBASE");
+ }
 
  // Storage of the used parameters in the IceCalibrate device
  AliSignal params;
@@ -190,33 +203,44 @@ void IceCalibrate::Exec(Option_t* opt)
     fcal=omd->GetCalFunction("LE");
     fdecal=omd->GetDecalFunction("LE");
    }
-   // Store the hit-specific ADC dependent (de)calibration function in the hit itself
-   sx->SetCalFunction(fcal,"LE");
-   sx->SetDecalFunction(fdecal,"LE");
-   fcal=sx->GetCalFunction("LE");
-   fdecal=sx->GetDecalFunction("LE");
-   if (adc>0)
+
+   // MuDaq only : Store the hit-specific ADC dependent (de)calibration function in the hit itself
+   if (mudaq)
    {
-    if (fcal) fcal->SetParameter(3,adc);
-    if (fdecal) fdecal->SetParameter(3,adc);
+    sx->SetCalFunction(fcal,"LE");
+    sx->SetDecalFunction(fdecal,"LE");
+    fcal=sx->GetCalFunction("LE");
+    fdecal=sx->GetDecalFunction("LE");
+    if (adc>0)
+    {
+     if (fcal) fcal->SetParameter(3,adc);
+     if (fdecal) fdecal->SetParameter(3,adc);
+    }
+    else
+    {
+     if (fcal) fcal->SetParameter(3,1.e20);
+     if (fdecal) fdecal->SetParameter(3,1.e20);
+    }
    }
-   else
-   {
-    if (fcal) fcal->SetParameter(3,1.e20);
-    if (fdecal) fdecal->SetParameter(3,1.e20);
-   }
+
    if (fcal) // Store calibrated signal
    {
     cle=fcal->Eval(le);
     sx->SetSignal(cle,"LE");
-    sx->SetCalFunction(0,"LE");
-    sx->SetDecalFunction(fdecal,"LE");
+    if (mudaq) // MuDaq only
+    {
+     sx->SetCalFunction(0,"LE");
+     sx->SetDecalFunction(fdecal,"LE");
+    }
    }
    else // Store uncalibrated signal
    {
     sx->SetSignal(le,"LE");
-    sx->SetCalFunction(fcal,"LE");
-    sx->SetDecalFunction(0,"LE");
+    if (mudaq) // MuDaq only
+    {
+     sx->SetCalFunction(fcal,"LE");
+     sx->SetDecalFunction(0,"LE");
+    }
    }
 
    // TOT (de)calibration
@@ -266,7 +290,9 @@ void IceCalibrate::Exec(Option_t* opt)
    ome->SetDecalFunction(0,"ADC");
   }
 
-  // Store ADC independent LE (de)calibration function in this OM according to dbase info
+  // Store LE (de)calibration function in this OM according to dbase info
+  // Note for MuDaq only : This is the ADC independent function.
+  //                       The ADC dependent calibration function is in the hits themselves
   fcal=0;
   fdecal=0;
   if (omd)

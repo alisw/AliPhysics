@@ -690,6 +690,21 @@ Int_t AliEvent::GetNdevices() const
  return ndevs;
 } 
 ///////////////////////////////////////////////////////////////////////////
+Int_t AliEvent::GetNdevices(const char* classname) const
+{
+// Provide the number of stored devices of the specified class.
+
+ Int_t ndevs=0;
+ for (Int_t idev=1; idev<=GetNdevices(); idev++)
+ {
+  TObject* obj=GetDevice(idev);
+  if (!obj) continue;
+
+  if (obj->InheritsFrom(classname)) ndevs++;
+ }
+ return ndevs;
+} 
+///////////////////////////////////////////////////////////////////////////
 void AliEvent::AddDevice(TObject& d)
 {
 // Add a device to the event.
@@ -830,9 +845,38 @@ TObject* AliEvent::GetDevice(TString name) const
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-TObject* AliEvent::GetIdDevice(Int_t id) const
+TObject* AliEvent::GetIdDevice(Int_t id,TObjArray* devs) const
 {
-// Return the device with unique identifier "id".
+// Return the device with identifier "id" from the specified array "devs".
+// In case devs=0 (which is the default) all devices stored in the event
+// structure will be evaluated.
+// Note : In case of multiple occurrences of identifier "id", the first
+//        encountered matching device will be returned.
+
+ TObjArray* arr=devs;
+ if (!arr) arr=fDevices;
+
+ if (!arr || id<0) return 0;
+
+ Int_t idx=0;
+ for (Int_t i=0; i<arr->GetSize(); i++)
+ {
+  TObject* dev=arr->At(i);
+  if (dev)
+  {
+   idx=dev->GetUniqueID();
+   if (idx==id) return dev;
+  }
+ }
+ return 0; // No matching id found
+}
+///////////////////////////////////////////////////////////////////////////
+TObject* AliEvent::GetIdDevice(Int_t id,const char* classname) const
+{
+// Return the device with identifier "id" of the specified class.
+// Note : In case of multiple occurrences of identifier "id", the first
+//        encountered matching device will be returned.
+
  if (!fDevices || id<0) return 0;
 
  Int_t idx=0;
@@ -842,10 +886,10 @@ TObject* AliEvent::GetIdDevice(Int_t id) const
   if (dev)
   {
    idx=dev->GetUniqueID();
-   if (idx==id) return dev;
+   if (idx==id && dev->InheritsFrom(classname)) return dev;
   }
  }
- return 0; // No matching id found
+ return 0; // No matching id found for the specified class
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliEvent::ShowDevices(Int_t mode) const
@@ -867,6 +911,7 @@ void AliEvent::ShowDevices(Int_t mode) const
   else
   {
    cout << " The following " << ndevs << " devices are available :" << endl; 
+   Int_t nh=0,nw=0;
    for (Int_t i=1; i<=ndevs; i++)
    {
     TObject* dev=GetDevice(i);
@@ -876,9 +921,71 @@ void AliEvent::ShowDevices(Int_t mode) const
      cout << " Device number : " << i;
      cout << " Class : " << dev->ClassName() << " Id : " << dev->GetUniqueID();
      if (strlen(name)) cout << " Name : " << name;
-     if (dev->InheritsFrom("AliDevice")) cout << " Nhits : " << ((AliDevice*)dev)->GetNhits();
-     if (dev->InheritsFrom("AliSignal")) cout << " Nwaveforms : " << ((AliSignal*)dev)->GetNwaveforms();
+     if (dev->InheritsFrom("AliDevice"))
+     {
+      nh=((AliDevice*)dev)->GetNhits();
+      if (nh) cout << " Nhits : " << nh;
+     }
+     if (dev->InheritsFrom("AliSignal"))
+     {
+      nw=((AliSignal*)dev)->GetNwaveforms();
+      if (nw) cout << " Nwaveforms : " << nw;
+     }
      cout << endl;
+    }
+   }
+  }
+ }
+ else
+ {
+  cout << " No devices present for this event." << endl;
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+void AliEvent::ShowDevices(const char* classname,Int_t mode) const
+{
+// Provide an overview of the available devices of the specified class.
+// The argument mode determines the amount of information as follows :
+// mode = 0 ==> Only printout of the number of devices
+//        1 ==> Provide a listing with 1 line of info for each device
+//
+// The default is mode=1.
+//
+ Int_t ndevs=GetNdevices();
+ if (ndevs)
+ {
+  Int_t ndevs2=GetNdevices(classname);
+  if (!mode || !ndevs2)
+  {
+   cout << " There are " << ndevs2 << " selected devices available." << endl; 
+  }
+  else
+  {
+   cout << " The following " << ndevs2 << " selected devices are available :" << endl; 
+   Int_t nh=0,nw=0;
+   for (Int_t i=1; i<=ndevs; i++)
+   {
+    TObject* dev=GetDevice(i);
+    if (dev)
+    {
+     if (dev->InheritsFrom(classname))
+     {
+      const char* name=dev->GetName();
+      cout << " Device number : " << i;
+      cout << " Class : " << dev->ClassName() << " Id : " << dev->GetUniqueID();
+      if (strlen(name)) cout << " Name : " << name;
+      if (dev->InheritsFrom("AliDevice"))
+      {
+       nh=((AliDevice*)dev)->GetNhits();
+       if (nh) cout << " Nhits : " << nh;
+      }
+      if (dev->InheritsFrom("AliSignal"))
+      {
+       nw=((AliSignal*)dev)->GetNwaveforms();
+       if (nw) cout << " Nwaveforms : " << nw;
+      }
+      cout << endl;
+     }
     }
    }
   }

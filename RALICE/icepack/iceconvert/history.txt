@@ -102,3 +102,7 @@
                 separate histos in memberfunction PutWaveforms.
 15-mar-2007 GdV New class IceRoot introduced to convert I3 extracted ROOT trees
                 into IcePack event structures.
+30-mar-2007 GdV Obsolete memberfunction declarations PutTrigger and PutWaveforms removed
+                from IceRoot.h.
+01-jul-2007 NvE Class IceCal2Root extended to support various databases (e.g. MuDaq, TWRDaq, ...).
+

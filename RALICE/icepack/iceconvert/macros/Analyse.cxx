@@ -49,7 +49,13 @@ void Analyse::Exec(Option_t* opt)
 
  if (!parent) return;
 
- AliObjMatrix* omdb=(AliObjMatrix*)parent->GetMainObject();
+ TFolder* folder=parent->GetFolder();
+ if (!folder) return;
+
+ AliObjMatrix* omdb=0;
+ omdb=(AliObjMatrix*)folder->FindObject("MuDaq-OMDBASE");
+ // Next statement for compatibility with old calibration file format
+ if (!omdb) omdb=(AliObjMatrix*)folder->FindObject("Cal-OMDBASE");
  if (!omdb) return;
 
  IceAOM* omx=0;

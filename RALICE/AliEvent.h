@@ -50,11 +50,14 @@ class AliEvent : public AliVertex,public AliTimestamp
   void AddDevice(TObject& d);             // Add a device to the event
   void AddDevice(TObject* d) { if (d) AddDevice(*d); }
   Int_t GetNdevices() const;              // Provide the number of devices
+  Int_t GetNdevices(const char* classname) const; // Provide the number of selected devices
   void ShowDevices(Int_t mode=1) const;   // Provide on overview of the available devices
+  void ShowDevices(const char* classname,Int_t mode=1) const; // Overview of selected devices
   TObjArray* GetDevices(const char* classname); // Provide references to the devices derived from the specified class
   TObject* GetDevice(Int_t i) const;      // Provide i-th device of the event
   TObject* GetDevice(TString name) const; // Provide the device with name "name"
-  TObject* GetIdDevice(Int_t id) const;   // Provide the device with unique identifier "id"
+  TObject* GetIdDevice(Int_t id, TObjArray* devs=0) const; // Get device with identifier "id"
+  TObject* GetIdDevice(Int_t id, const char* classname) const; // Get device with identifier "id" of specified class
   Int_t GetNhits(const char* classname);  // Provide number of hits for the specified device class
   TObjArray* GetHits(const char* classname); // Provide refs to all hits of the specified device class 
   AliSignal* GetIdHit(Int_t id,const char* classname); // Provide hit with unique "id" for the specified device class
@@ -80,6 +83,6 @@ class AliEvent : public AliVertex,public AliTimestamp
   TObject* fDisplay;                    //! Temp. pointer to hold objects which serve event displays
   TObjArray* fDevs;                     //! Temp. array to hold references to user selected devices
 
- ClassDef(AliEvent,23) // Creation and investigation of an Alice physics event.
+ ClassDef(AliEvent,24) // Creation and investigation of an Alice physics event.
 };
 #endif

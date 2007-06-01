@@ -41,12 +41,10 @@ class IceRoot : public AliJob
   Int_t fPrintfreq;    // The event info printing frequency
   TObjArray* fInfiles; // Names of all the simple Root data input files
   TFile* fOutfile;     // The ROOT output file
-  void PutTrigger(Int_t year);   // Put the trigger info from the simple Root data event into the IcePack structure
-  void PutWaveforms(Int_t year); // Put the waveforms from the simple Root data event into the IcePack structure
 
   TFile* fInput;       // Simple Root data input file
   TTree* fTree;        // Tree with simple Root data
 
- ClassDef(IceRoot,1) // Job for conversion of simple Root data into IceEvent data structures.
+ ClassDef(IceRoot,2) // Job for conversion of simple Root data into IceEvent data structures.
 };
 #endif

@@ -28,7 +28,7 @@
 // 2) TOT within [min,max]  Default : electrical [125,2000] optical [20,2000] ns
 // 3) abs(LE-Ttrig)<=win    Default : win=2250 TDC counts
 //    where : LE=uncalibrated hit LE (i.e. TDC counts)   Ttrig=trigger pulse LE in TDC counts
-// 4) At least one other hit within radius R and time difference dt
+// 4) At least one hit in another OM within radius R and time difference dt
 //    to remove isolated hits. Defaults : R=70 m  dt=500 ns
 //
 // The defaults of the various parameters can be changed by the corresponding
@@ -280,7 +280,7 @@ void IceCleanHits::Amanda()
  }
  
  // Isolation cut
- // Only retain hits that have at least one other hit within a certain
+ // Only retain hits that have at least one hit of another OM within a certain
  // radius and within a certain time window
  Int_t nhits=hits.GetEntries();
  AliSignal* sx1=0;
@@ -296,22 +296,22 @@ void IceCleanHits::Amanda()
  {
   sx1=(AliSignal*)hits.At(jh1);
   if (!sx1) continue;
+
   iso=1;
   for (Int_t jh2=0; jh2<nhits; jh2++)
   {
-   if (jh1==jh2)
-   {
-    iso=0;
-    continue;
-   }
    sx2=(AliSignal*)hits.At(jh2);
    if (!sx2) continue;
+
+   omx1=(IceAOM*)sx1->GetDevice();
+   omx2=(IceAOM*)sx2->GetDevice();
+   if (omx1==omx2) continue;
+
    t1=sx1->GetSignal("LE",7);
    t2=sx2->GetSignal("LE",7);
    dt=fabs(t2-t1);
    if (dt>fDtmaxA) continue;
-   omx1=(IceAOM*)sx1->GetDevice();
-   omx2=(IceAOM*)sx2->GetDevice();
+
    if (omx1 && omx2)
    {
     r1=omx1->GetPosition();

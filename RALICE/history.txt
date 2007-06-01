@@ -772,3 +772,5 @@
                 specification of negative "mode" parameter.
 29-mar-2007 NvE New memberfunction Almanac() introduced in AliTimestamp to provide a 
                 central place for calculation of astronomical observables.
+31-may-2007 NvE Memberfunctions GetNdevices, GetIdDevice and ShowDevices of AliEvent
+                extended to select device classes.

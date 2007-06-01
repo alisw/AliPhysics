@@ -130,6 +130,47 @@ IceGOM::IceGOM(const IceGOM& m) : AliDevice(m)
 // Copy constructor.
 }
 ///////////////////////////////////////////////////////////////////////////
+Int_t IceGOM::GetString() const
+{
+// Provide the corresponding string number for this module.
+// Note : Amanda string numbers will have negative values.
+
+ Int_t omid=GetUniqueID();
+
+ if (omid<=0) return 0;
+ if (omid==681) return -18;
+
+ Int_t string=0;
+ if (InheritsFrom("IceAOM"))
+ {
+  if (omid<=20) return -1;
+  if (omid>=21 && omid<=40) return -2;
+  if (omid>=41 && omid<=60) return -3;
+  if (omid>=61 && omid<=86) return -4;
+  if (omid>=87 && omid<=122) return -5;
+  if (omid>=123 && omid<=158) return -6;
+  if (omid>=159 && omid<=194) return -7;
+  if (omid>=195 && omid<=230) return -8;
+  if (omid>=231 && omid<=266) return -9;
+  if (omid>=267 && omid<=302) return -10;
+  if (omid>=303 && omid<=344) return -11;
+  if (omid>=345 && omid<=386) return -12;
+  if (omid>=387 && omid<=428) return -13;
+  if (omid>=429 && omid<=470) return -14;
+  if (omid>=471 && omid<=512) return -15;
+  if (omid>=513 && omid<=554) return -16;
+  if (omid>=555 && omid<=596) return -17;
+  if (omid>=597 && omid<=638) return -18;
+  if (omid>=639 && omid<=680) return -19;
+ }
+ else
+ {
+  string=omid/100;
+ }
+
+ return string;
+}
+///////////////////////////////////////////////////////////////////////////
 TObject* IceGOM::Clone(const char* name) const
 {
 // Make a deep copy of the current object and provide the pointer to the copy.

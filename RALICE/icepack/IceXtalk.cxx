@@ -19,6 +19,8 @@
 // Class IceXtalk
 // TTask derived class to perform cross talk hit correction.
 //
+// Note : This processor only acts on MuDaq data.
+//
 // This task takes the current event in memory and uses the attached
 // OM database to identify pairs of OMs which might induce cross talk.
 // For each particular transmitter and receiver pair within the event
@@ -110,10 +112,6 @@ void IceXtalk::SetCalibFile(TString name)
 // Set the calibration ROOT file as created with IceCal2Root.
 // Note : this will overrule a previously attached database. 
  fCalfile=new TFile(name.Data());
- if (fCalfile)
- {
-  fOmdb=(AliObjMatrix*)fCalfile->Get("Cal-OMDBASE");
- }
 }
 ///////////////////////////////////////////////////////////////////////////
 void IceXtalk::SetMinProb(Float_t pmin)
@@ -132,8 +130,6 @@ void IceXtalk::Exec(Option_t* opt)
 {
 // Implementation of cross talk hit correction.
 
- if (!fOmdb) return;
-
  TString name=opt;
  AliJob* parent=(AliJob*)(gROOT->GetListOfTasks()->FindObject(name.Data()));
 
@@ -141,6 +137,24 @@ void IceXtalk::Exec(Option_t* opt)
 
  IceEvent* evt=(IceEvent*)parent->GetObject("IceEvent");
  if (!evt) return;
+
+ Int_t mudaq=0;
+ Int_t twrdaq=0;
+ AliSignal* daq=(AliSignal*)evt->GetDevice("Daq");
+ mudaq=daq->GetSignal("Muon");
+ twrdaq=daq->GetSignal("TWR");
+
+ // This cross talk correction processor is only for MuDaq data 
+ if (!mudaq) return;
+
+ if (fCalfile)
+ {
+  fOmdb=(AliObjMatrix*)fCalfile->Get("MuDaq-OMDBASE");
+  // Next statement for compatibility with old calibration file format
+  if (!fOmdb) fOmdb=(AliObjMatrix*)fCalfile->Get("Cal-OMDBASE");
+ }
+
+ if (!fOmdb) return;
 
  // Storage of the used parameters in the IceXtalk device
  AliSignal params;

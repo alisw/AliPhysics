@@ -17,13 +17,20 @@
 
 ///////////////////////////////////////////////////////////////////////////
 // Class IceCal2Root
-// Conversion of Amanda ascii calibration data into an AliObjMatrix object
+// Conversion of Amanda (ascii) calibration data into a AliObjMatrix objects
 // containing the complete OM position, calibration, Xtalk etc... database.
+// Via specification of the various input files, various AliObjMatrix objects
+// are created and (optionally) stored in a single output file.
+// The names of the AliObjMatrix objects indicate the type of database they
+// contain.
+// For example :
+// The name "MuDaq-OMDBASE" indicates the database info for MuDaq data,
+// whereas TWRDaq calibration data is in the object named "TWRDaq-OMDBASE".
+// Note that a MuDaq Amacalib ascii input file has always to be provided,
+// since the geometry data for all the other databases is obtained from there.   
 // In addition a PDG particle database, extended with some specific Amanda
 // entries, is provided as well.
 // This class is derived from AliJob providing task-based processing.
-// The main object in the job environment is an AliObjMatrix* pointer
-// which contains the OM database.
 // Note that the data structures are only written out if an outputfile has
 // been specified via the SetOutputFile memberfunction.
 // In case no outputfile has been specified, this class provides a facility
@@ -34,6 +41,8 @@
 // (j,1)    : Pointer to OM with identifier "j"
 // (j,k+1)  : Pointer to a TF1* being the probability function for Xtalk
 //            with OM "j" as transmitter and OM "k" as receiver.
+//
+// The latter is only available for MuDaq databases.
 //
 // The geometry information is directly available from the OM pointer
 // in the form of its position and data words like "ORIENT" for orientation etc...
@@ -92,11 +101,14 @@
 //
 // IceCal2Root q("IceCal2Root","Amacalib to IcePack data structure conversion");
 //
-// // The Amacalib input filename
-// q.SetAmacalibFile("amacalib_amanda2_2003.txt");
+// // The MuDaq Amacalib input filename
+// q.SetAmacalibFile("amacalib_amanda2_2005.txt");
+//
+// // The TWRDaq input filename with the newly determined TWR T0's.
+// q.SetTWRDaqFile("muon_t0_cal_2005.txt");
 //
 // // Output file for the event structures
-// q.SetOutputFile("calib2003.root");
+// q.SetOutputFile("cal2005.root");
 //
 // ///////////////////////////////////////////////////////////////////
 // // Here the user can specify his/her sub-tasks to be executed
@@ -120,7 +132,7 @@
 //
 // // Outline of dbase usage for (de)calibration and Xtalk
 //
-// AliObjMatrix* omdb=q.GetOMdbase();
+// AliObjMatrix* omdb=q.GetOMdbase("MuDaq");
 // IceAOM* om=(IceAOM*)omdb->GetObject(9,1); // Pointer to OM 9
 // om->Data(); // Overview of generic module parameters
 // TF1* fcal=0;   // Calibration function
@@ -158,11 +170,13 @@ IceCal2Root::IceCal2Root(const char* name,const char* title) : AliJob(name,title
 {
 // Default constructor.
  fAmacalFileName="";
+ fTWRDaqFileName="";
  fRootFileName="";
  fOutfile=0;
 
  fPdg=0;
- fOmdb=0;
+ fMuDaqdb=0;
+ fTWRDaqdb=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 IceCal2Root::~IceCal2Root()
@@ -175,17 +189,29 @@ IceCal2Root::~IceCal2Root()
   fPdg=0;
  }
 
- if (fOmdb)
+ if (fMuDaqdb)
  {
-  delete fOmdb;
-  fOmdb=0;
+  delete fMuDaqdb;
+  fMuDaqdb=0;
+ }
+
+ if (fTWRDaqdb)
+ {
+  delete fTWRDaqdb;
+  fTWRDaqdb=0;
  }
 }
 ///////////////////////////////////////////////////////////////////////////
 void IceCal2Root::SetAmacalibFile(TString name)
 {
-// Set the name of the Amacalib input file.
+// Set the name of the Amacalib MuDaq input file.
  fAmacalFileName=name;
+}
+///////////////////////////////////////////////////////////////////////////
+void IceCal2Root::SetTWRDaqFile(TString name)
+{
+// Set the name of the TWRDaq calibration input file.
+ fTWRDaqFileName=name;
 }
 ///////////////////////////////////////////////////////////////////////////
 void IceCal2Root::SetOutputFile(TString name)
@@ -200,41 +226,33 @@ TDatabasePDG* IceCal2Root::GetPDG()
  return fPdg;
 }
 ///////////////////////////////////////////////////////////////////////////
-AliObjMatrix* IceCal2Root::GetOMdbase()
+AliObjMatrix* IceCal2Root::GetOMdbase(TString name)
 {
-// Provide pointer to the OM geometry, calib. etc... database
- return fOmdb;
+// Provide pointer to the requested OM geometry, calib. etc... database.
+// Options for the "name" specification are : MuDaq, TWRDaq.
+// For backward compatibility the default is name="MuDaq".
+
+ if (name=="MuDaq") return fMuDaqdb;
+ if (name=="TWRDaq") return fTWRDaqdb;
+ return 0;
 }
 ///////////////////////////////////////////////////////////////////////////
 void IceCal2Root::Exec(Option_t* opt)
 {
-// Job to convert the ascii database info into the IcePack structure.
+// Job to convert the (ascii) database info into the IcePack structure.
 //
 // Notes :
 // -------
 // 1) This class is derived from AliJob, allowing a task based processing.
-//    After conversion of the ascii dbase data into the IcePack structure,
+//    After conversion of the (ascii) dbase data into the IcePack structure,
 //    the processing of all available sub-tasks (if any) is invoked.
 //    This provides a facility to investigate/use the dbase data in
 //    subsequent (sub)tasks processing before the final data structures
 //    are written out.
-// 2) The main object in this job environment is an AliObjMatrix* pointer
-//    which contains the OM database.
-
- if (fAmacalFileName=="")
- {
-  cout << " *IceCal2Root Exec* No amacalib input file specified." << endl;
-  return;
- }
-
- fInput.clear();
- fInput.open(fAmacalFileName.Data());
-
- if (!fInput.good())
- {
-  cout << " *IceCal2Root Exec* Bad input file : " << fAmacalFileName.Data() << endl;
-  return;
- }
+//
+// 2) Creation of a TFolder via the argument of the ExecuteJob statement
+//    makes all created database objects accessible to subsequent tasks
+//    via the TFolder::FindObject facility.
 
  if (fOutfile)
  {
@@ -244,18 +262,6 @@ void IceCal2Root::Exec(Option_t* opt)
  if (fRootFileName != "")
  {
   fOutfile=new TFile(fRootFileName.Data(),"RECREATE","Calibration data in IcePack structure");
- }
-
- // The OM database object
- if (fOmdb)
- {
-  fOmdb->Reset();
- }
- else
- {
-  fOmdb=new AliObjMatrix();
-  fOmdb->SetNameTitle("Cal-OMDBASE","The OM geometry, calib. etc... database");
-  fOmdb->SetOwner();
  }
 
  // Create the particle database and extend it with some F2000 specific definitions
@@ -276,19 +282,23 @@ void IceCal2Root::Exec(Option_t* opt)
  fPdg->AddParticle("a_primary","a_primary",0,1,0,0,"none",10003500,0,0);
 
  // Initialise the job working environment
- SetMainObject(fOmdb);
  AddObject(fPdg);
  if (fOutfile) AddObject(fOutfile);
 
  cout << " ***" << endl;
  cout << " *** Start processing of job " << GetName() << " ***" << endl;
  cout << " ***" << endl;
- cout << " Amacalib input file : " << fAmacalFileName.Data() << endl;
+ cout << " Amacalib MuDaq input file : " << fAmacalFileName.Data() << endl;
+ cout << " TWRDaq input file : " << fTWRDaqFileName.Data() << endl;
  if (fOutfile) cout << " ROOT output file : " << fOutfile->GetName() << endl;
 
- ListEnvironment();
+ GetMuDaqData();
+ if (fMuDaqdb) AddObject(fMuDaqdb);
 
- GetCalibData();
+ GetTWRDaqData();
+ if (fTWRDaqdb) AddObject(fTWRDaqdb);
+
+ ListEnvironment();
 
  // Invoke all available sub-tasks (if any)
  CleanTasks();
@@ -298,7 +308,8 @@ void IceCal2Root::Exec(Option_t* opt)
  if (fOutfile)
  {
   fOutfile->cd();
-  if (fOmdb) fOmdb->Write();
+  if (fMuDaqdb) fMuDaqdb->Write();
+  if (fTWRDaqdb) fTWRDaqdb->Write();
   if (fPdg) fPdg->Write();
  }
 
@@ -306,9 +317,36 @@ void IceCal2Root::Exec(Option_t* opt)
  if (fOutfile) fOutfile->Write();
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceCal2Root::GetCalibData()
+void IceCal2Root::GetMuDaqData()
 {
-// Obtain all the geometry, calibration and Xtalk data.
+// Obtain all the MuDaq geometry, calibration and Xtalk data.
+
+ if (fAmacalFileName=="")
+ {
+  cout << " *IceCal2Root GetMuDaqData* No amacalib input file specified." << endl;
+  return;
+ }
+
+ fInput.clear();
+ fInput.open(fAmacalFileName.Data());
+
+ if (!fInput.good())
+ {
+  cout << " *IceCal2Root GetMuDaqData* Bad input file : " << fAmacalFileName.Data() << endl;
+  return;
+ }
+
+ // The MuDaq OM database object
+ if (fMuDaqdb)
+ {
+  fMuDaqdb->Reset();
+ }
+ else
+ {
+  fMuDaqdb=new AliObjMatrix();
+  fMuDaqdb->SetNameTitle("MuDaq-OMDBASE","The MuDaq OM geometry, calib. etc... database");
+  fMuDaqdb->SetOwner();
+ }
 
  // Prescription of the various (de)calibration functions
  TF1 fadccal("fadccal","(x-[1])*[0]");
@@ -376,12 +414,12 @@ void IceCal2Root::GetCalibData()
   if (s == "P") // Read the Geom data
   {
    fInput >> jmod >> type >> serial >> string >> ix >> iy >> iz >> ori;
-   omx=(IceAOM*)fOmdb->GetObject(jmod,1);
+   omx=(IceAOM*)fMuDaqdb->GetObject(jmod,1);
    if (!omx)
    {
     omx=new IceAOM(om);
     omx->SetUniqueID(jmod);
-    fOmdb->EnterObject(jmod,1,omx);
+    fMuDaqdb->EnterObject(jmod,1,omx);
    }
    pos[0]=double(ix)/1000.;
    pos[1]=double(iy)/1000.;
@@ -397,12 +435,12 @@ void IceCal2Root::GetCalibData()
   else if (s == "T") // Read the Time calibration constants
   {
    fInput >> jmod >> ped >> beta >> alpha >> pol;
-   omx=(IceAOM*)fOmdb->GetObject(jmod,1);
+   omx=(IceAOM*)fMuDaqdb->GetObject(jmod,1);
    if (!omx)
    {
     omx=new IceAOM(om);
     omx->SetUniqueID(jmod);
-    fOmdb->EnterObject(jmod,1,omx);
+    fMuDaqdb->EnterObject(jmod,1,omx);
    }
 
    omx->SetCalFunction(&ftdccal,2);
@@ -453,12 +491,12 @@ void IceCal2Root::GetCalibData()
   else if (s == "A") // Read the Amplitude calibration constants
   {
    fInput >> jmod >> ped >> beta >> totped >> pol;
-   omx=(IceAOM*)fOmdb->GetObject(jmod,1);
+   omx=(IceAOM*)fMuDaqdb->GetObject(jmod,1);
    if (!omx)
    {
     omx=new IceAOM(om);
     omx->SetUniqueID(jmod);
-    fOmdb->EnterObject(jmod,1,omx);
+    fMuDaqdb->EnterObject(jmod,1,omx);
    }
 
    omx->SetCalFunction(&fadccal,1);
@@ -495,12 +533,12 @@ void IceCal2Root::GetCalibData()
   else if (s == "K") // Read the cross talk probability constants
   {
    fInput >> jtrans >> jrec >> c >> b >> dlemin >> dlemax;
-   omx=(IceAOM*)fOmdb->GetObject(jtrans,1);
+   omx=(IceAOM*)fMuDaqdb->GetObject(jtrans,1);
    if (!omx)
    {
     omx=new IceAOM(om);
     omx->SetUniqueID(jtrans);
-    fOmdb->EnterObject(jtrans,1,omx);
+    fMuDaqdb->EnterObject(jtrans,1,omx);
    }
 
    TF1* fx=new TF1(fxtalkp);
@@ -515,12 +553,153 @@ void IceCal2Root::GetCalibData()
    }
    fx->SetParameter(2,dlemin);
    fx->SetParameter(3,dlemax);
-   fOmdb->EnterObject(jtrans,jrec+1,fx);
+   fMuDaqdb->EnterObject(jtrans,jrec+1,fx);
   }
   else // Skip this line
   {
    fInput.ignore(99999,'\n');
   } 
  }
+
+ fInput.close();
+}
+///////////////////////////////////////////////////////////////////////////
+void IceCal2Root::GetTWRDaqData()
+{
+// Obtain all the TWRDaq geometry and calibration data.
+
+ if (fTWRDaqFileName=="")
+ {
+  cout << " *IceCal2Root GetTWRDaqData* No TWRDaq calibration data will be produced." << endl;
+  return;
+ }
+
+ fInput.clear();
+ fInput.open(fTWRDaqFileName.Data());
+
+ if (!fInput.good())
+ {
+  cout << " *IceCal2Root GetTWRDaqData* Bad input file : " << fTWRDaqFileName.Data() << endl;
+  return;
+ }
+
+ // The geometry info will be obtained from the MuDaq OM database
+ if (!fMuDaqdb)
+ {
+  cout << " *IceCal2Root GetTWRDaqData* MuDaq OM geometry database is missing." << endl;
+  return;
+ }
+
+ // The TWRDaq OM database object
+ if (fTWRDaqdb)
+ {
+  fTWRDaqdb->Reset();
+ }
+ else
+ {
+  fTWRDaqdb=new AliObjMatrix();
+  fTWRDaqdb->SetNameTitle("TWRDaq-OMDBASE","The TWRDaq OM geometry, calib. etc... database");
+  fTWRDaqdb->SetOwner();
+ }
+
+ // Prescription of the various (de)calibration functions
+ TF1 fadccal("fadccal","(x-[0])*[1]");
+ TF1 fadcdecal("fadcdecal","(x/[1])+[0]");
+ fadccal.SetParName(0,"ADC-PED");
+ fadccal.SetParName(1,"ADC-FACT");
+ fadcdecal.SetParName(0,"ADC-PED");
+ fadcdecal.SetParName(1,"ADC-FACT");
+
+ TF1 ftdccal("ftdccal","x-[0]");
+ TF1 ftdcdecal("ftdcdecal","x+[0]");
+ ftdccal.SetParName(0,"T0");
+ ftdcdecal.SetParName(0,"T0");
+
+ TF1 ftotcal("ftotcal","x*[0]");
+ TF1 ftotdecal("ftotdecal","x/[0]");
+ ftotcal.SetParName(0,"TOT-FACT");
+ ftotdecal.SetParName(0,"TOT-FACT");
+
+ fInput.seekg(0); // Position at beginning of file
+ fInput >> dec;   // Make sure all integers starting with 0 are taken in decimal format
+
+ Int_t jmod;
+ Float_t t0;
+ IceAOM* omx=0;
+ TF1* fcal=0;
+ TF1* fdecal=0;
+ while (fInput >> jmod >> t0)
+ {
+  // Copy the Geom data from the MuDaq OM database
+  IceAOM* omg=(IceAOM*)fMuDaqdb->GetObject(jmod,1);
+  if (!omg) continue;
+
+  omx=new IceAOM(*omg);
+
+  // Reset all previous "dead" flags
+  omx->SetAlive("ADC");
+  omx->SetAlive("LE");
+  omx->SetAlive("TOT");
+
+  // Enter the TWRDaq (de)calibration functions
+  omx->SetCalFunction(&fadccal,"ADC");
+  omx->SetDecalFunction(&fadcdecal,"ADC");
+  omx->SetCalFunction(&ftdccal,"LE");
+  omx->SetDecalFunction(&ftdcdecal,"LE");
+  omx->SetCalFunction(&ftotcal,"TOT");
+  omx->SetDecalFunction(&ftotdecal,"TOT");
+
+  // Flag time slots of bad OMs as dead and don't provide time (de)calib functions
+  if (t0<-999)
+  {
+   omx->SetDead("LE");
+   omx->SetDead("TOT");
+   omx->SetCalFunction(0,"LE");
+   omx->SetDecalFunction(0,"LE");
+   omx->SetCalFunction(0,"TOT");
+   omx->SetDecalFunction(0,"TOT");
+  }
+
+  // Set the TWRDaq (de)calibration function parameters for the good OMs
+  fcal=omx->GetCalFunction("ADC");
+  fdecal=omx->GetDecalFunction("ADC");
+  if (fcal)
+  {
+   fcal->SetParameter(0,0);
+   fcal->SetParameter(1,1);
+  }
+  if (fdecal)
+  {
+   fdecal->SetParameter(0,0);
+   fdecal->SetParameter(1,1);
+  }
+
+  fcal=omx->GetCalFunction("LE");
+  fdecal=omx->GetDecalFunction("LE");
+  if (fcal)
+  {
+   fcal->SetParameter(0,t0);
+  }
+  if (fdecal)
+  {
+   fdecal->SetParameter(0,t0);
+  }
+
+  fcal=omx->GetCalFunction("TOT");
+  fdecal=omx->GetDecalFunction("TOT");
+  if (fcal)
+  {
+   fcal->SetParameter(0,1);
+  }
+  if (fdecal)
+  {
+   fdecal->SetParameter(0,1);
+  }
+
+  fTWRDaqdb->EnterObject(jmod,1,omx);
+
+ } // End of reading loop
+
+ fInput.close();
 }
 ///////////////////////////////////////////////////////////////////////////

@@ -30,5 +30,5 @@
  Analyse ana("Analyse","OMDB analyser");
  q.Add(&ana);
 
- q.ExecuteJob();
+ q.ExecuteJob(1);
 }
