@@ -668,6 +668,10 @@ void AliMC::Init()
 
    //=================Create Materials and geometry
    gMC->Init();
+  // Set alignable volumes for the whole geometry (with old root)
+#if ROOT_VERSION_CODE < 331527
+  SetAllAlignableVolumes();
+#endif
    //Read the cuts for all materials
    ReadTransPar();
    //Build the special IMEDIA table
