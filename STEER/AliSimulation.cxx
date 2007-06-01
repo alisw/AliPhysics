@@ -432,9 +432,6 @@ Bool_t AliSimulation::MisalignGeometry(AliRunLoader *runLoader)
   // Update the TGeoPhysicalNodes
   gGeoManager->RefreshPhysicalNodes();
 
-  // Export (mis)aligned geometry 
-  gGeoManager->Export("misaligned_geometry.root");
-
   return kTRUE;
 }
 
