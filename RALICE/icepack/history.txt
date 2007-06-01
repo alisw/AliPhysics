@@ -100,7 +100,7 @@
                 obsolete due to bug fix in IceRawTWR.
 28-mar-2007 NvE Explicitly included TMath.h in IceChi2.h and IcePandel.h due to a
                 ROOT restructuring introduced in version 5.15/04.
-01-jul-2007 NvE Memberfunction GetString() introduced in class IceGOM.
+01-jun-2007 NvE Memberfunction GetString() introduced in class IceGOM.
                 IceCalibrate.cxx and IceXtalk.cxx updated to support both the old (MuDaq only)
                 and new (MuDaq, TWRDaq, ...) calibration file format.
                 Also isolation cut in IceCleanHits modified to ignore hits from

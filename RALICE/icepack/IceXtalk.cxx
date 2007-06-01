@@ -141,8 +141,8 @@ void IceXtalk::Exec(Option_t* opt)
  Int_t mudaq=0;
  Int_t twrdaq=0;
  AliSignal* daq=(AliSignal*)evt->GetDevice("Daq");
- mudaq=daq->GetSignal("Muon");
- twrdaq=daq->GetSignal("TWR");
+ mudaq=int(daq->GetSignal("Muon"));
+ twrdaq=int(daq->GetSignal("TWR"));
 
  // This cross talk correction processor is only for MuDaq data 
  if (!mudaq) return;
