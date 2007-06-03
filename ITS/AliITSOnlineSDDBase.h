@@ -39,7 +39,7 @@ class AliITSOnlineSDDBase : public AliITSOnlineSDD {
     else return 0;
   }
 
-  Float_t CalcMeanRawNoise();
+  Float_t CalcMeanRawNoise() const;
   Float_t GetAnodeCommonMode(Int_t iAnode) const{
     if(fNEvents>0) return fSumCMN[iAnode]/fNEvents;
     else return 0;
@@ -50,16 +50,16 @@ class AliITSOnlineSDDBase : public AliITSOnlineSDD {
  protected:
 
  private:
-  Int_t fNEvents;
-  Bool_t fGoodAnode[fgkNAnodes];
-  Float_t fSumBaseline[fgkNAnodes];
-  Float_t fSumRawNoise[fgkNAnodes];
-  Float_t fSumCMN[fgkNAnodes];
-  Float_t fMinBaseline;
-  Float_t fMaxBaseline;
-  Float_t fMinRawNoise;
-  Float_t fMaxRawNoise;
-  Float_t fNSigmaNoise;
+  Int_t fNEvents;                    // number of events
+  Bool_t fGoodAnode[fgkNAnodes];     // anode quality: good(1) - bad (0)
+  Float_t fSumBaseline[fgkNAnodes];  // baseline summed over events
+  Float_t fSumRawNoise[fgkNAnodes];  // noise summed over events
+  Float_t fSumCMN[fgkNAnodes];       // common mode noise coeff.
+  Float_t fMinBaseline;              // Cut value for minimum baseline
+  Float_t fMaxBaseline;              // Cut value for maximum baseline
+  Float_t fMinRawNoise;              // Cut value for minimum noise
+  Float_t fMaxRawNoise;              // Cut value for maximum noise
+  Float_t fNSigmaNoise;              // Cut value for noise (n*sigma)
 
   ClassDef(AliITSOnlineSDDBase,1);
 };

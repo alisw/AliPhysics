@@ -35,13 +35,13 @@ class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
   void SetMaxDriftVel(Float_t vmax=9.){fMaxDriftVel=vmax;}
 
   TGraphErrors* GetLineGraph(Int_t jlin);
-  TGraphErrors* GetDriftVelocityGraph();
+  TGraphErrors* GetDriftVelocityGraph() const;
   Float_t* GetDriftVelFitParam()const{ return fParam;}
   Float_t GetDriftVelocity(Int_t jlin) const{return fDriftVel[jlin];}
   Float_t GetSigmaDriftVelocity(Int_t jlin) const{return fSigmaDriftVel[jlin];}
   Float_t GetTimeBinZero() const{return fTbZero;}
   Float_t GetDriftCoordinate(Float_t cAnode, Float_t cTimeBin);
-  Int_t GetAnodeNumber(Int_t iInjLine);
+  Int_t GetAnodeNumber(Int_t iInjLine) const;
 
   void PrintInjMap();
   void PrintCentroids();
@@ -68,21 +68,22 @@ class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
   static const Float_t fgkSaturation;
   static const Float_t fgkJitterTB;
 
-  TH2F* fHisto;
-  Float_t fTbZero;
-  Float_t fPosition[3];
-  UShort_t fTbMin[3];
-  UShort_t fTbMax[3];
-  Bool_t fGoodInj[kNInjectors][3];
-  Float_t fCentroid[kNInjectors][3];
-  Float_t fRMSCentroid[kNInjectors][3];
-  Float_t fDriftVel[kNInjectors];
-  Float_t fSigmaDriftVel[kNInjectors];
-  Float_t *fParam;
-  Int_t fPolOrder;
-  Float_t fMinDriftVel;
-  Float_t fMaxDriftVel;
-  Float_t fThreshold;
+  TH2F* fHisto;                         // histogram of module channel counts
+  Float_t fTbZero;                      // Time zero for injector event
+  Float_t fPosition[3];                 // Coordinates of injector lines
+  UShort_t fTbMin[3];                   // Minimum time bin for each line
+  UShort_t fTbMax[3];                   // Maximum time bin for each line
+  Bool_t fGoodInj[kNInjectors][3];      // array of good injectors
+  Float_t fCentroid[kNInjectors][3];    // array of time centroids of injectors
+  Float_t fRMSCentroid[kNInjectors][3]; // array of time rms of injectors
+  Float_t fDriftVel[kNInjectors];       // drift velocity
+  Float_t fSigmaDriftVel[kNInjectors];  // error on drift velocity
+  Float_t *fParam;                      // parameters of polinomial fit
+                                        //  of drift vel. vs. anode number
+  Int_t fPolOrder;                      // order of polinomial fit
+  Float_t fMinDriftVel;                 // Cut value for minimum drift speed
+  Float_t fMaxDriftVel;                 // Cut value for maximum drift speed
+  Float_t fThreshold;                   // Threshold for injector signal
 
   ClassDef(AliITSOnlineSDDInjectors,1)
 };

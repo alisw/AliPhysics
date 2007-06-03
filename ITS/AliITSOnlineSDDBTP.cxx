@@ -14,7 +14,6 @@
  **************************************************************************/
 #include "AliITSOnlineSDDBTP.h"
 #include <TH2F.h>
-#include <Riostream.h>
 #include <TMath.h>
 
 
@@ -57,6 +56,7 @@ AliITSOnlineSDDBTP::~AliITSOnlineSDDBTP(){
 }
 //______________________________________________________________________
 void AliITSOnlineSDDBTP::Reset(){
+  //
   fNBaseEvents=0;
   fNTPEvents=0;
   for(Int_t i=0;i<fgkNAnodes;i++){
@@ -70,6 +70,7 @@ void AliITSOnlineSDDBTP::Reset(){
 }
 //______________________________________________________________________
 void  AliITSOnlineSDDBTP::ValidateAnodes(){
+  //
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
     fGoodAnode[ian]=1;
     if(GetAnodeBaseline(ian)>fMaxBaseline || GetAnodeBaseline(ian)<fMinBaseline) fGoodAnode[ian]=0;
@@ -130,9 +131,9 @@ void AliITSOnlineSDDBTP::AddBaseEvent(TH2F* hrawd){
   }
 
 
-  const Int_t itbmax=int(tbmax);
-  Float_t *cmnEven = new Float_t[itbmax];
-  Float_t *cmnOdd  = new Float_t[itbmax];
+  const Int_t kTbmax=int(tbmax);
+  Float_t *cmnEven = new Float_t[kTbmax];
+  Float_t *cmnOdd  = new Float_t[kTbmax];
   for(Int_t itb=0;itb<tbmax;itb++){
     Float_t sumEven=0., sumOdd=0.;
     Int_t countEven=0,countOdd=0;
@@ -164,7 +165,7 @@ void AliITSOnlineSDDBTP::AddBaseEvent(TH2F* hrawd){
   delete [] cmnOdd;
 }
 //______________________________________________________________________
-Float_t AliITSOnlineSDDBTP::CalcMeanRawNoise(){
+Float_t AliITSOnlineSDDBTP::CalcMeanRawNoise() const{
   //
   Float_t meanns=0.;
   Int_t cnt=0;
@@ -178,6 +179,7 @@ Float_t AliITSOnlineSDDBTP::CalcMeanRawNoise(){
 }
 //______________________________________________________________________
 void AliITSOnlineSDDBTP::StatGain(Float_t &mean, Float_t  &rms){
+  //
   Float_t sum=0.,sumq=0.;
   Int_t cnt=0;
   for(Int_t ian=0;ian<fgkNAnodes;ian++){

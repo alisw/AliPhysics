@@ -55,6 +55,7 @@ AliITSOnlineSDDBase::~AliITSOnlineSDDBase(){
 }
 //______________________________________________________________________
 void AliITSOnlineSDDBase::Reset(){
+  //
   fNEvents=0;
   for(Int_t i=0;i<fgkNAnodes;i++){
     fGoodAnode[i]=1;
@@ -65,6 +66,7 @@ void AliITSOnlineSDDBase::Reset(){
 }
 //______________________________________________________________________
 void  AliITSOnlineSDDBase::ValidateAnodes(){
+  //
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
     fGoodAnode[ian]=1;
     if(GetAnodeBaseline(ian)>fMaxBaseline || GetAnodeBaseline(ian)<fMinBaseline) fGoodAnode[ian]=0;
@@ -94,9 +96,9 @@ void AliITSOnlineSDDBase::AddEvent(TH2F* hrawd){
   }
 
 
-  const Int_t itbmax=int(tbmax);
-  Float_t *cmnEven = new Float_t[itbmax];
-  Float_t *cmnOdd  = new Float_t[itbmax];
+  const Int_t kTbmax=int(tbmax);
+  Float_t *cmnEven = new Float_t[kTbmax];
+  Float_t *cmnOdd  = new Float_t[kTbmax];
   for(Int_t itb=0;itb<tbmax;itb++){
     Float_t sumEven=0., sumOdd=0.;
     Int_t countEven=0,countOdd=0;
@@ -129,7 +131,7 @@ void AliITSOnlineSDDBase::AddEvent(TH2F* hrawd){
   delete [] cmnOdd;
 }
 //______________________________________________________________________
-Float_t AliITSOnlineSDDBase::CalcMeanRawNoise(){
+Float_t AliITSOnlineSDDBase::CalcMeanRawNoise() const{
   //
   Float_t meanns=0.;
   Int_t cnt=0;

@@ -10,7 +10,6 @@
 ///////////////////////////////////////////////////////////////////
 
 #include<TObject.h>
-#include<TMath.h>
 
 class AliITSOnlineSDD : public TObject {
 
@@ -26,7 +25,7 @@ class AliITSOnlineSDD : public TObject {
   Int_t GetDetectorSide() const {return fSide;}
 
  protected:
-  static const Int_t fgkNAnodes = 256;
+  static const Int_t fgkNAnodes = 256; // number of anodes in each half-module
   Int_t fModuleId; // module number from 0 to 255
   Int_t fSide;     // detector side (0-1)
 

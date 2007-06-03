@@ -35,22 +35,22 @@ class AliITSOnlineSDDCMN : public AliITSOnlineSDD {
     else return 0;
   }
 
-  Float_t CalcMeanNoise();
+  Float_t CalcMeanNoise() const;
   Int_t GetNEvents() const {return fNEvents;}
   void WriteToFXS();
 
  protected:
 
  private:
-  Int_t fNEvents;
-  Bool_t fGoodAnode[fgkNAnodes];
-  Float_t fBaseline[fgkNAnodes];
-  Float_t fRawNoise[fgkNAnodes];
-  Float_t fSumCorrNoise[fgkNAnodes];
-  Float_t fCMN[fgkNAnodes];
-  Float_t fMinCorrNoise;
-  Float_t fMaxCorrNoise;
-  Float_t fNSigmaNoise;
+  Int_t fNEvents;                    // number of events
+  Bool_t fGoodAnode[fgkNAnodes];     // anode quality: good(1) - bad (0)
+  Float_t fBaseline[fgkNAnodes];     // array of anode baselines
+  Float_t fRawNoise[fgkNAnodes];     // array of anode raw noise
+  Float_t fSumCorrNoise[fgkNAnodes]; // corrected noise summed over events
+  Float_t fCMN[fgkNAnodes];          // common mode noise coeff.
+  Float_t fMinCorrNoise;             // Cut value for minimum corrected noise
+  Float_t fMaxCorrNoise;             // Cut value for maximum corrected noise
+  Float_t fNSigmaNoise;              // Cut value for corrected noise (n*sigma)
 
   ClassDef(AliITSOnlineSDDCMN,1);
 };

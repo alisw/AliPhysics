@@ -52,6 +52,7 @@ AliITSOnlineSDDCMN::~AliITSOnlineSDDCMN(){
 }
 //______________________________________________________________________
 void AliITSOnlineSDDCMN::Reset(){
+  //
   fNEvents=0;
   for(Int_t i=0;i<fgkNAnodes;i++){
     fGoodAnode[i]=1;
@@ -88,6 +89,7 @@ void AliITSOnlineSDDCMN::ReadBaselines(){
 }
 //______________________________________________________________________
 void  AliITSOnlineSDDCMN::ValidateAnodes(){
+  //
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
     if(!fGoodAnode[ian]) continue;
     if(GetAnodeCorrNoise(ian)>fMaxCorrNoise || GetAnodeCorrNoise(ian)<fMinCorrNoise) fGoodAnode[ian]=0;
@@ -135,7 +137,7 @@ void AliITSOnlineSDDCMN::AddEvent(TH2F* hrawd){
   delete hcorrd;
 }
 //______________________________________________________________________
-Float_t AliITSOnlineSDDCMN::CalcMeanNoise(){
+Float_t AliITSOnlineSDDCMN::CalcMeanNoise() const{
   //
   Float_t meanns=0.;
   Int_t cnt=0;

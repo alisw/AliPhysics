@@ -44,7 +44,8 @@ const Float_t AliITSOnlineSDDInjectors::fgkJitterTB = 8.;
 }
 //______________________________________________________________________
 AliITSOnlineSDDInjectors::AliITSOnlineSDDInjectors(Int_t mod, Int_t sid):AliITSOnlineSDD(mod,sid),fHisto(),fTbZero(0.),fParam(),fPolOrder(0),fMinDriftVel(0.),fMaxDriftVel(0.),fThreshold(0.)
-{ // standard constructor
+{ 
+// standard constructor
   SetMinDriftVel();
   SetMaxDriftVel();
   SetRangeLine1();
@@ -72,6 +73,7 @@ void AliITSOnlineSDDInjectors::SetPositions(){
 }
 //______________________________________________________________________
 void AliITSOnlineSDDInjectors::Reset(){
+  //
   for(Int_t i=0;i<kNInjectors;i++){ 
     fDriftVel[i]=0.;
     fSigmaDriftVel[i]=0.;
@@ -114,14 +116,14 @@ TGraphErrors* AliITSOnlineSDDInjectors::GetLineGraph(Int_t jlin){
 }
 //______________________________________________________________________
 Float_t AliITSOnlineSDDInjectors::GetDriftCoordinate(Float_t cAnode, Float_t cTimeBin){
+  //
   Float_t vel=0;
   for(Int_t i=0;i<=fPolOrder;i++) vel+=fParam[i]*TMath::Power(cAnode,(Float_t)i);
   return vel*(cTimeBin-(fTbZero-fgkJitterTB))*25/1000.; 
 }
 //______________________________________________________________________
-TGraphErrors* AliITSOnlineSDDInjectors::GetDriftVelocityGraph(){
+TGraphErrors* AliITSOnlineSDDInjectors::GetDriftVelocityGraph() const{
   // 
-
   Int_t ipt=0;
   TGraphErrors *g=new TGraphErrors(0);
   for(Int_t i=0;i<kNInjectors;i++){
@@ -135,6 +137,7 @@ TGraphErrors* AliITSOnlineSDDInjectors::GetDriftVelocityGraph(){
 }
 //______________________________________________________________________
 void AliITSOnlineSDDInjectors::CalcTimeBinZero(){
+  //
   Float_t tzero=0.,intCont=0.;
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
     for(Int_t itb=1;itb<fTbMin[0];itb++){
@@ -274,7 +277,8 @@ void AliITSOnlineSDDInjectors::CalcDriftVelocity(Int_t jlin){
   fSigmaDriftVel[jlin]=evel;
 }
 //______________________________________________________________________
-Int_t AliITSOnlineSDDInjectors::GetAnodeNumber(Int_t iInjLine){
+Int_t AliITSOnlineSDDInjectors::GetAnodeNumber(Int_t iInjLine) const{
+  //
   Int_t ian=-1;
   if(iInjLine>32) return ian;
   if(!fSide){

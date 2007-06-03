@@ -29,14 +29,14 @@
 ClassImp(AliITSOnlineSDDTP)
 
 //______________________________________________________________________
-AliITSOnlineSDDTP::AliITSOnlineSDDTP():AliITSOnlineSDD(),fNEvents(0),fDAQ(0.),fNSigmaGain(0.)
+AliITSOnlineSDDTP::AliITSOnlineSDDTP():AliITSOnlineSDD(),fNEvents(0),fDAC(0.),fNSigmaGain(0.)
 {
   // default constructor
   Reset();
   SetNSigmaGain();
 }
 //______________________________________________________________________
-AliITSOnlineSDDTP::AliITSOnlineSDDTP(Int_t mod, Int_t sid, Float_t xDAQ):AliITSOnlineSDD(mod,sid),fNEvents(0),fDAQ(xDAQ),fNSigmaGain(0.)
+AliITSOnlineSDDTP::AliITSOnlineSDDTP(Int_t mod, Int_t sid, Float_t xDAC):AliITSOnlineSDD(mod,sid),fNEvents(0),fDAC(xDAC),fNSigmaGain(0.)
 {
   // standard constructor
   Reset();
@@ -48,6 +48,7 @@ AliITSOnlineSDDTP::~AliITSOnlineSDDTP(){
 }
 //______________________________________________________________________
 void AliITSOnlineSDDTP::Reset(){
+  //
   fNEvents=0;
   for(Int_t i=0;i<fgkNAnodes;i++){
     fGoodAnode[i]=1;
@@ -104,6 +105,7 @@ void AliITSOnlineSDDTP::ReadBaselines(){
 
 //______________________________________________________________________
 void AliITSOnlineSDDTP::ValidateAnodes(){
+  //
   Float_t meang,rmsg;
   StatGain(meang,rmsg);
   Float_t lowlim=meang-fNSigmaGain*rmsg;
@@ -118,6 +120,7 @@ void AliITSOnlineSDDTP::ValidateAnodes(){
 
 //______________________________________________________________________
 void AliITSOnlineSDDTP::StatGain(Float_t &mean, Float_t  &rms){
+  //
   Float_t sum=0.,sumq=0.;
   Int_t cnt=0;
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
