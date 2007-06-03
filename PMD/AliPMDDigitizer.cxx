@@ -875,6 +875,20 @@ void AliPMDDigitizer::Exec(Option_t *option)
 		  if (deltaE > 0.)
 		    {
 		      MeV2ADC(deltaE,adc);
+                      //
+		      // To decalibrte the adc values
+		      //
+		      Float_t gain1 = Gain(idet,ism,jrow,kcol);
+		      if (gain1 != 0.)
+		      {
+			  Int_t adcDecalib = (Int_t)(adc/gain1);
+			  adc = (Float_t) adcDecalib;
+		      }
+		      else if(gain1 == 0.)
+		      {
+			  adc = 0.;
+		      }
+
 		      AddDigit(trno,detno,ism,jrow,kcol,adc);
 		    }
 		} // column loop
