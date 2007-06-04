@@ -37,6 +37,7 @@
 #include "AliAnalysisTask.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliAnalysisDataSlot.h"
+#include "AliVirtualEventHandler.h"
 #include "AliAnalysisManager.h"
 
 ClassImp(AliAnalysisManager)
@@ -47,6 +48,7 @@ AliAnalysisManager *AliAnalysisManager::fgAnalysisManager = NULL;
 AliAnalysisManager::AliAnalysisManager() 
                    :TNamed(),
                     fTree(NULL),
+		    fEventHandler(NULL),
                     fCurrentEntry(-1),
                     fMode(kLocalAnalysis),
                     fInitOK(kFALSE),
@@ -66,6 +68,7 @@ AliAnalysisManager::AliAnalysisManager()
 AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
                    :TNamed(name,title),
                     fTree(NULL),
+		    fEventHandler(NULL),
                     fCurrentEntry(-1),
                     fMode(kLocalAnalysis),
                     fInitOK(kFALSE),
@@ -92,6 +95,7 @@ AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
 AliAnalysisManager::AliAnalysisManager(const AliAnalysisManager& other)
                    :TNamed(other),
                     fTree(NULL),
+		    fEventHandler(NULL),
                     fCurrentEntry(-1),
                     fMode(other.fMode),
                     fInitOK(other.fInitOK),
@@ -120,6 +124,7 @@ AliAnalysisManager& AliAnalysisManager::operator=(const AliAnalysisManager& othe
    if (&other != this) {
       TNamed::operator=(other);
       fTree       = NULL;
+      fEventHandler = other.fEventHandler;
       fCurrentEntry = -1;
       fMode       = other.fMode;
       fInitOK     = other.fInitOK;
@@ -206,7 +211,9 @@ void AliAnalysisManager::SlaveBegin(TTree *tree)
    if (fDebug > 1) {
       cout << "->AliAnalysisManager::SlaveBegin()" << endl;
    }
-
+   // Call InitIO of EventHandler
+   fEventHandler->InitIO();
+   //
    TIter next(fTasks);
    AliAnalysisTask *task;
    // Call CreateOutputObjects for all tasks
@@ -285,6 +292,8 @@ void AliAnalysisManager::PackOutput(TList *target)
       return;
    }
 
+   fEventHandler->Terminate();
+   
    if (fMode == kProofAnalysis) {
       TIter next(fOutputs);
       AliAnalysisDataContainer *output;
@@ -403,6 +412,8 @@ void AliAnalysisManager::Terminate()
    if (fDebug > 1) {
       cout << "<-AliAnalysisManager::Terminate()" << endl;
    }   
+   //
+   fEventHandler->TerminateIO();
 }
 
 //______________________________________________________________________________
@@ -715,6 +726,7 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
          }   
          task->ExecuteTask(option);
       }
+      fEventHandler->Fill();
       return;
    }   
    // The event loop is not controlled by TSelector   
@@ -726,6 +738,7 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
       }   
       task->ExecuteTask(option);
    }   
+   fEventHandler->Fill();
 }
 
 //______________________________________________________________________________
