@@ -256,6 +256,7 @@ Bool_t AliMUONTrackHitPattern::TriggerDigits()
     /// make (S)Digit for trigger
     //
 
+    for(Int_t ch=0; ch<4; ++ch) fTriggerDigitsList[ch].Clear();
 
     Int_t nBoard;
 
