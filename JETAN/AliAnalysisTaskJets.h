@@ -8,7 +8,7 @@
 class AliJetFinder;
 class AliESD;
 class TChain;
-
+class AliAODEvent;
 
 class AliAnalysisTaskJets : public AliAnalysisTask
 {
@@ -30,8 +30,8 @@ class AliAnalysisTaskJets : public AliAnalysisTask
     AliJetFinder* fJetFinder; //  Pointer to the jet finder 
     TChain*       fChain;     //! chained files
     AliESD*       fESD;       //! ESD
-    TTree*        fTreeJ;     //  tree of reconstructed jets
-    
+    AliAODEvent*  fAOD;       //! AOD
+    TTree*        fTreeA;     //  tree of reconstructed jets
     ClassDef(AliAnalysisTaskJets, 1); // Analysis task for standard jet analysis
 };
  

@@ -12,6 +12,7 @@
 //---------------------------------------------------------------------
 
 #include <TObject.h>
+#include "AliAODJet.h"
 
 class TFile;
 class TTree;
@@ -20,6 +21,8 @@ class AliJetReader;
 class AliJetHeader;
 class AliJetControlPlots;
 class AliLeading;
+class AliAODJet;
+class AliAODEvent;
 
 class AliJetFinder : public TObject 
 {
@@ -37,6 +40,7 @@ class AliJetFinder : public TObject
   virtual void SetJetReader(AliJetReader* r) {fReader=r;}
   virtual void SetJetHeader(AliJetHeader* h) {fHeader=h;}
   // others
+  virtual void   AddJet(AliAODJet jet);
   virtual void   PrintJets();
   virtual void   Run();
   virtual void   WriteRHeaderToFile();  
@@ -50,6 +54,7 @@ class AliJetFinder : public TObject
   virtual Bool_t ProcessEvent(Long64_t entry);
   virtual void   FinishRun();
   virtual void   ConnectTree(TTree* tree, TObject* data);
+  virtual void   ConnectAOD(AliAODEvent* aod);
   virtual TTree* MakeTreeJ(char* name);
   virtual void   WriteHeaders();
   virtual void   WriteJetsToFile() {;}
@@ -64,6 +69,8 @@ class AliJetFinder : public TObject
   AliLeading*   fLeading;        //! pointer to leading particle data 
   AliJetReader* fReader;         //  pointer to reader
   AliJetHeader* fHeader;         //  pointer to header
+  TClonesArray* fAODjets;        //! reconstructed jets
+  Int_t         fNAODjets;       //! number of reconstructed jets
   AliJetControlPlots* fPlots;    //! pointer to control plots
   TFile* fOut;                   //! output file
   ClassDef(AliJetFinder,2)

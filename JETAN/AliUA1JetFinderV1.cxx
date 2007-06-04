@@ -34,6 +34,7 @@
 #include "AliJetReaderHeader.h"
 #include "AliJetReader.h"
 #include "AliJet.h"
+#include "AliAODJet.h"
 
 
 ClassImp(AliUA1JetFinderV1)
@@ -80,9 +81,9 @@ void AliUA1JetFinderV1::FindJets()
   if (nIn == 0) return;
 
   // local arrays for input
-  Float_t* ptT  = new Float_t[nIn];
-  Float_t* etaT = new Float_t[nIn];
-  Float_t* phiT = new Float_t[nIn];
+  Float_t* ptT   = new Float_t[nIn];
+  Float_t* etaT  = new Float_t[nIn];
+  Float_t* phiT  = new Float_t[nIn];
   Int_t*   injet = new Int_t[nIn];
 
   //total energy in array
@@ -173,6 +174,11 @@ void AliUA1JetFinderV1::FindJets()
       pz = etJet[kj] / TMath::Tan(2.0 * TMath::ATan(TMath::Exp(-etaJet[kj])));
       en = TMath::Sqrt(px * px + py * py + pz * pz);
       fJets->AddJet(px, py, pz, en);
+      AliAODJet jet(px, py, pz, en);
+      jet.Print("");
+      
+      AddJet(jet);
+      
       idxjets[nselectj] = kj;
       nselectj++;
   }
@@ -797,6 +803,7 @@ void AliUA1JetFinderV1::Reset()
 {
   fLego->Reset();
   fJets->ClearJets();
+  fNAODjets = 0;
 }
 
 ////////////////////////////////////////////////////////////////////////

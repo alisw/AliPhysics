@@ -21,8 +21,12 @@
 #include <TH1.h>
 
 #include "AliAnalysisTaskJets.h"
+#include "AliAnalysisManager.h"
 #include "AliJetFinder.h"
 #include "AliESD.h"
+#include "AliAODEvent.h"
+#include "AliAODHandler.h"
+
 
 ClassImp(AliAnalysisTaskJets)
 
@@ -33,7 +37,8 @@ AliAnalysisTaskJets::AliAnalysisTaskJets():
     fJetFinder(0x0),
     fChain(0x0),
     fESD(0x0),
-    fTreeJ(0x0)
+    fAOD(0x0),
+    fTreeA(0x0)
 {
   // Default constructor
 }
@@ -44,7 +49,8 @@ AliAnalysisTaskJets::AliAnalysisTaskJets(const char* name):
     fJetFinder(0x0),
     fChain(0x0),
     fESD(0x0),
-    fTreeJ(0x0)
+    fAOD(0x0),
+    fTreeA(0x0)
 {
   // Default constructor
     DefineInput (0, TChain::Class());
@@ -55,7 +61,11 @@ void AliAnalysisTaskJets::CreateOutputObjects()
 {
 // Create the output container
     OpenFile(0);
-    fTreeJ = fJetFinder->MakeTreeJ("TreeJ");
+    AliAODHandler* handler = (AliAODHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetEventHandler());
+    
+    fAOD   = handler->GetAOD();
+    fTreeA = handler->GetTree();
+    fJetFinder->ConnectAOD(fAOD);
 }
 
 void AliAnalysisTaskJets::Init()
@@ -101,7 +111,7 @@ void AliAnalysisTaskJets::Exec(Option_t */*option*/)
     Long64_t ientry = fChain->GetReadEntry();
     if (fDebug > 1) printf("Analysing event # %5d\n", (Int_t) ientry);
     fJetFinder->ProcessEvent(ientry);
-    PostData(0, fTreeJ);
+    PostData(0, fTreeA);
 }
 
 void AliAnalysisTaskJets::Terminate(Option_t */*option*/)

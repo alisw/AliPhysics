@@ -24,12 +24,16 @@
 
 #include <Riostream.h>
 #include <TFile.h>
+#include <TClonesArray.h>
+
 #include "AliJetFinder.h"
 #include "AliJet.h"
+#include "AliAODJet.h"
 #include "AliJetReader.h"
 #include "AliJetReaderHeader.h"
 #include "AliJetControlPlots.h"
 #include "AliLeading.h"
+#include "AliAODEvent.h"
 
 ClassImp(AliJetFinder)
 
@@ -41,6 +45,8 @@ AliJetFinder::AliJetFinder():
     fLeading(0),
     fReader(0x0),
     fHeader(0x0),
+    fAODjets(0x0),
+    fNAODjets(0),
     fPlots(0x0),
     fOut(0x0)
     
@@ -49,6 +55,7 @@ AliJetFinder::AliJetFinder():
   fJets    = new AliJet();
   fGenJets = new AliJet();
   fLeading = new AliLeading();
+  fAODjets = 0;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -73,10 +80,10 @@ AliJetFinder::~AliJetFinder()
 
 ////////////////////////////////////////////////////////////////////////
 
-void AliJetFinder::SetOutputFile(const char* name)
+void AliJetFinder::SetOutputFile(const char */*name*/)
 {
   //  opens output file 
-    fOut = new TFile(name,"recreate");
+  //  fOut = new TFile(name,"recreate");
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -151,12 +158,11 @@ void AliJetFinder::Run()
 	      printf("In FindJetsTPC() routine: find jets with fMomentumArray !!!\n");
 	  FindJetsTPC();
       } else {
-	  if(debug > 1) printf("In FindJets() routine: find jets with fUnitArray !!!\n");
-	  FindJets();
+	   if(debug > 1) printf("In FindJets() routine: find jets with fUnitArray !!!\n");
+	   FindJets();
       }
       if (fOut) {
 	  fOut->cd();
-	  fTreeJ->Fill();
       }
       
       if (fPlots) fPlots->FillHistos(fJets);
@@ -213,8 +219,6 @@ Bool_t AliJetFinder::ProcessEvent(Long64_t entry)
     fLeading->FindLeading(fReader);
     // Jets
     FindJets();
-    // Fill the tree
-    fTreeJ->Fill();
 
     if (fPlots) fPlots->FillHistos(fJets);
     fLeading->Reset();
@@ -233,7 +237,6 @@ void AliJetFinder::FinishRun()
     
     if (fOut) {
 	 fOut->cd();
-	 fTreeJ->Write();
 	 if (fPlots) {
 	     fPlots->Write();
 	 }
@@ -241,3 +244,16 @@ void AliJetFinder::FinishRun()
     }
 }
 
+void AliJetFinder::AddJet(AliAODJet p)
+{
+// Add new jet to the list
+  new ((*fAODjets)[fNAODjets++]) AliAODJet(p);
+}
+
+void AliJetFinder::ConnectAOD(AliAODEvent* aod)
+{
+// Connect to the AOD
+    printf("Connect AOD \n");
+    fAODjets = aod->GetJets();
+    printf("Connect AOD %p \n", fAODjets);
+}
