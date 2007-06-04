@@ -48,7 +48,7 @@ const Int_t AliMpExMap::fgkSeparator1 = 10000;
 const Int_t AliMpExMap::fgkSeparator2 = 100;
 
 const TString  AliMpExMap::fgkCharacterMap 
-  = " 1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.";
+  = " 1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.-";
 
 //
 // static methods
