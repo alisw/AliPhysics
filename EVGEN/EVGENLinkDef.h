@@ -56,4 +56,5 @@
 #pragma link C++ class  AliGenReaderEMD+;
 #pragma link C++ class  AliDecayerPolarized+;
 #pragma link C++ class  AliGenCorrHF+;
+#pragma link C++ class  AliGenCosmicsParam+;
 #endif
