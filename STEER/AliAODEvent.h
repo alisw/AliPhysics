@@ -21,6 +21,7 @@
 #include "AliAODCluster.h"
 #include "AliAODJet.h"
 
+
 class AliAODEvent : public TObject {
 
  public :
@@ -71,23 +72,23 @@ class AliAODEvent : public TObject {
     {new((*fJets)[fJets->GetEntries()]) AliAODJet(*vtx);}
 
   // -- Services
-  void CreateStdContent();
-  void GetStdContent() const;
-  void ResetStd(Int_t trkArrSize = 0, Int_t vtxArrSize = 0);
-
+  void    CreateStdContent();
+  void    GetStdContent();
+  void    ResetStd(Int_t trkArrSize = 0, Int_t vtxArrSize = 0);
+  void    ClearStd();
  private :
 
   AliAODEvent(const AliAODEvent&); // Not implemented
   AliAODEvent& operator=(const AliAODEvent&); // Not implemented
 
-  TList *fAODObjects; // list of AODObjects
-
+  TList *fAODObjects; //  list of AODObjects
+  
   // standard content
-  mutable AliAODHeader  *fHeader;   //! event information
-  mutable TClonesArray  *fTracks;   //! charged tracks
-  mutable TClonesArray  *fVertices; //! vertices
-  mutable TClonesArray  *fClusters; //! neutral particles
-  mutable TClonesArray  *fJets;     //! jets
+  AliAODHeader  *fHeader;   //! event information
+  TClonesArray  *fTracks;   //! charged tracks
+  TClonesArray  *fVertices; //! vertices
+  TClonesArray  *fClusters; //! neutral particles
+  TClonesArray  *fJets;     //! jets
 
   ClassDef(AliAODEvent,1);
 };
