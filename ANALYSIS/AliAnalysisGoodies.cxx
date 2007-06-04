@@ -236,8 +236,8 @@ Bool_t AliAnalysisGoodies::MakeEsdCollectionFromTagCollection(AliRunTagCuts *run
 
 #ifdef WITHALIEN
   
-  TGridCollection * collection = (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(%s)",in));
-  TGridResult* result = collection->GetGridResult("");
+  TGridCollection * collection = (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(\"%s\", 0)",in));
+  TGridResult* result = collection->GetGridResult("", 0, 0);
   AliTagAnalysis * tagAna = new AliTagAnalysis(); 
   tagAna->ChainGridTags(result);
 
@@ -263,8 +263,8 @@ Bool_t AliAnalysisGoodies::MakeEsdCollectionFromTagCollection(const char * runCu
   
 #ifdef WITHALIEN
 
-  TGridCollection * collection = (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(%s)",in));
-  TGridResult* result = collection->GetGridResult("");
+  TGridCollection * collection = (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(\"%s\", 0)",in));
+  TGridResult* result = collection->GetGridResult("", 0, 0);
   AliTagAnalysis * tagAna = new AliTagAnalysis(); 
   tagAna->ChainGridTags(result);
   
@@ -299,8 +299,8 @@ Bool_t AliAnalysisGoodies::Merge(const char * collectionFile, const char * subFi
   
 #ifdef WITHALIEN
 
-  TGridCollection * collection = (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(%s)",collectionFile));
-  TGridResult* result = collection->GetGridResult("");
+  TGridCollection * collection = (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(\"%s\", 0)",collectionFile));
+  TGridResult* result = collection->GetGridResult("", 0, 0);
   
   Int_t index = 0  ;
   const char * turl ;
@@ -481,8 +481,12 @@ Bool_t AliAnalysisGoodies::ProcessChain(TChain * chain) const
     
     // Create containers for input/output
    
-    mgr->ConnectInput (task, 0, taskInput);
-    mgr->ConnectOutput(task, 0, taskOutput);
+    rv = mgr->ConnectInput (task, 0, taskInput);
+    if (!rv) 
+      AliFatal(Form("Error while connecting %s to %s", task->GetName(), taskInput->GetName())) ;  
+    rv = mgr->ConnectOutput(task, 0, taskOutput);
+    if (!rv) 
+      AliFatal(Form("Error while connecting %s to %s", task->GetName(), taskOutput->GetName())) ;  
   }
   
   // start processing 
@@ -602,13 +606,13 @@ Bool_t AliAnalysisGoodies::ProcessEsdXmlCollection(const char * xmlFile) const
 
 #ifdef WITHALIEN
   //AliXMLCollection * collection = AliXMLCollection::Open(xmlFile,0) ;
-  TGridCollection * collection =  (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(%s,0)",xmlFile));
+  TGridCollection * collection =  (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(\"%s\", 0)", xmlFile));
   if (! collection) {
     AliError(Form("%s not found", xmlFile)) ; 
     return kFALSE ; 
   }
 
-  TGridResult* result = collection->GetGridResult("");
+  TGridResult* result = collection->GetGridResult("",0 ,0);
   TList* analysisfilelist = result->GetFileInfoList();
   
   // Makes the ESD chain 
@@ -643,7 +647,7 @@ Bool_t AliAnalysisGoodies::ProcessTagXmlCollection(const char * xmlFile, AliRunT
 
   printf("*** Process       ***\n");
   printf("***  Wk-Dir = |%s|             \n",gSystem->WorkingDirectory());
-  printf("***  Coll   = |%s|             \n",xmlFile);              	
+  printf("***  Coll   = |%s|            \n",xmlFile);              	
  
   // check if file is local or alien
   if ( gSystem->AccessPathName(xmlFile) ) 
@@ -651,13 +655,13 @@ Bool_t AliAnalysisGoodies::ProcessTagXmlCollection(const char * xmlFile, AliRunT
 
 #ifdef WITHALIEN
 
-  TGridCollection * collection = (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(%s)",xmlFile));
+  TGridCollection * collection = (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(\"%s\", 0)",xmlFile));
   if (! collection) {
     AliError(Form("%s not found", xmlFile)) ; 
     return kFALSE ; 
   }
 
-  TGridResult* result = collection->GetGridResult("");
+  TGridResult* result = collection->GetGridResult("", 0, 0);
   AliTagAnalysis * tagAna = new AliTagAnalysis(); 
   tagAna->ChainGridTags(result);
   
@@ -698,13 +702,13 @@ Bool_t AliAnalysisGoodies::ProcessTagXmlCollection(const char * xmlFile, const c
   if ( gSystem->AccessPathName(xmlFile) ) 
     TGrid::Connect("alien://"); 
 
-  TGridCollection * collection = (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(%s)",xmlFile));
+  TGridCollection * collection = (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(\"%s\", 0)",xmlFile));
   if (! collection) {
     AliError(Form("%s not found", xmlFile)) ; 
     return kFALSE ; 
   }
 
-  TGridResult* result = collection->GetGridResult("");
+  TGridResult* result = collection->GetGridResult("", 0, 0);
   AliTagAnalysis * tagAna = new AliTagAnalysis(); 
   tagAna->ChainGridTags(result);
   
