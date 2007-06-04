@@ -27,11 +27,6 @@ ClassImp(AliTPCSensorPressureArray)
 
 const char kFname[] = "PressureSensor.txt";
 const char kAmandaString[] = "system:gcs-ALITPC-ALITPC-AnalogInput-0%d.ProcessInput.PosSt";
-const Int_t  kMinGraph = 10;       // minimum #points of graph to be fitted
-const Int_t  kMinPoints = 10;      // minimum number of points per knot in fit
-const Int_t  kIter = 10;           // number of iterations for spline fit
-const Double_t  kMaxDelta = 0.00;  // precision parameter for spline fit
-const Int_t  kFitReq = 2;          // fit requirement, 2 = continuous 2nd derivative
 
 //_____________________________________________________________________________
 AliTPCSensorPressureArray::AliTPCSensorPressureArray():AliDCSSensorArray(),

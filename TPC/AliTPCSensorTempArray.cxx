@@ -27,11 +27,6 @@ ClassImp(AliTPCSensorTempArray)
 
 const char kFname[] = "TempSensor.txt";
 const char kAmandaString[] = "tpc_temp:PT_%d.Temperature";
-const Int_t  kMinGraph = 10;       // minimum #points of graph to be fitted
-const Int_t  kMinPoints = 10;      // minimum number of points per knot in fit
-const Int_t  kIter = 10;           // number of iterations for spline fit
-const Double_t  kMaxDelta = 0.00;  // precision parameter for spline fit
-const Int_t  kFitReq = 2;          // fit requirement, 2 = continuous 2nd derivative
 
 //_____________________________________________________________________________
 AliTPCSensorTempArray::AliTPCSensorTempArray():AliDCSSensorArray(),
