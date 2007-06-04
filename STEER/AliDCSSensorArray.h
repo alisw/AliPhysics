@@ -34,6 +34,21 @@ class AliDCSSensorArray : public TNamed {
   void SetEndTime   (const TTimeStamp& end) { fEndTime = end; }
   TTimeStamp GetStartTime () const { return fStartTime; } 
   TTimeStamp GetEndTime () const { return fEndTime; } 
+  void  SetMinGraph(const Int_t minGraph) { fMinGraph=minGraph;}
+  Int_t GetMinGraph()  const { return fMinGraph; }
+  void  SetMinPoints(const Int_t minPoints) { fMinPoints=minPoints;}
+  Int_t GetMinPoints() const { return fMinPoints; }
+  void  SetIter(const Int_t iter ) { fIter=iter; } 
+  Int_t GetIter() const { return fIter; }             
+  void  SetMaxDelta(const Double_t maxDelta) { fMaxDelta= maxDelta;}
+  Double_t GetMaxDelta() const { return fMaxDelta; }   
+  void  SetFitReq(const Int_t fitReq) { fFitReq=fitReq; }
+  Int_t GetFitReq() const {return fFitReq;}
+  void  SetValCut(const Int_t valCut) { fValCut=valCut;}
+  Int_t GetValCut() const {return fValCut;} 
+  void  SetDiffCut(const Int_t diffCut) { fDiffCut=diffCut; }
+  Int_t GetDiffCut() const {return fDiffCut;}
+
   void SetGraph     (TMap *map, const char* amandaString);
   void MakeSplineFit(TMap *map, const char* amandaString, Bool_t keepMap=kFALSE);
   TMap* ExtractDCS  (TMap *dcsMap, const char* amandaString);
@@ -48,11 +63,18 @@ class AliDCSSensorArray : public TNamed {
   Int_t GetLastIdDCS()  const; 
 
  protected:
-  TTimeStamp  fStartTime;         // start time for measurements in this entry
-  TTimeStamp  fEndTime;           // end time for measurements in this entry
-  TClonesArray *fSensors;         // Array of sensors
+  Int_t  fMinGraph;              // minimum #points of graph to be fitted
+  Int_t  fMinPoints;             // minimum number of points per knot in fit
+  Int_t  fIter;                  // number of iterations for spline fit
+  Double_t  fMaxDelta;           // precision parameter for spline fit
+  Int_t  fFitReq;                // fit requirement, 2 = continuous 2nd derivative
+  Int_t  fValCut;                // cut on absolute value read from DCS map
+  Int_t  fDiffCut;               // cut on difference in value read from DCS map
+  TTimeStamp  fStartTime;        // start time for measurements in this entry
+  TTimeStamp  fEndTime;          // end time for measurements in this entry
+  TClonesArray *fSensors;        // Array of sensors
 
-  ClassDef(AliDCSSensorArray,2)       //  TPC calibration class for parameters which are saved per pad
+  ClassDef(AliDCSSensorArray,3)       //  TPC calibration class for parameters which are saved per pad
 
 };
 

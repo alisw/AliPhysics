@@ -25,15 +25,17 @@
 
 ClassImp(AliDCSSensorArray)
 
-const Int_t  kMinGraph = 10;       // minimum #points of graph to be fitted
-const Int_t  kMinPoints = 10;      // minimum number of points per knot in fit
-const Int_t  kIter = 10;           // number of iterations for spline fit
-const Double_t  kMaxDelta = 0.00;  // precision parameter for spline fit
-const Int_t  kFitReq = 2;          // fit requirement, 2 = continuous 2nd derivative
 const Double_t kSecInHour = 3600.; // seconds in one hour
 
 //_____________________________________________________________________________
 AliDCSSensorArray::AliDCSSensorArray():TNamed(), 
+  fMinGraph(10),
+  fMinPoints(10),
+  fIter(10),
+  fMaxDelta(0.0),
+  fFitReq(2),
+  fValCut(9999999),
+  fDiffCut(9999999),
   fStartTime (2000,1,1,0,0,0),
   fEndTime   (2000,1,1,0,0,0),
   fSensors(0)
@@ -46,6 +48,13 @@ AliDCSSensorArray::AliDCSSensorArray():TNamed(),
 //_____________________________________________________________________________
 AliDCSSensorArray::AliDCSSensorArray(Int_t prevRun, const char* dbEntry) : 
   TNamed(),
+  fMinGraph(10),
+  fMinPoints(10),
+  fIter(10),
+  fMaxDelta(0.0),
+  fFitReq(2),
+  fValCut(9999999),
+  fDiffCut(9999999),
   fStartTime (2000,1,1,0,0,0),
   fEndTime   (2000,1,1,0,0,0),
   fSensors(0)
@@ -90,6 +99,13 @@ AliDCSSensorArray::AliDCSSensorArray(Int_t prevRun, const char* dbEntry) :
 
 //_____________________________________________________________________________
 AliDCSSensorArray::AliDCSSensorArray(const AliDCSSensorArray &c):TNamed(c),
+  fMinGraph(c.fMinGraph),
+  fMinPoints(c.fMinPoints),
+  fIter(c.fIter),
+  fMaxDelta(c.fMaxDelta),
+  fFitReq(c.fFitReq),
+  fValCut(c.fValCut),
+  fDiffCut(c.fDiffCut),
   fStartTime (c.fStartTime),
   fEndTime   (c.fEndTime),
   fSensors(0)
@@ -165,10 +181,10 @@ void AliDCSSensorArray::MakeSplineFit(TMap *map, const char *amandaString,
     Int_t dcsSensor=entry->GetIdDCS();
     sprintf(dname,amandaString,dcsSensor);
     TGraph *gr = (TGraph*)map->GetValue(dname);
-    if (gr->GetN() < kMinGraph ) continue;    
+    if (gr->GetN() < fMinGraph ) continue;    
     AliSplineFit *fit = new AliSplineFit();
-    fit->InitKnots(gr,kMinPoints,kIter,kMaxDelta);
-    fit->SplineFit(kFitReq);
+    fit->InitKnots(gr,fMinPoints,fIter,fMaxDelta);
+    fit->SplineFit(fFitReq);
     entry->SetStartTime(fStartTime);
     entry->SetEndTime(fEndTime);
     fit->Cleanup();
@@ -222,18 +238,37 @@ TGraph* AliDCSSensorArray::MakeGraph(TObjArray* valueSet){
   Int_t time0=0;
   Int_t out=0;
   Int_t skipped=0;
-  Float_t value;  
+  AliDCSValue *val = (AliDCSValue *)valueSet->At(0);
+  AliDCSValue::Type type = val->GetType();
+  if ( type == AliDCSValue::kInvalid || type == AliDCSValue::kBool ) return 0;
+  Float_t value;
   for (Int_t i=0; i<nentries; i++){
-    AliDCSValue * val = (AliDCSValue *)valueSet->At(i);
+    val = (AliDCSValue *)valueSet->At(i);
     if (!val) continue;
     if (time0==0){
       time0=val->GetTimeStamp();
     }
-    value = val->GetFloat();
-    if (TMath::Abs(value)>100) continue;   // refuse values exceeding 100
-    if ( out>0 && skipped<10 && TMath::Abs(value-y[out-1])>5) {
-      skipped++;                               // refuse temperatures changing 
-      continue;                                // by > 5 degrees in one time step
+    switch ( type )
+    { 
+      case AliDCSValue::kFloat:
+        value = val->GetFloat();
+        break;
+      case AliDCSValue::kChar:
+        value = val->GetChar();
+	break;
+      case AliDCSValue::kInt:
+        value = val->GetInt();
+	break;
+      case AliDCSValue::kUInt:
+        value = val->GetUInt();
+	break;
+      default:
+        continue;
+    }
+    if (TMath::Abs(value)>fValCut) continue;   // refuse values greater than cut
+    if ( out>0 && skipped<10 && TMath::Abs(value-y[out-1])>fDiffCut) {
+      skipped++;                               // refuse values changing 
+      continue;                                // by > cut  in one time step
     }                                          
     skipped=0;					      
     if (val->GetTimeStamp()-time0>1000000) continue;

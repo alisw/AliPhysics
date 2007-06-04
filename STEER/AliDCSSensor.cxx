@@ -93,12 +93,7 @@ Double_t AliDCSSensor::GetValue(UInt_t timeSec)
  // Get temperature value for actual sensor
  //  timeSec given as offset from start-of-run measured in seconds
  //
- Double_t timeHrs = timeSec/kSecInHour;
- if (fFit) {
-  return  fFit->Eval(timeHrs,0);
- } else { 
-  return kSmall;
- }
+ return Eval(TTimeStamp(timeSec));
 }
 //_____________________________________________________________________________
 Double_t AliDCSSensor::GetValue(TTimeStamp time) 
@@ -106,12 +101,7 @@ Double_t AliDCSSensor::GetValue(TTimeStamp time)
  // Get temperature value for actual sensor
  //  time given as absolute TTimeStamp
  //
- Double_t timeHrs = (time.GetSec() - fStartTime)/kSecInHour;
- if (fFit) {
-  return  fFit->Eval(timeHrs,0);
- } else { 
-  return kSmall;
- }
+ return Eval(time);
 }
 
 //_____________________________________________________________________________
