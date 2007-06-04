@@ -9,7 +9,7 @@
  * without fee, provided that the above copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *Crate
+ * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
@@ -38,7 +38,7 @@
 #include "AliMpLocalBoard.h"
 #include "AliMpSegmentation.h"
 #include "AliMpVSegmentation.h"
-
+#include "AliMpStringObjMap.h"
 #include "AliLog.h"
 
 #include <Riostream.h>
@@ -271,6 +271,11 @@ Bool_t  AliMpDDLStore::ReadTriggerDDLs()
 {
 /// create trigger DDL object ddl<->Crate<->local board
   
+   AliMpStringObjMap inputXfromMap;
+   AliMpStringObjMap inputXtoMap;
+   AliMpStringObjMap inputYfromMap;
+   AliMpStringObjMap inputYtoMap;
+
     Int_t nonNotified = 0;
 
     Int_t iDDL = -1;
@@ -381,6 +386,42 @@ Bool_t  AliMpDDLStore::ReadTriggerDDLs()
 	}
       }
 
+      // map the different copies between cards in X and Y inputs
+      // when copying Xinput, Yinput are copied as well
+      if (tmp.Contains("X3input1")) 
+      {
+	TObjArray* stringList = tmp.Tokenize(TString(" "));
+  
+	TString copyX = ((TObjString*)stringList->At(3))->GetString();
+	TString input = ((TObjString*)stringList->At(2))->GetString();;
+
+	if (copyX.Contains("(1)")) { 
+	  inputXfromMap.Add(input, board);
+	  inputYfromMap.Add(input, board);
+
+	}
+	if (copyX.Contains("(2)")) {
+	  inputXtoMap.Add(input, board);
+	  inputYtoMap.Add(input, board);
+	}
+	delete stringList;
+      }
+
+      if (tmp.Contains("Y1input1")) 
+      {
+	TObjArray* stringList = tmp.Tokenize(TString(" "));
+
+	TString copyY = ((TObjString*)stringList->At(3))->GetString();
+	TString input = ((TObjString*)stringList->At(2))->GetString();;
+
+	if (copyY.Contains("(1)")) 
+	    inputYfromMap.Add(input, board);
+	if (copyY.Contains("(2)")) 
+	    inputYtoMap.Add(input, board);
+	delete stringList;
+      }
+
+
       if (tmp.Contains("transv")) 
       {
 	// set transverse connector
@@ -413,6 +454,37 @@ Bool_t  AliMpDDLStore::ReadTriggerDDLs()
 	fLocalBoards.Add(board->GetId(), board);
 
       }
+    }
+    
+    // set copy card number to where the X-Y inputs are copied and
+    // from where the X-Y inputs come.
+    // deleting the first item (TString) done by AliMpStringObjMap itself
+    // keep AliMpLocalBoard object undelete
+
+    TString value;
+
+    for (inputXfromMap.First(); !inputXfromMap.IsDone(); inputXfromMap.Next()) {
+      
+      value = inputXfromMap.CurrentKey();
+      AliMpLocalBoard* boardFrom = (AliMpLocalBoard*)inputXfromMap.CurrentItem();
+      AliMpLocalBoard* boardTo   = (AliMpLocalBoard*)inputXtoMap.Get(value);
+      boardFrom->SetInputXto(boardTo->GetId());
+      boardTo->SetInputXfrom(boardFrom->GetId());
+      AliDebug(3, Form("copy xInputs from local id %d_%s_%d to %d_%s_%d\n", 
+		       boardTo->GetInputXfrom(), boardFrom->GetCrate().Data(), boardFrom->GetSlot(),
+		       boardFrom->GetInputXto(), boardTo->GetCrate().Data(), boardTo->GetSlot()));
+    }
+
+    for (inputYfromMap.First(); !inputYfromMap.IsDone(); inputYfromMap.Next()) {
+
+      value = inputYfromMap.CurrentKey();
+      AliMpLocalBoard* boardFrom = (AliMpLocalBoard*)inputYfromMap.CurrentItem();
+      AliMpLocalBoard* boardTo   = (AliMpLocalBoard*)inputYtoMap.Get(value);
+      boardFrom->SetInputYto(boardTo->GetId());
+      boardTo->SetInputYfrom(boardFrom->GetId());
+      AliDebug(3, Form("copy yInputs from local id %d_%s_%d to %d_%s_%d\n", 
+		       boardTo->GetInputYfrom(), boardFrom->GetCrate().Data(), boardFrom->GetSlot(),
+		       boardFrom->GetInputYto(), boardTo->GetCrate().Data(), boardTo->GetSlot()));
     }
 
     return kTRUE;

@@ -47,6 +47,14 @@ class AliMpLocalBoard : public TNamed
     Int_t  GetNofSwitches() const;
     Int_t  GetSwitch(Int_t index) const;
 
+    // switch enum for local board (see PRR, chpt: 2.4.4)
+    enum {kX2d, kX2m, kX2u, ///< (1) indicate a change of strip pitch in Y circuit
+	  kOR0, kOR1,  ///< taking into account the different segmentation in Y from MT1 to MT2
+	  kENY,        ///< (0) enable communication in Y to n+/-1 board via tranverse connector, (1) disable
+	  kZeroAllYLSB,///< (1) reset the LSB for special configuration of board RC2L5B4 & RC2L6B1
+	  kZeroDown,   ///< (0) information is expected from n-1 board for X input, (1) not
+	  kZeroMiddle, ///< (0) always, not used
+	  kZeroUp };   ///< (0) information is expected from n+1 board for X input, (1) not
 
     // Transverse connector
     //     
@@ -72,6 +80,16 @@ class AliMpLocalBoard : public TNamed
     // given position (line, col)
     AliMpIntPair GetPosition() const;
 
+    // Id to be copy to or from
+    Int_t GetInputXfrom() {return fInputXfrom;}
+    Int_t GetInputXto()   {return fInputXto;}
+    Int_t GetInputYfrom() {return fInputYfrom;}
+    Int_t GetInputYto()   {return fInputYto;}
+
+    void SetInputXfrom(Int_t id) {fInputXfrom = id;}
+    void SetInputXto(Int_t id)   {fInputXto   = id;}
+    void SetInputYfrom(Int_t id) {fInputYfrom = id;}
+    void SetInputYto(Int_t id)   {fInputYto   = id;}
 
  private:
   /// Not implemented
@@ -90,7 +108,11 @@ class AliMpLocalBoard : public TNamed
    TString     fCrate;    ///< Crate name
    AliMpArrayI fSwitches; ///< switches
    Bool_t      fNotified; ///< notified flag (not copy card)
-   AliMpArrayI fDEId;    ///< list of Detection element to which this local board is connected
+   AliMpArrayI fDEId;     ///< list of Detection element to which this local board is connected
+   Int_t       fInputXfrom;///< local id of x3-4 inputs copied from (zero: not copied)
+   Int_t       fInputXto;  ///< local id of x3-4 inputs copied to (zero: not copied)
+   Int_t       fInputYfrom;///< local id of y1-4 inputs copied from (zero: not copied)
+   Int_t       fInputYto;  ///< local id of y1-4 inputs copied to (zero: not copied)
 
   ClassDef(AliMpLocalBoard,1) //utility class for the motif type
 };

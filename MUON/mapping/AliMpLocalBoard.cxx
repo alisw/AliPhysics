@@ -44,8 +44,11 @@ AliMpLocalBoard::AliMpLocalBoard(Int_t id, const Char_t* name, Int_t slot)
       fCrate(),
       fSwitches(false),
       fNotified(true),
-      fDEId(false)
-
+      fDEId(false),
+      fInputXfrom(0),
+      fInputXto(0),
+      fInputYfrom(0),
+      fInputYto(0)
 {
 /// Default constructor
 }
@@ -59,7 +62,11 @@ AliMpLocalBoard::AliMpLocalBoard(TRootIOCtor* /*ioCtor*/)
       fCrate(),
       fSwitches(),
       fNotified(),
-      fDEId()
+      fDEId(),
+      fInputXfrom(0),
+      fInputXto(0),
+      fInputYfrom(0),
+      fInputYto(0)
 {
 /// Root IO constructor
 }
