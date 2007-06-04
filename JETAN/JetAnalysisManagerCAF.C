@@ -5,13 +5,14 @@ void JetAnalysisManagerCAF()
     gROOT->LoadMacro("CreateESDChain.C");
     //
     // Connect to proof
-    //
+
+    TProof::Reset("proof://morsch@lxb6046.cern.ch"); 
     TProof::Open("proof://morsch@lxb6046.cern.ch"); 
 
-//    gProof->SetParallel(1);
-//    gProof->ClearPackage("ESD");
-//    gProof->ClearPackage("JETAN");
-//    gProof->ClearPackage("ANALYSIS");
+    //gProof->SetParallel(3);
+    gProof->ClearPackage("ESD");
+    gProof->ClearPackage("JETAN");
+    gProof->ClearPackage("ANALYSIS");
     
     gProof->ShowEnabledPackages();
     // Enable the ESD Package
@@ -32,15 +33,16 @@ void JetAnalysisManagerCAF()
     //
     // Create the chain
     //
-    TChain* chain = CreateESDChain("ESD100_110_v3.txt");
-    // TChain* chain = CreateESDChain("test.txt", 100);  
+    TChain* chain = CreateESDChain("test.txt", 200);
     //
     // Make the analysis manager
     //
     AliAnalysisManager *mgr     = new AliAnalysisManager("Jet Manager", "Jet Manager");
+    AliAODHandler* aodHandler   = new AliAODHandler();
+    mgr->SetEventHandler(aodHandler);
     mgr-> SetDebugLevel(10);
+    
     AliAnalysisTaskJets *jetana = new AliAnalysisTaskJets("JetAnalysis");
-    jetana->Init();
     jetana->SetDebugLevel(10);
     mgr->AddTask(jetana);
     //
@@ -49,7 +51,7 @@ void JetAnalysisManagerCAF()
 							     AliAnalysisManager::kInputContainer);
 
     AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("tree", TTree::Class(),
-							      AliAnalysisManager::kOutputContainer, "jets.root");
+							      AliAnalysisManager::kOutputContainer, "aod.root");
 
     mgr->ConnectInput (jetana, 0, cinput1);
     mgr->ConnectOutput(jetana, 0, coutput1);
@@ -58,6 +60,5 @@ void JetAnalysisManagerCAF()
     //    
     mgr->InitAnalysis();
     mgr->PrintStatus();
-    mgr->StartAnalysis("proof", chain);
-    
+    mgr->StartAnalysis("proof",chain);
 }
