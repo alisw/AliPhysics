@@ -118,7 +118,7 @@ class AliITShit : public AliHit {
     virtual void SetStatus(Int_t stat){fStatus = stat;}
     virtual void SetStartStatus(Int_t stat){fStatus0 = stat;}
     virtual void SetEdep(Float_t de){fDestep = de;}
-    virtual void SetMomentum(TLorentzVector &p){fPx=p.Pz();fPy=p.Py();
+    virtual void SetMomentum(TLorentzVector &p){fPx=p.Px();fPy=p.Py();
                                                 fPz=p.Pz();}
     virtual Int_t GetTrackStatus() const {//returns the status code
         return fStatus;}
