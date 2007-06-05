@@ -15,7 +15,7 @@
 
 /* $Id$ */
 
-//*-- Author: Yves Schutz (SUBATECH)  & Dmitri Peressounko (SUBATECH & Kurchatov Institute)
+//-- Author: Yves Schutz (SUBATECH)  & Dmitri Peressounko (SUBATECH & Kurchatov Institute)
 //  August 2002 Yves Schutz: clone PHOS as closely as possible and intoduction
 //                           of new  IO (à la PHOS)
 //  Mar 2007, Aleksei Pavlinov - new algoritmh of pseudo clusters
@@ -410,6 +410,20 @@ void AliEMCALClusterizerv1::InitParameters()
   fMinECut = 0.45; // Best value for 2 GeV gamma merged with Ideal HIJING. Retune later? 
 
   fCalibData               = 0 ;
+
+  // If reconstruction parameters are found in OCDB, take them from it
+
+  AliEMCALLoader *emcalLoader = 
+    dynamic_cast<AliEMCALLoader*>(AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL"));
+  AliEMCALRecParam *recParamDB = emcalLoader->RecParam();
+  if (recParamDB != 0) {
+    fECAClusteringThreshold = recParamDB->GetClusteringThreshold();
+    fECAW0                  = recParamDB->GetW0();
+    fMinECut                = recParamDB->GetMinECut();
+    AliDebug(1,Form("Reconstruction parameters were taken from OCDB: fECAClusteringThreshold=%.3f, fECAW=%.3f, fMinECut=%.3f",
+		 fECAClusteringThreshold,fECAW0,fMinECut));
+  }
+
 }
 
 //____________________________________________________________________________
