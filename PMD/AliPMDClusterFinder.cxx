@@ -260,6 +260,130 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
 }
 // ------------------------------------------------------------------------- //
 
+void AliPMDClusterFinder::Digits2RecPoints(TTree *digitsTree,
+					   TTree *clustersTree)
+{
+  // Converts digits to recpoints after running clustering
+  // algorithm on CPV plane and PREshower plane
+  //
+
+  Int_t    det = 0,smn = 0;
+  Int_t    xpos,ypos;
+  Float_t  adc;
+  Int_t    ismn;
+  Int_t    idet;
+  Float_t  clusdata[6];
+
+  TObjArray *pmdcont = new TObjArray();
+  AliPMDClustering *pmdclust = new AliPMDClusteringV1();
+
+  pmdclust->SetEdepCut(fEcut);
+
+/*
+  fRunLoader->GetEvent(ievt);
+  fTreeD = fPMDLoader->TreeD();
+  if (fTreeD == 0x0)
+    {
+      AliFatal("AliPMDClusterFinder: Can not get TreeD");
+    }
+*/
+
+  AliPMDdigit  *pmddigit;
+  TBranch *branch = digitsTree->GetBranch("PMDDigit");
+  branch->SetAddress(&fDigits);
+
+  ResetRecpoint();
+
+/*
+  fTreeR = fPMDLoader->TreeR();
+  if (fTreeR == 0x0)
+    {
+      fPMDLoader->MakeTree("R");
+      fTreeR = fPMDLoader->TreeR();
+    }
+*/
+
+  Int_t bufsize = 16000;
+  TBranch * branch1 = clustersTree->Branch("PMDRecpoint", &fRecpoints, bufsize); 
+  TBranch * branch2 = clustersTree->Branch("PMDRechit", &fRechits, bufsize); 
+
+  Int_t nmodules = (Int_t) digitsTree->GetEntries();
+
+  for (Int_t imodule = 0; imodule < nmodules; imodule++)
+    {
+      ResetCellADC();
+      digitsTree->GetEntry(imodule); 
+      Int_t nentries = fDigits->GetLast();
+      for (Int_t ient = 0; ient < nentries+1; ient++)
+	{
+	  pmddigit = (AliPMDdigit*)fDigits->UncheckedAt(ient);
+	  
+	  det    = pmddigit->GetDetector();
+	  smn    = pmddigit->GetSMNumber();
+	  xpos   = pmddigit->GetRow();
+	  ypos   = pmddigit->GetColumn();
+	  adc    = pmddigit->GetADC();
+	  
+	  // CALIBRATION
+	  Float_t gain = fCalibData->GetGainFact(det,smn,xpos,ypos);
+	  // printf("adc = %d gain = %f\n",adc,gain);
+	  
+	  adc = adc*gain;
+
+	  //Int_t trno   = pmddigit->GetTrackNumber();
+	  fCellADC[xpos][ypos] = (Double_t) adc;
+	}
+
+      idet = det;
+      ismn = smn;
+      pmdclust->DoClust(idet,ismn,fCellADC,pmdcont);
+      
+      Int_t nentries1 = pmdcont->GetEntries();
+
+      AliDebug(1,Form("Total number of clusters/module = %d",nentries1));
+
+      for (Int_t ient1 = 0; ient1 < nentries1; ient1++)
+	{
+	  AliPMDcluster *pmdcl = (AliPMDcluster*)pmdcont->UncheckedAt(ient1);
+	  idet        = pmdcl->GetDetector();
+	  ismn        = pmdcl->GetSMN();
+	  clusdata[0] = pmdcl->GetClusX();
+	  clusdata[1] = pmdcl->GetClusY();
+	  clusdata[2] = pmdcl->GetClusADC();
+	  clusdata[3] = pmdcl->GetClusCells();
+	  clusdata[4] = pmdcl->GetClusSigmaX();
+	  clusdata[5] = pmdcl->GetClusSigmaY();
+
+	  AddRecPoint(idet,ismn,clusdata);
+
+	  Int_t ncell = (Int_t) clusdata[3];
+	  for(Int_t ihit = 0; ihit < ncell; ihit++)
+	    {
+	      Int_t celldataX = pmdcl->GetClusCellX(ihit);
+	      Int_t celldataY = pmdcl->GetClusCellY(ihit);
+	      AddRecHit(celldataX, celldataY);
+	    }
+	  branch2->Fill();
+	  ResetRechit();
+	}
+      pmdcont->Clear();
+      
+      branch1->Fill();
+      ResetRecpoint();
+
+    } // modules
+
+  ResetCellADC();
+  fPMDLoader = fRunLoader->GetLoader("PMDLoader");  
+  fPMDLoader->WriteRecPoints("OVERWRITE");
+
+  //   delete the pointers
+  delete pmdclust;
+  delete pmdcont;
+    
+}
+// ------------------------------------------------------------------------- //
+
 void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 					   TTree *clustersTree)
 {
@@ -291,7 +415,7 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
   Int_t idet = 0;
   Int_t iSMN = 0;
 
-  
+
   for (Int_t indexDDL = 0; indexDDL < kDDL; indexDDL++)
     {
       if (indexDDL < 4)

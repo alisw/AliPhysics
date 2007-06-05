@@ -32,6 +32,7 @@ class AliPMDClusterFinder : public TObject
   virtual ~AliPMDClusterFinder();
 
   void Digits2RecPoints(Int_t ievt);
+  void Digits2RecPoints(TTree *digitsTree, TTree *clustersTree);
   void Digits2RecPoints(AliRawReader *rawReader, TTree *clustersTree);
   void Digits2RecPoints(Int_t ievt, AliRawReader *rawReader);
   void SetCellEdepCut(Float_t ecut);
@@ -69,7 +70,7 @@ class AliPMDClusterFinder : public TObject
   static const Int_t fgkCol = 96; // Total number of cols in one unitmodule
   Double_t fCellADC[fgkRow][fgkCol]; // Array containing individual cell ADC
 
-  ClassDef(AliPMDClusterFinder,10) // To run PMD clustering
+  ClassDef(AliPMDClusterFinder,11) // To run PMD clustering
 };
 #endif
 
