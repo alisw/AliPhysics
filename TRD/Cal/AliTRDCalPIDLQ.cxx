@@ -76,7 +76,8 @@ AliTRDCalPIDLQ::AliTRDCalPIDLQ()
   //  The Default constructor
   //
 
-	Init();
+  Init();
+
 }
 
 //_________________________________________________________________________
@@ -256,6 +257,7 @@ void AliTRDCalPIDLQ::Init()
   fHistdEdx->SetOwner();
   fHistTimeBin = new TObjArray(2 * fNMom);
   fHistTimeBin->SetOwner();  
+
 	// Initialization of estimator at object instantiation because late
 	// initialization in function GetProbability() is not working due to
 	// constantness of this function. 
@@ -264,9 +266,17 @@ void AliTRDCalPIDLQ::Init()
 	// Number of Time bins
 	AliTRDcalibDB *calibration = AliTRDcalibDB::Instance();
 	if(!calibration){
-		AliWarning("No AliTRDcalibDB available. Using 22 time bins.");
-		fNTimeBins = 22;
-	} else fNTimeBins = calibration->GetNumberOfTimeBins();
+	  AliWarning("No AliTRDcalibDB available. Using 22 time bins.");
+	  fNTimeBins = 22;
+	} else {
+          if (calibration->GetRun() > -1) {
+            fNTimeBins = calibration->GetNumberOfTimeBins();
+	  }
+          else {
+  	    AliWarning("No run number set. Using 22 time bins.");
+	    fNTimeBins = 22;
+	  }
+	}
 	
   // ADC Gain normalization
   fMeanChargeRatio = 1.0;
