@@ -94,6 +94,9 @@ void AliFMDQATask::ConnectInputData(const Option_t*)
 void AliFMDQATask::CreateOutputObjects()
 {  
   // create histograms 
+
+  OpenFile(0) ; 
+
   fhFMD1i = new TH1D("FMD1i", "FMD1i", 100, -0.5, 3);
   fhFMD2i = new TH1D("FMD2i", "FMD2i", 100, -0.5, 3);
   fhFMD2o = new TH1D("FMD2o", "FMD2o", 100, -0.5, 3);

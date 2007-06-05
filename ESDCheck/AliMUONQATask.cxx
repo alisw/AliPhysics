@@ -131,6 +131,9 @@ void AliMUONQATask::ConnectInputData(const Option_t*)
 void AliMUONQATask::CreateOutputObjects()
 {  
   // create histograms 
+
+  OpenFile(0) ; 
+
   fhMUONVertex = new TH1F("hMUONVertex","ITS Vertex"                ,100, -25., 25.);
   fhMUONMult   = new TH1F("hMUONMult"  ,"Multiplicity of ESD tracks",10,  -0.5, 9.5);
   fhPt = new TH1F("hPt","Pt",100, 0.,20.);

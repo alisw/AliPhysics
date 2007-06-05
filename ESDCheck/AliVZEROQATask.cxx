@@ -97,6 +97,8 @@ void AliVZEROQATask::CreateOutputObjects()
 {  
   // Creates histograms 
      
+  OpenFile(0) ; 
+
   fhVZERONbPMA  = new TH1I("Nb of fired PMs in V0A", "VZERONbPMA" ,100 ,0 ,99);
   fhVZERONbPMC  = new TH1I("Nb of fired PMs in V0C", "VZERONbPMC" ,100 ,0 ,99);
   fhVZEROMultA  = new TH1I("Multiplicity in V0A", "VZEROMultA" ,50 ,0 ,49);

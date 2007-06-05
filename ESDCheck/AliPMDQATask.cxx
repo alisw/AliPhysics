@@ -164,6 +164,8 @@ void AliPMDQATask::CreateOutputObjects()
 {  
   // create histograms 
   
+  OpenFile(0) ; 
+
   fhPMDP1   = new TH2F("fhPMDP1","XY of Clusters",100,-100.,100.,100,-100.,100.);
   fhPMDC2   = new TH1F("fhPMDC2","CPV  PHI",200,-1,9);
   fhPMDP2   = new TH1F("fhPMDP2","PRE  PHI",200,-1,9);

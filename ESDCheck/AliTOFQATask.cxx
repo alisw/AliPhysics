@@ -344,6 +344,8 @@ void AliTOFQATask::CreateOutputObjects()
 {  
   // Construct histograms:
   
+  OpenFile(0) ; 
+
   fhTOFMatch= 
     new TH1F("hTOFMatch","Fraction of Matched TOF tracks",101,-0.005,1.005);
   fhESDeffPhi= 

@@ -103,6 +103,8 @@ void AliPHOSQATask::CreateOutputObjects()
 {  
   // create histograms 
   
+  OpenFile(0) ; 
+
   fhPHOSPos            = new TNtuple("PHOSPos"         , "Position in PHOS"  , "x:y:z");
   fhPHOS               = new TNtuple("PHOS"            , "PHOS"  , "event:digits:clusters:photons");
   fhPHOSEnergy         = new TH1D("PHOSEnergy"         , "PHOSEnergy"        , 1000, 0., 10. ) ;

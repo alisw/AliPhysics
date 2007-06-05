@@ -73,6 +73,9 @@ void AliAnalysisTaskPt::ConnectInputData(Option_t *)
 void AliAnalysisTaskPt::CreateOutputObjects()
 {
   // create histograms 
+
+  OpenFile(0) ; 
+
   fhPt = new TH1F("fhPt","This is the Pt distribution",15,0.1,3.1);
   fhPt->SetStats(kTRUE);
   fhPt->GetXaxis()->SetTitle("P_{T} [GeV]");

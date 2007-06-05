@@ -84,6 +84,9 @@ void AliTRDQATask::ConnectInputData(const Option_t *)
 void AliTRDQATask::CreateOutputObjects()
 {
   // create histograms 
+
+  OpenFile(0) ; 
+
   fNTracks     = new TH1D("ntracks", ";number of all tracks", 500, -0.5, 499.5); 
   fEventSize   = new TH1D("evSize", ";event size (MB)", 100, 0, 5);
 

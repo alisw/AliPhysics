@@ -89,6 +89,9 @@ void AliT0QATask::ConnectInputData(const Option_t*)
 void AliT0QATask::CreateOutputObjects()
 {
   // create histograms   
+
+  OpenFile(0) ; 
+
   fhT01 = new TH1F("hRealVertex", "Primary vertex", 100,   -20,    20);
   fhT02 = new TH1F("hT0start",    "T0 start time",  100, 12400, 12600);
   fhT03 = new TH1F("hT0vertex",   "T0vertex",       100,   -20,    20);

@@ -99,6 +99,9 @@ void AliHMPIDQATask::ConnectInputData(const Option_t*)
 void AliHMPIDQATask::CreateOutputObjects()
 {  
   // create histograms 
+
+  OpenFile(0) ; 
+
   fhHMPIDCkovP    = new TH2F("CkovP" , "#theta_{c}, [rad];P, [GeV]", 150,   0,  7  ,100, -3, 1); 
   fhHMPIDSigP     = new TH2F("SigP"  ,"#sigma_{#theta_c}"          , 150,   0,  7  ,100, 0, 1e20);
   fhHMPIDMipXY    = new TH2F("MipXY" ,"mip position"               , 260,   0,130  ,252,0,126); 

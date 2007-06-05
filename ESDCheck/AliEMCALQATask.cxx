@@ -102,6 +102,9 @@ void AliEMCALQATask::ConnectInputData(const Option_t*)
 void AliEMCALQATask::CreateOutputObjects()  
 {
 // create histograms  
+
+  OpenFile(0) ; 
+
   fhEMCALPos           = new TNtuple("EMCALPos"        , "Position in EMCAL" , "x:y:z");
   fhEMCAL              = new TNtuple("EMCAL"           , "EMCAL" , "event:digits:clusters:photons");
   fhEMCALEnergy        = new TH1D("EMCALEnergy"        , "EMCALEnergy"       , 1000, 0., 10. ) ;
