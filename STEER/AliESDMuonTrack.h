@@ -60,12 +60,19 @@ public:
   void     SetNHit(UInt_t NHit) {fNHit = NHit;}
 
  // Get and Set methods for trigger matching
-  Int_t    GetMatchTrigger() const {return fMatchTrigger;}
-  void     SetMatchTrigger(Int_t MatchTrigger) {fMatchTrigger = MatchTrigger;}
+  Int_t    GetMatchTrigger() const;
   Double_t GetChi2MatchTrigger() const {return fChi2MatchTrigger;}
   void     SetChi2MatchTrigger(Double_t Chi2MatchTrigger) {fChi2MatchTrigger = Chi2MatchTrigger;}
   UShort_t GetHitsPatternInTrigCh() const {return fHitsPatternInTrigCh;}
   void     SetHitsPatternInTrigCh(UShort_t hitsPatternInTrigCh) {fHitsPatternInTrigCh = hitsPatternInTrigCh;}
+  void     SetLocalTrigger(Int_t locTrig) { fLocalTrigger = locTrig; }
+  Int_t    LoCircuit(void) const
+  { Int_t circ = fLocalTrigger & 0xFF; return (circ == 234) ? -1 : circ; }
+  Int_t    LoStripX(void) const  { return fLocalTrigger >>  8 & 0x1F; }
+  Int_t    LoStripY(void) const  { return fLocalTrigger >> 13 & 0x0F; }
+  Int_t    LoDev(void)    const  { return fLocalTrigger >> 17 & 0x1F; }
+  Int_t    LoLpt(void)    const  { return fLocalTrigger >> 22 & 0x03; }
+  Int_t    LoHpt(void)    const  { return fLocalTrigger >> 24 & 0x03; }
   
  // Methods to compute track momentum
   Double_t Px() const;
@@ -101,15 +108,11 @@ protected:
   Double_t fChi2; // chi2 in the MUON track fit
   UInt_t   fNHit; // number of hit in the track
 
- // trigger matching
-  Int_t   fMatchTrigger; // -1 track does not match trigger
-                         //  0 track match but does not pass pt cut
-                         //  1 track match Low pt cut
-                         //  2 track match High pt cut
+  Int_t fLocalTrigger;    ///< packed local trigger information
+  
   Double_t fChi2MatchTrigger; // chi2 of trigger/track matching
   
   UShort_t fHitsPatternInTrigCh; ///< Word containing info on the hits left in trigger chambers
-
 
   ClassDef(AliESDMuonTrack,4)  //MUON ESD track class 
 };

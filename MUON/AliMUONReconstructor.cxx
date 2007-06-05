@@ -486,7 +486,7 @@ void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   Double_t fitFmin, chi2MatchTrigger;
   Double_t xRec, yRec, zRec, bendingSlope, nonBendingSlope, inverseBendingMomentum;
   Double_t xVtx, yVtx, zVtx, bendingSlopeAtVtx, nonBendingSlopeAtVtx, inverseBendingMomentumAtVtx;
-  Int_t matchTrigger;
+  Int_t localTrigger;
   UShort_t hitsPatternInTrigCh;
 
   // setting pointer for tracks, triggertracks & trackparam at vertex
@@ -562,7 +562,7 @@ void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
     // Global info
     nTrackHits       = recTrack->GetNTrackHits();
     fitFmin          = recTrack->GetFitFMin();
-    matchTrigger     = recTrack->GetMatchTrigger();
+    localTrigger     = recTrack->GetLocalTrigger();
     chi2MatchTrigger = recTrack->GetChi2MatchTrigger();
     hitsPatternInTrigCh = recTrack->GetHitsPatternInTrigCh();
 
@@ -584,7 +584,7 @@ void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
     // global info
     theESDTrack->SetChi2(fitFmin);
     theESDTrack->SetNHit(nTrackHits);
-    theESDTrack->SetMatchTrigger(matchTrigger);
+    theESDTrack->SetLocalTrigger(localTrigger);
     theESDTrack->SetChi2MatchTrigger(chi2MatchTrigger);
     theESDTrack->SetHitsPatternInTrigCh(hitsPatternInTrigCh);
 

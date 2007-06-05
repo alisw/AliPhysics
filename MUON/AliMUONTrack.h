@@ -69,7 +69,7 @@ class AliMUONTrack : public TObject
   Double_t                   GetFitFMin(void) const {return fFitFMin;}
 	/// set the minimum value of the function minimized by the fit
   void                       SetFitFMin(Double_t chi2) { fFitFMin = chi2; }
-        /// return 0,1,2 if track matches with trigger track, -1 if not
+        /// return 1,2,3 if track matches with trigger track, 0 if not
   Int_t                     GetMatchTrigger(void) const {return fMatchTrigger;}
   /// returns the local trigger number corresponding to the trigger track 
   Int_t                      GetLoTrgNum(void) const {return floTrgNum;}
@@ -95,6 +95,18 @@ class AliMUONTrack : public TObject
         /// set word telling which trigger chambers where hit by track
   void                       SetHitsPatternInTrigCh(UShort_t hitsPatternInTrigCh) {fHitsPatternInTrigCh = hitsPatternInTrigCh;}
 
+  /// set local trigger information for the matched trigger track
+  void SetLocalTrigger(Int_t loCirc, Int_t loStripX, Int_t loStripY, Int_t loDev, Int_t loLpt, Int_t loHpt);
+  /// return local trigger information for the matched trigger track
+  Int_t GetLocalTrigger(void) const { return fLocalTrigger;              }
+  Int_t LoCircuit(void) const 
+  { Int_t circ = fLocalTrigger & 0xFF; return (circ == 234) ? -1 : circ; }
+  Int_t LoStripX(void) const  { return fLocalTrigger >>  8 & 0x1F; }
+  Int_t LoStripY(void) const  { return fLocalTrigger >> 13 & 0x0F; }
+  Int_t LoDev(void)    const  { return fLocalTrigger >> 17 & 0x1F; }
+  Int_t LoLpt(void)    const  { return fLocalTrigger >> 22 & 0x03; }
+  Int_t LoHpt(void)    const  { return fLocalTrigger >> 24 & 0x03; }
+
   Double_t                   TryOneHitForRec(AliMUONHitForRec* hitForRec);
   Double_t                   TryTwoHitForRec(AliMUONHitForRec* hitForRec1, AliMUONHitForRec* hitForRec2); 
   
@@ -118,16 +130,17 @@ class AliMUONTrack : public TObject
   AliMUONHitForRec *fVertex; //!< Vertex used during the tracking procedure if required
   
   Double_t fFitFMin; ///< minimum value of the function minimized by the fit
-  Int_t fMatchTrigger;  ///< -1 track does not match trigger
-                        ///<  0 track match but does not pass pt cut
-                        ///<  1 track match Low pt cut
-                        ///<  2 track match High pt cut
+  Int_t fMatchTrigger;  ///<  0 track does not match trigger
+                        ///<  1 track match but does not pass pt cut
+                        ///<  2 track match Low pt cut
+                        ///<  3 track match High pt cut
   Int_t floTrgNum; ///< the number of the corresponding loTrg, -1 if no matching
   Double_t fChi2MatchTrigger; ///< chi2 of trigger/track matching 
   
   Int_t fTrackID; ///< track ID = track number in TrackRefs
   UShort_t fHitsPatternInTrigCh; ///< Word containing info on the hits left in trigger chambers
-  
+
+  Int_t fLocalTrigger;    ///< packed local trigger information
   
   ClassDef(AliMUONTrack, 5) // Reconstructed track in ALICE dimuon spectrometer
 };

@@ -60,7 +60,8 @@ AliMUONTrack::AliMUONTrack()
     floTrgNum(-1),
     fChi2MatchTrigger(0.),
     fTrackID(0),
-    fHitsPatternInTrigCh(0)
+    fHitsPatternInTrigCh(0),
+    fLocalTrigger(234)
 {
   /// Default constructor
 }
@@ -80,7 +81,8 @@ AliMUONTrack::AliMUONTrack(AliMUONHitForRec* hitForRec1, AliMUONHitForRec* hitFo
     floTrgNum(-1),    
     fChi2MatchTrigger(0.),
     fTrackID(0),
-    fHitsPatternInTrigCh(0)
+    fHitsPatternInTrigCh(0),
+    fLocalTrigger(234)
 {
   /// Constructor from thw hitForRec's
 
@@ -171,7 +173,8 @@ AliMUONTrack::AliMUONTrack (const AliMUONTrack& theMUONTrack)
     floTrgNum(theMUONTrack.floTrgNum),    
     fChi2MatchTrigger(theMUONTrack.fChi2MatchTrigger),
     fTrackID(theMUONTrack.fTrackID),
-    fHitsPatternInTrigCh(theMUONTrack.fHitsPatternInTrigCh)
+    fHitsPatternInTrigCh(theMUONTrack.fHitsPatternInTrigCh),
+    fLocalTrigger(theMUONTrack.fLocalTrigger)
 {
   ///copy constructor
   Int_t maxIndex = 0;
@@ -261,6 +264,7 @@ AliMUONTrack & AliMUONTrack::operator=(const AliMUONTrack& theMUONTrack)
   fChi2MatchTrigger   =  theMUONTrack.fChi2MatchTrigger;
   fTrackID            =  theMUONTrack.fTrackID; 
   fHitsPatternInTrigCh = theMUONTrack.fHitsPatternInTrigCh;
+  fLocalTrigger        = theMUONTrack.fLocalTrigger;
 
   return *this;
 }
@@ -572,3 +576,21 @@ void AliMUONTrack::Print(Option_t* opt) const
   }
     
 }
+
+//__________________________________________________________________________
+void AliMUONTrack::SetLocalTrigger(Int_t loCirc, Int_t loStripX, Int_t loStripY, Int_t loDev, Int_t loLpt, Int_t loHpt)
+{
+  /// pack the local trigger information and store
+
+  if (loCirc < 0 || loCirc > 233) return;
+
+  fLocalTrigger = 0;
+  fLocalTrigger += loCirc;
+  fLocalTrigger += loStripX << 8;
+  fLocalTrigger += loStripY << 13;
+  fLocalTrigger += loDev    << 17;
+  fLocalTrigger += loLpt    << 22;
+  fLocalTrigger += loHpt    << 24;
+
+}
+

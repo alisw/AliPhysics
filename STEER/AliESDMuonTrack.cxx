@@ -49,7 +49,7 @@ AliESDMuonTrack::AliESDMuonTrack ():
   fNonBendingCoorUncorrected(0),
   fChi2(0),
   fNHit(0),
-  fMatchTrigger(-1),
+  fLocalTrigger(234),
   fChi2MatchTrigger(0),
   fHitsPatternInTrigCh(0)
 {
@@ -74,7 +74,7 @@ AliESDMuonTrack::AliESDMuonTrack (const AliESDMuonTrack& MUONTrack):
   fNonBendingCoorUncorrected(MUONTrack.fNonBendingCoorUncorrected),
   fChi2(MUONTrack.fChi2),
   fNHit(MUONTrack.fNHit),
-  fMatchTrigger(MUONTrack.fMatchTrigger),
+  fLocalTrigger(MUONTrack.fLocalTrigger),
   fChi2MatchTrigger(MUONTrack.fChi2MatchTrigger),
   fHitsPatternInTrigCh(MUONTrack.fHitsPatternInTrigCh)
 {
@@ -110,7 +110,7 @@ AliESDMuonTrack& AliESDMuonTrack::operator=(const AliESDMuonTrack& MUONTrack)
   fChi2                   = MUONTrack.fChi2;             
   fNHit                   = MUONTrack.fNHit; 
 
-  fMatchTrigger           = MUONTrack.fMatchTrigger;  
+  fLocalTrigger           = MUONTrack.fLocalTrigger;  
   fChi2MatchTrigger       = MUONTrack.fChi2MatchTrigger; 
 
   fHitsPatternInTrigCh    = MUONTrack.fHitsPatternInTrigCh;
@@ -228,5 +228,26 @@ void AliESDMuonTrack::LorentzPUncorrected(TLorentzVector& vP) const
   Double_t pY  = pZ * bendingSlope;
   Double_t e   = TMath::Sqrt(muonMass*muonMass + pX*pX + pY*pY + pZ*pZ);
   vP.SetPxPyPzE(pX, pY, pZ, e);
+}
+
+//_____________________________________________________________________________
+Int_t AliESDMuonTrack::GetMatchTrigger() const
+{
+  //  backward compatibility after replacing fMatchTrigger by fLocalTrigger
+  //  0 track does not match trigger
+  //  1 track match but does not pass pt cut
+  //  2 track match Low pt cut
+  //  3 track match High pt cut
+
+  if (LoCircuit() == -1) {
+    return 0;
+  } else if (LoLpt() == 0 && LoHpt() == 0) {
+    return 1;
+  } else if (LoLpt() >  0 && LoHpt() == 0) {
+    return 2;
+  } else {
+    return 3;
+  }
+
 }
 

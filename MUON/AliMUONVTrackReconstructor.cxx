@@ -254,6 +254,14 @@ void AliMUONVTrackReconstructor::ValidateTracksWithTrigger(void)
   /// Try to match track from tracking system with trigger track
   static const Double_t kDistSigma[3]={1,1,0.02}; // sigma of distributions (trigger-track) X,Y,slopeY
   
+  Int_t loTrigger =  0;
+  Int_t loCirc    = -1;
+  Int_t loStripX  = -1;
+  Int_t loStripY  = -1;
+  Int_t loDev     = -1;
+  Int_t loLpt     = -1;
+  Int_t loHpt     = -1;
+
   AliMUONTrack *track;
   AliMUONTrackParam trackParam; 
   AliMUONTriggerTrack *triggerTrack;
@@ -274,7 +282,7 @@ void AliMUONVTrackReconstructor::ValidateTracksWithTrigger(void)
   
   track = (AliMUONTrack*) fRecTracksPtr->First();
   while (track) {
-    matchTrigger = -1;
+    matchTrigger = 0;
     chi2MatchTrigger = 0.;
     loTrgNum = -1;
     Int_t doubleMatch=-1; // Check if track matches 2 trigger tracks
@@ -307,9 +315,9 @@ void AliMUONVTrackReconstructor::ValidateTracksWithTrigger(void)
 	      chi2MatchTrigger = chi2;
 	      loTrgNum=triggerTrack->GetLoTrgNum();
 	      locTrg = (AliMUONLocalTrigger*)localTrigger->UncheckedAt(loTrgNum);
-	      matchTrigger=0;
-	      if(locTrg->LoLpt()>0)matchTrigger=1;
-	      if(locTrg->LoHpt()>0)matchTrigger=2;
+	      matchTrigger=1;
+	      if(locTrg->LoLpt()>0)matchTrigger=2;
+	      if(locTrg->LoHpt()>0)matchTrigger=3;
 	  }
 	  else if(isDoubleTrack) {
 	      doubleMatch = triggerTrack->GetLoTrgNum();
@@ -321,9 +329,9 @@ void AliMUONVTrackReconstructor::ValidateTracksWithTrigger(void)
     if(doubleMatch>=0){ // If two trigger tracks match, select the one passing more trigger cuts
 	AliDebug(1, Form("Two candidates found: %i and %i",loTrgNum,doubleMatch));
 	AliMUONLocalTrigger *locTrg1 = (AliMUONLocalTrigger*)localTrigger->UncheckedAt(doubleMatch);
-	if((locTrg1->LoLpt()>0 && matchTrigger<1) || (locTrg1->LoHpt() && matchTrigger<2)){
-	    if(locTrg1->LoHpt()>0)matchTrigger=2;
-	    else matchTrigger=1;
+	if((locTrg1->LoLpt()>0 && matchTrigger<2) || (locTrg1->LoHpt() && matchTrigger<3)){
+	    if(locTrg1->LoHpt()>0)matchTrigger=3;
+	    else matchTrigger=2;
 	    loTrgNum = doubleMatch;
 	    chi2MatchTrigger=doubleChi2;
 	}
@@ -332,6 +340,20 @@ void AliMUONVTrackReconstructor::ValidateTracksWithTrigger(void)
     track->SetMatchTrigger(matchTrigger);
     track->SetLoTrgNum(loTrgNum);
     track->SetChi2MatchTrigger(chi2MatchTrigger);
+
+    if (loTrgNum >= 0 && loTrgNum < 234) {
+      locTrg = (AliMUONLocalTrigger*)localTrigger->UncheckedAt(loTrgNum);
+      
+      loCirc   = locTrg->LoCircuit();
+      loStripX = locTrg->LoStripX();
+      loStripY = locTrg->LoStripY();
+      loDev    = locTrg->LoDev();
+      loLpt    = locTrg->LoLpt();
+      loHpt    = locTrg->LoHpt();
+      
+      track->SetLocalTrigger(loCirc,loStripX,loStripY,loDev,loLpt,loHpt);
+    }
+
     track = (AliMUONTrack*) fRecTracksPtr->After(track);
   }
 
