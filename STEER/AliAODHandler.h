@@ -40,7 +40,6 @@ class AliAODHandler : public AliVirtualEventHandler {
     AliAODHandler& operator=(const AliAODHandler&);  // Not implemented
  private:
     AliAODEvent             *fAODEvent;  //! Pointer to the AOD event
-    TFile                   *fAODFile;   //! Pointer to the AOD file
     TTree                   *fTreeA;     //! tree for AOD persistency
 
     

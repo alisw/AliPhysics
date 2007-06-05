@@ -20,7 +20,7 @@
 //     Author: Andreas Morsch, CERN
 //-------------------------------------------------------------------------
 
-#include <TFile.h>
+
 #include <TTree.h>
 #include "AliAODHandler.h"
 #include "AliAODEvent.h"
@@ -31,7 +31,7 @@ ClassImp(AliAODHandler)
 AliAODHandler::AliAODHandler() :
     AliVirtualEventHandler(),
     fAODEvent(NULL),
-    fAODFile(NULL)
+    fTreeA(NULL)
 {
   // default constructor
 }
@@ -40,7 +40,7 @@ AliAODHandler::AliAODHandler() :
 AliAODHandler::AliAODHandler(const char* name, const char* title):
     AliVirtualEventHandler(name, title),
     fAODEvent(NULL),
-    fAODFile(NULL)
+    fTreeA(NULL)
 {
 }
 
@@ -56,7 +56,6 @@ Bool_t AliAODHandler::InitIO()
     // Initialize IO
     fAODEvent = new AliAODEvent();
     fAODEvent->CreateStdContent();
-//    fAODFile  = new TFile("aod.root", "recreate");
     CreateTree();
     
     return kTRUE;
@@ -65,8 +64,6 @@ Bool_t AliAODHandler::InitIO()
 Bool_t AliAODHandler::Fill()
 {
     // Fill data structures
-    printf(">>>>>>>>>>> AliAODHandler::Fill()\n");
-    
     FillTree();
     fAODEvent->ClearStd();
     
@@ -84,10 +81,6 @@ Bool_t AliAODHandler::TerminateIO()
 {
     // Terminate IO
 
-//    fAODFile->cd();
-//    fTreeA->Write();
-//    fAODFile->Close();
-    
     return kTRUE;
 }
 
