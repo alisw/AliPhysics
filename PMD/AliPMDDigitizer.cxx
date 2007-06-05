@@ -1318,7 +1318,6 @@ Float_t AliPMDDigitizer::Gain(Int_t det, Int_t smn, Int_t row, Int_t col) const
 
   Float_t GainFact;
   GainFact = fCalibData->GetGainFact(det,smn,row,col);
-  printf("\t gain=%10.3f\n",GainFact);
   return GainFact;
 }
 //----------------------------------------------------------------------
