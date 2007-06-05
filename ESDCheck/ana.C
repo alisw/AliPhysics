@@ -12,11 +12,22 @@ Bool_t LoadLib( const char* pararchivename)
   
   // Setup par File
   if (pararchivename) {
+   char parpar[80] ; 
+   sprintf(parpar, "%s.par", pararchivename) ;
+   if ( gSystem->AccessPathName(parpar) ) {
+    gSystem->ChangeDirectory(gSystem->Getenv("ALICE_ROOT")) ;
     char processline[1024];
-    sprintf(processline,".! tar xvzf %s.par",pararchivename);
+    sprintf(processline, ".! make %s", parpar) ; 
+    cout << processline << endl ; 
+    gROOT->ProcessLine(processline) ;
+    gSystem->ChangeDirectory(cdir) ; 
+    sprintf(processline, ".! mv %s/%s .", gSystem->Getenv("ALICE_ROOT"), parpar) ;
+    gROOT->ProcessLine(processline) ; 	
+    sprintf(processline,".! tar xvzf %s",parpar);
     gROOT->ProcessLine(processline);
-    gSystem->ChangeDirectory(pararchivename);
-
+   }
+   gSystem->ChangeDirectory(pararchivename);
+   
     // check for BUILD.sh and execute
     if (!gSystem->AccessPathName("PROOF-INF/BUILD.sh")) {
       printf("*** Building PAR archive  %s  ***\n", pararchivename);
@@ -55,8 +66,8 @@ Bool_t LoadLib( const char* pararchivename)
 }
 
 //______________________________________________________________________
-void ana() 
-{  
+void ana(const Int_t kEvent=100)  
+{ 
   if (! gIsAnalysisLoaded ) {
     LoadLib("ESD") ; 
     LoadLib("ANALYSIS") ; 
@@ -68,55 +79,55 @@ void ana()
 
   // definition of analysis tasks
  
-  const Int_t knumberOfTasks = 10 ; 
-  AliAnalysisTask * taskList[knumberOfTasks] ; 
-  TClass * taskInputList[knumberOfTasks]  ; 
-  TClass * taskOutputList[knumberOfTasks] ; 
+  const Int_t knumberOfTasks = 10 ;
+  AliAnalysisTask * taskList[knumberOfTasks] ;
+  TClass * taskInputList[knumberOfTasks]  ;
+  TClass * taskOutputList[knumberOfTasks] ;
 
   taskList[0]       = new AliPHOSQATask("PHOS") ;
-  taskInputList[0]  = TChain::Class() ; 
-  taskOutputList[0] = TObjArray::Class() ; 
+  taskInputList[0]  = TChain::Class() ;
+  taskOutputList[0] = TObjArray::Class() ;
 
   taskList[1]       = new AliEMCALQATask("EMCal") ;
-  taskInputList[1]  = taskInputList[0] ; // only one top input container allowed 
-  taskOutputList[1] = TObjArray::Class() ; 
+  taskInputList[1]  = taskInputList[0] ; // only one top input container allowed
+  taskOutputList[1] = TObjArray::Class() ;
 
   taskList[2]       = new AliPMDQATask("PMD") ;
-  taskInputList[2]  = taskInputList[0] ; // only one top input container allowed 
-  taskOutputList[2] = TObjArray::Class() ; 
+  taskInputList[2]  = taskInputList[0] ; // only one top input container allowed
+  taskOutputList[2] = TObjArray::Class() ;
 
   taskList[3]       = new AliAnalysisTaskPt("Pt") ;
-  taskInputList[3]  = taskInputList[0] ; // only one top input container allowed 
-  taskOutputList[3] = TObjArray::Class() ; 
-  
+  taskInputList[3]  = taskInputList[0] ; // only one top input container allowed
+  taskOutputList[3] = TObjArray::Class() ;
+
   taskList[4]       = new AliHMPIDQATask("HMPID") ;
-  taskInputList[4]  = taskInputList[0] ; // only one top input container allowed 
-  taskOutputList[4] = TObjArray::Class() ; 
+  taskInputList[4]  = taskInputList[0] ; // only one top input container allowed
+  taskOutputList[4] = TObjArray::Class() ;
 
   taskList[5]       = new AliT0QATask("T0") ;
-  taskInputList[5]  = taskInputList[0] ; // only one top input container allowed 
-  taskOutputList[5] = TObjArray::Class() ; 
+  taskInputList[5]  = taskInputList[0] ; // only one top input container allowed
+  taskOutputList[5] = TObjArray::Class() ;
 
   taskList[6]       = new AliMUONQATask("MUON") ;
-  taskInputList[6]  = taskInputList[0] ; // only one top input container allowed 
-  taskOutputList[6] = TObjArray::Class() ; 
-  
+  taskInputList[6]  = taskInputList[0] ; // only one top input container allowed
+  taskOutputList[6] = TObjArray::Class() ;
+
   taskList[7]       = new AliTRDQATask("TRD") ;
-  taskInputList[7]  = taskInputList[0] ; // only one top input container allowed 
-  taskOutputList[7] = TObjArray::Class() ; 
+  taskInputList[7]  = taskInputList[0] ; // only one top input container allowed
+  taskOutputList[7] = TObjArray::Class() ;
 
   taskList[8]       = new AliTOFQATask("TOF") ;
-  taskInputList[8]  = taskInputList[0] ; // only one top input container allowed 
-  taskOutputList[8] = TObjArray::Class() ; 
+  taskInputList[8]  = taskInputList[0] ; // only one top input container allowed
+  taskOutputList[8] = TObjArray::Class() ;
 
   taskList[9]       = new AliVZEROQATask("VZERO") ;
-  taskInputList[9]  = taskInputList[0] ; // only one top input container allowed 
-  taskOutputList[9] = TObjArray::Class() ; 
+  taskInputList[9]  = taskInputList[0] ; // only one top input container allowed
+  taskOutputList[9] = TObjArray::Class() ;
 
 //   taskList[8]       = new AliFMDQATask("FMD") ;
-//   taskInputList[8]  = taskInputList[0] ; // only one top input container allowed 
-//   taskOutputList[8] = TObjArray::Class() ; 
-  
+//   taskInputList[8]  = taskInputList[0] ; // only one top input container allowed
+//   taskOutputList[8] = TObjArray::Class() ;
+
   ag->SetTasks(knumberOfTasks, taskList, taskInputList, taskOutputList) ; 
 
   // get the data to analyze
@@ -149,7 +160,32 @@ void ana()
     //   input = "alien:///alice/cern.ch/user/a/aliprod/prod2006_2/output_pp/105/411/AliESDs.root" ; 
     //   analysisChain->AddFile(input);
     input = "AliESDs.root" ; 
-    analysisChain->AddFile(input);
+    const char * kInDir = gSystem->Getenv("OUTDIR") ; 
+    if ( kInDir ) {
+      if ( ! gSystem->cd(kInDir) ) {
+	printf("%s does not exist\n", kInDir) ;
+	return ;
+      }     
+      Int_t event, skipped=0 ; 
+      char file[120] ;
+      for (event = 0 ; event < kEvent ; event++) {
+        sprintf(file, "%s/%d/AliESDs.root", kInDir,event) ; 
+	TFile * fESD = 0 ; 
+	if ( fESD = TFile::Open(file)) 
+	  if ( fESD->Get("esdTree") ) { 
+            printf("++++ Adding %s\n", file) ;
+            analysisChain->AddFile(file);
+	  }
+	  else { 
+            printf("---- Skipping %s\n", file) ;
+            skipped++ ;
+	  }
+      }
+      printf("number of entries # %lld, skipped %d\n", analysisChain->GetEntries(), skipped*100) ; 	
+    }
+    else  
+      analysisChain->AddFile(input);
+    
     ag->Process(analysisChain) ; 
   }
   return ;
