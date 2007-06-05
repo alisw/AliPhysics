@@ -57,7 +57,6 @@
 #include "AliTPCROC.h"
 #include "AliTPCParam.h"
 #include "AliTPCCalibCE.h"
-#include "AliTPCcalibDB.h"
 #include "AliMathBase.h"
 #include "TTreeStream.h"
 
@@ -73,11 +72,11 @@ AliTPCCalibCE::AliTPCCalibCE() : /*FOLD00*/
     fXminT0(-5),
     fXmaxT0(5),
     fNbinsQ(200),
-    fXminQ(14),
-    fXmaxQ(55),
+    fXminQ(1),
+    fXmaxQ(40),
     fNbinsRMS(100),
-    fXminRMS(0),
-    fXmaxRMS(5),
+    fXminRMS(0.1),
+    fXmaxRMS(5.1),
     fLastSector(-1),
     fOldRCUformat(kTRUE),
     fROC(AliTPCROC::Instance()),
@@ -86,7 +85,6 @@ AliTPCCalibCE::AliTPCCalibCE() : /*FOLD00*/
     fPadNoiseTPC(0x0),
     fPedestalROC(0x0),
     fPadNoiseROC(0x0),
-    fBpedestal(kFALSE),
     fCalRocArrayT0(72),
     fCalRocArrayQ(72),
     fCalRocArrayRMS(72),
@@ -99,6 +97,7 @@ AliTPCCalibCE::AliTPCCalibCE() : /*FOLD00*/
     fParamArrayEventPol1(72),
     fParamArrayEventPol2(72),
     fTMeanArrayEvent(1000),
+    fQMeanArrayEvent(1000),
     fVEventTime(1000),
     fVEventNumber(1000),
     fNevents(0),
@@ -119,6 +118,8 @@ AliTPCCalibCE::AliTPCCalibCE() : /*FOLD00*/
     fPadNoise(0),
     fVTime0Offset(72),
     fVTime0OffsetCounter(72),
+    fVMeanQ(72),
+    fVMeanQCounter(72),
 //    fHTime0(0x0),
     fEvent(-1),
     fDebugStreamer(0x0),
@@ -151,7 +152,6 @@ AliTPCCalibCE::AliTPCCalibCE(const AliTPCCalibCE &sig) :
     fPadNoiseTPC(0x0),
     fPedestalROC(0x0),
     fPadNoiseROC(0x0),
-    fBpedestal(sig.fBpedestal),
     fCalRocArrayT0(72),
     fCalRocArrayQ(72),
     fCalRocArrayRMS(72),
@@ -164,6 +164,7 @@ AliTPCCalibCE::AliTPCCalibCE(const AliTPCCalibCE &sig) :
     fParamArrayEventPol1(72),
     fParamArrayEventPol2(72),
     fTMeanArrayEvent(1000),
+    fQMeanArrayEvent(1000),
     fVEventTime(1000),
     fVEventNumber(1000),
     fNevents(sig.fNevents),
@@ -181,9 +182,11 @@ AliTPCCalibCE::AliTPCCalibCE(const AliTPCCalibCE &sig) :
     fMaxTimeBin(-1),
     fPadSignal(1024),
     fPadPedestal(0),
-    fPadNoise(),
+    fPadNoise(0),
     fVTime0Offset(72),
     fVTime0OffsetCounter(72),
+    fVMeanQ(72),
+    fVMeanQCounter(72),
 //    fHTime0(0x0),
     fEvent(-1),
     fDebugStreamer(0x0),
@@ -301,7 +304,7 @@ Int_t AliTPCCalibCE::Update(const Int_t icsector, /*FOLD00*/
     }
 
     //fill signals for current pad
-    fPadSignal[icTimeBin]=csignal;
+    fPadSignal.GetMatrixArray()[icTimeBin]=csignal;
     if ( csignal > fMaxPadSignal ){
 	fMaxPadSignal = csignal;
 	fMaxTimeBin   = icTimeBin;
@@ -315,13 +318,9 @@ void AliTPCCalibCE::FindPedestal(Float_t part)
     // find pedestal and noise for the current pad. Use either database or
     // truncated mean with part*100%
     //
-    Bool_t noPedestal = kTRUE;
-    if ( fBpedestal ){
-	//!!!!!!! does not work like this
-	if ( !fPedestalTPC ) fPedestalTPC = AliTPCcalibDB::Instance()->GetPedestals();
-        if ( !fPadNoiseTPC ) fPadNoiseTPC = AliTPCcalibDB::Instance()->GetPadNoise();
+    Bool_t noPedestal = kTRUE;;
+    if (fPedestalTPC&&fPadNoiseTPC){
         //use pedestal database
-
         //only load new pedestals if the sector has changed
 	if ( fCurrentSector!=fLastSector ){
 	    fPedestalROC = fPedestalTPC->GetCalROC(fCurrentSector);
@@ -329,7 +328,7 @@ void AliTPCCalibCE::FindPedestal(Float_t part)
 	    fLastSector=fCurrentSector;
 	}
 
-	if ( fPedestalROC ){
+	if ( fPedestalROC&&fPadNoiseROC ){
 	    fPadPedestal = fPedestalROC->GetValue(fCurrentChannel);
 	    fPadNoise    = fPadNoiseROC->GetValue(fCurrentChannel);
             noPedestal   = kFALSE;
@@ -347,16 +346,20 @@ void AliTPCCalibCE::FindPedestal(Float_t part)
 	Int_t    count0 =  0;
 	Int_t    count1 =  0;
 	//
+	Float_t padSignal=0;
+        //
 	UShort_t histo[kPedMax];
 	memset(histo,0,kPedMax*sizeof(UShort_t));
+
 	for (Int_t i=fFirstTimeBin; i<=fLastTimeBin; i++){
-	    if (fPadSignal[i]<=0) continue;
-	    if (fPadSignal[i]>max && i>10) {
-		max = fPadSignal[i];
+            padSignal = fPadSignal.GetMatrixArray()[i];
+	    if (padSignal<=0) continue;
+	    if (padSignal>max && i>10) {
+		max = padSignal;
 		maxPos = i;
 	    }
-	    if (fPadSignal[i]>kPedMax-1) continue;
-	    histo[int(fPadSignal[i]+0.5)]++;
+	    if (padSignal>kPedMax-1) continue;
+	    histo[int(padSignal+0.5)]++;
 	    count0++;
 	}
 	    //
@@ -405,11 +408,11 @@ void AliTPCCalibCE::FindCESignal(TVectorD &param, Float_t &qSum, const TVectorF 
     const Int_t    kCemin  = 4;             // range for the analysis of the ce signal +- channels from the peak
     const Int_t    kCemax  = 7;
 
-    Float_t minDist  = 50;  //initial minimum distance betweek roc mean ce signal and pad ce signal
-    Float_t tmean    = -1;
+    Float_t minDist  = 25;  //initial minimum distance betweek roc mean ce signal and pad ce signal
+
     // find maximum closest to the sector mean from the last event
     for ( Int_t imax=0; imax<maxima.GetNrows(); imax++){
-	tmean = (*((TVectorF*)(fTMeanArrayEvent[fTMeanArrayEvent.GetLast()])))[fCurrentSector];
+	Float_t tmean = (*((TVectorF*)(fTMeanArrayEvent[fTMeanArrayEvent.GetLast()])))[fCurrentSector];
 	    if ( TMath::Abs( tmean-maxima[imax] ) < minDist ) {
 		minDist  = tmean-maxima[imax];
                 cemaxpos = (Int_t)maxima[imax];
@@ -417,21 +420,28 @@ void AliTPCCalibCE::FindCESignal(TVectorD &param, Float_t &qSum, const TVectorF 
     }
 
     if (cemaxpos!=0){
-        ceQmax = fPadSignal[cemaxpos]-fPadPedestal;
+        ceQmax = fPadSignal.GetMatrixArray()[cemaxpos]-fPadPedestal;
 	for (Int_t i=cemaxpos-kCemin; i<cemaxpos+kCemax; i++){
-	    if ( i>fFirstTimeBin && i<fLastTimeBin && fPadSignal[i]-fPadPedestal>0 ){
-		Double_t val=fPadSignal[i]-fPadPedestal;
-		ceTime+=val*(i+0.5);
-                ceRMS +=val*(i+0.5)*(i+0.5);
-		ceQsum+=val;
+            Float_t signal = fPadSignal.GetMatrixArray()[i]-fPadPedestal;
+	    if ( (i>fFirstTimeBin) && (i<fLastTimeBin) && (signal>0) ){
+		ceTime+=signal*(i+0.5);
+                ceRMS +=signal*(i+0.5)*(i+0.5);
+		ceQsum+=signal;
 	    }
 	}
     }
     if (ceQmax&&ceQsum>ceSumThreshold) {
 	ceTime/=ceQsum;
 	ceRMS  = TMath::Sqrt(TMath::Abs(ceRMS/ceQsum-ceTime*ceTime));
-	fVTime0Offset[fCurrentSector]+=ceTime;   // mean time for each sector
-	fVTime0OffsetCounter[fCurrentSector]++;
+	fVTime0Offset.GetMatrixArray()[fCurrentSector]+=ceTime;   // mean time for each sector
+	fVTime0OffsetCounter.GetMatrixArray()[fCurrentSector]++;
+
+	//Normalise Q to pad area of irocs
+	Float_t norm = fParam->GetPadPitchWidth(fCurrentSector)*fParam->GetPadPitchLength(fCurrentSector,fCurrentRow);
+
+	ceQsum/=norm;
+	fVMeanQ.GetMatrixArray()[fCurrentSector]+=ceQsum;
+        fVMeanQCounter.GetMatrixArray()[fCurrentSector]++;
     } else {
 	ceQmax=0;
 	ceTime=0;
@@ -471,7 +481,7 @@ void AliTPCCalibCE::FindLocalMaxima(TVectorF &maxima)
     Int_t   tplus       = 3;
     for (Int_t i=fLastTimeBin-tplus-1; i>=fFirstTimeBin+tminus; i--){
 	if ( (fPadSignal[i]-fPadPedestal)>ceThreshold && IsPeak(i,tminus,tplus) ){
-	    maxima[count++]=i;
+	    maxima.GetMatrixArray()[count++]=i;
 	    GetHistoTmean(fCurrentSector,kTRUE)->Fill(i);
 	}
     }
@@ -498,13 +508,10 @@ void AliTPCCalibCE::ProcessPad() /*FOLD00*/
     Double_t sigmaT = param[2];
 
     //Fill Event T0 counter
-    (*GetPadTimesEvent(fCurrentSector,kTRUE))[fCurrentChannel] = meanT;
-
-    //Normalise Q to pad area of irocs
-    Float_t norm = fParam->GetPadPitchWidth(fCurrentSector)*fParam->GetPadPitchLength(fCurrentSector,fCurrentRow);
+    (*GetPadTimesEvent(fCurrentSector,kTRUE)).GetMatrixArray()[fCurrentChannel] = meanT;
 
     //Fill Q histogram
-    GetHistoQ(fCurrentSector,kTRUE)->Fill( TMath::Sqrt(Qsum/norm), fCurrentChannel );
+    GetHistoQ(fCurrentSector,kTRUE)->Fill( TMath::Sqrt(Qsum), fCurrentChannel );
 
     //Fill RMS histogram
     GetHistoRMS(fCurrentSector,kTRUE)->Fill( sigmaT, fCurrentChannel );
@@ -512,9 +519,9 @@ void AliTPCCalibCE::ProcessPad() /*FOLD00*/
 
     //Fill debugging info
     if ( fDebugLevel>0 ){
-	(*GetPadPedestalEvent(fCurrentSector,kTRUE))[fCurrentChannel]=fPadPedestal;
-	(*GetPadRMSEvent(fCurrentSector,kTRUE))[fCurrentChannel]=sigmaT;
-	(*GetPadQEvent(fCurrentSector,kTRUE))[fCurrentChannel]=Qsum;
+	(*GetPadPedestalEvent(fCurrentSector,kTRUE)).GetMatrixArray()[fCurrentChannel]=fPadPedestal;
+	(*GetPadRMSEvent(fCurrentSector,kTRUE)).GetMatrixArray()[fCurrentChannel]=sigmaT;
+	(*GetPadQEvent(fCurrentSector,kTRUE)).GetMatrixArray()[fCurrentChannel]=Qsum;
     }
 
     ResetPad();
@@ -536,6 +543,7 @@ void AliTPCCalibCE::EndEvent() /*FOLD00*/
     TVectorD param(3);
     TMatrixD dummy(3,3);
     TVectorF vMeanTime(72);
+    TVectorF vMeanQ(72);
     AliTPCCalROC calIroc(0);
     AliTPCCalROC calOroc(36);
 
@@ -544,21 +552,21 @@ void AliTPCCalibCE::EndEvent() /*FOLD00*/
     Double_t time0SideCount[2];  //time0 counter for side A:0 and C:0
     time0Side[0]=0;time0Side[1]=0;time0SideCount[0]=0;time0SideCount[1]=0;
     for ( Int_t iSec = 0; iSec<72; iSec++ ){
-	time0Side[(iSec/18)%2] += fVTime0Offset[iSec];
-        time0SideCount[(iSec/18)%2] += fVTime0OffsetCounter[iSec];
+	time0Side[(iSec/18)%2] += fVTime0Offset.GetMatrixArray()[iSec];
+	time0SideCount[(iSec/18)%2] += fVTime0OffsetCounter.GetMatrixArray()[iSec];
     }
-    time0Side[0]/=time0SideCount[0];
-    time0Side[1]/=time0SideCount[1];
+    if ( time0SideCount[0] >0  )
+	time0Side[0]/=time0SideCount[0];
+    if ( time0SideCount[1] >0 )
+	time0Side[1]/=time0SideCount[1];
     // end find time0 offset
-    printf("end event\n");
+
     //loop over all ROCs, fill CE Time histogram corrected for the mean Time0 of each ROC
     for ( Int_t iSec = 0; iSec<72; iSec++ ){
-	TVectorF *vTimes = GetPadTimesEvent(iSec);
-	if ( !vTimes ) continue;
-	printf("sector: %d",iSec);
-	TH1S *hMeanT    = GetHistoTmean(iSec);
 
-	//find median
+      //find median and then calculate the mean around it
+	TH1S *hMeanT    = GetHistoTmean(iSec);
+	if ( !hMeanT ) continue;
 	Double_t entries = hMeanT->GetEntries();
 	Double_t sum     = 0;
 	Short_t *arr     = hMeanT->GetArray()+1;
@@ -572,16 +580,32 @@ void AliTPCCalibCE::EndEvent() /*FOLD00*/
 	Int_t lastBin  = fFirstTimeBin+ibin+delta;
         if ( firstBin<fFirstTimeBin ) firstBin=fFirstTimeBin;
         if ( lastBin>fLastTimeBin   ) lastBin =fLastTimeBin;
-	vMeanTime[iSec] =AliMathBase::GetCOG(arr+ibin-delta,2*delta,firstBin,lastBin);
-        Float_t median = vMeanTime[iSec];
-        // end find median
+	Float_t median =AliMathBase::GetCOG(arr+ibin-delta,2*delta,firstBin,lastBin);
+	vMeanTime.GetMatrixArray()[iSec]=median;
+      // end find median
+
+	TVectorF *vTimes = GetPadTimesEvent(iSec);
+	if ( !vTimes ) continue;
+	AliTPCCalROC calIrocOutliers(0);
+	AliTPCCalROC calOrocOutliers(36);
+
+        // calculate mean Q of the sector
+	Float_t meanQ = 0;
+	if ( fVMeanQCounter.GetMatrixArray()[iSec]>0 ) meanQ=fVMeanQ.GetMatrixArray()[iSec]/fVMeanQCounter.GetMatrixArray()[iSec];
+        vMeanQ.GetMatrixArray()[iSec]=meanQ;
 
 	for ( UInt_t iChannel=0; iChannel<fROC->GetNChannels(iSec); iChannel++ ){
-	    Float_t Time  = (*vTimes)[iChannel];
+	    Float_t Time  = (*vTimes).GetMatrixArray()[iChannel];
 
 	    //set values for temporary roc calibration class
-	    if ( iSec < 36 ) calIroc.SetValue(iChannel, Time);
-	    else calOroc.SetValue(iChannel, Time);
+	    if ( iSec < 36 ) {
+		calIroc.SetValue(iChannel, Time);
+                if ( Time == 0 ) calIrocOutliers.SetValue(iChannel,1);
+
+	    } else {
+		calOroc.SetValue(iChannel, Time);
+                if ( Time == 0 ) calOrocOutliers.SetValue(iChannel,1);
+	    }
 
 	    if ( (fNevents>0) && (fOldRunNumber==fRunNumber) )
 		GetHistoT0(iSec,kTRUE)->Fill( Time-time0Side[(iSec/18)%2],iChannel );
@@ -620,26 +644,30 @@ void AliTPCCalibCE::EndEvent() /*FOLD00*/
 //		for (Int_t i=fFirstTimeBin; i<fLastTimeBin+1; i++)
 //		    h1->Fill(i,fPadSignal(i));
 
-		Double_t T0Sec = fVTime0Offset[iSec]/fVTime0OffsetCounter[iSec];
-                Double_t T0Side = time0Side[(iSec/18)%2];
+		Double_t T0Sec = 0;
+		if (fVTime0OffsetCounter.GetMatrixArray()[iSec]>0)
+		    T0Sec = fVTime0Offset.GetMatrixArray()[iSec]/fVTime0OffsetCounter.GetMatrixArray()[iSec];
+		Double_t T0Side = time0Side[(iSec/18)%2];
 		(*fDebugStreamer) << "DataPad" <<
 		    "Event=" << fNevents <<
 		    "EventNumber=" << fRunNumber <<
-                    "TimeStamp="   << fTimeStamp <<
+		    "TimeStamp="   << fTimeStamp <<
 		    "Sector="<< sector <<
 		    "Row="   << row<<
 		    "Pad="   << pad <<
 		    "PadC="  << padc <<
 		    "PadSec="<< channel <<
 		    "Time0Sec="  << T0Sec <<
-                    "Time0Side=" << T0Side <<
+		    "Time0Side=" << T0Side <<
 		    "Time="  << Time <<
 		    "RMS="   << RMS <<
 		    "Sum="   << Q <<
-//		    "hist.=" << h1 <<
+                    "MeanQ=" << meanQ <<
+		    //		    "hist.=" << h1 <<
 		    "\n";
 
-//		delete h1;
+		//		delete h1;
+
 	    }
 	    //-----------------------------  Debug end  ------------------------------
 	}// end channel loop
@@ -649,25 +677,31 @@ void AliTPCCalibCE::EndEvent() /*FOLD00*/
 	TVectorD paramPol2(6);
 	TMatrixD matPol1(3,3);
 	TMatrixD matPol2(6,6);
-	Float_t  chi2Pol1;
-	Float_t  chi2Pol2;
+	Float_t  chi2Pol1=0;
+	Float_t  chi2Pol2=0;
 
 	if ( (fNevents>0) && (fOldRunNumber==fRunNumber) ){
 	    if ( iSec < 36 ){
-		calIroc.GlobalFit(0,0,paramPol1,matPol1,chi2Pol1,0);
-		calIroc.GlobalFit(0,0,paramPol2,matPol2,chi2Pol2,1);
+		calIroc.GlobalFit(&calIrocOutliers,0,paramPol1,matPol1,chi2Pol1,0);
+		calIroc.GlobalFit(&calIrocOutliers,0,paramPol2,matPol2,chi2Pol2,1);
 	    } else {
-		calOroc.GlobalFit(0,0,paramPol1,matPol1,chi2Pol1,0);
-		calOroc.GlobalFit(0,0,paramPol2,matPol2,chi2Pol2,1);
+		calOroc.GlobalFit(&calOrocOutliers,0,paramPol1,matPol1,chi2Pol1,0);
+		calOroc.GlobalFit(&calOrocOutliers,0,paramPol2,matPol2,chi2Pol2,1);
 	    }
 
 	    GetParamArrayPol1(iSec,kTRUE)->AddAtAndExpand(new TVectorD(paramPol1), fNevents);
 	    GetParamArrayPol2(iSec,kTRUE)->AddAtAndExpand(new TVectorD(paramPol2), fNevents);
 	}
-	printf("events: %d -- size: %d\n",fNevents,GetParamArrayPol1(iSec)->GetSize());
+//	printf("events: %d -- size: %d\n",fNevents,GetParamArrayPol1(iSec)->GetSize());
 
 	//-------------------------------  Debug start  ------------------------------
 	if ( fDebugLevel>0 ){
+	    if ( !fDebugStreamer ) {
+		//debug stream
+		TDirectory *backup = gDirectory;
+		fDebugStreamer = new TTreeSRedirector("debugCalibCE.root");
+		if ( backup ) backup->cd();  //we don't want to be cd'd to the debug streamer
+	    }
 	    (*fDebugStreamer) << "DataRoc" <<
 		"Event=" << fEvent <<
 		"EventNumber=" << fRunNumber <<
@@ -695,6 +729,7 @@ void AliTPCCalibCE::EndEvent() /*FOLD00*/
 
     //    fParamArrayEvent.AddAtAndExpand(new TVectorD(param),fNevents);
     fTMeanArrayEvent.AddAtAndExpand(new TVectorF(vMeanTime),fNevents);
+    fQMeanArrayEvent.AddAtAndExpand(new TVectorF(vMeanQ),fNevents);
     if ( fVEventTime.GetNrows() < fNevents ) {
 	fVEventTime.ResizeTo((Int_t)(fVEventTime.GetNrows()+1000));
 	fVEventNumber.ResizeTo((Int_t)(fVEventNumber.GetNrows()+1000));
@@ -1035,8 +1070,10 @@ void AliTPCCalibCE::ResetEvent() /*FOLD00*/
     fPadPedestalArrayEvent.Delete();
 
     for ( Int_t i=0; i<72; i++ ){
-	fVTime0Offset[i]=0;
-	fVTime0OffsetCounter[i]=0;
+	fVTime0Offset.GetMatrixArray()[i]=0;
+	fVTime0OffsetCounter.GetMatrixArray()[i]=0;
+	fVMeanQ.GetMatrixArray()[i]=0;
+        fVMeanQCounter.GetMatrixArray()[i]=0;
     }
 }
 //_____________________________________________________________________
@@ -1046,7 +1083,7 @@ void AliTPCCalibCE::ResetPad() /*FOLD00*/
     //  Reset pad infos -- Should be called after a pad has been processed
     //
     for (Int_t i=fFirstTimeBin; i<fLastTimeBin+1; i++)
-	fPadSignal[i] = 0;
+	fPadSignal.GetMatrixArray()[i] = 0;
     fMaxTimeBin   = -1;
     fMaxPadSignal = -1;
     fPadPedestal  = -1;
@@ -1058,7 +1095,7 @@ TGraph *AliTPCCalibCE::MakeGraphTimeCE(Int_t sector, Int_t xVariable, Int_t fitT
     //
     // Make graph from fit parameters of pol1 or pol2 fit
     // xVariable:    0-run time, 1-run number, 2-internal event counter
-    // fitType:      0-pol1 fit, 1-pol2 fit, 2-mean time
+    // fitType:      0-pol1 fit, 1-pol2 fit, 2-mean time, 2-mean Q
     // fitParameter: fit parameter ( 0-2 for pol1, 0-5 for pol2, 0 for mean time )
     //
 
@@ -1072,7 +1109,7 @@ TGraph *AliTPCCalibCE::MakeGraphTimeCE(Int_t sector, Int_t xVariable, Int_t fitT
     // sanity checks
     if ( (sector<0) || (sector>71) )      return 0x0;
     if ( (xVariable<0) || (xVariable>2) ) return 0x0;
-    if ( (fitType<0) || (fitType>2) )     return 0x0;
+    if ( (fitType<0) || (fitType>3) )     return 0x0;
     if ( fitType==0 ){
 	if ( (fitParameter<0) || (fitParameter>2) ) return 0x0;
 	aType = &fParamArrayEventPol1;
@@ -1097,11 +1134,12 @@ TGraph *AliTPCCalibCE::MakeGraphTimeCE(Int_t sector, Int_t xVariable, Int_t fitT
 	    TObjArray *events = (TObjArray*)(aType->At(sector));
             if ( events->GetSize()<=ievent ) break;
 	    TVectorD *v = (TVectorD*)(events->At(ievent));
-//	    if ( v!=0x0 ) gr->SetPoint(ievent,(*xVar)[ievent],(*v)[fitParameter]);
 	    if ( v!=0x0 ) { x[npoints]=(*xVar)[ievent]; y[npoints]=(*v)[fitParameter]; npoints++;}
 	} else if (fitType == 2) {
             Double_t yValue=(*((TVectorF*)(fTMeanArrayEvent[ievent])))[sector];
-//	    if ( y>0 ) gr->SetPoint(ievent,(*xVar)[ievent],y);
+	    if ( yValue>0 ) { x[npoints]=(*xVar)[ievent]; y[npoints]=yValue;npoints++;}
+	}else if (fitType == 3) {
+            Double_t yValue=(*((TVectorF*)(fQMeanArrayEvent[ievent])))[sector];
 	    if ( yValue>0 ) { x[npoints]=(*xVar)[ievent]; y[npoints]=yValue;npoints++;}
 	}
     }
@@ -1227,8 +1265,9 @@ void AliTPCCalibCE::Analyse()
 	}
 
     }
+    fDebugStreamer->GetFile()->Write();
 //    delete fDebugStreamer;
-    fDebugStreamer = 0x0;
+//    fDebugStreamer = 0x0;
 }
 //_____________________________________________________________________
 void AliTPCCalibCE::DumpToFile(const Char_t *filename, const Char_t *dir, Bool_t append)

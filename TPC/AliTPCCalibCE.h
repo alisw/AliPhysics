@@ -67,6 +67,8 @@ public:
 
     void  SetDebugLevel(Short_t debug=1){ fDebugLevel = debug;}
 
+    void  SetPedestalDatabase(AliTPCCalPad *pedestalTPC, AliTPCCalPad *padNoiseTPC) {fPedestalTPC = pedestalTPC; fPadNoiseTPC = padNoiseTPC;}
+
     Int_t GetFirstTimeBin()   const { return fFirstTimeBin;  }
     Int_t GetLastTimeBin()    const { return fLastTimeBin;   }
 
@@ -76,7 +78,7 @@ public:
 
     void DumpToFile(const Char_t *filename, const Char_t *dir="", Bool_t append=kFALSE);
 
-//private:
+private:
     Int_t fFirstTimeBin;              //  First Time bin needed for analysis
     Int_t fLastTimeBin;               //  Last Time bin needed for analysis
 
@@ -102,7 +104,6 @@ public:
     AliTPCCalPad *fPadNoiseTPC;       //! Pad noise Information whole TPC
     AliTPCCalROC *fPedestalROC;       //! Pedestal Information for current ROC
     AliTPCCalROC *fPadNoiseROC;       //! Pad noise Information for current ROC
-    Bool_t fBpedestal;                //! are we running with pedestal substraction
 
     TObjArray fCalRocArrayT0;         //  Array of AliTPCCalROC class for Time0 calibration
     TObjArray fCalRocArrayQ;          //  Array of AliTPCCalROC class for Charge calibration
@@ -118,7 +119,8 @@ public:
     TObjArray fParamArrayEvent;       //  Store mean arrival time parameters for each event
     TObjArray fParamArrayEventPol1;   //  Store mean arrival time parameters for each sector event by event from global plane fit
     TObjArray fParamArrayEventPol2;   //  Store mean arrival time parameters for each sector event by event from global parabola fit
-    TObjArray fTMeanArrayEvent;       //  Store mean arrival time parameters for each sector event by event
+    TObjArray fTMeanArrayEvent;       //  Store mean arrival time for each sector event by event
+    TObjArray fQMeanArrayEvent;       //  Store mean arrival Charge for each sector event by event
     TVectorD  fVEventTime;            //  Timestamps of the events
     TVectorD  fVEventNumber;          //  Eventnumbers of the events
     Int_t     fNevents;               //  Event counter
@@ -142,6 +144,8 @@ public:
 
     TVectorD  fVTime0Offset;          //!  Time0 Offset for each sector;
     TVectorD  fVTime0OffsetCounter;   //!  Time0 Offset counter for each sector;
+    TVectorD  fVMeanQ;                //!  Mean Q for each sector;
+    TVectorD  fVMeanQCounter;         //!  Mean Q counter for each sector;
 //    TH1F      *fHTime0;                //!  Time0 Offset ( mean Time0 )                          ???????????????????????????
     //debugging
     Int_t fEvent;
