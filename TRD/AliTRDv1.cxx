@@ -176,21 +176,26 @@ void AliTRDv1::AddAlignableVolumes() const
         symName += snApp2;
         symName += iplan;
 
-        gGeoManager->SetAlignableEntry(symName.Data(),volPath.Data());
+        TGeoPNEntry *alignableEntry = 
+	  gGeoManager->SetAlignableEntry(symName.Data(),volPath.Data());
 
 	// Add the tracking to local matrix following the TPC example
-        TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntry(symName.Data());
-        const char *path = alignableEntry->GetTitle();
-        if (!gGeoManager->cd(path)) {
-          AliFatal(Form("Volume path %s not valid!",path));
-	}
-        TGeoHMatrix *globMatrix = gGeoManager->GetCurrentMatrix();
-        Double_t sectorAngle = 20.0 * (isect % 18) + 10.0;
-        TGeoHMatrix *t2lMatrix  = new TGeoHMatrix();
-        t2lMatrix->RotateZ(sectorAngle);
-        t2lMatrix->MultiplyLeft(&(globMatrix->Inverse()));
-        alignableEntry->SetMatrix(t2lMatrix);
 
+	if (alignableEntry) {
+	  const char *path = alignableEntry->GetTitle();
+	  if (!gGeoManager->cd(path)) {
+	    AliFatal(Form("Volume path %s not valid!",path));
+	  }
+	  TGeoHMatrix *globMatrix = gGeoManager->GetCurrentMatrix();
+	  Double_t sectorAngle = 20.0 * (isect % 18) + 10.0;
+	  TGeoHMatrix *t2lMatrix  = new TGeoHMatrix();
+	  t2lMatrix->RotateZ(sectorAngle);
+	  t2lMatrix->MultiplyLeft(&(globMatrix->Inverse()));
+	  alignableEntry->SetMatrix(t2lMatrix);
+	}
+	else {
+	  AliError(Form("Alignable entry %s is not valid!",symName.Data()));
+	}
       }
     }
   }
