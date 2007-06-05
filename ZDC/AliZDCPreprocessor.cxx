@@ -25,8 +25,8 @@
 ClassImp(AliZDCPreprocessor)
 
 //______________________________________________________________________________________________
-AliZDCPreprocessor::AliZDCPreprocessor(const char* detector, AliShuttleInterface* shuttle) :
-  AliPreprocessor(detector, shuttle),
+AliZDCPreprocessor::AliZDCPreprocessor(AliShuttleInterface* shuttle) :
+  AliPreprocessor("ZDC", shuttle),
   fData(0)
 {
   // constructor
@@ -114,7 +114,7 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   // *************** From DAQ ******************
   // [a] PEDESTALS
 TString runType = GetRunType();
-if (runType = "PEDESTALS") {
+if (runType = "PEDESTAL_RUN") {
   TList* daqSources = GetFileSources(kDAQ, "PEDESTALS");
   if(!daqSources){
     Log(Form("No source for PEDESTALS run %d !", fRun));

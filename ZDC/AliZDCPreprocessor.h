@@ -18,7 +18,7 @@ class AliZDCDataDCS;
 class AliZDCPreprocessor : public AliPreprocessor
 {
   public:
-    AliZDCPreprocessor(const char* detector, AliShuttleInterface* shuttle);
+    AliZDCPreprocessor(AliShuttleInterface* shuttle);
     virtual ~AliZDCPreprocessor();
 
   protected:
