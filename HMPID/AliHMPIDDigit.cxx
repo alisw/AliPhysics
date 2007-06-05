@@ -18,19 +18,10 @@
 #include <TBox.h>             //Draw() 
 #include <TPolyLine.h>        //Draw() 
 #include <AliRawDataHeader.h> //WriteRaw()
+#include "AliHMPIDParam.h"
 #include <AliDAQ.h>           //WriteRaw()
 #include "Riostream.h"        //WriteRaw()
 ClassImp(AliHMPIDDigit)
-
-const Float_t AliHMPIDDigit::fgkMinPcX[]={ 0.00 ,  66.60 ,   0.00 ,  66.60 ,  0.00 ,  66.60};
-const Float_t AliHMPIDDigit::fgkMaxPcX[]={64.00 , 130.60 ,  64.00 , 130.60 , 64.00 , 130.60};
-
-const Float_t AliHMPIDDigit::fgkMinPcY[]={ 0.00 , 0.00 , 42.92 ,  42.92,  85.84,  85.84};
-const Float_t AliHMPIDDigit::fgkMaxPcY[]={40.32 , 40.32, 83.24 ,  83.24, 126.16, 126.16};
-
-
-Int_t AliHMPIDDigit::fgSigmas=4;
-
 
 /*
  Preface: all geometrical information (like left-right sides) is reported as seen from electronic side.
@@ -102,13 +93,15 @@ HMPID raw word is 32 bits with the structure:
 void AliHMPIDDigit::Draw(Option_t*)
 {
 //  TMarker *pMark=new TMarker(LorsX(),LorsY(),25); pMark->SetMarkerColor(kGreen);pMark->Draw();
-  TBox *pad = new TBox(LorsX()-0.5*SizePadX(),LorsY()-0.5*SizePadY(),LorsX()+0.5*SizePadX(),LorsY()+0.5*SizePadY());
+  TBox *pad = new
+ 
+TBox(LorsX()-0.5*AliHMPIDParam::SizePadX(),LorsY()-0.5*AliHMPIDParam::SizePadY(),LorsX()+0.5*AliHMPIDParam::SizePadX(),LorsY()+0.5*AliHMPIDParam::SizePadY());
   TPolyLine *line=new TPolyLine(5);
-  line->SetPoint(0,LorsX()-0.5*SizePadX(),LorsY()-0.5*SizePadY());
-  line->SetPoint(1,LorsX()-0.5*SizePadX(),LorsY()+0.5*SizePadY());
-  line->SetPoint(2,LorsX()+0.5*SizePadX(),LorsY()+0.5*SizePadY());
-  line->SetPoint(3,LorsX()+0.5*SizePadX(),LorsY()-0.5*SizePadY());
-  line->SetPoint(4,LorsX()-0.5*SizePadX(),LorsY()-0.5*SizePadY());
+  line->SetPoint(0,LorsX()-0.5*AliHMPIDParam::SizePadX(),LorsY()-0.5*AliHMPIDParam::SizePadY());
+  line->SetPoint(1,LorsX()-0.5*AliHMPIDParam::SizePadX(),LorsY()+0.5*AliHMPIDParam::SizePadY());
+  line->SetPoint(2,LorsX()+0.5*AliHMPIDParam::SizePadX(),LorsY()+0.5*AliHMPIDParam::SizePadY());
+  line->SetPoint(3,LorsX()+0.5*AliHMPIDParam::SizePadX(),LorsY()-0.5*AliHMPIDParam::SizePadY());
+  line->SetPoint(4,LorsX()-0.5*AliHMPIDParam::SizePadX(),LorsY()-0.5*AliHMPIDParam::SizePadY());
   Int_t slice=(Int_t)fQ/20;
   switch(slice){
     case 0: pad->SetFillColor(kBlue); break;
@@ -133,7 +126,8 @@ void AliHMPIDDigit::Print(Option_t *opt)const
   UInt_t w32; Int_t ddl,r,d,a;
   Raw(w32,ddl,r,d,a);
   Printf("%sDIG:(ch=%1i,pc=%1i,x=%2i,y=%2i) (%7.3f,%7.3f) Q=%8.3f TID=(%5i,%5i,%5i) raw=0x%x (ddl=%2i,r=%2i,d=%2i,a=%2i) %s",
-          opt,  A2C(fPad),A2P(fPad),A2X(fPad),A2Y(fPad),LorsX(),LorsY(), Q(),  fTracks[0],fTracks[1],fTracks[2],w32,ddl,r,d,a, (IsOverTh(Q()))?"":"below thr");
+          opt,  AliHMPIDParam::A2C(fPad),AliHMPIDParam::A2P(fPad),AliHMPIDParam::A2X(fPad),AliHMPIDParam::A2Y(fPad),LorsX(),LorsY(), Q(),  
+	  fTracks[0],fTracks[1],fTracks[2],w32,ddl,r,d,a, (AliHMPIDParam::IsOverTh(Q()))?"":"below thr");
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDDigit::WriteRaw(TObjArray *pDigAll)
@@ -141,7 +135,7 @@ void AliHMPIDDigit::WriteRaw(TObjArray *pDigAll)
 // Write a list of digits for a given chamber in raw data stream
 // Arguments: pDigAll- list of digits 
 //   Returns: none      
-  for(Int_t iCh=kMinCh;iCh<=kMaxCh;iCh++){//chambers loop
+  for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){//chambers loop
     ofstream ddlL,ddlR;                               //output streams, 2 per chamber
     Int_t    cntL=0,cntR=0;                           //data words counters for DDLs
     AliRawDataHeader header; header.SetAttribute(0);  //empty DDL header

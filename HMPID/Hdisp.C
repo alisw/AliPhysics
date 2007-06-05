@@ -120,12 +120,12 @@ void PrintEsd()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void DrawChamber(Int_t iCh) 
 {//used by Draw() to Draw() chamber structure
-  gPad->Range(-10,-10,AliHMPIDDigit::SizeAllX()+5,AliHMPIDDigit::SizeAllY()+5); 
+  gPad->Range(-10,-10,AliHMPIDParam::SizeAllX()+5,AliHMPIDParam::SizeAllY()+5); 
   if(iCh>=0){TLatex txt; txt.SetTextSize(0.1); txt.DrawLatex(-5,-5,Form("%i",iCh));}
   
-  for(Int_t iPc=AliHMPIDDigit::kMinPc;iPc<=AliHMPIDDigit::kMaxPc;iPc++){
-    TBox *pBox=new TBox(AliHMPIDDigit::MinPcX(iPc),AliHMPIDDigit::MinPcY(iPc),
-                        AliHMPIDDigit::MaxPcX(iPc),AliHMPIDDigit::MaxPcY(iPc));
+  for(Int_t iPc=AliHMPIDParam::kMinPc;iPc<=AliHMPIDParam::kMaxPc;iPc++){
+    TBox *pBox=new TBox(AliHMPIDParam::MinPcX(iPc),AliHMPIDParam::MinPcY(iPc),
+                        AliHMPIDParam::MaxPcX(iPc),AliHMPIDParam::MaxPcY(iPc));
     pBox->SetFillStyle(0);  pBox->Draw();
   }//PC loop      
 }//DrawChamber()
@@ -212,7 +212,7 @@ void RenderEsd(AliESD *pEsd)
       rec.SetTrack(xRa,yRa,thRa,phRa);
       for(Int_t j=0;j<100;j++){ 
         TVector2 pos; pos=rec.TracePhot(ckov,j*0.0628);
-       if(!AliHMPIDDigit::IsInDead(pos.X(),pos.Y())) fRenRin[ch]->SetNextPoint(pos.X(),pos.Y());
+       if(!AliHMPIDParam::IsInDead(pos.X(),pos.Y())) fRenRin[ch]->SetNextPoint(pos.X(),pos.Y());
       }      
     }//if ckov is valid
   }//tracks loop  
@@ -251,16 +251,16 @@ void SimulateHits(AliESD *pEsd, TClonesArray *pHits)
 
     Float_t theta,phi,xPc,yPc,; pTrk->GetHMPIDtrk(xPc,yPc,theta,phi); rec.SetTrack(xRa,yRa,theta,phi); 
     
-    if(!AliHMPIDDigit::IsInDead(xPc,yPc)) new((*pHits)[hc++]) AliHMPIDHit(ch,eMip,kProton  ,iTrk,xPc,yPc);                 //mip hit
+    if(!AliHMPIDParam::IsInDead(xPc,yPc)) new((*pHits)[hc++]) AliHMPIDHit(ch,eMip,kProton  ,iTrk,xPc,yPc);                 //mip hit
     Int_t nPhots = (Int_t)(20.*TMath::Power(TMath::Sin(ckov),2)/TMath::Power(TMath::Sin(TMath::ACos(1./1.292)),2));
     for(int i=0;i<nPhots;i++){
       TVector2 pos;
       pos=rec.TracePhot(ckov,gRandom->Rndm()*TMath::TwoPi());
-      if(!AliHMPIDDigit::IsInDead(pos.X(),pos.Y())) new((*pHits)[hc++]) AliHMPIDHit(ch,ePho,kCerenkov,iTrk,pos.X(),pos.Y());
+      if(!AliHMPIDParam::IsInDead(pos.X(),pos.Y())) new((*pHits)[hc++]) AliHMPIDHit(ch,ePho,kCerenkov,iTrk,pos.X(),pos.Y());
     }                      //photon hits  
     for(int i=0;i<3;i++){//feedback photons
       Float_t x=gRandom->Rndm()*160; Float_t y=gRandom->Rndm()*150;
-      if(!AliHMPIDDigit::IsInDead(x,y)) new((*pHits)[hc++]) AliHMPIDHit(ch,ePho,kFeedback,iTrk,x,y);                 //feedback hits  
+      if(!AliHMPIDParam::IsInDead(x,y)) new((*pHits)[hc++]) AliHMPIDHit(ch,ePho,kFeedback,iTrk,x,y);                 //feedback hits  
     }//photon hits loop                      
   }//tracks loop    
 }//SimulateHits()
@@ -284,7 +284,7 @@ void DoZoom(Int_t evt, Int_t px, Int_t py, TObject *)
  
   if(evt==5){ zoom=zoom/2;     pPad->Range(x-zoom*2,y-zoom*2,x+zoom*2,y+zoom*2);} //zoom in
   else      { zoom=zoom*2;     pPad->Range(x-zoom*2,y-zoom*2,x+zoom*2,y+zoom*2);} //zoom out 
-  if(zoom==minZoom) pPad->Range(-10,-10,AliHMPIDDigit::SizeAllX()+5,AliHMPIDDigit::SizeAllY()+5);
+  if(zoom==minZoom) pPad->Range(-10,-10,AliHMPIDParam::SizeAllX()+5,AliHMPIDParam::SizeAllY()+5);
   ((TCanvas *)gTQSender)->SetTitle(Form("zoom x%i",minZoom/zoom));
   pPad->Modified();
   pPad->Update();                                              
@@ -306,7 +306,7 @@ void ReadEvent()
   
   if(fCluFile){ 
     if(fCluTree) delete fCluTree; fCluTree=(TTree*)fCluFile->Get(Form("Event%i/TreeR",fEvt));
-    for(Int_t iCh=AliHMPIDDigit::kMinCh;iCh<=AliHMPIDDigit::kMaxCh;iCh++) fCluTree->SetBranchAddress(Form("HMPID%i",iCh),&(*fCluLst)[iCh]);      
+    for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) fCluTree->SetBranchAddress(Form("HMPID%i",iCh),&(*fCluLst)[iCh]);      
     fCluTree->GetEntry(0);
     RenderClu(fCluLst,fRenClu);   
   }//if clus file

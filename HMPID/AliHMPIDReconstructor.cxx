@@ -34,10 +34,10 @@ AliHMPIDReconstructor::AliHMPIDReconstructor():AliReconstructor(),fUserCut(0),fD
 //ctor
 //
 
-  fClu=new TObjArray(AliHMPIDDigit::kMaxCh+1); fClu->SetOwner(kTRUE);
-  fDig=new TObjArray(AliHMPIDDigit::kMaxCh+1); fDig->SetOwner(kTRUE);
+  fClu=new TObjArray(AliHMPIDParam::kMaxCh+1); fClu->SetOwner(kTRUE);
+  fDig=new TObjArray(AliHMPIDParam::kMaxCh+1); fDig->SetOwner(kTRUE);
 
-  for(int i=AliHMPIDDigit::kMinCh;i<=AliHMPIDDigit::kMaxCh;i++){ 
+  for(int i=AliHMPIDParam::kMinCh;i<=AliHMPIDParam::kMaxCh;i++){ 
     fDig->AddAt(new TClonesArray("AliHMPIDDigit"),i);
     TClonesArray *pClus = new TClonesArray("AliHMPIDCluster");
     pClus->SetUniqueID(i);
@@ -72,9 +72,9 @@ void AliHMPIDReconstructor::SigConv(TObjArray *pDaqSig)
 //Arguments: pDaqSig pointer to the pedestal objects from OCDB
 //   Returs: none
 //
-  fDaqSig = new TObjArray(AliHMPIDDigit::kMaxCh+1);fDaqSig->SetOwner(kTRUE);
+  fDaqSig = new TObjArray(AliHMPIDParam::kMaxCh+1);fDaqSig->SetOwner(kTRUE);
   
-  for(Int_t iCh=AliHMPIDDigit::kMinCh;iCh<=AliHMPIDDigit::kMaxCh;iCh++) fDaqSig->AddAt(new TMatrixF(1,10,0,47),iCh);
+  for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) fDaqSig->AddAt(new TMatrixF(1,10,0,47),iCh);
  
   AliHMPIDDigit dig;
    
@@ -101,9 +101,9 @@ void AliHMPIDReconstructor::Dig2Clu(TObjArray *pDigAll,TObjArray *pCluAll,Bool_t
 //            pCluAll     - list of clusters for all chambers
 //            isTryUnfold - flag to choose between CoG and Mathieson fitting  
 //  Returns: none    
-  TMatrixF padMap(AliHMPIDDigit::kMinPx,AliHMPIDDigit::kMaxPcx,AliHMPIDDigit::kMinPy,AliHMPIDDigit::kMaxPcy);  //pads map for single chamber 0..159 x 0..143 
+  TMatrixF padMap(AliHMPIDParam::kMinPx,AliHMPIDParam::kMaxPcx,AliHMPIDParam::kMinPy,AliHMPIDParam::kMaxPcy);  //pads map for single chamber 0..159 x 0..143 
   
-  for(Int_t iCh=AliHMPIDDigit::kMinCh;iCh<=AliHMPIDDigit::kMaxCh;iCh++){                  //chambers loop 
+  for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){                  //chambers loop 
     TClonesArray *pDigCur=(TClonesArray*)pDigAll->At(iCh);                                //get list of digits for current chamber
     if(pDigCur->GetEntriesFast()==0) continue;                                            //no digits for current chamber
   
@@ -136,10 +136,10 @@ void  AliHMPIDReconstructor::FormClu(AliHMPIDCluster *pClu,AliHMPIDDigit *pDig,T
 
   Int_t cnt=0,cx[4],cy[4];
   
-  if(pDig->PadPcX() != AliHMPIDDigit::kMinPx){cx[cnt]=pDig->PadChX()-1; cy[cnt]=pDig->PadChY()  ;cnt++;}       //left
-  if(pDig->PadPcX() != AliHMPIDDigit::kMaxPx){cx[cnt]=pDig->PadChX()+1; cy[cnt]=pDig->PadChY()  ;cnt++;}       //right
-  if(pDig->PadPcY() != AliHMPIDDigit::kMinPy){cx[cnt]=pDig->PadChX()  ; cy[cnt]=pDig->PadChY()-1;cnt++;}       //down
-  if(pDig->PadPcY() != AliHMPIDDigit::kMaxPy){cx[cnt]=pDig->PadChX()  ; cy[cnt]=pDig->PadChY()+1;cnt++;}       //up
+  if(pDig->PadPcX() != AliHMPIDParam::kMinPx){cx[cnt]=pDig->PadChX()-1; cy[cnt]=pDig->PadChY()  ;cnt++;}       //left
+  if(pDig->PadPcX() != AliHMPIDParam::kMaxPx){cx[cnt]=pDig->PadChX()+1; cy[cnt]=pDig->PadChY()  ;cnt++;}       //right
+  if(pDig->PadPcY() != AliHMPIDParam::kMinPy){cx[cnt]=pDig->PadChX()  ; cy[cnt]=pDig->PadChY()-1;cnt++;}       //down
+  if(pDig->PadPcY() != AliHMPIDParam::kMaxPy){cx[cnt]=pDig->PadChX()  ; cy[cnt]=pDig->PadChY()+1;cnt++;}       //up
   
   for (Int_t i=0;i<cnt;i++){//neighbours loop
     if((pDig=UseDig(cx[i],cy[i],pDigLst,pDigMap))) FormClu(pClu,pDig,pDigLst,pDigMap);   //check if this neighbour pad fired and mark it as taken  
@@ -153,7 +153,7 @@ void AliHMPIDReconstructor::Reconstruct(TTree *pDigTree,TTree *pCluTree)const
 //           pCluTree - poitner to Cluster tree
 //  Returns: none    
   AliDebug(1,"Start.");
-  for(Int_t iCh=AliHMPIDDigit::kMinCh;iCh<=AliHMPIDDigit::kMaxCh;iCh++) {
+  for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) {
     pCluTree->Branch(Form("HMPID%d",iCh),&((*fClu)[iCh]),4000,0);
     pDigTree->SetBranchAddress(Form("HMPID%d",iCh),&((*fDig)[iCh]));
   }   
@@ -161,7 +161,7 @@ void AliHMPIDReconstructor::Reconstruct(TTree *pDigTree,TTree *pCluTree)const
   Dig2Clu(fDig,fClu);              //cluster finder 
   pCluTree->Fill();                //fill tree for current event
   
-  for(Int_t iCh=AliHMPIDDigit::kMinCh;iCh<=AliHMPIDDigit::kMaxCh;iCh++){
+  for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){
     fDig->At(iCh)->Clear();
     fClu->At(iCh)->Clear();
   }
@@ -217,14 +217,14 @@ void AliHMPIDReconstructor::ConvertDigits(AliRawReader *pRR,TTree *pDigTree)cons
 //  Returns: none    
   AliDebug(1,"Start.");
   AliHMPIDDigit dig; //tmp digit, raw digit will be converted to it
-  for(Int_t iCh=AliHMPIDDigit::kMinCh;iCh<=AliHMPIDDigit::kMaxCh;iCh++) {
+  for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) {
     pDigTree->Branch(Form("HMPID%d",iCh),&((*fDig)[iCh]),4000,0);
     pRR->Select("HMPID",2*iCh,2*iCh+1);//select only DDL files for the current chamber      
     Int_t iDigCnt=0;
     UInt_t w32=0;
-    while(pRR->ReadNextInt(w32)){//raw records loop (in selected DDL files)
+                while(pRR->ReadNextInt(w32)){//raw records loop (in selected DDL files)
       UInt_t ddl=pRR->GetDDLID(); //returns 0,1,2 ... 13
-      if (!dig.Raw(w32,ddl,pRR)) continue;
+      if(!dig.Raw(w32,ddl,pRR)) continue;  
       AliDebug(1,Form("Ch=%i DDL=%i raw=0x%x digit=(%3i,%3i,%3i,%3i) Q=%5.2f",iCh,ddl,w32,dig.Ch(),dig.Pc(),dig.PadPcX(),dig.PadPcY(),dig.Q()));
       if(!IsDigSurvive(&dig)) continue;                                       //sigma cut test
       new((*((TClonesArray*)fDig->At(iCh)))[iDigCnt++]) AliHMPIDDigit(dig); //add this digit to the tmp list
@@ -232,7 +232,7 @@ void AliHMPIDReconstructor::ConvertDigits(AliRawReader *pRR,TTree *pDigTree)cons
     pRR->Reset();        
   }//chambers loop
   pDigTree->Fill();
-  for(Int_t iCh=AliHMPIDDigit::kMinCh;iCh<=AliHMPIDDigit::kMaxCh;iCh++)fDig->At(iCh)->Clear();
+  for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++)fDig->At(iCh)->Clear();
   AliDebug(1,"Stop.");
 }//Reconstruct digits from raw digits
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

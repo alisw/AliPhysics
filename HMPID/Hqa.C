@@ -13,7 +13,7 @@
 TObjArray *CreateContainer(const char *classname,TTree *pTree)
 {
   TObjArray *pOA=new TObjArray(7); pOA->SetOwner();
-  for(Int_t iCh=AliHMPIDDigit::kMinCh;iCh<=AliHMPIDDigit::kMaxCh;iCh++){
+  for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){
     TClonesArray *pCA=new TClonesArray(classname);
     pOA->AddAt(pCA,iCh);    
     pTree->SetBranchAddress(Form("HMPID%i",iCh),&pCA);
@@ -69,7 +69,7 @@ void Clus(Int_t mode, TTree *pTree=0x0)
     case 2:      
       if(pTree==0) return;
       TObjArray *pLst=CreateContainer("AliHMPIDCluster",pTree); pTree->GetEntry(0);
-      for(Int_t iCh=AliHMPIDDigit::kMinCh;iCh<=AliHMPIDDigit::kMaxCh;iCh++){//chambers loop
+      for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){//chambers loop
         TClonesArray *pClus=(TClonesArray *)pLst->UncheckedAt(iCh);
         hCluEvt->Fill(pClus->GetEntriesFast());
         for(Int_t iClu=0;iClu<pClus->GetEntriesFast();iClu++){//clusters loop
@@ -165,8 +165,8 @@ void BlahQA()
     for(Int_t iHit=0;iHit<nHits;iHit++){//hits loop for the current event
       switch(iHit){
         case 0:  ch=0;pid=kProton;e=e200;
-                 hitx=AliHMPIDDigit::SizePadX()*(6+gRandom->Rndm());
-                 hity=AliHMPIDDigit::SizePadY()*(6+gRandom->Rndm());break; //mip ramdomly distributed in one pad
+                 hitx=AliHMPIDParam::SizePadX()*(6+gRandom->Rndm());
+                 hity=AliHMPIDParam::SizePadY()*(6+gRandom->Rndm());break; //mip ramdomly distributed in one pad
         case 1:  ch=0;pid=kProton;e=e200;hitx=0.4;hity=0.42;break; //mip in left-hand bottom coner of chamber 0
         case 2:  ch=0;pid=kProton;e=e200;hitx=0.4;hity=30  ;break; //mip on left edge of chamber 0
         case 3:  ch=0;pid=kProton;e=e200;hitx=40; hity=0.42;break; //mip on bottom edge of chamber 0
@@ -175,7 +175,7 @@ void BlahQA()
                     e=gRandom->Rndm()*900e-9; 
                   else
                     e=5.5e-9+3e-9*gRandom->Rndm();
-                  hitx=gRandom->Rndm()*AliHMPIDDigit::SizeAllX(); hity=gRandom->Rndm()*AliHMPIDDigit::SizeAllY();break; //random hit
+                  hitx=gRandom->Rndm()*AliHMPIDParam::SizeAllX(); hity=gRandom->Rndm()*AliHMPIDParam::SizeAllY();break; //random hit
       }
       new(hits[iHit]) AliHMPIDHit(ch,e,pid,iHit,hitx,hity);                          
       hitq=e;
@@ -188,8 +188,8 @@ void BlahQA()
 
 // From here normal procedure for QA
 
-    Int_t kMaxCh=(nHits==1)?0:AliHMPIDDigit::kMaxCh;
-    for(Int_t iCh=AliHMPIDDigit::kMinCh;iCh<=kMaxCh;iCh++){//chambers loop
+    Int_t kMaxCh=(nHits==1)?0:AliHMPIDParam::kMaxCh;
+    for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=kMaxCh;iCh++){//chambers loop
       TClonesArray *pDigs=(TClonesArray *)digs.UncheckedAt(iCh);
       TClonesArray *pClus=(TClonesArray *)clus.UncheckedAt(iCh);
       
@@ -220,8 +220,8 @@ void BlahQA()
         hHitCluDifX->Fill(hitx-clux); hHitCluDifY->Fill(hity-cluy); hHitCluDifXY->Fill(hitx-clux,hity-cluy); hHitCluDifQ->Fill(100*(cluq-hitq)/hitq);
         // distorsion due to feedback photons
         Int_t pc,px,py;
-        AliHMPIDDigit::Lors2Pad(hitx,hity,pc,px,py);
-        Float_t padCenterX = AliHMPIDDigit::LorsX(pc,px);
+        AliHMPIDParam::Lors2Pad(hitx,hity,pc,px,py);
+        Float_t padCenterX = AliHMPIDParam::LorsX(pc,px);
         if(pClu->Size()>1)hHitCluDifXv->Fill(hitx-padCenterX,(hitx-clux));        
         //
       }//clusters loop

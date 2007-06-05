@@ -48,8 +48,10 @@ Float_t AliHMPIDHit::QdcTot(Float_t e)
 // Arguments: e- hit energy [GeV] for mip Eloss for photon Etot   
 //   Returns: total QDC
   Int_t pc,px,py;
-  AliHMPIDDigit::Lors2Pad(fLx,fLy,pc,px,py); 
-  Float_t y=AliHMPIDDigit::LorsY(pc,py);  
+  AliHMPIDParam::Lors2Pad(fLx,fLy,pc,px,py); 
+  if(py<0) fQ=0;
+ else {
+  Float_t y=AliHMPIDParam::LorsY(pc,py);  
   fLy=((y-fLy)>0)?y-0.2:y+0.2;                                                                       //shift to the nearest anod wire   
   
   Float_t  x=(fLx > 66.6)? fLx-66.6:fLx;                                                             //sagita is for PC (0-64) and not for chamber   
@@ -61,6 +63,7 @@ Float_t AliHMPIDHit::QdcTot(Float_t e)
     Double_t rnd=gRandom->Rndm(); if(rnd==0) rnd=1e-12;                                              //1e-12 is a protection against 0 from rndm  
     fQ-=qdcEle*TMath::Log(rnd);                
   }
+ }
   return fQ;
 }  
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

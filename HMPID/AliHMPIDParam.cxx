@@ -23,8 +23,25 @@
 #include <AliStack.h>      //Stack()
 #include <TParticle.h>     //Stack()    
 #include <TGeoPhysicalNode.h> //ctor
-
+#include <TGeoBBox.h>
 ClassImp(AliHMPIDParam)
+
+
+Float_t AliHMPIDParam::fgkMinPcX[]={0.,0.,0.,0.,0.,0.};
+Float_t AliHMPIDParam::fgkMaxPcX[]={0.,0.,0.,0.,0.,0.};
+Float_t AliHMPIDParam::fgkMinPcY[]={0.,0.,0.,0.,0.,0.};
+Float_t AliHMPIDParam::fgkMaxPcY[]={0.,0.,0.,0.,0.,0.};
+
+Float_t AliHMPIDParam::fgCellX=0.;
+Float_t AliHMPIDParam::fgCellY=0.;
+
+Float_t AliHMPIDParam::fgPcX=0;
+Float_t AliHMPIDParam::fgPcY=0;
+
+Float_t AliHMPIDParam::fgAllX=0;
+Float_t AliHMPIDParam::fgAllY=0;
+
+Int_t AliHMPIDParam::fgSigmas=4;
 
 AliHMPIDParam* AliHMPIDParam::fgInstance=0x0;        //singleton pointer               
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -33,9 +50,34 @@ AliHMPIDParam::AliHMPIDParam():TNamed("HmpidParam","default version")
 // Here all the intitializition is taken place when AliHMPIDParam::Instance() is invoked for the first time.
 // In particulare, matrices to be used for LORS<->MARS trasnformations are initialized from TGeo structure.    
 // Note that TGeoManager should be already initialized from geometry.root file  
-  fX=0.5*AliHMPIDDigit::SizeAllX();
-  fY=0.5*AliHMPIDDigit::SizeAllY();
-  for(Int_t i=AliHMPIDDigit::kMinCh;i<=AliHMPIDDigit::kMaxCh;i++) 
+
+if(!gGeoManager) 
+{
+TGeoManager::Import("misaligned_geometry.root");
+if(!gGeoManager) AliFatal("!!!!!!No geometry loaded!!!!!!!");
+}
+
+
+    Float_t Dead=2.6;// cm of the dead zones between PCs-> See 2CRC2099P1
+    TGeoBBox *bcell = (TGeoBBox *)gGeoManager->GetVolume("Hcel")->GetShape();
+    fgCellX=2.*bcell->GetDX(); fgCellY = 2.*bcell->GetDY();
+    fgPcX=80.*fgCellX; fgPcY = 48.*fgCellY;
+    fgAllX=2.*fgPcX+Dead;
+    fgAllY=3.*fgPcY+2.*Dead;
+
+     fgkMinPcX[1]=fgPcX+Dead; fgkMinPcX[3]=fgkMinPcX[1];  fgkMinPcX[5]=fgkMinPcX[3];
+     fgkMaxPcX[0]=fgPcX; fgkMaxPcX[2]=fgkMaxPcX[0];  fgkMaxPcX[4]=fgkMaxPcX[2];
+     fgkMaxPcX[1]=fgAllX; fgkMaxPcX[3]=fgkMaxPcX[1];  fgkMaxPcX[5]=fgkMaxPcX[3];
+   
+     fgkMinPcY[2]=fgPcY+Dead; fgkMinPcY[3]=fgkMinPcY[2];  
+     fgkMinPcY[4]=2.*fgPcY+2.*Dead; fgkMinPcY[5]=fgkMinPcY[4];
+     fgkMaxPcY[0]=fgPcY; fgkMaxPcY[1]=fgkMaxPcY[0];  
+     fgkMaxPcY[2]=2.*fgPcY+Dead; fgkMaxPcY[3]=fgkMaxPcY[2]; 
+     fgkMaxPcY[4]=fgAllY; fgkMaxPcY[5]=fgkMaxPcY[4];   
+    
+  fX=0.5*SizeAllX();
+  fY=0.5*SizeAllY();
+  for(Int_t i=kMinCh;i<=kMaxCh;i++) 
     if(gGeoManager && gGeoManager->IsClosed()) {
 //      fM[i]=(TGeoHMatrix*)gGeoManager->GetVolume("ALIC")->GetNode(Form("HMPID_%i",i))->GetMatrix(); // previous style
       TGeoPNEntry* pne = gGeoManager->GetAlignableEntry(Form("/HMPID/Chamber%i",i));

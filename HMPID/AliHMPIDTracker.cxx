@@ -20,8 +20,8 @@ AliHMPIDTracker::AliHMPIDTracker():AliTracker()
 // ctor. Create TObjArray of TClonesArray of AliHMPIDCluster  
 // 
 //  
-  fClu=new TObjArray(AliHMPIDDigit::kMaxCh+1);  fClu->SetOwner(kTRUE);
-  for(int i=AliHMPIDDigit::kMinCh;i<=AliHMPIDDigit::kMaxCh;i++) fClu->AddAt(new TClonesArray("AliHMPIDCluster"),i);
+  fClu=new TObjArray(AliHMPIDParam::kMaxCh+1);  fClu->SetOwner(kTRUE);
+  for(int i=AliHMPIDParam::kMinCh;i<=AliHMPIDParam::kMaxCh;i++) fClu->AddAt(new TClonesArray("AliHMPIDCluster"),i);
 }//ctor
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++    
 Bool_t AliHMPIDTracker::GetTrackPoint(Int_t idx, AliTrackPoint& point) const
@@ -49,7 +49,7 @@ Int_t AliHMPIDTracker::IntTrkCha(AliESDtrack *pTrk,Float_t &xPc,Float_t &yPc)
 //   Returns: intersected chamber ID or -1
   AliHMPIDParam *pParam=AliHMPIDParam::Instance();
   Float_t xRa=0,yRa=0,theta=0,phi=0;                                                            //track intersection at PC and angles at RAD, LORS  
-  for(Int_t i=AliHMPIDDigit::kMinCh;i<=AliHMPIDDigit::kMaxCh;i++){                              //chambers loop
+  for(Int_t i=AliHMPIDParam::kMinCh;i<=AliHMPIDParam::kMaxCh;i++){                              //chambers loop
     Double_t p1[3],n1[3]; pParam->Norm(i,n1); pParam->Point(i,p1,AliHMPIDParam::kRad);          //point & norm  for middle of radiator plane
     Double_t p2[3],n2[3]; pParam->Norm(i,n2); pParam->Point(i,p2,AliHMPIDParam::kPc);           //point & norm  for entrance to PC plane
     if(pTrk->Intersect(p1,n1,-GetBz())==kFALSE) continue;                                       //try to intersect track with the middle of radiator
@@ -57,7 +57,7 @@ Int_t AliHMPIDTracker::IntTrkCha(AliESDtrack *pTrk,Float_t &xPc,Float_t &yPc)
     pParam->Mars2LorsVec(i,n1,theta,phi);                                                       //track angles at RAD
     pParam->Mars2Lors   (i,p1,xRa,yRa);                                                         //TRKxRAD position
     pParam->Mars2Lors   (i,p2,xPc,yPc);                                                         //TRKxPC position
-    if(AliHMPIDDigit::IsInside(xPc,yPc,pParam->DistCut())==kFALSE) continue;                    //not in active area  
+    if(AliHMPIDParam::IsInside(xPc,yPc,pParam->DistCut())==kFALSE) continue;                    //not in active area  
     pTrk->SetHMPIDtrk      (xRa,yRa,theta,phi);                                                 //store track intersection info
     pTrk->SetHMPIDcluIdx   (i,0);
     return i;
@@ -70,7 +70,7 @@ Int_t AliHMPIDTracker::LoadClusters(TTree *pCluTree)
 // Interface callback methode invoked from AliReconstruction::RunTracking() to load HMPID clusters before PropagateBack() gets control. Done once per event.
 // Arguments: pCluTree- pointer to clusters tree got by AliHMPIDLoader::LoadRecPoints("read") then AliHMPIDLoader::TreeR()
 //   Returns: error code (currently ignored in AliReconstruction::RunTraking())    
-  for(int i=AliHMPIDDigit::kMinCh;i<=AliHMPIDDigit::kMaxCh;i++) pCluTree->SetBranchAddress(Form("HMPID%d",i),&((*fClu)[i]));
+  for(int i=AliHMPIDParam::kMinCh;i<=AliHMPIDParam::kMaxCh;i++) pCluTree->SetBranchAddress(Form("HMPID%d",i),&((*fClu)[i]));
   pCluTree->GetEntry(0);
   return 0;  
 }//LoadClusters()

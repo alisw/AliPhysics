@@ -115,7 +115,7 @@ void PrintMap()
  
   Double_t r2d=TMath::RadToDeg();
 
-  Double_t x=AliHMPIDDigit::SizeAllX(),y=AliHMPIDDigit::SizeAllY();
+  Double_t x=AliHMPIDParam::SizeAllX(),y=AliHMPIDParam::SizeAllY();
     
   Printf("\n\n\n");                                       
   

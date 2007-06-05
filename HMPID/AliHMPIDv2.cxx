@@ -45,10 +45,10 @@ void AliHMPIDv2::AddAlignableVolumes()const
 //   Returns: none   
   
   TGeoHMatrix *pGm = new TGeoHMatrix;
-  Double_t trans[3]={0.5*AliHMPIDDigit::SizeAllX(),0.5*AliHMPIDDigit::SizeAllY(),0};                            //clm: translation from LORS to TGeo RS 
+  Double_t trans[3]={0.5*131.24,0.5*126.16,0};                            //translation from LORS to TGeo RS (half size AllX, half size allY,0)
   pGm->SetTranslation(trans);
  
-  for(Int_t i=AliHMPIDDigit::kMinCh;i<=AliHMPIDDigit::kMaxCh;i++) {
+  for(Int_t i=AliHMPIDParam::kMinCh;i<=AliHMPIDParam::kMaxCh;i++) {
       TGeoPNEntry *pPn=gGeoManager->SetAlignableEntry(Form("/HMPID/Chamber%i",i),Form("ALIC_1/Hmp_%i",i)); 
       if(pPn) pPn->SetMatrix(pGm); 
     }
@@ -127,7 +127,7 @@ void AliHMPIDv2::CreateGeometry()
   if(title.Contains("TestBeam")){
     gGeoManager->GetVolume("ALIC")->AddNode(hmp,0);
   }else{
-    for(Int_t iCh=AliHMPIDDigit::kMinCh;iCh<=AliHMPIDDigit::kMaxCh;iCh++){//place 7 chambers
+    for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){//place 7 chambers
       TGeoHMatrix *pMatrix=new TGeoHMatrix;
       IdealPosition(iCh,pMatrix);
       gGeoManager->GetVolume("ALIC")->AddNode(hmp,iCh,pMatrix);
@@ -168,6 +168,13 @@ void AliHMPIDv2::CreateGeometry()
   TGeoVolume *lar=gGeoManager->MakeBox ("Hlar",ar   ,  181*mm/2 ,   89.25*mm/2 ,   38.3*mm/2);//2001P2
   TGeoVolume *smo=gGeoManager->MakeBox ("Hsmo",ar   ,  114*mm/2 ,   89.25*mm/2 ,   38.3*mm/2);//2001P2
 		
+
+		
+        TGeoVolume *fr3=   gGeoManager->MakeBox("Hfr3",          al,  1463*mm/2,  1422*mm/2,  34*mm/2);//2041P1
+   TGeoVolume *fr3up=    gGeoManager->MakeBox("Hfr3up",     ch4, 1323*mm/2,  1282*mm/2,  20*mm/2);//2041P1
+   TGeoVolume *fr3down=gGeoManager->MakeBox("Hfr3down", ch4, 1437*mm/2,  1370*mm/2,  14*mm/2);//2041P1
+
+
 
 // ^ Y   z=         z=-12mm      z=98.25mm               ALIC->7xHmp (virtual)-->1xHsbo (virtual) --->2xHcov (real) 2072P1
 // |  ____________________________________                                    |                   |-->1xHhon (real) 2072P1
@@ -284,7 +291,9 @@ void AliHMPIDv2::CreateGeometry()
   ppf->AddNode(smo,6,new TGeoTranslation(+ 65.0*mm,+ 50.625*mm,  0.*mm));
   ppf->AddNode(smo,7,new TGeoTranslation(+ 65.0*mm,+151.875*mm,  0.*mm)); 
 
-
+hmp->AddNode(fr3,1,new TGeoTranslation(0.,0.,(80.-29.)*mm-34.*mm/2));
+         fr3->AddNode( fr3up,1,    new TGeoTranslation(0.,  0.,  7*mm));
+	 fr3->AddNode(fr3down,1,new TGeoTranslation(0.,  0., -10*mm));	
 
   AliDebug(1,"Stop v2. HMPID option");  
 }//CreateGeometry()
@@ -570,7 +579,7 @@ Bool_t AliHMPIDv2::Raw2SDigits(AliRawReader *pRR)
   UInt_t w32=0;
   while(pRR->ReadNextInt(w32)){//raw records loop (in selected DDL files)
     UInt_t ddl=pRR->GetDDLID(); //returns 0,1,2 ... 13
-    if (!sdi.Raw(ddl,w32,pRR)) continue;
+    if(!sdi.Raw(ddl,w32,pRR)) continue;  
     new((*pSdiLst)[iSdiCnt++]) AliHMPIDDigit(sdi); //add this digit to the tmp list
   }//raw records loop
   GetLoader()->TreeS()->Fill(); GetLoader()->WriteSDigits("OVERWRITE");//write out sdigits
@@ -709,8 +718,8 @@ void AliHMPIDv2::TestGeom()
 //
 // Test method to check geometry
 //
-  TGeoManager::Import("geometry.root");
-  for(Int_t ch=AliHMPIDDigit::kMinCh;ch<=AliHMPIDDigit::kMaxCh;ch++)
+  TGeoManager::Import("misaligned_geometry.root");
+  for(Int_t ch=AliHMPIDParam::kMinCh;ch<=AliHMPIDParam::kMaxCh;ch++)
     TestPoint(ch,0,0);
 }//TestPoint()
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

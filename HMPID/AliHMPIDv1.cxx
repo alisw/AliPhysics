@@ -41,7 +41,7 @@ void AliHMPIDv1::AddAlignableVolumes()const
 // Associates the symbolic volume name with the corresponding volume path. Interface method from AliModule invoked from AliMC
 // Arguments: none
 //   Returns: none   
-  for(Int_t i=AliHMPIDDigit::kMinCh;i<=AliHMPIDDigit::kMaxCh;i++)
+  for(Int_t i=AliHMPIDParam::kMinCh;i<=AliHMPIDParam::kMaxCh;i++)
     gGeoManager->SetAlignableEntry(Form("/HMPID/Chamber%i",i),Form("ALIC_1/HMPID_%i",i));
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -97,7 +97,7 @@ void AliHMPIDv1::CreateGeometry()
   TGeoVolume *pRich=gGeoManager->MakeBox("HMPID",gGeoManager->GetMedium("HMPID_CH4"),dx=(6*mm+1681*mm+6*mm)/2,  //main HMPID volume
                                                                                    dy=(6*mm+1466*mm+6*mm)/2,
                                                                                    dz=(80*mm+40*mm)*2/2);     //x,y taken from 2033P1  z from p84 TDR  
-  for(Int_t iCh=AliHMPIDDigit::kMinCh;iCh<=AliHMPIDDigit::kMaxCh;iCh++){//place 7 chambers
+  for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){//place 7 chambers
     TGeoHMatrix *pMatrix=new TGeoHMatrix;
     AliHMPIDParam::IdealPosition(iCh,pMatrix);
     gGeoManager->GetVolume("ALIC")->AddNode(pRich,iCh,pMatrix);
@@ -461,7 +461,7 @@ Bool_t AliHMPIDv1::Raw2SDigits(AliRawReader *pRR)
   UInt_t w32=0;
   while(pRR->ReadNextInt(w32)){//raw records loop (in selected DDL files)
     UInt_t ddl=pRR->GetDDLID(); //returns 0,1,2 ... 13
-    if (!sdi.Raw(ddl,w32,pRR)) continue;  
+    if(!sdi.Raw(ddl,w32,pRR)) continue;  
     new((*pSdiLst)[iSdiCnt++]) AliHMPIDDigit(sdi); //add this digit to the tmp list
   }//raw records loop
   GetLoader()->TreeS()->Fill(); GetLoader()->WriteSDigits("OVERWRITE");//write out sdigits

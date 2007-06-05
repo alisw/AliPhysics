@@ -17,7 +17,7 @@
 #include <TPDGCode.h>     //Draw() Print()
 #include <TMarker.h>      //Draw()
 #include <TClonesArray.h> //Hit2Sdi()
- 
+#include "AliHMPIDParam.h" 
 ClassImp(AliHMPIDHit)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDHit::Draw(Option_t*)
@@ -39,7 +39,7 @@ void AliHMPIDHit::Hit2Sdi(TClonesArray *pSdiLst,Int_t iHow)const
 //            iHow- how many pads to check 
 //   Returns: none
   Int_t pc,px,py;
-  AliHMPIDDigit::Lors2Pad(fLx,fLy,pc,px,py); if(pc<0) return; //check if the hit in dead zone. Should never happen during trasport!
+  AliHMPIDParam::Lors2Pad(fLx,fLy,pc,px,py); if(py<0) return; //check if the hit in dead zone. Should never happen during trasport!
 
   AliHMPIDDigit dig;
   Int_t iSdiCnt=pSdiLst->GetEntries();                       //list of sdigits contains sdigits from previous ivocations of Hit2Sdi, do not override them
@@ -72,8 +72,8 @@ void AliHMPIDHit::Print(Option_t *opt)const
     case 50000051:     sPart="feed";break;
   }
 
-  Printf("%sHIT: ch=%i                 (%7.3f,%7.3f) Q=%8.3f TID= %5i, MARS=(%7.2f,%7.2f,%7.2f) %s  %s",
+  Printf("%sHIT: ch=%i                 (%7.6f,%7.6f) Q=%8.3f TID= %5i, MARS=(%7.2f,%7.2f,%7.2f) %s  %s",
          opt,  Ch(),                    fLx,fLy,  fQ,     fTrack,         X(),  Y(),  Z(),   sPart, 
-                        (AliHMPIDDigit::IsInDead(LorsX(),LorsY()))? "IN DEAD ZONE":"");
+                        (AliHMPIDParam::IsInDead(LorsX(),LorsY()))? "IN DEAD ZONE":"");
 }//Print
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

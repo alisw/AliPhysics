@@ -114,8 +114,8 @@ Bool_t AliHMPIDCluster::IsInPc()
   Int_t pc = ((AliHMPIDDigit*)fDigs->At(0))->Pc();
  
   
-  if ( fX < AliHMPIDDigit::MinPcX(pc) || fX > AliHMPIDDigit::MaxPcX(pc) || 
-       fY < AliHMPIDDigit::MinPcY(pc) || fY > AliHMPIDDigit::MaxPcY(pc) ) return kFALSE;
+  if ( fX < AliHMPIDParam::MinPcX(pc) || fX > AliHMPIDParam::MaxPcX(pc) || 
+       fY < AliHMPIDParam::MinPcY(pc) || fY > AliHMPIDParam::MaxPcY(pc) ) return kFALSE;
   
   return kTRUE;
   

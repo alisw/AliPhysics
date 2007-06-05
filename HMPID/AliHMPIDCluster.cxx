@@ -66,8 +66,8 @@ void AliHMPIDCluster::CorrSin()
 // Arguments: none
 //   Returns: none
   Int_t pc,px,py;
-  AliHMPIDDigit::Lors2Pad(fX,fY,pc,px,py);             //tmp digit to get it center
-  Float_t x=fX-AliHMPIDDigit::LorsX(pc,px);                    //diff between cluster x and center of the pad contaning this cluster   
+  AliHMPIDParam::Lors2Pad(fX,fY,pc,px,py);             //tmp digit to get it center
+  Float_t x=fX-AliHMPIDParam::LorsX(pc,px);                    //diff between cluster x and center of the pad contaning this cluster   
   fX+=3.31267e-2*TMath::Sin(2*TMath::Pi()/0.8*x)-2.66575e-3*TMath::Sin(4*TMath::Pi()/0.8*x)+2.80553e-3*TMath::Sin(6*TMath::Pi()/0.8*x)+0.0070;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -169,10 +169,10 @@ Int_t AliHMPIDCluster::Solve(TClonesArray *pCluLst,Bool_t isTryUnfold)
     }//second digits loop
     if(iCnt==0&&fNlocMax<kMaxLocMax){                                                    //this pad has Q more then any neighbour so it's local maximum
       Double_t xStart=pDig1->LorsX();Double_t yStart=pDig1->LorsY();
-      Double_t xMin=xStart-AliHMPIDDigit::SizePadX();
-      Double_t xMax=xStart+AliHMPIDDigit::SizePadX();
-      Double_t yMin=yStart-AliHMPIDDigit::SizePadY();
-      Double_t yMax=yStart+AliHMPIDDigit::SizePadY();
+      Double_t xMin=xStart-AliHMPIDParam::SizePadX();
+      Double_t xMax=xStart+AliHMPIDParam::SizePadX();
+      Double_t yMin=yStart-AliHMPIDParam::SizePadY();
+      Double_t yMax=yStart+AliHMPIDParam::SizePadY();
       gMinuit->mnparm(3*fNlocMax  ,Form("x%i",fNlocMax),xStart,0.1,xMin,xMax,iErrFlg);   // X,Y,Q initial values of the loc max pad
       gMinuit->mnparm(3*fNlocMax+1,Form("y%i",fNlocMax),yStart,0.1,yMin,yMax,iErrFlg);   // X, Y constrained to be near the loc max
       gMinuit->mnparm(3*fNlocMax+2,Form("q%i",fNlocMax),pDig1->Q(),0.1,0,100000,iErrFlg);// Q constrained to be positive
