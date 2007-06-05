@@ -52,6 +52,7 @@ class AliMUONTriggerElectronics : public TTask
 
       virtual void Feed(UShort_t pattern[2][4]);
 		  virtual void FeedM();
+      virtual void FeedBoardsGUI(TObjArray *guibs);
 		  
       virtual void Reset();
 
@@ -65,6 +66,7 @@ class AliMUONTriggerElectronics : public TTask
 
       virtual void Digits2Trigger();
       virtual void Trigger();
+      virtual Int_t TriggerGUI(Int_t *trigInfo, Bool_t patt = kFALSE);
 
    private:
       /// Not implemented

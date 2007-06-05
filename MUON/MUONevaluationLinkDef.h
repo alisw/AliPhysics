@@ -15,6 +15,10 @@
 #pragma link C++ class AliMUONPoints+;
 #pragma link C++ class AliMUONDisplay+;
 #pragma link C++ class AliMUONDataInterface+;
+#pragma link C++ class AliMUONTriggerGUI+;
+#pragma link C++ class AliMUONTriggerGUIbdmap+;
+#pragma link C++ class AliMUONTriggerGUIdimap+;
+#pragma link C++ class AliMUONTriggerGUIboard+;
 
 #endif
 
