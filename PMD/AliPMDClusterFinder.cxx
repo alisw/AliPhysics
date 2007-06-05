@@ -279,29 +279,11 @@ void AliPMDClusterFinder::Digits2RecPoints(TTree *digitsTree,
 
   pmdclust->SetEdepCut(fEcut);
 
-/*
-  fRunLoader->GetEvent(ievt);
-  fTreeD = fPMDLoader->TreeD();
-  if (fTreeD == 0x0)
-    {
-      AliFatal("AliPMDClusterFinder: Can not get TreeD");
-    }
-*/
-
   AliPMDdigit  *pmddigit;
   TBranch *branch = digitsTree->GetBranch("PMDDigit");
   branch->SetAddress(&fDigits);
 
   ResetRecpoint();
-
-/*
-  fTreeR = fPMDLoader->TreeR();
-  if (fTreeR == 0x0)
-    {
-      fPMDLoader->MakeTree("R");
-      fTreeR = fPMDLoader->TreeR();
-    }
-*/
 
   Int_t bufsize = 16000;
   TBranch * branch1 = clustersTree->Branch("PMDRecpoint", &fRecpoints, bufsize); 
@@ -374,8 +356,6 @@ void AliPMDClusterFinder::Digits2RecPoints(TTree *digitsTree,
     } // modules
 
   ResetCellADC();
-  fPMDLoader = fRunLoader->GetLoader("PMDLoader");  
-  fPMDLoader->WriteRecPoints("OVERWRITE");
 
   //   delete the pointers
   delete pmdclust;
