@@ -27,9 +27,15 @@ ClassImp(AliAODJet)
 
 
 //______________________________________________________________________________
-AliAODJet::AliAODJet() 
+AliAODJet::AliAODJet() :
+    AliVirtualParticle(),
+    fMomentum(0)
 {
   // constructor
+    fBackgEnergy[0]   = 0.;     
+    fBackgEnergy[1]   = 0.;
+    fEffectiveArea[0] = 0.;   
+    fEffectiveArea[1] = 0.;   
 }
 
 AliAODJet::AliAODJet(Double_t px, Double_t py, Double_t pz, Double_t e):
@@ -44,7 +50,7 @@ AliAODJet::AliAODJet(Double_t px, Double_t py, Double_t pz, Double_t e):
     fEffectiveArea[1] = 0.;   
 }
 
-AliAODJet::AliAODJet(TLorentzVector p):
+AliAODJet::AliAODJet(TLorentzVector & p):
     AliVirtualParticle(),
     fMomentum(0)
 {

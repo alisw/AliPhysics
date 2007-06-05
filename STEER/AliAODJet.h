@@ -20,7 +20,7 @@ class AliAODJet : public AliVirtualParticle {
  public:
     AliAODJet();
     AliAODJet(Double_t px, Double_t py, Double_t pz, Double_t e);
-    AliAODJet(TLorentzVector p);  
+    AliAODJet(TLorentzVector & p);  
     virtual ~AliAODJet();
     AliAODJet(const AliAODJet& jet); 
     AliAODJet& operator=(const AliAODJet& jet);
