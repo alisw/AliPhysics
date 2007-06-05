@@ -26,7 +26,8 @@ ClassImp(AliPHOSRecoParam)
 
 //-----------------------------------------------------------------------------
 AliPHOSRecoParam::AliPHOSRecoParam() : TNamed(),
-  fClusteringThreshold(9999),fLocMaxCut(9999),fMinE(9999),fW0(9999)
+  fClusteringThreshold(9999),fLocMaxCut(9999),fMinE(9999),fW0(9999),
+  fSubtractPedestals(kTRUE)
 {
   //Default constructor.
 }
@@ -34,7 +35,8 @@ AliPHOSRecoParam::AliPHOSRecoParam() : TNamed(),
 //-----------------------------------------------------------------------------
 AliPHOSRecoParam::AliPHOSRecoParam(const AliPHOSRecoParam& recoParam):
   TNamed(recoParam),fClusteringThreshold(recoParam.fClusteringThreshold),
-  fLocMaxCut(recoParam.fLocMaxCut),fMinE(recoParam.fMinE),fW0(recoParam.fW0)
+  fLocMaxCut(recoParam.fLocMaxCut),fMinE(recoParam.fMinE),fW0(recoParam.fW0),
+  fSubtractPedestals(recoParam.fSubtractPedestals)
 {
   //Copy constructor.
 }
@@ -49,6 +51,7 @@ AliPHOSRecoParam& AliPHOSRecoParam::operator = (const AliPHOSRecoParam& recoPara
     fLocMaxCut = recoParam.fLocMaxCut;
     fMinE = recoParam.fMinE;
     fW0 = recoParam.fW0;
+    fSubtractPedestals = recoParam.fSubtractPedestals;
   }
 
   return *this;
