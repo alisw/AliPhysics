@@ -83,7 +83,13 @@ void IceCalibrate::SetCalibFile(TString name)
 {
 // Set the calibration ROOT file as created with IceCal2Root.
 // Note : this will overrule a previously attached database. 
+ if (fCalfile)
+ {
+  delete fCalfile;
+  fCalfile=0;
+ }
  fCalfile=new TFile(name.Data());
+ fOmdb=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 void IceCalibrate::Exec(Option_t* opt)
@@ -104,7 +110,7 @@ void IceCalibrate::Exec(Option_t* opt)
  mudaq=int(daq->GetSignal("Muon"));
  twrdaq=int(daq->GetSignal("TWR"));
 
- if (fCalfile)
+ if (!fOmdb && fCalfile)
  {
   if (mudaq)
   {

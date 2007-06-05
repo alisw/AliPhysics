@@ -111,7 +111,13 @@ void IceXtalk::SetCalibFile(TString name)
 {
 // Set the calibration ROOT file as created with IceCal2Root.
 // Note : this will overrule a previously attached database. 
+ if (fCalfile)
+ {
+  delete fCalfile;
+  fCalfile=0;
+ }
  fCalfile=new TFile(name.Data());
+ fOmdb=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 void IceXtalk::SetMinProb(Float_t pmin)
@@ -147,7 +153,7 @@ void IceXtalk::Exec(Option_t* opt)
  // This cross talk correction processor is only for MuDaq data 
  if (!mudaq) return;
 
- if (fCalfile)
+ if (!fOmdb && fCalfile)
  {
   fOmdb=(AliObjMatrix*)fCalfile->Get("MuDaq-OMDBASE");
   // Next statement for compatibility with old calibration file format

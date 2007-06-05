@@ -105,4 +105,6 @@
                 and new (MuDaq, TWRDaq, ...) calibration file format.
                 Also isolation cut in IceCleanHits modified to ignore hits from
                 the same OM.
+05-jun-2007 NvE Search for attached dbase performed only once in the Exec() memberfunction
+                of IceCalibrate and IceXtalk to speed up processing.
                  
