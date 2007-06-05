@@ -130,19 +130,6 @@ AliMDC::AliMDC(Int_t compress, Bool_t deleteFiles, EFilterMode filterMode,
     fESD = new AliESD;
   }
 
-// Tag DB is now created at the point where the header version is
-// already known
-//   if (fileNameTagDB) {
-//     if (maxSizeTagDB > 0) {
-//       fTagDB = new AliTagDB(fEvent->GetHeader(), NULL);
-//       fTagDB->SetMaxSize(maxSizeTagDB);
-//       fTagDB->SetFS(fileNameTagDB);
-//       fTagDB->Create();
-//     } else {
-//       fTagDB = new AliTagDB(fEvent->GetHeader(), fileNameTagDB);
-//     }
-//   }
-
   // Create the guid files folder if it does not exist
   if (fGuidFileFolder) {
     gSystem->ResetErrno();
@@ -206,19 +193,28 @@ Int_t AliMDC::Open(EWriteMode mode, const char* fileName,
     fRawDB = new AliRawDB(fEvent, fESD, fCompress, fileName);
   fRawDB->SetDeleteFiles(fDeleteFiles);
 
-  if (fileName == NULL) {
-    fRawDB->SetMaxSize(maxFileSize);
-    fRawDB->SetFS(fs1, fs2);
-    fRawDB->Create();
-  }
-
-  if (fGuidFileFolder) fRawDB->SetGuidFileFolder(fGuidFileFolder);
-
   if (fRawDB->IsZombie()) {
     delete fRawDB;
     fRawDB = NULL;
     return -1;
   }
+
+  if (fileName == NULL) {
+    fRawDB->SetMaxSize(maxFileSize);
+    fRawDB->SetFS(fs1, fs2);
+    if (!fRawDB->Create()) {
+      delete fRawDB;
+      fRawDB = NULL;
+      return -1;
+    }
+  }
+
+  if (!fRawDB->WriteGuidFile(fGuidFileFolder)) {
+    delete fRawDB;
+    fRawDB = NULL;
+    return -2;
+  }
+
   Info("Open", "Filling raw DB %s\n", fRawDB->GetDBName());
 
   // Create AliStats object
@@ -393,9 +389,10 @@ Int_t AliMDC::ProcessEvent(void* event, Bool_t isIovecArray)
 	fTagDB = new AliTagDB(fEventTag, NULL);
 	fTagDB->SetMaxSize(fMaxSizeTagDB);
 	fTagDB->SetFS(fFileNameTagDB);
-	fTagDB->Create();
+	if (!fTagDB->Create()) return kErrTagFile;
       } else {
 	fTagDB = new AliTagDB(fEventTag, fFileNameTagDB);
+	if (fTagDB->IsZombie()) return kErrTagFile;
       }
     }
     fIsTagDBCreated = kTRUE;

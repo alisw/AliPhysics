@@ -49,7 +49,8 @@ public:
 		     kErrEquipment = -7,
                      kErrFileSize = -8,
 		     kFilterReject = -9,
-                     kErrWriting = -10 };
+                     kErrWriting = -10,
+		     kErrTagFile = -11};
 
    AliMDC(Int_t compress, Bool_t deleteFiles, 
 	  EFilterMode filterMode = kFilterTransparent, 

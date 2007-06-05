@@ -66,8 +66,7 @@ AliRawDB::AliRawDB(AliRawEvent *event,
   fFS1(""),
   fFS2(""),
   fDeleteFiles(kFALSE),
-  fStop(kFALSE),
-  fGuidFileFolder(NULL)
+  fStop(kFALSE)
 {
    // Create a new raw DB
 
@@ -318,10 +317,6 @@ Int_t AliRawDB::Close()
 	return -1;
    }
 
-   // Write a text file with file GUID
-   // in the specified folder
-   WriteGuidFile();
-
    delete fRawDB;
    fRawDB = 0;
    if(!error)
@@ -452,14 +447,16 @@ const char *AliRawDB::GetAliRootTag()
 }
 
 //______________________________________________________________________________
-void AliRawDB::WriteGuidFile()
+Bool_t AliRawDB::WriteGuidFile(const char *guidFileFolder)
 {
   // Write the guid file
-  // in the specified folder
+  // in the specified folder or
+  // in the folder where the raw data
+  // file is.
 
    TString guidFileName;
-   if (fGuidFileFolder) {
-     guidFileName = fGuidFileFolder;
+   if (guidFileFolder) {
+     guidFileName = guidFileFolder;
 
      TString pathStr = fRawDB->GetName();
      TObjArray *pathArr = pathStr.Tokenize('/');
@@ -474,7 +471,13 @@ void AliRawDB::WriteGuidFile()
    guidFileName += ".guid";
 
    ofstream fguid(guidFileName.Data());
+   if (!fguid.is_open()) {
+     Error("WriteGuidFile", "failure to open guid file %s", guidFileName.Data());
+     return kFALSE;
+   }
    TString guid = fRawDB->GetUUID().AsString();
    fguid << "guid: \t" << guid.Data();
    fguid.close();
+
+   return kTRUE;
 }
