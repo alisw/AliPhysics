@@ -96,7 +96,7 @@ Bool_t AliHMPIDPreprocessor::ProcPed()
   
   TList *pLdc=GetFileSources(kDAQ,"pedestals"); //get list of LDC names containing id "pedestals"
   for(Int_t i=0;i<pLdc->GetEntries();i++)//lists of LDCs
-    gSystem->Exec(Form("tar xzf %s",GetFile(kDAQ,"pedestals",((TObjString*)pLdc->At(i))->GetName()))); //untar pedestal files from current LDC
+    gSystem->Exec(Form("tar xf %s",GetFile(kDAQ,"pedestals",((TObjString*)pLdc->At(i))->GetName()))); //untar pedestal files from current LDC
   AliHMPIDDigit dig;
   Int_t nSigCut,r,d,a,hard;  Float_t mean,sigma;
   for(Int_t ddl=0;ddl<14;ddl++){  
