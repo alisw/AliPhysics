@@ -235,7 +235,7 @@ void AliMUONTriggerElectronics::FeedM()
   while ( ( cr = fCrates->NextCrate() ) )
   {            
       TObjArray *boards = cr->Boards();
-		
+
       for (Int_t j = 1; j < boards->GetEntries()-1; j++)
       {
 	  TObject *o = boards->At(j);
@@ -245,19 +245,7 @@ void AliMUONTriggerElectronics::FeedM()
 	  AliMUONLocalTriggerBoard *currboard = (AliMUONLocalTriggerBoard*)o;
 			
 	  AliMUONLocalTriggerBoard *neighbour = (AliMUONLocalTriggerBoard*)boards->At(j+1);
-
-/*
-	  cout << j << " " 
-	       << boards->GetEntries()-2 << " " 
-	       << boards->GetEntries()-3 << " "
-	       << cr->GetName() << " "  
-	       << currboard->GetName() << " " 
-	       << neighbour->GetName() << " " 
-	       << currboard->GetNumber() << " " 
-	       << currboard->GetSwitch(7) << currboard->GetSwitch(8) 
-	       << currboard->GetSwitch(9) << "\n";;
-*/
-	
+			
 	  UShort_t cXY[2][4];
 			
 	  if (j==1) {neighbour->GetXY(cXY); currboard->SetXYU(cXY);}
@@ -265,37 +253,18 @@ void AliMUONTriggerElectronics::FeedM()
 	  //       LAST BOARD IN THE CRATE HAS NO UP EXCEPT FOR CRATES 2 & 3
 	  if (j < boards->GetEntries()-2)  
 	  {
-	      cout << " here000 " << j << " " 
-		   << boards->GetEntries()-2 << " " 
-		   << boards->GetEntries()-3 << " "
-		   << cr->GetName() << " "  
-		   << currboard->GetName() << " " 
-		   << neighbour->GetName() << " " 
-		   << currboard->GetNumber() << " " 
-		   << currboard->GetSwitch(7) << currboard->GetSwitch(8) 
-		   << currboard->GetSwitch(9) << "\n";;
-
 	      AliMUONLocalTriggerBoard *nextboard = (AliMUONLocalTriggerBoard*)boards->At(j+2);
 				
 	      currboard->GetXY(cXY); neighbour->SetXYD(cXY);
 	      nextboard->GetXY(cXY); neighbour->SetXYU(cXY);
 				
-	      if (j==boards->GetEntries()-3) {
-	      cout << " here111 " << j << " " 
-		   << boards->GetEntries()-2 << " " 
-		   << boards->GetEntries()-3 << " "
-		   << cr->GetName() << " "  
-		   << currboard->GetName() << " " 
-		   << neighbour->GetName() << " " 
-		   << currboard->GetNumber() << " " 
-		   << currboard->GetSwitch(7) << currboard->GetSwitch(8) 
-		   << currboard->GetSwitch(9) << "\n";;
-		  neighbour->GetXY(cXY); nextboard->SetXYD(cXY);
-	      }
+	      if (j==boards->GetEntries()-3) {neighbour->GetXY(cXY); nextboard->SetXYD(cXY);}
 	  }
       }
   }
-}
+}		
+
+
 
 //___________________________________________
 void AliMUONTriggerElectronics::Feed(UShort_t pattern[2][4])
@@ -906,7 +875,6 @@ void AliMUONTriggerElectronics::FeedBoardsGUI(TObjArray *guibs)
 	  }
       }
   }
-
 }
 
 //_______________________________________________________________________
