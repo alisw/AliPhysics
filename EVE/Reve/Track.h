@@ -99,6 +99,7 @@ class TrackRnrStyle : public TObject
 public:
   Color_t                  fColor;
   Width_t                  fWidth;
+  Style_t                  fStyle;
   Float_t                  fMagField;  
   // track limits
   Float_t                  fMaxR;       
@@ -208,6 +209,9 @@ public:
 
   Width_t GetWidth() const { return fRnrStyle->fWidth; }
   void  SetWidth(Width_t w);
+
+  Width_t GetStyle() const { return fRnrStyle->fStyle; }
+  void  SetStyle(Style_t s);
 
   Float_t GetMaxR()         const { return fRnrStyle->fMaxR; }
   Float_t GetMaxZ()         const { return fRnrStyle->fMaxZ; }

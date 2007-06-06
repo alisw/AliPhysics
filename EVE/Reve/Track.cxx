@@ -317,7 +317,6 @@ void Track::ImportKineWithArgs(Bool_t importMother, Bool_t importDaugters)
   Reve::LoadMacro("kine_tracks.C");
   gROOT->ProcessLine(Form("kine_track(%d, %d, %d, (Reve::RenderElement*)%p);", 
 			   fLabel, importMother, importDaugters, this));
-
 }
 
 /**************************************************************************/
@@ -377,6 +376,7 @@ TrackRnrStyle::TrackRnrStyle() :
 
   fColor(1),
   fWidth(1),
+  fStyle(1),
   fMagField(fgDefMagField),
 
   fMaxR  (350),
@@ -516,6 +516,17 @@ void TrackList::SetWidth(Width_t w)
     Track& t = *((Track*)(*i));
     if (t.GetLineWidth() == oldw)
       t.SetLineWidth(w);
+  }
+}
+
+void TrackList::SetStyle(Style_t s)
+{
+  Style_t olds = fRnrStyle->fStyle;
+  fRnrStyle->fStyle = s;
+  for (List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+    Track& t = *((Track*)(*i));
+    if (t.GetLineStyle() == olds)
+      t.SetLineStyle(s);
   }
 }
 

@@ -40,6 +40,9 @@ TrackListEditor::TrackListEditor(const TGWindow *p,
   fDelta(0),
 
   fRnrTracks(0),
+  fWidthCombo(0),
+  fStyleCombo(0),
+
   fRnrMarkers(0),
 
   fPMFrame(0),
@@ -135,22 +138,36 @@ TrackListEditor::TrackListEditor(const TGWindow *p,
   fPRange->GetSlider()->SetWidth(224);
   fPRange->SetLimits(0, 100, TGNumberFormat::kNESRealTwo);
   fPRange->Connect("ValueSet()",
-		    "Reve::TrackListEditor", this, "DoPRange()");
+		   "Reve::TrackListEditor", this, "DoPRange()");
   AddFrame(fPRange, new TGLayoutHints(kLHintsTop, 1, 1, 4, 1));
 
   // --- Rendering control
   {
-    TGHorizontalFrame* f = new TGHorizontalFrame(this);
-    fRnrTracks = new TGCheckButton(f, "Render tracks");
-    f->AddFrame(fRnrTracks, new TGLayoutHints(kLHintsLeft, 3, 1, 2, 0));
+    TGHorizontalFrame* ft = new TGHorizontalFrame(this);
+    fRnrTracks = new TGCheckButton(ft, "Render tracks");
+    ft->AddFrame(fRnrTracks, new TGLayoutHints(kLHintsLeft, 3, 1, 2, 0));
     fRnrTracks->Connect
       ("Toggled(Bool_t)", "Reve::TrackListEditor", this, "DoRnrTracks()");
+    AddFrame(ft, new TGLayoutHints(kLHintsTop, 1, 1, 3, 0));
+    
+    TGHorizontalFrame* f = new TGHorizontalFrame(this); 
+    TGLabel *wl = new TGLabel(f, "Width:");
+    f->AddFrame(wl, new TGLayoutHints(kLHintsTop | kLHintsCenterY, 3, 2, 1, 1));
     fWidthCombo = new TGLineWidthComboBox(f);
-    fWidthCombo->Resize(80, 18);
+    fWidthCombo->Resize(70, 18);
     f->AddFrame(fWidthCombo, new TGLayoutHints(kLHintsLeft, 8, 1, 0, 0));
-
     fWidthCombo->Connect
       ("Selected(Int_t)", "Reve::TrackListEditor", this, "DoLineWidth(Int_t)"); 
+
+    TGLabel *sl = new TGLabel(f, "Style:");
+    f->AddFrame(sl, new TGLayoutHints(kLHintsTop | kLHintsCenterY, 6, 2, 1, 1));
+    fStyleCombo = new TGLineStyleComboBox(f);
+    fStyleCombo->Resize(70, 18);
+    f->AddFrame(fStyleCombo, new TGLayoutHints(kLHintsLeft, 8, 1, 0, 0));
+    fStyleCombo->Connect
+      ("Selected(Int_t)", "Reve::TrackListEditor", this, "DoLineStyle(Int_t)"); 
+
+
     AddFrame(f, new TGLayoutHints(kLHintsTop, 1, 1, 3, 0));
   }
 
@@ -223,6 +240,7 @@ void TrackListEditor::SetModel(TObject* obj)
   fDelta->SetNumber(fTC->GetDelta());
 
   fWidthCombo->Select(fTC->GetWidth());
+  fStyleCombo->Select(fTC->GetStyle());
 
   fRnrTracks->SetState(fTC->GetRnrTracks() ? kButtonDown : kButtonUp);
  
@@ -285,6 +303,14 @@ void TrackListEditor::DoDelta()
 void TrackListEditor::DoLineWidth(Int_t width)
 {
   fTC->SetWidth(width);
+  Update();
+}
+
+/**************************************************************************/
+
+void TrackListEditor::DoLineStyle(Int_t style)
+{
+  fTC->SetStyle(style);
   Update();
 }
 

@@ -11,6 +11,7 @@ class TGNumberEntry;
 class TGColorSelect;
 class TGComboBox;
 class TGLineWidthComboBox;
+class TGLineStyleComboBox;
 
 namespace Reve {
 
@@ -37,9 +38,10 @@ protected:
   TGNumberEntry*     fMinAng;
   TGNumberEntry*     fDelta;
 
+  TGCheckButton*       fRnrTracks;
   TGLineWidthComboBox* fWidthCombo;
+  TGLineStyleComboBox* fStyleCombo;
 
-  TGCheckButton*     fRnrTracks;
   TGCheckButton*     fRnrMarkers;
 
   TGHorizontalFrame* fPMFrame;
@@ -67,6 +69,8 @@ public:
   void DoDelta();
 
   void DoLineWidth(Int_t width);
+  void DoLineStyle(Int_t style);
+
 
   void DoRnrTracks();
   void DoRnrMarkers();
