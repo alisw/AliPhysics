@@ -18,7 +18,7 @@
 #include "AliESDVertex.h"
 #include "AliRunLoader.h"
 #include "AliITSLoader.h"
-#include "AliITSgeom.h"
+#include "AliITSgeomTGeo.h"
 #include "AliITSRecPoint.h"
 #include "AliITSVertexerCosmics.h"
 #include "AliStrLine.h"
@@ -75,7 +75,6 @@ AliESDVertex* AliITSVertexerCosmics::FindVertexForCurrentEvent(Int_t evnumber)
   fCurrentVertex = 0;
   AliRunLoader *rl =AliRunLoader::GetRunLoader();
   AliITSLoader* itsLoader = (AliITSLoader*)rl->GetLoader("ITSLoader");
-  AliITSgeom* geom = itsLoader->GetITSgeom();
   itsLoader->LoadRecPoints();
   rl->GetEvent(evnumber);
 
@@ -101,7 +100,7 @@ AliESDVertex* AliITSVertexerCosmics::FindVertexForCurrentEvent(Int_t evnumber)
 
   for(Int_t imodule=fFirstSPD1; imodule<fLastSPD2; imodule++) { // SPD
     rpTree->GetEvent(imodule);
-    geom->GetModuleId(imodule,lay,lad,det);
+    AliITSgeomTGeo::GetModuleId(imodule,lay,lad,det);
     nrecpoints=recpoints->GetEntriesFast();
     if(imodule<fLastSPD1) nrecpointsSPD1 += nrecpoints;
     //printf("cosmics: module %d clusters %d\n",imodule,nrecpoints);
@@ -110,7 +109,7 @@ AliESDVertex* AliITSVertexerCosmics::FindVertexForCurrentEvent(Int_t evnumber)
       // Local coordinates of this recpoint
       lc[0]=rp->GetDetLocalX();
       lc[2]=rp->GetDetLocalZ();
-      geom->LtoG(imodule,lc,gc); // global coordinates
+      AliITSgeomTGeo::LocalToGlobal(imodule,lc,gc); // global coordinates
       if(lay==1) { // store SPD1 clusters
 	xclspd1[nclspd1stored]=gc[0];
 	yclspd1[nclspd1stored]=gc[1];
