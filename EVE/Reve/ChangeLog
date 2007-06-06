@@ -1,7 +1,6 @@
 2007-05-30  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
 
 	* LinkDef.h:
-	* NLTPolygonSet:
 	* NLTPolygonSet.cxx:
 	* NLTPolygonSet.h:
 	* NLTPolygonSetEditor.cxx:
