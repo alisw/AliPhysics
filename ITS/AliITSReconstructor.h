@@ -11,6 +11,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliReconstructor.h"
+#include "AliITSRecoParam.h"
 
 class AliITSgeom;
 class AliLoader;
@@ -48,10 +49,14 @@ public:
 			       AliRawReader* rawReader, AliESD* esd) const
     {AliReconstructor::FillESD(runLoader,rawReader, esd);}
 
+  void SetRecoParam(AliITSRecoParam * param){ fgkRecoParam = param;}
+  static const AliITSRecoParam* GetRecoParam(){ return fgkRecoParam;}
+
 private:
   // methods
   AliITSgeom*          GetITSgeom(AliRunLoader* runLoader) const;
   //data
+  static AliITSRecoParam *   fgkRecoParam; // reconstruction parameters
   AliITSpidESD *fItsPID; //Pid for ITS
   ClassDef(AliITSReconstructor, 1)   // class for the ITS reconstruction
 };

@@ -11,7 +11,7 @@
 
 #include "TMath.h"
 #include "AliCluster.h"
-#include "AliITSrecoV2.h"
+#include "AliITSRecoParam.h"
 
 //_____________________________________________________________________________
 class AliITSclusterV2 : public AliCluster {

@@ -9,7 +9,7 @@
 //           Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //-------------------------------------------------------------------------
 #include "AliTracker.h"
-#include "AliITSrecoV2.h"
+#include "AliITSRecoParam.h"
 #include "AliITStrackV2.h"
 
 class AliITSRecPoint;

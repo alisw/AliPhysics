@@ -44,6 +44,7 @@ SRCS = 	AliITSDetTypeRec.cxx \
 		AliITSRawClusterSDD.cxx \
 		AliITSRawClusterSSD.cxx\
 		AliITSReconstructor.cxx \
+		AliITSRecoParam.cxx \
 		AliITSBeamTestDig.cxx \
 		AliITSBeamTestDigSDD.cxx \
 		AliITSBeamTestDigSPD.cxx \
@@ -83,4 +84,4 @@ DHDR=ITSrecLinkDef.h
 EINCLUDE:=TPC RAW
 
 EXPORT:=AliITStrackV2.h                \
-        AliITSVertexer.h AliITSrecoV2.h
+        AliITSVertexer.h AliITSRecoParam.h

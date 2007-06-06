@@ -34,6 +34,7 @@
 #include "AliITSRecPoint.h"
 #include "AliESD.h"
 #include "AliITSRecPoint.h"
+#include "AliITSReconstructor.h"
 #include "AliITStrackerV2.h"
 
 ClassImp(AliITStrackerV2)
@@ -56,7 +57,12 @@ AliITStrackerV2::AliITStrackerV2():
 
   fConstraint[0]=1; fConstraint[1]=0;
 
-  Double_t xyz[]={kXV,kYV,kZV}, ers[]={kSigmaXV,kSigmaYV,kSigmaZV}; 
+  Double_t xyz[]={AliITSReconstructor::GetRecoParam()->GetXVdef(),
+		  AliITSReconstructor::GetRecoParam()->GetYVdef(),
+		  AliITSReconstructor::GetRecoParam()->GetZVdef()}; 
+  Double_t ers[]={AliITSReconstructor::GetRecoParam()->GetSigmaXVdef(),
+		  AliITSReconstructor::GetRecoParam()->GetSigmaYVdef(),
+		  AliITSReconstructor::GetRecoParam()->GetSigmaZVdef()}; 
   SetVertex(xyz,ers);
 
   for (Int_t i=0; i<kMaxLayer; i++) fLayersNotToSkip[i]=kLayersNotToSkip[i];
@@ -79,7 +85,12 @@ AliITStrackerV2::AliITStrackerV2(const AliITStrackerV2 &t):
 
   fConstraint[0]=t.fConstraint[0]; fConstraint[1]=t.fConstraint[1];
 
-  Double_t xyz[]={kXV,kYV,kZV}, ers[]={kSigmaXV,kSigmaYV,kSigmaZV};
+  Double_t xyz[]={AliITSReconstructor::GetRecoParam()->GetXVdef(),
+		  AliITSReconstructor::GetRecoParam()->GetYVdef(),
+		  AliITSReconstructor::GetRecoParam()->GetZVdef()}; 
+  Double_t ers[]={AliITSReconstructor::GetRecoParam()->GetSigmaXVdef(),
+		  AliITSReconstructor::GetRecoParam()->GetSigmaYVdef(),
+		  AliITSReconstructor::GetRecoParam()->GetSigmaZVdef()}; 
   xyz[0]=t.GetX(); xyz[1]=t.GetY(); xyz[2]=t.GetZ(); 
   ers[0]=t.GetSigmaX(); ers[1]=t.GetSigmaY(); ers[2]=t.GetSigmaZ(); 
   SetVertex(xyz,ers);
@@ -145,7 +156,12 @@ AliITStrackerV2::AliITStrackerV2(const Char_t *geom) :
 
   fConstraint[0]=1; fConstraint[1]=0;
 
-  Double_t xyz[]={kXV,kYV,kZV}, ers[]={kSigmaXV,kSigmaYV,kSigmaZV}; 
+  Double_t xyz[]={AliITSReconstructor::GetRecoParam()->GetXVdef(),
+		  AliITSReconstructor::GetRecoParam()->GetYVdef(),
+		  AliITSReconstructor::GetRecoParam()->GetZVdef()}; 
+  Double_t ers[]={AliITSReconstructor::GetRecoParam()->GetSigmaXVdef(),
+		  AliITSReconstructor::GetRecoParam()->GetSigmaYVdef(),
+		  AliITSReconstructor::GetRecoParam()->GetSigmaZVdef()}; 
   SetVertex(xyz,ers);
 
   for (Int_t i=0; i<kMaxLayer; i++) fLayersNotToSkip[i]=kLayersNotToSkip[i];
@@ -504,26 +520,26 @@ void AliITStrackerV2::FollowProlongation() {
 
     //Select possible prolongations and store the current track estimation
     track.~AliITStrackV2(); new(&track) AliITStrackV2(fTrackToFollow);
-    Double_t dz=7*TMath::Sqrt(track.GetSigmaZ2() + kSigmaZ2[i]);
-    Double_t dy=7*TMath::Sqrt(track.GetSigmaY2() + kSigmaY2[i]);
+    Double_t dz=7*TMath::Sqrt(track.GetSigmaZ2() + AliITSReconstructor::GetRecoParam()->GetSigmaZ2(i));
+    Double_t dy=7*TMath::Sqrt(track.GetSigmaY2() + AliITSReconstructor::GetRecoParam()->GetSigmaY2(i));
     Double_t road=layer.GetRoad();
     if (dz*dy>road*road) {
        Double_t dd=TMath::Sqrt(dz*dy), scz=dz/dd, scy=dy/dd;
        dz=road*scz; dy=road*scy;
     } 
 
-    //Double_t dz=4*TMath::Sqrt(track.GetSigmaZ2() + kSigmaZ2[i]);
+    //Double_t dz=4*TMath::Sqrt(track.GetSigmaZ2() + AliITSReconstructor::GetRecoParam()->GetSigmaZ2(i));
     if (dz < 0.5*TMath::Abs(track.GetTgl())) dz=0.5*TMath::Abs(track.GetTgl());
-    if (dz > kMaxRoad) {
+    if (dz > AliITSReconstructor::GetRecoParam()->GetMaxRoad()) {
       //Warning("FollowProlongation","too broad road in Z !\n");
       return;
     }
 
     if (TMath::Abs(fTrackToFollow.GetZ()-GetZ()) > r+dz) return;
 
-    //Double_t dy=4*TMath::Sqrt(track.GetSigmaY2() + kSigmaY2[i]);
+    //Double_t dy=4*TMath::Sqrt(track.GetSigmaY2() + AliITSReconstructor::GetRecoParam()->GetSigmaY2(i));
     if (dy < 0.5*TMath::Abs(track.GetSnp())) dy=0.5*TMath::Abs(track.GetSnp());
-    if (dy > kMaxRoad) {
+    if (dy > AliITSReconstructor::GetRecoParam()->GetMaxRoad()) {
       //Warning("FollowProlongation","too broad road in Y !\n");
       return;
     }
@@ -548,7 +564,7 @@ void AliITStrackerV2::FollowProlongation() {
   if (ncl)
   if (ncl >= nclb) {
      Double_t chi2=fTrackToFollow.GetChi2();
-     if (chi2/ncl < kChi2PerCluster) {        
+     if (chi2/ncl < AliITSReconstructor::GetRecoParam()->GetChi2PerCluster()) {        
         if (ncl > nclb || chi2 < fBestTrack.GetChi2()) {
            ResetBestTrack();
         }
@@ -566,8 +582,8 @@ Int_t AliITStrackerV2::TakeNextProlongation() {
   AliITSlayer &layer=fgLayers[fI];
   ResetTrackToFollow(fTracks[fI]);
 
-  Double_t dz=7*TMath::Sqrt(fTrackToFollow.GetSigmaZ2() + kSigmaZ2[fI]);
-  Double_t dy=7*TMath::Sqrt(fTrackToFollow.GetSigmaY2() + kSigmaY2[fI]);
+  Double_t dz=7*TMath::Sqrt(fTrackToFollow.GetSigmaZ2() + AliITSReconstructor::GetRecoParam()->GetSigmaZ2(fI));
+  Double_t dy=7*TMath::Sqrt(fTrackToFollow.GetSigmaY2() + AliITSReconstructor::GetRecoParam()->GetSigmaY2(fI));
   Double_t road=layer.GetRoad();
   if (dz*dy>road*road) {
      Double_t dd=TMath::Sqrt(dz*dy), scz=dz/dd, scy=dy/dd;
@@ -576,7 +592,7 @@ Int_t AliITStrackerV2::TakeNextProlongation() {
 
   const AliITSRecPoint *c=0; Int_t ci=-1;
   const AliITSRecPoint *cc=0; Int_t cci=-1;
-  Double_t chi2=kMaxChi2;
+  Double_t chi2=AliITSReconstructor::GetRecoParam()->GetMaxChi2();
   while ((c=layer.GetNextCluster(ci))!=0) {
     Int_t idet=c->GetDetectorIndex();
 
@@ -1041,7 +1057,7 @@ Bool_t AliITStrackerV2::RefitAt(Double_t xx,AliITStrackV2 *t,
      t->SetDetectorIndex(idet);
 
      const AliITSRecPoint *cl=0;
-     Double_t maxchi2=kMaxChi2;
+     Double_t maxchi2=AliITSReconstructor::GetRecoParam()->GetMaxChi2();
 
      Int_t idx=index[i];
      if (idx>=0) {
@@ -1081,9 +1097,9 @@ Bool_t AliITStrackerV2::RefitAt(Double_t xx,AliITStrackV2 *t,
                  
      if (extra) { //search for extra clusters
         AliITStrackV2 tmp(*t);
-        Double_t dz=4*TMath::Sqrt(tmp.GetSigmaZ2()+kSigmaZ2[i]);
+        Double_t dz=4*TMath::Sqrt(tmp.GetSigmaZ2()+AliITSReconstructor::GetRecoParam()->GetSigmaZ2(i));
         if (dz < 0.5*TMath::Abs(tmp.GetTgl())) dz=0.5*TMath::Abs(tmp.GetTgl());
-        Double_t dy=4*TMath::Sqrt(t->GetSigmaY2()+kSigmaY2[i]);
+        Double_t dy=4*TMath::Sqrt(t->GetSigmaY2()+AliITSReconstructor::GetRecoParam()->GetSigmaY2(i));
         if (dy < 0.5*TMath::Abs(tmp.GetSnp())) dy=0.5*TMath::Abs(tmp.GetSnp());
         Double_t zmin=t->GetZ() - dz;
         Double_t zmax=t->GetZ() + dz;
@@ -1092,7 +1108,7 @@ Bool_t AliITStrackerV2::RefitAt(Double_t xx,AliITStrackV2 *t,
         layer.SelectClusters(zmin,zmax,ymin,ymax);
 
         const AliITSRecPoint *c=0; Int_t ci=-1,cci=-1;
-        Double_t maxchi2=1000.*kMaxChi2, tolerance=0.1;
+        Double_t maxchi2=1000.*AliITSReconstructor::GetRecoParam()->GetMaxChi2(), tolerance=0.1;
         while ((c=layer.GetNextCluster(ci))!=0) {
            if (idet == c->GetDetectorIndex()) continue;
 

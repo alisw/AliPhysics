@@ -42,22 +42,30 @@
 #include "AliITSpidESD2.h"
 #include "AliITSInitGeometry.h"
 
+
 ClassImp(AliITSReconstructor)
+
+AliITSRecoParam *AliITSReconstructor::fgkRecoParam =0;  // reconstruction parameters
 
 //___________________________________________________________________________
 AliITSReconstructor::AliITSReconstructor() : AliReconstructor(),
 fItsPID(0)
 {
   // Default constructor
+  if (!fgkRecoParam) {
+    AliError("The Reconstruction parameters nonitialized - Used default one");
+    fgkRecoParam = AliITSRecoParam::GetHighFluxParam();
+  }
 }
  //___________________________________________________________________________
 AliITSReconstructor::~AliITSReconstructor(){
 // destructor
   delete fItsPID;
+  if(fgkRecoParam) delete fgkRecoParam;
 } 
 //______________________________________________________________________
 AliITSReconstructor::AliITSReconstructor(const AliITSReconstructor &ob) :AliReconstructor(ob),
-fItsPID(ob.fItsPID) 
+									 fItsPID(ob.fItsPID)
 {
   // Copy constructor
 }

@@ -60,6 +60,7 @@
 #pragma link C++ class AliITStrackSA+;
 #pragma link C++ class AliITSVertexerFast+;
 #pragma link C++ class AliITSReconstructor+;
+#pragma link C++ class AliITSRecoParam+;
 #pragma link C++ class AliITSClusterFinderV2+;
 #pragma link C++ class AliITSClusterFinderV2SDD+;
 #pragma link C++ class AliITSClusterFinderV2SPD+;
