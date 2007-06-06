@@ -132,6 +132,7 @@ void IceCalibrate::Exec(Option_t* opt)
 
  // All OMs with a signal
  TObjArray* mods=evt->GetDevices("IceGOM");
+ if (!mods) return;
 
  Int_t nmods=mods->GetEntries();
  if (!nmods) return;

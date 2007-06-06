@@ -203,6 +203,7 @@ void IceMakeHits::Amanda()
 
  // All Amanda OMs with a signal
  TObjArray* aoms=fEvt->GetDevices("IceAOM");
+ if (!aoms) return;
 
  // OM, waveform and hit
  IceAOM* omx=0;

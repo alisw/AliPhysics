@@ -105,4 +105,5 @@
 30-mar-2007 GdV Obsolete memberfunction declarations PutTrigger and PutWaveforms removed
                 from IceRoot.h.
 01-jun-2007 NvE Class IceCal2Root extended to support various databases (e.g. MuDaq, TWRDaq, ...).
+06-jun-2007 NvE Maximum OM id changed from 677 to 681 in IceRawTWR.cxx.
 

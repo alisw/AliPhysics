@@ -288,6 +288,7 @@ void IcePandel::Exec(Option_t* opt)
  if (fSelhits==0)
  {
   TObjArray* hits=fEvt->GetHits("IceGOM");
+  if (!hits) return;
   for (Int_t ih=0; ih<hits->GetEntries(); ih++)
   {
    AliSignal* sx=(AliSignal*)hits->At(ih);
@@ -335,7 +336,8 @@ void IcePandel::Exec(Option_t* opt)
   str=strx->GetString();
   ntkmax=fUseNtk->At(iclass);
   TObjArray* tracks=fEvt->GetTracks(str);
-  ntk=tracks->GetEntries();
+  ntk=0;
+  if (tracks) ntk=tracks->GetEntries();
   if (ntkmax>0 && ntk>ntkmax) ntk=ntkmax;
 
   for (Int_t jtk=0; jtk<ntk; jtk++) // Loop over tracks of a certain class
@@ -646,7 +648,6 @@ void IcePandel::FitFCN(Int_t&,Double_t*,Double_t& f,Double_t* x,Int_t)
  Int_t ier;
  Double_t psihit=0;
  fPsistats.Reset();
-//@@@ for (Int_t i=1; i<=nhits; i++)
  for (Int_t i=0; i<nhits; i++)
  {
   AliSignal* sx=(AliSignal*)fHits->At(i);

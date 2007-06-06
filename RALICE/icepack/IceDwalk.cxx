@@ -504,6 +504,7 @@ void IceDwalk::Exec(Option_t* opt)
 
  // Fetch all fired Amanda OMs for this event
  TObjArray* aoms=evt->GetDevices("IceAOM");
+ if (!aoms) return;
  Int_t naoms=aoms->GetEntries();
  if (!naoms) return;
 

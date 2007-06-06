@@ -408,7 +408,7 @@ void IceRawTWR::PutWaveforms(Int_t year)
  IceAOM om;
  IceAOM* omx=0;
  Int_t omid;
- Int_t omidmax=677;
+ Int_t omidmax=681;
  Int_t error;
  Float_t baseline;
  Int_t nfrags;

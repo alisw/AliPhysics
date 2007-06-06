@@ -208,6 +208,7 @@ void IceCleanHits::Amanda()
 
  // All Amanda OMs with a signal
  TObjArray* aoms=fEvt->GetDevices("IceAOM");
+ if (!aoms) return;
 
  // Local OM array with bad/dead OMs (as indicated via IceCalibrate) discarded
  TObjArray oms;

@@ -175,7 +175,7 @@ void IceXtalk::Exec(Option_t* opt)
 
  // All Amanda OMs with a signal
  TObjArray* mods=evt->GetDevices("IceAOM");
-
+ if (!mods) return;
  Int_t nmods=mods->GetEntries();
  if (!nmods) return;
 

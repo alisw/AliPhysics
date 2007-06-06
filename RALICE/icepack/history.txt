@@ -107,4 +107,8 @@
                 the same OM.
 05-jun-2007 NvE Search for attached dbase performed only once in the Exec() memberfunction
                 of IceCalibrate and IceXtalk to speed up processing.
+06-jun-2007 NvE Explicit tests on null pointers for returned TObjArray* from e.g. GetHits()
+                introduced in the .cxx files of IceCalibrate, IceChi2, IceCleanHits, IceDwalk,
+                IceDwalkx, IceLinefit, IceMakeHits, IcePandel and IceXtalk to prevent
+                problems with empty events.
                  
