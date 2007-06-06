@@ -7,6 +7,9 @@ ifndef PACKCXXFLAGS
 PACKCXXFLAGS = $(CXXFLAGS)
 endif
 
+ifneq ($(ESD_INCLUDE),)
+   PACKCXXFLAGS += -I../$(ESD_INCLUDE)
+endif
 SRCS         += G__$(PACKAGE).cxx
 OBJS          = $(SRCS:.cxx=.o)
 
