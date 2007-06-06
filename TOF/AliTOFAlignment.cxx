@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2007/05/15 16:25:44  cvetan
+Moving the alignment-related static methods from AliAlignObj to the new geometry steering class AliGeomManager (macro from Raffaele)
+
 Revision 1.15  2007/05/03 09:25:10  decaro
 Coding convention: RN13 violation -> suppression
 
@@ -222,7 +225,6 @@ void AliTOFAlignment::WriteParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
 {
   //Write Align Par on CDB
   AliCDBManager *man = AliCDBManager::Instance();
-  if(!man->IsDefaultStorageSet())man->SetDefaultStorage("local://$ALICE_ROOT");
   Char_t *sel1 = "AlignPar" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
@@ -237,7 +239,6 @@ void AliTOFAlignment::ReadParFromCDB(Char_t *sel, Int_t nrun)
 {
   //Read Align Par from CDB
   AliCDBManager *man = AliCDBManager::Instance();
-  if(!man->IsDefaultStorageSet())man->SetDefaultStorage("local://$ALICE_ROOT");
   Char_t *sel1 = "AlignPar" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
@@ -256,7 +257,6 @@ void AliTOFAlignment::WriteSimParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
 {
   //Write Sim Align Par on CDB
   AliCDBManager *man = AliCDBManager::Instance();
-  if(!man->IsDefaultStorageSet())man->SetDefaultStorage("local://$ALICE_ROOT");
   Char_t *sel1 = "AlignSimPar" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
@@ -270,7 +270,6 @@ void AliTOFAlignment::WriteSimParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
 void AliTOFAlignment::ReadSimParFromCDB(Char_t *sel, Int_t nrun){
   //Read Sim Align Par from CDB
   AliCDBManager *man = AliCDBManager::Instance();
-  if(!man->IsDefaultStorageSet())man->SetDefaultStorage("local://$ALICE_ROOT");
   Char_t *sel1 = "AlignSimPar" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
@@ -285,7 +284,6 @@ void AliTOFAlignment::WriteOnCDBforDC()
 {
   //Write Align Par on CDB for DC06
   AliCDBManager *man = AliCDBManager::Instance();
-  if(!man->IsDefaultStorageSet())man->SetDefaultStorage("local://$ALICE_ROOT");
   AliCDBId idTOFAlign("TOF/Align/Data",0,0);
   AliCDBMetaData *mdTOFAlign = new AliCDBMetaData();
   mdTOFAlign->SetComment("Alignment objects for ideal geometry, i.e. applying them to TGeo has to leave geometry unchanged");
@@ -298,7 +296,6 @@ void AliTOFAlignment::ReadFromCDBforDC()
 {
   //Read Sim Align Par from CDB for DC06
   AliCDBManager *man = AliCDBManager::Instance();
-  if(!man->IsDefaultStorageSet())man->SetDefaultStorage("local://$ALICE_ROOT");
   AliCDBEntry *entry = man->Get("TOF/Align/Data",0);
   fTOFAlignObjArray=(TObjArray*)entry->GetObject();
   fNTOFAlignObj=fTOFAlignObjArray->GetEntries();

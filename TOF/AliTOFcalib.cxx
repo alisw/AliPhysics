@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2007/04/20 13:59:40  arcelli
+make protections agains failed retrieval of the CDB object in a proper way
+
 Revision 1.12  2007/03/23 11:31:16  arcelli
 CDB Entry for TOF Reconstruction Parameters
 
@@ -752,7 +755,6 @@ void AliTOFcalib::WriteParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
 {
   //Write calibration parameters to the CDB
   AliCDBManager *man = AliCDBManager::Instance();
-  if(!man->IsDefaultStorageSet())man->SetDefaultStorage("local://$ALICE_ROOT");
   Char_t *sel1 = "Par" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
@@ -773,7 +775,6 @@ void AliTOFcalib::WriteParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
 void AliTOFcalib::WriteParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun, AliTOFCal *cal){
   //Write calibration parameters to the CDB
   AliCDBManager *man = AliCDBManager::Instance();
-  if(!man->IsDefaultStorageSet())man->SetDefaultStorage("local://$ALICE_ROOT");
   Char_t *sel1 = "Par" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
@@ -789,7 +790,6 @@ Bool_t AliTOFcalib::ReadParFromCDB(Char_t *sel, Int_t nrun)
 {
   //Read calibration parameters from the CDB
   AliCDBManager *man = AliCDBManager::Instance();
-  if(!man->IsDefaultStorageSet())man->SetDefaultStorage("local://$ALICE_ROOT");
   Char_t *sel1 = "Par" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
@@ -844,7 +844,6 @@ void AliTOFcalib::WriteSimParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
   // Store them in the CDB
 
   AliCDBManager *man = AliCDBManager::Instance();
-  if(!man->IsDefaultStorageSet())man->SetDefaultStorage("local://$ALICE_ROOT");
   AliCDBMetaData *md = new AliCDBMetaData();
   md->SetResponsible("Chiara Zampolli");
   Char_t *sel1 = "SimPar" ;
@@ -866,7 +865,6 @@ void AliTOFcalib::WriteSimParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun, AliT
   fTOFSimToT=histo;
   fTOFSimCal=cal;  
   AliCDBManager *man = AliCDBManager::Instance();
-  if(!man->IsDefaultStorageSet())man->SetDefaultStorage("local://$ALICE_ROOT");
   AliCDBMetaData *md = new AliCDBMetaData();
   md->SetResponsible("Chiara Zampolli");
   Char_t *sel1 = "SimPar" ;
@@ -885,7 +883,6 @@ void AliTOFcalib::ReadSimParFromCDB(Char_t *sel, Int_t nrun)
 {
   //Read miscalibration parameters from the CDB
   AliCDBManager *man = AliCDBManager::Instance();
-  if(!man->IsDefaultStorageSet())man->SetDefaultStorage("local://$ALICE_ROOT");
 
   // The Slewing Pars
 
@@ -927,7 +924,6 @@ void AliTOFcalib::WriteRecParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun, AliT
   //Write reconstruction parameters to the CDB
 
   AliCDBManager *man = AliCDBManager::Instance();
-  if(!man->IsDefaultStorageSet())man->SetDefaultStorage("local://$ALICE_ROOT");
   AliCDBMetaData *md = new AliCDBMetaData();
   md->SetResponsible("Silvia Arcelli");
   Char_t *sel1 = "RecPar" ;
@@ -942,7 +938,6 @@ AliTOFRecoParam * AliTOFcalib::ReadRecParFromCDB(Char_t *sel, Int_t nrun)
 {
   //Read reconstruction parameters from the CDB
   AliCDBManager *man = AliCDBManager::Instance();
-  if(!man->IsDefaultStorageSet())man->SetDefaultStorage("local://$ALICE_ROOT");
   Char_t *sel1 = "RecPar" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
