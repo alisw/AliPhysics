@@ -51,5 +51,12 @@
 #pragma link C++ class AliTPCCalibViewerGUI+;
 
 
+#pragma link C++ class AliCorrector+;
+#pragma link C++ class AliTPCExBExact+;
+#pragma link C++ class AliTPCExBFirst+ ;
+#pragma link C++ class AliTPCExB+;
+
+
+
 #endif
 
