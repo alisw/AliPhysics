@@ -39,11 +39,11 @@ class AliTPCCalROC : public TObject {
   virtual void Draw(Option_t* option = "");
   //
   // algebra
-  void Add(Float_t c1);
-  void Multiply(Float_t c1);
-  void Add(const AliTPCCalROC * roc, Double_t c1 = 1);
-  void Multiply(const AliTPCCalROC * roc);   
-  void Divide(const AliTPCCalROC * roc);   
+  void Add(Float_t c1); // add c1 to each channel of the ROC
+  void Multiply(Float_t c1); // multiply each channel of the ROC with c1
+  void Add(const AliTPCCalROC * roc, Double_t c1 = 1);  // multiply AliTPCCalROC roc by c1 and add each channel to the coresponing channel in the ROC
+  void Multiply(const AliTPCCalROC * roc);   // multiply each channel of the ROC with the coresponding channel of 'roc'
+  void Divide(const AliTPCCalROC * roc);   // divide each channel of the ROC by the coresponding value of 'roc'
   // statistic
   //
   Double_t GetMean(AliTPCCalROC* outlierROC = 0);
@@ -54,16 +54,15 @@ class AliTPCCalROC : public TObject {
   TH2F * MakeHisto2D(Float_t min=4, Float_t max=-4, Int_t type=0);   
   TH2F * MakeHistoOutliers(Float_t delta=4, Float_t fraction=0.7, Int_t mode=0);
 
-  AliTPCCalROC * LocalFit(Int_t rowRadius, Int_t padRadius, AliTPCCalROC* ROCoutliers = 0, Bool_t robust = kFALSE);
-  //
-  void GlobalFit(const AliTPCCalROC* ROCoutliers, Bool_t robust, TVectorD &fitParam, TMatrixD &covMatrix, Float_t & chi2, Int_t fitType = 1);
-  //
+  AliTPCCalROC * LocalFit(Int_t rowRadius, Int_t padRadius, AliTPCCalROC* ROCoutliers = 0, Bool_t robust = kFALSE, Double_t chi2Threshold = 5, Double_t robustFraction = 0.7);
+  void GlobalFit(const AliTPCCalROC* ROCoutliers, Bool_t robust, TVectorD &fitParam, TMatrixD &covMatrix, Float_t & chi2, Int_t fitType = 1, Double_t chi2Threshold = 5, Double_t robustFraction = 0.7);
+  
   static AliTPCCalROC* CreateGlobalFitCalROC(TVectorD &fitParam, Int_t sector);
   
   static void Test();
  protected:
   
-  Double_t GetNeighbourhoodValue(TLinearFitter* fitterQ, Int_t row, Int_t pad, Int_t rRadius, Int_t pRadius, AliTPCCalROC* ROCoutliers, Bool_t robust);
+  Double_t GetNeighbourhoodValue(TLinearFitter* fitterQ, Int_t row, Int_t pad, Int_t rRadius, Int_t pRadius, AliTPCCalROC* ROCoutliers, Bool_t robust, Double_t chi2Threshold, Double_t robustFraction);
   void GetNeighbourhood(TArrayI* &rowArray, TArrayI* &padArray, Int_t row, Int_t pad, Int_t rRadius, Int_t pRadius);
   
   UInt_t     fSector;          // sector number

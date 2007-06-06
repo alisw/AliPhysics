@@ -17,16 +17,13 @@
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 //  GUI for the AliTPCCalibViewer                                            //
-//  used for the calibration monitor   
-//  Example usage: 
+//  used for the calibration monitor                                         //
+//  Example usage:                                                           //
 /*
   aliroot
-
-  AliTPCCalibViewerGUI v(gClient->GetRoot(), 1000, 600, "/u/sgaertne/calibration/localFit/AliTPCCalibViewer/allInOne6.root")
-
- - Resize windows - (BUG to BE FIXED)
-
-*/                                      //
+  AliTPCCalibViewerGUI::showGUI("allInOne22.root")
+*/
+// - Resize windows - (BUG to BE FIXED -> ROOT bug)                          //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -40,28 +37,42 @@
 #include <TObjArray.h>
 #include <TObjString.h>
 #include <TVector.h>
+#include <string.h>
+#include <TH1.h>
+
 
 ClassImp(AliTPCCalibViewerGUI)
 
 AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h, char* fileName)
-  : TGMainFrame(p, w, h),
+  : TGCompositeFrame(p, w, h),
     fViewer(0),
-    fContAll(0),
+    fContTopBottom(0),
+    fContLCR(0),
     fContLeft(0),
     fContRight(0),
     fContCenter(0),
     fContPlotOpt(0),
     fContDrawOpt(0),
+    fContDrawOptSub1D2D(0),
     fContNormalized(0),
     fContCustom(0),
     fContCuts(0),
     fContSector(0),
     fContAddCuts(0),
+    fContFit(0),
+    fContAddFit(0),
+    fContScaling(0),
+    fContSetMax(0),
+    fContSetMin(0),
     fListVariables(0),
     fBtnDraw(0),
+    fBtnFit(0),
+    fBtnAddFitFunction(0),
+    fBtnGetMinMax(0),
     fCanvMain(0),
     fRadioRaw(0),
     fRadioNormalized(0),
+    fRadioPredefined(0),
     fRadioCustom(0),
     fRadio1D(0),
     fRadio2D(0),
@@ -72,10 +83,17 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
     fChkAuto(0),
     fComboMethod(0),
     fListNormalization(0),
-    fTxtCustom(0),
+    fComboCustom(0),
     fNmbSector(0),
+    fLblSector(0),
     fChkAddCuts(0),
-    fTxtAddCuts(0)
+    fComboAddCuts(0), 
+    fComboCustomFit(0),
+    fChkSetMax(0),
+    fChkSetMin(0),
+    fChkGetMinMaxAuto(0),
+    fTxtSetMax(0),
+    fTxtSetMin(0)
 //
 // AliTPCCalibViewerGUI constructor; fileName specifies the ROOT tree used for drawing
 //
@@ -84,59 +102,88 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
    
    // ************************* content of this MainFrame *************************
    // top level container with horizontal layout
-   fContAll = new TGCompositeFrame(this, w, h, kHorizontalFrame | kFixedWidth | kFixedHeight);
-   AddFrame(fContAll, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 0, 0, 0, 0));
+   fContTopBottom = new TGCompositeFrame(this, w, h, kVerticalFrame | kFixedWidth | kFixedHeight);
+   AddFrame(fContTopBottom, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 0, 0, 0, 0));
+   
+   fContLCR = new TGCompositeFrame(fContTopBottom, w, h, kHorizontalFrame | kFixedWidth | kFixedHeight);
+   fContTopBottom->AddFrame(fContLCR, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 0, 0, 0, 0));
+   
 
-   // ************************* content of fContAll *************************
+   // ************************* content of fContLCR *************************
    // left container
-   fContLeft = new TGCompositeFrame(fContAll, 200, 200, kVerticalFrame | kFixedWidth | kFitHeight);
-   fContAll->AddFrame(fContLeft, new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandY, 5, 3, 3, 3));
+   fContLeft = new TGCompositeFrame(fContLCR, 200, 200, kVerticalFrame | kFixedWidth | kFitHeight);
+   fContLCR->AddFrame(fContLeft, new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandY, 5, 3, 3, 3));
    
    // left vertical splitter
-   TGVSplitter *splitLeft = new TGVSplitter(fContAll);
+   TGVSplitter *splitLeft = new TGVSplitter(fContLCR);
    splitLeft->SetFrame(fContLeft, kTRUE);
-   fContAll->AddFrame(splitLeft, new TGLayoutHints(kLHintsLeft | kLHintsExpandY, 0, 0, 0, 0));
+   fContLCR->AddFrame(splitLeft, new TGLayoutHints(kLHintsLeft | kLHintsExpandY, 0, 0, 0, 0));
 
    // right container
-   fContRight = new TGCompositeFrame(fContAll, 150, 200, kVerticalFrame | kFixedWidth | kFitHeight);
-   fContAll->AddFrame(fContRight, new TGLayoutHints(kLHintsTop | kLHintsRight | kLHintsExpandY, 3, 5, 3, 3));
+   fContRight = new TGCompositeFrame(fContLCR, 150, 200, kVerticalFrame | kFixedWidth | kFitHeight);
+   fContLCR->AddFrame(fContRight, new TGLayoutHints(kLHintsTop | kLHintsRight | kLHintsExpandY, 3, 5, 3, 3));
    
    // center container
-   fContCenter = new TGCompositeFrame(fContAll, 200, 200, kVerticalFrame | kFixedWidth | kFitHeight);
-   fContAll->AddFrame(fContCenter, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 0, 0, 0, 0));
+   fContCenter = new TGCompositeFrame(fContLCR, 200, 200, kVerticalFrame | kFixedWidth | kFitHeight);
+   fContLCR->AddFrame(fContCenter, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 0, 0, 0, 0));
 
    // right vertical splitter
-   TGVSplitter *splitRight = new TGVSplitter(fContAll);
+   TGVSplitter *splitRight = new TGVSplitter(fContLCR);
    splitRight->SetFrame(fContRight, kFALSE);
-   fContAll->AddFrame(splitRight, new TGLayoutHints(kLHintsLeft | kLHintsExpandY, 0, 0, 0, 0));
+   fContLCR->AddFrame(splitRight, new TGLayoutHints(kLHintsLeft | kLHintsExpandY, 0, 0, 0, 0));
    
    // ************************* content of fContLeft *************************
+   // draw button
+   fBtnDraw = new TGTextButton(fContLeft, "&Draw");
+   fContLeft->AddFrame(fBtnDraw, new TGLayoutHints(kLHintsExpandX, 10, 10, 0, 0));
+   //fBtnDraw->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "DoTest(=\"fBtnDraw clicked\")");
+   fBtnDraw->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "DoDraw()");
+   
+   // draw options container
+   fContDrawOpt = new TGGroupFrame(fContLeft, "Plot options", kVerticalFrame | kFitWidth | kFitHeight);
+   fContLeft->AddFrame(fContDrawOpt, new TGLayoutHints(kLHintsExpandX, 0, 0, 10, 0));
+   fContDrawOptSub1D2D = new TGCompositeFrame(fContDrawOpt, 200, 20, kHorizontalFrame | kFitWidth | kFixedHeight);
+   fContDrawOpt->AddFrame(fContDrawOptSub1D2D, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
+   
+   
+   // predefined radio button
+   fRadioPredefined = new TGRadioButton(fContLeft, "Predefined: ", 13);
+   fContLeft->AddFrame(fRadioPredefined, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
+   fRadioPredefined->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtons()");
+   
    // list of variables
    fListVariables = new TGListBox(fContLeft);
-   fContLeft->AddFrame(fListVariables, new TGLayoutHints(kLHintsNormal | kLHintsExpandX | kLHintsExpandY, 0, 0, 0, 0));
+   fContLeft->AddFrame(fListVariables, new TGLayoutHints(kLHintsNormal | kLHintsExpandX | kLHintsExpandY, 10, 0, 0, 0));
    fListVariables->Connect("Selected(Int_t)", "AliTPCCalibViewerGUI", this, "DoNewSelection()");
 
    // plot options container
    //fContPlotOpt = new TGCompositeFrame(fContLeft, 200, 200, kVerticalFrame | kFitWidth | kFitHeight);
-   fContPlotOpt = new TGGroupFrame(fContLeft, "Plot options", kVerticalFrame | kFitWidth | kFitHeight);
-   fContLeft->AddFrame(fContPlotOpt, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 0, 0, 0, 0));
+   fContPlotOpt = new TGGroupFrame(fContLeft, "Normalization options", kVerticalFrame | kFitWidth | kFitHeight);
+   fContLeft->AddFrame(fContPlotOpt, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 10, 0, 0, 0));
+   
+   // custom radio button
+   fRadioCustom = new TGRadioButton(fContLeft, "Custom: ", 12);
+   fContLeft->AddFrame(fRadioCustom, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
+   fRadioCustom->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtons()");
 
-   // draw options container
-   fContDrawOpt = new TGCompositeFrame(fContLeft, 200, 20, kHorizontalFrame | kFitWidth | kFixedHeight);
-   fContLeft->AddFrame(fContDrawOpt, new TGLayoutHints(kLHintsExpandX, 0, 0, 10, 0));
-   
-   // draw button
-   fBtnDraw = new TGTextButton(fContLeft, "&Draw");
-   fContLeft->AddFrame(fBtnDraw, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
-   //fBtnDraw->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "DoTest(=\"fBtnDraw clicked\")");
-   fBtnDraw->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "DoDraw()");
-   
+   // custom options container
+   fContCustom = new TGCompositeFrame(fContTopBottom, 200, 200, kVerticalFrame | kFitWidth | kFitHeight);
+   fContTopBottom->AddFrame(fContCustom, new TGLayoutHints(kLHintsExpandX, 10, 0, 0, 0));
+
    // ************************* content of fContRight *************************
    // cut options container
    //fContCuts = new TGCompositeFrame(fContRight, 200, 200, kVerticalFrame | kFitWidth | kFitHeight);
    fContCuts = new TGGroupFrame(fContRight, "Cuts", kVerticalFrame | kFitWidth | kFitHeight);
    fContRight->AddFrame(fContCuts, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
 
+   // Fit options container
+   fContFit = new TGGroupFrame(fContRight, "Custom Fit", kVerticalFrame | kFitWidth | kFitHeight);
+   fContRight->AddFrame(fContFit, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
+   
+   // Scaling options container
+   fContScaling = new TGGroupFrame(fContRight, "Scaling", kVerticalFrame | kFitWidth | kFitHeight);
+   fContRight->AddFrame(fContScaling, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
+   
    // ************************* content of fContCenter *************************
    // main drawing canvas
    fCanvMain = new TRootEmbeddedCanvas("Main Canvas", fContCenter, 200, 200, kFitWidth | kFitHeight);
@@ -161,24 +208,16 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
    fContNormalized = new TGCompositeFrame(fContPlotOpt, 200, 200, kVerticalFrame | kFitWidth | kFitHeight);
    fContPlotOpt->AddFrame(fContNormalized, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 15, 0, 0, 0));
 
-   // custom radio button
-   fRadioCustom = new TGRadioButton(fContPlotOpt, "Custom", 12);
-   fContPlotOpt->AddFrame(fRadioCustom, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
-   fRadioCustom->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtons()");
-
-   // custom options container
-   fContCustom = new TGCompositeFrame(fContPlotOpt, 200, 200, kVerticalFrame | kFitWidth | kFitHeight);
-   fContPlotOpt->AddFrame(fContCustom, new TGLayoutHints(kLHintsExpandX, 15, 0, 0, 0));
-
    // ************************* content of fContDrawOpt *************************
    // 1D radio button
-   fRadio1D = new TGRadioButton(fContDrawOpt, "1D", 30);
-   fContDrawOpt->AddFrame(fRadio1D, new TGLayoutHints(kLHintsNormal, 2, 2, 0, 0));
+   fRadio1D = new TGRadioButton(fContDrawOptSub1D2D, "1D", 30);
+//   fContDrawOpt->AddFrame(fRadio1D, new TGLayoutHints(kLHintsNormal, 2, 2, 0, 0));
+   fContDrawOptSub1D2D->AddFrame(fRadio1D, new TGLayoutHints(kLHintsNormal, 2, 2, 0, 0));
    fRadio1D->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtons()");
    
    // 2D radio button
-   fRadio2D = new TGRadioButton(fContDrawOpt, "2D", 31);
-   fContDrawOpt->AddFrame(fRadio2D, new TGLayoutHints(kLHintsNormal, 2, 2, 0, 0));
+   fRadio2D = new TGRadioButton(fContDrawOptSub1D2D, "2D", 31);
+   fContDrawOptSub1D2D->AddFrame(fRadio2D, new TGLayoutHints(kLHintsNormal, 2, 2, 0, 0));
    fRadio2D->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtons()");
 
    // automatic redraw check button
@@ -207,8 +246,8 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
    fRadioSector->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtons()");
 
    // sector options container
-   fContSector = new TGCompositeFrame(fContCuts, 200, 200, kVerticalFrame | kFitWidth | kFitHeight);
-   fContCuts->AddFrame(fContSector, new TGLayoutHints(kLHintsExpandX, 15, 0, 0, 0));
+   fContSector = new TGCompositeFrame(fContCuts, 200, 200, kHorizontalFrame | kFitWidth | kFitHeight);
+   fContCuts->AddFrame(fContSector, new TGLayoutHints(kLHintsExpandX, 5, 0, 0, 0));
    
    // additional cuts check button
    fChkAddCuts = new TGCheckButton(fContCuts, "additional cuts");
@@ -217,7 +256,7 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
 
    // additional cuts container
    fContAddCuts = new TGCompositeFrame(fContCuts, 200, 200, kVerticalFrame | kFitWidth | kFitHeight);
-   fContCuts->AddFrame(fContAddCuts, new TGLayoutHints(kLHintsExpandX, 15, 0, 0, 0));
+   fContCuts->AddFrame(fContAddCuts, new TGLayoutHints(kLHintsExpandX, -5, -5, 0, 0));
    
    // ************************* content of fContNormalized *************************
    // method drop down combo box
@@ -233,22 +272,99 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
 
    // ************************* content of fContCustom *************************
    // text field for custom draw command
-   fTxtCustom = new TGTextEntry(fContCustom);
-   fContCustom->AddFrame(fTxtCustom, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 0, 0, 0, 0));
-   fTxtCustom->Connect("ReturnPressed()", "AliTPCCalibViewerGUI", this, "DoNewSelection()");
+   fComboCustom = new TGComboBox(fContCustom);
+   fComboCustom->Resize(0, fBtnDraw->GetDefaultHeight());
+   fComboCustom->EnableTextInput(kTRUE);
+   fContCustom->AddFrame(fComboCustom, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 0, 0, 0, 0));
+   fComboCustom->Connect("ReturnPressed()", "AliTPCCalibViewerGUI", this, "HandleButtons(=42)");
+   fComboCustom->Connect("Selected(Int_t)", "AliTPCCalibViewerGUI", this, "DoNewSelection()");
    
    // ************************* content of fContSector *************************
    // sector number entry
    fNmbSector = new TGNumberEntry(fContSector, 0, 1, -1, TGNumberFormat::kNESInteger, TGNumberFormat::kNEANonNegative, TGNumberFormat::kNELLimitMinMax, 0, 71);
    fContSector->AddFrame(fNmbSector, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 0, 0, 0, 0));
-   fNmbSector->Connect("ValueSet(Long_t)", "AliTPCCalibViewerGUI", this, "DoNewSelection()");
+   fNmbSector->Connect("ValueSet(Long_t)", "AliTPCCalibViewerGUI", this, "ChangeSector()");
+   
+   // sector number label
+   fLblSector = new TGLabel(fContSector, "IROC, A");
+   fContSector->AddFrame(fLblSector, new TGLayoutHints(kLHintsNormal | kLHintsExpandX));
    
    // ************************* content of fContAddCuts *************************
-   // text field for additional cuts
-   fTxtAddCuts = new TGTextEntry(fContAddCuts);
-   fContAddCuts->AddFrame(fTxtAddCuts, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 0, 0, 0, 0));
-   fTxtAddCuts->Connect("ReturnPressed()", "AliTPCCalibViewerGUI", this, "DoNewSelection()");
+   // combo text field for additional cuts
+   fComboAddCuts = new TGComboBox(fContAddCuts);
+   fComboAddCuts->Resize(0, fBtnDraw->GetDefaultHeight());
+   fComboAddCuts->EnableTextInput(kTRUE);
+   fContAddCuts->AddFrame(fComboAddCuts, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 0, 0, 0, 0));
+   fComboAddCuts->Connect("ReturnPressed()", "AliTPCCalibViewerGUI", this, "DoNewSelection()");
+   fComboAddCuts->Connect("Selected(Int_t)", "AliTPCCalibViewerGUI", this, "DoNewSelection()");
+   
+   // ************************* content of fContFit *************************
+   // container for additional fits
+   fContAddFit = new TGCompositeFrame(fContFit, 200, 200, kVerticalFrame | kFitWidth | kFitHeight);
+   fContFit->AddFrame(fContAddFit, new TGLayoutHints(kLHintsExpandX, -5, -5, 0, 0));
+   
+   // ************************* content of fContAddFit *************************
+   // text field for custom fit
+   fComboCustomFit = new TGComboBox(fContAddFit);
+   fComboCustomFit->Resize(0, fBtnDraw->GetDefaultHeight());
+   fComboCustomFit->EnableTextInput(kTRUE);
+   fContAddFit->AddFrame(fComboCustomFit, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 0, 0, 0, 0));
+   fComboCustomFit->Connect("ReturnPressed()", "AliTPCCalibViewerGUI", this, "DoFit()");
+   fComboCustomFit->Connect("Selected(Int_t)", "AliTPCCalibViewerGUI", this, "DoFit()");
+   
+   // fit button
+   fBtnFit = new TGTextButton(fContAddFit, "&Fit");
+   fContAddFit->AddFrame(fBtnFit, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
+   fBtnFit->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "DoFit()");
 
+   // add fit function button
+   //fBtnAddFitFunction = new TGTextButton(fContAddFit, "&Add fit function to normalization");
+   //fContAddFit->AddFrame(fBtnAddFitFunction, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
+   //fBtnAddFitFunction->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "AddFitFunction()");
+
+   // ************************* content of fContScaling *************************
+   // SetMaximum container
+   fContSetMax = new TGCompositeFrame(fContScaling, 200, 200, kVerticalFrame | kFitWidth | kFitHeight);
+   fContScaling->AddFrame(fContSetMax, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
+
+   // SetMinimum container
+   fContSetMin = new TGCompositeFrame(fContScaling, 200, 200, kVerticalFrame | kFitWidth | kFitHeight);
+   fContScaling->AddFrame(fContSetMin, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
+   
+   // get Min & Max from Plot - button
+   fBtnGetMinMax = new TGTextButton(fContScaling, "&Get scale from plot");
+   fContScaling->AddFrame(fBtnGetMinMax, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
+   fBtnGetMinMax->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "GetMinMax()");
+   
+   // GetMinMaxAuto - checkbox
+   fChkGetMinMaxAuto = new TGCheckButton(fContScaling, "Get Min + Max auto.");
+   fContScaling->AddFrame(fChkGetMinMaxAuto, new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
+   fChkGetMinMaxAuto->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "DoNewSelection()");
+
+   
+   // ************************* content of fContSetMax *************************
+   // SetMaximum - checkbox
+   fChkSetMax = new TGCheckButton(fContSetMax, "Set fixed max.");
+   fContSetMax->AddFrame(fChkSetMax, new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
+   fChkSetMax->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "HandleButtons()");
+   
+   // text field for maximum value
+   fTxtSetMax = new TGTextEntry(fContSetMax, "", 41);
+   fContSetMax->AddFrame(fTxtSetMax, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 0, 0, 0, 0));
+   fTxtSetMax->Connect("ReturnPressed()", "AliTPCCalibViewerGUI", this, "HandleButtons()");
+
+   // ************************* content of fContSetMin *************************
+   // SetMinimum - checkbox
+   fChkSetMin = new TGCheckButton(fContSetMin, "Set fixed min.");
+   fContSetMin->AddFrame(fChkSetMin, new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
+   fChkSetMin->Connect("Clicked()", "AliTPCCalibViewerGUI", this, "DoNewSelection()");
+   
+   // text field for minimum value
+   fTxtSetMin = new TGTextEntry(fContSetMin, "", 40);
+   fContSetMin->AddFrame(fTxtSetMin, new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 0, 0, 0, 0));
+   fTxtSetMin->Connect("ReturnPressed()", "AliTPCCalibViewerGUI", this, "HandleButtons()");
+
+   
    // Display everything
    Initialize(fileName);
    SetWindowName("AliTPCCalibViewer GUI");
@@ -258,24 +374,35 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
 }
 
 AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const AliTPCCalibViewerGUI &c)
-   : TGMainFrame(c.fParent, c.fWidth, c.fHeight),
+   : TGCompositeFrame(c.fParent, c.fWidth, c.fHeight),
     fViewer(0),
-    fContAll(0),
+    fContTopBottom(0),
+    fContLCR(0),
     fContLeft(0),
     fContRight(0),
     fContCenter(0),
     fContPlotOpt(0),
     fContDrawOpt(0),
+    fContDrawOptSub1D2D(0),
     fContNormalized(0),
     fContCustom(0),
     fContCuts(0),
     fContSector(0),
     fContAddCuts(0),
+    fContFit(0),
+    fContAddFit(0),
+    fContScaling(0),
+    fContSetMax(0),
+    fContSetMin(0),
     fListVariables(0),
     fBtnDraw(0),
+    fBtnFit(0),
+    fBtnAddFitFunction(0),
+    fBtnGetMinMax(0),
     fCanvMain(0),
     fRadioRaw(0),
     fRadioNormalized(0),
+    fRadioPredefined(0),
     fRadioCustom(0),
     fRadio1D(0),
     fRadio2D(0),
@@ -286,10 +413,17 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const AliTPCCalibViewerGUI &c)
     fChkAuto(0),
     fComboMethod(0),
     fListNormalization(0),
-    fTxtCustom(0),
+    fComboCustom(0),
     fNmbSector(0),
+    fLblSector(0),
     fChkAddCuts(0),
-    fTxtAddCuts(0)
+    fComboAddCuts(0), 
+    fComboCustomFit(0),
+    fChkSetMax(0),
+    fChkSetMin(0),
+    fChkGetMinMaxAuto(0),
+    fTxtSetMax(0),
+    fTxtSetMin(0)
 {
   //
   // dummy AliTPCCalibViewerGUI copy constructor
@@ -304,12 +438,21 @@ AliTPCCalibViewerGUI & AliTPCCalibViewerGUI::operator =(const AliTPCCalibViewerG
 }
 
 AliTPCCalibViewerGUI::~AliTPCCalibViewerGUI() {
+   if (fCanvMain && fCanvMain->GetCanvas()) {
+      for (Int_t i = 0; i < fCanvMain->GetCanvas()->GetListOfPrimitives()->GetEntries(); i++) {
+         if (strcmp(fCanvMain->GetCanvas()->GetListOfPrimitives()->At(i)->ClassName(), "TFrame") != 0)
+            fCanvMain->GetCanvas()->GetListOfPrimitives()->At(i)->Delete();
+      }
+   }
    Cleanup();
+   if (fViewer) fViewer->Delete();
 }
 
+/*
 void AliTPCCalibViewerGUI::CloseWindow() {
    DeleteWindow();
 }
+*/
 
 void AliTPCCalibViewerGUI::Initialize(char* fileName) {
    //
@@ -317,6 +460,7 @@ void AliTPCCalibViewerGUI::Initialize(char* fileName) {
    //
    
    // create AliTPCCalibViewer object, which will be used for generating all drawings
+   if (fViewer) delete fViewer;
    fViewer = new AliTPCCalibViewer(fileName);
 
    // fill fListVariables
@@ -325,7 +469,7 @@ void AliTPCCalibViewerGUI::Initialize(char* fileName) {
    iter->Reset();
    TObjString* currentStr = 0;
    Int_t id = 0;
-   while (currentStr = (TObjString*)(iter->Next())) {
+   while ((currentStr = (TObjString*)(iter->Next()))) {
       fListVariables->AddEntry(currentStr->GetString().Data(), id);
       id++;
    }
@@ -343,7 +487,7 @@ void AliTPCCalibViewerGUI::Initialize(char* fileName) {
    iter->Reset();
    currentStr = 0;
    id = 0;
-   while (currentStr = (TObjString*)(iter->Next())) {
+   while ((currentStr = (TObjString*)(iter->Next()))) {
       fListNormalization->AddEntry(currentStr->GetString().Data(), id);
       id++;
    }
@@ -352,15 +496,24 @@ void AliTPCCalibViewerGUI::Initialize(char* fileName) {
    delete arr;
 
    // set default button states
+   fRadioPredefined->SetState(kButtonDown);
    fRadioRaw->SetState(kButtonDown);
    fRadioTPC->SetState(kButtonDown);
-   //fRadioCustom->SetState(kButtonDisabled);
    fRadio1D->SetState(kButtonDown);
    fChkAuto->SetState(kButtonDown);
    fChkAddCuts->SetState(kButtonUp);
    fListVariables->Select(0);
    fListNormalization->Select(0);
    fComboMethod->Select(0);
+   fChkGetMinMaxAuto->SetState(kButtonDown);
+   fChkSetMin->SetState(kButtonUp);
+   fChkSetMax->SetState(kButtonUp);
+
+   //fCanvMain->GetCanvas()->ToggleEventStatus(); // klappt nicht
+   //fCanvMain->GetCanvas()->GetCanvasImp()->ShowStatusBar(kTRUE); // klappt auch nicht
+   fListVariables->IntegralHeight(kFALSE);         // naja
+   fListNormalization->IntegralHeight(kFALSE);     // naja
+   DoDraw();
 }
 
 void AliTPCCalibViewerGUI::HandleButtons(Int_t id) {
@@ -371,21 +524,27 @@ void AliTPCCalibViewerGUI::HandleButtons(Int_t id) {
       TGButton *btn = (TGButton *) gTQSender;
       id = btn->WidgetId();
    }
-   
+
    switch (id) {
       case 10:             // fRadioRaw
          fRadioNormalized->SetState(kButtonUp);
+         fRadioPredefined->SetState(kButtonDown);
          fRadioCustom->SetState(kButtonUp);
          //fComboMethod->UnmapWindow();
          //fListNormalization->UnmapWindow();
          break;
       case 11:             // fRadioNormalized
          fRadioRaw->SetState(kButtonUp);
+         fRadioPredefined->SetState(kButtonDown);
          fRadioCustom->SetState(kButtonUp);
          break;
       case 12:             // fRadioCustom
-         fRadioRaw->SetState(kButtonUp);
-         fRadioNormalized->SetState(kButtonUp);
+         fRadioPredefined->SetState(kButtonUp);
+         //fRadioNormalized->SetState(kButtonUp);
+         break;
+      case 13:             // fRadioPredefined
+         fRadioCustom->SetState(kButtonUp);
+         //fRadioNormalized->SetState(kButtonUp);
          break;
       //--------
       case 20:             // fRadioTPC
@@ -415,10 +574,19 @@ void AliTPCCalibViewerGUI::HandleButtons(Int_t id) {
       case 31:             // fRadio2D
          fRadio1D->SetState(kButtonUp);
          break;
+      //--------
+      case 40:             // fTxtSetMin
+         fChkSetMin->SetState(kButtonDown);
+         break;
+      case 41:             // fTxtSetMax
+         fChkSetMax->SetState(kButtonDown);
+         break;
+      case 42:             // fComboCustom
+         fRadioCustom->SetState(kButtonDown);
+         fRadioPredefined->SetState(kButtonUp);
+         break;
    }
-   //fRadioCustom->SetState(kButtonDisabled);
-
-   if (fChkAuto->GetState() == kButtonDown) DoDraw();
+   DoNewSelection();
 }
 
 void AliTPCCalibViewerGUI::DoNewSelection() {
@@ -436,11 +604,12 @@ void AliTPCCalibViewerGUI::DoDraw() {
    
    // specify data to plot
    TString desiredData("");
+   if (!fListVariables->GetSelectedEntry()) return;
    desiredData += ((TGTextLBEntry*)(fListVariables->GetSelectedEntry()))->GetTitle();
    desiredData += ".fElements";
 
    // specify normalization
-   if (fRadioNormalized->GetState() == kButtonDown) {
+   if (fRadioPredefined->GetState() == kButtonDown && fRadioNormalized->GetState() == kButtonDown) {
       TString op("");
       switch (fComboMethod->GetSelected()) {
          case 0:        // subtraction
@@ -451,14 +620,46 @@ void AliTPCCalibViewerGUI::DoDraw() {
             break;
       }
       TString normalizationData("");
+      if (!fListNormalization->GetSelectedEntry()) return;
       normalizationData += ((TGTextLBEntry*)(fListNormalization->GetSelectedEntry()))->GetTitle();
+      
+      if ( normalizationData.BeginsWith("Fit")) {
+         // create fit formula, evaluate it an replace normalizationData-String
+         // ********** create cut string **********
+         TString cutStr("");
+         if (fRadioTPC->GetState() == kButtonDown)
+            cutStr += ""; // whole TPC is used for fitting
+         if (fRadioSideA->GetState() == kButtonDown)
+            cutStr += "(sector/18)%2==0"; // side A
+         if (fRadioSideC->GetState() == kButtonDown)
+            cutStr+= "(sector/18)%2==1"; // side C
+         if (fRadioSector->GetState() == kButtonDown) {
+            Int_t sector = (Int_t)(fNmbSector->GetNumber());
+            cutStr += "sector==";
+            cutStr += sector; 
+         }
+         if (fChkAddCuts->GetState() == kButtonDown && strcmp(fComboAddCuts->GetTextEntry()->GetText(), "") != 0){
+            if (fRadioTPC->GetState() != kButtonDown) cutStr += " && ";
+            cutStr += fComboAddCuts->GetTextEntry()->GetText();  
+         }
+         Double_t chi2 = 0;
+         TVectorD fitParam(0);
+         TMatrixD covMatrix(0,0);
+         TString formulaStr("");
+         if (normalizationData.CompareTo("FitLinLocal") == 0)
+            formulaStr = "lx~ ++ ly~";
+         if (normalizationData.CompareTo("FitLinGlobal") == 0) 
+            formulaStr = "gx~ ++ gy~";
+         normalizationData = *fViewer->Fit(desiredData.Data(), formulaStr.Data(), cutStr.Data(), chi2, fitParam, covMatrix);
+      }
+
       desiredData += op;
-      desiredData += ((TGTextLBEntry*)(fListVariables->GetSelectedEntry()))->GetTitle();
-      //desiredData += "_";
+      if (! (TString(((TGTextLBEntry*)(fListNormalization->GetSelectedEntry()))->GetTitle())).BeginsWith("Fit"))
+         desiredData += ((TGTextLBEntry*)(fListVariables->GetSelectedEntry()))->GetTitle();
       desiredData += normalizationData;
    }
    else if (fRadioCustom->GetState() == kButtonDown) {
-      desiredData = fTxtCustom->GetText();
+      desiredData = fComboCustom->GetTextEntry()->GetText();
       if (desiredData == "") return;
    }
 
@@ -476,15 +677,188 @@ void AliTPCCalibViewerGUI::DoDraw() {
    }
    TString cutsStr("");
    if (fChkAddCuts->GetState() == kButtonDown)
-      cutsStr += fTxtAddCuts->GetText();
+      cutsStr += fComboAddCuts->GetTextEntry()->GetText();
    
    // draw finally
+   for (Int_t i = 0; i < fCanvMain->GetCanvas()->GetListOfPrimitives()->GetEntries(); i++) {
+      if (strcmp(fCanvMain->GetCanvas()->GetListOfPrimitives()->At(i)->ClassName(), "TFrame") != 0)
+         fCanvMain->GetCanvas()->GetListOfPrimitives()->At(i)->Delete();
+   }
+   //fCanvMain->GetCanvas()->Clear();
    fCanvMain->GetCanvas()->cd();
-   //fViewer->Draw(desiredData.Data(), cuts.Data());
+   Int_t entries = -1;
    if (fRadio1D->GetState() == kButtonDown)
-      fViewer->EasyDraw1D(desiredData.Data(), sectorStr.Data(), cutsStr.Data());
+      entries = fViewer->EasyDraw1D(desiredData.Data(), sectorStr.Data(), cutsStr.Data());
    else if (fRadio2D->GetState() == kButtonDown)
-      fViewer->EasyDraw(desiredData.Data(), sectorStr.Data(), cutsStr.Data());
+      entries = fViewer->EasyDraw(desiredData.Data(), sectorStr.Data(), cutsStr.Data());
+   if (entries == -1) return;
+   
+   TList* listOfPrimitives = fCanvMain->GetCanvas()->GetListOfPrimitives();
+   TObject* ptr = 0;
+   for (Int_t i = 0; i < listOfPrimitives->GetEntries(); i++) {
+      ptr = listOfPrimitives->At(i);
+      if ( ptr->InheritsFrom("TH1") ) break;
+   }
+   if ( ptr != 0 && !ptr->InheritsFrom("TH1") ) return;      // if the loop did not find a TH1
+   TH1 *hist = (TH1*)ptr; 
+   TString minTxt(fTxtSetMin->GetText());
+   TString maxTxt(fTxtSetMax->GetText());
+   if (fChkSetMax->GetState() == kButtonDown && (maxTxt.IsDigit() || maxTxt.IsFloat()) )
+      hist->SetMaximum(maxTxt.Atof());
+   if (fChkSetMin->GetState() == kButtonDown && (minTxt.IsDigit() || minTxt.IsFloat()) )
+      hist->SetMinimum(minTxt.Atof());
+      
+   if (fChkGetMinMaxAuto->GetState() == kButtonDown) {
+      if (fChkSetMax->GetState() == kButtonUp)
+         fTxtSetMax->SetText(Form("%f", hist->GetMaximum()));
+      if (fChkSetMin->GetState() == kButtonUp)
+         fTxtSetMin->SetText(Form("%f", hist->GetMinimum()));
+   }
    
    fCanvMain->GetCanvas()->Update();
 }
+
+
+void AliTPCCalibViewerGUI::DoFit() {
+   //
+   // main method for fitting
+   //
+   
+   Double_t chi2 = 0;
+   TVectorD fitParam(0);
+   TMatrixD covMatrix(0,0);
+   TString drawStr("");
+   TString cutStr("");
+   TString formulaStr("");
+   TString *returnStr = new TString("");
+
+   
+   // ******** create draw string *********
+   if (fRadioCustom->GetState() == kButtonDown) {
+   // take custom text as draw string
+      drawStr = fComboCustom->GetTextEntry()->GetText();
+      if (drawStr == "") return;
+   }
+   else if (fRadioPredefined->GetState() == kButtonDown) {
+   // create drawStr out of selection
+      drawStr += ((TGTextLBEntry*)(fListVariables->GetSelectedEntry()))->GetTitle();
+      drawStr += ".fElements";
+      if (fRadioNormalized->GetState() == kButtonDown) {
+      // normalize data by selection
+         TString op("");
+         switch (fComboMethod->GetSelected()) {
+            case 0:        // subtraction
+               op += "-";
+               break;
+            case 1:        // division
+               op += "/";
+               break;
+         }
+         TString normalizationData("");
+         normalizationData += ((TGTextLBEntry*)(fListNormalization->GetSelectedEntry()))->GetTitle();
+         drawStr += op;
+         drawStr += ((TGTextLBEntry*)(fListVariables->GetSelectedEntry()))->GetTitle();
+         drawStr += normalizationData;
+      }
+   }
+
+   // ********** create cut string **********
+   if (fRadioTPC->GetState() == kButtonDown)
+      cutStr += ""; // whole TPC is used for fitting
+   if (fRadioSideA->GetState() == kButtonDown)
+      cutStr += "(sector/18)%2==0"; // side A
+   if (fRadioSideC->GetState() == kButtonDown)
+      cutStr+= "(sector/18)%2==1"; // side C
+   if (fRadioSector->GetState() == kButtonDown) {
+      Int_t sector = (Int_t)(fNmbSector->GetNumber());
+      cutStr += "sector==";
+      cutStr += sector; 
+   }
+   if (fChkAddCuts->GetState() == kButtonDown && strcmp(fComboAddCuts->GetTextEntry()->GetText(), "") != 0){
+      if (fRadioTPC->GetState() != kButtonDown) cutStr += " && ";
+      cutStr += fComboAddCuts->GetTextEntry()->GetText();  
+   }
+   
+   // ********** get formula string **********
+   formulaStr += fComboCustomFit->GetTextEntry()->GetText();
+
+   // ********** call AliTPCCalibViewer's fit-function
+   returnStr = fViewer->Fit(drawStr.Data(), formulaStr.Data(), cutStr.Data(), chi2, fitParam, covMatrix);
+   
+   std::cout << std::endl;
+   std::cout << "Your fit formula reads as follows:" << std::endl;
+   std::cout << returnStr->Data() << std::endl;
+   std::cout << "chi2 = " << chi2 << std::endl;
+}
+
+void AliTPCCalibViewerGUI::GetMinMax() {
+   //
+   // Read current Min & Max from the plot and set it to fTxtSetMin & fTxtSetMax
+   //
+   TList* listOfPrimitives = fCanvMain->GetCanvas()->GetListOfPrimitives();
+   TObject* ptr = 0;
+   for (Int_t i = 0; i < listOfPrimitives->GetEntries(); i++) {
+      ptr = listOfPrimitives->At(i);
+      if ( ptr->InheritsFrom("TH1") ) break;
+   }
+   if ( ptr != 0 && !ptr->InheritsFrom("TH1") ) return;      // if the loop did not find a TH1
+   TH1 *hist = (TH1*)ptr;
+   Double_t histMax = hist->GetMaximum();
+   Double_t histMin = hist->GetMinimum();
+   fTxtSetMax->SetText(Form("%f",histMax));
+   fTxtSetMin->SetText(Form("%f",histMin));
+}
+
+void AliTPCCalibViewerGUI::ChangeSector(){
+   // 
+   // function that is called, when the number of the sector is changed
+   // to change the sector label
+   // 
+   Int_t sector = (Int_t)(fNmbSector->GetNumber());
+   char* secLabel = "";
+   if (sector >= 0 && sector <= 17) // IROC, Side A
+      secLabel = "IROC, A";
+   if (sector >= 18 && sector <= 35) // IROC, Side C
+      secLabel = "IROC, C";
+   if (sector >= 36 && sector <= 53) // OROC, Side A
+      secLabel = "OROC, A";
+   if (sector >= 54 && sector <= 71) // OROC, Side C
+      secLabel = "OROC, C";
+   fLblSector->SetText(secLabel);
+   DoNewSelection();
+}
+
+void AliTPCCalibViewerGUI::AddFitFunction(){ 
+   //
+   // adds the last fit function to the normalization list
+   // 
+   std::cout << "Not yet implemented." << std::endl;
+}
+   
+
+void AliTPCCalibViewerGUI::ShowGUI(const char* fileName) {
+   //
+   // initialize and show GUI for presentation
+   // 
+   TGMainFrame* frmMain = new TGMainFrame(gClient->GetRoot(), 1000, 600);
+   frmMain->SetWindowName("AliTPCCalibViewer GUI");
+   frmMain->SetCleanup(kDeepCleanup);
+   
+   TGTab* tabMain = new TGTab(frmMain, 1000, 600);
+   frmMain->AddFrame(tabMain, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 0, 0, 0, 0));
+
+   TGCompositeFrame* tabCont1 = tabMain->AddTab("Viewer 1");
+   TGCompositeFrame* tabCont2 = tabMain->AddTab("Viewer 2");
+   
+   AliTPCCalibViewerGUI* calibViewer1 = new AliTPCCalibViewerGUI(tabCont1, 1000, 600, (char*)fileName);
+   tabCont1->AddFrame(calibViewer1, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 0, 0, 0, 0));
+
+   AliTPCCalibViewerGUI* calibViewer2 = new AliTPCCalibViewerGUI(tabCont2, 1000, 600, (char*)fileName);
+   tabCont2->AddFrame(calibViewer2, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 0, 0, 0, 0));
+   
+   frmMain->MapSubwindows();
+   frmMain->Resize();
+   frmMain->MapWindow();
+
+}
+

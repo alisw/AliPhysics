@@ -50,7 +50,8 @@ AliTPCCalibViewer::AliTPCCalibViewer()
                   :TObject(),
                    fTree(0),
                    fFile(0),
-                   fListOfObjectsToBeDeleted(0)
+                   fListOfObjectsToBeDeleted(0),
+                   fTreeMustBeDeleted(0)
 {
   //
   // Default constructor
@@ -63,13 +64,15 @@ AliTPCCalibViewer::AliTPCCalibViewer(const AliTPCCalibViewer &c)
                   :TObject(c),
                    fTree(0),
                    fFile(0),
-                   fListOfObjectsToBeDeleted(0)
+                   fListOfObjectsToBeDeleted(0),
+                   fTreeMustBeDeleted(0)
 {
   //
   // dummy AliTPCCalibViewer copy constructor
   // not yet working!!!
   //
   fTree = c.fTree;
+  fTreeMustBeDeleted = c.fTreeMustBeDeleted;
   //fFile = new TFile(*(c.fFile));
   fListOfObjectsToBeDeleted = c.fListOfObjectsToBeDeleted;
 }
@@ -79,12 +82,14 @@ AliTPCCalibViewer::AliTPCCalibViewer(TTree* tree)
                   :TObject(),
                    fTree(0),
                    fFile(0),
-                   fListOfObjectsToBeDeleted(0)
+                   fListOfObjectsToBeDeleted(0),
+                   fTreeMustBeDeleted(0)
 {
   //
   // Constructor that initializes the calibration viewer
   //
   fTree = tree;
+  fTreeMustBeDeleted = kFALSE;
   fListOfObjectsToBeDeleted = new TObjArray();
 }
 
@@ -93,7 +98,8 @@ AliTPCCalibViewer::AliTPCCalibViewer(char* fileName, char* treeName)
                   :TObject(),
                    fTree(0),
                    fFile(0),
-                   fListOfObjectsToBeDeleted(0)
+                   fListOfObjectsToBeDeleted(0),
+                   fTreeMustBeDeleted(0)
 {
    //
    // Constructor to initialize the calibration viewer
@@ -101,6 +107,7 @@ AliTPCCalibViewer::AliTPCCalibViewer(char* fileName, char* treeName)
    //
    fFile = new TFile(fileName, "read");
    fTree = (TTree*) fFile->Get(treeName);
+   fTreeMustBeDeleted = kTRUE;
    fListOfObjectsToBeDeleted = new TObjArray();
 }
                    
@@ -112,6 +119,7 @@ AliTPCCalibViewer & AliTPCCalibViewer::operator =(const AliTPCCalibViewer & para
    // not yet working!!!
    //
    fTree = param.fTree;
+   fTreeMustBeDeleted = param.fTreeMustBeDeleted;
    //fFile = new TFile(*(param.fFile));
    fListOfObjectsToBeDeleted = param.fListOfObjectsToBeDeleted;
    return (*this);
@@ -122,12 +130,13 @@ AliTPCCalibViewer::~AliTPCCalibViewer()
 {
    //
    // AliTPCCalibViewer destructor
-   // all objects will be deleted, the file will be closed, the pictures will disapear
+   // all objects will be deleted, the file will be closed, the pictures will disappear
    //
-   /*if (fTree) {
-      delete fTree;
-      fTree = 0;
-   }*/
+   if (fTree && fTreeMustBeDeleted) {
+      fTree->SetCacheSize(0);
+      fTree->Delete();
+      //delete fTree;
+   }
    if (fFile) {
       fFile->Close();
       fFile = 0;
@@ -137,6 +146,24 @@ AliTPCCalibViewer::~AliTPCCalibViewer()
       //cout << "Index " << i << " trying to delete the following object: " << fListOfObjectsToBeDeleted->At(i)->GetName() << "..."<< endl;
       delete fListOfObjectsToBeDeleted->At(i);
    }
+   delete fListOfObjectsToBeDeleted;
+}
+
+//_____________________________________________________________________________
+void AliTPCCalibViewer::Delete(Option_t* option) {
+   //
+   // Should be called from AliTPCCalibViewerGUI class only.
+   // If you use Delete() do not call the destructor.
+   // All objects (except those contained in fListOfObjectsToBeDeleted) will be deleted, the file will be closed.
+   //
+   
+   option = option;  // to avoid warnings on compiling   
+   if (fTree && fTreeMustBeDeleted) {
+      fTree->SetCacheSize(0);
+      fTree->Delete();
+   }
+   if (fFile)
+      delete fFile;
    delete fListOfObjectsToBeDeleted;
 }
 
@@ -536,6 +563,7 @@ AliTPCCalPad* AliTPCCalibViewer::GetCalPad(const char* desiredData, char* cuts, 
    Int_t entries = 0;
    for (Int_t sec = 0; sec < 72; sec++) {
       entries = EasyDraw1D(drawStr.Data(), (Int_t)sec, cuts, "goff");
+      if (entries == -1) return 0;
       for (Int_t i = 0; i < entries; i++) 
          createdCalPad->GetCalROC(sec)->SetValue((UInt_t)(fTree->GetV2()[i]), (Float_t)(fTree->GetV1()[i]));
    }
@@ -552,6 +580,7 @@ AliTPCCalROC* AliTPCCalibViewer::GetCalROC(const char* desiredData, UInt_t secto
    TString drawStr(desiredData);
    drawStr.Append(":channel~");
    Int_t entries = EasyDraw1D(drawStr.Data(), (Int_t)sector, cuts, "goff");
+   if (entries == -1) return 0;
    AliTPCCalROC * createdROC = new AliTPCCalROC(sector);
    for (Int_t i = 0; i < entries; i++) 
       createdROC->SetValue((UInt_t)(fTree->GetV2()[i]), fTree->GetV1()[i]);
@@ -611,6 +640,8 @@ TObjArray* AliTPCCalibViewer::GetListOfNormalizationVariables(Bool_t printList) 
    arr->Add(new TObjString("LFitIntern_4_8.fElements"));
    arr->Add(new TObjString("GFitIntern_Lin.fElements"));
    arr->Add(new TObjString("GFitIntern_Par.fElements"));
+   arr->Add(new TObjString("FitLinLocal"));
+   arr->Add(new TObjString("FitLinGlobal"));
 
    if (printList) {
       TIterator* iter = arr->MakeIterator();
@@ -658,6 +689,75 @@ TObjArray* AliTPCCalibViewer::GetArrayOfCalPads(){
    delete listOfCalPads;
    return calPadsArray;
 }
+
+
+TString* AliTPCCalibViewer::Fit(const char* drawCommand, const char* formula, const char* cuts, Double_t & chi2, TVectorD &fitParam, TMatrixD &covMatrix){
+   //
+   // fit an arbitrary function, specified by formula into the data, specified by drawCommand and cuts
+   // returns chi2, fitParam and covMatrix
+   // returns TString with fitted formula
+   //
+   
+   TString formulaStr(formula); 
+   TString drawStr(drawCommand);
+   TString cutStr(cuts);
+   
+   // abbreviations:
+   drawStr.ReplaceAll("~",".fElements");
+   cutStr.ReplaceAll("~",".fElements");
+   formulaStr.ReplaceAll("~", ".fElements");
+   
+   formulaStr.ReplaceAll("++", "~");
+   TObjArray* formulaTokens = formulaStr.Tokenize("~"); 
+   Int_t dim = formulaTokens->GetEntriesFast();
+   
+   fitParam.ResizeTo(dim);
+   covMatrix.ResizeTo(dim,dim);
+   
+   TLinearFitter* fitter = new TLinearFitter(dim+1, Form("hyp%d",dim));
+   fitter->StoreData(kTRUE);   
+   fitter->ClearPoints();
+   
+   Int_t entries = Draw(drawStr.Data(), cutStr.Data(), "goff");
+   if (entries == -1) return new TString("An ERROR has occured during fitting!");
+   Double_t **values = new Double_t*[dim+1] ; 
+   
+   for (Int_t i = 0; i < dim + 1; i++){
+      Int_t centries = 0;
+      if (i < dim) centries = fTree->Draw(((TObjString*)formulaTokens->At(i))->GetName(), cutStr.Data(), "goff");
+      else  centries = fTree->Draw(drawStr.Data(), cutStr.Data(), "goff");
+      
+      if (entries != centries) return new TString("An ERROR has occured during fitting!");
+      values[i] = new Double_t[entries];
+      memcpy(values[i],  fTree->GetV1(), entries*sizeof(Double_t)); 
+   }
+   
+   // add points to the fitter
+   for (Int_t i = 0; i < entries; i++){
+      Double_t x[1000];
+      for (Int_t j=0; j<dim;j++) x[j]=values[j][i];
+      fitter->AddPoint(x, values[dim][i], 1);
+   }
+
+   fitter->Eval();
+   fitter->GetParameters(fitParam);
+   fitter->GetCovarianceMatrix(covMatrix);
+   chi2 = fitter->GetChisquare();
+   chi2 = chi2;
+   
+   TString *preturnFormula = new TString(Form("( %f+",fitParam[0])), &returnFormula = *preturnFormula; 
+   
+   for (Int_t iparam = 0; iparam < dim; iparam++) {
+     returnFormula.Append(Form("%s*(%f)",((TObjString*)formulaTokens->At(iparam))->GetName(),fitParam[iparam+1]));
+     if (iparam < dim-1) returnFormula.Append("+");
+   }
+   returnFormula.Append(" )");
+   delete formulaTokens;
+   delete fitter;
+   delete[] values;
+   return preturnFormula;
+}
+
 
 
 void AliTPCCalibViewer::MakeTreeWithObjects(const char * fileName, TObjArray * array, const char * mapFileName) {

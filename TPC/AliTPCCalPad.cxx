@@ -17,7 +17,8 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-//  TPC calibration class for parameters which saved per pad                 //
+//  TPC calibration class for parameters which are saved per pad             //
+//  Each AliTPCCalPad consists of 72 AliTPCCalROC-objects                    //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -131,11 +132,25 @@ void AliTPCCalPad::Copy(TObject &c) const
   TObject::Copy(c);
 }
 
+
+void AliTPCCalPad::SetCalROC(AliTPCCalROC* roc, Int_t sector){
+   //
+   // Set AliTPCCalROC copies values from 'roc'
+   // if sector == -1 the sector specified in 'roc' is used
+   // else sector specified in 'roc' is ignored and specified sector is filled
+   //
+   if (sector == -1) sector = roc->GetSector();
+   for (UInt_t ichannel = 0; ichannel < roc->GetNchannels(); ichannel++) 
+      fROC[sector]->SetValue(ichannel, roc->GetValue(ichannel));
+}
+
+
+
 //_____________________________________________________________________________
 void AliTPCCalPad::Add(Float_t c1)
 {
     //
-    // add constant for all channels of all ROCs
+    // add constant c1 to all channels of all ROCs
     //
 
     for (Int_t isec = 0; isec < kNsec; isec++) {
@@ -148,9 +163,9 @@ void AliTPCCalPad::Add(Float_t c1)
 //_____________________________________________________________________________
 void AliTPCCalPad::Multiply(Float_t c1)
 {
-    //
-    // multiply constant for all channels of all ROCs
-    //
+  //
+  // multiply each channel of all ROCs with c1
+  //    
     for (Int_t isec = 0; isec < kNsec; isec++) {
 	if (fROC[isec]){
 	    fROC[isec]->Multiply(c1);
@@ -161,9 +176,10 @@ void AliTPCCalPad::Multiply(Float_t c1)
 //_____________________________________________________________________________
 void AliTPCCalPad::Add(const AliTPCCalPad * pad, Double_t c1)
 {
-    //
-    // add calpad channel by channel multiplied by c1 - all ROCs
-    //
+  //
+  // multiply AliTPCCalPad 'pad' by c1 and add each channel to the coresponing channel in all ROCs
+  //  - pad by pad -
+  //
     for (Int_t isec = 0; isec < kNsec; isec++) {
 	if (fROC[isec]){
 	    fROC[isec]->Add(pad->GetCalROC(isec),c1);
@@ -174,10 +190,11 @@ void AliTPCCalPad::Add(const AliTPCCalPad * pad, Double_t c1)
 //_____________________________________________________________________________
 void AliTPCCalPad::Multiply(const AliTPCCalPad * pad)
 {
-    //
-    // multiply calpad channel by channel - all ROCs
-    //
-    for (Int_t isec = 0; isec < kNsec; isec++) {
+  //
+  // multiply each channel of all ROCs with the coresponding channel of 'pad'
+  //     - pad by pad -
+  //
+   for (Int_t isec = 0; isec < kNsec; isec++) {
 	if (fROC[isec]){
 	    fROC[isec]->Multiply(pad->GetCalROC(isec));
 	}
@@ -187,9 +204,10 @@ void AliTPCCalPad::Multiply(const AliTPCCalPad * pad)
 //_____________________________________________________________________________
 void AliTPCCalPad::Divide(const AliTPCCalPad * pad)
 {
-    //
-    // divide calpad channel by channel - all ROCs
-    //
+  //
+  // divide each channel of all ROCs by the coresponding channel of 'pad'
+  //     - pad by pad -
+  //    
     for (Int_t isec = 0; isec < kNsec; isec++) {
 	if (fROC[isec]){
 	    fROC[isec]->Divide(pad->GetCalROC(isec));
@@ -203,6 +221,7 @@ TGraph  *  AliTPCCalPad::MakeGraph(Int_t type, Float_t ratio){
   //   type=1 - mean
   //        2 - median
   //        3 - LTM
+  //
   Int_t npoints = 0;
   for (Int_t i=0;i<72;i++) if (fROC[i]) npoints++;
   TGraph * graph = new TGraph(npoints);
@@ -236,7 +255,7 @@ TGraph  *  AliTPCCalPad::MakeGraph(Int_t type, Float_t ratio){
 Double_t AliTPCCalPad::GetMeanRMS(Double_t &rms)
 {
     //
-    // Calculate mean an RMS of all rocs
+    // Calculates mean and RMS of all ROCs
     //
     Double_t sum = 0, sum2 = 0, n=0, val=0;
     for (Int_t isec = 0; isec < kNsec; isec++) {
@@ -351,6 +370,7 @@ TH1F * AliTPCCalPad::MakeHisto1D(Float_t min, Float_t max,Int_t type){
   // make 1D histo
   // type -1 = user defined range
   //       0 = nsigma cut nsigma=min
+  //
   if (type>=0){
     if (type==0){
       // nsigma range
@@ -400,6 +420,7 @@ TH2F *AliTPCCalPad::MakeHisto2D(Int_t side){
   // Make 2D graph
   // side  -  specify the side A = 0 C = 1
   // type  -  used types of determination of boundaries in z
+  //
   Float_t kEpsilon = 0.000000000001;
   TH2F * his = new TH2F(GetName(), GetName(), 250,-250,250,250,-250,250);
   AliTPCROC * roc  = AliTPCROC::Instance(); 
@@ -426,11 +447,204 @@ TH2F *AliTPCCalPad::MakeHisto2D(Int_t side){
 }
 
 
+AliTPCCalPad* AliTPCCalPad::LocalFit(const char* padName, Int_t rowRadius, Int_t padRadius, AliTPCCalPad* PadOutliers, Bool_t robust, Double_t chi2Threshold, Double_t robustFraction){
+   //
+   // Loops over all AliTPCCalROCs and performs a localFit in each ROC
+   // AliTPCCalPad with fit-data is returned
+   // rowRadius and padRadius specifies a window around a given pad in one sector. 
+   // The data of this window are fitted with a parabolic function. 
+   // This function is evaluated at the pad's position.
+   // At the edges the window is shifted, so that the specified pad is not anymore in the center of the window. 
+   // rowRadius  -  radius - rows to be used for smoothing
+   // padradius  -  radius - pads to be used for smoothing
+   // ROCoutlier -  map of outliers - pads not to be used for local smoothing
+   // robust     -  robust method of fitting  - (much slower)
+   // chi2Threshold: Threshold for chi2 when EvalRobust is called
+   // robustFraction: Fraction of data that will be used in EvalRobust
+   //
+   //
+   AliTPCCalPad* pad = new AliTPCCalPad(padName, padName);
+   for (Int_t isec = 0; isec < 72; isec++){
+      if (PadOutliers)
+         SetCalROC(GetCalROC(isec)->LocalFit(rowRadius, padRadius, PadOutliers->GetCalROC(isec), robust, chi2Threshold, robustFraction));
+      else 
+         SetCalROC(GetCalROC(isec)->LocalFit(rowRadius, padRadius, 0, robust, chi2Threshold, robustFraction));
+   }
+   return pad;
+}
+
+
+AliTPCCalPad* AliTPCCalPad::GlobalFit(const char* padName, AliTPCCalPad* PadOutliers, Bool_t robust, Int_t fitType, Double_t chi2Threshold, Double_t robustFraction){
+   //
+   // Loops over all AliTPCCalROCs and performs a globalFit in each ROC
+   // AliTPCCalPad with fit-data is returned
+   // chi2Threshold: Threshold for chi2 when EvalRobust is called
+   // robustFraction: Fraction of data that will be used in EvalRobust
+   // chi2Threshold: Threshold for chi2 when EvalRobust is called
+   // robustFraction: Fraction of data that will be used in EvalRobust
+   //
+   AliTPCCalPad* pad = new AliTPCCalPad(padName, padName);
+   TVectorD fitParam(0);
+   TMatrixD covMatrix(0,0);
+   Float_t chi2 = 0;
+   for (Int_t isec = 0; isec < 72; isec++){
+      if (PadOutliers)
+         GetCalROC(isec)->GlobalFit(PadOutliers->GetCalROC(isec), robust, fitParam, covMatrix, chi2, fitType, chi2Threshold, robustFraction);
+      else 
+         GetCalROC(isec)->GlobalFit(0, robust, fitParam, covMatrix, chi2, fitType, chi2Threshold, robustFraction);
+      pad->SetCalROC(AliTPCCalROC::CreateGlobalFitCalROC(fitParam, isec));
+   }
+   return pad;
+}
+
+
+void AliTPCCalPad::GlobalSidesFit(const AliTPCCalPad* PadOutliers, TVectorD &fitParamSideA, TVectorD &fitParamSideC,TMatrixD &covMatrixSideA, TMatrixD &covMatrixSideC, Float_t & chi2SideA, Float_t & chi2SideC, Int_t fitType, Bool_t robust, Double_t chi2Threshold, Double_t robustFraction){
+  //
+  // Makes a  GlobalFit over each side and return fit-parameters, covariance and chi2 for each side
+  // fitType == 0: fit plane function
+  // fitType == 1: fit parabolic function
+  // PadOutliers - pads with value !=0 are not used in fitting procedure
+  // chi2Threshold: Threshold for chi2 when EvalRobust is called
+  // robustFraction: Fraction of data that will be used in EvalRobust
+  //
+  TLinearFitter* fitterGA = 0;
+  TLinearFitter* fitterGC = 0;
+  
+  if (fitType  == 1) {
+    fitterGA = new TLinearFitter (6,"x0++x1++x2++x3++x4++x5");
+    fitterGC = new TLinearFitter (6,"x0++x1++x2++x3++x4++x5");
+  }
+  else {
+    fitterGA = new TLinearFitter(3,"x0++x1++x2");
+    fitterGC = new TLinearFitter(3,"x0++x1++x2");
+  }
+  fitterGA->StoreData(kTRUE);   
+  fitterGC->StoreData(kTRUE);   
+  fitterGA->ClearPoints();
+  fitterGC->ClearPoints();
+  Double_t xx[6];  
+  Int_t    npointsA=0;
+  Int_t    npointsC=0;
+  
+  Float_t localXY[3] = {0}; // pad's position, needed to get the pad's position
+  Float_t lx, ly;  // pads position
+  
+  AliTPCROC* tpcROCinstance = AliTPCROC::Instance();  // to calculate the pad's position
+  
+  // loop over all sectors and pads and read data into fitterGA and fitterGC 
+  if (fitType == 1) {  
+  // parabolic fit
+    fitParamSideA.ResizeTo(6);
+    fitParamSideC.ResizeTo(6);
+    covMatrixSideA.ResizeTo(6,6);
+    covMatrixSideC.ResizeTo(6,6);
+    for (UInt_t isec = 0; isec<72; isec++){
+      for (UInt_t irow = 0; irow < GetCalROC(isec)->GetNrows(); irow++) {
+         for (UInt_t ipad = 0; ipad < GetCalROC(isec)->GetNPads(irow); ipad++) {
+            // fill fitterG
+            tpcROCinstance->GetPositionLocal(isec, irow, ipad, localXY);   // calculate position localXY by sector, pad and row number
+            lx = localXY[0];
+            ly = localXY[1];
+            xx[0] = 1;
+            xx[1] = lx;
+            xx[2] = ly;
+            xx[3] = lx*lx;
+            xx[4] = ly*ly;
+            xx[5] = lx*ly;
+            if (!PadOutliers || PadOutliers->GetCalROC(isec)->GetValue(irow, ipad) != 1) {
+            // if given pad is no outlier, add it to TLinearFitter, decide to which of both
+//                sector  0 - 17: IROC, A
+//                sector 18 - 35: IROC, C
+//                sector 36 - 53: OROC, A
+//                sector 54 - 71: CROC, C
+               if (isec <= 17 || (isec >= 36 && isec <= 53)) { // Side A
+                  npointsA++;
+                  fitterGA->AddPoint(xx, GetCalROC(isec)->GetValue(irow, ipad), 1);  
+               }
+               else { // side C
+                  npointsC++;
+                  fitterGC->AddPoint(xx, GetCalROC(isec)->GetValue(irow, ipad), 1);  
+               }
+            }
+         }
+      }
+    }
+  }
+  else {   
+  // linear fit
+    fitParamSideA.ResizeTo(3);
+    fitParamSideC.ResizeTo(3);
+    covMatrixSideA.ResizeTo(3,3);
+    covMatrixSideC.ResizeTo(3,3);
+    
+    for (UInt_t isec = 0; isec<72; isec++){
+      for (UInt_t irow = 0; irow < GetCalROC(isec)->GetNrows(); irow++) {
+         for (UInt_t ipad = 0; ipad < GetCalROC(isec)->GetNPads(irow); ipad++) {
+            // fill fitterG
+            tpcROCinstance->GetPositionLocal(isec, irow, ipad, localXY);   // calculate position localXY by sector, pad and row number
+            lx = localXY[0];
+            ly = localXY[1];
+            xx[0] = 1;
+            xx[1] = lx;
+            xx[2] = ly;
+            if (!PadOutliers || PadOutliers->GetCalROC(isec)->GetValue(irow, ipad) != 1) {
+            // if given pad is no outlier, add it to TLinearFitter, decide to which of both
+//                sector  0 - 17: IROC, A
+//                sector 18 - 35: IROC, C
+//                sector 36 - 53: OROC, A
+//                sector 54 - 71: CROC, C
+               if (isec <= 17 || (isec >= 36 && isec <= 53)) { 
+               // Side A
+                  npointsA++;
+                  fitterGA->AddPoint(xx, GetCalROC(isec)->GetValue(irow, ipad), 1);  
+               }
+               else { 
+               // side C
+                  npointsC++;
+                  fitterGC->AddPoint(xx, GetCalROC(isec)->GetValue(irow, ipad), 1);  
+               }
+            }
+         }
+      }
+    }
+  }    
+  
+  fitterGA->Eval();
+  fitterGC->Eval();
+  fitterGA->GetParameters(fitParamSideA);
+  fitterGC->GetParameters(fitParamSideC);
+  fitterGA->GetCovarianceMatrix(covMatrixSideA);
+  fitterGC->GetCovarianceMatrix(covMatrixSideC);
+  if (fitType == 1){
+    chi2SideA = fitterGA->GetChisquare()/(npointsA-6.);
+    chi2SideC = fitterGC->GetChisquare()/(npointsC-6.);
+  }
+  else {
+   chi2SideA = fitterGA->GetChisquare()/(npointsA-3.);
+   chi2SideC = fitterGC->GetChisquare()/(npointsC-3.);
+  }
+  if (robust && chi2SideA > chi2Threshold) {
+    //    std::cout << "robust fitter called... " << std::endl;
+    fitterGA->EvalRobust(robustFraction);
+    fitterGA->GetParameters(fitParamSideA);
+  }
+  if (robust && chi2SideC > chi2Threshold) {
+    //    std::cout << "robust fitter called... " << std::endl;
+    fitterGC->EvalRobust(robustFraction);
+    fitterGC->GetParameters(fitParamSideC);
+  }
+  delete fitterGA;
+  delete fitterGC;
+}
 
 
 void AliTPCCalPad::MakeTree(const char * fileName, TObjArray * array, const char * mapFileName, AliTPCCalPad* outlierPad, Float_t ltmFraction) {
   //
-  // Write tree with all available information
+  // Write a tree with all available information
+  // im mapFileName is speciefied, the Map information are also written to the tree
+  // pads specified in outlierPad are not used for calculating statistics
+  //  - this function will be moved to AliTPCCalibViewer - 
+  //  - DO NOT USE THIS FUNCTION ANY MORE - 
   //
    AliTPCROC* tpcROCinstance = AliTPCROC::Instance();
 
@@ -621,7 +835,6 @@ void AliTPCCalPad::MakeTree(const char * fileName, TObjArray * array, const char
       delete[] posArray;
       delete[] vectorArray;
    }
-   
    delete[] names;
    if (mapFileName) {
       delete mapIROCs;

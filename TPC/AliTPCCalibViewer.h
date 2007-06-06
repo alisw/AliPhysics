@@ -27,6 +27,7 @@ public:
    AliTPCCalibViewer(char* fileName, char* treeName = "calPads");
    AliTPCCalibViewer &operator = (const AliTPCCalibViewer & param);
    virtual ~AliTPCCalibViewer();
+   virtual void Delete(Option_t* option = "");
    
    virtual void     Draw(Option_t* opt="") { fTree->Draw(opt); }
    virtual Long64_t Draw(const char* varexp, const TCut& selection, Option_t* option = "", Long64_t nentries = 1000000000, Long64_t firstentry = 0) { return fTree->Draw(varexp, selection, option, nentries, firstentry); };
@@ -53,11 +54,15 @@ public:
    TFriendElement* AddFriend(const char* treename, const char* filename) {return fTree->AddFriend(treename, filename);};
    TFriendElement* AddFriend(TTree* tree, const char* alias, Bool_t warn=kFALSE) {return fTree->AddFriend(tree, alias, warn);};
    TFriendElement* AddFriend(const char* treename, TFile* file) {return fTree->AddFriend(treename, file);};
-   
+   TTree * GetTree() { return fTree;}
+
+   TString* Fit(const char* drawCommand, const char* formula, const char* cuts, Double_t & chi2, TVectorD &fitParam, TMatrixD &covMatrix);
+      
 protected:
    TTree* fTree;     // tree containing visualization data (e.g. written by AliTPCCalPad::MakeTree(...)
    TFile* fFile;     // file that contains a calPads tree (e.g. written by AliTPCCalPad::MakeTree(...)
    TObjArray* fListOfObjectsToBeDeleted;  //Objects, that will be deleted when the destructor ist called
+   Bool_t fTreeMustBeDeleted;  // decides weather the tree must be deleted in destructor or not 
    
    ClassDef(AliTPCCalibViewer,1)    //  TPC calibration viewer class
 };

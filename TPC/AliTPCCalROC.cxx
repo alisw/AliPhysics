@@ -16,8 +16,8 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-//  Calibration base class for a single ROC                                  //
-//  Contains one float value per pad                                         //
+//     Calibration base class for a single ROC                               //
+//     Contains one float value per pad                                      //
 //     mapping of the pads taken form AliTPCROC                              //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
@@ -123,7 +123,9 @@ AliTPCCalROC::~AliTPCCalROC()
 
 void AliTPCCalROC::Streamer(TBuffer &R__b)
 {
+   //
    // Stream an object of class AliTPCCalROC.
+   //
    if (R__b.IsReading()) {
       AliTPCCalROC::Class()->ReadBuffer(R__b, this);
       fIndexes =  AliTPCROC::Instance()->GetRowIndexes(fSector);
@@ -132,29 +134,29 @@ void AliTPCCalROC::Streamer(TBuffer &R__b)
    }
 }
 
-//  //
-//   // algebra
-//   void Add(Float_t c1);
-//   void Multiply(Float_t c1);
-//   void Add(const AliTPCCalROC * roc, Double_t c1 = 1);
-//   void Divide(const AliTPCCalROC * roc);   
+
+// algebra fuctions:
 
 void AliTPCCalROC::Add(Float_t c1){
   //
-  // add constant
+  // add c1 to each channel of the ROC  
   //
   for (UInt_t  idata = 0; idata< fNChannels; idata++) fData[idata]+=c1;
 }
+
+
 void AliTPCCalROC::Multiply(Float_t c1){
   //
-  // add constant
+  // multiply each channel of the ROC with c1
   //
   for (UInt_t  idata = 0; idata< fNChannels; idata++) fData[idata]*=c1;
 }
 
+
 void AliTPCCalROC::Add(const AliTPCCalROC * roc, Double_t c1){
   //
-  // add values 
+  // multiply AliTPCCalROC roc by c1 and add each channel to the coresponing channel in the ROC
+  //  - pad by pad 
   //
   for (UInt_t  idata = 0; idata< fNChannels; idata++){
     fData[idata]+=roc->fData[idata]*c1;
@@ -164,7 +166,8 @@ void AliTPCCalROC::Add(const AliTPCCalROC * roc, Double_t c1){
 
 void AliTPCCalROC::Multiply(const AliTPCCalROC*  roc) {
   //
-  // multiply values - per by pad
+  // multiply each channel of the ROC with the coresponding channel of 'roc'
+  //     - pad by pad -
   //
   for (UInt_t  idata = 0; idata< fNChannels; idata++){
     fData[idata]*=roc->fData[idata];
@@ -174,7 +177,8 @@ void AliTPCCalROC::Multiply(const AliTPCCalROC*  roc) {
 
 void AliTPCCalROC::Divide(const AliTPCCalROC*  roc) {
   //
-  // divide values 
+  // divide each channel of the ROC by the coresponding channel of 'roc'
+  //     - pad by pad -
   //
   Float_t kEpsilon=0.00000000000000001;
   for (UInt_t  idata = 0; idata< fNChannels; idata++){
@@ -184,6 +188,10 @@ void AliTPCCalROC::Divide(const AliTPCCalROC*  roc) {
 }
 
 Double_t AliTPCCalROC::GetMean(AliTPCCalROC* outlierROC) {
+   //
+   //  returns the mean value of the ROC
+   //  pads with value != 0 in outlierROC are not used for the calculation
+   //
    if (!outlierROC) return TMath::Mean(fNChannels, fData);
    Double_t *ddata = new Double_t[fNChannels];
    Int_t NPoints = 0;
@@ -199,6 +207,10 @@ Double_t AliTPCCalROC::GetMean(AliTPCCalROC* outlierROC) {
 }
 
 Double_t AliTPCCalROC::GetMedian(AliTPCCalROC* outlierROC) {
+   //
+   //  returns the median value of the ROC
+   //  pads with value != 0 in outlierROC are not used for the calculation
+   //
    if (!outlierROC) return TMath::Median(fNChannels, fData);
    Double_t *ddata = new Double_t[fNChannels];
    Int_t NPoints = 0;
@@ -214,6 +226,10 @@ Double_t AliTPCCalROC::GetMedian(AliTPCCalROC* outlierROC) {
 }
 
 Double_t AliTPCCalROC::GetRMS(AliTPCCalROC* outlierROC) {
+   //
+   //  returns the RMS value of the ROC
+   //  pads with value != 0 in outlierROC are not used for the calculation
+   //
    if (!outlierROC) return TMath::RMS(fNChannels, fData);
    Double_t *ddata = new Double_t[fNChannels];
    Int_t NPoints = 0;
@@ -230,7 +246,8 @@ Double_t AliTPCCalROC::GetRMS(AliTPCCalROC* outlierROC) {
 
 Double_t AliTPCCalROC::GetLTM(Double_t *sigma, Double_t fraction, AliTPCCalROC* outlierROC){
   //
-  //  Calculate LTM mean and sigma
+  //  returns the LTM and sigma
+  //  pads with value != 0 in outlierROC are not used for the calculation
   //
   Double_t *ddata = new Double_t[fNChannels];
   Double_t mean=0, lsigma=0;
@@ -254,6 +271,7 @@ TH1F * AliTPCCalROC::MakeHisto1D(Float_t min, Float_t max,Int_t type){
   // type -1 = user defined range
   //       0 = nsigma cut nsigma=min
   //       1 = delta cut around median delta=min
+  //
   if (type>=0){
     if (type==0){
       // nsigma range
@@ -301,6 +319,7 @@ TH2F * AliTPCCalROC::MakeHisto2D(Float_t min, Float_t max,Int_t type){
   // type -1 = user defined range
   //       0 = nsigma cut nsigma=min
   //       1 = delta cut around median delta=min
+  //
   if (type>=0){
     if (type==0){
       // nsigma range
@@ -352,6 +371,7 @@ TH2F * AliTPCCalROC::MakeHistoOutliers(Float_t delta, Float_t fraction, Int_t ty
   // fraction - fraction of values used to define sigma
   // delta - in mode 0 - nsigma cut
   //            mode 1 - delta cut
+  //
   Double_t sigma;
   Float_t mean  = GetLTM(&sigma,fraction);  
   if (type==0) delta*=sigma; 
@@ -531,35 +551,39 @@ void AliTPCCalROC::Test() {
 }
 
 
-AliTPCCalROC * AliTPCCalROC::LocalFit(Int_t rowRadius, Int_t padRadius, AliTPCCalROC* ROCoutliers, Bool_t robust) {
+AliTPCCalROC * AliTPCCalROC::LocalFit(Int_t rowRadius, Int_t padRadius, AliTPCCalROC* ROCoutliers, Bool_t robust, Double_t chi2Threshold, Double_t robustFraction) {
   //
   // MakeLocalFit - smoothing
+  // returns a AliTPCCalROC with smoothed data
+  // rowRadius and padRadius specifies a window around a given pad. 
+  // The data of this window are fitted with a parabolic function. 
+  // This function is evaluated at the pad's position.
+  // At the edges the window is shifted, so that the specified pad is not anymore in the center of the window. 
   // rowRadius  -  radius - rows to be used for smoothing
   // padradius  -  radius - pads to be used for smoothing
   // ROCoutlier -  map of outliers - pads not to be used for local smoothing
   // robust     -  robust method of fitting  - (much slower)
-  
+  // chi2Threshold: Threshold for chi2 when EvalRobust is called
+  // robustFraction: Fraction of data that will be used in EvalRobust
+  //
   AliTPCCalROC * ROCfitted = new AliTPCCalROC(fSector);
-  TLinearFitter fitterQ(6,"x0++x1++x2++x3++x4++x5");
+  TLinearFitter fitterQ(6,"hyp5");
+   // TLinearFitter fitterQ(6,"x0++x1++x2++x3++x4++x5");
   fitterQ.StoreData(kTRUE);
   for (UInt_t row=0; row < GetNrows(); row++) {
     //std::cout << "Entering row " << row << " of " << GetNrows() << " @ sector "<< fSector << " for local fitting... "<< std::endl;
     for (UInt_t pad=0; pad < GetNPads(row); pad++)
-      ROCfitted->SetValue(row, pad, GetNeighbourhoodValue(&fitterQ, row, pad, rowRadius, padRadius, ROCoutliers, robust));
+      ROCfitted->SetValue(row, pad, GetNeighbourhoodValue(&fitterQ, row, pad, rowRadius, padRadius, ROCoutliers, robust, chi2Threshold, robustFraction));
   }
   return ROCfitted;
 }
 
 
-Double_t AliTPCCalROC::GetNeighbourhoodValue(TLinearFitter* fitterQ, Int_t row, Int_t pad, Int_t rRadius, Int_t pRadius, AliTPCCalROC* ROCoutliers, Bool_t robust) {
+Double_t AliTPCCalROC::GetNeighbourhoodValue(TLinearFitter* fitterQ, Int_t row, Int_t pad, Int_t rRadius, Int_t pRadius, AliTPCCalROC* ROCoutliers, Bool_t robust, Double_t chi2Threshold, Double_t robustFraction) {
   //
-  //  AliTPCCalROC::GetNeighbourhoodValue - smoothing (PRIVATE)
-  // rowRadius  -  radius - rows to be used for smoothing
-  // padradius  -  radius - pads to be used for smoothing
-  // ROCoutlier -  map of outliers - pads not to be used for local smoothing
-  // robust     -  robust method of fitting  - (much slower)
-  
-
+  // AliTPCCalROC::GetNeighbourhoodValue - smoothing - PRIVATE
+  // in this function the fit for LocalFit is done
+  //
 
   fitterQ->ClearPoints();
   TVectorD fitParam(6);
@@ -587,14 +611,14 @@ Double_t AliTPCCalROC::GetNeighbourhoodValue(TLinearFitter* fitterQ, Int_t row, 
     tpcROCinstance->GetPositionLocal(fSector, r, p, localXY);   // calculate position localXY by pad and row number
     dlx = lPad[0] - localXY[0];
     dly = lPad[1] - localXY[1];
-    xx[0] = 1;
+    //xx[0] = 1;
     xx[1] = dlx;
     xx[2] = dly;
     xx[3] = dlx*dlx;
     xx[4] = dly*dly;
     xx[5] = dlx*dly;
     if (!ROCoutliers || ROCoutliers->GetValue(r,p) != 1) {
-      fitterQ->AddPoint(xx, GetValue(r, p), 1);
+      fitterQ->AddPoint(&xx[1], GetValue(r, p), 1);
       npoints++;
     }
   }
@@ -609,17 +633,16 @@ Double_t AliTPCCalROC::GetNeighbourhoodValue(TLinearFitter* fitterQ, Int_t row, 
   fitterQ->Eval();
   fitterQ->GetParameters(fitParam);
   Float_t chi2Q = 0;
-  chi2Q = fitterQ->GetChisquare()/(npoints-6.);
+  if (robust) chi2Q = fitterQ->GetChisquare()/(npoints-6.);
   //if (robust) chi2Q = fitterQ->GetChisquare()/(npoints-6.);
-  if (robust && chi2Q > 5) {
+  if (robust && chi2Q > chi2Threshold) {
     //std::cout << "robust fitter called... " << std::endl;
-    fitterQ->EvalRobust(0.7);
+    fitterQ->EvalRobust(robustFraction);
     fitterQ->GetParameters(fitParam);
   }
   Double_t value = fitParam[0];
   
   //if (value < 0) std::cerr << "negative fit-value " << value << " in sector "<< this->fSector << " @ row: " << row << " and pad: " << pad << ", with fitter Chi2 = " << chi2Q <<  std::endl;
-  
   return value;
 }
 
@@ -628,12 +651,11 @@ Double_t AliTPCCalROC::GetNeighbourhoodValue(TLinearFitter* fitterQ, Int_t row, 
 
 void AliTPCCalROC::GetNeighbourhood(TArrayI* &rowArray, TArrayI* &padArray, Int_t row, Int_t pad, Int_t rRadius, Int_t pRadius) {
   //
-  //
+  // AliTPCCalROC::GetNeighbourhood - PRIVATE
+  // in this function the window for LocalFit is determined
   //
   rowArray = new TArrayI((2*rRadius+1)*(2*pRadius+1));
   padArray = new TArrayI((2*rRadius+1)*(2*pRadius+1));
-  //Int_t* rowArrayTemp = rowArray->GetArray();
-  //Int_t* padArrayTemp = padArray->GetArray();
   
   Int_t rmin = row - rRadius;
   UInt_t rmax = row + rRadius;
@@ -680,14 +702,16 @@ void AliTPCCalROC::GetNeighbourhood(TArrayI* &rowArray, TArrayI* &padArray, Int_
 
 
 
-void AliTPCCalROC::GlobalFit(const AliTPCCalROC* ROCoutliers, Bool_t robust, TVectorD &fitParam, TMatrixD &covMatrix, Float_t & chi2, Int_t fitType){
+void AliTPCCalROC::GlobalFit(const AliTPCCalROC* ROCoutliers, Bool_t robust, TVectorD &fitParam, TMatrixD &covMatrix, Float_t & chi2, Int_t fitType, Double_t chi2Threshold, Double_t robustFraction){
   //
-  // Makes global fit  
-  // do GlobalFit for given Secotr and return fit-parameters, covariance, and whatever
-  // fitType == 0: fit plane
-  // fitType == 1: fit parabolic
-  // ROCoutliers - pads signed=1 - not used in fitting procedure
-   
+  // Makes a  GlobalFit for the given secotr and return fit-parameters, covariance and chi2
+  // The origin of the fit function is the center of the ROC!
+  // fitType == 0: fit plane function
+  // fitType == 1: fit parabolic function
+  // ROCoutliers - pads with value !=0 are not used in fitting procedure
+  // chi2Threshold: Threshold for chi2 when EvalRobust is called
+  // robustFraction: Fraction of data that will be used in EvalRobust
+  //
   TLinearFitter* fitterG = 0;
   Double_t xx[6];
   
@@ -754,23 +778,20 @@ void AliTPCCalROC::GlobalFit(const AliTPCCalROC* ROCoutliers, Bool_t robust, TVe
   if (fitType == 1)
     chi2 = fitterG->GetChisquare()/(npoints-6.);
   else chi2 = fitterG->GetChisquare()/(npoints-3.);
-  if (robust && chi2 > 5) {
+  if (robust && chi2 > chi2Threshold) {
     //    std::cout << "robust fitter called... " << std::endl;
-    fitterG->EvalRobust(0.7);
+    fitterG->EvalRobust(robustFraction);
     fitterG->GetParameters(fitParam);
   }
   delete fitterG;
 }
 
 
-//
 AliTPCCalROC* AliTPCCalROC::CreateGlobalFitCalROC(TVectorD &fitParam, Int_t sector){
   //
-  //
   // Create ROC with global fit parameters
-  // fitType == 0: fit plane
-  // fitType == 1: fit parabolic
-  // loop over all channels and write fit values into ROCfitted
+  // The origin of the fit function is the center of the ROC!
+  // loop over all channels, write fit values into new ROC and return it
   //
   Float_t dlx, dly;
   Float_t centerPad[3] = {0};
