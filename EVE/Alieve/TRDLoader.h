@@ -3,7 +3,7 @@
 
 ////////////////////////////////////////////////////////////////////////
 //                                                                      // - ALIEVE implementation -
-// Loader for the TRD detector
+// Loader for the TRD detector - base class 
 //    - TRDLoader - loader of TRD data (simulation + measured)
 //    - TRDLoaderEditor - UI
 //
@@ -14,10 +14,6 @@
 #include <Reve/RenderElement.h>
 #endif
 
-#ifndef ROOT_TNamed
-#include <TNamed.h>
-#endif
-
 #ifndef ROOT_TString
 #include <TString.h>
 #endif
@@ -26,11 +22,9 @@
 #include <TGedFrame.h>
 #endif
 
-class AliRunLoader;
 class AliTRDv1;
 class AliTRDgeometry;
 
-class TGCheckButton;
 class TGNumberEntry;
 class TGColorSelect;
 class TGTextEntry;
@@ -40,30 +34,33 @@ namespace Reve {
 }
 namespace Alieve {
 	class TRDChamber;
-	enum DataTypes{
+	class TRDLoaderManager;
+	enum TRDDataTypes{
 		kHits = 0,
 		kDigits = 1,
 		kClusters = 2,
-		kESDs = 3 
+		kTracks = 3,
+		kRawRoot = 4,
+		kRawData = 5
 	};
-	class TRDLoader : public Reve::RenderElement, public TNamed
+	class TRDLoader : public Reve::RenderElementList
 	{
 	friend class TRDLoaderEditor;
 	public:
-		TRDLoader(const Text_t* n="TRDLoader", const Text_t* t=0);
+		TRDLoader(const Text_t* n="TRDLoader", const Text_t* t=0x0);
 		~TRDLoader();
-
+		virtual void 		Paint(Option_t *option="");
+		virtual void		SetDataType(TRDDataTypes type);
 	protected:
 		virtual void		AddChambers(int sm=-1, int stk=-1, int ly=-1);
 		virtual TRDChamber*	GetChamber(int d);
 		virtual Bool_t	GoToEvent(int ev);
 		virtual Bool_t	LoadClusters(TTree *tC);
 		virtual Bool_t	LoadDigits(TTree *tD);
-		virtual Bool_t	LoadHits(TTree *tH);
 		virtual Bool_t	LoadTracklets(TTree *tT);
 		virtual Bool_t	Open(const char *file, const char *dir = ".");
 		virtual void		Unload();
-		
+
 	protected:
 		Bool_t	kLoadHits, kLoadDigits, kLoadClusters, kLoadTracks;
 		Int_t		fSM, fStack, fLy; // supermodule, stack, layer
@@ -71,10 +68,9 @@ namespace Alieve {
 		TString	fDir; // data directory
 		Int_t		fEvent; // current event to be displayed
 			
-	private:
-		AliTRDv1				*fTRD; // the TRD detector
-		AliTRDgeometry	*fGeo; // the TRD geometry
-		AliRunLoader		*fRunLoader; // Run Loader
+
+		AliTRDv1					*fTRD; // the TRD detector
+		AliTRDgeometry		*fGeo; // the TRD geometry
 		
 		ClassDef(TRDLoader, 1) // Alieve Loader class for the TRD detector
 	};
@@ -90,18 +86,17 @@ namespace Alieve {
 		virtual void	AddChambers();
 		virtual void	FileOpen();
 		virtual void	Load();
+		virtual void	SetEvent(Double_t ev){fM->fEvent = (Int_t)ev;}
 		virtual void	SetModel(TObject* obj);
 		
-		
 	protected:
-		TRDLoader* fM;
-  	TGTextEntry *fFile;
-		Reve::RGValuator *fEvent;
-
-		Reve::RGValuator *fSMNumber, *fStackNumber, *fPlaneNumber;
-		TGCheckButton *fLoadHits, *fLoadDigits, *fLoadClusters, *fLoadTracks;
+		TRDLoader					*fM;
+  	TGTextEntry				*fFile;
+		Reve::RGValuator	*fEvent;
+		Reve::RGValuator	*fSMNumber, *fStackNumber, *fPlaneNumber;
 		
 		ClassDef(TRDLoaderEditor,1) // Editor for TRDLoader
 	};
+	
 }
 #endif

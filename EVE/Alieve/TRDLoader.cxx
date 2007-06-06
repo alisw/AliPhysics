@@ -4,7 +4,13 @@
 #include <Reve/RGTopFrame.h>
 #include <Reve/RGValuators.h>
 
-#include <TSystem.h>
+#include "TSystem.h"
+#include "TFile.h"
+#include "TTree.h"
+#include "TString.h"
+#include "TObjString.h"
+#include "TObjArray.h"
+
 #include <TGLabel.h>
 #include <TGButton.h>
 #include <TGTextEntry.h>
@@ -13,9 +19,7 @@
 #include <TGListTree.h>
 #include <TGToolTip.h>
 
-#include "AliRun.h"
-#include "AliRunLoader.h"
-#include "AliLoader.h"
+#include "AliLog.h"
 #include "AliCDBManager.h"
 
 #include "AliTRDv1.h"
@@ -24,6 +28,7 @@
 #include "AliTRDmcmTracklet.h"
 #include "AliTRDdigitsManager.h"
 #include "AliTRDgeometry.h"
+
 
 #include <algorithm>
 
@@ -41,7 +46,7 @@ ClassImp(Alieve::TRDLoaderEditor)
 
 
 //________________________________________________________
-TRDLoader::TRDLoader(const Text_t* n, const Text_t* t) : Reve::RenderElement(), TNamed(n,t), fSM(-1), fStack(-1), fLy(-1), fEvent(0)
+TRDLoader::TRDLoader(const Text_t* n, const Text_t* t) : Reve::RenderElementList(n, t), fSM(-1), fStack(-1), fLy(-1), fEvent(0)
 {	
 	kLoadHits = kFALSE;
 	kLoadDigits = kFALSE;
@@ -49,8 +54,9 @@ TRDLoader::TRDLoader(const Text_t* n, const Text_t* t) : Reve::RenderElement(), 
 	kLoadTracks = kFALSE;
 	fFilename = "";
 	fDir = ".";
-	
-	fRunLoader = 0x0;
+	fEvent  = -1;
+
+	fTRD           = 0x0;	
 	fGeo = new AliTRDgeometry();
 	
 	AliCDBManager *fCDBManager=AliCDBManager::Instance();
@@ -145,42 +151,41 @@ TRDChamber*	TRDLoader::GetChamber(int d)
 //________________________________________________________
 Bool_t	TRDLoader::GoToEvent(int ev)
 {
-	Info("GoToEvent", Form("Event = %d", ev));
+	if(!fChildren.size()){
+		AliWarning("Please select first the chamber that you want to monitor from \"Chamber(s) selector\".");
+		return kFALSE;
+	}
+
 	fEvent = ev;
 
-	if(!fRunLoader) return kFALSE;
-	fRunLoader->UnloadAll("TRD");
 	Unload();
 	
-	fRunLoader->GetEvent(ev);
 	TTree *t = 0x0;
-	if(kLoadHits){
-		fRunLoader->LoadHits("TRD", "READ");
-		t = fRunLoader->GetTreeH("TRD", kFALSE);
-		if(!t) return kFALSE;
-		fTRD->SetTreeAddress();
-		if(!LoadHits(t)) return kFALSE;
+	TFile *f = new TFile(Form("%s/%s", fDir.Data(), fFilename.Data()));
+	if(! f->cd(Form("Event%d", ev))){
+		AliError(Form("Couldn't find event %d in file \"%s/%s\".", ev, fDir.Data(), fFilename.Data()));
+		f->Close(); delete f;
+		return kFALSE;
 	}
+	
 	if(kLoadDigits){
-		fRunLoader->LoadDigits("TRD", "READ");
-		t = fRunLoader->GetTreeD("TRD", kFALSE);
+		t = (TTree*)gDirectory->Get("TreeD");
 		if(!t) return kFALSE;
-		fTRD->SetTreeAddress();
 		if(!LoadDigits(t)) return kFALSE;
-	}
-	if(kLoadClusters){
-		fRunLoader->LoadRecPoints("TRD", "READ");
-		t = fRunLoader->GetTreeR("TRD", kFALSE);
+	} else if(kLoadClusters){
+		t = (TTree*)gDirectory->Get("TreeR");
 		if(!t) return kFALSE;
 		if(!LoadClusters(t)) return kFALSE;
-	}
-	if(kLoadTracks){
-		fRunLoader->LoadTracks("TRD", "READ");
-		t = fRunLoader->GetTreeT("TRD", kFALSE);
+	} else if(kLoadTracks){
+		t = (TTree*)gDirectory->Get("TreeT");
 		if(!t) return kFALSE;
 		if(!LoadTracklets(t)) return kFALSE;
-	}
+	} else AliWarning("Please select first the type of data that you want to monitor and then hit the \"Load\" button.");
+
+	f->Close(); delete f;
+	
 	gReve->Redraw3D();
+	
 	return kTRUE;
 }
 
@@ -188,17 +193,19 @@ Bool_t	TRDLoader::GoToEvent(int ev)
 //________________________________________________________
 Bool_t	TRDLoader::LoadClusters(TTree *tC)
 {
-	Info("LoadClusters()", Form("Clusters tree 0x%x", tC));
+	AliInfo("Loading ...");
 	if(!fChildren.size()) return kTRUE;
 
 	TObjArray *clusters = new TObjArray();
-	tC->SetBranchAddress("TRDcluster",&clusters);
+	tC->SetBranchAddress("TRDcluster", &clusters);
 
 	TRDChamber *chmb = 0x0;	
 	AliTRDcluster *c=0x0;
 	for(int idet=0; idet<540; idet++){
-		if(!tC->GetEntry(idet)) continue;
-		if(clusters->GetEntriesFast()) c = (AliTRDcluster*)clusters->UncheckedAt(0);
+		tC->GetEntry(idet);
+		if(!clusters->GetEntriesFast()) continue;
+		c = (AliTRDcluster*)clusters->UncheckedAt(0);
+		if(!c) continue;
 		if((chmb = GetChamber(c->GetDetector()))) chmb->LoadClusters(clusters);
 	}
 	return kTRUE;
@@ -208,7 +215,7 @@ Bool_t	TRDLoader::LoadClusters(TTree *tC)
 //________________________________________________________
 Bool_t	TRDLoader::LoadDigits(TTree *tD)
 {
-	Info("LoadDigits()", Form("Digits tree 0x%x", tD));
+	AliInfo("Loading ...");
 	
 	if(!fChildren.size()) return kTRUE;
 	
@@ -227,37 +234,9 @@ Bool_t	TRDLoader::LoadDigits(TTree *tD)
 
 
 //________________________________________________________
-Bool_t	TRDLoader::LoadHits(TTree *tH)
-{
-	Info("LoadHits()", Form("Hits tree 0x%x", tH));
-	if(!fChildren.size()) return kTRUE;
-	
-	TRDChamber *chmb = 0x0;
-	AliTRDhit *hit = 0x0;
-	Int_t d;
-	for(int iTrack=0; iTrack<tH->GetEntries(); iTrack++){
-		gAlice->ResetHits();
-		if(!tH->GetEvent(iTrack)) continue;
-		hit = (AliTRDhit*)fTRD->FirstHit(-1);
-		if(!hit) continue;
-		d = hit->GetDetector();
-		chmb = GetChamber(d);
-		while(hit){
-			if(d != hit->GetDetector()){
-				d = hit->GetDetector();
-				chmb = GetChamber(d);
-			}
-			if(chmb) chmb->AddHit(hit);
-			hit = (AliTRDhit*)fTRD->NextHit();
-		}
-	}
-	return kTRUE;
-}
-
-//________________________________________________________
 Bool_t	TRDLoader::LoadTracklets(TTree *tT)
 {
-	Info("LoadTracklets()", Form("Tracks tree 0x%x", tT));
+	AliInfo("Loading ...");
 	if(!fChildren.size()) return kTRUE;
 
 	TObjArray *tracks = new TObjArray();
@@ -274,35 +253,75 @@ Bool_t	TRDLoader::LoadTracklets(TTree *tT)
 	return kTRUE;
 }
 	
+
 //________________________________________________________
 Bool_t	TRDLoader::Open(const char *filename, const char *dir)
 {
 	fFilename = filename;
 	fDir = dir;
-	fDir += "/";
+	Int_t count = 0;
+	count += kLoadDigits ? 1 : 0;
+	count += kLoadClusters ? 1 : 0;
+	count += kLoadTracks ? 1 : 0;
 	
-	fRunLoader = AliRunLoader::GetRunLoader();
-	if(!fRunLoader) fRunLoader = AliRunLoader::Open(filename,
-				AliConfig::GetDefaultEventFolderName(),"read");
-	if(!fRunLoader){
-		Error("Open()", "Couldn't find run loader");
-		return kFALSE;
+	TObjArray *so = fFilename.Tokenize(".");
+
+	if(((TObjString*)(*so)[0])->GetString().CompareTo("TRD") != 0){
+		if(!count){
+			AliWarning("Filename didn't fulfill naming conventions. No TRD data will be loaded.");
+			return kFALSE;
+		} else {
+			Warning("Open()", "Filename didn't fulfill naming conventions.");
+			return kTRUE;
+		}
 	}
-	fRunLoader->SetDirName(fDir);
-	
-	gAlice = fRunLoader->GetAliRun();
-  if(!gAlice) fRunLoader->LoadgAlice();
-	if(!gAlice){
-		Error("Open()", "Couldn't find gAlice object");
-		return kFALSE;
-	}
-	fTRD = (AliTRDv1*)gAlice->GetDetector("TRD");
-	if(!fTRD){
-		Error("Open()", "Couldn't find TRD");
+	if(((TObjString*)(*so)[1])->GetString().CompareTo("Digits") == 0){
+		if(!kLoadDigits) AliWarning("Data type set to DIGITS according to file name. Previous settings with SetDataType() will be discarded.");
+		kLoadDigits = kTRUE;
+	} else if(((TObjString*)(*so)[1])->GetString().CompareTo("RecPoints") == 0){
+		if(!kLoadClusters) AliWarning("Data type set to CLUSTERS according to file name. Previous settings with SetDataType() will be discarded.");
+		kLoadClusters = kTRUE;
+	} else if(((TObjString*)(*so)[1])->GetString().CompareTo("Tracks") == 0){
+		if(!kLoadTracks) AliWarning("Data type set to TRACKLETS according to file name. Previous settings with SetDataType() will be discarded.");
+		kLoadTracks = kTRUE;
+	} else if(count){
+		AliWarning("Filename didn't fulfill naming conventions.");
+		return kTRUE;
+	} else {
+		AliError("Filename didn't fulfill naming conventions. No data will be loaded.");
 		return kFALSE;
 	}
 	
 	return kTRUE;
+}
+
+
+
+//________________________________________________________
+void TRDLoader::Paint(Option_t *option)
+{
+	List_i ichmb = fChildren.begin();
+	while(ichmb != fChildren.end()){
+		(dynamic_cast<TRDModule*>(*ichmb))->Paint(option);
+		ichmb++;
+	}
+}
+
+//________________________________________________________
+void	TRDLoader::SetDataType(TRDDataTypes type)
+{
+	kLoadHits     = kFALSE;
+	kLoadDigits   = kFALSE;
+	kLoadClusters = kFALSE;
+	kLoadTracks   = kFALSE;
+	switch(type){
+	case kHits: kLoadHits = kTRUE; break;
+	case kDigits: kLoadDigits = kTRUE; break;
+	case kClusters: kLoadClusters = kTRUE; break;
+	case kTracks: kLoadTracks = kTRUE; break;
+	case kRawRoot: break;
+	case kRawData: break;
+	}
 }
 
 //________________________________________________________
@@ -327,38 +346,33 @@ TRDLoaderEditor::TRDLoaderEditor(const TGWindow* p, Int_t width, Int_t height, U
   fFile = 0x0;
 	TGTextButton *fOpenFile = 0x0;
 	Int_t labelW = 42;
-  {
-    TGHorizontalFrame* f = new TGHorizontalFrame(this);
-    TGHorizontalFrame* g = new TGHorizontalFrame(f, labelW, 0, kFixedWidth);
-    TGLabel* l = new TGLabel(g, "File: ");
-    g->AddFrame(l, new TGLayoutHints(kLHintsLeft, 0,0,4,0));
-    f->AddFrame(g);
-    fFile = new TGTextEntry(f);
-    fFile->SetWidth(140);
-    f->AddFrame(fFile);
-/*    
-		fFile->Connect("DoubleClicked()",
-		   "Alieve::TPCLoaderEditor", this, "FileSelect()");
-    fFile->Connect("TextChanged(const char *)",
-		   "Alieve::TPCLoaderEditor", this, "FileChanged()");
-*/    
-		fOpenFile = new TGTextButton(f, "Open");
-    f->AddFrame(fOpenFile);
-    fOpenFile->Connect("Clicked()",
-		       "Alieve::TRDLoaderEditor", this, "FileOpen()");
-		AddFrame(f);
-  }
+ 
+	TGHorizontalFrame* f = new TGHorizontalFrame(this);
+	TGHorizontalFrame* g = new TGHorizontalFrame(f, labelW, 0, kFixedWidth);
+	TGLabel* l = new TGLabel(g, "File: ");
+	g->AddFrame(l, new TGLayoutHints(kLHintsLeft, 0,0,4,0));
+	f->AddFrame(g);
+	fFile = new TGTextEntry(f);
+	fFile->SetToolTipText("Select TRD data file or galice.root");
+	fFile->SetWidth(140);
+	fFile->Connect("DoubleClicked()", "Alieve::TRDLoaderEditor", this, "FileOpen()");
+	f->AddFrame(fFile);
+	
+	fOpenFile = new TGTextButton(f, "Browse");
+	f->AddFrame(fOpenFile);
+	fOpenFile->Connect("Clicked()", "Alieve::TRDLoaderEditor", this, "FileOpen()");
+	AddFrame(f);
 
+		
   fEvent = new RGValuator(this, "Event:", 110, 0);
   fEvent->SetShowSlider(kFALSE);
   fEvent->SetLabelWidth(labelW);
   fEvent->SetNELength(6);
   fEvent->Build();
   fEvent->SetLimits(-1, 1000);
-  fEvent->SetToolTip("Current event number");
-/*  fEvent->Connect("ValueSet(Double_t)",
-		  "Alieve::TPCLoaderEditor", this, "DoEvent()");
-*/  
+  fEvent->SetToolTip("Set event number to be monitored");
+	fEvent->Connect("ValueSet(Double_t)",
+		  "Alieve::TRDLoaderEditor", this, "SetEvent(Double_t)");
 	AddFrame(fEvent);
 
 
@@ -398,38 +412,21 @@ TRDLoaderEditor::TRDLoaderEditor(const TGWindow* p, Int_t width, Int_t height, U
 
 	TGTextButton *fTextButton2037 = new TGTextButton(fGroupFrame1974,"Select");
 	fTextButton2037->SetTextJustify(36);
-//	fTextButton2037->Resize(128,22);
 	fGroupFrame1974->AddFrame(fTextButton2037, new TGLayoutHints(kLHintsExpandY | kLHintsCenterX,2,2,2,2));
+  fTextButton2037->SetToolTipText("Apply selection", 400);
 	fTextButton2037->Connect("Clicked()",
 					"Alieve::TRDLoaderEditor", this, "AddChambers()");
 
 	fGroupFrame1974->SetLayoutManager(new TGHorizontalLayout(fGroupFrame1974));
-//	fGroupFrame1974->Resize(164,150);
 	AddFrame(fGroupFrame1974, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX,2,2,2,2));
 
-	
-	// "Data selector" group frame
-	TGGroupFrame *fGroupFrame1987 = new TGGroupFrame(this,"Data selector");
-	fLoadHits = new TGCheckButton(fGroupFrame1987,"  Hits");
-	fGroupFrame1987->AddFrame(fLoadHits, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX,2,2,2,2));
-	fLoadDigits = new TGCheckButton(fGroupFrame1987,"  Digits");
-	fGroupFrame1987->AddFrame(fLoadDigits, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX,2,2,2,2));
-	fLoadClusters = new TGCheckButton(fGroupFrame1987,"  Clusters");
-	fGroupFrame1987->AddFrame(fLoadClusters, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX,2,2,2,2));
-	fLoadTracks = new TGCheckButton(fGroupFrame1987,"  Tracklets ");
-	fGroupFrame1987->AddFrame(fLoadTracks, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX,2,2,2,2));
-
-	fGroupFrame1987->SetLayoutManager(new TGVerticalLayout(fGroupFrame1987));
-//	fGroupFrame1987->Resize(164,116);
-	AddFrame(fGroupFrame1987, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX,2,2,2,2));
 
 	TGTextButton *fTextButton2004 = new TGTextButton(this,"Load");
 	fTextButton2004->SetTextJustify(36);
 	fTextButton2004->Resize(164,22);
 	AddFrame(fTextButton2004, new TGLayoutHints(kLHintsLeft | kLHintsTop | kLHintsCenterY | kLHintsExpandX,2,2,2,2));
-
-	fTextButton2004->Connect("Clicked()",
-					"Alieve::TRDLoaderEditor", this, "Load()");
+	fTextButton2004->SetToolTipText("Load data according to selection", 400);
+	fTextButton2004->Connect("Clicked()", "Alieve::TRDLoaderEditor", this, "Load()");
 }
 
 //________________________________________________________
@@ -439,6 +436,7 @@ TRDLoaderEditor::~TRDLoaderEditor()
 //_________________________________________________________
 void TRDLoaderEditor::SetModel(TObject* obj)
 {
+
 	fM = dynamic_cast<TRDLoader*>(obj);
 
 	fFile->SetText(gSystem->BaseName(fM->fFilename.Data()));
@@ -447,23 +445,18 @@ void TRDLoaderEditor::SetModel(TObject* obj)
 	if(fM->fFilename.CompareTo("") == 0) kFile = kFALSE;
 
 	fEvent->SetEnabled(kFile);
-	if(kFile) fEvent->GetEntry()->SetIntNumber(fM->fEvent);
+	fEvent->GetEntry()->SetIntNumber(fM->fEvent);
 	
 	fSMNumber->SetEnabled(kFile);
-	if(kFile) fSMNumber->GetEntry()->SetIntNumber(fM->fSM);
+	fSMNumber->GetEntry()->SetIntNumber(fM->fSM);
+
+
 	fStackNumber->SetEnabled(kFile);
-	if(kFile) fStackNumber->GetEntry()->SetIntNumber(fM->fStack);
+	fStackNumber->GetEntry()->SetIntNumber(fM->fStack);
+
+
 	fPlaneNumber->SetEnabled(kFile);
-	if(kFile) fPlaneNumber->GetEntry()->SetIntNumber(fM->fLy);
-	
-	fLoadHits->SetEnabled(kFile);
-	if(kFile) fLoadHits->SetState(fM->kLoadHits ? kButtonDown : kButtonUp);
-	fLoadDigits->SetEnabled(kFile);
-	if(kFile) fLoadDigits->SetState(fM->kLoadDigits ? kButtonDown : kButtonUp);
-	fLoadClusters->SetEnabled(kFile);
-	if(kFile) fLoadClusters->SetState(fM->kLoadClusters ? kButtonDown : kButtonUp);
-	fLoadTracks->SetEnabled(kFile);
-	if(kFile) fLoadTracks->SetState(fM->kLoadTracks ? kButtonDown : kButtonUp);
+	fPlaneNumber->GetEntry()->SetIntNumber(fM->fLy);
 }
 
 //________________________________________________________
@@ -490,21 +483,11 @@ void TRDLoaderEditor::FileOpen()
   fFile->SetText       (gSystem->BaseName(fi.fFilename));
 
 	fM->Open(gSystem->BaseName(fi.fFilename), gSystem->DirName (fi.fFilename));
-	SetModel(fM);
+
+	this->SetModel(fM);
 }
 
-//________________________________________________________
 void TRDLoaderEditor::Load()
 {
-	fM->kLoadHits     = kFALSE;
-	fM->kLoadDigits   = kFALSE;
-	fM->kLoadClusters = kFALSE;
-	fM->kLoadTracks   = kFALSE;
-	if(fLoadHits->IsDown()) fM->kLoadHits = kTRUE;
-	if(fLoadDigits->IsDown()) fM->kLoadDigits = kTRUE;
-	if(fLoadClusters->IsDown()) fM->kLoadClusters = kTRUE;
-	if(fLoadTracks->IsDown()) fM->kLoadTracks = kTRUE;
-	
-	fM->GoToEvent((int)fEvent->GetEntry()->GetNumber());
+	fM->GoToEvent(fM->fEvent);
 }
-

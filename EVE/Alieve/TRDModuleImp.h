@@ -46,6 +46,12 @@ namespace Alieve {
 		TRDChamber& operator=(const TRDChamber&);
 		
 		void	AddHit(AliTRDhit *hit);
+		Int_t	GetRowMax() const {return rowMax;}
+		Int_t	GetColMax() const {return colMax;}
+		Int_t	GetTimeMax() const {return timeMax;}
+		Int_t	GetSM() const;
+		Int_t	GetSTK() const;
+		Int_t	GetPlane() const {return fPla;}
 		void	LoadClusters(TObjArray *cs);
 		void	LoadDigits(AliTRDdigitsManager *digits);
 		void	LoadTracklets(TObjArray *ts);

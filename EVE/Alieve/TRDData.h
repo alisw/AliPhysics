@@ -23,6 +23,10 @@
 #include <Reve/PointSet.h>
 #endif
 
+#ifndef ROOT_TGedFrame
+#include <TGedFrame.h>
+#endif
+
 #include "AliTRDdataArrayI.h"
 
 class AliTRDdigitsManager;
@@ -31,16 +35,34 @@ namespace Alieve {
 	class TRDHits : public Reve::PointSet
 	{
 	public:
-		TRDHits(const Text_t* name, Int_t n_points = 0);
+		TRDHits(TRDChamber *p);
 
 		void PointSelected(Int_t n);
 
+	protected:
+		TRDChamber *fParent;
+	
 	ClassDef(TRDHits,1) // Base class for TRD hits visualisation
 	};
 
-		
+	class TRDHitsEditor : public TGedFrame
+	{
+	public:
+		TRDHitsEditor(const TGWindow* p=0, Int_t width = 170, Int_t height = 30, UInt_t options = kChildFrame, Pixel_t back = GetDefaultFrameBackground());
+		~TRDHitsEditor();
+
+		virtual void SetModel(TObject* obj);
+
+	protected:
+		TRDHits* fM;
+
+	ClassDef(TRDHitsEditor,1) // Editor for TRDHits
+	};	
+
+
 	class TRDDigits : public Reve::OldQuadSet, public Reve::RenderElement
 	{
+	friend class TRDDigitsEditor;
 	public:
 		TRDDigits(TRDChamber *p);
 
@@ -50,7 +72,7 @@ namespace Alieve {
 		void			SetData(AliTRDdigitsManager *digits);
 
 	protected:
-		TRDChamber *fChamber;
+		TRDChamber *fParent;
 	
 	private:
 		Reve::BoxSet			fBoxes;
@@ -58,6 +80,32 @@ namespace Alieve {
 		
 		ClassDef(TRDDigits,1) // Digits visualisation for TRD
 	};
+	
+	class TRDDigitsEditor : public TGedFrame
+	{
+	public:
+		TRDDigitsEditor(const TGWindow* p=0, Int_t width = 170, Int_t height = 30, UInt_t options = kChildFrame, Pixel_t back = GetDefaultFrameBackground());
+		~TRDDigitsEditor();
+
+		virtual void SetModel(TObject* obj);
+
+	protected:
+		TRDDigits* fM;
+
+	ClassDef(TRDDigitsEditor,1) // Editor for TRDDigits
+	};
+
+
+	class TRDClusters : public TRDHits
+	{
+	public:
+		TRDClusters(TRDChamber *p);
+
+		void PointSelected(Int_t n);
+	
+	ClassDef(TRDClusters,1) // Base class for TRD clusters visualisation
+	};
+
 }
 
 #endif

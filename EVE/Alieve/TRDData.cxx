@@ -1,6 +1,9 @@
 #include "TRDData.h"
 #include "TRDModuleImp.h"
 
+#include "AliLog.h"
+#include "AliTRDhit.h"
+#include "AliTRDcluster.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDpadPlane.h"
 #include "AliTRDgeometry.h"
@@ -10,30 +13,30 @@ using namespace Reve;
 using namespace Alieve;
 using namespace std;
 
-ClassImp(TRDDigits)
+
 ClassImp(TRDHits)
+ClassImp(TRDDigits)
+ClassImp(TRDClusters)
 
 ///////////////////////////////////////////////////////////
 /////////////   TRDDigits             /////////////////////
 ///////////////////////////////////////////////////////////
 
 //________________________________________________________
-TRDDigits::TRDDigits(TRDChamber *p): OldQuadSet("digits", ""), RenderElement()
-{
-	fChamber = p;
-}
+TRDDigits::TRDDigits(TRDChamber *p): OldQuadSet("digits", ""), RenderElement(), fParent(p)
+{}
 
 //________________________________________________________
 void	TRDDigits::SetData(AliTRDdigitsManager *digits)
 {
 	
-	fData.Allocate(fChamber->rowMax, fChamber->colMax, fChamber->timeMax);
+	fData.Allocate(fParent->rowMax, fParent->colMax, fParent->timeMax);
 //	digits->Expand();
-	for (Int_t  row = 0;  row <  fChamber->rowMax;  row++)
-		for (Int_t  col = 0;  col <  fChamber->colMax;  col++)
-			for (Int_t time = 0; time < fChamber->timeMax; time++) {
-				if(digits->GetDigitAmp(row, col, time, fChamber->GetID()) < 0) continue;
-				fData.SetDataUnchecked(row, col, time, digits->GetDigitAmp(row, col, time, fChamber->GetID()));
+	for (Int_t  row = 0;  row <  fParent->rowMax;  row++)
+		for (Int_t  col = 0;  col <  fParent->colMax;  col++)
+			for (Int_t time = 0; time < fParent->timeMax; time++) {
+				if(digits->GetDigitAmp(row, col, time, fParent->GetID()) < 0) continue;
+				fData.SetDataUnchecked(row, col, time, digits->GetDigitAmp(row, col, time, fParent->GetID()));
 	}
 }
 
@@ -60,22 +63,22 @@ void	TRDDigits::ComputeRepresentation()
   Double_t cloc[4][3], cglo[3];
 	Int_t color, dimension;
 	fData.Expand();
-	for (Int_t  row = 0;  row <  fChamber->rowMax;  row++) {
-		rowSize = .5 * fChamber->fPadPlane->GetRowSize(row);
-		z = fChamber->fPadPlane->GetRowPos(row) - rowSize;
+	for (Int_t  row = 0;  row <  fParent->rowMax;  row++) {
+		rowSize = .5 * fParent->fPadPlane->GetRowSize(row);
+		z = fParent->fPadPlane->GetRowPos(row) - rowSize;
 		
-		for (Int_t  col = 0;  col <  fChamber->colMax;  col++) {
-			colSize = .5 * fChamber->fPadPlane->GetColSize(col);
-			y = fChamber->fPadPlane->GetColPos(col) - colSize;
-			t0 = calibration->GetT0(fChamber->fDet, col, row);
-			timeBinSize = calibration->GetVdrift(fChamber->fDet, col, row)/fChamber->samplingFrequency;
+		for (Int_t  col = 0;  col <  fParent->colMax;  col++) {
+			colSize = .5 * fParent->fPadPlane->GetColSize(col);
+			y = fParent->fPadPlane->GetColPos(col) - colSize;
+			t0 = calibration->GetT0(fParent->fDet, col, row);
+			timeBinSize = calibration->GetVdrift(fParent->fDet, col, row)/fParent->samplingFrequency;
 			
-			for (Int_t time = 0; time < fChamber->timeMax; time++) {
+			for (Int_t time = 0; time < fParent->timeMax; time++) {
 				charge = fData.GetDataUnchecked(row, col, time);
-	  		if (charge < fChamber->GetDigitsThreshold()) continue;
+	  		if (charge < fParent->GetDigitsThreshold()) continue;
 				
-				x = fChamber->fX0 - (time+0.5-t0)*timeBinSize;
-				scale = fChamber->GetDigitsLog() ? TMath::Log(float(charge))/TMath::Log(1024.) : charge/1024.;
+				x = fParent->fX0 - (time+0.5-t0)*timeBinSize;
+				scale = fParent->GetDigitsLog() ? TMath::Log(float(charge))/TMath::Log(1024.) : charge/1024.;
 				color  = 50+int(scale*50.);
 				
 				cloc[0][2] = z - rowSize * scale;
@@ -95,7 +98,7 @@ void	TRDDigits::ComputeRepresentation()
 				cloc[3][0] = x;
 	
 				Float_t* p;
-				if( fChamber->GetDigitsBox()){
+				if( fParent->GetDigitsBox()){
 					fBoxes.fBoxes.push_back(Reve::Box());
 					fBoxes.fBoxes.back().color[0] = (UChar_t)color;
 					fBoxes.fBoxes.back().color[1] = (UChar_t)color;
@@ -113,7 +116,7 @@ void	TRDDigits::ComputeRepresentation()
 				for(int id=0; id<dimension; id++)
 				for (Int_t ic = 0; ic < 4; ic++) {
 					cloc[ic][0] -= .5 * id * timeBinSize;
-					fChamber->fGeo->RotateBack(fChamber->fDet,cloc[ic],cglo);
+					fParent->fGeo->RotateBack(fParent->fDet,cloc[ic],cglo);
 	      	p[0] = cglo[0]; p[1] = cglo[1]; p[2] = cglo[2];
 					p+=3;
 				}
@@ -126,7 +129,7 @@ void	TRDDigits::ComputeRepresentation()
 //________________________________________________________
 void TRDDigits::Paint(Option_t *option)
 {
-	if(fChamber->GetDigitsBox()) fBoxes.Paint(option);
+	if(fParent->GetDigitsBox()) fBoxes.Paint(option);
 	else OldQuadSet::Paint(option);
 }
 
@@ -143,15 +146,97 @@ void TRDDigits::Reset()
 ///////////////////////////////////////////////////////////
 
 //________________________________________________________
-TRDHits::TRDHits(const Text_t* name, Int_t n_points):PointSet(name, n_points)
-{
-
-}
+TRDHits::TRDHits(TRDChamber *p):PointSet("hits", 20), fParent(p)
+{}
 
 //________________________________________________________
 void TRDHits::PointSelected(Int_t n)
 {
-	printf("void TRDHits::PointSelected(%d)\n", n);
-//	printf("Detector %d\n", ((TRDChamber*)GetPointId(n))->GetDetector());
+	fParent->SpawnEditor();
+	AliTRDhit *h = dynamic_cast<AliTRDhit*>(GetPointId(n));
+	printf("\nDetector             : %d\n", h->GetDetector());
+	printf("Region of production : %c\n", h->FromAmplification() ? 'A' : 'D');
+	printf("TR photon            : %s\n", h->FromTRphoton() ? "Yes" : "No");
+	printf("Charge               : %d\n", h->GetCharge());
+	printf("MC track label       : %d\n", h->GetTrack());
+	printf("Time from collision  : %f\n", h->GetTime());
 }
 
+
+///////////////////////////////////////////////////////////
+/////////////   TRDHits               /////////////////////
+///////////////////////////////////////////////////////////
+
+//________________________________________________________
+TRDClusters::TRDClusters(TRDChamber *p):TRDHits(p)
+{}
+
+//________________________________________________________
+void TRDClusters::PointSelected(Int_t n)
+{
+	fParent->SpawnEditor();
+	AliTRDcluster *c = dynamic_cast<AliTRDcluster*>(GetPointId(n));
+	printf("\nDetector             : %d\n", c->GetDetector());
+	printf("Charge               : %f\n", c->GetQ());
+	printf("Sum S                : %4.0f\n", c->GetSumS());
+	printf("Time bin             : %d\n", c->GetLocalTimeBin());
+	printf("Signals              : ");
+	Short_t *cSignals = c->GetSignals();
+	for(Int_t ipad=0; ipad<7; ipad++) printf("%d ", cSignals[ipad]); printf("\n");
+	printf("Central pad          : %d\n", c->GetPad());
+	printf("MC track labels      : ");
+	for(Int_t itrk=0; itrk<3; itrk++) printf("%d ", c->GetLabel(itrk)); printf("\n");
+// Bool_t	AliCluster::GetGlobalCov(Float_t* cov) const
+// Bool_t	AliCluster::GetGlobalXYZ(Float_t* xyz) const
+// Float_t	AliCluster::GetSigmaY2() const
+// Float_t	AliCluster::GetSigmaYZ() const
+// Float_t	AliCluster::GetSigmaZ2() const
+}
+
+///////////////////////////////////////////////////////////
+/////////////   TRDHitsEditor         /////////////////////
+///////////////////////////////////////////////////////////
+TRDHitsEditor::TRDHitsEditor(const TGWindow* p, Int_t width, Int_t height, UInt_t options, Pixel_t back) : TGedFrame(p, width, height, options, back)
+{
+	MakeTitle("TRD Hits");
+
+}
+
+TRDHitsEditor::~TRDHitsEditor()
+{}
+
+void TRDHitsEditor::SetModel(TObject* obj)
+{
+	fM = dynamic_cast<TRDHits*>(obj);
+
+// 	Float_t x, y, z;
+// 	for(int ihit=0; ihit<fM->GetN(); ihit++){
+// 		fM->GetPoint(ihit, x, y, z);
+// 		printf("%3d : x=%6.3f y=%6.3f z=%6.3f\n", ihit, x, y, z);
+// 	}
+}
+
+///////////////////////////////////////////////////////////
+/////////////   TRDDigitsEditor       /////////////////////
+///////////////////////////////////////////////////////////
+TRDDigitsEditor::TRDDigitsEditor(const TGWindow* p, Int_t width, Int_t height, UInt_t options, Pixel_t back) : TGedFrame(p, width, height, options, back)
+{
+	MakeTitle("TRD Digits");
+
+}
+
+TRDDigitsEditor::~TRDDigitsEditor()
+{}
+
+void TRDDigitsEditor::SetModel(TObject* obj)
+{
+	fM = dynamic_cast<TRDDigits*>(obj);
+	fM->fParent->SpawnEditor();
+	
+// 	printf("Chamber %d", fM->fParent->GetID());
+// 	for (Int_t  row = 0;  row <  fM->fParent->GetRowMax();  row++)
+// 		for (Int_t  col = 0;  col <  fM->fParent->GetColMax();  col++)
+// 			for (Int_t time = 0; time < fM->fParent->GetTimeMax(); time++) {
+// 				printf("\tA(%d %d %d) = %d\n", row, col, time, fM->fData.GetDataUnchecked(row, col, time));
+// 			}
+}

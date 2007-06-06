@@ -70,12 +70,20 @@
 #pragma link C++ class Alieve::TPCLoaderEditor+;
 
 // TRD
+#pragma link C++ class Alieve::TRDLoaderManager+;
+#pragma link C++ class Alieve::TRDLoaderManagerEditor+;
 #pragma link C++ class Alieve::TRDLoader+;
-#pragma link C++ class Alieve::TRDLoaderSingle+;
 #pragma link C++ class Alieve::TRDLoaderEditor+;
+#pragma link C++ class Alieve::TRDLoaderSim+;
+#pragma link C++ class Alieve::TRDLoaderSimEditor+;
+#pragma link C++ class Alieve::TRDLoaderRaw+;
+//#pragma link C++ class Alieve::TRDLoaderRawEditor+;
 #pragma link C++ class Alieve::TRDModule+;
 #pragma link C++ class Alieve::TRDChamber+;
 #pragma link C++ class Alieve::TRDNode+;
 #pragma link C++ class Alieve::TRDModuleEditor+;
 #pragma link C++ class Alieve::TRDDigits+;
+#pragma link C++ class Alieve::TRDDigitsEditor+;
 #pragma link C++ class Alieve::TRDHits+;
+#pragma link C++ class Alieve::TRDHitsEditor+;
+#pragma link C++ class Alieve::TRDClusters+;

@@ -7,6 +7,7 @@
 #include "Reve/RGTopFrame.h"
 #include "Reve/Track.h"
 
+#include "AliLog.h"
 #include "AliRun.h"
 #include "AliTRDv1.h"
 #include "AliTRDgeometry.h"
@@ -253,6 +254,26 @@ TRDChamber& TRDChamber::operator=(const TRDChamber &mod)
 }
 
 //________________________________________________________
+Int_t	TRDChamber::GetSM() const
+{
+	if(!fGeo){
+		AliWarning("Fail. No TRD geometry defined.");
+		return -1;
+	}
+	return fGeo->GetSector(fDet);
+}
+
+//________________________________________________________
+Int_t	TRDChamber::GetSTK() const
+{
+	if(!fGeo){
+		AliWarning("Fail. No TRD geometry defined.");
+		return -1;
+	}
+	return fGeo->GetChamber(fDet);
+}
+
+//________________________________________________________
 void TRDChamber::LoadClusters(TObjArray *clusters)
 {
   //
@@ -260,15 +281,16 @@ void TRDChamber::LoadClusters(TObjArray *clusters)
   //
 	
 	if(!fGeo){
-		Error("LoadClusters()", Form("Geometry not set for chamber %d. Please call first TRDChamber::SetGeometry().", fDet));
+		AliError(Form("Geometry not set for chamber %d. Please call first TRDChamber::SetGeometry().", fDet));
 		return;
 	}
-//	Info("LoadClusters()", Form("clusters = 0x%x", clusters));
+	
 	if(!fRecPoints){
-		fRecPoints = new TRDHits("clusters");
+		fRecPoints = new TRDClusters(this);
 		fRecPoints->SetMarkerSize(1.);
 		fRecPoints->SetMarkerStyle(24);
 		fRecPoints->SetMarkerColor(6);
+		fRecPoints->SetOwnIds(kTRUE);
 	} else fRecPoints->Reset();
 
 	Float_t q, z0;
@@ -284,7 +306,7 @@ void TRDChamber::LoadClusters(TObjArray *clusters)
 		q = c->GetQ();
 		fGeo->RotateBack(fDet,cloc,cglo);
 		fRecPoints->SetNextPoint(cglo[0], cglo[1], cglo[2]);
-		fRecPoints->SetPointId(this);
+		fRecPoints->SetPointId(c);
 	}
 	fLoadRecPoints = kTRUE;
 }
@@ -296,7 +318,7 @@ void TRDChamber::LoadDigits(AliTRDdigitsManager *digits)
   // Draw digits
   //
 	if(!fGeo){
-		Error("LoadDigits()", Form("Geometry not set for chamber %d. Please call first TRDChamber::SetGeometry().", fDet));
+		AliError(Form("Geometry not set for chamber %d. Please call first TRDChamber::SetGeometry().", fDet));
 		return;
 	}
 //	Info("LoadDigits()", Form("digits =0x%x", digits));
@@ -317,13 +339,14 @@ void TRDChamber::AddHit(AliTRDhit *hit)
 //	Info("AddHit()", Form("%s", GetName()));
 
 	if(!fHits){
-		fHits = new TRDHits("hits");
+		fHits = new TRDHits(this);
 		fHits->SetMarkerSize(.1);
 		fHits->SetMarkerColor(2);
+		fHits->SetOwnIds(kTRUE);
 	}
 	
 	fHits->SetNextPoint(hit->X(), hit->Y(), hit->Z());
-	fHits->SetPointId(this);
+	fHits->SetPointId(hit);
 	fLoadHits = kTRUE;
 }
 
