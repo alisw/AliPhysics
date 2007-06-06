@@ -1,3 +1,22 @@
+2007-06-06  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* LinkDef.h:
+	* TRDData.cxx:
+	* TRDData.h:
+	* TRDLoader.cxx:
+	* TRDLoader.h:
+	* TRDLoaderImp.cxx:
+	* TRDLoaderImp.h:
+	* TRDLoaderManager.cxx:
+	* TRDLoaderManager.h:
+	* TRDModuleImp.cxx:
+	* TRDModuleImp.h:
+	From Alexandru: new version of TRD visualization.
+
+	* TRDLoaderSingle.cxx:
+	* TRDLoaderSingle.h:
+	From Alexandru: removed files.
+
 2007-05-31  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* ITSDigitsInfo.cxx:
