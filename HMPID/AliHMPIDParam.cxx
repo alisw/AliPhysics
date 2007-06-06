@@ -59,8 +59,13 @@ if(!gGeoManager) AliFatal("!!!!!!No geometry loaded!!!!!!!");
 
 
     Float_t Dead=2.6;// cm of the dead zones between PCs-> See 2CRC2099P1
-    TGeoBBox *bcell = (TGeoBBox *)gGeoManager->GetVolume("Hcel")->GetShape();
-    fgCellX=2.*bcell->GetDX(); fgCellY = 2.*bcell->GetDY();
+    TGeoVolume *pCellVol = gGeoManager->GetVolume("Hcel");
+    if(!pCellVol) {
+      fgCellX=0.8;fgCellY=0.84;
+      } else { 
+      TGeoBBox *bcell = (TGeoBBox *)pCellVol->GetShape();
+      fgCellX=2.*bcell->GetDX(); fgCellY = 2.*bcell->GetDY();
+    }
     fgPcX=80.*fgCellX; fgPcY = 48.*fgCellY;
     fgAllX=2.*fgPcX+Dead;
     fgAllY=3.*fgPcY+2.*Dead;

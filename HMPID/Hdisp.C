@@ -349,6 +349,7 @@ void NextEvent()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void Hdisp()                                  
 {//display events from files if any in current directory or simulated events
+  AliHMPIDParam::Instance();                          // first invocation of AliHMPIDParam to initialize geometry...
   CreateContainers();
   CreateRenders();
   
