@@ -12,14 +12,16 @@ class TGeoVolume;
 class AliITSv11GeometrySupport : public AliITSv11Geometry {
   public:
     AliITSv11GeometrySupport(){};
-    AliITSv11GeometrySupport(Bool_t debug):AliITSv11Geometry(debug){};
+    AliITSv11GeometrySupport(Int_t debug):AliITSv11Geometry(debug){};
     virtual ~AliITSv11GeometrySupport(){};
     //
-    virtual void SPDCone(TGeoVolume *Moth);
-    virtual void SPDThermalSheald(TGeoVolume *Moth);
-    virtual void SDDCone(TGeoVolume *Moth);
-    virtual void SSDCone(TGeoVolume *Moth);
-    virtual void ServicesCableSupport(TGeoVolume *Moth);
+    virtual void SPDCone(TGeoVolume *moth,TGeoManager *mgr=gGeoManager);
+    virtual void SPDThermalSheald(TGeoVolume *moth,
+                          TGeoManager *mgr=gGeoManager); // called by SPDCone.
+    virtual void SDDCone(TGeoVolume *moth,TGeoManager *mgr=gGeoManager);
+    virtual void SSDCone(TGeoVolume *moth,TGeoManager *mgr=gGeoManager);
+    virtual void ServicesCableSupport(TGeoVolume *moth,
+                                      TGeoManager *mgr=gGeoManager);
 
   private:
     ClassDef(AliITSv11GeometrySupport,1) // ITS v11 Support geometry

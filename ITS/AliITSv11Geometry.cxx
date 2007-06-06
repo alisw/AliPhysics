@@ -461,7 +461,7 @@ void AliITSv11Geometry::InsidePoint(Double_t x0,Double_t y0,
                                     Double_t x2,Double_t y2,Double_t c,
                                     Double_t &x,Double_t &y)const{
     // Given two intersecting lines defined by the points (x0,y0), (x1,y1) and
-    // (x1,y1), (x1,y2) {intersecting at (x1,y1)} the point (x,y) a distance
+    // (x1,y1), (x2,y2) {intersecting at (x1,y1)} the point (x,y) a distance
     // c away is returned such that two lines a distance c away from the
     // lines defined above intersect at (x,y).
     // Inputs:
@@ -478,6 +478,9 @@ void AliITSv11Geometry::InsidePoint(Double_t x0,Double_t y0,
     // Return:
     //    none.
     Double_t dx01,dx12,dy01,dy12,r01,r12,m;
+
+    //printf("InsidePoint: x0=% #12.7g y0=% #12.7g x1=% #12.7g y1=% #12.7g "
+    //       "x2=% #12.7g y2=% #12.7g c=% #12.7g ",x0,y0,x1,y2,x2,y2,c);
     dx01 = x0-x1; //cout <<"L410 dx01="<<dx01<<endl;
     dx12 = x1-x2; //cout <<"L411 dx12="<<dx12<<endl;
     dy01 = y0-y1; //cout <<"L412 dy01="<<dy01<<endl;
@@ -489,19 +492,23 @@ void AliITSv11Geometry::InsidePoint(Double_t x0,Double_t y0,
         if(dy01==0.0){ // line are =
             x = x1+c; //cout <<"L419 x="<<x<<endl;
             y = y1; //cout <<"L420 y="<<y<<endl;
+            //printf("dy01==0.0 x=% #12.7g y=% #12.7g\n",x,y);
             return;
         }else if(dx01==0.0){
             x = x1;
             y = y1+c;
+            //printf("dx01==0.0 x=% #12.7g y=% #12.7g\n",x,y);
             return;
         }else{ // dx01!=0 and dy01 !=0.
             x = x1-0.5*c*r01/dy01; //cout <<"L434 x="<<x<<endl;
             y = y1+0.5*c*r01/dx01; //cout <<"L435 y="<<y<<endl;
+            //printf("m*m<DBL_E x=% #12.7g y=% #12.7g\n",x,y);
         } // end if
         return;
     } //
     x = x1+c*(dx12*r01-dx01*r12)/m; //cout <<"L442 x="<<x<<endl;
     y = y1+c*(dy12*r01-dy01*r12)/m; //cout <<"L443 y="<<y<<endl;
+    //printf("          x=% #12.7g y=% #12.7g\n",x,y);
     //cout <<"=============================================="<<endl;
     return;
 }

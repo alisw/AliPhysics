@@ -9,7 +9,9 @@
   parameters (GEANT3 types for the moment.
  */
 
-
+/*
+  $Id$
+ */
 #include <TGeoManager.h>
 #include <TVirtualMC.h>
 #include <AliITSv11Geometry.h>
@@ -21,7 +23,7 @@ class AliITSv11GeometrySPD : public AliITSv11Geometry {
     // Default constructor
     AliITSv11GeometrySPD():AliITSv11Geometry(){};
     // Default constructor with debuging level switch
-    AliITSv11GeometrySPD(Bool_t debug):AliITSv11Geometry(debug){};
+    AliITSv11GeometrySPD(Int_t debug):AliITSv11Geometry(debug){};
     // Destructor
     virtual ~AliITSv11GeometrySPD(){};
     // Creates SPD Sector geometry

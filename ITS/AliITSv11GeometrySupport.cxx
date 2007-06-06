@@ -25,7 +25,7 @@
 // General Root includes
 #include <TMath.h>
 // Root Geometry includes
-#include <AliLog.h>
+//#include <AliLog.h>
 #include <TGeoManager.h>
 #include <TGeoVolume.h>
 #include <TGeoPcon.h>
@@ -42,22 +42,25 @@ ClassImp(AliITSv11GeometrySupport)
 #define SQ(A) (A)*(A)
 
 //______________________________________________________________________
-void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth){
+void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,TGeoManager *mgr){
     // Define the detail SPD support cone geometry.
     // Inputs:
-    //   TGeo Volume  *moth  The mother volume to place this object.
+    //   TGeoVolume  *moth  The mother volume to place this object.
+    //   TGeoManager *mgr   A pointer to the Geo-Manager default gGeoManager
     // Outputs:
     //  none.
     // Return:
     //  none.
 
-    SPDThermalSheald(moth);
+    SPDThermalSheald(moth,mgr);
 }
 //______________________________________________________________________
-void AliITSv11GeometrySupport::SPDThermalSheald(TGeoVolume *moth){
+void AliITSv11GeometrySupport::SPDThermalSheald(TGeoVolume *moth,
+                                                TGeoManager *mgr){
     // Define the detail SPD Thermal Sheld geometry.
     // Inputs:
-    //   TGeo Volume  *moth  The mother volume to place this object.
+    //   TGeoVolume  *moth  The mother volume to place this object.
+    //   TGeoManager *mgr   A pointer to the Geo-Manager default gGeoManager
     // Outputs:
     //  none.
     // Return:
@@ -65,12 +68,12 @@ void AliITSv11GeometrySupport::SPDThermalSheald(TGeoVolume *moth){
     // From ALICE-Thermal Screen (SPD) "Cylinder" file thermal-screen2_a3.ps
     // Volumes sA1,sA2,sA3,sAh1,sAh2,sAh3, and b1,b2,b3,bh1,bh2,bh3;
     // "CONE TRANSITION" file thermal-screen1_a3.ps Volumes sC1,sC2,sC3,
-    // sCh1,sCh2, sCh3; "FLANGE" file thermal-screen4_a3.ps Volumes d,sDs,
+    // sCh1,sCh2, sCh3; "FLANGE" file thermal-screen4_a3.ps Volumes D,sDs,
     // sDw,sDws; and "HALF ASSEMBLY" file thermal-screen3_a3.ps. This object,
     // both halfs, are incased inside of a single minimum sized mother 
     // volume called M, which is a union of two parts sM1 and 4 copies of sM2.
     const Double_t ktscarbonFiberThA = 0.03*fgkmm; // 
-    //const Double_t ktscarbonFiberThB = 0.10*fgkmm; //
+    const Double_t ktscarbonFiberThB = 0.10*fgkmm; //
     const Double_t ktscLengthB  = 50.0*fgkmm; //
     const Double_t ktscLengthA  = 900.0*fgkmm-2.0*ktscLengthB; //
     const Double_t ktscLengthC  = 290.0*fgkmm; //
@@ -88,9 +91,8 @@ void AliITSv11GeometrySupport::SPDThermalSheald(TGeoVolume *moth){
     const Double_t ktscRinD     = 373.0*fgkmm;  // Iner radii
     // angular wing
     const Double_t ktscAngleDD  = (60.*fgkmm/ktscRwingD)*fgkRadian;
-                                                    // width of fill material
-    const Double_t ktscAngleDDs = ((60.*fgkmm-2.*ktscarbonFiberThA)/
-                                                  ktscRwingD)*fgkRadian;
+                                  // carbon fiber in angle
+    const Double_t ktscAngleDDs = (ktscarbonFiberThA/ktscRwingD)*fgkRadian;
     const Double_t ktscAngleD0  = 45.*fgkDegree;//Strting angle of wing
     const Double_t ktscoutSA    = 24.372*fgkmm; // The other one Calculated
     const Double_t ktscinLA     = 31.674*fgkmm; // The ohter one Calculated
@@ -99,19 +101,19 @@ void AliITSv11GeometrySupport::SPDThermalSheald(TGeoVolume *moth){
     const Double_t ktscoutSC    = 148.831*fgkmm;// The other one Calculated
     const Double_t ktscinLC     = 90.915*fgkmm; // The ohter one Calculated
     Int_t i,k;
-    Double_t th;
+    Double_t th,x,y;
     Double_t xo[7],yo[7],xi[7],yi[7];
     Double_t xbo[7],ybo[7],xbi[7],ybi[7];
     Double_t xco[7],yco[7],xci[7],yci[7];
     TGeoArb8 *sA1,*sA2,*sA3,*sAh1,*sAh2,*sAh3,*sB1,*sB2,*sB3,*sBh1,*sBh2,*sBh3;
     TGeoArb8 *sC1,*sC2,*sC3,*sCh1,*sCh2,*sCh3;
-    TGeoPcon *sM1;
+    //TGeoPcon *sM1;
     TGeoTube  *sD,*sDs;
-    TGeoTubeSeg *sDw,*sDws,*sM2;
-    TGeoCompositeShape *sM;
-    TGeoRotation *rot;
-    TGeoTranslation *tranb,*tranbm,*tranc;
-    TGeoTranslation *tranITSspdShealdVVt0;
+    TGeoTubeSeg *sDw,*sDws;//,*sM2;
+    //TGeoCompositeShape *sM;
+    TGeoRotation *rot,*rot2;
+    TGeoTranslation *tranb,*tranbm,*tranc,*trancm;
+    //TGeoTranslation *tranITSspdShealdVVt0;
     TGeoCombiTrans *rotITSspdShealdVVt1,*rotITSspdShealdVVt2;
     TGeoCombiTrans *rotITSspdShealdVVt3;
     TGeoMedium *medSPDcf  = 0; // SPD support cone Carbon Fiber materal number.
@@ -142,18 +144,20 @@ void AliITSv11GeometrySupport::SPDThermalSheald(TGeoVolume *moth){
     sCh2 = new TGeoArb8("ITS SPD Therm Screen Cylinder Ch2",0.5*ktscLengthC);
     sCh3 = new TGeoArb8("ITS SPD Therm Screen Cylinder Ch3",0.5*ktscLengthC);
     sD = new TGeoTube("ITS SPD Therm Screen Flange D",ktscRinD,ktscRoutD,
-                    0.5*ktscLengthD);
-    sDs = new TGeoTube("ITS SPD Therm Screen Flange fill Ds",
-                      ktscRinD+ktscarbonFiberThA,ktscRoutD-ktscarbonFiberThA,
                       0.5*ktscLengthD);
+    sDs = new TGeoTube("ITS SPD Therm Screen Flange fill Ds",
+                       sD->GetRmin()+ktscarbonFiberThA,
+                       sD->GetRmax()-ktscarbonFiberThA,
+                       sD->GetDz()-ktscarbonFiberThA);
     sDw = new TGeoTubeSeg("ITS SPD Therm Screen Flange Wing Dw",
-                         ktscRoutD,ktscRwingD ,0.5*ktscLengthD,
-                         ktscAngleD0-0.5*ktscAngleDD,
-                         ktscAngleD0+0.5*ktscAngleDD);
+                          ktscRoutD,ktscRwingD-0.05/*fuge*/,0.5*ktscLengthD,
+                          ktscAngleD0-0.5*ktscAngleDD,
+                          ktscAngleD0+0.5*ktscAngleDD);
     sDws = new TGeoTubeSeg("ITS SPD Therm Screen Flange Wing Fill Ds",
-                          ktscRoutD,ktscRwingD-ktscarbonFiberThA,
-                          0.5*ktscLengthD,ktscAngleD0-0.5*ktscAngleDDs,
-                          ktscAngleD0+0.5*ktscAngleDDs);
+                           sDw->GetRmin(),sDw->GetRmax()-ktscarbonFiberThA,
+                           sDw->GetDz()-ktscarbonFiberThA,
+                           sDw->GetPhi1()+ktscAngleDDs,
+                           sDw->GetPhi2()-ktscAngleDDs);
     k = 0;
     for(i=-1;i<2;i++){
         th = ((Double_t)(i+1))*ktscAngle*fgkDegree;
@@ -196,9 +200,9 @@ void AliITSv11GeometrySupport::SPDThermalSheald(TGeoVolume *moth){
     yco[6] = 0.0;
     xci[6] = xci[5];
     yci[6] = 0.0;
-    if(AliDebugLevel()){
+    if(GetDebug(1)){
         Info("SPDThermalSheald","i     \t  xo  yo    \t  xi yi     \t  xbo "
-             "ybo   \t   xbi ybi  \t   xco yco   \t   xci yxi");
+             "ybo   \t   xbi ybi  \t   xco yco   \t   xci yci");
         for(i=0;i<7;i++){
             Info("SPDThermalSheald","%7d\t%7.4f,%7.4f\t%7.4f,%7.4f\t"
                  "%7.4f,%7.4f\t%7.4f,%7.4f\t%7.4f,%7.4f\t%7.4f,%7.4f",i,
@@ -206,7 +210,7 @@ void AliITSv11GeometrySupport::SPDThermalSheald(TGeoVolume *moth){
                  xbo[i],ybo[i],xbi[i],ybi[i],
                  xco[i],yco[i],xci[i],yci[i]);
         } // end for i
-    } // end if AliDebugLevel()
+    } // end if GetDebug(1)
     //+++++++++++++++++++++++++
     sA1->SetVertex(0,xo[0],yo[0]);
     sA1->SetVertex(1,xo[1],yo[1]);
@@ -253,275 +257,179 @@ void AliITSv11GeometrySupport::SPDThermalSheald(TGeoVolume *moth){
     sC3->SetVertex(2,xci[6],yci[6]);
     sC3->SetVertex(3,xci[5],yci[5]);
     // Defining the hole, filled with air
-    Double_t lp1,lc1,x,y,x7[3],y7[3];
-    lp1 = (xo[0]-xi[0])/(yo[0]-yi[0]);
-    lc1 = xo[0]+0.5*ktscarbonFiberThA*TMath::Sqrt(SQ(xo[0]-xi[0])+
-                                            SQ(yo[0]-yi[0]))/(xo[0]-xi[0]);
-    y = ktscRoutA-2.*ktscarbonFiberThA;
-    x = lp1*(y-yo[0])+lc1;
-    sAh1->SetVertex(0,x,y);
-    sBh1->SetVertex(0,x,y);
-    sCh1->SetVertex(4,x,y);
-    y = ktscRinA+ktscarbonFiberThA;
-    x = lp1*(y-yo[0])+lc1;
-    sAh1->SetVertex(3,x,y);
-    sBh1->SetVertex(3,x,y);
-    x7[0] = x; y7[0] = y; // vortexing done after last point
-    //sCh1->SetVertex(7,x,y);
-    lp1 = (xo[1]-xi[1])/(yo[1]-yi[1]);
-    lc1 = xo[1]-0.5*ktscarbonFiberThA*TMath::Sqrt(SQ(xo[1]-xi[1])+
-                                            SQ(yo[1]-yi[1]))/(xo[1]-xi[1]);
-    y = ktscRoutA-2.*ktscarbonFiberThA;
-    x = lp1*(y-yo[1])+lc1;
-    sAh1->SetVertex(1,x,y);
-    sBh1->SetVertex(1,x,y);
-    sCh1->SetVertex(5,x,y);
-    y = ktscRinA+ktscarbonFiberThA;
-    x = lp1*(y-yo[1])+lc1;
-    sAh1->SetVertex(2,x,y);
-    sBh1->SetVertex(2,x,y);
-    sCh1->SetVertex(6,x,y);
-    //
-    // The easist way to get the points for the hole in volume sA2 is to
-    // rotate it to the Y axis where the y coordinates are easier to know
-    // and then rotate it back.
-    Double_t xp,yp,xa,ya,xb,yb;
-    th = 0.5*ktscAngle;
-    xa = CosD(th)*xo[1]-SinD(th)*yo[1];
-    ya = SinD(th)*xo[1]+CosD(th)*yo[1];
-    xb = CosD(th)*xi[1]-SinD(th)*yi[1];
-    yb = SinD(th)*xi[1]+CosD(th)*yi[1];
-    lp1 = (xa-xb)/(ya-yb);
-    lc1 = xa+0.5*ktscarbonFiberThA*TMath::Sqrt(SQ(xa-xb)+SQ(ya-yb))/(xa-xb);
-    y = ya-ktscarbonFiberThA;
-    x = lp1*(y-ya)+lc1;
-    xp = CosD(-th)*x-SinD(-th)*y;
-    yp = SinD(-th)*x+CosD(-th)*y;
-    sAh2->SetVertex(0,xp,yp);
-    sBh2->SetVertex(0,xp,yp);
-    sCh2->SetVertex(4,xp,yp);
-    y = yb+2.0*ktscarbonFiberThA;
-    x = lp1*(y-ya)+lc1;
-    xp = CosD(-th)*x-SinD(-th)*y;
-    yp = SinD(-th)*x+CosD(-th)*y;
-    sAh2->SetVertex(3,xp,yp);
-    sBh2->SetVertex(3,xp,yp);
-    x7[1] = x; y7[1] = y; // vortexing done after last point
-    //sCh2->SetVertex(7,xp,yp);
-    xa = CosD(th)*xo[2]-SinD(th)*yo[2];
-    ya = SinD(th)*xo[2]+CosD(th)*yo[2];
-    xb = CosD(th)*xi[2]-SinD(th)*yi[2];
-    yb = SinD(th)*xi[2]+CosD(th)*yi[2];
-    lp1 = (xa-xb)/(ya-yb);
-    lc1 = xa-0.5*ktscarbonFiberThA*TMath::Sqrt(SQ(xa-xb)+SQ(ya-yb))/(xa-xb);
-    y = ya-ktscarbonFiberThA;
-    x = lp1*(y-ya)+lc1;
-    xp = CosD(-th)*x-SinD(-th)*y;
-    yp = SinD(-th)*x+CosD(-th)*y;
-    sAh2->SetVertex(1,xp,yp);
-    sBh2->SetVertex(1,xp,yp);
-    sCh2->SetVertex(5,xp,yp);
-    y = yb+2.0*ktscarbonFiberThA;
-    x = lp1*(y-ya)+lc1;
-    xp = CosD(-th)*x-SinD(-th)*y;
-    yp = SinD(-th)*x+CosD(-th)*y;
-    sAh2->SetVertex(2,xp,yp);
-    sBh2->SetVertex(2,xp,yp);
-    sCh2->SetVertex(6,xp,yp);
-    //
-    lp1 = (yo[5]-yi[5])/(xo[5]-xi[5]);
-    lc1 = yo[5]+0.5*ktscarbonFiberThA*TMath::Sqrt(SQ(yo[5]-yi[5])+
-                                            SQ(xo[5]-xi[5]))/(yo[5]-yi[5]);
-    x = xo[5]-ktscarbonFiberThA;
-    y = lp1*(x-xo[5])+lc1;
-    sAh3->SetVertex(0,x,y);
-    sBh3->SetVertex(0,x,y);
-    sCh3->SetVertex(4,x,y);
-    x = xi[5]+2.0*ktscarbonFiberThA;
-    y = lp1*(x-xo[5])+lc1;
-    sAh3->SetVertex(3,x,y);
-    sBh3->SetVertex(3,x,y);
-    x7[2] = x; y7[2] = y; // vortexing done after last point
-    //sCh3->SetVertex(7,x,y);
-    y = 2.0*ktscarbonFiberThA;
-    x = xo[5]-ktscarbonFiberThA;
-    sAh3->SetVertex(1,x,y);
-    sBh3->SetVertex(1,x,y);
-    sCh3->SetVertex(5,x,y);
-    y = 2.0*ktscarbonFiberThA;
-    x = xi[5]+2.0*ktscarbonFiberThA;
-    sAh3->SetVertex(2,x,y);
-    sBh3->SetVertex(2,x,y);
-    sCh3->SetVertex(6,x,y);
-    //
     for(i=0;i<4;i++){ // define points at +dz
-     sA1->SetVertex(i+4,(sA1->GetVertices())[2*i],(sA1->GetVertices())[1+2*i]);
-     sA2->SetVertex(i+4,(sA2->GetVertices())[2*i],(sA2->GetVertices())[1+2*i]);
-     sA3->SetVertex(i+4,(sA3->GetVertices())[2*i],(sA3->GetVertices())[1+2*i]);
-     //
-     sB1->SetVertex(i+4,(sB1->GetVertices())[2*i],(sB1->GetVertices())[1+2*i]);
-     sB2->SetVertex(i+4,(sB2->GetVertices())[2*i],(sB2->GetVertices())[1+2*i]);
-     sB3->SetVertex(i+4,(sB3->GetVertices())[2*i],(sB3->GetVertices())[1+2*i]);
-     // C's are a cone which must match up with B's.
-     sC1->SetVertex(i+4,(sB1->GetVertices())[2*i],(sB1->GetVertices())[1+2*i]);
-     sC2->SetVertex(i+4,(sB2->GetVertices())[2*i],(sB2->GetVertices())[1+2*i]);
-     sC3->SetVertex(i+4,(sB3->GetVertices())[2*i],(sB3->GetVertices())[1+2*i]);
-     //
-     sAh1->SetVertex(i+4,(sAh1->GetVertices())[2*i],
-                     (sAh1->GetVertices())[1+2*i]);
-     sAh2->SetVertex(i+4,(sAh2->GetVertices())[2*i],
-                     (sAh2->GetVertices())[1+2*i]);
-     sAh3->SetVertex(i+4,(sAh3->GetVertices())[2*i],
-                     (sAh3->GetVertices())[1+2*i]);
-     //
-     sBh1->SetVertex(i+4,(sBh1->GetVertices())[2*i],
-                     (sBh1->GetVertices())[1+2*i]);
-     sBh2->SetVertex(i+4,(sBh2->GetVertices())[2*i],
-                     (sBh2->GetVertices())[1+2*i]);
-     sBh3->SetVertex(i+4,(sBh3->GetVertices())[2*i],
-                     (sBh3->GetVertices())[1+2*i]);
-    } // end for
+        sA1->SetVertex(i+4,(sA1->GetVertices())[2*i],
+                       (sA1->GetVertices())[1+2*i]);
+        sA2->SetVertex(i+4,(sA2->GetVertices())[2*i],
+                       (sA2->GetVertices())[1+2*i]);
+        sA3->SetVertex(i+4,(sA3->GetVertices())[2*i],
+                       (sA3->GetVertices())[1+2*i]);
+        //
+        sB1->SetVertex(i+4,(sB1->GetVertices())[2*i],
+                       (sB1->GetVertices())[1+2*i]);
+        sB2->SetVertex(i+4,(sB2->GetVertices())[2*i],
+                       (sB2->GetVertices())[1+2*i]);
+        sB3->SetVertex(i+4,(sB3->GetVertices())[2*i],
+                       (sB3->GetVertices())[1+2*i]);
+        // C's are a cone which must match up with B's.
+        sC1->SetVertex(i+4,(sB1->GetVertices())[2*i],
+                       (sB1->GetVertices())[1+2*i]);
+        sC2->SetVertex(i+4,(sB2->GetVertices())[2*i],
+                       (sB2->GetVertices())[1+2*i]);
+        sC3->SetVertex(i+4,(sB3->GetVertices())[2*i],
+                       (sB3->GetVertices())[1+2*i]);
+    } // end for i
     //
-    lp1 = (xco[0]-xci[0])/(yco[0]-yci[0]);
-    lc1 = xco[0]+0.5*ktscarbonFiberThA*TMath::Sqrt(SQ(xco[0]-xci[0])+
-                                           SQ(yco[0]-yci[0]))/(xco[0]-xci[0]);
-    y = ktscRoutC-2.*ktscarbonFiberThA;
-    x = lp1*(y-yco[0])+lc1;
-    sCh1->SetVertex(0,x,y);
-    y = ktscRinC+ktscarbonFiberThA;
-    x = lp1*(y-yci[0])+lc1;
-    sCh1->SetVertex(2,x,y);
-    lp1 = (xco[1]-xci[1])/(yco[1]-yci[1]);
-    lc1 = xco[1]-0.5*ktscarbonFiberThA*TMath::Sqrt(SQ(xco[1]-xci[1])+
-                                           SQ(yco[1]-yci[1]))/(xco[1]-xci[1]);
-    y = ktscRoutC-2.*ktscarbonFiberThA;
-    x = lp1*(y-yco[1])+lc1;
-    sCh1->SetVertex(1,x,y);
-    y = ktscRinC+ktscarbonFiberThA;
-    x = lp1*(y-yci[1])+lc1;
-    sCh1->SetVertex(3,x,y);
-    //
-    th = 0.5*ktscAngle;
-    xa = CosD(th)*xco[1]-SinD(th)*yco[1];
-    ya = SinD(th)*xco[1]+CosD(th)*yco[1];
-    xb = CosD(th)*xci[1]-SinD(th)*yci[1];
-    yb = SinD(th)*xci[1]+CosD(th)*yci[1];
-    lp1 = (xa-xb)/(ya-yb);
-    lc1 = xa+0.5*ktscarbonFiberThA*TMath::Sqrt(SQ(xa-xb)+SQ(ya-yb))/(xa-xb);
-    y = ya-ktscarbonFiberThA;
-    x = lp1*(y-ya)+lc1;
-    xp = CosD(-th)*x-SinD(-th)*y;
-    yp = SinD(-th)*x+CosD(-th)*y;
-    yp = ya-ktscarbonFiberThA;
-    xp = lp1*(y-ya)+lc1;
-    sCh2->SetVertex(0,xp,yp);
-    y = yb+2.0*ktscarbonFiberThA;
-    x = lp1*(y-ya)+lc1;
-    xp = CosD(-th)*x-SinD(-th)*y;
-    yp = SinD(-th)*x+CosD(-th)*y;
-    sCh2->SetVertex(2,xp,yp);
-    xa = CosD(th)*xco[2]-SinD(th)*yco[2];
-    ya = SinD(th)*xco[2]+CosD(th)*yco[2];
-    xb = CosD(th)*xci[2]-SinD(th)*yci[2];
-    yb = SinD(th)*xci[2]+CosD(th)*yci[2];
-    lp1 = (xa-xb)/(ya-yb);
-    lc1 = xa-0.5*ktscarbonFiberThA*TMath::Sqrt(SQ(xa-xb)+SQ(ya-yb))/(xa-xb);
-    y = ya-ktscarbonFiberThA;
-    x = lp1*(y-ya)+lc1;
-    xp = CosD(-th)*x-SinD(-th)*y;
-    yp = SinD(-th)*x+CosD(-th)*y;
-    sCh2->SetVertex(1,xp,yp);
-    y = yb+2.0*ktscarbonFiberThA;
-    x = lp1*(y-ya)+lc1;
-    xp = CosD(-th)*x-SinD(-th)*y;
-    yp = SinD(-th)*x+CosD(-th)*y;
-    sCh2->SetVertex(3,xp,yp);
-    //
-    lp1 = (yco[5]-yci[5])/(xco[5]-xci[5]);
-    lc1 = yco[5]+0.5*ktscarbonFiberThA*TMath::Sqrt(SQ(yco[5]-yci[5])+
-                                          SQ(xco[5]-xci[5]))/(yco[5]-yci[5]);
-    x = xco[5]-ktscarbonFiberThA;
-    y = lp1*(x-xco[5])+lc1;
-    sCh3->SetVertex(0,x,y);
-    x = xci[5]+2.0*ktscarbonFiberThA;
-    y = lp1*(x-xci[5])+lc1;
-    sCh3->SetVertex(2,x,y);
-    y = 2.0*ktscarbonFiberThA;
-    x = xco[5]-ktscarbonFiberThA;
-    sCh3->SetVertex(1,x,y);
-    y = 2.0*ktscarbonFiberThA;
-    x = xci[5]+2.0*ktscarbonFiberThA;
-    sCh3->SetVertex(3,x,y);
-    sCh1->SetVertex(7,x7[0],y7[0]); // 7th point most be done last ???
-    sCh2->SetVertex(7,x7[1],y7[1]); // 7th point most be done last ???
-    sCh3->SetVertex(7,x7[2],y7[2]); // 7th point most be done last ???
+    for(i=0;i<4;i++){
+        //printf("A1#%d ",i);
+        InsidePoint(sA1->GetVertices()[((i+3)%4)*2+0],
+                    sA1->GetVertices()[((i+3)%4)*2+1],
+                    sA1->GetVertices()[i*2+0],
+                    sA1->GetVertices()[i*2+1],
+                    sA1->GetVertices()[((i+1)%4)*2+0],
+                    sA1->GetVertices()[((i+1)%4)*2+1],-ktscarbonFiberThA,x,y);
+        sAh1->SetVertex(i,x,y);
+        //printf("A1#%d ",i+4);
+        InsidePoint(sA1->GetVertices()[((i+3)%4 +4)*2+0],
+                    sA1->GetVertices()[((i+3)%4 +4)*2+1],
+                    sA1->GetVertices()[(i+4)*2+0],
+                    sA1->GetVertices()[(i+4)*2+1],
+                    sA1->GetVertices()[((i+1)%4 +4)*2+0],
+                    sA1->GetVertices()[((i+1)%4 +4)*2+1],-ktscarbonFiberThA,x,y);
+        sAh1->SetVertex(i+4,x,y); // 7th point done last
+        //printf("A2#%d ",i);
+        InsidePoint(sA2->GetVertices()[((i+3)%4)*2+0],
+                    sA2->GetVertices()[((i+3)%4)*2+1],
+                    sA2->GetVertices()[i*2+0],
+                    sA2->GetVertices()[i*2+1],
+                    sA2->GetVertices()[((i+1)%4)*2+0],
+                    sA2->GetVertices()[((i+1)%4)*2+1],-ktscarbonFiberThA,x,y);
+        sAh2->SetVertex(i,x,y);
+        //printf("A2#%d ",i+4);
+        InsidePoint(sA2->GetVertices()[((i+3)%4 +4)*2+0],
+                    sA2->GetVertices()[((i+3)%4 +4)*2+1],
+                    sA2->GetVertices()[(i+4)*2+0],
+                    sA2->GetVertices()[(i+4)*2+1],
+                    sA2->GetVertices()[((i+1)%4 +4)*2+0],
+                    sA2->GetVertices()[((i+1)%4 +4)*2+1],-ktscarbonFiberThA,x,y);
+        sAh2->SetVertex(i+4,x,y); // 7th point done last
+        //printf("A3#%d ",i);
+        InsidePoint(sA3->GetVertices()[((i+3)%4)*2+0],
+                    sA3->GetVertices()[((i+3)%4)*2+1],
+                    sA3->GetVertices()[i*2+0],
+                    sA3->GetVertices()[i*2+1],
+                    sA3->GetVertices()[((i+1)%4)*2+0],
+                    sA3->GetVertices()[((i+1)%4)*2+1],-ktscarbonFiberThA,x,y);
+        sAh3->SetVertex(i,x,y);
+        //printf("A3#%d ",i+4);
+        InsidePoint(sA3->GetVertices()[((i+3)%4 +4)*2+0],
+                    sA3->GetVertices()[((i+3)%4 +4)*2+1],
+                    sA3->GetVertices()[(i+4)*2+0],
+                    sA3->GetVertices()[(i+4)*2+1],
+                    sA3->GetVertices()[((i+1)%4 +4)*2+0],
+                    sA3->GetVertices()[((i+1)%4 +4)*2+1],-ktscarbonFiberThA,x,y);
+        sAh3->SetVertex(i+4,x,y); // 7th point done last
+        //printf("B1#%d ",i);
+        InsidePoint(sB1->GetVertices()[((i+3)%4)*2+0],
+                    sB1->GetVertices()[((i+3)%4)*2+1],
+                    sB1->GetVertices()[i*2+0],
+                    sB1->GetVertices()[i*2+1],
+                    sB1->GetVertices()[((i+1)%4)*2+0],
+                    sB1->GetVertices()[((i+1)%4)*2+1],-ktscarbonFiberThB,x,y);
+        sBh1->SetVertex(i,x,y);
+        //printf("B1#%d ",i+4);
+        InsidePoint(sB1->GetVertices()[((i+3)%4 +4)*2+0],
+                    sB1->GetVertices()[((i+3)%4 +4)*2+1],
+                    sB1->GetVertices()[(i+4)*2+0],
+                    sB1->GetVertices()[(i+4)*2+1],
+                    sB1->GetVertices()[((i+1)%4 +4)*2+0],
+                    sB1->GetVertices()[((i+1)%4 +4)*2+1],-ktscarbonFiberThB,x,y);
+        sBh1->SetVertex(i+4,x,y); // 7th point done last
+        //printf("B2#%d ",i);
+        InsidePoint(sB2->GetVertices()[((i+3)%4)*2+0],
+                    sB2->GetVertices()[((i+3)%4)*2+1],
+                    sB2->GetVertices()[i*2+0],
+                    sB2->GetVertices()[i*2+1],
+                    sB2->GetVertices()[((i+1)%4)*2+0],
+                    sB2->GetVertices()[((i+1)%4)*2+1],-ktscarbonFiberThB,x,y);
+        sBh2->SetVertex(i,x,y);
+        //printf("B2#%d ",i+4);
+        InsidePoint(sB2->GetVertices()[((i+3)%4 +4)*2+0],
+                    sB2->GetVertices()[((i+3)%4 +4)*2+1],
+                    sB2->GetVertices()[(i+4)*2+0],
+                    sB2->GetVertices()[(i+4)*2+1],
+                    sB2->GetVertices()[((i+1)%4 +4)*2+0],
+                    sB2->GetVertices()[((i+1)%4 +4)*2+1],-ktscarbonFiberThB,x,y);
+        sBh2->SetVertex(i+4,x,y); // 7th point done last
+        //printf("B3#%d ",i);
+        InsidePoint(sB3->GetVertices()[((i+3)%4)*2+0],
+                    sB3->GetVertices()[((i+3)%4)*2+1],
+                    sB3->GetVertices()[i*2+0],
+                    sB3->GetVertices()[i*2+1],
+                    sB3->GetVertices()[((i+1)%4)*2+0],
+                    sB3->GetVertices()[((i+1)%4)*2+1],-ktscarbonFiberThB,x,y);
+        sBh3->SetVertex(i,x,y);
+        //printf("B3#%d ",i+4);
+        InsidePoint(sB3->GetVertices()[((i+3)%4 +4)*2+0],
+                    sB3->GetVertices()[((i+3)%4 +4)*2+1],
+                    sB3->GetVertices()[(i+4)*2+0],
+                    sB3->GetVertices()[(i+4)*2+1],
+                    sB3->GetVertices()[((i+1)%4 +4)*2+0],
+                    sB3->GetVertices()[((i+1)%4 +4)*2+1],-ktscarbonFiberThB,x,y);
+        sBh3->SetVertex(i+4,x,y); // 7th point done last
+        //printf("C1#%d ",i);
+        InsidePoint(sC1->GetVertices()[((i+3)%4)*2+0],
+                    sC1->GetVertices()[((i+3)%4)*2+1],
+                    sC1->GetVertices()[i*2+0],
+                    sC1->GetVertices()[i*2+1],
+                    sC1->GetVertices()[((i+1)%4)*2+0],
+                    sC1->GetVertices()[((i+1)%4)*2+1],-ktscarbonFiberThB,x,y);
+        sCh1->SetVertex(i,x,y);
+        //printf("C1#%d ",i+4);
+        InsidePoint(sC1->GetVertices()[((i+3)%4 +4)*2+0],
+                    sC1->GetVertices()[((i+3)%4 +4)*2+1],
+                    sC1->GetVertices()[(i+4)*2+0],
+                    sC1->GetVertices()[(i+4)*2+1],
+                    sC1->GetVertices()[((i+1)%4 +4)*2+0],
+                    sC1->GetVertices()[((i+1)%4 +4)*2+1],-ktscarbonFiberThA,x,y);
+        sCh1->SetVertex(i+4,x,y); // 7th point done last
+        //printf("C2#%d ",i);
+        InsidePoint(sC2->GetVertices()[((i+3)%4)*2+0],
+                    sC2->GetVertices()[((i+3)%4)*2+1],
+                    sC2->GetVertices()[i*2+0],
+                    sC2->GetVertices()[i*2+1],
+                    sC2->GetVertices()[((i+1)%4)*2+0],
+                    sC2->GetVertices()[((i+1)%4)*2+1],-ktscarbonFiberThA,x,y);
+        sCh2->SetVertex(i,x,y);
+        //printf("C2#%d ",i+4);
+        InsidePoint(sC2->GetVertices()[((i+3)%4 +4)*2+0],
+                    sC2->GetVertices()[((i+3)%4 +4)*2+1],
+                    sC2->GetVertices()[(i+4)*2+0],
+                    sC2->GetVertices()[(i+4)*2+1],
+                    sC2->GetVertices()[((i+1)%4 +4)*2+0],
+                  sC2->GetVertices()[((i+1)%4 +4)*2+1],-ktscarbonFiberThA,x,y);
+        sCh2->SetVertex(i+4,x,y); // 7th point done last
+        //printf("C3#%d ",i);
+        InsidePoint(sC3->GetVertices()[((i+3)%4)*2+0],
+                    sC3->GetVertices()[((i+3)%4)*2+1],
+                    sC3->GetVertices()[i*2+0],
+                    sC3->GetVertices()[i*2+1],
+                    sC3->GetVertices()[((i+1)%4)*2+0],
+                    sC3->GetVertices()[((i+1)%4)*2+1],-ktscarbonFiberThA,x,y);
+        sCh3->SetVertex(i,x,y);
+        //printf("C3#%d ",i+4);
+        InsidePoint(sC3->GetVertices()[((i+3)%4 +4)*2+0],
+                    sC3->GetVertices()[((i+3)%4 +4)*2+1],
+                    sC3->GetVertices()[(i+4)*2+0],
+                    sC3->GetVertices()[(i+4)*2+1],
+                    sC3->GetVertices()[((i+1)%4 +4)*2+0],
+                  sC3->GetVertices()[((i+1)%4 +4)*2+1],-ktscarbonFiberThA,x,y);
+        sCh3->SetVertex(i+4,x,y); // 7th point done last
+    } // end for i
     //
     // Define Minimal volume to inclose this SPD Thermal Sheald.
-    sM1 = new TGeoPcon("ITSspdShealdVV",0.0,360.0,9);
-    sM1->Z(0)    = 0.5*ktscLengthA+ktscLengthB;
-    sM1->Rmin(0) = ktscRinB;
-    x = sB1->GetVertices()[0]; // [0][0]
-    y = sB1->GetVertices()[1]; // [0][1]
-    sM1->Rmax(0) = TMath::Sqrt(x*x+y*y);
-    sM1->Z(1)    = sM1->GetZ(0)-ktscLengthB;
-    sM1->Rmin(1) = sM1->GetRmin(0);
-    sM1->Rmax(1) = sM1->GetRmax(0);
-    sM1->Z(2)    = sM1->GetZ(1);
-    sM1->Rmin(2) = ktscRinA;
-    x = sA1->GetVertices()[0]; // [0]0]
-    y = sA1->GetVertices()[1]; // [0][1]
-    sM1->Rmax(2) = TMath::Sqrt(x*x+y*y);
-    sM1->Z(3)    = -(sM1->GetZ(0)-ktscLengthB);
-    sM1->Rmin(3) = sM1->GetRmin(2);
-    sM1->Rmax(3) = sM1->GetRmax(2);
-    sM1->Z(4)    = sM1->GetZ(3);
-    sM1->Rmin(4) = sM1->GetRmin(1);
-    sM1->Rmax(4) = sM1->GetRmax(1);
-    sM1->Z(5)    = -(sM1->GetZ(0));
-    sM1->Rmin(5) = sM1->GetRmin(0);
-    sM1->Rmax(5) = sM1->GetRmax(0);
-    sM1->Z(6)    = sM1->GetZ(5) - ktscLengthC;
-    sM1->Rmin(6) = ktscRinC;
-    x = sC1->GetVertices()[0]; // [0][0]
-    y = sC1->GetVertices()[1]; // [0][1]
-    sM1->Rmax(6) = TMath::Sqrt(x*x+y*y);
-    sM1->Z(7)    = sM1->GetZ(6);
-    sM1->Rmin(7) = sD->GetRmin();
-    sM1->Rmax(7) = sD->GetRmax();
-    sM1->Z(8)    = sM1->Z(7) - ktscLengthD;
-    sM1->Rmin(8) = sM1->GetRmin(7);
-    sM1->Rmax(8) = sM1->GetRmax(7);
-    sM2 = new TGeoTubeSeg("ITSspdShealdWingVV",
-                          sM1->GetRmax(8),sDw->GetRmax(),sDw->GetDz(),
-                          sDw->GetPhi1(),sDw->GetPhi2());
     //
-    x = 0.5*(sM1->GetZ(8) + sM1->GetZ(7));
-    tranITSspdShealdVVt0 = new TGeoTranslation("ITSspdShealdVVt0",0.0,0.0,x);
-    tranITSspdShealdVVt0->RegisterYourself();
-    TGeoRotation rotz90("",0.0,0.0,90.0); // never registered.
-    rotITSspdShealdVVt1 = new TGeoCombiTrans(*tranITSspdShealdVVt0,rotz90);
-    rotITSspdShealdVVt1->SetName("ITSspdShealdVVt1");
-    rotITSspdShealdVVt1->RegisterYourself();
-    TGeoRotation rotz180("",0.0,0.0,180.0); // never registered
-    rotITSspdShealdVVt2 = new TGeoCombiTrans(*tranITSspdShealdVVt0,rotz180);
-    rotITSspdShealdVVt2->SetName("ITSspdShealdVVt2");
-    rotITSspdShealdVVt2->RegisterYourself();
-    TGeoRotation rotz270("",0.0,0.0,270.0); // never registered
-    rotITSspdShealdVVt3 = new TGeoCombiTrans(*tranITSspdShealdVVt0,rotz270);
-    rotITSspdShealdVVt3->SetName("ITSspdShealdVVt3");
-    rotITSspdShealdVVt3->RegisterYourself();
-    sM = new TGeoCompositeShape("ITS SPD Thermal sheald volume",
-                                "(((ITSspdShealdVV+"
-                                "ITSspdShealdWingVV:ITSspdShealdVVt0)+"
-                                "ITSspdShealdWingVV:ITSspdShealdVVt1)+"
-                                "ITSspdShealdWingVV:ITSspdShealdVVt2)+"
-                                "ITSspdShealdWingVV:ITSspdShealdVVt3");
-    //
-    if(AliDebugLevel()){
-        tranITSspdShealdVVt0->Print();
-        rotITSspdShealdVVt1->Print();
-        rotITSspdShealdVVt2->Print();
-        rotITSspdShealdVVt3->Print();
+    if(GetDebug(1)){
         sD->InspectShape();
         sDs->InspectShape();
         sDw->InspectShape();
@@ -544,12 +452,11 @@ void AliITSv11GeometrySupport::SPDThermalSheald(TGeoVolume *moth){
         sCh2->InspectShape();
         sC3->InspectShape();
         sCh3->InspectShape();
-        sM1->InspectShape();
-        sM2->InspectShape();
-        sM->InspectShape();
-    } // end if AliDebugLevel
+        //sM1->InspectShape();
+        //sM2->InspectShape();
+        //sM->InspectShape();
+    } // end if GetDebug(1)
     //
-    TGeoManager *mgr = gGeoManager;
     medSPDcf = mgr->GetMedium("ITSspdCarbonFiber");
     medSPDfs = mgr->GetMedium("ITSspdStaselite4411w");
     medSPDfo = mgr->GetMedium("ITSspdRohacell50A");
@@ -558,49 +465,51 @@ void AliITSv11GeometrySupport::SPDThermalSheald(TGeoVolume *moth){
     TGeoVolume *vA1,*vA2,*vA3,*vAh1,*vAh2,*vAh3;
     TGeoVolume *vB1,*vB2,*vB3,*vBh1,*vBh2,*vBh3;
     TGeoVolume *vC1,*vC2,*vC3,*vCh1,*vCh2,*vCh3;
-    TGeoVolume *vD,*vDs,*vDw,*vDws,*vM;
-    vM = new TGeoVolume("ITSspdThermalShealdMother",sM,medSPDair);
-    vM->SetVisibility(kTRUE);
-    vM->SetLineColor(7); // light Blue
-    vM->SetLineWidth(1);
-    vM->SetFillColor(vM->GetLineColor());
-    vM->SetFillStyle(4090); // 90% transparent
+    TGeoVolume *vD,*vDs,*vDw,*vDws;
+    TGeoVolumeAssembly *vM;
+    //vM = new TGeoVolume("ITSspdThermalShealdMother",sM,medSPDair);
+    vM = new TGeoVolumeAssembly("ITSspdThermalShealdMother");
+    //vM->SetVisibility(kTRUE);
+    //vM->SetLineColor(7); // light Blue
+    //vM->SetLineWidth(1);
+    //vM->SetFillColor(vM->GetLineColor());
+    //vM->SetFillStyle(4090); // 90% transparent
     moth->AddNode(vM,1,0); ///////////////////// Virtual Volume ////////
     vA1 = new TGeoVolume("ITSspdCentCylA1CF",sA1,medSPDcf);
     vA1->SetVisibility(kTRUE);
-    vA1->SetLineColor(4);
+    vA1->SetLineColor(7);
     vA1->SetLineWidth(1);
     vA2 = new TGeoVolume("ITSspdCentCylA2CF",sA2,medSPDcf);
     vA2->SetVisibility(kTRUE);
-    vA2->SetLineColor(4);
+    vA2->SetLineColor(7);
     vA2->SetLineWidth(1);
     vA3 = new TGeoVolume("ITSspdCentCylA3CF",sA3,medSPDcf);
     vA3->SetVisibility(kTRUE);
-    vA3->SetLineColor(4);
+    vA3->SetLineColor(7);
     vA3->SetLineWidth(1);
     vB1 = new TGeoVolume("ITSspdCentCylB1CF",sB1,medSPDcf);
     vB1->SetVisibility(kTRUE);
-    vB1->SetLineColor(4);
+    vB1->SetLineColor(7);
     vB1->SetLineWidth(1);
     vB2 = new TGeoVolume("ITSspdCentCylB2CF",sB2,medSPDcf);
     vB2->SetVisibility(kTRUE);
-    vB2->SetLineColor(4);
+    vB2->SetLineColor(7);
     vB2->SetLineWidth(1);
     vB3 = new TGeoVolume("ITSspdCentCylB3CF",sB3,medSPDcf);
     vB3->SetVisibility(kTRUE);
-    vB3->SetLineColor(4);
+    vB3->SetLineColor(7);
     vB3->SetLineWidth(1);
     vC1 = new TGeoVolume("ITSspdCentCylC1CF",sC1,medSPDcf);
     vC1->SetVisibility(kTRUE);
-    vC1->SetLineColor(4);
+    vC1->SetLineColor(7);
     vC1->SetLineWidth(1);
     vC2 = new TGeoVolume("ITSspdCentCylC2CF",sC2,medSPDcf);
     vC2->SetVisibility(kTRUE);
-    vC2->SetLineColor(4);
+    vC2->SetLineColor(7);
     vC2->SetLineWidth(1);
     vC3 = new TGeoVolume("ITSspdCentCylC3CF",sC3,medSPDcf);
     vC3->SetVisibility(kTRUE);
-    vC3->SetLineColor(4);
+    vC3->SetLineColor(7);
     vC3->SetLineWidth(1);
     vAh1 = new TGeoVolume("ITSspdCentCylA1AirA",sAh1,medSPDair);
     vAh1->SetVisibility(kTRUE);
@@ -649,11 +558,11 @@ void AliITSv11GeometrySupport::SPDThermalSheald(TGeoVolume *moth){
     vCh3->SetFillStyle(4090); // 90% transparent
     vD = new TGeoVolume("ITSspdCentCylA1CD",sD,medSPDcf);
     vD->SetVisibility(kTRUE);
-    vD->SetLineColor(4);
+    vD->SetLineColor(7);
     vD->SetLineWidth(1);
     vDw = new TGeoVolume("ITSspdCentCylA1CDw",sDw,medSPDcf);
     vDw->SetVisibility(kTRUE);
-    vDw->SetLineColor(4);
+    vDw->SetLineColor(7);
     vDw->SetLineWidth(1);
     vDs = new TGeoVolume("ITSspdCentCylA1Dfill",sDs,medSPDfs);
     vDs->SetVisibility(kTRUE);
@@ -681,87 +590,110 @@ void AliITSv11GeometrySupport::SPDThermalSheald(TGeoVolume *moth){
     vM->AddNode(vA1,1,0);
     vM->AddNode(vA2,1,0);
     vM->AddNode(vA3,1,0);
-    tranb  = new TGeoTranslation("",0.0,0.0,0.5*(ktscLengthA+ktscLengthB));
-    tranbm = new TGeoTranslation("",0.0,0.0,0.5*(-ktscLengthA-ktscLengthB));
+    tranb  = new TGeoTranslation("",0.0,0.0,+sA1->GetDz()+sB1->GetDz());
+    tranbm = new TGeoTranslation("",0.0,0.0,-sA1->GetDz()-sB1->GetDz());
     vM->AddNode(vB1,1,tranb);
     vM->AddNode(vB2,1,tranb);
     vM->AddNode(vB3,1,tranb);
     vM->AddNode(vB1,2,tranbm);
     vM->AddNode(vB2,2,tranbm);
     vM->AddNode(vB3,2,tranbm);
-    // Muon side (rsB26) is at -Z.
-    tranc = new TGeoTranslation("",0.0,0.0,
-                                0.5*(-ktscLengthA-ktscLengthB-ktscLengthC));
+    // Muon side (rsB26) is at -.Z
+    TGeoRotation *roty180 = new TGeoRotation("",0.0,180.0,0.0);//Rotate about Y
+    tranc = new TGeoTranslation("",0.0,0.0,-sA1->GetDz()
+                                -2.*sB1->GetDz()-sC1->GetDz());
+    trancm = new TGeoTranslation("",0.0,0.0,sA1->GetDz()
+                                +2.*sB1->GetDz()+sC1->GetDz());
+    TGeoCombiTrans *trancmr = new TGeoCombiTrans(*trancm,*roty180);
     vM->AddNode(vC1,1,tranc);
     vM->AddNode(vC2,1,tranc);
     vM->AddNode(vC3,1,tranc);
+    vM->AddNode(vC1,2,trancmr);
+    vM->AddNode(vC2,2,trancmr);
+    vM->AddNode(vC3,2,trancmr);
+    // added fudge factor of 0.075 to remove overlap with SSD cone.
+    x = sA1->GetDz()+2.*sB1->GetDz()+2.*sC1->GetDz()+sD->GetDz()+0.075;
+    TGeoTranslation *tranITSspdShealdVVt0m = 
+        new TGeoTranslation("ITSspdShealdVVt0m",0.0,0.0,-x);
+    TGeoTranslation *tranITSspdShealdVVt0 = 
+        new TGeoTranslation("ITSspdShealdVVt0",0.0,0.0,x);
+    TGeoRotation rotz90("",0.0,0.0,90.0); // never registered.
+    rotITSspdShealdVVt1 = new TGeoCombiTrans(*tranITSspdShealdVVt0,rotz90);
+    rotITSspdShealdVVt1->SetName("ITSspdShealdVVt1");
+    TGeoRotation rotz180("",0.0,0.0,180.0); // never registered
+    rotITSspdShealdVVt2 = new TGeoCombiTrans(*tranITSspdShealdVVt0,rotz180);
+    rotITSspdShealdVVt2->SetName("ITSspdShealdVVt2");
+    TGeoRotation rotz270("",0.0,0.0,270.0); // never registered
+    rotITSspdShealdVVt3 = new TGeoCombiTrans(*tranITSspdShealdVVt0,rotz270);
+    rotITSspdShealdVVt3->SetName("ITSspdShealdVVt3");
     vM->AddNode(vD,1,tranITSspdShealdVVt0);
+    TGeoCombiTrans *roty180ITSspdShealdVVt0 = 
+        new TGeoCombiTrans(*tranITSspdShealdVVt0m,*roty180);
+    vM->AddNode(vD,2,roty180ITSspdShealdVVt0);
     vM->AddNode(vDw,1,tranITSspdShealdVVt0);
     vM->AddNode(vDw,2,rotITSspdShealdVVt1);
     vM->AddNode(vDw,3,rotITSspdShealdVVt2);
     vM->AddNode(vDw,4,rotITSspdShealdVVt3);
+    vM->AddNode(vDw,5,roty180ITSspdShealdVVt0);
+    //Rotate about Y then about new z 90
+    TGeoRotation *roty180z90 = new TGeoRotation("",0.0,180.0,90.0);
+    //Rotate about Y then about new z 180
+    TGeoRotation *roty180z180 = new TGeoRotation("",0.0,180.0,180.0);
+    //Rotate about Y then about new z 270
+    TGeoRotation *roty180z270 = new TGeoRotation("",0.0,180.0,270.0);
+    vM->AddNode(vDw,6,new TGeoCombiTrans(*tranITSspdShealdVVt0m,*roty180z90));
+    vM->AddNode(vDw,7,new TGeoCombiTrans(*tranITSspdShealdVVt0m,*roty180z180));
+    vM->AddNode(vDw,8,new TGeoCombiTrans(*tranITSspdShealdVVt0m,*roty180z270));
     k=2;
     for(i=1;i<10;i++) {
         th = ((Double_t)i)*ktscAngle*fgkDegree;
         rot = new TGeoRotation("",0.0,0.0,th);
+        rot2 = new TGeoRotation("",0.0,180.0,th);
         vM->AddNode(vA1,i+1,rot);
         vM->AddNode(vB1,i+2,new TGeoCombiTrans(*tranb,*rot));
         vM->AddNode(vB1,i+12,new TGeoCombiTrans(*tranbm,*rot));
-        vM->AddNode(vC1,i+1,new TGeoCombiTrans(*tranc,*rot));
+        vM->AddNode(vC1,i+2,new TGeoCombiTrans(*tranc,*rot));
+        vM->AddNode(vC1,i+13,new TGeoCombiTrans(*trancm,*rot2));
         if(i!=0||i!=2||i!=7){
             vM->AddNode(vA2,k++,rot);
             vM->AddNode(vB2,k++,new TGeoCombiTrans(*tranb,*rot));
             vM->AddNode(vB2,k++,new TGeoCombiTrans(*tranbm,*rot));
             vM->AddNode(vC2,k++,new TGeoCombiTrans(*tranc,*rot));
+            vM->AddNode(vC2,k++,new TGeoCombiTrans(*trancm,*rot2));
         } // end if
         if(i==5) {
             vM->AddNode(vA3,2,rot);
             vM->AddNode(vB3,3,new TGeoCombiTrans(*tranb,*rot));
             vM->AddNode(vB3,4,new TGeoCombiTrans(*tranbm,*rot));
-            vM->AddNode(vC3,2,new TGeoCombiTrans(*tranc,*rot));
+            vM->AddNode(vC3,3,new TGeoCombiTrans(*tranc,*rot));
+            vM->AddNode(vC3,4,new TGeoCombiTrans(*trancm,*rot2));
         } // end if
     } // end for i
     rot = new TGeoRotation("",180.,0.0,0.0);
+    rot2 = new TGeoRotation("",180.,180.,0.0);
     vM->AddNode(vA3,3,rot);
     vM->AddNode(vB3,5,new TGeoCombiTrans(*tranb,*rot));
     vM->AddNode(vB3,6,new TGeoCombiTrans(*tranbm,*rot));
-    vM->AddNode(vC3,3,new TGeoCombiTrans(*tranc,*rot));
+    vM->AddNode(vC3,5,new TGeoCombiTrans(*tranc,*rot));
+    vM->AddNode(vC3,6,new TGeoCombiTrans(*trancm,*rot2));
     rot = new TGeoRotation("",180.,0.0,180.0);
+    rot2 = new TGeoRotation("",180.,180.0,180.0);
     vM->AddNode(vA3,4,rot);
     vM->AddNode(vB3,7,new TGeoCombiTrans(*tranb,*rot));
     vM->AddNode(vB3,8,new TGeoCombiTrans(*tranbm,*rot));
-    vM->AddNode(vC3,4,new TGeoCombiTrans(*tranc,*rot));
-    if(AliDebugLevel()){
-        vA1->PrintNodes();
-        vAh1->PrintNodes();
-        vA2->PrintNodes();
-        vAh2->PrintNodes();
-        vA3->PrintNodes();
-        vAh3->PrintNodes();
-        vB1->PrintNodes();
-        vBh1->PrintNodes();
-        vB2->PrintNodes();
-        vBh2->PrintNodes();
-        vB3->PrintNodes();
-        vBh3->PrintNodes();
-        vC1->PrintNodes();
-        vCh1->PrintNodes();
-        vC2->PrintNodes();
-        vCh2->PrintNodes();
-        vC3->PrintNodes();
-        vCh3->PrintNodes();
-        vD->PrintNodes();
-        vDs->PrintNodes();
-        vDw->PrintNodes();
-        vDws->PrintNodes();
+    vM->AddNode(vC3,7,new TGeoCombiTrans(*tranc,*rot));
+    vM->AddNode(vC3,8,new TGeoCombiTrans(*trancm,*rot2));
+    if(GetDebug(1)){
         vM->PrintNodes();
+        vM->InspectShape();
     } // end if
 }
 //______________________________________________________________________
-void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth){
+void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth,TGeoManager *mgr){
     // Define the detail SDD support cone geometry.
     // Inputs:
-    //   TGeo Volume  *moth  The mother volume to place this object.
+    //   TGeoVolume  *moth  The mother volume to place this object.
+    //   TGeoManager *mgr   The pointer to the Geo-Manager defaule gGeoManager
     // Outputs:
     //  none.
     // Return:
@@ -796,14 +728,13 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth){
                     ktsOuterR-ktscarbonFiberth,0.5*ktsLength);
     sD = new TGeoTube("ITS SDD CC M6 bolt end",0.0,0.5*ktsBoltDiameter,
                     0.5*ktsBoltDepth);
-    if(AliDebugLevel()){
+    if(GetDebug(1)){
         sA->InspectShape();
         sB->InspectShape();
         sC->InspectShape();
         sD->InspectShape();
-    } // end if AliDebugLevel
+    } // end if GetDebug(1)
     //
-    TGeoManager *mgr = gGeoManager;
     medSDDcf = mgr->GetMedium("ITSssdCarbonFiber");
     medSDDfs = mgr->GetMedium("ITSssdStaselite4411w");
     medSDDfo = mgr->GetMedium("ITSssdRohacell50A");
@@ -848,7 +779,7 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth){
         tran = new TGeoTranslation("",x,y,-z);
         vC->AddNode(vD,i+n+1,tran);
     } // end for i
-    if(AliDebugLevel()){
+    if(GetDebug(1)){
         vA->PrintNodes();
         vB->PrintNodes();
         vC->PrintNodes();
@@ -863,7 +794,8 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth){
     const Double_t kconTc           = 45.0; // angle of SDD cone [degrees].
     const Double_t kconZouterMilled = 23.0*fgkmm;
     const Double_t kconZcylinder    = 186.0*fgkmm;
-    const Double_t kconZ0           = kconZcylinder + 0.5*ktsLength;
+    // fudge factor of 0.05cm.
+    const Double_t kconZ0           = kconZcylinder + 0.5*ktsLength+0.05;
     //const Int_t kconNspoaks         = 12;
     //const Int_t kconNmounts         = 4;
     //const Double_t kconDmountAngle  = 9.0; // degrees
@@ -1072,37 +1004,37 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth){
     //
     rot = new TGeoRotation("ITSsddRotZ30",0.0,0.0,30.0);
     rot->RegisterYourself();
-    if(AliDebugLevel()) rot->Print();
+    if(GetDebug(1)) rot->Print();
     rot = new TGeoRotation("ITSsddRotZ60",0.0,0.0,60.0);
     rot->RegisterYourself();
-    if(AliDebugLevel()) rot->Print();
+    if(GetDebug(1)) rot->Print();
     rot = new TGeoRotation("ITSsddRotZ90",0.0,0.0,90.0);
     rot->RegisterYourself();
-    if(AliDebugLevel()) rot->Print();
+    if(GetDebug(1)) rot->Print();
     rot = new TGeoRotation("ITSsddRotZ120",0.0,0.0,120.0);
     rot->RegisterYourself();
-    if(AliDebugLevel()) rot->Print();
+    if(GetDebug(1)) rot->Print();
     rot = new TGeoRotation("ITSsddRotZ150",0.0,0.0,150.0);
     rot->RegisterYourself();
-    if(AliDebugLevel()) rot->Print();
+    if(GetDebug(1)) rot->Print();
     rot = new TGeoRotation("ITSsddRotZ180",0.0,0.0,180.0);
     rot->RegisterYourself();
-    if(AliDebugLevel()) rot->Print();
+    if(GetDebug(1)) rot->Print();
     rot = new TGeoRotation("ITSsddRotZ210",0.0,0.0,210.0);
     rot->RegisterYourself();
-    if(AliDebugLevel()) rot->Print();
+    if(GetDebug(1)) rot->Print();
     rot = new TGeoRotation("ITSsddRotZ240",0.0,0.0,240.0);
     rot->RegisterYourself();
-    if(AliDebugLevel()) rot->Print();
+    if(GetDebug(1)) rot->Print();
     rot = new TGeoRotation("ITSsddRotZ270",0.0,0.0,270.0);
     rot->RegisterYourself();
-    if(AliDebugLevel()) rot->Print();
+    if(GetDebug(1)) rot->Print();
     rot = new TGeoRotation("ITSsddRotZ300",0.0,0.0,300.0);
     rot->RegisterYourself();
-    if(AliDebugLevel()) rot->Print();
+    if(GetDebug(1)) rot->Print();
     rot = new TGeoRotation("ITSsddRotZ330",0.0,0.0,330.0);
     rot->RegisterYourself();
-    if(AliDebugLevel()) rot->Print();
+    if(GetDebug(1)) rot->Print();
     sL = new TGeoCompositeShape("ITS SDD Suport Cone","((((((((((((((((("
                                 "ITSsddSuportConeCarbonFiberSurfaceE -"
                                 "ITSsddSuportConeHoleH)  -"
@@ -1166,7 +1098,7 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth){
                                 "ITSsddSuportConeHoleK:ITSsddRotZ240) -"
                                 "ITSsddSuportConeHoleK:ITSsddRotZ300");
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    if(AliDebugLevel()){
+    if(GetDebug(1)){
         sE->InspectShape();
         sF->InspectShape();
         sG->InspectShape();
@@ -1177,7 +1109,7 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth){
         sL->InspectShape();
         sM->InspectShape();
         sN->InspectShape();
-    } // end if AliDebugLevel()
+    } // end if GetDebug(1)
     //
     TGeoVolume *vL,*vM,*vN;
     vL = new TGeoVolume("ITSsddConeL",sL,medSDDcf);
@@ -1206,7 +1138,7 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth){
     rot = new TGeoRotation("",0.0,180.0*fgkDegree,0.0);
     rotran = new TGeoCombiTrans("",0.0,0.0,kconZ0,rot);
     moth->AddNode(vL,2,rotran);
-    if(AliDebugLevel()){
+    if(GetDebug(1)){
         tran->Print();
         rot->Print();
         rotran->Print();
@@ -1214,13 +1146,14 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth){
         vM->PrintNodes();
         vN->PrintNodes();
     } // end if
-    delete rot;// rot not explicity used in AddNode functions.
+    //delete rot;// rot not explicity used in AddNode functions.
 }
 //______________________________________________________________________
-void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth){
+void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth,TGeoManager *mgr){
     // Define the detail SSD support cone geometry.
     // Inputs:
-    //   TGeo Volume  *moth  The mother volume to place this object.
+    //   TGeoVolume  *moth  The mother volume to place this object.
+    //   TGeoManager *mgr   A pointer to the Geo-Manager default gGeoManager
     // Outputs:
     //  none.
     // Return:
@@ -1234,7 +1167,6 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth){
     TGeoMedium *medSSDss  = 0; // SSD support cone screw material,Stainless
     TGeoMedium *medSSDair = 0; // SSD support cone Air
     TGeoMedium *medSSDal  = 0; // SSD support cone SDD mounting bracket Al
-    TGeoManager *mgr = gGeoManager;
     medSSDcf = mgr->GetMedium("ITSssdCarbonFiber");
     medSSDfs = mgr->GetMedium("ITSssdStaselite4411w");
     medSSDfo = mgr->GetMedium("ITSssdRohacell50A");
@@ -1249,10 +1181,10 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth){
     const Double_t kcylRInner      = 0.5*560.5*fgkmm; //
     const Double_t kcylCthick      = 0.64*fgkmm; //
     const Double_t kcylFoamThick   = 5.0*fgkmm; //
-    const Double_t kcylRholes      = 0.5*575.0*fgkmm;
+    const Double_t kcylRholes      = 0.5*570.0*fgkmm;
     const Double_t kcylZM6         = 6.0*fgkmm; //
     const Double_t kcylRM6         = 0.5*6.0*fgkmm;
-    const Double_t kcylPhi0M6      = 0.0*fgkDegree;
+    const Double_t kcylPhi0M6      = 4.5*fgkDegree;
     const Int_t    kcylNM6         = 40;
     const Double_t kcylZPin        = 10.0*fgkmm;
     const Double_t kcylRPin        = 0.5*4.0*fgkmm;
@@ -1323,7 +1255,7 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth){
     sCE = new TGeoTube("ITS SSD Thermal Centeral Cylinder PinCE",
                       0.0,kcylRPin,0.5*kcylZPin);
     //
-    if(AliDebugLevel()){
+    if(GetDebug(1)){
         sCA->InspectShape();
         sCB->InspectShape();
         sCC->InspectShape();
@@ -1365,7 +1297,7 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth){
     vCB->AddNode(vCC,1,0);
     vCA->AddNode(vCB,1,0);
     moth->AddNode(vCA,1,0);
-    if(AliDebugLevel()){
+    if(GetDebug(1)){
         vCA->PrintNodes();
         vCB->PrintNodes();
         vCC->PrintNodes();
@@ -1439,13 +1371,13 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth){
     const Double_t kconWingPhi0         = 45.0*fgkDegree;
     //const Int_t    kconNWings           = 4;
     // SSD-SDD Thermal/Mechanical cylinder mounts
-    const Double_t kconRM6Head          = 8.0*fgkmm;
+    const Double_t kconRM6Head          = 0.5*8.0*fgkmm;
     const Double_t kconZM6Head          = 8.5*fgkmm;
     //
     // SSD-SDD Mounting bracket
     const Double_t ksupPRmin            = 0.5*539.0*fgkmm;// see SDD RoutMin
     const Double_t ksupPRmax            = 0.5*585.0*fgkmm;
-    const Double_t ksupPZ               = 3.5*fgkmm;
+    const Double_t ksupPZ               = 4.0*fgkmm;
     const Double_t ksupPPhi1            = (-0.5*70.*fgkmm/ksupPRmax)*fgkRadian;
     const Double_t ksupPPhi2            = -ksupPPhi1;
     //
@@ -1547,27 +1479,37 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth){
     sB0->Z(0)    = sA0->GetZ(0);
     sB0->Rmin(0) = sA0->GetRmin(0) + kconCthick;
     sB0->Rmax(0) = sA0->GetRmax(0) - kconCthick;
+    //printf("A0#%d ",1);
     InsidePoint(sA0,0,1,2,kconCthick,sB0,1,kFALSE); // Rmin
     sB0->Rmax(1) = sB0->Rmax(0);
+    //printf("A0#%d ",2);
     InsidePoint(sA0,1,2,3,kconCthick,sB0,2,kFALSE); // Rmin
     sB0->Rmax(2) = sB0->Rmax(0);
+    //printf("A0#%d ",3);
     InsidePoint(sA0,2,3,9,kconCthick,sB0,3,kFALSE);
     sB0->Rmax(3) = sB0->Rmax(0);
+    //printf("A0#%d ",4);
     InsidePoint(sA0,0,4,5,kconCthick,sB0,4,kTRUE); // Rmax
     sB0->Rmin(4) = -1000.; // see Bellow
+    //printf("A0#%d ",5);
     InsidePoint(sA0,4,5,6,kconCthick,sB0,5,kTRUE); // Rmax
     sB0->Rmin(5) = -1000.; // see Bellow
+    //printf("A0#%d ",6);
     InsidePoint(sA0,5,6,7,kconCthick,sB0,6,kTRUE); // Rmax
     sB0->Rmin(6) = -1000.; // see Bellow
+    //printf("A0#%d ",7);
     InsidePoint(sA0,6,7,11,kconCthick,sB0,7,kTRUE); // Rmax
     sB0->Rmin(7) = -1000.; // see Bellow
+    //printf("A0#%d ",8);
     InsidePoint(sA0,3,8,9,kconCthick,sB0,8,kFALSE); // Rmin
     sB0->Rmax(8) = -1000.; // see Bellow
+    //printf("A0#%d ",9);
     InsidePoint(sA0,8,9,10,kconCthick,sB0,9,kFALSE); // Rmin
     sB0->Rmax(9) = -1000.; // see Bellow
     sB0->Z(10)   = sA0->GetZ(10) + kconCthick;
     sB0->Rmin(10)= sA0->GetRmin(10);
     sB0->Rmax(10)= -1000.; // see Bellow
+    //printf("A0#%d ",11);
     InsidePoint(sA0,7,11,14,kconCthick,sB0,11,kTRUE); // Rmax
     sB0->Rmin(11)= sA0->GetRmin(10);
     sB0->Z(12)    = sA0->GetZ(12);
@@ -1714,7 +1656,7 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth){
     // SDD support plate, SSD side.
     //Poly-cone Volume sT.
     sT = new TGeoTubeSeg("ITSssdsddMountingBracketT",ksupPRmin,ksupPRmax,
-                         ksupPZ,ksupPPhi1,ksupPPhi2);
+                         0.5*ksupPZ,ksupPPhi1,ksupPPhi2);
     //
     TGeoRotation *rotZ225 =new TGeoRotation("ITSssdConeZ225", 0.0,0.0, 22.5);
     rotZ225->RegisterYourself();
@@ -1818,7 +1760,7 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth){
     TGeoCombiTrans *rotranBrTZ300 = new TGeoCombiTrans("ITSssdConeBrTZ300",
                                                   vg[0],vg[1],vg[2],rotZ300);
     rotranBrTZ300->RegisterYourself();
-    if(AliDebugLevel()){
+    if(GetDebug(1)){
         rotZ225->Print();
         rotZ675->Print();
         rotZ90->Print();
@@ -1849,7 +1791,7 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth){
         rotranBrTZ60->Print();
         rotranBrTZ180->Print();
         rotranBrTZ300->Print();
-    } // end if AliDebugLevel()
+    } // end if GetDebug(1)
     sA = new TGeoCompositeShape("ITSssdSuportConeCarbonFiberSurfaceA",
         "(((((((((((((((((((((((((((("
         "ITSssdSuportConeCarbonFiberSurfaceA0 +"
@@ -1950,19 +1892,19 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth){
     // Bolt heads holding the SSD-SDD tube to the SSD cone.
     // Bolt -- PolyCone
     //Poly-cone Volume sQ.
-    sQ = new TGeoPcon("ITS SSD Thermal sheal M6 screw headQ",0.0,360.0,4);
+    sQ = new TGeoPcon("ITS SSD Thermal sheald M6 screw headQ",0.0,360.0,4);
     sQ->Z(0)    = sA0->GetZ(12);
     sQ->Rmin(0) = 0.0;
     sQ->Rmax(0) = kcylRM6;
-    sQ->Z(1)    = sQ->GetZ(0) - kconZM6Head;
+    sQ->Z(1)    = sA0->GetZ(10) + kconZM6Head;
     sQ->Rmin(1) = 0.0;
     sQ->Rmax(1) = kcylRM6;
     sQ->Z(2)    = sQ->GetZ(1);
     sQ->Rmin(2) = 0.0;
     sQ->Rmax(2) = kconRM6Head;
-    sQ->Z(3)    = sQ->GetZ(0)-ksupPZ;
+    sQ->Z(3)    = sA0->GetZ(10)+ksupPZ;
     sQ->Rmin(3) = 0.0;
-    sQ->Rmax(3) = 0.5*kconRM6Head;
+    sQ->Rmax(3) = kconRM6Head;
     // air infront of bolt (stasolit Volume K) -- Tube
     sR = new TGeoTube("ITS Air in front of bolt (in stasolit)R",
                       sQ->GetRmin(3),sQ->GetRmax(3),0.5*(ksupPZ-kconCthick));
@@ -1970,7 +1912,7 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth){
     sS = new TGeoTube("ITS Air in front of Stainless Steal Screw end, M6S",
                       sQ->GetRmin(3),sQ->GetRmax(3),0.5*kconCthick);
     //
-    if(AliDebugLevel()){
+    if(GetDebug(1)){
         sA0->InspectShape();
         sB0->InspectShape();
         sC0->InspectShape();
@@ -1995,7 +1937,7 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth){
         sB->InspectShape();
         sC->InspectShape();
         sF->InspectShape();
-    } // end if AliDebugLevel()
+    } // end if GetDebug(1)
     TGeoVolume *vA,*vB,*vC,*vD,*vE,*vF,*vQ,*vR,*vS,*vT;
     //
     vA = new TGeoVolume("ITSssdConeA",sA,medSSDcf); // Carbon Fiber
@@ -2065,7 +2007,7 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth){
     TGeoRotation *rotY180 = new TGeoRotation("",0.0,180.0,0.0);
     TGeoCombiTrans *flip  = new TGeoCombiTrans("ITSssdConeFlip",
                                            0.0,0.0,kconZDisplacement,rotY180);
-    delete rotY180;// rot not explicity used in AddNode functions.
+    //delete rotY180;// rot not explicity used in AddNode functions.
     //
     //
     //
@@ -2081,7 +2023,7 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth){
     // Insert Bolt and Pins in both the Cone and Cylinder at the same time.
     Int_t nCopyCDv=0,nCopyCEv=0,nCopyQv=0,nCopyvR=0,nCopySv=0,nCopyTv=0;
     Int_t nCopyvD=0,nCopyvE=0;
-    z = sCB->GetZ(0)-0.5*kcylZPin;
+    z = sCB->GetZ(0)+sCD->GetDz(); // sCB->GetZ(0)<0!
     dt = (360.0/((Double_t)kcylNPin));
     for(i=0;i<kcylNPin;i++){
         t = ((Double_t)i)*dt;
@@ -2097,7 +2039,7 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth){
         t = ((Double_t)i)*dt;
         x = kcylRholes*CosD(t+kcylPhi0M6);
         y = kcylRholes*SinD(t+kcylPhi0M6);
-        z = sCB->GetZ(0)-0.5*kcylZM6;
+        z = sCB->GetZ(0)+sCE->GetDz(); // sCB->GetZ()<0!
         tran = new TGeoTranslation("",x,y,z);
         vCB->AddNode(vCE,++nCopyCEv,tran);
         tran = new TGeoTranslation("",x,y,-z);
@@ -2139,32 +2081,32 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth){
             t = t0 + 5.0*((Double_t)j);
             tran = new TGeoTranslation("",kconROutHoles*CosD(t),
                                           kconROutHoles*SinD(t),
-                                          sB0->GetZ(0)+sD->GetDz());
-            vB->AddNode(vD,++nCopyvD,tran);
+                                          sB0->GetZ(0)+sE->GetDz());
+            vB->AddNode(vE,++nCopyvE,tran);
         } // end or j
         for(j=-kconNPinO6/2;j<=kconNPinO6/2;j++){ // pins per ITS-TPC bracket
             t = t0 + 3.0*((Double_t)j);
             tran = new TGeoTranslation("",kconROutHoles*CosD(t),
                                           kconROutHoles*SinD(t),
                                           sB0->GetZ(0)+sD->GetDz());
-            vB->AddNode(vE,++nCopyvE,tran);
+            vB->AddNode(vD,++nCopyvD,tran);
         } // end or j
-        t0 = (96.5+187.*((Double_t)i));
+        t0 = (-5.5+191.*((Double_t)i));
         for(j=0;j<kconNRailScrews;j++){ // screws per ITS-rail bracket
             t = t0+da[j];
             tran = new TGeoTranslation("",kconROutHoles*CosD(t),
                                           kconROutHoles*SinD(t),
-                                          sB0->GetZ(0)+sD->GetDz());
-            vB->AddNode(vD,++nCopyvD,tran);
+                                          sB0->GetZ(0)+sE->GetDz());
+            vB->AddNode(vE,++nCopyvE,tran);
         } // end or j
-        t0 = (91.5+184.*((Double_t)i));
+        t0 = (95.5+191.*((Double_t)i));
         for(j=-kconNRailPins/2;j<=kconNRailPins/2;j++)if(j!=0){ 
              // pins per ITS-rail bracket
-            t = t0+(7.0*((Double_t)j));
+            t = t0+(5.5*((Double_t)j));
             tran = new TGeoTranslation("",kconROutHoles*CosD(t),
                                           kconROutHoles*SinD(t),
                                           sB0->GetZ(0)+sD->GetDz());
-            vB->AddNode(vE,++nCopyvE,tran);
+            vB->AddNode(vD,++nCopyvD,tran);
         } // end or j
     } // end for i
     for(i=0;i<kconNmounts;i++){ 
@@ -2185,7 +2127,7 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth){
             vB->AddNode(vE,++nCopyvE,tran);
         } // end for j
     } // end for i
-    if(AliDebugLevel()){
+    if(GetDebug(1)){
         vA->PrintNodes();
         vB->PrintNodes();
         vC->PrintNodes();
@@ -2200,11 +2142,13 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth){
 }
 
 //______________________________________________________________________
-void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
+void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth,
+                                                    TGeoManager *mgr){
     // Define the detail ITS cable support trays on both the RB24 and 
     // RB26 sides..
     // Inputs:
-    //   TGeo Volume  *moth  The mother volume to place this object.
+    //   TGeoVolume  *moth  The mother volume to place this object.
+    //   TGeoManager *mgr   A pointer to the Geo-Manager default gGeoManager
     // Outputs:
     //  none.
     // Return:
@@ -2218,7 +2162,6 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
     TGeoMedium *medSUPair   = 0; // SUP support cone Air
     TGeoMedium *medSUPal    = 0; // SUP support cone SDD mounting bracket Al
     TGeoMedium *medSUPwater = 0; // SUP support cone Water
-    TGeoManager *mgr = gGeoManager;
     medSUPcf    = mgr->GetMedium("ITSssdCarbonFiber");
     medSUPfs    = mgr->GetMedium("ITSssdStaselite4411w");
     medSUPfo    = mgr->GetMedium("ITSssdRohacell50A");
@@ -2227,7 +2170,7 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
     medSUPal    = mgr->GetMedium("ITSssdAl");
     medSUPwater = mgr->GetMedium("ITSssdWater");
     //
-    Int_t i,j;
+    Int_t i,j,iRmin;
     Double_t x,y,z,t,t0,dt,di,r,l,local[3],master[3];
     Char_t name[100];
     Double_t r1,r2,m;
@@ -2249,10 +2192,9 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
     //
     TGeoTubeSeg *sA24[kfrm24NZsections+1];
     TGeoArb8    *sB24[kfrm24NZsections+1];
-    TGeoPcon    *sM24;
     Double_t zA24[kfrm24NZsections+1];
     l = 4.*kfrm24ZssSection+5*kfrm24Width;
-    j = 0;
+    j = iRmin = 0;
     for(i=0;i<kfrm24NZsections+1;i++){
         sprintf(name,"ITS sup Cable tray support frame radial section A24[%d]",
                 i);
@@ -2265,7 +2207,7 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
         r2 = r1+kfrm24Thss;
         sA24[i] = new TGeoTubeSeg(name,r1,r2,0.5*kfrm24Width,kfrm24Phi0,
                                   kfrm24Phi1);
-        if(i>0)if(sA24[i-1]->GetRmin()==sA24[i]->GetRmin()) j = i;
+        if(i>0)if(sA24[i-1]->GetRmin()==sA24[i]->GetRmin()) j = iRmin = i;
     } // end for i
     for(i=0;i<kfrm24NZsections;i++){
         sprintf(name,"ITS sup Cable tray support frame Z section B24[%d]",i);
@@ -2279,23 +2221,12 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
         sB24[i]->SetVertex(6,sA24[i+1]->GetRmin(),-0.5*kfrm24Hight);
         sB24[i]->SetVertex(7,sA24[i+1]->GetRmax(),-0.5*kfrm24Hight);
     } // end for i
-    sM24 = new TGeoPcon("ITS sup Cable tray support frame mother volume M24",
-                        kfrm24Phi0,kfrm24Phi1,3);
-    sM24->Z(0)    = zA24[0] -kfrm24Width;
-    sM24->Rmin(0) = sA24[0]->GetRmin();
-    sM24->Rmax(0) = sA24[0]->GetRmax();
-    sM24->Z(1)    = zA24[j];
-    sM24->Rmin(1) = sA24[j]->GetRmin();
-    sM24->Rmax(1) = sA24[j]->GetRmax();
-    sM24->Z(2)    = zA24[kfrm24NZsections] + kfrm24Width;
-    sM24->Rmin(2) = sA24[kfrm24NZsections]->GetRmin();
-    sM24->Rmax(2) = sA24[kfrm24NZsections]->GetRmax();
-    if(AliDebugLevel()){
-        sM24->InspectShape();
+    if(GetDebug(1)){
         for(i=0;i<kfrm24NZsections+1;i++) sA24[i]->InspectShape();
         for(i=0;i<kfrm24NZsections;i++)   sB24[i]->InspectShape();
-    } // end if AliDebugLevel()
-    TGeoVolume *vA24[kfrm24NZsections+1],*vB24[kfrm24NZsections],*vM24;
+    } // end if GetDebug(1)
+    TGeoVolume *vA24[kfrm24NZsections+1],*vB24[kfrm24NZsections];
+    TGeoVolumeAssembly *vM24;
     TGeoTranslation *tran;
     TGeoRotation    *rot,*rot1;
     TGeoCombiTrans  *tranrot;
@@ -2320,12 +2251,12 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
         vB24[i]->SetFillColor(vB24[i]->GetLineColor());
         vB24[i]->SetFillStyle(4000); // 0% transparent
     } // end for i
-    vM24 = new TGeoVolume("ITSsupFrameM24",sM24,medSUPair);
-    vM24->SetVisibility(kTRUE);
-    vM24->SetLineColor(7); // light blue
-    vM24->SetLineWidth(1);
-    vM24->SetFillColor(vM24->GetLineColor());
-    vM24->SetFillStyle(4090); // 90% transparent
+    vM24 = new TGeoVolumeAssembly("ITSsupFrameM24");
+    //vM24->SetVisibility(kTRUE);
+    //vM24->SetLineColor(7); // light blue
+    //vM24->SetLineWidth(1);
+    //vM24->SetFillColor(vM24->GetLineColor());
+    //vM24->SetFillStyle(4090); // 90% transparent
     //
     Int_t ncopyB24[kfrm24NPhiSections];
     t0 = kfrm24Phi0;
@@ -2340,7 +2271,7 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
                t = t0 + ((Double_t)j)*dt;
                rot = new TGeoRotation("",0.0,0.0,t);
                tranrot = new TGeoCombiTrans("",0.0,0.0,z+sB24[i]->GetDz(),rot);
-               delete rot;// rot not explicity used in AddNode functions.
+               //delete rot;// rot not explicity used in AddNode functions.
                vM24->AddNode(vB24[i],ncopyB24[i]++,tranrot);
            } // end for j
        } // end if
@@ -2351,10 +2282,10 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
         di = (Double_t) i;
         rot = new TGeoRotation("",0.0,0.0,90.0*di);
         tranrot = new TGeoCombiTrans("",0.0,0.0,kfrm24Z0,rot);
-        delete rot;// rot not explicity used in AddNode functions.
+        //delete rot;// rot not explicity used in AddNode functions.
         moth->AddNode(vM24,i+1,tranrot);
     } // end for i
-    if(AliDebugLevel()){
+    if(GetDebug(1)){
         for(i=0;i<kfrm24NZsections+1;i++) vA24[i]->PrintNodes();
         for(i=0;i<kfrm24NZsections;i++) vB24[i]->PrintNodes();
         vM24->PrintNodes();
@@ -2388,7 +2319,7 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
     sT24 = new TGeoXtru(3);
     sT24->SetName("ITS sup Full Cable Tray for RB24 Side T24");
     xp[0]  = -0.5*kct24WidthBottom;
-    yp[0]  = sM24->GetRmax(0);
+    yp[0]  = sA24[0]->GetRmax();
     yp[1]  = yp[0] + kct24Hight-kct24CapEar;
     xp[1]  = Xfrom2Points(xp[0],yp[0],-0.5*kct24WidthTop+kct24AlThick,
                           yp[0]+kct24Hight,yp[1]);
@@ -2405,15 +2336,15 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
     xp[7]  = -xp[0];
     yp[7]  =  yp[0];
     sT24->DefinePolygon(8,xp,yp);
-    sT24->DefineSection(0,sM24->GetZ(0));
-    sT24->DefineSection(1,sM24->GetZ(1));
-    sT24->DefineSection(2,zA24[kfrm24NZsections],0.0,
-                      sA24[kfrm24NZsections]->GetRmin()-sA24[0]->GetRmin());
+    sT24->DefineSection(0,zA24[0]-kfrm24Width,0.0,0.0,1.0);
+    sT24->DefineSection(1,zA24[iRmin],0.0,0.0,1.0);
+    sT24->DefineSection(2,zA24[kfrm24NZsections]+kfrm24Width,0.0,
+                      sA24[kfrm24NZsections]->GetRmax()-sA24[0]->GetRmin());
     // RB 24 full tray no divider (for ALG and T0-V0 cables?)
     sW24 = new TGeoXtru(3);
     sW24->SetName("ITS sup Cable Tray No Divider for RB24 Side W24");
     xp[0] = sT24->GetX(0) + kct24AlThick;
-    yp[0] = sT24->GetY(0) - kct24AlThick;
+    yp[0] = sT24->GetY(0) + kct24AlThick;
     yp[1] = sT24->GetY(3) - kct24AlThick;
     xp[1] = Xfrom2Points(sT24->GetX(0),sT24->GetY(0),sT24->GetX(1),
                          sT24->GetY(1),yp[1]) + kct24AlThick;
@@ -2439,9 +2370,10 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
     xp[7]  = -xp[0];
     yp[7]  =  yp[0];
     sTs24->DefinePolygon(8,xp,yp);
-    sTs24->DefineSection(0,sM24->GetZ(0)+kft24PPlength);
-    sTs24->DefineSection(1,sM24->GetZ(1));
-    sTs24->DefineSection(2,zA24[kfrm24NZsections],sT24->GetXOffset(2),
+    sTs24->DefineSection(0,zA24[0] -kfrm24Width+kft24PPlength);
+    sTs24->DefineSection(1,zA24[iRmin]);
+    sTs24->DefineSection(2,zA24[kfrm24NZsections]+kfrm24Width,
+                         sT24->GetXOffset(2),
                          sT24->GetYOffset(2),sT24->GetScale(2));
     // Outer Tray Long
     sTl24 = new TGeoXtru(3);
@@ -2451,10 +2383,10 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
     yp[i]  = sTs24->GetY(i);
     } // End for i
     sTl24->DefinePolygon(8,xp,yp);
-    sTl24->DefineSection(0,sM24->GetZ(0));
-    sTl24->DefineSection(1,sM24->GetZ(1));
-    sTl24->DefineSection(2,zA24[kfrm24NZsections],0.0,
-                         sA24[kfrm24NZsections]->GetRmin()-sA24[0]->GetRmin());
+    sTl24->DefineSection(0,zA24[0]-kfrm24Width,0.0,0.0,1.0);
+    sTl24->DefineSection(1,zA24[iRmin],0.0,0.0,1.0);
+    sTl24->DefineSection(2,zA24[kfrm24NZsections]+kfrm24Width,0.0,
+                     sA24[kfrm24NZsections]->GetRmax()-sA24[0]->GetRmin(),1.0);
     // Outer Tray for air Tubes
     sTt24 = new TGeoXtru(3);
     sTt24->SetName("ITS sup Long Air Tube Tray for RB24 Side Tt24");
@@ -2465,12 +2397,12 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
     xp[2]  = -xp[1];
     yp[2]  =  yp[1];
     xp[3]  = -xp[0];
-    yp[3]  =  yp[1];
+    yp[3]  =  yp[0];
     sTt24->DefinePolygon(4,xp,yp);
-    sTt24->DefineSection(0,sM24->GetZ(0));
-    sTt24->DefineSection(1,sM24->GetZ(1));
-    sTt24->DefineSection(2,zA24[kfrm24NZsections],0.0,
-                         sA24[kfrm24NZsections]->GetRmin()-sA24[0]->GetRmin());
+    sTt24->DefineSection(0,zA24[0]-kfrm24Width,0.0,0.0,1.0);
+    sTt24->DefineSection(1,zA24[iRmin],0.0,0.0,1.0);
+    sTt24->DefineSection(2,zA24[kfrm24NZsections]+kfrm24Width,0.0,
+                         sA24[kfrm24NZsections]->GetRmax()-sA24[0]->GetRmin());
     // Inner opening for cooling (lower) {inside sTt24}
     sU24 = new TGeoXtru(3);
     sU24->SetName("ITS sup Cable Tray Cooling tube space RB24 Side U24");
@@ -2594,7 +2526,7 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
     sV3PP24 = new TGeoXtru(2);
     sV3PP24->SetName("ITS sup Patch Pannel 3 Bay inside Rb24 side V3PP24");
     xp[0] = s3PP24->GetX(0) + kct24AlThick;
-    yp[0] = s3PP24->GetY(0);
+    yp[0] = s3PP24->GetY(0) + kct24AlThick;
     local[1] = s3PP24->GetY(6) + kft24PPHightSDDSSD - kct24AlThick;local[2]=0.;
     local[0] = Xfrom2Points(sTl24->GetX(0),sTl24->GetY(0),
                            sTl24->GetX(1),sTl24->GetY(1),local[1]);
@@ -2622,7 +2554,7 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
     sV2PP24 = new TGeoXtru(2);
     sV2PP24->SetName("ITS sup Patch Pannel 2 Bay inside Rb24 side V2PP24");
     xp[0] = s2PP24->GetX(0) + kct24AlThick;
-    yp[0] = s2PP24->GetY(0);
+    yp[0] = s2PP24->GetY(0) + kct24AlThick;
     local[1] = sTl24->GetY(3) + kft24PPHightSPDFMD - kct24AlThick;local[2]=0.;
     local[0] = Xfrom2Points(sTl24->GetX(0),sTl24->GetY(0),
                            sTl24->GetX(1),sTl24->GetY(1),local[1]);
@@ -2648,7 +2580,7 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
     sMT24 = new TGeoPcon("ITS sup Cable Tray Mother Volume RB24 MT24",
                          0.0,360.0,5);
     sMT24->Z(0)    = 0.0;
-    sMT24->Rmin(0) = sM24->GetRmax(0);
+    sMT24->Rmin(0) = sA24[0]->GetRmax();
     sMT24->Rmax(0) = TMath::Max(TMath::Hypot(s3PP24->GetX(1),s3PP24->GetY(1)),
                                 TMath::Hypot(s2PP24->GetX(1),s2PP24->GetY(1)));
 
@@ -2659,15 +2591,16 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
     sMT24->Rmin(2) = sMT24->GetRmin(0);
     sMT24->Rmax(2) = sMT24->GetRmax(0) - kft24PPHightSPDFMD;
 
-    sMT24->Z(3)    = sMT24->GetZ(0) + sM24->GetZ(1) - sM24->GetZ(0);
-    sMT24->Rmin(3) = sM24->GetRmax(1);
+    sMT24->Z(3)    = sMT24->GetZ(0) + zA24[iRmin] - zA24[0] -kfrm24Width;
+    sMT24->Rmin(3) = sA24[iRmin]->GetRmin();
     sMT24->Rmax(3) = TMath::Hypot(sT24->GetX(3),sT24->GetY(3));
-    sMT24->Z(4)    = sMT24->GetZ(0) + sM24->GetZ(2)  - sM24->GetZ(0);
-    sMT24->Rmin(4) = sM24->GetRmax(2);
+    sMT24->Z(4)    = sMT24->GetZ(0) + zA24[kfrm24NZsections] + kfrm24Width  - 
+        zA24[0] -kfrm24Width;
+    sMT24->Rmin(4) = sA24[kfrm24NZsections]->GetRmax();
     sMT24->Rmax(4) = TMath::Hypot(sT24->GetX(3)+sT24->GetXOffset(2),
                                   sT24->GetY(3)+sT24->GetYOffset(2));
     //
-    if(AliDebugLevel()){
+    if(GetDebug(1)){
         sT24->InspectShape();
         sW24->InspectShape();
         sTl24->InspectShape();
@@ -2681,17 +2614,18 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
         sV3PP24->InspectShape();
         sV2PP24->InspectShape();
         sMT24->InspectShape();
-    } // end if AliDebugLevel()
+    } // end if GetDebug(1)
     //
     TGeoVolume *vC24[kct24Ntrays],*vT24[kct24Ntrays],*vPP24[kft24NPatchPannels];
-    TGeoVolume *vWTV024,*vW24,*vU24,*vUFMD24,*vVl24,*vVlFMD24,*vVs24,*vMT24;
+    TGeoVolume *vWTV024,*vW24,*vU24,*vUFMD24,*vVl24,*vVlFMD24,*vVs24;
     TGeoVolume *vV3PP24,*vV2PP24,*vV2PPFMD24;
-    vMT24 = new TGeoVolume("ITSsupCableTrayMotherMT24",sMT24,medSUPair);
-    vMT24->SetVisibility(kTRUE);
-    vMT24->SetLineColor(8); // white
-    vMT24->SetLineWidth(1);
-    vMT24->SetFillColor(vMT24->GetLineColor());
-    vMT24->SetFillStyle(4100); // 100% transparent
+    TGeoVolumeAssembly *vMT24;
+    vMT24 = new TGeoVolumeAssembly("ITSsupCableTrayMotherMT24");
+    //vMT24->SetVisibility(kTRUE);
+    //vMT24->SetLineColor(8); // white
+    //vMT24->SetLineWidth(1);
+    //vMT24->SetFillColor(vMT24->GetLineColor());
+    //vMT24->SetFillStyle(4100); // 100% transparent
     //
     vU24 = new TGeoVolume("ITSsupCableTrayLowerU24",sU24,medSUPair);
     vU24->SetVisibility(kTRUE);
@@ -2756,8 +2690,8 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
     vV2PPFMD24->SetFillColor(vV2PPFMD24->GetLineColor());
     vV2PPFMD24->SetFillStyle(4100); // 100% transparent
     //
-    delete rot;
-    delete rot1;
+    //delete rot;
+    //delete rot1;
     //
     Double_t tha[kct24Ntrays],thb[kft24NPatchPannels];
     for(i=0;i<kct24Ntrays/4;i++) {
@@ -2767,7 +2701,7 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
         tha[i+  kct24Ntrays/2] = 180.0 + tha[i];
         tha[i+3*kct24Ntrays/4] = 270.0 + tha[i];
     } // end for i
-    if(AliDebugLevel()) for(i=0;i<kct24Ntrays;i++) Info("ServicesCableSupport",
+    if(GetDebug(1)) for(i=0;i<kct24Ntrays;i++) Info("ServicesCableSupport",
                                                   "tha[%d]=%f",i,tha[i]);
     Char_t *airName[kct24Ntrays]={"FMD0","SDD0","SSD0","SSD1","SPD0","SPD1",
                                   "TV00","SDD1","SDD2","SPD2","SPD3","ALG0",
@@ -2816,7 +2750,7 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
         vT24[i]->SetFillColor(vT24[i]->GetLineColor());
         vT24[i]->SetFillStyle(4000); // 0% transparent
         rot = new TGeoRotation("",0.0,0.0,tha[i]-90.0);
-        if(AliDebugLevel()) rot->Print();
+        if(GetDebug(1)) rot->Print();
         vMT24->AddNode(vT24[i],1,rot);
         //
         if(strncmp(trayName[i],"FMD",3)==0){
@@ -2873,12 +2807,12 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
         vPP24[i]->SetFillColor(vPP24[i]->GetLineColor());
         vPP24[i]->SetFillStyle(4000); // 0% transparent
         rot = new TGeoRotation("",0.0,0.0,thb[i]-90.0);
-        if(AliDebugLevel()) rot->Print();
+        if(GetDebug(1)) rot->Print();
         vMT24->AddNode(vPP24[i],1,rot);
     } // end for i
     tran = new TGeoTranslation("",0.0,0.0,kfrm24Z0);
     moth->AddNode(vMT24,1,tran);
-    if(AliDebugLevel()){
+    if(GetDebug(1)){
         for(i=0;i<kct24Ntrays;i++) vT24[i]->PrintNodes();
         for(i=0;i<kct24Ntrays-8;i++) vC24[i]->PrintNodes();
         vU24->PrintNodes();
@@ -2905,14 +2839,15 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
     const Int_t    kfrm26NZsections   = 4;
     const Int_t    kfrm26NPhiSections = 4;
     const Int_t    kfrm26NPhi         = 4;
-    TGeoConeSeg *sA26[kfrm26NZsections+1],*sM26;//Cylinderial support structure
+    TGeoConeSeg *sA26[kfrm26NZsections+1];//,*sM26;//Cylinderial support structure
     TGeoArb8     *sB26; // Cylinderial support structure
-
+    /*
     sM26 = new TGeoConeSeg("ITS sup Cable tray support frame mother volume "
                           "M26",0.5*(4.*kfrm26ZssSection+5*kfrm26Width),
                           kfrm26R1ss,kfrm26R1ss+kfrm26Thss,
                           kfrm26R0ss,kfrm26R0ss+kfrm26Thss,
                           kfrm26Phi0,kfrm26Phi1);
+    */
     m = -((kfrm26R1ss-kfrm26R0ss)/
          (((Double_t)kfrm26NZsections)*(kfrm26ZssSection+kfrm26Width)));
     for(i=0;i<kfrm26NZsections+1;i++){
@@ -2936,13 +2871,14 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
     sB26->SetVertex(5,sA26[1]->GetRmax1()-r,-0.5*kfrm26Width);
     sB26->SetVertex(6,sA26[1]->GetRmin1()-r,-0.5*kfrm26Width);
     sB26->SetVertex(7,sA26[1]->GetRmin1()-r,+0.5*kfrm26Width);
-    if(AliDebugLevel()){
+    if(GetDebug(1)){
         for(i=0;i<kfrm26NZsections+1;i++) sA26[i]->InspectShape();
-        sM26->InspectShape();
+        //sM26->InspectShape();
         sB26->InspectShape();
-    } // end if AliDebugLevel()
+    } // end if GetDebug(1)
     //
-    TGeoVolume *vA26[kfrm26NZsections+1],*vB26,*vM26;
+    TGeoVolume *vA26[kfrm26NZsections+1],*vB26;
+    TGeoVolumeAssembly *vM26;
     //
     for(i=0;i<kfrm26NZsections+1;i++){
         sprintf(name,"ITSsupFrameA26[%d]",i);
@@ -2959,19 +2895,21 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
     vB26->SetLineWidth(1);
     vB26->SetFillColor(vB26->GetLineColor());
     vB26->SetFillStyle(4000); // 0% transparent
-    vM26 = new TGeoVolume("ITSsupFrameM26",sM26,medSUPair);
-    vM26->SetVisibility(kTRUE);
-    vM26->SetLineColor(7); // light blue
-    vM26->SetLineWidth(1);
-    vM26->SetFillColor(vM26->GetLineColor());
-    vM26->SetFillStyle(4090); // 90% transparent
+    vM26 = new TGeoVolumeAssembly("ITSsupFrameM26");
+    //vM26 = new TGeoVolume("ITSsupFrameM26",sM26,medSUPair);
+    //vM26->SetVisibility(kTRUE);
+    //vM26->SetLineColor(7); // light blue
+    //vM26->SetLineWidth(1);
+    //vM26->SetFillColor(vM26->GetLineColor());
+    //vM26->SetFillStyle(4090); // 90% transparent
     //
     Int_t ncopyB26=1;
     t0 = kfrm26Phi0;
     dt = (kfrm26Phi1-kfrm26Phi0)/((Double_t)kfrm26NPhiSections);
     for(i=0;i<=kfrm26NZsections;i++){
         di = ((Double_t) i)*(kfrm26ZssSection+kfrm26Width);
-        z = -sM26->GetDz()+sA26[i]->GetDz() + di;
+        z = 0.5*(4.*kfrm26ZssSection+5*kfrm26Width);
+        z = -z+sA26[i]->GetDz() + di;
         tran = new TGeoTranslation("",0.0,0.0,z);
         vM26->AddNode(vA26[i],1,tran);
         z = z+sB26->GetDz();
@@ -2983,19 +2921,19 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth){
             y = r*SinD(t);
             x = r*CosD(t);
             tranrot = new TGeoCombiTrans("",x,y,z,rot);
-            delete rot; // rot not explicity used in AddNode functions.
+            //delete rot; // rot not explicity used in AddNode functions.
             vM26->AddNode(vB26,ncopyB26++,tranrot);
         } // end for j
     } // end for i
-    tran = new TGeoTranslation("",0.0,0.0,kfrm26Z0-sM26->GetDz());
+    tran = new TGeoTranslation("",0.0,0.0,kfrm26Z0-0.5*(4.*kfrm26ZssSection+5*kfrm26Width));
     moth->AddNode(vM26,1,tran);
     for(i=1;i<kfrm26NPhi;i++){
         rot = new TGeoRotation("",0.0,0.0,90.0*((Double_t)i));
         tranrot = new TGeoCombiTrans(*tran,*rot);
-        delete rot; // rot not explicity used in AddNode functions.
+        //delete rot; // rot not explicity used in AddNode functions.
         moth->AddNode(vM26,i+1,tranrot);
     } // end for i
-    if(AliDebugLevel()){
+    if(GetDebug(1)){
         for(i=0;i<kfrm26NZsections+1;i++) vA26[i]->PrintNodes();
         vB26->PrintNodes();
         vM26->PrintNodes();

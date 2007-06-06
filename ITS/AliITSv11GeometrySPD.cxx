@@ -21,6 +21,7 @@
 // and cable trays on both the RB26 (muon dump) and RB24 sides, and all of
 // the cabling from the ladders/stave ends out past the TPC. 
 
+/* $Id$ */
 // General Root includes
 #include <Riostream.h>
 #include <TMath.h>
@@ -337,14 +338,16 @@ void AliITSv11GeometrySPD::SPDSector(TGeoVolume *moth,TGeoManager *mgr){
         secRot->SetDy(radiusSector*TMath::Cos(angle/fgkRadian));
         //secRot->RegisterYourself();
         moth->AddNode(vCarbonFiberSector,i+1,new TGeoCombiTrans(*secRot));
-        printf("i=%d angle=%g angle[rad]=%g radiusSector=%g x=%g y=%g \n",
-               i,angle,angle/fgkRadian,radiusSector,
-               -radiusSector*TMath::Sin(angle/fgkRadian),
-               radiusSector*TMath::Cos(angle/fgkRadian));
+        if(GetDebug(5)){
+            printf("i=%d angle=%g angle[rad]=%g radiusSector=%g x=%g y=%g \n",
+                   i,angle,angle/fgkRadian,radiusSector,
+                   -radiusSector*TMath::Sin(angle/fgkRadian),
+                   radiusSector*TMath::Cos(angle/fgkRadian));
+        } // end if GetDebug(5)
         angle += kSectorRelativeAngle;
         secRot->RotateZ(kSectorRelativeAngle);
     } // end for i
-    if(GetDebug()){
+    if(GetDebug(3)){
         moth->PrintNodes();
     } // end if GetDebug().
     delete secRot;
@@ -700,13 +703,16 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth,
     sA0->DefineSection(0,-ksecDz);
     sA0->DefineSection(1,ksecDz);
     //
+    //printf("SectorA#%d ",0);
     InsidePoint(xpp[m-1],ypp[m-1],xpp[0],ypp[0],xpp[1],ypp[1],
                 ksecCthick,xpp2[0],ypp2[0]);
     for(i=1;i<m-1;i++){
         j = i/(ksecNPointsPerRadii+1);
+        //printf("SectorA#%d ",i);
         InsidePoint(xpp[i-1],ypp[i-1],xpp[i],ypp[i],xpp[i+1],ypp[i+1],
                     ksecCthick,xpp2[i],ypp2[i]);
     } // end for i
+    //printf("SectorA#%d ",m);
     InsidePoint(xpp[m-2],ypp[m-2],xpp[m-1],ypp[m-1],xpp[0],ypp[0],
                 ksecCthick,xpp2[m-1],ypp2[m-1]);
     // Fix center value of cooling tube dip.
@@ -747,6 +753,7 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth,
     sB0->DefineSection(0,ksecDz);
     sB0->DefineSection(1,ksecDz+ksecZEndLen);
     //
+    //printf("SectorB#%d ",0);
     InsidePoint(xpp[m-1],ypp[m-1],xpp[0],ypp[0],xpp[1],ypp[1],
                 ksecCthick2,xpp2[0],ypp2[0]);
     for(i=1;i<m-1;i++){
@@ -757,9 +764,11 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth,
                      ksecDipIndex[k]*(ksecNPointsPerRadii+1)+
                      ksecNPointsPerRadii==i   )) 
                     t = ksecRCoolOut-ksecRCoolIn;
+        //printf("SectorB#%d ",i);
         InsidePoint(xpp[i-1],ypp[i-1],xpp[i],ypp[i],xpp[i+1],ypp[i+1],
                     t,xpp2[i],ypp2[i]);
-    } // end for i
+    } // end for
+    //printf("SectorB#%d ",m);
     InsidePoint(xpp[m-2],ypp[m-2],xpp[m-1],ypp[m-1],xpp[0],ypp[0],
                 ksecCthick2,xpp2[m-1],ypp2[m-1]);
     sB1 = new TGeoXtru(2);
@@ -772,36 +781,34 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth,
     sTB1 = new TGeoTube("ITS SPD Cooling Tube End coolant TB0",0.0,
                        sTB0->GetRmax()-ksecCoolTubeThick,0.5*ksecLen);
     //
-    sM0 = new TGeoTube("ITS SPD Sensitive Virutual Volume M0",0.0,8.0,
-                       sA0->GetZ(1)+sB0->GetZ(1));
+    //sM0 = new TGeoTube("ITS SPD Sensitive Virutual Volume M0",0.0,8.0,
+    //                   sA0->GetZ(1)+sB0->GetZ(1));
     //
-    if(GetDebug()){
-        cout<<"medSPDcf= "<<medSPDcf<<endl;
-	//        printf("medSPDcf=%x\n",medSPDcf);
+    if(GetDebug(3)){
         if(medSPDcf) medSPDcf->Dump();
-        cout<<"medSPDss= "<<medSPDss<<endl;
-	//       printf("medSPDss=%x\n",medSPDss);
+        else printf("medSPDcf=0\n");
         if(medSPDss) medSPDss->Dump();
-	cout<<"medSPDair= "<<medSPDair<<endl;
-	//       printf("medSPDair=%x\n",medSPDair);
+        else printf("medSPDss=0\n");
         if(medSPDair) medSPDair->Dump();
-	cout<<"medSPDcoolfl= "<<medSPDcoolfl<<endl;
-	//       printf("medSPDcoolfl=%x\n",medSPDcoolfl);
+        else printf("medSPDAir=0\n");
         if(medSPDcoolfl) medSPDcoolfl->Dump();
-        sM0->InspectShape();
+        else printf("medSPDcoolfl=0\n");
+        //sM0->InspectShape();
         sA0->InspectShape();
         sA1->InspectShape();
         sB0->InspectShape();
         sB1->InspectShape();
     } // end if GetDebug
     //
-    TGeoVolume *vM0,*vA0,*vA1,*vTA0,*vTA1,*vB0,*vB1,*vTB0,*vTB1;
-    vM0 = new TGeoVolume("ITSSPDSensitiveVirtualvolumeM0",sM0,medSPDair);
-    vM0->SetVisibility(kTRUE);
-    vM0->SetLineColor(7); // light Blue
-    vM0->SetLineWidth(1);
-    vM0->SetFillColor(vM0->GetLineColor());
-    vM0->SetFillStyle(4090); // 90% transparent
+    TGeoVolume *vA0,*vA1,*vTA0,*vTA1,*vB0,*vB1,*vTB0,*vTB1;
+    TGeoVolumeAssembly *vM0;
+    vM0 = new TGeoVolumeAssembly("ITSSPDSensitiveVirtualvolumeM0");
+    //vM0 = new TGeoVolume("ITSSPDSensitiveVirtualvolumeM0",sM0,medSPDair);
+    //vM0->SetVisibility(kTRUE);
+    //vM0->SetLineColor(7); // light Blue
+    //vM0->SetLineWidth(1);
+    //vM0->SetFillColor(vM0->GetLineColor());
+    //vM0->SetFillStyle(4090); // 90% transparent
     vA0 = new TGeoVolume("ITSSPDCarbonFiberSupportSectorA0",sA0,medSPDcf);
     vA0->SetVisibility(kTRUE);
     vA0->SetLineColor(4); // Blue
@@ -872,7 +879,7 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth,
     vM0->AddNode(vB0,1,0);
     // Reflection.
     vM0->AddNode(vB0,2,new TGeoRotation("",90.,0.,90.,90.,180.,0.));
-    if(GetDebug()){
+    if(GetDebug(3)){
         vM0->PrintNodes();
         vA0->PrintNodes();
         vA1->PrintNodes();

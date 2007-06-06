@@ -11,6 +11,7 @@
   Base class for defining large parts of the ITS geometry, v11.
  */
 #include <TObject.h>
+#include <AliLog.h>
 class TGeoArb8;
 class TGeoPcon;
 class TGeoTube;
@@ -20,8 +21,8 @@ class TGeoBBox;
 
 class AliITSv11Geometry : public TObject {
   public:
-    AliITSv11Geometry():fDebug(kTRUE) {};
-    AliITSv11Geometry(Bool_t debug):fDebug(debug) {};
+    AliITSv11Geometry():fDebug(AliDebugLevel()) {};
+    AliITSv11Geometry(Int_t debug):fDebug(debug) {};
     virtual ~AliITSv11Geometry(){};
     //
     // Sets the debug flag for debugging output
@@ -104,7 +105,7 @@ class AliITSv11Geometry : public TObject {
     void InsidePoint(const TGeoPcon *p,Int_t i1,Int_t i2,Int_t i3,
                         Double_t Cthick,TGeoPcon *q,Int_t j1,Bool_t max)const;
     // Given two intersecting lines defined by the points (x0,y0), (x1,y1) and
-    // (x1,y1), (x1,y2) {intersecting at (x1,y1)} the point (x,y) a distance
+    // (x1,y1), (x2,y2) {intersecting at (x1,y1)} the point (x,y) a distance
     // c away is returned such that two lines a distance c away from the
     // lines defined above intersect at (x,y).
      void InsidePoint(Double_t x0,Double_t y0,Double_t x1,Double_t y1,

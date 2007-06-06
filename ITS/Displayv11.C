@@ -16,9 +16,9 @@ void Displayv11(const char* filename=""){
     //
     TGeoMaterial *vacmat = new TGeoMaterial("Vacume",0,0,0);
     TGeoMedium   *vacmed = new TGeoMedium("Vacume_med",1,vacmat);
-    TGeoVolume *ALIC = mgr2->MakeBox("ALIC",vacmed,100.,100.,200.);
+    TGeoVolume *ALIC = mgr2->MakeBox("ALIC",vacmed,1000.,1000.,2000.);
     mgr2->SetTopVolume(ALIC);
-    TGeoVolume *ITS = mgr2->MakeBox("ITSV",vacmed,99.,99.,199.);
+    TGeoVolume *ITS = mgr2->MakeBox("ITSV",vacmed,990.,990.,1990.);
     TGeoVolumeAssembly *ITSspd = new TGeoVolumeAssembly("ITSspd");
     ITS->AddNode(ITSspd,1);
     ALIC->AddNode(ITS,1);
@@ -33,14 +33,14 @@ void Displayv11(const char* filename=""){
     */
     AliITSv11GeometrySPD *gspd = new AliITSv11GeometrySPD(0);
     //AliITSv11GeometrySDD *gsdd = new AliITSv11GeometrySDD();
-    AliITSv11GeometrySupport *gsupp = new AliITSv11GeometrySupport(3);
+    AliITSv11GeometrySupport *gsupp = new AliITSv11GeometrySupport(0);
     //AliITSv11GeometrySSD *gssd = new AliITSv11GeometrySSD();
     //
     Int_t imat=1,imed=1;
     gspd->CreateSPDCenteralMaterials(imed,imat);
     gspd->SPDSector(ITSspd,mgr2);
     gsupp->SPDCone(ITS,mgr2);
-    gsupp->SetDebug(1);
+    gsupp->SetDebug(0);
     gsupp->SDDCone(ITS,mgr2);
     //gsdd->Layer3(ITS);
     //gsdd->Layer4(ITS);
