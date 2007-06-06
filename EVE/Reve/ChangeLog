@@ -1,3 +1,30 @@
+2007-05-30  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	* LinkDef.h:
+	* NLTPolygonSet:
+	* NLTPolygonSet.cxx:
+	* NLTPolygonSet.h:
+	* NLTPolygonSetEditor.cxx:
+	* NLTPolygonSetEditor.h:
+	* NLTPolygonSetGL.cxx:
+	* NLTPolygonSetGL.h:
+	* NLTProjector.cxx:
+	* NLTProjector.h:
+        New files for non-linear projections. FishEye and RhoZ
+	projections are implemeted with NLTProjection::fDistortion value
+	varying from 0. to 0.001. NLTProjector functions ProjectGeoShape(),
+	ProjectPointSet() and ProjectTrackList() are used to build non-linear
+	projected scene with detector geometry, hits and tracks.
+
+	* PODs.h:
+        New functions in Vector class.
+
+	* Track.cxx:
+	* Track.h:
+	* TrackEditors.cxx:
+	* TrackEditors.h:
+	Enable line style modification in TrackList/TrackListEditor.   
+
 2007-05-24  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
 
 	* RGTopFrame.cxx:

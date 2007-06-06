@@ -1,3 +1,8 @@
+2007-05-30  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+	* alice-macros/NLT_geo_demo.C:
+	* alice-macros/NLT_demo.C:
+	New files; macros to demonstrate non-linear projections.
+
 2007-05-31  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* alice-macros/its_raw.C:
