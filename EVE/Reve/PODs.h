@@ -64,7 +64,8 @@ public:
   Float_t Perp2() const { return x*x+y*y;}
   Float_t R()     const { return Perp(); }
 
-  // need operator +,-,Dot
+  Float_t Distance(const Vector& v) const;
+  Float_t SquareDistance(const Vector& v) const;
 
   ClassDef(Vector, 1);
 };
@@ -77,6 +78,15 @@ inline Float_t Vector::Theta() const
 
 inline Float_t Vector::CosTheta() const
 { Float_t ptot = Mag(); return ptot == 0.0 ? 1.0 : z/ptot; }
+
+inline Float_t Vector::Distance( const Vector& b) const
+{
+  return TMath::Sqrt((x - b.x)*(x - b.x) + (y - b.y)*(y - b.y) + (z - b.z)*(z - b.z));
+}
+inline Float_t Vector::SquareDistance(const Vector& b) const
+{
+  return ((x - b.x)*(x - b.x) + (y - b.y)*(y - b.y) + (z - b.z)*(z - b.z));
+}
 
 /**************************************************************************/
 // PathMark
