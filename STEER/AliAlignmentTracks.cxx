@@ -142,8 +142,14 @@ void AliAlignmentTracks::AddESD(const char *esdfilename, const char *esdtreename
   }
 }
 
-//______________________________________________________________________________
-void AliAlignmentTracks::ProcessESD()
+//________________________________________________________________________
+
+void AliAlignmentTracks::ProcessESD(Bool_t onlyITS,
+				    Int_t minITSpts,
+				    Bool_t cuts,
+				    Float_t minMom,Float_t maxMom,
+				    Float_t minAbsSinPhi,Float_t maxAbsSinPhi,
+				    Float_t minSinTheta,Float_t maxSinTheta)
 {
   // Analyzes and filters ESD tracks
   // Stores the selected track space points
@@ -171,7 +177,13 @@ void AliAlignmentTracks::ProcessESD()
 
   TTree *pointsTree = new TTree("spTree", "Tree with track space point arrays");
   const AliTrackPointArray *array = 0;
-  pointsTree->Branch("SP","AliTrackPointArray", &array);
+  AliTrackPointArray *array2 = 0;
+  if(onlyITS) {   // only ITS AliTrackPoints 
+    pointsTree->Branch("SP","AliTrackPointArray", &array2);
+  } else {
+    pointsTree->Branch("SP","AliTrackPointArray", &array);
+  } 
+
   Int_t ievent = 0;
   while (fESDChain->GetEntry(ievent++)) {
     if (!esd) break;
@@ -182,17 +194,153 @@ void AliAlignmentTracks::ProcessESD()
     for (Int_t itrack=0; itrack < ntracks; itrack++) {
       AliESDtrack * track = esd->GetTrack(itrack);
       if (!track) continue;
- 
-     //  UInt_t status = AliESDtrack::kITSpid; 
-//       status|=AliESDtrack::kTPCpid; 
-//       status|=AliESDtrack::kTRDpid; 
-//       if ((track->GetStatus() & status) != status) continue;
 
-      if (track->GetP() < 0.5) continue;
+      if(track->GetNcls(0) < minITSpts) continue;
+      if(cuts) {
+	if(track->GetP()<minMom || track->GetP()>maxMom) continue;
+	Float_t abssinphi = TMath::Abs(TMath::Sin(track->GetAlpha()+TMath::ASin(track->GetSnp())));
+	if(abssinphi<minAbsSinPhi || abssinphi>maxAbsSinPhi) continue;
+	Float_t sintheta = TMath::Sin(0.5*TMath::Pi()-TMath::ATan(track->GetTgl()));
+	if(sintheta<minSinTheta || sintheta>maxSinTheta) continue;
+      } 
+      // UInt_t status = AliESDtrack::kITSpid; 
+      // status|=AliESDtrack::kTPCpid; 
+      // status|=AliESDtrack::kTRDpid; 
+      // if ((track->GetStatus() & status) != status) continue;
 
+      AliTrackPoint point;
       array = track->GetTrackPointArray();
+
+      if(onlyITS) {
+	array2 = new AliTrackPointArray(track->GetNcls(0));
+	Int_t ipt,volId,modId,layerId;
+	Int_t jpt=0;
+	for(ipt=0; ipt<array->GetNPoints(); ipt++) {
+	  array->GetPoint(point,ipt);
+	  volId = point.GetVolumeID();
+	  layerId = AliGeomManager::VolUIDToLayer(volId,modId);
+	  if(layerId<7) {
+	    array2->AddPoint(jpt,&point);
+	    jpt++;
+	  }
+	}
+      } // end if(onlyITS)
+ 
       pointsTree->Fill();
     }
+  }
+
+  if (!pointsTree->Write()) {
+    AliWarning("Can't write the tree with track point arrays!");
+    return;
+  }
+
+  pointsFile->Close();
+}
+
+//______________________________________________________________________________
+void AliAlignmentTracks::ProcessESDCosmics(Bool_t onlyITS,
+			           Int_t minITSpts,
+			           Bool_t cuts,
+				   Float_t minMom,Float_t maxMom,
+				   Float_t minAbsSinPhi,Float_t maxAbsSinPhi,
+			     	   Float_t minSinTheta,Float_t maxSinTheta)
+{
+  // Analyzes and filters ESD tracks
+  // Merges inward and outward tracks in one single track
+  // Stores the selected track space points
+  // into the output file
+
+  if (!fESDChain) return;
+
+  AliESD *esd = 0;
+  fESDChain->SetBranchAddress("ESD",&esd);
+  AliESDfriend *esdf = 0; 
+  fESDChain->SetBranchStatus("ESDfriend*",1);
+  fESDChain->SetBranchAddress("ESDfriend.",&esdf);
+
+  // Open the output file
+  if (fPointsFilename.Data() == "") {
+    AliWarning("Incorrect output filename!");
+    return;
+  }
+
+  TFile *pointsFile = TFile::Open(fPointsFilename,"RECREATE");
+  if (!pointsFile || !pointsFile->IsOpen()) {
+    AliWarning(Form("Can't open %s !",fPointsFilename.Data()));
+    return;
+  }
+
+  TTree *pointsTree = new TTree("spTree", "Tree with track space point arrays");
+  const AliTrackPointArray *array = 0;
+  AliTrackPointArray *array2 = 0;
+  pointsTree->Branch("SP","AliTrackPointArray", &array2);
+
+  Int_t ievent = 0;
+  while (fESDChain->GetEntry(ievent++)) {
+    if (!esd) break;
+
+    esd->SetESDfriend(esdf); //Attach the friend to the ESD
+
+    Int_t ntracks = esd->GetNumberOfTracks();
+    Int_t ngt=0;
+    Int_t goodtracks[10];
+    for (Int_t itrack=0; itrack < ntracks; itrack++) {
+      AliESDtrack * track = esd->GetTrack(itrack);
+      if (!track) continue;
+
+      if(track->GetNcls(0) < minITSpts) continue;
+      if(cuts) {
+	if(track->GetP()<minMom || track->GetP()>maxMom) continue;
+	Float_t abssinphi = TMath::Abs(TMath::Sin(track->GetAlpha()+TMath::ASin(track->GetSnp())));
+	if(abssinphi<minAbsSinPhi || abssinphi>maxAbsSinPhi) continue;
+	Float_t sintheta = TMath::Sin(0.5*TMath::Pi()-TMath::ATan(track->GetTgl()));
+	if(sintheta<minSinTheta || sintheta>maxSinTheta) continue;
+      } 
+      if(ngt<10) goodtracks[ngt]=itrack;
+      ngt++;
+    }
+
+    if(ngt!=2) continue; // this can be changed to check that the two tracks match
+
+    AliESDtrack * track1 = esd->GetTrack(goodtracks[0]);
+    AliESDtrack * track2 = esd->GetTrack(goodtracks[1]);
+
+    Int_t ntotpts;
+    if(onlyITS) {
+      ntotpts = track1->GetNcls(0)+track2->GetNcls(0);
+    } else {
+      ntotpts = track1->GetTrackPointArray()->GetNPoints()+
+	        track2->GetTrackPointArray()->GetNPoints();
+    }
+    array2 = new AliTrackPointArray(ntotpts);
+    AliTrackPoint point;
+    Int_t ipt,volId,modId,layerId;
+    Int_t jpt=0;
+    array = track1->GetTrackPointArray();
+    for(ipt=0; ipt<array->GetNPoints(); ipt++) {
+      array->GetPoint(point,ipt);
+      if(onlyITS) {
+	volId = point.GetVolumeID();
+	layerId = AliGeomManager::VolUIDToLayer(volId,modId);
+	if(layerId>6) continue;
+      }
+      array2->AddPoint(jpt,&point);
+      jpt++;
+    }
+    array = track2->GetTrackPointArray();
+    for(ipt=0; ipt<array->GetNPoints(); ipt++) {
+      array->GetPoint(point,ipt);
+      if(onlyITS) {
+	volId = point.GetVolumeID();
+	layerId = AliGeomManager::VolUIDToLayer(volId,modId);
+	if(layerId>6) continue;
+      }
+      array2->AddPoint(jpt,&point);
+      jpt++;
+    }
+
+    pointsTree->Fill();
   }
 
   if (!pointsTree->Write()) {
