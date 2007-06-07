@@ -457,6 +457,12 @@ void IceRoot::Exec(Option_t* opt)
    omx->AddNamedSlot(hname);
    omx->SetSignal(baseline,hname);
 
+   // Store readout type
+   omx->AddNamedSlot("READOUT");
+   if(type==0) omx->SetSignal(1,"READOUT");       // Electrical
+   else if(type==1) omx->SetSignal(2,"READOUT");  // Optical
+   else omx->SetSignal(0,"READOUT");              // Unknown
+
    // Fill the waveform histogram with this fragment
    hname="OM";
    hname+=omid;
