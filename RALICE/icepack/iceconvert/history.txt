@@ -106,4 +106,8 @@
                 from IceRoot.h.
 01-jun-2007 NvE Class IceCal2Root extended to support various databases (e.g. MuDaq, TWRDaq, ...).
 06-jun-2007 NvE Maximum OM id changed from 677 to 681 in IceRawTWR.cxx.
-
+07-jun-2007 NvE Maximum OM id changed from 681 to 680 in IceRawTWR.cxx to ignore the signals
+                of OM 681 which is always regarded is being bad.
+                Also new OM slotname "READOUT" introduced in IceCal2Root, IceF2k and IceRawTWR
+                to identify electrical, optical and digital readout based on the Dbase info
+                and/or actual settings in the various data files (headers). 

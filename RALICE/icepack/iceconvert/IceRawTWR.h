@@ -11,6 +11,7 @@
 #include "TString.h"
 #include "TObjString.h"
 #include "TObjArray.h"
+#include "TArrayI.h"
 
 #include "AliJob.h"
 #include "AliObjMatrix.h"
@@ -42,6 +43,8 @@ class IceRawTWR : public AliJob
   Int_t fPrintfreq;    // The event info printing frequency
   TObjArray* fInfiles; // Names of all the raw data input files
   TFile* fOutfile;     // The ROOT output file
+  TArrayI fReadout;    // The OM readout type (0=unknown 1=electrical 2=optical)
+  TArrayI fThreshold;  // The OM thresholds in ADC
   void PutTrigger(Int_t year);   // Put the trigger info from the raw data event into the IcePack structure
   void PutWaveforms(Int_t year); // Put the waveforms from the raw data event into the IcePack structure
 
@@ -62,6 +65,6 @@ class IceRawTWR : public AliJob
   Int_t clear_waveform_analysis(waveform_analyse_t* wfm_om);
   Int_t restore_waveform(waveform_t f_wfm,waveform_analyse_t* wfm_om,Int_t year);
 
- ClassDef(IceRawTWR,1) // Job for conversion of TWR raw data into IceEvent data structures.
+ ClassDef(IceRawTWR,2) // Job for conversion of TWR raw data into IceEvent data structures.
 };
 #endif

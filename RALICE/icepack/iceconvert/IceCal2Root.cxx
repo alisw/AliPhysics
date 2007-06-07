@@ -391,6 +391,7 @@ void IceCal2Root::GetMuDaqData()
  om.SetSlotName("ORIENT",5);
  om.SetSlotName("THRESH",6);
  om.SetSlotName("SENSIT",7);
+ om.SetSlotName("READOUT",8); // 0=unknown 1=electrical 2=optical 3=digital
 
  fInput.seekg(0); // Position at beginning of file
  fInput >> dec;   // Make sure all integers starting with 0 are taken in decimal format
@@ -400,6 +401,7 @@ void IceCal2Root::GetMuDaqData()
  Float_t costh=0;
  Float_t thresh=0;
  Float_t sensit=1;
+ Float_t readout=0;
  Double_t pos[3]={0,0,0};
  Float_t ped,beta,alpha;
  Int_t pol;
@@ -431,6 +433,7 @@ void IceCal2Root::GetMuDaqData()
    omx->SetSignal(costh,5);
    omx->SetSignal(thresh,6);
    omx->SetSignal(sensit,7);
+   omx->SetSignal(readout,8);
   }
   else if (s == "T") // Read the Time calibration constants
   {

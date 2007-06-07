@@ -599,6 +599,7 @@ void IceF2k::FillOMdbase()
   dev->SetSlotName("ORIENT",5);
   dev->SetSlotName("THRESH",6);
   dev->SetSlotName("SENSIT",7);
+  dev->SetSlotName("READOUT",8); // 0=unknown 1=electrical 2=optical 3=digital
 
   pos[0]=fHeader.x[i];
   pos[1]=fHeader.y[i];
@@ -656,6 +657,7 @@ void IceF2k::FillOMdbase()
   dev->SetSignal((Float_t)fHeader.costh[i],5);
   dev->SetSignal(fHeader.thresh[i],6);
   dev->SetSignal(fHeader.sensit[i],7);
+  dev->SetSignal(0.,8);
 
   fOmdb->EnterObject(i+1,1,dev);
  }

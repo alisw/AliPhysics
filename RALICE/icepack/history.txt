@@ -111,4 +111,6 @@
                 introduced in the .cxx files of IceCalibrate, IceChi2, IceCleanHits, IceDwalk,
                 IceDwalkx, IceLinefit, IceMakeHits, IcePandel and IceXtalk to prevent
                 problems with empty events.
+07-jun-2007 NvE Contents of OM slot "READOUT" used to determine readout system for Amanda OMs
+                in IceCalibrate.cxx.
                  

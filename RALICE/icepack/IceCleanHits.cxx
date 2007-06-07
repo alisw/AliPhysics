@@ -227,11 +227,19 @@ void IceCleanHits::Amanda()
  Int_t clean=1;
  AliSignal* sx=0;
  Float_t adc,le,tot;
+ Int_t readout;
  for (Int_t iom=0; iom<oms.GetEntries(); iom++)
  {
   omx=(IceAOM*)oms.At(iom);
   if (!omx) continue;
   omid=omx->GetUniqueID();
+  readout=int(omx->GetSignal("READOUT"));
+  // General readout setting in case info was missing 
+  if (!readout)
+  {
+   readout=1;
+   if (omid>=303) readout=2; // Optical OMs
+  }
   for (Int_t ih=1; ih<=omx->GetNhits(); ih++)
   {
    sx=omx->GetHit(ih);
@@ -248,7 +256,7 @@ void IceCleanHits::Amanda()
    }
    // Remove hits with a TOT value outside the range
    // Note : Different ranges for electrical and optical modules
-   if (omid<303) // Electrical OMs
+   if (readout==1) // Electrical OMs
    {
     if (tot<fTotminAE || tot>fTotmaxAE)
     {

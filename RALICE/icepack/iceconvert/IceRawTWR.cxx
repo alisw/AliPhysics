@@ -319,6 +319,31 @@ void IceRawTWR::Exec(Option_t* opt)
 
   // Correct the mapping
   update_system(fHeader,runnum);
+
+  // Retrieve the actual readout system and threshold of each OM for these data
+  fReadout.Set(681);
+  fThreshold.Set(681);
+  Int_t ncrates=fHeader->n_crates;
+  Int_t ntwrs=0;
+  Int_t omid,readout,thresh;
+  for (Int_t icr=0; icr<ncrates; icr++)
+  {
+   ntwrs=fHeader->crate[icr]->n_twr;
+   for (Int_t i_twr=0; i_twr<ntwrs; i_twr++)
+   {
+    for (Int_t ich=0; ich<CHANNELS_PER_TWR; ich++)
+    {
+     omid=fHeader->crate[icr]->twr[i_twr]->om_no[ich];
+     thresh=fHeader->crate[icr]->twr[i_twr]->threshold[ich];
+     readout=1+fHeader->crate[icr]->twr[i_twr]->om_is_optical[ich];
+     if (omid>=0 && omid<=681)
+     {
+      fReadout.AddAt(readout,omid-1);
+      fThreshold.AddAt(thresh,omid-1);
+     }
+    }
+   }
+  }
  
   while (!read_event(fInput,fHeader,&fEvent))
   {
@@ -408,7 +433,7 @@ void IceRawTWR::PutWaveforms(Int_t year)
  IceAOM om;
  IceAOM* omx=0;
  Int_t omid;
- Int_t omidmax=681;
+ Int_t omidmax=680;
  Int_t error;
  Float_t baseline;
  Int_t nfrags;
@@ -431,6 +456,12 @@ void IceRawTWR::PutWaveforms(Int_t year)
   }
 
   if (!omx) continue;
+
+  // Update readout type and threshold for this OM
+  omx->AddNamedSlot("READOUT");
+  omx->SetSignal(float(fReadout.At(omid-1)),"READOUT");
+  omx->AddNamedSlot("THRESH");
+  omx->SetSignal(float(fThreshold.At(omid-1)),"THRESH");
 
   clear_waveform_analysis(&fWform);
   error=restore_waveform(fEvent.wfm[i],&fWform,year);
