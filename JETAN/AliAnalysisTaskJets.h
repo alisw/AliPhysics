@@ -32,6 +32,7 @@ class AliAnalysisTaskJets : public AliAnalysisTask
     AliESD*       fESD;       //! ESD
     AliAODEvent*  fAOD;       //! AOD
     TTree*        fTreeA;     //  tree of reconstructed jets
+    TH1F*         fHisto;     //  Histogram
     ClassDef(AliAnalysisTaskJets, 1); // Analysis task for standard jet analysis
 };
  

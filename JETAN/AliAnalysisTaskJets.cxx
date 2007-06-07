@@ -38,7 +38,8 @@ AliAnalysisTaskJets::AliAnalysisTaskJets():
     fChain(0x0),
     fESD(0x0),
     fAOD(0x0),
-    fTreeA(0x0)
+    fTreeA(0x0),
+    fHisto(0x0)
 {
   // Default constructor
 }
@@ -50,22 +51,28 @@ AliAnalysisTaskJets::AliAnalysisTaskJets(const char* name):
     fChain(0x0),
     fESD(0x0),
     fAOD(0x0),
-    fTreeA(0x0)
+    fTreeA(0x0),
+    fHisto(0x0)
 {
   // Default constructor
     DefineInput (0, TChain::Class());
     DefineOutput(0, TTree::Class());
+    DefineOutput(1, TH1F::Class());
 }
 
 void AliAnalysisTaskJets::CreateOutputObjects()
 {
 // Create the output container
-    OpenFile(0);
+//
+//  Default AOD
     AliAODHandler* handler = (AliAODHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetEventHandler());
-    
     fAOD   = handler->GetAOD();
     fTreeA = handler->GetTree();
     fJetFinder->ConnectAOD(fAOD);
+//
+//  Histogram
+    OpenFile(1);
+    fHisto = new TH1F("fHisto", "Jet Et", 100, 0., 100.);
 }
 
 void AliAnalysisTaskJets::Init()
@@ -112,6 +119,7 @@ void AliAnalysisTaskJets::Exec(Option_t */*option*/)
     if (fDebug > 1) printf("Analysing event # %5d\n", (Int_t) ientry);
     fJetFinder->ProcessEvent(ientry);
     PostData(0, fTreeA);
+    PostData(1, fHisto);
 }
 
 void AliAnalysisTaskJets::Terminate(Option_t */*option*/)
