@@ -99,12 +99,18 @@ class AliMUONTrack : public TObject
   void SetLocalTrigger(Int_t loCirc, Int_t loStripX, Int_t loStripY, Int_t loDev, Int_t loLpt, Int_t loHpt);
   /// return local trigger information for the matched trigger track
   Int_t GetLocalTrigger(void) const { return fLocalTrigger;              }
+  /// number of triggering circuit
   Int_t LoCircuit(void) const 
   { Int_t circ = fLocalTrigger & 0xFF; return (circ == 234) ? -1 : circ; }
+  /// x-strip local trigger 
   Int_t LoStripX(void) const  { return fLocalTrigger >>  8 & 0x1F; }
+  /// y-strip local trigger 
   Int_t LoStripY(void) const  { return fLocalTrigger >> 13 & 0x0F; }
+  /// deviation local trigger 
   Int_t LoDev(void)    const  { return fLocalTrigger >> 17 & 0x1F; }
+  /// low pt decision local trigger 
   Int_t LoLpt(void)    const  { return fLocalTrigger >> 22 & 0x03; }
+  /// high pt decision local trigger 
   Int_t LoHpt(void)    const  { return fLocalTrigger >> 24 & 0x03; }
 
   Double_t                   TryOneHitForRec(AliMUONHitForRec* hitForRec);
@@ -142,7 +148,7 @@ class AliMUONTrack : public TObject
 
   Int_t fLocalTrigger;    ///< packed local trigger information
   
-  ClassDef(AliMUONTrack, 5) // Reconstructed track in ALICE dimuon spectrometer
+  ClassDef(AliMUONTrack, 6) // Reconstructed track in ALICE dimuon spectrometer
 };
 	
 #endif
