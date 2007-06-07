@@ -22,6 +22,8 @@
 
 
 #include <TTree.h>
+#include <TFile.h>
+
 #include "AliAODHandler.h"
 #include "AliAODEvent.h"
 
@@ -31,7 +33,9 @@ ClassImp(AliAODHandler)
 AliAODHandler::AliAODHandler() :
     AliVirtualEventHandler(),
     fAODEvent(NULL),
-    fTreeA(NULL)
+    fTreeA(NULL),
+    fFileA(NULL),
+    fName("")
 {
   // default constructor
 }
@@ -40,7 +44,9 @@ AliAODHandler::AliAODHandler() :
 AliAODHandler::AliAODHandler(const char* name, const char* title):
     AliVirtualEventHandler(name, title),
     fAODEvent(NULL),
-    fTreeA(NULL)
+    fTreeA(NULL),
+    fFileA(NULL),
+    fName("")
 {
 }
 
@@ -51,11 +57,24 @@ AliAODHandler::~AliAODHandler()
 }
 
 
-Bool_t AliAODHandler::InitIO()
+Bool_t AliAODHandler::InitIO(Option_t* opt)
 {
     // Initialize IO
+    //
+    // Create the AODevent object
     fAODEvent = new AliAODEvent();
     fAODEvent->CreateStdContent();
+    //
+    // File opening according to execution mode
+
+    if (!(strcmp(opt, "proof"))) {
+	// proof
+    } else {
+	// local and grid
+	fFileA = new TFile(fName, "RECREATE");
+    }
+    //
+    // Create the output tree
     CreateTree();
     
     return kTRUE;

@@ -24,7 +24,9 @@ class AliAODHandler : public AliVirtualEventHandler {
     AliAODHandler();
     AliAODHandler(const char* name, const char* title);
     virtual ~AliAODHandler();
-    virtual Bool_t       InitIO();
+    virtual void         SetOutputFileName(char* fname) {fName = fname;}
+    virtual char*        GetOutputFileName() {return fName;}
+    virtual Bool_t       InitIO(Option_t* option);
     virtual Bool_t       Fill();
     virtual Bool_t       Terminate();
     virtual Bool_t       TerminateIO();
@@ -41,8 +43,8 @@ class AliAODHandler : public AliVirtualEventHandler {
  private:
     AliAODEvent             *fAODEvent;  //! Pointer to the AOD event
     TTree                   *fTreeA;     //! tree for AOD persistency
-
-    
+    TFile                   *fFileA;     //! Output file
+    char                    *fName;      //! Output file name
     ClassDef(AliAODHandler, 1);
 };
 
