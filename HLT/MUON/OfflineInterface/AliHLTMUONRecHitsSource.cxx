@@ -39,16 +39,12 @@
 #include <cassert>
 #include <new>
 
-#include <iostream>
-using namespace std;
-
-
-//namespace
-//{
+namespace
+{
 	// The global object used for automatic component registration.
 	// Note DO NOT use this component for calculation!
 	AliHLTMUONRecHitsSource gAliHLTMUONRecHitsSource;
-//}
+}
 
 
 ClassImp(AliHLTMUONRecHitsSource);
@@ -57,12 +53,20 @@ ClassImp(AliHLTMUONRecHitsSource);
 AliHLTMUONRecHitsSource::AliHLTMUONRecHitsSource() :
 	AliHLTOfflineDataSource(),
 	fSimData(NULL), fRecData(NULL),
-	fRunLoader(NULL), fLoader(NULL)
+	fRunLoader(NULL), fLoader(NULL),
+	fSelection(kWholePlane)
 {
+	for (Int_t i = 0; i < AliMUONConstants::NTrackingCh(); i++)
+		fServeChamber[i] = false;
 }
+
 
 AliHLTMUONRecHitsSource::~AliHLTMUONRecHitsSource()
 {
+	assert( fSimData == NULL );
+	assert( fRecData == NULL );
+	assert( fRunLoader == NULL );
+	assert( fLoader == NULL );
 }
 
 
@@ -71,13 +75,65 @@ int AliHLTMUONRecHitsSource::DoInit(int argc, const char** argv)
 	// Parse the command line arguments:
 	bool simdata = false;
 	bool recdata = false;
-	int i = 0;
-	while (i < argc)
+	bool chamberWasSet = false;
+	
+	for (int i = 0; i < argc; i++)
 	{
-		if (strcmp(argv[i], "-simdata") != 0)
+		if (strcmp(argv[i], "-simdata") == 0)
+		{
 			simdata = true;
-		else if (strcmp(argv[i], "-recdata") != 0)
+		}
+		else if (strcmp(argv[i], "-recdata") == 0)
+		{
 			recdata = true;
+		}
+		else if (strcmp(argv[i], "-plane") == 0)
+		{
+			i++;
+			if (i >= argc)
+			{
+				Logging(kHLTLogError,
+					"AliHLTMUONRecHitsSource::DoInit",
+					"Missing parameter",
+					"Expected one of 'left', 'right' or 'all' after '-plane'."
+				);
+				return EINVAL;
+			}
+			if (strcmp(argv[i], "left") == 0)
+				fSelection = kLeftPlane;
+			else if (strcmp(argv[i], "right") == 0)
+				fSelection = kRightPlane;
+			else if (strcmp(argv[i], "all") == 0)
+				fSelection = kWholePlane;
+			else
+			{
+				Logging(kHLTLogError,
+					"AliHLTMUONRecHitsSource::DoInit",
+					"Invalid parameter",
+					"The parameter '%s' is invalid and must be one of 'left',"
+					  " 'right' or 'all'.",
+					argv[i]
+				);
+				return EINVAL;
+			}
+		}
+		else if (strcmp(argv[i], "-chamber") == 0)
+		{
+			i++;
+			if (i >= argc)
+			{
+				Logging(kHLTLogError,
+					"AliHLTMUONRecHitsSource::DoInit",
+					"Missing parameter",
+					"Expected a chamber number, range eg. '1-10' or list eg."
+					  " '1,2,3' after '-chamber'."
+				);
+				return EINVAL;
+			}
+			int result = ParseChamberString(argv[i]);
+			if (result != 0) return result;
+			chamberWasSet = true;
+		}
 		else
 		{
 			Logging(kHLTLogError,
@@ -111,9 +167,26 @@ int AliHLTMUONRecHitsSource::DoInit(int argc, const char** argv)
 		return EINVAL;
 	}
 	
+	if (not chamberWasSet)
+	{
+		Logging(kHLTLogInfo,
+			"AliHLTMUONRecHitsSource::DoInit",
+			"Setting Parameters",
+			"No chambers were selected so we will publish for all chambers."
+		);
+		for (Int_t i = 0; i < AliMUONConstants::NTrackingCh(); i++)
+			fServeChamber[i] = true;
+	}
+	
 	// Now we can initialise the data interface objects and loaders.
 	if (simdata)
 	{
+		Logging(kHLTLogDebug,
+			"AliHLTMUONRecHitsSource::DoInit",
+			"Data interface",
+			"Loading simulated GEANT hits with AliMUONSimData."
+		);
+		
 		try
 		{
 			fSimData = new AliMUONSimData("galice.root");
@@ -132,6 +205,12 @@ int AliHLTMUONRecHitsSource::DoInit(int argc, const char** argv)
 	}
 	else if (recdata)
 	{
+		Logging(kHLTLogDebug,
+			"AliHLTMUONRecHitsSource::DoInit",
+			"Data interface",
+			"Loading reconstructed clusters with AliMUONRecData."
+		);
+		
 		try
 		{
 			fRecData = new AliMUONRecData("galice.root");
@@ -180,18 +259,21 @@ const char* AliHLTMUONRecHitsSource::GetComponentID()
 	return AliHLTMUONConstants::RecHitsSourceId();
 }
 
+
 AliHLTComponentDataType AliHLTMUONRecHitsSource::GetOutputDataType()
 {
 	return AliHLTMUONConstants::RecHitsBlockDataType();
 }
 
+
 void AliHLTMUONRecHitsSource::GetOutputDataSize(
 		unsigned long& constBase, double& inputMultiplier
 	)
 {
-	constBase = sizeof(AliHLTMUONRecHitsBlockStruct);
-	inputMultiplier = 1;
+	constBase = sizeof(AliHLTMUONRecHitsBlockStruct) + 1024*4*8;
+	inputMultiplier = 0;
 }
+
 
 AliHLTComponent* AliHLTMUONRecHitsSource::Spawn()
 {
@@ -229,8 +311,8 @@ int AliHLTMUONRecHitsSource::GetEvent(
 	
 	// Use the fEventID as the event number to load, check it and load that
 	// event with the runloader.
-	Int_t eventnumber = Int_t(evtData.fEventID);
-	if (eventnumber >= fRunLoader->GetNumberOfEvents())
+	UInt_t eventnumber = UInt_t(evtData.fEventID);
+	if ( eventnumber >= UInt_t(fRunLoader->GetNumberOfEvents()) )
 	{
 		Logging(kHLTLogError,
 			"AliHLTMUONRecHitsSource::GetEvent",
@@ -263,6 +345,13 @@ int AliHLTMUONRecHitsSource::GetEvent(
 	
 	if (fSimData != NULL)
 	{
+		Logging(kHLTLogDebug,
+			"AliHLTMUONRecHitsSource::GetEvent",
+			"Filling hits",
+			"Filling data block with GEANT hits for event %d.",
+			eventnumber
+		);
+		
 		// Loop over all tracks, extract the hits and write them to the
 		// data block.
 		fSimData->SetTreeAddress("H");
@@ -276,10 +365,15 @@ int AliHLTMUONRecHitsSource::GetEvent(
 				AliMUONHit* hit = static_cast<AliMUONHit*>(
 						fSimData->Hits()->At(j)
 					);
-				hit->Print();
 				
-				// Select only hits on a certain chamber.
-				if (hit->Chamber() != 7) continue;
+				// Select only hits on selected chambers.
+				Int_t chamber = hit->Chamber() - 1;
+				if (chamber > AliMUONConstants::NTrackingCh()) continue;
+				if (not fServeChamber[chamber]) continue;
+				
+				// Only select hits from the given part of the plane
+				if (fSelection == kLeftPlane and not (hit->Xref() < 0)) continue;
+				if (fSelection == kRightPlane and not (hit->Xref() >= 0)) continue;
 				
 				AliHLTMUONRecHitStruct* rechit = block.AddEntry();
 				if (rechit == NULL)
@@ -305,40 +399,51 @@ int AliHLTMUONRecHitsSource::GetEvent(
 	}
 	else if (fRecData != NULL)
 	{
-		//Int_t nchambers = AliMUONConstants::NTrackingCh();
+		Logging(kHLTLogDebug,
+			"AliHLTMUONRecHitsSource::GetEvent",
+			"Filling hits",
+			"Filling data block with reconstructed raw clusters for event %d.",
+			eventnumber
+		);
+		
 		fRecData->SetTreeAddress("RC,TC"); 
 		fRecData->GetRawClusters();
 		
-		// Select a specific chamber.
-		Int_t chamber = 7;
-		char branchname[32];
-		sprintf(branchname, "MUONRawClusters%d", chamber);
-
-		TClonesArray* clusterarray = fRecData->RawClusters(chamber);
-		Int_t nrecpoints = clusterarray->GetEntriesFast();
-		for (Int_t i = 0; i < nrecpoints; i++)
+		// Loop over selected chambers and extract the raw clusters.
+		for (Long_t chamber = 0; chamber < AliMUONConstants::NTrackingCh(); chamber++)
 		{
-			AliMUONRawCluster* cluster = static_cast<AliMUONRawCluster*>(clusterarray->At(i));
-			cluster->GetX();
+			// Select only hits on selected chambers.
+			if (not fServeChamber[chamber]) continue;
 			
-			AliHLTMUONRecHitStruct* rechit = block.AddEntry();
-			if (rechit == NULL)
+			TClonesArray* clusterarray = fRecData->RawClusters(chamber);
+			Int_t nrecpoints = clusterarray->GetEntriesFast();
+			for (Int_t i = 0; i < nrecpoints; i++)
 			{
-				Logging(kHLTLogError,
-					"AliHLTMUONRecHitsSource::GetEvent",
-					"Buffer overflow",
-					"There is not enough buffer space to add more hits."
-					  " We overflowed the buffer which is only %d bytes.",
-					block.BufferSize()
-				);
-				fRecData->ResetRawClusters();
-				size = 0; // Important to tell framework that nothing was generated.
-				return ENOBUFS;
-			}
+				AliMUONRawCluster* cluster = static_cast<AliMUONRawCluster*>(clusterarray->At(i));
+				
+				// Only select hits from the given part of the plane
+				if (fSelection == kLeftPlane and not (cluster->GetX() < 0)) continue;
+				if (fSelection == kRightPlane and not (cluster->GetX() >= 0)) continue;
 			
-			rechit->fX = cluster->GetX();
-			rechit->fY = cluster->GetY();
-			rechit->fZ = cluster->GetZ();
+				AliHLTMUONRecHitStruct* rechit = block.AddEntry();
+				if (rechit == NULL)
+				{
+					Logging(kHLTLogError,
+						"AliHLTMUONRecHitsSource::GetEvent",
+						"Buffer overflow",
+						"There is not enough buffer space to add more hits."
+						  " We overflowed the buffer which is only %d bytes.",
+						block.BufferSize()
+					);
+					fRecData->ResetRawClusters();
+					size = 0; // Important to tell framework that nothing was generated.
+					return ENOBUFS;
+				}
+				
+				rechit->fX = cluster->GetX();
+				rechit->fY = cluster->GetY();
+				rechit->fZ = cluster->GetZ();
+			}
 		}
 		
 		fRecData->ResetRawClusters();
@@ -353,6 +458,108 @@ int AliHLTMUONRecHitsSource::GetEvent(
 		size = 0; // Important to tell framework that nothing was generated.
 		return EFAULT;
 	}
+	
+	AliHLTComponentBlockData bd;
+	FillBlockData(bd);
+	bd.fPtr = outputPtr;
+	bd.fOffset = 0;
+	bd.fSize = block.BytesUsed();
+	bd.fDataType = AliHLTMUONConstants::RecHitsBlockDataType();
+	bd.fSpecification = 7;
+	outputBlocks.push_back(bd);
+	size = block.BytesUsed();
 
+	return 0;
+}
+
+
+int AliHLTMUONRecHitsSource::ParseChamberString(const char* str)
+{
+	char* end = const_cast<char*>(str);
+	long lastChamber = -1;
+	do
+	{
+		// Parse the next number.
+		char* current = end;
+		long chamber = strtol(current, &end, 0);
+		
+		// Check for parse errors of the number.
+		if (current == end)
+		{
+			Logging(kHLTLogError,
+				"AliHLTMUONRecHitsSource::GetEvent",
+				"Parse error",
+				"Expected a number in the range [1..%d] but got '%s'.",
+				AliMUONConstants::NTrackingCh(), current
+			);
+			return EINVAL;
+		}
+		if (chamber < 1 or AliMUONConstants::NTrackingCh() < chamber)
+		{
+			Logging(kHLTLogError,
+				"AliHLTMUONRecHitsSource::GetEvent",
+				"Parse error",
+				"Got the chamber number %d which is outside the valid range of [1..%d].",
+				AliMUONConstants::NTrackingCh(), chamber
+			);
+			return EINVAL;
+		}
+		
+		// Skip any whitespace after the number
+		while (*end != '\0' and (*end == ' ' or *end == '\t' or *end == '\r' or *end == '\n')) end++;
+		
+		// Check if we are dealing with a list or range, or if we are at
+		// the end of the string.
+		if (*end == '-')
+		{
+			lastChamber = chamber;
+			end++;
+			continue;
+		}
+		else if (*end == ',')
+		{
+			assert( 1 <= chamber and chamber <= 10 );
+			fServeChamber[chamber-1] = true;
+			end++;
+		}
+		else if (*end == '\0')
+		{
+			assert( 1 <= chamber and chamber <= 10 );
+			fServeChamber[chamber-1] = true;
+		}
+		else
+		{
+			Logging(kHLTLogError,
+				"AliHLTMUONRecHitsSource::GetEvent",
+				"Parse error",
+				"Could not understand parameter list '%s'. Expected '-', ','"
+				  " or end of line but got '%c' at character %d.",
+				str, *end, (int)(end - str) +1
+			);
+			return EINVAL;
+		}
+		
+		// Set the range of chambers to publish for.
+		if (lastChamber > 0)
+		{
+			Int_t min, max;
+			if (lastChamber < chamber)
+			{
+				min = lastChamber;
+				max = chamber;
+			}
+			else
+			{
+				min = chamber;
+				max = lastChamber;
+			}
+			assert( min >= 1 );
+			assert( max <= 10 );
+			for (Int_t i = min; i <= max; i++)
+				fServeChamber[i-1] = true;
+		}
+		lastChamber = -1;
+	}
+	while (*end != '\0');
 	return 0;
 }

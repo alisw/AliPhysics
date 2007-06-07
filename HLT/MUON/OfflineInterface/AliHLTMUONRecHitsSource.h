@@ -55,10 +55,21 @@ protected:
 	
 private:
 
+	enum SelectionType
+	{
+		kLeftPlane,  // everything from x < 0
+		kRightPlane, // everything from x >= 0
+		kWholePlane  // for all x
+	};
+	
+	int ParseChamberString(const char* str);
+
 	AliMUONSimData* fSimData; //! MUON module interface to simulated data.
 	AliMUONRecData* fRecData; //! MUON module interface to reconstructed data.
 	AliRunLoader* fRunLoader; //! A pointer to the AliRunLoader instance.
 	AliLoader* fLoader; //! Pointer to the MUON loader instance.
+	SelectionType fSelection; //! Indicates if we should publish from the left, right or whole XY plane.
+	bool fServeChamber[10]; //! Flag to indicate if hits from a given chamber should be published.
 
 	ClassDef(AliHLTMUONRecHitsSource, 0); // dHLT data source for reconstructed hit data blocks.
 };
