@@ -212,7 +212,12 @@ void AliAnalysisManager::SlaveBegin(TTree *tree)
       cout << "->AliAnalysisManager::SlaveBegin()" << endl;
    }
    // Call InitIO of EventHandler
-   fEventHandler->InitIO();
+   if (fMode == kProofAnalysis) {
+       fEventHandler->InitIO("proof");
+   } else {
+       fEventHandler->InitIO("local");
+   }
+
    //
    TIter next(fTasks);
    AliAnalysisTask *task;
@@ -376,6 +381,8 @@ void AliAnalysisManager::UnpackOutput(TList *source)
       }   
       // Check if the output need to be written to a file.
       const char *filename = output->GetFileName();
+      if (!(strcmp(filename, "default"))) filename = fEventHandler->GetOutputFileName();
+
       if (!filename || !strlen(filename)) continue;
       TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(filename);
       if (file) file->cd();
