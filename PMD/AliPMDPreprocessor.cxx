@@ -66,7 +66,6 @@ UInt_t AliPMDPreprocessor::Process(TMap* pdaqAliasMap)
 
         TIter iter(filesources);
         TObjString* source;
-        int i=0;
         UInt_t result = 0;
 	TString filename;
         while((source=dynamic_cast<TObjString*> (iter.Next()))){
