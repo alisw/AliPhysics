@@ -917,23 +917,12 @@ AliPMDCalibData* AliPMDClusterFinder::GetCalibData() const
   // Added by ZA
   AliCDBEntry  *entry = AliCDBManager::Instance()->Get("PMD/Calib/Data");
   
-  if(!entry){
-    AliWarning("Calibration object retrieval failed! Dummy calibration will be used.");
-    
-    // this just remembers the actual default storage. No problem if it is null.
-    AliCDBStorage *origStorage = AliCDBManager::Instance()->GetDefaultStorage();
-    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
-    
-    entry = AliCDBManager::Instance()->Get("PMD/Calib/Data");
-    
-    // now reset the original default storage to AliCDBManager...
-    AliCDBManager::Instance()->SetDefaultStorage(origStorage);  
-  }
+  if(!entry)  AliFatal("Calibration object retrieval failed! ");
   
   AliPMDCalibData *calibdata=0;
   if (entry) calibdata = (AliPMDCalibData*) entry->GetObject();
   
-  if (!calibdata)  AliError("No calibration data from calibration database !");
+  if (!calibdata)  AliFatal("No calibration data from calibration database !");
   
   return calibdata;
 }

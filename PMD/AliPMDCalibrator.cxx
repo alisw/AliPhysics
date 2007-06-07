@@ -329,7 +329,8 @@ void AliPMDCalibrator::CalculateIsoCell()
 Bool_t AliPMDCalibrator::Store()
 {
   AliCDBManager *man = AliCDBManager::Instance();
-  man->SetDefaultStorage("local://$ALICE_ROOT");
+  //man->SetDefaultStorage("local://$ALICE_ROOT");
+  if(!man->IsDefaultStorageSet()) return kFALSE;
   AliCDBId id("PMD/Calib/Data",0,0);
   AliCDBMetaData md;
   md.SetResponsible("Zubayer");
