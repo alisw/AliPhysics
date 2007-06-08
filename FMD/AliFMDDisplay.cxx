@@ -29,6 +29,7 @@
 // Latest changes by Christian Holm Christensen
 //
 
+#include <TSystem.h>
 #include <TApplication.h>
 #include <TButton.h>
 #include <TCanvas.h>
