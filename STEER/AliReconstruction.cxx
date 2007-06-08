@@ -733,7 +733,15 @@ Bool_t AliReconstruction::Run(const char* input)
     }
 
     //Try to improve the reconstructed primary vertex position using the tracks
-    AliESDVertex *pvtx=tVertexer.FindPrimaryVertex(esd);
+    AliESDVertex *pvtx=0;
+    Bool_t dovertex=kTRUE;
+    TObject* obj = fOptions.FindObject("ITS");
+    if (obj) {
+      TString optITS = obj->GetTitle();
+      if (optITS.Contains("cosmics") || optITS.Contains("COSMICS")) 
+	dovertex=kFALSE;
+    }
+    if(dovertex) pvtx=tVertexer.FindPrimaryVertex(esd);
     if(fDiamondProfile) esd->SetDiamond(fDiamondProfile);
     
     if (pvtx)
