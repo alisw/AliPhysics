@@ -59,21 +59,26 @@ Bool_t AliHMPIDPreprocessor::ProcDcs(TMap* pMap)
   for(Int_t iCh=0;iCh<7;iCh++){                   
 //    TObjArray *pHV=(TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_PW/HMP_MP%i_SEC0/HMP_MP%i_SEC0_HV.actual.vMon",iCh,iCh,iCh,iCh)); //HV
     TObjArray *pP =(TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_GAS/HMP_MP%i_GAS_PMWC.actual.value"           ,iCh,iCh,iCh));    TIter nextP(pP);
-    TGraph *pGrP=new TGraph; cnt=0; while((pVal=(AliDCSValue*)nextP())) pGrP->SetPoint(cnt++,pVal->GetTimeStamp(),pVal->GetFloat());            //P
-
-    pGrP->Fit(new TF1(Form("P%i",iCh),"1005",fStartTime,fEndTime),"Q"); delete pGrP;
+    TGraph *pGrP=new TGraph; cnt=0; 
+    while((pVal=(AliDCSValue*)nextP())) pGrP->SetPoint(cnt++,pVal->GetTimeStamp(),pVal->GetFloat());            //P
+    if( cnt!=0) pGrP->Fit(new TF1(Form("P%i",iCh),"1005+x*[0]",fStartTime,fEndTime),"Q");                       //clm: if no DCS map entry don't fit
+    delete pGrP;   
+    
     arQthre.AddAt(new TF1(Form("HMP_Qthre%i",iCh),"100",fStartTime,fEndTime),iCh);    
     
     for(Int_t iRad=0;iRad<3;iRad++){
       TObjArray *pT1=(TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_LIQ_LOOP.actual.sensors.Rad%iIn_Temp",iCh,iCh,iRad));  TIter nextT1(pT1);//Tin
       TObjArray *pT2=(TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_LIQ_LOOP.actual.sensors.Rad%iOut_Temp",iCh,iCh,iRad)); TIter nextT2(pT2);//Tout      
+      
       TGraph *pGrT1=new TGraph; cnt=0;  while((pVal=(AliDCSValue*)nextT1())) pGrT1->SetPoint(cnt++,pVal->GetTimeStamp(),pVal->GetFloat()); //T inlet
+      if(cnt!=0) pGrT1->Fit(new TF1(Form("Tin%i%i",iCh,iRad),"[0]+[1]*x+[2]*sin([3]*x)",fStartTime,fEndTime),"Q");       //fit Tin graph -- clm: if DCS entry
+      
       TGraph *pGrT2=new TGraph; cnt=0;  while((pVal=(AliDCSValue*)nextT2())) pGrT2->SetPoint(cnt++,pVal->GetTimeStamp(),pVal->GetFloat()); //T outlet 
-      pGrT1->Fit(new TF1(Form("Tin%i%i",iCh,iRad),"[0]+[1]*x+[2]*sin([3]*x)",fStartTime,fEndTime),"Q");       //fit Tin graph 
-      pGrT2->Fit(new TF1(Form("Tou%i%i",iCh,iRad),"[0]+[1]*x+[2]*sin([3]*x)",fStartTime,fEndTime),"Q");       //fit Tout graph 
-
-      delete pGrT1;  delete pGrT2;
+      if(cnt!=0) pGrT2->Fit(new TF1(Form("Tou%i%i",iCh,iRad),"[0]+[1]*x+[2]*sin([3]*x)",fStartTime,fEndTime),"Q");       //fit Tout graph -- clm: if DCS entry
             
+      delete pGrT1;  delete pGrT2;
+	
+	    
 //      arTmean.Add(pRadTempF);  
       arNmean.AddAt(new TF1(Form("HMP_Nmean%i-%i",iCh,iRad),"1.292",fStartTime,fEndTime),3*iCh+iRad); //Nmean=f(t)
     }//radiators loop
