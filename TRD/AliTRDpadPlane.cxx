@@ -57,6 +57,7 @@ AliTRDpadPlane::AliTRDpadPlane()
   ,fTiltingTan(0)
   ,fPadRow(0)
   ,fPadCol(0)
+  ,fPadRowSMOffset(0)
 {
   //
   // Default constructor
@@ -86,6 +87,7 @@ AliTRDpadPlane::AliTRDpadPlane(Int_t p, Int_t c)
   ,fTiltingTan(0)
   ,fPadRow(0)
   ,fPadCol(0)
+  ,fPadRowSMOffset(0)
 {
   //
   // Constructor that initializes a given pad plane type
@@ -265,14 +267,9 @@ AliTRDpadPlane::AliTRDpadPlane(Int_t p, Int_t c)
   // Row direction
   //
   fPadRow = new Double_t[fNrows];
-  Double_t row = fGeo->GetChamberLength(p,0)
-    	       + fGeo->GetChamberLength(p,1)
-               + fGeo->GetChamberLength(p,2) / 2.0
+  Double_t row = fGeo->GetChamberLength(p,c) / 2.0
                - fGeo->RpadW()
                - fLengthRim;
-  for (Int_t ic = 0; ic < c; ic++) {
-    row -= fGeo->GetChamberLength(p,ic);
-  }
   for (Int_t ir = 0; ir < fNrows; ir++) {
     fPadRow[ir] = row;
     row -= fRowSpacing;
@@ -300,6 +297,15 @@ AliTRDpadPlane::AliTRDpadPlane(Int_t p, Int_t c)
       col -= fWidthIPad;
     }
   }
+  // Calculate the offset to translate from the local ROC system into
+  // the local supermodule system, which is used for clusters
+  Double_t rowTmp = fGeo->GetChamberLength(p,0)
+    	          + fGeo->GetChamberLength(p,1)
+                  + fGeo->GetChamberLength(p,2) / 2.0;
+  for (Int_t ic = 0; ic < c; ic++) {
+    rowTmp -= fGeo->GetChamberLength(p,ic);
+  }
+  fPadRowSMOffset = rowTmp - fGeo->GetChamberLength(p,c)/2.0;
 
 }
 
@@ -325,6 +331,7 @@ AliTRDpadPlane::AliTRDpadPlane(const AliTRDpadPlane &p)
   ,fTiltingTan(p.fTiltingTan)
   ,fPadRow(0)
   ,fPadCol(0)
+  ,fPadRowSMOffset(p.fPadRowSMOffset)
 {
   //
   // AliTRDpadPlane copy constructor
@@ -398,28 +405,30 @@ void AliTRDpadPlane::Copy(TObject &p) const
 
   Int_t iBin = 0;
 
-  ((AliTRDpadPlane &) p).fGeo          = 0;
+  ((AliTRDpadPlane &) p).fGeo            = 0;
 
-  ((AliTRDpadPlane &) p).fPla          = fPla;
-  ((AliTRDpadPlane &) p).fCha          = fCha;
+  ((AliTRDpadPlane &) p).fPla            = fPla;
+  ((AliTRDpadPlane &) p).fCha            = fCha;
 
-  ((AliTRDpadPlane &) p).fLength       = fLength;
-  ((AliTRDpadPlane &) p).fWidth        = fWidth;
-  ((AliTRDpadPlane &) p).fLengthRim    = fLengthRim;
-  ((AliTRDpadPlane &) p).fWidthRim     = fWidthRim;
-  ((AliTRDpadPlane &) p).fLengthOPad   = fLengthOPad;
-  ((AliTRDpadPlane &) p).fWidthOPad    = fWidthOPad;
-  ((AliTRDpadPlane &) p).fLengthIPad   = fLengthIPad;
-  ((AliTRDpadPlane &) p).fWidthIPad    = fWidthIPad;
+  ((AliTRDpadPlane &) p).fLength         = fLength;
+  ((AliTRDpadPlane &) p).fWidth          = fWidth;
+  ((AliTRDpadPlane &) p).fLengthRim      = fLengthRim;
+  ((AliTRDpadPlane &) p).fWidthRim       = fWidthRim;
+  ((AliTRDpadPlane &) p).fLengthOPad     = fLengthOPad;
+  ((AliTRDpadPlane &) p).fWidthOPad      = fWidthOPad;
+  ((AliTRDpadPlane &) p).fLengthIPad     = fLengthIPad;
+  ((AliTRDpadPlane &) p).fWidthIPad      = fWidthIPad;
 
-  ((AliTRDpadPlane &) p).fRowSpacing   = fRowSpacing;
-  ((AliTRDpadPlane &) p).fColSpacing   = fColSpacing;
+  ((AliTRDpadPlane &) p).fRowSpacing     = fRowSpacing;
+  ((AliTRDpadPlane &) p).fColSpacing     = fColSpacing;
 
-  ((AliTRDpadPlane &) p).fNrows        = fNrows;
-  ((AliTRDpadPlane &) p).fNcols        = fNcols;
+  ((AliTRDpadPlane &) p).fNrows          = fNrows;
+  ((AliTRDpadPlane &) p).fNcols          = fNcols;
 
-  ((AliTRDpadPlane &) p).fTiltingAngle = fTiltingAngle;
-  ((AliTRDpadPlane &) p).fTiltingTan   = fTiltingTan;
+  ((AliTRDpadPlane &) p).fTiltingAngle   = fTiltingAngle;
+  ((AliTRDpadPlane &) p).fTiltingTan     = fTiltingTan;
+
+  ((AliTRDpadPlane &) p).fPadRowSMOffset = fPadRowSMOffset;
 
   if (((AliTRDpadPlane &) p).fPadRow) {
     delete [] ((AliTRDpadPlane &) p).fPadRow;
@@ -445,7 +454,7 @@ void AliTRDpadPlane::Copy(TObject &p) const
 Int_t AliTRDpadPlane::GetPadRowNumber(Double_t z) const
 {
   //
-  // Finds the pad row number for a given global z-position
+  // Finds the pad row number for a given z-position in local supermodule system
   //
 
   Int_t row    = 0;
@@ -455,6 +464,48 @@ Int_t AliTRDpadPlane::GetPadRowNumber(Double_t z) const
 
   if ((z > GetRow0()  ) || 
       (z < GetRowEnd())) {
+
+    row = -1;
+
+  }
+  else {
+
+    nabove = fNrows + 1;
+    nbelow = 0;
+    while (nabove - nbelow > 1) {
+      middle = (nabove + nbelow) / 2;
+      if (z == (fPadRow[middle-1] + fPadRowSMOffset)) {
+        row    = middle;
+      }
+      if (z  > (fPadRow[middle-1] + fPadRowSMOffset)) {
+        nabove = middle;
+      }
+      else {
+        nbelow = middle;
+      }
+    }
+    row = nbelow - 1;
+
+  }
+
+  return row;
+
+}
+
+//_____________________________________________________________________________
+Int_t AliTRDpadPlane::GetPadRowNumberROC(Double_t z) const
+{
+  //
+  // Finds the pad row number for a given z-position in local ROC system
+  //
+
+  Int_t row    = 0;
+  Int_t nabove = 0;
+  Int_t nbelow = 0;
+  Int_t middle = 0;
+
+  if ((z > GetRow0ROC()  ) || 
+      (z < GetRowEndROC())) {
 
     row = -1;
 
@@ -484,17 +535,16 @@ Int_t AliTRDpadPlane::GetPadRowNumber(Double_t z) const
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDpadPlane::GetPadColNumber(Double_t rphi
-				    , Double_t /*rowOffset*/) const
+Int_t AliTRDpadPlane::GetPadColNumber(Double_t rphi) const
 {
   //
   // Finds the pad column number for a given global rphi-position
   //
 
-  Int_t    col    = 0;
-  Int_t    nabove = 0;
-  Int_t    nbelow = 0;
-  Int_t    middle = 0;
+  Int_t col    = 0;
+  Int_t nabove = 0;
+  Int_t nbelow = 0;
+  Int_t middle = 0;
 
   if ((rphi > GetCol0()  ) || 
       (rphi < GetColEnd())) {
