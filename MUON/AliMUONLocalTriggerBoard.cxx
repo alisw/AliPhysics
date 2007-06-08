@@ -1109,7 +1109,12 @@ void AliMUONLocalTriggerBoard::LocalTrigger()
        
 //    GET LUT OUTPUT FOR icirc/istripX1/deviation/istripY
        fLUT->GetLutOutput(fNumber, fStripX11, deviation, fStripY11, fLutLpt, fLutHpt);
-   }  
+       }
+   fResponse = fLutLpt[0]                      + 
+       static_cast<int>(fLutLpt[1]<<1) + 
+       static_cast<int>(fLutHpt[0]<<2) + 
+       static_cast<int>(fLutHpt[1]<<3);  
+
 }
 
 //___________________________________________
@@ -1325,12 +1330,6 @@ void AliMUONLocalTriggerBoard::Response()
 
    TrigY(yY1, yY2, yY3, yY4, yY3U, yY3D, yY4U, yY4D);
    
-// ASIGN fLutLpt, fLutHpt
+// ASIGN fLutLpt, fLutHpt and calculate fResponse
    LocalTrigger();
-
-   fResponse = fLutLpt[0]                      + 
-       static_cast<int>(fLutLpt[1]<<1) + 
-       static_cast<int>(fLutHpt[0]<<2) + 
-       static_cast<int>(fLutHpt[1]<<3);
 }
-
