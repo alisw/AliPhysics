@@ -30,6 +30,7 @@ class AliITSv11GeomCableRound : public AliITSv11GeomCable {
   void          AddCheckPoint( TGeoVolume *vol, Int_t iCheckPt,
 			       Double_t *coord, Double_t *orthVect);
   TGeoVolume*   CreateAndInsertCableSegment(Int_t p2, TGeoCombiTrans** ct=0);
+  TGeoVolume*   CreateAndInsertTubeSegment(Int_t p2, TGeoCombiTrans** ct=0);
   TGeoVolume*   CreateAndInsertTorusSegment(Int_t p2, Double_t rotation=0,
 					    TGeoCombiTrans** ct=0);
   void          PrintCheckPoints() const;
@@ -43,6 +44,7 @@ class AliITSv11GeomCableRound : public AliITSv11GeomCable {
  protected:
   TGeoVolume*   CreateSegment( Double_t *coord1,Double_t *coord2,
 			       Double_t *localVect1, Double_t *localVect2, Int_t p);
+  TGeoVolume*   CreateTubeSegment( Double_t *coord1,Double_t *coord2, Int_t p);
   TGeoVolume*   CreateTorus(  Double_t &phi, Double_t &r, Int_t p);
 
   Double_t   fRadius;                         // total radius

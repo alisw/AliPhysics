@@ -123,7 +123,6 @@ Int_t AliITSv11GeomCableFlat::GetPoint( Int_t iCheckPt, Double_t *coord)
   };
 }
 
-
 //________________________________________________________________________
 Int_t AliITSv11GeomCableFlat::GetVect( Int_t iCheckPt, Double_t *coord)
   const {
@@ -141,7 +140,6 @@ Int_t AliITSv11GeomCableFlat::GetVect( Int_t iCheckPt, Double_t *coord)
     return kFALSE;
   };
 }
-
 
 //________________________________________________________________________
 void AliITSv11GeomCableFlat::AddCheckPoint( TGeoVolume *vol, Int_t iCheckPt,
@@ -302,7 +300,6 @@ TGeoVolume* AliITSv11GeomCableFlat::CreateAndInsertCableSegment(Int_t p2,
   //-- order to match as closer as possible this segment and the 
   //-- previous one. 
   //-- It seems that some times it doesn't work ...
-  Double_t angleRotZ = 0;
   TGeoRotation rotTemp("",angleRot1*TMath::RadToDeg(),
 		       angleRotDiag*TMath::RadToDeg(), rotation);
   Double_t localX[3] = {0,1,0};
@@ -312,28 +309,29 @@ TGeoVolume* AliITSv11GeomCableFlat::CreateAndInsertCableSegment(Int_t p2,
   GetCheckVect(localX, p2Vol, 0, fgkCableMaxNodeLevel+1, globalX);
   Double_t orthVect[3];
   GetCheckVect(vect1, p2Vol, 0, fgkCableMaxNodeLevel+1, orthVect);
-  if (p2>1) {
-    Double_t orthVectNorm2 = ScalProd(orthVect,orthVect);
-    Double_t alpha1 = ScalProd(fPreviousX,orthVect)/orthVectNorm2;
-    Double_t alpha2 = ScalProd(globalX,orthVect)/orthVectNorm2;
-    Double_t globalX1p[3], globalX2p[3];
-    globalX1p[0] = fPreviousX[0] - alpha1*orthVect[0];
-    globalX1p[1] = fPreviousX[1] - alpha1*orthVect[1];
-    globalX1p[2] = fPreviousX[2] - alpha1*orthVect[2];
-    globalX2p[0] = globalX[0] - alpha2*orthVect[0];
-    globalX2p[1] = globalX[1] - alpha2*orthVect[1];
-    globalX2p[2] = globalX[2] - alpha2*orthVect[2];
-    //-- now I'm searching the 3th vect which makes an orthogonal base
-    //-- with orthVect and globalX1p ...
-    Double_t nulVect[3] = {0,0,0};
-    Double_t axis3[3];
-    TMath::Normal2Plane(nulVect, orthVect, globalX1p, axis3);
-    Double_t globalX1pNorm2 = ScalProd(globalX1p, globalX1p);
-    Double_t beta = ScalProd(globalX2p, globalX1p)/globalX1pNorm2;
-    Double_t gamma = ScalProd(globalX2p, axis3);
-    angleRotZ = (TMath::ATan2(1,0) - TMath::ATan2(beta, gamma))
-                *TMath::RadToDeg();
-  };
+//   Double_t angleRotZ = 0;
+//   if (p2>1) {
+//     Double_t orthVectNorm2 = ScalProd(orthVect,orthVect);
+//     Double_t alpha1 = ScalProd(fPreviousX,orthVect)/orthVectNorm2;
+//     Double_t alpha2 = ScalProd(globalX,orthVect)/orthVectNorm2;
+//     Double_t globalX1p[3], globalX2p[3];
+//     globalX1p[0] = fPreviousX[0] - alpha1*orthVect[0];
+//     globalX1p[1] = fPreviousX[1] - alpha1*orthVect[1];
+//     globalX1p[2] = fPreviousX[2] - alpha1*orthVect[2];
+//     globalX2p[0] = globalX[0] - alpha2*orthVect[0];
+//     globalX2p[1] = globalX[1] - alpha2*orthVect[1];
+//     globalX2p[2] = globalX[2] - alpha2*orthVect[2];
+//     //-- now I'm searching the 3th vect which makes an orthogonal base
+//     //-- with orthVect and globalX1p ...
+//     Double_t nulVect[3] = {0,0,0};
+//     Double_t axis3[3];
+//     TMath::Normal2Plane(nulVect, orthVect, globalX1p, axis3);
+//     Double_t globalX1pNorm2 = ScalProd(globalX1p, globalX1p);
+//     Double_t beta = ScalProd(globalX2p, globalX1p)/globalX1pNorm2;
+//     Double_t gamma = ScalProd(globalX2p, axis3);
+//     angleRotZ = (TMath::ATan2(1,0) - TMath::ATan2(beta, gamma))
+//                 *TMath::RadToDeg();
+//   };
   //   cout << "!!!!!!!!!!!!!!!!!!!  angle = " <<angleRotZ << endl;
   CopyFrom(fPreviousX, globalX);
   //---
@@ -351,8 +349,6 @@ TGeoVolume* AliITSv11GeomCableFlat::CreateAndInsertCableSegment(Int_t p2,
   // Create the segment and add it to the mother volume
   TGeoVolume *vCableSegB = CreateSegment(coord1, coord2,
 					 localVect1, localVect2);
-//   TGeoVolume *vCableSegB = CreateBoxSegment(coord1, coord2);
-
   TGeoRotation rotArbSeg("", 0, 90, 0);
   rotArbSeg.MultiplyBy(&rot, kFALSE);
   TGeoTranslation trans("",cx, cy, cz);
@@ -503,7 +499,6 @@ TGeoVolume* AliITSv11GeomCableFlat::CreateAndInsertBoxCableSegment(Int_t p2,
   //-- order to match as closer as possible this segment and the 
   //-- previous one. 
   //-- It seems that some times it doesn't work ...
-  Double_t angleRotZ = 0;
   TGeoRotation rotTemp("",angleRot1*TMath::RadToDeg(),
 		       angleRotDiag*TMath::RadToDeg(), rotation);
   Double_t localX[3] = {0,1,0};
@@ -513,29 +508,29 @@ TGeoVolume* AliITSv11GeomCableFlat::CreateAndInsertBoxCableSegment(Int_t p2,
   GetCheckVect(localX, p2Vol, 0, fgkCableMaxNodeLevel+1, globalX);
   Double_t orthVect[3];
   GetCheckVect(vect1, p2Vol, 0, fgkCableMaxNodeLevel+1, orthVect);
-  if (p2>1) {
-    Double_t orthVectNorm2 = ScalProd(orthVect,orthVect);
-    Double_t alpha1 = ScalProd(fPreviousX,orthVect)/orthVectNorm2;
-    Double_t alpha2 = ScalProd(globalX,orthVect)/orthVectNorm2;
-    Double_t globalX1p[3], globalX2p[3];
-    globalX1p[0] = fPreviousX[0] - alpha1*orthVect[0];
-    globalX1p[1] = fPreviousX[1] - alpha1*orthVect[1];
-    globalX1p[2] = fPreviousX[2] - alpha1*orthVect[2];
-    globalX2p[0] = globalX[0] - alpha2*orthVect[0];
-    globalX2p[1] = globalX[1] - alpha2*orthVect[1];
-    globalX2p[2] = globalX[2] - alpha2*orthVect[2];
-    //-- now I'm searching the 3th vect which makes an orthogonal base
-    //-- with orthVect and globalX1p ...
-    Double_t nulVect[3] = {0,0,0};
-    Double_t axis3[3];
-    TMath::Normal2Plane(nulVect, orthVect, globalX1p, axis3);
-    Double_t globalX1pNorm2 = ScalProd(globalX1p, globalX1p);
-    Double_t beta = ScalProd(globalX2p, globalX1p)/globalX1pNorm2;
-    Double_t gamma = ScalProd(globalX2p, axis3);
-    angleRotZ = (TMath::ATan2(1,0) - TMath::ATan2(beta, gamma))
-                *TMath::RadToDeg();
-  };
-  //   cout << "!!!!!!!!!!!!!!!!!!!  angle = " <<angleRotZ << endl;
+//   Double_t angleRotZ = 0;
+//   if (p2>1) {
+//     Double_t orthVectNorm2 = ScalProd(orthVect,orthVect);
+//     Double_t alpha1 = ScalProd(fPreviousX,orthVect)/orthVectNorm2;
+//     Double_t alpha2 = ScalProd(globalX,orthVect)/orthVectNorm2;
+//     Double_t globalX1p[3], globalX2p[3];
+//     globalX1p[0] = fPreviousX[0] - alpha1*orthVect[0];
+//     globalX1p[1] = fPreviousX[1] - alpha1*orthVect[1];
+//     globalX1p[2] = fPreviousX[2] - alpha1*orthVect[2];
+//     globalX2p[0] = globalX[0] - alpha2*orthVect[0];
+//     globalX2p[1] = globalX[1] - alpha2*orthVect[1];
+//     globalX2p[2] = globalX[2] - alpha2*orthVect[2];
+//     //-- now I'm searching the 3th vect which makes an orthogonal base
+//     //-- with orthVect and globalX1p ...
+//     Double_t nulVect[3] = {0,0,0};
+//     Double_t axis3[3];
+//     TMath::Normal2Plane(nulVect, orthVect, globalX1p, axis3);
+//     Double_t globalX1pNorm2 = ScalProd(globalX1p, globalX1p);
+//     Double_t beta = ScalProd(globalX2p, globalX1p)/globalX1pNorm2;
+//     Double_t gamma = ScalProd(globalX2p, axis3);
+//     angleRotZ = (TMath::ATan2(1,0) - TMath::ATan2(beta, gamma))
+//                 *TMath::RadToDeg();
+//   };
   CopyFrom(fPreviousX, globalX);
   //---
   Double_t localVect1[3], localVect2[3];
@@ -740,14 +735,13 @@ TGeoVolume* AliITSv11GeomCableFlat::CreateAndInsertCableCylSegment(Int_t p2,
   return vCableSegT;
 }
 
-
 //________________________________________________________________________
 TGeoVolume *AliITSv11GeomCableFlat::CreateSegment( Double_t *coord1,
 						   Double_t *coord2,
 						   Double_t *localVect1,
 						   Double_t *localVect2 )
 {
-
+  // Create a segment with arbitrary vertices (general case)
   //=================================================
   // Calculate segment "deformation"
   Double_t dx = coord2[0]-coord1[0];
@@ -781,7 +775,7 @@ TGeoVolume *AliITSv11GeomCableFlat::CreateSegment( Double_t *coord1,
 
   Double_t dl1 = 0.5*fThick*tanACosCosPhi1*0.99999999999999;
   Double_t dl2 = 0.5*fThick*tanACosCosPhi2*0.99999999999999;
-  // 0.9999999999999 is for correcting dawn problems in TGeo...
+  // 0.9999999999999 is for correcting problems in TGeo...
   //=================================================
   // Create the segment
   TGeoArb8 *cableSeg = new TGeoArb8(fThick/2);
@@ -794,11 +788,10 @@ TGeoVolume *AliITSv11GeomCableFlat::CreateSegment( Double_t *coord1,
   cableSeg->SetVertex( 6,  fWidth/2,  length/2 - dL2 + dl2);
   cableSeg->SetVertex( 7,  fWidth/2, -length/2 + dL1 - dl1);
 
-  TGeoMedium *airSDD = gGeoManager->GetMedium("ITS_AIR$");
-  TGeoVolume *vCableSeg = new TGeoVolume(GetName(), cableSeg, airSDD);
+  TGeoVolume *vCableSeg = new TGeoVolume(GetName(), cableSeg, fLayMedia[fNlayer-1]);
 
-  // add all cable layers
-  for (Int_t iLay=0; iLay<fNlayer; iLay++) {
+  // add all cable layers but the last
+  for (Int_t iLay=0; iLay<fNlayer-1; iLay++) {
 
     Double_t dl1Lay = 0.5*fLayThickness[iLay]*tanACosCosPhi1;
     Double_t dl2Lay = 0.5*fLayThickness[iLay]*tanACosCosPhi2;
@@ -827,15 +820,16 @@ TGeoVolume *AliITSv11GeomCableFlat::CreateSegment( Double_t *coord1,
     vCableSeg->AddNode(vLay, iLay+1, fTranslation[iLay]);
   };
 
-  vCableSeg->SetVisibility(kFALSE);
+  //vCableSeg->SetVisibility(kFALSE);
   return vCableSeg;
 }
-
 
 //________________________________________________________________________
 TGeoVolume *AliITSv11GeomCableFlat::CreateCylSegment(Double_t &phi,
 						     Double_t &r)
 {
+  // Create a segment in shape of a cylinder, allows to represent
+  // a folded flat cable
 
   Double_t phi1 = 360-phi;
   Double_t phi2 = 360+phi;
@@ -847,11 +841,10 @@ TGeoVolume *AliITSv11GeomCableFlat::CreateCylSegment(Double_t &phi,
 
   TGeoTubeSeg *cableSeg = new TGeoTubeSeg(rMin, rMax, fWidth/2,
 					  phi1, phi2);
-  TGeoMedium *airSDD = gGeoManager->GetMedium("ITS_AIR$");
-  TGeoVolume *vCableSeg = new TGeoVolume(GetName(), cableSeg, airSDD);
+  TGeoVolume *vCableSeg = new TGeoVolume(GetName(), cableSeg, fLayMedia[fNlayer-1]);
 
-  // add all cable layers
-  for (Int_t iLay=0; iLay<fNlayer; iLay++) {
+  // add all cable layers but the last
+  for (Int_t iLay=0; iLay<fNlayer-1; iLay++) {
  
     Double_t ztr = -fThick/2;
     for (Int_t i=0;i<iLay; i++) ztr+= fLayThickness[i];
@@ -867,37 +860,34 @@ TGeoVolume *AliITSv11GeomCableFlat::CreateCylSegment(Double_t &phi,
     vCableSeg->AddNode(vLay, iLay+1, 0);
   };
 
-  vCableSeg->SetVisibility(kFALSE);
+  //vCableSeg->SetVisibility(kFALSE);
   return vCableSeg;
 }
-
 
 //________________________________________________________________________
 TGeoVolume *AliITSv11GeomCableFlat::CreateBoxSegment( Double_t *coord1,
 						      Double_t *coord2)
 {
-
-  //=================================================
   // Create a segment for the case it is a simple box
+  //=================================================
   Double_t dx = coord2[0]-coord1[0];
   Double_t dy = coord2[1]-coord1[1];
   Double_t dz = coord2[2]-coord1[2];
   Double_t length = TMath::Sqrt(dx*dx+dy*dy+dz*dz);
 
   TGeoBBox *cableSeg = new  TGeoBBox(fWidth/2, length/2, fThick/2);
+  TGeoVolume *vCableSeg = new TGeoVolume(GetName(), cableSeg, fLayMedia[fNlayer-1]);
+  // This volume is the cable container. It codes also the material for the
+  // last layer
 
-  TGeoMedium *airSDD = gGeoManager->GetMedium("ITS_AIR$");
-  TGeoVolume *vCableSeg = new TGeoVolume(GetName(), cableSeg, airSDD);
-
-  // add all cable layers
-  for (Int_t iLay=0; iLay<fNlayer; iLay++) {
+  // add all cable layers but the last one
+  for (Int_t iLay=0; iLay<fNlayer-1; iLay++) {
  
     Double_t ztr = -fThick/2;
     for (Int_t i=0;i<iLay; i++) ztr+= fLayThickness[i];
     ztr+= fLayThickness[iLay]/2;
 
     TGeoBBox *lay = new  TGeoBBox(fWidth/2, length/2, fLayThickness[iLay]/2);
-
 
     TGeoVolume *vLay = new TGeoVolume("vCableSegLay", lay, fLayMedia[iLay]);
     vLay->SetLineColor(fLayColor[iLay]);
@@ -907,7 +897,7 @@ TGeoVolume *AliITSv11GeomCableFlat::CreateBoxSegment( Double_t *coord1,
     vCableSeg->AddNode(vLay, iLay+1, fTranslation[iLay]);
   };
 
-  vCableSeg->SetVisibility(kFALSE);
+  //vCableSeg->SetVisibility(kFALSE);
   return vCableSeg;
 }
 

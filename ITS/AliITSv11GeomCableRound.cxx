@@ -428,6 +428,132 @@ TGeoVolume* AliITSv11GeomCableRound::CreateAndInsertCableSegment(Int_t p2,
   return vCableSeg;
 }
 
+//________________________________________________________________________
+TGeoVolume* AliITSv11GeomCableRound::CreateAndInsertTubeSegment(Int_t p2,
+								 TGeoCombiTrans** ct)
+{
+//    Creates a cable segment between points p1 and p2.
+//
+//  This creates simple tube sections, i.e. the cable ends are
+// cutted perpendicularly to the tube axis. The method has to
+// be used only in this simple case, in ordder to save some memory
+
+  TGeoNode *mainNode;
+  if (fInitialNode==0) {
+    TObjArray *nodes = gGeoManager->GetListOfNodes();
+    if (nodes->GetEntriesFast()==0) return 0;
+    mainNode = (TGeoNode *) nodes->UncheckedAt(0);
+  } else {
+    mainNode = fInitialNode;
+  };
+
+  Int_t p1 = p2 - 1;
+  TGeoVolume *p1Vol = GetVolume(p1);
+  TGeoVolume *p2Vol = GetVolume(p2);
+
+  ResetCheckDaughter();
+  fCurrentVol = p1Vol;
+  if (! CheckDaughter(mainNode)) {
+    printf("Error::volume containing point is not visible in node tree!\n");
+    return 0;
+  };
+
+  Double_t coord1[3], coord2[3], vect1[3], vect2[3];
+  //=================================================
+  // Get p1 position in the systeme of p2
+  if (p1Vol!=p2Vol) {
+
+    Int_t p1nodeInd[fgkCableMaxNodeLevel]; 
+    for (Int_t i=0; i<fgkCableMaxNodeLevel; i++) p1nodeInd[i]=fNodeInd[i];
+    Int_t p1volLevel = 0;
+    while (p1nodeInd[p1volLevel]!=-1) p1volLevel++;
+    p1volLevel--;
+
+    ResetCheckDaughter();
+    fCurrentVol = p2Vol;
+    if (! CheckDaughter(mainNode)) {
+      printf("Error::volume containing point is not visible in node tree!\n");
+      return 0;
+    };
+    Int_t p2nodeInd[fgkCableMaxNodeLevel];
+    for (Int_t i=0; i<fgkCableMaxNodeLevel; i++) p2nodeInd[i]=fNodeInd[i];
+    Int_t commonMotherLevel = 0;
+    while (p1nodeInd[commonMotherLevel]==fNodeInd[commonMotherLevel])
+      commonMotherLevel++;
+    commonMotherLevel--;
+    Int_t p2volLevel = 0;
+    while (fNodeInd[p2volLevel]!=-1) p2volLevel++;
+    p2volLevel--;
+
+    // Get coord and vect of p1 in the common mother reference system
+    GetCheckPoint(p1, 0, p1volLevel-commonMotherLevel, coord1);
+    GetCheckVect( p1, 0, p1volLevel-commonMotherLevel, vect1);
+    // Translate them in the reference system of the volume containing p2    
+    TGeoNode *pathNode[fgkCableMaxNodeLevel];
+    pathNode[0] = mainNode;
+    for (Int_t i=0; i<=p2volLevel; i++) {
+      pathNode[i+1] = pathNode[i]->GetDaughter(p2nodeInd[i]);
+    };
+    Double_t globalCoord1[3] = {coord1[0], coord1[1], coord1[2]}; 
+    Double_t globalVect1[3]  = {vect1[0], vect1[1], vect1[2]};
+
+    for (Int_t i = commonMotherLevel+1; i<=p2volLevel; i++) {
+      pathNode[i+1]->GetMatrix()->MasterToLocal(globalCoord1, coord1);
+      pathNode[i+1]->GetMatrix()->MasterToLocalVect(globalVect1, vect1);
+      CopyFrom(globalCoord1, coord1);
+      CopyFrom(globalVect1, vect1);
+    };
+  } else {
+    GetCheckPoint(p1, 0, 0, coord1);
+    GetCheckVect(p1, 0, 0, vect1);
+  };
+  
+  //=================================================
+  // Get p2 position in the systeme of p2
+  GetCheckPoint(p2, 0, 0, coord2);
+  GetCheckVect(p2, 0, 0, vect2);
+
+  Double_t cx = (coord1[0]+coord2[0])/2;
+  Double_t cy = (coord1[1]+coord2[1])/2;
+  Double_t cz = (coord1[2]+coord2[2])/2;
+  Double_t dx = coord2[0]-coord1[0];
+  Double_t dy = coord2[1]-coord1[1];
+  Double_t dz = coord2[2]-coord1[2];
+
+  //=================================================
+  // Positionning of the segment between the 2 points
+  if ((dy<1e-31)&&(dy>0)) dy = 1e-31;
+  if ((dz<1e-31)&&(dz>0)) dz = 1e-31;
+  if ((dy>-1e-31)&&(dy<0)) dy = -1e-31;
+  if ((dz>-1e-31)&&(dz<0)) dz = -1e-31;
+
+  Double_t angleRot1 = -TMath::ATan2(dx,dy);
+  Double_t planDiagL = TMath::Sqrt(dy*dy+dx*dx);
+  Double_t angleRotDiag = -TMath::ATan2(planDiagL,dz);
+  TGeoRotation *rot = new TGeoRotation("",angleRot1*TMath::RadToDeg(),
+				       angleRotDiag*TMath::RadToDeg(),
+				       0);
+  TGeoTranslation *trans = new TGeoTranslation("",cx, cy, cz);
+
+  //=================================================
+  // Create the segment and add it to the mother volume
+  TGeoVolume *vCableSeg = CreateTubeSegment( coord1,coord2, p2);
+
+  TGeoCombiTrans  *combi = new TGeoCombiTrans(*trans, *rot);
+  p2Vol->AddNode(vCableSeg, p2, combi);
+  //=================================================
+  delete rot;
+  delete trans;
+
+  if (fDebug) {
+    printf("---\n  Cable segment points : ");
+    printf("%f, %f, %f\n",coord1[0], coord1[1], coord1[2]);
+    printf("%f, %f, %f\n",coord2[0], coord2[1], coord2[2]);
+  };
+
+  if (ct) *ct = combi;
+  return vCableSeg;
+}
 
 //________________________________________________________________________
 TGeoVolume* AliITSv11GeomCableRound::CreateAndInsertTorusSegment(Int_t p2,
@@ -553,6 +679,7 @@ TGeoVolume* AliITSv11GeomCableRound::CreateAndInsertTorusSegment(Int_t p2,
 			       localVect2[1]*axisX[1]+
 			       localVect2[2]*axisX[2])/normVect2;
   Double_t angleTorusSeg = TMath::ACos(cosangleTorusSeg)*TMath::RadToDeg();
+
   TGeoRotation rotTorus("",angleRot1*TMath::RadToDeg(),
 			angleRotDiag*TMath::RadToDeg(),
 			180-angleTorusSeg+rotation);
@@ -602,7 +729,8 @@ TGeoVolume *AliITSv11GeomCableRound::CreateSegment( Double_t *coord1,
 						      Double_t *localVect1,
 						      Double_t *localVect2, Int_t p)
 {
-  // Create one cylindrical segment and its layers
+  // Create a cylindrical segment and its layers. The tube section is cutted by
+  // two planes, defined by the normal vectors localVect1 and localVect2
 
   //=================================================
   // Calculate segment "deformation"
@@ -628,15 +756,16 @@ TGeoVolume *AliITSv11GeomCableRound::CreateSegment( Double_t *coord1,
 				    localVect1[0],localVect1[1],localVect1[2],
 				    localVect2[0],localVect2[1],localVect2[2]);
 
-  TGeoMedium *airSDD = gGeoManager->GetMedium("ITS_AIR$");
+  TGeoMedium *skinMedia = fLayMedia[fNlayer-1];
   char name[100];
-  sprintf(name, "%s_%i",GetName(),p);
-  TGeoVolume *vCableSeg = new TGeoVolume(name, cableSeg, airSDD);
+  sprintf(name, "%s_%i",GetName(), p);
+  TGeoVolume *vCableSeg = new TGeoVolume(name, cableSeg, skinMedia);
+  vCableSeg->SetLineColor(fLayColor[fNlayer-1]);
 
   // add all cable layers
   Double_t layThickness[100+1];                        // 100 layers max !!!
   layThickness[0] = 0;
-  for (Int_t iLay=0; iLay<fNlayer; iLay++) {
+  for (Int_t iLay=0; iLay<fNlayer-1; iLay++) {
     
     layThickness[iLay+1] = fLayThickness[iLay]+layThickness[iLay];
     TGeoCtub *lay = new TGeoCtub(layThickness[iLay], layThickness[iLay+1],
@@ -649,7 +778,49 @@ TGeoVolume *AliITSv11GeomCableRound::CreateSegment( Double_t *coord1,
     vCableSeg->AddNode(vLay, iLay+1, 0);
   };
 
-  vCableSeg->SetVisibility(kFALSE);
+  //vCableSeg->SetVisibility(kFALSE);
+  return vCableSeg;
+}
+
+
+//________________________________________________________________________
+TGeoVolume *AliITSv11GeomCableRound::CreateTubeSegment( Double_t *coord1,
+						      Double_t *coord2, Int_t p)
+{
+  // Create a cylindrical segment and its layers
+
+  //=================================================
+  // Calculate segment "deformation"
+  Double_t dx = coord2[0]-coord1[0];
+  Double_t dy = coord2[1]-coord1[1];
+  Double_t dz = coord2[2]-coord1[2];
+  Double_t length = TMath::Sqrt(dx*dx+dy*dy+dz*dz);
+
+ //=================================================
+  // Create the segment
+
+  TGeoTubeSeg *cableSeg = new TGeoTubeSeg(0, fRadius, length/2, fPhiMin, fPhiMax);
+
+  TGeoMedium *skinMedia = fLayMedia[fNlayer-1];
+  char name[100];
+  sprintf(name, "%s_%i",GetName(), p);
+  TGeoVolume *vCableSeg = new TGeoVolume(name, cableSeg, skinMedia);
+  vCableSeg->SetLineColor(fLayColor[fNlayer-1]);
+
+  // add all cable layers
+  Double_t layThickness[100+1];                        // 100 layers max !!!
+  layThickness[0] = 0;
+  for (Int_t iLay=0; iLay<fNlayer-1; iLay++) {
+    
+    layThickness[iLay+1] = fLayThickness[iLay]+layThickness[iLay];
+    TGeoTubeSeg*lay = new TGeoTubeSeg(layThickness[iLay], layThickness[iLay+1],
+				      length/2, fPhiMin, fPhiMax);
+    TGeoVolume *vLay = new TGeoVolume("vCableSegLay", lay, fLayMedia[iLay]);
+    vLay->SetLineColor(fLayColor[iLay]);
+    vCableSeg->AddNode(vLay, iLay+1, 0);
+  };
+
+  //vCableSeg->SetVisibility(kFALSE);
   return vCableSeg;
 }
 
@@ -666,18 +837,18 @@ TGeoVolume *AliITSv11GeomCableRound::CreateTorus( Double_t &phi,
   Double_t torusPhi1 = 360-phi;
   Double_t torusDPhi = 2*phi;
 
-  //=================================================
-  // Create the segment
+  //  // Create the segment, it will also work as the last layer
   TGeoTorus *cableSeg = new TGeoTorus(torusR, 0, fRadius, torusPhi1, torusDPhi);
-  TGeoMedium *airSDD = gGeoManager->GetMedium("ITS_AIR$");
+  TGeoMedium *skinMedia = fLayMedia[fNlayer-1];
   char name[100];
   sprintf(name, "%s_%i",GetName(),p);
-  TGeoVolume *vCableSeg = new TGeoVolume(name, cableSeg, airSDD);
+  TGeoVolume *vCableSeg = new TGeoVolume(name, cableSeg, skinMedia);
+  vCableSeg->SetLineColor(fLayColor[fNlayer-1]);
 
-  // add all cable layers
+  // add all cable layers but last
   Double_t layThickness[100+1];                        // 100 layers max !!!
   layThickness[0] = 0;
-  for (Int_t iLay=0; iLay<fNlayer; iLay++) {
+  for (Int_t iLay=0; iLay<fNlayer-1; iLay++) {
     
     layThickness[iLay+1] = fLayThickness[iLay]+layThickness[iLay];
     TGeoTorus *lay = new TGeoTorus(torusR, layThickness[iLay],
@@ -686,13 +857,13 @@ TGeoVolume *AliITSv11GeomCableRound::CreateTorus( Double_t &phi,
 
     TGeoVolume *vLay = new TGeoVolume("vCableSegLay",lay,fLayMedia[iLay]);
     vLay->SetLineColor(fLayColor[iLay]);
-    vCableSeg->AddNode(vLay, iLay+1, 0);
+
+    vCableSeg->AddNode(vLay, iLay+1,0);
   };
 
-  vCableSeg->SetVisibility(kFALSE);
+  //vCableSeg->SetVisibility(kFALSE);
   return vCableSeg;
 }
-
 
 //________________________________________________________________________
 void AliITSv11GeomCableRound::SetNLayers(Int_t nLayers) {

@@ -4,6 +4,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+// $Id$
 
 //*************************************************************************
 //
@@ -74,7 +75,7 @@ class AliITSv11GeometrySDD : public AliITSv11Geometry {
 
   virtual TGeoVolumeAssembly*  CreateLadder(Int_t iLay);
   virtual TGeoVolumeAssembly*  CreateDetectorsAssembly(Int_t iLay);
-  virtual TGeoVolumeAssembly*  CreateLadderSegment(Int_t iLay, Int_t iSeg);
+  virtual TGeoVolume*          CreateLadderSegment(Int_t iLay, Int_t iSeg);
   virtual TGeoVolumeAssembly*  CreateEndLadder(Int_t iLay);
   virtual TGeoVolumeAssembly*  CreateEndLadderCards(Int_t iLay);
   virtual TGeoVolumeAssembly*  CreateSupportRing(Int_t iLay);
@@ -87,14 +88,15 @@ class AliITSv11GeometrySDD : public AliITSv11Geometry {
   virtual TGeoVolume*          CreateCoolPipeSupportR();
   virtual TGeoVolume*          CreateBaseThermalBridge();
 
-/*   virtual TGeoVolumeAssembly*  CreateCarlosCard(Int_t iLay); */
-  virtual TGeoVolumeAssembly*  CreateLVCard(Int_t orientation);
+  virtual TGeoVolumeAssembly*  CreateLadderFoot();
+  virtual TGeoVolumeAssembly*  CreateCarlosCard(Int_t iLay);
+  virtual Int_t                CreateLVCard();
   virtual TGeoVolumeAssembly*  CreateHVCard(Int_t iLay);
 
   void                         CreateBasicObjects();
 
 
-  // Check that the nedium exists
+  // Check that the medium exists
   virtual TGeoMedium* GetMedium(const char* mediumName);
 
   // Create a TGeoCombiTrans: general rotation in phi and (dy,dz) translation 
@@ -118,6 +120,14 @@ class AliITSv11GeometrySDD : public AliITSv11Geometry {
   TGeoVolume* fSDDsensor4;        //!  sensor of lay. 4 and HV cables on it
   TGeoVolume* fBaseThermalBridge; //!  Base of hybrid thermal bridge
   TGeoVolume* fHybrid;            //!  hybrid volume
+  TGeoVolumeAssembly *fLadderFoot;//!  ladder foot in stesalite
+  TGeoVolumeAssembly *fCardLVR;   //!  low voltage card, right
+  TGeoVolumeAssembly *fCardLVL;   //!  low voltage card, left
+  TGeoVolumeAssembly *fCardHV;    //!  high voltage card
+  TGeoVolumeAssembly *fCardCarlos;//!  end-ladder CARLOS card
+  TGeoVolumeAssembly *fRaccordoL; //!  link between cooling tubes at end ladder
+  TGeoVolume* fCommonVol[2];      //!  some common vol. used in several places
+  TGeoMatrix* fCommonTr[2];       //!  some common transformations
 
   static const Int_t fgkNladdSegCommonVol = 19;       //  Number of vol.
   TGeoVolume* fLaddSegCommonVol[fgkNladdSegCommonVol];//! volumes in ladder
@@ -152,8 +162,8 @@ class AliITSv11GeometrySDD : public AliITSv11Geometry {
 
   //--------------------------------------  parameters for the SDD geometry
 
-  static const char* fgSDDsensitiveVolName3;       // sens. vol. name for lay. 3
-  static const char* fgSDDsensitiveVolName4;       // sens. vol. name for lay. 4
+  static const char* fgSDDsensitiveVolName3;      // sens. vol. name for lay. 3
+  static const char* fgSDDsensitiveVolName4;      // sens. vol. name for lay. 4
 
   static const Int_t    fgkLay3Nladd;             // 14
   static const Int_t    fgkLay3Ndet;              //  6
@@ -449,7 +459,7 @@ class AliITSv11GeometrySDD : public AliITSv11Geometry {
   static const Double_t fgkHVCardCool3Z;         // ===
   static const Double_t fgkHVCardCoolDY;         // ===
 
-  static const Double_t fgkCarlosSuppX1;         // piece on which
+  static const Double_t fgkCarlosSuppX1;         // piece with which
   static const Double_t fgkCarlosSuppY1;         // the carlos card
   static const Double_t fgkCarlosSuppX2;         // is fixed
   static const Double_t fgkCarlosSuppY2;         // ===
@@ -459,6 +469,93 @@ class AliITSv11GeometrySDD : public AliITSv11Geometry {
   static const Double_t fgkCarlosSuppY3;         // ===
   static const Double_t fgkCarlosSuppZ3;         // ===
   static const Double_t fgkCarlosSuppTopLen;     // ===
+
+  // screws fixing the board on the U tube
+  static const Double_t fgkLittleScrewHeadR;     // screws fixing boards
+  static const Double_t fgkLittleScrewHeadH;     // Value to be checked
+  static const Double_t fgkLittleScrewR;         // ===
+  static const Double_t fgkShiftLittleScrewLV;   // ===
+  static const Double_t fgkLittleLVScrewHeadR;   // ===
+
+  // CARLOS board
+  static const Double_t fgkCarlosCardX1;         // length (first part of Carlos card)
+  static const Double_t fgkCarlosCardY1;         // thickness
+  static const Double_t fgkCarlosCardZ1;         // width 
+  static const Double_t fgkCarlosCardCuY;        // thickness of Cu layer (strips)
+  static const Double_t fgkCarlosCardX2;         // length (2nd part of Carlos card)
+  static const Double_t fgkCarlosCardZ2;         // width 
+
+  static const Double_t fgkCarlosCardChipSiThick;  // Carlos Chip thicknes - value to be checked
+  static const Double_t fgkCarlosCardShift;        // (value to be checked) shift in z w.r.t. heat bridge 
+
+  // size and position of various chips on carlos end-ladder board
+  static const Double_t fgkCarlosU1X;            // chip size in X
+  static const Double_t fgkCarlosU1Y;            // chip size in Y
+  static const Double_t fgkCarlosU1Z;            // chip size in Z
+  static const Double_t fgkCarlosU1posX;         // position in X
+  static const Double_t fgkCarlosU1posZ;         // position in Z
+
+  static const Double_t fgkCarlosU2X;            // chip size in X
+  static const Double_t fgkCarlosU2Y;            // chip size in Y
+  static const Double_t fgkCarlosU2Z;            // chip size in Z
+  static const Double_t fgkCarlosU2posX;         // position in X
+  static const Double_t fgkCarlosU2posZ;         // position in Z
+  
+  static const Double_t fgkCarlosU3X;            // same convention
+  static const Double_t fgkCarlosU3Y;            // ===
+  static const Double_t fgkCarlosU3Z;            // ===
+  static const Double_t fgkCarlosU3posX;         // ===
+  static const Double_t fgkCarlosU3posZ;         // ===
+
+  // U4 like U3  
+  static const Double_t fgkCarlosU4posX;         // same convention
+  static const Double_t fgkCarlosU4posZ;         // ===
+
+  static const Double_t fgkCarlosU17X;           // same convention
+  static const Double_t fgkCarlosU17Y;           // ===
+  static const Double_t fgkCarlosU17Z;           // ===
+  static const Double_t fgkCarlosU17posX;        // ===
+  static const Double_t fgkCarlosU17posZ;        // ===
+  
+  static const Double_t fgkCarlosU35X;           // same convention
+  static const Double_t fgkCarlosU35Y;           // ===
+  static const Double_t fgkCarlosU35Z;           // ===
+  static const Double_t fgkCarlosU35posX;        // ===
+  static const Double_t fgkCarlosU35posZ;        // ===
+
+  static const Double_t fgkCarlosU36X;           // same convention
+  static const Double_t fgkCarlosU36Y;           // ===
+  static const Double_t fgkCarlosU36Z;           // ===
+  static const Double_t fgkCarlosU36posX;        // ===
+  static const Double_t fgkCarlosU36posZ;        // ===
+  
+  static const Double_t fgkCarlosQZ1X;           // same convention
+  static const Double_t fgkCarlosQZ1Y;           // look more thick than design number (0.7) ! to be checked
+  static const Double_t fgkCarlosQZ1Z;           // to be checked
+  static const Double_t fgkCarlosQZ1posX;        // to be checked
+  static const Double_t fgkCarlosQZ1posZ;        // to be checked
+
+  // some pieces at the end of the carbon fiber ladder
+  static const Double_t fgkCoolPipeLay3Len;  // value to be checked
+  static const Double_t fgkCoolPipeLay4Len;  // ===
+  static const Double_t fgkHVguideX1;    // ===
+  static const Double_t fgkHVguideY1;    // ===
+  static const Double_t fgkHVguideZ1;    // ===
+  static const Double_t fgkHVguideZ2;    // ===
+  static const Double_t fgkHVguideDX;    // ===
+  static const Double_t fgkHVguideSuppFullZ;    // ===
+  
+  // Cooling connector between phynox and plastic cooling water tubes
+  static const Double_t fgkConnectorCoolTubeRmin; // internal radius
+  static const Double_t fgkConnectorCoolTubeR1; // value to be checked
+  static const Double_t fgkConnectorCoolTubeL1;  // ===
+  static const Double_t fgkConnectorCoolTubeR2;  // ===
+  static const Double_t fgkConnectorCoolTubeL2;  // ===
+  static const Double_t fgkConnectorCoolTubeR3;  // ===
+  static const Double_t fgkConnectorCoolTubeL3;  // ===
+
+  // distance from the heat bridge center to the card center :
+  static const Double_t fgkCarlosCard2HeatBridge;// distance from the heat bridge center to the card center
 
   static const Double_t fgkmu;  // 1 micron, or more for debugging
 
@@ -470,11 +567,11 @@ class AliITSv11GeometrySDD : public AliITSv11Geometry {
   Double_t fLay4LaddShortRadius;   // ladder 4 to beam axis radius
   Double_t fLay4LaddLongRadius;    // ladder 4 to beam axis radius
 
-  // parameters that be modified
+  // parameters that can be modified
   Double_t fLay3sensorZPos[6];     // Z pos of sensors in layer 3
   Double_t fLay4sensorZPos[8];     // Z pos of sensors in layer 4
 
-  ClassDef(AliITSv11GeometrySDD,2) // ITS v11 SDD geometry
+  ClassDef(AliITSv11GeometrySDD,0) // ITS v11 SDD geometry
 };
 
 
