@@ -1,3 +1,4 @@
+
 #ifndef ALIESDTRACK_H
 #define ALIESDTRACK_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
@@ -41,6 +42,7 @@ public:
   const AliESDfriendTrack *GetFriendTrack() const {return fFriendTrack;}
   void SetFriendTrack(const AliESDfriendTrack *t) {
     delete fFriendTrack; fFriendTrack=new AliESDfriendTrack(*t);
+    // CKB
   }
   void AddCalibObject(TObject * object);     // add calib object to the list
   TObject *  GetCalibObject(Int_t index);    // return calib objct at given position
@@ -283,7 +285,7 @@ protected:
   Int_t   fStopVertex;  // Index of the stop vertex
 
   AliExternalTrackParam *fCp; // Track parameters constrained to the primary vertex
-  Double_t fCchi2; // chi2 at the primary vertex
+  Double32_t fCchi2; // chi2 at the primary vertex
 
 
   AliExternalTrackParam *fIp; // Track parameters at the first measured point (TPC)

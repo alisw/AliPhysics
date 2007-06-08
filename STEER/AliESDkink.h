@@ -60,15 +60,15 @@ public:
   Int_t          fID;       // kink ID
   AliExternalTrackParam fParamDaughter;
   AliExternalTrackParam fParamMother;
-  Double_t       fDist1;    //info about closest distance according closest MC - linear DCA
-  Double_t       fDist2;    //info about closest distance parabolic DCA
+  Double32_t       fDist1;    //info about closest distance according closest MC - linear DCA
+  Double32_t       fDist2;    //info about closest distance parabolic DCA
   //
-  Double_t       fPdr[3];    //momentum at vertex daughter  - according approx at DCA
-  Double_t       fXr[3];     //rec. position according helix
+  Double32_t       fPdr[3];    //momentum at vertex daughter  - according approx at DCA
+  Double32_t       fXr[3];     //rec. position according helix
   //
-  Double_t       fPm[3];    //momentum at the vertex mother
-  Double_t       fAngle[3]; //three angles
-  Double_t       fRr;       // rec position of the vertex 
+  Double32_t       fPm[3];    //momentum at the vertex mother
+  Double32_t       fAngle[3]; //three angles
+  Double32_t       fRr;       // rec position of the vertex 
   Int_t          fLab[2];   //MC label of the partecle
   Int_t          fIndex[2]; //reconstructed labels of the tracks
   Char_t         fStatus[12];       //status of kink - first 4 mother (ITS,TPC,TRD,TOF)  other daughter
@@ -78,7 +78,7 @@ public:
   Int_t          fRow0;              // critical pad row number
   Int_t          fMultiple[2];       //how many times the track's were used
   Int_t          fTPCncls[2];     //number of clusters for mother particle
-  ClassDef(AliESDkink,2)      // ESD V0 vertex
+  ClassDef(AliESDkink,3)      // ESD V0 vertex
 };
 
 #endif

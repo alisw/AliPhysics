@@ -89,32 +89,33 @@ public:
   
 protected:
  // parameters at vertex
-  Double_t fInverseBendingMomentum; // Inverse bending momentum (GeV/c ** -1) times the charge 
-  Double_t fThetaX;		    // Angle of track at vertex in X direction (rad)
-  Double_t fThetaY;		    // Angle of track at vertex in Y direction (rad)
-  Double_t fZ;			    // Z coordinate (cm)
-  Double_t fBendingCoor;	    // bending coordinate (cm)
-  Double_t fNonBendingCoor;	    // non bending coordinate (cm)
+  Double32_t fInverseBendingMomentum; // Inverse bending momentum (GeV/c ** -1) times the charge 
+  Double32_t fThetaX;		    // Angle of track at vertex in X direction (rad)
+  Double32_t fThetaY;		    // Angle of track at vertex in Y direction (rad)
+  Double32_t fZ;			    // Z coordinate (cm)
+  Double32_t fBendingCoor;	    // bending coordinate (cm)
+  Double32_t fNonBendingCoor;	    // non bending coordinate (cm)
   
  // parameters at first tracking station
-  Double_t fInverseBendingMomentumUncorrected; // Inverse bending momentum (GeV/c ** -1) times the charge 
-  Double_t fThetaXUncorrected;		       // Angle of track at vertex in X direction (rad)
-  Double_t fThetaYUncorrected;		       // Angle of track at vertex in Y direction (rad)
-  Double_t fZUncorrected;		       // Z coordinate (cm)
-  Double_t fBendingCoorUncorrected;	       // bending coordinate (cm)
-  Double_t fNonBendingCoorUncorrected;	       // non bending coordinate (cm)
+  Double32_t fInverseBendingMomentumUncorrected; // Inverse bending momentum (GeV/c ** -1) times the charge 
+  Double32_t fThetaXUncorrected;		       // Angle of track at vertex in X direction (rad)
+  Double32_t fThetaYUncorrected;		       // Angle of track at vertex in Y direction (rad)
+  Double32_t fZUncorrected;		       // Z coordinate (cm)
+  Double32_t fBendingCoorUncorrected;	       // bending coordinate (cm)
+  Double32_t fNonBendingCoorUncorrected;	       // non bending coordinate (cm)
   
  // global tracking info
-  Double_t fChi2; // chi2 in the MUON track fit
+  Double32_t fChi2; // chi2 in the MUON track fit
   UInt_t   fNHit; // number of hit in the track
 
   Int_t fLocalTrigger;    ///< packed local trigger information
   
-  Double_t fChi2MatchTrigger; // chi2 of trigger/track matching
+  Double32_t fChi2MatchTrigger; // chi2 of trigger/track matching
   
   UShort_t fHitsPatternInTrigCh; ///< Word containing info on the hits left in trigger chambers
 
-  ClassDef(AliESDMuonTrack,4)  //MUON ESD track class 
+
+  ClassDef(AliESDMuonTrack,5)  //MUON ESD track class 
 };
 
 #endif 

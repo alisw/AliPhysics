@@ -54,20 +54,20 @@ public:
 
 protected: 
   Int_t    fPdgCode;        // reconstructed cascade type (PDG code)
-  Double_t fEffMass;        // reconstructed cascade effective mass
-  Double_t fChi2Xi;         // chi2 value
-  Double_t fDcaXiDaughters; // dca between Xi's daughters
-  Double_t fPosXi[3];       // cascade vertex position (global)
-  Double_t fPosCovXi[6];    // covariance matrix of the vertex position
+  Double32_t fEffMass;        // reconstructed cascade effective mass
+  Double32_t fChi2Xi;         // chi2 value
+  Double32_t fDcaXiDaughters; // dca between Xi's daughters
+  Double32_t fPosXi[3];       // cascade vertex position (global)
+  Double32_t fPosCovXi[6];    // covariance matrix of the vertex position
 
   Int_t    fBachIdx;        // label of the bachelor track
-  Double_t fBachMom[3];     // bachelor momentum (global)
-  Double_t fBachMomCov[6];  // covariance matrix of the bachelor momentum.
+  Double32_t fBachMom[3];     // bachelor momentum (global)
+  Double32_t fBachMomCov[6];  // covariance matrix of the bachelor momentum.
 
 private:
   AliESDcascade& operator=(const AliESDcascade&);
 
-  ClassDef(AliESDcascade,2) // reconstructed cascade vertex
+  ClassDef(AliESDcascade,3) // reconstructed cascade vertex
 };
 
 inline

@@ -37,7 +37,7 @@ class AliESDPmdTrack : public TObject {
   Float_t GetClusterPID() const {return fCluPID;}
   
  protected:
-  Int_t fDet;      // Detector, 0:PRE, 1:CPV
+  Short_t fDet;      // Detector, 0:PRE, 1:CPV
   Float_t fX;      // Cluster X position
   Float_t fY;      // Cluster Y position
   Float_t fZ;      // Cluster Z position (vertex uncorrected)
@@ -45,7 +45,7 @@ class AliESDPmdTrack : public TObject {
   Float_t fNcell;  // Cluster cells
   Float_t fCluPID; // Cluster probability, 1: Photon, 0: Hadron
 
-  ClassDef(AliESDPmdTrack,2)  //PMD ESD track class 
+  ClassDef(AliESDPmdTrack,3)  //PMD ESD track class 
 };
 
 #endif 
