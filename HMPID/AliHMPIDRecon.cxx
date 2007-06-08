@@ -359,6 +359,9 @@ Double_t AliHMPIDRecon::Sigma2(Double_t ckovTh, Double_t ckovPh)const
   
   TVector3 v(-999,-999,-999);
   Double_t trkBeta = 1./(TMath::Cos(ckovTh)*fRadNmean);
+  
+  if(trkBeta > 1) trkBeta = 1;                 //protection against bad measured thetaCer  
+  if(trkBeta < 0) trkBeta = 0.0001;            //
 
   v.SetX(SigLoc (ckovTh,ckovPh,trkBeta));
   v.SetY(SigGeom(ckovTh,ckovPh,trkBeta));
@@ -375,20 +378,29 @@ Double_t AliHMPIDRecon::SigLoc(Double_t thetaC, Double_t phiC,Double_t betaM)con
 //            dip and azimuthal angles for MIP taken at the entrance to radiator, [radians]        
 //            MIP beta
 //   Returns: absolute error on Cerenkov angle, [radians]    
+  
   Double_t phiDelta = phiC - fTrkDir.Phi();
 
-  Double_t alpha =TMath::Cos(fTrkDir.Theta())-TMath::Tan(thetaC)*TMath::Cos(phiDelta)*TMath::Sin(fTrkDir.Theta());
-  Double_t k = 1.-fRadNmean*fRadNmean+alpha*alpha/(betaM*betaM);
+  Double_t sint     = TMath::Sin(fTrkDir.Theta());
+  Double_t cost     = TMath::Cos(fTrkDir.Theta());
+  Double_t sinf     = TMath::Sin(fTrkDir.Phi());
+  Double_t cosf     = TMath::Cos(fTrkDir.Phi());
+  Double_t sinfd    = TMath::Sin(phiDelta);
+  Double_t cosfd    = TMath::Cos(phiDelta);
+  Double_t tantheta = TMath::Tan(thetaC);
+  
+  Double_t alpha =cost-tantheta*cosfd*sint;                                                 // formula (11)
+  Double_t k = 1.-fRadNmean*fRadNmean+alpha*alpha/(betaM*betaM);                            // formula (after 8 in the text)
   if (k<0) return 1e10;
+  Double_t mu =sint*sinf+tantheta*(cost*cosfd*sinf+sinfd*cosf);                             // formula (10)
+  Double_t e  =sint*cosf+tantheta*(cost*cosfd*cosf-sinfd*sinf);                             // formula (9)
 
-  Double_t mu =TMath::Sin(fTrkDir.Theta())*TMath::Sin(fTrkDir.Phi())+TMath::Tan(thetaC)*(TMath::Cos(fTrkDir.Theta())*TMath::Cos(phiDelta)*TMath::Sin(fTrkDir.Phi())+TMath::Sin(phiDelta)*TMath::Cos(fTrkDir.Phi()));
-  Double_t e  =TMath::Sin(fTrkDir.Theta())*TMath::Cos(fTrkDir.Phi())+TMath::Tan(thetaC)*(TMath::Cos(fTrkDir.Theta())*TMath::Cos(phiDelta)*TMath::Cos(fTrkDir.Phi())-TMath::Sin(phiDelta)*TMath::Sin(fTrkDir.Phi()));
+  Double_t kk = betaM*TMath::Sqrt(k)/(fgkGapThick*alpha);                                   // formula (6) and (7)
+  Double_t dtdxc = kk*(k*(cosfd*cosf-cost*sinfd*sinf)-(alpha*mu/(betaM*betaM))*sint*sinfd); // formula (6)           
+  Double_t dtdyc = kk*(k*(cosfd*sinf+cost*sinfd*cosf)+(alpha* e/(betaM*betaM))*sint*sinfd); // formula (7)            pag.4
 
-  Double_t kk = betaM*TMath::Sqrt(k)/(8*alpha);
-  Double_t dtdxc = kk*(k*(TMath::Cos(phiDelta)*TMath::Cos(fTrkDir.Phi())-TMath::Cos(fTrkDir.Theta())*TMath::Sin(phiDelta)*TMath::Sin(fTrkDir.Phi()))-(alpha*mu/(betaM*betaM))*TMath::Sin(fTrkDir.Theta())*TMath::Sin(phiDelta));
-  Double_t dtdyc = kk*(k*(TMath::Cos(phiDelta)*TMath::Sin(fTrkDir.Phi())+TMath::Cos(fTrkDir.Theta())*TMath::Sin(phiDelta)*TMath::Cos(fTrkDir.Phi()))+(alpha* e/(betaM*betaM))*TMath::Sin(fTrkDir.Theta())*TMath::Sin(phiDelta));
-
-  return  TMath::Sqrt(0.2*0.2*dtdxc*dtdxc + 0.25*0.25*dtdyc*dtdyc);
+  Double_t errX = 0.2,errY=0.25;                                                            //end of page 7
+  return  TMath::Sqrt(errX*errX*dtdxc*dtdxc + errY*errY*dtdyc*dtdyc);
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Double_t AliHMPIDRecon::SigCrom(Double_t thetaC, Double_t phiC,Double_t betaM)const
@@ -399,12 +411,19 @@ Double_t AliHMPIDRecon::SigCrom(Double_t thetaC, Double_t phiC,Double_t betaM)co
 //            dip and azimuthal angles for MIP taken at the entrance to radiator, [radians]        
 //            MIP beta
 //   Returns: absolute error on Cerenkov angle, [radians]    
+  
   Double_t phiDelta = phiC - fTrkDir.Phi();
-  Double_t alpha =TMath::Cos(fTrkDir.Theta())-TMath::Tan(thetaC)*TMath::Cos(phiDelta)*TMath::Sin(fTrkDir.Theta());
 
-  Double_t dtdn = TMath::Cos(fTrkDir.Theta())*fRadNmean*betaM*betaM/(alpha*TMath::Tan(thetaC));
+  Double_t sint     = TMath::Sin(fTrkDir.Theta());
+  Double_t cost     = TMath::Cos(fTrkDir.Theta());
+  Double_t cosfd    = TMath::Cos(phiDelta);
+  Double_t tantheta = TMath::Tan(thetaC);
+  
+  Double_t alpha =cost-tantheta*cosfd*sint;                                                 // formula (11)
+  Double_t dtdn = cost*fRadNmean*betaM*betaM/(alpha*tantheta);                              // formula (12)
             
-  Double_t f = 0.00928*(7.75-5.635)/TMath::Sqrt(12.);
+//  Double_t f = 0.00928*(7.75-5.635)/TMath::Sqrt(12.);
+  Double_t f = 0.0172*(7.75-5.635)/TMath::Sqrt(24.);
 
   return f*dtdn;
 }//SigCrom()
@@ -419,22 +438,30 @@ Double_t AliHMPIDRecon::SigGeom(Double_t thetaC, Double_t phiC,Double_t betaM)co
 //   Returns: absolute error on Cerenkov angle, [radians]    
 
   Double_t phiDelta = phiC - fTrkDir.Phi();
-  Double_t alpha =TMath::Cos(fTrkDir.Theta())-TMath::Tan(thetaC)*TMath::Cos(phiDelta)*TMath::Sin(fTrkDir.Theta());
 
-  Double_t k = 1.-fRadNmean*fRadNmean+alpha*alpha/(betaM*betaM);
+  Double_t sint     = TMath::Sin(fTrkDir.Theta());
+  Double_t cost     = TMath::Cos(fTrkDir.Theta());
+  Double_t sinf     = TMath::Sin(fTrkDir.Phi());
+  Double_t cosfd    = TMath::Cos(phiDelta);
+  Double_t costheta = TMath::Cos(thetaC);
+  Double_t tantheta = TMath::Tan(thetaC);
+  
+  Double_t alpha =cost-tantheta*cosfd*sint;                                                  // formula (11)
+  
+  Double_t k = 1.-fRadNmean*fRadNmean+alpha*alpha/(betaM*betaM);                             // formula (after 8 in the text)
   if (k<0) return 1e10;
 
-  Double_t eTr = 0.5*1.5*betaM*TMath::Sqrt(k)/(8*alpha);
-  Double_t lambda = 1.-TMath::Sin(fTrkDir.Theta())*TMath::Sin(fTrkDir.Theta())*TMath::Sin(phiC)*TMath::Sin(phiC);
+  Double_t eTr = 0.5*fgkRadThick*betaM*TMath::Sqrt(k)/(fgkGapThick*alpha);                   // formula (14)
+  Double_t lambda = 1.-sint*sint*sinf*sinf;                                                  // formula (15)
 
-  Double_t c = 1./(1.+ eTr*k/(alpha*alpha*TMath::Cos(thetaC)*TMath::Cos(thetaC)));
-  Double_t i = betaM*TMath::Tan(thetaC)*lambda*TMath::Power(k,1.5);
-  Double_t ii = 1.+eTr*betaM*i;
+  Double_t c1 = 1./(1.+ eTr*k/(alpha*alpha*costheta*costheta));                              // formula (13.a)
+  Double_t c2 = betaM*TMath::Power(k,1.5)*tantheta*lambda/(fgkGapThick*alpha*alpha);         // formula (13.b)
+  Double_t c3 = (1.+eTr*k*betaM*betaM)/((1+eTr)*alpha*alpha);                                // formula (13.c)
+  Double_t c4 = TMath::Sqrt(k)*tantheta*(1-lambda)/(fgkGapThick*betaM);                      // formula (13.d)
+  Double_t dtdT = c1 * (c2+c3*c4);
+  Double_t trErr = fgkRadThick/(TMath::Sqrt(12.)*cost);
 
-  Double_t err = c * (i/(alpha*alpha*8) +  ii*(1.-lambda) / ( alpha*alpha*8*betaM*(1.+eTr)) );
-  Double_t trErr = 1.5/(TMath::Sqrt(12.)*TMath::Cos(fTrkDir.Theta()));
-
-  return trErr*err;
+  return trErr*dtdT;
 }//SigGeom()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //
