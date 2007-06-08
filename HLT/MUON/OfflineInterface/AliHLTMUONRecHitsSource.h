@@ -23,7 +23,21 @@ class AliLoader;
  * AliHLTMUONRecHitsSource is a HLT-AliRoot data source object which generates
  * and serves AliHLTMUONRecHitsBlockStruct type data blocks to the HLT system.
  * This is meant as a debugging utility which can optionally generate the data
- * blocks from simulate GEANT hits or MUON offline reconstructed hits.
+ * blocks from simulated GEANT hits or MUON offline reconstructed hits.
+ *
+ * Command line flags:
+ *  -simdata
+ *      Specify this option to publish GEANT hits.
+ *  -recdata
+ *      Specify this option to publish offline reconstructed raw clusters.
+ *  -plane left|right|all
+ *      Specifies if data from the left (x < 0), right (x >= 0) or the whole XY
+ *      plane should be published.
+ *  -chamber <number>|<number>-<number>[,<number>|<number>-<number>]...
+ *      Selects the chambers from which to publish data. Valid chamber numbers
+ *      in the range [1..10]. The string after '-chamber' is a comma separated
+ *      list of numbers or ranges. Some examples of strings:
+ *      1  1-2  1,2,3  1,3-5,7 etc...
  */
 class AliHLTMUONRecHitsSource : public AliHLTOfflineDataSource
 {
@@ -62,6 +76,15 @@ private:
 		kWholePlane  // for all x
 	};
 	
+	/**
+	 * Parses a string with the following format:
+	 *   <number>|<number>-<number>[,<number>|<number>-<number>]...
+	 * For example: 1  1,2,3  1-2   1,2-4,5  etc...
+	 * Flags in the fServeChamber will be set to 'true' for all appropriate
+	 * values parsed.
+	 * @param str  The string to parse.
+	 * @return  Zero on success and EINVAL if there is a parse error.
+	 */
 	int ParseChamberString(const char* str);
 
 	AliMUONSimData* fSimData; //! MUON module interface to simulated data.
