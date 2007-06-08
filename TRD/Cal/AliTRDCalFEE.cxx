@@ -17,48 +17,44 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-//  TRD calibration class for global TRD parameters                          //
+//  TRD calibration class for TRD FEE parameters                             //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "AliTRDCalGlobals.h"
+#include "AliTRDCalFEE.h"
 
-ClassImp(AliTRDCalGlobals)
+ClassImp(AliTRDCalFEE)
 
 //_____________________________________________________________________________
-AliTRDCalGlobals::AliTRDCalGlobals()
+AliTRDCalFEE::AliTRDCalFEE()
   :TNamed()
   ,fNumberOfTimeBins(0)
   ,fTailCancelationTau1(0)
   ,fTailCancelationTau2(0)
   ,fTailCancelationAmp(0)
   ,fPedestal(0)
-  ,fADCClockphase(0)
   ,fConfigID(0)
   ,fGainTableID(0)
-  ,fPretriggerConf(0)
 {
   //
-  // AliTRDCalGlobals default constructor
+  // AliTRDCalFEE default constructor
   //
 
 }
 
 //_____________________________________________________________________________
-AliTRDCalGlobals::AliTRDCalGlobals(const Text_t *name, const Text_t *title)
+AliTRDCalFEE::AliTRDCalFEE(const Text_t *name, const Text_t *title)
   :TNamed(name,title)
   ,fNumberOfTimeBins(0)
   ,fTailCancelationTau1(0)
   ,fTailCancelationTau2(0)
   ,fTailCancelationAmp(0)
   ,fPedestal(0)
-  ,fADCClockphase(0)
   ,fConfigID(0)
   ,fGainTableID(0)
-  ,fPretriggerConf(0)
 {
   //
-  // AliTRDCalGlobals constructor
+  // AliTRDCalFEE constructor
   //
 
 }

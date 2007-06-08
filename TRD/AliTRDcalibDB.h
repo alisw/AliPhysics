@@ -84,7 +84,7 @@ class AliTRDcalibDB : public TObject {
        , kIDGainFactorPad
        , kIDGainFactorChamber
        , kIDPRFWidth
-       , kIDGlobals
+       , kIDFEE
        , kIDChamberPos
        , kIDStackPos
        , kIDSuperModulePos

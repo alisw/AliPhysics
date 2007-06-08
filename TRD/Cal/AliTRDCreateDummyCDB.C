@@ -12,7 +12,7 @@
 #include "AliTRDCalROC.h"
 #include "AliTRDCalPad.h"
 #include "AliTRDCalDet.h"
-#include "AliTRDCalGlobals.h"
+#include "AliTRDCalFEE.h"
 
 #include "AliTRDCalChamberStatus.h"
 #include "AliTRDCalPadStatus.h"
@@ -57,11 +57,11 @@ TObject *CreateDetObject(const char *shortName, const char *description
 }
 
 //_____________________________________________________________________________
-TObject *CreateGlobalsObject() 
+TObject *CreateFEEObject() 
 {
 
-  AliTRDCalGlobals *object = new AliTRDCalGlobals("Globals"
-                                                 ,"Global TRD calibration parameters");
+  AliTRDCalFEE *object = new AliTRDCalFEE("FEE"
+                                         ,"TRD FEE calibration parameters");
 
   object->SetNumberOfTimeBins(24);
 
@@ -70,7 +70,6 @@ TObject *CreateGlobalsObject()
   object->SetTailCancelationAmp(0);
 
   object->SetPedestal(0);
-  object->SetADCClockphase(0);
 
   return object;
 
@@ -251,12 +250,12 @@ void AliTRDCreateDummyCDB()
   StoreObject("TRD/Calib/ChamberGainFactor" ,obj,metaData);
   
   //
-  // Global object
+  // FEE object
   //
 
-  metaData = CreateMetaObject("AliTRDCalGlobals");
-  obj = CreateGlobalsObject();
-  StoreObject("TRD/Calib/Globals"           ,obj,metaData);
+  metaData = CreateMetaObject("AliTRDCalFEE");
+  obj = CreateFEEObject();
+  StoreObject("TRD/Calib/FEE"               ,obj,metaData);
   
   //
   // Status objects

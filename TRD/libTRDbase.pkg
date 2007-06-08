@@ -17,7 +17,7 @@ SRCS= AliTRDarrayI.cxx \
       Cal/AliTRDCalROC.cxx \
       Cal/AliTRDCalPad.cxx \
       Cal/AliTRDCalDet.cxx \
-      Cal/AliTRDCalGlobals.cxx \
+      Cal/AliTRDCalFEE.cxx \
       Cal/AliTRDCalPIDLQ.cxx \
       Cal/AliTRDCalPIDLQRef.cxx \
       Cal/AliTRDCalMonitoring.cxx \

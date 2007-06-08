@@ -1,5 +1,5 @@
-#ifndef AliTRDCALGLOBALS_H
-#define AliTRDCALGLOBALS_H
+#ifndef AliTRDCALFEE_H
+#define AliTRDCALFEE_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -7,7 +7,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-//  TRD calibration class for global TRD parameters                          //
+//  TRD calibration class for TRD FEE parameters                             //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -15,33 +15,29 @@
 
 class TString;
 
-class AliTRDCalGlobals : public TNamed {
+class AliTRDCalFEE : public TNamed {
 
  public:
 
-  AliTRDCalGlobals();
-  AliTRDCalGlobals(const Text_t *name, const Text_t *title);
-  virtual ~AliTRDCalGlobals() { };
+  AliTRDCalFEE();
+  AliTRDCalFEE(const Text_t *name, const Text_t *title);
+  virtual ~AliTRDCalFEE() { };
     
   void    SetNumberOfTimeBins(Int_t value)   { fNumberOfTimeBins    = value; }
   void    SetTailCancelationTau1(Int_t tau1) { fTailCancelationTau1 = tau1;  }
   void    SetTailCancelationTau2(Int_t tau2) { fTailCancelationTau2 = tau2;  }
   void    SetTailCancelationAmp(Int_t amp)   { fTailCancelationAmp  = amp;   }
   void    SetPedestal(Int_t ped)             { fPedestal            = ped;   }
-  void    SetADCClockphase(Float_t cp)       { fADCClockphase       = cp;    }
   void    SetConfigID(TString id)            { fConfigID            = id;    }
   void    SetGainTableID(TString id)         { fGainTableID         = id;    }
-  void    SetPretriggerConf(TString conf)    { fPretriggerConf      = conf;  }
 
   Int_t   GetNumberOfTimeBins() const        { return fNumberOfTimeBins;     }
   Int_t   GetTailCancelationTau1() const     { return fTailCancelationTau1;  }
   Int_t   GetTailCancelationTau2() const     { return fTailCancelationTau2;  }
   Int_t   GetTailCancelationAmp() const      { return fTailCancelationAmp;   }
   Int_t   GetPedestal() const                { return fPedestal;             }
-  Float_t GetADCClockphase() const           { return fADCClockphase;        }
   TString GetConfigID() const                { return fConfigID;             }
   TString GetGainTableID() const             { return fGainTableID;          }
-  TString GetPretriggerConf() const          { return fPretriggerConf;       }
 
  protected:
 
@@ -53,13 +49,10 @@ class AliTRDCalGlobals : public TNamed {
 
   Int_t   fPedestal;               //  Pedestal
 
-  Float_t fADCClockphase;          //  ADC clockphase in respect to TTC
-
   TString fConfigID;               //  Configuration ID
   TString fGainTableID;            //  Gain table ID
-  TString fPretriggerConf;         //  Pretrigger configuration
 
-  ClassDef(AliTRDCalGlobals,4)     //  TRD calibration class for global TRD parameters
+  ClassDef(AliTRDCalFEE,1)         //  TRD calibration class for TRD FEE parameters
 
 };
 #endif

@@ -44,7 +44,7 @@
 #include "Cal/AliTRDCalROC.h"
 #include "Cal/AliTRDCalPad.h"
 #include "Cal/AliTRDCalDet.h"
-#include "Cal/AliTRDCalGlobals.h"
+#include "Cal/AliTRDCalFEE.h"
 #include "Cal/AliTRDCalPIDLQ.h"
 #include "Cal/AliTRDCalMonitoring.h"
 #include "Cal/AliTRDCalChamberStatus.h"
@@ -241,8 +241,8 @@ const TObject *AliTRDcalibDB::GetCachedCDBObject(Int_t id)
     case kIDMonitoringData : 
       return CacheCDBEntry(kIDMonitoringData    ,"TRD/Calib/MonitoringData"); 
       break;
-    case kIDGlobals : 
-      return CacheCDBEntry(kIDGlobals           ,"TRD/Calib/Globals"); 
+    case kIDFEE : 
+      return CacheCDBEntry(kIDFEE               ,"TRD/Calib/FEE"); 
       break;
     case kIDPIDLQ : 
       return CacheCDBEntry(kIDPIDLQ             ,"TRD/Calib/PIDLQ"); 
@@ -663,13 +663,13 @@ Int_t AliTRDcalibDB::GetNumberOfTimeBins()
   // Returns the number of time bins which are read-out.
   //
 
-  const AliTRDCalGlobals *calGlobal = dynamic_cast<const AliTRDCalGlobals *> 
-                                      (GetCachedCDBObject(kIDGlobals));
-  if (!calGlobal) {
+  const AliTRDCalFEE *calFEE     = dynamic_cast<const AliTRDCalFEE *> 
+                                   (GetCachedCDBObject(kIDFEE));
+  if (!calFEE) {
     return -1;
   }
 
-  return calGlobal->GetNumberOfTimeBins();
+  return calFEE->GetNumberOfTimeBins();
 
 }
 
@@ -680,8 +680,8 @@ Char_t AliTRDcalibDB::GetPadStatus(Int_t det, Int_t col, Int_t row)
   // Returns the status of the given pad
   //
 
-  const AliTRDCalPadStatus *cal     = dynamic_cast<const AliTRDCalPadStatus *> 
-                                      (GetCachedCDBObject(kIDPadStatus));
+  const AliTRDCalPadStatus *cal  = dynamic_cast<const AliTRDCalPadStatus *> 
+                                   (GetCachedCDBObject(kIDPadStatus));
   if (!cal) {
     return -1;
   }
