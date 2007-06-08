@@ -38,7 +38,10 @@ class AliAODEvent : public TObject {
   // -- Header
   AliAODHeader *GetHeader()              const { return (AliAODHeader*)fHeader; }
   void          AddHeader(const AliAODHeader* hdx)
-    {delete fHeader; fHeader=new AliAODHeader(*hdx);}
+    {
+	delete fHeader; fHeader = new AliAODHeader(*hdx);
+	(fAODObjects->FirstLink())->SetObject(fHeader);
+    }
 
   // -- Tracks
   TClonesArray *GetTracks()              const { return fTracks; }
