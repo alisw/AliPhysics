@@ -250,7 +250,6 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
           void     FillTheInfoOfTheTrackPH();
           void     FillTheInfoOfTheTrackCH();
 	  void     FillCH2d(Int_t x, Float_t y);
-	  void     FillCHSm(Int_t supermodule, Float_t y);
 	  Bool_t   FindP1TrackPH();
           void     ResetfVariables();
           Bool_t   LocalisationDetectorXbins(Int_t detector);

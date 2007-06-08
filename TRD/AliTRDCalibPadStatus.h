@@ -1,4 +1,4 @@
-#ifndef ALITPCCALIBPEDESTAL_H
+#ifndef ALITRDCALIBPADSTATUS_H
 #define ALITRDCALIBPADSTATUS_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -31,9 +31,9 @@ public:
 
   AliTRDCalibPadStatus& operator = (const  AliTRDCalibPadStatus &source);
 
-  Bool_t ProcessEvent(AliTRDRawStream *rawStream);
-  Bool_t ProcessEvent(AliRawReader    *rawReader);
-  Bool_t ProcessEvent(eventHeaderStruct   *event);
+  Bool_t ProcessEvent(AliTRDRawStream *rawStream, Bool_t nocheck = kFALSE);
+  Bool_t ProcessEvent(AliRawReader    *rawReader, Bool_t nocheck = kFALSE);
+  Bool_t ProcessEvent(eventHeaderStruct   *event, Bool_t nocheck = kFALSE);
 
   Int_t Update(const Int_t idet, const Int_t iRow, const Int_t iCol,
 	       const Int_t signal, const Int_t rowMax);
@@ -67,6 +67,7 @@ private:
   Int_t fAdcMin;                    //  min adc channel of pedestal value
   Int_t fAdcMax;                    //  max adc channel of pedestal value
   Int_t fDetector;                  //  Current detector
+  Int_t fNumberOfTimeBins;          //  Current number of time bins
      
   TObjArray fCalArrayEntries;       //  Array of AliTRDarrayF class calibration
   TObjArray fCalArrayMean;          //  Array of AliTRDarrayF class calibration
@@ -80,12 +81,9 @@ private:
   AliTRDarrayF *fCalMean;           //  Current AliTRDArrayF Mean
   AliTRDarrayF *fCalSquares;        //  Current AliTRDArrayF Squares
 
-  AliTRDarrayF* GetCalEntries(Int_t det, TObjArray* arr, Bool_t force);
-  AliTRDarrayF* GetCalMean(Int_t det, TObjArray* arr, Bool_t force);
-  AliTRDarrayF* GetCalSquares(Int_t det, TObjArray* arr, Bool_t force);
-  AliTRDCalROC* GetCalRocMean(Int_t det, TObjArray* arr, Bool_t force);
-  AliTRDCalROC* GetCalRocRMS(Int_t det, TObjArray* arr, Bool_t force);
-
+  AliTRDarrayF* GetCal(Int_t det, TObjArray* arr, Bool_t force);
+  AliTRDCalROC* GetCalRoc(Int_t det, TObjArray* arr, Bool_t force);
+ 
   TH2F* GetHisto(Int_t det, TObjArray *arr,
 		 Int_t nbinsY, Float_t ymin, Float_t ymax,
 		 Char_t *type, Bool_t force);

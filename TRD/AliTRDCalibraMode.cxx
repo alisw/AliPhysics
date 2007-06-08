@@ -100,8 +100,23 @@ AliTRDCalibraMode::AliTRDCalibraMode(const AliTRDCalibraMode &c)
   // Copy constructor
   //
 
-}
+  for(Int_t k = 0; k < 3; k++){
+    fNz[k]        = c.fNz[k];
+    fNrphi[k]     = c.fNrphi[k];
+    fNnZ[k]       = c.fNnZ[k];
+    fNnRphi[k]    = c.fNnRphi[k];
+    fNfragZ[k]    = c.fNfragZ[k];
+    fNfragRphi[k] = c.fNfragRphi[k];
+    fRowMin[k]    = c.fRowMin[k];
+    fRowMax[k]    = c.fRowMax[k];
+    fColMin[k]    = c.fColMin[k];
+    fColMax[k]    = c.fColMax[k];
+    fXbins[k]     = c.fXbins[k];
+    fDetChamb0[k] = c.fDetChamb0[k];
+    fDetChamb2[k] = c.fDetChamb2[k];
+  }
 
+}
 //____________________________________________________________________________________
 AliTRDCalibraMode::~AliTRDCalibraMode()
 {
