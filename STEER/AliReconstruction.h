@@ -30,6 +30,7 @@ class AliVertexer;
 class AliESDVertex;
 class AliESD;
 class TFile;
+class TTree;
 
 class AliRunTag;
 class AliLHCTag;
@@ -68,7 +69,9 @@ public:
   void           SetLoadAlignFromCDB(Bool_t load)  {fLoadAlignFromCDB = load;};
   void           SetLoadAlignData(const char* detectors) 
     {fLoadAlignData = detectors;};
-
+  void           SetESDParLocation(const char *c){fESDPar = c;}
+  TNamed *CopyFileToTNamed(TString fPath,TString fName);
+  void  TNamedToFile(TTree* fTree, TString fName);
 
   //*** Global reconstruction flag setters
   void SetUniformFieldTracking(Bool_t flag=kTRUE){fUniformField=flag;} 
@@ -154,6 +157,8 @@ private:
   TObjArray      fOptions;            // options for reconstructor objects
   Bool_t         fLoadAlignFromCDB;   // Load alignment data from CDB and apply it to geometry or not
   TString        fLoadAlignData;      // Load alignment data from CDB for these detectors
+  TString        fESDPar;             // String where the esd.par is stored, will be attached to the tree         
+
 
   AliRunLoader*  fRunLoader;          //! current run loader object
   AliRawReader*  fRawReader;          //! current raw data reader
@@ -171,7 +176,7 @@ private:
   TString	 fCDBUri;	      // Uri of the default CDB storage
   TObjArray      fSpecCDBUri;         // Array with detector specific CDB storages
 
-  ClassDef(AliReconstruction, 9)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 10)      // class for running the reconstruction
 };
 
 #endif

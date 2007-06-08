@@ -201,6 +201,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename, const char* cdb
   fOptions(),
   fLoadAlignFromCDB(kTRUE),
   fLoadAlignData("ALL"),
+  fESDPar(""),
 
   fRunLoader(NULL),
   fRawReader(NULL),
@@ -249,6 +250,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fOptions(),
   fLoadAlignFromCDB(rec.fLoadAlignFromCDB),
   fLoadAlignData(rec.fLoadAlignData),
+  fESDPar(rec.fESDPar),
 
   fRunLoader(NULL),
   fRawReader(NULL),
@@ -380,6 +382,9 @@ void AliReconstruction::SetSpecificStorage(const char* calibType, const char* ur
   fSpecCDBUri.Add(new TNamed(aPath.GetPath().Data(), uri));
 
 }
+
+
+
 
 //_____________________________________________________________________________
 Bool_t AliReconstruction::SetRunNumber()
@@ -557,7 +562,7 @@ Bool_t AliReconstruction::Run(const char* input)
   stopwatch.Start();
 
   // get the possibly already existing ESD file and tree
-  AliESD* esd = new AliESD; AliESD* hltesd = new AliESD;
+  AliESD* esd = new AliESD(); AliESD* hltesd = new AliESD();
   TFile* fileOld = NULL;
   TTree* treeOld = NULL; TTree *hlttreeOld = NULL;
   if (!gSystem->AccessPathName("AliESDs.root")){
@@ -565,32 +570,43 @@ Bool_t AliReconstruction::Run(const char* input)
     fileOld = TFile::Open("AliESDs.old.root");
     if (fileOld && fileOld->IsOpen()) {
       treeOld = (TTree*) fileOld->Get("esdTree");
-      if (treeOld) treeOld->SetBranchAddress("ESD", &esd);
+      if (treeOld)esd->ReadFromTree(treeOld);
       hlttreeOld = (TTree*) fileOld->Get("HLTesdTree");
-      if (hlttreeOld) hlttreeOld->SetBranchAddress("ESD", &hltesd);
+      if (hlttreeOld)	hltesd->ReadFromTree(hlttreeOld);
     }
   }
 
   // create the ESD output file and tree
   TFile* file = TFile::Open("AliESDs.root", "RECREATE");
+  file->SetCompressionLevel(2);
   if (!file->IsOpen()) {
     AliError("opening AliESDs.root failed");
     if (fStopOnError) {CleanUp(file, fileOld); return kFALSE;}    
   }
+
   TTree* tree = new TTree("esdTree", "Tree with ESD objects");
-  tree->Branch("ESD", "AliESD", &esd);
+  esd = new AliESD();
+  esd->CreateStdContent();
+  esd->WriteToTree(tree);
+
   TTree* hlttree = new TTree("HLTesdTree", "Tree with HLT ESD objects");
-  hlttree->Branch("ESD", "AliESD", &hltesd);
+  hltesd = new AliESD();
+  hltesd->CreateStdContent();
+  hltesd->WriteToTree(hlttree);
+
+  /* CKB Why?
   delete esd; delete hltesd;
   esd = NULL; hltesd = NULL;
-
+  */
   // create the branch with ESD additions
-  AliESDfriend *esdf=0;
+  AliESDfriend *esdf = 0; 
   if (fWriteESDfriend) {
-     TBranch *br=tree->Branch("ESDfriend.", "AliESDfriend", &esdf);
-     br->SetFile("AliESDfriends.root");
+    esdf = new AliESDfriend();
+    TBranch *br=tree->Branch("ESDfriend.","AliESDfriend", &esdf);
+    br->SetFile("AliESDfriends.root");
+    esd->AddObject(esdf);
   }
-
+  
   // Get the diamond profile from OCDB
   AliCDBEntry* entry = AliCDBManager::Instance()
   	->Get("GRP/Calib/MeanVertex");
@@ -612,18 +628,18 @@ Bool_t AliReconstruction::Run(const char* input)
     if ((iEvent < fFirstEvent) || ((fLastEvent >= 0) && (iEvent > fLastEvent))) {
       // copy old ESD to the new one
       if (treeOld) {
-	treeOld->SetBranchAddress("ESD", &esd);
+	esd->ReadFromTree(treeOld);
 	treeOld->GetEntry(iEvent);
       }
       tree->Fill();
       if (hlttreeOld) {
-	hlttreeOld->SetBranchAddress("ESD", &hltesd);
+	esd->ReadFromTree(hlttreeOld);
 	hlttreeOld->GetEntry(iEvent);
       }
       hlttree->Fill();
       continue;
     }
-
+    
     AliInfo(Form("processing event %d", iEvent));
     fRunLoader->GetEvent(iEvent);
 
@@ -640,16 +656,18 @@ Bool_t AliReconstruction::Run(const char* input)
       }
     }
 
-    esd = new AliESD; hltesd = new AliESD;
+  
     esd->SetRunNumber(fRunLoader->GetHeader()->GetRun());
     hltesd->SetRunNumber(fRunLoader->GetHeader()->GetRun());
     esd->SetEventNumberInFile(fRunLoader->GetHeader()->GetEventNrInRun());
     hltesd->SetEventNumberInFile(fRunLoader->GetHeader()->GetEventNrInRun());
-
+    
     // Set magnetic field from the tracker
     esd->SetMagneticField(AliTracker::GetBz());
     hltesd->SetMagneticField(AliTracker::GetBz());
 
+    
+    
     // Fill raw-data error log into the ESD
     if (fRawReader) FillRawDataErrorLog(iEvent,esd);
 
@@ -744,8 +762,8 @@ Bool_t AliReconstruction::Run(const char* input)
  
     // write ESD
     if (fWriteESDfriend) {
-       esdf=new AliESDfriend();
-       esd->GetESDfriend(esdf);
+      new (esdf) AliESDfriend(); // Reset...
+      esd->GetESDfriend(esdf);
     }
     tree->Fill();
 
@@ -753,10 +771,24 @@ Bool_t AliReconstruction::Run(const char* input)
     hlttree->Fill();
 
     if (fCheckPointLevel > 0)  WriteESD(esd, "final"); 
- 
-    delete esd; delete esdf; delete hltesd;
-    esd = NULL; esdf=NULL; hltesd = NULL;
+    esd->Reset();
+    hltesd->Reset();
+    // esdf->Reset();
+    // delete esdf; esdf = 0;
+  } 
+
+
+  tree->GetUserInfo()->Add(esd);
+  hlttree->GetUserInfo()->Add(hltesd);
+
+
+
+  if(fESDPar.Contains("ESD.par")){
+    AliInfo("Attaching ESD.par to Tree");
+    TNamed *fn = CopyFileToTNamed(fESDPar.Data(),"ESD.par");
+    tree->GetUserInfo()->Add(fn);
   }
+
 
   AliInfo(Form("Execution time for filling ESD : R:%.2fs C:%.2fs",
 	       stopwatch.RealTime(),stopwatch.CpuTime()));
@@ -773,10 +805,12 @@ Bool_t AliReconstruction::Run(const char* input)
     aodFile->Close();
   }
 
+  gROOT->cd();
   // Create tags for the events in the ESD tree (the ESD tree is always present)
   // In case of empty events the tags will contain dummy values
   CreateTag(file);
-  CleanUp(file, fileOld);
+
+ CleanUp(file, fileOld);
 
   return kTRUE;
 }
@@ -1750,10 +1784,9 @@ void AliReconstruction::CreateTag(TFile* file)
     return ;
   }  
   Int_t lastEvent = 0;
-  TTree *t = (TTree*) file->Get("esdTree");
-  TBranch * b = t->GetBranch("ESD");
-  AliESD *esd = 0;
-  b->SetAddress(&esd);
+  TTree *b = (TTree*) file->Get("esdTree");
+  AliESD *esd = new AliESD();
+  esd->ReadFromTree(b);
 
   b->GetEntry(fFirstEvent);
   Int_t iInitRunNumber = esd->GetRunNumber();
@@ -2743,3 +2776,50 @@ void AliReconstruction::FillRawDataErrorLog(Int_t iEvent, AliESD* esd)
   }
 
 }
+
+TNamed* AliReconstruction::CopyFileToTNamed(TString fPath,TString fName){
+  ifstream in;
+  in.open(fPath.Data(),ios::in | ios::binary|ios::ate);
+  Int_t kBytes = (Int_t)in.tellg();
+  printf("Size: %d \n",kBytes);
+  TNamed *fn = 0;
+  if(in.good()){
+    char* memblock = new char [kBytes];
+    in.seekg (0, ios::beg);
+    in.read (memblock, kBytes);
+    in.close();
+    TString fData(memblock,kBytes);
+    fn = new TNamed(fName,fData);
+    printf("fData Size: %d \n",fData.Sizeof());
+    printf("fName Size: %d \n",fName.Sizeof());
+    printf("fn    Size: %d \n",fn->Sizeof());
+    delete[] memblock;
+  }
+  else{
+    AliInfo(Form("Could not Open %s\n",fPath.Data()));
+  }
+
+  return fn;
+}
+
+void AliReconstruction::TNamedToFile(TTree* fTree, TString fName){
+
+  // This is not really needed in AliReconstruction at the moment
+  // but can serve as a template
+
+  TList *fList = fTree->GetUserInfo();
+  TNamed *fn = (TNamed*)fList->FindObject(fName.Data());
+  printf("fn Size: %d \n",fn->Sizeof());
+
+  TString fTmp(fn->GetName()); // to be 100% sure in principle fName also works
+  const char* cdata = fn->GetTitle();
+  printf("fTmp Size %d\n",fTmp.Sizeof());
+
+  int size = fn->Sizeof()-fTmp.Sizeof()-sizeof(UChar_t)-sizeof(Int_t); // see dfinition of TString::SizeOf()...
+  printf("calculated size %d\n",size);
+  ofstream out(fName.Data(),ios::out | ios::binary);
+  out.write(cdata,size);
+  out.close();
+
+}
+
