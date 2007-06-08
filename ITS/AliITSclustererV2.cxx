@@ -223,17 +223,19 @@ void AliITSclustererV2::Digits2Clusters(AliRawReader* rawReader) {
 
   // write all clusters to the tree
   Int_t nClusters = 0;
+  TClonesArray *emptyArray=new TClonesArray("AliITSclusterV2");
   for (Int_t iModule = 0; iModule < fNModules; iModule++) {
     array = clusters[iModule];
     if (!array) {
       Error("Digits2Clusters", "data for module %d missing!", iModule);
-      array = new TClonesArray("AliITSclusterV2");
+      array = emptyArray;
     }
     cTree->SetBranchAddress("Clusters", &array);
     cTree->Fill();
     nClusters += array->GetEntriesFast();
-    delete array;
   }
+  delete emptyArray;
+
   itsLoader->WriteRecPoints("OVERWRITE");
 
   delete[] clusters;

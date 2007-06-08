@@ -972,25 +972,25 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader){
   for(id=0;id<3;id++){
     rec = (AliITSClusterFinderV2*)GetReconstructionModel(id);
     rec->SetDetTypeRec(this);
-    if (!rec) {
-      Error("DigitsToRecPoints",
-	    "The reconstruction class was not instanciated");
-      exit(1);
-    } 
+    if (!rec)
+      AliFatal("The reconstruction class was not instanciated");
+
     rec->RawdataToClusters(rawReader,clusters);    
   } 
   Int_t nClusters =0;
+  TClonesArray *emptyArray=new TClonesArray("AliITSRecPoint");
   for(Int_t iModule=0;iModule<GetITSgeom()->GetIndexMax();iModule++){
     array = clusters[iModule];
     if(!array){
-      Error("DigitsToRecPoints","data for module %d missing!",iModule);
-      array = new TClonesArray("AliITSRecPoint");
+      AliDebug(1,Form("data for module %d missing!",iModule));
+      array = emptyArray;
     }
     cTree->SetBranchAddress("ITSRecPoints",&array);
     cTree->Fill();
     nClusters+=array->GetEntriesFast();
-    delete array;
   }
+  delete emptyArray;
+
   fLoader->WriteRecPoints("OVERWRITE");
 
   delete[] clusters;

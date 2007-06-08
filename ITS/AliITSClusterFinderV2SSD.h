@@ -42,6 +42,8 @@ public:
   Float_t fTanP;          //tangent of the stereo angle on the P side
   Float_t fTanN;          //tangent of the stereo angle on the N side
 
+  static Short_t*fPairs;         //array used to build positive-negative pairs
+  static Int_t   fPairsSize;     //actual size of pairs array
 
   ClassDef(AliITSClusterFinderV2SSD,1)  // ITS cluster finder V2 for SDD
 };
