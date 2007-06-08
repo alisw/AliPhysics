@@ -64,6 +64,7 @@
 #include "AliPDG.h"
 #include "AliRun.h"
 #include "AliStack.h"
+#include "AliCDBManager.h"
 #include "AliAlignObj.h"
 
 AliRun *gAlice;
@@ -560,6 +561,10 @@ void AliRun::InitMC(const char *setup)
   gROOT->LoadMacro(setup);
   gInterpreter->ProcessLine(fConfigFunction.Data());
 
+  // Set the run number in the CDB manager as assigned from
+  // constructor or from config file 
+  AliCDBManager::Instance()->SetRun(GetRunNumber());
+  
   fRunLoader->CdGAFile();
 
   AliPDG::AddParticlesToPdgDataBase();  

@@ -627,7 +627,6 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
     gAlice->SetTriggerDescriptor(fMakeTrigger.Data());
 
   // Set run number in CDBManager
-  AliCDBManager::Instance()->SetRun(gAlice->GetRunNumber());
   AliInfo(Form("Run number: %d",AliCDBManager::Instance()->GetRun()));
 
   AliRunLoader* runLoader = gAlice->GetRunLoader();
