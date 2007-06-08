@@ -26,7 +26,6 @@
 #pragma link C++ class AliPHOSFastGlobalReconstruction+;
 #pragma link C++ class AliPHOSJet+;
 #pragma link C++ class AliPHOSJetFinder+;
-#pragma link C++ class AliPHOSGammaJet+;
 #pragma link C++ class AliPHOSGridFile+;
 #pragma link C++ class AliPHOSTracker+;
 #pragma link C++ class AliPHOSRecoParam+;
