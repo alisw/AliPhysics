@@ -740,7 +740,7 @@ void AliRun::Tree2Tree(Option_t *option, const char *selected)
 //_______________________________________________________________________
 void AliRun::RunLego(const char *setup, Int_t nc1, Float_t c1min,
 		     Float_t c1max,Int_t nc2,Float_t c2min,Float_t c2max,
-		     Float_t rmin,Float_t rmax,Float_t zmax, AliLegoGenerator* gener)
+		     Float_t rmin,Float_t rmax,Float_t zmax, AliLegoGenerator* gener, Int_t nev)
 {
   //
   // Generates lego plots of:
@@ -779,10 +779,12 @@ void AliRun::RunLego(const char *setup, Int_t nc1, Float_t c1min,
   */
   //End_Html
   //
-
+  // Number of events 
+    if (nev == -1) nev  = nc1 * nc2;
+    
   // check if initialisation has been done
   // If runloader has been initialized, set the number of events per file to nc1 * nc2
-
+    
   // Set new generator
   if (!gener) gener  = new AliLegoGenerator();
   //
@@ -806,9 +808,9 @@ void AliRun::RunLego(const char *setup, Int_t nc1, Float_t c1min,
   
   //Run Lego Object
 
-  if (fRunLoader) fRunLoader->SetNumberOfEventsPerFile(nc1 * nc2);
+  if (fRunLoader) fRunLoader->SetNumberOfEventsPerFile(nev);
   //gMC->ProcessRun(nc1*nc2+1);
-  gMC->ProcessRun(nc1*nc2);
+  gMC->ProcessRun(nev);
   
   // End of this run, close files
   FinishRun();
