@@ -92,6 +92,8 @@ private:
 
 	Bool_t GetValueSet(const char* host, Int_t port, const char* alias,
 				TObjArray* result, DCSType type);
+	TMap* GetValueSet(const char* host, Int_t port, const TSeqCollection* entries,
+			      DCSType type);
 
 	Bool_t RetrieveFile(UInt_t system, const char* daqFileName, const char* localFileName);
 

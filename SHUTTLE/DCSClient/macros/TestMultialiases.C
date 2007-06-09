@@ -1,8 +1,8 @@
-void TestMultiAliases(){
+void TestMultialiases(){
 // Simple test for the multi request query
 
 gSystem->Load("AliDCSClient.so");
- AliDCSClient client("192.168.39.54",4242,1000,5);
+ AliDCSClient client("aldcs053.cern.ch",4242,1000,5);
 
 
 //TObjArray *arr = new TObjArray();
@@ -11,27 +11,27 @@ gSystem->Load("AliDCSClient.so");
 
 
 
-TMap map;
-map.Add(new TObjString("tpc_PT_322.Temperature"), new TObjArray());
-map.Add(new TObjString("tpc_PT_323.Temperature"), new TObjArray());
-map.Add(new TObjString("tpc_PT_324.Temperature"), new TObjArray());
-map.Add(new TObjString("tpc_PT_325.Temperature"), new TObjArray());
-map.Add(new TObjString("tpc_PT_326.Temperature"), new TObjArray());
-map.Add(new TObjString("tpc_PT_327.Temperature"), new TObjArray());
-map.Add(new TObjString("tpc_PT_328.Temperature"), new TObjArray());
-map.Add(new TObjString("tpc_PT_329.Temperature"), new TObjArray());
-map.Add(new TObjString("tpc_PT_330.Temperature"), new TObjArray());
-map.Add(new TObjString("tpc_PT_331.Temperature"), new TObjArray());
+TList list;
+list.Add(new TObjString("tpc_PT_322.Temperature"));
+list.Add(new TObjString("tpc_PT_323.Temperature"));
+list.Add(new TObjString("tpc_PT_324.Temperature"));
+list.Add(new TObjString("tpc_PT_325.Temperature"));
+list.Add(new TObjString("tpc_PT_326.Temperature"));
+list.Add(new TObjString("tpc_PT_327.Temperature"));
+list.Add(new TObjString("tpc_PT_328.Temperature"));
+list.Add(new TObjString("tpc_PT_329.Temperature"));
+list.Add(new TObjString("tpc_PT_330.Temperature"));
+list.Add(new TObjString("tpc_PT_331.Temperature"));
 
-client.GetAliasValues(1180586575, 1180686575, map);
+TMap *map = client.GetAliasValues(&list, 1180586575, 1180686575, 2, 4);
 
-TIter iter(&map);
+TIter iter(map);
 TObjString *objstr=0;
 
 while(objstr = dynamic_cast<TObjString*>(iter.Next())){
 
    cout << objstr->GetName() << endl;
-   TObjArray *arr = map.GetValue(objstr->GetName());   
+   TObjArray *arr = map->GetValue(objstr->GetName());   
 
    cout << "N of values: " << arr->GetEntries() << endl;
    //arr->Print(); 

@@ -15,6 +15,13 @@
 
 /*
 $Log$
+Revision 1.45  2007/05/30 06:35:20  jgrosseo
+Adding functionality to the Shuttle/TestShuttle:
+o) Function to retrieve list of sources from a given system (GetFileSources with id=0)
+o) Function to retrieve list of IDs for a given source      (GetFileIDs)
+These functions are needed for dealing with the tag files that are saved for the GRP preprocessor
+Example code has been added to the TestProcessor in TestShuttle
+
 Revision 1.44  2007/05/11 16:09:32  acolla
 Reference files for ITS, MUON and PHOS are now stored in OfflineDetName/OnlineDetName/run_...
 example: ITS/SPD/100_filename.root
@@ -1483,10 +1490,7 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 	if (!CleanReferenceStorage(fCurrentDetector.Data()))
 		return kFALSE;
 
-	TMap dcsMap;
-	dcsMap.SetOwner(1);
-
-	Bool_t aDCSError = kFALSE;
+	TMap* dcsMap = 0;
 
 	// call preprocessor
 	AliPreprocessor* aPreprocessor =
@@ -1517,73 +1521,61 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 		TString host(fConfig->GetDCSHost(fCurrentDetector));
 		Int_t port = fConfig->GetDCSPort(fCurrentDetector);
 
-		// Retrieval of Aliases
-		TObjString* anAlias = 0;
-		Int_t iAlias = 0;
-		Int_t nTotAliases= ((TMap*)fConfig->GetDCSAliases(fCurrentDetector))->GetEntries();
-		TIter iterAliases(fConfig->GetDCSAliases(fCurrentDetector));
-		while ((anAlias = (TObjString*) iterAliases.Next()))
+		if (fConfig->GetDCSAliases(fCurrentDetector)->GetEntries() > 0)
 		{
-			TObjArray *valueSet = new TObjArray();
-			valueSet->SetOwner(1);
-
-			iAlias++;
-			aDCSError = (GetValueSet(host, port, anAlias->String(), valueSet, kAlias) == 0);
-
-			if(!aDCSError)
+			dcsMap = GetValueSet(host, port, fConfig->GetDCSAliases(fCurrentDetector), kAlias);
+			if (!dcsMap)
 			{
-				if (((iAlias-1) % 500) == 0 || iAlias == nTotAliases)
-					AliInfo(Form("Alias %s (%d of %d) - %d values collected",
-							anAlias->GetName(), iAlias, nTotAliases, valueSet->GetEntriesFast()));
-				dcsMap.Add(anAlias->Clone(), valueSet);
-			} else {
-				Log(fCurrentDetector,
-					Form("ProcessCurrentDetector - Error while retrieving alias %s",
-						anAlias->GetName()));
+				Log(fCurrentDetector, "ProcessCurrentDetector - Error while retrieving DCS aliases");
 				UpdateShuttleStatus(AliShuttleStatus::kDCSError);
-				dcsMap.DeleteAll();
 				return kFALSE;
 			}
 		}
-
-		// Retrieval of Data Points
-		TObjString* aDP = 0;
-		Int_t iDP = 0;
-		Int_t nTotDPs= ((TMap*)fConfig->GetDCSDataPoints(fCurrentDetector))->GetEntries();
-		TIter iterDP(fConfig->GetDCSDataPoints(fCurrentDetector));
-		while ((aDP = (TObjString*) iterDP.Next()))
+		
+		if (fConfig->GetDCSDataPoints(fCurrentDetector)->GetEntries() > 0)
 		{
-			TObjArray *valueSet = new TObjArray();
-			valueSet->SetOwner(1);
-			if (((iDP-1) % 500) == 0 || iDP == nTotDPs)
-				AliInfo(Form("Querying DCS archive: DP %s (%d of %d)",
-						aDP->GetName(), iDP++, nTotDPs));
-			aDCSError = (GetValueSet(host, port, aDP->String(), valueSet, kDP) == 0);
-
-			if(!aDCSError)
+			TMap* dcsMap2 = GetValueSet(host, port, fConfig->GetDCSDataPoints(fCurrentDetector), kDP);
+			if (!dcsMap2)
 			{
-				dcsMap.Add(aDP->Clone(), valueSet);
-			} else {
-				Log(fCurrentDetector,
-					Form("ProcessCurrentDetector - Error while retrieving data point %s",
-						aDP->GetName()));
+				Log(fCurrentDetector, "ProcessCurrentDetector - Error while retrieving DCS data points");
 				UpdateShuttleStatus(AliShuttleStatus::kDCSError);
-				dcsMap.DeleteAll();
+				if (dcsMap)
+					delete dcsMap;
 				return kFALSE;
 			}
+			
+			if (!dcsMap)
+			{
+				dcsMap = dcsMap2;
+			}
+			else // merge
+			{
+				TIter iter(dcsMap2);
+				TObjString* key = 0;
+				while ((key = (TObjString*) iter.Next()))
+					dcsMap->Add(key, dcsMap2->GetValue(key->String()));
+					
+				dcsMap2->SetOwner(kFALSE);
+				delete dcsMap2;
+			}
 		}
+		
+		// still no map?
+		if (!dcsMap)
+			dcsMap = new TMap;
 	}
 
 	// DCS Archive DB processing successful. Call Preprocessor!
 	UpdateShuttleStatus(AliShuttleStatus::kPPStarted);
 
-	UInt_t returnValue = aPreprocessor->Process(&dcsMap);
+	UInt_t returnValue = aPreprocessor->Process(dcsMap);
 
 	if (returnValue > 0) // Preprocessor error!
 	{
 		Log(fCurrentDetector, Form("Preprocessor failed. Process returned %d.", returnValue));
 		UpdateShuttleStatus(AliShuttleStatus::kPPError);
-		dcsMap.DeleteAll();
+		dcsMap->DeleteAll();
+		delete dcsMap;
 		return kFALSE;
 	}
 	
@@ -1592,7 +1584,8 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 	Log(fCurrentDetector, Form("ProcessCurrentDetector - %s preprocessor returned success",
 				fCurrentDetector.Data()));
 
-	dcsMap.DeleteAll();
+	dcsMap->DeleteAll();
+	delete dcsMap;
 
 	return kTRUE;
 }
@@ -1766,6 +1759,77 @@ Bool_t AliShuttle::GetValueSet(const char* host, Int_t port, const char* entry,
 	return kTRUE;
 }
 
+//______________________________________________________________________________________________
+TMap* AliShuttle::GetValueSet(const char* host, Int_t port, const TSeqCollection* entries,
+			      DCSType type)
+{
+	// Retrieve all "entry" data points from the DCS server
+	// host, port: TSocket connection parameters
+	// entries: list of name of the alias or data point
+	// type: kAlias or kDP
+	// returns TMap of values, 0 when failure
+
+	const Int_t kSplit = 100; // maximum number of DPs at a time
+	
+	Int_t totalEntries = entries->GetEntries();
+	
+	TMap* result = 0;
+	
+	for (Int_t index=0; index < totalEntries; index += kSplit)
+	{
+		Int_t endIndex = index + kSplit;
+	
+		AliDCSClient client(host, port, fTimeout, fRetries);
+		if (!client.IsConnected())
+			return 0;
+
+		TMap* partialResult = 0;
+
+		if (type == kAlias)
+		{
+			partialResult = client.GetAliasValues(entries, GetCurrentStartTime(), 
+				GetCurrentEndTime(), index, endIndex);
+		} 
+		else if (type == kDP)
+		{
+			partialResult = client.GetDPValues(entries, GetCurrentStartTime(), 
+				GetCurrentEndTime(), index, endIndex);
+		}
+
+		if (partialResult == 0)
+		{
+			Log(fCurrentDetector.Data(), Form("GetValueSet - Can't get entries (%d...%d)! Reason: %s",
+				index, endIndex, client.GetServerError().Data()));
+	
+			if (result)
+				delete result;
+				
+			return 0;
+		}
+		
+		AliInfo(Form("Retrieved entries %d..%d (total %d); E.g. %s has %d values collected",
+					index, endIndex, totalEntries, entries->At(index)->GetName(), ((TObjArray*)
+					partialResult->GetValue(entries->At(index)->GetName()))->GetEntriesFast()));
+		
+		if (!result)
+		{
+			result = partialResult;
+		}
+		else
+		{		
+			TIter iter(partialResult);
+			TObjString* key = 0;
+			while ((key = (TObjString*) iter.Next()))
+				result->Add(key, partialResult->GetValue(key->String()));
+				
+			partialResult->SetOwner(kFALSE);
+			delete partialResult;
+		}
+	
+	}
+
+	return result;
+}
 //______________________________________________________________________________________________
 const char* AliShuttle::GetFile(Int_t system, const char* detector,
 		const char* id, const char* source)

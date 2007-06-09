@@ -14,7 +14,7 @@ INCLUDES := $(ALICE_ROOT)/include
 LIBDIR := $(shell root-config --libdir)
 SHARED = -shared
 
-CXXFLAGS += -I$(INCLUDES)
+CXXFLAGS += -I$(INCLUDES) -g
 
 OBJS := $(patsubst %.$(SrcSuf),.obj/%.$(ObjSuf),$(SRCS))
 DEPS := $(patsubst .obj/%.$(ObjSuf),.dep/%.d,$(OBJS))

@@ -17,6 +17,7 @@
 class TObjArray;
 class TSocket;
 class TMap;
+class TCollection;
 
 class AliDCSClient: public TObject {
 public:
@@ -43,10 +44,9 @@ public:
         Int_t GetAliasValues(const char* alias, UInt_t startTime,
                                 UInt_t endTime, TObjArray* result);
 
-        Int_t GetDPValues(UInt_t startTime, UInt_t endTime, TMap& result);
+        TMap* GetDPValues(const TSeqCollection* dpList, UInt_t startTime, UInt_t endTime, Int_t startIndex = 0, Int_t endIndex = -1);
 
-        Int_t GetAliasValues(UInt_t startTime, UInt_t endTime, TMap& result);
-
+        TMap* GetAliasValues(const TSeqCollection* aliasList, UInt_t startTime, UInt_t endTime, Int_t startIndex = 0, Int_t endIndex = -1);
 
         AliDCSMessage::ErrorCode GetServerErrorCode() const
                 { return fServerErrorCode;};
@@ -95,8 +95,9 @@ private:
 		const char* requestString, UInt_t startTime, UInt_t endTime,
 		TObjArray* result);
 
-	Int_t GetValues(AliDCSMessage::RequestType requestType,
-		UInt_t startTime, UInt_t endTime, TMap& result);
+	TMap* GetValues(AliDCSMessage::RequestType requestType,
+		const TSeqCollection* list, UInt_t startTime, UInt_t endTime,
+		Int_t startIndex, Int_t endIndex);
 
 	Int_t ReceiveValueSet(TObjArray* result);
 

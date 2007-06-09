@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.1  2006/11/06 14:22:47  jgrosseo
+major update (Alberto)
+o) reading of run parameters from the logbook
+o) online offline naming conversion
+o) standalone DCSclient package
+
 Revision 1.6  2006/10/02 16:38:39  jgrosseo
 update (alberto):
 fixed memory leaks
@@ -315,51 +321,51 @@ Int_t AliDCSClient::GetValues(AliDCSMessage::RequestType reqType,
 }
 
 //______________________________________________________________________
-Int_t AliDCSClient::GetValues(AliDCSMessage::RequestType reqType,
-	UInt_t startTime, UInt_t endTime, TMap& result)
+TMap* AliDCSClient::GetValues(AliDCSMessage::RequestType reqType,
+	const TSeqCollection* list, UInt_t startTime, UInt_t endTime,
+	Int_t startIndex, Int_t endIndex)
 {
-// get array of DCS values from the DCS server
-// startTime, endTime: start time and end time of the query
-// result: map containing the array of alias names. It will be filled with
-// the values retrieved for each alias
+	// get array of DCS values from the DCS server
+	// list, startTime, endTime: list of dp/alias names, start time and end time of the query
+	//
+	// Result: map containing the array of alias names. It will be filled with
+	// the values retrieved for each alias
 
 	if (!IsConnected()) {
 		AliError("Not connected!");
-		return AliDCSClient::fgkBadState;
+		return 0;
 	}
 
 	AliDCSMessage multiRequestMessage;
 	multiRequestMessage.CreateMultiRequestMessage(reqType,
 			startTime, endTime);
 
-	TObjArray requests;
-
-	TIter iter(&result);
-	TObjString* aRequest;
-
-	// copy request strings to temporary TObjArray because
-	// TMap doesn't guarantee the order of elements!!!
-	while ((aRequest = (TObjString*) iter.Next())) {
-		requests.AddLast(aRequest);
+	if (endIndex < 0 || endIndex > list->GetEntries())
+		endIndex = list->GetEntries();
+			
+	for (Int_t i=startIndex; i<endIndex; i++)
+	{
+		TObjString* aRequest = (TObjString*) list->At(i);
 		if (!multiRequestMessage.AddRequestString(aRequest->String()))
-		{
-			return AliDCSClient::fgkInvalidParameter;
-		}
+			return 0;
 	}
-
-	Int_t sResult;
-	if ((sResult = SendMessage(multiRequestMessage)) < 0) {
+	
+	Int_t sResult = 0;
+	if ((sResult = SendMessage(multiRequestMessage)) < 0)
+	{
                 AliError(Form("Can't send request message! Reason: %s",
                         GetErrorString(sResult)));
                 Close();
-                return sResult;
+                return 0;
         }
 
-	result.SetOwner(0);
-	result.Clear();
+	TMap* result = new TMap;
+	result->SetOwner(1);
 
-	TIter reqIter(&requests);
-	while ((aRequest = (TObjString*) reqIter.Next())) {
+	for (Int_t i=startIndex; i<endIndex; i++)
+	{
+		TObjString* aRequest = (TObjString*) list->At(i);
+		
 		TObjArray* resultSet = new TObjArray();
 		resultSet->SetOwner(1);
 
@@ -368,24 +374,17 @@ Int_t AliDCSClient::GetValues(AliDCSMessage::RequestType reqType,
 				aRequest->String().Data()));
 
 			delete resultSet;
-			break;
+			result->DeleteValues();
+			delete result;
+			return 0;
 		}
 
-		result.Add(aRequest, resultSet);
-	}
-
-	if (sResult < 0) {
-		result.DeleteValues();
-		result.Clear();
-
-		requests.Delete();
-	} else {
-		result.SetOwner(1);
+		result->Add(aRequest, resultSet);
 	}
 
 	Close();
 
-	return sResult;
+	return result;
 }
 	
 //______________________________________________________________________
@@ -502,11 +501,11 @@ Int_t AliDCSClient::GetAliasValues(const char* alias, UInt_t startTime,
 }
 
 //______________________________________________________________________
-Int_t AliDCSClient::GetDPValues(UInt_t startTime, UInt_t endTime, 
-				TMap& result) 
+TMap* AliDCSClient::GetDPValues(const TSeqCollection* dpList, UInt_t startTime, UInt_t endTime,
+	Int_t startIndex, Int_t endIndex) 
 {
 	//
-        // For every key of 'result' (which must be TObjString) 
+        // For every entry (fron startIndex to endIndex) in dpList (which must be TObjString) 
 	// reads a valueSet. The key represents particular DataPoint to be read.
         // For all DataPoints time interval (startTime - endTime) is used.
         // After the read, the correspoding value for every key is a 
@@ -514,19 +513,18 @@ Int_t AliDCSClient::GetDPValues(UInt_t startTime, UInt_t endTime,
 	// case of error.
 	// 
         // Returns:
-        //      If >= 0 , the number of values read.
-        //      if < 0, the error code which has occured during the read.
+        //      TMap of results, 0 in case of failure
         //
 
-	return GetValues(AliDCSMessage::kDPName, startTime, endTime, result);
+	return GetValues(AliDCSMessage::kDPName, dpList, startTime, endTime, startIndex, endIndex);
 }
 
 //______________________________________________________________________
-Int_t AliDCSClient::GetAliasValues(UInt_t startTime, UInt_t endTime,
-				TMap& result)
+TMap* AliDCSClient::GetAliasValues(const TSeqCollection* aliasList, UInt_t startTime, UInt_t endTime,
+	Int_t startIndex, Int_t endIndex)
 {
 	//
-        // For every key of 'result' (which must be TObjString) 
+        // For every entry (fron startIndex to endIndex) in dpList (which must be TObjString) 
         // reads a valueSet. The key represents particular Alias to be read.
         // For all aliases time interval (startTime - endTime) is used.
         // After the read, the correspoding value for every key is a 
@@ -534,11 +532,10 @@ Int_t AliDCSClient::GetAliasValues(UInt_t startTime, UInt_t endTime,
         // case of error.
         // 
         // Returns:
-        //      If >= 0 , the number of values read.
-        //      if < 0, the error code which has occured during the read.
+        //      TMap of results, 0 in case of failure
         //
 
-	return GetValues(AliDCSMessage::kAlias, startTime, endTime, result);
+	return GetValues(AliDCSMessage::kAlias, aliasList, startTime, endTime, startIndex, endIndex);
 }
 
 //______________________________________________________________________
