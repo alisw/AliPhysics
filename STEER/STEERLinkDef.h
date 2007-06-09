@@ -40,6 +40,7 @@
 #pragma link C++ class  AliLegoGeneratorXYZ+;
 #pragma link C++ class  AliLegoGeneratorPhiZ+;
 #pragma link C++ class  AliLegoGeneratorEta+;
+#pragma link C++ class  AliLegoGeneratorEtaR+;
 #pragma link C++ class  AliDigitNew+;
 #pragma link C++ class  AliGeometry+;
 #pragma link C++ class  AliRecPoint+;

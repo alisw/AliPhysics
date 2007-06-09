@@ -7,7 +7,7 @@ AliLego.cxx	AliModule.cxx	AliDigitNew.cxx \
 AliGeometry.cxx	AliRecPoint.cxx	AliSegmentation.cxx \
 AliHitMap.cxx	AliMagFC.cxx	AliMagFCM.cxx \
 AliMagFDM.cxx	AliLegoGenerator.cxx AliLegoGeneratorXYZ.cxx\
-AliLegoGeneratorPhiZ.cxx AliLegoGeneratorEta.cxx \
+AliLegoGeneratorPhiZ.cxx AliLegoGeneratorEta.cxx AliLegoGeneratorEtaR.cxx \
 AliRndm.cxx \
 AliMCQA.cxx AliPDG.cxx AliDebugVolume.cxx \
 AliGenEventHeader.cxx AliStack.cxx AliConfig.cxx \
