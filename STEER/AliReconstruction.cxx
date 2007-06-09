@@ -2071,25 +2071,29 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
     for (Int_t iTrack=0; iTrack<nTracks; ++iTrack) 
       if (esd->GetTrack(iTrack)->GetSign()> 0) nPosTracks++;
 
-    // create the header
-    aod->AddHeader(new AliAODHeader(esd->GetRunNumber(),
-				    esd->GetBunchCrossNumber(),
-				    esd->GetOrbitNumber(),
-				    esd->GetPeriodNumber(),
-				    nTracks,
-				    nPosTracks,
-				    nTracks-nPosTracks,
-				    esd->GetMagneticField(),
-				    -999., // fill muon magnetic field
-				    -999., // centrality; to be filled, still
-				    esd->GetZDCN1Energy(),
-				    esd->GetZDCP1Energy(),
-				    esd->GetZDCN2Energy(),
-				    esd->GetZDCP2Energy(),
-				    esd->GetZDCEMEnergy(),
-				    esd->GetTriggerMask(),
-				    esd->GetTriggerCluster(),
-				    esd->GetEventType()));
+    // Update the header
+    AliAODHeader* header = aod->GetHeader();
+    
+    header->SetRunNumber       (fESD->GetRunNumber()       );
+    header->SetBunchCrossNumber(fESD->GetBunchCrossNumber());
+    header->SetOrbitNumber     (fESD->GetOrbitNumber()     );
+    header->SetPeriodNumber    (fESD->GetPeriodNumber()    );
+    header->SetTriggerMask     (fESD->GetTriggerMask()     ); 
+    header->SetTriggerCluster  (fESD->GetTriggerCluster()  );
+    header->SetEventType       (fESD->GetEventType()       );
+    header->SetMagneticField   (fESD->GetMagneticField()   );
+    header->SetZDCN1Energy     (fESD->GetZDCN1Energy()     );
+    header->SetZDCP1Energy     (fESD->GetZDCP1Energy()     );
+    header->SetZDCN2Energy     (fESD->GetZDCN2Energy()     );
+    header->SetZDCP2Energy     (fESD->GetZDCP2Energy()     );
+    header->SetZDCEMEnergy     (fESD->GetZDCEMEnergy()     );
+    header->SetRefMultiplicity   (nTracks);
+    header->SetRefMultiplicityPos(nPosTracks);
+    header->SetRefMultiplicityNeg(nTracks - nPosTracks);
+    header->SetMuonMagFieldScale(-999.); // FIXME
+    header->SetCentrality(-999.);        // FIXME
+//
+//
 
     Int_t nV0s      = esd->GetNumberOfV0s();
     Int_t nCascades = esd->GetNumberOfCascades();
@@ -2709,7 +2713,6 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
   
   return;
 }
-
 
 void AliReconstruction::WriteAlignmentData(AliESD* esd)
 {
