@@ -2074,19 +2074,19 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
     // Update the header
     AliAODHeader* header = aod->GetHeader();
     
-    header->SetRunNumber       (fESD->GetRunNumber()       );
-    header->SetBunchCrossNumber(fESD->GetBunchCrossNumber());
-    header->SetOrbitNumber     (fESD->GetOrbitNumber()     );
-    header->SetPeriodNumber    (fESD->GetPeriodNumber()    );
-    header->SetTriggerMask     (fESD->GetTriggerMask()     ); 
-    header->SetTriggerCluster  (fESD->GetTriggerCluster()  );
-    header->SetEventType       (fESD->GetEventType()       );
-    header->SetMagneticField   (fESD->GetMagneticField()   );
-    header->SetZDCN1Energy     (fESD->GetZDCN1Energy()     );
-    header->SetZDCP1Energy     (fESD->GetZDCP1Energy()     );
-    header->SetZDCN2Energy     (fESD->GetZDCN2Energy()     );
-    header->SetZDCP2Energy     (fESD->GetZDCP2Energy()     );
-    header->SetZDCEMEnergy     (fESD->GetZDCEMEnergy()     );
+    header->SetRunNumber       (esd->GetRunNumber()       );
+    header->SetBunchCrossNumber(esd->GetBunchCrossNumber());
+    header->SetOrbitNumber     (esd->GetOrbitNumber()     );
+    header->SetPeriodNumber    (esd->GetPeriodNumber()    );
+    header->SetTriggerMask     (esd->GetTriggerMask()     ); 
+    header->SetTriggerCluster  (esd->GetTriggerCluster()  );
+    header->SetEventType       (esd->GetEventType()       );
+    header->SetMagneticField   (esd->GetMagneticField()   );
+    header->SetZDCN1Energy     (esd->GetZDCN1Energy()     );
+    header->SetZDCP1Energy     (esd->GetZDCP1Energy()     );
+    header->SetZDCN2Energy     (esd->GetZDCN2Energy()     );
+    header->SetZDCP2Energy     (esd->GetZDCP2Energy()     );
+    header->SetZDCEMEnergy     (esd->GetZDCEMEnergy()     );
     header->SetRefMultiplicity   (nTracks);
     header->SetRefMultiplicityPos(nPosTracks);
     header->SetRefMultiplicityNeg(nTracks - nPosTracks);
