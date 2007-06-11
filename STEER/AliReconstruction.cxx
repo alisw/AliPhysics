@@ -2047,11 +2047,10 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
 
   // connect to ESD
   TTree *t = (TTree*) esdFile->Get("esdTree");
-  TBranch *b = t->GetBranch("ESD");
-  AliESD *esd = 0;
-  b->SetAddress(&esd);
+  AliESD *esd = new AliESD();
+  esd->ReadFromTree(t);
 
-  Int_t nEvents = b->GetEntries();
+  Int_t nEvents = t->GetEntries();
 
   // set arrays and pointers
   Float_t posF[3];
@@ -2063,7 +2062,7 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
 
   // loop over events and fill them
   for (Int_t iEvent = 0; iEvent < nEvents; ++iEvent) {
-    b->GetEntry(iEvent);
+    t->GetEntry(iEvent);
 
     // Multiplicity information needed by the header (to be revised!)
     Int_t nTracks   = esd->GetNumberOfTracks();
@@ -2665,8 +2664,8 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
 
       Int_t id = cluster->GetID();
       Int_t label = -1;
-      Float_t energy = cluster->GetClusterEnergy();
-      cluster->GetGlobalPosition(posF);
+      Float_t energy = cluster->E();
+      cluster->GetPosition(posF);
       AliAODVertex *prodVertex = primary;
       AliAODTrack *primTrack = NULL;
       Char_t ttype=AliAODCluster::kUndef;
