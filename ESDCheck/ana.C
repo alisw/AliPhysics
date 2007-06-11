@@ -70,6 +70,7 @@ void ana(const Int_t kEvent=100)
 { 
   if (! gIsAnalysisLoaded ) {
     LoadLib("ESD") ; 
+    LoadLib("AOD") ; 
     LoadLib("ANALYSIS") ; 
     LoadLib("AnalysisCheck") ; 
   }
@@ -79,56 +80,50 @@ void ana(const Int_t kEvent=100)
 
   // definition of analysis tasks
  
-  const Int_t knumberOfTasks = 10 ;
-  AliAnalysisTask * taskList[knumberOfTasks] ;
-  TClass * taskInputList[knumberOfTasks]  ;
-  TClass * taskOutputList[knumberOfTasks] ;
+ 
+  AliPHOSQATask * phos  =  new AliPHOSQATask("PHOS") ;
+  AliAnalysisDataContainer * phosIn = ag->ConnectInput(phos, TChain::Class(), 0) ; 
+  ag->ConnectOuput(phos, TObjArray::Class(), 0) ;  
 
-  taskList[0]       = new AliPHOSQATask("PHOS") ;
-  taskInputList[0]  = TChain::Class() ;
-  taskOutputList[0] = TObjArray::Class() ;
+  AliEMCALQATask *emcal = new AliEMCALQATask("EMCal") ;
+  ag->ConnectInput(emcal, phosIn, 0) ; 
+  ag->ConnectOuput(emcal, TObjArray::Class(), 0) ;  
 
-  taskList[1]       = new AliEMCALQATask("EMCal") ;
-  taskInputList[1]  = taskInputList[0] ; // only one top input container allowed
-  taskOutputList[1] = TObjArray::Class() ;
+  AliPMDQATask * pmd    = new AliPMDQATask("PMD") ;
+  ag->ConnectInput(pmd, phosIn, 0) ; 
+  ag->ConnectOuput(pmd, TObjArray::Class(), 0) ;  
 
-  taskList[2]       = new AliPMDQATask("PMD") ;
-  taskInputList[2]  = taskInputList[0] ; // only one top input container allowed
-  taskOutputList[2] = TObjArray::Class() ;
+  AliAnalysisTaskPt * pt = new AliAnalysisTaskPt("Pt") ;
+  ag->ConnectInput(pt, phosIn, 0) ; 
+  ag->ConnectOuput(pt, TObjArray::Class(), 0) ;  
 
-  taskList[3]       = new AliAnalysisTaskPt("Pt") ;
-  taskInputList[3]  = taskInputList[0] ; // only one top input container allowed
-  taskOutputList[3] = TObjArray::Class() ;
+  AliHMPIDQATask * hmpid= new AliHMPIDQATask("HMPID") ;
+  ag->ConnectInput(hmpid, phosIn, 0) ; 
+  ag->ConnectOuput(hmpid, TObjArray::Class(), 0) ;  
 
-  taskList[4]       = new AliHMPIDQATask("HMPID") ;
-  taskInputList[4]  = taskInputList[0] ; // only one top input container allowed
-  taskOutputList[4] = TObjArray::Class() ;
+  AliT0QATask * t0     = new AliT0QATask("T0") ;
+  ag->ConnectInput(t0, phosIn, 0) ; 
+  ag->ConnectOuput(t0, TObjArray::Class(), 0) ;  
 
-  taskList[5]       = new AliT0QATask("T0") ;
-  taskInputList[5]  = taskInputList[0] ; // only one top input container allowed
-  taskOutputList[5] = TObjArray::Class() ;
+  AliMUONQATask * muon = new AliMUONQATask("MUON") ;
+  ag->ConnectInput(muon, phosIn, 0) ; 
+  ag->ConnectOuput(muon, TObjArray::Class(), 0) ;  
 
-  taskList[6]       = new AliMUONQATask("MUON") ;
-  taskInputList[6]  = taskInputList[0] ; // only one top input container allowed
-  taskOutputList[6] = TObjArray::Class() ;
+  AliTRDQATask * trd   = new AliTRDQATask("TRD") ;
+  ag->ConnectInput(trd, phosIn, 0) ; 
+  ag->ConnectOuput(trd, TObjArray::Class(), 0) ;  
 
-  taskList[7]       = new AliTRDQATask("TRD") ;
-  taskInputList[7]  = taskInputList[0] ; // only one top input container allowed
-  taskOutputList[7] = TObjArray::Class() ;
+  AliTOFQATask * tof   = new AliTOFQATask("TOF") ;
+  ag->ConnectInput(tof, phosIn, 0) ; 
+  ag->ConnectOuput(tof, TObjArray::Class(), 0) ;  
 
-  taskList[8]       = new AliTOFQATask("TOF") ;
-  taskInputList[8]  = taskInputList[0] ; // only one top input container allowed
-  taskOutputList[8] = TObjArray::Class() ;
+  AliVZEROQATask * vzero = new AliVZEROQATask("VZERO") ;
+  ag->ConnectInput(vzero, phosIn, 0) ; 
+  ag->ConnectOuput(vzero, TObjArray::Class(), 0) ;  
 
-  taskList[9]       = new AliVZEROQATask("VZERO") ;
-  taskInputList[9]  = taskInputList[0] ; // only one top input container allowed
-  taskOutputList[9] = TObjArray::Class() ;
-
-//   taskList[8]       = new AliFMDQATask("FMD") ;
-//   taskInputList[8]  = taskInputList[0] ; // only one top input container allowed
-//   taskOutputList[8] = TObjArray::Class() ;
-
-  ag->SetTasks(knumberOfTasks, taskList, taskInputList, taskOutputList) ; 
+  AliFMDQATask * fmd = new AliFMDQATask("FMD") ;
+  ag->ConnectInput(fmd, phosIn, 0) ; 
+  ag->ConnectOuput(fmd, TObjArray::Class(), 0) ;  
 
   // get the data to analyze
 
