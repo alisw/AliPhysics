@@ -35,20 +35,17 @@ AliESDCaloCluster::AliESDCaloCluster() :
   fClusterType(-1),
   fEMCALCluster(kFALSE),
   fPHOSCluster(kFALSE),
-  fTrackMatched(-1),
   fEnergy(-1),
   fDispersion(-1),
   fChi2(-1),
-  fPrimaryIndex(-1),
   fM20(0),
   fM02(0),
   fM11(0),
   fNExMax(0),
   fEmcCpvDistance(9999),
   fDistToBadChannel(9999),
-  fNumberOfPrimaries(-1),
-  fListOfPrimaries(0x0),
-  fNumberOfDigits(0),
+  fTracksMatched(0x0),
+  fLabels(0x0),
   fDigitAmplitude(0x0),
   fDigitTime(0x0),
   fDigitIndex(0x0)
@@ -67,23 +64,20 @@ AliESDCaloCluster::AliESDCaloCluster(const AliESDCaloCluster& clus) :
   fClusterType(clus.fClusterType),
   fEMCALCluster(clus.fEMCALCluster),
   fPHOSCluster(clus.fPHOSCluster),
-  fTrackMatched(clus.fTrackMatched),
   fEnergy(clus.fEnergy),
   fDispersion(clus.fDispersion),
   fChi2(clus.fChi2),
-  fPrimaryIndex(clus.fPrimaryIndex),
   fM20(clus.fM20),
   fM02(clus.fM02),
   fM11(clus.fM11),
   fNExMax(clus.fNExMax),
   fEmcCpvDistance(clus.fEmcCpvDistance),
   fDistToBadChannel(clus.fDistToBadChannel),
-  fNumberOfPrimaries(clus.fNumberOfPrimaries),
-  fListOfPrimaries(0x0),
-  fNumberOfDigits(clus.fNumberOfDigits),
-  fDigitAmplitude(0x0),
-  fDigitTime(0x0),
-  fDigitIndex(0x0)
+  fTracksMatched(clus.fTracksMatched),
+  fLabels(clus.fLabels),
+  fDigitAmplitude(clus.fDigitAmplitude),
+  fDigitTime(clus.fDigitTime),
+  fDigitIndex(clus.fDigitIndex)
 {
   //
   // The copy constructor 
@@ -94,28 +88,6 @@ AliESDCaloCluster::AliESDCaloCluster(const AliESDCaloCluster& clus) :
 
   for(Int_t i=0; i<AliPID::kSPECIESN; i++) fPID[i] = clus.fPID[i];
 
-  if (clus.fNumberOfDigits > 0) {
-    if (clus.fDigitAmplitude) {
-      fDigitAmplitude = new UShort_t[clus.fNumberOfDigits];
-      for (Int_t i=0; i<clus.fNumberOfDigits; i++)
-	fDigitAmplitude[i]=clus.fDigitAmplitude[i];
-    }
-    if (clus.fDigitTime) {
-      fDigitTime = new UShort_t[clus.fNumberOfDigits];
-      for (Int_t i=0; i<clus.fNumberOfDigits; i++)
-	fDigitTime[i]=clus.fDigitTime[i];
-    }
-    if (clus.fDigitIndex) {
-      fDigitIndex = new UShort_t[clus.fNumberOfDigits];
-      for (Int_t i=0; i<clus.fNumberOfDigits; i++)
-	fDigitIndex[i]=clus.fDigitIndex[i];
-    }
-   if (clus.fListOfPrimaries) {
-      fListOfPrimaries = new UShort_t[clus.fNumberOfPrimaries];
-      for (Int_t i=0; i<clus.fNumberOfPrimaries; i++)
-	fListOfPrimaries[i]=clus.fListOfPrimaries[i];
-    }
-  }
 }
 
 //_______________________________________________________________________
@@ -129,24 +101,15 @@ AliESDCaloCluster &AliESDCaloCluster::operator=(const AliESDCaloCluster& source)
   fClusterType = source.fClusterType;
   fEMCALCluster = source.fEMCALCluster;
   fPHOSCluster = source.fPHOSCluster;
-  fTrackMatched = source.fTrackMatched;
   fEnergy = source.fEnergy;
   fDispersion = source.fDispersion;
   fChi2 = source.fChi2;
-  fPrimaryIndex = source.fPrimaryIndex;
   fM20 = source.fM20;
   fM02 = source.fM02;
   fM11 = source.fM11;
   fNExMax = source.fNExMax;
   fEmcCpvDistance = source.fEmcCpvDistance;
   fDistToBadChannel = source.fDistToBadChannel ;
-  fNumberOfPrimaries = source.fNumberOfPrimaries;
-  delete fListOfPrimaries; fListOfPrimaries=0x0;
-
-  fNumberOfDigits = source.fNumberOfDigits;
-  delete fDigitAmplitude; fDigitAmplitude=0x0;
-  delete fDigitTime; fDigitTime = 0x0;
-  delete fDigitIndex; fDigitIndex = 0x0;
 
   fGlobalPos[0] = source.fGlobalPos[0];
   fGlobalPos[1] = source.fGlobalPos[1];
@@ -154,28 +117,12 @@ AliESDCaloCluster &AliESDCaloCluster::operator=(const AliESDCaloCluster& source)
 
   for(Int_t i=0; i<AliPID::kSPECIESN; i++) fPID[i] = source.fPID[i];
 
-  if (source.fNumberOfDigits > 0) {
-    if (source.fDigitAmplitude) {
-      fDigitAmplitude = new UShort_t[source.fNumberOfDigits];
-      for (Int_t i=0; i<source.fNumberOfDigits; i++)
-	fDigitAmplitude[i]=source.fDigitAmplitude[i];
-    }
-    if (source.fDigitTime) {
-      fDigitTime = new UShort_t[source.fNumberOfDigits];
-      for (Int_t i=0; i<source.fNumberOfDigits; i++)
-	fDigitTime[i]=source.fDigitTime[i];
-    }
-    if (source.fDigitIndex) {
-      fDigitIndex = new UShort_t[source.fNumberOfDigits];
-      for (Int_t i=0; i<source.fNumberOfDigits; i++)
-	fDigitIndex[i]=source.fDigitIndex[i];
-    }
-   if (source.fListOfPrimaries) {
-      fListOfPrimaries = new UShort_t[source.fNumberOfPrimaries];
-      for (Int_t i=0; i<source.fNumberOfPrimaries; i++)
-	fListOfPrimaries[i]=source.fListOfPrimaries[i];
-    }
-  }
+  fTracksMatched = source.fTracksMatched;
+  fLabels = source.fLabels;
+  fDigitAmplitude = source.fDigitAmplitude;
+  fDigitTime = source.fDigitTime;
+  fDigitIndex = source.fDigitIndex;
+
 
   return *this;
 
@@ -185,14 +132,13 @@ AliESDCaloCluster &AliESDCaloCluster::operator=(const AliESDCaloCluster& source)
 //_______________________________________________________________________
 AliESDCaloCluster::~AliESDCaloCluster(){ 
   //
-  // This is destructor according Coding Conventrions 
+  // This is destructor according Coding Conventions 
   //
-  // AliESDCaloCluster is the owner of the arrays
-  // even if they are created outside
-  delete[] fListOfPrimaries;
-  delete[] fDigitAmplitude;
-  delete[] fDigitTime;
-  delete[] fDigitIndex;
+  delete fTracksMatched;
+  delete fLabels;
+  delete fDigitAmplitude;
+  delete fDigitTime;
+  delete fDigitIndex;
 
 }
 
@@ -229,9 +175,17 @@ void AliESDCaloCluster::SetPid(const Float_t *p) {
 }
 
 //_______________________________________________________________________
-void AliESDCaloCluster::GetMomentum(TLorentzVector& p) {
+void AliESDCaloCluster::GetMomentum(TLorentzVector& p, Double_t *vertex ) {
   // Returns TLorentzVector with momentum of the cluster. Only valid for clusters 
   // identified as photons or pi0 (overlapped gamma) produced on the vertex
+  //Vertex can be recovered with esd pointer doing:  
+  //" Double_t vertex[3] ; esd->GetVertex()->GetXYZ(vertex) ; "
+
+  if(vertex){//calculate direction from vertex
+    fGlobalPos[0]-=vertex[0];
+    fGlobalPos[1]-=vertex[1];
+    fGlobalPos[2]-=vertex[2];
+  }
   
   Double_t r = TMath::Sqrt(fGlobalPos[0]*fGlobalPos[0]+
 		            fGlobalPos[1]*fGlobalPos[1]+
