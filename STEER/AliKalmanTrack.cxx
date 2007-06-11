@@ -21,7 +21,10 @@
 //        Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
 //-------------------------------------------------------------------------
 #include <TGeoManager.h>
+#include <TMatrixDSym.h>
+
 #include "AliKalmanTrack.h"
+#include "AliCluster3D.h"
 
 ClassImp(AliKalmanTrack)
 
@@ -59,6 +62,43 @@ AliKalmanTrack::AliKalmanTrack(const AliKalmanTrack &t):
   
   for (Int_t i=0; i<AliPID::kSPECIES; i++)
       fIntegratedTime[i] = t.fIntegratedTime[i];
+}
+
+//_______________________________________________________________________
+Double_t AliKalmanTrack::GetPredictedChi2(const AliCluster3D *c) const {
+  //
+  //  Calculate the predicted Chi2 for a 3D cluster "c" 
+  //
+  Double_t res[3] = {
+    GetX() - c->GetX(),
+    GetY() - c->GetY(),
+    GetZ() - c->GetZ()
+  };
+
+  Double_t f=GetSnp();
+  if (TMath::Abs(f) >= kAlmost1) return kVeryBig;
+  Double_t r=TMath::Sqrt(1.- f*f);
+  Double_t a=f/r, b=GetTgl()/r;
+
+  Double_t s2=333.*333.;  //something reasonably big (cm^2)
+ 
+  TMatrixDSym v(3);
+  v(0,0)=  s2;  v(0,1)=  a*s2;                 v(0,2)=  b*s2;;
+  v(1,0)=a*s2;  v(1,1)=a*a*s2 + GetSigmaY2();  v(1,2)=a*b*s2 + GetSigmaZY();
+  v(2,0)=b*s2;  v(2,1)=a*b*s2 + GetSigmaZY();  v(2,2)=b*b*s2 + GetSigmaZ2();
+
+  v(0,0)+=c->GetSigmaX2(); v(0,1)+=c->GetSigmaXY(); v(0,2)+=c->GetSigmaXZ();
+  v(1,0)+=c->GetSigmaXY(); v(1,1)+=c->GetSigmaY2(); v(1,2)+=c->GetSigmaYZ();
+  v(2,0)+=c->GetSigmaXZ(); v(2,1)+=c->GetSigmaYZ(); v(2,2)+=c->GetSigmaZ2();
+
+  v.Invert();
+  if (!v.IsValid()) return kVeryBig;
+
+  Double_t chi2=0.;
+  for (Int_t i = 0; i < 3; i++)
+    for (Int_t j = 0; j < 3; j++) chi2 += res[i]*res[j]*v(i,j);
+
+  return chi2;  
 }
 
 //_______________________________________________________________________
