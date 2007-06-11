@@ -25,6 +25,7 @@
 #include "AliXMLCollection.h" 
 #include "AliAnalysisGoodies.h" 
 #include "AliAnalysisManager.h" 
+#include "AliAODHandler.h"
 #include "AliAnalysisTask.h" 
 #include "AliLog.h" 
 
@@ -44,10 +45,7 @@ AliAnalysisGoodies::AliAnalysisGoodies() :
   TObject(),
   fTimer(), 
   fESDTreeName("esdTree"), 
-  fnumberOfTasks(0),
-  fTaskList(0),
-  fTaskInType(0), 
-  fTaskOuType(0)
+  fAmgr(0)
 {
   fTimer.Reset() ; 
    
@@ -57,17 +55,15 @@ AliAnalysisGoodies::AliAnalysisGoodies() :
     TGrid::Connect("alien://");
   else 
     AliInfo("You are not connected to the GRID") ; 
+ // Make the analysis manager
+  fAmgr = new AliAnalysisManager("Goodies Manager", "Analysis manager created by AliAnalysisGoodies") ;
 }
 
 //______________________________________________________________________________
 AliAnalysisGoodies::AliAnalysisGoodies(const AliAnalysisGoodies& ag) :
   TObject(),
   fTimer(), 
-  fESDTreeName(""), 
-  fnumberOfTasks(0),
-  fTaskList(0),
-  fTaskInType(0), 
-  fTaskOuType(0)
+  fESDTreeName("") 
 {
   
   fESDTreeName = ag.fESDTreeName ;  
@@ -77,6 +73,9 @@ AliAnalysisGoodies::AliAnalysisGoodies(const AliAnalysisGoodies& ag) :
     TGrid::Connect("alien://");
   else 
     AliInfo("You are not connected to the GRID") ; 
+   
+  // Make the analysis manager
+  fAmgr = new AliAnalysisManager("Goodies Manager", "Analysis manager created by AliAnalysisGoodies") ;
 }
 
 //______________________________________________________________________________
@@ -174,6 +173,83 @@ Bool_t AliAnalysisGoodies::Alien2Local(const TString collectionNameIn, const TSt
   return kFALSE;
 #endif
 }
+
+//______________________________________________________________________
+AliAnalysisDataContainer * AliAnalysisGoodies::ConnectInput(AliAnalysisTask * task, TClass * classin, UShort_t index) 
+{
+  // connect a task to the input
+
+  if ( ! fAmgr->GetTask(task->GetName()) ) 
+    fAmgr->AddTask(task) ;
+  else 
+    AliFatal(Form("Task %s already exists", task->GetName())) ; 
+
+  AliAnalysisDataContainer * taskInput = 0x0 ; 
+  if ( fAmgr->GetInputs() ) 
+    taskInput = dynamic_cast<AliAnalysisDataContainer *>(fAmgr->GetInputs()->FindObject(Form("InputContainer_%s_%d", task->GetName(), index))) ; 
+  if ( ! taskInput ) {
+    taskInput  = fAmgr->CreateContainer(Form("InputContainer_%s_%d", task->GetName(), index), classin, AliAnalysisManager::kInputContainer) ;
+    fAmgr->ConnectInput (task, index, taskInput);
+  }
+  else 
+    AliFatal(Form("Input %s already exists", taskInput->GetName())) ; 
+
+  return taskInput ; 
+} 
+
+//______________________________________________________________________
+void AliAnalysisGoodies::ConnectInput(AliAnalysisTask * task, AliAnalysisDataContainer * taskInput, UShort_t index) 
+{
+  // connect a task to the input
+
+  if ( ! fAmgr->GetTask(task->GetName()) ) 
+    fAmgr->AddTask(task) ;
+  else 
+    AliFatal(Form("Task %s already exists", task->GetName())) ; 
+
+  fAmgr->ConnectInput (task, index, taskInput);
+} 
+
+//______________________________________________________________________
+AliAnalysisDataContainer *  AliAnalysisGoodies::ConnectOuput(AliAnalysisTask * task, TClass * classou, UShort_t index, TString opt ) 
+{
+  // connect a task to the output
+
+  char filename[20] ; 
+
+    if (opt == "AOD" ) {    
+      if ( fAmgr->GetEventHandler() == 0x0) {
+	AliAODHandler * aodHandler = new AliAODHandler() ; 
+	aodHandler->SetOutputFileName(Form("%s_0.root",task->GetName())) ; 
+	fAmgr->SetEventHandler(aodHandler) ;
+      } 
+      sprintf(filename, "default") ; 
+    } 
+    else {
+      if ( fAmgr->GetEventHandler() == 0x0) {
+	AliAODHandler * aodHandler = new AliAODHandler() ; 
+	fAmgr->SetEventHandler(aodHandler) ; 
+      }
+      sprintf(filename, "%s_%d.root",task->GetName(), index) ; 
+    }
+    
+    AliAnalysisDataContainer * taskOuput = 0x0 ;
+    if ( fAmgr->GetOutputs() ) 
+      taskOuput = dynamic_cast<AliAnalysisDataContainer *>(fAmgr->GetOutputs()->FindObject(Form("OutputContainer_%s_%d", task->GetName(), index))) ; 
+    if ( ! taskOuput )
+      taskOuput = fAmgr->CreateContainer(Form("OutputContainer_%s_%d", task->GetName(), index), classou, AliAnalysisManager::kOutputContainer, filename) ;
+    fAmgr->ConnectOutput(task, index, taskOuput);
+    
+    return taskOuput ; 
+} 
+
+//______________________________________________________________________
+void AliAnalysisGoodies::ConnectOuput(AliAnalysisTask * task, AliAnalysisDataContainer * taskOuput, UShort_t index) 
+{
+  // connect a task to the output
+
+  fAmgr->ConnectInput (task, index, taskOuput);
+} 
 
 //______________________________________________________________________
 Bool_t AliAnalysisGoodies::Make(AliRunTagCuts *runCuts, AliLHCTagCuts *lhcCuts, AliDetectorTagCuts *detCuts, AliEventTagCuts *evtCuts, const char * in, const char * out) const  
@@ -458,42 +534,10 @@ Bool_t AliAnalysisGoodies::ProcessChain(TChain * chain) const
 
   Bool_t rv = kTRUE ;
 
-  if (! fTaskList ) {
-    AliError("No tasks defined") ; 
-    return kFALSE ;
-  }
-  
-  // Make the analysis manager
-  AliAnalysisManager * mgr = new AliAnalysisManager("Goodies Manager", "Analysis manager created by AliAnalysisGoodies") ;
-
-  // Make tasks 
-  // The top input must be common to all top tasks
-  TClass * classIn = fTaskInType[0] ; 
-  AliAnalysisDataContainer * taskInput  = mgr->CreateContainer("InputContainer", classIn, AliAnalysisManager::kInputContainer) ;
-  Int_t index ; 
-  for (index = 0; index < fnumberOfTasks; index++) {
- 
-    TClass * classOu = fTaskOuType[index] ;    
-    AliAnalysisTask * task = fTaskList[index] ;
-
-    AliAnalysisDataContainer * taskOutput = mgr->CreateContainer(Form("OutputContainer%d",index), classOu, AliAnalysisManager::kOutputContainer, Form("%s.root",task->GetName())) ;
-    mgr->AddTask(task) ;
-    
-    // Create containers for input/output
-   
-    rv = mgr->ConnectInput (task, 0, taskInput);
-    if (!rv) 
-      AliFatal(Form("Error while connecting %s to %s", task->GetName(), taskInput->GetName())) ;  
-    rv = mgr->ConnectOutput(task, 0, taskOutput);
-    if (!rv) 
-      AliFatal(Form("Error while connecting %s to %s", task->GetName(), taskOutput->GetName())) ;  
-  }
-  
   // start processing 
-
-  if (mgr->InitAnalysis()) {
-    mgr->PrintStatus();
-    mgr->StartAnalysis("local",chain);
+  if (fAmgr->InitAnalysis()) {
+    fAmgr->PrintStatus();
+    fAmgr->StartAnalysis("local",chain);
   } else 
     rv = kFALSE ; 
   
@@ -771,14 +815,3 @@ Bool_t AliAnalysisGoodies::Register( const char * lfndir, const char * pfndir, c
   return rv;
 }
  
-//______________________________________________________________________
-void AliAnalysisGoodies::SetTasks(Int_t nb, AliAnalysisTask ** taskList, TClass ** inputType, TClass ** outputType)
-{
-  // define a task with its output and input type
-
-  
-  fnumberOfTasks= nb; 
-  fTaskList   = taskList ;
-  fTaskInType = inputType ; 
-  fTaskOuType = outputType ; 
-}

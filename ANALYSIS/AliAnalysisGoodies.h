@@ -21,6 +21,8 @@ class AliEventTagCuts ;
 class AliRunTagCuts ;  
 class AliLHCTagCuts ;  
 class AliDetectorTagCuts ;  
+class AliAnalysisManager ; 
+class AliAnalysisDataContainer ;; 
 
 class AliAnalysisGoodies : public TObject {
 
@@ -31,6 +33,10 @@ public:
 
   virtual void Help() const; 
   Bool_t Alien2Local(const TString collectionNameIn, const TString localDir) ; 
+  AliAnalysisDataContainer * ConnectInput(AliAnalysisTask * task, TClass * classin, UShort_t index) ; 
+  void ConnectInput(AliAnalysisTask * task, AliAnalysisDataContainer * in, UShort_t index ) ;
+  AliAnalysisDataContainer * ConnectOuput(AliAnalysisTask * task, TClass * classou, UShort_t index, TString opt = "") ; 
+  void   ConnectOuput(AliAnalysisTask * task, AliAnalysisDataContainer * ou, UShort_t index) ; 
   Bool_t Make(AliRunTagCuts *runCuts, AliLHCTagCuts *lhcCuts, AliDetectorTagCuts *detCuts, AliEventTagCuts *evtCuts, const char * in, const char * out) const ;
   Bool_t Merge(const char * collection, const char * subFile = 0, const char * outFile = 0) ; 
   Bool_t Register( const char * lfndir, const char * pfndir, const char * file)  ;   
@@ -38,8 +44,7 @@ public:
   Bool_t Process(const char * esdFile)  ;  
   Bool_t Process(const char * inFile, AliRunTagCuts *runCuts, AliLHCTagCuts *lhcCuts, AliDetectorTagCuts *detCuts, AliEventTagCuts * evtCuts ) ;
   Bool_t Process(const char * inFile, const char * runCuts, const char * lhcCuts, const char * detCuts, const char * evtCuts) ;  
- void         SetESDTreeName(const char * name) { fESDTreeName = name ; }
-  void         SetTasks(Int_t nb, AliAnalysisTask ** taskList, TClass ** inputType, TClass ** outputType) ;
+  void   SetESDTreeName(const char * name) { fESDTreeName = name ; }
   Bool_t MakeEsdCollectionFromTagFile(AliRunTagCuts *runCuts, AliLHCTagCuts *lhcCuts, AliDetectorTagCuts *detCuts, AliEventTagCuts *evtCuts, const char * in, const char * out) const ; 
 
 private:
@@ -55,13 +60,9 @@ private:
   Bool_t ProcessTagXmlCollection(const char * xmlFile, AliRunTagCuts *runCuts, AliLHCTagCuts *lhcCuts, AliDetectorTagCuts *detCuts, AliEventTagCuts * evtCuts) const ;   
   Bool_t ProcessTagXmlCollection(const char * xmlFile, const char * runCuts, const char * lhcCuts, const char * detCuts, const char * evtCuts) const ; 
 
-  TStopwatch        fTimer         ;   //! stopwatch
-  TString           fESDTreeName   ;   //! name of the ESD TTree
-  UShort_t          fnumberOfTasks ;   //! number of tasks
-  AliAnalysisTask ** fTaskList      ;  //! list of tasks
-  TClass          ** fTaskInType    ;  //! list of tasks input
-  TClass          ** fTaskOuType    ;  //! list of tasks output
-
+  TStopwatch        fTimer         ;  //! stopwatch
+  TString           fESDTreeName   ;  //! name of the ESD TTree
+  AliAnalysisManager * fAmgr       ;  //! the analysis manager
   ClassDef(AliAnalysisGoodies, 0); // an analysis utilities class
 };
 #endif // ALIANALYSISGOODIES_H
