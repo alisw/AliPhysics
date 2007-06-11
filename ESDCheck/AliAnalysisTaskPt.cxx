@@ -27,6 +27,7 @@
 #include <TH1.h>
 #include <TROOT.h>
 #include <TSystem.h>
+#include <TString.h> 
 
 #include "AliAnalysisTaskPt.h"
 #include "AliESD.h"
@@ -150,11 +151,11 @@ void AliAnalysisTaskPt::Terminate(Option_t *)
 
   AliInfo(Form("!!! All the eps files are in %s.tar.gz !!!", GetName())) ;
  
-  char * report ; 
+  TString report ; 
   if(problem)
     report="Problems found, please check!!!";  
   else 
     report="OK";
   
-  AliInfo(Form("*** %s Summary Report: %s \n",GetName(), report)) ; 
+  AliInfo(Form("*** %s Summary Report: %s \n",GetName(), report.Data())) ; 
 }

@@ -29,6 +29,7 @@
 #include <TLegend.h> 
 #include <TVector3.h> 
 #include <TFile.h> 
+#include <TString.h> 
 
 #include "AliVZEROQATask.h" 
 #include "AliESD.h" 
@@ -194,12 +195,12 @@ void AliVZEROQATask::Terminate(Option_t *)
  
   AliInfo(Form("!!! All the eps files are in %s.tar.gz !!! ", GetName())) ;
   
-  char * report ; 
+  TString report ; 
   if(problem)
     report="Problems found, please check!!!";  
   else 
     report="OK";
   
-  AliInfo(Form("*** %s Summary Report: %s\n",GetName(), report)) ; 
+  AliInfo(Form("*** %s Summary Report: %s\n",GetName(), report.Data())) ; 
   
 }

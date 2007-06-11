@@ -31,6 +31,7 @@
 #include <TNtuple.h>
 #include <TROOT.h>
 #include <TVector3.h> 
+#include <TString.h> 
 
 #include "AliEMCALQATask.h" 
 #include "AliESD.h" 
@@ -162,16 +163,16 @@ void AliEMCALQATask::Exec(Option_t *)
     if (caloCluster) {
       Float_t pos[3] ;
       if(caloCluster->GetClusterType() == AliESDCaloCluster::kClusterv1) {  
-	caloCluster->GetGlobalPosition(pos) ;
+	caloCluster->GetPosition(pos) ;
 	fhEMCALPos->Fill(pos[0],pos[1],pos[2]) ;
-	fhEMCALEnergy->Fill(caloCluster->GetClusterEnergy()) ;
+	fhEMCALEnergy->Fill(caloCluster->E()) ;
 	fhEMCALDigits->Fill(entry, caloCluster->GetNumberOfDigits()) ;
 	numberOfEmcalClustersv1++ ;
 	numberOfDigitsInEmcal += caloCluster->GetNumberOfDigits() ;    
 	// Float_t * pid = clus->GetPid() ;
 	// if(pid[AliPID::kPhoton]>0.9){
 	emcalVector[numberOfPhotonsInEmcal] = new TVector3(pos[0],pos[1],pos[2]) ;
-	emcalPhotonsEnergy[numberOfPhotonsInEmcal] = caloCluster->GetClusterEnergy() ;
+	emcalPhotonsEnergy[numberOfPhotonsInEmcal] = caloCluster->E() ;
 	numberOfPhotonsInEmcal++ ; 
       }
     }
@@ -275,11 +276,11 @@ void AliEMCALQATask::Terminate(Option_t *)
  
   AliInfo(Form("!!! All the eps files are in %s.tar.gz !!!", GetName())) ;
 
-  char * report ; 
+  TString report ; 
   if(problem)
     report="Problems found, please check!!!";  
   else 
     report="OK";
 
-  AliInfo(Form("*** %s Summary Report: %s \n",GetName(), report)) ; 
+  AliInfo(Form("*** %s Summary Report: %s \n",GetName(), report.Data())) ; 
 }

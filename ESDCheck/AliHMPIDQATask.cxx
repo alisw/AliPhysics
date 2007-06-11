@@ -30,6 +30,7 @@
 #include <TLegend.h> 
 #include <TROOT.h>
 #include <TVector3.h> 
+#include <TString.h> 
 
 #include "AliHMPIDQATask.h" 
 #include "AliESD.h" 
@@ -246,11 +247,11 @@ void AliHMPIDQATask::Terminate(Option_t *)
   
   AliInfo(Form("!!! All the eps files are in %s.tar.gz !!!", GetName())) ;
 
-  char * report ; 
+  TString report ; 
   if(problem)
     report="Problems found, please check!!!";  
   else 
     report="OK";
 
-  AliInfo(Form("*** %s Summary Report: %s \n",GetName(), report)) ; 
+  AliInfo(Form("*** %s Summary Report: %s \n",GetName(), report.Data())) ; 
 }

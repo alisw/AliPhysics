@@ -27,6 +27,7 @@
 #include <TFile.h> 
 #include <TH1D.h> 
 #include <TROOT.h>
+#include <TString.h> 
 
 #include "AliFMDQATask.h" 
 #include "AliESD.h" 
@@ -132,11 +133,12 @@ void AliFMDQATask::Exec(Option_t *)
     AliInfo(Form("%s ----> Processing event # %lld", currentFile->GetName(), entry)) ; 
 	    
   // ************************  FMD *************************************
-  
  AliESDFMD * fmd = fESD->GetFMDData() ;
-  
- //fmd->CheckNeedUShort(currentFile);
-
+ if ( ! fmd ) {
+   AliError("No FMD found in ESD") ; 
+   return ; 
+ }
+ fmd->CheckNeedUShort(currentFile);
   Int_t nFMD1 = 0, nFMD2i = 0, nFMD2o = 0, nFMD3i = 0, nFMD3o = 0 ;
   
   UShort_t detector = 1 ;
@@ -190,6 +192,9 @@ void AliFMDQATask::Terminate(Option_t *)
   // Processing when the event loop is ended
  
   fOutputContainer = (TObjArray*)GetOutputData(0);
+  if ( ! fOutputContainer ) 
+    return ; 
+
   fhFMD1i = (TH1D*)fOutputContainer->At(0);
   fhFMD2i = (TH1D*)fOutputContainer->At(1);
   fhFMD2o = (TH1D*)fOutputContainer->At(2);

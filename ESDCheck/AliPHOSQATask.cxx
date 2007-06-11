@@ -31,6 +31,7 @@
 #include <TNtuple.h>
 #include <TROOT.h> 
 #include <TVector3.h> 
+#include <TString.h> 
 
 #include "AliPHOSQATask.h" 
 #include "AliESD.h" 
@@ -160,15 +161,15 @@ void AliPHOSQATask::Exec(Option_t *)
     AliESDCaloCluster * caloCluster = fESD->GetCaloCluster(phosCluster) ;
     if (caloCluster) {
       Float_t pos[3] ;
-      caloCluster->GetGlobalPosition( pos ) ;
-      fhPHOSEnergy->Fill( caloCluster->GetClusterEnergy() ) ;
+      caloCluster->GetPosition( pos ) ;
+      fhPHOSEnergy->Fill( caloCluster->E() ) ;
       fhPHOSPos->Fill( pos[0], pos[1], pos[2] ) ;
       fhPHOSDigits->Fill(entry, caloCluster->GetNumberOfDigits() ) ;
       numberOfDigitsInPhos += caloCluster->GetNumberOfDigits() ;
       Float_t * pid = caloCluster->GetPid() ;
       if(pid[AliPID::kPhoton] > 0.9) {
 	phosVector[numberOfPhotonsInPhos] = new TVector3(pos[0],pos[1],pos[2]) ;
-	phosPhotonsEnergy[numberOfPhotonsInPhos]=caloCluster->GetClusterEnergy() ;
+	phosPhotonsEnergy[numberOfPhotonsInPhos]=caloCluster->E() ;
 	numberOfPhotonsInPhos++;
       }
     }
@@ -273,11 +274,11 @@ void AliPHOSQATask::Terminate(Option_t *)
  
   AliInfo(Form("!!! All the eps files are in %s.tar.gz !!!", GetName())) ;
 
-  char * report ; 
+  TString report ; 
   if(problem)
     report="Problems found, please check!!!";  
   else 
     report="OK";
 
-  AliInfo(Form("*** %s Summary Report: %s \n",GetName(), report)) ; 
+  AliInfo(Form("*** %s Summary Report: %s \n",GetName(), report.Data())) ; 
 }

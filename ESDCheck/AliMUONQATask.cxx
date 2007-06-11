@@ -32,6 +32,8 @@
 #include <TH1F.h>
 #include <TROOT.h>
 #include <TLorentzVector.h>
+#include <TString.h> 
+
 #include "AliMUONQATask.h" 
 #include "AliESD.h" 
 #include "AliLog.h"
@@ -375,11 +377,11 @@ void AliMUONQATask::Terminate(Option_t *)
     
     AliInfo(Form("!!! All the eps files are in %s.tar.gz !!!", GetName())) ;
  
-   char * report ; 
+   TString report ; 
    if(problem)
       report="Problems found, please check!!!";  
     else 
       report="OK";
     
-    AliInfo(Form("*** %s Summary Report: %s \n",GetName(), report)) ; 
+   AliInfo(Form("*** %s Summary Report: %s \n",GetName(), report.Data())) ; 
 }

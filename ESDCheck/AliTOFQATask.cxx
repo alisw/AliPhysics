@@ -32,6 +32,7 @@
 #include <TSpectrum.h>
 #include <TF1.h>
 #include <TROOT.h>
+#include <TString.h> 
 
 #include "AliTOFQATask.h" 
 #include "AliESD.h" 
@@ -697,12 +698,12 @@ void AliTOFQATask::Terminate(Option_t *)
   GetEfficiency();
   Bool_t problem = DrawHistos() ; 
 
-  char * report ; 
+  TString report ; 
   if(problem)
     report="Problems found, please check!!!";  
   else 
     report="OK";
 
-  AliInfo(Form("*** %s Summary Report: %s\n",GetName(), report)) ; 
+  AliInfo(Form("*** %s Summary Report: %s\n",GetName(), report.Data())) ; 
   
 }
