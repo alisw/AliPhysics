@@ -622,7 +622,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
       // has to be changed once the muon pid is provided by the ESD
       for (Int_t i = 0; i < 10; pid[i++] = 0.); pid[AliAODTrack::kMuon]=1.;
       
-      primary->AddDaughter(
+      primary->AddDaughter( aodTrack =
 	  new(tracks[jTracks++]) AliAODTrack(0, // no ID provided
 					     0, // no label provided
 					     p,
@@ -638,6 +638,13 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 					     kTRUE,  // not used for vertex fit
 					     AliAODTrack::kPrimary)
 	  );
+	aodTrack->SetHitsPatternInTrigCh(esdMuTrack->GetHitsPatternInTrigCh());
+	Int_t track2Trigger = esdMuTrack->GetMatchTrigger();
+	aodTrack->SetMatchTrigger(track2Trigger);
+	if (track2Trigger) 
+	  aodTrack->SetChi2MatchTrigger(esdMuTrack->GetChi2MatchTrigger());
+	else 
+	  aodTrack->SetChi2MatchTrigger(0.);
     }
     
     // Access to the AOD container of clusters

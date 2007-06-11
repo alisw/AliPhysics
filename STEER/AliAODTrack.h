@@ -177,6 +177,23 @@ class AliAODTrack : public AliVirtualParticle {
   void SetMuonClusterMap(UInt_t muonClusMap)       { fITSMuonClusterMap = muonClusMap*65536; }
   void SetITSMuonClusterMap(UInt_t itsMuonClusMap) { fITSMuonClusterMap = itsMuonClusMap; }
 
+  Int_t    GetMatchTrigger() const {return fITSMuonClusterMap>>30;}
+					//  0 Muon track does not match trigger
+					//  1 Muon track match but does not pass pt cut
+					//  2 Muon track match Low pt cut
+					//  3 Muon track match High pt cut
+  void     SetMatchTrigger(Int_t MatchTrigger);
+  Int_t    MatchTrigger(){ return (GetMatchTrigger()>0)?1:0; }	//  Muon track matches trigger track
+  Int_t    MatchTriggerAnyPt(){ return (GetMatchTrigger()>0)?1:0; }	//  Muon track matches trigger track
+  Int_t    MatchTriggerLowPt(){ return (GetMatchTrigger()>1)?1:0; }	//  Muon track matches trigger track and passes Low pt cut
+  Int_t    MatchTriggerHighPt(){ return (GetMatchTrigger()>2)?1:0; }	//  Muon track matches trigger track and passes High pt cut
+  Double_t GetChi2MatchTrigger() const {return fChi2MatchTrigger;}
+  void     SetChi2MatchTrigger(Double_t Chi2MatchTrigger) {fChi2MatchTrigger = Chi2MatchTrigger;}
+  UShort_t GetHitsPatternInTrigCh() const { return (fITSMuonClusterMap&0xff00)>>8; }
+  void     SetHitsPatternInTrigCh(UShort_t hitsPatternInTrigCh);
+  Int_t HitsMT(Int_t istation, Int_t iplane, Char_t *cathode=0);  // Check if track hits Muon chambers
+  Int_t HitsMuonChamber(Int_t MuonChamber);  // Check if track hits Muon chambers
+
   void SetProdVertex(TObject *vertex) { fProdVertex = vertex; }
 
   // name and title
@@ -201,6 +218,7 @@ class AliAODTrack : public AliVirtualParticle {
   UInt_t        fITSMuonClusterMap; // map of ITS and muon clusters, one bit per layer (ITS: bit 1-8, muon: bit 17-32) 
   Char_t        fType;              // Track Type
 
+  Double_t fChi2MatchTrigger; // chi2 of trigger/track matching
 
   ClassDef(AliAODTrack,2);
 };

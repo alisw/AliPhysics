@@ -34,7 +34,8 @@ AliAODTrack::AliAODTrack() :
   fProdVertex(0x0),
   fCharge(-99),
   fITSMuonClusterMap(0),
-  fType(kUndef)
+  fType(kUndef),
+  fChi2MatchTrigger(0.)
 {
   // default constructor
 
@@ -66,7 +67,8 @@ AliAODTrack::AliAODTrack(Int_t id,
   fProdVertex(prodVertex),
   fCharge(charge),
   fITSMuonClusterMap(itsClusMap),
-  fType(ttype)
+  fType(ttype),
+  fChi2MatchTrigger(0.)
 {
   // constructor
  
@@ -102,7 +104,8 @@ AliAODTrack::AliAODTrack(Int_t id,
   fProdVertex(prodVertex),
   fCharge(charge),
   fITSMuonClusterMap(itsClusMap),
-  fType(ttype)
+  fType(ttype),
+  fChi2MatchTrigger(0.)
 {
   // constructor
  
@@ -132,7 +135,8 @@ AliAODTrack::AliAODTrack(const AliAODTrack& trk) :
   fProdVertex(trk.fProdVertex),
   fCharge(trk.fCharge),
   fITSMuonClusterMap(trk.fITSMuonClusterMap),
-  fType(trk.fType)
+  fType(trk.fType),
+  fChi2MatchTrigger(0.)
 {
   // Copy constructor
 
@@ -409,3 +413,104 @@ void AliAODTrack::Print(Option_t* /* option */) const
   printf(" PID object: %p\n", PID());
 }
 
+void AliAODTrack::SetMatchTrigger(Int_t MatchTrigger){
+  switch(MatchTrigger){
+    case 0: // 0 track does not match trigger
+      fITSMuonClusterMap=fITSMuonClusterMap&0x3fffffff;
+      break;
+    case 1: // 1 track match but does not pass pt cut
+      fITSMuonClusterMap=(fITSMuonClusterMap&0x3fffffff)|0x40000000;
+      break;
+    case 2: // 2 track match Low pt cut
+      fITSMuonClusterMap=(fITSMuonClusterMap&0x3fffffff)|0x80000000;
+      break;
+    case 3: // 3 track match High pt cut
+      fITSMuonClusterMap=fITSMuonClusterMap|0xc0000000;
+      break;
+    default:
+      fITSMuonClusterMap=fITSMuonClusterMap&0x3fffffff;
+      printf("AliAODTrack::SetMatchTrigger unknown case for MatchTrigger: %d\n",MatchTrigger);
+  }
+}
+
+void AliAODTrack::SetHitsPatternInTrigCh(UShort_t hitsPatternInTrigCh){
+  fITSMuonClusterMap=(fITSMuonClusterMap&0xffff00ff)|(hitsPatternInTrigCh<<8);
+}
+
+Int_t AliAODTrack::HitsMT(Int_t istation, Int_t iplane, Char_t *cathode){
+  if(cathode){
+    if(cathode[0]=='x'||cathode[0]=='X'){
+      if(istation==1){
+        if(iplane==1)
+	  return (fITSMuonClusterMap&0x8000)?1:0;
+	else if(iplane==2)
+	  return (fITSMuonClusterMap&0x4000)?1:0;
+	else
+	  return 0;
+      }else if(istation==2){
+        if(iplane==1)
+	  return (fITSMuonClusterMap&0x2000)?1:0;
+	else if(iplane==2)
+	  return (fITSMuonClusterMap&0x1000)?1:0;
+	else
+	  return 0;
+      }else{
+        return 0;
+      }
+    }else if(cathode[0]=='y'||cathode[0]=='Y'){
+      if(istation==1){
+        if(iplane==1)
+	  return (fITSMuonClusterMap&0x0800)?1:0;
+	else if(iplane==2)
+	  return (fITSMuonClusterMap&0x0400)?1:0;
+	else
+	  return 0;
+      }else if(istation==2){
+        if(iplane==1)
+	  return (fITSMuonClusterMap&0x0200)?1:0;
+	else if(iplane==2)
+	  return (fITSMuonClusterMap&0x0100)?1:0;
+	else
+	  return 0;
+      }else{
+        return 0;
+      }
+    }else{
+      return 0;
+    }
+  }else{
+    if(istation==1){
+      if(iplane==1)
+	return (HitsMT(1,1,"X")||HitsMT(1,1,"Y"))?1:0;
+      else if(iplane==2)
+	return (HitsMT(1,2,"X")||HitsMT(1,2,"Y"))?1:0;
+      else
+	return 0;
+    }else if(istation==2){
+      if(iplane==1)
+	return (HitsMT(2,1,"X")||HitsMT(2,1,"Y"))?1:0;
+      else if(iplane==2)
+	return (HitsMT(2,2,"X")||HitsMT(2,2,"Y"))?1:0;
+      else
+	return 0;
+    }else{
+      return 0;
+    }
+  }
+}
+
+Int_t AliAODTrack::HitsMuonChamber(Int_t MuonChamber){
+  switch(MuonChamber){
+    case 11:
+      return HitsMT(1,1);
+    case 12:
+      return HitsMT(1,2);
+    case 13:
+      return HitsMT(2,1);
+    case 14:
+      return HitsMT(2,2);
+    default:
+      printf("Unknown MUON chamber: %d\n",MuonChamber);
+      return 0;
+  }
+}
