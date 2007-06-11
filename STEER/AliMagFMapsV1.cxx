@@ -90,6 +90,7 @@ void AliMagFMapsV1::Field(Float_t *x, Float_t *b) const
     const Float_t kRmax2 = 500. * 500.;
     const Float_t kZmax  = 550.; 
     const Float_t kTeslaTokG = 10.;
+    const Float_t kScale = 0.98838; // matching factor
     
     // Check if position inside measured map
     Float_t r2 = x[0] * x[0] + x[1] * x[1];
@@ -104,8 +105,10 @@ void AliMagFMapsV1::Field(Float_t *x, Float_t *b) const
 	b[2] *= kTeslaTokG;
     } else {
 	AliMagFMaps::Field(x, b);
-	b[0] = - b[0];
-	b[2] = - b[2];
+	// Match to measure map
+	b[0] = - b[0] * kScale;
+	b[2] = - b[2] * kScale;
+	b[1] =   b[1] * kScale;
     }
 }
 
