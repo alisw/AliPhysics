@@ -1145,24 +1145,14 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   // The MCMs
   //
 
-  //const Float_t kMCMx    = 3.0;
-  //const Float_t kMCMy    = 3.0;
-  //const Float_t kMCMz    = 0.3;
-  //
-  //const Float_t kMCMpcTh = 0.1;
-  //const Float_t kMCMcuTh = 0.0215;
-  //const Float_t kMCMsiTh = 0.003;
-  //const Float_t kMCMcoTh = 0.1549;
-
-  // New 
-  const Float_t kMCMx    = 6.0;
-  const Float_t kMCMy    = 6.0;
-  const Float_t kMCMz    = 0.075;
-
-  const Float_t kMCMpcTh = 0.025;
-  const Float_t kMCMcuTh = 0.005;
-  const Float_t kMCMsiTh = 0.00075;
-  const Float_t kMCMcoTh = 0.03873;
+  const Float_t kMCMx    = 3.0;
+  const Float_t kMCMy    = 3.0;
+  const Float_t kMCMz    = 0.3;
+  
+  const Float_t kMCMpcTh = 0.1;
+  const Float_t kMCMcuTh = 0.0025;
+  const Float_t kMCMsiTh = 0.03;
+  const Float_t kMCMcoTh = 0.04;
 
   // The mother volume for the MCMs (air)
   const Int_t kNparMCM = 3;
@@ -1221,10 +1211,7 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
         for (Int_t iMCMcol = 0; iMCMcol < nMCMcol; iMCMcol++) {
           xpos   = (0.5 + iMCMcol) * xSize + 1.0 
                  - fCwidth[iplan]/2.0;
-          //ypos   = (0.5 + iMCMrow) * ySize + 1.0 
-          //       - fClength[iplan][icham]/2.0 + fgkHspace/2.0;
-	  // New!
-          ypos   = (0.5 + iMCMrow) * ySize
+          ypos   = (0.5 + iMCMrow) * ySize + 1.0 
                  - fClength[iplan][icham]/2.0 + fgkHspace/2.0;
           zpos   = -0.4 + 0.742/2.0;
           par[0] = 0.0;
