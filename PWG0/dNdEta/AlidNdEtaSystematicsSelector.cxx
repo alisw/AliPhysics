@@ -224,7 +224,7 @@ Bool_t AlidNdEtaSystematicsSelector::Process(Long64_t entry)
   
   // getting process information NB: this only works for Pythia !!!
   Int_t processtype = AliPWG0depHelper::GetPythiaEventProcessType(header);
-    
+
   // can only read pythia headers, either directly or from cocktalil header
   AliGenEventHeader* genHeader = (AliGenEventHeader*)(header->GenEventHeader());
   
@@ -244,7 +244,7 @@ Bool_t AlidNdEtaSystematicsSelector::Process(Long64_t entry)
   Bool_t vertexReconstructed = AliPWG0Helper::IsVertexReconstructed(fESD);
   
   // non diffractive
-  if (processtype!=92 && processtype!=93 && processtype!=94) { 
+  if (processtype!=92 && processtype!=93 && processtype!=94) {
     // NB: passing the wrong process type here (1), since the process type is defined by the index in the array (here non-diffractive)
     if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[0]->FillEvent(vtxMC[2], nGoodTracks, eventTriggered, vertexReconstructed, 1);      
     if (vertexRecoStudy)  fdNdEtaCorrectionVertexReco[0] ->FillEvent(vtxMC[2], nGoodTracks, eventTriggered, vertexReconstructed, 1);
@@ -391,30 +391,8 @@ Bool_t AlidNdEtaSystematicsSelector::Process(Long64_t entry)
       if (vertexRecoStudy)  fdNdEtaCorrectionVertexReco[2] ->FillTrackedParticle(vtxMC[2], eta, pt);
     }
 
-
-    TParticle* mother = particle;
     // find primary particle that created this particle
-    while (label >= nPrim)
-    {
-      //printf("Particle %d (pdg %d) is not a primary. Let's check its mother %d\n", label, mother->GetPdgCode(), mother->GetMother(0));
-
-      if (mother->GetMother(0) == -1)
-      {
-        AliDebug(AliLog::kError, Form("UNEXPECTED: Could not find mother of secondary particle %d.", label));
-        mother = 0;
-        break;
-      }
-
-      label = mother->GetMother(0);
-
-      mother = stack->Particle(label);
-      if (!mother)
-      {
-        AliDebug(AliLog::kError, Form("UNEXPECTED: particle with label %d not found in stack (find mother loop).", label));
-        break;
-      }
-    }
-
+    TParticle* mother = AliPWG0depHelper::FindPrimaryMother(stack, label);
     if (!mother)
       continue;
 

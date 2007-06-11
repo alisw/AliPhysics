@@ -11,6 +11,8 @@
 #include <TH2F.h>
 #include <TH3F.h>
 #include <TParticle.h>
+#include <TRandom.h>
+#include <TNtuple.h>
 
 #include <AliLog.h>
 #include <AliESD.h>
@@ -21,7 +23,10 @@
 
 #include "esdTrackCuts/AliESDtrackCuts.h"
 #include "AliPWG0Helper.h"
+#include "AliPWG0depHelper.h"
 #include "dNdEta/AliMultiplicityCorrection.h"
+#include "AliCorrection.h"
+#include "AliCorrectionMatrix3D.h"
 
 //#define TPCMEASUREMENT
 #define ITSMEASUREMENT
@@ -31,11 +36,17 @@ ClassImp(AliMultiplicityMCSelector)
 AliMultiplicityMCSelector::AliMultiplicityMCSelector() :
   AliSelectorRL(),
   fMultiplicity(0),
-  fEsdTrackCuts(0)
+  fEsdTrackCuts(0),
+  fSystSkipParticles(kFALSE),
+  fSelectProcessType(0),
+  fParticleSpecies(0)
 {
   //
   // Constructor. Initialization of pointers
   //
+
+  for (Int_t i = 0; i<4; i++)
+    fParticleCorrection[i] = 0;
 }
 
 AliMultiplicityMCSelector::~AliMultiplicityMCSelector()
@@ -82,6 +93,32 @@ void AliMultiplicityMCSelector::SlaveBegin(TTree* tree)
   ReadUserObjects(tree);
 
   fMultiplicity = new AliMultiplicityCorrection("Multiplicity", "Multiplicity");
+
+  TString option(GetOption());
+  if (option.Contains("skip-particles"))
+  {
+    fSystSkipParticles = kTRUE;
+    AliInfo("WARNING: Systematic study enabled. Particles will be skipped.");
+  }
+
+  if (option.Contains("particle-efficiency"))
+    for (Int_t i = 0; i<4; i++)
+      fParticleCorrection[i] = new AliCorrection(Form("correction_%d", i), Form("correction_%d", i));
+
+  if (option.Contains("only-process-type-nd"))
+    fSelectProcessType = 1;
+
+  if (option.Contains("only-process-type-sd"))
+    fSelectProcessType = 2;
+
+  if (option.Contains("only-process-type-dd"))
+    fSelectProcessType = 3;
+
+  if (fSelectProcessType != 0)
+    AliInfo(Form("WARNING: Systematic study enabled. Only considering process type %d", fSelectProcessType));
+
+  if (option.Contains("particle-species"))
+    fParticleSpecies = new TNtuple("fParticleSpecies", "fParticleSpecies", "Pi_True:K_True:p_True:o_True:Pi_Rec:K_Rec:p_Rec:o_Rec");
 }
 
 void AliMultiplicityMCSelector::Init(TTree* tree)
@@ -157,7 +194,34 @@ Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
     return kFALSE;
   }
 
+  if (fSelectProcessType > 0)
+  {
+    // getting process information; NB: this only works for Pythia
+    Int_t processtype = AliPWG0depHelper::GetPythiaEventProcessType(header);
+
+    Bool_t processEvent = kFALSE;
+
+    // non diffractive
+    if (fSelectProcessType == 1 && processtype !=92 && processtype !=93 && processtype != 94)
+      processEvent = kTRUE;
+
+    // single diffractive
+    if (fSelectProcessType == 2 && (processtype == 92 || processtype == 93))
+      processEvent = kTRUE;
+
+    // double diffractive
+    if (fSelectProcessType == 3 && processtype == 94)
+      processEvent = kTRUE;
+
+    if (!processEvent)
+    {
+      AliDebug(AliLog::kDebug, Form("Skipping this event, because it is not of the requested process type (%d)", processtype));
+      return kTRUE;
+    }
+  }
+
   Bool_t eventTriggered = AliPWG0Helper::IsEventTriggered(fESD);
+  eventTriggered = kTRUE; // no generated trigger for the simulated events
   Bool_t eventVertex = AliPWG0Helper::IsVertexReconstructed(fESD);
 
   // get the ESD vertex
@@ -191,6 +255,11 @@ Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
   Int_t nMCTracks20 = 0;
   Int_t nMCTracksAll = 0;
 
+  // tracks per particle species, in |eta| < 2 (systematic study)
+  Int_t nMCTracksSpecies[4]; // (pi, K, p, other)
+  for (Int_t i = 0; i<4; ++i)
+    nMCTracksSpecies[i] = 0;
+
   for (Int_t iMc = 0; iMc < nPrim; ++iMc)
   {
     AliDebug(AliLog::kDebug+1, Form("MC Loop: Processing particle %d.", iMc));
@@ -203,8 +272,16 @@ Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
       continue;
     }
 
-    if (AliPWG0Helper::IsPrimaryCharged(particle, nPrim) == kFALSE)
+    Bool_t debug = kFALSE;
+    if (AliPWG0Helper::IsPrimaryCharged(particle, nPrim, debug) == kFALSE)
+    {
+      //printf("%d) DROPPED ", iMC);
+      //particle->Print();
       continue;
+    }
+
+    //printf("%d) OK      ", iMC);
+    //particle->Print();
 
     //if (particle->Pt() < kPtCut)
     //  continue;
@@ -222,9 +299,21 @@ Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
       nMCTracks20++;
 
     nMCTracksAll++;
+
+    Int_t id = -1;
+    switch (TMath::Abs(particle->GetPdgCode()))
+    {
+      case 211: id = 0; break;
+      case 321: id = 1; break;
+      case 2212: id = 2; break;
+      default: id = 3; break;
+    }
+    if (TMath::Abs(particle->Eta()) < 2.0)
+      nMCTracksSpecies[id]++;
+    if (fParticleCorrection[id])
+      fParticleCorrection[id]->GetTrackCorrection()->FillGene(vtxMC[2], particle->Eta(), particle->Pt());
   }// end of mc particle
 
-  // FAKE: put back vtxMC[2]
   fMultiplicity->FillGenerated(vtxMC[2], eventTriggered, eventVertex, nMCTracks05, nMCTracks10, nMCTracks15, nMCTracks20, nMCTracksAll);
 
   if (!eventTriggered || !eventVertex)
@@ -235,6 +324,11 @@ Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
   Int_t nESDTracks15 = 0;
   Int_t nESDTracks20 = 0;
 
+  // tracks per particle species, in |eta| < 2 (systematic study)
+  Int_t nESDTracksSpecies[4]; // (pi, K, p, other)
+  for (Int_t i = 0; i<4; ++i)
+    nESDTracksSpecies[i] = 0;
+
 #ifdef ITSMEASUREMENT
   // get multiplicity from ITS tracklets
   for (Int_t i=0; i<mult->GetNumberOfTracklets(); ++i)
@@ -243,6 +337,10 @@ Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
 
     // this removes non-tracklets. Very bad solution. SPD guys are working on better solution...
     if (mult->GetDeltaPhi(i) < -1000)
+      continue;
+
+    // systematic study: 10% lower efficiency
+    if (fSystSkipParticles && gRandom->Uniform() < 0.1)
       continue;
 
     Float_t theta = mult->GetTheta(i);
@@ -259,6 +357,29 @@ Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
 
     if (TMath::Abs(eta) < 2.0)
       nESDTracks20++;
+
+    // TODO define needed, because this only works with new AliRoot
+    Int_t label = mult->GetLabel(i);
+    if (label < 0)
+      continue;
+
+    TParticle* mother = AliPWG0depHelper::FindPrimaryMother(stack, label);
+
+    if (!mother)
+      continue;
+
+    Int_t id = -1;
+    switch (TMath::Abs(mother->GetPdgCode()))
+    {
+      case 211: id = 0; break;
+      case 321: id = 1; break;
+      case 2212: id = 2; break;
+      default: id = 3; break;
+    }
+    if (TMath::Abs(eta) < 2.0)
+      nESDTracksSpecies[id]++;
+    if (fParticleCorrection[id])
+      fParticleCorrection[id]->GetTrackCorrection()->FillMeas(vtxMC[2], mother->Eta(), mother->Pt());
   }
 #endif
 
@@ -298,13 +419,41 @@ Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
 
     if (TMath::Abs(eta) < 2.0)
       nESDTracks20++;
+
+    Int_t label = esdTrack->GetLabel();
+    if (label < 0)
+      continue;
+
+    TParticle* mother = AliPWG0depHelper::FindPrimaryMother(stack, label);
+
+    if (!mother)
+      continue;
+
+    Int_t id = -1;
+    switch (TMath::Abs(mother->GetPdgCode()))
+    {
+      case 211: id = 0; break;
+      case 321: id = 1; break;
+      case 2212: id = 2; break;
+      default: id = 3; break;
+    }
+    if (TMath::Abs(eta) < 2.0)
+      nESDTracksSpecies[id]++;
+    if (fParticleCorrection[id])
+      fParticleCorrection[id]->GetTrackCorrection()->FillMeas(vtxMC[2], mother->Eta(), mother->Pt());
   }
 #endif
+
+  if (nMCTracks20 == 0 && nESDTracks20 > 3)
+    printf("WARNING: Event %lld has %d generated and %d reconstructed...\n", entry, nMCTracks05, nESDTracks05);
 
   fMultiplicity->FillMeasured(vtx[2], nESDTracks05, nESDTracks10, nESDTracks15, nESDTracks20);
 
   // TODO should this be vtx[2] or vtxMC[2] ?
   fMultiplicity->FillCorrection(vtxMC[2], nMCTracks05, nMCTracks10, nMCTracks15, nMCTracks20, nMCTracksAll, nESDTracks05, nESDTracks10, nESDTracks15, nESDTracks20);
+
+  if (fParticleSpecies)
+    fParticleSpecies->Fill(nMCTracksSpecies[0], nMCTracksSpecies[1], nMCTracksSpecies[2], nMCTracksSpecies[3], nESDTracksSpecies[0], nESDTracksSpecies[1], nESDTracksSpecies[2], nESDTracksSpecies[3]);
 
   return kTRUE;
 }
@@ -325,6 +474,10 @@ void AliMultiplicityMCSelector::SlaveTerminate()
   }
 
   fOutput->Add(fMultiplicity);
+  for (Int_t i = 0; i < 4; ++i)
+    fOutput->Add(fParticleCorrection[i]);
+
+  fOutput->Add(fParticleSpecies);
 }
 
 void AliMultiplicityMCSelector::Terminate()
@@ -336,6 +489,9 @@ void AliMultiplicityMCSelector::Terminate()
   AliSelector::Terminate();
 
   fMultiplicity = dynamic_cast<AliMultiplicityCorrection*> (fOutput->FindObject("Multiplicity"));
+  for (Int_t i = 0; i < 4; ++i)
+    fParticleCorrection[i] = dynamic_cast<AliCorrection*> (fOutput->FindObject(Form("correction_%d", i)));
+  fParticleSpecies = dynamic_cast<TNtuple*> (fOutput->FindObject("fParticleSpecies"));
 
   if (!fMultiplicity)
   {
@@ -346,6 +502,10 @@ void AliMultiplicityMCSelector::Terminate()
   TFile* file = TFile::Open("multiplicityMC.root", "RECREATE");
 
   fMultiplicity->SaveHistograms();
+  for (Int_t i = 0; i < 4; ++i)
+    if (fParticleCorrection[i])
+      fParticleCorrection[i]->SaveHistograms();
+  fParticleSpecies->Write();
 
   file->Close();
 

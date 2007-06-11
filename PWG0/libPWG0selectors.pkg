@@ -12,10 +12,11 @@ HDRS = dNdEta/AlidNdEtaCorrectionSelector.h \
        esdTrackCuts/AliTestESDtrackCutsSelector.h \
        TPC/AliROCESDAnalysisSelector.h \
        TPC/AliROCRawAnalysisSelector.h \
-       TPC/AliROCClusterAnalysisSelector.h 
+       TPC/AliROCClusterAnalysisSelector.h \
+       highMultiplicity/AliHighMultiplicitySelector.h
 
 SRCS = $(HDRS:.h=.cxx)
 
 DHDR= PWG0selectorsLinkDef.h
 
-EINCLUDE=PYTHIA6 EVGEN TPC RAW
+EINCLUDE=PYTHIA6 EVGEN TPC RAW ITS

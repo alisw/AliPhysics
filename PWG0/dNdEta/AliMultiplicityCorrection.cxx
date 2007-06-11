@@ -34,18 +34,23 @@
 #include <TF1.h>
 #include <TMath.h>
 #include <TCollection.h>
+#include <TLegend.h>
+#include <TLine.h>
 
 ClassImp(AliMultiplicityCorrection)
 
-const Int_t AliMultiplicityCorrection::fgMaxParams = 200;
+const Int_t AliMultiplicityCorrection::fgMaxInput  = 250;  // bins in measured histogram
+const Int_t AliMultiplicityCorrection::fgMaxParams = 250;  // bins in unfolded histogram = number of fit params
+
 TH1* AliMultiplicityCorrection::fCurrentESD = 0;
 TH1* AliMultiplicityCorrection::fCurrentCorrelation = 0;
 TH1* AliMultiplicityCorrection::fCurrentEfficiency = 0;
-TMatrixF* AliMultiplicityCorrection::fCorrelationMatrix = 0;
-TMatrixF* AliMultiplicityCorrection::fCorrelationCovarianceMatrix = 0;
-TVectorF* AliMultiplicityCorrection::fCurrentESDVector = 0;
+TMatrixD* AliMultiplicityCorrection::fCorrelationMatrix = 0;
+TMatrixD* AliMultiplicityCorrection::fCorrelationCovarianceMatrix = 0;
+TVectorD* AliMultiplicityCorrection::fCurrentESDVector = 0;
+TVectorD* AliMultiplicityCorrection::fEntropyAPriori = 0;
 AliMultiplicityCorrection::RegularizationType AliMultiplicityCorrection::fRegularizationType = AliMultiplicityCorrection::kPol1;
-Float_t AliMultiplicityCorrection::fRegularizationWeight = 1e4;
+Float_t AliMultiplicityCorrection::fRegularizationWeight = 5000;
 TF1* AliMultiplicityCorrection::fNBD = 0;
 
 //____________________________________________________________________
@@ -103,8 +108,8 @@ AliMultiplicityCorrection::AliMultiplicityCorrection(const Char_t* name, const C
   #define VTXBINNING 10, binLimitsVtx
   #define NBINNING fgMaxParams, binLimitsN*/
 
-  #define NBINNING 251, -0.5, 250.5
-  #define VTXBINNING 10, -10, 10
+  #define NBINNING 501, -0.5, 500.5
+  #define VTXBINNING 1, -10, 10
 
   for (Int_t i = 0; i < kESDHists; ++i)
     fMultiplicityESD[i] = new TH2F(Form("fMultiplicityESD%d", i), "fMultiplicityESD;vtx-z;Ntracks;Count", VTXBINNING, NBINNING);
@@ -352,7 +357,7 @@ void AliMultiplicityCorrection::FillCorrection(Float_t vtx, Int_t generated05, I
 }
 
 //____________________________________________________________________
-Double_t AliMultiplicityCorrection::RegularizationPol0(Double_t *params)
+Double_t AliMultiplicityCorrection::RegularizationPol0(TVectorD& params)
 {
   // homogenity term for minuit fitting
   // pure function of the parameters
@@ -360,20 +365,24 @@ Double_t AliMultiplicityCorrection::RegularizationPol0(Double_t *params)
 
   Double_t chi2 = 0;
 
-  for (Int_t i=1; i<fgMaxParams; ++i)
+  // ignore the first bin here. on purpose...
+  for (Int_t i=2; i<fgMaxParams; ++i)
   {
     Double_t right  = params[i];
     Double_t left   = params[i-1];
 
-    Double_t diff = (right - left);
-    chi2 += diff * diff;
+    if (right != 0)
+    {
+      Double_t diff = 1 - left / right;
+      chi2 += diff * diff;
+    }
   }
 
-  return chi2 * 100;
+  return chi2 / 100.0;
 }
 
 //____________________________________________________________________
-Double_t AliMultiplicityCorrection::RegularizationPol1(Double_t *params)
+Double_t AliMultiplicityCorrection::RegularizationPol1(TVectorD& params)
 {
   // homogenity term for minuit fitting
   // pure function of the parameters
@@ -381,7 +390,8 @@ Double_t AliMultiplicityCorrection::RegularizationPol1(Double_t *params)
 
   Double_t chi2 = 0;
 
-  for (Int_t i=2; i<fgMaxParams; ++i)
+  // ignore the first bin here. on purpose...
+  for (Int_t i=2+1; i<fgMaxParams; ++i)
   {
     if (params[i-1] == 0)
       continue;
@@ -402,7 +412,7 @@ Double_t AliMultiplicityCorrection::RegularizationPol1(Double_t *params)
 }
 
 //____________________________________________________________________
-Double_t AliMultiplicityCorrection::RegularizationTest(Double_t *params)
+Double_t AliMultiplicityCorrection::RegularizationTest(TVectorD& params)
 {
   // homogenity term for minuit fitting
   // pure function of the parameters
@@ -428,7 +438,7 @@ Double_t AliMultiplicityCorrection::RegularizationTest(Double_t *params)
 }
 
 //____________________________________________________________________
-Double_t AliMultiplicityCorrection::RegularizationTotalCurvature(Double_t *params)
+Double_t AliMultiplicityCorrection::RegularizationTotalCurvature(TVectorD& params)
 {
   // homogenity term for minuit fitting
   // pure function of the parameters
@@ -437,7 +447,8 @@ Double_t AliMultiplicityCorrection::RegularizationTotalCurvature(Double_t *param
 
   Double_t chi2 = 0;
 
-  for (Int_t i=2; i<fgMaxParams; ++i)
+  // ignore the first bin here. on purpose...
+  for (Int_t i=3; i<fgMaxParams; ++i)
   {
     Double_t right  = params[i];
     Double_t middle = params[i-1];
@@ -446,17 +457,16 @@ Double_t AliMultiplicityCorrection::RegularizationTotalCurvature(Double_t *param
     Double_t der1 = (right - middle);
     Double_t der2 = (middle - left);
 
-    Double_t secDer = (der1 - der2);
+    Double_t diff = (der1 - der2);
 
-    // square and weight with the bin width
-    chi2 += secDer * secDer;
+    chi2 += diff * diff;
   }
 
-  return chi2 * 100;
+  return chi2 * 1e4;
 }
 
 //____________________________________________________________________
-Double_t AliMultiplicityCorrection::RegularizationEntropy(Double_t *params)
+Double_t AliMultiplicityCorrection::RegularizationEntropy(TVectorD& params)
 {
   // homogenity term for minuit fitting
   // pure function of the parameters
@@ -464,18 +474,19 @@ Double_t AliMultiplicityCorrection::RegularizationEntropy(Double_t *params)
   // The method of reduced cross-entropy (M. Schmelling 1993)
 
   Double_t paramSum = 0;
-  for (Int_t i=0; i<fgMaxParams; ++i)
+  // ignore the first bin here. on purpose...
+  for (Int_t i=1; i<fgMaxParams; ++i)
     paramSum += params[i];
 
   Double_t chi2 = 0;
-  for (Int_t i=0; i<fgMaxParams; ++i)
+  for (Int_t i=1; i<fgMaxParams; ++i)
   {
     Double_t tmp = params[i] / paramSum;
-    if (tmp > 0)
-      chi2 += tmp * log(tmp);
+    if (tmp > 0 && (*fEntropyAPriori)[i] > 0)
+      chi2 += tmp * log(tmp / (*fEntropyAPriori)[i]);
   }
 
-  return chi2;
+  return 10.0 + chi2;
 }
 
 //____________________________________________________________________
@@ -486,6 +497,9 @@ void AliMultiplicityCorrection::MinuitNBD(Int_t& unused1, Double_t* unused2, Dou
   // does: nbd
   // func = new TF1("nbd", "[0] * TMath::Binomial([2]+TMath::Nint(x)-1, [2]-1) * pow([1] / ([1]+[2]), TMath::Nint(x)) * pow(1 + [1]/[2], -[2])", 0, 50);
   // func->SetParNames("scaling", "averagen", "k");
+  // func->SetParLimits(0, 0.001, fCurrentESD->GetMaximum() * 1000);
+  // func->SetParLimits(1, 0.001, 1000);
+  // func->SetParLimits(2, 0.001, 1000);
   //
 
   fNBD->SetParameters(params[0], params[1], params[2]);
@@ -508,51 +522,54 @@ void AliMultiplicityCorrection::MinuitFitFunction(Int_t&, Double_t*, Double_t& c
   // does: (m - Ad)W(m - Ad) where m = measured, A correlation matrix, d = guess, W = covariance matrix
   //
 
-  static Int_t callCount = 0;
-
-  Double_t chi2FromFit = 0;
-
   // d
-  TVectorF paramsVector(fgMaxParams);
+  TVectorD paramsVector(fgMaxParams);
   for (Int_t i=0; i<fgMaxParams; ++i)
-    paramsVector[i] = params[i];
+    paramsVector[i] = params[i] * params[i];
 
-  // Ad
-  paramsVector = (*fCorrelationMatrix) * paramsVector;
-
-  // Ad - m
-  paramsVector -= (*fCurrentESDVector);
-
-  TVectorF copy(paramsVector);
-
-  // (Ad - m) W
-  paramsVector *= (*fCorrelationCovarianceMatrix);
-
-  // (Ad - m) W (Ad - m)
-  chi2FromFit = paramsVector * copy;
-
+  // calculate penalty factor
   Double_t penaltyVal = 0;
-
   switch (fRegularizationType)
   {
     case kNone:       break;
-    case kPol0:       penaltyVal = RegularizationPol0(params); break;
-    case kPol1:       penaltyVal = RegularizationPol1(params); break;
-    case kCurvature:  penaltyVal = RegularizationTotalCurvature(params); break;
-    case kEntropy:    penaltyVal = RegularizationEntropy(params); break;
-    case kTest:    penaltyVal = RegularizationTest(params); break;
+    case kPol0:       penaltyVal = RegularizationPol0(paramsVector); break;
+    case kPol1:       penaltyVal = RegularizationPol1(paramsVector); break;
+    case kCurvature:  penaltyVal = RegularizationTotalCurvature(paramsVector); break;
+    case kEntropy:    penaltyVal = RegularizationEntropy(paramsVector); break;
+    case kTest:       penaltyVal = RegularizationTest(paramsVector); break;
   }
+
+  //if (penaltyVal > 1e10)
+  //  paramsVector2.Print();
 
   penaltyVal *= fRegularizationWeight;
 
+  // Ad
+  TVectorD measGuessVector(fgMaxInput);
+  measGuessVector = (*fCorrelationMatrix) * paramsVector;
+
+  // Ad - m
+  measGuessVector -= (*fCurrentESDVector);
+
+  TVectorD copy(measGuessVector);
+
+  // (Ad - m) W
+  measGuessVector *= (*fCorrelationCovarianceMatrix);
+
+  //measGuessVector.Print();
+
+  // (Ad - m) W (Ad - m)
+  Double_t chi2FromFit = measGuessVector * copy * 1e6;
+
   chi2 = chi2FromFit + penaltyVal;
 
-  if ((callCount++ % 1000) == 0)
-    printf("%f %f --> %f\n", chi2FromFit, penaltyVal, chi2);
+  static Int_t callCount = 0;
+  if ((callCount++ % 10000) == 0)
+    printf("%d) %f %f --> %f\n", callCount, chi2FromFit, penaltyVal, chi2);
 }
 
 //____________________________________________________________________
-void AliMultiplicityCorrection::SetupCurrentHists(Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType)
+void AliMultiplicityCorrection::SetupCurrentHists(Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType, Bool_t createBigBin)
 {
   //
   // fills fCurrentESD, fCurrentCorrelation
@@ -577,7 +594,72 @@ void AliMultiplicityCorrection::SetupCurrentHists(Int_t inputRange, Bool_t fullP
   }
 
   fCurrentCorrelation = hist->Project3D("zy");
+  //((TH2*) fCurrentCorrelation)->Rebin2D(2, 1);
+  //fMultiplicityESDCorrected[correlationID]->Rebin(2);
   fCurrentCorrelation->Sumw2();
+
+  if (createBigBin)
+  {
+    Int_t maxBin = 0;
+    for (Int_t i=1; i<=fCurrentESD->GetNbinsX(); ++i)
+    {
+      if (fCurrentESD->GetBinContent(i) <= 5)
+      {
+        maxBin = i;
+        break;
+      }
+    }
+
+    if (maxBin > 0)
+    {
+      TCanvas* canvas = new TCanvas("StatSolution", "StatSolution", 1000, 800);
+      canvas->Divide(2, 2);
+
+      canvas->cd(1);
+      fCurrentESD->DrawCopy();
+      gPad->SetLogy();
+
+      canvas->cd(2);
+      fCurrentCorrelation->DrawCopy("COLZ");
+
+      printf("Bin limit in measured spectrum is %d.\n", maxBin);
+      fCurrentESD->SetBinContent(maxBin, fCurrentESD->Integral(maxBin, fCurrentESD->GetNbinsX()));
+      for (Int_t i=maxBin+1; i<=fCurrentESD->GetNbinsX(); ++i)
+      {
+        fCurrentESD->SetBinContent(i, 0);
+        fCurrentESD->SetBinError(i, 0);
+      }
+      // the error is set to sqrt(N), better solution possible?, sum of relative errors of all contributions???
+      fCurrentESD->SetBinError(maxBin, TMath::Sqrt(fCurrentESD->GetBinContent(maxBin)));
+
+      printf("This bin has now %f +- %f entries\n", fCurrentESD->GetBinContent(maxBin), fCurrentESD->GetBinError(maxBin));
+
+      for (Int_t i=1; i<=fCurrentCorrelation->GetNbinsX(); ++i)
+      {
+        fCurrentCorrelation->SetBinContent(i, maxBin, fCurrentCorrelation->Integral(i, i, maxBin, fCurrentCorrelation->GetNbinsY()));
+        // the error is set to sqrt(N), better solution possible?, sum of relative errors of all contributions???
+        fCurrentCorrelation->SetBinError(i, maxBin, TMath::Sqrt(fCurrentCorrelation->GetBinContent(i, maxBin)));
+
+        for (Int_t j=maxBin+1; j<=fCurrentCorrelation->GetNbinsY(); ++j)
+        {
+          fCurrentCorrelation->SetBinContent(i, j, 0);
+          fCurrentCorrelation->SetBinError(i, j, 0);
+        }
+      }
+
+      printf("Adjusted correlation matrix!\n");
+
+      canvas->cd(3);
+      fCurrentESD->DrawCopy();
+      gPad->SetLogy();
+
+      canvas->cd(4);
+      fCurrentCorrelation->DrawCopy("COLZ");
+    }
+  }
+
+  //normalize ESD
+  fCurrentESD->Scale(1.0 / fCurrentESD->Integral());
 
   fCurrentEfficiency = fMultiplicityVtx[inputRange]->ProjectionY("CurrentEfficiency");
   TH2* divisor = 0;
@@ -588,10 +670,21 @@ void AliMultiplicityCorrection::SetupCurrentHists(Int_t inputRange, Bool_t fullP
     case kINEL: divisor = fMultiplicityINEL[inputRange]; break;
   }
   fCurrentEfficiency->Divide(divisor->ProjectionY());
+  //fCurrentEfficiency->Rebin(2);
+  //fCurrentEfficiency->Scale(0.5);
 }
 
 //____________________________________________________________________
-void AliMultiplicityCorrection::ApplyMinuitFit(Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType, Bool_t check, TH1* inputDist)
+void AliMultiplicityCorrection::SetRegularizationParameters(RegularizationType type, Float_t weight)
+{
+  fRegularizationType = type;
+  fRegularizationWeight = weight;
+
+  printf("AliMultiplicityCorrection::SetRegularizationParameters --> Regularization set to %d with weight %f\n", (Int_t) type, weight);
+}
+
+//____________________________________________________________________
+Int_t AliMultiplicityCorrection::ApplyMinuitFit(Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType, Bool_t check, TH1* inputDist)
 {
   //
   // correct spectrum using minuit chi2 method
@@ -603,11 +696,19 @@ void AliMultiplicityCorrection::ApplyMinuitFit(Int_t inputRange, Bool_t fullPhas
   Int_t correlationID = inputRange + ((fullPhaseSpace == kFALSE) ? 0 : 4);
   Int_t mcTarget = ((fullPhaseSpace == kFALSE) ? inputRange : 4);
 
-  SetupCurrentHists(inputRange, fullPhaseSpace, eventType);
+  SetupCurrentHists(inputRange, fullPhaseSpace, eventType, kFALSE); // TODO FAKE kTRUE
 
-  fCorrelationMatrix = new TMatrixF(fgMaxParams, fgMaxParams);
-  fCorrelationCovarianceMatrix = new TMatrixF(fgMaxParams, fgMaxParams);
-  fCurrentESDVector = new TVectorF(fgMaxParams);
+  fCorrelationMatrix = new TMatrixD(fgMaxInput, fgMaxParams);
+  fCorrelationCovarianceMatrix = new TMatrixD(fgMaxInput, fgMaxInput);
+  fCurrentESDVector = new TVectorD(fgMaxInput);
+  fEntropyAPriori = new TVectorD(fgMaxParams);
+
+  /*new TCanvas; fCurrentESD->DrawCopy();
+  fCurrentESD = ((TH2*) fCurrentCorrelation)->ProjectionY("check-proj2");
+  fCurrentESD->Sumw2();
+  fCurrentESD->Scale(1.0 / fCurrentESD->Integral());
+  fCurrentESD->SetLineColor(2);
+  fCurrentESD->DrawCopy("SAME");*/
 
   // normalize correction for given nPart
   for (Int_t i=1; i<=fCurrentCorrelation->GetNbinsX(); ++i)
@@ -630,61 +731,83 @@ void AliMultiplicityCorrection::ApplyMinuitFit(Int_t inputRange, Bool_t fullPhas
       fCurrentCorrelation->SetBinContent(i, j, fCurrentCorrelation->GetBinContent(i, j) / sum);
       fCurrentCorrelation->SetBinError(i, j, fCurrentCorrelation->GetBinError(i, j) / sum);
 
-      if (i <= fgMaxParams && j <= fgMaxParams)
+      if (i <= fgMaxParams && j <= fgMaxInput)
         (*fCorrelationMatrix)(j-1, i-1) = fCurrentCorrelation->GetBinContent(i, j);
     }
 
     //printf("MPV for Ntrue = %f is %f\n", fCurrentCorrelation->GetXaxis()->GetBinCenter(i), fCurrentCorrelation->GetYaxis()->GetBinCenter(maxBin));
   }
 
-  // small hack to get around charge conservation for full phase space ;-)
-  /*if (fullPhaseSpace)
-  {
-    for (Int_t i=2; i<=50; i+=2)
-      for (Int_t j=1; j<=fCurrentCorrelation->GetNbinsY(); ++j)
-        fCurrentCorrelation->SetBinContent(i, j, fCurrentCorrelation->GetBinContent(i-1, j));
-  }*/
-
   // Initialize TMinuit via generic fitter interface
   TVirtualFitter *minuit = TVirtualFitter::Fitter(0, fgMaxParams);
+  Double_t arglist[100];
+  arglist[0] = 0;
+  minuit->ExecuteCommand("SET PRINT", arglist, 1);
 
   minuit->SetFCN(MinuitFitFunction);
 
-  static Double_t results[fgMaxParams];
+  for (Int_t i=0; i<fgMaxParams; i++)
+    (*fEntropyAPriori)[i] = 1;
 
   if (inputDist)
   {
     printf("Using different starting conditions...\n");
     new TCanvas;
     inputDist->DrawCopy();
+
+    inputDist->Scale(1.0 / inputDist->Integral());
+    for (Int_t i=0; i<fgMaxParams; i++)
+      if (inputDist->GetBinContent(i+1) > 0)
+        (*fEntropyAPriori)[i] = inputDist->GetBinContent(i+1);
   }
   else
     inputDist = fCurrentESD;
 
-  // normalize ESD
-  fCurrentESD->Scale(1.0 / fCurrentESD->Integral());
-  inputDist->Scale(1.0 / inputDist->Integral());
 
-  Float_t minStartValue = 1e-3;
+  //Float_t minStartValue = 0; //1e-3;
 
+  //new TCanvas; fMultiplicityVtx[mcTarget]->Draw("COLZ");
   TH1* proj = fMultiplicityVtx[mcTarget]->ProjectionY("check-proj");
+  //proj->Rebin(2);
   proj->Scale(1.0 / proj->Integral());
+
+  Double_t results[fgMaxParams];
   for (Int_t i=0; i<fgMaxParams; ++i)
   {
     results[i] = inputDist->GetBinContent(i+1);
+
     if (check)
       results[i] = proj->GetBinContent(i+1);
 
-    printf("%f %f %f\n", inputDist->GetBinContent(i+1), TMath::Sqrt(inputDist->GetBinContent(i+1)), inputDist->GetBinError(i+1));
+    // minimum value
+    results[i] = TMath::Max(results[i], 1e-3);
+
+    Float_t stepSize = 0.1;
+
+    // minuit sees squared values to prevent it from going negative...
+    results[i] = TMath::Sqrt(results[i]);
+    //stepSize /= results[i]; // keep relative step size
+
+    minuit->SetParameter(i, Form("param%d", i), results[i], stepSize, 0, 0);
+  }
+  // bin 0 is filled with value from bin 1 (otherwise it's 0)
+  //minuit->SetParameter(0, "param0", (results[1] > minStartValue) ? results[1] : minStartValue, 0.1, 0, 0);
+  //results[0] = 0;
+  //minuit->SetParameter(0, "param0", 0, 0, 0, 0);
+
+  for (Int_t i=0; i<fgMaxInput; ++i)
+  {
+    //printf("%f %f %f\n", inputDist->GetBinContent(i+1), TMath::Sqrt(inputDist->GetBinContent(i+1)), inputDist->GetBinError(i+1));
 
     (*fCurrentESDVector)[i] = fCurrentESD->GetBinContent(i+1);
     if (fCurrentESD->GetBinError(i+1) > 0)
-      (*fCorrelationCovarianceMatrix)(i, i) = 1.0 / fCurrentESD->GetBinError(i+1);
+      (*fCorrelationCovarianceMatrix)(i, i) = (Double_t) 1e-6 / fCurrentESD->GetBinError(i+1) / fCurrentESD->GetBinError(i+1);
 
-    minuit->SetParameter(i, Form("param%d", i), ((results[i] > minStartValue) ? results[i] : minStartValue), 0.1, 0, 1);
+    if ((*fCorrelationCovarianceMatrix)(i, i) > 1e7)
+      (*fCorrelationCovarianceMatrix)(i, i) = 0;
+
+    //printf("%d --> %e\n", i, (*fCorrelationCovarianceMatrix)(i, i));
   }
-  // bin 0 is filled with value from bin 1 (otherwise it's 0)
-  minuit->SetParameter(0, "param0", (results[1] > minStartValue) ? results[1] : minStartValue, 0.1, 0, 1);
 
   Int_t dummy;
   Double_t chi2;
@@ -692,12 +815,16 @@ void AliMultiplicityCorrection::ApplyMinuitFit(Int_t inputRange, Bool_t fullPhas
   printf("Chi2 of initial parameters is = %f\n", chi2);
 
   if (check)
-    return;
+    return -1;
 
-  Double_t arglist[100];
-  arglist[0] = 0;
-  minuit->ExecuteCommand("SET PRINT", arglist, 1);
-  minuit->ExecuteCommand("MIGRAD", arglist, 1);
+  // first param is number of iterations, second is precision....
+  arglist[0] = 1e6;
+  //arglist[1] = 1e-5;
+  //minuit->ExecuteCommand("SCAN", arglist, 0);
+  Int_t status = minuit->ExecuteCommand("MIGRAD", arglist, 1);
+  printf("MINUIT status is %d\n", status);
+  //minuit->ExecuteCommand("MIGRAD", arglist, 1);
+  //minuit->ExecuteCommand("MIGRAD", arglist, 1);
   //printf("!!!!!!!!!!!!!! MIGRAD finished: Starting MINOS !!!!!!!!!!!!!!");
   //minuit->ExecuteCommand("MINOS", arglist, 0);
 
@@ -705,8 +832,9 @@ void AliMultiplicityCorrection::ApplyMinuitFit(Int_t inputRange, Bool_t fullPhas
   {
     if (fCurrentEfficiency->GetBinContent(i+1) > 0)
     {
-      fMultiplicityESDCorrected[correlationID]->SetBinContent(i+1, minuit->GetParameter(i) / fCurrentEfficiency->GetBinContent(i+1));
-      fMultiplicityESDCorrected[correlationID]->SetBinError(i+1, minuit->GetParError(i) / fCurrentEfficiency->GetBinContent(i+1));
+      fMultiplicityESDCorrected[correlationID]->SetBinContent(i+1, minuit->GetParameter(i) * minuit->GetParameter(i) / fCurrentEfficiency->GetBinContent(i+1));
+      // error is : (relError) * (value) = (minuit->GetParError(i) / minuit->GetParameter(i)) * (minuit->GetParameter(i) * minuit->GetParameter(i))
+      fMultiplicityESDCorrected[correlationID]->SetBinError(i+1, minuit->GetParError(i) * minuit->GetParameter(i) /  fCurrentEfficiency->GetBinContent(i+1));
     }
     else
     {
@@ -714,6 +842,8 @@ void AliMultiplicityCorrection::ApplyMinuitFit(Int_t inputRange, Bool_t fullPhas
       fMultiplicityESDCorrected[correlationID]->SetBinError(i+1, 0);
     }
   }
+
+  return status;
 }
 
 //____________________________________________________________________
@@ -725,11 +855,11 @@ void AliMultiplicityCorrection::ApplyNBDFit(Int_t inputRange, Bool_t fullPhaseSp
 
   Int_t correlationID = inputRange + ((fullPhaseSpace == kFALSE) ? 0 : 4);
 
-  SetupCurrentHists(inputRange, fullPhaseSpace, kTrVtx);
+  SetupCurrentHists(inputRange, fullPhaseSpace, kTrVtx, kFALSE);
 
-  fCorrelationMatrix = new TMatrixF(fgMaxParams, fgMaxParams);
-  fCorrelationCovarianceMatrix = new TMatrixF(fgMaxParams, fgMaxParams);
-  fCurrentESDVector = new TVectorF(fgMaxParams);
+  fCorrelationMatrix = new TMatrixD(fgMaxParams, fgMaxParams);
+  fCorrelationCovarianceMatrix = new TMatrixD(fgMaxParams, fgMaxParams);
+  fCurrentESDVector = new TVectorD(fgMaxParams);
 
   // normalize correction for given nPart
   for (Int_t i=1; i<=fCurrentCorrelation->GetNbinsX(); ++i)
@@ -773,7 +903,7 @@ void AliMultiplicityCorrection::ApplyNBDFit(Int_t inputRange, Bool_t fullPhaseSp
   Double_t arglist[100];
   arglist[0] = 0;
   minuit->ExecuteCommand("SET PRINT", arglist, 1);
-  minuit->ExecuteCommand("MIGRAD", arglist, 1);
+  minuit->ExecuteCommand("MIGRAD", arglist, 0);
   //minuit->ExecuteCommand("MINOS", arglist, 0);
 
   fNBD->SetParameters(minuit->GetParameter(0), minuit->GetParameter(1), minuit->GetParameter(2));
@@ -864,12 +994,41 @@ void AliMultiplicityCorrection::DrawHistograms()
 }
 
 //____________________________________________________________________
-void AliMultiplicityCorrection::DrawComparison(const char* name, Int_t inputRange, Bool_t fullPhaseSpace, Bool_t normalizeESD, TH1* mcHist)
+void AliMultiplicityCorrection::DrawComparison(const char* name, Int_t inputRange, Bool_t fullPhaseSpace, Bool_t normalizeESD, TH1* mcHist, Bool_t simple)
 {
+  //mcHist->Rebin(2);
+
   Int_t esdCorrId = inputRange + ((fullPhaseSpace == kFALSE) ? 0 : 4);
 
   TString tmpStr;
   tmpStr.Form("%s_DrawComparison_%d", name, esdCorrId);
+
+  if (fMultiplicityESDCorrected[esdCorrId]->Integral() == 0)
+  {
+    printf("ERROR. Unfolded histogram is empty\n");
+    return;
+  }
+
+  //regain measured distribution used for unfolding, because the bins at high mult. were modified in SetupCurrentHists
+  fCurrentESD = fMultiplicityESD[esdCorrId]->ProjectionY();
+  fCurrentESD->Sumw2();
+  fCurrentESD->Scale(1.0 / fCurrentESD->Integral());
+
+  // normalize unfolded result to 1
+  fMultiplicityESDCorrected[esdCorrId]->Scale(1.0 / fMultiplicityESDCorrected[esdCorrId]->Integral());
+
+  //fCurrentESD->Scale(mcHist->Integral(2, 200));
+
+  //new TCanvas;
+  /*TH1* ratio = (TH1*) fMultiplicityESDCorrected[esdCorrId]->Clone("ratio");
+  ratio->Divide(mcHist);
+  ratio->Draw("HIST");
+  ratio->Fit("pol0", "W0", "", 20, 120);
+  Float_t scalingFactor = ratio->GetFunction("pol0")->GetParameter(0);
+  delete ratio;
+  mcHist->Scale(scalingFactor);*/
+
+  mcHist->Scale(1.0 / mcHist->Integral());
 
   // calculate residual
 
@@ -877,35 +1036,65 @@ void AliMultiplicityCorrection::DrawComparison(const char* name, Int_t inputRang
   // if normalizeESD is not set, the histogram is already normalized, this needs to be passed to CalculateMultiplicityESD
   TH1* tmpESDEfficiencyRecorrected = (TH1*) fMultiplicityESDCorrected[esdCorrId]->Clone("tmpESDEfficiencyRecorrected");
   tmpESDEfficiencyRecorrected->Multiply(fCurrentEfficiency);
-  TH2* convoluted = CalculateMultiplicityESD(tmpESDEfficiencyRecorrected, esdCorrId, !normalizeESD);
-  TH1* proj2 = convoluted->ProjectionY("proj2", -1, -1, "e");
-  NormalizeToBinWidth(proj2);
+  TH2* convoluted = CalculateMultiplicityESD(tmpESDEfficiencyRecorrected, esdCorrId);
+  TH1* convolutedProj = convoluted->ProjectionY("convolutedProj", -1, -1, "e");
+  if (convolutedProj->Integral() > 0)
+  {
+    convolutedProj->Scale(1.0 / convolutedProj->Integral());
+  }
+  else
+    printf("ERROR: convolutedProj is empty. Something went wrong calculating the convoluted histogram.\n");
 
-  TH1* residual = (TH1*) proj2->Clone("residual");
-  residual->SetTitle("Residuals;Ntracks;(folded unfolded measured - measured) / measured");
+  //NormalizeToBinWidth(proj2);
+
+  TH1* residual = (TH1*) convolutedProj->Clone("residual");
+  residual->SetTitle("Residuals;Ntracks;(folded unfolded measured - measured) / e");
 
   residual->Add(fCurrentESD, -1);
-  residual->Divide(residual, fCurrentESD, 1, 1, "B");
+  //residual->Divide(residual, fCurrentESD, 1, 1, "B");
+
+  TH1* residualHist = new TH1F("residualHist", "residualHist", 50, -5, 5);
 
   // TODO fix errors
-  for (Int_t i=1; i<residual->GetNbinsX(); ++i)
+  Float_t chi2 = 0;
+  for (Int_t i=1; i<=residual->GetNbinsX(); ++i)
   {
-    proj2->SetBinError(i, 0);
+    if (fCurrentESD->GetBinError(i) > 0)
+    {
+      Float_t value = residual->GetBinContent(i) / fCurrentESD->GetBinError(i);
+      if (i > 1)
+        chi2 += value * value;
+      residual->SetBinContent(i, value);
+      residualHist->Fill(value);
+    }
+    else
+    {
+      //printf("Residual bin %d set to 0\n", i);
+      residual->SetBinContent(i, 0);
+    }
+    convolutedProj->SetBinError(i, 0);
     residual->SetBinError(i, 0);
+
+    if (i == 200)
+      fLastChi2Residuals = chi2;
   }
 
-  // normalize mc to 1
-  //mcHist->Scale(1.0 / mcHist->Integral(1, 200));
+  residualHist->Fit("gaus", "N");
+  delete residualHist;
 
-  // normalize unfolded esd to 1
-  //fMultiplicityESDCorrected[esdCorrId]->Scale(1.0 / fMultiplicityESDCorrected[esdCorrId]->Integral(1, 200));
+  printf("Difference (Residuals) is %f for bin 2-200\n", chi2);
 
-  // normalize unfolded result to mc hist
-  fMultiplicityESDCorrected[esdCorrId]->Scale(1.0 / fMultiplicityESDCorrected[esdCorrId]->Integral());
-  fMultiplicityESDCorrected[esdCorrId]->Scale(mcHist->Integral(1, 200));
-
-  TCanvas* canvas1 = new TCanvas(tmpStr, tmpStr, 1200, 800);
-  canvas1->Divide(2, 2);
+  TCanvas* canvas1 = 0;
+  if (simple)
+  {
+    canvas1 = new TCanvas(tmpStr, tmpStr, 900, 400);
+    canvas1->Divide(2, 1);
+  }
+  else
+  {
+    canvas1 = new TCanvas(tmpStr, tmpStr, 1200, 1200);
+    canvas1->Divide(2, 3);
+  }
 
   canvas1->cd(1);
   TH1* proj = (TH1*) mcHist->Clone("proj");
@@ -915,76 +1104,162 @@ void AliMultiplicityCorrection::DrawComparison(const char* name, Int_t inputRang
     NormalizeToBinWidth(fMultiplicityESDCorrected[esdCorrId]);
 
   proj->GetXaxis()->SetRangeUser(0, 200);
+  proj->SetTitle(";true multiplicity;Entries");
+  proj->SetStats(kFALSE);
   proj->DrawCopy("HIST");
   gPad->SetLogy();
 
   //fMultiplicityESDCorrected[esdCorrId]->SetMarkerStyle(3);
   fMultiplicityESDCorrected[esdCorrId]->SetLineColor(2);
-  fMultiplicityESDCorrected[esdCorrId]->DrawCopy("SAME HIST");
+  fMultiplicityESDCorrected[esdCorrId]->DrawCopy("SAME HIST E");
 
-  Float_t chi2 = 0;
+  TLegend* legend = new TLegend(0.3, 0.8, 0.93, 0.93);
+  legend->AddEntry(proj, "true distribution");
+  legend->AddEntry(fMultiplicityESDCorrected[esdCorrId], "unfolded distribution");
+  legend->SetFillColor(0);
+  legend->Draw();
+  // unfortunately does not work. maybe a bug? --> legend->SetTextSizePixels(14);
+
+  canvas1->cd(2);
+
+  gPad->SetLogy();
+  fCurrentESD->GetXaxis()->SetRangeUser(0, 200);
+  //fCurrentESD->SetLineColor(2);
+  fCurrentESD->SetTitle(";measured multiplicity;Entries");
+  fCurrentESD->SetStats(kFALSE);
+  fCurrentESD->DrawCopy("HIST E");
+
+  convolutedProj->SetLineColor(2);
+  //proj2->SetMarkerColor(2);
+  //proj2->SetMarkerStyle(5);
+  convolutedProj->DrawCopy("HIST SAME");
+
+  legend = new TLegend(0.3, 0.8, 0.93, 0.93);
+  legend->AddEntry(fCurrentESD, "measured distribution");
+  legend->AddEntry(convolutedProj, "R #otimes unfolded distribution");
+  legend->SetFillColor(0);
+  legend->Draw();
+
+  TH1* diffMCUnfolded = dynamic_cast<TH1*> (proj->Clone("diffMCUnfolded"));
+  diffMCUnfolded->Add(fMultiplicityESDCorrected[esdCorrId], -1);
+
+  /*Float_t chi2 = 0;
+  Float_t chi = 0;
   fLastChi2MCLimit = 0;
+  Int_t limit = 0;
   for (Int_t i=2; i<=200; ++i)
   {
     if (proj->GetBinContent(i) != 0)
     {
       Float_t value = (proj->GetBinContent(i) - fMultiplicityESDCorrected[esdCorrId]->GetBinContent(i)) / proj->GetBinContent(i);
       chi2 += value * value;
+      chi += TMath::Abs(value);
 
-      if (chi2 < 0.1)
+      //printf("%d %f\n", i, chi);
+
+      if (chi2 < 0.2)
         fLastChi2MCLimit = i;
 
-      if (i == 100)
-        fLastChi2MC = chi2;
+      if (chi < 3)
+        limit = i;
+
     }
-  }
-
-  printf("Difference (from MC) is %f for bin 2-100. Limit is %d.\n", fLastChi2MC, fLastChi2MCLimit);
-
-  canvas1->cd(2);
-
-  NormalizeToBinWidth(fCurrentESD);
-  gPad->SetLogy();
-  fCurrentESD->GetXaxis()->SetRangeUser(0, 200);
-  //fCurrentESD->SetLineColor(2);
-  fCurrentESD->DrawCopy("HIST");
-
-  proj2->SetLineColor(2);
-  //proj2->SetMarkerColor(2);
-  //proj2->SetMarkerStyle(5);
-  proj2->DrawCopy("HIST SAME");
+  }*/
 
   chi2 = 0;
-  for (Int_t i=2; i<=100; ++i)
+  Float_t chi = 0;
+  Int_t limit = 0;
+  for (Int_t i=1; i<=diffMCUnfolded->GetNbinsX(); ++i)
   {
-    if (fCurrentESD->GetBinContent(i) != 0)
+    if (fMultiplicityESDCorrected[esdCorrId]->GetBinError(i) > 0)
     {
-      Float_t value = (proj2->GetBinContent(i) - fCurrentESD->GetBinContent(i)) / fCurrentESD->GetBinContent(i);
-      chi2 += value * value;
+      Double_t value = diffMCUnfolded->GetBinContent(i) / fMultiplicityESDCorrected[esdCorrId]->GetBinError(i);
+      if (value > 1e8)
+        value = 1e8; //prevent arithmetic exception
+      else if (value < -1e8)
+        value = -1e8;
+      if (i > 1)
+      {
+        chi2 += value * value;
+        chi += TMath::Abs(value);
+      }
+      diffMCUnfolded->SetBinContent(i, value);
     }
+    else
+    {
+      //printf("diffMCUnfolded bin %d set to 0\n", i);
+      diffMCUnfolded->SetBinContent(i, 0);
+    }
+    if (chi2 < 1000)
+      fLastChi2MCLimit = i;
+    if (chi < 1000)
+      limit = i;
+    if (i == 150)
+      fLastChi2MC = chi2;
   }
 
-  printf("Difference (Residuals) is %f for bin 2-100\n", chi2);
-  fLastChi2Residuals = chi2;
+  printf("limits %d %d\n", fLastChi2MCLimit, limit);
+  fLastChi2MCLimit = limit;
 
-  canvas1->cd(3);
-  TH1* clone = dynamic_cast<TH1*> (proj->Clone("clone"));
-  clone->Divide(fMultiplicityESDCorrected[esdCorrId]);
-  clone->SetTitle("Ratio;Npart;MC/Unfolded Measured");
-  clone->GetYaxis()->SetRangeUser(0.8, 1.2);
-  clone->GetXaxis()->SetRangeUser(0, 200);
-  clone->DrawCopy("HIST");
+  printf("Difference (from MC) is %f for bin 2-150. Limit is %d.\n", fLastChi2MC, fLastChi2MCLimit);
 
-  /*TLegend* legend = new TLegend(0.6, 0.7, 0.85, 0.85);
-  legend->AddEntry(fMultiplicityESDCorrected, "ESD corrected");
-  legend->AddEntry(fMultiplicityMC, "MC");
-  legend->AddEntry(fMultiplicityESD, "ESD");
-  legend->Draw();*/
+  if (!simple)
+  {
+    canvas1->cd(3);
 
-  canvas1->cd(4);
-  residual->GetYaxis()->SetRangeUser(-0.2, 0.2);
-  residual->GetXaxis()->SetRangeUser(0, 200);
-  residual->DrawCopy();
+    diffMCUnfolded->SetTitle("#chi^{2};Npart;(MC - Unfolded) / e");
+    //diffMCUnfolded->GetYaxis()->SetRangeUser(-20, 20);
+    diffMCUnfolded->GetXaxis()->SetRangeUser(0, 200);
+    diffMCUnfolded->DrawCopy("HIST");
+
+    TH1F* fluctuation = new TH1F("fluctuation", "fluctuation", 20, -5, 5);
+    for (Int_t i=20; i<=diffMCUnfolded->GetNbinsX(); ++i)
+      fluctuation->Fill(diffMCUnfolded->GetBinContent(i));
+
+    new TCanvas;
+    fluctuation->Draw();
+
+    /*TLegend* legend = new TLegend(0.6, 0.7, 0.85, 0.85);
+    legend->AddEntry(fMultiplicityESDCorrected, "ESD corrected");
+    legend->AddEntry(fMultiplicityMC, "MC");
+    legend->AddEntry(fMultiplicityESD, "ESD");
+    legend->Draw();*/
+
+    canvas1->cd(4);
+    //residual->GetYaxis()->SetRangeUser(-0.2, 0.2);
+    residual->GetXaxis()->SetRangeUser(0, 200);
+    residual->DrawCopy();
+
+    canvas1->cd(5);
+
+    TH1* ratio = (TH1*) fMultiplicityESDCorrected[esdCorrId]->Clone("ratio");
+    ratio->Divide(mcHist);
+    ratio->SetTitle("Ratio;true multiplicity;Unfolded / MC");
+    ratio->GetYaxis()->SetRangeUser(0.5, 1.5);
+    ratio->GetXaxis()->SetRangeUser(0, 200);
+    ratio->SetStats(kFALSE);
+    ratio->Draw("HIST");
+
+    Double_t ratioChi2 = 0;
+    fLastChi2MCLimit = 0;
+    for (Int_t i=2; i<=150; ++i)
+    {
+      Float_t value = ratio->GetBinContent(i) - 1;
+      if (value > 1e8)
+        value = 1e8; //prevent arithmetic exception
+      else if (value < -1e8)
+        value = -1e8;
+
+      ratioChi2 += value * value;
+
+      if (ratioChi2 < 0.1)
+        fLastChi2MCLimit = i;
+    }
+
+    printf("Sum over (ratio-1)^2 (2..150) is %f\n", ratioChi2);
+    // TODO FAKE
+    fLastChi2MC = ratioChi2;
+  }
 
   canvas1->SaveAs(Form("%s.gif", canvas1->GetName()));
 }
@@ -1031,10 +1306,17 @@ void AliMultiplicityCorrection::ApplyBayesianMethod(Int_t inputRange, Bool_t ful
 
   Int_t correlationID = inputRange + ((fullPhaseSpace == kFALSE) ? 0 : 4);
 
-  SetupCurrentHists(inputRange, fullPhaseSpace, eventType);
+  SetupCurrentHists(inputRange, fullPhaseSpace, eventType, kFALSE);
 
-  // normalize ESD
-  fCurrentESD->Scale(1.0 / fCurrentESD->Integral());
+  // smooth efficiency
+  //TH1* tmp = (TH1*) fCurrentEfficiency->Clone("eff_clone");
+  //for (Int_t i=2; i<fCurrentEfficiency->GetNbinsX(); ++i)
+  //  fCurrentEfficiency->SetBinContent(i, (tmp->GetBinContent(i-1) + tmp->GetBinContent(i) + tmp->GetBinContent(i+1)) / 3);
+
+  // set efficiency to 1 above 150
+  // FAKE TEST
+  //for (Int_t i=150; i<=fCurrentEfficiency->GetNbinsX(); ++i)
+  //  fCurrentEfficiency->SetBinContent(i, 1);
 
   // normalize correction for given nPart
   for (Int_t i=1; i<=fCurrentCorrelation->GetNbinsX(); ++i)
@@ -1063,6 +1345,27 @@ void AliMultiplicityCorrection::ApplyBayesianMethod(Int_t inputRange, Bool_t ful
     }
   }
 
+  // normalize nTrack
+  /*for (Int_t j=1; j<=fCurrentCorrelation->GetNbinsY(); ++j)
+  {
+    // with this it is normalized to 1
+    Double_t sum = fCurrentCorrelation->Integral(1, fCurrentCorrelation->GetNbinsX(), j, j);
+
+    for (Int_t i=1; i<=fCurrentCorrelation->GetNbinsX(); ++i)
+    {
+      if (sum > 0)
+      {
+        fCurrentCorrelation->SetBinContent(i, j, fCurrentCorrelation->GetBinContent(i, j) / sum);
+        fCurrentCorrelation->SetBinError(i, j, fCurrentCorrelation->GetBinError(i, j) / sum);
+      }
+      else
+      {
+        fCurrentCorrelation->SetBinContent(i, j, 0);
+        fCurrentCorrelation->SetBinError(i, j, 0);
+      }
+    }
+  }*/
+
   // smooth input spectrum
   /*
   TH1* esdClone = (TH1*) fCurrentESD->Clone("esdClone");
@@ -1076,6 +1379,18 @@ void AliMultiplicityCorrection::ApplyBayesianMethod(Int_t inputRange, Bool_t ful
   // rescale to 1
   fCurrentESD->Scale(1.0 / fCurrentESD->Integral());
   */
+
+  /*new TCanvas;
+  fCurrentEfficiency->Draw();
+
+  new TCanvas;
+  fCurrentCorrelation->DrawCopy("COLZ");
+
+  new TCanvas;
+  ((TH2*) fCurrentCorrelation)->ProjectionX()->DrawCopy();
+
+  new TCanvas;
+  ((TH2*) fCurrentCorrelation)->ProjectionY()->DrawCopy();*/
 
   // pick prior distribution
   TH1* hPrior = 0;
@@ -1103,6 +1418,8 @@ void AliMultiplicityCorrection::ApplyBayesianMethod(Int_t inputRange, Bool_t ful
 
   TH1F* convergence = new TH1F("convergence", "convergence", 50, 0.5, 50.5);
 
+  const Int_t kStartBin = 1;
+
   // unfold...
   for (Int_t i=0; i<nIterations; i++)
   {
@@ -1114,9 +1431,9 @@ void AliMultiplicityCorrection::ApplyBayesianMethod(Int_t inputRange, Bool_t ful
     for (Int_t m=1; m<=hResponse->GetNbinsY(); m++)
     {
       Float_t norm = 0;
-      for (Int_t t = 1; t<=hResponse->GetNbinsX(); t++)
+      for (Int_t t = kStartBin; t<=hResponse->GetNbinsX(); t++)
         norm += hResponse->GetBinContent(t,m) * hPrior->GetBinContent(t);
-      for (Int_t t = 1; t<=hResponse->GetNbinsX(); t++)
+      for (Int_t t = kStartBin; t<=hResponse->GetNbinsX(); t++)
       {
         if (norm==0)
           hInverseResponseBayes->SetBinContent(t,m,0);
@@ -1125,7 +1442,7 @@ void AliMultiplicityCorrection::ApplyBayesianMethod(Int_t inputRange, Bool_t ful
       }
     }
 
-    for (Int_t t = 1; t<=hResponse->GetNbinsX(); t++)
+    for (Int_t t = kStartBin; t<=hResponse->GetNbinsX(); t++)
     {
       Float_t value = 0;
       for (Int_t m=1; m<=hResponse->GetNbinsY(); m++)
@@ -1138,18 +1455,24 @@ void AliMultiplicityCorrection::ApplyBayesianMethod(Int_t inputRange, Bool_t ful
     }
 
     // this is the last guess, fill before (!) smoothing
-    for (Int_t t=1; t<=fMultiplicityESDCorrected[correlationID]->GetNbinsX(); t++)
+    for (Int_t t=kStartBin; t<=fMultiplicityESDCorrected[correlationID]->GetNbinsX(); t++)
     {
+      //as bin error put the difference to the last iteration
+      //fMultiplicityESDCorrected[correlationID]->SetBinError(t, hTemp->GetBinContent(t) - fMultiplicityESDCorrected[correlationID]->GetBinContent(t));
       fMultiplicityESDCorrected[correlationID]->SetBinContent(t, hTemp->GetBinContent(t));
-      fMultiplicityESDCorrected[correlationID]->SetBinError(t, 0.05 * hTemp->GetBinContent(t)); // TODO
+      fMultiplicityESDCorrected[correlationID]->SetBinError(t, 0.05 * hTemp->GetBinContent(t));
 
       //printf(" bin %d content %f \n", t, fMultiplicityESDCorrected[correlationID]->GetBinContent(t));
     }
 
+    /*new TCanvas;
+    fMultiplicityESDCorrected[correlationID]->DrawCopy();
+    gPad->SetLogy();*/
+
     // regularization (simple smoothing)
     TH1F* hTrueSmoothed = (TH1F*) hTemp->Clone("truesmoothed");
 
-    for (Int_t t=2; t<hTrueSmoothed->GetNbinsX(); t++)
+    for (Int_t t=kStartBin+2; t<hTrueSmoothed->GetNbinsX(); t++)
     {
       Float_t average = (hTemp->GetBinContent(t-1)
                          + hTemp->GetBinContent(t)
@@ -1168,7 +1491,7 @@ void AliMultiplicityCorrection::ApplyBayesianMethod(Int_t inputRange, Bool_t ful
     //for (Int_t t=1; t<=hPrior->GetNbinsX(); t++)
     //  norm = norm + hTrueSmoothed->GetBinContent(t);
 
-    for (Int_t t=1; t<hTrueSmoothed->GetNbinsX(); t++)
+    for (Int_t t=kStartBin; t<=hTrueSmoothed->GetNbinsX(); t++)
     {
       Float_t newValue = hTrueSmoothed->GetBinContent(t)/norm;
       Float_t diff = hPrior->GetBinContent(t) - newValue;
@@ -1358,7 +1681,7 @@ void AliMultiplicityCorrection::ApplyLaszloMethod(Int_t inputRange, Bool_t fullP
   Int_t correlationID = inputRange + ((fullPhaseSpace == kFALSE) ? 0 : 4);
   Int_t mcTarget = ((fullPhaseSpace == kFALSE) ? inputRange : 4);
 
-  SetupCurrentHists(inputRange, fullPhaseSpace, eventType);
+  SetupCurrentHists(inputRange, fullPhaseSpace, eventType, kFALSE);
 
   // TODO should be taken from correlation map
   //TH1* sumHist = GetMultiplicityMC(inputRange, eventType)->ProjectionY("sumHist", 1, GetMultiplicityMC(inputRange, eventType)->GetNbinsX());
@@ -1478,7 +1801,7 @@ void AliMultiplicityCorrection::ApplyGaussianMethod(Int_t inputRange, Bool_t ful
   Int_t correlationID = inputRange + ((fullPhaseSpace == kFALSE) ? 0 : 4);
   Int_t mcTarget = ((fullPhaseSpace == kFALSE) ? inputRange : 4);
 
-  SetupCurrentHists(inputRange, fullPhaseSpace, kTrVtx);
+  SetupCurrentHists(inputRange, fullPhaseSpace, kTrVtx, kFALSE);
 
   NormalizeToBinWidth((TH2*) fCurrentCorrelation);
 
@@ -1544,7 +1867,7 @@ void AliMultiplicityCorrection::ApplyGaussianMethod(Int_t inputRange, Bool_t ful
 }
 
 //____________________________________________________________________
-TH2F* AliMultiplicityCorrection::CalculateMultiplicityESD(TH1* inputMC, Int_t correlationMap, Bool_t normalized)
+TH2F* AliMultiplicityCorrection::CalculateMultiplicityESD(TH1* inputMC, Int_t correlationMap)
 {
   // runs the distribution given in inputMC through the response matrix identified by
   // correlationMap and produces a measured distribution
@@ -1568,7 +1891,8 @@ TH2F* AliMultiplicityCorrection::CalculateMultiplicityESD(TH1* inputMC, Int_t co
     }
   }
 
-  TH1* corr = hist->Project3D("zy");
+  TH2* corr = (TH2*) hist->Project3D("zy");
+  //corr->Rebin2D(2, 1);
   corr->Sumw2();
 
   // normalize correction for given nPart
@@ -1594,26 +1918,18 @@ TH2F* AliMultiplicityCorrection::CalculateMultiplicityESD(TH1* inputMC, Int_t co
     Float_t measured = 0;
     Float_t error = 0;
 
-    for (Int_t gen=1; gen<=target->GetNbinsY(); ++gen)
+    for (Int_t gen=1; gen<=corr->GetNbinsX(); ++gen)
     {
-      Int_t mcGenBin = inputMC->GetXaxis()->FindBin(target->GetYaxis()->GetBinCenter(gen));
+      Int_t mcGenBin = inputMC->GetXaxis()->FindBin(corr->GetXaxis()->GetBinCenter(gen));
 
-      Float_t factor = 1;
-      if (normalized)
-        factor = inputMC->GetBinWidth(mcGenBin);
-
-      measured += inputMC->GetBinContent(mcGenBin) * factor * corr->GetBinContent(gen, meas);
-      error += inputMC->GetBinError(mcGenBin) * factor * corr->GetBinContent(gen, meas);
+      measured += inputMC->GetBinContent(mcGenBin) * corr->GetBinContent(gen, meas);
+      error += inputMC->GetBinError(mcGenBin) * corr->GetBinContent(gen, meas);
     }
-
-    // bin width of the <measured> axis has to be taken into account
-    //measured /= target->GetYaxis()->GetBinWidth(meas);
-    //error /= target->GetYaxis()->GetBinWidth(meas);
 
     //printf("%f +- %f ; %f +- %f \n", inputMC->GetBinContent(meas), inputMC->GetBinError(meas), measured, error);
 
-    target->SetBinContent(target->GetNbinsX() / 2, meas, measured);
-    target->SetBinError(target->GetNbinsX() / 2, meas, error);
+    target->SetBinContent(1 + target->GetNbinsX() / 2, meas, measured);
+    target->SetBinError(1 + target->GetNbinsX() / 2, meas, error);
   }
 
   return target;

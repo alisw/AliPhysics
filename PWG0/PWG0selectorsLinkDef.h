@@ -18,5 +18,6 @@
 #pragma link C++ class AliROCESDAnalysisSelector+;
 #pragma link C++ class AliROCRawAnalysisSelector+;
 #pragma link C++ class AliROCClusterAnalysisSelector+;
+#pragma link C++ class AliHighMultiplicitySelector+;
 
 #endif
