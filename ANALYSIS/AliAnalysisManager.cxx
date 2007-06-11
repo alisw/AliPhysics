@@ -212,11 +212,14 @@ void AliAnalysisManager::SlaveBegin(TTree *tree)
       cout << "->AliAnalysisManager::SlaveBegin()" << endl;
    }
    // Call InitIO of EventHandler
-   if (fMode == kProofAnalysis) {
-       fEventHandler->InitIO("proof");
-   } else {
-       fEventHandler->InitIO("local");
+   if (fEventHandler) {
+       if (fMode == kProofAnalysis) {
+	   fEventHandler->InitIO("proof");
+       } else {
+	   fEventHandler->InitIO("local");
+       }
    }
+   
 
    //
    TIter next(fTasks);
@@ -297,7 +300,7 @@ void AliAnalysisManager::PackOutput(TList *target)
       return;
    }
 
-   fEventHandler->Terminate();
+   if (fEventHandler) fEventHandler->Terminate();
    
    if (fMode == kProofAnalysis) {
       TIter next(fOutputs);
@@ -381,8 +384,10 @@ void AliAnalysisManager::UnpackOutput(TList *source)
       }   
       // Check if the output need to be written to a file.
       const char *filename = output->GetFileName();
-      if (!(strcmp(filename, "default"))) filename = fEventHandler->GetOutputFileName();
-
+      if (!(strcmp(filename, "default"))) {
+	  if (fEventHandler) filename = fEventHandler->GetOutputFileName();
+      }
+      
       if (!filename || !strlen(filename)) continue;
       TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(filename);
       if (file) file->cd();
@@ -420,7 +425,7 @@ void AliAnalysisManager::Terminate()
       cout << "<-AliAnalysisManager::Terminate()" << endl;
    }   
    //
-   fEventHandler->TerminateIO();
+   if (fEventHandler) fEventHandler->TerminateIO();
 }
 
 //______________________________________________________________________________
@@ -733,7 +738,7 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
          }   
          task->ExecuteTask(option);
       }
-      fEventHandler->Fill();
+      if (fEventHandler) fEventHandler->Fill();
       return;
    }   
    // The event loop is not controlled by TSelector   
@@ -745,7 +750,7 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
       }   
       task->ExecuteTask(option);
    }   
-   fEventHandler->Fill();
+   if (fEventHandler) fEventHandler->Fill();
 }
 
 //______________________________________________________________________________
