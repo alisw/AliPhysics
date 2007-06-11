@@ -24,7 +24,9 @@ class AliTRDseed : public TObject {
   AliTRDseed(const AliTRDseed &s);
   ~AliTRDseed() {};                 
 
-  AliTRDseed      &operator=(const AliTRDseed &/*s*/)       { return *this;          } 
+  AliTRDseed      &operator=(const AliTRDseed &s)           { *(new(this) AliTRDseed(s)); 
+                                                              return *this;          }
+
 
   static  Float_t  FitRiemanTilt(AliTRDseed *seed, Bool_t error);
           void     UseClusters();
