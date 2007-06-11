@@ -16,10 +16,13 @@
 /* $Id$ */
 
 #include <TList.h>
+#include <TParticle.h>
 
 #include <AliPWG0depHelper.h>
 
 #include <AliHeader.h>
+#include <AliStack.h>
+#include <AliLog.h>
 
 #include <AliGenEventHeader.h>
 #include <AliGenPythiaEventHeader.h>
@@ -29,7 +32,7 @@
 ClassImp(AliPWG0depHelper)
 
 //____________________________________________________________________
-const Int_t AliPWG0depHelper::GetPythiaEventProcessType(AliHeader* aHeader, Bool_t adebug) {
+Int_t AliPWG0depHelper::GetPythiaEventProcessType(AliHeader* aHeader, Bool_t adebug) {
   //
   // get the process type of the event.
   //
@@ -67,4 +70,45 @@ const Int_t AliPWG0depHelper::GetPythiaEventProcessType(AliHeader* aHeader, Bool
   }
 
   return pythiaGenHeader->ProcessType();
+}
+
+//____________________________________________________________________
+TParticle* AliPWG0depHelper::FindPrimaryMother(AliStack* stack, Int_t label)
+{
+  //
+  // Finds the first mother among the primary particles of the particle identified by <label>,
+  // i.e. the primary that "caused" this particle
+  //
+
+  Int_t nPrim  = stack->GetNprimary();
+  TParticle* mother = stack->Particle(label);
+
+  if (!mother)
+  {
+    AliDebugGeneral("FindPrimaryMother", AliLog::kError, Form("UNEXPECTED: Could not retrieve particle with label %d.", label));
+    return 0;
+  }
+
+  while (label >= nPrim)
+  {
+    //printf("Particle %d (pdg %d) is not a primary. Let's check its mother %d\n", label, mother->GetPdgCode(), mother->GetMother(0));
+
+    if (mother->GetMother(0) == -1)
+    {
+      AliDebugGeneral("FindPrimaryMother", AliLog::kError, Form("UNEXPECTED: Could not find mother of secondary particle %d.", label));
+      mother = 0;
+      break;
+    }
+
+    label = mother->GetMother(0);
+
+    mother = stack->Particle(label);
+    if (!mother)
+    {
+      AliDebugGeneral("FindPrimaryMother", AliLog::kError, Form("UNEXPECTED: particle with label %d not found in stack (find mother loop).", label));
+      break;
+    }
+  }
+
+  return mother;
 }

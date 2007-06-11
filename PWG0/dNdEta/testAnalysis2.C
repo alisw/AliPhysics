@@ -14,19 +14,14 @@
 void testAnalysis2(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kFALSE, Bool_t aDebug = kFALSE, Bool_t aProof = kFALSE, const char* correctionMapFile = "correction_map.root", const char* correctionMapFolder = "dndeta_correction", const char* option = "", const char* proofServer = "jgrosseo@lxb6046")
 {
   if (aProof)
-  {
     connectProof(proofServer);
-    gProof->AddInput(new TParameter<long>("PROOF_MaxSlavesPerNode", (long)2));
-    gProof->AddInput(new TNamed("PROOF_Packetizer", "TAdaptivePacketizer"));
-  }
 
   TString libraries("libEG;libGeom;libESD;libPWG0base");
-  TString packages("adaptivepacketizer;PWG0base");
+  TString packages("PWG0base");
 
   if (!prepareQuery(libraries, packages, kTRUE))
     return;
 
-  //TODO somehow prevent loading several times
   gROOT->ProcessLine(".L CreateCuts.C");
   gROOT->ProcessLine(".L drawPlots.C");
 
