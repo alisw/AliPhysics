@@ -202,8 +202,8 @@ public:
   virtual ~AliESDCaloTrigger();
 
   // does this create mem leak? CKB use new with placement?
-  void AddTriggerPosition(const TArrayF array)  { fTriggerPosition     = new TArrayF(array); }
-  void AddTriggerAmplitudes(const TArrayF array) { fTriggerAmplitudes  = new TArrayF(array); }
+  void AddTriggerPosition(const TArrayF & array)  { fTriggerPosition     = new TArrayF(array); }
+  void AddTriggerAmplitudes(const TArrayF & array) { fTriggerAmplitudes  = new TArrayF(array); }
   
   void Reset(); 
 
@@ -367,11 +367,11 @@ public:
   }
 
   
-  AliESDHLTtrack *GetHLTConfMapTrack(Int_t i) const {
+  AliESDHLTtrack *GetHLTConfMapTrack(Int_t /*i*/) const {
     //    return (AliESDHLTtrack *)fHLTConfMapTracks->UncheckedAt(i);
     return 0;
   }
-  void AddHLTConfMapTrack(const AliESDHLTtrack *t) {
+  void AddHLTConfMapTrack(const AliESDHLTtrack */*t*/) {
     /*
     TClonesArray &fhlt = *fHLTConfMapTracks;
     new(fhlt[fHLTConfMapTracks->GetEntriesFast()]) AliESDHLTtrack(*t);
@@ -380,11 +380,11 @@ public:
   }
   
 
-  AliESDHLTtrack *GetHLTHoughTrack(Int_t i) const {
+  AliESDHLTtrack *GetHLTHoughTrack(Int_t /*i*/) const {
     //    return (AliESDHLTtrack *)fHLTHoughTracks->UncheckedAt(i);
     return 0;
   }
-  void AddHLTHoughTrack(const AliESDHLTtrack *t) {
+  void AddHLTHoughTrack(const AliESDHLTtrack */*t*/) {
     printf("ESD:: AddHLTHoughTrack do nothing \n");
     /*
     TClonesArray &fhlt = *fHLTHoughTracks;
