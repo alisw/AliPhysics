@@ -21,6 +21,7 @@
 #pragma link C++ class AliAODVertex+;
 #pragma link C++ class AliAODCluster+;
 #pragma link C++ class AliAODJet+;
+#pragma link C++ class AliAODPhoton+;
 #pragma link C++ class AliAODRedCov<3>+;
 #pragma link C++ class AliAODRedCov<4>+;
 #pragma link C++ class AliAODRedCov<6>+;
