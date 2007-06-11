@@ -176,7 +176,7 @@ void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   esd->AddPHOSTriggerAmplitudes(triggerAmplitudes);
   
   //######################################
-
+  
   //Fill CaloClusters 
   for (Int_t recpart = 0 ; recpart < nOfRecParticles ; recpart++) {
     AliPHOSRecParticle * rp = dynamic_cast<AliPHOSRecParticle*>(recParticles->At(recpart));
@@ -186,57 +186,68 @@ void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
     AliPHOSTrackSegment *ts    = gime->TrackSegment(rp->GetPHOSTSIndex());
     AliPHOSEmcRecPoint  *emcRP = gime->EmcRecPoint(ts->GetEmcIndex());
     AliESDCaloCluster   *ec    = new AliESDCaloCluster() ; 
-
-  // fills the ESDCaloCluster
+        
     Float_t xyz[3];
     for (Int_t ixyz=0; ixyz<3; ixyz++) 
       xyz[ixyz] = rp->GetPos()[ixyz];
     
     AliDebug(2,Form("Global position xyz=(%f,%f,%f)",xyz[0],xyz[1],xyz[2]));
     
-
+    //Create digits lists
     Int_t  digitMult  = emcRP->GetDigitsMultiplicity();
     Int_t *digitsList = emcRP->GetDigitsList();
-    UShort_t *amplList  = new UShort_t[digitMult];
-    UShort_t *timeList  = new UShort_t[digitMult];
-    UShort_t *digiList  = new UShort_t[digitMult];
+    Short_t *amplList  = new Short_t[digitMult];
+    Short_t *timeList  = new Short_t[digitMult];
+    Short_t *digiList  = new Short_t[digitMult];
 
-    // Convert Float_t* and Int_t* to UShort_t* to save memory
+    // Convert Float_t* and Int_t* to Short_t* to save memory
     for (Int_t iDigit=0; iDigit<digitMult; iDigit++) {
       AliPHOSDigit *digit = gime->Digit(digitsList[iDigit]);
-      amplList[iDigit] = (UShort_t)(digit->GetEnergy()*500); // Energy in units of GeV/500
-      timeList[iDigit] = (UShort_t)(digit->GetTime()*1e9*100); // time in units of 0.01 ns
-      digiList[iDigit] = (UShort_t)(digit->GetId());
+      amplList[iDigit] = (Short_t)(digit->GetEnergy()*500); // Energy in units of GeV/500
+      timeList[iDigit] = (Short_t)(digit->GetTime()*1e9*100); // time in units of 0.01 ns
+      digiList[iDigit] = (Short_t)(digit->GetId());
     }
-
+    
+    //Primaries
+    Int_t  primMult  = 0;
+    Int_t *primInts =  emcRP->GetPrimaries(primMult);
+    Short_t *primList = new Short_t[primMult];
+    for (Int_t ipr=0; ipr<primMult; ipr++) 
+      primList[ipr] = (Short_t)(primInts[ipr]);	 
+    
+    // fills the ESDCaloCluster
+ 
     ec->SetPHOS(kTRUE);
-    ec->SetGlobalPosition(xyz);                 //rec.point position in MARS
-    ec->SetClusterEnergy(rp->Energy());         //total particle energy
+    ec->SetPosition(xyz);                 //rec.point position in MARS
+    ec->SetE(rp->Energy());         //total particle energy
     ec->SetClusterDisp(emcRP->GetDispersion()); //cluster dispersion
     ec->SetPid          (rp->GetPID()) ;        //array of particle identification
     ec->SetM02(emcRP->GetM2x()) ;               //second moment M2x
     ec->SetM20(emcRP->GetM2z()) ;               //second moment M2z
     ec->SetNExMax(emcRP->GetNExMax());          //number of local maxima
-    ec->SetNumberOfDigits(digitMult);           //digit multiplicity
-    ec->SetDigitAmplitude(amplList);            //energies in 1/500 of GeV
-    ec->SetDigitTime(timeList);                 //times in 1/100 on ns
-    ec->SetDigitIndex(digiList);                //abs id of the cell
     ec->SetEmcCpvDistance(-1);                  //not yet implemented
     ec->SetClusterChi2(-1);                     //not yet implemented
     ec->SetM11(-1) ;                            //not yet implemented
  
+    //Digits Lists
+    TArrayS arrayAmpList(digitMult,amplList);
+    TArrayS arrayTimeList(digitMult,timeList);
+    TArrayS arrayIndexList(digitMult,digiList);
+    ec->AddDigitAmplitude(arrayAmpList);
+    ec->AddDigitTime(arrayTimeList);
+    ec->AddDigitIndex(arrayIndexList);
+
     //Distance to the nearest bad crystal
     ec->SetDistanceToBadChannel(emcRP->GetDistanceToBadCrystal()); 
+  
+    //Array of MC indeces
+    TArrayS arrayPrim(primMult,primList);
+    ec->AddLabels(arrayPrim);
 
-    //Primaries
-    ec->SetPrimaryIndex(rp->GetPrimaryIndex());
-    Int_t  primMult  = 0;
-    Int_t *primInts =  emcRP->GetPrimaries(primMult);
-    ec->SetNumberOfPrimaries(primMult);           //primary multiplicity
-    UShort_t *primList = new UShort_t[primMult];
-    for (Int_t ipr=0; ipr<primMult; ipr++) 
-      primList[ipr] = (UShort_t)(primInts[ipr]);	 
-    ec->SetListOfPrimaries(primList);                  //primary List for a cluster
+    //Array of tracks uncomment when available in future
+    //TArrayS arrayTrackMatched(1);// Only one track, temporal solution.
+    //arrayTrackMatched[0]= (Short_t)(matchedTrack[iClust]);
+    //ec->AddTracksMatched(arrayTrackMatched);
     
     // add the track to the esd object
     esd->AddCaloCluster(ec);
@@ -280,8 +291,8 @@ void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader,
 
     Int_t  digitMult  = emcRP->GetDigitsMultiplicity();
     Int_t *digitsList = emcRP->GetDigitsList();
-    UShort_t *amplList  = new UShort_t[digitMult];
-    UShort_t *digiList  = new UShort_t[digitMult];
+    Short_t *amplList  = new Short_t[digitMult];
+    Short_t *digiList  = new Short_t[digitMult];
 
     // Convert Float_t* and Int_t* to UShort_t* to save memory
     for (Int_t iDigit=0; iDigit<digitMult; iDigit++) {
@@ -290,26 +301,30 @@ void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader,
 	AliFatal(Form("Digit not found at the expected position %d!",iDigit));
       }
       else {
-	amplList[iDigit] = (UShort_t)digit->GetEnergy();
-	digiList[iDigit] = (UShort_t)(digit->GetId());
+	amplList[iDigit] = (Short_t)digit->GetEnergy();
+	digiList[iDigit] = (Short_t)(digit->GetId());
+	//timeList[iDigit] = (Short_t)(digit->GetTime());
       }
     }
 
     ec->SetPHOS(kTRUE);
-    ec->SetGlobalPosition(xyz);                 //rec.point position in MARS
-    ec->SetClusterEnergy(rp->Energy());         //total particle energy
+    ec->SetPosition(xyz);                 //rec.point position in MARS
+    ec->SetE(rp->Energy());         //total particle energy
     ec->SetClusterDisp(emcRP->GetDispersion()); //cluster dispersion
     ec->SetPid          (rp->GetPID()) ;        //array of particle identification
     ec->SetM02(emcRP->GetM2x()) ;               //second moment M2x
     ec->SetM20(emcRP->GetM2z()) ;               //second moment M2z
     ec->SetNExMax(emcRP->GetNExMax());          //number of local maxima
-    ec->SetNumberOfDigits(digitMult);           //digit multiplicity
-    ec->SetDigitAmplitude(amplList);            //digit energies
-    ec->SetDigitIndex(digiList);                //abs id of the cell
+
     ec->SetEmcCpvDistance(-1);                  //not yet implemented
     ec->SetClusterChi2(-1);                     //not yet implemented
     ec->SetM11(-1) ;                            //not yet implemented
-
+ //    TArrayS arrayAmpList(digitMult,amplList);
+//     TArrayS arrayTimeList(digitMult,timeList);
+//     TArrayS arrayIndexList(digitMult,digiList);
+//     ec->AddDigitAmplitude(arrayAmpList);
+//     ec->AddDigitTime(arrayTimeList);
+//     ec->AddDigitIndex(arrayIndexList);
     //Distance to the nearest bad crystal
     ec->SetDistanceToBadChannel(emcRP->GetDistanceToBadCrystal()); 
     

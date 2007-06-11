@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.11  2007/03/30 13:50:34  gustavo
+ * PID for particles with E < 5 GeV was not done, temporal solution found (Guenole)
+ *
  * Revision 1.10  2007/03/09 14:34:11  gustavo
  * Correct probability calculation, added missing initialization of data members
  *
@@ -248,7 +251,7 @@ void AliEMCALPID::RunPID(AliESD *esd)
   for (Int_t iCluster = firstCluster; iCluster < (nClusters + firstCluster); iCluster++) {
     
     AliESDCaloCluster *clust = esd->GetCaloCluster(iCluster);
-    energy = clust->GetClusterEnergy();
+    energy = clust->E();
     lambda0 = clust->GetM02();
     // verify cluster type
     Int_t clusterType= clust->GetClusterType();

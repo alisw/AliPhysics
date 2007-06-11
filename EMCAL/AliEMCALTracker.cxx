@@ -1042,7 +1042,7 @@ AliEMCALTracker::AliEMCALMatchCluster::AliEMCALMatchCluster(Int_t index, AliEMCA
 //
 AliEMCALTracker::AliEMCALMatchCluster::AliEMCALMatchCluster(Int_t index, AliESDCaloCluster *caloCluster)
   : fIndex(index),
-    fLabel(caloCluster->GetPrimaryIndex()),
+    fLabel(caloCluster->GetLabel()),
     fX(0.),
     fY(0.),
     fZ(0.)
@@ -1052,7 +1052,7 @@ AliEMCALTracker::AliEMCALMatchCluster::AliEMCALMatchCluster(Int_t index, AliESDC
 	// Index of passed cluster in its native array must be specified.
 	//
 	Float_t clpos[3];
-	caloCluster->GetGlobalPosition(clpos);
+	caloCluster->GetPosition(clpos);
 	
 	fX = (Double_t)clpos[0];
 	fY = (Double_t)clpos[1];
