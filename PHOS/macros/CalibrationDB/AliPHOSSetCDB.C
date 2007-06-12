@@ -29,35 +29,32 @@ void AliPHOSSetCDB()
 {
   TControlBar *menu = new TControlBar("vertical","PHOS CDB");
   menu->AddButton("Help to run PHOS CDB","Help()",
-		  "Explains how to use PHOS CDS menus");
+		  "Explains how to use PHOS CDB menus");
   menu->AddButton("Equal CC","SetCC(0)",
-		  "Set equal calibration coefficients");
-  menu->AddButton("Decalibrate","SetCC(1)",
-		  "Set random decalibration calibration coefficients");
-  menu->AddButton("Set calibration equal to invers decalibration coefficients","SetCC(2)",
-		  "Set calibration coefficients inverse to decalibration ones");
-  menu->AddButton("Residual calibration","SetCC(3)",
+		  "Set equal CC");
+  menu->AddButton("Full decalibration","SetCC(1)",
+		  "Set random decalibration CC");
+  menu->AddButton("Residual decalibration","SetCC(2)",
 		  "Set residual decalibration calibration coefficients");
 
   menu->AddButton("Read equal CC","GetCC(0)",
-		  "Read initial equal calibration coefficients");
+		  "Read equal calibration coefficients");
   menu->AddButton("Read random CC","GetCC(1)",
 		  "Read random decalibration calibration coefficients");
-  menu->AddButton("Read inverse CC","GetCC(2)",
-		  "Read calibration coefficients inverse to decalibration ones");
-  menu->AddButton("Read residual CC","GetCC(3)",
+  menu->AddButton("Read residual CC","GetCC(2)",
 		  "Read residial calibration coefficients");
+  menu->AddButton("Exit","gApplication->Terminate(0)","Quit aliroot session");
   menu->Show();
 }
 
 //------------------------------------------------------------------------
 void Help()
 {
-  char *string =
-    "\nSet calibration parameters and write them into ALICE CDB.
-Press button \"Equal CC\" to create equal pedestals and gain factors.
-Press button \"Decalibrate\" to create random pedestals and gain factors to imitate decalibrated detector\n";
-  printf(string);
+  TString string="\nSet calibration parameters and write them into ALICE OCDB:";
+  string += "\n\tPress button \"Equal CC\" to create equal calibration coefficients;";
+  string += "\n\tPress button \"Full decalibration\" to create \n\t random calibration coefficients with 20\% spread \n\t to imitate fully decalibrated detector;";
+  string += "\n\tPress button \"Residual decalibration\" to create \n\t random calibration coefficients with +-2\% spread\n\t to imitate decalibrated detector after initial calibration.\n";
+  printf("%s",string.Data());
 }
 
 //------------------------------------------------------------------------
@@ -88,59 +85,21 @@ void SetCC(Int_t flag=0)
   }
 
   else if (flag == 1) {
-    DBFolder  ="local://DeCalibDB";
+    DBFolder  ="local://FullDecalibDB";
     firstRun  =  0;
     lastRun   =  999999;
-    objFormat = "PHOS decalibration pedestals and ADC gain factors (5x64x56)";
+    objFormat = "PHOS fully decalibrated calibration coefficients (5x64x56)";
  
     cdb = new AliPHOSCalibData();    
-    cdb->RandomEmc();
-    cdb->RandomCpv();
+    cdb->RandomEmc(0.8,1.2);
+    cdb->RandomCpv(0.0008,0.0016);
   }
   
   else if (flag == 2) {
-    // First read decalibration DB
-    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
-    AliCDBManager::Instance()->SetSpecificStorage("PHOS/*","local://DeCalibDB");
-    AliPHOSCalibData* cdbDecalib = new AliPHOSCalibData(100);
-
-    DBFolder  ="local://InverseCalibDB";
-    firstRun  = 0;
-    lastRun   = 999999;
-    objFormat = "PHOS calibration parameters equal to inverse decalibration ones (5x64x56)";
-    cdb = new AliPHOSCalibData();    
-
-    // Read EMC decalibration parameters and put inverse values to a new artificial CDB
-
-    for (Int_t module=1; module<=nMod; module++) {
-      for (Int_t column=1; column<=nCol; column++) {
-	for (Int_t row=1; row<=nRow; row++) {
-	  Float_t valueGain = cdbDecalib->GetADCchannelEmc (module,column,row);
-	  Float_t valuePed  = cdbDecalib->GetADCpedestalEmc(module,column,row);
-	  cdb->SetADCchannelEmc(module,column,row,1./valueGain);
-	  cdb->SetADCpedestalEmc(module,column,row,valuePed);
-	}
-      }
-    }
-
-    // Read CPV decalibration parameters and put inverse values to a new artificial CDB
-
-    for (Int_t module=1; module<=nMod; module++) {
-      for (Int_t column=1; column<=nCol*2; column++) {
-	for (Int_t row=1; row<=nRow; row++) {
-	  Float_t valueGain = cdbDecalib->GetADCchannelCpv (module,column,row);
-	  Float_t valuePed  = cdbDecalib->GetADCpedestalCpv(module,column,row);
-	  cdb->SetADCchannelCpv(module,column,row,1./valueGain);
-	  cdb->SetADCpedestalCpv(module,column,row,valuePed);
-	}
-      }
-    }
-  }
-  else if (flag == 3) {
     DBFolder  ="local://ResidualCalibDB";
     firstRun  =  0;
     lastRun   =  999999;
-    objFormat = "PHOS residual ADC gain factors (5x64x56)";
+    objFormat = "PHOS residual calibration coefficients (5x64x56)";
     
     cdb = new AliPHOSCalibData();    
     cdb->RandomEmc(0.98,1.02);
@@ -155,10 +114,14 @@ void SetCC(Int_t flag=0)
   md.SetResponsible("Boris Polichtchouk");
   
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
-  AliCDBManager::Instance()->SetSpecificStorage("PHOS/*",DBFolder.Data());
+  if(gSystem->Getenv("STORAGE")){
+    cout << "Setting specific storage" << endl;
+    AliCDBManager::Instance()->SetSpecificStorage("PHOS/*",DBFolder.Data());
+  }
 
   cdb->WriteEmc(firstRun,lastRun,&md);
   cdb->WriteCpv(firstRun,lastRun,&md);
+  cdb->WriteEmcBadChannelsMap(firstRun,lastRun,&md);
 
 }
 
@@ -172,6 +135,8 @@ void GetCC(Int_t flag=0)
   //   flag=2: calibration coefficients equal to inverse decalibration ones
   // Author: Yuri.Kharlov at cern.ch
 
+  gStyle->SetPalette(1);
+  gStyle->SetOptStat(0);
   TString DBFolder;
   Int_t runNumber;
 
@@ -180,12 +145,8 @@ void GetCC(Int_t flag=0)
     runNumber = 0;
   }
   else if (flag == 1) {
-    DBFolder  ="local://DeCalibDB";
-    runNumber = 100;
-  }
-  else if (flag == 2) {
-    DBFolder  ="local://InverseCalibDB";
-    runNumber = 200;
+    DBFolder  ="local://FullDecalibDB";
+    runNumber = 0;
   }
   else if (flag == 2) {
     DBFolder  ="local://ResidualCalibDB";
@@ -193,28 +154,21 @@ void GetCC(Int_t flag=0)
   }
 
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
-  AliCDBManager::Instance()->SetSpecificStorage("PHOS/*",DBFolder.Data());
+  if(gSystem->Getenv("STORAGE")){
+    cout << "Setting specific storage" << endl;
+    AliCDBManager::Instance()->SetSpecificStorage("PHOS/*",DBFolder.Data());
+  }
 
   AliPHOSCalibData* clb  = new AliPHOSCalibData(runNumber);
 
   TH2::AddDirectory(kFALSE);
 
-  TH2F* hPed[5];
   TH2F* hGain[5];
 
-  TCanvas *cPed  = new TCanvas("cPed" ,"PHOS EMC Pedestals"   , 10,10,400,800);
-  TCanvas *cGain = new TCanvas("cGain","PHOS EMC Gain factors",410,10,400,800);
-  cPed ->Divide(1,5);
-  cGain->Divide(1,5);
+  TCanvas *cGain = new TCanvas("cGain","PHOS EMC Gain factors",10,10,700,500);
+  cGain->Divide(3,2);
 
   for (Int_t module=1; module<=nMod; module++) {
-    TString namePed="hPed";
-    namePed+=module;
-    TString titlePed="Pedestals in module ";
-    titlePed+=module;
-    hPed[module-1] = new TH2F(namePed.Data(),titlePed.Data(),
-			    nCol,1.,1.*nCol,nRow,1.,1.*nRow);
-
     TString nameGain="hGain";
     nameGain+=module;
     TString titleGain="Gain factors in module ";
@@ -224,17 +178,13 @@ void GetCC(Int_t flag=0)
 
     for (Int_t column=1; column<=nCol; column++) {
       for (Int_t row=1; row<=nRow; row++) {
-	Float_t ped  = clb->GetADCpedestalEmc(module,column,row);
-	Float_t gain = clb->GetADCchannelEmc (module,column,row);
-	hPed[module-1]->SetBinContent(column,row,ped);
+        Float_t gain = clb->GetADCchannelEmc (module,column,row);
 	hGain[module-1]->SetBinContent(column,row,gain);
       }
     }
-    cPed ->cd(module);
-    hPed[module-1]->Draw("lego2");
     cGain->cd(module);
-    hGain[module-1]->Draw("lego2");
+    hGain[module-1]->SetMinimum(0);
+    hGain[module-1]->Draw("colz");
   }
-  cPed ->Print("pedestals.eps");
   cGain->Print("gains.eps");
 }
