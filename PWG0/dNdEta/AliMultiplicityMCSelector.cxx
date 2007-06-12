@@ -118,7 +118,7 @@ void AliMultiplicityMCSelector::SlaveBegin(TTree* tree)
     AliInfo(Form("WARNING: Systematic study enabled. Only considering process type %d", fSelectProcessType));
 
   if (option.Contains("particle-species"))
-    fParticleSpecies = new TNtuple("fParticleSpecies", "fParticleSpecies", "Pi_True:K_True:p_True:o_True:Pi_Rec:K_Rec:p_Rec:o_Rec");
+    fParticleSpecies = new TNtuple("fParticleSpecies", "fParticleSpecies", "vtx:Pi_True:K_True:p_True:o_True:Pi_Rec:K_Rec:p_Rec:o_Rec");
 }
 
 void AliMultiplicityMCSelector::Init(TTree* tree)
@@ -300,18 +300,21 @@ Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
 
     nMCTracksAll++;
 
-    Int_t id = -1;
-    switch (TMath::Abs(particle->GetPdgCode()))
+    if (fParticleCorrection[0] || fParticleSpecies)
     {
-      case 211: id = 0; break;
-      case 321: id = 1; break;
-      case 2212: id = 2; break;
-      default: id = 3; break;
+      Int_t id = -1;
+      switch (TMath::Abs(particle->GetPdgCode()))
+      {
+        case 211: id = 0; break;
+        case 321: id = 1; break;
+        case 2212: id = 2; break;
+        default: id = 3; break;
+      }
+      if (TMath::Abs(particle->Eta()) < 2.0)
+        nMCTracksSpecies[id]++;
+      if (fParticleCorrection[id])
+        fParticleCorrection[id]->GetTrackCorrection()->FillGene(vtxMC[2], particle->Eta(), particle->Pt());
     }
-    if (TMath::Abs(particle->Eta()) < 2.0)
-      nMCTracksSpecies[id]++;
-    if (fParticleCorrection[id])
-      fParticleCorrection[id]->GetTrackCorrection()->FillGene(vtxMC[2], particle->Eta(), particle->Pt());
   }// end of mc particle
 
   fMultiplicity->FillGenerated(vtxMC[2], eventTriggered, eventVertex, nMCTracks05, nMCTracks10, nMCTracks15, nMCTracks20, nMCTracksAll);
@@ -358,28 +361,31 @@ Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
     if (TMath::Abs(eta) < 2.0)
       nESDTracks20++;
 
-    // TODO define needed, because this only works with new AliRoot
-    Int_t label = mult->GetLabel(i);
-    if (label < 0)
-      continue;
-
-    TParticle* mother = AliPWG0depHelper::FindPrimaryMother(stack, label);
-
-    if (!mother)
-      continue;
-
-    Int_t id = -1;
-    switch (TMath::Abs(mother->GetPdgCode()))
+    if (fParticleCorrection[0] || fParticleSpecies)
     {
-      case 211: id = 0; break;
-      case 321: id = 1; break;
-      case 2212: id = 2; break;
-      default: id = 3; break;
+      // TODO define needed, because this only works with new AliRoot
+      Int_t label = mult->GetLabel(i);
+      if (label < 0)
+        continue;
+
+      TParticle* mother = AliPWG0depHelper::FindPrimaryMother(stack, label);
+
+      if (!mother)
+        continue;
+
+      Int_t id = -1;
+      switch (TMath::Abs(mother->GetPdgCode()))
+      {
+        case 211: id = 0; break;
+        case 321: id = 1; break;
+        case 2212: id = 2; break;
+        default: id = 3; break;
+      }
+      if (TMath::Abs(eta) < 2.0)
+        nESDTracksSpecies[id]++;
+      if (fParticleCorrection[id])
+        fParticleCorrection[id]->GetTrackCorrection()->FillMeas(vtxMC[2], mother->Eta(), mother->Pt());
     }
-    if (TMath::Abs(eta) < 2.0)
-      nESDTracksSpecies[id]++;
-    if (fParticleCorrection[id])
-      fParticleCorrection[id]->GetTrackCorrection()->FillMeas(vtxMC[2], mother->Eta(), mother->Pt());
   }
 #endif
 
@@ -420,27 +426,30 @@ Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
     if (TMath::Abs(eta) < 2.0)
       nESDTracks20++;
 
-    Int_t label = esdTrack->GetLabel();
-    if (label < 0)
-      continue;
-
-    TParticle* mother = AliPWG0depHelper::FindPrimaryMother(stack, label);
-
-    if (!mother)
-      continue;
-
-    Int_t id = -1;
-    switch (TMath::Abs(mother->GetPdgCode()))
+    if (fParticleCorrection[0] || fParticleSpecies)
     {
-      case 211: id = 0; break;
-      case 321: id = 1; break;
-      case 2212: id = 2; break;
-      default: id = 3; break;
+      Int_t label = esdTrack->GetLabel();
+      if (label < 0)
+        continue;
+
+      TParticle* mother = AliPWG0depHelper::FindPrimaryMother(stack, label);
+
+      if (!mother)
+        continue;
+
+      Int_t id = -1;
+      switch (TMath::Abs(mother->GetPdgCode()))
+      {
+        case 211: id = 0; break;
+        case 321: id = 1; break;
+        case 2212: id = 2; break;
+        default: id = 3; break;
+      }
+      if (TMath::Abs(eta) < 2.0)
+        nESDTracksSpecies[id]++;
+      if (fParticleCorrection[id])
+        fParticleCorrection[id]->GetTrackCorrection()->FillMeas(vtxMC[2], mother->Eta(), mother->Pt());
     }
-    if (TMath::Abs(eta) < 2.0)
-      nESDTracksSpecies[id]++;
-    if (fParticleCorrection[id])
-      fParticleCorrection[id]->GetTrackCorrection()->FillMeas(vtxMC[2], mother->Eta(), mother->Pt());
   }
 #endif
 
@@ -449,11 +458,11 @@ Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
 
   fMultiplicity->FillMeasured(vtx[2], nESDTracks05, nESDTracks10, nESDTracks15, nESDTracks20);
 
-  // TODO should this be vtx[2] or vtxMC[2] ?
+  // fill response matrix using vtxMC (best guess)
   fMultiplicity->FillCorrection(vtxMC[2], nMCTracks05, nMCTracks10, nMCTracks15, nMCTracks20, nMCTracksAll, nESDTracks05, nESDTracks10, nESDTracks15, nESDTracks20);
 
   if (fParticleSpecies)
-    fParticleSpecies->Fill(nMCTracksSpecies[0], nMCTracksSpecies[1], nMCTracksSpecies[2], nMCTracksSpecies[3], nESDTracksSpecies[0], nESDTracksSpecies[1], nESDTracksSpecies[2], nESDTracksSpecies[3]);
+    fParticleSpecies->Fill(vtxMC[2], nMCTracksSpecies[0], nMCTracksSpecies[1], nMCTracksSpecies[2], nMCTracksSpecies[3], nESDTracksSpecies[0], nESDTracksSpecies[1], nESDTracksSpecies[2], nESDTracksSpecies[3]);
 
   return kTRUE;
 }
