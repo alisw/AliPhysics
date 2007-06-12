@@ -1,5 +1,5 @@
 #include <AliESDVertex.h>
-#include "AliITSgeom.h"
+#include "AliITSgeomTGeo.h"
 #include "AliITSVertexer.h"
 #include "AliRunLoader.h"
 #include "AliITSLoader.h"
@@ -144,27 +144,27 @@ void AliITSVertexer::SetLaddersOnLayer2(Int_t ladwid){
   fLadOnLay2=ladwid;
   AliRunLoader *rl =AliRunLoader::GetRunLoader();
   AliITSLoader* itsLoader = (AliITSLoader*)rl->GetLoader("ITSLoader");
-  AliITSgeom* geom = itsLoader->GetITSgeom();
-  Int_t ladtot1=geom->GetNladders(1);
+  //  AliITSgeom* geom = itsLoader->GetITSgeom();
+  Int_t ladtot1=AliITSgeomTGeo::GetNLadders(1);
   if(fLadders) delete [] fLadders;
   fLadders=new UShort_t[ladtot1];
 
 
   Double_t pos1[3],pos2[3];
-  Int_t mod1=geom->GetModuleIndex(2,1,1);
-  geom->GetTrans(mod1,pos1);  // position of the module in the MRS 
+  Int_t mod1=AliITSgeomTGeo::GetModuleIndex(2,1,1);
+  AliITSgeomTGeo::GetTranslation(mod1,pos1);  // position of the module in the MRS 
   Double_t phi0=TMath::ATan2(pos1[1],pos1[0]);
   if(phi0<0) phi0+=2*TMath::Pi();
-  Int_t mod2=geom->GetModuleIndex(2,2,1);
-  geom->GetTrans(mod2,pos2);
+  Int_t mod2=AliITSgeomTGeo::GetModuleIndex(2,2,1);
+  AliITSgeomTGeo::GetTranslation(mod2,pos2);
   Double_t phi2=TMath::ATan2(pos2[1],pos2[0]); 
   if(phi2<0) phi2+=2*TMath::Pi();
   Double_t deltaPhi= phi0-phi2; // phi width of a layer2 module
 
   for(Int_t i= 0; i<ladtot1;i++){
-    Int_t modlad= geom->GetModuleIndex(1,i+1,1);
+    Int_t modlad= AliITSgeomTGeo::GetModuleIndex(1,i+1,1);
     Double_t posmod[3];
-    geom->GetTrans(modlad,posmod);
+    AliITSgeomTGeo::GetTranslation(modlad,posmod);
     Double_t phimod=TMath::ATan2(posmod[1],posmod[0]); 
     if(phimod<0) phimod+=2*TMath::Pi();
     Double_t phi1= phimod+deltaPhi*double(fLadOnLay2);

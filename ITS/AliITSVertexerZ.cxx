@@ -19,7 +19,7 @@
 #include <TString.h>
 #include<TTree.h>
 #include "AliITSLoader.h"
-#include "AliITSgeom.h"
+#include "AliITSgeomTGeo.h"
 #include "AliITSDetTypeRec.h"
 #include "AliITSRecPoint.h"
 #include "AliITSZPoint.h"
@@ -219,7 +219,7 @@ void AliITSVertexerZ::VertexZFinder(Int_t evnumber){
   fCurrentVertex = 0;
   AliRunLoader *rl =AliRunLoader::GetRunLoader();
   AliITSLoader* itsLoader = (AliITSLoader*)rl->GetLoader("ITSLoader");
-  AliITSgeom* geom = itsLoader->GetITSgeom();
+  //  AliITSgeom* geom = itsLoader->GetITSgeom();
   itsLoader->LoadRecPoints();
   rl->GetEvent(evnumber);
 
@@ -297,10 +297,13 @@ void AliITSVertexerZ::VertexZFinder(Int_t evnumber){
     detTypeRec.ResetRecPoints();
     for(Int_t j1=0;j1<nrecp1;j1++){
       AliITSRecPoint *recp = (AliITSRecPoint*)prpl1->At(j1);
+      /*
       lc1[0]=recp->GetDetLocalX();
       lc1[2]=recp->GetDetLocalZ();
       geom->LtoG(modul1,lc1,gc1);
       // Global coordinates of this recpoints
+      */
+      recp->GetGlobalXYZ(gc1);
       gc1[0]-=fNominalPos[0]; // Possible beam offset in the bending plane
       gc1[1]-=fNominalPos[1]; //   "               "
       Float_t r1=TMath::Sqrt(gc1[0]*gc1[0]+gc1[1]*gc1[1]);
@@ -311,15 +314,18 @@ void AliITSVertexerZ::VertexZFinder(Int_t evnumber){
       for(Int_t ladl2=0 ; ladl2<fLadOnLay2*2+1;ladl2++){
 	for(Int_t k=0;k<4;k++){
  	  Int_t ladmod=fLadders[ladder-1]+ladl2;
-	  if(ladmod>geom->GetNladders(2)) ladmod=ladmod-geom->GetNladders(2);
-	  Int_t modul2=geom->GetModuleIndex(2,ladmod,k+1);
+	  if(ladmod>AliITSgeomTGeo::GetNLadders(2)) ladmod=ladmod-AliITSgeomTGeo::GetNLadders(2);
+	  Int_t modul2=AliITSgeomTGeo::GetModuleIndex(2,ladmod,k+1);
 	  branch->GetEvent(modul2);
 	  Int_t nrecp2 = itsRec->GetEntries();
 	  for(Int_t j2=0;j2<nrecp2;j2++){
 	    recp = (AliITSRecPoint*)itsRec->At(j2);
+	    /*
 	    lc2[0]=recp->GetDetLocalX();
 	    lc2[2]=recp->GetDetLocalZ();
 	    geom->LtoG(modul2,lc2,gc2);
+	    */
+	    recp->GetGlobalXYZ(gc2);
 	    gc2[0]-=fNominalPos[0];
 	    gc2[1]-=fNominalPos[1];
 	    Float_t r2=TMath::Sqrt(gc2[0]*gc2[0]+gc2[1]*gc2[1]);

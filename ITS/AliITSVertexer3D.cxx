@@ -25,6 +25,7 @@
 #include "AliITSLoader.h"
 #include "AliITSDetTypeRec.h"
 #include "AliITSRecPoint.h"
+#include "AliITSgeomTGeo.h"
 /////////////////////////////////////////////////////////////////
 // this class implements a method to determine
 // the 3 coordinates of the primary vertex
@@ -149,7 +150,7 @@ Int_t AliITSVertexer3D::FindTracklets(Int_t evnumber, Int_t optCuts){
   // The tracklets are processed in Prepare3DVertex
   AliRunLoader *rl =AliRunLoader::GetRunLoader();
   AliITSLoader* itsLoader = (AliITSLoader*)rl->GetLoader("ITSLoader");
-  AliITSgeom* geom = itsLoader->GetITSgeom();
+  //  AliITSgeom* geom = itsLoader->GetITSgeom();
   itsLoader->LoadRecPoints();
   rl->GetEvent(evnumber);
 
@@ -187,16 +188,16 @@ Int_t AliITSVertexer3D::FindTracklets(Int_t evnumber, Int_t optCuts){
   Int_t nrpL2 = 0;    // number of rec points on layer 2
 
   // By default irstL1=0 and lastL1=79
-  Int_t irstL1 = geom->GetStartDet(0);
-  Int_t lastL1 = geom->GetModuleIndex(2,1,1)-1;
+  Int_t irstL1 = AliITSgeomTGeo::GetModuleIndex(1,1,1);
+  Int_t lastL1 = AliITSgeomTGeo::GetModuleIndex(2,1,1)-1;
   for(Int_t module= irstL1; module<=lastL1;module++){  // count number of recopints on layer 1
     branch->GetEvent(module);
     nrpL1+= itsRec->GetEntries();
     detTypeRec.ResetRecPoints();
   }
   //By default irstL2=80 and lastL2=239
-  Int_t irstL2 = geom->GetModuleIndex(2,1,1);
-  Int_t lastL2 = geom->GetLastDet(0);
+  Int_t irstL2 = AliITSgeomTGeo::GetModuleIndex(2,1,1);
+  Int_t lastL2 = AliITSgeomTGeo::GetModuleIndex(3,1,1)-1;
   for(Int_t module= irstL2; module<=lastL2;module++){  // count number of recopints on layer 2
     branch->GetEvent(module);
     nrpL2+= itsRec->GetEntries();
@@ -229,23 +230,29 @@ Int_t AliITSVertexer3D::FindTracklets(Int_t evnumber, Int_t optCuts){
     for(Int_t j=0;j<nrecp1;j++){
       AliITSRecPoint *recp = (AliITSRecPoint*)prpl1->At(j);
       // Local coordinates of this recpoint
+      /*
       lc[0]=recp->GetDetLocalX();
       lc[2]=recp->GetDetLocalZ();
       geom->LtoG(modul1,lc,gc); // global coordinates
+      */
+      recp->GetGlobalXYZ(gc);
       Double_t phi1 = TMath::ATan2(gc[1]-ybeam,gc[0]-xbeam);
       if(phi1<0)phi1=2*TMath::Pi()+phi1;
       for(Int_t ladl2=0 ; ladl2<fLadOnLay2*2+1;ladl2++){
 	for(Int_t k=0;k<4;k++){
 	  Int_t ladmod=fLadders[ladder-1]+ladl2;
- 	  if(ladmod>geom->GetNladders(2)) ladmod=ladmod-geom->GetNladders(2);
-	  Int_t modul2=geom->GetModuleIndex(2,ladmod,k+1);
+ 	  if(ladmod>AliITSgeomTGeo::GetNLadders(2)) ladmod=ladmod-AliITSgeomTGeo::GetNLadders(2);
+	  Int_t modul2=AliITSgeomTGeo::GetModuleIndex(2,ladmod,k+1);
 	  branch->GetEvent(modul2);
 	  Int_t nrecp2 = itsRec->GetEntries();
 	  for(Int_t j2=0;j2<nrecp2;j2++){
 	    recp = (AliITSRecPoint*)itsRec->At(j2);
+	    /*
 	    lc2[0]=recp->GetDetLocalX();
 	    lc2[2]=recp->GetDetLocalZ();
 	    geom->LtoG(modul2,lc2,gc2);
+	    */
+	    recp->GetGlobalXYZ(gc2);
 	    Double_t phi2 = TMath::ATan2(gc2[1]-ybeam,gc2[0]-xbeam);
 	    if(phi2<0)phi2=2*TMath::Pi()+phi2;
 	    Double_t diff = TMath::Abs(phi2-phi1); 

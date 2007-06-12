@@ -2,7 +2,7 @@
 #include "AliITSVertexerIons.h"
 #include "AliITSVertexerZ.h"
 #include "AliESDVertex.h"
-#include "AliITSgeom.h"
+#include "AliITSgeomTGeo.h"
 #include "AliITSLoader.h"
 #include "AliITSRecPoint.h"
 #include "AliLog.h"
@@ -85,10 +85,12 @@ AliESDVertex* AliITSVertexerIons::FindVertexForCurrentEvent(Int_t evnumber){
 
   AliRunLoader *rl = AliRunLoader::GetRunLoader();
   AliITSLoader* itsloader = (AliITSLoader*)rl->GetLoader("ITSLoader");
+  /*
   TDirectory * olddir = gDirectory;
   rl->CdGAFile();
   AliITSgeom* g2  = (AliITSgeom*)gDirectory->Get("AliITSgeom");
   olddir->cd(); 
+  */
 
   TTree *tr =  itsloader->TreeR();
   AliITSDetTypeRec detTypeRec;
@@ -102,7 +104,7 @@ AliESDVertex* AliITSVertexerIons::FindVertexForCurrentEvent(Int_t evnumber){
   Int_t npoints=0;
   Int_t nopoints1=40000;
   Int_t nopoints2=40000;
-  Float_t l[3], p[3];
+  Float_t p[3];
 
   Double_t *z1, *z2, *y1, *y2, *x1, *x2, *phi1, *phi2, *r1, *r2;
   z1=new Double_t[nopoints1];
@@ -123,16 +125,19 @@ AliESDVertex* AliITSVertexerIons::FindVertexForCurrentEvent(Int_t evnumber){
   Double_t r=0;
 
   Int_t np1=0, np2=0;
-  for(Int_t i=g2->GetStartSPD();i<=g2->GetLastSPD();i++) {
+  for(Int_t i=AliITSgeomTGeo::GetModuleIndex(1,1,1);i<=AliITSgeomTGeo::GetModuleIndex(2,1,1)-1;i++) {
     detTypeRec.ResetRecPoints();
     tr->GetEvent(i);
     npoints = recpoints->GetEntries();
     for (Int_t ipoint=0;ipoint<npoints;ipoint++) {
       pnt = (AliITSRecPoint*)recpoints->UncheckedAt(ipoint);
+      /*
       l[0]=pnt->GetDetLocalX();
       l[1]=0;
       l[2]=pnt->GetDetLocalZ();
       g2->LtoG(i, l, p);
+      */
+      pnt->GetGlobalXYZ(p);
       r=TMath::Sqrt(TMath::Power(p[0],2)+TMath::Power(p[1],2));
 
       if(i<80 && TMath::Abs(p[2])<14.35)  {
