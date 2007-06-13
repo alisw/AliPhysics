@@ -236,13 +236,8 @@ AliAnalysisDataContainer *  AliAnalysisGoodies::ConnectOuput(AliAnalysisTask * t
       } 
       sprintf(filename, "default") ; 
     } 
-    else {
-      if ( fAmgr->GetEventHandler() == 0x0) {
-	AliAODHandler * aodHandler = new AliAODHandler() ; 
-	fAmgr->SetEventHandler(aodHandler) ; 
-      }
+    else 
       sprintf(filename, "%s_%d.root",task->GetName(), index) ; 
-    }
     
     AliAnalysisDataContainer * taskOuput = 0x0 ;
     if ( fAmgr->GetOutputs() ) 
