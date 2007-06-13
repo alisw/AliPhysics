@@ -1,3 +1,22 @@
+2007-06-13  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* LinkDef.h:
+	Added TOF visualization classes.
+
+	* TOFDigitsInfo.cxx:
+	* TOFDigitsInfo.h:
+	* TOFDigitsInfoEditor.cxx:
+	* TOFDigitsInfoEditor.h:
+	* TOFSector.cxx:
+	* TOFSector.h:
+	* TOFSectorEditor.cxx:
+	* TOFSectorEditor.h:
+	* TOFStrip.cxx:
+	* TOFStrip.h:
+	* TOFStripEditor.cxx:
+	* TOFStripEditor.h:
+	From Annalisa: new files for TOF visualization.
+
 2007-06-06  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* LinkDef.h:

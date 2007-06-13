@@ -1,3 +1,13 @@
+2007-06-13  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* libAlieve.pkg:
+	Added TOF to EINCLUDES.
+
+	* alice-macros/tof_digits.C:
+	* alice-macros/tof_digits_sector.C:
+	* alice-macros/tof_digits_strips.C:
+	From Annalisa: new macros for TOF digit visualization.
+
 2007-06-06  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* alice-macros/init_trd.C:
