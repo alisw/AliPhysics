@@ -4,4 +4,4 @@ HDRS     := $(SRCS:.cxx=.h)
 
 DHDR     := Alieve/LinkDef.h
 
-EINCLUDE := RAW ITS TPC TRD T0 MUON MUON/mapping PMD
+EINCLUDE := RAW ITS TPC TRD TOF T0 MUON MUON/mapping PMD
