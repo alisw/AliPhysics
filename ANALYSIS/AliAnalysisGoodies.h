@@ -22,7 +22,7 @@ class AliRunTagCuts ;
 class AliLHCTagCuts ;  
 class AliDetectorTagCuts ;  
 class AliAnalysisManager ; 
-class AliAnalysisDataContainer ; 
+class AliAnalysisDataContainer ;
 
 class AliAnalysisGoodies : public TObject {
 
@@ -30,6 +30,7 @@ public:
   AliAnalysisGoodies() ; 
   AliAnalysisGoodies(const AliAnalysisGoodies& ag) ; 
   ~AliAnalysisGoodies() {;} 
+  AliAnalysisGoodies& operator=(const AliAnalysisGoodies& ag) ;
 
   virtual void Help() const; 
   Bool_t Alien2Local(const TString collectionNameIn, const TString localDir) ; 

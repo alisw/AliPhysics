@@ -63,7 +63,8 @@ AliAnalysisGoodies::AliAnalysisGoodies() :
 AliAnalysisGoodies::AliAnalysisGoodies(const AliAnalysisGoodies& ag) :
   TObject(),
   fTimer(), 
-  fESDTreeName("") 
+  fESDTreeName(""), 
+  fAmgr(0x0)  
 {
   
   fESDTreeName = ag.fESDTreeName ;  
@@ -76,6 +77,16 @@ AliAnalysisGoodies::AliAnalysisGoodies(const AliAnalysisGoodies& ag) :
    
   // Make the analysis manager
   fAmgr = new AliAnalysisManager("Goodies Manager", "Analysis manager created by AliAnalysisGoodies") ;
+}
+
+//______________________________________________________________________________
+AliAnalysisGoodies& AliAnalysisGoodies::operator=(const AliAnalysisGoodies& ag)
+{
+  // Assignment operator
+  if(this!=&ag) {
+  }
+
+  return *this;
 }
 
 //______________________________________________________________________________
