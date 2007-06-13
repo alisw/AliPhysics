@@ -87,3 +87,12 @@
 #pragma link C++ class Alieve::TRDHits+;
 #pragma link C++ class Alieve::TRDHitsEditor+;
 #pragma link C++ class Alieve::TRDClusters+;
+
+// TOF
+#pragma link C++ class Alieve::TOFDigitsInfo+;
+#pragma link C++ class Alieve::TOFSector+;
+#pragma link C++ class Alieve::TOFStrip+;
+
+#pragma link C++ class Alieve::TOFDigitsInfoEditor+;
+#pragma link C++ class Alieve::TOFSectorEditor+;
+#pragma link C++ class Alieve::TOFStripEditor+;
