@@ -44,11 +44,7 @@ public:
   void SetTimeDelayTVD(Float_t r=150)   { fTimeDelayTVD = r; };
   Float_t GetTimeDelayTVD()   { return fTimeDelayTVD; }
 
-  // Set various variable parameter defaults
-  void SetSlewingLED(Int_t ipmt); 
-  void SetSlewingRec(Int_t ipmt); 
  
-
   // Get `Fixed' various parameters
   Int_t GetPh2Mip()          const { return fPh2Mip; }
   Int_t GetmV2Mip()          const { return fmV2Mip; }
@@ -58,29 +54,24 @@ public:
   Int_t GetQTmax() const {return fQTmax;}
   Double_t GetZposition(Int_t i) const {return fT0zPosition[i];}
   Double_t GetZPosition(const char* symname) ;
-   TGraph *  GetPMTeff(Int_t ipmt) const  
+  TGraph *  GetPMTeff(Int_t ipmt) const  
   {return (TGraph*)fPMTeff.At(ipmt);}
   Float_t GetpmtEFF(Int_t ipmt, Float_t lambda) const
   {return((TGraph*)fPMTeff.At(ipmt))->Eval(lambda);} 
 
 
-  Float_t GetSlewingLED(Int_t ipmt, Float_t mv) const;
-  //  {return((TGraph*)fSlewingLED.At(ipmt))->Eval(mv);} 
-  TGraph *  GetSlew(Int_t ipmt) const ; 
-  //  {return (TGraph*)fSlewingLED.At(ipmt);}
-  TGraph *  GetSlewRec(Int_t ipmt) const;  
-  //  {return (TGraph*)fSlewingRec.At(ipmt);}
-  Float_t GetSlewingRec(Int_t ipmt, Float_t mv) const;
-  //  {return((TGraph*)fSlewingRec.At(ipmt))->Eval(mv);} 
+  //  Float_t GetSlewingLED(Int_t ipmt, Float_t mv) const;
+  TGraph *  GetAmpLED(Int_t ipmt) const ; 
+  TGraph *  GetAmpLEDRec(Int_t ipmt) const;  
+  //  Float_t GetSlewingRec(Int_t ipmt, Float_t mv) const;
 
-  TGraph *GetWalk(Int_t ipmt )  const;// {return ((TF1*)fWalk.At(ipmt));}
-  Float_t  GetWalkVal(Int_t ipmt, Float_t mv ) const ;//{return ((TF1*)fWalk.At(ipmt))->Eval(mv);}
-   void SetWalk(Int_t ipmt) ;
+  TGraph *GetWalk(Int_t ipmt )  const;
+  Float_t  GetWalkVal(Int_t ipmt, Float_t mv ) const ;
    
   Float_t GetTimeDelayCFD(Int_t ipmt);
   Float_t GetTimeDelayDA(Int_t ipmt);
 
-  void SetMeanT0(Int_t mean=500) { fMeanT0 = mean; };
+  //  void SetMeanT0(Int_t mean=500) { fMeanT0 = mean; };
   Int_t GetMeanT0 (); //{return fMeanT0;};
 
   //  TMap *LookupTable;
@@ -89,7 +80,7 @@ public:
   Int_t GetNumberOfTRMs();
   void SetNumberOfTRMs(Int_t ntrms=2) {fNumberOfTRMs = ntrms;}
 
-protected:
+ protected:
   AliT0Parameters();
   virtual ~AliT0Parameters() {}
   static AliT0Parameters* fgInstance; // Static singleton instance
@@ -102,17 +93,18 @@ protected:
   Int_t        fmV2Channel;     // ADC mv  2  channel # (200000ps/(25*25).
   Int_t fQTmin;                 //min  time for QTC
   Int_t fQTmax;                 //max  time fro QTC 
-  Int_t fVariableDelayLine[24];      //time delay in VDL for trigger equvalizing
-  TObjArray fSlewingLED;  //array of slewing correction for each PMT
-  TObjArray fSlewingRec;  //array of slewing correction for Reconstruction
+  //  Int_t fVariableDelayLine[24];      //time delay in VDL for trigger equvalizing
+
+    TObjArray fAmpLED;  //array of amlitude vs LED-CFD for each channel (simulation)
+   TObjArray fAmpLEDRec;  // array of amlitude vs LED-CFD (reconstruction)
   TObjArray fPMTeff; //array PMT registration efficiency
-  TObjArray fWalk; //array time-amplitude walk
+    TObjArray fWalk; //array time-amplitude walk
   
   Float_t fTimeDelayDA;  //  sum time delay for LED channel
   Float_t fTimeDelayCFD;  // sum time delay for CFD channel
   Float_t  fTimeDelayTVD;  //time delay for TVD (vertex trigger channel)
- Int_t fMeanT0; //mean of T0distribution with vertex=0;
-   
+  Int_t fMeanT0; //mean of T0distribution with vertex=0;
+  
   TMap fLookUp;           //lookup table
   Int_t fNumberOfTRMs;    // number of TRMs in setup
   

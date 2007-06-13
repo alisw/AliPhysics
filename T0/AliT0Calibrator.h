@@ -22,13 +22,11 @@ class AliT0Calibrator: public TNamed
   //  Int_t EquivalizeChannel(Int_t ipmt)  ;
  protected:
 
-  Int_t fTimeDelayCFD[24]; 
-  Int_t  fChannelWidth  ;  
+  Int_t           fTimeDelayCFD[24]; 
+  Int_t           fChannelWidth  ;  
+  TObjArray       fWalk;
   
-  TObjArray  fWalk;
-  TObjArray  fSlewingRec;
-  
-  ClassDef(AliT0Calibrator, 0)   // class for the T0 reconstruction
+  ClassDef(AliT0Calibrator, 1)   // class for the T0 reconstruction
 
 };
 

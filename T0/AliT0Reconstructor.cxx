@@ -51,6 +51,16 @@ ClassImp(AliT0Reconstructor)
 
 {
  AliDebug(1,"Start reconstructor ");
+  
+  fParam = AliT0Parameters::Instance();
+  fParam->Init();
+  
+  for (Int_t i=0; i<24; i++){
+    TGraph* gr = fParam ->GetAmpLEDRec(i);
+    fAmpLEDrec.AddAtAndExpand(gr,i) ;  
+    fTime0vertex[i]= fParam->GetTimeDelayDA(i);
+  }
+
 }
 //____________________________________________________________________
 
@@ -86,31 +96,18 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   // T0 digits reconstruction
   // T0RecPoint writing 
   
-  
-  Float_t time0vertex[24];
-  TObjArray slewingLEDrec;
-  TObjArray walk;
-  
+   
   TArrayI * timeCFD = new TArrayI(24); 
   TArrayI * timeLED = new TArrayI(24); 
   TArrayI * chargeQT0 = new TArrayI(24); 
   TArrayI * chargeQT1 = new TArrayI(24); 
-  
-  AliT0Parameters* param = AliT0Parameters::Instance();
-  param->Init();
+
   AliT0Calibrator *calib=new AliT0Calibrator(); 
 
   //  Int_t mV2Mip = param->GetmV2Mip();     
   //mV2Mip = param->GetmV2Mip();     
-  Int_t channelWidth = param->GetChannelWidth() ;  
-  Int_t meanT0 = param->GetMeanT0();
-  
-  for (Int_t i=0; i<24; i++){
-    TGraph* gr = param ->GetSlewRec(i);
-    slewingLEDrec.AddAtAndExpand(gr,i) ;  
-    time0vertex[i]= param->GetTimeDelayDA(i);
-  }
-
+  Int_t channelWidth = fParam->GetChannelWidth() ;  
+  Int_t meanT0 = fParam->GetMeanT0();
   
   AliDebug(1,Form("Start DIGITS reconstruction "));
   
@@ -153,7 +150,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
       
       //LED
       Double_t sl = (timeLED->At(ipmt) - timeCFD->At(ipmt))*channelWidth;
-      Double_t qt=((TGraph*)slewingLEDrec.At(ipmt))->Eval(sl/1000.);
+      Double_t qt=((TGraph*)fAmpLEDrec.At(ipmt))->Eval(sl/1000.);
       //      frecpoints->SetTime(ipmt,time[ipmt]);
       frecpoints->SetAmp(ipmt,adc[ipmt]);
       frecpoints->SetAmpLED(ipmt,qt);
@@ -196,7 +193,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   //time in each channel as time[ipmt]-MeanTimeinThisChannel(with vertex=0)
   for (Int_t ipmt=0; ipmt<24; ipmt++) {
     if(time[ipmt]>1) {
-      time[ipmt] = (time[ipmt] - time0vertex[ipmt])*channelWidth;
+      time[ipmt] = (time[ipmt] - fTime0vertex[ipmt])*channelWidth;
       frecpoints->SetTime(ipmt,time[ipmt]);
     }
   }
@@ -217,10 +214,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   // T0RecPoint writing 
   
   //Q->T-> coefficients !!!! should be measured!!!
-  Float_t time0vertex[24];
   Int_t allData[110][5];
-  TObjArray slewingLEDrec;
-  TObjArray walk;
   
   TArrayI * timeCFD = new TArrayI(24); 
   TArrayI * timeLED = new TArrayI(24); 
@@ -237,23 +231,13 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
    for (Int_t i=0; i<110; i++) {
      allData[i][0]=myrawreader.GetData(i,0);
    }
+  AliT0Calibrator *calib = new AliT0Calibrator(); 
 
-  AliT0Parameters* param = AliT0Parameters::Instance();
-  param->Init();
-  AliT0Calibrator *calib=new AliT0Calibrator(); 
-
-  Int_t mV2Mip = param->GetmV2Mip();     
+  //  Int_t mV2Mip = param->GetmV2Mip();     
   //mV2Mip = param->GetmV2Mip();     
-  Int_t channelWidth = param->GetChannelWidth() ;  
-  Int_t meanT0 = param->GetMeanT0();
-    
-  for (Int_t i=0; i<24; i++){
-    TGraph* gr = param ->GetSlewRec(i);
-    slewingLEDrec.AddAtAndExpand(gr,i) ;  
-    time0vertex[i]= param->GetTimeDelayDA(i);
-  }
-  
-
+  Int_t channelWidth = fParam->GetChannelWidth() ;  
+  Int_t meanT0 = fParam->GetMeanT0();
+ 
   for (Int_t in=0; in<24; in++)
      {
        timeLED->AddAt(allData[in+1][0],in);
@@ -284,7 +268,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
       //      time[ipmt] = channelWidth * (calib-> WalkCorrection( ipmt,qt1 , timeCFD->At(ipmt) ) ) ;
       time[ipmt] = calib-> WalkCorrection( ipmt,qt1 , timeCFD->At(ipmt) ) ;
       Double_t sl = (timeLED->At(ipmt) - timeCFD->At(ipmt))*channelWidth;
-      Double_t qt=((TGraph*)slewingLEDrec.At(ipmt))->Eval(sl/1000.);
+      Double_t qt=((TGraph*)fAmpLEDrec.At(ipmt))->Eval(sl/1000.);
       frecpoints->SetTime(ipmt,time[ipmt]);
       frecpoints->SetAmp(ipmt,adc[ipmt]);
       frecpoints->SetAmpLED(ipmt,qt);
@@ -328,7 +312,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   //time in each channel as time[ipmt]-MeanTimeinThisChannel(with vertex=0)
   for (Int_t ipmt=0; ipmt<24; ipmt++) {
     if(time[ipmt]>1) {
-      time[ipmt] = (time[ipmt] - time0vertex[ipmt])*channelWidth;
+      time[ipmt] = (time[ipmt] - fTime0vertex[ipmt])*channelWidth;
       frecpoints->SetTime(ipmt,time[ipmt]);
     }
   }

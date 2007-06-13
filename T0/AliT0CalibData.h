@@ -39,15 +39,15 @@ class AliT0CalibData: public TNamed {
   Float_t  GetWalkVal(Int_t ipmt, Float_t mv )  const {return ((TGraph*)fWalk.At(ipmt))->Eval(mv);}
   void SetWalk(Int_t ipmt) ;
 
-   TGraph *  GetSlew(Int_t ipmt) const   {return (TGraph*)fSlewingLED.At(ipmt);}
-  Float_t  GetSlewingLED(Int_t ipmt, Float_t mv)  const 
-      {return((TGraph*)fSlewingLED.At(ipmt))->Eval(mv);}
-   TGraph *  GetSlewRec(Int_t ipmt) const   {return (TGraph*)fSlewingRec.At(ipmt);}
-  Float_t  GetSlewingRec(Int_t ipmt, Float_t mv)  const 
-      {return((TGraph*)fSlewingRec.At(ipmt))->Eval(mv);}
+   TGraph *  GetAmpLED(Int_t ipmt) const   {return (TGraph*)fAmpLED.At(ipmt);}
+  Float_t  GetAmpLEDVal(Int_t ipmt, Float_t mv)  const 
+      {return((TGraph*)fAmpLED.At(ipmt))->Eval(mv);}
+   TGraph *  GetAmpLEDRec(Int_t ipmt) const   {return (TGraph*)fAmpLEDRec.At(ipmt);}
+  Float_t  GetAmpLEDRecVal(Int_t ipmt, Float_t mv)  const 
+      {return((TGraph*)fAmpLEDRec.At(ipmt))->Eval(mv);}
 
-  void SetSlewingLED(Int_t ipmt) ;
-  void SetSlewingRec(Int_t ipmt) ;
+  void SetAmpLED(Int_t ipmt) ;
+  void SetAmpLEDRec(Int_t ipmt) ;
 
   void     SetTimeDelayCFD(Float_t val, Int_t channel) {fTimeDelayCFD[channel]=val;}
   void     SetTimeDelayCFD(Float_t* TimeDelay);
@@ -74,13 +74,13 @@ class AliT0CalibData: public TNamed {
   Float_t fTimeDelayTVD; //time delay for TVD (vertex trigger channel)
   Int_t fMeanT0; //mean of T0distribution with vertex=0;
   TObjArray fWalk;  //time - amp. walk
-  TObjArray fSlewingLED;  //time - amp.LED slew
-  TObjArray fSlewingRec;  //time - amp. LED slew for reconstruction
+  TObjArray fAmpLED;  //time - amp.LED-CFD for simulation
+  TObjArray fAmpLEDRec;  //time - amp. LED-CFD for reconstruction
   TMap fLookup;           //lookup table
   Int_t fNumberOfTRMs;    // number of TRMs in setup
 
   //
-  ClassDef(AliT0CalibData,5)    // T0 Sensor Calibration data
+  ClassDef(AliT0CalibData,6)    // T0 Sensor Calibration data
 };
 
 typedef AliT0CalibData AliSTARTCalibData; // for backward compatibility

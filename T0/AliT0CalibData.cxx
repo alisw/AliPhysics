@@ -52,8 +52,8 @@ AliT0CalibData::AliT0CalibData(const char* name):TNamed(),
 				      fTimeDelayTVD(0),
 				      fMeanT0(0),
 				      fWalk(0),
-				      fSlewingLED(0),
-				      fSlewingRec(0),
+				      fAmpLED(0),
+				      fAmpLEDRec(0),
 				      fLookup(0),
 				      fNumberOfTRMs(0)
 {
@@ -70,8 +70,8 @@ AliT0CalibData::AliT0CalibData(const AliT0CalibData& calibda) :
   fTimeDelayTVD(0),
   fMeanT0(0),
   fWalk(0),
-  fSlewingLED(0),
-  fSlewingRec(0),
+  fAmpLED(0),
+  fAmpLEDRec(0),
   fLookup(0),
   fNumberOfTRMs(0)
 
@@ -214,7 +214,7 @@ void AliT0CalibData::SetWalk(Int_t ipmt)
 
 //________________________________________________________________
 
-void AliT0CalibData::SetSlewingLED(Int_t ipmt)
+void AliT0CalibData::SetAmpLED(Int_t ipmt)
 {
   Float_t mv, ps; 
   Float_t x[100], y[100];
@@ -234,19 +234,19 @@ void AliT0CalibData::SetSlewingLED(Int_t ipmt)
   }
   inFile.close();
   TGraph* gr = new TGraph(i,x,y);
-  fSlewingLED.AddAtAndExpand(gr,ipmt);
+  fAmpLED.AddAtAndExpand(gr,ipmt);
    
 }
 
 //________________________________________________________________
 
-void AliT0CalibData::SetSlewingRec(Int_t ipmt)
+void AliT0CalibData::SetAmpLEDRec(Int_t ipmt)
 {
   Float_t mv, ps; 
   Float_t x[100], y[100];
   string buffer;
   
- const char * filename = gSystem->ExpandPathName("$ALICE_ROOT/T0/data/CFD-LED.root");
+ const char * filename = gSystem->ExpandPathName("$ALICE_ROOT/T0/data/CFD-LED.txt");
    ifstream inFile(filename);
   if(!inFile) {AliError(Form("Cannot open file %s !",filename));}
   
@@ -263,7 +263,7 @@ void AliT0CalibData::SetSlewingRec(Int_t ipmt)
   for (Int_t ir=0; ir<i; ir++){
     y1[ir]=y[i-ir]; x1[ir]=x[i-ir];}
   TGraph* gr = new TGraph(i,y1,x1);
-  fSlewingRec.AddAtAndExpand(gr,ipmt);
+  fAmpLEDRec.AddAtAndExpand(gr,ipmt);
   
 }
 

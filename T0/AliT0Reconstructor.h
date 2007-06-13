@@ -35,9 +35,12 @@ class AliT0Reconstructor: public AliReconstructor {
   virtual Bool_t       HasDigitConversion() const {return kFALSE;}
  public:
  
-  Float_t fZposition; // vertex position
-
+  Float_t              fZposition; // vertex position
+  
  protected:
+  AliT0Parameters     *fParam;           //pointer to T0 parameters class     
+  TObjArray           fAmpLEDrec;        // amp LED-CFD 
+  Float_t             fTime0vertex[24];  // time position if Zvertex=0
 
   ClassDef(AliT0Reconstructor, 0)   // class for the T0 reconstruction
 

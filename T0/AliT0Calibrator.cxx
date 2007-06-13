@@ -29,8 +29,7 @@ ClassImp(AliT0Calibrator)
 //____________________________________________________________________
   AliT0Calibrator::AliT0Calibrator():
   fChannelWidth(0),  
-  fWalk(0),
-  fSlewingRec(0)
+  fWalk(0)
 {
   AliT0Parameters* param = AliT0Parameters::Instance();
   param->Init();
@@ -39,10 +38,9 @@ ClassImp(AliT0Calibrator)
  
   for (Int_t i=0; i<24; i++){
     fTimeDelayCFD[i] = Int_t (param->GetTimeDelayCFD(i));
-    TGraph* gr = param ->GetSlewRec(i);
-    fSlewingRec.AddAtAndExpand(gr,i) ;  
     TGraph* fu = param ->GetWalk(i);
     fWalk.AddAtAndExpand(fu,i);
+
   }
   
   //
@@ -51,8 +49,7 @@ ClassImp(AliT0Calibrator)
 
 AliT0Calibrator::AliT0Calibrator(const AliT0Calibrator &r):
   fChannelWidth(0),  
-  fWalk(0),
-  fSlewingRec(0)
+  fWalk(0)
 
 {
   //
@@ -90,8 +87,8 @@ Int_t  AliT0Calibrator::WalkCorrection(Int_t ipmt, Int_t qt, Int_t time)
   timeWalk = time + Int_t(maxValue-walk)/fChannelWidth ;
   
   timeEq= timeWalk - (fTimeDelayCFD[ipmt]-fTimeDelayCFD[0]);
-  AliDebug(2,Form(" timeWalk %i ,  qt %i timeEq %i \n ",
-		  timeWalk, qt, timeEq ));
+  AliDebug(2,Form(" time before %i timeWalk %i ,  qt %i timeEq %i \n ",
+		  time,timeWalk, qt, timeEq ));
   return timeEq;
 }
 
