@@ -22,7 +22,7 @@ class AliRunTagCuts ;
 class AliLHCTagCuts ;  
 class AliDetectorTagCuts ;  
 class AliAnalysisManager ; 
-class AliAnalysisDataContainer ;; 
+class AliAnalysisDataContainer ; 
 
 class AliAnalysisGoodies : public TObject {
 
