@@ -1,7 +1,3 @@
-#include "STEER/AliCDBManager.h"
-#include "STEER/AliCDBStorage.h"
-#include "STEER/AliCDBEntry.h"
-#include "VZERO/AliVZEROSurveyData.h"
 
 void VZEROSurveyToAlignment(){
 
@@ -19,11 +15,10 @@ void VZEROSurveyToAlignment(){
   Double_t l_vect[3]={0.,0.,0.}; // a local vector (the origin)
   Double_t g_vect[3];            // vector corresp. to it in global RS
   Double_t m_vect[3];            // vector corresp. to it in mother RS
-
-  gGeoManager->cd("/ALIC_1/VZERO_1/V0RI_1");
-  
+ 
   // ************* get global matrix *******************
-  TGeoHMatrix* g3 = gGeoManager->GetCurrentMatrix();
+  TGeoHMatrix *g3 = AliGeomManager::GetMatrix("VZERO/V0C");
+  
   // this is used below as the ideal global matrix
 
   // ************* get local matrix *******************
@@ -89,36 +84,61 @@ void VZEROSurveyToAlignment(){
     "B "<<gB[0]<<" "<<gB[1]<<" "<<gB[2]<<" "<<endl<<
     "C "<<gC[0]<<" "<<gC[1]<<" "<<gC[2]<<" "<<endl<<
     "D "<<gD[0]<<" "<<gD[1]<<" "<<gD[2]<<" "<<endl;
+  cout<<endl<<endl;  
     
-// Retrieval of real survey data from CDB : 
+// Retrieval of real survey data from ALICE Survey Data Depot : 
 
-   AliCDBManager *man = AliCDBManager::Instance();
-   AliCDBStorage *storLoc;
-   storLoc = man->GetStorage("local://$ALICE_ROOT");
+  AliSurveyObj *so = new AliSurveyObj();
  
-   AliCDBEntry *entry=0;
-   entry = storLoc->Get("VZERO/Survey/Data", 0);
-   
-   AliVZEROSurveyData * surveyda = 0;   
-   if (entry) surveyda = (AliVZEROSurveyData*) entry->GetObject();
-   if (!surveyda)  AliError("No survey data from survey database !");
-   
+  so->FillFromLocalFile("Survey_835615_V0.txt");
+  size = so->GetEntries();
+
+  Printf("Title: \"%s\"", so->GetReportTitle().Data());
+  Printf("Date: \"%s\"", so->GetReportDate().Data());
+  Printf("Detector: \"%s\"", so->GetDetector().Data());
+  Printf("URL: \"%s\"", so->GetURL().Data());
+  Printf("Number: \"%d\"", so->GetReportNumber());
+  Printf("Version: \"%d\"", so->GetReportVersion());
+  Printf("Observations: \"%s\"", so->GetObservations().Data());
+  Printf("Coordinate System: \"%s\"", so->GetCoordSys().Data());
+  Printf("Measurement Units: \"%s\"", so->GetUnits().Data());
+  Printf("Nr Columns: \"%d\" \n", so->GetNrColumns());
+  
+  TObjArray *colNames = so->GetColumnNames();
+  
+  TObjArray   *points = so->GetData();
+  const char  namePoint[4]  = "6001";
+  Double_t    coordinates[4][3];
+//  Printf("  ******* %c ******* \n\n ", namePoint[0]); 
+  Printf("Relevant points to be used for alignment procedure (in mm):"); 
+  for (Int_t i = 0; i < points->GetEntries(); ++i) {
+    if(((AliSurveyPoint *) points->At(i))->GetPointName()[0] == namePoint[0]) {
+           Printf("Point %d --> \"%s\" %f %f %f ", i, 
+           ((AliSurveyPoint *) points->At(i))->GetPointName().Data(),
+	   ((AliSurveyPoint *) points->At(i))->GetX(),
+	   ((AliSurveyPoint *) points->At(i))->GetY(),
+	   ((AliSurveyPoint *) points->At(i))->GetZ() ); 
+	   if(i > 10){
+	   coordinates[i-11][0]  = (AliSurveyPoint *) points->At(i))->GetX();
+	   coordinates[i-11][1]  = (AliSurveyPoint *) points->At(i))->GetY();
+	   coordinates[i-11][2]  = (AliSurveyPoint *) points->At(i))->GetZ(); } 
+     }
+  }   
+    
    Double_t ngA[3], ngB[3], ngC[3], ngD[3];
 
      for(Int_t i=0; i<3; i++) 
-     { ngA[i]  = surveyda->GetPointA(i) ; 
-       ngB[i]  = surveyda->GetPointB(i) ;
-       ngC[i]  = surveyda->GetPointC(i) ; 
-       ngD[i]  = surveyda->GetPointD(i) ; }
+     { ngA[i]  = coordinates[0][i] / 10.0 ; 
+       ngB[i]  = coordinates[1][i] / 10.0 ;
+       ngC[i]  = coordinates[2][i] / 10.0 ; 
+       ngD[i]  = coordinates[3][i] / 10.0 ; }
           
-   cout<<endl<<"Fiducial marks coordinates in the global RS given by survey:\n"<<
+   cout<<endl<<"Fiducial marks coordinates in the global RS given by surveyers:\n"<<
     "A "<<ngA[0]<<" "<<ngA[1]<<" "<<ngA[2]<<" "<<endl<<
     "B "<<ngB[0]<<" "<<ngB[1]<<" "<<ngB[2]<<" "<<endl<<
     "C "<<ngC[0]<<" "<<ngC[1]<<" "<<ngC[2]<<" "<<endl<<
     "D "<<ngD[0]<<" "<<ngD[1]<<" "<<ngD[2]<<" "<<endl;
     
-   delete entry;
-
   // From the new fiducial marks coordinates derive back the new global position
   // of the surveyed volume
   //*** What follows is the actual survey-to-alignment procedure which assumes,
@@ -192,14 +212,14 @@ void VZEROSurveyToAlignment(){
      for(i=0;i<3;i++){
           ab[i] /= sx;
      }
-     cout<<endl<<"x direction "<<ab[0]<<"  "<<ab[1]<<"  "<<ab[2]<<endl;
+     cout<<"x direction "<<ab[0]<<"  "<<ab[1]<<"  "<<ab[2]<<endl;
   }
   Double_t sy = TMath::Sqrt(bc[0]*bc[0] + bc[1]*bc[1] + bc[2]*bc[2]);
   if(sy>1.e-8){
     for(i=0;i<3;i++){
           bc[i] /= sy;
     }
-    cout<<endl<<"y direction "<<bc[0]<<"  "<<bc[1]<<"  "<<bc[2]<<endl;
+    cout<<"y direction "<<bc[0]<<"  "<<bc[1]<<"  "<<bc[2]<<endl;
   }
 
   // the global matrix for the surveyed volume - ng
