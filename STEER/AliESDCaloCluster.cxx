@@ -73,11 +73,11 @@ AliESDCaloCluster::AliESDCaloCluster(const AliESDCaloCluster& clus) :
   fNExMax(clus.fNExMax),
   fEmcCpvDistance(clus.fEmcCpvDistance),
   fDistToBadChannel(clus.fDistToBadChannel),
-  fTracksMatched(clus.fTracksMatched),
-  fLabels(clus.fLabels),
-  fDigitAmplitude(clus.fDigitAmplitude),
-  fDigitTime(clus.fDigitTime),
-  fDigitIndex(clus.fDigitIndex)
+  fTracksMatched(clus.fTracksMatched?new TArrayS(*clus.fTracksMatched):0x0),
+  fLabels(clus.fLabels?new TArrayS(*clus.fLabels):0x0),
+  fDigitAmplitude(clus.fDigitAmplitude?new TArrayS(*clus.fDigitAmplitude):0x0),
+  fDigitTime(clus.fDigitTime?new TArrayS(*clus.fDigitTime):0x0),
+  fDigitIndex(clus.fDigitIndex?new TArrayS(*clus.fDigitIndex):0x0)
 {
   //
   // The copy constructor 
@@ -117,12 +117,11 @@ AliESDCaloCluster &AliESDCaloCluster::operator=(const AliESDCaloCluster& source)
 
   for(Int_t i=0; i<AliPID::kSPECIESN; i++) fPID[i] = source.fPID[i];
 
-  fTracksMatched = source.fTracksMatched;
-  fLabels = source.fLabels;
-  fDigitAmplitude = source.fDigitAmplitude;
-  fDigitTime = source.fDigitTime;
-  fDigitIndex = source.fDigitIndex;
-
+  fTracksMatched = source.fTracksMatched?new TArrayS(*source.fTracksMatched):0x0;
+  fLabels = source.fLabels?new TArrayS(*source.fLabels):0x0;
+  fDigitAmplitude = source.fDigitAmplitude?new TArrayS(*source.fDigitAmplitude):0x0;
+  fDigitTime = source.fDigitTime?new TArrayS(*source.fDigitTime):0x0;
+  fDigitIndex = source.fDigitIndex?new TArrayS(*source.fDigitIndex):0x0;
 
   return *this;
 
