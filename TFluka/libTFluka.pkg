@@ -3,13 +3,30 @@ SRCS:=  TFluka.cxx TFlukaMCGeometry.cxx TFlukaCerenkov.cxx \
 	TFlukaConfigOption.cxx TFlukaScoringOption.cxx\
         magfld.cxx source.cxx mgdraw.cxx bxdraw.cxx eedraw.cxx \
 	endraw.cxx sodraw.cxx usdraw.cxx stupre.cxx stuprf.cxx \
-	abscff.cxx dffcff.cxx queffc.cxx rflctv.cxx rfrndx.cxx
+	abscff.cxx dffcff.cxx queffc.cxx rflctv.cxx rfrndx.cxx 
 
 # Headers
 HDRS:= TFluka.h TFlukaMCGeometry.h TFlukaCerenkov.h TFlukaConfigOption.h \
 	TFlukaScoringOption.h
 
 FSRCS:= FLUKA_input.f crnkvp.f
+
+ifeq ($(FLUSCW),1MEVN)
+	FSRCS+=fluscw_1mevn.f
+endif
+
+ifeq ($(FLUSCW),DEQ99C)
+	FSRCS+=fluscw_deq99c.f
+endif
+
+ifeq ($(COMSCW),DEFAULT)
+	SRCS+=comscw.cxx
+endif
+
+ifeq ($(COMSCW),ACTIVITY)
+	FSRCS+=comscw_activity.f
+endif
+
 
 # ROOT Dictionary
 DHDR:= TFlukaLinkDef.h
