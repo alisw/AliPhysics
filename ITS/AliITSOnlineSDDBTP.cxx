@@ -198,7 +198,7 @@ void AliITSOnlineSDDBTP::StatGain(Float_t &mean, Float_t  &rms){
   return;
 }
 //______________________________________________________________________
-void AliITSOnlineSDDBTP::WriteToFXS(){
+void AliITSOnlineSDDBTP::WriteToASCII(){
   //
   Char_t outfilnam[100];
   sprintf(outfilnam,"SDDbase_mod%03d_sid%d.data",fModuleId,fSide);

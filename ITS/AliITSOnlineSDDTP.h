@@ -31,7 +31,7 @@ class AliITSOnlineSDDTP : public AliITSOnlineSDD {
     else return 0;
   }
   void StatGain(Float_t &mean, Float_t  &rms);
-  void WriteToFXS();
+  void WriteToASCII();
 
  protected:
 

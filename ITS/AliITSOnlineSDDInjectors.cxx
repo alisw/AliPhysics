@@ -382,7 +382,7 @@ void AliITSOnlineSDDInjectors::PrintCentroids(){
   }
 }
 //______________________________________________________________________
-void AliITSOnlineSDDInjectors::WriteToFXS(){
+void AliITSOnlineSDDInjectors::WriteToASCII(){
   //
   Char_t outfilnam[100];
   sprintf(outfilnam,"SDDinj_mod%03d_sid%d.data",fModuleId,fSide);

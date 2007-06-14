@@ -45,7 +45,7 @@ class AliITSOnlineSDDBase : public AliITSOnlineSDD {
     else return 0;
   }
   Int_t GetNEvents() const {return fNEvents;}
-  void WriteToFXS();
+  void WriteToASCII();
 
  protected:
 

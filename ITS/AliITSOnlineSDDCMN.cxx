@@ -12,6 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+#include <TFile.h>
 #include "AliITSOnlineSDDCMN.h"
 #include "AliLog.h"
 #include <TH2F.h>
@@ -150,7 +151,7 @@ Float_t AliITSOnlineSDDCMN::CalcMeanNoise() const{
   return meanns;
 }
 //______________________________________________________________________
-void AliITSOnlineSDDCMN::WriteToFXS(){
+void AliITSOnlineSDDCMN::WriteToASCII(){
   //
   Char_t outfilnam[100];
   sprintf(outfilnam,"SDDbase_step2_mod%03d_sid%d.data",fModuleId,fSide);
@@ -159,4 +160,36 @@ void AliITSOnlineSDDCMN::WriteToFXS(){
     fprintf(outf,"%d %d %8.3f %8.3f %8.3f %8.3f\n",ian,IsAnodeGood(ian),GetAnodeBaseline(ian),GetAnodeRawNoise(ian),GetAnodeCommonMode(ian),GetAnodeCorrNoise(ian));
   }
   fclose(outf);  
+}
+//______________________________________________________________________
+Bool_t AliITSOnlineSDDCMN::WriteToROOT(TFile *fil){
+  if(fil==0){ 
+    AliWarning("Invalid pointer to ROOT file");
+    return kFALSE;    
+  }
+  Char_t hisnam[20];
+  fil->cd();
+  sprintf(hisnam,"hgood%03ds%d",fModuleId,fSide);
+  TH1F hgood(hisnam,"",256,-0.5,255.5);
+  sprintf(hisnam,"hbase%03ds%d",fModuleId,fSide);
+  TH1F hbase(hisnam,"",256,-0.5,255.5);
+  sprintf(hisnam,"hnois%03ds%d",fModuleId,fSide);
+  TH1F hnois(hisnam,"",256,-0.5,255.5);
+  sprintf(hisnam,"hcmn%03ds%d",fModuleId,fSide);
+  TH1F hcmn(hisnam,"",256,-0.5,255.5);
+  sprintf(hisnam,"hcorn%03ds%d",fModuleId,fSide);
+  TH1F hcorn(hisnam,"",256,-0.5,255.5);
+  for(Int_t ian=0;ian<fgkNAnodes;ian++){
+    hgood.SetBinContent(ian+1,float(IsAnodeGood(ian)));
+    hbase.SetBinContent(ian+1,GetAnodeBaseline(ian));
+    hnois.SetBinContent(ian+1,GetAnodeRawNoise(ian));
+    hcmn.SetBinContent(ian+1,GetAnodeCommonMode(ian));
+    hcorn.SetBinContent(ian+1,GetAnodeCorrNoise(ian));
+  }
+  hgood.Write();
+  hbase.Write();
+  hnois.Write();
+  hcmn.Write();
+  hcorn.Write();
+  return kTRUE;
 }

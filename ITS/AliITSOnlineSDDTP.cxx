@@ -140,7 +140,7 @@ void AliITSOnlineSDDTP::StatGain(Float_t &mean, Float_t  &rms){
 }
 
 //______________________________________________________________________
-void AliITSOnlineSDDTP::WriteToFXS(){
+void AliITSOnlineSDDTP::WriteToASCII(){
   //
   Char_t basfilnam[100];
   sprintf(basfilnam,"SDDbase_step2_mod%03d_sid%d.data",fModuleId,fSide);

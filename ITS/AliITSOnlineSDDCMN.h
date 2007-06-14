@@ -37,7 +37,8 @@ class AliITSOnlineSDDCMN : public AliITSOnlineSDD {
 
   Float_t CalcMeanNoise() const;
   Int_t GetNEvents() const {return fNEvents;}
-  void WriteToFXS();
+  void WriteToASCII();
+  Bool_t WriteToROOT(TFile *fil);
 
  protected:
 

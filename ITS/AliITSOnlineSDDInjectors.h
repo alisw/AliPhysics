@@ -45,7 +45,7 @@ class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
 
   void PrintInjMap();
   void PrintCentroids();
-  void WriteToFXS();
+  void WriteToASCII();
 
   void Reset();      
   void AnalyzeEvent(TH2F* his);      

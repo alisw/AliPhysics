@@ -50,7 +50,7 @@ class AliITSOnlineSDDBTP : public AliITSOnlineSDD {
   }
   Int_t GetNBaseEvents() const {return fNBaseEvents;}
   Int_t GetNTPEvents() const {return fNTPEvents;}
-  void WriteToFXS();
+  void WriteToASCII();
 
  protected:
 

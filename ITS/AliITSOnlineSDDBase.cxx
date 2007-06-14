@@ -144,7 +144,7 @@ Float_t AliITSOnlineSDDBase::CalcMeanRawNoise() const{
   return meanns;
 }
 //______________________________________________________________________
-void AliITSOnlineSDDBase::WriteToFXS(){
+void AliITSOnlineSDDBase::WriteToASCII(){
   //
   Char_t outfilnam[100];
   sprintf(outfilnam,"SDDbase_step1_mod%03d_sid%d.data",fModuleId,fSide);
