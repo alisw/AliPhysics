@@ -367,6 +367,6 @@ void AliPHOSRecPoint::EvalLocal2TrackingCSTransform()
   if(!tr2loc) AliFatal(Form("No Tracking2LocalMatrix found."));
 
   tr2loc->MasterToLocal(lxyz,txyz);
-  SetX(0.); SetY(txyz[1]); SetY(txyz[2]);
+  SetX(txyz[0]); SetY(txyz[1]); SetZ(txyz[2]);
 
 }
