@@ -2788,6 +2788,7 @@ void AliReconstruction::FillRawDataErrorLog(Int_t iEvent, AliESD* esd)
 }
 
 TNamed* AliReconstruction::CopyFileToTNamed(TString fPath,TString fName){
+  // Dump a file content into a char in TNamed
   ifstream in;
   in.open(fPath.Data(),ios::in | ios::binary|ios::ate);
   Int_t kBytes = (Int_t)in.tellg();
@@ -2813,7 +2814,6 @@ TNamed* AliReconstruction::CopyFileToTNamed(TString fPath,TString fName){
 }
 
 void AliReconstruction::TNamedToFile(TTree* fTree, TString fName){
-
   // This is not really needed in AliReconstruction at the moment
   // but can serve as a template
 

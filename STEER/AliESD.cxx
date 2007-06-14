@@ -22,299 +22,14 @@
 //      Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
 //-----------------------------------------------------------------
 
+#include "TList.h"
+#include <TNamed.h>
+
 #include "AliESD.h"
-
-
-ClassImp(AliESDRun)  
- 
-//______________________________________________________________________________
-AliESDRun::AliESDRun() :
-  fRunNumber(0),
-  fPeriodNumber(0),
-  fRecoVersion(0), 
-  fMagneticField(0)
-{
-  for (Int_t i=0; i<2; i++) fDiamondXY[i]=0.;
-  for (Int_t i=0; i<3; i++) fDiamondCovXY[i]=0.;
-}
-
-//______________________________________________________________________________
-AliESDRun::AliESDRun(const AliESDRun &esd) :
-  TObject(esd),
-  fRunNumber(esd.fRunNumber),
-  fPeriodNumber(esd.fPeriodNumber),
-  fRecoVersion(esd.fRecoVersion),
-  fMagneticField(esd.fMagneticField)
-{ 
-  for (Int_t i=0; i<2; i++) fDiamondXY[i]=esd.fDiamondXY[i];
-  for (Int_t i=0; i<3; i++) fDiamondCovXY[i]=esd.fDiamondCovXY[i];
-}
-
-//______________________________________________________________________________
-AliESDRun& AliESDRun::operator=(const AliESDRun &esd)
-{ 
-  if(this!=&esd) {
-    TObject::operator=(esd);
-    fRunNumber=esd.fRunNumber;
-    fPeriodNumber=esd.fPeriodNumber;
-    fRecoVersion=esd.fRecoVersion;
-    fMagneticField=esd.fMagneticField;
-    for (Int_t i=0; i<2; i++) fDiamondXY[i]=esd.fDiamondXY[i];
-    for (Int_t i=0; i<3; i++) fDiamondCovXY[i]=esd.fDiamondCovXY[i];
-  } 
-  return *this;
-}
-
-//______________________________________________________________________________
-void AliESDRun::Print(const Option_t *) const
-{
-  printf("Mean vertex in RUN %d: X=%.4f Y=%.4f cm\n",
-	 GetRunNumber(),GetDiamondX(),GetDiamondY());
-  printf("Magnetic field = %f T\n",
-	 GetMagneticField());
-  printf("Event from reconstruction version %d \n",fRecoVersion);
-}
-
-void AliESDRun::Reset() 
-{
-  fRunNumber = 0;
-  fPeriodNumber = 0;
-  fRecoVersion = 0;
-  fMagneticField = 0;
-  for (Int_t i=0; i<2; i++) fDiamondXY[i]=0.;
-  for (Int_t i=0; i<3; i++) fDiamondCovXY[i]=0.;
-}
-
-ClassImp(AliESDHeader)
-
-//______________________________________________________________________________
-AliESDHeader::AliESDHeader() :
-  TObject(),
-  fTriggerMask(0),
-  fOrbitNumber(0),
-  fTimeStamp(0),
-  fEventType(0),
-  fEventNumberInFile(0),
-  fBunchCrossNumber(0),
-  fTriggerCluster(0)
-{
-}
-
-
-AliESDHeader::AliESDHeader(const AliESDHeader &header) :
-  TObject(header),
-  fTriggerMask(header.fTriggerMask),
-  fOrbitNumber(header.fOrbitNumber),
-  fTimeStamp(header.fTimeStamp),
-  fEventType(header.fEventType),
-  fEventNumberInFile(header.fEventNumberInFile),
-  fBunchCrossNumber(header.fBunchCrossNumber),
-  fTriggerCluster(header.fTriggerCluster)
-{
-}
-
-AliESDHeader& AliESDHeader::operator=(const AliESDHeader &header)
-{ 
-  if(this!=&header) {
-    TObject::operator=(header);
-    fTriggerMask = header.fTriggerMask;
-    fOrbitNumber = header.fOrbitNumber;
-    fTimeStamp = header.fTimeStamp;
-    fEventType = header.fEventType;
-    fEventNumberInFile = header.fEventNumberInFile;
-    fBunchCrossNumber = header.fBunchCrossNumber;
-    fTriggerCluster = header.fTriggerCluster;
-  } 
-  return *this;
-}
-
-
-
-//______________________________________________________________________________
-void AliESDHeader::Reset()
-{
-  fTriggerMask       = 0;
-  fOrbitNumber       = 0;
-  fTimeStamp         = 0;
-  fEventType         = 0;
-  fEventNumberInFile = 0;
-  fBunchCrossNumber  = 0;
-  fTriggerCluster    = 0;
-}
-
-//______________________________________________________________________________
-void AliESDHeader::Print(const Option_t *) const
-{
-  printf("Event # %d in file Bunch crossing # %d Orbit # %d Trigger %lld \n",
-	 GetEventNumberInFile(),
-	 GetBunchCrossNumber(),
-	 GetOrbitNumber(),
-	 GetTriggerMask());
-}
-
-ClassImp(AliESDZDC)
-
-//______________________________________________________________________________
-AliESDZDC::AliESDZDC() :
-  TObject(),
-  fZDCN1Energy(0),
-  fZDCP1Energy(0),
-  fZDCN2Energy(0),
-  fZDCP2Energy(0),
-  fZDCEMEnergy(0),
-  fZDCParticipants(0)
-{
-}
-
-AliESDZDC::AliESDZDC(const AliESDZDC& zdc) :
-  TObject(zdc),
-  fZDCN1Energy(zdc.fZDCN1Energy),
-  fZDCP1Energy(zdc.fZDCP1Energy),
-  fZDCN2Energy(zdc.fZDCN2Energy),
-  fZDCP2Energy(zdc.fZDCP2Energy),
-  fZDCEMEnergy(zdc.fZDCEMEnergy),
-  fZDCParticipants(zdc.fZDCParticipants)
-{
-}
-
-AliESDZDC& AliESDZDC::operator=(const AliESDZDC&zdc)
-{
-  if(this!=&zdc) {
-    TObject::operator=(zdc);
-    fZDCN1Energy = zdc.fZDCN1Energy;
-    fZDCP1Energy = zdc.fZDCP1Energy;
-    fZDCN2Energy = zdc.fZDCN2Energy;
-    fZDCP2Energy = zdc.fZDCP2Energy;
-    fZDCEMEnergy = zdc.fZDCEMEnergy;
-    fZDCParticipants = zdc.fZDCParticipants;
-  } 
-  return *this;
-}
-
-
-//______________________________________________________________________________
-void AliESDZDC::Reset()
-{
-  fZDCN1Energy=0;
-  fZDCP1Energy=0;
-  fZDCN2Energy=0;
-  fZDCP2Energy=0;
-  fZDCEMEnergy=0;
-  fZDCParticipants=0;
-}
-
-//______________________________________________________________________________
-void AliESDZDC::Print(const Option_t *) const
-{
-}
-
-
-ClassImp(AliESDTZERO)
-
-//______________________________________________________________________________
-AliESDTZERO::AliESDTZERO() :
-  TObject(),
-  fT0zVertex(0),
-  fT0timeStart(0)   
-{
-  for(int i = 0;i<24;i++)fT0time[i] = fT0amplitude[i] = 0;
-}
-
-AliESDTZERO::AliESDTZERO(const AliESDTZERO &tzero ) :
-  TObject(tzero),
-  fT0zVertex(tzero.fT0zVertex),
-  fT0timeStart(tzero.fT0timeStart)   
-{
-  for(int i = 0;i<24;i++){
-    fT0time[i] = tzero.fT0time[i]; 
-    fT0amplitude[i] = tzero.fT0amplitude[i];
-  }
-}
-
-AliESDTZERO& AliESDTZERO::operator=(const AliESDTZERO& tzero){
-  if(this!=&tzero) {
-    TObject::operator=(tzero);
-    fT0zVertex = tzero.fT0zVertex;
-    fT0timeStart = tzero.fT0timeStart;   
-    for(int i = 0;i<24;i++){
-      fT0time[i] = tzero.fT0time[i]; 
-      fT0amplitude[i] = tzero.fT0amplitude[i];
-    }
-  } 
-  return *this;
-}
-
-//______________________________________________________________________________
-void AliESDTZERO::Reset()
-{
-  fT0zVertex = 0;  
-  fT0timeStart = 0;
-  for(int i = 0;i<24;i++)fT0time[i] = fT0amplitude[i] = 0;
-}
-
-//______________________________________________________________________________
-void AliESDTZERO::Print(const Option_t *) const
-{
-}
-
-ClassImp(AliESDCaloTrigger)
-
-AliESDCaloTrigger::AliESDCaloTrigger() : 
-  TNamed(),
-  fTriggerAmplitudes(0x0),
-  fTriggerPosition(0x0)
-{
-}
-
-AliESDCaloTrigger::AliESDCaloTrigger(const AliESDCaloTrigger &ctrig) : 
-  TNamed(ctrig),
-  fTriggerAmplitudes(ctrig.fTriggerAmplitudes),
-  fTriggerPosition(ctrig.fTriggerPosition)
-{
-}
-
-AliESDCaloTrigger::~AliESDCaloTrigger()
-{
-  delete fTriggerAmplitudes; fTriggerAmplitudes = 0;
-  delete fTriggerPosition; fTriggerPosition = 0;
-}
-
-AliESDCaloTrigger& AliESDCaloTrigger::operator=(const AliESDCaloTrigger& ctrig)
-{
-  if(this!=&ctrig) {
-    TNamed::operator=(ctrig);
-    // CKB dont't want to create leak if fTriggerAmp points to 
-    // somthing already, use new with placement
-    if(fTriggerAmplitudes){
-      fTriggerAmplitudes = new(fTriggerAmplitudes) TArrayF(*ctrig.fTriggerAmplitudes);
-    }
-    else{
-      fTriggerAmplitudes = new TArrayF(*ctrig.fTriggerAmplitudes);
-    }
-    if(fTriggerPosition){
-      fTriggerPosition = new(fTriggerPosition) TArrayF(*ctrig.fTriggerPosition);
-    }
-    else{
-      fTriggerPosition = new TArrayF(*ctrig.fTriggerPosition);
-    }
-  } 
-  return *this;
-}
-
-void AliESDCaloTrigger::Reset()
-{
-  
-  if( fTriggerAmplitudes){  
-    printf("%s %d Size %d",(char*)__FILE__,__LINE__,fTriggerAmplitudes->GetSize());
-    fTriggerAmplitudes->Reset();
-// delete fTriggerAmplitudes;
-  }
-  if( fTriggerPosition){
-    fTriggerPosition->Reset();
-  // delete fTriggerPosition;
-  }
-}
-
+#include "AliESDfriend.h"
+#include "AliESDVZERO.h"
+#include "AliESDHLTtrack.h"
+#include "AliESDFMD.h"
 
 
 ClassImp(AliESD)
@@ -508,7 +223,7 @@ AliESD::~AliESD()
 //______________________________________________________________________________
 void AliESD::Reset()
 {
-
+  // Reset the standard contents
   if(fESDRun) fESDRun->Reset();
   if(fHeader) fHeader->Reset();
   if(fESDZDC) fESDZDC->Reset();
@@ -607,6 +322,44 @@ void AliESD::SetESDfriend(const AliESDfriend *ev) {
   }
 }
 
+Int_t  AliESD::AddTrack(const AliESDtrack *t) {
+    // Add track
+    TClonesArray &ftr = *fTracks;
+    AliESDtrack * track = new(ftr[fTracks->GetEntriesFast()])AliESDtrack(*t);
+    track->SetID(fTracks->GetEntriesFast()-1);
+    return  track->GetID();    
+}
+
+Int_t AliESD::AddKink(const AliESDkink *c) {
+    // Add kink
+    TClonesArray &fk = *fKinks;
+    AliESDkink * kink = new(fk[fKinks->GetEntriesFast()]) AliESDkink(*c);
+    kink->SetID(fKinks->GetEntriesFast()); // CKB different from the other imps..
+    return fKinks->GetEntriesFast()-1;
+}
+
+Int_t AliESD::AddCaloCluster(const AliESDCaloCluster *c) {
+    // Add calocluster
+    TClonesArray &fc = *fCaloClusters;
+    AliESDCaloCluster *clus = new(fc[fCaloClusters->GetEntriesFast()]) AliESDCaloCluster(*c);
+    clus->SetID(fCaloClusters->GetEntriesFast()-1);
+    return fCaloClusters->GetEntriesFast()-1;
+  }
+
+
+void AliESD::SetFMDData(AliESDFMD * obj) { 
+  // use already allocated space
+  if(fESDFMD){
+    new(fESDFMD) AliESDFMD(*obj); 
+  }
+}
+
+void AliESD::SetVZEROData(AliESDVZERO * obj){ 
+  // use already allocated space
+  if(fESDVZERO)
+    new(fESDVZERO) AliESDVZERO(*obj);
+}
+
 void AliESD::GetESDfriend(AliESDfriend *ev) const {
   //
   // Extracts the complementary info from the ESD
@@ -622,6 +375,7 @@ void AliESD::GetESDfriend(AliESDfriend *ev) const {
   }
 }
 
+
 void AliESD::AddObject(TObject* obj) 
 {
   // Add an object to the list of object.
@@ -629,6 +383,7 @@ void AliESD::AddObject(TObject* obj)
   // refrain from using TObjArrays (if possible). Use TClonesArrays, instead.
   fESDObjects->AddLast(obj);
 }
+
 
 void AliESD::GetStdContent() 
 {
@@ -658,7 +413,7 @@ void AliESD::GetStdContent()
 }
 
 void AliESD::SetStdNames(){
-
+  // Set the names of the standard contents
   fSPDVertex->SetName("SPDVertex");
   fPrimaryVertex->SetName("PrimaryVertex");
   fPHOSTrigger->SetName("PHOSTrigger");

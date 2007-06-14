@@ -16,11 +16,11 @@
 
 #include <TClonesArray.h>
 #include <TObject.h>
-#include <TNamed.h>
-#include <TList.h>
 #include <TTree.h>
 #include <TArrayF.h>
-#include <TRef.h>
+
+class TList;
+
 
 #include "AliESDMuonTrack.h"
 #include "AliESDPmdTrack.h"
@@ -29,201 +29,28 @@
 #include "AliESDcascade.h"
 #include "AliESDkink.h"
 #include "AliESDtrack.h"
-#include "AliESDfriend.h"
-#include "AliESDHLTtrack.h"
 #include "AliESDCaloCluster.h"
 #include "AliESDv0.h"
 #include "AliESDFMD.h"
 #include "AliESDVZERO.h"
 #include "AliMultiplicity.h"
 #include "AliRawDataErrorLog.h"
+#include "AliESDRun.h"
+#include "AliESDHeader.h"
+#include "AliESDZDC.h"
+#include "AliESDTZERO.h"
+#include "AliESDCaloTrigger.h"
 
 class AliESDfriend;
-
-class AliESDRun: public TObject {
-public:
-
-  AliESDRun();
-  AliESDRun(const AliESDRun&);
-  AliESDRun& operator=(const AliESDRun&);
-
-
-  Int_t   GetRunNumber() const {return fRunNumber;}
-  void    SetRunNumber(Int_t n) {fRunNumber=n;}
-  void    SetMagneticField(Float_t mf){fMagneticField = mf;}
-  Float_t GetMagneticField() const {return fMagneticField;}
-  Int_t   GetPeriodNumber() const {return fPeriodNumber;}
-  void    SetPeriodNumber(Int_t n) {fPeriodNumber=n;}
-  void    Reset();
-  void    Print(const Option_t *opt=0) const;
-
-  void SetDiamond(const AliESDVertex *vertex) {
-    fDiamondXY[0]=vertex->GetXv();
-    fDiamondXY[1]=vertex->GetYv();
-    Double32_t cov[6];
-    vertex->GetCovMatrix(cov);
-    fDiamondCovXY[0]=cov[0];
-    fDiamondCovXY[1]=cov[1];
-    fDiamondCovXY[2]=cov[2];
-  }
-  Float_t GetDiamondX() const {return fDiamondXY[0];}
-  Float_t GetDiamondY() const {return fDiamondXY[1];}
-  Float_t GetSigma2DiamondX() const {return fDiamondCovXY[0];}
-  Float_t GetSigma2DiamondY() const {return fDiamondCovXY[2];}
-  void GetDiamondCovXY(Float_t cov[3]) const {
-    for(Int_t i=0;i<3;i++) cov[i]=fDiamondCovXY[i]; return;
-  }
-private:
-  Int_t        fRunNumber;       // Run Number
-  Int_t        fPeriodNumber;       // PeriodNumber
-  Int_t        fRecoVersion;     // Version of reconstruction 
-  Float_t      fMagneticField;   // Solenoid Magnetic Field in kG : for compatibility with AliMagF
-  Float_t      fDiamondXY[2];    // Interaction diamond (x,y) in RUN
-  Float_t      fDiamondCovXY[3]; // Interaction diamond covariance (x,y) in RUN
-
-  ClassDef(AliESDRun,1)
-};
-
-
-
-
-
-class AliESDHeader: public TObject {
-public:
-  AliESDHeader();
-  AliESDHeader(const AliESDHeader&);
-  AliESDHeader& operator=(const AliESDHeader&);
-
-  void      SetTriggerMask(ULong64_t n) {fTriggerMask=n;}
-  void      SetOrbitNumber(UInt_t n) {fOrbitNumber=n;}
-  void      SetTimeStamp(UInt_t timeStamp){fTimeStamp = timeStamp;}
-  void      SetEventType(UInt_t eventType){fEventType = eventType;}
-  void      SetEventNumberInFile(Int_t n) {fEventNumberInFile=n;}
-  void      SetBunchCrossNumber(UShort_t n) {fBunchCrossNumber=n;}
-  void      SetTriggerCluster(UChar_t n) {fTriggerCluster = n;}
-
-  ULong64_t GetTriggerMask() const {return fTriggerMask;}
-  UInt_t    GetOrbitNumber() const {return fOrbitNumber;}
-  UInt_t    GetTimeStamp()  const { return fTimeStamp;}
-  UInt_t    GetEventType()  const { return fEventType;}
-  Int_t     GetEventNumberInFile() const {return fEventNumberInFile;}
-  UShort_t  GetBunchCrossNumber() const {return fBunchCrossNumber;}
-  UChar_t   GetTriggerCluster() const {return fTriggerCluster;}
-
-
-
-  void      Reset();
-  void    Print(const Option_t *opt=0) const;
-private:
-
-  // Event Identification
-  ULong64_t    fTriggerMask;       // Trigger Type (mask)
-  UInt_t       fOrbitNumber;       // Orbit Number
-  UInt_t       fTimeStamp;         // Time stamp
-  UInt_t       fEventType;         // Type of Event
-  Int_t        fEventNumberInFile; // running Event count in the file
-  UShort_t     fBunchCrossNumber;  // Bunch Crossing Number
-  UChar_t      fTriggerCluster;    // Trigger cluster (mask)
-  
-  ClassDef(AliESDHeader,1)
-};
-
-class AliESDZDC: public TObject {
-public:
-  AliESDZDC();
-  AliESDZDC(const AliESDZDC&);
-  AliESDZDC& operator=(const AliESDZDC&);
-
-  Float_t GetZDCN1Energy() const {return fZDCN1Energy;}
-  Float_t GetZDCP1Energy() const {return fZDCP1Energy;}
-  Float_t GetZDCN2Energy() const {return fZDCN2Energy;}
-  Float_t GetZDCP2Energy() const {return fZDCP2Energy;}
-  Float_t GetZDCEMEnergy() const {return fZDCEMEnergy;}
-  Int_t   GetZDCParticipants() const {return fZDCParticipants;}
-  void    SetZDC(Float_t n1Energy, Float_t p1Energy, Float_t emEnergy,
-                 Float_t n2Energy, Float_t p2Energy, Int_t participants) 
-   {fZDCN1Energy=n1Energy; fZDCP1Energy=p1Energy; fZDCEMEnergy=emEnergy;
-    fZDCN2Energy=n2Energy; fZDCP2Energy=p2Energy; fZDCParticipants=participants;}
-
-  void    Reset();
-  void    Print(const Option_t *opt=0) const;
-
-private:
-
-  Float_t      fZDCN1Energy;      // reconstructed energy in the neutron ZDC
-  Float_t      fZDCP1Energy;      // reconstructed energy in the proton ZDC
-  Float_t      fZDCN2Energy;      // reconstructed energy in the neutron ZDC
-  Float_t      fZDCP2Energy;      // reconstructed energy in the proton ZDC
-  Float_t      fZDCEMEnergy;     // reconstructed energy in the electromagnetic ZDC
-  Int_t        fZDCParticipants; // number of participants estimated by the ZDC
-
-  ClassDef(AliESDZDC,1)
-};
-
-
-class AliESDTZERO: public TObject {
-public:
-  AliESDTZERO();
-  AliESDTZERO(const AliESDTZERO&);
-  AliESDTZERO& operator=(const AliESDTZERO&);
-
-  Float_t GetT0zVertex() const {return fT0zVertex;}
-  void SetT0zVertex(Float_t z) {fT0zVertex=z;}
-  Float_t GetT0() const {return fT0timeStart;}
-  void SetT0(Float_t timeStart) {fT0timeStart = timeStart;}
-  const Float_t * GetT0time() const {return fT0time;}
-  void SetT0time(Float_t time[24]) {
-    for (Int_t i=0; i<24; i++) fT0time[i] = time[i];
-  }
-  const Float_t * GetT0amplitude() const {return fT0amplitude;}
-  void SetT0amplitude(Float_t amp[24]) {
-    for (Int_t i=0; i<24; i++) fT0amplitude[i] = amp[i];
-  }
-
-  void    Reset();
-  void    Print(const Option_t *opt=0) const;
-
-private:
-
-  Float_t      fT0zVertex;       // vertex z position estimated by the T0
-  Float_t      fT0timeStart;     // interaction time estimated by the T0
-  Float_t      fT0time[24];      // best TOF on each T0 PMT
-  Float_t      fT0amplitude[24]; // number of particles(MIPs) on each T0 PMT
-
-  ClassDef(AliESDTZERO,1)
-};
-
-
-class AliESDCaloTrigger : public TNamed {
-public:
-  AliESDCaloTrigger();
-  AliESDCaloTrigger(const  AliESDCaloTrigger&);
-  AliESDCaloTrigger& operator=(const  AliESDCaloTrigger&);
-  virtual ~AliESDCaloTrigger();
-
-  // does this create mem leak? CKB use new with placement?
-  void AddTriggerPosition(const TArrayF & array)  { fTriggerPosition     = new TArrayF(array); }
-  void AddTriggerAmplitudes(const TArrayF & array) { fTriggerAmplitudes  = new TArrayF(array); }
-  
-  void Reset(); 
-
-  TArrayF* GetTriggerPosition()    {return fTriggerPosition;}
-  TArrayF* GetTriggerAmplitudes()  {return fTriggerPosition;}
-  
-
-private:
-
-  TArrayF *fTriggerAmplitudes;
-  TArrayF *fTriggerPosition;
-
-  ClassDef(AliESDCaloTrigger,1)
-};
+class AliESDVZERO;
+class AliESDHLTtrack;
+class AliESDFMD;
 
 class AliESD : public TObject {
 public:
 
 
-  enum ESDListIndex_t {kESDRun,
+  enum ESDListIndex_t   {kESDRun,
 		       kHeader,
 		       kESDZDC,
 		       kESDFMD,
@@ -252,7 +79,7 @@ public:
 
   // RUN
   // move this to the UserData!!!
-  const AliESDRun*    GetESDRun() {return fESDRun;}
+  const AliESDRun*    GetESDRun() const {return fESDRun;}
 
   // Delegated methods for fESDRun
   void    SetRunNumber(Int_t n) {fESDRun->SetRunNumber(n);}
@@ -270,7 +97,7 @@ public:
   
 
   // HEADER
-  const AliESDHeader* GetHeader() {return fHeader;}
+  const AliESDHeader* GetHeader() const {return fHeader;}
 
   // Delegated methods for fHeader
   void      SetTriggerMask(ULong64_t n) {fHeader->SetTriggerMask(n);}
@@ -290,7 +117,7 @@ public:
   UChar_t   GetTriggerCluster() const {return fHeader->GetTriggerCluster();}
 
   // ZDC CKB: put this in the header?
-  const AliESDZDC*    GetESDZDC() {return fESDZDC;}
+  const AliESDZDC*    GetESDZDC() const {return fESDZDC;}
 
   // Delegated methods for fESDZDC
   Float_t GetZDCN1Energy() const {return fESDZDC->GetZDCN1Energy();}
@@ -305,13 +132,12 @@ public:
 
 
   // FMD
-  void SetFMDData(AliESDFMD * obj) { new(fESDFMD) AliESDFMD(*obj); /*CKB test vs 0*/ }
+  void SetFMDData(AliESDFMD * obj);
   AliESDFMD *GetFMDData(){ return fESDFMD; }
 
 
   // TZERO CKB: put this in the header?
-  
-  const AliESDTZERO*    GetESDTZERO() {return fESDTZERO;}
+  const AliESDTZERO*    GetESDTZERO() const {return fESDTZERO;}
   // delegetated methods for fESDTZERO
 
   Float_t GetT0zVertex() const {return fESDTZERO->GetT0zVertex();}
@@ -324,8 +150,8 @@ public:
   void SetT0amplitude(Float_t amp[24]){fESDTZERO->SetT0amplitude(amp);}
 
   // VZERO 
-  AliESDVZERO *GetVZEROData(){ return fESDVZERO; }
-  void SetVZEROData(AliESDVZERO * obj) { new(fESDVZERO) AliESDVZERO(*obj);  /*CKB test vs 0*/ }
+  AliESDVZERO *GetVZEROData() const { return fESDVZERO; }
+  void SetVZEROData(AliESDVZERO * obj);
 
 
   void SetESDfriend(const AliESDfriend *f);
@@ -343,8 +169,6 @@ public:
   void SetPrimaryVertex(const AliESDVertex *vertex) {
     *fPrimaryVertex = *vertex;
     fPrimaryVertex->SetName("fPrimaryVertex");// error prone use class wide names?
-    // ckb
-    //     new (&fPrimaryVertex) AliESDVertex(*vertex);
   }
   const AliESDVertex *GetPrimaryVertex() const {return fPrimaryVertex;}
 
@@ -358,13 +182,7 @@ public:
   AliESDtrack *GetTrack(Int_t i) const {
     return (AliESDtrack *)fTracks->UncheckedAt(i);
   }
-  Int_t  AddTrack(const AliESDtrack *t) {
-    // CKB inline this or better in .cxx
-    TClonesArray &ftr = *fTracks;
-    AliESDtrack * track = new(ftr[fTracks->GetEntriesFast()])AliESDtrack(*t);
-    track->SetID(fTracks->GetEntriesFast()-1);
-    return  track->GetID();    
-  }
+  Int_t  AddTrack(const AliESDtrack *t);
 
   
   AliESDHLTtrack *GetHLTConfMapTrack(Int_t /*i*/) const {
@@ -372,11 +190,9 @@ public:
     return 0;
   }
   void AddHLTConfMapTrack(const AliESDHLTtrack */*t*/) {
-    /*
-    TClonesArray &fhlt = *fHLTConfMapTracks;
-    new(fhlt[fHLTConfMapTracks->GetEntriesFast()]) AliESDHLTtrack(*t);
-    */
     printf("ESD:: AddHLTConfMapTrack do nothing \n");
+    //    TClonesArray &fhlt = *fHLTConfMapTracks;
+    //  new(fhlt[fHLTConfMapTracks->GetEntriesFast()]) AliESDHLTtrack(*t);
   }
   
 
@@ -386,10 +202,8 @@ public:
   }
   void AddHLTHoughTrack(const AliESDHLTtrack */*t*/) {
     printf("ESD:: AddHLTHoughTrack do nothing \n");
-    /*
-    TClonesArray &fhlt = *fHLTHoughTracks;
-    new(fhlt[fHLTHoughTracks->GetEntriesFast()]) AliESDHLTtrack(*t);
-    */
+    //    TClonesArray &fhlt = *fHLTHoughTracks;
+    //     new(fhlt[fHLTHoughTracks->GetEntriesFast()]) AliESDHLTtrack(*t);
   }
   
   AliESDMuonTrack *GetMuonTrack(Int_t i) const {
@@ -432,23 +246,12 @@ public:
   AliESDkink *GetKink(Int_t i) const {
     return (AliESDkink *)fKinks->UncheckedAt(i);
   }
-  Int_t AddKink(const AliESDkink *c) {
-    TClonesArray &fk = *fKinks;
-    AliESDkink * kink = new(fk[fKinks->GetEntriesFast()]) AliESDkink(*c);
-    kink->SetID(fKinks->GetEntriesFast()); // CKB different from the other imps..
-    return fKinks->GetEntriesFast()-1;
-  }
+  Int_t AddKink(const AliESDkink *c);
 
   AliESDCaloCluster *GetCaloCluster(Int_t i) const {
     return (AliESDCaloCluster *)fCaloClusters->UncheckedAt(i);
   }
-  Int_t AddCaloCluster(const AliESDCaloCluster *c) {
-    TClonesArray &fc = *fCaloClusters;
-    AliESDCaloCluster *clus = new(fc[fCaloClusters->GetEntriesFast()]) AliESDCaloCluster(*c);
-    clus->SetID(fCaloClusters->GetEntriesFast()-1);
-    return fCaloClusters->GetEntriesFast()-1;
-  }
-
+  Int_t AddCaloCluster(const AliESDCaloCluster *c);
 
   AliRawDataErrorLog *GetErrorLog(Int_t i) const {
     return (AliRawDataErrorLog *)fErrorLogs->UncheckedAt(i);
@@ -503,7 +306,7 @@ public:
 
   void AddObject(TObject* obj);
   void ReadFromTree(TTree *tree);
-  void WriteToTree(TTree* tree) {tree->Branch(fESDObjects);}
+  const void WriteToTree(TTree* tree) const {tree->Branch(fESDObjects);}
   void GetStdContent();
   void CreateStdContent();
   void SetStdNames();
