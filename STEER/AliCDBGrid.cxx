@@ -392,6 +392,9 @@ AliCDBEntry* AliCDBGrid::GetEntryFromFile(TString& filename, AliCDBId* dataId){
 
 	anEntry->SetLastStorage("grid");
 
+	// Check whether entry contains a TTree. In case load the tree in memory!
+	LoadTreeFromFile(anEntry);
+
 	// close file, return retieved entry
 	file->Close(); delete file; file=0;
 
@@ -530,19 +533,21 @@ Bool_t AliCDBGrid::PutEntry(AliCDBEntry* entry) {
 	if (fSE != "default") fullFilename += Form("?se=%s",fSE.Data());
 
 	// open file
-	TFile *file = TFile::Open(fullFilename,"CREATE");
-	if(!file || !file->IsWritable()){
-		AliError(Form("Can't open file <%s>!", filename.Data()));
-		if(file && !file->IsWritable()) file->Close(); delete file; file=0;
-		return kFALSE;
-	}
+  	TFile *file = TFile::Open(fullFilename,"CREATE");
+  	if(!file || !file->IsWritable()){
+  		AliError(Form("Can't open file <%s>!", filename.Data()));
+  		if(file && !file->IsWritable()) file->Close(); delete file; file=0;
+  		return kFALSE;
+  	}
 
 	file->cd();
+
+	SetTreeToFile(entry, file);
 
 	entry->SetVersion(id.GetVersion());
 
 	// write object (key name: "AliCDBEntry")
-	Bool_t result = (entry->Write("AliCDBEntry") != 0);
+	Bool_t result = (file->WriteTObject(entry, "AliCDBEntry") != 0);
 	if (!result) AliError(Form("Can't write entry to file <%s>!", filename.Data()));
 
 

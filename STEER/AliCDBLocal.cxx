@@ -417,6 +417,9 @@ AliCDBEntry* AliCDBLocal::GetEntry(const AliCDBId& queryId) {
 		AliWarning(Form("Object's Id: %s", entryId.ToString().Data()));
         }
 
+	// Check whether entry contains a TTree. In case load the tree in memory!
+	LoadTreeFromFile(anEntry);
+
 	// close file, return retieved entry
 	file.Close();
 	return anEntry;
@@ -547,6 +550,8 @@ Bool_t AliCDBLocal::PutEntry(AliCDBEntry* entry) {
 		return kFALSE;
 	}
 	
+	SetTreeToFile(entry, &file);
+
 	entry->SetVersion(id.GetVersion());
 	entry->SetSubVersion(id.GetSubVersion());
 

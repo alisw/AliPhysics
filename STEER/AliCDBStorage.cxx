@@ -15,6 +15,8 @@
 
 #include <TKey.h>
 #include <TH1.h>
+#include <TTree.h>
+#include <TFile.h>
 #include "AliCDBStorage.h"
 #include "AliCDBGrid.h"
 
@@ -439,4 +441,43 @@ AliCDBManager::DataType AliCDBStorage::GetDataType() const {
 	if(GetBaseFolder().Contains(refFolder)) return AliCDBManager::kReference;
 
 	return AliCDBManager::kPrivate;
+}
+
+//_____________________________________________________________________________
+void AliCDBStorage::LoadTreeFromFile(AliCDBEntry *entry) const {
+// Checks whether entry contains a TTree and in case loads it into memory
+
+	AliCDBMetaData *md = dynamic_cast<AliCDBMetaData*> (entry->GetMetaData());
+	if(!md) return;
+	TString objStr = md->GetObjectClassName();
+	if(objStr != "TTree") return;
+	AliWarning("Entry contains a TTree! Loading baskets...");
+
+	TTree* tree = dynamic_cast<TTree*> (entry->GetObject());
+
+	if(!tree) return;
+
+	tree->LoadBaskets();
+	tree->SetDirectory(0);
+
+	return;
+}
+
+//_____________________________________________________________________________
+void AliCDBStorage::SetTreeToFile(AliCDBEntry *entry, TFile* file) const {
+// Checks whether entry contains a TTree and in case assigns it to memory
+
+	AliCDBMetaData *md = dynamic_cast<AliCDBMetaData*> (entry->GetMetaData());
+	if(!md) return;
+	TString objStr = md->GetObjectClassName();
+	if(objStr != "TTree") return;
+	AliWarning("Entry contains a TTree! Setting file...");
+
+	TTree* tree = dynamic_cast<TTree*> (entry->GetObject());
+
+	if(!tree) return;
+
+	tree->SetDirectory(file);
+
+	return;
 }

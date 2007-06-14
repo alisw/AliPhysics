@@ -22,6 +22,7 @@
 class AliCDBEntry;
 class AliCDBPath;
 class AliCDBParam;
+class TFile;
 
 class AliCDBStorage: public TObject {
 
@@ -103,6 +104,8 @@ protected:
 	virtual Bool_t PutEntry(AliCDBEntry* entry) = 0;
 	virtual TList *GetIdListFromFile(const char* fileName)=0;
 	virtual void   QueryValidFiles() = 0;
+	void 	LoadTreeFromFile(AliCDBEntry* entry) const;
+	void 	SetTreeToFile(AliCDBEntry* entry, TFile* file) const;
 
 	TObjArray fValidFileIds; 	// list of Id's of the files valid for a given run (cached as fRun)
 	Int_t fRun;		// run number, used to manage list of valid files
