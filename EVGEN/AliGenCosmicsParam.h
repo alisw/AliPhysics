@@ -26,6 +26,7 @@ public:
       if(max<0. || max>90.) AliFatal("angle must be in [0,pi/2]");
       fMaxAngleWRTVertical=max; return; }
   void SetBkG(Float_t b) { fBkG=b; return; }
+  void SetInACORDE() { fACORDE=kTRUE; return; }
   void SetInTPC() { fTPC=kTRUE; return; }
   void SetInITS() { fITS=kTRUE; return; }
   void SetInSPDouter() { fSPDouter=kTRUE; return; }
@@ -35,7 +36,8 @@ private:
 
   Bool_t IntersectCylinder(Float_t r,Float_t z,Int_t pdg,
 			   Float_t o[3],Float_t p[3]) const;  
-
+  Bool_t IntersectACORDE(Int_t pdg,
+			 Float_t o[3],Float_t p[3]) const;
   Bool_t fParamMI;              // parametrization from M.Ivanov
   Bool_t fParamACORDE;          // parametrization from AliGenACORDE 
                                 // (parametrized at ALICE y)
@@ -46,8 +48,9 @@ private:
   Bool_t fITS;                  // acceptance cuts
   Bool_t fSPDouter;             // acceptance cuts
   Bool_t fSPDinner;             // acceptance cuts
+  Bool_t fACORDE;               // acceptance cuts
 
-  ClassDef(AliGenCosmicsParam,1) // parametrized cosmics generator
+  ClassDef(AliGenCosmicsParam,2) // parametrized cosmics generator
 };
 
 #endif

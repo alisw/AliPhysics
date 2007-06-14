@@ -39,7 +39,8 @@ fBkG(0.),
 fTPC(kFALSE),
 fITS(kFALSE),
 fSPDouter(kFALSE),
-fSPDinner(kFALSE)
+fSPDinner(kFALSE),
+fACORDE(kFALSE)
 {
   //
   // Default constructor
@@ -59,10 +60,20 @@ void AliGenCosmicsParam::Generate()
   Double_t ptot=0,pt=0,angleWRTVertical=0;
   Bool_t okMom=kFALSE,okAngle=kFALSE;
   //
+  Float_t rtrigger=250.0,ztrigger=250.0; // TPC is default
+  if(fITS)      { rtrigger=50.0; ztrigger=50.0; }
+  if(fSPDouter) { rtrigger=6.5; ztrigger=14.0; }
+  if(fSPDinner) { rtrigger=3.5; ztrigger=14.0; }
+
 
   // mu+ or mu-
-  Int_t ipart=13;
-  if(gRandom->Rndm()<0.5) ipart *= -1;
+  Float_t muMinusFraction = 4./9.; // mu+/mu- = 1.25
+  Int_t ipart;
+  if(gRandom->Rndm()<muMinusFraction) {
+    ipart = 13; // mu-
+  } else {
+    ipart = -13; // mu+
+  }
 
   if(fParamACORDE) { // extracted from AliGenACORDE events
     // sample total momentum only once (to speed up)
@@ -77,9 +88,9 @@ void AliGenCosmicsParam::Generate()
   while(1) {
     trials++;
     // origin
-    origin[0]  = fYOrigin*TMath::Tan(fMaxAngleWRTVertical)*(-1.+2.*gRandom->Rndm());
+    origin[0]  = (fYOrigin*TMath::Tan(fMaxAngleWRTVertical)+rtrigger)*(-1.+2.*gRandom->Rndm());
     origin[1]  = fYOrigin;
-    origin[2]  = fYOrigin*TMath::Tan(fMaxAngleWRTVertical)*(-1.+2.*gRandom->Rndm());
+    origin[2]  = (fYOrigin*TMath::Tan(fMaxAngleWRTVertical)+ztrigger)*(-1.+2.*gRandom->Rndm());
 
     // momentum
     while(1) {
@@ -126,12 +137,15 @@ void AliGenCosmicsParam::Generate()
       if(okAngle&&okMom) break;
     }
 
-    // acceptance
-    if(!fTPC && !fITS && !fSPDinner && !fSPDouter) break;
-    if(fTPC) if(IntersectCylinder(250.,250.,ipart,origin,p)) break;
-    if(fITS) if(IntersectCylinder(50.,50.,ipart,origin,p)) break;
-    if(fSPDouter) if(IntersectCylinder(6.5,14.,ipart,origin,p)) break;
-    if(fSPDinner) if(IntersectCylinder(3.5,14.0,ipart,origin,p)) break;
+    // acceptance trigger
+    if(IntersectCylinder(rtrigger,ztrigger,ipart,origin,p)) {
+      if(!fACORDE) {
+	break; 
+      } else {
+	if(IntersectACORDE(ipart,origin,p)) break;
+      }
+    }
+    //
   }
 
   Float_t polarization[3]= {0,0,0};
@@ -198,6 +212,30 @@ Bool_t AliGenCosmicsParam::IntersectCylinder(Float_t r,Float_t z,Int_t pdg,
     if(TMath::Abs(dz)>z) return kFALSE;
     }
   */
+
+  return kTRUE;
+}
+//-----------------------------------------------------------------------------
+Bool_t AliGenCosmicsParam::IntersectACORDE(Int_t pdg,
+					   Float_t o[3],Float_t p[3]) const
+{
+  //
+  // Intersection between muon and ACORDE (very rough)
+  //
+
+  Float_t en = TMath::Sqrt(0.105*0.105+p[0]*p[0]+p[1]*p[1]+p[2]*p[2]);
+  TParticle part(pdg,0,0,0,0,0,p[0],p[1],p[2],en,o[0],o[1],o[2],0);
+  AliESDtrack track(&part);
+
+  Float_t rACORDE=800.0,xACORDE=750.0,zACORDE=600.0;
+
+  Double_t xyz[3];
+  track.GetXYZAt(rACORDE,fBkG,xyz);
+
+  // check global x 
+  if(TMath::Abs(xyz[0]) > xACORDE) return kFALSE;
+  // check global z
+  if(TMath::Abs(xyz[2]) > zACORDE) return kFALSE;
 
   return kTRUE;
 }
