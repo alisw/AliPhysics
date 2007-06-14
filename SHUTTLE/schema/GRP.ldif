@@ -4,7 +4,7 @@ objectClass: AliShuttleDetector
 det: GRP
 StrictRunOrder: 0
 responsible: not_yet_set
-DCSHost: aldcs053.cern.ch
+DCSHost: aldcs052.cern.ch
 DCSPort: 4242
 DCSalias: LHCState
 DCSalias: LHCPeriod

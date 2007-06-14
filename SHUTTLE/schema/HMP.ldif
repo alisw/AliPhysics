@@ -3,9 +3,9 @@ dn: det=HMP,o=alice,dc=cern,dc=ch
 objectClass: AliShuttleDetector
 det: HMP
 StrictRunOrder: 0
-responsible: kir@mail.cern.ch 
+responsible: Giacomo.Volpe@ba.infn.it 
 responsible: Domenico.Dibari@ba.infn.it
-DCSHost: aldcs053.cern.ch
+DCSHost: aldcs052.cern.ch
 DCSPort: 4242
 DCSalias: HMP_DET/HMP_MP0/HMP_MP0_PW/HMP_MP0_SEC0/HMP_MP0_SEC0_HV.actual.vMon
 DCSalias: HMP_DET/HMP_MP0/HMP_MP0_PW/HMP_MP0_SEC1/HMP_MP0_SEC1_HV.actual.vMon

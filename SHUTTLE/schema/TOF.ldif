@@ -12,7 +12,7 @@ objectClass: AliShuttleDetector
 det: TOF
 StrictRunOrder: 1
 responsible: not_yet_set
-DCSHost: aldcs053.cern.ch
+DCSHost: aldcs052.cern.ch
 DCSPort: 4242
 DCSalias: tof_hv_vp_[00..89]
 DCSalias: tof_hv_vn_[00..89]

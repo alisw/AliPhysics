@@ -4,10 +4,9 @@ objectClass: AliShuttleDetector
 det: TRD
 StrictRunOrder: 0
 responsible: not_yet_set
-DCSHost: aldcs053.cern.ch
+DCSHost: aldcs052.cern.ch
 DCSPort: 4242
 DCSalias: trd_chamberByteStatus[000..539]
-DCSalias: trd_preTrigger
 DCSalias: trd_goofyHv
 DCSalias: trd_goofyPeakPos00
 DCSalias: trd_goofyPeakPos01
@@ -29,3 +28,4 @@ DCSalias: trd_adcClkPhase
 DCSalias: trd_atmPressure
 DCSalias: trd_luminosity
 DCSalias: trd_magneticField
+#DCSalias: trd_preTrigger
