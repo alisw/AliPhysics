@@ -398,6 +398,9 @@ void AliITSsimulationSPD::HitToSDigit(AliITSmodule *mod){
             sigz=sig*fda;
             SpreadChargeAsym(x,z,ix,iz,el,sigx,sigz,idtrack,h);
         } // end if st>0.0
+
+    } // Loop over all hits h
+
         // Coupling
         switch (fCoupling) {
         default:
@@ -419,7 +422,6 @@ void AliITSsimulationSPD::HitToSDigit(AliITSmodule *mod){
                 } // end for i
             break;
         } // end switch
-    } // Loop over all hits h
     if(GetDebug(2))Info("HitToSDigit","Finished fCoupling=%d",fCoupling);
 }
 //______________________________________________________________________
@@ -494,6 +496,9 @@ void AliITSsimulationSPD::HitToSDigitFast(AliITSmodule *mod){
             sigz=sig*fda;
             SpreadChargeAsym(x,z,ix,iz,el,sigx,sigz,idtrack,h);
         } // end if st>0.0
+
+    } // Loop over all hits h
+
         // Coupling
         switch (fCoupling) {
         default:
@@ -515,7 +520,6 @@ void AliITSsimulationSPD::HitToSDigitFast(AliITSmodule *mod){
                 } // end for i
             break;
         } // end switch
-    } // Loop over all hits h
     if(GetDebug(2))Info("HitToSDigit","Finished fCoupling=%d",fCoupling);
 }
 //______________________________________________________________________
