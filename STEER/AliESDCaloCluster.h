@@ -135,7 +135,7 @@ protected:
   TArrayS * fDigitTime;        //time of this digit (integer units) 
   TArrayS * fDigitIndex;       //calorimeter digit index 
 
-  ClassDef(AliESDCaloCluster,3)  //ESDCaloCluster 
+  ClassDef(AliESDCaloCluster,4)  //ESDCaloCluster 
 };
 
 #endif 
