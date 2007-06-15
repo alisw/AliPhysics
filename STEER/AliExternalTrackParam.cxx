@@ -464,7 +464,7 @@ Double_t AliExternalTrackParam::
 GetPredictedChi2(Double_t p[3],Double_t covyz[3],Double_t covxyz[3]) const {
   //----------------------------------------------------------------
   // Estimate the chi2 of the 3D space point "p" and
-  // the fill covariance matrix "covyz" and "covxyz"
+  // the full covariance matrix "covyz" and "covxyz"
   //
   // Cov(x,x) ... :   covxyz[0]
   // Cov(y,x) ... :   covxyz[1]  covyz[0]
@@ -503,6 +503,69 @@ GetPredictedChi2(Double_t p[3],Double_t covyz[3],Double_t covxyz[3]) const {
   return chi2;  
 
 
+}
+
+Bool_t AliExternalTrackParam::
+PropagateTo(Double_t p[3],Double_t covyz[3],Double_t covxyz[3],Double_t bz) {
+  //----------------------------------------------------------------
+  // Propagate this track to the plane 
+  // the 3D space point "p" (with the covariance matrix "covyz" and "covxyz")
+  // belongs to.
+  // The magnetic field is "bz" (kG)
+  //
+  // The track curvature and the change of the covariance matrix
+  // of the track parameters are negleted !
+  // (So the "step" should be small compared with 1/curvature)
+  //----------------------------------------------------------------
+
+  Double_t f=GetSnp();
+  if (TMath::Abs(f) >= kAlmost1) return kFALSE;
+  Double_t r=TMath::Sqrt(1.- f*f);
+  Double_t a=f/r, b=GetTgl()/r;
+
+  Double_t s2=333.*333.;  //something reasonably big (cm^2)
+ 
+  TMatrixDSym tV(3);
+  tV(0,0)=  s2;  tV(0,1)=  a*s2;  tV(0,2)=  b*s2;
+  tV(1,0)=a*s2;  tV(1,1)=a*a*s2;  tV(1,2)=a*b*s2;
+  tV(2,0)=b*s2;  tV(2,1)=a*b*s2;  tV(2,2)=b*b*s2;
+
+  TMatrixDSym pV(3);
+  pV(0,0)=covxyz[0]; pV(0,1)=covxyz[1]; pV(0,2)=covxyz[2];
+  pV(1,0)=covxyz[1]; pV(1,1)=covyz[0];  pV(1,2)=covyz[1];
+  pV(2,0)=covxyz[2]; pV(2,1)=covyz[1];  pV(2,2)=covyz[2];
+
+  TMatrixDSym tpV(tV);
+  tpV+=pV;
+  tpV.Invert();
+  if (!tpV.IsValid()) return kFALSE;
+
+  TMatrixDSym pW(3),tW(3);
+  for (Int_t i=0; i<3; i++)
+    for (Int_t j=0; j<3; j++) {
+      pW(i,j)=tW(i,j)=0.;
+      for (Int_t k=0; k<3; k++) {
+	pW(i,j) += tV(i,k)*tpV(k,j);
+	tW(i,j) += pV(i,k)*tpV(k,j);
+      }
+    }
+
+  Double_t t[3] = {GetX(), GetY(), GetZ()};
+
+  Double_t x=0.;
+  for (Int_t i=0; i<3; i++) x += (tW(0,i)*t[i] + pW(0,i)*p[i]);  
+  Double_t crv=GetC(bz);
+  if (TMath::Abs(b) < kAlmost0Field) crv=0.;
+  f += crv*(x-fX);
+  if (TMath::Abs(f) >= kAlmost1) return kFALSE;
+  fX=x;  
+
+  fP[0]=0.;
+  for (Int_t i=0; i<3; i++) fP[0] += (tW(1,i)*t[i] + pW(1,i)*p[i]);  
+  fP[1]=0.;
+  for (Int_t i=0; i<3; i++) fP[1] += (tW(2,i)*t[i] + pW(2,i)*p[i]);  
+
+  return kTRUE;  
 }
 
 Bool_t AliExternalTrackParam::Update(Double_t p[2], Double_t cov[3]) {
