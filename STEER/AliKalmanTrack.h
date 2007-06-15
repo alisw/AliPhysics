@@ -28,7 +28,6 @@ public:
   void SetLabel(Int_t lab) {fLab=lab;}
 
   virtual Double_t GetPredictedChi2(const AliCluster *c) const = 0;
-  virtual Double_t GetPredictedChi2(const AliCluster3D *c) const;
   virtual Bool_t PropagateTo(Double_t xr, Double_t x0, Double_t rho) = 0;
   virtual Bool_t Update(const AliCluster* c, Double_t chi2, Int_t index) = 0;
 

@@ -90,6 +90,8 @@ class AliExternalTrackParam: public TObject {
   Bool_t CorrectForMaterial(Double_t d, Double_t x0, Double_t mass,
 			    Double_t (*f)(Double_t)=ApproximateBetheBloch);
   Double_t GetPredictedChi2(Double_t p[2],Double_t cov[3]) const;
+  Double_t 
+    GetPredictedChi2(Double_t p[3],Double_t covyz[3],Double_t covxyz[3]) const;
   Bool_t Update(Double_t p[2],Double_t cov[3]);
   Bool_t Rotate(Double_t alpha);
   Bool_t PropagateTo(Double_t x, Double_t b);

@@ -25,6 +25,7 @@
 // are implemented.
 // Origin: I.Belikov, CERN, Jouri.Belikov@cern.ch                            //
 ///////////////////////////////////////////////////////////////////////////////
+#include <TMatrixDSym.h>
 #include "AliExternalTrackParam.h"
 #include "AliESDVertex.h"
 #include "AliLog.h"
@@ -457,6 +458,51 @@ AliExternalTrackParam::GetPredictedChi2(Double_t p[2],Double_t cov[3]) const {
   Double_t z = fP[1] - p[1];
 
   return (d*szz*d - 2*d*sdz*z + z*sdd*z)/det;
+}
+
+Double_t AliExternalTrackParam::
+GetPredictedChi2(Double_t p[3],Double_t covyz[3],Double_t covxyz[3]) const {
+  //----------------------------------------------------------------
+  // Estimate the chi2 of the 3D space point "p" and
+  // the fill covariance matrix "covyz" and "covxyz"
+  //
+  // Cov(x,x) ... :   covxyz[0]
+  // Cov(y,x) ... :   covxyz[1]  covyz[0]
+  // Cov(z,x) ... :   covxyz[2]  covyz[1]  covyz[2]
+  //----------------------------------------------------------------
+
+  Double_t res[3] = {
+    GetX() - p[0],
+    GetY() - p[1],
+    GetZ() - p[2]
+  };
+
+  Double_t f=GetSnp();
+  if (TMath::Abs(f) >= kAlmost1) return kVeryBig;
+  Double_t r=TMath::Sqrt(1.- f*f);
+  Double_t a=f/r, b=GetTgl()/r;
+
+  Double_t s2=333.*333.;  //something reasonably big (cm^2)
+ 
+  TMatrixDSym v(3);
+  v(0,0)=  s2;  v(0,1)=  a*s2;                 v(0,2)=  b*s2;;
+  v(1,0)=a*s2;  v(1,1)=a*a*s2 + GetSigmaY2();  v(1,2)=a*b*s2 + GetSigmaZY();
+  v(2,0)=b*s2;  v(2,1)=a*b*s2 + GetSigmaZY();  v(2,2)=b*b*s2 + GetSigmaZ2();
+
+  v(0,0)+=covxyz[0]; v(0,1)+=covxyz[1]; v(0,2)+=covxyz[2];
+  v(1,0)+=covxyz[1]; v(1,1)+=covyz[0];  v(1,2)+=covyz[1];
+  v(2,0)+=covxyz[2]; v(2,1)+=covyz[1];  v(2,2)+=covyz[2];
+
+  v.Invert();
+  if (!v.IsValid()) return kVeryBig;
+
+  Double_t chi2=0.;
+  for (Int_t i = 0; i < 3; i++)
+    for (Int_t j = 0; j < 3; j++) chi2 += res[i]*res[j]*v(i,j);
+
+  return chi2;  
+
+
 }
 
 Bool_t AliExternalTrackParam::Update(Double_t p[2], Double_t cov[3]) {
