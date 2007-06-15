@@ -17,7 +17,6 @@
 #include "AliPID.h"
 
 class AliCluster;
-class AliCluster3D;
 
 class AliKalmanTrack : public AliExternalTrackParam {
 public:
