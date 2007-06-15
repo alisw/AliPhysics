@@ -115,7 +115,7 @@ const char* GetAliRootLocation(Int_t aliroot)
 {
   switch (aliroot)
   {
-    case 1: return "/afs/cern.ch/alice/caf/sw/ALICE/v4-04-Release/slc4_ia32_gcc34/aliroot"; break;
+    case 1: return "/afs/cern.ch/alice/caf/sw/ALICE/$ROOTVERSIONTAG/v4-04-Release/slc4_ia32_gcc34/aliroot"; break;
     default: return 0;
   }
 }
@@ -135,12 +135,12 @@ void ProofEnableAliRoot(Int_t aliroot)
   const char* location = GetAliRootLocation(aliroot);
 	const char* target = "tgt_linux";
 
-  gProof->Exec(Form("gSystem->Setenv(\"ALICE_ROOT\", \"%s\")", location), kTRUE);
+  gProof->Exec(Form("TString str(gSystem->ExpandPathName(\"%s\")); gSystem->Setenv(\"ALICE_ROOT\", str);", location), kTRUE);
+
   gProof->AddIncludePath(Form("%s/include", location));
   gProof->AddDynamicPath(Form("%s/lib/%s", location, target));
 
   // load all libraries
-  gProof->Exec("gSystem->Load(\"libMinuit\")");
   gProof->Exec("gROOT->Macro(\"$ALICE_ROOT/macros/loadlibs.C\")");
 }
 
