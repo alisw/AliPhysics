@@ -93,7 +93,7 @@ AliMUONClusterFinderAZ::AliMUONClusterFinderAZ(Bool_t draw)
     fReco = 0;
     fDraw = new AliMUONClusterDrawAZ(this);
   }
-  cout << " *** Running AZ cluster finder *** " << endl;
+  AliInfo(" *** Running AZ cluster finder *** ");
 }
 
 //_____________________________________________________________________________

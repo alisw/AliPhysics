@@ -54,10 +54,10 @@ AliMUONTrackReconstructorK::AliMUONTrackReconstructorK(AliMUONRecData* data, con
   /// Constructor for class AliMUONTrackReconstructorK
 
   if (strstr(TrackMethod,"Kalman")) {
-    cout << " *** Tracking with the Kalman filter *** " << endl;
+    AliInfo(" *** Tracking with the Kalman filter *** ");
     fTrackMethod = 2;
   } else if (strstr(TrackMethod,"Combi")) {
-    cout << " *** Combined cluster / track finder ***" << endl;
+    AliInfo(" *** Combined cluster / track finder ***");
     fTrackMethod = 3;
   } else AliFatal(Form("Tracking method %s not available",TrackMethod));
   
