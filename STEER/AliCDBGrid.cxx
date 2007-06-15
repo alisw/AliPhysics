@@ -542,7 +542,7 @@ Bool_t AliCDBGrid::PutEntry(AliCDBEntry* entry) {
 
 	file->cd();
 
-	SetTreeToFile(entry, file);
+	//SetTreeToFile(entry, file);
 
 	entry->SetVersion(id.GetVersion());
 

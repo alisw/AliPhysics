@@ -404,7 +404,7 @@ AliCDBEntry* AliCDBLocal::GetEntry(const AliCDBId& queryId) {
 	}
 
  	AliCDBId entryId = anEntry->GetId();
- 
+
 	// The object's Id are not reset during storage
 	// If object's Id runRange or version do not match with filename,
 	// it means that someone renamed file by hand. In this case a warning msg is issued.
@@ -550,7 +550,7 @@ Bool_t AliCDBLocal::PutEntry(AliCDBEntry* entry) {
 		return kFALSE;
 	}
 	
-	SetTreeToFile(entry, &file);
+	//SetTreeToFile(entry, &file);
 
 	entry->SetVersion(id.GetVersion());
 	entry->SetSubVersion(id.GetSubVersion());

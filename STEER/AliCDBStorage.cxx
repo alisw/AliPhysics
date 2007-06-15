@@ -16,6 +16,7 @@
 #include <TKey.h>
 #include <TH1.h>
 #include <TTree.h>
+#include <TNtuple.h>
 #include <TFile.h>
 #include "AliCDBStorage.h"
 #include "AliCDBGrid.h"
@@ -447,37 +448,50 @@ AliCDBManager::DataType AliCDBStorage::GetDataType() const {
 void AliCDBStorage::LoadTreeFromFile(AliCDBEntry *entry) const {
 // Checks whether entry contains a TTree and in case loads it into memory
 
-	AliCDBMetaData *md = dynamic_cast<AliCDBMetaData*> (entry->GetMetaData());
-	if(!md) return;
-	TString objStr = md->GetObjectClassName();
-	if(objStr != "TTree") return;
-	AliWarning("Entry contains a TTree! Loading baskets...");
+	TObject *obj = (TObject*) entry->GetObject();
 
-	TTree* tree = dynamic_cast<TTree*> (entry->GetObject());
+	if (!strcmp(obj->ClassName(),TTree::Class_Name())) {
 
-	if(!tree) return;
+		AliWarning("Entry contains a TTree! Loading baskets...");
 
-	tree->LoadBaskets();
-	tree->SetDirectory(0);
+		TTree* tree = dynamic_cast<TTree*> (obj);
 
-	return;
-}
+		if(!tree) return;
 
-//_____________________________________________________________________________
-void AliCDBStorage::SetTreeToFile(AliCDBEntry *entry, TFile* file) const {
-// Checks whether entry contains a TTree and in case assigns it to memory
+		tree->LoadBaskets();
+		tree->SetDirectory(0);
+	}
+	else if (!strcmp(obj->ClassName(),TNtuple::Class_Name())){
 
-	AliCDBMetaData *md = dynamic_cast<AliCDBMetaData*> (entry->GetMetaData());
-	if(!md) return;
-	TString objStr = md->GetObjectClassName();
-	if(objStr != "TTree") return;
-	AliWarning("Entry contains a TTree! Setting file...");
+		AliWarning("Entry contains a TNtuple! Loading baskets...");
 
-	TTree* tree = dynamic_cast<TTree*> (entry->GetObject());
+		TNtuple* ntu = dynamic_cast<TNtuple*> (obj);
 
-	if(!tree) return;
+		if(!ntu) return;
 
-	tree->SetDirectory(file);
+		ntu->LoadBaskets();
+		ntu->SetDirectory(0);
+	}
 
 	return;
 }
+
+// //_____________________________________________________________________________
+// void AliCDBStorage::SetTreeToFile(AliCDBEntry *entry, TFile* file) const {
+// // Checks whether entry contains a TTree and in case assigns it to memory
+// 
+// 	AliCDBMetaData *md = dynamic_cast<AliCDBMetaData*> (entry->GetMetaData());
+// 	if(!md) return;
+// 	TString objStr = md->GetObjectClassName();
+// 	if(objStr != "TTree") return;
+// 	AliWarning("Entry contains a TTree! Setting file...");
+// 
+// 	TTree* tree = dynamic_cast<TTree*> (entry->GetObject());
+// 
+// 	if(!tree) return;
+// 
+// //	tree->SetDirectory(file);
+// 	tree->SetDirectory(0);
+// 
+// 	return;
+// }
