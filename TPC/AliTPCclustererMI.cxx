@@ -59,7 +59,6 @@ ClassImp(AliTPCclustererMI)
 
 AliTPCclustererMI::AliTPCclustererMI(const AliTPCParam* par, const AliTPCRecoParam * recoParam):
   fBins(0),
-  fResBins(0),
   fLoop(0),
   fMaxBin(0),
   fMaxTime(0),
@@ -113,7 +112,6 @@ AliTPCclustererMI::AliTPCclustererMI(const AliTPCParam* par, const AliTPCRecoPar
 AliTPCclustererMI::AliTPCclustererMI(const AliTPCclustererMI &param)
               :TObject(param),
   fBins(0),
-  fResBins(0),
   fLoop(0),
   fMaxBin(0),
   fMaxTime(0),
@@ -226,10 +224,8 @@ AliTPCclusterMI &c)
   // set pointers to data
   //Int_t dummy[5] ={0,0,0,0,0};
   Float_t * matrix[5]; //5x5 matrix with digits  - indexing i = 0 ..4  j = -2..2
-  Float_t * resmatrix[5];
   for (Int_t di=-2;di<=2;di++){
     matrix[di+2]  =  &bins[k+di*max];
-    resmatrix[di+2]  =  &fResBins[k+di*max];
   }
   //build matrix with virtual charge
   Float_t sigmay2= GetSigmaY2(j0);
@@ -324,13 +320,6 @@ AliTPCclusterMI &c)
     c.SetSigmaY2(mi2);
     c.SetSigmaZ2(mj2);
     AddCluster(c,(Float_t*)vmatrix,k);
-    //remove cluster data from data
-    for (Int_t di=-2;di<=2;di++)
-      for (Int_t dj=-2;dj<=2;dj++){
-	resmatrix[di+2][dj] -= vmatrix[di+2][dj+2];
-	if (resmatrix[di+2][dj]<0) resmatrix[di+2][dj]=0;
-      }
-    resmatrix[2][0] =0;
 
     return;     
   }
@@ -652,9 +641,7 @@ void AliTPCclustererMI::Digits2Clusters()
     
     fMaxBin=fMaxTime*(fMaxPad+6);  // add 3 virtual pads  before and 3 after
     fBins    =new Float_t[fMaxBin];
-    fResBins =new Float_t[fMaxBin];  //fBins with residuals after 1 finder loop 
     memset(fBins,0,sizeof(Float_t)*fMaxBin);
-    memset(fResBins,0,sizeof(Float_t)*fMaxBin);
     
     if (digarr.First()) //MI change
       do {
@@ -672,7 +659,6 @@ void AliTPCclustererMI::Digits2Clusters()
     delete clrow;    
     nclusters+=fNcluster;    
     delete[] fBins;      
-    delete[] fResBins;  
   }  
 
   Info("Digits2Clusters", "Number of found clusters : %d", nclusters);
@@ -717,16 +703,13 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
   //alocate memory for sector - maximal case
   //
   Float_t** allBins = NULL;
-  Float_t** allBinsRes = NULL;
   Int_t nRowsMax = roc->GetNRows(roc->GetNSector()-1);
   Int_t nPadsMax = roc->GetNPads(roc->GetNSector()-1,nRowsMax-1);
   allBins = new Float_t*[nRowsMax];
-  allBinsRes = new Float_t*[nRowsMax];
   for (Int_t iRow = 0; iRow < nRowsMax; iRow++) {
     //
     Int_t maxBin = fMaxTime*(nPadsMax+6);  // add 3 virtual pads  before and 3 after
     allBins[iRow] = new Float_t[maxBin];
-    allBinsRes[iRow] = new Float_t[maxBin];
     memset(allBins[iRow],0,sizeof(Float_t)*maxBin);
   }
   //
@@ -869,7 +852,6 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
       fMaxBin = fMaxTime*(fMaxPad+6);  // add 3 virtual pads  before and 3 after
 
       fBins = allBins[fRow];
-      fResBins = allBinsRes[fRow];
 
       FindClusters(noiseROC);
 
@@ -881,10 +863,8 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
   
   for (Int_t iRow = 0; iRow < nRowsMax; iRow++) {
     delete [] allBins[iRow];
-    delete [] allBinsRes[iRow];
   }  
   delete [] allBins;
-  delete [] allBinsRes;
   
   Info("Digits2Clusters", "File  %s Event\t%d\tNumber of found clusters : %d\n", fOutput->GetName(),*(rawReader->GetEventId()), nclusters);
 
@@ -921,7 +901,6 @@ void AliTPCclustererMI::FindClusters(AliTPCCalROC * noiseROC)
     }        
     fBins[(fMaxPad+3)*fMaxTime+i] = amp0;           
   }
-  memcpy(fResBins,fBins, fMaxBin*sizeof(Float_t));
   //
   //
   //
