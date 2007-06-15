@@ -1,6 +1,28 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
+////////////////////////////////////////////////////////////////////
+//                                                                //
+// Fills a set of QA histograms to check the correctness of       //
+// the TRD reconstruction                                         // 
+//                                                                //
+////////////////////////////////////////////////////////////////////
 
 #include "AliTRDtrackingAnalysis.h"
-
 
 #include "TFile.h"
 #include "TTree.h"
@@ -63,7 +85,7 @@ AliTRDtrackingAnalysis::AliTRDtrackingAnalysis():
   fClYY(0),
   fClYX(0),
   fNLabels(0),
-  fBits(0),
+  fTestBits(0),
   fRefDx(0),
   fClZXref(0),
   fClZXcl(0),
@@ -108,7 +130,7 @@ AliTRDtrackingAnalysis::AliTRDtrackingAnalysis():
   fClYX = new TH2D("clYX", ";Y;X", 250, -60, 60, 100, -4, 1);
 
   fNLabels = new TH1D("clLabels", ";n labels", 10, -0.5, 9.5);
-  fBits = new TH1D("bits", ";bits", 10, -0.5, 9.5);
+  fTestBits = new TH1D("bits", ";bits", 10, -0.5, 9.5);
   
   fRefDx = new TH1D("refDX", ";delta X", 100, 0, 20);
   fClPos = new TH2D("clPos", ";z;y", 400, -400, 400, 120, -60, 60);
@@ -121,7 +143,99 @@ AliTRDtrackingAnalysis::AliTRDtrackingAnalysis():
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
-void AliTRDtrackingAnalysis::DrawResolutionPt(int startEvent, int stopEvent) {
+AliTRDtrackingAnalysis::AliTRDtrackingAnalysis(const AliTRDtrackingAnalysis &t):
+  TObject(t),
+  fPath(0),
+  fRefTPC(0),
+  fRefTRD(0),
+  fLoader(0),
+  fEsdTree(0),
+  fESD(0),
+  fTracker(0),
+  fDeltaPt(0),
+  fDeltaZ(0),
+  fDeltaX(0),
+  fDeltaYPos(0),
+  fDeltaYNeg(0),
+  fNPoints(0),
+  fNGood(0),
+  fRefSpace(0),
+  fGeo(0),
+  fClY2(0),
+  fClY3(0),
+  fTgPhi(0),
+  fGrResTgPhi(0),
+  fGrMeanTgPhi(0),
+  fTrklY(0),
+  fTrklZ(0),
+  fClZ(0),
+  fClZZ(0),
+  fClYY(0),
+  fClYX(0),
+  fNLabels(0),
+  fTestBits(0),
+  fRefDx(0),
+  fClZXref(0),
+  fClZXcl(0),
+  fClPos(0)
+{
+
+  fDeltaX = new TH1D("deltaX", ";delta X (cm)", 100, -1, 1);
+  fDeltaZ = new TH1D("deltaZ", ";delta Z (cm)", 100, -2, 2);
+
+  fDeltaYPos = new TH1D("deltaYpos", ";delta Y (mm)", 100, -1, 1);
+  fDeltaYNeg = new TH1D("deltaYneg", ";delta Y (mm)", 100, -1, 1);
+  
+  fNPoints = new TH1D("nPoints", ";np", 40, -0.5, 39.5);
+  fNGood   = new TH1D("nGood", ";np", 40, -0.5, 39.5);
+
+  fDeltaPt = new TH1D("deltaPt", ";delta Pt/Pt (%)", 100, -10, 10);
+  fRefSpace = new TH2D("refSpace", ";y;x", 120, -60, 60, 200, -4, 1);
+
+  fTrklY = new TH1D("trklY", ";delta Y (mm)", 100, -1, 1);
+  fTrklZ = new TH1D("trklZ", ";delta Z (cm)", 100, -10, 10);
+
+
+  // cluster studies
+  fClY2 = new TH1D("clY2", ";delta Y (mm)", 100, -10, 10);
+  fClY3 = new TH1D("clY3", ";delta Y (mm)", 100, -10, 10);
+
+  for(int i=0; i<12; i++) // bewere hidden constants in the code
+    fClYTgPhi[i] = new TH1D(Form("clYtgPhi%d", i), ";delta Y (mm)", 100, -3, 3);
+
+  fTgPhi = new TH1D("tgPhi", ";Tg(#phi)", 100, -0.3, 0.3);
+  fGrResTgPhi = new TGraphErrors();
+  fGrMeanTgPhi = new TGraphErrors();
+
+  //fPullY2 = new TH1D("pullY2", ";pulls Y", 100, -5, 5);
+  //fPullY3 = new TH1D("pullY3", ";pulls Y", 100, -5, 5);
+
+
+  fClZ = new TH1D("clZ", ";delta Z (cm)", 200, -20, 20);
+  fClZZ = new TH2D("clZZ", ";z ref;z cl", 600, -300, 300, 600, -300, 300);  
+
+  fClYY = new TH2D("clYY", ";dY;dY", 100, -3, 3, 100, -3, 3);
+  fClYX = new TH2D("clYX", ";Y;X", 250, -60, 60, 100, -4, 1);
+
+  fNLabels = new TH1D("clLabels", ";n labels", 10, -0.5, 9.5);
+  fTestBits = new TH1D("bits", ";bits", 10, -0.5, 9.5);
+  
+  fRefDx = new TH1D("refDX", ";delta X", 100, 0, 20);
+  fClPos = new TH2D("clPos", ";z;y", 400, -400, 400, 120, -60, 60);
+
+  fClZXref = new TH2D("clZXref", ";z;x", 36, -54, 54, 300, 280, 380);
+  fClZXcl =  new TH2D("clZXcl", ";z;x", 36, -54, 54, 300, 280, 380);
+
+  //fGeo = new AliTRDgeometry();
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+
+void AliTRDtrackingAnalysis::DrawResolutionPt(int startEvent, int stopEvent) 
+{
+  //
+  // Check the pt resolution
+  //
 
   CheckFiles();
   
@@ -280,7 +394,11 @@ void AliTRDtrackingAnalysis::DrawResolutionPt(int startEvent, int stopEvent) {
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
-void  AliTRDtrackingAnalysis::DrawRecPointResolution(int startEvent, int stopEvent) {
+void  AliTRDtrackingAnalysis::DrawRecPointResolution(int startEvent, int stopEvent) 
+{
+  //
+  // Check the resolution of the reconstructed points
+  //
 
   LoadRecPointsFile();
   TObjArray *module = new TObjArray(); 
@@ -297,8 +415,8 @@ void  AliTRDtrackingAnalysis::DrawRecPointResolution(int startEvent, int stopEve
 
     Info("Res", "Refs Loaded");
 
-    int N = tree->GetEntries();
-    for(int i=0; i<N; i++) {
+    Int_t nn = tree->GetEntries();
+    for(int i=0; i<nn; i++) {
       
       tree->GetEntry(i);
       int m = module->GetEntries();
@@ -439,7 +557,7 @@ void  AliTRDtrackingAnalysis::DrawRecPointResolution(int startEvent, int stopEve
   //fClPos->Draw("colz");
 
   //new TCanvas();
-  //fBits->Draw();
+  //fTestBits->Draw();
 
   //new TCanvas();
   //fRefDx->Draw();
@@ -448,7 +566,11 @@ void  AliTRDtrackingAnalysis::DrawRecPointResolution(int startEvent, int stopEve
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
-void AliTRDtrackingAnalysis::LoadRecPointsFile() {
+void AliTRDtrackingAnalysis::LoadRecPointsFile() 
+{
+  //
+  // Load the clusters from the input file
+  //
 
   char filename[256];
   sprintf(filename, "%s/galice.root", fPath);
@@ -486,7 +608,11 @@ void AliTRDtrackingAnalysis::LoadRecPointsFile() {
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
-void  AliTRDtrackingAnalysis::CheckFiles() {
+void  AliTRDtrackingAnalysis::CheckFiles() 
+{
+  //
+  // Check the presence of the input files
+  //
 
   // MC info
 
@@ -533,7 +659,11 @@ void  AliTRDtrackingAnalysis::CheckFiles() {
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
-void  AliTRDtrackingAnalysis::LoadRefs() {
+void  AliTRDtrackingAnalysis::LoadRefs() 
+{
+  //
+  // Load the track references
+  //
 
   if (fRefTPC) delete fRefTPC;
   if (fRefTRD) delete fRefTRD;
@@ -545,11 +675,11 @@ void  AliTRDtrackingAnalysis::LoadRefs() {
   //AliStack* stack = gAlice->Stack();
   TTree *refTree = fLoader->TreeTR();
     
-  const int nBranch = 2;
+  const int kNBranch = 2;
   const char *brName[] = {"TPC", "TRD"};
   TClonesArray *clRefs = new TClonesArray("AliTrackReference");
   
-  for(int b=0; b<nBranch; b++) {
+  for(int b=0; b<kNBranch; b++) {
       
     TBranch *branch = refTree->GetBranch(brName[b]);
     refTree->SetBranchAddress(brName[b],&clRefs);
@@ -578,7 +708,7 @@ void  AliTRDtrackingAnalysis::LoadRefs() {
     while(ref->LocalX() > fGeo->GetTime0(p)+2) p++;
     fRefSpace->Fill(ref->LocalY(), ref->LocalX()-fGeo->GetTime0(p));
 
-    //for(int bit=0; bit<9; bit++) if (ref->TestBit(bit)) fBits->Fill(bit);
+    //for(int bit=0; bit<9; bit++) if (ref->TestBit(bit)) fTestBits->Fill(bit);
   }
 
   delete clRefs;
@@ -587,7 +717,11 @@ void  AliTRDtrackingAnalysis::LoadRefs() {
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
-Int_t AliTRDtrackingAnalysis::GetReference(Int_t label) {
+Int_t AliTRDtrackingAnalysis::GetReference(Int_t label) 
+{
+  //
+  // Sort the track references
+  //
   
   int start = TMath::BinarySearch(fRefTRD->GetEntries(), fLabels, label);
   
@@ -602,7 +736,11 @@ Int_t AliTRDtrackingAnalysis::GetReference(Int_t label) {
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
-int AliTRDtrackingAnalysis::GetMCPosition(Int_t label, Double_t x, Double_t &Y, Double_t &Z, Double_t &tgphi) {
+int AliTRDtrackingAnalysis::GetMCPosition(Int_t label, Double_t x, Double_t &Y, Double_t &Z, Double_t &tgphi) 
+{
+  //
+  // Determine the MC positions from the track references
+  //
   
   double lowX = 100.;
   double highX = 100.;
@@ -658,13 +796,20 @@ int AliTRDtrackingAnalysis::GetMCPosition(Int_t label, Double_t x, Double_t &Y, 
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
-Int_t AliTRDtrackingAnalysis::GetPhiBin(Double_t phi)  {
+Int_t AliTRDtrackingAnalysis::GetPhiBin(Double_t phi) const
+{
+  //
+  // Return the phi bin
+  //
   return (int)((phi+0.3)/0.05);  
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
-
-Double_t AliTRDtrackingAnalysis::GetPhi(Int_t bin) {
+Double_t AliTRDtrackingAnalysis::GetPhi(Int_t bin) const
+{
+  //
+  // Return phi for a given bin
+  //
   return bin * 0.05 - 0.3 + 0.025; 
 }
 //////////////////////////////////////////////////////////////////////////////////////////

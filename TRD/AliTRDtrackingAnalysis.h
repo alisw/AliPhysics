@@ -1,7 +1,17 @@
-
-
 #ifndef AliTRDtrackingAnalysis_H
 #define AliTRDtrackingAnalysis_H
+
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
+////////////////////////////////////////////////////////////////////
+//                                                                //
+// Fills a set of QA histograms to check the correctness of       //
+// the TRD reconstruction                                         // 
+//                                                                //
+////////////////////////////////////////////////////////////////////
 
 #include "TObject.h"
 
@@ -18,61 +28,21 @@ class AliTRDcluster;
 class AliTRDtracker;
 
 class AliTRDtrackingAnalysis : public TObject {
+
+ public:
   
-  const char *fPath;
-  
-  TObjArray *fRefTPC;
-  TObjArray *fRefTRD;
-  Int_t fLabels[100000];
+  AliTRDtrackingAnalysis();
+  AliTRDtrackingAnalysis(const AliTRDtrackingAnalysis &t);
+  virtual ~AliTRDtrackingAnalysis() {}
+  AliTRDtrackingAnalysis  &operator=(const AliTRDtrackingAnalysis &t) { return *this; }
+    
+  void SetPath(const char *path) {fPath = path;}
 
-  AliRunLoader *fLoader;
-  TTree  *fEsdTree;
-  AliESD *fESD;
+  void DrawResolutionPt(int startEvent, int stopEvent);  
+  void DrawRecPointResolution(int startEvent, int stopEvent);
+  //void DrawTrackletResolution(int startEvent, int stopEvent);
 
-  AliTRDtracker *fTracker;
-
-  // histograms 
-  TH1D *fDeltaPt;
-  TH1D *fDeltaZ;
-  TH1D *fDeltaX;
-  TH1D *fDeltaYPos;
-  TH1D *fDeltaYNeg;
-
-  TH1D *fNPoints;
-  TH1D *fNGood;
-  
-  TH2D *fRefSpace;
-
-  AliTRDgeometry *fGeo;
-
-  TH1D *fClY2;
-  TH1D *fClY3;
-
-  TH1D *fTgPhi;
-  TH1D *fClYTgPhi[12];
-
-  TGraphErrors *fGrResTgPhi;
-  TGraphErrors *fGrMeanTgPhi;
-
-
-    //TH1D *fPullY2;
-  //TH1D *fPullY3;
-
-  TH1D *fTrklY;
-  TH1D *fTrklZ;
-
-  TH1D *fClZ;
-  TH2D *fClZZ;
-  TH2D *fClYY;
-  TH2D *fClYX;
-  TH1D *fNLabels;
-  TH1D *fBits;
-  TH1D *fRefDx;
-
-  TH2D *fClZXref;
-  TH2D *fClZXcl;
-
-  TH2D *fClPos;
+ protected:
 
   void CheckFiles();
   void LoadRecPointsFile();
@@ -80,19 +50,62 @@ class AliTRDtrackingAnalysis : public TObject {
   Int_t GetReference(Int_t label); 
   Int_t GetMCPosition(Int_t label, Double_t x, Double_t &Y, Double_t &Z, Double_t &tgphi);
 
-  Int_t GetPhiBin(Double_t phi);
-  Double_t GetPhi(Int_t bin);
+  Int_t GetPhiBin(Double_t phi) const;
+  Double_t GetPhi(Int_t bin) const;
 
- public:
+  const char *fPath;              // Path to data directory
   
-  AliTRDtrackingAnalysis();
-  virtual ~AliTRDtrackingAnalysis() {}
-  
-  void SetPath(const char *path) {fPath = path;}
+  TObjArray *fRefTPC;             // TPC track references
+  TObjArray *fRefTRD;             // TRD track references
+  Int_t fLabels[100000];          // Track lables
 
-  void DrawResolutionPt(int startEvent, int stopEvent);  
-  void DrawRecPointResolution(int startEvent, int stopEvent);
-  //void DrawTrackletResolution(int startEvent, int stopEvent);
+  AliRunLoader *fLoader;          // AliRunLoader instance
+  TTree  *fEsdTree;               // ESD tree
+  AliESD *fESD;                   // ESD
+
+  AliTRDtracker *fTracker;        // TRD tracker instance
+
+  // histograms 
+  TH1D *fDeltaPt;                 // Histogram for the pt resolution
+  TH1D *fDeltaZ;                  // Histogram for the cluster z deviation
+  TH1D *fDeltaX;                  // Histogram for the cluster x deviation
+  TH1D *fDeltaYPos;               // Histogram for the cluster y deviation (positives)
+  TH1D *fDeltaYNeg;               // Histogram for the cluster y deviation (negatives)
+
+  TH1D *fNPoints;                 // Histogram for the number of points
+  TH1D *fNGood;                   // Histogram for the number of good points
+  
+  TH2D *fRefSpace;                // Histogram for reference space 
+
+  AliTRDgeometry *fGeo;           // TRD geometry
+
+  TH1D *fClY2;                    // Histogram for cluster studies Y
+  TH1D *fClY3;                    // Histogram for cluster studies Y
+
+  TH1D *fTgPhi;                   // Histogram for tangens(phi)
+  TH1D *fClYTgPhi[12];            // Histogram cluster Y tangen phi
+
+  TGraphErrors *fGrResTgPhi;      // Graph resolution tangens phi
+  TGraphErrors *fGrMeanTgPhi;     // Graph mean tangens phi
+
+  //TH1D *fPullY2;
+  //TH1D *fPullY3;
+
+  TH1D *fTrklY;                   // QA histogram
+  TH1D *fTrklZ;                   // QA histogram
+
+  TH1D *fClZ;                     // QA histogram
+  TH2D *fClZZ;                    // QA histogram
+  TH2D *fClYY;                    // QA histogram
+  TH2D *fClYX;                    // QA histogram
+  TH1D *fNLabels;                 // QA histogram
+  TH1D *fTestBits;                // QA histogram
+  TH1D *fRefDx;                   // QA histogram
+
+  TH2D *fClZXref;                 // QA histogram
+  TH2D *fClZXcl;                  // QA histogram
+
+  TH2D *fClPos;                   // QA histogram
  
   ClassDef(AliTRDtrackingAnalysis,1)            // qa for Digits
 };
