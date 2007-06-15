@@ -147,7 +147,7 @@ Int_t AliHLTTPCDigitReaderPacked::InitBlock(void* ptr,unsigned long size, Int_t 
   if (patch < 2)
     DDLid = 768 + 2*slice + patch;
   else 
-    DDLid = 840 + 4*slice + patch;
+    DDLid = 840 + 4*slice + patch-2;
 
   fRawMemoryReader->SetEquipmentID(DDLid);
   //fRawMemoryReader->SetEquipmentID(1);
