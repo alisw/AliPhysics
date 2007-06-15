@@ -362,7 +362,7 @@ protected:
 
   AliESDtrack & operator=(const AliESDtrack & ) {return *this;}
 
-  ClassDef(AliESDtrack,35)  //ESDtrack 
+  ClassDef(AliESDtrack,36)  //ESDtrack 
 };
 
 #endif 
