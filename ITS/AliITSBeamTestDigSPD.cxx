@@ -6,6 +6,8 @@
 //                                                //
 ////////////////////////////////////////////////////
 
+/* $Id$ */
+
 #include "AliITSdigitSPD.h"
 #include "AliRawReader.h"
 #include "AliRawReader.h"
@@ -86,7 +88,7 @@ void AliITSBeamTestDigSPD::Exec(Option_t* /*opt*/)
 
   AliITSRawStreamSPD str(fReader);
 
-  fReader->SelectEquipment(17,211,211);
+  // fReader->SelectEquipment(17,0,19);
 
   while(str.Next()){  
 
@@ -127,11 +129,11 @@ void AliITSBeamTestDigSPD::Exec(Option_t* /*opt*/)
       //fITSHeader->SetSubDet(0,Subdets);
       //fITSHeader->SetL1TriggerType(0,L1TrigType);
 
-   // fITSHeader->SetOrbitNumberSPD(OrbitNumber);
-         //printf("Bunch Crossing  = %x\n ",BunchCross);
-     if ( blockAttributes != 0x3a ) {
-       Info("Exec","Block Attribs  = %x\n ",blockAttributes);
-     }  
+      //fITSHeader->SetOrbitNumberSPD(OrbitNumber);
+      //printf("Bunch Crossing  = %x\n ",BunchCross);
+      //if ( blockAttributes != 0x3a ) {
+      //Info("Exec","Block Attribs  = %x\n ",blockAttributes);
+      //}  
     
      
     
