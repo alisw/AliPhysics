@@ -254,7 +254,7 @@ AliMUONCheck::CheckESD(Bool_t pdc06TriggerResponse)
     AliError(Form("CheckESD", "no ESD tree found"));
     return ;
   }
-  fTree->SetBranchAddress("ESD", &fESD);
+  fESD->ReadFromTree(fTree);
   
   Int_t fnevents = fRunLoader->GetNumberOfEvents();
   Int_t endOfLoop = fLastEvent+1;

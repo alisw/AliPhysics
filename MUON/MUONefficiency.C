@@ -226,8 +226,8 @@ Bool_t MUONefficiency( char* filename = "galice.root", char* geoFilename = "geom
   if (!tree) {
     Error("CheckESD", "no ESD tree found");
     return kFALSE;
-  }
-  tree->SetBranchAddress("ESD", &esd);
+  } 
+  esd->ReadFromTree(tree);
 
   runLoader->LoadHeader();
   nevents = runLoader->GetNumberOfEvents();
