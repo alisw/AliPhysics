@@ -159,6 +159,15 @@ Int_t  AliMUONHit::Chamber()  const
   return AliMpDEManager::GetChamberId(fDetElemId) + 1;  
 }
 
+//-----------------------------------------------------------------------------
+const char*
+AliMUONHit::GetName() const
+{
+/// Generate hit name
+
+  return Form("%s-DE%04d",ClassName(),DetElemId());
+}
+
 //-----------------------------------------------------------------------------------------------
 void AliMUONHit::Print(Option_t* opt) const
 {

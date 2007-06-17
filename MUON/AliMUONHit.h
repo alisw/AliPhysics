@@ -38,6 +38,8 @@ class AliMUONHit : public AliHit {
                Float_t Xref, Float_t Yref, Float_t Zref);
     virtual ~AliMUONHit();
 
+    virtual const char* GetName() const;
+    
     Int_t   DetElemId()const {return fDetElemId;} ///< Return detection element ID
     Int_t   Chamber()  const;
 
