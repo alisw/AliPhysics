@@ -20,7 +20,7 @@ class AliMUONCalibParamNF : public AliMUONVCalibParam
 {
 public:
   AliMUONCalibParamNF();
-  AliMUONCalibParamNF(Int_t dimension, Int_t theSize, Float_t fillWithValue=0);
+  AliMUONCalibParamNF(Int_t dimension, Int_t theSize, Int_t id0, Int_t id1, Float_t fillWithValue=0);
   AliMUONCalibParamNF(const AliMUONCalibParamNF& other);
   AliMUONCalibParamNF& operator=(const AliMUONCalibParamNF& other);
   
@@ -52,7 +52,7 @@ private:
   /// The values array
   Float_t* fValues; //[fN] The values array
   
-  ClassDef(AliMUONCalibParamNF,1) // Container for calibration parameters
+  ClassDef(AliMUONCalibParamNF,3) // Container for calibration parameters
 };
 
 #endif

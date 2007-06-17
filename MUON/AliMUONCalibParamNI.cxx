@@ -50,12 +50,14 @@ AliMUONCalibParamNI::AliMUONCalibParamNI()
   fValues(0x0)
 {
 /// Default constructor.
+    AliDebug(1,Form("this=%p default ctor",this));
 }
 
 //_____________________________________________________________________________
-AliMUONCalibParamNI::AliMUONCalibParamNI(Int_t dimension, Int_t theSize, 
+AliMUONCalibParamNI::AliMUONCalibParamNI(Int_t dimension, Int_t theSize,
+                                         Int_t id0, Int_t id1,
                                          Int_t fillWithValue, Int_t packingFactor) 
-: AliMUONVCalibParam(),
+: AliMUONVCalibParam(id0,id1),
   fDimension(dimension),
   fSize(theSize),
   fN(fSize*fDimension),
@@ -65,6 +67,9 @@ AliMUONCalibParamNI::AliMUONCalibParamNI(Int_t dimension, Int_t theSize,
 /// Normal constructor, where theSize specifies the number of channels handled
 /// by this object, and fillWithValue the default value assigned to each
 /// channel.
+
+    AliDebug(1,Form("this=%p dimension=%d theSize=%d fillWithValue=%d packingFactor=%d",
+                    this,dimension,theSize,fillWithValue,packingFactor));
 
   if ( fN > 0 )
   {
@@ -88,6 +93,7 @@ fValues(0x0)
 {
 /// Copy constructor.
 
+  AliDebug(1,Form("this=%p copy ctor",this));
   other.CopyTo(*this);
 }
 
@@ -106,6 +112,7 @@ AliMUONCalibParamNI::~AliMUONCalibParamNI()
 {
 /// Destructor
 
+  AliDebug(1,Form("this=%p",this));
   delete[] fValues;
 }
 
@@ -115,6 +122,9 @@ AliMUONCalibParamNI::CopyTo(AliMUONCalibParamNI& destination) const
 {
 /// Copy *this to destination
 
+  const TObject& o = static_cast<const TObject&>(*this);
+  o.Copy(destination);
+  
   delete[] destination.fValues;
   destination.fN = fN;
   destination.fSize = fSize;
@@ -157,7 +167,9 @@ AliMUONCalibParamNI::Print(Option_t* opt) const
   TString sopt(opt);
   sopt.ToUpper();
   cout << "AliMUONCalibParamNI - Size=" << Size()
-    << " Dimension=" << Dimension();
+    << " Dimension=" << Dimension()
+    << " Id=(" << ID0() << "," << ID1() << ")";
+  
   if ( IsPacked() ) 
   {
     cout << " Packing Factor=" << fPackingFactor;
@@ -176,11 +188,11 @@ AliMUONCalibParamNI::Print(Option_t* opt) const
         {
           Int_t m,c;
           UnpackValue(v,m,c);
-          cout << Form(" (%d,%d)",m,c);
+          cout << Form(" (%d,%d) (0x%x,0x%x)",m,c,m,c);
         }
         else
         {
-          cout << Form(" %d",v);
+          cout << Form(" %d (0x%x)",v,v);
         }
       }
       cout << endl;

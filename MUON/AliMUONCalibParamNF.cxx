@@ -46,8 +46,10 @@ AliMUONCalibParamNF::AliMUONCalibParamNF()
 }
 
 //_____________________________________________________________________________
-AliMUONCalibParamNF::AliMUONCalibParamNF(Int_t dimension, Int_t theSize, Float_t fillWithValue) 
-: AliMUONVCalibParam(),
+AliMUONCalibParamNF::AliMUONCalibParamNF(Int_t dimension, Int_t theSize, 
+                                         Int_t id0, Int_t id1,
+                                         Float_t fillWithValue) 
+: AliMUONVCalibParam(id0,id1),
   fDimension(dimension),
   fSize(theSize),
   fN(fSize*fDimension),
@@ -105,6 +107,9 @@ AliMUONCalibParamNF::CopyTo(AliMUONCalibParamNF& destination) const
 {
 /// Copy *this to destination
 
+  const TObject& o = static_cast<const TObject&>(*this);
+  o.Copy(destination);
+  
   delete[] destination.fValues;
   destination.fN = fN;
   destination.fSize = fSize;
@@ -145,8 +150,8 @@ AliMUONCalibParamNF::Print(Option_t* opt) const
 
   TString sopt(opt);
   sopt.ToUpper();
-  cout << "AliMUONCalibParamNF - Size=" << Size()
-    << " Dimension=" << Dimension() << endl;
+  cout << Form("AliMUONCalibParamNF Id=(%d,%d) Size=%d Dimension=%d",ID0(),
+               ID1(),Size(),Dimension()) << endl;
   if ( sopt.Contains("FULL") )
   {
     for ( Int_t i = 0; i < Size(); ++i )

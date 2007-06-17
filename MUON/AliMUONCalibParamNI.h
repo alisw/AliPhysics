@@ -20,7 +20,7 @@ class AliMUONCalibParamNI : public AliMUONVCalibParam
 {
 public:
   AliMUONCalibParamNI();
-  AliMUONCalibParamNI(Int_t dimension, Int_t theSize, Int_t fillWithValue=0, Int_t packingValue=0);
+  AliMUONCalibParamNI(Int_t dimension, Int_t theSize, Int_t id0, Int_t id1, Int_t fillWithValue=0, Int_t packingValue=0);
   AliMUONCalibParamNI(const AliMUONCalibParamNI& other);
   AliMUONCalibParamNI& operator=(const AliMUONCalibParamNI& other);
   
@@ -59,7 +59,7 @@ private:
   /// The values array
   Int_t* fValues; //[fN] The values array
   
-  ClassDef(AliMUONCalibParamNI,1) // Container for calibration parameters
+  ClassDef(AliMUONCalibParamNI,3) // Container for calibration parameters
 };
 
 #endif

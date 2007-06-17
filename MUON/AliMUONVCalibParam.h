@@ -20,14 +20,29 @@ class AliMUONVCalibParam : public TObject
 {
 public:
   AliMUONVCalibParam();
+  //AliMUONVCalibParam(Int_t id0);
+  AliMUONVCalibParam(Int_t id0, Int_t id1);
   virtual ~AliMUONVCalibParam();
 
+  virtual const char* GetName() const;
+  
+  /// First id of this object
+  virtual Int_t ID0() const;
+  
+  /// Second id of this object (might not be required)
+  virtual Int_t ID1() const;
+  
   /// whether or not the value we store are packed, e.g. as v = a*cste + b
   virtual Bool_t IsPacked() const { return kFALSE; }
   
   /// j indices in following methods are valid from 0 to Dimension()-1.
   virtual Int_t Dimension() const = 0;
-  
+
+  /** Set one value, for channel i, dimension j. Consider value is a double.
+    Only ok to use if IsDoublePrecision() is kTRUE.
+    */
+  virtual void SetValueAsDouble(Int_t i, Int_t j, Double_t value);
+
   /// Set one value, for channel i, dimension j. Consider value is a float.
   virtual void SetValueAsFloat(Int_t i, Int_t j, Float_t value) = 0;
   
@@ -36,6 +51,14 @@ public:
   
   /// The number of channels handled by this object.
   virtual Int_t Size() const = 0;
+
+  /// Whether we can store double precision values   
+  virtual Bool_t IsDoublePrecision() const { return kFALSE; }
+  
+  /** Retrieve the value for a given (channel,dim) as a double.
+      Only ok if IsDoublePrecision() is kTRUE.
+    */
+  virtual Double_t ValueAsDouble(Int_t i, Int_t j=0) const;
 
   /// Retrieve the value for a given (channel,dim) as a float.
   virtual Float_t ValueAsFloat(Int_t i, Int_t j=0) const = 0;
@@ -51,8 +74,15 @@ public:
   
   /// Return 1E38 as invalid float value
   static Float_t InvalidFloatValue() { return 1E38; }
+
+protected:
+    
+  static UInt_t BuildUniqueID(Int_t id0, Int_t id1);
+  static void DecodeUniqueID(UInt_t uniqueID, Int_t& id0, Int_t& id1);
+  static Int_t ID0(UInt_t uniqueID);
+  static Int_t ID1(UInt_t uniqueID);
   
-  ClassDef(AliMUONVCalibParam,0) // 
+  ClassDef(AliMUONVCalibParam,0) // Base class for a calibration data holder (usually for 64 channels)
 };
 
 #endif
