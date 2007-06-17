@@ -21,22 +21,25 @@
 //*
 //*
 
-#include "AliMUONTriggerElectronics.h"
-#include "AliMUONTriggerCrate.h"
-#include "AliMUONTriggerCrateStore.h"
-#include "AliMUONLocalTriggerBoard.h"
-#include "AliMUONRegionalTriggerBoard.h"
+#include "AliLoader.h"
+#include "AliLog.h"
+#include "AliMUON.h" 
+#include "AliMUONCalibrationData.h"
+#include "AliMUONVDigit.h"
+#include "AliMUONVDigitStore.h"
+#include "AliMUONGlobalTrigger.h"
 #include "AliMUONGlobalTriggerBoard.h"
 #include "AliMUONLocalTrigger.h"
+#include "AliMUONLocalTriggerBoard.h"
 #include "AliMUONRegionalTrigger.h"
-#include "AliMUONGlobalTrigger.h"
-#include "AliMUON.h" 
-#include "AliMUONData.h" 
-#include "AliMUONDigit.h"
-#include "AliMUONSegmentation.h"
-#include "AliMUONCalibrationData.h"
+#include "AliMUONRegionalTriggerBoard.h"
+#include "AliMUONTriggerCrate.h"
+#include "AliMUONTriggerCrateStore.h"
+#include "AliMUONTriggerElectronics.h"
+#include "AliMUONVTriggerStore.h"
 #include "AliMUONVCalibParam.h"
-
+#include "AliMpCathodType.h"
+#include "AliMpDEManager.h"
 #include "AliMpSegmentation.h"
 #include "AliMpVSegmentation.h"
 #include "AliMpCathodType.h"
@@ -46,34 +49,23 @@
 #include "AliLog.h"
 #include "AliLoader.h"
 #include "AliRun.h"
+#include <TBits.h>
+#include <TSystem.h>
 
-//#include "Riostream.h"
-#include "TBits.h"
-#include "TSystem.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMUONTriggerElectronics)
 /// \endcond
 
 //___________________________________________
-AliMUONTriggerElectronics::AliMUONTriggerElectronics(AliMUONData *Data, AliMUONCalibrationData* calibData) 
-: TTask("AliMUONTriggerElectronics",
-        "From trigger digits to Local and Global Trigger objects"),
+AliMUONTriggerElectronics::AliMUONTriggerElectronics(AliMUONCalibrationData* calibData) 
+: TObject(),
   fSourceFileName(),
   fCrates(new AliMUONTriggerCrateStore),
-  fGlobalTriggerBoard(new AliMUONGlobalTriggerBoard),
-  fMUONData(Data),
-  fLocalTrigger(new AliMUONLocalTrigger()),
-  fGlobalTrigger(new AliMUONGlobalTrigger())
-
+  fGlobalTriggerBoard(new AliMUONGlobalTriggerBoard)
 {
-/// CONSTRUCTOR
+ /// CONSTRUCTOR
 ///
-  if (!fMUONData)
-  {  
-    AliWarning("NO MUON TRIGGER DATA");
-  }
-    
   SetDataSource();
   Factory(calibData);
   LoadMasks(calibData);
@@ -86,9 +78,6 @@ AliMUONTriggerElectronics::~AliMUONTriggerElectronics()
 ///
   delete fGlobalTriggerBoard;
   delete fCrates;
-  delete fLocalTrigger;
-  delete fGlobalTrigger;
-
 }
 
 //___________________________________________
@@ -125,145 +114,138 @@ void AliMUONTriggerElectronics::Factory(AliMUONCalibrationData* calibData)
 }
 
 //___________________________________________
-void AliMUONTriggerElectronics::FeedM()
+void AliMUONTriggerElectronics::Feed(const AliMUONVDigitStore& digitStore)
 {
-/// FILL INPUTS
-///
-    for (Int_t ichamber=10; ichamber<14; ichamber++) 
+  /// FILL INPUTS
+  ///
+  
+  TIter next(digitStore.CreateTriggerIterator());
+  AliMUONVDigit* mdig;
+  
+  while ( ( mdig = static_cast<AliMUONVDigit*>(next()) ) )
+  {      
+    //       CHECKME ! The TrackCharge is not ok with new digitizerV3 !
+    //			for (Int_t ichg=0; ichg<10; ichg++) schg += mdig->TrackCharge(ichg);
+    Int_t ichamber = AliMpDEManager::GetChamberId(mdig->DetElemId());
+    Int_t schg = (Int_t)(mdig->Charge() + 0.5);
+    
+    //       APPLY CONDITION ON SOFT BACKGROUND	
+    Int_t tchg = schg - (Int_t(schg/10))*10;	
+    
+    if (schg<=10 || tchg>0) 
     {
-      TClonesArray *muonDigits = fMUONData->Digits(ichamber);
-      Int_t ndigits = muonDigits->GetEntriesFast();
-
-      for (Int_t digit=0; digit<ndigits; digit++)
+      Int_t detElemId  = mdig->DetElemId();
+      Int_t cathode    = mdig->Cathode();
+      
+      const AliMpVSegmentation *seg = 
+        AliMpSegmentation::Instance()
+        ->GetMpSegmentation(detElemId,AliMp::GetCathodType(cathode));
+      
+      Int_t ix = mdig->PadX(), iy = mdig->PadY();
+      
+      AliDebug(3,Form("cathode %d ix %d iy %d ",cathode,ix,iy));
+      
+      AliMpPad pad = seg->PadByIndices(AliMpIntPair(ix,iy),kTRUE);
+      
+      for (Int_t i=0; i<pad.GetNofLocations(); i++) 
       {
-	  AliMUONDigit *mdig = static_cast<AliMUONDigit*>(muonDigits->UncheckedAt(digit));
-
-	  //       CHECKME ! The TrackCharge is not ok with new digitizerV3 !
-	  //			for (Int_t ichg=0; ichg<10; ichg++) schg += mdig->TrackCharge(ichg);
-	  Int_t schg = (Int_t)(mdig->Signal() + 0.5);
-         
-	  //       APPLY CONDITION ON SOFT BACKGROUND	
-	  Int_t tchg = schg - (Int_t(schg/10))*10;	
-
-	  if (schg<=10 || tchg>0) 
-	  {
-	      //   				mdig->Print();
-
-	      Int_t detElemId  = mdig->DetElemId();
-	      Int_t cathode    = mdig->Cathode();
-
-	      const AliMpVSegmentation *seg = 
-		AliMpSegmentation::Instance()
-                  ->GetMpSegmentation(detElemId,AliMp::GetCathodType(cathode));
-
-	      Int_t ix = mdig->PadX(), iy = mdig->PadY();
-				
-	      AliDebug(3,Form("cathode %d ix %d iy %d ",cathode,ix,iy));
-
-	      AliMpPad pad = seg->PadByIndices(AliMpIntPair(ix,iy),kTRUE);
-				
-	      for (Int_t i=0; i<pad.GetNofLocations(); i++) 
-	      {
-		  AliMpIntPair location = pad.GetLocation(i);
-					
-		  Int_t nboard = location.GetFirst();
-
-		  Int_t ibitxy = location.GetSecond();
-
-		  AliMUONLocalTriggerBoard *b = fCrates->LocalBoard(nboard);
-
-		  if (b) 
-		  {
-		      if (cathode && b->GetSwitch(6)) ibitxy += 8;
-						
-		      b->SetbitM(ibitxy,cathode,ichamber-10);
-						
-		  }
-		  else
-		  {
-		      AliError(Form("Could not get local board number %d",b->GetNumber()));
-		 }
-	      }
-	  }		
+        AliMpIntPair location = pad.GetLocation(i);
+        
+        Int_t nboard = location.GetFirst();
+        
+        Int_t ibitxy = location.GetSecond();
+        
+        AliMUONLocalTriggerBoard *b = fCrates->LocalBoard(nboard);
+        
+        if (b) 
+        {
+          if (cathode && b->GetSwitch(6)) ibitxy += 8;
+          
+          b->SetbitM(ibitxy,cathode,ichamber-10);
+        }
+        else
+        {
+          AliError(Form("Could not get local board number %d",b->GetNumber()));
+        }
       }
-    }
-
+    }		
+  }
+  
   // Particular case of the columns with 22 local boards (2R(L) 3R(L))   
   AliMUONTriggerCrate *crate = 0x0; TObjArray *bs = 0x0;
-
+  
   char *scratess[4] = {  "2R",   "2L",   "3L",   "3R"}; 
   char *scratesd[4] = {"2-3R", "2-3L", "2-3L", "2-3R"}; 
   Int_t    slotf[4] = {     2,      2,     10,     10}; 
   Int_t    slotd[4] = {     1,      1,      9,      9}; 
-
+  
   for (Int_t i = 0; i < 4; i++)
   {
-      crate = fCrates->Crate(scratess[i]); 
-      bs = crate->Boards();
-      AliMUONLocalTriggerBoard *desybb = (AliMUONLocalTriggerBoard*)bs->At(14);
-      AliMUONLocalTriggerBoard *fromcb = (AliMUONLocalTriggerBoard*)bs->At(15);
-      AliMUONLocalTriggerBoard *desxbb = (AliMUONLocalTriggerBoard*)bs->At(16);
-
-      crate = fCrates->Crate(scratesd[i]); 
-      bs = crate->Boards();
-      AliMUONLocalTriggerBoard *frombb = (AliMUONLocalTriggerBoard*)bs->At(slotf[i]);
-      AliMUONLocalTriggerBoard *desycb = (AliMUONLocalTriggerBoard*)bs->At(slotd[i]);
-
-      UShort_t cX[2];
-
-      //    COPY X3-4 FROM BOARD  2 OF CRATE 2-3 TO BOARD 16 OF CRATE 2
-      //    COPY X3-4 FROM BOARD 10 OF CRATE 2-3 TO BOARD 16 OF CRATE 3
-      frombb->GetX34(cX); desxbb->SetX34(cX);
-
-      //    COPY X3-4 FROM BOARD 15 OF CRATE 2 TO BOARD 1 OF CRATE 2-3
-      //    COPY X3-4 FROM BOARD 15 OF CRATE 3 TO BOARD 9 OF CRATE 2-3
-      fromcb->GetX34(cX); desycb->SetX34(cX);
-
-      UShort_t cY[4];
-
-      desybb->GetY(cY); frombb->SetY(cY);
-
-      frombb->GetY(cY); desxbb->SetY(cY);
-      fromcb->GetY(cY); desycb->SetY(cY);
+    crate = fCrates->Crate(scratess[i]); 
+    bs = crate->Boards();
+    AliMUONLocalTriggerBoard *desybb = (AliMUONLocalTriggerBoard*)bs->At(14);
+    AliMUONLocalTriggerBoard *fromcb = (AliMUONLocalTriggerBoard*)bs->At(15);
+    AliMUONLocalTriggerBoard *desxbb = (AliMUONLocalTriggerBoard*)bs->At(16);
+    
+    crate = fCrates->Crate(scratesd[i]); 
+    bs = crate->Boards();
+    AliMUONLocalTriggerBoard *frombb = (AliMUONLocalTriggerBoard*)bs->At(slotf[i]);
+    AliMUONLocalTriggerBoard *desycb = (AliMUONLocalTriggerBoard*)bs->At(slotd[i]);
+    
+    UShort_t cX[2];
+    
+    //    COPY X3-4 FROM BOARD  2 OF CRATE 2-3 TO BOARD 16 OF CRATE 2
+    //    COPY X3-4 FROM BOARD 10 OF CRATE 2-3 TO BOARD 16 OF CRATE 3
+    frombb->GetX34(cX); desxbb->SetX34(cX);
+    
+    //    COPY X3-4 FROM BOARD 15 OF CRATE 2 TO BOARD 1 OF CRATE 2-3
+    //    COPY X3-4 FROM BOARD 15 OF CRATE 3 TO BOARD 9 OF CRATE 2-3
+    fromcb->GetX34(cX); desycb->SetX34(cX);
+    
+    UShort_t cY[4];
+    
+    desybb->GetY(cY); frombb->SetY(cY);
+    
+    frombb->GetY(cY); desxbb->SetY(cY);
+    fromcb->GetY(cY); desycb->SetY(cY);
   }
-
+  
   // FILL UP/DOWN OF CURRENT BOARD (DONE VIA J3 BUS IN REAL LIFE)
   AliMUONTriggerCrate* cr;
- 
+  
   fCrates->FirstCrate();
- 
+  
   while ( ( cr = fCrates->NextCrate() ) )
   {            
-      TObjArray *boards = cr->Boards();
-
-      for (Int_t j = 1; j < boards->GetEntries()-1; j++)
+    TObjArray *boards = cr->Boards();
+    
+    for (Int_t j = 1; j < boards->GetEntries()-1; j++)
+    {
+      TObject *o = boards->At(j);
+			
+      if (!o) break;
+			
+      AliMUONLocalTriggerBoard *currboard = (AliMUONLocalTriggerBoard*)o;
+			
+      AliMUONLocalTriggerBoard *neighbour = (AliMUONLocalTriggerBoard*)boards->At(j+1);
+			
+      UShort_t cXY[2][4];
+			
+      if (j==1) {neighbour->GetXY(cXY); currboard->SetXYU(cXY);}
+			
+      //       LAST BOARD IN THE CRATE HAS NO UP EXCEPT FOR CRATES 2 & 3
+      if (j < boards->GetEntries()-2)  
       {
-	  TObject *o = boards->At(j);
-			
-	  if (!o) break;
-			
-	  AliMUONLocalTriggerBoard *currboard = (AliMUONLocalTriggerBoard*)o;
-			
-	  AliMUONLocalTriggerBoard *neighbour = (AliMUONLocalTriggerBoard*)boards->At(j+1);
-			
-	  UShort_t cXY[2][4];
-			
-	  if (j==1) {neighbour->GetXY(cXY); currboard->SetXYU(cXY);}
-			
-	  //       LAST BOARD IN THE CRATE HAS NO UP EXCEPT FOR CRATES 2 & 3
-	  if (j < boards->GetEntries()-2)  
-	  {
 	      AliMUONLocalTriggerBoard *nextboard = (AliMUONLocalTriggerBoard*)boards->At(j+2);
 				
 	      currboard->GetXY(cXY); neighbour->SetXYD(cXY);
 	      nextboard->GetXY(cXY); neighbour->SetXYU(cXY);
 				
 	      if (j==boards->GetEntries()-3) {neighbour->GetXY(cXY); nextboard->SetXYD(cXY);}
-	  }
       }
+    }
   }
-}		
-
+}
 
 
 //___________________________________________
@@ -522,127 +504,114 @@ void AliMUONTriggerElectronics::GlobalResponse()
 }
 
 //_______________________________________________________________________
-void 
-AliMUONTriggerElectronics::Exec(Option_t*)
-{
-/// \todo add comment
-///
-  Digits2Trigger();
-}
-
-//_______________________________________________________________________
-void AliMUONTriggerElectronics::Trigger()
-{
-/// \todo add comment
-///
-   FeedM();
-   LocalResponse();
-   RegionalResponse();      
-   GlobalResponse();
-}
-
-//_______________________________________________________________________
-void AliMUONTriggerElectronics::Digits2Trigger()
+void AliMUONTriggerElectronics::Digits2Trigger(const AliMUONVDigitStore& digitStore,
+                                               AliMUONVTriggerStore& triggerStore)
 {
   /// Main method to go from digits to trigger decision
-  AliMUONRegionalTrigger *pRegTrig = new AliMUONRegionalTrigger();
-  fMUONData->ResetTrigger(); 
+  AliMUONRegionalTrigger pRegTrig;
+  
+  triggerStore.Clear();
+  
   // RUN THE FULL BEE CHAIN
-  Trigger();
-//    DumpOS();
+  Feed(digitStore);
+  LocalResponse();
+  RegionalResponse();      
+  GlobalResponse();
+  //    DumpOS();
 	
   AliMUONTriggerCrate* cr;
- 
+  AliMUONLocalTrigger localTrigger;
+  
   // stored in right order
   // do not used iterator order
-
+  
   for (Int_t iSide = 0; iSide < 2; iSide++) // right & left side
   {            
     for (Int_t iReg = 0; iReg < 8; iReg++) // 8 crates/regional boards for each side.
     {
       cr = fCrates->Crate(iSide, iReg);     
       TObjArray *boards = cr->Boards();
-
+      
       UInt_t regInpLpt = 0;
       UInt_t regInpHpt = 0;
-
+      
       AliMUONRegionalTriggerBoard *regBoard = (AliMUONRegionalTriggerBoard*)boards->At(0);
-
+      
       for (Int_t j = 1; j < boards->GetEntries(); j++)
       {     
-	TObject *o = boards->At(j);
+        TObject *o = boards->At(j);
+        
+        if (!o) break;
+        
+        AliMUONLocalTriggerBoard *board = (AliMUONLocalTriggerBoard*)o;
+        
+        if (board) 
+        {
+          //          L0 TRIGGER
+          // pcrochet 181206: MOOD needs ALL boards
+          //	  if (board->Triggered())
+          //	  {
+          
+          Int_t icirc = board->GetNumber();
+          if (icirc != 0) { // pcrochet 181206: MOOD needs ALL boards
+            
+            localTrigger.SetLoCircuit(icirc);
+            localTrigger.SetLoStripX(board->GetStripX11());
+            localTrigger.SetLoDev(board->GetDev());
+            localTrigger.SetLoSdev(board->GetSdev());
+            localTrigger.SetLoTrigY(board->GetTrigY());
+            localTrigger.SetLoStripY(board->GetStripY11());
+            
+            //             SAVE LUT OUTPUT 
+            UShort_t response = board->GetResponse();
+            localTrigger.SetLoHpt((response & 12) >> 2);
+            localTrigger.SetLoLpt(response &  3);
+            
+            // calculates regional inputs from local for the moment
+            UInt_t hPt = (response >> 2) & 0x3;
+            UInt_t lPt =  response       & 0x3;
+            
+            regInpHpt |= hPt << (30 - (j-1)*2);
+            regInpLpt |= lPt << (30 - (j-1)*2);
+            
+            TBits rrr;
+            rrr.Set(6,&response);	  
+            
+            //             SAVE BIT PATTERN
+            localTrigger.SetX1Pattern(board->GetXY(0,0));
+            localTrigger.SetX2Pattern(board->GetXY(0,1));
+            localTrigger.SetX3Pattern(board->GetXY(0,2));
+            localTrigger.SetX4Pattern(board->GetXY(0,3));
+            
+            localTrigger.SetY1Pattern(board->GetXY(1,0));
+            localTrigger.SetY2Pattern(board->GetXY(1,1));
+            localTrigger.SetY3Pattern(board->GetXY(1,2));
+            localTrigger.SetY4Pattern(board->GetXY(1,3));
+            
+            //             ADD A NEW LOCAL TRIGGER          
+            triggerStore.Add(localTrigger);  
+            
+          }
+          }
+        }
+      pRegTrig.SetId(iReg + 8*iSide);
+      pRegTrig.SetLocalOutput(regInpLpt, 0);
+      pRegTrig.SetLocalOutput(regInpHpt, 1);
+      pRegTrig.SetOutput(regBoard->GetResponse());
       
-	if (!o) break;
-      
-	AliMUONLocalTriggerBoard *board = (AliMUONLocalTriggerBoard*)o;
-      
-	if (board) 
-	{
-	  //          L0 TRIGGER
-// pcrochet 181206: MOOD needs ALL boards
-//	  if (board->Triggered())
-//	  {
-          
-	    Int_t icirc = board->GetNumber();
-	    if (icirc != 0) { // pcrochet 181206: MOOD needs ALL boards
-
-	    fLocalTrigger->SetLoCircuit(icirc);
-	    fLocalTrigger->SetLoStripX(board->GetStripX11());
-	    fLocalTrigger->SetLoDev(board->GetDev());
-	    fLocalTrigger->SetLoSdev(board->GetSdev());
-	    fLocalTrigger->SetLoTrigY(board->GetTrigY());
-	    fLocalTrigger->SetLoStripY(board->GetStripY11());
-          
-	    //             SAVE LUT OUTPUT 
-	    UShort_t response = board->GetResponse();
-	    fLocalTrigger->SetLoHpt((response & 12) >> 2);
-	    fLocalTrigger->SetLoLpt(response &  3);
-
-	    // calculates regional inputs from local for the moment
-	    UInt_t hPt = (response >> 2) & 0x3;
-	    UInt_t lPt =  response       & 0x3;
-	    
-	    regInpHpt |= hPt << (30 - (j-1)*2);
-	    regInpLpt |= lPt << (30 - (j-1)*2);
-
-	    TBits rrr;
-	    rrr.Set(6,&response);	  
-          
-	    //             SAVE BIT PATTERN
-	    fLocalTrigger->SetX1Pattern(board->GetXY(0,0));
-	    fLocalTrigger->SetX2Pattern(board->GetXY(0,1));
-	    fLocalTrigger->SetX3Pattern(board->GetXY(0,2));
-	    fLocalTrigger->SetX4Pattern(board->GetXY(0,3));
-          
-	    fLocalTrigger->SetY1Pattern(board->GetXY(1,0));
-	    fLocalTrigger->SetY2Pattern(board->GetXY(1,1));
-	    fLocalTrigger->SetY3Pattern(board->GetXY(1,2));
-	    fLocalTrigger->SetY4Pattern(board->GetXY(1,3));
-          
-	    //             ADD A NEW LOCAL TRIGGER          
-	    fMUONData->AddLocalTrigger(*fLocalTrigger);  
-	  
-	  }
-	}
+      triggerStore.Add(pRegTrig);  
       }
-      pRegTrig->SetId(iReg + 8*iSide);
-      pRegTrig->SetLocalOutput(regInpLpt, 0);
-      pRegTrig->SetLocalOutput(regInpHpt, 1);
-      pRegTrig->SetOutput(regBoard->GetResponse());
-
-      fMUONData->AddRegionalTrigger(*pRegTrig);  
     }
-  }
-  delete pRegTrig;
   
   // GLOBAL TRIGGER INFORMATION
   UShort_t global = fGlobalTriggerBoard->GetResponse();
-  fGlobalTrigger->SetFromGlobalResponse(global);
-
   
+  AliMUONGlobalTrigger globalTrigger;
+  
+  globalTrigger.SetFromGlobalResponse(global);
   // ADD A LOCAL TRIGGER IN THE LIST 
-  fMUONData->AddGlobalTrigger(*fGlobalTrigger);
-
+  triggerStore.SetGlobal(globalTrigger);
+  
   // NOW RESET ELECTRONICS
   Reset();
 }

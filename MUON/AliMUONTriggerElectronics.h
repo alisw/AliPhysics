@@ -13,12 +13,8 @@
 ///
 /// \author Rachid Guernane (LPCCFd)
 
-#ifndef ROOT_TTask
-#  include "TTask.h"
-#endif
-
-#ifndef ROOT_TArrayI
-#  include "TArrayI.h"
+#ifndef ROOT_TObject
+#  include "TObject.h"
 #endif
 
 #ifndef ROOT_TString
@@ -27,21 +23,18 @@
 
 class AliMUONTriggerCrate;
 class AliMUONCalibrationData;
-class AliMUONData;
 class AliMUONGlobalTriggerBoard;
 class AliMUONTriggerCrateStore;
-class AliMUONLocalTrigger;
-class AliMUONGlobalTrigger;
+class AliMUONVTriggerStore;
+class AliMUONVDigitStore;
 
-class AliMUONTriggerElectronics : public TTask
+class AliMUONTriggerElectronics : public TObject
 {
    public:
-      AliMUONTriggerElectronics(AliMUONData* data = 0, 
-                                AliMUONCalibrationData* calibData=0);
-      virtual ~AliMUONTriggerElectronics();
+      AliMUONTriggerElectronics(AliMUONCalibrationData* calibData=0);
 
-      virtual void Exec(Option_t*);
-      
+    virtual ~AliMUONTriggerElectronics();
+
       /// Set Crate config from ascii file
       virtual void SetDataSource(TString SourceFile = 
                                  "$ALICE_ROOT/MUON/mapping/data/stationTrigger/crate.dat") 
@@ -51,9 +44,8 @@ class AliMUONTriggerElectronics : public TTask
       void LoadMasks(AliMUONCalibrationData* calibData);
 
       virtual void Feed(UShort_t pattern[2][4]);
-		  virtual void FeedM();
+		  virtual void Feed(const AliMUONVDigitStore& digitStore);
       virtual void FeedBoardsGUI(TObjArray *guibs);
-		  
       virtual void Reset();
 
       virtual void Scan(Option_t *option);
@@ -64,8 +56,8 @@ class AliMUONTriggerElectronics : public TTask
 
       virtual void DumpOS();
 
-      virtual void Digits2Trigger();
-      virtual void Trigger();
+      virtual void Digits2Trigger(const AliMUONVDigitStore& digitStore,
+                                  AliMUONVTriggerStore& triggerStore);
       virtual Int_t TriggerGUI(Int_t *trigInfo, Bool_t patt = kFALSE);
 
    private:
@@ -78,10 +70,7 @@ class AliMUONTriggerElectronics : public TTask
       TString                    fSourceFileName;     ///< Source file
       AliMUONTriggerCrateStore  *fCrates;             ///< Crate array
       AliMUONGlobalTriggerBoard *fGlobalTriggerBoard; ///< Global trigger board
-      AliMUONData               *fMUONData;           //!< Data container for MUON subsystem
-      AliMUONLocalTrigger*       fLocalTrigger;       //!< pointer for local trigger container
-      AliMUONGlobalTrigger*      fGlobalTrigger;      //!< pointer for global trigger container
-
-   ClassDef(AliMUONTriggerElectronics,2)
+      
+   ClassDef(AliMUONTriggerElectronics,3)
 };
 #endif
