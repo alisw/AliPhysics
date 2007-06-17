@@ -8,33 +8,69 @@
 //
 /// \ingroup evaluation
 /// \class AliMUONDataInterface
-/// \brief An easy to use interface to data in the MUON module
+/// \brief An easy to use interface to MUON data
 
 // Author: Artur Szostak
 //  email: artur@alice.phy.uct.ac.za
+//
+// Updated to MUON module w/o MUONData by Laurent Aphecetche, Subatech
+//
 
 #include <TObject.h>
-#include <TString.h>
 
-#include "AliMUONRecData.h"
-#include "AliMUONSimData.h"
+class AliMUONDataManager;
+class AliMUONVDigitStore;
+class AliMUONVTriggerStore;
+class AliMUONVTriggerTrackStore;
+class AliMUONVClusterStore;
+class AliMUONVTrackStore;
 
-class TParticle;
-
-class AliRunLoader;
-class AliLoader;
-class AliMUONRawCluster;
-class AliMUONLocalTrigger;
-class AliMUONHit;
+// >>LA should not needed (once we remove deprecated methods)
+class AliMUONHit; 
 class AliMUONDigit;
+class AliMUONLocalTrigger;
+class AliMUONGlobalTrigger;
+class AliMUONRawCluster;
 class AliMUONTrack;
+class TParticle;
+// <<LA
+class TList;
 
 class AliMUONDataInterface : public TObject
 {
  public:
   
-  AliMUONDataInterface();
-  ~AliMUONDataInterface();
+  AliMUONDataInterface(const char* filename="galice.root");
+  virtual ~AliMUONDataInterface();
+  
+  Bool_t IsValid() const;
+
+  AliMUONVClusterStore* ClusterStore(Int_t event) const;
+  void DumpRecPoints(Int_t event, Bool_t sorted=kFALSE) const;
+
+  /** Return the digit store for one event. The returned pointer should be
+    deleted by the client.
+    */
+  AliMUONVDigitStore* DigitStore(Int_t event) const;  
+  void DumpDigits(Int_t event, Bool_t sorted=kFALSE) const;
+  TList* DigitStoreAsList(Int_t event) const;
+  
+  Int_t NumberOfEvents() const;
+
+  AliMUONVDigitStore* SDigitStore(Int_t event) const;
+  void DumpSDigits(Int_t event, Bool_t sorted=kFALSE) const;
+  
+  AliMUONVTrackStore* TrackStore(Int_t event) const;
+  void DumpTracks(Int_t event, Bool_t sorted=kFALSE) const;
+  
+  /// Get the triggerStore from the given tree (can be "D" or "R").
+  AliMUONVTriggerStore* TriggerStore(Int_t event, const char* treeLetter) const;
+  void DumpTrigger(Int_t event, const char* treeLetter="R") const;
+  
+  AliMUONVTriggerTrackStore* TriggerTrackStore(Int_t event) const;
+  void DumpTriggerTracks(Int_t event, Bool_t sorted=kFALSE) const;
+  
+  // all the methods below are deprecated.
   
   // Sets all internal pointers to NULL without releasing the current runloader.
   void Reset();
@@ -65,8 +101,6 @@ class AliMUONDataInterface : public TObject
   Bool_t SetFile(TString filename = "galice.root", TString foldername = "MUONFolder");
   Bool_t GetEvent(Int_t event = 0);
   
-  Int_t NumberOfEvents();
-  
   Int_t NumberOfParticles();
   TParticle* Particle(Int_t particle);
   
@@ -94,66 +128,36 @@ class AliMUONDataInterface : public TObject
   AliMUONTrack* RecTrack(Int_t rectrack);
   
   /// Returns the file name from which we are fetching data
-  TString CurrentFile() const    { return fFilename;    };
+  TString CurrentFile() const { return ""; }
   
   /// Returns the name of the currently selected folder.
-  TString CurrentFolder() const   { return fFoldername;  };
+  TString CurrentFolder() const { return ""; }
   
   /// Returns the number of the currently selected event.
-  Int_t   CurrentEvent() const    { return fEventnumber; };
+  Int_t   CurrentEvent() const { return 0; }
   
   /// Returns the currently selected track.
-  Int_t   CurrentTrack() const    { return fTrack;       };
+  Int_t   CurrentTrack() const { return 0; }
   
   /// Returns the currently selected cathode in TreeS.
-  Int_t   CurrentSCathode() const { return fSCathode;    };
+  Int_t   CurrentSCathode() const { return 0; }
   
   /// Returns the currently selected cathode in TreeD.
-  Int_t   CurrentDCathode() const { return fCathode;     };
+  Int_t   CurrentDCathode() const { return 0; }
   
  private:
+    
+  void DumpIt(const char* treeLetter, const char* what, Int_t event, Bool_t sorted) const;
+  
   /// Not implemented
   AliMUONDataInterface(const AliMUONDataInterface& rhs);
   /// Not implemented
   AliMUONDataInterface& operator=(const AliMUONDataInterface& rhs);
+
+  AliMUONDataManager* fDataManager; //!< Internal data accessor
   
-  Bool_t FetchMuonLoader(TString filename);
-  Bool_t LoadLoaders(TString filename);
-  Bool_t FetchLoaders(TString filename);
-  Bool_t FetchEvent(Int_t event);
-  Bool_t FetchTreeK();
-  Bool_t FetchTreeH();
-  Bool_t FetchTreeS();
-  Bool_t FetchTreeD();
-  Bool_t FetchTreeR();
-  Bool_t FetchTreeT();
-  
-  Bool_t fCreatedRunLoader;   //!< If this object created the fRunloader then this flag is set.	
-  Bool_t fCreatedRunLoaderSim;//!< If this object created the fRunloader then this flag is set.	
-  
-  Bool_t fHitAddressSet;     //!< Flag specifying if the TTree address for the hit tree was set.
-  Bool_t fSDigitAddressSet;  //!< Flag specifying if the TTree address for the s-digit tree was set.
-  Bool_t fDigitAddressSet;   //!< Flag specifying if the TTree address for the digit tree was set.
-  Bool_t fClusterAddressSet; //!< Flag specifying if the TTree address for the cluster tree was set.
-  Bool_t fTriggerAddressSet; //!< Flag specifying if the TTree address for the trigger tree was set.
-  Bool_t fRecTracksAddressSet; //!< Flag specifying if the TTree address for the rec tracks tree was set.
-  
-  AliRunLoader* fRunloader;  //!< Pointer to the runloader object used.
-  AliRunLoader* fRunloaderSim; //!< Pointer to the runloader object used.
-  AliLoader* fRecLoader;    //!< Pointer to the muon loader object used.
-  AliLoader* fSimLoader;    //!< Pointer to the muon loader object used.
-  AliMUONRecData fRecData;  //!< Pointer to the muon raw data interface.
-  AliMUONSimData fSimData;  //!< Pointer to the muon raw data interface.
-  TString fFilename;         //!< The file name from which we are fetching data.
-  TString fFoldername;       //!< The folder name from which we are fetching data.
-  TString fFoldernameSim;    //!< The folder name from which we are fetching data.
-  Int_t fEventnumber;        //!< The currently selected event.
-  Int_t fTrack;              //!< The currently selected track.
-  Int_t fSCathode;           //!< The currently selected cathode in TreeS.
-  Int_t fCathode;            //!< The currently selected cathode in TreeD.
-  
-  ClassDef(AliMUONDataInterface, 0)  // A easy to use interface to data in the MUON module.
-    };
+  ClassDef(AliMUONDataInterface, 0)  // An easy to use interface to MUON data
+};
     
 
 #endif // ALI_MUON_DATA_INTERFACE_H

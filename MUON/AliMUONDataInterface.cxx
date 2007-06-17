@@ -15,7 +15,6 @@
  
 /* $Id$ */
 
-#include <cassert>
 #include <TError.h>
 #include <TParticle.h>
 
@@ -31,1183 +30,572 @@
 #include "AliMUONTrack.h"
 #include "AliLog.h"
 
-#include <iostream>
-using std::endl;
-using std::cout;
+#include <Riostream.h>
+
+#include "AliMUONVDigitStore.h"
+#include "AliMUONVTriggerStore.h"
+#include "AliMUONVClusterStore.h"
+#include "AliMUONVTrackStore.h"
+#include "AliMUONVTriggerTrackStore.h"
+#include "AliMUONDataManager.h"
+#include "AliLog.h"
+#include <TList.h>
 
 ///
 /// \class AliMUONDataInterface
 ///
-/// An easy to use interface to the MUON module data stored in
-/// TreeK, TreeH, TreeS, TreeD and TreeR
-/// One can fetch any of the data objects with all the calls to runloader, 
-/// muon loader and AliMUONData done behind the scenes and automatically.
+/// An easy to use interface to the MUON data data stored in
+/// TreeS, TreeD, TreeR and TreeT.
+///
+/// For MC related information (i.e. TreeH, TreeK, TreeTR), see
+/// AliMUONMCDataInterface.
+///
 ///
 /// This interface in not necessarily the fastest way to fetch the data but
 /// it is the easiest.
-/// Note: If independant calls to the run loader, muon loader or 
-/// AliMUONData objects are interspersed with calls to the 
-/// AliMUONDataInterface to fetch data, one might need to call the Reset 
-/// method between these method calls at some point to prevent 
-/// AliMUONDataInterface from getting confused.
-/// This is necessary since this object assumes the state of runloader,
-/// muon loader nor AliMUONData has not changed between calls.
-/// If the state has changes then one must call Reset so that 
-/// AliMUONDataInterface refreshes what it knows about the state
-/// of the loader and AliMUONData objects.
 ///
-/// \deprecated We have to revisit all this AliMUONData stuff anyway,
-/// and probably make a real AliMUONLoader instead...
-///
-/// \author Artur Szostak
-/// email: artur@alice.phy.uct.ac.za
-
+/// \author Laurent Aphecetche, Subatech
 
 /// \cond CLASSIMP
 ClassImp(AliMUONDataInterface)
 /// \endcond
 
-AliMUONDataInterface::AliMUONDataInterface()
+//______________________________________________________________________________
+AliMUONDataInterface::AliMUONDataInterface(const char* filename)
 	: TObject(), 
-	  fCreatedRunLoader(kFALSE),
-	  fCreatedRunLoaderSim(kFALSE),
-	  fHitAddressSet(kFALSE),
-	  fSDigitAddressSet(kFALSE),
-	  fDigitAddressSet(kFALSE),
-	  fClusterAddressSet(kFALSE),
-	  fTriggerAddressSet(kFALSE),
-	  fRecTracksAddressSet(kFALSE),
-	  fRunloader(0x0),
-	  fRunloaderSim(0x0),
-	  fRecLoader(0x0),
-	  fSimLoader(0x0),
-	  fRecData(0x0, "MUON", "MUON"),
-	  fSimData(0x0, "MUON", "MUON"),
-	  fFilename(),
-	  fFoldername("MUONLoader"),
-	  fFoldernameSim("MUONLoaderSim"),
-	  fEventnumber(-1),
-	  fTrack(-1),
-	  fSCathode(-1),
-	  fCathode(-1)
+fDataManager(new AliMUONDataManager(filename))
 {
-/// Set all internal pointers to 0x0 and indices to -1.
-
-	Reset();
+  /// ctor
+  /// @param filename should be the full path to a valid galice.root file
+  
+  if (!IsValid())
+  {
+    AliError("Improper initialization. Object will be unuseable");
+  }
 }
 
+//______________________________________________________________________________
 AliMUONDataInterface::~AliMUONDataInterface()
 {
-/// Delete the runloader if we created it.
-/// If the runloader is not to be deleted then call Reset just before 
-/// the destructor is called.
-
-	if (fRunloader != NULL && fCreatedRunLoader)
-		delete fRunloader;
-
-	if (fRunloaderSim != NULL && fCreatedRunLoaderSim)
-		delete fRunloaderSim;
+  /// dtor
+  delete fDataManager;
 }
+
+//______________________________________________________________________________
+AliMUONVClusterStore*
+AliMUONDataInterface::ClusterStore(Int_t event) const
+{
+  /// Return the cluster store for a given event
+  if (!IsValid()) return 0x0;
+  return dynamic_cast<AliMUONVClusterStore*>(fDataManager->ReadConnectable(event,"R","Cluster"));
+
+}
+
+//______________________________________________________________________________
+void
+AliMUONDataInterface::DumpRecPoints(Int_t event, Bool_t sorted) const
+{
+  /// Dump the recpoints for a given event, sorted if so required
+  DumpIt("R","Cluster",event,sorted);
+}
+
+//______________________________________________________________________________
+AliMUONVDigitStore*
+AliMUONDataInterface::DigitStore(Int_t event) const
+{
+  /// Return the digit store for a given event
+  if (!IsValid()) return 0x0;
+  return dynamic_cast<AliMUONVDigitStore*>(fDataManager->ReadConnectable(event,"D","Digit"));
+}
+
+//______________________________________________________________________________
+TList* 
+AliMUONDataInterface::DigitStoreAsList(Int_t event) const
+{
+  /// Return the digitStore as a TList
+  AliMUONVDigitStore* digitStore = DigitStore(event);
+  
+  TIter next(digitStore->CreateIterator());
+
+  TList* list = new TList;
+  list->SetOwner(kTRUE);
+  TObject* object;
+  
+  while ( ( object = next() ) ) 
+  {
+    list->Add(object->Clone());
+  }
+  
+  delete digitStore;
+  return list;
+}
+
+//______________________________________________________________________________
+void
+AliMUONDataInterface::DumpIt(const char* treeLetter, const char* what, 
+                             Int_t event, Bool_t sorted) const
+{
+  /// Generic dump method used by the other DumpXXX methods
+  AliMUONVStore* store = fDataManager->ReadConnectable(event,treeLetter,what);
+  if (!store)
+  {
+    AliError(Form("Could not read %s from tree%s",what,treeLetter));
+    return;
+  }
+  
+  if ( sorted ) 
+  {
+    TList list;
+    list.SetOwner(kFALSE);
+    TIter next(store->CreateIterator());
+    TObject* object;
+  
+    while ( ( object = next() ) ) 
+    {
+      list.Add(object);
+    }
+
+    list.Sort();
+  
+    list.Print();
+  }
+  else
+  {
+    store->Print();
+  }
+  
+  delete store;
+}
+
+//______________________________________________________________________________
+void
+AliMUONDataInterface::DumpDigits(Int_t event, Bool_t sorted) const
+{
+  /// Dump digits of a given event, sorted if so required
+  DumpIt("D","Digit",event,sorted);
+}
+
+//______________________________________________________________________________
+Bool_t
+AliMUONDataInterface::IsValid() const
+{
+  /// Whether we were properly initialized from a valid galice.root file
+  return fDataManager->IsValid();
+}
+
+//______________________________________________________________________________
+Int_t
+AliMUONDataInterface::NumberOfEvents() const
+{
+  /// Number of events in the current galice.root file we're attached to 
+  if (!IsValid()) return 0;
+  return fDataManager->NumberOfEvents();
+}
+
+//______________________________________________________________________________
+AliMUONVDigitStore*
+AliMUONDataInterface::SDigitStore(Int_t event) const
+{
+  /// Return the SDigit store for a given event
+  if (!IsValid()) return 0x0;
+  return dynamic_cast<AliMUONVDigitStore*>(fDataManager->ReadConnectable(event,"S","SDigit"));
+}
+
+//______________________________________________________________________________
+void
+AliMUONDataInterface::DumpSDigits(Int_t event, Bool_t sorted) const
+{
+  /// Dump sdigits for a given event, sorted if so required
+  DumpIt("S","Digit",event,sorted);
+}
+
+
+//______________________________________________________________________________
+AliMUONVTrackStore* 
+AliMUONDataInterface::TrackStore(Int_t event) const
+{
+  /// Return the track store for a given event
+  if (!IsValid()) return 0x0;
+  return dynamic_cast<AliMUONVTrackStore*>(fDataManager->ReadConnectable(event,"T","Track"));
+}
+
+//______________________________________________________________________________
+void
+AliMUONDataInterface::DumpTracks(Int_t event, Bool_t sorted) const
+{
+  /// Dump tracks for a given event, sorted if so required
+  DumpIt("T","Track",event,sorted);
+}
+
+//______________________________________________________________________________
+AliMUONVTriggerStore* 
+AliMUONDataInterface::TriggerStore(Int_t event, const char* treeLetter) const
+{
+  /// Return the trigger store for a given event, from a given tree (D or R)
+  if (!IsValid()) return 0x0;
+  return dynamic_cast<AliMUONVTriggerStore*>(fDataManager->ReadConnectable(event,treeLetter,"Trigger"));  
+}
+
+//______________________________________________________________________________
+void
+AliMUONDataInterface::DumpTrigger(Int_t event, const char* treeLetter) const
+{
+  /// Dump trigger for a given event, from a given tree, sorted if possible
+  DumpIt(treeLetter,"Trigger",event,kFALSE);
+}
+
+//______________________________________________________________________________
+AliMUONVTriggerTrackStore* 
+AliMUONDataInterface::TriggerTrackStore(Int_t event) const
+{
+  /// Return trigger track store for a given event
+  if (!IsValid()) return 0x0;
+  return dynamic_cast<AliMUONVTriggerTrackStore*>(fDataManager->ReadConnectable(event,"T","TriggerTrack"));  
+}
+
+//______________________________________________________________________________
+void
+AliMUONDataInterface::DumpTriggerTracks(Int_t event, Bool_t sorted) const
+{
+  /// Dump trigger tracks for a given event
+  DumpIt("T","Trigger",event,sorted);
+}
+
+//______________________________________________________________________________
+//______________________________________________________________________________
+//______________________________________________________________________________
+//______________________________________________________________________________
 
 void AliMUONDataInterface::Reset()
 {
-/// Sets all internal pointers to NULL and indices to -1.
-/// Note: No resources are released!
-/// Specificaly AliRunLoader is not deleted.
+/// \deprecated Method is going to be removed
 
-	fCreatedRunLoader = kFALSE;
-	fCreatedRunLoaderSim = kFALSE;
-	fRunloader = NULL;
-	fRunloaderSim = NULL;
-	fRecLoader = NULL;
-	fSimLoader = NULL;
-	fEventnumber = -1;
-	fTrack = -1;
-	fSCathode = -1;
-	fCathode = -1;
-	fHitAddressSet = kFALSE;
-	fSDigitAddressSet = kFALSE;
-	fDigitAddressSet = kFALSE;
-	fClusterAddressSet = kFALSE;
-	fTriggerAddressSet = kFALSE;
-	fRecTracksAddressSet = kFALSE;
+  AliFatal("Deprecated");
 }
-
 
 Bool_t AliMUONDataInterface::UseCurrentRunLoader()
 {
-/// Tries to fetch the current runloader with AliRunLoader::GetRunLoader. If nothing is
-/// currently loaded then kFALSE is returned and AliMUONDataInterface is reset.
+/// \deprecated Method is going to be removed
 
-	Reset();
-	fRunloader = AliRunLoader::GetRunLoader();
-	if (fRunloader == NULL) return kFALSE;
-	// Fetch the current file name, folder name and event number.
-	fFilename = fRunloader->GetFileName();
-        // fFoldername = fRunloader->GetEventFolder()->GetName();
-	fEventnumber = fRunloader->GetEventNumber();
-
-	if ( ! FetchMuonLoader(fFilename.Data()) )
-	{
-		Reset();
-		return kFALSE;
-	}		
-
-	return kTRUE;
-}
-
-
-Bool_t AliMUONDataInterface::FetchMuonLoader(TString filename)
-{
-/// Fetches the muon loader for the given filename/foldername
-
-
-	fRecLoader = fRunloader->GetLoader("MUONLoader");
-	if (fRecLoader == NULL)
-	{
-		AliError(Form("Could not find the MUON loader in file: %s and folder: %s", 
-			(const char*)filename, fFoldername.Data() ));
-		return kFALSE;
-	}
-	
-	// Need to connect the muon loader to the AliMUONData object,
-	// else class to fRecData will return NULL.
-	fRecData.SetLoader(fRecLoader);
-
-	fSimLoader = fRunloaderSim->GetLoader("MUONLoader");
-	if (fSimLoader == NULL)
-	{
-		AliError(Form("Could not find the MUON loader in file: %s and folder: %s", 
-			(const char*)filename, fFoldernameSim.Data()));
-		return kFALSE;
-	}
-	
-	// Need to connect the muon loader to the AliMUONData object,
-	// else class to fSimData will return NULL.
-	fSimData.SetLoader(fSimLoader);
-	return kTRUE;
-}
-
-
-Bool_t AliMUONDataInterface::LoadLoaders(TString filename)
-{
-/// Load the run and muon loaders from the specified file and folder.
-/// kTRUE is returned on success and kFALSE on failure.
-
-	fRunloader = AliRunLoader::Open(filename, "MUONFolder", "READ");
-	if (fRunloader == NULL)
-	{
-		AliError(Form("Could not find or load the run loader for the file: %s and folder: MUONFolder", 
-			(const char*)filename));
-		return kFALSE;
-	}
-	fCreatedRunLoader = kTRUE;
-
-	fRunloaderSim = AliRunLoader::Open(filename, "MUONFolderSim", "READ");
-	if (fRunloaderSim == NULL)
-	{
-		AliError(Form("Could not find or load the run loader for the file: %s and folder: MUONFolderSim", 
-			(const char*)filename));
-		return kFALSE;
-	}
-	fCreatedRunLoaderSim = kTRUE;
-
-	if ( ! FetchMuonLoader(filename) )
-	{
-		fRunloader = NULL;
-		fRunloaderSim = NULL;
-		return kFALSE;
-	}
-	
-	fFilename = filename;
-	fEventnumber = -1;  // Reset the event number to force the event to be loaded.
-	return kTRUE;
-}
-
-
-Bool_t AliMUONDataInterface::FetchLoaders(TString filename)
-{
-/// Fetch the run loader and muon loader objects from memory if they already exist,
-/// or from memory if they do not. 
-/// If the currently loaded run loader (if any) is not refering to the file and folder
-/// we are interested in then it is deleted and reopened with the required file and
-/// folder names.
-
-	if (fRunloader == NULL)
-	{
-		fRunloader = AliRunLoader::GetRunLoader();
-		if (fRunloader == NULL)
-			return LoadLoaders(filename);
-		else
-		{
-			if (fRecLoader == NULL)
-			{
-				if ( ! FetchMuonLoader(filename) )
-				{
-					fRunloader = NULL;
-					return kFALSE;
-				}
-			}
-		}
-		
-		// Fetch the current file and folder names.
-		fFilename = fRunloader->GetFileName();
-		// fFoldername = fRunloader->GetEventFolder()->GetName();
-	}
-
-	// If filename or foldername are not the same as the ones currently selected then
-	// reopen the file.
-	if ( filename.CompareTo(fFilename) != 0 )
-	{
-		delete fRunloader;
-		return LoadLoaders(filename);
-	}
-	return kTRUE;
-}
-
-
-Bool_t AliMUONDataInterface::FetchEvent(Int_t event)
-{
-/// Fetch the specified event from the runloader and reset all the track, cathode
-/// and address flags to force them to be reloaded.
-/// If a negative event number is specified then the current runloader event
-/// number is used.
-
-	if (fEventnumber < 0)
-	{
-		fEventnumber = fRunloader->GetEventNumber();
-		fTrack = -1;
-		fSCathode = -1;
-		fCathode = -1;
-		fHitAddressSet = kFALSE;
-		fSDigitAddressSet = kFALSE;
-		fDigitAddressSet = kFALSE;
-		fClusterAddressSet = kFALSE;
-		fTriggerAddressSet = kFALSE;
-		fRecTracksAddressSet = kFALSE;
-	}
-	if ( event != fEventnumber )
-	{
-		if ( fRunloader->GetEvent(event) < 0 ) return kFALSE;
-		fEventnumber = event;
-		fTrack = -1;
-		fSCathode = -1;
-		fCathode = -1;
-		fHitAddressSet = kFALSE;
-		fSDigitAddressSet = kFALSE;
-		fDigitAddressSet = kFALSE;
-		fClusterAddressSet = kFALSE;
-		fTriggerAddressSet = kFALSE;
-		fRecTracksAddressSet = kFALSE;
-	}
-	return kTRUE;
-}
-
-
-Bool_t AliMUONDataInterface::FetchTreeK()
-{
-/// Fetch the Kine tree from the current run loader.
-
-	if (fRunloaderSim->TreeK() == NULL)
-	{
-		fRunloaderSim->LoadKinematics("READ");
-		if (fRunloaderSim->TreeK() == NULL)
-		{
-			AliError("Could not load TreeK.");
-			return kFALSE;
-		}
-	}
-	return kTRUE;
-}
-
-
-Bool_t AliMUONDataInterface::FetchTreeH()
-{
-/// Fetch the Hits tree from the current muon loader.
-/// Set all the required addresses etc...
-
-	if (fSimLoader->TreeH() == NULL)
-	{
-		fSimLoader->LoadHits("READ");
-		if (fSimLoader->TreeH() == NULL)
-		{
-			AliError("Could not load TreeH.");
-			return kFALSE;
-		}
-		fSimData.SetTreeAddress("H");
-		fHitAddressSet = kTRUE;
-	}
-	else if ( ! fHitAddressSet )
-	{
-		fSimData.SetTreeAddress("H");
-		fHitAddressSet = kTRUE;
-	}
-	return kTRUE;
-}
-
-
-Bool_t AliMUONDataInterface::FetchTreeS()
-{
-/// Fetch the S-Digits tree from the current muon loader.
-/// Set all the required addresses etc...
-
-	if (fSimLoader->TreeS() == NULL)
-	{
-		fSimLoader->LoadSDigits("READ");
-		if (fSimLoader->TreeS() == NULL)
-		{
-			AliError("Could not load TreeS.");
-			return kFALSE;
-		}
-		fSimData.SetTreeAddress("S");
-		fSDigitAddressSet = kTRUE;
-	}
-	else if ( ! fSDigitAddressSet )
-	{
-		fSimData.SetTreeAddress("S");
-		fSDigitAddressSet = kTRUE;
-	}
-	return kTRUE;
-}
-
-
-Bool_t AliMUONDataInterface::FetchTreeD()
-{
-/// Fetch the digits tree from the current muon loader.
-/// Set all the required addresses etc...
-
-	if (fSimLoader->TreeD() == NULL)
-	{
-		fSimLoader->LoadDigits("READ");
-		if (fSimLoader->TreeD() == NULL)
-		{
-			AliError("Could not load TreeD.");
-			return kFALSE;
-		}
-		fSimData.SetTreeAddress("D");
-		fDigitAddressSet = kTRUE;
-	}
-	else if ( ! fDigitAddressSet )
-	{
-		fSimData.SetTreeAddress("D");
-		fDigitAddressSet = kTRUE;
-	}
-	return kTRUE;
-}
-
-
-Bool_t AliMUONDataInterface::FetchTreeR()
-{
-/// Fetch the reconstructed objects tree from the current muon loader.
-/// Note: The addresses must still be set. 
-  
-  if (fRecLoader->TreeR() == NULL)
-    {
-      fRecLoader->LoadRecPoints("READ");
-      if (fRecLoader->TreeR() == NULL)
-	{
-	  AliError("Could not load TreeR.");
-	  return kFALSE;
-	}
-      
-      // Need to reset these flags so that the cluster and trigger address
-      // gets reset after this method. 
-      fClusterAddressSet = kFALSE;
-      fTriggerAddressSet = kFALSE;
-    }
-  return kTRUE;
-}
-
-Bool_t AliMUONDataInterface::FetchTreeT()
-{
-/// fetch the reconstructed tracks tree from the current muon loader
-/// note : the addresses must still be set.
-  if (fRecLoader->TreeT() == NULL)
-    {
-      fRecLoader->LoadTracks("READ");
-      if (fRecLoader->TreeT() == NULL)
-	{
-	  AliError("Could not load TreeT.");
-	  return kFALSE;
-	}
-      
-      // Need to reset these flags so that the rec tracks address
-      // gets reset after this method. 
-      fRecTracksAddressSet = kFALSE;
-    }
-  return kTRUE;
+  AliFatal("Deprecated");
+  return kFALSE;
 }
   
-Int_t AliMUONDataInterface::NumberOfEvents(TString filename, TString foldername)
+Int_t AliMUONDataInterface::NumberOfEvents(TString , TString )
 {
-/// Returns the number of events in the specified file/folder, and -1 on error.
+/// \deprecated Method is going to be removed
 
-	if ( ! FetchLoaders(filename) ) return -1;
-	return fRunloader->GetNumberOfEvents();
+  AliFatal("Deprecated");
+  return 0;
 }
 
 
-Int_t AliMUONDataInterface::NumberOfParticles(TString filename, TString foldername, Int_t event)
+Int_t AliMUONDataInterface::NumberOfParticles(TString , TString , Int_t )
 {
-/// Returns the number of events in the specified file/folder, and -1 on error.
+/// \deprecated Method is going to be removed
 
-	if ( ! FetchLoaders(filename) ) return -1;
-	if ( ! FetchEvent(event) ) return -1;
-	if ( ! FetchTreeK() ) return -1;
-	return (Int_t) fRunloader->TreeK()->GetEntriesFast();
+  AliFatal("Deprecated");
+  return 0;
 }
 
 
 TParticle* AliMUONDataInterface::Particle(
-		TString filename, TString foldername, Int_t event, Int_t particle
+		TString , TString , Int_t , Int_t 
 	)
 {
-/// Returns the specified particle in the given file, folder and event.
-/// NULL is returned on error.
+/// \deprecated Method is going to be removed
 
-	if ( ! FetchLoaders(filename) ) return NULL;
-	if ( ! FetchEvent(event) ) return NULL;
-	if ( ! FetchTreeK() ) return NULL;
-	
-	TTree* treeK = fRunloader->TreeK();
-	TParticle* p = NULL;
-	treeK->GetBranch("Particles")->SetAddress(&p);
-	treeK->GetEvent(particle);
-	return p;
+  AliFatal("Deprecated");
+  return 0;
 }
 
 
-Int_t AliMUONDataInterface::NumberOfTracks(TString filename, TString foldername, Int_t event)
+Int_t AliMUONDataInterface::NumberOfTracks(TString , TString , Int_t )
 {
-/// Returns the number of tracks in the specified file/folder and event.
-/// -1 is returned on error.
+/// \deprecated Method is going to be removed
 
-	if ( ! FetchLoaders(filename) ) return -1;
-	if ( ! FetchEvent(event) ) return -1;
-	if ( ! FetchTreeH() ) return -1;
-	return fSimData.GetNtracks();
+  AliFatal("Deprecated");
+  return 0;
 }
 
 
 Int_t AliMUONDataInterface::NumberOfHits(
-		TString filename, TString foldername, Int_t event, Int_t track
+		TString , TString , Int_t , Int_t 
 	)
 {
-/// Returns the number of hits in the specified file/folder, event and track.
-/// -1 is returned on error.
+/// \deprecated Method is going to be removed
 
-	if ( ! FetchLoaders(filename) ) return -1;
-	if ( ! FetchEvent(event) ) return -1;
-	if ( ! FetchTreeH() ) return -1;
-
-	if (fTrack < 0 || fTrack != track)
-	{
-		fSimData.ResetHits();
-		fSimData.GetTrack(track);
-		fTrack = track;
-	}
-	return fSimData.Hits()->GetEntriesFast();
+  AliFatal("Deprecated");
+  return 0;
 }
 
 
 AliMUONHit* AliMUONDataInterface::Hit(
-		TString filename, TString foldername, Int_t event,
-		Int_t track, Int_t hit
+		TString , TString , Int_t ,
+		Int_t , Int_t 
 	)
 {
-/// Returns the specified hit in the given file, folder, event and track.
-/// NULL is returned on error.
+/// \deprecated Method is going to be removed
 
-	if ( ! FetchLoaders(filename) ) return NULL;
-	if ( ! FetchEvent(event) ) return NULL;
-	if ( ! FetchTreeH() ) return NULL;
-
-	if (fTrack < 0 || fTrack != track)
-	{
-		fSimData.ResetHits();
-		fSimData.GetTrack(track);
-		fTrack = track;
-	}
-	return static_cast<AliMUONHit*>( fSimData.Hits()->At(hit) );
+  AliFatal("Deprecated");
+  return 0;
 }
 
 
 Int_t AliMUONDataInterface::NumberOfSDigits(
-		TString filename, TString foldername, Int_t event,
-		Int_t chamber, Int_t cathode
+		TString , TString , Int_t ,
+		Int_t , Int_t 
 	)
 {
-/// Returns the number of s-digits in the given file, folder, event,
-/// chamber and cathode. -1 is returned on error.
+/// \deprecated Method is going to be removed
 
-	assert( 0 <= chamber && chamber <= 13 );
-	assert( 0 <= cathode && cathode <= 1 );
-	
-	if ( ! FetchLoaders(filename) ) return -1;
-	if ( ! FetchEvent(event) ) return -1;
-	if ( ! FetchTreeS() ) return -1;
-
-	if ( fSCathode != cathode )
-	{
-		fSimData.ResetSDigits();
-		fSimData.GetSDigits();
-		fSCathode = cathode;
-	}
-	return fSimData.SDigits(chamber)->GetEntriesFast();
+  AliFatal("Deprecated");
+  return 0;
 }
 
 
 AliMUONDigit* AliMUONDataInterface::SDigit(
-		TString filename, TString foldername, Int_t event,
-		Int_t chamber, Int_t cathode, Int_t sdigit
+		TString , TString , Int_t ,
+		Int_t , Int_t , Int_t 
 	)
 {
-/// Returns the specified s-digit in the given file, folder, event,
-/// chamber and cathode. NULL is returned on error.
+/// \deprecated Method is going to be removed
 
-	assert( 0 <= chamber && chamber <= 13 );
-	assert( 0 <= cathode && cathode <= 1 );
-	
-	if ( ! FetchLoaders(filename) ) return NULL;
-	if ( ! FetchEvent(event) ) return NULL;
-	if ( ! FetchTreeS() ) return NULL;
-
-	if ( fSCathode != cathode )
-	{
-		fSimData.ResetSDigits();
-		fSimData.GetSDigits();
-		fSCathode = cathode;
-	}
-	return static_cast<AliMUONDigit*>( fSimData.SDigits(chamber)->At(sdigit) );
+  AliFatal("Deprecated");
+  return 0;
 }
 
 
 Int_t AliMUONDataInterface::NumberOfDigits(
-		TString filename, TString foldername, Int_t event,
-		Int_t chamber, Int_t cathode
+		TString , TString , Int_t ,
+		Int_t , Int_t 
 	)
 {
-/// Returns the number of digits in the given file, folder, event,
-/// chamber and cathode. -1 is returned on error.
-	assert( 0 <= chamber && chamber <= 13 );
-	assert( 0 <= cathode && cathode <= 1 );
-	
-	if ( ! FetchLoaders(filename) ) return -1;
-	if ( ! FetchEvent(event) ) return -1;
-	if ( ! FetchTreeD() ) return -1;
+/// \deprecated Method is going to be removed
 
-	if ( fCathode != cathode )
-	{
-		fSimData.ResetDigits();
-		fSimData.GetDigits();
-		fCathode = cathode;
-	}
-	return fSimData.Digits(chamber)->GetEntriesFast();
+  AliFatal("Deprecated");
+  return 0;
 }
 
 
 AliMUONDigit* AliMUONDataInterface::Digit(
-		TString filename, TString foldername, Int_t event,
-		Int_t chamber, Int_t cathode, Int_t digit
+		TString , TString , Int_t ,
+		Int_t , Int_t , Int_t 
 	)
 {
-/// Returns the specified digit in the given file, folder, event,
-/// chamber and cathode. NULL is returned on error.
+/// \deprecated Method is going to be removed
 
-	assert( 0 <= chamber && chamber <= 13 );
-	assert( 0 <= cathode && cathode <= 1 );
-	
-	if ( ! FetchLoaders(filename) ) return NULL;
-	if ( ! FetchEvent(event) ) return NULL;
-	if ( ! FetchTreeD() ) return NULL;
-
-	if ( fCathode != cathode )
-	{
-		fSimData.ResetDigits();
-		fSimData.GetDigits();
-		fCathode = cathode;
-	}
-	return static_cast<AliMUONDigit*>( fSimData.Digits(chamber)->At(digit) );
+  AliFatal("Deprecated");
+  return 0;
 }
 
 
 Int_t AliMUONDataInterface::NumberOfRawClusters(
-		TString filename, TString foldername, Int_t event, Int_t chamber
+		TString , TString , Int_t , Int_t 
 	)
 {
-/// Returns the number of raw clusters in the specified file, folder, event and chamber.
-/// -1 is returned or error.
+/// \deprecated Method is going to be removed
 
-	assert( 0 <= chamber && chamber <= 13 );
-	if ( ! FetchLoaders(filename) ) return -1;
-	if ( ! FetchEvent(event) ) return -1;
-	if ( ! FetchTreeR() ) return -1;
-	if ( ! fClusterAddressSet )
-	{
-		// If the raw cluster address in TreeR is not set yet then set it now.
-		fRecData.SetTreeAddress("RC");
-		fRecData.ResetRawClusters();
-		fRecData.GetRawClusters();
-		fClusterAddressSet = kTRUE;
-	}
-	return fRecData.RawClusters(chamber)->GetEntriesFast();
+  AliFatal("Deprecated");
+  return 0;
 }
 
 
 AliMUONRawCluster* AliMUONDataInterface::RawCluster(
-		TString filename, TString foldername, Int_t event,
-		Int_t chamber, Int_t cluster
+		TString , TString , Int_t ,
+		Int_t , Int_t 
 	)
 {
-/// Fetch the specified raw cluster from the given file, folder, event and chamber number.
-/// NULL is returned on error.
+/// \deprecated Method is going to be removed
 
-	assert( 0 <= chamber && chamber <= 13 );
-	if ( ! FetchLoaders(filename) ) return NULL;
-	if ( ! FetchEvent(event) ) return NULL;
-	if ( ! FetchTreeR() ) return NULL;
-	if ( ! fClusterAddressSet )
-	{
-		// If the raw cluster address in TreeR is not set yet then set it now.
-		fRecData.SetTreeAddress("RC");
-		fRecData.ResetRawClusters();
-		fRecData.GetRawClusters();
-		fClusterAddressSet = kTRUE;
-	}
-	return static_cast<AliMUONRawCluster*>( fRecData.RawClusters(chamber)->At(cluster) );
+  AliFatal("Deprecated");
+  return 0;
 }
 
 
-Int_t AliMUONDataInterface::NumberOfLocalTriggers(TString filename, TString foldername, Int_t event)
+Int_t AliMUONDataInterface::NumberOfLocalTriggers(TString , TString , Int_t )
 {
-/// Return the number of local trigger objects in the specified file, folder and
-/// event number. -1 is returned on error.
+/// \deprecated Method is going to be removed
 
-	if ( ! FetchLoaders(filename) ) return -1;
-	if ( ! FetchEvent(event) ) return -1;
-	if ( ! FetchTreeD() ) return -1;
-	if ( ! fTriggerAddressSet )
-	{
-		// If the local trigger address in TreeR is not set yet then set it now.
-		fRecData.SetTreeAddress("GLT");
-		fRecData.ResetTrigger();
-		fRecData.GetTriggerD();
-		fTriggerAddressSet = kTRUE;
-	}
-	return fRecData.LocalTrigger()->GetEntriesFast();
+  AliFatal("Deprecated");
+  return 0;
 }
 
 
 AliMUONLocalTrigger* AliMUONDataInterface::LocalTrigger(
-		TString filename, TString foldername, Int_t event, Int_t trigger
+		TString , TString , Int_t , Int_t 
 	)
 {
-/// Fetch the specified local trigger object from the given file, folder and event number.
-/// NULL is returned on error.
+/// \deprecated Method is going to be removed
 
-	if ( ! FetchLoaders(filename) ) return NULL;
-	if ( ! FetchEvent(event) ) return NULL;
-	if ( ! FetchTreeD() ) return NULL;
-	if ( ! fTriggerAddressSet )
-	{
-		// If the local trigger address in TreeR is not set yet then set it now.
-		fRecData.SetTreeAddress("GLT");
-		fRecData.ResetTrigger();
-		fRecData.GetTriggerD();
-		fTriggerAddressSet = kTRUE;
-	}
-	return static_cast<AliMUONLocalTrigger*>( fRecData.LocalTrigger()->At(trigger) );
+  AliFatal("Deprecated");
+  return 0;
 }
 
-Bool_t AliMUONDataInterface::SetFile(TString filename, TString foldername)
+Bool_t AliMUONDataInterface::SetFile(TString , TString )
 {
-/// Set the current file and folder from which to fetch data.
-/// kTRUE is returned if the run and muon loaders were found, else kFALSE. 
+/// \deprecated Method is going to be removed
 
-	return FetchLoaders(filename);
+  AliFatal("Deprecated");
+  return 0;
 }
 
 
-Bool_t AliMUONDataInterface::GetEvent(Int_t event)
+Bool_t AliMUONDataInterface::GetEvent(Int_t )
 {
-/// Select the current event from which to fetch data.
-/// kTRUE is returned if the event was found, else kFALSE is returned.
+/// \deprecated Method is going to be removed
 
-	if (fRunloader == NULL)
-	{
-		AliError("File not set.");
-		return kFALSE;
-	}
-	else
-		return FetchEvent(event);
+  AliFatal("Deprecated");
+  return 0;
 }
-
-
-Int_t AliMUONDataInterface::NumberOfEvents()
-{
-/// Get the number of events in the currently selected file.
-/// -1 is returned on error.
-
-	if (fRunloader == NULL)
-	{
-		AliError("File not set.");
-		return -1;
-	}
-	return fRunloader->GetNumberOfEvents();
-}
-
 
 Int_t AliMUONDataInterface::NumberOfParticles()
 {
-/// Get the number of particles in the current event.
-/// -1 is returned on error.
+/// \deprecated Method is going to be removed
 
-	if (fRunloader == NULL)
-	{
-		AliError("File not set.");
-		return -1;
-	}
-	if ( ! FetchTreeK() ) return -1;
-	return (Int_t) fRunloader->TreeK()->GetEntriesFast();
+  AliFatal("Deprecated");
+  return 0;
 }
 
 
-TParticle* AliMUONDataInterface::Particle(Int_t particle)
+TParticle* AliMUONDataInterface::Particle(Int_t )
 {
-/// Fetch the specified particle from the current event.
-/// NULL is returned on error.
+/// \deprecated Method is going to be removed
 
-	if (fRunloader == NULL)
-	{
-		AliError("File not set.");
-		return NULL;
-	}
-	if (fEventnumber < 0)
-	{
-		AliError("Event not chosen.");
-		return NULL;
-	}
-	if ( ! FetchTreeK() ) return NULL;
-	TTree* treeK = fRunloader->TreeK();
-	TParticle* p = NULL;
-	treeK->GetBranch("Particles")->SetAddress(&p);
-	treeK->GetEvent(particle);
-	return p;
+  AliFatal("Deprecated");
+  return 0;
 }
 
 
 Int_t AliMUONDataInterface::NumberOfTracks()
 {
-/// Get the number of tracks in the current event.
-/// -1 is returned on error.
+/// \deprecated Method is going to be removed
 
-	if (fRunloader == NULL)
-	{
-		AliError("File not set.");
-		return -1;
-	}
-	if (fEventnumber < 0)
-	{
-		AliError( "Event not chosen.");
-		return -1;
-	}
-	if ( ! FetchTreeH() ) return -1;
-	return fSimData.GetNtracks();
+  AliFatal("Deprecated");
+  return 0;
 }
 
 
-Int_t AliMUONDataInterface::NumberOfHits(Int_t track)
+Int_t AliMUONDataInterface::NumberOfHits(Int_t )
 {
-/// Get the number of hits for the given track in the current event.
-/// -1 is returned on error.
+/// \deprecated Method is going to be removed
 
-	if (fRunloader == NULL)
-	{
-		AliError("File not set.");
-		return -1;
-	}
-	if (fEventnumber < 0)
-	{
-		AliError("Event not chosen.");
-		return -1;
-	}
-	if ( ! FetchTreeH() ) return -1;
-	if (fTrack < 0 || fTrack != track)
-	{
-		fSimData.ResetHits();
-		fSimData.GetTrack(track);
-		fTrack = track;
-	}
-	return fSimData.Hits()->GetEntriesFast();
+  AliFatal("Deprecated");
+  return 0;
 }
 
 
-AliMUONHit* AliMUONDataInterface::Hit(Int_t track, Int_t hit)
+AliMUONHit* 
+AliMUONDataInterface::Hit(Int_t , Int_t )
 {
-/// Fetch the specified hit from the current event.
-/// NULL is returned on error.
+/// \deprecated Method is going to be removed
 
-	if (fRunloader == NULL)
-	{
-		AliError("File not set.");
-		return NULL;
-	}
-	if (fEventnumber < 0)
-	{
-		AliError("Event not chosen.");
-		return NULL;
-	}
-	if ( ! FetchTreeH() ) return NULL;
-	if (fTrack < 0 || fTrack != track)
-	{
-		fSimData.ResetHits();
-		fSimData.GetTrack(track);
-		fTrack = track;
-	}
-	return static_cast<AliMUONHit*>( fSimData.Hits()->At(hit) );
+  AliFatal("Deprecated");
+  return 0;
 }
 
 
-Int_t AliMUONDataInterface::NumberOfSDigits(Int_t chamber, Int_t cathode)
+Int_t AliMUONDataInterface::NumberOfSDigits(Int_t , Int_t )
 {
-/// Get the number of s-digits on the chamber, cathode in the current event.
-/// -1 is returned on error.
+/// \deprecated Method is going to be removed
 
-	assert( 0 <= chamber && chamber <= 13 );
-	assert( 0 <= cathode && cathode <= 1 );
-	
-	if (fRunloader == NULL)
-	{
-		AliError("File not set.");
-		return -1;
-	}
-	if (fEventnumber < 0)
-	{
-		AliError("Event not chosen.");
-		return -1;
-	}
-
-	if ( ! FetchTreeS() ) return -1;
-	if ( fSCathode != cathode )
-	{
-		fSimData.ResetSDigits();
-		fSimData.GetSDigits();
-		fSCathode = cathode;
-	}
-	return fSimData.SDigits(chamber)->GetEntriesFast();
+  AliFatal("Deprecated");
+  return 0;
 }
 
 
-AliMUONDigit* AliMUONDataInterface::SDigit(Int_t chamber, Int_t cathode, Int_t sdigit)
+AliMUONDigit* AliMUONDataInterface::SDigit(Int_t , Int_t , Int_t )
 {
-/// Fetch the specified s-digits on the chamber, cathode from the current event.
-/// NULL is returned on error.
+/// \deprecated Method is going to be removed
 
-	assert( 0 <= chamber && chamber <= 13 );
-	assert( 0 <= cathode && cathode <= 1 );
-	
-	if (fRunloader == NULL)
-	{
-		AliError("File not set.");
-		return NULL;
-	}
-	if (fEventnumber < 0)
-	{
-		AliError("Event not chosen.");
-		return NULL;
-	}
+  AliFatal("Deprecated");
+  return 0;
 
-	if ( ! FetchTreeS() ) return NULL;
-	if ( fSCathode != cathode )
-	{
-		fSimData.ResetSDigits();
-		fSimData.GetSDigits();
-		fSCathode = cathode;
-	}
-	return static_cast<AliMUONDigit*>( fSimData.SDigits(chamber)->At(sdigit) );
 }
 
 
-Int_t AliMUONDataInterface::NumberOfDigits(Int_t chamber, Int_t cathode)
+Int_t AliMUONDataInterface::NumberOfDigits(Int_t , Int_t )
 {
-/// Get the number of digits on the chamber, cathode in the current event.
-/// -1 is returned on error.
+/// \deprecated Method is going to be removed
 
-	assert( 0 <= chamber && chamber <= 13 );
-	assert( 0 <= cathode && cathode <= 1 );
-	
-	if (fRunloader == NULL)
-	{
-		AliError("File not set.");
-		return -1;
-	}
-	if (fEventnumber < 0)
-	{
-		AliError("Event not chosen.");
-		return -1;
-	}
-	
-	if ( ! FetchTreeD() ) return -1;
-	if ( fCathode != cathode )
-	{
-		fSimData.ResetDigits();
-		fSimData.GetDigits();
-		fCathode = cathode;
-	}
-	return fSimData.Digits(chamber)->GetEntriesFast();
+  AliFatal("Deprecated");
+  return 0;
+
 }
 
 
-AliMUONDigit* AliMUONDataInterface::Digit(Int_t chamber, Int_t cathode, Int_t digit)
+AliMUONDigit* AliMUONDataInterface::Digit(Int_t , Int_t , Int_t )
 {
-/// Fetch the specified digits on the chamber, cathode from the current event.
-/// NULL is returned on error.
+/// \deprecated Method is going to be removed
 
-	assert( 0 <= chamber && chamber <= 13 );
-	assert( 0 <= cathode && cathode <= 1 );
-	
-	if (fRunloader == NULL)
-	{
-		AliError("File not set.");
-		return NULL;
-	}
-	if (fEventnumber < 0)
-	{
-		AliError("Event not chosen.");
-		return NULL;
-	}
-
-	if ( ! FetchTreeD() ) return NULL;
-	if ( fCathode != cathode )
-	{
-		fSimData.ResetDigits();
-		fSimData.GetDigits();
-		fCathode = cathode;
-	}
-	return static_cast<AliMUONDigit*>( fSimData.Digits(chamber)->At(digit) );
+  AliFatal("Deprecated");
+  return 0;
 }
 
 
-Int_t AliMUONDataInterface::NumberOfRawClusters(Int_t chamber)
+Int_t AliMUONDataInterface::NumberOfRawClusters(Int_t )
 {
-/// Get the number of raw clusters on the given chamber in the current event.
-/// -1 is returned on error.
+/// \deprecated Method is going to be removed
 
-	assert( 0 <= chamber && chamber <= 13 );
-
-	if (fRunloader == NULL)
-	{
-		AliError("File not set.");
-		return -1;
-	}
-	if (fEventnumber < 0)
-	{
-		AliError("Event not chosen.");
-		return -1;
-	}
-
-	if ( ! FetchTreeR() ) return -1;
-	if ( ! fClusterAddressSet )
-	{
-		fRecData.SetTreeAddress("RC");
-		fRecData.ResetRawClusters();
-		fRecData.GetRawClusters();
-		fClusterAddressSet = kTRUE;
-	}
-	return fRecData.RawClusters(chamber)->GetEntriesFast();
+  AliFatal("Deprecated");
+  return 0;
 }
 
 
-AliMUONRawCluster* AliMUONDataInterface::RawCluster(Int_t chamber, Int_t cluster)
+AliMUONRawCluster* AliMUONDataInterface::RawCluster(Int_t , Int_t )
 {
-/// Fetch the specified raw cluster on the given chamber from the current event.
-/// NULL is returned on error.
+/// \deprecated Method is going to be removed
 
-	assert( 0 <= chamber && chamber <= 13 );
-
-	if (fRunloader == NULL)
-	{
-		AliError("File not set.");
-		return NULL;
-	}
-	if (fEventnumber < 0)
-	{
-		AliError("Event not chosen.");
-		return NULL;
-	}
-
-	if ( ! FetchTreeR() ) return NULL;
-	if ( ! fClusterAddressSet )
-	{
-		fRecData.SetTreeAddress("RC");
-		fRecData.ResetRawClusters();
-		fRecData.GetRawClusters();
-		fClusterAddressSet = kTRUE;
-	}
-	return static_cast<AliMUONRawCluster*>( fRecData.RawClusters(chamber)->At(cluster) );
+  AliFatal("Deprecated");
+  return 0;
 }
 
 
 Int_t AliMUONDataInterface::NumberOfLocalTriggers()
 {
-/// Get the number of local trigger objects in the current event.
-/// -1 is returned on error.
+/// \deprecated Method is going to be removed
 
-	if (fRunloader == NULL)
-	{
-		AliError("File not set.");
-		return -1;
-	}
-	if (fEventnumber < 0)
-	{
-		AliError("Event not chosen.");
-		return -1;
-	}
-
-	if ( ! FetchTreeD() ) return -1;
-	if ( ! fTriggerAddressSet )
-	{
-		fRecData.SetTreeAddress("GLT");
-		fRecData.ResetTrigger();
-		fRecData.GetTriggerD();
-		fTriggerAddressSet = kTRUE;
-	}
-	return fRecData.LocalTrigger()->GetEntriesFast();
+  AliFatal("Deprecated");
+  return 0;
 }
 
 
-AliMUONLocalTrigger* AliMUONDataInterface::LocalTrigger(Int_t trigger)
+AliMUONLocalTrigger* AliMUONDataInterface::LocalTrigger(Int_t )
 {
-/// Fetch the specified local trigger object from the current event.
-/// NULL is returned on error.
+/// \deprecated Method is going to be removed
 
-	if (fRunloader == NULL)
-	{
-		AliError("File not set.");
-		return NULL;
-	}
-	if (fEventnumber < 0)
-	{
-		AliError( "Event not chosen.");
-		return NULL;
-	}
-
-	if ( ! FetchTreeD() ) return NULL;
-	if ( ! fTriggerAddressSet )
-	{
-		fRecData.SetTreeAddress("GLT");
-		fRecData.ResetTrigger();
-		fRecData.GetTriggerD();
-		fTriggerAddressSet = kTRUE;
-	}
-	return static_cast<AliMUONLocalTrigger*>( fRecData.LocalTrigger()->At(trigger) );
+  AliFatal("Deprecated");
+  return 0;
 }
 
 Int_t AliMUONDataInterface::NumberOfGlobalTriggers()
 {
-/// Get the number of local trigger objects in the current event.
-/// -1 is returned on error.
-  
-  if (fRunloader == NULL)
-    {
-      AliError("File not set.");
-      return -1;
-    }
-  if (fEventnumber < 0)
-    {
-      AliError("Event not chosen.");
-      return -1;
-    }
-  
-  if ( ! FetchTreeD() ) return -1;
-  if ( ! fTriggerAddressSet )
-    {
-      fRecData.SetTreeAddress("GLT");
-      fRecData.ResetTrigger();
-      fRecData.GetTriggerD();
-      fTriggerAddressSet = kTRUE;
-    }
-  return fRecData.GlobalTrigger()->GetEntriesFast();
+/// \deprecated Method is going to be removed
+
+  AliFatal("Deprecated");
+  return 0;
 }
 
-AliMUONGlobalTrigger* AliMUONDataInterface::GlobalTrigger(Int_t trigger)
+AliMUONGlobalTrigger* AliMUONDataInterface::GlobalTrigger(Int_t )
 {
-/// Fetch the specified local trigger object from the current event.
-/// NULL is returned on error.
-  
-  if (fRunloader == NULL)
-    {
-      AliError("File not set.");
-      return NULL;
-    }
-  if (fEventnumber < 0)
-    {
-      AliError( "Event not chosen.");
-      return NULL;
-    }
-  
-  if ( ! FetchTreeD() ) return NULL;
-  if ( ! fTriggerAddressSet )
-    {
-      fRecData.SetTreeAddress("GLT");
-      fRecData.ResetTrigger();
-      fRecData.GetTriggerD();
-      fTriggerAddressSet = kTRUE;
-    }
-  return static_cast<AliMUONGlobalTrigger*>( fRecData.GlobalTrigger()->At(trigger) );
+/// \deprecated Method is going to be removed
+
+  AliFatal("Deprecated");
+  return 0;
 }
 
 Int_t AliMUONDataInterface::NumberOfRecTracks()
 {
-/// Fetch the number of reconstructed tracks from the current event.
-/// NULL is returned on error.
-  
-  if (fRunloader == NULL)
-    {
-      AliError("File not set.");
-      return -1;
-    }
-  if (fEventnumber < 0)
-    {
-      AliError( "Event not chosen.");
-      return -1;
-    }
-  
-  if ( ! FetchTreeT() ) return -1;
-  if ( ! fRecTracksAddressSet )
-    {
-      fRecData.SetTreeAddress("RT");
-      fRecData.ResetRecTracks();
-      fRecData.GetRecTracks();
-      fRecTracksAddressSet = kTRUE;
-    }
-  return fRecData.RecTracks()->GetEntriesFast();
+/// \deprecated Method is going to be removed
+
+  AliFatal("Deprecated");
+  return 0;
 }
 
-AliMUONTrack* AliMUONDataInterface::RecTrack(Int_t rectrack)
+AliMUONTrack* AliMUONDataInterface::RecTrack(Int_t )
 {
-/// Fetch the specified reconstructed track object from the current event.
-/// NULL is returned on error.
-  
-  if (fRunloader == NULL)
-    {
-      AliError("File not set.");
-      return NULL;
-    }
-  if (fEventnumber < 0)
-    {
-      AliError( "Event not chosen.");
-      return NULL;
-    }
-  
-  if ( ! FetchTreeT() ) return NULL;
-  if ( ! fRecTracksAddressSet )
-    {
-      fRecData.SetTreeAddress("RT");
-      fRecData.ResetRecTracks();
-      fRecData.GetRecTracks();
-      fRecTracksAddressSet = kTRUE;
-    }
-  return static_cast<AliMUONTrack*>( fRecData.RecTracks()->At(rectrack) );
-  // return (AliMUONTrack*)(fRecData.RecTracks()->At(rectrack));
+/// \deprecated Method is going to be removed
+
+  AliFatal("Deprecated");
+  return 0;
 }
