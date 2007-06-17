@@ -15,22 +15,18 @@
 
 #include "AliMUONVTrackReconstructor.h"
 
-class AliMUONTrackReconstructorK : public AliMUONVTrackReconstructor {
+class AliMUONTrackReconstructorK : public AliMUONVTrackReconstructor 
+{
 
  public:
-  AliMUONTrackReconstructorK(AliMUONRecData* data, const Option_t* TrackMethod); // default Constructor
+  AliMUONTrackReconstructorK(const Option_t* TrackMethod); // default Constructor
   virtual ~AliMUONTrackReconstructorK(); // Destructor
 
           /// Return track method
   Int_t GetTrackMethod(void) const {return fTrackMethod;} 
   
-  virtual void EventDump(void);  // dump reconstructed event
-
-
  protected:
   
-  // Functions
-  virtual void AddHitsForRecFromRawClusters();
   virtual void MakeTracks(void);
   virtual void MakeTrackCandidates(void);
   virtual void FollowTracks(void);

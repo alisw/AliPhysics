@@ -14,14 +14,19 @@
 #include <TObject.h>
 
 class TClonesArray;
-class AliMUONRecData;
 class AliMUONTriggerTrack;
 class AliMUONTrackHitPattern;
+class AliMUONVClusterStore;
+class AliMUONVTrackStore;
+class AliMUONVTriggerTrackStore;
+class AliMUONVTriggerStore;
+class AliMUONGeometryTransformer;
+class AliMUONDigitMaker;
 
 class AliMUONVTrackReconstructor : public TObject {
 
  public:
-  AliMUONVTrackReconstructor(AliMUONRecData* data); // default Constructor
+  AliMUONVTrackReconstructor(); // default Constructor
   virtual ~AliMUONVTrackReconstructor(); // Destructor
 
   // Parameters for track reconstruction: public methods
@@ -42,20 +47,18 @@ class AliMUONVTrackReconstructor : public TObject {
   TClonesArray* GetRecTracksPtr(void) const {return fRecTracksPtr;} // Array
  
   // Functions
-  void EventReconstruct(void);
-  void EventReconstructTrigger(void);
-  virtual void EventDump(void) = 0;  ///< dump reconstructed event
-  void EventDumpTrigger(void);  // dump reconstructed trigger event
+  void EventReconstruct(const AliMUONVClusterStore& clusterStore,
+                        AliMUONVTrackStore& trackStore);
   
-          /// Return MUON data
-  AliMUONRecData*  GetMUONData() {return fMUONData;}
-          /// Set MUON data
-  void SetMUONData(AliMUONRecData* data) {fMUONData = data;}
-
-          /// Set trigger circuit
-  void SetTriggerCircuit(TClonesArray* circuit) {fTriggerCircuit = circuit;}
-
-
+  void EventReconstructTrigger(const TClonesArray& triggerCircuitArray,
+                               const AliMUONVTriggerStore& triggerStore,
+                               AliMUONVTriggerTrackStore& triggerTrackStore);
+  
+  void ValidateTracksWithTrigger(AliMUONVTrackStore& trackStore,
+                                 const AliMUONVTriggerTrackStore& triggerTrackStore,
+                                 const AliMUONVTriggerStore& triggerStore,
+                                 const AliMUONTrackHitPattern& trackHitPattern);
+    
  protected:
 
   // Defaults parameters for reconstruction
@@ -85,9 +88,6 @@ class AliMUONVTrackReconstructor : public TObject {
   TClonesArray *fRecTracksPtr; ///< pointer to array of reconstructed tracks
   Int_t fNRecTracks; ///< number of reconstructed tracks
 
-  // data container
-  AliMUONRecData* fMUONData; ///< Data container for MUON subsystem 
-
   // Functions
   AliMUONVTrackReconstructor (const AliMUONVTrackReconstructor& rhs); ///< copy constructor
   AliMUONVTrackReconstructor& operator=(const AliMUONVTrackReconstructor& rhs); ///< assignment operator
@@ -96,7 +96,7 @@ class AliMUONVTrackReconstructor : public TObject {
   TClonesArray *MakeSegmentsInStation(Int_t station);
 
                /// \todo add comment
-  virtual void AddHitsForRecFromRawClusters() = 0;
+  virtual void AddHitsForRecFromRawClusters(const AliMUONVClusterStore& clusterStore);
                /// \todo add comment
   virtual void MakeTracks(void) = 0;
                /// \todo add comment
@@ -108,23 +108,12 @@ class AliMUONVTrackReconstructor : public TObject {
                /// \todo add comment
   virtual void FillMUONTrack(void) = 0;
 
-  AliMUONTrackHitPattern *fTrackHitPattern; ///< Pointer to class for hit pattern recognition
-
  private:
-  
-  AliMUONTriggerTrack* fTriggerTrack; ///< Trigger track structure
-
-  TClonesArray* fTriggerCircuit;      //!< trigger circuit array
   
   // Functions
   void ResetTracks(void);
   void ResetHitsForRec(void);
   
-  void ValidateTracksWithTrigger(void);
-  
-  Bool_t MakeTriggerTracks(void);
-
-
   ClassDef(AliMUONVTrackReconstructor, 0) // MUON track reconstructor in ALICE
 };
 	

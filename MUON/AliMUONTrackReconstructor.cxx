@@ -26,7 +26,7 @@
 ///
 
 #include "AliMUONTrackReconstructor.h"
-#include "AliMUONRecData.h"
+
 #include "AliMUONConstants.h"
 #include "AliMUONRawCluster.h"
 #include "AliMUONHitForRec.h"
@@ -34,7 +34,6 @@
 #include "AliMUONTrack.h"
 #include "AliMUONTrackParam.h"
 #include "AliMUONTrackExtrap.h"
-
 #include "AliLog.h"
 
 #include <TMinuit.h>
@@ -56,8 +55,8 @@ const Double_t AliMUONTrackReconstructor::fgkMaxNormChi2 = 100.0;
 const Bool_t AliMUONTrackReconstructor::fgkTrackAllTracks = kFALSE;
 
 //__________________________________________________________________________
-AliMUONTrackReconstructor::AliMUONTrackReconstructor(AliMUONRecData* data)
-  : AliMUONVTrackReconstructor(data)
+AliMUONTrackReconstructor::AliMUONTrackReconstructor()
+  : AliMUONVTrackReconstructor()
 {
   /// Constructor for class AliMUONTrackReconstructor
   
@@ -65,82 +64,14 @@ AliMUONTrackReconstructor::AliMUONTrackReconstructor(AliMUONRecData* data)
   fRecTracksPtr = new TClonesArray("AliMUONTrack", 10);
 }
 
-  //__________________________________________________________________________
+//__________________________________________________________________________
 AliMUONTrackReconstructor::~AliMUONTrackReconstructor(void)
 {
   /// Destructor for class AliMUONTrackReconstructor
   delete fRecTracksPtr;
 }
 
-  //__________________________________________________________________________
-void AliMUONTrackReconstructor::AddHitsForRecFromRawClusters()
-{
-  /// To add to the list of hits for reconstruction all the raw clusters
-  TTree *treeR;
-  AliMUONHitForRec *hitForRec;
-  AliMUONRawCluster *clus;
-  Int_t iclus, nclus;
-  TClonesArray *rawclusters;
-  AliDebug(1,"Enter AddHitsForRecFromRawClusters");
-  
-  treeR = fMUONData->TreeR();
-  if (!treeR) {
-    AliError("TreeR must be loaded");
-    exit(0);
-  }
-  
-  fMUONData->SetTreeAddress("RC");
-  fMUONData->GetRawClusters(); // only one entry  
-  
-  // Loop over tracking chambers
-  for (Int_t ch = 0; ch < AliMUONConstants::NTrackingCh(); ch++) {
-    rawclusters =fMUONData->RawClusters(ch);
-    nclus = (Int_t) (rawclusters->GetEntries());
-    // Loop over (cathode correlated) raw clusters
-    for (iclus = 0; iclus < nclus; iclus++) {
-      clus = (AliMUONRawCluster*) rawclusters->UncheckedAt(iclus);
-      // new AliMUONHitForRec from raw cluster
-      // and increment number of AliMUONHitForRec's (total and in chamber)
-      hitForRec = new ((*fHitsForRecPtr)[fNHitsForRec]) AliMUONHitForRec(clus);
-      fNHitsForRec++;
-      // more information into HitForRec
-      hitForRec->SetBendingReso2(clus->GetErrY() * clus->GetErrY());
-      hitForRec->SetNonBendingReso2(clus->GetErrX() * clus->GetErrX());
-      //  original raw cluster
-      hitForRec->SetChamberNumber(ch);
-      hitForRec->SetHitNumber(iclus);
-      // Z coordinate of the raw cluster (cm)
-      hitForRec->SetZ(clus->GetZ(0));
-      if (AliLog::GetDebugLevel("MUON","AliMUONTrackReconstructor") >= 3) {
-        cout << "Chamber " << ch <<" raw cluster  " << iclus << " : " << endl;
-        clus->Print("full");
-        cout << "AliMUONHitForRec number (1...): " << fNHitsForRec << endl;
-        hitForRec->Print("full");
-      }
-    } // end of cluster loop
-  } // end of chamber loop
-  SortHitsForRecWithIncreasingChamber(); 
-  
-  AliDebug(1,"End of AddHitsForRecFromRawClusters");
-    if (AliLog::GetGlobalDebugLevel() > 0) {
-      AliDebug(1, Form("NHitsForRec: %d",fNHitsForRec));
-      for (Int_t ch = 0; ch < AliMUONConstants::NTrackingCh(); ch++) {
-	AliDebug(1, Form("Chamber(0...): %d",ch));
-	AliDebug(1, Form("NHitsForRec: %d", fNHitsForRecPerChamber[ch]));
-	AliDebug(1, Form("Index(first HitForRec): %d", fIndexOfFirstHitForRecPerChamber[ch]));
-	for (Int_t hit = fIndexOfFirstHitForRecPerChamber[ch];
-	     hit < fIndexOfFirstHitForRecPerChamber[ch] + fNHitsForRecPerChamber[ch];
-	     hit++) {
-	  AliDebug(1, Form("HitForRec index(0...): %d",hit));
-	  ((*fHitsForRecPtr)[hit])->Dump();
-      }
-    }
-  }
-  
-  return;
-}
-
-  //__________________________________________________________________________
+//__________________________________________________________________________
 void AliMUONTrackReconstructor::MakeTracks(void)
 {
   /// To make the tracks from the list of segments and points in all stations
@@ -172,11 +103,13 @@ void AliMUONTrackReconstructor::MakeTrackCandidates(void)
   AliDebug(1,"Enter MakeTrackCandidates");
 
   // Loop over stations(1..) 5 and 4 and make track candidates
-  for (Int_t istat=4; istat>=3; istat--) {
+  for (Int_t istat=4; istat>=3; istat--) 
+  {
     // Make segments in the station
     segments = MakeSegmentsInStation(istat);
     // Loop over segments
-    for (Int_t iseg=0; iseg<segments->GetEntriesFast(); iseg++) {
+    for (Int_t iseg=0; iseg<segments->GetEntriesFast(); iseg++) 
+    {
       AliDebug(1,Form("Making primary candidate(1..) %d",++iCandidate));
       // Transform segments to tracks and put them at the end of fRecTracksPtr
       segment = (AliMUONObjectPair*) ((*segments)[iseg]);
@@ -188,7 +121,8 @@ void AliMUONTrackReconstructor::MakeTrackCandidates(void)
       trackParamAtFirstHit = (AliMUONTrackParam*) (track->GetTrackParamAtHit()->First());
       AliMUONTrackExtrap::AddMCSEffect(trackParamAtFirstHit,AliMUONConstants::ChamberThicknessInX0(),1.);
       // Printout for debuging
-      if ((AliLog::GetDebugLevel("MUON","AliMUONTrackReconstructor") >= 2) || (AliLog::GetGlobalDebugLevel() >= 2)) {
+      if ((AliLog::GetDebugLevel("MUON","AliMUONTrackReconstructor") >= 2) || (AliLog::GetGlobalDebugLevel() >= 2))
+      {
         cout<<endl<<"Track parameter covariances at first hit with multiple Coulomb scattering effects:"<<endl;
         trackParamAtFirstHit->GetCovariances()->Print();
       }

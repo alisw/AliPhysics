@@ -13,10 +13,10 @@
 
 class AliMUONTrack;
 
-class AliMUONTrackReconstructor : public AliMUONVTrackReconstructor {
-
+class AliMUONTrackReconstructor : public AliMUONVTrackReconstructor 
+{
  public:
-  AliMUONTrackReconstructor(AliMUONRecData* data); // default Constructor
+  AliMUONTrackReconstructor(); // default Constructor
   virtual ~AliMUONTrackReconstructor(); // Destructor
 
   virtual void EventDump(void);  // dump reconstructed event
@@ -24,8 +24,6 @@ class AliMUONTrackReconstructor : public AliMUONVTrackReconstructor {
 
  protected:
 
-  // Functions
-  virtual void AddHitsForRecFromRawClusters();
   virtual void MakeTracks(void);
   virtual void MakeTrackCandidates(void);
   virtual void FollowTracks(void);
@@ -52,6 +50,6 @@ class AliMUONTrackReconstructor : public AliMUONVTrackReconstructor {
 
 
   ClassDef(AliMUONTrackReconstructor, 0) // MUON track reconstructor in ALICE
-    };
+};
 	
 #endif

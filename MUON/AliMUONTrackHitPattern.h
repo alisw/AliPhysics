@@ -10,33 +10,38 @@
 //  Author: Diego Stocco
 
 #include <TObject.h>
-#include <TList.h>
 
-class AliMUONRecData;
-class AliMUONLocalStruct;
-class AliMUONLocalTriggerBoard;
+class AliMUONVTrackStore;
+class AliMUONVTriggerStore;
 class AliMUONTrackParam;
-class AliMUONTriggerCrateStore;
 class AliMUONDigitMaker;
-
 class AliMUONGeometryTransformer;
+class AliMUONVDigitStore;
 
-class TClonesArray;
-
-class AliMUONTrackHitPattern : public TObject {
+class AliMUONTrackHitPattern : public TObject 
+{
 public:
-    AliMUONTrackHitPattern(AliMUONRecData *MUONData); // Default Constructor
-    virtual ~AliMUONTrackHitPattern(); // Destructor
-    
-    void GetHitPattern(TClonesArray *recTracksArray);
-    
-    void FindPadMatchingTrack(AliMUONTrackParam *trackParam, Bool_t isMatch[2], Int_t iChamber);
-    Float_t MinDistanceFromPad(Float_t xPad, Float_t yPad, Float_t zPad,
-			       Float_t dpx, Float_t dpy, AliMUONTrackParam *trackParam);
-    void GetPosUncertainty(AliMUONTrackParam *trackParm, Float_t zChamber,
-			   Float_t &sigmaX, Float_t &sigmaY, Float_t &sigmaMS);
 
-    Bool_t TriggerDigits();
+  AliMUONTrackHitPattern(const AliMUONGeometryTransformer& transformer,
+                         const AliMUONDigitMaker& digitMaker);
+  virtual ~AliMUONTrackHitPattern(); // Destructor
+    
+    void GetHitPattern(AliMUONVTrackStore& trackStore,
+                       const AliMUONVTriggerStore& triggerStore) const;
+    
+    void FindPadMatchingTrack(AliMUONVDigitStore& digitStore,
+                              const AliMUONTrackParam& trackParam,
+                              Bool_t isMatch[2], Int_t iChamber) const;
+
+    Float_t MinDistanceFromPad(Float_t xPad, Float_t yPad, Float_t zPad,
+                               Float_t dpx, Float_t dpy, 
+                               const AliMUONTrackParam& trackParam) const;
+    
+    void GetPosUncertainty(const AliMUONTrackParam& trackParm, Float_t zChamber,
+                           Float_t &sigmaX, Float_t &sigmaY, Float_t &sigmaMS) const;
+
+    Bool_t TriggerDigits(const AliMUONVTriggerStore& triggerStore, 
+                         AliMUONVDigitStore& digitStore) const;
 
 private:
     /// Not implemented
@@ -44,11 +49,8 @@ private:
     /// Not implemented
     AliMUONTrackHitPattern& operator = (const AliMUONTrackHitPattern& rhs);
 
-    AliMUONRecData *fMUONData; ///< Data container for MUON subsystem
-    TList fTriggerDigitsList[4]; ///< List of trigger digits, one per chamber
-    AliMUONGeometryTransformer *fTransformer; //!< pointer to transformation
-    AliMUONTriggerCrateStore *fCrateManager; ///< pointer to crate manager
-    AliMUONDigitMaker *fDigitMaker; ///< pointer to digit maker
+    const AliMUONGeometryTransformer& fTransformer; //!< geometry transformer
+    const AliMUONDigitMaker& fDigitMaker; ///< pointer to digit maker
 
     ClassDef(AliMUONTrackHitPattern, 0) // MUON track hit pattern
 };
