@@ -32,7 +32,6 @@
 class AliMpSlatMotifMap;
 class AliMpSlat;
 class AliMpPCB;
-class TObjString;
 
 class AliMpSt345Reader : public TObject
 {
