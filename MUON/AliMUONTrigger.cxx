@@ -15,19 +15,14 @@
 
 /* $Id$ */
 
-#include <TClonesArray.h>
+#include "AliMUONTrigger.h"
 
 #include "AliLog.h"
+#include "AliMUONGlobalTrigger.h"
+#include "AliMUONVTriggerStore.h"
 #include "AliRun.h"
 #include "AliRunLoader.h"
 #include "AliTriggerInput.h"
-
-#include "AliMUON.h"
-#include "AliMUONSimLoader.h"
-#include "AliMUONData.h"
-#include "AliMUONDigit.h"
-#include "AliMUONGlobalTrigger.h"
-#include "AliMUONTrigger.h"
 
 ///
 /// \class AliMUONTrigger
@@ -45,7 +40,7 @@ ClassImp(AliMUONTrigger)
 
 //----------------------------------------------------------------------
 AliMUONTrigger::AliMUONTrigger()
-  : AliTriggerDetector() 
+  : AliTriggerDetector(), fTriggerStore(0x0)
 {
 /// Default constructor
 
@@ -56,7 +51,8 @@ AliMUONTrigger::AliMUONTrigger()
 //----------------------------------------------------------------------
 AliMUONTrigger::~AliMUONTrigger()
 {
-/// Destructor
+  /// Destructor
+  delete fTriggerStore;
 }
 
 //----------------------------------------------------------------------
@@ -82,42 +78,56 @@ void AliMUONTrigger::Trigger()
 {
   /// sets the trigger inputs
 
-  AliMUONGlobalTrigger* globalTrigger;
-  TClonesArray* globalTriggerArray;
-
    AliRunLoader* runLoader = gAlice->GetRunLoader();
-
-   AliLoader * muonLoader = runLoader->GetLoader("MUONLoader");
+  
+   AliLoader * muonLoader = runLoader->GetDetectorLoader("MUON");
    muonLoader->LoadDigits("READ");
 
-   // Creating MUON data container
-   AliMUONData* muonData = new AliMUONData(muonLoader,"MUON","MUON");
-
-   // get global info
-   muonData->SetTreeAddress("GLT");
-   muonData->GetTriggerD();
-   globalTriggerArray = muonData->GlobalTrigger(); 
-   if (globalTriggerArray == 0x0) { 
-     AliWarning("No Global Trigger Array available");
+   TTree* treeD = muonLoader->TreeD();
+   
+   if (!treeD)
+   {
+     AliError("No TreeD available. Cannot make trigger");
      return;
    }
-   globalTrigger = (AliMUONGlobalTrigger*)globalTriggerArray->UncheckedAt(0);
+   
+   if (!fTriggerStore) 
+   {  
+     fTriggerStore = AliMUONVTriggerStore::Create(*treeD);
+     if (!fTriggerStore)
+     {
+       AliError("Could not create triggerStore from treeD");
+       return;
+     }     
+   }
 
-   if (globalTrigger == 0x0) { 
+   Bool_t ok = fTriggerStore->Connect(*treeD,kTRUE);
+
+   if (!ok)
+   {
+     AliError("Could not read trigger from TreeD !");
+     return;
+   }
+   
+   treeD->GetEvent(0);
+   
+   AliMUONGlobalTrigger* globalTrigger = fTriggerStore->Global();
+   if (globalTrigger == 0x0) 
+   { 
      AliWarning("No Global Trigger available");
-     return;
    }
-   // set CTP
-   if (globalTrigger->SingleLpt())      SetInput("MUON_Single_LPt_L0");
-   if (globalTrigger->SingleHpt())      SetInput("MUON_Single_HPt_L0");
-   
-   if (globalTrigger->PairUnlikeLpt())  SetInput("MUON_Unlike_LPt_L0");
-   if (globalTrigger->PairUnlikeHpt())  SetInput("MUON_Unlike_HPt_L0");
-   
-   if (globalTrigger->PairLikeLpt())    SetInput("MUON_Like_LPt_L0");
-   if (globalTrigger->PairLikeHpt())    SetInput("MUON_Like_HPt_L0");
-
-   muonData->ResetTrigger();
+   else
+   {
+     // set CTP
+     if (globalTrigger->SingleLpt())      SetInput("MUON_Single_LPt_L0");
+     if (globalTrigger->SingleHpt())      SetInput("MUON_Single_HPt_L0");
+     
+     if (globalTrigger->PairUnlikeLpt())  SetInput("MUON_Unlike_LPt_L0");
+     if (globalTrigger->PairUnlikeHpt())  SetInput("MUON_Unlike_HPt_L0");
+     
+     if (globalTrigger->PairLikeLpt())    SetInput("MUON_Like_LPt_L0");
+     if (globalTrigger->PairLikeHpt())    SetInput("MUON_Like_HPt_L0");
+   }
    muonLoader->UnloadDigits();
-
+   fTriggerStore->Clear();
 }

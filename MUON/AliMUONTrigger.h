@@ -12,6 +12,8 @@
 
 #include "AliTriggerDetector.h"
 
+class AliMUONVTriggerStore;
+
 class AliMUONTrigger : public AliTriggerDetector
 {
  public:
@@ -20,6 +22,14 @@ class AliMUONTrigger : public AliTriggerDetector
    virtual void    CreateInputs();
    virtual void    Trigger();
 
+private:
+   /// Not implemented
+   AliMUONTrigger(const AliMUONTrigger&);
+   /// Not implemented
+   AliMUONTrigger& operator=(const AliMUONTrigger&);
+   
+   AliMUONVTriggerStore* fTriggerStore; //!< trigger store
+   
   ClassDef(AliMUONTrigger,1)  // MUON Trigger Detector class
 };
 #endif

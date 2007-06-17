@@ -22,15 +22,14 @@
 #include "AliLog.h"
 #include "AliMUON.h"
 #include "AliMUONChamber.h"
-#include "AliMUONSimData.h"
-#include "AliMUONDigit.h"
+#include "AliMUONVDigit.h"
+#include "AliMUONDigitStoreV1.h"
 #include "AliMUONHit.h"
 #include "AliMpDEManager.h"
 #include "AliLoader.h"
 #include "AliRun.h"
 #include "AliRunLoader.h"
-#include "TObjArray.h"
-
+#include "AliMUONVHitStore.h"
 
 ///
 /// The sdigitizer performs the transformation from hits (energy deposits by
@@ -83,15 +82,16 @@ AliMUONSDigitizerV2::Exec(Option_t*)
   AliDebug(1,"");
   
   AliRunLoader* runLoader = AliRunLoader::GetRunLoader();
-  AliLoader* fLoader = runLoader->GetLoader("MUONLoader");
+  AliLoader* loader = runLoader->GetDetectorLoader("MUON");
 
-  fLoader->LoadHits("READ");
+  loader->LoadHits("READ");
   
-  AliMUONSimData muonData(fLoader,"MUON","MUON");
-
   AliMUON* muon = static_cast<AliMUON*>(gAlice->GetModule("MUON"));
     
   Int_t nofEvents(runLoader->GetNumberOfEvents());
+  
+  AliMUONVDigitStore* sDigitStore = new AliMUONDigitStoreV1;
+  
   for ( Int_t iEvent = 0; iEvent < nofEvents; ++iEvent ) 
   {    
     // Loop over events.
@@ -100,33 +100,36 @@ AliMUONSDigitizerV2::Exec(Option_t*)
     
     AliDebug(1,Form("iEvent=%d",iEvent));
     runLoader->GetEvent(iEvent);
-    TTree* treeS = fLoader->TreeS();
-    AliDebug(1,Form("TreeS=%p",treeS));
+  
+    loader->MakeSDigitsContainer();
+
+    TTree* treeS = loader->TreeS();
+
     if ( !treeS )
     {
-      AliDebug(1,"MakeSDigitsContainer");
-      fLoader->MakeSDigitsContainer();
-      treeS = fLoader->TreeS();
+      AliFatal("");
     }
-    AliDebug(1,Form("TreeS=%p",treeS));
-    muonData.MakeBranch("S");
-    muonData.SetTreeAddress("S");
+
+    sDigitStore->Connect(*treeS);
     
-    muonData.SetTreeAddress("H");
-    TTree* treeH = fLoader->TreeH();
-    AliDebug(1,Form("TreeH=%p",treeH));
-             
+    TTree* treeH = loader->TreeH();
+
+    AliMUONVHitStore* hitStore = AliMUONVHitStore::Create(*treeH);
+    hitStore->Connect(*treeH);
+    
     Long64_t nofTracks = treeH->GetEntries();
+    
     for ( Long64_t iTrack = 0; iTrack < nofTracks; ++iTrack )
     {
       // Loop over the tracks of this event.
       treeH->GetEvent(iTrack);
-      TClonesArray* hits = muonData.Hits();
-      Int_t nofHits = hits->GetEntriesFast();
-      for ( Int_t ihit = 0; ihit < nofHits; ++ihit )
+
+      AliMUONHit* hit;
+      TIter next(hitStore->CreateIterator());
+      Int_t ihit(0);
+      
+      while ( ( hit = static_cast<AliMUONHit*>(next()) ) )       
       {
-        // Loop over the hits of this track.
-        AliMUONHit* hit = static_cast<AliMUONHit*>(hits->At(ihit)); 
         Int_t chamberId = hit->Chamber()-1;
         AliMUONChamber& chamber = muon->Chamber(chamberId);
         AliMUONResponse* response = chamber.ResponseModel();
@@ -136,35 +139,49 @@ AliMUONSDigitizerV2::Exec(Option_t*)
         response->DisIntegrate(*hit,digits);
         
         TIter next(&digits);
-        AliMUONDigit* d;
-        while ( ( d = (AliMUONDigit*)next() ) )
+        AliMUONVDigit* d;
+        while ( ( d = (AliMUONVDigit*)next() ) )
         {
           // Update some sdigit information that could not be known
           // by the DisIntegrate method
           d->SetHit(ihit);
-          d->AddTrack(iTrack,d->Signal());
+          d->AddTrack(iTrack,d->Charge());
           tdlist.Add(d);
         }
+        ++ihit;
       }
-      muonData.ResetHits();
+      hitStore->Clear();
     } // end of loop on tracks within an event
     
-    for ( Int_t i = 0; i <= tdlist.GetLast(); ++i )
+    TIter next(&tdlist);
+    AliMUONVDigit* d;
+    
+    while ( ( d = static_cast<AliMUONVDigit*>(next()) ) )
     {
-      AliMUONDigit* d = (AliMUONDigit*)tdlist[i];
-      StdoutToAliDebug(1,d->Print(););
-      if ( d->Signal() > 0 ) // that check would be better in the disintegrate
+      if ( d->Charge() > 0 ) // that check would be better in the disintegrate
         // method, but to compare with old sdigitizer, it has to be there.
       {
-        muonData.AddSDigit(AliMpDEManager::GetChamberId(d->DetElemId()),*d);
+        AliMUONVDigit* added = sDigitStore->Add(*d,AliMUONVDigitStore::kMerge);
+        if (!added)
+        {
+          AliError("Could not add digit to digitStore");
+        }
       }
     }
-    muonData.Fill("S");
-    fLoader->WriteSDigits("OVERWRITE");
+
+    treeS->Fill();
     
-    muonData.ResetSDigits();
-    fLoader->UnloadSDigits();
+    loader->WriteSDigits("OVERWRITE");
+    
+    sDigitStore->Clear();
+    
+    loader->UnloadSDigits();
+    
+    delete hitStore;
+    
   } // loop on events
   
-  fLoader->UnloadHits();  
+  loader->UnloadHits();  
+  
+  delete sDigitStore;
 }
