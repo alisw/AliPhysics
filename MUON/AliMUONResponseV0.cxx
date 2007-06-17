@@ -25,10 +25,8 @@
 #include "AliMUON.h"
 #include "AliMUONConstants.h"
 #include "AliMUONDigit.h"
-#include "AliMUONGeometrySegmentation.h"
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONHit.h"
-#include "AliMUONSegmentation.h"
 
 #include "AliMpArea.h"
 #include "AliMpDEManager.h"
@@ -67,12 +65,6 @@ void Global2Local(Int_t detElemId, Double_t xg, Double_t yg, Double_t zg,
   transformer->Global2Local(detElemId,xg,yg,zg,xl,yl,zl);
 }
 
-AliMUONSegmentation* Segmentation()
-{
-  static AliMUONSegmentation* segmentation = muon()->GetSegmentation();
-  return segmentation;
-}
-
 //__________________________________________________________________________
 AliMUONResponseV0::AliMUONResponseV0()
   : AliMUONResponse(),
@@ -92,12 +84,57 @@ AliMUONResponseV0::AliMUONResponseV0()
 }
 
 //__________________________________________________________________________
+AliMUONResponseV0::AliMUONResponseV0(const AliMUONResponseV0& other)
+: AliMUONResponse(),
+fChargeSlope(0.0),
+fChargeSpreadX(0.0),
+fChargeSpreadY(0.0),
+fSigmaIntegration(0.0),
+fMaxAdc(0),
+fSaturation(0),
+fZeroSuppression(0),
+fChargeCorrel(0.0),
+fMathieson(0),
+fChargeThreshold(1e-4)
+{
+  /// copy ctor
+  other.CopyTo(*this);
+}
+
+//__________________________________________________________________________
+AliMUONResponseV0& 
+AliMUONResponseV0::operator=(const AliMUONResponseV0& other)
+{
+  /// Assignment operator
+  other.CopyTo(*this);
+  return *this;
+}
+
+//__________________________________________________________________________
 AliMUONResponseV0::~AliMUONResponseV0()
 {
 /// Destructor
 
   AliDebug(1,"");
   delete fMathieson;
+}
+
+//______________________________________________________________________________
+void
+AliMUONResponseV0::CopyTo(AliMUONResponseV0& other) const
+{
+  /// Copy *this to other
+  other.fChargeSlope=fChargeSlope;
+  other.fChargeSpreadX=fChargeSpreadX;
+  other.fChargeSpreadY=fChargeSpreadY;
+  other.fSigmaIntegration=fSigmaIntegration;
+  other.fMaxAdc=fMaxAdc;
+  other.fSaturation=fSaturation;
+  other.fZeroSuppression=fZeroSuppression;
+  other.fChargeCorrel=fChargeCorrel;
+  delete other.fMathieson;
+  other.fMathieson = new AliMUONMathieson(*fMathieson);
+  other.fChargeThreshold=fChargeThreshold;
 }
 
 //______________________________________________________________________________
@@ -147,17 +184,6 @@ Float_t AliMUONResponseV0::IntPH(Float_t eloss) const
   }
   return charge;
 }
-
-  //-------------------------------------------
-Float_t AliMUONResponseV0::IntXY(Int_t idDE,
-				 AliMUONGeometrySegmentation* segmentation) 
-const
-{
- /// Calculate charge on current pad according to Mathieson distribution
-
-  return fMathieson->IntXY(idDE, segmentation);
-}
-
 
 //_____________________________________________________________________________
 Float_t
@@ -259,15 +285,10 @@ AliMUONResponseV0::DisIntegrate(const AliMUONHit& hit, TList& digits)
       {
         // If we're above threshold, then we create a digit,
         // and fill it with relevant information, including electronics.
-        AliMUONDigit* d = new AliMUONDigit;
-        d->SetDetElemId(detElemId);
-        d->SetPadX(pad.GetIndices().GetFirst());
-        d->SetPadY(pad.GetIndices().GetSecond());
-        d->SetSignal(icharge);
-        d->AddPhysicsSignal(d->Signal());
-        d->SetCathode(cath);
-        d->SetElectronics(pad.GetLocation().GetFirst(),
-                          pad.GetLocation().GetSecond());
+        AliMUONDigit* d = new AliMUONDigit(detElemId,pad.GetLocation().GetFirst(),
+                                           pad.GetLocation().GetSecond(),cath);
+        d->SetPadXY(pad.GetIndices().GetFirst(),pad.GetIndices().GetSecond());
+        d->SetCharge(icharge);
         digits.Add(d);   
       }       
       it->Next();

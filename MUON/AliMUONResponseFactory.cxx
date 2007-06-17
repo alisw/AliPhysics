@@ -66,6 +66,7 @@ AliMUONResponseFactory::~AliMUONResponseFactory()
 {
 /// Destructor
 	AliDebug(1,Form("dtor this=%p",this));
+  delete fResponse0;
 }
           
 //__________________________________________________________________________
@@ -93,20 +94,20 @@ void AliMUONResponseFactory::BuildStation1()
 
   // Response for 4 mm of gas (station 1)
   // automatic consistency with width of sensitive medium in CreateGeometry ????
-  AliMUONResponseV0* responseSt1 = new AliMUONResponseV0;
+  AliMUONResponseV0 responseSt1;
   // Mathieson parameters from L.Kharmandarian's thesis, page 190
-  responseSt1->SetSqrtKx3AndDeriveKx2Kx4(0.7000); // sqrt(0.4900)
-  responseSt1->SetSqrtKy3AndDeriveKy2Ky4(0.7550); // sqrt(0.5700)
-  responseSt1->SetPitch(AliMUONConstants::PitchSt1()); // anode-cathode distance
-  responseSt1->SetSigmaIntegration(10.);
+  responseSt1.SetSqrtKx3AndDeriveKx2Kx4(0.7000); // sqrt(0.4900)
+  responseSt1.SetSqrtKy3AndDeriveKy2Ky4(0.7550); // sqrt(0.5700)
+  responseSt1.SetPitch(AliMUONConstants::PitchSt1()); // anode-cathode distance
+  responseSt1.SetSigmaIntegration(10.);
   // ChargeSlope larger to compensate for the smaller anode-cathode distance
   // and keep the same most probable ADC channel for mip's
-  responseSt1->SetChargeSlope(62.5); 
+  responseSt1.SetChargeSlope(62.5); 
   // assumed proportionality to anode-cathode distance for ChargeSpread
-  responseSt1->SetChargeSpread(0.144, 0.144);
-  responseSt1->SetMaxAdc(4096);
-  responseSt1->SetSaturation(3000);
-  responseSt1->SetZeroSuppression(6);
+  responseSt1.SetChargeSpread(0.144, 0.144);
+  responseSt1.SetMaxAdc(4096);
+  responseSt1.SetSaturation(3000);
+  responseSt1.SetZeroSuppression(6);
 
    for (Int_t chamber = 0; chamber < 2; chamber++) {
     fMUON->SetResponseModel(chamber, responseSt1); // special response      
@@ -120,7 +121,7 @@ void AliMUONResponseFactory::BuildStation2()
 /// Configuration for Chamber TC3/4 (Station 2) -----------
 
   for (Int_t chamber = 2; chamber < 4; chamber++) {
-    fMUON->SetResponseModel(chamber, fResponse0); // normal response        
+    fMUON->SetResponseModel(chamber, *fResponse0); // normal response        
     fMUON->Chamber(chamber).SetChargeCorrel(0.11); // 11% charge spread
   }
 }       
@@ -131,7 +132,7 @@ void AliMUONResponseFactory::BuildStation3()
 /// Configuration for Chamber TC5/6  (Station 3) ----------          
 
   for (Int_t chamber = 4; chamber < 6; chamber++) {
-    fMUON->SetResponseModel(chamber, fResponse0); // normal response        
+    fMUON->SetResponseModel(chamber, *fResponse0); // normal response        
     fMUON->Chamber(chamber).SetChargeCorrel(0.11); // 11% charge spread
   }
 }       
@@ -142,7 +143,7 @@ void AliMUONResponseFactory::BuildStation4()
 /// Configuration for Chamber TC7/8  (Station 4) ----------          
 
   for (Int_t chamber = 6; chamber < 8; chamber++) {
-    fMUON->SetResponseModel(chamber, fResponse0); // normal response        
+    fMUON->SetResponseModel(chamber, *fResponse0); // normal response        
     fMUON->Chamber(chamber).SetChargeCorrel(0.11); // 11% charge spread
   }
 }       
@@ -153,7 +154,7 @@ void AliMUONResponseFactory::BuildStation5()
 /// Configuration for Chamber TC9/10  (Station 5) ---------           
 
   for (Int_t chamber = 8; chamber < 10; chamber++) {
-    fMUON->SetResponseModel(chamber, fResponse0); // normal response        
+    fMUON->SetResponseModel(chamber, *fResponse0); // normal response        
     fMUON->Chamber(chamber).SetChargeCorrel(0.11); // 11% charge spread
   }
 }       
@@ -165,15 +166,21 @@ void AliMUONResponseFactory::BuildStation6()
 
     Bool_t resTrigV1 = fMUON->GetTriggerResponseV1();    
 
-    for (Int_t chamber = 10; chamber < 14; chamber++) {
-	
-	if (!resTrigV1) 
-	    fMUON->SetResponseModel(chamber, new AliMUONResponseTrigger);
-    	else 
-	    fMUON->SetResponseModel(chamber, new AliMUONResponseTriggerV1);
-	
-	fMUON->Chamber(chamber).SetChargeCorrel(0); // same charge on both cathodes
-  }
+    for (Int_t chamber = 10; chamber < 14; chamber++) 
+    {
+      AliMUONResponse* response;
+      if (!resTrigV1) 
+      {
+        response = new AliMUONResponseTrigger;
+      }
+      else
+      {
+        response = new AliMUONResponseTriggerV1;
+      }
+	    fMUON->SetResponseModel(chamber,*response);	
+      fMUON->Chamber(chamber).SetChargeCorrel(0); // same charge on both cathodes
+      delete response;
+    }
 }       
 
 //__________________________________________________________________________

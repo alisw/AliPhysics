@@ -16,7 +16,6 @@
 #include <TNamed.h>
 
 class AliMUON;
-class AliMUONSegmentation;
 class AliMUONResponseV0;
 
 class AliMUONResponseFactory : public  TNamed {

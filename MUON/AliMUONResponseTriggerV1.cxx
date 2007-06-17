@@ -22,11 +22,9 @@
 // with cluster size activated
 
 #include "AliMUONResponseTriggerV1.h"
-#include "AliMUONGeometrySegmentation.h"
 #include "AliMUON.h"
 #include "AliMUONDigit.h"
 #include "AliMUONGeometryTransformer.h"
-#include "AliMUONSegmentation.h"
 #include "AliMUONConstants.h"
 
 #include "AliMpPad.h"
@@ -63,11 +61,6 @@ namespace
     transformer->Global2Local(detElemId,xg,yg,zg,xl,yl,zl);
   }
 
-  AliMUONSegmentation* Segmentation()
-  {
-    static AliMUONSegmentation* segmentation = muon()->GetSegmentation();
-    return segmentation;
-  }
 }
 
 //------------------------------------------------------------------   
@@ -165,15 +158,12 @@ void AliMUONResponseTriggerV1::DisIntegrate(const AliMUONHit& hit, TList& digits
     Int_t ix = pad.GetIndices().GetFirst();
     Int_t iy = pad.GetIndices().GetSecond();
     
-    AliMUONDigit* d = new AliMUONDigit;
-    d->SetDetElemId(detElemId);
+    AliMUONDigit* d = new AliMUONDigit(detElemId,pad.GetLocation().GetFirst(),
+                                       pad.GetLocation().GetSecond(),
+                                       cath);
+    d->SetPadXY(ix,iy);
 
-    d->SetPadX(ix);
-    d->SetPadY(iy);
-
-    d->SetSignal(twentyNano);
-    d->AddPhysicsSignal(d->Signal());
-    d->SetCathode(cath);
+    d->SetCharge(twentyNano);
     digits.Add(d);
 
     SetGenerCluster(); // 1 randum number per cathode (to be checked)
@@ -214,15 +204,12 @@ void AliMUONResponseTriggerV1::DisIntegrate(const AliMUONHit& hit, TList& digits
 		else qp = 0;
 		
 		if (qp == 1) { // this digit is fired    
-		    AliMUONDigit* dNeigh = new AliMUONDigit;
-		    dNeigh->SetDetElemId(detElemId);
+		    AliMUONDigit* dNeigh = new AliMUONDigit(detElemId,padNeigh.GetLocation().GetFirst(),
+                                                padNeigh.GetLocation().GetSecond(),
+                                                cath);
 		    
-		    dNeigh->SetPadX(ixNeigh);
-		    dNeigh->SetPadY(iyNeigh);
-		    
-		    dNeigh->SetSignal(twentyNano);
-		    dNeigh->AddPhysicsSignal(dNeigh->Signal());
-		    dNeigh->SetCathode(cath);
+		    dNeigh->SetPadXY(ixNeigh,iyNeigh);      
+		    dNeigh->SetCharge(twentyNano);
 		    digits.Add(dNeigh);
 		} // digit fired		
 	    } // pad is valid

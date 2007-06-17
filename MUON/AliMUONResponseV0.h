@@ -17,8 +17,11 @@ class AliMUONResponseV0 : public AliMUONResponse
 {
  public:
   AliMUONResponseV0();
-    virtual ~AliMUONResponseV0();
-    //
+  AliMUONResponseV0(const AliMUONResponseV0& rhs);
+  AliMUONResponseV0& operator = (const AliMUONResponseV0& rhs);
+  virtual ~AliMUONResponseV0();
+  
+  //
     // Configuration methods
     //
     /// Set number of sigmas over which cluster didintegration is performed
@@ -82,21 +85,17 @@ class AliMUONResponseV0 : public AliMUONResponse
     // Chamber response methods
     // Pulse height from scored quantity (eloss)
     virtual Float_t  IntPH(Float_t eloss) const;
-    // Charge disintegration
-    virtual Float_t  IntXY(Int_t idDE, 
-			   AliMUONGeometrySegmentation* segmentation) const;
 
     virtual Float_t GetAnod(Float_t x) const;
     
     virtual void DisIntegrate(const AliMUONHit& hit, TList& digits);
     
     virtual void Print(Option_t* opt="") const;
-     
- protected:
-    /// Not implemented
-    AliMUONResponseV0(const AliMUONResponseV0& rhs);
-    /// Not implemented
-    AliMUONResponseV0& operator = (const AliMUONResponseV0& rhs);
+  
+private:
+    void CopyTo(AliMUONResponseV0& other) const;
+    
+private:
    
     Float_t fChargeSlope;              ///< Slope of the charge distribution
     Float_t fChargeSpreadX;            ///< Width of the charge distribution in x

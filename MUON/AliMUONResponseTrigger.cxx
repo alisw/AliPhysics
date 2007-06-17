@@ -27,8 +27,6 @@
 #include "AliMUONDigit.h"
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONHit.h"
-#include "AliMUONSegmentation.h"
-#include "AliMUONTriggerSegmentation.h"
 #include "AliMUONConstants.h"
 
 #include "AliMpPad.h"
@@ -63,12 +61,6 @@ namespace
   
     const AliMUONGeometryTransformer* transformer = muon()->GetGeometryTransformer();
     transformer->Global2Local(detElemId,xg,yg,zg,xl,yl,zl);
-  }
-
-  AliMUONSegmentation* Segmentation()
-  {
-    static AliMUONSegmentation* segmentation = muon()->GetSegmentation();
-    return segmentation;
   }
 }
 
@@ -130,43 +122,16 @@ AliMUONResponseTrigger::DisIntegrate(const AliMUONHit& hit, TList& digits)
                       xhit,yhit,x,y,z,ix,iy));
       continue;
     }
-    AliMUONDigit* d = new AliMUONDigit;
-    d->SetDetElemId(detElemId);
-/* pc 09/02/06 no need for that anymore : trigger is in local numbering
+    AliMUONDigit* d = new AliMUONDigit(detElemId,pad.GetLocation(0).GetFirst(),
+                                       pad.GetLocation(0).GetSecond(),cath);
+    d->SetPadXY(ix,iy);
 
-    //FIXME: >> the following code to get the ixGlo and iyGlo is a bad hack 
-    // because trigger has not yet switched to local numbering of its indices !
-    // We should be able to use directly the (local) ix,iy from the pad !
-    const AliMUONTriggerSegmentationV2* old = 
-      dynamic_cast<const AliMUONTriggerSegmentationV2*>
-        (Segmentation()->GetDESegmentation(detElemId,cath));
-    if ( !old )
-    {
-      AliFatal("Got a wrong TriggerSegmentation object! Check that!");
-    }
-    Int_t ixGlo;
-    Int_t iyGlo;
-    old->ILoc2IGlo(ix,iy,ixGlo,iyGlo);
-    if ( xhit < 0 ) ixGlo = -ixGlo;
-    // << end of bad hack.
-    d->SetPadX(ixGlo);
-    d->SetPadY(iyGlo);
-*/
-    d->SetPadX(ix);
-    d->SetPadY(iy);
-
-    d->SetSignal(twentyNano);
-    d->AddPhysicsSignal(d->Signal());
-    d->SetCathode(cath);
+    //FIXME : a trigger digit can have several locations. 
+    //this is not currently supported by the digit class. Change that or not ?
+    d->SetCharge(twentyNano);
     digits.Add(d);   
- //   AliDebug(1,Form("Adding digit DE %d Cathode %d (%d,%d) signal %d",
-//                    detElemId,cath,ixGlo,iyGlo,twentyNano));
   }
   
-//  StdoutToAliDebug(1,digits.Print();); 
-//  AliDebug(1,Form("Number of digits for detelem %d track %d : %d",
-//                  hit.DetElemId(),hit.Track(),digits.GetSize()));
-//   
 }
 
 
