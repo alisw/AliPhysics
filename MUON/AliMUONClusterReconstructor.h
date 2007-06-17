@@ -8,55 +8,45 @@
 
 /// \ingroup rec
 /// \class AliMUONClusterReconstructor
-/// \brief MUON cluster reconstructor in ALICE
+/// \brief Steering class for clusterizing MUON tracking chambers
 
 #include <TObject.h>
 
-class AliMUONClusterFinderVS;
-class AliMUONRecData;
-class TClonesArray;
 class AliMUONVClusterFinder;
 class AliMUONGeometryTransformer;
+class AliMUONVClusterStore;
+class AliMUONVDigitStore;
+class AliMUONRawCluster;
 
 class AliMUONClusterReconstructor : public TObject 
 {
  public:
-  AliMUONClusterReconstructor(AliMUONRecData* data = 0x0,
-                              AliMUONVClusterFinder* finder = 0x0,
+  AliMUONClusterReconstructor(AliMUONVClusterFinder* finder = 0x0,
                               const AliMUONGeometryTransformer* transformer = 0x0
                               ); 
+
   virtual ~AliMUONClusterReconstructor(void); // Destructor
 
  
-  // Cluster Finding & Trigger
-  virtual void   Digits2Clusters(Int_t chBeg = 0);
-  virtual void   Trigger2Trigger() ;
-
-  /// Return cluster recontruction model
-  AliMUONClusterFinderVS* GetRecoModel() {return fRecModel;}
-
-  void SetRecoModel(AliMUONClusterFinderVS* rec);
-
+  // Cluster Finding 
+  virtual void Digits2Clusters(const AliMUONVDigitStore& digitStore, AliMUONVClusterStore& clusterStore);
+  
  protected:
   /// Not implemented
   AliMUONClusterReconstructor (const AliMUONClusterReconstructor& rhs); // copy constructor
   /// Not implemented
   AliMUONClusterReconstructor& operator=(const AliMUONClusterReconstructor& rhs); // assignment operator
 
-  void ClusterizeOneDE(Int_t detElemId);
-  void ClusterizeOneDEV2(Int_t detElemId);
-  
-private:
-  AliMUONVClusterFinder* fClusterFinder; //!< the object doing the real job (not owner)  
-  AliMUONRecData*         fMUONData;           //!< Data container for MUON subsystem 
-  AliMUONClusterFinderVS* fRecModel;           //!< cluster recontruction model
+  void ClusterizeOneDE(Int_t detElemId, const AliMUONVDigitStore& digitStore);
 
-  TClonesArray* fDigitsCath0; //!< digits for cathode 0 of the current DE
-  TClonesArray* fDigitsCath1; //!< digits for cathode 1 of the current DE
-  
+private:
+  AliMUONVClusterFinder* fClusterFinder; //!< the object doing the real clustering job (not owner)  
+
   const AliMUONGeometryTransformer* fTransformer; //!< to go from local to global (not owner)
-    
-  ClassDef(AliMUONClusterReconstructor,0) // MUON cluster reconstructor in ALICE
+  
+  AliMUONVClusterStore* fClusterStore; //!< not owner
+  
+  ClassDef(AliMUONClusterReconstructor,0) // Clustering steering
 };
 	
 #endif
