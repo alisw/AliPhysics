@@ -25,13 +25,13 @@
 #include "AliHLTMUONRecHitsSource.h"
 #include "AliHLTMUONConstants.h"
 #include "AliHLTMUONDataBlockWriter.h"
-#include "AliMUONSimData.h"
-#include "AliMUONRecData.h"
+#include "AliMUONMCDataInterface.h"
+#include "AliMUONDataInterface.h"
 #include "AliMUONHit.h"
 #include "AliMUONRawCluster.h"
 #include "AliMUONConstants.h"
-#include "AliRunLoader.h"
-#include "AliLoader.h"
+#include "AliMUONVClusterStore.h"
+#include "AliMUONVHitStore.h"
 #include "TClonesArray.h"
 #include <cstdlib>
 #include <cstdio>
@@ -52,8 +52,7 @@ ClassImp(AliHLTMUONRecHitsSource);
 
 AliHLTMUONRecHitsSource::AliHLTMUONRecHitsSource() :
 	AliHLTOfflineDataSource(),
-	fSimData(NULL), fRecData(NULL),
-	fRunLoader(NULL), fLoader(NULL),
+	fMCDataInterface(NULL), fDataInterface(NULL),
 	fSelection(kWholePlane)
 {
 	for (Int_t i = 0; i < AliMUONConstants::NTrackingCh(); i++)
@@ -63,10 +62,8 @@ AliHLTMUONRecHitsSource::AliHLTMUONRecHitsSource() :
 
 AliHLTMUONRecHitsSource::~AliHLTMUONRecHitsSource()
 {
-	assert( fSimData == NULL );
-	assert( fRecData == NULL );
-	assert( fRunLoader == NULL );
-	assert( fLoader == NULL );
+	assert( fMCDataInterface == NULL );
+	assert( fDataInterface == NULL );
 }
 
 
@@ -189,19 +186,17 @@ int AliHLTMUONRecHitsSource::DoInit(int argc, const char** argv)
 		
 		try
 		{
-			fSimData = new AliMUONSimData("galice.root");
+			fMCDataInterface = new AliMUONMCDataInterface("galice.root");
 		}
 		catch (const std::bad_alloc&)
 		{
 			Logging(kHLTLogError,
 				"AliHLTMUONRecHitsSource::DoInit",
 				"Out of memory",
-				"Not enough memory to allocate AliMUONSimData."
+				"Not enough memory to allocate AliMUONMCDataInterface."
 			);
 			return ENOMEM;
 		}
-		fLoader = fSimData->GetLoader();
-		fLoader->LoadHits("READ");
 	}
 	else if (recdata)
 	{
@@ -213,22 +208,18 @@ int AliHLTMUONRecHitsSource::DoInit(int argc, const char** argv)
 		
 		try
 		{
-			fRecData = new AliMUONRecData("galice.root");
+			fDataInterface = new AliMUONDataInterface("galice.root");
 		}
 		catch (const std::bad_alloc&)
 		{
 			Logging(kHLTLogError,
 				"AliHLTMUONRecHitsSource::DoInit",
 				"Out of memory",
-				"Not enough memory to allocate AliMUONRecData."
+				"Not enough memory to allocate AliMUONDataInterface."
 			);
 			return ENOMEM;
 		}
-		fLoader = fRecData->GetLoader();
-		fLoader->LoadRecPoints("READ");
 	}
-	
-	fRunLoader = AliRunLoader::GetRunLoader();
 	
 	return 0;
 }
@@ -236,20 +227,10 @@ int AliHLTMUONRecHitsSource::DoInit(int argc, const char** argv)
 
 int AliHLTMUONRecHitsSource::DoDeinit()
 {
-	if (fSimData != NULL)
-	{
-		fLoader->UnloadHits();
-		delete fSimData;
-		fSimData = NULL;
-	}
-	if (fRecData != NULL)
-	{
-		fLoader->UnloadRecPoints();
-		delete fRecData;
-		fRecData = NULL;
-	}
-	fRunLoader = NULL;
-	fLoader = NULL;
+  delete fMCDataInterface;
+  fMCDataInterface = NULL;
+  delete fDataInterface;
+  fDataInterface = NULL;
 	return 0;
 }
 
@@ -283,15 +264,13 @@ AliHLTComponent* AliHLTMUONRecHitsSource::Spawn()
 
 int AliHLTMUONRecHitsSource::GetEvent(
 		const AliHLTComponentEventData& evtData,
-		AliHLTComponentTriggerData& trigData,
+		AliHLTComponentTriggerData& /*trigData*/,
 		AliHLTUInt8_t* outputPtr, 
 		AliHLTUInt32_t& size,
 		vector<AliHLTComponentBlockData>& outputBlocks
 	)
 {
-	assert( fSimData != NULL or fRecData != NULL );
-	assert( fRunLoader != NULL );
-	assert( fLoader != NULL );
+	assert( fMCDataInterface != NULL or fDataInterface != NULL );
 
 	// Check the size of the event descriptor structure.
 	if (evtData.fStructSize < sizeof(AliHLTComponentEventData))
@@ -312,7 +291,8 @@ int AliHLTMUONRecHitsSource::GetEvent(
 	// Use the fEventID as the event number to load, check it and load that
 	// event with the runloader.
 	UInt_t eventnumber = UInt_t(evtData.fEventID);
-	if ( eventnumber >= UInt_t(fRunLoader->GetNumberOfEvents()) )
+  UInt_t maxevent = UInt_t(fMCDataInterface->NumberOfEvents());
+	if ( eventnumber >= maxevent )
 	{
 		Logging(kHLTLogError,
 			"AliHLTMUONRecHitsSource::GetEvent",
@@ -320,12 +300,11 @@ int AliHLTMUONRecHitsSource::GetEvent(
 			"The event number (%d) is larger than the available number"
 			  " of events on file (%d).",
 			eventnumber,
-			fRunLoader->GetNumberOfEvents()
-		);
+      maxevent
+    );
 		size = 0; // Important to tell framework that nothing was generated.
 		return EINVAL;
 	}
-	fRunLoader->GetEvent(eventnumber);
 	
 	// Create and initialise a new data block.
 	AliHLTMUONRecHitsBlockWriter block(outputPtr, size);
@@ -343,7 +322,7 @@ int AliHLTMUONRecHitsSource::GetEvent(
 		return ENOBUFS;
 	}
 	
-	if (fSimData != NULL)
+	if (fMCDataInterface != NULL)
 	{
 		Logging(kHLTLogDebug,
 			"AliHLTMUONRecHitsSource::GetEvent",
@@ -354,18 +333,14 @@ int AliHLTMUONRecHitsSource::GetEvent(
 		
 		// Loop over all tracks, extract the hits and write them to the
 		// data block.
-		fSimData->SetTreeAddress("H");
-		for (Int_t i = 0; i < fSimData->GetNtracks(); i++)
+    Int_t ntracks = fMCDataInterface->NumberOfTracks(eventnumber);
+		for (Int_t i = 0; i < ntracks; ++i)
 		{
-			fSimData->GetTrack(i);
-			assert( fSimData->Hits() != NULL );
-			Int_t nhits = fSimData->Hits()->GetEntriesFast();
-			for (Int_t j = 0; j < nhits; j++)
-			{
-				AliMUONHit* hit = static_cast<AliMUONHit*>(
-						fSimData->Hits()->At(j)
-					);
-				
+      AliMUONVHitStore* hitStore = fMCDataInterface->HitStore(eventnumber,i);
+      AliMUONHit* hit;
+      TIter next(hitStore->CreateIterator());
+      while ( ( hit = static_cast<AliMUONHit*>(next()) ) )
+      {
 				// Select only hits on selected chambers.
 				Int_t chamber = hit->Chamber() - 1;
 				if (chamber > AliMUONConstants::NTrackingCh()) continue;
@@ -385,7 +360,6 @@ int AliHLTMUONRecHitsSource::GetEvent(
 						  " We overflowed the buffer which is only %d bytes.",
 						block.BufferSize()
 					);
-					fSimData->ResetHits();
 					size = 0; // Important to tell framework that nothing was generated.
 					return ENOBUFS;
 				}
@@ -394,10 +368,10 @@ int AliHLTMUONRecHitsSource::GetEvent(
 				rechit->fY = hit->Yref();
 				rechit->fZ = hit->Zref();
 			}
-			fSimData->ResetHits();
+      delete hitStore;
 		}
 	}
-	else if (fRecData != NULL)
+	else if (fDataInterface != NULL)
 	{
 		Logging(kHLTLogDebug,
 			"AliHLTMUONRecHitsSource::GetEvent",
@@ -406,21 +380,19 @@ int AliHLTMUONRecHitsSource::GetEvent(
 			eventnumber
 		);
 		
-		fRecData->SetTreeAddress("RC,TC"); 
-		fRecData->GetRawClusters();
-		
+		AliMUONVClusterStore* clusterStore = fDataInterface->ClusterStore(eventnumber);
+    
 		// Loop over selected chambers and extract the raw clusters.
-		for (Long_t chamber = 0; chamber < AliMUONConstants::NTrackingCh(); chamber++)
+		for (Int_t chamber = 0; chamber < AliMUONConstants::NTrackingCh(); chamber++)
 		{
 			// Select only hits on selected chambers.
 			if (not fServeChamber[chamber]) continue;
 			
-			TClonesArray* clusterarray = fRecData->RawClusters(chamber);
-			Int_t nrecpoints = clusterarray->GetEntriesFast();
-			for (Int_t i = 0; i < nrecpoints; i++)
-			{
-				AliMUONRawCluster* cluster = static_cast<AliMUONRawCluster*>(clusterarray->At(i));
-				
+      TIter next(clusterStore->CreateChamberIterator(chamber,chamber));
+      AliMUONRawCluster* cluster;
+      
+			while ( ( cluster = static_cast<AliMUONRawCluster*>(next()) ) )
+      {				
 				// Only select hits from the given part of the plane
 				if (fSelection == kLeftPlane and not (cluster->GetX() < 0)) continue;
 				if (fSelection == kRightPlane and not (cluster->GetX() >= 0)) continue;
@@ -435,7 +407,6 @@ int AliHLTMUONRecHitsSource::GetEvent(
 						  " We overflowed the buffer which is only %d bytes.",
 						block.BufferSize()
 					);
-					fRecData->ResetRawClusters();
 					size = 0; // Important to tell framework that nothing was generated.
 					return ENOBUFS;
 				}
@@ -445,8 +416,7 @@ int AliHLTMUONRecHitsSource::GetEvent(
 				rechit->fZ = cluster->GetZ();
 			}
 		}
-		
-		fRecData->ResetRawClusters();
+    delete clusterStore;
 	}
 	else
 	{

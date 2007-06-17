@@ -14,10 +14,8 @@
 
 #include "AliHLTOfflineDataSource.h"
 
-class AliMUONSimData;
-class AliMUONRecData;
-class AliRunLoader;
-class AliLoader;
+class AliMUONMCDataInterface;
+class AliMUONDataInterface;
 
 /**
  * AliHLTMUONRecHitsSource is a HLT-AliRoot data source object which generates
@@ -69,6 +67,9 @@ protected:
 	
 private:
 
+  AliMUONMCDataInterface* fMCDataInterface; // access to MUON MC-related data
+  AliMUONDataInterface* fDataInterface; // access to MUON data
+
 	enum SelectionType
 	{
 		kLeftPlane,  // everything from x < 0
@@ -87,10 +88,6 @@ private:
 	 */
 	int ParseChamberString(const char* str);
 
-	AliMUONSimData* fSimData; //! MUON module interface to simulated data.
-	AliMUONRecData* fRecData; //! MUON module interface to reconstructed data.
-	AliRunLoader* fRunLoader; //! A pointer to the AliRunLoader instance.
-	AliLoader* fLoader; //! Pointer to the MUON loader instance.
 	SelectionType fSelection; //! Indicates if we should publish from the left, right or whole XY plane.
 	bool fServeChamber[10]; //! Flag to indicate if hits from a given chamber should be published.
 

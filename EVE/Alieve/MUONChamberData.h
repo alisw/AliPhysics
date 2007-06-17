@@ -5,7 +5,6 @@
 
 #include <TObject.h>
 
-class AliMUONSegmentation;
 class AliMUONGeometryTransformer;
 
 namespace Alieve {
@@ -18,7 +17,6 @@ class MUONChamberData : public TObject
 
 private:
 
-  static AliMUONSegmentation*        fgSegmentation;  // detector segmentation
   static AliMUONGeometryTransformer* fgTransformer;   // geometry transformer
 
 protected:

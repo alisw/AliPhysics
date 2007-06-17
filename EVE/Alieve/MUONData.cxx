@@ -23,10 +23,9 @@
 #include <AliMUONDigitMaker.h>
 #include <AliMUONHit.h>
 #include <AliMUONRawCluster.h>
-#include <AliMUONDigit.h>
+#include <AliMUONVDigit.h>
 #include <AliMUONTriggerCrateStore.h>
-#include <AliMUONData.h>
-
+#include "AliMUONDigitStoreV1.h"
 #include "TTree.h"
 #include "TString.h"
 #include "TClonesArray.h"
@@ -90,7 +89,9 @@ void MUONData::Reset()
 //______________________________________________________________________
 MUONData::MUONData(const MUONData &mdata) :
   TObject(mdata),
-  Reve::ReferenceCount()
+  Reve::ReferenceCount(),
+  fChambers(14),
+  fNTrackList(0)
 {
   //
   // Copy constructor
@@ -191,45 +192,6 @@ void MUONData::RegisterTrack(Int_t track)
   if (!inList) {
     fTrackList[fNTrackList] = track;
     fNTrackList++;
-  }
-
-}
-
-//______________________________________________________________________
-void MUONData::LoadDigits(TTree* tree)
-{
-  // 
-  // load digits from the TreeD
-  //
-
-  Char_t branchname[30];
-  TClonesArray *digits = 0;
-  Int_t ndigits;
-  AliMUONDigit  *mdig;
-  Int_t cathode, detElemId, ix, iy, charge;
-
-  for (Int_t c = 0; c < 14; ++c) {
-
-    if (fChambers[c] == 0) continue;
-    sprintf(branchname,"MUONDigits%d",c+1);
-    tree->SetBranchAddress(branchname,&digits);
-    tree->GetEntry(0);
-
-    ndigits = digits->GetEntriesFast(); 
-
-    for (Int_t id = 0; id < ndigits; id++) {
-      mdig  = (AliMUONDigit*)digits->UncheckedAt(id);
-
-      cathode   = mdig->Cathode();
-      ix        = mdig->PadX();
-      iy        = mdig->PadY();
-      detElemId = mdig->DetElemId();      
-      charge    = (Int_t)mdig->Signal();
-
-      fChambers[c]->RegisterDigit(detElemId,cathode,ix,iy,charge);
-      
-    } // end digits loop
-
   }
 
 }
@@ -337,48 +299,43 @@ void MUONData::LoadRaw(TString fileName)
   fgRawReader->Reset();
 
   Int_t iEvent = 0;
-  while (fgRawReader->NextEvent()) {
-    if (iEvent != Alieve::gEvent->GetEventId()) {
+  while (fgRawReader->NextEvent()) 
+  {
+    if (iEvent != Alieve::gEvent->GetEventId()) 
+    {
       iEvent++;
       continue;
     }
     break;
   }
 
-  AliMUONDigitMaker *digitMaker = new AliMUONDigitMaker();
+  AliMUONDigitMaker digitMaker;
 
-  AliMUONTriggerCrateStore *crateManager = new AliMUONTriggerCrateStore();
-  crateManager->ReadFromFile();
+  AliMUONTriggerCrateStore crateManager;
+  crateManager.ReadFromFile();
 
-  AliMUONData *muonData = new AliMUONData(0x0,"MUON","MUON");
+  digitMaker.SetMakeTriggerDigits(kTRUE);
+  digitMaker.SetCrateManager(&crateManager);
 
-  digitMaker->SetDisplayFlag();
-  digitMaker->SetCrateManager(crateManager);
-  digitMaker->SetMUONData(muonData);
-  muonData->SetDataContainer("D, GLT");
+  AliMUONDigitStoreV1 digitStore;
+  
+  digitMaker.Raw2Digits(fgRawReader,&digitStore);
 
-  digitMaker->Raw2Digits(fgRawReader);
-
-  AliMUONDigit *digit;
-  Int_t cathode, detElemId, ix, iy, charge, chamber, ndigits;
-  for (chamber = 0; chamber < 14; chamber++) {
-    ndigits = (Int_t)muonData->Digits(chamber)->GetEntriesFast();
-    for (Int_t id = 0; id < ndigits; id++) {
-      digit = static_cast<AliMUONDigit*>(muonData->Digits(chamber)->At(id));
+  AliMUONVDigit* digit;
+  TIter next(digitStore.CreateIterator());
+  
+  Int_t cathode, detElemId, ix, iy, charge, chamber;
+  
+  while ( ( digit = static_cast<AliMUONVDigit*>(next() ) ) )
+  {
       cathode   = digit->Cathode();
       ix        = digit->PadX();
       iy        = digit->PadY();
       detElemId = digit->DetElemId();      
-      charge    = (Int_t)digit->Signal();
+      charge    = (Int_t)digit->Charge();
       chamber   = detElemId/100 - 1;
       fChambers[chamber]->RegisterDigit(detElemId,cathode,ix,iy,charge);
-    }
   }
-
-  delete muonData;
-  delete crateManager;
-  delete digitMaker;
-
 }
 
 //______________________________________________________________________

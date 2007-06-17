@@ -1,8 +1,6 @@
 #include "MUONChamberData.h"
 
-#include <AliMUONSegmentation.h>
 #include <AliMUONGeometryTransformer.h>
-#include <AliMUONSegFactory.h>
 #include <mapping/AliMpDEIterator.h>
 #include <mapping/AliMpSectorSegmentation.h>
 #include <mapping/AliMpSector.h>
@@ -29,7 +27,6 @@ using namespace Alieve;
 
 ClassImp(MUONChamberData)
 
-AliMUONSegmentation* MUONChamberData::fgSegmentation = 0;
 AliMUONGeometryTransformer* MUONChamberData::fgTransformer = 0;
 
 //______________________________________________________________________
@@ -70,9 +67,7 @@ MUONChamberData::MUONChamberData(Int_t chamber)
     fChamberBox[i*2+1] = -9999;
   }
 
-  if (fgSegmentation == 0) {
-    AliMUONSegFactory segFactory("volpath.dat","transform.dat");
-    fgSegmentation = segFactory.CreateSegmentation();
+  if (fgTransformer == 0) {
     fgTransformer = new AliMUONGeometryTransformer(true);
     fgTransformer->ReadGeometryData("volpath.dat",dataPath.Data());
   }
@@ -165,10 +160,10 @@ void MUONChamberData::Init(Int_t chamber)
     
     } else {
 
-      if (!fgSegmentation->HasDE(detElemId)) {
-	printf("Segmentation has no %d detElemId! \n",detElemId);
-	continue;
-      }
+//      if (!fgSegmentation->HasDE(detElemId)) {
+//	printf("Segmentation has no %d detElemId! \n",detElemId);
+//	continue;
+//      }
 
       vseg = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,AliMp::kCath0);
 
