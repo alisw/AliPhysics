@@ -41,166 +41,128 @@
 
 // MUON includes
 #include "AliMUON.h"
-#include "AliMUONSimData.h"
-#include "AliMUONRecData.h"
 #include "AliMUONHit.h"
 #include "AliMUONConstants.h"
 #include "AliMUONDigit.h"
 #include "AliMUONRawCluster.h"
 #include "AliMUONGlobalTrigger.h"
-#include "AliMUONLocalTrigger.h"
 #include "AliMUONTrack.h"
+
+#include "AliMUONDataInterface.h"
+#include "AliMUONMCDataInterface.h"
+#include "AliMUONVHitStore.h"
+#include "AliMUONVTriggerStore.h"
+
 #endif
 
 // Upsilon(1S)
 
 
-void MUONTriggerEfficiency (char filenameSim[10]="galice_sim.root", 
-                            char filenameRec[10]="galice.root",  
-                            Bool_t readFromRP = 0){
- 
-// output file
-  char digitdat[100];
-  char currentfile[100]; 
-  sprintf(digitdat,"MUONTriggerEfficiency.out"); 
+void MUONTriggerEfficiency(const char* filenameSim="galice_sim.root", 
+                           const char* filenameRec="galice.root",  
+                           Bool_t readFromRP = 0)
+{
   
-  FILE *fdat=fopen(digitdat,"w");          
+  // output file
   
-  Int_t nevents,coincmuon,muonlpt,muonhpt;
+  AliMUONMCDataInterface diSim(filenameSim);
+  AliMUONDataInterface diRec(filenameRec);
+  
+  if (!diSim.IsValid())
+  {
+    cerr << "Cannot access " << filenameSim << endl;
+    return;
+  }
+  
+  if (!diRec.IsValid())
+  {
+    cerr << "Cannot access " << filenameRec << endl;
+    return;
+  }
+  
+  FILE* fdat = fopen("MUONTriggerEfficiency.out","w");          
+  if (!fdat)
+  {
+    cerr << "Cannot create output file" << endl;
+    return;
+  }
+  
+  Int_t coincmuon,muonlpt,muonhpt;
   Int_t CoincMuPlus,CoincMuMinus;
   coincmuon=0;
   muonlpt=0;  
   muonhpt=0;
- 
-// Initialise AliRoot
-   // Creating Run Loader and openning file containing Hits
-   AliRunLoader * RunLoaderSim = AliRunLoader::Open(filenameSim,"MUONFolderSim","READ");
+  
+  Int_t nevents = diSim.NumberOfEvents();          
+  
+  for (Int_t ievent=0; ievent<nevents; ++ievent) 
+  {   
+    CoincMuPlus=0;
+    CoincMuMinus=0;
     
-   if (RunLoaderSim ==0x0) {
-       printf(">>> Error : Error Opening %s file \n",currentfile);
-       return;
-   }
-             
-   AliRunLoader * RunLoaderRec = AliRunLoader::Open(filenameRec,"MUONFolder","READ");
+    if (ievent%1000==0) printf("\t Event = %d\n",ievent);    
     
-   if (RunLoaderRec ==0x0) {
-       printf(">>> Error : Error Opening %s file \n",currentfile);
-       return;
-   }
-             
-   nevents = RunLoaderSim->GetNumberOfEvents();          
-     
- 
-   AliLoader * MUONLoaderSim = RunLoaderSim->GetLoader("MUONLoader");
-   AliLoader * MUONLoaderRec = RunLoaderRec->GetLoader("MUONLoader");
-   
-   if (!readFromRP) {
-       cout << " reading from digits \n";
-       MUONLoaderSim->LoadDigits("READ");
-   } else {
-       cout << " reading from RecPoints \n";
-       MUONLoaderRec->LoadRecPoints("READ");
-   }
-   MUONLoaderSim->LoadHits("READ");
-   
-   // Creating MUON data containers
-   AliMUONSimData muondataSim(MUONLoaderSim,"MUON","MUON");
-   AliMUONRecData muondataRec(MUONLoaderRec,"MUON","MUON");
-
-   TClonesArray * globalTrigger;
-   AliMUONGlobalTrigger * gloTrg; 
- 
- 
-   for (Int_t ievent=0; ievent<nevents; ievent++) {    // event loop
-       CoincMuPlus=0;
-       CoincMuMinus=0;
-       RunLoaderSim->GetEvent(ievent);
-       RunLoaderRec->GetEvent(ievent);
-         
-     if (ievent%1000==0) printf("\t Event = %d\n",ievent);    
-
-// Hits
-     muondataSim.SetTreeAddress("H");    
-        
-    Int_t itrack, ntracks, NbHits[2][4];
-    Int_t SumNbHits;
-    for (Int_t j=0; j<2; j++) {
-     for (Int_t jj=0; jj<4; jj++) {
-      NbHits[j][jj]=0;
-     }
+    // Hits
+    
+    Int_t NbHits[2][4];
+    for (Int_t j=0; j<2; j++) 
+    {
+      for (Int_t jj=0; jj<4; jj++) 
+      {
+        NbHits[j][jj]=0;
+      }
     } 
-    ntracks = (Int_t) muondataSim.GetNtracks();      
-    for (itrack=0; itrack<ntracks; itrack++) { // Track loop
     
-      muondataSim.GetTrack(itrack); 
-
-      Int_t ihit, nhits;
-      nhits = (Int_t) muondataSim.Hits()->GetEntriesFast();   
+    Int_t ntracks = (Int_t) diSim.NumberOfTracks(ievent);
+    
+    for ( Int_t itrack=0; itrack<ntracks; ++itrack ) 
+    {
+      AliMUONVHitStore* hitStore = diSim.HitStore(ievent,itrack);      
       AliMUONHit* mHit;
-      for(ihit=0; ihit<nhits; ihit++) {
-        mHit = static_cast<AliMUONHit*>(muondataSim.Hits()->At(ihit));
-        Int_t Nch        = mHit->Chamber(); 
-        Int_t hittrack   = mHit->Track();
-        Float_t IdPart     = mHit->Particle();
-
-        for (Int_t j=0;j<4;j++) {
-         Int_t kch=11+j;
-         if (hittrack==1 || hittrack==2) {
-          if (Nch==kch && IdPart==-13 && NbHits[0][j]==0) NbHits[0][j]++; 
-          if (Nch==kch && IdPart==13 && NbHits[1][j]==0) NbHits[1][j]++; 
+      TIter next(hitStore->CreateIterator());
+      
+      while ( ( mHit = static_cast<AliMUONHit*>(next()) ) )
+      {
+        Int_t Nch = mHit->Chamber(); 
+        Int_t hittrack = mHit->Track();
+        Float_t IdPart = mHit->Particle();
+        
+        for (Int_t j=0;j<4;j++) 
+        {
+          Int_t kch=11+j;
+          if (hittrack==1 || hittrack==2) 
+          {
+            if (Nch==kch && IdPart==-13 && NbHits[0][j]==0) NbHits[0][j]++; 
+            if (Nch==kch && IdPart==13 && NbHits[1][j]==0) NbHits[1][j]++; 
           }       
         }
-       }
-       
-      muondataSim.ResetHits();
+      }
       
+      delete hitStore;      
     } // end track loop     
     
-// 3/4 coincidence
-    SumNbHits=NbHits[0][0]+NbHits[0][1]+NbHits[0][2]+NbHits[0][3];
+    // 3/4 coincidence
+    Int_t SumNbHits=NbHits[0][0]+NbHits[0][1]+NbHits[0][2]+NbHits[0][3];
     if (SumNbHits==3 || SumNbHits==4) CoincMuPlus=1;
-       
+    
     SumNbHits=NbHits[1][0]+NbHits[1][1]+NbHits[1][2]+NbHits[1][3];
     if (SumNbHits==3 || SumNbHits==4) CoincMuMinus=1;
     
     if (CoincMuPlus==1 && CoincMuMinus==1) coincmuon++;         
-           
-// Trigger
-    if (!readFromRP) {
-	muondataSim.SetTreeAddress("D,GLT"); 
-	muondataSim.GetTriggerD();
-        globalTrigger = muondataSim.GlobalTrigger();
-    } else {    
-	muondataRec.SetTreeAddress("RC,TC"); 
-	muondataRec.GetTrigger();
-        globalTrigger = muondataRec.GlobalTrigger();
-    }
-   
-    Int_t nglobals = (Int_t) globalTrigger->GetEntriesFast(); // should be 1
-
-    for (Int_t iglobal=0; iglobal<nglobals; iglobal++) { // Global Trigger
+          
+    TString tree("D");
+    if ( readFromRP ) tree = "R";
     
-      gloTrg = static_cast<AliMUONGlobalTrigger*>(globalTrigger->At(iglobal));
-            
-       if (gloTrg->PairUnlikeLpt()>=1) muonlpt++;
-       if (gloTrg->PairUnlikeHpt()>=1) muonhpt++;
-                               
-    } // end of loop on Global Trigger         
-    
-    //if (!readFromRP) 
-      muondataSim.ResetTrigger();  
-    //else    
-      muondataRec.ResetTrigger();  
+    AliMUONVTriggerStore* triggerStore = diRec.TriggerStore(ievent,tree.Data());
 
+    AliMUONGlobalTrigger* gloTrg = triggerStore->Global();
+    
+    if (gloTrg->PairUnlikeLpt()>=1) muonlpt++;
+    if (gloTrg->PairUnlikeHpt()>=1) muonhpt++;
+
+    delete triggerStore;
+       
   } // end loop on event  
-
-   MUONLoaderSim->UnloadHits();
-
-  if (!readFromRP) {
-      MUONLoaderSim->UnloadDigits();  
-  } else {    
-      MUONLoaderRec->UnloadRecPoints();
-  }  
  
   // calculate efficiency with as a ref. at least 3/4 planes fired
   Float_t efficiencylpt,efficiencyhpt;
@@ -209,7 +171,6 @@ void MUONTriggerEfficiency (char filenameSim[10]="galice_sim.root",
   coincmu=Double_t(coincmuon);
   lptmu=Double_t(muonlpt); 
   hptmu=Double_t(muonhpt); 
-
 
   // output
   fprintf(fdat,"\n"); 

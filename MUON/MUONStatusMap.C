@@ -22,28 +22,24 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "AliCDBManager.h"
 #include "AliMUONCalibrationData.h"
-#include "AliMUONObjectPair.h"
 #include "AliMUONPadStatusMaker.h"
 #include "AliMUONPadStatusMapMaker.h"
-#include "AliMUONV2DStore.h"
+#include "AliMUONVStore.h"
 #include "AliMUONVCalibParam.h"
-#include "AliMUONVDataIterator.h"
 #include "AliMpIntPair.h"
 #include "Riostream.h"
 #endif
 
 
-void findBad(const AliMUONV2DStore& status)
+void findBad(const AliMUONVStore& status)
 {
-  AliMUONVDataIterator* it = status.Iterator();
-  AliMUONObjectPair* pair;
+  TIter next(status.CreateIterator());
+  AliMUONVCalibParam* param;
   
-  while ( ( pair = static_cast<AliMUONObjectPair*>(it->Next()) ) )
+  while ( ( param = dynamic_cast<AliMUONVCalibParam*>(next()) ) )
   {
-    AliMpIntPair* p = static_cast<AliMpIntPair*>(pair->First());
-    Int_t detElemId = p->GetFirst();
-    Int_t manuId = p->GetSecond();
-    AliMUONVCalibParam* param = static_cast<AliMUONVCalibParam*>(pair->Second());
+    Int_t detElemId = param->ID0();
+    Int_t manuId = param->ID1();
     Bool_t bad(kFALSE);
     for ( Int_t i = 0; i < param->Size(); ++i ) 
     {
@@ -53,11 +49,10 @@ void findBad(const AliMUONV2DStore& status)
     {
       cout << Form("DE %4d ManuId %4d",detElemId,manuId) << endl;
     }
-    if (it->IsOwner()) delete pair;
   }
 }
 
-AliMUONV2DStore* MUONStatusMap(const TString& cdbStorage = "local://$ALICE_ROOT",
+AliMUONVStore* MUONStatusMap(const TString& cdbStorage = "local://$ALICE_ROOT",
                                Int_t runNumber=0, Bool_t statusOnly=kFALSE, Int_t mask=0)
 {  
   AliCDBManager::Instance()->SetDefaultStorage(cdbStorage.Data());
@@ -69,7 +64,7 @@ AliMUONV2DStore* MUONStatusMap(const TString& cdbStorage = "local://$ALICE_ROOT"
 //  statusMaker.SetPedMeanLimits(50,200);
   statusMaker.SetPedSigmaLimits(0.5,2);
   
-  AliMUONV2DStore* status = statusMaker.MakeStatus();
+  AliMUONVStore* status = statusMaker.MakeStatus();
  
   if ( status )
   {
