@@ -11,24 +11,37 @@
 ///
 /// \author Alexander Zinchenko, JINR Dubna
 
+#ifndef ALIMUONVCLUSTERFINDER_H
+# include "AliMUONVClusterFinder.h"
+#endif
+
 class TH2D;
 class TClonesArray;
 class TMinuit;
 
-class AliMUONVGeometryDESegmentation;
+class AliMpVSegmentation;
 class AliMUONPixel;
-class AliMUONClusterDrawAZ;
-#include "AliMUONClusterFinderVS.h"
+//class AliMUONClusterDrawAZ;
 #include "TMatrixDfwd.h"
+class AliMUONVDigit;
+class AliMUONRawCluster;
+class AliMUONVDigitStore;
+class AliMUONMathieson;
+class AliMpVSegmentation;
 
-class AliMUONClusterFinderAZ : public AliMUONClusterFinderVS 
+class AliMUONClusterFinderAZ : public AliMUONVClusterFinder 
 {
 public:
   AliMUONClusterFinderAZ(Bool_t draw = 0); // Constructor
   virtual ~AliMUONClusterFinderAZ(); // Destructor
 
-  void     FindRawClusters(); // the same interface as for old cluster finder
-  void     EventLoop(Int_t nev = 0, Int_t ch = 0); // first event 
+  virtual AliMUONCluster* NextCluster();
+
+  virtual Bool_t Prepare(const AliMpVSegmentation* segmentations[2],
+                         const AliMUONVDigitStore& digitStore);
+
+  void     FindRawClusters(Int_t ch); // the same interface as for old cluster finder
+  void     EventLoop(Int_t ch = 0);
   Bool_t   TestTrack(Int_t t) const; // test if track was selected
   
   /// Return the number of pads in the cluster on the given cathode
@@ -37,8 +50,6 @@ public:
   Int_t    GetIJ(Int_t indx, Int_t iPad) const { return fPadIJ[indx][iPad]; }
   /// Return pad information \todo add more details
   Float_t  GetXyq(Int_t indx, Int_t iPad) const { return fXyq[indx][iPad]; }
-  /// Return the z-coordinate of the hit
-  Float_t  GetZpad() const { return fZpad; }
   /// Return the flag for used pads
   Bool_t GetUsed(Int_t cath, Int_t dig) const { return fUsed[cath][dig]; }
 
@@ -51,6 +62,12 @@ public:
   /// Start  \todo add more details
   void SetStart(Int_t iCath, Int_t iPad) { fCathBeg = iCath; fPadBeg[0] = fPadBeg[1] = 0; fPadBeg[fCathBeg] = iPad; } 
 
+  void ResetRawClusters();
+  
+  Float_t ChargeIntegration(Double_t x, Double_t y, 
+                            Double_t padX, Double_t padY,
+                            Double_t padDX, Double_t padDY);
+    
 private:
   // Some constants
   static const Int_t fgkDim = 10000; ///< array size
@@ -62,9 +79,9 @@ private:
 
   Int_t      fnPads[2];         //!< number of pads in the cluster on 2 cathodes
   Float_t    fXyq[7][fgkDim];   //!< pad information \todo add more details
+  UInt_t     fDigitId[fgkDim];  //!< digit id of the pads (to find back the digit using the digitstore)
   Int_t      fPadIJ[4][fgkDim]; //!< pad information \todo add more details
-  AliMUONVGeometryDESegmentation *fSegmentation[2]; //!< new segmentation
-  Float_t    fZpad;             //!< z-coordinate of the hit
+  const AliMpVSegmentation *fSegmentation[2]; //!< new segmentation
   Int_t      fNpar;             //!< number of fit parameters
   Double_t   fQtot;             //!< total cluster charge
   Int_t      fReco;             //!< !=0 if run reco with writing of reconstructed clusters 
@@ -73,11 +90,22 @@ private:
 
   static     TMinuit* fgMinuit; //!< Fitter
   Bool_t     fUsed[2][fgkDim]; //!< flags for used pads
-  AliMUONClusterDrawAZ *fDraw; //!< drawing object 
+//  AliMUONClusterDrawAZ *fDraw; //!< drawing object 
   TObjArray* fPixArray; //!< collection of pixels
   Int_t fnCoupled; //!< number of coupled clusters in precluster
   Int_t fDebug; //!< debug level
 
+  TClonesArray*           fRawClusters;        //!< array of cluster per ch.
+  
+  const AliMUONVDigitStore* fDigitStore; //!< digit store we're working on
+  
+  Int_t fDetElemId; //!< detection element id we're currently working on
+  Int_t fChamberId; //!< chamber corresponding the fDetElemId
+  
+  AliMUONMathieson* fMathieson; //!< mathieson function to be used
+  
+  Int_t fCurrentCluster; //!< current cluster
+  
   // Functions
 
   /// Not implemented
@@ -85,8 +113,8 @@ private:
   /// Not implemented
   AliMUONClusterFinderAZ& operator=(const AliMUONClusterFinderAZ& rhs);
 
-  void   AddPad(Int_t cath, Int_t digit); // add a pad to the cluster
-  Bool_t Overlap(Int_t cath, AliMUONDigit *dig); // check if the pad from one cathode overlaps with a pad in the cluster on the other cathode
+  void   AddPad(Int_t cath, AliMUONVDigit& digit); // add a pad to the cluster
+  Bool_t Overlap(Int_t cath, const AliMUONVDigit& dig); // check if the pad from one cathode overlaps with a pad in the cluster on the other cathode
   Bool_t Overlap(Float_t *xy1, Int_t iPad, Float_t *xy12, Int_t iSkip); // check if pads xy1 and iPad overlap and return overlap area
   Bool_t CheckPrecluster(Int_t *nShown); // check precluster to simplify it (if possible)
   void   BuildPixArray(); // build array of pixels
@@ -120,6 +148,12 @@ private:
 	      Double_t wy, Double_t wx, Int_t iover, 
 	      Double_t dyc, Double_t dxc, Double_t qtot, 
 	      Double_t &yrec, Double_t &xrec, Double_t &erry, Double_t &errx);
+
+  virtual void Print(Option_t* opt="") const;
+  void PrintPixel(Int_t i) const;
+  void PrintPad(Int_t i) const;
+    
+  void Used(Int_t indx, Bool_t value);
 
   /// Dummy method for overloading warnings
   void FindCluster(int, int, int, AliMUONRawCluster&) {return;}
