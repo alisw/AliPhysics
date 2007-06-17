@@ -41,7 +41,8 @@ AliMpStringObjMap::AliMpStringObjMap(Bool_t isOwner)
  : TObject(),
    fNofItems(0),
    fFirstArray(),
-   fSecondArray()
+   fSecondArray(),
+   fCurrentIndex(0)
 {
 /// Standard constructor
 
