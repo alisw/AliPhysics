@@ -20,7 +20,7 @@
 #endif
 
 class AliMUONCalibrationData;
-class AliMUONV2DStore;
+class AliMUONVStore;
 class TMap;
 
 class AliMUONPadStatusMaker : public TObject
@@ -29,16 +29,16 @@ public:
   AliMUONPadStatusMaker(const AliMUONCalibrationData& calibData);
   virtual ~AliMUONPadStatusMaker();
       
-  AliMUONV2DStore* MakeGainStatus(const AliMUONV2DStore& gainValues) const;
+  AliMUONVStore* MakeGainStatus(const AliMUONVStore& gainValues) const;
 
-  AliMUONV2DStore* MakeHVStatus(const TMap& hvMap) const;
+  AliMUONVStore* MakeHVStatus(const TMap& hvMap) const;
 
-  AliMUONV2DStore* MakePedestalStatus(const AliMUONV2DStore& pedValues) const;
+  AliMUONVStore* MakePedestalStatus(const AliMUONVStore& pedValues) const;
 
   /// Produces a status store. Should not return 0x0.
-  AliMUONV2DStore* MakeStatus() const;
+  AliMUONVStore* MakeStatus() const;
 
-  static AliMUONV2DStore* GeneratePadStatus(Int_t value);
+  static AliMUONVStore* GeneratePadStatus(Int_t value);
 
   /// Return Low and High threshold for St12 HV
   TVector2 HVSt12Limits() const { return fHVSt12Limits; }
@@ -68,8 +68,8 @@ private:
   
 private:
   
-  AliMUONV2DStore* Combine(const AliMUONV2DStore& store1,
-                           const AliMUONV2DStore& store2,
+  AliMUONVStore* Combine(const AliMUONVStore& store1,
+                           const AliMUONVStore& store2,
                            Int_t binShift) const;
   
   Bool_t GetSt12Status(const TMap& hvMap, Int_t detElemId, Int_t sector,
@@ -84,10 +84,10 @@ private:
                         Bool_t& hvChannelON,
                         Bool_t& hvSwitchON) const;
   
-  void SetStatusSt12(AliMUONV2DStore& hvStatus, 
+  void SetStatusSt12(AliMUONVStore& hvStatus, 
                      Int_t detElemId, Int_t sector, Int_t status) const;
 
-  void SetStatusSt345(AliMUONV2DStore& hvStatus,
+  void SetStatusSt345(AliMUONVStore& hvStatus,
                       Int_t detElemId, Int_t pcbIndex, Int_t status) const;
 
   

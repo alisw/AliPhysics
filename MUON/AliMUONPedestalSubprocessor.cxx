@@ -15,24 +15,22 @@
 
 // $Id$
 
-#include <sstream>
-
-#include <Riostream.h>
-#include <TList.h>
-#include <TObjString.h>
-#include <TSystem.h>
+#include "AliMUONPedestalSubprocessor.h"
 
 #include "AliCDBMetaData.h"
 #include "AliLog.h"
 #include "AliMUON2DMap.h"
-#include "AliMUONCalibParamNF.h"
-#include "AliMUONObjectPair.h"
-#include "AliMUONPedestalSubprocessor.h"
-#include "AliMUONPreprocessor.h"
-#include "AliMUONVDataIterator.h"
-#include "AliMpDDLStore.h"
 #include "AliMUON2DStoreValidator.h"
+#include "AliMUONCalibParamNF.h"
+#include "AliMUONPreprocessor.h"
+#include "AliMpConstants.h"
+#include "AliMpDDLStore.h"
 #include "TObjString.h"
+#include <Riostream.h>
+#include <TList.h>
+#include <TObjString.h>
+#include <TSystem.h>
+#include <sstream>
 
 ///
 /// \class AliMUONPedestalSubprocessor
@@ -186,8 +184,7 @@ AliMUONPedestalSubprocessor::ReadFile(const char* filename)
   char line[80];
   Int_t busPatchID, manuID, manuChannel;
   Float_t pedMean, pedSigma;
-  static const Int_t kNchannels(64);
-  static Bool_t replace(kFALSE);
+  static const Int_t kNchannels(AliMpConstants::ManuNofChannels());
   Int_t n(0);
   
   while ( in.getline(line,80) )
@@ -200,12 +197,14 @@ AliMUONPedestalSubprocessor::ReadFile(const char* filename)
              busPatchID,detElemID,manuID,manuChannel,pedMean,pedSigma));
     
     AliMUONVCalibParam* ped = 
-      static_cast<AliMUONVCalibParam*>(fPedestals->Get(detElemID,manuID));
+      static_cast<AliMUONVCalibParam*>(fPedestals->FindObject(detElemID,manuID));
     
     if (!ped) 
     {
-      ped = new AliMUONCalibParamNF(2,kNchannels,AliMUONVCalibParam::InvalidFloatValue());  
-      fPedestals->Set(detElemID,manuID,ped,replace);
+      ped = new AliMUONCalibParamNF(2,kNchannels,
+                                    detElemID,manuID,
+                                    AliMUONVCalibParam::InvalidFloatValue());  
+      fPedestals->Add(ped);
     }
     ped->SetValueAsFloat(manuChannel,0,pedMean);
     ped->SetValueAsFloat(manuChannel,1,pedSigma);
@@ -221,13 +220,5 @@ void
 AliMUONPedestalSubprocessor::Print(Option_t* opt) const
 {
   /// ouput to screen
-  AliMUONVDataIterator* it = fPedestals->Iterator();
-  AliMUONObjectPair* p;
-
-  while ( ( p = static_cast<AliMUONObjectPair*>(it->Next() ) ) )
-  {
-    AliMUONVCalibParam* value = static_cast<AliMUONVCalibParam*>(p->Value());
-    value->Print(opt);
-    if (it->IsOwner()) delete p;
-  }
+  if (fPedestals) fPedestals->Print("",opt);
 }

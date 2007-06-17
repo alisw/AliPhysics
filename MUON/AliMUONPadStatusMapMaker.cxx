@@ -53,12 +53,13 @@
 #include "AliMUON2DMap.h"
 #include "AliMUONCalibParamNI.h"
 #include "AliMUONCalibrationData.h"
-#include "AliMUONObjectPair.h"
-#include "AliMUONV2DStore.h"
+#include "AliMUONVStore.h"
 #include "AliMUONVCalibParam.h"
-#include "AliMUONVDataIterator.h"
+#include "AliMpConstants.h"
 #include "AliMpIntPair.h"
+#include "AliMpManuList.h"
 #include <Riostream.h>
+#include <TList.h>
 #include <TStopwatch.h>
 
 /// \cond CLASSIMP
@@ -128,24 +129,42 @@ AliMUONPadStatusMapMaker::GetPadStatus(Int_t detElemId,
                                       
 {
   /// Get the pad status
-  AliMUONVCalibParam* param = static_cast<AliMUONVCalibParam*>(fStatus->Get(detElemId,manuId));
+  AliMUONVCalibParam* param = static_cast<AliMUONVCalibParam*>(fStatus->FindObject(detElemId,manuId));
   return param->ValueAsInt(manuChannel);
 }
 
 //_____________________________________________________________________________
-AliMUONV2DStore*
+AliMUONVStore*
 AliMUONPadStatusMapMaker::MakeEmptyPadStatusMap()
 {
   /// Make an empty (but complete) statusMap
-  
-  AliMUONCalibParamNI param(1,64,0);
-  
-  return AliMUON2DMap::Generate(param);
+    
+    AliMUONVStore* store = new AliMUON2DMap(true);
+    
+    TList* list = AliMpManuList::ManuList();
+    
+    AliMpIntPair* pair;
+    
+    TIter next(list);
+    
+    while ( ( pair = static_cast<AliMpIntPair*>(next()) ) ) 
+    {
+      Int_t detElemId = pair->GetFirst();
+      Int_t manuId = pair->GetSecond();
+      AliMUONVCalibParam* param = new AliMUONCalibParamNI(1,AliMpConstants::ManuNofChannels(),
+                                                          detElemId,manuId,
+                                                          0);
+      store->Add(param);
+    }
+    
+    delete list;
+    
+    return store;
 }
 
 //_____________________________________________________________________________
-AliMUONV2DStore*
-AliMUONPadStatusMapMaker::MakePadStatusMap(const AliMUONV2DStore& status,
+AliMUONVStore*
+AliMUONPadStatusMapMaker::MakePadStatusMap(const AliMUONVStore& status,
                                            Int_t mask)
 {
   /// Given the status store for all pads, compute a status map store
@@ -159,33 +178,30 @@ AliMUONPadStatusMapMaker::MakePadStatusMap(const AliMUONV2DStore& status,
   TStopwatch timer;  
   timer.Start(kTRUE);
   
-  AliMUONV2DStore* neighbourStore = fCalibrationData.Neighbours();
+  AliMUONVStore* neighbourStore = fCalibrationData.Neighbours();
   
-  AliMUONV2DStore* statusMap = status.CloneEmpty();
+  AliMUONVStore* statusMap = status.Create();
   
-  AliMUONVDataIterator* it = status.Iterator();
-  AliMUONObjectPair* pair;
+  TIter next(status.CreateIterator());
+  AliMUONVCalibParam* statusEntry;
   
-  while ( ( pair = static_cast<AliMUONObjectPair*>(it->Next()) ) )
+  while ( ( statusEntry = static_cast<AliMUONVCalibParam*>(next()) ) )
   {
-    AliMpIntPair* ip = static_cast<AliMpIntPair*>(pair->First());
-
-    Int_t detElemId = ip->GetFirst();    
-    Int_t manuId = ip->GetSecond();
+    Int_t detElemId = statusEntry->ID0();
+    Int_t manuId = statusEntry->ID1();
         
-    AliMUONVCalibParam* statusEntry = static_cast<AliMUONVCalibParam*>(pair->Second());
-    
     AliMUONVCalibParam* statusMapEntry = static_cast<AliMUONVCalibParam*>
-      (statusMap->Get(detElemId,manuId));
+      (statusMap->FindObject(detElemId,manuId));
 
     if (!statusMapEntry)
     {
-      statusMapEntry = new AliMUONCalibParamNI(1,64,0);
-      statusMap->Set(detElemId,manuId,statusMapEntry,false);
+      statusMapEntry = new AliMUONCalibParamNI(1,AliMpConstants::ManuNofChannels(),
+                                               detElemId,manuId,0);
+      statusMap->Add(statusMapEntry);
     }
     
     AliMUONVCalibParam* neighbours = static_cast<AliMUONVCalibParam*>
-      (neighbourStore->Get(detElemId,manuId));
+      (neighbourStore->FindObject(detElemId,manuId));
     
     if (!neighbours)
     {
@@ -204,8 +220,8 @@ AliMUONPadStatusMapMaker::MakePadStatusMap(const AliMUONV2DStore& status,
       Int_t x = neighbours->ValueAsInt(manuChannel,0);
       
       if ( x > 0 )
-      { // channel is a valid one (i.e. (manuId,manuChannel) is an existing pad)
-        // assert(x>=0);
+      { 
+        // channel is a valid one (i.e. (manuId,manuChannel) is an existing pad)
         statusMapValue = ComputeStatusMap(*neighbours,manuChannel,detElemId);
       }
       else
@@ -215,12 +231,7 @@ AliMUONPadStatusMapMaker::MakePadStatusMap(const AliMUONV2DStore& status,
       
       statusMapEntry->SetValueAsInt(manuChannel,0,statusMapValue);
     }
-    
-    if (it->IsOwner()) delete pair;
   }
-  
-  delete it;
-
   timer.Stop();
   
   StdoutToAliInfo(

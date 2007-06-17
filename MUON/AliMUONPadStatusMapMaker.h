@@ -17,7 +17,7 @@
 #endif
 
 class AliMUONCalibrationData;
-class AliMUONV2DStore;
+class AliMUONVStore;
 class AliMUONVCalibParam;
 class AliMpPad;
 class AliMpVSegmentation;
@@ -33,10 +33,10 @@ public:
   /// Return status bit map to tell a pad is bad
   static Int_t SelfDeadMask() { return fgkSelfDead; }
   
-  AliMUONV2DStore* MakePadStatusMap(const AliMUONV2DStore& status,
+  AliMUONVStore* MakePadStatusMap(const AliMUONVStore& status,
                                     Int_t mask);
   
-  static AliMUONV2DStore* MakeEmptyPadStatusMap();
+  static AliMUONVStore* MakeEmptyPadStatusMap();
 
 
 private:
@@ -53,7 +53,7 @@ private:
   
 private:
     static Int_t fgkSelfDead; //!< status bit map to tell a pad is bad
-  const AliMUONV2DStore* fStatus; //!< status store
+  const AliMUONVStore* fStatus; //!< status store
   Int_t fMask; //!< mask to be tested
 
   /// Bit numbers

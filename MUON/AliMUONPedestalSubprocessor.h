@@ -16,7 +16,7 @@
 #  include "AliMUONVSubprocessor.h"
 #endif
 
-class AliMUONV2DStore;
+class AliMUONVStore;
 class TObjArray;
 
 class AliMUONPedestalSubprocessor : public AliMUONVSubprocessor
@@ -38,7 +38,7 @@ private:
   Int_t ReadFile(const char* filename);
 
 private:
-  AliMUONV2DStore* fPedestals; //!< Pedestals for the MUON TRK
+  AliMUONVStore* fPedestals; //!< Pedestals for the MUON TRK
   
   ClassDef(AliMUONPedestalSubprocessor,1) // A shuttle preprocessor for MUON TRK pedestals
 };

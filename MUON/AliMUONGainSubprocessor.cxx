@@ -15,25 +15,22 @@
 
 // $Id$
 
-#include "AliMUON2DMap.h"
-#include "AliMUONCalibParamNF.h"
-#include "AliMUONConstants.h"
-#include "AliMUONObjectPair.h"
 #include "AliMUONGainSubprocessor.h"
-#include "AliMUONPreprocessor.h"
-#include "AliMUONVDataIterator.h"
-#include "AliMpDDLStore.h"
-#include "AliMUON2DStoreValidator.h"
 
 #include "AliCDBMetaData.h"
 #include "AliLog.h"
-
-#include <TObjString.h>
+#include "AliMUON2DMap.h"
+#include "AliMUON2DStoreValidator.h"
+#include "AliMUONCalibParamNF.h"
+#include "AliMUONConstants.h"
+#include "AliMUONPreprocessor.h"
+#include "AliMpConstants.h"
+#include "AliMpDDLStore.h"
 #include <Riostream.h>
 #include <TList.h>
 #include <TObjString.h>
+#include <TObjString.h>
 #include <TSystem.h>
-
 #include <sstream>
 
 ///
@@ -192,8 +189,7 @@ AliMUONGainSubprocessor::ReadFile(const char* filename)
   Float_t xlim;
   Float_t chi2, chi22;
   
-  static const Int_t kNchannels(64);
-  static Bool_t replace(kFALSE);
+  static const Int_t kNchannels(AliMpConstants::ManuNofChannels());
   Int_t n(0);
   
   while ( in.getline(line,256) )
@@ -210,12 +206,12 @@ AliMUONGainSubprocessor::ReadFile(const char* filename)
     if ( a0==a1 && a1==a2 && a0==-2) continue;
     
     AliMUONVCalibParam* gain = 
-      static_cast<AliMUONVCalibParam*>(fGains->Get(detElemID,manuID));
+      static_cast<AliMUONVCalibParam*>(fGains->FindObject(detElemID,manuID));
     
     if (!gain) 
     {
-      gain = new AliMUONCalibParamNF(6,kNchannels,0);//AliMUONVCalibParam::InvalidFloatValue());  
-      fGains->Set(detElemID,manuID,gain,replace);
+      gain = new AliMUONCalibParamNF(6,detElemID,manuID,kNchannels,0);
+      fGains->Add(gain);
     }
     gain->SetValueAsFloat(manuChannel,0,a0);
     gain->SetValueAsFloat(manuChannel,1,a1);
@@ -227,21 +223,4 @@ AliMUONGainSubprocessor::ReadFile(const char* filename)
   }
   in.close();
   return n;
-}
-
-
-//_____________________________________________________________________________
-void
-AliMUONGainSubprocessor::Print(Option_t* opt) const
-{
-  /// ouput to screen
-  AliMUONVDataIterator* it = fGains->Iterator();
-  AliMUONObjectPair* p;
-
-  while ( ( p = static_cast<AliMUONObjectPair*>(it->Next() ) ) )
-  {
-    AliMUONVCalibParam* value = static_cast<AliMUONVCalibParam*>(p->Value());
-    value->Print(opt);
-    if ( it->IsOwner() ) delete p;
-  }
 }
