@@ -15,19 +15,18 @@
 
 // $Id$
 
-#include "AliMUON1DMapIterator.h"
-#include "AliMpExMap.h"
-#include "AliLog.h"
-#include "AliMpIntPair.h"
-#include "AliMUONObjectPair.h"
-#include "AliMpExMap.h"
-
 /// \class AliMUON1DMapIterator
-/// Implementation of AliMUONVDataIterator for 1Dmaps
+/// Implementation of TIterator for 1Dmaps
 /// 
 /// A simple implementation of VDataIterator for 1Dmaps.
 ///
 /// \author Laurent Aphecetche
+
+#include "AliMUON1DMapIterator.h"
+#include "AliMpExMap.h"
+#include "AliLog.h"
+#include "AliMpIntPair.h"
+#include "AliMpExMap.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMUON1DMapIterator)
@@ -35,13 +34,51 @@ ClassImp(AliMUON1DMapIterator)
 
 //_____________________________________________________________________________
 AliMUON1DMapIterator::AliMUON1DMapIterator(AliMpExMap& theMap)
-: AliMUONVDataIterator(), 
+: TIterator(), 
 fIter(theMap.GetIterator()),
 fCurrentI(-1)
 {
   /// default ctor
   Reset();
 }
+
+//_____________________________________________________________________________
+AliMUON1DMapIterator::AliMUON1DMapIterator(const AliMUON1DMapIterator& rhs)
+: TIterator(rhs),
+  fIter(rhs.fIter),
+  fCurrentI(rhs.fCurrentI)        
+{
+    /// copy ctor
+}
+
+//_____________________________________________________________________________
+AliMUON1DMapIterator& 
+AliMUON1DMapIterator::operator=(const AliMUON1DMapIterator& rhs)
+{
+  /// assignment operator
+  if ( this != &rhs )
+  {
+    fIter = rhs.fIter;
+    fCurrentI = rhs.fCurrentI;
+  }
+  return *this;
+}
+
+//_____________________________________________________________________________
+TIterator& 
+AliMUON1DMapIterator::operator=(const TIterator& rhs)
+{
+  /// overriden operator= (imposed by Root definition of TIterator::operator= ?)
+  
+  if ( this != &rhs && rhs.IsA() == AliMUON1DMapIterator::Class() )
+  {
+    const AliMUON1DMapIterator& rhs1 = static_cast<const AliMUON1DMapIterator&>(rhs);
+    fIter = rhs1.fIter;
+    fCurrentI = rhs1.fCurrentI;
+  }
+  return *this;
+}
+
 
 //_____________________________________________________________________________
 AliMUON1DMapIterator::~AliMUON1DMapIterator()
@@ -53,17 +90,12 @@ AliMUON1DMapIterator::~AliMUON1DMapIterator()
 TObject*
 AliMUON1DMapIterator::Next()
 {
-  ///  
+  /// Return next object in iteration
 
   Long_t key, value;
   Bool_t ok = fIter.Next(key,value);
   if (!ok) return 0x0;
-  Int_t i = (Int_t)(key & 0xFFFF);
-  TObject* o = reinterpret_cast<TObject*>(value);
-  
-  return new AliMUONObjectPair(new AliMpIntPair(i,0),o,
-                               kTRUE, /* owner of intpair */
-                               kFALSE /* but not of o */);
+  return reinterpret_cast<TObject*>(value);
 }
 
 //_____________________________________________________________________________
@@ -72,13 +104,4 @@ AliMUON1DMapIterator::Reset()
 {
   /// rewind the iterator
   fIter.Reset();
-}
-
-//_____________________________________________________________________________
-Bool_t
-AliMUON1DMapIterator::Remove()
-{
-  /// to be implemented if needed
-  AliInfo("Not supported yet");
-  return kFALSE;
 }

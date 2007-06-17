@@ -16,26 +16,23 @@
 // $Id$
 
 #include "AliMUON2DMapIterator.h"
-#include "AliMpExMap.h"
-#include "TMap.h"
-#include "AliLog.h"
-#include "AliMpIntPair.h"
-#include "AliMUONObjectPair.h"
 
 /// \class AliMUON2DMapIterator
-/// Implementation of AliMUONVDataIterator for 2Dmaps
+/// Implementation of TIterator for 2Dmaps
 /// 
 /// A simple implementation of VDataIterator for 2Dmaps.
 ///
 /// \author Laurent Aphecetche
+
+#include "AliMpExMap.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMUON2DMapIterator)
 /// \endcond
 
 //_____________________________________________________________________________
-AliMUON2DMapIterator::AliMUON2DMapIterator(AliMpExMap& theMap)
-: AliMUONVDataIterator(), 
+AliMUON2DMapIterator::AliMUON2DMapIterator(const AliMpExMap& theMap)
+: TIterator(), 
 fIter(theMap.GetIterator()),
 fIter2(0x0),
 fCurrentI(-1),
@@ -46,10 +43,65 @@ fCurrentJ(-1)
 }
 
 //_____________________________________________________________________________
+AliMUON2DMapIterator::AliMUON2DMapIterator(const AliMUON2DMapIterator& rhs)
+: TIterator(rhs),
+fIter(rhs.fIter),
+fIter2(0x0),
+fCurrentI(rhs.fCurrentI),
+fCurrentJ(rhs.fCurrentJ)
+{
+  /// copy ctor
+  if ( rhs.fIter2 ) fIter2 = new TExMapIter(*rhs.fIter2);
+
+}
+//_____________________________________________________________________________
+AliMUON2DMapIterator& 
+AliMUON2DMapIterator::operator=(const AliMUON2DMapIterator& rhs)
+{
+  /// assignment operator
+  if ( this != &rhs ) 
+  {
+    fIter = rhs.fIter;
+    fIter2 = 0x0;
+    if ( rhs.fIter2 ) fIter2 = new TExMapIter(*rhs.fIter2);
+    fCurrentI = rhs.fCurrentI;
+    fCurrentJ = rhs.fCurrentJ;
+  }
+  return *this;
+}
+
+//_____________________________________________________________________________
+TIterator& 
+AliMUON2DMapIterator::operator=(const TIterator& rhs)
+{
+  /// overriden operator= (imposed by Root's definition of TIterator::operator= ?)
+  
+  if ( this != &rhs && rhs.IsA() == AliMUON2DMapIterator::Class() ) 
+  {
+    const AliMUON2DMapIterator& rhs1 = static_cast<const AliMUON2DMapIterator&>(rhs);
+    
+    fIter = rhs1.fIter;
+    fIter2 = 0x0;
+    if ( rhs1.fIter2 ) fIter2 = new TExMapIter(*rhs1.fIter2);
+    fCurrentI = rhs1.fCurrentI;
+    fCurrentJ = rhs1.fCurrentJ;
+  }
+  return *this;
+}
+
+//_____________________________________________________________________________
 AliMUON2DMapIterator::~AliMUON2DMapIterator()
 {
   /// dtor
   delete fIter2;
+}
+
+//_____________________________________________________________________________
+const TCollection* 
+AliMUON2DMapIterator::GetCollection() const
+{
+  /// Return 0 as we're not really dealing with a Root TCollection...
+  return 0x0;
 }
 
 //_____________________________________________________________________________
@@ -67,7 +119,7 @@ AliMUON2DMapIterator::GetValue(TExMapIter& iter, Int_t& theKey) const
 
 //_____________________________________________________________________________
 AliMpExMap*
-AliMUON2DMapIterator::GetMap(TExMapIter& iter, Int_t& key) 
+AliMUON2DMapIterator::GetMap(TExMapIter& iter, Int_t& key)  const
 {
   /// get the map corresponding to key
   AliMpExMap* rv(0x0);
@@ -75,10 +127,6 @@ AliMUON2DMapIterator::GetMap(TExMapIter& iter, Int_t& key)
   if (o)
   {
     rv = dynamic_cast<AliMpExMap*>(o);
-    if (!rv)
-    {
-      AliFatal("boom");
-    }
   }
   return rv;
 }
@@ -106,10 +154,9 @@ AliMUON2DMapIterator::Next()
     delete fIter2;
     fIter2 = new TExMapIter(m->GetIterator());
     o = GetValue(*fIter2,fCurrentJ);
-  }  
-  return new AliMUONObjectPair(new AliMpIntPair(fCurrentI,fCurrentJ),o,
-                               kTRUE, /* owner of intpair */
-                               kFALSE /* but not of o */);
+  }
+  
+  return o;
 }
 
 //_____________________________________________________________________________
@@ -124,13 +171,4 @@ AliMUON2DMapIterator::Reset()
   {
     fIter2 = new TExMapIter(m->GetIterator());
   }  
-}
-
-//_____________________________________________________________________________
-Bool_t
-AliMUON2DMapIterator::Remove()
-{
-  /// to be implemented if needed
-  AliInfo("Not supported yet");
-  return kFALSE;
 }

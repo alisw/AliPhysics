@@ -8,7 +8,7 @@
 
 /// \ingroup calib
 /// \class AliMUON1DMapIterator
-/// \brief Implementation of AliMUONVDataIterator for 1D maps
+/// \brief Implementation of TIterator for 1D maps
 /// 
 //  Author Laurent Aphecetche
 
@@ -18,39 +18,30 @@
 #ifndef ROOT_TExMap
 #  include "TExMap.h"
 #endif
-#ifndef ALIMUONVDATAITERATOR_H
-#  include "AliMUONVDataIterator.h"
+#ifndef ROOT_TIterator
+#  include "TIterator.h"
 #endif
 
 class AliMpExMap;
 
 //_____________________________________________________________________________
-class AliMUON1DMapIterator : public AliMUONVDataIterator
+class AliMUON1DMapIterator : public TIterator
 {
 public:
   AliMUON1DMapIterator(AliMpExMap& theMap);
-  
+  AliMUON1DMapIterator(const AliMUON1DMapIterator&);
+  AliMUON1DMapIterator& operator=(const AliMUON1DMapIterator& rhs);
+  TIterator& operator=(const TIterator& iterator);  
   virtual ~AliMUON1DMapIterator();
   
-  /** The object returned by this iterator is an AliMUONObjectPair(TObject* key,TObject* value)
-    where key is an AliMpIntPair (i,0), and value is 
-    an AliMUONVCalibParam.
-    The returned object must be deleted by the user (as advertised by the IsOwner method below)
-    */
+  /** The returned object must not be deleted by the user ! */
   virtual TObject* Next();
   
   virtual void Reset(); 
   
-  virtual Bool_t Remove();
+  /// Return 0 as we're not really dealing with a TCollection
+  virtual const TCollection* GetCollection() const { return 0x0; }
   
-  virtual Bool_t IsOwner() const { return kTRUE; }
-  
-private:
-  /// copy ctor will not implemented
-  AliMUON1DMapIterator(const AliMUON1DMapIterator&);
-  /// assignement operator will not implemented
-  AliMUON1DMapIterator& operator=(const AliMUON1DMapIterator&);
-    
 private:
   TExMapIter fIter; //!< iterator
   Int_t fCurrentI; //!< current index in direction i 
