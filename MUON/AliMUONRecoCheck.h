@@ -14,61 +14,44 @@
 #include "AliMUONTrack.h"
 
 class TClonesArray;
-class AliMUONRecData;
-class AliMUONSimData;
-class AliRunLoader;
-
+class AliMUONMCDataInterface;
+class AliMUONDataInterface;
+class AliMUONVTrackStore;
 
 class AliMUONRecoCheck : public TObject 
 {
 public:
   AliMUONRecoCheck(Char_t *chLoader, Char_t *chLoaderSim);
-  AliMUONRecoCheck(AliRunLoader *runloader, AliMUONRecData *muondata,
-                   AliRunLoader *runloaderSim, AliMUONSimData *muondataSim);
-  virtual          ~AliMUONRecoCheck();
+  virtual ~AliMUONRecoCheck();
 
-  /// Return MUON data 	 
-  AliMUONRecData*  GetMUONData() {return fMUONData;}
-  /// Return run loader 	 
-  AliRunLoader* GetRunLoader()    {return fRunLoader;}
-  /// Return run loader for sim data	 
-  AliRunLoader* GetRunLoaderSim() {return fRunLoaderSim;}
+  /// Return number of reconstructed tracks
+  AliMUONVTrackStore* ReconstructedTracks(Int_t event);
+  
+  /// Return reference muon tracks
+  AliMUONVTrackStore* TrackRefs(Int_t event);
 
-  void MakeTrackRef();
-                /// Add track reference
-  void AddMuonTrackReference(const AliMUONTrack *muonTrack) 
-    {new ((*fMuonTrackRef)[fMuonTrackRef->GetEntriesFast()]) AliMUONTrack(*muonTrack);}
-
-  void PrintEvent() const;
-  void ResetTracks() const;
-  void CleanMuonTrackRef();
-  void ReconstructibleTracks();
-                /// Return number of reconstructible tracks
-  Int_t GetNumberOfReconstuctibleTracks() {return fReconstructibleTracks;}
-                /// Return number of reconstructed tracks
-  Int_t GetNumberOfRecoTracks() {return fRecoTracks;}
-  TClonesArray *GetTrackReco();
-                /// Return reference muon tracks
-  TClonesArray *GetMuonTrackRef() {return fMuonTrackRef;}
-
+  /// Return reconstructible ref tracks
+  AliMUONVTrackStore* ReconstructibleTracks(Int_t event);
+  
+  Int_t NumberOfEvents() const;
+  
 private:
   /// Not implemented
   AliMUONRecoCheck(const AliMUONRecoCheck& rhs);
   /// Not implemented
   AliMUONRecoCheck& operator = (const AliMUONRecoCheck& rhs);
+
+  AliMUONVTrackStore* MakeReconstructibleTracks(const AliMUONVTrackStore& refTracks);
+
+  AliMUONVTrackStore* MakeTrackRefs(Int_t event);
   
-  AliRunLoader*   fRunLoader;     ///< alice run loader 
-  AliMUONRecData* fMUONData;      ///< Data container for MUON subsystem 
-  AliRunLoader*   fRunLoaderSim;  ///< alice run loader 
-  AliMUONSimData* fMUONDataSim;   ///< Data container for MUON subsystem 
-  TClonesArray*   fMuonTrackRef;  ///< reference muon tracks
-  TClonesArray*   fTrackReco;     ///< reconstructed muon tracks
-  Int_t fReconstructibleTracks; ///< number of reconstructible tracks 
-  Int_t fRecoTracks;            ///< number of reconstructed tracks 
-  Bool_t fIsLoadConstructor;    //!< \brief boolean to tag the constructor, 
-                                /// to decide if the class should or not deal with the loaders
-
-
+  AliMUONVTrackStore* CleanMuonTrackRef(const AliMUONVTrackStore& refTracks);
+  
+private:
+    
+  AliMUONMCDataInterface* fMCDataInterface; ///< to access MC information
+  AliMUONDataInterface* fDataInterface; ///< to access MUON data
+  
   ClassDef(AliMUONRecoCheck, 0)   //Utility class to check reconstruction
 };
 

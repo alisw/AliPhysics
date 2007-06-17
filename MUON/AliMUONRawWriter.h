@@ -14,51 +14,48 @@
 #include <TObject.h>
 #include "AliRawDataHeader.h"
 
-class AliMUONData;
-class AliMUONDigit;
-class AliMUONDspHeader;
 class AliMUONBlockHeader;
-class AliMUONDarcHeader;
-class AliMUONRegHeader;
-class AliMUONLocalStruct;
-class AliMpExMap;
 class AliMUONBusStruct;
+class AliMUONDarcHeader;
+class AliMUONVDigit;
+class AliMUONDspHeader;
 class AliMUONGlobalTrigger;
-class AliMpDDLStore;
+class AliMUONLocalStruct;
+class AliMUONRegHeader;
+class AliMUONStopwatchGroup;
 class AliMUONTriggerCrateStore;
-class TStopwatch;
+class AliMUONVDigitStore;
+class AliMUONVTriggerStore;
+class AliMpDDLStore;
+class AliMpExMap;
 
 class AliMUONRawWriter : public TObject 
 {
  public:
-  AliMUONRawWriter(AliMUONData* data); // Constructor
+  AliMUONRawWriter(); // Constructor
   virtual ~AliMUONRawWriter(); // Destructor
     
   // write raw data
-  Int_t Digits2Raw();
-
+  Int_t Digits2Raw(AliMUONVDigitStore* digitStore, AliMUONVTriggerStore* triggerStore);
+  
   void SetScalersNumbers();
 
-protected:
-  AliMUONRawWriter();                  // Default constructor
-
-  // writing raw data
-  Int_t WriteTrackerDDL(Int_t iCh);
-  Int_t WriteTriggerDDL();
-  
 private:
-  Int_t GetBusPatch(const AliMUONDigit& digit) const;
+
+  void Digits2BusPatchMap(const AliMUONVDigitStore& digitStore, AliMpExMap& busPatchMap);
+  void WriteTrackerDDL(AliMpExMap& busPatchMap, Int_t iDDL);
+
+  //void WriteBusPatch(AliMUONLocalBusStruct* busStruct);
+  
+  Int_t WriteTriggerDDL(const AliMUONVTriggerStore& triggerStore, FILE* file[2]);
+  
+  Int_t GetBusPatch(const AliMUONVDigit& digit) const;
 
 private:
   /// Not implemented copy constructor
   AliMUONRawWriter (const AliMUONRawWriter& rhs); // copy constructor
   /// Not implemented assignment operator
   AliMUONRawWriter& operator=(const AliMUONRawWriter& rhs);
-
-
-  AliMUONData*  fMUONData;           //!< Data container for MUON subsystem 
- 
-  FILE*         fFile[4];            //!< DDL binary file pointer one per 1/2 chamber, 4 for one station
 
   AliMUONBlockHeader* fBlockHeader;  //!< DDL block header class pointers
   AliMUONDspHeader*   fDspHeader;    //!< DDL Dsp header class pointers
@@ -72,11 +69,13 @@ private:
   Bool_t fScalerEvent;               ///< flag to generates scaler event
 
   AliRawDataHeader    fHeader;           ///< header of DDL
+  
+  AliMUONStopwatchGroup* fTimers;             //!< time watchers
 
-  
-  TStopwatch* fTimers;             //!< time watchers
-  
-  ClassDef(AliMUONRawWriter,2) // MUON cluster reconstructor in ALICE
+  Int_t fBufferSize; //!< size of internal data buffer
+  Int_t* fBuffer; //!< internal data buffer
+
+  ClassDef(AliMUONRawWriter,3) // MUON cluster reconstructor in ALICE
 };
 	
 #endif
