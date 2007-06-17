@@ -46,6 +46,7 @@ AliMUONGlobalTrigger::AliMUONGlobalTrigger()
     fPairLikeHpt(0)
 { 
   /// Default constructor 
+      AliDebug(1,Form("this=%p",this));
 }
 
 //----------------------------------------------------------------------
@@ -62,12 +63,15 @@ AliMUONGlobalTrigger::AliMUONGlobalTrigger(const AliMUONGlobalTrigger& theMUONGl
     fPairLikeHpt(theMUONGlobalTrig.fPairLikeHpt)
 {
   /// Copy constructor
+      AliDebug(1,Form("this=%p copy ctor",this));
+
 }
 
 //----------------------------------------------------------------------
 AliMUONGlobalTrigger::~AliMUONGlobalTrigger()
 {
   /// Destructor
+  AliDebug(1,Form("this=%p",this));
 }
 
 //----------------------------------------------------------------------
@@ -135,15 +139,11 @@ UChar_t AliMUONGlobalTrigger::GetGlobalResponse() const
   return response;
 }
 //----------------------------------------------------------------------
-void AliMUONGlobalTrigger::Print(Option_t* opt) const
+void AliMUONGlobalTrigger::Print(Option_t*) const
 {
   ///
   /// Printing Global Trigger information
   ///
-  TString sopt(opt);
-  sopt.ToUpper();
-  if ( sopt.Contains("FULL") ) { 
-
       printf("=============================================\n");
       printf(" Global Trigger output       Low pt  High pt\n");
       printf(" Single                    :\t");
@@ -159,7 +159,7 @@ void AliMUONGlobalTrigger::Print(Option_t* opt) const
       printf("\n");
       
       printf("=============================================\n");
-  }  
+
 }
 
 
