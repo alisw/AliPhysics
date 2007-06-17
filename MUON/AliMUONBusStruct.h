@@ -21,6 +21,11 @@ public:
    AliMUONBusStruct(const AliMUONBusStruct& rhs);
    AliMUONBusStruct& operator=(const AliMUONBusStruct& rhs);
 
+           /// Return header length in word
+   static Int_t   GetHeaderLength()   {return fgkHeaderLength;}
+           /// Return default data key word for Bus Patch Header
+   static UInt_t  GetDefaultDataKey() {return fgkDefaultDataKey;}
+
    // header
            /// Return Data key word for bus patch header
    Int_t   GetDataKey()     const {return fDataKey;}
@@ -30,11 +35,6 @@ public:
    Int_t   GetLength()      const {return fLength;}
            /// Return bus patch id
    Int_t   GetBusPatchId()  const {return fBusPatchId;}
-
-           /// Return header length in word
-   Int_t   GetHeaderLength()   const {return fgkHeaderLength;}
-           /// Return default data key word for Bus Patch Header
-   UInt_t  GetDefaultDataKey() const {return fgkDefaultDataKey;}
 
            /// Return header
    Int_t*  GetHeader() {return &fDataKey;}
@@ -90,6 +90,7 @@ public:
 
    static const Int_t  fgkHeaderLength;   ///< header length in word
    static const UInt_t fgkDefaultDataKey; ///< default data key word for Bus Patch Header 
+   static const Int_t  fgkManuNofChannels;///< max number of channels per manu;
 
    Int_t     fBufSize;       ///< initial size for data array
 
@@ -105,4 +106,5 @@ public:
 
    ClassDef(AliMUONBusStruct,3)  // MUON DDL Tracker
 };
+
 #endif

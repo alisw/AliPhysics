@@ -16,6 +16,7 @@
 /* $Id$ */
 
 #include "AliMUONBusStruct.h"
+
 #include "AliLog.h"
 #include <Riostream.h>
 #include <string.h>
@@ -36,6 +37,7 @@ ClassImp(AliMUONBusStruct)
 
 const Int_t  AliMUONBusStruct::fgkHeaderLength = 4;
 const UInt_t AliMUONBusStruct::fgkDefaultDataKey = 0xB000000B;
+const Int_t  AliMUONBusStruct::fgkManuNofChannels(64);
 
 //___________________________________________
 AliMUONBusStruct::AliMUONBusStruct()
@@ -44,7 +46,7 @@ AliMUONBusStruct::AliMUONBusStruct()
      fTotalLength(0),
      fLength(0),
      fBusPatchId(0),
-     fBufSize(43*64), 
+fBufSize(43*fgkManuNofChannels), 
   /* assuming 43 manus max per bustpatch.
   Anyway fData is resized where needed (though it makes it slower) */
      fData(new UInt_t[fBufSize]),
