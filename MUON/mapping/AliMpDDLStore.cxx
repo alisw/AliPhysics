@@ -110,7 +110,9 @@ AliMpDDLStore::AliMpDDLStore(TRootIOCtor* /*ioCtor*/)
 : TObject(),
   fDDLs(),
   fDetElements(0),
-  fBusPatches()
+  fBusPatches(),
+  fTriggerCrates(true),
+  fLocalBoards(true)
 {  
 /// Constructor for IO
 
