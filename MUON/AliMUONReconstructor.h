@@ -1,84 +1,104 @@
 #ifndef ALIMUONRECONSTRUCTOR_H
 #define ALIMUONRECONSTRUCTOR_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
-// Revision of includes 07/05/2004
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+* See cxx source for full Copyright notice                               */
+
+// $Id$
 
 /// \ingroup rec
 /// \class AliMUONReconstructor
-/// \brief Class for the MUON reconstruction
+/// \brief Implementation of AliReconstructor for MUON (both tracker and trigger)
+/// 
+// Author Laurent Aphecetche, Subatech
 
-#include "AliReconstructor.h"
+#ifndef ALIRECONSTRUCTOR_H
+#  include "AliReconstructor.h"
+#endif
 
-class AliMUONCalibrationData;
-class AliMUONRecData;
 class AliMUONDigitMaker;
-class AliMUONTriggerCrateStore;
+class AliMUONVDigitStore;
+class AliMUONVTriggerStore;
+
 class AliMUONGeometryTransformer;
-class AliTracker;
-class AliMUONClusterReconstructor;
-class AliMUONSegmentation;
 
-class TTask;
+class AliMUONTriggerCrateStore;
+class AliMUONTriggerCircuit;
 class TClonesArray;
+class AliMUONVTriggerStore;
 
-class AliMUONReconstructor: public AliReconstructor 
+class AliMUONDigitCalibrator;
+class AliMUONCalibrationData;
+
+class AliMUONClusterReconstructor;
+class AliMUONVClusterStore;
+
+class AliMUONTracker;
+class AliMUONVTrackStore;
+
+class AliMUONStopwatchGroup;
+
+class AliMUONReconstructor : public AliReconstructor
 {
-  public:
-    AliMUONReconstructor();
-    virtual ~AliMUONReconstructor();
+public:
+  AliMUONReconstructor();
+  virtual ~AliMUONReconstructor();
+  
+  virtual Bool_t HasDigitConversion() const;
 
-    /// Dummy implementation    
-    virtual void         Reconstruct(TTree* /*digitsTree*/, 
-				     TTree* /*clustersTree*/) const {return;}
-    /// Dummy implementation    
-    virtual void         Reconstruct(AliRawReader* /*rawReader*/, 
-				     TTree* /*clustersTree*/) const {return;}
-    virtual void         Reconstruct(AliRunLoader* runLoader) const;
-    virtual void         Reconstruct(AliRunLoader* runLoader, 
-                                   AliRawReader* rawReader) const;
+  virtual void ConvertDigits(AliRawReader* rawReader, TTree* digitsTree) const;
+  
+  virtual Bool_t HasLocalReconstruction() const;
+  
+  virtual void Reconstruct(AliRunLoader* runLoader) const;
+  
+  virtual void Reconstruct(AliRunLoader* runLoader, AliRawReader* rawReader) const;
 
-    /// Dummy implementation    
-    virtual void         FillESD(TTree* /*digitsTree*/, TTree* /*clustersTree*/, 
-				 AliESD* /*esd*/) const {return;}
-    /// Dummy implementation    
-    virtual void         FillESD(AliRawReader* /*rawReader*/, TTree* /*clustersTree*/, 
-				 AliESD* /*esd*/) const {return;}
-    virtual void         FillESD(AliRunLoader* runLoader, AliESD* esd) const;
-    virtual void         FillESD(AliRunLoader* runLoader, 
-				 AliRawReader* /*rawReader*/, AliESD* esd) const;
-
-    AliTracker*          CreateTracker(AliRunLoader* runLoader) const;
- 
-    enum {kNone, kOriginal, kKalman, kCombi};
+  virtual void Reconstruct(AliRawReader* rawReader, TTree* clustersTree) const;
+  
+  virtual void Reconstruct(TTree* digitsTree, TTree* clustersTree) const;
+  
+  virtual AliTracker* CreateTracker(AliRunLoader* runLoader) const;
+    
+private:
+  /// Not implemented
+  AliMUONReconstructor(const AliMUONReconstructor&);
+  /// Not implemented
+  AliMUONReconstructor& operator=(const AliMUONReconstructor&);
+  
+  void ConvertDigits(AliRawReader* rawReader, 
+                     AliMUONVDigitStore* digitStore,
+                     AliMUONVTriggerStore* triggerStore) const;
+  void Calibrate(AliMUONVDigitStore& digitStore) const;
+  void Clusterize(const AliMUONVDigitStore& digitStore, AliMUONVClusterStore& clusterStore) const;
+  AliMUONTriggerCrateStore* CrateManager() const;
+  void CreateCalibrator() const;
+  void CreateDigitMaker() const;
+  void CreateTriggerCircuit() const;
+  void CreateClusterReconstructor() const;
+  void FillTreeR(AliMUONVTriggerStore* triggerStore,
+                 AliMUONVClusterStore* clusterStore,
+                 TTree& clustersTree) const;
+  
+  AliMUONVDigitStore* DigitStore() const;
+  AliMUONVClusterStore* ClusterStore() const;
+  AliMUONVTriggerStore* TriggerStore() const;
 
 private:
-
-    TTask* GetCalibrationTask() const;
-    AliMUONClusterReconstructor* CreateClusterReconstructor() const;
-    
-    /// Not implemented
-    AliMUONReconstructor(const AliMUONReconstructor& right);
-    /// Not implemented
-    AliMUONReconstructor&  operator = (const AliMUONReconstructor& right);
-
-private:
-    AliMUONDigitMaker* fDigitMaker; //!< pointer to the digit maker class
-
-    mutable AliMUONCalibrationData* fCalibrationData; //!< pointer to calibration data
-    
-    AliMUONTriggerCrateStore* fCrateManager;     //!< Crate array
-
-    TClonesArray* fTriggerCircuit;   //!< trigger circuit
- 
-    AliMUONGeometryTransformer* fTransformer; //!< pointer to transformation
-    AliMUONSegmentation*        fSegmentation; //!< pointer to segmentation
-
-    AliMUONRecData*             fMUONData;     //!< pointer to container
-
-  ClassDef(AliMUONReconstructor, 0)   // class for the MUON reconstruction
+  mutable AliMUONTriggerCrateStore* fCrateManager; //!< Trigger Crate manager
+  mutable AliMUONDigitMaker* fDigitMaker; //!< Raw to Digits converter
+  AliMUONGeometryTransformer* fTransformer; //!< Geometry transformer (local<->global)
+  mutable AliMUONVDigitStore* fDigitStore; //!< Digit container
+  mutable TClonesArray* fTriggerCircuit; //!< Trigger Circuit
+  mutable AliMUONCalibrationData* fCalibrationData; //!< Calibration data
+  mutable AliMUONDigitCalibrator* fDigitCalibrator; //!<  Digit to calibrate digit converter
+  mutable AliMUONClusterReconstructor* fClusterReconstructor; //!<  Clusterizer
+  mutable AliMUONVClusterStore* fClusterStore; //!< Cluster container
+  mutable AliMUONVTriggerStore* fTriggerStore; //!< Trigger container
+  mutable AliMUONVTrackStore* fTrackStore; //!< Track container
+  AliMUONStopwatchGroup* fTimers; //!< Internal timers
+  
+  ClassDef(AliMUONReconstructor,1) // Implementation of AliReconstructor
 };
 
 #endif
