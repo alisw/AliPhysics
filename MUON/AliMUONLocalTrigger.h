@@ -13,9 +13,9 @@
 //  Author Ph. Crochet
 
 #include <TObject.h>
-#include <TArrayS.h>
 
 class AliMUONLocalStruct;
+class TArrayS;
 
 class AliMUONLocalTrigger : public TObject {
  public:
@@ -66,7 +66,7 @@ class AliMUONLocalTrigger : public TObject {
            /// return Y pattern array
    void    GetYPattern(TArrayS& array) const;
 
-  Char_t GetLoDecision();
+  Char_t GetLoDecision() const;
 
   // setter methods
   //
@@ -107,8 +107,11 @@ class AliMUONLocalTrigger : public TObject {
 
   void SetLocalStruct(Int_t loCircuit, AliMUONLocalStruct& localStruct);
 
-
+  Bool_t IsNull() const;
+  
   virtual void Print(Option_t* opt="") const;
+  
+  virtual const char* GetName() const;
   
 private:
   Int_t fLoCircuit; ///< Circuit number 
@@ -130,10 +133,7 @@ private:
   UShort_t fY3Pattern; ///< Y strip pattern for chamber 21
   UShort_t fY4Pattern; ///< Y strip pattern for chamber 22
 
-
-  Char_t fLoDecision; ///< Local decision word (4 bits)
-
-  ClassDef(AliMUONLocalTrigger,3)  // reconstructed Local Trigger object
+  ClassDef(AliMUONLocalTrigger,4)  // reconstructed Local Trigger object
 };
 #endif
 

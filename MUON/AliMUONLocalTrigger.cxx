@@ -20,6 +20,7 @@
 #include "AliLog.h"
 #include "AliMUONLocalStruct.h"
 #include <Riostream.h>
+#include <TArrayS.h>
 
 /// \class AliMUONLocalTrigger
 /// Local Trigger algorithm data outputs
@@ -51,9 +52,7 @@ AliMUONLocalTrigger::AliMUONLocalTrigger()
     fY1Pattern(0),
     fY2Pattern(0),
     fY3Pattern(0),
-    fY4Pattern(0),
-    
-    fLoDecision(0)
+    fY4Pattern(0)
 {
 /// Default constructor
 }
@@ -77,9 +76,7 @@ AliMUONLocalTrigger::AliMUONLocalTrigger(const AliMUONLocalTrigger& theMUONLocal
       fY1Pattern(theMUONLocalTrig.fY1Pattern),
       fY2Pattern(theMUONLocalTrig.fY2Pattern),
       fY3Pattern(theMUONLocalTrig.fY3Pattern),
-      fY4Pattern(theMUONLocalTrig.fY4Pattern),
-      
-      fLoDecision(theMUONLocalTrig.fLoDecision)
+      fY4Pattern(theMUONLocalTrig.fY4Pattern)
 {
 /// Copy constructor (useful for TClonesArray)
 
@@ -122,23 +119,21 @@ AliMUONLocalTrigger& AliMUONLocalTrigger::operator=(const AliMUONLocalTrigger& t
   fY3Pattern  = theMUONLocalTrig.fY3Pattern;
   fY4Pattern  = theMUONLocalTrig.fY4Pattern;
 
-  fLoDecision =  theMUONLocalTrig.fLoDecision;
-
   return *this;
 }
 
 
 //----------------------------------------------------------------------
-Char_t AliMUONLocalTrigger::GetLoDecision()
+Char_t AliMUONLocalTrigger::GetLoDecision() const
 {
 /// Get local decision 
 /// from H(L)pt;
 /// returns local trigger decision
 
-  fLoDecision  = (fLoLpt & 0x3);
-  fLoDecision |= (fLoHpt << 2) & 0xC;
+  Char_t rv = (fLoLpt & 0x3);
+  rv |= (fLoHpt << 2) & 0xC;
 
-  return fLoDecision;
+  return rv;
 }
 
 //___________________________________________
@@ -155,6 +150,21 @@ void AliMUONLocalTrigger::GetYPattern(TArrayS& array) const
     /// return array of Y pattern
     Short_t vec[4] = {GetY1Pattern(), GetY2Pattern(), GetY3Pattern(), GetY4Pattern()};
     array.Set(4, vec);
+}
+
+//___________________________________________
+Bool_t
+AliMUONLocalTrigger::IsNull() const
+{
+  /// Whether or not this card has something usefull to say or not
+  return ( fX1Pattern == 0 &&
+           fX2Pattern == 0 &&
+           fX3Pattern == 0 &&
+           fX4Pattern == 0 &&
+           fY1Pattern == 0 &&
+           fY2Pattern == 0 &&
+           fY3Pattern == 0 &&
+           fY4Pattern == 0 );          
 }
 
 //----------------------------------------------------------------------
@@ -190,6 +200,31 @@ void AliMUONLocalTrigger::SetLocalStruct(Int_t loCircuit, AliMUONLocalStruct& lo
 
 }
 
+namespace
+{
+  const char* AsString(Int_t t)
+  {
+    switch (t)
+    {
+      case 0:
+        return "no";
+        break;
+      case 1:
+        return "minus";
+        break;
+      case 2:
+        return "plus";
+        break;
+      case 3:
+        return "undef";
+        break;
+      default:
+        return "";
+        break;
+    }
+  }
+}
+
 //----------------------------------------------------------------------
 void AliMUONLocalTrigger::Print(Option_t* opt) const
 {
@@ -197,11 +232,26 @@ void AliMUONLocalTrigger::Print(Option_t* opt) const
 
   TString sopt(opt);
   sopt.ToUpper();
- 
+
+  cout << Form("Circuit %3d Decision %2d StripX %2d Dev %2d(%1d) StripY %2d Lpt %6s Hpt %6s",
+               LoCircuit(), GetLoDecision(),
+               LoStripX(), LoDev(), LoSdev(), LoStripY(),
+               AsString(LoLpt()),AsString(LoHpt()),IsNull()) << endl;
+  
   if ( sopt.Contains("FULL") ) { 
 
-      printf("<AliMUONLocalTrigger> Circuit %d StripX %d Dev %d StripY %d Lpt %d Hpt %d \n",LoCircuit(),LoStripX(),LoDev(),LoStripY(),LoLpt(),LoHpt());
-
+    cout << Form("Xpatterns = 0x %04x %04x %04x %04x",
+                 fX1Pattern,fX2Pattern,fX3Pattern,fX4Pattern) << endl;
+    cout << Form("Ypatterns = 0x %04x %04x %04x %04x",
+                 fY1Pattern,fY2Pattern,fY3Pattern,fY4Pattern) << endl;
   }
 }
 
+//----------------------------------------------------------------------
+const char*
+AliMUONLocalTrigger::GetName() const
+{
+/// Generate name
+
+  return Form("LocalBoard%3d",LoCircuit());
+}
