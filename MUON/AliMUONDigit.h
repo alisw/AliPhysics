@@ -10,16 +10,22 @@
 /// \class AliMUONDigit
 /// \brief MUON digit
 
-#include <TObject.h>
+#ifndef ALIMUONVDIGIT_H
+#  include "AliMUONVDigit.h"
+#endif
 
-class AliMUONDigit : public TObject 
+class AliMUONDigit : public AliMUONVDigit 
 {
  public:
-    AliMUONDigit();
+  AliMUONDigit();
+  AliMUONDigit(Int_t detElemId, Int_t manuId, Int_t manuChannel, Int_t cathode);
+  
     AliMUONDigit(const AliMUONDigit& rhs);
     virtual ~AliMUONDigit();
 
     AliMUONDigit& operator=(const AliMUONDigit& rhs);
+    
+    virtual Bool_t HasMCInformation() const { return kTRUE; }
     
     virtual Bool_t IsSortable() const {return kTRUE;}        ///< Return true if sortable
     virtual Int_t Compare(const TObject *obj) const;
@@ -29,9 +35,7 @@ class AliMUONDigit : public TObject
     virtual Int_t PadY() const         {return fPadY;}       ///< Return pad number along y
     virtual Int_t Cathode() const      {return fCathode;}    ///< Return cathode number
     
-    virtual Float_t Signal() const     {return fSignal;}     ///< Return signal amplitude
-    
-    virtual Float_t Physics() const    {return fPhysics;}    ///< Return MC physics contribution to signal
+    virtual Float_t Charge() const     {return fSignal;}     ///< Return signal amplitude
     
     virtual Int_t Hit() const          {return fHit;}        ///< Return MC hit number
     
@@ -52,20 +56,11 @@ class AliMUONDigit : public TObject
     virtual void Saturated(Bool_t saturated=kTRUE);
     virtual void EfficiencyApplied(Bool_t value=kTRUE);
     
-    virtual void SetElectronics(Int_t manuId, Int_t manuChannel);
     virtual void SetADC(Int_t adc)         {fADC=adc; }        ///< Set ADC value
-    virtual void SetDetElemId(Int_t id)    {fDetElemId = id;}  ///< Set detection element ID
-    virtual void SetPadX(Int_t pad)        {fPadX = pad;}      ///< Set pad number along x
-    virtual void SetPadY(Int_t pad)        {fPadY = pad;}      ///< Set pad number along y
-    virtual void SetSignal(Float_t q)        {fSignal = q;}    ///< Set signal amplitude
-    virtual void AddSignal(Float_t q)        {fSignal += q;}   ///< Add signal amplitude
-    virtual void AddPhysicsSignal(Float_t q) {fPhysics += q;}  ///< Add MC physics contribution to signal
+    virtual void SetPadXY(Int_t padx, Int_t pady)        {fPadX = padx; fPadY=pady; }      ///< Set pad number along x
+    virtual void SetCharge(Float_t q)        {fSignal = q;}    ///< Set charge
     virtual void SetHit(Int_t n)           {fHit = n;}         ///< Set MC hit number
-    virtual void SetCathode(Int_t c)       {fCathode = c;}     ///< Set cathode number
-    virtual void SetPhysicsSignal(Float_t q) {fPhysics = q; }  ///< Set MC physics contribution to signal
     virtual void SetStatusMap(UInt_t statusMap) { fStatusMap = statusMap; } ///< Set status map
-    
-    virtual void Print(Option_t* opt="") const;
     
     virtual void Copy(TObject& digit) const;
     
@@ -77,6 +72,16 @@ class AliMUONDigit : public TObject
     
     // Add mask to the track numbers.
     virtual void PatchTracks(Int_t mask);
+    
+    virtual Bool_t MergeWith(const AliMUONVDigit& other);
+
+    virtual Bool_t IsUsed() const;
+    virtual void Used(Bool_t value);
+    
+    virtual Bool_t IsCalibrated() const;
+    virtual void Calibrated(Bool_t value);
+    
+    virtual UInt_t GetUniqueID() const;
     
 private:
     Int_t fDetElemId;     ///< Detection element ID
@@ -98,15 +103,17 @@ private:
     /// primary MC tracks making this digit
     Int_t* fTracks;       //[fNtracks]  primary MC tracks making this digit
 
-    Float_t fPhysics;       ///< MC physics contribution to signal 
     Int_t fHit;           ///< MC hit number - temporary solution
   
     UInt_t fStatusMap; ///< Neighbouring pad status (whether ped, gains, hv were ok or not)
     
     static const UInt_t fgkSaturatedMask = 0x1; ///< the mask (part of fFlags) to indicate this digit is saturated
+    static const UInt_t fgkUsedMask = 0x10; ///< whether this digit is used by whatever other object (typically a cluster, though)
+    static const UInt_t fgkCalibratedMask = 0x100; ///< whether this digits has been calibrated
     static const UInt_t fgkNoiseOnlyMask = 0x1000; ///< indicate a simulated digit due to noise only
     static const UInt_t fgkEfficiencyMask = 0x2000; ///< indicate chamber efficiency has been applied to a simulated digit
     
-    ClassDef(AliMUONDigit,7)  //Digits for MUON
+    ClassDef(AliMUONDigit,9)  //Digits for MUON
 };
+
 #endif
