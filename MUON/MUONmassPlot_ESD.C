@@ -173,8 +173,8 @@ Bool_t MUONmassPlot(char* filename = "galice_sim.root", Int_t ExtrapToVertex = -
     Error("CheckESD", "no ESD tree found");
     return kFALSE;
   }
-  tree->SetBranchAddress("ESD", &esd);
-  
+//  tree->SetBranchAddress("ESD", &esd);
+  esd->ReadFromTree(tree);
   
 
   runLoader->LoadHeader();

@@ -474,7 +474,7 @@ Bool_t MUONefficiency( char* filename = "galice.root", char* geoFilename = "geom
 		hPtResonance->Fill(fVtot.Pt());
 		
 		// match with trigger
-		if (muonTrack2->GetMatchTrigger() && (esd->GetTriggerMask() & ptTrig))  EventInMassMatch++;
+		if (muonTrack2->GetMatchTrigger()>=0 && (esd->GetTriggerMask() & ptTrig))  EventInMassMatch++;
 		
 	      }
 	      
