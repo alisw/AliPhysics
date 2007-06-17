@@ -9,7 +9,7 @@ Both will manage several subtasks (e.g. the tracker one will handle pedestals,
 Depending on the subsystem and on the task to be performed (based on the run type), this class
  will instanciate the correct set of AliMUONVSubProcessor(s) which does the actual job.
 Output of most processors will end up in OCDB (Offine Condition DataBase). A set of helper functions
- to peek at this OCDB are gathered in MUONCDB.C macro.
+ to peek at this OCDB are gathered in AiMUONCDB class.
  
 -------
 TestMUONPreprocessor.C
@@ -39,7 +39,7 @@ MCH       GMS                         read GMS alignment files  AliMUONGMSSubpro
 MCH       PHYSICS                     read DCS HV values and    AliMUONHVSubprocessor
                                       put them into OCDB
                                       
-MCH       ELECTRONICS_CALIBRATION_RUN read ASCII gain files     to be done
+MCH       ELECTRONICS_CALIBRATION_RUN read ASCII gain files     prototype only = AliMUONGainSubprocessor
                                       and put them into OCDB
                                       
 MTR       to be defined               to be defined             to be done
@@ -54,37 +54,26 @@ Two options here. You can either use a pre-done set of ASCII pedestals files (ge
  
 We've written an AliMUONPedestalEventGenerator which creates fake pedestal events. The pedestal values
 are taken from the Offline Condition DataBase (OCDB) (which is itself fakely filled
-using the writePedestals() function located in the MUONCDB.C macro.
+using the WritePedestals() method of AliMUONCDB class
 
-So first generate a valid pedestal CDB entry but using the MUONCDB.C macro.
+So first generate a valid pedestal CDB entry but using the AliMUONCDB class
 
-root[] .L MUONCDB.C++
 root[] const char* cdbpath="local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB"; // where to put the CDB
+root[] AliMUONCDB cdb(cdbpath)
 root[] Bool_t defaultValues = kFALSE; // to generate random values instead of plain zeros...
 root[] Int_t startRun = 80;
 root[] Int_t endRun = 80;
-root[] writePedestals(cdbpath, defaultValues, startRun, endRun);
+root[] cdb.WritePedestals(defaultValues, startRun, endRun);
 
 Expected output is (don't worry about the warnings, they are harmless) :
 
-W-AliMpExMap::AddKey: AliMpExMap::AddKey: resized Key array 
-W-AliMpExMap::AddKey: AliMpExMap::AddKey: resized Key array 
-W-AliMpExMap::AddKey: AliMpExMap::AddKey: resized Key array 
-W-AliMpExMap::AddKey: AliMpExMap::AddKey: resized Key array 
-W-AliMpExMap::AddKey: AliMpExMap::AddKey: resized Key array 
-W-AliMpExMap::AddKey: AliMpExMap::AddKey: resized Key array 
-W-AliMpExMap::AddKey: AliMpExMap::AddKey: resized Key array 
-W-AliMpExMap::AddKey: AliMpExMap::AddKey: resized Key array 
-W-AliMpExMap::AddKey: AliMpExMap::AddKey: resized Key array 
-W-AliMpExMap::AddKey: AliMpExMap::AddKey: resized Key array 
-W-AliMpExMap::AddKey: AliMpExMap::AddKey: resized Key array 
-W-AliMpExMap::AddKey: AliMpExMap::AddKey: resized Key array 
-W-AliMpExMap::AddKey: AliMpExMap::AddKey: resized Key array 
-W-AliMpExMap::AddKey: AliMpExMap::AddKey: resized Key array 
-W-AliMpExMap::AddKey: AliMpExMap::AddKey: resized Key array 
-W-AliMpExMap::AddKey: AliMpExMap::AddKey: resized Key array 
-16828 Manus and 1064008 channels.
-Ngenerated = 1064008
+I-AliMUONCDB::ManuList: Generating ManuList...
+I-AliMUONCDB::ManuList: Manu List generated.
+I-AliMUONCDB::MakePedestalStore: 16828 Manus and 1064008 channels.
+I-AliMUONCDB::WritePedestals: Ngenerated = 1064008
+I-AliCDBManager::Init: AliEn classes enabled in Root. AliCDBGrid factory registered.
+I-AliCDBManager::SetDefaultStorage: Setting Default storage to: local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB
+I-AliCDBLocal::PutEntry: CDB object stored into file ($ALICE_ROOT)/SHUTTLE/TestShuttle/TestCDB/MUON/Calib/Pedestals/Run80_80_v0_s0.root
 
 Then use the AliMUONPedestalEventGenerator to produce simulated pedestal events.
 
@@ -94,7 +83,7 @@ root[] AliCDBManager::Instance()->SetDefaultStorage(cdbpath); // so you will rea
 root[] const char* dateFileName = "raw.date"; // base filename for the output
 root[] Int_t runNumber = 80; // run number used to fetch the pedestals from the OCDB 
 root[] Int_t nevents = 100; // # of events to generate. 100 should be enough
-root[] gSystem->Load("libMUONshuttle");
+root[] gSystem->Load("libMUONshuttle"); // needed or not depending on whether it's already loaded or not
 root[] AliMUONPedestalEventGenerator ped(runNumber,nevents,dateFileName);
 root[] ped.Exec("");
 
