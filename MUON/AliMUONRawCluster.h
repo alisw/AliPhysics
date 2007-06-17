@@ -41,6 +41,9 @@ public:
    Int_t        AddY(Int_t i, Float_t Y);
    Int_t        AddZ(Int_t i, Float_t Z);
 
+   /// Return the ID number of the detection element (slat) on which the cluster is found
+   Int_t DetElemId() const { return fDetElemId; }
+   
    Float_t        GetCharge(Int_t i=0) const;
    Float_t      GetX(Int_t i=0) const;
    Float_t      GetY(Int_t i=0) const;
