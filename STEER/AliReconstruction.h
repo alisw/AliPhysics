@@ -107,7 +107,7 @@ private:
   Bool_t         RunLocalEventReconstruction(const TString& detectors);
   Bool_t         RunVertexFinder(AliESD*& esd);
   Bool_t         RunHLTTracking(AliESD*& esd);
-  Bool_t         RunMuonTracking();
+  Bool_t         RunMuonTracking(AliESD*& esd);
   Bool_t         RunTracking(AliESD*& esd);
   Bool_t         FillESD(AliESD*& esd, const TString& detectors);
   Bool_t         FillTriggerESD(AliESD*& esd);

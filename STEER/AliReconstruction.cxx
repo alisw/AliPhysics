@@ -694,7 +694,7 @@ Bool_t AliReconstruction::Run(const char* input)
     // Muon tracking
     if (!fRunTracking.IsNull()) {
       if (fRunMuonTracking) {
-	if (!RunMuonTracking()) {
+	if (!RunMuonTracking(esd)) {
 	  if (fStopOnError) {CleanUp(file, fileOld); return kFALSE;}
 	}
       }
@@ -1075,7 +1075,7 @@ Bool_t AliReconstruction::RunHLTTracking(AliESD*& esd)
 }
 
 //_____________________________________________________________________________
-Bool_t AliReconstruction::RunMuonTracking()
+Bool_t AliReconstruction::RunMuonTracking(AliESD*& esd)
 {
 // run the muon spectrometer tracking
 
@@ -1109,12 +1109,21 @@ Bool_t AliReconstruction::RunMuonTracking()
   fLoader[iDet]->MakeTracksContainer();
 
   // read RecPoints
-  fLoader[iDet]->LoadRecPoints("read");
-
-  if (!tracker->Clusters2Tracks(0x0)) {
+  fLoader[iDet]->LoadRecPoints("read");  
+  tracker->LoadClusters(fLoader[iDet]->TreeR());
+  
+  Int_t rv = tracker->Clusters2Tracks(esd);
+  
+  fLoader[iDet]->UnloadRecPoints();
+  
+  if ( rv )
+  {
     AliError(Form("%s Clusters2Tracks failed", fgkDetectorName[iDet]));
     return kFALSE;
   }
+  
+  tracker->UnloadClusters();
+  
   fLoader[iDet]->UnloadRecPoints();
 
   fLoader[iDet]->WriteTracks("OVERWRITE");
@@ -1122,7 +1131,6 @@ Bool_t AliReconstruction::RunMuonTracking()
 
   delete tracker;
   
-
   AliInfo(Form("Execution time: R:%.2fs C:%.2fs",
 	       stopwatch.RealTime(),stopwatch.CpuTime()));
 
