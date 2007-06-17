@@ -18,17 +18,15 @@
 #include "AliMUON2DMap.h"
 
 #include "AliLog.h"
-#include "AliMUONVDataIterator.h"
 #include "AliMUON2DMapIterator.h"
+#include "AliMUON2DMapIteratorByI.h"
 #include "AliMpExMap.h"
-#include "AliMpIntPair.h"
 #include "AliMpManuList.h"
 #include "AliMpDEManager.h"
 #include "AliMpConstants.h"
-#include <TList.h>
 
 /// \class AliMUON2DMap
-/// Basic implementation of AliMUONV2DStore container using
+/// Basic implementation of AliMUONVStore container using
 /// AliMpExMap internally.
 /// What we store is a "double" map : an AliMpExMap of AliMpExMaps
 ///
@@ -38,27 +36,34 @@
 ClassImp(AliMUON2DMap)
 /// \endcond
 
+namespace
+{
+  //___________________________________________________________________________
+  TObject* GetValue(TExMapIter& iter, Int_t& theKey) 
+  {
+    /// return the next value corresponding to theKey in iterator iter
+    theKey = -1;
+    Long_t key, value;
+    Bool_t ok = iter.Next(key,value);
+    if (!ok) return 0x0;
+    theKey = (Int_t)(key & 0xFFFF);
+    return reinterpret_cast<TObject*>(value);
+  }
+}
+
 //_____________________________________________________________________________
 AliMUON2DMap::AliMUON2DMap(Bool_t optimizeForDEManu) 
-: AliMUONV2DStore(), 
-  fMap(new AliMpExMap(true)), 
+: AliMUONVStore(), 
+  fMap(0x0),
   fOptimizeForDEManu(optimizeForDEManu)
 {
-/// Default constructor.
-    if ( fOptimizeForDEManu )
-    {
-      Int_t nDEs(0);
-      for ( Int_t i = 0; i < AliMpConstants::NofTrackingChambers(); ++i )
-      {
-        nDEs += AliMpDEManager::GetNofDEInChamber(i);
-      }
-      fMap->SetSize(nDEs);
-    }
+  /// Default constructor.
+    Clear();
 }
 
 //_____________________________________________________________________________
 AliMUON2DMap::AliMUON2DMap(const AliMUON2DMap& other)
-: AliMUONV2DStore(),
+: AliMUONVStore(),
 fMap(0x0),
 fOptimizeForDEManu(kFALSE)
 {
@@ -87,8 +92,8 @@ AliMUON2DMap::~AliMUON2DMap()
 }
 
 //_____________________________________________________________________________
-AliMUONV2DStore*
-AliMUON2DMap::CloneEmpty() const
+AliMUONVStore*
+AliMUON2DMap::Create() const
 {
   /// Create a void copy of *this. 
   return new AliMUON2DMap(fOptimizeForDEManu);
@@ -106,24 +111,30 @@ AliMUON2DMap::CopyTo(AliMUON2DMap& dest) const
 }
 
 //_____________________________________________________________________________
-TObject* 
-AliMUON2DMap::Get(Int_t i, Int_t j) const
+Bool_t
+AliMUON2DMap::Add(TObject* object)
 {
-/// Return the value at position (i,j).
+  /// Add object, using the decoding of uniqueID into two ints as the key
+  UInt_t uniqueID = object->GetUniqueID();
+  Int_t j = ( uniqueID & 0xFFFF0000 ) >> 16;
+  Int_t i = ( uniqueID & 0xFFFF);
+  return Set(i,j,object,kFALSE);
+}
 
-  TObject* o = fMap->GetValue(i);
-  if ( o )
-  {
-    AliMpExMap* m = dynamic_cast<AliMpExMap*>(o);
-    if (!m) AliFatal(Form("fMap[%d] not of the expected type",i));
-    return m->GetValue(j);
-  }
+//_____________________________________________________________________________
+TObject* 
+AliMUON2DMap::FindObject(Int_t i, Int_t j) const
+{
+  /// Return the value at position (i,j).
+
+  AliMpExMap* m = static_cast<AliMpExMap*>(fMap->GetValue(i));
+  if (m) return m->GetValue(j);
   return 0x0;
 }
 
 //_____________________________________________________________________________
-AliMUONVDataIterator*
-AliMUON2DMap::Iterator() const
+TIterator*
+AliMUON2DMap::CreateIterator() const
 {
   // Create and return an iterator on this map
   // Returned iterator must be deleted by user.
@@ -135,31 +146,65 @@ AliMUON2DMap::Iterator() const
 }
 
 //_____________________________________________________________________________
-AliMUONV2DStore* 
-AliMUON2DMap::Generate(const TObject& object)
+TIterator*
+AliMUON2DMap::CreateIterator(Int_t firstI, Int_t lastI) const
 {
-  /// Build a complete (i.e. all detElemId,manuId couple will be there) store
-  /// but with identical values, given by object 
-  /// The returned store will be obviously optimized for DEManu.
-
-  AliMUONV2DStore* store = new AliMUON2DMap(true);
-  
-  TList* list = AliMpManuList::ManuList();
-  
-  AliMpIntPair* pair;
-  
-  TIter next(list);
-  
-  while ( ( pair = static_cast<AliMpIntPair*>(next()) ) ) 
+  // Create and return an iterator on this map
+  // Returned iterator must be deleted by user.
+  if ( fMap ) 
   {
-    Int_t detElemId = pair->GetFirst();
-    Int_t manuId = pair->GetSecond();
-    store->Set(detElemId,manuId,object.Clone(),kFALSE);
+    return new AliMUON2DMapIteratorByI(*fMap,firstI,lastI);
   }
+  return 0x0;
+}
+
+//_____________________________________________________________________________
+void 
+AliMUON2DMap::Clear(Option_t*)
+{
+  /// Reset
+  delete fMap;
+
+  fMap = new AliMpExMap(kTRUE);
+
+  if ( fOptimizeForDEManu )
+  {
+    Int_t nDEs(0);
+    for ( Int_t i = 0; i < AliMpConstants::NofChambers(); ++i )
+    {
+      nDEs += AliMpDEManager::GetNofDEInChamber(i);
+    }
+    fMap->SetSize(nDEs);
+  }
+}  
+
+//_____________________________________________________________________________
+Int_t 
+AliMUON2DMap::GetSize() const
+{
+  /// Return the number of objects we hold
+  TExMapIter iter(fMap->GetIterator());
+  Int_t i;
+  Int_t theSize(0);
   
-  delete list;
-  
-  return store;
+  while ( GetValue(iter,i) ) 
+  {
+    theSize += GetSize(i);
+  }
+  return theSize;
+}
+
+//_____________________________________________________________________________
+Int_t 
+AliMUON2DMap::GetSize(Int_t i) const
+{
+  /// Return the number of objects we hold
+  AliMpExMap* m = static_cast<AliMpExMap*>(fMap->GetValue(i));
+  if (m)
+  {
+    return m->GetSize();
+  }
+  return 0;
 }
 
 //_____________________________________________________________________________
@@ -191,22 +236,30 @@ AliMUON2DMap::Set(Int_t i, Int_t j, TObject* object, Bool_t replace)
     fMap->Add(i,m);
     o = fMap->GetValue(i);
   }
-  AliMpExMap* m = dynamic_cast<AliMpExMap*>(o);
-  if (!m) AliFatal(Form("fMap[%d] not of the expected type",i));
+  AliMpExMap* m = static_cast<AliMpExMap*>(o);
+//  AliMpExMap* m = dynamic_cast<AliMpExMap*>(o);
+//  if (!m) AliFatal(Form("fMap[%d] not of the expected type",i));
+ 
   o = m->GetValue(j);
-  if ( !o || ( o && replace ) )
+  
+  if ( !o )
   {
-    if ( IsOwner() ) 
-    {
-      delete o;
-    }
     m->Add(j,object);
   }
-  else if ( o && !replace )
+  else 
   {
-    AliError(Form("Object %p is already there for (i,j)=(%d,%d)",o,i,j));
-    return kFALSE;
+    if ( replace ) 
+    {
+      delete o;
+      m->Add(j,object);
+    }
+    else
+    {
+      AliError(Form("Object %p is already there for (i,j)=(%d,%d)",o,i,j));
+      return kFALSE;
+    }
   }
+
   return kTRUE;
 }
 

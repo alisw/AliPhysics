@@ -35,7 +35,7 @@ ClassImp(AliMUON1DMap)
 
 //_____________________________________________________________________________
 AliMUON1DMap::AliMUON1DMap(Int_t theSize)
-: AliMUONV1DStore(),
+: AliMUONVStore(),
   fMap(new AliMpExMap(true))
 {
 /// Default ctor
@@ -49,7 +49,7 @@ AliMUON1DMap::AliMUON1DMap(Int_t theSize)
 
 //_____________________________________________________________________________
 AliMUON1DMap::AliMUON1DMap(const AliMUON1DMap& other)
-: AliMUONV1DStore(),
+: AliMUONVStore(),
   fMap(0x0)
 {
 /// Copy constructor
@@ -76,6 +76,25 @@ AliMUON1DMap::~AliMUON1DMap()
 }
 
 //_____________________________________________________________________________
+Bool_t 
+AliMUON1DMap::Add(TObject* object)
+{
+  /// Add an object to this, using uniqueID as the key
+  if (!object) return kFALSE;
+  Set(object->GetUniqueID(),object,kFALSE);
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+void 
+AliMUON1DMap::Clear(Option_t*)
+{
+  /// Reset
+  delete fMap;
+  fMap = 0x0;
+}
+
+//_____________________________________________________________________________
 void
 AliMUON1DMap::CopyTo(AliMUON1DMap& dest) const
 {
@@ -86,8 +105,16 @@ AliMUON1DMap::CopyTo(AliMUON1DMap& dest) const
 }
 
 //_____________________________________________________________________________
+AliMUON1DMap* 
+AliMUON1DMap::Create() const
+{
+  /// Create an empty clone of this
+  return new AliMUON1DMap(fMap->GetSize());
+}
+
+//_____________________________________________________________________________
 TObject* 
-AliMUON1DMap::Get(Int_t i) const
+AliMUON1DMap::FindObject(UInt_t i) const
 {
 /// Get the object located at index i, if it exists, and if i is correct.
 
@@ -95,8 +122,8 @@ AliMUON1DMap::Get(Int_t i) const
 }
 
 //_____________________________________________________________________________
-AliMUONVDataIterator*
-AliMUON1DMap::Iterator() const
+TIterator*
+AliMUON1DMap::CreateIterator() const
 {
   // Create and return an iterator on this map
   // Returned iterator must be deleted by user.
@@ -107,6 +134,13 @@ AliMUON1DMap::Iterator() const
   return 0x0;
 }
 
+//_____________________________________________________________________________
+Int_t
+AliMUON1DMap::GetSize() const
+{
+  /// Return the number of objects we hold
+  return fMap->GetSize();
+}
 
 //_____________________________________________________________________________
 Bool_t 
@@ -116,7 +150,7 @@ AliMUON1DMap::Set(Int_t i, TObject* object, Bool_t replace)
 /// If replace=kFALSE and there's already an object at location i,
 /// this method fails and returns kFALSE, otherwise it returns kTRUE
 
-  TObject* o = Get(i);
+  TObject* o = FindObject(i);
   if ( o && !replace )
   {
     AliError(Form("Object %p is already there for i=%d",o,i));

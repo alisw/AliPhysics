@@ -5,7 +5,7 @@
 
 /// \ingroup calib
 /// \class AliMUON1DMap
-/// \brief Implementation of AliMUONV1DStore
+/// \brief Implementation of AliMUONVStore
 /// 
 //  Author Laurent Aphecetche
 
@@ -13,41 +13,49 @@
 #define ALIMUON1DMAP_H
 
 #ifndef ALIMUONV1DSTORE_H
-#  include "AliMUONV1DStore.h"
+#  include "AliMUONVStore.h"
 #endif
 
 class AliMpExMap;
 
-class AliMUON1DMap : public AliMUONV1DStore
+class AliMUON1DMap : public AliMUONVStore
 {
 public:
   AliMUON1DMap(Int_t theSize=0);
   AliMUON1DMap(const AliMUON1DMap& other);
   AliMUON1DMap& operator=(const AliMUON1DMap& other);
-  
   virtual ~AliMUON1DMap();
+
+  virtual Bool_t Add(TObject* object);
+
+  virtual Bool_t CanConnect() const { return kFALSE; }
   
-  /// Return the object stored at i.
-  virtual TObject* Get(Int_t i) const;
+  virtual void Clear(Option_t* opt="");
+
+  virtual AliMUON1DMap* Create() const;
   
-  virtual AliMUONVDataIterator* Iterator() const;
+  using AliMUONVStore::FindObject;
   
+  virtual TObject* FindObject(UInt_t i) const;
+  
+  virtual TIterator* CreateIterator() const;
+  
+  using AliMUONVStore::GetSize;
+  
+  virtual Int_t GetSize() const;
+  
+private:
+   void CopyTo(AliMUON1DMap& to) const;
   /** Set the object stored at i.
     if replace=false and there's already an object there, returns kFALSE
     */
   virtual Bool_t Set(Int_t i, TObject* object, Bool_t replace);
   
-  /// Whether or not this container is the owner of its contents.
-  virtual Bool_t IsOwner() const { return kTRUE; }
-  
-private:
-   void CopyTo(AliMUON1DMap& to) const;
-  
 private:  
     
     AliMpExMap* fMap; ///< Internal array (map)
   
-    ClassDef(AliMUON1DMap,1) // Implementation of AliMUONV1DStore
+    ClassDef(AliMUON1DMap,1) // Implementation of AliMUONVStore
 };
 
 #endif

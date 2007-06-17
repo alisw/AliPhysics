@@ -18,8 +18,9 @@
 #include "AliMUON1DArray.h"
 
 #include "AliLog.h"
-#include "TObjArray.h"
-
+#include <TClass.h>
+#include <TObjArray.h>
+#include <Riostream.h>
 ///
 /// \class AliMUON1DArray
 /// This class is simply a wrapper to a TObjArray, offering in addition a
@@ -34,24 +35,25 @@ ClassImp(AliMUON1DArray)
 
 //_____________________________________________________________________________
 AliMUON1DArray::AliMUON1DArray(Int_t theSize)
-: AliMUONV1DStore(),
+: AliMUONVStore(),
   fArray(0x0)
 {
-/// Default ctor
+    /// Default ctor
 
-  if ( theSize ) 
-  {
-    fArray = new TObjArray(theSize);
-  }
+  if (theSize<=0) theSize=16;
+        
+  fArray = new TObjArray(theSize);
+  fArray->SetOwner(kTRUE);
 }
 
 //_____________________________________________________________________________
 AliMUON1DArray::AliMUON1DArray(const AliMUON1DArray& other)
-: AliMUONV1DStore(),
+: AliMUONVStore(),
   fArray(0x0)
 {
 /// Copy constructor
 
+    AliDebug(1,Form("this=%p copy ctor",this));
   other.CopyTo(*this);
 }
 
@@ -68,9 +70,36 @@ AliMUON1DArray::operator=(const AliMUON1DArray& other)
 //_____________________________________________________________________________
 AliMUON1DArray::~AliMUON1DArray()
 {
-/// dtor, we're the owner of our internal array.
+  /// dtor, we're the owner of our internal array.
 
+  AliDebug(1,Form("this=%p",this));
   delete fArray;
+}
+
+//_____________________________________________________________________________
+Bool_t
+AliMUON1DArray::Add(TObject* object)
+{
+  /// Add an object to this, if its uniqueID is below maxsize
+  if (!object) return kFALSE;
+  
+  Int_t i = (Int_t)object->GetUniqueID();
+  if ( i >= fArray->GetSize() ) 
+  {
+    AliError(Form("Index out of bounds %u (max is %u)",i,fArray->GetSize()));
+    return kFALSE;
+  }
+
+  Set(object->GetUniqueID(),object,kFALSE);
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+void
+AliMUON1DArray::Clear(Option_t* opt)
+{
+  /// Reset
+  fArray->Clear(opt);
 }
 
 //_____________________________________________________________________________
@@ -80,7 +109,8 @@ AliMUON1DArray::CopyTo(AliMUON1DArray& dest) const
 /// Make a deep copy
 
   delete dest.fArray;
-  dest.fArray = new TObjArray;
+  dest.fArray = 0;
+  dest.fArray = new TObjArray(fArray->GetSize());
   dest.fArray->SetOwner(kTRUE);
   for ( Int_t i = 0; i < fArray->GetLast(); ++i )
   {
@@ -89,17 +119,33 @@ AliMUON1DArray::CopyTo(AliMUON1DArray& dest) const
 }
 
 //_____________________________________________________________________________
-TObject* 
-AliMUON1DArray::Get(Int_t i) const
+AliMUON1DArray* 
+AliMUON1DArray::Create() const 
 {
-/// Get the object located at index i, if it exists, and if i is correct.
+  /// Create an empty clone of this
+  return new AliMUON1DArray(fArray->GetSize());
+}
 
-  if ( i >= 0 && i < fArray->GetSize() )
+//_____________________________________________________________________________
+TObject* 
+AliMUON1DArray::FindObject(UInt_t i) const
+{
+  /// Get the object located at index i, if it exists, and if i is correct.
+
+  if ( (Int_t)(i) < fArray->GetSize() )
   {
     return fArray->At(i);
   }
   AliError(Form("Index %d out of bounds (max %d)",i,fArray->GetSize()));
   return 0x0;
+}
+
+//_____________________________________________________________________________
+TIterator* 
+AliMUON1DArray::CreateIterator() const
+{
+  /// Return an iterator on this
+  return fArray->MakeIterator();
 }
 
 //_____________________________________________________________________________
@@ -112,13 +158,20 @@ AliMUON1DArray::Set(Int_t i, TObject* object, Bool_t replace)
 
   if ( i >= 0 && i < fArray->GetSize() )
   {
-    TObject* o = Get(i);
+    if (((Int_t)(object->GetUniqueID()))!=i)
+    {
+      AliError(Form("object's UniqueID is %d, which is different from the expected %d",
+                    object->GetUniqueID(),i));
+      return kFALSE;
+    }
+    
+    TObject* o = FindObject(i);
     if ( o && !replace )
     {
       AliError(Form("Object %p is already there for i=%d",o,i));
       return kFALSE;
     }
-    if ( replace ) 
+    if ( o && replace ) 
     {
       delete o;
     }
@@ -129,5 +182,10 @@ AliMUON1DArray::Set(Int_t i, TObject* object, Bool_t replace)
   return kFALSE;
 }
 
-
-
+//_____________________________________________________________________________
+Int_t 
+AliMUON1DArray::GetSize() const
+{
+  /// Return the number of object we hold
+  return fArray->GetEntries();
+}

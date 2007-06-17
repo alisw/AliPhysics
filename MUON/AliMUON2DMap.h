@@ -5,7 +5,7 @@
 
 /// \ingroup calib
 /// \class AliMUON2DMap
-/// \brief Basic implementation of AliMUONV2DStore container using
+/// \brief Basic implementation of AliMUONVStore container using
 /// AliMpExMap internally.
 ///
 //  Author Laurent Aphecetche
@@ -13,36 +13,48 @@
 #ifndef AliMUON2DMAP_H
 #define AliMUON2DMAP_H
 
-#include "AliMUONV2DStore.h"
+#include "AliMUONVStore.h"
 
 class AliMpExMap;
 
-class AliMUON2DMap : public AliMUONV2DStore
+class AliMUON2DMap : public AliMUONVStore
 {
 public:
   AliMUON2DMap(Bool_t optimizeForDEManu=kFALSE);  
-  virtual ~AliMUON2DMap();
-
-  AliMUONV2DStore* CloneEmpty() const;
-  
-  /// The returned iterator is owned by the client.
-  AliMUONVDataIterator* Iterator() const;
-  
-  virtual TObject* Get(Int_t i, Int_t j) const;
-  virtual Bool_t Set(Int_t i, Int_t j, TObject* object, Bool_t replace);
-  /// Whether or not this container is the owner of its contents.
-  virtual Bool_t IsOwner() const { return kTRUE; } 
-
   AliMUON2DMap(const AliMUON2DMap& other);
   AliMUON2DMap&  operator = (const AliMUON2DMap& other);
+  virtual ~AliMUON2DMap();
 
-  /// Build a complete (i.e. all detElemId,manuId couple will be there) store
-  /// but with identical values, given by object 
-  /// The returned store will be obviously optimized for DEManu.
-  static AliMUONV2DStore* Generate(const TObject& object);
-    
+  virtual Bool_t Add(TObject* object);
+  
+  /// Mandatory methods from TCollection
+  virtual void Clear(Option_t* opt="");
+  
+  /// Whether the Connect(TTree&) method is implemented
+  virtual Bool_t CanConnect() const { return kFALSE; }
+  
+  virtual AliMUONVStore* Create() const;
+  
+  /// The returned iterator is owned by the client.
+  virtual TIterator* CreateIterator() const;
+
+  /// Iterate on part of the store (only for (i,j) where firstI<=i<=lastI
+  TIterator* CreateIterator(Int_t firstI, Int_t lastI) const;
+
+  using AliMUONVStore::FindObject;
+  
+  virtual TObject* FindObject(Int_t i, Int_t j) const;
+
+  /// Whether our internal storage is optimize to store (detection element id, manu id)  
+  Bool_t IsOptimizedForDEManu() const { return fOptimizeForDEManu; }
+  
+  virtual Int_t GetSize() const;
+
+  virtual Int_t GetSize(Int_t i) const;
+
 private:
   void CopyTo(AliMUON2DMap& destination) const;
+  Bool_t Set(Int_t i, Int_t j, TObject* object, Bool_t replace);
 
 private:
   AliMpExMap* fMap; ///< Our internal map (an AliMpExMap of AliMpExMaps)
