@@ -1298,35 +1298,35 @@ void AliMUONSlatGeometryBuilder::SetTransformations()
 // the distance beween the roation axis and the chamber position is 
 // AliMUONConstants::DzCh()+AliMUONConstants::DzSlat()
 // Therefore the position of the half-chamber has to be corrected by a traslation in Z and Y axis
-  Double_t delta_y = (AliMUONConstants::DzCh()+AliMUONConstants::DzSlat())*
+  Double_t deltaY = (AliMUONConstants::DzCh()+AliMUONConstants::DzSlat())*
     TMath::Sin(AliMUONConstants::St345Inclination() * TMath::Pi()/180.);
-  Double_t delta_z = (AliMUONConstants::DzCh()+AliMUONConstants::DzSlat())*
+  Double_t deltaZ = (AliMUONConstants::DzCh()+AliMUONConstants::DzSlat())*
     (1.-TMath::Cos(AliMUONConstants::St345Inclination() * TMath::Pi()/180.));
 
 
   Double_t zpos1= - AliMUONConstants::DefaultChamberZ(4); 
-  SetTransformation(4, TGeoTranslation(0., -delta_y, -delta_z+zpos1), st345inclination);
-  SetTransformation(5, TGeoTranslation(0.,  delta_y,  delta_z+zpos1), st345inclination);
+  SetTransformation(4, TGeoTranslation(0., -deltaY, -deltaZ+zpos1), st345inclination);
+  SetTransformation(5, TGeoTranslation(0.,  deltaY,  deltaZ+zpos1), st345inclination);
 
   zpos1= - AliMUONConstants::DefaultChamberZ(5); 
-  SetTransformation(6, TGeoTranslation(0., -delta_y, -delta_z+zpos1), st345inclination);
-  SetTransformation(7, TGeoTranslation(0.,  delta_y,  delta_z+zpos1), st345inclination);
+  SetTransformation(6, TGeoTranslation(0., -deltaY, -deltaZ+zpos1), st345inclination);
+  SetTransformation(7, TGeoTranslation(0.,  deltaY,  deltaZ+zpos1), st345inclination);
 
   zpos1 = - AliMUONConstants::DefaultChamberZ(6); 
-  SetTransformation(8, TGeoTranslation(0., -delta_y, -delta_z+zpos1), st345inclination);
-  SetTransformation(9, TGeoTranslation(0.,  delta_y,  delta_z+zpos1), st345inclination);
+  SetTransformation(8, TGeoTranslation(0., -deltaY, -deltaZ+zpos1), st345inclination);
+  SetTransformation(9, TGeoTranslation(0.,  deltaY,  deltaZ+zpos1), st345inclination);
 
   zpos1 = - AliMUONConstants::DefaultChamberZ(7); 
-  SetTransformation(10, TGeoTranslation(0., -delta_y, -delta_z+zpos1), st345inclination );
-  SetTransformation(11, TGeoTranslation(0.,  delta_y,  delta_z+zpos1), st345inclination );
+  SetTransformation(10, TGeoTranslation(0., -deltaY, -deltaZ+zpos1), st345inclination );
+  SetTransformation(11, TGeoTranslation(0.,  deltaY,  deltaZ+zpos1), st345inclination );
 
   zpos1 = - AliMUONConstants::DefaultChamberZ(8); 
-  SetTransformation(12, TGeoTranslation(0., -delta_y, -delta_z+zpos1), st345inclination);
-  SetTransformation(13, TGeoTranslation(0.,  delta_y,  delta_z+zpos1), st345inclination);
+  SetTransformation(12, TGeoTranslation(0., -deltaY, -deltaZ+zpos1), st345inclination);
+  SetTransformation(13, TGeoTranslation(0.,  deltaY,  deltaZ+zpos1), st345inclination);
 
   zpos1 = - AliMUONConstants::DefaultChamberZ(9); 
-  SetTransformation(14, TGeoTranslation(0., -delta_y, -delta_z+zpos1), st345inclination);
-  SetTransformation(15, TGeoTranslation(0.,  delta_y,  delta_z+zpos1), st345inclination);
+  SetTransformation(14, TGeoTranslation(0., -deltaY, -deltaZ+zpos1), st345inclination);
+  SetTransformation(15, TGeoTranslation(0.,  deltaY,  deltaZ+zpos1), st345inclination);
 
 }
 
