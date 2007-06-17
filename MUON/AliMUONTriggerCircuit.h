@@ -13,12 +13,10 @@
 //  Author Philippe Crochet (LPCCFd)
 
 #include <TObject.h>
-#include <TObjArray.h>
 #include "AliMpPad.h"
 #include "AliMUONGeometryTransformer.h"
 #include "AliMpVSegmentation.h"
 
-class TObjArray;
 class AliMUONTriggerCrateStore;
 class AliMUONGeometryTransformer;
 
