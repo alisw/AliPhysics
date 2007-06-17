@@ -23,11 +23,10 @@
 /// \author Diego Stocco (Torino)
 
 #include "AliMUONTriggerChamberEff.h"
-#include "AliMUONDigit.h"
+#include "AliMUONVDigit.h"
 #include "AliMUONConstants.h"
 #include "AliMUONGlobalTrigger.h"
 #include "AliMUONGeometryTransformer.h"
-#include "AliMUONSegmentation.h"
 #include "AliMUON.h"
 #include "AliMUONRecData.h"
 #include "AliMUONTriggerTrack.h"
@@ -190,7 +189,7 @@ void AliMUONTriggerChamberEff::InfoDigit()
       digits->Sort();
       Int_t ndigits = (Int_t)digits->GetEntriesFast();
       for(Int_t idigit=0; idigit<ndigits; idigit++) {
-	  mDigit = (AliMUONDigit*)digits->At(idigit);
+	  mDigit = (AliMUONVDigit*)digits->At(idigit);
 	  mDigit->Print();
       } // end digit loop
     } // end chamber loop
@@ -226,9 +225,9 @@ Int_t AliMUONTriggerChamberEff::MatchingPad(Int_t &detElemId, Float_t coor[2], c
     Float_t foundZmatch=999.;
     Float_t yCoorAtPadZ=999.;
     Int_t ndigits = (Int_t)digits->GetEntriesFast();
-    AliMUONDigit * mDigit = 0x0;
+    AliMUONVDigit * mDigit = 0x0;
     for(Int_t idigit=0; idigit<ndigits; idigit++) { // digit loop
-	mDigit = (AliMUONDigit*)digits->At(idigit);
+	mDigit = (AliMUONVDigit*)digits->At(idigit);
 	Int_t currDetElemId = mDigit->DetElemId();
 	Int_t currSlat = currDetElemId%100;
 	if(TMath::Abs(currSlat%18-iSlat%18)>1)continue; // Check neighbour slats
@@ -342,7 +341,6 @@ Int_t AliMUONTriggerChamberEff::DetElemIdFromPos(Float_t x, Float_t y, Int_t cha
     Int_t resultingDetElemId = -1;
     AliMpDEIterator it;
     const AliMUONGeometryTransformer *kGeomTransformer = fMUON->GetGeometryTransformer();
-    AliMUONSegmentation *segmentation = fMUON->GetSegmentation();
     Float_t minDist = 999.;
     for ( it.First(chamber-1); ! it.IsDone(); it.Next() ){
 	Int_t detElemId = it.CurrentDEId();
@@ -350,7 +348,6 @@ Int_t AliMUONTriggerChamberEff::DetElemIdFromPos(Float_t x, Float_t y, Int_t cha
 	Float_t tolerance=0.2*((Float_t)ich);
 	Float_t currDist=9999.;
 
-	if (  segmentation->HasDE(detElemId) ){
 	    const AliMpVSegmentation* seg = 
 		AliMpSegmentation::Instance()
                   ->GetMpSegmentation(detElemId,AliMp::GetCathodType(cathode));
@@ -389,7 +386,6 @@ Int_t AliMUONTriggerChamberEff::DetElemIdFromPos(Float_t x, Float_t y, Int_t cha
 		}
 	    }
 	}
-    }
     return resultingDetElemId;
 }
 
