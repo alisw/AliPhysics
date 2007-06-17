@@ -19,12 +19,12 @@
 
 #include "AliLog.h"
 #include "AliMUONCluster.h"
-#include "AliMUONDigit.h"
+#include "AliMUONVDigit.h"
 #include "AliMUONPad.h"
 #include "AliMUONPreClusterFinder.h"
 #include "AliMpArea.h"
-#include "TClonesArray.h"
 #include "TVector2.h"
+#include "AliMUONVDigitStore.h"
 
 /// \class AliMUONClusterFinderCOG
 ///
@@ -61,21 +61,21 @@ AliMUONClusterFinderCOG::~AliMUONClusterFinderCOG()
 //_____________________________________________________________________________
 Bool_t 
 AliMUONClusterFinderCOG::Prepare(const AliMpVSegmentation* segmentations[2],
-                                       TClonesArray* digits[2])
+                                 const AliMUONVDigitStore& digitStore)
 {
   /// Prepare for clustering
   
   // Find out the DetElemId
   Int_t detElemId(-1);
   
-  for ( Int_t i = 0; i < 2; ++i )
+  TIter next(digitStore.CreateIterator());
+  AliMUONVDigit* d;
+
+  d = static_cast<AliMUONVDigit*>(next());
+
+  if (d)
   {
-    AliMUONDigit* d = static_cast<AliMUONDigit*>(digits[i]->First());
-    if (d)
-    {
-      detElemId = d->DetElemId();
-      break;
-    }
+    detElemId = d->DetElemId();
   }
   
   if ( detElemId < 0 )
@@ -86,7 +86,7 @@ AliMUONClusterFinderCOG::Prepare(const AliMpVSegmentation* segmentations[2],
   
   delete fPreClusterFinder;
   fPreClusterFinder = new AliMUONPreClusterFinder;
-  return fPreClusterFinder->Prepare(segmentations,digits);
+  return fPreClusterFinder->Prepare(segmentations,digitStore);
 }
 
 //_____________________________________________________________________________

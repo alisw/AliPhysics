@@ -30,14 +30,14 @@
 #include "AliLog.h"
 #include "AliMUONCluster.h"
 #include "AliMUONClusterSplitterMLEM.h"
-#include "AliMUONDigit.h"
+#include "AliMUONVDigit.h"
 #include "AliMUONPad.h"
 #include "AliMUONPreClusterFinder.h"
 #include "AliMpPad.h"
 #include "AliMpVPadIterator.h"
 #include "AliMpVSegmentation.h"
 #include "AliRunLoader.h"
-
+#include "AliMUONVDigitStore.h"
 #include <Riostream.h>
 #include <TH2.h>
 #include <TMinuit.h>
@@ -118,7 +118,7 @@ AliMUONClusterFinderMLEM::~AliMUONClusterFinderMLEM()
 //_____________________________________________________________________________
 Bool_t 
 AliMUONClusterFinderMLEM::Prepare(const AliMpVSegmentation* segmentations[2],
-                                  TClonesArray* digits[2])
+                                  const AliMUONVDigitStore& digitStore)
 {
   /// Prepare for clustering
   
@@ -130,14 +130,12 @@ AliMUONClusterFinderMLEM::Prepare(const AliMpVSegmentation* segmentations[2],
   // Find out the DetElemId
   fDetElemId = -1;
   
-  for ( Int_t i = 0; i < 2; ++i )
+  TIter next(digitStore.CreateIterator());
+  AliMUONVDigit* d = static_cast<AliMUONVDigit*>(next());
+  
+  if (d)
   {
-    AliMUONDigit* d = static_cast<AliMUONDigit*>(digits[i]->First());
-    if (d)
-    {
-      fDetElemId = d->DetElemId();
-      break;
-    }
+    fDetElemId = d->DetElemId();
   }
   
   if ( fDetElemId < 0 )
@@ -156,7 +154,7 @@ AliMUONClusterFinderMLEM::Prepare(const AliMpVSegmentation* segmentations[2],
   
 //  AliDebug(3,Form("EVT %d DE %d",fEventNumber,fDetElemId));
   
-  return fPreClusterFinder->Prepare(segmentations,digits);
+  return fPreClusterFinder->Prepare(segmentations,digitStore);
 }
 
 //_____________________________________________________________________________

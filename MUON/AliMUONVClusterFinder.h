@@ -18,8 +18,8 @@
 
 class AliMUONCluster;
 class AliMpVSegmentation;
-class TClonesArray;
 class AliMUONPad;
+class AliMUONVDigitStore;
 
 class AliMUONVClusterFinder : public TObject
 {
@@ -29,7 +29,7 @@ public:
   
   /// \todo add comment
   virtual Bool_t Prepare(const AliMpVSegmentation* segmentations[2],
-                         TClonesArray* digits[2]) = 0;
+                         const AliMUONVDigitStore& digitStore) = 0;
   
   /// \todo add comment
   virtual AliMUONCluster* NextCluster() = 0;

@@ -37,7 +37,7 @@ public:
   virtual ~AliMUONClusterFinderMLEM(); // Destructor
 
   virtual Bool_t Prepare(const AliMpVSegmentation* segmentations[2],
-                         TClonesArray* digits[2]);
+                         const AliMUONVDigitStore& digitStore);
   
   virtual AliMUONCluster* NextCluster();
   

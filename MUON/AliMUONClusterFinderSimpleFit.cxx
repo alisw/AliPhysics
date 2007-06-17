@@ -22,7 +22,7 @@
 #include "AliMpStationType.h"
 #include "AliMUONCluster.h"
 #include "AliMUONConstants.h"
-#include "AliMUONDigit.h"
+#include "AliMUONVDigit.h"
 #include "AliMUONMathieson.h"
 #include "AliMUONPad.h"
 #include "AliMUONClusterFinderCOG.h"
@@ -32,6 +32,8 @@
 #include "TVector2.h"
 #include "TVirtualFitter.h"
 #include "TF1.h"
+#include "AliMUONVDigitStore.h"
+#include <Riostream.h>
 
 /// \class AliMUONClusterFinderSimpleFit
 ///
@@ -108,7 +110,7 @@ AliMUONClusterFinderSimpleFit::~AliMUONClusterFinderSimpleFit()
 //_____________________________________________________________________________
 Bool_t 
 AliMUONClusterFinderSimpleFit::Prepare(const AliMpVSegmentation* segmentations[2],
-                                       TClonesArray* digits[2])
+                                       const AliMUONVDigitStore& digitStore)
 {
   /// Prepare for clustering
 
@@ -117,19 +119,17 @@ AliMUONClusterFinderSimpleFit::Prepare(const AliMpVSegmentation* segmentations[2
   // Find out the DetElemId
   Int_t detElemId(-1);
   
-  for ( Int_t i = 0; i < 2; ++i )
-  {
-    AliMUONDigit* d = static_cast<AliMUONDigit*>(digits[i]->First());
-    if (d)
-    {
-      detElemId = d->DetElemId();
-      break;
-    }
-  }
+  TIter next(digitStore.CreateIterator());
+  AliMUONVDigit* d = static_cast<AliMUONVDigit*>(next());
   
-  if ( detElemId < 0 )
+  if (d)
   {
-    AliWarning("Could not find DE. Probably no digits at all ?");
+    detElemId = d->DetElemId();
+  }
+  else
+  {
+    AliWarning("Could not find DE. Probably no digits at all : here's the digitStore :");
+    StdoutToAliWarning(digitStore.Print(););
     return kFALSE;
   }
   
@@ -155,7 +155,7 @@ AliMUONClusterFinderSimpleFit::Prepare(const AliMpVSegmentation* segmentations[2
 
   delete fClusterFinder;
   fClusterFinder = new AliMUONClusterFinderCOG;
-  return fClusterFinder->Prepare(segmentations,digits);
+  return fClusterFinder->Prepare(segmentations,digitStore);
 }
 
 //_____________________________________________________________________________
