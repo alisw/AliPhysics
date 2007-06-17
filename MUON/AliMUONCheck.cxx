@@ -29,17 +29,16 @@
 /// \author Frederic Yermia, INFN Torino
 
 #include "AliMUONCheck.h"
-#include "AliMUONSimData.h"
-#include "AliMUONRecData.h"
-#include "AliMUONDigit.h"
 #include "AliMUONConstants.h"
 #include "AliMUONTrack.h"
 #include "AliMUONTrackParam.h"
 #include "AliMUONTrackExtrap.h"
-
+#include "AliMUONMCDataInterface.h"
+#include "AliMUONDataInterface.h"
 #include "AliMpSegmentation.h"
 #include "AliMpVSegmentation.h"
 #include "AliMpDEManager.h"
+#include "AliMUONVDigitStore.h"
 
 #include "AliRunLoader.h"
 #include "AliLoader.h"
@@ -64,132 +63,35 @@ ClassImp(AliMUONCheck)
 
 AliMUONCheck::AliMUONCheck(const char* galiceFile, const char* esdFile,Int_t firstEvent, Int_t lastEvent,const char* outDir) 
 : TObject(),
-  fFileName(galiceFile),
-  fFileNameSim(galiceFile),
-  fesdFileName(esdFile),
-  foutDir(outDir),
-  fFirstEvent(firstEvent),
-  fLastEvent(lastEvent),
-  fRunLoader(0x0),
-  fRunLoaderSim(0x0),
-  fRecData(0x0),
-  fSimData(0x0),
-  fTree(0)
+fFileName(galiceFile),
+fFileNameSim(),
+fesdFileName(esdFile),
+foutDir(outDir),
+fFirstEvent(firstEvent),
+fLastEvent(lastEvent)
 {
   /// ctor
- 
-  fRunLoader = AliRunLoader::Open(fFileName.Data(),"MUONFolder","READ");
-  if (!fRunLoader) 
-  {
-    AliError(Form("Error opening %s file \n",fFileName.Data()));
-  }  
-  else
-  {
-    fLoader = fRunLoader->GetLoader("MUONLoader");
-    if ( fLoader )
-    {
-      fRecData = new AliMUONRecData(fLoader,"MUON","MUON");
-    }
-    else
-    {
-      AliError(Form("Could get MUONLoader"));
-    }
-  }
-    
- fRunLoaderSim = AliRunLoader::Open(fFileNameSim.Data(),"MUONFolderSim","READ");
-  if (!fRunLoaderSim) 
-  {
-    AliError(Form("Error opening %s file \n",fFileNameSim.Data()));
-  }  
-  else
-  {
-    fLoaderSim = fRunLoaderSim->GetLoader("MUONLoader");
-    if ( fLoaderSim )
-    {
-      fSimData = new AliMUONSimData(fLoaderSim,"MUON","MUON");
-    }
-    else
-    {
-      AliError(Form("Could get MUONLoader"));
-    }
-  }
-
-  char command[120];
-  sprintf(command,"rm -rf %s", foutDir);
-  gSystem->Exec(command);
-  gSystem->mkdir(foutDir);
-
 }
+
 //_____________________________________________________________________________
-AliMUONCheck::AliMUONCheck(const char* galiceFile, const char* galiceFileSim, const char* esdFile,Int_t firstEvent, Int_t lastEvent,const char* outDir) 
+AliMUONCheck::AliMUONCheck(const char* galiceFile, const char* galiceFileSim,
+                           const char* esdFile,Int_t firstEvent, Int_t lastEvent,
+                           const char* outDir) 
 : TObject(),
-  fFileName(galiceFile),
-  fFileNameSim(galiceFileSim),
-  fesdFileName(esdFile),
-  foutDir(outDir),
-  fFirstEvent(firstEvent),
-  fLastEvent(lastEvent),
-  fRunLoader(0x0),
-  fRunLoaderSim(0x0),
-  fRecData(0x0),
-  fSimData(0x0),
-  fTree(0)
+fFileName(galiceFile),
+fFileNameSim(galiceFileSim),
+fesdFileName(esdFile),
+foutDir(outDir),
+fFirstEvent(firstEvent),
+fLastEvent(lastEvent)
 {
   /// ctor
- 
-  fRunLoader = AliRunLoader::Open(fFileName.Data(),"MUONFolder","READ");
-  if (!fRunLoader) 
-  {
-    AliError(Form("Error opening %s file \n",fFileName.Data()));
-  }  
-  else
-  {
-    fLoader = fRunLoader->GetLoader("MUONLoader");
-    if ( fLoader )
-    {
-      fRecData = new AliMUONRecData(fLoader,"MUON","MUON");
-    }
-    else
-    {
-      AliError(Form("Could get MUONLoader"));
-    }
-  }
-    
- fRunLoaderSim = AliRunLoader::Open(fFileNameSim.Data(),"MUONFolderSim","READ");
-  if (!fRunLoaderSim) 
-  {
-    AliError(Form("Error opening %s file \n",fFileNameSim.Data()));
-  }  
-  else
-  {
-    fLoaderSim = fRunLoaderSim->GetLoader("MUONLoader");
-    if ( fLoaderSim )
-    {
-      fSimData = new AliMUONSimData(fLoaderSim,"MUON","MUON");
-    }
-    else
-    {
-      AliError(Form("Could get MUONLoader"));
-    }
-  }
-
-  char command[120];
-  sprintf(command,"rm -rf %s", foutDir);
-  gSystem->Exec(command);
-  gSystem->mkdir(foutDir);
-
 }
 
 //_____________________________________________________________________________
 AliMUONCheck::~AliMUONCheck()
 {
-/// Destructor
-  fRunLoader->UnloadAll();
-  fRunLoaderSim->UnloadAll();
-  delete fRunLoader;
-  delete fRecData;
-  delete fRunLoaderSim;
-  delete fSimData;
+  /// Destructor
 }
 
 //_____________________________________________________________________________
@@ -197,8 +99,6 @@ void
 AliMUONCheck::CheckESD(Bool_t pdc06TriggerResponse) 
 {
   /// Check ESD files
-
-  if ( !IsValid() ) return;
   
   // Histograms
   TH1F * fhMUONVertex ; //! 
@@ -214,10 +114,12 @@ AliMUONCheck::CheckESD(Bool_t pdc06TriggerResponse)
   // ------------->open the ESD file
   TFile* esdFile = TFile::Open(fesdFileName.Data());
   
-  if (!esdFile || !esdFile->IsOpen()) {
+  if (!esdFile || !esdFile->IsOpen()) 
+  {
     AliError(Form("Error opening %s file \n",fesdFileName.Data()));
-         return ;}
-
+    return;
+  }
+  
   Int_t fSPLowpt=0     ; //!
   Int_t fSPHighpt=0    ; //!
   Int_t fSPAllpt=0     ; //!
@@ -233,10 +135,10 @@ AliMUONCheck::CheckESD(Bool_t pdc06TriggerResponse)
   Int_t fLSLowpt=0     ; //!
   Int_t fLSHighpt=0    ; //! 
   Int_t fLSAllpt=0     ; //!
-
+  
   Int_t fSLowpt=0      ; //!
   Int_t fSHighpt=0     ; //!
-
+  
   Int_t fnTrackTrig=0  ; //!
   Int_t ftracktot=0    ; //!
   Int_t effMatch=0     ; //!
@@ -248,44 +150,45 @@ AliMUONCheck::CheckESD(Bool_t pdc06TriggerResponse)
   Int_t fZ1;
   
   AliESD* fESD = new AliESD();
-  TTree* fTree = (TTree*) esdFile->Get("esdTree");
-  if (!fTree) {
+  TTree* tree = (TTree*) esdFile->Get("esdTree");
+  if (!tree) 
+  {
     Error("CheckESD", "no ESD tree found");
     AliError(Form("CheckESD", "no ESD tree found"));
     return ;
   }
-  fESD->ReadFromTree(fTree);
+  fESD->ReadFromTree(tree);
   
-  Int_t fnevents = fRunLoader->GetNumberOfEvents();
+  Int_t fnevents = tree->GetEntries();
   Int_t endOfLoop = fLastEvent+1;
-
+  
   if ( fLastEvent == -1 ) endOfLoop = fnevents;
   Int_t ievent=0;
   Int_t nev=0;
-
+  
   for (ievent = fFirstEvent; ievent < endOfLoop; ++ievent ) 
   {
-    fRunLoader->GetEvent(ievent);
-    nev++;
-    
-    fTree->GetEvent(ievent);
-    if (!fESD) {
+    nev++;    
+    tree->GetEvent(ievent);
+    if (!fESD) 
+    {
       Error("CheckESD", "no ESD object found for event %d", ievent);
       return ;
     }
-    AliESDVertex* vertex = (AliESDVertex*) fESD->AliESD::GetVertex();
+    AliESDVertex* vertex = (AliESDVertex*) fESD->GetVertex();
     
     Double_t zVertex = 0. ;
     if (vertex) zVertex = vertex->GetZv();
-            
+    
     Int_t nTracks = (Int_t)fESD->GetNumberOfMuonTracks() ;
     ULong64_t trigword=fESD->GetTriggerMask();
-
-    if(pdc06TriggerResponse){
+    
+    if(pdc06TriggerResponse)
+    {
       if (trigword & 0x01) {
         fSPLowpt++;
       }
-    
+      
       if (trigword & 0x02){
         fSPHighpt++;
       }
@@ -313,7 +216,7 @@ AliMUONCheck::CheckESD(Bool_t pdc06TriggerResponse)
       if (trigword & 0x200){
         fUSLowpt++;
       }
-    
+      
       if (trigword & 0x400){
         fUSHighpt++;
       }
@@ -323,11 +226,11 @@ AliMUONCheck::CheckESD(Bool_t pdc06TriggerResponse)
       if (trigword & 0x1000){
         fLSLowpt++;
       }
-    
+      
       if (trigword & 0x2000){
         fLSHighpt++;
       }
-     
+      
       if (trigword & 0x4000){
         fLSAllpt++;
       }
@@ -336,7 +239,7 @@ AliMUONCheck::CheckESD(Bool_t pdc06TriggerResponse)
       if (trigword & 0x01) {
         fSLowpt++;
       }
-    
+      
       if (trigword & 0x02){
         fSHighpt++;
       }
@@ -355,15 +258,16 @@ AliMUONCheck::CheckESD(Bool_t pdc06TriggerResponse)
     }
     
     Int_t tracktrig=0;
-    Int_t iTrack1 ; 
-    for (iTrack1 = 0; iTrack1<nTracks; iTrack1++) { //1st loop
+    
+    for ( Int_t iTrack1 = 0; iTrack1<nTracks; ++iTrack1 ) 
+    { //1st loop
       AliESDMuonTrack* muonTrack = fESD->GetMuonTrack(iTrack1);
       ftracktot++;
       
       thetaX = muonTrack->GetThetaX();
       thetaY = muonTrack->GetThetaY();
       pYZ     =  1./TMath::Abs(muonTrack->GetInverseBendingMomentum());
-
+      
       fPzRec1  = - pYZ / TMath::Sqrt(1.0 + TMath::Tan(thetaY)*TMath::Tan(thetaY));
       fPxRec1  = fPzRec1 * TMath::Tan(thetaX);
       fPyRec1  = fPzRec1 * TMath::Tan(thetaY);
@@ -374,26 +278,27 @@ AliMUONCheck::CheckESD(Bool_t pdc06TriggerResponse)
       Float_t pt1 = fV1.Pt();
       // ----------->Rapidity
       Float_t y1 = fV1.Rapidity();
- 
-      if(muonTrack->GetMatchTrigger()) {
+      
+      if(muonTrack->GetMatchTrigger()) 
+      {
         fnTrackTrig++;
         tracktrig++;
       }
       hY->Fill(y1);
       hPt->Fill(pt1);
-
-    }// loop on track
- 
+    } // loop on track
+    
     fhMUONVertex->Fill(zVertex) ;
     fhMUONMult->Fill(Float_t(nTracks)) ;
-      
+    
   } // loop over events
   
   AliInfo(Form("Terminate %s:", GetName())) ;
   
   effMatch=100*fnTrackTrig/ftracktot;
-
-  if(pdc06TriggerResponse){
+  
+  if(pdc06TriggerResponse)
+  {
     printf("=================================================================\n") ;
     printf("================  %s ESD SUMMARY    ==============\n", GetName()) ;
     printf("                                                   \n") ;
@@ -421,14 +326,14 @@ AliMUONCheck::CheckESD(Bool_t pdc06TriggerResponse)
     printf("\n") ;
     printf("matching efficiency with the trigger for single tracks = %2d %% \n", effMatch);
     printf("================================================================\n") ;  printf("\n") ;
-  
+    
   }//if(pdc06TriggerResponse)
   
   gSystem->cd(foutDir);
   
   FILE *outtxt=fopen("output.txt","a");
   freopen("output.txt","a",outtxt);
-
+  
   if(pdc06TriggerResponse){
     fprintf(outtxt,"                                                   \n");
     fprintf(outtxt,"===================================================\n");
@@ -458,9 +363,9 @@ AliMUONCheck::CheckESD(Bool_t pdc06TriggerResponse)
     fprintf(outtxt,"\n");
     fprintf(outtxt,"matching efficiency with the trigger for single tracks = %2d %% \n", effMatch);
   }//if(pdc06TriggerResponse)
-
-  else {
   
+  else {
+    
     fprintf(outtxt,"                                                   \n");
     fprintf(outtxt,"===================================================\n");
     fprintf(outtxt,"================      ESD SUMMARY    ==============\n");
@@ -506,49 +411,43 @@ void
 AliMUONCheck::CheckKine() 
 {
   /// Check Stack 
-  if ( !IsValid() ) return;
   
-  // Stack of particle for each event
-  AliStack* stack;
+  AliMUONMCDataInterface diSim(fFileNameSim.Data());
+  if (!diSim.IsValid()) return;
   
-  Int_t fnevents = fRunLoaderSim->GetNumberOfEvents();
-  fRunLoaderSim->LoadKinematics("READ");
-         
+  Int_t fnevents = diSim.NumberOfEvents();
+  
   Int_t endOfLoop = fLastEvent+1;
   
   if ( fLastEvent == -1 ) endOfLoop = fnevents;
   
-  Int_t ievent=0;
   Int_t nev=0;
   Int_t nmu=0;
   Int_t nonemu=0;
   Int_t ndimu=0;
-  Int_t npa=0;
-  Int_t npb=0;
   
-  for (ievent = fFirstEvent; ievent < endOfLoop; ++ievent ) {
-    
+  for ( Int_t ievent = fFirstEvent; ievent < endOfLoop; ++ievent ) 
+  {
     Int_t nmu2=0;
-    nev++;  
+    ++nev;  
     
-    fRunLoaderSim->GetEvent(ievent); 
-    stack = fRunLoaderSim->Stack();
-    npa = stack->GetNprimary();
-    npb = stack->GetNtrack(); 
+    AliStack* stack = diSim.Stack(ievent);
+    Int_t npa = stack->GetNprimary();
+    Int_t npb = stack->GetNtrack(); 
     printf("Primary particles  %i   \n",npa); 
     printf("Sec particles  %i   \n",npb); 
     printf("=================================================================\n") ;
     printf("Primary particles listing:  \n"); 
     printf("=================================================================\n") ;
-    for(Int_t i=0; i<npa; i++) {
-      
+    for (Int_t i=0; i<npa; ++i) 
+    {
       TParticle *p  = stack->Particle(i);
       p->Print("");
       Int_t pdg=p->GetPdgCode(); 
       
-      
-      if (abs(pdg) == 13) {
-        nmu2++;
+      if (abs(pdg) == 13) 
+      {
+        ++nmu2;
       }
     }
     printf("=================================================================\n") ;
@@ -556,54 +455,59 @@ AliMUONCheck::CheckKine()
     
     printf("Secondaries particles listing:  \n"); 
     printf("=================================================================\n") ;
-    for(Int_t i=npa; i<npb; i++) {
-      
+    for (Int_t i=npa; i<npb; ++i) 
+    {
       stack->Particle(i)->Print("");
     }
-
+    
     printf("=================================================================\n") ; 
     printf(">>> Event %d, Number of primary particles is %d \n",ievent, npa); 
     printf(">>> Event %d, Number of secondary articles is %d \n",ievent, npb-npa); 
     printf("=================================================================\n");
-    if(nmu2>0){
+    if(nmu2>0)
+    {
       printf(">>> Okay!!! Event %d with at least one muon on primary stack! \n",ievent); 
-      nonemu++;
+      ++nonemu;
     }
     
-    if(nmu2==0){
+    if(nmu2==0)
+    {
       printf(">>> Warning!!! Event %d without muon on primary stack! \n",ievent);     
-      nmu++;
+      ++nmu;
     }
-
-    if(nmu2>1){
+    
+    if(nmu2>1)
+    {
       printf(">>> Okay!!! Event %d with at least two muons on primary stack! \n",ievent); 
-      ndimu++; 
+      ++ndimu; 
     }
     printf("=================================================================\n");  
     printf("                                                                  \n");
     printf("                                                                  \n") ;
   }//ievent
   
-  fRunLoaderSim->UnloadKinematics();
-  
   printf("=================================================================\n") ;
   printf("               Total number of processed events  %d               \n", nev) ;
   printf("                                                                 \n") ;
   
-  if(nmu>0){
+  if(nmu>0)
+  {
     printf("--->                       WARNING!!!                       <---\n"); 
     printf(" %i events without muon on primary stack \n",nmu); 
   }
   
-  if(nmu==0){
+  if(nmu==0)
+  {
     printf("--->                          OKAY!!!                        <---\n"); 
     printf("  %i events generated with at least one muon on primary stack \n",nonemu);
   }
-  if(ndimu>0){
+  
+  if(ndimu>0)
+  {
     printf("--->                          OKAY!!!                        <---\n"); 
     printf("  %i events generated with at least two muons on primary stack \n",ndimu); 
   }
-
+  
   printf("                                                                 \n") ;
   printf("***                       Leaving MuonKine()                 *** \n");
   printf("**************************************************************** \n");
@@ -619,38 +523,41 @@ AliMUONCheck::CheckKine()
   fprintf(outtxt,"               Total number of processed events  %d              \n", nev) ;
   fprintf(outtxt,"                                                                 \n");
   
-  if(nmu>0){
+  if(nmu>0)
+  {
     fprintf(outtxt,"                        ---> WARNING!!! <---                     \n"); 
     fprintf(outtxt,"  %i events without muon on primary stack \n",nmu); 
   }
-
-  if(nmu==0){
+  
+  if(nmu==0)
+  {
     fprintf(outtxt,"                         ---> OKAY!!! <---                       \n"); 
     fprintf(outtxt,"  %i events generated with at least one muon on primary stack \n",nonemu); 
   }
-
-  if(ndimu>0){
+  
+  if(ndimu>0)
+  {
     fprintf(outtxt,"                         ---> OKAY!!! <---                       \n"); 
     fprintf(outtxt,"  %i events generated with at least two muons on primary stack \n",ndimu); 
   }
-
+  
   fprintf(outtxt,"                                                                 \n") ;
   fprintf(outtxt,"***                       Leaving MuonKine()                 *** \n");
   fprintf(outtxt,"**************************************************************** \n");
   fclose(outtxt);
-
-  fRunLoaderSim->UnloadKinematics();
 }
 
 //_____________________________________________________________________________
 void
 AliMUONCheck::CheckTrackRef() 
 {
-   /// Check TrackRef files
+  /// Check TrackRef files
   
-  if ( !IsValid() ) return;
+  AliMUONMCDataInterface diSim(fFileNameSim.Data());
+  if ( !diSim.IsValid() ) return;
+  
   Int_t flag11=0,flag12=0,flag13=0,flag14=0;
- 
+  
   TH1F *tof01= new TH1F("tof01","TOF for first tracking plane",100,0.,100);
   tof01->SetXTitle("tof (ns)");
   TH1F *tof14= new TH1F("tof14","TOF for MT22",100,0.,100);
@@ -669,34 +576,33 @@ AliMUONCheck::CheckTrackRef()
   hitDensity[3] =  new TH1F("TR_dhits14","",30,0,300);
   hitDensity[3]->SetFillColor(3);
   hitDensity[3]->SetXTitle("R (cm)");
-  Int_t fnevents = fRunLoader->GetNumberOfEvents();
   
-  fRunLoaderSim->LoadTrackRefs();
+  Int_t fnevents = diSim.NumberOfEvents();
+  
   Int_t endOfLoop = fLastEvent+1;
   
   if ( fLastEvent == -1 ) endOfLoop = fnevents;
   
-  Int_t ievent=0;
   Int_t nev=0;
   Int_t ntot=fLastEvent+1-fFirstEvent;
-  for (ievent = fFirstEvent; ievent < endOfLoop; ++ievent ) {
-    fRunLoaderSim->GetEvent(ievent);
+  
+  for ( Int_t ievent = fFirstEvent; ievent < endOfLoop; ++ievent ) 
+  {
     Int_t  save=-99;
-    nev++;  
-    TTree *tTR = fRunLoaderSim->TreeTR();
-    Int_t nentries = (Int_t)tTR->GetEntries();
-    TClonesArray *fRefArray = new TClonesArray("AliTrackReference");
-    TBranch *branch = tTR->GetBranch("MUON");
-    branch->SetAddress(&fRefArray);
+    ++nev;  
     
-    for(Int_t l=0; l<nentries; l++)
+    Int_t nentries = diSim.NumberOfTrackRefs(ievent);
+    
+    for ( Int_t l=0; l<nentries; ++l )
     {
-      if(!branch->GetEvent(l)) continue;
-      Int_t nnn = fRefArray->GetEntriesFast();
-                              
-      for(Int_t k=0; k<nnn; k++) 
+      TClonesArray* trackRefs = diSim.TrackRefs(ievent,l);
+      if (!trackRefs) continue;
+      
+      Int_t nnn = trackRefs->GetEntriesFast();
+      
+      for ( Int_t k=0; k<nnn; ++k ) 
       {
-        AliTrackReference *tref = (AliTrackReference*)fRefArray->UncheckedAt(k);
+        AliTrackReference *tref = static_cast<AliTrackReference*>(trackRefs->UncheckedAt(k));
         Int_t label = tref->GetTrack();
         Float_t x     =    tref->X();        // x-pos of hit
         Float_t y     =    tref->Y();        // y-pos
@@ -714,7 +620,7 @@ AliMUONCheck::CheckTrackRef()
           flag13=0;
           flag14=0;
         }
-                
+        
         if (save==label){
           
           //Ch 1, z=-526.16
@@ -729,7 +635,7 @@ AliMUONCheck::CheckTrackRef()
             flag12=1;
             hitDensity[1]->Fill(r,wgt);
           }
-                          
+          
           //Ch 11, z=-1603.5
           if (z<=-1598&& z>=-1608&&flag13==0){
             flag13=1;
@@ -744,16 +650,15 @@ AliMUONCheck::CheckTrackRef()
           }; 
           
         }//if save==label
-                            
+        
       }//hits de tTR
-                
+      
+      delete trackRefs;
+      
     }//entree de tTR 
-  
-     fRefArray->Delete();
-     delete  fRefArray; 
+    
   }//evt loop
-       
-  fRunLoaderSim->UnloadTrackRefs();
+  
   gSystem->cd(foutDir);
   TCanvas *c6 = new TCanvas("c6","TOF",400,10,600,700);
   c6->Divide(1,2);
@@ -763,7 +668,7 @@ AliMUONCheck::CheckTrackRef()
   c6->cd(2);
   tof14->Draw();
   c6->Print("tof_on_trigger.ps");
-          
+  
   TCanvas *c5 = new TCanvas("c5","TRef:Hits Density",400,10,600,700);
   c5->Divide(2,2);
   c5->cd(1);
@@ -781,205 +686,185 @@ AliMUONCheck::CheckTrackRef()
   printf("         Total number of processed events  %d      \n", nev) ;
   printf("***                Leaving TRef()               *** \n");
   printf("*************************************************** \n");
-
-  fRunLoaderSim->UnloadTrackRefs();
 }
 
 //_____________________________________________________________________________
 void 
 AliMUONCheck::CheckOccupancy(Bool_t perDetEle) const
 {
-/// Check occupancy for the first event selected
-
-  // Loading MUON subsystem
-  fLoaderSim->LoadDigits("READ");
-  AliMUONData muondata(fLoaderSim,"MUON","MUON");
+  /// Check occupancy for the first event selected
   
-  AliMUONDigit * mDigit =0x0;
-  const AliMpVSegmentation * segbend = 0x0;
-  const AliMpVSegmentation * segnonbend = 0x0;
-  AliMpIntPair pad(0,0);
-
   Int_t dEoccupancyBending[14][26];
   Int_t dEoccupancyNonBending[14][26];
   Int_t cHoccupancyBending[14];
   Int_t cHoccupancyNonBending[14];
   Int_t totaloccupancyBending =0;
   Int_t totaloccupancyNonBending =0;
-
+  
   Int_t dEchannelsBending[14][26];
   Int_t dEchannelsNonBending[14][26];
   Int_t cHchannelsBending[14];
   Int_t cHchannelsNonBending[14];
   Int_t totalchannelsBending =0;
   Int_t totalchannelsNonBending =0;
-
-  Int_t nchambers = AliMUONConstants::NCh(); ;
-  for (Int_t ichamber=0; ichamber<nchambers; ichamber++) {
+  
+  Int_t nchambers = AliMUONConstants::NCh();
+  
+  AliMUONDataInterface di(fFileNameSim);
+  
+  AliMUONVDigitStore* digitStore = di.DigitStore(fFirstEvent);
+  
+  // Compute values
+  for (Int_t ichamber=0; ichamber<nchambers; ++ichamber) 
+  {
     cHchannelsBending[ichamber]=0;
     cHchannelsNonBending[ichamber]=0;
-
-    for (Int_t idetele=0; idetele<26; idetele++) {
+    cHoccupancyBending[ichamber]=0;
+    cHoccupancyNonBending[ichamber]=0;
+    
+    for (Int_t idetele=0; idetele<26; idetele++) 
+    {
       Int_t detele = 100*(ichamber +1)+idetele;
-      dEchannelsBending[ichamber][idetele]=0;
-      dEchannelsNonBending[ichamber][idetele]=0;
-      dEoccupancyBending[ichamber][idetele]=0;
-      dEoccupancyNonBending[ichamber][idetele]=0;
-      if ( AliMpDEManager::IsValidDetElemId(detele) ) {
-	segbend    = AliMpSegmentation::Instance()
-                     ->GetMpSegmentation(detele, AliMp::kCath0);
-	segnonbend = AliMpSegmentation::Instance()
-                     ->GetMpSegmentation(detele, AliMp::kCath1);
-        if (AliMpDEManager::GetPlaneType(detele, AliMp::kCath0) != AliMp::kBendingPlane ) {
-	  const AliMpVSegmentation* tmp = segbend;
-	  segbend    =  segnonbend;
-	  segnonbend =  tmp;
-	}  
-	  
-	for (Int_t ix=0; ix<=segbend->MaxPadIndexX(); ix++) {
-	  for (Int_t iy=0; iy<=segbend->MaxPadIndexY(); iy++) {
-	    pad.SetFirst(ix);
-	    pad.SetSecond(iy);
-	    if( segbend->HasPad(pad) )   {  
-	      dEchannelsBending[ichamber][idetele]++;
-	      cHchannelsBending[ichamber]++;
-	      totalchannelsBending++;
+      
+      if ( AliMpDEManager::IsValidDetElemId(detele) ) 
+      {
+        Int_t cathode(0);
+        
+        const AliMpVSegmentation* segbend = AliMpSegmentation::Instance()
+        ->GetMpSegmentation(detele, AliMp::kCath0);
+        const AliMpVSegmentation* segnonbend = AliMpSegmentation::Instance()
+          ->GetMpSegmentation(detele, AliMp::kCath1);
+        
+        if (AliMpDEManager::GetPlaneType(detele, AliMp::kCath0) != AliMp::kBendingPlane ) 
+        {
+          const AliMpVSegmentation* tmp = segbend;
+          segbend    =  segnonbend;
+          segnonbend =  tmp;
+          cathode = 1;
+        }  
+        
+        Int_t nchannels = segbend->NofPads();
+        Int_t ndigits = digitStore->GetSize(detele,cathode);
+	      dEchannelsBending[ichamber][idetele] = nchannels;
+        dEoccupancyBending[ichamber][idetele] = ndigits;
+	      cHchannelsBending[ichamber] += nchannels;
+        cHoccupancyBending[ichamber] += ndigits;
+	      totalchannelsBending += nchannels;
+        totaloccupancyBending += ndigits;
+        
+        nchannels = segnonbend->NofPads();
+        ndigits = digitStore->GetSize(detele,1-cathode);
+        
+	      dEchannelsNonBending[ichamber][idetele] = nchannels;
+        dEoccupancyBending[ichamber][idetele] = ndigits;
+	      cHchannelsNonBending[ichamber] += nchannels;
+	      cHoccupancyNonBending[ichamber] += ndigits;
+	      totalchannelsNonBending += nchannels;
+	      totaloccupancyNonBending += ndigits;
 	    }
-	  }
-	}
-	for (Int_t ix=0; ix<=segnonbend->MaxPadIndexX(); ix++) {
-	  for (Int_t iy=0; iy<=segnonbend->MaxPadIndexY(); iy++) {
-	    pad.SetFirst(ix);
-	    pad.SetSecond(iy);
-	    if(segnonbend->HasPad(pad))  {
-	      dEchannelsNonBending[ichamber][idetele]++;  
-	      cHchannelsNonBending[ichamber]++;
-	      totalchannelsNonBending++;
-	    }
-	  }
-	}
-	if (perDetEle) printf(">>> Detection element %4d has %5d channels in bending and %5d channels in nonbending \n",
-	     detele, dEchannelsBending[ichamber][idetele], dEchannelsNonBending[ichamber][idetele] ); 
+      if (perDetEle) 
+      {
+        printf(">>> Detection element %4d has %5d channels in bending and %5d channels in nonbending \n",
+               detele, dEchannelsBending[ichamber][idetele], dEchannelsNonBending[ichamber][idetele] ); 
       }
     }
     printf(">>> Chamber %2d has %6d channels in bending and %6d channels in nonbending \n",
-	   ichamber+1,  cHchannelsBending[ichamber], cHchannelsNonBending[ichamber]);
+           ichamber+1,  cHchannelsBending[ichamber], cHchannelsNonBending[ichamber]);
   }
   printf(">>Spectrometer has  %7d channels in bending and %7d channels in nonbending \n",
-	 totalchannelsBending, totalchannelsNonBending);
-
-  // Get event
-  printf(">>> Event %d \n", fFirstEvent);
-  fRunLoaderSim->GetEvent(fFirstEvent);
-  muondata.SetTreeAddress("D"); 
-  muondata.GetDigits();
-
-  // Loop on chambers
-  for (Int_t ichamber=0; ichamber<nchambers; ichamber++) {
-    cHoccupancyBending[ichamber]   = 0;
-    cHoccupancyNonBending[ichamber]= 0;
-
-    // Loop on digits
-    Int_t ndigits = (Int_t) muondata.Digits(ichamber)->GetEntriesFast();
-    for (Int_t idigit=0; idigit<ndigits; idigit++) {
-      mDigit = static_cast<AliMUONDigit*>(muondata.Digits(ichamber)->At(idigit));
-      Int_t detele = mDigit->DetElemId();
-      Int_t idetele = detele-(ichamber+1)*100;
-      if ( mDigit->Cathode() == 0 ) {
-	cHoccupancyBending[ichamber]++;
-	dEoccupancyBending[ichamber][idetele]++;
-	totaloccupancyBending++;
-      }
-      else {
-	cHoccupancyNonBending[ichamber]++;
-	dEoccupancyNonBending[ichamber][idetele]++;
-	totaloccupancyNonBending++;
-      }
-    } 
-
+         totalchannelsBending, totalchannelsNonBending);
+  
+  // Output values
+  
+  for ( Int_t ichamber = 0; ichamber < 14; ++ichamber ) 
+  {
     printf(">>> Chamber %2d  nChannels Bending %5d  nChannels NonBending %5d \n", 
-	   ichamber+1, 
-	   cHoccupancyBending[ichamber],
-	   cHoccupancyNonBending[ichamber]);           
+         ichamber+1, 
+         cHoccupancyBending[ichamber],
+         cHoccupancyNonBending[ichamber]);           
     printf(">>> Chamber %2d  Occupancy Bending %5.2f %%  Occupancy NonBending %5.2f %% \n", 
-	   ichamber+1, 
-	   100.*((Float_t) cHoccupancyBending[ichamber])/((Float_t) cHchannelsBending[ichamber]),
-	   100.*((Float_t) cHoccupancyNonBending[ichamber])/((Float_t) cHchannelsBending[ichamber])            );
-
-
-    for(Int_t idetele=0; idetele<26; idetele++) {
-      Int_t detele = idetele + 100*(ichamber+1);
-      if ( AliMpDEManager::IsValidDetElemId(detele) ) {
-	if (perDetEle) {
-	  printf(">>> DetEle %4d nChannels Bending %5d  nChannels NonBending %5d \n", 
-		 idetele+100*(ichamber+1), 
-		 dEoccupancyBending[ichamber][idetele],
-		 dEoccupancyNonBending[ichamber][idetele]);  
-	  printf(">>> DetEle %4d Occupancy Bending %5.2f %%  Occupancy NonBending %5.2f %% \n", 
-		 idetele+100*(ichamber+1), 
-		 100.*((Float_t) dEoccupancyBending[ichamber][idetele])/((Float_t) dEchannelsBending[ichamber][idetele]),
-		 100.*((Float_t) dEoccupancyNonBending[ichamber][idetele])/((Float_t) dEchannelsBending[ichamber][idetele]));  
-	}
+         ichamber+1, 
+         100.*((Float_t) cHoccupancyBending[ichamber])/((Float_t) cHchannelsBending[ichamber]),
+         100.*((Float_t) cHoccupancyNonBending[ichamber])/((Float_t) cHchannelsBending[ichamber])            );
+  
+    if ( perDetEle )
+    {
+      for(Int_t idetele=0; idetele<26; idetele++) 
+      {
+        Int_t detele = idetele + 100*(ichamber+1);
+        if ( AliMpDEManager::IsValidDetElemId(detele) ) 
+        {
+          printf(">>> DetEle %4d nChannels Bending %5d  nChannels NonBending %5d \n", 
+               idetele+100*(ichamber+1), 
+               dEoccupancyBending[ichamber][idetele],
+               dEoccupancyNonBending[ichamber][idetele]);  
+          printf(">>> DetEle %4d Occupancy Bending %5.2f %%  Occupancy NonBending %5.2f %% \n", 
+               idetele+100*(ichamber+1), 
+               100.*((Float_t) dEoccupancyBending[ichamber][idetele])/((Float_t) dEchannelsBending[ichamber][idetele]),
+               100.*((Float_t) dEoccupancyNonBending[ichamber][idetele])/((Float_t) dEchannelsBending[ichamber][idetele]));  
+        }
       }
     }
-  } // end chamber loop
+  }
+
   printf(">>> Muon Spectrometer  Occupancy Bending %5.2f %%  Occupancy NonBending %5.2f %% \n",  
-	   100.*((Float_t) totaloccupancyBending)/((Float_t) totalchannelsBending),
-	 100.*((Float_t) totaloccupancyNonBending)/((Float_t) totalchannelsNonBending)            );
-  muondata.ResetDigits();
-  //    } // end cathode loop
-  fLoaderSim->UnloadDigits();
+       100.*((Float_t) totaloccupancyBending)/((Float_t) totalchannelsBending),
+       100.*((Float_t) totaloccupancyNonBending)/((Float_t) totalchannelsNonBending)            );
+
+  delete digitStore;
 }
 
 //_____________________________________________________________________________
 void 
 AliMUONCheck::CheckRecTracks () const
 {
-/// Reads and dumps rec tracks objects
-
-  // waiting for mag field in CDB 
-  AliInfoStream() << "Loading field map...\n";
-  if (!AliTracker::GetFieldMap()) {
-    AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5kG);
-    AliTracker::SetFieldMap(field, kFALSE);
-  }
+  /// Reads and dumps rec tracks objects
   
-  // Loading data
-  fLoader->LoadTracks("READ");
+  AliWarning("Reimplement me ? or use AliMUONDumper simply ?");
   
-  Int_t endOfLoop = fLastEvent+1;
-  if ( fLastEvent == -1 ) endOfLoop = fRunLoader->GetNumberOfEvents();
-
-  for (Int_t ievent=fFirstEvent; ievent<endOfLoop; ievent++) {
-    fRunLoader->GetEvent(ievent);
-    
-    fRecData->SetTreeAddress("RT");
-    fRecData->GetRecTracks();
-    TClonesArray* recTracks = fRecData->RecTracks();
-    
-    Int_t nrectracks = (Int_t) recTracks->GetEntriesFast(); //
-    printf(">>> Event %d, Number of Recconstructed tracks %d \n",ievent, nrectracks);
-
-    // Set the magnetic field for track extrapolations
-    AliMUONTrackExtrap::SetField(AliTracker::GetFieldMap());
-
-    // Loop over tracks
-    for (Int_t iRecTracks = 0; iRecTracks <  nrectracks;  iRecTracks++) {
-      AliMUONTrack* recTrack = (AliMUONTrack*) recTracks->At(iRecTracks);
-      AliMUONTrackParam* trackParam = (AliMUONTrackParam*) (recTrack->GetTrackParamAtHit())->First();
-      AliMUONTrackExtrap::ExtrapToZ(trackParam,0.);
-      recTrack->Print("full");
-    }
-    fRecData->ResetRecTracks();
-  }   
-  fLoader->UnloadTracks();
+  //  // waiting for mag field in CDB 
+  //  AliInfoStream() << "Loading field map...\n";
+  //  if (!AliTracker::GetFieldMap()) {
+  //    AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5kG);
+  //    AliTracker::SetFieldMap(field, kFALSE);
+  //  }
+  //  
+  //  // Loading data
+  //  fLoader->LoadTracks("READ");
+  //  
+  //  Int_t endOfLoop = fLastEvent+1;
+  //  if ( fLastEvent == -1 ) endOfLoop = fRunLoader->GetNumberOfEvents();
+  //
+  //  for (Int_t ievent=fFirstEvent; ievent<endOfLoop; ievent++) {
+  //    fRunLoader->GetEvent(ievent);
+  //    
+  //    fRecData->SetTreeAddress("RT");
+  //    fRecData->GetRecTracks();
+  //    TClonesArray* recTracks = fRecData->RecTracks();
+  //    
+  //    Int_t nrectracks = (Int_t) recTracks->GetEntriesFast(); //
+  //    printf(">>> Event %d, Number of Recconstructed tracks %d \n",ievent, nrectracks);
+  //
+  //    // Set the magnetic field for track extrapolations
+  //    AliMUONTrackExtrap::SetField(AliTracker::GetFieldMap());
+  //
+  //    // Loop over tracks
+  //    for (Int_t iRecTracks = 0; iRecTracks <  nrectracks;  iRecTracks++) {
+  //      AliMUONTrack* recTrack = (AliMUONTrack*) recTracks->At(iRecTracks);
+  //      AliMUONTrackParam* trackParam = (AliMUONTrackParam*) (recTrack->GetTrackParamAtHit())->First();
+  //      AliMUONTrackExtrap::ExtrapToZ(trackParam,0.);
+  //      recTrack->Print("full");
+  //    }
+  //    fRecData->ResetRecTracks();
+  //  }   
+  //  fLoader->UnloadTracks();
 }
 
 //_____________________________________________________________________________
 void AliMUONCheck::SetEventsToCheck(Int_t firstEvent, Int_t lastEvent)
 {
-/// Set first and last event number to check
-
+  /// Set first and last event number to check
+  
   fFirstEvent = firstEvent;
   fLastEvent = lastEvent;
 }  

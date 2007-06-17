@@ -19,10 +19,6 @@
 #  include "TString.h"
 #endif
 
-class AliMUONSimData;
-class AliMUONRecData;
-class AliRunLoader;
-class AliLoader;
 class AliESD;
 class TTree;
 class TH1F ;
@@ -36,9 +32,6 @@ public:
                Int_t firstEvent=0, Int_t lastEvent=-1, const char* outDir="");
   virtual ~AliMUONCheck();
  
-  /// Return true if contains valid data
-  Bool_t IsValid() const { return (fRecData!=0); }
-  
   void CheckESD(Bool_t pdc06TriggerResponse= false);
   void CheckKine();
   void CheckTrackRef();
@@ -62,18 +55,6 @@ private:
   
   Int_t   fFirstEvent;  //!< First event to consider
   Int_t   fLastEvent;   //!< Last event to consider
-
-  AliRunLoader* fRunLoader;    //!< AliRunLoader pointer for reconstruction
-  AliRunLoader* fRunLoaderSim; //!< AliRunLoader pointer for simulation
-
-  AliLoader*    fLoader;    //!< MUON loader pointer for reconstruction
-  AliLoader*    fLoaderSim; //!< MUON loader pointer for simulation
-
-  AliMUONRecData*  fRecData;  //!< AliMUONData pointer (to access containers) for recontruction 
-  AliMUONSimData*  fSimData;  //!< AliMUONData pointer (to access containers) for simulation
-
-  TTree   * fTree ;     //!< pointer to the analyzed TTree or TChain
-  AliESD  * fESD ;      //!< Declaration of leave types
 
   ClassDef(AliMUONCheck,0) // Dumper of MUON related data
 }; 
