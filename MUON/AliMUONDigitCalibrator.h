@@ -12,37 +12,40 @@
 #ifndef ALIMUONDIGITCALIBRATOR_H
 #define ALIMUONDIGITCALIBRATOR_H
 
-#ifndef ROOT_TTask
-#include "TTask.h"
+#ifndef ROOT_TObject
+#include "TObject.h"
 #endif
 
 class AliMUONCalibrationData;
-class AliMUONData;
 class AliMUONLogger;
-class AliMUONV2DStore;
+class AliMUONVStore;
+class AliMUONVDigitStore;
+class AliMUONVDigit;
 
-class AliMUONDigitCalibrator : public TTask
+class AliMUONDigitCalibrator : public TObject
 {
 public:
-  AliMUONDigitCalibrator(AliMUONData* data, 
-                         AliMUONCalibrationData* calib,
+  AliMUONDigitCalibrator(const AliMUONCalibrationData& calib,
                          Bool_t createAndUseStatusMap=kTRUE);
+  
   virtual ~AliMUONDigitCalibrator();
   
-  virtual void Exec(Option_t*);
-
+  virtual void Calibrate(AliMUONVDigitStore& digitStore);
+    
 private:    
     /// Not implemented
     AliMUONDigitCalibrator(const AliMUONDigitCalibrator& other);
     /// Not implemented
     AliMUONDigitCalibrator& operator=(const AliMUONDigitCalibrator& other);
 
-    AliMUONData* fData;                       //!< MUON data 
-    AliMUONCalibrationData* fCalibrationData; //!< Calibration data
-    AliMUONV2DStore* fStatusMap; //!< Channel status map
+    virtual void CalibrateDigit(AliMUONVDigit& digit);
+
+private:
+    const AliMUONCalibrationData& fCalibrationData; //!< Calibration data
+    AliMUONVStore* fStatusMap; //!< Channel status map
     AliMUONLogger* fLogger; //!< to log repeated messages
     
-  ClassDef(AliMUONDigitCalibrator,2) // Calibrate raw digit
+  ClassDef(AliMUONDigitCalibrator,3) // Calibrate raw digit
 };
 
 #endif

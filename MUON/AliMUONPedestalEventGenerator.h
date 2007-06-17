@@ -20,9 +20,13 @@
 #endif
 
 class AliMUONCalibrationData;
-class AliMUONData;
 class TList;
 class AliRunLoader;
+class AliMUONVDigitStore;
+class AliLoader;
+class AliMUONVStore;
+class AliMUONStopwatchGroup;
+class AliMUONRawWriter;
 
 class AliMUONPedestalEventGenerator : public TTask
 {
@@ -42,20 +46,24 @@ private:
   AliMUONPedestalEventGenerator& operator=(const AliMUONPedestalEventGenerator&);
 
   Bool_t ConvertRawFilesToDate();
-  void GenerateDigits(AliMUONData* data);
-  AliMUONData* GetDataAccess(const char* mode);
+  AliMUONVDigitStore* DigitStore();
+  void GenerateDigits(AliMUONVDigitStore& digitStore);
   AliRunLoader* LoadRun(const char* mode);
-  void Digits2Raw();
+  void Digits2Raw(Int_t event);
   
 private:
-  TList* fManuList; //!< list of (de,manu) pairs
   AliMUONCalibrationData* fCalibrationData; //!< access to pedestal CDB
   TString fDateFileName; //!< basefilename of the DATE output file
   TString fGAliceFileName; //!< absolute path to galice.root file
   Bool_t fMakeDDL; //!< whether to generate DDL ascii files or not
+  AliLoader* fLoader; //!< to access trees
+  AliMUONVStore* fPedestals; //!< pedestals
+  AliMUONStopwatchGroup* fTimers; //!< to time some methods
+  AliMUONVDigitStore* fDigitStore; //!< digit container
+  AliMUONRawWriter* fRawWriter; //!< to convert digits to raw data
   static Int_t fgCounter; //!< counter 
   
-  ClassDef(AliMUONPedestalEventGenerator,1) // Random generator of pedestal events for MUON TRK
+  ClassDef(AliMUONPedestalEventGenerator,2) // Random generator of pedestal events for MUON TRK
 };
 
 #endif

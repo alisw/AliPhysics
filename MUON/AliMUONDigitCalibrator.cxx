@@ -18,16 +18,15 @@
 #include "AliMUONDigitCalibrator.h"
 
 #include "AliLog.h"
+#include "AliMpConstants.h"
 #include "AliMUONCalibrationData.h"
-#include "AliMUONConstants.h"
-#include "AliMUONData.h"
-#include "AliMUONDigit.h"
+#include "AliMUONVDigit.h"
+#include "AliMUONVDigitStore.h"
 #include "AliMUONLogger.h"
 #include "AliMUONPadStatusMaker.h"
 #include "AliMUONPadStatusMapMaker.h"
-#include "AliMUONV2DStore.h"
+#include "AliMUONVStore.h"
 #include "AliMUONVCalibParam.h"
-#include "TClonesArray.h"
 
 /// \class AliMUONDigitCalibrator
 /// Class used to calibrate digits (either real or simulated ones).
@@ -52,57 +51,50 @@ ClassImp(AliMUONDigitCalibrator)
 /// \endcond
 
 //_____________________________________________________________________________
-AliMUONDigitCalibrator::AliMUONDigitCalibrator(AliMUONData* muonData,
-                                               AliMUONCalibrationData* calib,
+AliMUONDigitCalibrator::AliMUONDigitCalibrator(const AliMUONCalibrationData& calib,
                                                Bool_t createAndUseStatusMap)
-: TTask("AliMUONDigitCalibrator","Raw digit calibration"),
-  fData(muonData),
-  fCalibrationData(calib),
-  fStatusMap(0x0),
-  fLogger(new AliMUONLogger(1000))
+: TObject(),
+fCalibrationData(calib),
+fStatusMap(0x0),
+fLogger(new AliMUONLogger(1000))
 {
-    /// ctor. This class needs the muonData to get access to the digit,
-    /// and the calibrationData to get access to calibration parameters.
+  /// ctor
+  if (createAndUseStatusMap) 
+  {
+    AliMUONPadStatusMaker maker(fCalibrationData);
     
-    if (!calib) {
-      AliFatal("No calibration data defined");
-    }   
+    // this is here that we decide on our "goodness" policy, i.e.
+    // what do we call an invalid pad (a pad maybe bad because its HV
+    // was too low, or its pedestals too high, etc..)
+    // FIXME: find a way not to hard-code the goodness policy (i.e. the limits)
+    // here...
+    maker.SetHVSt12Limits(1300,1600);
+    maker.SetHVSt345Limits(1500,2000);
+    maker.SetPedMeanLimits(50,200);
+    maker.SetPedSigmaLimits(0.1,3);
     
-    if (createAndUseStatusMap) 
-    {
-      AliMUONPadStatusMaker maker(*calib);
-      
-      // this is here that we decide on our "goodness" policy, i.e.
-      // what do we call an invalid pad (a pad maybe bad because its HV
-      // was too low, or its pedestals too high, etc..)
-      //
-      maker.SetHVSt12Limits(1300,1600);
-      maker.SetHVSt345Limits(1500,2000);
-      maker.SetPedMeanLimits(50,200);
-      maker.SetPedSigmaLimits(0.1,3);
-      
-      // From this set of limits, compute the status of all tracker pads.
-      AliMUONV2DStore* status = maker.MakeStatus();      
-      // we do not check that status is != 0x0, as this is supposed to be
-      // the responsability of the padStatusMaker.
-      
-      AliMUONPadStatusMapMaker mapMaker(*calib);
-      
-      Int_t mask(0x8080); 
-      //FIXME: kind of fake one for the moment, we consider dead only 
-      // if ped and/or hv value missing.
-      //WARNING : getting this mask wrong is a very effective way of getting
-      //no digits at all out of this class ;-)
-      
-      fStatusMap = mapMaker.MakePadStatusMap(*status,mask);
-      
-      delete status;
+    // From this set of limits, compute the status of all tracker pads.
+    AliMUONVStore* status = maker.MakeStatus();      
+    // we do not check that status is != 0x0, as this is supposed to be
+    // the responsability of the padStatusMaker.
+    
+    AliMUONPadStatusMapMaker mapMaker(fCalibrationData);
+    
+    Int_t mask(0x8080); 
+    //FIXME: kind of fake one for the moment, we consider dead only 
+    // if ped and/or hv value missing.
+    //WARNING : getting this mask wrong is a very effective way of getting
+    //no digits at all out of this class ;-)
+    
+    fStatusMap = mapMaker.MakePadStatusMap(*status,mask);
+    
+    delete status;
     }
-    else
-    {
-      // make a fake (empty) status map
-      fStatusMap = AliMUONPadStatusMapMaker::MakeEmptyPadStatusMap();
-    }
+  else
+  {
+    // make a fake (empty) status map
+    fStatusMap = AliMUONPadStatusMapMaker::MakeEmptyPadStatusMap();
+  }
 }
 
 //_____________________________________________________________________________
@@ -119,71 +111,73 @@ AliMUONDigitCalibrator::~AliMUONDigitCalibrator()
 
 //_____________________________________________________________________________
 void
-AliMUONDigitCalibrator::Exec(Option_t*)
+AliMUONDigitCalibrator::Calibrate(AliMUONVDigitStore& digitStore)
 {
-  /// Main method.
-  /// We loop on tracking chambers (i.e. we do nothing for trigger)
-  /// and for each digit in that chamber, we calibrate it :
-  /// a) we set its status map and if status is bad, set the signal to zero
-  /// b) we then apply pedestal and gain corrections.
+  /// Calibrate the digits contained in digitStore  
+  TIter next(digitStore.CreateTrackerIterator());
+  AliMUONVDigit* digit;
   
-  for ( Int_t ch = 0; ch < AliMUONConstants::NTrackingCh(); ++ch )
+  while ( ( digit = static_cast<AliMUONVDigit*>(next() ) ) )
   {
-    TClonesArray* digitArray = fData->Digits(ch);
-    Int_t nDigits = digitArray->GetEntriesFast();
-    for ( Int_t d = 0; d < nDigits; ++d )
+    CalibrateDigit(*digit);
+  }
+}
+
+//_____________________________________________________________________________
+void
+AliMUONDigitCalibrator::CalibrateDigit(AliMUONVDigit& digit)
+{
+  /// Calibrate one digit
+  
+  AliMUONVCalibParam* deadmap = static_cast<AliMUONVCalibParam*>
+  (fStatusMap->FindObject(digit.DetElemId(),digit.ManuId()));
+  Int_t statusMap = deadmap->ValueAsInt(digit.ManuChannel());
+  digit.SetStatusMap(statusMap);
+  digit.Calibrated(kTRUE);
+  if ( ( statusMap & AliMUONPadStatusMapMaker::SelfDeadMask() ) != 0 ) 
+  {
+    // pad itself is bad (not testing its neighbours at this stage)
+    digit.SetCharge(0);
+    fLogger->Log(Form("%s:%d:Channel detElemId %d manuId %d "
+                    "manuChannel %d is bad %x",__FILE__,__LINE__,
+                    digit.DetElemId(),digit.ManuId(),
+                    digit.ManuChannel(),digit.StatusMap()));
+  }
+  else
+  {
+    // If the channel is good, go on with the calibration itself.
+
+    AliMUONVCalibParam* pedestal = static_cast<AliMUONVCalibParam*>
+    (fCalibrationData.Pedestals(digit.DetElemId(),digit.ManuId()));
+    
+    AliMUONVCalibParam* gain = static_cast<AliMUONVCalibParam*>
+      (fCalibrationData.Gains(digit.DetElemId(),digit.ManuId()));
+    
+    if (!pedestal)
     {
-      AliMUONDigit* digit = 
-        static_cast<AliMUONDigit*>(digitArray->UncheckedAt(d));
- 
-      AliMUONVCalibParam* deadmap = static_cast<AliMUONVCalibParam*>
-        (fStatusMap->Get(digit->DetElemId(),digit->ManuId()));
-      Int_t statusMap = deadmap->ValueAsInt(digit->ManuChannel());
-      digit->SetStatusMap(statusMap);
-      if ( ( statusMap & AliMUONPadStatusMapMaker::SelfDeadMask() ) != 0 ) // pad itself is bad (not testing its neighbours at this stage)
-      {
-        digit->SetSignal(0);
-        fLogger->Log(Form("%s:%d:Channel detElemId %d manuId %d "
-                        "manuChannel %d is bad %x",__FILE__,__LINE__,
-                          digit->DetElemId(),digit->ManuId(),
-                        digit->ManuChannel(),digit->StatusMap()));
-        continue;
-      }
-          
-      // If the channel is good, go on with the calibration itself.
+      AliFatal(Form("Got a null ped object for DE,manu=%d,%d",
+                    digit.DetElemId(),digit.ManuId()));
       
-      AliMUONVCalibParam* pedestal = static_cast<AliMUONVCalibParam*>
-        (fCalibrationData->Pedestals(digit->DetElemId(),digit->ManuId()));
-      
-      AliMUONVCalibParam* gain = static_cast<AliMUONVCalibParam*>
-        (fCalibrationData->Gains(digit->DetElemId(),digit->ManuId()));
-      
-      if (!pedestal)
-      {
-        AliFatal(Form("Got a null ped object for DE,manu=%d,%d",
-                      digit->DetElemId(),digit->ManuId()));
-        
-      }
-      if (!gain)
-      {
-        AliFatal(Form("Got a null gain object for DE,manu=%d,%d",
-                      digit->DetElemId(),digit->ManuId()));        
-      }
-      
-      Int_t manuChannel = digit->ManuChannel();
-      Float_t adc = digit->Signal();
-      Float_t padc = adc-pedestal->ValueAsFloat(manuChannel,0);
-      if ( padc < 3.0*pedestal->ValueAsFloat(manuChannel,1) ) 
-      {
-        padc = 0.0;
-      }
-      Float_t charge = padc*gain->ValueAsFloat(manuChannel,0);
-      digit->SetSignal(charge);
-      Int_t saturation = gain->ValueAsInt(manuChannel,1);
-      if ( charge >= saturation )
-      {
-        digit->Saturated(kTRUE);
-      }
+    }
+    if (!gain)
+    {
+      AliFatal(Form("Got a null gain object for DE,manu=%d,%d",
+                    digit.DetElemId(),digit.ManuId()));        
+    }
+    
+    Int_t manuChannel = digit.ManuChannel();
+    Float_t adc = digit.ADC();
+    Float_t padc = adc-pedestal->ValueAsFloat(manuChannel,0);
+    if ( padc < 3.0*pedestal->ValueAsFloat(manuChannel,1) ) 
+    {
+      padc = 0.0;
+    }
+    Float_t charge = padc*gain->ValueAsFloat(manuChannel,0);
+    digit.SetCharge(charge);
+    Int_t saturation = gain->ValueAsInt(manuChannel,1);
+    if ( charge >= saturation )
+    {
+      digit.Saturated(kTRUE);
     }
   }
 }

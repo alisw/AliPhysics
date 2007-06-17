@@ -17,23 +17,30 @@
 
 #include "AliMUONPedestalEventGenerator.h"
 
-#include "AliDAQ.h"
 #include "AliHeader.h"
 #include "AliLog.h"
 #include "AliMUONCalibrationData.h"
-#include "AliMUONData.h"
-#include "AliMUONDigit.h"
+#include "AliMUONDigitStoreV1.h"
 #include "AliMUONRawWriter.h"
+#include "AliMUONStopwatchGroup.h"
+#include "AliMUONStopwatchGroupElement.h"
 #include "AliMUONVCalibParam.h"
+#include "AliMUONVDigit.h"
+#include "AliMUONVStore.h"
+#include "AliMpCathodType.h"
+#include "AliMpConstants.h"
+#include "AliMpDEStore.h"
+#include "AliMpDetElement.h"
 #include "AliMpIntPair.h"
-#include "AliMpManuList.h"
+#include "AliMpPlaneType.h"
 #include "AliRunLoader.h"
-
-#include "TClonesArray.h"
-#include "TRandom.h"
-#include "TStopwatch.h"
-#include "TSystem.h"
-#include "TMath.h"
+#include <TClonesArray.h>
+#include <TMath.h>
+#include <TROOT.h>
+#include <TRandom.h>
+#include <TStopwatch.h>
+#include <TSystem.h>
+#include "AliDAQ.h"
 
 ///
 /// \class AliMUONPedestalEventGenerator
@@ -58,16 +65,30 @@ ClassImp(AliMUONPedestalEventGenerator)
 
 Int_t AliMUONPedestalEventGenerator::fgCounter(0);
 
+//std::streambuf* RedirectTo(std::ostream& what, std::ostream& to)
+//{
+//  std::streambuf* old = what.rdbuf();
+//  
+//  std::streambuf* psbuf = to.rdbuf();
+//  what.rdbuf(psbuf);
+//  
+//  return old;
+//}
+
 //_____________________________________________________________________________
 AliMUONPedestalEventGenerator::AliMUONPedestalEventGenerator(Int_t runNumber,
                                                              Int_t nevents,
                                                              const char* filename)
 : TTask("AliMUONPedestalEventGenerator","Generate fake pedestal events"), 
-fManuList(AliMpManuList::ManuList()),
 fCalibrationData(new AliMUONCalibrationData(runNumber)),
 fDateFileName(filename),
 fGAliceFileName("galice.root"),
-fMakeDDL(kTRUE)
+fMakeDDL(kTRUE),
+fLoader(0x0),
+fPedestals(fCalibrationData->Pedestals()),
+fTimers(new AliMUONStopwatchGroup),
+fDigitStore(0x0),
+fRawWriter(0x0)
 {
   /// Will generate pedestals according to (mean,sigma)s found in CDB
   /// for run runNumber.
@@ -92,16 +113,9 @@ fMakeDDL(kTRUE)
     return;
   }
   
-  AliConfig::Instance()
-    ->CreateDetectorFolders(runLoader->GetEventFolder(), 
-                            "MUON", "MUON");
-  
-  AliLoader* loader = new AliLoader("MUON",runLoader->GetEventFolder());
-  
-	runLoader->AddLoader(loader);
-  
   // Initialize event headers.
   runLoader->MakeTree("E");
+
   for ( Int_t iEvent = 0; iEvent < nevents; ++iEvent )
   {
     runLoader->SetEventNumber(iEvent);
@@ -113,6 +127,7 @@ fMakeDDL(kTRUE)
   runLoader->Write(0, TObject::kOverwrite);  
 
   delete runLoader;
+  fLoader = 0x0;
 }
 
 
@@ -120,9 +135,13 @@ fMakeDDL(kTRUE)
 AliMUONPedestalEventGenerator::~AliMUONPedestalEventGenerator()
 {
   /// dtor
-  delete fManuList;
   delete fCalibrationData;
+  AliInfo("Timers:");
+  fTimers->Print();
+  delete fTimers;
   AliInfo(Form("make a digit counter %d",fgCounter));
+  delete fDigitStore;
+  delete fRawWriter;
 }
 
 //_____________________________________________________________________________
@@ -131,6 +150,10 @@ AliMUONPedestalEventGenerator::ConvertRawFilesToDate()
 {
   /// convert raw data DDL files to DATE files with the program "dateStream".
   /// we make one file per LDC
+  
+  AliMUONStopwatchGroupElement timer(fTimers,"MUON","AliMUONPedestalEventGenerator::ConvertRawFilesToDate");
+  
+  AliInfo("Converting raw to date");
   
   const Int_t kIDet = AliDAQ::DetectorID("MUONTRK");
   
@@ -201,7 +224,18 @@ AliMUONPedestalEventGenerator::ConvertRawFilesToDate()
   
   delete [] pipe;
   delete runLoader;
+  fLoader=0x0;
   return (result == 0);
+}
+
+//_____________________________________________________________________________
+AliMUONVDigitStore*
+AliMUONPedestalEventGenerator::DigitStore()
+{
+/// Return digt container; create it if it does not exist
+
+  if (!fDigitStore) fDigitStore = new AliMUONDigitStoreV1;
+  return fDigitStore;
 }
 
 //_____________________________________________________________________________
@@ -210,206 +244,132 @@ AliMUONPedestalEventGenerator::Exec(Option_t*)
 {  
   /// Main steering method
   
-  TStopwatch timer;
-  timer.Start(kTRUE);
+  AliMUONStopwatchGroupElement timer(fTimers,"MUON","AliMUONPedestalEventGenerator::Exec");
   
-  TStopwatch writeTimer;
-  writeTimer.Start(kTRUE); writeTimer.Stop();
-  TStopwatch fillTimer;
-  fillTimer.Start(kTRUE); fillTimer.Stop();
-  TStopwatch resetTimer;
-  resetTimer.Start(kTRUE); resetTimer.Stop();
-  TStopwatch getEventTimer;
-  getEventTimer.Start(kTRUE); getEventTimer.Stop();
-  TStopwatch branchTimer;
-  branchTimer.Start(kTRUE); branchTimer.Stop();
-  TStopwatch generateDigitsTimer;
-  generateDigitsTimer.Start(kTRUE); generateDigitsTimer.Stop();
-  TStopwatch digits2RawTimer;
-  digits2RawTimer.Start(kTRUE); digits2RawTimer.Stop();
-  TStopwatch convertRawFilesToDateTimer;
-  convertRawFilesToDateTimer.Start(kTRUE); convertRawFilesToDateTimer.Stop();
-  TStopwatch getTimer;
-
-  getTimer.Start(kTRUE); 
-  AliMUONData* data = GetDataAccess("update");
-  AliRunLoader* runLoader = data->GetLoader()->GetRunLoader();  
-  getTimer.Stop();
-  
-  for ( Int_t i = 0; i < runLoader->GetNumberOfEvents(); ++i )
+  if (!fPedestals)
   {
-    getEventTimer.Start(kFALSE);
+    AliError("No pedestal store. Cannot proceed.");
+    return;
+  }
+  
+  AliRunLoader* runLoader = LoadRun("update");
+  
+  Int_t nevents = runLoader->GetNumberOfEvents();
+    
+  for ( Int_t i = 0; i < nevents ; ++i )
+  {
     runLoader->GetEvent(i);
-    getEventTimer.Stop();
     
-    branchTimer.Start(kFALSE);
-    if ( data->TreeD() == 0x0 )
+    fLoader->MakeDigitsContainer();
+    TTree* treeD = fLoader->TreeD();  
+    if (!treeD)
     {
-      AliDebug(1,"Calling MakeDigitsContainer");
-      data->GetLoader()->MakeDigitsContainer();
+      AliError(Form("Could not get TreeD for event %d",i));
+      continue;
     }
-    data->MakeBranch("D,GLT");
-    data->SetTreeAddress("D,GLT");
-    branchTimer.Stop();
     
-    generateDigitsTimer.Start(kFALSE);
-    GenerateDigits(data);
-    generateDigitsTimer.Stop();
-    
-    fillTimer.Start(kTRUE);
+    DigitStore()->Connect(*treeD);
+        
+    GenerateDigits(*(DigitStore()));
+
     // Fill the output treeD
-    data->Fill("D,GLT");
-    fillTimer.Stop();
+    treeD->Fill();
     
     // Write to the output tree(D).
     // Please note that as GlobalTrigger, LocalTrigger and Digits are in the same
     // tree (=TreeD) in different branches, this WriteDigits in fact writes all of 
     // the 3 branches.
+
+    fTimers->Start("MUON","AliMUONPedestalEventGenerator::Exec WriteDigits");
+    fLoader->WriteDigits("OVERWRITE");
+    fTimers->Stop("MUON","AliMUONPedestalEventGenerator::Exec WriteDigits");
     
-    writeTimer.Start(kFALSE);
-    data->GetLoader()->WriteDigits("OVERWRITE");
-    writeTimer.Stop();
+    fLoader->UnloadDigits();
     
-    // Finally, we clean up after ourselves.
-    resetTimer.Start(kTRUE);
-    data->ResetDigits();
-    data->ResetTrigger();
-    data->GetLoader()->UnloadDigits();
-    resetTimer.Stop();
+    if ( fMakeDDL )
+    {
+      Digits2Raw(i);
+    }
+    
+//    gROOT->ProcessLine(Form("gObjectTable->Print(); > generate.txt.%d",i));
   }
-  
-  TStopwatch endTimer;
-  endTimer.Start(kTRUE);
+    
   runLoader->WriteRunLoader("OVERWRITE");
-  delete data;
   delete runLoader;
-  endTimer.Stop();
-  
-  if ( fMakeDDL ) 
-  {
-    // Now convert the digits.root file(s) to DDL files
-    digits2RawTimer.Start(kFALSE);
-    Digits2Raw();
-    digits2RawTimer.Stop();
-  }
-  
+  fLoader = 0x0;
+    
   // Finally, if instructed to do so, convert DDL files to DATE file(s)
   if ( fMakeDDL && fDateFileName.Length() > 0 ) 
   {
-    convertRawFilesToDateTimer.Start(kFALSE);
-    AliDebug(1,"Converting to DATE file(s)");
-    
     Bool_t dateOutput = ConvertRawFilesToDate();
-    convertRawFilesToDateTimer.Stop();
     if (!dateOutput) 
     {
       AliError("DATE output failed. Aborting.");
       return;
     }    
   }
-  
-  AliInfo(Form("Execution time Exec : R:%.2fs C:%.2fs",
-               timer.RealTime(),timer.CpuTime()));
-
-  AliInfo(Form("  Execution time branch : R:%.2fs C:%.2fs",
-               branchTimer.RealTime(),branchTimer.CpuTime()));
-  AliInfo(Form("  Execution time getEvent : R:%.2fs C:%.2fs",
-               getEventTimer.RealTime(),getEventTimer.CpuTime()));
-  AliInfo(Form("  Execution time fill digits : R:%.2fs C:%.2fs",
-               fillTimer.RealTime(),fillTimer.CpuTime()));
-  AliInfo(Form("  Execution time write digits : R:%.2fs C:%.2fs",
-               writeTimer.RealTime(),writeTimer.CpuTime()));
-  AliInfo(Form("  Execution time reset digits : R:%.2fs C:%.2fs",
-               resetTimer.RealTime(),resetTimer.CpuTime()));
-  AliInfo(Form("  Execution time for GenerateDigits : R:%.2fs C:%.2fs",
-               generateDigitsTimer.RealTime(),generateDigitsTimer.CpuTime()));
-  AliInfo(Form("  Execution time for Digits2Raw : R:%.2fs C:%.2fs",
-               digits2RawTimer.RealTime(),digits2RawTimer.CpuTime()));
-  AliInfo(Form("  Execution time for ConvertRawFilesToDate : R:%.2fs C:%.2fs",
-               convertRawFilesToDateTimer.RealTime(),convertRawFilesToDateTimer.CpuTime()));
-  AliInfo(Form("  Execution time for get : R:%.2fs C:%.2fs",
-               getTimer.RealTime(),getTimer.CpuTime()));
-  AliInfo(Form("  Execution time for end : R:%.2fs C:%.2fs",
-               endTimer.RealTime(),endTimer.CpuTime()));
 }
 
 //_____________________________________________________________________________
 void
-AliMUONPedestalEventGenerator::Digits2Raw()
+AliMUONPedestalEventGenerator::Digits2Raw(Int_t event)
 {
   /// Converts digits (from MUON.Digits.root file) to Raw DDL ascii files.
   
-  AliMUONData* data = GetDataAccess("read");
-  AliRunLoader* runLoader = data->GetLoader()->GetRunLoader();
-  AliDebug(1,Form("runLoader=%p",runLoader));
+  AliMUONStopwatchGroupElement timer(fTimers,"MUON","AliMUONPedestalEventGenerator::Digits2Raw");
   
-  AliMUONRawWriter rawWriter(data);
+  if (!fRawWriter) fRawWriter = new AliMUONRawWriter;
   
   // Generate RAW data from the digits
   // Be carefull to create&change to the correct directory first...
-
+  
   TString baseDir = gSystem->WorkingDirectory();
-
-  for ( Int_t i = 0; i < runLoader->GetNumberOfEvents(); ++i )
+  
+  char dirName[256];
+  sprintf(dirName, "raw%d", event);
+  gSystem->MakeDirectory(dirName);
+  if (!gSystem->ChangeDirectory(dirName)) 
   {
-    runLoader->GetEvent(i);
-    
-    AliDebug(1,Form("processing event %d", i));
-    
-    char dirName[256];
-    sprintf(dirName, "raw%d", i);
-    gSystem->MakeDirectory(dirName);
-    if (!gSystem->ChangeDirectory(dirName)) 
-    {
-      AliError(Form("couldn't change to directory %s", dirName));
-      return;
-    }
-
-    rawWriter.Digits2Raw();
-    
-    gSystem->ChangeDirectory(baseDir);
+    AliError(Form("couldn't change to directory %s", dirName));
+    return;
   }
   
-  delete data;
-  delete runLoader;
+  fRawWriter->Digits2Raw(DigitStore(),0);
   
-  AliDebug(1,Form("DDL files written successfully"));    
+  gSystem->ChangeDirectory(baseDir);
 }
 
 //_____________________________________________________________________________
 void
-AliMUONPedestalEventGenerator::GenerateDigits(AliMUONData* data)
+AliMUONPedestalEventGenerator::GenerateDigits(AliMUONVDigitStore& digitStore)
 {  
   /// Generate digits (where ADC is set to pedestal value) for all MUON TRK
   /// and for 1 event.
   
-  TIter next(fManuList);
-  AliMpIntPair* p;
-  Int_t ngenerated(0);
-  
-  while ( ( p = static_cast<AliMpIntPair*>(next())) )
-  {
-    Int_t detElemId = p->GetFirst();
+  AliMUONStopwatchGroupElement timer(fTimers,"MUON","AliMUONPedestalEventGenerator::GenerateDigits(AliMUONVDigitStore&)");
 
-    Int_t chamber = detElemId/100-1;
+  digitStore.Clear();
+  
+  Int_t ngenerated(0);
+  Int_t nmanus(0);
+  TIter next(fPedestals->CreateIterator());
+  AliMUONVCalibParam* pedestals;
+  
+  while ( ( pedestals = static_cast<AliMUONVCalibParam*>(next())) )
+  {
+    Int_t detElemId = pedestals->ID0();
+    Int_t manuId = pedestals->ID1();
+    
+    AliMpDetElement* de = AliMpDEStore::Instance()->GetDetElement(detElemId);
+    AliMp::PlaneType planeType = AliMp::kBendingPlane;
+    if ( manuId & AliMpConstants::ManuMask(AliMp::kNonBendingPlane) ) 
+    {
+      planeType = AliMp::kNonBendingPlane;
+    }
+    AliMp::CathodType cathode = de->GetCathodType(planeType);
+    
+    ++nmanus;
         
-    TClonesArray* pdigits = data->Digits(chamber);
-    if (!pdigits)
-    {
-      AliError(Form("No digits for chamber %d",1));
-      continue;
-    }
-    TClonesArray& digits = *pdigits;
-    
-    Int_t manuId = p->GetSecond();
-    
-    AliMUONVCalibParam* pedestals = fCalibrationData->Pedestals(detElemId,manuId);
-    if (!pedestals)
-    {
-      AliError(Form("Could not find pedestals for (DE,MANU)=(%d,%d)",detElemId,
-                    manuId));
-      return;
-    }
     for ( Int_t manuChannel = 0; manuChannel < pedestals->Size(); ++manuChannel )
     {
       Float_t mean = pedestals->ValueAsFloat(manuChannel,0);
@@ -423,44 +383,26 @@ AliMUONPedestalEventGenerator::GenerateDigits(AliMUONData* data)
       else
       {
         Float_t sigma = pedestals->ValueAsFloat(manuChannel,1);
-        AliMUONDigit d;
+        
+
+        AliMUONVDigit* d = digitStore.Add(detElemId,manuId,manuChannel,
+                                          cathode,
+                                          AliMUONVDigitStore::kIgnore);
+        
         Float_t ped = gRandom->Gaus(mean,sigma);
-	Int_t pedADC = TMath::FloorNint(ped);
-        d.SetElectronics(manuId, manuChannel);
-        d.SetADC(pedADC);
-        d.SetSignal(ped);
-        d.SetDetElemId(detElemId); 
+        Int_t pedADC = TMath::FloorNint(ped);
+
+        d->SetADC(pedADC);
+        d->SetCharge(ped);
         // we do not set the remaining parts of the digit, as in principle
         // this is all we need : manuId, manuChannel and ADC, as far as
         // real data is concerned.
-        new (digits[digits.GetLast()+1]) AliMUONDigit(d);
         ++fgCounter;
         ++ngenerated;
       }
     }
   }
-  AliDebug(1,Form("ngenerated=%d",ngenerated));
-}
-
-//_____________________________________________________________________________
-AliMUONData*
-AliMUONPedestalEventGenerator::GetDataAccess(const char* mode)
-{
-  /// Get the pointer to AliMUONData object
-  AliRunLoader* runLoader = LoadRun(mode);
-  if (!runLoader)
-  {
-    AliError("Could not get RunLoader");
-    return 0x0;
-  }
-  AliLoader* loader = static_cast<AliLoader*>(runLoader->GetLoader("MUONLoader"));
-  if (!loader)
-  {
-    AliError("Could not get MuonLoader");
-    return 0x0;
-  }
-  
-  return new AliMUONData(loader,"MUON","MUONData");
+  AliDebug(1,Form("ngenerated=%d nmanus=%d",ngenerated,nmanus));
 }
 
 //_____________________________________________________________________________
@@ -477,12 +419,28 @@ AliMUONPedestalEventGenerator::LoadRun(const char* mode)
   AliRunLoader* runLoader = 
     AliRunLoader::Open(fGAliceFileName,AliConfig::GetDefaultEventFolderName(), 
                        mode);
-  
+
   AliDebug(1,Form("AliRunLoader(%s)=%p",mode,runLoader));
-           
+  
   if (!runLoader) 
   {
     AliError("No run loader found in file galice.root");
   }
+    
+  TString smode(mode);
+  smode.ToUpper();
+  
+  if (smode.Contains("RECREATE"))
+  {
+    AliInfo("Creating folder structure");
+    AliConfig::Instance()
+    ->CreateDetectorFolders(runLoader->GetEventFolder(), 
+                            "MUON", "MUON");
+    fLoader = new AliLoader("MUON",runLoader->GetEventFolder());
+    runLoader->AddLoader(fLoader);
+  }
+  
+  fLoader = static_cast<AliLoader*>(runLoader->GetDetectorLoader("MUON"));
+    
   return runLoader;
 }
