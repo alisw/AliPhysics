@@ -89,7 +89,7 @@ void MUONTrigger(char * FileNameSim="galice_sim.root", char * FileName="galice.r
 		digits[0] = mDigit->PadX();
 		digits[1] = mDigit->PadY();
 		digits[2] = mDigit->Cathode();
-		digits[3] = mDigit->Signal();
+		digits[3] = mDigit->Charge();
 		digits[4] = mDigit->Physics();
 		digits[5] = mDigit->Hit();
 		digits[6] = mDigit->DetElemId();
