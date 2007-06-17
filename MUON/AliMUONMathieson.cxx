@@ -25,7 +25,6 @@
 #include "AliMUONMathieson.h"
 
 #include "AliLog.h"
-#include "AliMUONGeometrySegmentation.h"
 
 #include <TClass.h>
 #include <TMath.h>
@@ -103,19 +102,6 @@ AliMUONMathieson::IntXY(Float_t xi1, Float_t yi1, Float_t xi2, Float_t yi2) cons
   
   return Float_t(4.*fKx4*(TMath::ATan(ux2)-TMath::ATan(ux1))*
                  fKy4*(TMath::ATan(uy2)-TMath::ATan(uy1)));
-}
-
-// -------------------------------------------
-Float_t AliMUONMathieson::IntXY(Int_t idDE, AliMUONGeometrySegmentation* segmentation) const
-{
-/// Calculate charge on current pad according to Mathieson distribution
-/// using Detection elt
-
-//  Integration limits defined by segmentation model
-//  
-    Float_t xi1, xi2, yi1, yi2;
-    segmentation->IntegrationLimits(idDE, xi1,xi2,yi1,yi2);
-    return IntXY(xi1,yi1,xi2,yi2);
 }
 
 //______________________________________________________________________________

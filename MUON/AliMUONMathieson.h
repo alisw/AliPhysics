@@ -14,8 +14,6 @@
 #  include "TObject.h"
 #endif
 
-class AliMUONGeometrySegmentation;
-
 class AliMUONMathieson : public TObject
 {
  public:
@@ -53,9 +51,6 @@ class AliMUONMathieson : public TObject
     
     /// Mathieson \a Ky4
     void    SetKy4(Float_t p1) {fKy4 = p1;};
-    
-    /// \deprecated To be removed when old (s)digitizers go off.
-    Float_t  IntXY(Int_t id, AliMUONGeometrySegmentation* segmentation) const;
     
     /// Charge integration on region \a (x1,y1,x2,y2).
     Float_t IntXY(Float_t xi1, Float_t yi1, Float_t xi2, Float_t yi2) const;
