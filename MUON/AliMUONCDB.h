@@ -15,8 +15,8 @@
 #include <TString.h>
 
 class TList;
-class AliMUONV1DStore;
-class AliMUONV2DStore;
+class AliMUONVStore;
+class AliMUONVStore;
 class TMap;
 class AliMUONVCalibParam;
 class AliMUONTriggerLut;
@@ -32,24 +32,24 @@ public:
   AliMUONCDB(const char* cdbpath = "local://$ALICE_ROOT");
   virtual ~AliMUONCDB();
   
-  Int_t MakeNeighbourStore(AliMUONV2DStore& neighbourStore);
+  Int_t MakeNeighbourStore(AliMUONVStore& neighbourStore);
 
   Int_t MakeHVStore(TMap& aliasMap, Bool_t defaultValues);
-  Int_t MakePedestalStore(AliMUONV2DStore& pedestalStore, Bool_t defaultValues);
-  Int_t MakeCapacitanceStore(AliMUONV1DStore& capaStore, Bool_t defaultValues);
-  Int_t MakeGainStore(AliMUONV2DStore& gainStore, Bool_t defaultValues);
+  Int_t MakePedestalStore(AliMUONVStore& pedestalStore, Bool_t defaultValues);
+  Int_t MakeCapacitanceStore(AliMUONVStore& capaStore, Bool_t defaultValues);
+  Int_t MakeGainStore(AliMUONVStore& gainStore, Bool_t defaultValues);
   
-  Int_t MakeLocalTriggerMaskStore(AliMUONV1DStore& ltm) const;
-  Int_t MakeRegionalTriggerMaskStore(AliMUONV1DStore& rtm) const;
+  Int_t MakeLocalTriggerMaskStore(AliMUONVStore& ltm) const;
+  Int_t MakeRegionalTriggerMaskStore(AliMUONVStore& rtm) const;
   Int_t MakeGlobalTriggerMaskStore(AliMUONVCalibParam& gtm) const;
   AliMUONTriggerLut* MakeTriggerLUT(const char* file="$(ALICE_ROOT)/MUON/data/lutAptLpt1Hpt1p7.root") const;
   AliMUONTriggerEfficiencyCells* MakeTriggerEfficiency(const char* file="$ALICE_ROOT/MUON/data/efficiencyCells.dat") const;
 
   /// Compute the difference between two (compatible) stores
-  AliMUONV2DStore* Diff(AliMUONV2DStore& store1, AliMUONV2DStore& store2, 
+  AliMUONVStore* Diff(AliMUONVStore& store1, AliMUONVStore& store2, 
                         const char* opt="abs");
     
-  void Plot(const AliMUONV2DStore& store, const char* name, Int_t nbins=512);
+  void Plot(const AliMUONVStore& store, const char* name, Int_t nbins=512);
 
   void WriteToCDB(const char* calibpath, TObject* object, 
                   Int_t startRun, Int_t endRun, Bool_t defaultValues);
@@ -75,10 +75,11 @@ private:
   /// Not implemented
   AliMUONCDB& operator=(const AliMUONCDB& rhs);
   
+  TList* ManuList();
+  
 private:
   TString fCDBPath; //!< where to write stuff
   TList* fManuList; //!< full list of manus
-  static const Int_t fgkMaxNofChannelsPerManu; //!< 64
   
   ClassDef(AliMUONCDB,0) // Helper class to experience OCDB
 };

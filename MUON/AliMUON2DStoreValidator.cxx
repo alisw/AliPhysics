@@ -21,7 +21,7 @@
 #include "AliMUONCheckItem.h"
 #include "AliMUONCheckItemIterator.h"
 #include "AliMpConstants.h"
-#include "AliMUONV2DStore.h"
+#include "AliMUONVStore.h"
 #include "AliMUONVCalibParam.h"
 #include "AliMpDEManager.h"
 #include "AliMpIntPair.h"
@@ -34,7 +34,9 @@
 /// \class AliMUON2DStoreValidator
 ///
 /// Determine which channels, manus, DEs, stations are missing
-/// from a 2DStore. This is mainly to be used during (shuttle) preprocessing
+/// from a VStore, which must be 2D, and the 2 dimensions must be
+/// (detElemId,manuId).
+/// This is mainly to be used during (shuttle) preprocessing
 /// to insure that what we'll put in the CDB is as complete as possible,
 /// and to detect possible problem.
 ///
@@ -45,10 +47,13 @@
 /// The list of missing things is kept in a structure of objects defined as :
 /// 
 /// fMissing = TObjArray[0..N tracking chambers]
+///
 /// fMissing[iChamber] = AliMUONCheckItem which contains n AliMUONCheckItem, 
 /// where n is the number of DE for that chamber
+///
 /// fMissing[iChamber]->GetItem(de) = AliMUONCheckItem which contains m
 /// AliMUONCheckItem where m is the number of Manu for that DE
+///
 /// fMissing[iChamber]->GetItem(de)->GetItem(manu) = AliMUONCheckItem which 
 /// contains k TObjString = Form("%d",manuChannel)
 ///
@@ -295,7 +300,7 @@ AliMUON2DStoreValidator::Report(TList& lines, const TObjArray& chambers)
 
 //_____________________________________________________________________________
 TObjArray* 
-AliMUON2DStoreValidator::Validate(const AliMUONV2DStore& store)
+AliMUON2DStoreValidator::Validate(const AliMUONVStore& store)
 {                                  
   /// Validate the store. Check only the presence of all manus (i.e.
   /// check nothing about the values themselves)
@@ -306,7 +311,7 @@ AliMUON2DStoreValidator::Validate(const AliMUONV2DStore& store)
 
 //_____________________________________________________________________________
 TObjArray* 
-AliMUON2DStoreValidator::Validate(const AliMUONV2DStore& store,
+AliMUON2DStoreValidator::Validate(const AliMUONVStore& store,
                                   Bool_t (*check)(const AliMUONVCalibParam&,Int_t))
 {
   /// Validate the store. 
@@ -327,7 +332,7 @@ AliMUON2DStoreValidator::Validate(const AliMUONV2DStore& store,
     Int_t detElemId = p->GetFirst();
     Int_t manuId = p->GetSecond();
     AliMUONVCalibParam* test = 
-      static_cast<AliMUONVCalibParam*>(store.Get(detElemId,manuId));
+      static_cast<AliMUONVCalibParam*>(store.FindObject(detElemId,manuId));
     if (!test)
     {
       // completely missing manu
@@ -354,7 +359,7 @@ AliMUON2DStoreValidator::Validate(const AliMUONV2DStore& store,
 
 //_____________________________________________________________________________
 TObjArray* 
-AliMUON2DStoreValidator::Validate(const AliMUONV2DStore& store,
+AliMUON2DStoreValidator::Validate(const AliMUONVStore& store,
                                   Float_t invalidFloatValue)
 {
   /// Validate the store. 
@@ -375,7 +380,7 @@ AliMUON2DStoreValidator::Validate(const AliMUONV2DStore& store,
     Int_t detElemId = p->GetFirst();
     Int_t manuId = p->GetSecond();
     AliMUONVCalibParam* test = 
-      static_cast<AliMUONVCalibParam*>(store.Get(detElemId,manuId));
+      static_cast<AliMUONVCalibParam*>(store.FindObject(detElemId,manuId));
     if (!test)
     {
       // completely missing manu

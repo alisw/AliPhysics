@@ -40,13 +40,12 @@
 #include "AliMUONCalibParamNI.h"
 #include "AliMUONConstants.h"
 #include "AliMUONHVNamer.h"
-#include "AliMUONObjectPair.h"
 #include "AliMUONTriggerEfficiencyCells.h"
 #include "AliMUONTriggerLut.h"
-#include "AliMUONV2DStore.h"
+#include "AliMUONVStore.h"
 #include "AliMUONVCalibParam.h"
 #include "AliMUONVCalibParam.h"
-#include "AliMUONVDataIterator.h"
+#include "AliMpConstants.h"
 #include "AliMpDDLStore.h"
 #include "AliMpDEIterator.h"
 #include "AliMpDEManager.h"
@@ -71,12 +70,10 @@
 ClassImp(AliMUONCDB)
 /// \endcond
 
-const Int_t AliMUONCDB::fgkMaxNofChannelsPerManu=64;
-
 namespace
 {
 //_____________________________________________________________________________
-void getBoundaries(const AliMUONV2DStore& store,
+void getBoundaries(const AliMUONVStore& store,
                    Float_t& x0min, Float_t& x0max,
                    Float_t& x1min, Float_t& x1max)
 {
@@ -85,17 +82,13 @@ void getBoundaries(const AliMUONV2DStore& store,
   x1min=1E30;
   x1max=-1E30;
   
-  AliMUONVDataIterator* it = store.Iterator();
+  TIter next(store.CreateIterator());
+  AliMUONVCalibParam* value;
   
-  AliMUONObjectPair* p;
-  
-  while ( ( p = dynamic_cast<AliMUONObjectPair*>(it->Next() ) ) )
+  while ( ( value = dynamic_cast<AliMUONVCalibParam*>(next() ) ) )
   {
-    AliMpIntPair* dm = dynamic_cast<AliMpIntPair*>(p->Key());
-    AliMUONVCalibParam* value = dynamic_cast<AliMUONVCalibParam*>(p->Value());
-    
-    Int_t detElemId = dm->GetFirst();
-    Int_t manuId = dm->GetSecond();
+    Int_t detElemId = value->ID0();
+    Int_t manuId = value->ID1();
     
     const AliMpVSegmentation* seg = 
       AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(detElemId,manuId);
@@ -116,7 +109,6 @@ void getBoundaries(const AliMUONV2DStore& store,
         x1max = TMath::Max(x1max,x1);
       }
     }
-    if (it->IsOwner()) delete p;
   }  
 }
 
@@ -126,7 +118,7 @@ void getBoundaries(const AliMUONV2DStore& store,
 AliMUONCDB::AliMUONCDB(const char* cdbpath)
 : TObject(),
   fCDBPath(cdbpath),
-  fManuList(AliMpManuList::ManuList())
+  fManuList(0x0)
 {
     /// ctor
 }
@@ -139,8 +131,22 @@ AliMUONCDB::~AliMUONCDB()
 }
 
 //_____________________________________________________________________________
-AliMUONV2DStore* 
-AliMUONCDB::Diff(AliMUONV2DStore& store1, AliMUONV2DStore& store2, 
+TList*
+AliMUONCDB::ManuList()
+{
+  /// return (and create if necessary) the list of (de,manu) pairs
+  if (!fManuList) 
+  {
+    AliInfo("Generating ManuList...");
+    fManuList = AliMpManuList::ManuList();
+    AliInfo("Manu List generated.");
+  }
+  return fManuList;
+}
+
+//_____________________________________________________________________________
+AliMUONVStore* 
+AliMUONCDB::Diff(AliMUONVStore& store1, AliMUONVStore& store2, 
                  const char* opt)
 {
   /// creates a store which contains store1-store2
@@ -157,33 +163,18 @@ AliMUONCDB::Diff(AliMUONV2DStore& store1, AliMUONV2DStore& store2,
     return 0x0;
   }
   
-  AliMUONV2DStore* d = static_cast<AliMUONV2DStore*>(store1.Clone());
+  AliMUONVStore* d = static_cast<AliMUONVStore*>(store1.Clone());
   
-  AliMUONVDataIterator* it = d->Iterator();
+  TIter next(d->CreateIterator());
   
-  AliMUONObjectPair* p;
+  AliMUONVCalibParam* param;
   
-  while ( ( p = dynamic_cast<AliMUONObjectPair*>(it->Next() ) ) )
+  while ( ( param = dynamic_cast<AliMUONVCalibParam*>(next() ) ) )
   {
-    AliMpIntPair* dm = dynamic_cast<AliMpIntPair*>(p->Key());
-    //FIXME: this might happen (if a full manu is missing, for instance)
-    //handle it.
-    if (!dm) 
-    {
-      cerr << "dm is null : FIXME: this might happen !" << endl;
-      delete d; 
-      return 0;
-    }
-    AliMUONVCalibParam* param = dynamic_cast<AliMUONVCalibParam*>(p->Value());
-    //FIXMENOT: this should *not* happen
-    if (!param) 
-    {
-      cerr << "param is null" << endl;
-      delete d;
-      return 0;
-    }
+    Int_t detElemId = param->ID0();
+    Int_t manuId = param->ID1();
     
-    AliMUONVCalibParam* param2 = dynamic_cast<AliMUONVCalibParam*>(store2.Get(dm->GetFirst(),dm->GetSecond()));
+    AliMUONVCalibParam* param2 = dynamic_cast<AliMUONVCalibParam*>(store2.FindObject(detElemId,manuId));
     //FIXME: this might happen. Handle it.
     if (!param2) 
     {
@@ -215,14 +206,13 @@ AliMUONCDB::Diff(AliMUONV2DStore& store1, AliMUONV2DStore& store2,
         param->SetValueAsFloat(i,j,value);
       }      
     }
-    if (it->IsOwner()) delete p;
   }
   return d;
 }
 
 //_____________________________________________________________________________
 void 
-AliMUONCDB::Plot(const AliMUONV2DStore& store, const char* name, Int_t nbins)
+AliMUONCDB::Plot(const AliMUONVStore& store, const char* name, Int_t nbins)
 {
   /// Make a plot of the first 1 or 2 dimensions of the AliMUONVCalibParam
   /// contained inside store.
@@ -256,7 +246,7 @@ AliMUONCDB::Plot(const AliMUONV2DStore& store, const char* name, Int_t nbins)
                   nbins,x1min,x1max);
   }
   
-  TIter next(fManuList);
+  TIter next(ManuList());
   AliMpIntPair* p;
   Int_t n(0);
   Int_t nPerStation[7];
@@ -273,7 +263,7 @@ AliMUONCDB::Plot(const AliMUONV2DStore& store, const char* name, Int_t nbins)
       AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(detElemId,manuId);
     
     AliMUONVCalibParam* value = 
-      dynamic_cast<AliMUONVCalibParam*>(store.Get(detElemId,manuId));
+      dynamic_cast<AliMUONVCalibParam*>(store.FindObject(detElemId,manuId));
     
     if (value)
     {
@@ -316,7 +306,6 @@ AliMUONCDB::MakeHVStore(TMap& aliasMap, Bool_t defaultValues)
   /// Create a HV store
   
   AliMUONHVNamer hvNamer;
-  TRandom random;
   
   TObjArray* aliases = hvNamer.GenerateAliases();
   
@@ -337,7 +326,7 @@ AliMUONCDB::MakeHVStore(TMap& aliasMap, Bool_t defaultValues)
       
       if (!defaultValues)
       {
-        Float_t r = random.Uniform();
+        Float_t r = gRandom->Uniform();
         if ( r < 0.007 ) value = kFALSE;      
       } 
       
@@ -356,7 +345,7 @@ AliMUONCDB::MakeHVStore(TMap& aliasMap, Bool_t defaultValues)
       for ( UInt_t timeStamp = 0; timeStamp < 60*15; timeStamp += 120 )
       {
         Float_t value = 1500;
-        if (!defaultValues) value = random.Gaus(1750,62.5);
+        if (!defaultValues) value = gRandom->Gaus(1750,62.5);
         AliDCSValue* dcsValue = new AliDCSValue(value,timeStamp);
         valueSet->Add(dcsValue);
       }
@@ -374,22 +363,20 @@ AliMUONCDB::MakeHVStore(TMap& aliasMap, Bool_t defaultValues)
 
 //_____________________________________________________________________________
 Int_t 
-AliMUONCDB::MakePedestalStore(AliMUONV2DStore& pedestalStore, Bool_t defaultValues)
+AliMUONCDB::MakePedestalStore(AliMUONVStore& pedestalStore, Bool_t defaultValues)
 {
   /// Create a pedestal store. if defaultValues=true, ped.mean=ped.sigma=1,
   /// otherwise mean and sigma are from a gaussian (with parameters
   /// defined below by the kPedestal* constants)
   
-  TIter next(fManuList);
+  TIter next(ManuList());
   
   AliMpIntPair* p;
   
   Int_t nchannels(0);
   Int_t nmanus(0);
   
-  Bool_t replace = kFALSE;
-  
-  const Int_t kChannels(64);
+  const Int_t kChannels(AliMpConstants::ManuNofChannels());
   const Float_t kPedestalMeanMean(200);
   const Float_t kPedestalMeanSigma(10);
   const Float_t kPedestalSigmaMean(1.0);
@@ -398,11 +385,11 @@ AliMUONCDB::MakePedestalStore(AliMUONV2DStore& pedestalStore, Bool_t defaultValu
   while ( ( p = (AliMpIntPair*)next() ) )
   {
     ++nmanus;
-    AliMUONVCalibParam* ped = new AliMUONCalibParamNF(2,kChannels,AliMUONVCalibParam::InvalidFloatValue());
-    
-    Int_t detElemId = p->GetFirst();
-        
+
+    Int_t detElemId = p->GetFirst();    
     Int_t manuId = p->GetSecond();
+    
+    AliMUONVCalibParam* ped = new AliMUONCalibParamNF(2,kChannels,detElemId,manuId,AliMUONVCalibParam::InvalidFloatValue());
     
     const AliMpVSegmentation* seg = 
       AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(detElemId,manuId);
@@ -439,7 +426,7 @@ AliMUONCDB::MakePedestalStore(AliMUONV2DStore& pedestalStore, Bool_t defaultValu
       ped->SetValueAsFloat(manuChannel,1,sigmaPedestal);
       
     }
-    Bool_t ok = pedestalStore.Set(detElemId,manuId,ped,replace);
+    Bool_t ok = pedestalStore.Add(ped);
     if (!ok)
     {
       AliError(Form("Could not set DetElemId=%d manuId=%d",detElemId,manuId));
@@ -453,22 +440,20 @@ AliMUONCDB::MakePedestalStore(AliMUONV2DStore& pedestalStore, Bool_t defaultValu
 
 //_____________________________________________________________________________
 Int_t 
-AliMUONCDB::MakeCapacitanceStore(AliMUONV1DStore& capaStore, Bool_t defaultValues)
+AliMUONCDB::MakeCapacitanceStore(AliMUONVStore& capaStore, Bool_t defaultValues)
 {
   /// Create a capacitance store. if defaultValues=true, all capa are 1.0,
   /// otherwise they are from a gaussian with parameters defined in the
   /// kCapa* constants below.
   
-  TIter next(fManuList);
+  TIter next(ManuList());
   
   AliMpIntPair* p;
   
   Int_t nchannels(0);
   Int_t nmanus(0);
   Int_t nmanusOK(0); // manus for which we got the serial number
-  
-  Bool_t replace = kFALSE;
-  
+    
   const Float_t kCapaMean(1.0);
   const Float_t kCapaSigma(0.5);
   
@@ -482,17 +467,19 @@ AliMUONCDB::MakeCapacitanceStore(AliMUONV1DStore& capaStore, Bool_t defaultValue
     AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId); 
     Int_t serialNumber = de->GetManuSerialFromId(manuId);
       
-    if ( serialNumber > 0 ) ++nmanusOK;
+    if ( serialNumber <= 0 ) continue;
+    
+    ++nmanusOK;
     
     const AliMpVSegmentation* seg = 
       AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(detElemId,manuId);
 
-    AliMUONVCalibParam* capa = static_cast<AliMUONVCalibParam*>(capaStore.Get(serialNumber));
+    AliMUONVCalibParam* capa = static_cast<AliMUONVCalibParam*>(capaStore.FindObject(serialNumber));
     
     if (!capa)
     {
-      capa = new AliMUONCalibParamNF(1,fgkMaxNofChannelsPerManu,1.0);
-      Bool_t ok = capaStore.Set(serialNumber,capa,replace);
+      capa = new AliMUONCalibParamNF(1,AliMpConstants::ManuNofChannels(),serialNumber,0,1.0);
+      Bool_t ok = capaStore.Add(capa);
       if (!ok)
       {
         AliError(Form("Could not set serialNumber=%d manuId=%d",serialNumber,manuId));
@@ -539,21 +526,19 @@ AliMUONCDB::MakeCapacitanceStore(AliMUONV1DStore& capaStore, Bool_t defaultValue
 
 //_____________________________________________________________________________
 Int_t 
-AliMUONCDB::MakeGainStore(AliMUONV2DStore& gainStore, Bool_t defaultValues)
+AliMUONCDB::MakeGainStore(AliMUONVStore& gainStore, Bool_t defaultValues)
 {  
   /// Create a gain store. if defaultValues=true, all gain are 1.0,
   /// otherwise they are from a gaussian with parameters defined in the
   /// kGain* constants below.
   
-  TIter next(fManuList);
+  TIter next(ManuList());
   
   AliMpIntPair* p;
   
   Int_t nchannels(0);
   Int_t nmanus(0);
-  
-  Bool_t replace = kFALSE;
-  
+    
   const Double_t kSaturation(3000);
   const Double_t kGainMean(1.0);
   const Double_t kGainSigma(0.05);
@@ -561,12 +546,16 @@ AliMUONCDB::MakeGainStore(AliMUONV2DStore& gainStore, Bool_t defaultValues)
   while ( ( p = (AliMpIntPair*)next() ) )
   {
     ++nmanus;
-    AliMUONVCalibParam* gain = 
-      new AliMUONCalibParamNF(2,fgkMaxNofChannelsPerManu,
-                              AliMUONVCalibParam::InvalidFloatValue());
 
     Int_t detElemId = p->GetFirst();
     Int_t manuId = p->GetSecond();
+
+    AliMUONVCalibParam* gain = 
+      new AliMUONCalibParamNF(2,AliMpConstants::ManuNofChannels(),
+                              detElemId,
+                              manuId,
+                              AliMUONVCalibParam::InvalidFloatValue());
+
 
     const AliMpVSegmentation* seg = 
       AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(detElemId,manuId);
@@ -597,7 +586,7 @@ AliMUONCDB::MakeGainStore(AliMUONV2DStore& gainStore, Bool_t defaultValues)
       gain->SetValueAsFloat(manuChannel,1,saturation);
       
     }
-    Bool_t ok = gainStore.Set(detElemId,manuId,gain,replace);
+    Bool_t ok = gainStore.Add(gain);
     if (!ok)
     {
       AliError(Form("Could not set DetElemId=%d manuId=%d",detElemId,manuId));
@@ -610,7 +599,7 @@ AliMUONCDB::MakeGainStore(AliMUONV2DStore& gainStore, Bool_t defaultValues)
 
 //_____________________________________________________________________________
 Int_t
-AliMUONCDB::MakeLocalTriggerMaskStore(AliMUONV1DStore& localBoardMasks) const
+AliMUONCDB::MakeLocalTriggerMaskStore(AliMUONVStore& localBoardMasks) const
 {
   /// Generate local trigger masks store. All masks are set to FFFF
   
@@ -619,7 +608,7 @@ AliMUONCDB::MakeLocalTriggerMaskStore(AliMUONV1DStore& localBoardMasks) const
   // one single container (localBoardMasks)
   for ( Int_t i = 1; i <= 234; ++i )
   {
-    AliMUONVCalibParam* localBoard = new AliMUONCalibParamNI(1,8);
+    AliMUONVCalibParam* localBoard = new AliMUONCalibParamNI(1,8,i,0,0);
     for ( Int_t x = 0; x < 2; ++x )
     {
       for ( Int_t y = 0; y < 4; ++y )
@@ -629,27 +618,27 @@ AliMUONCDB::MakeLocalTriggerMaskStore(AliMUONV1DStore& localBoardMasks) const
         ++ngenerated;
       }
     }
-    localBoardMasks.Set(i,localBoard,kFALSE);
+    localBoardMasks.Add(localBoard);
   }
   return ngenerated;
 }
 
 //_____________________________________________________________________________
 Int_t
-AliMUONCDB::MakeRegionalTriggerMaskStore(AliMUONV1DStore& rtm) const
+AliMUONCDB::MakeRegionalTriggerMaskStore(AliMUONVStore& rtm) const
 {
   /// Make a regional trigger masks store. All masks are set to 3F
   
   Int_t ngenerated(0);
   for ( Int_t i = 0; i < 16; ++i )
   {
-    AliMUONVCalibParam* regionalBoard = new AliMUONCalibParamNI(1,16);
+    AliMUONVCalibParam* regionalBoard = new AliMUONCalibParamNI(1,16,i,0,0);
     for ( Int_t j = 0; j < 16; ++j )
     {
       regionalBoard->SetValueAsInt(j,0,0x3F);
       ++ngenerated;
     }
-    rtm.Set(i,regionalBoard,kFALSE);
+    rtm.Add(regionalBoard);
   }
   
   return ngenerated;
@@ -718,16 +707,18 @@ AliMUONCDB::WriteToCDB(const char* calibpath, TObject* object,
 
 //_____________________________________________________________________________
 Int_t 
-AliMUONCDB::MakeNeighbourStore(AliMUONV2DStore& neighbourStore)
+AliMUONCDB::MakeNeighbourStore(AliMUONVStore& neighbourStore)
 {
   /// Fill the neighbours store with, for each channel, a TObjArray of its
   /// neighbouring pads (including itself)
+  
+  AliInfo("Generating NeighbourStore. This will take a while. Please be patient.");
   
   TStopwatch timer;
   
   timer.Start(kTRUE);
   
-  TIter next(fManuList);
+  TIter next(ManuList());
   
   AliMpIntPair* p;
   
@@ -743,16 +734,16 @@ AliMUONCDB::MakeNeighbourStore(AliMUONV2DStore& neighbourStore)
     const AliMpVSegmentation* seg = 
       AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(detElemId,manuId);
     
-    AliMUONVCalibParam* calibParam = static_cast<AliMUONVCalibParam*>(neighbourStore.Get(detElemId,manuId));
+    AliMUONVCalibParam* calibParam = static_cast<AliMUONVCalibParam*>(neighbourStore.FindObject(detElemId,manuId));
     if (!calibParam)
     {
       Int_t dimension(11);
-      Int_t size(64);
+      Int_t size(AliMpConstants::ManuNofChannels());
       Int_t defaultValue(-1);
-      Int_t packingFactor(64);
+      Int_t packingFactor(size);
       
-      calibParam = new AliMUONCalibParamNI(dimension,size,defaultValue,packingFactor);
-      Bool_t ok = neighbourStore.Set(detElemId,manuId,calibParam,kFALSE);
+      calibParam = new AliMUONCalibParamNI(dimension,size,detElemId,manuId,defaultValue,packingFactor);
+      Bool_t ok = neighbourStore.Add(calibParam);
       if (!ok)
       {
         AliError(Form("Could not set DetElemId=%d manuId=%d",detElemId,manuId));
@@ -760,7 +751,7 @@ AliMUONCDB::MakeNeighbourStore(AliMUONV2DStore& neighbourStore)
       }      
     }
     
-    for ( Int_t manuChannel = 0; manuChannel < 64; ++manuChannel )
+    for ( Int_t manuChannel = 0; manuChannel < AliMpConstants::ManuNofChannels(); ++manuChannel )
     {
       AliMpPad pad = seg->PadByLocation(AliMpIntPair(manuId,manuChannel),kFALSE);
       
@@ -779,6 +770,7 @@ AliMUONCDB::MakeNeighbourStore(AliMUONV2DStore& neighbourStore)
           if (!ok)
           {
             AliError("Could not pack value. Something is seriously wrong. Please check");
+            StdoutToAliError(pad->Print(););
             return -1;
           }
           calibParam->SetValueAsInt(manuChannel,i,x);
@@ -798,7 +790,7 @@ AliMUONCDB::WriteLocalTriggerMasks(Int_t startRun, Int_t endRun)
 {  
   /// Write local trigger masks to OCDB
   
-  AliMUONV1DStore* ltm = new AliMUON1DArray(235);
+  AliMUONVStore* ltm = new AliMUON1DArray(235);
   Int_t ngenerated = MakeLocalTriggerMaskStore(*ltm);
   AliInfo(Form("Ngenerated = %d",ngenerated));
   if (ngenerated>0)
@@ -814,7 +806,7 @@ AliMUONCDB::WriteRegionalTriggerMasks(Int_t startRun, Int_t endRun)
 {  
   /// Write regional trigger masks to OCDB
   
-  AliMUONV1DStore* rtm = new AliMUON1DArray(16);
+  AliMUONVStore* rtm = new AliMUON1DArray(16);
   Int_t ngenerated = MakeRegionalTriggerMaskStore(*rtm);
   AliInfo(Form("Ngenerated = %d",ngenerated));
   if (ngenerated>0)
@@ -830,7 +822,7 @@ AliMUONCDB::WriteGlobalTriggerMasks(Int_t startRun, Int_t endRun)
 {  
   /// Write global trigger masks to OCDB
   
-  AliMUONVCalibParam* gtm = new AliMUONCalibParamNI(1,16);
+  AliMUONVCalibParam* gtm = new AliMUONCalibParamNI(1,16,1,0,0);
 
   Int_t ngenerated = MakeGlobalTriggerMaskStore(*gtm);
   AliInfo(Form("Ngenerated = %d",ngenerated));
@@ -875,7 +867,7 @@ AliMUONCDB::WriteNeighbours(Int_t startRun, Int_t endRun)
 {
   /// Write neighbours to OCDB
   
-  AliMUONV2DStore* neighbours = new AliMUON2DMap(kTRUE);
+  AliMUONVStore* neighbours = new AliMUON2DMap(kTRUE);
   Int_t ngenerated = MakeNeighbourStore(*neighbours);
   AliInfo(Form("Ngenerated = %d",ngenerated));
   if (ngenerated>0)
@@ -915,7 +907,7 @@ AliMUONCDB::WritePedestals(Bool_t defaultValues,
   /// store them into CDB located at cdbpath, with a validity period
   /// ranging from startRun to endRun
   
-  AliMUONV2DStore* pedestalStore = new AliMUON2DMap(true);
+  AliMUONVStore* pedestalStore = new AliMUON2DMap(true);
   Int_t ngenerated = MakePedestalStore(*pedestalStore,defaultValues);
   AliInfo(Form("Ngenerated = %d",ngenerated));
   WriteToCDB("MUON/Calib/Pedestals",pedestalStore,startRun,endRun,defaultValues);
@@ -933,7 +925,7 @@ AliMUONCDB::WriteGains(Bool_t defaultValues,
   /// store them into CDB located at cdbpath, with a validity period
   /// ranging from startRun to endRun
   
-  AliMUONV2DStore* gainStore = new AliMUON2DMap(true);
+  AliMUONVStore* gainStore = new AliMUON2DMap(true);
   Int_t ngenerated = MakeGainStore(*gainStore,defaultValues);
   AliInfo(Form("Ngenerated = %d",ngenerated));  
   WriteToCDB("MUON/Calib/Gains",gainStore,startRun,endRun,defaultValues);
@@ -950,7 +942,7 @@ AliMUONCDB::WriteCapacitances(Bool_t defaultValues,
   /// store them into CDB located at cdbpath, with a validity period
   /// ranging from startRun to endRun
   
-  AliMUONV1DStore* capaStore = new AliMUON1DMap(16828);
+  AliMUONVStore* capaStore = new AliMUON1DMap(16828);
   Int_t ngenerated = MakeCapacitanceStore(*capaStore,defaultValues);
   AliInfo(Form("Ngenerated = %d",ngenerated));
   WriteToCDB("MUON/Calib/Capacitances",capaStore,startRun,endRun,defaultValues);

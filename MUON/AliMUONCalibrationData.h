@@ -19,8 +19,8 @@
 class AliCDBEntry;
 class AliMUONTriggerEfficiencyCells;
 class AliMUONTriggerLut;
-class AliMUONV1DStore;
-class AliMUONV2DStore;
+class AliMUONVStore;
+class AliMUONVStore;
 class AliMUONVCalibParam;
 class TMap;
 
@@ -35,11 +35,11 @@ public:
   AliMUONCalibrationData(Int_t runNumber=-1, Bool_t deferredInitialization=kTRUE);
   virtual ~AliMUONCalibrationData();
 
-  AliMUONV2DStore* Neighbours() const;
+  AliMUONVStore* Neighbours() const;
   
-  AliMUONV1DStore* Capacitances() const;
+  AliMUONVStore* Capacitances() const;
   
-  AliMUONV2DStore* Gains() const;
+  AliMUONVStore* Gains() const;
   
   /// Get the Gain calibration object for channels within (detElemId,manuId).
   AliMUONVCalibParam* Gains(Int_t detElemId, Int_t manuId) const;
@@ -56,7 +56,7 @@ public:
   /// Whether this object is valid or not (might be invalid if fetching from CDB failed).
   Bool_t IsValid() const { return fIsValid; }
   
-  AliMUONV2DStore* Pedestals() const;
+  AliMUONVStore* Pedestals() const;
   
   /// Get the Pedestal calibration object for channels within (detElemId,manuId).
   AliMUONVCalibParam* Pedestals(Int_t detElemId, Int_t manuId) const;
@@ -86,32 +86,32 @@ protected:
   
 private:
   AliCDBEntry* GetEntry(const char* path) const;
-  AliMUONV2DStore* OnDemandNeighbours() const;
-  AliMUONV1DStore* OnDemandCapacitances() const;
-  AliMUONV2DStore* OnDemandGains() const;
-  AliMUONV2DStore* OnDemandPedestals() const;
+  AliMUONVStore* OnDemandNeighbours() const;
+  AliMUONVStore* OnDemandCapacitances() const;
+  AliMUONVStore* OnDemandGains() const;
+  AliMUONVStore* OnDemandPedestals() const;
   TMap* OnDemandHV() const;
   AliMUONVCalibParam* OnDemandGlobalTriggerBoardMasks() const;
-  AliMUONV1DStore* OnDemandRegionalTriggerBoardMasks() const;
-  AliMUONV1DStore* OnDemandLocalTriggerBoardMasks() const;
+  AliMUONVStore* OnDemandRegionalTriggerBoardMasks() const;
+  AliMUONVStore* OnDemandLocalTriggerBoardMasks() const;
   AliMUONTriggerLut* OnDemandTriggerLut() const;
   AliMUONTriggerEfficiencyCells* OnDemandTriggerEfficiency() const;
   
 private:  
   mutable Bool_t fIsValid; ///<  Whether we were able to correctly initialize
   Int_t fRunNumber; ///<  The run number for which we hold calibrations
-  mutable AliMUONV2DStore* fGains; //!< Gains
-  mutable AliMUONV2DStore* fPedestals; //!< Pedestals
+  mutable AliMUONVStore* fGains; //!< Gains
+  mutable AliMUONVStore* fPedestals; //!< Pedestals
   mutable TMap* fHV; //!< HV
-  mutable AliMUONV1DStore* fLocalTriggerBoardMasks; //!< Local trigger board maska
-  mutable AliMUONV1DStore* fRegionalTriggerBoardMasks; //!< Regional trigger board maska
+  mutable AliMUONVStore* fLocalTriggerBoardMasks; //!< Local trigger board maska
+  mutable AliMUONVStore* fRegionalTriggerBoardMasks; //!< Regional trigger board maska
   mutable AliMUONVCalibParam* fGlobalTriggerBoardMasks; //!< Global trigger board maska
   mutable AliMUONTriggerLut* fTriggerLut; //!< TRigger LUTs
   mutable AliMUONTriggerEfficiencyCells* fTriggerEfficiency; //!< Trigger efficiency cells
-  mutable AliMUONV1DStore* fCapacitances; //!< Manu capacitances
-  mutable AliMUONV2DStore* fNeighbours; //!< list of neighbours for all channels
+  mutable AliMUONVStore* fCapacitances; //!< Manu capacitances
+  mutable AliMUONVStore* fNeighbours; //!< list of neighbours for all channels
   
-  ClassDef(AliMUONCalibrationData,6) // Storage for all MUON calibration data.
+  ClassDef(AliMUONCalibrationData,7) // Storage for all MUON calibration data.
 };
 
 #endif

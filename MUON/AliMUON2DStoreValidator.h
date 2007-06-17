@@ -17,7 +17,7 @@
 #  include "TObject.h"
 #endif
 
-class AliMUONV2DStore;
+class AliMUONVStore;
 class TList;
 class TObjArray;
 class AliMUONCheckItem;
@@ -29,15 +29,15 @@ public:
   AliMUON2DStoreValidator();
   virtual ~AliMUON2DStoreValidator();
   
-  TObjArray* Validate(const AliMUONV2DStore& store, Float_t invalidFloatValue);
+  TObjArray* Validate(const AliMUONVStore& store, Float_t invalidFloatValue);
 
-  TObjArray* Validate(const AliMUONV2DStore& store);
+  TObjArray* Validate(const AliMUONVStore& store);
   
-  TObjArray* Validate(const AliMUONV2DStore& store, 
+  TObjArray* Validate(const AliMUONVStore& store, 
                       Bool_t (*check)(const AliMUONVCalibParam&,Int_t));
 
   /// Return statuses
-  AliMUONV2DStore* GetStatus() const { return fStatus; }
+  AliMUONVStore* GetStatus() const { return fStatus; }
   
   /// Reports what is missing, trying to be as concise as possible.
   void Report(TList& lines) const;
@@ -65,7 +65,7 @@ private:
 private:
   TList* fManuList; //!< List of (DE,manuID) pairs.
   TObjArray* fChambers; //!< Array of AliMUONCheckItem.
-  AliMUONV2DStore* fStatus; //!< Statuses
+  AliMUONVStore* fStatus; //!< Statuses
   
   ClassDef(AliMUON2DStoreValidator,2) // Validator of 2DStore
 };
