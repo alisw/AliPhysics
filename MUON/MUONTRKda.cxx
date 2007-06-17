@@ -28,14 +28,12 @@ extern "C" {
 #include "AliMUONBlockHeader.h"
 #include "AliMUONBusStruct.h"
 #include "AliMUONDDLTracker.h"
-#include "AliMUONV2DStore.h"
+#include "AliMUONVStore.h"
 #include "AliMUON2DMap.h"
 #include "AliMUONCalibParamNF.h"
-#include "AliMUONObjectPair.h"
-#include "AliMUONVDataIterator.h"
 #include "AliMpDDLStore.h"
 #include "AliMpIntPair.h"
-
+#include "AliMpConstants.h"
 #include "AliRawReaderDate.h"
 
 
@@ -54,8 +52,8 @@ extern "C" {
 
 
 // global variables
-AliMUONV2DStore* pedestalStore =  new AliMUON2DMap(kFALSE);
-const Int_t kNchannels = 64;
+AliMUONVStore* pedestalStore =  new AliMUON2DMap(kFALSE);
+const Int_t kNchannels = AliMpConstants::ManuNofChannels();
 Int_t nManu = 0;
 Int_t nChannel = 0;
 UInt_t runNumber = 0;
@@ -168,16 +166,13 @@ void MakePedStore(TString flatOutputFile = "")
   }
 
   // iterator over pedestal
-  AliMUONVDataIterator* it = pedestalStore->Iterator();
-
-  AliMUONObjectPair* p;
+  TIter next(pedestalStore);
+  AliMUONVCalibParam* ped;
   
-  while ( ( p = dynamic_cast<AliMUONObjectPair*>(it->Next() ) ) )
+  while ( ( ped = dynamic_cast<AliMUONVCalibParam*>(next() ) ) )
   {
-    AliMUONVCalibParam* ped = dynamic_cast<AliMUONVCalibParam*>(p->Value());
-    AliMpIntPair* pair      = dynamic_cast<AliMpIntPair*>(p->Key());
-    busPatchId              = pair->GetFirst();
-    manuId                  = pair->GetSecond();
+    busPatchId              = ped->ID0();
+    manuId                  = ped->ID1();
 
     for (channelId = 0; channelId < ped->Size() ; ++channelId) {
 
@@ -207,8 +202,6 @@ void MakePedStore(TString flatOutputFile = "")
 	tree->Fill();
       }
     }
-
-    delete p; // cos create a new object for each iteration
   }
 
   // file outputs
@@ -352,17 +345,15 @@ void MakeGainStore(TString flatOutputFile)
     // TF1* func = new TF1("func","pol1");
 
     // iterates over the first pedestal run
-    AliMUONVDataIterator* it = map[0]->Iterator();
+    TIter next(map[0]);
+    AliMUONVCalibParam* p;
 
-    AliMUONObjectPair* p;
-
-    while ( ( p = dynamic_cast<AliMUONObjectPair*>(it->Next() ) ) )
+    while ( ( p = dynamic_cast<AliMUONVCalibParam*>(next() ) ) )
     {
-      ped[0]  = dynamic_cast<AliMUONVCalibParam*>(p->Value());
-      pair    = dynamic_cast<AliMpIntPair*>(p->Key());
+      ped[0]  = p;
 
-      Int_t busPatchId = pair->GetFirst();
-      Int_t manuId     = pair->GetSecond();
+      Int_t busPatchId = p->Id(0);
+      Int_t manuId     = p->Id(1);
 
       // read back pedestal from the other runs for the given (bupatch, manu)
       for (Int_t i = 1; i < nEntries; ++i) {
@@ -410,7 +401,6 @@ void MakeGainStore(TString flatOutputFile)
 	}
 
       }
-      delete p;
     }
 
     // file outputs for gain
