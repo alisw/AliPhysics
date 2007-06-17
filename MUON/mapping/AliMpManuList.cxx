@@ -17,11 +17,12 @@
 
 #include "AliMpManuList.h"
 
+#include "AliMpCathodType.h"
+#include "AliMpConstants.h"
 #include "AliMpDEIterator.h"
 #include "AliMpDEManager.h"
 #include "AliMpSegmentation.h"
 #include "AliMpStationType.h"
-#include "AliMpCathodType.h"
 #include "AliMpVSegmentation.h"
 #include "TArrayI.h"
 #include "TList.h"
@@ -124,7 +125,7 @@ AliMpManuList::NumberOfChannels(Int_t detElemId, Int_t manuId)
     AliMpSegmentation::Instance()
       ->GetMpSegmentationByElectronics(detElemId,manuId);
   Int_t n(0);
-  for ( Int_t i = 0; i < 64; ++i )
+  for ( Int_t i = 0; i < AliMpConstants::ManuNofChannels(); ++i )
   {
     AliMpPad pad = seg->PadByLocation(AliMpIntPair(manuId,i),kFALSE);
     if (pad.IsValid()) ++n;
