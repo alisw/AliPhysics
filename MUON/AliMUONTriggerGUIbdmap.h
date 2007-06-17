@@ -7,16 +7,8 @@
 /// \ingroup evaluation
 /// \class AliMUONTriggerGUIbdmap
 /// \brief Trigger GUI utility class: single board map of the strips/digits
+//  Author Bogdan Vulpescu, LPC Clermont-Ferrand
 
-//////////////////////////////////////////////////////////////////////////
-//                                                                      //
-// Graphical User Interface utility class for the MUON trigger          //
-// - single board map of the strips/digits                              //
-//                                                                      //
-//////////////////////////////////////////////////////////////////////////
-
-#include <TObject.h>
-#include <RQ_OBJECT.h>
 #include <TGFrame.h>
 
 class TCanvas;
@@ -35,23 +27,17 @@ class AliMUONTriggerGUIboard;
 class AliMUONTriggerGUI;
 class AliMUONTriggerCircuit;
 class AliLoader;
-class AliMUONData;
 
-class AliMUONTriggerGUIbdmap : public TObject
+class AliMUONTriggerGUIbdmap : public TGFrame
 {
 
-RQ_OBJECT("AliMUONTriggerGUIbdmap")
-    
 public:
 
   AliMUONTriggerGUIbdmap(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t h);
   virtual ~AliMUONTriggerGUIbdmap();
   
-  AliMUONTriggerGUIbdmap (const AliMUONTriggerGUIbdmap& bdmap);
-  AliMUONTriggerGUIbdmap& operator=(const AliMUONTriggerGUIbdmap& bdmap);
-
   /// set the name of the board gui window
-  void SetName(Char_t *name)               { fMain->SetWindowName(name); };
+  void SetName(const Char_t *name)         { fMain->SetWindowName(name); };
   /// set the board associated to this instance
   void SetBoard(AliMUONTriggerGUIboard *b) { fBoard = b; };  
   /// set the board associated to this instance, from boards array and id
@@ -78,6 +64,11 @@ public:
   void LocalTriggerInfo();
 
 private:
+  /// Not implemented
+  AliMUONTriggerGUIbdmap (const AliMUONTriggerGUIbdmap& bdmap);
+  /// Not implemented
+  AliMUONTriggerGUIbdmap& operator=(const AliMUONTriggerGUIbdmap& bdmap);
+
 
   enum { kNBoards = 234, kNMT = 4, kNS = 16 };  ///< constants
 
@@ -87,7 +78,6 @@ private:
 
   AliMUONTriggerGUIboard  *fBoard;         ///< Current board object
   AliLoader               *fLoader;        ///< The MUON loader
-  AliMUONData             *fMUONData;      ///< MUON data manager
 
   TGCheckButton        *fXStrips;          ///< Draw x-strips and digits
   TGCheckButton        *fYStrips;          ///< Draw y-strips and digits

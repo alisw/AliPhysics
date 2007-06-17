@@ -4,15 +4,13 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+/* $Id$ */
+
 /// \ingroup evaluation
 /// \class AliMUONTriggerGUI
-/// \brief Trigger GUI utility class
+/// \brief Graphical User Interface utility class for the MUON trigger detector
+//  Author Bogdan Vulpescu, LPC Clermont-Ferrand
 
-//////////////////////////////////////////////////////////////////////////
-//                                                                      //
-// Graphical User Interface utility class for the MUON trigger          //
-//                                                                      //
-//////////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
 #include <TObjArray.h>
@@ -34,7 +32,6 @@ class AliCDBManager;
 class AliMUONCalibrationData;
 class AliMUONTriggerGUIboard;
 class AliMUONTriggerGUIdimap;
-class AliMUONData;
 class AliMUONTriggerElectronics;
 
 class AliMUONTriggerGUI : public TObject
@@ -47,9 +44,6 @@ public:
     /// main gui destructor 
   };
   
-  AliMUONTriggerGUI (const AliMUONTriggerGUI& board);
-  AliMUONTriggerGUI& operator=(const AliMUONTriggerGUI& board);
-
   void OpenBoard(Int_t id);
   void HandleMenu(Int_t id);
 
@@ -75,9 +69,16 @@ public:
   void CloseCircuit() const;
 
 private:
+    
+  AliMUONTriggerGUI (const AliMUONTriggerGUI& board); ///< copy constructor
+  AliMUONTriggerGUI& operator=(const AliMUONTriggerGUI& board);///< assignment operator
   
-  enum { kNBoards = 234, kNMT = 4 };    ///< nr of boards, nr of chambers
+private:
+  
+  /// nr of boards, nr of chambers
+  enum { kNBoards = 234, kNMT = 4 }; 
 
+  /// working status flags
   enum EMenuIdentifiers {
     
     kMFILEEXIT,
@@ -91,7 +92,7 @@ private:
 
     kMTRIGGERDSET
 
-  };                                    ///< gui menu identifiers
+  };
 
   enum {
     kGood = 0x0001, kWithProblems = 0x0002, kNotWorking = 0x0004, kUnknown = 0x0008
@@ -129,12 +130,12 @@ private:
   AliMUONTriggerGUIdimap *fDiMap;   ///< Digits map
 
   AliMUONTriggerElectronics *fTriggerProcessor;   ///< The GUI trigger processor
-  AliMUONData      *fMUONData;      ///< The MUON data manager
 
   TObjArray *fBoards;               ///< The array of trigger boards
+  /// Access the array of trigger boards
   TObjArray *Boards() {
     if(!fBoards) fBoards = new TObjArray(kNBoards); return fBoards;
-  };                                ///< Access the array of trigger boards
+  };                                
   AliMUONTriggerGUIboard *GetBoard(Int_t id) const;
 
   virtual void Init();
@@ -142,7 +143,7 @@ private:
 
   void  SetStripBoxes(AliMUONTriggerGUIboard *board);
 
-  ClassDef(AliMUONTriggerGUI,1)      // Main GUI class for the MUON trigger
+  ClassDef(AliMUONTriggerGUI,2)      // Main GUI class for the MUON trigger
 
 };
 

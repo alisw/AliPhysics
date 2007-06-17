@@ -13,15 +13,15 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//////////////////////////////////////////////////////////////////////////
-//                                                                      //
-// Graphical User Interface utility class for the MUON trigger          //
-// - digits maps of the trigger chambers                                //
-//                                                                      //
-//////////////////////////////////////////////////////////////////////////
+// $Id$
+
+/// \class AliMUONTriggerGUIdimap
+///
+/// The digit maps of the four trigger chambers, all boards
+///
+/// \author Bogdan Vulpescu, LPC Clermont-Ferrand
 
 #include <TCanvas.h>
-#include <TGFrame.h>
 #include <TGButton.h>
 #include <TGTab.h>
 #include <TRootEmbeddedCanvas.h>
@@ -35,14 +35,15 @@
 #include "AliRun.h"
 
 #include "AliMUON.h"
-#include "AliMUONDigit.h"
+#include "AliMUONVDigit.h"
 #include "AliMpSegmentation.h"
 #include "AliMpVSegmentation.h"
 #include "AliMUONGeometryTransformer.h"
-#include "AliMUONData.h"
 
 #include "AliMUONTriggerGUIboard.h"
 #include "AliMUONTriggerGUIdimap.h"
+
+#include "AliMUONVDigitStore.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMUONTriggerGUIdimap)
@@ -50,11 +51,9 @@ ClassImp(AliMUONTriggerGUIdimap)
 
 //__________________________________________________________________________
 AliMUONTriggerGUIdimap::AliMUONTriggerGUIdimap(AliLoader *loader, TObjArray *boards, const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t h)
-  : TObject(),
-    fQObject(),
+  : TGFrame(0),
     fMain(0),
     fLoader(0),
-    fMUONData(0),
     fBoards(0),
     fIsOn(0)
 {
@@ -64,9 +63,6 @@ AliMUONTriggerGUIdimap::AliMUONTriggerGUIdimap(AliLoader *loader, TObjArray *boa
   fIsOn   = kTRUE;
   fBoards = boards;
 
-  fMUONData = new AliMUONData(loader,"MUON","MUON");
-  fMUONData->SetTreeAddress("D");
- 
   gStyle->SetPadLeftMargin(0.05);
   gStyle->SetPadRightMargin(0.05);
   gStyle->SetPadTopMargin(0.05);
@@ -216,37 +212,7 @@ AliMUONTriggerGUIdimap::~AliMUONTriggerGUIdimap()
     }
   }
 
-  delete fMUONData;
   fMain->DeleteWindow();
-
-}
-
-//__________________________________________________________________________
-AliMUONTriggerGUIdimap::AliMUONTriggerGUIdimap(const AliMUONTriggerGUIdimap& dimap)
-  : TObject(),
-    fQObject(),
-    fMain(0),
-    fLoader(0),
-    fMUONData(0),
-    fBoards(0),
-    fIsOn(0)
-{
-  /// copy constructor
-
-  dimap.Dump();
-  Fatal("AliMUONTriggerGUIdimap","copy constructor not implemented");
-
-}
-
-//__________________________________________________________________________
-AliMUONTriggerGUIdimap & AliMUONTriggerGUIdimap::operator=(const AliMUONTriggerGUIdimap& dimap)
-{
-  /// asignment operator
-
-  dimap.Dump();
-  Fatal("AliMUONTriggerGUIdimap","assignment operator not implemented");
-
-  return *this;
 
 }
 
@@ -262,7 +228,6 @@ void AliMUONTriggerGUIdimap::DrawMaps(Int_t chamber)
   canvas->cd();
   canvas->Clear();
 
-  AliMUONDigit *mdig;
   AliMpPad      mpad;
   
   AliRunLoader *runLoader = fLoader->GetRunLoader();
@@ -270,11 +235,9 @@ void AliMUONTriggerGUIdimap::DrawMaps(Int_t chamber)
   AliMUON *pMUON = (AliMUON*)gAlice->GetModule("MUON");
   const AliMUONGeometryTransformer* kGeomTransformer = pMUON->GetGeometryTransformer();
   
-  TClonesArray *muonDigits = fMUONData->Digits(chamber-1);
-  if (muonDigits == 0) { printf("No muonDigits \n"); return; }
-  gAlice->ResetDigits();
-  fMUONData->GetDigits();
-  Int_t nDigits = muonDigits->GetEntriesFast(); 
+  fLoader->LoadDigits("READ");
+  TTree* treeD = fLoader->TreeD();
+  AliMUONVDigitStore* digitStore = AliMUONVDigitStore::Create(*treeD);
   
   TPaveText *label;
   TBox *boxd;
@@ -475,16 +438,17 @@ void AliMUONTriggerGUIdimap::DrawMaps(Int_t chamber)
   
   // draw the digits
 
-  for (Int_t id = 0; id < nDigits; id++) {
-    
-    mdig  = (AliMUONDigit*)muonDigits->UncheckedAt(id);
-    
+  TIter next(digitStore->CreateIterator());
+  AliMUONVDigit* mdig;
+  
+  while ( ( mdig = static_cast<AliMUONVDigit*>(next()) ) ) 
+  {
     cathode = mdig->Cathode()+1;
     
     ix=mdig->PadX();
     iy=mdig->PadY();
     detElemId=mdig->DetElemId();      
-    charge = (Int_t)mdig->Signal();
+    charge = (Int_t)mdig->Charge();
     color  = 261+5*(charge-1);
     if (color > 282) color = 282;
     
@@ -522,6 +486,7 @@ void AliMUONTriggerGUIdimap::DrawMaps(Int_t chamber)
     
   }  // end digits loop
 
+  delete digitStore;
   canvas->Modified();
   canvas->Update();
 
@@ -561,10 +526,6 @@ void AliMUONTriggerGUIdimap::DoClose()
 void AliMUONTriggerGUIdimap::DoUpdate()
 {
   /// update maps for another run/event
-
-  //fMUONData->SetLoader(fLoader);
-  fMUONData = new AliMUONData(fLoader,"MUON","MUON");
-  fMUONData->SetTreeAddress("D");
 
   for (Int_t it = 0; it < kNMT; it++) {
     for (Int_t ib = 0; ib < kNBoards; ib++) {

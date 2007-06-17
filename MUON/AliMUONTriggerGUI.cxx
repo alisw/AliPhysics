@@ -13,11 +13,13 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//////////////////////////////////////////////////////////////////////////
-//                                                                      //
-// Graphical User Interface utility class for the MUON trigger          //
-//                                                                      //
-//////////////////////////////////////////////////////////////////////////
+// $Id$
+
+/// \class AliMUONTriggerGUI
+/// Graphical User Interface utility class for the MUON trigger detector
+/// It creates, after initialisation with a data file, a sensitive map
+/// of the trigger boards
+/// \author Bogdan Vulpescu, LPC Clermont-Ferrand
 
 #include "AliMUONTriggerGUI.h"
 #include "AliMUONTriggerGUIboard.h"
@@ -29,7 +31,6 @@
 #include "AliMpPad.h"
 #include "AliMpIntPair.h"
 #include "AliMUON.h"
-#include "AliMUONData.h"
 #include "AliMpDEIterator.h"
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONTriggerCrateStore.h"
@@ -84,7 +85,6 @@ AliMUONTriggerGUI::AliMUONTriggerGUI()
     fBoardsInit(0),
     fDiMap(0),
     fTriggerProcessor(0),
-    fMUONData(0),
     fBoards(0)
 {
   /// main GUI frame of the trigger monitor
@@ -211,54 +211,6 @@ AliMUONTriggerGUI::AliMUONTriggerGUI()
   //InitBoards();
   //Init();
   
-}
-
-//__________________________________________________________________________
-AliMUONTriggerGUI::AliMUONTriggerGUI(const AliMUONTriggerGUI& gui)
-  : TObject(),
-    fMain(0),
-    fImageMap(0),
-    fTxtBuffer1(0),
-    fTxtBuffer2(0),
-    fTxtCircuit(0),
-    fRunInput(0),
-    fError(0),
-    fControl(0),
-    fCircuit(0),
-    fSkipToEventTxt(0),
-    fFileName(0),
-    fPath(0),
-    fEvString(0),
-    fChamber(0),
-    fEvent(0),
-    fEventsPerRun(0),
-    fLoader(0),
-    fRunLoader(0),
-    fCDBManager(0),
-    fCalibrationData(0),
-    fBoardsInit(0),
-    fDiMap(0),
-    fTriggerProcessor(0),
-    fMUONData(0),
-    fBoards(0)
-{
-  /// copy constructor
-
-  gui.Dump();
-  Fatal("AliMUONTriggerGUI","copy constructor not implemented");
-
-}
-
-//__________________________________________________________________________
-AliMUONTriggerGUI & AliMUONTriggerGUI::operator=(const AliMUONTriggerGUI& gui)
-{
-  /// asignment operator
-
-  gui.Dump();
-  Fatal("AliMUONTriggerGUI","assignment operator not implemented");
-
-  return *this;
-
 }
 
 //__________________________________________________________________________
@@ -616,13 +568,6 @@ void AliMUONTriggerGUI::HandleMenu(Int_t id)
 
   case kMTRIGGERDSET:
 
-    //cout << "Trigger with fMUONData digits....." << endl;
-    /*
-    fMUONData->SetTreeAddress("D");
-    fMUONData->GetDigits();
-    fTriggerProcessor = new AliMUONTriggerElectronics(fMUONData,fCalibrationData);
-    fTriggerProcessor->FeedM();
-    */
     cout << "Trigger with boards digits....." << endl;
     fTriggerProcessor->FeedBoardsGUI(Boards());
 
@@ -775,36 +720,7 @@ void AliMUONTriggerGUI::DoRunApply()
 	}
       }
       
-      fMUONData = new AliMUONData(fLoader,"MUON","MUON");
-      fMUONData->SetTreeAddress("D,GLT");
-
-      fTriggerProcessor = new AliMUONTriggerElectronics(0,fCalibrationData);
-      /*
-      fRunLoader->LoadKinematics();
-
-      AliStack* stack = gAlice->Stack();
-      Int_t nParticles = stack->GetNtrack();
-      Int_t nPrimaries = stack->GetNprimary();
-
-      TParticle *part;
-      Int_t nMuons = 0;
-      Int_t pdgCode;
-      Double_t px, py, pz, theta, phi;
-      for (Int_t i = 0; i < nPrimaries; i++) {
-	part = stack->Particle(i);
-	if (!part) continue;
-	if (TMath::Abs(part->GetPdgCode()) == 13) {
-	  nMuons++;
-	  pdgCode = part->GetPdgCode();
-	  px = part->Px();
-	  py = part->Py();
-	  pz = part->Pz();
-	  theta = part->Theta();
-	  phi = part->Phi();
-	  printf("Kine %d px %f py %f pz %f th %f ph %f \n",pdgCode,px,py,pz,theta,phi); 
-	}
-      }
-      */
+      fTriggerProcessor = new AliMUONTriggerElectronics(fCalibrationData);
     }
 
   }

@@ -7,19 +7,11 @@
 /// \ingroup evaluation
 /// \class AliMUONTriggerGUIdimap
 /// \brief Trigger GUI utility class: digits maps of the trigger chambers
+//  Author Bogdan Vulpescu, LPC Clermont-Ferrand
 
-//////////////////////////////////////////////////////////////////////////
-//                                                                      //
-// Graphical User Interface utility class for the MUON trigger          //
-// - digits maps of the trigger chambers                                //
-//                                                                      //
-//////////////////////////////////////////////////////////////////////////
-
-#include <TObject.h>
-#include <RQ_OBJECT.h>
+#include <TGFrame.h>
 
 class AliLoader;
-class AliMUONData;
 class TGTransientFrame;
 class TObjArray;
 class TRootEmbeddedCanvas;
@@ -28,10 +20,8 @@ class TH1F;
 class TGWindow;
 class TPad;
 
-class AliMUONTriggerGUIdimap : public TObject
+class AliMUONTriggerGUIdimap : public TGFrame
 {
-
-RQ_OBJECT("AliMUONTriggerGUIdimap")
     
 public:
 
@@ -41,9 +31,6 @@ public:
 			UInt_t w, UInt_t h);
  virtual ~AliMUONTriggerGUIdimap();
  
- AliMUONTriggerGUIdimap (const AliMUONTriggerGUIdimap& dimap);
- AliMUONTriggerGUIdimap& operator=(const AliMUONTriggerGUIdimap& dimap);
-
  /// set the current muon loader
  void SetLoader(AliLoader *loader) { fLoader = loader; };
  /// true if the gui is active
@@ -58,6 +45,12 @@ public:
  void SelectBoard(Int_t ib);
 
 private:
+ /// Not implemented  
+ AliMUONTriggerGUIdimap (const AliMUONTriggerGUIdimap& dimap);
+ /// Not implemented  
+ AliMUONTriggerGUIdimap& operator=(const AliMUONTriggerGUIdimap& dimap);
+ 
+private:
 
   enum { kNBoards = 234 };        ///< number of boards
   enum { kGood = 0x0001, kWithProblems = 0x0002, kNotWorking = 0x0004, kUnknown = 0x0008 };                      ///< working status flags
@@ -66,7 +59,6 @@ private:
   TGTransientFrame    *fMain;     ///< Main frame
 
   AliLoader   *fLoader;           ///< The MUON loader
-  AliMUONData *fMUONData;         ///< MUON data manager
 
   TRootEmbeddedCanvas *fEc[kNMT]; ///< Canvases for drawing the digits
 

@@ -13,16 +13,16 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//////////////////////////////////////////////////////////////////////////
-//                                                                      //
-// Graphical User Interface utility class for the MUON trigger          //
-// - single board map of the strips/digits                              //
-//                                                                      //
-//////////////////////////////////////////////////////////////////////////
+// $Id$
+
+/// \class AliMUONTriggerGUIbdmap
+///
+/// The gui map of a single board object, strips/digits
+///
+/// \author Bogdan Vulpescu, LPC Clermont-Ferrand
 
 #include <TPolyLine.h>
 #include <TStyle.h>
-#include <TGFrame.h>
 #include <TGButton.h>
 #include <TRootEmbeddedCanvas.h>
 #include <TBox.h>
@@ -35,8 +35,7 @@
 
 #include "AliRun.h"
 #include "AliMUON.h"
-#include "AliMUONData.h"
-#include "AliMUONDigit.h"
+#include "AliMUONVDigit.h"
 #include "AliMpVSegmentation.h"
 #include "AliMpSegmentation.h"
 #include "AliMUONGeometryTransformer.h"
@@ -48,19 +47,22 @@
 #include "AliMUONTriggerGUIboard.h"
 #include "AliMUONTriggerGUIbdmap.h"
 
+#include "AliMUONVTriggerStore.h"
+#include "AliMUONVDigitStore.h"
+
+#include "AliMpDEManager.h"
+
 /// \cond CLASSIMP
 ClassImp(AliMUONTriggerGUIbdmap)
 /// \endcond
 
 //__________________________________________________________________________
 AliMUONTriggerGUIbdmap::AliMUONTriggerGUIbdmap(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t h)
-  : TObject(),
-    fQObject(),
+  : TGFrame(0),
     fMain(0),
     fLocTrigE(0),
     fBoard(0),
     fLoader(0),
-    fMUONData(0),
     fXStrips(0),
     fYStrips(0),
     fEditStrips(0),
@@ -256,47 +258,6 @@ AliMUONTriggerGUIbdmap::~AliMUONTriggerGUIbdmap()
 }
 
 //__________________________________________________________________________
-AliMUONTriggerGUIbdmap::AliMUONTriggerGUIbdmap(const AliMUONTriggerGUIbdmap& bdmap)
-  : TObject(),
-    fQObject(),
-    fMain(0),
-    fLocTrigE(0),
-    fBoard(0),
-    fLoader(0),
-    fMUONData(0),
-    fXStrips(0),
-    fYStrips(0),
-    fEditStrips(0),
-    fXOn(0),
-    fYOn(0),
-    fLabelX(0),
-    fLabelY(0),
-    fIsEditable(0),
-    fCanvasSize(0),
-    fNStripX(0),
-    fNStripY(0),
-    fBoards(0)
-{
-  /// copy constructor
-
-  bdmap.Dump();
-  Fatal("AliMUONTriggerGUIbdmap","copy constructor not implemented");
-
-}
-
-//__________________________________________________________________________
-AliMUONTriggerGUIbdmap & AliMUONTriggerGUIbdmap::operator=(const AliMUONTriggerGUIbdmap& bdmap)
-{
-  /// asignment operator
-
-  bdmap.Dump();
-  Fatal("AliMUONTriggerGUIbdmap","assignment operator not implemented");
-
-  return *this;
-
-}
-
-//__________________________________________________________________________
 void AliMUONTriggerGUIbdmap::Show()
 {
   /// map the main frame
@@ -323,24 +284,23 @@ void AliMUONTriggerGUIbdmap::LocalTriggerInfo()
   AliRunLoader *runLoader = fLoader->GetRunLoader();
   gAlice = runLoader->GetAliRun();
 
-  fMUONData->SetTreeAddress("GLT");
-  fMUONData->GetTriggerD();
-
+  fLoader->LoadDigits("READ");
+  
+  TTree* treeD = fLoader->TreeD();
+  
+  AliMUONVTriggerStore* triggerStore = AliMUONVTriggerStore::Create(*treeD);
+  
   Int_t circuitNumber = fBoard->GetIdCircuit();
-
-  TClonesArray *localTrigger = fMUONData->LocalTrigger();
-  if (localTrigger == 0) return;
-
-  Int_t nLocalTrigger = localTrigger->GetEntriesFast(); 
 
   UShort_t x2m, x2u, x2d;
 
   Int_t loStripX, loStripY, loDev, loCircuit, iStripX, iStripY, loLpt, loHpt;
   AliMUONLocalTrigger *mlt;
+
+  TIter next(triggerStore->CreateLocalIterator());
   
-  for (Int_t ilt = 0; ilt < nLocalTrigger; ilt++) {
-    mlt = (AliMUONLocalTrigger*)localTrigger->UncheckedAt(ilt);
-    
+  while ( ( mlt = static_cast<AliMUONLocalTrigger*>(next()) ) )
+  {    
     loCircuit = mlt->LoCircuit();
 
     if (loCircuit == circuitNumber) {
@@ -409,6 +369,7 @@ void AliMUONTriggerGUIbdmap::LocalTriggerInfo()
 
   }
   
+  delete triggerStore;
 }
 
 //__________________________________________________________________________
@@ -418,9 +379,6 @@ void AliMUONTriggerGUIbdmap::Init()
 
   TString mapspath = gSystem->Getenv("ALICE_ROOT");
   mapspath.Append("/MUON/data");
-
-  fMUONData = new AliMUONData(fLoader,"MUON","MUON");
-  fMUONData->SetTreeAddress("D");
 
   TString mapName[kNMT];
   mapName[0] = TString(mapspath.Data());
@@ -911,10 +869,8 @@ void AliMUONTriggerGUIbdmap::DrawDigits(Bool_t bx, Bool_t by)
   const AliMUONGeometryTransformer* kGeomTransformer = pMUON->GetGeometryTransformer();
   
   AliMUONTriggerGUIboard *board;
-  TClonesArray *muonDigits;
-  Int_t nDigits, over, pos, number;
+  Int_t over, pos, number;
   const AliMpVSegmentation* seg;
-  AliMUONDigit *mdig;
   AliMpPad pad;
   Int_t cathode, detElemId, ix, iy, charge;
   Int_t chamber, np = 5;
@@ -932,6 +888,10 @@ void AliMUONTriggerGUIbdmap::DrawDigits(Bool_t bx, Bool_t by)
   pos    = fBoard->GetPosition();
   over   = fBoard->GetYOver();
 
+  fLoader->LoadDigits("READ");
+  TTree* treeD = fLoader->TreeD();
+  AliMUONVDigitStore* digitStore = AliMUONVDigitStore::Create(*treeD);
+  
   for (Int_t i = 0; i < kNMT; i++) {
 
     fCanvas[i]->cd();
@@ -942,22 +902,18 @@ void AliMUONTriggerGUIbdmap::DrawDigits(Bool_t bx, Bool_t by)
 
     chamber = 11+i;
 
-    muonDigits = fMUONData->Digits(chamber-1);
-    if (muonDigits == 0) { printf("No muonDigits \n"); return; }
-    gAlice->ResetDigits();
-    fMUONData->GetDigits();
-    nDigits = muonDigits->GetEntriesFast(); 
+    AliMpIntPair deRange = AliMpDEManager::GetDetElemIdRange(chamber-1);
+    TIter next(digitStore->CreateIterator(deRange.GetFirst(),deRange.GetSecond()));
+    AliMUONVDigit *mdig;
 
-    for (Int_t id = 0; id < nDigits; id++) {
-    
-      mdig  = (AliMUONDigit*)muonDigits->UncheckedAt(id);
-      
+    while ( ( mdig = static_cast<AliMUONVDigit*>(next())) )
+    {
       cathode = mdig->Cathode()+1;
       
       ix = mdig->PadX();
       iy = mdig->PadY();
       detElemId = mdig->DetElemId(); 
-      charge = (Int_t)mdig->Signal();
+      charge = (Int_t)mdig->Charge();
 
       Bool_t triggerBgn = kFALSE;
       Int_t schg = (Int_t)(charge + 0.5);
@@ -1216,6 +1172,7 @@ void AliMUONTriggerGUIbdmap::DrawDigits(Bool_t bx, Bool_t by)
       
   }  // end canvas loop
 
+  delete digitStore;
   fMain->MapWindow();
 
 }
