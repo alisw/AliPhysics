@@ -37,7 +37,7 @@
 #include "TObjString.h"
 #include "TList.h"
 #include "TString.h"
-
+#include <TArrayI.h>
 #include <sstream>
 
 /// 
@@ -564,10 +564,12 @@ AliMpTriggerReader::ReadLocalBoardMapping()
         TObjArray* tokens = sline.Tokenize(' ');
         TString& number = ((TObjString*)(tokens->At(1)))->String();
         Int_t n = atoi(number.Data());
-        if ( n == 0 ) continue;
-        TString& name = ((TObjString*)(tokens->At(4)))->String();
-        fLocalBoardMap.Add(new TObjString(name), new TObjString(number));
-        AliDebugClass(10,Form("Board %s has number %s\n",name.Data(),number.Data()));
+        if ( n > 0 ) 
+        {
+          TString& name = ((TObjString*)(tokens->At(4)))->String();
+          fLocalBoardMap.Add(new TObjString(name), new TObjString(number));
+          AliDebugClass(10,Form("Board %s has number %s\n",name.Data(),number.Data()));
+        }
         delete tokens;
       }
     }      
@@ -762,7 +764,7 @@ AliMpTriggerReader::ReadSlat(const char* slatType, AliMp::PlaneType planeType)
     TString& s = osline->String();
     if ( IsLayerLine(s) )
     {
-      TList* list(new TList);
+      TList* list = new TList;
       list->SetOwner(kTRUE);
       layers.Add(list);
       ++ilayer;

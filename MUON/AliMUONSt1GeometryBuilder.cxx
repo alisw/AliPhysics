@@ -29,6 +29,7 @@
 
 #include "AliMUONSt1GeometryBuilder.h"
 #include "AliMUON.h"
+#include "TArrayI.h"
 #include "AliMUONConstants.h"
 #include "AliMUONGeometryModule.h"
 #include "AliMUONGeometryEnvelopeStore.h"
