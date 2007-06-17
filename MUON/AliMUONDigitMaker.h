@@ -14,56 +14,46 @@
 #include <TObject.h>
 #include "TStopwatch.h"
 
-class TList;
 class TArrayS;
 
 class AliRawReader;
-class AliMUONData;
-class AliMUONDigit;
-class AliMUONGlobalTrigger;
-class AliMUONLocalTrigger;
 class AliMUONTriggerCrateStore;
 class AliMUONLocalStruct;
 
 class AliMUONRawStreamTracker;
 class AliMUONRawStreamTrigger;
 
+class AliMUONVDigitStore;
+class AliMUONVTriggerStore;
+
 class AliMUONDigitMaker : public TObject 
 {
  public:
-  AliMUONDigitMaker(Bool_t digit = kTRUE); // Constructor
+  AliMUONDigitMaker(); // Constructor
   virtual ~AliMUONDigitMaker(void); // Destructor
     
   // write raw data
-  Int_t  Raw2Digits(AliRawReader* rawReader);
+  Int_t  Raw2Digits(AliRawReader* rawReader, 
+                    AliMUONVDigitStore* digitContainer=0,
+                    AliMUONVTriggerStore* triggerStore=0);
 
   Int_t  ReadTrackerDDL(AliRawReader* rawReader);
   Int_t  ReadTriggerDDL(AliRawReader* rawReader);
- 
-         /// Return MUON data
-  AliMUONData*   GetMUONData() const {return fMUONData;}
-        /// Set MUON data
-  void SetMUONData(AliMUONData* data) {fMUONData = data;}
- 
-  Int_t GetMapping(Int_t buspatchId, UShort_t manuId, 
-			  UChar_t channelId, AliMUONDigit* digit );
-
-  Int_t TriggerDigits(Int_t nBoard, TArrayS* xyPattern, TList& digitList );
+  
+  Int_t TriggerDigits(Int_t nBoard, TArrayS* xyPattern, 
+                      AliMUONVDigitStore& digitStore) const;
 
         /// Set flag to generates scaler event
-  void  SetScalerEvent() {fScalerEvent = kTRUE;}
-
-      /// Disable trigger rawdata reading
-  void  DisableTrigger() {fTriggerFlag = kFALSE;}
+  void  SetScalerEvent() { fScalerEvent = kTRUE; }
 
         /// Set Crate array
-  void  SetCrateManager(AliMUONTriggerCrateStore* crateManager) {fCrateManager =  crateManager;}
+  void  SetCrateManager(AliMUONTriggerCrateStore* crateManager) { fCrateManager =  crateManager; }
 
-       /// enable only list of digits for the display
-  void SetDisplayFlag() { fDisplayFlag = kTRUE;  fDigitFlag = kFALSE;}
+        /// Set flag whether or not we should generate digits for the trigger
+  void  SetMakeTriggerDigits(Bool_t flag = kFALSE) { fMakeTriggerDigits = flag; }
 
-
- private:
+private:
+    
   /// Not implemented
   AliMUONDigitMaker (const AliMUONDigitMaker& rhs); // copy constructor
   /// Not implemented
@@ -71,23 +61,13 @@ class AliMUONDigitMaker : public TObject
 
   void GetCrateName(Char_t* name, Int_t iDDL, Int_t iReg) const;
 
-  AliMUONData*     fMUONData;          //!< Data container for MUON subsystem 
-  
+private:
+
   Bool_t           fScalerEvent;       //!< flag to generates scaler event
-
-  Bool_t           fDigitFlag;         //!< true for Digit, false for SDigit
-
-  Bool_t           fTriggerFlag;       //!< true for reading also trigger rawdata
-
-  Bool_t           fDisplayFlag;       //!< true for returning digits list to the display
-
+  Bool_t fMakeTriggerDigits; //!< whether or not we should generate digits for the trigger
+  
   AliMUONRawStreamTracker* fRawStreamTracker;  //!< pointer of raw stream for tracker
   AliMUONRawStreamTrigger* fRawStreamTrigger;  //!< pointer of raw stream for trigger
-
-  AliMUONDigit*        fDigit;                 //!< pointer to digits
-
-  AliMUONLocalTrigger*  fLocalTrigger;         //!< pointer to local trigger
-  AliMUONGlobalTrigger* fGlobalTrigger;        //!< pointer to local trigger
 
   AliMUONTriggerCrateStore* fCrateManager;     //!< Crate array
 
@@ -95,7 +75,10 @@ class AliMUONDigitMaker : public TObject
   TStopwatch fTriggerTimer;                    //!< time watcher for trigger part
   TStopwatch fMappingTimer;                    //!< time watcher for mapping-tracker part
 
-  ClassDef(AliMUONDigitMaker,1) // MUON digit maker from rawdata
+  AliMUONVDigitStore* fDigitStore; //!< not owner
+  AliMUONVTriggerStore* fTriggerStore; //!< not owner
+  
+  ClassDef(AliMUONDigitMaker,4) // MUON digit maker from rawdata
 };
 	
 #endif

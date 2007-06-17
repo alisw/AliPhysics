@@ -21,13 +21,16 @@
 #endif
 
 class AliMUONCalibrationData;
-class AliMUONSimData;
-class AliMUONDigit;
+class AliMUONVDigit;
 class AliMUONLogger;
 class AliMUONTriggerEfficiencyCells;
 class TClonesArray;
 class TF1;
 class TString;
+class AliMUONVDigitStore;
+class AliLoader;
+class AliMUONVTriggerStore;
+class AliMUONTriggerElectronics;
 
 class AliMUONDigitizerV3 : public AliDigitizer
 {
@@ -45,37 +48,32 @@ private:
   AliMUONDigitizerV3(const AliMUONDigitizerV3& other);
   /// Not implemented
   AliMUONDigitizerV3& operator=(const AliMUONDigitizerV3& other);
-  
-  void AddOrUpdateDigit(TClonesArray& array, 
-                        const AliMUONDigit& digit);
     
-  void ApplyResponse();
+  void ApplyResponse(const AliMUONVDigitStore& store, AliMUONVDigitStore& filteredStore);
 
-  void ApplyResponseToTrackerDigit(AliMUONDigit& digit, Bool_t addNoise);
-  void ApplyResponseToTriggerDigit(AliMUONDigit& digit);
+  void ApplyResponseToTrackerDigit(AliMUONVDigit& digit, Bool_t addNoise);
+  void ApplyResponseToTriggerDigit(const AliMUONVDigitStore& digitStore, AliMUONVDigit& digit);
 
-private:  
-  AliMUONDigit* FindCorrespondingDigit(AliMUONDigit& digit) const;
+  AliLoader* GetLoader(const TString& foldername);
   
-  Int_t FindDigitIndex(TClonesArray& array, const AliMUONDigit& digit) const;
+private:  
 
-  void GenerateNoisyDigits();
-  void GenerateNoisyDigitsForOneCathode(Int_t detElemId, Int_t cathode);
+  AliMUONVDigit* FindCorrespondingDigit(const AliMUONVDigitStore& digitStore,
+                                       AliMUONVDigit& digit) const;
 
-  AliMUONSimData* GetDataAccess(const TString& folderName);
+  void GenerateNoisyDigits(AliMUONVDigitStore& digitStore);
+  void GenerateNoisyDigitsForOneCathode(AliMUONVDigitStore& digitStore, 
+                                        Int_t detElemId, Int_t cathode);
 
-  Bool_t MergeDigits(const AliMUONDigit& src, AliMUONDigit& srcAndDest);
-
-  void MergeWithSDigits(AliMUONSimData& outputData, const AliMUONSimData& inputData, 
+  void MergeWithSDigits(AliMUONVDigitStore*& digitStore,
+                        const AliMUONVDigitStore& input,
                         Int_t mask);
   
 private:
   Bool_t fIsInitialized; ///< are we initialized ?
-  AliMUONSimData* fOutputData; //!< pointer to access digits
   AliMUONCalibrationData* fCalibrationData; //!< pointer to access calib parameters
-  TTask* fTriggerProcessor; ///< pointer to the trigger part of the job
+  AliMUONTriggerElectronics* fTriggerProcessor; ///< pointer to the trigger part of the job
   AliMUONTriggerEfficiencyCells* fTriggerEfficiency; ///< trigger efficiency map  
-  mutable TStopwatch fFindDigitIndexTimer; //!< counting time spent in FindDigitIndex
   TStopwatch fGenerateNoisyDigitsTimer; //!< counting time spent in GenerateNoisyDigits()
   TStopwatch fExecTimer; //!< couting time spent in Exec()  
   TF1* fNoiseFunction; //!< function to randomly get signal above n*sigma_ped
@@ -83,8 +81,11 @@ private:
   static const Double_t fgkNSigmas; ///< \brief number of sigmas above ped to use 
   /// for noise-only digit generation and zero-suppression
   AliMUONLogger* fLogger; //!< to keep track of messages
+  AliMUONVTriggerStore* fTriggerStore; //!< trigger objects
+  AliMUONVDigitStore* fDigitStore; //!< temporary digits
+  AliMUONVDigitStore* fOutputDigitStore; //!< digits we'll output to disk
   
-  ClassDef(AliMUONDigitizerV3,4) // MUON Digitizer V3-3
+  ClassDef(AliMUONDigitizerV3,5) // MUON Digitizer V3-5
 };
 
 #endif
