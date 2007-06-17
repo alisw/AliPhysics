@@ -66,6 +66,8 @@ public:
     return 0;
   }
 
+  virtual void Print(Option_t* opt="") const;
+    
 protected:
   Int_t     fTrack;  // Track number
   Float_t   fX;      // X reference position of the track

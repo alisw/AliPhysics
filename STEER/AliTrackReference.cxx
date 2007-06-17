@@ -21,6 +21,7 @@
 #include "AliTrackReference.h"
 #include "AliExternalTrackParam.h"
 #include "AliKalmanTrack.h"
+#include <Riostream.h>
 
 // 
 // Track Reference object is created every time particle is 
@@ -138,4 +139,12 @@ AliExternalTrackParam * AliTrackReference::MakeTrack(const AliTrackReference *re
   return track;
 }
 
+//_______________________________________________________________________
+void
+AliTrackReference::Print(Option_t* opt) const
+{
+  cout << Form("Label %d P=%7.2f (X,Y,Z)=(%7.2f,%7.2f,%7.2f) (PX,PY,PZ)=(%7.2f,%7.2f,%7.2f)"
+               " Length=%7.2f Time=%7.2f UserId=%d",
+               Label(),P(),Px(),Py(),Pz(),X(),Y(),Z(),GetLength(),GetTime()) << endl;
+}
 
