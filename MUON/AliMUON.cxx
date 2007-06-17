@@ -60,9 +60,7 @@
 #include "AliMUONGeometryBuilder.h"
 #include "AliMUONCommonGeometryBuilder.h"
 #include "AliMUONVGeometryBuilder.h"	
-#include "AliMUONGeometrySegmentation.h"
 #include "AliMUONRawWriter.h"
-#include "AliMUONSegmentation.h"
 #include "AliLog.h"
 
 #include "AliMUONSDigitizerV2.h"
@@ -73,6 +71,10 @@
 #include "AliMUONSt2GeometryBuilderV2.h"
 #include "AliMUONSlatGeometryBuilder.h"
 #include "AliMUONTriggerGeometryBuilder.h"
+
+#include "AliMUONDigitStoreV1.h"
+#include "AliMUONVTriggerStore.h"
+#include "AliMUONHitStoreV1.h"
 
 // Defaults parameters for Z positions of chambers
 // taken from values for "stations" in AliMUON::AliMUON
@@ -97,11 +99,9 @@ AliMUON::AliMUON()
   : AliDetector(),
     fNCh(0),
     fNTrackingCh(0),
-    fMUONData(0),
     fSplitLevel(0),
     fChambers(0),
     fGeometryBuilder(0),
-    fSegmentation(0),
     fAccCut(kFALSE),
     fAccMin(0.),
     fAccMax(0.),   
@@ -117,8 +117,8 @@ AliMUON::AliMUON()
     fTriggerEffCells(0),
     fDigitizerWithNoise(kTRUE),
     fRawWriter(0x0),
-    fDigitMaker(0x0)
-
+    fDigitMaker(0x0),
+    fHitStore(0x0)
 {
 /// Default Constructor
     
@@ -131,11 +131,9 @@ AliMUON::AliMUON(const char *name, const char* title)
   : AliDetector(name, title),
     fNCh(AliMUONConstants::NCh()),
     fNTrackingCh(AliMUONConstants::NTrackingCh()),
-    fMUONData(0),
     fSplitLevel(0),
     fChambers(0),
     fGeometryBuilder(0),
-    fSegmentation(0),
     fAccCut(kFALSE),
     fAccMin(0.),
     fAccMax(0.),   
@@ -151,7 +149,8 @@ AliMUON::AliMUON(const char *name, const char* title)
     fTriggerEffCells(0),
     fDigitizerWithNoise(kTRUE),
     fRawWriter(0x0),
-    fDigitMaker(new AliMUONDigitMaker(kFALSE)) 
+    fDigitMaker(new AliMUONDigitMaker),
+    fHitStore(0x0)
 {
 /// Standard constructor  
   
@@ -180,7 +179,8 @@ AliMUON::AliMUON(const char *name, const char* title)
   // Creating List of Chambers
     Int_t ch;
     fChambers = new TObjArray(AliMUONConstants::NCh());
-
+    fChambers->SetOwner(kTRUE);
+    
     // Loop over stations
     for (Int_t st = 0; st < AliMUONConstants::NCh() / 2; st++) {
       // Loop over 2 chambers in the station
@@ -205,18 +205,11 @@ AliMUON::~AliMUON()
 /// Destructor
 
   AliDebug(1,Form("dtor this=%p",this));
-  fIshunt  = 0;
-
-  if (fChambers){
-    fChambers->Delete();
-    delete fChambers;
-  }
-  
-  delete fMUONData;
+  delete fChambers;
   delete fGeometryBuilder;
-  delete fSegmentation;
   delete fRawWriter;
   delete fDigitMaker;
+  delete fHitStore;
 }
 
 //_____________________________________________________________________________
@@ -265,22 +258,68 @@ const AliMUONGeometryTransformer*  AliMUON::GetGeometryTransformer() const
 }   
 
 //__________________________________________________________________
-void  AliMUON::SetTreeAddress()
+void 
+AliMUON::MakeBranch(Option_t* opt)
 {
-/// Set Hits tree address
-
-  GetMUONData()->SetLoader(fLoader); 
-  //  GetMUONData()->MakeBranch("D,S,RC");
-  //  GetMUONData()->SetTreeAddress("H,D,S,RC");
-  GetMUONData()->SetTreeAddress("H");
-  if (fHits !=  GetMUONData()->Hits())  {
+  /// Create branche(s) to hold MUON hits
+  AliDebug(1,"");
+  
+  TString sopt(opt);
+  if ( sopt != "H" ) return;
+    
+  if (!fHitStore)
+  {
+    fHitStore = new AliMUONHitStoreV1;
     if ( gAlice->GetMCApp() )
-      if ( gAlice->GetMCApp()->GetHitLists() ) {
-	fHits = GetMUONData()->Hits();
-	gAlice->GetMCApp()->AddHitList(fHits); // For purifyKine, only necessary when Hit list is created in AliMUONData
+    {
+      if ( gAlice->GetMCApp()->GetHitLists() ) 
+      {
+        // AliStack::PurifyKine needs to be able to loop on our hits
+        // to remap the track numbers.
+        gAlice->GetMCApp()->AddHitList(fHitStore->Collection()); 
       }  
+    }
   }
-  fHits = GetMUONData()->Hits(); // Added by Ivana to use the methods FisrtHit, NextHit of AliDetector    
+
+  TTree* treeH = fLoader->TreeH();
+  
+  if (!treeH)
+  {
+    AliFatal("No TreeH");
+  }
+  
+  fHitStore->Connect(*treeH);
+}
+
+//__________________________________________________________________
+void  
+AliMUON::SetTreeAddress()
+{
+  /// Set Hits tree address  
+ 
+//  if ( gAlice->GetMCApp() && fHitStore )
+//  {
+//    TList* l = gAlice->GetMCApp()->GetHitLists();
+//    if ( l )
+//    {
+//      TObject* o = l->First();
+//      if (o!=fHitStore->HitCollection())
+//      {
+//        AliError(Form("Something is strange hitcollection=%x",fHitStore->HitCollection()));
+//        l->Print();        
+//      }
+//    }  
+//  }  
+}
+
+//_________________________________________________________________
+void
+AliMUON::ResetHits()
+{
+  /// Reset hits
+  
+  AliDebug(1,"");
+  if (fHitStore) fHitStore->Clear();
 }
 
 //_________________________________________________________________
@@ -399,7 +438,7 @@ Float_t  AliMUON::GetMaxDestepAlu() const
 }   
 
 //____________________________________________________________________
-void   AliMUON::SetResponseModel(Int_t id, AliMUONResponse *response)
+void   AliMUON::SetResponseModel(Int_t id, const AliMUONResponse& response)
 {
 /// Set the response for chamber id
     ((AliMUONChamber*) fChambers->At(id))->SetResponseModel(response);
@@ -429,8 +468,8 @@ void AliMUON::Hits2SDigits()
 {
 /// Perform Hits2Digits using SDigitizerV2
   
-  TTask* sdigitizer = new AliMUONSDigitizerV2;
-  sdigitizer->ExecuteTask();
+  AliMUONSDigitizerV2 sdigitizer;
+  sdigitizer.ExecuteTask();
 }
 
 //_____________________________________________________________________
@@ -440,17 +479,41 @@ void AliMUON::Digits2Raw()
 
   if (!fRawWriter)
   {
-    fRawWriter = new AliMUONRawWriter(fMUONData);
+    fRawWriter = new AliMUONRawWriter;
+    AliDebug(1,Form("Creating %s",fRawWriter->ClassName()));
     if (fTriggerScalerEvent == kTRUE) 
     {
       fRawWriter->SetScalersNumbers();
     }
   }
   
-  if (!fRawWriter->Digits2Raw()) 
+  fLoader->LoadDigits("READ");
+  
+  TTree* treeD = fLoader->TreeD();
+  
+  if (!treeD)
+  {
+    AliError("Could not get TreeD");
+    return;
+  }
+  
+  AliMUONVTriggerStore*  triggerStore = AliMUONVTriggerStore::Create(*treeD);
+  AliMUONVDigitStore* digitStore = AliMUONVDigitStore::Create(*treeD);
+
+  triggerStore->Connect(*treeD,kFALSE);
+  digitStore->Connect(*treeD,kFALSE);
+  
+  treeD->GetEvent(0);
+  
+  if (!fRawWriter->Digits2Raw(digitStore,triggerStore))
   {
     AliError("pb writting raw data");
   }
+  
+  delete triggerStore;
+  delete digitStore;
+  
+  fLoader->UnloadDigits();
 }
 
 //_____________________________________________________________________
@@ -459,20 +522,23 @@ Bool_t AliMUON::Raw2SDigits(AliRawReader* rawReader)
 /// Convert  raw data to SDigit
 /// Only for tracking for the moment (ChF) 
 
-  //fLoader->LoadDigits("READ");
+  fLoader->LoadDigits("READ");
   if (!fLoader->TreeS()) fLoader->MakeSDigitsContainer();
 
-  fMUONData->MakeBranch("S");
-  fMUONData->SetTreeAddress("S");
-  fDigitMaker->Raw2Digits(rawReader);
-  fMUONData->Fill("S");
+  TTree* treeS = fLoader->TreeS();
+  
+  AliMUONVDigitStore* sDigitStore = new AliMUONDigitStoreV1;
+  sDigitStore->Connect(*treeS);
+  
+  fDigitMaker->Raw2Digits(rawReader,sDigitStore,0x0);
 
   fLoader->WriteSDigits("OVERWRITE");
-  fMUONData->ResetSDigits();
+
   fLoader->UnloadSDigits();
 
+  delete sDigitStore;
+  
   return kTRUE;
-
 }
 
 //_______________________________________________________________________
@@ -484,10 +550,6 @@ AliLoader* AliMUON::MakeLoader(const char* topfoldername)
  AliDebug(1,Form("Creating standard getter for detector %s. Top folder is %s.",
          GetName(),topfoldername));
  fLoader   = new AliLoader(GetName(),topfoldername);
- fMUONData = new AliMUONSimData(fLoader,GetName(),GetName()); 
- fMUONData->SetSplitLevel(fSplitLevel);
-
- fDigitMaker->SetMUONData(fMUONData);
 
  return fLoader;
 }

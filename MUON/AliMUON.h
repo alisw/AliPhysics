@@ -15,7 +15,6 @@
 #include <TObjArray.h>
 
 #include "AliDetector.h"
-#include "AliMUONSimData.h"
 #include "AliMUONChamber.h"
 #include "AliMUONTrigger.h"
 
@@ -25,7 +24,6 @@ class TFile;
 class TTree;
 
 class AliLoader;
-class AliMUONSimData;
 class AliMUONResponse;
 class AliMUONSegmentation;
 class AliMUONHit;
@@ -36,6 +34,7 @@ class AliMUONRawWriter;
 class AliMUONVGeometryBuilder;
 class AliESD;
 class AliMUONDigitMaker;
+class AliMUONVHitStore;
 
 class AliMUON : public  AliDetector 
 {
@@ -54,25 +53,13 @@ class AliMUON : public  AliDetector
     AliMUONGeometryBuilder*            GetGeometryBuilder() const {return fGeometryBuilder;}
     const AliMUONGeometryTransformer*  GetGeometryTransformer() const;
                    /// Return segmentation
-    AliMUONSegmentation*               GetSegmentation() const    { return fSegmentation; }
-
-                   /// Return MUONData   
-    AliMUONSimData*   GetMUONData() {return fMUONData;}
 
     // MUONLoader definition
     virtual AliLoader* MakeLoader(const char* topfoldername); //builds standard getter (AliLoader type)
 
-    // Interface with AliMUONData
-                   /// Make branch
-    virtual void   MakeBranch(Option_t *opt=" ") {GetMUONData()->MakeBranch(opt);}
     virtual void   SetTreeAddress();
-                   /// Reset hits
-    virtual void   ResetHits()                   {GetMUONData()->ResetHits();}
-                   /// Reset digits
-    virtual void   ResetDigits()                 {GetMUONData()->ResetDigits();}
-                   /// Reset trigger
-    virtual void   ResetTrigger()                {GetMUONData()->ResetTrigger();}
-                   /// Set split level
+                  
+                   /// Set split level for making branches in outfiles
     virtual void   SetSplitLevel(Int_t SplitLevel)     {fSplitLevel=SplitLevel;}
 
     // Digitisation 
@@ -96,7 +83,7 @@ class AliMUON : public  AliDetector
     virtual void   SetChargeSpread(Int_t id, Float_t p1, Float_t p2);
     virtual void   SetMaxAdc(Int_t id, Int_t p1);
     // Set Response Model
-    virtual void   SetResponseModel(Int_t id, AliMUONResponse *response);
+    virtual void   SetResponseModel(Int_t id, const AliMUONResponse& response);
 
     // Set Stepping Parameters
     virtual void   SetMaxStepGas(Float_t p1);
@@ -140,6 +127,8 @@ class AliMUON : public  AliDetector
       {return *((AliMUONChamber *) (*fChambers)[id]);}
                   /// Return reference to New Circuit \a id 
 
+    virtual void MakeBranch(Option_t* opt=" ");
+    virtual void ResetHits();
     
   protected:
     /// Not implemented
@@ -151,11 +140,9 @@ class AliMUON : public  AliDetector
 
     Int_t                 fNCh;                ///< Number of chambers   
     Int_t                 fNTrackingCh;        ///< Number of tracking chambers*
-    AliMUONSimData*       fMUONData;           ///< Data container for MUON subsystem  
     Int_t                 fSplitLevel;         ///< Splitlevel when making branches in outfiles.
     TObjArray*            fChambers;           ///< List of Tracking Chambers
     AliMUONGeometryBuilder*  fGeometryBuilder; ///< Geometry builder 
-    AliMUONSegmentation*  fSegmentation;       ///< New segmentation 
    
     //
     Bool_t   fAccCut;         ///<Transport acceptance cut
@@ -183,7 +170,9 @@ class AliMUON : public  AliDetector
     
     AliMUONDigitMaker* fDigitMaker; //!< pointer to the digit maker class
 
-    ClassDef(AliMUON,14)  // MUON Detector base class
+    AliMUONVHitStore* fHitStore; //!< container of hits
+    
+    ClassDef(AliMUON,15)  // MUON Detector base class
 };
 #endif
 
