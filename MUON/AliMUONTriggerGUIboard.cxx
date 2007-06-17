@@ -13,12 +13,13 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//////////////////////////////////////////////////////////////////////////
-//                                                                      //
-// Graphical User Interface utility class for the MUON trigger          //
-// - single board object                                                //
-//                                                                      //
-//////////////////////////////////////////////////////////////////////////
+// $Id$
+
+/// \class AliMUONTriggerGUIboard
+///
+/// Single trigger board object with geometry information, strips and digits
+///
+/// \author Bogdan Vulpescu, LPC Clermont-Ferrand
 
 #include <TBox.h>
 
@@ -102,41 +103,6 @@ AliMUONTriggerGUIboard::~AliMUONTriggerGUIboard()
       delete fYDigBox[imt][is];
     }
   }
-
-}
-
-//__________________________________________________________________________
-AliMUONTriggerGUIboard::AliMUONTriggerGUIboard(const AliMUONTriggerGUIboard& board)
-  : TObject(board),
-    fName(0),
-    fID(-1),
-    fStatus(0),
-    fPosition(0),
-    fYOver(0),
-    fXSix(0),
-    fXSiy1(0),
-    fXSiy2(0),
-    fYSix1(0),
-    fYSix2(0),
-    fYSiy(0),
-    fDetElemId(0),
-    fIdCircuit(-1),
-    fIsOpen(0)
-{
-  /// copy constructor
-
-  Fatal("AliMUONTriggerGUIboard","copy constructor not implemented");
-
-}
-
-//__________________________________________________________________________
-AliMUONTriggerGUIboard & AliMUONTriggerGUIboard::operator=(const AliMUONTriggerGUIboard& board)
-{
-  /// asignment operator
-
-  Fatal("AliMUONTriggerGUIboard","assignment operator not implemented");
-
-  return *this;
 
 }
 

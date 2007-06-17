@@ -7,13 +7,7 @@
 /// \ingroup evaluation
 /// \class AliMUONTriggerGUIboard
 /// \brief Trigger GUI utility class: single board object
-
-//////////////////////////////////////////////////////////////////////////
-//                                                                      //
-// Graphical User Interface utility class for the MUON trigger          //
-// - single board object                                                //
-//                                                                      //
-//////////////////////////////////////////////////////////////////////////
+//  Author Bogdan Vulpescu, LPC Clermont-Ferrand
 
 #include <TString.h>
 #include <TObject.h>
@@ -28,9 +22,6 @@ public:
 
   AliMUONTriggerGUIboard(Int_t id, Char_t *name);
   virtual ~AliMUONTriggerGUIboard();
-
-  AliMUONTriggerGUIboard (const AliMUONTriggerGUIboard& board);
-  AliMUONTriggerGUIboard& operator=(const AliMUONTriggerGUIboard& board);
 
   /// returns the standard name of this board
   Char_t  *GetBoardName()   const { return (Char_t*)(fName->Data()); };
@@ -137,6 +128,11 @@ public:
 private:
 
   enum { kNMT = 4, kNS = 16 };     ///< constants
+
+  /// Not implemented
+  AliMUONTriggerGUIboard (const AliMUONTriggerGUIboard& board);
+  /// Not implemented
+  AliMUONTriggerGUIboard& operator=(const AliMUONTriggerGUIboard& board);
 
   TString       *fName;            ///< Board name LCxLxBx or RCxLxBx
   Int_t          fID;              ///< Board serial number
