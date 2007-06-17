@@ -228,7 +228,7 @@ Double_t AliMUONTrackParam::P() const
 }
 
   //__________________________________________________________________________
-TMatrixD* AliMUONTrackParam::GetCovariances()
+TMatrixD* AliMUONTrackParam::GetCovariances() const
 {
   /// Return the covariance matrix (create it before if needed)
   if (!fCovariances) {
@@ -264,11 +264,19 @@ void AliMUONTrackParam::SetVariances(Double_t matrix[5][5])
   for (Int_t i=0; i<5; i++) (*fCovariances)(i,i) = matrix[i][i];
 }
 
+//__________________________________________________________________________
+void
+AliMUONTrackParam::Clear(Option_t* /*opt*/)
+{
+  /// Delete the covariance matrix
+  DeleteCovariances();
+}
+
   //__________________________________________________________________________
 void AliMUONTrackParam::DeleteCovariances()
 {
   /// Delete the covariance matrix
-  if (fCovariances) delete fCovariances;
+  delete fCovariances;
   fCovariances = 0x0;
 }
 

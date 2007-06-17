@@ -73,7 +73,7 @@ class AliMUONTrackParam : public TObject
 
 	/// return kTRUE if the covariance matrix exist, kFALSE if not
   Bool_t    CovariancesExist(void) {return (fCovariances) ? kTRUE : kFALSE;}
-  TMatrixD* GetCovariances(void);
+  TMatrixD* GetCovariances(void) const;
   void      SetCovariances(TMatrixD* covariances);
   void      SetCovariances(Double_t matrix[5][5]);
   void      SetVariances(Double_t matrix[5][5]);
@@ -87,6 +87,7 @@ class AliMUONTrackParam : public TObject
 
   virtual void Print(Option_t* opt="") const;
  
+  virtual void Clear(Option_t* opt="");
 
  private:
   // Parameters
@@ -103,7 +104,7 @@ class AliMUONTrackParam : public TObject
   ///    <X,Y>      <Y,SlopeX>        <Y,Y>      <Y,SlopeY>       <Y,InvP_yz>
   /// <X,SlopeY>  <SlopeX,SlopeY>  <Y,SlopeY>  <SlopeY,SlopeY>  <SlopeY,InvP_yz>
   /// <X,InvP_yz> <SlopeX,InvP_yz> <Y,InvP_yz> <SlopeY,InvP_yz> <InvP_yz,InvP_yz>  </pre>
-  TMatrixD *fCovariances; ///< \brief Covariance matrix of track parameters 
+  mutable TMatrixD *fCovariances; ///< \brief Covariance matrix of track parameters 
   
   AliMUONHitForRec *fHitForRecPtr; //!< Pointer to associated HitForRec if any
   
