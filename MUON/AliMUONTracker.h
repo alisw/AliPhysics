@@ -11,36 +11,44 @@
 //  Author: Christian Finck, SUBATECH Nantes
 
 #include "AliTracker.h"
-class AliESD;
+
 class AliCluster;
-class AliMUONRecData;
-class TClonesArray;
+class AliESD;
+class AliLoader;
+class AliMUONDigitMaker;
+class AliMUONGeometryTransformer;
+class AliMUONTrackHitPattern;
+class AliMUONVClusterStore;
 class AliMUONVTrackReconstructor;
+class AliMUONVTrackStore;
+class AliMUONVTriggerStore;
+class TClonesArray;
 
 class AliMUONTracker : public AliTracker
 {
  public:
 
-  AliMUONTracker();
+  AliMUONTracker(AliLoader* loader,
+                 const AliMUONDigitMaker* digitMaker=0,
+                 const AliMUONGeometryTransformer* transformer=0,
+                 const TClonesArray* triggerCircuit=0);
   virtual ~AliMUONTracker();
-    
-  virtual Int_t Clusters2Tracks(AliESD* /*esd*/); 
   
+  /// Main entry point.
+  virtual Int_t Clusters2Tracks(AliESD* esd);
+
+  /// 
+  virtual Int_t LoadClusters(TTree* clustersTree);
+
+  ///
+  virtual void  UnloadClusters();
+
   /// Dummy implementation
   virtual Int_t PropagateBack(AliESD* /*event*/) {return 0;}
   /// Dummy implementation
   virtual Int_t RefitInward(AliESD* /*event*/) {return 0;}
   /// Dummy implementation
-  virtual Int_t LoadClusters(TTree* /*tree*/) {return 0;}
-  /// Dummy implementation
-  virtual void  UnloadClusters() {return;}
-  /// Dummy implementation
   virtual AliCluster *GetCluster(Int_t /*index*/) const {return 0;}
-
-  /// Set trigger circuit
-  void SetTriggerCircuit(TClonesArray* circuit) {fTriggerCircuit = circuit;}
-  /// Set pointer to data container
-  void SetMUONData(AliMUONRecData* data) {fMUONData = data;}
   /// Set option
   void SetOption(Option_t* opt);
 
@@ -50,10 +58,20 @@ private:
   /// Not implemented
   AliMUONTracker& operator=(const AliMUONTracker& rhs);
     
-  TClonesArray* fTriggerCircuit;                //!< trigger circuit
-  AliMUONRecData*  fMUONData;                   //!< pointer to container
-  AliMUONVTrackReconstructor* fTrackReco;       //!< track reconstructor
+  Int_t Clusters2Tracks(TTree& tracksTree, AliESD* esd);
 
+  void FillESD(AliMUONVTrackStore& trackStore, AliESD* esd) const;
+
+private:
+  AliLoader* fLoader; //!< loader to get access to trees
+  const AliMUONDigitMaker* fDigitMaker; //!< digit maker (not owner)
+  const AliMUONGeometryTransformer* fTransformer; //!< geometry transformer (not owner)
+  const TClonesArray* fTriggerCircuit;                //!< trigger circuit (not owner)
+  AliMUONTrackHitPattern* fTrackHitPatternMaker; //!< trigger hit pattern maker
+  AliMUONVTrackReconstructor* fTrackReco;       //!< track reconstructor
+  AliMUONVClusterStore* fClusterStore; //!< cluster container
+  AliMUONVTriggerStore* fTriggerStore; //!< trigger information
+  
   ClassDef(AliMUONTracker,0)  //tracker base class for MUON
 };
 #endif
