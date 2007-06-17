@@ -61,22 +61,26 @@ root [0] gAlice->SetConfigFunction("Config( \"/home/martinez/aliroot/work_NewIO/
 ============================================================
  How to dump the content of Root data files 
 ============================================================
-To check the content of Root data files, the AliMUONData class
+To check the content of Root data files, the AliMUON*DataInterface classes
 provides the functions to produce an ASCII output on the screen
 which can be redirected on the file:
 
-aliroot
-root [0] AliMUONData data("galice.root");
-root [1] data.DumpKine(5);       > dump.kine
-root [2] data.DumpHits(5);       > dump.hits
-root [3] data.DumpDigits(5);     > dump.digits
-root [4] data.DumpSDigits(5);    > dump.sdigits
-root [5] data.DumpRecPoints(5);  > dump.recpoints
-root [6] data.DumpRecTrigger(5); > dump.rectrigger
+for MC information, use AliMUONMCDataInterface :
 
-If the event number in the function argument is not specified,
-data are dumped for all events.
+> aliroot (or root with just the loading of MUON libs, see loadlibs.C)
+root [0] AliMUONMCDataInterface mcdi("galice.root");
+root [1] mcdi.DumpKine(5);       > dump.kine
+root [2] mcdi.DumpHits(5);       > dump.hits
+root [3] mcdi.DumpTrackRefs(5);  > dump.trackrefs
 
+for all other information, use AliMUONDataInterface :
+
+> aliroot
+root [0] AliMUONDataInterface di("galice.root");
+root [1] di.DumpDigits(5);     > dump.digits
+root [2] di.DumpSDigits(5);    > dump.sdigits
+root [3] di.DumpRecPoints(5);  > dump.recpoints
+root [4] di.DumpTrigger(5); > dump.rectrigger
 
 ============================================================
  How to check the Geometry with the new Geometrical modeler
@@ -455,7 +459,7 @@ and Monte Carlo (secondaries).
 The particle response in the detector, a hit, is registered
 in the hits tree and the hits are filled with each primary track.
 The total number of "tracks" (fills of the tree) can be obtained
-with ntracks = AliMUONData::GetNtracks() and is usually smaller than "nPart".
+with ntracks = AliMUONMCDataInterface::NumberOfTracks(event) and is usually smaller than "nPart".
 Since particles can also deposit hits in other detectors than 
 the MUON spectrometer, there will be many "tracks" (fills) in the hit-tree
 without a hit in MUON.
@@ -464,15 +468,20 @@ The correspondence between "track ID" in the hits-tree ("itr") and the
 particle ID for particles on the stack (i.e. generated particles) can be
 obtained via:
 for (Int_t itr = 0; itr < ntracks; itr++) {
-    MUONData->GetTrack(itr); //track "itr" of the hits-tree
-    Int_t nhitstot = MUONData->Hits()->GetEntriesFast();
-    AliMUONHit* mHit;    
-    for (Int_t ihit=0; ihit<nhitstot; ihit++) {
-       mHit = static_cast<AliMUONHit*>(MUONData->Hits()->At(ihit));
-       Int_t id = muonHit->Track(); //gives particle ID on stack
-       TParticle* particle = gAlice->Stack()->Particle(id);
+    AliMUONVHitStore* hitStore = mcDataInterface.HitStore(event,itr);
+    //track "itr" of the hits-tree
+    Int_t nhitstot = hitStore->GetSize();
+    AliMUONHit* mHit; 
+    TIter next(hitStore->CreateIterator());
+    while ( ( mHit = static_cast<AliMUONHit*>(next()) ) )
+    {   
+       Int_t id = mHit->Track(); //gives particle ID on stack
+       TParticle* particle = mcDataInterface.Stack(event)->Particle(id);
     }  
 }
+
+where mcDataInterface has been obtained by
+AliMUONMCDataInterface mcDataInterface("galice.root");
 
 During the procedure to go from hits to digits, the hits 
 are summed up such that more than one track can contribute
@@ -483,19 +492,28 @@ AliMUONDigit::Ntracks() to provide the reference to *all*
 tracks that contributed to it. The returned track ID is the one 
 referred to in the hit-tree. To know which is the generated particle
 that deposited a given digit one has to follow the sequence of the kind:
+(shown here using the simple, but not fast, DataInterface interfaces) :
 
+AliMUONMCDataInterface mcdi("galice.root");
+AliMUONDataInterface di("galice.root");
 
-mDigit = static_cast<AliMUONDigit*>(digits->At(idigit));
-for (int tr = 0; tr < mDigit->Ntracks(); tr++){
+AliMUONVDigitStore* digitStore = di.DigitStore(event);
+AliMUONVDigit* mDigit = ... get some digit from the digitStore
+
+for (int tr = 0; tr < mDigit->Ntracks(); tr++)
+{
    Int_t hitTrackID = mDigit->Track(tr);
-   MUONData->GetTrack(hitTrackID);
-   mHit = static_cast<AliMUONHit*>(MUONData->Hits()->At(0));
-                                  //just take first hit of given track
-   Int_t numPart = mHit->Track(); //gives ID of particle on the stack
-   Int_t idTrack  = mHit->Particle(); //gives flavour code of the particle
+   // get the hits corresponding to this trackID
+   AliMUONHitStore* hitStore = mcdi.HitStore(event,hitTrackID);
+   // loop over the hits
+   TIter hNext(hitStore->CreateIterator());
+   AliMUONHit* mHit;
+   while ( ( mHit = static_cast<AliMUONHit*>(hNext()) ) )
+   {
+    Int_t numPart = mHit->Track(); //gives ID of particle on the stack
+    Int_t idTrack = mHit->Particle(); //gives flavour code of the particle
+   }
 }
-In this example, for simplicity, only the first hit of a 
-hit-track is used to check the particle ID.
 
 ==========================================================
 Macros for MC studies
