@@ -51,7 +51,8 @@ class AliMpDEManager : public  TObject {
     static AliMpDetElement* GetDetElement(Int_t detElemId, Bool_t warn = true);
     static AliMpDetElement* GetDetElement(const TString& deName, Bool_t warn = true);
 
-    static Int_t GetNofDEInChamber(Int_t chamberId, Bool_t warn = true);
+    static Int_t        GetNofDEInChamber(Int_t chamberId, Bool_t warn = true);
+    static AliMpIntPair GetDetElemIdRange(Int_t chamberId);
 
   private:
     /// Not implemented

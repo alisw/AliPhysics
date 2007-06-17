@@ -33,9 +33,6 @@
 
 #include <Riostream.h>
 #include <TClass.h>
-//#include <TSystem.h>
-//#include <TObjString.h>
-//#include <TMap.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMpDEManager)
@@ -228,5 +225,18 @@ Int_t AliMpDEManager::GetNofDEInChamber(Int_t chamberId, Bool_t warn)
   
   return fgNofDEPerChamber[chamberId];    
 
+}
+
+//______________________________________________________________________________
+AliMpIntPair AliMpDEManager::GetDetElemIdRange(Int_t chamberId)
+{
+/// Return the detection element Id range for given chamberId
+ 
+  if ( ! IsValidChamberId(chamberId) ) return AliMpIntPair::Invalid();
+
+  return AliMpIntPair(
+           (chamberId+1)*fgkCoefficient,
+           (chamberId+1)*fgkCoefficient + GetNofDEInChamber(chamberId) - 1);
+  
 }
 
