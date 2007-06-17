@@ -203,7 +203,11 @@ AliMUONCluster::Copy(TObject& obj) const
   ///
   TObject::Copy(obj);
   AliMUONCluster& dest = static_cast<AliMUONCluster&>(obj);
-  dest.fPads = static_cast<TObjArray*>(fPads->Clone());
+  dest.fPads = 0x0;
+  if ( fPads )
+  {
+    dest.fPads = static_cast<TObjArray*>(fPads->Clone());
+  }
   dest.fHasPosition = fHasPosition;
   dest.fPosition = fPosition;
   dest.fPositionError = fPositionError;
