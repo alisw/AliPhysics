@@ -23,9 +23,7 @@
 
 #include "AliMUONv1.h"
 #include "AliMUONConstants.h"
-#include "AliMUONSegFactory.h"
 #include "AliMUONResponseFactory.h"
-#include "AliMUONSegmentation.h"
 #include "AliMUONHit.h"
 #include "AliMUONGeometryBuilder.h"	
 #include "AliMUONGeometry.h"	
@@ -51,6 +49,8 @@
 #include <TGeoMatrix.h>
 
 #include <string>
+
+#include "AliMUONVHitStore.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMUONv1)
@@ -173,18 +173,10 @@ void AliMUONv1::Init()
   // Build segmentation
   // using geometry parametrisation
   //
-  AliMUONSegFactory segFactory(GetGeometryTransformer());
-  fSegmentation = segFactory.CreateSegmentation();
-
   // Build response
   //
   AliMUONResponseFactory respFactory("default");
   respFactory.Build(this);
-  
-
-  // Initialize segmentation
-  //
-  fSegmentation->Init();
   
 }
 
@@ -410,8 +402,7 @@ void AliMUONv1::StepManager()
     }
     }
     
-    // One hit per chamber
-    GetMUONData()->AddHit(fIshunt, 
+    AliMUONHit hit(fIshunt, 
 			  gAlice->GetMCApp()->GetCurrentTrackNumber(), 
 			  detElemId, ipart,
 			  fTrackPosition.X(), 
@@ -427,9 +418,7 @@ void AliMUONv1::StepManager()
 			  fTrackPosition.Y(),
 			  fTrackPosition.Z());
 
-    //       AliDebug(1,Form("Exit: Particle exiting from chamber %d",iChamber));
-    //       AliDebug(1,Form("Exit: StepSum %f eloss geant %g ",fStepSum[idvol],fDestepSum[idvol]));
-    //       AliDebug(1,Form("Exit: Track Position %f %f %f",fTrackPosition.X(),fTrackPosition.Y(),fTrackPosition.Z()) ;
+    fHitStore->Add(hit);
 
     fStepSum[idvol]  =0; // Reset for the next event
     fDestepSum[idvol]=0; // Reset for the next event
