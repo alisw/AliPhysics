@@ -24,11 +24,10 @@
 //          Laurent Aphecetche, Christian Finck, SUBATECH Nantes
 
 #include "AliMpDetElement.h"
+
+#include "AliMpConstants.h"
 #include "AliMpDEManager.h"
-
 #include "AliLog.h"
-
-#include <TObjString.h>
 #include <Riostream.h>
 
 /// \cond CLASSIMP
@@ -131,6 +130,19 @@ AliMp::CathodType AliMpDetElement::GetCathodType(AliMp::PlaneType planeType) con
 
   if ( fPlaneType == planeType ) return AliMp::kCath0;
   else                           return AliMp::kCath1;
+}
+
+//______________________________________________________________________________
+AliMp::CathodType AliMpDetElement::GetCathodTypeFromManuId(Int_t manuId) const
+{
+/// Return cathod type for given manuId
+
+  AliMp::PlaneType planeType = AliMp::kBendingPlane;
+  if ( manuId & AliMpConstants::ManuMask(AliMp::kNonBendingPlane) ) 
+  {
+    planeType = AliMp::kNonBendingPlane;
+  }
+  return GetCathodType(planeType);
 }
 
 //______________________________________________________________________________

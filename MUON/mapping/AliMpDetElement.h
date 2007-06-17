@@ -50,6 +50,7 @@ class AliMpDetElement : public  TObject {
 
     AliMp::PlaneType   GetPlaneType(AliMp::CathodType cath) const;
     AliMp::CathodType  GetCathodType(AliMp::PlaneType planeType) const;
+    AliMp::CathodType  GetCathodTypeFromManuId(Int_t manuId) const;
     AliMp::StationType GetStationType() const;
     
     Int_t  GetNofBusPatches() const;
@@ -60,6 +61,7 @@ class AliMpDetElement : public  TObject {
     Int_t  GetManuSerialFromId(Int_t manuId) const;
     Int_t  GetManuIdFromSerial(Int_t serialNb) const;
 
+    
   private:
     /// Not implemented
     AliMpDetElement();
