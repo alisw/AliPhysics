@@ -12,7 +12,7 @@
 ///
 /// \author Alexander Zinchenko, JINR Dubna
 
-class AliMUONEventRecoCombi;
+//class AliMUONEventRecoCombi;
 class AliMUONHitForRec;
 class AliMUONObjectPair;
 class AliMUONTrackReconstructorK;
@@ -32,7 +32,7 @@ class AliMUONTrackK : public AliMUONTrack {
   virtual ~AliMUONTrackK(); // Destructor
 
   AliMUONTrackK(AliMUONTrackReconstructorK *TrackReconstructor, TClonesArray *hitForRec); // Constructor
-  AliMUONTrackK(AliMUONObjectPair *segment); // Constructor from a segment
+  AliMUONTrackK(const AliMUONObjectPair& segment); // Constructor from a segment
 
   // Pointer to hits on track
   TObjArray* GetTrackHits(void) const {return fTrackHits;} ///< ptr. to hits on track
@@ -68,7 +68,7 @@ class AliMUONTrackK : public AliMUONTrack {
   Bool_t IsSortable() const { return kTRUE; }
   Int_t Compare(const TObject* trackK) const; // "Compare" function for sorting
 
-
+  virtual void Clear(Option_t* opt="");
 
  protected:
 
@@ -81,7 +81,7 @@ class AliMUONTrackK : public AliMUONTrack {
   //static AliMUON *fgMUON; ///< pointer to MUON module  
   static AliMUONTrackReconstructorK *fgTrackReconstructor; ///< pointer to event reconstructor
   static TClonesArray *fgHitForRec; ///< pointer to hits
-  static AliMUONEventRecoCombi *fgCombi; ///< pointer to combined cluster/track finder
+//  static AliMUONEventRecoCombi *fgCombi; ///< pointer to combined cluster/track finder
 
   AliMUONObjectPair *fStartSegment; ///< seed segment  
   Double_t fPosition; ///< Z-coordinate of track
@@ -138,6 +138,9 @@ class AliMUONTrackK : public AliMUONTrack {
   Bool_t ExistDouble(void);
   void CheckBranches(TArrayD &branchChi2, Int_t nBranch);
 
+  void SetOwnerShip();
+  void RemoveIfUnique(TObjArray*& array);
+  
   private:
    // Some constants
    static const Int_t fgkSize; ///< number of track parameters
