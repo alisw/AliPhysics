@@ -105,10 +105,10 @@ void TestMUONPreprocessor(Int_t runNumber=80)
   // To test it, we must provide the run parameters manually. They will be retrieved in the preprocessor
   // using GetRunParameter function.
   // In real life the parameters will be retrieved automatically from the run logbook;
-  shuttle->SetInputRunType("PEDESTAL_RUN"); 
+  //shuttle->SetInputRunType("PEDESTAL_RUN"); 
   //shuttle->SetInputRunType("ELECTRONICS_CALIBRATION_RUN");
   //shuttle->SetInputRunType("GMS"); 
-  //shuttle->SetInputRunType("PHYSICS");
+  shuttle->SetInputRunType("PHYSICS");
   // PEDESTAL_RUN -> pedestals
   // ELECTRONICS_CALIBRATION_RUN -> gains
   // PHYSICS ? -> HV
@@ -170,13 +170,11 @@ TMap* CreateDCSAliasMap()
       for ( UInt_t timeStamp = 0; timeStamp < 60*15; timeStamp += 120 )
       {
         Float_t value = random.Gaus(1750,62.5);
-        if ( aliasName == "MchHvLvLeft/Chamber01Left/Quad3Sect2.actual.vMon") value = 500;
-//        if ( aliasName == "MchHvLvLeft/Chamber05Left/Slat07.actual.vMon") value = 1300;
-//        if ( aliasName == "MchHvLvLeft/Chamber05Left/Slat03.actual.vMon") value = 2500;
+        if ( aliasName == "MchHvLvLeft/Chamber00Left/Quad2Sect1.actual.vMon") value = 500;
         AliDCSValue* dcsValue = new AliDCSValue(value,timeStamp);
         valueSet->Add(dcsValue);
       }
-      if ( aliasName == "MchHvLvLeft/Chamber05Left/Slat07.actual.vMon" ) continue;
+      if ( aliasName == "MchHvLvLeft/Chamber04Left/Slat06.actual.vMon" ) continue;
       aliasMap->Add(new TObjString(*alias),valueSet);
     }
   }
