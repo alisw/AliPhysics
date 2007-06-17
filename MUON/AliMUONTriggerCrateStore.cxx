@@ -274,7 +274,9 @@ AliMUONTriggerCrateStore::ReadFromFile(const char* file)
 {
     /// Read crate and local board information from file.
     fCrates = new AliMpExMap(kTRUE);
-    fLocalBoards = new AliMpExMap(kFALSE);
+    fCrates->SetOwner(kTRUE);
+    fLocalBoards = new AliMpExMap(kTRUE);
+    fLocalBoards->SetOwner(kFALSE);
   
     ifstream myInputFile(gSystem->ExpandPathName(file), ios::in);
   

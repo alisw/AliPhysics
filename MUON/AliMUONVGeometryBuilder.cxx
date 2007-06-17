@@ -57,7 +57,8 @@ AliMUONVGeometryBuilder::AliMUONVGeometryBuilder(
 
   // Create the module geometries array
   fGeometryModules = new TObjArray();
-
+  fGeometryModules->SetOwner(kFALSE);
+     
   for (Int_t i=0; i<nofModules; i++ )
     fGeometryModules->Add(new AliMUONGeometryModule(firstModuleId++));
 }
