@@ -17,6 +17,9 @@
 
 #include "AliMUONObjectPair.h"
 
+#include "AliLog.h"
+#include <Riostream.h>
+
 /// \class AliMUONObjectPair
 ///
 /// The equivalent of a std::pair<TObject*,TObject*> ;-)
@@ -42,6 +45,7 @@ fIsOwnerOfFirst(kTRUE),
 fIsOwnerOfSecond(kTRUE)
 {
   /// ctor
+  AliDebug(1,Form("this=%p",this));
 }
 
 //_____________________________________________________________________________
@@ -56,6 +60,12 @@ fIsOwnerOfFirst(isOwnerOfFirst),
 fIsOwnerOfSecond(isOwnerOfSecond)
 {
   /// ctor
+  AliDebug(1,Form("this=%p first is %s second is %s",
+                  this,
+                  (first ? first->ClassName() : "0x0"),
+                  (second ? second->ClassName() : "0x0")
+                  ));
+
 }
 
 //_____________________________________________________________________________
@@ -67,6 +77,7 @@ fIsOwnerOfFirst(kTRUE),
 fIsOwnerOfSecond(kTRUE)
 {
   /// copy ctor
+  AliDebug(1,Form("this=%p copy ctor",this));
   other.Copy(*this);
 }
 
@@ -75,6 +86,7 @@ AliMUONObjectPair&
 AliMUONObjectPair::operator=(const AliMUONObjectPair& other)
 {
   /// assignement operator
+  AliDebug(1,"");
   AliMUONObjectPair pair(other);
   pair.Copy(*this);
   return *this;
@@ -84,8 +96,20 @@ AliMUONObjectPair::operator=(const AliMUONObjectPair& other)
 AliMUONObjectPair::~AliMUONObjectPair()
 {
   /// dtor
+  AliDebug(1,Form("this=%p",this));
   if ( fIsOwnerOfFirst ) delete fFirst;
   if ( fIsOwnerOfSecond ) delete fSecond;
+}
+
+//_____________________________________________________________________________
+void
+AliMUONObjectPair::Clear(Option_t*)
+{
+  /// Reset
+  if ( fIsOwnerOfFirst ) delete fFirst;
+  if ( fIsOwnerOfSecond ) delete fSecond;
+  fFirst = 0x0;
+  fSecond = 0x0;
 }
 
 //_____________________________________________________________________________
@@ -114,4 +138,32 @@ AliMUONObjectPair::Copy(TObject& other) const
   {
     pair.fSecond = fSecond;
   }
+}
+
+//_____________________________________________________________________________
+void
+AliMUONObjectPair::Print(Option_t* opt) const
+{
+  /// Printout
+  
+  cout << "First:";
+  if ( First() ) 
+  {
+    First()->Print(opt);
+  }
+  else
+  {
+    cout << " NULL ";
+  }
+  cout << endl;
+  cout << "Second:";
+  if ( Second() ) 
+  {
+    Second()->Print(opt);
+  }
+  else
+  {
+    cout << " NULL ";
+  }
+  cout << endl;    
 }

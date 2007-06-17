@@ -41,6 +41,10 @@ public:
 
   virtual void Copy(TObject& other) const;
   
+  virtual void Print(Option_t* opt="") const;
+  
+  virtual void Clear(Option_t* opt="");
+  
 private:
 
   TObject* fFirst; ///< first element of the pair
