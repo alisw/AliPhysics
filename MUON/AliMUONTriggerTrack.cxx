@@ -28,6 +28,8 @@
 
 #include "AliMUONTriggerTrack.h"
 #include "AliMUONTrackReconstructor.h" 
+#include <Riostream.h>
+#include "AliLog.h"
 
 //__________________________________________________________________________
 AliMUONTriggerTrack::AliMUONTriggerTrack()
@@ -41,6 +43,7 @@ AliMUONTriggerTrack::AliMUONTriggerTrack()
 
 {
   /// default ctr
+      AliDebug(1,Form("this=%p",this));
 }
 //__________________________________________________________________________
 AliMUONTriggerTrack::AliMUONTriggerTrack(Float_t x11, Float_t y11, Float_t thetax, Float_t thetay, Int_t loTrgNum, Long_t theGTPattern)
@@ -53,14 +56,16 @@ AliMUONTriggerTrack::AliMUONTriggerTrack(Float_t x11, Float_t y11, Float_t theta
       fGTPattern(theGTPattern)
 {
 /// ctor from local trigger output
+        AliDebug(1,Form("this=%p x11=%f y11=%f thetax=%f thetay=%f loTrgNum=%d GTPattern=%ld",
+                        this,x11,y11,thetax,thetay,loTrgNum,theGTPattern));
+
 }
 
 //__________________________________________________________________________
 AliMUONTriggerTrack::~AliMUONTriggerTrack()
 {
   /// Destructor
-    ;
-    
+  AliDebug(1,Form("this=%p",this));
 }
 
 //__________________________________________________________________________
@@ -76,6 +81,8 @@ AliMUONTriggerTrack::AliMUONTriggerTrack (const AliMUONTriggerTrack& theMUONTrig
 ///
 /// copy ctor
 ///
+        AliDebug(1,Form("this=%p copy ctor",this));
+
 }
       
 //__________________________________________________________________________
@@ -101,3 +108,12 @@ theMUONTriggerTrack)
     return *this;
 }
 
+//__________________________________________________________________________
+void
+AliMUONTriggerTrack::Print(Option_t*) const
+{
+/// Printing
+
+  cout << Form("(X,Y)11=(%7.2f,%7.2f) Theta(X,Y)=(%7.2f,%7.2f) LocalBoard #%3d GlobalTriggerPattern %x",
+               fx11,fy11,fthetax,fthetay,floTrgNum,fGTPattern) << endl;
+}

@@ -54,6 +54,8 @@ class AliMUONTriggerTrack : public TObject
     /// Return Global trigger pattern  (do not work with static statement) 
     UChar_t GetGTPattern() const {return fGTPattern;}    
     
+    virtual void Print(Option_t* opt="") const;
+    
 protected:
   private:
   Float_t fx11;    ///< x position of fired Y strip in MC11
