@@ -1,13 +1,8 @@
 # $Id$
 
-SRCS:= AliMUONRecData.cxx \
-       AliMUONRecLoader.cxx \
-       AliMUONClusterReconstructor.cxx \
-       AliMUONDigitMapA1.cxx \
-       AliMUONClusterFinderVS.cxx \
+SRCS:= AliMUONClusterReconstructor.cxx \
        AliMUONClusterFinderAZ.cxx \
        AliMUONPixel.cxx \
-       AliMUONClusterInput.cxx \
        AliMUONReconstructor.cxx \
        AliMUONVTrackReconstructor.cxx \
        AliMUONTrackReconstructor.cxx \
@@ -18,11 +13,10 @@ SRCS:= AliMUONRecData.cxx \
        AliMUONTrackParam.cxx \
        AliMUONTrackExtrap.cxx \
        AliMUONTriggerTrack.cxx \
+       AliMUONVTriggerTrackStore.cxx \
+       AliMUONTriggerTrackStoreV1.cxx \
        AliMUONRecoTrack.cxx \
        AliMUONHitForRec.cxx \
-       AliMUONClusterDrawAZ.cxx \
-       AliMUONDetElement.cxx \
-       AliMUONEventRecoCombi.cxx \
        AliMUONDigitCalibrator.cxx \
        AliMillepede.cxx \
        AliMUONAlignment.cxx \
@@ -37,7 +31,11 @@ SRCS:= AliMUONRecData.cxx \
        AliMUONPadStatusMaker.cxx \
        AliMUONPadStatusMapMaker.cxx \
        AliMUONTrackHitPattern.cxx \
-
+       AliMUONVClusterStore.cxx \
+       AliMUONClusterStoreV1.cxx \
+       AliMUONVTrackStore.cxx \
+       AliMUONTrackStoreV1.cxx
+       
 HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= MUONrecLinkDef.h

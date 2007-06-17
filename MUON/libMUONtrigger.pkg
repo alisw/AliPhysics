@@ -9,8 +9,8 @@ SRCS:=  AliMUONLocalTrigger.cxx \
         AliMUONGlobalTriggerBoard.cxx \
         AliMUONTriggerCrate.cxx \
         AliMUONTriggerCrateStore.cxx \
-        AliMUONTriggerCircuit.cxx
- 
+        AliMUONTriggerCircuit.cxx 
+                        
 HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= MUONtriggerLinkDef.h

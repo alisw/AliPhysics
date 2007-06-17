@@ -8,12 +8,6 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-// segmentation (change in progress)
-#pragma link C++ class AliMUONSegFactory+;
-#pragma link C++ class AliMUONSt12QuadrantSegmentation+; 
-#pragma link C++ class AliMUONSt345SlatSegmentation+;
-#pragma link C++ class AliMUONTriggerSegmentation+;
-
 // geometry 
 #pragma link C++ class AliMUONMathieson+; 
 
@@ -22,12 +16,15 @@
 #pragma link C++ class AliMUONLogger+;
 
 // containers
-#pragma link C++ class AliMUONData+; 
-#pragma link C++ class AliMUONDataIterator+; 
-#pragma link C++ class AliMUONDataDigitIterator+; 
 #pragma link C++ class AliMUONRawCluster+;
 #pragma link C++ class AliMUONDigit+; 
-#pragma link C++ class AliMUONHitMapA1+; 
+#pragma link C++ class AliMUONVDigit+; 
+#pragma link C++ class AliMUONVDigitStore+;
+#pragma link C++ class AliMUONDigitStoreV1+;
+#pragma link C++ class AliMUONDigitStoreV1Iterator+;
+#pragma link C++ class AliMUONTOTCAStoreIterator+;
+#pragma link C++ class AliMUONVTriggerStore+;
+#pragma link C++ class AliMUONTriggerStoreV1+;
 
 // raw data
 #pragma link C++ class AliMUONDigitMaker+;
@@ -37,6 +34,10 @@
 #pragma link C++ class AliMUONCalibrationData+;
 #pragma link C++ class AliMUONCDB+;
 #pragma link C++ class AliMUONHVNamer+;
+
+// misc
+#pragma link C++ class AliMUONDataManager+;
+#pragma link C++ class AliMUONStopwatchGroup+;
 
 #endif
 

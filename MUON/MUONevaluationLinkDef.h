@@ -12,8 +12,6 @@
 #pragma link C++ class AliMUONTrackLight+;
 #pragma link C++ class AliMUONCheck+;
 #pragma link C++ class AliMUONRecoCheck+;
-#pragma link C++ class AliMUONPoints+;
-#pragma link C++ class AliMUONDisplay+;
 #pragma link C++ class AliMUONDataInterface+;
 #pragma link C++ class AliMUONTriggerGUI+;
 #pragma link C++ class AliMUONTriggerGUIbdmap+;

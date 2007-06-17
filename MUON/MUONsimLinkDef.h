@@ -11,8 +11,6 @@
 
 #pragma link C++ class AliMUON+; 
 #pragma link C++ class AliMUONv1+; 
-#pragma link C++ class AliMUONSimLoader+; 
-#pragma link C++ class AliMUONSimData+; 
 #pragma link C++ class AliMUONHit+; 
 
 // geometry 
@@ -28,6 +26,8 @@
 // digitizer
 #pragma link C++ class AliMUONDigitizerV3+; 
 #pragma link C++ class AliMUONSDigitizerV2+;  
+#pragma link C++ class AliMUONVHitStore+;
+#pragma link C++ class AliMUONHitStoreV1+;
 
 // response
 #pragma link C++ class AliMUONChamber+; 
@@ -41,6 +41,9 @@
 #pragma link C++ class AliMUONTrigger+;
 #pragma link C++ class AliMUONChamberTrigger+; 
 #pragma link C++ class AliMUONTriggerElectronics+;
+
+// misc
+#pragma link C++ class AliMUONMCDataInterface+;
 
 #endif
 

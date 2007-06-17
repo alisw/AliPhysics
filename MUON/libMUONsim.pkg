@@ -2,8 +2,6 @@
 
 SRCS:= AliMUON.cxx \
        AliMUONv1.cxx \
-       AliMUONSimLoader.cxx \
-       AliMUONSimData.cxx \
        AliMUONHit.cxx \
        AliMUONCommonGeometryBuilder.cxx \
        AliMUONSt1GeometryBuilder.cxx \
@@ -24,6 +22,9 @@ SRCS:= AliMUON.cxx \
        AliMUONSDigitizerV2.cxx \
        AliMUONDigitizerV3.cxx \
        AliMUONTriggerElectronics.cxx \
+       AliMUONVHitStore.cxx \
+       AliMUONHitStoreV1.cxx \
+       AliMUONMCDataInterface.cxx
                            
 HDRS:= $(SRCS:.cxx=.h)
 

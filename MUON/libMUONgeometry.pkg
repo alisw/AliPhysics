@@ -12,14 +12,11 @@ SRCS  =  AliMUONGeometryConstituent.cxx \
 	 AliMUONGeometryModuleTransformer.cxx \
 	 AliMUONGeometryModule.cxx \
 	 AliMUONGeometryTransformer.cxx \
-         AliMUONGeometryMisAligner.cxx \
+   AliMUONGeometryMisAligner.cxx \
 	 AliMUONGeometry.cxx \
 	 AliMUONVGeometryBuilder.cxx \
-	 AliMUONGeometryBuilder.cxx \
-	 AliMUONVGeometryDESegmentation.cxx \
-	 AliMUONGeometrySegmentation.cxx \
-	 AliMUONSegmentation.cxx \
-
+	 AliMUONGeometryBuilder.cxx
+   
 HDRS =  $(SRCS:.cxx=.h) 
 
 EINCLUDE:= RAW MUON/mapping

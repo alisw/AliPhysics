@@ -9,14 +9,9 @@
 #pragma link off all functions;
 
 // reconstruction
-#pragma link C++ class AliMUONRecData+; 
-#pragma link C++ class AliMUONRecLoader+; 
 #pragma link C++ class AliMUONClusterReconstructor+; 
-#pragma link C++ class AliMUONClusterFinderVS+; 
 #pragma link C++ class AliMUONClusterFinderAZ+; 
-#pragma link C++ class AliMUONDigitMapA1+; 
 #pragma link C++ class AliMUONPixel+; 
-#pragma link C++ class AliMUONClusterInput+; 
 #pragma link C++ class AliMUONReconstructor+;
 #pragma link C++ class AliMUONVTrackReconstructor+; 
 #pragma link C++ class AliMUONTrackReconstructor+; 
@@ -29,9 +24,6 @@
 #pragma link C++ class AliMUONTriggerTrack+; 
 #pragma link C++ class AliMUONRecoTrack+; 
 #pragma link C++ class AliMUONHitForRec+; 
-#pragma link C++ class AliMUONClusterDrawAZ+;
-#pragma link C++ class AliMUONDetElement+; 
-#pragma link C++ class AliMUONEventRecoCombi+; 
 #pragma link C++ class AliMillepede+;
 #pragma link C++ class AliMUONAlignment+;
 #pragma link C++ class AliMUONVClusterFinder+;
@@ -43,6 +35,13 @@
 #pragma link C++ class AliMUONClusterFinderMLEM+;
 #pragma link C++ class AliMUONClusterSplitterMLEM+;
 #pragma link C++ class AliMUONTrackHitPattern+;
+
+#pragma link C++ class AliMUONVClusterStore+;
+#pragma link C++ class AliMUONClusterStoreV1+;
+#pragma link C++ class AliMUONVTrackStore+;
+#pragma link C++ class AliMUONTrackStoreV1+;
+#pragma link C++ class AliMUONVTriggerTrackStore+;
+#pragma link C++ class AliMUONTriggerTrackStoreV1+;
 
 // calibration
 #pragma link C++ class AliMUONDigitCalibrator+;

@@ -2,24 +2,25 @@
 
 SRCS:=  AliMUONConstants.cxx \
         AliMUONMathieson.cxx \
-        AliMUONData.cxx \
-        AliMUONDataIterator.cxx \
-        AliMUONDataDigitIterator.cxx \
         AliMUONDigit.cxx \
-        AliMUONHitMapA1.cxx \
         AliMUONRawCluster.cxx \
-        AliMUONSt12QuadrantSegmentation.cxx \
-        AliMUONSt345SlatSegmentation.cxx \
-        AliMUONTriggerSegmentation.cxx \
-        AliMUONSegFactory.cxx \
         AliMUONCalibrationData.cxx \
         AliMUONDigitMaker.cxx \
         AliMUONRawWriter.cxx \
         AliMUONLogger.cxx \
         AliMUONCDB.cxx \
         AliMUONHVNamer.cxx \
- 
-HDRS:= $(SRCS:.cxx=.h)
+        AliMUONVDigitStore.cxx \
+        AliMUONDigitStoreV1.cxx \
+        AliMUONDigitStoreV1Iterator.cxx \
+        AliMUONTOTCAStoreIterator.cxx \
+        AliMUONDataManager.cxx \
+        AliMUONStopwatchGroup.cxx \
+        AliMUONVDigit.cxx \
+        AliMUONVTriggerStore.cxx \
+        AliMUONTriggerStoreV1.cxx \
+        
+HDRS:= $(SRCS:.cxx=.h) AliMUONStopwatchGroupElement.h
 
 DHDR:= MUONbaseLinkDef.h
 
