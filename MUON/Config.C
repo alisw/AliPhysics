@@ -175,7 +175,7 @@ void Config(char directory[100]="", char option[6]="param")
   //  MUON->SetTriggerEffCells(0);
 
   // To get same as above w/o noise-only digits for the tracker do  :
-  // MUON->SetDigitizerWithNoise(kKALSE);
+  //MUON->SetDigitizerWithNoise(kFALSE);
 
   //
   // If SetAlign, the detection elements transformations
