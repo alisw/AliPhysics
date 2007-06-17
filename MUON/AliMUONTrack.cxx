@@ -87,7 +87,9 @@ AliMUONTrack::AliMUONTrack(AliMUONHitForRec* hitForRec1, AliMUONHitForRec* hitFo
   /// Constructor from thw hitForRec's
 
   fTrackParamAtHit = new TClonesArray("AliMUONTrackParam",10);
+  fTrackParamAtHit->SetOwner(kTRUE);
   fHitForRecAtHit = new TClonesArray("AliMUONHitForRec",10);
+  fHitForRecAtHit->SetOwner(kTRUE);
   
   if (!hitForRec1) return; //AZ
   
@@ -139,23 +141,9 @@ AliMUONTrack::AliMUONTrack(AliMUONHitForRec* hitForRec1, AliMUONHitForRec* hitFo
 AliMUONTrack::~AliMUONTrack()
 {
   /// Destructor
-  if (fTrackParamAtHit) {
-    // delete the TClonesArray of pointers to TrackParam
-    delete fTrackParamAtHit;
-    fTrackParamAtHit = 0x0;
-  }
-
-  if (fHitForRecAtHit) {
-    // delete the TClonesArray of pointers to HitForRec
-    delete fHitForRecAtHit;
-    fHitForRecAtHit = 0x0;
-  }
-  
-  if (fVertex) {
-    // delete the vertex used during the tracking procedure
-    delete fVertex;
-    fVertex = 0x0;
-  }
+  delete fTrackParamAtHit;
+  delete fHitForRecAtHit;  
+  delete fVertex;
 }
 
   //__________________________________________________________________________
@@ -305,6 +293,15 @@ void AliMUONTrack::AddHitForRecAtHit(const AliMUONHitForRec *hitForRec)
     AliFatal("AliMUONTrack::AddHitForRecAtHit: hitForRec == NULL");
   
   new ((*fHitForRecAtHit)[fHitForRecAtHit->GetEntriesFast()]) AliMUONHitForRec(*hitForRec);
+}
+
+//__________________________________________________________________________
+void
+AliMUONTrack::Clear(Option_t* opt)
+{
+  /// Clear arrays
+  if ( fTrackParamAtHit ) fTrackParamAtHit->Clear(opt);
+  if ( fHitForRecAtHit ) fHitForRecAtHit->Clear(opt);
 }
 
   //__________________________________________________________________________
@@ -552,29 +549,16 @@ void AliMUONTrack::RecursiveDump(void) const
 }
   
 //_____________________________________________-
-void AliMUONTrack::Print(Option_t* opt) const
+void AliMUONTrack::Print(Option_t*) const
 {
   /// Printing Track information 
-  /// "full" option for printing all the information about the track
-  TString sopt(opt);
-  sopt.ToUpper();
- 
-  if ( sopt.Contains("FULL") ) { 
-    cout << "<AliMUONTrack> No.Clusters=" << setw(2)   << GetNTrackHits() << 
-      //      ", Bending P="<< setw(8) << setprecision(5)      << 1./GetInverseBendingMomentum() << 
-      //", NonBendSlope=" << setw(8) << setprecision(5)  << GetNonBendingSlope()*180./TMath::Pi() <<
-      //", BendSlope=" << setw(8) << setprecision(5)     << GetBendingSlope()*180./TMath::Pi() <<
+
+  cout << "<AliMUONTrack> No.Clusters=" << setw(2)   << GetNTrackHits() << 
       ", Match2Trig=" << setw(1) << GetMatchTrigger()  << 
       ", LoTrgNum=" << setw(3) << GetLoTrgNum()  << 
-      ", Chi2-tracking-trigger=" << setw(8) << setprecision(5) <<  GetChi2MatchTrigger() << endl ;
-    GetTrackParamAtHit()->First()->Print("full");
-  }
-  else {
-    cout << "<AliMUONTrack>";
-    GetTrackParamAtHit()->First()->Print("");
-
-  }
-    
+    ", Chi2-tracking-trigger=" << setw(8) << setprecision(5) <<  GetChi2MatchTrigger();
+  cout << Form(" HitTriggerPattern %x",fHitsPatternInTrigCh) << endl;
+  GetTrackParamAtHit()->First()->Print("FULL");
 }
 
 //__________________________________________________________________________

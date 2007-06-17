@@ -120,6 +120,7 @@ class AliMUONTrack : public TObject
 
   virtual void               Print(Option_t* opt="") const;
 
+  virtual void Clear(Option_t* opt="");
 
  private:
   static const Double_t fgkMaxTrackingDistanceBending;    ///< Maximum distance to the track to search for compatible hitForRec(s) in bending direction
@@ -148,7 +149,7 @@ class AliMUONTrack : public TObject
 
   Int_t fLocalTrigger;    ///< packed local trigger information
   
-  ClassDef(AliMUONTrack, 6) // Reconstructed track in ALICE dimuon spectrometer
+  ClassDef(AliMUONTrack,6) // Reconstructed track in ALICE dimuon spectrometer
 };
 	
 #endif
