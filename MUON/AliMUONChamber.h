@@ -16,9 +16,7 @@
 #include <TObjArray.h>
 
 #include "AliMUONResponse.h"
-#include "AliMUONGeometrySegmentation.h"
 
-class AliMUONClusterFinderVS;
 class AliMUON;
 class AliMUONHit;
 
@@ -35,7 +33,7 @@ class AliMUONChamber : public TObject
 
   
 /// Set response model
-  virtual void    SetResponseModel(AliMUONResponse* thisResponse) {fResponse=thisResponse;}
+  virtual void    SetResponseModel(const AliMUONResponse& thisResponse);
   
 ///  Get pointer to response model
   virtual AliMUONResponse* &ResponseModel(){return fResponse;}
@@ -62,9 +60,6 @@ class AliMUONChamber : public TObject
 /// Set maximum ADC count value
   virtual void   SetMaxAdc(Int_t p1)                   {fResponse->SetMaxAdc(p1);}
 //  
-// Cluster formation method (charge disintegration)
-  virtual void   DisIntegration(AliMUONHit* hit,
-				Int_t& x, Float_t newclust[6][500]);
 /// Set charge correlation
   virtual void SetChargeCorrel(Float_t correl) {fResponse->SetChargeCorrel(correl);}
 

@@ -30,7 +30,6 @@
 // --- MUON includes ---
 #include "AliMUON.h"
 #include "AliMUONChamber.h"
-#include "AliMUONSegmentation.h"
 #include "AliMUONHit.h"
 #include "AliLog.h"
 
@@ -77,6 +76,7 @@ AliMUONChamber::~AliMUONChamber()
 /// Destructor
 
   AliDebug(1, Form("dtor this = %p", this));
+  delete fResponse;
 }
 
 //_____________________________________________________
@@ -90,69 +90,11 @@ void AliMUONChamber::ChargeCorrelationInit()
     fCurrentCorrel = TMath::Exp(gRandom->Gaus(0,fResponse->ChargeCorrel()/2));
 }
 
-//_______________________________________________________
-void AliMUONChamber::DisIntegration(AliMUONHit *hit, 
-				    Int_t& nnew,Float_t newclust[6][500]) 
+//_____________________________________________________________________________
+void
+AliMUONChamber::SetResponseModel(const AliMUONResponse& thisResponse)
 {
-///  Generates pad hits (simulated cluster) 
-///  using the segmentation and the response model 
-
-  Float_t dx, dy;
-
-  Float_t  xhit = hit->X();
-  Float_t  yhit = hit->Y();
-  Float_t  zhit = hit->Z();
-  Int_t      id = hit->DetElemId();
-  Float_t eloss = hit->Eloss();
-
-  //
-  // Width of the integration area
-  //
-  dx=fResponse->SigmaIntegration()*fResponse->ChargeSpreadX();
-  dy=fResponse->SigmaIntegration()*fResponse->ChargeSpreadY();
-  //
-  // Get pulse height from energy loss
-  Float_t qtot = fResponse->IntPH(eloss);
-  //
-  // Loop Over Pads
-    
-  Float_t qp; 
-  nnew=0;
-    
-  // Cathode plane loop
-  for (Int_t i = 1; i <= 2; i++) {
-    Float_t qcath = qtot * (i==1? fCurrentCorrel : 1/fCurrentCorrel);
-    
-    AliMUONGeometrySegmentation* segmentation=
-      fMUON->GetSegmentation()->GetModuleSegmentationByDEId(id, i-1); 
-
-    for (segmentation->FirstPad(id, xhit, yhit, zhit, dx, dy); 
-	 segmentation->MorePads(id); 
-	 segmentation->NextPad(id)) 
-      {
-	qp=fResponse->IntXY(id, segmentation);
-	qp=TMath::Abs(qp);
-	//
-	//
-	if (qp > 1.e-4) 
-	  {
-	    if (nnew >= 500) // Perform a bounds check on nnew since it is assumed
-	      // newclust only contains 500 elements.
-	      {
-		AliError("Limit of 500 pad responses reached.");
-		return;
-	      };
-	    //
-	    // --- store signal information
-	    newclust[0][nnew]=qcath;                     // total charge
-	    newclust[1][nnew]=segmentation->Ix();       // ix-position of pad
-	    newclust[2][nnew]=segmentation->Iy();       // iy-position of pad
-	    newclust[3][nnew]=qp * qcath;                // charge on pad
-	    newclust[4][nnew]=segmentation->ISector();  // sector id
-	    newclust[5][nnew]=(Float_t) i;              // counter
-	    nnew++;
-		
-	  }
-      } // Pad loop
-  } // Cathode plane loop
+  delete fResponse;
+  fResponse = static_cast<AliMUONResponse*>(thisResponse.Clone());
 }
+

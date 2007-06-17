@@ -14,7 +14,6 @@
 #include "AliMUONChamber.h"
 
 class AliMUONClusterFinder;
-class AliMUONSegmentationTrigger;
 class AliMUONResponseTrigger;
 class AliMUONResponseTriggerV1;
 class AliMUONGeometryTransformer;
@@ -27,11 +26,6 @@ class AliMUONChamberTrigger : public AliMUONChamber
     AliMUONChamberTrigger(Int_t id, const AliMUONGeometryTransformer* kGeometry);
     virtual ~AliMUONChamberTrigger();
     
-    // Cluster formation method (charge disintegration)
-    
-    virtual void   DisIntegration(AliMUONHit* hit,
-       				 Int_t& nnew, Float_t newclust[6][500]);
-
   protected:   
     /// Not implemented
     AliMUONChamberTrigger(const AliMUONChamberTrigger& right);
