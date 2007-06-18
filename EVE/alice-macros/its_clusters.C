@@ -1,5 +1,5 @@
 
-Reve::PointSet* its_clusters(RenderElement* cont=0)
+Reve::PointSet* its_clusters(RenderElement* cont=0, Float_t maxR=50)
 {
   if (!gGeoManager)
     gReve->GetGeometry("$PWD/misaligned_geometry.root");
@@ -22,14 +22,17 @@ Reve::PointSet* its_clusters(RenderElement* cont=0)
 
     Int_t ncl=cl->GetEntriesFast();
 
+    Float_t maxRsqr = maxR*maxR;
     while (ncl--) {
       AliCluster *c=(AliCluster*)cl->UncheckedAt(ncl);
       Float_t g[3]; //global coordinates
       c->GetGlobalXYZ(g);
-
-      clusters->SetNextPoint(g[0], g[1], g[2]);
-      AliCluster *atp = new AliCluster(*c);
-      clusters->SetPointId(atp);
+      if (g[0]*g[0]+g[1]*g[1] < maxRsqr)
+      {
+	clusters->SetNextPoint(g[0], g[1], g[2]);
+	AliCluster *atp = new AliCluster(*c);
+	clusters->SetPointId(atp);
+      }
     }
   }
 
