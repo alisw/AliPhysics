@@ -60,7 +60,8 @@ MuonRec.SetFillESD("");
 MuonRec.SetLoadAlignData("MUON");
 MuonRec.SetNumberOfEventsPerFile(1000);
 MuonRec.SetOption("MUON","SAVEDIGITS");
-MuonRec.SetOption("MUON","NOLOCALRECONSTRUCTION");
+// Change the line above with the line below to run without local reconstruction
+// MuonRec.SetOption("MUON","SAVEDIGITS NOLOCALRECONSTRUCTION");
 MuonRec.Run();
 delete MuonRec;
 .q
