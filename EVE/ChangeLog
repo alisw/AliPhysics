@@ -1,3 +1,11 @@
+2007-06-18  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* alice-macros/esd_spd_tracklets.C:
+	New macro: show SPD tracklets from AliMultiplicity.
+
+	* alice-macros/its_clusters.C:
+	Added optional argument maxR.
+
 2007-06-13  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* libAlieve.pkg:

@@ -1,3 +1,12 @@
+2007-06-18  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* StraightLineSet.cxx:
+	* StraightLineSet.h:
+	White-space.
+
+	* StraightLineSetGL.cxx:
+	Bugfix; wrong size passed to marker renderer.
+
 2007-05-30  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
 
 	* LinkDef.h:
