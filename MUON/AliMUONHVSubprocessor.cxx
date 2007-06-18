@@ -124,7 +124,7 @@ AliMUONHVSubprocessor::Process(TMap* dcsAliasMap)
     else
     {
       kNoAliases = kFALSE;
-      TObjArray* values = static_cast<TObjArray*>(hvPair->Value());
+      TObjArray* values = static_cast<TObjArray*>(hvPair->Value()->Clone());
       if (!values)
       {
         ++valueNotFound;
