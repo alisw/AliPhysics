@@ -140,10 +140,12 @@ AliPHOSCalibData & AliPHOSCalibData::operator = (const AliPHOSCalibData & rhs)
 //________________________________________________________________
 void AliPHOSCalibData::Reset()
 {
-  // Set all pedestals to 0 and all ADC channels to 1
+  // Set all pedestals to 0 and all ADC channels to 1,
+  // and all channels are good (alive)
 
-  fCalibDataEmc->Reset();
-  fCalibDataCpv->Reset();
+  fCalibDataEmc     ->Reset();
+  fCalibDataCpv     ->Reset();
+  fEmcBadChannelsMap->Reset();
 }
 
 //________________________________________________________________
