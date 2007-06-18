@@ -22,8 +22,9 @@ Reve::StraightLineSet* esd_spd_tracklets(Float_t rad=8)
   {
     using namespace TMath;
     Float_t dr[3];
-    dr[0] = rad*Cos(mul->GetPhi(i));
-    dr[1] = rad*Sin(mul->GetPhi(i));
+    Float_t phi = PiOver2() - mul->GetPhi(i); // strange people
+    dr[0] = rad*Cos(phi);
+    dr[1] = rad*Sin(phi);
     dr[2] = rad/Tan(mul->GetTheta(i));
     ls->AddLine(pvx[0], pvx[1], pvx[2],
 		pvx[0]+dr[0], pvx[1]+dr[1], pvx[2]+dr[2]);
