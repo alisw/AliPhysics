@@ -12,6 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+#include <TFile.h>
 #include "AliITSOnlineSDDTP.h"
 #include "AliLog.h"
 #include <TH2F.h>
@@ -53,6 +54,9 @@ void AliITSOnlineSDDTP::Reset(){
   for(Int_t i=0;i<fgkNAnodes;i++){
     fGoodAnode[i]=1;
     fBaseline[i]=0.;
+    fCMN[i]=0.;
+    fRawNoise[i]=0.;
+    fCorrNoise[i]=0.;
     fSumTPPeak[i]=0.;
     fTPPos[i]=0.;
   }
@@ -99,10 +103,23 @@ void AliITSOnlineSDDTP::ReadBaselines(){
     fscanf(basf,"%d %d %f %f %f %f\n",&n,&ok,&base,&rms,&cmn,&corrnoi);
     fBaseline[ian]=base;
     fGoodAnode[ian]=ok;
+    fRawNoise[ian]=rms;
+    fCMN[ian]=cmn;
+    fCorrNoise[ian]=corrnoi;
   }
   fclose(basf);
 }
 
+//______________________________________________________________________
+Bool_t AliITSOnlineSDDTP::IsModuleGood() const{
+  //
+  // Check if there is at least 1 good anode
+  //
+  for(Int_t ian=0;ian<fgkNAnodes;ian++){
+    if(fGoodAnode[ian]) return kTRUE;
+  }
+  return kFALSE;
+}
 //______________________________________________________________________
 void AliITSOnlineSDDTP::ValidateAnodes(){
   //
@@ -142,29 +159,50 @@ void AliITSOnlineSDDTP::StatGain(Float_t &mean, Float_t  &rms){
 //______________________________________________________________________
 void AliITSOnlineSDDTP::WriteToASCII(){
   //
-  Char_t basfilnam[100];
-  sprintf(basfilnam,"SDDbase_step2_mod%03d_sid%d.data",fModuleId,fSide);
-  FILE* basf=fopen(basfilnam,"r");
-  if(basf==0){
-    AliWarning("Baseline file not present, launch baseline analysis first\n");
-    return;
-  }
-  Int_t n,ok;
-  Float_t base,rms,cmn,corrnoi;
-  Float_t noise[fgkNAnodes],cmncoef[fgkNAnodes],corrnoise[fgkNAnodes];
-  for(Int_t ian=0;ian<fgkNAnodes;ian++){
-    fscanf(basf,"%d %d %f %f %f %f\n",&n,&ok,&base,&rms,&cmn,&corrnoi);
-    noise[ian]=rms;
-    cmncoef[ian]=cmn;
-    corrnoise[ian]=corrnoi;
-  }
-  fclose(basf);
   Char_t outfilnam[100];
   sprintf(outfilnam,"SDDbase_mod%03d_sid%d.data",fModuleId,fSide);
   FILE* outf=fopen(outfilnam,"w");
+  fprintf(outf,"%d %d %d\n",fModuleId,fSide,IsModuleGood());
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
-    fprintf(outf,"%d %d %8.3f %8.3f %8.3f %8.3f %8.3f\n",ian,IsAnodeGood(ian),fBaseline[ian], noise[ian],cmncoef[ian],corrnoise[ian],GetChannelGain(ian));
+    fprintf(outf,"%d %d %8.3f %8.3f %8.3f %8.3f %8.3f\n",ian,IsAnodeGood(ian),GetAnodeBaseline(ian),GetAnodeRawNoise(ian),GetAnodeCommonMode(ian),GetAnodeCorrNoise(ian),GetChannelGain(ian));
   }
   fclose(outf);  
+}
+//______________________________________________________________________
+Bool_t AliITSOnlineSDDTP::WriteToROOT(TFile *fil){
+  //
+  if(fil==0){ 
+    AliWarning("Invalid pointer to ROOT file");
+    return kFALSE;    
+  }
+  Char_t hisnam[20];
+  fil->cd();
+  sprintf(hisnam,"hgood%03ds%d",fModuleId,fSide);
+  TH1F hgood(hisnam,"",256,-0.5,255.5);
+  sprintf(hisnam,"hbase%03ds%d",fModuleId,fSide);
+  TH1F hbase(hisnam,"",256,-0.5,255.5);
+  sprintf(hisnam,"hnois%03ds%d",fModuleId,fSide);
+  TH1F hnois(hisnam,"",256,-0.5,255.5);
+  sprintf(hisnam,"hcmn%03ds%d",fModuleId,fSide);
+  TH1F hcmn(hisnam,"",256,-0.5,255.5);
+  sprintf(hisnam,"hcorn%03ds%d",fModuleId,fSide);
+  TH1F hcorn(hisnam,"",256,-0.5,255.5);
+  sprintf(hisnam,"hgain%03ds%d",fModuleId,fSide);
+  TH1F hgain(hisnam,"",256,-0.5,255.5);
+  for(Int_t ian=0;ian<fgkNAnodes;ian++){
+    hgood.SetBinContent(ian+1,float(IsAnodeGood(ian)));
+    hbase.SetBinContent(ian+1,GetAnodeBaseline(ian));
+    hnois.SetBinContent(ian+1,GetAnodeRawNoise(ian));
+    hcmn.SetBinContent(ian+1,GetAnodeCommonMode(ian));
+    hcorn.SetBinContent(ian+1,GetAnodeCorrNoise(ian));
+    hgain.SetBinContent(ian+1,GetChannelGain(ian));
+  }
+  hgood.Write();
+  hbase.Write();
+  hnois.Write();
+  hcmn.Write();
+  hcorn.Write();
+  hgain.Write();
+  return kTRUE;
 }
 

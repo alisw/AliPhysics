@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
 
 
   /* log start of process */
-  printf("ITS SDD TP algorithm program started\n");  
+  printf("ITS SDD BASE algorithm program started\n");  
 
 
   /* check that we got some arguments = list of files */
@@ -55,8 +55,8 @@ int main(int argc, char **argv) {
   }
 
 
-  // Loop over modules has to be added
-  const Int_t nSDDmodules=12;
+  Int_t maxNEvents=10; // maximum number of events to be analyzed
+  const Int_t nSDDmodules=12;  // temp for test raw data
   AliITSOnlineSDDBase **base=new AliITSOnlineSDDBase*[2*nSDDmodules];
   AliITSOnlineSDDCMN **corr=new AliITSOnlineSDDCMN*[2*nSDDmodules];
   TH2F **histo=new TH2F*[2*nSDDmodules];
@@ -73,10 +73,9 @@ int main(int argc, char **argv) {
   }
   
   /* report progress */
-  daqDA_progressReport(10);
+  daqDA_progressReport(8);
   Int_t iev;
   for(Int_t iStep=0;iStep<2;iStep++){
-    /* init some counters */
     printf("Start Analysis Step %d\n",iStep);
     iev=0;
     if(iStep==1){
@@ -101,7 +100,7 @@ int main(int argc, char **argv) {
       /* report progress */
       /* in this example, indexed on the number of files */
       // Progress report inside the event loop as well?
-      daqDA_progressReport(10+80*n/argc);
+      daqDA_progressReport(10+40*iStep*n/argc);
 
       /* read the file */
       for(;;) {
@@ -122,7 +121,7 @@ int main(int argc, char **argv) {
 	}
 
 	iev++; 
-	if(iev>10) break;
+	if(iev>maxNEvents) break;
 
 	/* use event - here, just write event id to result file */
 	eventT=event->eventType;
@@ -136,18 +135,18 @@ int main(int argc, char **argv) {
 	case END_OF_RUN:
 	  break;
 
-	  //      case PHYSICS_EVENT:
-	  //	break;
+ 	  //      case PHYSICS_EVENT:  // comment this line for test raw data
+	  //	break;               // comment this line for test raw data
+
 
 	case CALIBRATION_EVENT:
-	  // for test raw data
-	case PHYSICS_EVENT:
+	  break;  // uncomment this line for test raw data
+	case PHYSICS_EVENT: // uncomment this line for test raw data
 	  printf(" event number = %i \n",iev);
 	  AliRawReader *rawReader = new AliRawReaderDate((void*)event);
 	  rawReader->RequireHeader(kFALSE);
+	  rawReader->SelectEquipment(17,101,101);  // temp for test raw data
 
-	  // temp for test raw data
-	  rawReader->SelectEquipment(17,101,101);
 
 	  Int_t evtyp=0;
 	  while(rawReader->ReadHeader()){
@@ -163,13 +162,16 @@ int main(int argc, char **argv) {
 	    }
 	  }
 	  AliITSRawStreamSDD s(rawReader);
-	  // temp for test raw data
-	  rawReader->SelectEquipment(17,101,101);
+	  rawReader->SelectEquipment(17,101,101);  // temp for test raw data
 
 	  while(s.Next()){
-	    // calculation of module etc.
-	    if(s.GetCarlosId()<nSDDmodules){
-	      Int_t index=2*s.GetCarlosId()+s.GetChannel();
+	    Int_t iddl=rawReader->GetDDLID();
+	    iddl=0; // temporary for test raw data
+	    Int_t isddmod=s.GetModuleNumber(iddl,s.GetCarlosId()); 
+	    isddmod-=240;  // to have SDD modules from 0 to 259
+	    isddmod=s.GetCarlosId(); // temporary for test raw data
+	    if(isddmod<nSDDmodules){ 
+	      Int_t index=2*isddmod+s.GetChannel(); 
 	      histo[index]->Fill(s.GetCoord2(),s.GetCoord1(),s.GetSignal());
 	    }
 	  }
@@ -212,7 +214,7 @@ int main(int argc, char **argv) {
 
 
 
-  TFile *fh=new TFile("histos.root","RECREATE");
+  TFile *fh=new TFile("SDDbaseHistos.root","RECREATE");
   for(Int_t imod=0; imod<nSDDmodules;imod++){
     for(Int_t isid=0; isid<2;isid++){
       Int_t index=2*imod+isid;
@@ -221,10 +223,6 @@ int main(int argc, char **argv) {
   }
   fh->Close();
 
-
-
-  // Example how to store the output file ot DAQ FXS
-  //  status=daqDA_FES_storeFile("./result.txt","DAcase1_results");
 
   /* report progress */
   daqDA_progressReport(100);

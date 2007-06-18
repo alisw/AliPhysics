@@ -58,6 +58,7 @@ void AliITSOnlineSDDCMN::Reset(){
   for(Int_t i=0;i<fgkNAnodes;i++){
     fGoodAnode[i]=1;
     fBaseline[i]=0.;
+    fRawNoise[i]=0.;
     fCMN[i]=0.;
     fSumCorrNoise[i]=0.;
   }
@@ -163,6 +164,7 @@ void AliITSOnlineSDDCMN::WriteToASCII(){
 }
 //______________________________________________________________________
 Bool_t AliITSOnlineSDDCMN::WriteToROOT(TFile *fil){
+  //
   if(fil==0){ 
     AliWarning("Invalid pointer to ROOT file");
     return kFALSE;    
