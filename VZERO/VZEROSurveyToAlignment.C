@@ -1,4 +1,3 @@
-
 void VZEROSurveyToAlignment(){
 
   // Macro to convert survey data into alignment data. 
@@ -255,15 +254,14 @@ void VZEROSurveyToAlignment(){
     f.Close();
   }else{
     // save in CDB storage
-    const char* Storage = gSystem->Getenv("$STORAGE");
     AliCDBManager* cdb = AliCDBManager::Instance();
-    AliCDBStorage* storage = cdb->GetStorage(Storage);
-    AliCDBMetaData* md = new AliCDBMetaData();
-    md->SetResponsible("Brigitte Cheynis");
-    md->SetComment("Alignment objects for V0 survey");
-    md->SetAliRootVersion(gSystem->Getenv("$ARVERSION"));
+    AliCDBStorage* storage = cdb->GetStorage("local://$ALICE_ROOT");
+    AliCDBMetaData* mda = new AliCDBMetaData();
+    mda->SetResponsible("Brigitte Cheynis");
+    mda->SetComment("Alignment objects for V0 survey");
+    mda->SetAliRootVersion(gSystem->Getenv("$ARVERSION"));
     AliCDBId id("VZERO/Align/Data",0,9999999);
-    storage->Put(array,id,md);
+    storage->Put(array,id,mda);
   }
 
   array->Delete();
