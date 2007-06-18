@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.25  2007/03/06 06:47:28  kharlov
+ * DP:Possibility to use actual vertex position added
+ *
  * Revision 1.24  2006/08/28 10:01:56  kharlov
  * Effective C++ warnings fixed (Timur Pocheptsov)
  *
@@ -265,7 +268,7 @@ void AliPHOSCpvRecPoint::EvalAll(Float_t logWeight, TVector3 &vtx, TClonesArray 
   AliPHOSEmcRecPoint::EvalAll(logWeight,vtx,digits) ;
 }
 //____________________________________________________________________________
-void AliPHOSCpvRecPoint::EvalLocalPosition(Float_t logWeight, TVector3 & /*vtx */, TClonesArray * digits)
+void AliPHOSCpvRecPoint::EvalLocalPosition(Float_t logWeight, TVector3 & /*vtx */, TClonesArray * digits, TVector3 &/* vInc */)
 {
   // Calculates the center of gravity in the local PHOS-module coordinates 
 
