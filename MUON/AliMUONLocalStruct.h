@@ -56,8 +56,9 @@ public:
    UChar_t  GetId()  const  {return fData[4] >> 19 &  0xF;}
             /// Return Dec
    UChar_t  GetDec() const  {return fData[4] >> 15 &  0xF;}
+   Bool_t   GetTrigY() const {return (fData[4] >> 14 & 0x1);}
             /// Return TriggerY
-   Bool_t   GetTriggerY() const {return (fData[4] >> 14 & 0x1);}
+   Bool_t   GetTriggerY() const {return !(GetTrigY() && GetYPos()==15);}
             /// Return Upos
    UChar_t  GetYPos() const {return fData[4] >> 10 &  0xF;}
             /// Get Sign of X deviation 
@@ -65,7 +66,9 @@ public:
             /// Get X deviation 
    UChar_t  GetXDev() const {return fData[4] >> 5  &  0xF;}
             /// Return TriggerX
-   Bool_t   GetTriggerX() const {return ((GetXDev() >> 4  & 0x1) && !(GetXDev() & 0xF));}
+   Bool_t   GetTriggerX() const {return !(GetSXDev() &&
+					  !GetXDev() &&
+					  GetXPos()==0);}   
             /// Return Xpos
    UChar_t  GetXPos() const {return fData[4]       &  0x1F;}
 
