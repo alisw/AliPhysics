@@ -33,7 +33,8 @@ private:
   StraightLineSet& operator=(const StraightLineSet&); // Not implemented
 
 protected:
-  struct Line {
+  struct Line
+  {
     Float_t        fV1[3];
     Float_t        fV2[3];
     TRef           fRef;
@@ -45,7 +46,8 @@ protected:
     }
   };
  
-  struct Marker {
+  struct Marker
+  {
     Int_t   	   fLineID;
     Float_t 	   fPos;
     TRef           fRef;
@@ -57,7 +59,7 @@ protected:
   Color_t           fColor;
 
   Bool_t            fOwnLinesIds;       //Flag specifying if id-objects are owned by the QuadSet
-  Bool_t            fOwnMarkersIds;       //Flag specifying if id-objects are owned by the QuadSet
+  Bool_t            fOwnMarkersIds;     //Flag specifying if id-objects are owned by the QuadSet
   VoidCPlex         fLinePlex;
   Line*             fLastLine;     //!
   VoidCPlex         fMarkerPlex;
@@ -77,8 +79,8 @@ public:
   virtual void ComputeBBox();
   virtual void Paint(Option_t* option="");
 
-  Color_t GetColor(){ return fColor; };
-  void    SetColor(Color_t c){ fColor=c; }
+  Color_t GetColor()    const { return fColor; };
+  void    SetColor(Color_t c) { fColor=c; }
 
   ClassDef(StraightLineSet, 1);
 }; // endclass StraightLineSet
