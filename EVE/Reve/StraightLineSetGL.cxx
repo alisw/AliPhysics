@@ -67,7 +67,7 @@ void StraightLineSetGL::DirectDraw(const TGLDrawFlags & flags) const
   glPushAttrib(GL_POINT_BIT | GL_LINE_BIT | GL_ENABLE_BIT);
   GLUtilNS::GL_Capability_Switch lights_off(GL_LIGHTING, false);
  
-  if(mL.fRnrLines) 
+  if(mL.fRnrLines && mL.fLinePlex.Size() > 0)
   {
     UChar_t color[4];
     ColorFromIdx(mL.GetMainColor(), color);
@@ -107,7 +107,7 @@ void StraightLineSetGL::DirectDraw(const TGLDrawFlags & flags) const
     }
   }
 
-  if(mL.fRnrMarkers)
+  if(mL.fRnrMarkers && mL.fMarkerPlex.Size() > 0)
   {
     UChar_t color[4];
     ColorFromIdx(mL.GetMarkerColor(), color);
@@ -128,7 +128,8 @@ void StraightLineSetGL::DirectDraw(const TGLDrawFlags & flags) const
       pnt   += 3;
     }
     if(flags.SecSelection()) glPushName(2);
-    GLUtilNS::RenderPolyMarkers((TAttMarker&)mL, pnts, mL.fLinePlex.Size(), flags.Selection(), flags.SecSelection());
+    GLUtilNS::RenderPolyMarkers((TAttMarker&)mL, pnts, mL.fMarkerPlex.Size(),
+				flags.Selection(), flags.SecSelection());
     if(flags.SecSelection()) glPopName();
     delete [] pnts;
   }
