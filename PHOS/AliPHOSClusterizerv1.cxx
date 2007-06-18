@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.107  2007/05/25 14:12:26  policheh
+ * Local to tracking CS transformation added for CPV rec. points
+ *
  * Revision 1.106  2007/05/24 13:01:22  policheh
  * Local to tracking CS transformation invoked for each EMC rec.point
  *
@@ -638,18 +641,20 @@ void AliPHOSClusterizerv1::WriteRecPoints()
   //Evaluate position, dispersion and other RecPoint properties..
   Int_t nEmc = emcRecPoints->GetEntriesFast();
   for(index = 0; index < nEmc; index++){
-    AliPHOSEmcRecPoint * rp = dynamic_cast<AliPHOSEmcRecPoint *>( emcRecPoints->At(index) );
+    AliPHOSEmcRecPoint * rp =
+      dynamic_cast<AliPHOSEmcRecPoint *>( emcRecPoints->At(index) );
     rp->Purify(fEmcMinE) ;
     if(rp->GetMultiplicity()==0){
       emcRecPoints->RemoveAt(index) ;
       delete rp ;
+      continue;
     }
 
-// No vertex is available now, calculate cirrections in PID
-      rp->EvalAll(fW0,digits) ;
-      TVector3 fakeVtx(0.,0.,0.) ;
-      rp->EvalAll(fW0,fakeVtx,digits) ;
-      rp->EvalLocal2TrackingCSTransform();
+    // No vertex is available now, calculate corrections in PID
+    rp->EvalAll(fW0,digits) ;
+    TVector3 fakeVtx(0.,0.,0.) ;
+    rp->EvalAll(fW0,fakeVtx,digits) ;
+    rp->EvalLocal2TrackingCSTransform();
   }
   emcRecPoints->Compress() ;
 //  emcRecPoints->Sort() ; //Can not sort until position is calculated!
