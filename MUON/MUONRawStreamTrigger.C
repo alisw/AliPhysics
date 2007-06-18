@@ -124,7 +124,8 @@ void MUONRawStreamTrigger(Int_t maxEvent = 1, Int_t minDDL = 0, Int_t maxDDL = 1
 	   localStruct = regHeader->GetLocalEntry(iLocal);
 
 	   // check if trigger 
-	   if (localStruct->GetTriggerY() == 0) { // no empty data
+	   if (localStruct->GetTriggerX() 
+	       || localStruct->GetTriggerY()) { // no empty data
 
 	       // local trigger circuit number
 	       AliMUONLocalTriggerBoard* localBoard = (AliMUONLocalTriggerBoard*)boards->At(iLocal+1);
