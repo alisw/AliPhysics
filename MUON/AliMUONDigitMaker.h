@@ -17,7 +17,6 @@
 class TArrayS;
 
 class AliRawReader;
-class AliMUONTriggerCrateStore;
 class AliMUONLocalStruct;
 
 class AliMUONRawStreamTracker;
@@ -46,9 +45,6 @@ class AliMUONDigitMaker : public TObject
         /// Set flag to generates scaler event
   void  SetScalerEvent() { fScalerEvent = kTRUE; }
 
-        /// Set Crate array
-  void  SetCrateManager(AliMUONTriggerCrateStore* crateManager) { fCrateManager =  crateManager; }
-
         /// Set flag whether or not we should generate digits for the trigger
   void  SetMakeTriggerDigits(Bool_t flag = kFALSE) { fMakeTriggerDigits = flag; }
 
@@ -59,8 +55,6 @@ private:
   /// Not implemented
   AliMUONDigitMaker& operator=(const AliMUONDigitMaker& rhs); // assignment operator
 
-  void GetCrateName(Char_t* name, Int_t iDDL, Int_t iReg) const;
-
 private:
 
   Bool_t           fScalerEvent;       //!< flag to generates scaler event
@@ -69,8 +63,6 @@ private:
   AliMUONRawStreamTracker* fRawStreamTracker;  //!< pointer of raw stream for tracker
   AliMUONRawStreamTrigger* fRawStreamTrigger;  //!< pointer of raw stream for trigger
 
-  AliMUONTriggerCrateStore* fCrateManager;     //!< Crate array
-
   TStopwatch fTrackerTimer;                    //!< time watcher for tracker part
   TStopwatch fTriggerTimer;                    //!< time watcher for trigger part
   TStopwatch fMappingTimer;                    //!< time watcher for mapping-tracker part
@@ -78,7 +70,7 @@ private:
   AliMUONVDigitStore* fDigitStore; //!< not owner
   AliMUONVTriggerStore* fTriggerStore; //!< not owner
   
-  ClassDef(AliMUONDigitMaker,4) // MUON digit maker from rawdata
+  ClassDef(AliMUONDigitMaker,5) // MUON digit maker from rawdata
 };
 	
 #endif

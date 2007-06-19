@@ -48,13 +48,12 @@
 #include "AliMUONGlobalTrigger.h"
 #include "AliMUONLocalStruct.h"
 #include "AliMUONLocalTrigger.h"
-#include "AliMUONLocalTriggerBoard.h"
 #include "AliMUONRawStreamTracker.h"
 #include "AliMUONRawStreamTrigger.h"
 #include "AliMUONRegHeader.h"
 #include "AliMUONTriggerCircuit.h"
-#include "AliMUONTriggerCrate.h"
-#include "AliMUONTriggerCrateStore.h"
+#include "AliMpTriggerCrate.h"
+#include "AliMpLocalBoard.h"
 #include "AliMUONVTriggerStore.h"
 #include "AliMpCathodType.h"
 #include "AliMpDDLStore.h"
@@ -76,7 +75,6 @@ AliMUONDigitMaker::AliMUONDigitMaker()
     fMakeTriggerDigits(kFALSE),
     fRawStreamTracker(new AliMUONRawStreamTracker()),    
     fRawStreamTrigger(new AliMUONRawStreamTrigger()),    
-    fCrateManager(0x0),
     fTrackerTimer(),
     fTriggerTimer(),
     fMappingTimer(),
@@ -260,14 +258,14 @@ Int_t AliMUONDigitMaker::ReadTriggerDDL(AliRawReader* rawReader)
     for(Int_t iReg = 0; iReg < nReg ;iReg++)
     {   //reg loop
       
-      // crate info
-      if (!fCrateManager) AliFatal("Crate Store not defined");
-      AliMUONTriggerCrate* crate = fCrateManager->Crate(fRawStreamTrigger->GetDDL(), iReg);
+
+      // crate info  
+      AliMpTriggerCrate* crate = AliMpDDLStore::Instance()->
+                                GetTriggerCrate(fRawStreamTrigger->GetDDL(), iReg);
       
       if (!crate) 
         AliWarning(Form("Missing crate number %d in DDL %d\n", iReg, fRawStreamTrigger->GetDDL()));
-      
-      TObjArray *boards  = crate->Boards();
+     
       
       regHeader =  darcHeader->GetRegHeaderEntry(iReg);
       
@@ -280,12 +278,15 @@ Int_t AliMUONDigitMaker::ReadTriggerDDL(AliRawReader* rawReader)
         // if card exist
         if (localStruct) {
           
-          AliMUONLocalTriggerBoard* localBoard = 
-          (AliMUONLocalTriggerBoard*)boards->At(localStruct->GetId()+1);
-          
-          // skip copy cards
-          if( !(loCircuit = localBoard->GetNumber()) )
-            continue;
+   	  loCircuit = crate->GetLocalBoardId(localStruct->GetId());
+
+	  if ( !loCircuit ) continue; // empty slot
+
+	  AliMpLocalBoard* localBoard = AliMpDDLStore::Instance()->GetLocalBoard(loCircuit, false);
+
+	  // skip copy cards
+	  if( !localBoard->IsNotified()) 
+	     continue;
           
           if (fTriggerStore) 
           {
@@ -299,18 +300,9 @@ Int_t AliMUONDigitMaker::ReadTriggerDDL(AliRawReader* rawReader)
           {
             //FIXEME should find something better than a TArray
             TArrayS xyPattern[2];
-            xyPattern[0].Set(4);
-            xyPattern[1].Set(4);
             
-            xyPattern[0].AddAt(localStruct->GetX1(),0);
-            xyPattern[0].AddAt(localStruct->GetX2(),1);
-            xyPattern[0].AddAt(localStruct->GetX3(),2);
-            xyPattern[0].AddAt(localStruct->GetX4(),3);
-            
-            xyPattern[1].AddAt(localStruct->GetY1(),0);
-            xyPattern[1].AddAt(localStruct->GetY2(),1);
-            xyPattern[1].AddAt(localStruct->GetY3(),2);
-            xyPattern[1].AddAt(localStruct->GetY4(),3);
+	    localStruct->GetXPattern(xyPattern[0]);
+	    localStruct->GetYPattern(xyPattern[1]);
             
             TriggerDigits(loCircuit, xyPattern, *fDigitStore);
           }          
@@ -332,6 +324,10 @@ Int_t AliMUONDigitMaker::TriggerDigits(Int_t nBoard,
 {
   /// make digits for trigger from pattern, and add them to digitStore
 
+  Int_t detElemId;
+
+  AliMpLocalBoard* localBoard = AliMpDDLStore::Instance()->GetLocalBoard(nBoard);
+
   // loop over x1-4 and y1-4
   for (Int_t iChamber = 0; iChamber < 4; ++iChamber)
   {
@@ -341,9 +337,7 @@ Int_t AliMUONDigitMaker::TriggerDigits(Int_t nBoard,
       if (!pattern) continue;
       
       // get detElemId
-      AliMUONTriggerCircuit triggerCircuit;
-      AliMUONLocalTriggerBoard* localBoard = fCrateManager->LocalBoard(nBoard);
-      Int_t detElemId = triggerCircuit.DetElemId(iChamber+10, localBoard->GetName());//FIXME +/-10 (should be ok with new mapping)
+      detElemId = AliMpDDLStore::Instance()->GetDEfromLocalBoard(nBoard, iChamber);
         
         const AliMpVSegmentation* seg 
           = AliMpSegmentation::Instance()
@@ -389,34 +383,3 @@ Int_t AliMUONDigitMaker::TriggerDigits(Int_t nBoard,
   
   return kTRUE;
 } 
-//____________________________________________________________________
-void  
-AliMUONDigitMaker::GetCrateName(Char_t* name, Int_t iDDL, Int_t iReg) const
-{
-  /// set crate name from DDL & reg number
-  /// method same as in RawWriter, not so nice
-  /// should be put in AliMUONTriggerCrateStore
-
-      switch(iReg) {
-      case 0:
-      case 1:
-	sprintf(name,"%d", iReg+1);
-	break;
-      case 2:
-	strcpy(name, "2-3");
-	break;
-      case 3:
-      case 4:
-      case 5:
-      case 6:
-      case 7:
-	sprintf(name,"%d", iReg);
-	break;
-      }
-
-      // crate Right for first DDL
-      if (iDDL == 0)
-	strcat(name, "R");
-      else 
-	strcat(name, "L"); 
-}
