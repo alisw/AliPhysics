@@ -1,5 +1,5 @@
-#ifndef ALITRDSIM_H
-#define ALITRDSIM_H
+#ifndef ALITRDSIMTR_H
+#define ALITRDSIMTR_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -18,15 +18,15 @@ class TH1D;
 
 class AliModule;
 
-class AliTRDsim : public TObject {
+class AliTRDsimTR : public TObject {
 
  public:
 
-  AliTRDsim();
-  AliTRDsim(const AliTRDsim &s);
-  AliTRDsim(AliModule *mod, Int_t foil, Int_t gap);
-  virtual ~AliTRDsim();
-  AliTRDsim &operator=(const AliTRDsim &s);
+  AliTRDsimTR();
+  AliTRDsimTR(const AliTRDsimTR &s);
+  AliTRDsimTR(AliModule *mod, Int_t foil, Int_t gap);
+  virtual ~AliTRDsimTR();
+  AliTRDsimTR &operator=(const AliTRDsimTR &s);
 
   virtual void     Copy(TObject &s) const;
   virtual void     Init();
@@ -115,7 +115,7 @@ class AliTRDsim : public TObject {
 
           TH1D     *fSpectrum;             //! TR photon energy spectrum
 
-  ClassDef(AliTRDsim,2)                    //  Simulates TR photons
+  ClassDef(AliTRDsimTR,1)                  //  Simulates TR photons
 
 };
 #endif

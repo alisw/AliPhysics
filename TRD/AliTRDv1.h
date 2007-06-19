@@ -21,7 +21,7 @@ class TF1;
 class TTree;
 class TFile;
 
-class AliTRDsim;
+class AliTRDsimTR;
 
 //_____________________________________________________________________________
 class AliTRDv1 : public AliTRD {
@@ -50,14 +50,14 @@ class AliTRDv1 : public AliTRD {
           void     SetTR(Bool_t)              { fTRon = kTRUE; }
 
           Bool_t   GetTR() const              { return fTRon;  }
-  AliTRDsim       *GetTRDsim() const          { return fTR;    }
+  AliTRDsimTR     *GetTRDsim() const          { return fTR;    }
 
  protected:
 
           void    *StepManagerEntity();
 
           Bool_t   fTRon;               //  Switch for TR simulation
-  AliTRDsim       *fTR;                 //  TR simulator
+  AliTRDsimTR     *fTR;                 //  TR simulator
 
           Int_t    fTypeOfStepManager;  //  Type of Step Manager.
           Double_t fStepSize;           //  Used for the fixed step size
@@ -75,7 +75,7 @@ class AliTRDv1 : public AliTRD {
           Float_t  fTrackLength0;       //  Save the track length at chamber entrance  
           Int_t	   fPrimaryTrackPid;    //  Save the id of the primary track  
 
-  ClassDef(AliTRDv1,5)                  //  Transition Radiation Detector version 1 (slow simulator)
+  ClassDef(AliTRDv1,6)                  //  Transition Radiation Detector version 1 (slow simulator)
 
 };
 

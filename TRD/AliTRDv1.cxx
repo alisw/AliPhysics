@@ -39,7 +39,7 @@
 
 #include "AliTRDgeometry.h"
 #include "AliTRDhit.h"
-#include "AliTRDsim.h"
+#include "AliTRDsimTR.h"
 #include "AliTRDv1.h"
 
 ClassImp(AliTRDv1)
@@ -343,7 +343,7 @@ void AliTRDv1::Init()
     AliInfo("TR simulation off");
   }
   else {
-    fTR = new AliTRDsim();
+    fTR = new AliTRDsimTR();
   }
 
   // First ionization potential (eV) for the gas mixture (90% Xe + 10% CO2)

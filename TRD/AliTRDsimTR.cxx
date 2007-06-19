@@ -42,12 +42,12 @@
 #include "AliLog.h"
 #include "AliMC.h"
 
-#include "AliTRDsim.h"
+#include "AliTRDsimTR.h"
 
-ClassImp(AliTRDsim)
+ClassImp(AliTRDsimTR)
 
 //_____________________________________________________________________________
-AliTRDsim::AliTRDsim()
+AliTRDsimTR::AliTRDsimTR()
   :TObject()
   ,fNFoilsDim(0)
   ,fNFoils(0)
@@ -72,7 +72,7 @@ AliTRDsim::AliTRDsim()
   ,fSpectrum(0)
 {
   //
-  // AliTRDsim default constructor
+  // AliTRDsimTR default constructor
   // 
 
   Init();
@@ -80,7 +80,7 @@ AliTRDsim::AliTRDsim()
 }
 
 //_____________________________________________________________________________
-AliTRDsim::AliTRDsim(AliModule *mod, Int_t foil, Int_t gap)
+AliTRDsimTR::AliTRDsimTR(AliModule *mod, Int_t foil, Int_t gap)
   :TObject()
   ,fNFoilsDim(0)
   ,fNFoils(0)
@@ -105,7 +105,7 @@ AliTRDsim::AliTRDsim(AliModule *mod, Int_t foil, Int_t gap)
   ,fSpectrum(0)
 {
   //
-  // AliTRDsim constructor. Takes the material properties of the radiator
+  // AliTRDsimTR constructor. Takes the material properties of the radiator
   // foils and the gas in the gaps from AliModule <mod>.
   // The default number of foils is 100 with a thickness of 20 mu. The 
   // thickness of the gaps is 500 mu.
@@ -142,7 +142,7 @@ AliTRDsim::AliTRDsim(AliModule *mod, Int_t foil, Int_t gap)
 }
 
 //_____________________________________________________________________________
-AliTRDsim::AliTRDsim(const AliTRDsim &s)
+AliTRDsimTR::AliTRDsimTR(const AliTRDsimTR &s)
   :TObject(s)
   ,fNFoilsDim(s.fNFoilsDim)
   ,fNFoils(0)
@@ -167,42 +167,42 @@ AliTRDsim::AliTRDsim(const AliTRDsim &s)
   ,fSpectrum(0)
 {
   //
-  // AliTRDsim copy constructor
+  // AliTRDsimTR copy constructor
   //
 
-  if (((AliTRDsim &) s).fNFoils) {
-    delete [] ((AliTRDsim &) s).fNFoils;
+  if (((AliTRDsimTR &) s).fNFoils) {
+    delete [] ((AliTRDsimTR &) s).fNFoils;
   }
-  ((AliTRDsim &) s).fNFoils   = new Int_t[fNFoilsDim];
+  ((AliTRDsimTR &) s).fNFoils   = new Int_t[fNFoilsDim];
   for (Int_t iFoil = 0; iFoil < fNFoilsDim; iFoil++) {
-    ((AliTRDsim &) s).fNFoils[iFoil]   = fNFoils[iFoil];
+    ((AliTRDsimTR &) s).fNFoils[iFoil]   = fNFoils[iFoil];
   }  
 
-  if (((AliTRDsim &) s).fNFoilsUp) {
-    delete [] ((AliTRDsim &) s).fNFoilsUp;
+  if (((AliTRDsimTR &) s).fNFoilsUp) {
+    delete [] ((AliTRDsimTR &) s).fNFoilsUp;
   }
-  ((AliTRDsim &) s).fNFoilsUp = new Double_t[fNFoilsDim];
+  ((AliTRDsimTR &) s).fNFoilsUp = new Double_t[fNFoilsDim];
   for (Int_t iFoil = 0; iFoil < fNFoilsDim; iFoil++) {
-    ((AliTRDsim &) s).fNFoilsUp[iFoil] = fNFoilsUp[iFoil];
+    ((AliTRDsimTR &) s).fNFoilsUp[iFoil] = fNFoilsUp[iFoil];
   }  
 
-  if (((AliTRDsim &) s).fSigma) {
-    delete [] ((AliTRDsim &) s).fSigma;
+  if (((AliTRDsimTR &) s).fSigma) {
+    delete [] ((AliTRDsimTR &) s).fSigma;
   }
-  ((AliTRDsim &) s).fSigma    = new Double_t[fSpNBins];
+  ((AliTRDsimTR &) s).fSigma    = new Double_t[fSpNBins];
   for (Int_t iBin = 0; iBin < fSpNBins; iBin++) {
-    ((AliTRDsim &) s).fSigma[iBin]     = fSigma[iBin];
+    ((AliTRDsimTR &) s).fSigma[iBin]     = fSigma[iBin];
   }  
 
-  fSpectrum->Copy(*((AliTRDsim &) s).fSpectrum);
+  fSpectrum->Copy(*((AliTRDsimTR &) s).fSpectrum);
 
 }
 
 //_____________________________________________________________________________
-AliTRDsim::~AliTRDsim() 
+AliTRDsimTR::~AliTRDsimTR() 
 {
   //
-  // AliTRDsim destructor
+  // AliTRDsimTR destructor
   //
 
   if (fSigma) {
@@ -223,72 +223,72 @@ AliTRDsim::~AliTRDsim()
 }
 
 //_____________________________________________________________________________
-AliTRDsim &AliTRDsim::operator=(const AliTRDsim &s)
+AliTRDsimTR &AliTRDsimTR::operator=(const AliTRDsimTR &s)
 {
   //
   // Assignment operator
   //
 
-  if (this != &s) ((AliTRDsim &) s).Copy(*this);
+  if (this != &s) ((AliTRDsimTR &) s).Copy(*this);
 
   return *this;
 
 }
 
 //_____________________________________________________________________________
-void AliTRDsim::Copy(TObject &s) const
+void AliTRDsimTR::Copy(TObject &s) const
 {
   //
   // Copy function
   //
 
-  ((AliTRDsim &) s).fFoilThick  = fFoilThick;
-  ((AliTRDsim &) s).fFoilDens   = fFoilDens;
-  ((AliTRDsim &) s).fFoilOmega  = fFoilOmega;
-  ((AliTRDsim &) s).fFoilZ      = fFoilZ;
-  ((AliTRDsim &) s).fFoilA      = fFoilA;
-  ((AliTRDsim &) s).fGapThick   = fGapThick;
-  ((AliTRDsim &) s).fGapDens    = fGapDens;
-  ((AliTRDsim &) s).fGapOmega   = fGapOmega;
-  ((AliTRDsim &) s).fGapZ       = fGapZ;
-  ((AliTRDsim &) s).fGapA       = fGapA;
-  ((AliTRDsim &) s).fTemp       = fTemp;
-  ((AliTRDsim &) s).fSpNBins    = fSpNBins;
-  ((AliTRDsim &) s).fSpRange    = fSpRange;
-  ((AliTRDsim &) s).fSpBinWidth = fSpBinWidth;
-  ((AliTRDsim &) s).fSpLower    = fSpLower;
-  ((AliTRDsim &) s).fSpUpper    = fSpUpper;
+  ((AliTRDsimTR &) s).fFoilThick  = fFoilThick;
+  ((AliTRDsimTR &) s).fFoilDens   = fFoilDens;
+  ((AliTRDsimTR &) s).fFoilOmega  = fFoilOmega;
+  ((AliTRDsimTR &) s).fFoilZ      = fFoilZ;
+  ((AliTRDsimTR &) s).fFoilA      = fFoilA;
+  ((AliTRDsimTR &) s).fGapThick   = fGapThick;
+  ((AliTRDsimTR &) s).fGapDens    = fGapDens;
+  ((AliTRDsimTR &) s).fGapOmega   = fGapOmega;
+  ((AliTRDsimTR &) s).fGapZ       = fGapZ;
+  ((AliTRDsimTR &) s).fGapA       = fGapA;
+  ((AliTRDsimTR &) s).fTemp       = fTemp;
+  ((AliTRDsimTR &) s).fSpNBins    = fSpNBins;
+  ((AliTRDsimTR &) s).fSpRange    = fSpRange;
+  ((AliTRDsimTR &) s).fSpBinWidth = fSpBinWidth;
+  ((AliTRDsimTR &) s).fSpLower    = fSpLower;
+  ((AliTRDsimTR &) s).fSpUpper    = fSpUpper;
 
-  if (((AliTRDsim &) s).fNFoils) {
-    delete [] ((AliTRDsim &) s).fNFoils;
+  if (((AliTRDsimTR &) s).fNFoils) {
+    delete [] ((AliTRDsimTR &) s).fNFoils;
   }
-  ((AliTRDsim &) s).fNFoils   = new Int_t[fNFoilsDim];
+  ((AliTRDsimTR &) s).fNFoils   = new Int_t[fNFoilsDim];
   for (Int_t iFoil = 0; iFoil < fNFoilsDim; iFoil++) {
-    ((AliTRDsim &) s).fNFoils[iFoil]   = fNFoils[iFoil];
+    ((AliTRDsimTR &) s).fNFoils[iFoil]   = fNFoils[iFoil];
   }  
 
-  if (((AliTRDsim &) s).fNFoilsUp) {
-    delete [] ((AliTRDsim &) s).fNFoilsUp;
+  if (((AliTRDsimTR &) s).fNFoilsUp) {
+    delete [] ((AliTRDsimTR &) s).fNFoilsUp;
   }
-  ((AliTRDsim &) s).fNFoilsUp = new Double_t[fNFoilsDim];
+  ((AliTRDsimTR &) s).fNFoilsUp = new Double_t[fNFoilsDim];
   for (Int_t iFoil = 0; iFoil < fNFoilsDim; iFoil++) {
-    ((AliTRDsim &) s).fNFoilsUp[iFoil] = fNFoilsUp[iFoil];
+    ((AliTRDsimTR &) s).fNFoilsUp[iFoil] = fNFoilsUp[iFoil];
   }  
 
-  if (((AliTRDsim &) s).fSigma) {
-    delete [] ((AliTRDsim &) s).fSigma;
+  if (((AliTRDsimTR &) s).fSigma) {
+    delete [] ((AliTRDsimTR &) s).fSigma;
   }
-  ((AliTRDsim &) s).fSigma    = new Double_t[fSpNBins];
+  ((AliTRDsimTR &) s).fSigma    = new Double_t[fSpNBins];
   for (Int_t iBin = 0; iBin < fSpNBins; iBin++) {
-    ((AliTRDsim &) s).fSigma[iBin]     = fSigma[iBin];
+    ((AliTRDsimTR &) s).fSigma[iBin]     = fSigma[iBin];
   }  
 
-  fSpectrum->Copy(*((AliTRDsim &) s).fSpectrum);
+  fSpectrum->Copy(*((AliTRDsimTR &) s).fSpectrum);
 
 }
 
 //_____________________________________________________________________________
-void AliTRDsim::Init()
+void AliTRDsimTR::Init()
 {
   //
   // Initialization 
@@ -352,7 +352,7 @@ void AliTRDsim::Init()
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDsim::CreatePhotons(Int_t pdg, Float_t p
+Int_t AliTRDsimTR::CreatePhotons(Int_t pdg, Float_t p
                              , Int_t &nPhoton, Float_t *ePhoton)
 {
   //
@@ -393,7 +393,7 @@ Int_t AliTRDsim::CreatePhotons(Int_t pdg, Float_t p
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDsim::TrPhotons(Float_t p, Float_t mass
+Int_t AliTRDsimTR::TrPhotons(Float_t p, Float_t mass
                          , Int_t &nPhoton, Float_t *ePhoton)
 {
   //
@@ -534,7 +534,7 @@ Int_t AliTRDsim::TrPhotons(Float_t p, Float_t mass
 }
 
 //_____________________________________________________________________________
-void AliTRDsim::SetSigma() 
+void AliTRDsimTR::SetSigma() 
 {
   //
   // Sets the absorbtion crosssection for the energies of the TR spectrum
@@ -553,7 +553,7 @@ void AliTRDsim::SetSigma()
 }
 
 //_____________________________________________________________________________
-Double_t AliTRDsim::Sigma(Double_t energykeV)
+Double_t AliTRDsimTR::Sigma(Double_t energykeV)
 {
   //
   // Calculates the absorbtion crosssection for a one-foil-one-gap-radiator
@@ -572,7 +572,7 @@ Double_t AliTRDsim::Sigma(Double_t energykeV)
 }
 
 //_____________________________________________________________________________
-Double_t AliTRDsim::GetMuPo(Double_t energyMeV)
+Double_t AliTRDsimTR::GetMuPo(Double_t energyMeV)
 {
   //
   // Returns the photon absorbtion cross section for polypropylene
@@ -611,7 +611,7 @@ Double_t AliTRDsim::GetMuPo(Double_t energyMeV)
 }
 
 //_____________________________________________________________________________
-Double_t AliTRDsim::GetMuCO(Double_t energyMeV)
+Double_t AliTRDsimTR::GetMuCO(Double_t energyMeV)
 {
   //
   // Returns the photon absorbtion cross section for CO2
@@ -650,7 +650,7 @@ Double_t AliTRDsim::GetMuCO(Double_t energyMeV)
 }
 
 //_____________________________________________________________________________
-Double_t AliTRDsim::GetMuXe(Double_t energyMeV)
+Double_t AliTRDsimTR::GetMuXe(Double_t energyMeV)
 {
   //
   // Returns the photon absorbtion cross section for xenon
@@ -697,7 +697,7 @@ Double_t AliTRDsim::GetMuXe(Double_t energyMeV)
 }
 
 //_____________________________________________________________________________
-Double_t AliTRDsim::GetMuBu(Double_t energyMeV)
+Double_t AliTRDsimTR::GetMuBu(Double_t energyMeV)
 {
   //
   // Returns the photon absorbtion cross section for isobutane
@@ -736,7 +736,7 @@ Double_t AliTRDsim::GetMuBu(Double_t energyMeV)
 }
 
 //_____________________________________________________________________________
-Double_t AliTRDsim::GetMuMy(Double_t energyMeV)
+Double_t AliTRDsimTR::GetMuMy(Double_t energyMeV)
 {
   //
   // Returns the photon absorbtion cross section for mylar
@@ -775,7 +775,7 @@ Double_t AliTRDsim::GetMuMy(Double_t energyMeV)
 }
 
 //_____________________________________________________________________________
-Double_t AliTRDsim::GetMuN2(Double_t energyMeV)
+Double_t AliTRDsimTR::GetMuN2(Double_t energyMeV)
 {
   //
   // Returns the photon absorbtion cross section for nitrogen
@@ -814,7 +814,7 @@ Double_t AliTRDsim::GetMuN2(Double_t energyMeV)
 }
 
 //_____________________________________________________________________________
-Double_t AliTRDsim::GetMuO2(Double_t energyMeV)
+Double_t AliTRDsimTR::GetMuO2(Double_t energyMeV)
 {
   //
   // Returns the photon absorbtion cross section for oxygen
@@ -853,7 +853,7 @@ Double_t AliTRDsim::GetMuO2(Double_t energyMeV)
 }
 
 //_____________________________________________________________________________
-Double_t AliTRDsim::GetMuHe(Double_t energyMeV)
+Double_t AliTRDsimTR::GetMuHe(Double_t energyMeV)
 {
   //
   // Returns the photon absorbtion cross section for helium
@@ -892,7 +892,7 @@ Double_t AliTRDsim::GetMuHe(Double_t energyMeV)
 }
 
 //_____________________________________________________________________________
-Double_t AliTRDsim::GetMuAi(Double_t energyMeV)
+Double_t AliTRDsimTR::GetMuAi(Double_t energyMeV)
 {
   //
   // Returns the photon absorbtion cross section for air
@@ -936,7 +936,7 @@ Double_t AliTRDsim::GetMuAi(Double_t energyMeV)
 }
 
 //_____________________________________________________________________________
-Double_t AliTRDsim::Interpolate(Double_t energyMeV
+Double_t AliTRDsimTR::Interpolate(Double_t energyMeV
                               , Double_t *en, Double_t *mu, Int_t n)
 {
   //
@@ -958,7 +958,7 @@ Double_t AliTRDsim::Interpolate(Double_t energyMeV
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDsim::Locate(Double_t *xv, Int_t n, Double_t xval
+Int_t AliTRDsimTR::Locate(Double_t *xv, Int_t n, Double_t xval
                       , Int_t &kl, Double_t &dx) 
 {
   //
@@ -999,7 +999,7 @@ Int_t AliTRDsim::Locate(Double_t *xv, Int_t n, Double_t xval
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDsim::SelectNFoils(Float_t p)
+Int_t AliTRDsimTR::SelectNFoils(Float_t p)
 {
   //
   // Selects the number of foils corresponding to the momentum
