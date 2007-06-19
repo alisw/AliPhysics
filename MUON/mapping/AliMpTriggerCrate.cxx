@@ -114,7 +114,10 @@ Int_t  AliMpTriggerCrate::GetLocalBoardId(Int_t index) const
 {  
 /// Return the local board by index (in loop)
 
-  return fLocalBoard.GetValue(index); 
+  if (index >= 0 && index < fLocalBoard.GetSize())
+      return fLocalBoard.GetValue(index); 
+  else 
+      return 0; // begin at 1
 }
 
 //______________________________________________________________________________
