@@ -142,7 +142,7 @@ AliTRDtracker::AliTRDtracker(const AliTRDtracker &t)
 }
 
 //_____________________________________________________________________________
-AliTRDtracker::AliTRDtracker(const TFile *geomfile)
+AliTRDtracker::AliTRDtracker(const TFile */*geomfile*/)
   :AliTracker()
   ,fHBackfit(0x0)
   ,fHClSearch(0x0)
@@ -174,30 +174,14 @@ AliTRDtracker::AliTRDtracker(const TFile *geomfile)
    
   TDirectory *savedir = gDirectory; 
 
-  //TFile      *in      = (TFile *) geomfile; 
-  //
-  //if (!in->IsOpen()) {
-  //  AliWarning("geometry file is not open!\n");
-  //  AliWarning("FULL TRD geometry and DEFAULT TRD parameter will be used\n");
-  //}
-  //else {
-  //  in->cd();  
-  //  fGeom = (AliTRDgeometry *) in->Get("TRDgeometry");
-  //}
-  //
-  //if (!fGeom) {
-  //  AliWarning("Cannot find TRD geometry!\n");
-  //  fGeom = new AliTRDgeometry();
-  //} 
   fGeom = new AliTRDgeometry();
   fGeom->ReadGeoMatrices();
-
-  //savedir->cd();  
 
   for (Int_t geomS = 0; geomS < kTrackingSectors; geomS++) {
     Int_t trS   = geomS;
     fTrSec[trS] = new AliTRDtrackingSector(fGeom,geomS);
     for (Int_t icham = 0; icham < AliTRDgeometry::kNcham; icham++) {
+      // Could also go ...
       fHoles[icham][trS] = fGeom->IsHole(0,icham,geomS);
     }
   }
