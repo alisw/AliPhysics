@@ -456,6 +456,6 @@ smell-@MODULE@: $(@PACKAGE@SMELL)
 test-@PACKAGE@.par: @PACKAGE@.par
 	@echo "INFO: The file $< is now tested, in case of an error check in par-tmp/@PACKAGE@."
 	@mkdir -p par-tmp
-	@cd par-tmp; tar xfz ../$<;	cd $(subst .par,,$<); PROOF-INF/BUILD.sh
+	@cd par-tmp; tar xfz /tmp/$<;	cd $(subst .par,,$<); PROOF-INF/BUILD.sh
 	@rm -rf par-tmp/@PACKAGE@
 	@echo "INFO: Testing succeeded (already cleaned up)"
