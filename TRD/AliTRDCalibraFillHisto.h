@@ -33,14 +33,15 @@ class TH2;
 class TLinearFitter;
 
 class AliLog;
+class AliRawReader;
+
 class AliTRDCalibraMode;
 class AliTRDCalibraVector;
-
-class AliRawReader;
 class AliTRDRawStream;
 class AliTRDcluster;
 class AliTRDtrack;
 class AliTRDmcmTracklet;
+class AliTRDgeometry;
 class TTreeSRedirector;
 
 struct eventHeaderStruct;
@@ -164,6 +165,9 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
 
  protected:
 
+  // Geometry
+  AliTRDgeometry  *fGeo;                    //! The TRD geometry
+
   // Choice to fill or not the 2D
           Bool_t   fMITracking;             // Chose to fill the 2D histos or vectors during the offline MI tracking
           Bool_t   fMcmTracking;            // Chose to fill the 2D histos or vectors during the tracking with tracklets
@@ -274,7 +278,7 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
   static  Bool_t   fgTerminated;                             // If terminated
  
     
-  ClassDef(AliTRDCalibraFillHisto,2)                         // TRD Calibration class
+  ClassDef(AliTRDCalibraFillHisto,3)                         // TRD Calibration class
 
 };
   

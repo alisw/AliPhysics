@@ -13,8 +13,6 @@
 
 #include <TObject.h>
 
-class AliTRDtrigParam;
-
 class AliTRDmcm : public TObject {
 
  public:
@@ -23,7 +21,7 @@ class AliTRDmcm : public TObject {
 
   AliTRDmcm();
   AliTRDmcm(const AliTRDmcm &m);
-  AliTRDmcm(AliTRDtrigParam *trigp, Int_t id);
+  AliTRDmcm(Int_t id);
   virtual         ~AliTRDmcm();
   AliTRDmcm       &operator=(const AliTRDmcm &m);
 
@@ -67,8 +65,6 @@ class AliTRDmcm : public TObject {
 
  protected:
 
-  AliTRDtrigParam *fTrigParam;                         //! Pointer to the trigger parameters class
-
           Int_t    fNtrk;                              //  Number of found tracklets
           Int_t    fTrkIndex[kMaxTrackletsPerMCM];     //  Index of found tracklets
           Int_t    fRobId;                             //  ROB id
@@ -94,7 +90,7 @@ class AliTRDmcm : public TObject {
 
           Int_t    fId;                                //  Dummy id
  
-  ClassDef(AliTRDmcm,2)                                //  TRD MCM class
+  ClassDef(AliTRDmcm,3)                                //  TRD MCM class
 
 };
 

@@ -23,7 +23,6 @@
 /////////////////////////////////////////////////////////////////////////////// 
 
 #include "AliTRDcluster.h"
-#include "AliTRDrecPoint.h"
 
 ClassImp(AliTRDcluster)
 
@@ -44,34 +43,6 @@ AliTRDcluster::AliTRDcluster()
   for (Int_t i = 0; i < 7; i++) {
     fSignals[i] = 0;
   }
-
-}
-
-//_____________________________________________________________________________
-AliTRDcluster::AliTRDcluster(const AliTRDrecPoint &p)
-  :AliCluster()
-  ,fDetector(p.GetDetector())
-  ,fTimeBin(p.GetLocalTimeBin())
-  ,fQ(p.GetEnergy())
-  ,fNPads(0)
-  ,fCenter(0)
-  ,fPad(0)
-{
-  //
-  // Constructor from AliTRDrecPoint
-  //
-
-  SetLabel(p.GetTrackIndex(0),0);
-  SetLabel(p.GetTrackIndex(1),1);
-  SetLabel(p.GetTrackIndex(2),2);
-  SetY(p.GetY());
-  SetZ(p.GetZ());
-
-  //fSigmaY2   = p.GetSigmaY2();
-  //fSigmaZ2   = p.GetSigmaZ2();  
-  // Why is this ????
-  SetSigmaY2(0.2);
-  SetSigmaZ2(5.0);  
 
 }
 

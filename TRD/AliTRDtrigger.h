@@ -24,12 +24,9 @@ class AliTRDmcmTracklet;
 class AliTRDgtuTrack;
 class AliTRDmcm;
 class AliTRDmodule;
-class AliTRDtrigParam;
 class AliTRDdigitsManager;
 class AliTRDdataArrayI;
 class AliTRDgeometry;
-class AliTRDcalibDB;
-class AliTRDCommonParam;
 
 class AliTRDtrigger : public TNamed {
 
@@ -64,22 +61,16 @@ class AliTRDtrigger : public TNamed {
 
           Int_t    GetNumberOfTracks() const;
           Int_t    GetNPrimary() const                           { return fNPrimary;   };
-          AliTRDtrigParam *GetParameter() const                  { return fTrigParam;  };
           AliTRDgtuTrack  *GetTrack(Int_t i) const;
 
           void     SetRunLoader(AliRunLoader *rl)                { fRunLoader = rl;    };
           void     SetMCMcoordinates(Int_t imcm);
-          void     SetParameter(AliTRDtrigParam *trigp)          { fTrigParam = trigp; };
-
 
  protected:
 
           Float_t                fField;                       //! Magnetic field
           AliTRDgeometry        *fGeo;                         //! TRD geometry
-          AliTRDcalibDB         *fCalib;                       //! Calibration DB
-          AliTRDCommonParam     *fCParam;                      //! Common parameters
 
-          AliTRDtrigParam       *fTrigParam;                   //! Trigger class parameters
           AliRunLoader          *fRunLoader;                   //! Run Loader
           AliTRDdigitsManager   *fDigitsManager;               //! TRD digits manager
           TTree                 *fTrackletTree;                //! Tree with tracklets
@@ -103,7 +94,7 @@ class AliTRDtrigger : public TNamed {
 
           TClonesArray          *fTracks;                      //! Array of GTU tracks
 
-  ClassDef(AliTRDtrigger,3)                                    //  TRD trigger class
+  ClassDef(AliTRDtrigger,4)                                    //  TRD trigger class
 
 };
 

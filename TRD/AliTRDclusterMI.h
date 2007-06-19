@@ -14,15 +14,12 @@
 #include "AliTRDcluster.h"  
 #include "TMath.h"  
 
-class AliTRDrecPoint;
-
 class AliTRDclusterMI : public AliTRDcluster {
 
  public:
 
   AliTRDclusterMI();
   AliTRDclusterMI(const AliTRDcluster &c);
-  AliTRDclusterMI(const AliTRDrecPoint &p);
 
           void     SetRmsY(Float_t rmsy)          { fRmsY   = rmsy;                   }
           void     SetNPads(Int_t npads)          { fNPads  = npads;                  }

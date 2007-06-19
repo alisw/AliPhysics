@@ -35,7 +35,6 @@
 #include "AliTRDdataArrayI.h"
 #include "AliTRDRawStream.h"
 
-#include "AliTRDCommonParam.h"
 #include "AliTRDcalibDB.h"
 
 ClassImp(AliTRDrawData)
@@ -44,8 +43,6 @@ ClassImp(AliTRDrawData)
 AliTRDrawData::AliTRDrawData()
   :TObject()
   ,fRawVersion(2)    // Default Raw Data version set here
-  ,fCommonParam(0)
-  ,fCalibration(0)
   ,fGeo(0)
   ,fNumberOfDDLs(0)
 {
@@ -59,8 +56,6 @@ AliTRDrawData::AliTRDrawData()
 AliTRDrawData::AliTRDrawData(const AliTRDrawData &r)
   :TObject(r)
   ,fRawVersion(2)    // Default Raw Data version set here
-  ,fCommonParam(0)
-  ,fCalibration(0)
   ,fGeo(0)
   ,fNumberOfDDLs(0)
 {
@@ -123,16 +118,7 @@ Bool_t AliTRDrawData::Digits2Raw(TTree *digitsTree, TTree *tracks )
 
   fGeo = new AliTRDgeometry();
 
-  fCommonParam = AliTRDCommonParam::Instance();
-  if (!fCommonParam) {
-    AliError("Could not get common params");
-    delete fGeo;
-    delete digitsManager;
-    return kFALSE;
-  }
-
-  fCalibration = AliTRDcalibDB::Instance();
-  if (!fCalibration) {
+  if (!AliTRDcalibDB::Instance()) {
     AliError("Could not get calibration object");
     delete fGeo;
     delete digitsManager;
@@ -196,7 +182,7 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
 	Int_t iDet = fGeo->GetDetector(plan, cham, sect);
 	// If chamber status is ok, we assume that the optical link is also OK.
         // This is shown in the GTU link mask.
-	if ( fCalibration->GetChamberStatus(iDet) )
+	if ( AliTRDcalibDB::Instance()->GetChamberStatus(iDet) )
 	  GtuCdh = GtuCdh | (3 << (2*plan));
       }
       of->write((char *) (& GtuCdh), sizeof(GtuCdh));
@@ -271,9 +257,9 @@ Int_t AliTRDrawData::ProduceHcDataV1andV2(AliTRDdataArrayI *digits, Int_t side
   Int_t        plan = fGeo->GetPlane( det );   // Plane
   Int_t        cham = fGeo->GetChamber( det ); // Chamber
   Int_t        sect = fGeo->GetSector( det );  // Sector (=iDDL)
-  Int_t        nRow = fCommonParam->GetRowMax( plan, cham, sect );
-  Int_t        nCol = fCommonParam->GetColMax( plan );
-  const Int_t nTBin = fCalibration->GetNumberOfTimeBins();
+  Int_t        nRow = fGeo->GetRowMax( plan, cham, sect );
+  Int_t        nCol = fGeo->GetColMax( plan );
+  const Int_t nTBin = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
   Int_t      kCtype = 0;                       // Chamber type (0:C0, 1:C1)
   Int_t         iEv = 0xA;                     // Event ID. Now fixed to 10, how do I get event id?
   UInt_t          x = 0;                       // General used number

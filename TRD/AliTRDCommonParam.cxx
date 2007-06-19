@@ -30,8 +30,6 @@
 #include "AliRun.h"
 
 #include "AliTRDCommonParam.h"
-#include "AliTRDpadPlane.h"
-
 
 ClassImp(AliTRDCommonParam)
 
@@ -82,7 +80,6 @@ AliTRDCommonParam::AliTRDCommonParam()
   :TObject()
   ,fExBOn(kFALSE)
   ,fSamplingFrequency(0.0)
-  ,fPadPlaneArray(0)
 {
   //
   // Default constructor
@@ -104,19 +101,6 @@ void AliTRDCommonParam::Init()
 
   // Sampling Frequency in MHz
   fSamplingFrequency = 10.0;
-  
-  // ----------------------------------------------------------------------------
-  // The pad planes
-  // ----------------------------------------------------------------------------
-  
-  fPadPlaneArray = new TObjArray(kNplan * kNcham);
-  
-  for (Int_t iplan = 0; iplan < kNplan; iplan++) {
-    for (Int_t icham = 0; icham < kNcham; icham++) {
-      Int_t ipp = iplan + icham * kNplan;
-      fPadPlaneArray->AddAt(new AliTRDpadPlane(iplan,icham),ipp);
-    }
-  }
 
 }
 
@@ -127,12 +111,6 @@ AliTRDCommonParam::~AliTRDCommonParam()
   // Destructor
   //
   
-  if (fPadPlaneArray) {
-    fPadPlaneArray->Delete();
-    delete fPadPlaneArray;
-    fPadPlaneArray = 0;
-  }
-
 }
 
 //_____________________________________________________________________________
@@ -140,7 +118,6 @@ AliTRDCommonParam::AliTRDCommonParam(const AliTRDCommonParam &p)
   :TObject(p)
   ,fExBOn(p.fExBOn)
   ,fSamplingFrequency(p.fSamplingFrequency)
-  ,fPadPlaneArray(0)
 {
   //
   // Copy constructor
@@ -177,61 +154,5 @@ void AliTRDCommonParam::Copy(TObject &p) const
 
   target->fExBOn             = fExBOn;
   target->fSamplingFrequency = fSamplingFrequency;
-
-}
-
-//_____________________________________________________________________________
-AliTRDpadPlane *AliTRDCommonParam::GetPadPlane(Int_t p, Int_t c) const
-{
-  //
-  // Returns the pad plane for a given plane <p> and chamber <c> number
-  //
-
-  Int_t ipp = p + c * kNplan;
-  return ((AliTRDpadPlane *) fPadPlaneArray->At(ipp));
-
-}
-
-//_____________________________________________________________________________
-Int_t AliTRDCommonParam::GetRowMax(Int_t p, Int_t c, Int_t /*s*/) const
-{
-  //
-  // Returns the number of rows on the pad plane
-  //
-
-  return GetPadPlane(p,c)->GetNrows();
-
-}
-
-//_____________________________________________________________________________
-Int_t AliTRDCommonParam::GetColMax(Int_t p) const
-{
-  //
-  // Returns the number of rows on the pad plane
-  //
-
-  return GetPadPlane(p,0)->GetNcols();
-
-}
-
-//_____________________________________________________________________________
-Double_t AliTRDCommonParam::GetRow0(Int_t p, Int_t c, Int_t /*s*/) const
-{
-  //
-  // Returns the position of the border of the first pad in a row
-  //
-
-  return GetPadPlane(p,c)->GetRow0();
-
-}
-
-//_____________________________________________________________________________
-Double_t AliTRDCommonParam::GetCol0(Int_t p) const
-{
-  //
-  // Returns the position of the border of the first pad in a column
-  //
-
-  return GetPadPlane(p,0)->GetCol0();
 
 }

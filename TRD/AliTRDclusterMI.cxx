@@ -22,7 +22,6 @@
 /////////////////////////////////////////////////////////////////////////////// 
 
 #include "AliTRDclusterMI.h"
-#include "AliTRDrecPoint.h"
 
 ClassImp(AliTRDclusterMI)
 
@@ -51,17 +50,3 @@ AliTRDclusterMI::AliTRDclusterMI(const AliTRDcluster &c)
   //
 
 }
-
-//_____________________________________________________________________________
-AliTRDclusterMI::AliTRDclusterMI(const AliTRDrecPoint &p)
-  :AliTRDcluster(p)
-  ,fRmsY(0)
-  ,fNPads(0)
-  ,fRelPos(0)
-{
-  //
-  // Constructor from AliTRDrecPoint
-  //
-  
-}
-

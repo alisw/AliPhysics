@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2006/08/28 17:12:18  cblume
+Remove the last print statements
+
 Revision 1.3  2006/08/11 17:58:05  cblume
 Next round of effc++ changes
 
@@ -60,7 +63,6 @@ ClassImp(AliTRDmcm)
 //_____________________________________________________________________________
 AliTRDmcm::AliTRDmcm() 
   :TObject()
-  ,fTrigParam(0)
   ,fNtrk(0)
   ,fRobId(0)
   ,fChaId(0)
@@ -101,19 +103,18 @@ AliTRDmcm::AliTRDmcm()
 }
 
 //_____________________________________________________________________________
-AliTRDmcm::AliTRDmcm(AliTRDtrigParam *trigp, const Int_t id) 
+AliTRDmcm::AliTRDmcm(const Int_t id) 
   :TObject()
-  ,fTrigParam(trigp)
   ,fNtrk(0)
   ,fRobId(0)
   ,fChaId(0)
   ,fRow(0)
   ,fColFirst(0)
   ,fColLast(0)
-  ,fTime1(trigp->GetTime1())
-  ,fTime2(trigp->GetTime2())
-  ,fClusThr(trigp->GetClusThr())
-  ,fPadThr(trigp->GetPadThr())
+  ,fTime1(0)
+  ,fTime2(0)
+  ,fClusThr(0)
+  ,fPadThr(0)
   ,fNtrkSeeds(0)
   ,fR1(0)
   ,fR2(0)
@@ -140,15 +141,19 @@ AliTRDmcm::AliTRDmcm(AliTRDtrigParam *trigp, const Int_t id)
       fIsClus[i][j] = kFALSE;
     }
   }
+
+  fTime1   = AliTRDtrigParam::Instance()->GetTime1();
+  fTime2   = AliTRDtrigParam::Instance()->GetTime2();
+  fClusThr = AliTRDtrigParam::Instance()->GetClusThr();
+  fPadThr  = AliTRDtrigParam::Instance()->GetPadThr();
   
-  fTrigParam->GetFilterParam(fR1,fR2,fC1,fC2,fPedestal);
+  AliTRDtrigParam::Instance()->GetFilterParam(fR1,fR2,fC1,fC2,fPedestal);
 
 }
 
 //_____________________________________________________________________________
 AliTRDmcm::AliTRDmcm(const AliTRDmcm &m) 
   :TObject(m)
-  ,fTrigParam(NULL)
   ,fNtrk(m.fNtrk)
   ,fRobId(m.fRobId)
   ,fChaId(m.fChaId)
@@ -220,7 +225,6 @@ void AliTRDmcm::Copy(TObject &m) const
   Int_t i = 0;
   Int_t j = 0;
 
-  ((AliTRDmcm &) m).fTrigParam  = NULL;
   ((AliTRDmcm &) m).fNtrk       = fNtrk;
   ((AliTRDmcm &) m).fRobId      = fRobId;
   ((AliTRDmcm &) m).fChaId      = fChaId;
@@ -301,7 +305,6 @@ Bool_t AliTRDmcm::Run()
 
   Int_t   iTime = 0;
   Int_t   iCol  = 0;
-  Int_t   iPad  = 0;
   Int_t   iPlus = 0;
   Int_t   i     = 0;
   Int_t   j     = 0;
@@ -395,8 +398,8 @@ Int_t AliTRDmcm::CreateSeeds()
     }
   }
 
-  Int_t sum10 = fTrigParam->GetSum10();
-  Int_t sum12 = fTrigParam->GetSum12();
+  Int_t sum10 = AliTRDtrigParam::Instance()->GetSum10();
+  Int_t sum12 = AliTRDtrigParam::Instance()->GetSum12();
 
   // Build the 2padSum
   Int_t nsum2seed = 0;
@@ -440,15 +443,11 @@ Int_t AliTRDmcm::CreateSeeds()
     if ((fHit2padSum[0][i]+1) == fHit2padSum[0][i+1]) {
       nSeeds--;
       if (fHit2padSum[1][i] >= fHit2padSum[1][i+1]) {
-	if (fTrigParam->GetDebugLevel() > 1) {
-	  AliWarning(Form("Reject seed %1d in col %02d. \n",i,fHit2padSum[0][i+1]));
-	}
+	AliDebug(2,Form("Reject seed %1d in col %02d. \n",i,fHit2padSum[0][i+1]));
 	fSeedCol[i+1] = -1;
       } 
       else {
-	if (fTrigParam->GetDebugLevel() > 1) {
-	  AliWarning(Form("Reject seed %1d in col %02d. \n",i,fHit2padSum[0][i]));
-	}
+	AliDebug(2,Form("Reject seed %1d in col %02d. \n",i,fHit2padSum[0][i]));
 	fSeedCol[i]   = -1;
       }
     }

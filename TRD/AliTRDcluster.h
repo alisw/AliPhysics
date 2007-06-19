@@ -13,15 +13,12 @@
 
 #include "AliCluster.h"  
 
-class AliTRDrecPoint;
-
 class AliTRDcluster : public AliCluster {
 
  public:
 
   AliTRDcluster();
   AliTRDcluster(const AliTRDcluster &c);
-  AliTRDcluster(const AliTRDrecPoint &p);
 
   virtual void     AddTrackIndex(Int_t *i); 
 

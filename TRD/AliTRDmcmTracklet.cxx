@@ -38,6 +38,7 @@ ClassImp(AliTRDmcmTracklet)
 //_____________________________________________________________________________
 AliTRDmcmTracklet::AliTRDmcmTracklet() 
   :TObject()
+  ,fGeo(0)
   ,fDetector(-1)
   ,fRow(-1)
   ,fTrackLabel(-1)
@@ -67,11 +68,14 @@ AliTRDmcmTracklet::AliTRDmcmTracklet()
     fCol[time]    = 0;
   }
 
+  fGeo = new AliTRDgeometry();
+
 }
 
 //_____________________________________________________________________________
 AliTRDmcmTracklet::AliTRDmcmTracklet(Int_t det, Int_t row, Int_t n) 
   :TObject()
+  ,fGeo(0)
   ,fDetector(det)
   ,fRow(row)
   ,fTrackLabel(-1)
@@ -104,11 +108,14 @@ AliTRDmcmTracklet::AliTRDmcmTracklet(Int_t det, Int_t row, Int_t n)
   fGPos = new TGraph(0);
   fGAmp = new TGraph(0);
 
+  fGeo  = new AliTRDgeometry();
+
 }
 
 //_____________________________________________________________________________
 AliTRDmcmTracklet::AliTRDmcmTracklet(const AliTRDmcmTracklet &t) 
   :TObject(t)
+  ,fGeo(0)
   ,fDetector(t.fDetector)
   ,fRow(t.fRow)
   ,fTrackLabel(t.fTrackLabel)
@@ -138,6 +145,11 @@ AliTRDmcmTracklet::AliTRDmcmTracklet(const AliTRDmcmTracklet &t)
     ((AliTRDmcmTracklet &) t).fCol[time]    = 0;
   }
 
+  if (fGeo) {
+    delete fGeo;
+  }
+  fGeo = new AliTRDgeometry();
+
 }
 
 //_____________________________________________________________________________
@@ -149,6 +161,10 @@ AliTRDmcmTracklet::~AliTRDmcmTracklet()
 
   if (fGPos != 0) delete fGPos;
   if (fGAmp != 0) delete fGAmp;
+
+  if (fGeo) {
+    delete fGeo;
+  }
 
 }
 
@@ -270,8 +286,7 @@ void AliTRDmcmTracklet::MakeTrackletGraph(AliTRDgeometry *geo, Float_t field)
     return;
   }
   
-  AliTRDCommonParam* commonParam = AliTRDCommonParam::Instance();
-  if (!commonParam) {
+  if (!AliTRDCommonParam::Instance()) {
     AliError("No common parameters.");
     return;
   }
@@ -287,9 +302,9 @@ void AliTRDmcmTracklet::MakeTrackletGraph(AliTRDgeometry *geo, Float_t field)
   iplan = geo->GetPlane(fDetector);
   icham = geo->GetChamber(fDetector);
 
-  AliTRDpadPlane *padPlane = commonParam->GetPadPlane(iplan,icham);
+  AliTRDpadPlane *padPlane = fGeo->GetPadPlane(iplan,icham);
 
-  Float_t samplFreq = commonParam->GetSamplingFrequency();
+  Float_t samplFreq = AliTRDCommonParam::Instance()->GetSamplingFrequency();
 
   Int_t time, col;
   Float_t amp[3];

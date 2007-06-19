@@ -108,17 +108,9 @@ AliTRD::AliTRD(const char *name, const char *title)
     exit(1);
   }
 
-  // Save the geometry
-  TDirectory *saveDir = gDirectory;
-  gAlice->GetRunLoader()->CdGAFile();
-  fGeometry->Write("TRDgeometry");
-  saveDir->cd();
-
   // Allocate the hit array
   fHits = new TClonesArray("AliTRDhit",405);
   gAlice->GetMCApp()->AddHitList(fHits);
-
-  //PH SetMarkerColor(kWhite);   
 
 }
 

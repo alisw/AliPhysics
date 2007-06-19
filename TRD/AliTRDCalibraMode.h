@@ -15,6 +15,8 @@
 #  include <TObject.h>
 #endif
 
+class AliTRDgeometry;
+
 class AliTRDCalibraMode : public TObject {
 
  public: 
@@ -64,6 +66,9 @@ class AliTRDCalibraMode : public TObject {
      
  protected:
 
+  // Geometry
+  AliTRDgeometry  *fGeo;                    //! The TRD geometry
+
           Short_t  fNz[3];                  // Mode of calibration 
           Short_t  fNrphi[3];               // Mode of calibration 
 	  Short_t  fNnZ[3];                 // Number of pad rows in a group
@@ -83,7 +88,7 @@ class AliTRDCalibraMode : public TObject {
   virtual Int_t    GetChamber(Int_t d) const;
   virtual Int_t    GetSector(Int_t d) const;
  
-  ClassDef(AliTRDCalibraMode,1)             // TRD Calibration class
+  ClassDef(AliTRDCalibraMode,2)             // TRD Calibration class
 
 };
 #endif

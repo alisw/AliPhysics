@@ -36,7 +36,6 @@
 #include "AliTRDgeometry.h"
 #include "AliTRDdataArrayI.h"
 #include "AliTRDcalibDB.h"
-#include "AliTRDCommonParam.h"
 #include "AliTRDrawData.h"
 #include "AliTRDtrigger.h"
 #include "AliTRDmodule.h"
@@ -55,9 +54,6 @@ AliTRDtrigger::AliTRDtrigger()
   :TNamed()
   ,fField(0)
   ,fGeo(NULL)
-  ,fCalib(NULL)
-  ,fCParam(NULL)
-  ,fTrigParam(NULL)
   ,fRunLoader(NULL)
   ,fDigitsManager(NULL)
   ,fTrackletTree(NULL)
@@ -87,9 +83,6 @@ AliTRDtrigger::AliTRDtrigger(const Text_t *name, const Text_t *title)
   :TNamed(name,title)
   ,fField(0)
   ,fGeo(NULL)
-  ,fCalib(NULL)
-  ,fCParam(NULL)
-  ,fTrigParam(NULL)
   ,fRunLoader(NULL)
   ,fDigitsManager(new AliTRDdigitsManager())
   ,fTrackletTree(NULL)
@@ -119,9 +112,6 @@ AliTRDtrigger::AliTRDtrigger(const AliTRDtrigger &p)
   :TNamed(p)
   ,fField(p.fField)
   ,fGeo(NULL)
-  ,fCalib(NULL)
-  ,fCParam(NULL)
-  ,fTrigParam(NULL)
   ,fRunLoader(NULL)
   ,fDigitsManager(NULL)
   ,fTrackletTree(NULL)
@@ -144,6 +134,11 @@ AliTRDtrigger::AliTRDtrigger(const AliTRDtrigger &p)
   // AliTRDtrigger copy constructor
   //
 
+  if (fGeo) {
+    delete fGeo;
+  }
+  fGeo = new AliTRDgeometry();
+
 }
 
 ///_____________________________________________________________________________
@@ -161,6 +156,10 @@ AliTRDtrigger::~AliTRDtrigger()
   if (fTracks) {
     fTracks->Delete();
     delete fTracks;
+  }
+
+  if (fGeo) {
+    delete fGeo;
   }
 
 }
@@ -192,22 +191,20 @@ void AliTRDtrigger::Copy(TObject &) const
 void AliTRDtrigger::Init()
 {
 
-  fModule = new AliTRDmodule(fTrigParam); 
+  fModule = new AliTRDmodule(); 
   fTracks->Clear();
 
-  fField  = fTrigParam->GetField();
-  fGeo    = (AliTRDgeometry*)AliTRDgeometry::GetGeometry(fRunLoader);
+  // The magnetic field strength
+  Double_t x[3] = { 0.0, 0.0, 0.0 };
+  Double_t b[3];
+  gAlice->Field(x,b);  // b[] is in kilo Gauss
+  fField = b[2] * 0.1; // Tesla
 
-  fCalib  = AliTRDcalibDB::Instance();
-  if (!fCalib) {
+  fGeo = new AliTRDgeometry();
+
+  if (!AliTRDcalibDB::Instance()) {
     AliError("No instance of AliTRDcalibDB.");
     return;  
-  }
-
-  fCParam = AliTRDCommonParam::Instance();
-  if (!fCParam) {
-    AliError("No common parameters.");
-    return;
   }
 
 }
@@ -327,7 +324,7 @@ Bool_t AliTRDtrigger::ReadTracklets(AliRunLoader *rl)
     
     for (itrk = 0; itrk < tracklets->GetEntriesFast(); itrk++) {
 
-      fTrk   = (AliTRDmcmTracklet*)tracklets->UncheckedAt(itrk);
+      fTrk   = (AliTRDmcmTracklet *) tracklets->UncheckedAt(itrk);
       idet   = fTrk->GetDetector();
       iStack = idet / (AliTRDgeometry::Nplan());
 
@@ -376,7 +373,7 @@ Bool_t AliTRDtrigger::MakeTracklets(Bool_t makeTracks)
   Int_t sectEnd = AliTRDgeometry::Nsect();
 
   fTrkTest = new AliTRDmcmTracklet(0,0,0);
-  fMCM     = new AliTRDmcm(fTrigParam,0);
+  fMCM     = new AliTRDmcm(0);
 
   Int_t   time;
   Int_t   col;
@@ -419,9 +416,9 @@ Bool_t AliTRDtrigger::MakeTracklets(Bool_t makeTracks)
 	  }
 	}
 
-        Int_t nRowMax    = fCParam->GetRowMax(iplan,icham,isect);
-	Int_t nColMax    = fCParam->GetColMax(iplan);
-        Int_t nTimeTotal = fCalib->GetNumberOfTimeBins();
+        Int_t nRowMax    = fGeo->GetRowMax(iplan,icham,isect);
+	Int_t nColMax    = fGeo->GetColMax(iplan);
+        Int_t nTimeTotal = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
 
         // Get the digits
         fDigits = fDigitsManager->GetDigits(idet);
@@ -472,8 +469,9 @@ Bool_t AliTRDtrigger::MakeTracklets(Bool_t makeTracks)
 	      }
 	    }
 
-	    if (fTrigParam->GetTailCancelation()) {
-	      fMCM->Filter(fTrigParam->GetNexponential(),fTrigParam->GetFilterType());
+	    if (AliTRDtrigParam::Instance()->GetTailCancelation()) {
+	      fMCM->Filter(AliTRDtrigParam::Instance()->GetNexponential()
+                          ,AliTRDtrigParam::Instance()->GetFilterType());
 	    }
 	    
 	    if (fMCM->Run()) {
@@ -484,9 +482,7 @@ Bool_t AliTRDtrigger::MakeTracklets(Bool_t makeTracks)
                   continue;
 		}
 
-		if (fTrigParam->GetDebugLevel()   > 1) { 
-		  AliInfo(Form("Add tracklet %d in col %02d \n",fNtracklets,fMCM->GetSeedCol()[iSeed]));
-		}
+		AliDebug(2,Form("Add tracklet %d in col %02d \n",fNtracklets,fMCM->GetSeedCol()[iSeed]));
 
 		if (TestTracklet(idet,row,iSeed,0)) {
 		  AddTracklet(idet,row,iSeed,fNtracklets++);
@@ -583,7 +579,7 @@ Bool_t AliTRDtrigger::TestTracklet(Int_t det, Int_t row, Int_t seed, Int_t n)
   // Check first the tracklet pt
   //
 
-  Int_t nTimeTotal  = fCalib->GetNumberOfTimeBins();
+  Int_t nTimeTotal  = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
 
   // Calibration fill 2D
   AliTRDCalibraFillHisto *calibra = AliTRDCalibraFillHisto::Instance();
@@ -656,7 +652,7 @@ Bool_t AliTRDtrigger::TestTracklet(Int_t det, Int_t row, Int_t seed, Int_t n)
 
   fTrkTest->MakeClusAmpGraph();
 
-  if (TMath::Abs(fTrkTest->GetPt()) < fTrigParam->GetLtuPtCut()) {
+  if (TMath::Abs(fTrkTest->GetPt()) < AliTRDtrigParam::Instance()->GetLtuPtCut()) {
     return kFALSE;
   }
   
@@ -671,7 +667,7 @@ void AliTRDtrigger::AddTracklet(Int_t det, Int_t row, Int_t seed, Int_t n)
   // Add a found tracklet
   //
 
-  Int_t nTimeTotal  = fCalib->GetNumberOfTimeBins();
+  Int_t nTimeTotal  = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
 
   fTrk = new AliTRDmcmTracklet(det,row,n);
 
@@ -727,7 +723,7 @@ void AliTRDtrigger::AddTracklet(Int_t det, Int_t row, Int_t seed, Int_t n)
   // LTU Pt cut
   fTrk->MakeTrackletGraph(fGeo,fField);
   fTrk->MakeClusAmpGraph();
-  if (TMath::Abs(fTrk->GetPt()) < fTrigParam->GetLtuPtCut()) {
+  if (TMath::Abs(fTrk->GetPt()) < AliTRDtrigParam::Instance()->GetLtuPtCut()) {
     return;
   }
       
@@ -821,7 +817,7 @@ void AliTRDtrigger::MakeTracks(Int_t det)
     icham = fGeo->GetChamber(trk->GetDetector());
     isect = fGeo->GetSector(trk->GetDetector());
 
-    nRowMax = fCParam->GetRowMax(iplan,icham,isect);
+    nRowMax = fGeo->GetRowMax(iplan,icham,isect);
     row = trk->GetRow();
 
     fModule->AddTracklet(trk->GetDetector(),
@@ -847,7 +843,7 @@ void AliTRDtrigger::MakeTracks(Int_t det)
   AliTRDgtuTrack *gtutrk;
   for (Int_t i = 0; i < nModTracks; i++) {
     gtutrk = (AliTRDgtuTrack*)fModule->GetTrack(i);
-    if (TMath::Abs(gtutrk->GetPt()) < fTrigParam->GetGtuPtCut()) continue;
+    if (TMath::Abs(gtutrk->GetPt()) < AliTRDtrigParam::Instance()->GetGtuPtCut()) continue;
     gtutrk->CookLabel();
     gtutrk->MakePID();
     AddTrack(gtutrk,det);

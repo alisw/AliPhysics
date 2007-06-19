@@ -15,8 +15,11 @@
 
 #include "TObjArray.h"
 
-class AliRunLoader;
 class TGeoHMatrix;
+
+class AliRunLoader;
+
+class AliTRDpadPlane;
 
 class AliTRDgeometry : public AliGeometry {
 
@@ -49,13 +52,19 @@ class AliTRDgeometry : public AliGeometry {
 
           void     SetSMstatus(Int_t sm, Char_t status)                { fSMstatus[sm] = status; }
 
-  static  AliTRDgeometry* GetGeometry(AliRunLoader *runLoader = NULL);
-  
   static  Int_t    GetDetectorSec(Int_t p, Int_t c);
   static  Int_t    GetDetector(Int_t p, Int_t c, Int_t s);
   virtual Int_t    GetPlane(Int_t d) const;
   virtual Int_t    GetChamber(Int_t d) const;
   virtual Int_t    GetSector(Int_t d) const;
+
+          void     CreatePadPlaneArray();
+  AliTRDpadPlane  *CreatePadPlane(Int_t p, Int_t c);
+  AliTRDpadPlane  *GetPadPlane(Int_t p, Int_t c);
+          Int_t    GetRowMax(Int_t p, Int_t c, Int_t /*s*/);
+          Int_t    GetColMax(Int_t p);
+          Double_t GetRow0(Int_t p, Int_t c, Int_t /*s*/);
+          Double_t GetCol0(Int_t p);
 
   // Translation from MCM to Pad and vice versa
   virtual Int_t    GetPadRowFromMCM(Int_t irob, Int_t imcm) const;
@@ -217,7 +226,9 @@ class AliTRDgeometry : public AliGeometry {
   TObjArray            *fMatrixCorrectionArray;              //! Transformation Cluster to  Tracking systerm
   TObjArray            *fMatrixGeo;                          //! Geo matrices
 
-  ClassDef(AliTRDgeometry,13)                                //  TRD geometry class
+  TObjArray            *fPadPlaneArray;                      //! Array of pad plane objects
+
+  ClassDef(AliTRDgeometry,14)                                //  TRD geometry class
 
 };
 

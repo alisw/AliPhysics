@@ -43,7 +43,6 @@
 #include "AliTRDcalibDB.h"
 #include "AliTRDSimParam.h"
 #include "AliTRDRecParam.h"
-#include "AliTRDCommonParam.h"
 #include "AliTRDcluster.h"
 
 #include "Cal/AliTRDCalROC.h"
@@ -192,11 +191,12 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
   AliTRDdataArrayI *tracksIn;
 
   // Get the geometry
-  AliTRDgeometry *geo            = AliTRDgeometry::GetGeometry(fRunLoader);  
-  if (!geo) {
-    AliWarning("Loading default TRD geometry!");
-    geo = new AliTRDgeometry();
-  }
+  //AliTRDgeometry *geo            = AliTRDgeometry::GetGeometry(fRunLoader);  
+  //if (!geo) {
+  //  AliWarning("Creating default TRD geometry!");
+  //  geo = new AliTRDgeometry();
+  //}
+  AliTRDgeometry geo;
 
   AliTRDcalibDB  *calibration    = AliTRDcalibDB::Instance();
   if (!calibration) {
@@ -214,12 +214,6 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
   if (!recParam) {
     AliError("No AliTRDRecParam instance available\n");
     return kFALSE;  
-  }
-  
-  AliTRDCommonParam *commonParam = AliTRDCommonParam::Instance();
-  if (!commonParam) {
-    AliError("Could not get common parameters\n");
-    return kFALSE;
   }
 
   // ADC thresholds
@@ -269,7 +263,7 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
     for (iplan = planBeg; iplan < planEnd; iplan++) {
       for (isect = sectBeg; isect < sectEnd; isect++) {
 
-        Int_t    idet    = geo->GetDetector(iplan,icham,isect);
+        Int_t    idet    = geo.GetDetector(iplan,icham,isect);
         Int_t    ilayer  = AliGeomManager::kTRD1 + iplan;
         Int_t    imodule = icham + chamEnd * isect;
         UShort_t volid   = AliGeomManager::LayerToVolUID(ilayer,imodule); 
@@ -284,10 +278,10 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
         AliTRDdataArrayI *tracksTmp = fDigitsManager->GetDictionary(idet,0);
         tracksTmp->Expand();
 
-	Int_t nRowMax = commonParam->GetRowMax(iplan,icham,isect);
-	Int_t nColMax = commonParam->GetColMax(iplan);
+	Int_t nRowMax = geo.GetRowMax(iplan,icham,isect);
+	Int_t nColMax = geo.GetColMax(iplan);
 
-        AliTRDpadPlane *padPlane = commonParam->GetPadPlane(iplan,icham);
+        AliTRDpadPlane *padPlane = geo.GetPadPlane(iplan,icham);
 
 	// Calibration object with pad wise values for t0
         AliTRDCalROC *calT0ROC              = calibration->GetT0ROC(idet);

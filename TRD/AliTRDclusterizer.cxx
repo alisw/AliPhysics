@@ -32,7 +32,6 @@
 
 #include "AliTRDclusterizer.h"
 #include "AliTRDcluster.h"
-#include "AliTRDrecPoint.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDCommonParam.h"

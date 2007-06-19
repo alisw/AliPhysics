@@ -44,7 +44,6 @@
 #include "AliTrackReference.h"
 
 #include "AliTRDcluster.h"
-#include "AliTRDCommonParam.h"
 #include "AliTRDpadPlane.h"
 #include "AliTRDcalibDB.h"
 #include "AliTracker.h"
@@ -441,7 +440,7 @@ void  AliTRDtrackingAnalysis::DrawRecPointResolution(int startEvent, int stopEve
 	fClZXcl->Fill(cls->GetZ(), cls->GetX());
 	fClZXref->Fill(zref, cls->GetX());
 
-	AliTRDpadPlane *padPlane = AliTRDCommonParam::Instance()->GetPadPlane(plane,0);
+	AliTRDpadPlane *padPlane = fGeo->GetPadPlane(plane,0);
 	Double_t h01   = TMath::Tan(-TMath::Pi() / 180.0 * padPlane->GetTiltingAngle());
 	
 	//double dz = zref - padPlane->GetRow0();
@@ -653,8 +652,8 @@ void  AliTRDtrackingAnalysis::CheckFiles()
   
   fEsdTree = (TTree*)esdFile->Get("esdTree"); 
   fESD = new AliESD();
-  
-  fEsdTree->SetBranchAddress("ESD", &fESD);
+  fESD->ReadFromTree(fEsdTree);
+  //fEsdTree->SetBranchAddress("ESD", &fESD);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////

@@ -27,9 +27,11 @@ class TH2F;
 class TF1;
 
 class AliLog;
+
 class AliTRDCalibraMode;
 class AliTRDCalibraVector;
 class AliTRDCalDet;
+class AliTRDgeometry;
 
 class AliTRDCalibraFit : public TObject {
 
@@ -173,6 +175,9 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
   virtual ~AliTRDCalibraFit();
 
  protected:
+
+  // Geometry
+  AliTRDgeometry  *fGeo;                    //! The TRD geometry
 
   // Write
           Bool_t   fWriteCoef[3];           // Do you want to write the result in a file?
@@ -393,7 +398,7 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
   static  AliTRDCalibraFit *fgInstance;        // Instance
   static  Bool_t   fgTerminated;               // If terminated
     
-  ClassDef(AliTRDCalibraFit,1)                 // TRD Calibration class
+  ClassDef(AliTRDCalibraFit,2)                 // TRD Calibration class
 
 };
   

@@ -34,7 +34,6 @@
 
 #include "AliTRD.h"
 #include "AliTRDcalibDB.h"
-#include "AliTRDCommonParam.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDpadPlane.h"
 
@@ -164,7 +163,7 @@ AliTRDgeometry::AliTRDgeometry()
   ,fMatrixArray(0)
   ,fMatrixCorrectionArray(0)
   ,fMatrixGeo(0)
-
+  ,fPadPlaneArray(0)
 {
   //
   // AliTRDgeometry default constructor
@@ -177,9 +176,10 @@ AliTRDgeometry::AliTRDgeometry()
 //_____________________________________________________________________________
 AliTRDgeometry::AliTRDgeometry(const AliTRDgeometry &g)
   :AliGeometry(g)
-  ,fMatrixArray(g.fMatrixArray)
-  ,fMatrixCorrectionArray(g.fMatrixCorrectionArray)
-  ,fMatrixGeo(g.fMatrixGeo)
+  ,fMatrixArray(0)
+  ,fMatrixCorrectionArray(0)
+  ,fMatrixGeo(0)
+  ,fPadPlaneArray(0)
 {
   //
   // AliTRDgeometry copy constructor
@@ -212,6 +212,12 @@ AliTRDgeometry::~AliTRDgeometry()
     fMatrixGeo->Delete();
     delete fMatrixGeo;
     fMatrixGeo = 0;
+  }
+
+  if (fPadPlaneArray) {
+    fPadPlaneArray->Delete();
+    delete fPadPlaneArray;
+    fPadPlaneArray = 0;
   }
 
 }
@@ -275,10 +281,251 @@ void AliTRDgeometry::Init()
     fRotB22[isect] = TMath::Cos(phi);
   }
 
+  // Initialize the SM status
   for (isect = 0; isect < fgkNsect; isect++) {
     SetSMstatus(isect,1);
   }
  
+}
+
+//_____________________________________________________________________________
+void AliTRDgeometry::CreatePadPlaneArray()
+{
+  //
+  // Creates the array of AliTRDpadPlane objects
+  //
+
+  if (fPadPlaneArray) {
+    fPadPlaneArray->Delete();
+    delete fPadPlaneArray;
+  }
+
+  fPadPlaneArray = new TObjArray(fgkNplan * fgkNcham);  
+  for (Int_t iplan = 0; iplan < fgkNplan; iplan++) {
+    for (Int_t icham = 0; icham < fgkNcham; icham++) {
+      Int_t ipp = GetDetectorSec(iplan,icham);
+      fPadPlaneArray->AddAt(CreatePadPlane(iplan,icham),ipp);
+    }
+  }
+
+}
+
+//_____________________________________________________________________________
+AliTRDpadPlane *AliTRDgeometry::CreatePadPlane(Int_t iplan, Int_t icham)
+{
+  //
+  // Creates an AliTRDpadPlane object
+  //
+
+  AliTRDpadPlane *padPlane = new AliTRDpadPlane();
+
+  padPlane->SetPlane(iplan);
+  padPlane->SetChamber(icham);
+
+  padPlane->SetRowSpacing(0.0);
+  padPlane->SetColSpacing(0.0);
+
+  padPlane->SetLengthRim(1.0);
+  padPlane->SetWidthRim(0.5);
+
+  padPlane->SetNcols(144);
+
+  //
+  // The pad plane parameter
+  //
+  switch (iplan) {
+  case 0:
+    if (icham == 2) {
+      // L0C0 type
+      padPlane->SetNrows(12);
+      padPlane->SetLength(108.0);
+      padPlane->SetWidth(92.2);
+      padPlane->SetLengthOPad(8.0);
+      padPlane->SetWidthOPad(0.515);
+      padPlane->SetLengthIPad(9.0);
+      padPlane->SetWidthIPad(0.635);
+      padPlane->SetTiltingAngle(-2.0);
+    }
+    else {
+      // L0C1 type
+      padPlane->SetNrows(16);
+      padPlane->SetLength(122.0);
+      padPlane->SetWidth(92.2);
+      padPlane->SetLengthOPad(7.5);
+      padPlane->SetWidthOPad(0.515);
+      padPlane->SetLengthIPad(7.5);
+      padPlane->SetWidthIPad(0.635);
+      padPlane->SetTiltingAngle(-2.0);
+    }
+    break;
+  case 1:
+    if (icham == 2) {
+      // L1C0 type
+      padPlane->SetNrows(12);
+      padPlane->SetLength(108.0);
+      padPlane->SetWidth(96.6);
+      padPlane->SetLengthOPad(8.0);
+      padPlane->SetWidthOPad(0.585);
+      padPlane->SetLengthIPad(9.0);
+      padPlane->SetWidthIPad(0.665);
+      padPlane->SetTiltingAngle(2.0);
+    }
+    else {
+      // L1C1 type
+      padPlane->SetNrows(16);
+      padPlane->SetLength(122.0);
+      padPlane->SetWidth(96.6);
+      padPlane->SetLengthOPad(7.5);
+      padPlane->SetWidthOPad(0.585);
+      padPlane->SetLengthIPad(7.5);
+      padPlane->SetWidthIPad(0.665);
+      padPlane->SetTiltingAngle(2.0);
+    }
+    break;
+  case 2:
+    if (icham == 2) {
+      // L2C0 type
+      padPlane->SetNrows(12);
+      padPlane->SetLength(108.0);
+      padPlane->SetWidth(101.1);
+      padPlane->SetLengthOPad(8.0);
+      padPlane->SetWidthOPad(0.705);
+      padPlane->SetLengthIPad(9.0);
+      padPlane->SetWidthIPad(0.695);
+      padPlane->SetTiltingAngle(-2.0);
+    }
+    else {
+      // L2C1 type
+      padPlane->SetNrows(16);
+      padPlane->SetLength(129.0);
+      padPlane->SetWidth(101.1);
+      padPlane->SetLengthOPad(7.5);
+      padPlane->SetWidthOPad(0.705);
+      padPlane->SetLengthIPad(8.0);
+      padPlane->SetWidthIPad(0.695);
+      padPlane->SetTiltingAngle(-2.0);
+    }
+    break;
+  case 3:
+    if (icham == 2) {
+      // L3C0 type
+      padPlane->SetNrows(12);
+      padPlane->SetLength(108.0);
+      padPlane->SetWidth(105.5);
+      padPlane->SetLengthOPad(8.0);
+      padPlane->SetWidthOPad(0.775);
+      padPlane->SetLengthIPad(9.0);
+      padPlane->SetWidthIPad(0.725);
+      padPlane->SetTiltingAngle(2.0);
+    }
+    else {
+      // L3C1 type
+      padPlane->SetNrows(16);
+      padPlane->SetLength(136.0);
+      padPlane->SetWidth(105.5);
+      padPlane->SetLengthOPad(7.5);
+      padPlane->SetWidthOPad(0.775);
+      padPlane->SetLengthIPad(8.5);
+      padPlane->SetWidthIPad(0.725);
+      padPlane->SetTiltingAngle(2.0);
+    }
+    break;
+  case 4:
+    if (icham == 2) {
+      // L4C0 type
+      padPlane->SetNrows(12);
+      padPlane->SetLength(108.0);
+      padPlane->SetWidth(109.9);
+      padPlane->SetLengthOPad(8.0);
+      padPlane->SetWidthOPad(0.845);
+      padPlane->SetLengthIPad(9.0);
+      padPlane->SetWidthIPad(0.755);
+      padPlane->SetTiltingAngle(-2.0);
+    }
+    else {
+      // L4C1 type
+      padPlane->SetNrows(16);
+      padPlane->SetLength(143.0);
+      padPlane->SetWidth(109.9);
+      padPlane->SetLengthOPad(7.5);
+      padPlane->SetWidthOPad(0.845);
+      padPlane->SetLengthIPad(9.0);
+      padPlane->SetWidthIPad(0.755);
+      padPlane->SetTiltingAngle(-2.0);
+    }
+    break;
+  case 5:
+    if (icham == 2) {
+      // L5C0 type
+      padPlane->SetNrows(12);
+      padPlane->SetLength(108.0);
+      padPlane->SetWidth(114.4);
+      padPlane->SetLengthOPad(8.0);
+      padPlane->SetWidthOPad(0.965);
+      padPlane->SetLengthIPad(9.0);
+      padPlane->SetWidthIPad(0.785);
+      padPlane->SetTiltingAngle(2.0);
+    }
+    else {
+      // L5C1 type
+      padPlane->SetNrows(16);
+      padPlane->SetLength(145.0);
+      padPlane->SetWidth(114.4);
+      padPlane->SetLengthOPad(8.5);
+      padPlane->SetWidthOPad(0.965);
+      padPlane->SetLengthIPad(9.0);
+      padPlane->SetWidthIPad(0.785);
+      padPlane->SetTiltingAngle(2.0);
+    }
+    break;
+  };
+
+  //
+  // The positions of the borders of the pads
+  //
+  // Row direction
+  //
+  Double_t row = fClength[iplan][icham] / 2.0
+               - fgkRpadW
+               - padPlane->GetLengthRim();
+  for (Int_t ir = 0; ir < padPlane->GetNrows(); ir++) {
+    padPlane->SetPadRow(ir,row);
+    row -= padPlane->GetRowSpacing();
+    if (ir == 0) {
+      row -= padPlane->GetLengthOPad();
+    }
+    else {
+      row -= padPlane->GetLengthIPad();
+    }
+  }
+  //
+  // Column direction
+  //
+  Double_t col = fCwidth[iplan] / 2.0
+               + fgkCroW
+               - padPlane->GetWidthRim();
+  for (Int_t ic = 0; ic < padPlane->GetNcols(); ic++) {
+    padPlane->SetPadCol(ic,col);
+    col -= padPlane->GetColSpacing();
+    if (ic == 0) {
+      col -= padPlane->GetWidthOPad();
+    }
+    else {
+      col -= padPlane->GetWidthIPad();
+    }
+  }
+  // Calculate the offset to translate from the local ROC system into
+  // the local supermodule system, which is used for clusters
+  Double_t rowTmp = fClength[iplan][0]
+    	          + fClength[iplan][1]
+                  + fClength[iplan][2] / 2.0;
+  for (Int_t ic = 0; ic < icham; ic++) {
+    rowTmp -= fClength[iplan][ic];
+  }
+  padPlane->SetPadRowSMOffset(rowTmp - fClength[iplan][icham]/2.0);
+
+  return padPlane;
+
 }
 
 //_____________________________________________________________________________
@@ -937,12 +1184,6 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   gMC->Matrix(matrix[1],  80.0,   0.0,  90.0,  90.0,  10.0, 180.0);
   gMC->Matrix(matrix[2],   0.0,   0.0,  90.0,  90.0,  90.0,   0.0);
   gMC->Matrix(matrix[3], 180.0,   0.0,  90.0,  90.0,  90.0, 180.0);
-
-  AliTRDCommonParam *commonParam = AliTRDCommonParam::Instance();
-  if (!commonParam) {
-    AliError("Could not get common parameters\n");
-    return;
-  }
     
   //
   // The cooling arterias
@@ -1090,7 +1331,7 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
     for (iplan = 0; iplan < kNplan; iplan++) {
       Int_t   iDet    = GetDetectorSec(iplan,icham);
       Int_t   iCopy   = GetDetector(iplan,icham,0) * 100;
-      Int_t   nMCMrow = commonParam->GetRowMax(iplan,icham,0);
+      Int_t   nMCMrow = GetRowMax(iplan,icham,0);
       Float_t ySize   = (GetChamberLength(iplan,icham) - 2.0*fgkRpadW) 
                       / ((Float_t) nMCMrow);
       sprintf(cTagV,"UU%02d",iDet);
@@ -1123,7 +1364,7 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
     for (iplan = 0; iplan < kNplan; iplan++) {
       Int_t   iDet    = GetDetectorSec(iplan,icham);
       Int_t   iCopy   = GetDetector(iplan,icham,0) * 100;
-      Int_t   nMCMrow = commonParam->GetRowMax(iplan,icham,0);
+      Int_t   nMCMrow = GetRowMax(iplan,icham,0);
       Float_t ySize   = (GetChamberLength(iplan,icham) - 2.0*fgkRpadW) 
                       / ((Float_t) nMCMrow);
       sprintf(cTagV,"UU%02d",iDet);
@@ -1200,7 +1441,7 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
     for (iplan = 0; iplan < kNplan; iplan++) {
       Int_t   iDet    = GetDetectorSec(iplan,icham);
       Int_t   iCopy   = GetDetector(iplan,icham,0) * 1000;
-      Int_t   nMCMrow = commonParam->GetRowMax(iplan,icham,0);
+      Int_t   nMCMrow = GetRowMax(iplan,icham,0);
       Float_t ySize   = (GetChamberLength(iplan,icham) - 2.0*fgkRpadW) 
                       / ((Float_t) nMCMrow);
       Int_t   nMCMcol = 8;
@@ -1397,23 +1638,82 @@ Int_t AliTRDgeometry::GetSector(Int_t d) const
 
 }
 
-//CL
+//_____________________________________________________________________________
+AliTRDpadPlane *AliTRDgeometry::GetPadPlane(Int_t p, Int_t c)
+{
+  //
+  // Returns the pad plane for a given plane <p> and chamber <c> number
+  //
+
+  if (!fPadPlaneArray) {
+    CreatePadPlaneArray();
+  }
+
+  Int_t ipp = GetDetectorSec(p,c);
+  return ((AliTRDpadPlane *) fPadPlaneArray->At(ipp));
+
+}
+
+//_____________________________________________________________________________
+Int_t AliTRDgeometry::GetRowMax(Int_t p, Int_t c, Int_t /*s*/)
+{
+  //
+  // Returns the number of rows on the pad plane
+  //
+
+  return GetPadPlane(p,c)->GetNrows();
+
+}
+
+//_____________________________________________________________________________
+Int_t AliTRDgeometry::GetColMax(Int_t p)
+{
+  //
+  // Returns the number of rows on the pad plane
+  //
+
+  return GetPadPlane(p,0)->GetNcols();
+
+}
+
+//_____________________________________________________________________________
+Double_t AliTRDgeometry::GetRow0(Int_t p, Int_t c, Int_t /*s*/)
+{
+  //
+  // Returns the position of the border of the first pad in a row
+  //
+
+  return GetPadPlane(p,c)->GetRow0();
+
+}
+
+//_____________________________________________________________________________
+Double_t AliTRDgeometry::GetCol0(Int_t p)
+{
+  //
+  // Returns the position of the border of the first pad in a column
+  //
+
+  return GetPadPlane(p,0)->GetCol0();
+
+}
+
 //_____________________________________________________________________________
 Int_t AliTRDgeometry::GetPadRowFromMCM(Int_t irob, Int_t imcm) const
 {
-
-  // return on which row this mcm sits 
+  //
+  // Return on which row this mcm sits 
+  //
 
   return fgkMCMrow*(irob/2) + imcm/fgkMCMrow;
 
-;
 }
 
 //_____________________________________________________________________________
 Int_t AliTRDgeometry::GetPadColFromADC(Int_t irob, Int_t imcm, Int_t iadc) const
 {
   //
-  // return which pad is connected to this adc channel. return -1 if it
+  // Return which pad is connected to this adc channel. return -1 if it
   // is one of the not directly connected adc channels (0, 1 20)
   //
 
@@ -1426,8 +1726,9 @@ Int_t AliTRDgeometry::GetPadColFromADC(Int_t irob, Int_t imcm, Int_t iadc) const
 //_____________________________________________________________________________
 Int_t AliTRDgeometry::GetMCMfromPad(Int_t irow, Int_t icol) const
 {
-
-  // return on which mcm this pad is
+  //
+  // Return on which mcm this pad is
+  //
 
   if ( irow < 0 || icol < 0 || irow > fgkRowmaxC1 || icol > fgkColmax ) return -1;
 
@@ -1438,8 +1739,9 @@ Int_t AliTRDgeometry::GetMCMfromPad(Int_t irow, Int_t icol) const
 //_____________________________________________________________________________
 Int_t AliTRDgeometry::GetROBfromPad(Int_t irow, Int_t icol) const
 {
-
-  // return on which rob this pad is
+  //
+  // Return on which rob this pad is
+  //
 
   return (irow/fgkMCMrow)*2 + GetColSide(icol);
 
@@ -1448,8 +1750,9 @@ Int_t AliTRDgeometry::GetROBfromPad(Int_t irow, Int_t icol) const
 //_____________________________________________________________________________
 Int_t AliTRDgeometry::GetRobSide(Int_t irob) const
 {
-
-  // return on which side this rob sits (A side = 0, B side = 1)
+  //
+  // Return on which side this rob sits (A side = 0, B side = 1)
+  //
 
   if ( irob < 0 || irob >= fgkROBmaxC1 ) return -1;
 
@@ -1460,50 +1763,13 @@ Int_t AliTRDgeometry::GetRobSide(Int_t irob) const
 //_____________________________________________________________________________
 Int_t AliTRDgeometry::GetColSide(Int_t icol) const
 {
-
-  // return on which side this column sits (A side = 0, B side = 1)
+  //
+  // Return on which side this column sits (A side = 0, B side = 1)
+  //
 
   if ( icol < 0 || icol >= fgkColmax ) return -1;
 
   return icol/(fgkColmax/2);
-
-}
-
-//_____________________________________________________________________________
-AliTRDgeometry *AliTRDgeometry::GetGeometry(AliRunLoader *runLoader)
-{
-  //
-  // Load the geometry from the galice file
-  //
-
-  if (!runLoader) {
-    runLoader = AliRunLoader::GetRunLoader();
-  }
-  if (!runLoader) {
-    AliErrorGeneral("AliTRDgeometry::GetGeometry","No run loader");
-    return NULL;
-  }
-
-  TDirectory *saveDir = gDirectory;
-  runLoader->CdGAFile();
-
-  // Try from the galice.root file
-  static AliTRDgeometry *geom = (AliTRDgeometry *) gDirectory->Get("TRDgeometry");
-
-  if (!geom) {
-    // If it is not in the file, try to get it from the run loader 
-    if (runLoader->GetAliRun()) {
-      AliTRD *trd = (AliTRD *) runLoader->GetAliRun()->GetDetector("TRD");
-      geom = trd->GetGeometry();
-    }
-  }
-  if (!geom) {
-    AliErrorGeneral("AliTRDgeometry::GetGeometry","Geometry not found");
-    return NULL;
-  }
-
-  saveDir->cd();
-  return geom;
 
 }
 

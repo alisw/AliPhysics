@@ -15,8 +15,10 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-//                                                                           //
 //  TRD trigger parameters class                                             //
+//                                                                           //
+//  Request an instance with AliTRDCommonParam::Instance()                   //
+//  Then request the needed values                                           //
 //                                                                           //
 //  Author:                                                                  //
 //     Bogdan Vulpescu                                                       //
@@ -29,47 +31,51 @@
 
 ClassImp(AliTRDtrigParam)
 
-//_____________________________________________________________________________
-AliTRDtrigParam::AliTRDtrigParam()
-  :TNamed()
-  ,fDebug(0)
-  ,fTime1(0)
-  ,fTime2(0)
-  ,fClusThr(0)
-  ,fPadThr(0)
-  ,fSum10(0)
-  ,fSum12(0)
-  ,fTCOn(0)
-  ,fTCnexp(0)
-  ,fFilterType(0)
-  ,fR1(0)
-  ,fR2(0)
-  ,fC1(0)
-  ,fC2(0)
-  ,fPedestal(0)
-  ,fADCnoise(0)
-  ,fDeltaY(0)
-  ,fDeltaS(0)
-  ,fXprojPlane(0)
-  ,fLtuPtCut(0)
-  ,fGtuPtCut(0)
-  ,fField(0)
-  ,fHighPt(0)
-  ,fNPartJetLow(0)
-  ,fNPartJetHigh(0)
-  ,fJetLowPt(0)
-  ,fJetHighPt(0)
+AliTRDtrigParam *AliTRDtrigParam::fgInstance = 0;
+Bool_t AliTRDtrigParam::fgTerminated = kFALSE;
+
+//_ singleton implementation __________________________________________________
+AliTRDtrigParam *AliTRDtrigParam::Instance()
 {
   //
-  // AliTRDtrigParam default constructor
+  // Singleton implementation
+  // Returns an instance of this class, it is created if neccessary
   //
+
+  if (fgTerminated != kFALSE) {
+    return 0;
+  }
+
+  if (fgInstance == 0) {
+    fgInstance = new AliTRDtrigParam();
+  }
+
+  return fgInstance;
 
 }
 
 //_____________________________________________________________________________
-AliTRDtrigParam::AliTRDtrigParam(const Text_t *name, const Text_t *title)
-  :TNamed(name,title)
-  ,fDebug(0)
+void AliTRDtrigParam::Terminate()
+{
+  //
+  // Singleton implementation
+  // Deletes the instance of this class and sets the terminated flag,
+  // instances cannot be requested anymore
+  // This function can be called several times.
+  //
+
+  fgTerminated = kTRUE;
+
+  if (fgInstance != 0) {
+    delete fgInstance;
+    fgInstance = 0;
+  }
+
+}
+
+//_____________________________________________________________________________
+AliTRDtrigParam::AliTRDtrigParam()
+  :TObject()
   ,fTime1(2)
   ,fTime2(22)
   ,fClusThr(10.0)
@@ -90,7 +96,6 @@ AliTRDtrigParam::AliTRDtrigParam(const Text_t *name, const Text_t *title)
   ,fXprojPlane(0)
   ,fLtuPtCut(2.3)
   ,fGtuPtCut(3.0)
-  ,fField(0)
   ,fHighPt(10.0)
   ,fNPartJetLow(5)
   ,fNPartJetHigh(3)
@@ -98,7 +103,7 @@ AliTRDtrigParam::AliTRDtrigParam(const Text_t *name, const Text_t *title)
   ,fJetHighPt(5.0)
 {
   //
-  // AliTRDtrigParam constructor
+  // AliTRDtrigParam default constructor
   //
 
   // PASA.v.4
@@ -114,13 +119,14 @@ AliTRDtrigParam::AliTRDtrigParam(const Text_t *name, const Text_t *title)
     fC1 = 0.1141;
     fC2 = 0.6241;
   }
+ 
+  Init();
 
 }
 
 //_____________________________________________________________________________
 AliTRDtrigParam::AliTRDtrigParam(const AliTRDtrigParam &p)
-  :TNamed(p)
-  ,fDebug(p.fDebug)
+  :TObject(p)
   ,fTime1(p.fTime1)
   ,fTime2(p.fTime2)
   ,fClusThr(p.fClusThr)
@@ -141,7 +147,6 @@ AliTRDtrigParam::AliTRDtrigParam(const AliTRDtrigParam &p)
   ,fXprojPlane(p.fXprojPlane)
   ,fLtuPtCut(p.fLtuPtCut)
   ,fGtuPtCut(p.fGtuPtCut)
-  ,fField(p.fField)
   ,fHighPt(p.fHighPt)
   ,fNPartJetLow(p.fNPartJetLow)
   ,fNPartJetHigh(p.fNPartJetHigh)
@@ -182,7 +187,6 @@ void AliTRDtrigParam::Copy(TObject &p) const
   // Copy function
   //
 
-  ((AliTRDtrigParam &) p).fDebug        = fDebug;
   ((AliTRDtrigParam &) p).fTime1        = fTime1;
   ((AliTRDtrigParam &) p).fTime2        = fTime2;
   ((AliTRDtrigParam &) p).fClusThr      = fClusThr;
@@ -201,7 +205,6 @@ void AliTRDtrigParam::Copy(TObject &p) const
   ((AliTRDtrigParam &) p).fDeltaY       = fDeltaY;
   ((AliTRDtrigParam &) p).fDeltaS       = fDeltaS;
   ((AliTRDtrigParam &) p).fXprojPlane   = fXprojPlane;
-  ((AliTRDtrigParam &) p).fField        = fField;
   ((AliTRDtrigParam &) p).fLtuPtCut     = fLtuPtCut;
   ((AliTRDtrigParam &) p).fGtuPtCut     = fGtuPtCut;
   ((AliTRDtrigParam &) p).fHighPt       = fHighPt;

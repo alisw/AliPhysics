@@ -38,7 +38,6 @@ ClassImp(AliTRDpadPlane)
 //_____________________________________________________________________________
 AliTRDpadPlane::AliTRDpadPlane()
   :TObject()
-  ,fGeo(0)
   ,fPla(0)
   ,fCha(0)
   ,fLength(0)
@@ -66,253 +65,8 @@ AliTRDpadPlane::AliTRDpadPlane()
 }
 
 //_____________________________________________________________________________
-AliTRDpadPlane::AliTRDpadPlane(Int_t p, Int_t c)
-  :TObject()
-  ,fGeo(0)
-  ,fPla(0)
-  ,fCha(0)
-  ,fLength(0)
-  ,fWidth(0)
-  ,fLengthRim(0)
-  ,fWidthRim(0)
-  ,fLengthOPad(0)
-  ,fWidthOPad(0)
-  ,fLengthIPad(0)
-  ,fWidthIPad(0)
-  ,fRowSpacing(0)
-  ,fColSpacing(0)
-  ,fNrows(0)
-  ,fNcols(0)
-  ,fTiltingAngle(0)
-  ,fTiltingTan(0)
-  ,fPadRow(0)
-  ,fPadCol(0)
-  ,fPadRowSMOffset(0)
-{
-  //
-  // Constructor that initializes a given pad plane type
-  //
-
-  fGeo = new AliTRDgeometry();
-
-  fPla = p;
-  fCha = c;
-
-  fRowSpacing = 0.0;
-  fColSpacing = 0.0;
-
-  fLengthRim  = 1.0;
-  fWidthRim   = 0.5;
-
-  fNcols      = 144;
-
-  //
-  // The pad plane parameter
-  //
-  switch (p) {
-  case 0:
-    if (c == 2) {
-      // L0C0 type
-      fNrows        =  12;
-      fLength       = 108.0;
-      fWidth        =  92.2;
-      fLengthOPad   =   8.0;
-      fWidthOPad    =   0.515;
-      fLengthIPad   =   9.0;
-      fWidthIPad    =   0.635;
-      fTiltingAngle =  -2.0;
-    }
-    else {
-      // L0C1 type
-      fNrows        =  16;
-      fLength       = 122.0;
-      fWidth        =  92.2;
-      fLengthOPad   =   7.5;
-      fWidthOPad    =   0.515;
-      fLengthIPad   =   7.5;
-      fWidthIPad    =   0.635;
-      fTiltingAngle =  -2.0;
-    }
-    break;
-  case 1:
-    if (c == 2) {
-      // L1C0 type
-      fNrows        =  12;
-      fLength       = 108.0;
-      fWidth        =  96.6;
-      fLengthOPad   =   8.0;
-      fWidthOPad    =   0.585;
-      fLengthIPad   =   9.0;
-      fWidthIPad    =   0.665;
-      fTiltingAngle =   2.0;
-    }
-    else {
-      // L1C1 type
-      fNrows        =  16;
-      fLength       = 122.0;
-      fWidth        =  96.6;
-      fLengthOPad   =   7.5;
-      fWidthOPad    =   0.585;
-      fLengthIPad   =   7.5;
-      fWidthIPad    =   0.665;
-      fTiltingAngle =   2.0;
-    }
-    break;
-  case 2:
-    if (c == 2) {
-      // L2C0 type
-      fNrows        =  12;
-      fLength       = 108.0;
-      fWidth        = 101.1;
-      fLengthOPad   =   8.0;
-      fWidthOPad    =   0.705;
-      fLengthIPad   =   9.0;
-      fWidthIPad    =   0.695;
-      fTiltingAngle =  -2.0;
-    }
-    else {
-      // L2C1 type
-      fNrows        =  16;
-      fLength       = 129.0;
-      fWidth        = 101.1;
-      fLengthOPad   =   7.5;
-      fWidthOPad    =   0.705;
-      fLengthIPad   =   8.0;
-      fWidthIPad    =   0.695;
-      fTiltingAngle =  -2.0;
-    }
-    break;
-  case 3:
-    if (c == 2) {
-      // L3C0 type
-      fNrows        =  12;
-      fLength       = 108.0;
-      fWidth        = 105.5;
-      fLengthOPad   =   8.0;
-      fWidthOPad    =   0.775;
-      fLengthIPad   =   9.0;
-      fWidthIPad    =   0.725;
-      fTiltingAngle =   2.0;
-    }
-    else {
-      // L3C1 type
-      fNrows        =  16;
-      fLength       = 136.0;
-      fWidth        = 105.5;
-      fLengthOPad   =   7.5;
-      fWidthOPad    =   0.775;
-      fLengthIPad   =   8.5;
-      fWidthIPad    =   0.725;
-      fTiltingAngle =   2.0;
-    }
-    break;
-  case 4:
-    if (c == 2) {
-      // L4C0 type
-      fNrows        =  12;
-      fLength       = 108.0;
-      fWidth        = 109.9;
-      fLengthOPad   =   8.0;
-      fWidthOPad    =   0.845;
-      fLengthIPad   =   9.0;
-      fWidthIPad    =   0.755;
-      fTiltingAngle =  -2.0;
-    }
-    else {
-      // L4C1 type
-      fNrows        =  16;
-      fLength       = 143.0;
-      fWidth        = 109.9;
-      fLengthOPad   =   7.5;
-      fWidthOPad    =   0.845;
-      fLengthIPad   =   9.0;
-      fWidthIPad    =   0.755;
-      fTiltingAngle =  -2.0;
-    }
-    break;
-  case 5:
-    if (c == 2) {
-      // L5C0 type
-      fNrows        =  12;
-      fLength       = 108.0;
-      fWidth        = 114.4;
-      fLengthOPad   =   8.0;
-      fWidthOPad    =   0.965;
-      fLengthIPad   =   9.0;
-      fWidthIPad    =   0.785;
-      fTiltingAngle =   2.0;
-    }
-    else {
-      // L5C1 type
-      fNrows        =  16;
-      fLength       = 145.0;
-      fWidth        = 114.4;
-      fLengthOPad   =   8.5;
-      fWidthOPad    =   0.965;
-      fLengthIPad   =   9.0;
-      fWidthIPad    =   0.785;
-      fTiltingAngle =   2.0;
-    }
-    break;
-  };
-
-  //
-  // Store tilting angle as tangens
-  //
-  fTiltingTan = TMath::Tan(TMath::Pi()/180.0 * fTiltingAngle);
-
-  //
-  // The positions of the borders of the pads
-  //
-  // Row direction
-  //
-  fPadRow = new Double_t[fNrows];
-  Double_t row = fGeo->GetChamberLength(p,c) / 2.0
-               - fGeo->RpadW()
-               - fLengthRim;
-  for (Int_t ir = 0; ir < fNrows; ir++) {
-    fPadRow[ir] = row;
-    row -= fRowSpacing;
-    if (ir == 0) {
-      row -= fLengthOPad;
-    }
-    else {
-      row -= fLengthIPad;
-    }
-  }
-  //
-  // Column direction
-  //
-  fPadCol = new Double_t[fNcols];
-  Double_t col = fGeo->GetChamberWidth(p) / 2.0
-               + fGeo->CroWid()
-               - fWidthRim;
-  for (Int_t ic = 0; ic < fNcols; ic++) {
-    fPadCol[ic] = col;
-    col -= fColSpacing;
-    if (ic == 0) {
-      col -= fWidthOPad;
-    }
-    else {
-      col -= fWidthIPad;
-    }
-  }
-  // Calculate the offset to translate from the local ROC system into
-  // the local supermodule system, which is used for clusters
-  Double_t rowTmp = fGeo->GetChamberLength(p,0)
-    	          + fGeo->GetChamberLength(p,1)
-                  + fGeo->GetChamberLength(p,2) / 2.0;
-  for (Int_t ic = 0; ic < c; ic++) {
-    rowTmp -= fGeo->GetChamberLength(p,ic);
-  }
-  fPadRowSMOffset = rowTmp - fGeo->GetChamberLength(p,c)/2.0;
-
-}
-
-//_____________________________________________________________________________
 AliTRDpadPlane::AliTRDpadPlane(const AliTRDpadPlane &p)
   :TObject(p)
-  ,fGeo(0)
   ,fPla(p.fPla)
   ,fCha(p.fCha)
   ,fLength(p.fLength)
@@ -364,11 +118,6 @@ AliTRDpadPlane::~AliTRDpadPlane()
   // AliTRDpadPlane destructor
   //
 
-  if (fGeo) {
-    delete fGeo;
-    fGeo    = 0;
-  }
-
   if (fPadRow) {
     delete [] fPadRow;
     fPadRow = 0;
@@ -404,8 +153,6 @@ void AliTRDpadPlane::Copy(TObject &p) const
   //
 
   Int_t iBin = 0;
-
-  ((AliTRDpadPlane &) p).fGeo            = 0;
 
   ((AliTRDpadPlane &) p).fPla            = fPla;
   ((AliTRDpadPlane &) p).fCha            = fCha;

@@ -90,18 +90,13 @@ void AliTRDTriggerL1::Trigger()
   TString          evfoldname = AliConfig::GetDefaultEventFolderName();
   AliRunLoader    *runLoader  = AliRunLoader::GetRunLoader(evfoldname);
   AliLoader       *loader     = runLoader->GetLoader("TRDLoader");
-  AliTRDgeometry  *geo        = AliTRDgeometry::GetGeometry(runLoader);
-  AliTRDtrigParam *trigp      = new AliTRDtrigParam("TRDtrigParam","TRD Trigger parameters");
+  AliTRDgeometry   geo;
 
   AliTRDtrigger trdTrigger("Trigger","Trigger class"); 
 
   Float_t field = AliTracker::GetBz() * 0.1; // Tesla
   AliInfo(Form("Trigger set for magnetic field = %f Tesla \n",field));
 
-  trigp->SetField(field);
-  trigp->Init();
-
-  trdTrigger.SetParameter(trigp);
   trdTrigger.SetRunLoader(runLoader);
   trdTrigger.Init();
 
@@ -112,9 +107,9 @@ void AliTRDTriggerL1::Trigger()
 
   // Trigger (tracks, GTU)
 
-  Float_t highPt    = trigp->GetHighPt();
-  Float_t jetLowPt  = trigp->GetJetLowPt();
-  Float_t jetHighPt = trigp->GetJetHighPt();
+  Float_t highPt    = AliTRDtrigParam::Instance()->GetHighPt();
+  Float_t jetLowPt  = AliTRDtrigParam::Instance()->GetJetLowPt();
+  Float_t jetHighPt = AliTRDtrigParam::Instance()->GetJetHighPt();
 
   Float_t pid;
   Float_t pt;
@@ -154,7 +149,7 @@ void AliTRDTriggerL1::Trigger()
     isElectron = gtuTrack->IsElectron();
     pt         = gtuTrack->GetPt();
     det        = gtuTrack->GetDetector();
-    sec        = geo->GetSector(det);
+    sec        = geo.GetSector(det);
 
     if (isElectron) {
 
@@ -201,10 +196,10 @@ void AliTRDTriggerL1::Trigger()
   }
 
   // Hadrons from jets
-  if (hadronJetLowPt  >= trigp->GetNPartJetLow() ) {
+  if (hadronJetLowPt  >= AliTRDtrigParam::Instance()->GetNPartJetLow() ) {
     SetInput("TRD_Jet_LPt_L1");
   }
-  if (hadronJetHighPt >= trigp->GetNPartJetHigh()) {
+  if (hadronJetHighPt >= AliTRDtrigParam::Instance()->GetNPartJetHigh()) {
     SetInput("TRD_Jet_HPt_L1");
   }
 

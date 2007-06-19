@@ -56,13 +56,14 @@
 #include "AliLog.h"
 
 #include "AliTRDCalibraMode.h"
-#include "AliTRDCommonParam.h"
+#include "AliTRDgeometry.h"
 
 ClassImp(AliTRDCalibraMode)
 
 //______________________________________________________________________________________
 AliTRDCalibraMode::AliTRDCalibraMode()
   :TObject()
+  ,fGeo(0)
 {
   //
   // Default constructor
@@ -89,12 +90,15 @@ AliTRDCalibraMode::AliTRDCalibraMode()
     fNfragRphi[i] = -1;
     fXbins[i]     = -1;
   }
-   
+  
+  fGeo = new AliTRDgeometry();
+ 
 }
 
 //______________________________________________________________________________________
 AliTRDCalibraMode::AliTRDCalibraMode(const AliTRDCalibraMode &c)
   :TObject(c)
+  ,fGeo(0)
 {
   //
   // Copy constructor
@@ -116,13 +120,23 @@ AliTRDCalibraMode::AliTRDCalibraMode(const AliTRDCalibraMode &c)
     fDetChamb2[k] = c.fDetChamb2[k];
   }
 
+  if (fGeo) {
+    delete fGeo;
+  }
+  fGeo = new AliTRDgeometry();
+
 }
+
 //____________________________________________________________________________________
 AliTRDCalibraMode::~AliTRDCalibraMode()
 {
   //
   // AliTRDCalibraMode destructor
   //
+
+  if (fGeo) {
+    delete fGeo;
+  }
 
 }
 
@@ -232,16 +246,10 @@ Bool_t AliTRDCalibraMode::ModePadFragmentation(Int_t iPlane,Int_t iChamb, Int_t 
 
   fNfragZ[i]    = 0;
   fNfragRphi[i] = 0;
-  
-  AliTRDCommonParam *parCom = AliTRDCommonParam::Instance();
-  if (!parCom) {
-    AliInfo("Could not get CommonParam Manager");
-    return kFALSE;
-  }
 
   // A little geometry:
-  Int_t rowMax = parCom->GetRowMax(iPlane,iChamb,iSect);
-  Int_t colMax = parCom->GetColMax(iPlane);
+  Int_t rowMax = fGeo->GetRowMax(iPlane,iChamb,iSect);
+  Int_t colMax = fGeo->GetColMax(iPlane);
   
   // The fragmentation
   if (fNnZ[i]    != 0) {

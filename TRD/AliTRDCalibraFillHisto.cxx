@@ -54,6 +54,8 @@
 
 #include "AliLog.h"
 #include "AliCDBManager.h"
+#include "AliRawReader.h"
+#include "AliRawReaderDate.h"
 
 #include "AliTRDCalibraFillHisto.h"
 #include "AliTRDCalibraMode.h"
@@ -65,13 +67,11 @@
 #include "AliTRDcluster.h"
 #include "AliTRDtrack.h"
 #include "AliTRDRawStream.h"
-#include "AliRawReader.h"
-#include "AliRawReaderDate.h"
+#include "AliTRDgeometry.h"
 
 #ifdef ALI_DATE
 #include "event.h"
 #endif
-
 
 ClassImp(AliTRDCalibraFillHisto)
 
@@ -116,6 +116,7 @@ void AliTRDCalibraFillHisto::Terminate()
 //______________________________________________________________________________________
 AliTRDCalibraFillHisto::AliTRDCalibraFillHisto()
   :TObject()
+  ,fGeo(0)
   ,fMITracking(kFALSE)
   ,fMcmTracking(kFALSE)
   ,fMcmCorrectAngle(kFALSE)
@@ -174,56 +175,60 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto()
   fNumberUsedCh[1]       = 0;
   fNumberUsedPh[0]       = 0;
   fNumberUsedPh[1]       = 0;
+
+  fGeo = new AliTRDgeometry();
  
 }
+
 //______________________________________________________________________________________
 AliTRDCalibraFillHisto::AliTRDCalibraFillHisto(const AliTRDCalibraFillHisto &c)
-:TObject(c)
-,fMITracking(c.fMITracking)
-,fMcmTracking(c.fMcmTracking)
-,fMcmCorrectAngle(c.fMcmCorrectAngle)
-,fCH2dOn(c.fCH2dOn)
-,fPH2dOn(c.fPH2dOn)
-,fPRF2dOn(c.fPRF2dOn)
-,fHisto2d(c.fHisto2d)
-,fVector2d(c.fVector2d)
-,fLinearFitterOn(c.fLinearFitterOn)
-,fLinearFitterDebugOn(c.fLinearFitterDebugOn)
-,fRelativeScale(c.fRelativeScale)
-,fThresholdClusterPRF2(c.fThresholdClusterPRF2)
-,fCalibraMode(0x0)
-,fDebugStreamer(0)
-,fDebugLevel(c.fDebugLevel)
-,fDetectorAliTRDtrack(c.fDetectorAliTRDtrack)
-,fDetectorPreviousTrack(c.fDetectorPreviousTrack)
-,fNumberClusters(c.fNumberClusters)
-,fProcent(c.fProcent)
-,fDifference(c.fDifference)
-,fNumberTrack(c.fNumberTrack)
-,fTimeMax(c.fTimeMax)
-,fSf(c.fSf)
-,fNumberBinCharge(c.fNumberBinCharge)
-,fNumberBinPRF(c.fNumberBinPRF)
-,fNgroupprf(c.fNgroupprf)
-,fListClusters(new TObjArray())
-,fPar0(c.fPar0)
-,fPar1(c.fPar1)
-,fPar2(c.fPar2)
-,fPar3(c.fPar3)
-,fPar4(c.fPar4)
-,fAmpTotal(c.fAmpTotal)
-,fPHPlace(c.fPHPlace)
-,fPHValue(c.fPHValue)
-,fGoodTracklet(c.fGoodTracklet)
-,fGoodTrack(c.fGoodTrack)
-,fEntriesCH(c.fEntriesCH)
-,fEntriesLinearFitter(fEntriesLinearFitter)
-,fCalibraVector(0x0)
-,fPH2d(0x0)
-,fPRF2d(0x0)
-,fCH2d(0x0)
-,fLinearFitterArray(0)
-,fLinearFitterHistoArray(0)
+  :TObject(c)
+  ,fGeo(0)
+  ,fMITracking(c.fMITracking)
+  ,fMcmTracking(c.fMcmTracking)
+  ,fMcmCorrectAngle(c.fMcmCorrectAngle)
+  ,fCH2dOn(c.fCH2dOn)
+  ,fPH2dOn(c.fPH2dOn)
+  ,fPRF2dOn(c.fPRF2dOn)
+  ,fHisto2d(c.fHisto2d)
+  ,fVector2d(c.fVector2d)
+  ,fLinearFitterOn(c.fLinearFitterOn)
+  ,fLinearFitterDebugOn(c.fLinearFitterDebugOn)
+  ,fRelativeScale(c.fRelativeScale)
+  ,fThresholdClusterPRF2(c.fThresholdClusterPRF2)
+  ,fCalibraMode(0x0)
+  ,fDebugStreamer(0)
+  ,fDebugLevel(c.fDebugLevel)
+  ,fDetectorAliTRDtrack(c.fDetectorAliTRDtrack)
+  ,fDetectorPreviousTrack(c.fDetectorPreviousTrack)
+  ,fNumberClusters(c.fNumberClusters)
+  ,fProcent(c.fProcent)
+  ,fDifference(c.fDifference)
+  ,fNumberTrack(c.fNumberTrack)
+  ,fTimeMax(c.fTimeMax)
+  ,fSf(c.fSf)
+  ,fNumberBinCharge(c.fNumberBinCharge)
+  ,fNumberBinPRF(c.fNumberBinPRF)
+  ,fNgroupprf(c.fNgroupprf)
+  ,fListClusters(new TObjArray())
+  ,fPar0(c.fPar0)
+  ,fPar1(c.fPar1)
+  ,fPar2(c.fPar2)
+  ,fPar3(c.fPar3)
+  ,fPar4(c.fPar4)
+  ,fAmpTotal(c.fAmpTotal)
+  ,fPHPlace(c.fPHPlace)
+  ,fPHValue(c.fPHValue)
+  ,fGoodTracklet(c.fGoodTracklet)
+  ,fGoodTrack(c.fGoodTrack)
+  ,fEntriesCH(c.fEntriesCH)
+  ,fEntriesLinearFitter(fEntriesLinearFitter)
+  ,fCalibraVector(0x0)
+  ,fPH2d(0x0)
+  ,fPRF2d(0x0)
+  ,fCH2d(0x0)
+  ,fLinearFitterArray(0)
+  ,fLinearFitterHistoArray(0)
 {
   //
   // Copy constructor
@@ -260,7 +265,13 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto(const AliTRDCalibraFillHisto &c)
       }
     }
   }
+  if (fGeo) {
+    delete fGeo;
+  }
+  fGeo = new AliTRDgeometry();
+
 }
+
 //____________________________________________________________________________________
 AliTRDCalibraFillHisto::~AliTRDCalibraFillHisto()
 {
@@ -270,6 +281,10 @@ AliTRDCalibraFillHisto::~AliTRDCalibraFillHisto()
 
   ClearHistos();
   if ( fDebugStreamer ) delete fDebugStreamer;
+
+  if (fGeo) {
+    delete fGeo;
+  }
   
 }
 
@@ -720,13 +735,6 @@ Int_t *AliTRDCalibraFillHisto::CalculateRowCol(AliTRDcluster *cl) const
   rowcol[0] =  0;
   rowcol[1] =  0;
 
-  // Get the parameter object
-  AliTRDCommonParam *parCom = AliTRDCommonParam::Instance();
-  if (!parCom) {
-    AliInfo("Could not get CommonParam");
-    return rowcol;
-  }
-
   // Localisation of the detector
   Int_t detector = cl->GetDetector();
   Int_t chamber  = GetChamber(detector);
@@ -739,7 +747,7 @@ Int_t *AliTRDCalibraFillHisto::CalculateRowCol(AliTRDcluster *cl) const
   pos[2] = cl->GetZ();
 
   // Position of the cluster
-  AliTRDpadPlane *padplane  = parCom->GetPadPlane(plane,chamber);
+  AliTRDpadPlane *padplane  = fGeo->GetPadPlane(plane,chamber);
   Int_t    row              = padplane->GetPadRowNumber(pos[2]);
   //Do not take from here because it was corrected from ExB already....
   //Double_t offsetz         = padplane->GetPadRowOffset(row,pos[2]);
@@ -1771,13 +1779,6 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPH()
   // This function will be called in the functions UpdateHistogram... 
   // to fill the find the parameter P1 of a track for the drift velocity  calibration
   //
-
-  // Get the parameter object
-  AliTRDCommonParam *parCom = AliTRDCommonParam::Instance();
-  if (!parCom) {
-    AliInfo("Could not get CommonParam");
-    return kFALSE;
-  }
   
   //Number of points: if less than 3 return kFALSE
   Int_t Npoints = fListClusters->GetEntriesFast();
@@ -1799,7 +1800,7 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPH()
   Double_t  tiltingangle              = 0;                                  // tiltingangle of the pad
   Float_t   dzdx                      = 0;                                  // dz/dx now from dz/dl
   Int_t     nbli                      = 0;                                  // number linear fitter points
-  AliTRDpadPlane *padplane            = parCom->GetPadPlane(GetPlane(detector),GetChamber(detector));
+  AliTRDpadPlane *padplane            = fGeo->GetPadPlane(GetPlane(detector),GetChamber(detector));
 
   linearFitterTracklet.StoreData(kFALSE);
   linearFitterTracklet.ClearPoints();
@@ -1908,13 +1909,6 @@ Bool_t AliTRDCalibraFillHisto::HandlePRF()
   // For the offline tracking
   // Fit the tracklet with a line and take the position as reference for the PRF
   //
-
-  // Get the parameter object
-  AliTRDCommonParam *parCom = AliTRDCommonParam::Instance();
-  if (!parCom) {
-    AliInfo("Could not get CommonParam");
-    return kFALSE;
-  }
   
   //Number of points
   Int_t Npoints  = fListClusters->GetEntriesFast();                         // number of total points

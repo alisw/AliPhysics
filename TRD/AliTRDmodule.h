@@ -15,7 +15,6 @@
 
 class AliTRDgtuTrack;
 class AliTRDltuTracklet;
-class AliTRDtrigParam;
 
 class AliTRDmodule : public TObject {
 
@@ -25,7 +24,6 @@ class AliTRDmodule : public TObject {
 
   AliTRDmodule();
   AliTRDmodule(const AliTRDmodule &m);
-  AliTRDmodule(AliTRDtrigParam *trigp);
   virtual         ~AliTRDmodule();
   AliTRDmodule    &operator=(const AliTRDmodule &m);
 

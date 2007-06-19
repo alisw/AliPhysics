@@ -75,7 +75,6 @@
 #include "AliTRDCalibraVector.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDgeometry.h"
-#include "AliTRDCommonParam.h"
 #include "./Cal/AliTRDCalROC.h"
 #include "./Cal/AliTRDCalPad.h"
 #include "./Cal/AliTRDCalDet.h"
@@ -125,6 +124,7 @@ void AliTRDCalibraFit::Terminate()
 //______________________________________________________________________________________
 AliTRDCalibraFit::AliTRDCalibraFit()
   :TObject()
+  ,fGeo(0)
   ,fWriteNameCoef(0)
   ,fFitPHOn(kFALSE)
   ,fFitPol2On(kFALSE)
@@ -173,6 +173,7 @@ AliTRDCalibraFit::AliTRDCalibraFit()
   // Default constructor
   //
 
+  fGeo         = new AliTRDgeometry();
   fCalibraMode = new AliTRDCalibraMode();
 
   // Write
@@ -197,6 +198,7 @@ AliTRDCalibraFit::AliTRDCalibraFit()
 //______________________________________________________________________________________
 AliTRDCalibraFit::AliTRDCalibraFit(const AliTRDCalibraFit &c)
   :TObject(c)
+  ,fGeo(0)
   ,fWriteNameCoef(0)
   ,fFitPHOn(kFALSE)
   ,fFitPol2On(kFALSE)
@@ -255,6 +257,10 @@ AliTRDCalibraFit::~AliTRDCalibraFit()
   //
 
   ClearTree();
+
+  if (fGeo) {
+    delete fGeo;
+  }
 
 }
 
@@ -2495,13 +2501,6 @@ Bool_t AliTRDCalibraFit::InitFit(Int_t nbins, Int_t i)
   gStyle->SetPadLeftMargin(0.13);
   gStyle->SetPadRightMargin(0.01);
 
-  // Get the parameter object
-  AliTRDCommonParam *parCom = AliTRDCommonParam::Instance();
-  if (!parCom) {
-    AliInfo("Could not get CommonParam");
-    return kFALSE;
-  }
-
   // Mode groups of pads: the total number of bins!
   Int_t numberofbinsexpected = 0;
   fCalibraMode->ModePadCalibration(2,i);
@@ -2617,8 +2616,8 @@ Bool_t AliTRDCalibraFit::InitFit(Int_t nbins, Int_t i)
 	AliInfo(Form("You will see the detector: iPlane %d, iChamb %d, iSect %d"
                     ,fDet[0],fDet[1],fDet[2]));
 	// A little geometry:
-	Int_t rowMax = parCom->GetRowMax(fDet[0],fDet[1],fDet[2]);
-	Int_t colMax = parCom->GetColMax(fDet[0]);
+	Int_t rowMax = fGeo->GetRowMax(fDet[0],fDet[1],fDet[2]);
+	Int_t colMax = fGeo->GetColMax(fDet[0]);
 	// Create the histos to visualise
 	CreateFitHistoCHDB(rowMax,colMax);
 	if (fDebug == 4) {
@@ -2689,8 +2688,8 @@ Bool_t AliTRDCalibraFit::InitFit(Int_t nbins, Int_t i)
 	AliInfo(Form("You will see the detector: iPlane %d, iChamb %d, iSect %d"
                     ,fDet[0],fDet[1],fDet[2]));
 	// A little geometry:
-	Int_t rowMax = parCom->GetRowMax(fDet[0],fDet[1],fDet[2]);
-	Int_t colMax = parCom->GetColMax(fDet[0]);
+	Int_t rowMax = fGeo->GetRowMax(fDet[0],fDet[1],fDet[2]);
+	Int_t colMax = fGeo->GetColMax(fDet[0]);
 	// Create the histos to visualise
 	CreateFitHistoPHDB(rowMax,colMax);
 	CreateFitHistoT0DB(rowMax,colMax);
@@ -2761,8 +2760,8 @@ Bool_t AliTRDCalibraFit::InitFit(Int_t nbins, Int_t i)
 	AliInfo(Form("You will see the detector: iPlane %d, iChamb %d, iSect %d"
                     ,fDet[0],fDet[1],fDet[2]));
 	// A little geometry:
-	Int_t rowMax = parCom->GetRowMax(fDet[0],fDet[1],fDet[2]);
-	Int_t colMax = parCom->GetColMax(fDet[0]);
+	Int_t rowMax = fGeo->GetRowMax(fDet[0],fDet[1],fDet[2]);
+	Int_t colMax = fGeo->GetColMax(fDet[0]);
 	// Create the histos to visualise
 	CreateFitHistoPRFDB(rowMax,colMax);
 	if (fDebug == 4) {
@@ -2865,14 +2864,7 @@ Bool_t AliTRDCalibraFit::NotEnoughStatistic(Int_t idect, Int_t i)
   // of the calibration group, the value present in the choosen database
   // will be put. A negativ sign enables to know that a fit was not possible.
   //
-  
-  // Get the parameter object
-  AliTRDCommonParam *parCom = AliTRDCommonParam::Instance();
-  if (!parCom) {
-    AliInfo("Could not get CommonParam Manager");
-    return kFALSE;
-  }
-  
+
   // Get cal
   AliTRDcalibDB     *cal    = AliTRDcalibDB::Instance();
   if (!cal) {
@@ -3051,7 +3043,7 @@ Bool_t AliTRDCalibraFit::NotEnoughStatistic(Int_t idect, Int_t i)
     // Pointer to the branch
     for (Int_t k = fCalibraMode->GetRowMin(2); k < fCalibraMode->GetRowMax(2); k++) {
       for (Int_t j = fCalibraMode->GetColMin(2); j < fCalibraMode->GetColMax(2); j++) {
-	if((parCom->GetColMax(GetPlane(fCountDet[2])) != (j+1)) && (j != 0)){
+	if((fGeo->GetColMax(GetPlane(fCountDet[2])) != (j+1)) && (j != 0)){
 	  if (GetChamber(fCountDet[2]) == 2) {
             fPRFPad[(Int_t)(j*12+k)] = -fPRFCoef[1];
 	  }
@@ -3098,13 +3090,6 @@ Bool_t AliTRDCalibraFit::FillInfosFit(Int_t idect, Int_t i)
   // Fill the coefficients found with the fits or other
   // methods from the Fit functions
   //
-
-  // Get the parameter object
-  AliTRDCommonParam *parCom = AliTRDCommonParam::Instance();
-  if (!parCom) {
-    AliInfo("Could not get CommonParam Manager");
-    return kFALSE;
-  }
 
   // Get cal
   AliTRDcalibDB     *cal    = AliTRDcalibDB::Instance();
@@ -3180,7 +3165,7 @@ Bool_t AliTRDCalibraFit::FillInfosFit(Int_t idect, Int_t i)
     // Pointer to the branch
     for (Int_t k = fCalibraMode->GetRowMin(2); k < fCalibraMode->GetRowMax(2); k++) {
       for (Int_t j = fCalibraMode->GetColMin(2); j < fCalibraMode->GetColMax(2); j++) {
-	if ((parCom->GetColMax(GetPlane(fCountDet[2])) != (j+1)) && (j != 0)) {
+	if ((fGeo->GetColMax(GetPlane(fCountDet[2])) != (j+1)) && (j != 0)) {
 	  if (GetChamber(fCountDet[2]) == 2) {
             fPRFPad[(Int_t)(j*12+k)] = fPRFCoef[fFitPRFNDB];
 	  }
@@ -4931,11 +4916,6 @@ Bool_t AliTRDCalibraFit::CalculChargeCoefMean(Int_t dect, Int_t idect, Bool_t vr
     AliInfo("Could not get calibDB  Manager");
     return kFALSE;
   }
-  AliTRDCommonParam *parCom = AliTRDCommonParam::Instance();
-  if (!parCom) {
-    AliInfo("Could not get CommonParam  Manager");
-    return kFALSE;
-  }
 
   fChargeCoef[3] = 0.0;
 
@@ -5004,12 +4984,6 @@ Bool_t AliTRDCalibraFit::CalculPRFCoefMean(Int_t dect, Int_t idect)
     return kFALSE;
   }
 
-  AliTRDCommonParam *parCom = AliTRDCommonParam::Instance();
-  if (!parCom) {
-    AliInfo("Could not get CommonParam  Manager");
-    return kFALSE;
-  }
-
   fPRFCoef[1] = 0.0;
   Int_t cot = 0;
 
@@ -5017,7 +4991,7 @@ Bool_t AliTRDCalibraFit::CalculPRFCoefMean(Int_t dect, Int_t idect)
     
     for (Int_t row = fCalibraMode->GetRowMin(2); row < fCalibraMode->GetRowMax(2); row++) {
       for (Int_t col = fCalibraMode->GetColMin(2); col < fCalibraMode->GetColMax(2); col++) {
-	if ((parCom->GetColMax(GetPlane(dect)) != (col+1)) && (col != 0)) {
+	if ((fGeo->GetColMax(GetPlane(dect)) != (col+1)) && (col != 0)) {
 	  cot++;
 	  if (fAccCDB) {
             fPRFCoef[1] += (Float_t) cal->GetPRFWidth(dect,col,row);

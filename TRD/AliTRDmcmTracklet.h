@@ -59,6 +59,8 @@ class AliTRDmcmTracklet : public TObject {
   Int_t     GetClusterCol(Int_t icl)  const { return fCol[icl];   };
 
  protected:
+  // Geometry
+  AliTRDgeometry  *fGeo;                 //! The TRD geometry
 
   Int_t   fDetector;                     //  TRD detector number (0 ... 539)
   Int_t   fRow;                          //  Row number in the detector
@@ -81,7 +83,7 @@ class AliTRDmcmTracklet : public TObject {
   Float_t fPt;                           //  Transverse momentum
   Float_t fdQdl;                         //  Charge per unit length
 
-  ClassDef(AliTRDmcmTracklet,2)          //  Track segment for the TRD (Tracklet)
+  ClassDef(AliTRDmcmTracklet,3)          //  Track segment for the TRD (Tracklet)
 
 };
 

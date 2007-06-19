@@ -220,16 +220,9 @@ Bool_t AliTRDpidESD::GetTrackSegmentKine(AliESDtrack *t, Int_t plan, Float_t &mo
 	}
 	
 	// Retrieve TRD geometry -> Maybe there is a better way to do this
-	Bool_t kSelfGeom = kFALSE;
-	AliTRDgeometry *TRDgeom =0x0;
-	if(gAlice) TRDgeom = AliTRDgeometry::GetGeometry(gAlice->GetRunLoader());
-	if(!TRDgeom){
-		AliWarningGeneral("AliTRDpidESD::GetTrackSegmentKine()", "Cannot load TRD geometry from gAlice! Build a new one.\n");
-		TRDgeom = new AliTRDgeometry();
-		kSelfGeom = kTRUE;
-	}
+	AliTRDgeometry trdGeom;
 	const Float_t kAmHalfWidth = AliTRDgeometry::AmThick() / 2.;
-  const Float_t kDrWidth = AliTRDgeometry::DrThick();
+        const Float_t kDrWidth     = AliTRDgeometry::DrThick();
 	
 
 	// retrive the magnetic field
@@ -237,19 +230,17 @@ Bool_t AliTRDpidESD::GetTrackSegmentKine(AliESDtrack *t, Int_t plan, Float_t &mo
 	Double_t b[3], alpha;
 	gAlice->Field(xyz0,b);      // b[] is in kilo Gauss
 	Float_t field = b[2] * 0.1; // Tesla
-
 		
 	// find momentum at chamber entrance and track length in chamber
 	AliExternalTrackParam *param = (plan<3) ? new AliExternalTrackParam(*t->GetInnerParam()) : new AliExternalTrackParam(*t->GetOuterParam());
 
-	param->PropagateTo(TRDgeom->GetTime0(plan)+kAmHalfWidth, field);
+	param->PropagateTo(trdGeom.GetTime0(plan)+kAmHalfWidth, field);
 	param->GetXYZ(xyz0);
 	alpha = param->GetAlpha();
-	param->PropagateTo(TRDgeom->GetTime0(plan)-kAmHalfWidth-kDrWidth, field);
+	param->PropagateTo(trdGeom.GetTime0(plan)-kAmHalfWidth-kDrWidth, field);
 	// eliminate track segments which are crossing SM boundaries along chamber
 	if(TMath::Abs(alpha-param->GetAlpha())>.01){
 		delete param;
-		if(kSelfGeom) delete TRDgeom;
 		return kFALSE;
 	}
 	param->GetXYZ(xyz1);
@@ -261,7 +252,6 @@ Bool_t AliTRDpidESD::GetTrackSegmentKine(AliESDtrack *t, Int_t plan, Float_t &mo
 	param->GetPxPyPz(xyz1);
 	mom = sqrt(xyz1[0]*xyz1[0] + xyz1[1]*xyz1[1] + xyz1[2]*xyz1[2]);
 	delete param;
-	if(kSelfGeom) delete TRDgeom;
 
 	return kTRUE;
 }

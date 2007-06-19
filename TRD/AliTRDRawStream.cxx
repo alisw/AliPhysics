@@ -32,7 +32,6 @@
 #include "AliRawReader.h"
 #include "AliTRDRawStream.h"
 #include "AliTRDgeometry.h"
-#include "AliTRDCommonParam.h"
 #include "AliTRDcalibDB.h"
 
 ClassImp(AliTRDRawStream)
@@ -104,8 +103,6 @@ AliTRDRawStream::AliTRDRawStream()
   ,fDataWord(NULL)
   ,fTimeBinsCalib(0)
   ,fGeo(NULL) 
-  ,fCommonParam(NULL)
-  ,fCalibration(NULL)
 {
   //
   // Default constructor
@@ -184,8 +181,6 @@ AliTRDRawStream::AliTRDRawStream(AliRawReader *rawReader)
   ,fDataWord(NULL)
   ,fTimeBinsCalib(0)
   ,fGeo(NULL) 
-  ,fCommonParam(NULL)
-  ,fCalibration(NULL)
 {
   //
   // Create an object to read TRD raw digits
@@ -266,8 +261,6 @@ AliTRDRawStream::AliTRDRawStream(const AliTRDRawStream& stream)
   ,fDataWord(NULL)
   ,fTimeBinsCalib(0)
   ,fGeo(NULL)
-  ,fCommonParam(NULL)
-  ,fCalibration(NULL)
 {
   //
   // Copy constructor
@@ -296,8 +289,11 @@ AliTRDRawStream::~AliTRDRawStream()
   //
   // Destructor
   //
-  
-  delete fGeo;
+
+  if (fGeo) {  
+    delete fGeo;
+  }
+
 }
 
 //_____________________________________________________________________________
@@ -308,6 +304,7 @@ void AliTRDRawStream::SetRawReader(AliRawReader *rawReader)
       fRawReader = rawReader;
     }
 }
+
 //_____________________________________________________________________________
 Bool_t AliTRDRawStream::SetRawVersion(Int_t rv)
 {
@@ -332,24 +329,16 @@ Int_t AliTRDRawStream::Init()
   // Initialization
   //
 
-  fCommonParam = AliTRDCommonParam::Instance();
-  if (!fCommonParam) {
-    AliError("Could not get common parameters");
-    return 0;
-  }
-
-  fCalibration = AliTRDcalibDB::Instance();
-  if (!fCalibration) {
+  if (!AliTRDcalibDB::Instance()) {
     AliError("Could not get calibration object");
     return 0;
   }
 
-  if (!fGeo)
-    {
-      fGeo = new AliTRDgeometry();
-    }
+  if (!fGeo) {
+    fGeo = new AliTRDgeometry();
+  }
   
-  fTimeBinsCalib = fCalibration->GetNumberOfTimeBins();
+  fTimeBinsCalib = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
   AliDebug(2, Form("Number of Timebins read from CDB: %d", fTimeBinsCalib));
 
   // The number of data words needed for this number of time bins (there
@@ -550,8 +539,8 @@ Bool_t AliTRDRawStream::Next()
 	    { // HC header
 	      DecodeHCheader(fTimeBinsCalib); // This is the new header!
 	      fDET    = fGeo->GetDetector(fLAYER, fSTACK, fSM);
-	      fRowMax = fCommonParam->GetRowMax(fLAYER,fSTACK,fSM);
-	      fColMax = fCommonParam->GetColMax(fROC);
+	      fRowMax = fGeo->GetRowMax(fLAYER,fSTACK,fSM);
+	      fColMax = fGeo->GetColMax(fROC);
 	      
 	      fMCMHctr2 = 0;
 	      fHCdataCtr = 0;

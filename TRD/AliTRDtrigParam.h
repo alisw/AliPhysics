@@ -9,17 +9,18 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <TNamed.h>
+#include "TObject.h"
 
-class AliTRDtrigParam : public TNamed {
+class AliTRDtrigParam : public TObject {
 
  public:
 
-  AliTRDtrigParam();
-  AliTRDtrigParam(const Text_t* name, const Text_t* title);
   AliTRDtrigParam(const AliTRDtrigParam &p);   
   virtual         ~AliTRDtrigParam();
   AliTRDtrigParam &operator=(const AliTRDtrigParam &p); 
+
+  static AliTRDtrigParam *Instance();
+  static  void     Terminate();
 
   virtual void     Copy(TObject &p) const;
 
@@ -41,11 +42,9 @@ class AliTRDtrigParam : public TNamed {
                                                              c2            = fC2; 
                                                              ped           = fPedestal; };
           Float_t  GetADCnoise() const                     { return fADCnoise;      };
-          Int_t    GetDebugLevel() const                   { return fDebug;         };
           Float_t  GetDeltaY() const                       { return fDeltaY;        };
           Float_t  GetDeltaS() const                       { return fDeltaS;        }; 
           Float_t  GetXprojPlane() const                   { return fXprojPlane;    };
-          Float_t  GetField() const                        { return fField;         };
           Float_t  GetLtuPtCut() const                     { return fLtuPtCut;      };
           Float_t  GetGtuPtCut() const                     { return fGtuPtCut;      };
           Float_t  GetHighPt() const                       { return fHighPt;        };
@@ -70,10 +69,8 @@ class AliTRDtrigParam : public TNamed {
                                                              fC2           = c2; 
                                                              fPedestal     = ped;   };
           void     SetADCnoise(Float_t adcn)               { fADCnoise     = adcn;  };
-          void     SetDebugLevel(Int_t deb)                { fDebug        = deb;   };
           void     SetDeltaY(Float_t dy)                   { fDeltaY       = dy;    };
           void     SetDeltaS(Float_t ds)                   { fDeltaS       = ds;    };
-          void     SetField(Float_t b)                     { fField        = b;     };
           void     SetLtuPtCut(Float_t ptcut)              { fLtuPtCut     = ptcut; };
           void     SetGtuPtCut(Float_t ptcut)              { fGtuPtCut     = ptcut; };
           void     SetHighPt(Float_t hpt)                  { fHighPt       = hpt;   };
@@ -84,7 +81,8 @@ class AliTRDtrigParam : public TNamed {
 
  protected:
 
-          Int_t    fDebug;                         // Debugging flag
+  static  AliTRDtrigParam *fgInstance;             // Instance of this class (singleton implementation)
+  static  Bool_t           fgTerminated;           // Defines if this class has already been terminated
 
           Int_t    fTime1;                         // First time bin for tracking (incl.)
           Int_t    fTime2;                         // Last  time bin for tracking (incl.)
@@ -112,8 +110,6 @@ class AliTRDtrigParam : public TNamed {
           Float_t  fLtuPtCut;                      // Local pt cut
           Float_t  fGtuPtCut;                      // Global pt cut
 
-          Float_t  fField;                         // Magnetic field
-
           Float_t  fHighPt;                        // High pt selection
 
           Int_t    fNPartJetLow;                   // Number of tracks for jet (low)
@@ -121,7 +117,12 @@ class AliTRDtrigParam : public TNamed {
           Float_t  fJetLowPt;                      // Low pt threshold for jet particles
           Float_t  fJetHighPt;                     // High pt threshold for jet particles
 
-  ClassDef(AliTRDtrigParam,2)                      // TRD trigger parameter class
+ private:
+
+  // This is a singleton, constructor is private!
+  AliTRDtrigParam();
+
+  ClassDef(AliTRDtrigParam,3)                      // TRD trigger parameter class
 
 };
 

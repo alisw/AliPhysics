@@ -1,5 +1,4 @@
-SRCS= AliTRDrecPoint.cxx \
-      AliTRDcluster.cxx \
+SRCS= AliTRDcluster.cxx \
       AliTRDclusterMI.cxx \
       AliTRDclusterizer.cxx \
       AliTRDclusterizerV1.cxx \

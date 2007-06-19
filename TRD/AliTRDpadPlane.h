@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id: AliTRDpadPlane.h,v */
+/* $Id$ */
 
 //////////////////////////////////////////////////
 //                                              //
@@ -18,19 +18,40 @@
 
 #include <TObject.h>
 
-class AliTRDgeometry;
-
 //_____________________________________________________________________________
 class AliTRDpadPlane : public TObject {
 
  public:
 
   AliTRDpadPlane();
-  AliTRDpadPlane(Int_t p, Int_t c);
   AliTRDpadPlane(const AliTRDpadPlane &p);
   virtual           ~AliTRDpadPlane();
   AliTRDpadPlane    &operator=(const AliTRDpadPlane &p);
   virtual void       Copy(TObject &p) const;
+
+  void     SetPlane(Int_t p)                   { fPla            = p; };
+  void     SetChamber(Int_t c)                 { fCha            = c; };
+  void     SetRowSpacing(Double_t s)           { fRowSpacing     = s; };
+  void     SetColSpacing(Double_t s)           { fColSpacing     = s; };
+  void     SetLengthRim(Double_t l)            { fLengthRim      = l; };
+  void     SetWidthRim(Double_t w)             { fWidthRim       = w; };
+  void     SetNcols(Int_t n)                   { fNcols          = n;
+                                                 if (fPadCol) delete[] fPadCol;
+                                                 fPadCol         = new Double_t[fNcols]; };
+  void     SetNrows(Int_t n)                   { fNrows          = n;
+                                                 if (fPadRow) delete[] fPadRow;
+                                                 fPadRow         = new Double_t[fNrows]; };
+  void     SetPadCol(Int_t ic, Double_t c)     { if (ic < fNcols) fPadCol[ic] = c;       };
+  void     SetPadRow(Int_t ir, Double_t r)     { if (ir < fNrows) fPadRow[ir] = r;       };
+  void     SetLength(Double_t l)               { fLength         = l; };
+  void     SetWidth(Double_t w)                { fWidth          = w; };
+  void     SetLengthOPad(Double_t l)           { fLengthOPad     = l; };
+  void     SetWidthOPad(Double_t w)            { fWidthOPad      = w; };
+  void     SetLengthIPad(Double_t l)           { fLengthIPad     = l; };
+  void     SetWidthIPad(Double_t w)            { fWidthIPad      = w; };
+  void     SetTiltingAngle(Double_t t)         { fTiltingAngle   = t; 
+                                                 fTiltingTan     = TMath::Tan(TMath::Pi()/180.0 * fTiltingAngle); };
+  void     SetPadRowSMOffset(Double_t o)       { fPadRowSMOffset = o; };
 
   Int_t    GetPadRowNumber(Double_t z) const;
   Int_t    GetPadRowNumberROC(Double_t z) const;
@@ -81,11 +102,20 @@ class AliTRDpadPlane : public TObject {
                                                  return fWidthOPad;
                                                else
                                                   return fWidthIPad; };
+
   Double_t GetLengthRim() const              { return fLengthRim;    };
+  Double_t GetWidthRim() const               { return fWidthRim;     };
+
+  Double_t GetRowSpacing() const             { return fRowSpacing;   };
+  Double_t GetColSpacing() const             { return fColSpacing;   };
+
+  Double_t GetLengthOPad() const             { return fLengthOPad;   };
+  Double_t GetLengthIPad() const             { return fLengthIPad;   };
+
+  Double_t GetWidthOPad() const              { return fWidthOPad;    };
+  Double_t GetWidthIPad() const              { return fWidthIPad;    };
 
  protected:
-
-  AliTRDgeometry *fGeo;       //! TRD geometry       
 
   Int_t     fPla;             //  Plane number
   Int_t     fCha;             //  Chamber number
@@ -111,12 +141,12 @@ class AliTRDpadPlane : public TObject {
   Double_t  fTiltingAngle;    //  Pad tilting angle  
   Double_t  fTiltingTan;      //  Tangens of pad tilting angle
 
-  Double_t *fPadRow;          //! Pad border positions in row direction
-  Double_t *fPadCol;          //! Pad border positions in column direction
+  Double_t *fPadRow;          //  Pad border positions in row direction
+  Double_t *fPadCol;          //  Pad border positions in column direction
 
   Double_t  fPadRowSMOffset;  //  To be added to translate local ROC system to local SM system
 
-  ClassDef(AliTRDpadPlane,3)  //  TRD ROC pad plane
+  ClassDef(AliTRDpadPlane,4)  //  TRD ROC pad plane
 
 };
 

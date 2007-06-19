@@ -14,11 +14,15 @@
 class TObjArray;
 class TH2F;
 class TTreeSRedirector;
+
+class AliRawReader;
+
 class AliTRDCalROC;
 class AliTRDCalPadStatus;
 class AliTRDRawStream;
 class AliTRDarrayF;
-class AliRawReader;
+class AliTRDgeometry;
+
 struct eventHeaderStruct;
 
 class AliTRDCalibPadStatus : public TObject {
@@ -64,6 +68,9 @@ public:
 
 private:
 
+  // Geometry
+  AliTRDgeometry  *fGeo;            //! The TRD geometry
+
   Int_t fAdcMin;                    //  min adc channel of pedestal value
   Int_t fAdcMax;                    //  max adc channel of pedestal value
   Int_t fDetector;                  //  Current detector
@@ -93,9 +100,7 @@ private:
   virtual Int_t    GetChamber(Int_t d) const;
   virtual Int_t    GetSector(Int_t d) const;
 
-public:
-
-  ClassDef(AliTRDCalibPadStatus,1)
+  ClassDef(AliTRDCalibPadStatus,2)
 
 };
 

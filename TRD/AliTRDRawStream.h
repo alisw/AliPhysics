@@ -15,8 +15,6 @@
 
 class AliTRDgeometry;
 class AliRawReader;
-class AliTRDCommonParam;
-class AliTRDcalibDB;
 
 // Some constants:
 const UInt_t kEndoftrackletmarker = 0xAAAAAAAA; /*This marks the end of tracklet data words*/
@@ -144,15 +142,15 @@ class AliTRDRawStream: public TObject {
     Bool_t   fADCmask[21];                 //  Mask of active ADCs for zero suppression
     UShort_t fChamberDone[540];            //  Chamber was processed already (1=1HC, 2=full chamber)
 
-    Int_t    fRetVal;                         //  Datadecode return
-    Int_t    fEqID;                           //  Equipment id
-    UInt_t   fDataSize;                       //  Size of the data available in the current buffer
-    Bool_t   fSizeOK;                         //  Did we read anything
+    Int_t    fRetVal;                      //  Datadecode return
+    Int_t    fEqID;                        //  Equipment id
+    UInt_t   fDataSize;                    //  Size of the data available in the current buffer
+    Bool_t   fSizeOK;                      //  Did we read anything
     UInt_t   fCountBytes;                  //  Bytes traversed in the buffer
     UInt_t   fBufSize;                     //  Size of the current RawReader buffer
     Bool_t   fkBufferSet;                  //  Is the RawReader buffer available
-    UChar_t  *fPos;                        //  Position in the buffer of the RawReader
-    UInt_t   *fDataWord;                   //  The pointer to the current 32 bit data word
+    UChar_t *fPos;                         //  Position in the buffer of the RawReader
+    UInt_t  *fDataWord;                    //  The pointer to the current 32 bit data word
     UInt_t   fTimeBinsCalib;               //  N of time bins retrieved from calibration
 
     enum ETRDzRawStreamError {
@@ -175,17 +173,10 @@ class AliTRDRawStream: public TObject {
 
     AliTRDgeometry *fGeo;                  //  TRD geometry
 
-    AliTRDCommonParam *fCommonParam;
-    AliTRDcalibDB     *fCalibration;
-
     void  DecodeHCheader(Int_t timeBins);
-
     void  DecodeMCMheader();
-
     void  DecodeTracklet();
-
     void  DecodeGTUlinkMask();
-
     Int_t DecodeDataWord();
     Int_t DecodeDataWordV1V2();                // Valid for fRawversion = 1, 2, ... 
     Int_t DecodeDataWordV3();                  // Valid for fRawversion = 3, ... 
@@ -194,7 +185,7 @@ class AliTRDRawStream: public TObject {
 
     enum { fkStart, fkStop, fkWordOK, fkNoMoreData, fkNextSM, fkNextHC, fkSeekNonEoTracklet, fkDecodeHC, fkNextMCM, fkNextData, fkReading};
     
-    ClassDef(AliTRDRawStream, 4)               // Class for reading TRD raw digits
+    ClassDef(AliTRDRawStream, 5)               // Class for reading TRD raw digits
 
 };
 #endif

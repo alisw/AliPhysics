@@ -333,6 +333,11 @@ AliTRDdigitizer::~AliTRDdigitizer()
     fTimeStruct2 = 0;
   }
 
+  if (fGeo) {
+    delete fGeo;
+    fGeo = 0;
+  }
+
 }
 
 //_____________________________________________________________________________
@@ -658,8 +663,7 @@ Bool_t AliTRDdigitizer::InitDetector()
   }
 
   // Get the geometry
-  fGeo = fTRD->GetGeometry();
-  AliDebug(1,Form("Geometry version %d",fGeo->IsVersion()));
+  fGeo = new AliTRDgeometry();
 
   // Create a digits manager
   delete fDigitsManager;
@@ -858,7 +862,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
       Float_t hittime  = hit->GetTime();
       Int_t   plane    = fGeo->GetPlane(detector);
       Int_t   chamber  = fGeo->GetChamber(detector);
-      padPlane         = commonParam->GetPadPlane(plane,chamber);
+      padPlane         = fGeo->GetPadPlane(plane,chamber);
       Float_t row0     = padPlane->GetRow0ROC();
       Int_t   nRowMax  = padPlane->GetNrows();
       Int_t   nColMax  = padPlane->GetNcols();
@@ -1169,8 +1173,8 @@ Bool_t AliTRDdigitizer::MakeDigits()
     Int_t plane      = fGeo->GetPlane(iDet);
     Int_t sector     = fGeo->GetSector(iDet);
     Int_t chamber    = fGeo->GetChamber(iDet);
-    Int_t nRowMax    = commonParam->GetRowMax(plane,chamber,sector);
-    Int_t nColMax    = commonParam->GetColMax(plane);
+    Int_t nRowMax    = fGeo->GetRowMax(plane,chamber,sector);
+    Int_t nColMax    = fGeo->GetColMax(plane);
 
     Double_t *inADC  = new Double_t[nTimeTotal];
     Double_t *outADC = new Double_t[nTimeTotal];
@@ -1385,12 +1389,6 @@ Bool_t AliTRDdigitizer::ConvertSDigits()
     return kFALSE;
   }
   
-  AliTRDCommonParam *commonParam = AliTRDCommonParam::Instance();
-  if (!commonParam) {
-    AliFatal("Could not get common parameters");
-    return kFALSE;
-  }
-  
   AliTRDcalibDB     *calibration = AliTRDcalibDB::Instance();
   if (!calibration) {
     AliFatal("Could not get calibration object");
@@ -1424,8 +1422,8 @@ Bool_t AliTRDdigitizer::ConvertSDigits()
     Int_t plane      = fGeo->GetPlane(iDet);
     Int_t sector     = fGeo->GetSector(iDet);
     Int_t chamber    = fGeo->GetChamber(iDet);
-    Int_t nRowMax    = commonParam->GetRowMax(plane,chamber,sector);
-    Int_t nColMax    = commonParam->GetColMax(plane);
+    Int_t nRowMax    = fGeo->GetRowMax(plane,chamber,sector);
+    Int_t nColMax    = fGeo->GetColMax(plane);
 
     Double_t *inADC  = new Double_t[nTimeTotal];
     Double_t *outADC = new Double_t[nTimeTotal];
@@ -1549,12 +1547,6 @@ Bool_t AliTRDdigitizer::MergeSDigits()
     return kFALSE;
   }
   
-  AliTRDCommonParam *commonParam = AliTRDCommonParam::Instance();
-  if (!commonParam) {
-    AliFatal("Could not get common parameters");
-    return kFALSE;
-  }
-  
   AliTRDcalibDB     *calibration = AliTRDcalibDB::Instance();
   if (!calibration) {
     AliFatal("Could not get calibration object");
@@ -1601,8 +1593,8 @@ Bool_t AliTRDdigitizer::MergeSDigits()
       Int_t plane   = fGeo->GetPlane(iDet);
       Int_t sector  = fGeo->GetSector(iDet);
       Int_t chamber = fGeo->GetChamber(iDet);
-      Int_t nRowMax = commonParam->GetRowMax(plane,chamber,sector);
-      Int_t nColMax = commonParam->GetColMax(plane);
+      Int_t nRowMax = fGeo->GetRowMax(plane,chamber,sector);
+      Int_t nColMax = fGeo->GetColMax(plane);
 
       // Loop through the pixels of one detector and add the signals
       digitsA = fSDigitsManager->GetDigits(iDet);

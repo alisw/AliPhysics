@@ -18,8 +18,6 @@ class TTree;
 class AliRawReader;
 
 class AliTRDdigitsManager;
-class AliTRDCommonParam;
-class AliTRDcalibDB;
 class AliTRDgeometry;
 class AliTRDdataArrayI;
 
@@ -45,12 +43,10 @@ class AliTRDrawData : public TObject {
   virtual Int_t        ProduceHcDataV1andV2(AliTRDdataArrayI *digits, Int_t side, Int_t det, UInt_t *buf, Int_t maxSize);
   
   Int_t                fRawVersion;     //  Which version of raw simulator is used
-  AliTRDCommonParam   *fCommonParam;    //! Common parameters
-  AliTRDcalibDB       *fCalibration;    //! Offline database interface
   AliTRDgeometry      *fGeo;            //! Geometry
   Int_t                fNumberOfDDLs;   //  Number of DDLs
 
-  ClassDef(AliTRDrawData,3)             //  TRD raw data class
+  ClassDef(AliTRDrawData,4)             //  TRD raw data class
 
 };
 #endif

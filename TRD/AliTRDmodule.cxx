@@ -23,6 +23,7 @@
 
 #include <TObject.h>
 
+#include "AliRun.h"
 #include "AliLog.h"
 
 #include "AliTRDgeometry.h"
@@ -36,11 +37,11 @@ ClassImp(AliTRDmodule)
 
 //_____________________________________________________________________________
 AliTRDmodule::AliTRDmodule()
-  :TObject() 
+  :TObject()
   ,fXprojPlane(0)
   ,fField(0)
-  ,fTracklets(NULL)
-  ,fTracks(NULL)
+  ,fTracklets(new TObjArray(400))
+  ,fTracks(new TObjArray(400))
   ,fDeltaY(0)
   ,fDeltaS(0)
   ,fLTUtrk(0)
@@ -50,23 +51,15 @@ AliTRDmodule::AliTRDmodule()
   // AliTRDmodule default constructor
   //
 
-}
+  fXprojPlane = AliTRDtrigParam::Instance()->GetXprojPlane();
+  fDeltaY     = AliTRDtrigParam::Instance()->GetDeltaY();
+  fDeltaS     = AliTRDtrigParam::Instance()->GetDeltaS();
 
-//_____________________________________________________________________________
-AliTRDmodule::AliTRDmodule(AliTRDtrigParam *trigp) 
-  :TObject()
-  ,fXprojPlane(trigp->GetXprojPlane())
-  ,fField(trigp->GetField())
-  ,fTracklets(new TObjArray(400))
-  ,fTracks(new TObjArray(400))
-  ,fDeltaY(trigp->GetDeltaY())
-  ,fDeltaS(trigp->GetDeltaS())
-  ,fLTUtrk(0)
-  ,fGTUtrk(0)
-{
-  //
-  // AliTRDmodule constructor
-  //
+  // The magnetic field strength
+  Double_t x[3] = { 0.0, 0.0, 0.0 };
+  Double_t b[3];
+  gAlice->Field(x,b);  // b[] is in kilo Gauss
+  fField = b[2] * 0.1; // Tesla
 
   for (Int_t iPlan = 0; iPlan < AliTRDgeometry::Nplan(); iPlan++) {
     for (Int_t i = 0; i < kNsubZchan; i++) {

@@ -64,17 +64,18 @@ histo->Draw();
 #include <TFile.h>
 #include <AliMathBase.h>
 #include "TTreeStream.h"
+
 //AliRoot includes
 #include "AliRawReader.h"
 #include "AliRawReaderRoot.h"
 #include "AliRawReaderDate.h"
+
 #include "AliTRDRawStream.h"
+#include "AliTRDarrayF.h"
+#include "AliTRDgeometry.h"
 #include "./Cal/AliTRDCalROC.h"
 #include "./Cal/AliTRDCalPadStatus.h"
 #include "./Cal/AliTRDCalSingleChamberStatus.h"
-#include "AliTRDarrayF.h"
-#include "AliTRDCommonParam.h"
-
 
 #ifdef ALI_DATE
 #include "event.h"
@@ -83,13 +84,12 @@ histo->Draw();
 //header file
 #include "AliTRDCalibPadStatus.h"
 
-
-
 ClassImp(AliTRDCalibPadStatus) /*FOLD00*/
 
 //_____________________________________________________________________
 AliTRDCalibPadStatus::AliTRDCalibPadStatus() : /*FOLD00*/
   TObject(),
+  fGeo(0),
   fAdcMin(0),
   fAdcMax(20),
   fDetector(-1),
@@ -107,11 +107,15 @@ AliTRDCalibPadStatus::AliTRDCalibPadStatus() : /*FOLD00*/
     //
     // default constructor
     //
+
+  fGeo = new AliTRDgeometry();
+
 }
 
 //_____________________________________________________________________
 AliTRDCalibPadStatus::AliTRDCalibPadStatus(const AliTRDCalibPadStatus &ped) : /*FOLD00*/
   TObject(ped),
+  fGeo(0),
   fAdcMin(ped.GetAdcMin()),
   fAdcMax(ped.GetAdcMax()),
   fDetector(ped.fDetector),
@@ -150,7 +154,14 @@ AliTRDCalibPadStatus::AliTRDCalibPadStatus(const AliTRDCalibPadStatus &ped) : /*
 	}
 	
     }
+
+    if (fGeo) {
+      delete fGeo;
+    }
+    fGeo = new AliTRDgeometry();
+
 }
+
 //_____________________________________________________________________
 AliTRDCalibPadStatus& AliTRDCalibPadStatus::operator = (const  AliTRDCalibPadStatus &source)
 {
@@ -162,13 +173,20 @@ AliTRDCalibPadStatus& AliTRDCalibPadStatus::operator = (const  AliTRDCalibPadSta
 
   return *this;
 }
+
 //_____________________________________________________________________
 AliTRDCalibPadStatus::~AliTRDCalibPadStatus() /*FOLD00*/
 {
   //
   // destructor
   //
+
+  if (fGeo) {
+    delete fGeo;
+  }
+  
 }
+
 //_____________________________________________________________________
 Int_t AliTRDCalibPadStatus::Update(const Int_t icdet, /*FOLD00*/
 				   const Int_t icRow,
@@ -336,20 +354,16 @@ Bool_t AliTRDCalibPadStatus::TestEvent(Int_t nevent) /*FOLD00*/
   // fill one oroc and one iroc with random gaus
   //
 
-  AliTRDCommonParam *comParam = AliTRDCommonParam::Instance();
-  if (!comParam) {
-    return 0;
-  }
   gRandom->SetSeed(0);
 
     for (Int_t ism=0; ism<18; ism++){
        	for (Int_t ich=0; ich < 5; ich++){
 	    for (Int_t ipl=0; ipl < 6; ipl++){
-	      for(Int_t irow = 0; irow < comParam->GetRowMax(ipl,ich,ism); irow++){
-		for(Int_t icol = 0; icol < comParam->GetColMax(ipl); icol++){
+	      for(Int_t irow = 0; irow < fGeo->GetRowMax(ipl,ich,ism); irow++){
+		for(Int_t icol = 0; icol < fGeo->GetColMax(ipl); icol++){
 		  for (Int_t iTimeBin=0; iTimeBin<(30*nevent); iTimeBin++){
 		    Int_t signal=(Int_t)(ich+8+gRandom->Gaus(0,1.2));
-		    if ( signal>0 )Update((ipl+ich*6+ism*6*5),irow,icol,signal,comParam->GetRowMax(ipl,ich,ism));
+		    if ( signal>0 )Update((ipl+ich*6+ism*6*5),irow,icol,signal,fGeo->GetRowMax(ipl,ich,ism));
 		  }
 		}
 	      }
@@ -366,20 +380,16 @@ Bool_t AliTRDCalibPadStatus::TestEventHisto(Int_t nevent) /*FOLD00*/
   // fill one oroc and one iroc with random gaus
   //
 
-  AliTRDCommonParam *comParam = AliTRDCommonParam::Instance();
-  if (!comParam) {
-    return 0;
-  }
   gRandom->SetSeed(0);
 
     for (Int_t ism=0; ism<18; ism++){
        	for (Int_t ich=0; ich < 5; ich++){
 	    for (Int_t ipl=0; ipl < 6; ipl++){
-	      for(Int_t irow = 0; irow < comParam->GetRowMax(ipl,ich,ism); irow++){
-		for(Int_t icol = 0; icol < comParam->GetColMax(ipl); icol++){
+	      for(Int_t irow = 0; irow < fGeo->GetRowMax(ipl,ich,ism); irow++){
+		for(Int_t icol = 0; icol < fGeo->GetColMax(ipl); icol++){
 		  for (Int_t iTimeBin=0; iTimeBin<(30*nevent); iTimeBin++){
 		    Int_t signal=(Int_t)(ich+8+gRandom->Gaus(0,1.2));
-		    if ( signal>0 )UpdateHisto((ipl+ich*6+ism*6*5),irow,icol,signal,comParam->GetRowMax(ipl,ich,ism));
+		    if ( signal>0 )UpdateHisto((ipl+ich*6+ism*6*5),irow,icol,signal,fGeo->GetRowMax(ipl,ich,ism));
 		  }
 		}
 	      }
@@ -406,11 +416,8 @@ TH2F* AliTRDCalibPadStatus::GetHisto(Int_t det, TObjArray *arr, /*FOLD00*/
     sprintf(name,"hCalib%s%.2d",type,det);
     sprintf(title,"%s calibration histogram detector %.2d;ADC channel;Channel (pad)",type,det);
 
-    AliTRDCommonParam *comParam = AliTRDCommonParam::Instance();
-    if (!comParam) {
-      return 0x0;
-    }
-    Int_t nbchannels = comParam->GetRowMax(GetPlane(det),GetChamber(det),GetSector(det))*comParam->GetColMax(GetPlane(det));
+    Int_t nbchannels = fGeo->GetRowMax(GetPlane(det),GetChamber(det),GetSector(det))
+                     * fGeo->GetColMax(GetPlane(det));
 
     // new histogram with calib information. One value for each pad!
     TH2F* hist = new TH2F(name,title,
@@ -443,11 +450,8 @@ AliTRDarrayF* AliTRDCalibPadStatus::GetCal(Int_t det, TObjArray* arr, Bool_t for
 
     // if we are forced and histogram doesn't yes exist create it
     AliTRDarrayF *croc = new AliTRDarrayF();
-    AliTRDCommonParam *comParam = AliTRDCommonParam::Instance();
-    if (!comParam) {
-      return croc;
-    }
-    Int_t nbpad = comParam->GetRowMax(GetPlane(det),GetChamber(det),GetSector(det))*comParam->GetColMax(GetPlane(det));
+    Int_t nbpad = fGeo->GetRowMax(GetPlane(det),GetChamber(det),GetSector(det))
+                * fGeo->GetColMax(GetPlane(det));
 
     // new AliTRDCalROC. One value for each pad!
     croc->Expand(nbpad);

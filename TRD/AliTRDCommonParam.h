@@ -36,11 +36,6 @@ class AliTRDCommonParam : public TObject
     
     Bool_t          ExBOn() const                                  { return fExBOn;              }
     
-    AliTRDpadPlane *GetPadPlane(Int_t p, Int_t c) const;
-    Int_t           GetRowMax(Int_t p, Int_t c, Int_t /*s*/) const;
-    Int_t           GetColMax(Int_t p) const;
-    Double_t        GetRow0(Int_t p, Int_t c, Int_t /*s*/) const;
-    Double_t        GetCol0(Int_t p) const;
     Float_t         GetSamplingFrequency() const                   { return fSamplingFrequency;  }
 
   protected:
@@ -54,14 +49,13 @@ class AliTRDCommonParam : public TObject
 
     Float_t                   fSamplingFrequency; //  Sampling Frequency in MHz
   
-    TObjArray                *fPadPlaneArray;     //! Array of pad plane objects
-  
   private:
 
     // This is a singleton, constructor is private!  
     AliTRDCommonParam();
   
-    ClassDef(AliTRDCommonParam,3)                  // The constant parameters common to simulation and reconstruction
+    ClassDef(AliTRDCommonParam,4)                  // The constant parameters common to simulation and reconstruction
+
 };
 
 #endif
