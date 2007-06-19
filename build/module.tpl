@@ -428,8 +428,9 @@ smell-@MODULE@: $(@PACKAGE@SMELL)
 # targets to create .par archives (jgrosseo)
 @PACKAGE@.par: $(patsubst %,@MODULE@/@PACKAGE@/%,$(filter-out dict.%, $(HDRS) $(SRCS) $(DHDR) $(PKGFILE) Makefile Makefile.arch lib@PACKAGE@.pkg PROOF-INF))
 	@echo "Creating archive" $@ ...
-	@cd @MODULE@; tar cfzh ../$@ @PACKAGE@
+	@cd @MODULE@; tar cfzh /tmp/$@ @PACKAGE@
 	@rm -rf @MODULE@/@PACKAGE@
+	@echo "package" $@ "in /tmp/"$@
 	@echo $@ "done"
 
 @MODULE@/@PACKAGE@/Makefile: @MODULE@/Makefile
