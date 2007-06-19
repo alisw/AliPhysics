@@ -23,7 +23,6 @@ class AliMUONGlobalTrigger;
 class AliMUONLocalStruct;
 class AliMUONRegHeader;
 class AliMUONStopwatchGroup;
-class AliMUONTriggerCrateStore;
 class AliMUONVDigitStore;
 class AliMUONVTriggerStore;
 class AliMpDDLStore;
@@ -57,6 +56,10 @@ private:
   /// Not implemented assignment operator
   AliMUONRawWriter& operator=(const AliMUONRawWriter& rhs);
 
+ static void LocalWordPacking(UInt_t &word, UInt_t locId, UInt_t locDec, 
+			      UInt_t trigY, UInt_t posY, UInt_t posX, 
+			      UInt_t sdevX, UInt_t devX);
+
   AliMUONBlockHeader* fBlockHeader;  //!< DDL block header class pointers
   AliMUONDspHeader*   fDspHeader;    //!< DDL Dsp header class pointers
   AliMUONDarcHeader*  fDarcHeader;   //!< DDL darc header class pointers
@@ -64,7 +67,6 @@ private:
   AliMUONLocalStruct* fLocalStruct;  //!< DDL local structure class pointers
 
   AliMpDDLStore*            fDDLStore;     //!< DDL store pointer
-  AliMUONTriggerCrateStore* fCrateManager; //!< Crate array
 
   Bool_t fScalerEvent;               ///< flag to generates scaler event
 

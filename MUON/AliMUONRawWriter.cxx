@@ -57,14 +57,15 @@
 #include "AliMUONLocalTriggerBoard.h"
 #include "AliMUONRegionalTrigger.h"
 #include "AliMUONRegHeader.h"
-#include "AliMUONTriggerCrate.h"
-#include "AliMUONTriggerCrateStore.h"
+
 #include "AliMUONVTriggerStore.h"
 #include "AliMUONStopwatchGroup.h"
 #include "AliMUONStopwatchGroupElement.h"
 
 #include "AliMpDDLStore.h"
 #include "AliMpDDL.h"
+#include "AliMpTriggerCrate.h"
+#include "AliMpLocalBoard.h"
 #include "AliMpDetElement.h"
 #include "AliMpDEManager.h"
 #include "AliMpExMap.h"
@@ -96,7 +97,6 @@ AliMUONRawWriter::AliMUONRawWriter()
     fRegHeader(new AliMUONRegHeader()),
     fLocalStruct(new AliMUONLocalStruct()),
     fDDLStore(AliMpDDLStore::Instance()),
-    fCrateManager(new AliMUONTriggerCrateStore()),
     fScalerEvent(kFALSE),
     fHeader(),
     fTimers(new AliMUONStopwatchGroup),
@@ -110,9 +110,6 @@ AliMUONRawWriter::AliMUONRawWriter()
   // setting data key to default value (only for writting)
   fBlockHeader->SetDataKey(fBlockHeader->GetDefaultDataKey());
   fDspHeader->SetDataKey(fDspHeader->GetDefaultDataKey());
-
-  // Crate manager
-  fCrateManager->ReadFromFile();
 
 }
 
@@ -128,11 +125,27 @@ AliMUONRawWriter::~AliMUONRawWriter(void)
   delete fDarcHeader;
   delete fRegHeader;
   delete fLocalStruct;
-  delete fCrateManager;
   AliInfo("Timers:");
   fTimers->Print();
   delete fTimers;
   delete[] fBuffer;
+}
+
+//____________________________________________________________________
+void  AliMUONRawWriter::LocalWordPacking(UInt_t& word, UInt_t locId, UInt_t locDec, 
+					 UInt_t trigY, UInt_t posY, UInt_t posX, 
+					 UInt_t sdevX, UInt_t devX)
+{
+/// pack local trigger word
+
+    AliBitPacking::PackWord(locId,word,19,22); //card id number in crate
+    AliBitPacking::PackWord(locDec,word,15,18);
+    AliBitPacking::PackWord(trigY,word,14,14);
+    AliBitPacking::PackWord(posY,word,10,13);
+    AliBitPacking::PackWord(sdevX,word,9,9);
+    AliBitPacking::PackWord(devX,word,5,8);
+    AliBitPacking::PackWord(posX,word,0,4);
+
 }
 
 //____________________________________________________________________
@@ -439,7 +452,7 @@ Int_t AliMUONRawWriter::WriteTriggerDDL(const AliMUONVTriggerStore& triggerStore
   UInt_t word;
   Int_t* buffer = 0;
   Int_t index;
-  Int_t iLocCard, locCard;
+  Int_t locCard;
   UChar_t locDec, trigY, posY, posX, regOut;
   UInt_t regInpLpt;
   UInt_t regInpHpt;
@@ -530,13 +543,13 @@ Int_t AliMUONRawWriter::WriteTriggerDDL(const AliMUONVTriggerStore& triggerStore
     buffer[index++] = fDarcHeader->GetEndOfGlobal();
 
     // 8 regional cards per DDL
-    for (Int_t iReg = 0; iReg < 8; iReg++) {
+    for (Int_t iReg = 0; iReg < 8; ++iReg) {
 
-      // crate info
-      AliMUONTriggerCrate* crate = fCrateManager->Crate(iDDL, iReg);
+        // crate info
+      AliMpTriggerCrate* crate = AliMpDDLStore::Instance()->GetTriggerCrate(iDDL, iReg);
 
       if (!crate) 
-        AliWarning(Form("Missing crate number %d in DDL %d\n", iReg, iDDL));
+	AliWarning(Form("Missing crate number %d in DDL %d\n", iReg, iDDL));
 
       // regional info tree, make sure that no reg card missing
       AliMUONRegionalTrigger* regTrg  = triggerStore.FindRegional(iReg+iDDL*8);
@@ -555,7 +568,7 @@ Int_t AliMUONRawWriter::WriteTriggerDDL(const AliMUONVTriggerStore& triggerStore
       //see  AliMUONRegHeader.h for details
       AliBitPacking::PackWord((UInt_t)eventPhys,word,31,31); 
       AliBitPacking::PackWord((UInt_t)serialNb,word,19,24); 
-      AliBitPacking::PackWord((UInt_t)version,word,16,23);
+      AliBitPacking::PackWord((UInt_t)version,word,7,14);
       AliBitPacking::PackWord((UInt_t)iReg,word,15,18);
       AliBitPacking::PackWord((UInt_t)regOut,word,0,7); 
       fRegHeader->SetWord(word);
@@ -574,68 +587,76 @@ Int_t AliMUONRawWriter::WriteTriggerDDL(const AliMUONVTriggerStore& triggerStore
       // end of regional word
       buffer[index++] = fRegHeader->GetEndOfReg();
       
-      TObjArray *boards = crate->Boards();
-
-
       // 16 local card per regional board
       //      UShort_t localMask = 0x0;
       
       for (Int_t iLoc = 0; iLoc < 16; iLoc++) {
 	  
-	  // slot zero for Regional card
-	  AliMUONLocalTriggerBoard* localBoard = (AliMUONLocalTriggerBoard*)boards->At(iLoc+1);
-	  
-	  if (localBoard) { // if not empty slot
-	      
-      if ((iLocCard = localBoard->GetNumber()) != 0) {// if notified board
-        
-        AliMUONLocalTrigger* locTrg = triggerStore.FindLocal(iLocCard);
-        
-        locCard = locTrg->LoCircuit();
-        
-        locDec  = locTrg->GetLoDecision();
-        trigY =  locTrg->LoTrigY();
-        posY  = locTrg->LoStripY();
-        posX  = locTrg->LoStripX();
-        devX  = locTrg->LoDev();
-        sdevX = locTrg->LoSdev();
-        
-        AliDebug(4,Form("loctrg %d, posX %d, posY %d, devX %d\n", 
-                        locTrg->LoCircuit(),locTrg->LoStripX(),locTrg->LoStripY(),locTrg->LoDev()));  
-        //packing word
-        word = 0;
-        AliBitPacking::PackWord((UInt_t)iLoc,word,19,22); //card id number in crate
-        AliBitPacking::PackWord((UInt_t)locDec,word,15,18);
-        AliBitPacking::PackWord((UInt_t)trigY,word,14,14);
-        AliBitPacking::PackWord((UInt_t)posY,word,10,13);
-        AliBitPacking::PackWord((UInt_t)sdevX,word,9,9);
-        AliBitPacking::PackWord((UInt_t)devX,word,5,8);
-        AliBitPacking::PackWord((UInt_t)posX,word,0,4);
-        
-        buffer[index++] = (locTrg->GetX1Pattern() | (locTrg->GetX2Pattern() << 16));
-        buffer[index++] = (locTrg->GetX3Pattern() | (locTrg->GetX4Pattern() << 16));
-        buffer[index++] = (locTrg->GetY1Pattern() | (locTrg->GetY2Pattern() << 16));
-        buffer[index++] = (locTrg->GetY3Pattern() | (locTrg->GetY4Pattern() << 16));
-        buffer[index++] = (Int_t)word; // data word
-      } else {// number!=0
-              // fill with 10CDEAD word for 'non-notified' slots
-        for (Int_t i = 0; i < fLocalStruct->GetLength(); i++)
-		      buffer[index++] = fLocalStruct->GetDisableWord(); 
-      }
-	  } else { 
-	      // fill with 10CDEAD word for empty slots
-	      for (Int_t i = 0; i < fLocalStruct->GetLength(); i++)
-		  buffer[index++] = fLocalStruct->GetDisableWord(); 
-	  }// condition localBoard
-	  
-	  // 45 regional scaler word
-	  if (fScalerEvent) {
-	      memcpy(&buffer[index], fLocalStruct->GetScalers(), kLocScalerLength*4);
-	      index += kLocScalerLength;
+	// slot zero for Regional card
+	Int_t localBoardId = crate->GetLocalBoardId(iLoc);
+
+	if (localBoardId) { // if not empty slot
+	  AliMpLocalBoard* localBoard = AliMpDDLStore::Instance()->GetLocalBoard(localBoardId);
+
+	  if (localBoard->IsNotified()) {// if notified board 
+	    AliMUONLocalTrigger* locTrg = triggerStore.FindLocal(localBoardId);
+
+	    locCard = locTrg->LoCircuit();
+	    locDec  = locTrg->GetLoDecision();
+	    trigY   = locTrg->LoTrigY();
+	    posY    = locTrg->LoStripY();
+	    posX    = locTrg->LoStripX();
+	    devX    = locTrg->LoDev();
+	    sdevX   = locTrg->LoSdev();
+		  
+	    AliDebug(4,Form("loctrg %d, posX %d, posY %d, devX %d\n", 
+			    locTrg->LoCircuit(),locTrg->LoStripX(),locTrg->LoStripY(),locTrg->LoDev()));  
+	    //packing word
+	    word = 0;
+	    LocalWordPacking(word, (UInt_t)iLoc, (UInt_t)locDec, (UInt_t)trigY, (UInt_t)posY, 
+			     (UInt_t)posX, (UInt_t)sdevX, (UInt_t)devX);
+
+	    buffer[index++] = (locTrg->GetX1Pattern() | (locTrg->GetX2Pattern() << 16));
+	    buffer[index++] = (locTrg->GetX3Pattern() | (locTrg->GetX4Pattern() << 16));
+	    buffer[index++] = (locTrg->GetY1Pattern() | (locTrg->GetY2Pattern() << 16));
+	    buffer[index++] = (locTrg->GetY3Pattern() | (locTrg->GetY4Pattern() << 16));
+	    buffer[index++] = (Int_t)word; // data word
+		      
+		
 	  }
+	  // fill copy card X-Y inputs from the notified cards 
+	  if (localBoard->GetInputXfrom() && localBoard->GetInputYfrom()) 
+	  {
+	    // not triggered
+	    locDec = 0; trigY = 1; posY = 15; 	 
+	    posX   = 0; devX  = 0; sdevX = 1;
+	    LocalWordPacking(word, (UInt_t)iLoc, (UInt_t)locDec, (UInt_t)trigY, (UInt_t)posY, 
+			     (UInt_t)posX, (UInt_t)sdevX, (UInt_t)devX);
+
+	    Int_t localFromId = localBoard->GetInputXfrom();
+	    AliMUONLocalTrigger* locTrgfrom  = triggerStore.FindLocal(localFromId);
+
+	    buffer[index++] = 0; // copy only X3-4 & Y1-4
+	    buffer[index++] = (locTrgfrom->GetX3Pattern() | (locTrgfrom->GetX4Pattern() << 16));
+	    buffer[index++] = (locTrgfrom->GetY1Pattern() | (locTrgfrom->GetY2Pattern() << 16));
+	    buffer[index++] = (locTrgfrom->GetY3Pattern() | (locTrgfrom->GetY4Pattern() << 16));
+	    buffer[index++] = word;
+	  }
+
+	} else { 
+	  // fill with 10CDEAD word for empty slots
+	  for (Int_t i = 0; i < fLocalStruct->GetLength(); i++)
+	      buffer[index++] = fLocalStruct->GetDisableWord(); 
+	}// condition localBoard
 	  
-	  // end of local structure words
-	  buffer[index++] = fLocalStruct->GetEndOfLocal();
+	// 45 regional scaler word
+	if (fScalerEvent) {
+	  memcpy(&buffer[index], fLocalStruct->GetScalers(), kLocScalerLength*4);
+	  index += kLocScalerLength;
+	}
+	  
+	// end of local structure words
+	buffer[index++] = fLocalStruct->GetEndOfLocal();
 	  
       } // local card 
       // fill regional header with local output
