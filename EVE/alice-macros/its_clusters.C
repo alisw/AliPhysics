@@ -2,7 +2,7 @@
 Reve::PointSet* its_clusters(RenderElement* cont=0, Float_t maxR=50)
 {
   if (!gGeoManager)
-    gReve->GetGeometry("$PWD/misaligned_geometry.root");
+    gReve->GetGeometry("$PWD/geometry.root");
 
   AliRunLoader* rl = Alieve::Event::AssertRunLoader();
   rl->LoadRecPoints("ITS");
