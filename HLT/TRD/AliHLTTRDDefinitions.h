@@ -23,6 +23,8 @@
 class AliHLTTRDDefinitions
 {
     public:
+      AliHLTTRDDefinitions();
+      virtual ~AliHLTTRDDefinitions();
 
       static const AliHLTComponentDataType fgkDDLRawDataType;
       static const AliHLTComponentDataType fgkClusterDataType;

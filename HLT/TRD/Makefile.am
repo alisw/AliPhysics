@@ -19,23 +19,17 @@ lib_LTLIBRARIES			=  libAliHLTTRD.la
 
 # library sources
 libAliHLTTRD_la_SOURCES		= AliTRDclusterizerV1HLT.cxx \
-				  AliTRDtriggerHLT.cxx \
 				  AliHLTTRDDefinitions.cxx \
 				  AliHLTTRDClusterizerComponent.cxx \
 				  AliHLTTRDTrackerComponent.cxx \
-				  AliHLTTRDCalibrationComponent.cxx \
-				  AliHLTTRDCalibra.cxx \
 				  AliTRDtrackerHLT.cxx
 
 # class header files, the link definition for the root dictionary
 # will be created from the names of the header files
 CLASS_HDRS			= AliTRDclusterizerV1HLT.h \
-				  AliTRDtriggerHLT.h \
 				  AliHLTTRDDefinitions.h \
 				  AliHLTTRDClusterizerComponent.h \
 				  AliHLTTRDTrackerComponent.h \
-				  AliHLTTRDCalibrationComponent.h \
-				  AliHLTTRDCalibra.h \
 				  AliTRDtrackerHLT.h
 
 pkginclude_HEADERS		= $(CLASS_HDRS) 

@@ -199,7 +199,7 @@ AliTRDtrackerHLT::AliTRDtrackerHLT(const TFile *geomfile)
     }
   }
 
-  AliTRDpadPlane *padPlane = AliTRDCommonParam::Instance()->GetPadPlane(0,0);
+  AliTRDpadPlane *padPlane = fGeom->GetPadPlane(0,0);
   Float_t tiltAngle = TMath::Abs(padPlane->GetTiltingAngle());
   if (tiltAngle < 0.1) {
     fNoTilt = kTRUE;
@@ -436,8 +436,7 @@ Bool_t  AliTRDtrackerHLT::Transform(AliTRDcluster *cluster)
   Double_t vdrift = AliTRDcalibDB::Instance()->GetVdrift(cluster->GetDetector(),0,0);
   Double_t exB    = AliTRDcalibDB::Instance()->GetOmegaTau(vdrift,-AliTracker::GetBz()*0.1);
 
-  AliTRDCommonParam *commonParam = AliTRDCommonParam::Instance();  
-  AliTRDpadPlane    *padPlane    = commonParam->GetPadPlane(plane,chamber);
+  AliTRDpadPlane    *padPlane    = fGeom->GetPadPlane(plane,chamber);
   Double_t zshiftIdeal = 0.5*(padPlane->GetRow0()+padPlane->GetRowEnd());
   Double_t localPos[3];
   Double_t localPosTracker[3];
@@ -1649,7 +1648,7 @@ void AliTRDtrackerHLT::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESD *esd
     }
   }
 
-  AliTRDpadPlane *padPlane = AliTRDCommonParam::Instance()->GetPadPlane(0,0);
+  AliTRDpadPlane *padPlane = fGeom->GetPadPlane(0,0);
   Double_t h01 = TMath::Tan(-TMath::Pi() / 180.0 * padPlane->GetTiltingAngle());
   Double_t hL[6];                                                // Tilting angle
   Double_t xcl[6];                                               // X - position of reference cluster
@@ -3167,14 +3166,14 @@ AliTRDtrackingSectorHLT
   for (Int_t plane = 0; plane < AliTRDgeometry::Nplan(); plane++) {
 
     ymax          = fGeom->GetChamberWidth(plane) / 2.0;
-    padPlane      = commonParam->GetPadPlane(plane,0);
+    padPlane      = fGeom->GetPadPlane(plane,0);
     ymaxsensitive = (padPlane->GetColSize(1) * padPlane->GetNcols() - 4.0) / 2.0;    
 
     for (Int_t ch = 0; ch < kNchambers; ch++) {
       zmax[ch]          = fGeom->GetChamberLength(plane,ch) / 2.0;
       Float_t pad       = padPlane->GetRowSize(1);
-      Float_t row0      = commonParam->GetRow0(plane,ch,0);
-      Int_t   nPads     = commonParam->GetRowMax(plane,ch,0);
+      Float_t row0      = fGeom->GetRow0(plane,ch,0);
+      Int_t   nPads     = fGeom->GetRowMax(plane,ch,0);
       zmaxsensitive[ch] = Float_t(nPads) * pad / 2.0;      
       zc[ch]            = -(pad * nPads) / 2.0 + row0;
     }
@@ -3567,7 +3566,7 @@ Double_t AliTRDtrackerHLT::GetTiltFactor(const AliTRDcluster *c)
 
   Int_t    det   = c->GetDetector();    
   Int_t    plane = fGeom->GetPlane(det);
-  AliTRDpadPlane *padPlane = AliTRDCommonParam::Instance()->GetPadPlane(plane,0);
+  AliTRDpadPlane *padPlane = fGeom->GetPadPlane(plane,0);
   Double_t h01   = TMath::Tan(-TMath::Pi() / 180.0 * padPlane->GetTiltingAngle());
 
   if (fNoTilt) {

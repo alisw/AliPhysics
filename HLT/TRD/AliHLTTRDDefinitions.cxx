@@ -37,3 +37,14 @@ const AliHLTComponentDataType AliHLTTRDDefinitions::fgkMCMtrackletDataType = { s
 
 const AliHLTComponentDataType AliHLTTRDDefinitions::fgkMCMcalibrationDataType = { sizeof(AliHLTComponentDataType), {'M','C','M','C','A','L','I','H'},{'T','R','D',' '}};;
 
+AliHLTTRDDefinitions::AliHLTTRDDefinitions()
+{
+  // see header file for class documentation
+  // or
+  // refer to README to build package
+}
+
+AliHLTTRDDefinitions::~AliHLTTRDDefinitions()
+{
+  // see header file for class documentation
+}

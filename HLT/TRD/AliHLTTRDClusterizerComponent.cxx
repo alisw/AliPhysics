@@ -275,7 +275,7 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponent_EventData& evt
 
   free(memBufIn);
 
-  UInt_t memBufOutSize = 0;
+  //UInt_t memBufOutSize = 0;
   //   void *memBufOut = clusterizer->WriteClustersToMemory(memBufOut, memBufOutSize);
   Int_t iNclusters = clusterizer->GetNclusters();
   Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "COUNT", "N of Clusters = %d", iNclusters);
