@@ -24,7 +24,6 @@
 #include <AliMUONHit.h>
 #include <AliMUONRawCluster.h>
 #include <AliMUONVDigit.h>
-#include <AliMUONTriggerCrateStore.h>
 #include "AliMUONDigitStoreV1.h"
 #include "TTree.h"
 #include "TString.h"
@@ -311,11 +310,7 @@ void MUONData::LoadRaw(TString fileName)
 
   AliMUONDigitMaker digitMaker;
 
-  AliMUONTriggerCrateStore crateManager;
-  crateManager.ReadFromFile();
-
   digitMaker.SetMakeTriggerDigits(kTRUE);
-  digitMaker.SetCrateManager(&crateManager);
 
   AliMUONDigitStoreV1 digitStore;
   
