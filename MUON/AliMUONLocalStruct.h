@@ -56,6 +56,7 @@ public:
    UChar_t  GetId()  const  {return fData[4] >> 19 &  0xF;}
             /// Return Dec
    UChar_t  GetDec() const  {return fData[4] >> 15 &  0xF;}
+            /// Return TrigY
    Bool_t   GetTrigY() const {return (fData[4] >> 14 & 0x1);}
             /// Return TriggerY
    Bool_t   GetTriggerY() const {return !(GetTrigY() && GetYPos()==15);}
