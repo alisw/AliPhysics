@@ -2,7 +2,6 @@ SRCS= AliTRDhit.cxx \
       AliTRDpoints.cxx \
       AliTRDsim.cxx \
       AliTRD.cxx \
-      AliTRDv0.cxx \
       AliTRDv1.cxx \
       AliTRDmcTrack.cxx \
       AliTRDSimParam.cxx \
