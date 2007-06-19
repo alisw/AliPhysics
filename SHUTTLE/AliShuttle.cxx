@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.46  2007/06/09 13:01:09  jgrosseo
+Switching to retrieval of several DCS DPs at a time (multiDPrequest)
+
 Revision 1.45  2007/05/30 06:35:20  jgrosseo
 Adding functionality to the Shuttle/TestShuttle:
 o) Function to retrieve list of sources from a given system (GetFileSources with id=0)
@@ -1560,11 +1563,12 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 			}
 		}
 		
-		// still no map?
-		if (!dcsMap)
-			dcsMap = new TMap;
 	}
 
+	// still no map?
+	if (!dcsMap)
+		dcsMap = new TMap;
+	
 	// DCS Archive DB processing successful. Call Preprocessor!
 	UpdateShuttleStatus(AliShuttleStatus::kPPStarted);
 
@@ -2028,7 +2032,7 @@ Bool_t AliShuttle::RetrieveFile(UInt_t system, const char* fxsFileName, const ch
 	}
 	else if (system == kHLT)
 	{
-		baseFXSFolder = "~/";
+		baseFXSFolder = "/opt/FXS";
 	}
 
 
