@@ -141,10 +141,11 @@ end_run_loader:
       throw(eH + "failed opening ALICE ESD from '" + p + "'.");
     }
 
+    fESD = new AliESD();
     fESDTree = (TTree*) fESDFile->Get("esdTree");
     if(fESDTree == 0)
       throw(eH + "failed getting the esdTree.");
-    fESDTree->SetBranchAddress("ESD", &fESD);
+    fESD->ReadFromTree(fESDTree);
 
     // Check if ESDfriends exists and attach the branch
     p = Form("%s/AliESDfriends.root", fPath.Data());
@@ -191,9 +192,6 @@ void Event::GotoEvent(Int_t event)
   }
 
   if(fESDTree) {
-    delete fESD;       fESD       = 0;
-    delete fESDfriend; fESDfriend = 0;
-
     if(fESDTree->GetEntry(fEventId) <= 0)
       throw(eH + "failed getting required event from ESD.");
 
