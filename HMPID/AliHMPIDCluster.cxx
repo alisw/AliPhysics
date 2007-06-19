@@ -198,13 +198,15 @@ Int_t AliHMPIDCluster::Solve(TClonesArray *pCluLst,Bool_t isTryUnfold)
  else{                                                                                   //...resonable number of local maxima to fit and user requested it
    Double_t arglist[10];arglist[0] = 10000;arglist[1] = 1.;                              //number of steps and sigma on pads charges  
    gMinuit->mnexcm("SIMPLEX" ,arglist,2,iErrFlg);                                        //start fitting with Simplex
-   gMinuit->mnexcm("MIGRAD" ,arglist,2,iErrFlg);                                         //fitting improved by Migrad
+   if (!iErrFlg)
+     gMinuit->mnexcm("MIGRAD" ,arglist,2,iErrFlg);                                       //fitting improved by Migrad
    if(iErrFlg) {
      Double_t strategy=2;
      gMinuit->mnexcm("SET STR",&strategy,1,iErrFlg);                                     //change level of strategy 
      if(!iErrFlg) {
        gMinuit->mnexcm("SIMPLEX" ,arglist,2,iErrFlg);
-       gMinuit->mnexcm("MIGRAD" ,arglist,2,iErrFlg);                                     //fitting improved by Migrad
+       if (!iErrFlg)
+	 gMinuit->mnexcm("MIGRAD" ,arglist,2,iErrFlg);                                   //fitting improved by Migrad
 //       Printf("Try to improve fit --> err %d",iErrFlg);
      }
    }        
