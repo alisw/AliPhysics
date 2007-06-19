@@ -1,3 +1,11 @@
+2007-06-19  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* EventAlieve.cxx:
+	Use new ESD loading scheme.
+
+	* TRDModuleImp.cxx:
+	From Alex: changes for new TRD code.
+
 2007-06-13  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* LinkDef.h:

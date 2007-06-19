@@ -1,3 +1,8 @@
+2007-06-19  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* alice-macros/its_clusters.C:
+	Load misaligned-geometry.root not created any more.
+
 2007-06-18  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* alice-macros/esd_spd_tracklets.C:
