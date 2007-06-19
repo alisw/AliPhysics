@@ -236,7 +236,6 @@ AliMUONReconstructor::CreateDigitMaker() const
   AliMUONStopwatchGroupElement timer(fTimers,"MUON","AliMUONReconstructor::CreateDigitMaker()");
 
   fDigitMaker = new AliMUONDigitMaker;
-  fDigitMaker->SetCrateManager(CrateManager());
 }
 
 //_____________________________________________________________________________
