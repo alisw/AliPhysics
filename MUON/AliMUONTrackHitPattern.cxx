@@ -260,27 +260,20 @@ AliMUONTrackHitPattern::TriggerDigits(const AliMUONVTriggerStore& triggerStore,
   
   while ( ( locTrg = static_cast<AliMUONLocalTrigger*>(next()) ) ) 
   {
+    if (locTrg->IsNull()) continue;
+   
     TArrayS xyPattern[2];
-    xyPattern[0].Set(4);
-    xyPattern[1].Set(4);
-    
-    xyPattern[0].AddAt(locTrg->GetX1Pattern(),0);
-    xyPattern[0].AddAt(locTrg->GetX2Pattern(),1);
-    xyPattern[0].AddAt(locTrg->GetX3Pattern(),2);
-    xyPattern[0].AddAt(locTrg->GetX4Pattern(),3);
-    
-    xyPattern[1].AddAt(locTrg->GetY1Pattern(),0);
-    xyPattern[1].AddAt(locTrg->GetY2Pattern(),1);
-    xyPattern[1].AddAt(locTrg->GetY3Pattern(),2);
-    xyPattern[1].AddAt(locTrg->GetY4Pattern(),3);
-    
-    for(Int_t cath=0; cath<2; ++cath)
-    {
-      for(Int_t ch=0; ch<4; ++ch)
-      {
-        if(xyPattern[cath][ch]==0) continue;
-      }
-    }
+    locTrg->GetXPattern(xyPattern[0]);
+    locTrg->GetYPattern(xyPattern[1]);
+
+    // do we need this ? (Ch.F.)
+//     for(Int_t cath=0; cath<2; ++cath)
+//     {
+//       for(Int_t ch=0; ch<4; ++ch)
+//       {
+//         if(xyPattern[cath][ch]==0) continue;
+//       }
+//     }
     
     Int_t nBoard = locTrg->LoCircuit();
     fDigitMaker.TriggerDigits(nBoard, xyPattern, digitStore);
