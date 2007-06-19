@@ -437,8 +437,7 @@ void TRDChamber::SetGeometry(AliTRDgeometry *geo)
 	fPla = fGeo->GetPlane(fDet);
 	fX0 = fGeo->GetTime0(fPla);
 	
-	AliTRDCommonParam *parcom = AliTRDCommonParam::Instance();
-	fPadPlane = parcom->GetPadPlane(fPla,fGeo->GetChamber(fDet));
+	fPadPlane = fGeo->GetPadPlane(fPla,fGeo->GetChamber(fDet));
 	rowMax = fPadPlane->GetNrows();
 	colMax = fPadPlane->GetNcols();
 }
