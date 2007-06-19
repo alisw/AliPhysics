@@ -343,7 +343,7 @@ Double_t AliHMPIDRecon::HoughResponse()
 // evaluate the "BEST" theta ckov as the maximum value of histogramm
   Double_t *pVec = resultw->GetArray();
   Int_t locMax = TMath::LocMax(nBin,pVec);
-  phots->Delete();photsw->Delete();resultw->Delete(); // Reset and delete objects
+  delete phots;delete photsw;delete resultw; // Reset and delete objects
   
   return (Double_t)(locMax*fDTheta+0.5*fDTheta); //final most probable track theta ckov   
 }//HoughResponse()
