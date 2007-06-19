@@ -719,6 +719,9 @@ AliMpTriggerCrate* AliMpDDLStore::GetTriggerCrate(Int_t ddlId, Int_t index, Bool
 {
 /// Return trigger crate with given ddl and index crate
 
+  if (ddlId == 0 || ddlId == 1)
+      ddlId += fgkNofDDLs;
+
   AliMpDDL* ddl = GetDDL(ddlId, warn);
   if ( ! ddl ) return 0; 
   
