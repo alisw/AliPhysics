@@ -36,7 +36,7 @@
 ClassImp(AliMUONGMSSubprocessor)
 /// \endcond
 
-const Int_t    AliMUONGMSSubprocessor::fgkSystem = AliPreprocessor::kDAQ;
+const Int_t    AliMUONGMSSubprocessor::fgkSystem = AliPreprocessor::kDCS;
 const TString  AliMUONGMSSubprocessor::fgkDataId = "GMS";
 const TString  AliMUONGMSSubprocessor::fgkMatrixArrayName = "GMSarray";
 

@@ -99,7 +99,7 @@ void TestMUONPreprocessor(Int_t runNumber=80)
   shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC3","$HOME/Desktop/makegain_214.online.3");
   
   // and GMS file
-  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GMS","GMS","$ALICE_ROOT/MUON/data/GMS.root");
+  shuttle->AddInputFile(AliTestShuttle::kDCS,"MCH","GMS","GMS","$ALICE_ROOT/MUON/data/GMS.root");
 
   // The shuttle can read run parameters stored in the DAQ run logbook.
   // To test it, we must provide the run parameters manually. They will be retrieved in the preprocessor
