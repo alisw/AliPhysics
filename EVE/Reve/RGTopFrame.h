@@ -8,6 +8,7 @@
 #include <TGStatusBar.h>
 #include <TGeoManager.h>
 #include <TROOT.h>
+#include <TTimer.h>
 #include <TVirtualPad.h>
 
 #include <map>
@@ -45,6 +46,9 @@ public:
   class RedrawDisabler
   {
   private:
+    RedrawDisabler(const RedrawDisabler&);            // Not implemented
+    RedrawDisabler& operator=(const RedrawDisabler&); // Not implemented
+
     RGTopFrame* fFrame;
   public:
     RedrawDisabler(RGTopFrame* f) : fFrame(f)
@@ -68,7 +72,7 @@ private:
   RGEditor            *fEditor;
 
   EventBase           *fCurrentEvent;
-  PadPrimitive         *fGlobalStore;
+  PadPrimitive        *fGlobalStore;
   Bool_t               fKeepEmptyCont;
 
   Int_t                fRedrawDisabled;
