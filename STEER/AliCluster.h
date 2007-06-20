@@ -66,8 +66,6 @@ class AliCluster : public TObject {
 
  private:
 
-  TGeoPNEntry*         GetPNEntry() const;
-
   Int_t    fTracks[3];//MC labels
   Float_t  fX;        // X of the cluster in the tracking c.s.
   Float_t  fY;        // Y of the cluster in the tracking c.s.

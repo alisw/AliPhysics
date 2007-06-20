@@ -275,28 +275,10 @@ TGeoHMatrix* AliCluster::GetMatrix(Bool_t original) const
   // can be used to force the calculation of the ideal
   // matrix.
   if (!fIsMisaligned && (original == kFALSE)) {
-    TGeoPNEntry *pne = GetPNEntry();
-    if (!pne) return NULL;
-
-    TGeoPhysicalNode *pnode = pne->GetPhysicalNode();
-    if (pnode) return pnode->GetMatrix();
-
-    const char* path = pne->GetTitle();
-    if (!gGeoManager->cd(path)) {
-      AliError(Form("Volume path %s not valid!",path));
-      return NULL;
-    }
-    return gGeoManager->GetCurrentMatrix();
+    return AliGeomManager::GetMatrix(fVolumeId);
   }
   else {
-    const char* symname = AliGeomManager::SymName(fVolumeId);
-    if (!symname) return NULL;
-
-    static TGeoHMatrix m;
-    if (AliGeomManager::GetOrigGlobalMatrix(symname,m))
-      return &m;
-    else
-      return NULL;
+    return AliGeomManager::GetOrigGlobalMatrix(fVolumeId);
   }
 }
 
@@ -306,34 +288,6 @@ const TGeoHMatrix* AliCluster::GetTracking2LocalMatrix() const
   // Get the matrix which is stored with the PN entries in TGeo.
   // The matrix makes the transformation from the tracking c.s. to
   // the local one.
-  TGeoPNEntry *pne = GetPNEntry();
-  if (!pne) return NULL;
-
-  const TGeoHMatrix *m = pne->GetMatrix();
-  if (!m)
-    AliError(Form("TGeoPNEntry (%s) contains no matrix !",pne->GetName()));
-
-  return m;
+  return AliGeomManager::GetTracking2LocalMatrix(fVolumeId);
 }
 
-//______________________________________________________________________________
-TGeoPNEntry* AliCluster::GetPNEntry() const
-{
-  // Get a pointer to the physical node entry
-  // corresponding to the alignable volume to
-  // which the cluster belongs
-
-  if (!gGeoManager || !gGeoManager->IsClosed()) {
-    AliError("Can't get the PN entry! gGeoManager doesn't exist or it is still opened!");
-    return NULL;
-  }
-
-  const char* symname = AliGeomManager::SymName(fVolumeId);
-  if (!symname) return NULL;
-
-  TGeoPNEntry* pne = gGeoManager->GetAlignableEntry(symname);
-  if (!pne)
-    AliError(Form("The symbolic volume name %s does not correspond to a physical entry!",
-		  symname));
-  return pne;
-}
