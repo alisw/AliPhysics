@@ -49,7 +49,7 @@
 #pragma link C++ class  AliTRDCalibraMode+;
 #pragma link C++ class  AliTRDCalibraVector+;
 #pragma link C++ class  AliTRDCalibPadStatus+;
-#pragma link C++ class  AliTRDDataDCS-;
+#pragma link C++ class  AliTRDDataDCS+;
 #pragma link C++ class  AliTRDPreprocessor+;
 
 #pragma link C++ class  AliTRDTriggerL1+;

@@ -19,11 +19,20 @@
 //                                                                        //
 // This class collects the DCS information and does an AliSplineFit       //
 //                                                                        //
+// Typical use :                                                          //
+//                                                                        //
+//   AliTRDDataDCS dataDcs;                                               //
+//   dataDcs.ExtractDCS(dcs);                                             //
+//   ->call a storeRef function                                           //
+//   dataDcs.PerformFit();                                                //                        
+//   dataDcs.ClearGraphs();                                               //
+//   ->call a store function                                              //
+//   dataDcs.ClearFits();                                                 //
+//                                                                        //
 // Author:                                                                //
 //   W. Monange   (wilfried.monange@free.fr)                              //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
-
 
 #include <TGraph.h>
 #include <TObjArray.h>
@@ -38,254 +47,263 @@
 
 ClassImp(AliTRDDataDCS)
 
-/*
-Typical use :
-
-AliTRDDataDCS dataDcs;
-dataDcs.ExtractDCS (dcs);
-->call a storeRef function
-dataDcs.PerformFit ();
-dataDcs.ClearGraphs ();
-->call a store function
-dataDcs.ClearFits ();
-
-*/
-
 //_____________________________________________________________________________
-AliTRDDataDCS::AliTRDDataDCS () 
-  :  chamberByteStatus 	(0),
-     preTrigger		(1),
-     goofyHv 		(2),
-     goofyPeakPos 	(3),
-     goofyPeakArea 	(4),
-     goofyTemp 		(5),
-     goofyPressure 	(6),
-     goofyVelocity 	(7),
-     goofyGain 		(8),
-     goofyCO2 		(9),
-     goofyN2 		(10),
-     gasO2 		(11),
-     gasOverpressure 	(12),
-     envTemp  		(13),
-     hvAnodeImon 	(14),
-     hvDriftImon 	(15),
-     hvAnodeUmon 	(16),
-     hvDriftUmon 	(17),
-     adcClkPhase 	(18),
-     atmPressure 	(19),
-     luminosity 	(20),
-     magneticField 	(21),
-     fNAlias		(22),
-     graphsAreIni 	(false),
-     fitsAreIni 	(false)
+AliTRDDataDCS::AliTRDDataDCS() 
+  :TNamed()       
+  ,fGraphsAreIni(kFALSE)
+  ,fFitsAreIni(kFALSE)
+  ,fNAlias(22)
 {
+  //
+  // Default constructor
+  //
+
   Init ();
+
 }
 
 //_____________________________________________________________________________
-AliTRDDataDCS::~AliTRDDataDCS ()
+AliTRDDataDCS::~AliTRDDataDCS()
 {
-  ClearFits ();
-  ClearGraphs ();
+  //
+  // Destructor
+  //
+
+  ClearFits();
+  ClearGraphs();
+
 }
 
 //_____________________________________________________________________________
-void AliTRDDataDCS::Init ()
+void AliTRDDataDCS::Init()
 {
-  SetConf (chamberByteStatus, "trd_chamberByteStatus%03d", 'c', 540, true, false, 10,10,0,2); 
-  SetConf (preTrigger, 		"trd_preTrigger", 		'c', 1, true, true, 	10,10,0,2);
-  SetConf (goofyHv, 			"trd_goofyHv", 			'f', 1, true, true, 	10,10,0,2);
-  SetConf (goofyPeakPos, 		"trd_goofyPeakPos%02d", 'f', 2, true, true, 	10,10,0,2);
-  SetConf (goofyPeakArea, 	"trd_goofyPeakArea%02d",'f', 2, true, true, 	10,10,0,2);
-  SetConf (goofyTemp, 		"trd_goofyTemp%02d", 	'f', 2, true, true, 	10,10,0,2);
-  SetConf (goofyPressure, 	"trd_goofyPressure", 	'f', 1, true, true, 	10,10,0,2);
-  SetConf (goofyVelocity, 	"trd_goofyVelocity", 	'f', 1, true, true, 	10,10,0,2);
-  SetConf (goofyGain, 		"trd_goofyGain%02d", 	'f', 2, true, true, 	10,10,0,2);
-  SetConf (goofyCO2, 			"trd_goofyCO2", 		'f', 1, true, true, 	10,10,0,2);
-  SetConf (goofyN2, 			"trd_goofyN2", 			'f', 1, true, true, 	10,10,0,2);
-  SetConf (gasO2, 			"trd_gasO2", 			'f', 1, true, true, 	10,10,0,2);
-  SetConf (gasOverpressure, 	"trd_gasOverpressure", 	'f', 1, true, true, 	10,10,0,2);
-  SetConf (envTemp, 			"trd_envTemp%03d", 		'f', 540, true, true, 	10,10,0,2);
-  SetConf (hvAnodeImon, 		"trd_hvAnodeImon%03d", 	'f', 540, true, true, 	10,10,0,2);
-  SetConf (hvDriftImon, 		"trd_hvDriftImon%03d", 	'f', 540, true, true, 	10,10,0,2);
-  SetConf (hvAnodeUmon, 		"trd_hvAnodeUmon%03d", 	'f', 540, true, true, 	10,10,0,2);
-  SetConf (hvDriftUmon, 		"trd_hvDriftUmon%03d", 	'f', 540, true, true, 	10,10,0,2);
-  SetConf (adcClkPhase, 		"trd_adcClkPhase", 		'f', 1, true, true, 	10,10,0,2);
-  SetConf (atmPressure, 		"trd_atmPressure", 		'f', 1, true, true, 	10,10,0,2);
-  SetConf (luminosity, 		"trd_luminosity", 		'f', 1, true, true, 	10,10,0,2);
-  SetConf (magneticField, 	"trd_magneticField", 	'f', 1, true, true, 	10,10,0,2);		
+  //
+  // Initialization
+  //
+
+  SetConf(kChamberByteStatus, "trd_chamberByteStatus%03d",'c', 540, kTRUE,kFALSE,       10,10,0,2); 
+  SetConf(kPreTrigger, 	      "trd_preTrigger", 	  'c',   1, kTRUE, kTRUE, 	10,10,0,2);
+  SetConf(kGoofyHv, 	      "trd_goofyHv", 		  'f',   1, kTRUE, kTRUE, 	10,10,0,2);
+  SetConf(kGoofyPeakPos,      "trd_goofyPeakPos%02d",     'f',   2, kTRUE, kTRUE, 	10,10,0,2);
+  SetConf(kGoofyPeakArea,     "trd_goofyPeakArea%02d",    'f',   2, kTRUE, kTRUE, 	10,10,0,2);
+  SetConf(kGoofyTemp, 	      "trd_goofyTemp%02d", 	  'f',   2, kTRUE, kTRUE, 	10,10,0,2);
+  SetConf(kGoofyPressure,     "trd_goofyPressure", 	  'f',   1, kTRUE, kTRUE, 	10,10,0,2);
+  SetConf(kGoofyVelocity,     "trd_goofyVelocity", 	  'f',   1, kTRUE, kTRUE, 	10,10,0,2);
+  SetConf(kGoofyGain, 	      "trd_goofyGain%02d", 	  'f',   2, kTRUE, kTRUE, 	10,10,0,2);
+  SetConf(kGoofyCO2, 	      "trd_goofyCO2", 		  'f',   1, kTRUE, kTRUE, 	10,10,0,2);
+  SetConf(kGoofyN2, 	      "trd_goofyN2", 		  'f',   1, kTRUE, kTRUE, 	10,10,0,2);
+  SetConf(kGasO2, 	      "trd_gasO2", 		  'f',   1, kTRUE, kTRUE, 	10,10,0,2);
+  SetConf(kGasOverpressure,   "trd_gasOverpressure", 	  'f',   1, kTRUE, kTRUE, 	10,10,0,2);
+  SetConf(kEnvTemp, 	      "trd_envTemp%03d", 	  'f', 540, kTRUE, kTRUE, 	10,10,0,2);
+  SetConf(kHvAnodeImon,       "trd_hvAnodeImon%03d",   	  'f', 540, kTRUE, kTRUE, 	10,10,0,2);
+  SetConf(kHvDriftImon,       "trd_hvDriftImon%03d", 	  'f', 540, kTRUE, kTRUE, 	10,10,0,2);
+  SetConf(kHvAnodeUmon,       "trd_hvAnodeUmon%03d", 	  'f', 540, kTRUE, kTRUE, 	10,10,0,2);
+  SetConf(kHvDriftUmon,       "trd_hvDriftUmon%03d", 	  'f', 540, kTRUE, kTRUE, 	10,10,0,2);
+  SetConf(kAdcClkPhase,       "trd_adcClkPhase", 	  'f',   1, kTRUE, kTRUE, 	10,10,0,2);
+  SetConf(kAtmPressure,       "trd_atmPressure", 	  'f',   1, kTRUE, kTRUE, 	10,10,0,2);
+  SetConf(kLuminosity, 	      "trd_luminosity", 	  'f',   1, kTRUE, kTRUE, 	10,10,0,2);
+  SetConf(kMagneticField,     "trd_magneticField", 	  'f',   1, kTRUE, kTRUE, 	10,10,0,2);		
   
   for (UInt_t iAlias = 0; iAlias < fNAlias; iAlias++) {
-    fDatas[iAlias].graph.SetOwner (1);
-    fDatas[iAlias].fit.SetOwner (1);
+    fDatas[iAlias].GetGraph().SetOwner(1);
+    fDatas[iAlias].GetFit().SetOwner(1);
   }
+
 }
 
 //_____________________________________________________________________________
-void AliTRDDataDCS::SetConf (UInt_t iAlias, const char * amanda, 
+void AliTRDDataDCS::SetConf(UInt_t iAlias, const char *amanda, 
 			     char dataType, UInt_t nChannel, 
-			     Bool_t enableGraph, Bool_t enableFit, Int_t kMinPoints, 
-			     Int_t kIter, Double_t kMaxDelta, Int_t kFitReq)
+			     Bool_t enableGraph, Bool_t enableFit, Int_t minPoints, 
+			     Int_t iter, Double_t maxDelta, Int_t fitReq)
 {
+  //
+  // Configure a DCS alias
+  //
+
   if (iAlias >= fNAlias) {
     AliWarning (Form("Alias %d is not correct", iAlias));
     return;
   }
   
-  fConfs[iAlias].amanda = amanda;
-  fConfs[iAlias].dataType = dataType;
-  fConfs[iAlias].nChannel = nChannel;
-  fConfs[iAlias].enableGraph = enableGraph;
-  fConfs[iAlias].enableFit = enableFit;
-  fConfs[iAlias].kMinPoints = kMinPoints;
-  fConfs[iAlias].kIter = kIter;
-  fConfs[iAlias].kMaxDelta = kMaxDelta;
-  fConfs[iAlias].kFitReq = kFitReq;
+  fConfs[iAlias].SetAmanda(amanda);
+  fConfs[iAlias].SetDataType(dataType);
+  fConfs[iAlias].SetNChannel(nChannel);
+  fConfs[iAlias].SetEnableGraph(enableGraph);
+  fConfs[iAlias].SetEnableFit(enableFit);
+  fConfs[iAlias].SetMinPoints(minPoints);
+  fConfs[iAlias].SetIter(iter);
+  fConfs[iAlias].SetMaxDelta(maxDelta);
+  fConfs[iAlias].SetFitReq(fitReq);
   
 }
 
 //_____________________________________________________________________________
-void AliTRDDataDCS::InitFits ()
+void AliTRDDataDCS::InitFits()
 {
-  if (fitsAreIni)
+  //
+  // Initialize the fits
+  //
+
+  if (fFitsAreIni)
     return;
   
   UInt_t nChannel;
   for (UInt_t iAlias = 0; iAlias < fNAlias; iAlias++) {
-    nChannel = fConfs[iAlias].enableFit ? fConfs[iAlias].nChannel : 0;
-    fDatas[iAlias].fit.Expand (nChannel);	
+    nChannel = fConfs[iAlias].GetEnableFit() ? fConfs[iAlias].GetNChannel() : 0;
+    fDatas[iAlias].GetFit().Expand(nChannel);	
   }
   
-  fitsAreIni = true;
+  fFitsAreIni = kTRUE;
 }
 
 //_____________________________________________________________________________
-void AliTRDDataDCS::InitGraphs ()
+void AliTRDDataDCS::InitGraphs()
 {
-  if (graphsAreIni)
+  //
+  // Initialize the graphs
+  //
+
+  if (fGraphsAreIni)
     return;
   
   UInt_t nChannel;	
   for (UInt_t iAlias = 0; iAlias < fNAlias; iAlias++) {
-    nChannel = fConfs[iAlias].enableGraph ? fConfs[iAlias].nChannel : 0;	 
-    fDatas[iAlias].graph.Expand (nChannel);
+    nChannel = fConfs[iAlias].GetEnableGraph() ? fConfs[iAlias].GetNChannel() : 0;	 
+    fDatas[iAlias].GetGraph().Expand(nChannel);
   }
   
-  graphsAreIni = true;
+  fGraphsAreIni = kTRUE;
 }
 
 //_____________________________________________________________________________
-void AliTRDDataDCS::ClearFits ()
+void AliTRDDataDCS::ClearFits()
 {
+  //
+  // Clear the fits
+  //
+
   for (UInt_t iAlias = 0; iAlias < fNAlias; iAlias++) {
-    fDatas[iAlias].fit.Clear ();
-    fDatas[iAlias].fit.Expand (0);
+    fDatas[iAlias].GetFit().Clear();
+    fDatas[iAlias].GetFit().Expand(0);
   }
   
-  fitsAreIni = false;
+  fFitsAreIni = kFALSE;
 }
 
 //_____________________________________________________________________________
-void AliTRDDataDCS::ClearGraphs ()
-{	
-  for (UInt_t iAlias = 0; iAlias < fNAlias; iAlias++) {
-    fDatas[iAlias].graph.Clear ();
-    fDatas[iAlias].graph.Expand (0);
-  }
-  
-  graphsAreIni = false;
-}
-
-//_____________________________________________________________________________
-void AliTRDDataDCS::Streamer(TBuffer &R__b) {
-  
-  if (R__b.IsReading()) {
-    
-    R__b.ReadBool (graphsAreIni);
-    R__b.ReadBool (fitsAreIni);
-    
-    
-    for (UInt_t iAlias=0; iAlias<fNAlias; iAlias++) {
-      TString::ReadString (R__b, TString::Class());
-      R__b.ReadChar (fConfs[iAlias].dataType);
-      R__b.ReadUInt (fConfs[iAlias].nChannel);
-      R__b.ReadBool (fConfs[iAlias].enableGraph);
-      R__b.ReadBool (fConfs[iAlias].enableFit);
-      R__b.ReadInt  (fConfs[iAlias].kMinPoints);
-      R__b.ReadInt  (fConfs[iAlias].kIter);
-      R__b.ReadDouble  (fConfs[iAlias].kMaxDelta);
-      R__b.ReadInt  (fConfs[iAlias].kFitReq);
-    }
-    
-    
-    if (graphsAreIni) {
-      for (UInt_t iAlias=0; iAlias<fNAlias; iAlias++)
-	fDatas[iAlias].graph = *(TObjArray*)R__b.ReadObject (TObjArray::Class());
-    }
-    
-    if (fitsAreIni) {
-      for (UInt_t iAlias=0; iAlias<fNAlias; iAlias++)
-	fDatas[iAlias].fit = *(TObjArray*)R__b.ReadObject (TObjArray::Class());
-    }
-    
-    AliInfo (Form("Read %d octets to the stream (%d Ko)", R__b.Length(), R__b.Length()/1024));
-    
-  } else {
-    R__b.WriteBool (graphsAreIni);
-    R__b.WriteBool (fitsAreIni);
-    
-    for (UInt_t iAlias = 0; iAlias < fNAlias; iAlias++) {
-      TString::WriteString (R__b, &fConfs[iAlias].amanda);
-      R__b.WriteChar (fConfs[iAlias].dataType);
-      R__b.WriteUInt (fConfs[iAlias].nChannel);
-      R__b.WriteBool (fConfs[iAlias].enableGraph);
-      R__b.WriteBool (fConfs[iAlias].enableFit);
-      R__b.WriteInt  (fConfs[iAlias].kMinPoints);
-      R__b.WriteInt  (fConfs[iAlias].kIter);
-      R__b.WriteDouble  (fConfs[iAlias].kMaxDelta);
-      R__b.WriteInt  (fConfs[iAlias].kFitReq);
-    }
-    
-    if (graphsAreIni) {
-      for (UInt_t iAlias = 0; iAlias < fNAlias; iAlias++) 
-	R__b.WriteObject ((TObject*)&fDatas[iAlias].graph);
-    }
-    
-    if (fitsAreIni) {
-      for (UInt_t iAlias = 0; iAlias < fNAlias; iAlias++) 
-	R__b.WriteObject ((TObject*)&fDatas[iAlias].fit);
-    }
-    
-    AliInfo (Form("Write %d octets to the stream (%d Ko)", R__b.Length(), R__b.Length()/1024));
-  }
-}
-
-//_____________________________________________________________________________
-Bool_t AliTRDDataDCS::ExtractDCS (TMap * dcsAlias)
+void AliTRDDataDCS::ClearGraphs()
 {
+  //
+  // Clear the grpahs
+  //
+
+  for (UInt_t iAlias = 0; iAlias < fNAlias; iAlias++) {
+    fDatas[iAlias].GetGraph().Clear();
+    fDatas[iAlias].GetGraph().Expand(0);
+  }
+  
+  fGraphsAreIni = kFALSE;
+}
+
+// //_____________________________________________________________________________
+// void AliTRDDataDCS::Streamer(TBuffer &R__b) 
+// {
+//   //
+//   // Custom streamer
+//   //
+  
+//   if (R__b.IsReading()) {
+    
+//     R__b.ReadBool (fGraphsAreIni);
+//     R__b.ReadBool (fFitsAreIni);
+    
+    
+//     for (UInt_t iAlias=0; iAlias<fNAlias; iAlias++) {
+//       TString::ReadString (R__b, TString::Class());
+//       R__b.ReadChar (fConfs[iAlias].fDataType);
+//       R__b.ReadUInt (fConfs[iAlias].fNChannel);
+//       R__b.ReadBool (fConfs[iAlias].fEnableGraph);
+//       R__b.ReadBool (fConfs[iAlias].fEnableFit);
+//       R__b.ReadInt  (fConfs[iAlias].fMinPoints);
+//       R__b.ReadInt  (fConfs[iAlias].fIter);
+//       R__b.ReadDouble  (fConfs[iAlias].fMaxDelta);
+//       R__b.ReadInt  (fConfs[iAlias].fFitReq);
+//     }
+    
+    
+//     if (fGraphsAreIni) {
+//       for (UInt_t iAlias=0; iAlias<fNAlias; iAlias++)
+// 	fDatas[iAlias].GetGraph() = *(TObjArray*)R__b.ReadObject (TObjArray::Class());
+//     }
+    
+//     if (fFitsAreIni) {
+//       for (UInt_t iAlias=0; iAlias<fNAlias; iAlias++)
+// 	fDatas[iAlias].GetFit() = *(TObjArray*)R__b.ReadObject (TObjArray::Class());
+//     }
+    
+//     AliInfo (Form("Read %d octets to the stream (%d Ko)", R__b.Length(), R__b.Length()/1024));
+    
+//   } else {
+//     R__b.WriteBool (fGraphsAreIni);
+//     R__b.WriteBool (fFitsAreIni);
+    
+//     for (UInt_t iAlias = 0; iAlias < fNAlias; iAlias++) {
+//       TString::WriteString (R__b, &fConfs[iAlias].fAmanda);
+//       R__b.WriteChar (fConfs[iAlias].fDataType);
+//       R__b.WriteUInt (fConfs[iAlias].fNChannel);
+//       R__b.WriteBool (fConfs[iAlias].fEnableGraph);
+//       R__b.WriteBool (fConfs[iAlias].fEnableFit);
+//       R__b.WriteInt  (fConfs[iAlias].fMinPoints);
+//       R__b.WriteInt  (fConfs[iAlias].fIter);
+//       R__b.WriteDouble  (fConfs[iAlias].fMaxDelta);
+//       R__b.WriteInt  (fConfs[iAlias].fFitReq);
+//     }
+    
+//     if (fGraphsAreIni) {
+//       for (UInt_t iAlias = 0; iAlias < fNAlias; iAlias++) 
+// 	R__b.WriteObject ((TObject*)&fDatas[iAlias].GetGraph());
+//     }
+    
+//     if (fFitsAreIni) {
+//       for (UInt_t iAlias = 0; iAlias < fNAlias; iAlias++) 
+// 	R__b.WriteObject ((TObject*)&fDatas[iAlias].GetFit());
+//     }
+    
+//     AliInfo (Form("Write %d octets to the stream (%d Ko)", R__b.Length(), R__b.Length()/1024));
+//   }
+// }
+
+//_____________________________________________________________________________
+Bool_t AliTRDDataDCS::ExtractDCS (TMap *dcsAlias)
+{
+  //
+  // Extract the DCS information
+  //
+
   if (dcsAlias == 0x0) {
     AliWarning ("No DCS Map");
     return kFALSE;
   }
   
-  ClearGraphs ();
-  InitGraphs ();
+  ClearGraphs();
+  InitGraphs();
   
-  TGraph * graphTemp;
+  TGraph *graphTemp;
   UInt_t nChannel;
   
   for (UInt_t iAlias = 0; iAlias < fNAlias; iAlias++){
     
     // extract dcs only when it is needed
-    nChannel = fDatas[iAlias].graph.GetSize ();
+    nChannel = fDatas[iAlias].GetGraph().GetSize();
     
     for (UInt_t iSensor=0; iSensor < nChannel; iSensor++) {
       
-      graphTemp = FindAndMakeGraph (dcsAlias, 
-				    Form (fConfs[iAlias].amanda.Data(), iSensor), 
-				    fConfs[iAlias].dataType); 
+      graphTemp = FindAndMakeGraph(dcsAlias, 
+				   Form(fConfs[iAlias].GetAmanda().Data(), iSensor), 
+				   fConfs[iAlias].GetDataType()); 
       
-      fDatas[iAlias].graph.AddAt (graphTemp, iSensor);
+      fDatas[iAlias].GetGraph().AddAt(graphTemp, iSensor);
     }
   }
   
@@ -293,18 +311,22 @@ Bool_t AliTRDDataDCS::ExtractDCS (TMap * dcsAlias)
 }
 
 //_____________________________________________________________________________
-TGraph * AliTRDDataDCS::FindAndMakeGraph (TMap * dcsMap, const char * amandaStr, 
+TGraph *AliTRDDataDCS::FindAndMakeGraph (TMap *dcsMap, const char *amandaStr, 
 					  char dataType)
 {
-  TGraph * graph;
+  //
+  // Create the graphs
+  //
+
+  TGraph *graph;
   
-  TPair * pair = (TPair*)dcsMap->FindObject(amandaStr);
+  TPair *pair = (TPair *) dcsMap->FindObject(amandaStr);
   if (pair == 0x0) {
     AliWarning (Form("Can't find %s in dcsMap", amandaStr));
     return 0x0;
   }
   
-  TObjArray * valueSet = (TObjArray*)pair->Value();
+  TObjArray *valueSet = (TObjArray *) pair->Value();
   
   //
   // Make graph of values read from DCS map
@@ -317,19 +339,19 @@ TGraph * AliTRDDataDCS::FindAndMakeGraph (TMap * dcsMap, const char * amandaStr,
     return 0x0;
   }
   
-  Float_t * x = new Float_t [nEntries];
-  Float_t * y = new Float_t [nEntries];
+  Float_t * x = new Float_t[nEntries];
+  Float_t * y = new Float_t[nEntries];
   
-  Bool_t ok = true;
+  Bool_t ok = kTRUE;
   Int_t time0 = 0;
   Int_t iEntries;
   for (iEntries = 0;  iEntries< nEntries; iEntries++) {
     
-    AliDCSValue * val = (AliDCSValue *)valueSet->At(iEntries);
+    AliDCSValue *val = (AliDCSValue *) valueSet->At(iEntries);
     
     if (val == 0x0) { 
       ok = false;
-      AliError (Form("Entry %s at %d contain no datas", amandaStr, iEntries));
+      AliError(Form("Entry %s at %d contain no datas", amandaStr, iEntries));
       break;
     }
     
@@ -350,13 +372,13 @@ TGraph * AliTRDDataDCS::FindAndMakeGraph (TMap * dcsMap, const char * amandaStr,
       
     default :
       ok = false;
-      AliError (Form("Bad type for entry %s", amandaStr));
+      AliError(Form("Bad type for entry %s", amandaStr));
       break;
     }
   }
   
   if (ok)
-    graph = new TGraph (iEntries, x, y);
+    graph = new TGraph(iEntries, x, y);
   else
     graph = 0x0;
   
@@ -366,34 +388,37 @@ TGraph * AliTRDDataDCS::FindAndMakeGraph (TMap * dcsMap, const char * amandaStr,
   return graph;
 }
 
-
 //_____________________________________________________________________________
-Bool_t AliTRDDataDCS::PerformFit ()
+Bool_t AliTRDDataDCS::PerformFit()
 {
-  AliSplineFit * fitTemp;
+  //
+  // Do the fit
+  //
+
+  AliSplineFit *fitTemp;
   
-  ClearFits ();
-  InitFits ();
+  ClearFits();
+  InitFits();
   
   UInt_t nChannel;
   
   for (UInt_t iAlias = 0; iAlias < fNAlias; iAlias++){
     
     // perform fit only when it is needed
-    nChannel = fDatas[iAlias].fit.GetSize ();
+    nChannel = fDatas[iAlias].GetFit().GetSize();
     
     for (UInt_t iSensor=0; iSensor < nChannel; iSensor++) {
       
-      fitTemp = Fit ((TGraph*)fDatas[iAlias].graph[iSensor],
-		     fConfs[iAlias].kMinPoints,
-		     fConfs[iAlias].kIter,
-		     fConfs[iAlias].kMaxDelta,
-		     fConfs[iAlias].kFitReq); 
+      fitTemp = Fit((TGraph*)fDatas[iAlias].GetGraph(iSensor),
+		     fConfs[iAlias].GetMinPoints(),
+		     fConfs[iAlias].GetIter(),
+		     fConfs[iAlias].GetMaxDelta(),
+		     fConfs[iAlias].GetFitReq()); 
       
       if (fitTemp == 0x0)
-	AliInfo (Form ("Can't fit %s", Form (fConfs[iAlias].amanda.Data(), iSensor)));
+	AliInfo(Form("Can't fit %s", Form(fConfs[iAlias].GetAmanda().Data(), iSensor)));
       
-      fDatas[iAlias].fit.AddAt (fitTemp, iSensor);
+      fDatas[iAlias].GetFit().AddAt(fitTemp, iSensor);
     }
   }
   
@@ -402,101 +427,121 @@ Bool_t AliTRDDataDCS::PerformFit ()
 }
 
 //_____________________________________________________________________________
-AliSplineFit * AliTRDDataDCS::Fit (TGraph * graph, 
-				   Int_t  kMinPoints, Int_t  kIter, 
-				   Double_t  kMaxDelta, Int_t  kFitReq)
+AliSplineFit *AliTRDDataDCS::Fit(TGraph *graph, 
+			         Int_t  minPoints, Int_t  iter, 
+			         Double_t  maxDelta, Int_t  fitReq)
 {
   if (graph == 0x0) {
-    AliError ("No graph for fit");
+    AliError("No graph for fit");
     return 0x0;
   }
   
-  AliSplineFit * spline = new AliSplineFit ();
-  spline->InitKnots (new TGraph (*graph), kMinPoints, kIter, kMaxDelta);
-  spline->SplineFit (kFitReq);
+  AliSplineFit *spline = new AliSplineFit();
+  spline->InitKnots(new TGraph (*graph), minPoints, iter, maxDelta);
+  spline->SplineFit(fitReq);
   spline->Cleanup();   // delete also new TGraph (*graph)
   
   return spline;
 }
 
-
 //_____________________________________________________________________________
-void AliTRDDataDCS::Print (Option_t* option) const
+void AliTRDDataDCS::Print(Option_t* option) const
 {
+  //
+  // Print function
+  //
+
   if (option[0]=='g' || option[0]=='\0'){
     
-    if (graphsAreIni){
+    if (fGraphsAreIni){
       
       for (UInt_t iAlias = 0; iAlias < fNAlias; iAlias++){
 	
-	for (Int_t iSensor = 0; iSensor < fDatas[iAlias].graph.GetSize(); iSensor++) {
+	for (Int_t iSensor = 0; iSensor < fDatas[iAlias].GetGraph().GetSize(); iSensor++) {
 	  
-	  if (fDatas[iAlias].graph[iSensor] != 0x0)
-	    AliInfo (Form("Graph %s contain %d point(s)", 
-			  Form(fConfs[iAlias].amanda, iSensor), 
-			  ((TGraph*)(fDatas[iAlias].graph[iSensor]))->GetN ()));
+	  if (fDatas[iAlias].GetGraph(iSensor) != 0x0)
+	    AliInfo(Form("Graph %s contain %d point(s)", 
+			  Form(fConfs[iAlias].GetAmanda(), iSensor), 
+			  ((TGraph*)(fDatas[iAlias].GetGraph(iSensor)))->GetN()));
 	}
       }
-    }else{
-      AliInfo ("Graphs don't exist");
+    }
+    else{
+      AliInfo("Graphs don't exist");
     }
   }
   
   
   if (option[0] == 'f' || option[0]=='\0'){
     
-    AliInfo ("no print for fit");
+    AliInfo("no print for fit");
     
   }
   
 }
 
 //_____________________________________________________________________________
-TGraph * AliTRDDataDCS::GetGraph (UInt_t iAlias, UInt_t iChannel) const
+TGraph *AliTRDDataDCS::GetGraph(UInt_t iAlias, UInt_t iChannel) const
 {
+  //
+  // Get a graph
+  //
+
   if (iAlias >= fNAlias) {
-    AliWarning (Form("Alias %d is not correct", iAlias));
+    AliWarning(Form("Alias %d is not correct", iAlias));
     return 0x0;
   }
   
-  if (iChannel >= (UInt_t)fDatas[iAlias].graph.GetSize()) {
-    AliWarning (Form("Alias %s is not correct", 
-		     Form(fConfs[iAlias].amanda.Data(), iChannel)));
+  if (iChannel >= (UInt_t) fDatas[iAlias].GetGraph().GetSize()) {
+    AliWarning(Form("Alias %s is not correct", 
+		     Form(fConfs[iAlias].GetAmanda().Data(), iChannel)));
     return 0x0;
   }
   
-  return (TGraph *)fDatas[iAlias].graph[iChannel];
+  return (TGraph *)fDatas[iAlias].GetGraph(iChannel);
 }
 
 //_____________________________________________________________________________
-AliSplineFit * AliTRDDataDCS::GetFit (UInt_t iAlias, UInt_t iChannel) const
+AliSplineFit *AliTRDDataDCS::GetFit(UInt_t iAlias, UInt_t iChannel) const
 {
+  //
+  // Get the spline fit
+  //
+
   if (iAlias >= fNAlias) {
     AliWarning (Form("Alias %d is not correct", iAlias));
     return 0x0;
   }
   
-  if (iChannel >= (UInt_t)fDatas[iAlias].fit.GetSize()) {
-    AliWarning (Form("Alias %s is not correct", 
-		     Form(fConfs[iAlias].amanda.Data(), iChannel)));
+  if (iChannel >= (UInt_t) fDatas[iAlias].GetFit().GetSize()) {
+    AliWarning(Form("Alias %s is not correct", 
+		     Form(fConfs[iAlias].GetAmanda().Data(), iChannel)));
     return 0x0;
   }
   
-  return (AliSplineFit *)fDatas[iAlias].fit[iChannel];
+  return (AliSplineFit *) fDatas[iAlias].GetFit(iChannel);
 }
 
 //_____________________________________________________________________________
 TString AliTRDDataDCS::GetAmandaStr (UInt_t iAlias) const 
 {
+  //
+  // Return the AMANDA string
+  //
+
   if (iAlias < fNAlias)
-    return fConfs[iAlias].amanda;
+    return fConfs[iAlias].GetAmanda();
   else return TString ();
 }
 
 //_____________________________________________________________________________
 UInt_t AliTRDDataDCS::GetNChannel (UInt_t iAlias) const 
 {
+  //
+  // Get the channel number
+  //
+
   if (iAlias < fNAlias)
-    return fConfs[iAlias].nChannel;
+    return fConfs[iAlias].GetNChannel();
   else return 0;
 }
