@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.6  2007/04/29 15:06:19  gustavo
+ * New return value, and some minor fixes
+ *
  * Revision 1.5  2007/02/01 15:02:42  gustavo
  * Added log message in case there are no source files
  *
@@ -184,7 +187,7 @@ UInt_t AliEMCALPreprocessor::Process(TMap* /*valueSet*/)
   //Store EMCAL calibration data
   
   AliCDBMetaData emcalMetaData;
-  Bool_t emcalOK = Store("Calib", "EmcGainPedestals", &calibData, &emcalMetaData);
+  Bool_t emcalOK = Store("Calib", "Data", &calibData, &emcalMetaData);
   
   if(emcalOK) return 0;
   else
