@@ -472,14 +472,16 @@ void AliESD::ReadFromTree(TTree *tree){
 
   fESDObjects = (TList*)((AliESD*)tree->GetTree()->GetUserInfo()->FindObject("AliESD"))->GetList(); 
 
-  if(fESDObjects->GetEntries()<kESDListN){
-    printf("%s %d AliESD::ReadFromTree() TList contains less than the standard contents %d < %d \n",(char*)__FILE__,__LINE__,fESDObjects->GetEntries(),kESDListN);
-  }
-
   // if list is empty
   // we could still set the branch adresses based on 
   // tree->GetListOfBranches() CKB
   // or create standard list 
+
+  if(fESDObjects->GetEntries()<kESDListN){
+    printf("%s %d AliESD::ReadFromTree() TList contains less than the standard contents %d < %d \n",(char*)__FILE__,__LINE__,fESDObjects->GetEntries(),kESDListN);
+  }
+
+
 
   // set the branch addresses
   TIter next(fESDObjects);
@@ -491,13 +493,11 @@ void AliESD::ReadFromTree(TTree *tree){
       {
 	// AliESDfriend does not have a name ...
       tree->SetBranchStatus("ESDfriend.*",1);
-      printf("Friend %s\n", bname.Data());
       tree->SetBranchAddress("ESDfriend.",fESDObjects->GetObjectRef(el));
 
 
     }
     else{
-      printf("%s\n", bname.Data());
       tree->SetBranchAddress(bname.Data(),fESDObjects->GetObjectRef(el));
     }
   }
