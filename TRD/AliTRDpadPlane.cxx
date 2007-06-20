@@ -227,6 +227,18 @@ void AliTRDpadPlane::Copy(TObject &p) const
 }
 
 //_____________________________________________________________________________
+void AliTRDpadPlane::SetTiltingAngle(Double_t t)
+{
+  //
+  // Set the tilting angle of the pads
+  //
+ 
+  fTiltingAngle = t; 
+  fTiltingTan   = TMath::Tan(TMath::Pi()/180.0 * fTiltingAngle); 
+
+}
+
+//_____________________________________________________________________________
 Int_t AliTRDpadPlane::GetPadRowNumber(Double_t z) const
 {
   //

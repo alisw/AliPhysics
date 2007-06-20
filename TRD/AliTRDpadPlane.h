@@ -18,6 +18,7 @@
 
 #include <TObject.h>
 
+
 //_____________________________________________________________________________
 class AliTRDpadPlane : public TObject {
 
@@ -50,9 +51,8 @@ class AliTRDpadPlane : public TObject {
   void     SetWidthOPad(Double_t w)            { fWidthOPad      = w; };
   void     SetLengthIPad(Double_t l)           { fLengthIPad     = l; };
   void     SetWidthIPad(Double_t w)            { fWidthIPad      = w; };
-  void     SetTiltingAngle(Double_t t)         { fTiltingAngle   = t; 
-                                                 fTiltingTan     = TMath::Tan(TMath::Pi()/180.0 * fTiltingAngle); };
   void     SetPadRowSMOffset(Double_t o)       { fPadRowSMOffset = o; };
+  void     SetTiltingAngle(Double_t t);
 
   Int_t    GetPadRowNumber(Double_t z) const;
   Int_t    GetPadRowNumberROC(Double_t z) const;
