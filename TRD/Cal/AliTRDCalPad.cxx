@@ -387,6 +387,8 @@ TH2F *AliTRDCalPad::MakeHisto2DSmPl(Int_t sm, Int_t pl, const AliTRDCalDet *calD
   Float_t kEpsilon = 0.000000000001;
   Float_t kEpsilonr = 0.005;
 
+  AliTRDgeometry *trdGeo = new AliTRDgeometry();
+
   if (type>=0){
     if (type==0){
       // nsigma range
@@ -423,7 +425,7 @@ TH2F *AliTRDCalPad::MakeHisto2DSmPl(Int_t sm, Int_t pl, const AliTRDCalDet *calD
     }
   }
   
-  AliTRDpadPlane *padPlane0 = new AliTRDpadPlane(pl,0);
+  AliTRDpadPlane *padPlane0 = trdGeo->GetPadPlane(pl,0);
   Double_t row0    = padPlane0->GetRow0();
   Double_t col0    = padPlane0->GetCol0();
 
@@ -461,6 +463,7 @@ TH2F *AliTRDCalPad::MakeHisto2DSmPl(Int_t sm, Int_t pl, const AliTRDCalDet *calD
   his->SetStats(0);
   his->SetMaximum(max);
   his->SetMinimum(min);
+  delete trdGeo;
   return his;
 }
 
@@ -517,8 +520,7 @@ TH2F *AliTRDCalPad::MakeHisto2DCh(Int_t ch, const AliTRDCalDet *calDet, Int_t ty
     }
   }
 
-  AliTRDgeometry *TRDgeo = new AliTRDgeometry();
-  TRDgeo->Init();
+  AliTRDgeometry *trdGeo = new AliTRDgeometry();
       
   Float_t kEpsilon = 0.000000000001;
 
@@ -539,12 +541,12 @@ TH2F *AliTRDCalPad::MakeHisto2DCh(Int_t ch, const AliTRDCalDet *calDet, Int_t ty
       if(calDet) factor = calDet->GetValue(det);
       if (fROC[det]){
 	AliTRDCalROC * calRoc = fROC[det];
-	AliTRDpadPlane *padPlane = new AliTRDpadPlane(ipl,ch);
+	AliTRDpadPlane *padPlane = trdGeo->GetPadPlane(ipl,ch);
 	for (Int_t icol=0; icol<calRoc->GetNcols(); icol++){
-	  poslocal[0] = TRDgeo->GetTime0(ipl);
+	  poslocal[0] = trdGeo->GetTime0(ipl);
 	  poslocal[2] = padPlane->GetRowPos(0);
 	  poslocal[1] = padPlane->GetColPos(icol);
-	  TRDgeo->RotateBack(det,poslocal,posglobal);
+	  trdGeo->RotateBack(det,poslocal,posglobal);
 	  Int_t binx = 1+TMath::Nint((posglobal[0]+400.0)*0.5);
 	  Int_t biny = 1+TMath::Nint((posglobal[1]+400.0)*0.5);
 	  Float_t value = 0.0;
@@ -567,6 +569,7 @@ TH2F *AliTRDCalPad::MakeHisto2DCh(Int_t ch, const AliTRDCalDet *calDet, Int_t ty
   his->SetStats(0);
   his->SetMaximum(max);
   his->SetMinimum(min);
+  delete trdGeo;
   return his;
 }
 

@@ -326,9 +326,7 @@ TH2F *AliTRDCalDet::MakeHisto2DCh(Int_t ch, Float_t min, Float_t max, Int_t type
     }
   }
     
-  AliTRDgeometry *TRDgeo = new AliTRDgeometry();
-  TRDgeo->Init();
-      
+  AliTRDgeometry *trdGeo = new AliTRDgeometry();
 
   Double_t poslocal[3]  = {0.0,0.0,0.0};
   Double_t posglobal[3] = {0.0,0.0,0.0};
@@ -344,12 +342,12 @@ TH2F *AliTRDCalDet::MakeHisto2DCh(Int_t ch, Float_t min, Float_t max, Int_t type
   for (Int_t isec = 0; isec < kNsect; isec++){
     for(Int_t ipl = 0; ipl < kNplan; ipl++){
       Int_t det   = offsetch+isec*30+ipl;
-      AliTRDpadPlane *padPlane = new AliTRDpadPlane(ipl,ch);
+      AliTRDpadPlane *padPlane = trdGeo->GetPadPlane(ipl,ch);
       for (Int_t icol=0; icol<padPlane->GetNcols(); icol++){
-	poslocal[0] = TRDgeo->GetTime0(ipl);
+	poslocal[0] = trdGeo->GetTime0(ipl);
 	poslocal[2] = padPlane->GetRowPos(0);
 	poslocal[1] = padPlane->GetColPos(icol);
-	TRDgeo->RotateBack(det,poslocal,posglobal);
+        trdGeo->RotateBack(det,poslocal,posglobal);
 	Int_t binx = 1+TMath::Nint((posglobal[0]+400.0)*0.5);
 	Int_t biny = 1+TMath::Nint((posglobal[1]+400.0)*0.5);
 	his->SetBinContent(binx,biny,fData[det]);
@@ -361,6 +359,7 @@ TH2F *AliTRDCalDet::MakeHisto2DCh(Int_t ch, Float_t min, Float_t max, Int_t type
   his->SetStats(0);
   his->SetMaximum(max);
   his->SetMinimum(min);
+  delete trdGeo;
   return his;
 }
 
@@ -403,10 +402,10 @@ TH2F *AliTRDCalDet::MakeHisto2DSmPl(Int_t sm, Int_t pl, Float_t min, Float_t max
     }
   }
      
-  AliTRDpadPlane *padPlane0 = new AliTRDpadPlane(pl,0);
+  AliTRDgeometry *trdGeo = new AliTRDgeometry();
+  AliTRDpadPlane *padPlane0 = trdGeo->GetPadPlane(pl,0);
   Double_t row0    = padPlane0->GetRow0();
   Double_t col0    = padPlane0->GetCol0();
-
 
   char  name[1000];
   sprintf(name,"%s CalDet 2D sm %d and pl %d",GetTitle(),sm,pl);
@@ -428,6 +427,7 @@ TH2F *AliTRDCalDet::MakeHisto2DSmPl(Int_t sm, Int_t pl, Float_t min, Float_t max
   his->SetStats(0);
   his->SetMaximum(max);
   his->SetMinimum(min);
+  delete trdGeo;
   return his;
 }
 
