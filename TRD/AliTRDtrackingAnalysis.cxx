@@ -448,8 +448,8 @@ void  AliTRDtrackingAnalysis::DrawRecPointResolution(int startEvent, int stopEve
 	double dy = dz * h01;
 	double yy = cls->GetY() - dy;
 		
-	if (cls->From2pad()) fClY2->Fill(10 * (yy - yref));
-	if (cls->From3pad()) fClY3->Fill(10 * (yy - yref));
+	if (cls->GetNPads() == 2) fClY2->Fill(10 * (yy - yref));
+	if (cls->GetNPads() == 3) fClY3->Fill(10 * (yy - yref));
 
 	int idx = GetPhiBin(tgphi);
 	if (idx >= 0 && idx < 12) fClYTgPhi[idx]->Fill(10 * (yy - yref));

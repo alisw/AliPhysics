@@ -190,12 +190,6 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
   AliTRDdataArrayI *digitsIn;
   AliTRDdataArrayI *tracksIn;
 
-  // Get the geometry
-  //AliTRDgeometry *geo            = AliTRDgeometry::GetGeometry(fRunLoader);  
-  //if (!geo) {
-  //  AliWarning("Creating default TRD geometry!");
-  //  geo = new AliTRDgeometry();
-  //}
   AliTRDgeometry geo;
 
   AliTRDcalibDB  *calibration    = AliTRDcalibDB::Instance();
@@ -235,7 +229,6 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
   const Int_t   kNdict   = AliTRDdigitsManager::kNDict;
   const Int_t   kNtrack  = kNdict * kNclus;
 
-  Int_t    iType         = 0;
   Int_t    iUnfold       = 0;  
   Double_t ratioLeft     = 1.0;
   Double_t ratioRight    = 1.0;
@@ -253,8 +246,6 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
   Int_t    sectBeg    = 0;
   Int_t    sectEnd    = AliTRDgeometry::Nsect();
   Int_t    nTimeTotal = calibration->GetNumberOfTimeBins();
-
-  Int_t    dummy[9]   = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
   AliDebug(1,Form("Number of Time Bins = %d.\n",nTimeTotal));
 
@@ -293,11 +284,6 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
         Float_t       calGainFactorDetValue = calGainFactorDet->GetValue(idet);
 
         Int_t nClusters      = 0;
-        Int_t nClusters2pad  = 0;
-        Int_t nClusters3pad  = 0;
-        Int_t nClusters4pad  = 0;
-        Int_t nClusters5pad  = 0;
-        Int_t nClustersLarge = 0;
 
 	// Apply the gain and the tail cancelation via digital filter
         AliTRDdataArrayF *digitsOut = new AliTRDdataArrayF(digitsIn->GetNrow()
@@ -379,28 +365,6 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
                   if (col+ii+1 >= nColMax) break;
 		}
                 nClusters++;
-                switch (nPadCount) {
-                case 2:
-                  iType = 0;
-                  nClusters2pad++;
-                  break;
-                case 3:
-                  iType = 1;
-                  nClusters3pad++;
-                  break;
-                case 4:
-                  iType = 2;
-                  nClusters4pad++;
-                  break;
-                case 5:
-                  iType = 3;
-                  nClusters5pad++;
-                  break;
-                default:
-                  iType = 4;
-                  nClustersLarge++;
-                  break;
-		};
 
 		// Look for 5 pad cluster with minimum in the middle
                 Bool_t fivePadCluster = kFALSE;
@@ -425,7 +389,6 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 		// of the cluster which remains from a previous unfolding
                 if (iUnfold) {
                   clusterSignal[0] *= ratioLeft;
-                  iType   = 5;
                   iUnfold = 0;
 		}
 
@@ -441,7 +404,6 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
                   ratioRight        = Unfold(kEpsilon,iplan,padSignal);
                   ratioLeft         = 1.0 - ratioRight; 
                   clusterSignal[2] *= ratioRight;
-                  iType   = 5;
                   iUnfold = 1;
                 }
 
@@ -493,30 +455,17 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 
                 // Correct for t0 (sum of chamber and pad wise values !!!)
                 Float_t  calT0ROCValue  = calT0ROC->GetValue(col,row);
-		Int_t    clusterTimeBin = TMath::Nint(time - (calT0DetValue + calT0ROCValue));
+		Char_t   clusterTimeBin = ((Char_t) TMath::Nint(time - (calT0DetValue + calT0ROCValue)));
                 Double_t colSize        = padPlane->GetColSize(col);
                 Double_t rowSize        = padPlane->GetRowSize(row);
 
-                Double_t clusterPos[3];
+                Float_t clusterPos[3];
 		clusterPos[0] = padPlane->GetColPos(col) - (clusterPads[1] + 0.5) * colSize;
 		clusterPos[1] = padPlane->GetRowPos(row) - 0.5                    * rowSize;
                 clusterPos[2] = CalcXposFromTimebin(clusterPads[2],idet,col,row);
-                Double_t clusterSig[2];
+                Float_t clusterSig[2];
                 clusterSig[0] = (clusterSigmaY2 + 1.0/12.0) * colSize*colSize;
                 clusterSig[1] = rowSize * rowSize / 12.0;                                       
-                
-                // Add the cluster to the output array
-		// The track indices will be stored later 
-                AliTRDcluster *cluster = AddCluster(clusterPos
-                                                   ,clusterTimeBin
-                                                   ,idet
-			                           ,clusterCharge
-			                           ,dummy
-			                           ,clusterSig
-			                           ,iType
-                                                   ,col
-						   ,volid
-    		                                   ,clusterPads[1]);
 		
 		// Store the amplitudes of the pads in the cluster for later analysis
 		Short_t signals[7] = { 0, 0, 0, 0, 0, 0, 0 };
@@ -527,13 +476,26 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 		  }
 		  signals[jPad-col+3] = TMath::Nint(TMath::Abs(digitsOut->GetDataUnchecked(row,jPad,time)));
 		}
-		cluster->SetSignals(signals);
 
+                // Add the cluster to the output array
+		// The track indices will be stored later 
+                AliTRDcluster *cluster = new AliTRDcluster(idet
+                                                          ,clusterCharge
+                                                          ,clusterPos
+                                                          ,clusterSig
+                                                          ,0x0
+							  ,((Char_t) nPadCount)
+                                                          ,signals
+							  ,((UChar_t) col)
+                                                          ,clusterTimeBin
+                                                          ,clusterPads[1]
+                                                          ,volid);
 		// Temporarily store the row, column and time bin of the center pad
 		// Used to later on assign the track indices
                 cluster->SetLabel( row,0);
                 cluster->SetLabel( col,1);
                 cluster->SetLabel(time,2);
+                RecPoints()->Add(cluster);
 
 		// Store the index of the first cluster in the current ROC
                 if (firstClusterROC < 0) {

@@ -267,60 +267,6 @@ Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
   
 }
 
-
-//_____________________________________________________________________________
-AliTRDcluster* AliTRDclusterizer::AddCluster(Double_t *pos, Int_t timebin
-                                           , Int_t det, Double_t amp
-				           , Int_t *tracks, Double_t *sig
-                                           , Int_t iType, Int_t col
-					   , UShort_t volid
-                                           , Float_t center)
-{
-  //
-  // Add a cluster for the TRD
-  //
-
-  AliTRDcluster *c = new AliTRDcluster();
-
-  c->SetDetector(det);
-  c->SetQ(amp);
-  c->SetX(pos[2]);
-  c->SetY(pos[0]);
-  c->SetZ(pos[1]);
-  c->SetSigmaY2(sig[0]);   
-  c->SetSigmaZ2(sig[1]);
-  c->SetLocalTimeBin(timebin);
-  c->SetCenter(center);
-  c->SetPad(col);
-  c->SetVolumeId(volid);
-
-  if (tracks) {
-    c->AddTrackIndex(tracks);
-  }
-
-  switch (iType) {
-  case 0:
-    c->Set2pad();
-    break;
-  case 1:
-    c->Set3pad();
-    break;
-  case 2:
-    c->Set4pad();
-    break;
-  case 3:
-    c->Set5pad();
-    break;
-  case 4:
-    c->SetLarge();
-    break;
-  };
-
-  RecPoints()->Add(c);
-  return c;
-
-}
-
 //_____________________________________________________________________________
 Double_t AliTRDclusterizer::CalcXposFromTimebin(Float_t timebin, Int_t idet
                                               , Int_t col, Int_t row)
@@ -365,7 +311,7 @@ void AliTRDclusterizer::ResetRecPoints()
 }
 
 //_____________________________________________________________________________
-TObjArray* AliTRDclusterizer::RecPoints() 
+TObjArray *AliTRDclusterizer::RecPoints() 
 {
   //
   // Returns the list of rec points

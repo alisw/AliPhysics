@@ -40,13 +40,7 @@ class AliTRDclusterizer : public TNamed {
   virtual Bool_t   MakeClusters() = 0;
   virtual Bool_t   WriteClusters(Int_t det);
           void     ResetRecPoints();
-
-          TObjArray     *RecPoints();
-  virtual AliTRDcluster *AddCluster(Double_t *pos, Int_t timebin, Int_t det
-                                  , Double_t amp, Int_t *tracks
-			          , Double_t *sig, Int_t iType
-                                  , Int_t col, UShort_t volid
-                                  , Float_t center = 0);
+  TObjArray       *RecPoints();
 
  protected:
 

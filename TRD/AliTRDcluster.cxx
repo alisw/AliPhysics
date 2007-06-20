@@ -46,9 +46,37 @@ AliTRDcluster::AliTRDcluster()
 
 }
 
+//___________________________________________________________________________
+AliTRDcluster::AliTRDcluster(Int_t det, Float_t q
+                           , Float_t *pos, Float_t *sig
+                           , Int_t *tracks, Char_t npads, Short_t *signals
+                           , UChar_t col, Char_t timebin
+			   , Float_t center, UShort_t volid)
+  :AliCluster(volid,pos[2],pos[0],pos[1],sig[0],sig[1],0.0,0x0) 
+  ,fDetector(det)
+  ,fTimeBin(timebin)
+  ,fQ(q)
+  ,fNPads(npads)
+  ,fCenter(center)
+  ,fPad(col)
+{ 
+  //
+  // Constructor
+  //
+
+  for (Int_t i = 0; i < 7; i++) {
+    fSignals[i] = signals[i];
+  }
+
+  if (tracks) {
+    AddTrackIndex(tracks);
+  }
+
+}
+
 //_____________________________________________________________________________
 AliTRDcluster::AliTRDcluster(const AliTRDcluster &c)
-  :AliCluster()
+  :AliCluster(c)
   ,fDetector(c.fDetector)
   ,fTimeBin(c.fTimeBin)
   ,fQ(c.fQ)
@@ -153,19 +181,6 @@ void AliTRDcluster::AddTrackIndex(Int_t *track)
   return;
 
 }          
-
-//_____________________________________________________________________________
-void AliTRDcluster::SetSignals(Short_t *signals)
-{
-  //
-  // Write signals in the cluster
-  //
-
-  for (Int_t i = 0; i < 7; i++) {
-    fSignals[i] = signals[i];
-  }
-
-}
 
 //_____________________________________________________________________________
 Float_t AliTRDcluster::GetSumS() const
