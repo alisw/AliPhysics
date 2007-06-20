@@ -399,13 +399,13 @@ Bool_t AliSimulation::MisalignGeometry(AliRunLoader *runLoader)
         loadAlObjsListOfDets += " ";
       }
     } // end loop over detectors
-    (AliGeomManager::Instance())->ApplyAlignObjsFromCDB(loadAlObjsListOfDets.Data());
+    AliGeomManager::ApplyAlignObjsFromCDB(loadAlObjsListOfDets.Data());
   }else{
     // Check if the array with alignment objects was
     // provided by the user. If yes, apply the objects
     // to the present TGeo geometry
     if (fAlignObjArray) {
-      if ((AliGeomManager::Instance())->ApplyAlignObjsToGeom(fAlignObjArray) == kFALSE) {
+      if (AliGeomManager::ApplyAlignObjsToGeom(*fAlignObjArray) == kFALSE) {
         AliError("The misalignment of one or more volumes failed!"
                  "Compare the list of simulated detectors and the list of detector alignment data!");
         if (delRunLoader) delete runLoader;
@@ -428,9 +428,6 @@ Bool_t AliSimulation::MisalignGeometry(AliRunLoader *runLoader)
 
 
   if (delRunLoader) delete runLoader;
-
-  // Update the TGeoPhysicalNodes
-  gGeoManager->RefreshPhysicalNodes();
 
   return kTRUE;
 }
@@ -491,7 +488,7 @@ Bool_t AliSimulation::Run(Int_t nEvents)
 
   // If RunSimulation was not called, load the geometry and misalign it
   if (!gGeoManager) {
-    TGeoManager::Import("geometry.root");
+    AliGeomManager::LoadGeometry("geometry.root");
     if (!gGeoManager) if (fStopOnError) return kFALSE;
     // Initialize the geometry manager (if not already done)
     if(!MisalignGeometry()) if (fStopOnError) return kFALSE;
