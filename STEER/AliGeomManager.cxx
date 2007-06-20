@@ -89,6 +89,19 @@ TGeoPNEntry** AliGeomManager::fgPNEntry[kLastLayer - kFirstLayer] = {
   0x0
 };
 
+TGeoHMatrix** AliGeomManager::fgOrigMatrix[kLastLayer - kFirstLayer] = {
+  0x0,0x0,
+  0x0,0x0,
+  0x0,0x0,
+  0x0,0x0,
+  0x0,0x0,0x0,
+  0x0,0x0,0x0,
+  0x0,
+  0x0,0x0,
+  0x0,
+  0x0
+};
+
 AliAlignObj** AliGeomManager::fgAlignObjs[kLastLayer - kFirstLayer] = {
   0x0,0x0,
   0x0,0x0,
@@ -102,37 +115,40 @@ AliAlignObj** AliGeomManager::fgAlignObjs[kLastLayer - kFirstLayer] = {
   0x0
 };
 
-AliGeomManager* AliGeomManager::fgInstance = 0x0;
-
 TGeoManager* AliGeomManager::fgGeometry = 0x0;
 
 //_____________________________________________________________________________
-AliGeomManager* AliGeomManager::Instance()
-{
-// returns AliGeomManager instance (singleton)
-
-	if (!fgInstance) {
-	  fgInstance = new AliGeomManager();
-	  fgInstance->Init();
-	}
-	return fgInstance;
-}
-
-//_____________________________________________________________________________
-void AliGeomManager::Init()
+void AliGeomManager::LoadGeometry(const char *geomFileName)
 {
 // initialization
-  if(!gGeoManager) AliFatal("Impossible to initialize AliGeomManager without an active geometry");
-  fgGeometry = gGeoManager;
+
+  fgGeometry = NULL;
+  if (geomFileName && (!gSystem->AccessPathName(geomFileName))) { // gemotry.root exists
+    fgGeometry = TGeoManager::Import(geomFileName);
+    AliInfoClass("Using custom geometry.root file");
+  }
+
+  if (!fgGeometry) {
+    AliInfoClass("Using geometry from CDB");
+
+    AliCDBPath path("GRP","Geometry","Data");
+	
+    AliCDBEntry *entry=AliCDBManager::Instance()->Get(path.GetPath());
+    if(!entry) AliFatalClass("Couldn't load geometry data from CDB!");
+
+    entry->SetOwner(0);
+    fgGeometry = (TGeoManager*) entry->GetObject();
+    if (!fgGeometry) AliFatalClass("Couldn't find TGeoManager in the specified CDB entry!");
+  }
+
   InitSymNamesLUT();
   InitPNEntriesLUT();
+  InitOrigMatricesLUT();
 }
 
 //_____________________________________________________________________________
 AliGeomManager::AliGeomManager():
-  TObject(),
-
-  fAlignObjArray(NULL)
+  TObject()
 {
   // default constructor
 }
@@ -141,8 +157,6 @@ AliGeomManager::AliGeomManager():
 AliGeomManager::~AliGeomManager()
 {
   // dummy destructor
-  if(fAlignObjArray) fAlignObjArray->Delete();
-  delete fAlignObjArray;
 }
 
 //_____________________________________________________________________________
@@ -319,25 +333,25 @@ Bool_t AliGeomManager::GetFromGeometry(const char *symname, AliAlignObj &alobj)
   alobj.SetPars(0,0,0,0,0,0);
   alobj.SetSymName(symname);
 
-  if (!gGeoManager || !gGeoManager->IsClosed()) {
+  if (!fgGeometry || !fgGeometry->IsClosed()) {
     AliErrorClass("Can't get the alignment object! gGeoManager doesn't exist or it is still opened!");
     return kFALSE;
   }
 
-  if (!gGeoManager->GetListOfPhysicalNodes()) {
+  if (!fgGeometry->GetListOfPhysicalNodes()) {
     AliErrorClass("Can't get the alignment object! gGeoManager doesn't contain any aligned nodes!");
     return kFALSE;
   }
 
   const char *path;
-  TGeoPNEntry* pne = gGeoManager->GetAlignableEntry(symname);
+  TGeoPNEntry* pne = fgGeometry->GetAlignableEntry(symname);
   if(pne){
     path = pne->GetTitle();
   }else{
     AliWarningClass(Form("The symbolic volume name %s does not correspond to a physical entry. Using it as a volume path!",symname));
     path = symname;
   }
-  TObjArray* nodesArr = gGeoManager->GetListOfPhysicalNodes();
+  TObjArray* nodesArr = fgGeometry->GetListOfPhysicalNodes();
   TGeoPhysicalNode* node = NULL;
   for (Int_t iNode = 0; iNode < nodesArr->GetEntriesFast(); iNode++) {
     TGeoPhysicalNode* tempNode = (TGeoPhysicalNode*) nodesArr->UncheckedAt(iNode);
@@ -349,7 +363,7 @@ Bool_t AliGeomManager::GetFromGeometry(const char *symname, AliAlignObj &alobj)
   }
 
   if (!node) {
-    if (!gGeoManager->cd(path)) {
+    if (!fgGeometry->cd(path)) {
       AliErrorClass(Form("%s not valid neither as symbolic volume name nor as volume path!",path));
       return kFALSE;
     }
@@ -743,20 +757,45 @@ void AliGeomManager::InitPNEntriesLUT()
   // The LUTs are static; they are created at the creation of the
   // AliGeomManager instance and recreated if the geometry has changed
   //
+  if (fgPNEntry[0]) return;
 
-  if(!gGeoManager) AliErrorClass("Impossible to initialize PNEntries LUT without an active geometry");
-
-  InitSymNamesLUT();
-  
-  for (Int_t iLayer = 0; iLayer < (kLastLayer - kFirstLayer); iLayer++){
-    if(!fgPNEntry[iLayer]) fgPNEntry[iLayer] = new TGeoPNEntry*[fgLayerSize[iLayer]];
+  if(!fgGeometry) {
+    AliErrorClass("Impossible to initialize PNEntries LUT without an active geometry");
+    return;
   }
 
-  for (Int_t iLayer = 0; iLayer < (kLastLayer-kFirstLayer); iLayer++){
+  for (Int_t iLayer = 0; iLayer < (kLastLayer - kFirstLayer); iLayer++){
+    fgPNEntry[iLayer] = new TGeoPNEntry*[fgLayerSize[iLayer]];
     for(Int_t modnum=0; modnum<fgLayerSize[iLayer]; modnum++){
-      fgPNEntry[iLayer][modnum] = gGeoManager->GetAlignableEntry(fgSymName[iLayer][modnum].Data());
+      fgPNEntry[iLayer][modnum] = fgGeometry->GetAlignableEntry(fgSymName[iLayer][modnum]);
     }
   }
+}
+
+//_____________________________________________________________________________
+void AliGeomManager::InitOrigMatricesLUT()
+{
+  // Initialize the storage for the look-up table with the original global
+  // matrices for each alignable volume.
+  // The LUTs are static; the matrices are created on demand and recreated
+  // if the geometry has changed.
+  if (fgOrigMatrix[0]) return;
+
+  if (!fgGeometry || !fgGeometry->IsClosed()) {
+    AliErrorClass("Impossible to initialize orignal matrices LUT without an active geometry");
+    return;
+  }
+
+  for (Int_t iLayer = 0; iLayer < (kLastLayer - kFirstLayer); iLayer++){
+    fgOrigMatrix[iLayer] = new TGeoHMatrix*[fgLayerSize[iLayer]];
+    for(Int_t modnum=0; modnum<fgLayerSize[iLayer]; modnum++){
+      if (!fgPNEntry[iLayer][modnum]) continue;
+      TGeoHMatrix *m = GetOrigGlobalMatrix(fgPNEntry[iLayer][modnum]);
+      if (!m) continue;
+      fgOrigMatrix[iLayer][modnum] = new TGeoHMatrix(*m);
+    }
+  }
+
 }
 
 //______________________________________________________________________
@@ -765,7 +804,7 @@ TGeoHMatrix* AliGeomManager::GetMatrix(TGeoPNEntry* pne)
   // Get the transformation matrix for a given PNEntry
   // by quering the TGeoManager
 
-  if (!gGeoManager || !gGeoManager->IsClosed()) {
+  if (!fgGeometry || !fgGeometry->IsClosed()) {
     AliErrorClass("Can't get the global matrix! gGeoManager doesn't exist or it is still opened!");
     return NULL;
   }
@@ -774,11 +813,11 @@ TGeoHMatrix* AliGeomManager::GetMatrix(TGeoPNEntry* pne)
   if (pnode) return pnode->GetMatrix();
 
   const char* path = pne->GetTitle();
-  if (!gGeoManager->cd(path)) {
+  if (!fgGeometry->cd(path)) {
     AliErrorClass(Form("Volume path %s not valid!",path));
     return NULL;
   }
-  return gGeoManager->GetCurrentMatrix();
+  return fgGeometry->GetCurrentMatrix();
 }
 
 //______________________________________________________________________
@@ -799,8 +838,12 @@ TGeoHMatrix* AliGeomManager::GetMatrix(const char* symname)
   // Get the global transformation matrix for a given alignable volume
   //  identified by its symbolic name 'symname' by quering the TGeoManager
 
-  if(!ReactIfChangedGeom()) return NULL;
-  TGeoPNEntry* pne = gGeoManager->GetAlignableEntry(symname);
+  if (!fgGeometry || !fgGeometry->IsClosed()) {
+    AliErrorClass("No active geometry or geometry not yet closed!");
+    return NULL;
+  }
+
+  TGeoPNEntry* pne = fgGeometry->GetAlignableEntry(symname);
   if (!pne) return NULL;
 
   return GetMatrix(pne);
@@ -836,35 +879,31 @@ Bool_t AliGeomManager::GetRotation(Int_t index, Double_t r[9])
   return kTRUE;
 }
 
-//_____________________________________________________________________________
-Bool_t AliGeomManager::GetOrigGlobalMatrix(const char *symname, TGeoHMatrix &m)
+//______________________________________________________________________
+Bool_t AliGeomManager::GetOrigGlobalMatrix(const char* symname, TGeoHMatrix &m) 
 {
-  // The method returns global matrix for the ideal detector geometry
-  // Symname identifies either the corresponding TGeoPNEntry or directly
-  // the volume path. The output global matrix is stored in 'm'.
-  // Returns kFALSE in case TGeo has not been initialized or the symname
-  // is invalid.
-  //
+  // Get the global transformation matrix (ideal geometry) for a given alignable volume
+  //  identified by its symbolic name 'symname' by quering the TGeoManager
+  m.Clear();
 
-  if (!gGeoManager || !gGeoManager->IsClosed()) {
-    AliErrorClass("Can't get the original global matrix! gGeoManager doesn't exist or it is still opened!");
+  if (!fgGeometry || !fgGeometry->IsClosed()) {
+    AliErrorClass("No active geometry or geometry not yet closed!");
     return kFALSE;
   }
-  
-  if (!gGeoManager->GetListOfPhysicalNodes()) {
+  if (!fgGeometry->GetListOfPhysicalNodes()) {
     AliWarningClass("gGeoManager doesn't contain any aligned nodes!");
-    if (!gGeoManager->cd(symname)) {
+    if (!fgGeometry->cd(symname)) {
       AliErrorClass(Form("Volume path %s not valid!",symname));
       return kFALSE;
     }
     else {
-      m = *gGeoManager->GetCurrentMatrix();
+      m = *fgGeometry->GetCurrentMatrix();
       return kTRUE;
     }
   }
 
+  TGeoPNEntry* pne = fgGeometry->GetAlignableEntry(symname);
   const char* path = NULL;
-  TGeoPNEntry* pne = gGeoManager->GetAlignableEntry(symname);
   if(pne){
     path = pne->GetTitle();
   }else{
@@ -872,21 +911,38 @@ Bool_t AliGeomManager::GetOrigGlobalMatrix(const char *symname, TGeoHMatrix &m)
     path=symname;
   }
 
-  if (!gGeoManager->CheckPath(path)) {
+  return GetOrigGlobalMatrixFromPath(path,m);
+}
+
+//_____________________________________________________________________________
+Bool_t AliGeomManager::GetOrigGlobalMatrixFromPath(const char *path, TGeoHMatrix &m)
+{
+  // The method returns global matrix for the ideal detector geometry
+  // Symname identifies either the corresponding TGeoPNEntry or directly
+  // the volume path. The output global matrix is stored in 'm'.
+  // Returns kFALSE in case TGeo has not been initialized or the symname
+  // is invalid.
+  //
+  m.Clear();
+
+  if (!fgGeometry || !fgGeometry->IsClosed()) {
+    AliErrorClass("Can't get the original global matrix! gGeoManager doesn't exist or it is still opened!");
+    return kFALSE;
+  }
+
+  if (!fgGeometry->CheckPath(path)) {
     AliErrorClass(Form("Volume path %s not valid!",path));
     return kFALSE;
   }
 
-  m.Clear();
+  TIter next(fgGeometry->GetListOfPhysicalNodes());
+  fgGeometry->cd(path);
 
-  TIter next(gGeoManager->GetListOfPhysicalNodes());
-  gGeoManager->cd(path);
-
-  while(gGeoManager->GetLevel()){
+  while(fgGeometry->GetLevel()){
 
     TGeoPhysicalNode *physNode = NULL;
     next.Reset();
-    TGeoNode *node = gGeoManager->GetCurrentNode();
+    TGeoNode *node = fgGeometry->GetCurrentNode();
     while ((physNode=(TGeoPhysicalNode*)next())) 
       if (physNode->GetNode() == node) break;
 
@@ -899,26 +955,52 @@ Bool_t AliGeomManager::GetOrigGlobalMatrix(const char *symname, TGeoHMatrix &m)
 
     m.MultiplyLeft(lm);
 
-    gGeoManager->CdUp();
+    fgGeometry->CdUp();
   }
 
   return kTRUE;
 }
 
+//_____________________________________________________________________________
+TGeoHMatrix* AliGeomManager::GetOrigGlobalMatrix(TGeoPNEntry* pne)
+{
+  // The method returns global matrix for the ideal detector geometry
+  // using the corresponding TGeoPNEntry as an input.
+  // The method creates a new matrix, so it has to be used carefully in order
+  // to avoid memory leaks.
+  // In case of missing TGeoManager the method return NULL.
+
+  if (!fgGeometry || !fgGeometry->IsClosed()) {
+    AliErrorClass("Can't get the global matrix! gGeoManager doesn't exist or it is still opened!");
+    return NULL;
+  }
+
+  const char* path = pne->GetTitle();
+  static TGeoHMatrix m;
+  if (!GetOrigGlobalMatrixFromPath(path,m))
+    return NULL;
+
+  return &m;
+}
+
 //______________________________________________________________________
-Bool_t AliGeomManager::GetOrigGlobalMatrix(Int_t index, TGeoHMatrix &m)
+TGeoHMatrix* AliGeomManager::GetOrigGlobalMatrix(Int_t index)
 {
   // Get the original (ideal geometry) TGeo matrix for
   // a given module identified by 'index'.
-  // The method is slow, so it should be used
-  // with great care.
+  // In general the method is slow, so we use
+  // LUT for fast access. The LUT is reset in case of
+  // new geometry is loaded.
+  Int_t modId;
+  ELayerID layerId = VolUIDToLayer(index,modId);
 
-  m.Clear();
-
-  const char *symname = SymName(index);
-  if (!symname) return kFALSE;
-
-  return GetOrigGlobalMatrix(symname,m);
+  if (fgOrigMatrix[layerId-kFirstLayer][modId])
+    return fgOrigMatrix[layerId-kFirstLayer][modId];
+  else {
+    TGeoPNEntry *pne = GetPNEntry(index);
+    if (!pne) return NULL;
+    return GetOrigGlobalMatrix(pne);
+  }
 }
 
 //______________________________________________________________________
@@ -927,10 +1009,10 @@ Bool_t AliGeomManager::GetOrigTranslation(Int_t index, Double_t t[3])
   // Get the original translation vector (ideal geometry)
   // for a given module 'index' by quering the TGeoManager
 
-  TGeoHMatrix m;
-  if (!GetOrigGlobalMatrix(index,m)) return kFALSE;
+  TGeoHMatrix *m = GetOrigGlobalMatrix(index);
+  if (!m) return kFALSE;
 
-  Double_t *trans = m.GetTranslation();
+  Double_t *trans = m->GetTranslation();
   for (Int_t i = 0; i < 3; i++) t[i] = trans[i];
 
   return kTRUE;
@@ -942,10 +1024,10 @@ Bool_t AliGeomManager::GetOrigRotation(Int_t index, Double_t r[9])
   // Get the original rotation matrix (ideal geometry)
   // for a given module 'index' by quering the TGeoManager
 
-  TGeoHMatrix m;
-  if (!GetOrigGlobalMatrix(index,m)) return kFALSE;
+  TGeoHMatrix *m = GetOrigGlobalMatrix(index);
+  if (!m) return kFALSE;
 
-  Double_t *rot = m.GetRotationMatrix();
+  Double_t *rot = m->GetRotationMatrix();
   for (Int_t i = 0; i < 9; i++) r[i] = rot[i];
 
   return kTRUE;
@@ -998,23 +1080,11 @@ TGeoPNEntry* AliGeomManager::GetPNEntry(Int_t voluid) {
 }
 
 //_____________________________________________________________________________
-TGeoPNEntry* AliGeomManager::GetPNEntry(UShort_t voluid) {
-  // Returns the TGeoPNEntry for the given global volume ID "voluid"
-  //
-  Int_t modId;
-  ELayerID layerId = VolUIDToLayer(voluid,modId);
-  return GetPNEntry(layerId,modId);
-}
-
-//_____________________________________________________________________________
 TGeoPNEntry* AliGeomManager::GetPNEntry(ELayerID layerId, Int_t modId)
 {
   // Returns the TGeoPNEntry for a given layer
   // and module ID
   //
-
-  if(!fgPNEntry[0]) InitPNEntriesLUT();
-  if(!ReactIfChangedGeom()) return NULL;
 
   if(modId<0 || modId>=fgLayerSize[layerId-kFirstLayer]){
     AliWarningClass(Form("Module number %d not in the valid range (0->%d) !",modId,fgLayerSize[layerId-kFirstLayer]-1));
@@ -1039,9 +1109,9 @@ Bool_t AliGeomManager::ApplyAlignObjsFromCDB(const char* AlignDetsList)
   // Finally an overlaps check is performed.
   //
  
-  if(!fAlignObjArray) fAlignObjArray = new TObjArray();
-  fAlignObjArray->Clear();  	
-  fAlignObjArray->SetOwner(0);
+  TObjArray alignObjArray;
+  alignObjArray.Clear();  	
+  alignObjArray.SetOwner(0);
 
   TString alObjsNotLoaded="";
   TString alObjsLoaded="";
@@ -1053,8 +1123,8 @@ Bool_t AliGeomManager::ApplyAlignObjsFromCDB(const char* AlignDetsList)
   
   while((str = (TObjString*) iter.Next())){
     TString det(str->String());
-    AliInfo(Form("Loading alignment objs for %s",det.Data()));
-    if(!LoadAlignObjsFromCDBSingleDet(det.Data())){
+    AliInfoClass(Form("Loading alignment objs for %s",det.Data()));
+    if(!LoadAlignObjsFromCDBSingleDet(det.Data(),alignObjArray)){
       alObjsNotLoaded += det.Data();
       alObjsNotLoaded += " ";
     } else {
@@ -1063,16 +1133,16 @@ Bool_t AliGeomManager::ApplyAlignObjsFromCDB(const char* AlignDetsList)
     }
   }
 
-  if(!alObjsLoaded.IsNull()) AliInfo(Form("Alignment objects loaded for: %s",
-					alObjsLoaded.Data()));
-  if(!alObjsNotLoaded.IsNull()) AliInfo(Form("Didn't/couldn't load alignment objects for: %s",
-					   alObjsNotLoaded.Data()));
+  if(!alObjsLoaded.IsNull()) AliInfoClass(Form("Alignment objects loaded for: %s",
+					       alObjsLoaded.Data()));
+  if(!alObjsNotLoaded.IsNull()) AliInfoClass(Form("Didn't/couldn't load alignment objects for: %s",
+						  alObjsNotLoaded.Data()));
  
-  return(ApplyAlignObjsToGeom(fAlignObjArray));
+  return(ApplyAlignObjsToGeom(alignObjArray));
 }
 
 //_____________________________________________________________________________
-Bool_t AliGeomManager::LoadAlignObjsFromCDBSingleDet(const char* detName)
+Bool_t AliGeomManager::LoadAlignObjsFromCDBSingleDet(const char* detName, TObjArray& alignObjArray)
 {
   // Adds the alignable objects found in the CDBEntry for the detector
   // passed as argument to the array of all alignment objects to be applyed
@@ -1080,7 +1150,7 @@ Bool_t AliGeomManager::LoadAlignObjsFromCDBSingleDet(const char* detName)
   //
   // Fills array of single detector's alignable objects from CDB
   
-  AliDebug(2, Form("Loading alignment objs for detector: %s",detName));
+  AliDebugClass(2, Form("Loading alignment objs for detector: %s",detName));
   
   AliCDBEntry *entry;
   	
@@ -1088,55 +1158,56 @@ Bool_t AliGeomManager::LoadAlignObjsFromCDBSingleDet(const char* detName)
 	
   entry=AliCDBManager::Instance()->Get(path.GetPath());
   if(!entry){ 
-  	AliDebug(2,Form("Couldn't load alignment data for detector %s",detName));
+  	AliDebugClass(2,Form("Couldn't load alignment data for detector %s",detName));
 	return kFALSE;
   }
   entry->SetOwner(1);
   TClonesArray *alignArray = (TClonesArray*) entry->GetObject();	
   alignArray->SetOwner(0);
-  AliDebug(2,Form("Found %d alignment objects for %s",
-			alignArray->GetEntries(),detName));
+  AliDebugClass(2,Form("Found %d alignment objects for %s",
+		       alignArray->GetEntries(),detName));
 
   AliAlignObj *alignObj=0;
   TIter iter(alignArray);
 	
   // loop over align objects in detector
   while( ( alignObj=(AliAlignObj *) iter.Next() ) ){
-  	fAlignObjArray->Add(alignObj);
+  	alignObjArray.Add(alignObj);
   }
   // delete entry --- Don't delete, it is cached!
 	
-  AliDebug(2, Form("fAlignObjArray entries: %d",fAlignObjArray->GetEntries() ));
+  AliDebugClass(2, Form("fAlignObjArray entries: %d",alignObjArray.GetEntries() ));
   return kTRUE;
 
 }
 
 //_____________________________________________________________________________
-Bool_t AliGeomManager::ApplyAlignObjsToGeom(TObjArray* alObjArray)
+Bool_t AliGeomManager::ApplyAlignObjsToGeom(TObjArray& alignObjArray)
 {
   // Read collection of alignment objects (AliAlignObj derived) saved
   // in the TClonesArray alObjArray and apply them to gGeoManager
   //
-  ReactIfChangedGeom();
-
-  alObjArray->Sort();
-  Int_t nvols = alObjArray->GetEntriesFast();
+  alignObjArray.Sort();
+  Int_t nvols = alignObjArray.GetEntriesFast();
 
   Bool_t flag = kTRUE;
 
   for(Int_t j=0; j<nvols; j++)
     {
-      AliAlignObj* alobj = (AliAlignObj*) alObjArray->UncheckedAt(j);
+      AliAlignObj* alobj = (AliAlignObj*) alignObjArray.UncheckedAt(j);
       if (alobj->ApplyToGeometry() == kFALSE) flag = kFALSE;
     }
 
   if (AliDebugLevelClass() >= 1) {
-    gGeoManager->GetTopNode()->CheckOverlaps(1);
-    TObjArray* ovexlist = gGeoManager->GetListOfOverlaps();
+    fgGeometry->GetTopNode()->CheckOverlaps(1);
+    TObjArray* ovexlist = fgGeometry->GetListOfOverlaps();
     if(ovexlist->GetEntriesFast()){  
-      AliError("The application of alignment objects to the geometry caused huge overlaps/extrusions!");
+      AliErrorClass("The application of alignment objects to the geometry caused huge overlaps/extrusions!");
    }
   }
+
+  // Update the TGeoPhysicalNodes
+  fgGeometry->RefreshPhysicalNodes();
 
   return flag;
 
@@ -1156,14 +1227,14 @@ Bool_t AliGeomManager::ApplyAlignObjsToGeom(const char* fileName, const char* cl
     return kFALSE;
   }
 
-  TClonesArray* alObjArray = ((TClonesArray*) inFile->Get(clArrayName));
+  TClonesArray* alignObjArray = ((TClonesArray*) inFile->Get(clArrayName));
   inFile->Close();
-  if (!alObjArray) {
+  if (!alignObjArray) {
     AliErrorClass(Form("Could not get array (%s) from file (%s) !",clArrayName,fileName));
     return kFALSE;
   }
 
-  return ApplyAlignObjsToGeom(alObjArray);
+  return ApplyAlignObjsToGeom(*alignObjArray);
 
 }
 
@@ -1178,9 +1249,9 @@ Bool_t AliGeomManager::ApplyAlignObjsToGeom(AliCDBParam* param, AliCDBId& Id)
 
   AliCDBStorage* storage = AliCDBManager::Instance()->GetStorage(param);
   AliCDBEntry* entry = storage->Get(Id);
-  TClonesArray* AlObjArray = ((TClonesArray*) entry->GetObject());
+  TClonesArray* alignObjArray = ((TClonesArray*) entry->GetObject());
 
-  return ApplyAlignObjsToGeom(AlObjArray);
+  return ApplyAlignObjsToGeom(*alignObjArray);
 
 }
 
@@ -1213,28 +1284,7 @@ Bool_t AliGeomManager::ApplyAlignObjsToGeom(const char* detName, Int_t runnum, I
   AliCDBEntry* entry = AliCDBManager::Instance()->Get(path.GetPath(),runnum,version,sversion);
 
   if(!entry) return kFALSE;
-  TClonesArray* AlObjArray = ((TClonesArray*) entry->GetObject());
+  TClonesArray* alignObjArray = ((TClonesArray*) entry->GetObject());
 
-  return ApplyAlignObjsToGeom(AlObjArray);
-}
-
-//_____________________________________________________________________________
-Bool_t AliGeomManager::ReactIfChangedGeom()
-{
-  // Check if the TGeo geometry has changed. In that case reinitialize the
-  // look-up table mapping volume indexes to TGeoPNEntries
-  //
-
-  if (!gGeoManager || !gGeoManager->IsClosed()) {
-    AliErrorClass("No active geometry or geometry not yet closed!");
-    return kFALSE;
-  }
-
-  if(HasGeomChanged())
-    {
-      fgGeometry = gGeoManager;
-      InitPNEntriesLUT();
-    }
-
-  return kTRUE;
+  return ApplyAlignObjsToGeom(*alignObjArray);
 }

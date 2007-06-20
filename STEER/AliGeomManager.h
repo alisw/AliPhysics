@@ -11,7 +11,10 @@
 //
 
 #include <TObject.h>
-#include <TGeoManager.h>
+
+class TGeoManager;
+class TGeoPNEntry;
+class TGeoHMatrix;
 
 class TObjArray;
 
@@ -50,22 +53,17 @@ public:
   static const char* SymName(UShort_t voluid);
   static const char* SymName(ELayerID layerId, Int_t modId);
 
-  static TGeoPNEntry* GetPNEntry(Int_t index);
-  static TGeoPNEntry* GetPNEntry(UShort_t index);
-  static TGeoPNEntry* GetPNEntry(ELayerID layerId, Int_t modId);
-
   static Bool_t   GetFromGeometry(const char *symname, AliAlignObj &alobj);
   static AliAlignObj* GetAlignObj(UShort_t voluid);
   static AliAlignObj* GetAlignObj(ELayerID layerId, Int_t modId);
 
   //to be used making a copy of the returned pointer to TGeoHMatrix!!
-  static TGeoHMatrix* GetMatrix(TGeoPNEntry* pne);
   static TGeoHMatrix* GetMatrix(Int_t index);
   static TGeoHMatrix* GetMatrix(const char *symname);
   static Bool_t GetTranslation(Int_t index, Double_t t[3]);
   static Bool_t GetRotation(Int_t index, Double_t r[9]);
 
-  static Bool_t GetOrigGlobalMatrix(Int_t index, TGeoHMatrix &m);
+  static TGeoHMatrix* GetOrigGlobalMatrix(Int_t index);
   static Bool_t GetOrigGlobalMatrix(const char *symname, TGeoHMatrix &m);
   static Bool_t GetOrigTranslation(Int_t index, Double_t t[3]);
   static Bool_t GetOrigRotation(Int_t index, Double_t r[9]);
@@ -73,53 +71,50 @@ public:
   static const TGeoHMatrix* GetTracking2LocalMatrix(Int_t index);
   static Bool_t GetTrackingMatrix(Int_t index, TGeoHMatrix &m);
 
-  Bool_t         ApplyAlignObjsToGeom(TObjArray* alObjArray);
+  static void        LoadGeometry(const char *geomFileName = NULL);
 
-  Bool_t         ApplyAlignObjsToGeom(const char* fileName,
+  static Bool_t         ApplyAlignObjsToGeom(TObjArray& alObjArray);
+
+  static Bool_t         ApplyAlignObjsToGeom(const char* fileName,
 				      const char* clArrayName);
-  Bool_t         ApplyAlignObjsToGeom(AliCDBParam* param,
+  static Bool_t         ApplyAlignObjsToGeom(AliCDBParam* param,
 				      AliCDBId& Id);
-  Bool_t         ApplyAlignObjsToGeom(const char* uri, const char* path,
+  static Bool_t         ApplyAlignObjsToGeom(const char* uri, const char* path,
 				      Int_t runnum, Int_t version,
 				      Int_t sversion);
-  Bool_t         ApplyAlignObjsToGeom(const char* detName, Int_t runnum, Int_t version,
+  static Bool_t         ApplyAlignObjsToGeom(const char* detName, Int_t runnum, Int_t version,
 				      Int_t sversion);
 
-  Bool_t         ApplyAlignObjsFromCDB(const char* AlDetsList);
-  Bool_t         LoadAlignObjsFromCDBSingleDet(const char* detName);
+  static Bool_t         ApplyAlignObjsFromCDB(const char* AlDetsList);
+  static Bool_t         LoadAlignObjsFromCDBSingleDet(const char* detName, TObjArray& alignObjArray);
 
   ~AliGeomManager();
-  static AliGeomManager* Instance();
-
-
- protected:
-
-  static void        InitAlignObjFromGeometry();
-  static void        InitSymNamesLUT();
-  static void        InitPNEntriesLUT();
-
-  static Int_t       fgLayerSize[kLastLayer - kFirstLayer]; // Size of layers
-  static const char* fgLayerName[kLastLayer - kFirstLayer]; // Name of layers
-  static TString*    fgSymName[kLastLayer - kFirstLayer]; // Symbolic volume names
-  static TGeoPNEntry** fgPNEntry[kLastLayer - kFirstLayer]; // TGeoPNEntries
-  static AliAlignObj** fgAlignObjs[kLastLayer - kFirstLayer]; // Alignment objects
 
  private:
   AliGeomManager();
   AliGeomManager(const AliGeomManager&);
   AliGeomManager& operator=(const AliGeomManager&);
 
-  static Bool_t      ReactIfChangedGeom();
-  static Bool_t      HasGeomChanged(){return fgGeometry!=gGeoManager;} 
+  static TGeoHMatrix* GetMatrix(TGeoPNEntry* pne);
+  static TGeoHMatrix* GetOrigGlobalMatrix(TGeoPNEntry* pne);
+  static Bool_t       GetOrigGlobalMatrixFromPath(const char *path, TGeoHMatrix &m);
+
+  static TGeoPNEntry* GetPNEntry(Int_t index);
+  static TGeoPNEntry* GetPNEntry(ELayerID layerId, Int_t modId);
+
+  static void        InitAlignObjFromGeometry();
+  static void        InitSymNamesLUT();
+  static void        InitPNEntriesLUT();
+  static void        InitOrigMatricesLUT();
+
   static TGeoManager* fgGeometry;
 
-
-
-  static AliGeomManager* fgInstance; // the AliGeomManager singleton instance
-
-  TObjArray* 	 fAlignObjArray;      // array with the alignment objects to be applied to the geometry
-
-  void Init();
+  static Int_t       fgLayerSize[kLastLayer - kFirstLayer]; // Size of layers
+  static const char* fgLayerName[kLastLayer - kFirstLayer]; // Name of layers
+  static TString*    fgSymName[kLastLayer - kFirstLayer]; // Symbolic volume names
+  static TGeoPNEntry** fgPNEntry[kLastLayer - kFirstLayer]; // TGeoPNEntries
+  static TGeoHMatrix** fgOrigMatrix[kLastLayer - kFirstLayer]; // Original matrices before misalignment
+  static AliAlignObj** fgAlignObjs[kLastLayer - kFirstLayer]; // Alignment objects
 
   ClassDef(AliGeomManager, 0);
 };
