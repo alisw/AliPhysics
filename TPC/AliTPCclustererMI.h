@@ -60,6 +60,8 @@ private:
   Int_t  TransformFFT(Float_t *input, Float_t threshold, Bool_t locMax, Float_t *freq, Float_t *re, Float_t *im, Float_t *mag, Float_t *phi);
 
   Float_t * fBins;       //!digits array
+  Int_t   * fSigBins; //!digits array containg only timebins above threshold
+  Int_t     fNSigBins;//!size of fSigBins
   Int_t fLoop;         //loop - cf in 2 loops
   Int_t fMaxBin;       //current ( for current sector)  maximal bin
   Int_t fMaxTime;      //current ( for current sector)  maximal time

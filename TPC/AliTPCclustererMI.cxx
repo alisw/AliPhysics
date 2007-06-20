@@ -59,6 +59,8 @@ ClassImp(AliTPCclustererMI)
 
 AliTPCclustererMI::AliTPCclustererMI(const AliTPCParam* par, const AliTPCRecoParam * recoParam):
   fBins(0),
+  fSigBins(0),
+  fNSigBins(0),
   fLoop(0),
   fMaxBin(0),
   fMaxTime(0),
@@ -112,6 +114,8 @@ AliTPCclustererMI::AliTPCclustererMI(const AliTPCParam* par, const AliTPCRecoPar
 AliTPCclustererMI::AliTPCclustererMI(const AliTPCclustererMI &param)
               :TObject(param),
   fBins(0),
+  fSigBins(0),
+  fNSigBins(0),
   fLoop(0),
   fMaxBin(0),
   fMaxTime(0),
@@ -136,7 +140,9 @@ AliTPCclustererMI::AliTPCclustererMI(const AliTPCclustererMI &param)
   fNcluster(0),
   fAmplitudeHisto(0),
   fDebugStreamer(0),
-  fRecoParam(0)
+  fRecoParam(0),
+  fBDumpSignal(kFALSE),
+  fFFTr2c(0)
 {
   //
   // dummy
@@ -641,6 +647,8 @@ void AliTPCclustererMI::Digits2Clusters()
     
     fMaxBin=fMaxTime*(fMaxPad+6);  // add 3 virtual pads  before and 3 after
     fBins    =new Float_t[fMaxBin];
+    fSigBins =new Int_t[fMaxBin];
+    fNSigBins = 0;
     memset(fBins,0,sizeof(Float_t)*fMaxBin);
     
     if (digarr.First()) //MI change
@@ -649,7 +657,9 @@ void AliTPCclustererMI::Digits2Clusters()
 	if (dig<=fParam->GetZeroSup()) continue;
 	Int_t j=digarr.CurrentRow()+3, i=digarr.CurrentColumn()+3;
 	Float_t gain = gainROC->GetValue(row,digarr.CurrentColumn());
-	fBins[i*fMaxTime+j]=dig/gain;
+	Int_t bin = i*fMaxTime+j;
+	fBins[bin]=dig/gain;
+	fSigBins[fNSigBins++]=bin;
       } while (digarr.Next());
     digarr.ExpandTrackBuffer();
 
@@ -658,7 +668,8 @@ void AliTPCclustererMI::Digits2Clusters()
     fOutput->Fill();
     delete clrow;    
     nclusters+=fNcluster;    
-    delete[] fBins;      
+    delete[] fBins;
+    delete[] fSigBins;
   }  
 
   Info("Digits2Clusters", "Number of found clusters : %d", nclusters);
@@ -703,14 +714,20 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
   //alocate memory for sector - maximal case
   //
   Float_t** allBins = NULL;
+  Int_t** allSigBins = NULL;
+  Int_t*  allNSigBins = NULL;
   Int_t nRowsMax = roc->GetNRows(roc->GetNSector()-1);
   Int_t nPadsMax = roc->GetNPads(roc->GetNSector()-1,nRowsMax-1);
   allBins = new Float_t*[nRowsMax];
+  allSigBins = new Int_t*[nRowsMax];
+  allNSigBins = new Int_t[nRowsMax];
   for (Int_t iRow = 0; iRow < nRowsMax; iRow++) {
     //
     Int_t maxBin = fMaxTime*(nPadsMax+6);  // add 3 virtual pads  before and 3 after
     allBins[iRow] = new Float_t[maxBin];
     memset(allBins[iRow],0,sizeof(Float_t)*maxBin);
+    allSigBins[iRow] = new Int_t[maxBin];
+    allNSigBins[iRow]=0;
   }
   //
   // Loop over sectors
@@ -745,6 +762,7 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
       
       Int_t maxBin = fMaxTime*(maxPad+6);  // add 3 virtual pads  before and 3 after
       memset(allBins[iRow],0,sizeof(Float_t)*maxBin);
+      allNSigBins[iRow] = 0;
     }
     
     // Loas the raw data for corresponding DDLs
@@ -786,7 +804,9 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
       Float_t signal = input.GetSignal();
       if (!calcPedestal && signal <= zeroSup) continue;      
       if (!calcPedestal) {
-	allBins[iRow][iPad*fMaxTime+iTimeBin] = signal/gain;
+	Int_t bin = iPad*fMaxTime+iTimeBin;
+	allBins[iRow][bin] = signal/gain;
+	allSigBins[iRow][allNSigBins[iRow]++] = bin;
       }else{
 	allBins[iRow][iPad*fMaxTime+iTimeBin] = signal;
       }
@@ -821,15 +841,17 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
 	  
 	  //
 	  for (Int_t iTimeBin = 0; iTimeBin < fMaxTime; iTimeBin++) {
-	    allBins[iRow][iPad*fMaxTime+iTimeBin] -= pedestalEvent;
+	    Int_t bin = iPad*fMaxTime+iTimeBin;
+	    allBins[iRow][bin] -= pedestalEvent;
 	    if (iTimeBin < AliTPCReconstructor::GetRecoParam()->GetFirstBin())  
-	      allBins[iRow][iPad*fMaxTime+iTimeBin] = 0;
+	      allBins[iRow][bin] = 0;
 	    if (iTimeBin > AliTPCReconstructor::GetRecoParam()->GetLastBin())  
-	      allBins[iRow][iPad*fMaxTime+iTimeBin] = 0;
+	      allBins[iRow][bin] = 0;
 	    if (allBins[iRow][iPad*fMaxTime+iTimeBin] < zeroSup)
-	      allBins[iRow][iPad*fMaxTime+iTimeBin] = 0;
-	    if (allBins[iRow][iPad*fMaxTime+iTimeBin] < 3.0*rmsEvent)   // 3 sigma cut on RMS
-	      allBins[iRow][iPad*fMaxTime+iTimeBin] = 0;	    
+	      allBins[iRow][bin] = 0;
+	    if (allBins[iRow][bin] < 3.0*rmsEvent)   // 3 sigma cut on RMS
+	      allBins[iRow][bin] = 0;
+	    if (allBins[iRow][bin]) allSigBins[iRow][allNSigBins[iRow]++] = bin;
 	  }
 	}
       }
@@ -852,6 +874,8 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
       fMaxBin = fMaxTime*(fMaxPad+6);  // add 3 virtual pads  before and 3 after
 
       fBins = allBins[fRow];
+      fSigBins = allSigBins[fRow];
+      fNSigBins = allNSigBins[fRow];
 
       FindClusters(noiseROC);
 
@@ -863,8 +887,11 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
   
   for (Int_t iRow = 0; iRow < nRowsMax; iRow++) {
     delete [] allBins[iRow];
+    delete [] allSigBins[iRow];
   }  
   delete [] allBins;
+  delete [] allSigBins;
+  delete [] allNSigBins;
   
   Info("Digits2Clusters", "File  %s Event\t%d\tNumber of found clusters : %d\n", fOutput->GetName(),*(rawReader->GetEventId()), nclusters);
 
@@ -879,34 +906,8 @@ void AliTPCclustererMI::FindClusters(AliTPCCalROC * noiseROC)
   Double_t kMaxDumpSize = 500000;
   if (fRecoParam->GetCalcPedestal() && fOutput->GetZipBytes()< kMaxDumpSize) fBDumpSignal =kTRUE;   //dump signal flag
   //
-  if (0) for (Int_t i=0; i<fMaxTime; i++){
-    Float_t amp1 = fBins[i+3*fMaxTime]; 
-    Float_t amp0 =0;
-    if (amp1>0){
-      Float_t amp2 = fBins[i+4*fMaxTime];
-      if (amp2==0) amp2=0.5;
-      Float_t sigma2 = GetSigmaY2(i);		
-      amp0 = (amp1*amp1/amp2)*TMath::Exp(-1./sigma2);	
-      if (gDebug>4) printf("\n%f\n",amp0);
-    }  
-    fBins[i+2*fMaxTime] = amp0;    
-    amp0 = 0;
-    amp1 = fBins[(fMaxPad+2)*fMaxTime+i];
-    if (amp1>0){
-      Float_t amp2 = fBins[i+(fMaxPad+1)*fMaxTime];
-      if (amp2==0) amp2=0.5;
-      Float_t sigma2 = GetSigmaY2(i);		
-      amp0 = (amp1*amp1/amp2)*TMath::Exp(-1./sigma2);		
-      if (gDebug>4) printf("\n%f\n",amp0);
-    }        
-    fBins[(fMaxPad+3)*fMaxTime+i] = amp0;           
-  }
-  //
-  //
-  //
   fNcluster=0;
   fLoop=1;
-  Float_t *b=&fBins[-1]+2*fMaxTime;
   Int_t crtime = Int_t((fParam->GetZLength(fSector)-fRecoParam->GetCtgRange()*fRx)/fZWidth-fParam->GetNTBinsL1()-5);
   Float_t minMaxCutAbs       = fRecoParam->GetMinMaxCutAbs();
   Float_t minLeftRightCutAbs = fRecoParam->GetMinLeftRightCutAbs();
@@ -914,14 +915,10 @@ void AliTPCclustererMI::FindClusters(AliTPCCalROC * noiseROC)
   Float_t minMaxCutSigma       = fRecoParam->GetMinMaxCutSigma();
   Float_t minLeftRightCutSigma = fRecoParam->GetMinLeftRightCutSigma();
   Float_t minUpDownCutSigma    = fRecoParam->GetMinUpDownCutSigma();
-  for (Int_t i=2*fMaxTime; i<fMaxBin-2*fMaxTime; i++) {
-    b++;
-    if (i%fMaxTime<crtime) {
-      Int_t delta = -(i%fMaxTime)+crtime;
-      b+=delta;
-      i+=delta;
-      continue; 
-    }
+  for (Int_t iSig = 0; iSig < fNSigBins; iSig++) {
+    Int_t i = fSigBins[iSig];
+    if (i%fMaxTime<=crtime) continue;
+    Float_t *b = &fBins[i];
     //absolute custs
     if (b[0]<minMaxCutAbs) continue;   //threshold for maxima  
     //
