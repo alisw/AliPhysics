@@ -45,7 +45,6 @@ class AliMUONTriggerElectronics : public TObject
 
       virtual void Feed(UShort_t pattern[2][4]);
 		  virtual void Feed(const AliMUONVDigitStore& digitStore);
-      virtual void FeedBoardsGUI(TObjArray *guibs);
       virtual void Reset();
 
       virtual void Scan(Option_t *option);
@@ -58,7 +57,6 @@ class AliMUONTriggerElectronics : public TObject
 
       virtual void Digits2Trigger(const AliMUONVDigitStore& digitStore,
                                   AliMUONVTriggerStore& triggerStore);
-      virtual Int_t TriggerGUI(Int_t *trigInfo, Bool_t patt = kFALSE);
 
    private:
       /// Not implemented
