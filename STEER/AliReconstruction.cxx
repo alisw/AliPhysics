@@ -445,14 +445,14 @@ Bool_t AliReconstruction::MisalignGeometry(const TString& detectors)
       loadAlObjsListOfDets += fgkDetectorName[iDet];
       loadAlObjsListOfDets += " ";
     } // end loop over detectors
-    (AliGeomManager::Instance())->ApplyAlignObjsFromCDB(loadAlObjsListOfDets.Data());
+    AliGeomManager::ApplyAlignObjsFromCDB(loadAlObjsListOfDets.Data());
   }else{
     // Check if the array with alignment objects was
     // provided by the user. If yes, apply the objects
     // to the present TGeo geometry
     if (fAlignObjArray) {
       if (gGeoManager && gGeoManager->IsClosed()) {
-	if ((AliGeomManager::Instance())->ApplyAlignObjsToGeom(fAlignObjArray) == kFALSE) {
+	if (AliGeomManager::ApplyAlignObjsToGeom(*fAlignObjArray) == kFALSE) {
 	  AliError("The misalignment of one or more volumes failed!"
 		   "Compare the list of simulated detectors and the list of detector alignment data!");
 	  return kFALSE;
@@ -466,9 +466,6 @@ Bool_t AliReconstruction::MisalignGeometry(const TString& detectors)
   }
   
   delete fAlignObjArray; fAlignObjArray=0;
-
-  // Update the TGeoPhysicalNodes
-  gGeoManager->RefreshPhysicalNodes();
 
   return kTRUE;
 }
@@ -525,7 +522,7 @@ Bool_t AliReconstruction::Run(const char* input)
   if (!gGeoManager) {
     TString geom(gSystem->DirName(fGAliceFileName));
     geom += "/geometry.root";
-    TGeoManager::Import(geom.Data());
+    AliGeomManager::LoadGeometry(geom.Data());
     if (!gGeoManager) if (fStopOnError) return kFALSE;
   }
 
@@ -863,7 +860,8 @@ Bool_t AliReconstruction::RunLocalReconstruction(const TString& detectors)
 		 stopwatchDet.RealTime(),stopwatchDet.CpuTime()));
 
     // unload calibration data
-    man->ClearCache();
+    man->UnloadFromCache(calibPath);
+    //man->ClearCache();
   }
 
   man->SetCacheFlag(origCache);
