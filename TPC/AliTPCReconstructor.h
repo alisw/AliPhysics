@@ -9,22 +9,20 @@
 #include "AliTPCRecoParam.h"
 
 class AliTPCParam;
-
+class AliTPCclustererMI;
 
 class AliTPCReconstructor: public AliReconstructor {
 public:
   AliTPCReconstructor();
-  virtual ~AliTPCReconstructor() {if (fgkRecoParam) delete fgkRecoParam;};
+  virtual ~AliTPCReconstructor();
 
+  virtual Bool_t       HasLocalReconstruction() const {return kTRUE;}
   virtual void         Reconstruct(AliRunLoader* runLoader) const;
   virtual void         Reconstruct(AliRunLoader* runLoader,
 				   AliRawReader* rawReader) const;
-  virtual void         Reconstruct(TTree* digitsTree, TTree* clustersTree) const {
-    AliReconstructor::Reconstruct(digitsTree,clustersTree);
-  }
-  virtual void         Reconstruct(AliRawReader* rawReader, TTree* clustersTree) const {
-    AliReconstructor::Reconstruct(rawReader,clustersTree);
-  }
+  virtual void         Reconstruct(TTree* digitsTree, TTree* clustersTree) const;
+  virtual void         Reconstruct(AliRawReader* rawReader, TTree* clustersTree) const;
+
   virtual AliTracker*  CreateTracker(AliRunLoader* runLoader) const;
   virtual void         FillESD(AliRunLoader* runLoader, AliESD* esd) const;
   virtual void         FillESD(TTree* digitsTree, TTree* clustersTree, 
@@ -51,9 +49,10 @@ public:
   static void  SetStreamLevel(Int_t level) { fgStreamLevel = level;}
 
 private:
-  AliTPCParam*         GetTPCParam(AliRunLoader* runLoader) const;
+  AliTPCParam*         GetTPCParam() const;
   static AliTPCRecoParam *   fgkRecoParam; // reconstruction parameters
   static Int_t               fgStreamLevel; // flag for streaming      - for TPC reconstruction
+  AliTPCclustererMI*         fClusterer;   // TPC clusterer
 
   ClassDef(AliTPCReconstructor, 0)   // class for the TPC reconstruction
 };

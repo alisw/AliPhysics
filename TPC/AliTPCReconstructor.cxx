@@ -40,7 +40,10 @@ AliTPCRecoParam *    AliTPCReconstructor::fgkRecoParam =0;  // reconstruction pa
 Int_t    AliTPCReconstructor::fgStreamLevel     = 0;        // stream (debug) level
 
 
-AliTPCReconstructor::AliTPCReconstructor(): AliReconstructor() {
+AliTPCReconstructor::AliTPCReconstructor():
+AliReconstructor(),
+fClusterer(NULL)
+{
   //
   // default constructor
   //
@@ -48,8 +51,21 @@ AliTPCReconstructor::AliTPCReconstructor(): AliReconstructor() {
     AliError("The Reconstruction parameters nonitialized - Used default one");
     fgkRecoParam = AliTPCRecoParam::GetHighFluxParam();
   }
+
+  AliTPCParam* param = GetTPCParam();
+  if (!param) {
+    AliWarning("Loading default TPC parameters !");
+    param = new AliTPCParamSR;
+  }
+  fClusterer = new AliTPCclustererMI(param);
 }
 
+//_____________________________________________________________________________
+AliTPCReconstructor::~AliTPCReconstructor()
+{
+  if (fgkRecoParam) delete fgkRecoParam;
+  if (fClusterer)   delete fClusterer;
+}
 
 //_____________________________________________________________________________
 void AliTPCReconstructor::Reconstruct(AliRunLoader* runLoader) const
@@ -64,9 +80,6 @@ void AliTPCReconstructor::Reconstruct(AliRunLoader* runLoader) const
   loader->LoadRecPoints("recreate");
   loader->LoadDigits("read");
 
-  AliTPCParam* param = GetTPCParam(runLoader);
-  if (!param) return;
-  AliTPCclustererMI clusterer(param);
   Int_t nEvents = runLoader->GetNumberOfEvents();
 
   for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
@@ -83,15 +96,24 @@ void AliTPCReconstructor::Reconstruct(AliRunLoader* runLoader) const
       return;
     }
 
-    clusterer.SetInput(treeDigits);
-    clusterer.SetOutput(treeClusters);
-    clusterer.Digits2Clusters();
+    fClusterer->SetInput(treeDigits);
+    fClusterer->SetOutput(treeClusters);
+    fClusterer->Digits2Clusters();
          
     loader->WriteRecPoints("OVERWRITE");
   }
 
   loader->UnloadRecPoints();
   loader->UnloadDigits();
+}
+
+//_____________________________________________________________________________
+void AliTPCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) const {
+  // single event local reconstruction
+  // of TPC data
+  fClusterer->SetInput(digitsTree);
+  fClusterer->SetOutput(clustersTree);
+  fClusterer->Digits2Clusters();
 }
 
 //_____________________________________________________________________________
@@ -107,18 +129,9 @@ void AliTPCReconstructor::Reconstruct(AliRunLoader* runLoader,
   }
   loader->LoadRecPoints("recreate");
 
-  AliTPCParam* param = GetTPCParam(runLoader);
-  if (!param) {
-    AliWarning("Loading default TPC parameters !");
-    param = new AliTPCParamSR;
-  }
-  AliTPCclustererMI clusterer(param);
-
   TString option = GetOption();
-  //  if (option.Contains("PedestalSubtraction"))
-  //  clusterer.SetPedSubtraction(kTRUE);
   if (option.Contains("OldRCUFormat"))
-    clusterer.SetOldRCUFormat(kTRUE);
+    fClusterer->SetOldRCUFormat(kTRUE);
  
   Int_t iEvent = 0;
   while (rawReader->NextEvent()) {  
@@ -130,8 +143,8 @@ void AliTPCReconstructor::Reconstruct(AliRunLoader* runLoader,
       treeClusters = loader->TreeR();
     }
 
-    clusterer.SetOutput(treeClusters);
-    clusterer.Digits2Clusters(rawReader);
+    fClusterer->SetOutput(treeClusters);
+    fClusterer->Digits2Clusters(rawReader);
          
     loader->WriteRecPoints("OVERWRITE");
   }
@@ -140,11 +153,23 @@ void AliTPCReconstructor::Reconstruct(AliRunLoader* runLoader,
 }
 
 //_____________________________________________________________________________
-AliTracker* AliTPCReconstructor::CreateTracker(AliRunLoader* runLoader) const
+void AliTPCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTree) const {
+  // single event local reconstruction
+  // of TPC data starting from raw data
+  TString option = GetOption();
+  if (option.Contains("OldRCUFormat"))
+    fClusterer->SetOldRCUFormat(kTRUE);
+
+  fClusterer->SetOutput(clustersTree);
+  fClusterer->Digits2Clusters(rawReader);
+}
+
+//_____________________________________________________________________________
+AliTracker* AliTPCReconstructor::CreateTracker(AliRunLoader* /* runLoader */) const
 {
 // create a TPC tracker
 
-  AliTPCParam* param = GetTPCParam(runLoader);
+  AliTPCParam* param = GetTPCParam();
   if (!param) {
     AliWarning("Loading default TPC parameters !");
     param = new AliTPCParamSR;
@@ -166,18 +191,11 @@ void AliTPCReconstructor::FillESD(AliRunLoader* /*runLoader*/,
 
 
 //_____________________________________________________________________________
-AliTPCParam* AliTPCReconstructor::GetTPCParam(AliRunLoader* /*runLoader*/) const
+AliTPCParam* AliTPCReconstructor::GetTPCParam() const
 {
 // get the TPC parameters
 
-//  TDirectory* saveDir = gDirectory;
-//runLoader->CdGAFile();
+  AliTPCParam* param = AliTPCcalibDB::Instance()->GetParameters();
 
-  AliTPCParam* param =  AliTPCcalibDB::Instance()->GetParameters();
-
- //  AliTPCParam* param = (AliTPCParam*) gDirectory->Get("75x40_100x60_150x60");
-//   if (!param) Error("GetTPCParam", "no TPC parameters found");
-
-//  saveDir->cd();
   return param;
 }
