@@ -72,7 +72,8 @@ Event::Event() :
   fPath (), fEventId   (0),
   fRunLoader (0),
   fESDFile   (0), fESDTree (0), fESD (0),
-  fESDfriend (0), fESDfriendExists(kFALSE)
+  fESDfriend (0), fESDfriendExists(kFALSE),
+  fNewEventCommands()
 {}
 
 Event::Event(TString path, Int_t ev) :
@@ -81,7 +82,8 @@ Event::Event(TString path, Int_t ev) :
   fPath (path), fEventId(-1),
   fRunLoader (0),
   fESDFile   (0), fESDTree (0), fESD (0),
-  fESDfriend (0), fESDfriendExists(kFALSE)
+  fESDfriend (0), fESDfriendExists(kFALSE),
+  fNewEventCommands()
 {
   Open();
   if (ev >= 0) GotoEvent(ev);
