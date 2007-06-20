@@ -29,6 +29,8 @@
 #pragma link C++ class  AliTRDRawStream+;
 
 #pragma link C++ class  AliTRDCommonParam+;
+#pragma link C++ class  AliTRDfeeParam+;
+
 #pragma link C++ class  AliTRDcalibDB+;
 #pragma link C++ class  AliTRDCalROC+;
 #pragma link C++ class  AliTRDCalPad+;

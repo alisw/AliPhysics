@@ -13,6 +13,7 @@ SRCS= AliTRDarrayI.cxx \
       AliTRDpadPlane.cxx \
       AliTRDRawStream.cxx \
       AliTRDCommonParam.cxx \
+      AliTRDfeeParam.cxx \
       AliTRDcalibDB.cxx \
       Cal/AliTRDCalROC.cxx \
       Cal/AliTRDCalPad.cxx \
