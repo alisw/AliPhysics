@@ -8,7 +8,7 @@
 
 #include <AliHMPIDHit.h>
 #include <AliHMPIDCluster.h>
-
+#include <AliHMPIDDigit.h>
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 TObjArray *CreateContainer(const char *classname,TTree *pTree)
 {
@@ -86,6 +86,37 @@ void Clus(Int_t mode, TTree *pTree=0x0)
       return;
   }//switch
 }//Clus()
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+TH1F *hDigPcEvt,*hDigQ, *hDigChEvt;
+void Digs(Int_t mode, TTree *pTree=0x0)
+{
+  switch(mode){
+    case 1:
+      hDigPcEvt=new TH1F("OccPerEvt","PC occupancy per event",156,-1,77);
+      hDigChEvt=new TH1F("OccPerEvt","Chamber occupancy per event",32,-1,7);
+      hDigQ  =new TH1F("Q        ","Q                     ",3000,0,3000);
+      return;
+    case 2:
+      if(pTree==0) return;
+      TObjArray *pLst=CreateContainer("AliHMPIDDigit",pTree); pTree->GetEntry(0);
+      for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){//chambers loop
+        TClonesArray *pDigs=(TClonesArray *)pLst->UncheckedAt(iCh);
+        hDigChEvt->Fill(iCh,pDigs->GetEntriesFast()/(48.*80.*6.));
+        for(Int_t iDig=0;iDig<pDigs->GetEntriesFast();iDig++){//digits loop
+          AliHMPIDDigit *pDig=(AliHMPIDDigit*)pDigs->UncheckedAt(iDig);
+          hDigPcEvt->Fill(10.*iCh+pDig->Pc(),1./(48.*80.));
+          hDigQ->Fill(pDig->Q());
+        }
+      }
+      delete pLst;
+      return;
+    case 3:
+      TCanvas *c1=new TCanvas("DigQa","Digit Check",1280,800); c1->Divide(2,2);
+      c1->cd(1); hDigPcEvt->Draw();       c1->cd(2); hDigQ->Draw(); c1->cd(3); hDigChEvt->Draw();
+      return;
+  }//switch
+}//Dig()
+
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void Hqa()
 {
@@ -94,18 +125,20 @@ void Hqa()
   TFile *fd=0; if(gSystem->IsFileInIncludePath("HMPID.Digits.root"))    fd=TFile::Open("HMPID.Digits.root"   ,"read");if(fd->IsZombie()) fd=0;
   TFile *fc=0; if(gSystem->IsFileInIncludePath("HMPID.RecPoints.root")) fc=TFile::Open("HMPID.RecPoints.root","read");if(fc->IsZombie()) fc=0;
   if(fh==0 && fd==0 && fc==0){Printf("Nothing to do!"); return;}
-  if(fh) Hits(1); if(fc) Clus(1);  //book
+  if(fh) Hits(1); if(fc) Clus(1);  if(fd) Digs(1);//book
   Int_t iEvt=0;
   while(1){
     TTree *th=0; if(fh) th=(TTree*)fh->Get(Form("Event%i/TreeH",iEvt));
     TTree *td=0; if(fd) td=(TTree*)fd->Get(Form("Event%i/TreeD",iEvt));
     TTree *tc=0; if(fc) tc=(TTree*)fc->Get(Form("Event%i/TreeR",iEvt));
-    Hits(2,th);   Clus(2,tc); //fill
+    Hits(2,th);   Clus(2,tc); Digs(2,td);//fill
     if(th==0 && td==0 && tc==0) break;
     iEvt++;
     Printf("Event %i processed",iEvt);
   }
-  if(fh) Hits(3);  if(fc) Clus(3); //plot
+ // if(fh) Hits(3);  if(fc) Clus(3); 
+
+if(fd) Digs(3);//plot
 }
 
 /*
@@ -181,36 +214,7 @@ void BlahQA()
       hitq=e;
     }//hits loop
     
-    AliHMPIDv1::Hit2Sdi(&hits,&sdigs);
-    AliHMPIDDigitizer::DoNoise(kFALSE);
-    AliHMPIDDigitizer::Sdi2Dig(&sdigs,&digs);
-    AliHMPIDReconstructor::Dig2Clu(&digs,&clus,kTRUE);
-
-// From here normal procedure for QA
-
-    Int_t kMaxCh=(nHits==1)?0:AliHMPIDParam::kMaxCh;
-    for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=kMaxCh;iCh++){//chambers loop
-      TClonesArray *pDigs=(TClonesArray *)digs.UncheckedAt(iCh);
-      TClonesArray *pClus=(TClonesArray *)clus.UncheckedAt(iCh);
-      
-//      if(pClus->GetEntriesFast()>nHits) {hits.Print();}
-//      if(pClus->GetEntriesFast()>nHits) {pDigs->Print();Printf("----S D I G I T S-------------");}
-//      if(pClus->GetEntriesFast()>nHits) {sdigs.Print();Printf("-------------------------------");}
-      hCluPerEvt->Fill(pClus->GetEntriesFast());
-      for(Int_t iClu=0;iClu<pClus->GetEntriesFast();iClu++){//clusters loop
-        AliHMPIDCluster *pClu=(AliHMPIDCluster*)pClus->UncheckedAt(iClu);
-        Float_t clux=pClu->X(); Float_t cluy=pClu->Y(); Float_t cluq=pClu->Q();
-        hCluFlg->Fill(pClu->Status());
-        hCluChi2->Fill(pClu->Chi2());
-        hCluRawSize->Fill(pClu->Size());
-	 
-        switch(pClu->Status()){
-            case AliHMPIDCluster::kSi1:   pCluMapSi1->Fill(clux,cluy);  break;
-            case AliHMPIDCluster::kLo1:   pCluMapLo1->Fill(clux,cluy);  break;
-            case AliHMPIDCluster::kUnf:   pCluMapUnf->Fill(clux,cluy);  break; 
-            case AliHMPIDCluster::kMax:   pCluMapMax->Fill(clux,cluy);  break;
-            case AliHMPIDCluster::kEdg:   pCluMapEdg->Fill(clux,cluy);  break;
-            case AliHMPIDCluster::kCoG:   pCluMapCoG->Fill(clux,cluy);  break;
+            case AliHMPIDCluster::kNoLoc: pCluMapNoLoc->Fill(clux,cluy);break;
             case AliHMPIDCluster::kNoLoc: pCluMapNoLoc->Fill(clux,cluy);break;
             case AliHMPIDCluster::kAbn:   pCluMapAbn->Fill(clux,cluy);  break;
             case AliHMPIDCluster::kNot:   pCluMapNot->Fill(clux,cluy);  break;

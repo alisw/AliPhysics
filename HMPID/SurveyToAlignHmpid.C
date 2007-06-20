@@ -18,12 +18,17 @@ void SurveyToAlignHmpid(const char* filename="Survey_781282_HMPID.txt"){
 	printf("--> %d\n", size);
 
 	TObjArray *points = so->GetData();
+	
+	// We retrieve and open the ideal geometry
+	AliCDBManager* cdbman = AliCDBManager::Instance();
+	if(!cdbman->IsDefaultStorageSet()){
+		cdbman->SetDefaultStorage("local://$ALICE_ROOT");
+	}else{
+		cdbman->SetSpecificStorage("GRP/Geometry/*","local://$ALICE_ROOT");
+	}
+	cdbman->SetRun(0);
+	AliCDBEntry* cdbe = (AliCDBEntry*) cdbman->Get("GRP/Geometry/Data"); 
 
-	//AliCDBManager* cdbman = AliCDBManager::Instance();
-	//cdbman->SetSpecificStorage("local://$ALICE_ROOT");
-	//cdbman->SetRun(0);
-	//cdbman->Get("GRP/Align/Geometry");
-	TGeoManager::Import("geometry.root");
 
 	for (Int_t i = 0; i < points->GetEntries(); ++i)
 	{
