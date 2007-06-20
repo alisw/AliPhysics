@@ -65,6 +65,35 @@ AliTRDpadPlane::AliTRDpadPlane()
 }
 
 //_____________________________________________________________________________
+AliTRDpadPlane::AliTRDpadPlane(Int_t plane, Int_t chamber)
+  :TObject()
+  ,fPla(plane)
+  ,fCha(chamber)
+  ,fLength(0)
+  ,fWidth(0)
+  ,fLengthRim(0)
+  ,fWidthRim(0)
+  ,fLengthOPad(0)
+  ,fWidthOPad(0)
+  ,fLengthIPad(0)
+  ,fWidthIPad(0)
+  ,fRowSpacing(0)
+  ,fColSpacing(0)
+  ,fNrows(0)
+  ,fNcols(0)
+  ,fTiltingAngle(0)
+  ,fTiltingTan(0)
+  ,fPadRow(0)
+  ,fPadCol(0)
+  ,fPadRowSMOffset(0)
+{
+  //
+  // Constructor
+  //
+
+}
+
+//_____________________________________________________________________________
 AliTRDpadPlane::AliTRDpadPlane(const AliTRDpadPlane &p)
   :TObject(p)
   ,fPla(p.fPla)

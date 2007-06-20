@@ -24,6 +24,7 @@ class AliTRDpadPlane : public TObject {
  public:
 
   AliTRDpadPlane();
+  AliTRDpadPlane(Int_t plane, Int_t chamber);
   AliTRDpadPlane(const AliTRDpadPlane &p);
   virtual           ~AliTRDpadPlane();
   AliTRDpadPlane    &operator=(const AliTRDpadPlane &p);
