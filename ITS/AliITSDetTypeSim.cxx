@@ -432,7 +432,6 @@ Bool_t AliITSDetTypeSim::GetCalibration() {
 
   SetRunNumber((Int_t)AliCDBManager::Instance()->GetRun());
   Int_t run=GetRunNumber();
-  if(run<0)run=0;   // if the run number is not yet set, use fake run # 0
 
   Bool_t origCacheStatus = AliCDBManager::Instance()->GetCacheFlag();
   Bool_t isCacheActive = kTRUE;
