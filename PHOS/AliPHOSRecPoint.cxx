@@ -25,6 +25,7 @@
 #include "TGraph.h"
 #include "TPaveText.h"
 #include "TClonesArray.h"
+#include "TGeoMatrix.h"
 
 // --- Standard library ---
 
