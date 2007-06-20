@@ -34,7 +34,7 @@ class AliTRDtrackingAnalysis : public TObject {
   AliTRDtrackingAnalysis();
   AliTRDtrackingAnalysis(const AliTRDtrackingAnalysis &t);
   virtual ~AliTRDtrackingAnalysis() {}
-  AliTRDtrackingAnalysis  &operator=(const AliTRDtrackingAnalysis &t) { return *this; }
+  AliTRDtrackingAnalysis  &operator=(const AliTRDtrackingAnalysis &/*t*/) { return *this; }
     
   void SetPath(const char *path) {fPath = path;}
 
