@@ -226,8 +226,8 @@ void AliMUONTriggerGUI::HandleMenu(Int_t id)
   TGTextButton *controlClose, *nextEvent, *previousEvent, *skipToEvent;
   TGTextButton *circuitCancel, *circuitOpen;
 
-  Int_t trigInfo[kNBoards*6] = {-1};
-  Int_t nLocalTrigger = 0;
+  //Int_t trigInfo[kNBoards*6] = {-1};
+  //Int_t nLocalTrigger = 0;
 
   TString error = TString("");
   if (id != kMFILEEXIT && id != kMFILERUN && fRunLoader == 0) {
@@ -567,7 +567,7 @@ void AliMUONTriggerGUI::HandleMenu(Int_t id)
     break;
 
   case kMTRIGGERDSET:
-
+    /*
     cout << "Trigger with boards digits....." << endl;
     fTriggerProcessor->FeedBoardsGUI(Boards());
 
@@ -586,7 +586,7 @@ void AliMUONTriggerGUI::HandleMenu(Int_t id)
       cout << "LoHpt = "    << trigInfo[6*ilo+5] << endl;
       cout                                       << endl;
     }
-      
+    */
     break;
 
   default:
@@ -720,7 +720,7 @@ void AliMUONTriggerGUI::DoRunApply()
 	}
       }
       
-      fTriggerProcessor = new AliMUONTriggerElectronics(fCalibrationData);
+      //fTriggerProcessor = new AliMUONTriggerElectronics(fCalibrationData);
     }
 
   }
