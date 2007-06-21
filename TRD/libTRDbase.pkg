@@ -30,8 +30,10 @@ SRCS= AliTRDarrayI.cxx \
       AliTRDCalibraMode.cxx \
       AliTRDCalibraVector.cxx \
       AliTRDCalibPadStatus.cxx \
-      AliTRDDataDCS.cxx \
       AliTRDPreprocessor.cxx \
+      AliTRDDataDCS.cxx \
+      AliTRDSensor.cxx \
+      AliTRDSensorArray.cxx \
       AliTRDalignment.cxx \
       AliTRDTriggerL1.cxx \
       AliTRDmcmTracklet.cxx \

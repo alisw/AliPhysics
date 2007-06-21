@@ -23,16 +23,16 @@ class AliTRDPreprocessor : public AliPreprocessor
     virtual ~AliTRDPreprocessor();
 
     enum {
-       EExtractDCS    =   1  // error in case of failure by extracting DCS variables
-      ,EStoreRefDCS   =   2  // error in case of failure by storing DCS variables references
-      ,EFitDCS        =   4  // error in case of failure by fitting DCS variables
-      ,EStoreDCS      =   8  // error in case of failure by storing DCS variables fit results
-      ,EListFileHLT   =  16  // error in case of failure by taking the listof HLT files
-      ,EOpenFileHLT   =  32  // error in case of failure by opening the HLTfile
-      ,ETakeHistoHLT  =  64  // error in case of failure by taking the histos HLT
-      ,EStoreHistoHLT = 128  // error in case of failure by storing the reference data HLT
-      ,EFitHistoHLT   = 256  // error in case of failure by fitting the histos HLT
-      ,EStoreCalHLT   = 512  // error in case of failure by storing the HLTcal objects
+       kEExtractDCS    =   1  // error in case of failure by extracting DCS variables
+      ,kEStoreRefDCS   =   2  // error in case of failure by storing DCS variables references
+      ,kEFitDCS        =   4  // error in case of failure by fitting DCS variables
+      ,kEStoreDCS      =   8  // error in case of failure by storing DCS variables fit results
+      ,kEListFileHLT   =  16  // error in case of failure by taking the listof HLT files
+      ,kEOpenFileHLT   =  32  // error in case of failure by opening the HLTfile
+      ,kETakeHistoHLT  =  64  // error in case of failure by taking the histos HLT
+      ,kEStoreHistoHLT = 128  // error in case of failure by storing the reference data HLT
+      ,kEFitHistoHLT   = 256  // error in case of failure by fitting the histos HLT
+      ,kEStoreCalHLT   = 512  // error in case of failure by storing the HLTcal objects
     };
 
   protected:

@@ -27,16 +27,14 @@
 //                                                                        //
 // Author:                                                                //
 //   R. Bailhache (R.Bailhache@gsi.de)                                    //
-//   W. Monange   (wilfried.monange@free.fr)                              //
+//   W. Monange   (w.monange@gsi.de)                                      //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
 #include "AliTRDPreprocessor.h"
 
-#include <TTimeStamp.h>
 #include <TFile.h>
 #include <TProfile2D.h>
-#include <TH2I.h>
 #include <TStopwatch.h>
 #include <TObjString.h>
 #include <TString.h>
@@ -44,13 +42,11 @@
 #include <TCollection.h>
 
 #include "AliCDBMetaData.h"
-#include "AliDCSValue.h"
 #include "AliLog.h"
 
 #include "AliTRDCalibraFit.h"
 #include "AliTRDCalibraMode.h"
-#include "AliTRDDataDCS.h"
-#include "Cal/AliTRDCalDet.h"
+#include "AliTRDSensorArray.h"
 
 ClassImp(AliTRDPreprocessor)
 
@@ -96,38 +92,99 @@ UInt_t AliTRDPreprocessor::Process(TMap* dcsAliasMap)
   //
   // DCS
   //
-  AliTRDDataDCS dataRef;
-
+  
   AliCDBMetaData metaData;
   metaData.SetBeamPeriod(0);
   metaData.SetResponsible("Wilfried Monange/Raphaelle Bailhache");
   metaData.SetComment("TRD calib test");
+	
+	
+  Log ("****** DCS ******\n");
+	
+  TObjArray * list = AliTRDSensorArray::GetList ();
+	
+  if (list == 0x0) {
+	  Log ("Error during AliTRDSensorArray::GetList");
+	  Log ("DCS will not be processing");
+  }else { 
+	
+	Int_t nEntries = list->GetEntries ();
+	Log (Form ("%d alias loaded", nEntries));
+		
+	Bool_t * results = new Bool_t [nEntries];
+	Int_t  * nGraph = new Int_t [nEntries];
+		
+	for (Int_t iAlias = 0; iAlias < nEntries; iAlias++) {
+			
+		AliTRDSensorArray * oneTRDDCS = (AliTRDSensorArray *)list->At (iAlias);
+			
+		oneTRDDCS->SetStartTime (TTimeStamp (fStartTime));
+		oneTRDDCS->SetEndTime (TTimeStamp (fEndTime));
+			
+		Log (Form("Processing DCS : \"%s\"", 
+			oneTRDDCS->GetStoreName ().Data ()));
+			
+		TMap * map = oneTRDDCS->ExtractDCS (dcsAliasMap);
+		
+		nGraph [iAlias] = map->GetEntries ();
+		
+		if (nGraph [iAlias] == 0) {
+			Log("No TGraph for this dcsDatapointAlias : not stored");
+			results [iAlias] = kFALSE;
+			result |= kEStoreRefDCS;
+			continue;
+		}
+		
+		oneTRDDCS->SetGraph (map);
 
-  if (dataRef.ExtractDCS (dcsAliasMap)) {
-
-    if (!StoreReferenceData("Calib", "DataRef", &dataRef, &metaData)) {
-      AliError("Problem during StoreRef DCS");
-      result |= EStoreRefDCS;
-    }
-
-    if (dataRef.PerformFit()) {
-      if(!Store("Calib", "Data", &dataRef, &metaData, 0, 0)) {
-        AliError("Problem during Store DCS");
-        result |=EStoreDCS;
-      }
-    }else {
-      AliError("Problem during PerformFit DCS");
-      result |= EFitDCS;
-    }
-
-    dataRef.ClearFits();
-
-  }else {
-    AliError ("Problem during ExtractDCS");
-    result |= EExtractDCS;
+		results [iAlias] = Store("Calib", 
+								 oneTRDDCS->GetStoreName ().Data (), 
+								 oneTRDDCS,  
+								 &metaData,
+								 0, 
+								 kTRUE); 
+		
+		/*	
+		results [iAlias] = StoreReferenceData("Calib", 
+												oneTRDDCS->GetStoreName ().Data (), 
+												oneTRDDCS, 
+												&metaData); 
+		*/
+		if (!results [iAlias]) {
+			AliError("Problem during StoreRef DCS"); 
+			result |= kEStoreRefDCS;
+		}
+			
+		delete map;
+			
+		/*
+			//BEGIN TEST
+		oneTRDDCS->SetDiffCut2 (0.1);
+		map = oneTRDDCS->ExtractDCS (dcsAliasMap);
+		oneTRDDCS->SetGraph (map);
+			
+		StoreReferenceData("Calib", 
+							(oneTRDDCS->GetStoreName ()+"Cut").Data(), 
+							oneTRDDCS, &metaData); 
+		delete map;
+			//END TEST
+		*/
+	}
+		
+	Log ("         Summury of DCS :\n");
+	Log (Form("%30s %10s %10s", "dcsDatapointAlias", "Stored ?", "# graph"));
+	for (Int_t iAlias = 0; iAlias < nEntries; iAlias++) {
+		AliTRDSensorArray * oneTRDDCS = (AliTRDSensorArray *)list->At (iAlias);
+		Log (Form ("%30s %10s %4d", 
+			oneTRDDCS->GetStoreName ().Data (),
+			results[iAlias] ? "ok" : "X",
+			nGraph [iAlias]));
+	}
+	Log ("*********** End of DCS **********");
+	
+	delete results;
+	delete nGraph;
   }
-
-  dataRef.ClearGraphs();
 
   //
   // Process the calibration data for the HLT part
