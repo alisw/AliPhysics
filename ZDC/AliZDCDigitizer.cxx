@@ -330,6 +330,10 @@ void AliZDCDigitizer::Fragmentation(Float_t impPar, Int_t specN, Int_t specP,
   frag.AttachNeutrons(zz, nn, ztot, ntot);
   freeSpecN = specN-ntot-2*nAlpha;
   freeSpecP = specP-ztot-2*nAlpha;
+  // Removing deuterons
+  Int_t ndeu = (Int_t) (frag.DeuteronNumber());
+  freeSpecN -= ndeu;
+  //
   if(freeSpecN<0) freeSpecN=0;
   if(freeSpecP<0) freeSpecP=0;
   AliDebug(2, Form("FreeSpn = %d, FreeSpp = %d", freeSpecN, freeSpecP));
