@@ -3,7 +3,7 @@
 # with galice.root, galice_sim.root 
 
 if [ $# -ne 1 ]; then
-  NEVENTS=3000
+  NEVENTS=100
   echo "Number of events not specified. Using $NEVENTS"
 else
   NEVENTS=$1
