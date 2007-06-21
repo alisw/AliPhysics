@@ -46,7 +46,7 @@
 AliMUONTracker::AliMUONTracker(AliLoader* loader,
                                const AliMUONDigitMaker* digitMaker,
                                const AliMUONGeometryTransformer* transformer,
-                               const TClonesArray* triggerCircuit)
+                               const AliMUONTriggerCircuit* triggerCircuit)
 : AliTracker(),
   fLoader(loader),
   fDigitMaker(digitMaker), // not owner

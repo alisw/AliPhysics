@@ -89,7 +89,7 @@ private:
   mutable AliMUONDigitMaker* fDigitMaker; //!< Raw to Digits converter
   AliMUONGeometryTransformer* fTransformer; //!< Geometry transformer (local<->global)
   mutable AliMUONVDigitStore* fDigitStore; //!< Digit container
-  mutable TClonesArray* fTriggerCircuit; //!< Trigger Circuit
+  mutable AliMUONTriggerCircuit* fTriggerCircuit; //!< Trigger Circuit
   mutable AliMUONCalibrationData* fCalibrationData; //!< Calibration data
   mutable AliMUONDigitCalibrator* fDigitCalibrator; //!<  Digit to calibrate digit converter
   mutable AliMUONClusterReconstructor* fClusterReconstructor; //!<  Clusterizer

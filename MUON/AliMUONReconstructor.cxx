@@ -247,17 +247,9 @@ AliMUONReconstructor::CreateTriggerCircuit() const
 
   AliMUONStopwatchGroupElement timer(fTimers,"MUON","AliMUONReconstructor::CreateTriggerCircuit()");
 
-  fTriggerCircuit = new TClonesArray("AliMUONTriggerCircuit", 234);
-  for (Int_t i = 0; i < AliMUONConstants::NTriggerCircuit(); i++)  
-  {
-    AliMUONTriggerCircuit c;
-    c.SetTransformer(fTransformer);
-    c.Init(i,*(CrateManager()));
-    TClonesArray& circuit = *fTriggerCircuit;
-    new(circuit[circuit.GetEntriesFast()]) AliMUONTriggerCircuit(c);  
-  }
-}
+  fTriggerCircuit = new AliMUONTriggerCircuit(fTransformer);
 
+}
 //_____________________________________________________________________________
 AliTracker* 
 AliMUONReconstructor::CreateTracker(AliRunLoader* runLoader) const

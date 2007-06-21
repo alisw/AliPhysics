@@ -22,6 +22,7 @@ class AliMUONVTriggerTrackStore;
 class AliMUONVTriggerStore;
 class AliMUONGeometryTransformer;
 class AliMUONDigitMaker;
+class AliMUONTriggerCircuit;
 
 class AliMUONVTrackReconstructor : public TObject {
 
@@ -50,7 +51,7 @@ class AliMUONVTrackReconstructor : public TObject {
   void EventReconstruct(const AliMUONVClusterStore& clusterStore,
                         AliMUONVTrackStore& trackStore);
   
-  void EventReconstructTrigger(const TClonesArray& triggerCircuitArray,
+  void EventReconstructTrigger(const AliMUONTriggerCircuit& triggerCircuit,
                                const AliMUONVTriggerStore& triggerStore,
                                AliMUONVTriggerTrackStore& triggerTrackStore);
   

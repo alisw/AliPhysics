@@ -18,11 +18,11 @@ class AliLoader;
 class AliMUONDigitMaker;
 class AliMUONGeometryTransformer;
 class AliMUONTrackHitPattern;
+class AliMUONTriggerCircuit;
 class AliMUONVClusterStore;
 class AliMUONVTrackReconstructor;
 class AliMUONVTrackStore;
 class AliMUONVTriggerStore;
-class TClonesArray;
 
 class AliMUONTracker : public AliTracker
 {
@@ -31,7 +31,7 @@ class AliMUONTracker : public AliTracker
   AliMUONTracker(AliLoader* loader,
                  const AliMUONDigitMaker* digitMaker=0,
                  const AliMUONGeometryTransformer* transformer=0,
-                 const TClonesArray* triggerCircuit=0);
+                 const AliMUONTriggerCircuit* triggerCircuit=0);
   virtual ~AliMUONTracker();
   
   /// Main entry point.
@@ -66,7 +66,7 @@ private:
   AliLoader* fLoader; //!< loader to get access to trees
   const AliMUONDigitMaker* fDigitMaker; //!< digit maker (not owner)
   const AliMUONGeometryTransformer* fTransformer; //!< geometry transformer (not owner)
-  const TClonesArray* fTriggerCircuit;                //!< trigger circuit (not owner)
+  const AliMUONTriggerCircuit* fTriggerCircuit;                //!< trigger circuit (not owner)
   AliMUONTrackHitPattern* fTrackHitPatternMaker; //!< trigger hit pattern maker
   AliMUONVTrackReconstructor* fTrackReco;       //!< track reconstructor
   AliMUONVClusterStore* fClusterStore; //!< cluster container

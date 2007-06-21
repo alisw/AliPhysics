@@ -412,7 +412,7 @@ void AliMUONVTrackReconstructor::ValidateTracksWithTrigger(AliMUONVTrackStore& t
 
 //__________________________________________________________________________
 void 
-AliMUONVTrackReconstructor::EventReconstructTrigger(const TClonesArray& triggerCircuitArray,
+AliMUONVTrackReconstructor::EventReconstructTrigger(const AliMUONTriggerCircuit& circuit,
                                                     const AliMUONVTriggerStore& triggerStore,
                                                     AliMUONVTriggerTrackStore& triggerTrackStore)
 {
@@ -441,6 +441,7 @@ AliMUONVTrackReconstructor::EventReconstructTrigger(const TClonesArray& triggerC
     Bool_t xTrig=kFALSE;
     Bool_t yTrig=kFALSE;
     
+    Int_t localBoardId = locTrg->LoCircuit();
     if ( locTrg->LoSdev()==1 && locTrg->LoDev()==0 && 
          locTrg->LoStripX()==0) xTrig=kFALSE; // no trigger in X
     else xTrig=kTRUE;                         // trigger in X
@@ -451,10 +452,7 @@ AliMUONVTrackReconstructor::EventReconstructTrigger(const TClonesArray& triggerC
     if (xTrig && yTrig) 
     { // make Trigger Track if trigger in X and Y
       
-      AliMUONTriggerCircuit*circuit = static_cast<AliMUONTriggerCircuit*>
-      (triggerCircuitArray.At(locTrg->LoCircuit()-1)); // -1 !!!
-      
-      Float_t y11 = circuit->GetY11Pos(locTrg->LoStripX()); 
+      Float_t y11 = circuit.GetY11Pos(localBoardId, locTrg->LoStripX()); 
       // need first to convert deviation to [0-30] 
       // (see AliMUONLocalTriggerBoard::LocalTrigger)
       Int_t deviation = locTrg->LoDev(); 
@@ -465,8 +463,8 @@ AliMUONVTrackReconstructor::EventReconstructTrigger(const TClonesArray& triggerC
       deviation *= sign;
       deviation += 15;
       Int_t stripX21 = locTrg->LoStripX()+deviation+1;
-      Float_t y21 = circuit->GetY21Pos(stripX21);       
-      Float_t x11 = circuit->GetX11Pos(locTrg->LoStripY());
+      Float_t y21 = circuit.GetY21Pos(localBoardId, stripX21);       
+      Float_t x11 = circuit.GetX11Pos(localBoardId, locTrg->LoStripY());
       
       AliDebug(1, Form(" MakeTriggerTrack %d %d %d %d %f %f %f \n",locTrg->LoCircuit(),
                        locTrg->LoStripX(),locTrg->LoStripX()+locTrg->LoDev()+1,locTrg->LoStripY(),y11, y21, x11));
@@ -479,7 +477,7 @@ AliMUONVTrackReconstructor::EventReconstructTrigger(const TClonesArray& triggerC
       triggerTrack.SetThetax(thetax);
       triggerTrack.SetThetay(thetay);
       triggerTrack.SetGTPattern(gloTrigPat);
-      triggerTrack.SetLoTrgNum(locTrg->LoCircuit());
+      triggerTrack.SetLoTrgNum(localBoardId);
       
       triggerTrackStore.Add(triggerTrack);
     } // board is fired 
