@@ -11,20 +11,21 @@
 ////////////////////////////////////////////////
  
 #include "AliDetector.h"
- 
+class AliLoader;
  
 class AliBCM : public AliDetector {
  
  public:
     AliBCM();
     AliBCM(const char *name, const char *title);
-    virtual      ~AliBCM();
-    virtual void  CreateGeometry();
-    virtual void  CreateMaterials();
-    virtual void  Init();
-    virtual void  StepManager();
-    virtual void  MakeBranch(Option_t* option);
-    virtual void  SetTreeAddress();
+    virtual           ~AliBCM();
+    virtual void       CreateGeometry();
+    virtual void       CreateMaterials();
+    virtual void       Init();
+    virtual void       StepManager();
+    virtual void       MakeBranch(Option_t* option);
+    virtual void       SetTreeAddress();
+    virtual AliLoader* MakeLoader(const char* topfoldername);
     
     virtual Int_t IsVersion() const {return 0;}
  private:
