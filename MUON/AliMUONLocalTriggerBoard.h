@@ -12,28 +12,17 @@
 //  Author Rachid Guernane (LPCCFd)
 
 #include "AliMUONTriggerBoard.h"
+#include "AliMpLocalBoard.h"
 
 class AliMUONTriggerLut;
 
 class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard 
 {
    public: 
-
-     /// \todo add comment
-     enum ESwitch { 
-       kX2d = 0,
-       kX2m,
-       kX2u,
-       kOR0,
-       kOR1,
-       kENY,
-       kZeroAllYLSB,
-       kZeroDown,
-       kZeroMiddle,
-       kZeroUp };
        
       AliMUONLocalTriggerBoard();
-      AliMUONLocalTriggerBoard(const char *name, Int_t a, AliMUONTriggerLut* lut);
+      AliMUONLocalTriggerBoard(AliMpLocalBoard* mpLocalBoard);
+
       virtual ~AliMUONLocalTriggerBoard();
       
                        /// Return true if LUT is set
@@ -51,23 +40,19 @@ class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard
 
       virtual void     Reset();
 
-                       /// Set i-th Switch value
-      virtual void     SetSwitch(Int_t i, Int_t value) {fSwitch[i] = value;}
 
                        /// Return i-th Switch value
-      virtual UShort_t GetSwitch(Int_t i) const {return fSwitch[i];}
-
-                       /// Set Transverse connector
-      virtual void     SetTC(Bool_t con) {fTC = con;}
+      virtual UShort_t GetSwitch(Int_t i) const {return (UShort_t)fMpLocalBoard->GetSwitch(i);}
 
                        /// Return Transverse connector
-      virtual Bool_t   GetTC() const {return fTC;}
-
-                       /// Set Board number
-      virtual void     SetNumber(Int_t nb) {fNumber = nb;}
+      virtual Bool_t   GetTC() const {return fMpLocalBoard->GetTC();}
 
                        /// Return Board number
-      virtual Int_t    GetNumber() const {return fNumber;}
+      virtual Int_t    GetNumber() const;
+
+                       /// Return Crate name
+      virtual TString  GetCrate() const {return fMpLocalBoard->GetCrate();}
+
 
       virtual void     Module(char *mod);
 
@@ -136,12 +121,6 @@ class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard
                        /// Return Sign of Deviation 
       virtual Int_t    GetTrigY() const {return fTrigY;}
       
-                       /// Set Crate name
-      virtual void     SetCrate(TString crate) {fCrate = crate;}
-
-                       /// Return Crate name
-      virtual TString  GetCrate() const {return fCrate;}
-
    protected:
 
       static const Int_t fgkCircuitId[234]; ///< old numbering (to be removed)
@@ -156,17 +135,12 @@ class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard
       /// Not implemented
       AliMUONLocalTriggerBoard&  operator = (const AliMUONLocalTriggerBoard& right);
 
-      Int_t    fNumber;           ///< Board number
+      AliMpLocalBoard*  fMpLocalBoard; ///< pointer to the local board mapping 
 
-      TString  fCrate;            ///< Crate name
-
-      UShort_t fSwitch[10];       ///< Switch
       UShort_t fXY[2][4];         ///< Bit pattern
       UShort_t fXYU[2][4];        ///< Bit pattern UP
       UShort_t fXYD[2][4];        ///< Bit pattern DOWN
       UShort_t fMask[2][4];       ///< Mask
-
-      Bool_t   fTC;               ///< Transverse connector
 
       Int_t    fStripX11;         ///< MT1 X position of the valid road 
 

@@ -59,20 +59,18 @@ const Int_t AliMUONLocalTriggerBoard::fgkCircuitId[234] =
 //___________________________________________
 AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard()
     : AliMUONTriggerBoard(),
-      fNumber(0),
-      fCrate(0),
-      fTC(kTRUE),
+      fMpLocalBoard(0x0),
       fStripX11(0),
       fStripY11(15),
       fDev(0),
       fTrigY(1),
       fOutput(0),
       fLUT(0x0),
-      fCoinc44(0)      
+      fCoinc44(0)
 {
-/// Default constructor
+/// default constructor
 ///
-
+   
    for (Int_t i=0; i<2; i++) 
       for (Int_t j=0; j<4; j++) 
       {
@@ -81,26 +79,21 @@ AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard()
          fMask[i][j] = 0xFFFF;
       }
 
-   for (Int_t i=0; i<10; i++) fSwitch[i] = 0;
-
    for (Int_t i=0; i<5; i++) fMinDevStrip[i] = fMinDev[i] = fCoordY[i] = 0;
 
    for (Int_t i=0; i<2; i++) fLutLpt[i] = fLutHpt[i] = 0;
 }
 
 //___________________________________________
-AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard(const char *name, Int_t a,
-                                                   AliMUONTriggerLut* lut) 
-    : AliMUONTriggerBoard(name, a),
-      fNumber(0),
-      fCrate(0),
-      fTC(kTRUE),
+AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard(AliMpLocalBoard* mpLocalBoard)
+    : AliMUONTriggerBoard(mpLocalBoard->GetName(), mpLocalBoard->GetSlot()),
+      fMpLocalBoard(mpLocalBoard),
       fStripX11(0),
       fStripY11(15),
       fDev(0),
       fTrigY(1),
       fOutput(0),
-      fLUT(lut),
+      fLUT(0x0),
       fCoinc44(0)
 {
 /// Standard constructor
@@ -114,8 +107,6 @@ AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard(const char *name, Int_t a,
          fMask[i][j] = 0xFFFF;
       }
 
-   for (Int_t i=0; i<10; i++) fSwitch[i] = 0;
-
    for (Int_t i=0; i<5; i++) fMinDevStrip[i] = fMinDev[i] = fCoordY[i] = 0;
 
    for (Int_t i=0; i<2; i++) fLutLpt[i] = fLutHpt[i] = 0;
@@ -125,6 +116,18 @@ AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard(const char *name, Int_t a,
 AliMUONLocalTriggerBoard::~AliMUONLocalTriggerBoard()
 {
 /// Destructor
+}
+
+
+//___________________________________________
+Int_t AliMUONLocalTriggerBoard::GetNumber() const 
+{
+/// return board number for notified boards
+
+    if (fMpLocalBoard->IsNotified())
+	return fMpLocalBoard->GetId();
+    else 
+	return 0;
 }
 
 //___________________________________________
@@ -195,6 +198,7 @@ void AliMUONLocalTriggerBoard::SetbitM(Int_t strip, Int_t cathode, Int_t chamber
 
    fXY[cathode][chamber] = value;
 }
+
 
 //___________________________________________
 void AliMUONLocalTriggerBoard::Pattern(Option_t *option) const
@@ -339,7 +343,7 @@ void AliMUONLocalTriggerBoard::BP(Option_t *option) const
 
       UShort_t xyval = 0;
 
-      if (fSwitch[1])
+      if (GetSwitch(1))
       {
          xyval = fXY[1][0];
          TBits v11(8); v11.Set(8,&xyval);
@@ -410,27 +414,6 @@ void AliMUONLocalTriggerBoard::BP(Option_t *option) const
 }
 
 //___________________________________________
-void AliMUONLocalTriggerBoard::Conf() const
-{
-/// board switches
-///
-   cout << "Switch(" << GetName() << ")" 
-        << " x2d = "           << fSwitch[0] 
-        << " x2m = "           << fSwitch[1] 
-        << " x2u = "           << fSwitch[2] 
-        << " OR[0] = "         << fSwitch[3] 
-        << " OR[1] = "         << fSwitch[4] 
-        << " EN-Y = "          << fSwitch[5] 
-        << " ZERO-ALLY-LSB = " << fSwitch[6] 
-        << " ZERO-down = "     << fSwitch[7] 
-        << " ZERO-middle = "   << fSwitch[8] 
-        << " ZERO-up = "       << fSwitch[9] 
-        << " trans. conn. "    << fTC 
-        << " Slot = "          << fSlot 
-        << endl;
-}
-
-//___________________________________________
 void AliMUONLocalTriggerBoard::Module(char *mod)
 {
 /// get module from name
@@ -489,15 +472,15 @@ void AliMUONLocalTriggerBoard::TrigX(Int_t ch1q[16], Int_t ch2q[16], Int_t ch3q[
    }
    for (i=0; i<35; i++) {
       if (i<1||i>32) ch3e[i]=0; 
-      else if (i>=1 && i<=8)   ch3e[i]=ch3q[i-1]&!fSwitch[7];
-      else if (i>=9 && i<=24)  ch3e[i]=ch3q[i-1]&!fSwitch[8];
-      else if (i>=25 && i<=32) ch3e[i]=ch3q[i-1]&!fSwitch[9];
+      else if (i>=1 && i<=8)   ch3e[i]=ch3q[i-1]&!GetSwitch(7);
+      else if (i>=9 && i<=24)  ch3e[i]=ch3q[i-1]&!GetSwitch(8);
+      else if (i>=25 && i<=32) ch3e[i]=ch3q[i-1]&!GetSwitch(9);
    }
    for (i=0; i<36; i++) {
       if (i<2||i>33) ch4e[i]=0; 
-      else if (i>=2 && i<=9)   ch4e[i]=ch4q[i-2]&!fSwitch[7];
-      else if (i>=10 && i<=25) ch4e[i]=ch4q[i-2]&!fSwitch[8];
-      else if (i>=26 && i<=33) ch4e[i]=ch4q[i-2]&!fSwitch[9];
+      else if (i>=2 && i<=9)   ch4e[i]=ch4q[i-2]&!GetSwitch(7);
+      else if (i>=10 && i<=25) ch4e[i]=ch4q[i-2]&!GetSwitch(8);
+      else if (i>=26 && i<=33) ch4e[i]=ch4q[i-2]&!GetSwitch(9);
    }
 
 //--- calculate dble & sgle first station
@@ -854,8 +837,8 @@ void AliMUONLocalTriggerBoard::TrigY(Int_t y1[16], Int_t y2[16], Int_t y3[16], I
 
    for (i=0; i<16; i++)
    {
-      y3[i]=y3[i]&!fSwitch[8];
-      y4[i]=y4[i]&!fSwitch[8];
+     y3[i]=y3[i]&!GetSwitch(8);
+     y4[i]=y4[i]&!GetSwitch(8);
    }
 
 // 10/29/04 fZeroAllYLSB added
@@ -872,50 +855,50 @@ void AliMUONLocalTriggerBoard::TrigY(Int_t y1[16], Int_t y2[16], Int_t y3[16], I
    Int_t tmpy3to16[16], tmpy4to16[16];
    Int_t tmpy3uto16[16], tmpy3dto16[16], tmpy4uto16[16], tmpy4dto16[16];
    for (i=0; i<8; i++){
-      ch1[2*i]   = y1[i]&fSwitch[1] | y1[2*i]&!fSwitch[1];		
-      ch1[2*i+1] = y1[i]&fSwitch[1] | y1[2*i+1]&!fSwitch[1];
+      ch1[2*i]   = y1[i]&GetSwitch(1) | y1[2*i]&!GetSwitch(1);		
+      ch1[2*i+1] = y1[i]&GetSwitch(1) | y1[2*i+1]&!GetSwitch(1);
 
-      ch2[2*i]   = y2[i]&fSwitch[1] | y2[2*i]&!fSwitch[1];		
-      ch2[2*i+1] = y2[i]&fSwitch[1] | y2[2*i+1]&!fSwitch[1];
+      ch2[2*i]   = y2[i]&GetSwitch(1) | y2[2*i]&!GetSwitch(1);		
+      ch2[2*i+1] = y2[i]&GetSwitch(1) | y2[2*i+1]&!GetSwitch(1);
 
-      tmpy3to16[2*i  ] = y3[i]&fSwitch[1] | y3[2*i  ]&!fSwitch[1];		
-      tmpy3to16[2*i+1] = y3[i]&fSwitch[1] | y3[2*i+1]&!fSwitch[1];
+      tmpy3to16[2*i  ] = y3[i]&GetSwitch(1) | y3[2*i  ]&!GetSwitch(1);		
+      tmpy3to16[2*i+1] = y3[i]&GetSwitch(1) | y3[2*i+1]&!GetSwitch(1);
 
-      tmpy4to16[2*i  ] = y4[i]&fSwitch[1] | y4[2*i  ]&!fSwitch[1];
-      tmpy4to16[2*i+1] = y4[i]&fSwitch[1] | y4[2*i+1]&!fSwitch[1];
+      tmpy4to16[2*i  ] = y4[i]&GetSwitch(1) | y4[2*i  ]&!GetSwitch(1);
+      tmpy4to16[2*i+1] = y4[i]&GetSwitch(1) | y4[2*i+1]&!GetSwitch(1);
 
-      tmpy3uto16[2*i  ] = y3u[i]&fSwitch[2] | y3u[2*i  ]&!fSwitch[2]; 
-      tmpy3uto16[2*i+1] = y3u[i]&fSwitch[2] | y3u[2*i+1]&!fSwitch[2];
+      tmpy3uto16[2*i  ] = y3u[i]&GetSwitch(2) | y3u[2*i  ]&!GetSwitch(2); 
+      tmpy3uto16[2*i+1] = y3u[i]&GetSwitch(2) | y3u[2*i+1]&!GetSwitch(2);
 
-      tmpy4uto16[2*i  ] = y4u[i]&fSwitch[2] | y4u[2*i  ]&!fSwitch[2]; 
-      tmpy4uto16[2*i+1] = y4u[i]&fSwitch[2] | y4u[2*i+1]&!fSwitch[2];
+      tmpy4uto16[2*i  ] = y4u[i]&GetSwitch(2) | y4u[2*i  ]&!GetSwitch(2); 
+      tmpy4uto16[2*i+1] = y4u[i]&GetSwitch(2) | y4u[2*i+1]&!GetSwitch(2);
 
-      tmpy3dto16[2*i  ] = y3d[i]&fSwitch[0] | y3d[2*i  ]&!fSwitch[0]; 
-      tmpy3dto16[2*i+1] = y3d[i]&fSwitch[0] | y3d[2*i+1]&!fSwitch[0];
+      tmpy3dto16[2*i  ] = y3d[i]&GetSwitch(0) | y3d[2*i  ]&!GetSwitch(0); 
+      tmpy3dto16[2*i+1] = y3d[i]&GetSwitch(0) | y3d[2*i+1]&!GetSwitch(0);
     
-      tmpy4dto16[2*i  ] = y4d[i]&fSwitch[0] | y4d[2*i  ]&!fSwitch[0]; 
-      tmpy4dto16[2*i+1] = y4d[i]&fSwitch[0] | y4d[2*i+1]&!fSwitch[0];
+      tmpy4dto16[2*i  ] = y4d[i]&GetSwitch(0) | y4d[2*i  ]&!GetSwitch(0); 
+      tmpy4dto16[2*i+1] = y4d[i]&GetSwitch(0) | y4d[2*i+1]&!GetSwitch(0);
    }
   
-   if (fSwitch[3]==0&&fSwitch[4]==0){
+   if (GetSwitch(3)==0&&GetSwitch(4)==0){
       for (i=0; i<16; i++){
          ch3[i] = tmpy3to16[i];
          ch4[i] = tmpy4to16[i];
       }
    }
-   if (fSwitch[3]==0&&fSwitch[4]==1){
+   if (GetSwitch(3)==0&&GetSwitch(4)==1){
       for (i=0; i<16; i++){
          ch3[i] = tmpy3dto16[i]|tmpy3to16[i];
          ch4[i] = tmpy4dto16[i]|tmpy4to16[i];
       }
    }
-   if (fSwitch[3]==1&&fSwitch[4]==0){
+   if (GetSwitch(3)==1&&GetSwitch(4)==0){
       for (i=0; i<16; i++){
          ch3[i] = tmpy3uto16[i]|tmpy3to16[i];
          ch4[i] = tmpy4uto16[i]|tmpy4to16[i];
       }
    }
-   if (fSwitch[3]==1&&fSwitch[4]==1){
+   if (GetSwitch(3)==1&&GetSwitch(4)==1){
       for (i=0; i<16; i++){
          ch3[i] = tmpy3dto16[i]|tmpy3to16[i]|tmpy3uto16[i];
          ch4[i] = tmpy4dto16[i]|tmpy4to16[i]|tmpy4uto16[i];
@@ -926,7 +909,7 @@ void AliMUONLocalTriggerBoard::TrigY(Int_t y1[16], Int_t y2[16], Int_t y3[16], I
    if(AliDebugLevel()==4||AliDebugLevel()==5) {
       printf("===============================================================\n");  
       printf(" Y plane after PreHandling x2m x2u x2d orMud %i %i %i %i %i \n",
-             fSwitch[1],fSwitch[2], fSwitch[0],fSwitch[3],fSwitch[4]);
+             GetSwitch(1),GetSwitch(2), GetSwitch(0),GetSwitch(3),GetSwitch(4));
       printf("                            ");
       for (istrip=15; istrip>=0; istrip--) {
          if (istrip>9)  printf("%i",istrip-10*Int_t(istrip/10));
@@ -1108,9 +1091,10 @@ void AliMUONLocalTriggerBoard::LocalTrigger()
        deviation += 15;
        
 //    GET LUT OUTPUT FOR icirc/istripX1/deviation/istripY
-       fLUT->GetLutOutput(fNumber, fStripX11, deviation, fStripY11, fLutLpt, fLutHpt);
-       }
-   fResponse = fLutLpt[0]                      + 
+       fLUT->GetLutOutput(GetNumber(), fStripX11, deviation, fStripY11, fLutLpt, fLutHpt);
+   }
+
+   fResponse = fLutLpt[0]              + 
        static_cast<int>(fLutLpt[1]<<1) + 
        static_cast<int>(fLutHpt[0]<<2) + 
        static_cast<int>(fLutHpt[1]<<3);  
@@ -1184,7 +1168,7 @@ void AliMUONLocalTriggerBoard::Scan(Option_t *option) const
 {
 /// full dump
 ///
-   TString op = option;
+    TString op = option;
 
    if (op.Contains("CONF")) Conf();
 
@@ -1201,6 +1185,27 @@ void AliMUONLocalTriggerBoard::Scan(Option_t *option) const
       Resp("I");
       Resp("F");
    }
+}
+
+//___________________________________________
+void AliMUONLocalTriggerBoard::Conf() const
+{
+/// board switches
+///
+   cout << "Switch(" << GetName() << ")" 
+        << " x2d = "           << GetSwitch(0) 
+        << " x2m = "           << GetSwitch(1) 
+        << " x2u = "           << GetSwitch(2) 
+        << " OR[0] = "         << GetSwitch(3) 
+        << " OR[1] = "         << GetSwitch(4) 
+        << " EN-Y = "          << GetSwitch(5) 
+        << " ZERO-ALLY-LSB = " << GetSwitch(6) 
+        << " ZERO-down = "     << GetSwitch(7) 
+        << " ZERO-middle = "   << GetSwitch(8) 
+        << " ZERO-up = "       << GetSwitch(9) 
+        << " trans. conn. "    << GetTC() 
+        << " Slot = "          << fSlot 
+        << endl;
 }
 
 //___________________________________________
@@ -1224,30 +1229,6 @@ void AliMUONLocalTriggerBoard::Resp(Option_t *option) const
       printf(" \n");
    }
 
-   if (op.Contains("F"))
-   {
-      Int_t icirc = GetI();
-      Int_t idCircuit = fgkCircuitId[icirc];
-
-      Int_t deviation = 0, iStripY = 0;
-
-      for (Int_t i=0; i<4; i++) iStripY   += static_cast<int>( fCoordY[i] << i );
-
-      for (Int_t i=0; i<4; i++) deviation += Int_t(fMinDev[i]<<i);   
-
-      Float_t pt = 0.; //triggerCircuit->PtCal(fStripX11, fDev, fStripY11);
-      printf("-------------------------------------\n");
-      printf(" Local Trigger info for circuit Id %i (number %i ) \n", idCircuit, icirc);
-      printf(" istripX1 signDev deviation istripY = %i %i %i %i \n", fStripX11, fMinDev[4], deviation, iStripY);
-      printf(" pt = %f  (GeV/c) \n", pt);
-      printf("-------------------------------------\n");
-      printf(" Local Trigger Lut Output = Lpt : ");
-      for (Int_t i=1; i>=0; i--) printf("%i", fLutLpt[i]);
-      printf(" Hpt : ");
-      for (Int_t i=1; i>=0; i--) printf("%i", fLutHpt[i]);
-      printf("\n");
-      printf("-------------------------------------\n");
-   }      
 }
 
 //___________________________________________
@@ -1330,6 +1311,7 @@ void AliMUONLocalTriggerBoard::Response()
 
    TrigY(yY1, yY2, yY3, yY4, yY3U, yY3D, yY4U, yY4D);
    
-// ASIGN fLutLpt, fLutHpt and calculate fResponse
+// ASIGN fLutLpt, fLutHpt
    LocalTrigger();
 }
+

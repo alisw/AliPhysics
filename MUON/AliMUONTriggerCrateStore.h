@@ -40,8 +40,7 @@ public:
   AliMUONLocalTriggerBoard* NextLocalBoard();
   AliMUONLocalTriggerBoard* LocalBoard(Int_t boardNumber) const;
   
-  void ReadFromFile(const char* crateFile =
-                    "$ALICE_ROOT/MUON/mapping/data/stationTrigger/crate.dat");
+  void ReadFromFile(const char* crateFile = "");
  
 
 protected:

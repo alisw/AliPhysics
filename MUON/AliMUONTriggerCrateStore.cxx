@@ -20,11 +20,16 @@
 #include "AliMUONTriggerCrate.h"
 #include "AliMUONLocalTriggerBoard.h"
 #include "AliMUONRegionalTriggerBoard.h"
+
+#include "AliMpTriggerCrate.h"
+#include "AliMpLocalBoard.h"
+#include "AliMpDDLStore.h"
 #include "AliMpExMap.h"
-#include "TString.h"
-#include "TSystem.h"
 #include "AliLog.h"
-#include "Riostream.h"
+
+#include <TString.h>
+#include <TSystem.h>
+#include <Riostream.h>
 
 /// 
 /// \class AliMUONTriggerCrateStore
@@ -112,6 +117,7 @@ AliMUONTriggerCrateStore::Crate(const char *name) const
   return static_cast<AliMUONTriggerCrate*>(fCrates->GetValue(name));
 }
 
+// to be removed once AliMUONDigitMaker is linked with new mapping
 //_____________________________________________________________________________
 AliMUONTriggerCrate* 
 AliMUONTriggerCrateStore::Crate(Int_t ddl, Int_t reg) const
@@ -125,7 +131,7 @@ AliMUONTriggerCrateStore::Crate(Int_t ddl, Int_t reg) const
   TString name = GetCrateName(ddl, reg);
   return static_cast<AliMUONTriggerCrate*>(fCrates->GetValue(name.Data()));
 }
-// //____________________________________________________________________
+//____________________________________________________________________
 TString AliMUONTriggerCrateStore::GetCrateName(Int_t ddl, Int_t reg) const
 {
   /// set crate name from DDL & reg number
@@ -270,108 +276,52 @@ AliMUONTriggerCrateStore::NumberOfLocalBoards() const
 
 //_____________________________________________________________________________
 void
-AliMUONTriggerCrateStore::ReadFromFile(const char* file)
+AliMUONTriggerCrateStore::ReadFromFile(const char* /*file*/) // keep old name for the moment
 {
-    /// Read crate and local board information from file.
+    /// create crate and local board objects from mapping (Ch.F)
     fCrates = new AliMpExMap(kTRUE);
     fCrates->SetOwner(kTRUE);
     fLocalBoards = new AliMpExMap(kTRUE);
     fLocalBoards->SetOwner(kFALSE);
   
-    ifstream myInputFile(gSystem->ExpandPathName(file), ios::in);
-  
-    string sLine, sValue;
-  
-    if ( !myInputFile ) 
+    TExMapIter itr = AliMpDDLStore::Instance()->GetTriggerCrateItr();
+
+    Long_t key, value;
+
+    while(itr.Next(key, value))
     {
-      AliError("TRIGGER ELECTRONICS CONFIGURATION FILE COULD NOT BE OPENED");
-    }
-    else
-    {
-      while (getline(myInputFile,sLine))
+      AliMpTriggerCrate* crateMapping =  reinterpret_cast<AliMpTriggerCrate*>(value);
+
+      TString crateName = crateMapping->GetName();
+      AliMUONTriggerCrate *crate = Crate(crateName.Data());
+
+      if (!crate) 
       {
-	if (sLine.empty()) continue; // Ignore empty lines
-	else
-	{
-	  const Int_t kMaxfields = 15; char **fields = new char*[kMaxfields];
-        
-	  char s[100]; 
-        
-	  if (sLine.find("Board",0) != string::npos) 
-	  {   
-	    strcpy(s,sLine.c_str());
-          
-	    Int_t numlines = 0;
-          
-	    for (char *token = strtok(s, " ");
-		 token != NULL;
-		 token = strtok(NULL, " "))
-	    {
-	      fields[numlines] = new char[strlen(token)+1];
-	      strcpy(fields[numlines++],token);
-	    }
-          
-	    char str[10]; strcpy(str, fields[6]); strcat(str, fields[7]);
-          
-	    AliMUONTriggerCrate *crate = Crate(str); 
-          
-	    if (!crate) 
-	    {
-	      AddCrate(str); crate = Crate(str);
-            
-	      AliMUONRegionalTriggerBoard *rboard = new AliMUONRegionalTriggerBoard();
-	      crate->AddBoard(rboard, 0);
-	    }               
-          
-	    //             CONVENTION: SLOT 0 HOLDS THE REGIONAL BOARD
-	    Int_t sl = atoi(fields[10]);
-          
-//          AliMUONTriggerLut* lut = calibData->TriggerLut();
-          
-	    AliMUONLocalTriggerBoard *board = 
-		new AliMUONLocalTriggerBoard(fields[4], sl, 0x0);
-          
-	    if (strcmp(fields[1],"nn")) 
-	    {
-	      Int_t sboard = atoi(fields[1]);
-            
-	      board->SetNumber(sboard);
-	      fLocalBoards->Add(sboard,board);
-            
-// 	      fCrateMap[sboard-1] = new char[strlen(str)+1]; strcpy(fCrateMap[sboard-1], str);
-// 	      fBoardMap[sboard-1] = sl;
-	    }
-          
-	    board->SetCrate(str);
-          
-	    crate->AddBoard(board, sl);
-          
-	    while (getline(myInputFile,sLine)) if (sLine.find("transv",0) != string::npos) break;
-          
-	    strcpy(s,sLine.c_str());
-          
-	    for (char *token = strtok(s, " ");
-		 token != NULL;
-		 token = strtok(NULL, " ")) if (!strcmp(token,"NONE")) board->SetTC(kFALSE);
-          
-	    while (getline(myInputFile,sLine)) if (sLine.find("Switch",0) != string::npos) break;
-          
-	    while (getline(myInputFile,sLine)) if (!sLine.empty()) break;   
-          
-	    strcpy(s,sLine.c_str());
-          
-	    Int_t lines = 0;
-          
-	    for (char *token = strtok(s, " ");
-		 token != NULL;
-		 token = strtok(NULL, " ")) board->SetSwitch(lines++, atoi(token));
-          
-	    for (Int_t i = 0; i<numlines; i++) 
-		if (fields[i]) {delete [] fields[i]; fields[i] = 0;}
-              
-	    delete [] fields; fields = 0;
-	  }
+	AddCrate(crateName.Data()); 
+	crate = Crate(crateName.Data());
+	AliDebug(3, Form("crate name %s\n", crateName.Data()));
+	AliMUONRegionalTriggerBoard *rboard = new AliMUONRegionalTriggerBoard();
+	crate->AddBoard(rboard, 0);
+      }   
+	
+      for(Int_t iLocal = 0; iLocal < crateMapping->GetNofLocalBoards(); ++iLocal) { 
+
+	Int_t localBoardId = crateMapping->GetLocalBoardId(iLocal);
+	if (!localBoardId) continue; //empty slot, should not happen
+
+	AliMpLocalBoard* localBoardMapping = AliMpDDLStore::Instance()->GetLocalBoard(localBoardId);
+	AliDebug(3, Form("local name %s id %d\n", localBoardMapping->GetName(), localBoardId));
+
+	Int_t slot = localBoardMapping->GetSlot();
+	AliMUONLocalTriggerBoard *board = 
+	    new AliMUONLocalTriggerBoard(localBoardMapping);
+
+	if (localBoardMapping->IsNotified()) {
+	  fLocalBoards->Add(localBoardId, board);
 	}
-      }
-    }
+
+	crate->AddBoard(board, slot);
+
+      } // iLocal
+    } // while
 }
