@@ -18,7 +18,8 @@
 //*-- Author: Rachid Guernane (LPCCFd)
 //*   Manager class for muon trigger electronics
 //*   Client of trigger board classes
-//*
+//*   Debugged by Ph. Crochet & Ch. Finck
+//*   Interfaced with new mapping Ch. Finck
 //*
 
 #include "AliLoader.h"
@@ -43,6 +44,11 @@
 #include "AliMpSegmentation.h"
 #include "AliMpVSegmentation.h"
 #include "AliMpCathodType.h"
+#include "AliMpTriggerCrate.h"
+#include "AliMpLocalBoard.h"
+#include "AliMpDDLStore.h"
+#include "AliMpExMap.h"
+#include "AliMpIntPair.h"
 
 #include "AliLog.h"
 #include "AliLoader.h"
@@ -58,13 +64,20 @@ ClassImp(AliMUONTriggerElectronics)
 //___________________________________________
 AliMUONTriggerElectronics::AliMUONTriggerElectronics(AliMUONCalibrationData* calibData) 
 : TObject(),
-  fSourceFileName(),
   fCrates(new AliMUONTriggerCrateStore),
   fGlobalTriggerBoard(new AliMUONGlobalTriggerBoard)
 {
  /// CONSTRUCTOR
 ///
-  SetDataSource();
+
+  for (Int_t i = 0; i < 2; ++i) {
+    fCopyXInput[i] = new TList();
+    fCopyXInput[i]->SetOwner();
+    fCopyYInput[i] = new TList();
+    fCopyYInput[i]->SetOwner();
+  }
+
+  SetCopyInput();
   Factory(calibData);
   LoadMasks(calibData);
 }
@@ -76,6 +89,60 @@ AliMUONTriggerElectronics::~AliMUONTriggerElectronics()
 ///
   delete fGlobalTriggerBoard;
   delete fCrates;
+  for (Int_t i = 0; i < 2; ++i) {
+    delete fCopyXInput[i];
+    delete fCopyYInput[i];
+  }
+
+}
+//___________________________________________
+void AliMUONTriggerElectronics::SetCopyInput()
+{  
+/// set list of copy input
+
+    for (Int_t iDDL = 0; iDDL < 2; ++iDDL) { 
+
+      for(Int_t iReg = 0; iReg < 8; ++iReg){   //reg loop
+
+	AliMpTriggerCrate* crateMapping = AliMpDDLStore::Instance()->GetTriggerCrate(iDDL, iReg);
+
+	for(Int_t iLocal = 0; iLocal < crateMapping->GetNofLocalBoards(); ++iLocal) { 
+
+	  Int_t localBoardFromId = crateMapping->GetLocalBoardId(iLocal);
+	  if (!localBoardFromId) continue; //empty slot, should not happen
+
+          AliMpLocalBoard* localBoardFrom = AliMpDDLStore::Instance()->GetLocalBoard(localBoardFromId);
+	  Int_t localBoardToId;
+	  if ((localBoardToId = localBoardFrom->GetInputXto())) {
+	      AliMpLocalBoard* localBoardTo = AliMpDDLStore::Instance()->GetLocalBoard(localBoardToId);
+	      TString crateFrom = localBoardFrom->GetCrate();
+	      Int_t   slotFrom  = localBoardFrom->GetSlot();
+	      TString crateTo   = localBoardTo->GetCrate();
+	      Int_t   slotTo    = localBoardTo->GetSlot();
+
+	      fCopyXInput[0]->Add(new AliMpIntPair(AliMpExMap::GetIndex(crateFrom), slotFrom));
+	      fCopyXInput[1]->Add(new AliMpIntPair(AliMpExMap::GetIndex(crateTo), slotTo));
+	      AliDebug(3, Form("copy xInputs from local  %s_%d to %s_%d\n", crateFrom.Data(), slotFrom, 
+			       crateTo.Data(), slotTo));
+	  }
+
+	  if ((localBoardToId = localBoardFrom->GetInputYto())) {
+	      AliMpLocalBoard* localBoardTo = AliMpDDLStore::Instance()->GetLocalBoard(localBoardToId);
+	      TString crateFrom = localBoardFrom->GetCrate();
+	      Int_t   slotFrom  = localBoardFrom->GetSlot();
+	      TString crateTo   = localBoardTo->GetCrate();
+	      Int_t   slotTo    = localBoardTo->GetSlot();
+
+	      fCopyYInput[0]->Add(new AliMpIntPair(AliMpExMap::GetIndex(crateFrom), slotFrom));
+	      fCopyYInput[1]->Add(new AliMpIntPair(AliMpExMap::GetIndex(crateTo), slotTo));
+	      AliDebug(3, Form("copy yInputs from local  %s_%d to %s_%d\n", crateFrom.Data(), slotFrom, 
+			       crateTo.Data(), slotTo));
+
+	  }
+ 
+	}
+      }
+    }
 }
 
 //___________________________________________
@@ -92,7 +159,7 @@ void AliMUONTriggerElectronics::Factory(AliMUONCalibrationData* calibData)
       return;
   }
 
-  fCrates->ReadFromFile(gSystem->ExpandPathName(fSourceFileName.Data()));
+  fCrates->ReadFromFile();
   
   if ( !calibData ) return;
   
@@ -134,15 +201,15 @@ void AliMUONTriggerElectronics::Feed(const AliMUONVDigitStore& digitStore)
     {
       Int_t detElemId  = mdig->DetElemId();
       Int_t cathode    = mdig->Cathode();
-      
-      const AliMpVSegmentation *seg = 
-        AliMpSegmentation::Instance()
-        ->GetMpSegmentation(detElemId,AliMp::GetCathodType(cathode));
-      
+    
+      const AliMpVSegmentation* seg = 
+	  AliMpSegmentation::Instance()
+	  ->GetMpSegmentation(detElemId,AliMp::GetCathodType(cathode));
+  
       Int_t ix = mdig->PadX(), iy = mdig->PadY();
       
       AliDebug(3,Form("cathode %d ix %d iy %d ",cathode,ix,iy));
-      
+
       AliMpPad pad = seg->PadByIndices(AliMpIntPair(ix,iy),kTRUE);
       
       for (Int_t i=0; i<pad.GetNofLocations(); i++) 
@@ -168,44 +235,57 @@ void AliMUONTriggerElectronics::Feed(const AliMUONVDigitStore& digitStore)
       }
     }		
   }
-  
+
   // Particular case of the columns with 22 local boards (2R(L) 3R(L))   
+  // fill copy input from mapping instead of hardcoded valued (Ch.F)
   AliMUONTriggerCrate *crate = 0x0; TObjArray *bs = 0x0;
-  
-  char *scratess[4] = {  "2R",   "2L",   "3L",   "3R"}; 
-  char *scratesd[4] = {"2-3R", "2-3L", "2-3L", "2-3R"}; 
-  Int_t    slotf[4] = {     2,      2,     10,     10}; 
-  Int_t    slotd[4] = {     1,      1,      9,      9}; 
-  
-  for (Int_t i = 0; i < 4; i++)
+
+  for (Int_t i = 0; i < fCopyXInput[0]->GetEntries(); ++i) 
   {
-    crate = fCrates->Crate(scratess[i]); 
-    bs = crate->Boards();
-    AliMUONLocalTriggerBoard *desybb = (AliMUONLocalTriggerBoard*)bs->At(14);
-    AliMUONLocalTriggerBoard *fromcb = (AliMUONLocalTriggerBoard*)bs->At(15);
-    AliMUONLocalTriggerBoard *desxbb = (AliMUONLocalTriggerBoard*)bs->At(16);
-    
-    crate = fCrates->Crate(scratesd[i]); 
-    bs = crate->Boards();
-    AliMUONLocalTriggerBoard *frombb = (AliMUONLocalTriggerBoard*)bs->At(slotf[i]);
-    AliMUONLocalTriggerBoard *desycb = (AliMUONLocalTriggerBoard*)bs->At(slotd[i]);
-    
+    AliMpIntPair* pair = (AliMpIntPair*)fCopyXInput[0]->At(i);
+    TString crateFrom  =  AliMpExMap::GetString(pair->GetFirst());
+    Int_t   slotFrom   =  pair->GetSecond();
+
+    pair = (AliMpIntPair*)fCopyXInput[1]->At(i);
+    TString crateTo  =  AliMpExMap::GetString(pair->GetFirst());
+    Int_t   slotTo   =  pair->GetSecond();
+
+    AliDebug(3, Form("copy xInputs from local  %s_%d to %s_%d\n", crateFrom.Data(), slotFrom, 
+		     crateTo.Data(), slotTo));
+
     UShort_t cX[2];
-    
-    //    COPY X3-4 FROM BOARD  2 OF CRATE 2-3 TO BOARD 16 OF CRATE 2
-    //    COPY X3-4 FROM BOARD 10 OF CRATE 2-3 TO BOARD 16 OF CRATE 3
-    frombb->GetX34(cX); desxbb->SetX34(cX);
-    
-    //    COPY X3-4 FROM BOARD 15 OF CRATE 2 TO BOARD 1 OF CRATE 2-3
-    //    COPY X3-4 FROM BOARD 15 OF CRATE 3 TO BOARD 9 OF CRATE 2-3
-    fromcb->GetX34(cX); desycb->SetX34(cX);
-    
+    crate = fCrates->Crate(crateFrom); 
+    bs = crate->Boards();
+    AliMUONLocalTriggerBoard *fromxb = (AliMUONLocalTriggerBoard*)bs->At(slotFrom);
+    crate = fCrates->Crate(crateTo); 
+    bs = crate->Boards();
+    AliMUONLocalTriggerBoard *desxb = (AliMUONLocalTriggerBoard*)bs->At(slotTo);
+    fromxb->GetX34(cX); desxb->SetX34(cX);
+
+
+  }
+
+  for (Int_t i = 0; i < fCopyYInput[0]->GetEntries(); ++i) 
+  {
+    AliMpIntPair* pair = (AliMpIntPair*)fCopyYInput[0]->At(i);
+    TString crateFrom  =  AliMpExMap::GetString(pair->GetFirst());
+    Int_t   slotFrom   =  pair->GetSecond();
+
+    pair = (AliMpIntPair*)fCopyYInput[1]->At(i);
+    TString crateTo  =  AliMpExMap::GetString(pair->GetFirst());
+    Int_t   slotTo   =  pair->GetSecond();
+
+    AliDebug(3, Form("copy yInputs from local  %s_%d to %s_%d\n", crateFrom.Data(), slotFrom, 
+		     crateTo.Data(), slotTo));
+
     UShort_t cY[4];
-    
-    desybb->GetY(cY); frombb->SetY(cY);
-    
-    frombb->GetY(cY); desxbb->SetY(cY);
-    fromcb->GetY(cY); desycb->SetY(cY);
+    crate = fCrates->Crate(crateFrom); 
+    bs = crate->Boards();
+    AliMUONLocalTriggerBoard *fromyb = (AliMUONLocalTriggerBoard*)bs->At(slotFrom);
+    crate = fCrates->Crate(crateTo); 
+    bs = crate->Boards();
+    AliMUONLocalTriggerBoard *desyb = (AliMUONLocalTriggerBoard*)bs->At(slotTo);
+    fromyb->GetY(cY); desyb->SetY(cY);
   }
   
   // FILL UP/DOWN OF CURRENT BOARD (DONE VIA J3 BUS IN REAL LIFE)
@@ -243,6 +323,7 @@ void AliMUONTriggerElectronics::Feed(const AliMUONVDigitStore& digitStore)
       }
     }
   }
+ 
 }
 
 
@@ -613,4 +694,3 @@ void AliMUONTriggerElectronics::Digits2Trigger(const AliMUONVDigitStore& digitSt
   // NOW RESET ELECTRONICS
   Reset();
 }
-

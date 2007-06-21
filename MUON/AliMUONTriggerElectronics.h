@@ -33,12 +33,7 @@ class AliMUONTriggerElectronics : public TObject
    public:
       AliMUONTriggerElectronics(AliMUONCalibrationData* calibData=0);
 
-    virtual ~AliMUONTriggerElectronics();
-
-      /// Set Crate config from ascii file
-      virtual void SetDataSource(TString SourceFile = 
-                                 "$ALICE_ROOT/MUON/mapping/data/stationTrigger/crate.dat") 
-      {fSourceFileName = SourceFile;}
+      virtual ~AliMUONTriggerElectronics();
 
       virtual void Factory(AliMUONCalibrationData* calibData);
       void LoadMasks(AliMUONCalibrationData* calibData);
@@ -58,17 +53,24 @@ class AliMUONTriggerElectronics : public TObject
       virtual void Digits2Trigger(const AliMUONVDigitStore& digitStore,
                                   AliMUONVTriggerStore& triggerStore);
 
+
+      AliMUONTriggerCrateStore* GetCrateStore() {return fCrates;}
+
    private:
       /// Not implemented
       AliMUONTriggerElectronics(const AliMUONTriggerElectronics& right);
       /// Not implemented
       AliMUONTriggerElectronics&  operator = (const AliMUONTriggerElectronics& right);
      
+      /// set copy card array
+      void SetCopyInput();
+
    private:
-      TString                    fSourceFileName;     ///< Source file
+      TList*                     fCopyXInput[2];         ///< list of copy X input from local to local board
+      TList*                     fCopyYInput[2];         ///< list of copy Y input from local to local board
       AliMUONTriggerCrateStore  *fCrates;             ///< Crate array
       AliMUONGlobalTriggerBoard *fGlobalTriggerBoard; ///< Global trigger board
       
-   ClassDef(AliMUONTriggerElectronics,3)
+   ClassDef(AliMUONTriggerElectronics,4)
 };
 #endif
