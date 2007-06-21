@@ -130,10 +130,10 @@ void  AliZDCCalibData::Print(Option_t *) const
    // Printing of calibration object
    printf("\n #######	In-time pedestal values (mean value, sigma)	####### \n");
    for(int t=0; t<44; t++){
-     if(t==0 || t==24) printf("\n-------- ZN HighRes -------- \n");
-     else if(t==5 || t==29) printf("\n-------- ZN LowRes -------- \n");
-     else if(t==10 || t==34) printf("\n-------- ZP HighRes -------- \n");
-     else if(t==15 || t==39) printf("\n-------- ZP LowRes -------- \n");
+     if(t==0 || t==24) printf("\n-------- ZN1 HighRes -------- \n");
+     else if(t==5 || t==29) printf("\n-------- ZN1 LowRes -------- \n");
+     else if(t==10 || t==34) printf("\n-------- ZP1 HighRes -------- \n");
+     else if(t==15 || t==39) printf("\n-------- ZP1 LowRes -------- \n");
      else if(t==20) printf("\n-------- ZEM1 HighRes --------  \n");
      else if(t==21) printf("\n-------- ZEM1 LowRes --------  \n");
      else if(t==22) printf("\n-------- ZEM2 HighRes --------  \n");
@@ -143,10 +143,10 @@ void  AliZDCCalibData::Print(Option_t *) const
    //
    printf("\n\n\n #######	Out-of-time pedestal values (mean value, sigma)	####### \n");
    for(int t=0; t<44; t++){
-     if(t==0 || t==24) printf("\n-------- ZN HighRes -------- \n");
-     else if(t==5 || t==29) printf("\n-------- ZN LowRes -------- \n");
-     else if(t==10 || t==34) printf("\n-------- ZP HighRes -------- \n");
-     else if(t==15 || t==39) printf("\n-------- ZP LowRes -------- \n");
+     if(t==0 || t==24) printf("\n-------- ZN1 HighRes -------- \n");
+     else if(t==5 || t==29) printf("\n-------- ZN1 LowRes -------- \n");
+     else if(t==10 || t==34) printf("\n-------- ZP1 HighRes -------- \n");
+     else if(t==15 || t==39) printf("\n-------- ZP1 LowRes -------- \n");
      else if(t==20) printf("\n-------- ZEM1 HighRes --------  \n");
      else if(t==21) printf("\n-------- ZEM1 LowRes --------  \n");
      else if(t==22) printf("\n-------- ZEM2 HighRes --------  \n");
@@ -242,5 +242,36 @@ void AliZDCCalibData::SetPMTHVVal(Float_t* HVVal)
   // Set PMTs HV values
   if(HVVal) for(int t=0; t<22; t++) fPMTHVVal[t] = HVVal[t];
   else for(int t=0; t<22; t++) fPMTHVVal[t] = 0.;
+}
+ 
+//________________________________________________________________
+void AliZDCCalibData::SetZN1EqualCoeff(Float_t* EqualCoeff)
+{
+  // Set ZN1 equalization coefficients
+  if(EqualCoeff) for(int t=0; t<5; t++) fZN1EqualCoeff[t] = EqualCoeff[t];
+  else for(int t=0; t<5; t++) fZN1EqualCoeff[t] = 1.;
+}
+ 
+//________________________________________________________________
+void AliZDCCalibData::SetZP1EqualCoeff(Float_t* EqualCoeff)
+{
+  // Set ZP1 equalization coefficients
+  if(EqualCoeff) for(int t=0; t<5; t++) fZP1EqualCoeff[t] = EqualCoeff[t];
+  else for(int t=0; t<5; t++) fZP1EqualCoeff[t] = 1.;
+}
+//________________________________________________________________
+void AliZDCCalibData::SetZN2EqualCoeff(Float_t* EqualCoeff)
+{
+  // Set ZN2 equalization coefficients
+  if(EqualCoeff) for(int t=0; t<5; t++) fZN2EqualCoeff[t] = EqualCoeff[t];
+  else for(int t=0; t<5; t++) fZN2EqualCoeff[t] = 1.;
+}
+ 
+//________________________________________________________________
+void AliZDCCalibData::SetZP2EqualCoeff(Float_t* EqualCoeff)
+{
+  // Set ZN1 equalization coefficients
+  if(EqualCoeff) for(int t=0; t<5; t++) fZP2EqualCoeff[t] = EqualCoeff[t];
+  else for(int t=0; t<5; t++) fZP2EqualCoeff[t] = 1.;
 }
  
