@@ -1,4 +1,4 @@
-SRCS=  	AliBCM.cxx AliBCMHit.cxx
+SRCS=  	AliBCM.cxx AliBCMHit.cxx AliBCMLoader.cxx
 
 HDRS= $(SRCS:.cxx=.h)
 

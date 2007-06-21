@@ -10,4 +10,5 @@
  
 #pragma link C++ class  AliBCM+;
 #pragma link C++ class  AliBCMHit+;
+#pragma link C++ class  AliBCMLoader+;
 #endif
