@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.47  2007/06/19 17:28:56  acolla
+HLT updated; missing map bug removed.
+
 Revision 1.46  2007/06/09 13:01:09  jgrosseo
 Switching to retrieval of several DCS DPs at a time (multiDPrequest)
 
@@ -2070,8 +2073,11 @@ TList* AliShuttle::GetFileSources(Int_t system, const char* detector, const char
 
 	if (system == kDCS)
 	{
-		AliError("DCS system has only one source of data!");
-		return NULL;
+		AliWarning("DCS system has only one source of data!");
+		TList *list = new TList();
+		list->SetOwner(1);
+		list->Add(new TObjString(" "));
+		return list;
 	}
 
 	// check connection, in case connect
