@@ -606,12 +606,10 @@ void IceCal2Root::GetTWRDaqData()
  }
 
  // Prescription of the various (de)calibration functions
- TF1 fadccal("fadccal","(x-[0])*[1]");
- TF1 fadcdecal("fadcdecal","(x/[1])+[0]");
- fadccal.SetParName(0,"ADC-PED");
- fadccal.SetParName(1,"ADC-FACT");
- fadcdecal.SetParName(0,"ADC-PED");
- fadcdecal.SetParName(1,"ADC-FACT");
+ TF1 fadccal("fadccal","x*(5./4096.)/(50.*[0])");
+ TF1 fadcdecal("fadcdecal","x*(50.*[0])/(5./4096.)");
+ fadccal.SetParName(0,"nC/PE");
+ fadcdecal.SetParName(0,"nC/PE");
 
  TF1 ftdccal("ftdccal","x-[0]");
  TF1 ftdcdecal("ftdcdecal","x+[0]");
@@ -628,10 +626,11 @@ void IceCal2Root::GetTWRDaqData()
 
  Int_t jmod;
  Float_t t0;
+ Float_t ncpe;
  IceAOM* omx=0;
  TF1* fcal=0;
  TF1* fdecal=0;
- while (fInput >> jmod >> t0)
+ while (fInput >> jmod >> t0 >> ncpe)
  {
   // Copy the Geom data from the MuDaq OM database
   IceAOM* omg=(IceAOM*)fMuDaqdb->GetObject(jmod,1);
@@ -652,7 +651,13 @@ void IceCal2Root::GetTWRDaqData()
   omx->SetCalFunction(&ftotcal,"TOT");
   omx->SetDecalFunction(&ftotdecal,"TOT");
 
-  // Flag time slots of bad OMs as dead and don't provide time (de)calib functions
+  // Flag slots of bad OMs as dead and don't provide time (de)calib functions
+  if (ncpe<=0)
+  {
+   omx->SetDead("ADC");
+   omx->SetCalFunction(0,"ADC");
+   omx->SetDecalFunction(0,"ADC");
+  }
   if (t0<-999)
   {
    omx->SetDead("LE");
@@ -668,13 +673,11 @@ void IceCal2Root::GetTWRDaqData()
   fdecal=omx->GetDecalFunction("ADC");
   if (fcal)
   {
-   fcal->SetParameter(0,0);
-   fcal->SetParameter(1,1);
+   fcal->SetParameter(0,ncpe);
   }
   if (fdecal)
   {
-   fdecal->SetParameter(0,0);
-   fdecal->SetParameter(1,1);
+   fdecal->SetParameter(0,ncpe);
   }
 
   fcal=omx->GetCalFunction("LE");

@@ -228,8 +228,8 @@ void IceRoot::Exec(Option_t* opt)
   AddObject(otree);
  }
 
+ // Some output for the user's convenience
  TString inputfile;
-
  cout << " ***" << endl;
  cout << " *** Start processing of job " << GetName() << " ***" << endl;
  cout << " ***" << endl;
@@ -256,6 +256,11 @@ void IceRoot::Exec(Option_t* opt)
  daq.SetSlotName("TWR",1);
  daq.SetSignal(1,1);
 
+ // Trigger device
+ AliDevice trig;
+ trig.SetNameTitle("Trigger","Amanda/IceCube event triggers");
+ AliSignal s;
+
  // Some variables
  Double_t triggertime=0;
  Int_t    eventtimemjd=0;
@@ -266,6 +271,7 @@ void IceRoot::Exec(Option_t* opt)
  Int_t    String=0;
  Int_t    OM=0;
  Float_t  baseline=0;
+ Double_t binsize=10;
  Short_t  type=0;
  Int_t    numberbins=0;
  Float_t  starttime=0;
@@ -286,7 +292,6 @@ void IceRoot::Exec(Option_t* opt)
 
  Float_t pi=acos(-1.);
 
- Float_t binwidth=10;
  Int_t firstomonstring[20];
  firstomonstring[0]=0;
  firstomonstring[1]=1;
@@ -341,6 +346,7 @@ void IceRoot::Exec(Option_t* opt)
   fTree->SetBranchAddress("numberbins",&numberbins);
   fTree->SetBranchAddress("starttime",&starttime);
   fTree->SetBranchAddress("ntracks",&ntracks);
+  if(fTree->GetBranch("binsize")) fTree->SetBranchAddress("binsize",&binsize);
 
   Int_t nmaxbins=(Int_t)fTree->GetLeaf("numberbins")->GetMaximum();
   Float_t* wvform=new Float_t[nmaxbins+1];
@@ -395,6 +401,18 @@ void IceRoot::Exec(Option_t* opt)
     evt->SetMJD(eventtimemjd,eventtimemjds,eventtimemjdns,0);
     evt->AddDevice(daq);
 
+    // Store trigger information
+    trig.Reset(1);
+    s.Reset(1);
+    s.SetName("main");
+    s.SetTitle("First trigger for TWR time reference");
+    s.SetUniqueID(12);
+    s.SetSlotName("trig_pulse_le",1);
+    s.SetSignal(triggertime,1);
+    trig.AddHit(s);
+    //// TODO: store other triggers if available
+    evt->AddDevice(trig);
+
     // Loop over all the tracks and add them to the current event
     for (Int_t itrack=0; itrack<ntracks; itrack++)
     {
@@ -439,8 +457,9 @@ void IceRoot::Exec(Option_t* opt)
     lastevent=eventid;
    }
 
+   // Get OM from event strcture, or create and add it
    omid=firstomonstring[-String]+OM-1;
-   // Get corresponding device from the current event structure  
+   if(omid==681) continue;  // Skip OM 681, which should never give data: avoid all risk of confusion
    omx=(IceAOM*)evt->GetIdDevice(omid);
    if (!omx)
    {
@@ -461,6 +480,7 @@ void IceRoot::Exec(Option_t* opt)
    omx->AddNamedSlot("READOUT");
    if(type==0) omx->SetSignal(1,"READOUT");       // Electrical
    else if(type==1) omx->SetSignal(2,"READOUT");  // Optical
+   else if(type==2) omx->SetSignal(3,"READOUT");  // Digital 
    else omx->SetSignal(0,"READOUT");              // Unknown
 
    // Fill the waveform histogram with this fragment
@@ -471,7 +491,7 @@ void IceRoot::Exec(Option_t* opt)
 
    histo.Reset();
    histo.SetName(hname.Data());
-   histo.SetBins(numberbins,starttime,starttime+numberbins*binwidth);
+   histo.SetBins(numberbins,triggertime+starttime,triggertime+starttime+numberbins*binsize);
 
    for (Int_t jbin=1; jbin<=numberbins; jbin++)
    {

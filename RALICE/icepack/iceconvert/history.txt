@@ -112,3 +112,13 @@
                 to identify electrical, optical and digital readout based on the Dbase info
                 and/or actual settings in the various data files (headers). 
 07-jun-2007 GdV OM readout type also updated from the data contents in IceRoot.cxx.
+08-jun-2007 GdV Support introduced in IceRoot.cxx to set the waveform binsize based on the
+                info from the data of the I3 file.
+08-jun-2007 NvE First attempt for TWR ADC calibration in IceCal2Root.cxx. 
+09-jun-2007 GdV OM 681 now also ignored in IceRoot.cxx.
+21-jun-2007 GdV Trigger device and "main" trigger introduced IceRoot.cxx to provide
+                the actual trigger time(s).
+21-jun-2007 NvE External stop and (first) trigger time taken into account for the
+                TWR waveform timebins in IceRawTWR. This will provide a better
+                synchronisation of the various waveforms and consequently of the
+                extracted LE values.

@@ -260,9 +260,11 @@ void IceRawTWR::Exec(Option_t* opt)
  params.SetSlotName("Nchannels",1);
  params.SetSlotName("Ntriggers",2);
  params.SetSlotName("BaselineOffset",3);
+ params.SetSlotName("NanosecsPerTWRbin",4);
  params.SetSignal(float(N_OF_CHANNELS),1);
  params.SetSignal(float(N_OF_TRIGGERS),2);
  params.SetSignal(float(BASELINE_MEAN_MAGIC),3);
+ params.SetSignal(float(NSECS_PER_TWR_BIN),4);
 
  // Set DAQ device info
  AliDevice daq;
@@ -320,17 +322,19 @@ void IceRawTWR::Exec(Option_t* opt)
   // Correct the mapping
   update_system(fHeader,runnum);
 
-  // Retrieve the actual readout system and threshold of each OM for these data
+  // Retrieve the actual readout system, threshold and external stop of each OM for these data
   fReadout.Set(681);
   fThreshold.Set(681);
+  fExtstop.Set(681);
   Int_t ncrates=fHeader->n_crates;
   Int_t ntwrs=0;
-  Int_t omid,readout,thresh;
+  Int_t omid,readout,thresh,extstop;
   for (Int_t icr=0; icr<ncrates; icr++)
   {
    ntwrs=fHeader->crate[icr]->n_twr;
    for (Int_t i_twr=0; i_twr<ntwrs; i_twr++)
    {
+    extstop=fHeader->crate[icr]->twr[i_twr]->ext_stop;
     for (Int_t ich=0; ich<CHANNELS_PER_TWR; ich++)
     {
      omid=fHeader->crate[icr]->twr[i_twr]->om_no[ich];
@@ -340,6 +344,7 @@ void IceRawTWR::Exec(Option_t* opt)
      {
       fReadout.AddAt(readout,omid-1);
       fThreshold.AddAt(thresh,omid-1);
+      fExtstop.AddAt(extstop,omid-1);
      }
     }
    }
@@ -424,6 +429,15 @@ void IceRawTWR::PutWaveforms(Int_t year)
  IceEvent* evt=(IceEvent*)GetMainObject();
  if (!evt) return;
 
+ // Get trigger time for TWR time reference
+ Float_t trigtime=0;
+ AliDevice* trig=(AliDevice*)evt->GetDevice("Trigger");
+ if (trig)
+ {
+  AliSignal* sx=trig->GetHit("main");
+  if (sx) trigtime=sx->GetSignal("trig_pulse_le");
+ }
+
  // Loop over all the waveforms and add the histo(s) to the corresponding OM's
  TH1F histo;
  Int_t nbins=0;
@@ -438,6 +452,7 @@ void IceRawTWR::PutWaveforms(Int_t year)
  Float_t baseline;
  Int_t nfrags;
  Int_t firstbin,lastbin;
+ Int_t extstop;
  for (Int_t i=0; i<N_OF_CHANNELS; i++)
  {
   if (!fEvent.wfm_filled[i]) continue;
@@ -457,11 +472,15 @@ void IceRawTWR::PutWaveforms(Int_t year)
 
   if (!omx) continue;
 
+  extstop=fExtstop.At(omid-1);
+
   // Update readout type and threshold for this OM
   omx->AddNamedSlot("READOUT");
   omx->SetSignal(float(fReadout.At(omid-1)),"READOUT");
   omx->AddNamedSlot("THRESH");
   omx->SetSignal(float(fThreshold.At(omid-1)),"THRESH");
+  omx->AddNamedSlot("EXTSTOP");
+  omx->SetSignal(float(extstop),"EXTSTOP");
 
   clear_waveform_analysis(&fWform);
   error=restore_waveform(fEvent.wfm[i],&fWform,year);
@@ -493,6 +512,10 @@ void IceRawTWR::PutWaveforms(Int_t year)
 
    xlow=fWform.wfm_x[firstbin];
    xup=fWform.wfm_x[lastbin];
+
+   // Synchronise waveform times with external stop and trigger time
+   xlow=xlow-float(NSECS_PER_TWR_BIN)*(1024-extstop)+trigtime;
+   xup=xup-float(NSECS_PER_TWR_BIN)*(1024-extstop)+trigtime;
 
    histo.SetBins(nbins,xlow,xup);
 
@@ -538,6 +561,7 @@ void IceRawTWR::PutTrigger(Int_t year)
  if (year !=2005 && year != 2006)
  {
   s.SetName("main");
+  s.SetTitle("First trigger for TWR time reference");
   s.SetUniqueID(0);
   s.SetSlotName("trig_pulse_le",1);
   s.SetSignal(trigtime,1);
@@ -561,7 +585,7 @@ void IceRawTWR::PutTrigger(Int_t year)
   s.SetName(trignames[i]);
   s.SetUniqueID(i);
   trigtime=0;
-  if (fTrigger.trigger_has_pulse[i]) trigtime=fTrigger.trigger_time[i];
+  if (fTrigger.trigger_has_pulse[i]) trigtime=float(fTrigger.trigger_time[i]*NSECS_PER_TWR_BIN);
   s.SetSlotName("trig_pulse_le",1);
   s.SetSignal(trigtime,1);
   trig.AddHit(s);
@@ -569,15 +593,16 @@ void IceRawTWR::PutTrigger(Int_t year)
   if (i!=4 && i!=5 && i!=9) imain=1;
  }
 
- // Set the artificial "main" trigger
+ // Set the artificial "main" trigger to indicate the first trigger signal
  if (imain)
  {
   s.Reset(1);
   s.SetName("main");
+  s.SetTitle("First trigger for TWR time reference");
   s.SetUniqueID(N_OF_TRIGGERS);
   s.SetSlotName("trig_pulse_le",1);
   trigtime=0;
-  if (fTrigger.first_trigger>=0) trigtime=fTrigger.first_trigger_time;
+  if (fTrigger.first_trigger>=0) trigtime=float(fTrigger.first_trigger_time*NSECS_PER_TWR_BIN);
   s.SetSignal(trigtime,1);
   trig.AddHit(s);
  }

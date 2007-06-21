@@ -45,6 +45,7 @@ class IceRawTWR : public AliJob
   TFile* fOutfile;     // The ROOT output file
   TArrayI fReadout;    // The OM readout type (0=unknown 1=electrical 2=optical)
   TArrayI fThreshold;  // The OM thresholds in ADC
+  TArrayI fExtstop;    // The TWR external stop value in bin counts for each OM
   void PutTrigger(Int_t year);   // Put the trigger info from the raw data event into the IcePack structure
   void PutWaveforms(Int_t year); // Put the waveforms from the raw data event into the IcePack structure
 
@@ -65,6 +66,6 @@ class IceRawTWR : public AliJob
   Int_t clear_waveform_analysis(waveform_analyse_t* wfm_om);
   Int_t restore_waveform(waveform_t f_wfm,waveform_analyse_t* wfm_om,Int_t year);
 
- ClassDef(IceRawTWR,2) // Job for conversion of TWR raw data into IceEvent data structures.
+ ClassDef(IceRawTWR,3) // Job for conversion of TWR raw data into IceEvent data structures.
 };
 #endif
