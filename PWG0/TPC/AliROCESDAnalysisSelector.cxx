@@ -46,7 +46,8 @@ ClassImp(AliROCESDAnalysisSelector)
 AliROCESDAnalysisSelector::AliROCESDAnalysisSelector() :
   AliSelector(),
   fESDfriend(0),
-  fObjectsToSave(0)
+  fObjectsToSave(0),
+  fMinNumberOfRowsIsTrack(0)
 {
   //
   // Constructor. Initialization of pointers
@@ -127,7 +128,7 @@ Bool_t AliROCESDAnalysisSelector::Process(Long64_t entry)
 
   if (fESD->GetNumberOfTracks() != fESDfriend->GetNumberOfTracks())
   {
-    AliDebug(AliLog::kError, Form("Event %lld: Number of tracks differ between ESD (%d) and ESDfriend (%d)! Skipping event!\n", entry, fESD->GetNumberOfTracks(), fESDfriend->GetNumberOfTracks()))
+    AliDebug(AliLog::kError, Form("Event %lld: Number of tracks differ between ESD (%d) and ESDfriend (%d)! Skipping event!\n", entry, fESD->GetNumberOfTracks(), fESDfriend->GetNumberOfTracks()));
     return kFALSE;
   }  
 
@@ -175,7 +176,7 @@ Int_t AliROCESDAnalysisSelector::ProcessEvent(Long64_t entry, Bool_t detailedHis
   Int_t nTracks = fESD->GetNumberOfTracks();
   
   Int_t nSkippedSeeds = 0;
-  Int_t nSkippedTracks = 0;
+  //Int_t nSkippedTracks = 0;
 
   // for "flash" detection
   Int_t nClusters = 0;
@@ -208,12 +209,12 @@ Int_t AliROCESDAnalysisSelector::ProcessEvent(Long64_t entry, Bool_t detailedHis
       continue;
     }
     
-    if (!AcceptTrack(seed, fMinNumberOfRowsIsTrack))
+    /*if (!AcceptTrack(seed, fMinNumberOfRowsIsTrack))
     {
       AliDebug(AliLog::kDebug, Form("INFO: Rejected track %d.", t));
       nSkippedTracks++;
       continue;
-    }
+    }*/
     
     for (Int_t clusterID = 0; clusterID < 160; clusterID++)
     {
@@ -395,15 +396,15 @@ void AliROCESDAnalysisSelector::Terminate()
   for (Int_t i=0; i<kTPCHists; i++)
     if (fClusterHistograms[i]) {
       fClusterHistograms[i]->SaveHistograms();
-      TCanvas* c = fClusterHistograms[i]->DrawHistograms();
-			TString dir;
-			dir.Form("WWW/%s/%s", comment->GetTitle(), c->GetName());
-			gSystem->mkdir(dir, kTRUE);
-      c->SaveAs(Form("%s/plots_%s_%s.eps",dir.Data(),comment->GetTitle(),c->GetName()));
-      c->SaveAs(Form("%s/plots_%s_%s.gif",dir.Data(),comment->GetTitle(),c->GetName()));
+     // TCanvas* c = fClusterHistograms[i]->DrawHistograms(comment->GetTitle());
+			//TString dir;
+			//dir.Form("WWW/%s", comment->GetTitle(), c->GetName());
+			//gSystem->mkdir(dir, kTRUE);
+      //c->SaveAs(Form("%s/plots_%s_%s.eps",dir.Data(),comment->GetTitle(),c->GetName()));
+      //c->SaveAs(Form("%s/plots_%s_%s.gif",dir.Data(),comment->GetTitle(),c->GetName()));
 
-      c->Close();
-      delete c;
+      //c->Close();
+      //delete c;
     }
 
   gDirectory->mkdir("saved_objects");
