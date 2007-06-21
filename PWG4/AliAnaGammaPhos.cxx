@@ -241,6 +241,14 @@ void AliAnaGammaPhos::Init()
 }
 
 //______________________________________________________________________________
+void AliAnaGammaPhos:: Normalize(const Double_t norm) 
+{
+  // Normalize some histograms
+  fhPHOSEnergy->Scale(norm) ;
+  fhPHOSInvariantMass->Scale(norm) ;
+}  
+
+//______________________________________________________________________________
 void AliAnaGammaPhos::Terminate(Option_t *)
 {
   // Processing when the event loop is ended
