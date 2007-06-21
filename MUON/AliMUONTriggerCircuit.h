@@ -13,36 +13,29 @@
 //  Author Philippe Crochet (LPCCFd)
 
 #include <TObject.h>
-#include "AliMpPad.h"
-#include "AliMUONGeometryTransformer.h"
-#include "AliMpVSegmentation.h"
+#include <TArrayF.h>
 
-class AliMUONTriggerCrateStore;
-class AliMUONGeometryTransformer;
+#include "AliMpPad.h"
+#include "AliMpVSegmentation.h"
+#include "AliMUONGeometryTransformer.h"
+
+class AliMpLocalBoard;
 
 class AliMUONTriggerCircuit : public TObject 
 {
 public: 
-  AliMUONTriggerCircuit();  
+  AliMUONTriggerCircuit(const AliMUONGeometryTransformer* transformer);  
   virtual ~AliMUONTriggerCircuit();
      // copy constructor
   AliMUONTriggerCircuit(const AliMUONTriggerCircuit& AliMUONTriggerCircuit); 
   // assignment operator
   AliMUONTriggerCircuit& operator=(const AliMUONTriggerCircuit& AliMUONTriggerCircuit); 
 
-  // initializations
-  void Init(Int_t iCircuit, const AliMUONTriggerCrateStore& crates);    
-  
   //--- methods which return member data related info
-  Float_t GetY11Pos(Int_t istrip) const;
-  Float_t GetY21Pos(Int_t istrip) const;
-  Float_t GetX11Pos(Int_t istrip) const;
-  Int_t   DetElemId(Int_t ichamber, char side, Int_t iline);
-  void DecodeBoardName(const char* boardName, char& side,
-                       Int_t& iLine,
-                       Int_t& iCol);
-  Int_t DetElemId(Int_t ichamber, const char* localBoardName);
-  
+  Float_t GetY11Pos(Int_t localBoardId, Int_t istrip) const;
+  Float_t GetY21Pos(Int_t localBoardId, Int_t istrip) const;
+  Float_t GetX11Pos(Int_t localBoardId, Int_t istrip) const;
+
   //  void Print(Option_t* opt="") const;
   //  void dump(const char* what, const Float_t* array, Int_t size);
   //  void dump(const char* what, const Int_t* array, Int_t size);
@@ -50,35 +43,37 @@ public:
   /// Set pointer to transformations
   void  SetTransformer(const AliMUONGeometryTransformer* transformer) {fTransformer = transformer;}
   /// Get pointer to transformations
-  const AliMUONGeometryTransformer* GetTransformer() {return fTransformer;}
+  const AliMUONGeometryTransformer* GetTransformer() const {return fTransformer;}
 
 private:
 
-  void LoadYPos(const AliMUONTriggerCrateStore& crates);
-  void LoadXPos(const AliMUONTriggerCrateStore& crates);
-  Int_t FirstStrip(const char* localBoardName);
+  void LoadYPos(AliMpLocalBoard* localBoard);
+  void LoadXPos(AliMpLocalBoard* localBoard);
 
-  void FillXstrips(const AliMpVSegmentation* seg,
-		   const Int_t detElemId, const Int_t icol, 
+  Int_t FirstStrip(AliMpLocalBoard* localBoard);
+
+  void FillXstrips(const Int_t icol, 
                    const Int_t iFirstStrip, const Int_t iLastStrip,
-                   Int_t liStripCircuit, Float_t *tab);
+                   Int_t liStripCircuit, TArrayF& ypos);
   
-  void FillYstrips(const AliMpVSegmentation* seg,
-		   const Int_t detElemId, const Int_t iFirstStrip,
+  void FillYstrips(const Int_t iFirstStrip,
                    const Int_t iLastStrip, Int_t liStripCircuit,
                    const Bool_t doubling);
 
-  void XYGlobal(Int_t detElemId, const AliMpPad& pad,
-                Double_t xyGlobal[4]);    
+  void XYGlobal(const AliMpPad& pad,
+                Double_t* xyGlobal);    
   
 
 private:    
-  Int_t fILocalBoard;          ///< local board number
-  Float_t fXpos11[16];         ///< X position of Y strips in MC11
-  Float_t fYpos11[31];         ///< Y position of X strips in MC11
-  Float_t fYpos21[63];         ///< Y position of X strips in MC21
+  TArrayF fXpos11[235];         ///< X position of Y strips in MC11
+  TArrayF fYpos11[235];         ///< Y position of X strips in MC11
+  TArrayF fYpos21[235];         ///< Y position of X strips in MC21
 
   const AliMUONGeometryTransformer* fTransformer; //!< pointer to transformation
+  const AliMpVSegmentation* fCurrentSeg;          //!< current segmentation
+
+  Int_t fCurrentDetElem;                          //!< current detection elt id
+  Int_t fCurrentLocalBoard;                       //!< current local board id
 
   ClassDef(AliMUONTriggerCircuit,1) // Trigger Circuit class
 };
