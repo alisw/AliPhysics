@@ -35,6 +35,7 @@
 
 #include "AliBCM.h"
 #include "AliBCMHit.h"
+#include "AliBCMLoader.h"
 #include "AliMagF.h"
 #include "AliRun.h"
 #include "AliMC.h"
@@ -76,7 +77,7 @@ void AliBCM::StepManager()
 //    
 
     static Float_t edepT;    
-    static Double_t xh[3] = {0., 0., 0.};
+    static Double_t xh[4] = {0., 0., 0., 0.};
     Float_t edep = 0.;
     Int_t   copy = -1; 
     
@@ -88,7 +89,8 @@ void AliBCM::StepManager()
 	// Entering
 	if (gMC->IsTrackEntering()) {
 	    edepT = 0.;
-	    gMC->TrackPosition(xh[0],xh[1],xh[2]); 
+	    gMC->TrackPosition(xh[0],xh[1],xh[2]);
+	    xh[3] = gMC->TrackTime();
 	}
 	
 	//
@@ -223,4 +225,14 @@ void AliBCM::SetTreeAddress()
     if (TreeH() && fHits==0x0)
 	fHits   = new TClonesArray("AliBCMHit",  4000);
     AliDetector::SetTreeAddress();
+}
+
+//_____________________________________________________________________________
+AliLoader* AliBCM::MakeLoader(const char* topfoldername)
+{ 
+  //
+  // Builds BCM getter (AliLoader type)
+  AliDebug(1,Form("Creating AliBCMLoader, Top folder is %s ",topfoldername));
+  fLoader = new AliBCMLoader(GetName(),topfoldername);
+  return fLoader;
 }

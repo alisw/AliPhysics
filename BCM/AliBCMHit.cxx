@@ -33,15 +33,17 @@ ClassImp(AliBCMHit);
 AliBCMHit::AliBCMHit():
     AliHit(),
     fId(-1),
-    fEdep(0)
+    fEdep(0.),
+    fTime(0.)
 {
     // Default constructor
 }
 
-AliBCMHit::AliBCMHit(Int_t shunt, Int_t track, Double_t x[3], Int_t isens, Float_t edep):
+AliBCMHit::AliBCMHit(Int_t shunt, Int_t track, Double_t x[4], Int_t isens, Float_t edep):
     AliHit(shunt, track),
     fId(isens),
-    fEdep(edep)
+    fEdep(edep),
+    fTime(x[3])
 {
     // Constructor
     fX = x[0];
