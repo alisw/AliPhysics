@@ -15,6 +15,7 @@ class AliMagF;
 
 class TFile;
 class TTree;
+class TGeoManager;
 
 namespace Alieve {
 
@@ -42,11 +43,15 @@ protected:
   static Bool_t fgUseESDTree;
   static Bool_t fgAvoidExcOnOpen;
 
+  static TString  fgCdbUri;
+
   static AliMagF* fgMagField;
 
 public:
   static void Initialize(Bool_t use_runloader=kTRUE, Bool_t use_esd=kTRUE,
 			 Bool_t avoid_exc_on_open=kTRUE);
+
+  static void SetCdbUri(const Text_t* cdb) { if (cdb) fgCdbUri = cdb; }
 
   Event();
   Event(TString path, Int_t ev=0);
@@ -75,6 +80,8 @@ public:
   static AliESDfriend* AssertESDfriend();
 
   static AliMagF*      AssertMagField();
+
+  static TGeoManager*  AssertGeometry();
 
   ClassDef(Event, 1);
 }; // endclass Event

@@ -9,10 +9,14 @@
 #include <AliESD.h>
 #include <AliESDfriend.h>
 #include <AliMagFMaps.h>
+#include <AliCDBManager.h>
+#include <AliHeader.h>
+#include <AliGeomManager.h>
 
 #include <TFile.h>
 #include <TTree.h>
 #include <TObjString.h>
+#include <TError.h>
 
 #include <TROOT.h>
 #include <TSystem.h>
@@ -38,6 +42,8 @@ Event* Alieve::gEvent = 0;
 Bool_t Alieve::Event::fgUseRunLoader   = kTRUE;
 Bool_t Alieve::Event::fgUseESDTree     = kTRUE;
 Bool_t Alieve::Event::fgAvoidExcOnOpen = kTRUE;
+
+TString  Alieve::Event::fgCdbUri("local://$ALICE_ROOT");
 
 AliMagF* Alieve::Event::fgMagField = 0;
 
@@ -99,6 +105,8 @@ void Event::Open()
   if(fPath[0] != '/')
     fPath = Form("%s/%s", gSystem->WorkingDirectory(), fPath.Data());
 
+  Int_t runNo = -1;
+
   if(fgUseRunLoader)
   {
     TString ga_path(Form("%s/galice.root", fPath.Data()));
@@ -122,6 +130,7 @@ void Event::Open()
       throw(eH + "failed loading gAlice.");
     if(fRunLoader->LoadHeader() != 0)
       throw(eH + "failed loading header.");
+    runNo = fRunLoader->GetHeader()->GetRun();
   }
 end_run_loader:
 
@@ -148,6 +157,7 @@ end_run_loader:
     if(fESDTree == 0)
       throw(eH + "failed getting the esdTree.");
     fESD->ReadFromTree(fESDTree);
+    runNo = fESD->GetESDRun()->GetRunNumber();
 
     // Check if ESDfriends exists and attach the branch
     p = Form("%s/AliESDfriends.root", fPath.Data());
@@ -157,6 +167,17 @@ end_run_loader:
       fESDTree->SetBranchStatus ("ESDfriend*", 1);
       fESDTree->SetBranchAddress("ESDfriend.", &fESDfriend);
     }
+  }
+
+  if (runNo < 0)
+    throw(eH + "invalid run number.");
+
+  {
+    AliCDBManager* cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage(fgCdbUri);
+    if (cdb->IsDefaultStorageSet() == kFALSE)
+      throw(eH + "CDB initialization failed.");
+    cdb->SetRun(runNo);
   }
 
 end_esd_loader:
@@ -281,4 +302,25 @@ AliMagF* Event::AssertMagField()
       fgMagField = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5kG);
   }
   return fgMagField;
+}
+
+TGeoManager* Event::AssertGeometry()
+{
+  static const Exc_t eH("Event::AssertGeometry ");
+
+  if (AliGeomManager::GetGeometry() == 0)
+  {
+    AliGeomManager::LoadGeometry();
+    if ( ! AliGeomManager::GetGeometry())
+    {
+      throw(eH + "can not load geometry.");
+    }
+    if ( ! AliGeomManager::ApplyAlignObjsFromCDB("ITS TPC TRD TOF PHOS HMPID EMCAL MUON FMD ZDC PMD T0 VZERO ACORDE"))
+    {
+      ::Warning(eH, "mismatch of alignable volumes. Proceeding.");
+      // throw(eH + "could not apply align objs.");
+    }
+  }
+
+  return AliGeomManager::GetGeometry();
 }
