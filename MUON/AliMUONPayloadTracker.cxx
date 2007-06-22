@@ -194,9 +194,10 @@ Bool_t AliMUONPayloadTracker::Decode(UInt_t* buffer, Int_t totalDDLSize)
       if (fDspHeader->GetPaddingWord() == 1) {
 	if (buffer[index++] != fDspHeader->GetDefaultPaddingWord())
 
-	    AliError(Form("Error in padding word for iBlock %d, iDsp %d, iBus %d\n", 
+	    AliWarning(Form("Error in padding word for iBlock %d, iDsp %d, iBus %d\n", 
 			  iBlock, iDsp, iBusPatch));
 
+	fPaddingErrors++;
       }
 
       index = indexDsp + totalDspSize;
@@ -226,6 +227,7 @@ void AliMUONPayloadTracker::ResetDDL()
   ///
   fDDLTracker->GetBlkHeaderArray()->Delete();
   fGlitchErrors = 0;
+  fPaddingErrors = 0;
   fParityErrBus.Reset();
 
 }

@@ -209,6 +209,8 @@ AliMUONRawStreamTracker::GetNextDDL()
   
   Bool_t ok = fPayload->Decode(buffer, totalDataWord/4);
   
+  AddErrorMessage();
+
   delete[] buffer;
   
   fCurrentDDL = fPayload->GetDDLTracker();
@@ -356,12 +358,14 @@ Bool_t AliMUONRawStreamTracker::NextDDL()
   
   if(!fRawReader->ReadNext((UChar_t*)buffer, totalDataWord))
   {
-    AliError("a memory leak is here");
+    delete[] buffer;
     return kFALSE;
   }
   
   Bool_t ok = fPayload->Decode(buffer, totalDataWord/4);
-  
+
+  AddErrorMessage();
+
   delete[] buffer;
   
   fDDL++;
@@ -382,4 +386,21 @@ void AliMUONRawStreamTracker::SetMaxBlock(Int_t blk)
 {
   /// set regional card number
   fPayload->SetMaxBlock(blk);
+}
+
+//______________________________________________________
+void AliMUONRawStreamTracker::AddErrorMessage()
+{
+/// add message into logger of AliRawReader per event
+
+    for (Int_t i = 0; i < fPayload->GetParityErrors(); ++i)
+	fRawReader->AddMinorErrorLog(kParityErr, Form("Parity error for buspatch %s",  
+						      fPayload->GetParityErrBus()[i]));
+
+    for (Int_t i = 0; i < fPayload->GetGlitchErrors(); ++i)
+	fRawReader->AddMajorErrorLog(kGlitchErr, "Glitch error occurs skip event");
+
+    for (Int_t i = 0; i < fPayload->GetPaddingErrors(); ++i)
+	fRawReader->AddMinorErrorLog(kPaddingWordErr, "Padding word error");
+
 }

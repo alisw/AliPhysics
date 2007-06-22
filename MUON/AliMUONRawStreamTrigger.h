@@ -47,6 +47,18 @@ class AliMUONRawStreamTrigger: public TObject {
     /// Return number of DDL
     Int_t              GetDDL()        const {return fDDL - 1;}
 
+    /// add error message into error logger
+    void AddErrorMessage();
+
+    /// error numbers
+    enum rawStreamTriggerError {
+      kDarcEoWErr   = 6, ///< end of Darc word error 
+      kGlobalEoWErr = 7, ///< end of Global word error
+      kRegEoWErr    = 8, ///< end of Regional word error 
+      kLocalEoWErr  = 9  ///< end of local word error
+
+    };
+
   private :
     /// Not implemented
     AliMUONRawStreamTrigger(const AliMUONRawStreamTrigger& stream);

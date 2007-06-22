@@ -56,6 +56,8 @@ class AliMUONPayloadTracker: public TObject {
     TArrayI GetParityErrBus() const {return fParityErrBus;} // for MOOD
     /// Get number of glitch errors
     Int_t   GetGlitchErrors() const {return fGlitchErrors;}
+    /// Get number of padding word errors
+    Int_t   GetPaddingErrors() const {return fPaddingErrors;}
 
   private :
     /// Not implemented
@@ -82,8 +84,9 @@ class AliMUONPayloadTracker: public TObject {
 
     TArrayI fParityErrBus;                    //!< list of buspatch with at least one parity errors;
     Int_t   fGlitchErrors;                    //!< number of glitch errors;
+    Int_t   fPaddingErrors;                   //!< number of padding word errors;
 
-    ClassDef(AliMUONPayloadTracker, 2)    // base class for reading MUON raw digits
+    ClassDef(AliMUONPayloadTracker, 3)    // base class for reading MUON raw digits
 };
 
 #endif

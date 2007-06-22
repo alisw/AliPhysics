@@ -141,10 +141,12 @@ Bool_t AliMUONRawStreamTrigger::NextDDL()
   if (!fRawReader->ReadNext((UChar_t*)buffer, totalDataWord)) return kFALSE; 
   
   fPayload->Decode(buffer);
+  AddErrorMessage();
 
   fDDL++;
 
   delete [] buffer;
+
 
   return kTRUE;
 }
@@ -170,4 +172,23 @@ void AliMUONRawStreamTrigger::SetMaxLoc(Int_t loc)
 {
   /// set local card number
   fPayload->SetMaxLoc(loc);
+}
+
+//______________________________________________________
+void AliMUONRawStreamTrigger::AddErrorMessage()
+{
+/// add message into logger of AliRawReader per event
+
+    for (Int_t i = 0; i < fPayload->GetDarcEoWErrors(); ++i)
+	fRawReader->AddMajorErrorLog(kDarcEoWErr, "Wrong end of Darc word structure");
+
+   for (Int_t i = 0; i < fPayload->GetGlobalEoWErrors(); ++i)
+	fRawReader->AddMajorErrorLog(kGlobalEoWErr, "Wrong end of Global word structure");
+
+   for (Int_t i = 0; i < fPayload->GetRegEoWErrors(); ++i)
+	fRawReader->AddMajorErrorLog(kRegEoWErr, "Wrong end of Regional word structure");
+
+   for (Int_t i = 0; i < fPayload->GetLocalEoWErrors(); ++i)
+	fRawReader->AddMajorErrorLog(kLocalEoWErr, "Wrong end of Local word structure");
+
 }

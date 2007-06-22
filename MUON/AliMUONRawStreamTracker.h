@@ -94,6 +94,17 @@ class AliMUONRawStreamTracker: public TObject {
     Bool_t GetNextDspHeader();
     Bool_t GetNextBusStruct();
 
+    /// add error message into error logger
+    void AddErrorMessage();
+
+    /// error numbers
+    enum rawStreamTrackerError {
+      kGlitchErr      = 1, ///< glitch error 
+      kPaddingWordErr = 2, ///< padding word error
+      kParityErr      = 3  ///< parity error
+    };
+
+
  private:
     AliRawReader*    fRawReader;    ///< object for reading the raw data  
     Int_t  fDDL;          ///< number of DDL    

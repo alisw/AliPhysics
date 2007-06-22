@@ -41,6 +41,16 @@ class AliMUONPayloadTrigger: public TObject {
     /// Return pointer for DDL structure
     AliMUONDDLTrigger*      GetDDLTrigger() const {return fDDLTrigger;}
 
+    /// Get number of end of DARC word errors
+    Int_t   GetDarcEoWErrors() const {return fDarcEoWErrors;}
+    /// Get number of end of Global word errors
+    Int_t   GetGlobalEoWErrors() const {return fGlobalEoWErrors;}
+    /// Get number of end of regional word errors
+    Int_t   GetRegEoWErrors() const {return fRegEoWErrors;}
+    /// Get number of end of local word errors
+    Int_t   GetLocalEoWErrors() const {return fLocalEoWErrors;}
+
+
   private :
     /// Not implemented
     AliMUONPayloadTrigger(const AliMUONPayloadTrigger& stream);
@@ -54,7 +64,12 @@ class AliMUONPayloadTrigger: public TObject {
     AliMUONRegHeader*        fRegHeader;    //!< pointer for regional structure
     AliMUONLocalStruct*      fLocalStruct;  //!< pointer to local structure
 
-    ClassDef(AliMUONPayloadTrigger, 1)    // base class for reading MUON trigger rawdata
+    Int_t   fDarcEoWErrors;                 //!< number of end of DARC word errors;
+    Int_t   fGlobalEoWErrors;               //!< number of end of global word errors;
+    Int_t   fRegEoWErrors;                  //!< number of end of regional word errors;
+    Int_t   fLocalEoWErrors;                //!< number of end of local word errors;
+
+    ClassDef(AliMUONPayloadTrigger, 2)    // base class for reading MUON trigger rawdata
 };
 
 #endif

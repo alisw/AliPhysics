@@ -97,7 +97,7 @@ Bool_t AliMUONPayloadTrigger::Decode(UInt_t *buffer)
 
   if (buffer[index++] != darcHeader->GetEndOfDarc())
 
-      AliError(Form("Wrong end of Darc word %x instead of %x\n",
+      AliWarning(Form("Wrong end of Darc word %x instead of %x\n",
 		    buffer[index-1], darcHeader->GetEndOfDarc()));
 
 
@@ -113,7 +113,7 @@ Bool_t AliMUONPayloadTrigger::Decode(UInt_t *buffer)
 
   if (buffer[index++] != darcHeader->GetEndOfGlobal())
 
-  AliError(Form("Wrong end of Global word %x instead of %x\n",
+  AliWarning(Form("Wrong end of Global word %x instead of %x\n",
 		buffer[index-1], darcHeader->GetEndOfGlobal()));
 
  
@@ -132,7 +132,7 @@ Bool_t AliMUONPayloadTrigger::Decode(UInt_t *buffer)
 
     if (buffer[index++] != fRegHeader->GetEndOfReg())
 
-      AliError(Form("Wrong end of Reg word %x instead of %x\n",
+      AliWarning(Form("Wrong end of Reg word %x instead of %x\n",
 		    buffer[index-1], fRegHeader->GetEndOfReg()));
 
 
@@ -153,7 +153,7 @@ Bool_t AliMUONPayloadTrigger::Decode(UInt_t *buffer)
 
       if (buffer[index++] != fLocalStruct->GetEndOfLocal())
 
-      AliError(Form("Wrong end of local word %x instead of %x\n",
+      AliWarning(Form("Wrong end of local word %x instead of %x\n",
 		    buffer[index-1], fLocalStruct->GetEndOfLocal()));
 
       // fill only if card notified
