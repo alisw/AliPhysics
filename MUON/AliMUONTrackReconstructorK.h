@@ -24,6 +24,7 @@ class AliMUONTrackReconstructorK : public AliMUONVTrackReconstructor
 
           /// Return track method
   Int_t GetTrackMethod(void) const {return fTrackMethod;} 
+  virtual void EventDump(void);  // dump reconstructed event
   
  protected:
   
@@ -37,8 +38,6 @@ class AliMUONTrackReconstructorK : public AliMUONVTrackReconstructor
  private:
 
   Int_t fTrackMethod; ///< AZ - tracking method
-
-  Int_t fMuons; ///< AZ - number of muons within acceptance - just for tests
 
   // Functions
   AliMUONTrackReconstructorK (const AliMUONTrackReconstructorK& rhs); ///< copy constructor

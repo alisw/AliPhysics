@@ -186,7 +186,6 @@ AliMUONTrackK::AliMUONTrackK(const AliMUONObjectPair& segment)
     fPosition = hit1->GetZ(); // z
     fTrackHits->Add(hit2); // add hit 2
     fTrackHits->Add(hit1); // add hit 1
-    //AZ(Z->-Z) fTrackDir = -1;
     fTrackDir = 1;
   } else {
     // last but one tracking station
@@ -195,13 +194,12 @@ AliMUONTrackK::AliMUONTrackK(const AliMUONObjectPair& segment)
     fPosition = hit2->GetZ(); // z
     fTrackHits->Add(hit1); // add hit 1
     fTrackHits->Add(hit2); // add hit 2
-    //AZ(Z->-Z) fTrackDir = 1;
     fTrackDir = -1;
   }
   dZ = hit2->GetZ() - hit1->GetZ();
   dY = hit2->GetBendingCoor() - hit1->GetBendingCoor();
   dX = hit2->GetNonBendingCoor() - hit1->GetNonBendingCoor();
-  bendingSlope = (hit2->GetBendingCoor() - hit1->GetBendingCoor()) / dZ;
+  bendingSlope = dY / dZ;
   bendingImpact = hit1->GetBendingCoor() - hit1->GetZ() * bendingSlope;
   (*fTrackPar)(2,0) = TMath::ATan2(dY,dZ); // alpha
   if ((*fTrackPar)(2,0) < 0.) (*fTrackPar)(2,0) += 2*TMath::Pi(); // from 0 to 2*pi
@@ -211,7 +209,36 @@ AliMUONTrackK::AliMUONTrackK(const AliMUONObjectPair& segment)
   (*fTrackPar)(4,0) *= TMath::Cos((*fTrackPar)(3,0)); // 1/p
   // Evaluate covariance (and weight) matrix
   EvalCovariance(dZ);
-  
+  // In case the seed in last station start track from the "fake" point
+  // (in order to treat seed points similarly with the others in the smoother)
+  if (fTrackDir == 1) {
+    Double_t shift = 1; // 1 cm displacement
+    //cout << fPosition << " " << (*fTrackPar)(0,0) << " " << (*fTrackPar)(1,0) << endl;
+    fPosition = hit2->GetZ() - shift;
+    (*fTrackPar)(0,0) = hit2->GetBendingCoor() - bendingSlope * shift; // y
+    (*fTrackPar)(1,0) = hit2->GetNonBendingCoor() - dX / dZ * shift; // x
+    //cout << fPosition << " " << (*fTrackPar)(0,0) << " " << (*fTrackPar)(1,0)\ << endl;
+    fBPFlag = kTRUE;
+  }
+                                                                                
+  if (fgDebug >= 0 ) {
+    cout << fgTrackReconstructor->GetNRecTracks()-1 << " "
+	 << AliMUONTrackExtrap::GetBendingMomentumFromImpactParam(bendingImpact)
+	 << " " << 1/(*fTrackPar)(4,0) << " ";
+    // from raw clusters
+    for (Int_t i=0; i<2; i++) {
+      hit1 = (AliMUONHitForRec*) ((*fTrackHits)[i]);
+      /*
+      rawclusters = fgTrackReconstructor->GetMUONData()->RawClusters(hit1->GetCha\mberNumber());
+      clus = (AliMUONRawCluster*) rawclusters->UncheckedAt(hit1->GetHitNumber());
+      cout << clus->GetTrack(1);
+      if (clus->GetTrack(2) != -1) cout << " " << clus->GetTrack(2);
+      */
+      if (i == 0) cout << " <--> ";
+    }
+    cout << " @ " << hit1->GetChamberNumber() << endl;
+  }
+
   SetOwnerShip();
 }
 
@@ -306,7 +333,6 @@ AliMUONTrackK & AliMUONTrackK::operator=(const AliMUONTrackK& source)
   if(&source == this) return *this;
 
   // base class assignement
-  //AZ TObject::operator=(source);
   AliMUONTrack::operator=(source);
   
   delete fStartSegment; fStartSegment = 0;
@@ -389,7 +415,7 @@ void AliMUONTrackK::EvalCovariance(Double_t dZ)
   tanA = TMath::Tan((*fTrackPar)(2,0));
   dAdY = 1/(1+tanA*tanA)/dZ;
   (*fWeight)(2,2) = dAdY*dAdY*(*fWeight)(0,0)*2; // <aa>
-  (*fWeight)(0,2) = dAdY*(*fWeight)(0,0); // <ya>
+  (*fWeight)(0,2) = 0; //dAdY*(*fWeight)(0,0); // <ya>
   (*fWeight)(2,0) = (*fWeight)(0,2);
 
   rad = dZ/TMath::Cos((*fTrackPar)(2,0));
@@ -397,9 +423,11 @@ void AliMUONTrackK::EvalCovariance(Double_t dZ)
   dBdX = 1/(1+tanB*tanB)/rad;
   dBdY = 0; // neglect
   (*fWeight)(3,3) = dBdX*dBdX*(*fWeight)(1,1)*2; // <bb>
-  (*fWeight)(1,3) = dBdX*(*fWeight)(1,1); // <xb>
+  (*fWeight)(1,3) = 0; //dBdX*(*fWeight)(1,1); // <xb>
   (*fWeight)(3,1) = (*fWeight)(1,3);
 
+  (*fWeight) *= 4.; // extra safety factor
+                                                                                
   (*fWeight)(4,4) = ((*fTrackPar)(4,0)*0.5)*((*fTrackPar)(4,0)*0.5); // error 50%
 
   // check whether the Invert method returns flag if matrix cannot be inverted,
@@ -499,10 +527,8 @@ Bool_t AliMUONTrackK::KalmanFilter(Int_t ichamBeg, Int_t ichamEnd, Bool_t Back, 
       if (currIndx < fNmbTrackHits) {
 	hitAdd = (AliMUONHitForRec*) fTrackHits->UncheckedAt(currIndx);
 	zEnd = hitAdd->GetZ();
-	//AZ(z->-z) } else zEnd = -9999;
       } else zEnd = 9999;
     } else {
-      //AZ(Z->-Z) zEnd = -9999;
       zEnd = 9999;
       for (ihit=currIndx+iFB; ihit>=0 && ihit<fgNOfPoints; ihit+=iFB) {
 	hitAdd = (AliMUONHitForRec*) ((*fgHitForRec)[ihit]);
@@ -567,7 +593,6 @@ Bool_t AliMUONTrackK::KalmanFilter(Int_t ichamBeg, Int_t ichamEnd, Bool_t Back, 
     // propagate to the found Z
 
     // Check if track steps into dipole
-    //AZ(z->-z) if (fPosition>zDipole2 && zEnd<zDipole2) {
     if (fPosition<zDipole2 && zEnd>zDipole2) {
       //LinearPropagation(zDipole2-zBeg); 
       ParPropagation(zDipole2); 
@@ -581,7 +606,6 @@ Bool_t AliMUONTrackK::KalmanFilter(Int_t ichamBeg, Int_t ichamEnd, Bool_t Back, 
       fPosition = fPositionNew;
     } 
     // Check if track steps out of dipole
-    //AZ(z->-z) else if (fPosition>zDipole1 && zEnd<zDipole1) {
     else if (fPosition<zDipole1 && zEnd>zDipole1) {
       //MagnetPropagation(zDipole1-zBeg); 
       ParPropagation(zDipole1); 
@@ -619,7 +643,7 @@ Bool_t AliMUONTrackK::KalmanFilter(Int_t ichamBeg, Int_t ichamEnd, Bool_t Back, 
 
     if (Back && !miss) {
       // backward propagator
-      if (currIndx) {
+      if (currIndx || ichambOK == 10) {
 	TMatrixD pointWeight(fgkSize,fgkSize);
 	TMatrixD point(fgkSize,1);
 	TMatrixD trackParTmp = point;
@@ -633,8 +657,10 @@ Bool_t AliMUONTrackK::KalmanFilter(Int_t ichamBeg, Int_t ichamEnd, Bool_t Back, 
 	if (fTrackDir > 0) AddMatrices (this, dChi2, hitAdd);
 	fChi2 += dChi2; // Chi2
       } else *fTrackPar = *fTrackParNew; // adjust end point to the last hit
-      if (ichamb==ichamEnd) break; 
       currIndx ++;
+      //if (ichamb==ichamEnd) break; 
+      // Condition currIndx == fNmbTrackHits - for the case when there are 2 hits at ch. 0
+      if (ichamb==ichamEnd && currIndx == fNmbTrackHits) break;
     } else {
       // forward propagator
       if (miss || !FindPoint(ichamb, zEnd, currIndx, iFB, hitAdd, iz)) {
@@ -653,6 +679,14 @@ Bool_t AliMUONTrackK::KalmanFilter(Int_t ichamBeg, Int_t ichamEnd, Bool_t Back, 
   if (fgDebug > 0) cout << fNmbTrackHits << " " << fChi2 << " " << 1/(*fTrackPar)(4,0) << " " << fPosition << endl;
   if (1/TMath::Abs((*fTrackPar)(4,0)) < fgTrackReconstructor->GetMinBendingMomentum()) success = kFALSE; // p < p_min
   if (GetRecover() < 0) success = kFALSE;
+  if (ichamEnd == 9 && success) {
+    // Propagate 1 cm beyond the last chamber
+    Double_t shift = 1.;
+    ParPropagation(fPosition - shift);
+    //WeightPropagation(fPosition - shift, kFALSE);
+    fPosition = fPositionNew;
+    *fTrackPar = *fTrackParNew;
+  }
   return success;
 }
 
@@ -673,7 +707,6 @@ void AliMUONTrackK::ParPropagation(Double_t zEnd)
   if (dZ == 0) return; //AZ ???
   iFB = (Int_t)TMath::Sign(Double_t(1.0),dZ);
   step = dZ/TMath::Cos((*fTrackPar)(2,0))/TMath::Cos((*fTrackPar)(3,0)); // linear estimate
-  //AZ(z->-z) charge = iFB*TMath::Sign(Double_t(1.0),(*fTrackPar)(4,0));
   charge = -iFB*TMath::Sign(Double_t(1.0),(*fTrackPar)(4,0));
   SetGeantParam(vGeant3,iFB);
   //fTrackParNew->Print();
@@ -1038,6 +1071,10 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
 	    hit->SetNTrackHits(hit->GetNTrackHits()+1); // mark hit as being on track
 	    if (ichamb == 9) {
 	      // the last chamber
+              // Extend by 1 cm beyond the chamber
+              trackK->ParPropagation(trackK->fPosition - 1.);
+              trackK->fPosition = trackK->fPositionNew;
+              *(trackK->fTrackPar) = *(trackK->fTrackParNew);
 	      trackK->fTrackDir = 1;
 	      trackK->fBPFlag = kTRUE; 
 	    }
@@ -1499,7 +1536,6 @@ Bool_t AliMUONTrackK::Recover(void)
   // Remove all saved steps and smoother matrices after the skipped hit 
   RemoveMatrices(skipHit->GetZ());
 
-  //AZ(z->-z) if (skipHit->GetZ() > ((AliMUONHitForRec*) fStartSegment->Second())->GetZ() || !fNSteps) {
   if (TMath::Abs(skipHit->GetZ()) > TMath::Abs( ((AliMUONHitForRec*) fStartSegment->Second())->GetZ()) || !fNSteps) {
     // Propagation toward high Z or skipped hit next to segment - 
     // start track from segment 
@@ -1517,7 +1553,6 @@ Bool_t AliMUONTrackK::Recover(void)
   trackK = new ((*trackPtr)[nRecTracks]) AliMUONTrackK(NULL, NULL);
   *trackK = *this;
   fgTrackReconstructor->SetNRecTracks(nRecTracks+1);
-  //AZ(z->-z) trackK->fTrackDir = -1;
   trackK->fTrackDir = 1;
   trackK->fRecover = 1;
   trackK->fSkipHit = skipHit;
@@ -1735,12 +1770,11 @@ Bool_t AliMUONTrackK::Smooth(void)
     for ( ; ihit>=0; ihit--) { 
       hit = (AliMUONHitForRec*) (*fTrackHits)[ihit];
       if (TMath::Abs(hit->GetZ()-(*fSteps)[i-1]) < 0.1) { found = kTRUE; break; }
-      //AZ(z->-z) else if (ihit < fNmbTrackHits-1 && hit->GetZ() > (*fSteps)[i-1]) { ihit++; break; }
       else if (ihit < fNmbTrackHits-1 && TMath::Abs(hit->GetZ()) > TMath::Abs((*fSteps)[i-1])) { ihit++; break; }
     }
     if (!found) continue; // no measurement - skip the rest
     else if (fgDebug > 1) cout << i << " " << ihit << " " << hit->GetZ() << endl;
-    if (ihit == 0) continue; // the first hit - skip the rest
+    //AZ if (ihit == 0) continue; // the first hit - skip the rest
 
 L33:
     // Smoothed residuals
@@ -1904,6 +1938,86 @@ Double_t AliMUONTrackK::GetChi2PerPoint(Int_t iPoint) const
 /// Return Chi2 at point
   return fChi2Smooth ? (*fChi2Smooth)[iPoint] : (*fChi2Array)[iPoint];
   //return 0.;
+}
+
+  //__________________________________________________________________________
+void AliMUONTrackK::Print(const char* /*opt*/) const
+{
+/// Print out track information
+                                                                                
+  cout << 1/(*fTrackPar)(4,0) << " " << fChi2 << " " << fNmbTrackHits << " " << fNSteps << endl;
+                                                                                
+  AliMUONHitForRec *hit;
+  for (Int_t i = 0; i < fNmbTrackHits; ++i) {
+    hit =  (AliMUONHitForRec*) ((*fTrackHits)[i]);
+    printf ("%5d", hit->GetChamberNumber());
+  }
+  cout << endl;
+  if (fgDebug > 0) {
+    for (Int_t i = 0; i < fNmbTrackHits; ++i) {
+      hit =  (AliMUONHitForRec*) ((*fTrackHits)[i]);
+      //cout << ((AliMUONHitForRec*)((*fTrackHits)[i1]))->GetHitNumber() << " ";
+      //cout << ((AliMUONHitForRec*)((*fTrackHits)[i1]))->GetZ() << " ";
+      printf ("%5d", fgHitForRec->IndexOf(hit));
+    }
+    cout << endl;
+  }
+                                                                                
+  // from raw clusters
+  /*
+  TClonesArray *rawclusters = 0x0;
+  AliMUONRawCluster *clus = 0x0;
+  for (Int_t i = 0; i < fNmbTrackHits; ++i) {
+    hit =  (AliMUONHitForRec*) ((*fTrackHits)[i]);
+    if (hit->GetHitNumber() < 0) { // combined cluster / track finder
+      Int_t index = -hit->GetHitNumber() / 100000;
+      Int_t iPos = -hit->GetHitNumber() - index * 100000;
+      //clus = (AliMUONRawCluster*) fgCombi->DetElem(index-1)->RawClusters()->UncheckedAt(iPos);
+    } else {
+      rawclusters = fgTrackReconstructor->GetMUONData()->RawClusters(hit->GetChamberNumber());
+      clus = (AliMUONRawCluster*) rawclusters->UncheckedAt(hit->GetHitNumber());
+    }
+    printf ("%5d", clus->GetTrack(1)%10000000);
+  }
+  cout << endl;
+  for (Int_t i = 0; i < fNmbTrackHits; ++i) {
+    hit =  (AliMUONHitForRec*) ((*fTrackHits)[i]);
+    if (hit->GetHitNumber() < 0) { // combined cluster / track finder
+      Int_t index = -hit->GetHitNumber() / 100000;
+      Int_t iPos = -hit->GetHitNumber() - index * 100000;
+      clus = (AliMUONRawCluster*) fgCombi->DetElem(index-1)->RawClusters()->UncheckedAt(iPos);
+    } else {
+      rawclusters = fgTrackReconstructor->GetMUONData()->RawClusters(hit->GetChamberNumber());
+      clus = (AliMUONRawCluster*) rawclusters->UncheckedAt(hit->GetHitNumber());
+    }
+    if (clus->GetTrack(2) != -1) printf ("%5d", clus->GetTrack(2)%10000000);
+    else printf ("%5s", "    ");
+  }
+  cout << endl;
+  */
+                                                                                
+  for (Int_t i = 0; i < fNmbTrackHits; ++i) {
+    hit =  (AliMUONHitForRec*) ((*fTrackHits)[i]);
+    printf ("%5d", hit->GetNTrackHits());
+  }
+  cout << endl;
+  /*
+  for (Int_t i = 0; i < fNmbTrackHits; ++i) {
+    hit =  (AliMUONHitForRec*) ((*fTrackHits)[i]);
+    cout << hit << " ";
+  }
+  cout << endl;
+  */
+                                                                                
+  for (Int_t i = 0; i < fNmbTrackHits; ++i) {
+    //cout << ((AliMUONHitForRec*)((*fTrackHits)[i1]))->GetHitNumber() << " ";
+    cout << ((AliMUONHitForRec*)((*fTrackHits)[i]))->GetZ() << " ";
+    //cout << fgHitForRec->IndexOf(((AliMUONHitForRec*)((*fTrackHits)[i1]))) << " ";
+  }
+  cout << endl;
+  for (Int_t i = 0; i < fNmbTrackHits; ++i) printf("%8.4f", (*fChi2Smooth)[i]);
+  cout << endl;
+  cout << "---------------------------------------------------" << endl;
 }
 
   //__________________________________________________________________________

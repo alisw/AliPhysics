@@ -47,8 +47,7 @@ ClassImp(AliMUONConstants)
 //__________________________________________________________________________
 AliMUONTrackReconstructorK::AliMUONTrackReconstructorK(const Option_t* TrackMethod)
   : AliMUONVTrackReconstructor(),
-    fTrackMethod(2), //tracking method (2-Kalman 3-Combination-Kalman/Clustering)
-    fMuons(0)
+    fTrackMethod(2) //tracking method (2-Kalman 3-Combination-Kalman/Clustering)
 {
   /// Constructor for class AliMUONTrackReconstructorK
 
@@ -84,6 +83,8 @@ void AliMUONTrackReconstructorK::MakeTracks(void)
   FollowTracks();
   // Remove double tracks
   RemoveDoubleTracks();
+  // Print out some track info (if necessary)
+  EventDump();
   // Fill AliMUONTrack data members
   FillMUONTrack();
 }
@@ -164,6 +165,8 @@ void AliMUONTrackReconstructorK::FollowTracks(void)
       hit = trackK->GetHitLastOk(); // hit where track stopped
 
     if (hit) ichamBeg = hit->GetChamberNumber();
+    if (ichamBeg == 8 && trackK->GetStation0() == 4) ichamBeg = 10;
+
     ichamEnd = 0;
     // Check propagation direction
     if (!hit) { ichamBeg = ichamEnd; AliFatal(" ??? "); }
@@ -171,7 +174,7 @@ void AliMUONTrackReconstructorK::FollowTracks(void)
       ichamEnd = 9; // forward propagation
       ok = trackK->KalmanFilter(ichamBeg,ichamEnd,kFALSE,zDipole1,zDipole2);
       if (ok) {
-        ichamBeg = ichamEnd;
+        ichamBeg = ichamEnd + 1;
         ichamEnd = 6; // backward propagation
 	// Change weight matrix and zero fChi2 for backpropagation
         trackK->StartBack();
@@ -183,9 +186,13 @@ void AliMUONTrackReconstructorK::FollowTracks(void)
     } else {
       if (trackK->GetBPFlag()) {
 	// backpropagation
-        ichamEnd = 6; // backward propagation
-	// Change weight matrix and zero fChi2 for backpropagation
-        trackK->StartBack();
+        if (ichamBeg == 10) ichamEnd = 8;
+        else {
+          if (ichamBeg == 9) ichamBeg++;
+	  ichamEnd = 6; 
+	  // Change weight matrix and zero fChi2 for backpropagation
+	  trackK->StartBack();
+	}
         ok = trackK->KalmanFilter(ichamBeg,ichamEnd,kTRUE,zDipole1,zDipole2);
         ichamBeg = ichamEnd;
         ichamEnd = 0;
@@ -317,3 +324,19 @@ void AliMUONTrackReconstructorK::FillMUONTrack()
 }
 
 
+  //__________________________________________________________________________
+void AliMUONTrackReconstructorK::EventDump(void)
+{
+  /// Dump reconstructed event (track parameters at vertex and at first hit),
+  /// and the particle parameters
+  AliDebug(1,"****** enter EventDump ******");
+  AliDebug(1, Form("Number of Reconstructed tracks : %d", fNRecTracks));
+                                                                                
+  Int_t debug =   ((AliMUONTrackK*) fRecTracksPtr->First())->DebugLevel();
+  if (debug < 0) return;
+                                                                                
+  for (Int_t i = 0; i < fNRecTracks; ++i) {
+    AliMUONTrackK *track = (AliMUONTrackK*) fRecTracksPtr->UncheckedAt(i);
+    track->Print("");
+  }
+}
