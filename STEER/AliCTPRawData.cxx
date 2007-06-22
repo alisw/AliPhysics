@@ -28,6 +28,7 @@
 #include "AliRawDataHeader.h"
 #include "AliLog.h"
 #include "AliDAQ.h"
+#include "AliFstream.h"
 
 ClassImp(AliCTPRawData)
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -86,17 +87,13 @@ void AliCTPRawData::RawData()
   char  fileName[15];
   strcpy(fileName,AliDAQ::DdlFileName("TRG",0));
   AliInfo(Form("Storing CTP raw data in %s",fileName));
-  ofstream outfile;         // logical name of the output file 
- #ifndef __DECCXX
-    outfile.open(fileName,ios::binary);
-#else
-    outfile.open(fileName);
-#endif
+  AliFstream* outfile;         // logical name of the output file 
+  outfile = new AliFstream(fileName);
 
   AliRawDataHeader header;
   // Write a dummy header
-  UInt_t dataHeaderPosition=outfile.tellp();
-  outfile.write((char*)(&header),sizeof(header));
+  UInt_t dataHeaderPosition=outfile->Tellp();
+  outfile->WriteBuffer((char*)(&header),sizeof(header));
 
   // Writing CTP raw data here
   // The format is taken as in
@@ -113,18 +110,18 @@ void AliCTPRawData::RawData()
   word |= 0 << 13; // BlockID = 0 in case of CTP readout
   word |= bunchCross & 0xFFF;
   AliDebug(1,Form("CTP word1 = 0x%x",word));
-  outfile.write((char*)(&word),sizeof(UInt_t));
+  outfile->WriteBuffer((char*)(&word),sizeof(UInt_t));
 
   word = 0;
   word |= 0 << 13; // BlockID = 0 in case of CTP readout
   word |= (orbitId >> 12) & 0xFFF;
   AliDebug(1,Form("CTP word2 = 0x%x",word));
-  outfile.write((char*)(&word),sizeof(UInt_t));
+  outfile->WriteBuffer((char*)(&word),sizeof(UInt_t));
   word = 0;
   word |= 0 << 13; // BlockID = 0 in case of CTP readout
   word |= orbitId & 0xFFF;
   AliDebug(1,Form("CTP word3 = 0x%x",word));
-  outfile.write((char*)(&word),sizeof(UInt_t));
+  outfile->WriteBuffer((char*)(&word),sizeof(UInt_t));
 
   // Now the 4th word
   word = 0;
@@ -134,38 +131,38 @@ void AliCTPRawData::RawData()
   word |= (l2cluster & 0x3F) << 2; // L2Cluster
   word |= (UInt_t)((l2class >> 48) & 0x3);
   AliDebug(1,Form("CTP word4 = 0x%x",word));
-  outfile.write((char*)(&word),sizeof(UInt_t));
+  outfile->WriteBuffer((char*)(&word),sizeof(UInt_t));
 
   // Then the last 4 words with the trigger classes
   word = 0;
   word |= 0 << 13; // BlockID = 0 in case of CTP readout
   word |= (UInt_t)((l2class >> 36) & 0xFFF);
   AliDebug(1,Form("CTP word5 = 0x%x",word));
-  outfile.write((char*)(&word),sizeof(UInt_t));
+  outfile->WriteBuffer((char*)(&word),sizeof(UInt_t));
   word = 0;
   word |= 0 << 13; // BlockID = 0 in case of CTP readout
   word |= (UInt_t)((l2class >> 24) & 0xFFF);
   AliDebug(1,Form("CTP word6 = 0x%x",word));
-  outfile.write((char*)(&word),sizeof(UInt_t));
+  outfile->WriteBuffer((char*)(&word),sizeof(UInt_t));
   word = 0;
   word |= 0 << 13; // BlockID = 0 in case of CTP readout
   word |= (UInt_t)((l2class >> 12) & 0xFFF);
   AliDebug(1,Form("CTP word7 = 0x%x",word));
-  outfile.write((char*)(&word),sizeof(UInt_t));
+  outfile->WriteBuffer((char*)(&word),sizeof(UInt_t));
   word = 0;
   word |= 0 << 13; // BlockID = 0 in case of CTP readout
   word |= (UInt_t)(l2class & 0xFFF);
   AliDebug(1,Form("CTP word8 = 0x%x",word));
-  outfile.write((char*)(&word),sizeof(UInt_t));
+  outfile->WriteBuffer((char*)(&word),sizeof(UInt_t));
 
   // Write the real data header
-  UInt_t currentFilePosition=outfile.tellp();
-  outfile.seekp(dataHeaderPosition);
+  UInt_t currentFilePosition=outfile->Tellp();
+  outfile->Seekp(dataHeaderPosition);
   header.fSize=currentFilePosition-dataHeaderPosition;
   header.SetAttribute(0);  // valid data
   header.SetTriggerClass(l2class);
-  outfile.write((char*)(&header),sizeof(header));
-  outfile.close();
+  outfile->WriteBuffer((char*)(&header),sizeof(header));
+  delete outfile;
 
   return;
 }

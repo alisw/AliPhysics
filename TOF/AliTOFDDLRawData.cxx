@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.18  2007/05/21 13:26:19  decaro
+Correction on matching_window control and bug fixing (R.Preghenella)
+
 Revision 1.17  2007/05/10 09:29:34  hristov
 Last moment fixes and changes from v4-05-Release (Silvia)
 
@@ -80,6 +83,7 @@ Revision 0.01  2004/6/11 A.De Caro, S.B.Sellitto, R.Silvestri
 #include "AliTOFdigit.h"
 #include "AliTOFGeometry.h"
 #include "AliTOFRawStream.h"
+#include "AliFstream.h"
 
 extern TRandom *gRandom;
 
@@ -179,7 +183,7 @@ Int_t AliTOFDDLRawData::RawDataTOF(TBranch* branch)
   fTOFdigitArray = * (TClonesArray**) branch->GetAddress();
 
   char fileName[15];
-  ofstream outfile;         // logical name of the output file 
+  AliFstream* outfile;         // logical name of the output file 
 
   //AliRawDataHeader header;
   AliRawDataHeaderSim header;
@@ -202,17 +206,13 @@ Int_t AliTOFDDLRawData::RawDataTOF(TBranch* branch)
   for (nDDL=0; nDDL<AliDAQ::NumberOfDdls("TOF"); nDDL++) {
 
     strcpy(fileName,AliDAQ::DdlFileName("TOF",nDDL)); //The name of the output file
-#ifndef __DECCXX
-    outfile.open(fileName,ios::binary);
-#else
-    outfile.open(fileName);
-#endif
 
+    outfile = new AliFstream(fileName);
     iDDL = fTOFrawStream->GetDDLnumberPerSector(nDDL);
 
     // write Dummy DATA HEADER
-    UInt_t dataHeaderPosition = outfile.tellp();
-    outfile.write((char*)(&header),sizeof(header));
+    UInt_t dataHeaderPosition = outfile->Tellp();
+    outfile->WriteBuffer((char*)(&header),sizeof(header));
 
     // DRM section: trailer
     MakeDRMtrailer(buf);
@@ -264,21 +264,21 @@ Int_t AliTOFDDLRawData::RawDataTOF(TBranch* branch)
 
     ReverseArray(buf, fIndex+1);
 
-    outfile.write((char *)buf,((fIndex+1)*sizeof(UInt_t)));
+    outfile->WriteBuffer((char *)buf,((fIndex+1)*sizeof(UInt_t)));
 
     for (jj=0; jj<(fIndex+1); jj++) buf[jj]=0;
     fIndex = -1;
     
     //Write REAL DATA HEADER
-    UInt_t currentFilePosition = outfile.tellp();
+    UInt_t currentFilePosition = outfile->Tellp();
     sizeRawData = currentFilePosition - dataHeaderPosition - sizeof(header);
     header.fSize = currentFilePosition - dataHeaderPosition;
     header.SetAttribute(0);  // valid data
-    outfile.seekp(dataHeaderPosition);
-    outfile.write((char*)(&header),sizeof(header));
-    outfile.seekp(currentFilePosition);
+    outfile->Seekp(dataHeaderPosition);
+    outfile->WriteBuffer((char*)(&header),sizeof(header));
+    outfile->Seekp(currentFilePosition);
 
-    outfile.close();
+    delete outfile;
 
   } //end loop on DDL file number
 

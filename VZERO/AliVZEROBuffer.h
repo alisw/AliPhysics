@@ -13,6 +13,7 @@ class fstream;
 #include "Riostream.h"
 #endif
 
+#include "AliFstream.h"
 
 class AliVZEROBuffer:public TObject{
 
@@ -29,7 +30,7 @@ public:
   
 private:
   Int_t fVerbose; //Verbosity level: 0-silent, 1:cout msg, 2: txt files for checking
-  fstream f;      //The IO file name
+  AliFstream* f;      //The IO file name
   UInt_t  fNumberOfDigits; //Number of VZERO digits
   ClassDef(AliVZEROBuffer,1)
 };

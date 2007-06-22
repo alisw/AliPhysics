@@ -47,15 +47,11 @@ AliVZEROBuffer::AliVZEROBuffer(const char* fileName):TObject(),
     fNumberOfDigits(0)
 {
   // Constructor
-#ifndef __DECCXX
-  f.open(fileName,ios::binary|ios::out);
-#else
-  f.open(fileName,ios::out);
-#endif
+  f = new AliFstream(fileName);
   // fout=new TFile(fileName,"recreate");
   // tree=new TTree("tree","Values");
   AliRawDataHeader header;
-  f.write((char*)(&header), sizeof(header));
+  f->WriteBuffer((char*)(&header), sizeof(header));
 
 }
 
@@ -63,11 +59,11 @@ AliVZEROBuffer::AliVZEROBuffer(const char* fileName):TObject(),
 AliVZEROBuffer::~AliVZEROBuffer(){
   // Destructor, it closes the IO stream
   AliRawDataHeader header;
-  header.fSize = f.tellp();
+  header.fSize = f->Tellp();
   header.SetAttribute(0);  // valid data
-  f.seekp(0);
-  f.write((char*)(&header), sizeof(header));
-  f.close();
+  f->Seekp(0);
+  f->WriteBuffer((char*)(&header), sizeof(header));
+  delete f;
   //delete tree;
   //delete fout;
 }
@@ -110,7 +106,5 @@ void AliVZEROBuffer::WriteBinary(Int_t cell,Int_t ADC, Int_t Time){
   data.Time = Time;
 
   fNumberOfDigits++;
-  f.write((char*)(&data),sizeof(data));
-
+  f->WriteBuffer((char*)(&data),sizeof(data));
 }
-

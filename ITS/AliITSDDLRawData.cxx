@@ -33,6 +33,7 @@
 #include "AliITSRawStreamSSD.h"
 #include "AliBitPacking.h"
 #include "AliDAQ.h"
+#include "AliFstream.h"
 
 ClassImp(AliITSDDLRawData)
 
@@ -491,20 +492,16 @@ Int_t AliITSDDLRawData::RawDataSPD(TBranch* branch){
 
   TClonesArray*& digits = * (TClonesArray**) branch->GetAddress();
   char fileName[15];
-  ofstream outfile;         // logical name of the output file 
+  AliFstream* outfile;         // logical name of the output file 
   AliRawDataHeader header;
 
   //loop over DDLs
   for(Int_t i=0;i<AliDAQ::NumberOfDdls("ITSSPD");i++){
     strcpy(fileName,AliDAQ::DdlFileName("ITSSPD",i)); //The name of the output file.
-#ifndef __DECCXX
-    outfile.open(fileName,ios::binary);
-#else
-    outfile.open(fileName);
-#endif
+    outfile = new AliFstream(fileName);
     //write Dummy DATA HEADER
-    UInt_t dataHeaderPosition=outfile.tellp();
-    outfile.write((char*)(&header),sizeof(header));
+    UInt_t dataHeaderPosition=outfile->Tellp();
+    outfile->WriteBuffer((char*)(&header),sizeof(header));
     //Loops over Modules of a particular DDL
     for (Int_t mod=0; mod<AliITSRawStreamSPD::kModulesPerDDL; mod++){
       Int_t moduleNumber = AliITSRawStreamSPD::GetModuleNumber(i, mod);
@@ -513,7 +510,7 @@ Int_t AliITSDDLRawData::RawDataSPD(TBranch* branch){
       //For each Module, buf contains the array of data words in Binary format	  
       //fIndex gives the number of 32 bits words in the buffer for each module
       GetDigitsSPD(digits,mod,i,buf);
-      outfile.write((char *)buf,((fIndex+1)*sizeof(UInt_t)));
+      outfile->WriteBuffer((char *)buf,((fIndex+1)*sizeof(UInt_t)));
       for(Int_t i=0;i<(fIndex+1);i++){
 	buf[i]=0;
       }//end for
@@ -521,11 +518,11 @@ Int_t AliITSDDLRawData::RawDataSPD(TBranch* branch){
     }//end for
     
     //Write REAL DATA HEADER
-    UInt_t currentFilePosition=outfile.tellp();
-    outfile.seekp(dataHeaderPosition);
+    UInt_t currentFilePosition=outfile->Tellp();
+    outfile->Seekp(dataHeaderPosition);
     header.fSize=currentFilePosition-dataHeaderPosition;
-    outfile.write((char*)(&header),sizeof(header));
-    outfile.close();
+    outfile->WriteBuffer((char*)(&header),sizeof(header));
+    delete outfile;
   }//end for
 
   return 0;  
@@ -542,20 +539,16 @@ Int_t AliITSDDLRawData::RawDataSSD(TBranch* branch){
 
   TClonesArray*& digits = * (TClonesArray**) branch->GetAddress();
   char fileName[15];
-  ofstream outfile;         // logical name of the output file 
+  AliFstream* outfile;         // logical name of the output file 
   AliRawDataHeader header;
 
   //loop over DDLs  
   for(Int_t i=0;i<AliDAQ::NumberOfDdls("ITSSSD");i++){
     strcpy(fileName,AliDAQ::DdlFileName("ITSSSD",i)); //The name of the output file.
-#ifndef __DECCXX
-    outfile.open(fileName,ios::binary);
-#else
-    outfile.open(fileName);
-#endif
+    outfile = new AliFstream(fileName);
     //write Dummy DATA HEADER
-    UInt_t dataHeaderPosition=outfile.tellp();
-    outfile.write((char*)(&header),sizeof(header));
+    UInt_t dataHeaderPosition=outfile->Tellp();
+    outfile->WriteBuffer((char*)(&header),sizeof(header));
     
     //Loops over Modules of a particular DDL
     for (Int_t mod=0; mod<AliITSRawStreamSSD::kModulesPerDDL; mod++){
@@ -566,18 +559,18 @@ Int_t AliITSDDLRawData::RawDataSSD(TBranch* branch){
 	//For each Module, buf contains the array of data words in Binary format	  
 	//fIndex gives the number of 32 bits words in the buffer for each module
 	GetDigitsSSD(digits,mod,moduleNumber,i,buf);
-	outfile.write((char *)buf,((fIndex+1)*sizeof(UInt_t)));
+	outfile->WriteBuffer((char *)buf,((fIndex+1)*sizeof(UInt_t)));
 	fIndex=-1;
       }//end if
     }//end for
 
     //Write REAL DATA HEADER
-    UInt_t currentFilePosition=outfile.tellp();
-    outfile.seekp(dataHeaderPosition);
+    UInt_t currentFilePosition=outfile->Tellp();
+    outfile->Seekp(dataHeaderPosition);
     header.fSize=currentFilePosition-dataHeaderPosition;
     header.SetAttribute(0);  // valid data
-    outfile.write((char*)(&header),sizeof(header));
-    outfile.close();
+    outfile->WriteBuffer((char*)(&header),sizeof(header));
+    delete outfile;
   }//end for
 
   return 0;  
@@ -593,25 +586,21 @@ Int_t AliITSDDLRawData::RawDataSDD(TBranch* branch){
 
   TClonesArray*& digits = * (TClonesArray**) branch->GetAddress();
   char fileName[15];
-  ofstream outfile;             // logical name of the output file 
+  AliFstream* outfile;             // logical name of the output file 
   AliRawDataHeader header;
   UInt_t skippedword = AliBitPacking::PackWord(2,skippedword,0,31);
 
   //loop over DDLs  
   for(Int_t i=0;i<AliDAQ::NumberOfDdls("ITSSDD");i++){
     strcpy(fileName,AliDAQ::DdlFileName("ITSSDD",i)); //The name of the output file.
-#ifndef __DECCXX
-    outfile.open(fileName,ios::binary);
-#else
-    outfile.open(fileName);
-#endif
+    outfile = new AliFstream(fileName);
     //write Dummy DATA HEADER
-    UInt_t dataHeaderPosition=outfile.tellp();
-    outfile.write((char*)(&header),sizeof(header));
+    UInt_t dataHeaderPosition=outfile->Tellp();
+    outfile->WriteBuffer((char*)(&header),sizeof(header));
 
     //first 9 "dummy" words to be skipped
     for(Int_t iw=0;iw<9;iw++){
-	outfile.write((char*)&skippedword,sizeof(skippedword));
+	outfile->WriteBuffer((char*)(&skippedword),sizeof(skippedword));
     }
    
     //Loops over Modules of a particular DDL
@@ -625,19 +614,18 @@ Int_t AliITSDDLRawData::RawDataSDD(TBranch* branch){
 	//fIndex gives the number of 32 bits words in the buffer for each module
 	//	cout<<"MODULE NUMBER:"<<mapSDD[i][mod]<<endl;
 	GetDigitsSDD(digits,mod,moduleNumber,i,buf);
-	outfile.write((char *)buf,((fIndex+1)*sizeof(UInt_t)));
+	outfile->WriteBuffer((char *)buf,((fIndex+1)*sizeof(UInt_t)));
 	fIndex=-1;
       }//end if
     }//end for
     
     //Write REAL DATA HEADER
-    UInt_t currentFilePosition=outfile.tellp();
-    outfile.seekp(dataHeaderPosition);
+    UInt_t currentFilePosition=outfile->Tellp();
+    outfile->Seekp(dataHeaderPosition);
     header.fSize=currentFilePosition-dataHeaderPosition;
     header.SetAttribute(0);  // valid data
-    outfile.write((char*)(&header),sizeof(header));
-
-    outfile.close();
+    outfile->WriteBuffer((char*)(&header),sizeof(header));
+    delete outfile;
   }//end for
 
   return 0;  

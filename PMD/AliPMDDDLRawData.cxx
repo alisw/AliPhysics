@@ -31,6 +31,7 @@
 #include "AliPMDRawStream.h"
 #include "AliPMDDDLRawData.h"
 #include "AliDAQ.h"
+#include "AliFstream.h"
 
 ClassImp(AliPMDDDLRawData)
 
@@ -72,7 +73,7 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
 {
   // write digits into raw data format
 
-  ofstream outfile;
+  AliFstream *outfile;
 
   TBranch *branch = treeD->GetBranch("PMDDigit");
   if (!branch)
@@ -106,11 +107,8 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
   for(Int_t iddl = 0; iddl < kDDL; iddl++)
     {
       strcpy(filename,AliDAQ::DdlFileName("PMD",iddl));
-#ifndef __DECCXX
-      outfile.open(filename,ios::binary);
-#else
-      outfile.open(filename);
-#endif
+      
+      outfile = new AliFstream(filename);
       
       if (iddl < 4)
 	{
@@ -131,8 +129,8 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
 
 
       // Write the Dummy Data Header into the file
-      Int_t bHPosition = outfile.tellp();
-      outfile.write((char*)(&header),sizeof(header));
+      Int_t bHPosition = outfile->Tellp();
+      outfile->WriteBuffer((char*)(&header),sizeof(header));
 
       for (Int_t ibus = 0; ibus < 50; ibus++)
 	{
@@ -240,7 +238,7 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
 	      dspBlockHeaderWord[2] = (UInt_t) dspBlockBRDL;
 	    }
 
-	  outfile.write((char*)dspBlockHeaderWord,kblHLen*sizeof(UInt_t));
+	  outfile->WriteBuffer((char*)dspBlockHeaderWord,kblHLen*sizeof(UInt_t));
 
 	  if (iblock == 0)
 	    {
@@ -285,7 +283,7 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
 	      dspHeaderWord[2] = dspRDL;
 	      dspHeaderWord[3] = dspno;
 	      if (remainder == 1) dspHeaderWord[8] = 1; // setting the padding word
-	      outfile.write((char*)dspHeaderWord,kdspHLen*sizeof(UInt_t));
+	      outfile->WriteBuffer((char*)dspHeaderWord,kdspHLen*sizeof(UInt_t));
 
 	      for (Int_t ibus = 0; ibus < 5; ibus++)
 		{
@@ -309,7 +307,7 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
 		    }
 
 
-		  outfile.write((char*)patchBusHeaderWord,4*sizeof(UInt_t));
+		  outfile->WriteBuffer((char*)patchBusHeaderWord,4*sizeof(UInt_t));
 
 
 		  for (Int_t iword = 0; iword < patchbusRDL; iword++)
@@ -317,7 +315,7 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
 		      buffer[iword] = busPatch[busno][iword];
 		    }
 		  
-		  outfile.write((char*)buffer,patchbusRDL*sizeof(UInt_t));
+		  outfile->WriteBuffer((char*)buffer,patchbusRDL*sizeof(UInt_t));
 
 		} // End of patch bus loop
 
@@ -326,7 +324,7 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
 	      if (remainder == 1)
 		{
 		  UInt_t paddingWord = dspHeader.GetDefaultPaddingWord();
-		  outfile.write((char*)(&paddingWord),sizeof(UInt_t));
+		  outfile->WriteBuffer((char*)(&paddingWord),sizeof(UInt_t));
 		}
 	    }
 	}
@@ -335,16 +333,16 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
       // take the pointer to the beginning of the data header
       // write the total number of words per ddl and bring the
       // pointer to the current file position and close it
-      UInt_t cFPosition = outfile.tellp();
+      UInt_t cFPosition = outfile->Tellp();
       sizeRawData = cFPosition - bHPosition - sizeof(header);
 
       header.fSize = cFPosition - bHPosition;
       header.SetAttribute(0);  // valid data
-      outfile.seekp(bHPosition);
-      outfile.write((char*)(&header),sizeof(header));
-      outfile.seekp(cFPosition);
+      outfile->Seekp(bHPosition);
+      outfile->WriteBuffer((char*)(&header),sizeof(header));
+      outfile->Seekp(cFPosition);
 
-      outfile.close();
+      delete outfile;
     } // DDL Loop over
 
 

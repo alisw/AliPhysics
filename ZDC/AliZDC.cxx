@@ -50,6 +50,7 @@
 #include "AliZDCDigitizer.h"
 #include "AliZDCRawStream.h"
 #include "AliZDCCalibData.h"
+#include "AliFstream.h"
 
  
 ClassImp(AliZDC)
@@ -563,11 +564,8 @@ void AliZDC::Digits2Raw()
   // open the output file
   char fileName[30];
   strcpy(fileName,AliDAQ::DdlFileName("ZDC",0));
-#ifndef __DECCXX
-  ofstream file(fileName, ios::binary);
-#else
-  ofstream file(fileName);
-#endif
+
+  AliFstream* file = new AliFstream(fileName);
 
   // write the DDL data header
   AliRawDataHeader header;
@@ -581,22 +579,22 @@ void AliZDC::Digits2Raw()
   printf("sizeof header = %d, ADCHeader2 = %d, ADCData2 = %d, ADCEndBlock = %d\n",
           sizeof(header),sizeof(lADCHeader2),sizeof(lADCData2),sizeof(lADCEndBlock));*/
   header.SetAttribute(0);  // valid data
-  file.write((char*)(&header), sizeof(header));
+  file->WriteBuffer((char*)(&header), sizeof(header));
 
   // write the raw data and close the file
-  file.write((char*) &lADCHeader1, sizeof (lADCHeader1));
-  file.write((char*)(lADCData1), sizeof(lADCData1));
-  file.write((char*) &lADCEndBlock, sizeof(lADCEndBlock));
-  file.write((char*) &lADCHeader2, sizeof (lADCHeader2));
-  file.write((char*)(lADCData2), sizeof(lADCData2));
-  file.write((char*) &lADCEndBlock, sizeof(lADCEndBlock));
-  file.write((char*) &lADCHeader3, sizeof (lADCHeader3));
-  file.write((char*)(lADCData3), sizeof(lADCData3));
-  file.write((char*) &lADCEndBlock, sizeof(lADCEndBlock));
-  file.write((char*) &lADCHeader4, sizeof (lADCHeader4));
-  file.write((char*)(lADCData4), sizeof(lADCData4));
-  file.write((char*) &lADCEndBlock, sizeof(lADCEndBlock));
-  file.close();
+  file->WriteBuffer((char*) &lADCHeader1, sizeof (lADCHeader1));
+  file->WriteBuffer((char*)(lADCData1), sizeof(lADCData1));
+  file->WriteBuffer((char*) &lADCEndBlock, sizeof(lADCEndBlock));
+  file->WriteBuffer((char*) &lADCHeader2, sizeof (lADCHeader2));
+  file->WriteBuffer((char*)(lADCData2), sizeof(lADCData2));
+  file->WriteBuffer((char*) &lADCEndBlock, sizeof(lADCEndBlock));
+  file->WriteBuffer((char*) &lADCHeader3, sizeof (lADCHeader3));
+  file->WriteBuffer((char*)(lADCData3), sizeof(lADCData3));
+  file->WriteBuffer((char*) &lADCEndBlock, sizeof(lADCEndBlock));
+  file->WriteBuffer((char*) &lADCHeader4, sizeof (lADCHeader4));
+  file->WriteBuffer((char*)(lADCData4), sizeof(lADCData4));
+  file->WriteBuffer((char*) &lADCEndBlock, sizeof(lADCEndBlock));
+  delete file;
 
   // unload the digits
   fLoader->UnloadDigits();

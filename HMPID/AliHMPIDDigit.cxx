@@ -21,6 +21,8 @@
 #include "AliHMPIDParam.h"
 #include <AliDAQ.h>           //WriteRaw()
 #include "Riostream.h"        //WriteRaw()
+#include "AliFstream.h"   
+
 ClassImp(AliHMPIDDigit)
 
 /*
@@ -136,14 +138,15 @@ void AliHMPIDDigit::WriteRaw(TObjArray *pDigAll)
 // Arguments: pDigAll- list of digits 
 //   Returns: none      
   for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){//chambers loop
-    ofstream ddlL,ddlR;                               //output streams, 2 per chamber
+    AliFstream* ddlL;                                 //output streams, 2 per chamber
+    AliFstream* ddlR;                          
     Int_t    cntL=0,cntR=0;                           //data words counters for DDLs
     AliRawDataHeader header; header.SetAttribute(0);  //empty DDL header
 
-    ddlL.open(AliDAQ::DdlFileName("HMPID",2*iCh)); 
-    ddlR.open(AliDAQ::DdlFileName("HMPID",2*iCh+1));      //open both DDL of this chamber in parallel
-    ddlL.write((char*)&header,sizeof(header));            //write dummy header as place holder, actual 
-    ddlR.write((char*)&header,sizeof(header));            //will be rewritten later when total size of DDL is known
+    ddlL = new AliFstream(AliDAQ::DdlFileName("HMPID",2*iCh)); 
+    ddlR = new AliFstream(AliDAQ::DdlFileName("HMPID",2*iCh+1));      //open both DDL of this chamber in parallel
+    ddlL->WriteBuffer((char*)&header,sizeof(header));            //write dummy header as place holder, actual 
+    ddlR->WriteBuffer((char*)&header,sizeof(header));            //will be rewritten later when total size of DDL is known
   
     UInt_t w32=0;                 //32 bits data word 
     TClonesArray *pDigCh=(TClonesArray *)pDigAll->At(iCh); //list of digits for current chamber 
@@ -153,14 +156,14 @@ void AliHMPIDDigit::WriteRaw(TObjArray *pDigAll)
       Int_t ddl,r,d,a;            //32 bits data word 
       pDig->Raw(w32,ddl,r,d,a);                             
       if(ddl%2){
-        ddlL.write((char*)&w32,sizeof(w32));  cntL++;
+        ddlL->WriteBuffer((char*)&w32,sizeof(w32));  cntL++;
       }else{
-        ddlR.write((char*)&w32,sizeof(w32));  cntR++;
+        ddlR->WriteBuffer((char*)&w32,sizeof(w32));  cntR++;
       }
     }//digits  loop
 
-    header.fSize=sizeof(header)+cntL*sizeof(w32); ddlL.seekp(0); ddlL.write((char*)&header,sizeof(header)); ddlL.close(); //rewrite header with size set to
-    header.fSize=sizeof(header)+cntR*sizeof(w32); ddlR.seekp(0); ddlR.write((char*)&header,sizeof(header)); ddlR.close(); //number of bytes and close file
+    header.fSize=sizeof(header)+cntL*sizeof(w32); ddlL->Seekp(0); ddlL->WriteBuffer((char*)&header,sizeof(header)); delete ddlL; //rewrite header with size set to
+    header.fSize=sizeof(header)+cntR*sizeof(w32); ddlR->Seekp(0); ddlR->WriteBuffer((char*)&header,sizeof(header)); delete ddlR; //number of bytes and close file
   }//chambers loop
 }//WriteRaw()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

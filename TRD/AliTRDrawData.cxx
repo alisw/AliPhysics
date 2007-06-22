@@ -36,6 +36,7 @@
 #include "AliTRDRawStream.h"
 
 #include "AliTRDcalibDB.h"
+#include "AliFstream.h"
 
 ClassImp(AliTRDrawData)
 
@@ -161,16 +162,12 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
     char name[1024];
     sprintf(name,"TRD_%d.ddl",sect + AliTRDRawStream::kDDLOffset);
 
-#ifndef __DECCXX
-    ofstream *of = new ofstream(name, ios::binary);
-#else
-    ofstream *of = new ofstream(name);
-#endif
+    AliFstream* of = new AliFstream(name);
 
     // Write a dummy data header
     AliRawDataHeader  header;  // the event header
-    UInt_t hpos = of->tellp();
-    of->write((char *) (& header), sizeof(header));
+    UInt_t hpos = of->Tellp();
+    of->WriteBuffer((char *) (& header), sizeof(header));
 
     // Reset payload byte size (payload does not include header).
     Int_t npayloadbyte = 0;
@@ -185,7 +182,7 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
 	if ( AliTRDcalibDB::Instance()->GetChamberStatus(iDet) )
 	  GtuCdh = GtuCdh | (3 << (2*plan));
       }
-      of->write((char *) (& GtuCdh), sizeof(GtuCdh));
+      of->WriteBuffer((char *) (& GtuCdh), sizeof(GtuCdh));
       npayloadbyte += 4;
     }
 
@@ -203,25 +200,23 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
 
         // Process A side of the chamber
 	if ( fRawVersion >= 1 && fRawVersion <= 2 ) hcwords = ProduceHcDataV1andV2(digits,0,iDet,hc_buffer,kMaxHcWords);
-        of->write((char *) hc_buffer, hcwords*4);
+        of->WriteBuffer((char *) hc_buffer, hcwords*4);
         npayloadbyte += hcwords*4;
 
         // Process B side of the chamber
 	if ( fRawVersion >= 1 && fRawVersion <= 2 ) hcwords = ProduceHcDataV1andV2(digits,1,iDet,hc_buffer,kMaxHcWords);
-        of->write((char *) hc_buffer, hcwords*4);
+        of->WriteBuffer((char *) hc_buffer, hcwords*4);
         npayloadbyte += hcwords*4;
 
       }
     }
 
     // Complete header
-    header.fSize = UInt_t(of->tellp()) - hpos;
+    header.fSize = UInt_t(of->Tellp()) - hpos;
     header.SetAttribute(0);  // Valid data
-    of->seekp(hpos);         // Rewind to header position
-    of->write((char *) (& header), sizeof(header));
-    of->close();
+    of->Seekp(hpos);         // Rewind to header position
+    of->WriteBuffer((char *) (& header), sizeof(header));
     delete of;
-
   }
 
   delete hc_buffer;
