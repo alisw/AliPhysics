@@ -71,7 +71,7 @@ class AliRawReader: public TObject {
       } else return GetEquipmentSize() - GetEquipmentHeaderSize();};
 
     Int_t            GetVersion() const 
-      {if (fHeader) return fHeader->fVersion; else return -1;};
+      {if (fHeader) return fHeader->GetVersion(); else return -1;};
     Bool_t           IsValid() const 
       {if (fHeader) return fHeader->TestAttribute(0); 
       else return kFALSE;};

@@ -6,9 +6,7 @@
 struct AliRawDataHeader {
   AliRawDataHeader() :
     fSize(0xFFFFFFFF), 
-    fEventID1(0),
-    fL1TriggerType(0),
-    fVersion(2),
+    fWord2(2<<24),
     fEventID2(0),
     fAttributesSubDetectors(0),
     fStatusMiniEventID(0x1000),  // status bit 4: no L1/L2 trigger information
@@ -18,13 +16,24 @@ struct AliRawDataHeader {
   {}
 
   UShort_t  GetEventID1() const
-    {return (fEventID1 & 0xFFF);};
+    {
+      return (UShort_t)( fWord2 & 0xFFF );
+    };
+
+  UInt_t  GetEventID2() const
+    {
+      return fEventID2;
+    };
 
   UChar_t   GetL1TriggerMessage() const
-    {return (UChar_t)((fEventID1 >> 14) | ((UShort_t)fL1TriggerType << 2));};
+    {
+      return (UChar_t)( (fWord2 >> 14) & 0x3FF );
+    };
 
   UChar_t   GetVersion() const
-    {return fVersion;};
+    {
+      return (UChar_t)( (fWord2 >> 24) & 0xFF );
+    };
 
   UChar_t   GetAttributes() const 
     {return (fAttributesSubDetectors >> 24) & 0xFF;};
@@ -53,9 +62,7 @@ struct AliRawDataHeader {
     };
 
   UInt_t    fSize;              // size of the raw data in bytes
-  UShort_t  fEventID1;          // bunch crossing number
-  UChar_t   fL1TriggerType;     // level 1 trigger type
-  UChar_t   fVersion;           // version of the data header format
+  UInt_t    fWord2;             // bunch crossing, L1 trigger message and fomrat version
   UInt_t    fEventID2;          // orbit number
   UInt_t    fAttributesSubDetectors; // block attributes (bits 24-31) and participating sub detectors
   UInt_t    fStatusMiniEventID; // status & error bits (bits 12-27) and mini event ID (bits 0-11)
