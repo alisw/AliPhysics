@@ -95,8 +95,8 @@ void AliITSBeamTestDigSPD::Exec(Option_t* /*opt*/)
     const AliRawDataHeader* rdh = fReader->GetDataHeader();
     UChar_t blockAttributes = fReader->GetBlockAttributes();     
     UInt_t statusBits = fReader->GetStatusBits();     
-    UInt_t orbitNumber = rdh->fEventID2; 			 
-    UShort_t  bunchCross = rdh->fEventID1;      
+    UInt_t orbitNumber = rdh->GetEventID2(); 			 
+    UShort_t  bunchCross = rdh->GetEventID1();      
       // UInt_t DataSize = rdh->fSize;				      
       //UChar_t L1TrigType = rdh->fL1TriggerType;			      
       //UInt_t MiniEvId = rdh->GetMiniEventID();			      
