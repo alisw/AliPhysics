@@ -51,8 +51,6 @@ AliTrackResidualsLinear::AliTrackResidualsLinear():
 {
   // Default constructor
   for (Int_t ipar=0; ipar<6; ipar++){
-    fBFixed[ipar] = kFALSE;
-    fFixed[ipar]  = 0;;
     fParams[ipar]  = 0;
   }  
   for (Int_t icov=0; icov<36; icov++){ fCovar[icov]=0;}
@@ -67,8 +65,6 @@ AliTrackResidualsLinear::AliTrackResidualsLinear(Int_t ntracks):
 {
   // Constructor
   for (Int_t ipar=0; ipar<6; ipar++){
-    fBFixed[ipar] = kFALSE;
-    fFixed[ipar]  = 0;
     fParams[ipar]  = 0;
   }
   for (Int_t icov=0; icov<36; icov++){ fCovar[icov]=0;}
@@ -84,8 +80,6 @@ AliTrackResidualsLinear::AliTrackResidualsLinear(const AliTrackResidualsLinear &
   // Copy constructor
   //..
   for (Int_t ipar=0; ipar<6; ipar++){
-    fBFixed[ipar]  = res.fBFixed[ipar];
-    fFixed[ipar]   = res.fFixed[ipar];
     fParams[ipar]  = res.fParams[ipar];
   }
   for (Int_t icov=0; icov<36; icov++){ fCovar[icov]= res.fCovar[icov];}

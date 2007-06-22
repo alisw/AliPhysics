@@ -40,6 +40,10 @@ AliTrackResiduals::AliTrackResiduals():
   fIsOwner(kTRUE)
 {
   // Default constructor
+  for (Int_t ipar=0; ipar<6; ipar++){
+    fBFixed[ipar] = kFALSE;
+    fFixed[ipar]  = 0.;
+  }  
 }
 
 //_____________________________________________________________________________
@@ -61,6 +65,10 @@ AliTrackResiduals::AliTrackResiduals(Int_t ntracks):
     for (Int_t itrack = 0; itrack < ntracks; itrack++)
       fVolArray[itrack] = fTrackArray[itrack] = 0x0;
   }
+  for (Int_t ipar=0; ipar<6; ipar++){
+    fBFixed[ipar] = kFALSE;
+    fFixed[ipar]  = 0.;
+  }  
 }
 
 //_____________________________________________________________________________
@@ -96,6 +104,10 @@ AliTrackResiduals::AliTrackResiduals(const AliTrackResiduals &res):
 	  fTrackArray = 0x0;
       }
   }
+  for(Int_t i=0;i<6;i++) { 
+    fBFixed[i]=res.fBFixed[i];
+    fFixed[i]=res.fFixed[i];
+  }
 }
 
 //_____________________________________________________________________________
@@ -116,6 +128,11 @@ AliTrackResiduals &AliTrackResiduals::operator =(const AliTrackResiduals& res)
 
   fVolArray = res.fVolArray;
   fTrackArray = res.fTrackArray;
+
+  for(Int_t i=0;i<6;i++) { 
+    fBFixed[i]=res.fBFixed[i];
+    fFixed[i]=res.fFixed[i];
+  }
 
   return *this;
 }

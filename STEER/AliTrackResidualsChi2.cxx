@@ -65,6 +65,7 @@ Bool_t AliTrackResidualsChi2::Minimize()
 
   // Set starting values and step sizes for parameters
   Double_t pars[6] = {0,0,0,0,0,0};
+  for(Int_t i=0;i<6;i++) if(fBFixed[i]) pars[i]=fFixed[i];
   Double_t step[6] = {0.0001,0.0001,0.0001,0.0001,0.0001,0.0001};
   ierflg = fitter->SetParameter(0, "dx", pars[0], step[0], 0,0);
   ierflg = fitter->SetParameter(1, "dy", pars[1], step[1], 0,0);
@@ -72,6 +73,14 @@ Bool_t AliTrackResidualsChi2::Minimize()
   ierflg = fitter->SetParameter(3, "psi", pars[3], step[3], 0,0);
   ierflg = fitter->SetParameter(4, "theta", pars[4], step[4], 0,0);
   ierflg = fitter->SetParameter(5, "phi", pars[5], step[5], 0,0);
+
+  // Fix parameters
+  if(fBFixed[0]) {printf("Fixing dx=%f\n",pars[0]); fitter->FixParameter(0);}
+  if(fBFixed[1]) {printf("Fixing dy=%f\n",pars[1]); fitter->FixParameter(1);}
+  if(fBFixed[2]) {printf("Fixing dz=%f\n",pars[2]); fitter->FixParameter(2);}
+  if(fBFixed[3]) {printf("Fixing psi=%f\n",pars[3]); fitter->FixParameter(3);}
+  if(fBFixed[4]) {printf("Fixing theta=%f\n",pars[4]); fitter->FixParameter(4);}
+  if(fBFixed[5]) {printf("Fixing phi=%f\n",pars[5]); fitter->FixParameter(5);}
 
   // Now ready for minimization step
   arglist[0] = 500;

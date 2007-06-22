@@ -41,6 +41,8 @@ class AliTrackResiduals : public TObject {
   Float_t GetChi2() const { return fChi2; }
   Int_t   GetNdf() const  { return fNdf; }
   Int_t   GetMinNPoints() const  { return fMinNPoints; }
+  void    FixParameter(Int_t par,Float_t value=0.) {fBFixed[par]=kTRUE; fFixed[par]= value;}
+  void   ReleaseParameter(Int_t par) {fBFixed[par]=kFALSE;}
 
  protected:
 
@@ -55,8 +57,10 @@ class AliTrackResiduals : public TObject {
   Int_t              fNdf;          // Number of degrees of freedom
   Int_t              fMinNPoints;   // Minimum allowed Number of points in the volume which is to be aligned
   Bool_t             fIsOwner;      // Track point arrays owned by the object
+  Float_t            fFixed[6];     // The fixed values of parameters 
+  Bool_t            fBFixed[6];    // The flag for fixing parameter
 
-  ClassDef(AliTrackResiduals,1)
+  ClassDef(AliTrackResiduals,2)
 
 };
 

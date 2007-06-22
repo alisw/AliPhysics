@@ -24,10 +24,8 @@ class AliTrackResidualsLinear : public AliTrackResiduals {
   virtual ~AliTrackResidualsLinear();
   Bool_t Minimize();
   void   SetRobust(Float_t fraction){fFraction=fraction;}
-  void   FixParameter(Int_t par, Float_t value) {fBFixed[par]=kTRUE; fFixed[par]= value;}
   const Double_t * GetParameters() const { return fParams;}
   const Double_t * GetCovariance() const { return fCovar;}
-  void   ReleaseParameter(Int_t par) {fBFixed[par]=kFALSE;}
  protected:
   Bool_t Update();
   void   AddPoints(AliTrackPoint &p, AliTrackPoint &pprime);
@@ -35,8 +33,6 @@ class AliTrackResidualsLinear : public AliTrackResiduals {
   Float_t fFraction;                // fraction of points for robust fitter if less 0 - no robust fitter invoked
   Double_t fParams[6];               // resulting parameters 
   Double_t fCovar[36];               // covariance matrix 
-  Float_t fFixed[6];                // the fixed values of parameters 
-  Float_t fBFixed[6];               // the flag for fixing parameter
   Double_t fChi2Orig;               // original chi2 
   ClassDef(AliTrackResidualsLinear,1)
 

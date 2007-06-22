@@ -75,6 +75,10 @@ Bool_t AliTrackResidualsFast::Minimize()
 {
   // Implementation of fast linear Chi2
   // based minimization of track residuals sum
+  if(fBFixed[0]||fBFixed[1]||fBFixed[2]||fBFixed[3]||fBFixed[4]||fBFixed[5])
+    AliError("Cannot yet fix parameters in this minimizer");
+
+
   for (Int_t i = 0; i < 27; i++) fSum[i] = 0;
   fSumR = 0;
 
