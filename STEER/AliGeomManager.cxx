@@ -1138,7 +1138,7 @@ Bool_t AliGeomManager::ApplyAlignObjsFromCDB(const char* AlignDetsList)
   if(!alObjsNotLoaded.IsNull()) AliInfoClass(Form("Didn't/couldn't load alignment objects for: %s",
 						  alObjsNotLoaded.Data()));
  
-  return(ApplyAlignObjsToGeom(alignObjArray));
+  return ApplyAlignObjsToGeom(alignObjArray);
 }
 
 //_____________________________________________________________________________

@@ -38,6 +38,7 @@ public:
 		kMUON=19,
 		kLastLayer=20};
 
+  static TGeoManager* GetGeometry() { return fgGeometry; }
 
   static Int_t       LayerSize(Int_t layerId);
   static const char* LayerName(Int_t layerId);
