@@ -21,15 +21,6 @@
 // Clusterizer class based on the Expectation-Maximization algorithm
 // Author: Alexander Zinchenko, JINR Dubna
 
-#include <stdlib.h>
-#include <Riostream.h>
-#include <TH2.h>
-#include <TMinuit.h>
-#include <TMatrixD.h>
-#include <TRandom.h>
-#include <TROOT.h>
-#include <TMath.h>
-
 #include "AliMUONClusterFinderAZ.h"
 #include "AliMpVSegmentation.h"
 #include "AliMUONGeometryModuleTransformer.h"
@@ -37,11 +28,22 @@
 #include "AliMUONCluster.h"
 #include "AliMUONPixel.h"
 #include "AliMUONMathieson.h"
-#include "AliLog.h"
-#include <TClonesArray.h>
 #include "AliMpDEManager.h"
 #include "AliMUONVDigitStore.h"
 #include "AliMUONConstants.h"
+#include "AliRunLoader.h"
+#include "AliLog.h"
+
+#include <TClonesArray.h>
+#include <TH2.h>
+#include <TMinuit.h>
+#include <TMatrixD.h>
+#include <TRandom.h>
+#include <TROOT.h>
+#include <TMath.h>
+#include <Riostream.h>
+
+#include <stdlib.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONClusterFinderAZ)
@@ -64,7 +66,7 @@ AliMUONClusterFinderAZ::AliMUONClusterFinderAZ(Bool_t draw)
 //    fDraw(0x0),
     fPixArray(0x0),
     fnCoupled(0),
-    fDebug(0),
+    fDebug(0), // 0),
 fRawClusters(new TClonesArray("AliMUONCluster",100)),
 fDigitStore(0x0),
 fDetElemId(-1),
@@ -205,6 +207,8 @@ next:
   if (ndigits[0] == nShown[0] && ndigits[1] == nShown[1]) return;
 
   Bool_t first = kTRUE;
+  if (fDebug) cout << " *** Event # " << AliRunLoader::GetRunLoader()->GetEventNumber() << " det. elem.: " 
+		   << fDetElemId << endl;
   fnPads[0] = fnPads[1] = 0;
   for (Int_t i = 0; i < fgkDim; i++) 
   {
@@ -1014,7 +1018,7 @@ Bool_t AliMUONClusterFinderAZ::MainLoop(Int_t iSimple)
 
         Float_t q = ChargeIntegration(pixPtr->Coord(0),pixPtr->Coord(1),
                                       fXyq[0][j],fXyq[1][j],  
-                                      fXyq[3][j],fXyq[4][j]);
+                                      TMath::Abs(fXyq[3][j]),fXyq[4][j]);
         
 //        AliInfo(Form("pad %d pixel %d",j,ipix));
 //        PrintPad(j);
@@ -1270,11 +1274,16 @@ void AliMUONClusterFinderAZ::Mlem(Double_t *coef, Double_t *probi, Int_t nIter)
   Int_t nPix = fPixArray->GetEntriesFast();
   Int_t npad = fnPads[0] + fnPads[1];
   Double_t *probi1 = new Double_t [nPix];
+  Double_t *chargeNew = new Double_t [nPix];
   Double_t probMax = 0;
   Int_t indx, indx1;
   AliMUONPixel *pixPtr;
 
-  for (Int_t ipix=0; ipix<nPix; ipix++) if (probi[ipix] > probMax) probMax = probi[ipix];
+  for (Int_t ipix=0; ipix<nPix; ++ipix) {
+    if (probi[ipix] > probMax) probMax = probi[ipix];
+    chargeNew[ipix] = 0;
+  }
+
   for (Int_t iter=0; iter<nIter; iter++) {
     // Do iterations
     for (Int_t ipix=0; ipix<nPix; ipix++) {
@@ -1298,10 +1307,16 @@ void AliMUONClusterFinderAZ::Mlem(Double_t *coef, Double_t *probi, Int_t nIter)
 	if (coef[indx] > 1.e-6) sum += fXyq[2][j]*coef[indx]/sum1;
       } // for (Int_t j=0;
       pixPtr = (AliMUONPixel*) fPixArray->UncheckedAt(ipix);
-      if (probi1[ipix] > 1.e-6) pixPtr->SetCharge(pixPtr->Charge()*sum/probi1[ipix]);
+      if (probi1[ipix] > 1.e-6) chargeNew[ipix] = pixPtr->Charge() * sum / probi1[ipix];
+      else chargeNew[ipix] = 0.;
     } // for (Int_t ipix=0;
+    for (Int_t i = 0; i < nPix; ++i) {
+      pixPtr = (AliMUONPixel*) fPixArray->UncheckedAt(i);
+      pixPtr->SetCharge(chargeNew[i]);
+    }
   } // for (Int_t iter=0;
   delete [] probi1;
+  delete [] chargeNew;
   return;
 }
 
@@ -2066,13 +2081,14 @@ Int_t AliMUONClusterFinderAZ::Fit(Int_t iSimple, Int_t nfit, Int_t *clustFit, TO
   Double_t param0[2][8]={{0},{0}}, deriv[2][8]={{0},{0}}; 
   Double_t shift[8], stepMax, derMax, parmin[8], parmax[8], func2[2], shift0;
   Double_t delta[8], scMax, dder[8], estim, shiftSave = 0;
-  Int_t min, max, nCall = 0, memory[8] = {0}, nLoop, idMax = 0, iestMax = 0, nFail;
+  Int_t min, max, nCall = 0, nLoop, idMax = 0, iestMax = 0, nFail;
   Double_t rad, dist[3] = {0};
 
   // Try to fit with one-track hypothesis, then 2-track. If chi2/dof is 
   // lower, try 3-track (if number of pads is sufficient).
   for (Int_t iseed=0; iseed<nfit; iseed++) {
 
+    Int_t memory[8] = {0};
     if (iseed) { for (Int_t j=0; j<fNpar; j++) param[j] = parOk[j]; } // for bounded params
     for (Int_t j=0; j<3; j++) step0[fNpar+j] = shift[fNpar+j] = step[j];
     if (nfit == 1) param[fNpar] = xyCand[0][0]; // take COG
@@ -2344,7 +2360,7 @@ void AliMUONClusterFinderAZ::Fcn1(Int_t & /*npar*/, Double_t * /*gin*/, Double_t
 //      charge += fMathieson->IntXY(fDetElemId, fSegmentation[cath])*coef;
       charge += ChargeIntegration(par[indx],par[indx+1],
                                   c.fXyq[0][j],c.fXyq[1][j],
-                                  c.fXyq[3][j],c.fXyq[4][j]);
+                                  TMath::Abs(c.fXyq[3][j]),c.fXyq[4][j]) * coef;
     }
     charge *= c.fQtot;
     delta = charge - c.fXyq[2][j];
@@ -2384,7 +2400,7 @@ void AliMUONClusterFinderAZ::UpdatePads(Int_t /*nfit*/, Double_t *par)
 //        charge += fMathieson->IntXY(fDetElemId,fSegmentation[cath])*coef;
         charge += ChargeIntegration(par[indx],par[indx+1],
                                     fXyq[0][j],fXyq[1][j],
-                                    fXyq[3][j],fXyq[4][j]);
+                                    TMath::Abs(fXyq[3][j]),fXyq[4][j]) * coef;
       }
       charge *= fQtot;
       fXyq[2][j] -= charge;
@@ -2698,10 +2714,10 @@ void AliMUONClusterFinderAZ::AddVirtualPad()
       Int_t nn = fSegmentation[cath]->GetNeighbours(pad,neighbours);
       for (Int_t j=0; j<nn; j++) {
         AliMpPad* pad = static_cast<AliMpPad*>(neighbours.At(j));
-        Int_t xx = pad->GetIndices().GetFirst();
-        Int_t yy = pad->GetIndices().GetSecond();
-        if (TMath::Abs(xx-ix0) == 1 || xx*ix0 == -1) neighbx++;
-        if (TMath::Abs(yy-iy0) == 1 || yy*iy0 == -1) neighby++;
+        xList[j] = pad->GetIndices().GetFirst();
+        yList[j] = pad->GetIndices().GetSecond();
+        if (TMath::Abs(xList[j]-ix0) == 1 || xList[j]*ix0 == -1) neighbx++;
+        if (TMath::Abs(yList[j]-iy0) == 1 || yList[j]*iy0 == -1) neighby++;
       }
       if (!mirror) {
 	if (cath) neighb = neighbx; 
@@ -2775,9 +2791,9 @@ void AliMUONClusterFinderAZ::AddVirtualPad()
 	    if (cath && maxpad[0][0] >= 0) continue;
 	  }
 	  if (iPad && !iAddX) continue;
-    AliMpPad pad = fSegmentation[cath]->PadByIndices(AliMpIntPair(ix,iy));
-    fXyq[0][npads] = pad.Position().X();
-    fXyq[1][npads] = pad.Position().Y();
+	  AliMpPad pad = fSegmentation[cath]->PadByIndices(AliMpIntPair(ix,iy));
+	  fXyq[0][npads] = pad.Position().X();
+	  fXyq[1][npads] = pad.Position().Y();
 	  if (fXyq[0][npads] > 1.e+5) continue; // temporary fix
 	  if (ix == ix1) continue; //19-12-05
 	  if (ix1 == ix0) continue;
@@ -2790,7 +2806,8 @@ void AliMUONClusterFinderAZ::AddVirtualPad()
 	    else fXyq[2][npads] = TMath::Min (aamax[1]/100, 5.);
 	  }
 	  fXyq[2][npads] = TMath::Max (fXyq[2][npads], (float)1);
-	  fXyq[3][npads] = -2; // flag
+	  fXyq[3][npads] = -pad.Dimensions().X(); // "-" to flag
+	  fXyq[4][npads] = pad.Dimensions().Y();
 	  fPadIJ[2][npads] = ix;
 	  fPadIJ[3][npads] = iy;
 	  fnPads[1]++;
@@ -2806,9 +2823,9 @@ void AliMUONClusterFinderAZ::AddVirtualPad()
 	if (TMath::Abs(iy-iy0) == 1 || TMath::Abs(iy*iy0) == 1) {
 	  if (ix != ix0) continue; // new segmentation - check
 	  if (iPad && !iAddY) continue;
-    AliMpPad pad = fSegmentation[cath]->PadByIndices(AliMpIntPair(ix,iy));
-    fXyq[0][npads] = pad.Position().X();
-    fXyq[1][npads] = pad.Position().Y();
+	  AliMpPad pad = fSegmentation[cath]->PadByIndices(AliMpIntPair(ix,iy));
+	  fXyq[0][npads] = pad.Position().X();
+	  fXyq[1][npads] = pad.Position().Y();
 	  if (iy1 == iy0) continue;
 	  //if (iPad && iy1 == iy0) continue;
 	  if (maxpad[0][0] < 0 || mirror && maxpad[1][0] >= 0) {
@@ -2820,7 +2837,8 @@ void AliMUONClusterFinderAZ::AddVirtualPad()
 	    else fXyq[2][npads] = TMath::Min (aamax[0]/15, fgkZeroSuppression);
 	  }
 	  fXyq[2][npads] = TMath::Max (fXyq[2][npads], (float)1);
-	  fXyq[3][npads] = -2; // flag
+	  fXyq[3][npads] = -pad.Dimensions().X(); // "-" to flag
+	  fXyq[4][npads] = pad.Dimensions().Y();
 	  fPadIJ[2][npads] = ix;
 	  fPadIJ[3][npads] = iy;
 	  fnPads[1]++;
