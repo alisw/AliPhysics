@@ -1,6 +1,7 @@
 // $Header$
 
-void alieve_init(const Text_t* path=".", Int_t event=0,
+void alieve_init(const Text_t* path   = ".", Int_t event=0,
+		 const Text_t* cdburi = 0,
 		 Bool_t use_runloader=kTRUE, Bool_t use_esd=kTRUE,
 		 Bool_t avoid_exceptions_on_open=kTRUE)
 {
@@ -48,7 +49,7 @@ void alieve_init(const Text_t* path=".", Int_t event=0,
   // Open event
   if(path != 0) {
     Alieve::Event::Initialize(use_runloader, use_esd, avoid_exceptions_on_open);
-
+    Alieve::Event::SetCdbUri(cdburi);
     printf("Opening event %d from '%s' ...", event, path); fflush(stdout);
     Alieve::gEvent = new Alieve::Event(path, event);
     printf(" done.\n");
