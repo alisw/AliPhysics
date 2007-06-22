@@ -1,3 +1,9 @@
+2007-06-22  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* EventAlieve.cxx:
+	* EventAlieve.h:
+	With Cvetan: initialize CDB and provide proper geometry loading.
+
 2007-06-19  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* EventAlieve.cxx:
