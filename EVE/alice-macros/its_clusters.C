@@ -1,8 +1,10 @@
 
 Reve::PointSet* its_clusters(RenderElement* cont=0, Float_t maxR=50)
 {
-  if (!gGeoManager)
-    gReve->GetGeometry("$PWD/geometry.root");
+  AliLog::EnableDebug(1);
+  AliLog::SetGlobalDebugLevel(AliLog::kMaxType);
+
+  Alieve::Event::AssertGeometry();
 
   AliRunLoader* rl = Alieve::Event::AssertRunLoader();
   rl->LoadRecPoints("ITS");
@@ -43,7 +45,7 @@ Reve::PointSet* its_clusters(RenderElement* cont=0, Float_t maxR=50)
   }
 
   clusters->SetMarkerStyle(2);
-  clusters->SetMarkerSize(0.5);
+  clusters->SetMarkerSize(0.2);
   clusters->SetMarkerColor(4);
 
   char form[1000];

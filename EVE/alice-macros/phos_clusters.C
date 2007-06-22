@@ -1,8 +1,7 @@
 
 Reve::PointSet* phos_clusters(RenderElement* cont=0)
 {
-  if (!gGeoManager)
-    gReve->GetGeometry("$PWD/geometry.root");
+  Alieve::Event::AssertGeometry();
 
   AliRunLoader* rl = Alieve::Event::AssertRunLoader();
   rl->LoadRecPoints("PHOS");
