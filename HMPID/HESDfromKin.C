@@ -3,7 +3,7 @@ Int_t gEvt=0; Int_t gMaxEvt=0;
 TObjArray *pNmean;
 TTree *gEsdTr;
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void HESDfromKin(const char *name)
+void HESDfromKin(const char *name="default")
 {//simulate ESD from kinematics
 
   if(gSystem->IsFileInIncludePath("galice.root")){// tries to open session
@@ -18,8 +18,10 @@ void HESDfromKin(const char *name)
     AliESD *pEsd = new AliESD();   
     TFile *pEsdFl=TFile::Open("AliESDs.root","recreate"); 
     gEsdTr=new TTree("esdTree","Sim ESD from kinematics"); 
-    gEsdTr->Branch("ESD", &pEsd);
-         
+    pEsd->CreateStdContent();    pEsd->WriteToTree(gEsdTr);  //clm: new ESD write schema: see Task Force meeting 20th June, 2007
+    gEsdTr->GetUserInfo()->Add(pEsd);                        //clm: TList has to be created for ReadFromTree method -- this was not needed by the old ESD
+ 
+       
   }  else return;  
 
   OpenCalib();
@@ -27,6 +29,8 @@ void HESDfromKin(const char *name)
   TString ttl=name;
   Bool_t htaCheck=ttl.Contains("HTA");
   if(!htaCheck) SimEsd(pHL,pEsd); else SimEsdHidden(pHL,pEsd);
+  
+  pEsdFl->cd();
   pEsdFl->Write();pEsdFl->Close();        
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -49,7 +53,7 @@ void SimEsd(AliLoader *pHL,AliESD *pEsd)
       TParticle *pTrack=pStack->Particle(i); 
       mtid=pTrack->GetFirstMother();
       if(mtid>=0) continue; // only primaries
-      AliESDtrack trk(pTrack);
+      AliESDtrack trk(pTrack); 
       pEsd->AddTrack(&trk);
       AliHMPIDTracker::Recon(pEsd,pH->CluLst(),pNmean);
     }// track loop

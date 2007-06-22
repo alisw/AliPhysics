@@ -718,7 +718,8 @@ void AliHMPIDv2::TestGeom()
 //
 // Test method to check geometry
 //
-  TGeoManager::Import("misaligned_geometry.root");
+  //TGeoManager::Import("misaligned_geometry.root");
+  TGeoManager::Import("geometry.root");
   for(Int_t ch=AliHMPIDParam::kMinCh;ch<=AliHMPIDParam::kMaxCh;ch++)
     TestPoint(ch,0,0);
 }//TestPoint()

@@ -53,7 +53,8 @@ AliHMPIDParam::AliHMPIDParam():TNamed("HmpidParam","default version")
 
 if(!gGeoManager) 
 {
-TGeoManager::Import("misaligned_geometry.root");
+//TGeoManager::Import("misaligned_geometry.root");                                                        //clm: it was a temporary solution
+  TGeoManager::Import("geometry.root");
 if(!gGeoManager) AliFatal("!!!!!!No geometry loaded!!!!!!!");
 }
 

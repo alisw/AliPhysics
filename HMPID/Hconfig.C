@@ -1,3 +1,9 @@
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
+//Change log:  21st June 2007 by Levente Molnar
+//             Detector description upgrade: ITS,ToF,Absorber, Dipole, V0, Emcal
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
+
+
 #include <TPDGCode.h>
 
 Bool_t gGun1      =kFALSE;
@@ -434,36 +440,45 @@ void HmpConfig::DetRemSlot(Int_t id)
 void HmpConfig::WriteDet(FILE *pF)
 {
 //CORE detectors                  
-  if(fDetBG->GetButton(kPIPE )->GetState()) fprintf(pF,"\n  new AliPIPEv0(\"PIPE\",\"Beam Pipe\");\n");
-  if(fDetBG->GetButton(kSHILD)->GetState()) fprintf(pF,"\n  new AliSHILv2(\"SHIL\",\"Shielding Version 2\");\n");  
+  if(fDetBG->GetButton(kPIPE )->GetState()) fprintf(pF,"\n  new AliPIPEv3(\"PIPE\",\"Beam Pipe\");\n");
+  if(fDetBG->GetButton(kSHILD)->GetState()) fprintf(pF,"\n  new AliSHILv3(\"SHIL\",\"Shielding Version 2\");\n");  
   if(fDetBG->GetButton(kITS  )->GetState()){
-    fprintf(pF,"\n  AliITSvPPRasymmFMD *pIts =new AliITSvPPRasymmFMD(\"ITS\",\"ITS PPR detailed version\");\n");
-    fprintf(pF,"  pIts->SetMinorVersion(2); pIts->SetReadDet(kFALSE);\n");
-    fprintf(pF,"  pIts->SetThicknessDet1(200.); pIts->SetThicknessDet2(200.);\n");
-    fprintf(pF,"  pIts->SetThicknessChip1(150.); pIts->SetThicknessChip2(150.);\n");
-    fprintf(pF,"  pIts->SetRails(0); pIts->SetCoolingFluid(1);\n");
-    fprintf(pF,"  pIts->SetEUCLID(0);\n");
+    fprintf(pF,"\n AliITSvPPRasymmFMD *ITS  = new AliITSvPPRasymmFMD(\"ITS\",\"ITS PPR detailed version with asymmetric services\");\n");
+    fprintf(pF,"\n  ITS->SetMinorVersion(2);\n");  
+    fprintf(pF,"\n  ITS->SetReadDet(kFALSE);\n");	
+    fprintf(pF,"\n  ITS->SetThicknessDet1(200.);\n"); 
+    fprintf(pF,"\n  ITS->SetThicknessDet2(200.); \n");
+    fprintf(pF,"\n  ITS->SetThicknessChip1(150.);\n");
+    fprintf(pF,"\n  ITS->SetThicknessChip2(150.);\n");
+    fprintf(pF,"\n  ITS->SetRails(0);\n");	
+    fprintf(pF,"\n  ITS->SetCoolingFluid(1);\n");
+    fprintf(pF,"\n  ITS->SetEUCLID(0);\n");
   }  
+  
   if(fDetBG->GetButton(kTPC  )->GetState())  fprintf(pF,"\n  new AliTPCv2(\"TPC\",\"Default\");\n");
   if(fDetBG->GetButton(kFRAME)->GetState())  fprintf(pF,"\n  AliFRAMEv2 *pFrame=new AliFRAMEv2(\"FRAME\",\"Space Frame\"); pFrame->SetHoles(1);\n");
   if(fDetBG->GetButton(kTRD  )->GetState())  fprintf(pF,"\n  AliTRD *pTrd=new AliTRDv1(\"TRD\",\"TRD slow simulator\");\n");  
-  if(fDetBG->GetButton(kTOF  )->GetState()) fprintf(pF,"\n  new AliTOFv4T0(\"TOF\", \"normal TOF\");\n");
+  if(fDetBG->GetButton(kTOF  )->GetState())  {
+    fprintf(pF,"\n  AliTOF *TOF = new AliTOFv6T0(\"TOF\", \"normal TOF\");\n");
+    fprintf(pF,"\n  Int_t TOFSectors[18]={-1,0,0,-1,-1,-1,0,0,-1,0,0,0,0,-1,-1,0,0,0};\n");
+    fprintf(pF,"\n  TOF->SetTOFSectors(TOFSectors);\n");
+  }
 //central detectors  behind HMPID
   if(fDetBG->GetButton(kMAG  )->GetState()) fprintf(pF,"\n  new AliMAG(\"MAG\",\"Magnet\");\n");  
   if(fDetBG->GetButton(kHALL )->GetState()) fprintf(pF,"\n  new AliHALL(\"HALL\",\"Alice Hall\");\n");
 //forward detectors  
-  if(fDetBG->GetButton(kFMD  )->GetState()) fprintf(pF,"\n  new AliFMDv1(\"FMD\",\"normal FMD\");\n");
-  if(fDetBG->GetButton(kABSO )->GetState()) fprintf(pF,"\n  new AliABSOv0(\"ABSO\",\"Muon absorber\");\n");
-  if(fDetBG->GetButton(kDIPO )->GetState()) fprintf(pF,"\n  new AliDIPOv2(\"DIPO\",\"Dipole version 2\");\n");
-  if(fDetBG->GetButton(kMUON )->GetState()) fprintf(pF,"\n  new AliMUONv1(\"MUON\",\"default\");\n");
-  if(fDetBG->GetButton(kPMD  )->GetState()) fprintf(pF,"\n  new AliPMDv1(\"PMD\",\"normal PMD\");\n");
-  if(fDetBG->GetButton(kT0)->GetState()) fprintf(pF,"\n  new AliT0v1(\"T0\",\"T0 Detector\");\n");
-  if(fDetBG->GetButton(kVZERO)->GetState()) fprintf(pF,"\n  new AliVZEROv2(\"VZERO\",\"normal VZERO\");\n");
-  if(fDetBG->GetButton(kZDC  )->GetState()) fprintf(pF,"\n  new AliZDCv2(\"ZDC\",\"normal ZDC\");\n");
+  if(fDetBG->GetButton(kFMD  )->GetState()) fprintf(pF,"\n  AliFMD *FMD = new AliFMDv1(\"FMD\",\"normal FMD\");\n");
+  if(fDetBG->GetButton(kABSO )->GetState()) fprintf(pF,"\n  AliABSO *ABSO = new AliABSOv3(\"ABSO\",\"Muon absorber\");\n");
+  if(fDetBG->GetButton(kDIPO )->GetState()) fprintf(pF,"\n  AliDIPO *DIPO = new AliDIPOv3(\"DIPO\",\"Dipole version 3\");\n");
+  if(fDetBG->GetButton(kMUON )->GetState()) fprintf(pF,"\n  AliMUON *MUON = new AliMUONv1(\"MUON\",\"default\");\n");
+  if(fDetBG->GetButton(kPMD  )->GetState()) fprintf(pF,"\n  AliPMD *PMD = new AliPMDv1(\"PMD\",\"normal PMD\");\n");
+  if(fDetBG->GetButton(kT0)->GetState())    fprintf(pF,"\n  AliT0 *T0 = new AliT0v1(\"T0\",\"T0 Detector\");\n");
+  if(fDetBG->GetButton(kVZERO)->GetState()) fprintf(pF,"\n  AliVZERO *VZERO = new AliVZEROv7(\"VZERO\",\"normal VZERO\");\n");
+  if(fDetBG->GetButton(kZDC  )->GetState()) fprintf(pF,"\n  AliZDC *ZDC = new AliZDCv2(\"ZDC\",\"normal ZDC\");\n");
 //different phase space detectors  
-  if(fDetBG->GetButton(kPHOS )->GetState()) fprintf(pF,"\n  new AliPHOSv1(\"PHOS\",\"IHEP\");\n");
-  if(fDetBG->GetButton(kEMCAL)->GetState()) fprintf(pF,"\n  new AliEMCALv1(\"EMCAL\",\"G56_2_55_19_104_14\");\n");
-  if(fDetBG->GetButton(kACORDE  )->GetState()) fprintf(pF,"\n  new AliACORDEv0(\"ACORDE\",\"normal ACORDE\");\n");
+  if(fDetBG->GetButton(kPHOS )->GetState()) fprintf(pF,"\n  AliPHOS *PHOS = new AliPHOSv1(\"PHOS\",\"IHEP\");\n");
+  if(fDetBG->GetButton(kEMCAL)->GetState()) fprintf(pF,"\n  AliEMCAL *EMCAL = new AliEMCALv2(\"EMCAL\",\"SHISH_77_TRD1_2X2_FINAL_110DEG\");\n");
+  if(fDetBG->GetButton(kACORDE  )->GetState()) fprintf(pF,"\n  AliACORDE *ACORDE = new AliACORDEv0(\"ACORDE\",\"normal ACORDE\");\n");
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void HmpConfig::GuiBatch(TGHorizontalFrame *pMainF)

@@ -80,9 +80,10 @@ void AliHMPIDQaEsd::ConnectInputData(const Option_t*)
     fESD = (AliESD*)(*address);
   } else {
     fESD = new AliESD();
-    SetBranchAddress(0, "ESD", &fESD);
-    fChain->SetBranchStatus("*", 1);
-    fChain->SetBranchStatus("fTracks.*", 1);
+    fESD->ReadFromTree(fChain);                                                                   //clm: new ESD access works for local, need to test it for PROOF!
+    //SetBranchAddress(0, "esdTree", &fESD);
+    //fChain->SetBranchStatus("*", 1);
+    //fChain->SetBranchStatus("fTracks.*", 1);
   }
 }//ConnectInputData()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -176,11 +177,19 @@ void AliHMPIDQaEsd::Terminate(Option_t *)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void qa(Int_t mode=0)
 {
+  
+  /*
+  AliAODHandler* aodHandler   = new AliAODHandler();
+    mgr->SetEventHandler(aodHandler);
+  */
+  
   gBenchmark->Start("HMPID QA");
   
   TChain* chain =new TChain("esdTree");  
-  AliAnalysisManager *mgr=new AliAnalysisManager("FunnyName");
-  
+  AliAnalysisManager *mgr=new AliAnalysisManager("FunnyName");                                                   //clm: 
+  //AliAODHandler* aodHandler   = new AliAODHandler();
+  //mgr->SetEventHandler(aodHandler);
+    
   AliAnalysisTask *qa=new AliHMPIDQaEsd();
   qa->ConnectInput (0,mgr->CreateContainer("EsdChain",TChain::Class()   ,AliAnalysisManager::kInputContainer));
   qa->ConnectOutput(0,mgr->CreateContainer("HistLst",TObjArray::Class(),AliAnalysisManager::kOutputContainer));

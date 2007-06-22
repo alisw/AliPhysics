@@ -21,6 +21,8 @@
 #include "AliHMPIDRecon.h"
 #include "AliHMPIDParam.h"
 #include "AliHMPIDCluster.h"
+#include "AliTracker.h"
+
 #include <TChain.h>
 
 #endif
@@ -32,6 +34,7 @@ TFile *fDigFile; TTree *fDigTree; TObjArray    *fDigLst; TPolyMarker *fRenDig[7]
 TFile *fCluFile; TTree *fCluTree; TObjArray    *fCluLst; TPolyMarker *fRenClu[7];    
 TFile *fEsdFile; TTree *fEsdTree;  AliESD      *fEsd;    TPolyMarker *fRenTxC[7]; TPolyMarker *fRenRin[7];  
 TFile *fCosFile; TTree *fCosTree;
+AliRunLoader *gAL=0; 
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void CreateContainers()
@@ -186,13 +189,24 @@ void RenderHit(TClonesArray *pHitLst)
   }//hits loop for this entry
 }//RenderHits()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void RenderClu(TObjArray *pClus,TPolyMarker **pMark)
+void RenderDig(TObjArray *pDigLst)
+{//used by ReadEvent() and SimulateEvent() to render digs to Tbox structures, one per chamber
+  for(Int_t iCh=0;iCh<=6;iCh++){                                    //chambers loop   
+    TClonesArray *pDigCham=(TClonesArray*)pDigLst->At(iCh);         //get digs list for this chamber
+    for(Int_t iDig=0;iDig<pDigCham->GetEntries();iDig++){            //digs loop
+      AliHMPIDDigit *pDig = (AliHMPIDDigit*)pDigCham->At(iDig); Float_t x=pDig->LorsX(); Float_t y=pDig->LorsY();    //get current hit        
+      fRenDig[iCh]->SetNextPoint(x,y);
+    }
+  }//hits loop for this entry
+}//RenderHits()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void RenderClu(TObjArray *pClus)
 {//used by ReadEvent() and SimulateEvent() to render clusters to polymarker structures, one per chamber
   for(Int_t iCh=0;iCh<=6;iCh++){                                     //chambers loop   
     TClonesArray *pClusCham=(TClonesArray*)pClus->At(iCh);           //get clusters list for this chamber
     for(Int_t iClu=0;iClu<pClusCham->GetEntries();iClu++){           //clusters loop
       AliHMPIDCluster *pClu = (AliHMPIDCluster*)pClusCham->At(iClu); //get current cluster        
-      pMark[iCh]->SetNextPoint(pClu->X(),pClu->Y()); 
+      fRenClu[iCh]->SetNextPoint(pClu->X(),pClu->Y()); 
     }//switch hit PID      
   }//hits loop for this entry
 }//RenderClus()
@@ -204,7 +218,7 @@ void RenderEsd(AliESD *pEsd)
     AliESDtrack *pTrk=pEsd->GetTrack(iTrk);    Int_t ch=pTrk->GetHMPIDcluIdx(); //get track and chamber intersected by it
     if(ch<0) continue;                                                          //this track does not intersect any chamber
     Float_t thRa,phRa,xRa,yRa; pTrk->GetHMPIDtrk(xRa,yRa,thRa,phRa);            //get info on current track
-    ch/=1000000;                                                                //actual chamber number 
+    ch/=1000000;                            
     Float_t xPc=0,yPc=0; AliHMPIDTracker::IntTrkCha(pTrk,xPc,yPc);              //find again intersection of track with PC--> it is not stored in ESD!
     fRenTxC[ch]->SetNextPoint(xPc,yPc);                                            //add this intersection point
     Float_t ckov=pTrk->GetHMPIDsignal();                                        //get ckov angle stored for this track  
@@ -303,12 +317,19 @@ void ReadEvent()
       RenderHit(fHitLst);   
     }//prim loop
   }//if hits file
-  
+
+  if(fDigFile){ 
+    if(fDigTree) delete fDigTree;   fDigTree=(TTree*)fDigFile->Get(Form("Event%i/TreeD",fEvt));
+    for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) fDigTree->SetBranchAddress(Form("HMPID%i",iCh),&(*fDigLst)[iCh]);      
+    fDigTree->GetEntry(0);                              
+    RenderDig(fDigLst);   
+  }//if digs file
+    
   if(fCluFile){ 
     if(fCluTree) delete fCluTree; fCluTree=(TTree*)fCluFile->Get(Form("Event%i/TreeR",fEvt));
     for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) fCluTree->SetBranchAddress(Form("HMPID%i",iCh),&(*fCluLst)[iCh]);      
     fCluTree->GetEntry(0);
-    RenderClu(fCluLst,fRenClu);   
+    RenderClu(fCluLst);   
   }//if clus file
   
   if(fEsdFile){//if ESD file open
@@ -324,13 +345,13 @@ void SimulateEvent()
 
   SimulateEsd(fEsd);
   SimulateHits(fEsd,fHitLst);
-                 AliHMPIDv2::Hit2Sdi(fHitLst,fSdiLst);                               
+                 AliHMPIDv1::Hit2Sdi(fHitLst,fSdiLst);                               
           AliHMPIDDigitizer::Sdi2Dig(fSdiLst,fDigLst);     
       AliHMPIDReconstructor::Dig2Clu(fDigLst,fCluLst);
             AliHMPIDTracker::Recon(fEsd,fCluLst,(TObjArray*)pNmeanEnt->GetObject());
             
   RenderHit(fHitLst);
-  RenderClu(fCluLst,fRenClu);
+  RenderClu(fCluLst);
   RenderEsd(fEsd);            
 }//SimulateEvent()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -359,16 +380,29 @@ void Hdisp()
   }
   
   if(gSystem->IsFileInIncludePath("HMPID.Digits.root")){// tries to open clusters
-    fDigFile=TFile::Open("HMPID.Digits.root");  fNevt=fDigFile->GetNkeys(); fType=1;  title+=Form(" DIGITS-%i ",fNevt);
-  }
+     fDigFile=TFile::Open("HMPID.Digits.root");  fNevt=fDigFile->GetNkeys(); fType=1;  title+=Form(" DIGITS-%i ",fNevt);
+   }
   
   if(gSystem->IsFileInIncludePath("HMPID.RecPoints.root")){// tries to open clusters
     fCluFile=TFile::Open("HMPID.RecPoints.root");  fNevt=fCluFile->GetNkeys(); fType=1;  title+=Form(" CLUSTERS-%i ",fNevt);
-  }
+   }
   
   if(gSystem->IsFileInIncludePath("AliESDs.root")){     
-    fEsdFile=TFile::Open("AliESDs.root"); fEsdTree=(TTree*)fEsdFile->Get("esdTree");  fNevt=fEsdTree->GetEntries(); fType=1;  title+=Form(" ESD-%i ",fNevt);
-                                          fEsdTree->SetBranchAddress("ESD", &fEsd);    
+    fEsdFile=TFile::Open("AliESDs.root"); 
+    fEsdTree=(TTree*)fEsdFile->Get("esdTree"); 
+    fEsd->ReadFromTree(fEsdTree); fEsd->GetStdContent();                       //clm: new ESD schema: see Task Force meeting 20th June, 2007
+    fNevt=fEsdTree->GetEntries(); fType=1;  title+=Form(" ESD-%i ",fNevt);
+    
+    //clm: we need to set the magnetic field  
+    if(gSystem->IsFileInIncludePath("galice.root")){
+    if(gAlice) delete gAlice;                       
+    gAL=AliRunLoader::Open();                       
+    gAL->LoadgAlice();           
+    AliHMPIDTracker::SetFieldMap(gAL->GetAliRun()->Field(),kTRUE);                         
+   }else{
+          Printf("=============== NO galice file! Magnetic field for ESD tracking is: %f ===============",AliTracker::GetBz());
+     }  
+      
   }
 
   if(gSystem->IsFileInIncludePath("cosmic.root")){                          //clm: Check if cosmic file is in the folder
