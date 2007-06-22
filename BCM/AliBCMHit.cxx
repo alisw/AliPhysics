@@ -27,7 +27,7 @@
 
 
 #include "AliBCMHit.h"
-ClassImp(AliBCMHit);
+ClassImp(AliBCMHit)
 
 
 AliBCMHit::AliBCMHit():
