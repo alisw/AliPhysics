@@ -128,9 +128,9 @@ void VZEROSurveyToAlignment(){
 
      for(Int_t i=0; i<3; i++) 
      { ngA[i]  = coordinates[0][i] / 10.0 ; 
-       ngB[i]  = coordinates[1][i] / 10.0 ;
-       ngC[i]  = coordinates[2][i] / 10.0 ; 
-       ngD[i]  = coordinates[3][i] / 10.0 ; }
+       ngD[i]  = coordinates[1][i] / 10.0 ;
+       ngB[i]  = coordinates[2][i] / 10.0 ; 
+       ngC[i]  = coordinates[3][i] / 10.0 ; }
           
    cout<<endl<<"Fiducial marks coordinates in the global RS given by surveyers:\n"<<
     "A "<<ngA[0]<<" "<<ngA[1]<<" "<<ngA[2]<<" "<<endl<<
@@ -184,7 +184,7 @@ void VZEROSurveyToAlignment(){
     plane[i] = n[i] * s;
   }
   plane[3] = -( plane[0] * ngA[0] + plane[1] * ngA[1] + plane[2] * ngA[2] );
-  //  cout<<plane[0]<<"  "<<plane[1]<<"  "<<plane[2]<<"  "<<plane[3]<<"  "<<endl;
+//  cout<<plane[0]<<"  "<<plane[1]<<"  "<<plane[2]<<"  "<<plane[3]<<"  "<<endl;
 
   // The center of the square with fiducial marks as corners
   // as the middle point of one diagonal - md
@@ -199,8 +199,7 @@ void VZEROSurveyToAlignment(){
   for(i=0;i<3;i++){
     orig[i] = md[i] - plane[i]*zdepth;
   }
-  orig[1] = md[1] - plane[1]*zdepth;
-  orig[2] = md[2] - plane[2]*zdepth;
+
   cout<<endl<<"Center of the box: "<<orig[0]<<"  "<<orig[1]<<"  "<<orig[2]<<endl;
 
   // get x,y local directions needed to write the global rotation matrix
@@ -247,21 +246,21 @@ void VZEROSurveyToAlignment(){
   
   if(!gSystem->Getenv("$TOCDB")){
     // save on file
-    TFile f("V0Survey.root","RECREATE");
-    if(!f) cerr<<"cannot open file for output\n";
-    f.cd();
-    f.WriteObject(array,"V0SurveyObjs ","kSingleKey");
-    f.Close();
+     TFile f("V0Survey.root","RECREATE");
+     if(!f) cerr<<"cannot open file for output\n";
+     f.cd();
+     f.WriteObject(array,"V0SurveyObjs ","kSingleKey");
+     f.Close();
   }else{
     // save in CDB storage
-    AliCDBManager* cdb = AliCDBManager::Instance();
-    AliCDBStorage* storage = cdb->GetStorage("local://$ALICE_ROOT");
-    AliCDBMetaData* mda = new AliCDBMetaData();
-    mda->SetResponsible("Brigitte Cheynis");
-    mda->SetComment("Alignment objects for V0 survey");
-    mda->SetAliRootVersion(gSystem->Getenv("$ARVERSION"));
-    AliCDBId id("VZERO/Align/Data",0,9999999);
-    storage->Put(array,id,mda);
+     AliCDBManager* cdb = AliCDBManager::Instance();
+     AliCDBStorage* storage = cdb->GetStorage("local://$ALICE_ROOT");
+     AliCDBMetaData* mda = new AliCDBMetaData();
+     mda->SetResponsible("Brigitte Cheynis");
+     mda->SetComment("Alignment objects for V0 survey");
+     mda->SetAliRootVersion(gSystem->Getenv("$ARVERSION"));
+     AliCDBId id("VZERO/Align/Data",0,9999999);
+     storage->Put(array,id,mda);
   }
 
   array->Delete();
