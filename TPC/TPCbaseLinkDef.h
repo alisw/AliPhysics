@@ -38,6 +38,8 @@
 #pragma link C++ class AliTPCLaserTracks+;
 #pragma link C++ class AliTPCSensorTemp+;
 #pragma link C++ class AliTPCSensorTempArray+;
+#pragma link C++ class AliTPCDBTemp+;
+#pragma link C++ class AliTPCDBPressure+;
 
 
 #pragma link C++ class AliTPCAltroMapping+;
