@@ -218,7 +218,7 @@ void AliTPCcalibDB::Update(){
   if (entry){
     //if (fPressure) delete fPressure;
     entry->SetOwner(kTRUE);
-    fPressure = (AliTPCSensorPressureArray*)entry->GetObject();
+    fPressure = (AliDCSSensorArray*)entry->GetObject();
   }
 
 

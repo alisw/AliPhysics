@@ -13,7 +13,7 @@
 #include "TObject.h"
 class AliTPCCalPad;
 class AliTPCSensorTempArray;
-class AliTPCSensorPressureArray;
+class AliDCSSensorArray;
 class AliCDBEntry;
 class AliTPCParam;
 //class AliCDBStorage;
@@ -33,7 +33,7 @@ class AliTPCcalibDB : public TObject
   AliTPCCalPad* GetPadNoise() {return fPadNoise;}
   AliTPCCalPad* GetPedestals() {return fPedestals;}
   AliTPCSensorTempArray* GetTemperature() {return fTemperature;}
-  AliTPCSensorPressureArray* GetPressure() {return fPressure;}
+  AliDCSSensorArray* GetPressure() {return fPressure;}
   AliTPCParam*  GetParameters(){return fParam;}
   static void     CreateObjectList(const Char_t *filename, TObjArray *calibObjects);
   static void MakeTree(const char * fileName, TObjArray * array, const char * mapFileName = 0, AliTPCCalPad* outlierPad = 0, Float_t ltmFraction = 0.9);
@@ -53,7 +53,7 @@ protected:
   AliTPCCalPad* fPadNoise;
   AliTPCCalPad* fPedestals;
   AliTPCSensorTempArray* fTemperature;
-  AliTPCSensorPressureArray *fPressure;
+  AliDCSSensorArray *fPressure;
   //
   //
   AliTPCParam * fParam;
