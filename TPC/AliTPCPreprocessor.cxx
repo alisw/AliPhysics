@@ -20,11 +20,12 @@
 #include "AliDCSValue.h"
 #include "AliLog.h"
 #include "AliTPCSensorTempArray.h"
+#include "AliTPCDBPressure.h"
 
 #include <TTimeStamp.h>
 
-const char kFname[]="$ALICE_ROOT/TPC/Cal";
-const char kAmandaStringTemp[] = "tpc_PT_%d.Temperature";
+const Int_t kValCutTemp = 100;         // discard temperatures > 100 degrees
+const Int_t kDiffCutTemp = 5;	   // discard temperature differences > 5 degrees
 
 //
 // This class is the SHUTTLE preprocessor for the TPC detector.
@@ -37,14 +38,14 @@ ClassImp(AliTPCPreprocessor)
 //______________________________________________________________________________________________
 AliTPCPreprocessor::AliTPCPreprocessor(AliShuttleInterface* shuttle) :
   AliPreprocessor("TPC",shuttle),
-  fTemp(0)
+  fTemp(0), fPressure(0), fConfigOK(kTRUE)
 {
   // constructor
 }
 //______________________________________________________________________________________________
 // AliTPCPreprocessor::AliTPCPreprocessor(const AliTPCPreprocessor& org) :
 //   AliPreprocessor(org),
-//   fTemp(0)
+//   fTemp(0), fPressure(0), fConfigOK(kTRUE)
 // {
 //   // copy constructor not implemented
 //   //   -- missing underlying copy constructor in AliPreprocessor 
@@ -60,6 +61,7 @@ AliTPCPreprocessor::~AliTPCPreprocessor()
   // destructor
   
   delete fTemp;
+  delete fPressure;
 }
 //______________________________________________________________________________________________
 AliTPCPreprocessor& AliTPCPreprocessor::operator = (const AliTPCPreprocessor& )
@@ -81,8 +83,34 @@ void AliTPCPreprocessor::Initialize(Int_t run, UInt_t startTime,
 		TTimeStamp(startTime).AsString(),
 		TTimeStamp(endTime).AsString()));
 
-        fTemp = new AliTPCSensorTempArray(fStartTime, fEndTime, kFname);
-        fTemp->SetAmandaString(kAmandaStringTemp);
+  // Temperature sensors
+
+        AliCDBEntry* entry = GetFromOCDB("Config", "Temperature"); 
+        TTree *confTree = (TTree*) entry->GetObject();
+        if ( confTree==0 ) {
+           AliError(Form("Temperature Config OCDB entry missing.\n"));
+           Log("AliTPCPreprocsessor: Temperature Config OCDB entry missing.\n");
+	   fConfigOK = kFALSE;
+        }
+        fTemp = new AliTPCSensorTempArray(fStartTime, fEndTime, confTree);
+	fTemp->SetValCut(kValCutTemp);
+	fTemp->SetDiffCut(kDiffCutTemp);
+	confTree->Delete(); delete confTree; confTree=0;
+	entry->Delete(); delete entry; entry=0;
+  
+  // Pressure sensors
+ 
+        entry = GetFromOCDB("Config", "Pressure"); 
+        confTree = (TTree*) entry->GetObject();
+        if ( confTree==0 ) {
+           AliError(Form("Pressure Config OCDB entry missing.\n"));
+           Log("AliTPCPreprocsessor: Pressure Config OCDB entry missing.\n");
+	   fConfigOK = kFALSE;
+        }
+	fPressure = new AliDCSSensorArray(fStartTime, fEndTime, confTree);
+	confTree->Delete(); delete confTree; confTree=0;
+	entry->Delete(); delete entry; entry=0;
+
 }
 
 //______________________________________________________________________________________________
@@ -90,14 +118,21 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
 {
   // Fills data into TPC calibrations objects
 
-  if (!dcsAliasMap) return 9;
+   if (!dcsAliasMap) return 9;
+   if (!fConfigOK) return 9;
 
   // Amanda servers provide information directly through dcsAliasMap
 
   // Temperature sensors are processed by AliTPCCalTemp
 
+
   UInt_t tempResult = MapTemperature(dcsAliasMap);
   UInt_t result=tempResult;
+
+  // Pressure sensors
+
+  UInt_t pressureResult = MapPressure(dcsAliasMap);
+  result += pressureResult;
   
   // Other calibration information will be retrieved through FXS files
   //  examples: 
@@ -136,6 +171,41 @@ UInt_t AliTPCPreprocessor::MapTemperature(TMap* dcsAliasMap)
 	metaData.SetComment("Preprocessor AliTPC data base entries.");
 
 	result = Store("Calib", "Temperature", fTemp, &metaData, 0, 0);
+        if ( result == 1 ) {                  
+          result = 0;
+	} else {
+	  result = 1;
+	}                      // revert to new return code conventions
+   }
+
+   return result;
+}
+//______________________________________________________________________________________________
+UInt_t AliTPCPreprocessor::MapPressure(TMap* dcsAliasMap)
+{
+
+   // extract DCS temperature maps. Perform fits to save space
+
+  UInt_t result=0;
+  TMap *map = fPressure->ExtractDCS(dcsAliasMap);
+  if (map) {
+    fPressure->MakeSplineFit(map);
+    AliInfo(Form("Pressure values extracted, fits performed.\n"));
+  } else {
+    AliError(Form("No atmospheric pressure map extracted.\n"));
+    Log("AliTPCPreprocsessor: no atmospheric pressure map extracted. \n");
+    result=9;
+  }
+  delete map;
+  // Now store the final CDB file
+  
+  if ( result == 0 ) { 
+        AliCDBMetaData metaData;
+	metaData.SetBeamPeriod(0);
+	metaData.SetResponsible("Haavard Helstrup");
+	metaData.SetComment("Preprocessor AliTPC data base entries.");
+
+	result = Store("Calib", "Pressure", fPressure, &metaData, 0, 0);
         if ( result == 1 ) {                  
           result = 0;
 	} else {
