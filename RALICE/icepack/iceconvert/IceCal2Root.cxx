@@ -104,8 +104,8 @@
 // // The MuDaq Amacalib input filename
 // q.SetAmacalibFile("amacalib_amanda2_2005.txt");
 //
-// // The TWRDaq input filename with the newly determined TWR T0's.
-// q.SetTWRDaqFile("muon_t0_cal_2005.txt");
+// // The TWRDaq input filename with the newly determined TWR T0 and ADC calibs.
+// q.SetTWRDaqFile("twr-cal-2005.txt");
 //
 // // Output file for the event structures
 // q.SetOutputFile("cal2005.root");
