@@ -14,6 +14,7 @@
 #pragma link C++ class AliTPCv1+;
 #pragma link C++ class AliTPCv2+;
 #pragma link C++ class AliTPCv3+;
+#pragma link C++ class AliTPCv4+;
 #pragma link C++ class AliTPCLaser+;
 
 //#pragma link C++ class AliTrackHitsInfo+;    // defined in AliTPCTrackHits.h

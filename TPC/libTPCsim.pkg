@@ -1,5 +1,5 @@
 SRCS:=  AliTPC.cxx \
-        AliTPCv0.cxx AliTPCv1.cxx AliTPCv2.cxx AliTPCv3.cxx \
+        AliTPCv0.cxx AliTPCv1.cxx AliTPCv2.cxx AliTPCv3.cxx AliTPCv4.cxx \
         AliTPCLaser.cxx \
         AliTPCTrackHitsV2.cxx \
         AliTPCDigitizer.cxx \
