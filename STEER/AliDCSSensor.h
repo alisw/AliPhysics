@@ -38,6 +38,7 @@ public:
   
   Int_t       GetId()     const {return fId;     }
   Int_t       GetIdDCS()  const {return fIdDCS;     }
+  const TString& GetStringID() const {return fStringID; }
   
   Double_t    GetX()   	   const {return fX;      }
   Double_t    GetY()   	   const {return fY;      }
@@ -52,6 +53,7 @@ public:
 
   void SetId     (Int_t id)        {fId     = id;    }
   void SetIdDCS  (Int_t iddcs)     {fIdDCS  = iddcs;    }
+  void SetStringID (const TString& stringID)  {fStringID = stringID; }
   
   void SetX       (Double_t x)       {fX     = x;      }
   void SetY       (Double_t y)       {fY     = y;      }
@@ -67,15 +69,13 @@ public:
   Double_t GetValue(TTimeStamp time);
   Double_t Eval(const TTimeStamp& time) const;
   TGraph *MakeGraph (Int_t nPoints=100) const;
+  static TClonesArray *  ReadTree(TTree *tree);
   
-  
-//  static TClonesArray * ReadList(const char *fname);
-//  static TClonesArray * ReadListInd(const char *fname,
-//                                 Int_t& firstSensor, Int_t& lastSensor);
 
 protected:
-  Int_t fId;        // Internal number of sensor id  (array index)
-  Int_t fIdDCS;     // ID number in DCS
+  Int_t fId;         // Internal number of sensor id  (array index)
+  Int_t fIdDCS;      // ID number in DCS
+  TString  fStringID; // Amanda String ID
   UInt_t   fStartTime;  // start time for DCS map/fit
   UInt_t   fEndTime;    // end time for DCS map/fit
   TGraph * fGraph;      // graph with values
@@ -84,6 +84,7 @@ protected:
   Double_t fY;      //Y-position of the sensor
   Double_t fZ;      //Z-position of the sensor
 
-  ClassDef(AliDCSSensor,2);
+  ClassDef(AliDCSSensor,3);
 };
 #endif
+

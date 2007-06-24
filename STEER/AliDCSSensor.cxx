@@ -47,6 +47,7 @@ const Double_t kSecInHour = 3600.; // seconds in one hour
 AliDCSSensor::AliDCSSensor():
   fId(),
   fIdDCS(0),
+  fStringID(),
   fStartTime(0),
   fEndTime(0),
   fGraph(0),
@@ -64,6 +65,7 @@ AliDCSSensor::AliDCSSensor(const AliDCSSensor& source) :
    TNamed(source),
    fId(source.fId),
    fIdDCS(source.fIdDCS),
+   fStringID(source.fStringID),
    fStartTime(source.fStartTime),
    fEndTime(source.fEndTime),
    fGraph(source.fGraph),
@@ -155,4 +157,46 @@ TGraph* AliDCSSensor::MakeGraph(Int_t nPoints) const
   return graph;
 }
 
+//_____________________________________________________________________________
+
+TClonesArray * AliDCSSensor::ReadTree(TTree* tree) {
+  //
+  // read values from ascii file
+  //
+  
+  Int_t nentries = tree->GetEntries();
+  
+  char stringId[100];
+  Int_t num=0;
+  Int_t idDCS=0;
+  Double_t x=0;
+  Double_t y=0;
+  Double_t z=0;
+
+  tree->SetBranchAddress("StringID",&stringId);
+  tree->SetBranchAddress("IdDCS",&idDCS);
+  tree->SetBranchAddress("Num",&num);
+  tree->SetBranchAddress("X",&x);
+  tree->SetBranchAddress("Y",&y);
+  tree->SetBranchAddress("Z",&z);
+
+  // firstSensor = (Int_t)tree->GetMinimum("ECha");
+  // lastSensor = (Int_t)tree->GetMaximum("ECha");
+
+  TClonesArray * array = new TClonesArray("AliDCSSensor",nentries);
+   printf ("nentries = %d\n",nentries);
+
+  for (Int_t isensor=0; isensor<nentries; isensor++){
+    AliDCSSensor * sens = new ((*array)[isensor])AliDCSSensor;
+    tree->GetEntry(isensor);
+    sens->SetId(isensor);
+    sens->SetIdDCS(idDCS);
+    sens->SetStringID(TString(stringId));
+    sens->SetX(x);
+    sens->SetY(y);
+    sens->SetZ(z);
+
+  }
+  return array;
+}
 
