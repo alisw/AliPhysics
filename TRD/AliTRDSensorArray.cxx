@@ -204,14 +204,14 @@ TObjArray *  AliTRDSensorArray::GetList ()
 TMap* AliTRDSensorArray::ExtractDCS(TMap *dcsMap)
 {
 	//Return Tmap with TGraph inside corresponding to values in dcsMap
-	return AliDCSSensorArray::ExtractDCS (dcsMap, fAmanda.Data ());
+	return AliDCSSensorArray::ExtractDCS (dcsMap);
 }
 
 //_____________________________________________________________________________
 void AliTRDSensorArray::SetGraph (TMap * map)
 {
 	// assigne list of TGraph to the current instance
-	AliDCSSensorArray::SetGraph (map, fAmanda.Data ());
+	AliDCSSensorArray::SetGraph (map);
 }
 
 
