@@ -37,6 +37,7 @@
 #include "AliTPCSensorTemp.h"
 ClassImp(AliTPCSensorTemp)
 
+const char kAmandaString[] = "tpc_temp:PT_%d.Temperature";
 
 const Float_t kASideX[18][5]={
         { 99.56,  117.59,  160.82,  186.92,  213.11},
@@ -123,6 +124,7 @@ const Float_t kIFCrad[5] = {67.2, 64.4, 60.7, 64.4, 67.2};
 const Float_t kTSrad[4] =  {67.2, 61.5, 67.2, 61.5}; 
 const Float_t kTSz[4] =  {240.0, 90.0, 240.0, 90.0}; 
 
+//______________________________________________________________________________________________
 
 AliTPCSensorTemp::AliTPCSensorTemp(): AliDCSSensor(),
   fType(0),
@@ -134,6 +136,7 @@ AliTPCSensorTemp::AliTPCSensorTemp(): AliDCSSensor(),
   //  Standard constructor
   //
 }
+//______________________________________________________________________________________________
 
 AliTPCSensorTemp::AliTPCSensorTemp(const AliTPCSensorTemp& source) :
   AliDCSSensor(source),
@@ -146,6 +149,7 @@ AliTPCSensorTemp::AliTPCSensorTemp(const AliTPCSensorTemp& source) :
 //  Copy constructor
 //
 { }
+//______________________________________________________________________________________________
 
 AliTPCSensorTemp& AliTPCSensorTemp::operator=(const AliTPCSensorTemp& source){
 //
@@ -156,8 +160,7 @@ AliTPCSensorTemp& AliTPCSensorTemp::operator=(const AliTPCSensorTemp& source){
   
   return *this;  
 }
-
-   
+//______________________________________________________________________________________________
 
 TClonesArray * AliTPCSensorTemp::ReadList(const char *fname) {
   //
@@ -165,6 +168,14 @@ TClonesArray * AliTPCSensorTemp::ReadList(const char *fname) {
   //
   TTree * tree = new TTree("asci","asci");
   tree->ReadFile(fname,"");
+  TClonesArray *arr = ReadTree(tree);
+  delete tree;
+  return arr;
+}
+     
+//______________________________________________________________________________________________
+
+TClonesArray * AliTPCSensorTemp::ReadTree(TTree *tree) {
   
   Int_t nentries = tree->GetEntries();
   Int_t sensor=0;
@@ -198,6 +209,8 @@ TClonesArray * AliTPCSensorTemp::ReadList(const char *fname) {
     tree->GetEntry(isensor);
     temp->SetId(sensor);
     temp->SetIdDCS(echa);
+    TString stringID = Form (kAmandaString,echa);
+    temp->SetStringID(stringID);
     if (side[0]=='C') temp->SetSide(1);
     temp->SetSector(sector);
     temp->SetNum(num);
@@ -322,6 +335,5 @@ TClonesArray * AliTPCSensorTemp::ReadList(const char *fname) {
 
 
   }
-  delete tree;  
   return array;
 }

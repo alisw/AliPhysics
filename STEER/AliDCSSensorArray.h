@@ -25,7 +25,9 @@ class TTimeStamp;
 class AliDCSSensorArray : public TNamed {
  public:
   AliDCSSensorArray();
-  AliDCSSensorArray(Int_t prevRun, const char* dbEntry);
+  AliDCSSensorArray(TClonesArray *arr);
+  AliDCSSensorArray(Int_t run, const char* dbEntry);
+  AliDCSSensorArray(UInt_t startTime, UInt_t endTime, TTree* confTree);
   AliDCSSensorArray(const AliDCSSensorArray &c);   
   virtual ~AliDCSSensorArray();
   AliDCSSensorArray &operator=(const AliDCSSensorArray &c);
@@ -49,13 +51,16 @@ class AliDCSSensorArray : public TNamed {
   void  SetDiffCut(const Int_t diffCut) { fDiffCut=diffCut; }
   Int_t GetDiffCut() const {return fDiffCut;}
 
-  void SetGraph     (TMap *map, const char* amandaString);
-  void MakeSplineFit(TMap *map, const char* amandaString, Bool_t keepMap=kFALSE);
-  TMap* ExtractDCS  (TMap *dcsMap, const char* amandaString);
+  void SetGraph     (TMap *map);
+  void MakeSplineFit(TMap *map, Bool_t keepMap=kFALSE);
+  TMap* ExtractDCS  (TMap *dcsMap);
   TGraph* MakeGraph (TObjArray *valueSet);
+  void ClearGraph();
+  void ClearFit(); 
   Double_t GetValue  (UInt_t timeSec, Int_t sensor);
   AliDCSSensor* GetSensor (Int_t IdDCS);
   AliDCSSensor* GetSensor (Double_t x, Double_t y, Double_t z);
+  AliDCSSensor* GetSensor (const TString& stringID);
   AliDCSSensor* GetSensorNum (Int_t ind);
   Int_t NumSensors() const { return fSensors->GetEntries(); }
    

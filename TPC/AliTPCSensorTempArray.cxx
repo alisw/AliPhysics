@@ -25,12 +25,9 @@
 
 ClassImp(AliTPCSensorTempArray)
 
-const char kFname[] = "TempSensor.txt";
-const char kAmandaString[] = "tpc_temp:PT_%d.Temperature";
 
 //_____________________________________________________________________________
-AliTPCSensorTempArray::AliTPCSensorTempArray():AliDCSSensorArray(),
- fAmandaString(kAmandaString)
+AliTPCSensorTempArray::AliTPCSensorTempArray():AliDCSSensorArray()
 {
   //
   // AliTPCSensorTempArray default constructor
@@ -38,34 +35,38 @@ AliTPCSensorTempArray::AliTPCSensorTempArray():AliDCSSensorArray(),
  
 }
 //_____________________________________________________________________________
-AliTPCSensorTempArray::AliTPCSensorTempArray(Int_t prevRun) : 
-                AliDCSSensorArray(prevRun,"TPC/Calib/Temperature"),
- fAmandaString(kAmandaString)
+AliTPCSensorTempArray::AliTPCSensorTempArray(Int_t run) : AliDCSSensorArray() 
 {
+  //
+  // Read configuration from OCDB
+  //
+
+     
+  AliCDBEntry *entry =
+            AliCDBManager::Instance()->Get("TPC/Config/Temperature",run); 
+  TTree *tree = (TTree*) entry->GetObject();
+  fSensors = AliTPCSensorTemp::ReadTree(tree);
+  fSensors->BypassStreamer(kFALSE);
+  
 }
 //_____________________________________________________________________________
 AliTPCSensorTempArray::AliTPCSensorTempArray(UInt_t startTime, UInt_t endTime,
-                       const char *filepath)
-             :AliDCSSensorArray(),
-     fAmandaString(kAmandaString)
+                       TTree* confTree)
+             :AliDCSSensorArray()
 {
   //
-  // AliTPCSensorTempArray default constructor
+  // AliTPCSensorTempArray constructor for Shuttle preprocessor 
+  //  (confTree read from OCDB)
   //
-  char *expPath = gSystem->ExpandPathName(filepath);
-  TString filename(expPath);
-  filename.Append('/');
-  filename.Append(kFname);
-  fSensors =  AliTPCSensorTemp::ReadList(filename.Data());
+  fSensors = AliTPCSensorTemp::ReadTree(confTree);
+  fSensors->BypassStreamer(kFALSE);
   fStartTime = TTimeStamp(startTime);
   fEndTime   = TTimeStamp(endTime);
-  delete expPath;
 }
 
 //_____________________________________________________________________________
 AliTPCSensorTempArray::AliTPCSensorTempArray(const char *fname) : 
-                                                  AliDCSSensorArray(),
- fAmandaString(kAmandaString)
+                                                  AliDCSSensorArray()
 {
   //
   // AliTPCSensorTempArray constructor
@@ -77,8 +78,7 @@ AliTPCSensorTempArray::AliTPCSensorTempArray(const char *fname) :
 
 //_____________________________________________________________________________
 AliTPCSensorTempArray::AliTPCSensorTempArray(const AliTPCSensorTempArray &c):
-  AliDCSSensorArray(c),
-  fAmandaString(c.fAmandaString)
+  AliDCSSensorArray(c)
 {
   //
   // AliTPCSensorTempArray copy constructor
@@ -116,41 +116,16 @@ void AliTPCSensorTempArray::Copy(TObject &c) const
   TObject::Copy(c);
 }
 //_____________________________________________________________________________
-void AliTPCSensorTempArray::ReadSensors(const char *fname) 
+void AliTPCSensorTempArray::ReadSensors(const char *dbEntry) 
 {
   //
   // Read list of temperature sensors from text file
   //
-  fSensors = AliTPCSensorTemp::ReadList(fname);
-}  
-//_____________________________________________________________________________
-void AliTPCSensorTempArray::SetGraph(TMap *map) 
-{
-  // 
-  // Read graphs from DCS maps 
-  //
-  AliDCSSensorArray::SetGraph(map,fAmandaString.Data());
-}  
-//_____________________________________________________________________________
-void AliTPCSensorTempArray::MakeSplineFit(TMap *map) 
-{
-  // 
-  // Make spline fits from DCS maps 
-  //
-  AliDCSSensorArray::MakeSplineFit(map,fAmandaString.Data());
-}  
+  AliCDBEntry *entry = AliCDBManager::Instance()->Get(dbEntry); 
+  TTree *tree = (TTree*) entry->GetObject();
+  fSensors = AliTPCSensorTemp::ReadTree(tree);
 
-
-//_____________________________________________________________________________
-TMap* AliTPCSensorTempArray::ExtractDCS(TMap *dcsMap) 
-{
- //
- // Extract temperature graphs from DCS maps
- //
-
- TMap *values = AliDCSSensorArray::ExtractDCS(dcsMap,fAmandaString.Data());
- return values;
-}
+}  
 
 //_____________________________________________________________________________
 AliTPCSensorTemp* AliTPCSensorTempArray::GetSensor(Int_t type, Int_t side, Int_t sector, Int_t num) 

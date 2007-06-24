@@ -48,6 +48,7 @@ public:
 
 
   static TClonesArray * ReadList(const char *fname);
+  static TClonesArray * ReadTree(TTree *tree);
 
 protected:
   Int_t fType;      // Position of sensors on fieldcage
@@ -64,6 +65,6 @@ protected:
                     //	fType=6(0-1) 0:input -- 1:output
 
 
-  ClassDef(AliTPCSensorTemp,1);
+  ClassDef(AliTPCSensorTemp,1)
 };
 #endif

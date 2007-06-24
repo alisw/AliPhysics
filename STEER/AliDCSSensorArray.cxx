@@ -34,8 +34,8 @@ AliDCSSensorArray::AliDCSSensorArray():TNamed(),
   fIter(10),
   fMaxDelta(0.0),
   fFitReq(2),
-  fValCut(9999999),
-  fDiffCut(9999999),
+  fValCut(-1),
+  fDiffCut(-1),
   fStartTime (2000,1,1,0,0,0),
   fEndTime   (2000,1,1,0,0,0),
   fSensors(0)
@@ -46,53 +46,69 @@ AliDCSSensorArray::AliDCSSensorArray():TNamed(),
 
 }
 //_____________________________________________________________________________
-AliDCSSensorArray::AliDCSSensorArray(Int_t prevRun, const char* dbEntry) : 
+AliDCSSensorArray::AliDCSSensorArray(TClonesArray *arr):TNamed(), 
+  fMinGraph(10),
+  fMinPoints(10),
+  fIter(10),
+  fMaxDelta(0.0),
+  fFitReq(2),
+  fValCut(-1),
+  fDiffCut(-1),
+  fStartTime (2000,1,1,0,0,0),
+  fEndTime   (2000,1,1,0,0,0),
+  fSensors(arr)
+{
+  //
+  // AliDCSSensorArray special constructor taking TClonesArray from ReadList
+  //
+
+}
+//_____________________________________________________________________________
+AliDCSSensorArray::AliDCSSensorArray(Int_t run, const char* dbEntry) : 
   TNamed(),
   fMinGraph(10),
   fMinPoints(10),
   fIter(10),
   fMaxDelta(0.0),
   fFitReq(2),
-  fValCut(9999999),
-  fDiffCut(9999999),
+  fValCut(-1),
+  fDiffCut(-1),
   fStartTime (2000,1,1,0,0,0),
   fEndTime   (2000,1,1,0,0,0),
   fSensors(0)
 {
   //
-  // Read positions etc. from data base entry for previous run
-  // Delete all fits and graphs
+  // Read configuration from OCDB
   //
-   AliDCSSensorArray *temp=0;
-   AliCDBEntry* entry = 
-       AliCDBManager::Instance()->Get(dbEntry,prevRun); 
-   if (entry){
-     entry->SetOwner(kTRUE);
-     temp = (AliDCSSensorArray*)entry->GetObject();
-   } 
+  
+  AliCDBEntry *entry = AliCDBManager::Instance()->Get(dbEntry,run); 
+  TTree *tree = (TTree*) entry->GetObject();
+  fSensors = AliDCSSensor::ReadTree(tree);
+}
+//_____________________________________________________________________________
+AliDCSSensorArray::AliDCSSensorArray(UInt_t startTime, UInt_t endTime,
+                       TTree* confTree) :
+  TNamed(),
+  fMinGraph(10),
+  fMinPoints(10),
+  fIter(10),
+  fMaxDelta(0.0),
+  fFitReq(2),
+  fValCut(-1),
+  fDiffCut(-1),
+  fStartTime (2000,1,1,0,0,0),
+  fEndTime   (2000,1,1,0,0,0),
+  fSensors(0)
 
-   TGraph *gr;
-   AliSplineFit* fit;
-
-// Delete previous values
-   
-   Int_t nsensors = temp->fSensors->GetEntries();
-   for ( Int_t isensor=0; isensor<nsensors; isensor++) {
-     AliDCSSensor *entry = (AliDCSSensor*)temp->fSensors->At(isensor);
-     gr = entry->GetGraph();
-     if ( gr != 0 ) {
-       delete gr;
-       gr = 0;
-     }
-     fit = entry->GetFit();
-     if ( fit != 0 ) {
-       delete fit;
-       fit = 0;
-     }
-   }    
-   
-   new (this) AliDCSSensorArray(*temp);
-   delete temp;
+{
+  //
+  // AliDCSSensorArray constructor for Shuttle preprocessor 
+  //  (confTree read from OCDB)
+  //
+  fSensors = AliDCSSensor::ReadTree(confTree);
+  fSensors->BypassStreamer(kFALSE);
+  fStartTime = TTimeStamp(startTime);
+  fEndTime   = TTimeStamp(endTime);
 }
 
 
@@ -152,36 +168,38 @@ void AliDCSSensorArray::Copy(TObject &c) const
   TObject::Copy(c);
 }
 //_____________________________________________________________________________
-void AliDCSSensorArray::SetGraph(TMap *map, const char *amandaString) 
+void AliDCSSensorArray::SetGraph(TMap *map) 
 {
   // 
   // Read graphs from DCS maps 
   //
-  char dname[100];
   Int_t nsensors = fSensors->GetEntries();
   for ( Int_t isensor=0; isensor<nsensors; isensor++) {
     AliDCSSensor *entry = (AliDCSSensor*)fSensors->At(isensor);
-    Int_t dcsSensor=entry->GetIdDCS();
-    sprintf(dname,amandaString,dcsSensor);
-    TGraph *gr = (TGraph*)map->GetValue(dname);
-    entry->SetGraph(gr);
+    TString stringID = entry->GetStringID();    
+    TGraph *gr = (TGraph*)map->GetValue(stringID.Data());
+    if ( gr !=0 ) {
+       entry->SetGraph((TGraph*)gr->Clone());
+    } else { 
+       entry->SetGraph(0);
+    }
   } 
 }  
 //_____________________________________________________________________________
-void AliDCSSensorArray::MakeSplineFit(TMap *map, const char *amandaString,
-                                                               Bool_t keepMap) 
+void AliDCSSensorArray::MakeSplineFit(TMap *map, Bool_t keepMap) 
 {
   // 
   // Make spline fits from DCS maps 
   //
-  char dname[100];
   Int_t nsensors = fSensors->GetEntries();
   for ( Int_t isensor=0; isensor<nsensors; isensor++) {
     AliDCSSensor *entry = (AliDCSSensor*)fSensors->At(isensor);
-    Int_t dcsSensor=entry->GetIdDCS();
-    sprintf(dname,amandaString,dcsSensor);
-    TGraph *gr = (TGraph*)map->GetValue(dname);
-    if (gr->GetN() < fMinGraph ) continue;    
+    TString stringID = entry->GetStringID();    
+    TGraph *gr = (TGraph*)map->GetValue(stringID.Data());
+    if (gr==0 || gr->GetN() < fMinGraph) { 
+      entry->SetFit(0);
+      continue;    
+    }
     AliSplineFit *fit = new AliSplineFit();
     fit->InitKnots(gr,fMinPoints,fIter,fMaxDelta);
     fit->SplineFit(fFitReq);
@@ -192,6 +210,7 @@ void AliDCSSensorArray::MakeSplineFit(TMap *map, const char *amandaString,
     if (keepMap) entry->SetGraph(gr);
   } 
 }  
+
 
 //_____________________________________________________________________________
 Double_t AliDCSSensorArray::GetValue(UInt_t timeSec, Int_t sensor) 
@@ -206,7 +225,7 @@ Double_t AliDCSSensorArray::GetValue(UInt_t timeSec, Int_t sensor)
     
 
 //_____________________________________________________________________________
-TMap* AliDCSSensorArray::ExtractDCS(TMap *dcsMap, const char *amandaString) 
+TMap* AliDCSSensorArray::ExtractDCS(TMap *dcsMap) 
 {
  //
  // Extract temperature graphs from DCS maps
@@ -216,12 +235,14 @@ TMap* AliDCSSensorArray::ExtractDCS(TMap *dcsMap, const char *amandaString)
  Int_t nsensors = fSensors->GetEntries();
  for ( Int_t isensor=0; isensor<nsensors; isensor++) {
    AliDCSSensor *entry = (AliDCSSensor*)fSensors->At(isensor);
-   Int_t dcsSensor=entry->GetIdDCS();
-   TString DPname = Form (amandaString,dcsSensor);
-   TPair *pair = (TPair*)dcsMap->FindObject(DPname.Data());
-   valueSet = (TObjArray*)pair->Value();
-   TGraph *graph = MakeGraph(valueSet);
-   values->Add(new TObjString(DPname.Data()),graph);
+   TString stringID = entry->GetStringID();    
+   TPair *pair = (TPair*)dcsMap->FindObject(stringID.Data());
+   if ( pair ) {                            // only try to read values 
+                                            // if DCS object available
+     valueSet = (TObjArray*)pair->Value();
+     TGraph *graph = MakeGraph(valueSet);
+     values->Add(new TObjString(stringID.Data()),graph);
+   }
  }
  return values;
 }
@@ -233,6 +254,8 @@ TGraph* AliDCSSensorArray::MakeGraph(TObjArray* valueSet){
   //   (spline fit parameters will subsequently be obtained from this graph) 
   //
   Int_t nentries = valueSet->GetEntriesFast(); 
+  if ( nentries == 0 ) return 0;
+  
   Float_t *x = new Float_t[nentries];
   Float_t *y = new Float_t[nentries];
   Int_t time0=0;
@@ -254,23 +277,25 @@ TGraph* AliDCSSensorArray::MakeGraph(TObjArray* valueSet){
         value = val->GetFloat();
         break;
       case AliDCSValue::kChar:
-        value = val->GetChar();
+        value = static_cast<Float_t>(val->GetChar());
 	break;
       case AliDCSValue::kInt:
-        value = val->GetInt();
+        value = static_cast<Float_t>(val->GetInt());
 	break;
       case AliDCSValue::kUInt:
-        value = val->GetUInt();
+        value = static_cast<Float_t>(val->GetUInt());
 	break;
       default:
         continue;
     }
-    if (TMath::Abs(value)>fValCut) continue;   // refuse values greater than cut
-    if ( out>0 && skipped<10 && TMath::Abs(value-y[out-1])>fDiffCut) {
-      skipped++;                               // refuse values changing 
-      continue;                                // by > cut  in one time step
-    }                                          
-    skipped=0;					      
+    if (fValCut>0 && TMath::Abs(value)>fValCut) continue;   // refuse values greater than cut
+    if (fDiffCut>0 ) {
+      if ( out>0 && skipped<10 && TMath::Abs(value-y[out-1])>fDiffCut) {
+        skipped++;                               // refuse values changing 
+        continue;                                // by > cut  in one time step
+      }                                          
+      skipped=0;
+    }					      
     if (val->GetTimeStamp()-time0>1000000) continue;
     x[out] = (val->GetTimeStamp()-time0)/kSecInHour; // give times in fractions of hours 
     y[out] = val->GetFloat();
@@ -293,6 +318,19 @@ AliDCSSensor* AliDCSSensorArray::GetSensor(Int_t IdDCS)
  for (Int_t isensor=0; isensor<nsensors; isensor++) {
    AliDCSSensor *entry = (AliDCSSensor*)fSensors->At(isensor);
    if (entry->GetIdDCS() == IdDCS) return entry;
+ }
+ return 0;
+}
+//_____________________________________________________________________________
+AliDCSSensor* AliDCSSensorArray::GetSensor(const TString& stringID) 
+{
+ //
+ //  Return sensor information for sensor specified by IdDCS
+ //
+ Int_t nsensors = fSensors->GetEntries();
+ for (Int_t isensor=0; isensor<nsensors; isensor++) {
+   AliDCSSensor *entry = (AliDCSSensor*)fSensors->At(isensor);
+   if (entry->GetStringID() == stringID) return entry;
  }
  return 0;
 }
@@ -356,3 +394,37 @@ Int_t AliDCSSensorArray::GetLastIdDCS() const
     return 0;
  }
 }
+void AliDCSSensorArray::ClearGraph()
+{
+  //
+  // Delete DCS graphs from all sensors in array
+  //
+   
+   Int_t nsensors = fSensors->GetEntries();
+   for ( Int_t isensor=0; isensor<nsensors; isensor++) {
+     AliDCSSensor *sensor = (AliDCSSensor*)fSensors->At(isensor);
+     TGraph *gr = sensor->GetGraph();
+     if ( gr != 0 ) {
+       delete gr;
+       gr = 0;
+     }
+     sensor->SetGraph(0);
+   }    
+}  
+void AliDCSSensorArray::ClearFit()
+{
+  //
+  // Delete spline fits from all sensors in array
+  //
+   
+   Int_t nsensors = fSensors->GetEntries();
+   for ( Int_t isensor=0; isensor<nsensors; isensor++) {
+     AliDCSSensor *sensor = (AliDCSSensor*)fSensors->At(isensor);
+     AliSplineFit *fit = sensor->GetFit();
+     if ( fit != 0 ) {
+       delete fit;
+       fit = 0;
+     }
+     sensor->SetFit(0);
+   }    
+}  
