@@ -186,12 +186,16 @@ AliSignal::AliSignal(const AliSignal& s) : TNamed(s),AliPosition(s),AliAttrib(s)
 
  Int_t n=s.GetNvalues();
  Double_t val;
+ Int_t lock;
  for (Int_t i=1; i<=n; i++)
  {
   if (s.GetSignalFlag(i))
   {
    val=s.GetSignal(i);
+   lock=s.GetLockValue();
+   if (lock) Unlock();
    SetSignal(val,i);
+   if (lock) Lock();
   }
  } 
 
@@ -201,7 +205,10 @@ AliSignal::AliSignal(const AliSignal& s) : TNamed(s),AliPosition(s),AliAttrib(s)
   if (s.GetErrorFlag(j))
   {
    val=s.GetSignalError(j);
+   lock=s.GetLockValue();
+   if (lock) Unlock();
    SetSignalError(val,j);
+   if (lock) Lock();
   }
  }
 
@@ -402,10 +409,18 @@ void AliSignal::DeleteSignals(Int_t mode)
 void AliSignal::SetSignal(Double_t sig,Int_t j)
 {
 // Store signal value for the j-th (default j=1) slot.
-// Note : The first signal slot is at j=1.
+// Notes :
+// -------
+// 1) The first signal slot is at j=1.
+// 2) In case the 'lock' flag was set for the specified slot, the new
+//    signal value will not be stored.
+//    One has to unlock the specified slot first in case one really wants
+//    to overwite the signal value.
 // In case the value of the index j exceeds the maximum number of reserved
 // slots for signal values, the number of reserved slots for the
 // signal values is increased automatically.
+
+ if (GetLockValue(j)) return;
 
  if (!fSignals)
  {
@@ -430,6 +445,13 @@ void AliSignal::SetSignal(Double_t sig,TString name)
 {
 // Store signal value for the name-specified slot.
 //
+// Note :
+// ------
+// In case the 'lock' flag was set for the specified slot, the new
+// signal value will not be stored.
+// One has to unlock the specified slot first in case one really wants
+// to overwite the signal value.
+//
 // This procedure involves a slot-index search based on the specified name
 // at each invokation. This may become slow in case many slots have been
 // defined and/or when this procedure is invoked many times.
@@ -437,16 +459,27 @@ void AliSignal::SetSignal(Double_t sig,TString name)
 // either directly or via a few invokations of GetSlotIndex().
 
  Int_t j=GetSlotIndex(name);
- if (j>0) SetSignal(sig,j);
+ if (j>0)
+ {
+  if (!GetLockValue(j)) SetSignal(sig,j);
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliSignal::AddSignal(Double_t sig,Int_t j)
 {
 // Add value to the signal of the j-th (default j=1) slot.
-// Note : The first signal slot is at j=1.
+// Notes :
+// -------
+// 1) The first signal slot is at j=1.
+// 2) In case the 'lock' flag was set for the specified slot, the new
+//    signal value will not be stored.
+//    One has to unlock the specified slot first in case one really wants
+//    to overwite the signal value.
 // In case the value of the index j exceeds the maximum number of reserved
 // slots for signal values, the number of reserved slots for the
 // signal values is increased automatically.
+
+ if (GetLockValue(j)) return;
 
  if (!fSignals)
  {
@@ -472,6 +505,13 @@ void AliSignal::AddSignal(Double_t sig,TString name)
 {
 // Add value to the signal of the name-specified slot.
 //
+// Note :
+// ------
+// In case the 'lock' flag was set for the specified slot, the new
+// signal value will not be stored.
+// One has to unlock the specified slot first in case one really wants
+// to overwite the signal value.
+//
 // This procedure involves a slot-index search based on the specified name
 // at each invokation. This may become slow in case many slots have been
 // defined and/or when this procedure is invoked many times.
@@ -479,7 +519,10 @@ void AliSignal::AddSignal(Double_t sig,TString name)
 // either directly or via a few invokations of GetSlotIndex().
 
  Int_t j=GetSlotIndex(name);
- if (j>0) AddSignal(sig,j);
+ if (j>0)
+ {
+  if (!GetLockValue(j)) AddSignal(sig,j);
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 Float_t AliSignal::GetSignal(Int_t j,Int_t mode) const
@@ -669,10 +712,18 @@ Float_t AliSignal::GetSignal(TString name,Int_t mode) const
 void AliSignal::SetSignalError(Double_t dsig,Int_t j)
 {
 // Store error on the signal for the j-th (default j=1) slot.
-// Note : The first signal slot is at j=1.
+// Notes :
+// -------
+// 1) The first signal slot is at j=1.
+// 2) In case the 'lock' flag was set for the specified slot, the new
+//    signal error value will not be stored.
+//    One has to unlock the specified slot first in case one really wants
+//    to overwite the signal error value.
 // In case the value of the index j exceeds the maximum number of reserved
 // slots for signal error values, the number of reserved slots for the
 // signal errors is increased automatically.
+
+ if (GetLockValue(j)) return;
 
  if (!fDsignals)
  {
@@ -697,6 +748,13 @@ void AliSignal::SetSignalError(Double_t dsig,TString name)
 {
 // Store error on the signal for the name-specified slot.
 //
+// Note :
+// ------
+// In case the 'lock' flag was set for the specified slot, the new
+// signal error value will not be stored.
+// One has to unlock the specified slot first in case one really wants
+// to overwite the signal error value.
+//
 // This procedure involves a slot-index search based on the specified name
 // at each invokation. This may become slow in case many slots have been
 // defined and/or when this procedure is invoked many times.
@@ -704,7 +762,10 @@ void AliSignal::SetSignalError(Double_t dsig,TString name)
 // either directly or via a few invokations of GetSlotIndex().
 
  Int_t j=GetSlotIndex(name);
- if (j>0) SetSignalError(dsig,j);
+ if (j>0)
+ {
+  if (!GetLockValue(j)) SetSignalError(dsig,j);
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 Float_t AliSignal::GetSignalError(Int_t j) const

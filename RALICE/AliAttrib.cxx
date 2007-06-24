@@ -127,6 +127,7 @@ AliAttrib::AliAttrib(const AliAttrib& a)
  for (Int_t ic=1; ic<=n; ic++)
  {
   SetEdgeValue(a.GetEdgeValue(ic),ic);
+  if (a.GetLockValue(ic)) Lock(ic);
   if (a.GetDeadValue(ic)) SetDead(ic);
  }
 
@@ -314,7 +315,7 @@ void AliAttrib::SetCalFlags(Int_t gainflag,Int_t offsetflag,Int_t j)
 // In case the value of the index j exceeds the maximum number of reserved
 // slots for the calib. flags, the number of reserved slots for the calib.
 // flags is increased automatically.
-// The value stored is : 1000*edge + 100*dead + 10*gainflag + offsetflag.
+// The value stored is : 10000*edge +1000*lock + 100*dead + 10*gainflag + offsetflag.
 
  if (j<1) 
  {
@@ -335,9 +336,10 @@ void AliAttrib::SetCalFlags(Int_t gainflag,Int_t offsetflag,Int_t j)
  }
 
  Int_t edge=GetEdgeValue(j);
+ Int_t lock=GetLockValue(j);
  Int_t dead=GetDeadValue(j);
 
- Int_t word=1000*edge+100*dead+10*gainflag+offsetflag;
+ Int_t word=10000*edge+1000*lock+100*dead+10*gainflag+offsetflag;
  
  fCalflags->AddAt(word,j-1);
 }
@@ -441,7 +443,7 @@ Int_t AliAttrib::GetOffsetFlag(TString name) const
 Int_t AliAttrib::GetCalWord(Int_t j) const
 {
 // Provide calib. word of the j-th (default j=1) attribute slot.
-// The word value stored is : 1000*edge + 100*dead + 10*gainflag + offsetflag.
+// The word value stored is : 10000*edge + 1000*lock + 100*dead + 10*gainflag + offsetflag.
 //
 // Note : The first attribute slot is at j=1.
 // In case j is invalid, 0 is returned.
@@ -463,7 +465,7 @@ Int_t AliAttrib::GetCalWord(Int_t j) const
 Int_t AliAttrib::GetCalWord(TString name) const
 {
 // Provide calib. word of the name-specified attribute slot.
-// The word value stored is : 1000*edge + 100*dead + 10*gainflag + offsetflag.
+// The word value stored is : 10000*edge + 1000*lock + 100*dead + 10*gainflag + offsetflag.
 //
 // This procedure involves a slot-index search based on the specified name
 // at each invokation. This may become slow in case many slots have been
@@ -758,7 +760,7 @@ void AliAttrib::SetDead(Int_t j)
 // In case the value of the index j exceeds the maximum number of reserved
 // slots for the flags, the number of reserved slots for the flags
 // is increased automatically.
-// The value stored is : 1000*edge + 100*dead + 10*gainflag + offsetflag.
+// The value stored is : 10000*edge + 1000*lock + 100*dead + 10*gainflag + offsetflag.
 
  if (j<1) 
  {
@@ -781,9 +783,10 @@ void AliAttrib::SetDead(Int_t j)
  Int_t dead=1;
  Int_t oflag=GetOffsetFlag(j);
  Int_t gflag=GetGainFlag(j);
+ Int_t lock=GetLockValue(j);
  Int_t edge=GetEdgeValue(j);
 
- Int_t word=1000*edge+100*dead+10*gflag+oflag;
+ Int_t word=10000*edge+1000*lock+100*dead+10*gflag+oflag;
  
  fCalflags->AddAt(word,j-1);
 }
@@ -808,7 +811,7 @@ void AliAttrib::SetAlive(Int_t j)
 // Note : The first attribute slot is at j=1.
 // In case the value of the index j exceeds the maximum number of reserved
 // slots for the flags, no action is taken since by default the dead flag is 0.
-// The value stored is : 1000*edge + 100*dead + 10*gainflag + offsetflag.
+// The value stored is : 10000*edge + 1000*lock + 100*dead + 10*gainflag + offsetflag.
 
  if (j<1) 
  {
@@ -821,9 +824,10 @@ void AliAttrib::SetAlive(Int_t j)
  Int_t dead=0;
  Int_t oflag=GetOffsetFlag(j);
  Int_t gflag=GetGainFlag(j);
+ Int_t lock=GetLockValue(j);
  Int_t edge=GetEdgeValue(j);
 
- Int_t word=1000*edge+100*dead+10*gflag+oflag;
+ Int_t word=10000*edge+1000*lock+100*dead+10*gflag+oflag;
  
  fCalflags->AddAt(word,j-1);
 }
@@ -842,6 +846,99 @@ void AliAttrib::SetAlive(TString name)
  if (j>0) SetAlive(j);
 }
 ///////////////////////////////////////////////////////////////////////////
+void AliAttrib::Lock(Int_t j)
+{
+// Set the lock flag to 1 for the j-th (default j=1) attribute slot.
+// Note : The first attribute slot is at j=1.
+// In case the value of the index j exceeds the maximum number of reserved
+// slots for the flags, the number of reserved slots for the flags
+// is increased automatically.
+// The value stored is : 10000*edge + 1000*lock + 100*dead + 10*gainflag + offsetflag.
+
+ if (j<1) 
+ {
+  cout << " *AliAttrib::Lock* Invalid argument j = " << j << endl;
+  return;
+ }
+
+ if (!fCalflags)
+ {
+  fCalflags=new TArrayI(j);
+ }
+
+ Int_t size=fCalflags->GetSize();
+
+ if (j>size)
+ {
+  fCalflags->Set(j);
+ }
+
+ Int_t lock=1;
+ Int_t dead=GetDeadValue(j);
+ Int_t oflag=GetOffsetFlag(j);
+ Int_t gflag=GetGainFlag(j);
+ Int_t edge=GetEdgeValue(j);
+
+ Int_t word=10000*edge+1000*lock+100*dead+10*gflag+oflag;
+ 
+ fCalflags->AddAt(word,j-1);
+}
+///////////////////////////////////////////////////////////////////////////
+void AliAttrib::Lock(TString name)
+{
+// Set the lock flag to 1 for the name-specified attribute slot.
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ if (j>0) Lock(j);
+}
+///////////////////////////////////////////////////////////////////////////
+void AliAttrib::Unlock(Int_t j)
+{
+// Set the lock flag to 0 for the j-th (default j=1) attribute slot.
+// Note : The first attribute slot is at j=1.
+// In case the value of the index j exceeds the maximum number of reserved
+// slots for the flags, no action is taken since by default the dead flag is 0.
+// The value stored is : 10000*edge + 1000*lock + 100*dead + 10*gainflag + offsetflag.
+
+ if (j<1) 
+ {
+  cout << " *AliAttrib::Unlock* Invalid argument j = " << j << endl;
+  return;
+ }
+
+ if (!fCalflags || j>fCalflags->GetSize()) return;
+
+ Int_t lock=0;
+ Int_t dead=GetDeadValue();
+ Int_t oflag=GetOffsetFlag(j);
+ Int_t gflag=GetGainFlag(j);
+ Int_t edge=GetEdgeValue(j);
+
+ Int_t word=10000*edge+1000*lock+100*dead+10*gflag+oflag;
+ 
+ fCalflags->AddAt(word,j-1);
+}
+///////////////////////////////////////////////////////////////////////////
+void AliAttrib::Unlock(TString name)
+{
+// Set the lock flag to 0 for the name-specified attribute slot.
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ if (j>0) Unlock(j);
+}
+///////////////////////////////////////////////////////////////////////////
 void AliAttrib::SetEdgeOn(Int_t j)
 {
 // Set the edge value to 1 for the j-th (default j=1) attribute slot.
@@ -849,7 +946,7 @@ void AliAttrib::SetEdgeOn(Int_t j)
 // In case the value of the index j exceeds the maximum number of reserved
 // slots for the flags, the number of reserved slots for the flags
 // is increased automatically.
-// The value stored is : 1000*edge + 100*dead + 10*gainflag + offsetflag.
+// The value stored is : 10000*edge + 1000*lock + 100*dead + 10*gainflag + offsetflag.
 
  if (j<1) 
  {
@@ -880,7 +977,7 @@ void AliAttrib::SetEdgeOff(Int_t j)
 // Note : The first attribute slot is at j=1.
 // In case the value of the index j exceeds the maximum number of reserved
 // slots for the flags, no action is taken since by default the edge flag is 0.
-// The value stored is : 1000*edge + 100*dead + 10*gainflag + offsetflag.
+// The value stored is : 10000*edge + 1000*lock + 100*dead + 10*gainflag + offsetflag.
 
  if (j<1) 
  {
@@ -914,7 +1011,7 @@ void AliAttrib::SetEdgeValue(Int_t val,Int_t j)
 // In case the value of the index j exceeds the maximum number of reserved
 // slots for the flags, the number of reserved slots for the flags
 // is increased automatically.
-// The value stored is : 1000*edge + 100*dead + 10*gainflag + offsetflag.
+// The value stored is : 10000*edge + 1000*lock + 100*dead + 10*gainflag + offsetflag.
 
  if (j<1) 
  {
@@ -935,11 +1032,12 @@ void AliAttrib::SetEdgeValue(Int_t val,Int_t j)
  }
 
  Int_t edge=val;
+ Int_t lock=GetLockValue(j);
  Int_t dead=GetDeadValue(j);
  Int_t gflag=GetGainFlag(j);
  Int_t oflag=GetOffsetFlag(j);
 
- Int_t word=1000*edge+100*dead+10*gflag+oflag;
+ Int_t word=10000*edge+1000*lock+100*dead+10*gflag+oflag;
  
  fCalflags->AddAt(word,j-1);
 }
@@ -965,7 +1063,7 @@ void AliAttrib::IncreaseEdgeValue(Int_t j)
 // In case the value of the index j exceeds the maximum number of reserved
 // slots for the flags, the number of reserved slots for the flags
 // is increased automatically.
-// The value stored is : 1000*edge + 100*dead + 10*gainflag + offsetflag.
+// The value stored is : 10000*edge + 1000*lock + 100*dead + 10*gainflag + offsetflag.
 
  if (j<1) 
  {
@@ -998,7 +1096,7 @@ void AliAttrib::DecreaseEdgeValue(Int_t j)
 // In case the value of the index j exceeds the maximum number of reserved
 // slots for the flags, the number of reserved slots for the flags
 // is increased automatically.
-// The value stored is : 1000*edge + 100*dead + 10*gainflag + offsetflag.
+// The value stored is : 10000*edge + 1000*lock + 100*dead + 10*gainflag + offsetflag.
 
  if (j<1) 
  {
@@ -1042,7 +1140,7 @@ Int_t AliAttrib::GetEdgeValue(Int_t j) const
   if (j>0 && j<=(fCalflags->GetSize()))
   {
    Int_t word=fCalflags->At(j-1);
-   edge=word/1000;
+   edge=word/10000;
   }
  }
  return edge;
@@ -1102,6 +1200,47 @@ Int_t AliAttrib::GetDeadValue(TString name) const
  Int_t j=GetSlotIndex(name);
  Int_t val=0;
  if (j>0) val=GetDeadValue(j);
+ return val;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliAttrib::GetLockValue(Int_t j) const
+{
+// Provide lock value of the j-th (default j=1) attribute slot.
+// Note : The first attribute slot is at j=1.
+// In case j is invalid, 0 is returned.
+
+ if (j<1) 
+ {
+  cout << " *AliAttrib::GetLockValue* Invalid argument j = " << j << endl;
+  return 0;
+ }
+
+ Int_t lock=0;
+ if (fCalflags)
+ {
+  if (j>0 && j<=(fCalflags->GetSize()))
+  {
+   Int_t word=fCalflags->At(j-1);
+   word=word%10000;
+   lock=word/1000;
+  }
+ }
+ return lock;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliAttrib::GetLockValue(TString name) const
+{
+// Provide lock value of the name-specified attribute slot.
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ Int_t val=0;
+ if (j>0) val=GetLockValue(j);
  return val;
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -1232,6 +1371,7 @@ void AliAttrib::List(Int_t j) const
   if (GetOffsetFlag(j)) cout << " offset : " << GetOffset(j);
   if (GetEdgeValue(j)) cout << " edge : " << GetEdgeValue(j);
   if (GetDeadValue(j)) cout << " dead : " << GetDeadValue(j);
+  if (GetLockValue(j)) cout << " lock : " << GetLockValue(j);
   if (GetCalFunction(j)) cout << " *Fcalib*";
   if (GetDecalFunction(j)) cout << " *Fdecalib*";
   TString s=GetSlotName(j);
@@ -1257,6 +1397,7 @@ void AliAttrib::List(Int_t j) const
    if (GetOffsetFlag(i))    {cout << " offset : " << GetOffset(i); printf=1;}
    if (GetEdgeValue(i))     {cout << " edge : " << GetEdgeValue(i); printf=1;}
    if (GetDeadValue(i))     {cout << " dead : " << GetDeadValue(i); printf=1;}
+   if (GetLockValue(i))     {cout << " lock : " << GetLockValue(i); printf=1;}
    if (GetCalFunction(i))   {cout << " *Fcalib*"; printf=1;}
    if (GetDecalFunction(i)) {cout << " *Fdecalib*"; printf=1;}
    s=GetSlotName(i);
@@ -1326,6 +1467,14 @@ void AliAttrib::Load(AliAttrib& a,Int_t j)
   for (Int_t ic=1; ic<=n; ic++)
   {
    SetEdgeValue(a.GetEdgeValue(ic),ic);
+   if (a.GetLockValue(ic))
+   {
+    Lock(ic);
+   }
+   else
+   {
+    Unlock(ic);
+   }
    if (a.GetDeadValue(ic))
    {
     SetDead(ic);
@@ -1385,6 +1534,14 @@ void AliAttrib::Load(AliAttrib& a,Int_t j)
   if (j<=n)
   {
    SetEdgeValue(a.GetEdgeValue(j),j);
+   if (a.GetLockValue(j))
+   {
+    Lock(j);
+   }
+   else
+   {
+    Unlock(j);
+   }
    if (a.GetDeadValue(j))
    {
     SetDead(j);

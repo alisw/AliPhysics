@@ -383,15 +383,15 @@ void IceCal2Root::GetMuDaqData()
  IceAOM om;
 
  // Slots to hold the various (de)calibration functions
- om.SetSlotName("ADC",1);
- om.SetSlotName("LE",2);
- om.SetSlotName("TOT",3);
+ om.AddNamedSlot("ADC");
+ om.AddNamedSlot("LE");
+ om.AddNamedSlot("TOT");
  // Slots with hardware parameters
- om.SetSlotName("TYPE",4);
- om.SetSlotName("ORIENT",5);
- om.SetSlotName("THRESH",6);
- om.SetSlotName("SENSIT",7);
- om.SetSlotName("READOUT",8); // 0=unknown 1=electrical 2=optical 3=digital
+ om.AddNamedSlot("TYPE");
+ om.AddNamedSlot("ORIENT");
+/// om.AddNamedSlot("THRESH");
+/// om.AddNamedSlot("SENSIT");
+/// om.AddNamedSlot("READOUT"); // 0=unknown 1=electrical 2=optical 3=digital
 
  fInput.seekg(0); // Position at beginning of file
  fInput >> dec;   // Make sure all integers starting with 0 are taken in decimal format
@@ -399,9 +399,9 @@ void IceCal2Root::GetMuDaqData()
  TString s;
  Int_t jmod,type,serial,string,ix,iy,iz,ori;
  Float_t costh=0;
- Float_t thresh=0;
- Float_t sensit=1;
- Float_t readout=0;
+/// Float_t thresh=0;
+/// Float_t sensit=1;
+/// Float_t readout=0;
  Double_t pos[3]={0,0,0};
  Float_t ped,beta,alpha;
  Int_t pol;
@@ -429,11 +429,11 @@ void IceCal2Root::GetMuDaqData()
    omx->SetPosition(pos,"car");
    costh=1;
    if (ori==2) costh=-1;
-   omx->SetSignal(type,4);
-   omx->SetSignal(costh,5);
-   omx->SetSignal(thresh,6);
-   omx->SetSignal(sensit,7);
-   omx->SetSignal(readout,8);
+   omx->SetSignal(type,"TYPE");
+   omx->SetSignal(costh,"ORIENT");
+///   omx->SetSignal(thresh,"THRESH");
+///   omx->SetSignal(sensit,"SENSIT");
+///   omx->SetSignal(readout,"READOUT");
   }
   else if (s == "T") // Read the Time calibration constants
   {
@@ -446,24 +446,24 @@ void IceCal2Root::GetMuDaqData()
     fMuDaqdb->EnterObject(jmod,1,omx);
    }
 
-   omx->SetCalFunction(&ftdccal,2);
-   omx->SetDecalFunction(&ftdcdecal,2);
-   omx->SetCalFunction(&ftotcal,3);
-   omx->SetDecalFunction(&ftotdecal,3);
+   omx->SetCalFunction(&ftdccal,"LE");
+   omx->SetDecalFunction(&ftdcdecal,"LE");
+   omx->SetCalFunction(&ftotcal,"TOT");
+   omx->SetDecalFunction(&ftotdecal,"TOT");
 
    // Flag time slots of bad OMs as dead and don't provide time (de)calib functions
    if (ped<-1e5 || beta<=0 || alpha<0)
    {
-    omx->SetDead(2);
-    omx->SetDead(3);
-    omx->SetCalFunction(0,2);
-    omx->SetDecalFunction(0,2);
-    omx->SetCalFunction(0,3);
-    omx->SetDecalFunction(0,3);
+    omx->SetDead("LE");
+    omx->SetDead("TOT");
+    omx->SetCalFunction(0,"LE");
+    omx->SetDecalFunction(0,"LE");
+    omx->SetCalFunction(0,"TOT");
+    omx->SetDecalFunction(0,"TOT");
    }
 
-   fcal=omx->GetCalFunction(2);
-   fdecal=omx->GetDecalFunction(2);
+   fcal=omx->GetCalFunction("LE");
+   fdecal=omx->GetDecalFunction("LE");
    if (fcal)
    {
     fcal->SetParameter(0,beta);
@@ -480,8 +480,8 @@ void IceCal2Root::GetMuDaqData()
     fdecal->SetParameter(3,1.e20);
    }
 
-   fcal=omx->GetCalFunction(3);
-   fdecal=omx->GetDecalFunction(3);
+   fcal=omx->GetCalFunction("TOT");
+   fdecal=omx->GetDecalFunction("TOT");
    if (fcal)
    {
     fcal->SetParameter(0,beta);
@@ -502,25 +502,25 @@ void IceCal2Root::GetMuDaqData()
     fMuDaqdb->EnterObject(jmod,1,omx);
    }
 
-   omx->SetCalFunction(&fadccal,1);
-   omx->SetDecalFunction(&fadcdecal,1);
+   omx->SetCalFunction(&fadccal,"ADC");
+   omx->SetDecalFunction(&fadcdecal,"ADC");
 
    // Flag amplitude slots of bad OMs as dead and don't provide amplitude (de)calib functions
    if (ped<-1e5 || beta<=0)
    {
-    omx->SetDead(1);
-    omx->SetCalFunction(0,1);
-    omx->SetDecalFunction(0,1);
+    omx->SetDead("ADC");
+    omx->SetCalFunction(0,"ADC");
+    omx->SetDecalFunction(0,"ADC");
    }
    if (totped<-1e5)
    {
-    omx->SetDead(3);
-    omx->SetCalFunction(0,3);
-    omx->SetDecalFunction(0,3);
+    omx->SetDead("TOT");
+    omx->SetCalFunction(0,"TOT");
+    omx->SetDecalFunction(0,"TOT");
    }
 
-   fcal=omx->GetCalFunction(1);
-   fdecal=omx->GetDecalFunction(1);
+   fcal=omx->GetCalFunction("ADC");
+   fdecal=omx->GetDecalFunction("ADC");
    if (fcal)
    {
     fcal->SetParameter(0,beta);

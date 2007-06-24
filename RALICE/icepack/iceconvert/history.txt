@@ -122,3 +122,15 @@
                 TWR waveform timebins in IceRawTWR. This will provide a better
                 synchronisation of the various waveforms and consequently of the
                 extracted LE values.
+23-jun-2007 NvE Creation of OM slotnames "THRESH", "SENSIT" and "READOUT" deactivated in
+                IceCal2Root since these values are currently not known from the available
+                ascii database files. Furthermore, "READOUT" and "THRESH" are provided
+                in the TWR (raw) data themselves and having them as empty database entries
+                resulted in overwriting of the (raw) data values by the empty dbase ones.
+                In case in the future one wants to provide default dbase values, which
+                might be overwritten by values from the data themselves, on should "lock"
+                the signal values from the data using the newly introduced locking facility
+                of AliAttrib and AliSignal.
+                Also all slots in IceCal2Root now created via the "AddSlotName" facility
+                and slot access exclusively via the slotname, to enhance flexibility.
+   

@@ -47,6 +47,12 @@ class AliAttrib
   void SetAlive(TString name);                 // Indicate name-specified attribute slot as 'active'
   Int_t GetDeadValue(Int_t j=1) const;         // Return the 'dead flag' of the j-th attribute slot
   Int_t GetDeadValue(TString name) const;      // Return the 'dead flag' of the name-specified attribute slot
+  void Lock(Int_t j=1);                        // Indicate j-th attribute slot as 'locked'
+  void Lock(TString name);                     // Indicate name-specified attribute slot as 'locked'
+  void Unlock(Int_t j=1);                      // Indicate j-th attribute slot as 'unlocked'
+  void Unlock(TString name);                   // Indicate name-specified attribute slot as 'unlocked'
+  Int_t GetLockValue(Int_t j=1) const;         // Return the 'lock flag' of the j-th attribute slot
+  Int_t GetLockValue(TString name) const;      // Return the 'lock flag' of the name-specified attribute slot
   void SetEdgeOn(Int_t j=1);                   // Indicate j-th slot as 'detector edge module'
   void SetEdgeOn(TString name);                // Indicate name-spcified slot as 'detector edge module'
   void SetEdgeOff(Int_t j=1);                  // Indicate j-th slot as 'detector non-edge module'
@@ -88,6 +94,6 @@ class AliAttrib
   TObjArray* fCalfuncs;                        // Explicit signal calibration functions
   TObjArray* fDecalfuncs;                      // Explicit signal de-calibration functions
 
- ClassDef(AliAttrib,5) // Generic handling of detector signal (calibration) attributes.
+ ClassDef(AliAttrib,6) // Generic handling of detector signal (calibration) attributes.
 };
 #endif

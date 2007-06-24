@@ -774,3 +774,6 @@
                 central place for calculation of astronomical observables.
 31-may-2007 NvE Memberfunctions GetNdevices, GetIdDevice and ShowDevices of AliEvent
                 extended to select device classes.
+23-jun-2007 NvE Support for locking introduced in AliAttrib and locked signal (and error)
+                treatment implemented in SetSignal() and SetSignalError() of AliSignal.
+                Also the AliSignal copy constructor has been updated for the new locking.  
