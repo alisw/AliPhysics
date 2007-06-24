@@ -57,4 +57,5 @@
 #pragma link C++ class  AliDecayerPolarized+;
 #pragma link C++ class  AliGenCorrHF+;
 #pragma link C++ class  AliGenCosmicsParam+;
+#pragma link C++ class  AliGenKrypton+;
 #endif
