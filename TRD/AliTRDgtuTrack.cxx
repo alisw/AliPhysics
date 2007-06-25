@@ -451,9 +451,10 @@ void AliTRDgtuTrack::MakePID()
 		// A.Bercuci on 2nd May 2007
 		// Temporary modification to deal with more energy slices. The values
 		// attached to charge slices and track length are dummy
-		Double_t dedx[3];
-		dedx[0] = dedx[1] = q*3.; dedx[2] = 0.;
-		Double_t length = 3.7;
+                Float_t dedx[3];
+                dedx[0] = dedx[1] = q*3.; dedx[2] = 0.;
+                Float_t length = 3.7;
+
     probEle *= pd->GetProbability(0, TMath::Abs(fPt), dedx, length);
     probPio *= pd->GetProbability(2, TMath::Abs(fPt), dedx, length);
 

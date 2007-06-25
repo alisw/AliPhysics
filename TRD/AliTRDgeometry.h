@@ -54,7 +54,7 @@ class AliTRDgeometry : public AliGeometry {
 
   static  Int_t    GetDetectorSec(Int_t p, Int_t c);
   static  Int_t    GetDetector(Int_t p, Int_t c, Int_t s);
-  virtual Int_t    GetPlane(Int_t d) const;
+  static  Int_t    GetPlane(Int_t d);
   virtual Int_t    GetChamber(Int_t d) const;
   virtual Int_t    GetSector(Int_t d) const;
 

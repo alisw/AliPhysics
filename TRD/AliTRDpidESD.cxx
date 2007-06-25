@@ -34,6 +34,7 @@
 #include "AliLog.h"
 #include "AliESD.h"
 #include "AliESDtrack.h"
+#include "AliTracker.h"
 
 #include "AliTRDpidESD.h"
 #include "AliTRDgeometry.h"
@@ -41,6 +42,7 @@
 #include "AliRun.h"
 #include "AliTRDtrack.h"
 #include "Cal/AliTRDCalPIDLQ.h"
+
 
 ClassImp(AliTRDpidESD)
 
@@ -50,7 +52,7 @@ ClassImp(AliTRDpidESD)
 
 //_____________________________________________________________________________
 AliTRDpidESD::AliTRDpidESD()
-  :TObject()
+  :TObject(), fTrack(0x0)
 {
   //
   // Default constructor
@@ -60,7 +62,7 @@ AliTRDpidESD::AliTRDpidESD()
 
 //_____________________________________________________________________________
 AliTRDpidESD::AliTRDpidESD(const AliTRDpidESD &p)
-  :TObject(p)
+  :TObject(p), fTrack(0x0)
 {
   //
   // AliTRDpidESD copy constructor
@@ -68,6 +70,15 @@ AliTRDpidESD::AliTRDpidESD(const AliTRDpidESD &p)
 
   ((AliTRDpidESD &) p).Copy(*this);
 
+}
+
+//_____________________________________________________________________________
+AliTRDpidESD::~AliTRDpidESD()
+{
+  //
+  // Destructor
+  //
+	if(fTrack) delete fTrack;
 }
 
 //_____________________________________________________________________________
@@ -92,7 +103,8 @@ void AliTRDpidESD::Copy(TObject &p) const
   ((AliTRDpidESD &) p).fCheckTrackStatus          = fCheckTrackStatus;
   ((AliTRDpidESD &) p).fCheckKinkStatus           = fCheckKinkStatus;
   ((AliTRDpidESD &) p).fMinPlane                  = fMinPlane;
-
+  ((AliTRDpidESD &) p).fTrack                     = 0x0;
+	
 }
 
 //_____________________________________________________________________________
@@ -125,29 +137,28 @@ Int_t AliTRDpidESD::MakePID(AliESD *event)
 		return -1;
 	}
 
-
 	// Loop through all ESD tracks
 	Double_t p[10];
 	AliESDtrack *t = 0x0;
-	Double_t dedx[AliTRDtrack::kNslice], dEdx;
-	Int_t    timebin;
-	Float_t mom, length, probTotal;
-	Int_t nPlanePID;
+	Float_t dedx[AliTRDtrack::kNslice], dEdx;
+	Int_t   timebin;
+	Float_t mom, length;
+	Int_t   nPlanePID;
 	for (Int_t i=0; i<event->GetNumberOfTracks(); i++) {
 		t = event->GetTrack(i);
-
+		
 		// Check track
 		if(!CheckTrack(t)) continue;
+
 						
 		// Skip tracks which have no TRD signal at all
 		if (t->GetTRDsignal() == 0.) continue;
 	
 		// Loop over detector layers
-		mom       = 0.; //t->GetP();
-		length    = 0.;
-		probTotal = 0.;
+		mom          = 0.;
+		length       = 0.;
 		nPlanePID    = 0;
-		for (Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++) p[iSpecies] = 1.;
+		for (Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++) p[iSpecies] = 1./AliPID::kSPECIES;
 		for (Int_t iPlan = 0; iPlan < AliTRDgeometry::kNplan; iPlan++) {
 			// read data for track segment
 			for(int iSlice=0; iSlice<AliTRDtrack::kNslice; iSlice++)
@@ -159,7 +170,7 @@ Int_t AliTRDpidESD::MakePID(AliESD *event)
 			if ((dEdx <=  0.) || (timebin <= -1.)) continue;
 
 			// retrive kinematic info for this track segment
-			if(!GetTrackSegmentKine(t, iPlan, mom, length)) continue;
+			if(!RecalculateTrackSegmentKine(t, iPlan, mom, length)) continue;
 			
 			// this track segment has fulfilled all requierments
 			nPlanePID++;
@@ -167,20 +178,24 @@ Int_t AliTRDpidESD::MakePID(AliESD *event)
 			// Get the probabilities for the different particle species
 			for (Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++) {
 				p[iSpecies] *= pd->GetProbability(iSpecies, mom, dedx, length);
-				p[iSpecies] *= pd->GetProbabilityT(iSpecies, mom, timebin);
-				probTotal   += p[iSpecies];
+				//p[iSpecies] *= pd->GetProbabilityT(iSpecies, mom, timebin);
 			}
 		}
-
+		if(nPlanePID == 0) continue;
+		
 		// normalize probabilities
-		if(probTotal > 0.)
-			for (Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++)
-				if(nPlanePID > fMinPlane) p[iSpecies] /= probTotal;
-				else p[iSpecies] = 1.0;
-
+		Double_t probTotal = 0.;
+		for (Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++) probTotal   += p[iSpecies];
+		if(probTotal <= 0.){
+			AliWarningGeneral("AliTRDpidESD::MakePID()",
+			Form("The total probability over all species <= 0 in ESD track %d. This may be caused by some error in reference data. Calculation continue but results might be corrupted.", i));
+			continue;
+		}
+		for(Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++) p[iSpecies] /= probTotal;
 
 		// book PID to the track
 		t->SetTRDpid(p);
+		t->SetTRDpidQuality(nPlanePID);
 	}
 	
 	return 0;
@@ -206,53 +221,56 @@ Bool_t AliTRDpidESD::CheckTrack(AliESDtrack *t)
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDpidESD::GetTrackSegmentKine(AliESDtrack *t, Int_t plan, Float_t &mom, Float_t &length)
+Bool_t AliTRDpidESD::RecalculateTrackSegmentKine(AliESDtrack *esd, Int_t plan, Float_t &mom, Float_t &length)
 {
   //
   // Retrive momentum "mom" and track "length" in TRD chamber from plane
   // "plan" according to information stored in AliESDtrack "t".
-  // 
+  //
+  // Origin
+  // Alex Bercuci (A.Bercuci@gsi.de)	
 
-	if(!gAlice){
-		AliErrorGeneral("AliTRDpidESD::GetTrackSegmentKine()"
-		,"No gAlice object to retrive TRDgeometry and Magnetic fied  - this has to be removed in the future.");
-		return kFALSE;
-	}
-	
-	// Retrieve TRD geometry -> Maybe there is a better way to do this
-	AliTRDgeometry trdGeom;
 	const Float_t kAmHalfWidth = AliTRDgeometry::AmThick() / 2.;
         const Float_t kDrWidth     = AliTRDgeometry::DrThick();
-	
+	const Float_t kTime0       = AliTRDgeometry::GetTime0(plan);
 
-	// retrive the magnetic field
-	Double_t xyz0[3] = { 0., 0., 0.}, xyz1[3];
-	Double_t b[3], alpha;
-	gAlice->Field(xyz0,b);      // b[] is in kilo Gauss
-	Float_t field = b[2] * 0.1; // Tesla
+	// set initial length value to chamber height 
+	length = 2 * kAmHalfWidth + kDrWidth;
 		
-	// find momentum at chamber entrance and track length in chamber
-	AliExternalTrackParam *param = (plan<3) ? new AliExternalTrackParam(*t->GetInnerParam()) : new AliExternalTrackParam(*t->GetOuterParam());
-
-	param->PropagateTo(trdGeom.GetTime0(plan)+kAmHalfWidth, field);
-	param->GetXYZ(xyz0);
-	alpha = param->GetAlpha();
-	param->PropagateTo(trdGeom.GetTime0(plan)-kAmHalfWidth-kDrWidth, field);
-	// eliminate track segments which are crossing SM boundaries along chamber
-	if(TMath::Abs(alpha-param->GetAlpha())>.01){
-		delete param;
+	// retrive track's outer param
+	const AliExternalTrackParam *op = esd->GetOuterParam();
+	if(!op){
+		mom    = esd->GetP();
 		return kFALSE;
 	}
-	param->GetXYZ(xyz1);
-	length = sqrt(
-		(xyz1[0]-xyz0[0])*(xyz1[0]-xyz0[0])+
-		(xyz1[1]-xyz0[1])*(xyz1[1]-xyz0[1])+
-		(xyz1[2]-xyz0[2])*(xyz1[2]-xyz0[2])
-	);
-	param->GetPxPyPz(xyz1);
-	mom = sqrt(xyz1[0]*xyz1[0] + xyz1[1]*xyz1[1] + xyz1[2]*xyz1[2]);
-	delete param;
 
+	AliExternalTrackParam *param = 0x0;
+	if(!fTrack){
+		fTrack = new AliExternalTrackParam(*op);
+		param = fTrack;
+	} else param = new(&fTrack) AliExternalTrackParam(*op);
+
+	// retrive the magnetic field
+	Double_t xyz0[3];
+	op->GetXYZ(xyz0);
+	Float_t field = AliTracker::GetBz(xyz0); // Bz in kG at point xyz0
+	// propagate to chamber entrance
+	if(!param->PropagateTo(kTime0-kAmHalfWidth-kDrWidth, field)){
+		mom = op->GetP();
+		return kFALSE;
+	}
+	mom        = param->GetP();
+	Double_t s = param->GetSnp();
+	Double_t t = param->GetTgl();
+	length    /= TMath::Sqrt((1. - s*s) / (1. - t*t));
+
+	// check if track is crossing tracking sector by propagating to chamber exit- maybe is too much :)
+	Double_t alpha = param->GetAlpha();
+	if(!param->PropagateTo(kTime0+kAmHalfWidth, field)) return kFALSE;
+		
+	// mark track segments which are crossing SM boundaries along chamber
+	if(TMath::Abs(alpha-param->GetAlpha())>.01) return kFALSE;
+	
 	return kTRUE;
 }
 

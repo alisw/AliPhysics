@@ -1606,7 +1606,7 @@ Int_t AliTRDgeometry::GetDetector(Int_t p, Int_t c, Int_t s)
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDgeometry::GetPlane(Int_t d) const
+Int_t AliTRDgeometry::GetPlane(Int_t d)
 {
   //
   // Reconstruct the plane number from the detector number

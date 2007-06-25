@@ -397,7 +397,7 @@ TH1* AliTRDCalPIDLQ::GetHistogramT(Int_t k, Int_t ip) const
 }
 
 //_________________________________________________________________________
-Double_t AliTRDCalPIDLQ::GetProbability(Int_t spec, Double_t mom, Double_t *dedx, Double_t length) const 
+Double_t AliTRDCalPIDLQ::GetProbability(Int_t spec, Float_t mom, Float_t *dedx, Float_t length) const
 {
   //
 	// Core function of AliTRDCalPIDLQ class for calculating the
@@ -669,8 +669,10 @@ Bool_t AliTRDCalPIDLQ::WriteReferences(Char_t *File, Char_t *dir)
 						if ((dEdx <=  0.) || (timebin <= -1.)) continue;
 			
 						// retrive kinematic info for this track segment
-						if(!AliTRDpidESD::GetTrackSegmentKine(esdTrack, iPlane, mom, length)) continue;
-						
+						// Temporary fix
+						//if(!AliTRDpidESD::RecalculateTrackSegmentKine(esdTrack, iPlane, mom, length)) continue;
+						mom = esdTrack->GetOuterParam()->GetP();
+
 						// find segment length and momentum bin
 						Int_t jmom = 1, refMom = -1;
 						while(jmom<fNMom-1 && mom>fTrackMomentum[jmom]) jmom++;

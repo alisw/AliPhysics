@@ -393,48 +393,38 @@ Int_t AliTRDtrack::Compare(const TObject *o) const
 }                
 
 //_____________________________________________________________________________
-void AliTRDtrack::CookdEdx(Double_t low, Double_t up) 
+void AliTRDtrack::CookdEdx(Double_t low, Double_t up)
 {
   //
   // Calculates the truncated dE/dx within the "low" and "up" cuts.
   //
 
-  Int_t   i  = 0;
-
   // Array to sort the dEdx values according to amplitude
   Float_t sorted[kMAXCLUSTERSPERTRACK];
-
-  // Number of clusters used for dedx
-  Int_t   nc = fNdedx; 
-
+  fdEdx = 0.0;
+   
   // Require at least 10 clusters for a dedx measurement
-  if (nc < 10) {
-    SetdEdx(0);
-    return;
-  }
-
-  // Lower and upper bound
-  Int_t nl = Int_t(low * nc);
-  Int_t nu = Int_t( up * nc);
+  if (fNdedx < 10) return;
 
   // Can fdQdl be negative ????
-  for (i = 0; i < nc; i++) {
+  for (Int_t i = 0; i < fNdedx; i++) {
     sorted[i] = TMath::Abs(fdQdl[i]);
   }
-
   // Sort the dedx values by amplitude
-  Int_t *index = new Int_t[nc];
-  TMath::Sort(nc,sorted,index,kFALSE);
+  Int_t *index = new Int_t[fNdedx];
+  TMath::Sort(fNdedx, sorted, index, kFALSE);
 
-  // Sum up the truncated charge between nl and nu  
-  Float_t dedx = 0.0;
-  for (i = nl; i <= nu; i++) {
-    dedx += sorted[index[i]];
+  // Sum up the truncated charge between lower and upper bounds
+  Int_t nl = Int_t(low * fNdedx);
+  Int_t nu = Int_t( up * fNdedx);
+  for (Int_t i = nl; i <= nu; i++) {
+    fdEdx += sorted[index[i]];
   }
-  dedx /= (nu - nl + 1.0);
-  SetdEdx(dedx);
+  fdEdx /= (nu - nl + 1.0);
 
-}                     
+  delete[] index;
+
+}                    
 
 //_____________________________________________________________________________
 Bool_t AliTRDtrack::PropagateTo(Double_t xk, Double_t x0, Double_t rho)

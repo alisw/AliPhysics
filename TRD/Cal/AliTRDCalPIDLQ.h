@@ -49,7 +49,7 @@ class AliTRDCalPIDLQ : public TNamed {
   TH1*         GetHistogram(Int_t iType, Int_t ip/*, Int_t il*/) const;
   TH1*         GetHistogramT(Int_t iType, Int_t ip) const;
 
-  Double_t     GetProbability(Int_t spec, Double_t mom, Double_t *dedx, Double_t length) const;
+  Double_t     GetProbability(Int_t spec, Float_t mom, Float_t *dedx, Float_t length) const;
   Double_t     GetProbabilityT(Int_t spec, Double_t mom, Int_t timbin) const;
   //Int_t      GetNbins() const                       { return fNbins;   }
   //Double_t   GetBinSize() const                     { return fBinSize; }

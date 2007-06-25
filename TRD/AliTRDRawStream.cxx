@@ -422,7 +422,6 @@ Bool_t AliTRDRawStream::Next()
   while (fNextStatus != fkStop)
     { // !fkStop
       NextData();
-            
       if (fNextStatus == fkNextMCM || fNextStatus == fkNextData)
 	{
 	  fHCdataCtr += 4;
