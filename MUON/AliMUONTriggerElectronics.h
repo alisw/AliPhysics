@@ -54,6 +54,7 @@ class AliMUONTriggerElectronics : public TObject
                                   AliMUONVTriggerStore& triggerStore);
 
 
+      /// Return Crate array
       AliMUONTriggerCrateStore* GetCrateStore() {return fCrates;}
 
    private:
