@@ -15,31 +15,33 @@
  
 /* $Id$ */
 
-#include <TError.h>
-#include <TParticle.h>
-
-#include "AliRunLoader.h"
-#include "AliLoader.h"
-
 #include "AliMUONDataInterface.h"
-#include "AliMUONLocalTrigger.h"
+#include "AliMUONDigit.h"
+#include "AliMUONGeometryTransformer.h"
 #include "AliMUONGlobalTrigger.h"
 #include "AliMUONHit.h"
-#include "AliMUONDigit.h"
+#include "AliMUONLocalTrigger.h"
 #include "AliMUONRawCluster.h"
 #include "AliMUONTrack.h"
-#include "AliLog.h"
-
-#include <Riostream.h>
-
-#include "AliMUONVDigitStore.h"
-#include "AliMUONVTriggerStore.h"
+#include "AliMUONTriggerCircuit.h"
 #include "AliMUONVClusterStore.h"
+#include "AliMUONVDigitStore.h"
 #include "AliMUONVTrackStore.h"
+#include "AliMUONVTriggerStore.h"
 #include "AliMUONVTriggerTrackStore.h"
-#include "AliMUONDataManager.h"
+
+#include "AliLoader.h"
 #include "AliLog.h"
+#include "AliLog.h"
+#include "AliRunLoader.h"
+
+#include <TError.h>
+#include <TParticle.h>
+#include <Riostream.h>
+#include <TFile.h>
 #include <TList.h>
+#include <TNtuple.h>
+#include <TSystem.h>
 
 ///
 /// \class AliMUONDataInterface
@@ -60,119 +62,377 @@
 ClassImp(AliMUONDataInterface)
 /// \endcond
 
+//AliLoader* fLoader; //!< Tree accessor
+//AliMUONVDigitStore* fDigitStore; //!< current digit store (owner)
+//AliMUONVTriggerStore* fTriggerStore; //!< current trigger store (owner)
+//AliMUONVClusterStore* fClusterStore; //!< current cluster store (owner)
+//AliMUONVTrackStore* fTrackStore; //!< current track store (owner)
+//AliMUONVTriggerTrackStore* fTriggerTrackStore; //!< current trigger track store (owner)
+//Int_t fCurrentEvent; //!< Current event we've read in
+//Bool_t fIsValid; //!< whether we were initialized properly or not
+
+Int_t AliMUONDataInterface::fgInstanceCounter(0);
+
 //______________________________________________________________________________
 AliMUONDataInterface::AliMUONDataInterface(const char* filename)
-	: TObject(), 
-fDataManager(new AliMUONDataManager(filename))
+: TObject(), 
+fLoader(0x0),
+fDigitStore(0x0),
+fTriggerStore(0x0),
+fClusterStore(0x0),
+fTrackStore(0x0),
+fTriggerTrackStore(0x0),
+fCurrentEvent(-1),
+fIsValid(kFALSE)
 {
   /// ctor
   /// @param filename should be the full path to a valid galice.root file
   
-  if (!IsValid())
-  {
-    AliError("Improper initialization. Object will be unuseable");
-  }
+  ++fgInstanceCounter;
+  
+  Open(filename);
 }
 
 //______________________________________________________________________________
 AliMUONDataInterface::~AliMUONDataInterface()
 {
   /// dtor
-  delete fDataManager;
+  if ( fLoader ) 
+  {
+    delete fLoader->GetRunLoader();
+  }
+  --fgInstanceCounter;  
 }
 
 //______________________________________________________________________________
 AliMUONVClusterStore*
-AliMUONDataInterface::ClusterStore(Int_t event) const
+AliMUONDataInterface::ClusterStore(Int_t event)
 {
-  /// Return the cluster store for a given event
-  if (!IsValid()) return 0x0;
-  return dynamic_cast<AliMUONVClusterStore*>(fDataManager->ReadConnectable(event,"R","Cluster"));
-
-}
-
-//______________________________________________________________________________
-void
-AliMUONDataInterface::DumpRecPoints(Int_t event, Bool_t sorted) const
-{
-  /// Dump the recpoints for a given event, sorted if so required
-  DumpIt("R","Cluster",event,sorted);
+  /// Return clusterStore for a given event.
+  /// Return 0x0 if event not found.
+  /// Returned pointer should not be deleted
+  
+  if ( LoadEvent(event) ) return 0x0;
+  
+  fLoader->LoadRecPoints();
+  
+  TTree* treeR = fLoader->TreeR();
+  
+  if (!treeR)
+  {
+    AliError("Could not get treeR");
+    return 0x0;
+  }
+  
+  if (!fClusterStore)
+  {
+    fClusterStore = AliMUONVClusterStore::Create(*treeR);
+  }
+  
+  if ( fClusterStore ) 
+  {
+    fClusterStore->Clear();
+    fClusterStore->Connect(*treeR);
+    treeR->GetEvent(0);
+  }
+  
+  fLoader->UnloadRecPoints();
+  
+  return fClusterStore;
 }
 
 //______________________________________________________________________________
 AliMUONVDigitStore*
-AliMUONDataInterface::DigitStore(Int_t event) const
+AliMUONDataInterface::DigitStore(Int_t event)
 {
-  /// Return the digit store for a given event
-  if (!IsValid()) return 0x0;
-  return dynamic_cast<AliMUONVDigitStore*>(fDataManager->ReadConnectable(event,"D","Digit"));
-}
-
-//______________________________________________________________________________
-TList* 
-AliMUONDataInterface::DigitStoreAsList(Int_t event) const
-{
-  /// Return the digitStore as a TList
-  AliMUONVDigitStore* digitStore = DigitStore(event);
+  /// Return digitStore for a given event.
+  /// Return 0x0 if event not found.
+  /// Returned pointer should not be deleted
   
-  TIter next(digitStore->CreateIterator());
-
-  TList* list = new TList;
-  list->SetOwner(kTRUE);
-  TObject* object;
+  if ( LoadEvent(event) ) return 0x0;
   
-  while ( ( object = next() ) ) 
+  fLoader->LoadDigits();
+  
+  TTree* treeD = fLoader->TreeD();
+  
+  if (!treeD)
   {
-    list->Add(object->Clone());
+    AliError("Could not get treeD");
+    return 0x0;
   }
   
-  delete digitStore;
-  return list;
+  if (!fDigitStore)
+  {
+    fDigitStore = AliMUONVDigitStore::Create(*treeD);
+  }
+  
+  if ( fDigitStore ) 
+  {
+    fDigitStore->Clear();
+    fDigitStore->Connect(*treeD);
+    treeD->GetEvent(0);
+  }
+  
+  fLoader->UnloadDigits();
+  
+  return fDigitStore;
 }
 
 //______________________________________________________________________________
 void
-AliMUONDataInterface::DumpIt(const char* treeLetter, const char* what, 
-                             Int_t event, Bool_t sorted) const
+AliMUONDataInterface::DumpDigits(Int_t event, Bool_t sorted)
 {
-  /// Generic dump method used by the other DumpXXX methods
-  AliMUONVStore* store = fDataManager->ReadConnectable(event,treeLetter,what);
-  if (!store)
+  /// Dump the digits for a given event, sorted if so required
+  DigitStore(event);
+  if ( fDigitStore ) 
   {
-    AliError(Form("Could not read %s from tree%s",what,treeLetter));
-    return;
+    if ( sorted ) 
+    {
+      DumpSorted(*fDigitStore);
+    }
+    else
+    {
+      fDigitStore->Print();
+    }
+  }
+}
+
+//______________________________________________________________________________
+void
+AliMUONDataInterface::DumpRecPoints(Int_t event, Bool_t sorted)
+{
+  /// Dump the recpoints for a given event, sorted if so required
+  ClusterStore(event);
+  if ( fClusterStore ) 
+  {
+    if ( sorted ) 
+    {
+      DumpSorted(*fClusterStore);
+    }
+    else
+    {
+      fClusterStore->Print();
+    }
+  }
+}
+
+//_____________________________________________________________________________
+void
+AliMUONDataInterface::DumpSorted(const AliMUONVStore& store) const
+{
+  /// Dump the given store, in sorted order
+  
+  TIter next(store.CreateIterator());
+  TObject* object;
+  TList list;
+  list.SetOwner(kFALSE);
+  
+  while ( ( object = next() ) )
+  {
+    list.Add(object);
   }
   
-  if ( sorted ) 
-  {
-    TList list;
-    list.SetOwner(kFALSE);
-    TIter next(store->CreateIterator());
-    TObject* object;
+  list.Sort();
   
-    while ( ( object = next() ) ) 
-    {
-      list.Add(object);
-    }
+  list.Print();
+}
 
-    list.Sort();
+//______________________________________________________________________________
+void
+AliMUONDataInterface::DumpTracks(Int_t event, Bool_t sorted)
+{
+  /// Dump tracks for a given event, sorted if requested
   
-    list.Print();
+  TrackStore(event);
+  
+  if ( fTrackStore ) 
+  {
+    if ( sorted ) 
+    {
+      DumpSorted(*fTrackStore);
+    }
+    else
+    {
+      fTrackStore->Print();
+    }
+  }
+}
+
+//______________________________________________________________________________
+void
+AliMUONDataInterface::DumpTriggerTracks(Int_t event, Bool_t sorted)
+{
+  /// Dump trigger tracks for a given event, sorted if requested
+
+  TriggerTrackStore(event);
+  
+  if ( fTriggerTrackStore ) 
+  {
+    if ( sorted ) 
+    {
+      DumpSorted(*fTriggerTrackStore);
+    }
+    else
+    {
+      fTriggerTrackStore->Print();
+    }
+  }
+}
+
+//_____________________________________________________________________________
+void
+AliMUONDataInterface::DumpTrigger(Int_t event, const char* treeLetter)
+{
+  /// Dump trigger for a given event from a given tree (if event>=0)
+  /// or loop over all events and build a trigger ntuple if event<0
+  /// treeLetter can be R or D to tell from which tree to read the information
+  
+  if ( event < 0 ) 
+  {
+    NtupleTrigger(treeLetter);
   }
   else
   {
-    store->Print();
-  }
+    TriggerStore(event,treeLetter);
   
-  delete store;
+    if ( fTriggerStore ) 
+    {
+      fTriggerStore->Print();
+    }
+  }
 }
 
-//______________________________________________________________________________
+//_____________________________________________________________________________
 void
-AliMUONDataInterface::DumpDigits(Int_t event, Bool_t sorted) const
+AliMUONDataInterface::NtupleTrigger(const char* treeLetter)
 {
-  /// Dump digits of a given event, sorted if so required
-  DumpIt("D","Digit",event,sorted);
+  //// Loop over events to build trigger ntuples
+  ///
+  
+  TString sTreeLetter(treeLetter);
+  sTreeLetter.ToUpper();
+  
+  if ( sTreeLetter != "R" && sTreeLetter != "D" ) 
+  {
+    AliError(Form("Cannot handle tree%s. Use D or R",treeLetter));
+    return;
+  }
+  
+  // book ntuples
+  TNtuple tupleGlo("TgtupleGlo","Global Trigger Ntuple",
+                   "ev:slpt:shpt:uplpt:uphpt:lplpt:lplpt");
+  TNtuple tupleLoc("TgtupleLoc","Local Trigger Ntuple",
+                   "ev:LoCircuit:LoStripX:LoDev:StripY:LoLpt:LoHpt:y11:y21:x11");
+  
+  // initialize counters
+  Int_t sLowpt=0;
+  Int_t sHighpt=0;
+  Int_t uSLowpt=0;
+  Int_t uSHighpt=0;
+  Int_t lSLowpt=0;
+  Int_t lSHighpt=0;
+  
+  AliMUONGeometryTransformer transformer(kFALSE);
+  transformer.ReadGeometryData("volpath.dat", 
+                               Form("%s/geometry.root",
+                                    gSystem->DirName(fLoader->GetRunLoader()->GetFileName())));
+  
+  AliMUONTriggerCircuit triggerCircuit(&transformer);
+
+  // select output file name from selected Tree
+  Char_t fileNameOut[30];
+  if (sTreeLetter == "D") 
+  {
+    AliInfo(Form("reading from Digits\n"));
+    sprintf(fileNameOut,"TriggerCheckFromDigits.root");
+  } 
+  else if (sTreeLetter == "R") 
+  {
+    AliInfo(Form("reading from RecPoints\n"));
+    sprintf(fileNameOut,"TriggerCheckFromRP.root");
+  }
+  
+  // loop on events
+  Int_t nevents = NumberOfEvents();
+
+  for (Int_t ievent=0; ievent<nevents; ++ievent) 
+  {
+    if (ievent%100==0) AliInfo(Form("Processing event %d\n",ievent));
+    
+    AliMUONVTriggerStore* triggerStore = TriggerStore(ievent);
+    
+    if (!triggerStore)
+    {
+      AliError(Form("Could not read %s from tree%s","Trigger",treeLetter));
+      return;
+    }
+    
+    // get global trigger info
+    AliMUONGlobalTrigger* gloTrg = triggerStore->Global();	
+    sLowpt+=gloTrg->SingleLpt();
+    sHighpt+=gloTrg->SingleHpt();
+    uSLowpt+=gloTrg->PairUnlikeLpt(); 
+    uSHighpt+=gloTrg->PairUnlikeHpt();
+    lSLowpt+=gloTrg->PairLikeLpt(); 
+    lSHighpt+=gloTrg->PairLikeHpt();
+    
+    // loop on local triggers	
+    TIter next(triggerStore->CreateIterator());
+    AliMUONLocalTrigger* locTrg(0x0);
+    while ( ( locTrg = static_cast<AliMUONLocalTrigger*>(next()) ) )
+    {
+      Bool_t xTrig=kFALSE;
+      Bool_t yTrig=kFALSE;
+      
+      if ( locTrg->LoSdev()==1 && locTrg->LoDev()==0 && 
+           locTrg->LoStripX()==0) xTrig=kFALSE; // no trigger in X
+      else xTrig=kTRUE;                         // trigger in X
+      if (locTrg->LoTrigY()==1 && 
+          locTrg->LoStripY()==15 ) yTrig = kFALSE; // no trigger in Y
+      else yTrig = kTRUE;                          // trigger in Y
+      
+      if (xTrig && yTrig) 
+      { // fill ntuple if trigger in X and Y		        
+        tupleLoc.Fill(ievent,locTrg->LoCircuit(),
+                       locTrg->LoStripX(),
+                       locTrg->LoDev(),
+                       locTrg->LoStripY(),
+                       locTrg->LoLpt(),
+                       locTrg->LoHpt(),
+                       triggerCircuit.GetY11Pos(locTrg->LoCircuit(),locTrg->LoStripX()),
+                       triggerCircuit.GetY21Pos(locTrg->LoCircuit(),locTrg->LoStripX()+locTrg->LoDev()+1),
+                       triggerCircuit.GetX11Pos(locTrg->LoCircuit(),locTrg->LoStripY()));
+      }
+      tupleGlo.Fill(ievent,gloTrg->SingleLpt(),gloTrg->SingleHpt(),
+                     gloTrg->PairUnlikeLpt(),gloTrg->PairUnlikeHpt(),
+                     gloTrg->PairLikeLpt(),gloTrg->PairLikeHpt());
+    } // end of loop on local triggers
+  } // end of loop on events
+  
+  // print info and store ntuples
+  printf("\n");
+  printf("=============================================\n");
+  printf("================  SUMMARY  ==================\n");
+  printf("\n");
+  printf("Total number of events processed %d \n",nevents);
+  printf("\n");
+  printf(" Global Trigger output       Low pt  High pt\n");
+  printf(" number of Single           :\t");
+  printf("%i\t%i\t",sLowpt,sHighpt);
+  printf("\n");
+  printf(" number of UnlikeSign pair  :\t"); 
+  printf("%i\t%i\t",uSLowpt,uSHighpt);
+  printf("\n");
+  printf(" number of LikeSign pair    :\t");  
+  printf("%i\t%i\t",lSLowpt,lSHighpt);
+  printf("\n");
+  printf("=============================================\n");
+  fflush(stdout);    
+  
+  TFile myFile(fileNameOut, "RECREATE");
+  tupleGlo.Write();
+  tupleLoc.Write();
+  myFile.Close();
 }
 
 //______________________________________________________________________________
@@ -180,7 +440,28 @@ Bool_t
 AliMUONDataInterface::IsValid() const
 {
   /// Whether we were properly initialized from a valid galice.root file
-  return fDataManager->IsValid();
+  return fIsValid;
+}
+
+//_____________________________________________________________________________
+Int_t
+AliMUONDataInterface::LoadEvent(Int_t event)
+{
+  /// Load event if different from the current one.
+  if ( event != fCurrentEvent ) 
+  {
+    fCurrentEvent = event;
+    AliDebug(1,Form("Loading event %d using runLoader %p",event,fLoader->GetRunLoader()));
+    if ( event < NumberOfEvents() )
+    {
+      return fLoader->GetRunLoader()->GetEvent(event);
+    }
+    else
+    {
+      return 1;
+    }
+  }
+  return 0;
 }
 
 //______________________________________________________________________________
@@ -189,76 +470,192 @@ AliMUONDataInterface::NumberOfEvents() const
 {
   /// Number of events in the current galice.root file we're attached to 
   if (!IsValid()) return 0;
-  return fDataManager->NumberOfEvents();
+  return fLoader->GetRunLoader()->GetNumberOfEvents();
 }
 
-//______________________________________________________________________________
-AliMUONVDigitStore*
-AliMUONDataInterface::SDigitStore(Int_t event) const
-{
-  /// Return the SDigit store for a given event
-  if (!IsValid()) return 0x0;
-  return dynamic_cast<AliMUONVDigitStore*>(fDataManager->ReadConnectable(event,"S","SDigit"));
-}
-
-//______________________________________________________________________________
+//_____________________________________________________________________________
 void
-AliMUONDataInterface::DumpSDigits(Int_t event, Bool_t sorted) const
+AliMUONDataInterface::Open(const char* filename)
 {
-  /// Dump sdigits for a given event, sorted if so required
-  DumpIt("S","Digit",event,sorted);
+  /// Connect to a given galice.root file
+  
+  delete fDigitStore;
+  fDigitStore=0x0;
+  delete fTriggerStore;
+  fTriggerStore=0x0;
+  delete fClusterStore;
+  fClusterStore=0x0;
+  delete fTrackStore;
+  fTrackStore=0x0;
+  delete fTriggerTrackStore;
+  fTriggerTrackStore=0x0;
+  
+  fCurrentEvent=-1;
+  
+  if ( fLoader ) 
+  {
+    delete fLoader->GetRunLoader();
+  }
+  
+  fLoader = 0x0;
+  
+  fIsValid = kTRUE;
+  
+  TString foldername(Form("%s-%d",ClassName(),fgInstanceCounter));
+  
+  while (AliRunLoader::GetRunLoader(foldername)) 
+  {
+    delete AliRunLoader::GetRunLoader(foldername);
+  }
+  
+  AliRunLoader* runLoader = AliRunLoader::Open(filename,foldername);
+  if (!runLoader) 
+  {
+    AliError(Form("Cannot open file %s",filename));    
+    fIsValid = kFALSE;
+  }
+  fLoader = runLoader->GetDetectorLoader("MUON");
+  if (!fLoader) 
+  {
+    AliError("Cannot get AliMUONLoader");
+    fIsValid = kFALSE;
+  }
+  
+  if (!IsValid())
+  {
+    AliError(Form("Could not access %s filename. Object is unuseable",filename));
+  }
 }
-
 
 //______________________________________________________________________________
 AliMUONVTrackStore* 
-AliMUONDataInterface::TrackStore(Int_t event) const
+AliMUONDataInterface::TrackStore(Int_t event)
 {
-  /// Return the track store for a given event
-  if (!IsValid()) return 0x0;
-  return dynamic_cast<AliMUONVTrackStore*>(fDataManager->ReadConnectable(event,"T","Track"));
-}
-
-//______________________________________________________________________________
-void
-AliMUONDataInterface::DumpTracks(Int_t event, Bool_t sorted) const
-{
-  /// Dump tracks for a given event, sorted if so required
-  DumpIt("T","Track",event,sorted);
-}
-
-//______________________________________________________________________________
-AliMUONVTriggerStore* 
-AliMUONDataInterface::TriggerStore(Int_t event, const char* treeLetter) const
-{
-  /// Return the trigger store for a given event, from a given tree (D or R)
-  if (!IsValid()) return 0x0;
-  return dynamic_cast<AliMUONVTriggerStore*>(fDataManager->ReadConnectable(event,treeLetter,"Trigger"));  
-}
-
-//______________________________________________________________________________
-void
-AliMUONDataInterface::DumpTrigger(Int_t event, const char* treeLetter) const
-{
-  /// Dump trigger for a given event, from a given tree, sorted if possible
-  DumpIt(treeLetter,"Trigger",event,kFALSE);
+  /// Return the trackStore for a given event.
+  /// Return 0x0 if event not found.
+  /// Returned pointer should not be deleted
+  
+  if ( LoadEvent(event) ) return 0x0;
+  
+  fLoader->LoadTracks();
+  
+  TTree* treeT = fLoader->TreeT();
+  
+  if (!treeT)
+  {
+    AliError("Could not get treeT");
+    return 0x0;
+  }
+  
+  if (!fTrackStore)
+  {
+    fTrackStore = AliMUONVTrackStore::Create(*treeT);
+  }
+  
+  if ( fTrackStore ) 
+  {
+    fTrackStore->Clear();
+    fTrackStore->Connect(*treeT);
+    treeT->GetEvent(0);
+  }
+  
+  fLoader->UnloadTracks();
+  
+  return fTrackStore;
 }
 
 //______________________________________________________________________________
 AliMUONVTriggerTrackStore* 
-AliMUONDataInterface::TriggerTrackStore(Int_t event) const
+AliMUONDataInterface::TriggerTrackStore(Int_t event)
 {
-  /// Return trigger track store for a given event
-  if (!IsValid()) return 0x0;
-  return dynamic_cast<AliMUONVTriggerTrackStore*>(fDataManager->ReadConnectable(event,"T","TriggerTrack"));  
+  /// Return the triggerTrackStore for a given event.
+  /// Return 0x0 if event not found.
+  /// Returned pointer should not be deleted
+  
+  if ( LoadEvent(event) ) return 0x0;
+  
+  fLoader->LoadTracks();
+  
+  TTree* treeT = fLoader->TreeT();
+  
+  if (!treeT)
+  {
+    AliError("Could not get treeT");
+    return 0x0;
+  }
+  
+  if (!fTriggerTrackStore)
+  {
+    fTriggerTrackStore = AliMUONVTriggerTrackStore::Create(*treeT);
+  }
+  
+  if ( fTriggerTrackStore ) 
+  {
+    fTriggerTrackStore->Clear();
+    fTriggerTrackStore->Connect(*treeT);
+    treeT->GetEvent(0);
+  }
+  
+  fLoader->UnloadTracks();
+  
+  return fTriggerTrackStore;  
 }
 
-//______________________________________________________________________________
-void
-AliMUONDataInterface::DumpTriggerTracks(Int_t event, Bool_t sorted) const
+//_____________________________________________________________________________
+AliMUONVTriggerStore*
+AliMUONDataInterface::TriggerStore(Int_t event, const char* treeLetter)
 {
-  /// Dump trigger tracks for a given event
-  DumpIt("T","Trigger",event,sorted);
+  /// Return the triggerStore for a given event.
+  /// Return 0x0 if event not found.
+  /// Returned pointer should not be deleted
+  /// treeLetter can be R or D to tell from which tree to read the information
+  
+  if ( LoadEvent(event) ) return 0x0;
+  
+  TTree* tree(0x0);
+  
+  TString stree(treeLetter);
+  stree.ToUpper();
+  
+  if ( stree == "D" )
+  {
+    fLoader->LoadDigits();    
+    tree = fLoader->TreeD();
+  }
+  else if ( stree == "R" )
+  {
+    fLoader->LoadRecPoints();
+    tree = fLoader->TreeR();
+  }
+  
+  if ( !tree ) 
+  {
+    AliError(Form("Could not get tree%s",treeLetter));
+    return 0x0;
+  }
+  
+  if (!fTriggerStore)
+  {
+    fTriggerStore = AliMUONVTriggerStore::Create(*tree);
+  }
+  
+  if ( fTriggerStore ) 
+  {
+    fTriggerStore->Clear();
+    fTriggerStore->Connect(*tree);
+    tree->GetEvent(0);
+  }
+  
+  if ( stree == "D" )
+  {
+    fLoader->UnloadDigits();    
+  }
+  else if ( stree == "R" )
+  {
+    fLoader->UnloadRecPoints();
+  }
+  
+  return fTriggerStore;
 }
 
 //______________________________________________________________________________

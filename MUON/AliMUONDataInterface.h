@@ -17,13 +17,15 @@
 //
 
 #include <TObject.h>
+#include <TString.h>
 
-class AliMUONDataManager;
+class AliLoader;
+class AliMUONVClusterStore;
 class AliMUONVDigitStore;
+class AliMUONVStore;
+class AliMUONVTrackStore;
 class AliMUONVTriggerStore;
 class AliMUONVTriggerTrackStore;
-class AliMUONVClusterStore;
-class AliMUONVTrackStore;
 
 // >>LA should not needed (once we remove deprecated methods)
 class AliMUONHit; 
@@ -34,7 +36,6 @@ class AliMUONRawCluster;
 class AliMUONTrack;
 class TParticle;
 // <<LA
-class TList;
 
 class AliMUONDataInterface : public TObject
 {
@@ -45,30 +46,23 @@ class AliMUONDataInterface : public TObject
   
   Bool_t IsValid() const;
 
-  AliMUONVClusterStore* ClusterStore(Int_t event) const;
-  void DumpRecPoints(Int_t event, Bool_t sorted=kFALSE) const;
+  void Open(const char* filename);
 
-  /** Return the digit store for one event. The returned pointer should be
-    deleted by the client.
-    */
-  AliMUONVDigitStore* DigitStore(Int_t event) const;  
-  void DumpDigits(Int_t event, Bool_t sorted=kFALSE) const;
-  TList* DigitStoreAsList(Int_t event) const;
-  
   Int_t NumberOfEvents() const;
 
-  AliMUONVDigitStore* SDigitStore(Int_t event) const;
-  void DumpSDigits(Int_t event, Bool_t sorted=kFALSE) const;
-  
-  AliMUONVTrackStore* TrackStore(Int_t event) const;
-  void DumpTracks(Int_t event, Bool_t sorted=kFALSE) const;
-  
-  /// Get the triggerStore from the given tree (can be "D" or "R").
-  AliMUONVTriggerStore* TriggerStore(Int_t event, const char* treeLetter) const;
-  void DumpTrigger(Int_t event, const char* treeLetter="R") const;
-  
-  AliMUONVTriggerTrackStore* TriggerTrackStore(Int_t event) const;
-  void DumpTriggerTracks(Int_t event, Bool_t sorted=kFALSE) const;
+  AliMUONVDigitStore* DigitStore(Int_t event);  
+  AliMUONVClusterStore* ClusterStore(Int_t event);
+  AliMUONVTrackStore* TrackStore(Int_t event);
+  AliMUONVTriggerStore* TriggerStore(Int_t event, const char* treeLetter="R");
+  AliMUONVTriggerTrackStore* TriggerTrackStore(Int_t event);
+
+  /// Dump the clusters for a given event, sorted if so required
+  void DumpClusters(Int_t event, Bool_t sorted=kTRUE)  { return DumpRecPoints(event,sorted); }
+  void DumpRecPoints(Int_t event, Bool_t sorted=kTRUE);
+  void DumpDigits(Int_t event, Bool_t sorted=kTRUE);
+  void DumpTracks(Int_t event, Bool_t sorted=kFALSE);  
+  void DumpTrigger(Int_t event, const char* treeLetter="R");  
+  void DumpTriggerTracks(Int_t event, Bool_t sorted=kFALSE);
   
   // all the methods below are deprecated.
   
@@ -147,14 +141,29 @@ class AliMUONDataInterface : public TObject
   
  private:
     
-  void DumpIt(const char* treeLetter, const char* what, Int_t event, Bool_t sorted) const;
+  void DumpSorted(const AliMUONVStore& store) const;
+
+  Int_t LoadEvent(Int_t event);
+
+  void NtupleTrigger(const char* treeLetter);
   
   /// Not implemented
   AliMUONDataInterface(const AliMUONDataInterface& rhs);
   /// Not implemented
   AliMUONDataInterface& operator=(const AliMUONDataInterface& rhs);
 
-  AliMUONDataManager* fDataManager; //!< Internal data accessor
+private:
+  
+  AliLoader* fLoader; //!< Tree accessor
+  AliMUONVDigitStore* fDigitStore; //!< current digit store (owner)
+  AliMUONVTriggerStore* fTriggerStore; //!< current trigger store (owner)
+  AliMUONVClusterStore* fClusterStore; //!< current cluster store (owner)
+  AliMUONVTrackStore* fTrackStore; //!< current track store (owner)
+  AliMUONVTriggerTrackStore* fTriggerTrackStore; //!< current trigger track store (owner)
+  Int_t fCurrentEvent; //!< Current event we've read in
+  Bool_t fIsValid; //!< whether we were initialized properly or not
+  
+  static Int_t fgInstanceCounter; //!< To build unique folder name for each instance
   
   ClassDef(AliMUONDataInterface, 0)  // An easy to use interface to MUON data
 };

@@ -23,43 +23,115 @@
 ///
 
 #include "AliMUONMCDataInterface.h"
+#include "AliMUONVDigitStore.h"
+#include "AliMUONVHitStore.h"
+#include "AliMUONVStore.h"
+#include "AliMUONVTriggerStore.h"
 
 #include "AliLog.h"
-#include "AliMUONDataManager.h"
-#include "AliMUONVStore.h"
-#include "AliMUONVHitStore.h"
 #include "AliRunLoader.h"
 #include "AliStack.h"
+
 #include <Riostream.h>
 #include <TClonesArray.h>
+#include <TList.h>
 #include <TParticle.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONMCDataInterface)
 /// \endcond
 
+Int_t AliMUONMCDataInterface::fgInstanceCounter(0);
+
 //_____________________________________________________________________________
 AliMUONMCDataInterface::AliMUONMCDataInterface(const char* filename) :
 TObject(),
-fDataManager(new AliMUONDataManager(filename))
+fLoader(0x0),
+fHitStore(0x0),
+fSDigitStore(0x0),
+fDigitStore(0x0),
+fTriggerStore(0x0),
+fTrackRefs(0x0),
+fCurrentEvent(-1),
+fIsValid(kFALSE)
 {
   /// ctor
-  if (!IsValid())
-  {
-    AliError(Form("Could not access %s filename. Object is unuseable",filename));
-  }
+  
+  ++fgInstanceCounter;
+  
+  Open(filename);
 }
 
 //_____________________________________________________________________________
 AliMUONMCDataInterface::~AliMUONMCDataInterface()
 {
   /// dtor
-  delete fDataManager;
+  if ( fLoader ) 
+  {
+    delete fLoader->GetRunLoader();
+  }
+  --fgInstanceCounter;
+}
+
+//_____________________________________________________________________________
+AliMUONVDigitStore*
+AliMUONMCDataInterface::DigitStore(Int_t event)
+{
+  /// Return a pointer to the digitStore for a given event (or 0 if not found)
+  /// Returned pointer should not be deleted
+  
+  if ( LoadEvent(event) ) return 0x0;
+  
+  fLoader->LoadDigits();
+  
+  TTree* treeD = fLoader->TreeD();
+  
+  if (!treeD)
+  {
+    AliError("Could not get treeD");
+    return 0x0;
+  }
+  
+  if (!fDigitStore)
+  {
+    fDigitStore = AliMUONVDigitStore::Create(*treeD);
+  }
+  
+  if ( fDigitStore ) 
+  {
+    fDigitStore->Clear();
+    fDigitStore->Connect(*treeD);
+    treeD->GetEvent(0);
+  }
+  
+  fLoader->UnloadDigits();
+  
+  return fDigitStore;
 }
 
 //_____________________________________________________________________________
 void
-AliMUONMCDataInterface::DumpHits(Int_t event) const
+AliMUONMCDataInterface::DumpDigits(Int_t event, Bool_t sorted)
+{
+  /// Dump the digits for a given event, sorted if requested.
+  DigitStore(event);
+  
+  if ( fDigitStore ) 
+  {
+    if ( sorted ) 
+    {
+      DumpSorted(*fDigitStore);
+    }
+    else
+    {
+      fDigitStore->Print();
+    }  
+  }
+}
+
+//_____________________________________________________________________________
+void
+AliMUONMCDataInterface::DumpHits(Int_t event)
 {
   /// Dump all the hits for one event
   
@@ -68,15 +140,17 @@ AliMUONMCDataInterface::DumpHits(Int_t event) const
   for ( Int_t i = 0; i < ntracks; ++i ) 
   {
     cout << ">> Track " << i << endl;
-    AliMUONVHitStore* hitStore = HitStore(event,i);
-    hitStore->Print("","full");
-    delete hitStore;
+    HitStore(event,i);
+    if ( fHitStore )
+    {
+      fHitStore->Print("","full");
+    }
   }
 }
 
 //_____________________________________________________________________________
 void
-AliMUONMCDataInterface::DumpKine(Int_t event) const
+AliMUONMCDataInterface::DumpKine(Int_t event)
 {
   /// Dump all generated particles for one event
   AliStack* stack = Stack(event);
@@ -98,54 +172,119 @@ AliMUONMCDataInterface::DumpKine(Int_t event) const
 
 //_____________________________________________________________________________
 void
-AliMUONMCDataInterface::DumpTrackRefs(Int_t event) const
+AliMUONMCDataInterface::DumpSDigits(Int_t event, Bool_t sorted)
+{
+  /// Dump the SDigits for a given event, sorted if requested
+  SDigitStore(event);
+  
+  if ( fSDigitStore ) 
+  {
+    if ( sorted ) 
+    {
+      DumpSorted(*fSDigitStore);
+    }
+    else
+    {
+      fSDigitStore->Print();
+    }
+  }
+}
+
+//_____________________________________________________________________________
+void
+AliMUONMCDataInterface::DumpSorted(const AliMUONVStore& store) const
+{
+  /// Dump the given store in sorted order
+  
+  TIter next(store.CreateIterator());
+  TObject* object;
+  TList list;
+  list.SetOwner(kFALSE);
+  
+  while ( ( object = next() ) )
+  {
+    list.Add(object);
+  }
+  
+  list.Sort();
+  
+  list.Print();
+}
+
+//_____________________________________________________________________________
+void
+AliMUONMCDataInterface::DumpTrackRefs(Int_t event)
 {
   /// Dump track references for one event
   Int_t ntrackrefs = NumberOfTrackRefs(event);
   
   for ( Int_t i = 0; i < ntrackrefs; ++i ) 
   {
-    TClonesArray* trackRefs = TrackRefs(event,i);
-    trackRefs->Print("","*");
-    delete trackRefs;
+    TrackRefs(event,i);
+    if ( fTrackRefs ) 
+    {
+      fTrackRefs->Print("","*");
+    }
+  }
+}
+
+//_____________________________________________________________________________
+void
+AliMUONMCDataInterface::DumpTrigger(Int_t event)
+{
+  /// Dump trigger for a given event (trigger is read from TreeD)
+  
+  TriggerStore(event);
+
+  if ( fTriggerStore ) 
+  {
+    fTriggerStore->Print();
   }
 }
 
 //_____________________________________________________________________________
 AliMUONVHitStore* 
-AliMUONMCDataInterface::HitStore(Int_t event, Int_t track) const
+AliMUONMCDataInterface::HitStore(Int_t event, Int_t track)
 {
   /// Return the hitStore for a given track of one event
+  /// Return 0 if event and/or track not found
+  /// Returned pointer should not be deleted
+  
   if ( !IsValid() ) return 0x0;
   
-  fDataManager->Load("H");
+  if ( LoadEvent(event) ) return 0x0;
 
-  if ( fDataManager->Load(event) ) return 0x0;
+  if ( fHitStore) fHitStore->Clear();
   
-  TTree* treeH = fDataManager->Tree("H");
+  fLoader->LoadHits();
   
-  AliMUONVHitStore* hitStore(0x0);
+  TTree* treeH = fLoader->TreeH();
   
-  if (treeH)
+  if (!treeH) 
   {
-    hitStore = AliMUONVHitStore::Create(*treeH);
-    if ( hitStore )
+    AliError("Could not get treeH");
+    return 0x0;
+  }
+  
+  if ( !fHitStore ) 
+  {
+    fHitStore = AliMUONVHitStore::Create(*treeH);
+    AliDebug(1,"Creating hitStore from treeH");
+  }
+  
+  if ( fHitStore )
+  {
+    fHitStore->Connect(*treeH);
+    if ( treeH->GetEvent(track) == 0 ) 
     {
-      hitStore->Connect(*treeH);
-      if ( treeH->GetEvent(track) == 0 ) 
-      {
-        hitStore = 0x0;
-      }
+      AliError(Form("Could not read track %d",track));
+      fHitStore->Clear();
     }
   }
-  else
-  {
-    AliError("Could not get TreeH");
-  }
   
-  fDataManager->Unload("H");
-  
-  return hitStore;
+  fLoader->UnloadHits();
+
+  return fHitStore;
 }
 
 //_____________________________________________________________________________
@@ -153,8 +292,30 @@ Bool_t
 AliMUONMCDataInterface::IsValid() const
 {
   /// Whether we were initialized properly or not
-  return fDataManager->IsValid();
+  return fIsValid;
 }
+
+//_____________________________________________________________________________
+Int_t
+AliMUONMCDataInterface::LoadEvent(Int_t event)
+{
+  /// Load event if different from the current one.
+  if ( event != fCurrentEvent ) 
+  {
+    fCurrentEvent = event;
+    AliDebug(1,Form("Loading event %d using runLoader %p",event,fLoader->GetRunLoader()));
+    if ( event < NumberOfEvents() )
+    {
+      return fLoader->GetRunLoader()->GetEvent(event);
+    }
+    else
+    {
+      return 1;
+    }
+  }
+  return 0;
+}
+
 
 //_____________________________________________________________________________
 Int_t 
@@ -162,102 +323,195 @@ AliMUONMCDataInterface::NumberOfEvents() const
 {
   /// Number of events in the file we're connected to
   if (!IsValid()) return 0;
-  return fDataManager->NumberOfEvents();
+  return fLoader->GetRunLoader()->GetNumberOfEvents();
 }
 
 //_____________________________________________________________________________
 Int_t 
-AliMUONMCDataInterface::NumberOfTracks(Int_t event) const
+AliMUONMCDataInterface::NumberOfTracks(Int_t event)
 {
   /// Number of tracks in the event
   if (!IsValid()) return 0;
   
-  fDataManager->Load("H");
-
-  if ( fDataManager->Load(event) ) return 0;
+  if ( LoadEvent(event) ) return 0;
+  
+  fLoader->LoadHits();
   
   Int_t rv(0);
   
-  TTree* treeH = fDataManager->Tree("H");
+  TTree* treeH = fLoader->TreeH();
   if (treeH)
   {
-    rv=static_cast<Int_t>(fDataManager->Tree("H")->GetEntries());
+    rv = static_cast<Int_t>(treeH->GetEntries());
   }
   else
   {
     AliError("Could not get TreeH");
   }
 
-  fDataManager->Unload("H");
+  fLoader->UnloadHits();
   
   return rv;
 }
 
 //_____________________________________________________________________________
 Int_t 
-AliMUONMCDataInterface::NumberOfTrackRefs(Int_t event) const
+AliMUONMCDataInterface::NumberOfTrackRefs(Int_t event)
 {
   /// Number of track references in the event
   if (!IsValid()) return 0;
   
-  fDataManager->Load("TR");
-  
-  if ( fDataManager->Load(event) ) return 0;
+  if ( LoadEvent(event) ) return 0;
+
+  fLoader->GetRunLoader()->LoadTrackRefs();
   
   Int_t rv(0);
   
-  TTree* treeH = fDataManager->Tree("TR");
-  if (treeH)
+  TTree* treeTR = fLoader->GetRunLoader()->TreeTR();
+  if (treeTR)
   {
-    rv=static_cast<Int_t>(fDataManager->Tree("TR")->GetEntries());
+    rv = static_cast<Int_t>(treeTR->GetEntries());
   }
   else
   {
     AliError("Could not get TreeTR");
   }
   
-  fDataManager->Unload("TR");
+  fLoader->GetRunLoader()->UnloadTrackRefs();
   
   return rv;
 }
 
 //_____________________________________________________________________________
+void
+AliMUONMCDataInterface::Open(const char* filename)
+{
+  /// Connect to a given galice.root file
+  
+  delete fHitStore; 
+  fHitStore=0x0;
+  delete fSDigitStore;
+  fSDigitStore=0x0;
+  delete fDigitStore;
+  fDigitStore=0x0;
+  delete fTrackRefs;
+  fTrackRefs=0x0;
+  delete fTriggerStore;
+  fTriggerStore=0x0;
+  
+  fCurrentEvent=-1;
+
+  if ( fLoader ) 
+  {
+    delete fLoader->GetRunLoader();
+  }
+  
+  fLoader = 0x0;
+  
+  fIsValid = kTRUE;
+  
+  TString foldername(Form("%s-%d",ClassName(),fgInstanceCounter));
+  
+  while (AliRunLoader::GetRunLoader(foldername)) 
+  {
+    delete AliRunLoader::GetRunLoader(foldername);
+  }
+  
+  AliRunLoader* runLoader = AliRunLoader::Open(filename,foldername);
+  if (!runLoader) 
+  {
+    AliError(Form("Cannot open file %s",filename));    
+    fIsValid = kFALSE;
+  }
+  fLoader = runLoader->GetDetectorLoader("MUON");
+  if (!fLoader) 
+  {
+    AliError("Cannot get AliMUONLoader");
+    fIsValid = kFALSE;
+  }
+  
+  if (!IsValid())
+  {
+    AliError(Form("Could not access %s filename. Object is unuseable",filename));
+  }
+}
+
+//_____________________________________________________________________________
+AliMUONVDigitStore*
+AliMUONMCDataInterface::SDigitStore(Int_t event)
+{
+  /// Return the SDigit store for a given event.
+  /// Return 0 if event not found
+  /// Returned pointer should not be deleted
+  
+  if ( LoadEvent(event) ) return 0x0;
+  
+  fLoader->LoadSDigits();
+  
+  TTree* treeS = fLoader->TreeS();
+  
+  if (!treeS)
+  {
+    AliError("Could not get treeS");
+    return 0x0;
+  }
+  
+  if (!fSDigitStore)
+  {
+    fSDigitStore = AliMUONVDigitStore::Create(*treeS);
+  }
+  
+  if ( fSDigitStore ) 
+  {
+    fSDigitStore->Clear();
+    fSDigitStore->Connect(*treeS);
+    treeS->GetEvent(0);
+  }
+  
+  fLoader->UnloadSDigits();
+  
+  return fSDigitStore;
+}
+
+//_____________________________________________________________________________
 AliStack*
-AliMUONMCDataInterface::Stack(Int_t event) const
+AliMUONMCDataInterface::Stack(Int_t event)
 {
   /// Get the Stack (list of generated particles) for one event
+  /// Returned pointer should not be deleted
+  
   if (!IsValid()) return 0x0;
 
-  fDataManager->Load("K");
-
-  if ( fDataManager->Load(event) ) return 0x0;
+  if ( LoadEvent(event) ) return 0;
   
-  AliRunLoader* runLoader = AliRunLoader::GetRunLoader();
-  AliDebug(1,Form("RunLoader=%p",runLoader));
-  return runLoader->Stack();
+  fLoader->GetRunLoader()->LoadKinematics();
+  
+  return fLoader->GetRunLoader()->Stack();
 }
 
 //_____________________________________________________________________________
 TClonesArray*
-AliMUONMCDataInterface::TrackRefs(Int_t event, Int_t track) const
+AliMUONMCDataInterface::TrackRefs(Int_t event, Int_t track)
 {
   /// Get the track references for a given (generated) track of one event
+  /// Returned pointer should not be deleted
+  
   if ( !IsValid() ) return 0x0;
+
+  if ( LoadEvent(event) ) return 0;
   
-  fDataManager->Load("TR");
+  fLoader->GetRunLoader()->LoadTrackRefs();
   
-  if ( fDataManager->Load(event) ) return 0x0;
+  TTree* treeTR = fLoader->GetRunLoader()->TreeTR();
   
-  TTree* treeTR = fDataManager->Tree("TR");
-  
-  TClonesArray* rv = 0;
+  if ( fTrackRefs ) fTrackRefs->Clear("C");
   
   if (treeTR)
   {
     if ( treeTR->GetEvent(track) > 0 ) 
     {
       TBranch* branch = treeTR->GetBranch("MUON");
-      branch->SetAddress(&rv);
+      branch->SetAddress(&fTrackRefs);
       branch->GetEvent(track);
     }
   }
@@ -266,7 +520,44 @@ AliMUONMCDataInterface::TrackRefs(Int_t event, Int_t track) const
     AliError("Could not get TreeTR");
   }
   
-  fDataManager->Unload("TR");
+  fLoader->GetRunLoader()->UnloadTrackRefs();
   
-  return rv;
+  return fTrackRefs;
+}
+
+//_____________________________________________________________________________
+AliMUONVTriggerStore*
+AliMUONMCDataInterface::TriggerStore(Int_t event)
+{
+  /// Return the triggerStore for a given event.
+  /// Return 0x0 if event not found.
+  /// Returned pointer should not be deleted.
+  
+  if ( LoadEvent(event) ) return 0x0;
+  
+  fLoader->LoadDigits();
+  
+  TTree* treeD = fLoader->TreeD();
+  
+  if ( !treeD ) 
+  {
+    AliError("Could not get treeD");
+    return 0x0;
+  }
+  
+  if (!fTriggerStore)
+  {
+    fTriggerStore = AliMUONVTriggerStore::Create(*treeD);
+  }
+  
+  if ( fTriggerStore ) 
+  {
+    fTriggerStore->Clear();
+    fTriggerStore->Connect(*treeD);
+    treeD->GetEvent(0);
+  }
+  
+  fLoader->UnloadDigits();
+  
+  return fTriggerStore;
 }
