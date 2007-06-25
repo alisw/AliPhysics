@@ -28,7 +28,7 @@ AliT0Preprocessor::~AliT0Preprocessor()
 UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
 {
 
-	if(!dcsAliasMap) return 0;
+	if(!dcsAliasMap) return 1;
 
         TObjArray *aliasArr;
        // AliDCSValue *aValue;
@@ -69,13 +69,13 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
 				if(!file || !file->IsOpen()) 
 				{
 		  			Log(Form("Error opening file with Id TIME from source %s!", source->GetName()));
-		 			return 0;
+		 			return 1;
 				} 
 				AliT0Dqclass *tempdata = dynamic_cast<AliT0Dqclass*> (file->Get("Time"));
 				if (!tempdata) 
 				{
 					Log("Could not find key \"Time\" in DAQ file!");
-					return 0;
+					return 1;
 				}
 				for(Int_t i=0;i<24;i++){
 					numbers[i] = tempdata->GetTime(i);
@@ -85,7 +85,7 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
 				delete tempdata;
 			} else {
 		  		Log(Form("Could not find file with Id TIME in source %s!", source->GetName()));
-				return 0;
+				return 1;
 			}
 			calibdata->SetTime(numbers, hv);
 			calibdata->Print();
@@ -98,11 +98,12 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
 	metaData.SetBeamPeriod(0);
 	metaData.SetResponsible("Tomek&Michal");
 	metaData.SetComment("This preprocessor returns time to be used for reconstruction.");
-	
-	UInt_t result = Store("Calib","Data", calibdata, &metaData);
-	delete calibdata;
-	return result;
 
+	Bool_t result = Store("Calib","Data", calibdata, &metaData);
+	delete calibdata;
+	if(result == kTRUE) 
+	  {return 0;}
+	else {return 1;}
 }
 
 	
