@@ -165,9 +165,15 @@ void IceMakeHits::Exec(Option_t* opt)
 
  fEvt->AddDevice(params);
 
+ // Suppress (TSpectrum) warning messages
+ gErrorIgnoreLevel=kError; // Only provide error messages
+
  Amanda();
  InIce();
  IceTop();
+
+ // Activate all messages
+ gErrorIgnoreLevel=kWarning; // Error and warning messages
 
 }
 ///////////////////////////////////////////////////////////////////////////

@@ -11,6 +11,7 @@
 #include "TString.h"
 #include "TSpectrum.h"
 #include "TMath.h"
+#include "TError.h"
 
 #include "AliJob.h"
 #include "IceEvent.h"
@@ -21,7 +22,7 @@
 class IceMakeHits : public TTask
 {
  public :
-  IceMakeHits(const char* name="",const char* title=""); // Constructor
+  IceMakeHits(const char* name="IceMakeHits",const char* title="Hit extraction"); // Constructor
   virtual ~IceMakeHits();                                // Destructor
   virtual void Exec(Option_t* opt);                      // Hit extraction
   void SetBasefracA(Float_t val);                        // Set the Amanda fract. baseline update value
@@ -42,6 +43,6 @@ class IceMakeHits : public TTask
   void InIce();              // Hit extraction from IceCube InIce ATWD data
   void IceTop();             // Hit extraction from IceTop ATWD data
 
- ClassDef(IceMakeHits,1) // TTask derived class to perform hit extraction from waveforms
+ ClassDef(IceMakeHits,2) // TTask derived class to perform hit extraction from waveforms
 };
 #endif

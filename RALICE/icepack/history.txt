@@ -114,4 +114,6 @@
 07-jun-2007 NvE Contents of OM slot "READOUT" used to determine readout system for Amanda OMs
                 in IceCalibrate.cxx.
 24-jun-2007 NvE Treatment of TWRDaq data introduced in IceCleanHits.
+25-jun-2007 NvE Warning messages suppressed in the IceMakeHits processor to prevent
+                TSpectrum warnings in case of (noisy) waveforms with very many peaks.  
                  
