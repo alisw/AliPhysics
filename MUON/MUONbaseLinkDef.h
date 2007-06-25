@@ -36,7 +36,6 @@
 #pragma link C++ class AliMUONHVNamer+;
 
 // misc
-#pragma link C++ class AliMUONDataManager+;
 #pragma link C++ class AliMUONStopwatchGroup+;
 
 #endif

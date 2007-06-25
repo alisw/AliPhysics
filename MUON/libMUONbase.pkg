@@ -14,7 +14,6 @@ SRCS:=  AliMUONConstants.cxx \
         AliMUONDigitStoreV1.cxx \
         AliMUONDigitStoreV1Iterator.cxx \
         AliMUONTOTCAStoreIterator.cxx \
-        AliMUONDataManager.cxx \
         AliMUONStopwatchGroup.cxx \
         AliMUONVDigit.cxx \
         AliMUONVTriggerStore.cxx \
