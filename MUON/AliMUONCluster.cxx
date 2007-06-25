@@ -165,7 +165,7 @@ AliMUONCluster::AddPad(const AliMUONPad& pad)
   {
     fIsSaturated[p->Cathode()]=kTRUE;
   }
-  if ( fIsSorted ) Sort();
+  //AZ if ( fIsSorted ) Sort();
 }
 
 //_____________________________________________________________________________
