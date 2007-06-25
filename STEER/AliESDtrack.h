@@ -158,7 +158,13 @@ public:
   const TBits& GetTPCClusterMap() const {return fTPCClusterMap;}
   
   void    SetTRDpid(const Double_t *p);
-  void    SetTRDQuality(Float_t quality){fTRDQuality=quality;}
+  
+// A.Bercuci
+	void    SetTRDpidQuality(UChar_t q){fTRDpidQuality = q;}
+	UChar_t GetTRDpidQuality() const {return fTRDpidQuality;}
+// end A.Bercuci
+	
+	void    SetTRDQuality(Float_t quality){fTRDQuality=quality;}
   Float_t GetTRDQuality()const {return fTRDQuality;}
   void    SetTRDBudget(Float_t budget){fTRDBudget=budget;}
   Float_t GetTRDBudget()const {return fTRDBudget;}
@@ -317,12 +323,14 @@ protected:
 
   // TRD related track information
   Float_t fTRDchi2;        // chi2 in the TRD
-  Int_t   fTRDncls;        // number of clusters assigned in the TRD
-  Int_t   fTRDncls0;       // number of clusters assigned in the TRD before first material cross
+  UChar_t fTRDncls;        // number of clusters assigned in the TRD
+  UChar_t fTRDncls0;       // number of clusters assigned in the TRD before first material cross
   Float_t fTRDsignal;      // detector's PID signal
   Float_t fTRDsignals[kNPlane][kNSlice];  // TRD signals from all six planes in 3 slices each
   Int_t   fTRDTimBin[kNPlane];   // Time bin of Max cluster from all six planes
   Float_t fTRDr[AliPID::kSPECIES]; // "detector response probabilities" (for the PID)
+	// A.Bercuci
+	UChar_t fTRDpidQuality;   // TRD PID quality according to number of planes. 6 is the best
   Int_t   fTRDLabel;       // label according TRD
   Float_t fTRDQuality;     // trd quality factor for TOF
   Float_t fTRDBudget;      // trd material budget
@@ -362,7 +370,7 @@ protected:
 
   AliESDtrack & operator=(const AliESDtrack & ) {return *this;}
 
-  ClassDef(AliESDtrack,36)  //ESDtrack 
+  ClassDef(AliESDtrack,37)  //ESDtrack 
 };
 
 #endif 
