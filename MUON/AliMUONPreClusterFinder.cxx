@@ -149,7 +149,7 @@ AliMUONPreClusterFinder::AddPad(AliMUONCluster& cluster, AliMUONPad* pad)
   Int_t cathode = pad->Cathode();
   TClonesArray& padArray = *fPads[cathode];
   padArray.Remove(pad);
-  padArray.Compress();
+  //AZ padArray.Compress();
   TIter next(&padArray);
   AliMUONPad* testPad;
   
@@ -197,12 +197,14 @@ AliMUONPreClusterFinder::NextCluster()
   AliMUONCluster* cluster = new ((*fClusters)[id]) AliMUONCluster;
   cluster->SetUniqueID(id);
   
-  AliMUONPad* pad = static_cast<AliMUONPad*>(fPads[0]->First());
+  TIter next(fPads[0]);
+  AliMUONPad* pad = static_cast<AliMUONPad*>(next());
   
   if (!pad) // protection against no pad in first cathode, which might happen
   {
     // try other cathode
-    pad = static_cast<AliMUONPad*>(fPads[1]->First());
+    TIter next(fPads[1]);
+    pad = static_cast<AliMUONPad*>(next());
     if (!pad) 
     {
       // we are done.
