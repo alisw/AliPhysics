@@ -43,6 +43,7 @@
 #include <TObjArray.h>
 #include <TROOT.h>
 #include <TRandom.h>
+#include <Riostream.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONClusterSplitterMLEM)
@@ -59,7 +60,8 @@ fMathieson(0x0),
 fDetElemId(detElemId),
 fNpar(0),
 fQtot(0),
-fnCoupled(0)
+fnCoupled(0),
+fDebug(0)
 {
   /// Constructor
   
@@ -196,8 +198,8 @@ AliMUONClusterSplitterMLEM::Fcn1(const AliMUONCluster& cluster,
   for (Int_t j=0; j< cluster.Multiplicity(); ++j) 
   {
     AliMUONPad* pad = cluster.Pad(j);
-    if ( pad->Status() != 1 ) continue;
-    if ( pad->DX() > 0 ) npads++; // exclude virtual pads
+    if ( pad->Status() !=1 || pad->IsSaturated() ) continue;
+    if ( pad->IsReal() ) npads++; // exclude virtual pads
     qTot += pad->Charge(); // c.fXyq[2][j];
     charge = 0;
     for (Int_t i=fNpar/3; i>=0; --i)
@@ -217,7 +219,7 @@ AliMUONClusterSplitterMLEM::Fcn1(const AliMUONCluster& cluster,
         coef = i==1 ? coef*par[indx+2] : coef - par[7];
       }
       coef = TMath::Max (coef, 0.);
-      charge += ChargeIntegration(par[indx],par[indx+1],*pad);
+      charge += ChargeIntegration(par[indx],par[indx+1],*pad) * coef;
     }
     charge *= fQtot;
     delta = charge - pad->Charge(); //c.fXyq[2][j];
@@ -251,12 +253,13 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
   
   // Number of pads to use and number of virtual pads
   Int_t npads = 0, nVirtual = 0, nfit0 = nfit;
+  //cluster.Print("full");
   for (Int_t i=0; i<cluster.Multiplicity(); ++i ) 
   {
     AliMUONPad* pad = cluster.Pad(i);
-    if ( pad->DX() < 0 ) ++nVirtual;
-    if ( pad->Status() !=1 ) continue;
-    if ( pad->DX() > 0 )
+    if ( !pad->IsReal() ) ++nVirtual;
+    if ( pad->Status() !=1 || pad->IsSaturated() ) continue;
+    if ( pad->IsReal() )
     {
       ++npads;
       if (yPad > 9999) 
@@ -325,7 +328,16 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
   AliMpIntPair nofPads = cluster.NofPads(kStatusToTest);
   Int_t nInX = nofPads.GetFirst();
   Int_t nInY = nofPads.GetSecond();
-  //cout << " nInX and Y: " << nInX << " " << nInY << endl;
+
+  if (fDebug) {
+    Int_t npadOK = 0;
+    for (Int_t j = 0; j < cluster.Multiplicity(); ++j) {
+      AliMUONPad *pad = cluster.Pad(j);
+      if (pad->Status() == 1 && !pad->IsSaturated()) npadOK++;
+    }
+    cout << " Number of pads to fit: " << npadOK << endl;
+    cout << " nInX and Y: " << nInX << " " << nInY << endl;
+  }
   
   Int_t nfitMax = 3; 
   nfitMax = TMath::Min (nfitMax, (npads + 1) / 3);
@@ -375,7 +387,7 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
   sigCand[0][0] = sigCand[0][0] > 0 ? TMath::Sqrt (sigCand[0][0]) : 0;
   sigCand[0][1] = sigCand[0][1]/qq - xyCand[0][1]*xyCand[0][1]; // <y^2> - <y>^2
   sigCand[0][1] = sigCand[0][1] > 0 ? TMath::Sqrt (sigCand[0][1]) : 0;
-//  if (fDebug) cout << xyCand[0][0] << " " << xyCand[0][1] << " " << sigCand[0][0] << " " << sigCand[0][1] << endl;
+  if (fDebug) cout << xyCand[0][0] << " " << xyCand[0][1] << " " << sigCand[0][0] << " " << sigCand[0][1] << endl;
   
   Int_t nDof, maxSeed[3];//, nMax = 0;
     Double_t fmin, chi2o = 9999, chi2n;
@@ -386,7 +398,7 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
     Double_t param0[2][8]={{0},{0}}, deriv[2][8]={{0},{0}}; 
     Double_t shift[8], stepMax, derMax, parmin[8], parmax[8], func2[2], shift0;
     Double_t delta[8], scMax, dder[8], estim, shiftSave = 0;
-    Int_t min, max, nCall = 0, memory[8] = {0}, nLoop, idMax = 0, iestMax = 0, nFail;
+    Int_t min, max, nCall = 0, nLoop, idMax = 0, iestMax = 0, nFail;
     Double_t rad, dist[3] = {0};
     
     // Try to fit with one-track hypothesis, then 2-track. If chi2/dof is 
@@ -394,6 +406,7 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
     for (Int_t iseed=0; iseed<nfit; iseed++) 
     {
       
+      Int_t memory[8] = {0};
       if (iseed) 
       { 
         for (Int_t j=0; j<fNpar; j++) 
@@ -486,15 +499,15 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
                    || TMath::Abs(deriv[0][j]-deriv[1][j]) < 1.e-3 || TMath::Abs(dder[j]) < 1.e-6) 
           {
             shift[j] = -TMath::Sign (shift[j], (func2[0]-func2[1]) * (param0[0][j]-param0[1][j]));
-          }
-          if (min == max) 
-          { 
-            if (memory[j] > 1) 
-            { 
-              shift[j] *= 2; 
-            } 
-            memory[j]++;
-          }
+	    if (min == max) 
+	    { 
+	      if (memory[j] > 1) 
+	      { 
+		shift[j] *= 2; 
+	      } 
+	      memory[j]++;
+	    }
+	  }
           else 
           {
             shift[j] = dder[j] != 0 ? -deriv[min][j] / dder[j] : 0;
@@ -597,7 +610,7 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
       nDof = npads - fNpar + nVirtual;
       if (!nDof) nDof++;
       chi2n = fmin / nDof;
-//      if (fDebug) cout << " Chi2 " << chi2n << " " << fNpar << endl;
+      if (fDebug) cout << " Chi2 " << chi2n << " " << fNpar << endl;
       
       if (chi2n*1.2+1.e-6 > chi2o ) { fNpar -= 3; break; }
       
@@ -648,18 +661,18 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
       
       chi2o = chi2n;
       if (fmin < 0.1) break; // !!!???
-  } // for (Int_t iseed=0; 
-    
-//    if (fDebug) {
-//      for (Int_t i=0; i<fNpar; i++) {
-//        if (i == 4 || i == 7) {
-//          if (i == 7 || i == 4 && fNpar < 7) cout << parOk[i] << endl;
-//          else cout << parOk[i] * (1-parOk[7]) << endl;
-//          continue;
-//        }
-//        cout << parOk[i] << " " << errOk[i] << endl;
-//      }
-//    }
+    } // for (Int_t iseed=0; 
+   
+    if (fDebug) {
+      for (Int_t i=0; i<fNpar; i++) {
+        if (i == 4 || i == 7) {
+          if (i == 7 || i == 4 && fNpar < 7) cout << parOk[i] << endl;
+          else cout << parOk[i] * (1-parOk[7]) << endl;
+          continue;
+        }
+        cout << parOk[i] << " " << errOk[i] << endl;
+      }
+    }
     nfit = (fNpar + 1) / 3;
     dist[0] = dist[1] = dist[2] = 0;
     
@@ -708,20 +721,21 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
       
       if ( coef*fQtot >= 14 )
       {
-        AliMUONCluster* cluster = new AliMUONCluster();
+        //AZ AliMUONCluster* cluster1 = new AliMUONCluster();
+        AliMUONCluster* cluster1 = new AliMUONCluster(cluster);
         
-        cluster->SetCharge(coef*fQtot,coef*fQtot);
-        cluster->SetPosition(TVector2(parOk[indx],parOk[indx+1]),TVector2(sigCand[0][0],sigCand[0][1]));
-        cluster->SetChi2(dist[TMath::LocMin(nfit,dist)]);
+        cluster1->SetCharge(coef*fQtot,coef*fQtot);
+        cluster1->SetPosition(TVector2(parOk[indx],parOk[indx+1]),TVector2(sigCand[0][0],sigCand[0][1]));
+        cluster1->SetChi2(dist[TMath::LocMin(nfit,dist)]);
         
         // FIXME: we miss some information in this cluster, as compared to 
         // the original AddRawCluster code.
         
         AliDebug(2,Form("Adding RawCluster detElemId %4d mult %2d charge %5d (xl,yl)=(%9.6g,%9.6g)",
-                        fDetElemId,cluster->Multiplicity(),(Int_t)cluster->Charge(),
-                        cluster->Position().X(),cluster->Position().Y()));
+                        fDetElemId,cluster1->Multiplicity(),(Int_t)cluster1->Charge(),
+                        cluster1->Position().X(),cluster1->Position().Y()));
         
-        clusterList.Add(cluster);
+        clusterList.Add(cluster1);
       }
       //      AddRawCluster (parOk[indx], // double x
       //                     parOk[indx+1], // double y
@@ -1218,7 +1232,7 @@ AliMUONClusterSplitterMLEM::UpdatePads(const AliMUONCluster& cluster,
   for (Int_t j=0; j<cluster.Multiplicity(); ++j) 
   {
     AliMUONPad* pad = cluster.Pad(j);
-    if ( pad->Status() != 1 ) continue;
+    if ( pad->Status() != -1 ) continue;
     if (fNpar != 0) 
     {
       charge = 0;
@@ -1240,7 +1254,7 @@ AliMUONClusterSplitterMLEM::UpdatePads(const AliMUONCluster& cluster,
           coef = i==1 ? coef*par[indx+2] : coef - par[7];
         }
         coef = TMath::Max (coef, 0.);
-        charge += ChargeIntegration(par[indx],par[indx+1],*pad);
+        charge += ChargeIntegration(par[indx],par[indx+1],*pad) * coef;
       }
       charge *= fQtot;
       pad->SetCharge(pad->Charge()-charge);

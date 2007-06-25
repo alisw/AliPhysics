@@ -71,7 +71,7 @@ fZpad(0.0),
 fReco(1),
 fCathBeg(0),
 fPixArray(new TObjArray(20)),
-fDebug(1),
+fDebug(0),
 fPlot(plot),
 fTimers(new TObjArray(kLast)),
 fSplitter(0x0),
@@ -95,6 +95,7 @@ fNAddVirtualPads(0)
     t->Start(kTRUE);
     t->Stop();
   }
+  if (fPlot) fDebug = 1;
 }
 
 //_____________________________________________________________________________
@@ -146,6 +147,7 @@ AliMUONClusterFinderMLEM::Prepare(const AliMpVSegmentation* segmentations[2],
   
   delete fSplitter;
   fSplitter = new AliMUONClusterSplitterMLEM(fDetElemId,fPixArray);
+  fSplitter->SetDebug(fDebug);
     
   // find out current event number, and reset the cluster number
   fEventNumber = AliRunLoader::GetRunLoader()->GetEventNumber();
@@ -163,15 +165,9 @@ AliMUONClusterFinderMLEM::NextCluster()
 {
   /// Return next cluster
   
-  ++fClusterNumber;
-  
   // if the list of clusters is not void, pick one from there
-  if ( fClusterList.GetLast() >= 0 )
-  {
-    TObject* o = fClusterList.At(0);
-    fClusterList.RemoveAt(0);
-    return static_cast<AliMUONCluster*>(o);
-  }
+  TObject* o = fClusterList.At(++fClusterNumber);
+  if ( o != 0x0 ) return static_cast<AliMUONCluster*>(o);
   
   //FIXME : at this point, must check whether we've used all the digits
   //from precluster : if not, let the preclustering know about those unused
@@ -189,6 +185,7 @@ AliMUONClusterFinderMLEM::NextCluster()
   }
     
   fClusterList.Delete(); // reset the list of clusters for this pre-cluster
+  fClusterNumber = -1; //AZ
   
   WorkOnPreCluster();
 
@@ -214,10 +211,28 @@ AliMUONClusterFinderMLEM::WorkOnPreCluster()
   /// Starting from a precluster, builds a pixel array, and then
   /// extract clusters from this array
   
+  // Set saturation flag - it is not set if working directly with MC digits (w/out 
+  // creating raw data) !!!
+  for (Int_t j = 0; j < fPreCluster->Multiplicity(); ++j) {
+    AliMUONPad* pad = fPreCluster->Pad(j);
+    if (pad->IsSaturated()) break;
+    if (pad->Charge() > fgkSaturation-1) pad->SetSaturated(kTRUE); //FIXME : remove usage of fgkSaturation
+  }
+
+  if (fDebug) {
+    cout << " *** Event # " << AliRunLoader::GetRunLoader()->GetEventNumber() 
+	 << " det. elem.: " << fDetElemId << endl;
+    for (Int_t j=0; j<fPreCluster->Multiplicity(); ++j) {
+      AliMUONPad* pad = fPreCluster->Pad(j);
+      printf(" bbb %3d %1d %8.4f %8.4f %8.4f %8.4f %6.1f %3d %3d %2d %1d %1d \n",
+	     j, pad->Cathode(), pad->Coord(0), pad->Coord(1), pad->DX()*2, pad->DY()*2,
+             pad->Charge(), pad->Ix(), pad->Iy(), pad->Status(), pad->IsReal(), pad->IsSaturated());
+    }
+  }
+
   AliMUONCluster* cluster = CheckPrecluster(*fPreCluster);
-  
   if (!cluster) return kFALSE;
-    
+
   BuildPixArray(*cluster);
   
   if ( fPixArray->GetLast() < 0 )
@@ -309,8 +324,6 @@ AliMUONClusterFinderMLEM::CheckPrecluster(const AliMUONCluster& origCluster)
 
   AliMUONCluster* cluster = static_cast<AliMUONCluster*>(origCluster.Clone());
 
-  cluster->Sort();
-    
   AliDebug(2,"Start of CheckPreCluster=");
   StdoutToAliDebug(2,cluster->Print("full"));
 
@@ -382,6 +395,8 @@ AliMUONClusterFinderMLEM::CheckPreclusterTwoCathodes(AliMUONCluster* cluster)
   if (nFlags > 0) 
   {
     // not all pads overlap.
+    if (fDebug) cout << " nFlags: " << nFlags << endl;
+    TObjArray toBeRemoved;
     for (Int_t i=0; i<npad; ++i) 
     {
       AliMUONPad* pad = cluster->Pad(i);
@@ -391,16 +406,22 @@ AliMUONClusterFinderMLEM::CheckPreclusterTwoCathodes(AliMUONCluster* cluster)
       // Check for edge effect (missing pads on the _other_ cathode)
       AliMpPad mpPad = fSegmentation[cath1]->PadByPosition(pad->Position(),kFALSE);
       if (!mpPad.IsValid()) continue;
+      if (nFlags == 1 && pad->Charge() < fgkZeroSuppression * 3) continue;
       AliDebug(2,Form("Releasing the following pad : de,cath,ix,iy %d,%d,%d,%d charge %e",
                       fDetElemId,pad->Cathode(),pad->Ix(),pad->Iy(),pad->Charge()));
-      cluster->RemovePad(pad);
+      toBeRemoved.AddLast(pad);
+      //AZ cluster->RemovePad(pad);
       fPreCluster->Pad(i)->Release();
-      --npad;
+      //AZ --npad;
+    }
+    for ( Int_t i = 0; i <= toBeRemoved.GetLast(); ++i )
+    {
+      cluster->RemovePad(static_cast<AliMUONPad*>(toBeRemoved.At(i)));
     }
   } 
   
   // Check correlations of cathode charges
-  if ( !cluster->IsSaturated() && cluster->ChargeAsymmetry()*2 > 1 )
+  if ( !cluster->IsSaturated() && cluster->ChargeAsymmetry() > 1 )
   {
     // big difference
     Int_t cathode = cluster->MaxRawChargeCathode();
@@ -843,6 +864,7 @@ AliMUONClusterFinderMLEM::Plot(const char* basename)
 {
   /// Make a plot and save it as png
   
+  return; //AZ
   if (!fPlot) return;
   
   TCanvas* c = new TCanvas("MLEM","MLEM",800,600);
@@ -1245,6 +1267,7 @@ void AliMUONClusterFinderMLEM::Mlem(AliMUONCluster& cluster,
     // Do iterations
     for (Int_t ipix=0; ipix<nPix; ++ipix) 
     {
+      Pixel(ipix)->SetChargeBackup(0);
       // Correct each pixel
       if (probi[ipix] < 0.01) continue; // skip "invisible" pixel
       Double_t sum = 0;
@@ -1281,9 +1304,14 @@ void AliMUONClusterFinderMLEM::Mlem(AliMUONCluster& cluster,
       AliMUONPad* pixPtr = Pixel(ipix);
       if (probi1[ipix] > 1.e-6) 
       {
-        pixPtr->SetCharge(pixPtr->Charge()*sum/probi1[ipix]);
+        //AZ pixPtr->SetCharge(pixPtr->Charge()*sum/probi1[ipix]);
+        pixPtr->SetChargeBackup(pixPtr->Charge()*sum/probi1[ipix]);
       }
     } // for (Int_t ipix=0;
+    for (Int_t i = 0; i < nPix; ++i) {
+      AliMUONPad* pixPtr = Pixel(i);
+      pixPtr->SetCharge(pixPtr->ChargeBackup());
+    }
   } // for (Int_t iter=0;
   delete [] probi1;
 }
@@ -1672,7 +1700,6 @@ void AliMUONClusterFinderMLEM::AddVirtualPad(AliMUONCluster& cluster)
   Int_t nInX = -1, nInY;
   PadsInXandY(cluster,nInX, nInY);
   ++fNClusters;
-  if (fDebug) cout << " Chamber: " << fDetElemId / 100 - 1 << " " << nInX << " " << nInY << endl;
 
   // Add virtual pad only if number of pads per direction == 2
   if (nInX != 2 && nInY != 2) return;
@@ -1868,7 +1895,8 @@ void AliMUONClusterFinderMLEM::AddVirtualPad(AliMUONCluster& cluster)
           AliMpPad pad = fSegmentation[cath]->PadByIndices(AliMpIntPair(ix,iy),kTRUE);
 	  //          fXyq[0][npads] = pad.Position().X();
 	  //          fXyq[1][npads] = pad.Position().Y();
-	  AliMUONPad muonPad(fDetElemId, cath, ix, iy, pad.Position().X(), pad.Position().Y(), 0, 0, 0);
+	  AliMUONPad muonPad(fDetElemId, cath, ix, iy, pad.Position().X(), pad.Position().Y(), 
+			     pad.Dimensions().X(), pad.Dimensions().Y(), 0);
 	  //          fSegmentation[cath]->GetPadC(ix, iy, fXyq[0][npads], fXyq[1][npads], zpad);
 	  //          if (fXyq[0][npads] > 1.e+5) continue; // temporary fix
 	  if (muonPad.Coord(0) > 1.e+5) continue; // temporary fix
@@ -1891,15 +1919,16 @@ void AliMUONClusterFinderMLEM::AddVirtualPad(AliMUONCluster& cluster)
 	  //          fXyq[3][npads] = -2; // flag
 	  //          fPadIJ[2][npads] = ix;
 	  //          fPadIJ[3][npads] = iy;
-	  muonPad.SetSize(0,-2.); //flag
+          muonPad.SetReal(kFALSE);
 	  //          fnPads[1]++;
 	  //          iAddX = npads;
           iAddX = 1;
 	  //AliDebug(1,Form("Add virtual pad in X %f %f %f %3d %3d \n", 
 	  //                          fXyq[2][npads], fXyq[0][npads], fXyq[1][npads], ix, iy));
 	  //muonPad.Charge(), muonPad.Coord(0), muonPad.Coord(1), ix, iy));
-          if (fDebug) printf(" ***** Add virtual pad in X ***** %f %f %f %3d %3d \n",
-                          muonPad.Charge(), muonPad.Coord(0), muonPad.Coord(1), ix, iy);
+          if (fDebug) printf(" ***** Add virtual pad in X ***** %f %f %f %3d %3d %f %f \n",
+			     muonPad.Charge(), muonPad.Coord(0), muonPad.Coord(1), ix, iy, 
+			     muonPad.DX(), muonPad.DY());
 	  cluster.AddPad(muonPad); // add pad to the cluster
           ix1 = ix0;
           continue;
@@ -1914,7 +1943,8 @@ void AliMUONClusterFinderMLEM::AddVirtualPad(AliMUONCluster& cluster)
 	  //          fXyq[0][npads] = pad.Position().X();
 	  //          fXyq[1][npads] = pad.Position().Y();
 	  //          fSegmentation[cath]->GetPadC(ix, iy, fXyq[0][npads], fXyq[1][npads], zpad);
-	  AliMUONPad muonPad(fDetElemId, cath, ix, iy, pad.Position().X(), pad.Position().Y(), 0, 0, 0);
+	  AliMUONPad muonPad(fDetElemId, cath, ix, iy, pad.Position().X(), pad.Position().Y(), 
+			     pad.Dimensions().X(), pad.Dimensions().Y(), 0);
           if (iy1 == iy0) continue;
           //if (iPad && iy1 == iy0) continue;
           if (maxpad[0][0] < 0 || mirror && maxpad[1][0] >= 0) {
@@ -1934,12 +1964,13 @@ void AliMUONClusterFinderMLEM::AddVirtualPad(AliMUONCluster& cluster)
 	  //          fXyq[3][npads] = -2; // flag
 	  //          fPadIJ[2][npads] = ix;
 	  //          fPadIJ[3][npads] = iy;
-	  muonPad.SetSize(0,-2.); //flag
+          muonPad.SetReal(kFALSE);
 	  //          fnPads[1]++;
 	  //          iAddY = npads;
           iAddY = 1;
-          if (fDebug) printf(" ***** Add virtual pad in Y ***** %f %f %f %3d %3d \n", 
-			  muonPad.Charge(), muonPad.Coord(0), muonPad.Coord(1), ix, iy);
+          if (fDebug) printf(" ***** Add virtual pad in Y ***** %f %f %f %3d %3d %f %f \n", 
+			     muonPad.Charge(), muonPad.Coord(0), muonPad.Coord(1), ix, iy, 
+			     muonPad.DX(), muonPad.DY());
 	  cluster.AddPad(muonPad); // add pad to the cluster
           iy1 = iy0;
         }
@@ -1991,7 +2022,7 @@ void AliMUONClusterFinderMLEM::Simple(AliMUONCluster& cluster)
   for (Int_t i = 0; i < cluster.Multiplicity(); ++i) 
   {
     AliMUONPad* pad = cluster.Pad(i);
-    if ( pad->Charge() > fgkSaturation-1) //FIXME : remove usage of fgkSaturation
+    if ( pad->IsSaturated()) 
     {
       pad->SetStatus(-9);
     }

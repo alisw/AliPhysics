@@ -73,6 +73,8 @@ public:
   
   
   void UpdatePads(const AliMUONCluster& cluster, Int_t nfit, Double_t *par);
+  /// Set debug level
+  void SetDebug (Int_t debug) { fDebug = debug; }
 
 private:
   /// will not be implemented
@@ -90,6 +92,7 @@ private:
   Int_t fNpar; //!< number of fit parameters
   Double_t fQtot; //!< total charge
   Int_t fnCoupled; //!< number of coupled pixels ?
+  Int_t fDebug; //!< debug level
   
   ClassDef(AliMUONClusterSplitterMLEM,1) // 
 };
