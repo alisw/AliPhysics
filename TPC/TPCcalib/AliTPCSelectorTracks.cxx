@@ -42,7 +42,6 @@
 #include "AliClusterMap.h"
 //
 #include "AliTPCcalibTracks.h"
-//#include "AliTPCcalibTracks.cxx"
 #include "AliTPCSelectorTracks.h" 
 
 
@@ -84,7 +83,7 @@ void AliTPCSelectorTracks::SlaveBegin(TTree * tree)
   fOutput->AddLast(fNtracksFriend);
   fOutput->AddLast(fNClusters);
   fCalibTracks = new AliTPCcalibTracks;
-    //
+  //
   fCalibTracks->ProofSlaveBegin(fOutput);
 
 
@@ -134,7 +133,7 @@ Bool_t AliTPCSelectorTracks::Process(Long64_t entry)
     return 0;
   }
   //
-  Info("Procces","0");
+  //Info("Procces","0");
   if (!fESD) { 
     fESD =0;
     fESDfriend=0;
@@ -144,14 +143,14 @@ Bool_t AliTPCSelectorTracks::Process(Long64_t entry)
   Int_t ntracks = fESD->GetNumberOfTracks();   
 
   fNtracks->Fill(ntracks);
-  Info("Procces",Form("1-Ntracks=%d",ntracks));
+  //Info("Procces",Form("1-Ntracks=%d",ntracks));
   
   if (!fESDfriend || fESDfriend->GetNumberOfTracks()!=ntracks) {
     fESD =0;
     fESDfriend=0;
     //    CleanESD(); 
     if (fESDfriend) fNtracksFriend->Fill(fESDfriend->GetNumberOfTracks());
-    Info("Procces","2- PROBLEM");
+    //Info("Procces","2- PROBLEM");
     return kFALSE;
   }
   fESD->SetESDfriend(fESDfriend);
@@ -175,7 +174,7 @@ Bool_t AliTPCSelectorTracks::Process(Long64_t entry)
       //
     }
   }
-  CleanESD();
+  CleanESD(); 
   return kTRUE;
   
 }
@@ -217,15 +216,15 @@ void AliTPCSelectorTracks::Init(TTree *tree)
    tree->SetBranchStatus("*",1);
    //   fChain->SetMakeClass(1);
    fChain->SetBranchAddress("ESD",&fESD);
-   Info("Init","Enter");
+   //Info("Init","Enter");
    Bool_t isOK=kFALSE;
    if (fChain->GetBranch("ESDfriend")) {
      fChain->SetBranchAddress("ESDfriend",&fESDfriend);
-     Info("Init","V0-ESDfriend.");
+     //Info("Init","V0-ESDfriend.");
      isOK=kTRUE;
    }
    if (fChain->GetBranch("ESDfriend.")){
-     Info("Init","V1-ESDfriend.");
+     //Info("Init","V1-ESDfriend.");
      fChain->SetBranchAddress("ESDfriend.",&fESDfriend);
      isOK=kTRUE;
    }
@@ -235,21 +234,21 @@ void AliTPCSelectorTracks::Init(TTree *tree)
    // Try to solve problem
    //
 
-   Info("Init","Problem");
+   //Info("Init","Problem");
    if (tree->GetBranch("ESD")){
-     Info("InitTree",tree->GetBranch("ESD")->GetFile()->GetName());
+     //Info("InitTree",tree->GetBranch("ESD")->GetFile()->GetName());
      char  fname[1000];
      sprintf(fname,"%s/AliESDfriends.root",gSystem->DirName(tree->GetBranch("ESD")->GetFile()->GetName()));
-     Info("InitFile",fname);
+     //Info("InitFile",fname);
      if (tree->AddFriend("esdFriendTree",fname)){
-       Info("InitFileOK",fname);
+       //Info("InitFileOK",fname);
        if (fChain->GetBranch("ESDfriend")) {
 	 fChain->SetBranchAddress("ESDfriend",&fESDfriend);
-	 Info("Init","V0-ESDfriend.");
+	 //Info("Init","V0-ESDfriend.");
 	 isOK=kTRUE;
        }
        if (fChain->GetBranch("ESDfriend.")){
-	 Info("Init","V1-ESDfriend.");
+	 //Info("Init","V1-ESDfriend.");
 	 fChain->SetBranchAddress("ESDfriend.",&fESDfriend);
 	 isOK=kTRUE;
        }       

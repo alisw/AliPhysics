@@ -20,7 +20,7 @@ EDIR=TPCcalib
 mkdir $EDIR
 
 
-SRC=$ALICE_ROOT/TPC/selectors
+SRC=$ALICE_ROOT/TPC/TPCcalib
 echo Source $SRC  
 echo EDIR $EDIR
 

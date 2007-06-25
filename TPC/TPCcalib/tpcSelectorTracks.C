@@ -4,14 +4,14 @@
 
   STANDALONE - no PROOF
   .x ~/rootlogon.C
-  .L $ALICE_ROOT/TPC/selectors/AliTPCcalibTracks.cxx+
-  .L $ALICE_ROOT/TPC/selectors/AliTPCSelectorTracks.cxx+
-  .L $ALICE_ROOT/TPC/selectors/tpcSelectorTracks.C+
+  .L $ALICE_ROOT/TPC/TPCcalib/AliTPCcalibTracks.cxx+
+  .L $ALICE_ROOT/TPC/TPCcalib/AliTPCSelectorTracks.cxx+
+  .L $ALICE_ROOT/TPC/TPCcalib/tpcSelectorTracks.C+
   gMaxFiles = 50;
   //  TChain * chain = makeChain("list.list", kTRUE,kFALSE, kTRUE);
   TChain * chain = makeChain("listTr.list", kTRUE,kTRUE, kFALSE);
   chain->SetBranchStatus("*",1);
-  chain->Process("$ALICE_ROOT/TPC/selectors/AliTPCSelectorTracks.cxx+"); 
+  chain->Process("$ALICE_ROOT/TPC/TPCcalib/AliTPCSelectorTracks.cxx+"); 
 
  
   
