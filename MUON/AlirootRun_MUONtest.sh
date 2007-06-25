@@ -99,16 +99,14 @@ AliMUONMCDataInterface mcdSim("$SIMDIR/galice.root");
 mcdSim.DumpKine($DUMPEVENT);       > dump.kine
 mcdSim.DumpHits($DUMPEVENT);       > dump.hits
 mcdSim.DumpTrackRefs($DUMPEVENT);  > dump.trackrefs
-
-AliMUONDataInterface diSim("$SIMDIR/galice.root");
-diSim.DumpDigits($DUMPEVENT,true);     > dump.simdigits
-diSim.DumpSDigits($DUMPEVENT,true);    > dump.sdigits
+mcdSim.DumpDigits($DUMPEVENT,true);  > dump.simdigits
+mcdSim.DumpSDigits($DUMPEVENT,true); > dump.sdigits
 
 AliMUONDataInterface dRec("galice.root");
 dRec.DumpRecPoints($DUMPEVENT);  > dump.recpoints
 dRec.DumpTracks($DUMPEVENT);     > dump.tracks
 dRec.DumpTriggerTracks($DUMPEVENT); > dump.triggertracks
-dRec.DumpTrigger($DUMPEVENT); > dump.trigger
+dRec.DumpTrigger($DUMPEVENT);  > dump.trigger
 dRec.DumpDigits($DUMPEVENT,true); > dump.recdigits
 .q
 EOF
