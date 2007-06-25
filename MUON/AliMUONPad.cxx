@@ -250,6 +250,12 @@ AliMUONPad::Compare(const TObject* obj) const
   
   const AliMUONPad* pad = static_cast<const AliMUONPad*>(obj);
     
+  if (DetElemId() < 0) {
+    // AZ - For "pixels" from MLEM cluster finder
+    if (Charge() == pad->Charge()) return 0;
+    return ( Charge() < pad->Charge() ) ? 1:-1;
+  }
+
   if ( DetElemId() > pad->DetElemId() )
   {
     return 1;
@@ -430,6 +436,7 @@ AliMUONPad::Print(Option_t* opt) const
                  Y()-DY(),Y()+DY()) << endl;
   }
   cout << endl;
+  cout.precision(6); // reset to default precision
   cout.flags(oldflags);
 }
 
