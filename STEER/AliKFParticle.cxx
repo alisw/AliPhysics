@@ -23,7 +23,7 @@
 #include "AliHelix.h"
 //#include "TMath.h"
 
-ClassImp(AliKFParticle);
+ClassImp(AliKFParticle)
 
 Double_t AliKFParticle::fgBz = -5.;  //* Bz compoment of the magnetic field
 

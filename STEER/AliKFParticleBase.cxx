@@ -19,7 +19,7 @@
 #include "AliKFParticleBase.h"
 #include "TMath.h"
 
-ClassImp(AliKFParticleBase);
+ClassImp(AliKFParticleBase)
 
 
 AliKFParticleBase::AliKFParticleBase() :fQ(0), fNDF(-3), fChi2(0), fSFromDecay(0), fAtProductionVertex(0), fIsLinearized(0)

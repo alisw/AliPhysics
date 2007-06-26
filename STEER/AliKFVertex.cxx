@@ -19,7 +19,7 @@
 #include "AliKFVertex.h"
 
 
-ClassImp(AliKFVertex);
+ClassImp(AliKFVertex)
 
 
 AliKFVertex::AliKFVertex( const AliESDVertex &vertex )
