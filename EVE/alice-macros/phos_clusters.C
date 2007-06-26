@@ -11,26 +11,21 @@ Reve::PointSet* phos_clusters(RenderElement* cont=0)
   Reve::PointSet* clusters = new Reve::PointSet(10000);
   clusters->SetOwnIds(kTRUE);
 
-  TClonesArray *cl=NULL;
+  AliPHOSEmcRecPoint *cl=NULL;
   TBranch *branch=cTree->GetBranch("PHOSEmcRP");
   branch->SetAddress(&cl);
 
-  Int_t nentr=(Int_t)cTree->GetEntries();
+  Int_t nentr=(Int_t)branch->GetEntries();
   Warning("phos_clusters",Form(" %d"),nentr);
   for (Int_t i=0; i<nentr; i++) {
-    if (!cTree->GetEvent(i)) continue;
+    if (!branch->GetEvent(i)) continue;
 
-    Int_t ncl=cl->GetEntriesFast();
+    Float_t g[3]; //global coordinates
+    cl->GetGlobalXYZ(g);
 
-    while (ncl--) {
-      AliCluster *c=(AliCluster*)cl->UncheckedAt(ncl);
-      Float_t g[3]; //global coordinates
-      c->GetGlobalXYZ(g);
-
-      clusters->SetNextPoint(g[0], g[1], g[2]);
-      AliCluster *atp = new AliCluster(*c);
-      clusters->SetPointId(atp);
-    }
+    clusters->SetNextPoint(g[0], g[1], g[2]);
+    AliCluster *atp = new AliCluster(*cl);
+    clusters->SetPointId(atp);
   }
 
   if(clusters->Size() == 0 && gReve->GetKeepEmptyCont() == kFALSE) {
