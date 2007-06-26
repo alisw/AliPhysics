@@ -39,38 +39,13 @@ ClassImp(Event)
 
 Event* Alieve::gEvent = 0;
 
-Bool_t Alieve::Event::fgUseRunLoader   = kTRUE;
-Bool_t Alieve::Event::fgUseESDTree     = kTRUE;
-Bool_t Alieve::Event::fgAvoidExcOnOpen = kTRUE;
+Bool_t Alieve::Event::fgAssertRunLoader = kFALSE;
+Bool_t Alieve::Event::fgAssertESDTree   = kFALSE;
 
 TString  Alieve::Event::fgCdbUri("local://$ALICE_ROOT");
 
 AliMagF* Alieve::Event::fgMagField = 0;
 
-
-void Event::Initialize(Bool_t use_runloader, Bool_t use_esd,
-		       Bool_t avoid_exc_on_open)
-{
-  static const Exc_t eH("Event::Initialize ");
-
-  fgUseRunLoader   = use_runloader;
-  fgUseESDTree     = use_esd;
-  fgAvoidExcOnOpen = avoid_exc_on_open;
-
-  /*
-  if(fgUseRunLoader == false && fgUseESDTree == false)
-    throw(eH + "should use at least one data source.");
-
-  if(fgUseRunLoader) {
-    AssertMacro("loadlibs.C");
-  }
-  else if(fgUseESDTree) {
-    gSystem->Load("libESD.so");
-  }
-  */
-}
-
-/**************************************************************************/
 
 Event::Event() :
   EventBase(),
@@ -107,65 +82,92 @@ void Event::Open()
 
   Int_t runNo = -1;
 
-  if(fgUseRunLoader)
+  TString ga_path(Form("%s/galice.root", fPath.Data()));
+  if(gSystem->AccessPathName(ga_path, kReadPermission) == kFALSE)
   {
-    TString ga_path(Form("%s/galice.root", fPath.Data()));
-    if(gSystem->AccessPathName(ga_path, kReadPermission))
-    {
-      if (fgAvoidExcOnOpen) {
-	Warning(eH, "RunLoader not initialized.");
-	goto end_run_loader;
-      } else {
-	throw(eH + "can not read '" + ga_path + "'.");
-      }
-    }
     fRunLoader = AliRunLoader::Open(ga_path);
-    if(!fRunLoader)
-      throw(eH + "failed opening ALICE run loader from '" + ga_path + "'.");
+    if (fRunLoader)
     {
       TString alice_path = fPath + "/";
       fRunLoader->SetDirName(alice_path);
-    }
-    if(fRunLoader->LoadgAlice() != 0)
-      throw(eH + "failed loading gAlice.");
-    if(fRunLoader->LoadHeader() != 0)
-      throw(eH + "failed loading header.");
-    runNo = fRunLoader->GetHeader()->GetRun();
-  }
-end_run_loader:
 
-  if(fgUseESDTree)
-  {
-    TString p(Form("%s/AliESDs.root", fPath.Data()));
-    if(gSystem->AccessPathName(p, kReadPermission))
-    {
-      if (fgAvoidExcOnOpen) {
-	Warning(eH, "ESD not initialized.");
-	goto end_esd_loader;
-      } else { 
-	throw(eH + "can not read '" + p + "'.");
+      if (fRunLoader->LoadgAlice() != 0)
+	Warning(eH, "failed loading gAlice via run-loader.");
+
+      if (fRunLoader->LoadHeader() == 0)
+      {
+	runNo = fRunLoader->GetHeader()->GetRun();
+      }
+      else
+      {
+	Warning(eH, "failed loading run-loader's header.");
+	delete fRunLoader;
+	fRunLoader = 0;
       }
     }
-    fESDFile = new TFile(p);
-    if(fESDFile->IsZombie()) {
-      delete fESDFile; fESDFile = 0;
-      throw(eH + "failed opening ALICE ESD from '" + p + "'.");
-    }
-
-    fESD = new AliESD();
-    fESDTree = (TTree*) fESDFile->Get("esdTree");
-    if(fESDTree == 0)
-      throw(eH + "failed getting the esdTree.");
-    fESD->ReadFromTree(fESDTree);
-    runNo = fESD->GetESDRun()->GetRunNumber();
-
-    // Check if ESDfriends exists and attach the branch
-    p = Form("%s/AliESDfriends.root", fPath.Data());
-    if(gSystem->AccessPathName(p, kReadPermission) == kFALSE)
+    else // run-loader open failed
     {
-      fESDfriendExists = kTRUE;
-      fESDTree->SetBranchStatus ("ESDfriend*", 1);
-      fESDTree->SetBranchAddress("ESDfriend.", &fESDfriend);
+      Warning(eH, "failed opening ALICE run-loader from '%s'.", ga_path.Data());
+    }
+  }
+  else // galice not readable
+  {
+    Warning(eH, "can not read '%s'.", ga_path.Data());
+  }
+  if (fRunLoader == 0)
+  {
+    if(fgAssertRunLoader)
+      throw(eH + "Bootstraping of run-loader failed. Its precence was requested.");
+    else
+      Warning(eH, "Bootstraping of run-loader failed.");
+  }
+  
+
+  TString esd_path(Form("%s/AliESDs.root", fPath.Data()));
+  if(gSystem->AccessPathName(esd_path, kReadPermission) == kFALSE)
+  {
+    fESDFile = new TFile(esd_path);
+    if(fESDFile->IsZombie() == kFALSE)
+    {
+      fESD = new AliESD();
+      fESDTree = (TTree*) fESDFile->Get("esdTree");
+      if (fESDTree != 0)
+      {
+	fESD->ReadFromTree(fESDTree);
+	runNo = fESD->GetESDRun()->GetRunNumber();
+
+	// Check if ESDfriends exists and attach the branch
+	TString p = Form("%s/AliESDfriends.root", fPath.Data());
+	if(gSystem->AccessPathName(p, kReadPermission) == kFALSE)
+	{
+	  fESDfriendExists = kTRUE;
+	  fESDTree->SetBranchStatus ("ESDfriend*", 1);
+	  fESDTree->SetBranchAddress("ESDfriend.", &fESDfriend);
+	}
+      }
+      else // esdtree == 0
+      {
+	delete fESDFile; fESDFile = 0;
+	Warning(eH, "failed getting the esdTree.");
+      }
+    }
+    else // esd tfile is zombie
+    {
+      delete fESDFile; fESDFile = 0;
+      Warning(eH, "failed opening ESD from '%s'.", esd_path.Data());
+    }
+  }
+  else // esd not readable
+  {
+    Warning(eH, "can not read ESD file '%s'.", esd_path.Data());
+  }
+  if (fESDTree == 0)
+  {
+    if (fgAssertESDTree)
+    {
+      throw(eH + "ESD not initialized. Its precence was requested.");
+    } else { 
+      Warning(eH, "ESD not initialized.");
     }
   }
 
@@ -180,7 +182,6 @@ end_run_loader:
     cdb->SetRun(runNo);
   }
 
-end_esd_loader:
   SetName(Form("Event %d", fEventId));
   SetTitle(fPath);
 }

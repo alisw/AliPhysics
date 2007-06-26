@@ -39,19 +39,16 @@ protected:
 
   TList         fNewEventCommands;
 
-  static Bool_t fgUseRunLoader;
-  static Bool_t fgUseESDTree;
-  static Bool_t fgAvoidExcOnOpen;
-
   static TString  fgCdbUri;
+  static Bool_t   fgAssertRunLoader;
+  static Bool_t   fgAssertESDTree;
 
   static AliMagF* fgMagField;
 
 public:
-  static void Initialize(Bool_t use_runloader=kTRUE, Bool_t use_esd=kTRUE,
-			 Bool_t avoid_exc_on_open=kTRUE);
-
   static void SetCdbUri(const Text_t* cdb) { if (cdb) fgCdbUri = cdb; }
+  static void SetAssertElements(Bool_t assertRunloader, Bool_t assertEsd)
+  { fgAssertRunLoader = assertRunloader; fgAssertESDTree = assertEsd; }
 
   Event();
   Event(TString path, Int_t ev=0);
