@@ -2,8 +2,7 @@
 
 void alieve_init(const Text_t* path   = ".", Int_t event=0,
 		 const Text_t* cdburi = 0,
-		 Bool_t use_runloader=kTRUE, Bool_t use_esd=kTRUE,
-		 Bool_t avoid_exceptions_on_open=kTRUE)
+		 Bool_t assert_runloader=kFALSE, Bool_t assert_esd=kFALSE)
 {
 
   // Set-up environment, load libraries.
@@ -48,8 +47,8 @@ void alieve_init(const Text_t* path   = ".", Int_t event=0,
 
   // Open event
   if(path != 0) {
-    Alieve::Event::Initialize(use_runloader, use_esd, avoid_exceptions_on_open);
     Alieve::Event::SetCdbUri(cdburi);
+    Alieve::Event::SetAssertElements(assert_runloader, assert_esd);
     printf("Opening event %d from '%s' ...", event, path); fflush(stdout);
     Alieve::gEvent = new Alieve::Event(path, event);
     printf(" done.\n");
