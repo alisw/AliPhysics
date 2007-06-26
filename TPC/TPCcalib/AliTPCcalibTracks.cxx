@@ -30,7 +30,7 @@
 #include "TCint.h"
 #include "AliTPCcalibTracks.h"
 
-ClassImp(AliTPCcalibTracks);
+ClassImp(AliTPCcalibTracks)
 
 AliTPCParam  param;
 
