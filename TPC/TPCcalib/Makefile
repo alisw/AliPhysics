@@ -1,7 +1,7 @@
 PACKAGE = TPCcalib
 
 include Makefile.arch
-include lib$(PACKAGE).pkg
+include lib$(PACKAGE).pkg2
 
 ifndef PACKCXXFLAGS
 PACKCXXFLAGS = $(CXXFLAGS)

@@ -1,0 +1,12 @@
+SRCS = AliTPCcalibTracks.cxx
+       
+
+HDRS:= $(SRCS:.cxx=.h) 
+
+EINCLUDE:=RAW TPC STEER
+
+DHDR= TPCcalibLinkDef.h
+
+EXPORT:=$(SRCS:.cxx=.h)
+
+
