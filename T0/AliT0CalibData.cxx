@@ -41,7 +41,13 @@
 ClassImp(AliT0CalibData)
 
 //________________________________________________________________
-  AliT0CalibData::AliT0CalibData():   TNamed()
+  AliT0CalibData::AliT0CalibData():   TNamed(),
+				      fTimeDelayTVD(0),
+				      fMeanT0(0),
+				      fWalk(0),
+				      fAmpLEDRec(0),
+				      fLookup(0),
+				      fNumberOfTRMs(0)
 
 {
   //
@@ -52,7 +58,6 @@ AliT0CalibData::AliT0CalibData(const char* name):TNamed(),
 				      fTimeDelayTVD(0),
 				      fMeanT0(0),
 				      fWalk(0),
-				      fAmpLED(0),
 				      fAmpLEDRec(0),
 				      fLookup(0),
 				      fNumberOfTRMs(0)
@@ -70,7 +75,7 @@ AliT0CalibData::AliT0CalibData(const AliT0CalibData& calibda) :
   fTimeDelayTVD(0),
   fMeanT0(0),
   fWalk(0),
-  fAmpLED(0),
+  //  fAmpLED(0),
   fAmpLEDRec(0),
   fLookup(0),
   fNumberOfTRMs(0)
@@ -213,7 +218,7 @@ void AliT0CalibData::SetWalk(Int_t ipmt)
 
 
 //________________________________________________________________
-
+/*
 void AliT0CalibData::SetAmpLED(Int_t ipmt)
 {
   Float_t mv, ps; 
@@ -237,7 +242,7 @@ void AliT0CalibData::SetAmpLED(Int_t ipmt)
   fAmpLED.AddAtAndExpand(gr,ipmt);
    
 }
-
+*/
 //________________________________________________________________
 
 void AliT0CalibData::SetAmpLEDRec(Int_t ipmt)
@@ -283,25 +288,8 @@ void AliT0CalibData::ReadAsciiLookup(const Char_t *filename)
   lookup.open(filename);
   if(!lookup)
     {
-      //  AliLog(Form("Cannot open file %s ! Getting hardcoded value",filename));
-
-      //      fNumberOfTRMs = 2;
-      SetNumberOfTRMs(2);
-      trm=0; tdc=0; chain=0; channel=0; key=0;
-      for (Int_t ik=0; ik<108; ik++)
-	{
-	  AliT0LookUpKey * lookkey= new AliT0LookUpKey();
-	  AliT0LookUpValue * lookvalue= new AliT0LookUpValue();
-	  
-	  lookvalue->SetTRM(trm);
-	  lookvalue->SetTDC(tdc);
-	  lookvalue->SetChain(chain);
-	  lookvalue->SetChannel(channel);
-	  lookkey->SetKey(ik);
-	  if(ik>53) { trm=1; tdc=0; channel=0;}
-	  if (channel<7) channel +=2;
-	  else {channel = 0; tdc++;}
-	}
+     AliError(Form("!!!!!!!!!!!!!!No look up table in CDB!" ));
+ 
     }
   Char_t varname[11];
   Int_t ntrms;

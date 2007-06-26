@@ -6,6 +6,7 @@
 #include <AliDigitizer.h>
 #include <AliLoader.h>
 #include <AliRunLoader.h>
+#include "AliT0Parameters.h"
 
 #include <AliRunDigitizer.h>
 class AliT0;
@@ -40,7 +41,10 @@ private:
   TArrayI *fADC     ;//! array of QTC signals (main amplitude)
   TArrayI *fADC0     ;//! array of QTC signals (main amplitude)
   Int_t fSumMult; // multiplicity
-  TObjArray fEffPMT; //pmt registration effeicincy
+  TObjArray fAmpLED; //pmt registration effeicincy
+
+  AliT0Parameters     *fParam;           //pointer to T0 parameters class     
+
 
   AliT0Digitizer(const AliT0Digitizer&);
   AliT0Digitizer& operator=(const AliT0Digitizer);

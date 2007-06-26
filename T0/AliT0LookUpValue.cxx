@@ -55,15 +55,6 @@ ULong_t AliT0LookUpValue:: Hash(void) const
   //printf("hash=%i\n",hash);
   return hash; 
 }
-/*
-void AliT0LookUpValue:: Clear()  
-{
-  fTRM=-1;
-  fTDC=-1;
-  fChain=-1;
-  fChannel=-1;
-}
-*/
 
 ClassImp(AliT0LookUpKey)
 

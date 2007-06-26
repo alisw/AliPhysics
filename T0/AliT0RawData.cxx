@@ -23,7 +23,7 @@
 
 #include <Riostream.h>
 #include <TTree.h>
-
+#include <TMap.h>
 #include "AliT0.h"
 #include "AliT0RawData.h"
 #include "AliT0digit.h"
@@ -34,23 +34,27 @@
 #include "AliFstream.h"
 #include "AliRunLoader.h"
 #include "AliDAQ.h"
+#include "AliT0LookUpValue.h"
 
 ClassImp(AliT0RawData)
 
 //_____________________________________________________________________________
   AliT0RawData::AliT0RawData():TObject(),
- fVerbose(0),      
- fIndex(-1) ,     
- fEventNumber(0), 
- fTimeCFD(new TArrayI(24)),    
- fADC1( new TArrayI(24)),     
- fTimeLED( new TArrayI(24)), 
- fADC0( new TArrayI(24)),     
- fFile(0x0),   
- fDataHeaderPos(0),
- fDRMDataHeaderPos(0),
- fTRMDataHeaderPos(0),
- fDigits(0)  
+			       fVerbose(0),      
+			       fIndex(-1) ,     
+			       fEventNumber(0), 
+			       fTimeCFD(new TArrayI(24)),    
+			       fADC1( new TArrayI(24)),     
+			       fTimeLED( new TArrayI(24)), 
+			       fADC0( new TArrayI(24)),     
+			       fFile(0x0),   
+			       fDataHeaderPos(0),
+			       fDRMDataHeaderPos(0),
+			       fTRMDataHeaderPos(0),
+			       fDigits(0),
+			       fParam(0),
+			       fLookUp(0)
+  
 
 {
   /*
@@ -82,23 +86,44 @@ uncertances
   if (runloader) {
     fEventNumber = runloader->GetEventNumber();
   }
+
+  // Inverse lookup table for simulation
+
+  fParam = AliT0Parameters::Instance();
+  fParam->Init();
+  AliT0LookUpKey* lookkey= new AliT0LookUpKey();
+  AliT0LookUpValue*  lookvalue= new AliT0LookUpValue();
+  TMap *lookup = fParam->GetMapLookup();
+  TMapIter *iter = new TMapIter(lookup);
+
+  for( Int_t iline=0; iline<106; iline++)
+    {
+      lookvalue = ( AliT0LookUpValue*) iter->Next();
+      lookkey = (AliT0LookUpKey*) lookup->GetValue((TObject*)lookvalue);
+      fLookUp.Add((TObject*)lookkey,(TObject*)lookvalue);
+      lookkey= new AliT0LookUpKey();
+      lookvalue= new AliT0LookUpValue();
+    }
+ 
 }
 
 //_____________________________________________________________________________
 
 AliT0RawData::AliT0RawData(const AliT0RawData &r):TObject(),
- fVerbose(0),      
- fIndex(-1) ,     
- fEventNumber(0), 
- fTimeCFD(new TArrayI(24)),    
- fADC1( new TArrayI(24)),     
- fTimeLED( new TArrayI(24)), 
- fADC0( new TArrayI(24)),     
- fFile(0x0),   
- fDataHeaderPos(0),
- fDRMDataHeaderPos(0),
- fTRMDataHeaderPos(0),
- fDigits(0)  
+						  fVerbose(0),      
+						  fIndex(-1) ,     
+						  fEventNumber(0), 
+						  fTimeCFD(new TArrayI(24)),    
+						  fADC1( new TArrayI(24)),     
+						  fTimeLED( new TArrayI(24)), 
+						  fADC0( new TArrayI(24)),     
+						  fFile(0x0),   
+						  fDataHeaderPos(0),
+						  fDRMDataHeaderPos(0),
+						  fTRMDataHeaderPos(0),
+						  fDigits(0)  ,
+						  fParam(0),
+						  fLookUp(0)
 
 {
   //
@@ -169,32 +194,28 @@ void AliT0RawData::GetDigits(AliT0digit *fDigits)
   for (i=1; i<25; i++) {
     allData->AddAt(fTimeLED->At(i-1),i);
     allData->AddAt(fTimeCFD->At(i-1),i+24);
-    allData->AddAt(fADC0->At(i-1),i+54);
-    allData->AddAt(fADC1->At(i-1),i+78);
+    allData->AddAt(fADC0->At(i-1),i+56);
+    allData->AddAt(fADC1->At(i-1),i+80);
 
   }
   allData->AddAt(meantime,49);
   allData->AddAt(timediff,50);
-  allData->AddAt(timediff,103); //trigger vertex
   allData->AddAt(timeA,51);
-  allData->AddAt(timeA,104); //trigger T0A
   allData->AddAt(timeC,52);
-  allData->AddAt(timeC,105); //trigger T0C
   allData->AddAt(mult0,53);
-  allData->AddAt(mult1,106); //trigger central
   allData->AddAt(mult1,54);
-  allData->AddAt(mult1,107); //trigger semi-central
+  allData->AddAt(mult0,55);
+  allData->AddAt(mult1,56);
 
-  // cout.setf( ios_base::hex, ios_base::basefield );
-  
+  //   cout.setf( ios_base::hex, ios_base::basefield );
   //space for DRM header
   fIndex += 6;
+
 
   Int_t startTRM=fIndex;
   //space for 1st TRM header
   fIndex ++;
   positionOfTRMHeader= fIndex;
-
   //space for chain  header
   fIndex ++;
   WriteChainDataHeader(0, 0); // 
@@ -203,71 +224,71 @@ void AliT0RawData::GetDigits(AliT0digit *fDigits)
   Int_t iTDC = 0;
   Int_t channel=0;
   Int_t trm1words=0;
-
-  //LED
-  for (Int_t det = 0; det < 55; det++) {
-    time = allData->At(det);
-    if (time >0)  
-      FillTime(channel,  iTDC,  time); 
-    if (channel < 6) channel +=2;
-    else {
-      channel = 0; 
-      iTDC++;
-      if (iTDC>15) { chain++; iTDC=0;}
-    }
-  }
+  Int_t itrm=0, oldtrm=0;
   
-
+ 
+  for (Int_t det = 0; det < 105; det++) {
+    time = allData->At(det);
+     if (time >0) {
+      
+      AliT0LookUpKey * lookkey = new AliT0LookUpKey();
+      AliT0LookUpValue * lookvalue ;//= new AliT0LookUpValue(trm,tdc,chain,channel);
+      lookkey->SetKey(det);
+      lookvalue = (AliT0LookUpValue*) fLookUp.GetValue((TObject*)lookkey);     
+      if (lookvalue ) 
+	{
+	  itrm= lookvalue->GetTRM();
+	  if (itrm != oldtrm ) {
+	    WriteChainDataTrailer(1); // 1st chain trailer
+	    fIndex++;
+	    WriteChainDataHeader(2, 1); // 
+	    WriteChainDataTrailer(3); // 2st chain trailer
+	    WriteTrailer(15,0,fEventNumber,5); // 1st TRM trailer
+	    
+	    
+	    trm1words = fIndex - startTRM;
+	    WriteTRMDataHeader(oldtrm, trm1words , positionOfTRMHeader);
+	    //space for 2st TRM header
+	    startTRM=fIndex;
+	    fIndex ++;
+	    positionOfTRMHeader= fIndex;
+	    fIndex ++;
+	    oldtrm=itrm;
+	  }	    
+	  chain = lookvalue->GetChain();
+	  iTDC = lookvalue->GetTDC();
+	  channel = lookvalue->GetChannel();
+	  //	  cout<<det<<" "<<itrm<<" "<<chain<<" "<<iTDC<<" "<<channel<<" time "<<time<<endl;
+	  FillTime(channel,  iTDC,  time);
+	}
+      else
+	{
+	  cout<<" no lookup value for key "<<det<<endl;
+	  //  break;
+	}
+    }
+    
+  }
+    
   WriteChainDataTrailer(1); // 1st chain trailer
   fIndex++;
   WriteChainDataHeader(2, 1); // 
   WriteChainDataTrailer(3); // 2st chain trailer
   WriteTrailer(15,0,fEventNumber,5); // 1st TRM trailer
-  trm1words = fIndex - startTRM;
-  WriteTRMDataHeader(0, trm1words , positionOfTRMHeader);
-
-
+  
+  
+ trm1words = fIndex - startTRM;
   //space for 2st TRM header
-  startTRM=fIndex;
-  fIndex ++;
-  positionOfTRMHeader= fIndex;
- 
-  // chain  header
-  fIndex ++;
-  WriteChainDataHeader(0, 0); // 
-  chain=0; 
-  iTDC = 0;
-  channel=0;
-
-  for (Int_t det = 55; det < 108; det++) {
-    time = allData->At(det);
-    
-    if (time >0)  
-      FillTime(channel,  iTDC,  time); 
-     
-    if (channel < 6) channel +=2;
-    else {
-      channel = 0; 
-      iTDC++;
-      if (iTDC>15) { chain++; iTDC=0;}
-    }
-    
-    
-  }
-    WriteChainDataTrailer(1); // 1st chain trailer
-    fIndex++;
-    WriteChainDataHeader(2, 1); // 
-    WriteChainDataTrailer(3); // 2st chain trailer
-    WriteTrailer(15,0,fEventNumber,5); // 1st TRM trailer
-    trm1words = fIndex - startTRM;
-    WriteTRMDataHeader(1, trm1words , positionOfTRMHeader);
-    //DRM trailer
-    WriteTrailer(1,0,fEventNumber,5); // 1st TRM trailer
+  
+  WriteTRMDataHeader(1, trm1words , positionOfTRMHeader);
+  
+  //DRM trailer
+  WriteTrailer(1,0,fEventNumber,5); // 1st TRM trailer
     
     WriteDRMDataHeader();
-
+    
     delete allData;
-
+    
 }
 //------------------------------------------------------------------------------
 void AliT0RawData::PackWord(UInt_t &BaseWord, UInt_t Word, Int_t StartBit, Int_t StopBit)
@@ -492,7 +513,6 @@ void  AliT0RawData::WriteTrailer(UInt_t slot, Int_t word1, UInt_t word2, UInt_t 
   PackWord(baseWord,word,28,31); //  marks trailer
   fIndex++;
   fBuffer[fIndex] =  baseWord;
-
   word=0;
   baseWord=0;
 
@@ -523,7 +543,6 @@ void  AliT0RawData::FillTime(Int_t ch, Int_t iTDC, Int_t time)
   fBuffer[fIndex]=baseWord;
   word=0;
   baseWord=0;
-	
 }
 //---------------------------------------------------------------------------------------
 

@@ -25,15 +25,12 @@ ClassImp(AliT0RawReader)
  
   fRawReader->Reset();
   fRawReader->Select("T0");
- // AliT0Parameters* fParam = AliT0Parameters::Instance();  
- 
- // fIsOnline = isOnline; 
-  // fIsOnline=kTRUE;
- /* if (fIsOnline)
+  fParam = AliT0Parameters::Instance();  
+  if (fIsOnline)
     fParam->InitIfOnline();
   else 
     fParam->Init();
- */
+ 
 }
  AliT0RawReader::~AliT0RawReader ()
 {
@@ -84,28 +81,20 @@ Bool_t  AliT0RawReader::Next()
   Int_t numberOfWordsInTRM=0, iTRM=0;
   Int_t tdcTime, koef,hit=0;
   Int_t koefhits[110];
-  //  Int_t fDRM_GLOBAL_HEADER = 0x40000001;
-  //  Int_t fDRM_GLOBAL_TRAILER  = 0x50000001;
-  
-  //  Int_t  TRM_GLOBAL_HEADER  = 0x40000000;
     Int_t  TRM_CHAIN_0_HEADER =  0x00000000;
-    //  Int_t  TRM_CHAIN_1_HEADER =  0x20000000;
   Int_t  TRM_CHAIN_0_TRAILER =  0x10000000;
-  //  Int_t  TRM_CHAIN_1_TRAILER =  0x30000000;
-  //  Int_t  TRM_GLOBAL_TRAILER =  0x5000000f;
   
   Int_t  FILLER =  0x70000000;
   Bool_t correct=kTRUE;
   Int_t header;
-  
+  /*  
     AliT0Parameters* fParam = AliT0Parameters::Instance();   
    if (fIsOnline)
    fParam->InitIfOnline();
  	else
    fParam->Init();
-
+  */
    Int_t fNTRM = fParam->GetNumberOfTRMs();
-
    for ( Int_t k=0; k<110; k++) {
     koefhits[k]=0;
     for ( Int_t jj=0; jj<5; jj++) {
@@ -116,20 +105,17 @@ Bool_t  AliT0RawReader::Next()
       if (!fRawReader->ReadNextData(fData)) return kFALSE;
     } while (fRawReader->GetDataSize() == 0);
     
-    //  fPosition = GetPosition();
     fPosition = 0;
-    cout.setf( ios_base::hex, ios_base::basefield );
+    //  cout.setf( ios_base::hex, ios_base::basefield );
     
     //DRM header
     for (Int_t i=0; i<6; i++) {
       word = GetNextWord();
-      //      cout<<" DRM header "<<i<<" "<<word<<endl;
       header = AliBitPacking::UnpackWord(word,28,31);
       if( header !=4 )
-	//      uu = word&fDRM_GLOBAL_HEADER;
-	//      if(uu != fDRM_GLOBAL_HEADER ) 
 	{
-	  AliError(Form(" !!!! wrong  DRM header  %x!!!!", word));
+	  AliWarning(Form(" !!!! wrong  DRM header  %x!!!!", word));
+	  fRawReader->AddFatalErrorLog(kWrongDRMHeader,Form("w=%x",word));
 	  break;
 	}
     }
@@ -138,20 +124,15 @@ Bool_t  AliT0RawReader::Next()
       {
 	//TRMheader  
 	word = GetNextWord();
-	//	cout<<" TRM header "<<word<<" "<<AliBitPacking::UnpackWord(word,28,31)<<endl;
-      header = AliBitPacking::UnpackWord(word,28,31);
-	
-      //	uu = word&TRM_GLOBAL_HEADER;
-	//	if(uu != TRM_GLOBAL_HEADER &&
-	  if ( header != 4 )
-	{
-	  AliError(Form(" !!!! wrong TRM header  %x!!!!", word));
-	  break;
-	}
+	header = AliBitPacking::UnpackWord(word,28,31);
+	if ( header != 4 )
+	  {
+	    AliWarning(Form(" !!!! wrong TRM header  %x!!!!", word));
+	    fRawReader->AddMajorErrorLog(kWrongTRMHeader,Form("w=%x",word));
+	    break;
+	  }
 	numberOfWordsInTRM=AliBitPacking::UnpackWord(word,4,16);
 	iTRM=AliBitPacking::UnpackWord(word,0,3);
-	//	cout<<" iTRM "<<iTRM<<" Nworrds in TRM "<< numberOfWordsInTRM  <<endl;   
-
 	for( Int_t ichain=0; ichain<2; ichain++)
 	  {
 	    //chain header
@@ -159,11 +140,11 @@ Bool_t  AliT0RawReader::Next()
 	    uu = word & TRM_CHAIN_0_HEADER;
 	    if(uu != TRM_CHAIN_0_HEADER) 
 	      {
-		AliError(Form(" !!!! wrong CHAIN  0  header %x!!!!", word));
+		AliWarning(Form(" !!!! wrong CHAIN  0  header %x!!!!", word));
+		fRawReader->AddMajorErrorLog(kWrongChain0Header,Form("w=%x",word));
 		break;
 	      }
 	    word = GetNextWord();
-	    //	    cout<<" ???data?? "<<word<<endl;
 	    tdcTime =  AliBitPacking::UnpackWord(word,31,31);   
 	    for (; tdcTime==1; tdcTime) 
 	      {
@@ -172,19 +153,17 @@ Bool_t  AliT0RawReader::Next()
 		time=AliBitPacking::UnpackWord(word,0,20);
 		
 		koef = fParam->GetChannel(iTRM,itdc,ichain,ichannel);
-		//		cout<<"koef "<<koef<<" iTRM "<<iTRM<<" itdc "<<itdc<<" iChain "<<ichain<<" ichannel  "<<ichannel<<" "<<time<<endl;
 		if (koef ==-1 ){
-		  AliError(Form("Incorrect lookup table ! ")); 
+		  AliWarning(Form("Incorrect lookup table ! "));
+		  fRawReader->AddMajorErrorLog(kIncorrectLUT);
 		  correct=kFALSE;
 		}
 		if(correct){
 		  hit=koefhits[koef];
-		  //if(fAllData[koef][hit] == 0)  
 		  fAllData[koef][hit]=time; 
 		  koefhits[koef]++;
 		}
 		  word = GetNextWord();
-		  //		cout<<" next word "<<word<<endl;
 		  tdcTime =  AliBitPacking::UnpackWord(word,31,31);   
 		
 	    }
@@ -193,29 +172,29 @@ Bool_t  AliT0RawReader::Next()
 	    uu = word&TRM_CHAIN_0_TRAILER;
 	    if(uu != TRM_CHAIN_0_TRAILER )
 	      {
-		AliError(Form(" !!!! wrong CHAIN 0 trailer %x !!!!", word));
+		AliWarning(Form(" !!!! wrong CHAIN 0 trailer %x !!!!", word));
+		  fRawReader->AddMajorErrorLog(kWrongChain0Trailer,Form("w=%x",word));
 		break;
 	      }
 	  }
             
 	word = GetNextWord(); //TRM trailer
-	//	cout<<" TRM traier "<<word<<endl;
 	header = AliBitPacking::UnpackWord(word,28,31);
 	if( header !=5 )
 	  {
-	    AliError(Form(" !!!! wrong TRM GLOBAL trailer  %x!!!!", word));
+	    AliWarning(Form(" !!!! wrong TRM GLOBAL trailer  %x!!!!", word));
+	    fRawReader->AddMajorErrorLog(kWrongTRMTrailer,Form("w=%x",word));
 	    break;
 	  }
       } //TRM loop
     word = GetNextWord(); //
-       header = AliBitPacking::UnpackWord(word,28,31);
+    header = AliBitPacking::UnpackWord(word,28,31);
     uu = word&FILLER;
     if (word == FILLER )  word = GetNextWord(); 
-    //  	cout<<" word after FILLER "<<word<<endl;
     if( header !=5 )
       {
-	AliError(Form(" !!!! wrong DRM GLOBAL trailer  %x!!!!", word));
-	  //	  break;
+	AliWarning(Form(" !!!! wrong DRM GLOBAL trailer  %x!!!!", word));
+	fRawReader->AddFatalErrorLog(kWrongDRMTrailer,Form("w=%x",word));
       }
     cout.setf( ios_base::dec, ios_base::basefield );
     

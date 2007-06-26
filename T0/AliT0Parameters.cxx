@@ -36,6 +36,7 @@
 #include <Riostream.h>
 #include <TGeoManager.h>
 #include <TGeoPhysicalNode.h>
+#include <AliGeomManager.h>
 
 AliT0CalibData* AliT0Parameters::fgCalibData = 0;
 AliT0CalibData* AliT0Parameters::fgLookUp = 0;
@@ -54,7 +55,6 @@ AliT0Parameters* AliT0Parameters::Instance()
   // Get static instance 
   if (!fgInstance) {
     fgInstance = new AliT0Parameters;
-    //   fgInstance->Init();
   }
   return fgInstance;
 }
@@ -65,9 +65,17 @@ AliT0Parameters::AliT0Parameters()
    fPh2Mip(0),fmV2Mip(0),
    fChannelWidth(0),fmV2Channel(0),
    fQTmin(0),fQTmax(0),
+   fAmpLEDRec(0), 
    fPMTeff(),
-   fCalibentry(), fLookUpentry(),fSlewCorr(),
-   fLookUp(0), fNumberOfTRMs(2)
+   fWalk(0),
+   fTimeDelayDA(0), 
+   fTimeDelayCFD(0), 
+   fTimeDelayTVD(0),
+   fMeanT0(500),
+   fLookUp(0),
+   fNumberOfTRMs(2),
+   fCalibentry(), fLookUpentry(),fSlewCorr()
+
   
 {
   // Default constructor 
@@ -138,10 +146,12 @@ void AliT0Parameters::InitIfOnline()
   // AliT0RawReader myrawreader(rawReader);
 //	myrawreader.SetOnlineMode(kTRUE);
      
-
   if (fIsInit) return;
- 
-  Int_t trm=0; Int_t tdc=0; Int_t chain=0; Int_t channel=0;
+   //standart configuration (used for simulation)
+   //Int_t trm=0; Int_t tdc=0; Int_t chain=0; Int_t channel=0;
+  // configuration for test Jun07.
+  fNumberOfTRMs = 1;
+  Int_t trm=7; Int_t tdc=0; Int_t chain=0; Int_t channel=0;
   for (Int_t ik=0; ik<110; ik++)
         {
          AliT0LookUpKey * lookkey= new AliT0LookUpKey();
@@ -153,7 +163,7 @@ void AliT0Parameters::InitIfOnline()
           lookvalue->SetChain(chain);
           lookvalue->SetChannel(channel);
           lookkey->SetKey(ik);
-          if(ik==55) { trm=1; tdc=0; channel=0;}
+          if(ik==55) { tdc=0; channel=0; chain=1;}
           if (channel<6) channel +=2;
           else {channel = 0; tdc++;}
           fLookUp.Add((TObject*)lookvalue,(TObject*)lookkey);	
@@ -204,21 +214,11 @@ AliT0Parameters::GetMeanT0()
 }
 //__________________________________________________________________
 
-TGraph *AliT0Parameters::GetAmpLED(Int_t ipmt) const
-{
-  if (!fSlewCorr) {
-    return  (TGraph*)fAmpLED.At(ipmt); 
-  } 
-  return fgSlewCorr -> GetAmpLED(ipmt) ;
-}
-
-//__________________________________________________________________
-
 TGraph *AliT0Parameters::GetAmpLEDRec(Int_t ipmt) const
 {
    if (!fSlewCorr) {
-     cout<<"AliT0Parameters::GetSlewingRec !fSlewCorr"<<endl;
-    return  (TGraph*)fAmpLEDRec.At(ipmt); 
+     AliError("No slewing correction is available!");
+     return  (TGraph*)fAmpLEDRec.At(ipmt); 
   } 
   return fgSlewCorr -> GetAmpLEDRec(ipmt) ;
 }
@@ -228,7 +228,7 @@ TGraph *AliT0Parameters::GetAmpLEDRec(Int_t ipmt) const
 TGraph *AliT0Parameters::GetWalk(Int_t ipmt) const
 {
   if (!fSlewCorr) {
-    cout<<" AliT0Parameters::GetWalk "<<fSlewCorr<<endl;
+    AliError("No walk correction is available!");
     return  (TGraph*)fWalk.At(ipmt); 
   } 
   return fgSlewCorr -> GetWalk(ipmt) ;
@@ -280,23 +280,32 @@ AliT0Parameters::GetChannel(Int_t trm,  Int_t tdc, Int_t chain, Int_t channel)
    lookkey = (AliT0LookUpKey*) fLookUp.GetValue((TObject*)lookvalue);
 
   if (!lookkey ) {
-    cout<<" no such address "<<endl; return -1;
+    AliInfo(Form("No such address (%d %d %d %d)!",trm,tdc,chain,channel));
+    return -1;
   }
   
-
-  //cout<<"AliT0Parameters:: key "<<lookkey->GetKey()<<endl;
   return lookkey->GetKey();
   
 
 }
 //__________________________________________________________________
+TMap *AliT0Parameters::GetMapLookup()
+{
+  if (!fgLookUp){
+    cout<<" No look up table in OCDB";
+    return 0;
+  }
+  return   fgLookUp->GetMapLookup();
+}
+//__________________________________________________________________
+
 Int_t
 AliT0Parameters::GetNumberOfTRMs() 
 {
   // return number of trms
   // 
   if (!fgLookUp) {
-    fNumberOfTRMs = 2;
+    //  fNumberOfTRMs = 2;
     return  fNumberOfTRMs;
   } 
   return  fgLookUp ->GetNumberOfTRMs();
@@ -305,26 +314,22 @@ AliT0Parameters::GetNumberOfTRMs()
 Double_t AliT0Parameters::GetZPosition(const char* symname){
 // Get the global z coordinate of the given T0 alignable volume
 //
-  Double_t *tr;
-  
-  cout<<symname<<endl;
-  TGeoPNEntry *pne = gGeoManager->GetAlignableEntry(symname);
-  if (!pne) return 0;
-  
+  Double_t *tr = AliGeomManager::GetMatrix(symname)->GetTranslation();
 
-  TGeoPhysicalNode *pnode = pne->GetPhysicalNode();
-  if(pnode){
-          TGeoHMatrix* hm = pnode->GetMatrix();
-           tr = hm->GetTranslation();
-  }else{
-          const char* path = pne->GetTitle();
-          if(!gGeoManager->cd(path)){
-                  AliErrorClass(Form("Volume path %s not valid!",path));
-                  return 0;
-          }
-         tr = gGeoManager->GetCurrentMatrix()->GetTranslation();
-  }
   return tr[2];
+}
+//________________________________________________________________________________
 
+Double_t AliT0Parameters::GetZPositionShift(const char* symname)
+{
+// Get the global z coordinate of the given T0 alignable volume
+//
+  Double_t *tr = AliGeomManager::GetMatrix(symname)->GetTranslation();
+
+  TGeoHMatrix origmat;
+  AliGeomManager::GetOrigGlobalMatrix(symname,origmat);
+  Double_t *otr = origmat.GetTranslation();
+
+  return (tr[2]-otr[2]);
 }
 

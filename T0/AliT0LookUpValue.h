@@ -13,6 +13,7 @@ class AliT0LookUpValue: public TObject
   AliT0LookUpValue(Int_t trm, Int_t tdc, Int_t chain, Int_t channel );
   virtual Bool_t IsEqual(const TObject* obj) const ;
   virtual ULong_t Hash(void) const;
+  //  virtual ULong_t Hash(void) const {return TString::Hash(this, sizeof(*this));};
    Int_t GetTRM(void) const {return fTRM;};
    Int_t GetTDC(void) const {return fTDC;};
    Int_t GetChain(void) const {return fChain;};

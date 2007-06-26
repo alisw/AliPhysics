@@ -171,12 +171,8 @@ void SetWalk()
   TRandom rn;
   
   for(Int_t ipmt=0; ipmt<24; ipmt++) {
-    //    calibda->SetWalk(ipmt,"data/CFD-Amp.txt");
-    //    calibda->SetSlewingLED(ipmt,"data/CFD-LED.txt");
-    //  calibda->SetSlewingRec(ipmt,"data/CFD-LED.txt");
     calibda->SetWalk(ipmt);
-    calibda->SetSlewingLED(ipmt);
-    calibda->SetSlewingRec(ipmt);
+    calibda->SetAmpLEDRec(ipmt);
   }
   //Store calibration data into database
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
@@ -238,7 +234,7 @@ void GetWalk()
    AliT0CalibData *clb = (AliT0CalibData*)entry->GetObject();
    Int_t ipmt=0;
    //  cin>>" enter channel number">>ipmt;
-   TGraph *gr = clb->GetWalk(ipmt); 
+   TGraph *gr = clb->GetAmpLEDRec(ipmt); 
    gr->Draw("AP");
 }
 //------------------------------------------------------------------------

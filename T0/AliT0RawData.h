@@ -17,7 +17,7 @@ class AliT0;
 class AliT0digit;
 class AliFstream;
 class TFile;
-//class TBranch;
+class TMap;
 class AliRawDataHeaderSim;
 class AliT0RawData : public TObject {
 
@@ -73,6 +73,8 @@ class AliT0RawData : public TObject {
   UInt_t fDRMDataHeaderPos;//Data DRM header position
   UInt_t fTRMDataHeaderPos;//Data TRM header position
   AliT0digit *fDigits;  //! The T0 digits manager
+  AliT0Parameters *fParam;  // pointer to T0parameters
+  TMap fLookUp;
   
   ClassDef(AliT0RawData,2)             //  T0 raw data class
 

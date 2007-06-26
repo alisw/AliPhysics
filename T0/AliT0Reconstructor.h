@@ -41,6 +41,9 @@ class AliT0Reconstructor: public AliReconstructor {
   AliT0Parameters     *fParam;           //pointer to T0 parameters class     
   TObjArray           fAmpLEDrec;        // amp LED-CFD 
   Float_t             fTime0vertex[24];  // time position if Zvertex=0
+  Float_t             fdZ_A;   // Zideal - Zreal side A 
+  Float_t             fdZ_C; // Zideal - Zreal side C
+
 
   ClassDef(AliT0Reconstructor, 0)   // class for the T0 reconstruction
 

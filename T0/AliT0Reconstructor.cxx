@@ -54,12 +54,13 @@ ClassImp(AliT0Reconstructor)
   
   fParam = AliT0Parameters::Instance();
   fParam->Init();
-  
   for (Int_t i=0; i<24; i++){
     TGraph* gr = fParam ->GetAmpLEDRec(i);
     fAmpLEDrec.AddAtAndExpand(gr,i) ;  
     fTime0vertex[i]= fParam->GetTimeDelayDA(i);
   }
+  fdZ_C = TMath::Abs(fParam->GetZPositionShift("T0/C/PMT1"));
+  fdZ_A = TMath::Abs(fParam->GetZPositionShift("T0/A/PMT15"));
 
 }
 //____________________________________________________________________
@@ -142,16 +143,15 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   Float_t time[24], adc[24];
   for (Int_t ipmt=0; ipmt<24; ipmt++) {
     if(timeCFD->At(ipmt)>0 ){
-      Int_t qt0= chargeQT0->At(ipmt);
-      Int_t qt1= chargeQT1->At(ipmt);
+      Double_t qt0 = Double_t(chargeQT0->At(ipmt));
+      Double_t qt1 = Double_t(chargeQT1->At(ipmt));
       if((qt1-qt0)>0)  adc[ipmt] = TMath::Exp( Double_t (channelWidth*(qt1-qt0)/1000));
-      //     time[ipmt] = channelWidth * (calib-> WalkCorrection( ipmt,qt1 , timeCFD->At(ipmt) ) ) ;
-      time[ipmt] = calib-> WalkCorrection( ipmt,qt1 , timeCFD->At(ipmt) ) ;
+      time[ipmt] = calib-> WalkCorrection( ipmt,Int_t(qt1) , timeCFD->At(ipmt) ) ;
       
       //LED
-      Double_t sl = (timeLED->At(ipmt) - timeCFD->At(ipmt))*channelWidth;
+      Double_t sl = (timeLED->At(ipmt) - time[ipmt])*channelWidth;
       Double_t qt=((TGraph*)fAmpLEDrec.At(ipmt))->Eval(sl/1000.);
-      //      frecpoints->SetTime(ipmt,time[ipmt]);
+      frecpoints->SetTime(ipmt,time[ipmt]);
       frecpoints->SetAmp(ipmt,adc[ipmt]);
       frecpoints->SetAmpLED(ipmt,qt);
     }
@@ -184,7 +184,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   if(besttimeA !=999999 && besttimeC != 999999 ){
     timeDiff =(besttimeC - besttimeA)*channelWidth;
     meanTime = (meanT0 - (besttimeA + besttimeC)/2) * channelWidth;
-    vertex = c*(timeDiff)/2.; //-(lenr-lenl))/2;
+    vertex = c*(timeDiff)/2. + (fdZ_A - fdZ_C)/2; //-(lenr-lenl))/2;
     AliDebug(1,Form("  timeDiff %f ps,  meanTime %f ps, vertex %f cm",timeDiff, meanTime,vertex ));
     frecpoints->SetVertex(vertex);
     frecpoints->SetMeanTime(Int_t(meanTime));
@@ -242,8 +242,8 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
      {
        timeLED->AddAt(allData[in+1][0],in);
        timeCFD->AddAt(allData[in+25][0],in);
-       chargeQT1->AddAt(allData[in+55][0],in);
-       chargeQT0->AddAt(allData[in+79][0],in);
+       chargeQT1->AddAt(allData[in+57][0],in);
+       chargeQT0->AddAt(allData[in+80][0],in);
        AliDebug(10, Form(" readed Raw %i %i %i %i %i", in, timeLED->At(in),timeCFD->At(in),chargeQT0->At(in),chargeQT1->At(in)));
      }
 
@@ -262,12 +262,12 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   Float_t time[24], adc[24];
   for (Int_t ipmt=0; ipmt<24; ipmt++) {
     if(timeCFD->At(ipmt)>0 ){
-      Int_t qt0= chargeQT0->At(ipmt);
-      Int_t qt1= chargeQT1->At(ipmt);
+      Double_t qt0 = Double_t(chargeQT0->At(ipmt));
+      Double_t qt1 = Double_t(chargeQT1->At(ipmt));
       if((qt1-qt0)>0)  adc[ipmt] = TMath::Exp( Double_t (channelWidth*(qt1-qt0)/1000));
       //      time[ipmt] = channelWidth * (calib-> WalkCorrection( ipmt,qt1 , timeCFD->At(ipmt) ) ) ;
-      time[ipmt] = calib-> WalkCorrection( ipmt,qt1 , timeCFD->At(ipmt) ) ;
-      Double_t sl = (timeLED->At(ipmt) - timeCFD->At(ipmt))*channelWidth;
+      time[ipmt] = calib-> WalkCorrection( ipmt,Int_t(qt1) , timeCFD->At(ipmt) ) ;
+      Double_t sl = (timeLED->At(ipmt) - time[ipmt])*channelWidth;
       Double_t qt=((TGraph*)fAmpLEDrec.At(ipmt))->Eval(sl/1000.);
       frecpoints->SetTime(ipmt,time[ipmt]);
       frecpoints->SetAmp(ipmt,adc[ipmt]);
@@ -303,7 +303,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
     timeDiff = (besttimeC - besttimeA)*channelWidth;
     //    meanTime = (besttimeA + besttimeC)/2.;
     meanTime = (meanT0 - (besttimeA + besttimeC)/2) * channelWidth;
-    vertex = c*(timeDiff)/2.; //-(lenr-lenl))/2;
+    vertex = c*(timeDiff)/2. + (fdZ_A - fdZ_C)/2; //-(lenr-lenl))/2;
     AliDebug(1,Form("  timeDiff %f ps,  meanTime %f ps, vertex %f cm",timeDiff, meanTime,vertex ));
     frecpoints->SetVertex(vertex);
     frecpoints->SetMeanTime(Int_t(meanTime));
