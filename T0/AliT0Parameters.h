@@ -63,7 +63,6 @@ public:
   {return((TGraph*)fPMTeff.At(ipmt))->Eval(lambda);} 
 
 
-  TGraph *  GetAmpLED(Int_t ipmt) const ; 
   TGraph *  GetAmpLEDRec(Int_t ipmt) const;  
  
   TGraph *GetWalk(Int_t ipmt )  const;
