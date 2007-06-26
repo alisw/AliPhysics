@@ -1,9 +1,6 @@
 
 Reve::PointSet* its_clusters(RenderElement* cont=0, Float_t maxR=50)
 {
-  AliLog::EnableDebug(1);
-  AliLog::SetGlobalDebugLevel(AliLog::kMaxType);
-
   Alieve::Event::AssertGeometry();
 
   AliRunLoader* rl = Alieve::Event::AssertRunLoader();
