@@ -621,68 +621,86 @@ void AliDIPOv2::CreateCompensatorDipole()
 {
     //
     //  Geometry of the compensator Dipole MBWMD (was MCB @ SPS)
-    // 
+    //  LAB I/EA Note 74.10
+    //  6/5/1974
+    //
+    const Float_t kHCoil       =  22.;  // Coil Height
+    const Float_t kWCoil       =  12.;  // Coil Width
+    const Float_t kLCoilH      = 250.;  // Hor. Coil Length
+    const Float_t kRCoilC      =  31.;  // Circ Coil Radius
+    const Float_t kWBase       = 125.;  // Base Width
+    const Float_t kHBase       =  30.;  // Base Height
+    
+    const Float_t kWUYoke      =  16.;
+    const Float_t kHUYoke      =  31.;
+
+    const Float_t kWLYoke      =  50.0;
+    const Float_t kHLYoke      =  61.0;
+    const Float_t kLLYoke      =  kLCoilH + kRCoilC;
+
+    const Float_t kWApperture  =  12.;
+    const Float_t kDCoil       =  kHUYoke + kHLYoke - 6. - 2. * kRCoilC;
+    
+    const Float_t kH           =  kHBase +  kHUYoke +  kHLYoke;
+    
     Int_t *idtmed = fIdtmed->GetArray()-1799;
     Int_t idrotm[1899];
 //
-    Float_t pbox[3] = {63., 63., 170.};
-    
+    Float_t pbox[3];
+    Float_t ptube[3];
+    ptube[0] = 4.;
+    ptube[1] = 65. * TMath::Sqrt(2.);
+    ptube[2] = (kLCoilH + 2. * kRCoilC) / 2.;
 //  Mother volumes
-    gMC->Gsvolu("DCM0", "BOX", idtmed[1814 + 40], pbox, 3);
-    gMC->Gsatt("DCM0", "SEEN", 0);
+    gMC->Gsvolu("DCM0", "TUBE", idtmed[1814 + 40], ptube, 3);
+    gMC->Gsatt ("DCM0", "SEEN", 0);
     
 //
 //  Mother volume containing lower coil
-    pbox[0] = 58.5/2.;
-    pbox[1] = 30.0;
-    pbox[2] = 152.5;
+    pbox[0] = kWLYoke / 2.;
+    pbox[1] = kHLYoke / 2.;
+    pbox[2] = kLLYoke / 2.;
     
     gMC->Gsvolu("DCML", "BOX", idtmed[1809 + 40], pbox, 3);
 //
 // Base
-    pbox[0] = 62.5;
-    pbox[1] = 15.0;
+    pbox[0] = kWBase / 2.;
+    pbox[1] = kHBase / 2.;
     gMC->Gsvolu("DCBA", "BOX", idtmed[1809 + 40], pbox, 3);
 //
 // Coil: straight sections, horizontal
-    pbox[0] =   6.;
-    pbox[1] =  11.;
-    pbox[2] = 135.;
+    pbox[0] = kWCoil  / 2.;
+    pbox[1] = kHCoil  / 2.;
+    pbox[2] = kLCoilH / 2.;
     gMC->Gsvolu("DCH1", "BOX", idtmed[1816 + 40], pbox, 3);
 //
 // Coil: straight sections, horizontal
-    pbox[0] =   6.;
-    pbox[1] =  11.;
-    pbox[2] = 135.;
+    pbox[0] = kWCoil  / 2.;
+    pbox[1] = kHCoil  / 2.;
+    pbox[2] = kLCoilH / 2.;
     gMC->Gsvolu("DCH2", "BOX", idtmed[1816 + 40], pbox, 3);
 
 //
 // Mother volume containing upper coil
-    pbox[0] =    8.0;
-    pbox[1] =   17.5;
-    pbox[2] =  135.0;
+    pbox[0] =  kWUYoke / 2.;
+    pbox[1] =  kHUYoke / 2.;
+    pbox[2] =  kLCoilH / 2.;
     gMC->Gsvolu("DCMU", "BOX", idtmed[1809 + 40], pbox, 3);
 
 //
 // Coil: straight sections, vertical
-    pbox[0] =  6.0;
-    pbox[1] =  9.5;
-    pbox[2] = 11.0;
+    pbox[0] = kWCoil / 2.;
+    pbox[1] = kDCoil / 2.;
+    pbox[2] = kHCoil / 2.;
     
     gMC->Gsvolu("DCCV", "BOX", idtmed[1816 + 40], pbox, 3);
 //
 // Coil: circular section 
 
     Float_t ptubs[5];
-    ptubs[0] =  0.;
-    ptubs[1] = 35.;
-    ptubs[2] =  8.;
-    ptubs[3] =  0.;
-    ptubs[4] = 90.;
-//    gMC->Gsvolu("DCC1", "TUBS", idtmed[1809], ptubs, 5);
-    ptubs[0] = 13.;
-    ptubs[1] = 35.;
-    ptubs[2] =  6.;
+    ptubs[0] = kRCoilC - kHCoil;
+    ptubs[1] = kRCoilC;
+    ptubs[2] = kWCoil / 2.;
     ptubs[3] =  0.;
     ptubs[4] = 90.;
     gMC->Gsvolu("DCC1", "TUBS", idtmed[1816 + 40], ptubs, 5);
@@ -708,46 +726,83 @@ void AliDIPOv2::CreateCompensatorDipole()
     AliMatrix(idrotm[1813], 180., 0., 90., 90.,  90., 0.);
     AliMatrix(idrotm[1814],   0., 180., 90., 270.,  90., 0.);
     AliMatrix(idrotm[1815], 180., 180., 90., 270.,  90., 0.);  
-	
-    gMC->Gspos("DCH1", 1, "DCML", 23.25, -13., -17.5, 0, "ONLY");
-    gMC->Gspos("DCCV", 1, "DCM0",  12., 19., -159., 0, "ONLY");
-    gMC->Gspos("DCCV", 2, "DCM0", -12., 19., -159., 0, "ONLY");
-    gMC->Gspos("DCCV", 3, "DCML", 23.25, 20.5, 141.5, 0, "ONLY");
-
-    gMC->Gspos("DCML", 1, "DCM0", -33.25, -2.5, 17.5, 0, "ONLY");
-    gMC->Gspos("DCML", 2, "DCM0",  33.25, -2.5, 17.5, idrotm[1811], "ONLY");
-
-
-    gMC->Gspos("DCH2", 1, "DCMU", 2., 6.5, 0., 0, "ONLY");
-    gMC->Gspos("DCMU", 1, "DCM0", -12., 45., 0., 0, "ONLY");
-    gMC->Gspos("DCMU", 2, "DCM0",  12., 45., 0., idrotm[1811], "ONLY");
-
-//    gMC->Gspos("DCC2", 1, "DCC1", 0., 0., 0., 0, "ONLY");
     
-    gMC->Gspos("DCC1", 1, "DCM0", -12., 27.5,  135., idrotm[1812], "ONLY");
-    gMC->Gspos("DCC1", 2, "DCM0",  12., 27.5,  135., idrotm[1812], "ONLY");
-    gMC->Gspos("DCC1", 3, "DCM0", -12., 27.5, -135., idrotm[1813], "ONLY");
-    gMC->Gspos("DCC1", 4, "DCM0",  12., 27.5, -135., idrotm[1813], "ONLY");
+    Float_t dx, dy, dz;
+    Float_t dy0 = 0.;
 
-    gMC->Gspos("DCC1", 5, "DCM0",  12., 27.5-32.+13., -135., idrotm[1815], "ONLY");
-    gMC->Gspos("DCC1", 6, "DCM0", -12., 27.5-32.+13., -135., idrotm[1815], "ONLY");
+    dy0 = -kH / 2. + kHBase/2.;
+    gMC->Gspos("DCBA", 1, "DCM0",  0., dy0, 15.0, 0, "ONLY");
     
-    gMC->Gspos("DCC1", 7, "DCML", 23.25, -13+13.+11., 117.5, idrotm[1814], "ONLY");
+    // Lower coil
+    dx = ( kWLYoke - kWCoil) / 2.;
+    dy = (-kHLYoke + kHCoil) / 2. + 6.;
+    gMC->Gspos("DCH1", 1, "DCML",  dx, dy,  -kRCoilC / 2., 0, "ONLY");
+    // Lower mother volume
+    dx = (kWLYoke + kWApperture) / 2.;
+    dy0 += (kHBase +  kHLYoke) / 2.;
+    gMC->Gspos("DCML", 1, "DCM0", -dx, dy0, kRCoilC / 2., 0, "ONLY");
+    gMC->Gspos("DCML", 2, "DCM0", +dx, dy0, kRCoilC / 2., idrotm[1811], "ONLY");
+    
+    dx = (kWUYoke - kWCoil) / 2.;
+    dy = (kHUYoke - kHCoil) / 2;
+    // Upper coil
+    gMC->Gspos("DCH2", 1, "DCMU",   dx,  dy, 0., 0, "ONLY");
+    // Upper mother volume
+    dx = (kWUYoke + kWApperture) / 2.;
+    dy0 +=  (kHLYoke + kHUYoke) / 2.;
+    gMC->Gspos("DCMU", 1, "DCM0", -dx, dy0, 0., 0, "ONLY");
+    gMC->Gspos("DCMU", 2, "DCM0", +dx, dy0, 0., idrotm[1811], "ONLY");
 
-    gMC->Gspos("DCLA", 1, "DCM0",  20., 27.5, -134., 0, "ONLY");
-    gMC->Gspos("DCLA", 2, "DCM0",  20., 27.5,  -44., 0, "ONLY");
-    gMC->Gspos("DCLA", 3, "DCM0",  20., 27.5,   46., 0, "ONLY");
-    gMC->Gspos("DCLA", 4, "DCM0",  20., 27.5,  134., 0, "ONLY");
+    // Vertical coils
+    dx =  (kWCoil +  kWApperture) / 2.;
+    dy =  kH / 2. - kDCoil / 2. - kRCoilC;
+    dz =  (kLCoilH - kHCoil) / 2. + kRCoilC;
+    gMC->Gspos("DCCV", 1, "DCM0",  dx,  dy, -dz, 0, "ONLY");
+    gMC->Gspos("DCCV", 2, "DCM0", -dx,  dy, -dz, 0, "ONLY");
 
-    gMC->Gspos("DCLA", 5, "DCM0",  -20., 27.5, -134., idrotm[1811], "ONLY");
-    gMC->Gspos("DCLA", 6, "DCM0",  -20., 27.5,  -44., idrotm[1811], "ONLY");
-    gMC->Gspos("DCLA", 7, "DCM0",  -20., 27.5,   46., idrotm[1811], "ONLY");
-    gMC->Gspos("DCLA", 8, "DCM0",  -20., 27.5,  134., idrotm[1811], "ONLY");
+    dx = (kWLYoke - kWCoil) / 2.;
+    dy = -kHLYoke / 2. + kDCoil / 2. + 6. + kRCoilC;
+    dz =  kLLYoke / 2. - kHCoil / 2.;
+    
+    gMC->Gspos("DCCV", 3, "DCML", dx, dy,  dz, 0, "ONLY");
 
 
-    gMC->Gspos("DCBA", 1, "DCM0",  0., -47.5 , 17.5, 0, "ONLY");
+
+    // Circular coil
+    dx =  (kWCoil +  kWApperture) / 2.;
+    dy = dy0 + kHUYoke / 2. - kRCoilC;
+    dz =  kLCoilH / 2.;
+    gMC->Gspos("DCC1", 1, "DCM0", -dx, dy,  dz, idrotm[1812], "ONLY");
+    gMC->Gspos("DCC1", 2, "DCM0", +dx, dy,  dz, idrotm[1812], "ONLY");
+    gMC->Gspos("DCC1", 3, "DCM0", +dx, dy, -dz, idrotm[1813], "ONLY");
+    gMC->Gspos("DCC1", 4, "DCM0", -dx, dy, -dz, idrotm[1813], "ONLY");
+    dy = -kH / 2. + kHBase + 6. + kRCoilC;
+    gMC->Gspos("DCC1", 5, "DCM0", +dx, dy, -dz, idrotm[1815], "ONLY");
+    gMC->Gspos("DCC1", 6, "DCM0", -dx, dy, -dz, idrotm[1815], "ONLY");
+
+    dx = ( kWLYoke - kWCoil) / 2.;
+    dy =  -kHLYoke / 2. + 6. + kRCoilC;
+    dz =  kLLYoke / 2. - kRCoilC;
+    gMC->Gspos("DCC1", 7, "DCML", dx, dy, dz, idrotm[1814], "ONLY");
+
+//  Clamps
+    dx = kWApperture / 2. + kWUYoke;
+    dy = -kH / 2. + kHLYoke + kHBase;
+    
+
+    gMC->Gspos("DCLA", 1, "DCM0",  dx, dy, -119., 0, "ONLY");
+    gMC->Gspos("DCLA", 2, "DCM0",  dx, dy,  -44., 0, "ONLY");
+    gMC->Gspos("DCLA", 3, "DCM0",  dx, dy,   46., 0, "ONLY");
+    gMC->Gspos("DCLA", 4, "DCM0",  dx, dy,  119., 0, "ONLY");
+
+    gMC->Gspos("DCLA", 5, "DCM0",  -dx, dy, -119., idrotm[1811], "ONLY");
+    gMC->Gspos("DCLA", 6, "DCM0",  -dx, dy,  -44., idrotm[1811], "ONLY");
+    gMC->Gspos("DCLA", 7, "DCM0",  -dx, dy,   46., idrotm[1811], "ONLY");
+    gMC->Gspos("DCLA", 8, "DCM0",  -dx, dy,  119., idrotm[1811], "ONLY");
+
+
     AliMatrix(idrotm[1816], 270., 0., 90., 90.,  180., 0.);  
-    gMC->Gspos("DCM0", 1, "ALIC",  0., -6.75,  1080., idrotm[1816], "ONLY");
+    gMC->Gspos("DCM0", 1, "ALIC",  0., -6.75,  1085., idrotm[1816], "ONLY");
 }
 
 //_____________________________________________________________________________
