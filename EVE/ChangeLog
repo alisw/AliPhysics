@@ -1,3 +1,11 @@
+2007-06-26  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* alice-macros/its_clusters.C:
+	Remove AliDebug stuff.
+
+	* macros/alieve_init.C:
+	Use new Alieve::Event initialization.
+
 2007-06-22  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* alice-macros/its_clusters.C:

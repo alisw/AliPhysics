@@ -1,3 +1,10 @@
+2007-06-26  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* EventAlieve.cxx:
+	* EventAlieve.h:
+	Invert the modality of run-loader and esd loading: always try to
+	open them and complain only when asked to.
+
 2007-06-22  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* EventAlieve.cxx:
