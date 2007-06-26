@@ -45,9 +45,19 @@ class AliKFParticle :public AliKFParticleBase
 
   ~AliKFParticle(){}             
 
+  //* Construction of mother particle by its 2-3-4 daughters
+
+  AliKFParticle( const AliKFParticle &d1, const AliKFParticle &d2 );
+
+  AliKFParticle( const AliKFParticle &d1, const AliKFParticle &d2, 
+		 const AliKFParticle &d3 );
+
+  AliKFParticle( const AliKFParticle &d1, const AliKFParticle &d2, 
+		 const AliKFParticle &d3, const AliKFParticle &d4 );
+ 
   //* Initialisation from ALICE track, PID hypothesis can be provided 
 
-  AliKFParticle( const AliExternalTrackParam &track, Int_t PID = 211 );
+  AliKFParticle( const AliExternalTrackParam &track, Int_t PID );
 
   //* Initialisation from ESD vertex 
 
@@ -121,15 +131,13 @@ class AliKFParticle :public AliKFParticleBase
   //*
 
 
-  //* Simple way to construct particles ex. D0 = Pion + Kaon; 
-
-  AliKFParticle operator +( const AliKFParticle &Daughter ) const;
-
-  void operator +=( const AliKFParticle &Daughter );  
-
-  //* Add daughter track to the particle 
+  //* Add daughter to the particle 
 
   void AddDaughter( const AliKFParticle &Daughter );
+
+  //* Add daughter via += operator: ex.{ D0; D0+=Pion; D0+= Kaon; }
+
+  void operator +=( const AliKFParticle &Daughter );  
 
   //* Set production vertex 
 
@@ -209,7 +217,6 @@ class AliKFParticle :public AliKFParticleBase
   void SubtractFromVertex( AliKFParticle &v ) const ;
   void SubtractFromVertex( AliESDVertex &v ) const ;
 
-
  protected: 
   
   //*
@@ -225,12 +232,14 @@ class AliKFParticle :public AliKFParticleBase
   void GetFieldValue( const Double_t xyz[], Double_t B[] ) const ;
   void GetDStoParticle( const AliKFParticleBase &p, Double_t &DS, Double_t &DSp )const ;
   void Transport( Double_t dS, Double_t P[], Double_t C[] ) const ;
+  static void GetExternalTrackParam( const AliKFParticleBase &p, Double_t &X, Double_t &Alpha, Double_t P[5]  ) ;
+  void GetDStoParticleALICE( const AliKFParticleBase &p, Double_t &DS, Double_t &DS1 ) const;
 
  private:
 
   static Double_t fgBz;  //* Bz compoment of the magnetic field
 
-  ClassDef( AliKFParticle, 3 );
+  ClassDef( AliKFParticle, 1 );
 
 };
 
@@ -245,8 +254,43 @@ class AliKFParticle :public AliKFParticleBase
 
 inline void AliKFParticle::SetField( Double_t Bz )
 { 
-  fgBz = Bz;
+  fgBz = -Bz;//!!!
 }
+
+
+inline AliKFParticle::AliKFParticle( const AliKFParticle &d1, 
+				     const AliKFParticle &d2 )
+{
+  AliKFParticle mother;
+  mother+= d1;
+  mother+= d2;
+  *this = mother;
+}
+
+inline AliKFParticle::AliKFParticle( const AliKFParticle &d1, 
+				     const AliKFParticle &d2, 
+				     const AliKFParticle &d3 )
+{
+  AliKFParticle mother;
+  mother+= d1;
+  mother+= d2;
+  mother+= d3;
+  *this = mother;
+}
+
+inline AliKFParticle::AliKFParticle( const AliKFParticle &d1, 
+				     const AliKFParticle &d2, 
+				     const AliKFParticle &d3, 
+				     const AliKFParticle &d4 )
+{
+  AliKFParticle mother;
+  mother+= d1;
+  mother+= d2;
+  mother+= d3;
+  mother+= d4;
+  *this = mother;
+}
+
 
 inline void AliKFParticle::Initialize()
 { 
@@ -424,13 +468,13 @@ inline void AliKFParticle::operator +=( const AliKFParticle &Daughter )
   AliKFParticleBase::operator +=( Daughter );
 }
   
-inline AliKFParticle AliKFParticle::operator +( const AliKFParticle &Daughter ) const 
-{
-  AliKFParticle tmp;
-  const AliKFParticle *v[2] = {this, &Daughter };
-  tmp.Construct( v,2);
-  return tmp;
-}
+//inline AliKFParticle AliKFParticle::operator +( const AliKFParticle &Daughter ) const 
+//{
+//AliKFParticle tmp;
+//tmp+= *this;
+//tmp+= Daughter;
+//return tmp;
+//}
 
 inline void AliKFParticle::AddDaughter( const AliKFParticle &Daughter )
 {
@@ -495,7 +539,8 @@ inline Double_t AliKFParticle::GetDStoPoint( const Double_t xyz[] ) const
 inline void AliKFParticle::GetDStoParticle( const AliKFParticle &p, 
 					    Double_t &DS, Double_t &DSp ) const 
 {
-  return AliKFParticleBase::GetDStoParticleBz( GetFieldAlice(), p, DS,DSp);
+  GetDStoParticleALICE( p, DS, DSp );
+  //AliKFParticleBase::GetDStoParticleBz( GetFieldAlice(), p, DS,DSp);
 }
 
 
@@ -532,12 +577,12 @@ inline Double_t AliKFParticle::GetDeviationFromVertex( const AliESDVertex &Vtx )
   
 inline Double_t AliKFParticle::GetDistanceFromParticle( const AliKFParticle &p ) const 
 {
-  return AliKFParticleBase::GetDistanceFromParticleBz( GetFieldAlice(), p);
+  return AliKFParticleBase::GetDistanceFromParticle( p );
 }
 
 inline Double_t AliKFParticle::GetDeviationFromParticle( const AliKFParticle &p ) const 
 {
-  return AliKFParticleBase::GetDeviationFromParticleBz( GetFieldAlice(),p);
+  return AliKFParticleBase::GetDeviationFromParticle( p );
 }
 
 inline void AliKFParticle::SubtractFromVertex( AliKFParticle &v ) const 
@@ -572,7 +617,8 @@ inline void AliKFParticle::GetFieldValue( const Double_t * /*xyz*/, Double_t B[]
 inline void AliKFParticle::GetDStoParticle( const AliKFParticleBase &p, 
 					    Double_t &DS, Double_t &DSp )const
 {
-  return AliKFParticleBase::GetDStoParticleBz( GetFieldAlice(), p, DS,DSp);
+  GetDStoParticleALICE( p, DS, DSp );
+  //AliKFParticleBase::GetDStoParticleBz( GetFieldAlice(), p, DS,DSp);
 }
 
 inline void AliKFParticle::Transport( Double_t dS, Double_t P[], Double_t C[] ) const 

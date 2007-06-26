@@ -227,7 +227,7 @@ void RunV0(  AliESD *event )
 
       //* construct V0 mother
 
-      AliKFParticle V0 = info.fParticle + jnfo.fParticle;     
+      AliKFParticle V0( info.fParticle, jnfo.fParticle );     
 
       //* check V0 Chi^2
 
@@ -292,7 +292,7 @@ void RunV0(  AliESD *event )
 
 
 
-Int_t AliKFParticleTest(Int_t n1=0,Int_t n2=999,char *dire="/d/alice10/sma/v4-05-Release/pp/"){
+Int_t AliKFParticleTest(Int_t n1=0,Int_t n2=1000,char *dire="/d/alice10/sma/my_v4-05-Release/pp/"){
   //* Main macro
     
   //  LOOP  OVER  SERIES  OF  DIRECTORIES

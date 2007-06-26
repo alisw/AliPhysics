@@ -194,8 +194,7 @@ class AliKFParticleBase :public TObject {
 
   Double_t GetDistanceFromVertex( const Double_t vtx[] ) const;
   Double_t GetDistanceFromVertex( const AliKFParticleBase &Vtx ) const;
-  Double_t GetDistanceFromParticleBz( Double_t Bz,
-				      const AliKFParticleBase &p ) const;
+  Double_t GetDistanceFromParticle( const AliKFParticleBase &p ) const;
 
   //* Calculate sqrt(Chi2/ndf) deviation from vertex
   //* v = [xyz], Cv=[Cxx,Cxy,Cyy,Cxz,Cyz,Czz]-covariance matrix
@@ -203,8 +202,7 @@ class AliKFParticleBase :public TObject {
   Double_t GetDeviationFromVertex( const Double_t v[], 
 				   const Double_t Cv[]=0 ) const;
   Double_t GetDeviationFromVertex( const AliKFParticleBase &Vtx ) const;
-  Double_t GetDeviationFromParticleBz( Double_t Bz, 
-				       const AliKFParticleBase &p ) const;  
+  Double_t GetDeviationFromParticle( const AliKFParticleBase &p ) const;  
 
   //* Subtract the particle from the vertex  
 
@@ -226,6 +224,7 @@ class AliKFParticleBase :public TObject {
   static void MultQSQt( const Double_t Q[], const Double_t S[], 
 			Double_t SOut[] );
 
+  void GetMeasurement( const Double_t XYZ[], Double_t m[], Double_t V[] ) const ;
 
   Double_t fP[8];  //* Main particle parameters {X,Y,Z,Px,Py,Pz,E,S[=DecayLength/P]}
   Double_t fC[36]; //* Low-triangle covariance matrix of fP

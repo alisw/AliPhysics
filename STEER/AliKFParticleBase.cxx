@@ -19,7 +19,7 @@
 #include "AliKFParticleBase.h"
 #include "TMath.h"
 
-ClassImp(AliKFParticleBase)
+ClassImp(AliKFParticleBase);
 
 
 AliKFParticleBase::AliKFParticleBase() :fQ(0), fNDF(-3), fChi2(0), fSFromDecay(0), fAtProductionVertex(0), fIsLinearized(0)
@@ -89,12 +89,14 @@ Int_t AliKFParticleBase::GetMass( Double_t &M, Double_t &Error ) const
 		     - fP[6]*( fP[3]*fC[24] + fP[4]*fC[25] + fP[5]*fC[26] )   )
 		 ); 
   Double_t m2 = fP[6]*fP[6] - fP[3]*fP[3] - fP[4]*fP[4] - fP[5]*fP[5];
-  if( s>=0 && m2>1.e-20 ){
-    M = TMath::Sqrt(m2);
-    Error = TMath::Sqrt(s/m2);
-    return 0;
-  }
   M     = 0;
+  if( m2>1.e-20 ){
+    M = TMath::Sqrt(m2);
+    if( s>=0 ){
+      Error = TMath::Sqrt(s/m2);
+      return 0;
+    }
+  }
   Error = 1.e20;
   return 1;
 }
@@ -149,9 +151,106 @@ void AliKFParticleBase::operator +=( const AliKFParticleBase &Daughter )
   AddDaughter( Daughter );
 }
   
+
+void AliKFParticleBase::GetMeasurement( const Double_t XYZ[], Double_t m[], Double_t V[] ) const
+{
+  Double_t b[3];
+  GetFieldValue( XYZ, b );
+  const Double_t kCLight =  0.000299792458;
+  b[0]*=kCLight; b[1]*=kCLight; b[2]*=kCLight;
+
+  Transport( GetDStoPoint(XYZ), m, V );
+
+  Double_t d[3] = { XYZ[0]-m[0], XYZ[1]-m[1], XYZ[2]-m[2] };
+  Double_t sigmaS = 1.+10.*TMath::Sqrt( (d[0]*d[0]+d[1]*d[1]+d[2]*d[2])/
+					(m[3]*m[3]+m[4]*m[4]+m[5]*m[5])  );
+
+  Double_t h[6];
+
+  h[0] = m[3]*sigmaS;
+  h[1] = m[4]*sigmaS;
+  h[2] = m[5]*sigmaS;
+  h[3] = ( h[1]*b[2]-h[2]*b[1] )*GetQ();
+  h[4] = ( h[2]*b[0]-h[0]*b[2] )*GetQ();
+  h[5] = ( h[0]*b[1]-h[1]*b[0] )*GetQ();
+    
+  //* Fit of momentum (Px,Py,Pz) to XYZ point
+  if(0){      
+    Double_t mVv[6] = 
+      { V[ 0] + h[0]*h[0], 
+	V[ 1] + h[0]*h[1], V[ 2] + h[1]*h[1],			     
+	V[ 3] + h[0]*h[2], V[ 4] + h[1]*h[2], V[ 5] + h[2]*h[2] };
+    
+    Double_t mVvp[9]=
+      { V[ 6] + h[0]*h[3], V[ 7] + h[1]*h[3], V[ 8] + h[2]*h[3],
+	V[10] + h[0]*h[4], V[11] + h[1]*h[4], V[12] + h[2]*h[4],
+	V[15] + h[0]*h[5], V[16] + h[1]*h[5], V[17] + h[2]*h[5] };
+    
+    Double_t mS[6] = 
+      { mVv[2]*mVv[5] - mVv[4]*mVv[4],
+	mVv[3]*mVv[4] - mVv[1]*mVv[5], mVv[0]*mVv[5] - mVv[3]*mVv[3],
+	mVv[1]*mVv[4] - mVv[2]*mVv[3], mVv[1]*mVv[3] - mVv[0]*mVv[4], 
+	mVv[0]*mVv[2] - mVv[1]*mVv[1] };		 
+    
+    Double_t s = ( mVv[0]*mS[0] + mVv[1]*mS[1] + mVv[3]*mS[3] );    
+    s = ( s > 1.E-20 )  ?1./s :0;
+        
+    Double_t mSz[3] = { mS[0]*d[0]+mS[1]*d[1]+mS[3]*d[2],
+			mS[1]*d[0]+mS[2]*d[1]+mS[4]*d[2],
+			mS[3]*d[0]+mS[4]*d[1]+mS[5]*d[2] };
+    
+    Double_t px = m[3] + s*( mVvp[0]*mSz[0] + mVvp[1]*mSz[1] + mVvp[2]*mSz[2] );
+    Double_t py = m[4] + s*( mVvp[3]*mSz[0] + mVvp[4]*mSz[1] + mVvp[5]*mSz[2] );
+    Double_t pz = m[5] + s*( mVvp[6]*mSz[0] + mVvp[7]*mSz[1] + mVvp[8]*mSz[2] );
+
+    h[0] = px*sigmaS;
+    h[1] = py*sigmaS;
+    h[2] = pz*sigmaS;
+    h[3] = ( h[1]*b[2]-h[2]*b[1] )*GetQ();
+    h[4] = ( h[2]*b[0]-h[0]*b[2] )*GetQ();
+    h[5] = ( h[0]*b[1]-h[1]*b[0] )*GetQ();
+  }
+   
+  V[ 0]+= h[0]*h[0];
+  V[ 1]+= h[1]*h[0];
+  V[ 2]+= h[1]*h[1];
+  V[ 3]+= h[2]*h[0];
+  V[ 4]+= h[2]*h[1];
+  V[ 5]+= h[2]*h[2];
+
+  V[ 6]+= h[3]*h[0];
+  V[ 7]+= h[3]*h[1];
+  V[ 8]+= h[3]*h[2];
+  V[ 9]+= h[3]*h[3];
+
+  V[10]+= h[4]*h[0];
+  V[11]+= h[4]*h[1];
+  V[12]+= h[4]*h[2];
+  V[13]+= h[4]*h[3];
+  V[14]+= h[4]*h[4];
+
+  V[15]+= h[5]*h[0];
+  V[16]+= h[5]*h[1];
+  V[17]+= h[5]*h[2];
+  V[18]+= h[5]*h[3];
+  V[19]+= h[5]*h[4];
+  V[20]+= h[5]*h[5];
+}
+
+
+  
 void AliKFParticleBase::AddDaughter( const AliKFParticleBase &Daughter )
 {
   //* Add daughter 
+
+  if( fNDF<-1 ){ // first daughter -> just copy
+    fNDF   = -1;
+    fQ     =  Daughter.GetQ();
+    for( Int_t i=0; i<7; i++) fP[i] = Daughter.fP[i];
+    for( Int_t i=0; i<28; i++) fC[i] = Daughter.fC[i];
+    fSFromDecay = 0;
+    return;
+  }
 
   TransportToDecayVertex();
 
@@ -161,12 +260,19 @@ void AliKFParticleBase::AddDaughter( const AliKFParticleBase &Daughter )
   if( !fIsLinearized ){
     if( fNDF==-1 ){
       Double_t ds, ds1;
-      GetDStoParticle(Daughter, ds, ds1);
+      GetDStoParticle(Daughter, ds, ds1);      
       TransportToDS( ds );
+      Double_t m[8];
+      Double_t mCd[36];       
+      Daughter.Transport( ds1, m, mCd );    
+      fVtxGuess[0] = .5*( fP[0] + m[0] );
+      fVtxGuess[1] = .5*( fP[1] + m[1] );
+      fVtxGuess[2] = .5*( fP[2] + m[2] );
+    } else {
+      fVtxGuess[0] = fP[0];
+      fVtxGuess[1] = fP[1];
+      fVtxGuess[2] = fP[2]; 
     }
-    fVtxGuess[0] = fP[0];
-    fVtxGuess[1] = fP[1];
-    fVtxGuess[2] = fP[2]; 
     maxIter = 3;
   }
 
@@ -177,124 +283,24 @@ void AliKFParticleBase::AddDaughter( const AliKFParticleBase &Daughter )
       const Double_t kCLight =  0.000299792458;
       b[0]*=kCLight; b[1]*=kCLight; b[2]*=kCLight;
     }
-    if( fNDF==-1 ) TransportToDS( GetDStoPoint(fVtxGuess) );
-    
-    fSFromDecay = 0;
 
-    Double_t m[8];
-    Double_t mCd[36];
-    
-    Double_t dds = Daughter.GetDStoPoint(fVtxGuess);
-    
-    Daughter.Transport( Daughter.GetDStoPoint(fVtxGuess), m, mCd );
-
-    Double_t d[3] = { fVtxGuess[0]-m[0], fVtxGuess[1]-m[1], fVtxGuess[2]-m[2] };
-    Double_t sigmaS = .1+10.*TMath::Sqrt( (d[0]*d[0]+d[1]*d[1]+d[2]*d[2])/
-					  (m[3]*m[3]+m[4]*m[4]+m[5]*m[5])  );
-
-    Double_t h[6];
-
-    h[0] = m[3]*sigmaS;
-    h[1] = m[4]*sigmaS;
-    h[2] = m[5]*sigmaS; 
-    h[3] = ( h[1]*b[2]-h[2]*b[1] )*Daughter.GetQ();
-    h[4] = ( h[2]*b[0]-h[0]*b[2] )*Daughter.GetQ();
-    h[5] = ( h[0]*b[1]-h[1]*b[0] )*Daughter.GetQ();
-    
-    //* Fit of daughter momentum (Px,Py,Pz) to fVtxGuess vertex
-    {
-      Double_t zeta[3] = { fVtxGuess[0]-m[0], fVtxGuess[1]-m[1], fVtxGuess[2]-m[2] };
-      
-      Double_t mVv[6] = 
-	{ mCd[ 0] + h[0]*h[0], 
-	  mCd[ 1] + h[1]*h[0], mCd[ 2] + h[1]*h[1],			     
-	  mCd[ 3] + h[2]*h[0], mCd[ 4] + h[2]*h[1], mCd[ 5] + h[2]*h[2] };
-      
-      Double_t mVvp[9]=
-	{ mCd[ 6] + h[0]*h[3], mCd[ 7] + h[1]*h[3], mCd[ 8] + h[2]*h[3],
-	  mCd[10] + h[0]*h[4], mCd[11] + h[1]*h[4], mCd[12] + h[2]*h[4],
-	  mCd[15] + h[0]*h[5], mCd[16] + h[1]*h[5], mCd[17] + h[2]*h[5] };
-      
-      Double_t mS[6] = 
-	{ mVv[2]*mVv[5] - mVv[4]*mVv[4],
-	  mVv[3]*mVv[4] - mVv[1]*mVv[5], mVv[0]*mVv[5] - mVv[3]*mVv[3],
-	  mVv[1]*mVv[4] - mVv[2]*mVv[3], mVv[1]*mVv[3] - mVv[0]*mVv[4], 
-	  mVv[0]*mVv[2] - mVv[1]*mVv[1] };		 
-      
-      Double_t s = ( mVv[0]*mS[0] + mVv[1]*mS[1] + mVv[3]*mS[3] );
-      s = ( s > 1.E-20 )  ?1./s :0;
-      
-      mS[0]*=s; mS[1]*=s; mS[2]*=s; mS[3]*=s; mS[4]*=s; mS[5]*=s;
-      
-      Double_t mSz[3] = { (mS[0]*zeta[0]+mS[1]*zeta[1]+mS[3]*zeta[2]),
-			 (mS[1]*zeta[0]+mS[2]*zeta[1]+mS[4]*zeta[2]),
-			 (mS[3]*zeta[0]+mS[4]*zeta[1]+mS[5]*zeta[2]) };
-      
-      Double_t px = m[3] + mVvp[0]*mSz[0] + mVvp[1]*mSz[1] + mVvp[2]*mSz[2];
-      Double_t py = m[4] + mVvp[3]*mSz[0] + mVvp[4]*mSz[1] + mVvp[5]*mSz[2];
-      Double_t pz = m[5] + mVvp[6]*mSz[0] + mVvp[7]*mSz[1] + mVvp[8]*mSz[2];
-      
-      h[0] = px*sigmaS;
-      h[1] = py*sigmaS;
-      h[2] = pz*sigmaS; 
-      h[3] = ( h[1]*b[2]-h[2]*b[1] )*Daughter.GetQ();
-      h[4] = ( h[2]*b[0]-h[0]*b[2] )*Daughter.GetQ();
-      h[5] = ( h[0]*b[1]-h[1]*b[0] )*Daughter.GetQ();
-    }
-   
-    Double_t mV[28];
-    
-    mV[ 0] = mCd[ 0] + h[0]*h[0];
-    mV[ 1] = mCd[ 1] + h[1]*h[0];
-    mV[ 2] = mCd[ 2] + h[1]*h[1];
-    mV[ 3] = mCd[ 3] + h[2]*h[0];
-    mV[ 4] = mCd[ 4] + h[2]*h[1];
-    mV[ 5] = mCd[ 5] + h[2]*h[2];
-    
-    mV[ 6] = mCd[ 6] + h[3]*h[0];
-    mV[ 7] = mCd[ 7] + h[3]*h[1];
-    mV[ 8] = mCd[ 8] + h[3]*h[2];
-    mV[ 9] = mCd[ 9] + h[3]*h[3];
-
-    mV[10] = mCd[10] + h[4]*h[0];
-    mV[11] = mCd[11] + h[4]*h[1];
-    mV[12] = mCd[12] + h[4]*h[2];
-    mV[13] = mCd[13] + h[4]*h[3];
-    mV[14] = mCd[14] + h[4]*h[4];
-    
-    mV[15] = mCd[15] + h[5]*h[0];
-    mV[16] = mCd[16] + h[5]*h[1];
-    mV[17] = mCd[17] + h[5]*h[2];
-    mV[18] = mCd[18] + h[5]*h[3];
-    mV[19] = mCd[19] + h[5]*h[4];
-    mV[20] = mCd[20] + h[5]*h[5];	  
-    
-    mV[21] = mCd[21];
-    mV[22] = mCd[22];
-    mV[23] = mCd[23];
-    mV[24] = mCd[24];
-    mV[25] = mCd[25];
-    mV[26] = mCd[26];
-    mV[27] = mCd[27];
-  
-   //* 
-	    
-    if( fNDF<-1 ){ // first daughter -> just copy
-      fNDF   = -1;
-      fQ     =  Daughter.GetQ();
-      for( Int_t i=0; i<7; i++) fP[i] = m[i];
-      for( Int_t i=0; i<28; i++) fC[i] = mV[i];
-      fSFromDecay = 0;
-      return;
+    Double_t *ffP = fP, *ffC = fC, tmpP[8], tmpC[36];
+    if( fNDF==-1 ){      
+      GetMeasurement( fVtxGuess, tmpP, tmpC );
+      ffP = tmpP;
+      ffC = tmpC;
     }
 
+    Double_t m[8], mV[36];        
+    Daughter.GetMeasurement( fVtxGuess, m, mV );
+ 
     //*
 
     Double_t mS[6];
     {
-      Double_t mSi[6] = { fC[0]+mV[0], 
-		       fC[1]+mV[1], fC[2]+mV[2], 
-		       fC[3]+mV[3], fC[4]+mV[4], fC[5]+mV[5] };
+      Double_t mSi[6] = { ffC[0]+mV[0], 
+			  ffC[1]+mV[1], ffC[2]+mV[2], 
+			  ffC[3]+mV[3], ffC[4]+mV[4], ffC[5]+mV[5] };
       
       mS[0] = mSi[2]*mSi[5] - mSi[4]*mSi[4];
       mS[1] = mSi[3]*mSi[4] - mSi[1]*mSi[5];
@@ -315,20 +321,19 @@ void AliKFParticleBase::AddDaughter( const AliKFParticleBase &Daughter )
     
     //* Residual (measured - estimated)
     
-    Double_t zeta[3] = { m[0]-fP[0], m[1]-fP[1], m[2]-fP[2] };
-    
+    Double_t zeta[3] = { m[0]-ffP[0], m[1]-ffP[1], m[2]-ffP[2] };    
     
     //* CHt = CH' - D'
     
     Double_t mCHt0[7], mCHt1[7], mCHt2[7];
     
-    mCHt0[0]=fC[ 0] ;      mCHt1[0]=fC[ 1] ;      mCHt2[0]=fC[ 3] ;
-    mCHt0[1]=fC[ 1] ;      mCHt1[1]=fC[ 2] ;      mCHt2[1]=fC[ 4] ;
-    mCHt0[2]=fC[ 3] ;      mCHt1[2]=fC[ 4] ;      mCHt2[2]=fC[ 5] ;
-    mCHt0[3]=fC[ 6]-mV[ 6]; mCHt1[3]=fC[ 7]-mV[ 7]; mCHt2[3]=fC[ 8]-mV[ 8];
-    mCHt0[4]=fC[10]-mV[10]; mCHt1[4]=fC[11]-mV[11]; mCHt2[4]=fC[12]-mV[12];
-    mCHt0[5]=fC[15]-mV[15]; mCHt1[5]=fC[16]-mV[16]; mCHt2[5]=fC[17]-mV[17];
-    mCHt0[6]=fC[21]-mV[21]; mCHt1[6]=fC[22]-mV[22]; mCHt2[6]=fC[23]-mV[23];
+    mCHt0[0]=ffC[ 0] ;       mCHt1[0]=ffC[ 1] ;       mCHt2[0]=ffC[ 3] ;
+    mCHt0[1]=ffC[ 1] ;       mCHt1[1]=ffC[ 2] ;       mCHt2[1]=ffC[ 4] ;
+    mCHt0[2]=ffC[ 3] ;       mCHt1[2]=ffC[ 4] ;       mCHt2[2]=ffC[ 5] ;
+    mCHt0[3]=ffC[ 6]-mV[ 6]; mCHt1[3]=ffC[ 7]-mV[ 7]; mCHt2[3]=ffC[ 8]-mV[ 8];
+    mCHt0[4]=ffC[10]-mV[10]; mCHt1[4]=ffC[11]-mV[11]; mCHt2[4]=ffC[12]-mV[12];
+    mCHt0[5]=ffC[15]-mV[15]; mCHt1[5]=ffC[16]-mV[16]; mCHt2[5]=ffC[17]-mV[17];
+    mCHt0[6]=ffC[21]-mV[21]; mCHt1[6]=ffC[22]-mV[22]; mCHt2[6]=ffC[23]-mV[23];
   
     //* Kalman gain K = mCH'*S
     
@@ -344,7 +349,7 @@ void AliKFParticleBase::AddDaughter( const AliKFParticleBase &Daughter )
 
     if( iter<maxIter-1 ){
       for(Int_t i=0; i<3; ++i) 
-	fVtxGuess[i]= fP[i] + k0[i]*zeta[0]+k1[i]*zeta[1]+k2[i]*zeta[2];
+	fVtxGuess[i]= ffP[i] + k0[i]*zeta[0]+k1[i]*zeta[1]+k2[i]*zeta[2];
       continue;
     }
 
@@ -352,32 +357,32 @@ void AliKFParticleBase::AddDaughter( const AliKFParticleBase &Daughter )
 
     //* Add the daughter momentum to the particle momentum
     
-    fP[ 3] += m[ 3];
-    fP[ 4] += m[ 4];
-    fP[ 5] += m[ 5];
-    fP[ 6] += m[ 6];
+    ffP[ 3] += m[ 3];
+    ffP[ 4] += m[ 4];
+    ffP[ 5] += m[ 5];
+    ffP[ 6] += m[ 6];
   
-    fC[ 9] += mV[ 9];
-    fC[13] += mV[13];
-    fC[14] += mV[14];
-    fC[18] += mV[18];
-    fC[19] += mV[19];
-    fC[20] += mV[20];
-    fC[24] += mV[24];
-    fC[25] += mV[25];
-    fC[26] += mV[26];
-    fC[27] += mV[27];
+    ffC[ 9] += mV[ 9];
+    ffC[13] += mV[13];
+    ffC[14] += mV[14];
+    ffC[18] += mV[18];
+    ffC[19] += mV[19];
+    ffC[20] += mV[20];
+    ffC[24] += mV[24];
+    ffC[25] += mV[25];
+    ffC[26] += mV[26];
+    ffC[27] += mV[27];
     
     //* New estimation of the vertex position r += K*zeta
     
     for(Int_t i=0;i<7;++i) 
-      fP[i] += k0[i]*zeta[0] + k1[i]*zeta[1] + k2[i]*zeta[2];
+      fP[i] = ffP[i] + k0[i]*zeta[0] + k1[i]*zeta[1] + k2[i]*zeta[2];
     
     //* New covariance matrix C -= K*(mCH')'
    
     for(Int_t i=0, k=0;i<7;++i){
       for(Int_t j=0;j<=i;++j,++k) 
-	fC[k] -= k0[i]*mCHt0[j] + k1[i]*mCHt1[j] + k2[i]*mCHt2[j];
+	fC[k] = ffC[k] - (k0[i]*mCHt0[j] + k1[i]*mCHt1[j] + k2[i]*mCHt2[j] );
     }
     
     //* Calculate Chi^2 
@@ -584,7 +589,10 @@ void AliKFParticleBase::Construct( const AliKFParticleBase* vDaughters[], Int_t 
   Int_t maxIter = 1;
   bool wasLinearized = fIsLinearized;
   if( !fIsLinearized ){
-    fVtxGuess[0] = fVtxGuess[1] = fVtxGuess[2] = 0; 
+    //fVtxGuess[0] = fVtxGuess[1] = fVtxGuess[2] = 0;  //!!!!
+    fVtxGuess[0] = GetX();
+    fVtxGuess[1] = GetY();
+    fVtxGuess[2] = GetZ();
     fIsLinearized = 1;
     maxIter = 3;
   }
@@ -709,7 +717,7 @@ void AliKFParticleBase::TransportToDecayVertex()
 void AliKFParticleBase::TransportToProductionVertex()
 {
   //* Transport the particle to its production vertex 
-
+  
   if( fSFromDecay != -fP[7] ) TransportToDS( -fSFromDecay-fP[7] );
   if( !fAtProductionVertex ) Convert( 1 );
   fAtProductionVertex = 1;
@@ -719,7 +727,7 @@ void AliKFParticleBase::TransportToProductionVertex()
 void AliKFParticleBase::TransportToDS( Double_t dS )
 { 
   //* Transport the particle on dS parameter (SignedPath/Momentum) 
-
+ 
   Transport( dS, fP, fC );
   fSFromDecay+= dS;
 }
@@ -738,6 +746,7 @@ Double_t AliKFParticleBase::GetDStoPointLine( const Double_t xyz[] ) const
 Double_t AliKFParticleBase::GetDStoPointBz( Double_t B, const Double_t xyz[] ) 
   const
 { 
+  
   //* Get dS to a certain space point for Bz field
   const Double_t kCLight = 0.000299792458;
   Double_t bq = B*fQ*kCLight;
@@ -746,13 +755,13 @@ Double_t AliKFParticleBase::GetDStoPointBz( Double_t B, const Double_t xyz[] )
   Double_t dx = xyz[0] - fP[0];
   Double_t dy = xyz[1] - fP[1]; 
   Double_t a = dx*fP[3]+dy*fP[4];
-  if( TMath::Abs(bq)<1.e-8 ) return a/pt2;
+  if( TMath::Abs(bq)<1.e-8 ) return a/pt2;  
   return  TMath::ATan2( bq*a, pt2 + bq*(dy*fP[3] -dx*fP[4]) )/bq;
 }
 
 
 void AliKFParticleBase::GetDStoParticleBz( Double_t B, const AliKFParticleBase &p, 
-				    Double_t &DS, Double_t &DS1 ) 
+					   Double_t &DS, Double_t &DS1 ) 
   const
 { 
   //* Get dS to another particle for Bz field
@@ -1025,16 +1034,16 @@ void AliKFParticleBase::TransportCBM( Double_t dS,
 
 
 void AliKFParticleBase::TransportBz( Double_t B, Double_t S,
-				       Double_t P[], Double_t C[] ) const 
+				     Double_t P[], Double_t C[] ) const 
 { 
   //* Transport the particle on dS, output to P[],C[], for Bz field
-
+ 
   const Double_t kCLight = 0.000299792458;
   B = B*fQ*kCLight;
   Double_t bs= B*S;
   Double_t s = TMath::Sin(bs), c = TMath::Cos(bs);
   Double_t sB, cB;
-  if( TMath::Abs(bs)>1.e-8){
+  if( TMath::Abs(bs)>1.e-10){
     sB= s/B;
     cB= (1-c)/B;
   }else{
@@ -1056,13 +1065,13 @@ void AliKFParticleBase::TransportBz( Double_t B, Double_t S,
   P[7] = fP[7];
  
   Double_t mJ[8][8] = { {1,0,0,   sB, cB,  0, 0, 0 },
-		       {0,1,0,  -cB, sB,  0, 0, 0 },
-		       {0,0,1,    0,  0,  S, 0, 0 },
-		       {0,0,0,    c,  s,  0, 0, 0 },
-		       {0,0,0,   -s,  c,  0, 0, 0 },
-		       {0,0,0,    0,  0,  1, 0, 0 },
-		       {0,0,0,    0,  0,  0, 1, 0 },
-		       {0,0,0,    0,  0,  0, 0, 1 }  };
+			{0,1,0,  -cB, sB,  0, 0, 0 },
+			{0,0,1,    0,  0,  S, 0, 0 },
+			{0,0,0,    c,  s,  0, 0, 0 },
+			{0,0,0,   -s,  c,  0, 0, 0 },
+			{0,0,0,    0,  0,  1, 0, 0 },
+			{0,0,0,    0,  0,  0, 1, 0 },
+			{0,0,0,    0,  0,  0, 0, 1 }  };
   Double_t mA[8][8];
   for( Int_t k=0,i=0; i<8; i++)
     for( Int_t j=0; j<=i; j++, k++ ) mA[i][j] = mA[j][i] = fC[k]; 
@@ -1141,17 +1150,16 @@ Double_t AliKFParticleBase::GetDistanceFromVertex( const Double_t vtx[] ) const
   return TMath::Sqrt( d[0]*d[0]+d[1]*d[1]+d[2]*d[2] );
 }
 
-Double_t AliKFParticleBase::GetDistanceFromParticleBz( Double_t B, 
-						const AliKFParticleBase &p ) 
+Double_t AliKFParticleBase::GetDistanceFromParticle( const AliKFParticleBase &p ) 
   const
 { 
-  //* Calculate distance other particle [cm] for Bz field
+  //* Calculate distance to other particle [cm]
 
   Double_t dS, dS1;
-  GetDStoParticleBz( B, p, dS, dS1 );   
+  GetDStoParticle( p, dS, dS1 );   
   Double_t mP[8], mC[36], mP1[8], mC1[36];
-  TransportBz( B, dS, mP, mC ); 
-  p.TransportBz( B, dS1, mP1, mC1 ); 
+  Transport( dS, mP, mC ); 
+  p.Transport( dS1, mP1, mC1 ); 
   Double_t dx = mP[0]-mP1[0]; 
   Double_t dy = mP[1]-mP1[1]; 
   Double_t dz = mP[2]-mP1[2]; 
@@ -1216,21 +1224,20 @@ Double_t AliKFParticleBase::GetDeviationFromVertex( const Double_t v[], const Do
 }
 
 
-Double_t AliKFParticleBase::GetDeviationFromParticleBz( Double_t B, 
-						 const AliKFParticleBase &p ) 
+Double_t AliKFParticleBase::GetDeviationFromParticle( const AliKFParticleBase &p ) 
   const
 { 
-  //* Calculate sqrt(Chi2/ndf) deviation from other particle, for Bz field
+  //* Calculate sqrt(Chi2/ndf) deviation from other particle
 
   Double_t dS, dS1;
-  GetDStoParticleBz( B, p, dS, dS1 );   
+  GetDStoParticle( p, dS, dS1 );   
   Double_t mP1[8], mC1[36];
-  p.TransportBz( B, dS1, mP1, mC1 ); 
+  p.Transport( dS1, mP1, mC1 ); 
 
   Double_t d[3]={ fP[0]-mP1[0], fP[1]-mP1[1], fP[2]-mP1[2]};
 
   Double_t sigmaS = .1+10.*TMath::Sqrt( (d[0]*d[0]+d[1]*d[1]+d[2]*d[2])/
-				 (mP1[3]*mP1[3]+mP1[4]*mP1[4]+mP1[5]*mP1[5])  );
+					(mP1[3]*mP1[3]+mP1[4]*mP1[4]+mP1[5]*mP1[5])  );
 
   Double_t h[3] = { mP1[3]*sigmaS, mP1[4]*sigmaS, mP1[5]*sigmaS };       
   
