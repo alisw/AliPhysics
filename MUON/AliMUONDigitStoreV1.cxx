@@ -262,7 +262,8 @@ AliMUONDigitStoreV1::Remove(AliMUONVDigit& digit)
   
   Int_t index;
   AliMUONVDigit* d(0x0);
-  if ( ( d = FindIndex(digit.DetElemId(),digit.ManuId(),digit.ManuChannel(),index) ) )
+  if ( ( d = FindIndex(digit.DetElemId(),digit.ManuId(),
+                       digit.ManuChannel(),digit.Cathode(),index) ) )
   {
     Int_t iChamber = AliMpDEManager::GetChamberId(digit.DetElemId());
     TClonesArray* array = ChamberDigits(iChamber);
@@ -274,51 +275,29 @@ AliMUONDigitStoreV1::Remove(AliMUONVDigit& digit)
 
 //_____________________________________________________________________________
 AliMUONVDigit* 
-AliMUONDigitStoreV1::FindObject(Int_t detElemId, Int_t manuId, Int_t manuChannel) const
-{
-  /// Find a digit indexed by the triplet (de,manu,channel)
-  Int_t index;
-  return FindIndex(detElemId,manuId,manuChannel,index);
-}
-
-//_____________________________________________________________________________
-AliMUONVDigit* 
 AliMUONDigitStoreV1::Find(const AliMUONVDigit& digit, Int_t& index) const
 {
   /// Find a digit, and return its index.
-  if ( digit.IsTrigger() )
-  {
-    return FindIndex(digit.DetElemId(),digit.ManuId(),digit.ManuChannel(),digit.Cathode(),index);
-  }
-  else
-  {
-    return FindIndex(digit.DetElemId(),digit.ManuId(),digit.ManuChannel(),index);
-  }
+  return FindIndex(digit.DetElemId(),digit.ManuId(),digit.ManuChannel(),digit.Cathode(),index);
 }
 
 //_____________________________________________________________________________
 AliMUONVDigit* 
-AliMUONDigitStoreV1::FindObject(Int_t detElemId, Int_t localBoardId, 
-                                Int_t localBoardChannel, Int_t cathode) const
+AliMUONDigitStoreV1::FindObject(Int_t detElemId, Int_t manuId, 
+                                Int_t manuChannel, Int_t cathode) const
 {
   /// Find a (trigger) digit
   Int_t index;
-  return FindIndex(detElemId,localBoardId,localBoardChannel,cathode,index);
+  return FindIndex(detElemId,manuId,manuChannel,cathode,index);
 }
 
 //_____________________________________________________________________________
 AliMUONVDigit* 
-AliMUONDigitStoreV1::FindIndex(Int_t detElemId, Int_t localBoardId, 
-                               Int_t localBoardChannel, Int_t cathode, Int_t& index) const
+AliMUONDigitStoreV1::FindIndex(Int_t detElemId, Int_t manuId, 
+                               Int_t manuChannel, Int_t cathode, Int_t& index) const
 {
-  /// Find and return the index of a (trigger) digit
+  /// Find and return the index of a digit
   
-  AliMp::StationType stationType = AliMpDEManager::GetStationType(detElemId);
-  if ( stationType != AliMp::kStationTrigger ) 
-  {
-    AliError("This method is reserved for trigger detection elements");
-    return 0x0;
-  }
   Int_t iChamber = AliMpDEManager::GetChamberId(detElemId);
   const TClonesArray* array = ChamberDigits(iChamber);
   if (!array) return 0x0;
@@ -328,8 +307,8 @@ AliMUONDigitStoreV1::FindIndex(Int_t detElemId, Int_t localBoardId,
   while ( ( digit = static_cast<AliMUONVDigit*>(next()) ) )
   {
     if ( digit->DetElemId() == detElemId &&
-         digit->ManuId() == localBoardId &&
-         digit->ManuChannel() == localBoardChannel &&
+         digit->ManuId() == manuId &&
+         digit->ManuChannel() == manuChannel &&
          digit->Cathode() == cathode ) 
     {
       return digit;
@@ -338,30 +317,6 @@ AliMUONDigitStoreV1::FindIndex(Int_t detElemId, Int_t localBoardId,
   }
   return 0x0;
   
-}
-
-//_____________________________________________________________________________
-AliMUONVDigit* 
-AliMUONDigitStoreV1::FindIndex(Int_t detElemId, Int_t manuId, Int_t manuChannel, Int_t& index) const
-{
-  /// Find and return the index of a (tracker) digit
-  Int_t iChamber = AliMpDEManager::GetChamberId(detElemId);
-  const TClonesArray* array = ChamberDigits(iChamber);
-  if (!array) return 0x0;
-  TIter next(array);
-  AliMUONVDigit* digit;
-  index = 0;
-  while ( ( digit = static_cast<AliMUONVDigit*>(next()) ) )
-  {
-    if ( digit->DetElemId() == detElemId &&
-         digit->ManuId() == manuId &&
-         digit->ManuChannel() == manuChannel ) 
-    {
-      return digit;
-    }
-    ++index;
-  }
-  return 0x0;
 }
 
 //_____________________________________________________________________________

@@ -58,10 +58,7 @@ public:
   using AliMUONVDigitStore::FindObject;
   
   virtual AliMUONVDigit* FindObject(Int_t detElemId, Int_t manuId, 
-                                    Int_t manuChannel) const;
-  
-  virtual AliMUONVDigit* FindObject(Int_t detElemId, Int_t localBoardId, 
-                                    Int_t localBoardChannel, Int_t cathode) const;
+                                    Int_t manuChannel, Int_t cathode) const;
 
   using AliMUONVDigitStore::GetSize;
   
@@ -78,12 +75,8 @@ private:
   
   AliMUONVDigit* Find(const AliMUONVDigit& digit, Int_t& index) const;
   
-  AliMUONVDigit* FindIndex(Int_t detElemId, Int_t localBoardId, 
-                           Int_t localBoardChannel, Int_t cathode, 
-                           Int_t& index) const;
-  
   AliMUONVDigit* FindIndex(Int_t detElemId, Int_t manuId, 
-                           Int_t manuChannel, Int_t& index) const;
+                           Int_t manuChannel, Int_t cathode, Int_t& index) const;
   
 private:
   TObjArray* fDigits; ///< array of tclonesarray
