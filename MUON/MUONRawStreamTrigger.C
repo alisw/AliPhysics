@@ -31,10 +31,8 @@
 #include "AliMUONRegHeader.h"
 #include "AliMUONLocalStruct.h"
 #include "AliMUONDDLTrigger.h"
-#include "AliMUONTriggerCrateStore.h"
-#include "AliMUONTriggerCrate.h"
-#include "AliMUONLocalTriggerBoard.h"
-
+#include "AliMpTriggerCrate.h"
+#include "AliMpDDLStore.h"
 #endif
 
 // Macro to read rawdata for trigger
@@ -68,7 +66,7 @@ void MUONRawStreamTrigger(Int_t maxEvent = 1, Int_t minDDL = 0, Int_t maxDDL = 1
    // it's NOT the number to be read.
    // default wise set to 2, 8, 16 respectively.
    //    rawStream->SetMaxDDL(xx);
-   //    rawStream->SetMaxReg(xx);
+   rawStream->SetMaxReg(2);
    //    rawStream->SetMaxLoc(xx);
 
    // containers
@@ -77,9 +75,6 @@ void MUONRawStreamTrigger(Int_t maxEvent = 1, Int_t minDDL = 0, Int_t maxDDL = 1
    AliMUONRegHeader*        regHeader   = 0x0;
    AliMUONLocalStruct*      localStruct = 0x0;
 
-   // crate manager
-   AliMUONTriggerCrateStore* crateManager = new AliMUONTriggerCrateStore();   
-   crateManager->ReadFromFile();
 
    // Loop over events  
    Int_t iEvent = 0;
@@ -113,9 +108,9 @@ void MUONRawStreamTrigger(Int_t maxEvent = 1, Int_t minDDL = 0, Int_t maxDDL = 1
 	 regHeader =  darcHeader->GetRegHeaderEntry(iReg);
 	 //  printf("Reg length %d\n",regHeader->GetHeaderLength());
 
-	 // crate info
-	 AliMUONTriggerCrate* crate = crateManager->Crate(rawStream->GetDDL(), iReg);
-	 TObjArray *boards = crate->Boards();
+	 // crate info  
+	 AliMpTriggerCrate* crate = AliMpDDLStore::Instance()->
+	                            GetTriggerCrate(rawStream->GetDDL(), iReg);
 
 	 // loop over local structures
 	 Int_t nLocal = regHeader->GetLocalEntries();
@@ -123,16 +118,17 @@ void MUONRawStreamTrigger(Int_t maxEvent = 1, Int_t minDDL = 0, Int_t maxDDL = 1
 
 	   localStruct = regHeader->GetLocalEntry(iLocal);
 
+	   Int_t iLocCard = crate->GetLocalBoardId(localStruct->GetId());
+
+	   if ( !iLocCard ) continue; // empty slot
+
 	   // check if trigger 
 	   if (localStruct->GetTriggerX() 
 	       || localStruct->GetTriggerY()) { // no empty data
 
-	       // local trigger circuit number
-	       AliMUONLocalTriggerBoard* localBoard = (AliMUONLocalTriggerBoard*)boards->At(iLocal+1);
 
 	       printf("LocalId %d\n", localStruct->GetId());
 
-	       Int_t iLocCard = localBoard->GetNumber();
 	       Int_t loStripX  = (Int_t)localStruct->GetXPos();
 	       Int_t loStripY  = (Int_t)localStruct->GetYPos();
 	       Int_t loDev     = (Int_t)localStruct->GetXDev();
