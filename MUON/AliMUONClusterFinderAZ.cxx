@@ -344,7 +344,10 @@ void AliMUONClusterFinderAZ::AddPad(Int_t cath, AliMUONVDigit& mdig)
   {
     AliMpPad* p = static_cast<AliMpPad*>(neighbours.At(in));
     AliMUONVDigit* mdig1 = static_cast<AliMUONVDigit*>
-      (fDigitStore->FindObject(fDetElemId,p->GetLocation().GetFirst(),p->GetLocation().GetSecond()));
+      (fDigitStore->FindObject(fDetElemId,
+                               p->GetLocation().GetFirst(),
+                               p->GetLocation().GetSecond(),
+                               cath));
     if ( mdig1 && !mdig1->IsUsed() )
     {
       AddPad(cath,*mdig1);
