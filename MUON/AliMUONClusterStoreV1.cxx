@@ -211,5 +211,10 @@ AliMUONClusterStoreV1::CreateChamberIterator(Int_t firstChamber, Int_t lastChamb
 Int_t
 AliMUONClusterStoreV1::GetSize() const
 {
-  return fClusters->GetLast()+1;
+  Int_t n(0);
+  for ( Int_t i = 0; i < fClusters->GetSize(); ++i ) 
+  {
+    n += ChamberClusters(i)->GetLast()+1;
+  }
+  return n;
 }
