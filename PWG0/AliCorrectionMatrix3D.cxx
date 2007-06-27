@@ -113,9 +113,9 @@ AliCorrectionMatrix3D::AliCorrectionMatrix3D(const Char_t* name, const Char_t* t
   fhGene = (TH3F*)hBinning->Clone("generated");
   fhCorr = (TH3F*)hBinning->Clone("correction");
 
-  fhMeas->SetTitle(Form("%s measured",title)  );
-  fhGene->SetTitle(Form("%s generated",title ));
-  fhCorr->SetTitle(Form("%s correction",title));
+  fhMeas->SetTitle(Form("%s measured", GetTitle()));
+  fhGene->SetTitle(Form("%s generated", GetTitle()));
+  fhCorr->SetTitle(Form("%s correction", GetTitle()));
 
   fhMeas->Reset();
   fhGene->Reset();

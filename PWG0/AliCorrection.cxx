@@ -44,10 +44,10 @@ AliCorrection::AliCorrection(const Char_t* name, const Char_t* title) : TNamed(n
   Float_t binLimitsEta[] = {-2,-1.9,-1.8,-1.7,-1.6,-1.5,-1.4,-1.3,-1.2,-1.1,-1.0,-0.9,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0};
 //  Float_t binLimitsEta[] = { -7.0, -6.9, -6.8, -6.7, -6.6, -6.5, -6.4, -6.3, -6.2, -6.1, -6.0, -5.9, -5.8, -5.7, -5.6, -5.5, -5.4, -5.3, -5.2, -5.1, -5.0, -4.9, -4.8, -4.7, -4.6, -4.5, -4.4, -4.3, -4.2, -4.1, -4.0, -3.9, -3.8, -3.7, -3.6, -3.5, -3.4, -3.3, -3.2, -3.1, -3.0, -2.9, -2.8, -2.7, -2.6, -2.5, -2.4, -2.3, -2.2, -2.1, -2.0, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, -0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 4.0, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 5.0, 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9, 6.0, 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 6.9, 7.0 };
 
-  TH3F* dummyBinning = new TH3F("","",14, binLimitsVtx, 40, binLimitsEta , 28, binLimitsPt);
+  TH3F* dummyBinning = new TH3F("dummyBinning","dummyBinning",14, binLimitsVtx, 40, binLimitsEta , 28, binLimitsPt);
 
-  fEventCorr = new AliCorrectionMatrix2D("EventCorrection", Form("%s EventCorrection", title), 14, binLimitsVtx, 22, binLimitsN);
-  fTrackCorr = new AliCorrectionMatrix3D("TrackCorrection", Form("%s TrackCorrection", title), dummyBinning);
+  fEventCorr = new AliCorrectionMatrix2D("EventCorrection", Form("%s EventCorrection", fTitle.Data()), 14, binLimitsVtx, 22, binLimitsN);
+  fTrackCorr = new AliCorrectionMatrix3D("TrackCorrection", Form("%s TrackCorrection", fTitle.Data()), dummyBinning);
 
   delete dummyBinning;
 
