@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.26  2007/06/18 07:02:44  kharlov
+ * Change the signature of EvalLocalPosition() to obey the method virtuality from the parent class
+ *
  * Revision 1.25  2007/03/06 06:47:28  kharlov
  * DP:Possibility to use actual vertex position added
  *
@@ -258,7 +261,10 @@ void AliPHOSCpvRecPoint::ExecuteEvent(Int_t, Int_t, Int_t ) /*const*/
 //____________________________________________________________________________
 void AliPHOSCpvRecPoint::EvalAll(Float_t logWeight, TClonesArray * digits)
 {
+  // Evaluate local coordinate assuming the vertex in (000) and no inclination
+  TVector3 vtx(0,0,0), vInc(0,1,0);
   AliPHOSEmcRecPoint::EvalAll(logWeight,digits) ;
+  EvalLocalPosition(logWeight, vtx, digits,vInc) ;
   EvalClusterLengths(digits) ;
 }
 //____________________________________________________________________________
