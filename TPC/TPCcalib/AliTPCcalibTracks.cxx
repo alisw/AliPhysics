@@ -54,7 +54,8 @@ AliTPCcalibTracks::AliTPCcalibTracks() :
  }   
 
 
-
+void    AliTPCcalibTracks::ProcessTrack(AliTPCseed * seed){
+}
 
 
 Int_t   AliTPCcalibTracks::GetBin(Float_t q, Int_t pad){

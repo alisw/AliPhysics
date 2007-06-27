@@ -23,6 +23,7 @@ public :
    AliTPCcalibTracks();
    virtual ~AliTPCcalibTracks() {;}
    virtual void    ProofSlaveBegin(TList * output);
+   virtual void    ProcessTrack(AliTPCseed * seed);
    //
    //
    //
