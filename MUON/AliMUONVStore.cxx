@@ -154,24 +154,6 @@ AliMUONVStore::FindObject(Int_t, Int_t) const
   return 0;
 }
 
-//_____________________________________________________________________________
-TObject*
-AliMUONVStore::FindObject(Int_t,Int_t, Int_t) const
-{
-  /// Find an object using 3 identifiers
-  AliError("Not implemented");
-  return 0;
-}
-
-//_____________________________________________________________________________
-TObject*
-AliMUONVStore::FindObject(Int_t, Int_t, Int_t, Int_t) const
-{
-  /// Find an object using 4 identifiers
-  AliError("Not implemented");
-  return 0;
-}
-
 //______________________________________________________________________________
 TObject*
 AliMUONVStore::FindObject(const char *name) const
@@ -196,7 +178,7 @@ AliMUONVStore::FindObject(const TObject *obj) const
   // member function. Requires a sequential scan till the object has
   // been found. Returns 0 if object is not found.
   // Typically this function is overridden by a more efficient version
-  // in concrete collection classes (e.g. THashTable).
+  // in concrete collection classes.
   
   TIter next(CreateIterator());
   TObject *ob;

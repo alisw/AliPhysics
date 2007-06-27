@@ -28,6 +28,7 @@
 
 #include "AliLog.h"
 #include "AliMUONVDigit.h"
+#include <TClass.h>
 #include <TString.h>
 #include <TTree.h>
 
@@ -90,6 +91,22 @@ AliMUONVDigitStore::Add(Int_t detElemId,
   return 0x0;
 }
 
+//____________________________________________________________________________
+AliMUONVDigitStore* 
+AliMUONVDigitStore::Create(const char* digitstoreclassname)
+{
+  TClass* classPtr = TClass::GetClass(digitstoreclassname);
+  if (!classPtr)
+  {
+    return 0x0;
+  }
+  
+  AliMUONVDigitStore* digitStore = 
+    reinterpret_cast<AliMUONVDigitStore*>(classPtr->New());
+  
+  return digitStore;
+}
+
 //_____________________________________________________________________________
 AliMUONVDigitStore*
 AliMUONVDigitStore::Create(TTree& tree)
@@ -99,6 +116,30 @@ AliMUONVDigitStore::Create(TTree& tree)
                        (strcmp(tree.GetName(),"TreeS")== 9 ? "SDigit" : "")
                        );
   return static_cast<AliMUONVDigitStore*>(AliMUONVStore::Create(tree,dataType.Data()));
+}
+
+//_____________________________________________________________________________
+AliMUONVDigit* 
+AliMUONVDigitStore::FindObject(const TObject* object) const
+{
+  const AliMUONVDigit* digit = dynamic_cast<const AliMUONVDigit*>(object);
+  if (digit)
+  {
+    return FindObject(digit->GetUniqueID());
+  }
+  return 0x0;
+}
+
+//_____________________________________________________________________________
+AliMUONVDigit* 
+AliMUONVDigitStore::FindObject(UInt_t uniqueID) const
+{
+  /// Find digit by its uniqueID
+  
+  return FindObject(AliMUONVDigit::DetElemId(uniqueID),
+                    AliMUONVDigit::ManuId(uniqueID),
+                    AliMUONVDigit::ManuChannel(uniqueID),
+                    AliMUONVDigit::Cathode(uniqueID));
 }
 
 //_____________________________________________________________________________

@@ -58,12 +58,6 @@ public:
   /// Find an object using 2 ids
   virtual TObject* FindObject(Int_t i, Int_t j) const;
   
-  /// Find an object using 3 ids
-  virtual TObject* FindObject(Int_t i, Int_t j, Int_t k) const;
-
-  /// Find an object using 4 ids
-  virtual TObject* FindObject(Int_t i, Int_t j, Int_t k, Int_t l) const;
-  
   /// The number of objects stored
   virtual Int_t GetSize() const = 0;
 

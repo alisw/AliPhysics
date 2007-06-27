@@ -39,6 +39,8 @@ public:
   
   static AliMUONVDigitStore* Create(TTree& tree);
   
+  static AliMUONVDigitStore* Create(const char* classname);
+  
   /// Create a digit
   virtual AliMUONVDigit* CreateDigit(Int_t detElemId, Int_t manuId,
                                      Int_t manuChannel, Int_t cathode) const = 0;
@@ -77,12 +79,15 @@ public:
   virtual TIterator* CreateTriggerIterator() const = 0;
 
   using AliMUONVStore::FindObject;
+
+  /// Find an object (default is to forward to FindObject(object->GetUniqueID())
+  virtual AliMUONVDigit* FindObject(const TObject* object) const;
   
-  /// Find a (tracker) digit by the triplet (de,manu,channel)
-  virtual AliMUONVDigit* FindObject(Int_t detElemId, Int_t manuId, Int_t manuChannel) const = 0;
+  /// Find an object by its uniqueID
+  virtual AliMUONVDigit* FindObject(UInt_t uniqueID) const;
   
-  /// Find a (trigger) digit by the quadruplet (de,lb,channel,cathode)
-  virtual AliMUONVDigit* FindObject(Int_t detElemId, Int_t localBoardId, Int_t localBoardChannel, Int_t cathode) const = 0;
+  /// Find a digit by the quadruplet (de,manu,channel,cathode)
+  virtual AliMUONVDigit* FindObject(Int_t detElemId, Int_t manuId, Int_t manuChannel, Int_t cathode) const = 0;
   
   /// Number of digits we store
   virtual Int_t GetSize() const = 0;
