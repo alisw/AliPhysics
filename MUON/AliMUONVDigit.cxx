@@ -70,6 +70,61 @@ AliMUONVDigit::~AliMUONVDigit()
 }
 
 //_____________________________________________________________________________
+Bool_t 
+AliMUONVDigit::IsEqual(const TObject* object) const
+{
+  const AliMUONVDigit* d = static_cast<const AliMUONVDigit*>(object);
+    
+  return ( DetElemId() == d->DetElemId() &&
+           Cathode() == d->Cathode() &&
+           ManuId() == d->ManuId() &&
+           ManuChannel() == d->ManuChannel() );
+}
+
+//_____________________________________________________________________________
+Int_t 
+AliMUONVDigit::Compare(const TObject* object) const
+{
+  const AliMUONVDigit* d = static_cast<const AliMUONVDigit*>(object);
+  
+  if ( DetElemId() > d->DetElemId() ) 
+  {
+    return 1;
+  }
+  else if ( DetElemId() < d->DetElemId() )
+  {
+    return -1;
+  }
+  else
+  {
+    if ( Charge() > d->Charge() )
+    {
+      return 1;
+    }
+    else if ( Charge() < d->Charge() )
+    {
+      return -1;
+    }
+    else
+    {
+      if ( ManuId() < d->ManuId() )
+      {
+        return 1;
+      }
+      else if ( ManuId() > d->ManuId() )
+      {
+        return -1;
+      }
+      else
+      {
+        return ( ManuChannel() < d->ManuChannel() ) ? 1 : -1;
+      }
+    }
+  }
+  return 0;
+}
+
+//_____________________________________________________________________________
 UInt_t 
 AliMUONVDigit::BuildUniqueID(Int_t detElemId, Int_t manuId, 
                              Int_t manuChannel, Int_t cathode)

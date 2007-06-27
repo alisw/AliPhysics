@@ -22,6 +22,10 @@ public:
   AliMUONVDigit(Int_t detElemId, Int_t manuId, Int_t manuChannel, Int_t cathode);
   virtual ~AliMUONVDigit();
   
+  virtual Bool_t IsEqual(const TObject* object) const;
+  virtual Bool_t IsSortable() const { return kTRUE; }
+  virtual Int_t Compare(const TObject* object) const;
+  
   virtual const char* GetName() const;
   
   /// The detection element this digit belongs to
