@@ -1,3 +1,13 @@
+2007-06-27  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	Due to significant changes in the coming ROOT release
+	(reimplementation of GL-viewer) we'll probably have to split the
+	development again.
+
+	Merge changes from HEAD to EVE-dev.
+	Tag HEAD:    EVE-head-after-merge.
+	Tag EVE-dev: EVE-dev-after-merge.
+
 2007-06-26  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* alice-macros/its_clusters.C:
