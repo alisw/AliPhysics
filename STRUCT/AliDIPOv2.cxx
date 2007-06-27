@@ -802,7 +802,7 @@ void AliDIPOv2::CreateCompensatorDipole()
 
 
     AliMatrix(idrotm[1816], 270., 0., 90., 90.,  180., 0.);  
-    gMC->Gspos("DCM0", 1, "ALIC",  0., -6.75,  1085., idrotm[1816], "ONLY");
+    gMC->Gspos("DCM0", 1, "ALIC",  0., -12.,  1075., idrotm[1816], "ONLY");
 }
 
 //_____________________________________________________________________________

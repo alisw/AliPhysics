@@ -796,25 +796,29 @@ void AliPIPEv3::CreateGeometry()
 
 ////////////////////////////////////////////////////////////////////////////////     
 //                                                                            //
-//                                  RB24                                      // 
+//                                  RB24/1                                    // 
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 //
 //
 // Drawing LHCVC2U_0001
-// Copper Tube             373.5 cm 
+// Copper Tube RB24/1      393.5 cm 
 // Warm module VMACA        18.0 cm
 // Annular Ion Pump         35.0 cm
 // Valve                     7.5 cm
-// Warm module WMABC        28.0 cm
+// Warm module VMABC        28.0 cm
 // ================================
 //                         462.0 cm
 //
 
-// Copper Tube
-    const Float_t  kRB24CuTubeL  = 373.5;
-    const Float_t  kRB24CuTubeRi = 8.0/2.;
-    const Float_t  kRB24CuTubeRo = 8.4/2.;
+    
+// Copper Tube RB24/1
+    const Float_t  kRB24CuTubeL   = 393.5;
+    const Float_t  kRB24CuTubeRi  = 8.0/2.;
+    const Float_t  kRB24CuTubeRo  = 8.4/2.;
+    const Float_t  kRB24CuTubeFRo = 7.6;
+    const Float_t  kRB24CuTubeFL  = 1.86;
+
     TGeoVolume* voRB24CuTubeM = new TGeoVolume("voRB24CuTubeM", 
 					       new TGeoTube(0., kRB24CuTubeRo, kRB24CuTubeL/2.), kMedVac);
     voRB24CuTubeM->SetVisibility(0);
@@ -825,6 +829,10 @@ void AliPIPEv3::CreateGeometry()
     TGeoVolume* voRB24CuTubeA  = new TGeoVolume("voRB24CuTubeA", 
 						new TGeoTube(25., 100., kRB24CuTubeL/2.), kMedAirHigh);
     voRB24CuTubeA->SetVisibility(0);
+    // Simplified DN 100 Flange
+     TGeoVolume* voRB24CuTubeF = new TGeoVolume("voRB24CuTubeF", 
+					       new TGeoTube(kRB24CuTubeRo, kRB24CuTubeFRo, kRB24CuTubeFL/2.), kMedSteel);
+
 // Warm Module Type VMACA
 // LHCVMACA_0002
 // 
@@ -1319,7 +1327,9 @@ void AliPIPEv3::CreateGeometry()
     const Float_t kRB24VMABCRBT1Ri = 10.0/2.;
     const Float_t kRB24VMABCRBT1Ro = 10.3/2.;
     const Float_t kRB24VMABCRBT1L  = 11.5;   
-    const Float_t kRB24VMABCRBT1L2 = 8.;   
+    const Float_t kRB24VMABCRBT1L2 = 8.;
+    const Float_t kRB24VMABCL      = 28.;
+    
     TGeoTube* shRB24VMABCRBT1 = new TGeoTube(kRB24VMABCRBT1Ri, kRB24VMABCRBT1Ro, kRB24VMABCRBT1L/2.);
     shRB24VMABCRBT1->SetName("RB24VMABCRBT1");
     TGeoTube* shRB24VMABCRBT1o = new TGeoTube(0., kRB24VMABCRBT1Ro,  kRB24VMABCRBT1L/2.);
@@ -1588,26 +1598,96 @@ void AliPIPEv3::CreateGeometry()
 
 
 //
-// Assembling RB24
+// Assembling RB24/1
 //    
     TGeoVolumeAssembly* voRB24 = new TGeoVolumeAssembly("RB24");
-
+    // Cu Tube with two simplified flanges
     voRB24->AddNode(voRB24CuTubeM, 1, gGeoIdentity);
     voRB24->AddNode(voRB24CuTubeA, 1, gGeoIdentity);
-
+    z = - kRB24CuTubeL/2 + kRB24CuTubeFL/2.;
+    voRB24->AddNode(voRB24CuTubeF, 1, new TGeoTranslation(0., 0., z));
+    z = + kRB24CuTubeL/2 - kRB24CuTubeFL/2.;
+    voRB24->AddNode(voRB24CuTubeF, 2, new TGeoTranslation(0., 0., z));
+    // VMABC close to compensator magnet
+    z = - kRB24CuTubeL/2. -  (kRB24VMABCL - kRB24VMABCRBT1L/2) + 1.;
+    
+    voRB24->AddNode(voRB24VMABCRB, 2, new TGeoTranslation(0., 0., z));
+    // Bellow
     z =  kRB24CuTubeL/2;
     voRB24->AddNode(voRB24B1BellowM, 1, new TGeoTranslation(0., 0., z));
     z +=  (kRB24B1L +  kRB24AIpML/2.);
-
+    // Annular ion pump
     voRB24->AddNode(voRB24AIpM, 1, new TGeoTranslation(0., 0., z));
     z +=  (kRB24AIpML/2. +  kRB24ValveWz/2.);
-
+    // Valve
     voRB24->AddNode(voRB24ValveMo, 1, new TGeoTranslation(0., 0., z));
     z += (kRB24ValveWz/2.+ kRB24VMABCRBT1L/2. + 1.);
-
-    voRB24->AddNode(voRB24VMABCRB, 1, new TGeoTranslation(0., 0., z));
-    top->AddNode(voRB24, 1, new TGeoCombiTrans(0., 0., kRB24CuTubeL/2 + 88.5 + 400., rot180));
+    // VMABC close to forward detectors
+    voRB24->AddNode(voRB24VMABCRB, 2, new TGeoTranslation(0., 0., z));
+//
+//   RB24/2
+//     
+// Copper Tube RB24/2
+    const Float_t  kRB242CuTubeL  = 330.0;
     
+    TGeoVolume* voRB242CuTubeM = new TGeoVolume("voRB242CuTubeM", 
+						new TGeoTube(0., kRB24CuTubeRo, kRB242CuTubeL/2.), kMedVac);
+    voRB24CuTubeM->SetVisibility(0);
+    TGeoVolume* voRB242CuTube = new TGeoVolume("voRB242CuTube", 
+					       new TGeoTube(kRB24CuTubeRi, kRB24CuTubeRo, kRB242CuTubeL/2.), kMedCu);
+    voRB242CuTubeM->AddNode(voRB242CuTube, 1, gGeoIdentity);
+    
+
+    TGeoVolumeAssembly* voRB242 = new TGeoVolumeAssembly("RB242");
+    voRB242->AddNode(voRB242CuTube, 1, gGeoIdentity);
+    z = - kRB242CuTubeL/2 + kRB24CuTubeFL/2.;
+    voRB242->AddNode(voRB24CuTubeF, 3, new TGeoTranslation(0., 0., z));
+    z = + kRB242CuTubeL/2 - kRB24CuTubeFL/2.;
+    voRB242->AddNode(voRB24CuTubeF, 4, new TGeoTranslation(0., 0., z));
+    z = - kRB24CuTubeL/2 - kRB24VMABCL - kRB242CuTubeL/2.;
+    voRB24->AddNode(voRB242, 1, new TGeoTranslation(0., 0., z));
+//
+//   RB24/3
+//     
+// Copper Tube RB24/3
+    const Float_t  kRB243CuTubeL  = 303.35;
+    
+    TGeoVolume* voRB243CuTubeM = new TGeoVolume("voRB243CuTubeM", 
+						new TGeoTube(0., kRB24CuTubeRo, kRB243CuTubeL/2.), kMedVac);
+    voRB24CuTubeM->SetVisibility(0);
+    TGeoVolume* voRB243CuTube = new TGeoVolume("voRB243CuTube", 
+					       new TGeoTube(kRB24CuTubeRi, kRB24CuTubeRo, kRB243CuTubeL/2.), kMedCu);
+    voRB243CuTubeM->AddNode(voRB243CuTube, 1, gGeoIdentity);
+    
+
+    TGeoVolumeAssembly* voRB243  = new TGeoVolumeAssembly("RB243");
+    TGeoVolumeAssembly* voRB243A = new TGeoVolumeAssembly("RB243A");
+    
+    voRB243A->AddNode(voRB243CuTube, 1, gGeoIdentity);
+    z = - kRB243CuTubeL/2 + kRB24CuTubeFL/2.;
+    voRB243A->AddNode(voRB24CuTubeF, 5, new TGeoTranslation(0., 0., z));
+    z = + kRB243CuTubeL/2 - kRB24CuTubeFL/2.;
+    voRB243A->AddNode(voRB24CuTubeF,    6, new TGeoTranslation(0., 0., z));
+    z = + kRB243CuTubeL/2;
+    voRB243A->AddNode(voRB24B1BellowM,  2, new TGeoTranslation(0., 0., z));    
+
+    z = - kRB243CuTubeL/2.  - kRB24B1L;
+    voRB243->AddNode(voRB243A, 1, new TGeoTranslation(0., 0., z));    
+    z = - (1.5 * kRB243CuTubeL + 2. * kRB24B1L);
+    voRB243->AddNode(voRB243A, 2, new TGeoTranslation(0., 0., z));    
+
+    z = - 2. * (kRB243CuTubeL + kRB24B1L) - (kRB24VMABCL - kRB24VMABCRBT1L/2) + 1.;
+    voRB243->AddNode(voRB24VMABCRB, 3, new TGeoTranslation(0., 0., z));    
+    
+    z = - kRB24CuTubeL/2 - kRB24VMABCL - kRB242CuTubeL;
+    voRB24->AddNode(voRB243, 1, new TGeoTranslation(0., 0., z));
+
+
+//
+//
+    top->AddNode(voRB24, 1, new TGeoCombiTrans(0., 0., kRB24CuTubeL/2 + 88.5 + 400., rot180));
+
+
 // 
 ////////////////////////////////////////////////////////////////////////////////     
 //                                                                            //
