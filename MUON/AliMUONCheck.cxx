@@ -653,8 +653,6 @@ AliMUONCheck::CheckTrackRef()
         
       }//hits de tTR
       
-      delete trackRefs;
-      
     }//entree de tTR 
     
   }//evt loop
@@ -811,7 +809,6 @@ AliMUONCheck::CheckOccupancy(Bool_t perDetEle) const
        100.*((Float_t) totaloccupancyBending)/((Float_t) totalchannelsBending),
        100.*((Float_t) totaloccupancyNonBending)/((Float_t) totalchannelsNonBending)            );
 
-  delete digitStore;
 }
 
 //_____________________________________________________________________________
