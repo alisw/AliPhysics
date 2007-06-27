@@ -44,6 +44,10 @@ class AliMUONRawStreamTrigger: public TObject {
 
     /// Return pointer for DDL structure
     AliMUONDDLTrigger* GetDDLTrigger() const {return fPayload->GetDDLTrigger();}
+
+    /// Return pointer for payload
+    AliMUONPayloadTrigger*  GetPayLoad()    const {return fPayload;}
+
     /// Return number of DDL
     Int_t              GetDDL()        const {return fDDL - 1;}
 
