@@ -27,6 +27,7 @@
 #include <TClonesArray.h>
 #include <TGeoMatrix.h>
 #include <TGeoPhysicalNode.h>
+#include <TSystem.h>
 
 #include "AliGeomManager.h"
 #include "AliLog.h"
