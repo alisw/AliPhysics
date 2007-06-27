@@ -30,12 +30,10 @@ extern "C" {
 #include "AliMUONDDLTracker.h"
 #include "AliMUONVStore.h"
 #include "AliMUON2DMap.h"
-#include "AliMUONCalibParamNF.h"
-#include "AliMpDDLStore.h"
+#include "AliMUONCalibParamND.h"
 #include "AliMpIntPair.h"
 #include "AliMpConstants.h"
 #include "AliRawReaderDate.h"
-
 
 //ROOT
 #include "TFile.h"
@@ -70,7 +68,7 @@ Double_t fitFunc(Double_t *x, Double_t *par)
 {
     //fit function for gains
 
-    Float_t xx = x[0];
+    Double_t xx = x[0];
     Double_t f;
 
     if (xx < par[3])
@@ -88,24 +86,24 @@ void MakePed(Int_t busPatchId, Int_t manuId, Int_t channelId, Int_t charge)
 {
 
     AliMUONVCalibParam* ped = 
-	static_cast<AliMUONVCalibParam*>(pedestalStore->Get(busPatchId, manuId));
+	static_cast<AliMUONVCalibParam*>(pedestalStore->FindObject(busPatchId, manuId));
 
     if (!ped) {
       nManu++;
-      ped = new AliMUONCalibParamNF(2, kNchannels, -1.); // put default wise -1, not connected channel
-      pedestalStore->Set(busPatchId, manuId, ped, kFALSE);	
+      ped = new AliMUONCalibParamND(2, kNchannels,busPatchId, manuId, -1.); // put default wise -1, not connected channel
+      pedestalStore->Add(ped);	
     }
 
     if (nEvents == 1) {
-      ped->SetValueAsFloat(channelId, 0, 0.);
-      ped->SetValueAsFloat(channelId, 1, 0.);
+      ped->SetValueAsDouble(channelId, 0, 0.);
+      ped->SetValueAsDouble(channelId, 1, 0.);
     }
 
-    Float_t pedMean  = ped->ValueAsFloat(channelId, 0) + charge;
-    Float_t pedSigma = ped->ValueAsFloat(channelId, 1) + charge*charge;
+    Double_t pedMean  = ped->ValueAsDouble(channelId, 0) + charge;
+    Double_t pedSigma = ped->ValueAsDouble(channelId, 1) + charge*charge;
 
-    ped->SetValueAsFloat(channelId, 0, pedMean);
-    ped->SetValueAsFloat(channelId, 1, pedSigma);
+    ped->SetValueAsDouble(channelId, 0, pedMean);
+    ped->SetValueAsDouble(channelId, 1, pedSigma);
 
 }
 
@@ -113,8 +111,8 @@ void MakePed(Int_t busPatchId, Int_t manuId, Int_t channelId, Int_t charge)
 void MakePedStore(TString flatOutputFile = "")
 {
   TTimeStamp date;
-  Float_t pedMean;
-  Float_t pedSigma;
+  Double_t pedMean;
+  Double_t pedSigma;
   ofstream fileout;
   Int_t busPatchId;
   Int_t manuId;
@@ -166,7 +164,7 @@ void MakePedStore(TString flatOutputFile = "")
   }
 
   // iterator over pedestal
-  TIter next(pedestalStore);
+  TIter next(pedestalStore->CreateIterator());
   AliMUONVCalibParam* ped;
   
   while ( ( ped = dynamic_cast<AliMUONVCalibParam*>(next() ) ) )
@@ -176,19 +174,19 @@ void MakePedStore(TString flatOutputFile = "")
 
     for (channelId = 0; channelId < ped->Size() ; ++channelId) {
 
-      pedMean  = ped->ValueAsFloat(channelId, 0);
+      pedMean  = ped->ValueAsDouble(channelId, 0);
 
       if (pedMean > 0) { // connected channels
 
-	ped->SetValueAsFloat(channelId, 0, pedMean/(Float_t)nEvents);
+	ped->SetValueAsDouble(channelId, 0, pedMean/(Double_t)nEvents);
 
-	pedMean  = ped->ValueAsFloat(channelId, 0);
-	pedSigma = ped->ValueAsFloat(channelId, 1);
+	pedMean  = ped->ValueAsDouble(channelId, 0);
+	pedSigma = ped->ValueAsDouble(channelId, 1);
 
-	ped->SetValueAsFloat(channelId, 1, TMath::Sqrt(TMath::Abs(pedSigma/(Float_t)nEvents - pedMean*pedMean)));
+	ped->SetValueAsDouble(channelId, 1, TMath::Sqrt(TMath::Abs(pedSigma/(Double_t)nEvents - pedMean*pedMean)));
 
-	pedMean  = ped->ValueAsFloat(channelId, 0) + 0.5 ;
-	pedSigma = ped->ValueAsFloat(channelId, 1);
+	pedMean  = ped->ValueAsDouble(channelId, 0) + 0.5 ;
+	pedSigma = ped->ValueAsDouble(channelId, 1);
 
 
 	if (!flatOutputFile.IsNull()) {
@@ -292,10 +290,10 @@ void MakeGainStore(TString flatOutputFile)
     // Fit with a polynomial fct
     // store the result in a flat file.
 
-    Float_t pedMean[10];
-    Float_t pedSigma[10];
-    Float_t injCharge[10];
-    Float_t injChargeErr[10];
+    Double_t pedMean[10];
+    Double_t pedSigma[10];
+    Double_t injCharge[10];
+    Double_t injChargeErr[10];
 
     ofstream fileout;
     TTimeStamp date;
@@ -324,7 +322,7 @@ void MakeGainStore(TString flatOutputFile)
 
     AliMUON2DMap* map[10];
     AliMUONVCalibParam* ped[10];
-    AliMpIntPair* pair;
+    //   AliMpIntPair* pair;
     AliMpIntPair* run[10];
 
     //read back from root file
@@ -345,19 +343,19 @@ void MakeGainStore(TString flatOutputFile)
     // TF1* func = new TF1("func","pol1");
 
     // iterates over the first pedestal run
-    TIter next(map[0]);
+    TIter next(map[0]->CreateIterator());
     AliMUONVCalibParam* p;
 
     while ( ( p = dynamic_cast<AliMUONVCalibParam*>(next() ) ) )
     {
       ped[0]  = p;
 
-      Int_t busPatchId = p->Id(0);
-      Int_t manuId     = p->Id(1);
+      Int_t busPatchId = p->ID0();
+      Int_t manuId     = p->ID1();
 
       // read back pedestal from the other runs for the given (bupatch, manu)
       for (Int_t i = 1; i < nEntries; ++i) {
-	ped[i] = static_cast<AliMUONVCalibParam*>(map[i]->Get(busPatchId, manuId));
+	ped[i] = static_cast<AliMUONVCalibParam*>(map[i]->FindObject(busPatchId, manuId));
       }
 
       // compute for each channel the gain parameters
@@ -367,9 +365,9 @@ void MakeGainStore(TString flatOutputFile)
 	for (Int_t i = 0; i < nEntries; ++i) {
 
 	  if (!ped[i]) continue; //shouldn't happen.
-	  pedMean[i]      = ped[i]->ValueAsFloat(channelId, 0);
-	  pedSigma[i]     = ped[i]->ValueAsFloat(channelId, 1);
-	  injCharge[i]    = (Float_t)run[i]->GetSecond();
+	  pedMean[i]      = ped[i]->ValueAsDouble(channelId, 0);
+	  pedSigma[i]     = ped[i]->ValueAsDouble(channelId, 1);
+	  injCharge[i]    = (Double_t)run[i]->GetSecond();
 	  injChargeErr[i] = 1.;
 
 	  if (pedMean[i] < 0) continue; // not connected
@@ -428,15 +426,12 @@ int main(Int_t argc, Char_t **argv)
     Int_t printLevel = 0;  // Global variable defined as extern in the others .cxx files
     Int_t skipEvents = 0;
     Int_t maxEvents  = 1000000;
-    Float_t nSigma = 3;
+    Double_t nSigma = 3;
     Int_t threshold = -1;
     Char_t inputFile[256];
     TString flatOutputFile;
     TString crocusOutputFile;
     TString crocusConfigFile;
-
-    Int_t totalParityErr = 0;
-    Int_t totalGlitchErr = 0;
 
 // option handler
 
@@ -483,7 +478,7 @@ int main(Int_t argc, Char_t **argv)
 	  break;
 	case 'p' :
 	  i++; 
-	  sscanf(argv[i],"%f",&nSigma);
+	  sscanf(argv[i],"%lf",&nSigma);
 	  break;
 	case 't' :
 	  i++; 
@@ -532,12 +527,6 @@ int main(Int_t argc, Char_t **argv)
 
   void* event;
 
-   // containers
-  AliMUONDDLTracker*       ddlTracker = 0x0;
-  AliMUONBlockHeader*      blkHeader  = 0x0;
-  AliMUONDspHeader*        dspHeader  = 0x0;
-  AliMUONBusStruct*        busStruct  = 0x0;
-
   pedMeanHisto = 0x0;
   pedSigmaHisto = 0x0;
 
@@ -574,6 +563,11 @@ int main(Int_t argc, Char_t **argv)
   }
 
   cout << "MUONTRKda : Reading data from file " << inputFile <<endl;
+
+  Int_t busPatchId;
+  UShort_t manuId;  
+  UChar_t channelId;
+  UShort_t charge;
 
   while(1) 
   {
@@ -615,72 +609,24 @@ int main(Int_t argc, Char_t **argv)
     AliMUONRawStreamTracker* rawStream  = new AliMUONRawStreamTracker(rawReader);
 
     // loops over DDL 
-    while((status = rawStream->NextDDL())) {
-
-      if (printLevel) printf("\niDDL %d\n", rawStream->GetDDL());
-
-      ddlTracker =  rawStream->GetDDLTracker();
-
-      // loop over block (CRT) structure
-      Int_t nBlock = ddlTracker->GetBlkHeaderEntries();
-      for(Int_t iBlock = 0; iBlock < nBlock ;iBlock++){
-
-	blkHeader = ddlTracker->GetBlkHeaderEntry(iBlock);
-	 if (printLevel) printf("Block Total length %d\n",blkHeader->GetTotalLength());
-
-	// loop over DSP (FRT) structure
-	Int_t nDsp = blkHeader->GetDspHeaderEntries();
-	for(Int_t iDsp = 0; iDsp < nDsp ;iDsp++){   //DSP loop
-
-	  dspHeader =  blkHeader->GetDspHeaderEntry(iDsp);
-	   if (printLevel) printf("Dsp length %d\n",dspHeader->GetTotalLength());
-
-	  // loop over BusPatch structure
-	  Int_t nBusPatch = dspHeader->GetBusPatchEntries();
-	  for(Int_t iBusPatch = 0; iBusPatch < nBusPatch; iBusPatch++) {  
-
-	    busStruct = dspHeader->GetBusPatchEntry(iBusPatch);
-
-	     if (printLevel) printf("busPatchId %d", busStruct->GetBusPatchId());
-	     if (printLevel) printf(" BlockId %d", busStruct->GetBlockId());
-	     if (printLevel) printf(" DspId %d\n", busStruct->GetDspId());
-
-	     Int_t busPatchId = busStruct->GetBusPatchId();
-
-	    // loop over data
-	    Int_t dataSize = busStruct->GetLength();
-	    for (Int_t iData = 0; iData < dataSize; iData++) {
-
-	      if (nEvents == 1)
-		  nChannel++;
-	      Int_t manuId     = busStruct->GetManuId(iData);
-	      Int_t channelId  = busStruct->GetChannelId(iData);
-	      Int_t charge     = busStruct->GetCharge(iData);
-
-	      if (printLevel) printf("manuId: %d, channelId: %d charge: %d\n", manuId, 
-				      channelId, charge);
-
-	      MakePed(busPatchId, manuId, channelId, charge);
+    rawStream->First();
+    while( (status = rawStream->Next(busPatchId, manuId, channelId, charge)) ) {
+  
+      if (nEvents == 1)
+	  nChannel++;
+      
+      if (printLevel) printf("manuId: %d, channelId: %d charge: %d\n", manuId, 
+			     channelId, charge);
+      
+      MakePed(busPatchId, (Int_t)manuId, (Int_t)channelId, (Int_t)charge);
 		  
-	    } // iData
-	  } // iBusPatch
-	} // iDsp
-      } // iBlock
-
-      totalParityErr += rawStream->GetPayLoad()->GetParityErrors();
-      totalGlitchErr += rawStream->GetPayLoad()->GetGlitchErrors();
-    } // NextDDL
+    } // Next digit
      
     delete rawReader;
     delete rawStream;
 
   } // while (1)
 
-  nEvents -= totalGlitchErr; // skipped event cos of Glitch errors
-
-
-  cout << " Total number of parity errors in the Run: " << totalParityErr << endl;
-  cout << " Total number of glitch errors in the Run: " << totalGlitchErr << endl;
 
   if (command.CompareTo("ped") == 0)
       MakePedStore(flatOutputFile);
