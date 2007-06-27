@@ -56,9 +56,9 @@ AliCorrectionMatrix2D::AliCorrectionMatrix2D(const Char_t* name, const Char_t* t
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
 
-  fhMeas  = new TH2F("measured",   Form("%s measured",title),   nBinX, Xmin, Xmax, nBinY, Ymin, Ymax);
-  fhGene  = new TH2F("generated",  Form("%s generated",title),  nBinX, Xmin, Xmax, nBinY, Ymin, Ymax);
-  fhCorr  = new TH2F("correction", Form("%s correction",title), nBinX, Xmin, Xmax, nBinY, Ymin, Ymax);
+  fhMeas  = new TH2F("measured",   Form("%s measured", GetTitle()),   nBinX, Xmin, Xmax, nBinY, Ymin, Ymax);
+  fhGene  = new TH2F("generated",  Form("%s generated", GetTitle()),  nBinX, Xmin, Xmax, nBinY, Ymin, Ymax);
+  fhCorr  = new TH2F("correction", Form("%s correction", GetTitle()), nBinX, Xmin, Xmax, nBinY, Ymin, Ymax);
 
   TH1::AddDirectory(oldStatus);
 

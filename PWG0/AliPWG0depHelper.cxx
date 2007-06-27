@@ -80,35 +80,47 @@ TParticle* AliPWG0depHelper::FindPrimaryMother(AliStack* stack, Int_t label)
   // i.e. the primary that "caused" this particle
   //
 
-  Int_t nPrim  = stack->GetNprimary();
-  TParticle* mother = stack->Particle(label);
-
-  if (!mother)
-  {
-    AliDebugGeneral("FindPrimaryMother", AliLog::kError, Form("UNEXPECTED: Could not retrieve particle with label %d.", label));
+  Int_t motherLabel = FindPrimaryMotherLabel(stack, label);
+  if (motherLabel < 0)
     return 0;
-  }
+
+  return stack->Particle(motherLabel);
+}
+
+//____________________________________________________________________
+Int_t AliPWG0depHelper::FindPrimaryMotherLabel(AliStack* stack, Int_t label)
+{
+  //
+  // Finds the first mother among the primary particles of the particle identified by <label>,
+  // i.e. the primary that "caused" this particle
+  //
+  // returns its label
+  //
+
+  Int_t nPrim  = stack->GetNprimary();
 
   while (label >= nPrim)
   {
     //printf("Particle %d (pdg %d) is not a primary. Let's check its mother %d\n", label, mother->GetPdgCode(), mother->GetMother(0));
 
-    if (mother->GetMother(0) == -1)
+    TParticle* particle = stack->Particle(label);
+    if (!particle)
+    {
+      AliDebugGeneral("FindPrimaryMother", AliLog::kError, Form("UNEXPECTED: particle with label %d not found in stack.", label));
+      return -1;
+    }
+ 
+    // find mother
+    if (particle->GetMother(0) < 0)
     {
       AliDebugGeneral("FindPrimaryMother", AliLog::kError, Form("UNEXPECTED: Could not find mother of secondary particle %d.", label));
-      mother = 0;
-      break;
+      return -1;
     }
 
-    label = mother->GetMother(0);
-
-    mother = stack->Particle(label);
-    if (!mother)
-    {
-      AliDebugGeneral("FindPrimaryMother", AliLog::kError, Form("UNEXPECTED: particle with label %d not found in stack (find mother loop).", label));
-      break;
-    }
+    label = particle->GetMother(0);
   }
 
-  return mother;
+  return label;
 }
+
+
