@@ -29,7 +29,7 @@ const Int_t kDiffCutTemp = 5;	   // discard temperature differences > 5 degrees
 
 //
 // This class is the SHUTTLE preprocessor for the TPC detector.
-// It contains several components, this far the part containing 
+// It contains several components, this far the part containing
 // temperatures is implemented
 //
 
@@ -48,11 +48,11 @@ AliTPCPreprocessor::AliTPCPreprocessor(AliShuttleInterface* shuttle) :
 //   fTemp(0), fPressure(0), fConfigOK(kTRUE)
 // {
 //   // copy constructor not implemented
-//   //   -- missing underlying copy constructor in AliPreprocessor 
-// 
+//   //   -- missing underlying copy constructor in AliPreprocessor
+//
 //   Fatal("AliTPCPreprocessor", "copy constructor not implemented");
-//   
-// //  fTemp = new AliTPCSensorTempArray(*(org.fTemp)); 
+//
+// //  fTemp = new AliTPCSensorTempArray(*(org.fTemp));
 // }
 
 //______________________________________________________________________________________________
@@ -85,31 +85,32 @@ void AliTPCPreprocessor::Initialize(Int_t run, UInt_t startTime,
 
   // Temperature sensors
 
-        AliCDBEntry* entry = GetFromOCDB("Config", "Temperature"); 
-        TTree *confTree = (TTree*) entry->GetObject();
+        TTree *confTree = 0;
+	AliCDBEntry* entry = GetFromOCDB("Config", "Temperature");
+        if (entry) confTree = (TTree*) entry->GetObject();
         if ( confTree==0 ) {
            AliError(Form("Temperature Config OCDB entry missing.\n"));
            Log("AliTPCPreprocsessor: Temperature Config OCDB entry missing.\n");
 	   fConfigOK = kFALSE;
+	   return;
         }
         fTemp = new AliTPCSensorTempArray(fStartTime, fEndTime, confTree);
 	fTemp->SetValCut(kValCutTemp);
 	fTemp->SetDiffCut(kDiffCutTemp);
-	confTree->Delete(); delete confTree; confTree=0;
-	entry->Delete(); delete entry; entry=0;
-  
+
   // Pressure sensors
- 
-        entry = GetFromOCDB("Config", "Pressure"); 
-        confTree = (TTree*) entry->GetObject();
+
+	confTree=0;
+	entry=0;
+        entry = GetFromOCDB("Config", "Pressure");
+        if (entry) confTree = (TTree*) entry->GetObject();
         if ( confTree==0 ) {
            AliError(Form("Pressure Config OCDB entry missing.\n"));
            Log("AliTPCPreprocsessor: Pressure Config OCDB entry missing.\n");
 	   fConfigOK = kFALSE;
+	   return;
         }
 	fPressure = new AliDCSSensorArray(fStartTime, fEndTime, confTree);
-	confTree->Delete(); delete confTree; confTree=0;
-	entry->Delete(); delete entry; entry=0;
 
 }
 
@@ -133,7 +134,7 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
 
   UInt_t pressureResult = MapPressure(dcsAliasMap);
   result += pressureResult;
-  
+
   // Other calibration information will be retrieved through FXS files
   //  examples: 
   //    TList* fileSourcesDAQ = GetFile(AliShuttleInterface::kDAQ, "pedestals");
