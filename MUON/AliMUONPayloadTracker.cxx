@@ -47,7 +47,8 @@ AliMUONPayloadTracker::AliMUONPayloadTracker()
     fBlockHeader(new AliMUONBlockHeader()),
     fDspHeader(new AliMUONDspHeader()),
     fParityErrBus(),
-    fGlitchErrors(0)
+    fGlitchErrors(0),
+    fPaddingErrors(0)
 {
   ///
   /// create an object to decode MUON payload
