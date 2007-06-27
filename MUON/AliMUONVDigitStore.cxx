@@ -95,6 +95,8 @@ AliMUONVDigitStore::Add(Int_t detElemId,
 AliMUONVDigitStore* 
 AliMUONVDigitStore::Create(const char* digitstoreclassname)
 {
+  /// Create a concrete digitStore, given its classname
+  
   TClass* classPtr = TClass::GetClass(digitstoreclassname);
   if (!classPtr)
   {
@@ -122,6 +124,7 @@ AliMUONVDigitStore::Create(TTree& tree)
 AliMUONVDigit* 
 AliMUONVDigitStore::FindObject(const TObject* object) const
 {
+  /// Find an object, if of AliMUONVDigit type.
   const AliMUONVDigit* digit = dynamic_cast<const AliMUONVDigit*>(object);
   if (digit)
   {

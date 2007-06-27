@@ -73,6 +73,10 @@ AliMUONVDigit::~AliMUONVDigit()
 Bool_t 
 AliMUONVDigit::IsEqual(const TObject* object) const
 {
+  /// Whether we're equal to object. 
+  /// WARNING : only based on our identifiers (de,manu,channel,cathode), not our
+  /// content (i.e. charge, status...)
+  
   const AliMUONVDigit* d = static_cast<const AliMUONVDigit*>(object);
     
   return ( DetElemId() == d->DetElemId() &&
@@ -85,6 +89,9 @@ AliMUONVDigit::IsEqual(const TObject* object) const
 Int_t 
 AliMUONVDigit::Compare(const TObject* object) const
 {
+  /// Compare two digits, trying to get as complete an order as possible.
+  /// We sort by DE, then by charge, then by manu, etc...
+  ///
   const AliMUONVDigit* d = static_cast<const AliMUONVDigit*>(object);
   
   if ( DetElemId() > d->DetElemId() ) 

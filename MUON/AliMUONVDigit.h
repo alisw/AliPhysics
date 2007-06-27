@@ -23,6 +23,7 @@ public:
   virtual ~AliMUONVDigit();
   
   virtual Bool_t IsEqual(const TObject* object) const;
+  /// Advertise that we can be sorted in TCollections
   virtual Bool_t IsSortable() const { return kTRUE; }
   virtual Int_t Compare(const TObject* object) const;
   
