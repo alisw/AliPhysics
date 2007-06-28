@@ -194,22 +194,22 @@ Int_t AliMUONRawWriter::Digits2Raw(AliMUONVDigitStore* digitStore,
 
     // trigger chambers
     
-    FILE* file[2];
+    AliFstream* file[2];
     
     // open files
     idDDL = 0;// MUTR
     strcpy(name,AliDAQ::DdlFileName("MUONTRG",idDDL));
-    file[0] = fopen(name,"w");
+    file[0] = new AliFstream(name);
     
     idDDL = 1;// MUTR
     strcpy(name,AliDAQ::DdlFileName("MUONTRG",idDDL));
-    file[1] = fopen(name,"w");
+    file[1] = new AliFstream(name);
       
     WriteTriggerDDL(*triggerStore,file);
       
     // reset and close
-    fclose(file[0]);
-    fclose(file[1]);
+    delete file[0];
+    delete file[1];
       
     AliDebug(1,"Trigger written");
   }
@@ -413,11 +413,11 @@ AliMUONRawWriter::WriteTrackerDDL(AliMpExMap& busPatchMap, Int_t iDDL)
   
   fHeader.fSize = (totalDDLLength + headerSize) * 4;
   
-  FILE* file = fopen(AliDAQ::DdlFileName("MUONTRK",iDDL),"w");
+  AliFstream* file = new AliFstream(AliDAQ::DdlFileName("MUONTRK",iDDL));
   
-  fwrite((char*)(&fHeader),headerSize*4,1,file);
-  fwrite(fBuffer,sizeof(int),index,file);
-  fclose(file);
+  file->WriteBuffer((char*)(&fHeader),headerSize*4);
+  file->WriteBuffer((char*)fBuffer,sizeof(int)*index);
+  delete file;
 }
 
 //______________________________________________________________________________
@@ -429,7 +429,7 @@ Int_t AliMUONRawWriter::GetBusPatch(const AliMUONVDigit& digit) const
 }
 
 //______________________________________________________________________________
-Int_t AliMUONRawWriter::WriteTriggerDDL(const AliMUONVTriggerStore& triggerStore, FILE* file[2])
+Int_t AliMUONRawWriter::WriteTriggerDDL(const AliMUONVTriggerStore& triggerStore, AliFstream* file[2])
 {
   /// Write trigger DDL
   
@@ -670,8 +670,8 @@ Int_t AliMUONRawWriter::WriteTriggerDDL(const AliMUONVTriggerStore& triggerStore
     // writting onto disk
     // write DDL's
     fHeader.fSize = (index + headerSize) * 4;// total length in bytes
-    fwrite((char*)(&fHeader),headerSize*4,1,file[iDDL]);
-    fwrite(buffer,sizeof(int),index,file[iDDL]);
+    file[iDDL]->WriteBuffer((char*)(&fHeader),headerSize*4);
+    file[iDDL]->WriteBuffer((char*)buffer,sizeof(int)*index);
   
   }
   delete[] buffer;

@@ -13,6 +13,7 @@
 
 #include <TObject.h>
 #include "AliRawDataHeader.h"
+#include "AliFstream.h"
 
 class AliMUONBlockHeader;
 class AliMUONBusStruct;
@@ -46,7 +47,7 @@ private:
 
   //void WriteBusPatch(AliMUONLocalBusStruct* busStruct);
   
-  Int_t WriteTriggerDDL(const AliMUONVTriggerStore& triggerStore, FILE* file[2]);
+  Int_t WriteTriggerDDL(const AliMUONVTriggerStore& triggerStore, AliFstream* file[2]);
   
   Int_t GetBusPatch(const AliMUONVDigit& digit) const;
 
