@@ -37,8 +37,7 @@
 
 #endif
 
-void MUONGenerateGeometryData(Bool_t volpaths = true,
-                              Bool_t transforms = true, 
+void MUONGenerateGeometryData(Bool_t transforms = true, 
                               Bool_t svmaps = true,
                               Bool_t writeEnvelopes = true)
 {
@@ -55,11 +54,6 @@ void MUONGenerateGeometryData(Bool_t volpaths = true,
 
   // Get geometry builder
   AliMUONGeometryBuilder* builder = muon ->GetGeometryBuilder();
-  
-  if (volpaths) {
-    cout << "Generating volpath file ..." << endl;
-    builder->GetTransformer()->WriteVolumePaths("volpath.dat.out");
-  }  
 
   if (transforms) {
     cout << "Generating transformation file ..." << endl;
