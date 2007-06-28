@@ -35,8 +35,8 @@
 
 #include "AliMUONVTrackReconstructor.h"
 
-#include "AliMpDEManager.h"
 #include "AliMUONConstants.h"
+#include "AliMUONRawCluster.h"
 #include "AliMUONHitForRec.h"
 #include "AliMUONObjectPair.h"
 #include "AliMUONTriggerTrack.h"
@@ -50,14 +50,18 @@
 #include "AliMUONVTrackStore.h"
 #include "AliMUONVClusterStore.h"
 #include "AliMUONRawCluster.h"
-#include "AliLog.h"
-#include "AliTracker.h"
 #include "AliMUONVTriggerStore.h"
 #include "AliMUONVTriggerTrackStore.h"
+#include "AliMpDEManager.h"
 
-#include <Riostream.h>
+#include "AliLog.h"
+#include "AliTracker.h"
+
 #include <TClonesArray.h>
 #include <TMath.h>
+#include <TMatrixD.h>
+
+#include <Riostream.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONVTrackReconstructor) // Class implementation in ROOT context
@@ -66,21 +70,22 @@ ClassImp(AliMUONVTrackReconstructor) // Class implementation in ROOT context
 //************* Defaults parameters for reconstruction
 const Double_t AliMUONVTrackReconstructor::fgkDefaultMinBendingMomentum = 3.0;
 const Double_t AliMUONVTrackReconstructor::fgkDefaultMaxBendingMomentum = 3000.0;
-const Double_t AliMUONVTrackReconstructor::fgkDefaultBendingResolution = 0.01;
-const Double_t AliMUONVTrackReconstructor::fgkDefaultNonBendingResolution = 0.144;
-const Double_t AliMUONVTrackReconstructor::fgkDefaultBendingVertexDispersion = 10.;
-const Double_t AliMUONVTrackReconstructor::fgkDefaultNonBendingVertexDispersion = 10.;
 const Double_t AliMUONVTrackReconstructor::fgkDefaultMaxNormChi2MatchTrigger = 16.0;
 
-//__________________________________________________________________________
+const Double_t AliMUONVTrackReconstructor::fgkSigmaToCutForTracking = 6.0;
+const Double_t AliMUONVTrackReconstructor::fgkSigmaToCutForImprovement = 4.0;
+const Bool_t   AliMUONVTrackReconstructor::fgkTrackAllTracks = kTRUE;
+const Double_t AliMUONVTrackReconstructor::fgkMaxTrackingDistanceBending    = 2.;
+const Double_t AliMUONVTrackReconstructor::fgkMaxTrackingDistanceNonBending = 2.;
+const Bool_t   AliMUONVTrackReconstructor::fgkRecoverTracks = kTRUE;
+const Bool_t   AliMUONVTrackReconstructor::fgkImproveTracks = kTRUE;
+
+
+  //__________________________________________________________________________
 AliMUONVTrackReconstructor::AliMUONVTrackReconstructor()
   : TObject(),
     fMinBendingMomentum(fgkDefaultMinBendingMomentum),
     fMaxBendingMomentum(fgkDefaultMaxBendingMomentum),
-    fBendingResolution(fgkDefaultBendingResolution),
-    fNonBendingResolution(fgkDefaultNonBendingResolution),
-    fBendingVertexDispersion(fgkDefaultBendingVertexDispersion),
-    fNonBendingVertexDispersion(fgkDefaultNonBendingVertexDispersion),
     fMaxNormChi2MatchTrigger(fgkDefaultMaxNormChi2MatchTrigger),
     fHitsForRecPtr(0x0),
     fNHitsForRec(0),
@@ -96,7 +101,9 @@ AliMUONVTrackReconstructor::AliMUONVTrackReconstructor()
   // Memory allocation for the TClonesArray of hits for reconstruction
   // Is 10000 the right size ????
   fHitsForRecPtr = new TClonesArray("AliMUONHitForRec", 10000);
-  fHitsForRecPtr->SetOwner(kTRUE);
+  
+  // Memory allocation for the TClonesArray of reconstructed tracks
+  fRecTracksPtr = new TClonesArray("AliMUONTrack", 10);
   
   // set the magnetic field for track extrapolations
   const AliMagF* kField = AliTracker::GetFieldMap();
@@ -105,17 +112,58 @@ AliMUONVTrackReconstructor::AliMUONVTrackReconstructor()
 }
 
   //__________________________________________________________________________
-AliMUONVTrackReconstructor::~AliMUONVTrackReconstructor(void)
+AliMUONVTrackReconstructor::~AliMUONVTrackReconstructor()
 {
   /// Destructor for class AliMUONVTrackReconstructor
   delete [] fNHitsForRecPerChamber;
   delete [] fIndexOfFirstHitForRecPerChamber;
   delete fHitsForRecPtr;
+  delete fRecTracksPtr;
 }
 
-//__________________________________________________________________________
-void 
-AliMUONVTrackReconstructor::AddHitsForRecFromRawClusters(const AliMUONVClusterStore& clusterStore)
+  //__________________________________________________________________________
+void AliMUONVTrackReconstructor::ResetHitsForRec()
+{
+  /// To reset the TClonesArray of HitsForRec,
+  /// and the number of HitForRec and the index of the first HitForRec per chamber
+  if (fHitsForRecPtr) fHitsForRecPtr->Clear("C");
+  fNHitsForRec = 0;
+  for (Int_t ch = 0; ch < AliMUONConstants::NTrackingCh(); ch++) {
+    fNHitsForRecPerChamber[ch] = 0;
+    fIndexOfFirstHitForRecPerChamber[ch] = 0;
+  }
+}
+
+  //__________________________________________________________________________
+void AliMUONVTrackReconstructor::ResetTracks()
+{
+  /// To reset the TClonesArray of reconstructed tracks
+  if (fRecTracksPtr) fRecTracksPtr->Clear("C");
+  fNRecTracks = 0;
+  return;
+}
+
+  //__________________________________________________________________________
+void AliMUONVTrackReconstructor::EventReconstruct(const AliMUONVClusterStore& clusterStore, AliMUONVTrackStore& trackStore)
+{
+  /// To reconstruct one event
+  AliDebug(1,"");
+  
+  ResetTracks();
+  ResetHitsForRec();
+  AddHitsForRecFromRawClusters(clusterStore);
+  MakeTracks();
+
+  // Add tracks to MUON data container 
+  for (Int_t i=0; i<fNRecTracks; ++i) 
+  {
+    AliMUONTrack * track = (AliMUONTrack*) fRecTracksPtr->At(i);
+    trackStore.Add(*track);
+  }
+}
+
+  //__________________________________________________________________________
+void AliMUONVTrackReconstructor::AddHitsForRecFromRawClusters(const AliMUONVClusterStore& clusterStore)
 {
   /// Build internal array of hit for rec from clusterStore
   
@@ -169,50 +217,6 @@ AliMUONVTrackReconstructor::AddHitsForRecFromRawClusters(const AliMUONVClusterSt
   }
 }
 
-//__________________________________________________________________________
-void AliMUONVTrackReconstructor::EventReconstruct(const AliMUONVClusterStore& clusterStore,
-                                                  AliMUONVTrackStore& trackStore)
-{
-  /// To reconstruct one event
-  AliDebug(1,"");
-  
-  ResetTracks(); //AZ
-  ResetHitsForRec(); //AZ
-  AddHitsForRecFromRawClusters(clusterStore);
-  MakeTracks();
-
-  // Add tracks to MUON data container 
-  for (Int_t i=0; i<fNRecTracks; ++i) 
-  {
-    AliMUONTrack * track = (AliMUONTrack*) fRecTracksPtr->At(i);
-    trackStore.Add(*track);
-  }
-}
-
-//__________________________________________________________________________
-void AliMUONVTrackReconstructor::ResetTracks(void)
-{
-  /// To reset the TClonesArray of reconstructed tracks
-  if (fRecTracksPtr) fRecTracksPtr->Clear("C");
-  // Delete in order that the Track destructors are called,
-  // hence the space for the TClonesArray of pointers to TrackHit's is freed
-  fNRecTracks = 0;
-  return;
-}
-
-  //__________________________________________________________________________
-void AliMUONVTrackReconstructor::ResetHitsForRec(void)
-{
-  /// To reset the array and the number of HitsForRec,
-  /// and also the number of HitsForRec
-  /// and the index of the first HitForRec per chamber
-  if (fHitsForRecPtr) fHitsForRecPtr->Clear("C");
-  fNHitsForRec = 0;
-  for (Int_t ch = 0; ch < AliMUONConstants::NTrackingCh(); ch++)
-    fNHitsForRecPerChamber[ch] = fIndexOfFirstHitForRecPerChamber[ch] = 0;
-  return;
-}
-
   //__________________________________________________________________________
 void AliMUONVTrackReconstructor::SortHitsForRecWithIncreasingChamber()
 {
@@ -241,6 +245,24 @@ void AliMUONVTrackReconstructor::SortHitsForRecWithIncreasingChamber()
     }
   }
   return;
+}
+
+  //__________________________________________________________________________
+void AliMUONVTrackReconstructor::MakeTracks()
+{
+  /// To make the tracks from the list of segments and points in all stations
+  AliDebug(1,"Enter MakeTracks");
+  // Look for candidates from at least 3 aligned points in stations(1..) 4 and 5
+  MakeTrackCandidates();
+  if (fRecTracksPtr->GetEntriesFast() == 0) return;
+  // Follow tracks in stations(1..) 3, 2 and 1
+  FollowTracks();
+  // Improve the reconstructed tracks
+  if (fgkImproveTracks) ImproveTracks();
+  // Remove double tracks
+  RemoveDoubleTracks();
+  // Fill AliMUONTrack data members
+  Finalize();
 }
 
   //__________________________________________________________________________
@@ -309,7 +331,157 @@ TClonesArray* AliMUONVTrackReconstructor::MakeSegmentsInStation(Int_t station)
   return segments;
 }
 
-//__________________________________________________________________________
+  //__________________________________________________________________________
+void AliMUONVTrackReconstructor::RemoveIdenticalTracks()
+{
+  /// To remove identical tracks:
+  /// Tracks are considered identical if they have all their hits in common.
+  /// One keeps the track with the larger number of hits if need be
+  AliMUONTrack *track1, *track2, *trackToRemove;
+  Int_t hitsInCommon, nHits1, nHits2;
+  Bool_t removedTrack1;
+  // Loop over first track of the pair
+  track1 = (AliMUONTrack*) fRecTracksPtr->First();
+  while (track1) {
+    removedTrack1 = kFALSE;
+    nHits1 = track1->GetNTrackHits();
+    // Loop over second track of the pair
+    track2 = (AliMUONTrack*) fRecTracksPtr->After(track1);
+    while (track2) {
+      nHits2 = track2->GetNTrackHits();
+      // number of hits in common between two tracks
+      hitsInCommon = track1->HitsInCommon(track2);
+      // check for identical tracks
+      if ((hitsInCommon == nHits1) || (hitsInCommon == nHits2)) {
+        // decide which track to remove
+        if (nHits2 > nHits1) {
+	  // remove track1 and continue the first loop with the track next to track1
+	  trackToRemove = track1;
+	  track1 = (AliMUONTrack*) fRecTracksPtr->After(track1);
+          fRecTracksPtr->Remove(trackToRemove);
+	  fRecTracksPtr->Compress(); // this is essential to retrieve the TClonesArray afterwards
+	  fNRecTracks--;
+	  removedTrack1 = kTRUE;
+	  break;
+	} else {
+	  // remove track2 and continue the second loop with the track next to track2
+	  trackToRemove = track2;
+	  track2 = (AliMUONTrack*) fRecTracksPtr->After(track2);
+	  fRecTracksPtr->Remove(trackToRemove);
+	  fRecTracksPtr->Compress(); // this is essential to retrieve the TClonesArray afterwards
+	  fNRecTracks--;
+        }
+      } else track2 = (AliMUONTrack*) fRecTracksPtr->After(track2);
+    } // track2
+    if (removedTrack1) continue;
+    track1 = (AliMUONTrack*) fRecTracksPtr->After(track1);
+  } // track1
+  return;
+}
+
+  //__________________________________________________________________________
+void AliMUONVTrackReconstructor::RemoveDoubleTracks()
+{
+  /// To remove double tracks:
+  /// Tracks are considered identical if more than half of the hits of the track
+  /// which has the smaller number of hits are in common with the other track.
+  /// Among two identical tracks, one keeps the track with the larger number of hits
+  /// or, if these numbers are equal, the track with the minimum chi2.
+  AliMUONTrack *track1, *track2, *trackToRemove;
+  Int_t hitsInCommon, nHits1, nHits2;
+  Bool_t removedTrack1;
+  // Loop over first track of the pair
+  track1 = (AliMUONTrack*) fRecTracksPtr->First();
+  while (track1) {
+    removedTrack1 = kFALSE;
+    nHits1 = track1->GetNTrackHits();
+    // Loop over second track of the pair
+    track2 = (AliMUONTrack*) fRecTracksPtr->After(track1);
+    while (track2) {
+      nHits2 = track2->GetNTrackHits();
+      // number of hits in common between two tracks
+      hitsInCommon = track1->HitsInCommon(track2);
+      // check for identical tracks
+      if (((nHits1 < nHits2) && (2 * hitsInCommon > nHits1)) || (2 * hitsInCommon > nHits2)) {
+        // decide which track to remove
+        if ((nHits1 > nHits2) || ((nHits1 == nHits2) && (track1->GetFitFMin() <= track2->GetFitFMin()))) {
+	  // remove track2 and continue the second loop with the track next to track2
+	  trackToRemove = track2;
+	  track2 = (AliMUONTrack*) fRecTracksPtr->After(track2);
+	  fRecTracksPtr->Remove(trackToRemove);
+	  fRecTracksPtr->Compress(); // this is essential to retrieve the TClonesArray afterwards
+	  fNRecTracks--;
+        } else {
+	  // else remove track1 and continue the first loop with the track next to track1
+	  trackToRemove = track1;
+	  track1 = (AliMUONTrack*) fRecTracksPtr->After(track1);
+          fRecTracksPtr->Remove(trackToRemove);
+	  fRecTracksPtr->Compress(); // this is essential to retrieve the TClonesArray afterwards
+	  fNRecTracks--;
+	  removedTrack1 = kTRUE;
+	  break;
+        }
+      } else track2 = (AliMUONTrack*) fRecTracksPtr->After(track2);
+    } // track2
+    if (removedTrack1) continue;
+    track1 = (AliMUONTrack*) fRecTracksPtr->After(track1);
+  } // track1
+  return;
+}
+
+  //__________________________________________________________________________
+Double_t AliMUONVTrackReconstructor::TryOneHitForRec(const AliMUONTrackParam &trackParam, AliMUONHitForRec* hitForRec,
+						     AliMUONTrackParam &trackParamAtHit, Bool_t updatePropagator)
+{
+/// Test the compatibility between the track and the hitForRec (using trackParam's covariance matrix):
+/// return the corresponding Chi2
+/// return trackParamAtHit
+  
+  if (!trackParam.CovariancesExist()) AliWarning(" track parameter covariance matrix does not exist");
+  
+  // extrapolate track parameters and covariances at the z position of the tested hit
+  if (&trackParam != &trackParamAtHit) {
+    trackParamAtHit = trackParam;
+    AliMUONTrackExtrap::ExtrapToZCov(&trackParamAtHit, hitForRec->GetZ(), updatePropagator);
+  }
+  
+  // set pointer to hit into trackParamAtHit
+  trackParamAtHit.SetHitForRecPtr(hitForRec);
+  
+  // Set differences between trackParam and hitForRec in the bending and non bending directions
+  TMatrixD dPos(2,1);
+  dPos(0,0) = hitForRec->GetNonBendingCoor() - trackParamAtHit.GetNonBendingCoor();
+  dPos(1,0) = hitForRec->GetBendingCoor() - trackParamAtHit.GetBendingCoor();
+  
+  // quick test of hitForRec compatibility within a wide road of x*y = 10*1 cm2 to save computing time
+  if (TMath::Abs(dPos(0,0)) > fgkMaxTrackingDistanceNonBending ||
+      TMath::Abs(dPos(1,0)) > fgkMaxTrackingDistanceBending) return 1.e10;
+  
+  // Set the error matrix from trackParam covariances and hitForRec resolution
+  const TMatrixD& kParamCov = trackParamAtHit.GetCovariances();
+  TMatrixD error(2,2);
+  error(0,0) = kParamCov(0,0) + hitForRec->GetNonBendingReso2();
+  error(0,1) = kParamCov(0,2);
+  error(1,0) = kParamCov(2,0);
+  error(1,1) = kParamCov(2,2) + hitForRec->GetBendingReso2();
+  
+  // Invert the error matrix for Chi2 calculation
+  if (error.Determinant() != 0) {
+    error.Invert();
+  } else {
+    AliWarning(" Determinant error=0");
+    return 1.e10;
+  }
+  
+  // Compute the Chi2 value
+  TMatrixD tmp(dPos,TMatrixD::kTransposeMult,error);
+  TMatrixD result(tmp,TMatrixD::kMult,dPos);
+  
+  return result(0,0);
+  
+}
+
+  //__________________________________________________________________________
 void AliMUONVTrackReconstructor::ValidateTracksWithTrigger(AliMUONVTrackStore& trackStore,
                                                            const AliMUONVTriggerTrackStore& triggerTrackStore,
                                                            const AliMUONVTriggerStore& triggerStore,
@@ -410,11 +582,10 @@ void AliMUONVTrackReconstructor::ValidateTracksWithTrigger(AliMUONVTrackStore& t
   trackHitPattern.GetHitPattern(trackStore,triggerStore);
 }
 
-//__________________________________________________________________________
-void 
-AliMUONVTrackReconstructor::EventReconstructTrigger(const AliMUONTriggerCircuit& circuit,
-                                                    const AliMUONVTriggerStore& triggerStore,
-                                                    AliMUONVTriggerTrackStore& triggerTrackStore)
+  //__________________________________________________________________________
+void AliMUONVTrackReconstructor::EventReconstructTrigger(const AliMUONTriggerCircuit& circuit,
+                                                         const AliMUONVTriggerStore& triggerStore,
+                                                         AliMUONVTriggerTrackStore& triggerTrackStore)
 {
   /// To make the trigger tracks from Local Trigger
   AliDebug(1, "");
@@ -483,3 +654,4 @@ AliMUONVTrackReconstructor::EventReconstructTrigger(const AliMUONTriggerCircuit&
     } // board is fired 
   } // end of loop on Local Trigger
 }
+

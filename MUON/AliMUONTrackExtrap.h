@@ -34,7 +34,7 @@ class AliMUONTrackExtrap : public TObject
   static Double_t GetBendingMomentumFromImpactParam(Double_t impactParam);
   
   static void ExtrapToZ(AliMUONTrackParam *trackParam, Double_t Z);
-  static void ExtrapToZCov(AliMUONTrackParam* trackParam, Double_t zEnd);
+  static void ExtrapToZCov(AliMUONTrackParam* trackParam, Double_t zEnd, Bool_t updatePropagator = kFALSE);
   static void ExtrapToStation(AliMUONTrackParam *trackParamIn, Int_t station, AliMUONTrackParam *trackParamOut);
   static void ExtrapToVertexUncorrected(AliMUONTrackParam* trackParam, Double_t zVtx);
   static void ExtrapToVertex(AliMUONTrackParam *trackParam, Double_t xVtx, Double_t yVtx, Double_t zVtx,
@@ -42,7 +42,8 @@ class AliMUONTrackExtrap : public TObject
   
   static Double_t TotalMomentumEnergyLoss(AliMUONTrackParam* trackParam, Double_t xVtx, Double_t yVtx, Double_t zVtx);
   
-  static void AddMCSEffect(AliMUONTrackParam *param, Double_t dZ, Double_t x0);
+  static Double_t GetMCSAngle2(const AliMUONTrackParam& param, Double_t dZ, Double_t x0);
+  static void     AddMCSEffect(AliMUONTrackParam *param, Double_t dZ, Double_t x0);
   
   static void ExtrapOneStepRungekutta(Double_t charge, Double_t step, Double_t* vect, Double_t* vout);
   

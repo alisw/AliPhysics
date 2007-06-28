@@ -31,9 +31,9 @@
 #include "AliESDMuonTrack.h"
 #include "AliLog.h"
 
-#include <Riostream.h>
 #include <TMath.h>
-#include <TMatrixD.h>
+
+#include <Riostream.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONTrackParam) // Class implementation in ROOT context
@@ -42,14 +42,18 @@ ClassImp(AliMUONTrackParam) // Class implementation in ROOT context
   //_________________________________________________________________________
 AliMUONTrackParam::AliMUONTrackParam()
   : TObject(),
-    fNonBendingCoor(0.),
-    fNonBendingSlope(0.),
-    fBendingCoor(0.),
-    fBendingSlope(0.),
-    fInverseBendingMomentum(0.),
     fZ(0.),
+    fParameters(5,1),
     fCovariances(0x0),
-    fHitForRecPtr(0x0)
+    fPropagator(0x0),
+    fExtrapParameters(0x0),
+    fExtrapCovariances(0x0),
+    fSmoothParameters(0x0),
+    fSmoothCovariances(0x0),
+    fHitForRecPtr(0x0),
+    fRemovable(kFALSE),
+    fTrackChi2(0.),
+    fLocalChi2(0.)
 {
   /// Constructor
 }
@@ -57,17 +61,26 @@ AliMUONTrackParam::AliMUONTrackParam()
   //_________________________________________________________________________
 AliMUONTrackParam::AliMUONTrackParam(const AliMUONTrackParam& theMUONTrackParam)
   : TObject(theMUONTrackParam),
-    fNonBendingCoor(theMUONTrackParam.fNonBendingCoor),
-    fNonBendingSlope(theMUONTrackParam.fNonBendingSlope),
-    fBendingCoor(theMUONTrackParam.fBendingCoor),
-    fBendingSlope(theMUONTrackParam.fBendingSlope),
-    fInverseBendingMomentum(theMUONTrackParam.fInverseBendingMomentum), 
     fZ(theMUONTrackParam.fZ),
+    fParameters(theMUONTrackParam.fParameters),
     fCovariances(0x0),
-    fHitForRecPtr(theMUONTrackParam.fHitForRecPtr)
+    fPropagator(0x0),
+    fExtrapParameters(0x0),
+    fExtrapCovariances(0x0),
+    fSmoothParameters(0x0),
+    fSmoothCovariances(0x0),
+    fHitForRecPtr(theMUONTrackParam.fHitForRecPtr),
+    fRemovable(theMUONTrackParam.fRemovable),
+    fTrackChi2(theMUONTrackParam.fTrackChi2),
+    fLocalChi2(theMUONTrackParam.fLocalChi2)
 {
   /// Copy constructor
   if (theMUONTrackParam.fCovariances) fCovariances = new TMatrixD(*(theMUONTrackParam.fCovariances));
+  if (theMUONTrackParam.fPropagator) fPropagator = new TMatrixD(*(theMUONTrackParam.fPropagator));
+  if (theMUONTrackParam.fExtrapParameters) fExtrapParameters = new TMatrixD(*(theMUONTrackParam.fExtrapParameters));
+  if (theMUONTrackParam.fExtrapCovariances) fExtrapCovariances = new TMatrixD(*(theMUONTrackParam.fExtrapCovariances));
+  if (theMUONTrackParam.fSmoothParameters) fSmoothParameters = new TMatrixD(*(theMUONTrackParam.fSmoothParameters));
+  if (theMUONTrackParam.fSmoothCovariances) fSmoothCovariances = new TMatrixD(*(theMUONTrackParam.fSmoothCovariances));
 }
 
   //_________________________________________________________________________
@@ -80,12 +93,9 @@ AliMUONTrackParam& AliMUONTrackParam::operator=(const AliMUONTrackParam& theMUON
   // base class assignement
   TObject::operator=(theMUONTrackParam);
 
-  fNonBendingCoor         	=  theMUONTrackParam.fNonBendingCoor;
-  fNonBendingSlope        	=  theMUONTrackParam.fNonBendingSlope; 
-  fBendingCoor            	=  theMUONTrackParam.fBendingCoor; 
-  fBendingSlope           	=  theMUONTrackParam.fBendingSlope; 
-  fInverseBendingMomentum 	=  theMUONTrackParam.fInverseBendingMomentum; 
-  fZ                      	=  theMUONTrackParam.fZ; 
+  fZ = theMUONTrackParam.fZ; 
+  
+  fParameters = theMUONTrackParam.fParameters;
   
   if (theMUONTrackParam.fCovariances) {
     if (fCovariances) *fCovariances = *(theMUONTrackParam.fCovariances);
@@ -95,6 +105,53 @@ AliMUONTrackParam& AliMUONTrackParam::operator=(const AliMUONTrackParam& theMUON
     fCovariances = 0x0;
   }
   
+  if (theMUONTrackParam.fPropagator) {
+    if (fPropagator) *fPropagator = *(theMUONTrackParam.fPropagator);
+    else fPropagator = new TMatrixD(*(theMUONTrackParam.fPropagator));
+  } else if (fPropagator) {
+    delete fPropagator;
+    fPropagator = 0x0;
+  }
+  
+  if (theMUONTrackParam.fExtrapParameters) {
+    if (fExtrapParameters) *fExtrapParameters = *(theMUONTrackParam.fExtrapParameters);
+    else fExtrapParameters = new TMatrixD(*(theMUONTrackParam.fExtrapParameters));
+  } else if (fExtrapParameters) {
+    delete fExtrapParameters;
+    fExtrapParameters = 0x0;
+  }
+  
+  if (theMUONTrackParam.fExtrapCovariances) {
+    if (fExtrapCovariances) *fExtrapCovariances = *(theMUONTrackParam.fExtrapCovariances);
+    else fExtrapCovariances = new TMatrixD(*(theMUONTrackParam.fExtrapCovariances));
+  } else if (fExtrapCovariances) {
+    delete fExtrapCovariances;
+    fExtrapCovariances = 0x0;
+  }
+  
+  if (theMUONTrackParam.fSmoothParameters) {
+    if (fSmoothParameters) *fSmoothParameters = *(theMUONTrackParam.fSmoothParameters);
+    else fSmoothParameters = new TMatrixD(*(theMUONTrackParam.fSmoothParameters));
+  } else if (fSmoothParameters) {
+    delete fSmoothParameters;
+    fSmoothParameters = 0x0;
+  }
+  
+  if (theMUONTrackParam.fSmoothCovariances) {
+    if (fSmoothCovariances) *fSmoothCovariances = *(theMUONTrackParam.fSmoothCovariances);
+    else fSmoothCovariances = new TMatrixD(*(theMUONTrackParam.fSmoothCovariances));
+  } else if (fSmoothCovariances) {
+    delete fSmoothCovariances;
+    fSmoothCovariances = 0x0;
+  }
+  
+  fHitForRecPtr = theMUONTrackParam.fHitForRecPtr;
+  
+  fRemovable = theMUONTrackParam.fRemovable;
+  
+  fTrackChi2 = theMUONTrackParam.fTrackChi2;
+  fLocalChi2 = theMUONTrackParam.fLocalChi2;
+  
   return *this;
 }
 
@@ -103,18 +160,24 @@ AliMUONTrackParam::~AliMUONTrackParam()
 {
 /// Destructor
   DeleteCovariances();
+  delete fPropagator;
+  delete fExtrapParameters;
+  delete fExtrapCovariances;
+  delete fSmoothParameters;
+  delete fSmoothCovariances;
 }
 
   //__________________________________________________________________________
-void AliMUONTrackParam::SetTrackParam(AliMUONTrackParam& theMUONTrackParam)
+void
+AliMUONTrackParam::Clear(Option_t* /*opt*/)
 {
-  /// Set track parameters from "TrackParam" leaving pointer to fHitForRecPtr and parameter covariances unchanged
-  fNonBendingCoor         	=  theMUONTrackParam.fNonBendingCoor;
-  fNonBendingSlope        	=  theMUONTrackParam.fNonBendingSlope; 
-  fBendingCoor            	=  theMUONTrackParam.fBendingCoor; 
-  fBendingSlope           	=  theMUONTrackParam.fBendingSlope; 
-  fInverseBendingMomentum 	=  theMUONTrackParam.fInverseBendingMomentum; 
-  fZ                      	=  theMUONTrackParam.fZ; 
+  /// Delete the covariance matrix
+  DeleteCovariances();
+  delete fPropagator; fPropagator = 0x0;
+  delete fExtrapParameters; fExtrapParameters = 0x0;
+  delete fExtrapCovariances; fExtrapCovariances = 0x0;
+  delete fSmoothParameters; fSmoothParameters = 0x0;
+  delete fSmoothCovariances; fSmoothCovariances = 0x0;
 }
 
   //__________________________________________________________________________
@@ -130,48 +193,48 @@ AliMUONHitForRec* AliMUONTrackParam::GetHitForRecPtr(void) const
 void AliMUONTrackParam::GetParamFrom(const AliESDMuonTrack& esdMuonTrack)
 {
   /// assigned value form ESD track.
-  fInverseBendingMomentum 	=  esdMuonTrack.GetInverseBendingMomentum();
-  fBendingSlope           	=  TMath::Tan(esdMuonTrack.GetThetaY());
-  fNonBendingSlope        	=  TMath::Tan(esdMuonTrack.GetThetaX());
-  fZ                     	=  esdMuonTrack.GetZ(); 
-  fBendingCoor            	=  esdMuonTrack.GetBendingCoor(); 
-  fNonBendingCoor         	=  esdMuonTrack.GetNonBendingCoor();
+  fZ = esdMuonTrack.GetZ(); 
+  fParameters(0,0) = esdMuonTrack.GetNonBendingCoor();
+  fParameters(1,0) = TMath::Tan(esdMuonTrack.GetThetaX());
+  fParameters(2,0) = esdMuonTrack.GetBendingCoor(); 
+  fParameters(3,0) = TMath::Tan(esdMuonTrack.GetThetaY());
+  fParameters(4,0) = esdMuonTrack.GetInverseBendingMomentum();
 }
 
   //_________________________________________________________________________
-void AliMUONTrackParam::SetParamFor(AliESDMuonTrack& esdMuonTrack)
+void AliMUONTrackParam::SetParamFor(AliESDMuonTrack& esdMuonTrack) const
 {
   /// assigned value form ESD track.
-  esdMuonTrack.SetInverseBendingMomentum(fInverseBendingMomentum);
-  esdMuonTrack.SetThetaX(TMath::ATan(fNonBendingSlope));
-  esdMuonTrack.SetThetaY(TMath::ATan(fBendingSlope));
-  esdMuonTrack.SetZ(fZ); 
-  esdMuonTrack.SetBendingCoor(fBendingCoor); 
-  esdMuonTrack.SetNonBendingCoor(fNonBendingCoor);
+  esdMuonTrack.SetZ(fZ);
+  esdMuonTrack.SetNonBendingCoor(fParameters(0,0));
+  esdMuonTrack.SetThetaX(TMath::ATan(fParameters(1,0)));
+  esdMuonTrack.SetBendingCoor(fParameters(2,0)); 
+  esdMuonTrack.SetThetaY(TMath::ATan(fParameters(3,0)));
+  esdMuonTrack.SetInverseBendingMomentum(fParameters(4,0));
 }
 
   //_________________________________________________________________________
 void AliMUONTrackParam::GetParamFromUncorrected(const AliESDMuonTrack& esdMuonTrack)
 {
   /// assigned value form ESD track.
-  fInverseBendingMomentum 	=  esdMuonTrack.GetInverseBendingMomentumUncorrected();
-  fBendingSlope           	=  TMath::Tan(esdMuonTrack.GetThetaYUncorrected());
-  fNonBendingSlope        	=  TMath::Tan(esdMuonTrack.GetThetaXUncorrected());
-  fZ                     	=  esdMuonTrack.GetZUncorrected(); 
-  fBendingCoor            	=  esdMuonTrack.GetBendingCoorUncorrected(); 
-  fNonBendingCoor         	=  esdMuonTrack.GetNonBendingCoorUncorrected();
+  fZ = esdMuonTrack.GetZUncorrected(); 
+  fParameters(0,0) = esdMuonTrack.GetNonBendingCoorUncorrected();
+  fParameters(1,0) = TMath::Tan(esdMuonTrack.GetThetaXUncorrected());
+  fParameters(2,0) = esdMuonTrack.GetBendingCoorUncorrected(); 
+  fParameters(3,0) = TMath::Tan(esdMuonTrack.GetThetaYUncorrected());
+  fParameters(4,0) = esdMuonTrack.GetInverseBendingMomentumUncorrected();
 }
 
   //_________________________________________________________________________
-void AliMUONTrackParam::SetParamForUncorrected(AliESDMuonTrack& esdMuonTrack)
+void AliMUONTrackParam::SetParamForUncorrected(AliESDMuonTrack& esdMuonTrack) const
 {
   /// assigned value form ESD track.
-  esdMuonTrack.SetInverseBendingMomentumUncorrected(fInverseBendingMomentum);
-  esdMuonTrack.SetThetaXUncorrected(TMath::ATan(fNonBendingSlope));
-  esdMuonTrack.SetThetaYUncorrected(TMath::ATan(fBendingSlope));
-  esdMuonTrack.SetZUncorrected(fZ); 
-  esdMuonTrack.SetBendingCoorUncorrected(fBendingCoor); 
-  esdMuonTrack.SetNonBendingCoorUncorrected(fNonBendingCoor);
+  esdMuonTrack.SetZUncorrected(fZ);
+  esdMuonTrack.SetNonBendingCoorUncorrected(fParameters(0,0));
+  esdMuonTrack.SetThetaXUncorrected(TMath::ATan(fParameters(1,0)));
+  esdMuonTrack.SetBendingCoorUncorrected(fParameters(2,0)); 
+  esdMuonTrack.SetThetaYUncorrected(TMath::ATan(fParameters(3,0)));
+  esdMuonTrack.SetInverseBendingMomentumUncorrected(fParameters(4,0));
 }
 
   //__________________________________________________________________________
@@ -180,10 +243,10 @@ Double_t AliMUONTrackParam::Px() const
   /// return p_x from track parameters
   Double_t pYZ, pZ, pX;
   pYZ = 0;
-  if (  TMath::Abs(fInverseBendingMomentum) > 0 )
-    pYZ = TMath::Abs(1.0 / fInverseBendingMomentum);
-  pZ = -pYZ / (TMath::Sqrt(1.0 + fBendingSlope * fBendingSlope));  // spectro. (z<0)
-  pX = pZ * fNonBendingSlope; 
+  if (  TMath::Abs(fParameters(4,0)) > 0 )
+    pYZ = TMath::Abs(1.0 / fParameters(4,0));
+  pZ = -pYZ / (TMath::Sqrt(1.0 + fParameters(3,0) * fParameters(3,0)));  // spectro. (z<0)
+  pX = pZ * fParameters(1,0); 
   return pX;
 }
 
@@ -193,10 +256,10 @@ Double_t AliMUONTrackParam::Py() const
   /// return p_y from track parameters
   Double_t pYZ, pZ, pY;
   pYZ = 0;
-  if (  TMath::Abs(fInverseBendingMomentum) > 0 )
-    pYZ = TMath::Abs(1.0 / fInverseBendingMomentum);
-  pZ = -pYZ / (TMath::Sqrt(1.0 + fBendingSlope * fBendingSlope));  // spectro. (z<0)
-  pY = pZ * fBendingSlope; 
+  if (  TMath::Abs(fParameters(4,0)) > 0 )
+    pYZ = TMath::Abs(1.0 / fParameters(4,0));
+  pZ = -pYZ / (TMath::Sqrt(1.0 + fParameters(3,0) * fParameters(3,0)));  // spectro. (z<0)
+  pY = pZ * fParameters(3,0); 
   return pY;
 }
 
@@ -206,9 +269,9 @@ Double_t AliMUONTrackParam::Pz() const
   /// return p_z from track parameters
   Double_t pYZ, pZ;
   pYZ = 0;
-  if (  TMath::Abs(fInverseBendingMomentum) > 0 )
-    pYZ = TMath::Abs(1.0 / fInverseBendingMomentum);
-  pZ = -pYZ / (TMath::Sqrt(1.0 + fBendingSlope * fBendingSlope));  // spectro. (z<0)
+  if (  TMath::Abs(fParameters(4,0)) > 0 )
+    pYZ = TMath::Abs(1.0 / fParameters(4,0));
+  pZ = -pYZ / (TMath::Sqrt(1.0 + fParameters(3,0) * fParameters(3,0)));  // spectro. (z<0)
   return pZ;
 }
 
@@ -218,37 +281,37 @@ Double_t AliMUONTrackParam::P() const
   /// return p from track parameters
   Double_t  pYZ, pZ, p;
   pYZ = 0;
-  if (  TMath::Abs(fInverseBendingMomentum) > 0 )
-    pYZ = TMath::Abs(1.0 / fInverseBendingMomentum);
-  pZ = -pYZ / (TMath::Sqrt(1.0 + fBendingSlope * fBendingSlope));  // spectro. (z<0)
+  if (  TMath::Abs(fParameters(4,0)) > 0 )
+    pYZ = TMath::Abs(1.0 / fParameters(4,0));
+  pZ = -pYZ / (TMath::Sqrt(1.0 + fParameters(3,0) * fParameters(3,0)));  // spectro. (z<0)
   p = TMath::Abs(pZ) * 
-    TMath::Sqrt(1.0 + fBendingSlope * fBendingSlope + fNonBendingSlope * fNonBendingSlope);
+    TMath::Sqrt(1.0 + fParameters(3,0) * fParameters(3,0) + fParameters(1,0) * fParameters(1,0));
   return p;
   
 }
 
   //__________________________________________________________________________
-TMatrixD* AliMUONTrackParam::GetCovariances() const
+const TMatrixD& AliMUONTrackParam::GetCovariances() const
 {
   /// Return the covariance matrix (create it before if needed)
   if (!fCovariances) {
     fCovariances = new TMatrixD(5,5);
-    (*fCovariances) = 0;
+    fCovariances->Zero();
   }
-  return fCovariances;
-  }
-
-  //__________________________________________________________________________
-void AliMUONTrackParam::SetCovariances(TMatrixD* covariances)
-{
-  /// Set the covariance matrix
-  if (covariances == fCovariances) return; // nothing to be done
-  if (fCovariances) *fCovariances = *covariances;
-  else fCovariances = new TMatrixD(*covariances);
+  return *fCovariances;
 }
 
   //__________________________________________________________________________
-void AliMUONTrackParam::SetCovariances(Double_t matrix[5][5])
+void AliMUONTrackParam::SetCovariances(const TMatrixD& covariances)
+{
+  /// Set the covariance matrix
+  if (&covariances == fCovariances) return; // nothing to be done
+  if (fCovariances) *fCovariances = covariances;
+  else fCovariances = new TMatrixD(covariances);
+}
+
+  //__________________________________________________________________________
+void AliMUONTrackParam::SetCovariances(const Double_t matrix[5][5])
 {
   /// Set the covariance matrix
   if (fCovariances) fCovariances->SetMatrixArray(&(matrix[0][0]));
@@ -256,20 +319,12 @@ void AliMUONTrackParam::SetCovariances(Double_t matrix[5][5])
 }
 
   //__________________________________________________________________________
-void AliMUONTrackParam::SetVariances(Double_t matrix[5][5])
+void AliMUONTrackParam::SetVariances(const Double_t matrix[5][5])
 {
   /// Set the diagonal terms of the covariance matrix (variances)
   if (!fCovariances) fCovariances = new TMatrixD(5,5);
-  (*fCovariances) = 0;
+  fCovariances->Zero();
   for (Int_t i=0; i<5; i++) (*fCovariances)(i,i) = matrix[i][i];
-}
-
-//__________________________________________________________________________
-void
-AliMUONTrackParam::Clear(Option_t* /*opt*/)
-{
-  /// Delete the covariance matrix
-  DeleteCovariances();
 }
 
   //__________________________________________________________________________
@@ -281,38 +336,111 @@ void AliMUONTrackParam::DeleteCovariances()
 }
 
   //__________________________________________________________________________
-void AliMUONTrackParam::EvalCovariances(AliMUONHitForRec* hit2)
+const TMatrixD& AliMUONTrackParam::GetPropagator() const
 {
-  /// Evaluate covariances assuming the track is only a straight line
-  /// between the HitForRec attached to the current TrackParam and hit2.
-  /// Nothing can be done on fInverseBendingMomentum (-> 50% err).
-  
-  // Allocate memory if needed
-  if (!fCovariances) fCovariances = new TMatrixD(5,5);
-  
-  // Reset the covariance matrix
-  (*fCovariances) = 0;
-  
-  if (!fHitForRecPtr) {
-    AliWarning("fHitForRecPtr == NULL: cannot calculate TrackParam covariances");
-    return;
+  /// Return the propagator (create it before if needed)
+  if (!fPropagator) {
+    fPropagator = new TMatrixD(5,5);
+    fPropagator->Zero();
   }
-  
-  Double_t dz = fHitForRecPtr->GetZ() - hit2->GetZ();
-  
-  // Non bending plane
-  (*fCovariances)(0,0) = fHitForRecPtr->GetNonBendingReso2();
-  (*fCovariances)(0,1) = fHitForRecPtr->GetNonBendingReso2() / dz;
-  (*fCovariances)(1,0) = (*fCovariances)(0,1);
-  (*fCovariances)(1,1) = ( fHitForRecPtr->GetNonBendingReso2() + hit2->GetNonBendingReso2() ) / dz / dz;
-  // Bending plane
-  (*fCovariances)(2,2) = fHitForRecPtr->GetBendingReso2();
-  (*fCovariances)(2,3) = fHitForRecPtr->GetBendingReso2() / dz;
-  (*fCovariances)(3,2) = (*fCovariances)(2,3);
-  (*fCovariances)(3,3) = ( fHitForRecPtr->GetBendingReso2() + hit2->GetBendingReso2() ) / dz / dz;
-  // Inverse bending momentum
-  (*fCovariances)(4,4) = 0.5*fInverseBendingMomentum * 0.5*fInverseBendingMomentum; // error 50%
-  
+  return *fPropagator;
+  }
+
+  //__________________________________________________________________________
+void AliMUONTrackParam::ResetPropagator()
+{
+  /// Reset the propagator
+  if (!fPropagator) fPropagator = new TMatrixD(5,5);
+  fPropagator->UnitMatrix();
+}
+
+  //__________________________________________________________________________
+void AliMUONTrackParam::UpdatePropagator(const TMatrixD& propagator)
+{
+  /// Update the propagator
+  if (&propagator == fPropagator) return; // nothing to be done
+  if (fPropagator) *fPropagator = TMatrixD(propagator,TMatrixD::kMult,*fPropagator);
+  else fPropagator = new TMatrixD(propagator);
+}
+
+  //__________________________________________________________________________
+const TMatrixD& AliMUONTrackParam::GetExtrapParameters() const
+{
+  /// Return extrapolated parameters (create it before if needed)
+  if (!fExtrapParameters) {
+    fExtrapParameters = new TMatrixD(5,1);
+    fExtrapParameters->Zero();
+  }
+  return *fExtrapParameters;
+  }
+
+  //__________________________________________________________________________
+void AliMUONTrackParam::SetExtrapParameters(const TMatrixD& extrapParameters)
+{
+  /// Set extrapolated parameters
+  if (&extrapParameters == fExtrapParameters) return; // nothing to be done
+  if (fExtrapParameters) *fExtrapParameters = extrapParameters;
+  else fExtrapParameters = new TMatrixD(extrapParameters);
+}
+
+  //__________________________________________________________________________
+const TMatrixD& AliMUONTrackParam::GetExtrapCovariances() const
+{
+  /// Return the extrapolated covariance matrix (create it before if needed)
+  if (!fExtrapCovariances) {
+    fExtrapCovariances = new TMatrixD(5,5);
+    fExtrapCovariances->Zero();
+  }
+  return *fExtrapCovariances;
+  }
+
+  //__________________________________________________________________________
+void AliMUONTrackParam::SetExtrapCovariances(const TMatrixD& extrapCovariances)
+{
+  /// Set the extrapolated covariance matrix
+  if (&extrapCovariances == fExtrapCovariances) return; // nothing to be done
+  if (fExtrapCovariances) *fExtrapCovariances = extrapCovariances;
+  else fExtrapCovariances = new TMatrixD(extrapCovariances);
+}
+
+  //__________________________________________________________________________
+const TMatrixD& AliMUONTrackParam::GetSmoothParameters() const
+{
+  /// Return the smoothed parameters (create it before if needed)
+  if (!fSmoothParameters) {
+    fSmoothParameters = new TMatrixD(5,1);
+    fSmoothParameters->Zero();
+  }
+  return *fSmoothParameters;
+  }
+
+  //__________________________________________________________________________
+void AliMUONTrackParam::SetSmoothParameters(const TMatrixD& smoothParameters)
+{
+  /// Set the smoothed parameters
+  if (&smoothParameters == fSmoothParameters) return; // nothing to be done
+  if (fSmoothParameters) *fSmoothParameters = smoothParameters;
+  else fSmoothParameters = new TMatrixD(smoothParameters);
+}
+
+  //__________________________________________________________________________
+const TMatrixD& AliMUONTrackParam::GetSmoothCovariances() const
+{
+  /// Return the smoothed covariance matrix (create it before if needed)
+  if (!fSmoothCovariances) {
+    fSmoothCovariances = new TMatrixD(5,5);
+    fSmoothCovariances->Zero();
+  }
+  return *fSmoothCovariances;
+  }
+
+  //__________________________________________________________________________
+void AliMUONTrackParam::SetSmoothCovariances(const TMatrixD& smoothCovariances)
+{
+  /// Set the smoothed covariance matrix
+  if (&smoothCovariances == fSmoothCovariances) return; // nothing to be done
+  if (fSmoothCovariances) *fSmoothCovariances = smoothCovariances;
+  else fSmoothCovariances = new TMatrixD(smoothCovariances);
 }
 
   //__________________________________________________________________________
@@ -339,12 +467,12 @@ void AliMUONTrackParam::Print(Option_t* opt) const
   sopt.ToUpper();
  
   if ( sopt.Contains("FULL") ) { 
-    cout << "<AliMUONTrackParam> Bending P=" << setw(5) << setprecision(3)  << 1./GetInverseBendingMomentum() << 
-      ", NonBendSlope=" << setw(5) << setprecision(3)  << GetNonBendingSlope()*180./TMath::Pi() <<
-      ", BendSlope=" << setw(5) << setprecision(3)     << GetBendingSlope()*180./TMath::Pi()  << 
-      ", (x,y,z)_IP=(" <<  setw(5) << setprecision(3) << GetNonBendingCoor() <<
-      "," <<  setw(5) << setprecision(3) << GetBendingCoor() <<
-      "," <<  setw(5) << setprecision(3) << GetZ() <<
+    cout << "<AliMUONTrackParam> Bending P=" << setw(5) << setprecision(3)  << 1./fParameters(4,0) << 
+      ", NonBendSlope=" << setw(5) << setprecision(3)  << fParameters(1,0)*180./TMath::Pi() <<
+      ", BendSlope=" << setw(5) << setprecision(3)     << fParameters(3,0)*180./TMath::Pi()  << 
+      ", (x,y,z)_IP=(" <<  setw(5) << setprecision(3) << fParameters(0,0) <<
+      "," <<  setw(5) << setprecision(3) << fParameters(2,0) <<
+      "," <<  setw(5) << setprecision(3) << fZ <<
       ") cm, (px,py,pz)=(" << setw(5) << setprecision(3) << Px() <<
       "," << setw(5) << setprecision(3) << Py() <<
       "," << setw(5) << setprecision(3) << Pz() << ") GeV/c" << endl;

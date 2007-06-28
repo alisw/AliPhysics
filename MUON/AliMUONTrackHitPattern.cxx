@@ -13,6 +13,9 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
+
 ////////////////////////////////////
 ///
 /// \class AliMUONTrackHitPattern
@@ -39,7 +42,6 @@
 
 #include "AliMUONTrackHitPattern.h"
 
-#include "AliLog.h"
 #include "AliMUONConstants.h"
 #include "AliMUONVDigit.h"
 #include "AliMUONDigitMaker.h"
@@ -52,11 +54,14 @@
 #include "AliMUONTrackParam.h"
 #include "AliMUONVTrackStore.h"
 #include "AliMUONVTriggerStore.h"
-#include "AliMagF.h"
 #include "AliMpPad.h"
 #include "AliMpSegmentation.h"
 #include "AliMpVSegmentation.h"
+
+#include "AliMagF.h"
+#include "AliLog.h"
 #include "AliTracker.h"
+
 #include <Riostream.h>
 #include <TArrayS.h>
 #include <TClonesArray.h>
@@ -228,10 +233,10 @@ AliMUONTrackHitPattern::GetPosUncertainty(const AliMUONTrackParam& trackParam,
     Float_t zDistFromWall = TMath::Abs(zChamber - kZBranson);
     Float_t zDistFromLastTrackCh = TMath::Abs(zChamber - AliMUONConstants::DefaultChamberZ(9));
 
-    TMatrixD *covParam = trackParam.GetCovariances();
+    const TMatrixD& kCovParam = trackParam.GetCovariances();
     
-    sigmaX = (*covParam)(0,0);
-    sigmaY = (*covParam)(2,2);
+    sigmaX = kCovParam(0,0);
+    sigmaY = kCovParam(2,2);
 
     // If covariance matrix is not extrapolated, use "reasonable" errors
     // (To be removed as soon as covariance matrix is correctly propagated).

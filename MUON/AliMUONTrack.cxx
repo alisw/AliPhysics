@@ -29,21 +29,20 @@
 
 #include "AliMUONTrackParam.h" 
 #include "AliMUONHitForRec.h" 
+#include "AliMUONObjectPair.h" 
 #include "AliMUONConstants.h"
 #include "AliMUONTrackExtrap.h" 
 
 #include "AliLog.h"
 
 #include <TMath.h>
-#include <Riostream.h>
 #include <TMatrixD.h>
+
+#include <Riostream.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONTrack) // Class implementation in ROOT context
 /// \endcond
-
-const Double_t AliMUONTrack::fgkMaxTrackingDistanceBending    = 2.;
-const Double_t AliMUONTrack::fgkMaxTrackingDistanceNonBending = 2.;
 
 //__________________________________________________________________________
 AliMUONTrack::AliMUONTrack()
@@ -52,10 +51,13 @@ AliMUONTrack::AliMUONTrack()
     fTrackParamAtHit(0x0),
     fHitForRecAtHit(0x0),
     fNTrackHits(0),
-    fExtrapTrackParam(),
     fFitWithVertex(kFALSE),
     fVertex(0x0),
-    fFitFMin(-1.),
+    fFitWithMCS(kFALSE),
+    fHitWeightsNonBending(0x0),
+    fHitWeightsBending(0x0),
+    fGlobalChi2(-1.),
+    fImproved(kFALSE),
     fMatchTrigger(-1),
     floTrgNum(-1),
     fChi2MatchTrigger(0.),
@@ -67,16 +69,19 @@ AliMUONTrack::AliMUONTrack()
 }
 
   //__________________________________________________________________________
-AliMUONTrack::AliMUONTrack(AliMUONHitForRec* hitForRec1, AliMUONHitForRec* hitForRec2)
+AliMUONTrack::AliMUONTrack(AliMUONObjectPair *segment)
   : TObject(),
     fTrackParamAtVertex(),
     fTrackParamAtHit(0x0),
     fHitForRecAtHit(0x0),
     fNTrackHits(0),
-    fExtrapTrackParam(),
     fFitWithVertex(kFALSE),
     fVertex(0x0),
-    fFitFMin(-1.),
+    fFitWithMCS(kFALSE),
+    fHitWeightsNonBending(0x0),
+    fHitWeightsBending(0x0),
+    fGlobalChi2(0.),
+    fImproved(kFALSE),
     fMatchTrigger(-1),
     floTrgNum(-1),    
     fChi2MatchTrigger(0.),
@@ -91,128 +96,181 @@ AliMUONTrack::AliMUONTrack(AliMUONHitForRec* hitForRec1, AliMUONHitForRec* hitFo
   fHitForRecAtHit = new TClonesArray("AliMUONHitForRec",10);
   fHitForRecAtHit->SetOwner(kTRUE);
   
-  if (!hitForRec1) return; //AZ
+  if (!segment) return; //AZ
   
-  // Add hits to the track
-  AddTrackParamAtHit(0,hitForRec1);
-  AddTrackParamAtHit(0,hitForRec2);
+  // Pointers to hits from the segment
+  AliMUONHitForRec* hit1 = (AliMUONHitForRec*) segment->First();
+  AliMUONHitForRec* hit2 = (AliMUONHitForRec*) segment->Second();
   
-  // sort TrackParamAtHit according to increasing -Z
-  fTrackParamAtHit->Sort();
+  // check sorting in -Z (spectro z<0)
+  if (hit1->GetZ() < hit2->GetZ()) {
+    hit1 = hit2;
+    hit2 = (AliMUONHitForRec*) segment->First();
+  }
   
-  // Set track parameters at first track hit
+  // order the hits into the track according to the station the segment belong to
+  //(the hit first attached is the one from which we will start the tracking procedure)
+  if (hit1->GetChamberNumber() == 8) {
+    AddTrackParamAtHit(0,hit1);
+    AddTrackParamAtHit(0,hit2);
+  } else {
+    AddTrackParamAtHit(0,hit2);
+    AddTrackParamAtHit(0,hit1);
+  }
+  
   AliMUONTrackParam* trackParamAtFirstHit = (AliMUONTrackParam*) fTrackParamAtHit->First();
   AliMUONHitForRec* firstHit = trackParamAtFirstHit->GetHitForRecPtr();
-  AliMUONHitForRec* lastHit = ((AliMUONTrackParam*) fTrackParamAtHit->Last())->GetHitForRecPtr();
+  AliMUONTrackParam* trackParamAtLastHit = (AliMUONTrackParam*) fTrackParamAtHit->Last();
+  AliMUONHitForRec* lastHit = trackParamAtLastHit->GetHitForRecPtr();
+  
+  
+  // Compute track parameters
   Double_t dZ = firstHit->GetZ() - lastHit->GetZ();
   // Non bending plane
-  Double_t nonBendingCoor = firstHit->GetNonBendingCoor();
-  trackParamAtFirstHit->SetNonBendingCoor(nonBendingCoor);
-  trackParamAtFirstHit->SetNonBendingSlope((nonBendingCoor - lastHit->GetNonBendingCoor()) / dZ);
+  Double_t nonBendingCoor1 = firstHit->GetNonBendingCoor();
+  Double_t nonBendingCoor2 = lastHit->GetNonBendingCoor();
+  Double_t nonBendingSlope = (nonBendingCoor1 - nonBendingCoor2) / dZ;
   // Bending plane
-  Double_t bendingCoor = firstHit->GetBendingCoor();
-  trackParamAtFirstHit->SetBendingCoor(bendingCoor);
-  Double_t bendingSlope = (bendingCoor - lastHit->GetBendingCoor()) / dZ;
-  trackParamAtFirstHit->SetBendingSlope(bendingSlope);
+  Double_t bendingCoor1 = firstHit->GetBendingCoor();
+  Double_t bendingCoor2 = lastHit->GetBendingCoor();
+  Double_t bendingSlope = (bendingCoor1 - bendingCoor2) / dZ;
   // Inverse bending momentum
-  Double_t bendingImpact = bendingCoor - firstHit->GetZ() * bendingSlope;
+  Double_t bendingImpact = bendingCoor1 - firstHit->GetZ() * bendingSlope;
   Double_t inverseBendingMomentum = 1. / AliMUONTrackExtrap::GetBendingMomentumFromImpactParam(bendingImpact);
+  
+  
+  // Set track parameters at first hit
+  trackParamAtFirstHit->SetNonBendingCoor(nonBendingCoor1);
+  trackParamAtFirstHit->SetNonBendingSlope(nonBendingSlope);
+  trackParamAtFirstHit->SetBendingCoor(bendingCoor1);
+  trackParamAtFirstHit->SetBendingSlope(bendingSlope);
   trackParamAtFirstHit->SetInverseBendingMomentum(inverseBendingMomentum);
   
-  // Evaluate covariances
-  TMatrixD *paramCov = trackParamAtFirstHit->GetCovariances();
-  (*paramCov) = 0;
+  
+  // Set track parameters at last hit
+  trackParamAtLastHit->SetNonBendingCoor(nonBendingCoor2);
+  trackParamAtLastHit->SetNonBendingSlope(nonBendingSlope);
+  trackParamAtLastHit->SetBendingCoor(bendingCoor2);
+  trackParamAtLastHit->SetBendingSlope(bendingSlope);
+  trackParamAtLastHit->SetInverseBendingMomentum(inverseBendingMomentum);
+  
+  
+  // Compute and set track parameters covariances at first hit
+  TMatrixD paramCov1(5,5);
+  paramCov1.Zero();
   // Non bending plane
-  (*paramCov)(0,0) = firstHit->GetNonBendingReso2();
-  (*paramCov)(0,1) = firstHit->GetNonBendingReso2() / dZ;
-  (*paramCov)(1,0) = (*paramCov)(0,1);
-  (*paramCov)(1,1) = ( firstHit->GetNonBendingReso2() + lastHit->GetNonBendingReso2() ) / dZ / dZ;
+  paramCov1(0,0) = firstHit->GetNonBendingReso2();
+  paramCov1(0,1) = firstHit->GetNonBendingReso2() / dZ;
+  paramCov1(1,0) = paramCov1(0,1);
+  paramCov1(1,1) = ( firstHit->GetNonBendingReso2() + lastHit->GetNonBendingReso2() ) / dZ / dZ;
   // Bending plane
-  (*paramCov)(2,2) = firstHit->GetBendingReso2();
-  (*paramCov)(2,3) = firstHit->GetBendingReso2() / dZ;
-  (*paramCov)(3,2) = (*paramCov)(2,3);
-  (*paramCov)(3,3) = ( firstHit->GetBendingReso2() + lastHit->GetBendingReso2() ) / dZ / dZ;
+  paramCov1(2,2) = firstHit->GetBendingReso2();
+  paramCov1(2,3) = firstHit->GetBendingReso2() / dZ;
+  paramCov1(3,2) = paramCov1(2,3);
+  paramCov1(3,3) = ( firstHit->GetBendingReso2() + lastHit->GetBendingReso2() ) / dZ / dZ;
   // Inverse bending momentum (50% error)
-  (*paramCov)(4,4) = 0.5*inverseBendingMomentum * 0.5*inverseBendingMomentum;
+  paramCov1(4,4) = 0.5*inverseBendingMomentum * 0.5*inverseBendingMomentum;
+  // Set covariances
+  trackParamAtFirstHit->SetCovariances(paramCov1);
+  
+  
+  // Compute and set track parameters covariances at last hit (as if the first hit did not exist)
+  TMatrixD paramCov2(5,5);
+  paramCov2.Zero();
+  // Non bending plane
+  paramCov2(0,0) = paramCov1(0,0);
+  paramCov2(1,1) = 100.*paramCov1(1,1);
+  // Bending plane
+  paramCov2(2,2) = paramCov1(2,2);
+  paramCov2(3,3) = 100.*paramCov1(3,3);
+  // Inverse bending momentum
+  paramCov2(4,4) = paramCov1(4,4);
+  // Set covariances
+  trackParamAtLastHit->SetCovariances(paramCov2);
+  
+  
+  // Flag first hit as being removable
+  trackParamAtFirstHit->SetRemovable(kTRUE);
+  
+  // Flag last hit as being removable
+  trackParamAtLastHit->SetRemovable(kTRUE);
   
 }
 
   //__________________________________________________________________________
-AliMUONTrack::~AliMUONTrack()
-{
-  /// Destructor
-  delete fTrackParamAtHit;
-  delete fHitForRecAtHit;  
-  delete fVertex;
-}
-
-  //__________________________________________________________________________
-AliMUONTrack::AliMUONTrack (const AliMUONTrack& theMUONTrack)
-  : TObject(theMUONTrack),
-    fTrackParamAtVertex(theMUONTrack.fTrackParamAtVertex),
+AliMUONTrack::AliMUONTrack (const AliMUONTrack& track)
+  : TObject(track),
+    fTrackParamAtVertex(track.fTrackParamAtVertex),
     fTrackParamAtHit(0x0),
     fHitForRecAtHit(0x0),
-    fNTrackHits(theMUONTrack.fNTrackHits),
-    fExtrapTrackParam(theMUONTrack.fExtrapTrackParam),
-    fFitWithVertex(theMUONTrack.fFitWithVertex),
+    fNTrackHits(track.fNTrackHits),
+    fFitWithVertex(track.fFitWithVertex),
     fVertex(0x0),
-    fFitFMin(theMUONTrack.fFitFMin),
-    fMatchTrigger(theMUONTrack.fMatchTrigger),
-    floTrgNum(theMUONTrack.floTrgNum),    
-    fChi2MatchTrigger(theMUONTrack.fChi2MatchTrigger),
-    fTrackID(theMUONTrack.fTrackID),
-    fHitsPatternInTrigCh(theMUONTrack.fHitsPatternInTrigCh),
-    fLocalTrigger(theMUONTrack.fLocalTrigger)
+    fFitWithMCS(track.fFitWithMCS),
+    fHitWeightsNonBending(0x0),
+    fHitWeightsBending(0x0),
+    fGlobalChi2(track.fGlobalChi2),
+    fImproved(track.fImproved),
+    fMatchTrigger(track.fMatchTrigger),
+    floTrgNum(track.floTrgNum),    
+    fChi2MatchTrigger(track.fChi2MatchTrigger),
+    fTrackID(track.fTrackID),
+    fHitsPatternInTrigCh(track.fHitsPatternInTrigCh),
+    fLocalTrigger(track.fLocalTrigger)
 {
   ///copy constructor
   Int_t maxIndex = 0;
   
   // necessary to make a copy of the objects and not only the pointers in TClonesArray.
-  if (theMUONTrack.fTrackParamAtHit) {
-    maxIndex = (theMUONTrack.fTrackParamAtHit)->GetEntriesFast();
+  if (track.fTrackParamAtHit) {
+    maxIndex = (track.fTrackParamAtHit)->GetEntriesFast();
     fTrackParamAtHit = new TClonesArray("AliMUONTrackParam",maxIndex);
     for (Int_t index = 0; index < maxIndex; index++) {
-      new ((*fTrackParamAtHit)[index]) AliMUONTrackParam(*(AliMUONTrackParam*)theMUONTrack.fTrackParamAtHit->At(index));
+      new ((*fTrackParamAtHit)[index]) AliMUONTrackParam(*(AliMUONTrackParam*)track.fTrackParamAtHit->At(index));
     }
   }
   
   // necessary to make a copy of the objects and not only the pointers in TClonesArray.
-  if (theMUONTrack.fHitForRecAtHit) {
-    maxIndex = (theMUONTrack.fHitForRecAtHit)->GetEntriesFast();
+  if (track.fHitForRecAtHit) {
+    maxIndex = (track.fHitForRecAtHit)->GetEntriesFast();
     fHitForRecAtHit = new TClonesArray("AliMUONHitForRec",maxIndex);
     for (Int_t index = 0; index < maxIndex; index++) {
-      new ((*fHitForRecAtHit)[index]) AliMUONHitForRec(*(AliMUONHitForRec*)theMUONTrack.fHitForRecAtHit->At(index));
+      new ((*fHitForRecAtHit)[index]) AliMUONHitForRec(*(AliMUONHitForRec*)track.fHitForRecAtHit->At(index));
     }
   }
   
   // copy vertex used during the tracking procedure if any
-  if (theMUONTrack.fVertex) fVertex = new AliMUONHitForRec(*(theMUONTrack.fVertex));
+  if (track.fVertex) fVertex = new AliMUONHitForRec(*(track.fVertex));
+  
+  // copy hit weights matrices if any
+  if (track.fHitWeightsNonBending) fHitWeightsNonBending = new TMatrixD(*(track.fHitWeightsNonBending));
+  if (track.fHitWeightsBending) fHitWeightsBending = new TMatrixD(*(track.fHitWeightsBending));
   
 }
 
   //__________________________________________________________________________
-AliMUONTrack & AliMUONTrack::operator=(const AliMUONTrack& theMUONTrack)
+AliMUONTrack & AliMUONTrack::operator=(const AliMUONTrack& track)
 {
   /// Asignment operator
   // check assignement to self
-  if (this == &theMUONTrack)
+  if (this == &track)
     return *this;
 
   // base class assignement
-  TObject::operator=(theMUONTrack);
+  TObject::operator=(track);
 
-  fTrackParamAtVertex = theMUONTrack.fTrackParamAtVertex;
+  fTrackParamAtVertex = track.fTrackParamAtVertex;
 
   Int_t maxIndex = 0;
   
   // necessary to make a copy of the objects and not only the pointers in TClonesArray.
-  if (theMUONTrack.fTrackParamAtHit) {
+  if (track.fTrackParamAtHit) {
     if (fTrackParamAtHit) fTrackParamAtHit->Clear();
     else fTrackParamAtHit = new TClonesArray("AliMUONTrackParam",10);
-    maxIndex = (theMUONTrack.fTrackParamAtHit)->GetEntriesFast();
+    maxIndex = (track.fTrackParamAtHit)->GetEntriesFast();
     for (Int_t index = 0; index < maxIndex; index++) {
       new ((*fTrackParamAtHit)[fTrackParamAtHit->GetEntriesFast()])
-      	AliMUONTrackParam(*(AliMUONTrackParam*)(theMUONTrack.fTrackParamAtHit)->At(index));
+      	AliMUONTrackParam(*(AliMUONTrackParam*)(track.fTrackParamAtHit)->At(index));
     }
   } else if (fTrackParamAtHit) {
     delete fTrackParamAtHit;
@@ -220,13 +278,13 @@ AliMUONTrack & AliMUONTrack::operator=(const AliMUONTrack& theMUONTrack)
   }
 
   // necessary to make a copy of the objects and not only the pointers in TClonesArray.
-  if (theMUONTrack.fHitForRecAtHit) {
+  if (track.fHitForRecAtHit) {
     if (fHitForRecAtHit) fHitForRecAtHit->Clear();
     else fHitForRecAtHit = new TClonesArray("AliMUONHitForRec",10);
-    maxIndex = (theMUONTrack.fHitForRecAtHit)->GetEntriesFast();
+    maxIndex = (track.fHitForRecAtHit)->GetEntriesFast();
     for (Int_t index = 0; index < maxIndex; index++) {
       new ((*fHitForRecAtHit)[fHitForRecAtHit->GetEntriesFast()])
-      	AliMUONHitForRec(*(AliMUONHitForRec*)(theMUONTrack.fHitForRecAtHit)->At(index));
+      	AliMUONHitForRec(*(AliMUONHitForRec*)(track.fHitForRecAtHit)->At(index));
     }
   } else if (fHitForRecAtHit) {
     delete fHitForRecAtHit;
@@ -234,31 +292,75 @@ AliMUONTrack & AliMUONTrack::operator=(const AliMUONTrack& theMUONTrack)
   }
   
   // copy vertex used during the tracking procedure if any.
-  if (theMUONTrack.fVertex) {
-    if (fVertex) *fVertex = *(theMUONTrack.fVertex);
-    else fVertex = new AliMUONHitForRec(*(theMUONTrack.fVertex));
+  if (track.fVertex) {
+    if (fVertex) *fVertex = *(track.fVertex);
+    else fVertex = new AliMUONHitForRec(*(track.fVertex));
   } else if (fVertex) {
     delete fVertex;
     fVertex = 0x0;
   }
   
-  fExtrapTrackParam = theMUONTrack.fExtrapTrackParam;
+  // copy hit weights matrix if any
+  if (track.fHitWeightsNonBending) {
+    if (fHitWeightsNonBending) {
+      fHitWeightsNonBending->ResizeTo(*(track.fHitWeightsNonBending));
+      *fHitWeightsNonBending = *(track.fHitWeightsNonBending);
+    } else fHitWeightsNonBending = new TMatrixD(*(track.fHitWeightsNonBending));
+  } else if (fHitWeightsNonBending) {
+    delete fHitWeightsNonBending;
+    fHitWeightsNonBending = 0x0;
+  }
   
-  fNTrackHits         =  theMUONTrack.fNTrackHits;
-  fFitWithVertex      =  theMUONTrack.fFitWithVertex;
-  fFitFMin            =  theMUONTrack.fFitFMin;
-  fMatchTrigger       =  theMUONTrack.fMatchTrigger;
-  floTrgNum           =  theMUONTrack.floTrgNum;
-  fChi2MatchTrigger   =  theMUONTrack.fChi2MatchTrigger;
-  fTrackID            =  theMUONTrack.fTrackID; 
-  fHitsPatternInTrigCh = theMUONTrack.fHitsPatternInTrigCh;
-  fLocalTrigger        = theMUONTrack.fLocalTrigger;
+  // copy hit weights matrix if any
+  if (track.fHitWeightsBending) {
+    if (fHitWeightsBending) {
+      fHitWeightsBending->ResizeTo(*(track.fHitWeightsBending));
+      *fHitWeightsBending = *(track.fHitWeightsBending);
+    } else fHitWeightsBending = new TMatrixD(*(track.fHitWeightsBending));
+  } else if (fHitWeightsBending) {
+    delete fHitWeightsBending;
+    fHitWeightsBending = 0x0;
+  }
+  
+  fNTrackHits         =  track.fNTrackHits;
+  fFitWithVertex      =  track.fFitWithVertex;
+  fFitWithMCS         =  track.fFitWithMCS;
+  fGlobalChi2         =  track.fGlobalChi2;
+  fImproved           =  track.fImproved;
+  fMatchTrigger       =  track.fMatchTrigger;
+  floTrgNum           =  track.floTrgNum;
+  fChi2MatchTrigger   =  track.fChi2MatchTrigger;
+  fTrackID            =  track.fTrackID; 
+  fHitsPatternInTrigCh = track.fHitsPatternInTrigCh;
+  fLocalTrigger        = track.fLocalTrigger;
 
   return *this;
 }
 
   //__________________________________________________________________________
-void AliMUONTrack::AddTrackParamAtHit(AliMUONTrackParam *trackParam, AliMUONHitForRec *hitForRec) 
+AliMUONTrack::~AliMUONTrack()
+{
+  /// Destructor
+  delete fTrackParamAtHit;
+  delete fHitForRecAtHit;
+  delete fVertex;
+  delete fHitWeightsNonBending;
+  delete fHitWeightsBending;
+}
+
+  //__________________________________________________________________________
+void AliMUONTrack::Clear(Option_t* opt)
+{
+  /// Clear arrays
+  if ( fTrackParamAtHit ) fTrackParamAtHit->Clear(opt);
+  if ( fHitForRecAtHit ) fHitForRecAtHit->Clear(opt);
+  delete fVertex; fVertex = 0x0;
+  delete fHitWeightsNonBending; fHitWeightsNonBending = 0x0;
+  delete fHitWeightsBending; fHitWeightsBending = 0x0;
+}
+
+  //__________________________________________________________________________
+void AliMUONTrack::AddTrackParamAtHit(const AliMUONTrackParam *trackParam, AliMUONHitForRec *hitForRec)
 {
   /// Add TrackParamAtHit if "trackParam" != NULL
   /// else create empty TrackParamAtHit and set the z position to the one of "hitForRec" if any
@@ -283,6 +385,24 @@ void AliMUONTrack::AddTrackParamAtHit(AliMUONTrackParam *trackParam, AliMUONHitF
 }
 
   //__________________________________________________________________________
+void AliMUONTrack::RemoveTrackParamAtHit(AliMUONTrackParam *trackParam)
+{
+  /// Remove trackParam from the array of TrackParamAtHit
+  if (!fTrackParamAtHit) {
+    AliWarning("array fTrackParamAtHit does not exist");
+    return;
+  }
+  
+  if (!fTrackParamAtHit->Remove(trackParam)) {
+    AliWarning("object to remove does not exist in array fTrackParamAtHit");
+    return;
+  }
+  
+  fTrackParamAtHit->Compress();
+  fNTrackHits--;
+}
+
+  //__________________________________________________________________________
 void AliMUONTrack::AddHitForRecAtHit(const AliMUONHitForRec *hitForRec) 
 {
   /// Add hitForRec to the array of hitForRec at hit
@@ -295,21 +415,499 @@ void AliMUONTrack::AddHitForRecAtHit(const AliMUONHitForRec *hitForRec)
   new ((*fHitForRecAtHit)[fHitForRecAtHit->GetEntriesFast()]) AliMUONHitForRec(*hitForRec);
 }
 
-//__________________________________________________________________________
-void
-AliMUONTrack::Clear(Option_t* opt)
+  //__________________________________________________________________________
+void AliMUONTrack::UpdateTrackParamAtHit()
 {
-  /// Clear arrays
-  if ( fTrackParamAtHit ) fTrackParamAtHit->Clear(opt);
-  if ( fHitForRecAtHit ) fHitForRecAtHit->Clear(opt);
+  /// Update track parameters at each attached hit
+  
+  if (fNTrackHits == 0) {
+    AliWarning("no hit attached to the track");
+    return;
+  }
+  
+  Double_t z;
+  AliMUONTrackParam* startingTrackParam = (AliMUONTrackParam*) fTrackParamAtHit->First();
+  AliMUONTrackParam* trackParamAtHit = (AliMUONTrackParam*) fTrackParamAtHit->After(startingTrackParam);
+  while (trackParamAtHit) {
+    
+    // save current z
+    z = trackParamAtHit->GetZ();
+    
+    // reset track parameters and their covariances
+    trackParamAtHit->SetParameters(startingTrackParam->GetParameters());
+    trackParamAtHit->SetZ(startingTrackParam->GetZ());
+    
+    // extrapolation to the given z
+    AliMUONTrackExtrap::ExtrapToZ(trackParamAtHit, z);
+    
+    // prepare next step
+    startingTrackParam = trackParamAtHit;
+    trackParamAtHit = (AliMUONTrackParam*) (fTrackParamAtHit->After(trackParamAtHit));
+  }
+
 }
 
   //__________________________________________________________________________
-void AliMUONTrack::SetVertex(AliMUONHitForRec* vertex)
+void AliMUONTrack::UpdateCovTrackParamAtHit()
+{
+  /// Update track parameters and their covariances at each attached hit
+  
+  if (fNTrackHits == 0) {
+    AliWarning("no hit attached to the track");
+    return;
+  }
+  
+  Double_t z;
+  AliMUONTrackParam* startingTrackParam = (AliMUONTrackParam*) fTrackParamAtHit->First();
+  AliMUONTrackParam* trackParamAtHit = (AliMUONTrackParam*) fTrackParamAtHit->After(startingTrackParam);
+  while (trackParamAtHit) {
+    
+    // save current z
+    z = trackParamAtHit->GetZ();
+    
+    // reset track parameters and their covariances
+    trackParamAtHit->SetParameters(startingTrackParam->GetParameters());
+    trackParamAtHit->SetZ(startingTrackParam->GetZ());
+    trackParamAtHit->SetCovariances(startingTrackParam->GetCovariances());
+    
+    // extrapolation to the given z
+    AliMUONTrackExtrap::ExtrapToZCov(trackParamAtHit, z);
+    
+    // prepare next step
+    startingTrackParam = trackParamAtHit;
+    trackParamAtHit = (AliMUONTrackParam*) (fTrackParamAtHit->After(trackParamAtHit));
+  }
+
+}
+
+  //__________________________________________________________________________
+void AliMUONTrack::SetVertex(const AliMUONHitForRec* vertex)
 {
   /// Set the vertex used during the tracking procedure
   if (!fVertex) fVertex = new AliMUONHitForRec(*vertex);
   else *fVertex = *vertex;
+}
+
+
+  //__________________________________________________________________________
+Bool_t AliMUONTrack::ComputeLocalChi2(Bool_t accountForMCS)
+{
+  /// Compute the removable hit contribution to the chi2 of the track
+  /// accounting for multiple scattering or not according to the flag
+  /// - Also recompute the weight matrices of the attached hits if accountForMCS=kTRUE
+  /// - Assume that track parameters at each hit are corrects
+  /// - Return kFALSE if computation failed
+  
+  // Check hits (if the first one exist, assume that the other ones exit too!)
+  AliMUONTrackParam* trackParamAtHit = (AliMUONTrackParam*) fTrackParamAtHit->First();
+  if (!trackParamAtHit->GetHitForRecPtr()) {
+    AliWarning("hit is missing");
+    return kFALSE;
+  }
+  
+  if (accountForMCS) { // Compute local chi2 taking into account multiple scattering effects
+      
+    // Compute MCS covariance matrix only once
+    TMatrixD mcsCovariances(AliMUONConstants::NTrackingCh(),AliMUONConstants::NTrackingCh());
+    ComputeMCSCovariances(mcsCovariances);
+    
+    // Make sure hit weights are consistent with following calculations
+    if (!ComputeHitWeights(&mcsCovariances)) {
+      AliWarning("cannot take into account the multiple scattering effects");
+      return ComputeLocalChi2(kFALSE);
+    }
+    
+    // Compute chi2 of the track
+    Double_t globalChi2 = ComputeGlobalChi2(kTRUE);
+    if (globalChi2 < 0.) return kFALSE;
+    
+    // Loop over removable hits and compute their local chi2
+    AliMUONTrackParam* trackParamAtHit1;
+    AliMUONHitForRec *hitForRec, *discardedHit;
+    Int_t hitNumber1, hitNumber2, currentHitNumber1, currentHitNumber2;
+    TMatrixD hitWeightsNB(fNTrackHits-1,fNTrackHits-1);
+    TMatrixD hitWeightsB(fNTrackHits-1,fNTrackHits-1);
+    Double_t *dX = new Double_t[fNTrackHits-1];
+    Double_t *dY = new Double_t[fNTrackHits-1];
+    Double_t globalChi2b;
+    while (trackParamAtHit) {
+      
+      discardedHit = trackParamAtHit->GetHitForRecPtr();
+      
+      // Recompute hit weights without the current hit
+      if (!ComputeHitWeights(hitWeightsNB, hitWeightsB, &mcsCovariances, discardedHit)) {
+  	AliWarning("cannot take into account the multiple scattering effects");
+  	ComputeLocalChi2(kFALSE);
+      }
+      
+      // Compute track chi2 without the current hit
+      globalChi2b = 0.;
+      currentHitNumber1 = 0;
+      for (hitNumber1 = 0; hitNumber1 < fNTrackHits ; hitNumber1++) { 
+    	trackParamAtHit1 = (AliMUONTrackParam*) fTrackParamAtHit->UncheckedAt(hitNumber1);
+    	hitForRec = trackParamAtHit1->GetHitForRecPtr();
+        
+        if (hitForRec == discardedHit) continue;
+        
+        // Compute and save residuals
+    	dX[currentHitNumber1] = hitForRec->GetNonBendingCoor() - trackParamAtHit1->GetNonBendingCoor();
+    	dY[currentHitNumber1] = hitForRec->GetBendingCoor() - trackParamAtHit1->GetBendingCoor();
+        
+        currentHitNumber2 = 0;
+    	for (hitNumber2 = 0; hitNumber2 < hitNumber1; hitNumber2++) {
+    	  hitForRec = ((AliMUONTrackParam*) fTrackParamAtHit->UncheckedAt(hitNumber2))->GetHitForRecPtr();
+          
+          if (hitForRec == discardedHit) continue;
+          
+          // Add contribution from covariances
+          globalChi2b += (hitWeightsNB(currentHitNumber1, currentHitNumber2) +
+        		  hitWeightsNB(currentHitNumber2, currentHitNumber1)) * dX[currentHitNumber1] * dX[currentHitNumber2] +
+        		 (hitWeightsB(currentHitNumber1, currentHitNumber2) +
+        		  hitWeightsB(currentHitNumber2, currentHitNumber1)) * dY[currentHitNumber1] * dY[currentHitNumber2];
+          
+          currentHitNumber2++;
+    	}
+        
+        // Add contribution from variances
+    	globalChi2b += hitWeightsNB(currentHitNumber1, currentHitNumber1) * dX[currentHitNumber1] * dX[currentHitNumber1] +
+        	       hitWeightsB(currentHitNumber1, currentHitNumber1) * dY[currentHitNumber1] * dY[currentHitNumber1];
+    	
+        currentHitNumber1++;
+      }
+
+      // Set local chi2
+      trackParamAtHit->SetLocalChi2(globalChi2 - globalChi2b);
+      
+      trackParamAtHit = (AliMUONTrackParam*) fTrackParamAtHit->After(trackParamAtHit);
+    }
+    
+    delete [] dX;
+    delete [] dY;
+    
+  } else { // without multiple scattering effects
+    
+    AliMUONHitForRec *discardedHit;
+    Double_t dX, dY;
+    while (trackParamAtHit) {
+      
+      // compute chi2 of removable hits only
+      if (!trackParamAtHit->IsRemovable()) {
+        trackParamAtHit = (AliMUONTrackParam*) fTrackParamAtHit->After(trackParamAtHit);
+        continue;
+      }
+      
+      discardedHit = trackParamAtHit->GetHitForRecPtr();
+      
+      // Compute residuals
+      dX = discardedHit->GetNonBendingCoor() - trackParamAtHit->GetNonBendingCoor();
+      dY = discardedHit->GetBendingCoor() - trackParamAtHit->GetBendingCoor();
+      
+      // Set local chi2
+      trackParamAtHit->SetLocalChi2(dX * dX / discardedHit->GetNonBendingReso2() + dY * dY / discardedHit->GetBendingReso2());
+    
+    trackParamAtHit = (AliMUONTrackParam*) fTrackParamAtHit->After(trackParamAtHit);
+    }
+  
+  }
+  
+  
+  return kTRUE;
+  
+}
+
+  //__________________________________________________________________________
+Double_t AliMUONTrack::ComputeGlobalChi2(Bool_t accountForMCS)
+{
+  /// Compute the chi2 of the track accounting for multiple scattering or not according to the flag
+  /// - Assume that track parameters at each hit are corrects
+  /// - Assume the hits weights matrices are corrects
+  /// - Return negative value if chi2 computation failed
+  
+  // Check hits (if the first one exist, assume that the other ones exit too!)
+  AliMUONTrackParam* trackParamAtHit = (AliMUONTrackParam*) fTrackParamAtHit->First();
+  if (!trackParamAtHit->GetHitForRecPtr()) {
+    AliWarning("hit is missing");
+    return -1.;
+  }
+  
+  Double_t chi2 = 0.;
+  
+  if (accountForMCS) {
+    
+    // Check the weight matrices
+    Bool_t weightsAvailable = kTRUE;
+    if (!fHitWeightsNonBending || !fHitWeightsBending) weightsAvailable = kFALSE;
+    else if (fHitWeightsNonBending->GetNrows() != fNTrackHits || fHitWeightsNonBending->GetNcols() != fNTrackHits ||
+  	     fHitWeightsBending->GetNrows()    != fNTrackHits || fHitWeightsBending->GetNcols()    != fNTrackHits) weightsAvailable = kFALSE;
+    
+    // if weight matrices are not available compute chi2 without MCS
+    if (!weightsAvailable) {
+      AliWarning("hit weights including multiple scattering effects are not available\n\t\t --> compute chi2 WITHOUT multiple scattering");
+      return ComputeGlobalChi2(kFALSE);
+    }
+    
+    // Compute chi2
+    AliMUONHitForRec *hitForRec;
+    Double_t *dX = new Double_t[fNTrackHits];
+    Double_t *dY = new Double_t[fNTrackHits];
+    Int_t hitNumber1, hitNumber2;
+    for (hitNumber1 = 0; hitNumber1 < fNTrackHits ; hitNumber1++) { 
+      trackParamAtHit = (AliMUONTrackParam*) fTrackParamAtHit->UncheckedAt(hitNumber1);
+      hitForRec = trackParamAtHit->GetHitForRecPtr();
+      dX[hitNumber1] = hitForRec->GetNonBendingCoor() - trackParamAtHit->GetNonBendingCoor();
+      dY[hitNumber1] = hitForRec->GetBendingCoor() - trackParamAtHit->GetBendingCoor();
+      for (hitNumber2 = 0; hitNumber2 < hitNumber1; hitNumber2++) {
+        chi2 += ((*fHitWeightsNonBending)(hitNumber1, hitNumber2) + (*fHitWeightsNonBending)(hitNumber2, hitNumber1)) * dX[hitNumber1] * dX[hitNumber2] +
+		((*fHitWeightsBending)(hitNumber1, hitNumber2) + (*fHitWeightsBending)(hitNumber2, hitNumber1)) * dY[hitNumber1] * dY[hitNumber2];
+      }
+      chi2 += ((*fHitWeightsNonBending)(hitNumber1, hitNumber1) * dX[hitNumber1] * dX[hitNumber1]) +
+	      ((*fHitWeightsBending)(hitNumber1, hitNumber1) * dY[hitNumber1] * dY[hitNumber1]);
+    }
+    delete [] dX;
+    delete [] dY;
+    
+  } else {
+    
+    AliMUONHitForRec *hitForRec;
+    Double_t dX, dY;
+    for (Int_t hitNumber = 0; hitNumber < fNTrackHits ; hitNumber++) { 
+      trackParamAtHit = (AliMUONTrackParam*) fTrackParamAtHit->UncheckedAt(hitNumber);
+      hitForRec = trackParamAtHit->GetHitForRecPtr();
+      dX = hitForRec->GetNonBendingCoor() - trackParamAtHit->GetNonBendingCoor();
+      dY = hitForRec->GetBendingCoor() - trackParamAtHit->GetBendingCoor();
+      chi2 += dX * dX / hitForRec->GetNonBendingReso2() + dY * dY / hitForRec->GetBendingReso2();
+    }
+    
+  }
+  
+  return chi2;
+  
+}
+
+  //__________________________________________________________________________
+Bool_t AliMUONTrack::ComputeHitWeights(TMatrixD* mcsCovariances)
+{
+  /// Compute the weight matrices of the attached hits, in non bending and bending direction,
+  /// accounting for multiple scattering correlations and hits resolution
+  /// - Use the provided MCS covariance matrix if any (otherwise build it temporarily)
+  /// - Assume that track parameters at each hit are corrects
+  /// - Return kFALSE if computation failed
+  
+  // Alocate memory
+  if (!fHitWeightsNonBending) fHitWeightsNonBending = new TMatrixD(fNTrackHits,fNTrackHits);
+  if (!fHitWeightsBending) fHitWeightsBending = new TMatrixD(fNTrackHits,fNTrackHits);
+  
+  // Check hits (if the first one exist, assume that the other ones exit too!)
+  if (!((AliMUONTrackParam*) fTrackParamAtHit->First())->GetHitForRecPtr()) {
+    AliWarning("hit is missing");
+    fHitWeightsNonBending->ResizeTo(0,0);
+    fHitWeightsBending->ResizeTo(0,0);
+    return kFALSE;
+  }
+  
+  // Compute weights matrices
+  if (!ComputeHitWeights(*fHitWeightsNonBending, *fHitWeightsBending, mcsCovariances)) return kFALSE;
+  
+  return kTRUE;
+  
+}
+
+  //__________________________________________________________________________
+Bool_t AliMUONTrack::ComputeHitWeights(TMatrixD& hitWeightsNB, TMatrixD& hitWeightsB, TMatrixD* mcsCovariances, AliMUONHitForRec* discardedHit) const
+{
+  /// Compute the weight matrices, in non bending and bending direction,
+  /// of the other attached hits assuming the discarded one does not exist
+  /// accounting for multiple scattering correlations and hits resolution
+  /// - Use the provided MCS covariance matrix if any (otherwise build it temporarily)
+  /// - Return kFALSE if computation failed
+  
+  // Check MCS covariance matrix and recompute it if need
+  Bool_t deleteMCSCov = kFALSE;
+  if (!mcsCovariances) {
+    
+    // build MCS covariance matrix
+    mcsCovariances = new TMatrixD(AliMUONConstants::NTrackingCh(),AliMUONConstants::NTrackingCh());
+    deleteMCSCov = kTRUE;
+    ComputeMCSCovariances(*mcsCovariances);
+    
+  } else {
+    
+    // check MCS covariance matrix size
+    if (mcsCovariances->GetNrows() != AliMUONConstants::NTrackingCh() || mcsCovariances->GetNcols() != AliMUONConstants::NTrackingCh()) {
+      ComputeMCSCovariances(*mcsCovariances);
+    }
+    
+  }
+  
+  // Resize the weights matrices; alocate memory
+  if (discardedHit) {
+    hitWeightsNB.ResizeTo(fNTrackHits-1,fNTrackHits-1);
+    hitWeightsB.ResizeTo(fNTrackHits-1,fNTrackHits-1);
+  } else {
+    hitWeightsNB.ResizeTo(fNTrackHits,fNTrackHits);
+    hitWeightsB.ResizeTo(fNTrackHits,fNTrackHits);
+  }
+  
+  // Define variables
+  AliMUONHitForRec *hitForRec1, *hitForRec2;
+  Int_t chamber1, chamber2, currentHitNumber1, currentHitNumber2;
+  
+  // Compute the covariance matrices
+  currentHitNumber1 = 0;
+  for (Int_t hitNumber1 = 0; hitNumber1 < fNTrackHits; hitNumber1++) { 
+    hitForRec1 = ((AliMUONTrackParam*) fTrackParamAtHit->UncheckedAt(hitNumber1))->GetHitForRecPtr();
+    
+    if (hitForRec1 == discardedHit) continue;
+    
+    chamber1 = hitForRec1->GetChamberNumber();
+    
+    // Loop over next hits
+    currentHitNumber2 = currentHitNumber1;
+    for (Int_t hitNumber2 = hitNumber1; hitNumber2 < fNTrackHits; hitNumber2++) {
+      hitForRec2 = ((AliMUONTrackParam*) fTrackParamAtHit->UncheckedAt(hitNumber2))->GetHitForRecPtr();
+      
+      if (hitForRec2 == discardedHit) continue;
+      
+      chamber2 = hitForRec2->GetChamberNumber();
+    
+      // Fill with MCS covariances
+      hitWeightsNB(currentHitNumber1, currentHitNumber2) = (*mcsCovariances)(chamber1,chamber2);
+      
+      // Equal contribution from multiple scattering in non bending and bending directions
+      hitWeightsB(currentHitNumber1, currentHitNumber2) = hitWeightsNB(currentHitNumber1, currentHitNumber2);
+      
+      // Add contribution from hit resolution to diagonal element and symmetrize the matrix
+      if (currentHitNumber1 == currentHitNumber2) {
+	
+	// In non bending plane
+        hitWeightsNB(currentHitNumber1, currentHitNumber1) += hitForRec1->GetNonBendingReso2();
+	// In bending plane
+	hitWeightsB(currentHitNumber1, currentHitNumber1) += hitForRec1->GetBendingReso2();
+	
+      } else {
+	
+	// In non bending plane
+	hitWeightsNB(currentHitNumber2, currentHitNumber1) = hitWeightsNB(currentHitNumber1, currentHitNumber2);
+	// In bending plane
+	hitWeightsB(currentHitNumber2, currentHitNumber1) = hitWeightsB(currentHitNumber1, currentHitNumber2);
+	
+      }
+      
+      currentHitNumber2++;
+    }
+    
+    currentHitNumber1++;
+  }
+    
+  // Inversion of covariance matrices to get the weights
+  if (hitWeightsNB.Determinant() != 0 && hitWeightsB.Determinant() != 0) {
+    hitWeightsNB.Invert();
+    hitWeightsB.Invert();
+  } else {
+    AliWarning(" Determinant = 0");
+    hitWeightsNB.ResizeTo(0,0);
+    hitWeightsB.ResizeTo(0,0);
+    if(deleteMCSCov) delete mcsCovariances;
+    return kFALSE;
+  }
+  
+  if(deleteMCSCov) delete mcsCovariances;
+  
+  return kTRUE;
+  
+}
+
+  //__________________________________________________________________________
+void AliMUONTrack::ComputeMCSCovariances(TMatrixD& mcsCovariances) const
+{
+  /// Compute the multiple scattering covariance matrix
+  /// - Assume that track parameters at each hit are corrects
+  /// - Return kFALSE if computation failed
+  
+  // Make sure the size of the covariance matrix is correct
+  Int_t nChambers = AliMUONConstants::NTrackingCh();
+  mcsCovariances.ResizeTo(nChambers,nChambers);
+  
+  // check for too many track hits
+  if (fNTrackHits > nChambers) {
+    AliWarning("more than 1 hit per chamber!!");
+    mcsCovariances.Zero();
+    return;
+  }
+  
+  // Define variables
+  AliMUONTrackParam* trackParamAtHit;
+  AliMUONHitForRec *hitForRec;
+  AliMUONTrackParam extrapTrackParam;
+  Int_t currentChamber, expectedChamber;
+  Double_t *mcsAngle2 = new Double_t[nChambers];
+  Double_t *zMCS = new Double_t[nChambers];
+  
+  // Compute multiple scattering dispersion angle at each chamber
+  // and save the z position where it is calculated
+  currentChamber = 0;
+  expectedChamber = 0;
+  for (Int_t hitNumber = 0; hitNumber < fNTrackHits; hitNumber++) {
+    trackParamAtHit = (AliMUONTrackParam*) fTrackParamAtHit->UncheckedAt(hitNumber);
+    hitForRec = trackParamAtHit->GetHitForRecPtr();
+    
+    // look for missing chambers if any
+    currentChamber = hitForRec->GetChamberNumber();
+    while (currentChamber > expectedChamber) {
+      
+      // Save the z position where MCS dispersion is calculated
+      zMCS[expectedChamber] = AliMUONConstants::DefaultChamberZ(expectedChamber);
+      
+      // Do not take into account MCS in chambers prior the first hit
+      if (hitNumber > 0) {
+        
+        // Get track parameters at missing chamber z
+        extrapTrackParam = *trackParamAtHit;
+        AliMUONTrackExtrap::ExtrapToZ(&extrapTrackParam, zMCS[expectedChamber]);
+        
+        // Save multiple scattering dispersion angle in missing chamber
+        mcsAngle2[expectedChamber] = AliMUONTrackExtrap::GetMCSAngle2(extrapTrackParam,AliMUONConstants::ChamberThicknessInX0(),1.);
+        
+      } else mcsAngle2[expectedChamber] = 0.;
+      
+      expectedChamber++;
+    }
+    
+    // Save z position where MCS dispersion is calculated
+    zMCS[currentChamber] = trackParamAtHit->GetZ();
+    
+    // Save multiple scattering dispersion angle in current chamber
+    mcsAngle2[currentChamber] = AliMUONTrackExtrap::GetMCSAngle2(*trackParamAtHit,AliMUONConstants::ChamberThicknessInX0(),1.);
+    
+    expectedChamber++;
+  }
+  
+  // complete array of z if last hit is on the last but one chamber
+  if (currentChamber != nChambers-1) zMCS[nChambers-1] = AliMUONConstants::DefaultChamberZ(nChambers-1);
+  
+  
+  // Compute the covariance matrix
+  for (Int_t chamber1 = 0; chamber1 < nChambers; chamber1++) { 
+    
+    for (Int_t chamber2 = chamber1; chamber2 < nChambers; chamber2++) {
+      
+      // Initialization to 0 (diagonal plus upper triangular part)
+      mcsCovariances(chamber1, chamber2) = 0.;
+      
+      // Compute contribution from multiple scattering in upstream chambers
+      for (currentChamber = 0; currentChamber < chamber1; currentChamber++) { 	
+	mcsCovariances(chamber1, chamber2) += (zMCS[chamber1] - zMCS[currentChamber]) * (zMCS[chamber2] - zMCS[currentChamber]) * mcsAngle2[currentChamber];
+      }
+      
+      // Symetrize the matrix
+      mcsCovariances(chamber2, chamber1) = mcsCovariances(chamber1, chamber2);
+    }
+    
+  }
+    
+  delete [] mcsAngle2;
+  delete [] zMCS;
+  
 }
 
   //__________________________________________________________________________
@@ -335,6 +933,16 @@ Int_t AliMUONTrack::HitsInCommon(AliMUONTrack* track) const
     trackParamAtHit1 = (AliMUONTrackParam*) this->fTrackParamAtHit->After(trackParamAtHit1);
   } // trackParamAtHit1
   return hitsInCommon;
+}
+
+  //__________________________________________________________________________
+Double_t AliMUONTrack::GetNormalizedChi2() const
+{
+  /// return the chi2 value divided by the number of degrees of freedom (or 1.e10 if ndf < 0)
+  
+  Double_t numberOfDegFree = (2. * fNTrackHits - 5.);
+  if (numberOfDegFree > 0.) return fGlobalChi2 / numberOfDegFree;
+  else return 1.e10;
 }
 
   //__________________________________________________________________________
@@ -374,156 +982,6 @@ Bool_t* AliMUONTrack::CompatibleTrack(AliMUONTrack * track, Double_t sigma2Cut) 
   }
   
   return nCompHit;
-}
-
-  //__________________________________________________________________________
-Double_t AliMUONTrack::TryOneHitForRec(AliMUONHitForRec* hitForRec)
-{
-/// Test the compatibility between the track and the hitForRec:
-/// return the corresponding Chi2
-  
-  // Get track parameters and their covariances at the z position of hitForRec
-  AliMUONTrackParam extrapTrackParam(fExtrapTrackParam);
-  AliMUONTrackExtrap::ExtrapToZCov(&extrapTrackParam, hitForRec->GetZ());
-  
-  // Set differences between trackParam and hitForRec in the bending and non bending directions
-  TMatrixD dPos(2,1);
-  dPos(0,0) = hitForRec->GetNonBendingCoor() - extrapTrackParam.GetNonBendingCoor();
-  dPos(1,0) = hitForRec->GetBendingCoor() - extrapTrackParam.GetBendingCoor();
-  
-  // quick test of hitForRec compatibility within a wide road of x*y = 10*1 cm2 to save computing time
-  if (TMath::Abs(dPos(0,0)) > fgkMaxTrackingDistanceNonBending ||
-      TMath::Abs(dPos(1,0)) > fgkMaxTrackingDistanceBending) return 1.e10;
-  
-  // Set the error matrix from trackParam covariances and hitForRec resolution
-  TMatrixD* paramCov = extrapTrackParam.GetCovariances();
-  TMatrixD error(2,2);
-  error(0,0) = (*paramCov)(0,0) + hitForRec->GetNonBendingReso2();
-  error(0,1) = (*paramCov)(0,2);
-  error(1,0) = (*paramCov)(2,0);
-  error(1,1) = (*paramCov)(2,2) + hitForRec->GetBendingReso2();
-  
-  // Invert the error matrix for Chi2 calculation
-  if (error.Determinant() != 0) {
-    error.Invert();
-  } else {
-    AliWarning(" Determinant error=0");
-    return 1.e10;
-  }
-  
-  // Compute the Chi2 value
-  TMatrixD tmp(error,TMatrixD::kMult,dPos);
-  TMatrixD result(dPos,TMatrixD::kTransposeMult,tmp);
-  
-  return result(0,0);
-  
-}
-
-  //__________________________________________________________________________
-Double_t AliMUONTrack::TryTwoHitForRec(AliMUONHitForRec* hitForRec1, AliMUONHitForRec* hitForRec2)
-{
-/// Test the compatibility between the track and the 2 hitForRec together:
-/// return the corresponding Chi2 accounting for covariances between the 2 hitForRec
-  
-  // Get track parameters and their covariances at the z position of the first hitForRec
-  AliMUONTrackParam extrapTrackParam1(fExtrapTrackParam);
-  AliMUONTrackExtrap::ExtrapToZCov(&extrapTrackParam1, hitForRec1->GetZ());
-  
-  // Get track parameters at second hitForRec
-  AliMUONTrackParam extrapTrackParam2(extrapTrackParam1);
-  AliMUONTrackExtrap::ExtrapToZ(&extrapTrackParam2, hitForRec2->GetZ());
-  
-  // Set differences between track and the 2 hitForRec in the bending and non bending directions
-  TMatrixD dPos(4,1);
-  dPos(0,0) = hitForRec1->GetNonBendingCoor() - extrapTrackParam1.GetNonBendingCoor();
-  dPos(1,0) = hitForRec1->GetBendingCoor() - extrapTrackParam1.GetBendingCoor();
-  dPos(2,0) = hitForRec2->GetNonBendingCoor() - extrapTrackParam2.GetNonBendingCoor();
-  dPos(3,0) = hitForRec2->GetBendingCoor() - extrapTrackParam2.GetBendingCoor();
-  
-  // quick tests of hitForRec compatibility within a wide road of x*y = 1*1 cm2 to save computing time
-  if (TMath::Abs(dPos(0,0)) > fgkMaxTrackingDistanceNonBending ||
-      TMath::Abs(dPos(1,0)) > fgkMaxTrackingDistanceBending    ||
-      TMath::Abs(dPos(2,0)) > fgkMaxTrackingDistanceNonBending ||
-      TMath::Abs(dPos(3,0)) > fgkMaxTrackingDistanceBending) return 1.e10;
-  
-  // Calculate the error matrix from the track parameter covariances at first hitForRec
-  TMatrixD error(4,4);
-  error = 0.;
-  if (extrapTrackParam1.CovariancesExist()) {
-    // Get the pointer to the parameter covariance matrix at first hitForRec
-    TMatrixD* paramCov = extrapTrackParam1.GetCovariances();
-    
-    // Save track parameters at first hitForRec
-    AliMUONTrackParam extrapTrackParam1Save(extrapTrackParam1);
-    Double_t nonBendingCoor1 	     = extrapTrackParam1Save.GetNonBendingCoor();
-    Double_t nonBendingSlope1 	     = extrapTrackParam1Save.GetNonBendingSlope();
-    Double_t bendingCoor1 	     = extrapTrackParam1Save.GetBendingCoor();
-    Double_t bendingSlope1 	     = extrapTrackParam1Save.GetBendingSlope();
-    Double_t inverseBendingMomentum1 = extrapTrackParam1Save.GetInverseBendingMomentum();
-    Double_t z1			     = extrapTrackParam1Save.GetZ();
-    
-    // Save track coordinates at second hitForRec
-    Double_t nonBendingCoor2	     = extrapTrackParam2.GetNonBendingCoor();
-    Double_t bendingCoor2  	     = extrapTrackParam2.GetBendingCoor();
-    
-    // Calculate the jacobian related to the transformation between track parameters
-    // at first hitForRec and track coordinates at the 2 hitForRec z-position
-    TMatrixD jacob(4,5);
-    jacob = 0.;
-    // first derivative at the first hitForRec:
-    jacob(0,0) = 1.; // dx1/dx
-    jacob(1,2) = 1.; // dy1/dy
-    // first derivative at the second hitForRec:
-    Double_t dParam[5];
-    for (Int_t i=0; i<5; i++) {
-      // Skip jacobian calculation for parameters with no associated error
-      if ((*paramCov)(i,i) == 0.) continue;
-      // Small variation of parameter i only
-      for (Int_t j=0; j<5; j++) {
-        if (j==i) {
-          dParam[j] = TMath::Sqrt((*paramCov)(i,i));
-	  if (j == 4) dParam[j] *= TMath::Sign(1.,-inverseBendingMomentum1); // variation always in the same direction
-        } else dParam[j] = 0.;
-      }
-      // Set new track parameters at first hitForRec
-      extrapTrackParam1Save.SetNonBendingCoor	     (nonBendingCoor1	      + dParam[0]);
-      extrapTrackParam1Save.SetNonBendingSlope	     (nonBendingSlope1	      + dParam[1]);
-      extrapTrackParam1Save.SetBendingCoor	     (bendingCoor1 	      + dParam[2]);
-      extrapTrackParam1Save.SetBendingSlope	     (bendingSlope1	      + dParam[3]);
-      extrapTrackParam1Save.SetInverseBendingMomentum(inverseBendingMomentum1 + dParam[4]);
-      extrapTrackParam1Save.SetZ  		     (z1);
-      // Extrapolate new track parameters to the z position of the second hitForRec
-      AliMUONTrackExtrap::ExtrapToZ(&extrapTrackParam1Save,hitForRec2->GetZ());
-      // Calculate the jacobian
-      jacob(2,i) = (extrapTrackParam1Save.GetNonBendingCoor()  - nonBendingCoor2) / dParam[i]; // dx2/dParami
-      jacob(3,i) = (extrapTrackParam1Save.GetBendingCoor()     - bendingCoor2   ) / dParam[i]; // dy2/dParami
-    }
-    
-    // Calculate the error matrix
-    TMatrixD tmp((*paramCov),TMatrixD::kMultTranspose,jacob);
-    error = TMatrixD(jacob,TMatrixD::kMult,tmp);
-  }
-  
-  // Add hitForRec resolution to the error matrix
-  error(0,0) += hitForRec1->GetNonBendingReso2();
-  error(1,1) += hitForRec1->GetBendingReso2();
-  error(2,2) += hitForRec2->GetNonBendingReso2();
-  error(3,3) += hitForRec2->GetBendingReso2();
-  
-  // invert the error matrix for Chi2 calculation
-  if (error.Determinant() != 0) {
-    error.Invert();
-  } else {
-    AliWarning(" Determinant error=0");
-    return 1.e10;
-  }
-  
-  // Compute the Chi2 value
-  TMatrixD tmp2(error,TMatrixD::kMult,dPos);
-  TMatrixD result(dPos,TMatrixD::kTransposeMult,tmp2);
-  
-  return result(0,0);
-  
 }
 
   //__________________________________________________________________________

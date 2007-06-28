@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 /// \class AliMUONTracker
 ///
 /// Steering class for use in global tracking framework;
@@ -24,10 +26,6 @@
 
 #include "AliMUONTracker.h"
 
-#include "AliESD.h"
-#include "AliESDMuonTrack.h"
-#include "AliESDVertex.h"
-#include "AliLoader.h"
 #include "AliMUONTrack.h"
 #include "AliMUONTrackExtrap.h"
 #include "AliMUONTrackHitPattern.h"
@@ -39,9 +37,15 @@
 #include "AliMUONTriggerTrackStoreV1.h"
 #include "AliMUONVClusterStore.h"
 #include "AliMUONVTriggerStore.h"
+
+#include "AliESD.h"
+#include "AliESDMuonTrack.h"
+#include "AliESDVertex.h"
+#include "AliLoader.h"
+#include "AliLog.h"
+
 #include <Riostream.h>
 #include <TTree.h>
-#include "AliLog.h"
 
 //_____________________________________________________________________________
 AliMUONTracker::AliMUONTracker(AliLoader* loader,
@@ -259,13 +263,9 @@ void AliMUONTracker::SetOption(Option_t* option)
   {
     fTrackReco = new AliMUONTrackReconstructor;
   }
-  else if (strstr(option,"Combi")) 
-  {
-    fTrackReco = new AliMUONTrackReconstructorK("Combi");
-  }
   else 
   {
-    fTrackReco = new AliMUONTrackReconstructorK("Kalman");
+    fTrackReco = new AliMUONTrackReconstructorK();
   }
 }
 

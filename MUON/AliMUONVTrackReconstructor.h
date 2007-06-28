@@ -14,6 +14,8 @@
 #include <TObject.h>
 
 class TClonesArray;
+class AliMUONTrackParam;
+class AliMUONHitForRec;
 class AliMUONTriggerTrack;
 class AliMUONTrackHitPattern;
 class AliMUONVClusterStore;
@@ -33,11 +35,7 @@ class AliMUONVTrackReconstructor : public TObject {
   // Parameters for track reconstruction: public methods
   // Get and Set, Set to defaults
            /// Return minimum value (GeV/c) of momentum in bending plane
-  Double_t GetMinBendingMomentum(void) const {return fMinBendingMomentum;}
-           /// Return chamber resolution (cm) in bending plane
-  Double_t GetBendingResolution(void) const {return fBendingResolution;}
-           /// Return chamber resolution (cm) in non-bending plane
-  Double_t GetNonBendingResolution(void) const {return fNonBendingResolution;}
+  Double_t GetMinBendingMomentum() const {return fMinBendingMomentum;}
 
   // Reconstructed tracks
            /// Return number of reconstructed tracks
@@ -45,7 +43,7 @@ class AliMUONVTrackReconstructor : public TObject {
            /// Set number of reconstructed tracks
   void SetNRecTracks(Int_t NRecTracks) {fNRecTracks = NRecTracks;}
            /// Return array of reconstructed tracks
-  TClonesArray* GetRecTracksPtr(void) const {return fRecTracksPtr;} // Array
+  TClonesArray* GetRecTracksPtr() const {return fRecTracksPtr;} // Array
  
   // Functions
   void EventReconstruct(const AliMUONVClusterStore& clusterStore,
@@ -59,25 +57,27 @@ class AliMUONVTrackReconstructor : public TObject {
                                  const AliMUONVTriggerTrackStore& triggerTrackStore,
                                  const AliMUONVTriggerStore& triggerStore,
                                  const AliMUONTrackHitPattern& trackHitPattern);
-    
+  
+  
  protected:
 
   // Defaults parameters for reconstruction
   static const Double_t fgkDefaultMinBendingMomentum; ///< default min. bending momentum for reconstruction
   static const Double_t fgkDefaultMaxBendingMomentum; ///< default max. bending momentum for reconstruction
-  static const Double_t fgkDefaultBendingResolution; ///< default bending coordinate resolution for reconstruction 
-  static const Double_t fgkDefaultNonBendingResolution; ///< default non bending coordinate resolution for reconstruction
-  static const Double_t fgkDefaultBendingVertexDispersion; ///< default vertex dispersion in bending plane for reconstruction
-  static const Double_t fgkDefaultNonBendingVertexDispersion; ///< default vertex dispersion in non bending plane for reconstruction
   static const Double_t fgkDefaultMaxNormChi2MatchTrigger; ///< default maximum normalized chi2 of tracking/trigger track matching
+  
+  // Parameters for track reconstruction
+  static const Double_t fgkSigmaToCutForTracking; ///< cut in sigma to apply on cluster local chi2 and track global chi2 during tracking
+  static const Double_t fgkSigmaToCutForImprovement; ///< cut in sigma to apply on cluster local chi2 during track improvement
+  static const Bool_t   fgkTrackAllTracks; ///< kTRUE to track all the possible candidates; kFALSE to track only the best ones
+  static const Double_t fgkMaxTrackingDistanceBending;    ///< Maximum distance to the track to search for compatible hitForRec(s) in bending direction
+  static const Double_t fgkMaxTrackingDistanceNonBending; ///< Maximum distance to the track to search for compatible hitForRec(s) in non bending direction
+  static const Bool_t   fgkRecoverTracks; ///< kTRUE to try to recover the tracks being lost during reconstruction
+  static const Bool_t   fgkImproveTracks; ///< kTRUE to try to improve the reconstructed tracks
   
   // Parameters for track reconstruction
   Double_t fMinBendingMomentum; ///< minimum value (GeV/c) of momentum in bending plane
   Double_t fMaxBendingMomentum; ///< maximum value (GeV/c) of momentum in bending plane
-  Double_t fBendingResolution; ///< chamber resolution (cm) in bending plane
-  Double_t fNonBendingResolution; ///< chamber resolution (cm) in non bending plane
-  Double_t fBendingVertexDispersion; ///< vextex dispersion (cm) in bending plane
-  Double_t fNonBendingVertexDispersion; ///< vextex dispersion (cm) in non bending plane
   Double_t fMaxNormChi2MatchTrigger; ///< maximum normalized chi2 of tracking/trigger track matching
   
   TClonesArray* fHitsForRecPtr; ///< pointer to the array of hits for reconstruction
@@ -89,31 +89,40 @@ class AliMUONVTrackReconstructor : public TObject {
   TClonesArray *fRecTracksPtr; ///< pointer to array of reconstructed tracks
   Int_t fNRecTracks; ///< number of reconstructed tracks
 
+
   // Functions
   AliMUONVTrackReconstructor (const AliMUONVTrackReconstructor& rhs); ///< copy constructor
   AliMUONVTrackReconstructor& operator=(const AliMUONVTrackReconstructor& rhs); ///< assignment operator
   
-  void SortHitsForRecWithIncreasingChamber();
-  TClonesArray *MakeSegmentsInStation(Int_t station);
+  /// Make track candidats from clusters in stations(1..) 4 and 5
+  virtual void MakeTrackCandidates() = 0;
+  /// Follow tracks in stations(1..) 3, 2 and 1
+  virtual void FollowTracks() = 0;
+  /// Improve the reconstructed tracks
+  virtual void ImproveTracks() = 0;
+  /// Finalize the tracking results
+  virtual void Finalize() = 0;
+  
+  TClonesArray* MakeSegmentsInStation(Int_t station);
 
-               /// \todo add comment
-  virtual void AddHitsForRecFromRawClusters(const AliMUONVClusterStore& clusterStore);
-               /// \todo add comment
-  virtual void MakeTracks(void) = 0;
-               /// \todo add comment
-  virtual void MakeTrackCandidates(void) = 0;
-               /// \todo add comment
-  virtual void FollowTracks(void) = 0;
-               /// \todo add comment
-  virtual void RemoveDoubleTracks(void) = 0;
-               /// \todo add comment
-  virtual void FillMUONTrack(void) = 0;
+  void RemoveIdenticalTracks();
+  void RemoveDoubleTracks();
+
+  Double_t TryOneHitForRec(const AliMUONTrackParam &trackParam, AliMUONHitForRec* hitForRec,
+  			   AliMUONTrackParam &trackParamAtHit, Bool_t updatePropagator = kFALSE);
+  
 
  private:
   
   // Functions
-  void ResetTracks(void);
-  void ResetHitsForRec(void);
+  void ResetTracks();
+  void ResetHitsForRec();
+  
+  void AddHitsForRecFromRawClusters(const AliMUONVClusterStore& clusterStore);
+  void SortHitsForRecWithIncreasingChamber();
+  
+  void MakeTracks();
+  
   
   ClassDef(AliMUONVTrackReconstructor, 0) // MUON track reconstructor in ALICE
 };
