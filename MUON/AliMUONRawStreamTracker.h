@@ -83,13 +83,19 @@ class AliMUONRawStreamTracker: public TObject {
     /// Whether the iteration is finished or not
     Bool_t IsDone() const;
 
+
+    /// add error message into error logger
+    void AddErrorMessage();
+
+    /// Enable error info logger
+    void EnabbleErrorLogger() {fEnableErrorLogger = kTRUE;}
+
     /// error numbers
     enum rawStreamTrackerError {
       kGlitchErr      = 1, ///< glitch error 
       kPaddingWordErr = 2, ///< padding word error
       kParityErr      = 3  ///< parity error
     };
-
 
   private :
     /// Not implemented
@@ -101,9 +107,6 @@ class AliMUONRawStreamTracker: public TObject {
     Bool_t GetNextBlockHeader();
     Bool_t GetNextDspHeader();
     Bool_t GetNextBusStruct();
-
-    /// add error message into error logger
-    void AddErrorMessage();
 
  
  private:
@@ -121,6 +124,7 @@ class AliMUONRawStreamTracker: public TObject {
     AliMUONBusStruct* fCurrentBusStruct; //!< for iterator: current bus ptr
     Int_t fCurrentBusStructIndex; //!< for iterator: current bus index    
     Int_t fCurrentDataIndex; //!< for iterator: current data index
+    Bool_t fEnableErrorLogger; //!< flag to enable the error info logger
     
     ClassDef(AliMUONRawStreamTracker, 3)    // base class for reading MUON raw digits
 };

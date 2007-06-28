@@ -54,6 +54,9 @@ class AliMUONRawStreamTrigger: public TObject {
     /// add error message into error logger
     void AddErrorMessage();
 
+    /// Enable error info logger
+    void EnabbleErrorLogger() {fEnableErrorLogger = kTRUE;}
+
     /// error numbers
     enum rawStreamTriggerError {
       kDarcEoWErr   = 6, ///< end of Darc word error 
@@ -76,6 +79,7 @@ class AliMUONRawStreamTrigger: public TObject {
     Int_t  fSubEntries;   ///< entries of buspatch structure
     Bool_t fNextDDL;      ///< flag for next DDL to be read
     Int_t  fMaxDDL;       ///< maximum number of DDL in DATE file
+    Bool_t fEnableErrorLogger; //!< flag to enable the error info logger
 
     ClassDef(AliMUONRawStreamTrigger, 3)    // base class for reading MUON trigger rawdata
 };

@@ -49,7 +49,8 @@ AliMUONRawStreamTrigger::AliMUONRawStreamTrigger()
     fDDL(0),
     fSubEntries(0),
     fNextDDL(kTRUE),
-    fMaxDDL(2)
+    fMaxDDL(2),
+    fEnableErrorLogger(kFALSE)
 {
   ///
   /// create an object to read MUON raw digits
@@ -67,8 +68,8 @@ AliMUONRawStreamTrigger::AliMUONRawStreamTrigger(AliRawReader* rawReader)
     fDDL(0),
     fSubEntries(0),
     fNextDDL(kTRUE),
-    fMaxDDL(2)
-
+    fMaxDDL(2),
+    fEnableErrorLogger(kFALSE)
 {
   ///
   /// ctor with AliRawReader as argument
@@ -141,7 +142,7 @@ Bool_t AliMUONRawStreamTrigger::NextDDL()
   if (!fRawReader->ReadNext((UChar_t*)buffer, totalDataWord)) return kFALSE; 
   
   fPayload->Decode(buffer);
-  AddErrorMessage();
+  if (fEnableErrorLogger) AddErrorMessage();
 
   fDDL++;
 

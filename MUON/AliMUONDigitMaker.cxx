@@ -69,7 +69,7 @@ ClassImp(AliMUONDigitMaker) // Class implementation in ROOT context
 /// \endcond
 
 //__________________________________________________________________________
-AliMUONDigitMaker::AliMUONDigitMaker()
+AliMUONDigitMaker::AliMUONDigitMaker(Bool_t enableErrorLogger)
   : TObject(),
     fScalerEvent(kFALSE),
     fMakeTriggerDigits(kFALSE),
@@ -86,6 +86,10 @@ AliMUONDigitMaker::AliMUONDigitMaker()
   AliDebug(1,"");
 
   // Standard Constructor
+  if (enableErrorLogger) {
+    fRawStreamTracker->EnabbleErrorLogger();
+    fRawStreamTrigger->EnabbleErrorLogger();
+  }
 
   fTrackerTimer.Start(kTRUE); fTrackerTimer.Stop();
   fTriggerTimer.Start(kTRUE); fTriggerTimer.Stop();

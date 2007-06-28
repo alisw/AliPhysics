@@ -28,7 +28,7 @@ class AliMUONVTriggerStore;
 class AliMUONDigitMaker : public TObject 
 {
  public:
-  AliMUONDigitMaker(); // Constructor
+  AliMUONDigitMaker(Bool_t enableErrorLogger = kTRUE); // Constructor
   virtual ~AliMUONDigitMaker(void); // Destructor
     
   // write raw data
@@ -57,7 +57,7 @@ private:
 
 private:
 
-  Bool_t           fScalerEvent;       //!< flag to generates scaler event
+  Bool_t fScalerEvent;       //!< flag to generates scaler event
   Bool_t fMakeTriggerDigits; //!< whether or not we should generate digits for the trigger
   
   AliMUONRawStreamTracker* fRawStreamTracker;  //!< pointer of raw stream for tracker
@@ -69,7 +69,7 @@ private:
 
   AliMUONVDigitStore* fDigitStore; //!< not owner
   AliMUONVTriggerStore* fTriggerStore; //!< not owner
-  
+
   ClassDef(AliMUONDigitMaker,5) // MUON digit maker from rawdata
 };
 	

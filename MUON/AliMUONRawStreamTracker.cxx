@@ -27,9 +27,9 @@
 /// It can loop also over DDL and store the decoded rawdata in TClonesArray
 /// in Payload class.
 /// 
-/// First version implement for Tracker
+/// Version implement for Tracker
 ///
-/// \author Christian Finck
+/// \author Christian Finck & Laurent Aphecetche
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliMUONRawStreamTracker.h"
@@ -51,19 +51,20 @@ ClassImp(AliMUONRawStreamTracker)
 
 AliMUONRawStreamTracker::AliMUONRawStreamTracker()
 : TObject(),
-fRawReader(0x0),
-fDDL(0),
-fMaxDDL(20),
-fPayload(new AliMUONPayloadTracker()),
-fCurrentDDL(0),
-fCurrentDDLIndex(fMaxDDL),
-fCurrentBlockHeader(0),
-fCurrentBlockHeaderIndex(0),
-fCurrentDspHeader(0),
-fCurrentDspHeaderIndex(0),
-fCurrentBusStruct(0),
-fCurrentBusStructIndex(0),
-fCurrentDataIndex(0)
+  fRawReader(0x0),
+  fDDL(0),
+  fMaxDDL(20),
+  fPayload(new AliMUONPayloadTracker()),
+  fCurrentDDL(0),
+  fCurrentDDLIndex(fMaxDDL),
+  fCurrentBlockHeader(0),
+  fCurrentBlockHeaderIndex(0),
+  fCurrentDspHeader(0),
+  fCurrentDspHeaderIndex(0),
+  fCurrentBusStruct(0),
+  fCurrentBusStructIndex(0),
+  fCurrentDataIndex(0),
+  fEnableErrorLogger(kFALSE)
 {
   ///
   /// create an object to read MUON raw digits
@@ -76,19 +77,20 @@ fCurrentDataIndex(0)
 //_________________________________________________________________
 AliMUONRawStreamTracker::AliMUONRawStreamTracker(AliRawReader* rawReader)
 : TObject(),
-fRawReader(rawReader),
-fDDL(0),
-fMaxDDL(20),
-fPayload(new AliMUONPayloadTracker()),
-fCurrentDDL(0L),
-fCurrentDDLIndex(fMaxDDL),
-fCurrentBlockHeader(0),
-fCurrentBlockHeaderIndex(0),
-fCurrentDspHeader(0),
-fCurrentDspHeaderIndex(0),
-fCurrentBusStruct(0),
-fCurrentBusStructIndex(0),
-fCurrentDataIndex(0)
+  fRawReader(rawReader),
+  fDDL(0),
+  fMaxDDL(20),
+  fPayload(new AliMUONPayloadTracker()),
+  fCurrentDDL(0L),
+  fCurrentDDLIndex(fMaxDDL),
+  fCurrentBlockHeader(0),
+  fCurrentBlockHeaderIndex(0),
+  fCurrentDspHeader(0),
+  fCurrentDspHeaderIndex(0),
+  fCurrentBusStruct(0),
+  fCurrentBusStructIndex(0),
+  fCurrentDataIndex(0),
+  fEnableErrorLogger(kFALSE)
 {
   ///
   /// ctor with AliRawReader as argument
@@ -209,7 +211,7 @@ AliMUONRawStreamTracker::GetNextDDL()
   
   Bool_t ok = fPayload->Decode(buffer, totalDataWord/4);
   
-  AddErrorMessage();
+  if (fEnableErrorLogger) AddErrorMessage();
 
   delete[] buffer;
   
@@ -364,7 +366,7 @@ Bool_t AliMUONRawStreamTracker::NextDDL()
   
   Bool_t ok = fPayload->Decode(buffer, totalDataWord/4);
 
-  AddErrorMessage();
+  if (fEnableErrorLogger) AddErrorMessage();
 
   delete[] buffer;
   
