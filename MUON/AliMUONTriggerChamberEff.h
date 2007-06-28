@@ -31,8 +31,8 @@ public:
     
     virtual ~AliMUONTriggerChamberEff();
 
-    AliMUONTriggerChamberEff(const AliMUONTriggerChamberEff& other); // copy constructor
-    AliMUONTriggerChamberEff& operator=(const AliMUONTriggerChamberEff& other); // assignment operator
+    AliMUONTriggerChamberEff(const AliMUONTriggerChamberEff& other); 
+    AliMUONTriggerChamberEff& operator=(const AliMUONTriggerChamberEff& other);
     
     /// Set Reproduce trigger response
     void SetReproduceTrigResponse(Bool_t reproduceTrigRes=kFALSE)
@@ -64,12 +64,12 @@ private:
     static const Int_t fgkNslats=18;   ///< Number of slats per chamber
     static const Int_t fgkNboards=234; ///< Number of trigger boards per chamber
 
-    Int_t fTrigger34[fgkNchambers][fgkNcathodes]; //< Array counting # of times chamber was inefficient
-    Int_t fTrigger44[fgkNcathodes]; //< Array counting # of times all chambers were efficient
-    Int_t fInefficientSlat[fgkNchambers][fgkNcathodes][fgkNslats]; //< Array counting # of times slats were inefficient
-    Int_t fHitPerSlat[fgkNchambers][fgkNcathodes][fgkNslats]; //< Array counting # of times slats were efficient
-    Int_t fInefficientBoard[fgkNchambers][fgkNcathodes][fgkNboards]; //< Array counting # of times boards were inefficient
-    Int_t fHitPerBoard[fgkNchambers][fgkNcathodes][fgkNboards]; //< Array counting # of times boards were efficient
+    Int_t fTrigger34[fgkNchambers][fgkNcathodes]; ///< Array counting # of times chamber was inefficient
+    Int_t fTrigger44[fgkNcathodes]; ///< Array counting # of times all chambers were efficient
+    Int_t fInefficientSlat[fgkNchambers][fgkNcathodes][fgkNslats]; ///< Array counting # of times slats were inefficient
+    Int_t fHitPerSlat[fgkNchambers][fgkNcathodes][fgkNslats]; ///< Array counting # of times slats were efficient
+    Int_t fInefficientBoard[fgkNchambers][fgkNcathodes][fgkNboards]; ///< Array counting # of times boards were inefficient
+    Int_t fHitPerBoard[fgkNchambers][fgkNcathodes][fgkNboards]; ///< Array counting # of times boards were efficient
     
     const AliMUONGeometryTransformer* fTransformer; //!< geometry transformer
     const AliMUONDigitMaker* fDigitMaker; //!< pointer to digit maker

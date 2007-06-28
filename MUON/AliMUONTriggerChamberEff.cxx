@@ -119,6 +119,8 @@ AliMUONTriggerChamberEff::AliMUONTriggerChamberEff(const AliMUONTriggerChamberEf
      fDebugLevel(other.fDebugLevel),
      fkMaxDistance(other.fkMaxDistance)
 {
+/// copy constructor
+
     for(Int_t ch=0; ch<fgkNchambers; ch++){
 	for(Int_t cath=0; cath<fgkNcathodes; cath++){
 	    fTrigger34[ch][cath] = other.fTrigger34[ch][cath];
