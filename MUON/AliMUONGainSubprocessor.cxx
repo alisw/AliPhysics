@@ -189,7 +189,7 @@ AliMUONGainSubprocessor::ReadFile(const char* filename)
   Int_t busPatchID, manuID, manuChannel;
   Float_t a0, a1;
   Int_t thres;
-  Int_t qual;
+  UInt_t qual;
   const Int_t kSaturation(3000); // FIXME: how to get this number ?
   
   static const Int_t kNchannels(AliMpConstants::ManuNofChannels());
