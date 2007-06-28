@@ -18,7 +18,6 @@
 #pragma link C++ class AliMUONTrackReconstructorK+; 
 #pragma link C++ class AliMUONTracker+;
 #pragma link C++ class AliMUONTrack+; 
-#pragma link C++ class AliMUONTrackK+; 
 #pragma link C++ class AliMUONTrackParam+; 
 #pragma link C++ class AliMUONTrackExtrap+; 
 #pragma link C++ class AliMUONTriggerTrack+; 

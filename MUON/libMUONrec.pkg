@@ -9,7 +9,6 @@ SRCS:= AliMUONClusterReconstructor.cxx \
        AliMUONTrackReconstructorK.cxx \
        AliMUONTracker.cxx \
        AliMUONTrack.cxx \
-       AliMUONTrackK.cxx \
        AliMUONTrackParam.cxx \
        AliMUONTrackExtrap.cxx \
        AliMUONTriggerTrack.cxx \
