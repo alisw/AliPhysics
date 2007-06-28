@@ -36,6 +36,7 @@
 // (Nov. 05, added DDL)
 // (June 06, correction for St123)
 // (Feb. 07, add 1st manu list for St12 (starting on NB !) and new ddl sharing for station 3)
+// (June. 07, new numbering of station 345, and buspatch starts at 1)
 
 
 void MUONGenerateBusPatch()
@@ -72,16 +73,7 @@ void MUONGenerateBusPatch()
   Char_t manuListSt2[] 
       = " 1,27,53,79,105,131,157,183,201,214,226,246,1025,1051,1077,1103,1129,1155,1181,1207,1225,1238,1251,1269";
 
-  Int_t idCh5swp1 = 5; // 1/4 chamber for DDL on horizontal
-  Int_t idCh5swp2 = 10; // 1/4 chamber for DDL on horizontal
-  Int_t idCh5swp3 = 14; // 1/4 chamber for DDL on horizontal
 
-  Int_t idCh6swp1 = 5; // 1/4 chamber for DDL on horizontal
-  Int_t idCh6swp2 = 9; // 1/4 chamber for DDL on horizontal
-  Int_t idCh6swp3 = 14; // 1/4 chamber for DDL on horizontal
-
-  Int_t idSt45swp1 = 7; // half chamber for DDL in vertical cutting twice the official numbering
-  Int_t idSt45swp2 = 20;
 
   Int_t iDDL = 0;
   // station 1 & 2
@@ -95,18 +87,18 @@ void MUONGenerateBusPatch()
     idDE = idSt12[j];
     if (idDE % 100 == 0) {
       iDDL++;
-      begin[cursor] = AliMpBusPatch::GetGlobalBusID(0, iDDL-1);
+      begin[cursor] = AliMpBusPatch::GetGlobalBusID(1, iDDL-1);
       cout << "# Chamber " << idDE/100 << endl;
       out  << "# Chamber " << idDE/100 << endl;
     }
     if (idDE % 100 == 1) { 
       iDDL++;
-      begin[cursor] = AliMpBusPatch::GetGlobalBusID(0, iDDL-1);
+      begin[cursor] = AliMpBusPatch::GetGlobalBusID(1, iDDL-1);
     }
    
     if (idDE % 100 == 3) {
       iDDL--;
-      begin[cursor] = AliMpBusPatch::GetGlobalBusID(0, iDDL-1) + nbBusPatch;
+      begin[cursor] = AliMpBusPatch::GetGlobalBusID(1, iDDL-1) + nbBusPatch;
     }
 
     end[cursor]     = begin[cursor] + nbBusPatch - 1;
@@ -130,26 +122,30 @@ void MUONGenerateBusPatch()
   
   // station 345
   nbBusPatch = 0;
-  Int_t nbBusSt3Tot1 = 0;
-  Int_t nbBusSt3Tot2 = 0;
-  Int_t nbBusSt3Tot3 = 0;
-  Int_t nbBusSt3Tot4 = 0;
+  Int_t idCh5swp1 = 501; // 1/4 chamber for DDL on horizontal
+  Int_t idCh5swp2 = 505; // 1/4 chamber for DDL on horizontal
+  Int_t idCh5swp3 = 510; // 1/4 chamber for DDL on horizontal
+  Int_t idCh5swp4 = 514; // 1/4 chamber for DDL on horizontal
 
-  Int_t nbBusSt3Swap1 = 0;
-  Int_t nbBusSt3Swap2 = 0;
-  Int_t nbBusSt3Swap3 = 0;
-  Int_t nbBusSt3Swap4 = 0;
+  Int_t idCh6swp1 = 600; // 1/4 chamber for DDL on horizontal
+  Int_t idCh6swp2 = 605; // 1/4 chamber for DDL on horizontal
+  Int_t idCh6swp3 = 609; // 1/4 chamber for DDL on horizontal
+  Int_t idCh6swp4 = 614; // 1/4 chamber for DDL on horizontal
 
-  Int_t iDDLSt3Swap1 = 0;
-  Int_t iDDLSt3Swap2 = 0;
-  Int_t iDDLSt3Swap3 = 0;
+  Int_t idSt45swp1 = 7;  // half chamber for DDL in vertical cutting twice the official numbering
+  Int_t idSt45swp2 = 20;
 
-  Int_t nbBusSt45Tot = 0;
-  Int_t nbBusSt45Swap = 0;
+  Int_t offsetBusCh5swp1 = 13; // number of buspatches between DE 501-504
+  Int_t offsetBusCh5swp2 = 17; // number of buspatches before DE 510
 
-  Int_t nbBus500 = 4; // number of buspatch in DE 500
-  Int_t nbDDL500 = 11; // DDL number for DE 500
-  Int_t offsetBus500 = 13; // number of buspatches in DDL 11 before DE 500
+  Int_t offsetBusCh6swp1 = 17; // number of buspatches before DE 600-604
+  Int_t offsetBusCh6swp2 = 13; // number of buspatches between DE 614-617
+
+  Int_t offsetBusSt4 = 25;     // number of buspatches before DE 700-800
+  Int_t offsetBusSt4swp = 46;  // number of buspatches between 801-806 (701-706)
+
+  Int_t offsetBusSt5 = 27;     // number of buspatches before DE 900-1000
+  Int_t offsetBusSt5swp = 50;  // number of buspatches between 901-906 (1001-1006)
 
   // reads from file
   while ( in.getline(line,80) ) {
@@ -193,136 +189,208 @@ void MUONGenerateBusPatch()
     // much more with the new DDL sharing for station 3
 
     if (idDE < 700 ) {
-
-      if (idDE == 501) {
-	iDDL++;
-	begin[cursor] = AliMpBusPatch::GetGlobalBusID(0, iDDL-1);
-      	nbBusSt3Tot1 = 0; 
-
-      }
+  
       if (idDE % 100 == 0) {
 	cout << "# Chamber " << idDE/100 << endl;
 	out  << "# Chamber " << idDE/100 << endl;
       }
 
-      // taking into account that idDE = 500 is connected to ddl = 11;
-      if (idDE == 500) {
-	cout << idDE << " " << AliMpBusPatch::GetGlobalBusID(offsetBus500, nbDDL500)<<"-"
-	     << AliMpBusPatch::GetGlobalBusID(offsetBus500, nbDDL500) + nbBus500 -1
-	     << " " << nbDDL500 << " " <<nameSlat <<endl;
+      // chamber 5
+      if (idDE  == 500 ) {
+	iDDL = (idDE/100)*2+2;
+	begin[cursor] = AliMpBusPatch::GetGlobalBusID(1, iDDL-1);
+	
+	end[cursor]   = begin[cursor] + nbBusPatch - 1;
+	++cursor;
+	begin[cursor] = end[cursor-1] + 1;
 
-       	out << idDE << " " << AliMpBusPatch::GetGlobalBusID(offsetBus500, nbDDL500)<<"-"
-	    << AliMpBusPatch::GetGlobalBusID(offsetBus500, nbDDL500) + nbBus500 -1
-	     << " " << nbDDL500 <<endl;
-	continue;
-      }
-      nbBusSt3Tot1 +=  nbBusPatch;
-
-      // second 1/4 for chamber 5
-      if (idDE == 500+idCh5swp1) {
-	iDDLSt3Swap1 =  iDDL++;
-	begin[cursor] = AliMpBusPatch::GetGlobalBusID(0, iDDL-1);
-	nbBusSt3Swap1 = nbBusSt3Tot1 - nbBusPatch;
-	nbBusSt3Tot1 = 0;
-	nbBusSt3Tot2 = 0;
+	cout << idDE << " " << begin[cursor-1]<<"-"<<end[cursor-1] << " " << iDDL-1 << " " <<nameSlat <<endl;
+	out << idDE << " " << begin[cursor-1]<<"-"<<end[cursor-1] <<" " << iDDL-1 <<endl;
       }
 
-      // first 1/4 chamber 6
-      if (idDE == 600) {
-	iDDL = iDDLSt3Swap1;
-	begin[cursor] = AliMpBusPatch::GetGlobalBusID(nbBusSt3Swap1, iDDL-1);
-      }
-      // third 1/4 for chamber 5
-      if (idDE == 500+idCh5swp2) {
-	iDDL = iDDLSt3Swap1+1;
-	iDDLSt3Swap2 =  iDDL++;
-	begin[cursor] = AliMpBusPatch::GetGlobalBusID(0, iDDL-1);
-	nbBusSt3Swap2 = nbBusSt3Tot2;
-	nbBusSt3Tot2 = 0;
-	nbBusSt3Tot3 = 0;
-      }
-      nbBusSt3Tot2 +=  nbBusPatch;
+      if (idDE  >= idCh5swp1 && idDE < idCh5swp2) {
+	
+	if ( idDE ==  idCh5swp1) {
+	  iDDL = (idDE/100)*2 ;
+	  begin[cursor] = AliMpBusPatch::GetGlobalBusID(offsetBusCh5swp1, iDDL-1);
+	}
+	
+	end[cursor]   = begin[cursor] - nbBusPatch + 1;
+	++cursor;
+	begin[cursor] = end[cursor-1] - 1;
 
-      // second 1/4 chamber 6
-     if (idDE == 600 +idCh6swp1) {
-	iDDL = iDDLSt3Swap2;
-	begin[cursor] = AliMpBusPatch::GetGlobalBusID(nbBusSt3Swap2, iDDL-1);
-      }
-    
-     // fourth 1/4 chamber 5
-     if (idDE == 500+idCh5swp3) {
-	iDDL = iDDLSt3Swap2+1;
-	iDDLSt3Swap3 =  iDDL++;
-	begin[cursor] = AliMpBusPatch::GetGlobalBusID(0, iDDL-1);
-	nbBusSt3Swap3 = nbBusSt3Tot3;
-	nbBusSt3Tot2 = 0;
-	nbBusSt3Tot3 = 0;
-	nbBusSt3Tot4 = 0;
-      }
-      nbBusSt3Tot3 +=  nbBusPatch;
-
-     //third 1/4 chamber 6
-     if (idDE == 600)
-       nbBusSt3Swap4 = nbBusSt3Tot4;
-
-     if (idDE == 600 +idCh6swp2) {
-	iDDL = iDDLSt3Swap3;
-	begin[cursor] = AliMpBusPatch::GetGlobalBusID(nbBusSt3Swap3, iDDL-1);
-	nbBusSt3Tot4 +=  nbBusPatch;
-      }
-      nbBusSt3Tot4 +=  nbBusPatch;
-
-     // fourth 1/4 chamber 6
-    if (idDE == 600 +idCh6swp3) {
-	iDDL = iDDLSt3Swap3+1;
-	begin[cursor] = AliMpBusPatch::GetGlobalBusID(nbBusSt3Swap4 + nbBus500, iDDL-1);
+	cout << idDE << " " << end[cursor-1]<<"-"<<begin[cursor-1] << " " << iDDL-1 << " " <<nameSlat <<endl;
+	out << idDE << " " << end[cursor-1]<<"-"<<begin[cursor-1] <<" " << iDDL-1 <<endl;
       }
 
-      end[cursor]     = begin[cursor] + nbBusPatch - 1;
-      ++cursor;
-      begin[cursor] = end[cursor-1] + 1;
+      if (idDE >=  idCh5swp2  && idDE  < idCh5swp3) {
 
-      cout << idDE << " " << begin[cursor-1]<<"-"<<end[cursor-1] << " " << iDDL-1 << " " <<nameSlat <<endl;
-      out << idDE << " " << begin[cursor-1]<<"-"<<end[cursor-1] <<" " << iDDL-1 <<endl;
+	if (idDE ==  idCh5swp2) {
+	  iDDL = (idDE/100)*2-1;
+	      begin[cursor] = AliMpBusPatch::GetGlobalBusID(1, iDDL-1);	  
+	}
+
+	end[cursor]   = begin[cursor] + nbBusPatch - 1;
+	++cursor;
+	begin[cursor] = end[cursor-1] + 1;
+
+	cout << idDE << " " << begin[cursor-1]<<"-"<<end[cursor-1] << " " << iDDL-1 << " " <<nameSlat <<endl;
+	out << idDE << " " << begin[cursor-1]<<"-"<<end[cursor-1] <<" " << iDDL-1 <<endl;
+      }
+
+      if (idDE >=  idCh5swp3  && idDE  < idCh5swp4) {
+
+	if (idDE ==  idCh5swp3) {
+	  iDDL = (idDE/100)*2+1;
+	      begin[cursor] = AliMpBusPatch::GetGlobalBusID(1, iDDL-1);	  
+	}
+
+	end[cursor]   = begin[cursor] + nbBusPatch - 1;
+	++cursor;
+	begin[cursor] = end[cursor-1] + 1;
+
+	cout << idDE << " " << begin[cursor-1]<<"-"<<end[cursor-1] << " " << iDDL-1 << " " <<nameSlat <<endl;
+	out << idDE << " " << begin[cursor-1]<<"-"<<end[cursor-1] <<" " << iDDL-1 <<endl;
+      }
+
+     if (idDE  >= idCh5swp4 && idDE < 600) {
+	
+	if ( idDE ==  idCh5swp4) {
+	  iDDL = (idDE/100)*2+2 ;
+	  begin[cursor] = AliMpBusPatch::GetGlobalBusID(offsetBusCh5swp2, iDDL-1);
+	}
+	
+	end[cursor]   = begin[cursor] - nbBusPatch + 1;
+	++cursor;
+	begin[cursor] = end[cursor-1] - 1;
+
+	cout << idDE << " " << end[cursor-1]<<"-"<<begin[cursor-1] << " " << iDDL-1 << " " <<nameSlat <<endl;
+	out << idDE << " " << end[cursor-1]<<"-"<<begin[cursor-1] <<" " << iDDL-1 <<endl;
+      }
+
+     // chamber 6
+      if (idDE  >= idCh6swp1 && idDE < idCh6swp2) {
+	
+	if ( idDE ==  idCh6swp1) {
+	  iDDL = (idDE/100)*2-2 ;
+	  begin[cursor] = AliMpBusPatch::GetGlobalBusID(offsetBusCh5swp1+offsetBusCh6swp1, iDDL-1);
+	}
+	
+	end[cursor]   = begin[cursor] - nbBusPatch + 1;
+	++cursor;
+	begin[cursor] = end[cursor-1] - 1;
+
+	cout << idDE << " " << end[cursor-1]<<"-"<<begin[cursor-1] << " " << iDDL-1 << " " <<nameSlat <<endl;
+	out << idDE << " " << end[cursor-1]<<"-"<<begin[cursor-1] <<" " << iDDL-1 <<endl;
+      }
+
+      if (idDE >=  idCh6swp2  && idDE  < idCh6swp3) {
+
+	if (idDE ==  idCh6swp2) {
+	  iDDL = (idDE/100)*2-3;
+	      begin[cursor] = AliMpBusPatch::GetGlobalBusID(offsetBusCh5swp2+1, iDDL-1);	  
+	}
+
+	end[cursor]   = begin[cursor] + nbBusPatch - 1;
+	++cursor;
+	begin[cursor] = end[cursor-1] + 1;
+
+	cout << idDE << " " << begin[cursor-1]<<"-"<<end[cursor-1] << " " << iDDL-1 << " " <<nameSlat <<endl;
+	out << idDE << " " << begin[cursor-1]<<"-"<<end[cursor-1] <<" " << iDDL-1 <<endl;
+      }
+
+      if (idDE >=  idCh6swp3  && idDE  < idCh6swp4) {
+
+	if (idDE ==  idCh6swp3) {
+	  iDDL = (idDE/100)*2-1;
+	      begin[cursor] = AliMpBusPatch::GetGlobalBusID(offsetBusCh5swp1+1, iDDL-1);	  
+	}
+
+	end[cursor]   = begin[cursor] + nbBusPatch - 1;
+	++cursor;
+	begin[cursor] = end[cursor-1] + 1;
+
+	cout << idDE << " " << begin[cursor-1]<<"-"<<end[cursor-1] << " " << iDDL-1 << " " <<nameSlat <<endl;
+	out << idDE << " " << begin[cursor-1]<<"-"<<end[cursor-1] <<" " << iDDL-1 <<endl;
+      }
+
+     if (idDE  >= idCh6swp4 && idDE < 700) {
+	
+	if ( idDE ==  idCh6swp4) {
+	  iDDL = (idDE/100)*2 ;
+	  begin[cursor] = AliMpBusPatch::GetGlobalBusID(offsetBusCh5swp2+offsetBusCh6swp2, iDDL-1);
+	}
+	
+	end[cursor]   = begin[cursor] - nbBusPatch + 1;
+	++cursor;
+	begin[cursor] = end[cursor-1] - 1;
+
+	cout << idDE << " " << end[cursor-1]<<"-"<<begin[cursor-1] << " " << iDDL-1 << " " <<nameSlat <<endl;
+	out << idDE << " " << end[cursor-1]<<"-"<<begin[cursor-1] <<" " << iDDL-1 <<endl;
+      }
+
     }
-    
+ 
     // station 4 & 5
     // back to normal one ddl connects one 1/2 chamber
     // finally !
-    if (idDE == 700) {
-      iDDL = ((idDE-1)/100)*2;
-    }
+ 
     if (idDE >= 700) {
 
-    if (idDE % 100 == 0) {
-      nbBusSt45Tot = 0;
-      iDDL++;
-      if (idDE >=800)
-	iDDL++;
-      begin[cursor] = AliMpBusPatch::GetGlobalBusID(0, iDDL-1);
-      cout << "# Chamber " << idDE/100 << endl;
-      out  << "# Chamber " << idDE/100 << endl;
-    }
-
-      nbBusSt45Tot += nbBusPatch;
-
-      if (idDE == 700+idSt45swp1 || idDE == 800+idSt45swp1 || idDE == 900+idSt45swp1 || idDE == 1000+idSt45swp1 ) {
-	iDDL++;
-	begin[cursor] = AliMpBusPatch::GetGlobalBusID(0, iDDL-1);
-	nbBusSt45Swap = nbBusSt45Tot - nbBusPatch;
-	nbBusSt45Tot = 0;
-      }
-      if (idDE == 700+idSt45swp2 || idDE == 800+idSt45swp2 || idDE == 900+idSt45swp2 || idDE == 1000+idSt45swp2 ) {
-	iDDL--;
-	begin[cursor] = AliMpBusPatch::GetGlobalBusID(nbBusSt45Swap, iDDL-1);
+      if (idDE % 100 == 0) {
+	cout << "# Chamber " << idDE/100 << endl;
+	out  << "# Chamber " << idDE/100 << endl;
       }
 
-      end[cursor]     = begin[cursor] + nbBusPatch - 1;
-      ++cursor;
-      begin[cursor] = end[cursor-1] + 1;
+      if ((idDE % 100) >= idSt45swp1 && (idDE % 100) < idSt45swp2) {
+	if ((idDE % 100) == idSt45swp1) {
+	  iDDL = (idDE/100)*2-1;
+	  begin[cursor] = AliMpBusPatch::GetGlobalBusID(1, iDDL-1);
+	}
+	end[cursor]   = begin[cursor] + nbBusPatch - 1;
+	++cursor;
+	begin[cursor] = end[cursor-1] + 1;
 
-      cout << idDE << " " << begin[cursor-1]<<"-"<<end[cursor-1] << " " << iDDL-1 << " " <<nameSlat <<endl;
-      out << idDE << " " << begin[cursor-1]<<"-"<<end[cursor-1] <<" " << iDDL-1 <<endl;
+	cout << idDE << " " << begin[cursor-1]<<"-"<<end[cursor-1] << " " << iDDL-1 << " " <<nameSlat <<endl;
+	out << idDE << " " << begin[cursor-1]<<"-"<<end[cursor-1] <<" " << iDDL-1 <<endl;
+      }
+
+      if (idDE % 100 >= idSt45swp2) {
+
+	if ((idDE % 100) == idSt45swp2 ) {
+	  iDDL = (idDE/100)*2 ;
+	  if (idDE/100 == 7 || idDE/100 == 8)
+	      begin[cursor] = AliMpBusPatch::GetGlobalBusID(offsetBusSt4swp, iDDL-1);
+	  else
+	      begin[cursor] = AliMpBusPatch::GetGlobalBusID(offsetBusSt5swp, iDDL-1);
+
+	}
+	end[cursor]   = begin[cursor] - nbBusPatch + 1;
+	++cursor;
+	begin[cursor] = end[cursor-1] - 1;
+
+	cout << idDE << " " << end[cursor-1]<<"-"<<begin[cursor-1] << " " << iDDL-1 << " " <<nameSlat <<endl;
+	out << idDE << " " << end[cursor-1]<<"-"<<begin[cursor-1] <<" " << iDDL-1 <<endl;
+      }
+
+      if ((idDE % 100) >= 0 && (idDE % 100) < idSt45swp1) {
+
+	if ((idDE % 100) == 0 ) {
+	  iDDL = (idDE/100)*2;
+	  if (idDE/100 == 7 || idDE/100 == 8)
+	      begin[cursor] = AliMpBusPatch::GetGlobalBusID(offsetBusSt4, iDDL-1);
+	  else 
+	      begin[cursor] = AliMpBusPatch::GetGlobalBusID(offsetBusSt5, iDDL-1);
+	  
+	}
+	end[cursor]   = begin[cursor] - nbBusPatch + 1;
+	++cursor;
+	begin[cursor] = end[cursor-1] - 1;
+
+	cout << idDE << " " << end[cursor-1]<<"-"<<begin[cursor-1] << " " << iDDL-1 << " " <<nameSlat <<endl;
+	out << idDE << " " << end[cursor-1]<<"-"<<begin[cursor-1] <<" " << iDDL-1 <<endl;
+      }
+ 
     }
 
   }
