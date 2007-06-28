@@ -58,7 +58,7 @@
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONGeometryMisAligner.h"
 
-#include "AliSimulation.h"
+#include "AliGeomManager.h"
 #include "AliCDBManager.h"
 #include "AliCDBMetaData.h"
 #include "AliCDBId.h"
@@ -75,36 +75,34 @@ void MUONCheckMisAligner(Double_t xcartmisaligm = 0.0, Double_t xcartmisaligw = 
                          const TString& geomFileName = "geometry.root")
 {
   
-  // Load geometry from file 
-  TGeoManager::Import(geomFileName.Data());
-  if ( ! gGeoManager ) return;
+  AliMUONGeometryTransformer *transform = new AliMUONGeometryTransformer();
+  transform->LoadGeometryData(geomFileName.Data());
 
-  AliMUONGeometryTransformer *transform = new AliMUONGeometryTransformer(true);
-  transform->ReadGeometryData("volpath.dat", geomFileName.Data());
   AliMUONGeometryMisAligner misAligner(xcartmisaligm,xcartmisaligw,
                                        ycartmisaligm,ycartmisaligw,
 				       angmisaligm,angmisaligw);
 
   // Generate mis alignment data
+
   // Uncomment lines below if you would like to generate module misalignments
-//  misAligner.SetModuleCartMisAlig(0.0,0.1,0.0,0.1,0.0,0.1); // Full
-//   misAligner.SetModuleAngMisAlig(0.0,0.02,0.0,0.04,0.0,0.02); // Full
-//   misAligner.SetModuleCartMisAlig(0.0,0.003,0.0,0.003,0.0,0.003); // Res
-//   misAligner.SetModuleAngMisAlig(0.0,0.0006,0.0,0.001,0.0,0.0005); // Res
+  // misAligner.SetModuleCartMisAlig(0.0,0.1,0.0,0.1,0.0,0.1); // Full
+  // misAligner.SetModuleAngMisAlig(0.0,0.02,0.0,0.04,0.0,0.02); // Full
+  // misAligner.SetModuleCartMisAlig(0.0,0.003,0.0,0.003,0.0,0.003); // Res
+  // misAligner.SetModuleAngMisAlig(0.0,0.0006,0.0,0.001,0.0,0.0005); // Res
+
   AliMUONGeometryTransformer *newTransform = misAligner.MisAlign(transform,true); 
   newTransform->WriteTransformations("transform2.dat");
   newTransform->WriteMisAlignmentData("misalign.root");
 
   // Apply misAlignment via AliRoot framework
-  AliSimulation sim;
-  sim.ApplyAlignObjsToGeom(
-     const_cast<TClonesArray*>(newTransform->GetMisAlignmentData()));
+  AliGeomManager::ApplyAlignObjsToGeom(
+     *const_cast<TClonesArray*>(newTransform->GetMisAlignmentData()));
   // Save new geometry file
   gGeoManager->Export("geometry2.root");
   
   // Extract new transformations
-  AliMUONGeometryTransformer* transform3 = new AliMUONGeometryTransformer(true);
-  transform3->ReadGeometryData("volpath.dat", "geometry2.root");
+  AliMUONGeometryTransformer* transform3 = new AliMUONGeometryTransformer();
+  transform3->LoadGeometryData("geometry2.root");
   transform3->WriteTransformations("transform3.dat");
                // Check that transform3.dat is equal to transform2.dat
 

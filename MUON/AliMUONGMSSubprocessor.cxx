@@ -43,10 +43,10 @@ const TString  AliMUONGMSSubprocessor::fgkMatrixArrayName = "GMSarray";
 //______________________________________________________________________________
 AliMUONGMSSubprocessor::AliMUONGMSSubprocessor(AliMUONPreprocessor* master) 
   : AliMUONVSubprocessor(master, "GMS", "Upload GMS matrices to OCDB"),
-    fTransformer(true)
+    fTransformer()
 {
 /// Constructor
-  fTransformer.ReadGeometryData("volpath.dat", "transform.dat");
+  fTransformer.CreateModules();
 }
 
 //______________________________________________________________________________

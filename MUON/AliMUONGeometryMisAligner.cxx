@@ -56,6 +56,7 @@
 #include <TGeoMatrix.h>
 #include <TMath.h>
 #include <TRandom.h>
+#include <Riostream.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONGeometryMisAligner)
@@ -270,7 +271,7 @@ TGeoCombiTrans AliMUONGeometryMisAligner::MisAlignDetElem(const TGeoCombiTrans &
   TGeoCombiTrans deltaTransf(deltaTrans,deltaRot);
   TGeoHMatrix newTransfMat = transform * deltaTransf;
     
-  AliInfo(Form("Rotated Module by %f about Z axis.", angMisAlig[2]));
+  AliInfo(Form("Rotated DE by %f about Z axis.", angMisAlig[2]));
 
   return TGeoCombiTrans(newTransfMat);
 }
@@ -341,7 +342,7 @@ AliMUONGeometryMisAligner::MisAlign(const AliMUONGeometryTransformer *
 
 
   AliMUONGeometryTransformer *newGeometryTransformer =
-    new AliMUONGeometryTransformer(kTRUE);
+    new AliMUONGeometryTransformer();
   for (Int_t iMt = 0; iMt < transformer->GetNofModuleTransformers(); iMt++)
     {				// module transformers
       const AliMUONGeometryModuleTransformer *kModuleTransformer =

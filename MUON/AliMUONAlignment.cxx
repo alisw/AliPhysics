@@ -965,7 +965,7 @@ AliMUONAlignment::ReAlign(const AliMUONGeometryTransformer * transformer,
   Int_t iDetElemNumber = 0;
 
   AliMUONGeometryTransformer *newGeometryTransformer =
-    new AliMUONGeometryTransformer(kTRUE);
+    new AliMUONGeometryTransformer();
   for (Int_t iMt = 0; iMt < transformer->GetNofModuleTransformers(); iMt++) {
     // module transformers    
     const AliMUONGeometryModuleTransformer *kModuleTransformer =

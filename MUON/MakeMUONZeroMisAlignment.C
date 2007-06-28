@@ -23,11 +23,12 @@
 
 #include "AliMUONGeometryTransformer.h"
 
+#include "AliGeomManager.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
 #include "AliCDBId.h"
 
-#include <TGeoManager.h>
+#include <TSystem.h>
 #include <TClonesArray.h>
 #include <TString.h>
 #include <TFile.h>
@@ -37,15 +38,12 @@
 
 void MakeMUONZeroMisAlignment()
 {
-  // Check first if geometry is loaded,
-  // if not loaded try to load it from galice.root file
-  if ( ! gGeoManager && ! TGeoManager::Import("geometry.root") )  {
-    cerr << "Loading geometry failed." << endl;
-    return;
-  }  
+  // Load geometry, if not yet loaded,
+  if ( ! AliGeomManager::GetGeometry() )
+    AliGeomManager::LoadGeometry("geometry.root");
 
-  AliMUONGeometryTransformer transformer(true);
-  transformer.ReadGeometryData("volpath.dat", gGeoManager);
+  AliMUONGeometryTransformer transformer;
+  transformer.LoadGeometryData();
   TClonesArray* array = transformer.CreateZeroAlignmentData();;
 
   if ( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ) {

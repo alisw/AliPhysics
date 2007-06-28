@@ -95,7 +95,7 @@ AliMUONReconstructor::AliMUONReconstructor() :
 AliReconstructor(),
 fCrateManager(0x0),
 fDigitMaker(0x0),
-fTransformer(new AliMUONGeometryTransformer(kTRUE)),
+fTransformer(new AliMUONGeometryTransformer()),
 fDigitStore(0x0),
 fTriggerCircuit(0x0),
 fCalibrationData(0x0),
@@ -108,7 +108,7 @@ fTrigChamberEff(0x0),
 fTimers(new AliMUONStopwatchGroup)
 {
   /// normal ctor
-  fTransformer->ReadGeometryData("volpath.dat", "geometry.root");
+  fTransformer->LoadGeometryData();
 }
 
 //_____________________________________________________________________________

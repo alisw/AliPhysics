@@ -333,8 +333,7 @@ AliMUONDataInterface::NtupleTrigger(const char* treeLetter)
   Int_t lSHighpt=0;
   
   AliMUONGeometryTransformer transformer(kFALSE);
-  transformer.ReadGeometryData("volpath.dat", 
-                               Form("%s/geometry.root",
+  transformer.LoadGeometryData(Form("%s/geometry.root",
                                     gSystem->DirName(fLoader->GetRunLoader()->GetFileName())));
   
   AliMUONTriggerCircuit triggerCircuit(&transformer);
