@@ -20,13 +20,14 @@ class TGeoHMatrix;
 class AliMUONGeometryDetElement : public TObject
 {
   public:
-    AliMUONGeometryDetElement(Int_t detElemId,
-                              const TString& volumePath);
-    AliMUONGeometryDetElement();
+    AliMUONGeometryDetElement(Int_t detElemId);
+    AliMUONGeometryDetElement(Int_t detElemId, const TString& volumePath);
+    AliMUONGeometryDetElement(TRootIOCtor* /*ioCtor*/);
     virtual ~AliMUONGeometryDetElement();
 
     // static methods
     static TString GetDENamePrefix();
+    static TString GetDEName(Int_t detElemId);
 
     // methods
     void Global2Local(
@@ -61,6 +62,8 @@ class AliMUONGeometryDetElement : public TObject
 
   protected:
     /// Not implemented
+    AliMUONGeometryDetElement();
+    /// Not implemented
     AliMUONGeometryDetElement(const AliMUONGeometryDetElement& rhs);
     /// Not implemented
     AliMUONGeometryDetElement& operator = (const AliMUONGeometryDetElement& rhs);
@@ -70,7 +73,7 @@ class AliMUONGeometryDetElement : public TObject
     void PrintTransform(const TGeoHMatrix* transform) const;
  
      // static data members
-    static const TString  fgkDENamePrefix; ///< Geometry module name prefix
+    static const TString  fgkDENamePrefix;///< Geometry module name prefix
  
     // data members
     TString       fDEName;     ///< detection element name

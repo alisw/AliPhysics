@@ -37,11 +37,34 @@ ClassImp(AliMUONGeometryDetElement)
 const TString AliMUONGeometryDetElement::fgkDENamePrefix = "DE";
 
 //______________________________________________________________________________
+TString AliMUONGeometryDetElement::GetDEName(Int_t detElemId)
+{
+/// Return the module name for given moduleId
+
+  TString deName(fgkDENamePrefix);
+  deName += detElemId;
+  return deName;
+}   
+
+//______________________________________________________________________________
+AliMUONGeometryDetElement::AliMUONGeometryDetElement(Int_t detElemId)
+ : TObject(),
+   fDEName(GetDEName(detElemId)),
+   fVolumePath(),
+   fLocalTransformation(0),
+   fGlobalTransformation(0)
+{ 
+/// Standard constructor
+
+  SetUniqueID(detElemId);
+}
+
+//______________________________________________________________________________
 AliMUONGeometryDetElement::AliMUONGeometryDetElement(
                                         Int_t detElemId,
                                         const TString& volumePath)
  : TObject(),
-   fDEName(),
+   fDEName(GetDEName(detElemId)),
    fVolumePath(volumePath),
    fLocalTransformation(0),
    fGlobalTransformation(0)
@@ -49,20 +72,17 @@ AliMUONGeometryDetElement::AliMUONGeometryDetElement(
 /// Standard constructor
 
   SetUniqueID(detElemId);
-  
-  fDEName = fgkDENamePrefix;
-  fDEName += detElemId;
 }
 
 //______________________________________________________________________________
-AliMUONGeometryDetElement::AliMUONGeometryDetElement()
+AliMUONGeometryDetElement::AliMUONGeometryDetElement(TRootIOCtor* /*ioCtor*/)
  : TObject(),
    fDEName(),
    fVolumePath(),
    fLocalTransformation(0),
    fGlobalTransformation(0)
 {
-/// Default constructor
+/// Root IO constructor
 }
 
 //______________________________________________________________________________
