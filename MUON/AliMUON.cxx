@@ -115,7 +115,7 @@ AliMUON::AliMUON()
     fTriggerResponseV1(kFALSE),
     fTriggerCoinc44(0),
     fTriggerEffCells(0),
-    fDigitizerWithNoise(kTRUE),
+    fDigitizerWithNoise(1),
     fRawWriter(0x0),
     fDigitMaker(0x0),
     fHitStore(0x0)
@@ -147,7 +147,7 @@ AliMUON::AliMUON(const char *name, const char* title)
     fTriggerResponseV1(kFALSE),
     fTriggerCoinc44(0),
     fTriggerEffCells(0),
-    fDigitizerWithNoise(kTRUE),
+    fDigitizerWithNoise(1),
     fRawWriter(0x0),
     fDigitMaker(new AliMUONDigitMaker),
     fHitStore(0x0)
@@ -601,7 +601,7 @@ Bool_t  AliMUON::GetTriggerEffCells() const
 }  
 
 //____________________________________________________________________
-Bool_t  AliMUON::GetDigitizerWithNoise() const
+Int_t  AliMUON::GetDigitizerWithNoise() const
 {
 ///
 /// Returns fDigitizerWithNoise

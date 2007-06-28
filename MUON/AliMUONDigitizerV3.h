@@ -36,7 +36,7 @@ class AliMUONDigitizerV3 : public AliDigitizer
 {
 public:
   AliMUONDigitizerV3(AliRunDigitizer* manager=0, 
-                     Bool_t generateNoisyDigits=kTRUE);
+                     Int_t generateNoisyDigits=1);
   virtual ~AliMUONDigitizerV3();
 
   virtual void Exec(Option_t* opt="");
@@ -64,6 +64,7 @@ private:
   void GenerateNoisyDigits(AliMUONVDigitStore& digitStore);
   void GenerateNoisyDigitsForOneCathode(AliMUONVDigitStore& digitStore, 
                                         Int_t detElemId, Int_t cathode);
+  void GenerateNoisyDigitsForTrigger(AliMUONVDigitStore& digitStore);
 
   void MergeWithSDigits(AliMUONVDigitStore*& digitStore,
                         const AliMUONVDigitStore& input,
@@ -77,7 +78,8 @@ private:
   TStopwatch fGenerateNoisyDigitsTimer; //!< counting time spent in GenerateNoisyDigits()
   TStopwatch fExecTimer; //!< couting time spent in Exec()  
   TF1* fNoiseFunction; //!< function to randomly get signal above n*sigma_ped
-  Bool_t fGenerateNoisyDigits; //!< whether or not we should generate noise-only digits for tracker
+  TF1* fNoiseFunctionTrig; //!< function to get noise disribution on trig. chambers
+  Int_t fGenerateNoisyDigits; //!< whether or not we should generate noise-only digits for tracker (1) and trigger (2)
   static const Double_t fgkNSigmas; ///< \brief number of sigmas above ped to use 
   /// for noise-only digit generation and zero-suppression
   AliMUONLogger* fLogger; //!< to keep track of messages

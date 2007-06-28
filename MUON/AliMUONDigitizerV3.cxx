@@ -51,6 +51,7 @@
 #include <TString.h>
 #include <TSystem.h>
 
+#include "AliMUONGeometryTransformer.h" //ADDED for trigger noise
 ///
 /// \class AliMUONDigitizerV3
 /// The digitizer is performing the transformation to go from SDigits (digits
@@ -73,6 +74,12 @@ namespace
   {
     return static_cast<AliMUON*>(gAlice->GetModule("MUON"));
   }
+
+  //ADDED for trigger noise
+  const AliMUONGeometryTransformer* GetTransformer()
+  {
+      return muon()->GetGeometryTransformer();
+  }
 }
 
 const Double_t AliMUONDigitizerV3::fgkNSigmas=3;
@@ -83,7 +90,7 @@ ClassImp(AliMUONDigitizerV3)
 
 //_____________________________________________________________________________
 AliMUONDigitizerV3::AliMUONDigitizerV3(AliRunDigitizer* manager, 
-                                       Bool_t generateNoisyDigits)
+                                       Int_t generateNoisyDigits)
 : AliDigitizer(manager),
 fIsInitialized(kFALSE),
 fCalibrationData(0x0),
@@ -92,6 +99,7 @@ fTriggerEfficiency(0x0),
 fGenerateNoisyDigitsTimer(),
 fExecTimer(),
 fNoiseFunction(0x0),
+fNoiseFunctionTrig(0x0),
   fGenerateNoisyDigits(generateNoisyDigits),
   fLogger(new AliMUONLogger(1000)),
 fTriggerStore(new AliMUONTriggerStoreV1),
@@ -115,6 +123,7 @@ AliMUONDigitizerV3::~AliMUONDigitizerV3()
   delete fCalibrationData;
   delete fTriggerProcessor;
   delete fNoiseFunction;
+  delete fNoiseFunctionTrig;
   delete fTriggerStore;
   delete fDigitStore;
   delete fOutputDigitStore;
@@ -254,7 +263,7 @@ AliMUONDigitizerV3::ApplyResponseToTriggerDigit(const AliMUONVDigitStore& digitS
 
   Bool_t isTrig[2];
 
-  fTriggerEfficiency->IsTriggered(detElemId, nboard-1, 
+  fTriggerEfficiency->IsTriggered(detElemId, nboard, 
                                   isTrig[0], isTrig[1]);
   digit.EfficiencyApplied(kTRUE);
   correspondingDigit->EfficiencyApplied(kTRUE);
@@ -383,6 +392,12 @@ AliMUONDigitizerV3::Exec(Option_t*)
     fOutputDigitStore = fDigitStore->Create();
   }
   
+  if ( fGenerateNoisyDigits>=2 )
+  {
+    // Generate noise-only digits for trigger.
+    GenerateNoisyDigitsForTrigger(*fDigitStore);
+  }
+
   ApplyResponse(*fDigitStore,*fOutputDigitStore);
   
   if ( fGenerateNoisyDigits )
@@ -566,6 +581,111 @@ AliMUONDigitizerV3::GenerateNoisyDigitsForOneCathode(AliMUONVDigitStore& digitSt
     delete d;
   }
 }
+
+
+//_____________________________________________________________________________
+void
+AliMUONDigitizerV3::GenerateNoisyDigitsForTrigger(AliMUONVDigitStore& digitStore)
+{
+  /// Generate noise-only digits for one cathode of one detection element.
+  /// Called by GenerateNoisyDigits()
+
+  if ( !fNoiseFunctionTrig )
+  {
+    fNoiseFunctionTrig = new TF1("AliMUONDigitizerV3::fNoiseFunctionTrig","landau",
+				 50.,270.);
+    
+    fNoiseFunctionTrig->SetParameters(3.91070e+02, 9.85026, 9.35881e-02);
+  }
+
+  AliMpPad pad[2];
+  AliMUONVDigit *d[2]={0x0};
+
+  for ( Int_t chamberId = AliMUONConstants::NTrackingCh(); chamberId < AliMUONConstants::NCh(); ++chamberId )
+  {
+  
+    Int_t nofNoisyPads = 50;
+
+    Float_t r=-1, fi = 0., gx, gy, x, y, z, xg01, yg01, zg, xg02, yg02;
+    AliMpDEIterator it;
+  
+    AliDebug(3,Form("Chamber %d nofNoisyPads %d",chamberId,nofNoisyPads));
+
+    for ( Int_t i = 0; i < nofNoisyPads; ++i )
+    {
+      //printf("Generating noise %i\n",i);
+	Int_t ix(-1);
+	Int_t iy(-1);
+	Bool_t isOk = kFALSE;
+	Int_t detElemId = -1;
+	do {
+	  //r = gRandom->Landau(9.85026, 9.35881e-02);
+	    r = fNoiseFunctionTrig->GetRandom();
+	    fi = 2. * TMath::Pi() * gRandom->Rndm();
+	    //printf("r = %f\tfi = %f\n", r, fi);
+	    gx = r * TMath::Cos(fi);
+	    gy = r * TMath::Sin(fi);
+
+	    for ( it.First(chamberId); ! it.IsDone(); it.Next() ){
+		Int_t currDetElemId = it.CurrentDEId();
+		const AliMpVSegmentation* seg
+		    = AliMpSegmentation::Instance()->GetMpSegmentation(currDetElemId,AliMp::GetCathodType(0));
+		if (!seg) continue;
+		Float_t deltax = seg->Dimensions().X();
+		Float_t deltay = seg->Dimensions().Y();
+		GetTransformer()->Local2Global(currDetElemId, -deltax, -deltay, 0, xg01, yg01, zg);
+		GetTransformer()->Local2Global(currDetElemId,  deltax,  deltay, 0, xg02, yg02, zg);
+		Float_t xg1 = xg01, xg2 = xg02, yg1 = yg01, yg2 = yg02;
+		if(xg01>xg02){
+		    xg1 = xg02;
+		    xg2 = xg01;
+		}
+		if(yg01>yg02){
+		    yg1 = yg02;
+		    yg2 = yg01;
+		}
+		if(gx>=xg1 && gx<=xg2 && gy>=yg1 && gy<=yg2){
+		    detElemId = currDetElemId;
+		    GetTransformer()->Global2Local(detElemId, gx, gy, 0, x, y, z);
+		    pad[0] = seg->PadByPosition(TVector2(x,y),kFALSE);
+		    if(!pad[0].IsValid()) continue;
+		    isOk = kTRUE;
+		    break;
+		}
+	    } // loop on slats
+	} while ( !isOk );
+
+	const AliMpVSegmentation* seg1
+	    = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,AliMp::GetCathodType(1));
+	pad[1] = seg1->PadByPosition(TVector2(x,y),kFALSE);
+
+	for ( Int_t cathode = 0; cathode < 2; ++cathode ){
+	  Int_t manuId = pad[cathode].GetLocation(0).GetFirst();
+	  Int_t manuChannel = pad[cathode].GetLocation(0).GetSecond();    
+	  d[cathode] = digitStore.CreateDigit(detElemId,manuId,manuChannel,cathode);
+	  ix = pad[cathode].GetIndices().GetFirst();
+	  iy = pad[cathode].GetIndices().GetSecond();
+	  d[cathode]->SetPadXY(ix,iy);
+	  //d[cathode].SetSignal(1);
+	  //d[cathode].SetPhysicsSignal(0);
+	  d[cathode]->SetCharge(1);
+	  d[cathode]->NoiseOnly(kTRUE);
+	  AliDebug(3,Form("Adding a pure noise digit :"));
+
+	  Bool_t ok = digitStore.Add(*d[cathode],AliMUONVDigitStore::kDeny);
+	  if (!ok)
+	  {
+	      fLogger->Log("Collision while adding TriggerNoise digit");
+	  }
+	  else
+	  {
+	      fLogger->Log("Added triggerNoise digit");
+	  }
+	} //loop on cathodes
+    } // loop on noisy pads
+  } // loop on chambers
+}
+
 
 //_____________________________________________________________________________
 AliLoader*

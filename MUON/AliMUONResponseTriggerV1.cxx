@@ -158,8 +158,8 @@ void AliMUONResponseTriggerV1::DisIntegrate(const AliMUONHit& hit, TList& digits
     Int_t ix = pad.GetIndices().GetFirst();
     Int_t iy = pad.GetIndices().GetSecond();
     
-    AliMUONDigit* d = new AliMUONDigit(detElemId,pad.GetLocation().GetFirst(),
-                                       pad.GetLocation().GetSecond(),
+    AliMUONDigit* d = new AliMUONDigit(detElemId,pad.GetLocation(0).GetFirst(),
+                                       pad.GetLocation(0).GetSecond(),
                                        cath);
     d->SetPadXY(ix,iy);
 
@@ -204,8 +204,8 @@ void AliMUONResponseTriggerV1::DisIntegrate(const AliMUONHit& hit, TList& digits
 		else qp = 0;
 		
 		if (qp == 1) { // this digit is fired    
-		    AliMUONDigit* dNeigh = new AliMUONDigit(detElemId,padNeigh.GetLocation().GetFirst(),
-                                                padNeigh.GetLocation().GetSecond(),
+		    AliMUONDigit* dNeigh = new AliMUONDigit(detElemId,padNeigh.GetLocation(0).GetFirst(),
+                                                padNeigh.GetLocation(0).GetSecond(),
                                                 cath);
 		    
 		    dNeigh->SetPadXY(ixNeigh,iyNeigh);      

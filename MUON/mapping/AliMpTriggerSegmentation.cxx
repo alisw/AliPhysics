@@ -221,13 +221,9 @@ AliMpTriggerSegmentation::PadByLocation(const AliMpIntPair& location,
     {
       if ( !pad.IsValid() )
       {
-        pad = AliMpPad(invloc,pi.GetIndices(),pi.Position(),pi.Dimensions());
-        pad.AddLocation(pi.GetLocation());
+	// uses PadByIndices to get the complete list of locations
+	return PadByIndices(pi.GetIndices(),warning);
       }
-      else
-      {
-        pad.AddLocation(pi.GetLocation());
-      }  
     }
   }
   if ( warning && !pad.IsValid()  )

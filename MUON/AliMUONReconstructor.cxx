@@ -73,6 +73,7 @@
 #include "AliMUONPreClusterFinder.h"
 #include "AliMUONTracker.h"
 #include "AliMUONVTrackStore.h"
+#include "AliMUONTriggerChamberEff.h"
 #include "AliMUONTriggerCircuit.h"
 #include "AliMUONTriggerCrateStore.h"
 #include "AliMUONTriggerStoreV1.h"
@@ -103,6 +104,7 @@ fClusterReconstructor(0x0),
 fClusterStore(0x0),
 fTriggerStore(0x0),
 fTrackStore(0x0),
+fTrigChamberEff(0x0),
 fTimers(new AliMUONStopwatchGroup)
 {
   /// normal ctor
@@ -124,6 +126,7 @@ AliMUONReconstructor::~AliMUONReconstructor()
   delete fClusterStore;
   delete fTriggerStore;
   delete fTrackStore;
+  delete fTrigChamberEff;
   AliInfo("Timers:");
   fTimers->Print();
   delete fTimers;
@@ -250,6 +253,20 @@ AliMUONReconstructor::CreateTriggerCircuit() const
   fTriggerCircuit = new AliMUONTriggerCircuit(fTransformer);
 
 }
+
+//_____________________________________________________________________________
+void
+AliMUONReconstructor::CreateTriggerChamberEff() const
+{
+  /// Create (and create if necessary) the trigger chamber efficiency class
+  if (fTrigChamberEff) return;
+
+  AliMUONStopwatchGroupElement timer(fTimers,"MUON","AliMUONReconstructor::CreateTriggerChamberEff()");
+
+  fTrigChamberEff = new AliMUONTriggerChamberEff(fTransformer,fDigitMaker,kTRUE);
+  //fTrigChamberEff->SetDebugLevel(1);
+}
+
 //_____________________________________________________________________________
 AliTracker* 
 AliMUONReconstructor::CreateTracker(AliRunLoader* runLoader) const
@@ -259,6 +276,7 @@ AliMUONReconstructor::CreateTracker(AliRunLoader* runLoader) const
   
   CreateTriggerCircuit();
   CreateDigitMaker();
+  CreateTriggerChamberEff();
   
   AliLoader* loader = runLoader->GetDetectorLoader("MUON");
   if (!loader)
@@ -266,7 +284,7 @@ AliMUONReconstructor::CreateTracker(AliRunLoader* runLoader) const
     AliError("Cannot get MUONLoader, so cannot create MUONTracker");
     return 0x0;
   }
-  AliMUONTracker* tracker = new AliMUONTracker(loader,fDigitMaker,fTransformer,fTriggerCircuit);
+  AliMUONTracker* tracker = new AliMUONTracker(loader,fDigitMaker,fTransformer,fTriggerCircuit,fTrigChamberEff);
   tracker->SetOption(GetOption());
   
   return tracker;

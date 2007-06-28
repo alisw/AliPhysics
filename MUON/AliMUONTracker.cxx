@@ -35,6 +35,7 @@
 #include "AliMUONTrackReconstructor.h"
 #include "AliMUONTrackReconstructorK.h"
 #include "AliMUONTrackStoreV1.h"
+#include "AliMUONTriggerChamberEff.h"
 #include "AliMUONTriggerTrackStoreV1.h"
 #include "AliMUONVClusterStore.h"
 #include "AliMUONVTriggerStore.h"
@@ -46,12 +47,14 @@
 AliMUONTracker::AliMUONTracker(AliLoader* loader,
                                const AliMUONDigitMaker* digitMaker,
                                const AliMUONGeometryTransformer* transformer,
-                               const AliMUONTriggerCircuit* triggerCircuit)
+                               const AliMUONTriggerCircuit* triggerCircuit,
+			       AliMUONTriggerChamberEff* chamberEff)
 : AliTracker(),
   fLoader(loader),
   fDigitMaker(digitMaker), // not owner
   fTransformer(transformer), // not owner
   fTriggerCircuit(triggerCircuit), // not owner
+  fTrigChamberEff(chamberEff), // not owner
   fTrackHitPatternMaker(0x0),
   fTrackReco(0x0),
   fClusterStore(0x0),
@@ -172,6 +175,12 @@ Int_t AliMUONTracker::Clusters2Tracks(TTree& tracksTree, AliESD* esd)
   
   // Fills output TreeT 
   tracksTree.Fill();
+
+  if( trackStore && triggerTrackStore && fTriggerStore && fTrigChamberEff){
+      fTrigChamberEff->EventChamberEff(*fTriggerStore,*triggerTrackStore,*trackStore);
+      fTrigChamberEff->WriteEfficiencyMap(".");
+      fTrigChamberEff->WriteEfficiencyMapTxt(".");
+  }
 
   FillESD(*trackStore,esd);
   

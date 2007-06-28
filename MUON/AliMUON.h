@@ -117,9 +117,9 @@ class AliMUON : public  AliDetector
 	{ fTriggerEffCells = trigEffCells; }
     virtual Bool_t GetTriggerEffCells() const;
                  /// Set off generation of noisy digits
-    virtual void SetDigitizerWithNoise(Bool_t digitizerWithNoise)
+    virtual void SetDigitizerWithNoise(Int_t digitizerWithNoise)
         { fDigitizerWithNoise = digitizerWithNoise; }
-    virtual Bool_t GetDigitizerWithNoise() const; 
+    virtual Int_t GetDigitizerWithNoise() const; 
     
     // Getters
                   /// Return reference to Chamber \a id
@@ -164,7 +164,7 @@ class AliMUON : public  AliDetector
     Bool_t fTriggerResponseV1;  ///< Flag to select TriggerResponseV1
     Int_t  fTriggerCoinc44;     ///< Flag to select TriggerCoinc44 
     Bool_t fTriggerEffCells;    ///< Flag to select TriggerEffCells
-    Bool_t fDigitizerWithNoise; ///< Flag to switch on/off generation of noisy digits
+    Int_t fDigitizerWithNoise; ///< Flag to switch on/off generation of noisy digits
     
     AliMUONRawWriter* fRawWriter; //!< Raw data writer
     

@@ -42,6 +42,7 @@ private:
     Int_t FindSlatIndex(Int_t detElemId);
     void ReadFileXY(ifstream &file);
     void ReadFileBoards(ifstream &file);
+    void ReadHistoBoards(const char* filename="MUON.TriggerEfficiencyMap.root");
     
     static const Int_t fgkNofCells=80; ///< Number of cells
     
@@ -53,7 +54,7 @@ private:
 
     static const Int_t fgkNofBoards=234; ///< Number of boards
     /// the boards content
-    Float_t fBoardContent[4][2][fgkNofBoards]; //[trig. chambers][RPCs][cathode][board]
+    Float_t fBoardContent[4][2][fgkNofBoards]; //[trig. chambers][cathode][board]
     
     ClassDef(AliMUONTriggerEfficiencyCells,2) // Trigger efficiency store
 };

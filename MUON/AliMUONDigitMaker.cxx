@@ -328,6 +328,8 @@ Int_t AliMUONDigitMaker::TriggerDigits(Int_t nBoard,
 
   AliMpLocalBoard* localBoard = AliMpDDLStore::Instance()->GetLocalBoard(nBoard);
 
+  Int_t n,b;
+
   // loop over x1-4 and y1-4
   for (Int_t iChamber = 0; iChamber < 4; ++iChamber)
   {
@@ -360,14 +362,20 @@ Int_t AliMUONDigitMaker::TriggerDigits(Int_t nBoard,
                               detElemId, nBoard, ibitxy));
               continue;
             }
-            
-            AliMUONVDigit* digit = digitStore.Add(detElemId,nBoard,ibitxy,iCath,AliMUONVDigitStore::kDeny);
+
+            n = pad.GetLocation(0).GetFirst(); // always take first location so that digits are not inserted several times
+	    b = pad.GetLocation(0).GetSecond();
+
+	    AliDebug(1,Form("Using localBoard %d ixy %d instead of %d,%d",
+			    n,b,nBoard,ibitxy));
+
+	    AliMUONVDigit* digit = digitStore.Add(detElemId,n,b,iCath,AliMUONVDigitStore::kDeny);
             
             if (!digit)
             {
-              AliError(Form("Could not add digit DE %04d LocalBoard %03d ibitxy %02d cath %d",
-                            detElemId,nBoard,ibitxy,iCath));
-              continue;
+		AliDebug(1, Form("Digit DE %04d LocalBoard %03d ibitxy %02d cath %d already in store",
+				 detElemId,nBoard,ibitxy,iCath));
+		continue;
             }
             
             Int_t padX = pad.GetIndices().GetFirst();

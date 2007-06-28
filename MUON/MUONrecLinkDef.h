@@ -35,6 +35,7 @@
 #pragma link C++ class AliMUONClusterFinderMLEM+;
 #pragma link C++ class AliMUONClusterSplitterMLEM+;
 #pragma link C++ class AliMUONTrackHitPattern+;
+#pragma link C++ class AliMUONTriggerChamberEff+;
 
 #pragma link C++ class AliMUONVClusterStore+;
 #pragma link C++ class AliMUONClusterStoreV1+;

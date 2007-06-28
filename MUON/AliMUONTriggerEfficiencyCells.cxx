@@ -17,6 +17,8 @@
 #include <TRandom.h>
 #include "Riostream.h"
 #include "TSystem.h"
+#include "TFile.h"
+#include "TH1F.h"
 
 #include "AliMUONTriggerEfficiencyCells.h"
 #include "AliMpConstants.h"
@@ -119,8 +121,8 @@ void AliMUONTriggerEfficiencyCells::GetCellEfficiency(Int_t detElemId, Int_t loc
 ///  Get the efficiencies of the 2 cathodes at a given local board
 
   Int_t chamber = FindChamberIndex(detElemId);
-  eff1 = fBoardContent[chamber][0][localBoard];
-  eff2 = fBoardContent[chamber][1][localBoard];
+  eff1 = fBoardContent[chamber][0][localBoard-1];
+  eff2 = fBoardContent[chamber][1][localBoard-1];
 }
 
 
@@ -179,15 +181,20 @@ void AliMUONTriggerEfficiencyCells::ReadFile(const char* filename)
 ///  Reads a file containing the efficiency map.
 
   TString fileName = gSystem->ExpandPathName(filename);
+  if(fileName.EndsWith(".root")){
+      ReadHistoBoards(fileName.Data());
+      return;
+  }
+
   ifstream file(fileName.Data());
   char dat[50];
   if (file.good()){
       file >> dat;
       if(!strcmp(dat,"localBoards"))ReadFileBoards(file);
       else ReadFileXY(file);
-    file.close();
+      file.close();
   } else {
-    AliWarning(Form("Can't read file %s",fileName.Data()));
+      AliWarning(Form("Can't read file %s",fileName.Data()));
   }
 }
 
@@ -250,6 +257,35 @@ void AliMUONTriggerEfficiencyCells::ReadFileBoards(ifstream &file)
 	    }
     }
 }
+
+
+//__________________________________________________________________________
+void AliMUONTriggerEfficiencyCells::ReadHistoBoards(const char *filename)
+{
+    TFile *file = new TFile(filename, "read");
+    if(!file) {
+	AliWarning(Form("Can't read file %s",filename));
+	return;
+    }
+    char histoName[30];
+    char *cathCode[2] = {"bendPlane", "nonBendPlane"};
+    TH1F *histo = 0x0;
+    for(Int_t ch=0; ch<4; ch++){
+	for(Int_t cath=0; cath<2; cath++){
+	    sprintf(histoName, "%sBoardEffChamber%i", cathCode[cath], 11+ch);
+	    histo = (TH1F *)file->Get(histoName);
+	    if(!(TH1F *)file->Get(histoName)) {
+		AliWarning(Form("Can't find histo %s in file %s",histoName, filename));
+		continue;
+	    }
+	    for(Int_t board=0; board<fgkNofBoards; board++){
+		Int_t bin = histo->FindBin(board+1);
+		fBoardContent[ch][cath][board] = histo->GetBinContent(bin);
+	    }
+	}
+    }
+}
+
 
 //__________________________________________________________________________
 Int_t AliMUONTriggerEfficiencyCells::FindChamberIndex(Int_t detElemId)

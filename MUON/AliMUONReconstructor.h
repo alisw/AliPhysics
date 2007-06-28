@@ -36,6 +36,8 @@ class AliMUONVClusterStore;
 class AliMUONTracker;
 class AliMUONVTrackStore;
 
+class AliMUONTriggerChamberEff;
+
 class AliMUONStopwatchGroup;
 
 class AliMUONReconstructor : public AliReconstructor
@@ -76,6 +78,7 @@ private:
   void CreateDigitMaker() const;
   void CreateTriggerCircuit() const;
   void CreateClusterReconstructor() const;
+  void CreateTriggerChamberEff() const;
   void FillTreeR(AliMUONVTriggerStore* triggerStore,
                  AliMUONVClusterStore* clusterStore,
                  TTree& clustersTree) const;
@@ -96,6 +99,7 @@ private:
   mutable AliMUONVClusterStore* fClusterStore; //!< Cluster container
   mutable AliMUONVTriggerStore* fTriggerStore; //!< Trigger container
   mutable AliMUONVTrackStore* fTrackStore; //!< Track container
+  mutable AliMUONTriggerChamberEff* fTrigChamberEff; //!< pointer to trigger chamber efficiency class
   AliMUONStopwatchGroup* fTimers; //!< Internal timers
   
   ClassDef(AliMUONReconstructor,1) // Implementation of AliReconstructor
