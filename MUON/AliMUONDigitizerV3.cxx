@@ -150,17 +150,21 @@ AliMUONDigitizerV3::ApplyResponseToTrackerDigit(AliMUONVDigit& digit, Bool_t add
   /// For tracking digits, starting from an ideal digit's charge, we :
   ///
   /// - add some noise (thus leading to a realistic charge), if requested to do so
-  /// - divide by a gain (thus decalibrating the digit)
+  /// - "divide" by a gain (thus decalibrating the digit)
   /// - add a pedestal (thus decalibrating the digit)
   /// - sets the signal to zero if below 3*sigma of the noise
 
   static const Int_t kMaxADC = (1<<12)-1; // We code the charge on a 12 bits ADC.
   
-  Float_t signal = digit.Charge();
+  Float_t charge = digit.Charge();
+  
+  // We set the charge to 0, as the only relevant piece of information
+  // after Digitization is the ADC value.  
+  digit.SetCharge(0);
   
   if ( !addNoise )
   {
-    digit.SetADC(TMath::Min(kMaxADC,TMath::Nint(signal)));
+    digit.SetADC(TMath::Min(kMaxADC,TMath::Nint(charge)));
     return;
   }
   
@@ -175,7 +179,6 @@ AliMUONDigitizerV3::ApplyResponseToTrackerDigit(AliMUONVDigit& digit, Bool_t add
     fLogger->Log(Form("%s:%d:Could not get pedestal for DE=%4d manuId=%4d. Disabling.",
                       __FILE__,__LINE__,
                       detElemId,manuId));
-    digit.SetCharge(0);
     digit.SetADC(0);
     return;    
   }
@@ -188,31 +191,39 @@ AliMUONDigitizerV3::ApplyResponseToTrackerDigit(AliMUONVDigit& digit, Bool_t add
     fLogger->Log(Form("%s:%d:Could not get gain for DE=%4d manuId=%4d. Disabling.",
                       __FILE__,__LINE__,
                       detElemId,manuId));
-    digit.SetCharge(0);
     digit.SetADC(0);
     return;        
   }    
-  Float_t gainMean = gain->ValueAsFloat(manuChannel,0);
+
+  Float_t a0 = gain->ValueAsFloat(manuChannel,0);
+  Float_t a1 = gain->ValueAsFloat(manuChannel,1);
+
+  Int_t thres = gain->ValueAsInt(manuChannel,2);
+  Float_t chargeThres = a0*thres;
   
-  Float_t adcNoise = gRandom->Gaus(0.0,pedestalSigma);
+  Float_t padc(0); // (adc - ped) value
   
-  Int_t adc;
-  
-  if ( gainMean < 1E-6 )
+  if ( charge <= chargeThres || TMath::Abs(a1) < 1E-12 ) 
   {
-    AliError(Form("Got a too small gain %e for DE=%d manuId=%d manuChannel=%d. "
-                  "Setting signal to 0.",
-                  gainMean,detElemId,manuId,manuChannel));
-    adc = 0;
-  }
-  else
-  {
-    adc = TMath::Nint( signal / gainMean + pedestalMean + adcNoise);///
+    // linear part only
     
-    if ( adc <= pedestalMean + fgkNSigmas*pedestalSigma ) 
+    if ( TMath::Abs(a0) > 1E-12 ) 
     {
-      adc = 0;
+      padc = charge/a0;    
     }
+  }
+  else // charge > chargeThres && a1 not zero
+  {
+    // parabolic part
+    padc = TMath::Sqrt((chargeThres-charge)/a1) + thres;
+  }
+
+  Float_t adcNoise = gRandom->Gaus(0.0,pedestalSigma);
+  Int_t adc(0);
+  
+  if ( padc > 0 ) 
+  {
+    adc = TMath::Nint(padc + pedestalMean + adcNoise);
   }
   
   // be sure we stick to 12 bits.
@@ -221,7 +232,14 @@ AliMUONDigitizerV3::ApplyResponseToTrackerDigit(AliMUONVDigit& digit, Bool_t add
     adc = kMaxADC;
   }
   
-  digit.SetCharge(adc);
+  AliDebug(3,Form("DE %4d Manu %4d Ch %2d Charge %e A0 %e A1 %e Thres %d padc %e ADC %4d",
+                  detElemId,manuId,manuChannel,charge,
+                  gain->ValueAsFloat(manuChannel,0),
+                  gain->ValueAsFloat(manuChannel,1),
+                  gain->ValueAsInt(manuChannel,2),
+                  padc,
+                  adc));
+                  
   digit.SetADC(adc);
 }
 
@@ -309,7 +327,7 @@ AliMUONDigitizerV3::ApplyResponse(const AliMUONVDigitStore& store,
     {
       ApplyResponseToTriggerDigit(store,*digit);
     }
-    if ( digit->Charge() > 0  )
+    if ( digit->ADC() > 0  || digit->Charge() > 0 )
     {
       filteredStore.Add(*digit,AliMUONVDigitStore::kIgnore);
     }
@@ -558,7 +576,7 @@ AliMUONDigitizerV3::GenerateNoisyDigitsForOneCathode(AliMUONVDigitStore& digitSt
     d->SetCharge(TMath::Nint(ped+pedestalMean+0.5));
     d->NoiseOnly(kTRUE);
     ApplyResponseToTrackerDigit(*d,kFALSE);
-    if ( d->Charge() > 0 )
+    if ( d->ADC() > 0 )
     {
       Bool_t ok = digitStore.Add(*d,AliMUONVDigitStore::kDeny);
       // this can happen (that we randomly chose a digit that is

@@ -129,6 +129,12 @@ AliMUONDigitCalibrator::CalibrateDigit(AliMUONVDigit& digit)
 {
   /// Calibrate one digit
   
+  if ( digit.IsCalibrated() ) 
+  {
+    fLogger->Log("ERROR : trying to calibrate a digit twice");
+    return;
+  }
+  
   AliMUONVCalibParam* deadmap = static_cast<AliMUONVCalibParam*>
   (fStatusMap->FindObject(digit.DetElemId(),digit.ManuId()));
   Int_t statusMap = deadmap->ValueAsInt(digit.ManuChannel());
@@ -168,13 +174,23 @@ AliMUONDigitCalibrator::CalibrateDigit(AliMUONVDigit& digit)
     Int_t manuChannel = digit.ManuChannel();
     Float_t adc = digit.ADC();
     Float_t padc = adc-pedestal->ValueAsFloat(manuChannel,0);
-    if ( padc < 3.0*pedestal->ValueAsFloat(manuChannel,1) ) 
+    Float_t charge(0);
+    if ( padc > 3.0*pedestal->ValueAsFloat(manuChannel,1) ) 
     {
-      padc = 0.0;
+      Float_t a0 = gain->ValueAsFloat(manuChannel,0);
+      Float_t a1 = gain->ValueAsFloat(manuChannel,1);
+      Int_t thres = gain->ValueAsInt(manuChannel,2);
+      if ( padc < thres ) 
+      {
+        charge = a0*padc;
+      }
+      else
+      {
+        charge = a0*thres + a0*padc + a1*padc*padc;
+      }
     }
-    Float_t charge = padc*gain->ValueAsFloat(manuChannel,0);
     digit.SetCharge(charge);
-    Int_t saturation = gain->ValueAsInt(manuChannel,1);
+    Int_t saturation = gain->ValueAsInt(manuChannel,4);
     if ( charge >= saturation )
     {
       digit.Saturated(kTRUE);

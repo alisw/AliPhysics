@@ -38,10 +38,13 @@
 ///
 /// Implementation of AliMUONVSubprocessor class to deal with MUON TRK Gains.
 ///
-/// Gains are read in from an ascii file, with the format :                   \n            
-///---------------------------------------------------------------------------\n
-///BUS_PATCH   MANU   CHANNEL    Ped.     a0        a1         a2         xlim        P(chi2)    P(chi2)_2  \n 
-///---------------------------------------------------------------------------\n
+/// Gains are read in from an ascii file, with the format :                               
+///
+///---------------------------------------------------------------------------
+///
+///BUS_PATCH   MANU   CHANNEL    a0   a1   thres Qual
+///
+///---------------------------------------------------------------------------
 ///
 /// \author L. Aphecetche
 ///
@@ -164,13 +167,13 @@ AliMUONGainSubprocessor::Process(TMap* /*dcsAliasMap*/)
 Int_t
 AliMUONGainSubprocessor::ReadFile(const char* filename)
 {
-  /// Read the Gains from an ASCII file.                                  \n
-  /// Format of that file is one line per channel :                           \n
-  ///-------------------------------------------------------------------------\n
-  ///BUS_PATCH   MANU   CHANNEL    Ped.     a0        a1         a2         xlim        P(chi2)    P(chi2)_2  \n 
-  ///-------------------------------------------------------------------------\n
-  ///                                                                         \n
-  /// Return kFALSE if reading was not successfull.                           \n
+  /// Read the Gains from an ASCII file.                                  
+  /// Format of that file is one line per channel :                       
+  ///-------------------------------------------------------------------------
+  ///BUS_PATCH   MANU   CHANNEL  a0  a1 thres Qual
+  ///-------------------------------------------------------------------------
+  ///                                                                         
+  /// Return kFALSE if reading was not successfull.                           
   ///
   
   TString sFilename(gSystem->ExpandPathName(filename));
@@ -184,10 +187,10 @@ AliMUONGainSubprocessor::ReadFile(const char* filename)
   }
   char line[256];
   Int_t busPatchID, manuID, manuChannel;
-  Float_t ped;
-  Float_t a0, a1, a2;
-  Float_t xlim;
-  Float_t chi2, chi22;
+  Float_t a0, a1;
+  Int_t thres;
+  Int_t qual;
+  const Int_t kSaturation(3000); // FIXME: how to get this number ?
   
   static const Int_t kNchannels(AliMpConstants::ManuNofChannels());
   Int_t n(0);
@@ -196,29 +199,29 @@ AliMUONGainSubprocessor::ReadFile(const char* filename)
   {
     if ( strlen(line) < 10 ) continue;
     if ( line[0] == '/' && line[1] == '/' ) continue;
-    std::istringstream sin(line);
+
+    sscanf(line,"%d %d %d %f %f %d %x",&busPatchID,&manuID,&manuChannel,
+           &a0,&a1,&thres,&qual); 
     AliDebug(3,Form("line=%s",line));
-    sin >> busPatchID >> manuID >> manuChannel >> ped >> a0 >> a1 >> a2 >> xlim >> chi2 >> chi22;
     Int_t detElemID = AliMpDDLStore::Instance()->GetDEfromBus(busPatchID);
-    AliDebug(3,Form("BUSPATCH %3d DETELEMID %4d MANU %3d CH %3d PED %7.2f A0 %7.2f A1 %7.2f A2 %7.2f"
-                    " XLIM %7.2f CHI2 %7.2f CHI22 %7.2f",
-                    busPatchID,detElemID,manuID,manuChannel,ped,a0,a1,a2,xlim,chi2,chi22));
-    if ( a0==a1 && a1==a2 && a0==-2) continue;
+    AliDebug(3,Form("BUSPATCH %3d DETELEMID %4d MANU %3d CH %3d A0 %7.2f "
+                    "A1 %e THRES %5d QUAL %x",
+                    busPatchID,detElemID,manuID,manuChannel,a0,a1,thres,qual));
+    if ( qual == 0 ) continue;
     
     AliMUONVCalibParam* gain = 
       static_cast<AliMUONVCalibParam*>(fGains->FindObject(detElemID,manuID));
     
     if (!gain) 
     {
-      gain = new AliMUONCalibParamNF(6,detElemID,manuID,kNchannels,0);
+      gain = new AliMUONCalibParamNF(5,kNchannels,detElemID,manuID,0);
       fGains->Add(gain);
     }
     gain->SetValueAsFloat(manuChannel,0,a0);
     gain->SetValueAsFloat(manuChannel,1,a1);
-    gain->SetValueAsFloat(manuChannel,2,a2);
-    gain->SetValueAsFloat(manuChannel,3,xlim);
-    gain->SetValueAsFloat(manuChannel,4,chi2);
-    gain->SetValueAsFloat(manuChannel,5,chi22);
+    gain->SetValueAsInt(manuChannel,2,thres);
+    gain->SetValueAsInt(manuChannel,3,qual);
+    gain->SetValueAsInt(manuChannel,4,kSaturation);
     ++n;
   }
   in.close();

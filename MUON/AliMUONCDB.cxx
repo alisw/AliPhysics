@@ -65,6 +65,7 @@
 #include <TRandom.h>
 #include <TStopwatch.h>
 #include <TSystem.h>
+#include <TMath.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONCDB)
@@ -110,6 +111,24 @@ void getBoundaries(const AliMUONVStore& store,
       }
     }
   }  
+}
+
+//_____________________________________________________________________________
+Double_t GetRandom(Double_t mean, Double_t sigma, Bool_t mustBePositive)
+{
+  Double_t x(-1);
+  if ( mustBePositive ) 
+  {
+    while ( x < 0 ) 
+    {
+      x = gRandom->Gaus(mean,sigma);
+    }
+  }
+  else
+  {
+    x = gRandom->Gaus(mean,sigma);
+  }
+  return x;
 }
 
 }
@@ -345,7 +364,7 @@ AliMUONCDB::MakeHVStore(TMap& aliasMap, Bool_t defaultValues)
       for ( UInt_t timeStamp = 0; timeStamp < 60*15; timeStamp += 120 )
       {
         Float_t value = 1500;
-        if (!defaultValues) value = gRandom->Gaus(1750,62.5);
+        if (!defaultValues) value = GetRandom(1750,62.5,true);
         AliDCSValue* dcsValue = new AliDCSValue(value,timeStamp);
         valueSet->Add(dcsValue);
       }
@@ -411,16 +430,9 @@ AliMUONCDB::MakePedestalStore(AliMUONVStore& pedestalStore, Bool_t defaultValues
       }
       else
       {
-        meanPedestal = -1;
-        while ( meanPedestal < 0 )
-        {
-          meanPedestal = gRandom->Gaus(kPedestalMeanMean,kPedestalMeanSigma);
-        }
-        sigmaPedestal = -1;
-        while ( sigmaPedestal < 0 )
-        {
-          sigmaPedestal = gRandom->Gaus(kPedestalSigmaMean,kPedestalSigmaSigma);
-        }
+        Bool_t positive(kTRUE);
+        meanPedestal = GetRandom(kPedestalMeanMean,kPedestalMeanSigma,positive);
+        sigmaPedestal = GetRandom(kPedestalSigmaMean,kPedestalSigmaSigma,positive);
       }
       ped->SetValueAsFloat(manuChannel,0,meanPedestal);
       ped->SetValueAsFloat(manuChannel,1,sigmaPedestal);
@@ -501,11 +513,7 @@ AliMUONCDB::MakeCapacitanceStore(AliMUONVStore& capaStore, Bool_t defaultValues)
       }
       else
       {
-        capaValue = -1;
-        while ( capaValue < 0 )
-        {
-          capaValue = gRandom->Gaus(kCapaMean,kCapaSigma);
-        }
+        capaValue = GetRandom(kCapaMean,kCapaSigma,kTRUE);
       }
       capa->SetValueAsFloat(manuChannel,0,capaValue);
     }
@@ -528,9 +536,11 @@ AliMUONCDB::MakeCapacitanceStore(AliMUONVStore& capaStore, Bool_t defaultValues)
 Int_t 
 AliMUONCDB::MakeGainStore(AliMUONVStore& gainStore, Bool_t defaultValues)
 {  
-  /// Create a gain store. if defaultValues=true, all gain are 1.0,
-  /// otherwise they are from a gaussian with parameters defined in the
-  /// kGain* constants below.
+  /// Create a gain store. if defaultValues=true, all gains set so that
+  /// charge = (adc-ped)
+  ///
+  /// otherwise parameters are taken from gaussians with parameters 
+  /// defined in the k* constants below.
   
   TIter next(ManuList());
   
@@ -539,9 +549,15 @@ AliMUONCDB::MakeGainStore(AliMUONVStore& gainStore, Bool_t defaultValues)
   Int_t nchannels(0);
   Int_t nmanus(0);
     
-  const Double_t kSaturation(3000);
-  const Double_t kGainMean(1.0);
-  const Double_t kGainSigma(0.05);
+  const Int_t kSaturation(3000);
+  const Double_t kA0Mean(1.2);
+  const Double_t kA0Sigma(0.1);
+  const Double_t kA1Mean(1E-5);
+  const Double_t kA1Sigma(1E-6);
+  const Double_t kQualMean(0xFF);
+  const Double_t kQualSigma(0x10);
+  const Int_t kThresMean(1600);
+  const Int_t kThresSigma(100);
   
   while ( ( p = (AliMpIntPair*)next() ) )
   {
@@ -551,7 +567,7 @@ AliMUONCDB::MakeGainStore(AliMUONVStore& gainStore, Bool_t defaultValues)
     Int_t manuId = p->GetSecond();
 
     AliMUONVCalibParam* gain = 
-      new AliMUONCalibParamNF(2,AliMpConstants::ManuNofChannels(),
+      new AliMUONCalibParamNF(5,AliMpConstants::ManuNofChannels(),
                               detElemId,
                               manuId,
                               AliMUONVCalibParam::InvalidFloatValue());
@@ -567,23 +583,23 @@ AliMUONCDB::MakeGainStore(AliMUONVStore& gainStore, Bool_t defaultValues)
       
       ++nchannels;
       
-      Float_t meanGain;
-      Float_t saturation(kSaturation);
-    
       if ( defaultValues ) 
       {
-        meanGain = 1.0;
+        gain->SetValueAsFloat(manuChannel,0,1.0);
+        gain->SetValueAsFloat(manuChannel,1,0.0);
+        gain->SetValueAsInt(manuChannel,2,4095); 
+        gain->SetValueAsInt(manuChannel,3,1);
+        gain->SetValueAsInt(manuChannel,4,kSaturation);
       }
       else
       {
-        meanGain = -1;
-        while ( meanGain < 0 )
-        {
-          meanGain = gRandom->Gaus(kGainMean,kGainSigma);
-        }
+        Bool_t positive(kTRUE);
+        gain->SetValueAsFloat(manuChannel,0,GetRandom(kA0Mean,kA0Sigma,positive));
+        gain->SetValueAsFloat(manuChannel,1,GetRandom(kA1Mean,kA1Sigma,!positive));
+        gain->SetValueAsInt(manuChannel,2,(Int_t)TMath::Nint(GetRandom(kThresMean,kThresSigma,positive)));
+        gain->SetValueAsInt(manuChannel,3,(Int_t)TMath::Nint(GetRandom(kQualMean,kQualSigma,positive)));
+        gain->SetValueAsInt(manuChannel,4,kSaturation);        
       }
-      gain->SetValueAsFloat(manuChannel,0,meanGain);
-      gain->SetValueAsFloat(manuChannel,1,saturation);
       
     }
     Bool_t ok = gainStore.Add(gain);
