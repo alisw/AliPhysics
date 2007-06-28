@@ -170,11 +170,14 @@ Int_t AliTRDpidESD::MakePID(AliESD *event)
 			if ((dEdx <=  0.) || (timebin <= -1.)) continue;
 
 			// retrive kinematic info for this track segment
-			if(!RecalculateTrackSegmentKine(t, iPlan, mom, length)) continue;
+			if(!RecalculateTrackSegmentKine(t, iPlan, mom, length)){
+				// information is not fully reliable especialy for length
+				// estimation. To be used in the future. 
+			}
 			
 			// this track segment has fulfilled all requierments
 			nPlanePID++;
-			
+
 			// Get the probabilities for the different particle species
 			for (Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++) {
 				p[iSpecies] *= pd->GetProbability(iSpecies, mom, dedx, length);
@@ -187,8 +190,7 @@ Int_t AliTRDpidESD::MakePID(AliESD *event)
 		Double_t probTotal = 0.;
 		for (Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++) probTotal   += p[iSpecies];
 		if(probTotal <= 0.){
-			AliWarningGeneral("AliTRDpidESD::MakePID()",
-			Form("The total probability over all species <= 0 in ESD track %d. This may be caused by some error in reference data. Calculation continue but results might be corrupted.", i));
+			AliWarningGeneral("AliTRDpidESD::MakePID()", Form("The total probability (%e) over all species <= 0 in ESD track %d. This may be caused by some error in reference data. Calculation continue but results might be corrupted.", probTotal, i));
 			continue;
 		}
 		for(Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++) p[iSpecies] /= probTotal;
@@ -248,20 +250,25 @@ Bool_t AliTRDpidESD::RecalculateTrackSegmentKine(AliESDtrack *esd, Int_t plan, F
 	if(!fTrack){
 		fTrack = new AliExternalTrackParam(*op);
 		param = fTrack;
-	} else param = new(&fTrack) AliExternalTrackParam(*op);
-
+	} else param = new(fTrack) AliExternalTrackParam(*op);
+	
 	// retrive the magnetic field
 	Double_t xyz0[3];
 	op->GetXYZ(xyz0);
 	Float_t field = AliTracker::GetBz(xyz0); // Bz in kG at point xyz0
+	Double_t s, t;
+
 	// propagate to chamber entrance
 	if(!param->PropagateTo(kTime0-kAmHalfWidth-kDrWidth, field)){
-		mom = op->GetP();
+		mom    = op->GetP();
+		s      = op->GetSnp();
+		t      = op->GetTgl();
+	  length /= TMath::Sqrt((1. - s*s) / (1. - t*t));
 		return kFALSE;
 	}
 	mom        = param->GetP();
-	Double_t s = param->GetSnp();
-	Double_t t = param->GetTgl();
+	s = param->GetSnp();
+	t = param->GetTgl();
 	length    /= TMath::Sqrt((1. - s*s) / (1. - t*t));
 
 	// check if track is crossing tracking sector by propagating to chamber exit- maybe is too much :)
