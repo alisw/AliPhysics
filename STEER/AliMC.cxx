@@ -41,6 +41,7 @@
 #include "AliMagF.h"
 #include "AliTrackReference.h"
 #include "AliSimulation.h"
+#include "AliGeomManager.h"
 
 
 ClassImp(AliMC)
@@ -188,6 +189,7 @@ Bool_t  AliMC::MisalignGeometry()
    SetAllAlignableVolumes();
    // Misalign geometry via AliSimulation instance
    if (!AliSimulation::GetInstance()) return kFALSE;
+   AliGeomManager::SetGeometry(gGeoManager);
    return AliSimulation::GetInstance()->MisalignGeometry(gAlice->GetRunLoader());
 }   
 
