@@ -22,6 +22,7 @@
 /// hit in chamber (0..9) and from kinematics for the vertex parameters.     
 
 #include "AliMUONRecoCheck.h"
+#include "AliMUONHitForRec.h"
 #include "AliMUONTrack.h"
 #include "AliMUONConstants.h"
 #include "AliMUONMCDataInterface.h"
