@@ -29,6 +29,23 @@
 /// * EventReconstruct to build the muon tracks
 /// * EventReconstructTrigger to build the trigger tracks
 ///
+/// Several options and adjustable parameters are available for both Kalman and Original
+/// tracking algorithms (hard coded for the moment in AliMUONVTrackReconstructor.cxx):
+/// - *fgkSigmaToCutForTracking* : quality cut used to select new clusters to be
+///   attached to the track candidate and to select good tracks.
+/// - *fgkTrackAllTracks* : according to the value of this flag, in case that several
+///   new clusters pass the quality cut, either we consider all the possibilities
+///   (duplicating tracks) or we attach only the best cluster.
+/// - *fgkRecoverTracks* : if this flag is set to 'true', we try to recover the tracks
+///   lost during the tracking by removing the worst of the 2 clusters attached in the
+///   previous station.
+/// - *fgkImproveTracks* : if this flag is set to 'true', we try to improve the quality
+///   of the tracks at the end of the tracking by removing clusters that do not pass
+///   new quality cut (within the limit that we must keep at least one cluster per
+///   the station).
+/// - *fgkSigmaToCutForImprovement* : quality cut used when we try to improve the
+///   quality of the tracks.
+///
 ///  \author Philippe Pillot
 ///
 ////////////////////////////////////
