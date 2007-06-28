@@ -75,11 +75,11 @@ void Config(char directory[100]="", char option[6]="param")
     gener->SetSigma(0.0, 0.0, 0.0);         //Sigma in (X,Y,Z) (cm) on IP position
   }
   if (!strcmp(option,"gun")) {
-    AliGenFixed *gener = new AliGenFixed(ntracks);
+    AliGenFixed *gener = new AliGenFixed(1);
     gener->SetMomentum(10);
     gener->SetPhiRange(0.);
     gener->SetThetaRange(0.);
-    gener->SetOrigin(30,30,1200);//vertex position
+    gener->SetOrigin(30,30,-1200);//vertex position
     gener->SetPart(13);          //GEANT particle type  13 is muons
   }
   if (!strcmp(option,"scan")) {
