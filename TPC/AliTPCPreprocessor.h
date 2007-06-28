@@ -9,6 +9,7 @@
 class AliTestDataDCS;
 class AliTPCSensorTempArray;
 class AliDCSSensorArray;
+class AliTPCROC;
 
 class AliTPCPreprocessor : public AliPreprocessor
 {
@@ -22,12 +23,14 @@ class AliTPCPreprocessor : public AliPreprocessor
     virtual UInt_t Process(TMap* dcsAliasMap);
     UInt_t  MapTemperature(TMap* dcsAliasMap);
     UInt_t  MapPressure(TMap* dcsAliasMap);
+    UInt_t  ExtractPedestals();
     AliTPCPreprocessor& operator = (const AliTPCPreprocessor& rhs);
 
   private:
     AliTPCSensorTempArray  *fTemp;     // CDB class for temperature sensors
     AliDCSSensorArray      *fPressure; // CDB class for pressure sensors
     Bool_t                 fConfigOK;  // Identify succesful reading of OCDB Config
+    AliTPCROC              *fROC;      // TPC Read-Out configuration
 
     ClassDef(AliTPCPreprocessor, 2)
 };

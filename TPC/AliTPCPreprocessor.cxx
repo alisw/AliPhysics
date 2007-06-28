@@ -15,17 +15,23 @@
 
 
 #include "AliTPCPreprocessor.h"
+#include "AliShuttleInterface.h"
 
 #include "AliCDBMetaData.h"
 #include "AliDCSValue.h"
 #include "AliLog.h"
 #include "AliTPCSensorTempArray.h"
 #include "AliTPCDBPressure.h"
+#include "AliTPCROC.h"
+#include "AliTPCCalROC.h"
+#include "AliTPCCalPad.h"
+#include "AliTPCCalibPedestal.h"
 
 #include <TTimeStamp.h>
 
-const Int_t kValCutTemp = 100;         // discard temperatures > 100 degrees
-const Int_t kDiffCutTemp = 5;	   // discard temperature differences > 5 degrees
+const Int_t kValCutTemp = 100;               // discard temperatures > 100 degrees
+const Int_t kDiffCutTemp = 5;	             // discard temperature differences > 5 degrees
+const TString kPedestalRunType = "PEDESTAL_RUN";  // pedestal run identifier
 
 //
 // This class is the SHUTTLE preprocessor for the TPC detector.
@@ -38,9 +44,10 @@ ClassImp(AliTPCPreprocessor)
 //______________________________________________________________________________________________
 AliTPCPreprocessor::AliTPCPreprocessor(AliShuttleInterface* shuttle) :
   AliPreprocessor("TPC",shuttle),
-  fTemp(0), fPressure(0), fConfigOK(kTRUE)
+  fTemp(0), fPressure(0), fConfigOK(kTRUE), fROC(0)
 {
   // constructor
+  fROC = AliTPCROC::Instance();
 }
 //______________________________________________________________________________________________
 // AliTPCPreprocessor::AliTPCPreprocessor(const AliTPCPreprocessor& org) :
@@ -59,7 +66,7 @@ AliTPCPreprocessor::AliTPCPreprocessor(AliShuttleInterface* shuttle) :
 AliTPCPreprocessor::~AliTPCPreprocessor()
 {
   // destructor
-  
+
   delete fTemp;
   delete fPressure;
 }
@@ -100,9 +107,9 @@ void AliTPCPreprocessor::Initialize(Int_t run, UInt_t startTime,
 
   // Pressure sensors
 
-	confTree=0;
+        confTree=0;
 	entry=0;
-        entry = GetFromOCDB("Config", "Pressure");
+	entry = GetFromOCDB("Config", "Pressure");
         if (entry) confTree = (TTree*) entry->GetObject();
         if ( confTree==0 ) {
            AliError(Form("Pressure Config OCDB entry missing.\n"));
@@ -119,10 +126,12 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
 {
   // Fills data into TPC calibrations objects
 
-   if (!dcsAliasMap) return 9;
-   if (!fConfigOK) return 9;
-
   // Amanda servers provide information directly through dcsAliasMap
+
+  if (!dcsAliasMap) return 9;
+  if (!fConfigOK) return 9;
+
+  TString runType = GetRunType();
 
   // Temperature sensors are processed by AliTPCCalTemp
 
@@ -136,12 +145,18 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
   result += pressureResult;
 
   // Other calibration information will be retrieved through FXS files
-  //  examples: 
+  //  examples:
   //    TList* fileSourcesDAQ = GetFile(AliShuttleInterface::kDAQ, "pedestals");
   //    const char* fileNamePed = GetFile(AliShuttleInterface::kDAQ, "pedestals", "LDC1");
   //
   //    TList* fileSourcesHLT = GetFile(AliShuttleInterface::kHLT, "calib");
   //    const char* fileNameHLT = GetFile(AliShuttleInterface::kHLT, "calib", "LDC1");
+
+
+  if(runType == kPedestalRunType) {
+    UInt_t pedestalResult = ExtractPedestals();
+    result += pedestalResult;
+  }
 
 
   return result;
@@ -164,19 +179,16 @@ UInt_t AliTPCPreprocessor::MapTemperature(TMap* dcsAliasMap)
   }
   delete map;
   // Now store the final CDB file
-  
-  if ( result == 0 ) { 
+
+  if ( result == 0 ) {
         AliCDBMetaData metaData;
 	metaData.SetBeamPeriod(0);
 	metaData.SetResponsible("Haavard Helstrup");
 	metaData.SetComment("Preprocessor AliTPC data base entries.");
 
-	result = Store("Calib", "Temperature", fTemp, &metaData, 0, 0);
-        if ( result == 1 ) {                  
-          result = 0;
-	} else {
-	  result = 1;
-	}                      // revert to new return code conventions
+	Bool_t storeOK = Store("Calib", "Temperature", fTemp, &metaData, 0, kFALSE);
+        if ( !storeOK )  result=1;
+
    }
 
    return result;
@@ -199,20 +211,74 @@ UInt_t AliTPCPreprocessor::MapPressure(TMap* dcsAliasMap)
   }
   delete map;
   // Now store the final CDB file
-  
-  if ( result == 0 ) { 
+
+  if ( result == 0 ) {
         AliCDBMetaData metaData;
 	metaData.SetBeamPeriod(0);
 	metaData.SetResponsible("Haavard Helstrup");
 	metaData.SetComment("Preprocessor AliTPC data base entries.");
 
-	result = Store("Calib", "Pressure", fPressure, &metaData, 0, 0);
-        if ( result == 1 ) {                  
-          result = 0;
-	} else {
-	  result = 1;
-	}                      // revert to new return code conventions
+	Bool_t storeOK = Store("Calib", "Pressure", fPressure, &metaData, 0, 0);
+        if ( !storeOK ) result=1;
+
    }
 
    return result;
+}
+//______________________________________________________________________________________________
+UInt_t AliTPCPreprocessor::ExtractPedestals()
+{
+ //
+ //  Read pedestal file from file exchage server
+ //  Keep original entry from OCDB in case no new pedestals are available
+ //
+ AliTPCCalPad *calPadPed=0;
+ AliCDBEntry* entry = GetFromOCDB("Calib", "Pedestals");
+ if (entry) calPadPed = (AliTPCCalPad*)entry->GetObject();
+ if ( calPadPed==NULL ) {
+     AliWarning(Form("No previous TPC pedestal entry available.\n"));
+     Log("AliTPCPreprocsessor: No previous TPC pedestal entry available.\n");
+     calPadPed = new AliTPCCalPad();
+ }
+
+ UInt_t result=0;
+
+ Int_t nSectors = fROC->GetNSectors();
+ TList* list = GetFileSources(AliShuttleInterface::kDAQ,"pedestals");
+ if (list) {
+
+//  loop through all files from LDCs
+
+    UInt_t index = 0;
+    while (list->At(index)!=NULL) {
+     TObjString* fileNameEntry = (TObjString*) list->At(index);
+     if (fileNameEntry!=NULL) {
+        TString fileName = GetFile(AliShuttleInterface::kDAQ, "pedestals",
+	                                 fileNameEntry->GetString().Data());
+        TFile *f = TFile::Open(fileName);
+        AliTPCCalibPedestal *calPed;
+	f->GetObject("AliTPCCalibPedestal",calPed);
+
+        //  replace entries for the sectors available in the present file
+
+        for (Int_t sector=0; sector<=nSectors; sector++) {
+           AliTPCCalROC *roc=calPed->GetCalRocPedestal(sector, kFALSE);
+           if ( roc )  calPadPed->SetCalROC(roc,sector);
+        }
+      }
+     ++index;
+    }  // while(list)
+//
+//  Store updated pedestal entry to OCDB
+//
+    AliCDBMetaData metaData;
+    metaData.SetBeamPeriod(0);
+    metaData.SetResponsible("Haavard Helstrup");
+    metaData.SetComment("Preprocessor AliTPC data base entries.");
+
+    Bool_t storeOK = Store("Calib", "Pedestals", calPadPed, &metaData, 0, kTRUE);
+    if ( !storeOK ) result=1;
+
+  }  // if(list)
+  return result;
 }
