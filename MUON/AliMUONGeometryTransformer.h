@@ -9,10 +9,12 @@
 ///
 /// Geometry transformations can be filled in these ways:
 /// - by geometry builder when geometry is built via builders
-/// - from Root geometry file (*.root) or Root geometry manager
-/// - from ASCII file (*.dat)
-/// If geometry is loaded from a file, the list of aligned volume paths
-/// has to be read first from volpaths.dat file.
+///   (this way is used when running simulation and building geometry
+///    via VirtualMC)
+/// - from Root geometry file (*.root) or ASCII file (*.dat) using
+///   the method LoadGeometryData(const TString& fileName)
+/// - from geometry loaded in AliGeomManager using
+///   the method LoadGeometryData() without arguments
 /// 
 /// \author Ivana Hrivnacova, IPN Orsay
 
@@ -32,31 +34,25 @@ class TClonesArray;
 class AliMUONGeometryTransformer : public TObject
 {
   public:
-    AliMUONGeometryTransformer(Bool_t isOwner, const TString& detName = "MUON");
     AliMUONGeometryTransformer();
+    AliMUONGeometryTransformer(TRootIOCtor* /*ioCtor*/);
     virtual  ~AliMUONGeometryTransformer();
     
     // methods
     void  AddModuleTransformer(AliMUONGeometryModuleTransformer* transformer);
     void  AddMisAlignModule(Int_t moduleId, const TGeoHMatrix& matrix);
     void  AddMisAlignDetElement(Int_t detElemId, const TGeoHMatrix& matrix);
+    void  CreateModules();
 
     void  AddAlignableVolumes() const; 
     TClonesArray* CreateZeroAlignmentData() const;
-    void  ClearMisAlignmentData();			       
+    void  ClearMisAlignmentData();	
 
     // IO
     //
-    Bool_t  ReadGeometryData(const TString& volPathFileName,
-                             const TString& transformFileName);
-    Bool_t  ReadGeometryData(const TString& volPathFileName,
-                             TGeoManager* geoManager);
+    Bool_t  LoadGeometryData(const TString& fileName);
+    Bool_t  LoadGeometryData();
 
-    Bool_t  WriteGeometryData(const TString& volPathFileName,
-                             const TString& transformFileName,
-			     const TString& misalignFileName = "") const;
-   
-    Bool_t  WriteVolumePaths(const TString& fileName) const;
     Bool_t  WriteTransformations(const TString& fileName) const;
     Bool_t  WriteMisAlignmentData(const TString& fileName) const;
 
@@ -75,6 +71,10 @@ class AliMUONGeometryTransformer : public TObject
     void Local2Global(Int_t detElemId,
                  Double_t xl, Double_t yl, Double_t zl, 
                  Double_t& xg, Double_t& yg, Double_t& zg) const;
+                 
+    // Set methods
+    void SetDetName(const TString& detName);                 
+    void SetOwner(Bool_t isOwner);                 
 
     // Get methods
     //
@@ -108,9 +108,6 @@ class AliMUONGeometryTransformer : public TObject
 		  Double_t a1, Double_t a2, Double_t a3, 
  		  Double_t a4, Double_t a5, Double_t a6) const;
 
-    void FillModuleVolPath(Int_t moduleId, const TString& volPath); 
-    void FillDetElemVolPath(Int_t detElemId, const TString& volPath); 
-
     void FillModuleTransform(Int_t moduleId,
                   Double_t x, Double_t y, Double_t z,
 		  Double_t a1, Double_t a2, Double_t a3, 
@@ -120,30 +117,28 @@ class AliMUONGeometryTransformer : public TObject
 		  Double_t a1, Double_t a2, Double_t a3, 
  		  Double_t a4, Double_t a5, Double_t a6);
 
-    Bool_t  ReadVolPaths(ifstream& in);
     TString ReadModuleTransforms(ifstream& in);
     TString ReadDetElemTransforms(ifstream& in);
-    Bool_t  LoadTransforms(TGeoManager* tgeoManager); 
-
-    Bool_t  ReadVolPaths(const TString& fileName);
     Bool_t  ReadTransformations(const TString& fileName);
-    Bool_t  ReadTransformations2(const TString& fileName);
+    Bool_t  LoadTransformations(); 
 
     void    WriteTransform(ofstream& out, const TGeoMatrix* transform) const;
-    void    WriteModuleVolPaths(ofstream& out) const;
-    void    WriteDetElemVolPaths(ofstream& out) const;
     void    WriteModuleTransforms(ofstream& out) const;
     void    WriteDetElemTransforms(ofstream& out) const;
     
     TString GetModuleSymName(Int_t moduleId) const;
     TString GetDESymName(Int_t detElemId) const;
+    
+    // static data members
+    static const TString  fgkDefaultDetectorName; ///< Default detector name
+    
 
     // data members
     TString        fDetectorName;       ///< Detector name
     TObjArray*     fModuleTransformers; ///< array of module transformers
     TClonesArray*  fMisAlignArray;      ///< array of misalignment data
 
-  ClassDef(AliMUONGeometryTransformer,2)  // Geometry parametrisation
+  ClassDef(AliMUONGeometryTransformer,3)  // Geometry parametrisation
 };
 
 // inline methods
@@ -155,6 +150,14 @@ inline Int_t AliMUONGeometryTransformer::GetNofModuleTransformers() const
 /// Return the array of misalignment data
 inline const TClonesArray* AliMUONGeometryTransformer::GetMisAlignmentData() const	
 { return fMisAlignArray; }		       
+			       
+/// Set detector name
+inline void AliMUONGeometryTransformer::SetDetName(const TString& detName)
+{  fDetectorName = detName; }               
+
+/// Set ownership of array module transformers
+inline void AliMUONGeometryTransformer::SetOwner(Bool_t isOwner)
+{  fModuleTransformers->SetOwner(isOwner); }               
 
 #endif //ALI_MUON_GEOMETRY_TRANSFORMER_H
 

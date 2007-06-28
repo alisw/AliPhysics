@@ -27,6 +27,7 @@
 #include "AliMUONGeometryBuilder.h"
 
 #include "AliMpDEManager.h"
+#include "AliMpConstants.h"
 #include "AliMpExMap.h"
 
 #include "AliLog.h"
@@ -39,19 +40,21 @@
 #include <TGeoManager.h>
 #include <TGeoPhysicalNode.h>
 #include <TFile.h>
+#include <TString.h>
 
 #include <sstream>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONGeometryTransformer)
 /// \endcond
+
+const TString  AliMUONGeometryTransformer::fgkDefaultDetectorName = "MUON";
  
 //______________________________________________________________________________
-AliMUONGeometryTransformer::AliMUONGeometryTransformer(Bool_t isOwner,
-                                          const TString& detectorName)
+AliMUONGeometryTransformer::AliMUONGeometryTransformer()
 
   : TObject(),
-    fDetectorName(detectorName),
+    fDetectorName(fgkDefaultDetectorName),
     fModuleTransformers(0),
     fMisAlignArray(0)
 {
@@ -59,11 +62,11 @@ AliMUONGeometryTransformer::AliMUONGeometryTransformer(Bool_t isOwner,
 
   // Create array for geometry modules
   fModuleTransformers = new TObjArray(100);
-  fModuleTransformers->SetOwner(isOwner);
+  fModuleTransformers->SetOwner(true);
 }
 
 //______________________________________________________________________________
-AliMUONGeometryTransformer::AliMUONGeometryTransformer() 
+AliMUONGeometryTransformer::AliMUONGeometryTransformer(TRootIOCtor* /*ioCtor*/) 
   : TObject(),
     fDetectorName(),
     fModuleTransformers(0),
@@ -116,43 +119,6 @@ TGeoHMatrix AliMUONGeometryTransformer::GetTransform(
                         TGeoRotation("rot", a1, a2, a3, a4, a5, a6));
 }
 
-
-//______________________________________________________________________________
-void AliMUONGeometryTransformer::FillModuleVolPath(Int_t moduleId,
-                                           const TString& volPath) 
-{
-/// Create module with the given moduleId and volPath
-
-  // Get/Create geometry module transformer
-  AliMUONGeometryModuleTransformer* moduleTransformer
-    = GetModuleTransformerNonConst(moduleId, false);
-
-  if ( !moduleTransformer ) {
-    moduleTransformer = new AliMUONGeometryModuleTransformer(moduleId);
-    AddModuleTransformer(moduleTransformer);
-  }  
-  moduleTransformer->SetVolumePath(volPath);
-}		   
-  
-//______________________________________________________________________________
-void AliMUONGeometryTransformer::FillDetElemVolPath(Int_t detElemId, 
-                                           const TString& volPath) 
-{
-/// Create detection element with the given detElemId and volPath
-
-  // Module Id
-  Int_t moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-
-  // Get detection element store
-  AliMpExMap* detElements = 
-    GetModuleTransformer(moduleId)->GetDetElementStore();     
-
-  // Add detection element
-  AliMUONGeometryDetElement* detElement
-    = new AliMUONGeometryDetElement(detElemId, volPath);
-  detElements->Add(detElemId, detElement);
-}		   
-  
 
 //______________________________________________________________________________
 void AliMUONGeometryTransformer::FillModuleTransform(Int_t moduleId,
@@ -219,40 +185,6 @@ void AliMUONGeometryTransformer::FillDetElemTransform(
 				  localTransform );
   detElement->SetGlobalTransformation(globalTransform);
 }		   
-
-//______________________________________________________________________________
-Bool_t  
-AliMUONGeometryTransformer::ReadVolPaths(ifstream& in)
-{
-/// Read modules and detection element volume paths from stream
-
-  Int_t id;
-  TString key, volumePath;
-  in >> key;
-  
-  while ( !in.eof() ) {
-
-    in >> id >> volumePath;
-
-    // cout << "id="     << id << "  "
-    // 	 << "volPath= " << volumePath
-    //	 << endl;   
-
-    if ( key == AliMUONGeometryModuleTransformer::GetModuleNamePrefix() ) 
-      FillModuleVolPath(id, volumePath);
-  
-    else if ( key == AliMUONGeometryDetElement::GetDENamePrefix() )
-      FillDetElemVolPath(id, volumePath);
-  
-    else {
-      AliFatal(Form("%s key not recognized",  key.Data()));
-      return false;
-    }
-    in >> key;
-  }     
-
-  return true;
-}
 
 //______________________________________________________________________________
 TString  AliMUONGeometryTransformer::ReadModuleTransforms(ifstream& in)
@@ -342,95 +274,6 @@ TString  AliMUONGeometryTransformer::ReadDetElemTransforms(ifstream& in)
 
 //______________________________________________________________________________
 Bool_t  
-AliMUONGeometryTransformer::LoadTransforms(TGeoManager* tgeoManager)
-{
-/// Load transformations for defined modules and detection elements
-/// from the root file
-
-  if ( !tgeoManager) {
-    AliFatal("No TGeoManager defined.");
-    return false;
-  }   
-
-  for (Int_t i=0; i<fModuleTransformers->GetEntriesFast(); i++) {
-    AliMUONGeometryModuleTransformer* moduleTransformer 
-      = (AliMUONGeometryModuleTransformer*)fModuleTransformers->At(i);
-
-    // Module path
-    TString path = moduleTransformer->GetVolumePath();
-    
-    // Make physical node
-    TGeoPhysicalNode* moduleNode = tgeoManager->MakePhysicalNode(path);
-    if ( ! moduleNode ) {
-      AliErrorStream() 
-        << "Module id: " << moduleTransformer->GetModuleId()
-	<< " volume path: " << path << " not found in geometry." << endl;
-	return false;
-    }	 
-    
-    // Set matrix from physical node
-    TGeoHMatrix matrix = *moduleNode->GetMatrix();
-    moduleTransformer->SetTransformation(matrix);
-    
-    // Loop over detection elements
-    AliMpExMap* detElements = moduleTransformer->GetDetElementStore();    
-   
-    for (Int_t j=0; j<detElements->GetSize(); j++) {
-      AliMUONGeometryDetElement* detElement
-        = (AliMUONGeometryDetElement*)detElements->GetObject(j);
-
-      // Det element path
-      TString dePath = detElement->GetVolumePath();
-
-      // Make physical node
-      TGeoPhysicalNode* deNode = tgeoManager->MakePhysicalNode(dePath);
-      if ( ! deNode ) {
-        AliErrorStream() 
-          << "Det element id: " << detElement->GetId()
-	  << " volume path: " << path << " not found in geometry." << endl;
-	  return false;
-      }	
-	 
-      // Set global matrix from physical node
-      TGeoHMatrix globalMatrix = *deNode->GetMatrix();
-      detElement->SetGlobalTransformation(globalMatrix);
-
-      // Set local matrix
-      TGeoHMatrix localMatrix = 
-        AliMUONGeometryBuilder::Multiply(
-	   matrix.Inverse(), globalMatrix );
-      detElement->SetLocalTransformation(localMatrix);
-    }  
-  } 
-  return true;    
-}  
-
-//______________________________________________________________________________
-Bool_t  
-AliMUONGeometryTransformer::ReadVolPaths(const TString& fileName)
-{
-/// Read detection element volume paths from a file.
-/// Return true, if reading finished correctly.
-
-  // File path
-  TString filePath = gSystem->Getenv("ALICE_ROOT");
-  filePath += "/MUON/data/";
-  filePath += fileName;
-  
-  // Open input file
-  ifstream in(filePath, ios::in);
-  if (!in) {
-    cerr << filePath << endl;	
-    AliFatal("File not found.");
-    return false;
-  }
-
-  ReadVolPaths(in);
-  return true;
-}
-
-//______________________________________________________________________________
-Bool_t  
 AliMUONGeometryTransformer::ReadTransformations(const TString& fileName)
 {
 /// Read transformations from a file.
@@ -467,26 +310,58 @@ AliMUONGeometryTransformer::ReadTransformations(const TString& fileName)
 
 //______________________________________________________________________________
 Bool_t  
-AliMUONGeometryTransformer::ReadTransformations2(const TString& fileName)
+AliMUONGeometryTransformer::LoadTransformations()
 {
-/// Read transformations from root geometry file.
-/// Return true, if reading finished correctly.
+/// Load transformations for defined modules and detection elements
+/// using AliGeomManager
 
-  // File path
-  TString filePath = gSystem->Getenv("ALICE_ROOT");
-  filePath += "/MUON/data/";
-  filePath += fileName;
-  
-  // Load root geometry
-  TGeoManager* tgeoManager = gGeoManager;
-  if (!tgeoManager)
-    tgeoManager = TGeoManager::Import(fileName);
+  if ( ! AliGeomManager::GetGeometry() ) {
+    AliFatal("Geometry has to be laoded in AliGeomManager first.");
+    return false;
+  }   
 
-  // Retrieve matrices
-  LoadTransforms(tgeoManager);     
-  
-  return true;
-}
+  for (Int_t i=0; i<fModuleTransformers->GetEntriesFast(); i++) {
+    AliMUONGeometryModuleTransformer* moduleTransformer 
+      = (AliMUONGeometryModuleTransformer*)fModuleTransformers->At(i);
+
+    // Module symbolic name
+    TString symname = GetModuleSymName(moduleTransformer->GetModuleId());
+    
+    // Set matrix from physical node
+    TGeoHMatrix* matrix = AliGeomManager::GetMatrix(symname);
+    if ( !matrix ) {
+      AliErrorStream() << "Geometry module matrix not found." << endl;
+      return false;
+    }  
+    moduleTransformer->SetTransformation(*matrix);
+    
+    // Loop over detection elements
+    AliMpExMap* detElements = moduleTransformer->GetDetElementStore();    
+   
+    for (Int_t j=0; j<detElements->GetSize(); j++) {
+      AliMUONGeometryDetElement* detElement
+        = (AliMUONGeometryDetElement*)detElements->GetObject(j);
+
+      // Det element  symbolic name
+      TString symname = GetDESymName(detElement->GetId());
+    
+      // Set global matrix from physical node
+      TGeoHMatrix* globalMatrix = AliGeomManager::GetMatrix(symname);
+      if ( !matrix ) {
+        AliErrorStream() << "Detection element matrix not found." << endl;
+        return false;
+      }  
+      detElement->SetGlobalTransformation(*globalMatrix);
+
+      // Set local matrix
+      TGeoHMatrix localMatrix = 
+        AliMUONGeometryBuilder::Multiply(
+	   (*matrix).Inverse(), (*globalMatrix) );
+      detElement->SetLocalTransformation(localMatrix);
+    }  
+  } 
+  return true;    
+}  
 
 //______________________________________________________________________________
 void AliMUONGeometryTransformer::WriteTransform(ofstream& out,
@@ -513,47 +388,6 @@ void AliMUONGeometryTransformer::WriteTransform(ofstream& out,
       << setw(8) << setprecision(4) << a4 << "  " 
       << setw(8) << setprecision(4) << a5 << "  " 
       << setw(8) << setprecision(4) << a6 << "  " << endl; 
-}
-
-//______________________________________________________________________________
-void AliMUONGeometryTransformer::WriteModuleVolPaths(ofstream& out) const
-{
-/// Write module volume paths for all module transformers
-
-  for (Int_t i=0; i<fModuleTransformers->GetEntriesFast(); i++) {
-    AliMUONGeometryModuleTransformer* moduleTransformer 
-      = (AliMUONGeometryModuleTransformer*)fModuleTransformers->At(i);
-
-    // Write data on out
-    out << AliMUONGeometryModuleTransformer::GetModuleNamePrefix() << " "
-        << setw(4) << moduleTransformer->GetModuleId() << "    " 
-        << moduleTransformer->GetVolumePath() << endl;
-  }     
-  out << endl;	  	   	
-}
-
-//______________________________________________________________________________
-void AliMUONGeometryTransformer::WriteDetElemVolPaths(ofstream& out) const
-{
-/// Write detection element volume paths for all detection elements in all 
-/// module transformers
-
-  for (Int_t i=0; i<fModuleTransformers->GetEntriesFast(); i++) {
-    AliMUONGeometryModuleTransformer* moduleTransformer 
-      = (AliMUONGeometryModuleTransformer*)fModuleTransformers->At(i);
-    AliMpExMap* detElements = moduleTransformer->GetDetElementStore();    
-
-    for (Int_t j=0; j<detElements->GetSize(); j++) {
-      AliMUONGeometryDetElement* detElement
-        = (AliMUONGeometryDetElement*)detElements->GetObject(j);
-	
-      // Write data on out
-      out << AliMUONGeometryDetElement::GetDENamePrefix() << " " 
-          << setw(4) << detElement->GetId() << "    " 
-          << detElement->GetVolumePath() << endl;
-    }
-    out << endl;	  	   	
-  }     
 }
 
 //______________________________________________________________________________
@@ -608,14 +442,8 @@ TString AliMUONGeometryTransformer::GetModuleSymName(Int_t moduleId) const
 {
 /// Return the module symbolic name (use for alignment)
 
-  const AliMUONGeometryModuleTransformer* kTransformer 
-    = GetModuleTransformer(moduleId);
-  if ( ! kTransformer ) {
-    AliErrorStream() << "Module " << moduleId << " not found." << endl; 
-    return "";
-  }   
-  
-  return "/" + fDetectorName + "/" + kTransformer->GetModuleName();
+  return "/" + fDetectorName + "/" 
+             + AliMUONGeometryModuleTransformer::GetModuleName(moduleId);
 }  
 
 //______________________________________________________________________________
@@ -623,17 +451,11 @@ TString AliMUONGeometryTransformer::GetDESymName(Int_t detElemId) const
 {
 /// Return the detection element symbolic name (used for alignment)
 
-  const AliMUONGeometryDetElement* kDetElement 
-    = GetDetElement(detElemId);
-  if ( ! kDetElement ) {
-    AliErrorStream() << "Det element " << detElemId << " not found." << endl; 
-    return "";
-  }   
-  
   // Module Id
   Int_t moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
 
-  return GetModuleSymName(moduleId) + "/" + kDetElement->GetDEName();
+  return GetModuleSymName(moduleId) + "/" 
+         + AliMUONGeometryDetElement::GetDEName(detElemId);
 }  
 
 //
@@ -642,94 +464,40 @@ TString AliMUONGeometryTransformer::GetDESymName(Int_t detElemId) const
 
 //______________________________________________________________________________
 Bool_t  
-AliMUONGeometryTransformer::ReadGeometryData(
-                                const TString& volPathFileName,
-                                const TString& transformFileName)
+AliMUONGeometryTransformer::LoadGeometryData(const TString& fileName)
 {
-/// Read geometry data from given files;
-/// if transformFileName has ".root" extension, the transformations
-/// are loaded from root geometry file, otherwise ASCII file
-/// format is supposed
+/// Read geometry data either from ASCII file with transformations or
+/// from root geometry file (if fileName has ".root" extension)
 
-  Bool_t result1 = ReadVolPaths(volPathFileName);
+  CreateModules();
 
   // Get file extension
-  std::string fileName = transformFileName.Data();
-  std::string rootExt = fileName.substr(fileName.size()-5, fileName.size());
-  Bool_t result2;
+  std::string fileName2 = fileName.Data();
+  std::string rootExt = fileName2.substr(fileName2.size()-5, fileName2.size());
+  
   if ( rootExt != ".root" ) 
-    result2 = ReadTransformations(transformFileName);
-  else   
-    result2 = ReadTransformations2(transformFileName);
-  
-  return result1 && result2;
+    return ReadTransformations(fileName);
+  else  { 
+    // Load root geometry
+    AliGeomManager::LoadGeometry(fileName.Data());
+    return LoadTransformations();
+  }  
 }  
 
 //______________________________________________________________________________
 Bool_t  
-AliMUONGeometryTransformer::ReadGeometryData(
-                                const TString& volPathFileName,
-                                TGeoManager* tgeoManager)
+AliMUONGeometryTransformer::LoadGeometryData()
 {
-/// Load geometry data from root geometry using defined
-/// volume paths from file
+/// Load geometry data from already loaded Root geometry using AliGeomManager
 
-  Bool_t result1 = ReadVolPaths(volPathFileName);
-
-  Bool_t result2 = LoadTransforms(tgeoManager);
-  
-  return result1 && result2;
-}  
-
-//______________________________________________________________________________
-Bool_t  
-AliMUONGeometryTransformer::WriteGeometryData(
-                                 const TString& volPathFileName,
-                                 const TString& transformFileName,
-				 const TString& misalignFileName) const
-{
-/// Write geometry data into given files
-
-  Bool_t result1 = WriteVolumePaths(volPathFileName);
-  Bool_t result2 = WriteTransformations(transformFileName);
-  
-  Bool_t result3 = true;
-  if ( misalignFileName != "" )
-    result3 = WriteMisAlignmentData(misalignFileName);
-  
-  return result1 && result2 && result3;
-}
-				 
-//______________________________________________________________________________
-Bool_t  
-AliMUONGeometryTransformer::WriteVolumePaths(const TString& fileName) const
-{
-/// Write volume paths for modules and detection element volumes into a file.
-/// Return true, if writing finished correctly.
-
-  // No writing
-  // if builder is not associated with any geometry module
-  if (fModuleTransformers->GetEntriesFast() == 0) return false;
-
-  // File path
-  TString filePath = gSystem->Getenv("ALICE_ROOT");
-  filePath += "/MUON/data/";
-  filePath += fileName;
-  
-  // Open output file
-  ofstream out(filePath, ios::out);
-  if (!out) {
-    cerr << filePath << endl;	
-    AliError("File not found.");
+  if ( ! AliGeomManager::GetGeometry() ) {
+    AliErrorStream() << "Geometry has not been loaded in AliGeomManager" << endl;
     return false;
-  }
-#if !defined (__DECCXX)
-  out.setf(std::ios::fixed);
-#endif
-  WriteModuleVolPaths(out);
-  WriteDetElemVolPaths(out);
-  
-  return true;
+  }    
+
+  CreateModules();
+
+  return LoadTransformations();
 }  
 
 //______________________________________________________________________________
@@ -867,6 +635,40 @@ void  AliMUONGeometryTransformer::AddMisAlignDetElement(Int_t detElemId,
 				       const_cast<TGeoHMatrix&>(matrix),kTRUE);
 }
 
+//______________________________________________________________________________
+void AliMUONGeometryTransformer::CreateModules()
+{
+/// Create modules and their detection elements using info from mapping;
+/// but do not fill matrices
+
+
+  // Loop over geometry module
+  for (Int_t moduleId = 0; moduleId < AliMpConstants::NofGeomModules(); ++moduleId ) {
+    
+    // Create geometry module transformer
+    AliMUONGeometryModuleTransformer* moduleTransformer
+      = new AliMUONGeometryModuleTransformer(moduleId);
+    AddModuleTransformer(moduleTransformer);
+  }   
+    
+  // Loop over detection elements
+  AliMpDEIterator it;
+  for ( it.First(); ! it.IsDone(); it.Next() ) {
+    
+    Int_t detElemId = it.CurrentDEId();
+    Int_t moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
+
+    // Get detection element store
+    AliMpExMap* detElements = 
+      GetModuleTransformer(moduleId)->GetDetElementStore();     
+
+    // Add detection element
+    AliMUONGeometryDetElement* detElement 
+      = new AliMUONGeometryDetElement(detElemId);
+    detElements->Add(detElemId, detElement);
+  }   
+}
+
 //_____________________________________________________________________________
 void AliMUONGeometryTransformer::AddAlignableVolumes() const
 {
@@ -884,14 +686,19 @@ void AliMUONGeometryTransformer::AddAlignableVolumes() const
 
     // Set module symbolic name
     TGeoPNEntry* pnEntry
-      = gGeoManager->SetAlignableEntry(GetModuleSymName(module->GetModuleId()), 
+      = gGeoManager->SetAlignableEntry(GetModuleSymName(module->GetModuleId()),
                                        module->GetVolumePath());
-    // Set module matrix
-    pnEntry->SetMatrix(new TGeoHMatrix(*module->GetTransformation()));  
-       // the matrix will be deleted via TGeoManager                                    
-
-    //cout << "Module sym name: " << GetModuleSymName(module->GetModuleId()) 
-    //     << "  volPath: " << module->GetVolumePath() << endl;
+    if ( ! pnEntry ) {
+      AliErrorStream() 
+        << "Volume path for geometry module "
+        << module->GetModuleId()
+        << " not found in geometry." << endl;
+    }
+    else {
+      // Set module matrix
+      pnEntry->SetMatrix(new TGeoHMatrix(*module->GetTransformation()));  
+       // the matrix will be deleted via TGeoManager  
+    }                                     
 
     // Detection elements
     AliMpExMap* detElements = module->GetDetElementStore();    
@@ -904,12 +711,17 @@ void AliMUONGeometryTransformer::AddAlignableVolumes() const
       TGeoPNEntry* pnEntry
         = gGeoManager->SetAlignableEntry(GetDESymName(detElement->GetId()), 
                                          detElement->GetVolumePath());
-      // Set detection element matrix
-      pnEntry->SetMatrix(new TGeoHMatrix(*detElement->GetGlobalTransformation()));                                      
-       // the matrix will be deleted via TGeoManager                                    
-
-      //cout << "DE name: " << GetDESymName(detElement->GetId()) 
-      //     << "  volPath: " << detElement->GetVolumePath() << endl;
+      if ( ! pnEntry ) {
+        AliErrorStream() 
+          << "Volume path for detection element "
+          << detElement->GetId()
+          << " not found in geometry." << endl;
+      }
+      else {
+        // Set detection element matrix
+        pnEntry->SetMatrix(new TGeoHMatrix(*detElement->GetGlobalTransformation()));                                      
+         // the matrix will be deleted via TGeoManager 
+      }                                      
     }  
   }     
 }  	     
