@@ -241,7 +241,7 @@ void AliMUONGeometryBuilder::CreateGeometryWithTGeo()
   if (fAlign) {
     // Read transformations from ASCII data file  
     fGeometry->GetTransformer()
-      ->ReadGeometryData(fgkDefaultVolPathsFileName, fTransformFileName);
+      ->LoadGeometryData(fTransformFileName);
   }    
  
   for (Int_t i=0; i<fGeometryBuilders->GetEntriesFast(); i++) {
@@ -349,8 +349,7 @@ void AliMUONGeometryBuilder::CreateGeometryWithoutTGeo()
 
   if (fAlign) {
     // Read transformations from ASCII data file  
-    fGeometry->GetTransformer()
-      ->ReadGeometryData(fgkDefaultVolPathsFileName, fTransformFileName);
+    fGeometry->GetTransformer()->LoadGeometryData(fTransformFileName);
   }     
 
   for (Int_t i=0; i<fGeometryBuilders->GetEntriesFast(); i++) {
@@ -535,6 +534,16 @@ void AliMUONGeometryBuilder::CreateGeometry()
   } 
   else
    CreateGeometryWithoutTGeo();
+
+  for (Int_t i=0; i<fGeometryBuilders->GetEntriesFast(); i++) {
+
+    // Get the builder
+    AliMUONVGeometryBuilder* builder
+      = (AliMUONVGeometryBuilder*)fGeometryBuilders->At(i);
+
+    // Create detection elements from built geometry
+    builder->CreateDetElements();
+  }  
 }
 
 //_____________________________________________________________________________
@@ -561,10 +570,8 @@ void AliMUONGeometryBuilder::InitGeometry(const TString& svmapFileName)
   // Load alignement data from geometry if geometry is read from Root file
   if ( gAlice->IsRootGeometry() ) {
     fAlign = true;
-
-    fGeometry->GetTransformer()
-      ->ReadGeometryData(fgkDefaultVolPathsFileName, gGeoManager);
-  }    
+    fGeometry->GetTransformer()->LoadGeometryData();
+ }    
 
   // Read sensitive volume map from a file
   fGeometry->ReadSVMap(svmapFileName);
@@ -579,11 +586,6 @@ void AliMUONGeometryBuilder::InitGeometry(const TString& svmapFileName)
 
     // Set sensitive volumes with each builder
     builder->SetSensitiveVolumes();
-
-    if (!fAlign)  {
-      // Create detection elements from built geometry
-      builder->CreateDetElements();
-    }  
   }  
 }
 
