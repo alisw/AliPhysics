@@ -54,7 +54,8 @@ AliMUONGeometry::AliMUONGeometry(Bool_t isOwner)
   fModules->SetOwner(isOwner);
   
   // Geometry parametrisation
-  fTransformer = new AliMUONGeometryTransformer(false);  
+  fTransformer = new AliMUONGeometryTransformer();
+  fTransformer->SetOwner(false); 
 }
 
 //______________________________________________________________________________
