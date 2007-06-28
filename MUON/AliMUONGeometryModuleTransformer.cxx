@@ -41,10 +41,20 @@ ClassImp(AliMUONGeometryModuleTransformer)
 const TString AliMUONGeometryModuleTransformer::fgkModuleNamePrefix = "GM";
 
 //______________________________________________________________________________
+TString AliMUONGeometryModuleTransformer::GetModuleName(Int_t moduleId)
+{
+/// Return the module name for given moduleId
+
+  TString moduleName(fgkModuleNamePrefix);
+  moduleName += moduleId;
+  return moduleName;
+}   
+
+//______________________________________________________________________________
 AliMUONGeometryModuleTransformer::AliMUONGeometryModuleTransformer(Int_t moduleId)
  : TObject(),
    fModuleId(moduleId),
-   fModuleName(),
+   fModuleName(GetModuleName(moduleId)),
    fVolumePath(),
    fTransformation(0),
    fDetElements(0)
@@ -56,15 +66,11 @@ AliMUONGeometryModuleTransformer::AliMUONGeometryModuleTransformer(Int_t moduleI
 
   // Det elements transformation stores
   fDetElements = new AliMpExMap(true);
-  
-  // Compose module name
-  fModuleName = fgkModuleNamePrefix;
-  fModuleName += moduleId;
 }
 
 
 //______________________________________________________________________________
-AliMUONGeometryModuleTransformer::AliMUONGeometryModuleTransformer()
+AliMUONGeometryModuleTransformer::AliMUONGeometryModuleTransformer(TRootIOCtor* /*ioCtor*/)
  : TObject(),
    fModuleId(0),
    fModuleName(),
@@ -72,7 +78,7 @@ AliMUONGeometryModuleTransformer::AliMUONGeometryModuleTransformer()
    fTransformation(0),
    fDetElements(0)
 {
-/// Default constructor
+/// Root IO constructor
 }
 
 

@@ -33,11 +33,12 @@ class AliMUONGeometryModuleTransformer : public TObject
 {
   public:
     AliMUONGeometryModuleTransformer(Int_t moduleId);
-    AliMUONGeometryModuleTransformer();
+    AliMUONGeometryModuleTransformer(TRootIOCtor* /*ioCtor*/);
     virtual ~AliMUONGeometryModuleTransformer();
 
     // static methods
     static TString GetModuleNamePrefix();
+    static TString GetModuleName(Int_t moduleId);
 
     // methods
     void Global2Local(Int_t detElemId,
@@ -71,6 +72,8 @@ class AliMUONGeometryModuleTransformer : public TObject
                         GetDetElement(Int_t detElemId, Bool_t warn = true) const;    
 
   protected:
+    /// Not implemented
+    AliMUONGeometryModuleTransformer();
     /// Not implemented
     AliMUONGeometryModuleTransformer(const AliMUONGeometryModuleTransformer& rhs);
     /// Not implemented
