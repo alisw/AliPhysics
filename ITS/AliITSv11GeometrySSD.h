@@ -14,6 +14,9 @@ class TGeoArb8;
 class TList;
 class TGeoTube;
 class TGeoHMatrix;
+class TGeoTranslation;
+class TGeoXtru;
+class TGeoVolumeAssembly;
 #include "AliITSv11Geometry.h"
 class AliITSv11GeometrySSD: public AliITSv11Geometry {
 public:
@@ -24,144 +27,28 @@ public:
   /////////////////////////////////////////////////////////////////////////
   // Public methods
   /////////////////////////////////////////////////////////////////////////
-  const char*   GetSensitiveVolumeName() const {return fgkSSDSensitiveVolName;};
-  // Method returning the name of the sensitive part of detector
-  /////////////////////////////////////////////////////////////////////////
-  TGeoVolume* GetSSDSensorSupportShape(Double_t length,Double_t height,
-                                       Double_t width,Double_t* thickness);
-  // Method returning the name of the sensitive part of detector
-  /////////////////////////////////////////////////////////////////////////
-  TGeoVolume* GetSSDSensorSupport(Int_t VolumeKind,Int_t n);
-  // Method returning the SSD Sensor Support     
-  /////////////////////////////////////////////////////////////////////////
-  TGeoVolume* GetSSDSensorSupportAssembly(Int_t n);
-  // Method returning the SSD Sensor Support Assembly    
-  /////////////////////////////////////////////////////////////////////////
-  TGeoVolume* GetSSDSensor();
-  // Method returning the SSD Sensor     
-  /////////////////////////////////////////////////////////////////////////
-  TGeoVolume* GetSSDChipAssembly() const;
-  // Method returning the SSD Chip Assembly    
-  /////////////////////////////////////////////////////////////////////////
-  TGeoVolume* GetSSDChipCables(Double_t ssdchipcablesheigth,char* side);
-  // Method returning the SSD Chip Cables    
-  /////////////////////////////////////////////////////////////////////////
-  TGeoVolume* GetSSDChipCablesAssembly(Double_t ssdchipcablesheigth);
-  // Method returning the SSD Chip Cables Assembly   
-  /////////////////////////////////////////////////////////////////////////
-  TGeoVolume* GetSSDStiffenerAssembly();
-  // Method returning the SSD Stiffener Assembly    
-  /////////////////////////////////////////////////////////////////////////
-  TGeoVolume* GetSSDFlex(Double_t ssdflexradius, Double_t ssdflexheigth);
-  // Method returning the SSD Flex    
-  /////////////////////////////////////////////////////////////////////////
-  TGeoVolume* GetSSDEndFlex(Double_t ssdendflexlength,Double_t ssdflexheigth);
-  // Method returning the SSD End Flex    
-  /////////////////////////////////////////////////////////////////////////
-  TGeoVolume* GetSSDFlexAssembly();
-  // Method returning the SSD Flex Assembly    
-  /////////////////////////////////////////////////////////////////////////
-  TGeoVolume* GetSSDCoolingBlock();
-  // Method returning the SSD Cooling Block     
-  /////////////////////////////////////////////////////////////////////////
-  TGeoVolume* GetSSDCoolingBlockAssembly();
-  // Method returning the SSD Cooling Block Assembly    
-  /////////////////////////////////////////////////////////////////////////
-  TGeoVolume* GetSSDModule(Int_t ichipcablesheight);
-  // Method returning the SSD Module     
-  /////////////////////////////////////////////////////////////////////////
-  TGeoVolume* GetCarbonFiberJunction(Double_t width);
-  // Method returning the Carbon Fiber Junction     
-  /////////////////////////////////////////////////////////////////////////
-  TGeoVolume* GetCarbonFiberJunctionAssembly();
-  // Method returning the Carbon Fiber Junction Assembly    
-  /////////////////////////////////////////////////////////////////////////
-  TList* GetLadderCableSegment(Double_t ssdendladdercablelength);
-  // Method returning a List containing pointers to Ladder Cable Volumes    
-  /////////////////////////////////////////////////////////////////////////
-  TGeoVolume* GetLadderCable(Int_t n,Double_t ssdendladdercablelength);
-  // Method generating Ladder Cable Volumes Assemblies   
-  /////////////////////////////////////////////////////////////////////////
-  TGeoVolume* GetLadderCableAssembly(Int_t n,Double_t ssdendladdercablelength);
-  // Method generating Ladder Cable Volumes Assembly   
-  /////////////////////////////////////////////////////////////////////////
-  TList* GetLadderCableAssemblyList(Int_t n,Double_t ssdendladdercablelength);
-  // Method generating Ladder Cable List Assemblies   
-  /////////////////////////////////////////////////////////////////////////
-  TList* GetEndLadderCarbonFiberJunctionAssembly();
-  // Method generating the End Ladder Carbon Fiber Junction Assembly   
-  /////////////////////////////////////////////////////////////////////////
-  TGeoVolume* GetCarbonFiberSupport();
-  // Method generating the Carbon Fiber Support   
-  /////////////////////////////////////////////////////////////////////////
-  TGeoVolume* GetCarbonFiberLowerSupport(Int_t i=0,Bool_t endladder = false);
-  // Method generating the Carbon Fiber Lower Support   
-  /////////////////////////////////////////////////////////////////////////
-  TGeoVolume* GetCarbonFiberAssemblySupport();
-  // Method generating the Carbon Fiber Assembly Support   
-  /////////////////////////////////////////////////////////////////////////
-  TGeoVolume* GetCoolingTubeSupport();
-  // Method generating the Cooling Tube Support   
-  /////////////////////////////////////////////////////////////////////////
-  TGeoVolume* GetCoolingTubeSupportAssembly();
-  // Method generating the Cooling Tube Support Assembly  
-  /////////////////////////////////////////////////////////////////////////
-  TGeoVolume* GetCoolingTube() const;
-  // Method generating the Cooling Tube 
-  /////////////////////////////////////////////////////////////////////////
-  TGeoVolume* GetCoolingTubeAssembly();
-  // Method generating the Cooling Tube Assembly  
-  /////////////////////////////////////////////////////////////////////////
-  TGeoVolume* GetLadderSegment(Int_t iChipCablesHeight);
-  // Method generating the basic Ladder Segment element which will be replicated   
-  /////////////////////////////////////////////////////////////////////////
-  TList* GetEndLadderSegment();
-  // Method generating the Terminal Ladder Segment  
-  /////////////////////////////////////////////////////////////////////////
-  TGeoVolume* GetSSDMountingBlock();
-  // Method generating the Terminal Ladder Mounting Block  
-  /////////////////////////////////////////////////////////////////////////
-  TGeoVolume* GetLadder(Int_t iLayer);
-  // Method generating the Layer5 or Layer6 Ladder  
-  /////////////////////////////////////////////////////////////////////////
-  TGeoVolume* GetLayer(Int_t iLayer);
-  // Method generating the Layer5 or Layer6  
-  /////////////////////////////////////////////////////////////////////////
-  void Layer5(TGeoVolume* mothervolume);
-  // Method placing the Layer5 within mother volume  
-  /////////////////////////////////////////////////////////////////////////
-  void Layer6(TGeoVolume* mothervolume);
-  // Method placing the Layer6 within mother volume  
-  /////////////////////////////////////////////////////////////////////////
-  //Auxiliary methods for shapes building
-  /////////////////////////////////////////////////////////////////////////
-  TVector3* GetReflection(TVector3* vector,Double_t* param) const;
-  // Given an axis specified by param, it gives the reflection of the point
-  // respect to the axis
-  /////////////////////////////////////////////////////////////////////////
-  TGeoArb8* GetArbShape(TVector3* vertexpos[],Double_t* width, 
-                        Double_t height,char* shapename,Int_t isign = 1) const;
-  // Method generating an arb shape 
-  /////////////////////////////////////////////////////////////////////////
-  TGeoArb8* GetTriangleShape(TVector3* vertexpos[],Double_t height, char* shapename) const;
-  // Method generating a triangle shape 
-  /////////////////////////////////////////////////////////////////////////
-  TGeoArb8* GetTrapezoidShape(TVector3* vertexpos[],Double_t* width,    
-                              Double_t height,char* shapename) const;
-  // Method generating a trapezoid shape 
-  /////////////////////////////////////////////////////////////////////////
-  TGeoCombiTrans* AddTranslationToCombiTrans(TGeoCombiTrans* ct,Double_t dx,
-                                             Double_t dy,Double_t dz) const;
-  // add (dx,dy,dz) translation to a initial TGeoCombiTrans
-  /////////////////////////////////////////////////////////////////////////
-  //Auxiliary methods for material building
-  /////////////////////////////////////////////////////////////////////////
   TGeoMedium* GetMedium(const char* mediumName);
   // It returns the Medium
-  /////////////////////////////////////////////////////////////////////////
-  void CreateMaterials();
-  // it creates the matherials    
+  const char*   GetSenstiveVolumeName5() const {return fgSDDsensitiveVolName5;};
+  // it returns the Sensitive Volume of Layer 5
+  const char*   GetSenstiveVolumeName6() const {return fgSDDsensitiveVolName6;};
+  // it returns the Sensitive Volume of Layer 6
+  TGeoVolumeAssembly* GetLadderSegment(Int_t i){return fladdersegment[i];}; // Get Ladder Segment
+  TGeoVolumeAssembly* GetEndLadderSegment(Int_t i){return fendladdersegment[i];}; // Get End Ladder Segment 
+  TGeoVolume* GetLadder(Int_t i) {return fladder[i];}; // Get Ladder
+  TGeoVolume* GetLayer(Int_t i)const {return i==5? fSSDLayer5 : fSSDLayer6;}; // Get Layer
+  void SetLadderSegment();				// Set Ladder Elementary Segment 
+  void SetEndLadderSegment();			// Set End Ladder Segment
+  void SetLadder();						// Set Ladder
+  void SetLayer();						// Set Layer
+  void Layer5(TGeoVolume* moth);        // Setting Layer 5 into mother volume
+  void Layer6(TGeoVolume* moth);        // Setting Layer 6 into mother volume
 private:
+  /////////////////////////////////////////////////////////////////////////////////
+  // Names of the Sensitive Volumes of Layer 5 and Layer 6
+  /////////////////////////////////////////////////////////////////////////////////
+  static const char* fgSDDsensitiveVolName5;       // sens. vol. name for lay. 5
+  static const char* fgSDDsensitiveVolName6;       // sens. vol. name for lay. 6
   /////////////////////////////////////////////////////////////////////////
   // Layer5 (lengths are in mm and angles in degrees)
   /////////////////////////////////////////////////////////////////////////
@@ -193,8 +80,6 @@ private:
   static const Double_t fgkSSDChipGlueLength;      // SSD Module Chip Glue Layer Length
   static const Double_t fgkSSDChipGlueWidth;       // SSD Module Chip Glue Layer Width 
   static const Double_t fgkSSDChipGlueHeight;      // SSD Module Chip Glue Layer Height
-  TGeoMedium* fSSDChipMedium;                    // SSD Module Chip Medium
-  TGeoMedium* fSSDChipGlueMedium;                // SSD Module Chip Glue Layer Medium 
   /////////////////////////////////////////////////////////////////////////
   // Stiffener Components
   /////////////////////////////////////////////////////////////////////////
@@ -216,11 +101,8 @@ private:
   static const Double_t fgkSSDConnectorLength;     // SSD Stiffener Connector Length
   static const Double_t fgkSSDConnectorWidth;      // SSD Stiffener Connector Width
   static const Double_t fgkSSDConnectorHeight;     // SSD Stiffener Connector Height
-  TGeoMedium* fSSDStiffenerMedium;               // SSDStiffener Medium 
-  TGeoMedium* fSSDStiffenerConnectorMedium;      // SSD Stiffener Connector Medium 
-  TGeoMedium* fSSDStiffener0603CapacitorMedium;  // SSD Stiffener Capacitor 0603 Medium 
-  TGeoMedium* fSSDStiffener1812CapacitorMedium;  // SSD Stiffener Capacitor 1812 Medium 
-  TGeoMedium* fSSDStiffenerHybridWireMedium;     // SSD Stiffener Wire Medium  
+  static const Double_t fgkSSDConnectorAlHeight;     // SSD Stiffener Connector Al Height
+  static const Double_t fgkSSDConnectorNiHeight;     // SSD Stiffener Connector Ni Height
   /////////////////////////////////////////////////////////////////////////
   // Flex
   /////////////////////////////////////////////////////////////////////////
@@ -233,14 +115,10 @@ private:
   static const Double_t fgkSSDFlexHoleWidth;       // SSD Flex Hole Width
   static const Double_t fgkSSDEndFlexCompLength[6];// SSD End-Flex Components Length
   static const Double_t fgkSSDEndFlexCompWidth[3]; // SSD End-Flex Components Width
-  TGeoMedium* fSSDKaptonFlexMedium;              // SSD Flex Kapton Layer Medium    
-  TGeoMedium* fSSDAlTraceFlexMedium;             // SSD Flex Al Layer Medium 
   /////////////////////////////////////////////////////////////////////////////////
   // SSD Ladder Cable 
   /////////////////////////////////////////////////////////////////////////////////
   static const Double_t fgkSSDLadderCableWidth;    // SSD Ladder Cable Width
-  TGeoMedium* fSSDAlTraceLadderCableMedium;      // SSD Ladder Cable Al Layer Medium
-  TGeoMedium* fSSDKaptonLadderCableMedium;       // SSD Ladder Cable Kapton Layer Medium
   /////////////////////////////////////////////////////////////////////////
   // SSD Module Components 
   /////////////////////////////////////////////////////////////////////////
@@ -250,20 +128,12 @@ private:
                                                           // respect to Sensor Edge 
   static const Double_t fgkSSDModuleCoolingBlockToSensor; // SSD Cooling Block Position 
                                                           // respect to sensor
-  static const Int_t fgkSSDModuleCombiTransNumber = 7;    // Number of TGeoCombiTrans 
-                                                          // for positioning volumes in SSD Module 
-  void SetSSDModuleCombiTransMatrix(Double_t);            // Method for generating TGeoCombiTrans for 
-                                                          // for volume positioning in SSD Module
-  TGeoCombiTrans *fSSDModuleCombiTransMatrix[fgkSSDModuleCombiTransNumber]; // TGeoCombiTrans roto-trans
-                                                          // transformations for volume positioning
   /////////////////////////////////////////////////////////////////////////
   // Chip Cables
   /////////////////////////////////////////////////////////////////////////
   static const Double_t fgkSSDChipCablesLength[2]; // SSD Chip Cables Components Length
   static const Double_t fgkSSDChipCablesHeight[4]; // SSD Chip Cables Components Height   
   static const Double_t fgkSSDChipCablesWidth[3];  // SSD Chip Cables Components Width
-  TGeoMedium* fSSDKaptonChipCableMedium;         // SSD Chip Cables Kapton Layer Medium 
-  TGeoMedium* fSSDAlTraceChipCableMedium;        // SSD Chip Cables Al Layer Medium
   /////////////////////////////////////////////////////////////////////////
   // Cooling Block
   /////////////////////////////////////////////////////////////////////////
@@ -274,7 +144,6 @@ private:
   static const Double_t fgkSSDCoolingBlockHoleLength[2];// SSD Cooling Block Hole Length 
   static const Double_t fgkSSDCoolingBlockHoleCenter;   // SSD Cooling Block Hole Ceneter Position
   static const Double_t fgkSSDCoolingBlockHoleHeight;   // SSD Cooling Block Hole Height
-  TGeoMedium* fSSDAlCoolBlockMedium;                  // SSD Cooling Block Al Medium
   /////////////////////////////////////////////////////////////////////////
   // SSD Sensor 
   /////////////////////////////////////////////////////////////////////////
@@ -285,7 +154,6 @@ private:
   static const Double_t fgkSSDSensorOverlap;           // SSD Sensor Beam Axis Overlap
   static const Double_t fgkSSDSensorInsensitiveLength; // SSD Insensitive Part Length
   static const Double_t fgkSSDSensorInsensitiveWidth;  // SSD Insensitive Part Width
-  TGeoMedium* fSSDSensorMedium;                      // SSD Sensor Medium  
   /////////////////////////////////////////////////////////////////////////
   // SSD Sensor Support 
   /////////////////////////////////////////////////////////////////////////
@@ -301,11 +169,6 @@ private:
   static const Double_t fgkSSDSensorCenterSupportPosition;    // SSD Center Sensor Support Position
   static const Int_t fgkSSDSensorSupportCombiTransNumber = 3; // Number of TGeoCombiTrans 
                                                               // for positioning volumes in Sensor Support Assembly       
-  void SetSSDSensorSupportCombiTransMatrix();                 // Method for generating TGeoCombiTrans for 
-                                                              // volume positioning in Sensor Support Assembly   
-  TGeoCombiTrans *fSSDSensorSupportCombiTransMatrix[fgkSSDSensorSupportCombiTransNumber]; // TGeoCombiTrans roto-trans
-                                                          // transformations for volume positioning in Sensor Support Assembly
-  TGeoMedium* fSSDSensorSupportMedium;                  // SSD Sensor Support Medium   
   /////////////////////////////////////////////////////////////////////////
   //Parameters for Carbon Fiber 
   /////////////////////////////////////////////////////////////////////////
@@ -318,11 +181,6 @@ private:
   static const Double_t fgkCarbonFiberSupportYAxisLength;        // Carbon Fiber Support Y Axis Lenght
   static const Int_t fgkCarbonFiberAssemblyCombiTransNumber = 3; // Number of TGeoCombiTrans 
                                                                  // for positioning volumes in Carbon Fiber Assembly 
-  void SetCarbonFiberAssemblyCombiTransMatrix();                 // Method for generating TGeoCombiTrans for 
-                                                                 // volume positioning in Carbon Fiber Assembly
-  TGeoCombiTrans *fCarbonFiberAssemblyCombiTransMatrix[fgkCarbonFiberAssemblyCombiTransNumber]; // TGeoCombiTrans roto-trans
-                                                                 // transformations for volume positioning in Carbon Fiber Assembly
-  TGeoMedium* fSSDCarbonFiberMedium;                           // SSD Carbon Fiber Medium 
   //////////////////////////////////////////////////////////////////////////////
   // Carbon Fiber Junction Parameters
   //////////////////////////////////////////////////////////////////////////////
@@ -331,12 +189,6 @@ private:
   static const Double_t fgkCarbonFiberJunctionEdge[2];           // Carbon Fiber Junction Edge Length  
   static const Double_t fgkCarbonFiberJunctionAngle[2];          // Carbon Fiber Junction Angle 
   static const Double_t fgkCarbonFiberJunctionToSensorSupport;   // Carbon Fiber Junction position respect to sensor
-  static const Int_t fgkCarbonFiberJunctionCombiTransNumber = 3; // Number of TGeoCombiTrans 
-                                                                 // for positioning volumes in Carbon Fiber Junction Assembly 
-  void SetCarbonFiberJunctionCombiTransMatrix();                 // Method for generating TGeoCombiTrans for 
-                                                                 // volume positioning in Carbon Fiber Junction Assembly
-  TGeoCombiTrans *fCarbonFiberJunctionCombiTransMatrix[fgkCarbonFiberJunctionCombiTransNumber];// TGeoCombiTrans roto-trans
-                                                                 // transformations for volume positioning in Carbon Fiber Junction Assembly
   /////////////////////////////////////////////////////////////////////////
   //Parameters for Carbon Fiber Lower Support (lengths are in mm)
   /////////////////////////////////////////////////////////////////////////
@@ -352,13 +204,6 @@ private:
   static const Double_t fgkEndLadderCarbonFiberLowerJunctionLength[2];   // End Ladder Carbon Fiber Lower Up Support length 
   static const Double_t fgkEndLadderCarbonFiberUpperJunctionLength[2];   // End Ladder Carbon Fiber Lower Down Support length 
   static const Double_t fgkEndLadderMountingBlockPosition[2];            // End Ladder Mounting Block Position 
-  static const Int_t fgkEndLadderCarbonFiberJunctionCombiTransNumber = 3;// Number of TGeoCombiTrans 
-                                                                         // for positioning volumes in End LadderCarbon Fiber Junction Assembly 
-  void SetEndLadderCarbonFiberJunctionCombiTransMatrix(Int_t);           // Method for generating TGeoCombiTrans for 
-                                                                         // volume positioning in End Ladder Carbon Fiber Junction Assembly
-  TGeoCombiTrans *fEndLadderCarbonFiberJunctionCombiTransMatrix[fgkEndLadderCarbonFiberJunctionCombiTransNumber]; // TGeoCombiTrans roto-trans
-                                                                         // transformations for volume positioning in End Ladder 
-                                                                         // Carbon Fiber Junction Assembly
   /////////////////////////////////////////////////////////////////////////
   // Cooling Tube Support (lengths are in mm and angles in degrees)
   /////////////////////////////////////////////////////////////////////////
@@ -369,14 +214,6 @@ private:
   static const Double_t fgkCoolingTubeSupportWidth;         // Cooling Tube Support Width
   static const Double_t fgkCoolingTubeSupportSeparation;    // Cooling Tube Support Separation
   static const Double_t fgkCoolingTubeSupportToCarbonFiber; // Cooling Tube Support position respect to Carbon Fiber  
-  static const Int_t fgkCoolingTubeSupportCombiTransNumber = 2; // Number of TGeoCombiTrans 
-                                                            // for positioning volumes in Cooling Tube Support Assembly
-  void SetCoolingTubeSupportCombiTransMatrix();             // Method for generating TGeoCombiTrans for 
-                                                            // volume positioning in Cooling Tube Support Assembly
-  TGeoCombiTrans *fCoolingTubeSupportCombiTransMatrix[fgkCoolingTubeSupportCombiTransNumber]; // TGeoCombiTrans roto-trans
-                                                            // transformations for volume positioning in  
-                                                            // Cooling Tube Support Assembly
-  TGeoMedium* fSSDTubeHolderMedium;                       // Cooling Tube Support Medium
   /////////////////////////////////////////////////////////////////////////////////
   // Cooling Tube (lengths are in mm and angles in degrees)
   /////////////////////////////////////////////////////////////////////////////////
@@ -384,14 +221,6 @@ private:
   static const Double_t fgkCoolingTubeRmin;       // Cooling Tube Min Radius
   static const Double_t fgkCoolingTubeLength;     // Cooling Tube Length  
   static const Double_t fgkCoolingTubeSeparation; // Cooling Tube Separation
-  static const Int_t    fgkCoolingTubeCombiTransNumber = 2; // Number of TGeoCombiTrans 
-                                                            // for positioning volumes in Cooling Tube Assembly
-  void SetCoolingTubeCombiTransMatrix();                    // Method for generating TGeoCombiTrans for 
-                                                            // volume positioning in Cooling Tube Assembly
-  TGeoCombiTrans *fCoolingTubeTransMatrix[fgkCoolingTubeCombiTransNumber];// TGeoCombiTrans roto-trans
-                                                            // transformations for volume positioning Cooling Tube Assembly
-  TGeoMedium* fSSDCoolingTubeWater;           // Medium for Inner Part of Cooling Tube
-  TGeoMedium* fSSDCoolingTubePhynox;          // Medium for Cooling Tube 
   /////////////////////////////////////////////////////////////////////////
   // SSD Mounting Block Parameters (lengths are in mm and angles in degrees)
   /////////////////////////////////////////////////////////////////////////
@@ -407,36 +236,205 @@ private:
   static const Double_t fgkSSDMountingBlockScrewHoleEdge;       // SSD Mounting Block Screw Hole Edge  
   static const Double_t fgkSSDMountingBlockScrewHoleHeigth;     // SSD Mounting Block Screw Hole Height  
   static const Double_t fgkSSDMountingBlockScrewHoleRadius[2];  // SSD Mounting Block Screw Hole Radii
-  TGeoMedium* fSSDMountingBlockMedium;                        // Medium for SSD Mounting Block  
   /////////////////////////////////////////////////////////////////////////
-  // LadderSegment 
+  // Private methods for private members generation
   /////////////////////////////////////////////////////////////////////////
-  static const Int_t fgkLadderSegmentCombiTransNumber = 5; // Number of TGeoCombiTrans 
-                                                           // for positioning volumes in Ladder Segment    
-  void SetLadderSegmentCombiTransMatrix();                 // Method for generating TGeoCombiTrans for 
-                                                           // volume positioning in Ladder Segment 
-  TGeoCombiTrans *fLadderSegmentCombiTransMatrix[fgkLadderSegmentCombiTransNumber]; // TGeoCombiTrans roto-trans
-                                                            // transformations for volume positioning in  
-                                                            // in Ladder Segment
+  void CreateMaterials();				// Method setting the materials 
+  void CreateTransformationMatrices();  // Method setting the transformation matrices
+  void CreateBasicObjects();			// Method creating the basic objects of ssd geometry
+  void SetSSDSensor();					// Method setting the SSD Layer 5 and 6 sensors
+  TList* GetCarbonFiberSupportList();	// Method generating CarbonFiberSupport
+  TGeoVolume* GetCarbonFiberJunction(Double_t width); // Method generating 
+										// CarbonFiberJunction
+  TList* GetCarbonFiberLowerSupportList(); 
+									    // Method generating CarbonFiberLowerSupport
+  TGeoVolume* GetSSDSensorSupport(Double_t length, Double_t height, 
+								  Double_t width, Double_t* thickness) const; //
+										// Method generating SSDSensorSupport
+  TGeoVolume* GetCoolingTubeSupport(Int_t nedges); // Method generating CoolingTubeSupport 
+  TList* GetSSDHybridParts();			// Method setting Hybrid Components 
+  TGeoVolume* GetCoolingBlockSystem();  // Method generating Cooling Block System
+  TGeoVolume* GetSSDStiffenerFlex()const;    // Method generating StiffenerFlex
+  TGeoVolume* GetSSDEndFlex();			// Method generating EndFlex
+  TGeoVolume* GetSSDMountingBlock();	// Method generating Mounting Block
+  TList* GetCoolingTubeList()const;			// Method generating list of Tubes
+  TGeoVolume* GetSSDCoolingBlock(Int_t nedges); 
+									    // Method generating StiffenerFlex
+  TGeoVolume* GetSSDChipCables(Double_t SSDChipCablesHeigth, Int_t nedges); 
+										// Method setting ChipCables
+  TList* GetSSDChipSystem();			// Method setting Chip System
+  TGeoVolume* GetSSDChips() const;     // Method generating Chips
+  TList* GetLadderCableSegment(Double_t ssdendladdercablelength); 
+										// Method generating LadderCableSegment
+  TGeoVolume* GetLadderCable(Int_t n, Double_t ssdendladdercablelength); 
+										// Method generating Ladder Cable
+  TGeoVolume* GetLadderCableAssembly(Int_t n, Double_t ssdendladdercablelength); 
+										// Method generating Ladder Cable Assembly
+  TList* GetLadderCableAssemblyList(Int_t n, Double_t ssdendladdercablelength); 
+										// Method generating Ladder Cable List
+  TGeoXtru* GetArcShape(Double_t phi, Double_t rmin, 
+					    Double_t rmax, Int_t nedges, Double_t height); 
+										//Auxiliary Method for Arc Shape
+  TGeoArb8* GetArbShape(TVector3* vertexpos[],Double_t* width, 
+                        Double_t height,char* shapename,Int_t isign = 1) const;
+									   // Method generating an Arb shape 
+  TVector3* GetReflection(TVector3* vector,Double_t* param) const; 
+										// Given an axis specified by param,
+										// it gives the reflection of the point respect to the axis
+  TGeoHMatrix* AddTranslationToHMatrix(TGeoHMatrix* ct,Double_t dx,Double_t dy,
+                                                       Double_t dz) const;
+										// add (dx,dy,dz) translation to a initial TGeoCombiTrans
   /////////////////////////////////////////////////////////////////////////
-  // End LadderSegment 
+  // Private members
   /////////////////////////////////////////////////////////////////////////
-  static const Int_t fgkEndLadderSegmentCombiTransNumber = 4; // Number of TGeoCombiTrans 
-                                                           // for positioning volumes in End Ladder Segment    
-  void SetEndLadderSegmentCombiTransMatrix(Int_t);         // Method for generating TGeoCombiTrans for 
-                                                           // volume positioning in End Ladder Segment  
-  TGeoCombiTrans *fEndLadderSegmentCombiTransMatrix[fgkEndLadderSegmentCombiTransNumber]; // TGeoCombiTrans roto-trans
-                                                            // transformations for volume positioning in  
-                                                            // in End Ladder Segment
+  // Materials
+  /////////////////////////////////////////////////////////////////////////
+  TGeoMedium* fSSDChipMedium;                    // SSD Module Chip Medium
+  TGeoMedium* fSSDChipGlueMedium;                // SSD Module Chip Glue Layer Medium 
+  TGeoMedium* fSSDStiffenerMedium;               // SSDStiffener Medium 
+  TGeoMedium* fSSDStiffenerConnectorMedium;      // SSD Stiffener Connector Medium 
+  TGeoMedium* fSSDStiffener0603CapacitorMedium;  // SSD Stiffener Capacitor 0603 Medium 
+  TGeoMedium* fSSDStiffener1812CapacitorMedium;  // SSD Stiffener Capacitor 1812 Medium 
+  TGeoMedium* fSSDStiffenerHybridWireMedium;     // SSD Stiffener Wire Medium  
+  TGeoMedium* fSSDKaptonFlexMedium;              // SSD Flex Kapton Layer Medium    
+  TGeoMedium* fSSDAlTraceFlexMedium;             // SSD Flex Al Layer Medium 
+  TGeoMedium* fSSDAlTraceLadderCableMedium;      // SSD Ladder Cable Al Layer Medium
+  TGeoMedium* fSSDKaptonLadderCableMedium;       // SSD Ladder Cable Kapton Layer Medium
+  TGeoMedium* fSSDKaptonChipCableMedium;         // SSD Chip Cables Kapton Layer Medium 
+  TGeoMedium* fSSDAlTraceChipCableMedium;        // SSD Chip Cables Al Layer Medium
+  TGeoMedium* fSSDAlCoolBlockMedium;             // SSD Cooling Block Al Medium
+  TGeoMedium* fSSDSensorMedium;                  // SSD Sensor Medium  
+  TGeoMedium* fSSDSensorSupportMedium;                  // SSD Sensor Support Medium   
+  TGeoMedium* fSSDCarbonFiberMedium;             // SSD Carbon Fiber Medium 
+  TGeoMedium* fSSDTubeHolderMedium;              // Cooling Tube Support Medium
+  TGeoMedium* fSSDCoolingTubeWater;              // Medium for Inner Part of Cooling Tube
+  TGeoMedium* fSSDCoolingTubePhynox;             // Medium for Cooling Tube 
+  TGeoMedium* fSSDMountingBlockMedium;           // Medium for SSD Mounting Block  
+  TGeoMedium* fSSDAir;							 // SSD Air
+  /////////////////////////////////////////////////////////////////////////
+  Bool_t fCreateMaterials;		  // Bool variable which verifies if materials have been created
+  Bool_t fTransformationMatrices; // Bool variable which verifies if matrices have been allocated
+  Bool_t fBasicObjects;          // Bool variable which verifies if basic objects have been allocated
+  /////////////////////////////////////////////////////////////////////////
+  // Carbon Fiber Support Matrices and Objects
+  ////////////////////////////////////////////
+  static const Int_t fgkcarbonfibersupportnumber = 2;				   // Support Number	
+  TGeoVolume* fcarbonfibersupport[fgkcarbonfibersupportnumber];		   // Support
+  TGeoHMatrix* fcarbonfibersupportmatrix[fgkcarbonfibersupportnumber]; // Support Matrix
+  /////////////////////////
+  // Carbon Fiber Junction
+  ////////////////////////
+  static const Int_t fgkcarbonfiberjunctionumber = 3;  // Carbon Fiber Number
+  TGeoVolume* fcarbonfiberjunction;					   // Carbon Fiber
+  TGeoHMatrix* fcarbonfiberjunctionmatrix[fgkcarbonfiberjunctionumber]; // Carbon Fiber Matrix
+  /////////////////////////////
+  // Carbon Fiber Lower Support
+  /////////////////////////////
+  static const Int_t fgkcarbonfiberlowersupportnumber = 2; // Carbon Fiber Lower Support Number
+  TGeoVolume* fcarbonfiberlowersupport[fgkcarbonfiberlowersupportnumber]; // Carbon Fiber Lower Support 
+  TGeoTranslation* fcarbonfiberlowersupportrans[fgkcarbonfiberlowersupportnumber];// Carbon Fiber Lower Support Translation
+  /////////////////////////////
+  // SSD Sensor Support
+  /////////////////////////////
+  static const Int_t fgkvolumekind = 2; // volumekind = 0 : side ssd support
+										// volumekind = 1 : central ssd support	
+  static const Int_t fgkssdsensorsupportnumber = 3; // SSD Sensor Support Number
+  TGeoVolume** fssdsensorsupport[fgkvolumekind];    // SSD Sensor 
+  TGeoHMatrix* fssdsensorsupportmatrix[fgkssdsensorsupportnumber]; // SSD Sensor Matrix 
+  /////////////////////////////////////////////////////////////
+  // SSD Cooling Tube Support
+  /////////////////////////////////////////////////////////////
+  static const Int_t fgkcoolingtubesupportnumber = 2; // Cooling Tube Support Number
+  TGeoVolume* fcoolingtubesupport;					  // Cooling Tube Support
+  TGeoHMatrix* fcoolingtubesupportmatrix[fgkcoolingtubesupportnumber]; // Cooling Tube Support Matrix 
+  /////////////////////////////////////////////////////////////
+  // SSD Hybrid
+  /////////////////////////////////////////////////////////////
+  static const Int_t fgkhybridcompnumber = 3;  // Hybrid number
+  TGeoVolume* fssdhybridcomponent[fgkhybridcompnumber]; // Hybrid Components
+  TGeoHMatrix* fhybridmatrix;		// Hybrid Matrix
+  /////////////////////////////////////////////////////////////
+  // SSD Cooling Block System
+  /////////////////////////////////////////////////////////////
+  static const Int_t fgkcoolingblocknumber = 4; // Cooling Block Number
+  TGeoVolume* fssdcoolingblocksystem;  // Cooling Block 
+  TGeoHMatrix* fcoolingblocksystematrix;  // Cooling Block Matrix 
+  TGeoHMatrix* fcoolingblockmatrix[fgkcoolingblocknumber];  // Cooling System Matrix
+  /////////////////////////////////////////////////////////////
+  // SSD Flex  
+  /////////////////////////////////////////////////////////////
+  static const Int_t fgkflexnumber = 2; // Flex Number 
+  TGeoVolume* fssdstiffenerflex;		// Stiffener Flex
+  TGeoVolume* fssdendflex;				// End flex
+  TGeoHMatrix* fstiffenerflexmatrix[fgkflexnumber]; // Stiffener Flex Matrix
+  TGeoHMatrix* fendflexmatrix[fgkflexnumber];       // End Flex Matrix
+  /////////////////////////////////////////
+  // Cooling Tube
+  /////////////////////////////////////////
+  static const Int_t fgkcoolingtubenumber = 3;				// Coling Tube Number
+  TGeoHMatrix** fcoolingtubematrix[fgkcoolingtubenumber+1];  // Cooling Tube Matrix
+  TGeoVolume* fcoolingtube[fgkcoolingtubenumber];	     // Cooling Tube
+  /////////////////////////////////////////
+  // End Ladder Components
+  /////////////////////////////////////////
+  TGeoVolumeAssembly* fendladdersegment[2];  // End Ladder Segment 
+  TGeoHMatrix** fendladdersegmentmatrix[2];  // End Ladder Matrix
+  ///////////////////////////////////
+  // End Ladder Carbon Fiber Junction
+  ///////////////////////////////////
+  static const Int_t fgkendlabbercarbonfiberjunctionumber = 2; // End Ladder Carbon fiber Junction Number
+  TGeoVolume** fendladdercarbonfiberjunction[fgkendlabbercarbonfiberjunctionumber]; // End Ladder Carbon fiber Junction Volumes
+  static const Int_t fgkendladdercabonfiberjunctionmatrixnumber = 3; // End Ladder Carbon fiber Junction Matrix Number
+  TGeoHMatrix** fendladdercarbonfiberjunctionmatrix[fgkendlabbercarbonfiberjunctionumber]; // End Ladder Carbon fiber Junction Matrix 
+  ///////////////////////////////////
+  // End Ladder Carbon Fiber Support
+  ///////////////////////////////////
+  static const Int_t fgkendladdercarbonfibermatrixnumber = 2; // End Ladder Carbon fiber Matrix Number
+  TGeoHMatrix** fendladdercarbonfibermatrix[fgkendladdercarbonfibermatrixnumber]; // End Ladder Carbon fiber Matrix 
+  ///////////////////////////////////
+  // End Ladder SSD Mounting Block
+  ///////////////////////////////////
+  static const Int_t fgkendladdermountingblocknumber = 2; // Mounting Block Number   
+  TGeoVolume* fendladdermountingblock;					  // Mounting Block
+  TGeoTranslation* fendladdermountingblocktrans[fgkendladdermountingblocknumber]; // Mounting Block Translation
+  ///////////////////////////////////
+  // End Ladder Lower Support
+  ///////////////////////////////////
+  static const Int_t fgkendladderlowersuppnumber = 2; // End Ladder Lower Support Number
+  TGeoTranslation* fendladderlowersupptrans[fgkendladderlowersuppnumber+1]; // End Ladder Lower Support Translations
   /////////////////////////////////////////////////////////////////////////
   // LadderCables 
   /////////////////////////////////////////////////////////////////////////
-  static const Int_t fgkLadderCableCombiTransNumber = 4; // Number of TGeoCombiTrans 
-                                                         // for positioning Ladder Cable volumes  
-  void SetLadderCableCombiTransMatrix(Int_t iLayer);     // Method for generating TGeoCombiTrans 
-                                                         // for positioning Ladder Cables volumes
-  TGeoCombiTrans *fLadderCableCombiTransMatrix[fgkLadderCableCombiTransNumber]; // TGeoCombiTrans for positioning
-                                                         // Ladder Cables volumes
+  static const Int_t fgkladdercablematrixnumber = 4; // Number of TGeoCombiTrans 
+                                                     // for positioning Ladder Cable volumes  
+  static const Int_t fgkladdercablesnumber = 2;		  // Number of Ladder Cables Layers
+  TGeoHMatrix **fladdercablematrix[fgkladdercablesnumber]; // TGeoCombiTrans for positioning
+                                                           // Ladder Cables volumes
+  ///////////////////////////////////
+  // Ladder Segment
+  ///////////////////////////////////
+  static const Int_t fgkladdersegmentnumber = 2; // Ladder Segment Kinds Number
+  TGeoVolumeAssembly* fladdersegment[fgkladdersegmentnumber]; // Ladder Segment
+  ///////////////////////////////////
+  // Ladder 
+  ///////////////////////////////////
+  static const Int_t fgkladdernumber = 2;		      // Ladder Number 
+  TGeoVolume* fladder[fgkladdernumber];			      //fladder[0]: ladder of Layer 5
+												      //fladder[1]: ladder of Layer 6
+  TGeoHMatrix** fladdermatrix[fgkladdernumber];       // Ladder Matrix
+  ///////////////////////////////////
+  // SSD Sensor
+  ///////////////////////////////////
+  TGeoVolume* fSSDSensor5;  // Layer 5 SSD Sensor
+  TGeoVolume* fSSDSensor6;  // Layer 6 SSD Sensor
+  TGeoHMatrix** fssdsensormatrix[fgkladdernumber]; // SSD Sensor Matrix
+  ///////////////////////////////////
+  // SSD Layer
+  ///////////////////////////////////
+  static const Int_t fgklayernumber = 2; // Layer Number
+  TGeoVolume* fSSDLayer5;				 // SSD Layer 5
+  TGeoVolume* fSSDLayer6;	             // SSD Layer 6
+  TGeoHMatrix** flayermatrix[fgklayernumber]; // Layer Transformations
   /////////////////////////////////////////////////////////////////////////
   // Mother Volume 
   /////////////////////////////////////////////////////////////////////////
@@ -454,6 +452,8 @@ private:
   Int_t fColorPolyhamide;     //  ===
   Int_t fColorStiffener;      //  ===
   Int_t fColorEpoxy;          //  ===
+  Int_t fColorWater;		  //  ===
+  Int_t fColorG10;            //  ===
   ClassDef(AliITSv11GeometrySSD, 2)     // ITS v11 SSD geometry
 };
 #endif

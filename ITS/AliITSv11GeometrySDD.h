@@ -46,6 +46,8 @@ class AliITSv11GeometrySDD : public AliITSv11Geometry {
   // Main functions
   virtual void  Layer3(TGeoVolume *moth);
   virtual void  Layer4(TGeoVolume *moth);
+  virtual void  ForwardLayer3(TGeoVolume *moth);
+  virtual void  ForwardLayer4(TGeoVolume *moth);
   virtual Int_t ExportSensorGeometry(AliITSgeom *geom, Int_t iLaySDD,
 				      Int_t startMod);
   virtual Int_t GetCurrentLayLaddDet(Int_t &lay, Int_t &ladd, Int_t&det) const;
@@ -78,6 +80,7 @@ class AliITSv11GeometrySDD : public AliITSv11Geometry {
   virtual TGeoVolume*          CreateLadderSegment(Int_t iLay, Int_t iSeg);
   virtual TGeoVolumeAssembly*  CreateEndLadder(Int_t iLay);
   virtual TGeoVolumeAssembly*  CreateEndLadderCards(Int_t iLay);
+  virtual TGeoVolume*          CreateEndLadderCardsV(Int_t iLay);
   virtual TGeoVolumeAssembly*  CreateSupportRing(Int_t iLay);
 
   // Create some basic objects : 
@@ -186,6 +189,10 @@ class AliITSv11GeometrySDD : public AliITSv11Geometry {
   static const Double_t fgkLay4DetLongRadius;     // radius from beam axis
   static const Double_t fgkLay4LaddTopCornerEnd;  // Ends of ladder 3
   static const Double_t fgkLay4ZPlusEndLength;    // ===
+
+  static const Double_t fgkEndLaddCardsShortRadiusLay3; // ref radius of end ladder cards
+  static const Double_t fgkEndLaddCardsShortRadiusLay4; // ref radius  of end ladder cards
+  static const Double_t fgkDistEndLaddCardsLadd;        // dist. between U cooling tube and ladder
 
   static const Double_t fgkSegmentLength;         // length of 1 ladder seg.
   static const Double_t fgkLadderWidth;           // carbon fiber structure 

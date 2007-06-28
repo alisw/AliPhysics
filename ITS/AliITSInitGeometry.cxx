@@ -58,7 +58,7 @@ ClassImp(AliITSInitGeometry)
 
 const Bool_t AliITSInitGeometry::fgkOldSPDbarrel = kTRUE;
 const Bool_t AliITSInitGeometry::fgkOldSDDbarrel = kFALSE;
-const Bool_t AliITSInitGeometry::fgkOldSSDbarrel = kTRUE;
+const Bool_t AliITSInitGeometry::fgkOldSSDbarrel = kFALSE;
 const Bool_t AliITSInitGeometry::fgkOldSDDcone   = kTRUE;
 const Bool_t AliITSInitGeometry::fgkOldSSDcone   = kTRUE;
 const Bool_t AliITSInitGeometry::fgkOldSPDshield = kTRUE;
@@ -794,14 +794,23 @@ Bool_t AliITSInitGeometry::InitAliITSgeomV11Hybrid(AliITSgeom *geom){
     pathSDDsens1 = "%sITSD_1/IT34_1/I004_%d/I302_%d/ITS3_%d";
     pathSDDsens2 = "%sITSD_1/IT34_1/I005_%d/I402_%d/ITS4_%d";
   }
-  
+
+  char *pathSSDsens1, *pathSSDsens2;
+  if (SSDIsTGeoNative()) {
+    pathSSDsens1 = "%sITSssdLayer5_1/ITSssdLay5Ladd_%d/ITSsddSensor5_%d/ITSsddSensitivL5_1";
+    pathSSDsens2 = "%sITSssdLayer6_1/ITSssdLay6Ladd_%d/ITSsddSensor6_%d/ITSsddSensitivL6_1";
+  } else{
+    pathSSDsens1 = "%sITSD_1/IT56_1/I565_%d/I562_%d/ITS5_%d";
+    pathSSDsens2 = "%sITSD_1/IT56_1/I569_%d/I566_%d/ITS6_%d";
+  }
+
   const TString kNames[klayers] = {
     "%sITSD_1/IT12_1/I12B_%d/I10B_%d/I107_%d/I101_1/ITS1_1", // lay=1
     "%sITSD_1/IT12_1/I12B_%d/I20B_%d/I1D7_%d/I1D1_1/ITS2_1", // lay=2
     pathSDDsens1, // lay=3
     pathSDDsens2, // lay=4
-    "%sITSD_1/IT56_1/I565_%d/I562_%d/ITS5_%d", // lay=5
-    "%sITSD_1/IT56_1/I569_%d/I566_%d/ITS6_%d"};// Lay=6
+    pathSSDsens1, // lay=5
+    pathSSDsens2};// Lay=6
   
   Int_t mod,nmods=0, lay, lad, det, cpn0, cpn1, cpn2;
   Double_t tran[3]={0.,0.,0.}, rot[10]={9*0.0,1.0};
@@ -825,10 +834,14 @@ Bool_t AliITSInitGeometry::InitAliITSgeomV11Hybrid(AliITSgeom *geom){
     geom->CreateMatrix(mod,lay,lad,det,kIdet[lay-1],tran,rot);
     RecodeDetector(mod,cpn0,cpn1,cpn2); // Write reusing lay,lad,det.
 
-
-
     if (SDDIsTGeoNative())
       if (kIdet[lay-1]==kSDD) {
+	cpn0 = lad-1;
+	cpn1 = det-1;
+	cpn2 = 1;
+      }
+    if (SSDIsTGeoNative())
+      if (kIdet[lay-1]==kSSD) {
 	cpn0 = lad-1;
 	cpn1 = det-1;
 	cpn2 = 1;
@@ -2156,8 +2169,13 @@ void AliITSInitGeometry::DecodeDetectorv11Hybrid(Int_t &mod,Int_t layer,Int_t cp
     }
   } break;
   case 5: case 6:{
-    lad = cpn0;
-    det = cpn1;
+    if (SSDIsTGeoNative()) {
+      lad = cpn0+1;
+      det = cpn1+1;
+    } else {
+      lad = cpn0;
+      det = cpn1;
+    }
   } break;
   default:{
   } break;

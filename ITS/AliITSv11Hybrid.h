@@ -6,6 +6,9 @@
 // $Id$
 
 // $Log$
+// Revision 1.3  2007/05/08 16:57:42  masera
+// Updates concerning the geometry: versioning system, new V11hybrid version, bug fixes (B.Nilsend and L. Gaudichet
+//
 
 //========================================================================
 //
@@ -22,6 +25,7 @@
 #include "AliITSInitGeometry.h"
 
 class  AliITSv11GeometrySDD;
+class  AliITSv11GeometrySSD;
 
 class AliITSv11Hybrid : public AliITS {
 
@@ -110,8 +114,8 @@ class AliITSv11Hybrid : public AliITS {
 
  protected:
     void CreateOldGeometry();
-    void SetT2Lmatrix(const char *name, Double_t dAlpha, Double_t dxSign,
-		      Double_t yShift, Bool_t yFlip, Bool_t yRot180=kFALSE) const; // Set T2L matrix in TGeoPNEntries
+    void SetT2Lmatrix(const char *name, Double_t yShift,
+		      Bool_t yFlip, Bool_t yRot180=kFALSE) const; // Set T2L matrix in TGeoPNEntries
 
  private:
     AliITSv11Hybrid(const AliITSv11Hybrid &source); // copy constructor
@@ -137,8 +141,9 @@ class AliITSv11Hybrid : public AliITS {
 
     AliITSInitGeometry fInitGeom;   //! Get access to decoding and AliITSgeom init functins
     AliITSv11GeometrySDD *fSDDgeom; //! SDD Geometry
+    AliITSv11GeometrySSD *fSSDgeom; //! SSD Geometry
 
-    ClassDef(AliITSv11Hybrid,2)                          
+    ClassDef(AliITSv11Hybrid,3)                          
 };
  
 #endif

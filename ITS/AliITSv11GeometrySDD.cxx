@@ -42,6 +42,7 @@
 #include <TGeoCompositeShape.h>
 #include <TGeoMatrix.h>
 #include <TGeoNode.h>
+#include <TGeoPcon.h>
 
 #include "AliITSgeom.h"
 #include "AliITSgeomSDD.h"
@@ -105,8 +106,8 @@ const Double_t AliITSv11GeometrySDD::fgkBTBHolewidth       =  6 *fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkBTBHoleRefX        = 10 *fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkBTBHoleRefY        =  6.5 *fgkmm;
 
-const Double_t AliITSv11GeometrySDD::fgkLay3Rmin           = 145.*fgkmm;      // not min! Rmin virtual tube
-const Double_t AliITSv11GeometrySDD::fgkLay3Rmax           = 205.*fgkmm;      // not min! Rmax virtual tube
+const Double_t AliITSv11GeometrySDD::fgkLay3Rmin           = 145.*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLay3Rmax           = 200.*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkLay3Length         = (524.+0.)*fgkmm; // ladder+supporting rings (length of the virtual tube)
 const Double_t AliITSv11GeometrySDD::fgkLay3LadderLength   = 524.*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkLay3DetShortRadius = 146.0*fgkmm;
@@ -116,8 +117,8 @@ const Int_t    AliITSv11GeometrySDD::fgkLay3Ndet           =  6;
 const Int_t    AliITSv11GeometrySDD::fgkLay3Nladd          = 14;
 const Double_t AliITSv11GeometrySDD::fgkLay3CoolPipeSuppH  =  7.5*fgkmm;
 
-const Double_t AliITSv11GeometrySDD::fgkLay4Rmin           = 220.*fgkmm;         // not min! Rmin virtual tube
-const Double_t AliITSv11GeometrySDD::fgkLay4Rmax           = 290.*fgkmm;         // not min! Rmax virtual tube
+const Double_t AliITSv11GeometrySDD::fgkLay4Rmin           = 235.*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkLay4Rmax           = 286.*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkLay4Length         = (671.+0.)*fgkmm;    // ladder+supporting rings (length of the virtual tube)
 const Double_t AliITSv11GeometrySDD::fgkLay4LadderLength   = 671.*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkLay4DetShortRadius = 235.0*fgkmm;
@@ -126,6 +127,10 @@ const Double_t AliITSv11GeometrySDD::fgkLay4LaddTopCornerEnd = 15.6*fgkmm;
 const Int_t    AliITSv11GeometrySDD::fgkLay4Ndet           = 8;
 const Int_t    AliITSv11GeometrySDD::fgkLay4Nladd          = 22;
 const Double_t AliITSv11GeometrySDD::fgkLay4CoolPipeSuppH  = 7.5*fgkmm;
+
+const Double_t AliITSv11GeometrySDD::fgkEndLaddCardsShortRadiusLay3 = fgkLay3DetShortRadius;
+const Double_t AliITSv11GeometrySDD::fgkEndLaddCardsShortRadiusLay4 = fgkLay4DetShortRadius;
+const Double_t AliITSv11GeometrySDD::fgkDistEndLaddCardsLadd = 0.*fgkmm;
 
 //hybrid 
 const Double_t AliITSv11GeometrySDD::fgkHybridAngle       = 46;           // approx !!!
@@ -256,11 +261,11 @@ const Double_t AliITSv11GeometrySDD::fgkEndLadPipeOuterDiam   =   3.*fgkmm;
 //--- The al body of the cooling syst.of the heat exchanger :
 const Double_t AliITSv11GeometrySDD::fgkEndLadPipeArmZLay3    = 112.*fgkmm;   //
 const Double_t AliITSv11GeometrySDD::fgkEndLadPipeArmZLay4    = 125.*fgkmm;   //
-const Double_t AliITSv11GeometrySDD::fgkEndLadPipeArmX        =   4.75*fgkmm;    // the arms of the U cooling tube
+const Double_t AliITSv11GeometrySDD::fgkEndLadPipeArmX        =   4.75*fgkmm; // the arms of the U cooling tube
 const Double_t AliITSv11GeometrySDD::fgkEndLadPipeArmY        =   6.8*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkEndLadPipeArmBoxDY    =   1.03*fgkmm; // shift in Y of the arms from the axis
-const Double_t AliITSv11GeometrySDD::fgkEndLadPipeArmBoxDX    =   0.125*fgkmm;  // shift in X of the arms from the axis
-const Double_t AliITSv11GeometrySDD::fgkEndLadPipeArmZpos     =   8.9*fgkmm; // 
+const Double_t AliITSv11GeometrySDD::fgkEndLadPipeArmBoxDX    =   0.125*fgkmm;// shift in X of the arms from the axis
+const Double_t AliITSv11GeometrySDD::fgkEndLadPipeArmZpos     =   8.9*fgkmm;  // 
 
 // LV card :
 const Double_t AliITSv11GeometrySDD::fgkLVcardX     = 26.525*fgkmm;
@@ -1093,8 +1098,8 @@ void AliITSv11GeometrySDD::ShowOnePiece(TGeoVolume *moth) {
 //   moth->AddNode(lay3Detectors, 1, 0);
 
 
-  TGeoVolumeAssembly *endLadder = CreateEndLadder( 4 );
-  moth->AddNode(endLadder, 1, 0);
+//   TGeoVolumeAssembly *endLadder = CreateEndLadder( 4 );
+//   moth->AddNode(endLadder, 1, 0);
 
 //   TGeoVolumeAssembly *highVCard = CreateHVCard( 4 );
 //   moth->AddNode(highVCard, 1, 0);
@@ -1102,11 +1107,57 @@ void AliITSv11GeometrySDD::ShowOnePiece(TGeoVolume *moth) {
 //   TGeoVolumeAssembly *supportRing = CreateSupportRing( 4 );
 //   moth->AddNode(supportRing, 1, 0);
 
-//   TGeoVolumeAssembly *endLadderCards = CreateEndLadderCards( 4 );
+  TGeoVolume *endLadderCards = CreateEndLadderCardsV( 4 );
+  moth->AddNode(endLadderCards, 1, 0);
+
+//   TGeoVolume *endLadderCards = CreateEndLadderCards( 4 );
 //   moth->AddNode(endLadderCards, 1, 0);
 
 //   TGeoVolumeAssembly *carlosCard = CreateCarlosCard( 4 );
 //   moth->AddNode(carlosCard, 1, 0);
+
+
+
+  /*
+  //==================================
+  //--- test of flat cable curvature
+  //==================================
+
+  double angle = 90;
+  AliITSv11GeomCableFlat cable("test", 3, 0.3);
+  cable.SetNLayers(1);
+  cable.SetNLayers(2);
+  cable.SetLayer(0, 0.2, coolerMediumSDD, 2);
+  cable.SetLayer(1, 0.1, coolerMediumSDD, 3);
+  cable.SetInitialNode(endLadderCards);
+
+  Double_t p1[3], p2[3], vX[3] = {1,0,0},vY[3] = {0,5,0};
+
+  p1[0] = -3;
+  p1[1] = 1;
+  p1[2] = 10;
+
+  p2[0] = 0;
+  p2[1] = 1;
+  p2[2] = 10;
+  cable.AddCheckPoint(endLadderCards, 0, p1, vX);
+  cable.AddCheckPoint(endLadderCards, 1, p2, vX);
+  cable.CreateAndInsertBoxCableSegment(1,angle);
+
+  Double_t p3[3], p4[3];
+
+  p3[0] = 2;
+  p3[1] = 3;
+  p3[2] = 10;
+  cable.AddCheckPoint(endLadderCards, 2, p3, vY);
+  cable.CreateAndInsertCableCylSegment(2,angle);
+
+  p4[0] = 2;
+  p4[1] = 6;
+  p4[2] = 10;
+  cable.AddCheckPoint(endLadderCards, 3, p4, vY);
+  cable.CreateAndInsertCableSegment(3,angle);
+  */
 }
 
 
@@ -1190,23 +1241,33 @@ void AliITSv11GeometrySDD::Layer3(TGeoVolume *moth) {
     ///////////////////////////////////////////////////
   }
 
+  /*
   //====================================
   // Then the forward rapidity pieces
   // (cooling, Carlos, LV, HV ...)
   //====================================
 
-  Double_t fgkForwardLay3Length = 200*fgkmm;  // this has to be tune !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  Double_t fgkForwardLay3Rmin = fgkLay3Rmin-10*fgkmm;
-  Double_t fgkForwardLay3Rmax = fgkLay3Rmax;
+  Double_t fgkForwardLay3Length = fgkEndLadPipeUlengthLay3+10*fgkmm;  // this has to be tune
+  Double_t fgkForwardLay3Rmin = fgkLay3Rmin-7*fgkmm;
+  Double_t fgkForwardLay3Rmax = fgkLay3Rmax-5*fgkmm;
 
   TGeoVolumeAssembly* lay3EndLadder = CreateEndLadderCards(3);
   TGeoTube *virtualForward3Shape = new TGeoTube("virtualForward3Shape",
 						fgkForwardLay3Rmin, fgkForwardLay3Rmax,
 						fgkForwardLay3Length/2.);
+
+//   TGeoPcon *virtualForward3Shape = new TGeoPcon("virtualForward3Shape",0,360,2);
+// // virtualForward3Shape->DefineSection(Int_t snum, Double_t z, Double_t rmin, Double_t rmax);
+//   virtualForward3Shape->DefineSection(0, Double_t z, Double_t rmin, Double_t rmax);
+
+
   TGeoVolume *virtualForward3Pos = new TGeoVolume("ITSsddForward3Pos",
 						  virtualForward3Shape, airSDD);
   TGeoVolume *virtualForward3Neg = new TGeoVolume("ITSsddForward3Neg",
 						  virtualForward3Shape, airSDD);
+//   TGeoVolume *virtualForward3Neg = new TGeoVolumeAssembly("ITSsddForward3Neg");
+//   TGeoVolume *virtualForward3Pos = new TGeoVolumeAssembly("ITSsddForward3Pos");
+
   TGeoTranslation *virtualForward3TrPos = new TGeoTranslation("virtualForward3TrPos",0,0,
 					  fgkLay3Length/2+fgkForwardLay3Length/2);
   TGeoTranslation *virtualForward3TrNeg = new TGeoTranslation("virtualForward3TrNeg",0,0,
@@ -1230,21 +1291,166 @@ void AliITSv11GeometrySDD::Layer3(TGeoVolume *moth) {
     virtualForward3Neg->AddNode(lay3EndLadder, iLadd*2, ctEndLaddNeg);
   }
 
+  */
+
+
   if(GetDebug(1)) {
     virtualLayer3->CheckOverlaps(0.01);
+    //virtualForward3Pos->CheckOverlaps(0.01);
+    //virtualForward3Neg->CheckOverlaps(0.01);
+  }
+
+  virtualLayer3->SetVisibility(kFALSE);
+  //virtualForward3Pos->SetVisibility(kFALSE);
+  //virtualForward3Neg->SetVisibility(kFALSE);
+
+
+  moth->AddNode(virtualLayer3, 1, 0);
+  //moth->AddNode(virtualForward3Pos, 1, virtualForward3TrPos);
+  //moth->AddNode(virtualForward3Neg, 1, virtualForward3TrNeg);
+}
+
+
+// //________________________________________________________________________
+// void AliITSv11GeometrySDD::ForwardLayer3(TGeoVolume *moth) {
+//   //
+//   // Insert the forward pieces of layer 3 in the mother volume. 
+//   // (cooling, Carlos, LV, HV ...)
+//   //
+
+//   if (! moth) {
+//     printf("Error::AliITSv11GeometrySDD: Can't insert layer3, mother is null!\n");
+//     return;
+//   };
+
+//   TGeoMedium *airSDD = GetMedium("SDD AIR$");
+
+//   if (! fSDDsensor3) CreateBasicObjects();
+
+//   Double_t dPhi = 360./fgkLay3Nladd;
+//   Double_t detectorsThick = fgkLadWaferSep + 2*fgkWaferThickness;
+//   Int_t iLaddMin = 0;
+//   Int_t iLaddMax = fgkLay3Nladd;
+//   if ((fAddOnlyLadder3min>=0)&&(fAddOnlyLadder3max<fgkLay3Nladd)) {
+//     iLaddMin = fAddOnlyLadder3min;
+//     iLaddMax = fAddOnlyLadder3max+1;
+//   };
+//   char rotName[30];
+
+
+//   //=================
+
+//   Double_t fgkForwardLay3Length = fgkEndLadPipeUlengthLay3+10*fgkmm;  // this has to be tune
+//   Double_t fgkForwardLay3Rmin = fgkLay3Rmin-7*fgkmm;
+//   Double_t fgkForwardLay3Rmax = fgkLay3Rmax-5*fgkmm;
+
+//   TGeoVolumeAssembly* lay3EndLadder = CreateEndLadderCards(3);
+//   TGeoTube *virtualForward3Shape = new TGeoTube("virtualForward3Shape",
+// 						fgkForwardLay3Rmin, fgkForwardLay3Rmax,
+// 						fgkForwardLay3Length/2.);
+
+// //   TGeoPcon *virtualForward3Shape = new TGeoPcon("virtualForward3Shape",0,360,2);
+// // // virtualForward3Shape->DefineSection(Int_t snum, Double_t z, Double_t rmin, Double_t rmax);
+// //   virtualForward3Shape->DefineSection(0, Double_t z, Double_t rmin, Double_t rmax);
+
+
+//   TGeoVolume *virtualForward3Pos = new TGeoVolume("ITSsddForward3Pos",
+// 						  virtualForward3Shape, airSDD);
+//   TGeoVolume *virtualForward3Neg = new TGeoVolume("ITSsddForward3Neg",
+// 						  virtualForward3Shape, airSDD);
+// //   TGeoVolume *virtualForward3Neg = new TGeoVolumeAssembly("ITSsddForward3Neg");
+// //   TGeoVolume *virtualForward3Pos = new TGeoVolumeAssembly("ITSsddForward3Pos");
+
+//   TGeoTranslation *virtualForward3TrPos = new TGeoTranslation("virtualForward3TrPos",0,0,
+// 					  fgkLay3Length/2+fgkForwardLay3Length/2);
+//   TGeoTranslation *virtualForward3TrNeg = new TGeoTranslation("virtualForward3TrNeg",0,0,
+// 					  -fgkLay3Length/2-fgkForwardLay3Length/2);
+
+//   for (Int_t iLadd = iLaddMin; iLadd < iLaddMax; iLadd++) {
+
+//     Double_t ladderPhi = -3*dPhi+iLadd*dPhi;
+//     Double_t minRadiusDetBox = fgkLay3DetShortRadius;
+//     if (iLadd%2 != 0) minRadiusDetBox = fgkLay3DetLongRadius;
+//     minRadiusDetBox += detectorsThick/2;
+
+//     sprintf(rotName, "ITSsddLay3EndLadd%i",iLadd);
+
+//     TGeoCombiTrans *ctEndLaddPos = CreateCombiTrans(rotName, minRadiusDetBox-0.1,
+// 				   -fgkForwardLay3Length/2, ladderPhi, kTRUE);
+//     TGeoCombiTrans *ctEndLaddNeg = CreateCombiTrans(rotName, minRadiusDetBox-0.1,
+// 				   fgkForwardLay3Length/2, ladderPhi, kFALSE);
+
+//     virtualForward3Pos->AddNode(lay3EndLadder, iLadd*2, ctEndLaddPos);
+//     virtualForward3Neg->AddNode(lay3EndLadder, iLadd*2, ctEndLaddNeg);
+//   }
+
+//   if(GetDebug(1)) {
+//     virtualForward3Pos->CheckOverlaps(0.01);
+//     virtualForward3Neg->CheckOverlaps(0.01);
+//   }
+
+//   virtualForward3Pos->SetVisibility(kFALSE);
+//   virtualForward3Neg->SetVisibility(kFALSE);
+
+//   moth->AddNode(virtualForward3Pos, 1, virtualForward3TrPos);
+//   moth->AddNode(virtualForward3Neg, 1, virtualForward3TrNeg);
+// }
+
+
+
+//________________________________________________________________________
+void AliITSv11GeometrySDD::ForwardLayer3(TGeoVolume *moth) {
+  //
+  // Insert the end-ladder of layer 3 in the mother volume. 
+  // (cooling, Carlos, LV, HV ...)
+  //
+
+  if (! moth) {
+    printf("Error::AliITSv11GeometrySDD: Can't insert layer3, mother is null!\n");
+    return;
+  };
+
+  if (! fSDDsensor3) CreateBasicObjects();
+
+  Int_t iLaddMin = 0;
+  Int_t iLaddMax = fgkLay3Nladd;
+  if ((fAddOnlyLadder3min>=0)&&(fAddOnlyLadder3max<fgkLay3Nladd)) {
+    iLaddMin = fAddOnlyLadder3min;
+    iLaddMax = fAddOnlyLadder3max+1;
+  };
+
+  TGeoVolume *virtualForward3Neg = new TGeoVolumeAssembly("ITSsddForward3Neg");
+  TGeoVolume *virtualForward3Pos = new TGeoVolumeAssembly("ITSsddForward3Pos");
+
+  char rotName[30];
+  Double_t dPhi = 360./fgkLay3Nladd;
+  TGeoVolume* lay3EndLadder = CreateEndLadderCardsV(3);
+
+  for (Int_t iLadd = iLaddMin; iLadd < iLaddMax; iLadd++) {
+
+    Double_t ladderPhi = -3*dPhi+iLadd*dPhi;
+    Double_t dR = 0;
+    if (iLadd%2 != 0) dR = fgkLay3DetLongRadius-fgkLay3DetShortRadius;
+
+    sprintf(rotName, "ITSsddLay3EndLadd%i",iLadd);
+
+    TGeoCombiTrans *ctEndLaddPos = CreateCombiTrans(rotName, dR,
+				    fgkLay3Length/2, ladderPhi, kTRUE);
+    TGeoCombiTrans *ctEndLaddNeg = CreateCombiTrans(rotName, dR,
+				   -fgkLay3Length/2, ladderPhi, kFALSE);
+
+    virtualForward3Pos->AddNode(lay3EndLadder, iLadd*2, ctEndLaddPos);
+    virtualForward3Neg->AddNode(lay3EndLadder, iLadd*2, ctEndLaddNeg);
+  }
+
+  if(GetDebug(1)) {
     virtualForward3Pos->CheckOverlaps(0.01);
     virtualForward3Neg->CheckOverlaps(0.01);
   }
 
-  virtualLayer3->SetVisibility(kFALSE);
-  virtualForward3Pos->SetVisibility(kFALSE);
-  virtualForward3Neg->SetVisibility(kFALSE);
-
-  moth->AddNode(virtualLayer3, 1, 0);
-  moth->AddNode(virtualForward3Pos, 1, virtualForward3TrPos);
-  moth->AddNode(virtualForward3Neg, 1, virtualForward3TrNeg);
+  moth->AddNode(virtualForward3Pos, 1);
+  moth->AddNode(virtualForward3Neg, 1);
 }
-
 
 //________________________________________________________________________
 void AliITSv11GeometrySDD::Layer4(TGeoVolume *moth) {
@@ -1311,14 +1517,15 @@ void AliITSv11GeometrySDD::Layer4(TGeoVolume *moth) {
     ///////////////////////////////////////////////////
   }
 
+  /*
   //====================================
   // Then the pieces at forward rapidity
   // (cooling, Carlos, LV, HV ...)
   //====================================
 
-  Double_t fgkForwardLay4Length = 200*fgkmm;  // this has to be tuned !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  Double_t fgkForwardLay4Rmin = fgkLay4Rmin-10*fgkmm;
-  Double_t fgkForwardLay4Rmax = fgkLay4Rmax;
+  Double_t fgkForwardLay4Length = fgkEndLadPipeUlengthLay4+10*fgkmm;  // this has to be tuned
+  Double_t fgkForwardLay4Rmin = fgkLay4Rmin-9*fgkmm;
+  Double_t fgkForwardLay4Rmax = fgkLay4Rmax-5*fgkmm;
 
   TGeoVolumeAssembly* lay4EndLadder = CreateEndLadderCards(4);
   TGeoTube *virtualForward4Shape = new TGeoTube("virtualForward3Shape",
@@ -1328,6 +1535,9 @@ void AliITSv11GeometrySDD::Layer4(TGeoVolume *moth) {
 						  virtualForward4Shape, airSDD);
   TGeoVolume *virtualForward4Neg = new TGeoVolume("ITSsddForward4Neg",
 						  virtualForward4Shape, airSDD);
+//   TGeoVolume *virtualForward4Pos = new TGeoVolumeAssembly("ITSsddForward4Pos");
+//   TGeoVolume *virtualForward4Neg = new TGeoVolumeAssembly("ITSsddForward4Neg");
+
   TGeoTranslation *virtualForward4TrPos = new TGeoTranslation("virtualForward4TrPos",0,0,
 					  fgkLay4Length/2+fgkForwardLay4Length/2);
   TGeoTranslation *virtualForward4TrNeg = new TGeoTranslation("virtualForward4TrNeg",0,0,
@@ -1350,16 +1560,146 @@ void AliITSv11GeometrySDD::Layer4(TGeoVolume *moth) {
     virtualForward4Pos->AddNode(lay4EndLadder, iLadd*2, ctEndLaddPos);
     virtualForward4Neg->AddNode(lay4EndLadder, iLadd*2+1, ctEndLaddNeg);
   }
+  */
 
   if(GetDebug(1)) virtualLayer4->CheckOverlaps(0.01);
 
   virtualLayer4->SetVisibility(kFALSE);
-  virtualForward4Pos->SetVisibility(kFALSE);
-  virtualForward4Neg->SetVisibility(kFALSE);
+  //virtualForward4Pos->SetVisibility(kFALSE);
+  //virtualForward4Neg->SetVisibility(kFALSE);
 
   moth->AddNode(virtualLayer4,1,0);
-  moth->AddNode(virtualForward4Pos, 1, virtualForward4TrPos);
-  moth->AddNode(virtualForward4Neg, 1, virtualForward4TrNeg);
+  //moth->AddNode(virtualForward4Pos, 1, virtualForward4TrPos);
+  //moth->AddNode(virtualForward4Neg, 1, virtualForward4TrNeg);
+}
+
+
+// //________________________________________________________________________
+// void AliITSv11GeometrySDD::ForwardLayer4(TGeoVolume *moth) {
+//   //
+//   // Insert the layer 4 in the mother volume. This is a virtual volume
+//   // containing ladders of layer 4 and the supporting rings
+//   // (cooling, Carlos, LV, HV ...)
+//   //
+
+//   if (! moth) {
+//     printf("Error::AliITSv11GeometrySDD: Can't insert layer4, mother is null!\n");
+//     return;
+//   };
+
+//   TGeoMedium *airSDD = GetMedium("SDD AIR$");
+
+//   if (! fSDDsensor3) CreateBasicObjects();
+
+//   Double_t dPhi = 360./fgkLay4Nladd;
+//   Double_t detBoxThickness = fgkLadWaferSep + 2*fgkWaferThickness;
+
+//   // placing virtual ladder and detectors volumes following ladder 
+//   // ordering convention
+//   char rotName[20];
+//   Int_t iLaddMin = 0;
+//   Int_t iLaddMax = fgkLay4Nladd;
+//   if ((fAddOnlyLadder4min >= 0)&&(fAddOnlyLadder4max < fgkLay4Nladd)) {
+//     iLaddMin = fAddOnlyLadder4min;
+//     iLaddMax = fAddOnlyLadder4max+1;
+//   }
+
+//   //=================
+//   Double_t fgkForwardLay4Length = fgkEndLadPipeUlengthLay4+10*fgkmm;  // this has to be tuned
+//   Double_t fgkForwardLay4Rmin = fgkLay4Rmin-9*fgkmm;
+//   Double_t fgkForwardLay4Rmax = fgkLay4Rmax-5*fgkmm;
+
+//   TGeoVolumeAssembly* lay4EndLadder = CreateEndLadderCards(4);
+//   TGeoTube *virtualForward4Shape = new TGeoTube("virtualForward3Shape",
+// 						fgkForwardLay4Rmin, fgkForwardLay4Rmax,
+// 						fgkForwardLay4Length/2.);
+//   TGeoVolume *virtualForward4Pos = new TGeoVolume("ITSsddForward4Pos",
+// 						  virtualForward4Shape, airSDD);
+//   TGeoVolume *virtualForward4Neg = new TGeoVolume("ITSsddForward4Neg",
+// 						  virtualForward4Shape, airSDD);
+// //   TGeoVolume *virtualForward4Pos = new TGeoVolumeAssembly("ITSsddForward4Pos");
+// //   TGeoVolume *virtualForward4Neg = new TGeoVolumeAssembly("ITSsddForward4Neg");
+
+//   TGeoTranslation *virtualForward4TrPos = new TGeoTranslation("virtualForward4TrPos",0,0,
+// 					  fgkLay4Length/2+fgkForwardLay4Length/2);
+//   TGeoTranslation *virtualForward4TrNeg = new TGeoTranslation("virtualForward4TrNeg",0,0,
+// 					  -fgkLay4Length/2-fgkForwardLay4Length/2);
+
+//   for (Int_t iLadd = iLaddMin; iLadd < iLaddMax; iLadd++) {
+
+//     Double_t ladderPhi = -5*dPhi + iLadd*dPhi;
+//     Double_t minRadiusDetBox = fgkLay4DetShortRadius;
+//     if (iLadd%2 != 0)
+//       minRadiusDetBox = fgkLay4DetLongRadius;
+//     minRadiusDetBox += detBoxThickness/2;
+
+//     sprintf(rotName, "ITSsddLay4EndLadd%i",iLadd);
+
+//     TGeoCombiTrans *ctEndLaddPos = CreateCombiTrans(rotName, minRadiusDetBox-0.1,
+// 				   -fgkForwardLay4Length/2, ladderPhi, kTRUE);
+//     TGeoCombiTrans *ctEndLaddNeg = CreateCombiTrans(rotName, minRadiusDetBox-0.1,
+// 				    fgkForwardLay4Length/2, ladderPhi, kFALSE);
+//     virtualForward4Pos->AddNode(lay4EndLadder, iLadd*2, ctEndLaddPos);
+//     virtualForward4Neg->AddNode(lay4EndLadder, iLadd*2+1, ctEndLaddNeg);
+//   }
+
+//   virtualForward4Pos->SetVisibility(kFALSE);
+//   virtualForward4Neg->SetVisibility(kFALSE);
+
+//   moth->AddNode(virtualForward4Pos, 1, virtualForward4TrPos);
+//   moth->AddNode(virtualForward4Neg, 1, virtualForward4TrNeg);
+// }
+
+
+//________________________________________________________________________
+void AliITSv11GeometrySDD::ForwardLayer4(TGeoVolume *moth) {
+  //
+  // Insert the end-ladder of layer 4 in the mother volume.
+  // (cooling, Carlos, LV, HV ...)
+  //
+
+  if (! moth) {
+    printf("Error::AliITSv11GeometrySDD: Can't insert layer4, mother is null!\n");
+    return;
+  };
+
+  if (! fSDDsensor3) CreateBasicObjects();
+
+  // placing virtual ladder and detectors volumes following ladder 
+  // ordering convention
+  Int_t iLaddMin = 0;
+  Int_t iLaddMax = fgkLay4Nladd;
+  if ((fAddOnlyLadder4min >= 0)&&(fAddOnlyLadder4max < fgkLay4Nladd)) {
+    iLaddMin = fAddOnlyLadder4min;
+    iLaddMax = fAddOnlyLadder4max+1;
+  }
+
+  TGeoVolume *virtualForward4Pos = new TGeoVolumeAssembly("ITSsddForward4Pos");
+  TGeoVolume *virtualForward4Neg = new TGeoVolumeAssembly("ITSsddForward4Neg");
+
+  char rotName[30];
+  Double_t dPhi = 360./fgkLay4Nladd;
+  TGeoVolume* lay4EndLadder = CreateEndLadderCardsV(4);
+
+  for (Int_t iLadd = iLaddMin; iLadd < iLaddMax; iLadd++) {
+
+    Double_t ladderPhi = -5*dPhi + iLadd*dPhi;
+    Double_t dR = 0;
+    if (iLadd%2 != 0)
+      dR = fgkLay4DetLongRadius-fgkLay4DetShortRadius;
+
+    sprintf(rotName, "ITSsddLay4EndLadd%i",iLadd);
+
+    TGeoCombiTrans *ctEndLaddPos = CreateCombiTrans(rotName, dR,
+				   fgkLay4Length/2, ladderPhi, kTRUE);
+    TGeoCombiTrans *ctEndLaddNeg = CreateCombiTrans(rotName, dR,
+				   -fgkLay4Length/2, ladderPhi, kFALSE);
+    virtualForward4Pos->AddNode(lay4EndLadder, iLadd*2, ctEndLaddPos);
+    virtualForward4Neg->AddNode(lay4EndLadder, iLadd*2, ctEndLaddNeg);
+  }
+
+  moth->AddNode(virtualForward4Pos, 1);
+  moth->AddNode(virtualForward4Neg, 1);
 }
 
 
@@ -1449,7 +1789,7 @@ TGeoVolumeAssembly *AliITSv11GeometrySDD::CreateLadder(Int_t iLay) {
 	rotation = 90-fgkHybridAngle; 
 	digitCableA[iSegment].CreateAndInsertCableSegment(iPt, rotation);
       } else
-	digitCableA[iSegment].CreateAndInsertBoxCableSegment(iPt);
+	digitCableA[iSegment].CreateAndInsertCableSegment(iPt);
 
     };
     
@@ -1459,7 +1799,7 @@ TGeoVolumeAssembly *AliITSv11GeometrySDD::CreateLadder(Int_t iLay) {
 	rotation = fgkHybridAngle-90; 
 	digitCableB[iSegment].CreateAndInsertCableSegment(iPt, rotation);
       } else
-	digitCableB[iSegment].CreateAndInsertBoxCableSegment(iPt);
+	digitCableB[iSegment].CreateAndInsertCableSegment(iPt);
     };
   };
   
@@ -1996,7 +2336,7 @@ TGeoVolume* AliITSv11GeometrySDD::CreateLadderSegment(Int_t iLay, Int_t iSeg) {
   // Return a TGeoVolume* containing a segment of a ladder.
   //
 
-  TGeoMedium *phynoxSDD       = GetMedium("inox/alum$"); // phynoxSDD To code ??? !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  TGeoMedium *phynoxSDD       = GetMedium("inox/alum$"); // phynoxSDD To code ??? !!!
   TGeoMedium *coolerMediumSDD = GetMedium("WATER$");
   TGeoMedium *airSDD          = GetMedium("SDD AIR$");
 
@@ -3826,8 +4166,8 @@ TGeoVolumeAssembly*  AliITSv11GeometrySDD::CreateEndLadderCards(Int_t iLay) {
 // and their cooling system 
 //
 
-  TGeoMedium *alCu12SDD       = GetMedium("AL$"); // ITSsddAlCu12 : to code !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  TGeoMedium *phynoxSDD       = GetMedium("AL$"); // phynoxSDD To code !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  TGeoMedium *alCu12SDD       = GetMedium("AL$"); // ITSsddAlCu12 : to code !!!!!!!!!!!!!!
+  TGeoMedium *phynoxSDD       = GetMedium("AL$"); // phynoxSDD To code !!!!!!!!!!!!!!!!!!!
   TGeoMedium *coolerMediumSDD = GetMedium("WATER$");
 
   TGeoVolumeAssembly *endLadderCards = new TGeoVolumeAssembly("endLadderCards");
@@ -4013,50 +4353,234 @@ TGeoVolumeAssembly*  AliITSv11GeometrySDD::CreateEndLadderCards(Int_t iLay) {
     endLadderCards->AddNode(assemblySupCarlos, iCard, carlosPos);
   }
 
+  return endLadderCards;
+}
 
 
-  
+//________________________________________________________________________
+TGeoVolume*  AliITSv11GeometrySDD::CreateEndLadderCardsV(Int_t iLay) {
+// 
+// return an Pcon containing the LV, HV and Carlos cards of one ladder
+// and their cooling system 
+//
 
-  /*
+  TGeoMedium *alCu12SDD       = GetMedium("AL$"); // ITSsddAlCu12 : to code !!!!!!!!!!!!!!
+  TGeoMedium *phynoxSDD       = GetMedium("AL$"); // phynoxSDD To code !!!!!!!!!!!!!!!!!!!
+  TGeoMedium *coolerMediumSDD = GetMedium("WATER$");
+  TGeoMedium *airSDD          = GetMedium("SDD AIR$");
+
+  Double_t endLadPipeUlength = fgkEndLadPipeUlengthLay3;
+  Double_t endLadPipeArmZ    = fgkEndLadPipeArmZLay3;
+  Int_t    nCards = 3;
+  Double_t rREF   = fgkEndLaddCardsShortRadiusLay3;
+  // reference radius corresponding to local y=0
+
+  if (iLay==4) {
+    endLadPipeUlength = fgkEndLadPipeUlengthLay4;
+    endLadPipeArmZ = fgkEndLadPipeArmZLay4;
+    nCards = 4;
+    rREF = fgkEndLaddCardsShortRadiusLay4;
+  }
+
+  Double_t cardLVxShift = (fgkEndLadPipeUwidth/2-fgkEndLadPipeArmX/2
+			   +fgkEndLadPipeArmBoxDX);
+  Double_t cardLVyShift = (-fgkLVcoolPosY-fgkLVcoolY1+fgkLVcoolY3
+			   +fgkEndLadPipeArmY/2+fgkEndLadPipeArmBoxDY);
+
+  Double_t rMin   = rREF + cardLVyShift;
+  // (The LV card is defining rMin because it is the lower object)
+
   //==================================
-  //--- test of flat cable curvature
-  //==================================
+  //--- The Pcon container
 
-  double angle = 90;
-  AliITSv11GeomCableFlat cable("test", 3, 0.3);
-  cable.SetNLayers(1);
-  cable.SetNLayers(2);
-  cable.SetLayer(0, 0.2, coolerMediumSDD, 2);
-  cable.SetLayer(1, 0.1, coolerMediumSDD, 3);
-  cable.SetInitialNode(endLadderCards);
+  // minimum angle of the Pcon :
+  Double_t tanDPhi = ((fgkEndLadPipeUwidth/2+fgkEndLadPipeArmX/2) /
+		     (rREF-fgkEndLadPipeArmY/2) );
+  Double_t dphi = 2*TMath::ATan(tanDPhi)*TMath::RadToDeg();
+  Double_t phi0 = 90-dphi/2;
+  Double_t coolUzPos = fgkEndLadPipeOuterDiam/2 + fgkDistEndLaddCardsLadd; // it is the z coord of the axis
+                                                        // of the U colling pipe in its center
+  Double_t zMax = endLadPipeUlength+coolUzPos;
+  Double_t rMax = rMin + fgkLVcardY;
+  rMax = TMath::Sqrt(rMax*rMax + cardLVxShift*cardLVxShift);
 
-  Double_t p1[3], p2[3], vX[3] = {1,0,0},vY[3] = {0,5,0};
+  TGeoPcon *containerShape = new TGeoPcon("EndLadderCcontainerShape", phi0, dphi, 6);
+   //DefineSection(Int_t snum, Double_t z, Double_t rmin, Double_t rmax);
+  containerShape->DefineSection(0,  fgkDistEndLaddCardsLadd, rMin, rMax);
+  containerShape->DefineSection(1,  endLadPipeArmZ+2*fgkEndLadPipeRadius, rMin, rMax);
+  containerShape->DefineSection(2,  endLadPipeArmZ+2*fgkEndLadPipeRadius, rREF-1.*fgkmm, rMax);
+  containerShape->DefineSection(3,  zMax, rREF-1.*fgkmm, rMax);
+  // the following is dirty but works ...
+  containerShape->DefineSection(4,  zMax,          rREF+fgkCarlosCardZ1/2, rMax);
+  containerShape->DefineSection(5,  zMax+6.*fgkmm, rREF+fgkCarlosCardZ1/2, rMax);
 
-  p1[0] = -3;
-  p1[1] = 1;
-  p1[2] = 10;
+  TGeoVolume *endLadderCards = new TGeoVolume("endLadderCards",containerShape,airSDD);
+  endLadderCards->SetVisibility(kFALSE);
 
-  p2[0] = 0;
-  p2[1] = 1;
-  p2[2] = 10;
-  cable.AddCheckPoint(endLadderCards, 0, p1, vX);
-  cable.AddCheckPoint(endLadderCards, 1, p2, vX);
-  cable.CreateAndInsertBoxCableSegment(1,angle);
+  //=*********************************
+  //--- The rounded pipe for the end ladder card cooling
 
-  Double_t p3[3], p4[3];
+  AliITSv11GeomCableRound endLadderPipe("endLadderPipe", fgkEndLadPipeOuterDiam/2);
+  endLadderPipe.SetNLayers(2); 
+  endLadderPipe.SetLayer(0, fgkEndLadPipeInnerDiam/2, coolerMediumSDD, 4);
+  endLadderPipe.SetLayer(1, (fgkEndLadPipeOuterDiam-fgkEndLadPipeInnerDiam)/2, phynoxSDD, fColorPhynox);
 
-  p3[0] = 2;
-  p3[1] = 3;
-  p3[2] = 10;
-  cable.AddCheckPoint(endLadderCards, 2, p3, vY);
-  cable.CreateAndInsertCableCylSegment(2,angle);
+  Double_t coordA[3] = { fgkEndLadPipeUwidth/2, rREF, endLadPipeUlength+coolUzPos};
+  Double_t vectA[3]  = {0,0,1};
 
-  p4[0] = 2;
-  p4[1] = 6;
-  p4[2] = 10;
-  cable.AddCheckPoint(endLadderCards, 3, p4, vY);
-  cable.CreateAndInsertCableSegment(3,angle);
-  */
+  Double_t coordB[3] = { fgkEndLadPipeUwidth/2,rREF, fgkEndLadPipeRadius+coolUzPos};
+  Double_t vectB[3]  = {0,0,1};
+
+  Double_t coordC[3] = { fgkEndLadPipeUwidth/2-fgkEndLadPipeRadius, rREF, coolUzPos};
+  Double_t vectC[3]  = {1,0,0};
+
+  Double_t coordD[3] = {-fgkEndLadPipeUwidth/2+fgkEndLadPipeRadius, rREF, coolUzPos};
+  Double_t vectD[3]  = {-1,0,0};
+
+  Double_t coordE[3] = {-fgkEndLadPipeUwidth/2, rREF, fgkEndLadPipeRadius+coolUzPos};
+  Double_t vectE[3]  = {0,0,-1};
+
+  Double_t coordF[3] = {-fgkEndLadPipeUwidth/2,rREF, endLadPipeUlength+coolUzPos};
+  Double_t vectF[3]  = {0,0,-1};
+
+  endLadderPipe.AddCheckPoint( (TGeoVolume *) endLadderCards, 0, coordA, vectA);
+  endLadderPipe.AddCheckPoint( (TGeoVolume *) endLadderCards, 1, coordB, vectB);
+  endLadderPipe.AddCheckPoint( (TGeoVolume *) endLadderCards, 2, coordC, vectC);
+  endLadderPipe.AddCheckPoint( (TGeoVolume *) endLadderCards, 3, coordD, vectD);
+  endLadderPipe.AddCheckPoint( (TGeoVolume *) endLadderCards, 4, coordE, vectE);
+  endLadderPipe.AddCheckPoint( (TGeoVolume *) endLadderCards, 5, coordF, vectF);
+
+  endLadderPipe.SetInitialNode((TGeoVolume *) endLadderCards); //Set the root node
+  //endLadderPipe.CreateAndInsertCableSegment( 1);
+  endLadderPipe.CreateAndInsertTubeSegment( 1);
+  //endLadderPipe.CreateAndInsertCableSegment( 2);
+  endLadderPipe.CreateAndInsertTorusSegment( 2);
+  //endLadderPipe.CreateAndInsertCableSegment( 3);
+  endLadderPipe.CreateAndInsertTubeSegment( 3);
+  //endLadderPipe.CreateAndInsertCableSegment( 4);
+  endLadderPipe.CreateAndInsertTorusSegment( 4);
+  //endLadderPipe.CreateAndInsertCableSegment( 5);
+  endLadderPipe.CreateAndInsertTubeSegment( 5);
+
+  TGeoBBox *endLadPipeArmBox = new TGeoBBox("endLadPipeArmBox",fgkEndLadPipeArmX/2,
+				         fgkEndLadPipeArmY/2, endLadPipeArmZ/2);
+  TGeoTube *endLadPipeArmTube = new TGeoTube("endLadPipeArmTube", 0,
+				    fgkEndLadPipeOuterDiam/2, endLadPipeArmZ/2);
+
+  TGeoTranslation *endLadPipeArmBoxDY1 = new TGeoTranslation("endLadPipeArmBoxDY1",
+							    - fgkEndLadPipeArmBoxDX,
+							     fgkEndLadPipeArmBoxDY,0);
+  TGeoTranslation *endLadPipeArmBoxDY2 = new TGeoTranslation("endLadPipeArmBoxDY2",
+							    fgkEndLadPipeArmBoxDX,
+							    fgkEndLadPipeArmBoxDY,0);
+  endLadPipeArmBoxDY1->RegisterYourself();
+  endLadPipeArmBoxDY2->RegisterYourself();
+
+  if(GetDebug(3)) { // Remove compiler warning.
+    endLadPipeArmBox->InspectShape();
+    endLadPipeArmTube->InspectShape();
+  }
+
+  TGeoCompositeShape *endLadPipeArm1 = new TGeoCompositeShape("ITSsddEndLadPipeArm1",
+					   "endLadPipeArmBox:endLadPipeArmBoxDY1"
+					   "- endLadPipeArmTube");
+  TGeoCompositeShape *endLadPipeArm2 = new TGeoCompositeShape("ITSsddEndLadPipeArm2",
+					   "endLadPipeArmBox:endLadPipeArmBoxDY2"
+					   "- endLadPipeArmTube");
+
+  TGeoVolume *vEndLadPipeArm1 = new TGeoVolume("ITSsddVolEndLadPipeArm1",
+					       endLadPipeArm1, alCu12SDD);
+  TGeoVolume *vEndLadPipeArm2 = new TGeoVolume("ITSsddVolEndLadPipeArm2",
+					       endLadPipeArm2, alCu12SDD);
+  vEndLadPipeArm1->SetLineColor(2);
+  vEndLadPipeArm2->SetLineColor(2);
+
+  Double_t armZ = (coolUzPos-fgkEndLadPipeOuterDiam/2+endLadPipeArmZ/2
+		   +fgkEndLadPipeArmZpos);
+
+  TGeoTranslation *trEndLadPipeArm1 = new TGeoTranslation("trEndLadPipeArm1",
+					  -fgkEndLadPipeUwidth/2,rREF,armZ);
+  TGeoTranslation *trEndLadPipeArm2 = new TGeoTranslation("trEndLadPipeArm2",
+					   fgkEndLadPipeUwidth/2,rREF,armZ);
+
+  endLadderCards->AddNode(vEndLadPipeArm1, 1, trEndLadPipeArm1);
+  endLadderCards->AddNode(vEndLadPipeArm2, 1, trEndLadPipeArm2);
+
+  //=*********************************
+  //--- LV cards
+  TGeoVolumeAssembly *cardLVassemblyR = fCardLVR;
+  TGeoVolumeAssembly *cardLVassemblyL = fCardLVL;
+
+  Double_t spaceBetweenCards = 0.2*fgkmm; 
+
+
+  Double_t alLVcoolZ3 = (fgkLVcardCuZ+fgkLVcardZ+2.*(fgkLVChip0SiZ+fgkLVChip0Z)
+			  +fgkLVcoolZ1*2.);
+
+  Double_t firstLVCardZ = fgkEndLadPipeArmZpos-fgkEndLadPipeOuterDiam/2.+alLVcoolZ3/2
+                          +coolUzPos+1.25*fgkmm;
+  // Position in z of the first LVB with respect to the start of the cooling
+  // rectangular arm, coming  (from inside of the ladder)
+  // The cards are added one after the other
+
+  for (Int_t iCard=0; iCard<nCards; iCard++) {
+
+    Double_t cardLVzShift = firstLVCardZ + 
+      Double_t(iCard)*(alLVcoolZ3 + 2.*spaceBetweenCards+fgkHVCardCool3Z);
+
+    TGeoTranslation *trCardLVassemblyR = new TGeoTranslation(cardLVxShift,
+					     cardLVyShift+rREF, cardLVzShift);
+    TGeoTranslation *trCardLVassemblyL = new TGeoTranslation(-cardLVxShift,
+					     cardLVyShift+rREF, cardLVzShift);
+
+    endLadderCards->AddNode(cardLVassemblyR, iCard+1, trCardLVassemblyR);
+    endLadderCards->AddNode(cardLVassemblyL, iCard+1, trCardLVassemblyL);
+  }
+
+  //=*********************************
+  //--- HV cards
+  TGeoVolumeAssembly *cardHV = fCardHV;
+
+  Double_t coolHVdy = (fgkHVCardCoolDY + fgkHVCardCool3Y
+		       + fgkEndLadPipeArmY/2 + fgkEndLadPipeArmBoxDY);
+  // shift of the HV card in local y w.r.t the local y=0 (center of cooling tube)
+
+  Double_t coolHVCenterShift = (fgkHVCardCool3Z/2-fgkHVCardCool2Z
+				-(fgkHVCardCeramZ)/2); 
+
+  for (Int_t iCard=0; iCard<nCards; iCard++) {
+
+    Double_t fact = iCard*2.+1.;
+    Double_t coolHVdz = (firstLVCardZ + alLVcoolZ3*fact/2 + spaceBetweenCards*fact
+			 + fgkHVCardCool3Z*fact/2. + coolHVCenterShift);
+    TGeoTranslation *trCardHV = new TGeoTranslation(0,coolHVdy+rREF, coolHVdz);
+    endLadderCards->AddNode(cardHV, iCard+1, trCardHV);
+  }
+
+  //=*********************************
+  //--- Carlos card
+
+  TGeoVolumeAssembly *assemblySupCarlos = fCardCarlos;
+//   TGeoRotation *carlosSupRot1 = new TGeoRotation("carlosSuppAngle",
+// 						 0, -fgkCarlosSuppAngle, 0);
+
+  Double_t spaceBetweenCarlsoCards = 0.1*fgkmm;
+  Double_t firstCarlosCardZ = (firstLVCardZ - alLVcoolZ3/2 + alLVcoolZ3*4 +
+			       fgkHVCardCool3Z*4 + spaceBetweenCards*7 + 2*fgkmm);
+  // position in z of the first Carlos board, coming  from inside of the ladder
+
+  Double_t coolCarlosDy = (fgkCarlosSuppY3/2 + fgkEndLadPipeArmY/2 + 
+			   fgkEndLadPipeArmBoxDY);
+
+  for (Int_t iCard=0; iCard<nCards; iCard++) {
+
+    Double_t carloszPos = ( firstCarlosCardZ + fgkCarlosSuppZ3/2 +
+			    iCard*(fgkCarlosSuppZ3+spaceBetweenCarlsoCards) );
+    TGeoCombiTrans *carlosPos = new TGeoCombiTrans(0,coolCarlosDy+rREF,carloszPos,
+						   (TGeoRotation*) fCommonTr[0]);
+
+    endLadderCards->AddNode(assemblySupCarlos, iCard, carlosPos);
+  }
 
   return endLadderCards;
 }

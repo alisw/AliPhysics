@@ -16,6 +16,9 @@
 // $Id$
 
 // $Log$
+// Revision 1.4  2007/05/09 20:40:41  masera
+// Bug fix (V11Hybrid geometry)
+//
 // Revision 1.3  2007/05/08 16:57:42  masera
 // Updates concerning the geometry: versioning system, new V11hybrid version, bug fixes (B.Nilsend and L. Gaudichet
 //
@@ -69,6 +72,7 @@
 #include "AliTrackReference.h"
 #include "AliITSInitGeometry.h"
 #include "AliITSv11GeometrySDD.h"
+#include "AliITSv11GeometrySSD.h"
 
 
 #define GEANTGEOMETRY kTRUE
@@ -91,7 +95,8 @@ AliITSv11Hybrid::AliITSv11Hybrid():
   fFluid(0),
   fIDMother(0),
   fInitGeom((AliITSVersion_t)fMajorVersion,fMinorVersion),
-  fSDDgeom(0)
+  fSDDgeom(0),
+  fSSDgeom(0)
  {
     //    Standard default constructor
     // Inputs:
@@ -122,7 +127,8 @@ AliITSv11Hybrid::AliITSv11Hybrid(const char *name, const char *title)
     fFluid(0),
     fIDMother(0),
     fInitGeom((AliITSVersion_t)fMajorVersion,fMinorVersion),
-    fSDDgeom(0) {
+    fSDDgeom(0),
+    fSSDgeom(0) {
     //    Standard constructor for the v11Hybrid geometry.
     // Inputs:
     //   const char * name   Ignored, set to "ITS"
@@ -132,13 +138,16 @@ AliITSv11Hybrid::AliITSv11Hybrid(const char *name, const char *title)
     // Return:
     //   none.
   Int_t i;
+  
+  fSDDgeom = new AliITSv11GeometrySDD(0);
+  fSSDgeom = new AliITSv11GeometrySSD();
 
   fIdN = 6;
   fIdName = new TString[fIdN];
   fIdName[0] = name; // removes warning message
   fIdName[0] = "ITS1";
   fIdName[1] = "ITS2";
-
+  
   if (AliITSInitGeometry::SDDIsTGeoNative()) {
     fIdName[2] = fSDDgeom->GetSenstiveVolumeName3();
     fIdName[3] = fSDDgeom->GetSenstiveVolumeName4();
@@ -146,9 +155,15 @@ AliITSv11Hybrid::AliITSv11Hybrid(const char *name, const char *title)
     fIdName[2] = "ITS3";
     fIdName[3] = "ITS4";
   }
+  
+  if (AliITSInitGeometry::SSDIsTGeoNative()) {
+    fIdName[4] = fSSDgeom->GetSenstiveVolumeName5();
+    fIdName[5] = fSSDgeom->GetSenstiveVolumeName6();
+  } else {
+    fIdName[4] = "ITS5";
+    fIdName[5] = "ITS6";
+  }
 
-  fIdName[4] = "ITS5";
-  fIdName[5] = "ITS6";
   fIdSens    = new Int_t[fIdN];
   for(i=0;i<fIdN;i++) fIdSens[i] = 0;
   SetThicknessDet1();
@@ -163,7 +178,6 @@ AliITSv11Hybrid::AliITSv11Hybrid(const char *name, const char *title)
   strncpy(fWrite,fEuclidGeomDet,60);
   strncpy(fRead,"$ALICE_ROOT/ITS/ITSgeometry_vPPRasymmFMD.det",60);
 
-  fSDDgeom = new AliITSv11GeometrySDD(0);
 }
 //______________________________________________________________________
 AliITSv11Hybrid::~AliITSv11Hybrid() {
@@ -175,11 +189,14 @@ AliITSv11Hybrid::~AliITSv11Hybrid() {
     // Return:
     //   none.
   delete fSDDgeom;
+  delete fSSDgeom;
 }
 
+
+
 //______________________________________________________________________
-void AliITSv11Hybrid::SetT2Lmatrix(const char *name, Double_t dAlpha,
-		      Double_t dxSign, Double_t yShift, Bool_t yFlip, Bool_t yRot180)
+void AliITSv11Hybrid::SetT2Lmatrix(const char *name, Double_t yShift, 
+				   Bool_t yFlip, Bool_t yRot180)
   const {
 
   //
@@ -197,13 +214,13 @@ void AliITSv11Hybrid::SetT2Lmatrix(const char *name, Double_t dAlpha,
 
   Double_t *gtrans = globMatrix->GetTranslation(), rotMatrix[9];
   memcpy(&rotMatrix[0], globMatrix->GetRotationMatrix(), 9*sizeof(Double_t));
-  Double_t al = TMath::ATan2(rotMatrix[1],rotMatrix[0]) + dAlpha;
+  Double_t al = TMath::ATan2(rotMatrix[1],rotMatrix[0]);
   if (yRot180) {
-    al = TMath::ATan2(rotMatrix[1],-rotMatrix[0]) + dAlpha;
+    al = TMath::ATan2(rotMatrix[1],-rotMatrix[0]);
   }
 
   TGeoHMatrix *matLtoT = new TGeoHMatrix;
-  matLtoT->SetDx( dxSign*(gtrans[0]*TMath::Cos(al)+gtrans[1]*TMath::Sin(al)) ); // translation
+  matLtoT->SetDx( gtrans[0]*TMath::Cos(al)+gtrans[1]*TMath::Sin(al) ); // translation
   matLtoT->SetDy( yShift );
   matLtoT->SetDz(-gtrans[2]);
   rotMatrix[0]= 0;  rotMatrix[1]= 1;  rotMatrix[2]= 0; // + rotation
@@ -225,6 +242,68 @@ void AliITSv11Hybrid::SetT2Lmatrix(const char *name, Double_t dAlpha,
   delete matLtoT;
   alignableEntry->SetMatrix(matTtoL);
 }
+
+
+
+
+
+/*
+//______________________________________________________________________
+void AliITSv11Hybrid::SetT2Lmatrix(const char *name, Double_t dAlpha,
+		      Double_t dxSign, Double_t yShift, Bool_t yFlip, Bool_t yRot180)
+  const {
+
+  //
+  // Creates the TGeo Local to Tracking transformation matrix
+  // and sends it to the corresponding TGeoPNEntry 
+  //
+  // This function is used in AddAlignableVolumes()
+
+  TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntry(name);
+  const char *path = alignableEntry->GetTitle();
+
+  if (!gGeoManager->cd(path))
+    AliFatal(Form("Volume path %s not valid!",path));
+  TGeoHMatrix* globMatrix = gGeoManager->GetCurrentMatrix();
+
+  Double_t *gtransL1 = globMatrix->GetTranslation(), rotMatrixL1[9];
+  memcpy(&rotMatrixL1[0], globMatrix->GetRotationMatrix(), 9*sizeof(Double_t));
+
+  // L1 is the real local reference system. We will define L2, which is a
+  // more practical "local" reference system. L2 has his z axis parallel
+  // to the global z axis and y is the axis perpendicular to the sensor plane.
+  Double_t  rotMatrixL2[9];
+
+
+
+  // We know the transformation from L2 to Tracking
+  Double_t al = TMath::ATan2(rotMatrixL2[1],rotMatrixL2[0]) + dAlpha;
+  Double_t transL2toT[3] = { gtransL1[0]*TMath::Cos(al)+gtransL1[1]*TMath::Sin(al),
+			     yShift,
+			     -gtrans[2]};
+
+  TGeoHMatrix *matLtoT = new TGeoHMatrix;
+  matLtoT->SetDx( dxSign*(gtrans[0]*TMath::Cos(al)+gtrans[1]*TMath::Sin(al)) ); // translation
+  matLtoT->SetDy( yShift );
+  matLtoT->SetDz(-gtrans[2]);
+  rotMatrix[0]= 0;  rotMatrix[1]= 1;  rotMatrix[2]= 0; // + rotation
+  rotMatrix[3]= 1;  rotMatrix[4]= 0;  rotMatrix[5]= 0;
+  rotMatrix[6]= 0;  rotMatrix[7]= 0;  rotMatrix[8]=-1;
+  if (yFlip) rotMatrix[3] = -1;  // flipping in y  (for SPD1)
+
+
+  TGeoRotation rot;
+  rot.SetMatrix(rotMatrix);
+  matLtoT->MultiplyLeft(&rot);
+  TGeoHMatrix *matTtoL = new TGeoHMatrix(matLtoT->Inverse());
+  delete matLtoT;
+  alignableEntry->SetMatrix(matTtoL);
+}
+*/
+
+
+
+
 //______________________________________________________________________
 void AliITSv11Hybrid::AddAlignableVolumes() const
 {
@@ -307,7 +386,7 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
 	    AliFatal("Unable to set alignable entry!!");    
 	  //printf("%s   ==   %s\n",strEntryName3.Data(),module.Data());
 
-	  SetT2Lmatrix(strEntryName3.Data(), 0, 1, -fChip1*0.0001/2., kTRUE);
+	  SetT2Lmatrix(strEntryName3.Data(), -fChip1*0.0001/2., kTRUE);
 	}
       }
     }
@@ -359,14 +438,13 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
 	    AliFatal("Unable to set alignable entry!!");
 	  //printf("%s   ==   %s\n",strEntryName3.Data(),module.Data());
 
-	  SetT2Lmatrix(strEntryName3.Data(), TMath::Pi(), -1, -fChip2*0.0001/2., kFALSE);
+	  SetT2Lmatrix(strEntryName3.Data(), -fChip2*0.0001/2., kFALSE);
 	}
       }
     }
   }
 
   //===== SDD layers =====
-
   if (AliITSInitGeometry::SDDIsTGeoNative()) { // new SDD geometry
     
     TString str0 = "/ALIC_1/ITSV_1/ITSsddLayer3_1/ITSsddLadd_"; // SDD layer1
@@ -400,7 +478,7 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
 	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data()))
 	  AliFatal("Unable to set alignable entry!!");
 
-	SetT2Lmatrix(strEntryName2.Data(), TMath::Pi(), -1, 0, kFALSE, c2>=3);
+	SetT2Lmatrix(strEntryName2.Data(), 0, kFALSE, c2>=3);
       }
     }
 
@@ -433,11 +511,11 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
 	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data()))
 	  AliFatal("Unable to set alignable entry!!");  
 
-  	SetT2Lmatrix(strEntryName2.Data(), TMath::Pi(), -1, 0, kFALSE, c2>=4);
+  	SetT2Lmatrix(strEntryName2.Data(), 0, kFALSE, c2>=4);
       }
     }
 
-  } else {  // else old geometry
+  } else {  // else old SDD geometry
 
     TString str0 = "ALIC_1/ITSV_1/ITSD_1/IT34_1/I004_";
     TString str1 = "/I302_";
@@ -469,7 +547,7 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
 	  AliFatal("Unable to set alignable entry!!");    
 	//printf("%s    ==    %s\n",strEntryName2.Data(),wafer.Data());
 
-	SetT2Lmatrix(strEntryName2.Data(), TMath::Pi(), -1, 0, kFALSE);
+	SetT2Lmatrix(strEntryName2.Data(), 0, kFALSE);
       }
     }
 
@@ -500,23 +578,90 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
 	  AliFatal("Unable to set alignable entry!!");    
 	//printf("%s    ==    %s\n",strEntryName2.Data(),wafer.Data());
 
-	SetT2Lmatrix(strEntryName2.Data(), TMath::Pi(), -1, 0, kFALSE);
+	SetT2Lmatrix(strEntryName2.Data(), 0, kFALSE);
+      }
+    }
+  }   // end SDD
+
+  //===== SSD layer1 =====
+  if (AliITSInitGeometry::SSDIsTGeoNative()) { // new SSD geometry
+
+    TString str0 = "/ALIC_1/ITSV_1/ITSssdLayer5_1/ITSssdLay5Ladd_"; // SSD layer1
+    TString str1 = "/ITSsddSensor5_";
+    TString str2 = "";
+    TString ladder;
+    TString wafer;
+
+    for(Int_t c1 = 0; c1<34; c1++) {
+
+      ladder = str0;
+      ladder += c1; // the set of wafers from one ladder
+      strEntryName1 = strSSD;
+      strEntryName1 += 4;
+      strEntryName1 += strLadder;
+      strEntryName1 += c1;
+      //printf("%s    ==    %s\n",strEntryName1.Data(),ladder.Data());
+      if(!gGeoManager->SetAlignableEntry(strEntryName1.Data(),ladder.Data()))
+	AliFatal("Unable to set alignable entry!!");    
+
+      for(Int_t c2 =0; c2<22; c2++) {
+
+	wafer = ladder;
+	wafer += str1;
+	wafer += c2;
+	//wafer += str2;    // one wafer
+	strEntryName2 = strEntryName1;
+	strEntryName2 += strSensor;
+	strEntryName2 += c2;
+	//printf("%s    ==    %s\n",strEntryName2.Data(),wafer.Data());
+	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data()))
+	  AliFatal("Unable to set alignable entry!!");
+
+	SetT2Lmatrix(strEntryName2.Data(), 0, kFALSE, kFALSE);
       }
     }
 
-  }   // end SDD
+    str0 = "/ALIC_1/ITSV_1/ITSssdLayer6_1/ITSssdLay6Ladd_"; // SSD layer2
+    str1 = "/ITSsddSensor6_";
+    str2 = "";
+    
+    for(Int_t c1 = 0; c1<38; c1++) {
 
+      ladder = str0;
+      ladder += c1; // the set of wafers from one ladder
+      strEntryName1 = strSSD;
+      strEntryName1 += 5;
+      strEntryName1 += strLadder;
+      strEntryName1 += c1;
+      //printf("%s    ==    %s\n",strEntryName1.Data(),ladder.Data());
+      if(!gGeoManager->SetAlignableEntry(strEntryName1.Data(),ladder.Data()))
+	AliFatal("Unable to set alignable entry!!");    
 
-  //===== SSD layer1 =====
-  {
+      for(Int_t c2 =0; c2<25; c2++) {
+
+	wafer = ladder;
+	wafer += str1;
+	wafer += c2;
+	//wafer += str2;    // one wafer
+	strEntryName2 = strEntryName1;
+	strEntryName2 += strSensor;
+	strEntryName2 += c2;
+	//printf("%s    ==    %s\n",strEntryName2.Data(),wafer.Data());
+	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data()))
+	  AliFatal("Unable to set alignable entry!!");  
+
+	SetT2Lmatrix(strEntryName2.Data(), 0, kFALSE, kFALSE);
+      }
+    }
+    
+  } else { // else old SSD geometry
     TString str0 = "ALIC_1/ITSV_1/ITSD_1/IT56_1/I565_";
     TString str1 = "/I562_";
-
     TString ladder;
     TString wafer;
 
     for(Int_t c1 = 1; c1<=34; c1++){
-
+      
       ladder = str0;
       ladder += c1; // the set of wafers from one ladder
       strEntryName1 = strSSD;
@@ -526,9 +671,9 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
       if(!gGeoManager->SetAlignableEntry(strEntryName1.Data(),ladder.Data()))
 	AliFatal("Unable to set alignable entry!!");    
       //printf("%s    ==    %s\n",strEntryName1.Data(),ladder.Data());
-
+      
       for(Int_t c2 = 1; c2<=22; c2++){
-
+	
 	wafer = ladder;
 	wafer += str1;
 	wafer += c2;     // one wafer
@@ -538,22 +683,17 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
 	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data()))
 	  AliFatal("Unable to set alignable entry!!");    
 	//printf("%s    ==    %s\n",strEntryName2.Data(),wafer.Data());
-
-	SetT2Lmatrix(strEntryName2.Data(), TMath::Pi(), -1, 0, kFALSE);
+	
+	SetT2Lmatrix(strEntryName2.Data(), 0, kFALSE);
       }
     }
-  }
-
-  //===== SSD layer2 =====
-  {
-    TString str0 = "ALIC_1/ITSV_1/ITSD_1/IT56_1/I569_";
-    TString str1 = "/I566_";
-
-    TString ladder;
-    TString wafer;
-
+    
+    //===== SSD layer2 =====
+    str0 = "ALIC_1/ITSV_1/ITSD_1/IT56_1/I569_";
+    str1 = "/I566_";
+    
     for(Int_t c1 = 1; c1<=38; c1++){
-
+      
       ladder = str0;
       ladder += c1; // the set of wafers from one ladder
       strEntryName1 = strSSD;
@@ -563,9 +703,9 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
       if(!gGeoManager->SetAlignableEntry(strEntryName1.Data(),ladder.Data()))
 	AliFatal("Unable to set alignable entry!!");    
       //printf("%s    ==    %s\n",strEntryName1.Data(),ladder.Data());
-
+      
       for(Int_t c2 = 1; c2<=25; c2++){
-
+	
 	wafer = ladder;
 	wafer += str1;
 	wafer += c2;     // one wafer
@@ -575,12 +715,13 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
 	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),wafer.Data()))
 	  AliFatal("Unable to set alignable entry!!");    
 	//printf("%s    ==    %s\n",strEntryName2.Data(),wafer.Data());
-
-	SetT2Lmatrix(strEntryName2.Data(), TMath::Pi(), -1, 0, kFALSE);
+	
+	SetT2Lmatrix(strEntryName2.Data(), 0, kFALSE);
       }
     }
-  }
+  } // end SSD geometry 
 }
+
 //______________________________________________________________________
 void AliITSv11Hybrid::BuildGeometry(){
     //    Geometry builder for the ITS version 10. Event Display geometry.
@@ -651,6 +792,10 @@ void AliITSv11Hybrid::CreateGeometry() {
   CreateOldGeometry();
   TGeoVolume *vITS = geoManager->GetVolume("ITSV");
 
+  TGeoVolume *vIS02 = geoManager->GetVolume("IS02");
+
+
+
   const Char_t *cvsDate="$Date$";
   const Char_t *cvsRevision="$Revision$";
   const Int_t length=100;
@@ -662,6 +807,12 @@ void AliITSv11Hybrid::CreateGeometry() {
   if (AliITSInitGeometry::SDDIsTGeoNative()) {
     fSDDgeom->Layer3(vITS);
     fSDDgeom->Layer4(vITS);
+    fSDDgeom->ForwardLayer3(vIS02);
+    fSDDgeom->ForwardLayer4(vIS02);
+  }
+  if (AliITSInitGeometry::SSDIsTGeoNative()) {
+    fSSDgeom->Layer5(vITS);
+    fSSDgeom->Layer6(vITS);
   }
 }
 
@@ -2462,42 +2613,73 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   dits[0] = 0;
   dits[1] = 360;
   dits[2] = 12;
+  //
   dits[3] = -59.7;
   dits[4] = 27;
   dits[5] = 28.6;
+
   dits[6] = -42.7;
   dits[7] = 10;
   dits[8] = 28.6;
-  dits[9] = -34.65;
+
+  //   dits[9] = -34.65;
+  dits[9] = -33.55;
   dits[10] = 10;
   dits[11] = 28.6;
-  dits[12] = -34.65;
+  
+  //   dits[12] = -34.65;
+  dits[12] = -33.55;
   dits[13] = 10;
   dits[14] = 23.495;
-  dits[15] = -23.7;
+
+  //dits[15] = -23.7;
+  dits[15] = -26.2;
   dits[16] = 10;
   dits[17] = 23.495;
-  dits[18] = -23.7;
+
+  //dits[18] = -23.7;
+  dits[18] = -26.2;
   dits[19] = 10;
   dits[20] = 14.595;
-  dits[21] = 23.7;
+
+  //dits[21] = 23.7;
+  dits[21] = 26.2;
   dits[22] = 10;
   dits[23] = 14.595;
-  dits[24] = 23.7;
+
+  //dits[24] = 23.7;
+  dits[24] = 26.2;
   dits[25] = 10;
   dits[26] = 23.495;
-  dits[27] = 34.65;
+
+//   dits[27] = 34.65;
+  dits[27] = 33.55;
   dits[28] = 10;
   dits[29] = 23.495;
-  dits[30] = 34.65;
+
+//   dits[30] = 34.65;
+  dits[30] = 33.55;
   dits[31] = 10;
   dits[32] = 28.6;
+
   dits[33] = 42.7;
   dits[34] = 10;
   dits[35] = 28.6;
+
   dits[36] = 59.7;
   dits[37] = 27.2637;
-  dits[38] = 28.6;             
+  dits[38] = 28.6;
+
+  if (! AliITSInitGeometry::SDDIsTGeoNative()) {
+    dits[9] = -34.65;
+    dits[12] = -34.65;
+    dits[15] = -23.7;
+    dits[18] = -23.7;
+    dits[21] = 23.7;
+    dits[24] = 23.7;
+    dits[27] = 34.65;
+    dits[30] = 34.65;
+  } 
   gMC->Gsvolu("IS02", "PCON", idtmed[204], dits, 39);
   
   dits[0] = 0;
@@ -2603,7 +2785,10 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   dits[2] = 7.74;
   gMC->Gsvolu("I202", "BOX ", idtmed[272], dits, 3);
 
-  dits[0] = 1;
+  if (AliITSInitGeometry::SDDIsTGeoNative())
+    dits[0] = 0.9;
+  else
+    dits[0] = 1;
   dits[1] = 1;
   dits[2] = 9.14;
   gMC->Gsvolu("I203", "BOX ", idtmed[272], dits, 3);
@@ -2631,42 +2816,65 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   dits[0] = 0;
   dits[1] = 360;
   dits[2] = 12;
+
   dits[3] = -zmax;
-  dits[4] = 46;         
-  dits[5] = 49.25;       
+  dits[4] = 46;
+  dits[5] = 49.25;
+
   dits[6] = -61.2;
   dits[7] = 28.7;
-  dits[8] = 49.25;       
+  dits[8] = 49.25;
+
   dits[9] = -57.5;
   dits[10] = 28.7;
-  dits[11] = 49.25;      
+  dits[11] = 49.25;
+   
   dits[12] = -57.5;
   dits[13] = 28.7;
   dits[14] = 43.5;
-  dits[15] = -49.2;
+
+  //dits[15] = -49.2;
+  dits[15] = -53.4-0.75;
   dits[16] = 28.7;
   dits[17] = 43.5;
-  dits[18] = -49.2;
+
+  //dits[18] = -49.2;
+  dits[18] = -53.4-0.75;
   dits[19] = 28.7;
   dits[20] = 36.85;
-  dits[21] = 50.6;
+
+  //dits[21] = 50.6;
+  dits[21] = 53.4+0.75;
   dits[22] = 28.7;
   dits[23] = 36.85;
-  dits[24] = 50.6;
+
+  dits[24] = 53.4+0.75;
+  //dits[24] = 50.6;
   dits[25] = 28.7;
   dits[26] = 43.5;
+
   dits[27] = 57.5;
   dits[28] = 28.7;
   dits[29] = 43.5;
+
   dits[30] = 57.5;
   dits[31] = 28.7;
-  dits[32] = 49.25;      
+  dits[32] = 49.25;
+  
   dits[33] = 61.2;
   dits[34] = 28.7;
   dits[35] = 49.25;      
   dits[36] = zmax;
   dits[37] = 46;      
-  dits[38] = 49.25;      
+  dits[38] = 49.25;
+
+  if (! AliITSInitGeometry::SSDIsTGeoNative()) {
+    dits[15] = -49.2;
+    dits[18] = -49.2;
+    dits[21] = 50.6;
+    dits[24] = 50.6;
+  }
+  
   gMC->Gsvolu("IS01", "PCON", idtmed[204], dits, 39);   // SSD cone mother volume
   
   dits[0] = 0;
@@ -3878,10 +4086,16 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   gMC->Gspos("I212",2,"IS01",0.0,0.0,0.0,idrotm[701],"MANY");
   gMC->Gspos("I212",1,"IS01",0.0,0.0,0.0,0,"MANY");
   gMC->Gspos("I211",1,"IS01",0.0,0.0,-56.5,0,"ONLY");
+
   gMC->Gspos("I217",1,"IS01",0.0,0.0,-44.4,0,"ONLY");             // this will change after PPR to be symmetric
-  gMC->Gspos("I219",1,"IS01",0.0,0.0,-50.25,0,"ONLY");            // this will change after PPR to be symmetric
+  // Unfortunately the following piece is not compatible with new SSD
+  if (! AliITSInitGeometry::SSDIsTGeoNative())
+    gMC->Gspos("I219",1,"IS01",0.0,0.0,-50.25,0,"ONLY");            // this will change after PPR to be symmetric
   gMC->Gspos("I211",2,"IS01",0.0,0.0,56.5,idrotm[701],"ONLY");   
-  gMC->Gspos("I219",2,"IS01",0.0,0.0,51.65,idrotm[701],"ONLY");   // this will change after PPR to be symmetric
+
+  // Unfortunately the following piece is not compatible with new SSD
+  if (! AliITSInitGeometry::SSDIsTGeoNative())
+    gMC->Gspos("I219",2,"IS01",0.0,0.0,51.65,idrotm[701],"ONLY");   // this will change after PPR to be symmetric
   gMC->Gspos("I217",2,"IS01",0.0,0.0,45.8,idrotm[701],"ONLY");    // this will change after PPR to be symmetric
   gMC->Gspos("I214",2,"IS01",0.0,0.0,67.25,idrotm[701],"ONLY");   
   gMC->Gspos("I213",2,"IS01",0.0,0.0,62.25,idrotm[701],"ONLY");  
@@ -3899,18 +4113,23 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   gMC->Gspos("I215",13,"IS01",0.0,0.0,0.0,idrotm[711],"MANY");
   gMC->Gspos("I215",15,"IS01",0.0,0.0,0.0,idrotm[712],"MANY");
   gMC->Gspos("I215",17,"IS01",0.0,0.0,0.0,idrotm[713],"MANY");
-  gMC->Gspos("I216",9,"IS01",0.0,0.0,45.5,idrotm[714],"ONLY");
-  gMC->Gspos("I216",11,"IS01",0.0,0.0,45.5,idrotm[715],"ONLY");
-  gMC->Gspos("I216",12,"IS01",0.0,0.0,45.5,idrotm[716],"ONLY");
-  gMC->Gspos("I216",3,"IS01",0.0,0.0,45.5,idrotm[717],"ONLY");
-  gMC->Gspos("I216",5,"IS01",0.0,0.0,45.5,idrotm[718],"ONLY");
-  gMC->Gspos("I216",7,"IS01",0.0,0.0,45.5,idrotm[719],"ONLY");
-  gMC->Gspos("I216",10,"IS01",0.0,0.0,-44,idrotm[720],"ONLY");
-  gMC->Gspos("I216",1,"IS01",0.0,0.0,-44,idrotm[721],"ONLY");
-  gMC->Gspos("I216",2,"IS01",0.0,0.0,-44,idrotm[722],"ONLY");
-  gMC->Gspos("I216",4,"IS01",0.0,0.0,-44,idrotm[723],"ONLY");
-  gMC->Gspos("I216",6,"IS01",0.0,0.0,-44,idrotm[724],"ONLY");
-  gMC->Gspos("I216",8,"IS01",0.0,0.0,-44,idrotm[725],"ONLY");
+
+  // Unfortunately the following piece is not compatible with new SSD
+  if (! AliITSInitGeometry::SSDIsTGeoNative()) {
+    gMC->Gspos("I216",9,"IS01",0.0,0.0,45.5,idrotm[714],"ONLY");
+    gMC->Gspos("I216",11,"IS01",0.0,0.0,45.5,idrotm[715],"ONLY");
+    gMC->Gspos("I216",12,"IS01",0.0,0.0,45.5,idrotm[716],"ONLY");
+    gMC->Gspos("I216",3,"IS01",0.0,0.0,45.5,idrotm[717],"ONLY");
+    gMC->Gspos("I216",5,"IS01",0.0,0.0,45.5,idrotm[718],"ONLY");
+    gMC->Gspos("I216",7,"IS01",0.0,0.0,45.5,idrotm[719],"ONLY");
+    gMC->Gspos("I216",10,"IS01",0.0,0.0,-44,idrotm[720],"ONLY");
+    gMC->Gspos("I216",1,"IS01",0.0,0.0,-44,idrotm[721],"ONLY");
+    gMC->Gspos("I216",2,"IS01",0.0,0.0,-44,idrotm[722],"ONLY");
+    gMC->Gspos("I216",4,"IS01",0.0,0.0,-44,idrotm[723],"ONLY");
+    gMC->Gspos("I216",6,"IS01",0.0,0.0,-44,idrotm[724],"ONLY");
+    gMC->Gspos("I216",8,"IS01",0.0,0.0,-44,idrotm[725],"ONLY");
+  }
+
   gMC->Gspos("I215",1,"IS01",0.0,0.0,0.0,idrotm[726],"MANY");
   gMC->Gspos("I215",2,"IS01",0.0,0.0,0.0,idrotm[727],"MANY");
   gMC->Gspos("I215",4,"IS01",0.0,0.0,0.0,idrotm[728],"MANY");
@@ -3929,15 +4148,15 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   //     into ITS mother volume ITSD
     
   if (! AliITSInitGeometry::SPDIsTGeoNative())
-    gMC->Gspos("IT12",1,"ITSD",0.0,0.0,0.0,0,"MANY");  // SPD mother volume
+    gMC->Gspos("IT12",1,"ITSD",0.0,0.0,0.0,0,"ONLY");  // SPD mother volume
   if (! AliITSInitGeometry::SDDIsTGeoNative())
     gMC->Gspos("IT34",1,"ITSD",0.0,0.0,0.0,0,"MANY");  // SDD mother volume
   if (! AliITSInitGeometry::SSDIsTGeoNative())
     gMC->Gspos("IT56",1,"ITSD",0.0,0.0,0.0,0,"MANY");  // SSD mother volume
   if (! AliITSInitGeometry::SDDconeIsTGeoNative())
-    gMC->Gspos("IS02",1,"ITSD",0.0,0.0,0.0,0,"MANY");  // SDD cones/supports
+    gMC->Gspos("IS02",1,"ITSD",0.0,0.0,0.0,0,"ONLY");  // SDD cones/supports
   if (! AliITSInitGeometry::SSDconeIsTGeoNative())
-    gMC->Gspos("IS01",1,"ITSD",0.0,0.0,0.0,0,"MANY");  // SSD cones/supports
+    gMC->Gspos("IS01",1,"ITSD",0.0,0.0,0.0,0,"ONLY");  // SSD cones/supports
         
 
   // ****************************  SERVICES  *********************************
@@ -4530,10 +4749,7 @@ void AliITSv11Hybrid::CreateOldGeometry(){
       }
       while (strcmp(sddName, toTransform->GetName()) == 0);
     }
-
-
   }
-
 }
 //______________________________________________________________________
 void AliITSv11Hybrid::CreateMaterials(){
@@ -5171,6 +5387,7 @@ void AliITSv11Hybrid::InitAliITSgeom(){
     } // end for lay
     return;
 }
+
 //______________________________________________________________________
 void AliITSv11Hybrid::Init(){
     //     Initialise the ITS after it has been created.
@@ -5183,22 +5400,13 @@ void AliITSv11Hybrid::Init(){
 
     AliDebug(1,Form("Init: Major version %d Minor version %d",fMajorVersion,
 		 fMinorVersion));
-    //
-    /*  obsolete initialization of AliITSgeom from external "det" file
-    if(fRead[0]=='\0') strncpy(fRead,fEuclidGeomDet,60);
-    if(fWrite[0]=='\0') strncpy(fWrite,fEuclidGeomDet,60);
-    AliITSgeom* geom = new AliITSgeom();
-    SetITSgeom(geom);
-    if(fGeomDetIn) GetITSgeom()->ReadNewFile(fRead);
-    else this->InitAliITSgeom();
-    */
     UpdateInternalGeometry();
     AliITS::Init();
     if(fGeomDetOut) GetITSgeom()->WriteNewFile(fWrite);
 
-    //
     fIDMother = gMC->VolId("ITSV"); // ITS Mother Volume ID.
 }
+
 //______________________________________________________________________
 void AliITSv11Hybrid::SetDefaults(){
     // sets the default segmentation, response, digit and raw cluster classes
@@ -5353,6 +5561,7 @@ void AliITSv11Hybrid::DrawModule() const{
     gMC->Gdhead(1111, "Inner Tracking System Version 1");
     gMC->Gdman(17, 6, "MAN");
 }
+
 //______________________________________________________________________
 void AliITSv11Hybrid::StepManager(){
     //    Called for every step in the ITS, then calles the AliITShit class
@@ -5372,15 +5581,14 @@ void AliITSv11Hybrid::StepManager(){
     if(!(this->IsActive())) return;
     if(!(gMC->TrackCharge())) return;
 
-    Int_t  copy, id, lay;
-    Bool_t sensvol = kFALSE;
-    id = gMC->CurrentVolID(copy);
-    for(lay=0; lay<fIdN; lay++) if (id == fIdSens[lay]) {
-        sensvol=kTRUE;
-        break;
-    } // end for if
+    Int_t copy, lay = 0;
+    Int_t id = gMC->CurrentVolID(copy);
 
-    if(sensvol && (gMC->IsTrackExiting())) {
+    Bool_t notSens;
+    while ((notSens = id != fIdSens[lay]) && (lay<fIdN)) ++lay;
+    if (notSens) return;
+
+    if(gMC->IsTrackExiting()) {
       copy = fTrackReferences->GetEntriesFast();
       TClonesArray &lTR = *fTrackReferences;
       // Fill TrackReference structure with this new TrackReference.
@@ -5390,12 +5598,11 @@ void AliITSv11Hybrid::StepManager(){
 
     static TLorentzVector position, momentum; // Saves on calls to construtors
     static AliITShit hit;// Saves on calls to constructors
-    Int_t   cpn0, cpn1, cpn2, status, mod;
-    //TClonesArray &lhits = *(GetDetTypeSim()->GetHits());
+
     TClonesArray &lhits = *(Hits());
+    Int_t   cpn0, cpn1, mod, status = 0;
     //
     // Track status
-    status = 0;
     if(gMC->IsTrackInside())      status +=  1;
     if(gMC->IsTrackEntering())    status +=  2;
     if(gMC->IsTrackExiting())     status +=  4;
@@ -5403,15 +5610,16 @@ void AliITSv11Hybrid::StepManager(){
     if(gMC->IsTrackDisappeared()) status += 16;
     if(gMC->IsTrackStop())        status += 32;
     if(gMC->IsTrackAlive())       status += 64;
+
     //
     switch (lay) {
     case 0:case 1: // SPD
-      gMC->CurrentVolOffID(2,cpn2);
+      gMC->CurrentVolOffID(2,copy);
       gMC->CurrentVolOffID(3,cpn1);
       gMC->CurrentVolOffID(4,cpn0);
       break;
     case 2:case 3: // SDD
-      cpn2 = 1;
+      copy = 1;
       if (AliITSInitGeometry::SDDIsTGeoNative()) {
 	gMC->CurrentVolOffID(2,cpn1);
 	gMC->CurrentVolOffID(3,cpn0);
@@ -5421,15 +5629,20 @@ void AliITSv11Hybrid::StepManager(){
       };
       break;
     case 4:case 5: // SSD
-      cpn2 = 1;
+      copy = 1;
+      if (AliITSInitGeometry::SSDIsTGeoNative()) {
       gMC->CurrentVolOffID(1,cpn1);
       gMC->CurrentVolOffID(2,cpn0);
+      } else {
+      gMC->CurrentVolOffID(1,cpn1);
+      gMC->CurrentVolOffID(2,cpn0);
+      };
       break;
     default:
-      Error("StepManager","Unknown volume lay=%d",lay+1);
+      AliError(Form("Invalid value: lay= %d . Not an ITS sensitive volume",lay));
       return; // not an ITS sensitive volume.
     } //
-    fInitGeom.DecodeDetector(mod,lay+1,cpn0,cpn1,cpn2);
+    fInitGeom.DecodeDetector(mod,lay+1,cpn0,cpn1,copy);
 
     //
     // Fill hit structure.
