@@ -369,8 +369,8 @@ Bool_t AliSimulation::MisalignGeometry(AliRunLoader *runLoader)
   // then applied to the TGeo geometry.
   // Finally an overlaps check is performed.
 
-  if (!gGeoManager || !gGeoManager->IsClosed()) {
-    AliError("Can't apply the misalignment! gGeoManager doesn't exist or it is still opened!");
+  if (!AliGeomManager::GetGeometry() || !AliGeomManager::GetGeometry()->IsClosed()) {
+    AliError("Can't apply the misalignment! Geometry is not loaded or it is still opened!");
     return kFALSE;
   }  
   Bool_t delRunLoader = kFALSE;
@@ -381,7 +381,7 @@ Bool_t AliSimulation::MisalignGeometry(AliRunLoader *runLoader)
   }
 
   // Export ideal geometry 
-  gGeoManager->Export("geometry.root");
+  AliGeomManager::GetGeometry()->Export("geometry.root");
 
   // Load alignment data from CDB and apply to geometry through AliGeomManager
   if(fLoadAlignFromCDB){
@@ -487,10 +487,11 @@ Bool_t AliSimulation::Run(Int_t nEvents)
   if (!SetRunNumber()) if (fStopOnError) return kFALSE;
 
   // If RunSimulation was not called, load the geometry and misalign it
-  if (!gGeoManager) {
+  if (!AliGeomManager::GetGeometry()) {
+    // Initialize the geometry manager
     AliGeomManager::LoadGeometry("geometry.root");
-    if (!gGeoManager) if (fStopOnError) return kFALSE;
-    // Initialize the geometry manager (if not already done)
+    if (!AliGeomManager::GetGeometry()) if (fStopOnError) return kFALSE;
+    // Misalign geometry
     if(!MisalignGeometry()) if (fStopOnError) return kFALSE;
   }
 
@@ -636,6 +637,7 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
  
   // Misalign geometry
 #if ROOT_VERSION_CODE < 331527
+  AliGeomManager::SetGeometry(gGeoManager);
   MisalignGeometry(runLoader);
 #endif
 
