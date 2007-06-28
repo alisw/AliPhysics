@@ -87,6 +87,10 @@ Double_t AliMUONConstants::fgCoilL = 502.1;
 Double_t AliMUONConstants::fgYokeZ = -986.6;
 Double_t AliMUONConstants::fgYokeL = 309.4;
 
+// Defaults parameters for absorber (27/06/07)
+const Double_t AliMUONConstants::fgkAbsZBeg = -90.;
+const Double_t AliMUONConstants::fgkAbsZEnd = -505.;
+    
 // Defaults parameters for track reconstruction
 Double_t  AliMUONConstants::fgChamberThicknessInX0 = 0.03;
 

@@ -76,6 +76,10 @@ class AliMUONConstants : public TObject {
     static Double_t YokeZ() {return fgYokeZ;}
     /// Return yoke lenght
     static Double_t YokeL() {return fgYokeL;}
+    /// Return z-position of absorber begining
+    static const Double_t AbsZBeg() {return fgkAbsZBeg;}
+    /// Return z-position of absorber end
+    static const Double_t AbsZEnd() {return fgkAbsZEnd;}
     /// Return chamber thickness in X0
     static Double_t ChamberThicknessInX0() {return fgChamberThicknessInX0;}
     /// Return Trigger ToF Limit (75 ns)
@@ -119,6 +123,9 @@ class AliMUONConstants : public TObject {
     static Double_t fgYokeZ; ///< Yoke z-position
     static Double_t fgYokeL; ///< Yoke lenght
 
+    static const Double_t fgkAbsZBeg; ///< z-position of the begining of the absorber
+    static const Double_t fgkAbsZEnd; ///< z-position of the end of the absorber
+    
     static Int_t    fgMaxZoom;          ///< Maximum Zoom for event display
     static Float_t  fgkTriggerTofLimit; ///< Particle above this threshold are discarded in trigger algorithm
     
