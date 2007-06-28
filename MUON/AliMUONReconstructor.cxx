@@ -645,6 +645,14 @@ AliMUONReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) const
   
   if ( fDigitStore ) 
   {
+    // Insure we got calibrated digits (if we reconstruct from pure simulated,
+    // i.e. w/o going through raw data, this will be the case)
+    TIter next(fDigitStore->CreateIterator());
+    AliMUONVDigit* digit = static_cast<AliMUONVDigit*>(next());
+    if (!digit->IsCalibrated())
+    {
+      Calibrate(*fDigitStore);
+    }
     Clusterize(*fDigitStore,*(ClusterStore()));
   }
     
