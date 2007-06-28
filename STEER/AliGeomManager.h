@@ -73,6 +73,7 @@ public:
   static Bool_t GetTrackingMatrix(Int_t index, TGeoHMatrix &m);
 
   static void        LoadGeometry(const char *geomFileName = NULL);
+  static void        SetGeometry(TGeoManager *geom);
 
   static Bool_t         ApplyAlignObjsToGeom(TObjArray& alObjArray);
 

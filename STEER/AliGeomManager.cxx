@@ -121,7 +121,9 @@ TGeoManager* AliGeomManager::fgGeometry = 0x0;
 //_____________________________________________________________________________
 void AliGeomManager::LoadGeometry(const char *geomFileName)
 {
-// initialization
+  // initialization
+  // Load geometry either from a file
+  // or from the corresponding CDB entry
 
   fgGeometry = NULL;
   if (geomFileName && (!gSystem->AccessPathName(geomFileName))) { // gemotry.root exists
@@ -141,6 +143,19 @@ void AliGeomManager::LoadGeometry(const char *geomFileName)
     fgGeometry = (TGeoManager*) entry->GetObject();
     if (!fgGeometry) AliFatalClass("Couldn't find TGeoManager in the specified CDB entry!");
   }
+
+  InitSymNamesLUT();
+  InitPNEntriesLUT();
+  InitOrigMatricesLUT();
+}
+
+//_____________________________________________________________________________
+void AliGeomManager::SetGeometry(TGeoManager *geom)
+{
+  // Load already active geometry
+  if (!geom) AliFatalClass("Pointer to the active geometry is 0x0!");
+
+  fgGeometry = geom;
 
   InitSymNamesLUT();
   InitPNEntriesLUT();
