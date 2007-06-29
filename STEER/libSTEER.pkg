@@ -41,7 +41,9 @@ AliSelectorRL.cxx AliSplineFit.cxx \
 AliMagFMapsV1.cxx \
 AliDCSValue.cxx AliDCSSensor.cxx AliDCSSensorArray.cxx \
 AliSurveyObj.cxx AliSurveyPoint.cxx \
-AliCodeTimer.cxx
+AliCodeTimer.cxx \
+AliFstream.cxx \
+AliCTPRawData.cxx
 
 
 

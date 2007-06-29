@@ -1,8 +1,6 @@
 #-*- Mode: Makefile -*-
 
-SRCS:=  AliBitPacking.cxx AliAltroBuffer.cxx \
-	AliFstream.cxx \
-	AliCTPRawData.cxx
+SRCS:=  AliBitPacking.cxx AliAltroBuffer.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 
@@ -18,4 +16,4 @@ ifdef DATE_ROOT
 EINCLUDE+= ${DATE_COMMON_DEFS}
 endif
 
-EXPORT:= AliAltroBuffer.h AliBitPacking.h AliFstream.h
+EXPORT:= AliAltroBuffer.h AliBitPacking.h
