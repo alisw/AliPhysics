@@ -1,3 +1,20 @@
+/**************************************************************************
+ * Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$*/
+
 ////////////////////////////////////////////////////////////
 // Author: Henrik Tydesjo                                 //
 // This class is used in the detector algorithm framework //
@@ -291,6 +308,9 @@ Bool_t AliITSOnlineSPDscanAnalyzer::SaveDeadNoisyPixels(UInt_t module, Char_t *c
   return kFALSE;
 }
 
+
+
+
 Int_t AliITSOnlineSPDscanAnalyzer::GetDelay(UInt_t hs, UInt_t chipNr) {
   // get delay
   if (hs>=6 || chipNr>10) return -1;
@@ -309,22 +329,63 @@ Int_t AliITSOnlineSPDscanAnalyzer::GetDelay(UInt_t hs, UInt_t chipNr) {
     }
   }
 
-  Char_t funcName[30];
-  sprintf(funcName,"Fit delay func HS%d CHIP%d",hs,chipNr);
-  Int_t minDac = ((AliITSOnlineSPDscanMultiple*)fScanObj)->GetDacValue(0);
-  Int_t maxDac = ((AliITSOnlineSPDscanMultiple*)fScanObj)->GetDacValue(fScanObj->GetNSteps()-1);
-  TF1* delayFunc = new TF1(funcName,"gaus",minDac,maxDac);
-  fMeanMultiplicity[hs][chipNr]->Fit(funcName,"Q0");
-  Double_t mean = delayFunc->GetParameter(1);
-  //  Double_t sigma = fDelayFunc[hs][chipNr]->GetParameter(2);
-  delete delayFunc;
-  if (mean>minDac && mean<maxDac) {
-    return (Int_t) (mean+0.5);
+  UInt_t maxStep=0;
+  Float_t maxVal=0;
+  for (UInt_t step=0; step<fScanObj->GetNSteps(); step++) {
+    Double_t thisDac;
+    Double_t thisMult;
+    fMeanMultiplicity[hs][chipNr]->GetPoint(step,thisDac,thisMult);
+    if (thisMult > maxVal) {
+      maxVal = thisMult;
+      maxStep = step;
+    }
+  }
+
+  if (maxVal>0) {
+    return ((AliITSOnlineSPDscanMultiple*)fScanObj)->GetDacValue(maxStep);
   }
   else {
     return -1;
   }
+
 }
+
+
+// ********** old version of "GetDelay", which fits a gaussian to the meanmult graph
+//Int_t AliITSOnlineSPDscanAnalyzer::GetDelay(UInt_t hs, UInt_t chipNr) {
+//  // get delay
+//  if (hs>=6 || chipNr>10) return -1;
+//  if (fScanObj==NULL) {
+//    printf("No data!\n");
+//    return -1;
+//  }
+//  // should be type kDELAY or kDAC with id 42 (delay_ctrl)
+//  if (fType!=kDELAY && (fType!=kDAC || fDacId!=42)) {
+//    printf("Delay only for scan type %d or %d and dac_id 42\n",kDELAY,kDAC);
+//    return -1;
+//  }
+//  if (fMeanMultiplicity[hs][chipNr]==NULL) {
+//    if (!ProcessMeanMultiplicity()) {
+//      return -1;
+//    }
+//  }
+//
+//  Char_t funcName[30];
+//  sprintf(funcName,"Fit delay func HS%d CHIP%d",hs,chipNr);
+//  Int_t minDac = ((AliITSOnlineSPDscanMultiple*)fScanObj)->GetDacValue(0);
+//  Int_t maxDac = ((AliITSOnlineSPDscanMultiple*)fScanObj)->GetDacValue(fScanObj->GetNSteps()-1);
+//  TF1* delayFunc = new TF1(funcName,"gaus",minDac,maxDac);
+//  fMeanMultiplicity[hs][chipNr]->Fit(funcName,"Q0");
+//  Double_t mean = delayFunc->GetParameter(1);
+//  //  Double_t sigma = fDelayFunc[hs][chipNr]->GetParameter(2);
+//  delete delayFunc;
+//  if (mean>minDac && mean<maxDac) {
+//    return (Int_t) (mean+0.5);
+//  }
+//  else {
+//    return -1;
+//  }
+//}
 
 Int_t AliITSOnlineSPDscanAnalyzer::GetNrNoisyUnima(UInt_t hs, UInt_t chipNr) {
   // in case of a uniformity scan, returns the nr of noisy pixels, (here > 200 hits)

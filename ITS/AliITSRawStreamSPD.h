@@ -56,6 +56,7 @@ class AliITSRawStreamSPD: public AliITSRawStream {
     UInt_t GetHdacHigh(UInt_t hs) const;
     UInt_t GetHdacLow(UInt_t hs) const;
     UInt_t GetHTPAmp(UInt_t hs) const;
+    Bool_t GetHminTHchipPresent(UInt_t chip) const;
 
     enum {kDDLsNumber = 20};      // number of DDLs in SPD
     enum {kModulesPerDDL = 12};   // number of modules in each DDL

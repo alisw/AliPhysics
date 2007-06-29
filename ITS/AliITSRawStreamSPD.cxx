@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -289,4 +289,8 @@ UInt_t AliITSRawStreamSPD::GetHdacLow(UInt_t hs) const {
 UInt_t AliITSRawStreamSPD::GetHTPAmp(UInt_t hs) const {
   if (hs<6) return fCalHeadWord[hs+10];
   else return 0;
+}
+Bool_t AliITSRawStreamSPD::GetHminTHchipPresent(UInt_t chip) const {
+  if (chip<10) return ((( fCalHeadWord[7]>>(16+chip)) & 0x00000001) == 1);
+  else return kFALSE;
 }

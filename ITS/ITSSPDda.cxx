@@ -1,15 +1,15 @@
-//////////////////////////////////////////////////////////////////////////////
-// This program can be run in two modes.                                    //
-//                                                                          //
-// 1. With the DAQ DA framework on. In Makefile: -DDA_OFF flag outcommented.//
-// Call this program with the name of the executable followed by the        //
-// data files to process.                                                   //
-//                                                                          //
-// 2. Without the DAQ DA framework on. In Makefile: with -DDA_OFF flag.     //
-// Call this program with the name of the executable followed by the        //
-// runNr and the data files to process.                                     //
-//                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+// This program can be run in two modes.                                      //
+//                                                                            //
+// 1. With the DAQ DA framework on. This is the default operating mode.       //
+// Call this program with the name of the executable followed by the          //
+// data files to process.                                                     //
+//                                                                            //
+// 2. Without the DAQ DA framework on. Define the SPD_DA_OFF environment var. //
+// Call this program with the name of the executable followed by the          //
+// runNr and the data files to process.                                       //
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
 
 extern "C" {
 #include "daqDA.h"
@@ -36,12 +36,18 @@ int main(int argc, char **argv) {
     return -1;
   }
 
-  char *saveDirNoisy         = "./calibResults/Noisy";       // hard wired for now!!!
-#ifndef DA_OFF
-  char *saveDirNoisyToFXS    = "./calibResults/NoisyToFXS";  // hard wired for now!!!
+  // make directory structure (if not here already):
+  system("mkdir ./calibResults >& /dev/null");
+  system("mkdir ./calibResults/Noisy >& /dev/null");
+  system("mkdir ./calibResults/NoisyToFXS >& /dev/null");
+  system("mkdir ./calibResults/Parameters >& /dev/null");
+  system("mkdir ./calibResults/Reference >& /dev/null");
+  char *saveDirNoisy         = "./calibResults/Noisy";
+#ifndef SPD_DA_OFF
+  char *saveDirNoisyToFXS    = "./calibResults/NoisyToFXS";
 #endif
-  char *saveDirParameters    = "./calibResults/Parameters";  // hard wired for now!!!
-  char *saveDirRef           = "./calibResults/Reference";   // hard wired for now!!!
+  char *saveDirParameters    = "./calibResults/Parameters";
+  char *saveDirRef           = "./calibResults/Reference";
 
   // This line is needed in case of a stand-alone application w/o
   // $ROOTSYS/etc/system.rootrc file
@@ -53,7 +59,7 @@ int main(int argc, char **argv) {
 
   // turn off annoying warning messages
   new AliLog;
-  AliLog::Instance()->SetModuleDebugLevel("ROOT", -2);
+  AliLog::Instance()->SetGlobalDebugLevel(-20);
 
   // calib scan types
   enum calib_types{MINTH,MEANTH,DAC,UNIMA,NOISE,DELAY};
@@ -62,11 +68,15 @@ int main(int argc, char **argv) {
   // ********* STEP 1: Produce scan container files. ***********************************
   int startSeg = 1;
 
-#ifndef DA_OFF
+#ifndef SPD_DA_OFF
   int runNr = atoi(getenv("DATE_RUN_NUMBER"));
 #else
   int runNr = atoi(argv[1]);
   startSeg = 2;
+#endif
+
+#ifndef SPD_DA_OFF
+  UInt_t nrNoisyFilesProduced=0;
 #endif
 
   // container objects
@@ -94,6 +104,7 @@ int main(int argc, char **argv) {
   UInt_t dacHigh[20][6];
   UInt_t dacLow[20][6];
   UInt_t TPAmp[20][6];
+  Bool_t minTHchipPresent[20][10];
   // current scan step flag
   Int_t currentStep[20];
   for (UInt_t eqId=0; eqId<20; eqId++) currentStep[eqId] = 9999;
@@ -130,7 +141,9 @@ int main(int argc, char **argv) {
     for(;;) {
 
       /* check shutdown condition */
+#ifndef SPD_DA_OFF
       if (daqDA_checkShutdown()) {break;}
+#endif
       /* get next event (blocking call until timeout) */
       status=monitorGetEventDynamic((void **)&event);
       if (status==MON_ERR_EOF) {
@@ -148,11 +161,11 @@ int main(int argc, char **argv) {
       }
 
       eventT=event->eventType;
-      if (event->eventType == PHYSICS_EVENT){
+      if (eventT == PHYSICS_EVENT){
 
 
 	eventNr++;
-	//      printf("eventNr %d\n",eventNr);
+	//	printf("eventNr %d\n",eventNr);
 
 	AliRawReader *reader = new AliRawReaderDate((void*)event);
 	AliITSRawStreamSPD *str = new AliITSRawStreamSPD(reader);
@@ -180,26 +193,29 @@ int main(int argc, char **argv) {
 	    }
 
 	    // read calib values
-	    routerNr[eqId] = str->GetHrouterNr();
-	    type[eqId] = str->GetHtype();
-	    dataFormat[eqId] = str->GetHdataFormat();
-	    triggers[eqId] = str->GetHtriggers();
-	    dacStart[eqId] = str->GetHdacStart();
-	    dacEnd[eqId] = str->GetHdacEnd();
-	    dacStep[eqId] = str->GetHdacStep();
-	    dacId[eqId] = str->GetHdacId();
-	    rowStart[eqId] = str->GetHrowStart();
-	    rowEnd[eqId] = str->GetHrowEnd();
-	    rowValue[eqId] = str->GetHrowValue();
-	    dacValue[eqId] = str->GetHdacValue();
+	    routerNr[eqId]    = str->GetHrouterNr();
+	    type[eqId]        = str->GetHtype();
+	    dataFormat[eqId]  = str->GetHdataFormat();
+	    triggers[eqId]    = str->GetHtriggers();
+	    dacStart[eqId]    = str->GetHdacStart();
+	    dacEnd[eqId]      = str->GetHdacEnd();
+	    dacStep[eqId]     = str->GetHdacStep();
+	    dacId[eqId]       = str->GetHdacId();
+	    rowStart[eqId]    = str->GetHrowStart();
+	    rowEnd[eqId]      = str->GetHrowEnd();
+	    rowValue[eqId]    = str->GetHrowValue();
+	    dacValue[eqId]    = str->GetHdacValue();
 	    for (UInt_t hs=0; hs<6; hs++) {
-	      halfStaveScanned[eqId][hs]=str->GetHhalfStaveScanned(hs);
-	      dacHigh[eqId][hs] = str->GetHdacHigh(hs);
-	      dacLow[eqId][hs] = str->GetHdacLow(hs);
-	      TPAmp[eqId][hs] = str->GetHTPAmp(hs);
+	      halfStaveScanned[eqId][hs] = str->GetHhalfStaveScanned(hs);
+	      dacHigh[eqId][hs]          = str->GetHdacHigh(hs);
+	      dacLow[eqId][hs]           = str->GetHdacLow(hs);
+	      TPAmp[eqId][hs]            = str->GetHTPAmp(hs);
 	      for (UInt_t chip=0; chip<10; chip++) {
-		chipPresent[eqId][hs][chip] = str->GetHchipPresent(hs,chip);
+		chipPresent[eqId][hs][chip]      = str->GetHchipPresent(hs,chip);
 	      }
+	    }
+	    for (UInt_t chip=0; chip<10; chip++) {
+	      minTHchipPresent[eqId][chip] = str->GetHminTHchipPresent(chip);
 	    }
 
 	    currentStep[eqId] = (dacValue[eqId]-dacStart[eqId])/dacStep[eqId];
@@ -308,9 +324,11 @@ int main(int argc, char **argv) {
 	    while (str->Next()) {
 	      UInt_t hs = str->GetHalfStaveNr();
 	      UInt_t chip = str->GetChipAddr();
-
-	      if (type[eqId]!=MINTH || dacHigh[eqId][0]==chip) { // dachigh[0] holds chip scanned for minth
-
+#ifndef SPD_DA_OFF
+	      if (type[eqId]!=MINTH || minTHchipPresent[eqId][chip]) { 
+#else
+		if (type[eqId]!=MINTH || minTHchipPresent[eqId][chip] || runNr<=416900) { 
+#endif
 		scanObj[eqId]->IncrementHits(currentStep[eqId],hs,chip,str->GetChipCol(),str->GetChipRow());
 	    
 		if (!hitEventHSIncremented[hs]) {
@@ -350,7 +368,7 @@ int main(int argc, char **argv) {
       return -1;
     }
     
-#ifndef DA_OFF
+#ifndef SPD_DA_OFF
     daqDA_progressReport((unsigned int)( ((Float_t)(segNr-startSeg+1))/(argc-startSeg)*50 ));
 #else
     printf("progress: %d\n",(unsigned int)( ((Float_t)(segNr-startSeg+1))/(argc-startSeg)*50 ));
@@ -368,7 +386,7 @@ int main(int argc, char **argv) {
 
 
   // ********* STEP 2: Analyze scan container files. ***********************************
-#ifndef DA_OFF
+#ifndef SPD_DA_OFF
   // clear noisyToFXS dir:
   Char_t command[200];
   sprintf(command,"cd %s; rm -f *",saveDirNoisyToFXS);
@@ -402,7 +420,8 @@ int main(int argc, char **argv) {
       if (analyzer->ProcessNoisyPixels(saveDirNoisy)) {
 	for (UInt_t module=0; module<240; module++) {
 	  if (analyzer->SaveDeadNoisyPixels(module,saveDirNoisy)) {
-#ifndef DA_OFF
+#ifndef SPD_DA_OFF
+	    nrNoisyFilesProduced++;
 	    Char_t command[100];
 	    sprintf(command,"cp %s/SPD_DeadNoisy_%d.root %s/.",saveDirNoisy,module,saveDirNoisyToFXS);
 	    system(command);
@@ -424,7 +443,7 @@ int main(int argc, char **argv) {
 //	ofile << "\n";
 //      }
 //      ofile.close();
-//#ifndef DA_OFF
+//#ifndef SPD_DA_OFF
 //      Char_t id[20];
 //      sprintf(id,"SPD_delay_%d",eqId);
 //      Int_t status = daqDA_FES_storeFile(ofileName,id);
@@ -446,7 +465,7 @@ int main(int argc, char **argv) {
 	ofile << "\n";
       }
       ofile.close();
-#ifndef DA_OFF
+#ifndef SPD_DA_OFF
       Char_t id[20];
       sprintf(id,"SPD_minth_%d",eqId);
       Int_t status = daqDA_FES_storeFile(ofileName,id);
@@ -472,7 +491,7 @@ int main(int argc, char **argv) {
 	ofile << "\n";
       }
       ofile.close();
-#ifndef DA_OFF
+#ifndef SPD_DA_OFF
       Char_t id[20];
       sprintf(id,"SPD_delay_%d",eqId);
       Int_t status = daqDA_FES_storeFile(ofileName,id);
@@ -485,7 +504,7 @@ int main(int argc, char **argv) {
 
     delete analyzer;
 
-#ifndef DA_OFF
+#ifndef SPD_DA_OFF
     daqDA_progressReport((unsigned int)(50+(eqId+1)*2.5));
 #else
     printf("progress: %d\n",(unsigned int)(50+(eqId+1)*2.5));
@@ -495,18 +514,21 @@ int main(int argc, char **argv) {
   // *** *** *** end loop over equipments (eq_id)
 
 
-#ifndef DA_OFF
-  // send a tared file of all new noisy maps
-  sprintf(command,"cd %s; tar -cf noisy.tar *",saveDirNoisyToFXS);
-  printf("\n\n%s\n\n",command);
-  system(command);
-  Char_t fileName[200];
-  sprintf(fileName,"%s/noisy.tar",saveDirNoisyToFXS);
-  Char_t id[20];
-  sprintf(id,"SPD_noisy");
-  Int_t status = daqDA_FES_storeFile(fileName,id);
-  if (status) {
-    printf("Failed to export file %s , status %d\n",fileName,status);
+#ifndef SPD_DA_OFF
+  if (nrNoisyFilesProduced>0) {
+    // send a tared file of all new noisy maps
+    sprintf(command,"cd %s; tar -cf noisy.tar *",saveDirNoisyToFXS);
+    printf("\n\n%s\n\n",command);
+    system(command);
+    Char_t fileName[200];
+    sprintf(fileName,"%s/noisy.tar",saveDirNoisyToFXS);
+    Char_t id[20];
+    sprintf(id,"SPD_noisy");
+    Int_t status = daqDA_FES_storeFile(fileName,id);
+    if (status!=0) {
+      printf("Failed to export file %s , status %d\n",fileName,status);
+      return -1;
+    }
   }
 #endif
 
