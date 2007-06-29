@@ -68,8 +68,8 @@ MUONChamberData::MUONChamberData(Int_t chamber)
   }
 
   if (fgTransformer == 0) {
-    fgTransformer = new AliMUONGeometryTransformer(true);
-    fgTransformer->ReadGeometryData("volpath.dat",dataPath.Data());
+    fgTransformer = new AliMUONGeometryTransformer();
+    fgTransformer->LoadGeometryData(dataPath.Data());
   }
 
   Init(chamber);
