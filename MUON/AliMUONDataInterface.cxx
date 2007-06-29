@@ -332,7 +332,7 @@ AliMUONDataInterface::NtupleTrigger(const char* treeLetter)
   Int_t lSLowpt=0;
   Int_t lSHighpt=0;
   
-  AliMUONGeometryTransformer transformer(kFALSE);
+  AliMUONGeometryTransformer transformer;
   transformer.LoadGeometryData(Form("%s/geometry.root",
                                     gSystem->DirName(fLoader->GetRunLoader()->GetFileName())));
   
