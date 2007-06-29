@@ -116,4 +116,8 @@
 24-jun-2007 NvE Treatment of TWRDaq data introduced in IceCleanHits.
 25-jun-2007 NvE Warning messages suppressed in the IceMakeHits processor to prevent
                 TSpectrum warnings in case of (noisy) waveforms with very many peaks.  
+26-jun-2007 NvE Class IceDwalk made modular such that it can serve as a base class
+                for more sophisticated reconstruction algorithms.
+                Also expression for "ksi" corrected to correctly represent the traveled
+                distance of the cherenkov photon in IcePandel.cxx.
                  

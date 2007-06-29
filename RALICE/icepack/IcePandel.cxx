@@ -656,7 +656,7 @@ void IcePandel::FitFCN(Int_t&,Double_t*,Double_t& f,Double_t* x,Int_t)
   if (!omx) continue;
   rhit=omx->GetPosition();
   d=fTkfit->GetDistance(rhit);
-  ksi=d/lambda;
+  ksi=d/(sin(thetac)*lambda);
   r12=rhit-r0;
   dist=p.Dot(r12)+d/tan(pi/2.-thetac-alphac);
   tgeo=t0+dist/c;

@@ -19,7 +19,7 @@
 class IceDwalk : public TTask
 {
  public :
-  IceDwalk(const char* name="",const char* title=""); // Constructor
+  IceDwalk(const char* name="IceDwalk",const char* title="Direct walk reconstruction"); // Constructor
   virtual ~IceDwalk();                                // Destructor
   virtual void Exec(Option_t* opt);                   // Direct walk reconstruction
   void SetDmin(Float_t d);       // Set minimum hit distance to form a track element
@@ -37,6 +37,7 @@ class IceDwalk : public TTask
   void SetCharge(Float_t charge);// Set user defined charge for the produced first guess tracks
 
  protected :
+  IceEvent* fEvt;    // Pointer to the event structure
   Float_t fDmin;     // Minimum hit distance (in m) to form a track element 
   Int_t fDtmarg;     // Maximum hit time difference margin (in ns) for track elements
   Float_t fMaxdhit;  // Maximum distance (in scat. length) for hit association
@@ -54,6 +55,12 @@ class IceDwalk : public TTask
   TString fTrackname;// The name identifier for the produced first guess tracks
   Float_t fCharge;   // User defined charge of the produced first guess tracks
 
- ClassDef(IceDwalk,7) // TTask derived class to perform (improved) direct walk reconstruction
+  virtual void AssociateHits(TObjArray& tes,TObjArray& hits,Float_t& qmax,Int_t& nahmax); // Hit association
+  virtual void SelectQvalue(TObjArray& tes,Float_t qmax);                  // TC selection via Q-value
+  virtual void ClusterTracks(TObjArray& tes,TObjArray& jets,Float_t qmax); // Track clustering  
+  virtual void MergeJets(TObjArray& jets);                                 // Jet Merging
+  virtual void StoreTracks(TObjArray& jets);                               // Final track storage
+
+ ClassDef(IceDwalk,8) // TTask derived class to perform (improved) direct walk reconstruction
 };
 #endif

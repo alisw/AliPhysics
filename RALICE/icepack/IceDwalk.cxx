@@ -79,10 +79,10 @@
 //    tres   : time residual
 //             Difference between the observed hit time and the time expected
 //             for a direct photon hit.     
-//    dhit   : Distance between the hit and the TE
+//    dhit   : Distance traveled by the cherenkov photon from the track to the hit position
 //    lambda : Photon scattering length in ice
 //
-//    By default F is set to 2, but this can be modified via the memberfunction
+//    By default F is set to 3.07126, but this can be modified via the memberfunction
 //    SetMaxDhit(). 
 //
 // 3) Construction of track candidates (TC's).
@@ -257,9 +257,10 @@ IceDwalk::IceDwalk(const char* name,const char* title) : TTask(name,title)
 // The newly introduced angular separation parameter for jet merging
 // is initialised as half the value of the angular separation parameter
 // for track candidate clustering.    
+ fEvt=0;
  fDmin=75;
  fDtmarg=0;
- fMaxdhit=2;
+ fMaxdhit=3.07126;
  fTangmax=15;
  fTdistmax=20;
  fTinvol=1;
@@ -271,7 +272,7 @@ IceDwalk::IceDwalk(const char* name,const char* title) : TTask(name,title)
  fMinmodA=0;
  fMaxhitsA=1;
  fVgroup=1;
- fTrackname="IceDwalk";
+ fTrackname="";
  fCharge=0;
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -439,8 +440,8 @@ void IceDwalk::SetTrackName(TString s)
 // Set (alternative) name identifier for the produced first guess tracks.
 // This allows unique identification of (newly) produced direct walk tracks
 // in case of re-processing of existing data with different criteria.
-// By default the produced first guess tracks have the name "IceDwalk"
-// which is set in the constructor of this class.
+// By default the produced first guess tracks have the name of the class
+// by which they were produced.
  fTrackname=s;
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -462,12 +463,12 @@ void IceDwalk::Exec(Option_t* opt)
 
  if (!parent) return;
 
- IceEvent* evt=(IceEvent*)parent->GetObject("IceEvent");
- if (!evt) return;
+ fEvt=(IceEvent*)parent->GetObject("IceEvent");
+ if (!fEvt) return;
 
  // Enter the reco parameters as a device in the event
  AliSignal params;
- params.SetNameTitle("IceDwalk","IceDwalk reco parameters");
+ params.SetNameTitle(ClassName(),"Reco parameters");
  params.SetSlotName("Dmin",1);
  params.SetSlotName("Dtmarg",2);
  params.SetSlotName("Maxdhit",3);
@@ -498,12 +499,12 @@ void IceDwalk::Exec(Option_t* opt)
  params.SetSignal(fMaxhitsA,13);
  params.SetSignal(fVgroup,14);
 
- evt->AddDevice(params);
+ fEvt->AddDevice(params);
 
  if (fMaxhitsA<0) return;
 
  // Fetch all fired Amanda OMs for this event
- TObjArray* aoms=evt->GetDevices("IceAOM");
+ TObjArray* aoms=fEvt->GetDevices("IceAOM");
  if (!aoms) return;
  Int_t naoms=aoms->GetEntries();
  if (!naoms) return;
@@ -519,16 +520,7 @@ void IceDwalk::Exec(Option_t* opt)
  } 
  if (ngood<fMinmodA || ngood>fMaxmodA) return;
 
- const Float_t pi=acos(-1.);
- const Float_t c=0.299792458;         // Light speed in vacuum in meters per ns
- const Float_t npice=1.31768387;      // Phase refractive index (c/v_phase) of ice
- const Float_t ngice=1.35075806;      // Group refractive index (c/v_group) of ice
- const Float_t lambda=33.3;           // Light scattering length in ice
- const Float_t thetac=acos(1./npice); // Cherenkov angle (in radians)
-
- // Angular reduction of complement of thetac due to v_phase and v_group difference
- Float_t alphac=0;
- if (fVgroup) alphac=atan((1.-npice/ngice)/sqrt(npice*npice-1.));
+ const Float_t c=0.299792458; // Light speed in vacuum in meters per ns
 
  // Storage of track elements.
  TObjArray tes;
@@ -550,7 +542,7 @@ void IceDwalk::Exec(Option_t* opt)
  TObjArray hits;
  TObjArray* ordered;
 
- // Check the hits of Amanda OM pairs for posible track elements.
+ // Check the hits of Amanda OM pairs for possible track elements.
  // Also all the good hits are stored in the meantime (to save CPU time)
  // for hit association with the various track elements lateron.
  AliTrack* te=0;
@@ -653,7 +645,7 @@ void IceDwalk::Exec(Option_t* opt)
      te=new AliTrack();
      tes.Add(te);
      if (dt<0) r12*=-1.;
-     r0.SetTimestamp((AliTimestamp&)*evt);
+     r0.SetTimestamp((AliTimestamp&)*fEvt);
      AliTimestamp* tsx=r0.GetTimestamp();
      tsx->Add(0,0,(int)t0);
      te->SetReferencePoint(r0);
@@ -664,11 +656,59 @@ void IceDwalk::Exec(Option_t* opt)
  } // end of loop over first OM of the pair
 
  // Association of hits to the various track elements.
+ Float_t qmax=0;
+ Int_t nahmax=0;
+ AssociateHits(tes,hits,qmax,nahmax);
+
+ // Selection on quality (Q value) in case of multiple track candidates
+ SelectQvalue(tes,qmax);
+
+ Int_t nte=tes.GetEntries();
+ if (!nte) return;
+
+ // Clustering of track candidates into jets
+ TObjArray jets;
+ jets.SetOwner();
+ ClusterTracks(tes,jets,qmax);
+
+ Int_t njets=jets.GetEntries();
+ if (!njets) return;
+
+ // Order the jets w.r.t. decreasing quality value
+ ordered=fEvt->SortJets(-2,&jets);
+ TObjArray jets2(*ordered);
+
+ // Merging f jets
+ MergeJets(jets2);
+
+ // Production and storage of the final tracks
+ StoreTracks(jets2);
+}
+///////////////////////////////////////////////////////////////////////////
+void IceDwalk::AssociateHits(TObjArray& tes,TObjArray& hits,Float_t& qmax,Int_t& nahmax)
+{
+ // Association of hits to the various track elements.
+
+ const Float_t pi=acos(-1.);
+ const Float_t c=0.299792458;         // Light speed in vacuum in meters per ns
+ const Float_t npice=1.31768387;      // Phase refractive index (c/v_phase) of ice
+ const Float_t ngice=1.35075806;      // Group refractive index (c/v_group) of ice
+ const Float_t lambda=33.3;           // Light scattering length in ice
+ const Float_t thetac=acos(1./npice); // Cherenkov angle (in radians)
+
+ // Angular reduction of complement of thetac due to v_phase and v_group difference
+ Float_t alphac=0;
+ if (fVgroup) alphac=atan((1.-npice/ngice)/sqrt(npice*npice-1.));
+
  Int_t nte=tes.GetEntries();
  Int_t nh=hits.GetEntries();
  Float_t d=0;
  Ali3Vector p;
- Float_t tgeo,tres;
+ AliPosition r1;
+ AliPosition r2;
+ Ali3Vector r12;
+ Float_t t1;
+ Float_t dist,t0,tgeo,tres;
  AliSample levers;      // Statistics of the assoc. hit lever arms
  levers.SetStoreMode(1);// Enable median calculation
  AliSample hprojs;      // Statistics of the assoc. hit position projections on the track w.r.t. r0
@@ -698,26 +738,28 @@ void IceDwalk::Exec(Option_t* opt)
  fit.AddNamedSlot("term3");
  fit.AddNamedSlot("term4");
  fit.AddNamedSlot("term5");
- Float_t qtc=0,qmax=0;
- Int_t nah,nahmax=0; // Number of associated hits for a certain TE
+ Float_t qtc=0;
+ Int_t nah; // Number of associated hits for a certain TE
  Float_t lmin,lmax,spanl,medianl,meanl,sigmal,spreadl,expspreadl;
  Float_t hproj,hprojmin,hprojmax,span,median,mean,sigma,spread,expspread;
  Float_t mediant,meant,sigmat,spreadt;
  Float_t term1,term2,term3,term4,term5;
+ qmax=0;
+ nahmax=0;
  for (Int_t jte=0; jte<nte; jte++)
  {
-  te=(AliTrack*)tes.At(jte);
+  AliTrack* te=(AliTrack*)tes.At(jte);
   if (!te) continue;
   AliPosition* tr0=te->GetReferencePoint();
   AliTimestamp* tt0=tr0->GetTimestamp();
-  t0=evt->GetDifference(tt0,"ns");
+  t0=fEvt->GetDifference(tt0,"ns");
   p=te->Get3Momentum();
   levers.Reset();
   hprojs.Reset();
   times.Reset();
   for (Int_t jh=0; jh<nh; jh++)
   {
-   sx1=(AliSignal*)hits.At(jh);
+   AliSignal* sx1=(AliSignal*)hits.At(jh);
    if (!sx1) continue;
    IceGOM* omx=(IceGOM*)sx1->GetDevice();
    if (!omx) continue;
@@ -729,6 +771,8 @@ void IceDwalk::Exec(Option_t* opt)
    tgeo=t0+dist/c;
    t1=sx1->GetSignal("LE",7);
    tres=t1-tgeo;
+
+   d=d/sin(thetac); // The distance traveled by a cherenkov photon
 
    if (tres<-30 || tres>300 || d>fMaxdhit*lambda) continue;
 
@@ -811,14 +855,22 @@ void IceDwalk::Exec(Option_t* opt)
   te->SetFitDetails(fit);
   if (qtc>qmax) qmax=qtc;
  }
-
+}
+///////////////////////////////////////////////////////////////////////////
+void IceDwalk::SelectQvalue(TObjArray& tes,Float_t qmax)
+{
  // Perform selection on Q value in case of multiple track candidates
+
+ Int_t nte=tes.GetEntries();
+ Int_t nah;
+ Float_t qtc;
+ Ali3Vector p;
  for (Int_t jtc=0; jtc<nte; jtc++)
  {
-  te=(AliTrack*)tes.At(jtc);
+  AliTrack* te=(AliTrack*)tes.At(jtc);
   if (!te) continue;
   nah=te->GetNsignals();
-  sx1=(AliSignal*)te->GetFitDetails();
+  AliSignal* sx1=(AliSignal*)te->GetFitDetails();
   qtc=-1;
   if (sx1) qtc=sx1->GetSignal("QTC");
   if (!nah || qtc<0.8*qmax)
@@ -837,10 +889,10 @@ void IceDwalk::Exec(Option_t* opt)
   }
  } 
  tes.Compress();
- nte=tes.GetEntries();
-
- if (!nte) return;
-
+}
+///////////////////////////////////////////////////////////////////////////
+void IceDwalk::ClusterTracks(TObjArray& tes,TObjArray& jets,Float_t qmax)
+{
  // Cluster track candidates within a certain opening angle into jets.
  // Also the track should be within a certain maximum distance of the
  // starting track in order to get clustered.
@@ -848,17 +900,19 @@ void IceDwalk::Exec(Option_t* opt)
  // crossing the detector a very different locations (e.g. muon bundles).
  // The average r0 and t0 of the constituent tracks will be taken as the
  // jet reference point. 
- TObjArray jets;
- jets.SetOwner();
- AliTrack* te2=0;
+
+ Int_t nte=tes.GetEntries();
  Float_t ang=0;
  AliSample pos;
  AliSample time;
  Float_t vec[3],err[3];
- nahmax=0; // Determine the max. number of associated hits for the jets
+ AliPosition r0;
+ Float_t t0,dist,dist2;
+ Int_t nah=0,nahmax=0; // Determine the max. number of associated hits for the jets
+ Float_t qtc;
  for (Int_t jtc1=0; jtc1<nte; jtc1++)
  {
-  te=(AliTrack*)tes.At(jtc1);
+  AliTrack* te=(AliTrack*)tes.At(jtc1);
   if (!te) continue;
   AliPosition* x1=te->GetReferencePoint();
   if (!x1) continue;
@@ -870,12 +924,12 @@ void IceDwalk::Exec(Option_t* opt)
   time.Reset();
   x1->GetPosition(vec,"car");
   pos.Enter(vec[0],vec[1],vec[2]);
-  t0=evt->GetDifference(ts1,"ns");
+  t0=fEvt->GetDifference(ts1,"ns");
   time.Enter(t0);
   for (Int_t jtc2=0; jtc2<nte; jtc2++)
   {
    if (jtc2==jtc1) continue;
-   te2=(AliTrack*)tes.At(jtc2);
+   AliTrack* te2=(AliTrack*)tes.At(jtc2);
    if (!te2) continue;
    ang=te->GetOpeningAngle(*te2,"deg");
    if (ang<=fTangmax)
@@ -898,7 +952,7 @@ void IceDwalk::Exec(Option_t* opt)
     {
      x2->GetPosition(vec,"car");
      pos.Enter(vec[0],vec[1],vec[2]);
-     t0=evt->GetDifference(ts2,"ns");
+     t0=fEvt->GetDifference(ts2,"ns");
      time.Enter(t0);
      jx->AddTrack(te2);
     }
@@ -913,7 +967,7 @@ void IceDwalk::Exec(Option_t* opt)
   }
   r0.SetPosition(vec,"car");
   r0.SetPositionErrors(err,"car");
-  r0.SetTimestamp((AliTimestamp&)*evt);
+  r0.SetTimestamp((AliTimestamp&)*fEvt);
   AliTimestamp* jt0=r0.GetTimestamp();
   t0=time.GetMean(1);
   jt0->Add(0,0,(int)t0);
@@ -928,7 +982,7 @@ void IceDwalk::Exec(Option_t* opt)
   }
   else // Only keep single-track jets which have qtc=qmax 
   {
-   sx1=(AliSignal*)te->GetFitDetails();
+   AliSignal* sx1=(AliSignal*)te->GetFitDetails();
    qtc=-1;
    if (sx1) qtc=sx1->GetSignal("QTC");
    if (qtc>=(qmax-1.e-10))
@@ -943,11 +997,11 @@ void IceDwalk::Exec(Option_t* opt)
    }
   }
  }
- Int_t njets=jets.GetEntries();
 
+ Int_t njets=jets.GetEntries();
  if (!njets) return;
 
- // The sum of 0.15*(nah-nahmax) and average qtc value per track for this jet
+ // The sum of 0.15*(nah-nahmax) and average qtc value per track for each jet
  // will be stored as the jet energy to enable sorting on this value lateron
  Float_t sortval=0;
  Int_t ntk=0;
@@ -961,11 +1015,10 @@ void IceDwalk::Exec(Option_t* opt)
   if (ntk) sortval+=jx->GetMomentum()/float(ntk);
   jx->SetScalar(sortval);
  }
-
- // Order the jets w.r.t. decreasing value of the above sortval
- ordered=evt->SortJets(-2,&jets);
- TObjArray jets2(*ordered);
-
+}
+///////////////////////////////////////////////////////////////////////////
+void IceDwalk::MergeJets(TObjArray& jets2)
+{
  // Merge jets within a certain opening to provide the final track(s).
  // Also the jet should be within a certain maximum distance of the
  // starting jet in order to get merged.
@@ -973,9 +1026,18 @@ void IceDwalk::Exec(Option_t* opt)
  // crossing the detector a very different locations (e.g. muon bundles).
  // The average r0 and t0 of the constituent jets will be taken as the
  // final reference point. 
+
+ Int_t njets=jets2.GetEntries();
  AliJet* jx1=0;
  AliJet* jx2=0;
  Int_t merged=1;
+ Int_t ntk,nah,nahmax;
+ Float_t ang,dist,dist2,t0;
+ AliSample pos;
+ AliSample time;
+ AliPosition r0;
+ Float_t vec[3],err[3];
+ Float_t sortval;
  if (fJangmax>=0)
  {
   while (merged)
@@ -994,7 +1056,7 @@ void IceDwalk::Exec(Option_t* opt)
     time.Reset();
     x1->GetPosition(vec,"car");
     pos.Enter(vec[0],vec[1],vec[2]);
-    t0=evt->GetDifference(ts1,"ns");
+    t0=fEvt->GetDifference(ts1,"ns");
     time.Enter(t0);
     for (Int_t jet2=0; jet2<njets; jet2++)
     {
@@ -1021,11 +1083,11 @@ void IceDwalk::Exec(Option_t* opt)
       {
        x2->GetPosition(vec,"car");
        pos.Enter(vec[0],vec[1],vec[2]);
-       t0=evt->GetDifference(ts2,"ns");
+       t0=fEvt->GetDifference(ts2,"ns");
        time.Enter(t0);
        for (Int_t jtk=1; jtk<=jx2->GetNtracks(); jtk++)
        {
-        te=jx2->GetTrack(jtk);
+        AliTrack* te=jx2->GetTrack(jtk);
         if (!te) continue;
         jx1->AddTrack(te);
        }
@@ -1043,7 +1105,7 @@ void IceDwalk::Exec(Option_t* opt)
     }
     r0.SetPosition(vec,"car");
     r0.SetPositionErrors(err,"car");
-    r0.SetTimestamp((AliTimestamp&)*evt);
+    r0.SetTimestamp((AliTimestamp&)*fEvt);
     AliTimestamp* jt0=r0.GetTimestamp();
     t0=time.GetMean(1);
     jt0->Add(0,0,(int)t0);
@@ -1055,8 +1117,8 @@ void IceDwalk::Exec(Option_t* opt)
 
    jets2.Compress();
 
-   // The sum of 0.15*(nah-nahmax) and average qtc value per track for this jet
-   // will be stored as the jet energy to enable sorting on this value lateron
+   // The sum of 0.15*(nah-nahmax) and average qtc value per track for each jet
+   // will be stored as the jet energy to enable sorting on this value
    for (Int_t jjet=0; jjet<njets; jjet++)
    {
     AliJet* jx=(AliJet*)jets2.At(jjet);
@@ -1068,8 +1130,8 @@ void IceDwalk::Exec(Option_t* opt)
     jx->SetScalar(sortval);
    }
 
-   // Order the jets w.r.t. decreasing value of the above sortval
-   ordered=evt->SortJets(-2,&jets2);
+   // Order the jets w.r.t. decreasing quality value
+   TObjArray* ordered=fEvt->SortJets(-2,&jets2);
    njets=ordered->GetEntries();
    jets2.Clear();
    for (Int_t icopy=0; icopy<njets; icopy++)
@@ -1078,7 +1140,10 @@ void IceDwalk::Exec(Option_t* opt)
    }
   } // End of iterative while loop
  }
-
+}
+///////////////////////////////////////////////////////////////////////////
+void IceDwalk::StoreTracks(TObjArray& jets2)
+{
  // Store every jet as a reconstructed track in the event structure.
  // The jet 3-momentum (normalised to 1) and reference point
  // (i.e.the average r0 and t0 of the constituent tracks) will make up
@@ -1089,19 +1154,26 @@ void IceDwalk::Exec(Option_t* opt)
  // the maximum number of tracks (i.e. the first one in the array)
  // will be used to form a track. This will allow comparison with
  // the standard Sieglinde processing.
+
+ Int_t njets=jets2.GetEntries();
+
+ if (fTrackname=="") fTrackname=ClassName();
+ TString title=ClassName();
+ title+=" reco track";
  AliTrack t; 
- t.SetNameTitle(fTrackname.Data(),"IceDwalk direct walk track");
+ t.SetNameTitle(fTrackname.Data(),title.Data());
  t.SetCharge(fCharge);
+ Ali3Vector p;
  for (Int_t jet=0; jet<njets; jet++)
  {
   AliJet* jx=(AliJet*)jets2.At(jet);
   if (!jx) continue;
   AliPosition* ref=jx->GetReferencePoint();
   if (!ref) continue;
-  evt->AddTrack(t);
-  AliTrack* trk=evt->GetTrack(evt->GetNtracks());
+  fEvt->AddTrack(t);
+  AliTrack* trk=fEvt->GetTrack(fEvt->GetNtracks());
   if (!trk) continue;
-  trk->SetId(evt->GetNtracks(1)+1);
+  trk->SetId(fEvt->GetNtracks(1)+1);
   p=jx->Get3Momentum();
   p/=p.GetNorm();
   trk->Set3Momentum(p);
@@ -1114,7 +1186,7 @@ void IceDwalk::Exec(Option_t* opt)
    if (!tx) continue;
    for (Int_t is=1; is<=tx->GetNsignals(); is++)
    {
-    sx1=tx->GetSignal(is);
+    AliSignal* sx1=tx->GetSignal(is);
     if (sx1) sx1->AddTrack(*trk);
    }
   }
