@@ -35,7 +35,8 @@ AliAODTrack::AliAODTrack() :
   fCharge(-99),
   fITSMuonClusterMap(0),
   fType(kUndef),
-  fChi2MatchTrigger(0.)
+  fChi2MatchTrigger(0.),
+  fFilterMap(0)
 {
   // default constructor
 
@@ -58,7 +59,8 @@ AliAODTrack::AliAODTrack(Int_t id,
 			 AliAODVertex *prodVertex,
 			 Bool_t usedForVtxFit,
 			 Bool_t usedForPrimVtxFit,
-			 AODTrk_t ttype) :
+			 AODTrk_t ttype,
+			 UInt_t selectInfo) :
   AliVirtualParticle(),
   fChi2perNDF(-999.),
   fID(id),
@@ -68,7 +70,8 @@ AliAODTrack::AliAODTrack(Int_t id,
   fCharge(charge),
   fITSMuonClusterMap(itsClusMap),
   fType(ttype),
-  fChi2MatchTrigger(0.)
+  fChi2MatchTrigger(0.),
+  fFilterMap(selectInfo)
 {
   // constructor
  
@@ -95,7 +98,8 @@ AliAODTrack::AliAODTrack(Int_t id,
 			 AliAODVertex *prodVertex,
 			 Bool_t usedForVtxFit,
 			 Bool_t usedForPrimVtxFit,
-			 AODTrk_t ttype) :
+			 AODTrk_t ttype,
+			 UInt_t selectInfo) :
   AliVirtualParticle(),
   fChi2perNDF(-999.),
   fID(id),
@@ -105,7 +109,8 @@ AliAODTrack::AliAODTrack(Int_t id,
   fCharge(charge),
   fITSMuonClusterMap(itsClusMap),
   fType(ttype),
-  fChi2MatchTrigger(0.)
+  fChi2MatchTrigger(0.),
+  fFilterMap(selectInfo)
 {
   // constructor
  
@@ -136,7 +141,8 @@ AliAODTrack::AliAODTrack(const AliAODTrack& trk) :
   fCharge(trk.fCharge),
   fITSMuonClusterMap(trk.fITSMuonClusterMap),
   fType(trk.fType),
-  fChi2MatchTrigger(0.)
+  fChi2MatchTrigger(0.),
+  fFilterMap(trk.fFilterMap)
 {
   // Copy constructor
 
@@ -176,6 +182,7 @@ AliAODTrack& AliAODTrack::operator=(const AliAODTrack& trk)
     SetUsedForVtxFit(trk.GetUsedForVtxFit());
     SetUsedForPrimVtxFit(trk.GetUsedForPrimVtxFit());
     fType = trk.fType;
+    fFilterMap = trk.fFilterMap;
   }
 
   return *this;

@@ -60,7 +60,8 @@ class AliAODTrack : public AliVirtualParticle {
 	      AliAODVertex *prodVertex,
 	      Bool_t usedForVtxFit,
 	      Bool_t usedForPrimVtxFit,
-	      AODTrk_t ttype=kUndef);
+	      AODTrk_t ttype=kUndef,
+	      UInt_t selectInfo=0);
 
   AliAODTrack(Int_t id,
 	      Int_t label,
@@ -75,7 +76,8 @@ class AliAODTrack : public AliVirtualParticle {
 	      AliAODVertex *prodVertex,
 	      Bool_t usedForVtxFit,
 	      Bool_t usedForPrimVtxFit,
-	      AODTrk_t ttype=kUndef);
+	      AODTrk_t ttype=kUndef,
+	      UInt_t selectInfo=0);
 
   virtual ~AliAODTrack();
   AliAODTrack(const AliAODTrack& trk); 
@@ -148,6 +150,7 @@ class AliAODTrack : public AliVirtualParticle {
   UChar_t GetITSClusterMap() const     { return (UChar_t)fITSMuonClusterMap; }
   UInt_t  GetMUONClusterMap() const    { return fITSMuonClusterMap/65536; }
   UInt_t  GetITSMUONClusterMap() const { return fITSMuonClusterMap; }
+  Bool_t  TestFilterBit(UInt_t filterBit) {return (Bool_t) ((filterBit & fFilterMap) != 0);}
 
   AliAODVertex *GetProdVertex() const { return (AliAODVertex*)fProdVertex.GetObject(); }
   
@@ -218,9 +221,10 @@ class AliAODTrack : public AliVirtualParticle {
   UInt_t        fITSMuonClusterMap; // map of ITS and muon clusters, one bit per layer (ITS: bit 1-8, muon: bit 17-32) 
   Char_t        fType;              // Track Type
 
-  Double_t fChi2MatchTrigger; // chi2 of trigger/track matching
+  Double_t      fChi2MatchTrigger;  // chi2 of trigger/track matching
+  UInt_t        fFilterMap;         // filter information, one bit per set of cuts
 
-  ClassDef(AliAODTrack,2);
+  ClassDef(AliAODTrack,3);
 };
 
 #endif
