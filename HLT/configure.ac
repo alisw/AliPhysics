@@ -193,6 +193,12 @@ if test ! "x$have_aliroot" = "xno" ; then
   CHECKLIB=AOD
   AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"])
 
+  # Jun 22 2007: a circular dependency has been introduced between libCDB/libSTEER
+  # and libRAWDatasim/libSTEER in AliCTPRawData due to use of AliFstream
+  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS -lSTEER -lCDB"
+  CHECKLIB=RAWDatasim
+  AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"])
+
   # CBD library is present since AliRoot version v4-05-00 (02.06.2006)
   # in addition a circular dependency has been introduced in March 06 which
   # requires to add libSTEER already here
