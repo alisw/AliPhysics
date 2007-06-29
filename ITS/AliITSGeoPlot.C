@@ -109,8 +109,9 @@ Int_t AliITSGeoPlot (Int_t evesel=0, char *opt="All+ClustersV2", TString filenam
   // Set OCDB if needed
   AliCDBManager* man = AliCDBManager::Instance();
   if (!man->IsDefaultStorageSet()) {
-    printf("Setting a local default storage\n");
+    printf("Setting a local default storage and run number 0\n");
     man->SetDefaultStorage("local://$ALICE_ROOT");
+    man->SetRun(0);
   }
   else {
     printf("Using deafult storage \n");
