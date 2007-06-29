@@ -118,8 +118,8 @@ void AliAnaScale::Terminate(Option_t *)
   // Processing when the event loop is ended
   
   AliInfo(Form(" *** %s Report:", GetName())) ; 
-  printf("        PHOS Energy Integral In         : %5.3e \n", fhInPHOSEnergy->GetIntegral() ) ;
-  printf("        PHOS Energy Integral Ou         : %5.3e \n", fhOuPHOSEnergy->GetIntegral() ) ;
+  printf("        PHOS Energy Integral In         : %5.3e \n", fhInPHOSEnergy->Integral() ) ;
+  printf("        PHOS Energy Integral Ou         : %5.3e \n", fhOuPHOSEnergy->Integral() ) ;
 
   TCanvas  * cPHOS = new TCanvas("cPHOS", "PHOS ESD Test", 400, 10, 600, 700) ;
 
