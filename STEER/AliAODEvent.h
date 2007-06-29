@@ -13,6 +13,7 @@
 #include <TBuffer.h>
 #include <TClonesArray.h>
 #include <TList.h>
+#include <TTree.h>
 #include <TNamed.h>
 
 #include "AliAODHeader.h"
@@ -21,6 +22,7 @@
 #include "AliAODCluster.h"
 #include "AliAODJet.h"
 
+class TTree;
 
 class AliAODEvent : public TObject {
 
@@ -79,6 +81,8 @@ class AliAODEvent : public TObject {
   void    GetStdContent();
   void    ResetStd(Int_t trkArrSize = 0, Int_t vtxArrSize = 0);
   void    ClearStd();
+  void    ReadFromTree(TTree *tree);
+  void    WriteToTree(TTree* tree) {tree->Branch(fAODObjects);}
  private :
 
   AliAODEvent(const AliAODEvent&); // Not implemented

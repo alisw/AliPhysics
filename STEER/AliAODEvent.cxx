@@ -140,3 +140,18 @@ Int_t AliAODEvent::GetMuonTracks(TRefArray *muonTracks) const
 }
 
 
+
+void AliAODEvent::ReadFromTree(TTree *tree)
+{
+    // connects aod event to tree
+
+    fAODObjects = (TList*)((AliAODEvent*)tree->GetTree()->GetUserInfo()->FindObject("AliAODEvent"))->GetList(); 
+    TIter next(fAODObjects);
+    TNamed *el;
+    while((el=(TNamed*)next())){
+	TString bname(el->GetName());
+	tree->SetBranchAddress(bname.Data(),fAODObjects->GetObjectRef(el));
+    }
+    GetStdContent();
+}
+
