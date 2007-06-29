@@ -536,7 +536,7 @@ void IceDwalk::Exec(Option_t* opt)
  Int_t nh1,nh2;
  AliSignal* sx1=0;
  AliSignal* sx2=0;
- Float_t dist=0,dist2=0;
+ Float_t dist=0;
  Float_t t1,t2,dt,t0;
  Float_t dtmax;
  TObjArray hits;
