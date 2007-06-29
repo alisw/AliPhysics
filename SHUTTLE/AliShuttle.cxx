@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.48  2007/06/21 13:06:19  acolla
+GetFileSources returns dummy list with 1 source if system=DCS (better than
+returning error as it was)
+
 Revision 1.47  2007/06/19 17:28:56  acolla
 HLT updated; missing map bug removed.
 
@@ -1628,7 +1632,7 @@ Bool_t AliShuttle::QueryShuttleLogbook(const char* whereClause,
 	}
 
 	// TODO Check field count!
-	const UInt_t nCols = 22;
+	const UInt_t nCols = 23;
 	if (aResult->GetFieldCount() != (Int_t) nCols) {
 		AliError("Invalid SQL result field number!");
 		delete aResult;
