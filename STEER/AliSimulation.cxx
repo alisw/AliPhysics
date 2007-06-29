@@ -108,10 +108,10 @@
 #include <TVirtualMCApplication.h>
 #include <TGeoManager.h>
 #include <TObjString.h>
-#include <TStopwatch.h>
 #include <TSystem.h>
 #include <TFile.h>
 
+#include "AliCodeTimer.h"
 #include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
@@ -249,6 +249,8 @@ AliSimulation::~AliSimulation()
 
   fSpecCDBUri.Delete();
   if (fgInstance==this) fgInstance = 0;
+
+  AliCodeTimer::Instance()->Print();
 }
 
 
@@ -474,6 +476,8 @@ Bool_t AliSimulation::Run(Int_t nEvents)
 {
 // run the generation, simulation and digitization
 
+  AliCodeTimerAuto("")
+  
   InitCDBStorage();
 
   if (nEvents > 0) fNEvents = nEvents;
@@ -541,8 +545,7 @@ Bool_t AliSimulation::RunTrigger(const char* descriptors)
 {
   // run the trigger
 
-   TStopwatch stopwatch;
-   stopwatch.Start();
+  AliCodeTimerAuto("")
 
    AliRunLoader* runLoader = LoadRun("READ");
    if (!runLoader) return kFALSE;
@@ -571,9 +574,6 @@ Bool_t AliSimulation::RunTrigger(const char* descriptors)
       }
    }
 
-   AliInfo(Form("Execution time: R:%.2fs C:%.2fs",
-           stopwatch.RealTime(),stopwatch.CpuTime()));
-
    delete runLoader;
 
    return kTRUE;
@@ -596,8 +596,7 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
 {
 // run the generation and simulation
 
-  TStopwatch stopwatch;
-  stopwatch.Start();
+  AliCodeTimerAuto("")
 
   if (!gAlice) {
     AliError("no gAlice object. Restart aliroot and try again.");
@@ -707,8 +706,6 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
 
   delete runLoader;
 
-  AliInfo(Form("Execution time: R:%.2fs C:%.2fs",
-	       stopwatch.RealTime(),stopwatch.CpuTime()));
 
   return kTRUE;
 }
@@ -718,8 +715,7 @@ Bool_t AliSimulation::RunSDigitization(const char* detectors)
 {
 // run the digitization and produce summable digits
 
-  TStopwatch stopwatch;
-  stopwatch.Start();
+  AliCodeTimerAuto("")
 
   AliRunLoader* runLoader = LoadRun();
   if (!runLoader) return kFALSE;
@@ -731,11 +727,8 @@ Bool_t AliSimulation::RunSDigitization(const char* detectors)
     if (!det || !det->IsActive()) continue;
     if (IsSelected(det->GetName(), detStr)) {
       AliInfo(Form("creating summable digits for %s", det->GetName()));
-      TStopwatch stopwatchDet;
-      stopwatchDet.Start();
+      AliCodeTimerAuto(Form("creating summable digits for %s", det->GetName()));
       det->Hits2SDigits();
-      AliInfo(Form("Execution time for %s: R:%.2fs C:%.2fs",
-	   det->GetName(),stopwatchDet.RealTime(),stopwatchDet.CpuTime()));
     }
   }
 
@@ -747,9 +740,6 @@ Bool_t AliSimulation::RunSDigitization(const char* detectors)
 
   delete runLoader;
 
-  AliInfo(Form("Execution time: R:%.2fs C:%.2fs",
-	   stopwatch.RealTime(),stopwatch.CpuTime()));
-
   return kTRUE;
 }
 
@@ -760,8 +750,7 @@ Bool_t AliSimulation::RunDigitization(const char* detectors,
 {
 // run the digitization and produce digits from sdigits
 
-  TStopwatch stopwatch;
-  stopwatch.Start();
+  AliCodeTimerAuto("")
 
   while (AliRunLoader::GetRunLoader()) delete AliRunLoader::GetRunLoader();
   if (gAlice) delete gAlice;
@@ -814,9 +803,6 @@ Bool_t AliSimulation::RunDigitization(const char* detectors,
 
   delete manager;
 
-  AliInfo(Form("Execution time: R:%.2fs C:%.2fs",
-	       stopwatch.RealTime(),stopwatch.CpuTime()));
-  
   return kTRUE;
 }
 
@@ -825,8 +811,7 @@ Bool_t AliSimulation::RunHitsDigitization(const char* detectors)
 {
 // run the digitization and produce digits from hits
 
-  TStopwatch stopwatch;
-  stopwatch.Start();
+  AliCodeTimerAuto("")
 
   AliRunLoader* runLoader = LoadRun("READ");
   if (!runLoader) return kFALSE;
@@ -852,9 +837,6 @@ Bool_t AliSimulation::RunHitsDigitization(const char* detectors)
   //PH Temporary fix to avoid interference with the PHOS loder/getter
   //PH The problem has to be solved in more general way 09/06/05
 
-  AliInfo(Form("Execution time: R:%.2fs C:%.2fs",
-	       stopwatch.RealTime(),stopwatch.CpuTime()));
-
   return kTRUE;
 }
 
@@ -872,8 +854,7 @@ Bool_t AliSimulation::WriteRawData(const char* detectors,
 // to a root file.
 // If deleteIntermediateFiles is true, the DATE file is deleted afterwards.
 
-  TStopwatch stopwatch;
-  stopwatch.Start();
+  AliCodeTimerAuto("")
 
   if (!WriteRawFiles(detectors)) {
     if (fStopOnError) return kFALSE;
@@ -906,9 +887,6 @@ Bool_t AliSimulation::WriteRawData(const char* detectors,
     }
   }
 
-  AliInfo(Form("Execution time: R:%.2fs C:%.2fs",
-	       stopwatch.RealTime(),stopwatch.CpuTime()));
-
   return kTRUE;
 }
 
@@ -917,6 +895,8 @@ Bool_t AliSimulation::WriteRawFiles(const char* detectors)
 {
 // convert the digits to raw data DDL files
 
+  AliCodeTimerAuto("")
+  
   AliRunLoader* runLoader = LoadRun("READ");
   if (!runLoader) return kFALSE;
 
@@ -956,6 +936,7 @@ Bool_t AliSimulation::WriteRawFiles(const char* detectors)
   }
 
   delete runLoader;
+  
   return kTRUE;
 }
 
@@ -964,6 +945,8 @@ Bool_t AliSimulation::ConvertRawFilesToDate(const char* dateFileName)
 {
 // convert raw data DDL files to a DATE file with the program "dateStream"
 
+  AliCodeTimerAuto("")
+  
   char* path = gSystem->Which(gSystem->Getenv("PATH"), "dateStream");
   if (!path) {
     AliError("the program dateStream was not found");

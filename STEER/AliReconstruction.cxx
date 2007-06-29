@@ -119,11 +119,11 @@
 #include <TSystem.h>
 #include <TROOT.h>
 #include <TPluginManager.h>
-#include <TStopwatch.h>
 #include <TGeoManager.h>
 #include <TLorentzVector.h>
 
 #include "AliReconstruction.h"
+#include "AliCodeTimer.h"
 #include "AliReconstructor.h"
 #include "AliLog.h"
 #include "AliRunLoader.h"
@@ -295,6 +295,8 @@ AliReconstruction::~AliReconstruction()
   CleanUp();
   fOptions.Delete();
   fSpecCDBUri.Delete();
+
+  AliCodeTimer::Instance()->Print();
 }
 
 //_____________________________________________________________________________
@@ -494,6 +496,8 @@ Bool_t AliReconstruction::Run(const char* input)
 {
 // run the reconstruction
 
+  AliCodeTimerAuto("")
+  
   // set the input
   if (!input) input = fInput.Data();
   TString fileName(input);
@@ -553,10 +557,6 @@ Bool_t AliReconstruction::Run(const char* input)
       return kFALSE;
     }      
   }
-
-
-  TStopwatch stopwatch;
-  stopwatch.Start();
 
   // get the possibly already existing ESD file and tree
   AliESD* esd = new AliESD(); AliESD* hltesd = new AliESD();
@@ -795,9 +795,6 @@ Bool_t AliReconstruction::Run(const char* input)
   }
 
 
-  AliInfo(Form("Execution time for filling ESD : R:%.2fs C:%.2fs",
-	       stopwatch.RealTime(),stopwatch.CpuTime()));
-
   file->cd();
   if (fWriteESDfriend)
     tree->SetBranchStatus("ESDfriend*",0);
@@ -826,8 +823,7 @@ Bool_t AliReconstruction::RunLocalReconstruction(const TString& detectors)
 {
 // run the local reconstruction
 
-  TStopwatch stopwatch;
-  stopwatch.Start();
+  AliCodeTimerAuto("")
 
   AliCDBManager* man = AliCDBManager::Instance();
   Bool_t origCache = man->GetCacheFlag();
@@ -839,25 +835,26 @@ Bool_t AliReconstruction::RunLocalReconstruction(const TString& detectors)
     if (!reconstructor) continue;
     if (reconstructor->HasLocalReconstruction()) continue;
 
+    AliCodeTimerStart(Form("running reconstruction for %s", fgkDetectorName[iDet]));
     AliInfo(Form("running reconstruction for %s", fgkDetectorName[iDet]));
-    TStopwatch stopwatchDet;
-    stopwatchDet.Start();
-
+    
+    AliCodeTimerStart(Form("Loading calibration data from OCDB for %s", fgkDetectorName[iDet]));                          
     AliInfo(Form("Loading calibration data from OCDB for %s", fgkDetectorName[iDet]));
 
     man->SetCacheFlag(kTRUE);
     TString calibPath = Form("%s/Calib/*", fgkDetectorName[iDet]);
     man->GetAll(calibPath); // entries are cached!
 
+    AliCodeTimerStop(Form("Loading calibration data from OCDB for %s", fgkDetectorName[iDet]));
+     
     if (fRawReader) {
       fRawReader->RewindEvents();
       reconstructor->Reconstruct(fRunLoader, fRawReader);
     } else {
       reconstructor->Reconstruct(fRunLoader);
     }
-    AliInfo(Form("Execution time for %s: R:%.2fs C:%.2fs",
-		 fgkDetectorName[iDet],
-		 stopwatchDet.RealTime(),stopwatchDet.CpuTime()));
+     
+     AliCodeTimerStop(Form("running reconstruction for %s", fgkDetectorName[iDet]));
 
     // unload calibration data
     man->UnloadFromCache(calibPath);
@@ -872,9 +869,6 @@ Bool_t AliReconstruction::RunLocalReconstruction(const TString& detectors)
     if (fStopOnError) return kFALSE;
   }
 
-  AliInfo(Form("Execution time: R:%.2fs C:%.2fs",
-	       stopwatch.RealTime(),stopwatch.CpuTime()));
-
   return kTRUE;
 }
 
@@ -883,8 +877,7 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
 {
 // run the local reconstruction
 
-  TStopwatch stopwatch;
-  stopwatch.Start();
+  AliCodeTimerAuto("")
 
   TString detStr = detectors;
   for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
@@ -897,8 +890,8 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
     if (fRawReader && reconstructor->HasDigitConversion()) {
       AliInfo(Form("converting raw data digits into root objects for %s", 
 		   fgkDetectorName[iDet]));
-      TStopwatch stopwatchDet;
-      stopwatchDet.Start();
+      AliCodeTimerAuto(Form("converting raw data digits into root objects for %s", 
+                            fgkDetectorName[iDet]));
       loader->LoadDigits("update");
       loader->CleanDigits();
       loader->MakeDigitsContainer();
@@ -906,16 +899,12 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
       reconstructor->ConvertDigits(fRawReader, digitsTree);
       loader->WriteDigits("OVERWRITE");
       loader->UnloadDigits();
-      AliInfo(Form("Execution time for %s: R:%.2fs C:%.2fs",
-		   fgkDetectorName[iDet],
-		   stopwatchDet.RealTime(),stopwatchDet.CpuTime()));
     }
 
     // local reconstruction
     if (!reconstructor->HasLocalReconstruction()) continue;
     AliInfo(Form("running reconstruction for %s", fgkDetectorName[iDet]));
-    TStopwatch stopwatchDet;
-    stopwatchDet.Start();
+    AliCodeTimerAuto(Form("running reconstruction for %s", fgkDetectorName[iDet]));
     loader->LoadRecPoints("update");
     loader->CleanRecPoints();
     loader->MakeRecPointsContainer();
@@ -935,9 +924,6 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
     }
     loader->WriteRecPoints("OVERWRITE");
     loader->UnloadRecPoints();
-    AliInfo(Form("Execution time for %s: R:%.2fs C:%.2fs",
-		 fgkDetectorName[iDet],
-		 stopwatchDet.RealTime(),stopwatchDet.CpuTime()));
   }
 
   if ((detStr.CompareTo("ALL") != 0) && !detStr.IsNull()) {
@@ -946,9 +932,6 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
     if (fStopOnError) return kFALSE;
   }
   
-  AliInfo(Form("Execution time: R:%.2fs C:%.2fs",
-	       stopwatch.RealTime(),stopwatch.CpuTime()));
-
   return kTRUE;
 }
 
@@ -957,8 +940,7 @@ Bool_t AliReconstruction::RunVertexFinder(AliESD*& esd)
 {
 // run the barrel tracking
 
-  TStopwatch stopwatch;
-  stopwatch.Start();
+  AliCodeTimerAuto("")
 
   AliESDVertex* vertex = NULL;
   Double_t vtxPos[3] = {0, 0, 0};
@@ -1006,9 +988,6 @@ Bool_t AliReconstruction::RunVertexFinder(AliESD*& esd)
   }  
   delete vertex;
 
-  AliInfo(Form("Execution time: R:%.2fs C:%.2fs",
-	       stopwatch.RealTime(),stopwatch.CpuTime()));
-
   return kTRUE;
 }
 
@@ -1017,8 +996,7 @@ Bool_t AliReconstruction::RunHLTTracking(AliESD*& esd)
 {
 // run the HLT barrel tracking
 
-  TStopwatch stopwatch;
-  stopwatch.Start();
+  AliCodeTimerAuto("")
 
   if (!fRunLoader) {
     AliError("Missing runLoader!");
@@ -1066,9 +1044,6 @@ Bool_t AliReconstruction::RunHLTTracking(AliESD*& esd)
     delete tracker;
   }
 
-  AliInfo(Form("Execution time: R:%.2fs C:%.2fs",
-	       stopwatch.RealTime(),stopwatch.CpuTime()));
-
   return kTRUE;
 }
 
@@ -1077,8 +1052,7 @@ Bool_t AliReconstruction::RunMuonTracking(AliESD*& esd)
 {
 // run the muon spectrometer tracking
 
-  TStopwatch stopwatch;
-  stopwatch.Start();
+  AliCodeTimerAuto("")
 
   if (!fRunLoader) {
     AliError("Missing runLoader!");
@@ -1129,9 +1103,6 @@ Bool_t AliReconstruction::RunMuonTracking(AliESD*& esd)
 
   delete tracker;
   
-  AliInfo(Form("Execution time: R:%.2fs C:%.2fs",
-	       stopwatch.RealTime(),stopwatch.CpuTime()));
-
   return kTRUE;
 }
 
@@ -1141,8 +1112,7 @@ Bool_t AliReconstruction::RunTracking(AliESD*& esd)
 {
 // run the barrel tracking
 
-  TStopwatch stopwatch;
-  stopwatch.Start();
+  AliCodeTimerAuto("")
 
   AliInfo("running tracking");
 
@@ -1258,9 +1228,6 @@ Bool_t AliReconstruction::RunTracking(AliESD*& esd)
     track->RelateToVertex(esd->GetVertex(),fieldZ, kMaxD);
   }
   
-  AliInfo(Form("Execution time: R:%.2fs C:%.2fs",
-	       stopwatch.RealTime(),stopwatch.CpuTime()));
-
   return kTRUE;
 }
 
@@ -1269,9 +1236,7 @@ Bool_t AliReconstruction::FillESD(AliESD*& esd, const TString& detectors)
 {
 // fill the event summary data
 
-  TStopwatch stopwatch;
-  stopwatch.Start();
-  AliInfo("filling ESD");
+  AliCodeTimerAuto("")
 
   TString detStr = detectors;
   for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
@@ -1326,9 +1291,6 @@ Bool_t AliReconstruction::FillESD(AliESD*& esd, const TString& detectors)
     if (fStopOnError) return kFALSE;
   }
 
-  AliInfo(Form("Execution time: R:%.2fs C:%.2fs",
-	       stopwatch.RealTime(),stopwatch.CpuTime()));
-
   return kTRUE;
 }
 
@@ -1339,6 +1301,8 @@ Bool_t AliReconstruction::FillTriggerESD(AliESD*& esd)
   // stored in Trigger.root file and fills
   // the corresponding esd entries
 
+  AliCodeTimerAuto("")
+  
   AliInfo("Filling trigger information into the ESD");
 
   if (fRawReader) {
