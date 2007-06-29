@@ -12,6 +12,9 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
+/* $Id$*/
+
 ////////////////////////////////////////////////////////////////////////////
 //            Implementation of the ITS clusterer V2 class                //
 //                                                                        //
@@ -37,15 +40,14 @@ ClassImp(AliITSClusterFinderV2SDD)
 AliITSClusterFinderV2SDD::AliITSClusterFinderV2SDD(AliITSDetTypeRec* dettyp):AliITSClusterFinderV2(dettyp),
 fNySDD(256),
 fNzSDD(256),
-fYpitchSDD(0.01825),
 fZpitchSDD(0.02940),
 fHwSDD(3.5085),
 fHlSDD(3.7632),
-fYoffSDD(0.0425){
+fTimeOffsetSDD(0.){
 
   //Default constructor
 
-
+  SetTimeOffset();
 }
  
 
@@ -187,49 +189,21 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
 	     }   
 	   }
 	 
-	 /* 
-	    Float_t s2 = c.GetSigmaY2()/c.GetQ() - c.GetY()*c.GetY();
-	    Float_t w=par->GetPadPitchWidth(sec);
-	    c.SetSigmaY2(s2);
-	    if (s2 != 0.) {
-	    c.SetSigmaY2(c.GetSigmaY2()*0.108);
-	    if (sec<par->GetNInnerSector()) c.SetSigmaY2(c.GetSigmaY2()*2.07);
-	    }	 
-	    s2 = c.GetSigmaZ2()/c.GetQ() - c.GetZ()*c.GetZ();
-	    w=par->GetZWidth();
-	    c.SetSigmaZ2(s2);
-	    
-	    if (s2 != 0.) {
-	    c.SetSigmaZ2(c.GetSigmaZ2()*0.169);
-	    if (sec<par->GetNInnerSector()) c.SetSigmaZ2(c.GetSigmaZ2()*1.77);
-	    }
-	 */
+
 
          Float_t y=c.GetY(),z=c.GetZ(), q=c.GetQ();
          y/=q; z/=q;
-	 //
-	 //Float_t s2 = c.GetSigmaY2()/c.GetQ() - y*y;
-	 // c.SetSigmaY2(s2);
-	 //s2 = c.GetSigmaZ2()/c.GetQ() - z*z;
-         //c.SetSigmaZ2(s2);
-	 //
+
 
 	 Float_t yyyy = y;
-         //y=(y-0.5)*fYpitchSDD;
-         //y-=fHwSDD;
-         //y-=fYoffSDD;  //delay ?
-         //if (s) y=-y;
 
          z=(z-0.5)*fZpitchSDD;
          z-=fHlSDD;
 	 Float_t zdet = z;
-	 //      y=-(-y+fYshift[fModule]);
-	 // z=  -z+fZshift[fModule];
-	 //      c.SetY(y);
-	 //  c.SetZ(z);
 	 Float_t timebin = GetSeg()->Dpx(0);
-	 Float_t xdet = cal->GetDriftPath((yyyy-0.5)*timebin,0);
-	 xdet=xdet/10000.-fHwSDD-fYoffSDD;
+	 Float_t driftTime = (yyyy-0.5)*timebin - fTimeOffsetSDD;
+	 Float_t xdet = cal->GetDriftPath(driftTime,0);
+	 xdet=xdet/10000.-fHwSDD;
 	 if (s) xdet=-xdet;
 	 
 	 CorrectPosition(zdet,xdet);
