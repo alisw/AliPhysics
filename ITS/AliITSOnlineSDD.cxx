@@ -24,14 +24,18 @@
 
 ClassImp(AliITSOnlineSDD)
 //______________________________________________________________________
-  AliITSOnlineSDD::AliITSOnlineSDD():TObject(),fModuleId(0),fSide(0)
+  AliITSOnlineSDD::AliITSOnlineSDD():TObject(),fModuleId(0),fSide(0),fFirstGoodTB(0),fLastGoodTB(0)
 {
   // default constructor
+  SetFirstGoodTB();
+  SetLastGoodTB();
 }
 //______________________________________________________________________
-  AliITSOnlineSDD::AliITSOnlineSDD(Int_t mod, Int_t sid):TObject(),fModuleId(0),fSide(0)
+  AliITSOnlineSDD::AliITSOnlineSDD(Int_t mod, Int_t sid):TObject(),fModuleId(0),fSide(0),fFirstGoodTB(0),fLastGoodTB(0)
 {
   // standard constructor
   SetModule(mod);
   SetDetectorSide(sid);
+  SetFirstGoodTB();
+  SetLastGoodTB();
 }

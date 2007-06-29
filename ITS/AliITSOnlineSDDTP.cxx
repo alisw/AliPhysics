@@ -30,18 +30,20 @@
 ClassImp(AliITSOnlineSDDTP)
 
 //______________________________________________________________________
-AliITSOnlineSDDTP::AliITSOnlineSDDTP():AliITSOnlineSDD(),fNEvents(0),fDAC(0.),fNSigmaGain(0.)
+AliITSOnlineSDDTP::AliITSOnlineSDDTP():AliITSOnlineSDD(),fDAC(0.),fNSigmaGain(0.),fNSigmaNoise(0.)
 {
   // default constructor
   Reset();
   SetNSigmaGain();
+  SetNSigmaNoise();
 }
 //______________________________________________________________________
-AliITSOnlineSDDTP::AliITSOnlineSDDTP(Int_t mod, Int_t sid, Float_t xDAC):AliITSOnlineSDD(mod,sid),fNEvents(0),fDAC(xDAC),fNSigmaGain(0.)
+AliITSOnlineSDDTP::AliITSOnlineSDDTP(Int_t mod, Int_t sid, Float_t xDAC):AliITSOnlineSDD(mod,sid),fDAC(xDAC),fNSigmaGain(0.),fNSigmaNoise(0.)
 {
   // standard constructor
   Reset();
   SetNSigmaGain();
+  SetNSigmaNoise();
 }
 //______________________________________________________________________
 AliITSOnlineSDDTP::~AliITSOnlineSDDTP(){
@@ -50,8 +52,8 @@ AliITSOnlineSDDTP::~AliITSOnlineSDDTP(){
 //______________________________________________________________________
 void AliITSOnlineSDDTP::Reset(){
   //
-  fNEvents=0;
   for(Int_t i=0;i<fgkNAnodes;i++){
+    fNEvents[i]=0;
     fGoodAnode[i]=1;
     fBaseline[i]=0.;
     fCMN[i]=0.;
@@ -66,21 +68,22 @@ void AliITSOnlineSDDTP::Reset(){
 //______________________________________________________________________
 void AliITSOnlineSDDTP::AddEvent(TH2F* hrawd){
   // 
-  fNEvents++;
-  Double_t tbmax=(Double_t)hrawd->GetNbinsX();
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
     Float_t auxmax=0.;
     Int_t auxtb=0;
     if(!fGoodAnode[ian]) continue;
-    for(Int_t itb=0;itb<tbmax;itb++){
+    for(Int_t itb=fFirstGoodTB;itb<=fLastGoodTB;itb++){
       Float_t cnt=hrawd->GetBinContent(itb+1,ian+1);
       if(cnt>auxmax){ 
 	auxmax=cnt;
 	auxtb=itb;
       }
     }
-    fSumTPPeak[ian]+=auxmax-fBaseline[ian];
-    fTPPos[ian]+=auxtb;
+    if(auxmax>fBaseline[ian]+fNSigmaNoise*fRawNoise[ian]){
+      fSumTPPeak[ian]+=auxmax-fBaseline[ian];
+      fTPPos[ian]+=auxtb;
+      fNEvents[ian]++;
+    }
   }
 }
 //______________________________________________________________________
@@ -142,6 +145,7 @@ void AliITSOnlineSDDTP::StatGain(Float_t &mean, Float_t  &rms){
   Int_t cnt=0;
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
     if(!fGoodAnode[ian]) continue;
+    if(fNEvents[ian]==0) continue;
     sum+=GetChannelGain(ian);
     sumq+=TMath::Power(GetChannelGain(ian),2);
     cnt++;
