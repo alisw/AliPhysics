@@ -10,5 +10,6 @@
 #pragma link C++ class AliAnaGammaJet+;
 #pragma link C++ class AliAnaCaloTrigger+;
 #pragma link C++ class AliAnaGammaPhos+;
+#pragma link C++ class AliAnaScale+;
 
 #endif

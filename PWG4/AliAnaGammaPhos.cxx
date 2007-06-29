@@ -222,7 +222,7 @@ void AliAnaGammaPhos::Exec(Option_t *)
       }
     }    
   }
-  
+    
   PostData(0, fTreeA) ; 
   PostData(1, fOutputList);
 
@@ -241,14 +241,6 @@ void AliAnaGammaPhos::Init()
 }
 
 //______________________________________________________________________________
-void AliAnaGammaPhos:: Normalize(const Double_t norm) 
-{
-  // Normalize some histograms
-  fhPHOSEnergy->Scale(norm) ;
-  fhPHOSInvariantMass->Scale(norm) ;
-}  
-
-//______________________________________________________________________________
 void AliAnaGammaPhos::Terminate(Option_t *)
 {
   // Processing when the event loop is ended
@@ -263,6 +255,7 @@ void AliAnaGammaPhos::Terminate(Option_t *)
 //   fhPHOSInvariantMass  = (TH1D*)fOutputList->At(6);
 //   fhPHOSDigitsEvent    = (TH1I*)fOutputList->At(7);
 
+  
   Bool_t problem = kFALSE ; 
   AliInfo(Form(" *** %s Report:", GetName())) ; 
   printf("        PHOSEnergy Mean         : %5.3f , RMS : %5.3f \n", fhPHOSEnergy->GetMean(),         fhPHOSEnergy->GetRMS()         ) ;
