@@ -32,7 +32,6 @@ public:
   virtual void LocalInit() { Init() ; }
   virtual void Exec(Option_t * opt = "") ;
   const Float_t  GetPhotonId() const { return fPhotonId ; }
-  void Normalize(const Double_t norm = 1.0) ;  
   void SetDebugLevel(Int_t level) { fDebug = level ; }
   void SetPhotonId(Float_t threshold) { fPhotonId = threshold ; }
   virtual void Terminate(Option_t * opt = "") ;
@@ -45,7 +44,7 @@ private:
   AliAODEvent  * fAOD ;           //! AOD
   TClonesArray * fAODPhotons ;    //! reconstructed photons
   Int_t          fPhotonsInPhos ; //! number of photons found
-  TTree        * fTreeA ;         // tree of identified photons   
+  TTree        * fTreeA ;         // tree of identified photons 
   // task parameters
   Float_t   fPhotonId ;  // threshold for photon identification 
 

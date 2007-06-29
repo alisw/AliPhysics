@@ -1,5 +1,5 @@
 SRCS = AliAnaGammaDirect.cxx AliAnaGammaIsolCut.cxx AliAnaGammaHadron.cxx AliAnaGammaJet.cxx AliAnaCaloTrigger.cxx \
-       AliAnaGammaPhos.cxx
+       AliAnaGammaPhos.cxx AliAnaScale.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 
