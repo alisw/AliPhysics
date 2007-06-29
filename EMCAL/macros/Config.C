@@ -1,49 +1,84 @@
-//
-// Simple Config macro to generate some gammas heading toward the
-// EMCAL
+// One can use the configuration macro in compiled mode by
+// root [0] gSystem->Load("libgeant321");
+// root [0] gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include\
+//                   -I$ALICE_ROOT -I$ALICE/geant3/TGeant3");
+// root [0] .x grun.C(1,"Config.C++")
 
-static Int_t    eventsPerRun = 100;
-enum PprGeo_t 
-{
-    kHoles, kNoHoles
-};
-static PprGeo_t geo = kHoles;
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <Riostream.h>
+#include <TRandom.h>
+#include <TSystem.h>
+#include <TVirtualMC.h>
+#include <TGeant3TGeo.h>
+#include "STEER/AliRunLoader.h"
+#include "STEER/AliRun.h"
+#include "STEER/AliConfig.h"
+#include "PYTHIA6/AliDecayerPythia.h"
+#include "EVGEN/AliGenCocktail.h"
+#include "EVGEN/AliGenHIJINGpara.h"
+#include "STEER/AliMagFMaps.h"
+#include "STRUCT/AliBODY.h"
+#include "STRUCT/AliMAG.h"
+#include "STRUCT/AliABSOv3.h"
+#include "STRUCT/AliDIPOv3.h"
+#include "STRUCT/AliHALLv3.h"
+#include "STRUCT/AliFRAMEv2.h"
+#include "STRUCT/AliSHILv3.h"
+#include "STRUCT/AliPIPEv3.h"
+#include "ITS/AliITSvPPRasymmFMD.h"
+#include "TPC/AliTPCv2.h"
+#include "TOF/AliTOFv6T0.h"
+#include "HMPID/AliHMPIDv1.h"
+#include "ZDC/AliZDCv2.h"
+#include "TRD/AliTRDv1.h"
+#include "FMD/AliFMDv1.h"
+#include "MUON/AliMUONv1.h"
+#include "PHOS/AliPHOSv1.h"
+#include "PMD/AliPMDv1.h"
+#include "T0/AliT0v1.h"
+#include "EMCAL/AliEMCALv2.h"
+#include "ACORDE/AliACORDEv0.h"
+#include "VZERO/AliVZEROv7.h"
+#endif
+
+Float_t EtaToTheta(Float_t arg);
 
 void Config()
 {
+    // ThetaRange is (0., 180.). It was (0.28,179.72) 7/12/00 09:00
+    // Theta range given through pseudorapidity limits 22/6/2001
 
-    // AliLoader::SetDebug(5) ; 
     // Set Random Number seed
-    // gRandom->SetSeed(12345);
+  gRandom->SetSeed(123456); // Set 0 to use the currecnt time
+  AliLog::Message(AliLog::kInfo, Form("Seed for random number generation = %d",gRandom->GetSeed()), "Config.C", "Config.C", "Config()","Config.C", __LINE__);
 
-  TDatime *t = new TDatime();
-  UInt_t seed = t.Get();
-  //UInt_t seed = 613378658;
-
-  gRandom->SetSeed(seed);
-  cout<<"Seed for random number generation= "<<gRandom->GetSeed()<<endl;
 
    // libraries required by geant321
+#if defined(__CINT__)
     gSystem->Load("libgeant321");
+#endif
 
     new     TGeant3TGeo("C++ Interface to Geant3");
 
-    if (!gSystem->Getenv("CONFIG_FILE"))
-    {
-        cout<<"Config.C: Creating Run Loader ..."<<endl;
-        AliRunLoader* rl = AliRunLoader::Open("galice.root",AliConfig::GetDefaultEventFolderName(),
-                                              "recreate");
-        if (rl == 0x0)
-         {
-           gAlice->Fatal("Config.C","Can not instatiate the Run Loader");
-           return;
-         }
-        rl->SetCompressionLevel(2);
-        rl->SetNumberOfEventsPerFile(1000);
-        gAlice->SetRunLoader(rl);
-    }
+    AliRunLoader* rl=0x0;
 
-    TGeant3 *geant3 = (TGeant3 *) gMC;
+    AliLog::Message(AliLog::kInfo, "Creating Run Loader", "Config.C", "Config.C", "Config()"," Config.C", __LINE__);
+
+    rl = AliRunLoader::Open("galice.root",
+			    AliConfig::GetDefaultEventFolderName(),
+			    "recreate");
+    if (rl == 0x0)
+      {
+	gAlice->Fatal("Config.C","Can not instatiate the Run Loader");
+	return;
+      }
+    rl->SetCompressionLevel(2);
+    rl->SetNumberOfEventsPerFile(3);
+    gAlice->SetRunLoader(rl);
+
+    // Set the trigger configuration
+    gAlice->SetTriggerDescriptor("Pb-Pb");
+    cout<<"Trigger configuration is set to  Pb-Pb"<<endl;
 
     //
     // Set External decayer
@@ -52,44 +87,48 @@ void Config()
     decayer->SetForceDecay(kAll);
     decayer->Init();
     gMC->SetExternalDecayer(decayer);
-    //
-    //
-    //=======================================================================
-    // ******* GEANT STEERING parameters FOR ALICE SIMULATION *******
-    geant3->SetTRIG(1);         //Number of events to be processed 
-    geant3->SetSWIT(4, 10);
-    geant3->SetDEBU(0, 0, 1);
-    //geant3->SetSWIT(2,2);
-    geant3->SetDCAY(1);
-    geant3->SetPAIR(1);
-    geant3->SetCOMP(1);
-    geant3->SetPHOT(1);
-    geant3->SetPFIS(0);
-    geant3->SetDRAY(0);
-    geant3->SetANNI(1);
-    geant3->SetBREM(1);
-    geant3->SetMUNU(1);
-    geant3->SetCKOV(1);
-    geant3->SetHADR(1);         //Select pure GEANH (HADR 1) or GEANH/NUCRIN (HADR 3)
-    geant3->SetLOSS(2);
-    geant3->SetMULS(1);
-    geant3->SetRAYL(1);
-    geant3->SetAUTO(1);         //Select automatic STMIN etc... calc. (AUTO 1) or manual (AUTO 0)
-    geant3->SetABAN(0);         //Restore 3.16 behaviour for abandoned tracks
-    geant3->SetOPTI(2);         //Select optimisation level for GEANT geometry searches (0,1,2)
-    geant3->SetERAN(5.e-7);
-
-    Float_t cut = 1.e-3;        // 1MeV cut by default
-    Float_t tofmax = 1.e10;
-
-    //             GAM ELEC NHAD CHAD MUON EBREM MUHAB EDEL MUDEL MUPA TOFMAX
-    geant3->SetCUTS(cut, cut, cut, cut, cut, cut, cut, cut, cut, cut,
-                    tofmax);
-    //
     //=======================================================================
     // ************* STEERING parameters FOR ALICE SIMULATION **************
     // --- Specify event type to be tracked through the ALICE setup
     // --- All positions are in cm, angles in degrees, and P and E in GeV
+
+
+    gMC->SetProcess("DCAY",1);
+    gMC->SetProcess("PAIR",1);
+    gMC->SetProcess("COMP",1);
+    gMC->SetProcess("PHOT",1);
+    gMC->SetProcess("PFIS",0);
+    gMC->SetProcess("DRAY",0);
+    gMC->SetProcess("ANNI",1);
+    gMC->SetProcess("BREM",1);
+    gMC->SetProcess("MUNU",1);
+    gMC->SetProcess("CKOV",1);
+    gMC->SetProcess("HADR",1);
+    gMC->SetProcess("LOSS",2);
+    gMC->SetProcess("MULS",1);
+    gMC->SetProcess("RAYL",1);
+
+    Float_t cut = 1.e-3;        // 1MeV cut by default
+    Float_t tofmax = 1.e10;
+
+    gMC->SetCut("CUTGAM", cut);
+    gMC->SetCut("CUTELE", cut);
+    gMC->SetCut("CUTNEU", cut);
+    gMC->SetCut("CUTHAD", cut);
+    gMC->SetCut("CUTMUO", cut);
+    gMC->SetCut("BCUTE",  cut); 
+    gMC->SetCut("BCUTM",  cut); 
+    gMC->SetCut("DCUTE",  cut); 
+    gMC->SetCut("DCUTM",  cut); 
+    gMC->SetCut("PPCUTM", cut);
+    gMC->SetCut("TOFMAX", tofmax); 
+
+
+    int     nParticles = 100;
+    if (gSystem->Getenv("CONFIG_NPARTICLES"))
+    {
+        nParticles = atoi(gSystem->Getenv("CONFIG_NPARTICLES"));
+    }
 
     AliGenBox *gener = new AliGenBox(5);
     gener->SetMomentumRange(50.,100.);
@@ -100,7 +139,7 @@ void Config()
     gener->SetSigma(0,0,0);         //Sigma in (X,Y,Z) (cm) on IP position
     gener->SetPart(kGamma);
     gener->Init();
- 
+
     // 
     // Activate this line if you want the vertex smearing to happen
     // track by track
@@ -132,9 +171,7 @@ void Config()
     Int_t   iEMCAL =  1;
     Int_t   iACORDE   =  0;
     Int_t   iVZERO =  0;
-
     rl->CdGAFile();
-
     //=================== Alice BODY parameters =============================
     AliBODY *BODY = new AliBODY("BODY", "Alice envelop");
 
@@ -150,21 +187,21 @@ void Config()
     if (iABSO)
     {
         //=================== ABSO parameters ============================
-        AliABSO *ABSO = new AliABSOv0("ABSO", "Muon Absorber");
+        AliABSO *ABSO = new AliABSOv3("ABSO", "Muon Absorber");
     }
 
     if (iDIPO)
     {
         //=================== DIPO parameters ============================
 
-        AliDIPO *DIPO = new AliDIPOv2("DIPO", "Dipole version 2");
+        AliDIPO *DIPO = new AliDIPOv3("DIPO", "Dipole version 3");
     }
 
     if (iHALL)
     {
         //=================== HALL parameters ============================
 
-        AliHALL *HALL = new AliHALL("HALL", "Alice Hall");
+        AliHALL *HALL = new AliHALLv3("HALL", "Alice Hall");
     }
 
 
@@ -173,18 +210,13 @@ void Config()
         //=================== FRAME parameters ============================
 
         AliFRAMEv2 *FRAME = new AliFRAMEv2("FRAME", "Space Frame");
-	if (geo == kHoles) {
-	    FRAME->SetHoles(1);
-	} else {
-	    FRAME->SetHoles(0);
-	}
     }
 
     if (iSHIL)
     {
         //=================== SHIL parameters ============================
 
-        AliSHIL *SHIL = new AliSHILv2("SHIL", "Shielding Version 2");
+        AliSHIL *SHIL = new AliSHILv3("SHIL", "Shielding Version 3");
     }
 
 
@@ -192,7 +224,7 @@ void Config()
     {
         //=================== PIPE parameters ============================
 
-        AliPIPE *PIPE = new AliPIPEv0("PIPE", "Beam Pipe");
+        AliPIPE *PIPE = new AliPIPEv3("PIPE", "Beam Pipe");
     }
  
     if(iITS) {
@@ -210,16 +242,34 @@ void Config()
     //
     // Detailed geometries:         
     //
-	AliITSvPPRasymm *ITS  = new AliITSvPPRasymm("ITS","New ITS PPR detailed version with asymmetric services");
-	ITS->SetMinorVersion(2);					 // don't touch this parameter if you're not an ITS developer
-	ITS->SetReadDet(kFALSE);					 // don't touch this parameter if you're not an ITS developer
-    //    ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det");  // don't touch this parameter if you're not an ITS developer
+    //
+    //
+	AliITSvPPRasymmFMD *ITS  = new AliITSvPPRasymmFMD("ITS","ITS PPR detailed version with asymmetric services");
+	ITS->SetMinorVersion(2);  // don't touch this parameter if you're not an ITS developer
+	ITS->SetReadDet(kFALSE);	  // don't touch this parameter if you're not an ITS developer
+	//    ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det");  // don't touch this parameter if you're not an ITS developer
 	ITS->SetThicknessDet1(200.);   // detector thickness on layer 1 must be in the range [100,300]
 	ITS->SetThicknessDet2(200.);   // detector thickness on layer 2 must be in the range [100,300]
-	ITS->SetThicknessChip1(200.);  // chip thickness on layer 1 must be in the range [150,300]
-	ITS->SetThicknessChip2(200.);  // chip thickness on layer 2 must be in the range [150,300]
-	ITS->SetRails(0);	     // 1 --> rails in ; 0 --> rails out
-	ITS->SetCoolingFluid(1);   // 1 --> water ; 0 --> freon
+	ITS->SetThicknessChip1(150.);  // chip thickness on layer 1 must be in the range [150,300]
+	ITS->SetThicknessChip2(150.);  // chip thickness on layer 2 must be in the range [150,300]
+	ITS->SetRails(0);	       // 1 --> rails in ; 0 --> rails out
+	ITS->SetCoolingFluid(1);       // 1 --> water ; 0 --> freon
+
+ 
+    //
+    // Coarse geometries (warning: no hits are produced with these coarse geometries and they unuseful 
+    // for reconstruction !):
+    //                                                     
+    //
+    //AliITSvPPRcoarseasymm *ITS  = new AliITSvPPRcoarseasymm("ITS","New ITS PPR coarse version with asymmetric services");
+    //ITS->SetRails(0);                // 1 --> rails in ; 0 --> rails out
+    //ITS->SetSupportMaterial(0);      // 0 --> Copper ; 1 --> Aluminum ; 2 --> Carbon
+    //
+    //AliITS *ITS  = new AliITSvPPRcoarsesymm("ITS","New ITS PPR coarse version with symmetric services");
+    //ITS->SetRails(0);                // 1 --> rails in ; 0 --> rails out
+    //ITS->SetSupportMaterial(0);      // 0 --> Copper ; 1 --> Aluminum ; 2 --> Carbon
+    //                      
+    //
     //
     // Geant3 <-> EUCLID conversion
     // ============================
@@ -234,46 +284,21 @@ void Config()
 
     if (iTPC)
     {
-        //============================ TPC parameters ================================
-        // --- This allows the user to specify sectors for the SLOW (TPC geometry 2)
-        // --- Simulator. SecAL (SecAU) <0 means that ALL lower (upper)
-        // --- sectors are specified, any value other than that requires at least one 
-        // --- sector (lower or upper)to be specified!
-        // --- Reminder: sectors 1-24 are lower sectors (1-12 -> z>0, 13-24 -> z<0)
-        // ---           sectors 25-72 are the upper ones (25-48 -> z>0, 49-72 -> z<0)
-        // --- SecLows - number of lower sectors specified (up to 6)
-        // --- SecUps - number of upper sectors specified (up to 12)
-        // --- Sens - sensitive strips for the Slow Simulator !!!
-        // --- This does NOT work if all S or L-sectors are specified, i.e.
-        // --- if SecAL or SecAU < 0
-        //
-        //
-        //-----------------------------------------------------------------------------
-
-        //  gROOT->LoadMacro("SetTPCParam.C");
-        //  AliTPCParam *param = SetTPCParam();
+        //============================ TPC parameters ===================
         AliTPC *TPC = new AliTPCv2("TPC", "Default");
-
-        // All sectors included 
-        TPC->SetSecAU(-1);
-        TPC->SetSecAL(-1);
     }
 
 
     if (iTOF) {
-	if (geo == kHoles) {
         //=================== TOF parameters ============================
-	    AliTOF *TOF = new AliTOFv2FHoles("TOF", "TOF with Holes");
-	} else {
-	    AliTOF *TOF = new AliTOFv4T0("TOF", "normal TOF");
-	}
+	AliTOF *TOF = new AliTOFv6T0("TOF", "normal TOF");
     }
 
 
     if (iHMPID)
     {
         //=================== HMPID parameters ===========================
-        AliHMPID *HMPID = new AliHMPIDv3("HMPID", "normal HMPID");
+        AliHMPID *HMPID = new AliHMPIDv1("HMPID", "normal HMPID");
 
     }
 
@@ -290,33 +315,18 @@ void Config()
         //=================== TRD parameters ============================
 
         AliTRD *TRD = new AliTRDv1("TRD", "TRD slow simulator");
-
-        // Select the gas mixture (0: 97% Xe + 3% isobutane, 1: 90% Xe + 10% CO2)
-        TRD->SetGasMix(1);
-	if (geo == kHoles) {
-	    // With hole in front of PHOS
-	    TRD->SetPHOShole();
-	    // With hole in front of HMPID
-	    TRD->SetHMPIDhole();
-	}
-	    // Switch on TR
-	    AliTRDsim *TRDsim = TRD->CreateTR();
     }
 
     if (iFMD)
     {
         //=================== FMD parameters ============================
 	AliFMD *FMD = new AliFMDv1("FMD", "normal FMD");
-        FMD->SetRingsSi1(256);
-        FMD->SetRingsSi2(128);
-        FMD->SetSectorsSi1(20);
-        FMD->SetSectorsSi2(40);      
    }
 
     if (iMUON)
     {
         //=================== MUON parameters ===========================
-
+        // New MUONv1 version (geometry defined via builders)
         AliMUON *MUON = new AliMUONv1("MUON", "default");
     }
     //=================== PHOS parameters ===========================
@@ -354,8 +364,10 @@ void Config()
      if (iVZERO)
     {
         //=================== ACORDE parameters ============================
-        AliVZERO *VZERO = new AliVZEROv2("VZERO", "normal VZERO");
+        AliVZERO *VZERO = new AliVZEROv7("VZERO", "normal VZERO");
     }
+
+     AliLog::Message(AliLog::kInfo, "End of Config", "Config.C", "Config.C", "Config()"," Config.C", __LINE__);
 
 }
 
