@@ -33,7 +33,7 @@ AliTrackFitterStraight.cxx\
 AliTrackResiduals.cxx AliTrackResidualsChi2.cxx AliTrackResidualsFast.cxx AliTrackResidualsLinear.cxx\
 AliAlignmentTracks.cxx \
 AliExpression.cxx \
-AliCTPRawData.cxx AliCTPRawStream.cxx \
+AliCTPRawStream.cxx \
 AliMathBase.cxx AliSignalProcesor.cxx \
 AliTracker.cxx AliCluster.cxx AliCluster3D.cxx \
 AliHelix.cxx AliV0.cxx AliKink.cxx \

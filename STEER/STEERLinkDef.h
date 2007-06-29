@@ -117,7 +117,6 @@
 #pragma link C++ class AliTriggerCondition+;
 #pragma link C++ class AliTriggerDescriptor+;
 #pragma link C++ class AliCentralTrigger+;
-#pragma link C++ class AliCTPRawData+;
 #pragma link C++ class AliCTPRawStream+;
 #pragma link C++ class AliMathBase+;
 #pragma link C++ class AliSignalProcesor+;

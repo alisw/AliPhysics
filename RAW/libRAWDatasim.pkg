@@ -1,7 +1,8 @@
 #-*- Mode: Makefile -*-
 
 SRCS:=  AliBitPacking.cxx AliAltroBuffer.cxx \
-	AliFstream.cxx
+	AliFstream.cxx \
+	AliCTPRawData.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 
