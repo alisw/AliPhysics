@@ -31,6 +31,7 @@ class AliRawReaderDateV3: public AliRawReader {
     virtual const UInt_t* GetSubEventAttributes() const;
     virtual UInt_t   GetLDCId() const;
     virtual UInt_t   GetGDCId() const;
+    virtual UInt_t   GetTimestamp() const;
 
     virtual Int_t    GetEquipmentSize() const;
     virtual Int_t    GetEquipmentType() const;

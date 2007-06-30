@@ -199,6 +199,13 @@ UInt_t AliRawReaderDateV3::GetGDCId() const
   return UInt_t(-1);
 }
 
+UInt_t AliRawReaderDateV3::GetTimestamp() const
+{
+// get the timestamp from the event header
+
+  if (!fEvent) return 0;
+  return fEvent->time;
+}
 
 Int_t AliRawReaderDateV3::GetEquipmentSize() const
 {

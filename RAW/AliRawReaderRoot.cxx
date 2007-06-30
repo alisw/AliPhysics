@@ -266,6 +266,11 @@ UInt_t AliRawReaderRoot::GetGDCId() const
   return fEvent->GetHeader()->Get("GdcId");
 }
 
+UInt_t AliRawReaderRoot::GetTimestamp() const
+{
+  if (!fEvent) return 0;
+  return fEvent->GetHeader()->Get("Timestamp");
+}
 
 Int_t AliRawReaderRoot::GetEquipmentSize() const
 {

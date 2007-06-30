@@ -51,6 +51,7 @@ class AliRawReader: public TObject {
     virtual const UInt_t* GetSubEventAttributes() const = 0;
     virtual UInt_t   GetLDCId() const = 0;
     virtual UInt_t   GetGDCId() const = 0;
+    virtual UInt_t   GetTimestamp() const = 0;
 
     virtual Int_t    GetEquipmentSize() const = 0;
     virtual Int_t    GetEquipmentType() const = 0;
