@@ -223,21 +223,21 @@ AliVZEROCalibData* AliVZEROReconstructor::GetCalibData() const
 
   entry = man->Get("VZERO/Calib/Data");
 
-  if(!entry){
-    AliWarning("Load of calibration data from default storage failed!");
-    AliWarning("Calibration data will be loaded from local storage ($ALICE_ROOT)");
-    Int_t runNumber = man->GetRun();
-    entry = man->GetStorage("local://$ALICE_ROOT")
-      ->Get("VZERO/Calib/Data",runNumber);
-	
-  }
+//   if(!entry){
+//     AliWarning("Load of calibration data from default storage failed!");
+//     AliWarning("Calibration data will be loaded from local storage ($ALICE_ROOT)");
+//     Int_t runNumber = man->GetRun();
+//     entry = man->GetStorage("local://$ALICE_ROOT")
+//       ->Get("VZERO/Calib/Data",runNumber);
+// 	
+//   }
 
   // Retrieval of data in directory VZERO/Calib/Data:
 
   AliVZEROCalibData *calibdata = 0;
 
   if (entry) calibdata = (AliVZEROCalibData*) entry->GetObject();
-  if (!calibdata)  AliError("No calibration data from calibration database !");
+  if (!calibdata)  AliFatal("No calibration data from calibration database !");
 
   return calibdata;
 }
