@@ -181,3 +181,4 @@ AliHLTMUONConstants::fgkPairsDecisionBlockDataType = {
 };
 
 const char* AliHLTMUONConstants::fgkRecHitsSourceId = "DimuRecHitsSource";
+const char* AliHLTMUONConstants::fgkMansoTrackerFSMId = "DimuMansoTrackerFSM";

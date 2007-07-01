@@ -157,6 +157,11 @@ public:
 	{
 		return fgkRecHitsSourceId;
 	}
+	
+	static const char* MansoTrackerFSMId()
+	{
+		return fgkMansoTrackerFSMId;
+	}
 
 private:
 
@@ -195,6 +200,7 @@ private:
 	
 	// Component ID names:
 	static const char* fgkRecHitsSourceId; // Reconstructed hit component name.
+	static const char* fgkMansoTrackerFSMId; // Manso tracker FSM implementation component name.
 };
 
 #endif // ALIHLTMUONCONSTANTS_H
