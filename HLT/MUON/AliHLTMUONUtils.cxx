@@ -114,13 +114,25 @@ void AliHLTMUONUtils::UnpackPairDecisionBits(
 }
 
 
-bool AliHLTMUONUtils::HeaderOk(const AliHLTMUONTriggerRecordsBlockStruct& block)
+bool AliHLTMUONUtils::HeaderOk(
+		const AliHLTMUONTriggerRecordsBlockStruct& block,
+		WhyNotValid* reason
+	)
 {
 	// The block must have the correct type.
-	if (block.fHeader.fType != kTriggerRecordsDataBlock) return false;
+	if (block.fHeader.fType != kTriggerRecordsDataBlock)
+	{
+		if (reason != NULL) *reason = kHeaderContainsWrongType;
+		return false;
+	}
+	
 	// The block's record width must be the correct size.
 	if (block.fHeader.fRecordWidth != sizeof(AliHLTMUONTriggerRecordStruct))
+	{
+		if (reason != NULL) *reason = kHeaderContainsWrongRecordWidth;
 		return false;
+	}
+	
 	return true;
 }
 

@@ -164,10 +164,24 @@ public:
 		);
 
 	/**
+	 * These codes indicate the reason why a data block failed its
+	 * validity check.
+	 */
+	enum WhyNotValid
+	{
+		kNoReason,
+		kHeaderContainsWrongType,
+		kHeaderContainsWrongRecordWidth,
+	};
+
+	/**
 	 * Methods used to check if the header information corresponds to the
 	 * supposed type of the data block.
+	 * If the 'reason' parameter is not NULL then these methods will fill the
+	 * memory pointed to by reason with a code describing of why the header
+	 * is not valid, if and only if a problem is found with the data.
 	 */
-	static bool HeaderOk(const AliHLTMUONTriggerRecordsBlockStruct& block);
+	static bool HeaderOk(const AliHLTMUONTriggerRecordsBlockStruct& block, WhyNotValid* reason = NULL);
 	static bool HeaderOk(const AliHLTMUONTrigRecsDebugBlockStruct& block);
 	static bool HeaderOk(const AliHLTMUONTriggerChannelsBlockStruct& block);
 	static bool HeaderOk(const AliHLTMUONRecHitsBlockStruct& block);
