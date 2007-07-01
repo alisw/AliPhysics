@@ -100,6 +100,8 @@ public:
 	bool BufferSizeOk() const
 	{
 		// The block size must be at least sizeof(DataBlockType) bytes.
+		// Do not try read the header otherwise, because we could get a
+		// seg fault.
 		if (fSize < sizeof(DataBlockType)) return false;
 
 		// Now check if the size of the data block corresponds to the
@@ -121,7 +123,7 @@ public:
 	 */
 	const DataBlockType& BlockHeader() const
 	{
-		return fBlock;
+		return *fBlock;
 	}
 
 	/**
@@ -159,6 +161,17 @@ public:
 	 * Nentries().
 	 */
 	const DataElementType* GetArray() const { return fData; }
+
+	/**
+	 * Calculates the number of bytes used for the data block in the buffer.
+	 * This value should be the same as what is returned by BufferSize()
+	 * unless too much buffer space was allocated.
+	 */
+	AliHLTUInt32_t BytesUsed() const
+	{
+		assert( sizeof(DataElementType)	== fBlock->fHeader.fRecordWidth);
+		return sizeof(DataBlockType) + Nentries() * sizeof(DataElementType);
+	}
 
 	AliHLTUInt32_t BufferSize() { return fSize; }
 	

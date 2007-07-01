@@ -152,12 +152,12 @@ public:
 	 */
 	DataBlockType& BlockHeader()
 	{
-		return fBlock;
+		return *fBlock;
 	}
 	
 	const DataBlockType& BlockHeader() const
 	{
-		return fBlock;
+		return *fBlock;
 	}
 	
 	/**
@@ -184,6 +184,7 @@ public:
 	{
 		if (n * sizeof(DataElementType) > fMaxArraySize) return false;
 		fBlock->fHeader.fNrecords = n;
+		return true;
 	}
 
 	/**
@@ -241,10 +242,7 @@ public:
 	 */
 	AliHLTUInt32_t BytesUsed() const
 	{
-		assert( Nentries() * sizeof(DataElementType)
-			== Nentries() * fBlock->fHeader.fRecordWidth
-		);
-		
+		assert( sizeof(DataElementType) == fBlock->fHeader.fRecordWidth);
 		return sizeof(DataBlockType) + Nentries() * sizeof(DataElementType);
 	}
 	
