@@ -56,6 +56,9 @@ struct AliHLTMUONPairsDecisionBlockStruct
 {
 	AliHLTMUONDataBlockHeader fHeader; // Common data block header.
 	
+	// Number of unlike sign pt triggers for both tracks having any pt.
+	AliHLTUInt32_t fNunlikeAnyPt;
+	
 	// Number of unlike sign low pt triggers where both tracks have
 	// pt > low cut.
 	AliHLTUInt32_t fNunlikeLowPt;
@@ -63,6 +66,9 @@ struct AliHLTMUONPairsDecisionBlockStruct
 	// Number of unlike sign high pt triggers where both tracks have
 	// pt > high cut.
 	AliHLTUInt32_t fNunlikeHighPt;
+	
+	// Number of like sign pt triggers where both tracks have any pt.
+	AliHLTUInt32_t fNlikeAnyPt;
 	
 	// Number of like sign low pt triggers where both tracks have
 	// pt > low cut.
@@ -94,7 +100,7 @@ struct AliHLTMUONPairsDecisionBlockStruct
 /**
  * Stream operator for usage with std::ostream classes which prints the
  * trigger decision information for pairs of tracks in the following format:
- *  {fTrackAId = xx, fTrackBId = yy, fTriggerBits = 0xZZ}
+ *  {fTrackAId = xx, fTrackBId = yy, fTriggerBits = 0xZZ, fInvMass = ww}
  */
 inline std::ostream& operator << (
 		std::ostream& stream, const AliHLTMUONPairDecisionStruct& trig
@@ -103,7 +109,7 @@ inline std::ostream& operator << (
 	stream	<< "{fTrackAId = " << trig.fTrackAId
 		<< ", fTrackBId = " << trig.fTrackBId << ", fTriggerBits = "
 		<< std::showbase << std::hex << trig.fTriggerBits << std::dec
-		<< "}";
+		<< ", fInvMass = " << trig.fInvMass << "}";
 	return stream;
 }
 
@@ -126,6 +132,7 @@ inline bool operator == (
 	)
 {
 	return a.fTrackAId == b.fTrackAId and a.fTrackBId == b.fTrackBId
+		and a.fTriggerBits == b.fTriggerBits
 		and a.fTriggerBits == b.fTriggerBits;
 }
 

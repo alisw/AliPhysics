@@ -35,8 +35,10 @@ std::ostream& operator << (
 	assert( AliHLTMUONUtils::IntegrityOk(block) );
 
 	stream 	<< "{fHeader = " << block.fHeader
+		<< ", fNunlikeAnyPt = " << block.fNunlikeAnyPt
 		<< ", fNunlikeLowPt = " << block.fNunlikeLowPt
 		<< ", fNunlikeHighPt = " << block.fNunlikeHighPt
+		<< ", fNlikeAnyPt = " << block.fNlikeAnyPt
 		<< ", fNlikeLowPt = " << block.fNlikeLowPt
 		<< ", fNlikeHighPt = " << block.fNlikeHighPt
 		<< ", fNmassAny = " << block.fNmassAny
@@ -63,8 +65,10 @@ bool operator == (
 	// check if every track pair's decision is the same. In either case if
 	// we find a difference return false.
 	if (a.fHeader != b.fHeader) return false;
+	if (a.fNunlikeAnyPt != b.fNunlikeAnyPt) return false;
 	if (a.fNunlikeLowPt != b.fNunlikeLowPt) return false;
 	if (a.fNunlikeHighPt != b.fNunlikeHighPt) return false;
+	if (a.fNlikeAnyPt != b.fNlikeAnyPt) return false;
 	if (a.fNlikeLowPt != b.fNlikeLowPt) return false;
 	if (a.fNlikeHighPt != b.fNlikeHighPt) return false;
 	if (a.fNmassAny != b.fNmassAny) return false;
