@@ -69,6 +69,7 @@ enum AliHLTMUONParticleSign
  */
 enum AliHLTMUONChamberName
 {
+	kUnknownChamber = -1,
 	kChamber1 = 0,
 	kChamber2 = 1,
 	kChamber3 = 2,
@@ -128,21 +129,22 @@ inline std::ostream& operator << (std::ostream& stream, AliHLTMUONChamberName ch
 {
 	switch (chamber)
 	{
-	case kChamber1:  stream << "kChamber1";  break;
-	case kChamber2:  stream << "kChamber2";  break;
-	case kChamber3:  stream << "kChamber3";  break;
-	case kChamber4:  stream << "kChamber4";  break;
-	case kChamber5:  stream << "kChamber5";  break;
-	case kChamber6:  stream << "kChamber6";  break;
-	case kChamber7:  stream << "kChamber7";  break;
-	case kChamber8:  stream << "kChamber8";  break;
-	case kChamber9:  stream << "kChamber9";  break;
-	case kChamber10: stream << "kChamber10"; break;
-	case kChamber11: stream << "kChamber11"; break;
-	case kChamber12: stream << "kChamber12"; break;
-	case kChamber13: stream << "kChamber13"; break;
-	case kChamber14: stream << "kChamber14"; break;
-	default:         stream << "INVALID";
+	case kUnknownChamber:  stream << "kUnknownChamber";  break;
+	case kChamber1:        stream << "kChamber1";        break;
+	case kChamber2:        stream << "kChamber2";        break;
+	case kChamber3:        stream << "kChamber3";        break;
+	case kChamber4:        stream << "kChamber4";        break;
+	case kChamber5:        stream << "kChamber5";        break;
+	case kChamber6:        stream << "kChamber6";        break;
+	case kChamber7:        stream << "kChamber7";        break;
+	case kChamber8:        stream << "kChamber8";        break;
+	case kChamber9:        stream << "kChamber9";        break;
+	case kChamber10:       stream << "kChamber10";       break;
+	case kChamber11:       stream << "kChamber11";       break;
+	case kChamber12:       stream << "kChamber12";       break;
+	case kChamber13:       stream << "kChamber13";       break;
+	case kChamber14:       stream << "kChamber14";       break;
+	default:               stream << "INVALID";
 	}
 	return stream;
 }
