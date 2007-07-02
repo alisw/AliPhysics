@@ -137,8 +137,6 @@ void MUONTriggerEfficiency(const char* filenameSim="galice_sim.root",
           }       
         }
       }
-      
-      delete hitStore;      
     } // end track loop     
     
     // 3/4 coincidence
@@ -160,8 +158,6 @@ void MUONTriggerEfficiency(const char* filenameSim="galice_sim.root",
     if (gloTrg->PairUnlikeLpt()>=1) muonlpt++;
     if (gloTrg->PairUnlikeHpt()>=1) muonhpt++;
 
-    delete triggerStore;
-       
   } // end loop on event  
  
   // calculate efficiency with as a ref. at least 3/4 planes fired
