@@ -250,8 +250,10 @@ AliMUONPad::Compare(const TObject* obj) const
   
   const AliMUONPad* pad = static_cast<const AliMUONPad*>(obj);
     
-  if (DetElemId() < 0) {
+  if (DetElemId() < 0)
+  {
     // AZ - For "pixels" from MLEM cluster finder
+    // we only sort on charge
     if (Charge() == pad->Charge()) return 0;
     return ( Charge() < pad->Charge() ) ? 1:-1;
   }
@@ -262,7 +264,7 @@ AliMUONPad::Compare(const TObject* obj) const
   }
   else if ( DetElemId() > pad->DetElemId() )
   {
-    return 1;
+    return -1;
   }
   else
   {
@@ -322,13 +324,25 @@ AliMUONPad::Compare(const TObject* obj) const
             else
             {
               // same Y
-              return ( Charge() < pad->Charge() ) ? -1:1;              
-            }            
+              if ( Charge() < pad->Charge() ) 
+              {
+                return -1;
+              }
+              else if ( Charge() > pad->Charge() )
+              {
+                return 1;
+              }
+              else
+              {
+                return 0;
+              }
+            }
           }          
         }        
       }
     }
   }
+  return 0;
 }
 
 //_____________________________________________________________________________

@@ -49,8 +49,6 @@ public:
   /// Return backup charge
   Double_t ChargeBackup() const { return fChargeBackup; }
 
-  virtual Int_t Compare(const TObject* obj) const;
-
   /// Return detection element id
   Int_t DetElemId() const { return fDetElemId; }
   
@@ -72,9 +70,11 @@ public:
   /// Return info whether this pad is saturated or not
   Bool_t IsSaturated() const { return fIsSaturated; }
   
-  /// Return true as the function Sort is implemented
+  /// Return true as the function Compare is implemented
   Bool_t IsSortable() const { return kTRUE; }
   
+  virtual Int_t Compare(const TObject* obj) const;
+
   /// Return true if is used
   Bool_t IsUsed() const { return fClusterId >= 0; }
 
