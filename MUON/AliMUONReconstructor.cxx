@@ -32,9 +32,15 @@
 ///
 /// AZ : use the AliMUONClusterFinderAZ clusterizer (default)
 ///
+/// MLEM : another implementation of AZ, where preclustering is external
+/// MLEMV3 : MLEM with preclustering=PRECLUSTERV2
+/// MLEMV3 : MLEM with preclustering=PRECLUSTERV3
+///
 /// PRECLUSTER : use only AliMUONPreClusterFinder. Only for debug as
 /// the produced clusters do not have a position, hence the tracking will not
 /// work
+/// PRECLUSTERV2 : another version of the preclustering
+/// PRECLUSTERV3 : yet another version of the preclustering
 ///
 /// COG : use AliMUONClusterFinderCOG clusterizer. Not really a production
 /// option either, as center-of-gravity is generally not a good estimate
@@ -49,6 +55,9 @@
 /// "recover" old behavior)
 ///
 /// TRIGGERDISABLE : disable the treatment of MUON trigger
+///
+/// DIGITSTOREV1 : use the V1 implementation of the digitstore 
+/// DIGITSTOREV2R : use the V2R implementation of the digitstore 
 ///
 /// \author Laurent Aphecetche, Subatech
 
@@ -69,8 +78,11 @@
 #include "AliMUONDigitCalibrator.h"
 #include "AliMUONDigitMaker.h"
 #include "AliMUONDigitStoreV1.h"
+#include "AliMUONDigitStoreV2R.h"
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONPreClusterFinder.h"
+#include "AliMUONPreClusterFinderV2.h"
+#include "AliMUONPreClusterFinderV3.h"
 #include "AliMUONTracker.h"
 #include "AliMUONVTrackStore.h"
 #include "AliMUONTriggerChamberEff.h"
@@ -79,13 +91,12 @@
 #include "AliMUONTriggerStoreV1.h"
 #include "AliMUONVClusterFinder.h"
 #include "AliRawReader.h"
-#include "AliMUONStopwatchGroup.h"
-#include "AliMUONStopwatchGroupElement.h"
+#include "AliCodeTimer.h"
 #include <Riostream.h>
 #include <TClonesArray.h>
 #include <TString.h>
 #include <TTree.h>
-
+//#include "AliCodeTimer.h"
 /// \cond CLASSIMP
 ClassImp(AliMUONReconstructor)
 /// \endcond 
@@ -104,8 +115,7 @@ fClusterReconstructor(0x0),
 fClusterStore(0x0),
 fTriggerStore(0x0),
 fTrackStore(0x0),
-fTrigChamberEff(0x0),
-fTimers(new AliMUONStopwatchGroup)
+fTrigChamberEff(0x0)
 {
   /// normal ctor
   fTransformer->LoadGeometryData();
@@ -127,9 +137,6 @@ AliMUONReconstructor::~AliMUONReconstructor()
   delete fTriggerStore;
   delete fTrackStore;
   delete fTrigChamberEff;
-  AliInfo("Timers:");
-  fTimers->Print();
-  delete fTimers;
 }
 
 //_____________________________________________________________________________
@@ -141,7 +148,7 @@ AliMUONReconstructor::Calibrate(AliMUONVDigitStore& digitStore) const
   {
     CreateCalibrator();
   }
-  AliMUONStopwatchGroupElement timer(fTimers,"MUON",Form("%s::Calibrate(AliMUONVDigitStore*)",fDigitCalibrator->ClassName()));
+  AliCodeTimerAuto(Form("%s::Calibrate(AliMUONVDigitStore*)",fDigitCalibrator->ClassName()))
   fDigitCalibrator->Calibrate(digitStore);  
 }
 
@@ -161,8 +168,8 @@ AliMUONReconstructor::Clusterize(const AliMUONVDigitStore& digitStore,
     CreateClusterReconstructor();
   }
   
-  AliMUONStopwatchGroupElement timer(fTimers,"MUON",Form("%s::Digits2Clusters(const AliMUONVDigitStore&,AliMUONVClusterStore&)",
-                                                     fClusterReconstructor->ClassName()));
+  AliCodeTimerAuto(Form("%s::Digits2Clusters(const AliMUONVDigitStore&,AliMUONVClusterStore&)",
+                        fClusterReconstructor->ClassName()))
   fClusterReconstructor->Digits2Clusters(digitStore,clusterStore);  
 }
 
@@ -186,9 +193,12 @@ AliMUONReconstructor::ConvertDigits(AliRawReader* rawReader,
 {
   /// Convert raw data into digit and trigger stores
   CreateDigitMaker();
-  AliMUONStopwatchGroupElement timer(fTimers,"MUON",Form("%s::Raw2Digits(AliRawReader*,AliMUONVDigitStore*,AliMUONVTriggerStore*)",
-                                                     fDigitMaker->ClassName()));
+  
+  AliCodeTimerStart(Form("%s::Raw2Digits(AliRawReader*,AliMUONVDigitStore*,AliMUONVTriggerStore*)",
+                    fDigitMaker->ClassName()))
   fDigitMaker->Raw2Digits(rawReader,digitStore,triggerStore);
+  AliCodeTimerStop(Form("%s::Raw2Digits(AliRawReader*,AliMUONVDigitStore*,AliMUONVTriggerStore*)",
+                         fDigitMaker->ClassName()))
   Calibrate(*digitStore);
 }
 
@@ -236,7 +246,7 @@ AliMUONReconstructor::CreateDigitMaker() const
   /// Create (and create if necessary) the digit maker
   if (fDigitMaker) return;
 
-  AliMUONStopwatchGroupElement timer(fTimers,"MUON","AliMUONReconstructor::CreateDigitMaker()");
+  AliCodeTimerAuto("")
 
   fDigitMaker = new AliMUONDigitMaker;
 }
@@ -248,7 +258,7 @@ AliMUONReconstructor::CreateTriggerCircuit() const
   /// Return (and create if necessary) the trigger circuit object
   if (fTriggerCircuit) return;
 
-  AliMUONStopwatchGroupElement timer(fTimers,"MUON","AliMUONReconstructor::CreateTriggerCircuit()");
+  AliCodeTimerAuto("")
 
   fTriggerCircuit = new AliMUONTriggerCircuit(fTransformer);
 
@@ -261,7 +271,7 @@ AliMUONReconstructor::CreateTriggerChamberEff() const
   /// Create (and create if necessary) the trigger chamber efficiency class
   if (fTrigChamberEff) return;
 
-  AliMUONStopwatchGroupElement timer(fTimers,"MUON","AliMUONReconstructor::CreateTriggerChamberEff()");
+  AliCodeTimerAuto("")
 
   fTrigChamberEff = new AliMUONTriggerChamberEff(fTransformer,fDigitMaker,kTRUE);
   //fTrigChamberEff->SetDebugLevel(1);
@@ -296,7 +306,7 @@ AliMUONReconstructor::CreateClusterReconstructor() const
 {
   /// Create cluster reconstructor, depending on GetOption()
   
-  AliMUONStopwatchGroupElement timer(fTimers,"MUON","AliMUONReconstructor::CreateClusterReconstructor()");
+  AliCodeTimerAuto("")
 
   AliDebug(1,"");
   
@@ -305,25 +315,45 @@ AliMUONReconstructor::CreateClusterReconstructor() const
   TString opt(GetOption());
   opt.ToUpper();
   
-  if ( strstr(opt,"PRECLUSTER") )
+  if ( strstr(opt,"PRECLUSTERV2") )
+  {
+    clusterFinder = new AliMUONPreClusterFinderV2;
+  }    
+  else if ( strstr(opt,"PRECLUSTERV3") )
+  {
+    clusterFinder = new AliMUONPreClusterFinderV3;
+  }  
+  else if ( strstr(opt,"PRECLUSTER") )
   {
     clusterFinder = new AliMUONPreClusterFinder;
   }  
   else if ( strstr(opt,"COG") )
   {
-    clusterFinder = new AliMUONClusterFinderCOG;
+    clusterFinder = new AliMUONClusterFinderCOG(new AliMUONPreClusterFinder);
   }  
+  else if ( strstr(opt,"SIMPLEFITV3") )
+  {
+    clusterFinder = new AliMUONClusterFinderSimpleFit(new AliMUONClusterFinderCOG(new AliMUONPreClusterFinderV3));
+  }
   else if ( strstr(opt,"SIMPLEFIT") )
   {
-    clusterFinder = new AliMUONClusterFinderSimpleFit;
+    clusterFinder = new AliMUONClusterFinderSimpleFit(new AliMUONClusterFinderCOG(new AliMUONPreClusterFinder));
   }
   else if ( strstr(opt,"MLEM:DRAW") )
   {
-    clusterFinder = new AliMUONClusterFinderMLEM(kTRUE);
+    clusterFinder = new AliMUONClusterFinderMLEM(kTRUE,new AliMUONPreClusterFinder);
   }
+  else if ( strstr(opt,"MLEMV3") )
+  {
+    clusterFinder = new AliMUONClusterFinderMLEM(kFALSE,new AliMUONPreClusterFinderV3);
+  } 
+  else if ( strstr(opt,"MLEMV2") )
+  {
+    clusterFinder = new AliMUONClusterFinderMLEM(kFALSE,new AliMUONPreClusterFinderV2);
+  } 
   else if ( strstr(opt,"MLEM") )
   {
-    clusterFinder = new AliMUONClusterFinderMLEM(kFALSE);
+    clusterFinder = new AliMUONClusterFinderMLEM(kFALSE,new AliMUONPreClusterFinder);
   } 
   else if ( strstr(opt,"AZ") )
   {
@@ -331,6 +361,7 @@ AliMUONReconstructor::CreateClusterReconstructor() const
   }
   else
   {
+    // default is currently AZ
     clusterFinder = new AliMUONClusterFinderAZ;
   }
   
@@ -348,7 +379,7 @@ AliMUONReconstructor::CreateCalibrator() const
 {
   /// Create the calibrator
   
-  AliMUONStopwatchGroupElement timer(fTimers,"MUON","AliMUONReconstructor::CreateCalibrator()");
+  AliCodeTimerAuto("")
   
   Int_t runNumber = AliCDBManager::Instance()->GetRun();
 
@@ -390,7 +421,27 @@ AliMUONReconstructor::DigitStore() const
   /// Return (and create if necessary) the digit container
   if (!fDigitStore) 
   {
-    fDigitStore = new AliMUONDigitStoreV1;
+    TString sopt(GetOption());
+    sopt.ToUpper();
+    
+    AliInfo(Form("Options=%s",sopt.Data()));
+    
+    if ( sopt.Contains("DIGITSTOREV1") )
+    {
+      fDigitStore = AliMUONVDigitStore::Create("AliMUONDigitStoreV1");
+    }
+    else if ( sopt.Contains("DIGITSTOREV2R") ) 
+    {
+      fDigitStore = AliMUONVDigitStore::Create("AliMUONDigitStoreV2R");
+    }
+    else if ( sopt.Contains("DIGITSTOREV2S") ) 
+    {
+      fDigitStore = AliMUONVDigitStore::Create("AliMUONDigitStoreV2S");
+    }
+    
+    if (!fDigitStore) fDigitStore = AliMUONVDigitStore::Create("AliMUONDigitStoreV2R");
+    
+    AliInfo(Form("Will use %s to store digits during reconstruction",fDigitStore->ClassName()));
   }
   return fDigitStore;
 }
@@ -403,7 +454,7 @@ AliMUONReconstructor::FillTreeR(AliMUONVTriggerStore* triggerStore,
 {
   /// Write the trigger and cluster information into TreeR
   
-  AliMUONStopwatchGroupElement timer(fTimers,"MUON","AliMUONReconstructor::FillTreeR()");
+  AliCodeTimerAuto("")
 
   AliDebug(1,"");
   
@@ -483,11 +534,8 @@ AliMUONReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTree) 
     return;
   }
   
-  if ( DigitStore() ) 
-  {
-    ConvertDigits(rawReader,DigitStore(),TriggerStore());
-    Clusterize(*(DigitStore()),*(ClusterStore()));
-  }
+  ConvertDigits(rawReader,DigitStore(),TriggerStore());
+  Clusterize(*(DigitStore()),*(ClusterStore()));
     
   FillTreeR(TriggerStore(),ClusterStore(),*clustersTree);
 }
@@ -498,7 +546,7 @@ AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
 {
   /// Reconstruct simulated data
   
-  AliMUONStopwatchGroupElement timer(fTimers,"MUON","AliMUONReconstructor::Reconstruct(AliRunLoader*)");
+  AliCodeTimerAuto("Reconstruct(AliRunLoader*)")
   
   AliLoader* loader = runLoader->GetDetectorLoader("MUON");
   if (!loader) 
@@ -535,7 +583,7 @@ AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* rawRead
 {
   /// This method is called by AliReconstruction if HasLocalReconstruction()==kFALSE
   
-  AliMUONStopwatchGroupElement timer(fTimers,"MUON","AliMUONReconstructor::Reconstruct(AliRunLoader*, AliRawReader*)");
+  AliCodeTimerAuto("AliMUONReconstructor::Reconstruct(AliRunLoader*, AliRawReader*)")
   
   AliLoader* loader = runLoader->GetDetectorLoader("MUON");
   if (!loader) 
@@ -576,6 +624,8 @@ AliMUONReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) const
 {
   /// This method is called by AliReconstruction if HasLocalReconstruction()==kTRUE
   /// AND HasDigitConversion()==kTRUE
+  
+//  AliCodeTimerAuto("(TTree*,TTree*)")
   
   AliDebug(1,"");
   

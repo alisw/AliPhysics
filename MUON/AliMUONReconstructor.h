@@ -38,8 +38,6 @@ class AliMUONVTrackStore;
 
 class AliMUONTriggerChamberEff;
 
-class AliMUONStopwatchGroup;
-
 class AliMUONReconstructor : public AliReconstructor
 {
 public:
@@ -100,9 +98,8 @@ private:
   mutable AliMUONVTriggerStore* fTriggerStore; //!< Trigger container
   mutable AliMUONVTrackStore* fTrackStore; //!< Track container
   mutable AliMUONTriggerChamberEff* fTrigChamberEff; //!< pointer to trigger chamber efficiency class
-  AliMUONStopwatchGroup* fTimers; //!< Internal timers
   
-  ClassDef(AliMUONReconstructor,1) // Implementation of AliReconstructor
+  ClassDef(AliMUONReconstructor,2) // Implementation of AliReconstructor
 };
 
 #endif
