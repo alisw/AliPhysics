@@ -361,13 +361,55 @@ void AliPHOSRecPoint::EvalLocal2TrackingCSTransform()
   else
     SetVolumeId(AliGeomManager::LayerToVolUID(AliGeomManager::kPHOS2,GetPHOSMod()-1));
 
-  Double_t lxyz[3] = {fLocPos.X(),0,fLocPos.Z()};
+  Double_t lxyz[3] = {fLocPos.X(),fLocPos.Y(),fLocPos.Z()};
   Double_t txyz[3] = {0,0,0};
+  Double_t dy;
+  Double_t crystalShift;
+
+  AliPHOSGeometry * phosgeom = AliPHOSLoader::GetPHOSGeometry();
+  AliPHOSEMCAGeometry* geoEMCA = phosgeom->GetEMCAGeometry(); 
+
+  //Calculate offset to crystal surface.
+  //See fCrystalShift code in AliPHOSGeometry::Init()).
+
+  Float_t * inthermo = geoEMCA->GetInnerThermoHalfSize() ;
+  Float_t * strip = geoEMCA->GetStripHalfSize() ;
+  Float_t* splate = geoEMCA->GetSupportPlateHalfSize();
+  Float_t * crystal = geoEMCA->GetCrystalHalfSize() ;
+  Float_t * pin = geoEMCA->GetAPDHalfSize() ;
+  Float_t * preamp = geoEMCA->GetPreampHalfSize() ;
+  crystalShift = -inthermo[1]+strip[1]+splate[1]+crystal[1]-geoEMCA->GetAirGapLed()/2.+pin[1]+preamp[1] ;
+
+  if(IsEmc()) {
+    dy = crystalShift;
+    lxyz[2] = -lxyz[2]; //Opposite z directions in EMC matrix and local frame!!!
+  }
+  else
+    dy = phosgeom->GetCPVBoxSize(1)/2.; //center of CPV module
+
+  lxyz[1] = lxyz[1] - dy;
 
   const TGeoHMatrix* tr2loc = GetTracking2LocalMatrix();
   if(!tr2loc) AliFatal(Form("No Tracking2LocalMatrix found."));
 
   tr2loc->MasterToLocal(lxyz,txyz);
   SetX(txyz[0]); SetY(txyz[1]); SetZ(txyz[2]);
+
+  if(AliLog::GetGlobalDebugLevel()>0) {
+    TVector3 gpos; TMatrixF gmat;
+    GetGlobalPosition(gpos,gmat);
+    Float_t gxyz[3];
+    GetGlobalXYZ(gxyz);
+    TString emc;
+    if(IsEmc()) 
+      emc="EMC";
+    else
+      emc="CPV";
+    AliInfo(Form("lCS-->(%.3f,%.3f,%.3f), tCS-->(%.3f,%.3f,%.3f), gCS-->(%.3f,%.3f,%.3f),  gCScalc-->(%.3f,%.3f,%.3f), module %d %s",
+		 fLocPos.X(),fLocPos.Y(),fLocPos.Z(),
+		 GetX(),GetY(),GetZ(),
+		 gpos.X(),gpos.Y(),gpos.Z(),
+		 gxyz[0],gxyz[1],gxyz[2],GetPHOSMod(),emc.Data()));
+  }
 
 }
