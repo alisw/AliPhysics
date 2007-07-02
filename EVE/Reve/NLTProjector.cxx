@@ -287,17 +287,17 @@ void  NLTProjector::MakePolygonsFromBP(TBuffer3D* buff, std::list<NLTPolygon>& p
     if( pp.size()>2 && (bbox[1]-bbox[0])>fEps && (bbox[3]-bbox[2])>fEps)
     {
       Bool_t duplicate = kFALSE;
-      for( std::list<NLTPolygon>::iterator poi = pols.begin(); poi!= pols.end(); poi++)
+      for (std::list<NLTPolygon>::iterator poi = pols.begin(); poi!= pols.end(); poi++)
       {
-        NLTPolygon  P = *poi;
+        NLTPolygon P = *poi;
         if(pp.size() != (UInt_t)P.fNPnts) 
 	  continue;      
 	Int_t matched = 0;
-	for( std::list<Int_t>::iterator u = pp.begin(); u!= pp.end(); u++){
-          if(*u == P.fPnts[*u]) matched++;
+	for (std::list<Int_t>::iterator u = pp.begin(); u!= pp.end(); u++) {
+          if (*u == P.fPnts[*u]) matched++;
           else continue;
         }
-        if(matched == P.fNPnts) {
+        if (matched == P.fNPnts) {
           duplicate = kTRUE;
           break;
         }

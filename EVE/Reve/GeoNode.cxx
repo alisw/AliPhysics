@@ -161,6 +161,7 @@ ClassImp(GeoTopNodeRnrEl)
 GeoTopNodeRnrEl::GeoTopNodeRnrEl(TGeoManager* manager, TGeoNode* node,
 				 Int_t visopt, Int_t vislvl) :
   GeoNodeRnrEl (node),
+  fGlobalTrans (),
   fManager     (manager),
   fVisOption   (visopt),
   fVisLevel    (vislvl)
@@ -274,6 +275,7 @@ ClassImp(GeoShapeRnrEl)
 GeoShapeRnrEl::GeoShapeRnrEl(const Text_t* name, const Text_t* title) :
   RenderElement (fColor),
   TNamed        (name, title),
+  fHMTrans      (),
   fColor        (0),
   fTransparency (0),
   fShape        (0)

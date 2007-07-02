@@ -101,7 +101,7 @@ class PathMark
   Float_t time;
   Type_e type;
 
-  PathMark(Type_e t=Reference) : V(), P(), type(t) {}
+  PathMark(Type_e t=Reference) : V(), P(), time (0), type(t) {}
   virtual ~PathMark() {}
 
   const char* type_name();

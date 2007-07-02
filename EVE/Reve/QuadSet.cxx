@@ -790,7 +790,7 @@ void QuadSet::Paint(Option_t* /*option*/)
 
   // Section kCore
   buff.fID           = this;
-  buff.fColor        = 1;
+  buff.fColor        = fFrame ? fFrame->GetFrameColor() : 1;
   buff.fTransparency = 0;
   fHMTrans.SetBuffer3D(buff);
   buff.SetSectionsValid(TBuffer3D::kCore);

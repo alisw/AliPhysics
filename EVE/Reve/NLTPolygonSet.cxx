@@ -25,7 +25,8 @@ NLTPolygonSet::NLTPolygonSet(const Text_t* n, const Text_t* t) :
  fPols(0),
  fFillColor(5),
  fLineColor(3),
- fLineWidth(1)
+ fLineWidth(1),
+ fZDepth(0)
 {}
 
 /**************************************************************************/

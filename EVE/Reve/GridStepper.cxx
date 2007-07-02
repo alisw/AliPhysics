@@ -11,7 +11,10 @@ using namespace Reve;
 
 ClassImp(GridStepper)
 
-GridStepper::GridStepper(Int_t sm) : Mode(StepMode_e(sm))
+GridStepper::GridStepper(Int_t sm) :
+  Mode(StepMode_e(sm)),
+  nx(0), ny(0), nz(0), Nx(0), Ny(0), Nz(0),
+  Dx(0), Dy(0), Dz(0), Ox(0), Oy(0), Oz(0)
 {
   switch(Mode) {
   default:

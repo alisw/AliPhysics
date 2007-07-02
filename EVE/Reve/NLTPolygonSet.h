@@ -20,6 +20,10 @@ public:
 
   NLTPolygon() : fNPnts(0), fPnts(0) {}
   NLTPolygon(Int_t n, Int_t* p) : fNPnts(n), fPnts(p) {}
+  NLTPolygon(const NLTPolygon& x) : fNPnts(x.fNPnts), fPnts(x.fPnts) {}
+  NLTPolygon& operator=(const NLTPolygon& x)
+  { fNPnts = x.fNPnts; fPnts = x.fPnts; return *this; }
+
   virtual ~NLTPolygon() {}
 
   ClassDef(NLTPolygon, 0)
@@ -33,6 +37,10 @@ class NLTPolygonSet :  public Reve::RenderElement,
 {
   friend class NLTPolygonSetGL;
   friend class NLTPolygonSetEditor;
+
+  NLTPolygonSet(const NLTPolygonSet&);            // Not implemented
+  NLTPolygonSet& operator=(const NLTPolygonSet&); // Not implemented
+
 protected:
   Int_t        fNPnts;
   Vector*      fPnts;

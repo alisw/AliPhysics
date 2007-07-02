@@ -126,7 +126,7 @@ protected:
 
     // Here could have additional integer (like time, second threshold).
 
-    QuadBase(Int_t v=0) : fValue(v) {}
+    QuadBase(Int_t v=0) : fValue(v), fId() {}
   };
 
   struct QFreeQuad     : public QuadBase      { Float_t fVertices[12]; };
