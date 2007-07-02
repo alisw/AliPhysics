@@ -10,13 +10,12 @@
 #include "Reve/GLTextNS.h"
 
 #include <TObject.h>
+#include <TSystem.h>
 
 #include <TBuffer3D.h>
 #include <TBuffer3DTypes.h>
 #include <TVirtualPad.h>
 #include <TVirtualViewer3D.h>
-
-#include <TObject.h>
 
 using namespace Reve;
 using namespace Alieve;

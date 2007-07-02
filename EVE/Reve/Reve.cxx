@@ -13,6 +13,7 @@
 
 #include <TROOT.h>
 #include <TInterpreter.h>
+#include <TSystem.h>
 
 #include <TGClient.h>
 

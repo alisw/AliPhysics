@@ -18,6 +18,8 @@
 #include <TGMsgBox.h>
 #include <TH1F.h>
 
+#include <TSystem.h> // File input/output for track-count status.
+
 using namespace Reve;
 
 //______________________________________________________________________
@@ -554,24 +556,19 @@ void TrackCounterEditor::SetModel(TObject* obj)
 
 /**************************************************************************/
 
-// glv->SetOrthoCamera(TGLViewer::kCameraOrthoXOY, 2*left, 2*right, 2*top, bottom);
-
 void TrackCounterEditor::DoOrtoXY()
 {
-  TGLViewer* glv = dynamic_cast<TGLViewer*>(gReve->GetGLCanvas()->GetViewer3D());
-  glv->SetCurrentCamera(TGLViewer::kCameraOrthoXOY) ;
+  gReve->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY) ;
 }
 
 void TrackCounterEditor::DoOrtoZY()
 {
-  TGLViewer* glv = dynamic_cast<TGLViewer*>(gReve->GetGLCanvas()->GetViewer3D());
-  glv->SetCurrentCamera(TGLViewer::kCameraOrthoZOY) ;
+  gReve->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoZOY) ;
 }
 
 void TrackCounterEditor::DoPersp()
 {
-  TGLViewer* glv = dynamic_cast<TGLViewer*>(gReve->GetGLCanvas()->GetViewer3D());
-  glv->SetCurrentCamera(TGLViewer::kCameraPerspXOZ) ;
+  gReve->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraPerspXOZ) ;
 }
 
 /**************************************************************************/
