@@ -30,4 +30,4 @@ ${DICTSTEM}.cc: ${HDRS} LinkDef.h
 
 reve: reve_main/reve_main.o ${LIBNAME}
 	${CXX} ${CPPFLAGS} -o $@ ${CXXFLAGS} $< -L. -lReve \
-	   ${ROOTGLIBS} -lTreePlayer -lEG -lGeom -lGeomPainter -lGed -lRGL
+	   ${ROOTGLIBS} -lTreePlayer -lEG -lGeom -lGeomPainter -lGed -lRGL -lFTGL

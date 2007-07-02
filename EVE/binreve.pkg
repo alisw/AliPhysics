@@ -6,7 +6,7 @@ ELIBSDIR :=
 ELIBS    := Reve
 
 PACKBLIBS := $(ROOTCLIBS) -lTreePlayer -lGeomPainter -lGed \
-	     -L$(shell root-config --libdir)/$(dir $(shell root-config --version)) -lRGL \
+	     -L$(shell root-config --libdir)/$(dir $(shell root-config --version)) -lFTGL -lRGL \
 	     $(SYSLIBS)
 
 ifeq (macosx,$(ALICE_TARGET))
