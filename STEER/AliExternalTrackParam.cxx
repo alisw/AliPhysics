@@ -936,6 +936,10 @@ Bool_t AliExternalTrackParam::GetCovarianceXYZPxPyPz(Double_t cv[21]) const {
   Double_t m24= pt*(cs - fP[2]*sn/r), m44=-pt*pt*(r*sn + fP[2]*cs);
   Double_t m35=pt, m45=-pt*pt*fP[3];
 
+  m43*=GetSign();
+  m44*=GetSign();
+  m45*=GetSign();
+
   cv[0 ] = fC[0]*m00*m00;
   cv[1 ] = fC[0]*m00*m10; 
   cv[2 ] = fC[0]*m10*m10;
