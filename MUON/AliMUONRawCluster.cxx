@@ -82,14 +82,27 @@ Int_t AliMUONRawCluster::Compare(const TObject *obj) const
          else if (r<ro) return -1;
          else return 0;
   */
+  /*
          AliMUONRawCluster *raw=(AliMUONRawCluster *)obj;
 	 Float_t y=fY[0];
          Float_t yo=raw->fY[0];
          if (y>yo) return 1;
          else if (y<yo) return -1;
          else return 0;
-
+   */
+  
+  const AliMUONRawCluster* raw = static_cast<const AliMUONRawCluster*>(obj);
+  if ( GetCharge(0) > raw->GetCharge(0) ) 
+  {
+    return 1;
+  }
+  else if ( GetCharge(0) < raw->GetCharge(0) ) 
+  {
+    return -1;
+  }
+  return 0;
 }
+
 //____________________________________________________
 Int_t AliMUONRawCluster::BinarySearch(Float_t y, TArrayF coord, Int_t from, Int_t upto)
 {
@@ -194,11 +207,11 @@ void AliMUONRawCluster::Print(Option_t* opt) const
   TString sopt(opt);
   sopt.ToUpper();
  
-  cout << "<AliMUONRawCluster>: DetEle="        << setw(4)  << GetDetElemId() << 
-    ", (x,y,z)=(" << setw(8) << setprecision(5) << GetX() << "," << setw(8) 
-    << setprecision(5) << GetY() <<  "," << setw(8) << setprecision(5) << GetZ() << 
-    ") cm, Chi2=" << setw(8) << setprecision(3) << GetChi2() << 
-    ", Q=" << setw(4) << GetCharge();
+  cout << Form("<AliMUONRawCluster>: DetEle=%4d (x,y,z)=(%7.4f,%7.4f,%7.4f) cm"
+               " Chi2=%7.2f Q=%7.2f",
+               GetDetElemId(),GetX(),GetY(),GetZ(),GetChi2(),
+               GetCharge());
+               
   if ( sopt.Contains("FULL") )
   {
     cout << ", Hit=" << setw(4)  << GetTrack(0) <<
