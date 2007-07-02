@@ -1,3 +1,50 @@
+2007-07-02  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* .SKEL-gl.cxx:
+	* .SKEL-gl.h:
+	* BoxSetGL.cxx:
+	* BoxSetGL.h:
+	* FrameBoxGL.cxx:
+	* GLUtilNS.cxx:
+	* GLUtilNS.h:
+	* LineGL.cxx:
+	* LineGL.h:
+	* NLTPolygonSetGL.cxx:
+	* NLTPolygonSetGL.h:
+	* QuadSetGL.cxx:
+	* QuadSetGL.h:
+	* StraightLineSetGL.cxx:
+	* StraightLineSetGL.h:
+	* TrackGL.cxx:
+	* TrackGL.h:
+	* TriangleSetGL.cxx:
+	* TriangleSetGL.h:
+	Follow-up on gl/ changes introduced in ROOT-5.16.
+
+	* RMacro.cxx:
+	* RMacro.h:
+	Migrate to the new signature of TMacro::Exec.
+
+	* GeoNode.cxx:
+	* GridStepper.cxx:
+	* NLTPolygonSet.cxx:
+	* NLTPolygonSet.h:
+	* NLTProjector.cxx:
+	* PODs.h:
+	* QuadSet.cxx:
+	* QuadSet.h:
+	Fix effc++ warnings.
+
+	* RGTopFrame.cxx:
+	Remove unnecessary includes.
+
+	* Reve.cxx:
+	* TrackEditors.cxx:
+	Add includes needed due to changes in ROOT.
+
+	* Makefile:
+	Link also against libFTGL.
+
 2007-06-18  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* StraightLineSet.cxx:

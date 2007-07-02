@@ -1,3 +1,20 @@
+2007-07-02  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* .SKEL-gl.cxx:
+	* .SKEL-gl.h:
+	* ITSModuleStepperGL.cxx:
+	* ITSModuleStepperGL.h:
+	* MUONChamberGL.cxx:
+	* MUONChamberGL.h:
+	* TPCSector2DGL.cxx:
+	* TPCSector2DGL.h:
+	* TPCSector3DGL.cxx:
+	* TPCSector3DGL.h:
+	Follow-up on gl/ changes introduced in ROOT-5.16.
+
+	* ITSModuleStepper.cxx:
+	Add includes needed due to changes in ROOT.
+
 2007-06-26  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* EventAlieve.cxx:

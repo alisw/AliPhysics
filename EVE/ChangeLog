@@ -1,3 +1,16 @@
+2007-07-02  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	Removed tags EVE-head-after-merge and EVE-dev-after-merge.
+	Removed EVE-dev branch.
+	It will be recreated when needed.
+	
+	* binalieve.pkg:
+	* binreve.pkg:
+	Link also against libFTGL.
+
+	* macros/reve_quad_test.C:
+	Improve test-function modularity.
+
 2007-06-27  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	Due to significant changes in the coming ROOT release
