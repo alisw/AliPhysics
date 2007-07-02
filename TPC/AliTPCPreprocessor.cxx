@@ -21,11 +21,11 @@
 #include "AliDCSValue.h"
 #include "AliLog.h"
 #include "AliTPCSensorTempArray.h"
-#include "AliTPCDBPressure.h"
 #include "AliTPCROC.h"
 #include "AliTPCCalROC.h"
 #include "AliTPCCalPad.h"
 #include "AliTPCCalibPedestal.h"
+#include "TFile.h"
 
 #include <TTimeStamp.h>
 
@@ -238,7 +238,7 @@ UInt_t AliTPCPreprocessor::ExtractPedestals()
  if ( calPadPed==NULL ) {
      AliWarning(Form("No previous TPC pedestal entry available.\n"));
      Log("AliTPCPreprocsessor: No previous TPC pedestal entry available.\n");
-     calPadPed = new AliTPCCalPad();
+     calPadPed = new AliTPCCalPad("pedestals","pedestals");
  }
 
  UInt_t result=0;
