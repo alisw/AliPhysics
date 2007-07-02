@@ -16,8 +16,6 @@
 #include <TGMimeTypes.h>
 
 #include <TGLSAViewer.h>
-#include <TH1F.h>
-#include <TView.h>
 
 #include <TROOT.h>
 #include <TFile.h>
@@ -29,8 +27,6 @@
 #include <TSystem.h>
 #include <TRint.h>
 #include <TVirtualX.h>
-#include <TPolyLine3D.h>
-#include <TPolyMarker3D.h>
 #include <TEnv.h>
 #include <TStyle.h>
 #include <TColor.h>
@@ -109,7 +105,8 @@ RGTopFrame::RGTopFrame(const TGWindow *p, UInt_t w, UInt_t h, LookType_e look) :
   Reve::PushPad();
   TGCompositeFrame* tframe3 = fMasterTab->AddTab("GLCanvas");
   TRootEmbeddedCanvas* ecanvas3 = new TRootEmbeddedCanvas("GLCanvas", tframe3, 580, 360);
-  tframe3->AddFrame(ecanvas3, lay2);
+  // !!!! Avoid this
+  //tframe3->AddFrame(ecanvas3, lay2);
   fGLCanvas = ecanvas3->GetCanvas();
   fGLCanvas->SetEditable(kFALSE);
   Reve::PopPad();
