@@ -1307,7 +1307,7 @@ void AliMUONClusterFinderAZ::Mlem(Double_t *coef, Double_t *probi, Int_t nIter)
 	} // for (Int_t i=0;
 	if (fXyq[2][j] > fgkSaturation-1 && sum1 > fXyq[2][j]) { probi1[ipix] -= coef[indx]; continue; } // correct for pad charge overflows
 	//cout << sum1 << " " << fXyq[2][j] << " " << coef[j*nPix+ipix] << endl;
-	if (coef[indx] > 1.e-6) sum += fXyq[2][j]*coef[indx]/sum1;
+	if (sum1 > 1.e-6) sum += fXyq[2][j]*coef[indx]/sum1;
       } // for (Int_t j=0;
       pixPtr = (AliMUONPixel*) fPixArray->UncheckedAt(ipix);
       if (probi1[ipix] > 1.e-6) chargeNew[ipix] = pixPtr->Charge() * sum / probi1[ipix];
