@@ -84,18 +84,18 @@ AliDCSSensor& AliDCSSensor::operator=(const AliDCSSensor& source){
 //
   if (&source == this) return *this;
   new (this) AliDCSSensor(source);
-  
-  return *this;  
+
+  return *this;
 }
 
 //_____________________________________________________________________________
-Double_t AliDCSSensor::GetValue(UInt_t timeSec) 
+Double_t AliDCSSensor::GetValue(UInt_t timeSec)
 {
  //
  // Get temperature value for actual sensor
  //  timeSec given as offset from start-of-run measured in seconds
  //
- return Eval(TTimeStamp(timeSec));
+ return Eval(TTimeStamp(fStartTime+timeSec));
 }
 //_____________________________________________________________________________
 Double_t AliDCSSensor::GetValue(TTimeStamp time) 
