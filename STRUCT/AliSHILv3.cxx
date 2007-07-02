@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id $ */
+/* $Id$ */
 
 //-------------------------------------------------------------------------
 // The small angle absorber SAA (beam shield)
@@ -1119,26 +1119,24 @@ void AliSHILv3::CreateGeometry()
 //
 ///////////////////////////////////
 //    SAA3 Outer Shape           //
-//    Drawing ALIP2A__0xxx       //
+//    Drawing ALIP2A__0288       //
 ///////////////////////////////////
       
       TGeoVolumeAssembly* voSaa3  = new TGeoVolumeAssembly("YSAA3");
       
 ///////////////////////////////////
-//    SAA3 Steel Components      //
-//    Drawing ALIP2A__0xxx       //
+//    SAA3 Concrete cone         //
+//    Drawing ALIP2A__0284       //
 ///////////////////////////////////
 //    Block
       TGeoBBox* shSaa3CCBlockO   = new TGeoBBox(80./2., 80./2., 100./2.);
       shSaa3CCBlockO->SetName("Saa3CCBlockO");
 
-      TGeoPcon* shSaa3InnerRegion  = new TGeoPcon(0., 360., 6);
-      shSaa3InnerRegion->DefineSection( 0, -60.0, 0., 56.6/2.);
-      shSaa3InnerRegion->DefineSection( 1, -45.0, 0., 56.6/2.);
-      shSaa3InnerRegion->DefineSection( 2, -42.0, 0., 50.6/2.);
-      shSaa3InnerRegion->DefineSection( 3, -30.0, 0., 50.6/2.);
-      shSaa3InnerRegion->DefineSection( 4,  30.5, 0., 16.8/2.);
-      shSaa3InnerRegion->DefineSection( 5,  60.0, 0., 16.8/2.);
+      TGeoPcon* shSaa3InnerRegion  = new TGeoPcon(0., 360., 4);
+      shSaa3InnerRegion->DefineSection( 0, -60.0, 0., 27.1);
+      shSaa3InnerRegion->DefineSection( 1, -23.0, 0., 27.1);
+      shSaa3InnerRegion->DefineSection( 2,  29.1, 0., 12.3);
+      shSaa3InnerRegion->DefineSection( 3,  60.0, 0., 12.3);
       shSaa3InnerRegion->SetName("Saa3InnerRegion");
 
       TGeoCompositeShape* shSaa3CCBlock = new TGeoCompositeShape("Saa3CCBlock", "Saa3CCBlockO-Saa3InnerRegion");
