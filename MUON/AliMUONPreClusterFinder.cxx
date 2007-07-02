@@ -26,6 +26,7 @@
 #include "AliMUONPad.h"
 #include "AliMUONVDigit.h"
 #include "AliMUONVDigitStore.h"
+//#include "AliCodeTimer.h"
 
 /// \class AliMUONPreClusterFinder
 ///
@@ -135,7 +136,7 @@ AliMUONPreClusterFinder::Prepare(const AliMpVSegmentation* segmentations[2],
     // no pad at all, nothing to do...
     return kFALSE;
   }
-
+  
   return kTRUE;
 }
 
@@ -148,11 +149,20 @@ AliMUONPreClusterFinder::AddPad(AliMUONCluster& cluster, AliMUONPad* pad)
   
   Int_t cathode = pad->Cathode();
   TClonesArray& padArray = *fPads[cathode];
+  // WARNING: this Remove method uses the AliMUONPad::IsEqual if that method is
+  // present (otherwise just compares pointers) : so that one must be correct
+  // if implemented !
   padArray.Remove(pad);
-  //AZ padArray.Compress();
+ // TObject* o = padArray.Remove(pad); 
+//  if (!o)
+//  {
+//    AliFatal("Oups. Could not remove pad from pads to consider. Aborting as anyway "
+//             " we'll get an infinite loop. Please check the AliMUONPad::IsEqual method"
+//             " as the first suspect for failed remove");
+//  }  
   TIter next(&padArray);
   AliMUONPad* testPad;
-  
+
   while ( ( testPad = static_cast<AliMUONPad*>(next())))
   {
     if ( AliMUONPad::AreNeighbours(*testPad,*pad) )
@@ -191,6 +201,8 @@ AliMUONCluster*
 AliMUONPreClusterFinder::NextCluster()
 {
   /// Builds the next cluster, and returns it.
+  
+//  AliCodeTimerAuto("")
   
   // Start a new cluster
   Int_t id = fClusters->GetLast()+1;
