@@ -186,7 +186,7 @@ AliMUONDigitCalibrator::CalibrateDigit(AliMUONVDigit& digit)
       }
       else
       {
-        charge = a0*thres + a0*padc + a1*padc*padc;
+        charge = a0*thres + a0*(padc-thres) + a1*(padc-thres)*(padc-thres);
       }
     }
     digit.SetCharge(charge);
