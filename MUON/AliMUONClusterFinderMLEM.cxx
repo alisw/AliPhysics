@@ -45,6 +45,7 @@
 #include <TStopwatch.h>
 #include <TMath.h>
 #include <TROOT.h>
+//#include "AliCodeTimer.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMUONClusterFinderMLEM)
@@ -59,9 +60,9 @@ const TVector2 AliMUONClusterFinderMLEM::fgkDecreaseSize(AliMUONClusterFinderMLE
  TMinuit* AliMUONClusterFinderMLEM::fgMinuit = 0x0;
 
 //_____________________________________________________________________________
-AliMUONClusterFinderMLEM::AliMUONClusterFinderMLEM(Bool_t plot)
+AliMUONClusterFinderMLEM::AliMUONClusterFinderMLEM(Bool_t plot, AliMUONVClusterFinder* clusterFinder)
   : AliMUONVClusterFinder(),
-fPreClusterFinder(new AliMUONPreClusterFinder),
+fPreClusterFinder(clusterFinder),
 fPreCluster(0x0),
 fClusterList(),
 fEventNumber(0),
@@ -154,7 +155,7 @@ AliMUONClusterFinderMLEM::Prepare(const AliMpVSegmentation* segmentations[2],
   fClusterNumber = -1;
   fClusterList.Delete();
   
-//  AliDebug(3,Form("EVT %d DE %d",fEventNumber,fDetElemId));
+  AliDebug(3,Form("EVT %d DE %d",fEventNumber,fDetElemId));
   
   return fPreClusterFinder->Prepare(segmentations,digitStore);
 }
@@ -184,6 +185,9 @@ AliMUONClusterFinderMLEM::NextCluster()
     return 0x0;
   }
     
+//  AliCodeTimerAuto("Excluding preclustering")
+    
+
   fClusterList.Delete(); // reset the list of clusters for this pre-cluster
   fClusterNumber = -1; //AZ
   
@@ -325,7 +329,7 @@ AliMUONClusterFinderMLEM::CheckPrecluster(const AliMUONCluster& origCluster)
   AliMUONCluster* cluster = static_cast<AliMUONCluster*>(origCluster.Clone());
 
   AliDebug(2,"Start of CheckPreCluster=");
-  StdoutToAliDebug(2,cluster->Print("full"));
+//  StdoutToAliDebug(2,cluster->Print("full"));
 
   // Check if one-cathode precluster
   Int_t i1 = cluster->Multiplicity(0) ? 0 : 1;
@@ -351,8 +355,8 @@ AliMUONClusterFinderMLEM::CheckPreclusterOneCathode(AliMUONCluster* cluster)
 {
   /// Check single-cathode precluster
   AliWarning("Reimplement me!");
-  AliDebug(2,"End of CheckPreClusterOneCathode=");
-  StdoutToAliDebug(2,cluster->Print("full"));
+ AliDebug(2,"End of CheckPreClusterOneCathode=");
+//  StdoutToAliDebug(2,cluster->Print("full"));
 
   return cluster;
 }  
@@ -532,7 +536,7 @@ AliMUONClusterFinderMLEM::CheckPreclusterTwoCathodes(AliMUONCluster* cluster)
   delete[] flags;
   
   AliDebug(2,"End of CheckPreClusterTwoCathodes=");
-  StdoutToAliDebug(2,cluster->Print("full"));
+//  StdoutToAliDebug(2,cluster->Print("full"));
 
   return cluster;    
 }
@@ -603,7 +607,7 @@ void AliMUONClusterFinderMLEM::BuildPixArray(AliMUONCluster& cluster)
   
   Int_t nPix = fPixArray->GetLast()+1;
   
-//  AliDebug(2,Form("nPix after BuildPixArray=%d",nPix));
+  AliDebug(2,Form("nPix after BuildPixArray=%d",nPix));
   
   Double_t xPadMin(1E9);
   Double_t yPadMin(1E9);
@@ -642,7 +646,7 @@ void AliMUONClusterFinderMLEM::BuildPixArray(AliMUONCluster& cluster)
     if (pixPtr->Charge() < 1) 
     { 
       AliDebug(2,Form("Removing pixel %d with charge<1 : ",i));
-      StdoutToAliDebug(2,pixPtr->Print());
+//      StdoutToAliDebug(2,pixPtr->Print());
       RemovePixel(i);
     }
   }
@@ -650,11 +654,11 @@ void AliMUONClusterFinderMLEM::BuildPixArray(AliMUONCluster& cluster)
   fPixArray->Compress();
   nPix = fPixArray->GetEntriesFast();
   
-//  AliDebug(2,Form("nPix after AdjustPixel=%d",nPix));
+  AliDebug(2,Form("nPix after AdjustPixel=%d",nPix));
 
   if ( nPix > cluster.Multiplicity() ) 
   {
-//    AliDebug(2,Form("Will trim number of pixels to number of pads"));
+    AliDebug(2,Form("Will trim number of pixels to number of pads"));
     
     // Too many pixels - sort and remove pixels with the lowest signal
     fPixArray->Sort();
@@ -668,7 +672,7 @@ void AliMUONClusterFinderMLEM::BuildPixArray(AliMUONCluster& cluster)
 
 //  StdoutToAliDebug(2,cout << "End of BuildPixelArray:" << endl;
 //                   fPixArray->Print(););
-  CheckOverlaps();//FIXME : this is for debug only. Remove it.
+//  CheckOverlaps();//FIXME : this is for debug only. Remove it.
 }
 
 //_____________________________________________________________________________
@@ -676,7 +680,7 @@ void AliMUONClusterFinderMLEM::BuildPixArrayOneCathode(AliMUONCluster& cluster)
 {
   /// From a single-cathode cluster, build the pixel array
 
-//  AliDebug(2,Form("cluster.Multiplicity=%d",cluster.Multiplicity()));
+  AliDebug(2,Form("cluster.Multiplicity=%d",cluster.Multiplicity()));
 
   for ( Int_t j=0; j<cluster.Multiplicity(); ++j) 
   {
@@ -692,7 +696,7 @@ void AliMUONClusterFinderMLEM::BuildPixArrayTwoCathodes(AliMUONCluster& cluster)
 {
   /// From a two-cathodes cluster, build the pixel array
   
-//  AliDebug(2,Form("cluster.Multiplicity=%d",cluster.Multiplicity()));
+  AliDebug(2,Form("cluster.Multiplicity=%d",cluster.Multiplicity()));
            
   Int_t i1 = cluster.Pad(0)->Cathode();
   Int_t i2 = TMath::Even(i1);
@@ -905,13 +909,13 @@ AliMUONClusterFinderMLEM::ComputeCoefficients(AliMUONCluster& cluster,
       // coef is the charge (given by Mathieson integral) on pad, assuming
       // the Mathieson is center at pixel.
       coef[indx1] = fSplitter->ChargeIntegration(pixPtr->Coord(0), pixPtr->Coord(1), *pad);  
-//      AliDebug(2,Form("pad=(%d,%d,%e,%e,%e,%e) pix=(%e,%e,%e,%e) coef %e",
-//                      pad->Ix(),pad->Iy(),
-//                      pad->X(),pad->Y(),
-//                      pad->DX(),pad->DY(),
-//                      pixPtr->Coord(0),pixPtr->Coord(1), 
-//                      pixPtr->Size(0),pixPtr->Size(1),
-//                      coef[indx1]));
+      AliDebug(2,Form("pad=(%d,%d,%e,%e,%e,%e) pix=(%e,%e,%e,%e) coef %e",
+                      pad->Ix(),pad->Iy(),
+                      pad->X(),pad->Y(),
+                      pad->DX(),pad->DY(),
+                      pixPtr->Coord(0),pixPtr->Coord(1), 
+                      pixPtr->Size(0),pixPtr->Size(1),
+                      coef[indx1]));
       
       probi[ipix] += coef[indx1];
     } 
@@ -926,7 +930,7 @@ Bool_t AliMUONClusterFinderMLEM::MainLoop(AliMUONCluster& cluster, Int_t iSimple
   Int_t nPix = fPixArray->GetLast()+1;
 
   AliDebug(2,Form("nPix=%d iSimple=%d, precluster=",nPix,iSimple));
-  StdoutToAliDebug(2,cluster.Print("full"););
+//  StdoutToAliDebug(2,cluster.Print("full"););
 
   if ( nPix < 0 )
   {
@@ -947,7 +951,7 @@ Bool_t AliMUONClusterFinderMLEM::MainLoop(AliMUONCluster& cluster, Int_t iSimple
   Double_t* probi(0x0);
   Int_t lc(0); // loop counter (for debug)
   
-  Plot("mlem.start");
+//  Plot("mlem.start");
   
   while (1) 
   {
@@ -957,7 +961,7 @@ Bool_t AliMUONClusterFinderMLEM::MainLoop(AliMUONCluster& cluster, Int_t iSimple
     
     AliDebug(2,Form("lc %d nPix %d(%d) npadTot %d npadOK %d",lc,nPix,fPixArray->GetLast()+1,npadTot,npadOK));
     AliDebug(2,Form("EVT%d PixArray=",fEventNumber));
-    StdoutToAliDebug(2,fPixArray->Print("","full"));
+//    StdoutToAliDebug(2,fPixArray->Print("","full"));
         
     coef = new Double_t [npadTot*nPix];
     probi = new Double_t [nPix];
@@ -971,7 +975,7 @@ Bool_t AliMUONClusterFinderMLEM::MainLoop(AliMUONCluster& cluster, Int_t iSimple
       {
         AliMUONPad* pixel = Pixel(ipix);
         AliDebug(2,Form("Setting the following pixel to invisible as its probi<0.01:"));
-        StdoutToAliDebug(2,cout << Form(" -- ipix %3d --- "); pixel->Print(););
+//        StdoutToAliDebug(2,cout << Form(" -- ipix %3d --- "); pixel->Print(););
         pixel->SetCharge(0); // "invisible" pixel
       }
     }
@@ -1119,8 +1123,8 @@ Bool_t AliMUONClusterFinderMLEM::MainLoop(AliMUONCluster& cluster, Int_t iSimple
     nPix = fPixArray->GetEntriesFast();
 
     AliDebug(2,Form("After shift:"));
-    StdoutToAliDebug(2,fPixArray->Print("","full"););
-    Plot(Form("mlem.lc%d",lc+1));
+//    StdoutToAliDebug(2,fPixArray->Print("","full"););
+//    Plot(Form("mlem.lc%d",lc+1));
     
     AliDebug(2,Form(" xyCOG=%9.6f %9.6f xylim=%9.6f,%9.6f,%9.6f,%9.6f",
                     xyCOG[0],xyCOG[1],
@@ -1151,8 +1155,8 @@ Bool_t AliMUONClusterFinderMLEM::MainLoop(AliMUONCluster& cluster, Int_t iSimple
           j = TMath::Even (i/2);
           p->SetCoord(j, xyCOG[j]);
           AliDebug(2,Form("Adding pixel on the edge (i=%d) ",i));
-          StdoutToAliDebug(2,cout << " ---- "; 
-                           p->Print("corners"););
+//          StdoutToAliDebug(2,cout << " ---- "; 
+//                           p->Print("corners"););
           fPixArray->Add(p);
           ++nPix;
         }
@@ -1167,7 +1171,7 @@ Bool_t AliMUONClusterFinderMLEM::MainLoop(AliMUONCluster& cluster, Int_t iSimple
   } // while (1)
 
   AliDebug(2,Form("At the end of while loop nPix=%d : ",fPixArray->GetLast()+1));
-  StdoutToAliDebug(2,fPixArray->Print("","full"););
+//  StdoutToAliDebug(2,fPixArray->Print("","full"););
 
   // remove pixels with low signal or low visibility
   // Cuts are empirical !!!
@@ -1208,8 +1212,8 @@ Bool_t AliMUONClusterFinderMLEM::MainLoop(AliMUONCluster& cluster, Int_t iSimple
   Mlem(cluster,coef,probi,2);
   
   AliDebug(2,Form("Before splitting nPix=%d EVT %d DE %d",fPixArray->GetLast()+1,fEventNumber,fDetElemId));
-  StdoutToAliDebug(2,fPixArray->Print("","full"););
-  Plot("mlem.beforesplit");
+//  StdoutToAliDebug(2,fPixArray->Print("","full"););
+//  Plot("mlem.beforesplit");
   
            // Update histogram
   for (Int_t i=0; i<nPix; ++i) 
@@ -1923,9 +1927,6 @@ void AliMUONClusterFinderMLEM::AddVirtualPad(AliMUONCluster& cluster)
 	  //          fnPads[1]++;
 	  //          iAddX = npads;
           iAddX = 1;
-	  //AliDebug(1,Form("Add virtual pad in X %f %f %f %3d %3d \n", 
-	  //                          fXyq[2][npads], fXyq[0][npads], fXyq[1][npads], ix, iy));
-	  //muonPad.Charge(), muonPad.Coord(0), muonPad.Coord(1), ix, iy));
           if (fDebug) printf(" ***** Add virtual pad in X ***** %f %f %f %3d %3d %f %f \n",
 			     muonPad.Charge(), muonPad.Coord(0), muonPad.Coord(1), ix, iy, 
 			     muonPad.DX(), muonPad.DY());

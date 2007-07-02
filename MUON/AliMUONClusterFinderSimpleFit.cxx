@@ -25,7 +25,6 @@
 #include "AliMUONVDigit.h"
 #include "AliMUONMathieson.h"
 #include "AliMUONPad.h"
-#include "AliMUONClusterFinderCOG.h"
 #include "AliMpArea.h"
 #include "TClonesArray.h"
 #include "TObjArray.h"
@@ -91,9 +90,9 @@ namespace
 }
 
 //_____________________________________________________________________________
-AliMUONClusterFinderSimpleFit::AliMUONClusterFinderSimpleFit()
+AliMUONClusterFinderSimpleFit::AliMUONClusterFinderSimpleFit(AliMUONVClusterFinder* clusterFinder)
 : AliMUONVClusterFinder(),
-fClusterFinder(0x0),
+fClusterFinder(clusterFinder),
 fMathieson(0x0)
 {
   /// ctor
@@ -153,8 +152,6 @@ AliMUONClusterFinderSimpleFit::Prepare(const AliMpVSegmentation* segmentations[2
   fMathieson->SetSqrtKx3AndDeriveKx2Kx4(kx3);
   fMathieson->SetSqrtKy3AndDeriveKy2Ky4(ky3);
 
-  delete fClusterFinder;
-  fClusterFinder = new AliMUONClusterFinderCOG;
   return fClusterFinder->Prepare(segmentations,digitStore);
 }
 

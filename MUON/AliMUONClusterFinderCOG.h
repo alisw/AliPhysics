@@ -16,12 +16,10 @@
 #  include "AliMUONVClusterFinder.h"
 #endif
 
-class AliMUONMathieson;
-
 class AliMUONClusterFinderCOG : public AliMUONVClusterFinder
 {
 public:
-  AliMUONClusterFinderCOG();
+  AliMUONClusterFinderCOG(AliMUONVClusterFinder* clusterFinder);
   virtual ~AliMUONClusterFinderCOG();
   
   virtual Bool_t Prepare(const AliMpVSegmentation* segmentations[2],

@@ -21,7 +21,6 @@
 #include "AliMUONCluster.h"
 #include "AliMUONVDigit.h"
 #include "AliMUONPad.h"
-#include "AliMUONPreClusterFinder.h"
 #include "AliMpArea.h"
 #include "TVector2.h"
 #include "AliMUONVDigitStore.h"
@@ -44,9 +43,9 @@ ClassImp(AliMUONClusterFinderCOG)
 /// \endcond
 
 //_____________________________________________________________________________
-AliMUONClusterFinderCOG::AliMUONClusterFinderCOG()
+AliMUONClusterFinderCOG::AliMUONClusterFinderCOG(AliMUONVClusterFinder* clusterFinder)
 : AliMUONVClusterFinder(),
-fPreClusterFinder(0x0)
+fPreClusterFinder(clusterFinder)
 {
   /// ctor
 }
@@ -84,8 +83,6 @@ AliMUONClusterFinderCOG::Prepare(const AliMpVSegmentation* segmentations[2],
     return kFALSE;
   }
   
-  delete fPreClusterFinder;
-  fPreClusterFinder = new AliMUONPreClusterFinder;
   return fPreClusterFinder->Prepare(segmentations,digitStore);
 }
 

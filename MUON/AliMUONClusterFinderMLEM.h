@@ -33,7 +33,7 @@ class AliMUONClusterSplitterMLEM;
 class AliMUONClusterFinderMLEM : public AliMUONVClusterFinder
 {
 public:
-  AliMUONClusterFinderMLEM(Bool_t plot=kFALSE); // Constructor
+  AliMUONClusterFinderMLEM(Bool_t plot, AliMUONVClusterFinder* clusterFinder); // Constructor
   virtual ~AliMUONClusterFinderMLEM(); // Destructor
 
   virtual Bool_t Prepare(const AliMpVSegmentation* segmentations[2],

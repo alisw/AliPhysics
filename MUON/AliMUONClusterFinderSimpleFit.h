@@ -21,7 +21,7 @@ class AliMUONMathieson;
 class AliMUONClusterFinderSimpleFit : public AliMUONVClusterFinder
 {
 public:
-  AliMUONClusterFinderSimpleFit();
+  AliMUONClusterFinderSimpleFit(AliMUONVClusterFinder* clusterFinder);
   virtual ~AliMUONClusterFinderSimpleFit();
   
   virtual Bool_t Prepare(const AliMpVSegmentation* segmentations[2],
