@@ -52,6 +52,7 @@ AliMUONClusterReconstructor::AliMUONClusterReconstructor(AliMUONVClusterFinder* 
   fClusterStore(0x0)
 {
     /// Standard Constructor
+    /// Note that we adopt clusterFinder
 
   if (!transformer && clusterFinder)
   {
@@ -66,6 +67,7 @@ AliMUONClusterReconstructor::AliMUONClusterReconstructor(AliMUONVClusterFinder* 
 AliMUONClusterReconstructor::~AliMUONClusterReconstructor(void)
 {
   /// Destructor
+  delete fClusterFinder;
 }
 
 //______________________________________________________________________________
@@ -74,6 +76,8 @@ AliMUONClusterReconstructor::ClusterizeOneDE(Int_t detElemId,
                                              const AliMUONVDigitStore& digitStore)
 {
   /// Clusterize one detection element, which digits are in digitStore
+  
+//  AliDebug(1,Form("detElemId=%d, %d digits",detElemId,digitStore.GetSize()));
   
   if ( digitStore.IsEmpty() ) return;
   
