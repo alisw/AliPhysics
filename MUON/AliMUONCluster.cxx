@@ -99,8 +99,7 @@ fHasPosition(kFALSE),
 fPosition(1E9,1E9),
 fPositionError(1E9,1E9),
 fHasCharge(kFALSE),
-fChi2(0),
-fIsSorted(kFALSE)
+fChi2(0)
 {
   /// ctor
   fMultiplicity[0]=fMultiplicity[1]=0;
@@ -117,8 +116,7 @@ fHasPosition(kFALSE),
 fPosition(1E9,1E9),
 fPositionError(1E9,1E9),
 fHasCharge(kFALSE),
-fChi2(0),
-fIsSorted(kFALSE)
+fChi2(0)
 {
   /// copy ctor
   src.Copy(*this);
@@ -143,12 +141,51 @@ AliMUONCluster::~AliMUONCluster()
 
 //_____________________________________________________________________________
 void
+AliMUONCluster::Clear(Option_t*)
+{
+  /// Clear our pad array
+  if (fPads) fPads->Clear("C");
+}
+
+//_____________________________________________________________________________
+Bool_t
+AliMUONCluster::Contains(const AliMUONPad& pad) const
+{
+  /// Whether this cluster contains the pad
+  if (!fPads) return kFALSE;
+  for ( Int_t i = 0; i < Multiplicity(); ++i ) 
+  {
+    AliMUONPad* p = Pad(i);
+    if ( pad.Compare(p) == 0 ) return kTRUE;
+  }
+  return kFALSE;
+}
+
+//_____________________________________________________________________________
+void
+AliMUONCluster::AddCluster(const AliMUONCluster& cluster)
+{
+  /// Add all the pads for cluster to this one
+  for ( Int_t i = 0; i < cluster.Multiplicity(); ++i )
+  {
+    AliMUONPad* p = cluster.Pad(i);
+    if ( Contains(*p) ) 
+    {
+      AliError("I already got this pad : ");
+      StdoutToAliError(p->Print(););
+      AliFatal("");
+    }
+    AddPad(*p);
+  }
+  
+}
+
+//_____________________________________________________________________________
+AliMUONPad*
 AliMUONCluster::AddPad(const AliMUONPad& pad)
 {
   /// Add a pad to our pad array, and update some internal information
   /// accordingly.
-  /// If pad array was sorted prior to this call, we re-sort it after
-  /// actual addition.
   
   if (!fPads) 
   {
@@ -165,7 +202,53 @@ AliMUONCluster::AddPad(const AliMUONPad& pad)
   {
     fIsSaturated[p->Cathode()]=kTRUE;
   }
-  //AZ if ( fIsSorted ) Sort();
+  return p;
+}
+
+//___________________________________________________________________________
+TString
+AliMUONCluster::AsString() const
+{
+  /// Return a string containing a compact form of the pad list
+  TString s(Form("NPADS(%d,%d)",Multiplicity(0),Multiplicity(1)));
+  
+  for (Int_t i = 0; i < Multiplicity(); ++i ) 
+  {
+    AliMUONPad* p = Pad(i);
+    s += Form(" (%d,%d,%d) ",p->Cathode(),p->Ix(),p->Iy());
+  }
+  return s;
+}
+
+
+//___________________________________________________________________________
+Bool_t
+AliMUONCluster::AreOverlapping(const AliMUONCluster& c1, const AliMUONCluster& c2)
+{
+  /// Whether the two clusters overlap
+  
+  static Double_t precision = 1E-4; // cm
+  static TVector2 precisionAdjustment(precision,precision);
+    
+  for ( Int_t i1 = 0; i1 < c1.Multiplicity(); ++i1 )
+  {
+    AliMUONPad* p1 = c1.Pad(i1);
+    
+    for ( Int_t i2 = 0; i2 < c2.Multiplicity(); ++i2 )
+    {
+      AliMUONPad* p2 = c2.Pad(i2);
+      // Note: we use negative precision numbers, meaning
+      // the area of the pads will be *increased* by these small numbers
+      // prior to check the overlap by the AreOverlapping method,
+      // so pads touching only by the corners will be considered as
+      // overlapping.    
+      if ( AliMUONPad::AreOverlapping(*p1,*p2,precisionAdjustment) )
+      {
+        return kTRUE;
+      }
+    }
+  }
+  return kFALSE;
 }
 
 //_____________________________________________________________________________
@@ -195,6 +278,59 @@ AliMUONCluster::Area() const
 }
 
 //_____________________________________________________________________________
+AliMpArea
+AliMUONCluster::Area(Int_t cathode) const
+{
+  /// Return the geometrical area covered by this cluster's pads on 
+  /// a given cathode
+  
+  // Start by finding the (x,y) limits of this cluster
+  TVector2 lowerLeft(1E9,1E9);
+  TVector2 upperRight(-1E9,-1E9);
+  
+  for ( Int_t i = 0; i < Multiplicity(cathode); ++i )
+  {
+    AliMUONPad* pad = Pad(i);
+    TVector2 ll = pad->Position() - pad->Dimensions();
+    TVector2 ur = pad->Position() + pad->Dimensions();
+    lowerLeft.Set( TMath::Min(ll.X(),lowerLeft.X()),
+                   TMath::Min(ll.Y(),lowerLeft.Y()) );
+    upperRight.Set( TMath::Max(ur.X(),upperRight.X()),
+                    TMath::Max(ur.Y(),upperRight.Y()) );
+  }
+  
+  // then construct the area from those limits
+  return AliMpArea((lowerLeft+upperRight)/2,
+                   (upperRight-lowerLeft)/2);
+}
+
+//_____________________________________________________________________________
+Int_t
+AliMUONCluster::Cathode() const
+{
+  /// Return the cathode "number" of this cluster : 
+  /// 0 if all its pads are on cathode 0
+  /// 1 if all its pads are on cathode 1
+  /// 2 if some pads on cath 0 and some on cath 1
+  
+  Int_t cathode(-1);
+  if (Multiplicity(0)>0 && Multiplicity(1)>0) 
+  {
+    cathode=2;
+  }
+  else if (Multiplicity(0)>0) 
+  {
+    cathode=0;
+  }
+  else if (Multiplicity(1)>0) 
+  {
+    cathode=1;
+  }
+  
+  return cathode;
+}
+
+//_____________________________________________________________________________
 void
 AliMUONCluster::Copy(TObject& obj) const
 {
@@ -212,7 +348,6 @@ AliMUONCluster::Copy(TObject& obj) const
   dest.fPosition = fPosition;
   dest.fPositionError = fPositionError;
   dest.fHasCharge = fHasCharge;
-  dest.fIsSorted = fIsSorted;
   dest.fChi2 = fChi2;
   for ( Int_t i = 0; i < 2; ++i )
   {
@@ -255,6 +390,44 @@ AliMUONCluster::ChargeAsymmetry() const
     return TMath::Abs(Charge(0)-Charge(1))/Charge();
   }
   return 0;
+}
+
+//_____________________________________________________________________________
+TVector2
+AliMUONCluster::MaxPadDimensions(Int_t statusMask, Bool_t matchMask) const
+{
+  /// Returns the maximum pad dimensions (half sizes), only considering
+  /// pads matching (or not, depending matchMask) a given mask
+  
+  TVector2 cath0(MaxPadDimensions(0,statusMask,matchMask)); 
+  TVector2 cath1(MaxPadDimensions(1,statusMask,matchMask)); 
+  
+  return TVector2( TMath::Max(cath0.X(),cath1.X()),
+                   TMath::Max(cath0.Y(),cath1.Y()) );
+}
+
+//_____________________________________________________________________________
+TVector2
+AliMUONCluster::MaxPadDimensions(Int_t cathode, 
+                                 Int_t statusMask, Bool_t matchMask) const
+{
+  /// Returns the maximum pad dimensions (half sizes), only considering
+  /// pads matching (or not, depending matchMask) a given mask, within a
+  /// given cathode
+  
+  Double_t xmax(0);
+  Double_t ymax(0);
+  
+  for ( Int_t i = 0; i < Multiplicity(); ++i )
+  {
+    AliMUONPad* pad = Pad(i);
+    if ( ShouldUsePad(*pad,cathode,statusMask,matchMask) )
+    {
+      xmax = TMath::Max(xmax,pad->DX());
+      ymax = TMath::Max(ymax,pad->DY());
+    }
+  }
+  return TVector2(xmax,ymax);
 }
 
 //_____________________________________________________________________________
@@ -401,7 +574,9 @@ AliMUONCluster::Pad(Int_t index) const
   }
   else
   {
-    AliError(Form("Requesting index %d out of bounds (%d)",index,fPads->GetLast()));
+    AliError(Form("Requested index %d out of bounds (%d) Mult is %d",index,
+                  fPads->GetLast(),Multiplicity()));
+    DumpMe();
   }
   return 0x0;
 }
@@ -440,6 +615,33 @@ AliMUONCluster::Paint(Option_t*)
 
 //_____________________________________________________________________________
 void
+AliMUONCluster::DumpMe() const
+{
+  /// printout
+  cout << "Cluster Id " << GetUniqueID() << " npads=" << Multiplicity() 
+  << "(" << Multiplicity(0) << "," << Multiplicity(1) << ") RawCharge=" 
+  << RawCharge() << " (" << RawCharge(0) << "," << RawCharge(1)
+  << ") Charge=(" << Charge(0) << "," << Charge(1) <<")";
+  if ( HasPosition() )
+  {
+    cout << " (x,y)=(" << Position().X() << "," << Position().Y() << ")";
+    cout << " (errX,errY)=(" << PositionError().X() << "," << PositionError().Y() << ")";
+  }
+  cout << endl;
+//  cout << " " << Area() << endl;
+  if (fPads) 
+  {
+    for (Int_t i = 0; i < fPads->GetSize(); ++i) 
+    {
+      cout << Form("fPads[%d]=%x",i,fPads->At(i)) << endl;
+      if ( fPads->At(i) ) fPads->At(i)->Print();
+    }
+  }  
+}
+
+
+//_____________________________________________________________________________
+void
 AliMUONCluster::Print(Option_t* opt) const
 {
   /// printout
@@ -452,20 +654,73 @@ AliMUONCluster::Print(Option_t* opt) const
     cout << " (x,y)=(" << Position().X() << "," << Position().Y() << ")";
     cout << " (errX,errY)=(" << PositionError().X() << "," << PositionError().Y() << ")";
   }
-  cout << " " << Area() << endl;
+  cout << " " << Area();
   if (fPads) 
   {
-    fPads->Print("",opt);
+    TObjArray* a = static_cast<TObjArray*>(fPads->Clone());
+    a->Sort();
+    a->Print("",opt);
+    delete a;
   }
 }
 
 //_____________________________________________________________________________
-void
-AliMUONCluster::Sort()
+//Bool_t
+//AliMUONCluster::IsEqual(const TObject* obj) const
+//{
+//  const AliMUONCluster* c = static_cast<const AliMUONCluster*>(obj);
+//  if ( c->Multiplicity() != Multiplicity() ) return kFALSE;
+//  
+//  for ( Int_t i = 0; i < c->Multiplicity(); ++i ) 
+//  {
+//    AliMUONPad* p = c->Pad(i);
+//    if ( p->Compare(Pad(i)) ) return kFALSE;
+//  }
+//  return kTRUE;
+//}
+
+//_____________________________________________________________________________
+Int_t 
+AliMUONCluster::Compare(const TObject* obj) const
 {
-  /// Sort the pad array
-  fPads->Sort();
-  fIsSorted = kTRUE;
+  /// Compare two clusters. Comparison is made on position and rawcharge only.
+  
+  const AliMUONCluster* cluster = static_cast<const AliMUONCluster*>(obj);
+  
+  AliMpArea carea(cluster->Area());
+  AliMpArea area(Area());
+
+  if ( carea.Position().X() > area.Position().X() ) 
+  {
+    return 1;
+  }
+  else if ( carea.Position().X() < area.Position().X() ) 
+  {
+    return -1;
+  }
+  else 
+  {
+    if ( carea.Position().Y() > area.Position().Y() ) 
+    {
+      return 1;
+    }
+    else if ( carea.Position().Y() < area.Position().Y() ) 
+    {
+      return -1;
+    }
+    else
+    {
+      if ( cluster->RawCharge() > RawCharge() ) 
+      {
+        return 1;
+      }
+      else if ( cluster->RawCharge() < RawCharge() )
+      {
+        return -1;
+      }
+    }
+  }
+  return 0;
 }
 
 //_____________________________________________________________________________
@@ -491,7 +746,6 @@ AliMUONCluster::RemovePad(AliMUONPad* pad)
     ++fMultiplicity[p->Cathode()];
     fRawCharge[p->Cathode()] += p->Charge();
   }
-  if (fIsSorted) Sort();
 }
 
 //_____________________________________________________________________________

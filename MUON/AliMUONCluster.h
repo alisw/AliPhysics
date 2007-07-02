@@ -18,6 +18,9 @@
 #ifndef ROOT_TVector2
 #  include "TVector2.h"
 #endif
+#ifndef ROOT_TString
+#  include "TString.h"
+#endif
 #ifndef ALI_MP_AREA_H
 #  include "AliMpArea.h"
 #endif
@@ -39,12 +42,21 @@ public:
   AliMUONCluster& operator=(const AliMUONCluster& rhs);
   
   virtual ~AliMUONCluster();
+  
+  Bool_t Contains(const AliMUONPad& pad) const;
+  
+  TString AsString() const;
+  
+  static Bool_t AreOverlapping(const AliMUONCluster& c1, const AliMUONCluster& c2);
+  
+  AliMUONPad* AddPad(const AliMUONPad& pad);
 
-  void AddPad(const AliMUONPad& pad);
-
-  /// Area that contains all the pads.
+  /// Area that contains all the pads (whatever the cathode)
   AliMpArea Area() const;
-    
+
+  /// Area that contains all the pads of a given cathode
+  AliMpArea Area(Int_t cathode) const;
+
   Float_t Charge() const;
   Float_t Charge(Int_t cathode) const;
 
@@ -71,11 +83,17 @@ public:
   /// Return the max raw charge on the chathod
   Int_t MaxRawChargeCathode() const { return RawCharge(0) > RawCharge(1) ? 0:1; }
 
+  /// Return the biggest pad dimensions for a given cathode
+  TVector2 MaxPadDimensions(Int_t cathode, Int_t statusMask, Bool_t matchMask) const;
+  
+  /// Return the biggest pad dimensions
+  TVector2 MaxPadDimensions(Int_t statusMask, Bool_t matchMask) const;
+  
   /// Return the smallest pad dimensions for a given cathode
   TVector2 MinPadDimensions(Int_t cathode, Int_t statusMask, Bool_t matchMask) const;
   
   /// Return the smallest pad dimensions
-  TVector2 MinPadDimensions( Int_t statusMask, Bool_t matchMask) const;
+  TVector2 MinPadDimensions(Int_t statusMask, Bool_t matchMask) const;
   
   Int_t Multiplicity() const;
   Int_t Multiplicity(Int_t cathode) const;
@@ -85,6 +103,13 @@ public:
   
   /// Number of pads in (X,Y) direction, whatever the cathode.
   AliMpIntPair NofPads(Int_t statusMask, Bool_t matchMask=kTRUE) const;
+  
+  /// Return true as the function Compare is implemented
+  Bool_t IsSortable() const { return kTRUE; }
+  
+//  Bool_t IsEqual(const TObject* obj) const;
+  
+  virtual Int_t Compare(const TObject* obj) const;
   
   AliMUONPad* Pad(Int_t index) const;
   
@@ -119,7 +144,14 @@ public:
   void SetPosition(const TVector2& pos, const TVector2& errorOnPos) 
   { fHasPosition = kTRUE; fPosition = pos; fPositionError = errorOnPos; }
   
-  void Sort();
+  Int_t Cathode() const;
+  
+  void AddCluster(const AliMUONCluster& cluster);
+
+  void Clear(Option_t* opt="");
+  
+private:
+    void DumpMe() const;
   
 private:
   TObjArray* fPads; ///< AliMUONPad(s) composing this cluster
@@ -132,8 +164,8 @@ private:
   Float_t fCharge[2]; ///< cathode (re)computed charges
   Float_t fChi2; ///< chi2 of the RawCharge fit (if any)
   Bool_t fIsSaturated[2]; ///< saturation status of cathodes
-  Bool_t fIsSorted; ///< whether pads are sorted or not
-  ClassDef(AliMUONCluster,1) // A cluster of AliMUONPad
+  
+  ClassDef(AliMUONCluster,2) // A cluster of AliMUONPad
 };
 
 #endif
