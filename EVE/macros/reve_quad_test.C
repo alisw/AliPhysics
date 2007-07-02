@@ -1,7 +1,7 @@
 // $Header$
 
 Reve::QuadSet* reve_quad_test(Float_t x=0, Float_t y=0, Float_t z=0,
-			      Int_t num=100)
+			      Int_t num=100, Bool_t register=kTRUE)
 {
   TRandom r(0);
 
@@ -22,8 +22,11 @@ Reve::QuadSet* reve_quad_test(Float_t x=0, Float_t y=0, Float_t z=0,
   Reve::ZTrans& t = q->RefHMTrans();
   t.SetPos(x, y, z);
 
-  gReve->AddRenderElement(q);
-  gReve->Redraw3D();
+  if (register)
+  {
+    gReve->AddRenderElement(q);
+    gReve->Redraw3D();
+  }
 
   return q;
 }
@@ -85,7 +88,7 @@ Reve::QuadSet* reve_quad_test_circ()
 }
 
 Reve::QuadSet* reve_quad_test_hex(Float_t x=0, Float_t y=0, Float_t z=0,
-				  Int_t num=100)
+				  Int_t num=100, Bool_t register=kTRUE)
 {
   TRandom r(0);
 
@@ -104,8 +107,11 @@ Reve::QuadSet* reve_quad_test_hex(Float_t x=0, Float_t y=0, Float_t z=0,
     Reve::ZTrans& t = q->RefHMTrans();
     t.SetPos(x, y, z);
 
-    gReve->AddRenderElement(q);
-    gReve->Redraw3D();
+    if (register)
+    {
+      gReve->AddRenderElement(q);
+      gReve->Redraw3D();
+    }
   }
 
   {
@@ -121,8 +127,11 @@ Reve::QuadSet* reve_quad_test_hex(Float_t x=0, Float_t y=0, Float_t z=0,
     Reve::ZTrans& t = q->RefHMTrans();
     t.SetPos(x, y, z);
 
-    gReve->AddRenderElement(q);
-    gReve->Redraw3D();
+    if (register)
+    {
+      gReve->AddRenderElement(q);
+      gReve->Redraw3D();
+    }
   }
 
   return q;
