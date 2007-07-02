@@ -59,8 +59,7 @@
 #include "AliMUONRegHeader.h"
 
 #include "AliMUONVTriggerStore.h"
-#include "AliMUONStopwatchGroup.h"
-#include "AliMUONStopwatchGroupElement.h"
+#include "AliCodeTimer.h"
 
 #include "AliMpDDLStore.h"
 #include "AliMpDDL.h"
@@ -99,7 +98,6 @@ AliMUONRawWriter::AliMUONRawWriter()
     fDDLStore(AliMpDDLStore::Instance()),
     fScalerEvent(kFALSE),
     fHeader(),
-    fTimers(new AliMUONStopwatchGroup),
     fBufferSize((((43*AliMpConstants::ManuNofChannels() + 4)*5 + 10)*5 + 8)*2),
     fBuffer(new Int_t [fBufferSize])
 {
@@ -125,9 +123,6 @@ AliMUONRawWriter::~AliMUONRawWriter(void)
   delete fDarcHeader;
   delete fRegHeader;
   delete fLocalStruct;
-  AliInfo("Timers:");
-  fTimers->Print();
-  delete fTimers;
   delete[] fBuffer;
 }
 
@@ -154,7 +149,7 @@ Int_t AliMUONRawWriter::Digits2Raw(AliMUONVDigitStore* digitStore,
 {
   /// convert digits of the current event to raw data
 
-  AliMUONStopwatchGroupElement timer(fTimers,"MUON","AliMUONRawWriter::Digits2Raw");
+  AliCodeTimerAuto("")
   
   Int_t idDDL;
   Char_t name[255];
@@ -163,7 +158,7 @@ Int_t AliMUONRawWriter::Digits2Raw(AliMUONVDigitStore* digitStore,
   
   if ( digitStore ) 
   {
-    AliMUONStopwatchGroupElement timer(fTimers,"MUON","AliMUONRawWriter::Digits2Raw for Tracker");
+    AliCodeTimerAuto("for Tracker")
 
     AliMpExMap busPatchMap(true);
 
@@ -190,7 +185,7 @@ Int_t AliMUONRawWriter::Digits2Raw(AliMUONVDigitStore* digitStore,
  
   if ( triggerStore )
   {
-    AliMUONStopwatchGroupElement timer(fTimers,"MUON","AliMUONRawWriter::Digits2Raw for Trigger");
+    AliCodeTimerAuto("for Trigger")
 
     // trigger chambers
     
@@ -224,7 +219,7 @@ AliMUONRawWriter::Digits2BusPatchMap(const AliMUONVDigitStore& digitStore,
 {
   /// Create bus patch structures corresponding to digits in the store
   
-  AliMUONStopwatchGroupElement timer(fTimers,"MUON","AliMUONRawWriter::Digits2BusPatchMap");
+  AliCodeTimerAuto("")
   
   static const Int_t kMAXADC = (1<<12)-1; // We code the charge on a 12 bits ADC.
     
@@ -310,7 +305,7 @@ AliMUONRawWriter::WriteTrackerDDL(AliMpExMap& busPatchMap, Int_t iDDL)
   // (((43 manus max per bus patch *64 channels + 4 bus patch words) * 5 bus patch 
   //   + 10 dsp words)*5 dsps + 8 block words)*2 blocks 
  
-  AliMUONStopwatchGroupElement timer(fTimers,"MUON","AliMUONRawWriter::WriteTrackerDDL");
+  AliCodeTimerAuto("")
 
   memset(fBuffer,0,fBufferSize*sizeof(Int_t));
   
@@ -433,7 +428,7 @@ Int_t AliMUONRawWriter::WriteTriggerDDL(const AliMUONVTriggerStore& triggerStore
 {
   /// Write trigger DDL
   
-  AliMUONStopwatchGroupElement timer(fTimers,"MUON","AliMUONRawWriter::WriteTriggerDDL");
+  AliCodeTimerAuto("")
 
  // DDL event one per half chamber
 

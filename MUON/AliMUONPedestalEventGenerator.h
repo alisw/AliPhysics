@@ -25,7 +25,6 @@ class AliRunLoader;
 class AliMUONVDigitStore;
 class AliLoader;
 class AliMUONVStore;
-class AliMUONStopwatchGroup;
 class AliMUONRawWriter;
 
 class AliMUONPedestalEventGenerator : public TTask
@@ -58,12 +57,11 @@ private:
   Bool_t fMakeDDL; //!< whether to generate DDL ascii files or not
   AliLoader* fLoader; //!< to access trees
   AliMUONVStore* fPedestals; //!< pedestals
-  AliMUONStopwatchGroup* fTimers; //!< to time some methods
   AliMUONVDigitStore* fDigitStore; //!< digit container
   AliMUONRawWriter* fRawWriter; //!< to convert digits to raw data
   static Int_t fgCounter; //!< counter 
   
-  ClassDef(AliMUONPedestalEventGenerator,2) // Random generator of pedestal events for MUON TRK
+  ClassDef(AliMUONPedestalEventGenerator,3) // Random generator of pedestal events for MUON TRK
 };
 
 #endif

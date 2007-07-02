@@ -22,8 +22,7 @@
 #include "AliMUONCalibrationData.h"
 #include "AliMUONDigitStoreV1.h"
 #include "AliMUONRawWriter.h"
-#include "AliMUONStopwatchGroup.h"
-#include "AliMUONStopwatchGroupElement.h"
+#include "AliCodeTimer.h"
 #include "AliMUONVCalibParam.h"
 #include "AliMUONVDigit.h"
 #include "AliMUONVStore.h"
@@ -86,7 +85,6 @@ fGAliceFileName("galice.root"),
 fMakeDDL(kTRUE),
 fLoader(0x0),
 fPedestals(fCalibrationData->Pedestals()),
-fTimers(new AliMUONStopwatchGroup),
 fDigitStore(0x0),
 fRawWriter(0x0)
 {
@@ -136,9 +134,6 @@ AliMUONPedestalEventGenerator::~AliMUONPedestalEventGenerator()
 {
   /// dtor
   delete fCalibrationData;
-  AliInfo("Timers:");
-  fTimers->Print();
-  delete fTimers;
   AliInfo(Form("make a digit counter %d",fgCounter));
   delete fDigitStore;
   delete fRawWriter;
@@ -151,7 +146,7 @@ AliMUONPedestalEventGenerator::ConvertRawFilesToDate()
   /// convert raw data DDL files to DATE files with the program "dateStream".
   /// we make one file per LDC
   
-  AliMUONStopwatchGroupElement timer(fTimers,"MUON","AliMUONPedestalEventGenerator::ConvertRawFilesToDate");
+  AliCodeTimerAuto("")
   
   AliInfo("Converting raw to date");
   
@@ -244,7 +239,7 @@ AliMUONPedestalEventGenerator::Exec(Option_t*)
 {  
   /// Main steering method
   
-  AliMUONStopwatchGroupElement timer(fTimers,"MUON","AliMUONPedestalEventGenerator::Exec");
+  AliCodeTimerAuto("")
   
   if (!fPedestals)
   {
@@ -280,9 +275,9 @@ AliMUONPedestalEventGenerator::Exec(Option_t*)
     // tree (=TreeD) in different branches, this WriteDigits in fact writes all of 
     // the 3 branches.
 
-    fTimers->Start("MUON","AliMUONPedestalEventGenerator::Exec WriteDigits");
+    AliCodeTimerStart("WriteDigits")
     fLoader->WriteDigits("OVERWRITE");
-    fTimers->Stop("MUON","AliMUONPedestalEventGenerator::Exec WriteDigits");
+    AliCodeTimerStop("WriteDigits")
     
     fLoader->UnloadDigits();
     
@@ -316,7 +311,7 @@ AliMUONPedestalEventGenerator::Digits2Raw(Int_t event)
 {
   /// Converts digits (from MUON.Digits.root file) to Raw DDL ascii files.
   
-  AliMUONStopwatchGroupElement timer(fTimers,"MUON","AliMUONPedestalEventGenerator::Digits2Raw");
+  AliCodeTimerAuto("")
   
   if (!fRawWriter) fRawWriter = new AliMUONRawWriter;
   
@@ -346,7 +341,7 @@ AliMUONPedestalEventGenerator::GenerateDigits(AliMUONVDigitStore& digitStore)
   /// Generate digits (where ADC is set to pedestal value) for all MUON TRK
   /// and for 1 event.
   
-  AliMUONStopwatchGroupElement timer(fTimers,"MUON","AliMUONPedestalEventGenerator::GenerateDigits(AliMUONVDigitStore&)");
+  AliCodeTimerAuto("")
 
   digitStore.Clear();
   

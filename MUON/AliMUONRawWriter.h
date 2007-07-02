@@ -23,7 +23,6 @@ class AliMUONDspHeader;
 class AliMUONGlobalTrigger;
 class AliMUONLocalStruct;
 class AliMUONRegHeader;
-class AliMUONStopwatchGroup;
 class AliMUONVDigitStore;
 class AliMUONVTriggerStore;
 class AliMpDDLStore;
@@ -73,12 +72,10 @@ private:
 
   AliRawDataHeader    fHeader;           ///< header of DDL
   
-  AliMUONStopwatchGroup* fTimers;             //!< time watchers
-
   Int_t fBufferSize; //!< size of internal data buffer
   Int_t* fBuffer; //!< internal data buffer
 
-  ClassDef(AliMUONRawWriter,3) // MUON cluster reconstructor in ALICE
+  ClassDef(AliMUONRawWriter,4) // MUON cluster reconstructor in ALICE
 };
 	
 #endif
