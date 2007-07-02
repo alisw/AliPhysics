@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.49  2007/06/29 10:45:06  acolla
+Number of columns in MySql Shuttle logbook increased by one (HLT added)
+
 Revision 1.48  2007/06/21 13:06:19  acolla
 GetFileSources returns dummy list with 1 source if system=DCS (better than
 returning error as it was)
@@ -1404,12 +1407,24 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 				
 			}
 			
+			TString wd = gSystem->WorkingDirectory();
+			TString tmpDir = Form("%s/%s_process",GetShuttleTempDir(),fCurrentDetector.Data());
+			
+			gSystem->mkdir(tmpDir.Data());
+			gSystem->ChangeDirectory(tmpDir.Data());
+			
 			Bool_t success = ProcessCurrentDetector();
+			
+			gSystem->ChangeDirectory(wd.Data());
+			
+			gSystem->Exec(Form("rm -rf %s",tmpDir.Data()));
+			
 			if (success) // Preprocessor finished successfully!
 			{ 
 				// Update time_processed field in FXS DB
 				if (UpdateTable() == kFALSE)
-					Log("SHUTTLE", Form("Process - %s: Could not update FXS databases!"));
+					Log("SHUTTLE", Form("Process - %s: Could not update FXS databases!", 
+							fCurrentDetector.Data()));
 
 				// Transfer the data from local storage to main storage (Grid)
 				UpdateShuttleStatus(AliShuttleStatus::kStoreStarted);
