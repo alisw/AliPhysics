@@ -4,13 +4,10 @@
 #include <Reve/StraightLineSet.h>
 #include <Reve/GLUtilNS.h>
 
-#include <TGLDrawFlags.h>
+#include <TGLRnrCtx.h>
+#include <TGLSelectRecord.h>
 
-#ifdef WIN32
-#include "Windows4root.h"
-#endif
-#include <GL/gl.h>
-#include <GL/glu.h>
+#include <TGLIncludes.h>
 
 using namespace Reve;
 
@@ -22,7 +19,7 @@ ClassImp(StraightLineSetGL)
 
 StraightLineSetGL::StraightLineSetGL() : TGLObject(), fM(0)
 {
-  // fCached = false; // Disable display list.
+  // fDLCache = false; // Disable display list.
 }
 
 StraightLineSetGL::~StraightLineSetGL()
@@ -30,7 +27,7 @@ StraightLineSetGL::~StraightLineSetGL()
 
 /**************************************************************************/
 
-Bool_t StraightLineSetGL::SetModel(TObject* obj)
+Bool_t StraightLineSetGL::SetModel(TObject* obj, const Option_t* /*opt*/)
 {
   if(SetModelCheckClass(obj, StraightLineSet::Class())) {
     fM = dynamic_cast<StraightLineSet*>(obj);
@@ -46,19 +43,19 @@ void StraightLineSetGL::SetBBox()
 }
 
 //______________________________________________________________________________
-Bool_t StraightLineSetGL::ShouldCache(const TGLDrawFlags & flags) const
+Bool_t StraightLineSetGL::ShouldCache(TGLRnrCtx & rnrCtx) const
 {
    // Override from TGLDrawable.
    // To account for large point-sizes we modify the projection matrix
    // during selection and thus we need a direct draw.
 
-   if (flags.Selection()) return kFALSE;
-   return fCached;
+   if (rnrCtx.Selection()) return kFALSE;
+   return fDLCache;
 }
 
 /**************************************************************************/
 
-void StraightLineSetGL::DirectDraw(const TGLDrawFlags & flags) const
+void StraightLineSetGL::DirectDraw(TGLRnrCtx & rnrCtx) const
 {
   // printf("StraightLineSetGL::DirectDraw Style %d, LOD %d\n", flags.Style(), flags.LOD());
 
@@ -74,7 +71,7 @@ void StraightLineSetGL::DirectDraw(const TGLDrawFlags & flags) const
     glColor4ubv(color);
 
     VoidCPlex::iterator li(mL.fLinePlex);
-    if(flags.SecSelection()) 
+    if(rnrCtx.SecSelection()) 
     {  
       GLuint name = 0;
       glPushName(1);
@@ -127,10 +124,10 @@ void StraightLineSetGL::DirectDraw(const TGLDrawFlags & flags) const
       pnt[2] = l.fV1[2] + (l.fV2[2] - l.fV1[2])*m.fPos;;
       pnt   += 3;
     }
-    if(flags.SecSelection()) glPushName(2);
+    if(rnrCtx.SecSelection()) glPushName(2);
     GLUtilNS::RenderPolyMarkers((TAttMarker&)mL, pnts, mL.fMarkerPlex.Size(),
-				flags.Selection(), flags.SecSelection());
-    if(flags.SecSelection()) glPopName();
+				rnrCtx.Selection(), rnrCtx.SecSelection());
+    if(rnrCtx.SecSelection()) glPopName();
     delete [] pnts;
   }
 
@@ -139,17 +136,17 @@ void StraightLineSetGL::DirectDraw(const TGLDrawFlags & flags) const
 
 /**************************************************************************/
 
-void StraightLineSetGL::ProcessSelection(UInt_t* ptr, TGLViewer*, TGLScene*)
+void StraightLineSetGL::ProcessSelection(TGLRnrCtx       & /*rnrCtx*/,
+					 TGLSelectRecord & rec)
 { 
-  if (ptr[0] != 3) return;
-  ptr += 3; // skip n, zmin, zmax
-  if(ptr[1] == 1)
+  if (rec.GetN() != 3) return;
+  if(rec.GetItem(1) == 1)
   {
-    printf("selected line %d\n", ptr[2]);
+    printf("selected line %d\n", rec.GetItem(2));
   }
   else 
   {
-   StraightLineSet::Marker& m = * (StraightLineSet::Marker*) fM->fMarkerPlex.Atom(ptr[2]);
-   printf("Selected point %d on line %d\n", ptr[2], m.fLineID);
+    StraightLineSet::Marker& m = * (StraightLineSet::Marker*) fM->fMarkerPlex.Atom(rec.GetItem(2));
+    printf("Selected point %d on line %d\n", rec.GetItem(2), m.fLineID);
   }
 }

@@ -19,7 +19,7 @@ class TPCSector2DGL : public TGLObject
   TPCSector2DGL& operator=(const TPCSector2DGL&); // Not implemented
 
 protected:
-  virtual void DirectDraw(const TGLDrawFlags & flags) const;
+  virtual void DirectDraw(TGLRnrCtx & rnrCtx) const;
 
   void LoadPadrow(TPCSectorData::RowIterator& iter, Int_t row, Int_t off) const;
   void CreateTexture() const;
@@ -45,11 +45,11 @@ public:
   TPCSector2DGL();
   virtual ~TPCSector2DGL();
 
-  virtual Bool_t SetModel(TObject* obj); 
+  virtual Bool_t SetModel(TObject* obj, const Option_t* opt=0); 
   virtual void   SetBBox();
   virtual Bool_t SupportsSecondarySelect() const { return kTRUE; }
 
-  virtual void ProcessSelection(UInt_t* ptr, TGLViewer*, TGLScene*);
+  virtual void ProcessSelection(TGLRnrCtx & rnrCtx, TGLSelectRecord & rec);
 
   static void TraceStepsUp  (const TPCSectorData::SegmentInfo& s);
   static void TraceStepsDown(const TPCSectorData::SegmentInfo& s);

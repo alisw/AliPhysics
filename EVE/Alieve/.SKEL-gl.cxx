@@ -3,13 +3,8 @@
 #include "CLASS.h"
 #include <Alieve/STEM.h>
 
-#include <TGLDrawFlags.h>
-
-#ifdef WIN32
-#include "Windows4root.h"
-#endif
-#include <GL/gl.h>
-#include <GL/glu.h>
+#include <TGLRnrCtx.h>
+#include <TGLIncludes.h>
 
 using namespace Reve;
 using namespace Alieve;
@@ -30,7 +25,7 @@ CLASS::~CLASS()
 
 /**************************************************************************/
 
-Bool_t CLASS::SetModel(TObject* obj)
+Bool_t CLASS::SetModel(TObject* obj, const Option_t* /*opt*/)
 {
   if(SetModelCheckClass(obj, STEM::Class())) {
     fM = dynamic_cast<STEM*>(obj);
@@ -47,7 +42,7 @@ void CLASS::SetBBox()
 
 /**************************************************************************/
 
-void CLASS::DirectDraw(const TGLDrawFlags & flags) const
+void CLASS::DirectDraw(TGLRnrCtx & rnrCtx) const
 {
   // printf("CLASS::DirectDraw Style %d, LOD %d\n", flags.Style(), flags.LOD());
 }

@@ -3,13 +3,9 @@
 #include "TrackGL.h"
 #include <Reve/Track.h>
 
-#include <TGLDrawFlags.h>
+#include <TGLSelectRecord.h>
 
-#ifdef WIN32
-#include "Windows4root.h"
-#endif
-#include <GL/gl.h>
-#include <GL/glu.h>
+#include <TGLIncludes.h>
 
 using namespace Reve;
 
@@ -21,7 +17,7 @@ ClassImp(TrackGL)
 
 TrackGL::TrackGL() : LineGL()
 {
-  // fCached = false; // Disable display list.
+  // fDLCache = false; // Disable display list.
 }
 
 TrackGL::~TrackGL()
@@ -29,7 +25,7 @@ TrackGL::~TrackGL()
 
 /**************************************************************************/
 
-Bool_t TrackGL::SetModel(TObject* obj)
+Bool_t TrackGL::SetModel(TObject* obj, const Option_t* /*opt*/)
 {
   if(LineGL::SetModel(obj) == kFALSE) return kFALSE;
   if(SetModelCheckClass(obj, Track::Class())) {
@@ -40,29 +36,27 @@ Bool_t TrackGL::SetModel(TObject* obj)
 }
 /**************************************************************************/
 
-void TrackGL::ProcessSelection(UInt_t* ptr, TGLViewer*, TGLScene*)
+void TrackGL::ProcessSelection(TGLRnrCtx & /*rnrCtx*/, TGLSelectRecord & rec)
 {
   // Processes secondary selection from TGLViewer.
   // Calls TPointSet3D::PointSelected(Int_t) with index of selected
   // point as an argument.
 
-  Int_t n = ptr[0];
   printf("TrackGL::ProcessSelection %d names on the stack (z1=%g, z2=%g).\n",
-	 n, Float_t(ptr[1])/0x7fffffff, Float_t(ptr[2])/0x7fffffff);
-  ptr += 3;
+	 rec.GetN(), rec.GetMinZ(), rec.GetMaxZ());
   printf("  Names: ");
-  for (Int_t j=0; j<n; ++j, ++ptr) printf ("%d ", *ptr);
+  for (Int_t j=0; j<rec.GetN(); ++j) printf ("%d ", rec.GetItem(j));
   printf("\n");
 
   ((Track*)fM)->CtrlClicked((Track*)fM);
 }
 
 /**************************************************************************/
-void TrackGL::DirectDraw(const TGLDrawFlags & flags) const
+void TrackGL::DirectDraw(TGLRnrCtx & rnrCtx) const
 {
   // Render line and path marks
 
-  LineGL::DirectDraw(flags);
+  LineGL::DirectDraw(rnrCtx);
 
   if ( ! fTrack->fPathMarks.empty()){
 

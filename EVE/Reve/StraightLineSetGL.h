@@ -21,21 +21,21 @@ private:
 protected:
   StraightLineSet* fM; // fModel dynamic-casted to StraightLineSetGL
 
-  virtual void DirectDraw(const TGLDrawFlags & flags) const;
+  virtual void DirectDraw(TGLRnrCtx & rnrCtx) const;
 
 public:
   StraightLineSetGL();
   virtual ~StraightLineSetGL();
 
-  virtual Bool_t SetModel(TObject* obj);
+  virtual Bool_t SetModel(TObject* obj, const Option_t* opt=0);
   virtual void   SetBBox();
 
   // To support two-level selectionvirtual 
   Bool_t IgnoreSizeForOfInterest() const { return kTRUE; }
 
-  virtual Bool_t ShouldCache(const TGLDrawFlags & flags) const;
+  virtual Bool_t ShouldCache(TGLRnrCtx & rnrCtx) const;
   virtual Bool_t SupportsSecondarySelect() const { return kTRUE; }
-  virtual void ProcessSelection(UInt_t* ptr, TGLViewer*, TGLScene*);
+  virtual void ProcessSelection(TGLRnrCtx & rnrCtx, TGLSelectRecord & rec);
 
   ClassDef(StraightLineSetGL, 0);
 }; // endclass StraightLineSetGL

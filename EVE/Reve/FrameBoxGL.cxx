@@ -3,13 +3,7 @@
 #include "FrameBoxGL.h"
 #include <Reve/FrameBox.h>
 
-#include <TGLDrawFlags.h>
-
-#ifdef WIN32
-#include "Windows4root.h"
-#endif
-#include <GL/gl.h>
-#include <GL/glu.h>
+#include <TGLIncludes.h>
 
 using namespace Reve;
 

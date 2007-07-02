@@ -17,16 +17,16 @@ class BoxSetGL : public TGLObject
 protected:
   BoxSet* fM;
 
-  virtual void DirectDraw(const TGLDrawFlags & flags) const;
+  virtual void DirectDraw(TGLRnrCtx & rnrCtx) const;
 
 public:
   BoxSetGL();
   virtual ~BoxSetGL();
 
-  virtual Bool_t SetModel(TObject* obj);
+  virtual Bool_t SetModel(TObject* obj, const Option_t* opt=0);
   virtual void   SetBBox();
 
-  virtual void Render(const TGLDrawFlags & flags) { DirectDraw(flags); }
+  virtual void Render(TGLRnrCtx & rnrCtx) { DirectDraw(rnrCtx); }
 
   ClassDef(BoxSetGL, 0);
 }; // endclass BoxSetGL

@@ -24,10 +24,9 @@
 #include <Alieve/MUONChamber.h>
 #include <Alieve/MUONChamberData.h>
 
-#include <TGLDrawFlags.h>
 #include <Reve/QuadSetGL.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
+#include <TGLRnrCtx.h>
+#include <TGLIncludes.h>
 
 using namespace Reve;
 using namespace Alieve;
@@ -60,19 +59,13 @@ MUONChamberGL::~MUONChamberGL()
 }
 
 //______________________________________________________________________
-Bool_t MUONChamberGL::SetModel(TObject* obj)
+Bool_t MUONChamberGL::SetModel(TObject* obj, const Option_t* /*opt*/)
 {
   //
   // ...
   //
 
-#if ROOT_VERSION_CODE <= ROOT_VERSION(5,11,2)
-  if(set_model(obj, "Alieve::MUONChamber")) {
-#elif ROOT_VERSION_CODE <= ROOT_VERSION(5,13,0)
-  if(SetModelCheckClass(obj, "Alieve::MUONChamber")) {
-#else
   if(SetModelCheckClass(obj, Alieve::MUONChamber::Class())) {
-#endif
     
     fChamber = (MUONChamber*) fExternalObj;
     
@@ -91,16 +84,12 @@ void MUONChamberGL::SetBBox()
   // ...
   //
 
-#if ROOT_VERSION_CODE <= ROOT_VERSION(5,11,2)
-  set_axis_aligned_bbox(((MUONChamber*)fExternalObj)->AssertBBox());
-#else
   SetAxisAlignedBBox(((MUONChamber*)fExternalObj)->AssertBBox());
-#endif
 
 }
 
 //______________________________________________________________________
-void MUONChamberGL::DirectDraw(const TGLDrawFlags& /*flags*/) const
+void MUONChamberGL::DirectDraw(TGLRnrCtx& /*rnrCtx*/) const
 {
   //
   // Actual GL drawing.

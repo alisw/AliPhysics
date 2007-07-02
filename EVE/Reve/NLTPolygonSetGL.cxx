@@ -2,10 +2,8 @@
 #include "NLTPolygonSet.h"
 #include "PODs.h"
 
-#include <TGLDrawFlags.h>
+#include <TGLRnrCtx.h>
 #include <TGLIncludes.h>
-#include <GL/glu.h>
-
 
 
 using namespace Reve;
@@ -14,14 +12,14 @@ using namespace Reve;
 
 NLTPolygonSetGL::NLTPolygonSetGL() : TGLObject()
 {
-  // fCached = false; // Disable DL.
+  // fDLCache = false; // Disable DL.
 }
 
 NLTPolygonSetGL::~NLTPolygonSetGL()
 {}
 
 /**************************************************************************/
-Bool_t NLTPolygonSetGL::SetModel(TObject* obj)
+Bool_t NLTPolygonSetGL::SetModel(TObject* obj, const Option_t* /*opt*/)
 {
   return SetModelCheckClass(obj, NLTPolygonSet::Class());
 }
@@ -68,7 +66,7 @@ static GLUtriangulatorObj *GetTesselator()
 }
 
 /**************************************************************************/
-void NLTPolygonSetGL::DirectDraw(const TGLDrawFlags &) const
+void NLTPolygonSetGL::DirectDraw(TGLRnrCtx & /*rnrCtx*/) const
 {
   //printf("NLTPolygonSetGL::DirectDraw %s \n",fExternalObj->GetName() );
   NLTPolygonSet& PS = * (NLTPolygonSet*) fExternalObj;

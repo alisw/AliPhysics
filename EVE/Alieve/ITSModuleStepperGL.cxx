@@ -11,7 +11,8 @@
 #include <Alieve/ITSModuleStepper.h>
 #include <Alieve/ITSScaledModule.h>
 
-#include <TGLDrawFlags.h>
+#include <TGLRnrCtx.h>
+#include <TGLSelectRecord.h>
 
 using namespace Reve;
 using namespace Alieve;
@@ -24,7 +25,7 @@ ClassImp(ITSModuleStepperGL)
 
 ITSModuleStepperGL::ITSModuleStepperGL() : TGLObject(), fM(0)
 {
-  fCached = false; // Disable display list.
+  fDLCache = false; // Disable display list.
 }
 
 ITSModuleStepperGL::~ITSModuleStepperGL()
@@ -32,7 +33,7 @@ ITSModuleStepperGL::~ITSModuleStepperGL()
 
 /**************************************************************************/
 
-Bool_t ITSModuleStepperGL::SetModel(TObject* obj)
+Bool_t ITSModuleStepperGL::SetModel(TObject* obj, const Option_t* /*opt*/)
 {
   if(SetModelCheckClass(obj, ITSModuleStepper::Class())) {
     fM = dynamic_cast<ITSModuleStepper*>(obj);
@@ -49,9 +50,9 @@ void ITSModuleStepperGL::SetBBox()
 
 /**************************************************************************/
 
-void ITSModuleStepperGL::DirectDraw(const TGLDrawFlags & flags) const
+void ITSModuleStepperGL::DirectDraw(TGLRnrCtx & rnrCtx) const
 {
-  // printf("ITSModuleStepperGL::DirectDraw Style %d, LOD %d\n", flags.Style(), flags.LOD()); 
+  // printf("ITSModuleStepperGL::DirectDraw Style %d, LOD %d\n", rnrCtx.Style(), rnrCtx.LOD()); 
 
   ITSModuleStepper& MS = *fM;
   Int_t W = Int_t(MS.fStepper->Dx*MS.fStepper->Nx);
@@ -104,22 +105,22 @@ void ITSModuleStepperGL::DirectDraw(const TGLDrawFlags & flags) const
       break;
   }
   
-  if (flags.SecSelection()) glPushName(0);
+  if (rnrCtx.SecSelection()) glPushName(0);
   glPushMatrix();
   glTranslatef(sx, sy, 0.);
 
   // pager
-  if (flags.SecSelection()) glLoadName(2);
+  if (rnrCtx.SecSelection()) glLoadName(2);
   RenderSymbol(dx, dy, 2);
   glTranslatef(dx, 0, 0);
-  if (flags.SecSelection()) glLoadName(1);
+  if (rnrCtx.SecSelection()) glLoadName(1);
   RenderSymbol(dx*1.2, dy, 1);
   glTranslatef(dx, 0, 0);
   RenderString(Form(" %d/%d ", MS.GetCurrentPage(), MS.GetPages()), dy);
-  if (flags.SecSelection()) glLoadName(3);
+  if (rnrCtx.SecSelection()) glLoadName(3);
   RenderSymbol(dx*1.2, dy, 3);
   glTranslatef(dx, 0, 0);
-  if (flags.SecSelection()) glLoadName(4);
+  if (rnrCtx.SecSelection()) glLoadName(4);
   RenderSymbol(dx, dy, 4);
   glTranslatef(2*dx, 0, 0);
   
@@ -140,28 +141,28 @@ void ITSModuleStepperGL::DirectDraw(const TGLDrawFlags & flags) const
       cnx = di->fSSDScale[scale], cnz = 1;
       break;
   }
-  if (flags.SecSelection()) glLoadName(0);
+  if (rnrCtx.SecSelection()) glLoadName(0);
   RenderString(Form("Scale"), dy);
   glTranslatef(0.07*dx, 0, 0);
   // up down arrows 
-  if (flags.SecSelection()) glLoadName(6);
+  if (rnrCtx.SecSelection()) glLoadName(6);
   RenderSymbol(dx*1.2, dy*0.9, 5);
 
-  if (flags.SecSelection()) glLoadName(7);
+  if (rnrCtx.SecSelection()) glLoadName(7);
   RenderSymbol(dx*1.2, dy*0.9, 6);
 
   glTranslatef(1*dx, 0, 0);
-  if (flags.SecSelection()) glLoadName(0);
+  if (rnrCtx.SecSelection()) glLoadName(0);
   RenderString(Form(" %dx%d ", cnx, cnz), dy, kFALSE);
 
   glPopMatrix();
-  if (flags.SecSelection()) glLoadName(5);
+  if (rnrCtx.SecSelection()) glLoadName(5);
   glPushMatrix();
   glTranslatef(W+2, 0, 0);
   RenderPalette(H, 4);
   glPopMatrix();
 
-  if (flags.SecSelection()) glPopName();
+  if (rnrCtx.SecSelection()) glPopName();
 
   glPopAttrib();
 
@@ -270,15 +271,16 @@ void ITSModuleStepperGL::RenderString(TString info, Float_t dy, Bool_t trans) co
 
 /**************************************************************************/
 
-void ITSModuleStepperGL::ProcessSelection(UInt_t* ptr, TGLViewer*, TGLScene*)
+void ITSModuleStepperGL::ProcessSelection(TGLRnrCtx       & /*rnrCtx*/,
+					  TGLSelectRecord & rec)
 {
   // Processes secondary selection from TGLViewer.
   // Calls TPointSet3D::PointSelected(Int_t) with index of selected
   // point as an argument.
 
-  if (ptr[0] < 2) return;
+  if (rec.GetN() < 2) return;
 
-  switch (ptr[4]){
+  switch (rec.GetItem(1)) {
     case 1:
       fM->Previous();
       break;

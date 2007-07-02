@@ -5,13 +5,8 @@
 
 #include <Reve/BoxSetGL.h>
 
-#include <TGLDrawFlags.h>
-
-#ifdef WIN32
-#include "Windows4root.h"
-#endif
-#include <GL/gl.h>
-#include <GL/glu.h>
+#include <TGLRnrCtx.h>
+#include <TGLIncludes.h>
 
 using namespace Reve;
 using namespace Alieve;
@@ -27,7 +22,7 @@ TPCSector3DGL::TPCSector3DGL() :
   fSector(0), fBoxRnr(0),
   fRTS(0)
 {
-  // fCached = false; // Disable display list.
+  // fDLCache = false; // Disable display list.
 }
 
 TPCSector3DGL::~TPCSector3DGL()
@@ -37,15 +32,9 @@ TPCSector3DGL::~TPCSector3DGL()
 
 /**************************************************************************/
 
-Bool_t TPCSector3DGL::SetModel(TObject* obj)
+Bool_t TPCSector3DGL::SetModel(TObject* obj, const Option_t* /*opt*/)
 {
-#if ROOT_VERSION_CODE <= ROOT_VERSION(5,11,2)
-  if(set_model(obj, "Alieve::TPCSector3D")) {
-#elif ROOT_VERSION_CODE <= ROOT_VERSION(5,13,0)
-  if(SetModelCheckClass(obj, "Alieve::TPCSector3D")) {
-#else
   if(SetModelCheckClass(obj, Alieve::TPCSector3D::Class())) {
-#endif
     fSector = (TPCSector3D*) fExternalObj;
     if(fBoxRnr == 0) {
       fBoxRnr = new BoxSetGL;
@@ -58,18 +47,14 @@ Bool_t TPCSector3DGL::SetModel(TObject* obj)
 
 void TPCSector3DGL::SetBBox()
 {
-#if ROOT_VERSION_CODE <= ROOT_VERSION(5,11,2)
-  set_axis_aligned_bbox(((TPCSector3D*)fExternalObj)->AssertBBox());
-#else
   SetAxisAlignedBBox(((TPCSector3D*)fExternalObj)->AssertBBox());
-#endif
 }
 
 /**************************************************************************/
 
-void TPCSector3DGL::DirectDraw(const TGLDrawFlags & flags) const
+void TPCSector3DGL::DirectDraw(TGLRnrCtx & rnrCtx) const
 {
-  // printf("TPCSector3DGL::DirectDraw Style %d, LOD %d\n", flags.Style(), flags.LOD());
+  // printf("TPCSector3DGL::DirectDraw Style %d, LOD %d\n", rnrCtx.Style(), rnrCtx.LOD());
 
   if(fRTS < fSector->fRTS) {
     fSector->UpdateBoxes();
@@ -79,7 +64,7 @@ void TPCSector3DGL::DirectDraw(const TGLDrawFlags & flags) const
   Bool_t hasData = (fSector->GetSectorData() != 0);
 
   if(hasData)
-    fBoxRnr->Render(flags);
+    fBoxRnr->Render(rnrCtx);
 
   glPushAttrib(GL_CURRENT_BIT | GL_POINT_BIT | GL_ENABLE_BIT);
   glDisable(GL_LIGHTING);

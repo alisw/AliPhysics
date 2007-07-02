@@ -26,13 +26,13 @@ protected:
 
   mutable UInt_t  fRTS;
 
-  virtual void DirectDraw(const TGLDrawFlags & flags) const;
+  virtual void DirectDraw(TGLRnrCtx & rnrCtx) const;
 
 public:
   TPCSector3DGL();
   virtual ~TPCSector3DGL();
 
-  virtual Bool_t SetModel(TObject* obj);
+  virtual Bool_t SetModel(TObject* obj, const Option_t* opt=0);
   virtual void   SetBBox();
 
   void DrawSegmentFrame(const TPCSectorData::SegmentInfo& s,

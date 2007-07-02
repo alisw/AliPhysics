@@ -5,8 +5,7 @@
 
 #include <TGLObject.h>
 
-class TGLViewer;
-class TGLScene;
+class TGLRnrCtx;
 
 namespace Reve {
 
@@ -21,13 +20,13 @@ private:
 protected:
   TriangleSet* fM; // fModel dynamic-casted to TriangleSetGL
 
-  virtual void DirectDraw(const TGLDrawFlags & flags) const;
+  virtual void DirectDraw(TGLRnrCtx & rnrCtx) const;
 
 public:
   TriangleSetGL();
   virtual ~TriangleSetGL();
 
-  virtual Bool_t SetModel(TObject* obj);
+  virtual Bool_t SetModel(TObject* obj, const Option_t* opt=0);
   virtual void   SetBBox();
 
   // To support two-level selection

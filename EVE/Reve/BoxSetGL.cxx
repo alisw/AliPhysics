@@ -3,12 +3,7 @@
 #include "BoxSetGL.h"
 #include <Reve/BoxSet.h>
 
-#include <TGLDrawFlags.h>
-#ifdef WIN32
-#include "Windows4root.h"
-#endif
-#include <GL/gl.h>
-#include <GL/glu.h>
+#include <TGLIncludes.h>
 
 using namespace Reve;
 
@@ -20,7 +15,7 @@ ClassImp(BoxSetGL)
 
 BoxSetGL::BoxSetGL() : fM(0)
 {
-  // fCached = false; // Disable display list.
+  // fDLCache = false; // Disable display list.
 }
 
 BoxSetGL::~BoxSetGL()
@@ -28,7 +23,7 @@ BoxSetGL::~BoxSetGL()
 
 /**************************************************************************/
 
-Bool_t BoxSetGL::SetModel(TObject* obj)
+Bool_t BoxSetGL::SetModel(TObject* obj, const Option_t* /*opt*/)
 {
   Bool_t isok = SetModelCheckClass(obj, Reve::BoxSet::Class());
   fM = isok ? dynamic_cast<Reve::BoxSet*>(obj) : 0;
@@ -42,7 +37,7 @@ void BoxSetGL::SetBBox()
 
 /**************************************************************************/
 
-void BoxSetGL::DirectDraw(const TGLDrawFlags& /*flags*/) const
+void BoxSetGL::DirectDraw(TGLRnrCtx & /*rnrCtx*/) const
 {
   BoxSet& mB = * fM;
   // printf("BoxSetGL::DirectDraw N boxes %d\n", mB.fBoxes.size());

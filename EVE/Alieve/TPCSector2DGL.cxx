@@ -4,8 +4,9 @@
 
 #include <Alieve/TPCData.h>
 
-#include <TGLDrawFlags.h>
-#include <GL/gl.h>
+#include <TGLRnrCtx.h>
+#include <TGLSelectRecord.h>
+#include <TGLIncludes.h>
 
 using namespace Reve;
 using namespace Alieve;
@@ -44,15 +45,9 @@ TPCSector2DGL::~TPCSector2DGL()
 
 /**************************************************************************/
 
-Bool_t TPCSector2DGL::SetModel(TObject* obj)
+Bool_t TPCSector2DGL::SetModel(TObject* obj, const Option_t* /*opt*/)
 {
-#if ROOT_VERSION_CODE <= ROOT_VERSION(5,11,2)
-  if(set_model(obj, "Alieve::TPCSector2D")) {
-#elif ROOT_VERSION_CODE <= ROOT_VERSION(5,13,0)
-  if(SetModelCheckClass(obj, "Alieve::TPCSector2D")) {
-#else
   if(SetModelCheckClass(obj, Alieve::TPCSector2D::Class())) {
-#endif
     fSector = (TPCSector2D*) fExternalObj;
     return kTRUE;
   }
@@ -61,21 +56,17 @@ Bool_t TPCSector2DGL::SetModel(TObject* obj)
 
 void TPCSector2DGL::SetBBox()
 {
-#if ROOT_VERSION_CODE <= ROOT_VERSION(5,11,2)
-  set_axis_aligned_bbox(((TPCSector2D*)fExternalObj)->AssertBBox());
-#else
   SetAxisAlignedBBox(((TPCSector2D*)fExternalObj)->AssertBBox());
-#endif
 }
 
 /**************************************************************************/
 
-void TPCSector2DGL::ProcessSelection(UInt_t* ptr, TGLViewer*, TGLScene*)
+void TPCSector2DGL::ProcessSelection(TGLRnrCtx       & /*rnrCtx*/,
+				     TGLSelectRecord & rec)
 {
-  if (ptr[0] != 3) return;
-  ptr += 3; // skip n, zmin, zmax
-  Int_t row = ptr[1];
-  Int_t pad = ptr[2];
+  if (rec.GetN() != 3) return;
+  Int_t row = rec.GetItem(1);
+  Int_t pad = rec.GetItem(2);
   if (row < 0 || row >= TPCSectorData::GetNAllRows())      return;
   if (pad < 0 || pad >= TPCSectorData::GetNPadsInRow(row)) return;
   fSector->PadSelected(row, pad);
@@ -83,7 +74,7 @@ void TPCSector2DGL::ProcessSelection(UInt_t* ptr, TGLViewer*, TGLScene*)
 
 /**************************************************************************/
 
-void TPCSector2DGL::DirectDraw(const TGLDrawFlags& flags) const
+void TPCSector2DGL::DirectDraw(TGLRnrCtx& rnrCtx) const
 {
   // Actual GL drawing.
 
@@ -111,7 +102,7 @@ void TPCSector2DGL::DirectDraw(const TGLDrawFlags& flags) const
     const TPCSectorData::SegmentInfo& o1Seg = TPCSectorData::GetOut1Seg();
     const TPCSectorData::SegmentInfo& o2Seg = TPCSectorData::GetOut2Seg();
 
-    if(flags.SecSelection()) {
+    if(rnrCtx.SecSelection()) {
 
       if(fSector->fRnrInn)  DisplayNamedQuads(iSeg, 0, 0);
       if(fSector->fRnrOut1) DisplayNamedQuads(o1Seg, iSeg.GetNMaxPads(), 0);

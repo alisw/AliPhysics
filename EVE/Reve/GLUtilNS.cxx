@@ -1,7 +1,7 @@
 #include "GLUtilNS.h"
 
 #include <TAttMarker.h>
-#include <GL/gl.h>
+#include <TGLIncludes.h>
 
 namespace GLUtilNS {
 

@@ -22,13 +22,13 @@ private:
 protected:
   Line* fM; // fModel dynamic-casted to LineGL
 
-  virtual void DirectDraw(const TGLDrawFlags & flags) const;
+  virtual void DirectDraw(TGLRnrCtx & rnrCtx) const;
 
 public:
   LineGL();
   virtual ~LineGL();
 
-  virtual Bool_t SetModel(TObject* obj);
+  virtual Bool_t SetModel(TObject* obj, const Option_t* opt=0);
 
   // To support two-level selection
   // virtual Bool_t SupportsSecondarySelect() const { return kTRUE; }

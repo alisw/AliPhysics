@@ -20,10 +20,9 @@
 #include "QuadSetGL.h"
 #include <Reve/FrameBoxGL.h>
 
-#include <TGLDrawFlags.h>
-
-#include <GL/gl.h>
-#include <GL/glu.h>
+#include <TGLRnrCtx.h>
+#include <TGLSelectRecord.h>
+#include <TGLIncludes.h>
 
 using namespace Reve;
 
@@ -37,7 +36,7 @@ ClassImp(OldQuadSetGL)
 
 OldQuadSetGL::OldQuadSetGL() : TGLObject()
 {
-  // fCached = false; // Disable DL.
+  // fDLCache = false; // Disable DL.
 }
 
 OldQuadSetGL::~OldQuadSetGL()
@@ -45,7 +44,7 @@ OldQuadSetGL::~OldQuadSetGL()
 
 /**************************************************************************/
 
-Bool_t OldQuadSetGL::SetModel(TObject* obj)
+Bool_t OldQuadSetGL::SetModel(TObject* obj, const Option_t* /*opt*/)
 {
   return SetModelCheckClass(obj, Reve::OldQuadSet::Class());
 }
@@ -57,9 +56,9 @@ void OldQuadSetGL::SetBBox()
 
 /**************************************************************************/
 
-void OldQuadSetGL::DirectDraw(const TGLDrawFlags & ) const
+void OldQuadSetGL::DirectDraw(TGLRnrCtx & /*rnrCtx*/) const
 {
-  // printf("OldQuadSetGLRenderer::DirectDraw Style %d, LOD %d\n", flags.Style(), flags.LOD());
+  // printf("OldQuadSetGLRenderer::DirectDraw Style %d, LOD %d\n", rnrCtx.Style(), rnrCtx.LOD());
 
   OldQuadSet& Q = * (OldQuadSet*) fExternalObj;
 
@@ -106,7 +105,7 @@ ClassImp(QuadSetGL)
 
 QuadSetGL::QuadSetGL() : TGLObject(), fM(0)
 {
-  // fCached = false; // Disable DL.
+  // fDLCache = false; // Disable DL.
 }
 
 QuadSetGL::~QuadSetGL()
@@ -114,7 +113,7 @@ QuadSetGL::~QuadSetGL()
 
 /**************************************************************************/
 
-Bool_t QuadSetGL::SetModel(TObject* obj)
+Bool_t QuadSetGL::SetModel(TObject* obj, const Option_t* /*opt*/)
 {
   Bool_t ok = SetModelCheckClass(obj, Reve::QuadSet::Class());
   fM = ok ? dynamic_cast<Reve::QuadSet*>(obj) : 0;
@@ -147,11 +146,11 @@ inline Bool_t QuadSetGL::SetupColor(const QuadSet::QuadBase& q) const
 
 /**************************************************************************/
 
-void QuadSetGL::DirectDraw(const TGLDrawFlags & flags) const
+void QuadSetGL::DirectDraw(TGLRnrCtx & rnrCtx) const
 {
   static const Exc_t eH("QuadSetGL::DirectDraw ");
 
-  // printf("QuadSetGLRenderer::DirectDraw Style %d, LOD %d\n", flags.Style(), flags.LOD());
+  // printf("QuadSetGLRenderer::DirectDraw Style %d, LOD %d\n", rnrCtx.Style(), rnrCtx.LOD());
 
   QuadSet& mQ = * fM;
 
@@ -177,16 +176,16 @@ void QuadSetGL::DirectDraw(const TGLDrawFlags & flags) const
 
   if (mQ.fDisableLigting)  glDisable(GL_LIGHTING);
 
-  if (mQ.fQuadType < QuadSet::QT_Rectangle_End)      RenderQuads(flags);
-  else if (mQ.fQuadType < QuadSet::QT_Line_End)      RenderLines(flags);
-  else if (mQ.fQuadType < QuadSet::QT_Hexagon_End)   RenderHexagons(flags);
+  if (mQ.fQuadType < QuadSet::QT_Rectangle_End)      RenderQuads(rnrCtx);
+  else if (mQ.fQuadType < QuadSet::QT_Line_End)      RenderLines(rnrCtx);
+  else if (mQ.fQuadType < QuadSet::QT_Hexagon_End)   RenderHexagons(rnrCtx);
 
   glPopAttrib();
 
 }
 
 
-void QuadSetGL::RenderQuads(const TGLDrawFlags &flags) const
+void QuadSetGL::RenderQuads(TGLRnrCtx & rnrCtx) const
 {
   static const Exc_t eH("QuadSetGL::RenderQuads ");
 
@@ -206,7 +205,7 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &flags) const
 
   VoidCPlex::iterator qi(mQ.fPlex);
 
-  if (flags.SecSelection()) glPushName(0);
+  if (rnrCtx.SecSelection()) glPushName(0);
 
   switch (mQ.fQuadType)
   {
@@ -222,7 +221,7 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &flags) const
 	  e1[0] = p[3] - p[0]; e1[1] = p[4] - p[1]; e1[2] = p[5] - p[2];
 	  e2[0] = p[6] - p[0]; e2[1] = p[7] - p[1]; e2[2] = p[8] - p[2];
 	  TMath::Cross(e1, e2, normal);
-	  if (flags.SecSelection()) glLoadName(qi.index());
+	  if (rnrCtx.SecSelection()) glLoadName(qi.index());
 	  glBegin(primitiveType);
 	  glNormal3fv(normal);
 	  glVertex3fv(p);
@@ -241,7 +240,7 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &flags) const
 	QuadSet::QRect& q = * (QuadSet::QRect*) qi();
 	if (SetupColor(q))
 	{
-	  if (flags.SecSelection()) glLoadName(qi.index());
+	  if (rnrCtx.SecSelection()) glLoadName(qi.index());
 	  glBegin(primitiveType);
 	  glVertex3f(q.fA,        q.fB,        q.fC);
 	  glVertex3f(q.fA + q.fW, q.fB,        q.fC);
@@ -259,7 +258,7 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &flags) const
 	QuadSet::QRect& q = * (QuadSet::QRect*) qi();
 	if (SetupColor(q))
 	{
-	  if (flags.SecSelection()) glLoadName(qi.index());
+	  if (rnrCtx.SecSelection()) glLoadName(qi.index());
 	  glBegin(primitiveType);
 	  glVertex3f(q.fA,        q.fC, q.fB);
 	  glVertex3f(q.fA + q.fW, q.fC, q.fB);
@@ -277,7 +276,7 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &flags) const
 	QuadSet::QRect& q = * (QuadSet::QRect*) qi();
 	if (SetupColor(q))
 	{
-	  if (flags.SecSelection()) glLoadName(qi.index());
+	  if (rnrCtx.SecSelection()) glLoadName(qi.index());
 	  glBegin(primitiveType);
 	  glVertex3f(q.fC, q.fA,        q.fB);
 	  glVertex3f(q.fC, q.fA + q.fW, q.fB);
@@ -297,7 +296,7 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &flags) const
 	QuadSet::QRectFixDim& q = * (QuadSet::QRectFixDim*) qi();
 	if (SetupColor(q))
 	{
-	  if (flags.SecSelection()) glLoadName(qi.index());
+	  if (rnrCtx.SecSelection()) glLoadName(qi.index());
 	  glBegin(primitiveType);
 	  glVertex3f(q.fA,     q.fB,     q.fC);
 	  glVertex3f(q.fA + w, q.fB,     q.fC);
@@ -316,7 +315,7 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &flags) const
 	QuadSet::QRectFixC& q = * (QuadSet::QRectFixC*) qi();
 	if (SetupColor(q))
 	{
-	  if (flags.SecSelection()) glLoadName(qi.index());
+	  if (rnrCtx.SecSelection()) glLoadName(qi.index());
 	  glBegin(primitiveType);
 	  glVertex3f(q.fA,        q.fB,        z);
 	  glVertex3f(q.fA + q.fW, q.fB,        z);
@@ -335,7 +334,7 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &flags) const
 	QuadSet::QRectFixC& q = * (QuadSet::QRectFixC*) qi();
 	if (SetupColor(q))
 	{
-	  if (flags.SecSelection()) glLoadName(qi.index());
+	  if (rnrCtx.SecSelection()) glLoadName(qi.index());
 	  glBegin(primitiveType);
 	  glVertex3f(q.fA,        y, q.fB);
 	  glVertex3f(q.fA + q.fW, y, q.fB);
@@ -354,7 +353,7 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &flags) const
 	QuadSet::QRectFixC& q = * (QuadSet::QRectFixC*) qi();
 	if (SetupColor(q))
 	{
-	  if (flags.SecSelection()) glLoadName(qi.index());
+	  if (rnrCtx.SecSelection()) glLoadName(qi.index());
 	  glBegin(primitiveType);
 	  glVertex3f(x, q.fA,        q.fB);
 	  glVertex3f(x, q.fA + q.fW, q.fB);
@@ -375,7 +374,7 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &flags) const
 	QuadSet::QRectFixDimC& q = * (QuadSet::QRectFixDimC*) qi();
 	if (SetupColor(q))
 	{
-	  if (flags.SecSelection()) glLoadName(qi.index());
+	  if (rnrCtx.SecSelection()) glLoadName(qi.index());
 	  glBegin(primitiveType);
 	  glVertex3f(q.fA,     q.fB,     z);
 	  glVertex3f(q.fA + w, q.fB,     z);
@@ -396,7 +395,7 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &flags) const
 	QuadSet::QRectFixDimC& q = * (QuadSet::QRectFixDimC*) qi();
 	if (SetupColor(q))
 	{
-	  if (flags.SecSelection()) glLoadName(qi.index());
+	  if (rnrCtx.SecSelection()) glLoadName(qi.index());
 	  glBegin(primitiveType);
 	  glVertex3f(q.fA,     y, q.fB);
 	  glVertex3f(q.fA + w, y, q.fB);
@@ -417,7 +416,7 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &flags) const
 	QuadSet::QRectFixDimC& q = * (QuadSet::QRectFixDimC*) qi();
 	if (SetupColor(q))
 	{
-	  if (flags.SecSelection()) glLoadName(qi.index());
+	  if (rnrCtx.SecSelection()) glLoadName(qi.index());
 	  glBegin(primitiveType);
 	  glVertex3f(x, q.fA,     q.fB);
 	  glVertex3f(x, q.fA + w, q.fB);
@@ -434,11 +433,11 @@ void QuadSetGL::RenderQuads(const TGLDrawFlags &flags) const
 
   } // end switch quad-type
 
-  if (flags.SecSelection()) glPopName();
+  if (rnrCtx.SecSelection()) glPopName();
 }
 
 
-void QuadSetGL::RenderLines(const TGLDrawFlags &flags) const
+void QuadSetGL::RenderLines(TGLRnrCtx & rnrCtx) const
 {
   static const Exc_t eH("QuadSetGL::RenderLines ");
 
@@ -446,7 +445,7 @@ void QuadSetGL::RenderLines(const TGLDrawFlags &flags) const
 
   VoidCPlex::iterator qi(mQ.fPlex);
 
-  if (flags.SecSelection()) glPushName(0);
+  if (rnrCtx.SecSelection()) glPushName(0);
 
   switch (mQ.fQuadType)
   {
@@ -458,7 +457,7 @@ void QuadSetGL::RenderLines(const TGLDrawFlags &flags) const
 	QuadSet::QLineFixC& q = * (QuadSet::QLineFixC*) qi();
 	if (SetupColor(q))
 	{
-	  if (flags.SecSelection()) glLoadName(qi.index());
+	  if (rnrCtx.SecSelection()) glLoadName(qi.index());
 	  glBegin(GL_LINES);
 	  glVertex3f(q.fA,         q.fB,         z);
 	  glVertex3f(q.fA + q.fDx, q.fB + q.fDy, z);
@@ -475,7 +474,7 @@ void QuadSetGL::RenderLines(const TGLDrawFlags &flags) const
 	QuadSet::QLineFixC& q = * (QuadSet::QLineFixC*) qi();
 	if (SetupColor(q))
 	{
-	  if (flags.SecSelection()) glLoadName(qi.index());
+	  if (rnrCtx.SecSelection()) glLoadName(qi.index());
 	  glBegin(GL_LINES);
 	  glVertex3f(q.fA,         z, q.fB);
 	  glVertex3f(q.fA + q.fDx, z, q.fB + q.fDy);
@@ -490,10 +489,10 @@ void QuadSetGL::RenderLines(const TGLDrawFlags &flags) const
 
   }
 
-  if (flags.SecSelection()) glPopName();
+  if (rnrCtx.SecSelection()) glPopName();
 }
 
-void QuadSetGL::RenderHexagons(const TGLDrawFlags &flags) const
+void QuadSetGL::RenderHexagons(TGLRnrCtx & rnrCtx) const
 {
   static const Exc_t eH("QuadSetGL::RenderHexagons ");
 
@@ -508,7 +507,7 @@ void QuadSetGL::RenderHexagons(const TGLDrawFlags &flags) const
 
   VoidCPlex::iterator qi(mQ.fPlex);
 
-  if (flags.SecSelection()) glPushName(0);
+  if (rnrCtx.SecSelection()) glPushName(0);
 
   switch (mQ.fQuadType)
   {
@@ -521,7 +520,7 @@ void QuadSetGL::RenderHexagons(const TGLDrawFlags &flags) const
 	{
 	  const Float_t rh = q.fR * 0.5;
 	  const Float_t rs = q.fR * sqr3hf;
-	  if (flags.SecSelection()) glLoadName(qi.index());
+	  if (rnrCtx.SecSelection()) glLoadName(qi.index());
 	  glBegin(primitveType);
 	  glVertex3f( q.fR + q.fA,       q.fB, q.fC);
 	  glVertex3f(   rh + q.fA,  rs + q.fB, q.fC);
@@ -543,7 +542,7 @@ void QuadSetGL::RenderHexagons(const TGLDrawFlags &flags) const
 	{
 	  const Float_t rh = q.fR * 0.5;
 	  const Float_t rs = q.fR * sqr3hf;
-	  if (flags.SecSelection()) glLoadName(qi.index());
+	  if (rnrCtx.SecSelection()) glLoadName(qi.index());
 	  glBegin(primitveType);
 	  glVertex3f( rs + q.fA,    rh + q.fB, q.fC);
 	  glVertex3f(      q.fA,  q.fR + q.fB, q.fC);
@@ -562,19 +561,19 @@ void QuadSetGL::RenderHexagons(const TGLDrawFlags &flags) const
 
   } // end switch quad-type
 
-  if (flags.SecSelection()) glPopName();
+  if (rnrCtx.SecSelection()) glPopName();
 }
 
 /**************************************************************************/
 /**************************************************************************/
 
 //______________________________________________________________________________
-void QuadSetGL::ProcessSelection(UInt_t* ptr, TGLViewer*, TGLScene*)
+void QuadSetGL::ProcessSelection(TGLRnrCtx & /*rnrCtx*/, TGLSelectRecord & rec)
 {
-   // Processes secondary selection from TGLViewer.
-   // Calls TPointSet3D::PointSelected(Int_t) with index of selected
-   // point as an argument.
+  // Processes secondary selection from TGLViewer.
+  // Calls TPointSet3D::PointSelected(Int_t) with index of selected
+  // point as an argument.
 
-   if (ptr[0] < 2) return;
-   fM->QuadSelected(ptr[4]);
+  if (rec.GetN() < 2) return;
+  fM->QuadSelected(rec.GetItem(1));
 }

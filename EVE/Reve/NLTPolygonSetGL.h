@@ -1,23 +1,20 @@
 #ifndef REVE_NLTPolygonSetGL
 #define REVE_NLTPolygonSetGL
 
-#ifndef ROOT_TGLObject
-#include "TGLObject.h"
-#endif
-
+#include <TGLObject.h>
 
 namespace Reve {
 
 class NLTPolygonSetGL : public TGLObject
 {
 protected:
-  virtual void DirectDraw(const TGLDrawFlags & flags) const;
+  virtual void DirectDraw(TGLRnrCtx & rnrCtx) const;
 
 public:
   NLTPolygonSetGL();
   virtual  ~NLTPolygonSetGL();
 
-  virtual Bool_t SetModel(TObject* obj);
+  virtual Bool_t SetModel(TObject* obj, const Option_t* opt=0);
   virtual Bool_t IgnoreSizeForOfInterest() const { return kTRUE; }
   virtual void   SetBBox();
 

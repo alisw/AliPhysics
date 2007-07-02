@@ -25,18 +25,18 @@ private:
 protected:
   ITSModuleStepper* fM; // fModel dynamic-casted to ITSModuleStepperGL
 
-  virtual void DirectDraw(const TGLDrawFlags & flags) const;
+  virtual void DirectDraw(TGLRnrCtx & rnrCtx) const;
 
 public:
   ITSModuleStepperGL();
   virtual ~ITSModuleStepperGL();
 
-  virtual Bool_t SetModel(TObject* obj);
+  virtual Bool_t SetModel(TObject* obj, const Option_t* opt=0);
   virtual void   SetBBox();
 
   virtual Bool_t IgnoreSizeForOfInterest() const { return kTRUE; }
   virtual Bool_t SupportsSecondarySelect() const { return kTRUE; }
-  virtual void ProcessSelection(UInt_t* ptr, TGLViewer*, TGLScene*);
+  virtual void ProcessSelection(TGLRnrCtx & rnrCtx, TGLSelectRecord & rec);
 
   ClassDef(ITSModuleStepperGL, 0);
 }; // endclass ITSModuleStepperGL

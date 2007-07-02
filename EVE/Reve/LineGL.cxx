@@ -3,13 +3,8 @@
 #include "LineGL.h"
 #include <Reve/Line.h>
 
-#include <TGLDrawFlags.h>
-
-#ifdef WIN32
-#include "Windows4root.h"
-#endif
-#include <GL/gl.h>
-#include <GL/glu.h>
+#include <TGLRnrCtx.h>
+#include <TGLIncludes.h>
 
 using namespace Reve;
 
@@ -21,7 +16,7 @@ ClassImp(LineGL)
 
 LineGL::LineGL() : TPointSet3DGL(), fM(0)
 {
-  // fCached = false; // Disable display list.
+  // fDLCache = false; // Disable display list.
 }
 
 LineGL::~LineGL()
@@ -29,7 +24,7 @@ LineGL::~LineGL()
 
 /**************************************************************************/
 
-Bool_t LineGL::SetModel(TObject* obj)
+Bool_t LineGL::SetModel(TObject* obj, const Option_t* /*opt*/)
 {
   // TPointSet3DGL::SetModel(obj);
   if(SetModelCheckClass(obj, Line::Class())) {
@@ -41,9 +36,14 @@ Bool_t LineGL::SetModel(TObject* obj)
 
 /**************************************************************************/
 
-void LineGL::DirectDraw(const TGLDrawFlags & flags) const
+void LineGL::DirectDraw(TGLRnrCtx & rnrCtx) const
 {
-  // printf("LineGL::DirectDraw Style %d, LOD %d\n", flags.Style(), flags.LOD());
+  // Direct GL rendering for Line.
+
+  // printf("LineGL::DirectDraw Style %d, LOD %d\n", rnrCtx.Style(), rnrCtx.LOD());
+
+  if (rnrCtx.DrawPass() == TGLRnrCtx::kPassOutlineLine)
+    return;
 
   Line& q = *fM;
   if (q.Size() <= 0) return;
@@ -93,9 +93,9 @@ void LineGL::DirectDraw(const TGLDrawFlags & flags) const
     glColor4ubv(color);
     Int_t ms = q.GetMarkerStyle();
     if (ms != 2 && ms != 3 && ms != 5 && ms != 28)
-      RenderPoints(flags);
+      RenderPoints(rnrCtx);
     else
-      RenderCrosses(flags);
+      RenderCrosses(rnrCtx);
   }
 
   glPopAttrib();

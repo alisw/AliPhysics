@@ -4,12 +4,7 @@
 #include "TriangleSet.h"
 #include <TVector3.h>
 
-#include <TGLDrawFlags.h>
-
-#ifdef WIN32
-#include "Windows4root.h"
-#endif
-#include <GL/gl.h>
+#include <TGLIncludes.h>
 
 //______________________________________________________________________
 // TriangleSetGL
@@ -21,7 +16,7 @@ ClassImp(TriangleSetGL)
 
 TriangleSetGL::TriangleSetGL() : TGLObject(), fM(0)
 {
-  // fCached = false; // Disable display list.
+  // fDLCache = false; // Disable display list.
 }
 
 TriangleSetGL::~TriangleSetGL()
@@ -29,7 +24,7 @@ TriangleSetGL::~TriangleSetGL()
 
 /**************************************************************************/
 
-Bool_t TriangleSetGL::SetModel(TObject* obj)
+Bool_t TriangleSetGL::SetModel(TObject* obj, const Option_t* /*opt*/)
 {
   if(SetModelCheckClass(obj, TriangleSet::Class())) {
     fM = dynamic_cast<TriangleSet*>(obj);
@@ -46,7 +41,7 @@ void TriangleSetGL::SetBBox()
 
 /**************************************************************************/
 
-void TriangleSetGL::DirectDraw(const TGLDrawFlags& /*flags*/) const
+void TriangleSetGL::DirectDraw(TGLRnrCtx & /*rnrCtx*/) const
 {
   TriangleSet& TS = *fM;
   Bool_t isScaled = TS.fHMTrans.IsScale();

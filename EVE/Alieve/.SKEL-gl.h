@@ -21,18 +21,18 @@ private:
 protected:
   STEM* fM; // fModel dynamic-casted to CLASS
 
-  virtual void DirectDraw(const TGLDrawFlags & flags) const;
+  virtual void DirectDraw(TGLRnrCtx & rnrCtx) const;
 
 public:
   CLASS();
   virtual ~CLASS();
 
-  virtual Bool_t SetModel(TObject* obj);
+  virtual Bool_t SetModel(TObject* obj, const Option_t* opt=0);
   virtual void   SetBBox();
 
   // To support two-level selection
   // virtual Bool_t SupportsSecondarySelect() const { return kTRUE; }
-  // virtual void ProcessSelection(UInt_t* ptr, TGLViewer*, TGLScene*);
+  // virtual void ProcessSelection(TGLRnrCtx & rnrCtx, TGLSelectRecord & rec);
 
   ClassDef(CLASS, 0);
 }; // endclass CLASS
