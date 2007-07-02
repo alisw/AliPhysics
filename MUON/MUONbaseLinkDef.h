@@ -19,9 +19,14 @@
 #pragma link C++ class AliMUONRawCluster+;
 #pragma link C++ class AliMUONDigit+; 
 #pragma link C++ class AliMUONVDigit+; 
+#pragma link C++ class AliMUONRealDigit+; 
 #pragma link C++ class AliMUONVDigitStore+;
 #pragma link C++ class AliMUONDigitStoreV1+;
 #pragma link C++ class AliMUONDigitStoreV1Iterator+;
+#pragma link C++ class AliMUONDigitStoreVImpl+;
+#pragma link C++ class AliMUONDigitStoreVImplIterator+;
+#pragma link C++ class AliMUONDigitStoreV2R+;
+#pragma link C++ class AliMUONDigitStoreV2S+;
 #pragma link C++ class AliMUONTOTCAStoreIterator+;
 #pragma link C++ class AliMUONVTriggerStore+;
 #pragma link C++ class AliMUONTriggerStoreV1+;
@@ -34,9 +39,6 @@
 #pragma link C++ class AliMUONCalibrationData+;
 #pragma link C++ class AliMUONCDB+;
 #pragma link C++ class AliMUONHVNamer+;
-
-// misc
-#pragma link C++ class AliMUONStopwatchGroup+;
 
 #endif
 

@@ -29,6 +29,8 @@
 #pragma link C++ class AliMUONPad+;
 #pragma link C++ class AliMUONCluster+;
 #pragma link C++ class AliMUONPreClusterFinder+;
+#pragma link C++ class AliMUONPreClusterFinderV2+;
+#pragma link C++ class AliMUONPreClusterFinderV3+;
 #pragma link C++ class AliMUONClusterFinderSimpleFit+;
 #pragma link C++ class AliMUONClusterFinderCOG+;
 #pragma link C++ class AliMUONClusterFinderMLEM+;

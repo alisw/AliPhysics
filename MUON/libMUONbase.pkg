@@ -3,6 +3,7 @@
 SRCS:=  AliMUONConstants.cxx \
         AliMUONMathieson.cxx \
         AliMUONDigit.cxx \
+        AliMUONRealDigit.cxx \
         AliMUONRawCluster.cxx \
         AliMUONCalibrationData.cxx \
         AliMUONDigitMaker.cxx \
@@ -13,13 +14,16 @@ SRCS:=  AliMUONConstants.cxx \
         AliMUONVDigitStore.cxx \
         AliMUONDigitStoreV1.cxx \
         AliMUONDigitStoreV1Iterator.cxx \
+        AliMUONDigitStoreVImpl.cxx \
+        AliMUONDigitStoreVImplIterator.cxx \
+        AliMUONDigitStoreV2R.cxx \
+        AliMUONDigitStoreV2S.cxx \
         AliMUONTOTCAStoreIterator.cxx \
-        AliMUONStopwatchGroup.cxx \
         AliMUONVDigit.cxx \
         AliMUONVTriggerStore.cxx \
         AliMUONTriggerStoreV1.cxx \
         
-HDRS:= $(SRCS:.cxx=.h) AliMUONStopwatchGroupElement.h
+HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= MUONbaseLinkDef.h
 

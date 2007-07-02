@@ -21,6 +21,8 @@ SRCS:= AliMUONClusterReconstructor.cxx \
        AliMUONAlignment.cxx \
        AliMUONVClusterFinder.cxx \
        AliMUONPreClusterFinder.cxx \
+       AliMUONPreClusterFinderV2.cxx \
+       AliMUONPreClusterFinderV3.cxx \
        AliMUONClusterFinderMLEM.cxx \
        AliMUONClusterSplitterMLEM.cxx \
        AliMUONClusterFinderSimpleFit.cxx \
