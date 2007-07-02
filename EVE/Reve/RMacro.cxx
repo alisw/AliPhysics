@@ -40,11 +40,12 @@ RMacro::RMacro(const char* name) :
 
 #include <TTimer.h>
 
-void RMacro::Exec(const char* params)
+Long_t RMacro::Exec(const char* params, Int_t* error)
 {
   if(Reve::CheckMacro(fTitle.Data()))
     G__unloadfile(fTitle.Data());
 
+  Long_t retval;
   // Copy from TMacro::Exec. Difference is that the file is really placed
   // into the /tmp.
   TString fname = "/tmp/";
@@ -62,8 +63,7 @@ void RMacro::Exec(const char* params)
     if (p == "") p = fParams;
     if (p != "")
       exec += "(" + p + ")";
-    Int_t exit;
-    gROOT->ProcessLine(exec, &exit);
+    retval = gROOT->ProcessLine(exec, error);
     //enable gROOT->Reset
     gROOT->SetExecutingMacro(kFALSE);
     //delete the temporary file
@@ -76,6 +76,8 @@ void RMacro::Exec(const char* params)
   // the execution of next macros does not succeed.
   // However strange this might seem, this solves the problem.
   TTimer::SingleShot(100, "Reve::RMacro", this, "ResetRoot()");
+
+  return retval;
 }
 
 #include <TApplication.h>

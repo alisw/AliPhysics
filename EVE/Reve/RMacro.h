@@ -19,7 +19,7 @@ public:
   RMacro(const char* name);
   virtual ~RMacro() {}
 
-  virtual void Exec(const char* params = "0");
+  virtual Long_t Exec(const char* params = "0", Int_t* error = 0);
 
   void ResetRoot();
 
