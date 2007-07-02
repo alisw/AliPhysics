@@ -22,6 +22,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliTPCSensorTempArray.h"
+#include "TLinearFitter.h"
+#include "TVectorD.h"
 
 ClassImp(AliTPCSensorTempArray)
 
@@ -153,3 +155,41 @@ AliTPCSensorTemp* AliTPCSensorTempArray::GetSensor(Int_t IdDCS){
 AliTPCSensorTemp* AliTPCSensorTempArray::GetSensor(Double_t x, Double_t y, Double_t z){
   return dynamic_cast<AliTPCSensorTemp*>(AliDCSSensorArray::GetSensor(x,y,z));
 }
+//_____________________________________________________________________________
+
+Double_t AliTPCSensorTempArray::GetTempGradientY(UInt_t timeSec, Int_t side){
+ //
+ // Extract Linear Vertical Temperature Gradient [K/cm] within the TPC on
+ // Shaft Side(A): 0
+ // Muon  Side(C): 1
+ // Values based on TemperatureSensors within the TPC (type: 3(TPC))
+ //
+ // FIXME: Also return residual-distribution, covariance Matrix
+ //        or simply chi2 for validity check?
+ //
+
+ TLinearFitter fitter(3,"x0++x1++x2");
+ TVectorD param(3);
+ Int_t i = 0;
+
+ Int_t nsensors = fSensors->GetEntries();
+ for (Int_t isensor=0; isensor<nsensors; isensor++) { // loop over all sensors
+   AliTPCSensorTemp *entry = (AliTPCSensorTemp*)fSensors->At(isensor);
+
+   if (entry->GetType()==3 && entry->GetSide()==side) { // take SensorType:TPC
+     Double_t x[3];
+     x[0]=1;
+     x[1]=entry->GetX();
+     x[2]=entry->GetY();
+     Double_t y = entry->GetValue(timeSec); // get temperature value
+     fitter.AddPoint(x,y,1); // add values to LinearFitter
+     i++;
+   }
+
+ }
+ fitter.Eval();
+ fitter.GetParameters(param);
+
+ return param[2]; // return vertical (Y) tempGradient
+
+ }

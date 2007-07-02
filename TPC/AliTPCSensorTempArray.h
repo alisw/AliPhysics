@@ -39,6 +39,7 @@ class AliTPCSensorTempArray : public AliDCSSensorArray {
   AliTPCSensorTemp* GetSensor (Int_t type, Int_t side, Int_t sector, Int_t num);
   AliTPCSensorTemp* GetSensor (Int_t IdDCS);
   AliTPCSensorTemp* GetSensor (Double_t x, Double_t y, Double_t z);
+  Double_t GetTempGradientY(UInt_t timeSec, Int_t side);
 
  protected:
 
