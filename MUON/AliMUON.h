@@ -19,6 +19,7 @@
 #include "AliMUONTrigger.h"
 
 #include <TVectorfwd.h>
+#include <TString.h>
 
 class TFile;
 class TTree;
@@ -125,10 +126,14 @@ class AliMUON : public  AliDetector
                   /// Return reference to Chamber \a id
     virtual AliMUONChamber& Chamber(Int_t id)
       {return *((AliMUONChamber *) (*fChambers)[id]);}
-                  /// Return reference to New Circuit \a id 
 
     virtual void MakeBranch(Option_t* opt=" ");
     virtual void ResetHits();
+    
+                 /// Set digit store class name           
+    void SetDigitStoreClassName(const char* classname) { fDigitStoreConcreteClassName = classname; }
+                 /// Return digit store class name           
+    const TString DigitStoreClassName() const { return fDigitStoreConcreteClassName; }
     
   protected:
     /// Not implemented
@@ -172,7 +177,9 @@ class AliMUON : public  AliDetector
 
     AliMUONVHitStore* fHitStore; //!< container of hits
     
-    ClassDef(AliMUON,15)  // MUON Detector base class
+    TString fDigitStoreConcreteClassName; ///< to be able to select what the sdigitizer uses
+    
+    ClassDef(AliMUON,16)  // MUON Detector base class
 };
 #endif
 

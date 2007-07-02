@@ -23,12 +23,12 @@
 #include "AliMUON.h"
 #include "AliMUONChamber.h"
 #include "AliMUONVDigit.h"
-#include "AliMUONDigitStoreV1.h"
 #include "AliMUONHit.h"
 #include "AliMpDEManager.h"
 #include "AliLoader.h"
 #include "AliRun.h"
 #include "AliRunLoader.h"
+#include "AliMUONVDigitStore.h"
 #include "AliMUONVHitStore.h"
 
 ///
@@ -90,8 +90,17 @@ AliMUONSDigitizerV2::Exec(Option_t*)
     
   Int_t nofEvents(runLoader->GetNumberOfEvents());
   
-  AliMUONVDigitStore* sDigitStore = new AliMUONDigitStoreV1;
+  TString classname = muon->DigitStoreClassName();
   
+  AliMUONVDigitStore* sDigitStore = AliMUONVDigitStore::Create(classname.Data());
+  
+  if (!sDigitStore)
+  {
+    AliFatal(Form("Could not create digitstore of class %s",classname.Data()));
+  }
+  
+  AliInfo(Form("Will use digitStore of type %s",sDigitStore->ClassName()));
+          
   for ( Int_t iEvent = 0; iEvent < nofEvents; ++iEvent ) 
   {    
     // Loop over events.

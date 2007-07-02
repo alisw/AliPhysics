@@ -2,7 +2,7 @@
 // Remember to define the directory and option
 // gAlice->SetConfigFunction("Config('$HOME','box');");
 
-void Config(char directory[100]="", char option[6]="param")
+void Config(char directory[100]="", char option[6]="param", const char* digitstore="AliMUONDigitStoreV1")
 {
   //=====================================================================
   // Config file for MUON test
@@ -174,6 +174,11 @@ void Config(char directory[100]="", char option[6]="param")
   // activate trigger chamber efficiency by cells (0=default, 1=trigger efficiency according to AliMUONTriggerEfficiencyCells
   //  MUON->SetTriggerEffCells(0);
 
+  // Use SetDigitStoreClassName() to change the digitStore implementation used by (s)digitizer
+  MUON->SetDigitStoreClassName(digitstore);
+  
+  cout << "MUON DigitStore is " << MUON->DigitStoreClassName().Data() << endl;
+  
   // To get same as above w/o noise-only digits for the tracker do  :
   //MUON->SetDigitizerWithNoise(kFALSE);
 
@@ -192,8 +197,4 @@ void Config(char directory[100]="", char option[6]="param")
   //  MUON->AddGeometryBuilder(new AliMUONSt2GeometryBuilderV2(MUON));
   //  MUON->AddGeometryBuilder(new AliMUONSlatGeometryBuilder(MUON));
   //  MUON->AddGeometryBuilder(new AliMUONTriggerGeometryBuilder(MUON));
-}
-
-Float_t EtaToTheta(Float_t arg){
-  return (180./TMath::Pi())*2.*atan(exp(-arg));
 }

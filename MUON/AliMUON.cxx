@@ -118,7 +118,8 @@ AliMUON::AliMUON()
     fDigitizerWithNoise(1),
     fRawWriter(0x0),
     fDigitMaker(0x0),
-    fHitStore(0x0)
+    fHitStore(0x0),
+  fDigitStoreConcreteClassName()
 {
 /// Default Constructor
     
@@ -150,7 +151,8 @@ AliMUON::AliMUON(const char *name, const char* title)
     fDigitizerWithNoise(1),
     fRawWriter(0x0),
     fDigitMaker(new AliMUONDigitMaker),
-    fHitStore(0x0)
+    fHitStore(0x0),
+  fDigitStoreConcreteClassName("AliMUONDigitStoreV2S")
 {
 /// Standard constructor  
   
