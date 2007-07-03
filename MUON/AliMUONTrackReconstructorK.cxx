@@ -709,6 +709,10 @@ void AliMUONTrackReconstructorK::UpdateTrack(AliMUONTrack &track, AliMUONTrackPa
   /// Add 1 hit to the track candidate
   /// Update chi2 of the track 
   
+  // Flag hit as being not removable
+  trackParamAtHit.SetRemovable(kFALSE);
+  trackParamAtHit.SetLocalChi2(0.); // --> Local chi2 not used
+  
   // Update the track chi2 into TrackParamAtHit
   trackParamAtHit.SetTrackChi2(track.GetFitFMin() + addChi2);
   

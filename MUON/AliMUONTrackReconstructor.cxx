@@ -600,6 +600,10 @@ void AliMUONTrackReconstructor::UpdateTrack(AliMUONTrack &track, AliMUONTrackPar
   Double_t localChi2 = deltaX*deltaX / hit->GetNonBendingReso2() +
   		       deltaY*deltaY / hit->GetBendingReso2();
   
+  // Flag hit as being not removable
+  trackParamAtHit.SetRemovable(kFALSE);
+  trackParamAtHit.SetLocalChi2(0.); // --> Local chi2 not used
+  
   // Update the chi2 of the new track
   track.SetFitFMin(track.GetFitFMin() + localChi2);
   
