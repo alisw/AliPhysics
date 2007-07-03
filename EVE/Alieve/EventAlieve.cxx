@@ -311,6 +311,7 @@ TGeoManager* Event::AssertGeometry()
 
   if (AliGeomManager::GetGeometry() == 0)
   {
+    gGeoManager = 0;
     AliGeomManager::LoadGeometry();
     if ( ! AliGeomManager::GetGeometry())
     {
