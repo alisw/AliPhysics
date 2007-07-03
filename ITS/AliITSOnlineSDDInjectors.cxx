@@ -17,6 +17,8 @@
 #include <TGraphErrors.h>
 #include <TMath.h>
 
+/* $Id$ */
+
 ///////////////////////////////////////////////////////////////////
 //                                                               //
 // Implementation of the class used for SDD injector analysis    //
@@ -364,6 +366,7 @@ void AliITSOnlineSDDInjectors::FindCentroids(){
 	fRMSCentroid[iii][ninj]=0.;
 	fGoodInj[iii][ninj]=0;
       }
+      if(fRMSCentroid[iii][ninj]==0) fGoodInj[iii][ninj]=0;
     }
   }
 }
@@ -382,11 +385,14 @@ void AliITSOnlineSDDInjectors::PrintCentroids(){
   }
 }
 //______________________________________________________________________
-void AliITSOnlineSDDInjectors::WriteToASCII(){
+void AliITSOnlineSDDInjectors::WriteToASCII(Int_t evNumb, UInt_t timeStamp, Int_t optAppend){
   //
   Char_t outfilnam[100];
   sprintf(outfilnam,"SDDinj_mod%03d_sid%d.data",fModuleId,fSide);
-  FILE* outf=fopen(outfilnam,"w");
+  FILE* outf;
+  if(optAppend==0) outf=fopen(outfilnam,"w");
+  else outf=fopen(outfilnam,"a");
+  fprintf(outf,"%d   %d   ",evNumb,timeStamp);
   for(Int_t ic=0;ic<fPolOrder+1;ic++){
     fprintf(outf,"%G ",fParam[ic]);
   }

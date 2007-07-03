@@ -45,7 +45,7 @@ class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
 
   void PrintInjMap();
   void PrintCentroids();
-  void WriteToASCII();
+  void WriteToASCII(Int_t evNumb, UInt_t timeStamp, Int_t optAppend=0);
 
   void Reset();      
   void AnalyzeEvent(TH2F* his);      
