@@ -142,8 +142,6 @@ Bool_t AliAnalysisGoodies::Alien2Local(const TString collectionNameIn, const TSt
   collectionOu->SetCollectionName(collectionNameOu) ; 
   collectionOu->WriteHeader() ; 
 
-  TFileMerger merger ; 
-  
   const char* ocwd = gSystem->WorkingDirectory();
 
   Int_t counter = 1 ;  
@@ -171,7 +169,7 @@ Bool_t AliAnalysisGoodies::Alien2Local(const TString collectionNameIn, const TSt
     AliInfo(Form("Copying %s to %s\n", fileTURL.Data(), dir.Data())) ;  
     collectionOu->WriteBody(counter, collectionIn->GetGUID(""), collectionIn->GetLFN(""), dir, list) ;
     counter++ ;
-    merger.Cp(fileTURL, dir) ;
+    TFile::Cp(fileTURL, dir) ;
   }
   collectionOu->Export() ;
   gSystem->ChangeDirectory(ocwd) ; 
