@@ -33,6 +33,7 @@
 #ifdef WITHALIEN
 #include <TGridResult.h>
 #include <TFileMerger.h>
+#include <TFile.h> 
 #endif
 #include <TChain.h>
 #include <TGrid.h>
