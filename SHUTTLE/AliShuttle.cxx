@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.50  2007/07/02 17:19:32  acolla
+preprocessor is run in a temp directory that is removed when process is finished.
+
 Revision 1.49  2007/06/29 10:45:06  acolla
 Number of columns in MySql Shuttle logbook increased by one (HLT added)
 
@@ -253,6 +256,7 @@ some docs added
 #include <TMutex.h>
 #include <TSystemDirectory.h>
 #include <TSystemFile.h>
+#include <TFile.h>
 #include <TFileMerger.h>
 #include <TGrid.h>
 #include <TGridResult.h>
@@ -848,7 +852,7 @@ Bool_t AliShuttle::StoreRefFilesToGrid()
 		fullGridPath.Form("alien://%s/%s", alienDir.Data(), fileName.Data());
 
 		TFileMerger fileMerger;
-		Bool_t result = fileMerger.Cp(fullLocalPath, fullGridPath);
+		Bool_t result = TFile::Cp(fullLocalPath, fullGridPath);
 		
 		if (result)
 		{
