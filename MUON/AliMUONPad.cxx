@@ -262,7 +262,7 @@ AliMUONPad::Compare(const TObject* obj) const
   {
     return 1;
   }
-  else if ( DetElemId() > pad->DetElemId() )
+  else if ( DetElemId() < pad->DetElemId() )
   {
     return -1;
   }
