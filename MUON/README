@@ -677,5 +677,25 @@ tracking algorithms (hard coded for the moment in AliMUONVTrackReconstructor.cxx
   quality of the tracks.
 
 ===========================================================
+ How to get trigger chamber efficiency from data
+===========================================================
+Trigger chamber efficiency map is calculated during reconstruction and saved in AliESDs.root
+In order to view and save the map, use macro MUONTriggerChamberEfficiency.C
+
+To compile MUONTriggerChamberEfficiency.C
+.includepath $ALICE_ROOT/MUON
+.L $ALICE_ROOT/MUON/MUONTriggerChamberEfficiency.C+
+
+// To run MUONTriggerChamberEfficiency.C
+MUONTriggerChamberEfficiency();
+
+//If you want to make the calculated map available for next simulation use option kTRUE, i.e.
+MUONTriggerChamberEfficiency(kTRUE);
+
+When running next simulation, please remember to activate trigger efficiency
+by adding in Config.C:
+MUON->SetTriggerEffCells(1);
+
+===========================================================
  Still working ..............
 ===========================================================
