@@ -132,8 +132,7 @@ int main(int argc, char **argv) {
 
       //T0 event
       Int_t meantime = 0;     
-      AliT0RawReader *rawReaderT0 = new AliT0RawReader(rawReader);
-      rawReaderT0->SetOnlineMode(kTRUE);
+      AliT0RawReader *rawReaderT0 = new AliT0RawReader(rawReader,kTRUE);
       if (!rawReaderT0->Next()) {
         printf("T0: no raw data found!\n");
       } else {
