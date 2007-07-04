@@ -9,7 +9,7 @@
 class AliT0RawReader : public TTask {
   public :
 
-  AliT0RawReader(AliRawReader *rawReader) ;
+  AliT0RawReader(AliRawReader *rawReader,Bool_t isOnline = kFALSE) ;
 
   virtual  ~AliT0RawReader();
   AliT0RawReader(const AliT0RawReader& o): TTask(o),
@@ -42,7 +42,6 @@ class AliT0RawReader : public TTask {
     kIncorrectLUT = 10
   };
 
-  void SetOnlineMode(Bool_t on=kFALSE) {fIsOnline=on;}
   Bool_t IsOnlineMode () {return fIsOnline;}
      
   protected :

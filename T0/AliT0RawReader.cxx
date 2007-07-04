@@ -11,13 +11,13 @@
  
 ClassImp(AliT0RawReader)
   
-  AliT0RawReader::AliT0RawReader (AliRawReader *rawReader)
+  AliT0RawReader::AliT0RawReader (AliRawReader *rawReader, Bool_t isOnline)
     :  TTask("T0RawReader","read raw T0 data"),
        fRawReader(rawReader),
        fData(NULL),
        fPosition(0),
        fParam(NULL),
-       fIsOnline(kFALSE)
+       fIsOnline(isOnline)
 {
   //
 // create an object to read T0raw digits
@@ -87,13 +87,7 @@ Bool_t  AliT0RawReader::Next()
   Int_t  FILLER =  0x70000000;
   Bool_t correct=kTRUE;
   Int_t header;
-  /*  
-    AliT0Parameters* fParam = AliT0Parameters::Instance();   
-   if (fIsOnline)
-   fParam->InitIfOnline();
- 	else
-   fParam->Init();
-  */
+
    Int_t fNTRM = fParam->GetNumberOfTRMs();
    for ( Int_t k=0; k<110; k++) {
     koefhits[k]=0;
