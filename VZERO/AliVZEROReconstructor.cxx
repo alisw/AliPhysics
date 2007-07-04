@@ -143,22 +143,25 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
     for (Int_t d=0; d<nDigits; d++) {    
       AliVZEROdigit* digit = (AliVZEROdigit*)digitsArray->At(d);      
       Int_t  pmNumber      = digit->PMNumber();  
-      adc[pmNumber] = digit->ADC();  
-      if (pmNumber<=31) {
-        if (pmNumber<=7) multV0C[0]=multV0C[0]+ float(adc[pmNumber])/mip[pmNumber];
-	if (pmNumber>=8  && pmNumber<=15) multV0C[1]=multV0C[1]+ float(adc[pmNumber])/mip[pmNumber];
-	if (pmNumber>=16 && pmNumber<=23) multV0C[2]=multV0C[2]+ float(adc[pmNumber])/mip[pmNumber];
-	if (pmNumber>=24 && pmNumber<=31) multV0C[3]=multV0C[3]+ float(adc[pmNumber])/mip[pmNumber];
-        adcV0C = adcV0C + float(adc[pmNumber])/mip[pmNumber];
-	if(adc[pmNumber] > 4) nbPMV0C++;
-      }	
-      if (pmNumber>=32) {
-        if (pmNumber>=32 && pmNumber<=39) multV0A[0]=multV0A[0]+ float(adc[pmNumber])/mip[pmNumber];
-	if (pmNumber>=40 && pmNumber<=47) multV0A[1]=multV0A[1]+ float(adc[pmNumber])/mip[pmNumber];
-	if (pmNumber>=48 && pmNumber<=55) multV0A[2]=multV0A[2]+ float(adc[pmNumber])/mip[pmNumber];
-	if (pmNumber>=56 && pmNumber<=63) multV0A[3]=multV0A[3]+ float(adc[pmNumber])/mip[pmNumber];
-        adcV0A = adcV0A + float(adc[pmNumber])/mip[pmNumber];
-	if(adc[pmNumber] > 4) nbPMV0A++;
+      adc[pmNumber] = digit->ADC(); 
+      // cut of ADC at MIP/2
+      if  (adc[pmNumber] > (mip[pmNumber]/2)) { 
+        if (pmNumber<=31) {
+          if (pmNumber<=7) multV0C[0]=multV0C[0]+ float(adc[pmNumber])/mip[pmNumber];
+	  if (pmNumber>=8  && pmNumber<=15) multV0C[1]=multV0C[1]+ float(adc[pmNumber])/mip[pmNumber];
+	  if (pmNumber>=16 && pmNumber<=23) multV0C[2]=multV0C[2]+ float(adc[pmNumber])/mip[pmNumber];
+	  if (pmNumber>=24 && pmNumber<=31) multV0C[3]=multV0C[3]+ float(adc[pmNumber])/mip[pmNumber];
+          adcV0C = adcV0C + float(adc[pmNumber])/mip[pmNumber];
+	  nbPMV0C++;
+        }	
+        if (pmNumber>=32 ) {
+          if (pmNumber>=32 && pmNumber<=39) multV0A[0]=multV0A[0]+ float(adc[pmNumber])/mip[pmNumber];
+	  if (pmNumber>=40 && pmNumber<=47) multV0A[1]=multV0A[1]+ float(adc[pmNumber])/mip[pmNumber];
+	  if (pmNumber>=48 && pmNumber<=55) multV0A[2]=multV0A[2]+ float(adc[pmNumber])/mip[pmNumber];
+	  if (pmNumber>=56 && pmNumber<=63) multV0A[3]=multV0A[3]+ float(adc[pmNumber])/mip[pmNumber];
+          adcV0A = adcV0A + float(adc[pmNumber])/mip[pmNumber];
+	  nbPMV0A++;
+        }
       }
     } // end of loop over digits
     
