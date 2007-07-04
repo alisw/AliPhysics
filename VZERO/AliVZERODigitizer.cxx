@@ -26,6 +26,9 @@
 // --- ROOT system ---
 #include <TMath.h>
 #include <TTree.h>
+#include <TGeoManager.h>
+#include <TGeoPhysicalNode.h>
+#include <AliGeomManager.h>
 #include <TRandom.h>
 
 // --- AliRoot header files ---
@@ -111,7 +114,10 @@ Bool_t AliVZERODigitizer::Init()
 
   // Initialises the Digit array
   fDigits = new TClonesArray ("AliVZEROdigit", 1000);
-
+  
+  TGeoHMatrix *im = AliGeomManager::GetMatrix("VZERO/V0C");
+  im->Print();
+  
   return kTRUE;
 }
 
@@ -122,12 +128,19 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
      
   Int_t       map[80];    // 48 values on V0C + 32 on V0A
   Int_t       adc[64];    // 32 PMs on V0C + 32 PMs on V0A
-  Float_t    time[80], time_ref[80], time2[64];
-  Float_t    adc_gain[80];    
+  Float_t     time[80], time_ref[80], time2[64];
+  Float_t     adc_gain[80]; 
+  Float_t     adc_pedestal[64],adc_sigma[64];    
   fNdigits     =    0;  
-  Float_t cPM  = fPhotoCathodeEfficiency * fPMGain;
-
-  // Retrieval of ADC gain values from local CDB 
+  Float_t     PMGain_smeared[64];  
+  Float_t     cPM[80];
+  
+  // Smearing of the PM tubes intrinsic characteristics
+  
+  for(Int_t ii=0; ii<64; ii++) {
+      PMGain_smeared[ii] = gRandom->Gaus(fPMGain, fPMGain/5); }
+              
+  // Retrieval of ADC gain values and pedestal information from local CDB 
   // I use only the first 64th values of the calibration array in CDB 
   // as I have no beam burst structure - odd or even beam burst number
   
@@ -135,15 +148,26 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
   // on Ring 3 and Ring 4 in V0C -  added to produce  ADC outputs 
   // on these rings... 
    
-  for(Int_t i=0; i<16; i++) { adc_gain[i]  = fCalibData->GetGain(i) ; };
+  for(Int_t i=0; i<16; i++) { 
+            adc_gain[i] = fCalibData->GetGain(i); 
+            cPM[i]      = fPhotoCathodeEfficiency * PMGain_smeared[i];}
   
   for(Int_t j=16; j<48; j=j+2) { 
             Int_t i=(j+17)/2;
-            adc_gain[j]   = fCalibData->GetGain(i) ; 
-	    adc_gain[j+1] = fCalibData->GetGain(i) ; }
-  for(Int_t i=48; i<80; i++) { adc_gain[i]  = fCalibData->GetGain(i-16) ; }
+            adc_gain[j]   = fCalibData->GetGain(i);	    
+	    adc_gain[j+1] = fCalibData->GetGain(i); 
+	    cPM[j]        = fPhotoCathodeEfficiency * PMGain_smeared[i];   
+	    cPM[j+1]      = fPhotoCathodeEfficiency * PMGain_smeared[i]; }
+	    
+  for(Int_t i=48; i<80; i++){ 
+            adc_gain[i] = fCalibData->GetGain(i-16); 
+	    cPM[i]      = fPhotoCathodeEfficiency * PMGain_smeared[i-16];};
   
-//  for(Int_t i=0; i<80; i++) { printf(" i = %d gain = %f\n\n", i, adc_gain[i] );} 
+  for(Int_t  i=0; i<64; i++){ adc_pedestal[i] = fCalibData->GetPedestal(i); 
+                              adc_sigma[i]    = fCalibData->GetSigma(i); }; 
+                                
+//  for(Int_t i=0; i<64; i++) { printf(" i = %d pedestal = %f sigma = %f \n\n", 
+//                                       i, adc_pedestal[i], adc_sigma[i] );} 
             
   AliRunLoader* outRunLoader = 
     AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());    
@@ -164,83 +188,84 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
   treeD->Branch("VZERODigit", &fDigits, bufsize); 
   
   for (Int_t iInput = 0; iInput < fManager->GetNinputs(); iInput++) {
-    AliRunLoader* runLoader = 
-      AliRunLoader::GetRunLoader(fManager->GetInputFolderName(iInput));
-    AliLoader* loader = runLoader->GetLoader("VZEROLoader");
-    if (!loader) {
-      Error("Exec", "Can not get VZERO Loader for input %d", iInput);
-      continue;}
+     AliRunLoader* runLoader = 
+     AliRunLoader::GetRunLoader(fManager->GetInputFolderName(iInput));
+     AliLoader* loader = runLoader->GetLoader("VZEROLoader");
+     if (!loader) {
+       Error("Exec", "Can not get VZERO Loader for input %d", iInput);
+       continue;}
       
-    if (!runLoader->GetAliRun()) runLoader->LoadgAlice();
+     if (!runLoader->GetAliRun()) runLoader->LoadgAlice();
 
-    AliVZERO* vzero = (AliVZERO*) runLoader->GetAliRun()->GetDetector("VZERO");
-    if (!vzero) {
-      Error("Exec", "No VZERO detector for input %d", iInput);
-      continue;}
+     AliVZERO* vzero = (AliVZERO*) runLoader->GetAliRun()->GetDetector("VZERO");
+     if (!vzero) {
+       Error("Exec", "No VZERO detector for input %d", iInput);
+       continue;}
       
-    loader->LoadHits();
-    TTree* treeH = loader->TreeH();
-    if (!treeH) {
-      Error("Exec", "Cannot get TreeH for input %d", iInput);
-      continue; }
+     loader->LoadHits();
+     TTree* treeH = loader->TreeH();
+     if (!treeH) {
+       Error("Exec", "Cannot get TreeH for input %d", iInput);
+       continue; }
        
-    for(Int_t i=0; i<80; i++) {map[i] = 0; time[i] = 0.0;}
+     for(Int_t i=0; i<80; i++) {map[i] = 0; time[i] = 0.0;}
 	      
-    TClonesArray* hits = vzero->Hits();
+     TClonesArray* hits = vzero->Hits();
              
 //  Now makes Digits from hits
          
-    Int_t nTracks = (Int_t) treeH->GetEntries();
-    for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
-      for (Int_t i=0; i<80; i++) {time_ref[i] = 999999.0;}   
-      vzero->ResetHits();
-      treeH->GetEvent(iTrack);
-      Int_t nHits = hits->GetEntriesFast();
-      for (Int_t iHit = 0; iHit < nHits; iHit++) {
-	AliVZEROhit* hit = (AliVZEROhit *)hits->UncheckedAt(iHit);
-	Int_t nPhot = hit->Nphot();
-	Int_t cell  = hit->Cell();                                    
-	map[cell] += nPhot;
-	Float_t dt_scintillator = gRandom->Gaus(0,0.7);
-	Float_t t = dt_scintillator + 1e9*hit->Tof();
-	if (t > 0.0) {
-	   if(t < time_ref[cell]) time_ref[cell] = t;
-	   time[cell] = TMath::Min(t,time_ref[cell]);
-	}
-      }           // hit   loop      
-    }             // track loop
+     Int_t nTracks = (Int_t) treeH->GetEntries();
+     for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
+         for (Int_t i=0; i<80; i++) {time_ref[i] = 999999.0;}   
+         vzero->ResetHits();
+         treeH->GetEvent(iTrack);
+         Int_t nHits = hits->GetEntriesFast();
+         for (Int_t iHit = 0; iHit < nHits; iHit++) {
+	     AliVZEROhit* hit = (AliVZEROhit *)hits->UncheckedAt(iHit);
+	     Int_t nPhot = hit->Nphot();
+	     Int_t cell  = hit->Cell();                                    
+	     map[cell] += nPhot;
+	     Float_t dt_scintillator = gRandom->Gaus(0,0.7);
+	     Float_t t = dt_scintillator + 1e9*hit->Tof();
+	     if (t > 0.0) {
+	        if(t < time_ref[cell]) time_ref[cell] = t;
+	        time[cell] = TMath::Min(t,time_ref[cell]); }
+         }           // hit   loop      
+     }             // track loop
 
-    loader->UnloadHits();
+     loader->UnloadHits();
 
   }               // input loop
 
 // Now builds the scintillator cell response (80 cells i.e. 80 responses)
          
    for (Int_t i=0; i<80; i++) {    
-       Float_t q1 = Float_t ( map[i] )* cPM * kQe;
+       Float_t q1 = Float_t ( map[i] )* cPM[i] * kQe;
        Float_t noise = gRandom->Gaus(10.5,3.22);
        Float_t pmResponse  =  q1/kC*TMath::Power(ktheta/kthau,1/(1-ktheta/kthau)) 
-        + noise*1e-3;
+        + noise*1e-3; 	
        map[i] = Int_t( pmResponse * adc_gain[i]);
+       if(map[i] > (110/2)) {map[i] = Int_t(gRandom->Gaus(map[i], 110/6));}
      }
       
-// Now transforms 80 cell responses into 64 photomultiplier responses 
+// Now transforms 80 cell responses into 64 photomultiplier responses
+// Also adds the ADC pedestals taken out of the calibration data base
 	
-   for (Int_t j=0; j<32; j++){
-	adc[j]  = map [j];
+   for (Int_t j=0; j<16; j++){
+	adc[j]  = map [j] + gRandom->Gaus(adc_pedestal[j], adc_sigma[j]);
 	time2[j]= time[j];}
 	
    for (Int_t j=48; j<80; j++){
-	adc[j-16]  = map [j];
-	time2[j-16]= time[j];}
+	adc[j-16]  = map [j] 
+	           + gRandom->Gaus(adc_pedestal[j-16],adc_sigma[j-16]);
+	time2[j-16]= time[j]; }
 	
    for (Int_t j=0; j<16; j++){
-	adc[16+j] = map [16+2*j]+ map [16+2*j+1];
+	adc[16+j] = map [16+2*j]+ map [16+2*j+1] 
+	          + gRandom->Gaus(adc_pedestal[16+j], adc_sigma[16+j]);
 	Float_t min_time = TMath::Min(time [16+2*j],time [16+2*j+1]);
 	time2[16+j] = min_time;
-	if(min_time==0.0) {
-	   time2[16+j] = TMath::Max(time[16+2*j],time[16+2*j+1]);
-	}
+	if(min_time==0.0){time2[16+j]=TMath::Max(time[16+2*j],time[16+2*j+1]);}
    }
    	
 
@@ -248,11 +273,10 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
         
    for (Int_t i=0; i<64; i++) {      
       if(adc[i] > 0) {
-//      printf(" Event, cell, adc, tof = %d %d %d %f\n", 
-//                 outRunLoader->GetEventNumber(),i, map[i], time2[i]*10.0);
-//   multiply by 10 to have 100 ps per channel :
-      AddDigit(i, adc[i], Int_t(time2[i]*10.0) );
-     } 
+//           printf(" Event, cell, adc, tof = %d %d %d %f\n", 
+//                    outRunLoader->GetEventNumber(),i, map[i], time2[i]*10.0);
+//           multiply by 10 to have 100 ps per channel :
+             AddDigit(i, adc[i], Int_t(time2[i]*10.0)) ;}      
    }
     
   treeD->Fill();
