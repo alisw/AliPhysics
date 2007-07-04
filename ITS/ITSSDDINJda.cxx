@@ -131,6 +131,8 @@ int main(int argc, char **argv) {
 	rawReader->RequireHeader(kFALSE);
 	rawReader->SelectEquipment(17,101,101);  // temp for test raw data
 
+	UInt_t timeSt=rawReader->GetTimestamp();
+	//UInt_t timeSt=iev*5000+12;  // fake timestamp for test
 	Int_t evtyp=0;
 	while(rawReader->ReadHeader()){
 	  const UInt_t *subev = rawReader->GetSubEventAttributes();
@@ -159,8 +161,6 @@ int main(int argc, char **argv) {
 	  }
 	}
 	delete rawReader;
-	//	    UInt_t timeSt=rawReader->GetTimestamp();
-	UInt_t timeSt=iev*5000+12;  // fake timestamp for test
 	for(Int_t imod=0; imod<nSDDmodules;imod++){
 	  for(Int_t isid=0; isid<2;isid++){
 	    Int_t index=2*imod+isid;
