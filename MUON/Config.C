@@ -2,7 +2,7 @@
 // Remember to define the directory and option
 // gAlice->SetConfigFunction("Config('$HOME','box');");
 
-void Config(char directory[100]="", char option[6]="param", const char* digitstore="AliMUONDigitStoreV1")
+void Config(char directory[100]="", char option[6]="param", const char* digitstore="AliMUONDigitStoreV2S")
 {
   //=====================================================================
   // Config file for MUON test
