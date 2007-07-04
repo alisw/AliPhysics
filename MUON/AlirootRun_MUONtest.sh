@@ -131,7 +131,7 @@ fi
 
 if [ "$CHECKS" -eq 1 ]; then
 
-  if [ "$SIMULATION" -eq 1 ]; then
+  if [ -f "$OUTDIR/$SIMDIR/galice.root" ]; then
 
     echo "Running efficiency  ..."
 
@@ -142,7 +142,7 @@ if [ "$CHECKS" -eq 1 ]; then
     .q
 EOF
 
-    if [ "$RECONSTRUCTION" -eq 1 ]; then
+  if [ -f "$OUTDIR/galice.root" ]; then
 
       echo "Running Trigger efficiency  ..."
       aliroot -b >& $OUTDIR/testTriggerResults.out << EOF
@@ -151,13 +151,16 @@ EOF
       .q
 EOF
 
-      echo "Running check ..."
-      aliroot -b >& $OUTDIR/testCheck.out << EOF
-      gSystem->Load("libMUONevaluation");
-      .L $ALICE_ROOT/MUON/MUONCheck.C+
-      MUONCheck(0, $NEVENTS-1, "$OUTDIR/$SIMDIR/galice.root", "$OUTDIR/galice.root", "$OUTDIR/AliESDs.root"); 
-      .q
+      if [ -f "$OUTDIR/AliESDs.root" ]; then
+
+        echo "Running check ..."
+        aliroot -b >& $OUTDIR/testCheck.out << EOF
+        gSystem->Load("libMUONevaluation");
+        .L $ALICE_ROOT/MUON/MUONCheck.C+
+        MUONCheck(0, $NEVENTS-1, "$OUTDIR/$SIMDIR/galice.root", "$OUTDIR/galice.root", "$OUTDIR/AliESDs.root"); 
+        .q
 EOF
+      fi
     fi
   fi
 
