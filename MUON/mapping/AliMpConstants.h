@@ -32,6 +32,7 @@ class AliMpConstants : public TObject
   static Double_t LengthTolerance();
   static Double_t LengthStep();
   static Int_t    StartPadIndex();
+  static Int_t    NofCathodes();
   static Int_t    NofChambers();
   static Int_t    NofTrackingChambers();
   static Int_t    NofTriggerChambers();
@@ -50,6 +51,7 @@ class AliMpConstants : public TObject
   static const Double_t  fgkLengthStep;     ///< \brief the step in length used to move from
                                             /// a geometric border inside (pad, motif)
   static const Int_t     fgkStartPadIndex;  ///< global pad indices start value
+  static const Int_t     fgkNofCathodes;    ///< number of cathodes
   static const Int_t     fgkNofChambers;    ///< number of chambers
   static const Int_t     fgkNofTrackingChambers; ///< number of tracking chambers
   static const Int_t     fgkNofGeomModules; ///< number of geometry modules
@@ -69,6 +71,8 @@ inline Double_t AliMpConstants::LengthTolerance() { return fgkLengthTolerance;}
 inline Double_t AliMpConstants::LengthStep()      { return fgkLengthStep;}
                 /// Return global pad indices start value
 inline Int_t    AliMpConstants::StartPadIndex()   { return fgkStartPadIndex;}
+                /// Return number of cathodes
+inline Int_t    AliMpConstants::NofCathodes()     { return fgkNofCathodes;}
                 /// Return number of chambers
 inline Int_t    AliMpConstants::NofChambers()     { return fgkNofChambers;}
                 /// Return number of tracking chambers
