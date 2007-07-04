@@ -46,6 +46,12 @@
 #include "AliMpDEIterator.h"
 #include "AliMpPlaneType.h"
 #include "AliMpDEManager.h"
+#include "AliMpConstants.h"
+
+#include "AliMpDDLStore.h"
+#include "AliMpDDL.h"
+#include "AliMpTriggerCrate.h"
+#include "AliMpLocalBoard.h"
 
 #include "AliLog.h"
 
@@ -58,11 +64,17 @@
 #include <TTree.h>
 #include <TROOT.h>
 
+#include <TStyle.h>
+#include <TCanvas.h>
+#include <TH2.h>
+#include <TSystem.h>
+#include <TPaveLabel.h>
+
+#include <cassert>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONTriggerChamberEff)
 /// \endcond
-
 
 //_____________________________________________________________________________
 AliMUONTriggerChamberEff::AliMUONTriggerChamberEff()
@@ -75,7 +87,9 @@ AliMUONTriggerChamberEff::AliMUONTriggerChamberEff()
   fDebugLevel(0),
   fkMaxDistance(99999.)
 {
-/// Standard constructor
+/// Default constructor
+
+    CheckConstants();
     ResetArrays();
 }
 
@@ -94,6 +108,8 @@ AliMUONTriggerChamberEff::AliMUONTriggerChamberEff(const AliMUONGeometryTransfor
   fkMaxDistance(99999.)
 {
 /// Standard constructor
+
+    CheckConstants();
     ResetArrays();
 }
 
@@ -117,23 +133,17 @@ AliMUONTriggerChamberEff::AliMUONTriggerChamberEff(const AliMUONTriggerChamberEf
      fPrintInfo(other.fPrintInfo),
      fWriteOnESD(other.fWriteOnESD),
      fDebugLevel(other.fDebugLevel),
-     fkMaxDistance(other.fkMaxDistance)
+     fkMaxDistance(other.fkMaxDistance),
+     fTrigger44(other.fTrigger44),
+     fTrigger34(other.fTrigger34)
 {
-/// copy constructor
+/// Copy constructor
 
-    for(Int_t ch=0; ch<fgkNchambers; ch++){
-	for(Int_t cath=0; cath<fgkNcathodes; cath++){
-	    fTrigger34[ch][cath] = other.fTrigger34[ch][cath];
-	    fTrigger44[cath] = other.fTrigger44[cath];
-	    for(Int_t slat=0; slat<fgkNslats; slat++){
-		fInefficientSlat[ch][cath][slat] = other.fInefficientSlat[ch][cath][slat];
-		fHitPerSlat[ch][cath][slat] = other.fHitPerSlat[ch][cath][slat];
-	    }
-	    for(Int_t board=0; board<fgkNboards; board++){
-		fInefficientBoard[ch][cath][board] = other.fInefficientBoard[ch][cath][board];
-		fHitPerBoard[ch][cath][board] = other.fHitPerBoard[ch][cath][board];
-	    }
-	}
+    for(Int_t chCath=0; chCath<fgkNplanes; chCath++){
+	fInefficientSlat[chCath] = other.fInefficientSlat[chCath];
+	fHitPerSlat[chCath] = other.fHitPerSlat[chCath];
+	fInefficientBoard[chCath] = other.fInefficientBoard[chCath];
+	fHitPerBoard[chCath] = other.fHitPerBoard[chCath];
     }
 }
 
@@ -155,7 +165,16 @@ AliMUONTriggerChamberEff& AliMUONTriggerChamberEff::operator=(const AliMUONTrigg
     fPrintInfo = other.fPrintInfo;
     fWriteOnESD = other.fWriteOnESD;
     fDebugLevel = other.fDebugLevel;
-    //fkMaxDistance = other.fkMaxDistance;
+
+    fTrigger44 = other.fTrigger44;
+    fTrigger34 = other.fTrigger34;
+
+    for(Int_t chCath=0; chCath<fgkNplanes; chCath++){
+	fInefficientSlat[chCath] = other.fInefficientSlat[chCath];
+	fHitPerSlat[chCath] = other.fHitPerSlat[chCath];
+	fInefficientBoard[chCath] = other.fInefficientBoard[chCath];
+	fHitPerBoard[chCath] = other.fHitPerBoard[chCath];
+    }
     return *this;
 }
 
@@ -167,19 +186,24 @@ void AliMUONTriggerChamberEff::ResetArrays()
     /// Sets the data member counters to 0.
     //
 
-    for(Int_t ch=0; ch<fgkNchambers; ch++){
-	for(Int_t cath=0; cath<fgkNcathodes; cath++){
-	    fTrigger34[ch][cath] = 0;
-	    fTrigger44[cath] = 0;
-	    for(Int_t slat=0; slat<fgkNslats; slat++){
-		fInefficientSlat[ch][cath][slat] = 0;
-		fHitPerSlat[ch][cath][slat] = 0;
-	    }
-	    for(Int_t board=0; board<fgkNboards; board++){
-		fInefficientBoard[ch][cath][board] = 0;
-		fHitPerBoard[ch][cath][board] = 0;
-	    }
-	}
+    fTrigger44.Set(fgkNcathodes);
+    fTrigger34.Set(fgkNplanes);
+
+    for(Int_t chCath=0; chCath<fgkNplanes; chCath++){
+	fInefficientSlat[chCath].Set(fgkNslats);
+	fHitPerSlat[chCath].Set(fgkNslats);
+	fInefficientBoard[chCath].Set(AliMpConstants::NofLocalBoards());
+	fHitPerBoard[chCath].Set(AliMpConstants::NofLocalBoards());
+    }
+
+    fTrigger44.Reset();
+    fTrigger34.Reset();
+
+    for(Int_t chCath=0; chCath<fgkNplanes; chCath++){
+	fInefficientSlat[chCath].Reset();
+	fHitPerSlat[chCath].Reset();
+	fInefficientBoard[chCath].Reset();
+	fHitPerBoard[chCath].Reset();
     }
 }
 
@@ -201,7 +225,7 @@ AliMUONTriggerChamberEff::TriggerDigits(const AliMUONVTriggerStore& triggerStore
     {
 	if (locTrg->IsNull()) continue;
    
-	TArrayS xyPattern[2];
+	TArrayS xyPattern[fgkNcathodes];
 	locTrg->GetXPattern(xyPattern[0]);
 	locTrg->GetYPattern(xyPattern[1]);
     
@@ -231,9 +255,8 @@ void AliMUONTriggerChamberEff::InfoDigit(AliMUONVDigitStore& digitStore)
 
 //_____________________________________________________________________________
 Int_t AliMUONTriggerChamberEff::MatchingPad(AliMUONVDigitStore& digitStore, Int_t &detElemId,
-					    Float_t coor[2], Bool_t isMatch[fgkNcathodes],
-					    Int_t nboard[fgkNcathodes][4],
-					    Float_t zRealMatch[fgkNchambers], Float_t y11)
+					    Float_t coor[2], Bool_t isMatch[2],
+					    TArrayI nboard[2], TArrayF &zRealMatch, Float_t y11)
 {
     //
     /// Check slat and board number of digit matching track
@@ -306,7 +329,7 @@ Int_t AliMUONTriggerChamberEff::MatchingPad(AliMUONVDigitStore& digitStore, Int_
 	    AliMpIntPair location = pad.GetLocation(loc);
 	    nboard[cathode][loc] = location.GetFirst();
 	}
-	for(Int_t loc=pad.GetNofLocations(); loc<4; loc++){
+	for(Int_t loc=pad.GetNofLocations(); loc<fgkNlocations; loc++){
 	    nboard[cathode][loc]=-1;
 	}
     }
@@ -456,7 +479,7 @@ void AliMUONTriggerChamberEff::LocalBoardFromPos(Float_t x, Float_t y,
     /// it returns the corresponding local board
     //
 
-    for(Int_t loc=0; loc<4; loc++){
+    for(Int_t loc=0; loc<fgkNlocations; loc++){
 	localBoard[loc]=-1;
     }
     Float_t xl, yl, zl;
@@ -497,38 +520,50 @@ void AliMUONTriggerChamberEff::EventChamberEff(const AliMUONVTriggerStore& trigg
     Float_t rad2deg = 180./TMath::Pi();
 
     Int_t chOrder[fgkNchambers] = {0,2,1,3};
-    Float_t zRealMatch[fgkNchambers] = {0.0};
-    Float_t correctFactor[fgkNcathodes] = {1.};
 
-    Bool_t match[fgkNchambers][fgkNcathodes] = {{kFALSE}};
-    Bool_t matchPad[fgkNcathodes]={kFALSE};
+    TArrayF zRealMatch(fgkNchambers);
+    TArrayF correctFactor(fgkNcathodes);
 
+    Bool_t match[fgkNchambers][fgkNcathodes];
+    Bool_t matchPad[fgkNcathodes];
+    for(Int_t cath=0; cath<fgkNcathodes; cath++){
+	matchPad[cath] = kFALSE;
+    }
 
-    Float_t zMeanChamber[fgkNchambers];
+    TArrayF zMeanChamber(fgkNchambers);
     for(Int_t ch=0; ch<fgkNchambers; ch++){
 	zMeanChamber[ch] = AliMUONConstants::DefaultChamberZ(10+ch);
     }
 
-    Int_t digitPerTrack[fgkNcathodes] = {0};
+    TArrayI digitPerTrack(fgkNcathodes);
 
-    Float_t trackIntersectCh[fgkNchambers][2]={{0.0}};
+    Float_t trackIntersectCh[fgkNchambers][fgkNcathodes];
 
-    Int_t triggeredDigits[2][fgkNchambers] = {{-1}};
+    TArrayI triggeredDigits[2];
+    for(Int_t itrack=0; itrack<2; itrack++){
+	triggeredDigits[itrack].Set(fgkNchambers);
+	triggeredDigits[itrack].Reset(-1);
+    }
 
-    Int_t trigScheme[fgkNchambers][fgkNcathodes]={{0}};
-    Int_t slatThatTriggered[fgkNchambers][fgkNcathodes]={{-1}};
-    Int_t boardThatTriggered[fgkNchambers][fgkNcathodes][4]={{{-1}}};
-    Int_t nboard[fgkNcathodes][4]={{-1}};
-    Int_t ineffBoard[4]={-1};
+    TArrayI trigScheme[fgkNcathodes];
+    TArrayI slatThatTriggered[fgkNcathodes];
+    for(Int_t cath=0; cath<fgkNcathodes; cath++){
+	trigScheme[cath].Set(fgkNchambers);
+	slatThatTriggered[cath].Set(fgkNchambers);
+    }
+
+    Int_t boardThatTriggered[fgkNchambers][fgkNcathodes][fgkNlocations];
+    TArrayI nboard[fgkNcathodes];
+    for(Int_t cath=0; cath<fgkNcathodes; cath++){
+	nboard[cath].Set(fgkNlocations);
+    }
+    Int_t ineffBoard[fgkNlocations];
+    for(Int_t loc=0; loc<fgkNlocations; loc++){
+	ineffBoard[loc] = -1;
+    }
 
     AliMUONDigitStoreV1 digitStore;   
     TriggerDigits(triggerStore,digitStore);
-
-    for(Int_t ch=0; ch<fgkNchambers; ch++){
-	for(Int_t itrack=0; itrack<2; itrack++){
-	    triggeredDigits[itrack][ch]=-1;
-	}
-    }
 
     AliMUONTriggerTrack *recTrigTrack = 0x0;
 
@@ -536,40 +571,38 @@ void AliMUONTriggerChamberEff::EventChamberEff(const AliMUONVTriggerStore& trigg
     
     while ( ( recTrigTrack = static_cast<AliMUONTriggerTrack*>(next()) ) )
     {
-	for(Int_t cath=0; cath<fgkNcathodes; cath++){
-	    digitPerTrack[cath]=0;
+	if(!IsCleanTrack(recTrigTrack, trackStore)) {
+	    if(fDebugLevel>=1) printf("\tTrack %p (%f, %f) don't match tracker track: rejected!\n",(void *)recTrigTrack,recTrigTrack->GetX11(),recTrigTrack->GetY11());
+	    continue;
 	}
+
+	digitPerTrack.Reset();
 	for(Int_t ch=0; ch<fgkNchambers; ch++){
+	    zRealMatch[ch] = zMeanChamber[ch];
 	    for(Int_t cath=0; cath<fgkNcathodes; cath++){
 		match[ch][cath]=kFALSE;
-		slatThatTriggered[ch][cath]=-1;
-		for(Int_t loc=0; loc<4; loc++){
+		//slatThatTriggered[ch][cath]=-1;
+		//trigScheme[ch][cath] = 0;
+		for(Int_t loc=0; loc<fgkNlocations; loc++){
 		    boardThatTriggered[ch][cath][loc]=-1;
 		}
 	    }
 	}
 
+	for(Int_t cath=0; cath<fgkNcathodes; cath++){
+	    slatThatTriggered[cath].Reset(-1);
+	    trigScheme[cath].Reset();
+	}
+
 	Bool_t isClearEvent = kTRUE;
 	Bool_t doubleCountTrack = kFALSE;
-
-	if(!IsCleanTrack(recTrigTrack, trackStore)) {
-	    if(fDebugLevel>=1) printf("\tTrack %p (%f, %f) don't match tracker track: rejected!\n",recTrigTrack,recTrigTrack->GetX11(),recTrigTrack->GetY11());
-	    continue;
-	}
 
 	Float_t x11 = recTrigTrack->GetX11();// x position (info from non-bending plane)
 	Float_t y11 = recTrigTrack->GetY11();// y position (info from bending plane)
 	Float_t thetaX = recTrigTrack->GetThetax();
 	Float_t thetaY = recTrigTrack->GetThetay();
 
-	if(fDebugLevel>=3) printf("\tTrack = %p\npos from track: (x,y) = (%f, %f), (thetaX, thetaY) = (%f, %f)\n",recTrigTrack,x11,y11,thetaX*rad2deg,thetaY*rad2deg);
-
-	for(Int_t ch=0; ch<fgkNchambers; ch++) {
-	    zRealMatch[ch] = zMeanChamber[ch];
-	    for(Int_t cath=0; cath<fgkNcathodes; cath++){
-		trigScheme[ch][cath] = 0;
-	    }
-	}
+	if(fDebugLevel>=3) printf("\tTrack = %p\npos from track: (x,y) = (%f, %f), (thetaX, thetaY) = (%f, %f)\n",(void *)recTrigTrack,x11,y11,thetaX*rad2deg,thetaY*rad2deg);
 
 	for(Int_t ch=0; ch<fgkNchambers; ch++) { // chamber loop
 	    Int_t currCh = chOrder[ch];
@@ -599,7 +632,7 @@ void AliMUONTriggerChamberEff::EventChamberEff(const AliMUONVTriggerStore& trigg
 	    //                       => Event not clear => Reject track
 	    if(triggeredDigits[1][currCh]<-100){
 		isClearEvent = kFALSE;
-		if(fDebugLevel>=1) printf("Warning: track = %p (%i) matches many pads. Rejected!\n",recTrigTrack, detElemIdFromTrack);
+		if(fDebugLevel>=1) printf("Warning: track = %p (%i) matches many pads. Rejected!\n",(void *)recTrigTrack, detElemIdFromTrack);
 		break;
 	    }
 
@@ -619,9 +652,9 @@ void AliMUONTriggerChamberEff::EventChamberEff(const AliMUONVTriggerStore& trigg
 		match[currCh][cath] = (matchPad[cath] && !isDiffLocBoard);
 		if(!match[currCh][cath]) continue;
 		digitPerTrack[cath]++;
-		trigScheme[currCh][cath]++;
-		slatThatTriggered[currCh][cath] = detElemIdFromTrack;
-		for(Int_t loc=0; loc<4; loc++){
+		trigScheme[cath][currCh]++;
+		slatThatTriggered[cath][currCh] = detElemIdFromTrack;
+		for(Int_t loc=0; loc<fgkNlocations; loc++){
 		    boardThatTriggered[currCh][cath][loc] = nboard[cath][loc];
 		}
 	    }
@@ -650,14 +683,14 @@ void AliMUONTriggerChamberEff::EventChamberEff(const AliMUONVTriggerStore& trigg
 		Bool_t goodForBoardEff = kTRUE;
 		Int_t ineffSlat = -1;
 		Int_t ineffDetElId = -1;
-		Int_t firstSlat = slatThatTriggered[0][cath]%100;
-		if(firstSlat<0) firstSlat=slatThatTriggered[1][cath]%100;
+		Int_t firstSlat = slatThatTriggered[cath][0]%100;
+		if(firstSlat<0) firstSlat=slatThatTriggered[cath][1]%100;
 		Int_t firstBoard = boardThatTriggered[0][kBending][0];
 		if(firstBoard<0) firstBoard=boardThatTriggered[1][kBending][0];
 		for(Int_t ch=0; ch<fgkNchambers; ch++){
 		    Bool_t isCurrChIneff = kFALSE;
-		    is44 *= trigScheme[ch][cath];
-		    Int_t currSlat = slatThatTriggered[ch][cath]%100;
+		    is44 *= trigScheme[cath][ch];
+		    Int_t currSlat = slatThatTriggered[cath][ch]%100;
 		    if(currSlat<0){
 			ineffDetElId = DetElemIdFromPos(trackIntersectCh[ch][0], trackIntersectCh[ch][1], 11+ch, cath);
 			currSlat = ineffDetElId%100;
@@ -667,7 +700,7 @@ void AliMUONTriggerChamberEff::EventChamberEff(const AliMUONVTriggerStore& trigg
 		    if(currSlat!=firstSlat)goodForSlatEff=kFALSE;
 		    Bool_t atLeastOneLoc=kFALSE;
 		    if(isCurrChIneff) LocalBoardFromPos(trackIntersectCh[ch][0], trackIntersectCh[ch][1], ineffDetElId, cath, ineffBoard);
-		    for(Int_t loc=0; loc<4; loc++){
+		    for(Int_t loc=0; loc<fgkNlocations; loc++){
 			Int_t currBoard = boardThatTriggered[ch][cath][loc];
 			if(isCurrChIneff) currBoard = ineffBoard[loc];
 			if(currBoard==firstBoard){
@@ -684,42 +717,42 @@ void AliMUONTriggerChamberEff::EventChamberEff(const AliMUONVTriggerStore& trigg
 		    if(fDebugLevel>=1)printf("Trigger44[%i] = %i\n",cath,fTrigger44[cath]);
 		    if(goodForSlatEff){
 			for(Int_t ch=0; ch<fgkNchambers; ch++){
-			    fHitPerSlat[ch][cath][firstSlat]++;
-			    if(fDebugLevel>=1)printf("Slat that triggered = %i\n",slatThatTriggered[ch][cath]);
+			    Int_t chCath = fgkNchambers*cath + ch;
+			    fHitPerSlat[chCath][firstSlat]++;
+			    if(fDebugLevel>=1)printf("Slat that triggered = %i\n",slatThatTriggered[cath][ch]);
 			    if(goodForBoardEff && firstBoard>0){
-				fHitPerBoard[ch][cath][firstBoard-1]++;
+				fHitPerBoard[chCath][firstBoard-1]++;
 				if(fDebugLevel>=1)printf("Board that triggered = %i\n",firstBoard);
 			    }
-			    else if(fDebugLevel>=1) printf("Track = %p: Particle crossed different boards: rejected!\n",recTrigTrack);
+			    else if(fDebugLevel>=1) printf("Track = %p: Particle crossed different boards: rejected!\n",(void *)recTrigTrack);
 			}
 		    }
-		    else if(fDebugLevel>=1) printf("Track = %p: Particle crossed different slats: rejected!\n",recTrigTrack);
-		    //cout<<"fTrigger44["<<cath<<"] = "<<fTrigger44[cath]<<"\tfHitPerSlat["<<0<<"]["<<cath<<"]["<<firstSlat<<"] = "<<fHitPerSlat[0][cath][firstSlat]<<"\tfHitPerBoard["<<0<<"]["<<cath<<"]["<<firstBoard-1<<"] = "<<fHitPerBoard[0][cath][firstBoard-1]<<endl; //REMEMBER TO CUT
+		    else if(fDebugLevel>=1) printf("Track = %p: Particle crossed different slats: rejected!\n",(void *)recTrigTrack);
 		}
 
 		// Trigger 3/4
 		if(ineffDetElId>0){
 		    Int_t ineffCh = ineffDetElId/100-11;
-		    fTrigger34[ineffCh][cath]++;
-		    if(fDebugLevel>=1) printf("Trigger34[%i][%i] = %i\n",ineffCh,cath,fTrigger34[ineffCh][cath]);
+		    Int_t chCath = fgkNchambers*cath + ineffCh;
+		    fTrigger34[chCath]++;
+		    if(fDebugLevel>=1) printf("Trigger34[%i] = %i\n",chCath,fTrigger34[chCath]);
 		    if(goodForSlatEff){
 			if(fDebugLevel>=1) printf("Slat non efficient = %i\n",ineffDetElId);
-			fInefficientSlat[ineffCh][cath][ineffSlat]++;
+			fInefficientSlat[chCath][ineffSlat]++;
 
 			if(goodForBoardEff && firstBoard>0){
 			    if(fDebugLevel>=1) printf("Board non efficient = %i\n",firstBoard);
-			    fInefficientBoard[ineffCh][cath][firstBoard-1]++;
+			    fInefficientBoard[chCath][firstBoard-1]++;
 			}
-			else if(fDebugLevel>=1) printf("Track = %p: Particle crossed different boards: rejected!\n",recTrigTrack);
+			else if(fDebugLevel>=1) printf("Track = %p: Particle crossed different boards: rejected!\n",(void *)recTrigTrack);
 		    }
-		    else if(fDebugLevel>=1) printf("Track = %p: Particle crossed different slats: rejected!\n",recTrigTrack);
-		    //cout<<"fTrigger34["<<ineffCh<<"]["<<cath<<"] = "<<fTrigger34[ineffCh][cath]<<"\tfInefficientSlat["<<ineffCh<<"]["<<cath<<"]["<<ineffSlat<<"] = "<<fInefficientSlat[ineffCh][cath][ineffSlat]<<"\tfInefficientBoard["<<ineffCh<<"]["<<cath<<"]["<<firstBoard-1<<"] = "<<fInefficientBoard[ineffCh][cath][firstBoard-1]<<endl; //REMEMBER TO CUT
+		    else if(fDebugLevel>=1) printf("Track = %p: Particle crossed different slats: rejected!\n",(void *)recTrigTrack);
 		}
 	    } // end loop on cathodes
 	}
 	else if(doubleCountTrack){
 	    if(fDebugLevel>=1)
-		printf("\n\tTrack = %p: \nDouble Count Track: Track rejected!\n",recTrigTrack);
+		printf("\n\tTrack = %p: \nDouble Count Track: Track rejected!\n",(void *)recTrigTrack);
 	}
     } // end trigger tracks loop
 
@@ -742,67 +775,66 @@ void AliMUONTriggerChamberEff::WriteEfficiencyMap(const char* outputDir)
     TFile *outputHistoFile = new TFile(outFileName,"RECREATE");
     TDirectory *dir = gDirectory;
 
-    enum {kSlatIn11, kSlatIn12, kSlatIn13, kSlatIn14, kChamberEff};
     char *yAxisTitle = "trigger efficiency (a.u.)";
     char *xAxisTitle = "chamber";
 
-    TH1F *histo[fgkNcathodes][fgkNchambers+1];
-    TH1F *histoBoard[fgkNcathodes][fgkNchambers];
+    const Int_t kNumOfBoards = AliMpConstants::NofLocalBoards();
+
+    TH1F *histoChamber[fgkNcathodes];
+    TH1F *histoSlat[8];
+    TH1F *histoBoard[8];
 
     // ADDED for check
-    enum {allChEff, chNonEff, numOfHistoTypes};
-    char *histoTypeName[numOfHistoTypes] = {"CountInCh", "NonCountInCh"};
-    char *histoTypeTitle[numOfHistoTypes] = {"counted", "non counted"};
-    TH1F *histoCheckSlat[fgkNcathodes][fgkNchambers][numOfHistoTypes];
-    TH1F *histoCheckBoard[fgkNcathodes][fgkNchambers][numOfHistoTypes];
+    enum {kAllChEff, kChNonEff, kNumOfHistoTypes};
+    char *histoTypeName[kNumOfHistoTypes] = {"CountInCh", "NonCountInCh"};
+    char *histoTypeTitle[kNumOfHistoTypes] = {"counted", "non counted"};
+    TH1F *histoCheckSlat[8][kNumOfHistoTypes];
+    TH1F *histoCheckBoard[8][kNumOfHistoTypes];
     // end ADDED for check
 
     char histoName[40];
     char histoTitle[90];
 
     for(Int_t cath=0; cath<fgkNcathodes; cath++){
-	for(Int_t ch=0; ch<fgkNchambers+1; ch++){
-	    if(ch==kChamberEff){
-		sprintf(histoName, "%sChamberEff", cathCode[cath]);
-		sprintf(histoTitle, "Chamber efficiency %s", cathCode[cath]);
-		histo[cath][ch] = new TH1F(histoName, histoTitle, fgkNchambers, 11-0.5, 15-0.5);
-		histo[cath][ch]->SetXTitle(xAxisTitle);
-		histo[cath][ch]->SetYTitle(yAxisTitle);
-		histo[cath][ch]->GetXaxis()->SetNdivisions(fgkNchambers);
-	    }
-	    else {
-		sprintf(histoName, "%sSlatEffChamber%i", cathCode[cath], 11+ch);
-		sprintf(histoTitle, "Chamber %i: slat efficiency %s", 11+ch, cathCode[cath]);
-		histo[cath][ch] = new TH1F(histoName, histoTitle, fgkNslats, 0-0.5, fgkNslats-0.5);
-		histo[cath][ch]->SetXTitle("slat");
-		histo[cath][ch]->SetYTitle(yAxisTitle);
-		histo[cath][ch]->GetXaxis()->SetNdivisions(fgkNslats);
+	sprintf(histoName, "%sChamberEff", cathCode[cath]);
+	sprintf(histoTitle, "Chamber efficiency %s", cathCode[cath]);
+	histoChamber[cath] = new TH1F(histoName, histoTitle, fgkNchambers, 11-0.5, 15-0.5);
+	histoChamber[cath]->SetXTitle(xAxisTitle);
+	histoChamber[cath]->SetYTitle(yAxisTitle);
+	histoChamber[cath]->GetXaxis()->SetNdivisions(fgkNchambers);
+	for(Int_t ch=0; ch<fgkNchambers; ch++){
+	    Int_t chCath = fgkNchambers*cath + ch;
+	    sprintf(histoName, "%sSlatEffChamber%i", cathCode[cath], 11+ch);
+	    sprintf(histoTitle, "Chamber %i: slat efficiency %s", 11+ch, cathCode[cath]);
+	    histoSlat[chCath] = new TH1F(histoName, histoTitle, fgkNslats, 0-0.5, fgkNslats-0.5);
+	    histoSlat[chCath]->SetXTitle("slat");
+	    histoSlat[chCath]->SetYTitle(yAxisTitle);
+	    histoSlat[chCath]->GetXaxis()->SetNdivisions(fgkNslats);
 		
-		sprintf(histoName, "%sBoardEffChamber%i", cathCode[cath], 11+ch);
-		sprintf(histoTitle, "Chamber %i: board efficiency %s", 11+ch, cathCode[cath]);
-		histoBoard[cath][ch] = new TH1F(histoName, histoTitle, fgkNboards, 1-0.5, fgkNboards+1.-0.5);
-		histoBoard[cath][ch]->SetXTitle("boards");
-		histoBoard[cath][ch]->SetYTitle(yAxisTitle);
-		histoBoard[cath][ch]->GetXaxis()->SetNdivisions(fgkNboards);
+	    sprintf(histoName, "%sBoardEffChamber%i", cathCode[cath], 11+ch);
+	    sprintf(histoTitle, "Chamber %i: board efficiency %s", 11+ch, cathCode[cath]);
+	    histoBoard[chCath] = new TH1F(histoName, histoTitle, kNumOfBoards, 1-0.5, kNumOfBoards+1.-0.5);
+	    histoBoard[chCath]->SetXTitle("boards");
+	    histoBoard[chCath]->SetYTitle(yAxisTitle);
+	    histoBoard[chCath]->GetXaxis()->SetNdivisions(kNumOfBoards);
 
-		// ADDED for check
-		for(Int_t hType=0; hType<numOfHistoTypes; hType++){
-		    sprintf(histoName, "%sSlat%s%i", cathCode[cath], histoTypeName[hType], 11+ch);
-		    sprintf(histoTitle, "Chamber %i: slat %s %s", 11+ch, histoTypeTitle[hType], cathCode[cath]);
-		    histoCheckSlat[cath][ch][hType] = new TH1F(histoName, histoTitle, fgkNslats, 0-0.5, fgkNslats-0.5);
-		    histoCheckSlat[cath][ch][hType]->SetXTitle("slat");
-		    histoCheckSlat[cath][ch][hType]->SetYTitle(yAxisTitle);
-		    histoCheckSlat[cath][ch][hType]->GetXaxis()->SetNdivisions(fgkNslats);
+	    // ADDED for check
+	    for(Int_t hType=0; hType<kNumOfHistoTypes; hType++){
+		sprintf(histoName, "%sSlat%s%i", cathCode[cath], histoTypeName[hType], 11+ch);
+		sprintf(histoTitle, "Chamber %i: slat %s %s", 11+ch, histoTypeTitle[hType], cathCode[cath]);
+		histoCheckSlat[chCath][hType] = new TH1F(histoName, histoTitle, fgkNslats, 0-0.5, fgkNslats-0.5);
+		histoCheckSlat[chCath][hType]->SetXTitle("slat");
+		histoCheckSlat[chCath][hType]->SetYTitle(yAxisTitle);
+		histoCheckSlat[chCath][hType]->GetXaxis()->SetNdivisions(fgkNslats);
 
-		    sprintf(histoName, "%sBoard%s%i", cathCode[cath], histoTypeName[hType], 11+ch);
-		    sprintf(histoTitle, "Chamber %i: board %s %s", 11+ch, histoTypeTitle[hType], cathCode[cath]);
-		    histoCheckBoard[cath][ch][hType] = new TH1F(histoName, histoTitle, fgkNboards, 1-0.5, fgkNboards+1.-0.5);
-		    histoCheckBoard[cath][ch][hType]->SetXTitle("boards");
-		    histoCheckBoard[cath][ch][hType]->SetYTitle(yAxisTitle);
-		    histoCheckBoard[cath][ch][hType]->GetXaxis()->SetNdivisions(fgkNboards);
-		}
-		// end ADDED for check
+		sprintf(histoName, "%sBoard%s%i", cathCode[cath], histoTypeName[hType], 11+ch);
+		sprintf(histoTitle, "Chamber %i: board %s %s", 11+ch, histoTypeTitle[hType], cathCode[cath]);
+		histoCheckBoard[chCath][hType] = new TH1F(histoName, histoTitle, kNumOfBoards, 1-0.5, kNumOfBoards+1.-0.5);
+		histoCheckBoard[chCath][hType]->SetXTitle("boards");
+		histoCheckBoard[chCath][hType]->SetYTitle(yAxisTitle);
+		histoCheckBoard[chCath][hType]->GetXaxis()->SetNdivisions(kNumOfBoards);
 	    }
+	    // end ADDED for check
 	}
     }
 
@@ -811,30 +843,31 @@ void AliMUONTriggerChamberEff::WriteEfficiencyMap(const char* outputDir)
 
     for(Int_t cath=0; cath<fgkNcathodes; cath++){
 	for(Int_t ch=0; ch<fgkNchambers; ch++){
+	    Int_t chCath = fgkNchambers*cath + ch;
 	    for(Int_t slat=0; slat<fgkNslats; slat++){
-		CalculateEfficiency(fHitPerSlat[ch][cath][slat], fHitPerSlat[ch][cath][slat]+fInefficientSlat[ch][cath][slat], efficiency, efficiencyError, kFALSE);
-		bin = histo[cath][ch]->FindBin(slat);
-		histo[cath][ch]->SetBinContent(bin, efficiency);
-		histo[cath][ch]->SetBinError(bin, efficiencyError);
+		CalculateEfficiency(fHitPerSlat[chCath][slat], fHitPerSlat[chCath][slat]+fInefficientSlat[chCath][slat], efficiency, efficiencyError, kFALSE);
+		bin = histoSlat[chCath]->FindBin(slat);
+		histoSlat[chCath]->SetBinContent(bin, efficiency);
+		histoSlat[chCath]->SetBinError(bin, efficiencyError);
 
 		// ADDED for check
-		histoCheckSlat[cath][ch][allChEff]->SetBinContent(bin, fHitPerSlat[ch][cath][slat]);
-		histoCheckSlat[cath][ch][chNonEff]->SetBinContent(bin, fInefficientSlat[ch][cath][slat]);
+		histoCheckSlat[chCath][kAllChEff]->SetBinContent(bin, fHitPerSlat[chCath][slat]);
+		histoCheckSlat[chCath][kChNonEff]->SetBinContent(bin, fInefficientSlat[chCath][slat]);
 	    }
-	    CalculateEfficiency(fTrigger44[cath], fTrigger34[ch][cath]+fTrigger44[cath], efficiency, efficiencyError, kFALSE);
-	    bin = histo[cath][ch]->FindBin(11+ch);
-	    histo[cath][kChamberEff]->SetBinContent(bin, efficiency);
-	    histo[cath][kChamberEff]->SetBinError(bin, efficiencyError);
+	    CalculateEfficiency(fTrigger44[cath], fTrigger34[chCath]+fTrigger44[cath], efficiency, efficiencyError, kFALSE);
+	    bin = histoChamber[cath]->FindBin(11+ch);
+	    histoChamber[cath]->SetBinContent(bin, efficiency);
+	    histoChamber[cath]->SetBinError(bin, efficiencyError);
 
-	    for(Int_t board=0; board<fgkNboards; board++){
-		CalculateEfficiency(fHitPerBoard[ch][cath][board], fHitPerBoard[ch][cath][board]+fInefficientBoard[ch][cath][board], efficiency, efficiencyError, kFALSE);
-		bin = histoBoard[cath][ch]->FindBin(board+1);
-		histoBoard[cath][ch]->SetBinContent(bin, efficiency);
-		histoBoard[cath][ch]->SetBinError(bin, efficiencyError);
+	    for(Int_t board=0; board<kNumOfBoards; board++){
+		CalculateEfficiency(fHitPerBoard[chCath][board], fHitPerBoard[chCath][board]+fInefficientBoard[chCath][board], efficiency, efficiencyError, kFALSE);
+		bin = histoBoard[chCath]->FindBin(board+1);
+		histoBoard[chCath]->SetBinContent(bin, efficiency);
+		histoBoard[chCath]->SetBinError(bin, efficiencyError);
 
 		// ADDED for check
-		histoCheckBoard[cath][ch][allChEff]->SetBinContent(bin, fHitPerBoard[ch][cath][board]);
-		histoCheckBoard[cath][ch][chNonEff]->SetBinContent(bin, fInefficientBoard[ch][cath][board]);
+		histoCheckBoard[chCath][kAllChEff]->SetBinContent(bin, fHitPerBoard[chCath][board]);
+		histoCheckBoard[chCath][kChNonEff]->SetBinContent(bin, fInefficientBoard[chCath][board]);
 	    }
 	}
     }
@@ -872,14 +905,15 @@ void AliMUONTriggerChamberEff::WriteEfficiencyMapTxt(const char* outputDir)
 	outFile << "00";
 	for(Int_t cath=0; cath<fgkNcathodes; cath++){
 	    outFile << "\n cathode:\t" << cath << endl;
+	    Int_t chCath = fgkNchambers*cath + ch;
 	    Int_t currLine=0;
-	    for(Int_t board=0; board<fgkNboards; board++){
+	    for(Int_t board=0; board<AliMpConstants::NofLocalBoards(); board++){
 
 		if(board==aCapo[currLine]){
 		    outFile << endl;
 		    currLine++;
 		}
-		CalculateEfficiency(fHitPerBoard[ch][cath][board], fHitPerBoard[ch][cath][board]+fInefficientBoard[ch][cath][board], efficiency, efficiencyError, kFALSE);
+		CalculateEfficiency(fHitPerBoard[chCath][board], fHitPerBoard[chCath][board]+fInefficientBoard[chCath][board], efficiency, efficiencyError, kFALSE);
 		outFile << " " << setw(effOutWidth) << efficiency;
 	    }// loop on boards
 	    outFile << endl;
@@ -953,4 +987,147 @@ void AliMUONTriggerChamberEff::SaveInESDFile()
 	}
     }
     dir->cd();
+}
+
+
+//_____________________________________________________________________________
+void AliMUONTriggerChamberEff::DisplayEfficiency(Bool_t perSlat)
+{
+    //
+    /// Display calculated efficiency.
+    //
+
+    const Int_t kNumOfBoards = AliMpConstants::NofLocalBoards();
+
+    Int_t side, col, line, nbx, slat;
+    Float_t xCenter, yCenter, zCenter, xWidth, yWidth;
+    Int_t x1, y1, x2, y2, board=0;
+    char name[8], text[200];
+
+    gStyle->SetPalette(1);
+
+    TString boardName[234];
+
+    // instanciate the elec. mapping class
+    AliMpDDLStore* ddlStore = AliMpDDLStore::Instance();
+
+    // loop over the trigger DDL (Right: 20, Left: 21)
+    for (Int_t iDDL = 20; iDDL <= 21; ++iDDL) {
+
+      // get ddl object
+      AliMpDDL* ddl = ddlStore->GetDDL(iDDL);
+
+      Int_t nCrate = ddl->GetNofTriggerCrates();
+    
+      // loop over the number of crate in DDL
+      for (Int_t index = 0; index < nCrate; ++index) {
+
+	// get crate object
+	AliMpTriggerCrate* crate = ddlStore->GetTriggerCrate(iDDL, index);
+
+	Int_t nLocal = crate->GetNofLocalBoards();
+
+	for (Int_t iLocal = 0; iLocal  < nLocal; ++iLocal) {
+
+	  // get local board Id from crate object
+	  board = crate->GetLocalBoardId(iLocal);
+	  if(board>kNumOfBoards || board<=0) continue;
+
+	  AliMpLocalBoard* localBoard = ddlStore->GetLocalBoard(board);
+	  boardName[board-1] = localBoard->GetName();
+	}
+      }
+    }
+
+    char *cathCode[fgkNcathodes] = {"bendPlane", "nonBendPlane"};
+
+    Float_t boardsX = 257.00;  // cm
+    Float_t boardsY = 307.00;  // cm
+
+    TH2F *histo[8];
+    TPaveLabel *boardLabel[8][234];
+
+    char histoName[40];
+    char histoTitle[90];
+
+    Float_t efficiency, efficiencyError;
+
+    for(Int_t cath=0; cath<fgkNcathodes; cath++){
+	for(Int_t ch=0; ch<fgkNchambers; ch++){
+	    Int_t chCath = fgkNchambers*cath + ch;
+	    sprintf(histoName, "%sChamber%i", cathCode[cath], 11+ch);
+	    sprintf(histoTitle, "Chamber %i: efficiency %s", 11+ch, cathCode[cath]);
+	    histo[chCath] = new TH2F(histoName, histoTitle, (Int_t)boardsX, -boardsX, boardsX, (Int_t)boardsY, -boardsY, boardsY);
+	    histo[chCath]->SetXTitle("X (cm)");
+	    histo[chCath]->SetYTitle("Y (cm)");
+	}
+    }
+
+    TString mapspath = gSystem->Getenv("ALICE_ROOT");
+    mapspath.Append("/MUON/data");
+
+    sprintf(text,"%s/guimapp11.txt",mapspath.Data());
+    FILE *fmap = fopen(text,"r");
+
+    for (Int_t ib = 0; ib < kNumOfBoards; ib++) {
+	fscanf(fmap,"%d   %d   %d   %d   %f   %f   %f   %f   %f   %s   \n",&side,&col,&line,&nbx,&xCenter,&yCenter,&xWidth,&yWidth,&zCenter,&name[0]);
+
+	slat = (line-5)%fgkNslats;
+	for(Int_t iBoard=0; iBoard<kNumOfBoards; iBoard++){
+	    if(!boardName[iBoard].Contains(name)) continue;
+	    board = iBoard;
+	    break;
+	}
+
+	for(Int_t chCath=0; chCath<fgkNplanes; chCath++){
+	    x1 = histo[chCath]->GetXaxis()->FindBin(xCenter-xWidth/2.)+1;
+	    y1 = histo[chCath]->GetYaxis()->FindBin(yCenter-yWidth/2.)+1;
+	    x2 = histo[chCath]->GetXaxis()->FindBin(xCenter+xWidth/2.)-1;
+	    y2 = histo[chCath]->GetYaxis()->FindBin(yCenter+yWidth/2.)-1;
+	    
+	    boardLabel[chCath][board] = new TPaveLabel(xCenter-xWidth/2., yCenter-yWidth/2., xCenter+xWidth/2., yCenter+yWidth/2., Form("%3d",board+1));
+	    boardLabel[chCath][board]->SetFillStyle(0);
+	    boardLabel[chCath][board]->SetBorderSize(0);
+
+	    if(!perSlat){
+		CalculateEfficiency(fHitPerBoard[chCath][board], fHitPerBoard[chCath][board]+fInefficientBoard[chCath][board], efficiency, efficiencyError, kFALSE);
+	    }
+	    else{
+		CalculateEfficiency(fHitPerSlat[chCath][slat], fHitPerSlat[chCath][slat]+fInefficientSlat[chCath][slat], efficiency, efficiencyError, kFALSE);
+	    }
+	    
+	    for(Int_t binX=x1; binX<=x2; binX++){
+		for(Int_t binY=y1; binY<=y2; binY++){
+		    histo[chCath]->SetBinContent(binX, binY, efficiency);
+		    histo[chCath]->SetBinError(binX, binY, efficiencyError);
+		}
+	    }
+	}
+    }
+
+    TCanvas *can[8];
+    for(Int_t chCath=0; chCath<fgkNplanes; chCath++){
+	sprintf(histoName, "%sCan", histo[chCath]->GetName());
+	sprintf(histoTitle, "%s", histo[chCath]->GetTitle());
+	can[chCath] = new TCanvas(histoName, histoTitle, 100+10*chCath, 10*chCath, 700, 700);
+	can[chCath]->SetRightMargin(0.14);
+	can[chCath]->SetLeftMargin(0.12);
+	histo[chCath]->GetZaxis()->SetRangeUser(0.,1.);
+	histo[chCath]->GetYaxis()->SetTitleOffset(1.4);
+	histo[chCath]->SetStats(kFALSE);
+	histo[chCath]->Draw("COLZ");
+	for (Int_t board = 0; board < kNumOfBoards; board++) {
+	    boardLabel[chCath][board]->Draw("same");
+	}
+    }
+}
+
+//_____________________________________________________________________________
+void AliMUONTriggerChamberEff::CheckConstants() const
+{
+/// Check consistence of redefined constants 
+
+  assert(fgkNcathodes == AliMpConstants::NofCathodes());    
+  assert(fgkNchambers == AliMpConstants::NofTriggerChambers());    
+  assert(fgkNplanes == AliMpConstants::NofTriggerChambers() * fgkNcathodes);    
 }

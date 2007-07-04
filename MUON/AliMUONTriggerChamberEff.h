@@ -11,6 +11,8 @@
 
 #include <TObject.h>
 #include <TList.h>
+#include <TArrayI.h>
+#include <TArrayF.h>
 
 class AliMUONGeometryTransformer;
 class AliMUONDigitMaker;
@@ -19,7 +21,6 @@ class AliMUONVDigitStore;
 class AliMUONVTriggerStore;
 class AliMUONVTriggerTrackStore;
 class AliMUONVTrackStore;
-class TClonesArray;
 
 class AliMUONTriggerChamberEff : public TObject
 {
@@ -31,8 +32,8 @@ public:
     
     virtual ~AliMUONTriggerChamberEff();
 
-    AliMUONTriggerChamberEff(const AliMUONTriggerChamberEff& other); 
-    AliMUONTriggerChamberEff& operator=(const AliMUONTriggerChamberEff& other);
+    AliMUONTriggerChamberEff(const AliMUONTriggerChamberEff& other); // copy constructor
+    AliMUONTriggerChamberEff& operator=(const AliMUONTriggerChamberEff& other); // assignment operator
     
     /// Set Reproduce trigger response
     void SetReproduceTrigResponse(Bool_t reproduceTrigRes=kFALSE)
@@ -49,41 +50,13 @@ public:
 			 const AliMUONVTrackStore& trackStore);
     void WriteEfficiencyMap(const char* outputDir);
     void WriteEfficiencyMapTxt(const char* outputDir);
+    void DisplayEfficiency(Bool_t perSlat=kFALSE);
 
-    
-private:
-    /*
-   /// Not implemented
-    AliMUONTriggerChamberEff(const AliMUONTriggerChamberEff& other);
-    /// Not implemented
-    AliMUONTriggerChamberEff& operator=(const AliMUONTriggerChamberEff& other);
-    */
-    
-    static const Int_t fgkNchambers=4; ///< Number of trigger chambers
-    static const Int_t fgkNcathodes=2; ///< Number of cathodes per chamber
-    static const Int_t fgkNslats=18;   ///< Number of slats per chamber
-    static const Int_t fgkNboards=234; ///< Number of trigger boards per chamber
 
-    Int_t fTrigger34[fgkNchambers][fgkNcathodes]; ///< Array counting # of times chamber was inefficient
-    Int_t fTrigger44[fgkNcathodes]; ///< Array counting # of times all chambers were efficient
-    Int_t fInefficientSlat[fgkNchambers][fgkNcathodes][fgkNslats]; ///< Array counting # of times slats were inefficient
-    Int_t fHitPerSlat[fgkNchambers][fgkNcathodes][fgkNslats]; ///< Array counting # of times slats were efficient
-    Int_t fInefficientBoard[fgkNchambers][fgkNcathodes][fgkNboards]; ///< Array counting # of times boards were inefficient
-    Int_t fHitPerBoard[fgkNchambers][fgkNcathodes][fgkNboards]; ///< Array counting # of times boards were efficient
-    
-    const AliMUONGeometryTransformer* fTransformer; //!< geometry transformer
-    const AliMUONDigitMaker* fDigitMaker; //!< pointer to digit maker
-    Bool_t fReproduceTrigResponse; //!< Reproduce trigger response
-    Bool_t fPrintInfo; //!< Print informations on event
-    Int_t fWriteOnESD; //!< flag to write on ESD
-    Int_t fDebugLevel; //!< Debug level
-    const Float_t fkMaxDistance; //!< Maximum distance for reference
-
-    
 protected:
     Int_t MatchingPad(AliMUONVDigitStore& digitStore, Int_t &detElemId, Float_t coor[2],
-		      Bool_t isMatch[fgkNcathodes], Int_t nboard[fgkNcathodes][4],
-		      Float_t zRealMatch[fgkNchambers], Float_t y11);
+		      Bool_t isMatch[2], TArrayI nboard[2],
+		      TArrayF &zRealMatch, Float_t y11);
     Float_t PadMatchTrack(Float_t xPad, Float_t yPad, Float_t dpx, Float_t dpy,
 			  Float_t xTrackAtPad, Float_t yTrackAtPad, Int_t chamber);
     void InfoDigit(AliMUONVDigitStore& digitStore);
@@ -99,6 +72,31 @@ protected:
 			const AliMUONVTrackStore& trackStore);
     void SaveInESDFile();
 
-    ClassDef(AliMUONTriggerChamberEff,1) // Trigger chamber efficiency
+    
+private:
+    void CheckConstants() const;
+
+    const AliMUONGeometryTransformer* fTransformer; //!< geometry transformer
+    const AliMUONDigitMaker* fDigitMaker; //!< pointer to digit maker
+    Bool_t fReproduceTrigResponse; //!< Reproduce trigger response
+    Bool_t fPrintInfo; //!< Print informations on event
+    Int_t fWriteOnESD; //!< flag to write on ESD
+    Int_t fDebugLevel; //!< Debug level
+    const Float_t fkMaxDistance; //!< Maximum distance for reference
+
+    static const Int_t fgkNcathodes=2; ///<Number of cathodes
+    static const Int_t fgkNchambers=4; ///<Number of chambers
+    static const Int_t fgkNplanes=8;   ///<Number of planes
+    static const Int_t fgkNslats=18;   ///<Number of slats
+    static const Int_t fgkNlocations=4; ///<Number of locations
+
+    TArrayI fTrigger44; ///< Array counting # of times all chambers were efficient
+    TArrayI fTrigger34; ///< Array counting # of times chamber was inefficient
+    TArrayI fInefficientSlat[fgkNplanes]; ///< Array counting # of times slats were inefficient
+    TArrayI fHitPerSlat[fgkNplanes]; ///< Array counting # of times slats were efficient
+    TArrayI fInefficientBoard[fgkNplanes]; ///< Array counting # of times boards were inefficient
+    TArrayI fHitPerBoard[fgkNplanes]; ///< Array counting # of times boards were efficient
+    
+    ClassDef(AliMUONTriggerChamberEff,2) // Trigger chamber efficiency
 };
 #endif

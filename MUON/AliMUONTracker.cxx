@@ -182,8 +182,6 @@ Int_t AliMUONTracker::Clusters2Tracks(TTree& tracksTree, AliESD* esd)
 
   if( trackStore && triggerTrackStore && fTriggerStore && fTrigChamberEff){
       fTrigChamberEff->EventChamberEff(*fTriggerStore,*triggerTrackStore,*trackStore);
-      fTrigChamberEff->WriteEfficiencyMap(".");
-      fTrigChamberEff->WriteEfficiencyMapTxt(".");
   }
 
   FillESD(*trackStore,esd);
