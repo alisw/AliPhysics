@@ -48,9 +48,9 @@
 #include "AliCDBManager.h"
 #include "AliCDBMetaData.h"
 #include "AliCDBId.h"
+#include "AliGeomManager.h"
 
 #include <TString.h>
-#include <TGeoManager.h>
 #include <TError.h>
 #include <TH1.h>
 #include <TGraphErrors.h>
@@ -66,10 +66,10 @@ void MUONAlignment(Int_t nEvents = 100000, char* geoFilename = "geometry.root", 
 {
  
   // Import TGeo geometry (needed by AliMUONTrackExtrap::ExtrapToVertex)
-  if (!gGeoManager) {
-    TGeoManager::Import(geoFilename);
-    if (!gGeoManager) {
-      Error("MUONmass_ESD", "getting geometry from file %s failed", geoFilename);
+  if ( ! AliGeomManager::GetGeometry() ) {
+    AliGeomManager::LoadGeometry(geoFilename);
+    if (! AliGeomManager::GetGeometry() ) {
+      Error("MUONAlignment", "getting geometry from file %s failed", geoFilename);
       return;
     }
   }
@@ -116,8 +116,8 @@ void MUONAlignment(Int_t nEvents = 100000, char* geoFilename = "geometry.root", 
   AliMUONAlignment* alig = new AliMUONAlignment();
   alig->InitGlobalParameters(parameters);
 
-  AliMUONGeometryTransformer *transform = new AliMUONGeometryTransformer(true);
-  transform->ReadGeometryData("volpath.dat", gGeoManager);
+  AliMUONGeometryTransformer *transform = new AliMUONGeometryTransformer();
+  transform->LoadGeometryData();
   alig->SetGeometryTransformer(transform);
   
   // Set tracking station to use
