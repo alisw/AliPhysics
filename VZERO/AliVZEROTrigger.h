@@ -24,7 +24,7 @@ class AliVZEROTrigger : public AliTriggerDetector
    virtual void    CreateInputs();
    virtual void    Trigger();
 
-   void            SetAdcThreshold(Float_t t=62.5) 
+   void            SetAdcThreshold(Float_t t=55.0) 
      {fAdcThresHold=t; AliDebug(1,Form("ADC threshold set to %0.2f", fAdcThresHold));}
    
    void            SetTimeWindowWidth(Float_t w=2) {fTimeWindowWidth=w;}
