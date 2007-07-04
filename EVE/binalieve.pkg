@@ -12,7 +12,7 @@ ELIBS    := Reve Alieve \
   ACORDEbase ACORDEsim ACORDErec \
   HMPIDbase HMPIDrec HMPIDsim \
   ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec \
-  EMCALbase EMCALsim EMCALrec EMCALjet \
+  EMCALbase EMCALsim EMCALrec EMCALjet BCM \
   STRUCT T0base T0sim T0rec EVGEN ESD AOD CDB STEER \
   pythia6 AliPythia6 lhapdf THijing \
   hijing TMEVSIM mevsim THbtp HBTP TEPEMGEN EPEMGEN \
