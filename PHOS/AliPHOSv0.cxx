@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.91  2007/07/02 14:50:49  policheh
+ * Tracking2LocalCS matrices corrected.
+ *
  * Revision 1.90  2007/05/24 13:04:05  policheh
  * AddAlignableVolumes: local to tracking CS transformation matrices creates for each
  * PHOS supermodule
@@ -917,8 +920,7 @@ void AliPHOSv0::AddAlignableVolumes() const
   TString physModulePath="/ALIC_1/PHOS_";
   TString symbModuleName="PHOS/Module";
   Int_t nModules = GetGeometry()->GetNModules();
-  Double_t rotMatrix[9] ;
-
+  
   for(Int_t iModule=1; iModule<=nModules; iModule++){
     volpath = physModulePath;
     volpath += iModule;
@@ -965,19 +967,15 @@ void AliPHOSv0::AddAlignableVolumes() const
     const char *path = alignableEntry->GetTitle();
     if (!gGeoManager->cd(path))
        AliFatal(Form("Volume path %s not valid!",path));
-    TGeoHMatrix *matLtoT = new TGeoHMatrix;
-    matLtoT->SetDx(0.) ;
-    matLtoT->SetDy(0.) ;
-    matLtoT->SetDz(0.) ;
-    rotMatrix[0]= 1;  rotMatrix[1]= 0;  rotMatrix[2]= 0; // 
-    rotMatrix[3]= 0;  rotMatrix[4]= 0;  rotMatrix[5]= 1; //
-    rotMatrix[6]= 0;  rotMatrix[7]= 1;  rotMatrix[8]= 0;
-    TGeoRotation rot;
-    rot.SetMatrix(rotMatrix);
-    matLtoT->MultiplyLeft(&rot);
-    TGeoHMatrix *matTtoL = new TGeoHMatrix(matLtoT->Inverse());
-    delete matLtoT;
+
+    Float_t angle = GetGeometry()->GetPHOSAngle(iModule);
+    TGeoHMatrix* globMatrix = gGeoManager->GetCurrentMatrix();
+
+    TGeoHMatrix *matTtoL = new TGeoHMatrix;
+    matTtoL->RotateZ(-90.+angle);
+    matTtoL->MultiplyLeft(&(globMatrix->Inverse()));
     alignableEntry->SetMatrix(matTtoL);
+    
   }
  
 
