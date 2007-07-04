@@ -366,7 +366,7 @@ void AliPHOSRecPoint::EvalLocal2TrackingCSTransform()
   Double_t dy;
   Double_t crystalShift;
 
-  AliPHOSGeometry * phosgeom = AliPHOSLoader::GetPHOSGeometry();
+  AliPHOSGeometry * phosgeom = (AliPHOSGetter::Instance())->PHOSGeometry();
   AliPHOSEMCAGeometry* geoEMCA = phosgeom->GetEMCAGeometry(); 
 
   //Calculate offset to crystal surface.
