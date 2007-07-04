@@ -179,7 +179,7 @@ void Config(char directory[100]="", char option[6]="param", const char* digitsto
   
   cout << "MUON DigitStore is " << MUON->DigitStoreClassName().Data() << endl;
   
-  // To get same as above w/o noise-only digits for the tracker do  :
+  // Noise-only digits in tracker/trigger (0=no noise, 1=default (noise in tracker), 2=noise in tracker and trigger):
   //MUON->SetDigitizerWithNoise(kFALSE);
 
   //
