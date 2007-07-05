@@ -17,6 +17,8 @@
 
 // Macro which loads and compiles the MUON macros:
 //
+// runSimulation.C               - ok, comp,  x;      Laurent
+// runReconstruction.C           - ok, comp,  x;      Laurent
 // fastMuonGen.C                 - ok, comp,  x;      Hermine, Alessandro
 // fastMuonSim.C                 - ok, comp,  x;      Hermine, Alessandro
 // DecodeRecoCocktail.C          - ok, comp,  README; Hermine, Alessandro
@@ -96,6 +98,8 @@ void loadmacros ()
 
   // Load macros
   //
+  gROOT->LoadMacro("$ALICE_ROOT/MUON/runSimulation.C++");      
+  gROOT->LoadMacro("$ALICE_ROOT/MUON/runReconstruction.C++");      
   gROOT->LoadMacro("$ALICE_ROOT/MUON/fastMUONGen.C++");      
   gROOT->LoadMacro("$ALICE_ROOT/MUON/fastMUONSim.C++");      
   // gROOT->LoadMacro("$ALICE_ROOT/MUON/DecodeRecoCocktail.C++");      
