@@ -32,6 +32,8 @@ public:
   AliMUONCDB(const char* cdbpath = "local://$ALICE_ROOT");
   virtual ~AliMUONCDB();
   
+  void SetMaxNofChannelsToGenerate(Int_t n);
+  
   Int_t MakeNeighbourStore(AliMUONVStore& neighbourStore);
 
   Int_t MakeHVStore(TMap& aliasMap, Bool_t defaultValues);
@@ -80,6 +82,7 @@ private:
 private:
   TString fCDBPath; //!< where to write stuff
   TList* fManuList; //!< full list of manus
+  Int_t fMaxNofChannelsToGenerate; //!< to limit the number of generated channels (debug)
   
   ClassDef(AliMUONCDB,0) // Helper class to experience OCDB
 };

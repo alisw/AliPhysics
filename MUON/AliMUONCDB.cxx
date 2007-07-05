@@ -74,14 +74,18 @@ ClassImp(AliMUONCDB)
 namespace
 {
 //_____________________________________________________________________________
-void getBoundaries(const AliMUONVStore& store,
-                   Float_t& x0min, Float_t& x0max,
-                   Float_t& x1min, Float_t& x1max)
+void getBoundaries(const AliMUONVStore& store, Int_t dim,
+                   Float_t* xmin, Float_t* xmax)
 {
-  x0min=1E30;
-  x0max=-1E30;
-  x1min=1E30;
-  x1max=-1E30;
+  /// Assuming the store contains AliMUONVCalibParam objects, compute the
+  /// limits of the value contained in the VCalibParam, for each of its dimensions
+  /// xmin and xmax must be of dimension dim
+  
+  for ( Int_t i = 0; i < dim; ++i ) 
+  {
+    xmin[i]=1E30;
+    xmax[i]=-1E30;
+  }
   
   TIter next(store.CreateIterator());
   AliMUONVCalibParam* value;
@@ -99,18 +103,24 @@ void getBoundaries(const AliMUONVStore& store,
       AliMpPad pad = seg->PadByLocation(AliMpIntPair(manuId,manuChannel),kFALSE);
       if (!pad.IsValid()) continue;
       
-      Float_t x0 = value->ValueAsFloat(manuChannel,0);
-      
-      x0min = TMath::Min(x0min,x0);
-      x0max = TMath::Max(x0max,x0);
-      if ( value->Dimension()>1 )
+      for ( Int_t i = 0; i < dim; ++i ) 
       {
-        Float_t x1 = value->ValueAsFloat(manuChannel,1);
-        x1min = TMath::Min(x1min,x1);
-        x1max = TMath::Max(x1max,x1);
+        Float_t x0 = value->ValueAsFloat(manuChannel,i);
+      
+        xmin[i] = TMath::Min(xmin[i],x0);
+        xmax[i] = TMath::Max(xmax[i],x0);
       }
     }
-  }  
+  }
+
+  for ( Int_t i = 0; i < dim; ++i ) 
+  {
+    if ( TMath::Abs(xmin[i]-xmax[i]) < 1E-3 ) 
+    {
+      xmin[i] -= 1;
+      xmax[i] += 1;
+    }
+  }
 }
 
 //_____________________________________________________________________________
@@ -137,7 +147,8 @@ Double_t GetRandom(Double_t mean, Double_t sigma, Bool_t mustBePositive)
 AliMUONCDB::AliMUONCDB(const char* cdbpath)
 : TObject(),
   fCDBPath(cdbpath),
-  fManuList(0x0)
+  fManuList(0x0),
+  fMaxNofChannelsToGenerate(-1)
 {
     /// ctor
 }
@@ -171,14 +182,16 @@ AliMUONCDB::Diff(AliMUONVStore& store1, AliMUONVStore& store2,
   /// creates a store which contains store1-store2
   /// if opt="abs" the difference is absolute one,
   /// if opt="rel" then what is stored is (store1-store2)/store1
+  /// if opt="percent" then what is stored is rel*100
+  ///
   /// WARNING Works only for stores which holds AliMUONVCalibParam objects
   
   TString sopt(opt);
   sopt.ToUpper();
   
-  if ( !sopt.Contains("ABS") && !sopt.Contains("REL") )
+  if ( !sopt.Contains("ABS") && !sopt.Contains("REL") && !sopt.Contains("PERCENT") )
   {
-    AliErrorClass(Form("opt %s not supported. Only ABS or REL are",opt));
+    AliErrorClass(Form("opt %s not supported. Only ABS, REL, PERCENT are",opt));
     return 0x0;
   }
   
@@ -211,7 +224,7 @@ AliMUONCDB::Diff(AliMUONVStore& store1, AliMUONVStore& store2,
         {
           value = param->ValueAsFloat(i,j) - param2->ValueAsFloat(i,j);
         }
-        else if ( sopt.Contains("REL") )
+        else if ( sopt.Contains("REL") || sopt.Contains("PERCENT") )
         {
           if ( param->ValueAsFloat(i,j) ) 
           {
@@ -221,6 +234,7 @@ AliMUONCDB::Diff(AliMUONVStore& store1, AliMUONVStore& store2,
           {
             continue;
           }
+          if ( sopt.Contains("PERCENT") ) value *= 100.0;
         }
         param->SetValueAsFloat(i,j,value);
       }      
@@ -233,89 +247,67 @@ AliMUONCDB::Diff(AliMUONVStore& store1, AliMUONVStore& store2,
 void 
 AliMUONCDB::Plot(const AliMUONVStore& store, const char* name, Int_t nbins)
 {
-  /// Make a plot of the first 1 or 2 dimensions of the AliMUONVCalibParam
+  /// Make histograms of each dimension of the AliMUONVCalibParam
   /// contained inside store.
   /// It produces histograms named name_0, name_1, etc...
   
-  Float_t x0min, x0max, x1min, x1max;
-  
-  getBoundaries(store,x0min,x0max,x1min,x1max);
-  
-  if ( x0min > x0max ) 
-  {
-    cerr << Form("Something is wrong with boundaries : x0(min,max)=%e,%e",
-                 x0min,x0max) << endl;
-    return;
-  }
-
-  if ( TMath::Abs(x0min-x0max) < 1E-3 ) 
-  {
-    x0min -= 1;
-    x0max += 1;
-  }
-  
-  TH1* h0 = new TH1F(Form("%s_0",name),Form("%s_0",name),
-                    nbins,x0min,x0max);
-  
-  TH1* h1(0);
-  
-  if ( x1max > x1min )
-  {
-    h1 = new TH1F(Form("%s_1",name),Form("%s_1",name),
-                  nbins,x1min,x1max);
-  }
-  
-  TIter next(ManuList());
-  AliMpIntPair* p;
+  TIter next(store.CreateIterator());
+  AliMUONVCalibParam* param;
   Int_t n(0);
-  Int_t nPerStation[7];
+  const Int_t kNStations = AliMpConstants::NofTrackingChambers()/2;
+  Int_t* nPerStation = new Int_t[kNStations];
+  TH1** h(0x0);
   
-  for ( Int_t i = 0; i < 7; ++i ) nPerStation[i]=0;
+  for ( Int_t i = 0; i < kNStations; ++i ) nPerStation[i]=0;
   
-  while ( ( p = (AliMpIntPair*)next() ) )
+  while ( ( param = static_cast<AliMUONVCalibParam*>(next()) ) )
   {
-    Int_t detElemId = p->GetFirst();
-    Int_t manuId = p->GetSecond();
-    Int_t station = AliMpDEManager::GetChamberId(detElemId);
+    if (!h)
+    {
+      Int_t dim = param->Dimension();
+      h = new TH1*[dim];
+      Float_t* xmin = new Float_t[dim];
+      Float_t* xmax = new Float_t[dim];
+      getBoundaries(store,dim,xmin,xmax);
+      
+      for ( Int_t i = 0; i < dim; ++i ) 
+      {
+        h[i] = new TH1F(Form("%s_%d",name,i),Form("%s_%d",name,i),
+                            nbins,xmin[i],xmax[i]);
+        AliInfo(Form("Created histogram %s",h[i]->GetName()));
+      }
+    }
+    
+    Int_t detElemId = param->ID0();
+    Int_t manuId = param->ID1();
+    Int_t station = AliMpDEManager::GetChamberId(detElemId)/2;
     
     const AliMpVSegmentation* seg = 
       AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(detElemId,manuId);
     
-    AliMUONVCalibParam* value = 
-      dynamic_cast<AliMUONVCalibParam*>(store.FindObject(detElemId,manuId));
-    
-    if (value)
+    for ( Int_t manuChannel = 0; manuChannel < param->Size(); ++manuChannel )
     {
-      for ( Int_t manuChannel = 0; manuChannel < value->Size(); ++manuChannel )
-      {
-        AliMpPad pad = seg->PadByLocation(AliMpIntPair(manuId,manuChannel),kFALSE);
-        if (!pad.IsValid()) continue;
+      AliMpPad pad = seg->PadByLocation(AliMpIntPair(manuId,manuChannel),kFALSE);
+      if (!pad.IsValid()) continue;
 
-        ++n;
-        ++nPerStation[station];
-        Float_t x = value->ValueAsFloat(manuChannel,0);
-        if ( x>1E4 ) 
-        {
-          AliInfo(Form("DE %d Manu %d Ch %d x=%e",detElemId,manuId,manuChannel,x));
-        }
-        h0->Fill(x);
-        if (h1)
-        {
-          h1->Fill(value->ValueAsFloat(manuChannel,1));
-        }
+      ++n;
+      ++nPerStation[station];
+      
+      for ( Int_t dim = 0; dim < param->Dimension(); ++dim ) 
+      {
+        h[dim]->Fill(param->ValueAsFloat(manuChannel,dim));
       }
     }
-    else
-    {
-      AliWarning(Form("Got a null value for DE=%d manuId=%d",detElemId,manuId));
-    }
-  }
+  } 
   
-  AliInfo(Form("Number of channels = %d",n));
-  for ( Int_t i = 0; i < 7; ++i )
+  for ( Int_t i = 0; i < kNStations; ++i )
   {
     AliInfo(Form("Station %d %d ",(i+1),nPerStation[i]));
   }
+
+  AliInfo(Form("Number of channels = %d",n));
+  
+  delete[] nPerStation;
 }
 
 //_____________________________________________________________________________
@@ -408,7 +400,8 @@ AliMUONCDB::MakePedestalStore(AliMUONVStore& pedestalStore, Bool_t defaultValues
     Int_t detElemId = p->GetFirst();    
     Int_t manuId = p->GetSecond();
     
-    AliMUONVCalibParam* ped = new AliMUONCalibParamNF(2,kChannels,detElemId,manuId,AliMUONVCalibParam::InvalidFloatValue());
+    AliMUONVCalibParam* ped = 
+      new AliMUONCalibParamNF(2,kChannels,detElemId,manuId,AliMUONVCalibParam::InvalidFloatValue());
     
     const AliMpVSegmentation* seg = 
       AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(detElemId,manuId);
@@ -431,7 +424,11 @@ AliMUONCDB::MakePedestalStore(AliMUONVStore& pedestalStore, Bool_t defaultValues
       else
       {
         Bool_t positive(kTRUE);
-        meanPedestal = GetRandom(kPedestalMeanMean,kPedestalMeanSigma,positive);
+        meanPedestal = 0.0;
+        while ( meanPedestal == 0.0 ) // avoid strict zero 
+        {
+          meanPedestal = GetRandom(kPedestalMeanMean,kPedestalMeanSigma,positive);
+        }
         sigmaPedestal = GetRandom(kPedestalSigmaMean,kPedestalSigmaSigma,positive);
       }
       ped->SetValueAsFloat(manuChannel,0,meanPedestal);
@@ -443,6 +440,7 @@ AliMUONCDB::MakePedestalStore(AliMUONVStore& pedestalStore, Bool_t defaultValues
     {
       AliError(Form("Could not set DetElemId=%d manuId=%d",detElemId,manuId));
     }
+    if ( fMaxNofChannelsToGenerate > 0 && nchannels >= fMaxNofChannelsToGenerate ) break;
   }
   
   AliInfo(Form("%d Manus and %d channels.",nmanus,nchannels));
@@ -551,13 +549,13 @@ AliMUONCDB::MakeGainStore(AliMUONVStore& gainStore, Bool_t defaultValues)
     
   const Int_t kSaturation(3000);
   const Double_t kA0Mean(1.2);
-  const Double_t kA0Sigma(0.1);
-  const Double_t kA1Mean(1E-5);
-  const Double_t kA1Sigma(1E-6);
+    const Double_t kA0Sigma(0.1);
+    const Double_t kA1Mean(1E-5);
+      const Double_t kA1Sigma(1E-6);
   const Double_t kQualMean(0xFF);
   const Double_t kQualSigma(0x10);
   const Int_t kThresMean(1600);
-  const Int_t kThresSigma(100);
+    const Int_t kThresSigma(100);
   
   while ( ( p = (AliMpIntPair*)next() ) )
   {
@@ -607,6 +605,7 @@ AliMUONCDB::MakeGainStore(AliMUONVStore& gainStore, Bool_t defaultValues)
     {
       AliError(Form("Could not set DetElemId=%d manuId=%d",detElemId,manuId));
     }
+    if ( fMaxNofChannelsToGenerate > 0 && nchannels >= fMaxNofChannelsToGenerate ) break;
   }
   
   AliInfo(Form("%d Manus and %d channels.",nmanus,nchannels));
@@ -802,6 +801,15 @@ AliMUONCDB::MakeNeighbourStore(AliMUONVStore& neighbourStore)
 
 //_____________________________________________________________________________
 void
+AliMUONCDB::SetMaxNofChannelsToGenerate(Int_t n)
+{
+  /// Set the maximum number of channels to generate (used for testing only)
+  /// n < 0 means no limit
+  fMaxNofChannelsToGenerate = n;
+}
+
+//_____________________________________________________________________________
+void
 AliMUONCDB::WriteLocalTriggerMasks(Int_t startRun, Int_t endRun)
 {  
   /// Write local trigger masks to OCDB
@@ -988,4 +996,3 @@ AliMUONCDB::WriteTracker(Bool_t defaultValues, Int_t startRun, Int_t endRun)
   WriteCapacitances(defaultValues,startRun,endRun);
   WriteNeighbours(startRun,endRun);
 }
-
