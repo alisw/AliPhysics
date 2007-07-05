@@ -243,8 +243,8 @@ AliMUONRawWriter::Digits2BusPatchMap(const AliMUONVDigitStore& digitStore,
     {
       // This is most probably an error in the digitizer (which should insure
       // the adc is below kMAXADC), so make it a (non-fatal) error indeed.
-      AliError(Form("adc value %d above %x for DE %d . Setting to %x. Digit is:",
-                    digit->DetElemId(),charge,kMAXADC,kMAXADC));
+      AliError(Form("adc value %d above 0x%x for DE %d . Setting to 0x%x. Digit is:",
+                    charge,kMAXADC,digit->DetElemId(),kMAXADC));
       StdoutToAliError(digit->Print());
       charge = kMAXADC;
     }
