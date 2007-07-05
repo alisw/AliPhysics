@@ -200,9 +200,11 @@ void AliHMPIDv1::DefineOpticalProperties()
   const Int_t kNbins=30;       //number of photon energy points
   Float_t emin=5.5,emax=8.5;         //Photon energy range,[eV]
   Float_t aEckov [kNbins]; 
+  Double_t dEckov [kNbins]; 
   Float_t aAbsRad[kNbins], aAbsWin[kNbins], aAbsGap[kNbins], aAbsMet[kNbins];
   Float_t aIdxRad[kNbins], aIdxWin[kNbins], aIdxGap[kNbins], aIdxMet[kNbins], aIdxPc[kNbins]; 
   Float_t                                                    aQeAll [kNbins], aQePc [kNbins];
+  Double_t dReflMet[kNbins], dQePc[kNbins];
 
   TF2 *pRaIF=new TF2("HidxRad","sqrt(1+0.554*(1239.84/x)^2/((1239.84/x)^2-5796)-0.0005*(y-20))"                                       ,emin,emax,0,50); //DiMauro mail temp 0-50 degrees C
   TF1 *pWiIF=new TF1("HidxWin","sqrt(1+46.411/(10.666*10.666-x*x)+228.71/(18.125*18.125-x*x))"                                        ,emin,emax);      //SiO2 idx TDR p.35
@@ -218,13 +220,15 @@ void AliHMPIDv1::DefineOpticalProperties()
   for(Int_t i=0;i<kNbins;i++){
     Float_t eV=emin+0.1*i;  //Ckov energy in eV
     aEckov [i] =1e-9*eV;    //Ckov energy in GeV
+    dEckov [i] = aEckov[i];
     aAbsRad[i]=pRaAF->Eval(eV); aIdxRad[i]=1.292;//pRaIF->Eval(eV,20);      //Simulation for 20 degress C       
     aAbsWin[i]=pWiAF->Eval(eV); aIdxWin[i]=1.5787;//pWiIF->Eval(eV);
     aAbsGap[i]=pGaAF->Eval(eV); aIdxGap[i]=1.0005;//pGaIF->Eval(eV);   
     aQeAll[i] =1;                     //QE for all other materials except for PC must be 1.  
     aAbsMet[i] =0.0001;                aIdxMet[i]=0;                                             //metal ref idx must be 0 in order to reflect photon
                                        aIdxPc [i]=1;           aQePc [i]=pQeF->Eval(eV);         //PC ref idx must be 1 in order to apply photon to QE conversion 
-                                       
+    dQePc [i]=pQeF->Eval(eV);
+    dReflMet[i] = 0.;     // no reflection on the surface of the pc (?)                                       
   }
   gMC->SetCerenkov((*fIdtmed)[kC6F14]    , kNbins, aEckov, aAbsRad  , aQeAll , aIdxRad );    
   gMC->SetCerenkov((*fIdtmed)[kSiO2]     , kNbins, aEckov, aAbsWin  , aQeAll , aIdxWin );    
@@ -233,6 +237,13 @@ void AliHMPIDv1::DefineOpticalProperties()
   gMC->SetCerenkov((*fIdtmed)[kW]        , kNbins, aEckov, aAbsMet  , aQeAll , aIdxMet ); //n=0 means reflect photons       
   gMC->SetCerenkov((*fIdtmed)[kCsI]      , kNbins, aEckov, aAbsMet  , aQePc  , aIdxPc  ); //n=1 means convert photons    
   gMC->SetCerenkov((*fIdtmed)[kAl]       , kNbins, aEckov, aAbsMet  , aQeAll , aIdxMet );    
+
+  // Define a skin surface for the photocatode to enable 'detection' in G4
+  gMC->DefineOpSurface("surfPc", kGlisur /*kUnified*/,kDielectric_metal,kPolished, 0.);
+  gMC->SetMaterialProperty("surfPc", "EFFICIENCY", kNbins, dEckov, dQePc);
+  gMC->SetMaterialProperty("surfPc", "REFLECTIVITY", kNbins, dEckov, dReflMet);
+  gMC->SetSkinSurface("skinPc", "Rpc", "surfPc");
+
   delete pRaAF;delete pWiAF;delete pGaAF; delete pRaIF; delete pWiIF; delete pGaIF; delete pQeF;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
