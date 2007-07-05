@@ -33,7 +33,7 @@ AliHMPIDReconstructor::AliHMPIDReconstructor():AliReconstructor(),fUserCut(0),fD
 //
 //ctor
 //
-
+  AliHMPIDParam::Instance();                                                        //geometry loaded for reconstruction
   fClu=new TObjArray(AliHMPIDParam::kMaxCh+1); fClu->SetOwner(kTRUE);
   fDig=new TObjArray(AliHMPIDParam::kMaxCh+1); fDig->SetOwner(kTRUE);
 
