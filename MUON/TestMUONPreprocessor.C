@@ -53,8 +53,15 @@
 #include "AliMUONHVNamer.h"
 #endif
 
-void TestMUONPreprocessor(Int_t runNumber=80)
+void TestMUONPreprocessor(Int_t runNumber=80, const char* runType="PEDESTAL_RUN")
 {
+  // runType can be :
+  //
+  // PEDESTAL_RUN -> pedestals
+  // ELECTRONICS_CALIBRATION_RUN -> gains
+  // PHYSICS -> HV
+  // GMS
+  
   // load library
   gSystem->Load("../SHUTTLE/TestShuttle/libTestShuttle.so");
   gSystem->Load("libMUONshuttle.so");
@@ -93,10 +100,10 @@ void TestMUONPreprocessor(Int_t runNumber=80)
   shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC2","$ALICE_ROOT/MUON/data/LDC2.ped");
   shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC3","$ALICE_ROOT/MUON/data/LDC3.ped");
   
-  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC0","$HOME/Desktop/makegain_214.online");
-  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC1","$HOME/Desktop/makegain_214.online.1");
-  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC2","$HOME/Desktop/makegain_214.online.2");
-  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC3","$HOME/Desktop/makegain_214.online.3");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC0","$ALICE_ROOT/MUON/data/LDC0.gain");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC1","$ALICE_ROOT/MUON/data/LDC1.gain");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC2","$ALICE_ROOT/MUON/data/LDC2.gain");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC3","$ALICE_ROOT/MUON/data/LDC3.gain");
   
   // and GMS file
   shuttle->AddInputFile(AliTestShuttle::kDCS,"MCH","GMS","GMS","$ALICE_ROOT/MUON/data/GMS.root");
@@ -105,13 +112,7 @@ void TestMUONPreprocessor(Int_t runNumber=80)
   // To test it, we must provide the run parameters manually. They will be retrieved in the preprocessor
   // using GetRunParameter function.
   // In real life the parameters will be retrieved automatically from the run logbook;
-  //shuttle->SetInputRunType("PEDESTAL_RUN"); 
-  //shuttle->SetInputRunType("ELECTRONICS_CALIBRATION_RUN");
-  //shuttle->SetInputRunType("GMS"); 
-  shuttle->SetInputRunType("PHYSICS");
-  // PEDESTAL_RUN -> pedestals
-  // ELECTRONICS_CALIBRATION_RUN -> gains
-  // PHYSICS ? -> HV
+  shuttle->SetInputRunType(runType);
   
   // Create the preprocessor that should be tested, it registers itself automatically to the shuttle
   new AliMUONTrackerPreprocessor(shuttle);
