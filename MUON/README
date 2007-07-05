@@ -2,8 +2,14 @@ $Id$
 
 ==========================================================
 Please add  to this README file all information concerning 
-config files, simulation, digitalization, clusterization, 
-reconstruction and macro analysis
+general items about the MUON code or the libraries 
+base, simu and reco
+Other README file of the muon code are
+READMEevaluation
+READMEgeometry
+READMEraw
+READMEshuttle
+READMEtrigger
 
 ==========================================================
  How to check that your aliroot is working well
@@ -14,12 +20,28 @@ invariant analysis of the generated Upsilon (1S).
 The used configuration file is Config.C in MUON 
 directory.
 You have to type :
-source $ALICE_ROOT/MUON/AlirootRun_MUONtest.sh 
-The results of this test are saved in test_out/ directory.
+$ALICE_ROOT/MUON/AlirootRun_MUONtest.sh [option]
+
+The complete list of the option is printed when you call
+the script with whatever non valid option, .eg. h:
+
+./AlirootRun_MUONtest.sh h
+ERROR : extra option not recognized
+Usage: AlirootRun_MUONtest.sh options (-SRXsrxn:p:d:c:)
+       -S (-s) perform (or not) simulation (default is do it, i.e -S)
+       -R (-r) perform (or not) reconstruction (default is do it, i.e. -R)
+       -X event (-x) perform (or not) checks and dumps (default is do it for event 5, i.e. -X 5)
+       -n nevents (int) number of events to simulate (default 100)
+       -p recoptions (quotified string) reconstruction options to use (default "SAVEDIGITS")
+       -d full path to output directory (default /work/projects/alice/dev/AliRoot/MUON/test_out.100)
+       -c full path to configuration file for simulation (default /work/projects/alice/dev/AliRoot/MUON/Config.C)
+
+The results of this test are saved in test_out.nevent directory.
 Please note that the CDB (Condition DataBase) is now always *required* 
 to perform either simulation or reconstruction. For the moment, a version
- of that CDB is stored in CVS, so you should have one already in MUON/Calib
+of that CDB is stored in CVS, so you should have one already in MUON/Calib
 subdirectories.
+
 
 ==========================================================
  How to check that your aliroot is working VERY well
@@ -47,16 +69,8 @@ Config.C is modified accordingly )
 ==========================================================
  How to run a MUON generation
 ==========================================================
-aliroot
-root [0] gAlice->Run(10,"$ALICE_ROOT/MUON/Config.C");
-
-1 single muon of 7 GeV/c in the MUON spectrometer 
-acceptance will be simulated using geant3. 
-Hit information will be store in the root file in the
-execution directory.
-If you want to change the option or to define a new directory
-for hits, you have to do the following before:
-root [0] gAlice->SetConfigFunction("Config( \"/home/martinez/aliroot/work_NewIO/test/\" , \"box\" );"); 
+You only need to run the simulation part of the test script
+AlirootRun_MUONtest.sh
 
 ============================================================
  How to dump the content of Root data files 
@@ -82,36 +96,15 @@ root [2] di.DumpSDigits(5);    > dump.sdigits
 root [3] di.DumpRecPoints(5);  > dump.recpoints
 root [4] di.DumpTrigger(5); > dump.rectrigger
 
-============================================================
- How to check the Geometry with the new Geometrical modeler
- ftp://root.cern.ch/root/doc/chapter16.pdf
- http://agenda.cern.ch/fullAgenda.php?ida=a05212
-============================================================
-gAlice->Init("$ALICE_ROOT/MUON/Config.C");
-gGeoManager->GetMasterVolume()->Draw();
+Remind that during simulation and reconstruction two 
+differents galice.root are generated: one for the generation 
+(simulation) and other during the reconstruction.
 
-
-============================================================
- How to check the overlap with the new Geometrical modeler
- ftp://root.cern.ch/root/doc/chapter16.pdf
- http://agenda.cern.ch/fullAgenda.php?ida=a05212
-============================================================
-gAlice->Init("$ALICE_ROOT/MUON/Config.C");
-gGeoManager->CheckOverlaps();
-gGeoManager->PrintOverlaps();
-
-============================================================
- How to run MUONdisplay
-============================================================
-First you need to perform a full simulation: 
-generation, digitalisation and clusterisation
-To run MUONdisplay with Root 5.04/00 you need to get a fix in
-the gpad/src/TPad.cxx from Root CVS:
- cvs update -r 1.200 gpad/src/TPad.cxx
-and recompile root. 
-
-.L $ALICE_ROOT/MUON/MUONdisplay.C
-MUONdisplay(0,"galice.root")
+If you open the wrong galice.root file you could get:
+root [0] AliMUONMCDataInterface mcdi("galice.root");
+root [1] mcdi.DumpKine(5);
+W-AliRunLoader::GetEvent: Stack not found in header
+E-TFile::TFile: file ./Kinematics.root does not exist
 
 ============================================================
  Tracking parameters, cuts, energy loss and physics processes
@@ -141,6 +134,26 @@ config file when the magnetic field is defined:
 TRACKING must be 1 for RKUTA and 2 for HELIX (the default value for aliroot is 2 (HELIX))
 FACTOR allows you to set the magnetic field to 0, just putting FACTOR=0. Default value is 1.
 MAXB is the maximum magnetic field which is 10.T
+
+===========================================================
+ How to tune muon track reconstruction
+===========================================================
+several options and adjustable parameters are available for both Kalman and Original
+tracking algorithms (hard coded for the moment in AliMUONVTrackReconstructor.cxx):
+- *fgkSigmaToCutForTracking* : quality cut used to select new clusters to be
+  attached to the track candidate and to select good tracks.
+- *fgkTrackAllTracks* : according to the value of this flag, in case that several
+  new clusters pass the quality cut, either we consider all the possibilities
+  (duplicating tracks) or we attach only the best cluster.
+- *fgkRecoverTracks* : if this flag is set to 'true', we try to recover the tracks
+  lost during the tracking by removing the worst of the 2 clusters attached in the
+  previous station.
+- *fgkImproveTracks* : if this flag is set to 'true', we try to improve the quality
+  of the tracks at the end of the tracking by removing clusters that do not pass
+  new quality cut (within the limit that we must keep at least one cluster per
+  the station).
+- *fgkSigmaToCutForImprovement* : quality cut used when we try to improve the
+  quality of the tracks.
 
 ===========================================================
  MUON cocktail for physics ..............
@@ -177,155 +190,6 @@ gener->SetOrigin(0,0,0);        // Vertex position
 gener->SetSigma(0,0,0.0);       // Sigma in (X,Y,Z) (cm) on IP position
 gener->Init();
  
-================================================================
- csh Script for the full reconstruction with raw data generator
-================================================================
-The rawdata generation and analysis is working with the new segmentation.
-So the config file must use the version "AliMUONFactoryV3"
-
-Generation
-The method AliSimulation::SetWriteRawData("MUON") enables on 
-the muon rawdata generation
-aliroot -b << EOF  
-AliSimulation MuonSim("$ALICE_ROOT/MUON/Config.C")
-MuonSim.SetMakeTrigger("MUON");
-MuonSim.SetWriteRawData("MUON")
-MuonSim.Run(10)
-.q
-EOF
-
-Reconstruction
-aliroot -b << EOF 
-AliReconstruction MuonRec("galice.root");
-MuonRec.SetInput("$YOUR_WORKING_DIRECTORY/");  Do not forget the slash at the end!
-MuonRec.SetRunVertexFinder(kFALSE);
-MuonRec.SetRunLocalReconstruction("MUON");
-MuonRec.SetRunTracking("");
-MuonRec.SetFillESD("MUON");
-MuonRec.SetOption("MUON", "VS"); // to use VS cluster finder
-// MuonRec.SetOption("MUON", "VS Original"); // to run VS and original track finder
-// MuonRec.SetOption("MUON", "Combi"); // to run combined cluster / track finder
-MMuonRec.Run();
-.q
-EOF
-
-============================================================
- How to read & decode raw data 
-============================================================
-These macros can read & decode DDL files, root and DATE files.
-Nevertheless for the two latter, aliroot has to be compiled with DATE.
-
-For tracker raw data
-.includepath $ALICE_ROOT/STEER
-.includepath $ALICE_ROOT/MUON
-.includepath $ALICE_ROOT/RAW
-.L $ALICE_ROOT/MUON/MUONRawStreamTracker.C+
-MUONRawStreamTracker(maxEvent, firstDDL, lastDDL, rawFileName)
-
-For trigger raw data
-.includepath $ALICE_ROOT/STEER
-.includepath $ALICE_ROOT/MUON
-.includepath $ALICE_ROOT/RAW
-.L $ALICE_ROOT/MUON/MUONRawStreamTrigger.C+ 
-MUONRawStreamTrigger(maxEvent, firstDDL, lastDDL, rawFileName)
-
-Default wise the macro read all DDL files from the current directory for 1000 events.
-For root file rawFileName must end with .root, for date file rawFileName 
-must be no extention. For DDL files you have to specified the directory 
-where the raw0...n subdirectories are located:
-MUONRawStreamTracker(maxEvent, "$YOUR_WORKING_DIRECTORY/"); //Do not forget the slash at the end!
-
-
-============================================================
- How to run MUONRecoCheck macro
-============================================================
-
-To check the muon reconstruction by comparing the reconstructed tracks
-with the reference tracks made of "AliTrackReference" for the hits in chamber (0..9)
-and kinematic informations (TreeK) for the vertex.
-This macro can be used to check the track reconstruction e.g. efficiency,
-momentum resolution ... but also to make physics analysis whenever
-track identification is needed.   
-
-To compile MUONRecoCheck.C
-.includepath $ALICE_ROOT/STEER
-.includepath $ALICE_ROOT/MUON
-.L $ALICE_ROOT/MUON/MUONRecoCheck.C+
-
-// To run MUONRecoCheck
-MUONRecoCheck(nEvent,"geometry.root", "galice.root"); // nEvent = nb of events
-
-
-============================================================
- How to run MUONTracker macro
-============================================================
-To make the track reconstruction directly from AliTrackReference hits 
-which are recorded in TrackRefs.root during the simulation.
-It can be used to check the reconstruction without clusterization.	
-
-To compile MUONTracker.C
-.includepath $ALICE_ROOT/STEER
-.includepath $ALICE_ROOT/MUON
-.L $ALICE_ROOT/MUON/MUONTracker.C+
-
-// To run MUONTracker
-MUONTracker(iEventMin,iEventMax,"galice.root"); // iEventMin: first event
-
-===========================================================
- Macro  MUONGenerateGeometryData.C
-===========================================================
-						
-Macro for generating the geometry data files
-
-Geometry data files:
-- MUON/data/volpath.dat file contains the volume paths 
-for all alignable objects (modules & detection 
-elements).
-- MUON/data/transform.dat file contains the transformations
-data (translation and rotation) for all alignable objects
-(modules & detection elements)
-- MUON/data/svmap.dat file contains all the information to link 
-each geant volume (it can be extended to other virtual MC) with
-a detection element. The point here is that a given detection
-element, i.e. a slat chamber can consist of more geant volumes.
-the correspondence is then defined in an input file.
-Each time there is a change in the definition of MC geometry, these
-input files must be re-generated via the macro  
-MUONGenerateGeometryData.C
-
-To be run from aliroot:
-.x MUONGenerateGeometryData.C
-
-The generated files do not replace the existing ones
-but have different names (with extension ".out").
-Replacement with new files has to be done manually.
-
-===========================================================
- Macros to generate Mis-alignment data
-===========================================================
-						
-Macro for generating the geometry mis-alignment data: 
-MakeMUONFullMisAlignment.C
-MakeMUONResMisAlignment.C
-MakeMUONZeroMisAlignment.C
-
-To be run from aliroot:
-.x MakeMUONFullMisAlignment.C etc.
-
-If the environment variable TOCDB is not set to "kTRUE",
-the misalignment data are generated in a local file:
-(MUONFullMisalignment.root, etc.)
-
-If the data are stored in CDB, the storage can be specified in 
-the environment variable STORAGE. The misalignment data are then
-generated in the CDB folder (defaults are ResMisAlignCDB and FullMisAlignCDB
-in the working directory). Inside the local CDB the path for the
-alignment data is (and must be) "MUON/Align/Data/".
-Residual misalignment: Default is our current estimate of
-misalignment after all our alignment procedure has been applied.
-Full misalignment: Default is our current estimate of initial
-misalignment.
-
 ==========================================================
 How to simulate events with misaligned geometry in local CDB
 ==========================================================
@@ -358,31 +222,6 @@ MuonSim.Run(10);
 .q
 EOF
 
-==========================================================
-How to check the alignment software
-==========================================================
-
-The script AlirootRun_MUONtestAlign.sh  allows you to check the software for
-the alignment with physics tracks. The script will:
-- Generate a misaligned geometry in a local CDB (default FullMisAlignCDB)
-- Simulate 1000 events using previously misaligned geometry
-- Reconstruct the events using perfect geometry
-- Run the alignment code over the above events using MUONAlignment.C
-
-To run you need to type:
-$ALICE_ROOT/MUON/AlirootRun_MUONtestAlign.sh
-
-The results of the test are saved in test_align/ directory. The file measShifts.root
-contains useful graphs for studying the alignment performances. A local CDB
-containing the realigned geometry is also created (default is ReAlignCDB). The
-file $ALICE_ROOT/MUON/data/transform2ReAlign.dat contains the
-transformations describing the realigned geometry to be compared with the
-used misaligned geometry $ALICE_ROOT/MUON/data/transform2.dat.
-
-IMPORTANT NOTE: For a useful test of the alignment performances, the
-order of 100 000 tracks is needed, it is then advisable to generate and
-reconstruct enough events separately and run MUONAlignment.C providing a file list
-afterwards.
 
 ==========================================================
  How to Merge events
@@ -394,7 +233,7 @@ merging both.
 
 Merging is done at the sdigits level, so Kinematics files 
 of the merged events will just correspond to the 
-Config.C simulated file (not to Config_HIJING.C).
+Config.C simulated file).
 
 You must, first, do the Hijing simulation and store it 
 in directory $HIJING_SIM. Note that for merging you 
@@ -403,11 +242,13 @@ won't need Kinematics files of the Hijing simulation...
 Hijing simulation
 
 aliroot -b << EOF
-AliSimulation HijingSim("$HIJING_SIM/Config_HIJING.C")
+AliSimulation HijingSim("$HIJING_SIM/YourConfigForHIJING.C")
 HijingSim.Run(5)
 .q
 EOF
 
+You cand build YourConfigFroHIJING.C File from the 
+ConfigPPR file in AliRoot/macros module.
 
 Then you can do muon simulation and reconstruction
 merging both simulated events. In next example, we are
@@ -434,13 +275,6 @@ MuonRec.SetFillESD("MUON")
 MuonRec.Run()
 .q
 EOF
-
-==========================================================
- How to play with the CDB
-==========================================================
-
-If you'd like to see how the CDB is created, please have a look at the 
-MUONCDB.C (work in progress, though).
 
 ==========================================================
 ...on track numbering 
@@ -515,113 +349,6 @@ for (int tr = 0; tr < mDigit->Ntracks(); tr++)
    }
 }
 
-==========================================================
-Macros for MC studies
-==========================================================
-
-For MC studies the classes "AliMUONTrackLight" and "AliMUONPairLight" can be 
-used in order to fill not only the single muon / dimuon's kinematics (charge, 
-pT, rapidity, etc) at the generation AND reconstruction level, but also for 
-"decoding" the Pythia output and for the storing of the single muon's history. 
-This allows to tag if two muons of a given event come from a certain, well-defined 
-process, such as J/psi, Upsilons, correlated open charm or open beauty or the 
-low masses or if they are of uncorrelated origin. For open beauty/charm it also 
-tags the creation process (pair creation, flavour excitation or gluon splitting). 
-The classes also allow to tag feed-down or neutral B meson oscillation and 
-has a method that checks whether the reconstructed track is a muon or not.
-
-The macros ReadRecoCocktail.C, DecodeRecoCocktail.C and MergeMuonLight.C 
-are examples how to use these two classes. DecodeRecoCocktail.C opens the 
-generated files, loops over the events and fills an AliMUONTrackLight object 
-for every reconstructed track for which the reference to its generated particle 
-could be established, using the AliMUONRecoCheck class. 
-It then takes the AliMUONTrackLight objects and forms - event by event - 
-AliMUONPairLight objects, on a combinatorial basis. For a given event these 
-objects are stored in respective TClonesArrays which are then stored in a tree. 
-By default, the produced output file is called "MuonLight.root". 
-This root file can then be taken by the macro "ReadRecoCocktail.C" that shows, 
-on the example of the reconstructed mass and pT of the AliMUONPairLight object,
-how to access the available information. For large statistics, in which many 
-individual MuonLight.root files are produced, MergeMuonLight.C can be used 
-to merge the files and produce one common output root file.
-
-To read a generation/reconstrution from PDC06 preproduction, and write a file 
-with a tree of AliMUONTrackLight / AliMUONPairLight :
-go to the directory containing the generation/reconstruction. From there run
-aliroot
-.L DecodeRecoCocktail.C+
-DecodeRecoCocktail();
-.q
-
-To read the file previously generated:
-aliroot
-.L ReadRecoCocktail.C+
-ReadRecoCocktail();
-.q
-
-===========================================================
- How to reprocess trigger decision from already produced digits
-===========================================================
-The MUONTrigger.C macro can be used to check the trigger algorithm w/o 
-having to (re-)perform simulation and digitalization. 
-It loads the digits, erase TreeR and store the current trigger output in 
-TreeR.
-The different trigger outputs can be compared by looking at the GLT branch 
-of TreeD (filled during simulation) and the TC branch of TreeR (filled from 
-a copy of TreeD during reconstruction or with this macro).
-Note: rec points from tracking chamber will be lost.
-Usage:
-root [0] .L $ALICE_ROOT/MUON/MUONTrigger.C+
-root [1] MUONTrigger()
-
-===========================================================
- How to check integrated trigger efficiency
-===========================================================
-The MUONTriggerEfficiency.C macro (included in the check scripts) calculates
-the trigger efficiency for the 2 pt cuts. 
-The output is stored in MUONTriggerEfficiency.out file.
-Usage:
-root [0] .L $ALICE_ROOT/MUON/MUONTriggerEfficiency.C+
-root [1] MUONTriggerEfficiency()
-For the CVS default version of the trigger LUT (i.e. lutAptLpt1Hpt1p7.root),
-The reference for J/psi and Upsilon is as below
- For 1000 Jpsi events with:
-    AliGenParam *gener = new AliGenParam(1, AliGenMUONlib::kJpsi);
-    gener->SetMomentumRange(0,999);
-    gener->SetPtRange(0,100.);
-    gener->SetPhiRange(0., 360.);
-    gener->SetCutOnChild(1);
-    gener->SetChildPhiRange(0.,360.);
-    gener->SetChildThetaRange(171.0,178.0);
-    gener->SetOrigin(0,0,0);          
-    gener->SetForceDecay(kDiMuon);
-    gener->SetTrackingFlag(1);
- the output should be 
-  Efficiency Lpt cut = 0.7362 +/- 0.0391
-  Efficiency Hpt cut = 0.2662 +/- 0.0201
- Similarly, for 1000 Upsilon events, the output should be
-  Efficiency Lpt cut = 0.9806 +/- 0.0457
-  Efficiency Hpt cut = 0.9537 +/- 0.0448
-
-===========================================================
- How to check single muon trigger efficiency versus pt
-===========================================================
-The MUONTriggerEfficiencyPt.C macro produces trigger single muon efficiency 
-versus pt plots for the 2 pt cuts. 
-Results are compared to the reference (red curves).   
-To be used with (at least) 10000 events as follows
-   AliGenBox * gener = new AliGenBox(1);
-   gener->SetPtRange(0.,10.);
-   gener->SetPhiRange(0., 360.);         
-   gener->SetThetaRange(171.000,178.001);
-   gener->SetPart(13);           // or -13
-   gener->SetOrigin(0.,0., 0.);  
-   gener->SetSigma(0.0, 0.0, 0.0);     
-Outputs are stored in MUONTriggerEfficiencyPt.gif/eps/out files
-Important note: this macro works with one (real) muon track per event only
-Usage:
-root [0] .L $ALICE_ROOT/MUON/MUONTriggerEfficiencyPt.C+
-root [1] MUONTriggerEfficiencyPt()
 
 ===========================================================
  How to process invariant mass spectra for J/psi or Upsilon
@@ -656,45 +383,7 @@ PtCutMax    (default 10000): keep only tracks with transverse momentum < PtCutMa
 massMin     (default 9.17 for Upsilon) keep only invariant masses with 
 massMax     (default 9.77 for Upsilon) massMin < mass < massMax
 
-===========================================================
- How to tune muon track reconstruction
-===========================================================
-several options and adjustable parameters are available for both Kalman and Original
-tracking algorithms (hard coded for the moment in AliMUONVTrackReconstructor.cxx):
-- *fgkSigmaToCutForTracking* : quality cut used to select new clusters to be
-  attached to the track candidate and to select good tracks.
-- *fgkTrackAllTracks* : according to the value of this flag, in case that several
-  new clusters pass the quality cut, either we consider all the possibilities
-  (duplicating tracks) or we attach only the best cluster.
-- *fgkRecoverTracks* : if this flag is set to 'true', we try to recover the tracks
-  lost during the tracking by removing the worst of the 2 clusters attached in the
-  previous station.
-- *fgkImproveTracks* : if this flag is set to 'true', we try to improve the quality
-  of the tracks at the end of the tracking by removing clusters that do not pass
-  new quality cut (within the limit that we must keep at least one cluster per
-  the station).
-- *fgkSigmaToCutForImprovement* : quality cut used when we try to improve the
-  quality of the tracks.
 
-===========================================================
- How to get trigger chamber efficiency from data
-===========================================================
-Trigger chamber efficiency map is calculated during reconstruction and saved in AliESDs.root
-In order to view and save the map, use macro MUONTriggerChamberEfficiency.C
-
-To compile MUONTriggerChamberEfficiency.C
-.includepath $ALICE_ROOT/MUON
-.L $ALICE_ROOT/MUON/MUONTriggerChamberEfficiency.C+
-
-// To run MUONTriggerChamberEfficiency.C
-MUONTriggerChamberEfficiency();
-
-//If you want to make the calculated map available for next simulation use option kTRUE, i.e.
-MUONTriggerChamberEfficiency(kTRUE);
-
-When running next simulation, please remember to activate trigger efficiency
-by adding in Config.C:
-MUON->SetTriggerEffCells(1);
 
 ===========================================================
  Still working ..............
