@@ -6,7 +6,7 @@
 
 // $Id$
 
-/// \ingroup shuttle
+/// \ingroup sim
 /// \class AliMUONPedestalEventGenerator
 /// \brief Generate pedestal events (only for tracker).
 /// 

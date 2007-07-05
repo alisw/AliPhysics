@@ -20,7 +20,7 @@
 #include "AliHeader.h"
 #include "AliLog.h"
 #include "AliMUONCalibrationData.h"
-#include "AliMUONDigitStoreV1.h"
+#include "AliMUONVDigitStore.h"
 #include "AliMUONRawWriter.h"
 #include "AliCodeTimer.h"
 #include "AliMUONVCalibParam.h"
@@ -217,6 +217,13 @@ AliMUONPedestalEventGenerator::ConvertRawFilesToDate()
     result += gSystem->ClosePipe(pipe[iFile]);
   }
   
+  for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); ++iEvent) 
+  {
+    char command[256];
+    sprintf(command, "rm -r raw%d", iEvent);
+    gSystem->Exec(command);
+  }
+  
   delete [] pipe;
   delete runLoader;
   fLoader=0x0;
@@ -229,7 +236,7 @@ AliMUONPedestalEventGenerator::DigitStore()
 {
 /// Return digt container; create it if it does not exist
 
-  if (!fDigitStore) fDigitStore = new AliMUONDigitStoreV1;
+  if (!fDigitStore) fDigitStore = AliMUONVDigitStore::Create("AliMUONDigitStoreV2R");
   return fDigitStore;
 }
 
@@ -283,10 +290,9 @@ AliMUONPedestalEventGenerator::Exec(Option_t*)
     
     if ( fMakeDDL )
     {
+      AliCodeTimerAuto("Digits2Raw");
       Digits2Raw(i);
     }
-    
-//    gROOT->ProcessLine(Form("gObjectTable->Print(); > generate.txt.%d",i));
   }
     
   runLoader->WriteRunLoader("OVERWRITE");
@@ -296,6 +302,7 @@ AliMUONPedestalEventGenerator::Exec(Option_t*)
   // Finally, if instructed to do so, convert DDL files to DATE file(s)
   if ( fMakeDDL && fDateFileName.Length() > 0 ) 
   {
+    AliCodeTimerAuto("ConvertRawFilesToDate")
     Bool_t dateOutput = ConvertRawFilesToDate();
     if (!dateOutput) 
     {
@@ -375,16 +382,34 @@ AliMUONPedestalEventGenerator::GenerateDigits(AliMUONVDigitStore& digitStore)
         // using AliMpVSegmentation::PadByLocation(AliMpIntPair(manuId,manuChannel))
         continue;
       }
+      else if ( mean < 1 || mean >  4095 ) 
+      {
+        AliFatal(Form("Got an invalid mean pedestal value for DE %d Manu %d"
+                      " channel %d : mean = %e",detElemId,manuId,manuChannel,
+                      mean));
+      }
       else
       {
         Float_t sigma = pedestals->ValueAsFloat(manuChannel,1);
         
-
+        if ( sigma < 0 ) 
+        {
+          AliWarning(Form("Got a negative sigma pedestal value for DE %d Manu %d"
+                          " channel %d : sigma = %e, will use Abs()=%e",
+                          detElemId,manuId,manuChannel,
+                          sigma,-sigma));
+          sigma = -sigma;
+        }
+        
         AliMUONVDigit* d = digitStore.Add(detElemId,manuId,manuChannel,
                                           cathode,
                                           AliMUONVDigitStore::kIgnore);
         
-        Float_t ped = gRandom->Gaus(mean,sigma);
+        Float_t ped = -1;
+        while ( ped <= 0 ) 
+        {
+          ped = gRandom->Gaus(mean,sigma);
+        }
         Int_t pedADC = TMath::FloorNint(ped);
 
         d->SetADC(pedADC);
