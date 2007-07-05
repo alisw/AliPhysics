@@ -178,6 +178,10 @@ void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   //######################################
   
   //Fill CaloClusters 
+  const Float_t kBigShort = std::numeric_limits<short int>::max() - 1;
+  const Float_t nsec100   = 1e9*100.; // units of 0.01 ns
+  const Float_t gev500    = 500.;     // units of GeV/500
+
   for (Int_t recpart = 0 ; recpart < nOfRecParticles ; recpart++) {
     AliPHOSRecParticle * rp = dynamic_cast<AliPHOSRecParticle*>(recParticles->At(recpart));
     if (Debug()) 
@@ -203,8 +207,10 @@ void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
     // Convert Float_t* and Int_t* to Short_t* to save memory
     for (Int_t iDigit=0; iDigit<digitMult; iDigit++) {
       AliPHOSDigit *digit = gime->Digit(digitsList[iDigit]);
-      amplList[iDigit] = (Short_t)(digit->GetEnergy()*500); // Energy in units of GeV/500
-      timeList[iDigit] = (Short_t)(digit->GetTime()*1e9*100); // time in units of 0.01 ns
+      amplList[iDigit] =
+	(Short_t)(TMath::Min(digit->GetEnergy()*gev500,kBigShort)); // Energy in units of GeV/500
+      timeList[iDigit] =
+	(Short_t)(TMath::Min(digit->GetTime()*nsec100,kBigShort)); // time in units of 0.01 ns
       digiList[iDigit] = (Short_t)(digit->GetId());
     }
     
