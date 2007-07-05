@@ -150,7 +150,7 @@ class AliAODTrack : public AliVirtualParticle {
   UChar_t GetITSClusterMap() const     { return (UChar_t)fITSMuonClusterMap; }
   UInt_t  GetMUONClusterMap() const    { return fITSMuonClusterMap/65536; }
   UInt_t  GetITSMUONClusterMap() const { return fITSMuonClusterMap; }
-  Bool_t  TestFilterBit(UInt_t filterBit) {return (Bool_t) ((filterBit & fFilterMap) != 0);}
+  Bool_t  TestFilterBit(UInt_t filterBit) const {return (Bool_t) ((filterBit & fFilterMap) != 0);}
 
   AliAODVertex *GetProdVertex() const { return (AliAODVertex*)fProdVertex.GetObject(); }
   
@@ -180,17 +180,17 @@ class AliAODTrack : public AliVirtualParticle {
   void SetMuonClusterMap(UInt_t muonClusMap)       { fITSMuonClusterMap = muonClusMap*65536; }
   void SetITSMuonClusterMap(UInt_t itsMuonClusMap) { fITSMuonClusterMap = itsMuonClusMap; }
 
-  Int_t    GetMatchTrigger() const {return fITSMuonClusterMap>>30;}
+  Int_t GetMatchTrigger() const {return fITSMuonClusterMap>>30;}
 					//  0 Muon track does not match trigger
 					//  1 Muon track match but does not pass pt cut
 					//  2 Muon track match Low pt cut
 					//  3 Muon track match High pt cut
   void     SetMatchTrigger(Int_t MatchTrigger);
-  Int_t    MatchTrigger(){ return (GetMatchTrigger()>0)?1:0; }	//  Muon track matches trigger track
-  Int_t    MatchTriggerAnyPt(){ return (GetMatchTrigger()>0)?1:0; }	//  Muon track matches trigger track
-  Int_t    MatchTriggerLowPt(){ return (GetMatchTrigger()>1)?1:0; }	//  Muon track matches trigger track and passes Low pt cut
-  Int_t    MatchTriggerHighPt(){ return (GetMatchTrigger()>2)?1:0; }	//  Muon track matches trigger track and passes High pt cut
-  Double_t GetChi2MatchTrigger() const {return fChi2MatchTrigger;}
+  Int_t    MatchTrigger() const { return (GetMatchTrigger()>0)?1:0; }	//  Muon track matches trigger track
+  Int_t    MatchTriggerAnyPt()   const  { return (GetMatchTrigger()>0)?1:0; }	//  Muon track matches trigger track
+  Int_t    MatchTriggerLowPt()   const  { return (GetMatchTrigger()>1)?1:0; }	//  Muon track matches trigger track and passes Low pt cut
+  Int_t    MatchTriggerHighPt()  const  { return (GetMatchTrigger()>2)?1:0; }	//  Muon track matches trigger track and passes High pt cut
+  Double_t GetChi2MatchTrigger() const  { return fChi2MatchTrigger;}
   void     SetChi2MatchTrigger(Double_t Chi2MatchTrigger) {fChi2MatchTrigger = Chi2MatchTrigger;}
   UShort_t GetHitsPatternInTrigCh() const { return (fITSMuonClusterMap&0xff00)>>8; }
   void     SetHitsPatternInTrigCh(UShort_t hitsPatternInTrigCh);

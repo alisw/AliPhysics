@@ -330,10 +330,10 @@ void AliAODTrack::ConvertAliPIDtoAODPID()
   // Everything else has to be set to zero.
 
   fPID[kDeuteron] = 0.;
-  fPID[kTriton] = 0.;
-  fPID[kHelium3] = 0.;
-  fPID[kAlpha] = 0.;
-  fPID[kUnknown] = 0.;
+  fPID[kTriton]   = 0.;
+  fPID[kHelium3]  = 0.;
+  fPID[kAlpha]    = 0.;
+  fPID[kUnknown]  = 0.;
   
   return;
 }
@@ -342,7 +342,7 @@ void AliAODTrack::ConvertAliPIDtoAODPID()
 //______________________________________________________________________________
 template <class T> void AliAODTrack::SetP(const T *p, const Bool_t cartesian) 
 {
-  // set the momentum
+  // Set the momentum
 
   if (p) {
     if (cartesian) {
@@ -421,6 +421,8 @@ void AliAODTrack::Print(Option_t* /* option */) const
 }
 
 void AliAODTrack::SetMatchTrigger(Int_t MatchTrigger){
+//
+// Set the MUON trigger information
   switch(MatchTrigger){
     case 0: // 0 track does not match trigger
       fITSMuonClusterMap=fITSMuonClusterMap&0x3fffffff;
@@ -441,10 +443,14 @@ void AliAODTrack::SetMatchTrigger(Int_t MatchTrigger){
 }
 
 void AliAODTrack::SetHitsPatternInTrigCh(UShort_t hitsPatternInTrigCh){
+//
+// Set the MUON hit pattern (1 bit per chamber) 
   fITSMuonClusterMap=(fITSMuonClusterMap&0xffff00ff)|(hitsPatternInTrigCh<<8);
 }
 
 Int_t AliAODTrack::HitsMT(Int_t istation, Int_t iplane, Char_t *cathode){
+//
+// Retrieve hit information for MUON identified by  (station, plane, cathode)
   if(cathode){
     if(cathode[0]=='x'||cathode[0]=='X'){
       if(istation==1){
@@ -507,6 +513,7 @@ Int_t AliAODTrack::HitsMT(Int_t istation, Int_t iplane, Char_t *cathode){
 }
 
 Int_t AliAODTrack::HitsMuonChamber(Int_t MuonChamber){
+// Retrieve hit information for MUON Chamber
   switch(MuonChamber){
     case 11:
       return HitsMT(1,1);
