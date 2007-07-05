@@ -13,6 +13,4 @@
 #pragma link C++ class AliMUONGainSubprocessor+;
 #pragma link C++ class AliMUONGMSSubprocessor+;
 
-#pragma link C++ class AliMUONPedestalEventGenerator+;
-
 #endif
