@@ -38,6 +38,7 @@ class AliTrackPoint : public TObject {
   UShort_t GetVolumeID() const { return fVolumeID; }
 
   Float_t  GetResidual(const AliTrackPoint &p, Bool_t weighted = kFALSE) const;
+  Bool_t   GetPCA(const AliTrackPoint &p, AliTrackPoint &out) const;
 
   Float_t  GetAngle() const;
   AliTrackPoint& Rotate(Float_t alpha) const;

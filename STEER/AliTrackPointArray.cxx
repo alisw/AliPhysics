@@ -23,6 +23,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include <TMath.h>
+#include <TMatrixD.h>
 #include <TMatrixDSym.h>
 
 #include "AliTrackPointArray.h"
@@ -297,6 +298,64 @@ Float_t AliTrackPoint::GetResidual(const AliTrackPoint &p, Bool_t weighted) cons
   }
 
   return res;
+}
+
+//_____________________________________________________________________________
+Bool_t AliTrackPoint::GetPCA(const AliTrackPoint &p, AliTrackPoint &out) const
+{
+  //
+  // Get the intersection point between this point and
+  // the point "p" belongs to.
+  // The result is stored as a point 'out'
+  // return kFALSE in case of failure.
+  out.SetXYZ(0,0,0);
+
+  TMatrixD t(3,1);
+  t(0,0)=GetX();
+  t(1,0)=GetY();
+  t(2,0)=GetZ();
+ 
+  TMatrixDSym tC(3);
+  {
+  const Float_t *cv=GetCov();
+  tC(0,0)=cv[0]; tC(0,1)=cv[1]; tC(0,2)=cv[2];
+  tC(1,0)=cv[1]; tC(1,1)=cv[3]; tC(1,2)=cv[4];
+  tC(2,0)=cv[2]; tC(2,1)=cv[4]; tC(2,2)=cv[5];
+  }
+
+  TMatrixD m(3,1);
+  m(0,0)=p.GetX();
+  m(1,0)=p.GetY();
+  m(2,0)=p.GetZ();
+ 
+  TMatrixDSym mC(3);
+  {
+  const Float_t *cv=p.GetCov();
+  mC(0,0)=cv[0]; mC(0,1)=cv[1]; mC(0,2)=cv[2];
+  mC(1,0)=cv[1]; mC(1,1)=cv[3]; mC(1,2)=cv[4];
+  mC(2,0)=cv[2]; mC(2,1)=cv[4]; mC(2,2)=cv[5];
+  }
+
+  TMatrixDSym tmW(tC);
+  tmW+=mC;
+  tmW.Invert();
+  if (!tmW.IsValid()) return kFALSE; 
+
+  TMatrixD mW(tC,TMatrixD::kMult,tmW);
+  TMatrixD tW(mC,TMatrixD::kMult,tmW);
+
+  TMatrixD mi(mW,TMatrixD::kMult,m);
+  TMatrixD ti(tW,TMatrixD::kMult,t);
+  ti+=mi;
+
+  TMatrixD iC(tC,TMatrixD::kMult,tmW);
+  iC*=mC;
+
+  out.SetXYZ(ti(0,0),ti(1,0),ti(2,0));
+  UShort_t id=p.GetVolumeID();
+  out.SetVolumeID(id);
+
+  return kTRUE;
 }
 
 //______________________________________________________________________________
