@@ -89,12 +89,13 @@ private:
   Int_t fADC; ///< Raw ADC value
   UInt_t fStatusMap; ///< Neighbouring pad status (whether ped, gains, hv were ok or not)
   
+  /// Various statuses of the digit
   enum EStatusBit 
   {
-    kSaturated = BIT(20),
-    kUsed = BIT(21),
-    kCalibrated = BIT(22),
-    kVirtual = BIT(23)
+    kSaturated = BIT(20),  ///< to indicate that manas amplifier has saturated 
+    kUsed = BIT(21),       ///< whether the digit is used (e.g. in a cluster)
+    kCalibrated = BIT(22), ///< whether the digit has been calibrated or not 
+    kVirtual = BIT(23)     ///< whether the digit is virtual or not (see AZ) 
   };
   
   ClassDef(AliMUONRealDigit,1) // Implementation of AliMUONVDigit
