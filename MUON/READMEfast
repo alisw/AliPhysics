@@ -1,6 +1,8 @@
 $Id$
 
+===========================================================
 How to test the fast simulation for MUON.
+===========================================================
 
 The macro "fastMUONGen.C" allows to generate events using the 
 AliGenMUONCocktailpp generator. In the current implementation, the 
