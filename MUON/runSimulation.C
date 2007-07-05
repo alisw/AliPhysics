@@ -19,7 +19,9 @@
 // By Laurent Aphecetche
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
-// add
+#include "AliCDBManager.h"
+#include "AliSimulation.h"
+#include <TRandom.h>
 #endif
 
 void runSimulation(int run, int seed, int nevents, const char* config)

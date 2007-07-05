@@ -19,7 +19,11 @@
 // By Laurent Aphecetche
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
-// add
+#include "AliCDBManager.h"
+#include "AliMagFMaps.h"
+#include "AliTracker.h"
+#include "AliReconstruction.h"
+#include <TRandom.h>
 #endif
 
 void runReconstruction(int run, int seed, const char* input, const char* recoptions)
