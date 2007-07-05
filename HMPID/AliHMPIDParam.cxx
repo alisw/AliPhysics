@@ -53,13 +53,12 @@ AliHMPIDParam::AliHMPIDParam():TNamed("HmpidParam","default version")
 
 if(!gGeoManager) 
 {
-//TGeoManager::Import("misaligned_geometry.root");                                                        //clm: it was a temporary solution
   TGeoManager::Import("geometry.root");
-if(!gGeoManager) AliFatal("!!!!!!No geometry loaded!!!!!!!");
+  if(!gGeoManager) AliFatal("!!!!!!No geometry loaded!!!!!!!");
 }
 
 
-    Float_t Dead=2.6;// cm of the dead zones between PCs-> See 2CRC2099P1
+    Float_t dead=2.6;// cm of the dead zones between PCs-> See 2CRC2099P1
     TGeoVolume *pCellVol = gGeoManager->GetVolume("Hcel");
     if(!pCellVol) {
       fgCellX=0.8;fgCellY=0.84;
@@ -68,17 +67,17 @@ if(!gGeoManager) AliFatal("!!!!!!No geometry loaded!!!!!!!");
       fgCellX=2.*bcell->GetDX(); fgCellY = 2.*bcell->GetDY();
     }
     fgPcX=80.*fgCellX; fgPcY = 48.*fgCellY;
-    fgAllX=2.*fgPcX+Dead;
-    fgAllY=3.*fgPcY+2.*Dead;
+    fgAllX=2.*fgPcX+dead;
+    fgAllY=3.*fgPcY+2.*dead;
 
-     fgkMinPcX[1]=fgPcX+Dead; fgkMinPcX[3]=fgkMinPcX[1];  fgkMinPcX[5]=fgkMinPcX[3];
+     fgkMinPcX[1]=fgPcX+dead; fgkMinPcX[3]=fgkMinPcX[1];  fgkMinPcX[5]=fgkMinPcX[3];
      fgkMaxPcX[0]=fgPcX; fgkMaxPcX[2]=fgkMaxPcX[0];  fgkMaxPcX[4]=fgkMaxPcX[2];
      fgkMaxPcX[1]=fgAllX; fgkMaxPcX[3]=fgkMaxPcX[1];  fgkMaxPcX[5]=fgkMaxPcX[3];
    
-     fgkMinPcY[2]=fgPcY+Dead; fgkMinPcY[3]=fgkMinPcY[2];  
-     fgkMinPcY[4]=2.*fgPcY+2.*Dead; fgkMinPcY[5]=fgkMinPcY[4];
+     fgkMinPcY[2]=fgPcY+dead; fgkMinPcY[3]=fgkMinPcY[2];  
+     fgkMinPcY[4]=2.*fgPcY+2.*dead; fgkMinPcY[5]=fgkMinPcY[4];
      fgkMaxPcY[0]=fgPcY; fgkMaxPcY[1]=fgkMaxPcY[0];  
-     fgkMaxPcY[2]=2.*fgPcY+Dead; fgkMaxPcY[3]=fgkMaxPcY[2]; 
+     fgkMaxPcY[2]=2.*fgPcY+dead; fgkMaxPcY[3]=fgkMaxPcY[2]; 
      fgkMaxPcY[4]=fgAllY; fgkMaxPcY[5]=fgkMaxPcY[4];   
     
   fX=0.5*SizeAllX();
