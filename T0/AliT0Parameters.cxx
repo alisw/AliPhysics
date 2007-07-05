@@ -150,8 +150,8 @@ void AliT0Parameters::InitIfOnline()
    //standart configuration (used for simulation)
    //Int_t trm=0; Int_t tdc=0; Int_t chain=0; Int_t channel=0;
   // configuration for test Jun07.
-  fNumberOfTRMs = 1;
-  Int_t trm=7; Int_t tdc=0; Int_t chain=0; Int_t channel=0;
+  fNumberOfTRMs = 2;
+  Int_t trm=0; Int_t tdc=0; Int_t chain=0; Int_t channel=0;
   for (Int_t ik=0; ik<110; ik++)
         {
          AliT0LookUpKey * lookkey= new AliT0LookUpKey();
@@ -163,10 +163,10 @@ void AliT0Parameters::InitIfOnline()
           lookvalue->SetChain(chain);
           lookvalue->SetChannel(channel);
           lookkey->SetKey(ik);
-          if(ik==55) { tdc=0; channel=0; chain=1;}
-          if (channel<6) channel +=2;
-          else {channel = 0; tdc++;}
-          fLookUp.Add((TObject*)lookvalue,(TObject*)lookkey);	
+	  if (channel<6) channel +=2;
+	  else {channel = 0; tdc++;}
+	   if(ik==57) { tdc=0; channel=0; trm=1;}
+           fLookUp.Add((TObject*)lookvalue,(TObject*)lookkey);	
        }
   
   fIsInit=kTRUE;
