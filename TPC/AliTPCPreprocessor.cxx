@@ -261,7 +261,7 @@ UInt_t AliTPCPreprocessor::ExtractPedestals()
 
         //  replace entries for the sectors available in the present file
 
-        for (Int_t sector=0; sector<=nSectors; sector++) {
+        for (Int_t sector=0; sector<nSectors; sector++) {
            AliTPCCalROC *roc=calPed->GetCalRocPedestal(sector, kFALSE);
            if ( roc )  calPadPed->SetCalROC(roc,sector);
         }
