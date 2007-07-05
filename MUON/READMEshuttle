@@ -56,7 +56,7 @@ We've written an AliMUONPedestalEventGenerator which creates fake pedestal event
 are taken from the Offline Condition DataBase (OCDB) (which is itself fakely filled
 using the WritePedestals() method of AliMUONCDB class
 
-So first generate a valid pedestal CDB entry but using the AliMUONCDB class
+So first generate a valid pedestal CDB entry by using the AliMUONCDB class
 
 root[] const char* cdbpath="local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB"; // where to put the CDB
 root[] AliMUONCDB cdb(cdbpath)
@@ -77,22 +77,25 @@ I-AliCDBLocal::PutEntry: CDB object stored into file ($ALICE_ROOT)/SHUTTLE/TestS
 
 Then use the AliMUONPedestalEventGenerator to produce simulated pedestal events.
 
-Usage :
-root[] AliCDBManager::Instance()->SetDefaultStorage(cdbpath); // so you will read 
+Usage (from the Root prompt) :
+AliCDBManager::Instance()->SetDefaultStorage(cdbpath); // so you will read 
 // back pedestals values generated in the previous step
-root[] const char* dateFileName = "raw.date"; // base filename for the output
-root[] Int_t runNumber = 80; // run number used to fetch the pedestals from the OCDB 
-root[] Int_t nevents = 100; // # of events to generate. 100 should be enough
-root[] gSystem->Load("libMUONshuttle"); // needed or not depending on whether it's already loaded or not
-root[] AliMUONPedestalEventGenerator ped(runNumber,nevents,dateFileName);
-root[] ped.Exec("");
+const char* dateFileName = "raw.date"; // base filename for the output
+Int_t runNumber = 80; // run number used to fetch the pedestals from the OCDB 
+Int_t nevents = 100; // # of events to generate. 100 should be enough
+gSystem->Load("libMUONshuttle"); // needed or not depending on whether it's already loaded or not
+AliMUONPedestalEventGenerator ped(runNumber,nevents,dateFileName);
+ped.Exec("");
 
-It *will* take a lot of time (mainly due to the fact that we're writting a 
+It *will* take a lot of time (mainly due to the fact that we're writing a 
 bunch of ASCII files = DDL files), so please be patient.
 
 The output should be the normal simulated sequence of MUON.Hits.root, MUON.SDigits.root,
  MUON.Digits.root, raw/*.ddl files and raw.date.LDCi where i=0-3 (i.e. one DATE file
 per LDC, as will be used in real life), the latter ones being roughly 100 MB each.
+
+// FIXME : instructions below should be replaced with usage of MUONTRKda
+//
 
 The raw.date.LDC* files are then processed using the makeped online program 
 (currently found, pending an agreement on where to put online programs under cvs,
@@ -109,6 +112,61 @@ The output of the pedestal subprocessor (upon success only) is written into the 
 Difference between the input and the output can be inferred using the diff() function
 of MUONCDB.C macro.
 
+----------
+Gains
+----------
+
+Like pedestals, you have two options here. You can either use a pre-done set of 
+ASCII gain files (generated as explained below for the 2nd option), 
+located at /afs/cern.ch/user/l/laphecet/public/LDC*.gains,  or build you own set.
+ 
+We've written an AliMUONGainEventGenerator which creates fake gain events. 
+The pedestal and gain values are taken from the Offline Condition DataBase (OCDB)
+ (which is itself fakely filled using the WritePedestals() and WriteGains() 
+ methods of AliMUONCDB class).
+
+So first you need to generate a valid pedestal CDB entry and a valid gain CDB 
+entry by using the AliMUONCDB class, from the Root prompt:
+
+const char* cdbpath="local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB"; // where to put the CDB
+AliMUONCDB cdb(cdbpath)
+Bool_t defaultValues = kFALSE; // to generate random values instead of plain zeros...
+Int_t gainRun = 80;
+Int_t pedRun = 81;
+cdb.WritePedestals(defaultValues, pedRun, pedRun);
+cdb.WriteGains(defaultValues, gainRun, gainRun);
+
+Expected output is (don't worry about the warnings, they are harmless) :
+
+Then use the AliMUONGainEventGenerator to produce simulated gain events : the output 
+will be n x 4 date files (n is the number of fake injections, currently 9, and 4
+ is the number of LDCs)
+
+Usage (again, from the Root prompt) :
+
+const char* cdbpath="local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB"; // where to get the CDB
+AliCDBManager::Instance()->SetDefaultStorage(cdbpath); // so you will read 
+// back pedestals and gain values generated in the previous step
+const char* dateFileName = "raw.date"; // base filename for the output
+Int_t gainRunNumber = 80; // run number used to fetch gains from OCDB
+Int_t pedRunNumber = 81; // run number used to fetch the pedestals from the OCDB 
+// generated ped files will be for r = 81, 83, etc...
+Int_t nevents = 100; // # of events to generate. 100 should be enough for testing, but 1000 would be better for prod
+gSystem->Load("libMUONshuttle"); // needed or not depending on whether it's already loaded or not
+AliMUONGainEventGenerator g(gainRunNumber,pedRunNumber,nevents,dateFileName);
+g.Exec("");
+
+It *will* take a lot of time (mainly due to the fact that we're writing a 
+bunch of ASCII files = DDL files), so please be patient.
+
+The output should be a sequence of directories, RUN81, RUN82, etc..., each 
+containing the normal simulated sequence of MUON.Hits.root, MUON.SDigits.root,
+ MUON.Digits.root, raw/*.ddl files and raw.date.LDCi where i=0-3 (i.e. one DATE file
+per LDC, as will be used in real life), the latter ones being roughly 100 MB each.
+
+// FIXME
+// Below should follow instructions on how to feed the MUONTRKda with the
+// generated files.
 
 -------
 HV
