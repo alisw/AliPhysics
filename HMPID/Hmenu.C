@@ -1,19 +1,9 @@
 AliRun     *a; AliRunLoader *al;   TGeoManager *g; //globals for easy manual manipulations
 AliHMPID   *h; AliLoader    *hl; AliHMPIDParam *hp;
-Bool_t isGeomType=kFALSE;
 
 Int_t nCurEvt=0;
 Int_t nMaxEvt=0;
 TControlBar *pMenu=0;
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void GetParam()
-{
-  isGeomType=!isGeomType;
-  if(g) delete g;  if(hp) delete hp; //delete current TGeoManager and AliHMPIDParam
-  if(isGeomType) g=TGeoManager::Import("geometry.root");
-  else           g=TGeoManager::Import("misaligned_geometry.root");
-  hp=AliHMPIDParam::Instance();
-}//GetParam()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void Hmenu()
 {   
@@ -32,7 +22,9 @@ void Hmenu()
     status+="PROBLEM PROBLEM PROBLEM no galice.root";
   
   status+=Form(" curent event %i",nCurEvt);
-  GetParam();
+
+  AliHMPIDParam::Instance();      // geometry loaded
+
   pMenu = new TControlBar("horizontal",status.Data(),0,0);
     pMenu->AddButton("                     ","","");
     pMenu->AddButton("       General       ","General()"  ,"general items which do not depend on any files");
