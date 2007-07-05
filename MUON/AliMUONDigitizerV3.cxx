@@ -19,6 +19,7 @@
 #include "AliMUONDigitizerV3.h"
 
 #include "AliCDBManager.h"
+#include "AliCodeTimer.h"
 #include "AliLog.h"
 #include "AliMUON.h"
 #include "AliMUONCalibrationData.h"
@@ -96,8 +97,6 @@ fIsInitialized(kFALSE),
 fCalibrationData(0x0),
 fTriggerProcessor(0x0),
 fTriggerEfficiency(0x0),
-fGenerateNoisyDigitsTimer(),
-fExecTimer(),
 fNoiseFunction(0x0),
 fNoiseFunctionTrig(0x0),
   fGenerateNoisyDigits(generateNoisyDigits),
@@ -109,8 +108,6 @@ fOutputDigitStore(0x0)
   /// Ctor.
 
   AliDebug(1,Form("AliRunDigitizer=%p",fManager));
-  fGenerateNoisyDigitsTimer.Start(kTRUE); fGenerateNoisyDigitsTimer.Stop();
-  fExecTimer.Start(kTRUE); fExecTimer.Stop();
 }
 
 //_____________________________________________________________________________
@@ -127,16 +124,7 @@ AliMUONDigitizerV3::~AliMUONDigitizerV3()
   delete fTriggerStore;
   delete fDigitStore;
   delete fOutputDigitStore;
-  
-  if ( fGenerateNoisyDigits )
-  {
-    AliDebug(1, Form("Execution time for GenerateNoisyDigits() : R:%.2fs C:%.2fs",
-                 fGenerateNoisyDigitsTimer.RealTime(),
-                 fGenerateNoisyDigitsTimer.CpuTime()));
-  }
-  AliDebug(1, Form("Execution time for Exec() : R:%.2fs C:%.2fs",
-               fExecTimer.RealTime(),fExecTimer.CpuTime()));
- 
+   
   AliInfo("Summary of messages");
   fLogger->Print();
   
@@ -149,29 +137,19 @@ AliMUONDigitizerV3::ApplyResponseToTrackerDigit(AliMUONVDigit& digit, Bool_t add
 {
   /// For tracking digits, starting from an ideal digit's charge, we :
   ///
-  /// - add some noise (thus leading to a realistic charge), if requested to do so
   /// - "divide" by a gain (thus decalibrating the digit)
   /// - add a pedestal (thus decalibrating the digit)
+  /// - add some electronics noise (thus leading to a realistic adc), if requested to do so
   /// - sets the signal to zero if below 3*sigma of the noise
 
-  static const Int_t kMaxADC = (1<<12)-1; // We code the charge on a 12 bits ADC.
-  
   Float_t charge = digit.Charge();
   
   // We set the charge to 0, as the only relevant piece of information
   // after Digitization is the ADC value.  
   digit.SetCharge(0);
-  
-  if ( !addNoise )
-  {
-    digit.SetADC(TMath::Min(kMaxADC,TMath::Nint(charge)));
-    return;
-  }
-  
+    
   Int_t detElemId = digit.DetElemId();
-  
   Int_t manuId = digit.ManuId();
-  Int_t manuChannel = digit.ManuChannel();
   
   AliMUONVCalibParam* pedestal = fCalibrationData->Pedestals(detElemId,manuId);
   if (!pedestal)
@@ -182,8 +160,6 @@ AliMUONDigitizerV3::ApplyResponseToTrackerDigit(AliMUONVDigit& digit, Bool_t add
     digit.SetADC(0);
     return;    
   }
-  Float_t pedestalMean = pedestal->ValueAsFloat(manuChannel,0);
-  Float_t pedestalSigma = pedestal->ValueAsFloat(manuChannel,1);
   
   AliMUONVCalibParam* gain = fCalibrationData->Gains(detElemId,manuId);
   if (!gain)
@@ -195,51 +171,12 @@ AliMUONDigitizerV3::ApplyResponseToTrackerDigit(AliMUONVDigit& digit, Bool_t add
     return;        
   }    
 
-  Float_t a0 = gain->ValueAsFloat(manuChannel,0);
-  Float_t a1 = gain->ValueAsFloat(manuChannel,1);
+  Int_t manuChannel = digit.ManuChannel();
+  
 
-  Int_t thres = gain->ValueAsInt(manuChannel,2);
-  Float_t chargeThres = a0*thres;
   
-  Float_t padc(0); // (adc - ped) value
+  Int_t adc = DecalibrateTrackerDigit(*pedestal,*gain,manuChannel,charge,addNoise);
   
-  if ( charge <= chargeThres || TMath::Abs(a1) < 1E-12 ) 
-  {
-    // linear part only
-    
-    if ( TMath::Abs(a0) > 1E-12 ) 
-    {
-      padc = charge/a0;    
-    }
-  }
-  else // charge > chargeThres && a1 not zero
-  {
-    // parabolic part
-    padc = TMath::Sqrt((chargeThres-charge)/a1) + thres;
-  }
-
-  Float_t adcNoise = gRandom->Gaus(0.0,pedestalSigma);
-  Int_t adc(0);
-  
-  if ( padc > 0 ) 
-  {
-    adc = TMath::Nint(padc + pedestalMean + adcNoise);
-  }
-  
-  // be sure we stick to 12 bits.
-  if ( adc > kMaxADC )
-  {
-    adc = kMaxADC;
-  }
-  
-  AliDebug(3,Form("DE %4d Manu %4d Ch %2d Charge %e A0 %e A1 %e Thres %d padc %e ADC %4d",
-                  detElemId,manuId,manuChannel,charge,
-                  gain->ValueAsFloat(manuChannel,0),
-                  gain->ValueAsFloat(manuChannel,1),
-                  gain->ValueAsInt(manuChannel,2),
-                  padc,
-                  adc));
-                  
   digit.SetADC(adc);
 }
 
@@ -335,6 +272,106 @@ AliMUONDigitizerV3::ApplyResponse(const AliMUONVDigitStore& store,
 }    
 
 //_____________________________________________________________________________
+Int_t 
+AliMUONDigitizerV3::DecalibrateTrackerDigit(const AliMUONVCalibParam& pedestals,
+                                            const AliMUONVCalibParam& gains,
+                                            Int_t channel,
+                                            Float_t charge,
+                                            Bool_t addNoise)
+{
+  /// Decalibrate (i.e. go from charge to adc) a tracker digit, given its
+  /// pedestal and gain parameters.
+  /// Must insure before calling that channel is valid (i.e. between 0 and
+  /// pedestals or gains->GetSize()-1, but also corresponding to a valid channel
+  /// otherwise results are not predictible...)
+
+  static const Int_t kMaxADC = (1<<12)-1; // We code the charge on a 12 bits ADC.
+  
+  Float_t pedestalMean = pedestals.ValueAsFloat(channel,0);
+  Float_t pedestalSigma = pedestals.ValueAsFloat(channel,1);
+  
+  Float_t a0 = gains.ValueAsFloat(channel,0);
+  Float_t a1 = gains.ValueAsFloat(channel,1);
+  Int_t thres = gains.ValueAsInt(channel,2);
+  Int_t qual = gains.ValueAsInt(channel,3);
+  if ( qual <= 0 ) return 0;
+  
+  Float_t chargeThres = a0*thres;
+  
+  Float_t padc(0); // (adc - ped) value
+  
+  if ( charge <= chargeThres || TMath::Abs(a1) < 1E-12 ) 
+  {
+    // linear part only
+    
+    if ( TMath::Abs(a0) > 1E-12 ) 
+    {
+      padc = charge/a0;    
+    }
+  }
+  else 
+  {
+    // linear + parabolic part
+    Double_t qt = chargeThres - charge;
+    Double_t delta = a0*a0-4*a1*qt;
+    if ( delta < 0 ) 
+    {
+      AliErrorClass(Form("delta=%e DE %d Manu %d Channel %d "
+                    " charge %e a0 %e a1 %e thres %d ped %e pedsig %e",
+                    delta,pedestals.ID0(),pedestals.ID1(),
+                    channel, charge, a0, a1, thres, pedestalMean, 
+                    pedestalSigma));      
+    }      
+    else
+    {
+      delta = TMath::Sqrt(delta);
+      
+      padc = ( ( -a0 + delta ) > 0 ? ( -a0 + delta ) : ( -a0 - delta ) );
+      
+      padc /= 2*a1;
+    
+      if ( padc < 0 )
+      {
+        if ( TMath::Abs(padc) > 1E-3) 
+        {
+          // this is more than a precision problem : let's signal it !
+          AliErrorClass(Form("padc=%e DE %d Manu %d Channel %d "
+                             " charge %e a0 %e a1 %e thres %d ped %e pedsig %e delta %e",
+                             padc,pedestals.ID0(),pedestals.ID1(),
+                             channel, charge, a0, a1, thres, pedestalMean, 
+                             pedestalSigma,delta));
+        }
+
+        // ok. consider we're just at thres, let it be zero.
+        padc = 0;
+      }
+
+      padc += thres;
+
+    }
+  }
+  
+  Int_t adc(0);
+  
+  if ( padc > 0 ) 
+  {
+    Float_t adcNoise = 0.0;
+    
+    if ( addNoise ) adcNoise = gRandom->Gaus(0.0,pedestalSigma);
+    
+    adc = TMath::Nint(padc + pedestalMean + adcNoise);
+  }
+  
+  // be sure we stick to 12 bits.
+  if ( adc > kMaxADC )
+  {
+    adc = kMaxADC;
+  }
+  
+  return adc;
+}
+
+//_____________________________________________________________________________
 void
 AliMUONDigitizerV3::Exec(Option_t*)
 {
@@ -344,6 +381,8 @@ AliMUONDigitizerV3::Exec(Option_t*)
   /// Then we generate noise-only digits (for tracker only)
   /// And we finally generate the trigger outputs.
     
+  AliCodeTimerAuto("")
+  
   AliDebug(1, "Running digitizer.");
   
   if ( fManager->GetNinputs() == 0 )
@@ -358,8 +397,6 @@ AliMUONDigitizerV3::Exec(Option_t*)
     return;
   }
   
-  fExecTimer.Start(kFALSE);
-
   Int_t nInputFiles = fManager->GetNinputs();
   
   AliLoader* outputLoader = GetLoader(fManager->GetOutputFolderName());
@@ -451,7 +488,6 @@ AliMUONDigitizerV3::Exec(Option_t*)
   fTriggerStore->Clear();
   fDigitStore->Clear();
   fOutputDigitStore->Clear();
-  fExecTimer.Stop();
 }
 
 //_____________________________________________________________________________
@@ -462,6 +498,8 @@ AliMUONDigitizerV3::FindCorrespondingDigit(const AliMUONVDigitStore& digitStore,
   /// Find, if it exists, the digit corresponding to digit.Hit(), in the 
   /// other cathode
 
+  AliCodeTimerAuto("")
+  
   TIter next(digitStore.CreateIterator());
   AliMUONVDigit* d;
   
@@ -486,6 +524,8 @@ AliMUONDigitizerV3::GenerateNoisyDigits(AliMUONVDigitStore& digitStore)
   /// have a signal above the noise cut (ped+n*sigma_ped), i.e. digits
   /// that are "only noise".
   
+  AliCodeTimerAuto("")
+  
   if ( !fNoiseFunction )
   {
     fNoiseFunction = new TF1("AliMUONDigitizerV3::fNoiseFunction","gaus",
@@ -493,8 +533,6 @@ AliMUONDigitizerV3::GenerateNoisyDigits(AliMUONVDigitStore& digitStore)
     
     fNoiseFunction->SetParameters(1,0,1);
   }
-  
-  fGenerateNoisyDigitsTimer.Start(kFALSE);
   
   for ( Int_t i = 0; i < AliMUONConstants::NTrackingCh(); ++i )
   {
@@ -511,8 +549,6 @@ AliMUONDigitizerV3::GenerateNoisyDigits(AliMUONVDigitStore& digitStore)
       it.Next();
     }
   }
-  
-  fGenerateNoisyDigitsTimer.Stop();
 }
  
 //_____________________________________________________________________________

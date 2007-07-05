@@ -16,10 +16,6 @@
 #include "AliDigitizer.h"
 #endif
 
-#ifndef ROOT_TStopwatch
-#  include "TStopwatch.h"
-#endif
-
 class AliMUONCalibrationData;
 class AliMUONVDigit;
 class AliMUONLogger;
@@ -31,6 +27,7 @@ class AliMUONVDigitStore;
 class AliLoader;
 class AliMUONVTriggerStore;
 class AliMUONTriggerElectronics;
+class AliMUONVCalibParam;
 
 class AliMUONDigitizerV3 : public AliDigitizer
 {
@@ -43,6 +40,12 @@ public:
   
   virtual Bool_t Init();
 
+  static Int_t DecalibrateTrackerDigit(const AliMUONVCalibParam& pedestals,
+                                       const AliMUONVCalibParam& gains,
+                                       Int_t channel,
+                                       Float_t charge,
+                                       Bool_t addNoise=kFALSE);
+  
 private:
   /// Not implemented
   AliMUONDigitizerV3(const AliMUONDigitizerV3& other);
@@ -75,8 +78,6 @@ private:
   AliMUONCalibrationData* fCalibrationData; //!< pointer to access calib parameters
   AliMUONTriggerElectronics* fTriggerProcessor; ///< pointer to the trigger part of the job
   AliMUONTriggerEfficiencyCells* fTriggerEfficiency; ///< trigger efficiency map  
-  TStopwatch fGenerateNoisyDigitsTimer; //!< counting time spent in GenerateNoisyDigits()
-  TStopwatch fExecTimer; //!< couting time spent in Exec()  
   TF1* fNoiseFunction; //!< function to randomly get signal above n*sigma_ped
   TF1* fNoiseFunctionTrig; //!< function to get noise disribution on trig. chambers
   Int_t fGenerateNoisyDigits; //!< whether or not we should generate noise-only digits for tracker (1) and trigger (2)
@@ -87,7 +88,7 @@ private:
   AliMUONVDigitStore* fDigitStore; //!< temporary digits
   AliMUONVDigitStore* fOutputDigitStore; //!< digits we'll output to disk
   
-  ClassDef(AliMUONDigitizerV3,5) // MUON Digitizer V3-5
+  ClassDef(AliMUONDigitizerV3,6) // MUON Digitizer V3-5
 };
 
 #endif
