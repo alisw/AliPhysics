@@ -35,27 +35,60 @@ public:
   AliMUONCalibrationData(Int_t runNumber=-1, Bool_t deferredInitialization=kTRUE);
   virtual ~AliMUONCalibrationData();
 
-  AliMUONVStore* Neighbours() const;
-  
   AliMUONVStore* Capacitances() const;
+
+  /// Create a capa store (which must be deleted) from OCDB for the given run
+  static AliMUONVStore* CreateCapacitances(Int_t runNumber);
+
+  /// Create a gain store (which must be deleted) from OCDB for the given run
+  static AliMUONVStore* CreateGains(Int_t runNumber);
+
+  /// Create a global trigger mask (which must be deleted) from OCDB for the given run
+  static AliMUONVCalibParam* CreateGlobalTriggerBoardMasks(Int_t runNumber);
   
+  /// Create a hv map (which must be deleted) from OCDB for the given run
+  static TMap* CreateHV(Int_t runNumber);
+
+  /// Create a neighbours store (which must be deleted) from OCDB for the given run
+  static AliMUONVStore* CreateNeighbours(Int_t runNumber);
+  
+  /// Create a local trigger mask store (which must be deleted) for a given run
+  static AliMUONVStore* CreateLocalTriggerBoardMasks(Int_t runNumber);
+
+  /// Create a pedestal store (which must be deleted) from OCDB for the given run
+  static AliMUONVStore* CreatePedestals(Int_t runNumber);
+
+  /// Create a regional trigger mask store (which must be deleted) for a given run
+  static AliMUONVStore* CreateRegionalTriggerBoardMasks(Int_t runNumber);
+
+  /// Create a trigger Look Up Table (which must be deleted) for a given run
+  static AliMUONTriggerLut* CreateTriggerLut(Int_t runNumber);
+  
+  /// Create a trigger efficiency map (which must be deleted) for a given run
+  static AliMUONTriggerEfficiencyCells* CreateTriggerEfficiency(Int_t runNumber);
+  
+  /// Get all the gains
   AliMUONVStore* Gains() const;
-  
-  /// Get the Gain calibration object for channels within (detElemId,manuId).
-  AliMUONVCalibParam* Gains(Int_t detElemId, Int_t manuId) const;
 
   /// Get the mask for the global trigger board.
   AliMUONVCalibParam* GlobalTriggerBoardMasks() const;
-
-  /// Get the mask for a given local trigger board.
-  AliMUONVCalibParam* LocalTriggerBoardMasks(Int_t localBoardNumber) const;
-
+    
+  /// Get the Gain calibration object for channels within (detElemId,manuId).
+  AliMUONVCalibParam* Gains(Int_t detElemId, Int_t manuId) const;
+    
   /// Get the HV values
   TMap* HV() const;
-  
+    
   /// Whether this object is valid or not (might be invalid if fetching from CDB failed).
   Bool_t IsValid() const { return fIsValid; }
+    
+  /// Get the mask for a given local trigger board.
+  AliMUONVCalibParam* LocalTriggerBoardMasks(Int_t localBoardNumber) const;
+    
+  /// Get the neighbours store
+  AliMUONVStore* Neighbours() const;
   
+  /// Get the pedestal store
   AliMUONVStore* Pedestals() const;
   
   /// Get the Pedestal calibration object for channels within (detElemId,manuId).
@@ -84,20 +117,11 @@ protected:
   /// Not implemented
   AliMUONCalibrationData& operator=(const AliMUONCalibrationData& other);
   
-private:
-  AliCDBEntry* GetEntry(const char* path) const;
-  AliMUONVStore* OnDemandNeighbours() const;
-  AliMUONVStore* OnDemandCapacitances() const;
-  AliMUONVStore* OnDemandGains() const;
-  AliMUONVStore* OnDemandPedestals() const;
-  TMap* OnDemandHV() const;
-  AliMUONVCalibParam* OnDemandGlobalTriggerBoardMasks() const;
-  AliMUONVStore* OnDemandRegionalTriggerBoardMasks() const;
-  AliMUONVStore* OnDemandLocalTriggerBoardMasks() const;
-  AliMUONTriggerLut* OnDemandTriggerLut() const;
-  AliMUONTriggerEfficiencyCells* OnDemandTriggerEfficiency() const;
-  
 private:  
+    
+  static TObject* CreateObject(Int_t runNumber, const char* path);
+  
+private:
   mutable Bool_t fIsValid; ///<  Whether we were able to correctly initialize
   Int_t fRunNumber; ///<  The run number for which we hold calibrations
   mutable AliMUONVStore* fGains; //!< Gains
