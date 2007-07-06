@@ -674,7 +674,7 @@ void AliTPCv0::CreateGeometry()
    TGeoVolumeAssembly *secta = new TGeoVolumeAssembly("TPC_SECT"); // a-side
    TGeoVolumeAssembly *sectc = new TGeoVolumeAssembly("TPC_SECT"); // c-side
    //
-   TGeoVolumeAssembly *sect = new TGeoVolumeAssembly("TPC_SECT");
+
    TGeoRotation rot1("rot1",90.,90.,0.);
    TGeoRotation rot2("rot2");
    rot2.RotateY(10.);
