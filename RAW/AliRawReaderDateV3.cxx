@@ -86,7 +86,7 @@ AliRawReaderDateV3::AliRawReaderDateV3(const char* fileName,
   while (fread(&header, 1, headerSize, fFile) == headerSize) {
     if (eventNumber == 0) {
       UChar_t* buffer = new UChar_t[header.size];
-      fseek(fFile, -headerSize, SEEK_CUR);
+      fseek(fFile, -(long)headerSize, SEEK_CUR);
       if (Int_t(fread(buffer, 1, header.size, fFile)) != header.size) break;
       fEvent = (eventHeaderStruct*) buffer;
       break;
@@ -411,7 +411,7 @@ Bool_t AliRawReaderDateV3::NextEvent()
       continue;
     }
     UChar_t* buffer = new UChar_t[header.size];
-    fseek(fFile, -headerSize, SEEK_CUR);
+    fseek(fFile, -(long)headerSize, SEEK_CUR);
     if (Int_t(fread(buffer, 1, header.size, fFile)) != header.size) {
       Error("NextEvent", "could not read event from file");
       delete[] buffer;
