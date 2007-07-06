@@ -138,3 +138,41 @@ void tpc_digits(Int_t mode=0)
 
   } // switch
 }
+
+
+void tpc_digits_2drange(Int_t start, Int_t end)
+{
+  if (start <  0)  start = 0;
+  if (end   > 35)  end   = 35;
+
+  if (g_tpc_data == 0 || g_tpc_last_event != Alieve::gEvent) {
+    AliRunLoader* rl =  Alieve::Event::AssertRunLoader();
+    rl->LoadDigits("TPC");
+    TTree* dt = rl->GetTreeD("TPC", false);
+
+    g_tpc_data = new Alieve::TPCData;
+    g_tpc_data->LoadDigits(dt, kTRUE); // Create all present sectors.
+
+    g_tpc_last_event = Alieve::gEvent;
+  }
+
+  gStyle->SetPalette(1, 0);
+  Color_t col = 36;
+
+  gReve->DisableRedraw();
+  {
+    Reve::RenderElementList* l = new Reve::RenderElementList("TPC sectors");
+    l->SetMainColor(Color_t(col));
+    gReve->AddRenderElement(l);
+      
+    for(Int_t i=start; i<=end; i++) {
+      Alieve::TPCSector2D* s = new Alieve::TPCSector2D();
+      s->SetSectorID(i);
+      s->SetDataSource(g_tpc_data);
+      s->SetFrameColor(col);
+      s->SetAutoTrans(kTRUE);
+      gReve->AddRenderElement(l, s);
+    }
+  }
+  gReve->EnableRedraw();
+}
