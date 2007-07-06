@@ -44,6 +44,7 @@
 #include "AliMUONBusStruct.h"
 #include "AliMUONDDLTracker.h"
 #include "Riostream.h"
+#include <cassert>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONRawStreamTracker)
@@ -118,6 +119,7 @@ AliMUONRawStreamTracker::Next(Int_t& busPatchId,
   ///
   /// read the next raw digit (buspatch structure)
   /// returns kFALSE if there is no digit left
+  /// Should call First() before this method to start the iteration.
   ///
   
   if ( IsDone() ) return kFALSE;
@@ -154,19 +156,25 @@ AliMUONRawStreamTracker::IsDone() const
 void
 AliMUONRawStreamTracker::First()
 {
-  /// Initialize the iteration process
+  /// Initialize the iteration process.
   
   fCurrentDDLIndex = -1;
-  fCurrentDspHeaderIndex = -1;
-  fCurrentBusStructIndex = -1;
+//  fCurrentDspHeaderIndex = -1; // Not necessary since this gets reset in the GetNextXXX methods.
+//  fCurrentBusStructIndex = -1;
 
+  // Must reset all the pointers because if we return before calling
+  // GetNextBusStruct() the user might call CurrentDDL(), CurrentBlockHeader(),
+  // CurrentDspHeader() or CurrentBusStruct() which should return reasonable
+  // results in that case.
+  fCurrentDDL = 0;
+  fCurrentBlockHeader = 0;
   fCurrentDspHeader = 0;
   fCurrentBusStruct = 0;
   
   // Find the first non-empty structure
-  GetNextDDL();
-  GetNextBlockHeader();
-  GetNextDspHeader();
+  if (not GetNextDDL()) return;
+  if (not GetNextBlockHeader()) return;
+  if (not GetNextDspHeader()) return;
   GetNextBusStruct();
 }
 
@@ -175,6 +183,8 @@ Bool_t
 AliMUONRawStreamTracker::GetNextDDL()
 {
   /// Returns the next DDL present
+  
+  assert( fRawReader != 0 );
   
   Bool_t kFound(kFALSE);
   
@@ -191,7 +201,12 @@ AliMUONRawStreamTracker::GetNextDDL()
   
   if ( !kFound ) 
   {
+    // fCurrentDDLIndex is set to fMaxDDL so that we exit the above loop immediately
+    // for a subsequent call to this method, unless NextEvent is called in between.
     fCurrentDDLIndex = fMaxDDL;
+    // We have not actually been able to complete the loading of the new DDL so
+    // we are still on the old one. In this case we do not need to reset fCurrentDDL.
+    //fCurrentDDL = 0;
     return kFALSE;
   }
   
@@ -204,7 +219,10 @@ AliMUONRawStreamTracker::GetNextDDL()
   
   if ( !fRawReader->ReadNext((UChar_t*)buffer, totalDataWord) )
   {
-    fCurrentDDL = 0;
+    // We have not actually been able to complete the loading of the new DDL so
+    // we are still on the old one. In this case we do not need to reset fCurrentDDL.
+    //fCurrentDDL = 0;
+    delete [] buffer;
     return kFALSE;
   }
   fPayload->ResetDDL();
@@ -227,6 +245,8 @@ Bool_t
 AliMUONRawStreamTracker::GetNextBlockHeader()
 {
   /// Returns the next block Header present
+  
+  assert( fCurrentDDL != 0 );
 
   fCurrentBlockHeader = 0;
 
@@ -264,6 +284,8 @@ AliMUONRawStreamTracker::GetNextDspHeader()
 {
   /// Returns the next Dsp Header present
 
+  assert( fCurrentBlockHeader != 0 );
+  
   fCurrentDspHeader = 0;
   
   Int_t i(fCurrentDspHeaderIndex);
@@ -300,6 +322,8 @@ AliMUONRawStreamTracker::GetNextBusStruct()
 {
   /// Find the next non-empty busPatch structure
   
+  assert( fCurrentDspHeader != 0 );
+  
   fCurrentBusStruct = 0;
 
   Int_t i(fCurrentBusStructIndex);
@@ -334,6 +358,8 @@ AliMUONRawStreamTracker::GetNextBusStruct()
 Bool_t AliMUONRawStreamTracker::NextDDL()
 {
   /// reading tracker DDL
+  
+  assert( fRawReader != 0 );
   
   fPayload->ResetDDL();
   
@@ -394,6 +420,8 @@ void AliMUONRawStreamTracker::SetMaxBlock(Int_t blk)
 void AliMUONRawStreamTracker::AddErrorMessage()
 {
 /// add message into logger of AliRawReader per event
+
+    assert( fRawReader != 0 );
 
     for (Int_t i = 0; i < fPayload->GetParityErrors(); ++i)
 	fRawReader->AddMinorErrorLog(kParityErr, Form("Parity error for buspatch %s",  
