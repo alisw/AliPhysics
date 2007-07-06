@@ -49,7 +49,7 @@ ClassImp(AliMUONTrackReconstructorK) // Class implementation in ROOT context
 const Bool_t AliMUONTrackReconstructorK::fgkRunSmoother = kTRUE;
 
 
-//__________________________________________________________________________
+  //__________________________________________________________________________
 AliMUONTrackReconstructorK::AliMUONTrackReconstructorK()
   : AliMUONVTrackReconstructor()
 {
@@ -57,7 +57,7 @@ AliMUONTrackReconstructorK::AliMUONTrackReconstructorK()
   AliInfo("*** Tracking with Kalman Filter ***");
 }
 
-//__________________________________________________________________________
+  //__________________________________________________________________________
 AliMUONTrackReconstructorK::~AliMUONTrackReconstructorK()
 {
 /// Destructor
@@ -66,13 +66,14 @@ AliMUONTrackReconstructorK::~AliMUONTrackReconstructorK()
   //__________________________________________________________________________
 void AliMUONTrackReconstructorK::MakeTrackCandidates()
 {
-  /// To make track candidates:
+  /// To make track candidates (assuming linear propagation if the flag fgkMakeTrackCandidatesFast is set to kTRUE):
   /// Start with segments station(1..) 4 or 5 then follow track in station 5 or 4.
   /// Good candidates are made of at least three hitForRec's.
   /// Keep only best candidates or all of them according to the flag fgkTrackAllTracks.
   TClonesArray *segments;
   AliMUONTrack *track;
   Int_t iCandidate = 0;
+  Bool_t hitFound;
 
   AliDebug(1,"Enter MakeTrackCandidates");
 
@@ -90,10 +91,6 @@ void AliMUONTrackReconstructorK::MakeTrackCandidates()
       track = new ((*fRecTracksPtr)[fRecTracksPtr->GetLast()+1]) AliMUONTrack((AliMUONObjectPair*)((*segments)[iseg]));
       fNRecTracks++;
       
-      // Recompute track parameters and covariances on station(1..) 5 using Kalman filter
-      // (to make sure all tracks are treated in the same way)
-      if (istat == 4) RetraceTrack(*track,kFALSE);
-      
       // Printout for debuging
       if ((AliLog::GetDebugLevel("MUON","AliMUONTrackReconstructorK") >= 2) || (AliLog::GetGlobalDebugLevel() >= 2)) {
         cout<<endl<<"Track parameter covariances at first hit:"<<endl;
@@ -101,8 +98,16 @@ void AliMUONTrackReconstructorK::MakeTrackCandidates()
       }
       
       // Look for compatible hitForRec(s) in the other station
+      if (fgkMakeTrackCandidatesFast) hitFound = FollowLinearTrackInStation(*track,7-istat);
+      else {
+        // First recompute track parameters and covariances on station(1..) 5 using Kalman filter
+        // (to make sure all tracks are treated in the same way)
+        if (istat == 4) RetraceTrack(*track,kFALSE);
+	hitFound = FollowTrackInStation(*track,7-istat);
+      }
+      
       // Remove track if no hit found
-      if (!FollowTrackInStation(*track,7-istat)) {
+      if (!hitFound) {
         fRecTracksPtr->Remove(track);
   	fNRecTracks--;
       }
@@ -112,18 +117,24 @@ void AliMUONTrackReconstructorK::MakeTrackCandidates()
     delete segments;
   }
   
-  fRecTracksPtr->Compress(); // this is essential before checking tracks
   
-  // Remove bad tracks
-  Int_t currentNRecTracks = fNRecTracks;
-  for (Int_t iRecTrack = 0; iRecTrack < currentNRecTracks; iRecTrack++) {
+  // Retrace tracks using Kalman filter and remove bad ones
+  if (fgkMakeTrackCandidatesFast) {
+    fRecTracksPtr->Compress(); // this is essential before checking tracks
     
-    track = (AliMUONTrack*) fRecTracksPtr->UncheckedAt(iRecTrack);
-    
-    // Remove the track if the normalized chi2 is too high
-    if (track->GetNormalizedChi2() > fgkSigmaToCutForTracking * fgkSigmaToCutForTracking) {
-      fRecTracksPtr->Remove(track);
-      fNRecTracks--;
+    Int_t currentNRecTracks = fNRecTracks;
+    for (Int_t iRecTrack = 0; iRecTrack < currentNRecTracks; iRecTrack++) {
+      track = (AliMUONTrack*) fRecTracksPtr->UncheckedAt(iRecTrack);
+      
+      // Recompute track parameters and covariances using Kalman filter
+      RetraceTrack(*track,kTRUE);
+      
+      // Remove the track if the normalized chi2 is too high
+      if (track->GetNormalizedChi2() > fgkSigmaToCutForTracking * fgkSigmaToCutForTracking) {
+        fRecTracksPtr->Remove(track);
+        fNRecTracks--;
+      }
+      
     }
     
   }
@@ -294,21 +305,6 @@ void AliMUONTrackReconstructorK::FollowTracks()
     
     fRecTracksPtr->Compress(); // this is essential before checking tracks
     
-    // Remove bad tracks
-    Int_t currentNRecTracks = fNRecTracks;
-    for (Int_t iRecTrack = 0; iRecTrack < currentNRecTracks; iRecTrack++) {
-      track = (AliMUONTrack*) fRecTracksPtr->UncheckedAt(iRecTrack);
-      
-      // Remove the track if the normalized chi2 is too high
-      if (track->GetNormalizedChi2() > fgkSigmaToCutForTracking * fgkSigmaToCutForTracking) {
-  	fRecTracksPtr->Remove(track);
-  	fNRecTracks--;
-      }
-      
-    }
-    
-    fRecTracksPtr->Compress(); // this is essential before checking tracks
-    
     // Keep only the best tracks if required
     if (!fgkTrackAllTracks) RemoveDoubleTracks();
     
@@ -340,7 +336,6 @@ Bool_t AliMUONTrackReconstructorK::FollowTrackInStation(AliMUONTrack &trackCandi
     ch2 = 2*nextStation+1;
   }
   
-  Double_t zCh2 = AliMUONConstants::DefaultChamberZ(ch2);
   Double_t chi2OfHitForRec;
   Double_t maxChi2OfHitForRec = 2. * fgkSigmaToCutForTracking * fgkSigmaToCutForTracking; // 2 because 2 quantities in chi2
   Double_t addChi2TrackAtHit1;
@@ -359,30 +354,30 @@ Bool_t AliMUONTrackReconstructorK::FollowTrackInStation(AliMUONTrack &trackCandi
   Bool_t *hitForRecCh1Used = new Bool_t[fNHitsForRecPerChamber[ch1]];
   for (Int_t hit1 = 0; hit1 < fNHitsForRecPerChamber[ch1]; hit1++) hitForRecCh1Used[hit1] = kFALSE;
   
-  // Get track parameters and extrapolate them to chamber "ch2" to save computing time in the next steps
-  AliMUONTrackParam extrapTrackParamAtCh2(*(AliMUONTrackParam*)trackCandidate.GetTrackParamAtHit()->First());
+  // Get track parameters
+  AliMUONTrackParam extrapTrackParamAtCh(*(AliMUONTrackParam*)trackCandidate.GetTrackParamAtHit()->First());
   
   // Add MCS effect
-  AliMUONTrackExtrap::AddMCSEffect(&extrapTrackParamAtCh2,AliMUONConstants::ChamberThicknessInX0(),1.);
+  AliMUONTrackExtrap::AddMCSEffect(&extrapTrackParamAtCh,AliMUONConstants::ChamberThicknessInX0(),1.);
   
   // reset propagator for smoother
-  if (fgkRunSmoother) extrapTrackParamAtCh2.ResetPropagator();
+  if (fgkRunSmoother) extrapTrackParamAtCh.ResetPropagator();
   
   // Add MCS in the missing chamber if any (only 1 chamber can be missing according to tracking criteria)
-  if (ch1 < ch2 && extrapTrackParamAtCh2.GetHitForRecPtr()->GetChamberNumber() > ch2 + 1) {
+  if (ch1 < ch2 && extrapTrackParamAtCh.GetHitForRecPtr()->GetChamberNumber() > ch2 + 1) {
     // extrapolation to the missing chamber
-    AliMUONTrackExtrap::ExtrapToZCov(&extrapTrackParamAtCh2, AliMUONConstants::DefaultChamberZ(ch2 + 1), fgkRunSmoother);
+    AliMUONTrackExtrap::ExtrapToZCov(&extrapTrackParamAtCh, AliMUONConstants::DefaultChamberZ(ch2 + 1), fgkRunSmoother);
     // add MCS effect
-    AliMUONTrackExtrap::AddMCSEffect(&extrapTrackParamAtCh2,AliMUONConstants::ChamberThicknessInX0(),1.);
+    AliMUONTrackExtrap::AddMCSEffect(&extrapTrackParamAtCh,AliMUONConstants::ChamberThicknessInX0(),1.);
   }
   
   //Extrapolate trackCandidate to chamber "ch2"
-  AliMUONTrackExtrap::ExtrapToZCov(&extrapTrackParamAtCh2, zCh2, fgkRunSmoother);
+  AliMUONTrackExtrap::ExtrapToZCov(&extrapTrackParamAtCh, AliMUONConstants::DefaultChamberZ(ch2), fgkRunSmoother);
   
   // Printout for debuging
   if ((AliLog::GetDebugLevel("MUON","AliMUONTrackReconstructorK") >= 2) || (AliLog::GetGlobalDebugLevel() >= 2)) {
-    cout<<endl<<"Track parameter covariances at first hit extrapolated to z = "<<zCh2<<":"<<endl;
-    extrapTrackParamAtCh2.GetCovariances().Print();
+    cout<<endl<<"Track parameter covariances at first hit extrapolated to z = "<<AliMUONConstants::DefaultChamberZ(ch2)<<":"<<endl;
+    extrapTrackParamAtCh.GetCovariances().Print();
   }
   
   // Printout for debuging
@@ -395,8 +390,11 @@ Bool_t AliMUONTrackReconstructorK::FollowTrackInStation(AliMUONTrack &trackCandi
     
     hitForRecCh2 = (AliMUONHitForRec*) fHitsForRecPtr->UncheckedAt(fIndexOfFirstHitForRecPerChamber[ch2]+hit2);
     
-    // try to add the current hit
-    chi2OfHitForRec = TryOneHitForRec(extrapTrackParamAtCh2, hitForRecCh2, extrapTrackParamAtHit2, fgkRunSmoother);
+    // try to add the current hit fast
+    if (!TryOneHitForRecFast(extrapTrackParamAtCh, hitForRecCh2)) continue;
+    
+    // try to add the current hit accuratly
+    chi2OfHitForRec = TryOneHitForRec(extrapTrackParamAtCh, hitForRecCh2, extrapTrackParamAtHit2, fgkRunSmoother);
     
     // if good chi2 then try to attach a hitForRec in the other chamber too
     if (chi2OfHitForRec < maxChi2OfHitForRec) {
@@ -429,13 +427,19 @@ Bool_t AliMUONTrackReconstructorK::FollowTrackInStation(AliMUONTrack &trackCandi
       // reset propagator for smoother
       if (fgkRunSmoother) extrapTrackParam.ResetPropagator();
       
+      //Extrapolate track parameters to chamber "ch1"
+      AliMUONTrackExtrap::ExtrapToZCov(&extrapTrackParam, AliMUONConstants::DefaultChamberZ(ch1), fgkRunSmoother);
+      
       for (Int_t hit1 = 0; hit1 < fNHitsForRecPerChamber[ch1]; hit1++) {
         
 	hitForRecCh1 = (AliMUONHitForRec*) fHitsForRecPtr->UncheckedAt(fIndexOfFirstHitForRecPerChamber[ch1]+hit1);
 	
-        // try to add the current hit
-	chi2OfHitForRec = TryOneHitForRec(extrapTrackParam, hitForRecCh1, extrapTrackParamAtHit1, fgkRunSmoother);
-        
+    	// try to add the current hit fast
+    	if (!TryOneHitForRecFast(extrapTrackParam, hitForRecCh1)) continue;
+    	
+    	// try to add the current hit accuratly
+    	chi2OfHitForRec = TryOneHitForRec(extrapTrackParam, hitForRecCh1, extrapTrackParamAtHit1, fgkRunSmoother);
+    	
 	// if good chi2 then consider to add the 2 hitForRec to the "trackCandidate"
 	if (chi2OfHitForRec < maxChi2OfHitForRec) {
 	  foundSecondHit = kTRUE;
@@ -446,7 +450,7 @@ Bool_t AliMUONTrackReconstructorK::FollowTrackInStation(AliMUONTrack &trackCandi
 	    cout << "FollowTrackInStation: found one hit in chamber(1..): " << ch1+1
 	  	 << " (Chi2 = " << chi2OfHitForRec << ")" << endl;
 	  }
-	  
+          
           if (fgkRunSmoother) {
             // save extrapolated parameters for smoother
             extrapTrackParamAtHit1.SetExtrapParameters(extrapTrackParamAtHit1.GetParameters());
@@ -510,8 +514,7 @@ Bool_t AliMUONTrackReconstructorK::FollowTrackInStation(AliMUONTrack &trackCandi
 	  }
 	  
 	} else if (!foundTwoHits && addChi2TrackAtHit2 < bestAddChi2TrackAtHit1) {
-	  // keep track of the best single hitForRec except if a couple
-          // of hits has already been found (i.e. bestHitForRec2!=0x0)
+	  // keep track of the best single hitForRec except if a couple of hits has already been found
 	  bestAddChi2TrackAtHit1 = addChi2TrackAtHit2;
 	  bestTrackParamAtHit1 = extrapTrackParamAtHit2;
         }
@@ -532,17 +535,23 @@ Bool_t AliMUONTrackReconstructorK::FollowTrackInStation(AliMUONTrack &trackCandi
     }
     
     // add MCS effect for next step
-    AliMUONTrackExtrap::AddMCSEffect(&extrapTrackParamAtCh2,AliMUONConstants::ChamberThicknessInX0(),1.);
-      
+    AliMUONTrackExtrap::AddMCSEffect(&extrapTrackParamAtCh,AliMUONConstants::ChamberThicknessInX0(),1.);
+    
+    //Extrapolate trackCandidate to chamber "ch1"
+    AliMUONTrackExtrap::ExtrapToZCov(&extrapTrackParamAtCh, AliMUONConstants::DefaultChamberZ(ch1), fgkRunSmoother);
+    
     for (Int_t hit1 = 0; hit1 < fNHitsForRecPerChamber[ch1]; hit1++) {
       
       hitForRecCh1 = (AliMUONHitForRec*) fHitsForRecPtr->UncheckedAt(fIndexOfFirstHitForRecPerChamber[ch1]+hit1);
       
       if (hitForRecCh1Used[hit1]) continue; // Skip hitForRec already used
       
-      // try to add the current hit
-      chi2OfHitForRec = TryOneHitForRec(extrapTrackParamAtCh2, hitForRecCh1, extrapTrackParamAtHit1, fgkRunSmoother);
-    
+      // try to add the current hit fast
+      if (!TryOneHitForRecFast(extrapTrackParamAtCh, hitForRecCh1)) continue;
+      
+      // try to add the current hit accuratly
+      chi2OfHitForRec = TryOneHitForRec(extrapTrackParamAtCh, hitForRecCh1, extrapTrackParamAtHit1, fgkRunSmoother);
+      
       // if good chi2 then consider to add hitForRecCh1
       // We do not try to attach a hitForRec in the other chamber too since it has already been done above
       if (chi2OfHitForRec < maxChi2OfHitForRec) {
@@ -553,7 +562,7 @@ Bool_t AliMUONTrackReconstructorK::FollowTrackInStation(AliMUONTrack &trackCandi
   	  cout << "FollowTrackInStation: found one hit in chamber(1..): " << ch1+1
   	       << " (Chi2 = " << chi2OfHitForRec << ")" << endl;
   	}
-	
+        
 	if (fgkRunSmoother) {
           // save extrapolated parameters for smoother
           extrapTrackParamAtHit1.SetExtrapParameters(extrapTrackParamAtHit1.GetParameters());
@@ -582,8 +591,7 @@ Bool_t AliMUONTrackReconstructorK::FollowTrackInStation(AliMUONTrack &trackCandi
   	  }
 	  
   	} else if (addChi2TrackAtHit1 < bestAddChi2TrackAtHit1) {
-  	  // keep track of the best single hitForRec except if a couple
-  	  // of hits has already been found (i.e. bestHitForRec1!=0x0)
+	  // keep track of the best single hitForRec except if a couple of hits has already been found
 	  bestAddChi2TrackAtHit1 = addChi2TrackAtHit1;
 	  bestTrackParamAtHit1 = extrapTrackParamAtHit1;
   	}

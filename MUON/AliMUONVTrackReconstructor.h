@@ -14,6 +14,7 @@
 #include <TObject.h>
 
 class TClonesArray;
+class AliMUONTrack;
 class AliMUONTrackParam;
 class AliMUONHitForRec;
 class AliMUONTriggerTrack;
@@ -69,6 +70,7 @@ class AliMUONVTrackReconstructor : public TObject {
   // Parameters for track reconstruction
   static const Double_t fgkSigmaToCutForTracking; ///< cut in sigma to apply on cluster local chi2 and track global chi2 during tracking
   static const Double_t fgkSigmaToCutForImprovement; ///< cut in sigma to apply on cluster local chi2 during track improvement
+  static const Bool_t   fgkMakeTrackCandidatesFast; ///< kTRUE to make track candidates assuming linear propagation between stations 4 and 5
   static const Bool_t   fgkTrackAllTracks; ///< kTRUE to track all the possible candidates; kFALSE to track only the best ones
   static const Double_t fgkMaxTrackingDistanceBending;    ///< Maximum distance to the track to search for compatible hitForRec(s) in bending direction
   static const Double_t fgkMaxTrackingDistanceNonBending; ///< Maximum distance to the track to search for compatible hitForRec(s) in non bending direction
@@ -110,6 +112,11 @@ class AliMUONVTrackReconstructor : public TObject {
 
   Double_t TryOneHitForRec(const AliMUONTrackParam &trackParam, AliMUONHitForRec* hitForRec,
   			   AliMUONTrackParam &trackParamAtHit, Bool_t updatePropagator = kFALSE);
+  Bool_t   TryOneHitForRecFast(const AliMUONTrackParam &trackParam, AliMUONHitForRec* hitForRec);
+  Double_t TryTwoHitForRecFast(const AliMUONTrackParam &trackParamAtHit1, AliMUONHitForRec* hitForRec2,
+  			       AliMUONTrackParam &trackParamAtHit2);
+
+  Bool_t FollowLinearTrackInStation(AliMUONTrack &trackCandidate, Int_t nextStation);
   
 
  private:

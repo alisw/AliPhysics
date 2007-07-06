@@ -97,6 +97,34 @@ Double_t AliMUONTrackExtrap::GetBendingMomentumFromImpactParam(Double_t impactPa
 }
 
   //__________________________________________________________________________
+void AliMUONTrackExtrap::LinearExtrapToZ(AliMUONTrackParam* trackParam, Double_t zEnd)
+{
+  /// Track parameters (and their covariances if any) linearly extrapolated to the plane at "zEnd".
+  /// On return, results from the extrapolation are updated in trackParam.
+  
+  if (trackParam->GetZ() == zEnd) return; // nothing to be done if same z
+  
+  // Compute track parameters
+  Double_t dZ = zEnd - trackParam->GetZ();
+  trackParam->SetNonBendingCoor(trackParam->GetNonBendingCoor() + trackParam->GetNonBendingSlope() * dZ);
+  trackParam->SetBendingCoor(trackParam->GetBendingCoor() + trackParam->GetBendingSlope() * dZ);
+  trackParam->SetZ(zEnd);
+  
+  // Update track parameters covariances if any
+  if (trackParam->CovariancesExist()) {
+    TMatrixD paramCov(trackParam->GetCovariances());
+    paramCov(0,0) += dZ * dZ * paramCov(1,1) + 2. * dZ * paramCov(0,1);
+    paramCov(0,1) += dZ * paramCov(1,1);
+    paramCov(1,0) = paramCov(0,1);
+    paramCov(2,2) += dZ * dZ * paramCov(3,3) + 2. * dZ * paramCov(2,3);
+    paramCov(2,3) += dZ * paramCov(3,3);
+    paramCov(3,2) = paramCov(2,3);
+    trackParam->SetCovariances(paramCov);
+  }
+  
+}
+
+  //__________________________________________________________________________
 void AliMUONTrackExtrap::ExtrapToZ(AliMUONTrackParam* trackParam, Double_t zEnd)
 {
   /// Interface to track parameter extrapolation to the plane at "Z" using Helix or Rungekutta algorithm.

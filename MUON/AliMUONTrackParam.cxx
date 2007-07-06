@@ -100,7 +100,7 @@ AliMUONTrackParam& AliMUONTrackParam::operator=(const AliMUONTrackParam& theMUON
   if (theMUONTrackParam.fCovariances) {
     if (fCovariances) *fCovariances = *(theMUONTrackParam.fCovariances);
     else fCovariances = new TMatrixD(*(theMUONTrackParam.fCovariances));
-  } else if (fCovariances) {
+  } else {
     delete fCovariances;
     fCovariances = 0x0;
   }
@@ -108,7 +108,7 @@ AliMUONTrackParam& AliMUONTrackParam::operator=(const AliMUONTrackParam& theMUON
   if (theMUONTrackParam.fPropagator) {
     if (fPropagator) *fPropagator = *(theMUONTrackParam.fPropagator);
     else fPropagator = new TMatrixD(*(theMUONTrackParam.fPropagator));
-  } else if (fPropagator) {
+  } else {
     delete fPropagator;
     fPropagator = 0x0;
   }
@@ -116,7 +116,7 @@ AliMUONTrackParam& AliMUONTrackParam::operator=(const AliMUONTrackParam& theMUON
   if (theMUONTrackParam.fExtrapParameters) {
     if (fExtrapParameters) *fExtrapParameters = *(theMUONTrackParam.fExtrapParameters);
     else fExtrapParameters = new TMatrixD(*(theMUONTrackParam.fExtrapParameters));
-  } else if (fExtrapParameters) {
+  } else {
     delete fExtrapParameters;
     fExtrapParameters = 0x0;
   }
@@ -124,7 +124,7 @@ AliMUONTrackParam& AliMUONTrackParam::operator=(const AliMUONTrackParam& theMUON
   if (theMUONTrackParam.fExtrapCovariances) {
     if (fExtrapCovariances) *fExtrapCovariances = *(theMUONTrackParam.fExtrapCovariances);
     else fExtrapCovariances = new TMatrixD(*(theMUONTrackParam.fExtrapCovariances));
-  } else if (fExtrapCovariances) {
+  } else {
     delete fExtrapCovariances;
     fExtrapCovariances = 0x0;
   }
@@ -132,7 +132,7 @@ AliMUONTrackParam& AliMUONTrackParam::operator=(const AliMUONTrackParam& theMUON
   if (theMUONTrackParam.fSmoothParameters) {
     if (fSmoothParameters) *fSmoothParameters = *(theMUONTrackParam.fSmoothParameters);
     else fSmoothParameters = new TMatrixD(*(theMUONTrackParam.fSmoothParameters));
-  } else if (fSmoothParameters) {
+  } else {
     delete fSmoothParameters;
     fSmoothParameters = 0x0;
   }
@@ -140,7 +140,7 @@ AliMUONTrackParam& AliMUONTrackParam::operator=(const AliMUONTrackParam& theMUON
   if (theMUONTrackParam.fSmoothCovariances) {
     if (fSmoothCovariances) *fSmoothCovariances = *(theMUONTrackParam.fSmoothCovariances);
     else fSmoothCovariances = new TMatrixD(*(theMUONTrackParam.fSmoothCovariances));
-  } else if (fSmoothCovariances) {
+  } else {
     delete fSmoothCovariances;
     fSmoothCovariances = 0x0;
   }
@@ -305,7 +305,6 @@ const TMatrixD& AliMUONTrackParam::GetCovariances() const
 void AliMUONTrackParam::SetCovariances(const TMatrixD& covariances)
 {
   /// Set the covariance matrix
-  if (&covariances == fCovariances) return; // nothing to be done
   if (fCovariances) *fCovariances = covariances;
   else fCovariances = new TMatrixD(covariances);
 }
@@ -341,7 +340,7 @@ const TMatrixD& AliMUONTrackParam::GetPropagator() const
   /// Return the propagator (create it before if needed)
   if (!fPropagator) {
     fPropagator = new TMatrixD(5,5);
-    fPropagator->Zero();
+    fPropagator->UnitMatrix();
   }
   return *fPropagator;
   }
@@ -350,15 +349,13 @@ const TMatrixD& AliMUONTrackParam::GetPropagator() const
 void AliMUONTrackParam::ResetPropagator()
 {
   /// Reset the propagator
-  if (!fPropagator) fPropagator = new TMatrixD(5,5);
-  fPropagator->UnitMatrix();
+  if (fPropagator) fPropagator->UnitMatrix();
 }
 
   //__________________________________________________________________________
 void AliMUONTrackParam::UpdatePropagator(const TMatrixD& propagator)
 {
   /// Update the propagator
-  if (&propagator == fPropagator) return; // nothing to be done
   if (fPropagator) *fPropagator = TMatrixD(propagator,TMatrixD::kMult,*fPropagator);
   else fPropagator = new TMatrixD(propagator);
 }
@@ -378,7 +375,6 @@ const TMatrixD& AliMUONTrackParam::GetExtrapParameters() const
 void AliMUONTrackParam::SetExtrapParameters(const TMatrixD& extrapParameters)
 {
   /// Set extrapolated parameters
-  if (&extrapParameters == fExtrapParameters) return; // nothing to be done
   if (fExtrapParameters) *fExtrapParameters = extrapParameters;
   else fExtrapParameters = new TMatrixD(extrapParameters);
 }
@@ -398,7 +394,6 @@ const TMatrixD& AliMUONTrackParam::GetExtrapCovariances() const
 void AliMUONTrackParam::SetExtrapCovariances(const TMatrixD& extrapCovariances)
 {
   /// Set the extrapolated covariance matrix
-  if (&extrapCovariances == fExtrapCovariances) return; // nothing to be done
   if (fExtrapCovariances) *fExtrapCovariances = extrapCovariances;
   else fExtrapCovariances = new TMatrixD(extrapCovariances);
 }
@@ -418,7 +413,6 @@ const TMatrixD& AliMUONTrackParam::GetSmoothParameters() const
 void AliMUONTrackParam::SetSmoothParameters(const TMatrixD& smoothParameters)
 {
   /// Set the smoothed parameters
-  if (&smoothParameters == fSmoothParameters) return; // nothing to be done
   if (fSmoothParameters) *fSmoothParameters = smoothParameters;
   else fSmoothParameters = new TMatrixD(smoothParameters);
 }
@@ -438,7 +432,6 @@ const TMatrixD& AliMUONTrackParam::GetSmoothCovariances() const
 void AliMUONTrackParam::SetSmoothCovariances(const TMatrixD& smoothCovariances)
 {
   /// Set the smoothed covariance matrix
-  if (&smoothCovariances == fSmoothCovariances) return; // nothing to be done
   if (fSmoothCovariances) *fSmoothCovariances = smoothCovariances;
   else fSmoothCovariances = new TMatrixD(smoothCovariances);
 }

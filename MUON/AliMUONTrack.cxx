@@ -378,7 +378,7 @@ void AliMUONTrack::AddTrackParamAtHit(const AliMUONTrackParam *trackParam, AliMU
     }
   } else {
     trackParamAtHit = new ((*fTrackParamAtHit)[fNTrackHits]) AliMUONTrackParam();
-    if (hitForRec) ((AliMUONTrackParam*) fTrackParamAtHit->UncheckedAt(fNTrackHits))->SetZ(hitForRec->GetZ());
+    if (hitForRec) trackParamAtHit->SetZ(hitForRec->GetZ());
   }
   if (hitForRec) trackParamAtHit->SetHitForRecPtr(hitForRec);
   fNTrackHits++;
@@ -589,12 +589,6 @@ Bool_t AliMUONTrack::ComputeLocalChi2(Bool_t accountForMCS)
     AliMUONHitForRec *discardedHit;
     Double_t dX, dY;
     while (trackParamAtHit) {
-      
-      // compute chi2 of removable hits only
-      if (!trackParamAtHit->IsRemovable()) {
-        trackParamAtHit = (AliMUONTrackParam*) fTrackParamAtHit->After(trackParamAtHit);
-        continue;
-      }
       
       discardedHit = trackParamAtHit->GetHitForRecPtr();
       

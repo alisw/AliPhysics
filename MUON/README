@@ -142,6 +142,8 @@ several options and adjustable parameters are available for both Kalman and Orig
 tracking algorithms (hard coded for the moment in AliMUONVTrackReconstructor.cxx):
 - *fgkSigmaToCutForTracking* : quality cut used to select new clusters to be
   attached to the track candidate and to select good tracks.
+- *fgkMakeTrackCandidatesFast* : if this flag is set to 'true', the track candidates
+  are made assuming linear propagation between stations 4 and 5.
 - *fgkTrackAllTracks* : according to the value of this flag, in case that several
   new clusters pass the quality cut, either we consider all the possibilities
   (duplicating tracks) or we attach only the best cluster.

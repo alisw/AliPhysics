@@ -33,7 +33,8 @@ class AliMUONTrackExtrap : public TObject
   static Double_t GetImpactParamFromBendingMomentum(Double_t bendingMomentum);
   static Double_t GetBendingMomentumFromImpactParam(Double_t impactParam);
   
-  static void ExtrapToZ(AliMUONTrackParam *trackParam, Double_t Z);
+  static void LinearExtrapToZ(AliMUONTrackParam* trackParam, Double_t zEnd);
+  static void ExtrapToZ(AliMUONTrackParam *trackParam, Double_t zEnd);
   static void ExtrapToZCov(AliMUONTrackParam* trackParam, Double_t zEnd, Bool_t updatePropagator = kFALSE);
   static void ExtrapToStation(AliMUONTrackParam *trackParamIn, Int_t station, AliMUONTrackParam *trackParamOut);
   static void ExtrapToVertexUncorrected(AliMUONTrackParam* trackParam, Double_t zVtx);
