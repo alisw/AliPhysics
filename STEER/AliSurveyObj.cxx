@@ -63,7 +63,11 @@ AliSurveyObj::AliSurveyObj():
 //_____________________________________________________________________________
 AliSurveyObj::~AliSurveyObj() {
   //destructor
-  
+  if (fDataPoints) {
+    for (Int_t i = 0; i < fDataPoints->GetEntries(); ++i) delete fDataPoints->At(i);
+    fDataPoints->Delete();
+    fDataPoints = 0;
+  }
 }
 
 
@@ -131,25 +135,25 @@ void AliSurveyObj::AddPoint(AliSurveyPoint* point) {
 //_____________________________________________________________________________
 Bool_t AliSurveyObj::Connect(const char *gridUrl, const char *user) {
 
-   // if the same Grid is alreay active, skip connection
-	if ( !gGrid || gridUrl != gGrid->GridUrl() ||
-	     (( user != "" ) && ( user != gGrid->GetUser() )) ) {
-   	// connection to the Grid
-	   AliInfo("\nConnecting to the Grid...");
-	   if(gGrid){
-		   AliInfo(Form("gGrid = %x; GridUrl = %s; gGrid->GridUrl() = %s", 
-		                 gGrid, gridUrl, gGrid->GridUrl()));
-	      AliInfo(Form("User = %s; gGrid->GetUser() = %s",
-	                    user, gGrid->GetUser()));
-	   }
-	   TGrid::Connect(gridUrl,user);
-	}
+  // if the same Grid is alreay active, skip connection
+  if (!gGrid || gridUrl != gGrid->GridUrl() ||
+      (( user != "" ) && ( user != gGrid->GetUser() )) ) {
+    // connection to the Grid
+    AliInfo("\nConnecting to the Grid...");
+    if (gGrid) {
+      AliInfo(Form("gGrid = %x; GridUrl = %s; gGrid->GridUrl() = %s", 
+		   gGrid, gridUrl, gGrid->GridUrl()));
+      AliInfo(Form("User = %s; gGrid->GetUser() = %s",
+		   user, gGrid->GetUser()));
+    }
+    TGrid::Connect(gridUrl,user);
+  }
 	
-	if(!gGrid) {
-		AliError("Connection failed!");
-		return kFALSE;
-	}
-   return kTRUE;
+  if(!gGrid) {
+    AliError("Connection failed!");
+    return kFALSE;
+  }
+  return kTRUE;
 }
 
 
@@ -197,14 +201,44 @@ Bool_t AliSurveyObj::OpenFile(TString openString) {
 
 
 //_____________________________________________________________________________
-Bool_t AliSurveyObj::Fill(TString detector, Int_t reportNumber,
+Bool_t AliSurveyObj::Fill(TString detector, Int_t year, Int_t reportNumber,
                          Int_t reportVersion) {
   TString baseFolder = "/alice/cern.ch/user/r/rsilva/";
+  TString validDetectors = "ACORDE,BABYFRAME,BACKFRAME,EMCAL,FMD,HMPID,ITS,L3 MAGNET,MUON,MUON ABSORBERS,MUON DIPOLE,PHOS,PMD,SPACEFRAME,SUPERSTRUCTURE,T0,TOF,TPC,TRD,V0,ZDC";
+  TString GRPDetectors = "BABYFRAME,BACKFRAME,L3 MAGNET,SPACEFRAME,MUON DIPOLE,MUON ABSORBERS";
+  TString MUONDetectors = "MUON,SUPERSTRUCTURE";
 
-  TString fullOpenString = "alien://" + baseFolder + detector + '/';
-  fullOpenString += Form("%d_v%d.txt?filetype=raw", reportNumber, reportVersion);
+  detector.ToUpper();
+  
+  // Check if <detector> is valid
+  TObjArray *dets = validDetectors.Tokenize(',');
+  if (!dets->FindObject(detector)) {
+    AliError(Form("Detector '%s' is not a valid detector/structure!", detector.Data()));
+    return kFALSE;
+  }
+  dets->Delete();
+  dets = 0;
+
+  dets = GRPDetectors.Tokenize(',');
+  if (dets->FindObject(detector)) detector = "GRP";
+  dets->Delete();
+  dets = 0;
+
+  dets = MUONDetectors.Tokenize(',');
+  if (dets->FindObject(detector)) detector = "MUON";
+  dets->Delete();
+  dets = 0;
+
+  // Check if <year>, <reportNumber> and <reportVersion> are valid
+  if ((year < 1950) || (reportNumber < 1) || (reportVersion < 1)) {
+    AliError("Invalid parameter values for AliSurveyObj::Fill. (Year, Report Number or Report Version)");
+    return kFALSE;
+  }
+
+  TString fullOpenString = "alien://" + baseFolder + detector + "/RawSurvey/";
+  fullOpenString += Form("%d/%d_v%d.txt?filetype=raw", year, reportNumber, reportVersion);
   // !Still need to check it's a valid path before actually using it
-
+  
   return OpenFile(fullOpenString);
 }
 
@@ -232,6 +266,8 @@ TString &AliSurveyObj::Sanitize(TString str) {
 
 //_____________________________________________________________________________
 Bool_t AliSurveyObj::ParseBuffer(const Char_t* buf) {
+  if (fIsValid) Reset();
+
   TString buffer = TString(buf);
   TObjArray *lines = buffer.Tokenize('\n');
   TObjArray *dataLine = NULL; // Used to Tokenize each point read
@@ -349,9 +385,9 @@ Bool_t AliSurveyObj::ParseBuffer(const Char_t* buf) {
 	  Printf("Data LINE: \"%s\": %d\n", nextLine.Data(), nextLine.Length());
 	  if (2 == nextLine.Length()) for(Int_t g = 0; g < 2; ++g) Printf("'%c'", nextLine[g]);
 
-          if (fNrColumns == nextLine.CountChar(' ') + 1) dataLine = nextLine.Tokenize(' ');
-          else if (fNrColumns == nextLine.CountChar(',') + 1) dataLine = nextLine.Tokenize(',');
+          if (fNrColumns == nextLine.CountChar(',') + 1) dataLine = nextLine.Tokenize(',');
           else if (fNrColumns == nextLine.CountChar('\t') + 1) dataLine = nextLine.Tokenize('\t');
+          else if (fNrColumns == nextLine.CountChar(' ') + 1) dataLine = nextLine.Tokenize(' ');
           else {
             //Error
             AliError("Survey text file syntax error! Error processing data line!");
@@ -462,5 +498,30 @@ Bool_t AliSurveyObj::ParseBuffer(const Char_t* buf) {
   lines->Delete();
   fIsValid = kTRUE;
   return kTRUE;
+}
+
+//_____________________________________________________________________________
+void AliSurveyObj::Reset()
+{
+  if (fDataPoints) {
+    for (Int_t i = 0; i < fDataPoints->GetEntries(); ++i) delete fDataPoints->At(i);
+    fDataPoints->Delete();
+    fDataPoints = 0;
+  }
+  fTitle = "";
+  fDate = "";
+  fDetector = "";
+  fURL = "http://edms.cern.ch/";
+  fReportNr = -1;
+  fVersion = -1;
+  fObs = "";
+  fCoordSys = "";
+  fUnits = "";
+  fNrColumns = -1;
+  fColNames = "";
+  fIsValid = kFALSE;
+  fDataPoints = new TObjArray(1);
+  fDataPoints->SetOwner(kTRUE);
+  return;
 }
 

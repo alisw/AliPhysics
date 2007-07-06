@@ -26,7 +26,9 @@ class AliSurveyObj: public TObject {
   AliSurveyObj();
   ~AliSurveyObj();
   Bool_t FillFromLocalFile(const Char_t* filename);
-  Bool_t Fill(TString detector, Int_t reportNumber, Int_t reportVersion);
+  Bool_t Fill(TString detector, Int_t year, Int_t reportNumber,
+	      Int_t reportVersion);
+  
 
   
   Int_t GetEntries() const {return fDataPoints->GetEntries();};
@@ -67,9 +69,12 @@ class AliSurveyObj: public TObject {
   Bool_t OpenFile(TString openString);
   TString &Sanitize(TString str);
   Bool_t ParseBuffer(const Char_t* buf);
+  void Reset();
+
   AliSurveyObj (const AliSurveyObj& surveyObj);            // copy constructor
   AliSurveyObj& operator=(const AliSurveyObj& surveyObj);  // assignment operator 
   void AddPoint(AliSurveyPoint* point);
+
   ClassDef(AliSurveyObj, 1);
 };
 
