@@ -476,7 +476,7 @@ Bool_t AliRawReaderRoot::NextEvent()
 {
 // go to the next event in the root file
 
-  if (!fFile) return kFALSE;
+  if (!fBranch) return kFALSE;
 
   do {
     delete fEvent;
@@ -494,7 +494,7 @@ Bool_t AliRawReaderRoot::RewindEvents()
 {
 // go back to the beginning of the root file
 
-  if (!fFile) return kFALSE;
+  if (!fBranch) return kFALSE;
 
   fEventIndex = -1;
   delete fEvent;
