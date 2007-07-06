@@ -51,9 +51,9 @@ fCurrentCalibParamIndex(-1)
 
 //_____________________________________________________________________________
 AliMUONDigitStoreVImplIterator::AliMUONDigitStoreVImplIterator(const AliMUONDigitStoreVImpl* store,
-                                                         Int_t firstDE,
-                                                         Int_t lastDE,
-                                                         Int_t cathode)
+                                                               Int_t firstDE,
+                                                               Int_t lastDE,
+                                                               Int_t cathode)
 : TIterator(),
 fStore(store),
 fFirstDetElemId(firstDE),
@@ -117,7 +117,7 @@ AliMUONDigitStoreVImplIterator::Next()
     fCurrentCalibParamIndex = 0;
     if ( !fCurrentCalibParam ) return 0x0;
   }
-
+  
   Int_t ix(-1);
   AliMUONVDigit* d(0x0);
   
@@ -135,20 +135,29 @@ AliMUONDigitStoreVImplIterator::Next()
   }
   else
   {
-  while ( fCurrentCalibParamIndex < 64 )
-  {
-    ix = fCurrentCalibParam->ValueAsInt(fCurrentCalibParamIndex++);
-    if (ix>=0)
+    while ( d == 0x0 ) 
     {
-      d = static_cast<AliMUONVDigit*>(fStore->fDigits->UncheckedAt(ix));
+      while ( fCurrentCalibParamIndex < 64 && ix < 0 )
+      {
+        ix = fCurrentCalibParam->ValueAsInt(fCurrentCalibParamIndex++);
+      };
     
-      if (  fCathode == 2 || d->Cathode() == fCathode ) 
+      if (ix>=0)
+      {
+        d = static_cast<AliMUONVDigit*>(fStore->fDigits->UncheckedAt(ix));
+        
+        if (  fCathode == 2 || d->Cathode() == fCathode ) 
+        {
+          break;
+        }
+        d = 0x0;
+        ix = -1;
+      }
+      else
       {
         break;
       }
-      d = 0x0;
     }
-  }
   }
   
   if (ix<0) 
