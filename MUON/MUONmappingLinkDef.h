@@ -115,6 +115,7 @@
 #pragma link C++ class  AliMpLocalBoard+;
 #pragma link C++ class  AliMpDDL+;
 #pragma link C++ class  AliMpDDLStore+;
+#pragma link C++ class  AliMpCDB+;
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */

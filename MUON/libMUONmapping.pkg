@@ -91,7 +91,8 @@ SRCS +=  \
          mapping/AliMpTriggerCrate.cxx \
          mapping/AliMpLocalBoard.cxx \
          mapping/AliMpDDL.cxx \
-	 mapping/AliMpDDLStore.cxx
+	 mapping/AliMpDDLStore.cxx \
+	 mapping/AliMpCDB.cxx
 	 
 # Category graphics
 #
