@@ -679,7 +679,7 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree)
             return;
          } 
          // Run tree-based analysis via AliAnalysisSelector  
-         gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/AliAnalysisSelector.cxx+");
+//         gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/AliAnalysisSelector.cxx+");
          cout << "===== RUNNING LOCAL ANALYSIS " << GetName() << " ON TREE " << tree->GetName() << endl;
          sprintf(line, "AliAnalysisSelector *selector = new AliAnalysisSelector((AliAnalysisManager*)0x%lx);",(ULong_t)this);
          gROOT->ProcessLine(line);
@@ -696,7 +696,7 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree)
          if (chain) {
             chain->SetProof();
             cout << "===== RUNNING PROOF ANALYSIS " << GetName() << " ON CHAIN " << chain->GetName() << endl;
-            chain->Process(gSystem->ExpandPathName("$ALICE_ROOT/ANALYSIS/AliAnalysisSelector.cxx+"));
+            chain->Process("AliAnalysisSelector");
          } else {
             printf("StartAnalysis: no chain\n");
             return;

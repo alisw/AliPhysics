@@ -403,21 +403,23 @@ Long64_t AliAnalysisDataWrapper::Merge(TCollection *list)
       TSeqCollection *coll = (TSeqCollection*)fData;
       if (coll->IsEmpty()) return 0;
       Int_t nentries = coll->GetEntries();
-      AliAnalysisDataWrapper *top;
+      AliAnalysisDataWrapper *top, *crt;
       TIter next(list);
       TSeqCollection *collcrt = 0;
       TList *list1 = 0;
+      // Loop entries of the collection attached to this wrapper.
       for (Int_t i=0; i<nentries; i++) {
          list1 = new TList();
          top = new AliAnalysisDataWrapper(coll->At(i));
          next.Reset();
-         while ((collcrt=(TSeqCollection*)next())) 
+         // Loop wrappers coming in the 'to merge with' list
+         while ((crt=(AliAnalysisDataWrapper*)next())) {
+            collcrt = (TSeqCollection*)crt->Data();
             list1->Add(new AliAnalysisDataWrapper(collcrt->At(i)));
-         if (!top->Merge(list1)) {
-            list1->Delete();
-            delete list1;
-            return 0;   
-         }   
+         }
+         // Now merge 'top' wrapper with 'list1'. This may go recursively.
+         top->Merge(list1);
+         delete top;
          list1->Delete();
          delete list1;
       }
@@ -431,15 +433,14 @@ Long64_t AliAnalysisDataWrapper::Merge(TCollection *list)
       return 1;
    }
 
-   TIter next(list);
+   TIter next1(list);
    AliAnalysisDataWrapper *cont;
    // Make a list where to temporary store the data to be merged.
    TList *collectionData = new TList();
    Int_t count = 0; // object counter
-   while ((cont=(AliAnalysisDataWrapper*)next())) {
+   while ((cont=(AliAnalysisDataWrapper*)next1())) {
       TObject *data = cont->Data();
       if (!data) continue;
-      if (strcmp(cont->GetName(), GetName())) continue;
       collectionData->Add(data);
       count++;
    }
