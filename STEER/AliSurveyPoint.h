@@ -33,6 +33,8 @@ class AliSurveyPoint: public TObject {
   Char_t GetType() {return fType;};
   Bool_t GetTarget() {return fTargetUsed;};
   
+  virtual const char* GetName() const {return fPointName.Data();}; 
+
   void PrintPoint();
   
  private:
