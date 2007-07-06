@@ -48,7 +48,7 @@ ClassImp(AliITSTrigger)
 AliITSTrigger::AliITSTrigger()
   : AliTriggerDetector(),
 fGlobalFOThreshold(1),
-fHighMultFOThreshold(150){
+fHighMultFOThreshold(190){
 
   //standard constructor
   SetName("ITS");
@@ -111,16 +111,19 @@ void AliITSTrigger::MultiplicityTriggers(TObjArray* digDet, TTree* treeD, AliITS
 {
   // simple FO triggers that only cares about the multiplicity
 
+  const Int_t nChipsInModule = 5;
   Int_t startSPD = geom->GetStartSPD();
   Int_t lastSPD  = geom->GetLastSPD();
 
   Int_t totalNumberOfFO = 0;
+  Int_t totalNumberOfFOLay1 = 0;
   Int_t ndigitsInChip[5];
 
   // loop over modules (ladders)
   for (Int_t moduleIndex=startSPD; moduleIndex<lastSPD+1; moduleIndex++) {
     treeD->GetEvent(moduleIndex);
     TClonesArray* digits = (TClonesArray*) (digDet->At(0)); // SPD only.
+    Int_t lay,stav,det;  geom->GetModuleId(moduleIndex,lay,stav,det);
     
     // get number of digits in this module
     Int_t ndigitsInModule = digits->GetEntriesFast();
@@ -132,13 +135,14 @@ void AliITSTrigger::MultiplicityTriggers(TObjArray* digDet, TTree* treeD, AliITS
     for( Int_t iDig=0; iDig<ndigitsInModule; iDig++ ) {
 	AliITSdigitSPD* dp = (AliITSdigitSPD*) digits->At(iDig);
 	Int_t column = dp->GetCoord1();
-	Int_t isChip = Int_t(column/32.);
+	Int_t isChip = nChipsInModule - Int_t(column/32.) - 1;
 	ndigitsInChip[isChip]++;
     }
     // get number of FOs in the module
     for( Int_t ifChip=0; ifChip<5; ifChip++ ) {
 	if( ndigitsInChip[ifChip] >= 1 ) {
-    		totalNumberOfFO++;
+            totalNumberOfFO++;
+            if(lay==1) totalNumberOfFOLay1++;
     	}	
     }
   // end of loop over modules
@@ -148,7 +152,7 @@ void AliITSTrigger::MultiplicityTriggers(TObjArray* digDet, TTree* treeD, AliITS
   if (totalNumberOfFO>=fGlobalFOThreshold) 
     SetInput( "ITS_SPD_GFO_L0" );
 
-  if (totalNumberOfFO>=fHighMultFOThreshold) 
+  if (totalNumberOfFOLay1>=fHighMultFOThreshold) 
     SetInput( "ITS_SPD_HMULT_L0" );
 
   return;

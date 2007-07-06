@@ -42,7 +42,7 @@ public:
 
   void SetPhiWindow(Float_t w=0.08) {fPhiWindow=w;}
   void SetZetaWindow(Float_t w=1.) {fZetaWindow=w;}
-  void SetOnlyOneTrackletPerC2(Bool_t b = kFALSE) {fOnlyOneTrackletPerC2 = b;}
+  void SetOnlyOneTrackletPerC2(Bool_t b = kTRUE) {fOnlyOneTrackletPerC2 = b;}
   
   Int_t GetNClustersLayer1() const {return fNClustersLay1;}
   Int_t GetNClustersLayer2() const {return fNClustersLay2;}

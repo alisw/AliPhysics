@@ -29,13 +29,14 @@
 // candidate with minimum distance in Phi. 
 // The parameter AssociationChoice allows to control if two clusters
 // in layer 2 can be associated to the same cluster in layer 1 or not.
+// (TRUE means double associations exluded; default = TRUE)
 //
 // Two methods return the number of traklets and the number of clusters 
 // in the first SPD layer (GetNTracklets GetNSingleClusters)
 //
 // -----------------------------------------------------------------
 // 
-// NOTE: The cuts on phi and zeta depends on the interacting system (p-p  
+// NOTE: The cuts on phi and zeta depend on the interacting system (p-p  
 //  or Pb-Pb). Please, check the file AliITSMultReconstructor.h and be 
 //  sure that SetPhiWindow and SetZetaWindow are defined accordingly.
 // 
@@ -114,28 +115,28 @@ fhphiClustersLay1(0){
   }
 
   // definition of histograms
-  fhClustersDPhiAcc   = new TH1F("dphiacc",  "dphi",  100,-0.1,0.1);
+  fhClustersDPhiAcc   = new TH1F("dphiacc",  "dphi",  100,0.,0.1);
   fhClustersDPhiAcc->SetDirectory(0);
   fhClustersDThetaAcc = new TH1F("dthetaacc","dtheta",100,-0.1,0.1);
   fhClustersDThetaAcc->SetDirectory(0);
   fhClustersDZetaAcc = new TH1F("dzetaacc","dzeta",100,-1.,1.);
   fhClustersDZetaAcc->SetDirectory(0);
 
-  fhDPhiVsDZetaAcc = new TH2F("dphiVsDzetaacc","",100,-1.,1.,100,-0.1,0.1);
+  fhDPhiVsDZetaAcc = new TH2F("dphiVsDzetaacc","",100,-1.,1.,100,0.,0.1);
   fhDPhiVsDZetaAcc->SetDirectory(0);
-  fhDPhiVsDThetaAcc = new TH2F("dphiVsDthetaAcc","",100,-0.1,0.1,100,-0.1,0.1);
+  fhDPhiVsDThetaAcc = new TH2F("dphiVsDthetaAcc","",100,-0.1,0.1,100,0.,0.1);
   fhDPhiVsDThetaAcc->SetDirectory(0);
 
-  fhClustersDPhiAll   = new TH1F("dphiall",  "dphi",  100,-0.5,0.5);
+  fhClustersDPhiAll   = new TH1F("dphiall",  "dphi",  100,0.0,0.5);
   fhClustersDPhiAll->SetDirectory(0);
   fhClustersDThetaAll = new TH1F("dthetaall","dtheta",100,-0.5,0.5);
   fhClustersDThetaAll->SetDirectory(0);
   fhClustersDZetaAll = new TH1F("dzetaall","dzeta",100,-5.,5.);
   fhClustersDZetaAll->SetDirectory(0);
 
-  fhDPhiVsDZetaAll = new TH2F("dphiVsDzetaall","",100,-5.,5.,100,-0.5,0.5);
+  fhDPhiVsDZetaAll = new TH2F("dphiVsDzetaall","",100,-5.,5.,100,0.,0.5);
   fhDPhiVsDZetaAll->SetDirectory(0);
-  fhDPhiVsDThetaAll = new TH2F("dphiVsDthetaAll","",100,-0.5,0.5,100,-0.5,0.5);
+  fhDPhiVsDThetaAll = new TH2F("dphiVsDthetaAll","",100,-0.5,0.5,100,0.,0.5);
   fhDPhiVsDThetaAll->SetDirectory(0);
 
   fhetaTracklets  = new TH1F("etaTracklets",  "eta",  100,-2.,2.);
@@ -258,7 +259,7 @@ AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* 
 			       TMath::Power(z,2));
     
     fClustersLay1[iC1][0] = TMath::ACos(z/r);  // Store Theta
-    fClustersLay1[iC1][1] = TMath::ATan2(x,y);  // Store Phi
+    fClustersLay1[iC1][1] = TMath::ATan2(y,x);  // Store Phi
     fClustersLay1[iC1][2] = z/r;               // Store scaled z
     if (fHistOn) {
       Float_t eta=fClustersLay1[iC1][0];
@@ -280,7 +281,7 @@ AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* 
 			       TMath::Power(z,2));
     
     fClustersLay2[iC2][0] = TMath::ACos(z/r);  // Store Theta
-    fClustersLay2[iC2][1] = TMath::ATan2(x,y);  // Store Phi
+    fClustersLay2[iC2][1] = TMath::ATan2(y,x);  // Store Phi
     fClustersLay2[iC2][2] = z;                 // Store z
 
  // this only needs to be initialized for the fNClustersLay2 first associations
@@ -306,8 +307,10 @@ AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* 
 	
 	// find the difference in angles
 	Float_t dTheta = fClustersLay2[iC2][0] - fClustersLay1[iC1][0];
-	Float_t dPhi   = fClustersLay2[iC2][1] - fClustersLay1[iC1][1];
-	
+	Float_t dPhi   = TMath::Abs(fClustersLay2[iC2][1] - fClustersLay1[iC1][1]);
+        // take into account boundary condition
+        if (dPhi>TMath::Pi()) dPhi=2.*TMath::Pi()-dPhi;	
+
 	// find the difference in z (between linear projection from layer 1
 	// and the actual point: Dzeta= z1/r1*r2 -z2) 	
 	Float_t r2   = fClustersLay2[iC2][2]/TMath::Cos(fClustersLay2[iC2][0]);
