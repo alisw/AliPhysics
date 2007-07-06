@@ -152,7 +152,7 @@ void AliT0Parameters::InitIfOnline()
   // configuration for test Jun07.
   fNumberOfTRMs = 2;
   Int_t trm=0; Int_t tdc=0; Int_t chain=0; Int_t channel=0;
-  for (Int_t ik=0; ik<110; ik++)
+  for (Int_t ik=0; ik<105; ik++)
         {
          AliT0LookUpKey * lookkey= new AliT0LookUpKey();
          AliT0LookUpValue * lookvalue= new AliT0LookUpValue();
