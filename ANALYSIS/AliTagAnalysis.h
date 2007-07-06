@@ -25,6 +25,7 @@
 
 //ROOT
 #include <TObject.h>
+#include <TString.h>
 
 class AliEventTag;
 class TChain;
