@@ -20,7 +20,6 @@
 #include "TDatabasePDG.h"
 #include "TParticlePDG.h"
 #include "AliExternalTrackParam.h"
-#include "AliHelix.h"
 //#include "TMath.h"
 
 ClassImp(AliKFParticle)
