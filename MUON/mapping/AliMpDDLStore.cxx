@@ -46,6 +46,7 @@
 #include <TObjArray.h>
 #include <TString.h>
 #include <TObjString.h>
+#include <TClass.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMpDDLStore)
@@ -60,14 +61,33 @@ const Int_t    AliMpDDLStore::fgkNofTriggerDDLs = 2;
 //
 
 //______________________________________________________________________________
-AliMpDDLStore* AliMpDDLStore::Instance()
+AliMpDDLStore* AliMpDDLStore::Instance(Bool_t warn)
 {
 /// Create the DDL store if it does not yet exist
 /// and return its instance
 
-  if ( ! fgInstance )
-    fgInstance = new AliMpDDLStore();
-    
+  if ( ! fgInstance && warn  ) {
+    AliWarningClass("DDL Store has not beenloaded");
+  }  
+     
+  return fgInstance;
+}    
+
+//______________________________________________________________________________
+AliMpDDLStore* AliMpDDLStore::ReadData(Bool_t warn)
+{
+/// Load the DDL store rom ASCII data files
+/// and return its instance
+
+  if ( fgInstance ) {
+    if ( warn )
+      AliWarningClass("DDL Store has been already loaded");
+    return fgInstance;
+  }  
+  
+  AliInfoClass("Reading DDL Store from ASCII files.");
+
+  fgInstance = new AliMpDDLStore();
   return fgInstance;
 }    
 

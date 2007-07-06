@@ -42,11 +42,14 @@
 #include "AliMpCathodType.h"
 
 #include "AliLog.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
 
 #include <Riostream.h>
 #include <TMap.h>
 #include <TObjString.h>
 #include <TSystem.h>
+#include <TClass.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMpSegmentation)
@@ -59,14 +62,32 @@ AliMpSegmentation* AliMpSegmentation::fgInstance = 0;
 //
 
 //______________________________________________________________________________
-AliMpSegmentation* AliMpSegmentation::Instance()
+AliMpSegmentation* AliMpSegmentation::Instance(Bool_t warn)
 {
-/// Create the sementation if it does not yet exist
+/// Return its instance
+
+  if ( ! fgInstance && warn ) {
+    AliWarningClass("Segmentation has not been loaded");
+  }  
+    
+  return fgInstance;
+}    
+
+//______________________________________________________________________________
+AliMpSegmentation* AliMpSegmentation::ReadData(Bool_t warn)
+{
+/// Load the sementation from ASCII data files
 /// and return its instance
 
-  if ( ! fgInstance )
-    fgInstance = new AliMpSegmentation();
-    
+  if ( fgInstance ) {
+    if ( warn )
+      AliWarningClass("Segmentation has been already loaded");
+    return fgInstance;
+  }  
+  
+  AliInfoClass("Reading segmentation from ASCII files.");
+
+  fgInstance = new AliMpSegmentation();
   return fgInstance;
 }    
 
@@ -81,7 +102,7 @@ AliMpSegmentation::AliMpSegmentation()
   fElCardsMap(true),
   fSlatMotifMap()
 {  
-/// Standard constructor
+/// Standard constructor - segmentation is loaded from ASCII data files
 
   AliDebug(1,"");
   fElCardsMap.SetOwner(true);

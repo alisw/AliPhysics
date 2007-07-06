@@ -40,7 +40,8 @@ class AliMpDDLStore : public  TObject {
     virtual ~AliMpDDLStore();
     
     // static access method
-    static AliMpDDLStore* Instance(); 
+    static AliMpDDLStore* Instance(Bool_t warn = true); 
+    static AliMpDDLStore* ReadData(Bool_t warn = true);
     
     // methods
     AliMpDDL*          GetDDL(Int_t ddlId, Bool_t warn = true) const;

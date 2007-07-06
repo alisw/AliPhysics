@@ -51,7 +51,8 @@ class AliMpSegmentation : public  TObject {
     virtual ~AliMpSegmentation();
     
     // static methods
-    static AliMpSegmentation* Instance();
+    static AliMpSegmentation* Instance(Bool_t warn = true);
+    static AliMpSegmentation* ReadData(Bool_t warn = true);
 
     // methods
     const AliMpVSegmentation* GetMpSegmentation(
