@@ -29,6 +29,7 @@
 #include "AliMpDEManager.h"
 #include "AliMpConstants.h"
 #include "AliMpExMap.h"
+#include "AliMpCDB.h"
 
 #include "AliLog.h"
 #include "AliAlignObjMatrix.h"
@@ -87,6 +88,20 @@ AliMUONGeometryTransformer::~AliMUONGeometryTransformer()
 //
 // private methods
 //
+
+//_____________________________________________________________________________
+Bool_t AliMUONGeometryTransformer::LoadMapping() const
+{
+/// Load mapping from CDB
+
+  if ( ! AliMpCDB::LoadMpSegmentation() ) 
+  {
+    AliFatal("Could not access mapping from OCDB !");
+    return false;
+  }
+  
+  return true;
+}  
 
 //_____________________________________________________________________________
 AliMUONGeometryModuleTransformer* 
@@ -329,7 +344,7 @@ AliMUONGeometryTransformer::LoadTransformations()
     
     // Set matrix from physical node
     TGeoHMatrix* matrix = AliGeomManager::GetMatrix(symname);
-    if ( !matrix ) {
+    if ( ! matrix ) {
       AliErrorStream() << "Geometry module matrix not found." << endl;
       return false;
     }  
@@ -347,7 +362,7 @@ AliMUONGeometryTransformer::LoadTransformations()
     
       // Set global matrix from physical node
       TGeoHMatrix* globalMatrix = AliGeomManager::GetMatrix(symname);
-      if ( !matrix ) {
+      if ( ! globalMatrix ) {
         AliErrorStream() << "Detection element matrix not found." << endl;
         return false;
       }  
@@ -641,6 +656,8 @@ void AliMUONGeometryTransformer::CreateModules()
 /// Create modules and their detection elements using info from mapping;
 /// but do not fill matrices
 
+  // Load mapping as its info is used to define modules & DEs
+  LoadMapping();
 
   // Loop over geometry module
   for (Int_t moduleId = 0; moduleId < AliMpConstants::NofGeomModules(); ++moduleId ) {

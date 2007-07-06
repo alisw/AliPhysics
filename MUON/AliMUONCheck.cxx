@@ -38,6 +38,7 @@
 #include "AliMpSegmentation.h"
 #include "AliMpVSegmentation.h"
 #include "AliMpDEManager.h"
+#include "AliMpCDB.h"
 #include "AliMUONVDigitStore.h"
 
 #include "AliRunLoader.h"
@@ -711,6 +712,9 @@ AliMUONCheck::CheckOccupancy(Bool_t perDetEle) const
   AliMUONDataInterface di(fFileNameSim);
   
   AliMUONVDigitStore* digitStore = di.DigitStore(fFirstEvent);
+  
+  if ( ! AliMpCDB::LoadMpSegmentation()  ) 
+    AliFatal("Could not access mapping from OCDB !");
   
   // Compute values
   for (Int_t ichamber=0; ichamber<nchambers; ++ichamber) 

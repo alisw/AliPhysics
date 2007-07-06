@@ -31,10 +31,10 @@
 #include "AliMUONTriggerStoreV1.h"
 #include "AliMUONVCalibParam.h"
 #include "AliMUONVDigitStore.h"
+#include "AliMpCDB.h"
 #include "AliMpCathodType.h"
 #include "AliMpConstants.h"
 #include "AliMpDEIterator.h"
-#include "AliMpDEManager.h"
 #include "AliMpDEManager.h"
 #include "AliMpIntPair.h"
 #include "AliMpPad.h"
@@ -780,6 +780,16 @@ AliMUONDigitizerV3::Init()
   }
   
   Int_t runnumber = AliCDBManager::Instance()->GetRun();
+  
+  if ( ! AliMpCDB::LoadMpSegmentation()  ) 
+  {
+    AliFatal("Could not access mapping from OCDB !");
+  }
+  
+  if ( ! AliMpCDB::LoadDDLStore() ) 
+  {
+    AliFatal("Could not access DDL Store from OCDB !");
+  }
   
   fCalibrationData = new AliMUONCalibrationData(runnumber);
   if ( !fCalibrationData->Pedestals() )

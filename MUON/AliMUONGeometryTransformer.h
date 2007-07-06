@@ -100,6 +100,7 @@ class AliMUONGeometryTransformer : public TObject
  
   private:
     // methods
+    Bool_t LoadMapping() const;
     AliMUONGeometryModuleTransformer* GetModuleTransformerNonConst(
                                     Int_t index, Bool_t warn = true) const;
 

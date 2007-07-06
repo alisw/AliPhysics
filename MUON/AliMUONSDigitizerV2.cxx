@@ -25,6 +25,7 @@
 #include "AliMUONVDigit.h"
 #include "AliMUONHit.h"
 #include "AliMpDEManager.h"
+#include "AliMpCDB.h"
 #include "AliLoader.h"
 #include "AliRun.h"
 #include "AliRunLoader.h"
@@ -56,6 +57,10 @@ AliMUONSDigitizerV2::AliMUONSDigitizerV2()
   ///
   /// ctor.
   ///
+  if ( ! AliMpCDB::LoadMpSegmentation() ) 
+  {
+    AliFatal("Could not access mapping from OCDB !");
+  }
 }
 
 //_____________________________________________________________________________

@@ -90,6 +90,7 @@
 #include "AliMUONTriggerCrateStore.h"
 #include "AliMUONTriggerStoreV1.h"
 #include "AliMUONVClusterFinder.h"
+#include "AliMpCDB.h"
 #include "AliRawReader.h"
 #include "AliCodeTimer.h"
 #include <Riostream.h>
@@ -118,7 +119,23 @@ fTrackStore(0x0),
 fTrigChamberEff(0x0)
 {
   /// normal ctor
+
+  // Load geometry data
   fTransformer->LoadGeometryData();
+  
+  // Load mapping
+  if ( ! AliMpCDB::LoadMpSegmentation() ) 
+  {
+    AliFatal("Could not access mapping from OCDB !");
+  }
+  
+  // Load DDL store
+  if ( ! AliMpCDB::LoadDDLStore() ) 
+  {
+    AliFatal("Could not access DDL Store from OCDB !");
+  }
+  
+  
 }
 
 //_____________________________________________________________________________
