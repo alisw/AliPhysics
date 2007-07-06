@@ -20,9 +20,7 @@ contact: Chiara.Oppedisano@cern.ch
 #include <Riostream.h>
 
 // DATE
-extern "C" {
 #include <daqDA.h>
-}
 #include <event.h>
 #include <monitor.h>
 
@@ -135,6 +133,7 @@ int main(int argc, char **argv) {
   int *equipmentEnd;
   int *equipmentData;
   int *equipmentID;
+
   struct eventHeaderStruct *event;
   eventTypeType eventT;
   Int_t iev=0;
@@ -172,11 +171,28 @@ int main(int argc, char **argv) {
       //
       // Initalize raw-data reading and decoding
       AliRawReader *reader = new AliRawReaderDate((void*)event);
+      const AliRawDataHeader* header = reader->GetDataHeader();
+      if(header) {
+         UChar_t message = header->GetL1TriggerMessage();
+	 if(message & 0x40000){ // DEDICATED PEDESTAL RUN
+	    printf("\t L1 message -> PEDESTAL raw data\n");
+	    continue;
+	 }
+	 else{
+	    printf("\t L1 message -> NO PEDESTAL raw data found\n");
+	    return -1;
+	 }
+      }
+      //Commented until we won't have Raw Data Header...
+      /*else{
+         //printf("\t ERROR! No Raw Data Header found!!!\n");
+	 //return -1;
+      }*/
+      //
+    
       AliZDCRawStream *rawStreamZDC = new AliZDCRawStream(reader);
       //
-      if (!rawStreamZDC->Next())
-        printf(" \t No raw data found!! ");
-      //
+      if (!rawStreamZDC->Next()) printf(" \t No raw data found!! \n");
       Int_t counter=0;
       Int_t RawADC[44], RawADCoot[44];
       for(Int_t j=0; j<44; j++){
@@ -214,6 +230,7 @@ int main(int argc, char **argv) {
        }
        //
        nevents_physics++;
+
     }
     
     nevents_total++;
