@@ -10,6 +10,7 @@
 ////////////////////////////////////////////////
 
 #include "AliDetector.h"
+#include <TGeoManager.h>
 
 class AliACORDEModule;
 
@@ -29,6 +30,7 @@ public:
   virtual void SetModule(AliACORDEModule* module) {fModule = module;}
   virtual const AliACORDEModule* GetModule() const {return fModule; }
   virtual void MakeBranch(Option_t* opt = "");
+  virtual void AddAlignableVolumes() const;
 
 protected:
   AliACORDEModule* fModule;

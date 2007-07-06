@@ -214,3 +214,26 @@ void AliACORDE::MakeBranch(Option_t* opt)
   }
   AliDetector::MakeBranch(opt);
 }
+
+//_____________________________________________________________________________
+void AliACORDE::AddAlignableVolumes() const
+{
+  //
+  // Create entries for alignable volumes associating the symbolic volume
+  // name with the corresponding volume path. Needs to be syncronized with
+  // eventual changes in the geometry.
+  // 
+  TString vpstr1 = "ALIC_1/ACORDE1_";
+  TString snstr1="ACORDE/Array";
+  TString volpath, symname;
+  
+  for(Int_t cnt=1; cnt<=3; cnt++){
+    volpath = vpstr1;
+    volpath += cnt;
+    symname = snstr1;
+    symname += cnt;
+    if(!gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data()))
+      AliFatal(Form("Alignable entry %s not created. Volume path %s not valid", symname.Data(),volpath.Data()));
+  }
+
+}
