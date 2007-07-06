@@ -36,8 +36,6 @@ AliRawReaderMemory::AliRawReaderMemory() :
 {
 // create an object to read digits from
 // the given memory location
-
-  fHeader = new AliRawDataHeader;
 }
 
 AliRawReaderMemory::AliRawReaderMemory(UChar_t* memory, UInt_t size) :
@@ -47,15 +45,11 @@ AliRawReaderMemory::AliRawReaderMemory(UChar_t* memory, UInt_t size) :
   fEquipmentId(-1)
 {
 // create an object to read digits from the given memory
-
-  fHeader = new AliRawDataHeader;
 }
 
 AliRawReaderMemory::~AliRawReaderMemory()
 {
 // close the input memory
-
-  delete fHeader;
 }
 
 void AliRawReaderMemory::RequireHeader(Bool_t required)
@@ -74,26 +68,39 @@ Bool_t AliRawReaderMemory::ReadHeader()
 // read a data header at the current buffer position
 // returns kFALSE if the mini header could not be read
 
+  if (fEquipmentId == -1)
+  {
+    Warning("ReadHeader", "The equipment ID is not set for the DDL memory buffer.");
+  }
+
   if (!fBuffer) return kFALSE;
   do {
+    // Check if we would not read past the end of the buffer.
     if ( fPosition+fCount+sizeof(AliRawDataHeader) > fBufferSize ) return kFALSE;
-
-    memcpy( fHeader, fBuffer+fPosition+fCount, sizeof(AliRawDataHeader) );
-    if (fHeader->fSize == 0) {
-      Warning("ReadHeader",
-	      "Missing raw data header! Using the size of the memory buffer instead (%d) !",
-	      fBufferSize - fPosition - fCount);
-	fHeader->fSize = fBufferSize - fPosition - fCount;
+    
+    fHeader = reinterpret_cast<AliRawDataHeader*>(fBuffer+fPosition+fCount);
+    
+    // Check that the header is sane, that is the size does not go past the buffer.
+    // Otherwise try again at the next word location.
+    if (fHeader->fSize == 0 or fPosition+fCount+fHeader->fSize > fBufferSize) {
+      if (fPosition + sizeof(UInt_t) <= fBufferSize) {
+        fPosition += sizeof(UInt_t);
+        continue;
+      } else {
+        Error("ReadHeader", "Could not find a valid DDL header!");
+        return kFALSE;
       }
-    fPosition += fCount + sizeof(AliRawDataHeader);
+    } else {
+      fPosition += fCount + sizeof(AliRawDataHeader);
+    }
 
     if (fHeader->fSize != 0xFFFFFFFF) {
-      // Check for fHeader->fSize < sizeof(AliRawDataHeader) ????
       fCount = fHeader->fSize - sizeof(AliRawDataHeader);
     } else {
-      fCount = fBufferSize-fPosition;
+      fCount = fBufferSize - fPosition - sizeof(AliRawDataHeader);
     }
   } while (!IsSelected());
+
   return kTRUE;
 }
 
@@ -131,6 +138,7 @@ Bool_t AliRawReaderMemory::Reset()
 {
 // reset the current position in the buffer to the beginning of the curevent
 
+  fHeader = NULL;
   fCount = 0;
   fPosition = 0;
   return kTRUE;
@@ -159,6 +167,7 @@ Bool_t AliRawReaderMemory::SetMemory( UChar_t* memory, ULong_t size )
 {
   fBuffer = memory;
   fBufferSize = size;
+  fHeader = NULL;
   fCount = 0;
   fPosition = 0;
   return (fBuffer && fBufferSize>0) ? kTRUE : kFALSE;
