@@ -103,7 +103,8 @@ AliMpDDLStore::AliMpDDLStore()
   fBusPatches(true),
   fTriggerCrates(true),
   fLocalBoards(true),
-  fManuList12()
+  fManuList12(),
+  fManuBridge2()
 {  
 /// Standard constructor
 
@@ -123,6 +124,7 @@ AliMpDDLStore::AliMpDDLStore()
   ReadTriggerDDLs();
   SetManus();
   SetPatchModules();
+  SetBusPatchLength();
 }
 
 //______________________________________________________________________________
@@ -215,46 +217,45 @@ Bool_t AliMpDDLStore::ReadDDLs()
 
      TString tmp(AliMpHelper::Normalize(line));
 
-     Int_t blankPos  = tmp.First(' ');
-     Int_t blankPos1 = tmp.Last(' ');
-     Int_t length = 0;
+     TObjArray* stringList = tmp.Tokenize(TString(" "));
 
-     TString sDE(tmp(0, blankPos));
-
-     Int_t idDE = atoi(sDE.Data());
-
-     // reading 1st manu Id for each bus patch (station 1 & 2)
-     if(AliMpDEManager::GetStationType(idDE) != AliMp::kStation345) {
-
-       TString sManu(tmp(blankPos1 + 1, tmp.Length()-blankPos1));
-       AliMpHelper::DecodeName(sManu,',',fManuList12[GetManuListIndex(idDE)]);
-
-       TString tmp1(tmp(blankPos + 1, blankPos1 -  blankPos));
-       blankPos1 = blankPos + tmp1.First(' ') + 1;
-       length    = tmp.Last(' ') - blankPos1; 
-
-     } else {
-       length = tmp.Length()-blankPos1;
-     }
-
-     TString sDDL(tmp(blankPos1 + 1, length));
-     Int_t  iDDL = atoi(sDDL.Data());
-           
-
-     TString busPatch(tmp(blankPos + 1,blankPos1-blankPos-1));
-     AliDebugStream(3)
-	 << "idDE " << idDE << " buspatch " << busPatch.Data() << " iDDL " << iDDL 
-	 << endl;
-
-     if ( iDDL < 0 || iDDL >= fgkNofDDLs ) {
-       AliErrorStream() << "DDL id "<< iDDL << " outside limits." << endl;
-       return false;
-     }  
+     TString sDE = ((TObjString*)stringList->At(0))->GetString();
+     Int_t idDE  = atoi(sDE.Data());
 
      if ( ! AliMpDEManager::IsValidDetElemId(idDE, false) ) {
        AliErrorStream() << "DetElemId "<< idDE << " not valid." << endl;
        return false;
      }  
+
+     TString busPatch = ((TObjString*)stringList->At(1))->GetString();
+
+
+     TString sDDL = ((TObjString*)stringList->At(2))->GetString();
+     Int_t  iDDL  = atoi(sDDL.Data());
+
+     if ( iDDL < 0 || iDDL >= fgkNofDDLs ) {
+       AliErrorStream() << "DDL id "<< iDDL << " outside limits." << endl;
+       return false;
+     }
+  
+     AliDebugStream(3)
+	 << "idDE " << idDE << " buspatch " << busPatch.Data() << " iDDL " << iDDL 
+	 << endl;
+
+     // reading 1st manu Id for each bus patch (station 1 & 2)
+     if(AliMpDEManager::GetStationType(idDE) != AliMp::kStation345) {
+     
+       TString sManu = ((TObjString*)stringList->At(3))->GetString();
+       AliMpHelper::DecodeName(sManu,',',fManuList12[GetManuListIndex(idDE)]);
+  
+       if(AliMpDEManager::GetStationType(idDE) == AliMp::kStation2) {
+	 TString sManuBridge = ((TObjString*)stringList->At(4))->GetString();
+	 AliMpHelper::DecodeName(sManuBridge,',',fManuBridge2[GetManuListIndex(idDE)]);
+       }
+
+     }
+
+     delete stringList;
 
      AliMpDDL* ddl = GetDDL(iDDL, false);
      if ( !ddl) {
@@ -619,23 +620,66 @@ Bool_t AliMpDDLStore::SetPatchModules()
 {
 /// Compute the number of manu per PCB for each buspatch 
 
-  Bool_t result = true;
+    AliMpDEIterator it;
+    Bool_t result = true;
 
-  for (Int_t i = 0; i < fBusPatches.GetSize(); ++i) {
-    AliMpBusPatch* busPatch = (AliMpBusPatch*)fBusPatches.GetObject(i);
-    Bool_t newResult = busPatch->SetNofManusPerModule();
-    result = result && newResult;
+    for ( it.First(); !it.IsDone(); it.Next() ) {
 
-    if (AliDebugLevel() == 3) {
-      // print out for checking
-      printf("\nbus patch %d\n", busPatch->GetId());
-      for (Int_t i = 0; i < busPatch->GetNofPatchModules(); ++i) 
-        printf("manu per %dth pcb %d\n", i, busPatch->GetNofManusPerModule(i));
-    }    
-  }  
-  
-  return result;
+      AliMpDetElement* detElement = it.CurrentDE();
+      
+      for (Int_t i = 0; i < detElement->GetNofBusPatches(); ++i) {
+	AliMpBusPatch* busPatch = GetBusPatch(detElement->GetBusPatchId(i));
+	Bool_t newResult = false;
+	Int_t idDE = busPatch->GetDEId();
+
+	if (AliMpDEManager::GetStationType(idDE) == AliMp::kStation2 ) 
+	    newResult = busPatch->SetNofManusPerModule(fManuBridge2[GetManuListIndex(idDE)].At(i));
+	else 
+	    newResult = busPatch->SetNofManusPerModule();
+      }
+    }
+
+    return result;
 }
+
+//______________________________________________________________________________
+Bool_t AliMpDDLStore::SetBusPatchLength()
+{
+/// read the buspatch length file and set buspatch length 
+
+    TString infile = AliMpFiles::BusPatchLengthFilePath();
+    ifstream in(infile, ios::in);
+    if (!in) {
+      AliErrorStream() << "Data file " << infile << " not found.";
+      return false;
+    }  
+    char line[255];
+
+    for (Int_t iDDL = 0; iDDL < fgkNofDDLs; ++iDDL ) {
+      AliMpDDL* ddl = GetDDL(iDDL);
+
+      for (Int_t iBusPatch = 0; iBusPatch < ddl->GetNofBusPatches(); ++iBusPatch) {
+  
+	do {
+	  if (!in.getline(line,255)) {
+	    AliWarning(Form("Wrong size in bus patch length file; index %d DDL %d", 
+			    iBusPatch, iDDL));
+	    return false;
+	  }
+	} while(line[0] == '#');
+
+	TString tmp(AliMpHelper::Normalize(line));
+	Float_t length = tmp.Atof();
+
+	Int_t busPatchId = ddl->GetBusPatchId(iBusPatch);
+	AliMpBusPatch* busPatch = GetBusPatch(busPatchId);
+	busPatch->SetCableLength(length);
+      }
+    }
+
+    return true;
+}
+
 
 //________________________________________________________________
 Int_t AliMpDDLStore::GetLocalBoardId(TString name) const

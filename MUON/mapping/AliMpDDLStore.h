@@ -80,6 +80,7 @@ class AliMpDDLStore : public  TObject {
     Bool_t ReadTriggerDDLs();
     Bool_t SetManus();
     Bool_t SetPatchModules();
+    Bool_t SetBusPatchLength();
     Int_t  GetLocalBoardId(TString name) const;
 
     // static data members	
@@ -94,6 +95,7 @@ class AliMpDDLStore : public  TObject {
     AliMpExMap    fTriggerCrates;  ///< The map of trigger crate per their ID
     AliMpExMap    fLocalBoards;    ///< The map of local board per their ID
     TArrayI       fManuList12[16]; ///< Arrays of 1st manu in bus
+    TArrayI       fManuBridge2[16]; ///< Arrays of manu number before the bridge in buspatch
 
   ClassDef(AliMpDDLStore,2)  // The manager class for definition of detection element types
 };
