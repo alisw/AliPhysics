@@ -31,18 +31,19 @@ class TH2I;
 class TH2F;
 class TH2;
 class TLinearFitter;
+class TTreeSRedirector;
 
 class AliLog;
 class AliRawReader;
 
 class AliTRDCalibraMode;
 class AliTRDCalibraVector;
+class AliTRDCalibraVdriftLinearFit;
 class AliTRDRawStream;
 class AliTRDcluster;
 class AliTRDtrack;
 class AliTRDmcmTracklet;
 class AliTRDgeometry;
-class TTreeSRedirector;
 
 struct eventHeaderStruct;
 
@@ -66,28 +67,18 @@ class AliTRDCalibraFillHisto : public TObject {
           Bool_t   UpdateHistograms(AliTRDcluster *cl, AliTRDtrack *t);
           Bool_t   UpdateHistogramcm(AliTRDmcmTracklet *trk);
  
- // Process events DAQ
-	  Bool_t   ProcessEventDAQ(AliTRDRawStream *rawStream);
-	  Bool_t   ProcessEventDAQ(AliRawReader *rawReader);
-	  Bool_t   ProcessEventDAQ(eventHeaderStruct *event);
+  // Process events DAQ
+	  Int_t   ProcessEventDAQ(AliTRDRawStream *rawStream, Bool_t nocheck = kFALSE);
+	  Int_t   ProcessEventDAQ(AliRawReader *rawReader, Bool_t nocheck = kFALSE);
+	  Int_t   ProcessEventDAQ(eventHeaderStruct *event, Bool_t nocheck = kFALSE);
 
 	  Bool_t   UpdateDAQ(Int_t det, Int_t /*row*/, Int_t /*col*/, Int_t timebin, Int_t signal, Int_t nbtimebins);
 
- 
   // Is Pad on
           Bool_t   IsPadOn(Int_t detector, Int_t col, Int_t row) const;
 
-  // Functions for plotting the 2D
-          void     Plot2d();
-
   // Functions for write
 	  void     Write2d(const Char_t *filename = "TRD.calibration.root", Bool_t append = kFALSE);
-
-  // Reset the linearfitter objects
-	  void     ResetLinearFitter();
-	  void     ResetCHHisto()                                   { if(fCH2d)  fCH2d->Reset(); }
-	  void     ResetPHHisto()                                   { if(fPH2d)  fPH2d->Reset(); }
-	  void     ResetPRFHisto()                                  { if(fPRF2d) fPRF2d->Reset();}
 
   //For the statistics
 	  Double_t *StatH(TH2 *ch, Int_t i);
@@ -100,17 +91,17 @@ class AliTRDCalibraFillHisto : public TObject {
   //
 
   // Choice to fill or not the 2D
-          void     SetMITracking(Bool_t mitracking = kTRUE)                  { fMITracking      = mitracking;  }
-          void     SetMcmTracking(Bool_t mcmtracking = kTRUE)                { fMcmTracking     = mcmtracking; }
-          void     SetMcmCorrectAngle()                                      { fMcmCorrectAngle = kTRUE;       }
-          void     SetPH2dOn()                                               { fPH2dOn          = kTRUE;       }
-          void     SetCH2dOn()                                               { fCH2dOn          = kTRUE;       }
-          void     SetPRF2dOn()                                              { fPRF2dOn         = kTRUE;       }
-          void     SetHisto2d()                                              { fHisto2d         = kTRUE;       }
-          void     SetVector2d()                                             { fVector2d        = kTRUE;       }
-	  void     SetLinearFitterOn()                                       { fLinearFitterOn      = kTRUE;       }
-	  void     SetLinearFitterDebugOn()                                  { fLinearFitterDebugOn = kTRUE;       }
-	  
+          void     SetMITracking(Bool_t mitracking = kTRUE)                  { fMITracking      = mitracking;        }
+          void     SetMcmTracking(Bool_t mcmtracking = kTRUE)                { fMcmTracking     = mcmtracking;       }
+          void     SetMcmCorrectAngle(Bool_t mcmcorrectangle = kTRUE)        { fMcmCorrectAngle = mcmcorrectangle;   }
+          void     SetPH2dOn(Bool_t ph2don = kTRUE)                          { fPH2dOn          = ph2don;            }
+          void     SetCH2dOn(Bool_t ch2don = kTRUE)                          { fCH2dOn          = ch2don;            }
+          void     SetPRF2dOn(Bool_t prf2don = kTRUE)                        { fPRF2dOn         = prf2don;           }
+          void     SetHisto2d(Bool_t histo2d = kTRUE)                        { fHisto2d         = histo2d;           }
+          void     SetVector2d(Bool_t vector2d = kTRUE)                      { fVector2d        = vector2d;          }
+	  void     SetLinearFitterOn(Bool_t linearfitteron = kTRUE)          { fLinearFitterOn      = linearfitteron;}
+	  void     SetLinearFitterDebugOn(Bool_t debug = kTRUE)              { fLinearFitterDebugOn = debug;         }
+	 	  
   
           Bool_t   GetMITracking() const                                     { return fMITracking;             }
           Bool_t   GetMcmTracking() const                                    { return fMcmTracking;            }
@@ -120,12 +111,15 @@ class AliTRDCalibraFillHisto : public TObject {
           Bool_t   GetPRF2dOn() const                                        { return fPRF2dOn;                }
           Bool_t   GetHisto2d() const                                        { return fHisto2d;                }
           Bool_t   GetVector2d() const                                       { return fVector2d;               }
+          Bool_t   GetLinearFitterOn() const                                 { return fLinearFitterOn;         }
+	  Bool_t   GetLinearFitterDebugOn() const                            { return fLinearFitterDebugOn;    }
+  
   TH2I            *GetCH2d() const                                           { return fCH2d;                   }
-  TProfile2D      *GetPH2d(Int_t nbtimebin=24, Float_t samplefrequency= 10.0, Bool_t force=kFALSE);
+  TProfile2D      *GetPH2d(Int_t nbtimebin=24, Float_t samplefrequency= 10.0);
   TProfile2D      *GetPRF2d() const                                          { return fPRF2d;                  } 
   TObjArray        GetLinearFitterArray() const                              { return fLinearFitterArray;      }
   TLinearFitter   *GetLinearFitter(Int_t detector, Bool_t force=kFALSE);
-  TH2F            *GetLinearFitterHisto(Int_t detector, Bool_t force=kFALSE);
+  
  
   // How to fill the 2D
           void     SetRelativeScale(Float_t relativeScale);                      
@@ -148,8 +142,6 @@ class AliTRDCalibraFillHisto : public TObject {
           Short_t  GetNumberBinPRF() const                                   { return fNumberBinPRF;           }
 	  Short_t  GetNumberGroupsPRF() const                                { return fNgroupprf;              }
 	  Int_t    *GetEntriesLinearFitter() const                           { return fEntriesLinearFitter;    }
-  // Calibration mode
-AliTRDCalibraMode  *GetCalibraMode() const                                   { return fCalibraMode;            }
 
  // Debug
           void     SetDebugLevel(Short_t level)                              { fDebugLevel = level;           }
@@ -232,23 +224,24 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
   //
   
 	  
-	  AliTRDCalibraVector *fCalibraVector; // The vector object
+  AliTRDCalibraVector *fCalibraVector; // The vector object
  
  
   // Histograms to store the info from the digits, from the tracklets or from the tracks
-  TProfile2D      *fPH2d;                   // 2D average pulse height
-  TProfile2D      *fPRF2d;                  // 2D PRF
-  TH2I            *fCH2d;                   // 2D deposited charge
-  TObjArray       fLinearFitterArray;      // TObjArray of Linear Fitters for the detectors 
-  TObjArray       fLinearFitterHistoArray; // TObjArray of histo2D for debugging Linear Fitters
-          
+  TProfile2D      *fPH2d;                         // 2D average pulse height
+  TProfile2D      *fPRF2d;                        // 2D PRF
+  TH2I            *fCH2d;                         // 2D deposited charge
+  TObjArray       fLinearFitterArray;             // TObjArray of Linear Fitters for the detectors 
+  AliTRDCalibraVdriftLinearFit *fLinearVdriftFit; // Info Linear Fit
+  
+ 
   //
   // A lot of internal functions......
   //
   // Create the 2D histo to be filled Online
           void     CreateCH2d(Int_t nn);
           void     CreatePH2d(Int_t nn);
-          void     CreatePRF2d(Int_t nn);  
+          void     CreatePRF2d(Int_t nn);
   
   // Fill the 2D
           void     FillTheInfoOfTheTrackPH();
@@ -263,6 +256,9 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
 	  Int_t    CalculateTotalNumberOfBins(Int_t i);
 	  void     StoreInfoCHPH(AliTRDcluster *cl, AliTRDtrack *t, Int_t *group);
 	  Bool_t   HandlePRF();
+ 
+  // LinearFitter
+	  void     AnalyseLinearFitter();
 	  
   // Clear
           void     ClearHistos();

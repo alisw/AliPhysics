@@ -41,6 +41,11 @@ class AliTRDCalPadStatus : public TNamed {
   AliTRDCalSingleChamberStatus *GetCalROC(Int_t d) const { return fROC[d]; };
   AliTRDCalSingleChamberStatus *GetCalROC(Int_t p, Int_t c, Int_t s) const;
 
+  // Plot functions
+  TH1F    *MakeHisto1D();
+  TH2F    *MakeHisto2DSmPl(Int_t sm, Int_t pl);
+  void     PlotHistos2DSm(Int_t sm, const Char_t *name);
+
  protected:
 
   AliTRDCalSingleChamberStatus *fROC[kNdet];          //  Array of ROC objects which contain the values per pad

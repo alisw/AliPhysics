@@ -28,10 +28,8 @@
 
 #include <TGraphErrors.h>
 #include <TH1F.h>
-#include <TTree.h>
 #include <TObjArray.h>
 #include <TMath.h>
-#include <TChain.h>
 #include <TDirectory.h>
 #include <TROOT.h>
 #include <TFile.h>
@@ -40,18 +38,31 @@
 
 #include "AliTRDCalibraVector.h"
 #include "AliTRDCommonParam.h"
+#include "AliTRDarrayF.h"
+#include "AliTRDarrayI.h"
 
 ClassImp(AliTRDCalibraVector)
 
 //______________________________________________________________________________________
 AliTRDCalibraVector::AliTRDCalibraVector()
   :TObject()
-  ,fVectorPH(new TObjArray())
-  ,fPlaPH(new TObjArray())
-  ,fVectorCH(new TObjArray())
-  ,fPlaCH(new TObjArray())
-  ,fVectorPRF(new TObjArray())
-  ,fPlaPRF(new TObjArray())
+  ,fPHEntries(0x0)
+  ,fPHMean(0x0)
+  ,fPHSquares(0x0)
+  ,fPRFEntries(0x0)
+  ,fPRFMean(0x0)
+  ,fPRFSquares(0x0)
+  ,fCHEntries(0x0)
+  ,fDetectorPH(-1)
+  ,fDetectorCH(-1)
+  ,fDetectorPRF(-1)
+  ,fVectorPHMean(540)
+  ,fVectorPHSquares(540)
+  ,fVectorPHEntries(540)
+  ,fVectorCHEntries(540)
+  ,fVectorPRFMean(540)
+  ,fVectorPRFSquares(540)
+  ,fVectorPRFEntries(540)
   ,fNumberBinCharge(0)
   ,fNumberBinPRF(0)
   ,fTimeMax(0)
@@ -60,18 +71,33 @@ AliTRDCalibraVector::AliTRDCalibraVector()
   //
   // Default constructor
   //
-   
+  
+  for(Int_t k = 0; k < 3; k++){
+    fDetCha0[k] = 0;
+    fDetCha2[k] = 0;
+  }
+ 
 }
-
 //______________________________________________________________________________________
 AliTRDCalibraVector::AliTRDCalibraVector(const AliTRDCalibraVector &c)
   :TObject(c)
-  ,fVectorPH(new TObjArray())
-  ,fPlaPH(new TObjArray())
-  ,fVectorCH(new TObjArray())
-  ,fPlaCH(new TObjArray())
-  ,fVectorPRF(new TObjArray())
-  ,fPlaPRF(new TObjArray())
+  ,fPHEntries(0x0)
+  ,fPHMean(0x0)
+  ,fPHSquares(0x0)
+  ,fPRFEntries(0x0)
+  ,fPRFMean(0x0)
+  ,fPRFSquares(0x0)
+  ,fCHEntries(0x0)
+  ,fDetectorPH(-1)
+  ,fDetectorCH(-1)
+  ,fDetectorPRF(-1)
+  ,fVectorPHMean(540)
+  ,fVectorPHSquares(540)
+  ,fVectorPHEntries(540)
+  ,fVectorCHEntries(540)
+  ,fVectorPRFMean(540)
+  ,fVectorPRFSquares(540)
+  ,fVectorPRFEntries(540)
   ,fNumberBinCharge(c.fNumberBinCharge)
   ,fNumberBinPRF(c.fNumberBinPRF)
   ,fTimeMax(c.fTimeMax)
@@ -80,61 +106,51 @@ AliTRDCalibraVector::AliTRDCalibraVector(const AliTRDCalibraVector &c)
   //
   // Copy constructor
   //
-  for(Int_t k = 0; k < c.fVectorPH->GetEntriesFast(); k++){
-    AliTRDPInfo *obj = new AliTRDPInfo();
-    UShort_t  *entries    = new UShort_t[fTimeMax];
-    Float_t   *sum        = new Float_t[fTimeMax];
-    Float_t   *sumsquare  = new Float_t[fTimeMax];
-    for(Int_t i = 0; i < fTimeMax; i++){
-      entries[i]    = ((AliTRDPInfo *)c.fVectorPH->UncheckedAt(k))->GetEntries()[i];
-      sum[i]        = ((AliTRDPInfo *)c.fVectorPH->UncheckedAt(k))->GetSum()[i];
-      sumsquare[i]  = ((AliTRDPInfo *)c.fVectorPH->UncheckedAt(k))->GetSumSquare()[i];
-    }
-    obj->SetEntries(entries);
-    obj->SetSum(sum);
-    obj->SetSumSquare(sumsquare);
-    fVectorPH->AddAt((TObject *)obj,k);
-  } 
-  for(Int_t k = 0; k < c.fVectorPRF->GetEntriesFast(); k++){
-    AliTRDPInfo *obj = new AliTRDPInfo();
-    UShort_t  *entries    = new UShort_t[fNumberBinPRF];
-    Float_t   *sum        = new Float_t[fNumberBinPRF];
-    Float_t   *sumsquare  = new Float_t[fNumberBinPRF];
-    for(Int_t i = 0; i < fNumberBinPRF; i++){
-      entries[i]    = ((AliTRDPInfo *)c.fVectorPRF->UncheckedAt(k))->GetEntries()[i];
-      sum[i]        = ((AliTRDPInfo *)c.fVectorPRF->UncheckedAt(k))->GetSum()[i];
-      sumsquare[i]  = ((AliTRDPInfo *)c.fVectorPRF->UncheckedAt(k))->GetSumSquare()[i];
-    }
-    obj->SetEntries(entries);
-    obj->SetSum(sum);
-    obj->SetSumSquare(sumsquare);   
-    fVectorPRF->AddAt((TObject *)obj,k);
-  } 
-  for(Int_t k = 0; k < c.fVectorCH->GetEntriesFast(); k++){
-    AliTRDCTInfo *obj = new AliTRDCTInfo();
-    UShort_t  *entries = new UShort_t[fNumberBinCharge];
-    for(Int_t i = 0; i < fNumberBinCharge; i++){
-      entries[i] = ((AliTRDCTInfo *)c.fVectorCH->UncheckedAt(k))->GetEntries()[i];
-    }
-    obj->SetEntries(entries);
-    fVectorCH->AddAt((TObject *)obj,k);
-  } 
-  for(Int_t k = 0; k < c.fPlaPH->GetEntriesFast(); k++){
-    AliTRDPlace *obj = new AliTRDPlace();
-    obj->SetPlace(((AliTRDPlace *)c.fPlaPH->UncheckedAt(k))->GetPlace());
-    fPlaPH->AddAt((TObject *)obj,k);
-  } 
-  for(Int_t k = 0; k < c.fPlaCH->GetEntriesFast(); k++){
-    AliTRDPlace *obj = new AliTRDPlace();
-    obj->SetPlace(((AliTRDPlace *)c.fPlaCH->UncheckedAt(k))->GetPlace());
-    fPlaCH->AddAt((TObject *)obj,k);
-  } 
-  for(Int_t k = 0; k < c.fPlaPRF->GetEntriesFast(); k++){
-    AliTRDPlace *obj = new AliTRDPlace();
-    obj->SetPlace(((AliTRDPlace *)c.fPlaPRF->UncheckedAt(k))->GetPlace());
-    fPlaPRF->AddAt((TObject *)obj,k);
-  } 
+  for (Int_t idet = 0; idet < 540; idet++){
+    
+    const AliTRDarrayI *phEntries  = (AliTRDarrayI*)c.fVectorPHEntries.UncheckedAt(idet);
+    const AliTRDarrayF *phMean     = (AliTRDarrayF*)c.fVectorPHMean.UncheckedAt(idet);
+    const AliTRDarrayF *phSquares  = (AliTRDarrayF*)c.fVectorPHSquares.UncheckedAt(idet);
 
+    const AliTRDarrayI *prfEntries  = (AliTRDarrayI*)c.fVectorPRFEntries.UncheckedAt(idet);
+    const AliTRDarrayF *prfMean     = (AliTRDarrayF*)c.fVectorPRFMean.UncheckedAt(idet);
+    const AliTRDarrayF *prfSquares  = (AliTRDarrayF*)c.fVectorPRFSquares.UncheckedAt(idet);
+
+    const AliTRDarrayI *chEntries  = (AliTRDarrayI*)c.fVectorCHEntries.UncheckedAt(idet);
+
+    if ( phEntries != 0x0 )  fVectorPHEntries.AddAt(new AliTRDarrayI(*phEntries), idet);
+    if ( phMean != 0x0 )     fVectorPHMean.AddAt(new AliTRDarrayF(*phMean), idet);
+    if ( phSquares != 0x0 )  fVectorPHSquares.AddAt(new AliTRDarrayF(*phSquares), idet);
+
+    if ( prfEntries != 0x0 )  fVectorPRFEntries.AddAt(new AliTRDarrayI(*prfEntries), idet);
+    if ( prfMean != 0x0 )     fVectorPRFMean.AddAt(new AliTRDarrayF(*prfMean), idet);
+    if ( prfSquares != 0x0 )  fVectorPRFSquares.AddAt(new AliTRDarrayF(*prfSquares), idet);
+
+
+    if ( chEntries != 0x0 )   fVectorCHEntries.AddAt(new AliTRDarrayI(*chEntries), idet);
+
+  }
+
+  for(Int_t k = 0; k < 3; k++){
+    fDetCha0[k] = c.fDetCha0[k];
+    fDetCha2[k] = c.fDetCha2[k];
+  }
+
+  fVectorPHEntries.SetName(c.fVectorPHEntries.GetName());
+  fVectorCHEntries.SetName(c.fVectorCHEntries.GetName());
+  fVectorPRFEntries.SetName(c.fVectorPRFEntries.GetName());
+  
+}
+//_____________________________________________________________________
+AliTRDCalibraVector& AliTRDCalibraVector::operator = (const  AliTRDCalibraVector &source)
+{
+  //
+  // assignment operator
+  //
+  if (&source == this) return *this;
+  new (this) AliTRDCalibraVector(source);
+
+  return *this;
 }
 //____________________________________________________________________________________
 AliTRDCalibraVector::~AliTRDCalibraVector()
@@ -144,7 +160,6 @@ AliTRDCalibraVector::~AliTRDCalibraVector()
   //
 
 }
-
 //_____________________________________________________________________________
 Int_t AliTRDCalibraVector::SearchBin(Float_t value, Int_t i) const
 {
@@ -157,26 +172,29 @@ Int_t AliTRDCalibraVector::SearchBin(Float_t value, Int_t i) const
   Float_t fbinmax      = value;
   Int_t fNumberOfBin   = -1;
 
-  // Charge
-  if (i == 0) {
-    fbinmax      = 300.0;
-    fbinmin      = 0.0;
-    fNumberOfBin = fNumberBinCharge;
-  }
+  switch(i)
+    {
+    case 0:
+      fbinmax      = 300.0;
+      fbinmin      = 0.0;
+      fNumberOfBin = fNumberBinCharge;
+      break;
 
-  // PRF
-  if (i == 2) {
-    fbinmax      =   TMath::Abs(fPRFRange);
-    fbinmin      =  -TMath::Abs(fPRFRange);
-    fNumberOfBin = fNumberBinPRF;
-  }
-
+    case 2:
+      fbinmax      =   TMath::Abs(fPRFRange);
+      fbinmin      =  -TMath::Abs(fPRFRange);
+      fNumberOfBin = fNumberBinPRF;
+      break;
+      
+    default: 
+      return -1;
+    }
+  
   // Return -1 if out
   if ((value >= fbinmax) || 
       (value <  fbinmin)) {
     return -1;
   }
-  // Sinon
   else {
     reponse = (Int_t) ((fNumberOfBin*(value-fbinmin)) / (fbinmax-fbinmin));
   }
@@ -184,212 +202,80 @@ Int_t AliTRDCalibraVector::SearchBin(Float_t value, Int_t i) const
   return reponse;
 
 }
-
 //_____________________________________________________________________________
-Int_t AliTRDCalibraVector::SearchInVector(Int_t group, Int_t i) const
+Bool_t AliTRDCalibraVector::UpdateVectorCH(Int_t det, Int_t group, Float_t value)
 {
   //
-  // Search if the calibration group "group" has already been
-  // initialised by a previous track in the vector
-  //
-
-  if (i == 0) {
-    for (Int_t k = 0; k < (Int_t) fPlaCH->GetEntriesFast(); k++) {
-      if (((AliTRDPlace *) fPlaCH->At(k))->GetPlace() == group) {
-        return k;
-      }
-    }
-    return -1;
-  }
-
-  if (i == 1) {
-    for (Int_t k = 0; k < (Int_t) fPlaPH->GetEntriesFast(); k++) {
-      if (((AliTRDPlace *) fPlaPH->At(k))->GetPlace() == group) {
-        return k;
-      }
-    }
-    return -1;
-  }
-
-  if (i == 2) {
-    for (Int_t k = 0; k < (Int_t) fPlaPRF->GetEntriesFast(); k++) {
-      if (((AliTRDPlace *) fPlaPRF->At(k))->GetPlace() == group) {
-        return k;
-      }
-    }
-    return -1;
-  }
-
-  return -1;
-
-}
-
-//_____________________________________________________________________________
-Int_t AliTRDCalibraVector::SearchInTreeVector(TObjArray *vectorplace, Int_t group) const
-{
-  //
-  // Search if the calibration group "group" is present in the tree
-  //
-
-  for (Int_t k = 0; k < (Int_t) vectorplace->GetEntriesFast(); k++) {
-    if (((AliTRDPlace *) vectorplace->At(k))->GetPlace() == group) {
-      return k;
-    }
-  }
-
-  return -1;
-
-}
-
-//_____________________________________________________________________________
-Bool_t AliTRDCalibraVector::UpdateVectorCH(Int_t group, Float_t value)
-{
-  //
-  // Fill the vector if a new calibration group "group" or update the
-  // values of the calibration group "group" if already here  
+  // Fill the vector CH   
   //
 
   // Search bin
   Int_t bin = SearchBin(value,0);
   // Out
-  if ((bin < 0) || (bin >= fNumberBinCharge)) {
+  if (bin == -1) {
     return kFALSE; 
   }
 
-  // Search place
-  Int_t place = SearchInVector(group,0);
 
-  // New group
-  if (place == -1) {
-    AliTRDPlace *placegroup = new AliTRDPlace();
-    placegroup->SetPlace(group);
-    fPlaCH->Add((TObject *) placegroup);
-    // Variable
-    AliTRDCTInfo *fCHInfo = new AliTRDCTInfo();
-    UShort_t *entries = new UShort_t[fNumberBinCharge];
-    // Initialise first
-    for(Int_t k = 0; k < fNumberBinCharge; k++) {
-      entries[k] = 0;
-    }
-    // Add the value
-    entries[bin]= 1;
-    // Set
-    fCHInfo->SetEntries(entries);
-    // Set in the vector
-    fVectorCH->Add((TObject *) fCHInfo);
-  }
-  // Group already exits
-  else {
-    // Variable
-    AliTRDCTInfo *fCHInfo = new AliTRDCTInfo();
-    // Retrieve
-    fCHInfo = ((AliTRDCTInfo *) fVectorCH->At(place));
-    UShort_t *entries = fCHInfo->GetEntries();
-    // Add
-    entries[bin]++;
-    // Set
-    fCHInfo->SetEntries(entries);
-    // Update the vector
-    fVectorCH->AddAt((TObject *) fCHInfo,place);
+
+  if(fDetectorCH != det){
+    fCHEntries = ((AliTRDarrayI *)GetCHEntries(det,kTRUE));
   }
 
+  Int_t entries  = fCHEntries->At(group*fNumberBinCharge+bin);
+  
+  Int_t entriesn = entries+1;
+  fCHEntries->AddAt(entriesn,group*fNumberBinCharge+bin);
+  
+  fDetectorCH = det;
+
+ 
   return kTRUE;
 
 }
-
 //_____________________________________________________________________________
-Bool_t AliTRDCalibraVector::UpdateVectorPRF(Int_t group, Float_t x, Float_t y)
+Bool_t AliTRDCalibraVector::UpdateVectorPRF(Int_t det, Int_t group, Float_t x, Float_t y)
 {
   //
-  // Fill the vector if a new calibration group "group" or update the
-  // values of the calibration group "group" if already here  
+  // Fill the vector PRF
   //
 
   // Search bin
   Int_t bin = SearchBin(x,2);
   // Out
-  if ((bin < 0) || (bin >= fNumberBinPRF)) {
+  if (bin == -1) {
     return kFALSE; 
   }
 
-  // Search place
-  Int_t place = SearchInVector(group,2);
-
-  // New group
-  if (place == -1) {
-
-    AliTRDPlace *placegroup = new AliTRDPlace();
-    placegroup->SetPlace(group);
-    fPlaPRF->Add((TObject *) placegroup);
-    AliTRDPInfo *fPRFInfo = new AliTRDPInfo();
-
-    Float_t  *sum       = new Float_t[fNumberBinPRF];
-    Float_t  *sumsquare = new Float_t[fNumberBinPRF];
-    UShort_t *entries   = new UShort_t[fNumberBinPRF];
-
-    // Initialise first
-    for (Int_t k = 0; k < fNumberBinPRF; k++) {
-      sum[k]       = 0.0;
-      sumsquare[k] = 0.0;
-      entries[k]   = 0;
-    }
-
-    // Add the value
-    sum[bin]       += y;
-    sumsquare[bin] += y*y;
-    entries[bin]++;
-
-    // Set
-    fPRFInfo->SetSum(sum);
-    fPRFInfo->SetSumSquare(sumsquare);
-    fPRFInfo->SetEntries(entries);
-
-    // Set in the vector
-    fVectorPRF->Add((TObject *) fPRFInfo);
-        
+  
+  if(fDetectorPRF != det){
+    fPRFEntries = ((AliTRDarrayI *)GetPRFEntries(det,kTRUE));
+    fPRFMean    = ((AliTRDarrayF *)GetPRFMean(det,kTRUE));
+    fPRFSquares = ((AliTRDarrayF *)GetPRFSquares(det,kTRUE));
   }
-  // Group already exits
-  else {
 
-    AliTRDPInfo *fPRFInfo = new AliTRDPInfo();
-    // Retrieve
-    fPRFInfo = (AliTRDPInfo *) fVectorPRF->At(place);
+  Int_t entries  = fPRFEntries->At(group*fNumberBinPRF+bin);
+  Float_t mean   = fPRFMean->At(group*fNumberBinPRF+bin);
+  Float_t square = fPRFSquares->At(group*fNumberBinPRF+bin);
+  
+  Int_t entriesn = entries+1;
+  fPRFEntries->AddAt(entriesn,group*fNumberBinPRF+bin);
+  Float_t meann = (mean*((Float_t)entries)+y)/((Float_t)entriesn);
+  fPRFMean->AddAt(meann,group*fNumberBinPRF+bin);
+  Float_t squaren = ((square*((Float_t)entries))+(y*y))/((Float_t)entriesn);
+  fPRFSquares->AddAt(squaren,group*fNumberBinPRF+bin);
 
-    Float_t  *sum       = fPRFInfo->GetSum();
-    Float_t  *sumsquare = fPRFInfo->GetSumSquare();
-    UShort_t *entries   = fPRFInfo->GetEntries();
-
-    // Add
-    Double_t calcul       = (((Double_t) fPRFInfo->GetEntries()[bin])
-                           * ((Double_t) fPRFInfo->GetSum()[bin]) + (Double_t) y)
-                          / (((Double_t) fPRFInfo->GetEntries()[bin]) + 1);
-    sum[bin]       = (Float_t) calcul;
-    Double_t calculsquare = (((Double_t) fPRFInfo->GetSumSquare()[bin])
-                           * ((Double_t) fPRFInfo->GetEntries()[bin]) + ((Double_t) y)*((Double_t) y))
-                          / (((Double_t) fPRFInfo->GetEntries()[bin]) + 1);
-    sumsquare[bin] = (Float_t) calculsquare;
-    entries[bin]++;
-
-    // Set
-    fPRFInfo->SetSum(sum);
-    fPRFInfo->SetSumSquare(sumsquare);
-    fPRFInfo->SetEntries(entries);
- 
-    // Update the vector
-    fVectorPRF->AddAt((TObject *) fPRFInfo,place);
-
-  }
+  
+  fDetectorPRF = det;
 
   return kTRUE;
-
+  
 }
-
 //_____________________________________________________________________________
-Bool_t AliTRDCalibraVector::UpdateVectorPH(Int_t group, Int_t time, Float_t value)
+Bool_t AliTRDCalibraVector::UpdateVectorPH(Int_t det, Int_t group, Int_t time, Float_t value)
 {
   //
-  // Fill the vector if a new calibration group "group" or update
-  // the values of the calibration group "group" if already here  
+  // Fill the vector PH  
   //
 
   // Search bin
@@ -400,117 +286,181 @@ Bool_t AliTRDCalibraVector::UpdateVectorPH(Int_t group, Int_t time, Float_t valu
     return kFALSE; 
   }
 
-  // Search place
-  Int_t place = SearchInVector(group,1);
 
-  // New group
-  if(place == -1){
-
-    AliTRDPlace *placegroup = new AliTRDPlace();
-    placegroup->SetPlace(group);
-    fPlaPH->Add((TObject *) placegroup);
-    AliTRDPInfo *fPHInfo = new AliTRDPInfo();
-
-    Float_t  *sum       = new Float_t[fTimeMax];
-    Float_t  *sumsquare = new Float_t[fTimeMax];
-    UShort_t *entries   = new UShort_t[fTimeMax];
-
-    // Initialise first
-    for (Int_t k = 0; k < fTimeMax; k++) {
-      sum[k]       = 0.0;
-      sumsquare[k] = 0.0;
-      entries[k]   = 0;
-    }
-
-    // Add the value
-    sum[bin]       += value;
-    sumsquare[bin] += value*value;
-    entries[bin]++;
-
-    // Set
-    fPHInfo->SetSum(sum);
-    fPHInfo->SetSumSquare(sumsquare);
-    fPHInfo->SetEntries(entries);
-
-    // Set in the vector
-    fVectorPH->Add((TObject *) fPHInfo);
-
+  if(fDetectorPH != det){
+    fPHEntries = ((AliTRDarrayI *)GetPHEntries(det,kTRUE));
+    fPHMean    = ((AliTRDarrayF *)GetPHMean(det,kTRUE));
+    fPHSquares = ((AliTRDarrayF *)GetPHSquares(det,kTRUE));
   }
-  // Group already exits
-  else {
 
-    AliTRDPInfo *fPHInfo = new AliTRDPInfo();
-    // Retrieve
-    fPHInfo = (AliTRDPInfo *) fVectorPH->At(place);
+  Int_t entries  = fPHEntries->At(group*fTimeMax+bin);
+  Float_t mean   = fPHMean->At(group*fTimeMax+bin);
+  Float_t square = fPHSquares->At(group*fTimeMax+bin);
+  
+  Int_t entriesn = entries+1;
+  fPHEntries->AddAt(entriesn,group*fTimeMax+bin);
+  Float_t meann = (mean*((Float_t)entries)+value)/((Float_t)entriesn);
+  fPHMean->AddAt(meann,group*fTimeMax+bin);
+  Float_t squaren = ((square*((Float_t)entries))+(value*value))/((Float_t)entriesn);
+  fPHSquares->AddAt(squaren,group*fTimeMax+bin);
 
-    Float_t  *sum       = fPHInfo->GetSum();
-    Float_t  *sumsquare = fPHInfo->GetSumSquare();
-    UShort_t *entries   = fPHInfo->GetEntries();
-
-    // Add
-    Double_t calcul       = (((Double_t) fPHInfo->GetEntries()[bin])
-                           * ((Double_t) fPHInfo->GetSum()[bin]) + (Double_t) value)
-                          / (((Double_t) fPHInfo->GetEntries()[bin]) + 1);
-    sum[bin]       = (Float_t) calcul;
-    Double_t calculsquare = ((((Double_t) fPHInfo->GetSumSquare()[bin])
-                            * ((Double_t) fPHInfo->GetEntries()[bin])) 
-                          + (((Double_t) value) * ((Double_t)value))) 
-                          / (((Double_t) fPHInfo->GetEntries()[bin]) + 1);
-    sumsquare[bin] = (Float_t) calculsquare;
-    entries[bin]++;
-
-    // Set
-    fPHInfo->SetSum(sum);
-    fPHInfo->SetSumSquare(sumsquare);
-    fPHInfo->SetEntries(entries);
-
-    // Update the vector
-    fVectorPH->AddAt((TObject *) fPHInfo,place);
-
-  }
+  
+  fDetectorPH = det;
 
   return kTRUE;
-
-}  
-
-//_____________________________________________________________________________
-TGraphErrors *AliTRDCalibraVector::ConvertVectorPHisto(Int_t place
-                                        , const Char_t * name) const
-{
-  //
-  // Convert the PInfo in a TGraphErrors
-  //
-
-  AliTRDPInfo *pInfo = new AliTRDPInfo();
-  // Retrieve
-  pInfo = ((AliTRDPInfo *) fVectorPH->At(place));
-  TGraphErrors *histo;
-  histo = ConvertVectorPHistoI((AliTRDPInfo *)pInfo, name);
   
-  return histo;
-
-} 
-
-//_____________________________________________________________________________
-TGraphErrors *AliTRDCalibraVector::ConvertVectorPHistoI(AliTRDPInfo *pInfo
-                                               , const Char_t *name) const
+}
+//__________________________________________________________________________________
+Bool_t AliTRDCalibraVector::Add(AliTRDCalibraVector *calvect)
 {
   //
-  // Convert the PInfo in a 1D grapherror, name must contains "PRF"
-  // if PRF calibration and not "PRF" for Vdrift calibration
+  // Add a other AliTRCalibraVector to this one
   //
- 
-  TGraphErrors *histo;
-  const Char_t *pattern1 = "PRF";
 
+  // Check compatibility
+  if(fNumberBinCharge != calvect->GetNumberBinCharge()) return kFALSE;
+  if(fNumberBinPRF    != calvect->GetNumberBinPRF()) return kFALSE;
+  if(fPRFRange        != calvect->GetPRFRange()) return kFALSE;
+  if(fTimeMax         != calvect->GetTimeMax()) return kFALSE;
+  for(Int_t k = 0; k < 3; k++){
+    if(fDetCha0[k] != calvect->GetDetCha0(k)) return kFALSE;
+    if(fDetCha2[k] != calvect->GetDetCha2(k)) return kFALSE;
+  }
+
+  //printf("pass0!\n");
+
+  // Add
+  for (Int_t idet = 0; idet < 540; idet++){
+    
+    const AliTRDarrayI *phEntriesvect   = calvect->GetPHEntries(idet);
+    const AliTRDarrayF *phMeanvect      = calvect->GetPHMean(idet);
+    const AliTRDarrayF *phSquaresvect   = calvect->GetPHSquares(idet);
+    
+    const AliTRDarrayI *prfEntriesvect  = calvect->GetPRFEntries(idet);
+    const AliTRDarrayF *prfMeanvect     = calvect->GetPRFMean(idet);
+    const AliTRDarrayF *prfSquaresvect  = calvect->GetPRFSquares(idet);
+    
+    const AliTRDarrayI *chEntriesvect   = calvect->GetCHEntries(idet);
+
+    //printf("idet %d!\n",idet);
+
+    //printf("phEntriesvect %d\n",(Bool_t) phEntriesvect);
+    //printf("phMeanvect %d\n",(Bool_t) phMeanvect);
+    //printf("phSquaresvect %d\n",(Bool_t) phSquaresvect);
+
+    //printf("prfEntriesvect %d\n",(Bool_t) prfEntriesvect);
+    //printf("prfMeanvect %d\n",(Bool_t) prfMeanvect);
+    //printf("prfSquaresvect %d\n",(Bool_t) prfSquaresvect);
+
+    //printf("chEntriesvect %d\n",(Bool_t) chEntriesvect);
+
+    if ( phEntriesvect != 0x0 ){
+      //Take the stuff
+      fPHEntries = ((AliTRDarrayI *)GetPHEntries(idet,kTRUE));
+      fPHMean    = ((AliTRDarrayF *)GetPHMean(idet,kTRUE));
+      fPHSquares = ((AliTRDarrayF *)GetPHSquares(idet,kTRUE));
+      Int_t total = fPHEntries->GetSize();
+      // Add
+      for(Int_t k = 0; k < total; k++){
+	Int_t entries  = fPHEntries->At(k);
+	Float_t mean   = fPHMean->At(k);
+	Float_t square = fPHSquares->At(k);
+  
+	Int_t entriesn = entries+phEntriesvect->At(k);
+	if(entriesn <= 0) continue;
+	fPHEntries->AddAt(entriesn,k);
+	Float_t meann = (mean*((Float_t)entries)+phMeanvect->At(k)*((Float_t)phEntriesvect->At(k)))/((Float_t)entriesn);
+	fPHMean->AddAt(meann,k);
+	Float_t sq      = phSquaresvect->At(k)*((Float_t)phEntriesvect->At(k));
+	Float_t squaren = ((square*((Float_t)entries))+sq)/((Float_t)entriesn);
+	fPHSquares->AddAt(squaren,k);
+	//printf("test ph!\n");
+      }
+    }     
+
+    if ( prfEntriesvect != 0x0 ){
+      //Take the stuff
+      fPRFEntries = ((AliTRDarrayI *)GetPRFEntries(idet,kTRUE));
+      fPRFMean    = ((AliTRDarrayF *)GetPRFMean(idet,kTRUE));
+      fPRFSquares = ((AliTRDarrayF *)GetPRFSquares(idet,kTRUE));
+      Int_t total = fPRFEntries->GetSize();
+      // Add
+      for(Int_t k = 0; k < total; k++){
+	Int_t entries  = fPRFEntries->At(k);
+	Float_t mean   = fPRFMean->At(k);
+	Float_t square = fPRFSquares->At(k);
+
+	//printf("entries0 %d\n",entries);
+	//printf("mean0 %f\n",mean);
+	//printf("square0 %f\n",square);
+
+	//printf("entries1 %d\n",prfEntriesvect->At(k));
+	//printf("mean1 %f\n",prfMeanvect->At(k));
+	//printf("square1 %f\n",prfSquaresvect->At(k));
+  
+
+	//printf("entries0 size %d\n",fPRFEntries->GetSize());
+	//printf("mean0 size %d\n",fPRFMean->GetSize());
+	//printf("squares0 size %d\n",fPRFSquares->GetSize());
+
+	//printf("entries1 size %d\n",prfEntriesvect->GetSize());
+	//printf("mean1 size %d\n",prfMeanvect->GetSize());
+	//printf("squares1 size %d\n",prfSquaresvect->GetSize());
+
+
+	Int_t entriesn = entries+prfEntriesvect->At(k);
+	if(entriesn <= 0) continue;
+	fPRFEntries->AddAt(entriesn,k);
+	Float_t meann = (mean*((Float_t)entries)+prfMeanvect->At(k)*((Float_t)prfEntriesvect->At(k)))/((Float_t)entriesn);
+	fPRFMean->AddAt(meann,k);
+	Float_t sq      = prfSquaresvect->At(k)*((Float_t)prfEntriesvect->At(k));
+	Float_t squaren = ((square*((Float_t)entries))+sq)/((Float_t)entriesn);
+	fPRFSquares->AddAt(squaren,k);
+	//printf("test prf!\n");
+      }
+    }
+
+    if ( chEntriesvect != 0x0 ){
+      //Take the stuff
+      fCHEntries = ((AliTRDarrayI *)GetCHEntries(idet,kTRUE));
+      Int_t total = fCHEntries->GetSize();
+      //if(idet == 180) printf("total %d\n",total);
+      // Add
+      for(Int_t k = 0; k < total; k++){
+	Int_t entries  = fCHEntries->At(k);
+	Int_t entriesn = entries+chEntriesvect->At(k);
+	//if((idet == 180) && ((entries != 0) || (entriesn != 0))) printf("for k %d we have entries %d and entriesn %d\n",k,entries,entriesn);
+	if(entriesn <= 0) continue;
+	fCHEntries->AddAt(entriesn,k);
+      }
+      //printf("test ch!\n");
+    }           
+  }
+  
+  return kTRUE;
+} 
+//_____________________________________________________________________________
+TGraphErrors *AliTRDCalibraVector::ConvertVectorPHTGraphErrors(Int_t det, Int_t group
+                                        , const Char_t * name)
+{
+  //
+  // Convert the fVectorPHMean, fVectorPHSquares and fVectorPHEntries in TGraphErrors
+  //
+
+  // Take the info
+  fPHEntries = ((AliTRDarrayI *)GetPHEntries(det,kTRUE));
+  fPHMean    = ((AliTRDarrayF *)GetPHMean(det,kTRUE));
+  fPHSquares = ((AliTRDarrayF *)GetPHSquares(det,kTRUE));
+  
+
+  // Init the stuff
+  TGraphErrors *histo;
   Float_t sf = 10.0;
   AliTRDCommonParam *parCom = AliTRDCommonParam::Instance();
   if (!parCom) {
     AliInfo("Could not get CommonParam, take the default 10MHz");
   }
-  
   sf = parCom->GetSamplingFrequency();
-
   // Axis
   Double_t *x;
   Double_t *y;
@@ -518,760 +468,313 @@ TGraphErrors *AliTRDCalibraVector::ConvertVectorPHistoI(AliTRDPInfo *pInfo
   Double_t *ey;
   Double_t step = 0.0;
   Double_t min  = 0.0;
-
-  // Ntimes
-  Int_t ntimes = 0;
-  if (strstr(name,pattern1)) {
-    ntimes = fNumberBinPRF;
-  }
-  else {
-    ntimes = fTimeMax;
-  }
-  x  = new Double_t[ntimes]; // Xaxis
-  y  = new Double_t[ntimes]; // Sum
-  ex = new Double_t[ntimes]; // Nentries
-  ey = new Double_t[ntimes]; // Sum of square/nentries
-
-  // Init histo
-  if (!strstr(name,pattern1)) {
-    step = 1.0 / sf;
-    min  = 0.0;
-  }
-  else {
-    step = (2*TMath::Abs(fPRFRange)) / fNumberBinPRF;
-    min  = -TMath::Abs(fPRFRange) + step / 2.0;
-  }
-
+  x  = new Double_t[fTimeMax]; // Xaxis
+  y  = new Double_t[fTimeMax]; // Sum/entries
+  ex = new Double_t[fTimeMax]; // Nentries
+  ey = new Double_t[fTimeMax]; // Sum of square/nentries
+  step = 1.0 / sf;
+  min  = 0.0;
+  Int_t offset = group*fTimeMax;
+  
   // Fill histo
-  for (Int_t k = 0; k < ntimes; k++) {
+  for (Int_t k = 0; k < fTimeMax; k++) {
     x[k]  = min + k*step;
     y[k]  = 0.0;
     ex[k] = 0.0;
-    ey[k] = 0.0;
+    ey[k] = 0.0;   
+    Int_t bin = offset+k;
     // Fill only if there is more than 0 something
-    if (pInfo->GetEntries()[k] > 0) {
-      ex[k] = pInfo->GetEntries()[k];
-      y[k]  = pInfo->GetSum()[k];
-      ey[k] =  pInfo->GetSumSquare()[k];
+    if (fPHEntries->At(bin) > 0) {
+      ex[k] = fPHEntries->At(bin);
+      y[k]  = fPHMean->At(bin);
+      ey[k] = fPHSquares->At(bin);
     }
   }
 
   // Define the TGraphErrors
-  histo = new TGraphErrors(ntimes,x,y,ex,ey);
+  histo = new TGraphErrors(fTimeMax,x,y,ex,ey);
   histo->SetTitle(name); 
   return histo;
 
 }
-
 //_____________________________________________________________________________
-TH1F *AliTRDCalibraVector::ConvertVectorCTHisto(Int_t place
-                                              , const Char_t * name) const
+TGraphErrors *AliTRDCalibraVector::ConvertVectorPRFTGraphErrors(Int_t det, Int_t group
+                                        , const Char_t * name)
 {
   //
-  // Convert the CTInfo in a 1D histo
+  // Convert the fVectorPRFMean, fVectorPRFSquares and fVectorPRFEntries in TGraphErrors
   //
 
-  AliTRDCTInfo *cHInfo = new AliTRDCTInfo();
-  // Retrieve
-  cHInfo = ((AliTRDCTInfo *) fVectorCH->At(place));
-  TH1F *histo;
-  histo = ConvertVectorCTHistoI((AliTRDCTInfo *)cHInfo,(const Char_t *) name);
+  // Take the info
+  fPRFEntries = ((AliTRDarrayI *)GetPRFEntries(det,kTRUE));
+  fPRFMean    = ((AliTRDarrayF *)GetPRFMean(det,kTRUE));
+  fPRFSquares = ((AliTRDarrayF *)GetPRFSquares(det,kTRUE));
+  
+
+  // Init the stuff
+  TGraphErrors *histo;
+  // Axis
+  Double_t *x;
+  Double_t *y;
+  Double_t *ex;
+  Double_t *ey;
+  Double_t step = 0.0;
+  Double_t min  = 0.0;
+  x  = new Double_t[fNumberBinPRF]; // Xaxis
+  y  = new Double_t[fNumberBinPRF]; // Sum/entries
+  ex = new Double_t[fNumberBinPRF]; // Nentries
+  ey = new Double_t[fNumberBinPRF]; // Sum of square/nentries
+  step = (2*TMath::Abs(fPRFRange)) / fNumberBinPRF;
+  min  = -TMath::Abs(fPRFRange) + step / 2.0;
+  Int_t offset = group*fNumberBinPRF;
+  //printf("number of total: %d\n",fNumberBinPRF);
+  // Fill histo
+  for (Int_t k = 0; k < fNumberBinPRF; k++) {
+    x[k]  = min + k*step;
+    y[k]  = 0.0;
+    ex[k] = 0.0;
+    ey[k] = 0.0;
+    Int_t bin = offset+k;
+    // Fill only if there is more than 0 something
+    if (fPRFEntries->At(bin) > 0) {
+      ex[k] = fPRFEntries->At(bin);
+      y[k]  = fPRFMean->At(bin);
+      ey[k] = fPRFSquares->At(bin);
+    }
+    //printf("Number of entries %f for %d\n",ex[k],k);
+  }
+
+  // Define the TGraphErrors
+  histo = new TGraphErrors(fNumberBinPRF,x,y,ex,ey);
+  histo->SetTitle(name); 
+  return histo;
+
+}  
+//_____________________________________________________________________________
+TH1F *AliTRDCalibraVector::ConvertVectorCHHisto(Int_t det, Int_t group
+                                              , const Char_t * name)
+{
+  //
+  // Convert the fVectorCHEntries in TH1F
+  //
+
+  // Take the info
+  fCHEntries = ((AliTRDarrayI *)GetCHEntries(det,kTRUE));
+  
+  // Init the stuff
+  TH1F *histo = new TH1F(name,name,fNumberBinCharge,0,300);
+  histo->Sumw2();
+  Int_t offset = group*fNumberBinCharge;
+  // Fill histo
+  for (Int_t k = 0; k < fNumberBinCharge; k++) {
+    Int_t bin = offset+k;
+    histo->SetBinContent(k+1,fCHEntries->At(bin));
+    histo->SetBinError(k+1,TMath::Sqrt(TMath::Abs(fCHEntries->At(bin))));
+  }
   
   return histo;
 
 } 
+//_____________________________________________________________________
+AliTRDarrayI* AliTRDCalibraVector::GetPHEntries(Int_t det, Bool_t force) /*FOLD00*/
+{
+    //
+    // return pointer to Carge ROC Calibration
+    // if force is true create a new histogram if it doesn't exist allready
+    //
+    TObjArray *arr = &fVectorPHEntries;
+    return GetEntriesPH(det, arr, force);
+}
+//_____________________________________________________________________
+AliTRDarrayI* AliTRDCalibraVector::GetPRFEntries(Int_t det, Bool_t force) /*FOLD00*/
+{
+    //
+    // return pointer to Carge ROC Calibration
+    // if force is true create a new histogram if it doesn't exist allready
+    //
+    TObjArray *arr = &fVectorPRFEntries;
+    return GetEntriesPRF(det, arr, force);
+}
+//_____________________________________________________________________
+AliTRDarrayI* AliTRDCalibraVector::GetCHEntries(Int_t det, Bool_t force) /*FOLD00*/
+{
+    //
+    // return pointer to Carge ROC Calibration
+    // if force is true create a new histogram if it doesn't exist allready
+    //
+    TObjArray *arr = &fVectorCHEntries;
+    return GetEntriesCH(det, arr, force);
+}
+//_____________________________________________________________________
+AliTRDarrayF* AliTRDCalibraVector::GetPHMean(Int_t det, Bool_t force) /*FOLD00*/
+{
+    //
+    // return pointer to Carge ROC Calibration
+    // if force is true create a new histogram if it doesn't exist allready
+    //
+    TObjArray *arr = &fVectorPHMean;
+    return GetMeanSquaresPH(det, arr, force);
+}
+//_____________________________________________________________________
+AliTRDarrayF* AliTRDCalibraVector::GetPHSquares(Int_t det, Bool_t force) /*FOLD00*/
+{
+    //
+    // return pointer to Carge ROC Calibration
+    // if force is true create a new histogram if it doesn't exist allready
+    //
+    TObjArray *arr = &fVectorPHSquares;
+    return GetMeanSquaresPH(det, arr, force);
+}
+//_____________________________________________________________________
+AliTRDarrayF* AliTRDCalibraVector::GetPRFMean(Int_t det, Bool_t force) /*FOLD00*/
+{
+    //
+    // return pointer to Carge ROC Calibration
+    // if force is true create a new histogram if it doesn't exist allready
+    //
+    TObjArray *arr = &fVectorPRFMean;
+    return GetMeanSquaresPRF(det, arr, force);
+}
+//_____________________________________________________________________
+AliTRDarrayF* AliTRDCalibraVector::GetPRFSquares(Int_t det, Bool_t force) /*FOLD00*/
+{
+    //
+    // return pointer to Carge ROC Calibration
+    // if force is true create a new histogram if it doesn't exist allready
+    //
+    TObjArray *arr = &fVectorPRFSquares;
+    return GetMeanSquaresPRF(det, arr, force);
+}
+//_____________________________________________________________________
+AliTRDarrayI* AliTRDCalibraVector::GetEntriesCH(Int_t det, TObjArray* arr, Bool_t force) /*FOLD00*/
+{
+    //
+    // return pointer to AliTRDarrayI Entries
+    // if force is true create a new AliTRDarrayI if it doesn't exist allready
+    //
+    if ( !force || arr->UncheckedAt(det) )
+	return (AliTRDarrayI*)arr->UncheckedAt(det);
 
+    // if we are forced and AliTRDarrayI doesn't yes exist create it
+    AliTRDarrayI *croc = new AliTRDarrayI();
+    Int_t chamber = GetChamber(det);
+    Int_t ngroup  = 0;
+    if(chamber == 2) ngroup = fDetCha2[0]*fNumberBinCharge;
+    else ngroup = fDetCha0[0]*fNumberBinCharge;
+    // init
+    croc->Expand(ngroup);
+    for(Int_t k = 0; k < ngroup; k++){
+      croc->AddAt(0,k);
+    }
+    arr->AddAt(croc,det);
+    return croc;
+}
+//_____________________________________________________________________
+AliTRDarrayI* AliTRDCalibraVector::GetEntriesPRF(Int_t det, TObjArray* arr, Bool_t force) /*FOLD00*/
+{
+    //
+    // return pointer to AliTRDarrayI Entries
+    // if force is true create a new AliTRDarrayI if it doesn't exist allready
+    //
+    if ( !force || arr->UncheckedAt(det) )
+	return (AliTRDarrayI*)arr->UncheckedAt(det);
+
+    // if we are forced and AliTRDarrayI doesn't yes exist create it
+    AliTRDarrayI *croc = new AliTRDarrayI();
+    Int_t chamber = GetChamber(det);
+    Int_t ngroup  = 0;
+    if(chamber == 2) ngroup = fDetCha2[2]*fNumberBinPRF;
+    else ngroup = fDetCha0[2]*fNumberBinPRF;
+    // init
+    croc->Expand(ngroup);
+    for(Int_t k = 0; k < ngroup; k++){
+      croc->AddAt(0,k);
+    }
+    arr->AddAt(croc,det);
+    return croc;
+
+}
+//_____________________________________________________________________
+AliTRDarrayI* AliTRDCalibraVector::GetEntriesPH(Int_t det, TObjArray* arr, Bool_t force) /*FOLD00*/
+{
+    //
+    // return pointer to AliTRDarrayI Entries
+    // if force is true create a new AliTRDarrayI if it doesn't exist allready
+    //
+    if ( !force || arr->UncheckedAt(det) )
+	return (AliTRDarrayI*)arr->UncheckedAt(det);
+
+    // if we are forced and AliTRDarrayI doesn't yes exist create it
+    AliTRDarrayI *croc = new AliTRDarrayI();
+    Int_t chamber = GetChamber(det);
+    Int_t ngroup  = 0;
+    if(chamber == 2) ngroup = fDetCha2[1]*fTimeMax;
+    else ngroup = fDetCha0[1]*fTimeMax;
+    // init
+    croc->Expand(ngroup);
+    for(Int_t k = 0; k < ngroup; k++){
+      croc->AddAt(0,k);
+    }
+    arr->AddAt(croc,det);
+    return croc;
+
+}
+//_____________________________________________________________________
+AliTRDarrayF* AliTRDCalibraVector::GetMeanSquaresPH(Int_t det, TObjArray* arr, Bool_t force) /*FOLD00*/
+{
+    //
+    // return pointer to AliTRDarrayF Mean or Squares
+    // if force is true create a new AliTRDarrayF if it doesn't exist allready
+    //
+    if ( !force || arr->UncheckedAt(det) )
+	return (AliTRDarrayF*)arr->UncheckedAt(det);
+
+    // if we are forced and AliTRDarrayF doesn't yes exist create it
+    AliTRDarrayF *croc = new AliTRDarrayF();
+    Int_t chamber = GetChamber(det);
+    Int_t ngroup  = 0;
+    if(chamber == 2) ngroup = fDetCha2[1]*fTimeMax;
+    else ngroup = fDetCha0[1]*fTimeMax;
+    // init
+    croc->Expand(ngroup);
+    for(Int_t k = 0; k < ngroup; k++){
+      croc->AddAt(0.0,k);
+    }
+    arr->AddAt(croc,det);
+    return croc;
+}
+//_____________________________________________________________________
+AliTRDarrayF* AliTRDCalibraVector::GetMeanSquaresPRF(Int_t det, TObjArray* arr, Bool_t force) /*FOLD00*/
+{
+    //
+    // return pointer to AliTRDarrayF Mean or Squares
+    // if force is true create a new AliTRDarrayF if it doesn't exist allready
+    //
+    if ( !force || arr->UncheckedAt(det) )
+	return (AliTRDarrayF*)arr->UncheckedAt(det);
+
+    // if we are forced and AliTRDarrayF doesn't yes exist create it
+    AliTRDarrayF *croc = new AliTRDarrayF();
+    Int_t chamber = GetChamber(det);
+    Int_t ngroup  = 0;
+    if(chamber == 2) ngroup = fDetCha2[2]*fNumberBinPRF;
+    else ngroup = fDetCha0[2]*fNumberBinPRF;
+    // init
+    croc->Expand(ngroup);
+    for(Int_t k = 0; k < ngroup; k++){
+      croc->AddAt(0.0,k);
+    }
+    arr->AddAt(croc,det);
+    return croc;
+}
 //_____________________________________________________________________________
-TH1F *AliTRDCalibraVector::ConvertVectorCTHistoI(AliTRDCTInfo *cTInfo
-                                               , const Char_t * name) const
+Int_t AliTRDCalibraVector::GetChamber(Int_t d) const
 {
   //
-  // Convert the CTInfo in a 1D histo
+  // Reconstruct the chamber number from the detector number
   //
 
-  TH1F *histo;
-  
-  Int_t     ntimes  = fNumberBinCharge;
-  UShort_t *entries = cTInfo->GetEntries();
-  
-  // Init histo
-  histo = new TH1F(name,name,fNumberBinCharge,0,300);
-  histo->Sumw2();
-  // Fill histo
-  for (Int_t k = 0; k < ntimes; k++) {
-    histo->SetBinContent(k+1,entries[k]);
-    histo->SetBinError(k+1,TMath::Sqrt(TMath::Abs(entries[k])));
-  }
-  
-  return histo;
+  return ((Int_t) (d % 30) / 6);
 
 }
 
-//_____________________________________________________________________________
-TTree *AliTRDCalibraVector::ConvertVectorCTTreeHisto(TObjArray *vVectorCT
-                                                   , TObjArray *pPlaCT
-                                                   , const Char_t *name
-                                                   , const Char_t *nametitle) const
-{
-  //
-  // Convert the vector in a tree with two branchs: the group number
-  // and the TH1F histo reconstructed from the vector
-  //
-
-  // Size of the things
-  Int_t ntotal = (Int_t) pPlaCT->GetEntriesFast();
-  if (ntotal == 0) {
-    AliInfo("nothing to write!");
-    TTree *treeCT = new TTree(name,nametitle);
-    return treeCT;
-  }
-  
-  // Variable of the tree
-  Int_t groupnumber = -1; // Group calibration
-  TH1F      *histo = 0x0;
-  TObjArray  vectorCT = *vVectorCT;
-  TObjArray  plaCT    = *pPlaCT;
-
-  // Init the tree
-  TTree *treeCT = new TTree(name,nametitle);
-  treeCT->Branch("groupnumber",&groupnumber,"groupnumber/I");
-  treeCT->Branch("histo","TH1F",&histo,32000,0);
-
-  // Fill
-  Int_t k = 0;
-  while (k < ntotal) {
-    TString nome(name);
-    groupnumber  = ((AliTRDPlace *) plaCT.At(0))->GetPlace();
-    nome        += groupnumber;
-    histo        = ConvertVectorCTHistoI(((AliTRDCTInfo *) vectorCT.At(0)),nome);
-    treeCT->Fill();
-    vectorCT.RemoveAt(0);
-    vectorCT.Compress();
-    plaCT.RemoveAt(0);
-    plaCT.Compress();
-    k++;
-  } 
-
-  return treeCT;
-
-}
-
-//_____________________________________________________________________________
-TTree *AliTRDCalibraVector::ConvertVectorPTreeHisto(TObjArray *vVectorP
-                                                  , TObjArray *pPlaP
-                                                  , const Char_t *name
-                                                  , const Char_t *nametitle) const
-{
-  //
-  // Convert the vector in a tree with two branchs: the group number
-  // and the TGraphErrors histo reconstructed from the vector.
-  // The name must contain "PRF" for PRF calibration and not "PRF"
-  // for Vdrift calibration
-  //
-
-  // Size of the things
-  Int_t ntotal = (Int_t) pPlaP->GetEntriesFast();
-  if (ntotal == 0) {
-    AliInfo("nothing to write!");
-    TTree *treeP = new TTree(name,nametitle);
-    return treeP;
-  }
-
-  // Variable of the tree
-  Int_t groupnumber = -1; // Group calibration
-  TGraphErrors *histo   = 0x0;
-  TObjArray     vectorP = *vVectorP;
-  TObjArray     plaP    = *pPlaP;
-
-  // Init the tree
-  TTree *treeP = new TTree(name,nametitle);
-  treeP->Branch("groupnumber",&groupnumber,"groupnumber/I");
-  treeP->Branch("histo","TGraphErrors",&histo,32000,0);
-
-  // Fill
-  Int_t k = 0;
-  while (k < ntotal) {
-    TString nome(name);
-    groupnumber = ((AliTRDPlace *) plaP.At(0))->GetPlace();
-    nome       += groupnumber;
-    histo       = ConvertVectorPHistoI((AliTRDPInfo *) vectorP.At(0),nome);
-    treeP->Fill();
-    vectorP.RemoveAt(0);
-    vectorP.Compress();
-    plaP.RemoveAt(0);
-    plaP.Compress();
-    k++;
-  } 
-
-  return treeP;
-
-}
-
-//_____________________________________________________________________________
-TObjArray *AliTRDCalibraVector::ConvertTreeVector(TTree *tree) const
-{
-  //
-  // Convert the branch groupnumber of the tree taken from
-  // TRD.calibration.root in case of vector method in a std::vector 
-  // to be faster
-  //
-
-  // Initialise
-  TObjArray *vectorplace = new TObjArray();
-  
-  // Variable of the tree
-  Int_t groupnumber = -1; // Group calibration
-
-  // Set the branch
-  tree->SetBranchAddress("groupnumber",&groupnumber);
-    
-  // Fill
-  Int_t ntotal = tree->GetEntries();
-  for (Int_t k = 0; k < ntotal; k++) {
-    tree->GetEntry(k);
-    AliTRDPlace *placegroupnumber = new AliTRDPlace();
-    placegroupnumber->SetPlace(groupnumber);
-    vectorplace->Add((TObject *) placegroupnumber);
-  }
-  
-  return vectorplace;
-
-}
-
-//_____________________________________________________________________________
-Bool_t AliTRDCalibraVector::MergeVectorCT(TObjArray *vVectorCT2, TObjArray *pPlaCT2)
-{
-  //
-  // Add the two vectors and place the result in the first
-  //
-
-  if (((Int_t) pPlaCT2->GetEntriesFast()) != ((Int_t) vVectorCT2->GetEntriesFast())){
-    AliInfo("VectorCT2 doesn't correspond to PlaCT2!");
-    return kFALSE;
-  }
- 
-  // CH case
-  for (Int_t k = 0; k < (Int_t) fPlaCH->GetEntriesFast(); k++) {
-    
-    // Look if PlaCT1[k] it is also in the second vector
-    Int_t place = -1;
-    for (Int_t j = 0; j < (Int_t) pPlaCT2->GetEntriesFast(); j++) {
-      if (((AliTRDPlace *) pPlaCT2->At(j))->GetPlace() == 
-            ((AliTRDPlace *) fPlaCH->At(k))->GetPlace()) {
-	place = j;
-	break;
-      }
-    }
-    
-    // If not in the second vector nothing to do
-
-    // If in the second vector
-    if (place != -1) {
-      
-      AliTRDCTInfo *fCTInfo = new AliTRDCTInfo();
-      UShort_t *entries = new UShort_t[fNumberBinCharge];
-      
-      for (Int_t nu = 0; nu < fNumberBinCharge; nu++) {
-	entries[nu] = ((AliTRDCTInfo *)  fVectorCH->At(((AliTRDPlace *) fPlaCH->At(k))->GetPlace()))->GetEntries()[nu]
-                    + ((AliTRDCTInfo *) vVectorCT2->At(((AliTRDPlace *) fPlaCH->At(k))->GetPlace()))->GetEntries()[nu];
-      }
-      
-      // Set
-      fCTInfo->SetEntries(entries);
-
-      // Nothing to do on PlaCT1
-      
-      // Update the vector 
-      fVectorCH->AddAt((TObject *) fCTInfo,((AliTRDPlace *) fPlaCH->At(k))->GetPlace());
-
-    }
-    
-  } 
- 
-  // And at the end the vector in CT2 but not in CH1
-  for (Int_t k = 0; k < (Int_t) pPlaCT2->GetEntriesFast(); k++) {
-    
-    // Look if pPlaCT2[k] it is also in the second vector
-    Int_t place = -1;
-    for (Int_t j = 0; j < (Int_t) fPlaCH->GetEntriesFast(); j++) {
-      if (((AliTRDPlace *) fPlaCH->At(j))->GetPlace() == ((AliTRDPlace *) pPlaCT2->At(k))->GetPlace()) {
-	place = j;
-	break;
-      }
-    }
-
-    // If not in the first vector
-    if (place == -1) {
-      
-      AliTRDCTInfo *fCTInfo = new AliTRDCTInfo();     
-      fCTInfo = ((AliTRDCTInfo *) vVectorCT2->At(((AliTRDPlace *) pPlaCT2->At(k))->GetPlace()));
-      
-      // Add at the end 
-      fPlaCH->Add((TObject *) (pPlaCT2->At(k)));
-      fVectorCH->Add((TObject *) fCTInfo);
-
-    }
-    
-  }
-  
-  return kTRUE;
-  
-}
-
-//_____________________________________________________________________________
-Bool_t AliTRDCalibraVector::MergeVectorP(TObjArray *vVectorP2
-                                       , TObjArray *pPlaP2
-                                       , Int_t i)
-{
-  //
-  // Add the two vectors and place the result in the first
-  //
-
-  if (((Int_t) pPlaP2->GetEntriesFast()) != ((Int_t) vVectorP2->GetEntriesFast())) {
-    AliInfo("VectorP2 doesn't correspond to PlaP2!");
-    return kFALSE;
-  }
-
-  // PH case
-  if (i == 1) {
-
-     for (Int_t k = 0; k < (Int_t) fPlaPH->GetEntriesFast(); k++) {
-       
-       // Look if fPlaPH[k] it is also in the second vector
-       Int_t place = -1;
-       for (Int_t j = 0; j < (Int_t) pPlaP2->GetEntriesFast(); j++) {
-	 if (((AliTRDPlace *) pPlaP2->At(j))->GetPlace() == ((AliTRDPlace *) fPlaPH->At(k))->GetPlace()) {
-	   place = j;
-	   break;
-	 }
-       }
-       
-       // If not in the second vector nothing to do
-
-       // If in the second vector
-       if (place != -1) {
-
-	 AliTRDPInfo *fPInfo = new AliTRDPInfo();
-	 UShort_t *entries   = new UShort_t[fTimeMax];
-	 Float_t  *sum       = new Float_t[fTimeMax];
-	 Float_t  *sumsquare = new Float_t[fTimeMax];
-
-	 for (Int_t nu = 0; nu < fTimeMax; nu++) {
-	   
-	   entries[nu]   = ((AliTRDPInfo *) fVectorPH->At(((AliTRDPlace *) fPlaPH->At(k))->GetPlace()))->GetEntries()[nu]
-                         + ((AliTRDPInfo *) vVectorP2->At(((AliTRDPlace *) fPlaPH->At(k))->GetPlace()))->GetEntries()[nu];
-	   
-	   Double_t calcul       = ((((Double_t) ((AliTRDPInfo *) fVectorPH->At(((AliTRDPlace *) fPlaPH->At(k))->GetPlace()))->GetSum()[nu])
-                                   * ((Double_t) ((AliTRDPInfo *) fVectorPH->At(((AliTRDPlace *) fPlaPH->At(k))->GetPlace()))->GetEntries()[nu]))
-                                  + (((Double_t) ((AliTRDPInfo *) vVectorP2->At(((AliTRDPlace *) fPlaPH->At(k))->GetPlace()))->GetSum()[nu])
-                                   * ((Double_t) ((AliTRDPInfo *) vVectorP2->At(((AliTRDPlace *) fPlaPH->At(k))->GetPlace()))->GetEntries()[nu])))
-                                 / ((Double_t) fPInfo->GetEntries()[nu]);
-
-	   sum[nu]       = (Float_t) calcul;
-	   
-	   Double_t calculsquare = ((((Double_t) ((AliTRDPInfo *) fVectorPH->At(((AliTRDPlace *) fPlaPH->At(k))->GetPlace()))->GetSumSquare()[nu])
-                                   * ((Double_t) ((AliTRDPInfo *) fVectorPH->At(((AliTRDPlace *) fPlaPH->At(k))->GetPlace()))->GetEntries()[nu]))
-                                  + (((Double_t) ((AliTRDPInfo *) vVectorP2->At(((AliTRDPlace *) fPlaPH->At(k))->GetPlace()))->GetSumSquare()[nu])
-                                   * ((Double_t) ((AliTRDPInfo *) vVectorP2->At(((AliTRDPlace *) fPlaPH->At(k))->GetPlace()))->GetEntries()[nu])))
-                                 / ((Double_t) fPInfo->GetEntries()[nu]);
-
-	   sumsquare[nu] = calculsquare;
-
-	 }
-
-	 // Set
-	 fPInfo->SetSum(sum);
-	 fPInfo->SetSumSquare(sumsquare);
-	 fPInfo->SetEntries(entries);
-	 
-	 // Nothing to do on PlaCT1
-	 
-	 // Update the vector VectorCT1
-	 fVectorPH->AddAt((TObject *) fPInfo,((AliTRDPlace *) fPlaPH->At(k))->GetPlace());
-	 
-       }
-
-     }
-
-     // And at the end the vector in P2 but not in CH1
-     for (Int_t k = 0; k < (Int_t) pPlaP2->GetEntriesFast(); k++) {
-       
-       // Look if PlaCT2[k] it is also in the second vector
-       Int_t place = -1;
-       for (Int_t j = 0; j < (Int_t) fPlaPH->GetEntriesFast(); j++) {
-	 if (((AliTRDPlace *) fPlaPH->At(j))->GetPlace() == ((AliTRDPlace *) pPlaP2->At(k))->GetPlace()) {
-	   place = j;
-	   break;
-	 }
-       }
-       
-       // If not in the first vector
-       if (place == -1) {
-	 	 
-	 AliTRDPInfo *fPInfo = new AliTRDPInfo();
-	 fPInfo = (AliTRDPInfo *) vVectorP2->At(((AliTRDPlace *) pPlaP2->At(k))->GetPlace());
-	 
-	 // Add at the end of CH1
-	 fPlaPH->Add(((TObject *) pPlaP2->At(k)));
-	 fVectorPH->Add((TObject *) fPInfo);
-
-       }
-
-     }
-
-   }
-
-   // PRF case
-   if (i == 1) {
-
-     for (Int_t k = 0; k < (Int_t) fPlaPRF->GetEntriesFast(); k++) {
-
-       // Look if fPlaPRF[k] it is also in the second vector
-       Int_t place = -1;
-       for (Int_t j = 0; j < (Int_t) pPlaP2->GetEntriesFast(); j++) {
-	 if (((AliTRDPlace *) pPlaP2->At(j))->GetPlace() == ((AliTRDPlace *) fPlaPRF->At(k))->GetPlace()) {
-	   place = j;
-	   break;
-	 }
-       }
-
-       // If not in the second vector nothing to do
-
-       // If in the second vector
-       if (place != -1) {
-	
-	 AliTRDPInfo *fPInfo = new AliTRDPInfo();
-	 UShort_t *entries   = new UShort_t[fNumberBinPRF];
-	 Float_t  *sum       = new Float_t[fNumberBinPRF];
-	 Float_t  *sumsquare = new Float_t[fNumberBinPRF];
-
-	 for (Int_t nu = 0; nu < fNumberBinPRF; nu++) {
-	   
-	   entries[nu]           = ((AliTRDPInfo *) fVectorPRF->At(((AliTRDPlace *) fPlaPRF->At(k))->GetPlace()))->GetEntries()[nu]
-                                 + ((AliTRDPInfo *)  vVectorP2->At(((AliTRDPlace *) fPlaPRF->At(k))->GetPlace()))->GetEntries()[nu];
-	   
-	   Double_t calcul       = ((((Double_t) ((AliTRDPInfo *) fVectorPRF->At(((AliTRDPlace *) fPlaPRF->At(k))->GetPlace()))->GetSum()[nu])
-                                   * ((Double_t) ((AliTRDPInfo *) fVectorPRF->At(((AliTRDPlace *) fPlaPRF->At(k))->GetPlace()))->GetEntries()[nu]))
-                                  + (((Double_t) ((AliTRDPInfo *)  vVectorP2->At(((AliTRDPlace *) fPlaPRF->At(k))->GetPlace()))->GetSum()[nu])
-                                   * ((Double_t) ((AliTRDPInfo *)  vVectorP2->At(((AliTRDPlace *) fPlaPRF->At(k))->GetPlace()))->GetEntries()[nu])))
-                                 / ((Double_t) fPInfo->GetEntries()[nu]);
-
-	   sum[nu]               = (Float_t) calcul;
-	   
-	   Double_t calculsquare = ((((Double_t) ((AliTRDPInfo *) fVectorPRF->At(((AliTRDPlace *) fPlaPRF->At(k))->GetPlace()))->GetSumSquare()[nu])
-                                   * ((Double_t) ((AliTRDPInfo *) fVectorPRF->At(((AliTRDPlace *) fPlaPRF->At(k))->GetPlace()))->GetEntries()[nu]))
-                                  + (((Double_t) ((AliTRDPInfo *)  vVectorP2->At(((AliTRDPlace *) fPlaPRF->At(k))->GetPlace()))->GetSumSquare()[nu])
-                                   * ((Double_t) ((AliTRDPInfo *)  vVectorP2->At(((AliTRDPlace *) fPlaPRF->At(k))->GetPlace()))->GetEntries()[nu])))
-                                 / ((Double_t) fPInfo->GetEntries()[nu]);
-
-	   sumsquare[nu]         = calculsquare;
-
-	 }
-
-	 // Set
-	 fPInfo->SetSum(sum);
-	 fPInfo->SetSumSquare(sumsquare);
-	 fPInfo->SetEntries(entries);
-
-	 // Nothing to do on PlaCT1
-	 
-	 // Update the vector VectorCT1
-	 fVectorPRF->AddAt((TObject *) fPInfo,((AliTRDPlace *) fPlaPRF->At(k))->GetPlace());
-	 
-       }
-
-     }
-
-     // And at the end the vector in P2 but not in CH1
-     for (Int_t k = 0; k < (Int_t) pPlaP2->GetEntriesFast(); k++) {
-       
-       // Look if PlaCT2[k] it is also in the second vector
-       Int_t place = -1;
-       for (Int_t j = 0; j < (Int_t) fPlaPRF->GetEntriesFast(); j++) {
-	 if (((AliTRDPlace *) fPlaPRF->At(j))->GetPlace() == ((AliTRDPlace *) pPlaP2->At(k))->GetPlace()) {
-	   place = j;
-	   break;
-	 }
-       }
-
-       // If not in the first vector
-       if (place == -1) {
-
-	 AliTRDPInfo *fPInfo = new AliTRDPInfo();
-	 fPInfo = (AliTRDPInfo *) vVectorP2->At(((AliTRDPlace *) pPlaP2->At(k))->GetPlace());
-
-	 // Add at the end of CH1
-	 fPlaPRF->Add(((TObject *) pPlaP2->At(k)));
-	 fVectorPRF->Add((TObject *) fPInfo);
-
-       }
-       
-     }
-
-   } 
-
-   return kTRUE;
-
-}   
-
-//_____________________________________________________________________________
-TTree *AliTRDCalibraVector::Sum2Trees(const Char_t *filename1
-                                    , const Char_t *filename2
-                                    , const Char_t *variablecali)
-{
-  //
-  // It returns the sum of two trees with the name variablecali
-  // in the files filenam1 and filename2 equivalent of merging two 2D histos
-  // The name of the resulting tree is the same as the two input trees
-  // variablecali can be treeCH2d, treePH2d or treePRF2d 
-  //
-
-  // Variables
-  TChain    *treeChain   = new TChain(variablecali);
-  TObjArray *vectorplace = new TObjArray();
-  TObjArray *where       = new TObjArray();
-  
-  // First tree
-  // Take the tree
-  TFile *file1 = new TFile(filename1,"READ");
-  TTree *tree1 = (TTree *) file1->Get(variablecali);
-
-  gDirectory = gROOT;
-
-  // Take the places
-  vectorplace = ConvertTreeVector(tree1);
-
-  // Say where it is in tree 1
-  for (Int_t jui = 0; jui < (Int_t) vectorplace->GetEntriesFast(); jui++) {
-    AliTRDPlace *placejui = new AliTRDPlace();
-    placejui->SetPlace(jui);
-    TObjArray *chainplace = new TObjArray();
-    chainplace->Add((TObject *) placejui);
-    where->Add((TObject *) chainplace);
-  }
-
-  // Add to the chain
-  treeChain->Add(filename1);
-  delete file1;
-
-  // Second tree
-  // Take the tree
-  TFile *file2 = new TFile(filename2,"READ");
-  TTree *tree2 = (TTree *) file2->Get(variablecali);
-
-  gDirectory = gROOT;
-
-  // Take the places
-  TObjArray *vector2 = ConvertTreeVector(tree2);
-  Int_t j = treeChain->GetEntries();
-
-  for (Int_t jui = 0; jui < (Int_t) vector2->GetEntriesFast(); jui++) {
-    // Search if already found
-    Int_t place = SearchInTreeVector(vectorplace,((AliTRDPlace *) vector2->At(jui))->GetPlace());
-    // Create a new element in the two std vectors
-    if (place == -1) {
-      AliTRDPlace *placejjui  = new AliTRDPlace();
-      placejjui->SetPlace((j+jui));
-      TObjArray   *chainplace = new TObjArray();
-      chainplace->Add((TObject *) placejjui);
-      vectorplace->Add((TObject *) (vector2->At(jui)));
-      where->Add((TObject *) chainplace);
-    }
-    // Update the element at the place "place" in the std vector whereinthechain
-    else {
-      AliTRDPlace *placejjui  = new AliTRDPlace();
-      placejjui->SetPlace((j+jui));
-      TObjArray   *chainplace = ((TObjArray *) where->At(place));
-      chainplace->Add((TObject *) placejjui);
-      where->AddAt((TObject *) chainplace,place);
-    }
-  }
-
-  // Add to the Chain
-  treeChain->Add(filename2);
-  delete file2; 
-
-  // Take care of the profile
-  const Char_t *pattern = "P";
-  TTree *tree = 0x0;
-
-  if (!strstr(variablecali,pattern)) {
-
-    // Ready to read the chain
-    TH1F *his = 0x0;
-    treeChain->SetBranchAddress("histo",&his);
-
-    // Initialise the final tree
-    Int_t group   = -1;
-    TH1F *histsum = 0x0;
-   
-    tree = new TTree(variablecali,variablecali);
-    tree->Branch("groupnumber",&group,"groupnumber/I");
-    tree->Branch("histo","TH1F",&histsum,32000,0);
-
-    // Init histsum
-    if (treeChain->GetEntries() < 1) {
-      return tree1; 
-    }
-    
-    for (Int_t h = 0; h < (Int_t) vectorplace->GetEntriesFast(); h++) {
-      group = ((AliTRDPlace *) vectorplace->At(h))->GetPlace();
-      TObjArray *chainplace = ((TObjArray *) where->At(h));
-      treeChain->GetEntry(((AliTRDPlace *) chainplace->At(0))->GetPlace());
-      //Init for the first time
-      if (h == 0)  {
-	histsum = new TH1F("","",his->GetXaxis()->GetNbins()
-                                ,his->GetXaxis()->GetBinLowEdge(1)
-                                ,his->GetXaxis()->GetBinUpEdge(his->GetXaxis()->GetNbins()));
-	histsum->Sumw2();
-      }
-      // Reset for each new group
-      histsum->SetEntries(0.0);
-      for (Int_t l = 0; l <= histsum->GetXaxis()->GetNbins(); l++) {
-	histsum->SetBinContent(l,0.0);
-	histsum->SetBinError(l,0.0);
-      }
-      histsum->Add(his,1);
-      if ((Int_t) chainplace->GetEntriesFast() > 1) {
-	for (Int_t s = 1; s < (Int_t) chainplace->GetEntriesFast(); s++) {
-	  treeChain->GetEntry(((AliTRDPlace *) chainplace->At(s))->GetPlace());
-	  histsum->Add(his,1);
-	}
-      }
-      tree->Fill();
-    }
-
-  }
-  else {
-
-    // Ready to read the chain
-    TGraphErrors *his = 0x0;
-    treeChain->SetBranchAddress("histo",&his);
-    
-    // Initialise the final tree
-    Int_t         group   = -1;
-    TGraphErrors *histsum = 0x0;
-    Double_t     *xref    = 0x0;
-  
-    tree = new TTree(variablecali,variablecali);
-    tree->Branch("groupnumber",&group,"groupnumber/I");
-    tree->Branch("histo","TGraphErrors",&histsum,32000,0);
-
-    // Init histsum
-    if (treeChain->GetEntries() < 1) {
-      return tree1; 
-    }
-
-    for (Int_t h = 0; h < (Int_t) vectorplace->GetEntriesFast(); h++) {
-
-      group = ((AliTRDPlace *) vectorplace->At(h))->GetPlace();
-      TObjArray *chainplace = ((TObjArray *) where->At(h));
-      treeChain->GetEntry(((AliTRDPlace *) chainplace->At(0))->GetPlace());
-      //Init or reset for a new group
-      Int_t nbins = his->GetN();
-      Double_t *x;
-      x    = new Double_t[nbins];
-      xref = his->GetX();
-      Double_t *ex;
-      ex   = new Double_t[nbins];
-      Double_t *y;
-      y    = new Double_t[nbins];
-      Double_t *ey;
-      ey   = new Double_t[nbins];
-     
-      for (Int_t lo = 0; lo < nbins; lo++) {
-	x[lo]  = xref[lo];
-	ex[lo] = 0.0;
-	y[lo]  = 0.0;
-	ey[lo] = 0.0;
-      }
-      delete histsum;
-      histsum = new TGraphErrors(nbins,x,y,ex,ey);
-
-      // Add the first
-      histsum = AddProfiles(his,histsum);
-      if ((Int_t) chainplace->GetEntriesFast() > 1) {
-	for (Int_t s = 1; s < (Int_t) chainplace->GetEntriesFast(); s++) {
-	  treeChain->GetEntry(((AliTRDPlace *) chainplace->At(s))->GetPlace());
-	  histsum = AddProfiles(his,histsum);
-	}
-      }
-
-      tree->Fill();
-
-    }
-
-  }
-    
-  return tree;
-
-}
-
-//_____________________________________________________________________________
-TGraphErrors *AliTRDCalibraVector::AddProfiles(TGraphErrors *hist1
-                                             , TGraphErrors *hist2) const
-{
-  //
-  // In the case of the vectors method we use TGraphErrors for PH and PRF
-  // to be able to add the them after
-  // Here we add the TGraphErrors  
-  //
-
-  // First TGraphErrors
-  Int_t     nbins1 = hist1->GetN();
-  Double_t *x1     = hist1->GetX();
-  Double_t *ex1    = hist1->GetEX();
-  Double_t *y1     = hist1->GetY();
-  Double_t *ey1    = hist1->GetEY();
-
-  TGraphErrors *rehist = new TGraphErrors(nbins1);
-
-  // Second TGraphErrors
-  Double_t *ex2    = hist2->GetEX();
-  Double_t *y2     = hist2->GetY();
-  Double_t *ey2    = hist2->GetEY();
-
-  // Define the Variables for the new TGraphErrors
-  Double_t x;
-  Double_t ex;
-  Double_t y;
-  Double_t ey;
-  
-  for (Int_t k = 0; k < nbins1; k++) {
-    Double_t nentries = 0.0;
-    x  = x1[k];
-    y  = 0.0;
-    ey = 0.0;
-    ex = 0.0;
-    if ((ex2[k] == 0.0) && 
-        (ex1[k] == 0.0)) {
-      nentries = 0.0;
-    }
-    if ((ex2[k] == 0.0) && 
-        (ex1[k]  > 0.0)) {
-      nentries = ex1[k];
-      y  = y1[k];
-      ey = ey1[k];
-      ex = ex1[k];
-    }
-    if ((ex2[k]  > 0.0) && 
-        (ex1[k] == 0.0)) {
-      nentries = ex2[k];
-      y  = y2[k];
-      ey = ey2[k];
-      ex = ex2[k];
-    }
-    if ((ex2[k] > 0.0) && 
-        (ex1[k] > 0.0)) { 
-     nentries = ex1[k] + ex2[k];
-     y  = ( y1[k]*ex1[k]+ y2[k]*ex2[k]) / nentries;
-     ey = (ey1[k]*ex1[k]+ey2[k]*ex2[k]) / nentries;
-     ex = nentries;
-   }
-   rehist->SetPoint(k,x,y);
-   rehist->SetPointError(k,ex,ey);
- }
-
- return rehist;
-
-}

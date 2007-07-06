@@ -51,6 +51,8 @@ void AliTRDReconstructor::ConvertDigits(AliRawReader *rawReader
   //
 
   AliTRDrawData rawData;
+  rawReader->Reset();
+  rawReader->Select("TRD");
   AliTRDdigitsManager *manager = rawData.Raw2Digits(rawReader);
   manager->MakeBranch(digitsTree);
   manager->WriteDigits();
@@ -72,6 +74,9 @@ void AliTRDReconstructor::Reconstruct(AliRunLoader *runLoader
 
   runLoader->CdGAFile();
   Int_t nEvents = runLoader->GetNumberOfEvents();
+
+  rawReader->Reset();
+  rawReader->Select("TRD");
 
   for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
     if (!rawReader->NextEvent()) break;
@@ -95,6 +100,9 @@ void AliTRDReconstructor::Reconstruct(AliRawReader *rawReader
   //
 
   AliInfo("Reconstruct TRD clusters from RAW data");
+
+  rawReader->Reset();
+  rawReader->Select("TRD");
 
   AliTRDclusterizerV1 clusterer("clusterer","TRD clusterizer");
   clusterer.OpenOutput(clusterTree);

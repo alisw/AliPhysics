@@ -112,7 +112,8 @@ int main(int argc, char **argv) {
   // pad status on: no zero suppression (special runs)
   Bool_t passpadstatus = kTRUE;
   // everythings are okey for vdrift
-  Bool_t passvdrift = kFALSE;
+  Bool_t passvdrift  = kTRUE;    // if timebin okey
+  Int_t  nbvdrift    = 0;     // number of events with entries for vdrift
 
   
   /* main loop (infinite) */
@@ -153,7 +154,7 @@ int main(int argc, char **argv) {
       printf("pad status calibration\n");
       AliRawReader *rawReader = new AliRawReaderDate((void*)event);
       AliTRDRawStream *trdRawStream = new AliTRDRawStream((AliRawReader *) rawReader);
-      if(!calibpad.ProcessEvent(trdRawStream)) passpadstatus = kFALSE;
+      if(!calibpad.ProcessEvent(trdRawStream),(Bool_t)nevents_total)) passpadstatus = kFALSE;
       
       delete trdRawStream;
       delete rawReader;
@@ -161,12 +162,15 @@ int main(int argc, char **argv) {
     //
     // vdrift calibration: run only for physics events
     //
-    if ((eventT==PHYSICS_EVENT) && (!passpadstatus)) {
+    if ((eventT==PHYSICS_EVENT) && (!passpadstatus)  && (passvdrift)) {
       //if (eventT==PHYSICS_EVENT) {
       printf("vdrift calibration\n");
       AliRawReader *rawReader = new AliRawReaderDate((void*)event);
       AliTRDRawStream *trdRawStream = new AliTRDRawStream((AliRawReader *) rawReader);
-      if(calibra->ProcessEventDAQ(trdRawStream)) passvdrift = kTRUE;
+      Int_t result = calibra->ProcessEventDAQ(trdRawStream,(Bool_t)nevents_physics);
+      if(!result) passvdrift = kFALSE;
+      else nbvdrift += (Int_t) result/2;
+     
           
       nevents_physics++;
 
@@ -206,7 +210,7 @@ int main(int argc, char **argv) {
   //
   // vdrift
   //
-  if((nevents_physics > 0) && passvdrift){
+  if((nbvdrift > 0) && passvdrift){
     Double_t *stat = calibra->StatH((TH2 *)(calibra->GetPH2d()),1);
     // write only of enough statistics
     if(stat[6] < 0.20) {

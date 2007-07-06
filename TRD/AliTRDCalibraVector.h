@@ -17,8 +17,10 @@
 
 class TGraphErrors;
 class TH1F;
-class TTree;
 class TObjArray;
+
+class AliTRDarrayF;
+class AliTRDarrayI;
 
 class AliTRDCalibraVector : public TObject {
 
@@ -27,27 +29,22 @@ class AliTRDCalibraVector : public TObject {
   AliTRDCalibraVector();
   AliTRDCalibraVector(const AliTRDCalibraVector &c);
   virtual ~AliTRDCalibraVector();
-  AliTRDCalibraVector &operator=(const AliTRDCalibraVector &) { return *this; }
 
+  AliTRDCalibraVector& operator = (const  AliTRDCalibraVector &source);
+
+  // Fill
   Int_t          SearchBin(Float_t value, Int_t i) const;  
-  Int_t          SearchInVector(Int_t group, Int_t i) const;
-  Int_t          SearchInTreeVector (TObjArray *vectorplace, Int_t group) const;
-  Bool_t         UpdateVectorCH(Int_t group, Float_t value);
-  Bool_t         UpdateVectorPRF(Int_t group, Float_t x, Float_t y);
-  Bool_t         UpdateVectorPH(Int_t group, Int_t time, Float_t value);
-  TH1F          *ConvertVectorCTHisto(Int_t place, const Char_t *name) const;
-  TTree         *ConvertVectorCTTreeHisto(TObjArray *vVectorCT, TObjArray *pPlaCT
-                                        , const Char_t *name, const Char_t *nametitle) const;
-  TGraphErrors  *ConvertVectorPHisto(Int_t place, const Char_t *name) const;
-  TTree         *ConvertVectorPTreeHisto(TObjArray *vVectorP, TObjArray *pPlaP
-                                       , const Char_t *name, const Char_t *nametitle) const;
-  TObjArray     *ConvertTreeVector(TTree *tree) const ;
-  Bool_t         MergeVectorCT(TObjArray *vVectorCT2, TObjArray *pPlaCT2);
-  Bool_t         MergeVectorP(TObjArray *vVectorP2, TObjArray *pPlaP2, Int_t i);
-  //Add two trees
-  TTree         *Sum2Trees(const Char_t *filename1, const Char_t *filename2, const Char_t *variablecali);
-  //Correct the errors
-  TGraphErrors  *AddProfiles(TGraphErrors *hist1, TGraphErrors *hist2) const ;
+  Bool_t         UpdateVectorCH(Int_t det, Int_t group, Float_t value);
+  Bool_t         UpdateVectorPRF(Int_t det, Int_t group, Float_t x, Float_t y);
+  Bool_t         UpdateVectorPH(Int_t det, Int_t group, Int_t time, Float_t value);
+
+  // Add
+  Bool_t         Add(AliTRDCalibraVector *calvector);
+  
+  // Fit
+  TGraphErrors  *ConvertVectorPHTGraphErrors(Int_t det, Int_t group, const Char_t *name);
+  TGraphErrors  *ConvertVectorPRFTGraphErrors(Int_t det, Int_t group, const Char_t *name);
+  TH1F          *ConvertVectorCHHisto(Int_t det, Int_t group, const Char_t *name);
 
   //
   // Set and Get methods
@@ -57,129 +54,83 @@ class AliTRDCalibraVector : public TObject {
   void           SetNumberBinPRF(Short_t numberbinprf)         { fNumberBinPRF    = numberbinprf;               } 
   void           SetTimeMax(Int_t timemax)                     { fTimeMax         = timemax;                    } 
   void           SetPRFRange(Float_t prfrange)                 { fPRFRange        = prfrange;                   }  
-  void           SetVectorPH(TObjArray *vectorPH)              { fVectorPH        = vectorPH;                   }
-  void           SetPlaPH(TObjArray *plaPH)                    { fPlaPH           = plaPH;                      }
-  void           SetVectorCH(TObjArray *vectorCH)              { fVectorCH        = vectorCH;                   }
-  void           SetPlaCH(TObjArray *plaCH)                    { fPlaCH           = plaCH;                      }
-  void           SetVectorPRF(TObjArray *vectorPRF)            { fVectorPRF       = vectorPRF;                  }
-  void           SetPlaPRF(TObjArray *plaPRF)                  { fPlaPRF          = plaPRF;                     }
+  void           SetDetCha0(Int_t i, Short_t total)            { fDetCha0[i]      = total;                      } 
+  void           SetDetCha2(Int_t i, Short_t total)            { fDetCha2[i]      = total;                      } 
+  void           SetNamePH(const char* name)                   { fVectorPHEntries.SetName(name);                } 
+  void           SetNamePRF(const char* name)                  { fVectorPRFEntries.SetName(name);               } 
+  void           SetNameCH(const char* name)                   { fVectorCHEntries.SetName(name);                } 
 
   Short_t        GetNumberBinCharge()const                     { return fNumberBinCharge;                       }
   Short_t        GetNumberBinPRF()const                        { return fNumberBinPRF;                          }
   Int_t          GetTimeMax()const                             { return fTimeMax;                               } 
   Float_t        GetPRFRange()const                            { return fPRFRange;                              } 
-  TObjArray*     GetVectorPH()const                            { return fVectorPH;                              } 
-  TObjArray*     GetPlaPH()const                               { return fPlaPH;                                 } 
-  TObjArray*     GetVectorCH()const                            { return fVectorCH;                              } 
-  TObjArray*     GetPlaCH()const                               { return fPlaCH;                                 } 
-  TObjArray*     GetVectorPRF()const                           { return fVectorPRF;                             } 
-  TObjArray*     GetPlaPRF()const                              { return fPlaPRF;                                } 
- 
+  Short_t        GetDetCha0(Int_t i)                           { return fDetCha0[i];                            }
+  Short_t        GetDetCha2(Int_t i)                           { return fDetCha2[i];                            }
+  const char*    GetNamePH()                                   { return fVectorPHEntries.GetName();             }
+  const char*    GetNamePRF()                                  { return fVectorPRFEntries.GetName();            }
+  const char*    GetNameCH()                                   { return fVectorCHEntries.GetName();             }
+
+  AliTRDarrayI  *GetPHEntries(Int_t det,Bool_t force = kFALSE);
+  AliTRDarrayF  *GetPHMean(Int_t det,Bool_t force = kFALSE);
+  AliTRDarrayF  *GetPHSquares(Int_t det,Bool_t force = kFALSE);
+
+  AliTRDarrayI  *GetPRFEntries(Int_t det,Bool_t force = kFALSE);
+  AliTRDarrayF  *GetPRFMean(Int_t det,Bool_t force = kFALSE);
+  AliTRDarrayF  *GetPRFSquares(Int_t det,Bool_t force = kFALSE);
+
+  AliTRDarrayI  *GetCHEntries(Int_t det,Bool_t force = kFALSE);
+
  protected:
 
- // Objects for storing the infos per calibration group
-	  
-	  class AliTRDPlace : public TObject {
+  // Current data
 
-	  public: 
-    
-	    AliTRDPlace()
-	      :TObject()
-	      ,fPlace(0x0)                                     { }
-	    AliTRDPlace(const AliTRDPlace &i)
-	      :TObject(i)
-	      ,fPlace(0x0)                                     { }
-	    AliTRDPlace &operator=(const AliTRDPlace&)         { return *this;            } 
-	    virtual ~AliTRDPlace()                             { }
-	    
-	    void      SetPlace(Int_t place)                    { fPlace = place;          }
-	    Int_t     GetPlace() const                         { return  fPlace;          }
-	    
-	  protected:
-	    
-	    Int_t     fPlace;                       // Place of the calibration group
-	    
-	  };
-	  
-	  class AliTRDCTInfo : public TObject {
-	    
-	  public: 
-	    
-	    AliTRDCTInfo()
-	      :TObject()
-	      ,fEntries(0x0)                                   { }
-	    AliTRDCTInfo(const AliTRDCTInfo &i)
-	      :TObject(i)
-	      ,fEntries(0x0)                                   { }
-	    AliTRDCTInfo &operator=(const AliTRDCTInfo&)       { return *this;            } 
-	    virtual ~AliTRDCTInfo()                            { }
-	    
-	    void      SetEntries(UShort_t *entries)            { fEntries = entries;      }
-	    
-	    UShort_t *GetEntries() const                       { return fEntries;         }
-	    
-	  protected:
-	    
-	    UShort_t *fEntries;                     // Current number of entries for each bin of CH
-	    
-	  };
-	  
-	  
-	  class AliTRDPInfo : public TObject {
-	  public:
-	    
-	    AliTRDPInfo()
-	      :TObject()
-	      ,fSum(0x0) 
-	      ,fSumSquare(0x0)
-	      ,fEntries(0x0)                                   { }
-	    AliTRDPInfo(const AliTRDPInfo &i)
-	      :TObject(i)
-	      ,fSum(0x0) 
-	      ,fSumSquare(0x0)
-	      ,fEntries(0x0)                                   { } 
-	    AliTRDPInfo &operator=(const AliTRDPInfo&)         { return *this;            }
-	    virtual ~AliTRDPInfo()                             { }
-	    
-	    void      SetSum(Float_t *sum)                     { fSum       = sum;        }
-	    void      SetSumSquare(Float_t *sumSquare)         { fSumSquare = sumSquare;  }
-	    void      SetEntries(UShort_t *entries)            { fEntries   = entries;    }
-	    
-	    Float_t  *GetSum() const                           { return fSum;             }
-	    Float_t  *GetSumSquare() const                     { return fSumSquare;       }
-	    UShort_t *GetEntries() const                       { return fEntries;         }
-	    
-	  protected:
-	    
-	    Float_t  *fSum;                         // Current mean for each bin of the average pulse height
-	    Float_t  *fSumSquare;                   // Current mean of square values for each bin of the average pulse height
-	    UShort_t *fEntries;                     // Current number of entries for each bin of the average pulse height
-	    
-	  };
+         AliTRDarrayI     *fPHEntries;                //  Current AliTRDArrayI PH entries
+         AliTRDarrayF     *fPHMean;                   //  Current AliTRDArrayF PH Mean
+         AliTRDarrayF     *fPHSquares;                //  Current AliTRDArrayF PH Squares
 
+	 AliTRDarrayI     *fPRFEntries;               //  Current AliTRDArrayI PH entries
+         AliTRDarrayF     *fPRFMean;                  //  Current AliTRDArrayF PH Mean
+         AliTRDarrayF     *fPRFSquares;               //  Current AliTRDArrayF PH Squares
+
+	 AliTRDarrayI     *fCHEntries;                //  Current AliTRDArrayI PH entries
+
+	 Int_t            fDetectorPH;                //  Current detector
+	 Int_t            fDetectorCH;                //  Current detector
+	 Int_t            fDetectorPRF;               //  Current detector
+       	 
   // Arrays of these objects 
 	  
-	  TObjArray       *fVectorPH;               // Vectors to fill
-	  TObjArray       *fPlaPH;                  // Vectors to fill
-	  
-	  TObjArray       *fVectorCH;               // Vectors to fill
-	  TObjArray       *fPlaCH;                  // Vectors to fill
-	  
-	  TObjArray       *fVectorPRF;              // Vectors to fill
-	  TObjArray       *fPlaPRF;                 // Vectors to fill
-
+	  TObjArray       fVectorPHMean;              // array of AliTRDarrayF of mean
+	  TObjArray       fVectorPHSquares;           // array of AliTRDarrayF of squares
+	  TObjArray       fVectorPHEntries;           // array of AliTRDarrayI of entries
+	  TObjArray       fVectorCHEntries;           // array of AliTRDarrayI of entries
+	  TObjArray       fVectorPRFMean;             // array of AliTRDarrayF of mean
+	  TObjArray       fVectorPRFSquares;          // array of AliTRDarrayF of squares
+	  TObjArray       fVectorPRFEntries;          // array of AliTRDarrayI of entries
+	 
   // Size of the infos
 
-	  Short_t          fNumberBinCharge;        // Number of bins for the gain factor
-	  Short_t          fNumberBinPRF;           // Number of bin for the PRF
-	  Int_t            fTimeMax;                // Number of time bins
-	  Float_t          fPRFRange;               // Range PRF
+	  Short_t          fNumberBinCharge;          // Number of bins for the gain factor
+	  Short_t          fNumberBinPRF;             // Number of bin for the PRF
+	  Int_t            fTimeMax;                  // Number of time bins
+	  Float_t          fPRFRange;                 // Range PRF
+	  Short_t          fDetCha0[3];               // Number of XBins for chamber != 2
+          Short_t          fDetCha2[3];               // Number of Xbins for chamber 2
 
   // Some functions
 
-	  TGraphErrors  *ConvertVectorPHistoI(AliTRDPInfo *pInfo, const Char_t *name) const;
-	  TH1F          *ConvertVectorCTHistoI(AliTRDCTInfo *cTInfo, const Char_t *name) const;
 
+	  AliTRDarrayI  *GetEntriesPH(Int_t det, TObjArray *array, Bool_t force);
+	  AliTRDarrayF  *GetMeanSquaresPH(Int_t det, TObjArray *array, Bool_t force);
+
+	  AliTRDarrayI  *GetEntriesPRF(Int_t det, TObjArray *array, Bool_t force);
+	  AliTRDarrayF  *GetMeanSquaresPRF(Int_t det, TObjArray *array, Bool_t force);
+	  
+	  AliTRDarrayI  *GetEntriesCH(Int_t det, TObjArray *array, Bool_t force);
+
+  // Some basic geometry function
+          virtual Int_t    GetChamber(Int_t d) const;
+  
   ClassDef(AliTRDCalibraVector,1)                   // TRD Calibration class
 
 };

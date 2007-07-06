@@ -51,15 +51,16 @@
 #include <TROOT.h>
 #include <TTreeStream.h>
 #include <TVectorD.h>
+#include <TF1.h>
 
 #include "AliLog.h"
 #include "AliCDBManager.h"
-#include "AliRawReader.h"
-#include "AliRawReaderDate.h"
 
 #include "AliTRDCalibraFillHisto.h"
+#include "AliTRDCalibraFit.h"
 #include "AliTRDCalibraMode.h"
 #include "AliTRDCalibraVector.h"
+#include "AliTRDCalibraVdriftLinearFit.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDCommonParam.h"
 #include "AliTRDmcmTracklet.h"
@@ -67,11 +68,14 @@
 #include "AliTRDcluster.h"
 #include "AliTRDtrack.h"
 #include "AliTRDRawStream.h"
+#include "AliRawReader.h"
+#include "AliRawReaderDate.h"
 #include "AliTRDgeometry.h"
 
 #ifdef ALI_DATE
 #include "event.h"
 #endif
+
 
 ClassImp(AliTRDCalibraFillHisto)
 
@@ -113,6 +117,7 @@ void AliTRDCalibraFillHisto::Terminate()
   }
 
 }
+
 //______________________________________________________________________________________
 AliTRDCalibraFillHisto::AliTRDCalibraFillHisto()
   :TObject()
@@ -161,7 +166,7 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto()
   ,fPRF2d(0x0)
   ,fCH2d(0x0)
   ,fLinearFitterArray(0)
-  ,fLinearFitterHistoArray(0)
+  ,fLinearVdriftFit(0x0)
 {
   //
   // Default constructor
@@ -175,9 +180,9 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto()
   fNumberUsedCh[1]       = 0;
   fNumberUsedPh[0]       = 0;
   fNumberUsedPh[1]       = 0;
-
+  
   fGeo = new AliTRDgeometry();
- 
+
 }
 
 //______________________________________________________________________________________
@@ -211,24 +216,24 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto(const AliTRDCalibraFillHisto &c)
   ,fNumberBinPRF(c.fNumberBinPRF)
   ,fNgroupprf(c.fNgroupprf)
   ,fListClusters(new TObjArray())
-  ,fPar0(c.fPar0)
-  ,fPar1(c.fPar1)
-  ,fPar2(c.fPar2)
-  ,fPar3(c.fPar3)
-  ,fPar4(c.fPar4)
-  ,fAmpTotal(c.fAmpTotal)
-  ,fPHPlace(c.fPHPlace)
-  ,fPHValue(c.fPHValue)
+  ,fPar0(0x0)
+  ,fPar1(0x0)
+  ,fPar2(0x0)
+  ,fPar3(0x0)
+  ,fPar4(0x0)
+  ,fAmpTotal(0x0)
+  ,fPHPlace(0x0)
+  ,fPHValue(0x0)
   ,fGoodTracklet(c.fGoodTracklet)
   ,fGoodTrack(c.fGoodTrack)
-  ,fEntriesCH(c.fEntriesCH)
-  ,fEntriesLinearFitter(fEntriesLinearFitter)
+  ,fEntriesCH(0x0)
+  ,fEntriesLinearFitter(0x0)
   ,fCalibraVector(0x0)
   ,fPH2d(0x0)
   ,fPRF2d(0x0)
   ,fCH2d(0x0)
   ,fLinearFitterArray(0)
-  ,fLinearFitterHistoArray(0)
+  ,fLinearVdriftFit(0x0)
 {
   //
   // Copy constructor
@@ -247,29 +252,14 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto(const AliTRDCalibraFillHisto &c)
     fCH2d = new TH2I(*c.fCH2d);
     fCH2d->SetDirectory(0);
   }
-  if(c.fLinearFitterOn){
-    fLinearFitterArray.Expand(540);
-    for (Int_t cb = 0; cb < 540; cb++){
-      const TLinearFitter *linearFitter = (TLinearFitter*)c.fLinearFitterArray.UncheckedAt(cb);
-      if ( linearFitter != 0x0 ) fLinearFitterArray.AddAt(new TLinearFitter(*linearFitter), cb);
-    }
+  if(c.fLinearVdriftFit){
+    fLinearVdriftFit = new AliTRDCalibraVdriftLinearFit(*c.fLinearVdriftFit);
   }
-  if(c.fLinearFitterDebugOn){
-    fLinearFitterHistoArray.Expand(540);
-    for (Int_t cb = 0; cb < 540; cb++){
-      const TH2F *linearfitterhisto = (TH2F*)c.fLinearFitterHistoArray.UncheckedAt(cb);
-      if ( linearfitterhisto != 0x0 ){
-	TH2F *hNew = new TH2F(*linearfitterhisto);
-	hNew->SetDirectory(0);
-	fLinearFitterHistoArray.AddAt(hNew,cb);
-      }
-    }
-  }
+
   if (fGeo) {
     delete fGeo;
   }
   fGeo = new AliTRDgeometry();
-
 }
 
 //____________________________________________________________________________________
@@ -321,8 +311,9 @@ void AliTRDCalibraFillHisto::ClearHistos()
     delete fPRF2d;
     fPRF2d = 0x0;
   }
-
+  
 }
+
 //____________Functions for initialising the AliTRDCalibraFillHisto in the code_________
 Bool_t AliTRDCalibraFillHisto::Init2Dhistos()
 {
@@ -365,8 +356,13 @@ Bool_t AliTRDCalibraFillHisto::Init2Dhistos()
     fPar4[k] = 0.0;
   }
   
-  //If vector method On initialised all the stuff
-  if(fVector2d){
+  // Calcul Xbins Chambd0, Chamb2
+  Int_t Ntotal0 = CalculateTotalNumberOfBins(0);
+  Int_t Ntotal1 = CalculateTotalNumberOfBins(1);
+  Int_t Ntotal2 = CalculateTotalNumberOfBins(2);
+
+  // If vector method On initialised all the stuff
+  if(fVector2d){   
     fCalibraVector = new AliTRDCalibraVector();
     fCalibraVector->SetNumberBinCharge(fNumberBinCharge);
     fCalibraVector->SetTimeMax(fTimeMax);
@@ -378,6 +374,27 @@ Bool_t AliTRDCalibraFillHisto::Init2Dhistos()
       fCalibraVector->SetNumberBinPRF(fNumberBinPRF);
       fCalibraVector->SetPRFRange(1.5);
     }
+    for(Int_t k = 0; k < 3; k++){
+      fCalibraVector->SetDetCha0(k,fCalibraMode->GetDetChamb0(k));
+      fCalibraVector->SetDetCha2(k,fCalibraMode->GetDetChamb2(k));
+    }
+    TString namech("Nz");
+    namech += fCalibraMode->GetNz(0);
+    namech += "Nrphi";
+    namech += fCalibraMode->GetNrphi(0);
+    fCalibraVector->SetNameCH((const char* ) namech);
+    TString nameph("Nz");
+    nameph += fCalibraMode->GetNz(1);
+    nameph += "Nrphi";
+    nameph += fCalibraMode->GetNrphi(1);
+    fCalibraVector->SetNamePH((const char* ) nameph);
+    TString nameprf("Nz");
+    nameprf += fCalibraMode->GetNz(2);
+    nameprf += "Nrphi";
+    nameprf += fCalibraMode->GetNrphi(2);
+    nameprf += "Ngp";
+    nameprf += fNgroupprf;
+    fCalibraVector->SetNamePRF((const char* ) nameprf);
   }
  
   // Create the 2D histos corresponding to the pad groupCalibration mode
@@ -387,8 +404,6 @@ Bool_t AliTRDCalibraFillHisto::Init2Dhistos()
                 ,fCalibraMode->GetNz(0)
                 ,fCalibraMode->GetNrphi(0)));
     
-    // Calcul the number of Xbins
-    Int_t Ntotal0 = CalculateTotalNumberOfBins(0);
     // Create the 2D histo
     if (fHisto2d) {
       CreateCH2d(Ntotal0);
@@ -403,6 +418,7 @@ Bool_t AliTRDCalibraFillHisto::Init2Dhistos()
     for(Int_t k = 0; k < Ntotal0; k++){
       fEntriesCH[k] = 0;
     }
+    
   }
   if (fPH2dOn) {
 
@@ -410,8 +426,6 @@ Bool_t AliTRDCalibraFillHisto::Init2Dhistos()
                 ,fCalibraMode->GetNz(1)
                 ,fCalibraMode->GetNrphi(1)));
     
-    // Calcul the number of Xbins
-    Int_t Ntotal1 = CalculateTotalNumberOfBins(1);
     // Create the 2D histo
     if (fHisto2d) {
       CreatePH2d(Ntotal1);
@@ -433,10 +447,7 @@ Bool_t AliTRDCalibraFillHisto::Init2Dhistos()
     for(Int_t k = 0; k < 540; k++){
       fEntriesLinearFitter[k] = 0;
     }
-    if(fLinearFitterDebugOn) {
-      fLinearFitterHistoArray.Expand(540);
-      fLinearFitterHistoArray.SetName("ArrayHistos");
-    }
+    fLinearVdriftFit = new AliTRDCalibraVdriftLinearFit();
   }
 
   if (fPRF2dOn) {
@@ -444,9 +455,6 @@ Bool_t AliTRDCalibraFillHisto::Init2Dhistos()
     AliInfo(Form("The pad calibration mode for the PRF calibration: Nz %d, and Nrphi %d"
                 ,fCalibraMode->GetNz(2)
                 ,fCalibraMode->GetNrphi(2)));
-    
-    // Calcul the number of Xbins
-    Int_t Ntotal2 = CalculateTotalNumberOfBins(2);
     // Create the 2D histo
     if (fHisto2d) {
       CreatePRF2d(Ntotal2);
@@ -528,6 +536,7 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistograms(AliTRDcluster *cl, AliTRDtrack *
 
   // Localisation of the detector
   Int_t detector = cl->GetDetector();
+ 
 
   // Fill the infos for the previous clusters if not the same
   // detector anymore or if not the same track
@@ -538,8 +547,12 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistograms(AliTRDcluster *cl, AliTRDtrack *
     
     // If the same track, then look if the previous detector is in
     // the same plane, if yes: not a good track
+    //FollowBack
     if (fDetectorAliTRDtrack && 
-        (GetPlane(detector) <= GetPlane(fDetectorPreviousTrack))) {
+    	(GetPlane(detector) <= GetPlane(fDetectorPreviousTrack))) {
+    //Follow
+    //if (fDetectorAliTRDtrack && 
+    //    (GetPlane(detector) >= GetPlane(fDetectorPreviousTrack))) {
       fGoodTrack = kFALSE;
     }
 
@@ -611,6 +624,7 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistogramcm(AliTRDmcmTracklet *trk)
   
   // Localisation of the Xbins involved
   Int_t idect = trk->GetDetector();
+  fDetectorPreviousTrack = idect;
   LocalisationDetectorXbins(idect);
 
   // Get the parameter object
@@ -698,9 +712,9 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistogramcm(AliTRDmcmTracklet *trk)
 		  fPRF2d->Fill((1.0-xcenter),(fCalibraMode->GetXbins(2)+group[2]+0.5),ymax);
 		}
 		if (fVector2d) {
-		  fCalibraVector->UpdateVectorPRF(fCalibraMode->GetXbins(2)+group[2],xcenter,ycenter);
-		  fCalibraVector->UpdateVectorPRF(fCalibraMode->GetXbins(2)+group[2],-(xcenter+1.0),yminus);
-		  fCalibraVector->UpdateVectorPRF(fCalibraMode->GetXbins(2)+group[2],(1.0-xcenter),ymax);
+		  fCalibraVector->UpdateVectorPRF(idect,group[2],xcenter,ycenter);
+		  fCalibraVector->UpdateVectorPRF(idect,group[2],-(xcenter+1.0),yminus);
+		  fCalibraVector->UpdateVectorPRF(idect,group[2],(1.0-xcenter),ymax);
 		}
 	      }//in the drift region 
 	    }//in the middle
@@ -853,7 +867,7 @@ Int_t AliTRDCalibraFillHisto::CalculateTotalNumberOfBins(Int_t i)
   fCalibraMode->ModePadFragmentation(0,0,0,i);
   fCalibraMode->SetDetChamb0(i);
   Ntotal += 6 * 4 * 18 * fCalibraMode->GetDetChamb0(i);
-  AliInfo(Form("Total number of Xbins: %d",Ntotal));
+  AliInfo(Form("Total number of Xbins: %d for i %d",Ntotal,i));
   return Ntotal;
 
 }
@@ -919,73 +933,130 @@ void AliTRDCalibraFillHisto::StoreInfoCHPH(AliTRDcluster *cl, AliTRDtrack *t, In
   
 }
 //_____________________________________________________________________
-Bool_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliTRDRawStream *rawStream)
+Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliTRDRawStream *rawStream, Bool_t nocheck)
 {
   //
   // Event Processing loop - AliTRDRawStream
+  // 0 timebin problem
+  // 1 no input
+  // 2 input
   //
 
-  Bool_t withInput = kFALSE;
+  Int_t withInput = 1;
 
   Int_t phvalue[36];
   //Int_t row[36];
   //Int_t col[36];
   for(Int_t k = 0; k < 36; k++){
-    phvalue[k] = 0;
+    phvalue[k] = 10;
     //row[k]     = -1;
     //col[36]    = -1;
   }
   fDetectorPreviousTrack = -1;
   Int_t nbtimebin = 0;                                           
 
-  while (rawStream->Next()) {
-
-    Int_t idetector = rawStream->GetDet();                            //  current detector
-    if((fDetectorPreviousTrack != idetector) && (fDetectorPreviousTrack != -1)){
-      if(TMath::Mean(nbtimebin,phvalue)>0.0){
-	withInput = kTRUE;
-	for(Int_t k = 0; k < nbtimebin; k++){
-	  UpdateDAQ(fDetectorPreviousTrack,0,0,k,phvalue[k],nbtimebin);
-	  phvalue[k] = 0;
-	  //row[k]     = -1;
-	  //col[k]     = -1;
-	}
-      }
-    }
-    fDetectorPreviousTrack = idetector;
-    nbtimebin         = rawStream->GetNumberOfTimeBins();              //  number of time bins read from data
-    Int_t iTimeBin    = rawStream->GetTimeBin();                       //  current time bin
-    //row[iTimeBin]   = rawStream->GetRow();                           //  current row
-    //col[iTimeBin]   = rawStream->GetCol();                           //  current col     
-    Int_t *signal     = rawStream->GetSignals();                       //  current ADC signal
-        
-    Int_t fin     = TMath::Min(nbtimebin,(iTimeBin+3));
-    Int_t n       = 0;
-    for(Int_t itime = iTimeBin; itime < fin; itime++){
-      // should extract baseline here!
-      if(signal[n]>5.0) phvalue[itime] = signal[n];
-      n++;
-    }
-  }
+  if(!nocheck){
   
-  // fill the last one
-  if(fDetectorPreviousTrack != -1){
-      if(TMath::Mean(nbtimebin,phvalue)>0.0){
-	withInput = kTRUE;
-	for(Int_t k = 0; k < nbtimebin; k++){
-	  UpdateDAQ(fDetectorPreviousTrack,0,0,k,phvalue[k],nbtimebin);
-	  phvalue[k] = 0;
+    fTimeMax = 0;
+  
+    while (rawStream->Next()) {
+      
+      Int_t idetector = rawStream->GetDet();                            //  current detector
+      if((fDetectorPreviousTrack != idetector) && (fDetectorPreviousTrack != -1)){
+	if(TMath::Mean(fTimeMax,phvalue)>0.0){
+	  withInput = 2;
+	  for(Int_t k = 0; k < fTimeMax; k++){
+	    UpdateDAQ(fDetectorPreviousTrack,0,0,k,phvalue[k],fTimeMax);
+	    phvalue[k] = 10;
+	    //row[k]     = -1;
+	    //col[k]     = -1;
+	  }
+	}
+      }
+      fDetectorPreviousTrack = idetector;
+      nbtimebin         = rawStream->GetNumberOfTimeBins();              //  number of time bins read from data
+      if(nbtimebin == 0) return 0;
+      if((fTimeMax != 0) && (nbtimebin != fTimeMax)) return 0;
+      fTimeMax          = nbtimebin;
+      Int_t iTimeBin    = rawStream->GetTimeBin();                       //  current time bin
+      //row[iTimeBin]   = rawStream->GetRow();                           //  current row
+      //col[iTimeBin]   = rawStream->GetCol();                           //  current col     
+      Int_t *signal     = rawStream->GetSignals();                       //  current ADC signal
+      
+      Int_t fin     = TMath::Min(fTimeMax,(iTimeBin+3));
+      Int_t n       = 0;
+      for(Int_t itime = iTimeBin; itime < fin; itime++){
+	// should extract baseline here!
+	if(signal[n]>5.0) phvalue[itime] = signal[n];
+	n++;
+      }
+    }
+  
+    // fill the last one
+    if(fDetectorPreviousTrack != -1){
+      if(TMath::Mean(fTimeMax,phvalue)>0.0){
+	withInput = 2;
+	for(Int_t k = 0; k < fTimeMax; k++){
+	  UpdateDAQ(fDetectorPreviousTrack,0,0,k,phvalue[k],fTimeMax);
+	  phvalue[k] = 10;
 	  //row[k]     = -1;
 	  //col[k]     = -1;
 	}
       }
+    }
+    
+  }
+  else{
+
+    while (rawStream->Next()) {
+
+      Int_t idetector = rawStream->GetDet();                            //  current detector
+      if((fDetectorPreviousTrack != idetector) && (fDetectorPreviousTrack != -1)){
+	if(TMath::Mean(nbtimebin,phvalue)>0.0){
+	  withInput = 2;
+	  for(Int_t k = 0; k < nbtimebin; k++){
+	    UpdateDAQ(fDetectorPreviousTrack,0,0,k,phvalue[k],nbtimebin);
+	    phvalue[k] = 10;
+	    //row[k]     = -1;
+	    //col[k]     = -1;
+	  }
+	}
+      }
+      fDetectorPreviousTrack = idetector;
+      nbtimebin         = rawStream->GetNumberOfTimeBins();              //  number of time bins read from data
+      Int_t iTimeBin    = rawStream->GetTimeBin();                       //  current time bin
+      //row[iTimeBin]   = rawStream->GetRow();                           //  current row
+      //col[iTimeBin]   = rawStream->GetCol();                           //  current col     
+      Int_t *signal     = rawStream->GetSignals();                       //  current ADC signal
+      
+      Int_t fin     = TMath::Min(nbtimebin,(iTimeBin+3));
+      Int_t n       = 0;
+      for(Int_t itime = iTimeBin; itime < fin; itime++){
+	// should extract baseline here!
+	if(signal[n]>5.0) phvalue[itime] = signal[n];
+	n++;
+      }
+    }
+    
+    // fill the last one
+    if(fDetectorPreviousTrack != -1){
+      if(TMath::Mean(nbtimebin,phvalue)>0.0){
+	withInput = 2;
+	for(Int_t k = 0; k < nbtimebin; k++){
+	  UpdateDAQ(fDetectorPreviousTrack,0,0,k,phvalue[k],nbtimebin);
+	  phvalue[k] = 10;
+	  //row[k]     = -1;
+	  //col[k]     = -1;
+	}
+      }
+    }
   }
   
   return withInput;
-  
+
 }
 //_____________________________________________________________________
-Bool_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliRawReader *rawReader)
+Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliRawReader *rawReader, Bool_t nocheck)
 {
   //
   //  Event processing loop - AliRawReader
@@ -996,14 +1067,16 @@ Bool_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliRawReader *rawReader)
 
   rawReader->Select("TRD");
 
-  return ProcessEventDAQ(&rawStream);
+  return ProcessEventDAQ(&rawStream, nocheck);
 }
 //_________________________________________________________________________
-Bool_t AliTRDCalibraFillHisto::ProcessEventDAQ(
+Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(
 #ifdef ALI_DATE
-				   eventHeaderStruct *event
+					       eventHeaderStruct *event,
+					       Bool_t nocheck
 #else
-				   eventHeaderStruct* /*event*/
+					       eventHeaderStruct* /*event*/,
+					       Bool_t /*nocheck*/
 	    
 #endif 
 				   )
@@ -1013,7 +1086,7 @@ Bool_t AliTRDCalibraFillHisto::ProcessEventDAQ(
   //
 #ifdef ALI_DATE
     AliRawReader *rawReader = new AliRawReaderDate((void*)event);
-    Bool_t result=ProcessEventDAQ(rawReader);
+    Int_t result=ProcessEventDAQ(rawReader, nocheck);
     delete rawReader;
     return result;
 #else
@@ -1047,54 +1120,19 @@ Bool_t AliTRDCalibraFillHisto::UpdateDAQ(Int_t det, Int_t /*row*/, Int_t /*col*/
   
   //fPH2d->Fill((Float_t) timebin/fSf,(fCalibraMode->GetXbins(1)+posc*fCalibraMode->GetNfragZ(1)+posr)+0.5,(Float_t) signal);   
   
-  ((TProfile2D *)GetPH2d(nbtimebins,fSf,kTRUE))->Fill((Float_t) timebin/fSf,det+0.5,(Float_t) signal);
+  ((TProfile2D *)GetPH2d(nbtimebins,fSf))->Fill((Float_t) timebin/fSf,det+0.5,(Float_t) signal);
   
   return kTRUE;
   
-}
-//____________Functions for plotting the 2D____________________________________
-
-//_____________________________________________________________________________
-void AliTRDCalibraFillHisto::Plot2d()
-{
-  //
-  // Plot the 2D histos 
-  //
- 
-  if (fPH2dOn) {
-    TCanvas *cph2d = new TCanvas("cph2d","",50,50,600,800);
-    cph2d->cd();
-    fPH2d->Draw("LEGO");
-  }
-  if (fCH2dOn) {
-    TCanvas *cch2d = new TCanvas("cch2d","",50,50,600,800);
-    cch2d->cd();
-    fCH2d->Draw("LEGO");
-  }
-  if (fPRF2dOn) {
-    TCanvas *cPRF2d = new TCanvas("cPRF2d","",50,50,600,800);
-    cPRF2d->cd();
-    fPRF2d->Draw("LEGO");
-  }
-
-}
-//_____________________Reset____________________________________________________
-//_______________________________________________________________________________
-void AliTRDCalibraFillHisto::ResetLinearFitter()
-{
-  fLinearFitterArray.SetOwner();
-  fLinearFitterArray.Clear();
-  fLinearFitterHistoArray.SetOwner();
-  fLinearFitterHistoArray.Clear();
 }
 //____________Write_____________________________________________________
 //_____________________________________________________________________
 void AliTRDCalibraFillHisto::Write2d(const Char_t *filename, Bool_t append)
 {
-    //
-    //  Write infos to file
-    //
-
+  //
+  //  Write infos to file
+  //
+  
   //For debugging
   if ( fDebugStreamer ) {
     delete fDebugStreamer;
@@ -1120,52 +1158,30 @@ void AliTRDCalibraFillHisto::Write2d(const Char_t *filename, Bool_t append)
   
   TStopwatch stopwatch;
   stopwatch.Start();
+  if(fVector2d) {
+    f.WriteTObject(fCalibraVector);
+  }
 
   if (fCH2dOn ) {
     if (fHisto2d) {
       f.WriteTObject(fCH2d);
-    }
-    if (fVector2d) {
-      TString name("Nz");
-      name += fCalibraMode->GetNz(0);
-      name += "Nrphi";
-      name += fCalibraMode->GetNrphi(0);
-      TTree *treeCH2d = fCalibraVector->ConvertVectorCTTreeHisto(fCalibraVector->GetVectorCH(),fCalibraVector->GetPlaCH(),"treeCH2d",(const char *) name);
-	f.WriteTObject(treeCH2d);
     }
   }
   if (fPH2dOn ) {
     if (fHisto2d) {
       f.WriteTObject(fPH2d);
     }
-    if (fVector2d) {
-      TString name("Nz");
-      name += fCalibraMode->GetNz(1);
-      name += "Nrphi";
-      name += fCalibraMode->GetNrphi(1);
-      TTree *treePH2d = fCalibraVector->ConvertVectorPTreeHisto(fCalibraVector->GetVectorPH(),fCalibraVector->GetPlaPH(),"treePH2d",(const char *) name);
-      f.WriteTObject(treePH2d);
-    }
   }
   if (fPRF2dOn) {
     if (fHisto2d) {
 	f.WriteTObject(fPRF2d);
     }
-    if (fVector2d) {
-      TString name("Nz");
-      name += fCalibraMode->GetNz(2);
-      name += "Nrphi";
-      name += fCalibraMode->GetNrphi(2);
-      name += "Ngp";
-      name += fNgroupprf;
-      TTree *treePRF2d = fCalibraVector->ConvertVectorPTreeHisto(fCalibraVector->GetVectorPRF(),fCalibraVector->GetPlaPRF(),"treePRF2d",(const char *) name);
-      f.WriteTObject(treePRF2d);
-    }
   }
-  if(fLinearFitterOn && fLinearFitterDebugOn){
-    f.WriteTObject(&fLinearFitterHistoArray);
+  if(fLinearFitterOn){
+    AnalyseLinearFitter();
+    f.WriteTObject(fLinearVdriftFit);
   }
-  
+   
   f.Close();
   
   if ( backup ) backup->cd();
@@ -1186,7 +1202,7 @@ Double_t *AliTRDCalibraFillHisto::StatH(TH2 *h, Int_t i)
   // [3] : maximal number of entries found
   // [4] : calibration group number of the max
   // [5] : mean number of entries found
-  // [6] : mean relativ error
+  // [6] : mean relative error
   //
 
   Double_t *info = new Double_t[7];
@@ -1503,7 +1519,6 @@ void AliTRDCalibraFillHisto::CreatePH2d(Int_t nn)
   fPH2d->SetStats(0);
 
 }
-
 //_____________________________________________________________________________
 void AliTRDCalibraFillHisto::CreateCH2d(Int_t nn)
 {
@@ -1525,6 +1540,7 @@ void AliTRDCalibraFillHisto::CreateCH2d(Int_t nn)
   fCH2d->Sumw2();
 
 }
+
 //____________Offine tracking in the AliTRDtracker_____________________________
 void AliTRDCalibraFillHisto::FillTheInfoOfTheTrackCH()
 {
@@ -1537,6 +1553,8 @@ void AliTRDCalibraFillHisto::FillTheInfoOfTheTrackCH()
   Int_t nb            =  0;   // Nombre de zones traversees
   Int_t fd            = -1;   // Premiere zone non nulle
   Float_t totalcharge = 0.0;  // Total charge for the supermodule histo
+
+ 
   
   
   // See if the track goes through different zones
@@ -1550,7 +1568,7 @@ void AliTRDCalibraFillHisto::FillTheInfoOfTheTrackCH()
     }
   }
 
- 
+  
   switch (nb)
     { 
     case 1:
@@ -1561,7 +1579,7 @@ void AliTRDCalibraFillHisto::FillTheInfoOfTheTrackCH()
  	//fCH2d->Fill(fAmpTotal[fd]/fRelativeScale,fCalibraMode->GetXbins(0)+fd+0.5);
       }
       if (fVector2d) {
-	fCalibraVector->UpdateVectorCH(fCalibraMode->GetXbins(0)+fd,fAmpTotal[fd]/fRelativeScale);
+	fCalibraVector->UpdateVectorCH(fDetectorPreviousTrack,fd,fAmpTotal[fd]/fRelativeScale);
       }
       break;
     case 2:
@@ -1574,7 +1592,7 @@ void AliTRDCalibraFillHisto::FillTheInfoOfTheTrackCH()
 	    //fCH2d->Fill(fAmpTotal[fd]/fRelativeScale,fCalibraMode->GetXbins(0)+fd+0.5);
 	  }
 	  if (fVector2d) {
-	    fCalibraVector->UpdateVectorCH(fCalibraMode->GetXbins(0)+fd,fAmpTotal[fd]/fRelativeScale);
+	    fCalibraVector->UpdateVectorCH(fDetectorPreviousTrack,fd,fAmpTotal[fd]/fRelativeScale);
 	  }
 	  fNumberUsedCh[1]++;
 	  fEntriesCH[fCalibraMode->GetXbins(0)+fd]++;
@@ -1585,7 +1603,7 @@ void AliTRDCalibraFillHisto::FillTheInfoOfTheTrackCH()
 	    //fCH2d->Fill(fAmpTotal[fd+1]/fRelativeScale,fCalibraMode->GetXbins(0)+fd+1.5);
 	  }
 	  if (fVector2d) {
-	    fCalibraVector->UpdateVectorCH(fCalibraMode->GetXbins(0)+fd+1,fAmpTotal[fd+1]/fRelativeScale);
+	    fCalibraVector->UpdateVectorCH(fDetectorPreviousTrack,fd+1,fAmpTotal[fd+1]/fRelativeScale);
 	  }
 	  fNumberUsedCh[1]++;
 	  fEntriesCH[fCalibraMode->GetXbins(0)+fd+1]++;
@@ -1602,7 +1620,7 @@ void AliTRDCalibraFillHisto::FillTheInfoOfTheTrackCH()
 		  //fCH2d->Fill(fAmpTotal[fd]/fRelativeScale,fCalibraMode->GetXbins(0)+fd+0.5);
 		}
 		if (fVector2d) {
-		  fCalibraVector->UpdateVectorCH(fCalibraMode->GetXbins(0)+fd,fAmpTotal[fd]/fRelativeScale);
+		  fCalibraVector->UpdateVectorCH(fDetectorPreviousTrack,fd,fAmpTotal[fd]/fRelativeScale);
 		}
 		fNumberUsedCh[1]++;
 		fEntriesCH[fCalibraMode->GetXbins(0)+fd]++;
@@ -1615,7 +1633,7 @@ void AliTRDCalibraFillHisto::FillTheInfoOfTheTrackCH()
 		fNumberUsedCh[1]++;
 		fEntriesCH[fCalibraMode->GetXbins(0)+fd+fCalibraMode->GetNfragZ(0)]++;
 		if (fVector2d) {
-		  fCalibraVector->UpdateVectorCH(fCalibraMode->GetXbins(0)+fd+fCalibraMode->GetNfragZ(0),fAmpTotal[fd+fCalibraMode->GetNfragZ(0)]/fRelativeScale);
+		  fCalibraVector->UpdateVectorCH(fDetectorPreviousTrack,fd+fCalibraMode->GetNfragZ(0),fAmpTotal[fd+fCalibraMode->GetNfragZ(0)]/fRelativeScale);
 		}
 	      }
 	    }
@@ -1661,6 +1679,7 @@ void AliTRDCalibraFillHisto::FillTheInfoOfTheTrackPH()
     }
   }
 
+  
   switch(nb)
     {
     case 1:
@@ -1670,7 +1689,7 @@ void AliTRDCalibraFillHisto::FillTheInfoOfTheTrackPH()
 	  fPH2d->Fill((Float_t) i/fSf,(fCalibraMode->GetXbins(1)+fd1)+0.5,(Float_t) fPHValue[i]);
 	}
 	if (fVector2d) {
-	  fCalibraVector->UpdateVectorPH((fCalibraMode->GetXbins(1)+fd1),i,fPHValue[i]);
+	  fCalibraVector->UpdateVectorPH(fDetectorPreviousTrack,fd1,i,fPHValue[i]);
 	}
       }
       break;
@@ -1686,7 +1705,7 @@ void AliTRDCalibraFillHisto::FillTheInfoOfTheTrackPH()
 	      fPH2d->Fill((Float_t) i/fSf,(fCalibraMode->GetXbins(1)+fd1)+0.5,(Float_t) fPHValue[i]);
 	    }
 	    if (fVector2d) {
-	      fCalibraVector->UpdateVectorPH((fCalibraMode->GetXbins(1)+fd1),i,fPHValue[i]);
+	      fCalibraVector->UpdateVectorPH(fDetectorPreviousTrack,fd1,i,fPHValue[i]);
 	    }
 	  }
 	}
@@ -1698,7 +1717,7 @@ void AliTRDCalibraFillHisto::FillTheInfoOfTheTrackPH()
 	      fPH2d->Fill((Float_t) i/fSf,(fCalibraMode->GetXbins(1)+fd2)+0.5,(Float_t) fPHValue[i]);
 	    }
 	  if (fVector2d) {
-	    fCalibraVector->UpdateVectorPH((fCalibraMode->GetXbins(1)+fd2),i,fPHValue[i]);
+	    fCalibraVector->UpdateVectorPH(fDetectorPreviousTrack,fd2,i,fPHValue[i]);
 	  }
 	  }
 	}
@@ -1717,7 +1736,7 @@ void AliTRDCalibraFillHisto::FillTheInfoOfTheTrackPH()
 		  fPH2d->Fill((Float_t) i/fSf,(fCalibraMode->GetXbins(1)+fd1)+0.5,(Float_t) fPHValue[i]);
 		}
 		if (fVector2d) {
-		  fCalibraVector->UpdateVectorPH((fCalibraMode->GetXbins(1)+fd1),i,fPHValue[i]);
+		  fCalibraVector->UpdateVectorPH(fDetectorPreviousTrack,fd1,i,fPHValue[i]);
 		}
 	      }
 	    }
@@ -1729,7 +1748,7 @@ void AliTRDCalibraFillHisto::FillTheInfoOfTheTrackPH()
 		  fPH2d->Fill((Float_t) i/fSf,(fCalibraMode->GetXbins(1)+fd2)+0.5,(Float_t) fPHValue[i]);
 		}
 		if (fVector2d) {
-		  fCalibraVector->UpdateVectorPH((fCalibraMode->GetXbins(1)+fd2),i,fPHValue[i]);
+		  fCalibraVector->UpdateVectorPH(fDetectorPreviousTrack,fd2,i,fPHValue[i]);
 		}
 	      }
 	    }
@@ -1748,7 +1767,7 @@ void AliTRDCalibraFillHisto::FillTheInfoOfTheTrackPH()
 		  fPH2d->Fill((Float_t) i/fSf,(fCalibraMode->GetXbins(1)+fd1)+0.5,(Float_t) fPHValue[i]);
 		}
 		if (fVector2d) {
-		  fCalibraVector->UpdateVectorPH((fCalibraMode->GetXbins(1)+fd1),i,fPHValue[i]);
+		  fCalibraVector->UpdateVectorPH(fDetectorPreviousTrack,fd1,i,fPHValue[i]);
 		}
 	      }
 	    }
@@ -1760,7 +1779,7 @@ void AliTRDCalibraFillHisto::FillTheInfoOfTheTrackPH()
 		  fPH2d->Fill((Float_t) i/fSf,(fCalibraMode->GetXbins(1)+fd2)+0.5,(Float_t) fPHValue[i]);
 		}
 		if (fVector2d) {
-		  fCalibraVector->UpdateVectorPH((fCalibraMode->GetXbins(1)+fd2),i,fPHValue[i]);
+		  fCalibraVector->UpdateVectorPH(fDetectorPreviousTrack,fd2,i,fPHValue[i]);
 		}
 	      }
 	    }
@@ -1779,7 +1798,8 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPH()
   // This function will be called in the functions UpdateHistogram... 
   // to fill the find the parameter P1 of a track for the drift velocity  calibration
   //
-  
+
+   
   //Number of points: if less than 3 return kFALSE
   Int_t Npoints = fListClusters->GetEntriesFast();
   if(Npoints <= 2) return kFALSE;
@@ -1824,7 +1844,10 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPH()
     if(k==0) rowp                     = row;
     if(row != rowp) crossrow          = 1;
     //Take in the middle of the chamber
+    //FollowBack
     if(time > (Int_t) 10) {
+    //Follow
+    //if(time < (Int_t) 11) {
       z   = cl->GetZ();
       y   = cl->GetY();  
       snp = fPar2[time];
@@ -1833,7 +1856,10 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPH()
     linearFitterTracklet.AddPoint(&timeis,ycluster,1);
     nbli++;
   }
-  if(((AliTRDcluster *) fListClusters->At(0))->GetLocalTimeBin() <= 10) snpright = 0;
+  //FollowBack
+  if(((AliTRDcluster *) fListClusters->At(0))->GetLocalTimeBin() < 10) snpright = 0;
+  //Follow
+  //if(((AliTRDcluster *) fListClusters->At(0))->GetLocalTimeBin() >= 11) snpright = 0;
   if(nbli <= 2) return kFALSE; 
   
   // Do the straight line fit now
@@ -1853,7 +1879,7 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPH()
     if ( !fDebugStreamer ) {
       //debug stream
       TDirectory *backup = gDirectory;
-      fDebugStreamer = new TTreeSRedirector("TRDdebugCalibra.root");
+      fDebugStreamer = new TTreeSRedirector("TRDdebugCalibraFill.root");
       if ( backup ) backup->cd();  //we don't want to be cd'd to the debug streamer
     } 
     
@@ -1893,7 +1919,7 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPH()
       Double_t x = tnp-dzdx*tnt; 
       (GetLinearFitter(detector,kTRUE))->AddPoint(&x,dydt);
       if(fLinearFitterDebugOn) {
-	((TH2F *) GetLinearFitterHisto(detector,kTRUE))->Fill(tnp,pars[1]);
+	fLinearVdriftFit->Update(detector,x,pars[1]);
       }
       fEntriesLinearFitter[detector]++;
     }
@@ -1909,7 +1935,7 @@ Bool_t AliTRDCalibraFillHisto::HandlePRF()
   // For the offline tracking
   // Fit the tracklet with a line and take the position as reference for the PRF
   //
-  
+
   //Number of points
   Int_t Npoints  = fListClusters->GetEntriesFast();                         // number of total points
   Int_t Nb3pc    = 0;                                                       // number of three pads clusters used for fit 
@@ -2001,7 +2027,7 @@ Bool_t AliTRDCalibraFillHisto::HandlePRF()
     //calibration group
     Int_t    *rowcol       = CalculateRowCol(cl);                       // calcul col and row pad of the cluster
     Int_t     grouplocal   = CalculateCalibrationGroup(2,rowcol);       // calcul the corresponding group
-    Int_t     caligroup    = fCalibraMode->GetXbins(2)+ grouplocal;     // calcul the corresponidng group
+    Int_t     caligroup    = fCalibraMode->GetXbins(2)+ grouplocal;     // calcul the corresponding group
     Double_t  snp          = fPar2[(Int_t)time];                        // sin angle in xy plan
     Float_t   xcl          = cl->GetY();                                // y cluster
     Float_t   qcl          = cl->GetQ();                                // charge cluster 
@@ -2026,7 +2052,7 @@ Bool_t AliTRDCalibraFillHisto::HandlePRF()
       if ( !fDebugStreamer ) {
 	//debug stream
 	TDirectory *backup = gDirectory;
-	fDebugStreamer = new TTreeSRedirector("TRDdebugCalibra.root");
+	fDebugStreamer = new TTreeSRedirector("TRDdebugCalibraFill.root");
 	if ( backup ) backup->cd();  //we don't want to be cd'd to the debug streamer
       }     
       
@@ -2178,26 +2204,32 @@ Bool_t AliTRDCalibraFillHisto::HandlePRF()
       }
     }
     if (fHisto2d && !echec) {
-      fPRF2d->Fill(shift+dpad,(caligroup+0.5),ycenter);
-      if(ymin > 0.0) {
+      if(TMath::Abs(dpad) < 1.5) {
+	fPRF2d->Fill(shift+dpad,(caligroup+0.5),ycenter);
+	fPRF2d->Fill(shift-dpad,(caligroup+0.5),ycenter);
+      }
+      if((ymin > 0.0) && (TMath::Abs(dpad+1.0) < 1.5)) {
 	fPRF2d->Fill(shift-(dpad+1.0),(caligroup+0.5),ymin);
 	fPRF2d->Fill(shift+(dpad+1.0),(caligroup+0.5),ymin);
       }
-      if(ymax > 0.0) {
+      if((ymax > 0.0) && (TMath::Abs(dpad-1.0) < 1.5)) {
 	fPRF2d->Fill(shift+1.0-dpad,(caligroup+0.5),ymax);
 	fPRF2d->Fill(shift-1.0+dpad,(caligroup+0.5),ymax);
       }
     }
     //Not equivalent anymore here!
     if (fVector2d && !echec) {
-      fCalibraVector->UpdateVectorPRF(caligroup,shift+dpad,ycenter);
-      if(ymin > 0.0) {
-	fCalibraVector->UpdateVectorPRF(caligroup,shift-(dpad+1.0),ymin);
-	fCalibraVector->UpdateVectorPRF(caligroup,shift+(dpad+1.0),ymin);
+      if(TMath::Abs(dpad) < 1.5) {
+	fCalibraVector->UpdateVectorPRF(fDetectorPreviousTrack,grouplocal,shift+dpad,ycenter);
+	fCalibraVector->UpdateVectorPRF(fDetectorPreviousTrack,grouplocal,shift-dpad,ycenter);
       }
-      if(ymax > 0.0) {
-	fCalibraVector->UpdateVectorPRF(caligroup,shift+1.0-dpad,ymax);
-	fCalibraVector->UpdateVectorPRF(caligroup,shift-1.0+dpad,ymax);
+      if((ymin > 0.0) && (TMath::Abs(dpad+1.0) < 1.5)) {
+	fCalibraVector->UpdateVectorPRF(fDetectorPreviousTrack,grouplocal,shift-(dpad+1.0),ymin);
+	fCalibraVector->UpdateVectorPRF(fDetectorPreviousTrack,grouplocal,shift+(dpad+1.0),ymin);
+      }
+      if((ymax > 0.0)  && (TMath::Abs(dpad-1.0) < 1.5)) {
+	fCalibraVector->UpdateVectorPRF(fDetectorPreviousTrack,grouplocal,shift+1.0-dpad,ymax);
+	fCalibraVector->UpdateVectorPRF(fDetectorPreviousTrack,grouplocal,shift-1.0+dpad,ymax);
       }
     }
   }
@@ -2242,13 +2274,13 @@ Int_t AliTRDCalibraFillHisto::GetSector(Int_t d) const
 
 }
 //_____________________________________________________________________
-TProfile2D* AliTRDCalibraFillHisto::GetPH2d(Int_t nbtimebin, Float_t samplefrequency, Bool_t force)
+TProfile2D* AliTRDCalibraFillHisto::GetPH2d(Int_t nbtimebin, Float_t samplefrequency)
 {
     //
     // return pointer to fPH2d TProfile2D
-    // if force is true create a new TProfile2D if it doesn't exist allready
+    // create a new TProfile2D if it doesn't exist allready
     //
-    if ( !force || fPH2d )
+    if ( fPH2d )
 	return fPH2d;
 
     // Some parameters
@@ -2296,34 +2328,7 @@ TLinearFitter* AliTRDCalibraFillHisto::GetLinearFitter(Int_t detector, Bool_t fo
     fLinearFitterArray.AddAt(linearfitter,detector);
     return linearfitter;
 }
-//_____________________________________________________________________
-TH2F* AliTRDCalibraFillHisto::GetLinearFitterHisto(Int_t detector, Bool_t force)
-{
-    //
-    // return pointer to TH2F histo 
-    // if force is true create a new histo if it doesn't exist allready
-    //
-    if ( !force || fLinearFitterHistoArray.UncheckedAt(detector) )
-	return (TH2F*)fLinearFitterHistoArray.UncheckedAt(detector);
 
-    // if we are forced and TLinearFitter doesn't yes exist create it
-
-    // new TH2F
-    TString name("LFDV");
-    name += detector;
-    
-    TH2F *lfdv = new TH2F((const Char_t *)name,(const Char_t *) name
-			  ,100,-1.0,1.0,100
-			  ,-2.0,2.0);
-    lfdv->SetXTitle("tan(phi_{track})");
-    lfdv->SetYTitle("dy/dt");
-    lfdv->SetZTitle("Number of clusters");
-    lfdv->SetStats(0);
-    lfdv->SetDirectory(0);
-
-    fLinearFitterHistoArray.AddAt(lfdv,detector);
-    return lfdv;
-}
 //_____________________________________________________________________
 void  AliTRDCalibraFillHisto::FillCH2d(Int_t x, Float_t y)
 {
@@ -2341,4 +2346,31 @@ void  AliTRDCalibraFillHisto::FillCH2d(Int_t x, Float_t y)
   //Fill
   fCH2d->GetArray()[place]++;
 
+}
+
+//____________________________________________________________________________
+void AliTRDCalibraFillHisto::AnalyseLinearFitter()
+{
+  //
+  // Analyse array of linear fitter because can not be written
+  // Store two arrays: one with the param the other one with the error param + number of entries
+  //
+
+  for(Int_t k = 0; k < 540; k++){
+    TLinearFitter *linearfitter = GetLinearFitter(k);
+    if((linearfitter!=0) && (fEntriesLinearFitter[k]>10)){
+      TVectorD  *par  = new TVectorD(2);
+      TVectorD   pare = TVectorD(2);
+      TVectorD  *parE = new TVectorD(3);
+      linearfitter->Eval();
+      linearfitter->GetParameters(*par);
+      linearfitter->GetErrors(pare);
+      Float_t  ppointError =  TMath::Sqrt(TMath::Abs(linearfitter->GetChisquare())/fEntriesLinearFitter[k]);
+      (*parE)[0] = pare[0]*ppointError;
+      (*parE)[1] = pare[1]*ppointError;
+      (*parE)[2] = (Double_t) fEntriesLinearFitter[k];
+      ((TObjArray *)fLinearVdriftFit->GetPArray())->AddAt(par,k);
+      ((TObjArray *)fLinearVdriftFit->GetEArray())->AddAt(parE,k);
+    }
+  }
 }

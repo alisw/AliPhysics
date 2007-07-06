@@ -35,9 +35,9 @@ public:
 
   AliTRDCalibPadStatus& operator = (const  AliTRDCalibPadStatus &source);
 
-  Bool_t ProcessEvent(AliTRDRawStream *rawStream, Bool_t nocheck = kFALSE);
-  Bool_t ProcessEvent(AliRawReader    *rawReader, Bool_t nocheck = kFALSE);
-  Bool_t ProcessEvent(eventHeaderStruct   *event, Bool_t nocheck = kFALSE);
+  Int_t ProcessEvent(AliTRDRawStream *rawStream, Bool_t nocheck = kFALSE);
+  Int_t ProcessEvent(AliRawReader    *rawReader, Bool_t nocheck = kFALSE);
+  Int_t ProcessEvent(eventHeaderStruct   *event, Bool_t nocheck = kFALSE);
 
   Int_t Update(const Int_t idet, const Int_t iRow, const Int_t iCol,
 	       const Int_t signal, const Int_t rowMax);
@@ -46,6 +46,7 @@ public:
   void Analyse();
   void AnalyseHisto();
   AliTRDCalPadStatus *CreateCalPadStatus();
+
   //
   AliTRDarrayF* GetCalEntries(Int_t det, Bool_t force=kFALSE);    // get calibration object
   AliTRDarrayF* GetCalMean(Int_t det, Bool_t force=kFALSE);       // get calibration object
@@ -100,11 +101,10 @@ private:
   virtual Int_t    GetChamber(Int_t d) const;
   virtual Int_t    GetSector(Int_t d) const;
 
-  ClassDef(AliTRDCalibPadStatus,2)
+public:
+
+  ClassDef(AliTRDCalibPadStatus,1)
 
 };
-
-
-
 #endif
 

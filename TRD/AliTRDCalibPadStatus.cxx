@@ -16,7 +16,7 @@
 /* $Id$ */
 
 /*
- example: fill pedestal with gausschen noise
+ example: fill pedestal with Gaussian noise
  AliTRDCalibPadStatus ped;
  ped.TestEvent(numberofevent);
  // Method without histo
@@ -62,17 +62,20 @@ histo->Draw();
 #include <TRandom.h>
 #include <TDirectory.h>
 #include <TFile.h>
-#include <AliMathBase.h>
-#include "TTreeStream.h"
+#include <TTreeStream.h>
 
 //AliRoot includes
+#include <AliMathBase.h>
 #include "AliRawReader.h"
 #include "AliRawReaderRoot.h"
 #include "AliRawReaderDate.h"
 
+//header file
+#include "AliTRDCalibPadStatus.h"
 #include "AliTRDRawStream.h"
 #include "AliTRDarrayF.h"
 #include "AliTRDgeometry.h"
+#include "AliTRDCommonParam.h"
 #include "./Cal/AliTRDCalROC.h"
 #include "./Cal/AliTRDCalPadStatus.h"
 #include "./Cal/AliTRDCalSingleChamberStatus.h"
@@ -80,9 +83,6 @@ histo->Draw();
 #ifdef ALI_DATE
 #include "event.h"
 #endif
-
-//header file
-#include "AliTRDCalibPadStatus.h"
 
 ClassImp(AliTRDCalibPadStatus) /*FOLD00*/
 
@@ -154,12 +154,10 @@ AliTRDCalibPadStatus::AliTRDCalibPadStatus(const AliTRDCalibPadStatus &ped) : /*
 	}
 	
     }
-
     if (fGeo) {
       delete fGeo;
     }
     fGeo = new AliTRDgeometry();
-
 }
 
 //_____________________________________________________________________
@@ -180,11 +178,9 @@ AliTRDCalibPadStatus::~AliTRDCalibPadStatus() /*FOLD00*/
   //
   // destructor
   //
-
   if (fGeo) {
     delete fGeo;
   }
-  
 }
 
 //_____________________________________________________________________
@@ -223,6 +219,7 @@ Int_t AliTRDCalibPadStatus::Update(const Int_t icdet, /*FOLD00*/
     
     return 0;
 }
+
 //_____________________________________________________________________
 Int_t AliTRDCalibPadStatus::UpdateHisto(const Int_t icdet, /*FOLD00*/
 				       const Int_t icRow,
@@ -246,20 +243,23 @@ Int_t AliTRDCalibPadStatus::UpdateHisto(const Int_t icdet, /*FOLD00*/
   
   return 0;
 }
+
 //_____________________________________________________________________
-Bool_t AliTRDCalibPadStatus::ProcessEvent(AliTRDRawStream *rawStream, Bool_t nocheck)
+Int_t AliTRDCalibPadStatus::ProcessEvent(AliTRDRawStream *rawStream, Bool_t nocheck)
 {
   //
   // Event Processing loop - AliTRDRawStream
-  //
+  // 0 time bin problem or zero suppression
+  // 1 no input
+  // 2 input
+  //  
 
-
-  Bool_t withInput = kFALSE;
+  Int_t withInput = 1;
 
   if(!nocheck) {
     while (rawStream->Next()) {
       Int_t rawversion = rawStream->GetRawVersion();                     //  current raw version
-      if(rawversion != 2) return kFALSE;
+      if(rawversion != 2) return 0;
       Int_t idetector  = rawStream->GetDet();                            //  current detector
       Int_t iRow       = rawStream->GetRow();                            //  current row
       Int_t iRowMax    = rawStream->GetMaxRow();                         //  current rowmax
@@ -268,7 +268,7 @@ Bool_t AliTRDCalibPadStatus::ProcessEvent(AliTRDRawStream *rawStream, Bool_t noc
       Int_t *signal    = rawStream->GetSignals();                        //  current ADC signal
       Int_t nbtimebin  = rawStream->GetNumberOfTimeBins();               //  number of time bins read from data
 
-      if((fDetector != -1) && (nbtimebin != fNumberOfTimeBins)) return kFALSE;
+      if((fDetector != -1) && (nbtimebin != fNumberOfTimeBins)) return 0;
       fNumberOfTimeBins = nbtimebin;
       
       Int_t fin        = TMath::Min(nbtimebin,(iTimeBin+3));
@@ -279,7 +279,7 @@ Bool_t AliTRDCalibPadStatus::ProcessEvent(AliTRDRawStream *rawStream, Bool_t noc
 	n++;
       }
       
-      withInput = kTRUE;
+      withInput = 2;
     }
   }
   else {
@@ -300,14 +300,15 @@ Bool_t AliTRDCalibPadStatus::ProcessEvent(AliTRDRawStream *rawStream, Bool_t noc
 	n++;
       }
       
-      withInput = kTRUE;
+      withInput = 2;
     }
   }
   
   return withInput;
 }
+
 //_____________________________________________________________________
-Bool_t AliTRDCalibPadStatus::ProcessEvent(AliRawReader *rawReader, Bool_t nocheck)
+Int_t AliTRDCalibPadStatus::ProcessEvent(AliRawReader *rawReader, Bool_t nocheck)
 {
   //
   //  Event processing loop - AliRawReader
@@ -320,8 +321,9 @@ Bool_t AliTRDCalibPadStatus::ProcessEvent(AliRawReader *rawReader, Bool_t nochec
 
   return ProcessEvent(&rawStream, nocheck);
 }
+
 //_________________________________________________________________________
-Bool_t AliTRDCalibPadStatus::ProcessEvent(
+Int_t AliTRDCalibPadStatus::ProcessEvent(
 #ifdef ALI_DATE
 					  eventHeaderStruct *event,
 					  Bool_t nocheck
@@ -346,6 +348,7 @@ Bool_t AliTRDCalibPadStatus::ProcessEvent(
 #endif
 
 }
+
 //_____________________________________________________________________
 Bool_t AliTRDCalibPadStatus::TestEvent(Int_t nevent) /*FOLD00*/
 {
@@ -372,6 +375,7 @@ Bool_t AliTRDCalibPadStatus::TestEvent(Int_t nevent) /*FOLD00*/
     }
     return kTRUE;
 }
+
 //_____________________________________________________________________
 Bool_t AliTRDCalibPadStatus::TestEventHisto(Int_t nevent) /*FOLD00*/
 {
@@ -398,6 +402,7 @@ Bool_t AliTRDCalibPadStatus::TestEventHisto(Int_t nevent) /*FOLD00*/
     }
     return kTRUE;
 }
+
 //_____________________________________________________________________
 TH2F* AliTRDCalibPadStatus::GetHisto(Int_t det, TObjArray *arr, /*FOLD00*/
 				  Int_t nbinsY, Float_t ymin, Float_t ymax,
@@ -416,8 +421,8 @@ TH2F* AliTRDCalibPadStatus::GetHisto(Int_t det, TObjArray *arr, /*FOLD00*/
     sprintf(name,"hCalib%s%.2d",type,det);
     sprintf(title,"%s calibration histogram detector %.2d;ADC channel;Channel (pad)",type,det);
 
-    Int_t nbchannels = fGeo->GetRowMax(GetPlane(det),GetChamber(det),GetSector(det))
-                     * fGeo->GetColMax(GetPlane(det));
+   
+    Int_t nbchannels = fGeo->GetRowMax(GetPlane(det),GetChamber(det),GetSector(det))*fGeo->GetColMax(GetPlane(det));
 
     // new histogram with calib information. One value for each pad!
     TH2F* hist = new TH2F(name,title,
@@ -428,6 +433,7 @@ TH2F* AliTRDCalibPadStatus::GetHisto(Int_t det, TObjArray *arr, /*FOLD00*/
     arr->AddAt(hist,det);
     return hist;
 }
+
 //_____________________________________________________________________
 TH2F* AliTRDCalibPadStatus::GetHisto(Int_t det, Bool_t force) /*FOLD00*/
 {
@@ -438,6 +444,7 @@ TH2F* AliTRDCalibPadStatus::GetHisto(Int_t det, Bool_t force) /*FOLD00*/
     TObjArray *arr = &fHistoArray;
     return GetHisto(det, arr, fAdcMax-fAdcMin, fAdcMin, fAdcMax, "Pedestal", force);
 }
+
 //_____________________________________________________________________
 AliTRDarrayF* AliTRDCalibPadStatus::GetCal(Int_t det, TObjArray* arr, Bool_t force) /*FOLD00*/
 {
@@ -450,8 +457,8 @@ AliTRDarrayF* AliTRDCalibPadStatus::GetCal(Int_t det, TObjArray* arr, Bool_t for
 
     // if we are forced and histogram doesn't yes exist create it
     AliTRDarrayF *croc = new AliTRDarrayF();
-    Int_t nbpad = fGeo->GetRowMax(GetPlane(det),GetChamber(det),GetSector(det))
-                * fGeo->GetColMax(GetPlane(det));
+ 
+    Int_t nbpad = fGeo->GetRowMax(GetPlane(det),GetChamber(det),GetSector(det))*fGeo->GetColMax(GetPlane(det));
 
     // new AliTRDCalROC. One value for each pad!
     croc->Expand(nbpad);
@@ -461,6 +468,7 @@ AliTRDarrayF* AliTRDCalibPadStatus::GetCal(Int_t det, TObjArray* arr, Bool_t for
     arr->AddAt(croc,det);
     return croc;
 }
+
 //_____________________________________________________________________
 AliTRDCalROC* AliTRDCalibPadStatus::GetCalRoc(Int_t det, TObjArray* arr, Bool_t force) /*FOLD00*/
 {
@@ -478,6 +486,7 @@ AliTRDCalROC* AliTRDCalibPadStatus::GetCalRoc(Int_t det, TObjArray* arr, Bool_t 
     arr->AddAt(croc,det);
     return croc;
 }
+
 //_____________________________________________________________________
 AliTRDarrayF* AliTRDCalibPadStatus::GetCalEntries(Int_t det, Bool_t force) /*FOLD00*/
 {
@@ -488,6 +497,7 @@ AliTRDarrayF* AliTRDCalibPadStatus::GetCalEntries(Int_t det, Bool_t force) /*FOL
     TObjArray *arr = &fCalArrayEntries;
     return GetCal(det, arr, force);
 }
+
 //_____________________________________________________________________
 AliTRDarrayF* AliTRDCalibPadStatus::GetCalMean(Int_t det, Bool_t force) /*FOLD00*/
 {
@@ -498,6 +508,7 @@ AliTRDarrayF* AliTRDCalibPadStatus::GetCalMean(Int_t det, Bool_t force) /*FOLD00
     TObjArray *arr = &fCalArrayMean;
     return GetCal(det, arr, force);
 }
+
 //_____________________________________________________________________
 AliTRDarrayF* AliTRDCalibPadStatus::GetCalSquares(Int_t det, Bool_t force) /*FOLD00*/
 {
@@ -508,6 +519,7 @@ AliTRDarrayF* AliTRDCalibPadStatus::GetCalSquares(Int_t det, Bool_t force) /*FOL
     TObjArray *arr = &fCalArraySquares;
     return GetCal(det, arr, force);
 }
+
 //_____________________________________________________________________
 AliTRDCalROC* AliTRDCalibPadStatus::GetCalRocMean(Int_t det, Bool_t force) /*FOLD00*/
 {
@@ -518,6 +530,7 @@ AliTRDCalROC* AliTRDCalibPadStatus::GetCalRocMean(Int_t det, Bool_t force) /*FOL
     TObjArray *arr = &fCalRocArrayMean;
     return GetCalRoc(det, arr, force);
 }
+
 //_____________________________________________________________________
 AliTRDCalROC* AliTRDCalibPadStatus::GetCalRocRMS(Int_t det, Bool_t force) /*FOLD00*/
 {
@@ -528,6 +541,7 @@ AliTRDCalROC* AliTRDCalibPadStatus::GetCalRocRMS(Int_t det, Bool_t force) /*FOLD
     TObjArray *arr = &fCalRocArrayRMS;
     return GetCalRoc(det, arr, force);
 }
+
 //_________________________________________________________________________
 void AliTRDCalibPadStatus::Analyse() /*FOLD00*/
 {
@@ -566,6 +580,7 @@ void AliTRDCalibPadStatus::Analyse() /*FOLD00*/
     }
   }
 }
+
 //_____________________________________________________________________
 void AliTRDCalibPadStatus::AnalyseHisto() /*FOLD00*/
 {
@@ -609,6 +624,7 @@ void AliTRDCalibPadStatus::AnalyseHisto() /*FOLD00*/
     }
    
 }
+
 //_______________________________________________________________________________________
 AliTRDCalPadStatus* AliTRDCalibPadStatus::CreateCalPadStatus()
 {
@@ -664,16 +680,17 @@ AliTRDCalPadStatus* AliTRDCalibPadStatus::CreateCalPadStatus()
 	else entries     = fCalEntries->At(ich);
 	//Float_t mean     = calRocMean->GetValue(ich)*10.0;
 	Float_t rms      = calRocRMS->GetValue(ich)*10.0;
-	if(ich > 1720) printf("rms %f\n",rms);
+	//if(ich > 1720) printf("rms %f\n",rms);
 		
 	//if((entries < 0.3*meanentries) || (TMath::Abs(rms-meansquares) > ((Float_t)(fAdcMax-fAdcMin)/2.0)) || (rms == 0.0)) calROC->SetStatus(ich, AliTRDCalPadStatus::kMasked);
-	if(rms <= 0.01) calROC->SetStatus(ich, AliTRDCalPadStatus::kMasked);
+	if(rms <= 0.0001) calROC->SetStatus(ich, AliTRDCalPadStatus::kMasked);
 	}
     }
   
   return obj;
   
 }
+
 //_____________________________________________________________________
 void AliTRDCalibPadStatus::DumpToFile(const Char_t *filename, const Char_t *dir, Bool_t append) /*FOLD00*/
 {
@@ -700,7 +717,9 @@ void AliTRDCalibPadStatus::DumpToFile(const Char_t *filename, const Char_t *dir,
     f.Close();
 
     if ( backup ) backup->cd();
-}//_____________________________________________________________________________
+}
+
+//_____________________________________________________________________________
 Int_t AliTRDCalibPadStatus::GetPlane(Int_t d) const
 {
   //
@@ -721,6 +740,7 @@ Int_t AliTRDCalibPadStatus::GetChamber(Int_t d) const
   return ((Int_t) (d % 30) / 6);
 
 }
+
 //_____________________________________________________________________________
 Int_t AliTRDCalibPadStatus::GetSector(Int_t d) const
 {
