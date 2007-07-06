@@ -68,7 +68,8 @@ AliMpBusPatch::AliMpBusPatch(Int_t id, Int_t detElemId, Int_t ddlId)
     fDEId(detElemId),
     fDdlId(ddlId),
     fManus(false),
-    fNofManusPerModule(false)
+    fNofManusPerModule(false),
+    fCableLength(-1)
 {
 /// Standard constructor
 }
@@ -80,7 +81,8 @@ AliMpBusPatch::AliMpBusPatch(TRootIOCtor* /*ioCtor*/)
     fDEId(),
     fDdlId(),
     fManus(),
-    fNofManusPerModule(false)
+    fNofManusPerModule(false),
+    fCableLength(-1)
 {
 /// Root IO constructor
 }
@@ -113,20 +115,29 @@ Bool_t AliMpBusPatch::AddManu(Int_t manuId)
 }   
 
 //______________________________________________________________________________
-Bool_t AliMpBusPatch::SetNofManusPerModule()
+Bool_t AliMpBusPatch::SetNofManusPerModule(Int_t manuNumber)
 {
 /// Set the number of manus per patch module (PCB):
-/// - for stations 12 all manus are connected to one PCB,
+/// - for stations 1 all manus are connected to one PCB,
+/// - for stations 2 there maximum two PCBs per buspatch,
 /// - for slat stations there are maximum three PCBs per buspatch
-/// Not correct for station 2
 
-  if ( AliMpDEManager::GetStationType(fDEId) == AliMp::kStation1 ||
-       AliMpDEManager::GetStationType(fDEId) == AliMp::kStation2 ) {
+  if ( AliMpDEManager::GetStationType(fDEId) == AliMp::kStation1) {
 
     // simply fill the number of manus, no bridge for station 1
-    // not the case for station 2.
        
     fNofManusPerModule.Add(GetNofManus());
+    return true;
+  }
+
+ if ( AliMpDEManager::GetStationType(fDEId) == AliMp::kStation2) {
+
+    // there is max two patch modules per buspatch
+       
+    fNofManusPerModule.Add(manuNumber);
+    if (manuNumber != GetNofManus())
+	fNofManusPerModule.Add(GetNofManus() - manuNumber);
+
     return true;
   }
 
