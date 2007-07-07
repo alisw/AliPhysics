@@ -90,7 +90,6 @@ void AliHALLv3::CreateGeometry()
   TGeoMedium* kMedCC     = gGeoManager->GetMedium("HALL_CC_C2");
   TGeoMedium* kMedST     = gGeoManager->GetMedium("HALL_STST_C2");
   TGeoMedium* kMedAir    = gGeoManager->GetMedium("HALL_AIR_C2");
-  kMedST->Dump();
   
   // Floor thickness 
   Float_t dyFloor  =  190.;
