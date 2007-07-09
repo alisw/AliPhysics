@@ -2,11 +2,12 @@
 // Original: AliHLTTrackArray.cxx,v 1.21 2005/06/14 10:55:21 cvetan 
 
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * This file is property of and copyright by the ALICE HLT Project        * 
+ * ALICE Experiment at CERN, All rights reserved.                         *
  *                                                                        *
- * Authors: Uli Frankenfeld                                               *
- *          Matthias Richter <Matthias.Richter@ift.uib.no>                *
- *          for The ALICE Off-line Project.                               *
+ * Primary Authors: Uli Frankenfeld, maintained by                          *
+ *                  Matthias Richter <Matthias.Richter@ift.uib.no>        *
+ *                  for The ALICE HLT Project.                            *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
@@ -299,17 +300,17 @@ void AliHLTTPCTrackArray::FillTracks(Int_t ntracks, AliHLTTPCTrackSegmentData* t
     track->SetLastPoint(last[0],last[1],last[2]);
     track->SetHits( trs->fNPoints, trs->fPointIDs );
 
-    if (slice>=0 && bTransform!=0)  {
+    //if (slice>=0 && bTransform!=0)  {
       // Matthias Feb07: as everything is now in global coordinates, sector should
       // be set to 0. But as the display does a check on the sector, we have to set
       // it to the slice no. I suspect, that the transformation is done twice.
       //track->SetSector(0);
       track->SetSector(slice);
-    } else {
+    //} else {
       // the parameters are in local coordinates, set the sector no
       //#ifndef INCLUDE_TPC_HOUGH
-      if (slice<0) track->SetSector(0);
-      else track->SetSector(slice);
+      //if (slice<0) track->SetSector(0);
+      //else track->SetSector(slice);
       //#else 
       // Matthias Feb 2007: this is some kind of legacy ...
       // the INCLUDE_TPC_HOUGH has never been switched on in the new TPCLib
@@ -327,7 +328,7 @@ void AliHLTTPCTrackArray::FillTracks(Int_t ntracks, AliHLTTPCTrackSegmentData* t
       }
       //track->SetSector(trs->fSector);
       //#endif // INCLUDE_TPC_HOUGH
-    }
+      //}
 
     // this is currently a quick hack for straight lines of the first version 
     // of the CA tracker.

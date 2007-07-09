@@ -2,11 +2,12 @@
 // Original: AliHLTTrack.cxx,v 1.32 2005/06/14 10:55:21 cvetan 
 
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * This file is property of and copyright by the ALICE HLT Project        * 
+ * ALICE Experiment at CERN, All rights reserved.                         *
  *                                                                        *
- * Authors: Anders Vestbo, Uli Frankenfeld                                *
- *          Matthias Richter <Matthias.Richter@ift.uib.no>                *
- *          for The ALICE Off-line Project.                               *
+ * Primary Authors: Anders Vestbo, Uli Frankenfeld, maintained by         *
+ *                  Matthias Richter <Matthias.Richter@ift.uib.no>        *
+ *                  for The ALICE HLT Project.                            *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
@@ -649,11 +650,41 @@ int AliHLTTPCTrack::Convert2AliKalmanTrack()
   // sector A00 starts at 3 o'clock, sectors are counted counterclockwise
   // median of sector 00 is at 10 degrees, median of sector A04 at 90
   //
-  Double_t alpha = 0;
-  alpha = fmod((2*GetSector()+1)*(TMath::Pi()/18),2*TMath::Pi());
-  if      (alpha < -TMath::Pi()) alpha += 2*TMath::Pi();
-  else if (alpha >= TMath::Pi()) alpha -= 2*TMath::Pi();
+  Double_t xhit;
+  Double_t charge=-1.0 * (double) GetCharge();
+  Double_t xx[5];
+  xx[1] = GetFirstPointZ();
+  xx[3] = GetTgl();
+  xx[4] = charge*(1.0/GetPt());
 
+  Double_t alpha = 0;
+  if(GetSector() == -1){
+    alpha = TMath::ATan(fabs(GetFirstPointY())/fabs(GetFirstPointX()));
+
+    if(GetFirstPointX()<0 && GetFirstPointY()>=0){
+      alpha = alpha + TMath::PiOver2();
+    }
+    else if(GetFirstPointX()<0 && GetFirstPointY()<0){
+      alpha = -TMath::Pi() + alpha;
+    }
+    else if(GetFirstPointX()>=0 && GetFirstPointY()<0){
+      alpha = -alpha;
+    }
+    xhit = GetFirstPointX()*TMath::Cos(alpha) + GetFirstPointY()*TMath::Sin(alpha);
+    xx[0] = -(GetFirstPointX()*TMath::Sin(alpha)) + GetFirstPointY()*TMath::Cos(alpha);
+    xx[2] = TMath::Sin(GetPsi()-alpha);
+  }
+  else{
+    alpha = fmod((2*GetSector()+1)*(TMath::Pi()/18),2*TMath::Pi());
+    if      (alpha < -TMath::Pi()) alpha += 2*TMath::Pi();
+    else if (alpha >= TMath::Pi()) alpha -= 2*TMath::Pi();
+    
+    xhit = GetFirstPointX();
+    xx[0] = GetFirstPointY();
+    xx[2] = TMath::Sin(GetPsi());
+  }
+  
+  
   //covariance matrix
   Double_t cov[15]={
     0.,
@@ -663,22 +694,11 @@ int AliHLTTPCTrack::Convert2AliKalmanTrack()
     0.,  0.,  0.,  0.,  0.
   };
 
-  Double_t charge=-1.0 * (double) GetCharge();
-  Double_t xhit = GetFirstPointX();
-  Double_t xx[5];
-  xx[0] = GetFirstPointY();
-  xx[1] = GetFirstPointZ();
-  xx[2] = TMath::Sin(GetPsi());
-  xx[3] = GetTgl();
-  xx[4] = charge*(1.0/GetPt());
-  //cout << "xhit=" << xhit << " y=" << xx[0] << " z=" << xx[1] << endl;
-  //cout << "alpha=" << alpha << endl;
-
   Int_t nCluster = GetNHits();
   fdEdx=0;
 
   // the Set function was not available in earlier versions, check done
-  // during configure; for the AliRoot build, by default ON 
+  // during configure; for the AliRoot build, by default ON
 #ifdef EXTERNALTRACKPARAM_V1
 #warning track conversion to ESD format needs AliRoot version > v4-05-04
   //TODO (Feb 07): make this a real warning when logging system is adapted
