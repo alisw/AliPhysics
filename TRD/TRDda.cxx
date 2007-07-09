@@ -142,7 +142,7 @@ int main(int argc, char **argv) {
       continue;
     }
 
-    printf(" physic event number %d will be processed\n",(Int_t) nevents_physics);  
+    printf(" event number %d (physic event number %d) will be processed\n",(Int_t) nevents_total,(Int_t) nevents_physics);  
 
 
     /* use event - here, just write event id to result file */
@@ -154,7 +154,7 @@ int main(int argc, char **argv) {
       printf("pad status calibration\n");
       AliRawReader *rawReader = new AliRawReaderDate((void*)event);
       AliTRDRawStream *trdRawStream = new AliTRDRawStream((AliRawReader *) rawReader);
-      if(!calibpad.ProcessEvent(trdRawStream),(Bool_t)nevents_total)) passpadstatus = kFALSE;
+      if(!calibpad.ProcessEvent(trdRawStream,(Bool_t)nevents_total)) passpadstatus = kFALSE;
       
       delete trdRawStream;
       delete rawReader;
@@ -170,14 +170,17 @@ int main(int argc, char **argv) {
       Int_t result = calibra->ProcessEventDAQ(trdRawStream,(Bool_t)nevents_physics);
       if(!result) passvdrift = kFALSE;
       else nbvdrift += (Int_t) result/2;
-     
-          
-      nevents_physics++;
-
+             
+      
       delete trdRawStream;
       delete rawReader;
     } 
    
+    if(eventT==PHYSICS_EVENT){
+ 
+      nevents_physics++;
+     
+    }
     
     nevents_total++;
 
@@ -213,7 +216,7 @@ int main(int argc, char **argv) {
   if((nbvdrift > 0) && passvdrift){
     Double_t *stat = calibra->StatH((TH2 *)(calibra->GetPH2d()),1);
     // write only of enough statistics
-    if(stat[6] < 0.20) {
+    if((stat[6] < 0.20) && (stat[5] > 3000.0)) {
       calibra->GetPH2d()->Write();
       passwrite = kTRUE;
     }

@@ -963,7 +963,7 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliTRDRawStream *rawStream, Bool_t
       
       Int_t idetector = rawStream->GetDet();                            //  current detector
       if((fDetectorPreviousTrack != idetector) && (fDetectorPreviousTrack != -1)){
-	if(TMath::Mean(fTimeMax,phvalue)>0.0){
+	if(TMath::Mean(fTimeMax,phvalue)>13.0){
 	  withInput = 2;
 	  for(Int_t k = 0; k < fTimeMax; k++){
 	    UpdateDAQ(fDetectorPreviousTrack,0,0,k,phvalue[k],fTimeMax);
@@ -987,14 +987,14 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliTRDRawStream *rawStream, Bool_t
       Int_t n       = 0;
       for(Int_t itime = iTimeBin; itime < fin; itime++){
 	// should extract baseline here!
-	if(signal[n]>5.0) phvalue[itime] = signal[n];
+	if(signal[n]>13) phvalue[itime] = signal[n];
 	n++;
       }
     }
   
     // fill the last one
     if(fDetectorPreviousTrack != -1){
-      if(TMath::Mean(fTimeMax,phvalue)>0.0){
+      if(TMath::Mean(fTimeMax,phvalue)>13.0){
 	withInput = 2;
 	for(Int_t k = 0; k < fTimeMax; k++){
 	  UpdateDAQ(fDetectorPreviousTrack,0,0,k,phvalue[k],fTimeMax);
@@ -1012,7 +1012,7 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliTRDRawStream *rawStream, Bool_t
 
       Int_t idetector = rawStream->GetDet();                            //  current detector
       if((fDetectorPreviousTrack != idetector) && (fDetectorPreviousTrack != -1)){
-	if(TMath::Mean(nbtimebin,phvalue)>0.0){
+	if(TMath::Mean(nbtimebin,phvalue)>13.0){
 	  withInput = 2;
 	  for(Int_t k = 0; k < nbtimebin; k++){
 	    UpdateDAQ(fDetectorPreviousTrack,0,0,k,phvalue[k],nbtimebin);
@@ -1033,14 +1033,14 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliTRDRawStream *rawStream, Bool_t
       Int_t n       = 0;
       for(Int_t itime = iTimeBin; itime < fin; itime++){
 	// should extract baseline here!
-	if(signal[n]>5.0) phvalue[itime] = signal[n];
+	if(signal[n]>13) phvalue[itime] = signal[n];
 	n++;
       }
     }
     
     // fill the last one
     if(fDetectorPreviousTrack != -1){
-      if(TMath::Mean(nbtimebin,phvalue)>0.0){
+      if(TMath::Mean(nbtimebin,phvalue)>13.0){
 	withInput = 2;
 	for(Int_t k = 0; k < nbtimebin; k++){
 	  UpdateDAQ(fDetectorPreviousTrack,0,0,k,phvalue[k],nbtimebin);
