@@ -2,32 +2,28 @@
 #include  "AliHLTAltroData.h"
 
 
+
+
+
+
 AliHLTDDLDecoder::AliHLTDDLDecoder() : f32DtaPtr(0), f8DtaPtr(0),fN32HeaderWords(8), fN32RcuTrailerWords(1), fNDDLBlocks(0), 
-				       fBufferPos(0),fN40AltroWords(0), fN40RcuAltroWords(0), fSize(0), fSegmentation(0), 
+				       fBufferPos(0), fN40AltroWords(0), fN40RcuAltroWords(0), fSize(0), fSegmentation(0), 
 				       f32LastDDLBlockSize(5), f32PayloadSize(0),fBufferIndex(0), fN10bitWords(0)
 {
-  for(int i = 0; i< DDL_BLOCK_SIZE;  i++)
-    {
-      fDDLBlockDummy[i] = 0;
-    }
-}
 
+}
 
 AliHLTDDLDecoder::~AliHLTDDLDecoder()
 {
 
 }
 
-
 bool
 AliHLTDDLDecoder::CheckPayload()
 {
-  //  int iRet = true;
-  
   if(fN40AltroWords != fN40RcuAltroWords)
     {
       return  false;
-      //     return  true;
     } 
   else
     {
@@ -38,67 +34,40 @@ AliHLTDDLDecoder::CheckPayload()
 
 }
 
-
 bool
 AliHLTDDLDecoder::Decode()
 {
-  fCnt = 0;
-
   if((CheckPayload() == true)  &&  (fSize > 32) )
     {
       fDDLBlockCnt = 0;
-
-      for(int i = 0; i< DDL_BLOCK_SIZE;  i++)
-	{
-	  fDDLBlockDummy[i] = 0;
-	}
-
       fBufferIndex = 0;
       fN10bitWords = 0;
-
-      fBufferPos =  fN40AltroWords*4  -  1;
-
-
-      for(int i=0; i < fNDDLBlocks; i++)
+      
+      for(fI=0; fI < fNDDLBlocks; fI++)
 	{
 	  DecodeDDLBlock();
 	}
 
       DecodeLastDDLBlock(); 
-
-      UInt_t *tmpBufPtr = &fBuffer[fBufferPos - 17];
-
-      /* 
-	 printf("\nDumping DDL data\n");
-	 DumpData(tmpBufPtr, 16,   4);
-	 DumpData(fBuffer, 512,   4);
-	 printf("\nFINNISHED Dumping DDL data\n");
-      */
-
-   
-      //  cout << "AliHLTDDLDecoder::Decode() TP4" << endl;
-   return true;
+      return true;
     }
-  
-   else
-     {
-       printf("\nERROR: data integrity check failed, discarding data\n");
-       printf("Size of datablock is %d\n", fSize);
-       printf("fN40AltroWords = %d\n", fN40AltroWords);
-       printf("fN40RcuAltroWords = %d\n", fN40RcuAltroWords);
-       //  cout << "AliHLTDDLDecoder::Decode() TP5" << endl;
-       return false;
-     }
 
+  else
+    {
+
+      cout <<"ERROR: data integrity check failed, discarding data" << endl;
+      cout << "Size of datablock is  " << fSize   << endl;
+      cout << "fN40AltroWords = "      << fN40AltroWords   << endl;
+      cout << "fN40RcuAltroWords = "   << fN40RcuAltroWords  << endl;
+      return false;
+    }
 }
-
 
 bool
 AliHLTDDLDecoder::NextChannel(AliHLTAltroData *altroDataPtr)
 {
   if(fBufferPos >  fN32HeaderWords)
     {
-
       fBufferPos --;
       fNAltro10bitWords = ( (fBuffer[fBufferPos] & 0x3f) << 4 )   |  ((fBuffer[fBufferPos -1]  & (0xF << 6)) >> 6) ;
       fBufferPos --;
@@ -117,45 +86,31 @@ AliHLTDDLDecoder::NextChannel(AliHLTAltroData *altroDataPtr)
       altroDataPtr->fData  = &fBuffer[fBufferPos];
       fBufferPos --;
 
+      //      fNAltroLastSequence10bitWords = fBuffer[fBufferPos + fNAltro10bitWords];
 
-      /*
-	if(fCnt < 1)
-	{
-	printf("\nfCnt = %d,  fNAltro10bitWords mod 4 = %d\n", fCnt,   fNAltro10bitWords%4);
-	}
-      */
- 
-      fNAltroLastSequence10bitWords = fBuffer[fBufferPos + fNAltro10bitWords];
       altroDataPtr->fDataSize =  fNAltro10bitWords ;
       altroDataPtr->fHadd = fHadd; 
 	  
-      if(fNAltroLastSequence10bitWords ==  fNAltro10bitWords )
-	{
-	  altroDataPtr->fIsSingleSignal == kTRUE;
-	}
+      //      if(fNAltroLastSequence10bitWords ==  fNAltro10bitWords )
+      //	{
+      //	  altroDataPtr->fIsSingleSignal = true;
+      //	}
 
-      fCnt ++;
       return true;
-      //	  fCnt ++;
     }
-      
   else
     {
       return false;
     }
 }
 
-
 int
 AliHLTDDLDecoder::GetMarker(UInt_t *buffer, int index)
 {
   int tmpMarker = 0;
   int tmpMask = 0x3c0;
-
   tmpMarker = (buffer[index] << 4 ) | ((buffer[index-1] & tmpMask) >> 6);  
-
   return tmpMarker;
-
 }
 
 void
@@ -169,16 +124,12 @@ AliHLTDDLDecoder::PrintInfo(AliHLTAltroData &altrodata, int n, int nPerLine)
 	{
 	  printf("\n");
 	}
-
       printf("%d\t", altrodata.fData[i]);
-      
     }
-
   printf("\n");
 }
 
-
-int                    
+void                     
 AliHLTDDLDecoder::SetMemory(UChar_t *dtaPtr, UInt_t size)
 {
   f8DtaPtr =dtaPtr;
@@ -186,24 +137,16 @@ AliHLTDDLDecoder::SetMemory(UChar_t *dtaPtr, UInt_t size)
   f32PayloadSize = fSize/4 -  (fN32HeaderWords + fN32RcuTrailerWords);
   fN40AltroWords = (32*f32PayloadSize)/40; 
   f32LastDDLBlockSize =  f32PayloadSize%DDL_32BLOCK_SIZE;
-
-  printf("\n AliHLTDDLDecoder::SetMemory = f32LastDDLBlockSize = %d\n",   f32LastDDLBlockSize );
-  printf("\nf32PayloadSize mod 5 = %d \n",f32PayloadSize%5);
   fNDDLBlocks =  f32PayloadSize/5;
-  
-
   f8DtaPtr =f8DtaPtr + fSize;
   f32DtaPtr = (UInt_t *) f8DtaPtr;
   f32DtaPtr =  f32DtaPtr - fN32RcuTrailerWords;
   fN40RcuAltroWords =  *f32DtaPtr;
-  //  printf("\nAliHLTDDLDecoder::SetM  ResetBuffer(); memory: number of altro words read from RCU trailer is: 0x%x\n", *f32DtaPtr);
-  //  printf("AliHLTDDLDecoder::SetMemory: number of altro words calculated is:  0x%x\n", fN40AltroWords);
   f32DtaPtr = (UInt_t *)dtaPtr + fN32HeaderWords;
+  fBufferPos =  fN40AltroWords*4  -  1;
 }
 
-
-
-int
+void
 AliHLTDDLDecoder::DecodeDDLBlock()
 {
   fBuffer[fBufferIndex] =  *f32DtaPtr & 0x3ff;  //s0 
@@ -251,14 +194,12 @@ AliHLTDDLDecoder::DecodeDDLBlock()
   fDDLBlockCnt ++;  
 }
 
-
-int
+void
 AliHLTDDLDecoder::DecodeLastDDLBlock()
 {
-
-  for(int i=0; i< f32LastDDLBlockSize; i++)
+  for(unsigned fI=0; fI < f32LastDDLBlockSize; fI++)
     {
-      fDDLBlockDummy[i] = *f32DtaPtr;
+      fDDLBlockDummy[fI] = *f32DtaPtr;
       f32DtaPtr ++;
     }
   
@@ -266,24 +207,6 @@ AliHLTDDLDecoder::DecodeLastDDLBlock()
   f32DtaPtr ++;
   DecodeDDLBlock();
 }
-
-
-void
-AliHLTDDLDecoder::ReadAltroTrailer()
-{
-
-}
-
-
-void
-AliHLTDDLDecoder::ResetBuffer()
-{
-  for(int i=0; i< N_FEECS*N_BRANCHES*N_ALTROS*N_ALTROCHANNELS*(ALTRO_MAX_SAMPLES + ALTRO_MAX_TRALER_SIZE); i++)
-    {
-      fBuffer[i] = 0;
-    }
-}
-
 
 void 
 AliHLTDDLDecoder::SetNTrailerWords(int n)
