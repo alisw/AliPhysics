@@ -10,7 +10,7 @@ F77	      = g77
 CC	      = gcc
 
 # Global optimisation
-OPT           = -g #-O
+OPT           = -g -O
 NOOPT         = -g
 
 CXXOPT        = $(OPT)
@@ -39,7 +39,7 @@ LD            = g++
 LDFLAGS       = $(OPT) -Wl,-Map -Wl,$@.map
 
 SHLD	      = $(LD)
-SOFLAGS       = -shared -Wl #-O2
+SOFLAGS       = -shared -Wl -O2
 SOEXT 	      = so
 
 ALLD	      = ar
