@@ -6,7 +6,7 @@ void Hshuttle(Int_t runTime=1500)
   TMap *pDcsMap = new TMap;       pDcsMap->SetOwner(1);          //DCS archive map
   
   AliTestShuttle* pShuttle = new AliTestShuttle(0,0,1000000);   
-  SimPed();   for(Int_t ldc=1;ldc<=4;ldc++) pShuttle->AddInputFile(AliTestShuttle::kDAQ,"HMP","pedestals",Form("LDC%i",ldc),Form("HmpidPeds%i.tgz",ldc));
+  SimPed();   for(Int_t ldc=1;ldc<=4;ldc++) pShuttle->AddInputFile(AliTestShuttle::kDAQ,"HMP","pedestals",Form("LDC%i",ldc),Form("HmpidPeds%i.tar",ldc));
   SimMap(pDcsMap,runTime); pShuttle->SetDCSInput(pDcsMap);                                    //DCS map
   
   AliPreprocessor* pp = new AliHMPIDPreprocessor(pShuttle); pShuttle->Process();  delete pp;  //here goes preprocessor 
@@ -32,10 +32,10 @@ void SimPed()
     Printf("file ped %02i created",ddl);
     out.close();
   }
-  gSystem->Exec("tar cf HmpidPeds1.tgz HmpidPedDdl00.txt HmpidPedDdl01.txt HmpidPedDdl02.txt HmpidPedDdl03.txt");
-  gSystem->Exec("tar cf HmpidPeds2.tgz HmpidPedDdl04.txt HmpidPedDdl05.txt HmpidPedDdl06.txt HmpidPedDdl07.txt");
-  gSystem->Exec("tar cf HmpidPeds3.tgz HmpidPedDdl08.txt HmpidPedDdl09.txt HmpidPedDdl10.txt HmpidPedDdl11.txt");
-  gSystem->Exec("tar cf HmpidPeds4.tgz HmpidPedDdl12.txt HmpidPedDdl13.txt");
+  gSystem->Exec("tar cf HmpidPeds1.tar HmpidPedDdl00.txt HmpidPedDdl01.txt HmpidPedDdl02.txt HmpidPedDdl03.txt");
+  gSystem->Exec("tar cf HmpidPeds2.tar HmpidPedDdl04.txt HmpidPedDdl05.txt HmpidPedDdl06.txt HmpidPedDdl07.txt");
+  gSystem->Exec("tar cf HmpidPeds3.tar HmpidPedDdl08.txt HmpidPedDdl09.txt HmpidPedDdl10.txt HmpidPedDdl11.txt");
+  gSystem->Exec("tar cf HmpidPeds4.tar HmpidPedDdl12.txt HmpidPedDdl13.txt");
   gSystem->Exec("rm -rf ped*.txt");
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
