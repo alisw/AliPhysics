@@ -32,10 +32,10 @@ void SimPed()
     Printf("file ped %02i created",ddl);
     out.close();
   }
-  gSystem->Exec("tar czf HmpidPeds1.tgz HmpidPedDdl00.txt HmpidPedDdl01.txt HmpidPedDdl02.txt HmpidPedDdl03.txt");
-  gSystem->Exec("tar czf HmpidPeds2.tgz HmpidPedDdl04.txt HmpidPedDdl05.txt HmpidPedDdl06.txt HmpidPedDdl07.txt");
-  gSystem->Exec("tar czf HmpidPeds3.tgz HmpidPedDdl08.txt HmpidPedDdl09.txt HmpidPedDdl10.txt HmpidPedDdl11.txt");
-  gSystem->Exec("tar czf HmpidPeds4.tgz HmpidPedDdl12.txt HmpidPedDdl13.txt");
+  gSystem->Exec("tar cf HmpidPeds1.tgz HmpidPedDdl00.txt HmpidPedDdl01.txt HmpidPedDdl02.txt HmpidPedDdl03.txt");
+  gSystem->Exec("tar cf HmpidPeds2.tgz HmpidPedDdl04.txt HmpidPedDdl05.txt HmpidPedDdl06.txt HmpidPedDdl07.txt");
+  gSystem->Exec("tar cf HmpidPeds3.tgz HmpidPedDdl08.txt HmpidPedDdl09.txt HmpidPedDdl10.txt HmpidPedDdl11.txt");
+  gSystem->Exec("tar cf HmpidPeds4.tgz HmpidPedDdl12.txt HmpidPedDdl13.txt");
   gSystem->Exec("rm -rf ped*.txt");
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
