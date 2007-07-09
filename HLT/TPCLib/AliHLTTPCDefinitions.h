@@ -61,6 +61,8 @@ public:
 
   /** DDL packed RAW data */
   static const AliHLTComponentDataType fgkDDLPackedRawDataType;    // see above
+  /** DDL entropy encoded data */
+  static const AliHLTComponentDataType fgkDDLEncodedEntropyRawDataType; // see above
   /** packed RAW data */
   static const AliHLTComponentDataType fgkPackedRawDataType;       // see above
   /** unpacked RAW data */

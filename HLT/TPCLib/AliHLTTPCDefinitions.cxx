@@ -29,7 +29,9 @@
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCDefinitions)
 
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkDDLPackedRawDataType = { sizeof(AliHLTComponentDataType), {'D','D','L','_','R','W','P','K'},{'T','P','C',' '}};;
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkDDLPackedRawDataType = { sizeof(AliHLTComponentDataType),         {'D','D','L','_','R','W','P','K'},{'T','P','C',' '}};;
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkDDLEncodedEntropyRawDataType = { sizeof(AliHLTComponentDataType), {'D','D','L','E','N','C','E','N'},{'T','P','C',' '}};;
+
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkPackedRawDataType = { sizeof(AliHLTComponentDataType), {'R','A','W','P','A','K','E','D'},{'T','P','C',' '}};;
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkUnpackedRawDataType = { sizeof(AliHLTComponentDataType), {'R','A','W','U','N','P','A','K'},{'T','P','C',' '}};;
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkClustersDataType = { sizeof(AliHLTComponentDataType), {'C','L','U','S','T','E','R','S'},{'T','P','C',' '}};;
