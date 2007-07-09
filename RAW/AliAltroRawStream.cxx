@@ -371,8 +371,10 @@ Int_t AliAltroRawStream::GetPosition()
     // Now read the beginning of the trailer
     // where the payload size is written
     if (trailerSize < 2) {
-      PrintDebug();
-      AliFatal(Form("Invalid trailer size found (%d bytes) !",trailerSize*4));
+      fRawReader->AddMajorErrorLog(kRCUTrailerErr,Form("tr=%d bytes",
+						       trailerSize*4));
+      AliWarning(Form("Invalid trailer size found (%d bytes) !",
+		      trailerSize*4));
     }
     fRCUTrailerSize = (trailerSize-2)*4;
     index -= fRCUTrailerSize;
@@ -389,12 +391,17 @@ Int_t AliAltroRawStream::GetPosition()
     position *= 5;
 
     // Check the consistency of the header and trailer
-    if ((fRawReader->GetDataSize() - trailerSize*4) != position) {
-      PrintDebug();
-      AliFatal(Form("Inconsistent raw data size ! Raw data size - %d bytes (from the header), RCU trailer - %d bytes, raw data paylod - %d bytes !",
+    if (((fRawReader->GetDataSize() - trailerSize*4) < position) ||
+	((fRawReader->GetDataSize() - trailerSize*4) >= (position + 4))) {
+      fRawReader->AddMajorErrorLog(kRCUTrailerSizeErr,Form("h=%d tr=%d rcu=%d bytes",
+							   fRawReader->GetDataSize(),
+							   trailerSize*4,
+							   position));
+      AliWarning(Form("Inconsistent raw data size ! Raw data size - %d bytes (from the header), RCU trailer - %d bytes, raw data paylod - %d bytes !",
 		    fRawReader->GetDataSize(),
 		    trailerSize*4,
 		    position));
+      position = fRawReader->GetDataSize() - trailerSize*4;
     }
 
     return position * 8 / 10;
@@ -417,7 +424,8 @@ Int_t AliAltroRawStream::GetPosition()
     if (!fIsShortDataHeader) {
 
       // Check the consistency of the header and trailer
-      if ((fRawReader->GetDataSize() - 4) != position) {
+      if (((fRawReader->GetDataSize() - 4) < position) ||
+          ((fRawReader->GetDataSize() - 4) >= (position + 4))) {
 	fRawReader->AddMajorErrorLog(kRCUTrailerSizeErr,Form("h=%d rcu=%d bytes",
 							     fRawReader->GetDataSize()-4,
 							     position));
@@ -431,7 +439,8 @@ Int_t AliAltroRawStream::GetPosition()
     else {
       // Check the consistency of the header and trailer
       // In this case the header is shorter by 4 bytes
-      if (fRawReader->GetDataSize() != position) {
+      if ((fRawReader->GetDataSize() < position) ||
+          (fRawReader->GetDataSize() >= (position + 4))) {
 	fRawReader->AddMajorErrorLog(kRCUTrailerSizeErr,Form("h=%d rcu=%d bytes",
 							     fRawReader->GetDataSize(),
 							     position));

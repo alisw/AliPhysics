@@ -67,7 +67,8 @@ class AliAltroRawStream: public TObject {
       kTimeBinReadErr = 4,
       kAmplitudeReadErr = 5,
       k32bitWordReadErr = 6,
-      kBadAltroMapping = 7
+      kBadAltroMapping = 7,
+      kRCUTrailerErr = 8
     };
 
     AliAltroRawStream& operator = (const AliAltroRawStream& stream);
