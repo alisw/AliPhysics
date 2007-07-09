@@ -208,7 +208,7 @@ AliHLTPHOSClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
 }
 
 Int_t
-AliHLTPHOSClusterizerComponent::DoInit(Int_t argc, const Char_t** argv )
+AliHLTPHOSClusterizerComponent::DoInit(int argc, const char** argv )
 {
   //Do initialization
   

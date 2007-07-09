@@ -28,7 +28,7 @@ class AliHLTPHOSModuleMergerComponent:public AliHLTProcessor
   void DumpData(int gain =0);
   const int GetEquippmentId() const;
   virtual const char* GetComponentID();
-  virtual void GetInputDataTypes( std::vector <AliHLTComponentDataType>& list);
+  virtual void GetInputDataTypes( vector <AliHLTComponentDataType>& list);
   virtual AliHLTComponentDataType GetOutputDataType();
   virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
   void SetEquippmentId(int id = 0);

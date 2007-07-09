@@ -264,7 +264,7 @@ AliHLTPHOSClusterizer::CalculateCenterOfGravity(AliHLTPHOSRecPointDataStruct* re
 * Create a simpler data struct for a rec point, containing
 * only coordinates, energy and timing
 * @param recPointPtr pointer to the rec point
-* @clusterStructPtr pointer to the cluster struct
+* @param clusterStructPtr pointer to the cluster struct
 **/
 Int_t
 AliHLTPHOSClusterizer::ClusterizeStruct(AliHLTPHOSRecPointDataStruct* recPointPtr, AliHLTPHOSClusterDataStruct* clusterStructPtr)

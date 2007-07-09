@@ -2,11 +2,12 @@
 // Original: AliHLTConfMapFit.cxx,v 1.14 2005/06/14 10:55:21 cvetan 
 
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * This file is property of and copyright by the ALICE HLT Project        * 
+ * ALICE Experiment at CERN, All rights reserved.                         *
  *                                                                        *
- * Authors: Anders Vestbo                                                 *
- *          Matthias Richter <Matthias.Richter@ift.uib.no>                *
- *          for The ALICE Off-line Project.                               *
+ * Primary Authors: Anders Vestbo, maintained by                          *
+ *                  Matthias Richter <Matthias.Richter@ift.uib.no>        *
+ *                  for The ALICE HLT Project.                            *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *

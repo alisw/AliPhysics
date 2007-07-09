@@ -30,7 +30,7 @@ class AliHLTPHOSHistogramProducerComponent:public AliHLTPHOSProcessor
 
   void DumpData(int gain = 0);
   virtual const char* GetComponentID();
-  virtual void GetInputDataTypes( std::vector <AliHLTComponentDataType>& list);
+  virtual void GetInputDataTypes( vector <AliHLTComponentDataType>& list);
   virtual AliHLTComponentDataType GetOutputDataType();
   virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
   virtual AliHLTComponent* Spawn();

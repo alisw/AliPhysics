@@ -169,7 +169,7 @@ AliHLTPHOSPhysicsAnalyzerSpectrumComponent::DoEvent(const AliHLTComponentEventDa
 }
 
 Int_t
-AliHLTPHOSPhysicsAnalyzerSpectrumComponent::DoInit(Int_t argc, const Char_t** argv )
+AliHLTPHOSPhysicsAnalyzerSpectrumComponent::DoInit(int argc, const char** argv )
 {
   //Initialize the component
   Float_t firstThreshold = atof(argv[0]);

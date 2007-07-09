@@ -29,7 +29,7 @@ class AliHLTPHOSDDLDecoderComponent:public AliHLTPHOSProcessor
   virtual int DoInit( int argc, const char** argv );
   virtual int Deinit();
   virtual const char* GetComponentID();
-  virtual void GetInputDataTypes( std::vector <AliHLTComponentDataType>& list);
+  virtual void GetInputDataTypes( vector <AliHLTComponentDataType>& list);
   virtual AliHLTComponentDataType GetOutputDataType();
   virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
   virtual AliHLTComponent* Spawn();

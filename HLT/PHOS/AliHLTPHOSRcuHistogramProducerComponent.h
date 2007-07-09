@@ -24,7 +24,7 @@ class AliHLTPHOSRcuHistogramProducerComponent:public AliHLTPHOSProcessor
   virtual int DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
 		     AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 		     AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
-  virtual void GetInputDataTypes( std::vector <AliHLTComponentDataType>&);
+  virtual void GetInputDataTypes( vector <AliHLTComponentDataType>&);
   virtual AliHLTComponentDataType GetOutputDataType();
   virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
   virtual AliHLTComponent* Spawn();

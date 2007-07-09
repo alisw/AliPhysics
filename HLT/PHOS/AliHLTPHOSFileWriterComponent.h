@@ -26,7 +26,7 @@ class AliHLTPHOSFileWriterComponent:public AliHLTFileWriter
   virtual int Deinit();
   virtual int DoDeinit();
   virtual const char* GetComponentID();
-  virtual void GetInputDataTypes( std::vector <AliHLTComponentDataType>&);
+  virtual void GetInputDataTypes( vector <AliHLTComponentDataType>&);
   virtual AliHLTComponentDataType GetOutputDataType();
   virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
   virtual AliHLTComponent* Spawn();

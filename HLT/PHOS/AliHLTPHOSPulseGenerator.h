@@ -60,7 +60,7 @@ class AliHLTPHOSPulseGenerator
    * @param baselineLevel The baseline value of the pretrigger samples
    * @param samples The sample array for which to add the pretrigger samples
    **/
-  double *AddPretriggerSamples(double baslineLevel = 0, double *samples = 0);
+  double *AddPretriggerSamples(double baselineLevel = 0, double *samples = 0);
 
 
   /**

@@ -8,17 +8,19 @@ Foundation. Also see files AUTHORS and THANKS.
 This packages is maintained by Matthias.Richter@ift.uib.no
 Comments, bug reports, suggestions welcome! 
 
-TOC
-===
-1. Overview
-2. Requirements
-3. Setting up a version retrieved from CVS
-4. Modifying a distributed package
-5. Installation
-6. Documentation
-7. Further information
-8. Reporting bugs/Asking for support
-9. Committing to the AliRoot CVS
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++ TOC
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++ 1. Overview
++ 2. Requirements
++ 3. Setting up a version retrieved from CVS
++ 4. Modifying a distributed package
++ 5. Installation
++ 6. Documentation
++ 7. Further information
++ 8. Reporting bugs/Asking for support
++ 9. Committing to the AliRoot CVS
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 1. Overview
 ===========
@@ -26,23 +28,20 @@ This package provides a compilation of shared libraries of the ALICE
 HLT project and is intended for stand-alone compilation, i.e. not as part 
 of the AliRoot compilation. 
 
-- BASE: The base library (libHLTbase.so) provides the common interface for HLT 
-processing components, the binding into the ALICE offline project AliRoot
-and a pure C interface to the HLT on-line framework (Publisher/Subscriber
-framework)
+ - \b BASE: The base library (libHLTbase.so) provides the common interface for
+   HLT processing components, the binding into the ALICE offline project
+   AliRoot and a pure C interface to the HLT on-line framework 
+   (Publisher/Subscriber framework)
 
-- SampleLib: The sample library contains examples for component 
-implementation and a tutorial.
+ - \b SampleLib: The sample library contains examples for component 
+   implementation and a tutorial.
 
-- TPCLib: The HLT code for the TPC
-- TPCLib/OnlineDisplay: HLT visualization code for the TPC
+ - \b TPCLib: The HLT code for the TPC
+ - \b TPCLib/OnlineDisplay: HLT visualization code for the TPC
 
-- PHOS: The HLT code for PHOS
+ - \b PHOS: The HLT code for PHOS
 
-- TRD: The HLT code for TRD
-
-The old stand-alone build system is still available. Check the README
-file in the doc folder.
+ - \b TRD: The HLT code for TRD
 
 2. Requirements
 ===============
@@ -65,7 +64,8 @@ Skip this section if you have started from the tar ball.
 
 A version checked out from CVS requires a few steps to set up the Makefiles.
 Go to the directory and run
-autoreconf -i -f
+
+  autoreconf -i -f
 
 Then continue with the package configuration described in the 'Installation'
 section.
@@ -74,7 +74,8 @@ section.
 ==================================
 If you are going the modify a distributed package you might need to re-make 
 the GNU build system by running
- autoreconf -f -i
+
+  autoreconf -f -i
 
 Please notify the authors about bug fixes/corrections/extensions you made if
 you consider them worth to be merged into the project.
@@ -84,12 +85,12 @@ section.
 
 5. Installation
 ===============
-NOTE: The Makefiles which are in repository are part of the old build system.
-Now, the Makefile.am templates are valid.
-
 Package build relies on the GNU triplet configure, make and make install.
 In order to keep the development directory clean, it is recommended to
 use a separate build directory. 
+
+\b NOTE: Autotools creates the Makefiles from templates. All \b changes have to
+be done to the \b Makefile.am templates.
 
 It is recommended to read the complete section before the build process.
 
@@ -105,12 +106,15 @@ It is recommended to read the complete section before the build process.
 5.2 Installation directory
 --------------------------
 The default install directory is set to the current directory ($PWD). To
-override the default directory use the option --prefix=<dir>. More information
-can be obtained from the configure script by running it with option --help.
-All binary libraries will be installed under <prefix>/lib.
+override the default directory use the option 
+  --prefix=<dir>. 
+More information can be obtained from the configure script by running it with
+option --help. All binary libraries will be installed under
+  <prefix>/lib.
 
-If the directory is equal to $ALICE_ROOT, the libraries will be installed under 
-<prefix>/lib/tgt_<arch> as used for AliRoot. This is a custom extension in
+If the directory is equal to $ALICE_ROOT, the libraries will be installed under
+  <prefix>/lib/tgt_<arch>
+as used for AliRoot. This is a custom extension in
 order to adapt to the specific AliRoot installation directories.
 
 5.3 For the AliRoot user
@@ -126,52 +130,65 @@ To install all libraries in the AliRoot lib dir:
 5.4 Package options
 -------------------
 Some important options (all options are on by default):
---disable-sample           # disable compilation the sample library
---disable-tpc              # disable compilation the TPC library
---disable-phos             # disable compilation the PHOS library
---disable-trd              # disable compilation the TRD library
---disable-aliroot-logging  # disable logging
+
+  --disable-sample           # disable compilation the sample library
+  --disable-tpc              # disable compilation the TPC library
+  --disable-phos             # disable compilation the PHOS library
+  --disable-trd              # disable compilation the TRD library
+  --disable-aliroot-logging  # disable logging
 
 5.5 External packages
 ---------------------
 PubSub framework: the TPC online display needs the HOMER interface, which
 is currently part of the PubSub framework. It is planned to integrate it
-into AliRoot.
+into AliRoot.<br>
 If the TPC online display is not necessary one can skip this option.
---with-pubsub=<dir>        # the top dir of the HLT PubSub framework
+
+  --with-pubsub=<dir>        # the top dir of the HLT PubSub framework
 
 5.6 Final remarks/further information 
 -------------------------------------
-Note: You can have several build directories with different configure options,
-but using the same source code. 
+\b Note: You can have several build directories with different configure
+options, but using the same source code. 
 
 If you need further information on the GNU build system, execute from the 
 top directory:
-./configure --help | less
+
+  ./configure --help | less
 
 
 6. Documentation
 ================
-Documentation is generated from the source code at compile time if 
-doxygen is installed on the machine. From the build directory, open
-doc/html/index.html with a web browser.
+Documentation is build as part of the build process if \b doxygen is installed.
+The documentation can be opended from the
+  doc/html/
+sub-folder of your build directory. E.g with a web browser like firefox
+(assuming you are in the build directory):<br>
+  firefox file://`pwd`/doc/html/index.html
+
+A special target can be used to make a tar ball out of the documentation (again
+provided you are in the build directory):<br>
+  (cd doc && make tar-ball)
+
+On-line documentation is available at
+  http://web.ift.uib.no/~kjeks/doc/alice-hlt/
 
 7. Further information
 ======================
 A wiki with detailed information is set up at
-http://www.kip.uni-heidelberg.de/wiki/HLT
+  http://www.kip.uni-heidelberg.de/wiki/HLT
 
 8. Reporting bugs/Asking for support
 ====================================
 Please include the following information into your request:
-- config.log from your build directory
-- output of the make process. Note: Redirect BOTH the stdout and stderr
-  channel to a log file. Redirection depends on the shell you are using:
+ - config.log from your build directory
+ - output of the make process. Note: Redirect BOTH the stdout and stderr
+   channel to a log file. Redirection depends on the shell you are using:
     bash: make 2>&1 | tee make.log 
     csh: make |& tee make.log
-  The 'tee' command just duplicates the output.
-- history of the commands you are using for compilation
-  history > history.log
+   The 'tee' command just duplicates the output.
+ - history of the commands you are using for compilation
+   history > history.log
 
 9. Committing to the AliRoot CVS
 ================================
@@ -179,14 +196,14 @@ For development of HLT analysis code check out a HEAD version from the
 repository and implement your code. 
 
 For committing do:
-1. make sure that the code changes are correct
-   cvs diff | less
-   remember to restore all temporary changes you made (e.g. log level default)
-2. cvs update
-3. correct merging conflicts
-4. compile and test your code again
-5. send the whole HLT module except the build sub-directories to
-   Matthias.Richter@ift.uib.no
-6. you will get a notification when the code is committed, right after that you
-   must either do another cvs update or check out the complete module again in
-   order to have the right CVS information
+ - 1. make sure that the code changes are correct                    <br><tt>
+      cvs diff | less                                                </tt><br>
+      \b Remember to restore all temporary changes you made (e.g. log level)
+ - 2. cvs update
+ - 3. correct merging conflicts
+ - 4. compile and test your code again
+ - 5. send the whole HLT module except the build sub-directories to
+      Matthias.Richter@ift.uib.no
+ - 6. you will get a notification when the code is committed, right after that
+      you must either do another cvs update or check out the complete module
+      again in order to have the right CVS information.

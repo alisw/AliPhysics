@@ -35,7 +35,7 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTPHOSProcessor
   void DumpData(int gain =0) const;
   void DumpChannelData(Double_t *data =0) const; 
   virtual const char* GetComponentID() = 0;
-  virtual void GetInputDataTypes( std::vector <AliHLTComponentDataType>& list);
+  virtual void GetInputDataTypes( vector <AliHLTComponentDataType>& list);
   virtual AliHLTComponentDataType GetOutputDataType();
   virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
   virtual AliHLTComponent* Spawn() = 0; 

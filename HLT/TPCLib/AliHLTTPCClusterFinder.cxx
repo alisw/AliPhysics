@@ -2,9 +2,10 @@
 // Original: AliHLTClustFinderNew.cxx,v 1.29 2005/06/14 10:55:21 cvetan Exp 
 
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * This file is property of and copyright by the ALICE HLT Project        * 
+ * ALICE Experiment at CERN, All rights reserved.                         *
  *                                                                        *
- * Authors: Anders Vestbo <mailto:vestbo@fi.uib.no>, 		          *
+ * Primary Authors: Anders Vestbo <mailto:vestbo@fi.uib.no>, 		  *
  *          Constantin Loizides <mailto:loizides@ikf.uni-frankfurt.de>    *
  *          Jochen Thaeder <mailto:thaeder@kip.uni-heidelberg.de>         *
  *          for The ALICE Off-line Project.                               *
