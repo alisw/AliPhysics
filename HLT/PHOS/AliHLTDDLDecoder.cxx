@@ -37,6 +37,9 @@ AliHLTDDLDecoder::CheckPayload()
 bool
 AliHLTDDLDecoder::Decode()
 {
+   fComplete = 0;
+   fInComplete = 0;
+
   if((CheckPayload() == true)  &&  (fSize > 32) )
     {
       fDDLBlockCnt = 0;
@@ -66,8 +69,26 @@ AliHLTDDLDecoder::Decode()
 bool
 AliHLTDDLDecoder::NextChannel(AliHLTAltroData *altroDataPtr)
 {
+  int tmp = 0;
+
   if(fBufferPos >  fN32HeaderWords)
     {
+      tmp  =  GetMarker(fBuffer, fBufferPos);
+      //   printf("\nmarker = 0x%x", GetMarker(fBuffer, fBufferPos));
+ 
+      if(tmp == 0x2aaa)
+	{
+	  //	  printf("\nmarker = 0x%x", tmp);
+	  altroDataPtr->fIsComplete = true;
+	  fComplete ++;
+	}
+      else
+	{
+	  altroDataPtr->fIsComplete = false;
+	  fInComplete ++;
+	  //	  printf("\nERROR!!!!     marker = 0x%x\n", tmp);
+	}
+
       fBufferPos --;
       fNAltro10bitWords = ( (fBuffer[fBufferPos] & 0x3f) << 4 )   |  ((fBuffer[fBufferPos -1]  & (0xF << 6)) >> 6) ;
       fBufferPos --;
@@ -76,25 +97,20 @@ AliHLTDDLDecoder::NextChannel(AliHLTAltroData *altroDataPtr)
 
       if(fNAltro10bitWords%4 == 0)
 	{
+	  //	  altroDataPtr->fBunchPos  = fBufferPos; 
 	  fBufferPos = fBufferPos  -  fNAltro10bitWords;
 	}
       else
 	{
+	  //	  altroDataPtr->fBunchPos  = fBufferPos -(4 - fNAltro10bitWords%4);
 	  fBufferPos = fBufferPos - fNAltro10bitWords -(4 - fNAltro10bitWords%4);
 	}
 
       altroDataPtr->fData  = &fBuffer[fBufferPos];
       fBufferPos --;
-
-      //      fNAltroLastSequence10bitWords = fBuffer[fBufferPos + fNAltro10bitWords];
-
       altroDataPtr->fDataSize =  fNAltro10bitWords ;
       altroDataPtr->fHadd = fHadd; 
-	  
-      //      if(fNAltroLastSequence10bitWords ==  fNAltro10bitWords )
-      //	{
-      //	  altroDataPtr->fIsSingleSignal = true;
-      //	}
+
 
       return true;
     }
@@ -102,6 +118,28 @@ AliHLTDDLDecoder::NextChannel(AliHLTAltroData *altroDataPtr)
     {
       return false;
     }
+}
+
+/*
+bool
+AliHLTDDLDecoder::NextBunch()
+{
+
+}
+*/
+
+
+float
+AliHLTDDLDecoder::GetFailureRate()
+{
+  float tmp = 0;
+  cout << "Number of Complete channles = " << fComplete <<endl;
+  cout << "Number of InComplete channles = " << fInComplete <<endl;
+  tmp = (100*(float)fInComplete)/(float)fComplete;
+
+  cout <<"There are "<<  tmp <<"% incomplete channels"<<endl;
+
+  return  tmp;
 }
 
 int

@@ -3,6 +3,7 @@
 
 #include "Rtypes.h"
 #include <iostream>
+//#include 
 
 using  std::cout;
 using  std::endl;
@@ -11,7 +12,10 @@ using  std::endl;
 
 
 #include "AliHLTPHOSConstants.h"
+
+
 using namespace PhosHLTConst;
+
 
 class AliHLTAltroData;
 
@@ -23,9 +27,8 @@ class AliHLTDDLDecoder
   virtual ~AliHLTDDLDecoder();
   bool CheckPayload();
   bool Decode();
-
-  bool  NextChannel(AliHLTAltroData *altroDataPtr);
-
+  bool NextChannel(AliHLTAltroData *altroDataPtr);
+  bool NextBunch();
 
   template<typename T> 
   void  DumpData(T *array, int N, int nPerLine)
@@ -47,11 +50,14 @@ class AliHLTDDLDecoder
   void SetMemory(UChar_t  *dtaPtr, UInt_t size);
   void SetNTrailerWords(int N);
   void PrintInfo(AliHLTAltroData &altrodata, int n = 0, int nPerLine = 4);
+  float GetFailureRate();
+
 
  private:
   void DecodeDDLBlock();
   void DecodeLastDDLBlock();
   int GetMarker(UInt_t *buffer, int index);
+
 
   //  void ReadAltroTrailer();
 
@@ -59,10 +65,10 @@ class AliHLTDDLDecoder
 
   UInt_t  *f32DtaPtr;
   UChar_t *f8DtaPtr;   
-  unsigned int fN32HeaderWords;
-  unsigned int fN32RcuTrailerWords;
+  long int fN32HeaderWords;
+  long int fN32RcuTrailerWords;
   unsigned int fNDDLBlocks;
-  unsigned int fBufferPos;
+  long int fBufferPos;
   unsigned long  fN40AltroWords;
   unsigned long  fN40RcuAltroWords;
   UInt_t  fSize;
@@ -80,6 +86,10 @@ class AliHLTDDLDecoder
   //  UInt_t f10Wc;
   //  UInt_t fCnt;
   UInt_t fI;
+
+  int fComplete;
+  int fInComplete;
+
 };
 
 #endif
