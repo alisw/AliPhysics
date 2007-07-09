@@ -7,9 +7,9 @@
 #ifndef AliFemtoVertexAnalysis_hh
 #define AliFemtoVertexAnalysis_hh
 
-#include "AliFemtoAnalysis.h"        // base analysis class
+#include "AliFemtoSimpleAnalysis.h"        // base analysis class
 
-class AliFemtoVertexAnalysis : public AliFemtoAnalysis {
+class AliFemtoVertexAnalysis : public AliFemtoSimpleAnalysis {
 
 public:
 

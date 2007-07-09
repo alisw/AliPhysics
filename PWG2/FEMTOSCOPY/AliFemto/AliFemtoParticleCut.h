@@ -13,11 +13,11 @@
 #include <TObjString.h>
 #include <TList.h>
 
-class AliFemtoBaseAnalysis;
+class AliFemtoAnalysis;
 
 class AliFemtoParticleCut : public AliFemtoCutMonitorHandler {
 
-  friend class AliFemtoBaseAnalysis;
+  friend class AliFemtoAnalysis;
 
 public:
   AliFemtoParticleCut();   // default constructor. - Users should write their own
@@ -38,11 +38,11 @@ public:
   virtual AliFemtoParticleType Type()=0;
 
   // the following allows "back-pointing" from the CorrFctn to the "parent" Analysis
-  AliFemtoBaseAnalysis* HbtAnalysis(){return fyAnalysis;};
-  void SetAnalysis(AliFemtoBaseAnalysis*);
+  AliFemtoAnalysis* HbtAnalysis(){return fyAnalysis;};
+  void SetAnalysis(AliFemtoAnalysis*);
 
 protected:
-  AliFemtoBaseAnalysis* fyAnalysis; // Link to the base analysis class
+  AliFemtoAnalysis* fyAnalysis; // Link to the base analysis class
   double fMass;
 
 #ifdef __ROOT__
@@ -57,7 +57,7 @@ inline AliFemtoParticleCut::AliFemtoParticleCut(const AliFemtoParticleCut& c): A
   cout << " AliFemtoParticleCut::AliFemtoParticleCut(const AliFemtoParticleCut& c) - fMass: " << fMass << endl;
 #endif
 }
-inline void AliFemtoParticleCut::SetAnalysis(AliFemtoBaseAnalysis* analysis) { fyAnalysis = analysis; }
+inline void AliFemtoParticleCut::SetAnalysis(AliFemtoAnalysis* analysis) { fyAnalysis = analysis; }
 inline AliFemtoParticleCut& AliFemtoParticleCut::operator=(const AliFemtoParticleCut& aCut) { if (this == &aCut) return *this; fyAnalysis = aCut.fyAnalysis; fMass=aCut.fMass; return *this; }
   inline TList *AliFemtoParticleCut::ListSettings() { 
     TList *tListSetttings = new TList(); 

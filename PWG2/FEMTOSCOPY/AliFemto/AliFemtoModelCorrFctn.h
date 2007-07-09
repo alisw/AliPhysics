@@ -36,8 +36,8 @@ public:
 
   virtual AliFemtoModelCorrFctn* Clone();
 
-  AliFemtoBaseAnalysis* HbtAnalysis(){return fyAnalysis;};
-  void SetAnalysis(AliFemtoBaseAnalysis* aAnalysis);
+  AliFemtoAnalysis* HbtAnalysis(){return fyAnalysis;};
+  void SetAnalysis(AliFemtoAnalysis* aAnalysis);
 
 protected:
   AliFemtoModelManager *fManager; // Link back to the managet to get the weights

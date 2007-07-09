@@ -6,10 +6,10 @@
 #ifndef AliFemtoVertexMultAnalysis_hh
 #define AliFemtoVertexMultAnalysis_hh
 
-#include "AliFemtoAnalysis.h"        // base analysis class
+#include "AliFemtoSimpleAnalysis.h"        // base analysis class
 #include <limits.h>
 
-class AliFemtoVertexMultAnalysis : public AliFemtoAnalysis {
+class AliFemtoVertexMultAnalysis : public AliFemtoSimpleAnalysis {
 
 public:
 

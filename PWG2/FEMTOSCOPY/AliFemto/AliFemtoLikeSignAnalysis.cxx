@@ -15,7 +15,7 @@ ClassImp(AliFemtoLikeSignAnalysis)
 #endif
 
 // this little function used to apply ParticleCuts (TrackCuts or V0Cuts) and fill ParticleCollections of picoEvent
-//  it is called from AliFemtoAnalysis::ProcessEvent()
+//  it is called from AliFemtoSimpleAnalysis::ProcessEvent()
 
 
 extern void FillHbtParticleCollection(AliFemtoParticleCut*         partCut,
@@ -25,7 +25,7 @@ extern void FillHbtParticleCollection(AliFemtoParticleCut*         partCut,
  
 //____________________________
 AliFemtoLikeSignAnalysis::AliFemtoLikeSignAnalysis(unsigned int bins, double min, double max) : 
-  AliFemtoAnalysis(),
+  AliFemtoSimpleAnalysis(),
   fVertexBins(0),
   fOverFlow(0),  
   fUnderFlow(0)  
@@ -42,7 +42,7 @@ AliFemtoLikeSignAnalysis::AliFemtoLikeSignAnalysis(unsigned int bins, double min
 }
 //____________________________
 AliFemtoLikeSignAnalysis::AliFemtoLikeSignAnalysis(const AliFemtoLikeSignAnalysis& a) : 
-  AliFemtoAnalysis(a) ,
+  AliFemtoSimpleAnalysis(a) ,
   fVertexBins(0),
   fOverFlow(0),  
   fUnderFlow(0)  
@@ -74,10 +74,10 @@ AliFemtoString AliFemtoLikeSignAnalysis::Report()
   temp += tCtemp;
   sprintf(tCtemp,"Events overflowing: %d\n",fOverFlow);
   temp += tCtemp;
-  sprintf(tCtemp,"Now adding AliFemtoAnalysis(base) Report\n");
+  sprintf(tCtemp,"Now adding AliFemtoSimpleAnalysis(base) Report\n");
   temp += tCtemp; 
-  temp += "Adding AliFemtoAnalysis(base) Report now:\n";
-  temp += AliFemtoAnalysis::Report();
+  temp += "Adding AliFemtoSimpleAnalysis(base) Report now:\n";
+  temp += AliFemtoSimpleAnalysis::Report();
   temp += "-------------\n";
   AliFemtoString returnThis=temp;
   return returnThis;

@@ -90,10 +90,11 @@ bool AliFemtoBasicTrackCut::Pass(const AliFemtoTrack* track){
        (tPt             > fPt[0]) &&
        (tPt             < fPt[1]) &&
        (tRapidity      > fRapidity[0]) &&
-       (tRapidity      < fRapidity[1]))&&
-       (track->PidProbPion()>0.5)&&//moje
-       (track->PidProbMuon()<0.47)&&//moje
-       (track->Label()>0);//moje
+       (tRapidity      < fRapidity[1]));
+    //  &&
+    //       (track->PidProbPion()>0.5)&&//moje
+    //       (track->PidProbMuon()<0.47)&&//moje
+    //       (track->Label()>0);//moje
 
     //    cout << track->DCAxy() << " " << track->NHits() << " " << Pt << " " << tRapidity << " " << tEnergy << endl;
 

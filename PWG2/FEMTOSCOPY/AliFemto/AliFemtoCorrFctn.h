@@ -5,13 +5,13 @@
 #ifndef AliFemtoCorrFctn_hh
 #define AliFemtoCorrFctn_hh
 
-#include "AliFemtoBaseAnalysis.h"
+#include "AliFemtoAnalysis.h"
 #include "AliFemtoEvent.h"
 #include "AliFemtoPair.h"
 
 class AliFemtoCorrFctn{
 
-  friend class AliFemtoBaseAnalysis;
+  friend class AliFemtoAnalysis;
 
 public:
   AliFemtoCorrFctn();
@@ -30,11 +30,11 @@ public:
 
   virtual AliFemtoCorrFctn* Clone() { return 0;}
 
-  AliFemtoBaseAnalysis* HbtAnalysis(){return fyAnalysis;};
-  void SetAnalysis(AliFemtoBaseAnalysis* aAnalysis);
+  AliFemtoAnalysis* HbtAnalysis(){return fyAnalysis;};
+  void SetAnalysis(AliFemtoAnalysis* aAnalysis);
 
 protected:
-  AliFemtoBaseAnalysis* fyAnalysis;
+  AliFemtoAnalysis* fyAnalysis;
 
 private:
 
@@ -45,7 +45,7 @@ inline void AliFemtoCorrFctn::AddMixedPair(AliFemtoPair*) { cout << "Not impleme
 
 inline AliFemtoCorrFctn::AliFemtoCorrFctn(const AliFemtoCorrFctn& c):fyAnalysis(0) {}
 inline AliFemtoCorrFctn::AliFemtoCorrFctn(): fyAnalysis(0) {/* no-op */};
-inline void AliFemtoCorrFctn::SetAnalysis(AliFemtoBaseAnalysis* analysis) { fyAnalysis = analysis; }
+inline void AliFemtoCorrFctn::SetAnalysis(AliFemtoAnalysis* analysis) { fyAnalysis = analysis; }
 inline AliFemtoCorrFctn& AliFemtoCorrFctn::operator=(const AliFemtoCorrFctn& aCorrFctn) { if (this == &aCorrFctn) return *this; fyAnalysis = aCorrFctn.fyAnalysis; return *this; }
 
 #endif
