@@ -38,7 +38,7 @@ AliFemtoManager::AliFemtoManager(const AliFemtoManager& aManager) :
 {
   // copy constructor
   fEventReader = aManager.fEventReader;
-  AliFemtoAnalysisIterator tAnalysisIter;
+  AliFemtoSimpleAnalysisIterator tAnalysisIter;
   fAnalysisCollection = new AliFemtoAnalysisCollection;
   for (tAnalysisIter=aManager.fAnalysisCollection->begin();tAnalysisIter!=aManager.fAnalysisCollection->end();tAnalysisIter++){
     fAnalysisCollection->push_back(*tAnalysisIter);
@@ -55,7 +55,7 @@ AliFemtoManager::~AliFemtoManager(){
   // destructor
   delete fEventReader;
   // now delete each Analysis in the Collection, and then the Collection itself
-  AliFemtoAnalysisIterator tAnalysisIter;
+  AliFemtoSimpleAnalysisIterator tAnalysisIter;
   for (tAnalysisIter=fAnalysisCollection->begin();tAnalysisIter!=fAnalysisCollection->end();tAnalysisIter++){
     delete *tAnalysisIter;
     *tAnalysisIter = 0;
@@ -77,7 +77,7 @@ AliFemtoManager& AliFemtoManager::operator=(const AliFemtoManager& aManager)
     return *this;
 
   fEventReader = aManager.fEventReader;
-  AliFemtoAnalysisIterator tAnalysisIter;
+  AliFemtoSimpleAnalysisIterator tAnalysisIter;
   if (fAnalysisCollection) {
     for (tAnalysisIter=fAnalysisCollection->begin();tAnalysisIter!=fAnalysisCollection->end();tAnalysisIter++){
       delete *tAnalysisIter;
@@ -153,8 +153,8 @@ void AliFemtoManager::Finish(){
     currentEventWriter->Finish();
   }
   // Analyses
-  AliFemtoAnalysisIterator tAnalysisIter;
-  AliFemtoBaseAnalysis* currentAnalysis;
+  AliFemtoSimpleAnalysisIterator tAnalysisIter;
+  AliFemtoAnalysis* currentAnalysis;
   for (tAnalysisIter=fAnalysisCollection->begin();tAnalysisIter!=fAnalysisCollection->end();tAnalysisIter++){
     currentAnalysis = *tAnalysisIter;
     currentAnalysis->Finish();
@@ -180,8 +180,8 @@ AliFemtoString AliFemtoManager::Report(){
   // Analyses
   sprintf(ctemp,"\nAliFemtoManager Reporting %u Analyses\n",(unsigned int) fAnalysisCollection->size());
   stemp += ctemp;
-  AliFemtoAnalysisIterator tAnalysisIter;
-  AliFemtoBaseAnalysis* currentAnalysis;
+  AliFemtoSimpleAnalysisIterator tAnalysisIter;
+  AliFemtoAnalysis* currentAnalysis;
   for (tAnalysisIter=fAnalysisCollection->begin();tAnalysisIter!=fAnalysisCollection->end();tAnalysisIter++){
     cout << "AliFemtoManager - asking for Analysis Report" << endl;
     currentAnalysis = *tAnalysisIter;
@@ -192,11 +192,11 @@ AliFemtoString AliFemtoManager::Report(){
   return returnThis;
 }
 //____________________________
-AliFemtoBaseAnalysis* AliFemtoManager::Analysis( int n ){  // return pointer to n-th analysis
+AliFemtoAnalysis* AliFemtoManager::Analysis( int n ){  // return pointer to n-th analysis
   // return analysis number n
   if ( n<0 || n > (int) fAnalysisCollection->size() )
     return NULL;
-  AliFemtoAnalysisIterator iter = fAnalysisCollection->begin();
+  AliFemtoSimpleAnalysisIterator iter = fAnalysisCollection->begin();
   for (int i=0; i<n ;i++){
     iter++;
   }
@@ -241,7 +241,7 @@ int AliFemtoManager::ProcessEvent(){
   } 
 
   // loop over all the Analysis
-  AliFemtoAnalysisIterator tAnalysisIter;
+  AliFemtoSimpleAnalysisIterator tAnalysisIter;
   for (tAnalysisIter=fAnalysisCollection->begin();tAnalysisIter!=fAnalysisCollection->end();tAnalysisIter++){
     (*tAnalysisIter)->ProcessEvent(currentHbtEvent);
   } 

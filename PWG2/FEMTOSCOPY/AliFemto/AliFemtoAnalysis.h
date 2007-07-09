@@ -1,123 +1,31 @@
-/**************************************************************************
- AliFemtoAnalysis - the most basic analysis there is.
- Most others (e.g. AliFemtoVertexAnalysis) wrap this one.
-**************************************************************************/
+////////////////////////////////////////////////////////////////////////////////
+/// AliFemtoAnalysis - the pure virtual base class for femto analysis    ///
+/// All analysis classes must inherit from this one                          ///
+////////////////////////////////////////////////////////////////////////////////
+#ifndef AliFemtoAnalysis_hh
+#define AliFemtoAnalysis_hh
 
-#ifndef ALIFEMTOANALYSIS_H
-#define ALIFEMTOANALYSIS_H
-//#ifndef StMaker_H
-//#include "StMaker.h"
-//#endif
+#include "AliFemtoTypes.h"
+#include <TList.h>
+#include <TObjString.h>
 
-#include "AliFemtoBaseAnalysis.h"        // base analysis class
-#include "AliFemtoPairCut.h"     
-#include "AliFemtoEventCut.h"
-#include "AliFemtoParticleCut.h"
-#include "AliFemtoCorrFctn.h"
-#include "AliFemtoCorrFctnCollection.h"
-#include "AliFemtoPicoEventCollection.h"
-#include "AliFemtoParticleCollection.h"
-#include "AliFemtoPicoEvent.h"
+class AliFemtoEvent;
 
-class AliFemtoPicoEventCollectionVectorHideAway;
+class AliFemtoAnalysis{
 
-class AliFemtoAnalysis : public AliFemtoBaseAnalysis {
+public:
 
-  // friend class AliFemtoLikeSignAnalysis;
+  AliFemtoAnalysis() { /* noop */ };
+  virtual ~AliFemtoAnalysis() { /* noop */ };
 
- public:
-  AliFemtoAnalysis();
-  AliFemtoAnalysis(const AliFemtoAnalysis& OriginalAnalysis);  // copy constructor
-  virtual ~AliFemtoAnalysis();
+  
+  virtual AliFemtoString Report() = 0;       //! returns reports of all cuts applied and correlation functions being done
+  virtual TList* ListSettings() = 0;         // return list of cut settings for the analysis
 
-  AliFemtoAnalysis& operator=(const AliFemtoAnalysis& aAna);
+  virtual void ProcessEvent(const AliFemtoEvent* aEventToAnalyze) = 0;
 
-  // Gets and Sets
+  virtual void Finish() = 0;
 
-  virtual AliFemtoPairCut*       PairCut();
-  virtual AliFemtoEventCut*      EventCut();
-  virtual AliFemtoParticleCut*   FirstParticleCut();
-  virtual AliFemtoParticleCut*   SecondParticleCut();
-
-  AliFemtoCorrFctnCollection* CorrFctnCollection();
-  virtual AliFemtoCorrFctn* CorrFctn(int n);     // Access to CFs within the collection
-  void AddCorrFctn(AliFemtoCorrFctn* AnotherCorrFctn);
-
-  void SetPairCut(AliFemtoPairCut* ThePairCut);
-  void SetEventCut(AliFemtoEventCut* TheEventCut);
-  void SetFirstParticleCut(AliFemtoParticleCut* TheFirstParticleCut);
-  void SetSecondParticleCut(AliFemtoParticleCut* TheSecondParticleCut);
-
-  void SetMinSizePartCollection(unsigned int minSize);
-
-  unsigned int NumEventsToMix() const;
-  void SetNumEventsToMix(const unsigned int& NumberOfEventsToMix);
-  AliFemtoPicoEvent* CurrentPicoEvent();
-  AliFemtoPicoEventCollection* MixingBuffer();
-  bool MixingBufferFull();
-
-  bool AnalyzeIdenticalParticles() const;
-  virtual AliFemtoString Report();       //! returns reports of all cuts applied and correlation functions being done
-  virtual TList* ListSettings();         // return list of cut settings for the analysis
-
-  virtual void EventBegin(const AliFemtoEvent* TheEventToBegin); // startup for EbyE
-  virtual void ProcessEvent(const AliFemtoEvent* EventToProcess);
-  virtual void EventEnd(const AliFemtoEvent* TheEventToWrapUp);   // cleanup for EbyE
-  int GetNeventsProcessed() const;
-
-  virtual void Finish();
-
- protected:
-
-  void AddEventProcessed();
-  void MakePairs(const char* type, 
-		 AliFemtoParticleCollection* ParticlesPassingCut1,
-		 AliFemtoParticleCollection* ParticlesPssingCut2=0);
-
-  AliFemtoPicoEventCollectionVectorHideAway* fPicoEventCollectionVectorHideAway;  /* Mixing Buffer used for Analyses which wrap this one */
-
-  AliFemtoPairCut*             fPairCut;             /* cut applied to pairs */
-  AliFemtoCorrFctnCollection*  fCorrFctnCollection;  /* correlation functions of this analysis */
-  AliFemtoEventCut*            fEventCut;            /* cut to select events */
-  AliFemtoParticleCut*         fFirstParticleCut;    /* select particles of type #1 */
-  AliFemtoParticleCut*         fSecondParticleCut;   /* select particles of type #2 */
-  AliFemtoPicoEventCollection* fMixingBuffer;        /* mixing buffer used in this simplest analysis */
-  AliFemtoPicoEvent*           fPicoEvent;           /* The current event, in the small (pico) form */
-  unsigned int fNumEventsToMix;                      /* How many "previous" events get mixed with this one, to make background */
-  unsigned int fNeventsProcessed;                    /* How many events processed so far */
-
-  unsigned int fMinSizePartCollection;               /* Don't use event if it has fewer than this many particles passing ParticleCuts default 0*/
-
-#ifdef __ROOT__
-  ClassDef(AliFemtoAnalysis, 0)
-#endif
-
-    };
-
-// Get's
-inline AliFemtoPairCut*              AliFemtoAnalysis::PairCut() {return fPairCut;}
-inline AliFemtoEventCut*             AliFemtoAnalysis::EventCut() {return fEventCut;}
-inline AliFemtoParticleCut*          AliFemtoAnalysis::FirstParticleCut() {return fFirstParticleCut;}
-inline AliFemtoParticleCut*          AliFemtoAnalysis::SecondParticleCut() {return fSecondParticleCut;}
-inline AliFemtoCorrFctnCollection*   AliFemtoAnalysis::CorrFctnCollection() {return fCorrFctnCollection;}
-inline unsigned int                  AliFemtoAnalysis::NumEventsToMix() const {return fNumEventsToMix;}
-inline AliFemtoPicoEvent*            AliFemtoAnalysis::CurrentPicoEvent() {return fPicoEvent;}
-
-inline AliFemtoPicoEventCollection*  AliFemtoAnalysis::MixingBuffer() {return fMixingBuffer;}
-
-inline bool AliFemtoAnalysis::AnalyzeIdenticalParticles() const { return (fFirstParticleCut==fSecondParticleCut); }
-
-// Set's
-inline void AliFemtoAnalysis::SetPairCut(AliFemtoPairCut* x) { fPairCut = x; x->SetAnalysis((AliFemtoBaseAnalysis*)this);}
-inline void AliFemtoAnalysis::AddCorrFctn(AliFemtoCorrFctn* cf) {fCorrFctnCollection->push_back(cf); cf->SetAnalysis((AliFemtoBaseAnalysis*)this);}
-inline void AliFemtoAnalysis::SetEventCut(AliFemtoEventCut* x) {fEventCut = x; x->SetAnalysis((AliFemtoBaseAnalysis*)this);}
-inline void AliFemtoAnalysis::SetFirstParticleCut(AliFemtoParticleCut* x) {fFirstParticleCut = x; x->SetAnalysis((AliFemtoBaseAnalysis*)this);}
-inline void AliFemtoAnalysis::SetSecondParticleCut(AliFemtoParticleCut* x) {fSecondParticleCut = x; x->SetAnalysis((AliFemtoBaseAnalysis*)this);}
-
-inline void AliFemtoAnalysis::SetNumEventsToMix(const unsigned int& nmix){ fNumEventsToMix = nmix;}
-inline bool AliFemtoAnalysis::MixingBufferFull(){return (fMixingBuffer->size() >= fNumEventsToMix);}
-inline int AliFemtoAnalysis::GetNeventsProcessed() const {return fNeventsProcessed;}
-
-inline void AliFemtoAnalysis::SetMinSizePartCollection(unsigned int minSize){fMinSizePartCollection = minSize;}
+};
 
 #endif

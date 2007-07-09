@@ -15,7 +15,7 @@
 #include "AliFemtoAnalysisCollection.h"
 #include "AliFemtoEventWriterCollection.h"
 #include "AliFemtoEvent.h"
-#include "AliFemtoBaseAnalysis.h"
+#include "AliFemtoAnalysis.h"
 #include "AliFemtoEventReader.h"
 #include "AliFemtoEventWriter.h"
 
@@ -35,8 +35,8 @@ public:
 
   // Gets and Sets...
   AliFemtoAnalysisCollection* AnalysisCollection();
-  AliFemtoBaseAnalysis* Analysis(int n);  // Access to Analysis within Collection
-  void AddAnalysis(AliFemtoBaseAnalysis* a);
+  AliFemtoAnalysis* Analysis(int n);  // Access to Analysis within Collection
+  void AddAnalysis(AliFemtoAnalysis* a);
 
   AliFemtoEventWriterCollection* EventWriterCollection();
   AliFemtoEventWriter* EventWriter(int n);// Access to EventWriter within Collection
@@ -58,7 +58,7 @@ public:
 };
 
 inline AliFemtoAnalysisCollection* AliFemtoManager::AnalysisCollection(){return fAnalysisCollection;}
-inline void AliFemtoManager::AddAnalysis(AliFemtoBaseAnalysis* anal){fAnalysisCollection->push_back(anal);}
+inline void AliFemtoManager::AddAnalysis(AliFemtoAnalysis* anal){fAnalysisCollection->push_back(anal);}
 
 inline AliFemtoEventWriterCollection* AliFemtoManager::EventWriterCollection(){return fEventWriterCollection;}
 inline void AliFemtoManager::AddEventWriter(AliFemtoEventWriter* writer){fEventWriterCollection->push_back(writer);}

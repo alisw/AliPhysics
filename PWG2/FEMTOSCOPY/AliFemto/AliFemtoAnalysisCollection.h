@@ -12,6 +12,9 @@
  ***************************************************************************
  *
  * $Log$
+ * Revision 1.1  2007/05/16 10:22:11  akisiel
+ * Making the directory structure of AliFemto flat. All files go into one common directory
+ *
  * Revision 1.1.1.1  2007/04/25 15:38:41  panos
  * Importing the HBT code dir
  *
@@ -38,14 +41,14 @@
 #if !defined(ST_NO_NAMESPACES)
 using std::list;
 #endif
-class AliFemtoBaseAnalysis;
+class AliFemtoAnalysis;
 
 #ifdef ST_NO_TEMPLATE_DEF_ARGS
-typedef list<AliFemtoBaseAnalysis*, allocator<AliFemtoBaseAnalysis*> >            AliFemtoAnalysisCollection;
-typedef list<AliFemtoBaseAnalysis*, allocator<AliFemtoBaseAnalysis*> >::iterator  AliFemtoAnalysisIterator;
+typedef list<AliFemtoAnalysis*, allocator<AliFemtoAnalysis*> >            AliFemtoAnalysisCollection;
+typedef list<AliFemtoAnalysis*, allocator<AliFemtoAnalysis*> >::iterator  AliFemtoSimpleAnalysisIterator;
 #else
-typedef list<AliFemtoBaseAnalysis*>            AliFemtoAnalysisCollection;
-typedef list<AliFemtoBaseAnalysis*>::iterator  AliFemtoAnalysisIterator;
+typedef list<AliFemtoAnalysis*>            AliFemtoAnalysisCollection;
+typedef list<AliFemtoAnalysis*>::iterator  AliFemtoSimpleAnalysisIterator;
 #endif
 
 #endif

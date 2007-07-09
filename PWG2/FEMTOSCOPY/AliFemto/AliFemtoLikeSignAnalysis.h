@@ -10,20 +10,20 @@
 //#include "StMaker.h"
 //#endif
 
-#include "AliFemtoBaseAnalysis.h"        // base analysis class
+#include "AliFemtoAnalysis.h"        // base analysis class
 #include "AliFemtoTypes.h"
 //#include "AliFemtoEventCut.h"             // base class 
 //#include "AliFemtoParticleCut.h"          // base class
 //#include "AliFemtoPairCut.h"              // base class
 #include "AliFemtoLikeSignCorrFctn.h"    // base class
-#include "AliFemtoAnalysis.h"
+#include "AliFemtoSimpleAnalysis.h"
 #include "AliFemtoCorrFctnCollection.h"
 
 class AliFemtoEventCut;
 class AliFemtoParticleCut;
 class AliFemtoPairCut;
 
-class AliFemtoLikeSignAnalysis : public AliFemtoAnalysis {
+class AliFemtoLikeSignAnalysis : public AliFemtoSimpleAnalysis {
 
 public: 
 

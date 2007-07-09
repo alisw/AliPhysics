@@ -1,4 +1,4 @@
-SRCS= FEMTOSCOPY/AliFemto/AliFemtoAnalysis.cxx \
+SRCS= FEMTOSCOPY/AliFemto/AliFemtoSimpleAnalysis.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoLikeSignAnalysis.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoVertexAnalysis.cxx \
       FEMTOSCOPY/AliFemto/AliFemtoVertexMultAnalysis.cxx \

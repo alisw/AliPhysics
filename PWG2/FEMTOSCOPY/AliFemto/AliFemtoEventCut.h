@@ -6,14 +6,14 @@
 #define AliFemtoEventCut_hh
 
 class AliFemtoEvent;
-class AliFemtoBaseAnalysis;
+class AliFemtoAnalysis;
 
 #include "AliFemtoCutMonitorHandler.h"
 #include "AliFemtoString.h"
 
 class AliFemtoEventCut : public AliFemtoCutMonitorHandler {
 
-  friend class AliFemtoBaseAnalysis;
+  friend class AliFemtoAnalysis;
 
 public:
 
@@ -28,11 +28,11 @@ public:
   virtual AliFemtoEventCut* Clone() { return 0;}
 
 
-  AliFemtoBaseAnalysis* HbtAnalysis(){return fyAnalysis;};
-  void SetAnalysis(AliFemtoBaseAnalysis* aAnalysis);
+  AliFemtoAnalysis* HbtAnalysis(){return fyAnalysis;};
+  void SetAnalysis(AliFemtoAnalysis* aAnalysis);
 
 protected:
-  AliFemtoBaseAnalysis* fyAnalysis;
+  AliFemtoAnalysis* fyAnalysis;
 
 #ifdef __ROOT__
   ClassDef(AliFemtoEventCut, 0)
@@ -40,7 +40,7 @@ protected:
 };
 
 inline AliFemtoEventCut::AliFemtoEventCut(const AliFemtoEventCut& c) : AliFemtoCutMonitorHandler(), fyAnalysis(0) { }
-inline void AliFemtoEventCut::SetAnalysis(AliFemtoBaseAnalysis* analysis) { fyAnalysis = analysis; }
+inline void AliFemtoEventCut::SetAnalysis(AliFemtoAnalysis* analysis) { fyAnalysis = analysis; }
 inline AliFemtoEventCut::AliFemtoEventCut(): AliFemtoCutMonitorHandler(), fyAnalysis(0){};                // default constructor. - Users should write their own
 inline AliFemtoEventCut& AliFemtoEventCut::operator=(const AliFemtoEventCut& aCut) { if (this == &aCut) return *this; fyAnalysis = aCut.fyAnalysis; return *this; }
 #endif

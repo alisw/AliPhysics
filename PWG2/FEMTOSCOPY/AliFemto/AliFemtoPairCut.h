@@ -8,7 +8,7 @@
 
 #include <string>
 
-class AliFemtoBaseAnalysis;
+class AliFemtoAnalysis;
 
 #include "AliFemtoString.h"
 #include "AliFemtoEvent.h"
@@ -19,7 +19,7 @@ class AliFemtoBaseAnalysis;
 
 class AliFemtoPairCut : public AliFemtoCutMonitorHandler {
 
-  friend class AliFemtoBaseAnalysis;
+  friend class AliFemtoAnalysis;
 
 public:
 
@@ -37,11 +37,11 @@ public:
   virtual AliFemtoPairCut* Clone() { return 0;}
 
   // the following allows "back-pointing" from the CorrFctn to the "parent" Analysis
-  AliFemtoBaseAnalysis* HbtAnalysis(){return fyAnalysis;};
-  void SetAnalysis(AliFemtoBaseAnalysis* aAnalysis);    // Set Back pointer to Analysis
+  AliFemtoAnalysis* HbtAnalysis(){return fyAnalysis;};
+  void SetAnalysis(AliFemtoAnalysis* aAnalysis);    // Set Back pointer to Analysis
 
 protected:
-  AliFemtoBaseAnalysis* fyAnalysis; // Link to the base analysis class
+  AliFemtoAnalysis* fyAnalysis; // Link to the base analysis class
 
 #ifdef __ROOT__
   ClassDef(AliFemtoPairCut, 0)
@@ -50,7 +50,7 @@ protected:
 
 
 inline AliFemtoPairCut::AliFemtoPairCut(const AliFemtoPairCut& c) :  AliFemtoCutMonitorHandler(), fyAnalysis(0) {  }
-inline void AliFemtoPairCut::SetAnalysis(AliFemtoBaseAnalysis* analysis) { fyAnalysis = analysis; }
+inline void AliFemtoPairCut::SetAnalysis(AliFemtoAnalysis* analysis) { fyAnalysis = analysis; }
 inline AliFemtoPairCut::AliFemtoPairCut(): AliFemtoCutMonitorHandler(), fyAnalysis(0) {};   // default constructor. - Users should write their own
 inline AliFemtoPairCut& AliFemtoPairCut::operator=(const AliFemtoPairCut &aCut) { if (this == &aCut) return *this; fyAnalysis = aCut.fyAnalysis; return *this; }
 

@@ -6,7 +6,7 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class AliFemtoBaseAnalysis;
+//#pragma link C++ class AliFemtoAnalysis;
 #pragma link C++ class AliFemtoEventCut;
 #pragma link C++ class AliFemtoEventReader;
 #pragma link C++ class AliFemtoKinkCut;
@@ -15,7 +15,7 @@
 #pragma link C++ class AliFemtoTrackCut;
 #pragma link C++ class AliFemtoV0Cut;
 #pragma link C++ class AliFemtoXiCut;
-#pragma link C++ class AliFemtoAnalysis;
+#pragma link C++ class AliFemtoSimpleAnalysis;
 #pragma link C++ class AliFemtoCutMonitorHandler;
 #pragma link C++ class AliFemtoLikeSignAnalysis;
 #pragma link C++ class AliFemtoManager;

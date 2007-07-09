@@ -13,6 +13,9 @@
  ***************************************************************************
  *
  * $Log$
+ * Revision 1.1  2007/05/16 10:22:12  akisiel
+ * Making the directory structure of AliFemto flat. All files go into one common directory
+ *
  * Revision 1.2  2007/05/03 09:39:37  akisiel
  * Fixing Effective C++ warnings
  *
@@ -26,7 +29,7 @@
  * Added in AliFemtoKink stuff
  *
  * Revision 1.4  2000/08/31 22:31:32  laue
- * AliFemtoAnalysis: output changed (a little bit less)
+ * AliFemtoSimpleAnalysis: output changed (a little bit less)
  * AliFemtoEvent: new version, members for reference mult added
  * AliFemtoIOBinary: new IO for new AliFemtoEvent version
  * AliFemtoTypes: TTree typedef to AliFemtoTTree added
@@ -80,7 +83,7 @@ AliFemtoVertexAnalysis::AliFemtoVertexAnalysis(unsigned int bins, double min, do
 //____________________________
 
 AliFemtoVertexAnalysis::AliFemtoVertexAnalysis(const AliFemtoVertexAnalysis& a) : 
-  AliFemtoAnalysis(),
+  AliFemtoSimpleAnalysis(),
   fVertexBins(0),
   fOverFlow(0),  
   fUnderFlow(0)
@@ -159,9 +162,9 @@ AliFemtoString AliFemtoVertexAnalysis::Report()
   temp += Ctemp;
   sprintf(Ctemp,"Events overflowing: %d\n",fOverFlow);
   temp += Ctemp;
-  sprintf(Ctemp,"Now adding AliFemtoAnalysis(base) Report\n");
+  sprintf(Ctemp,"Now adding AliFemtoSimpleAnalysis(base) Report\n");
   temp += Ctemp;
-  temp += AliFemtoAnalysis::Report();
+  temp += AliFemtoSimpleAnalysis::Report();
   AliFemtoString returnThis=temp;
   return returnThis;
 }
@@ -176,6 +179,6 @@ void AliFemtoVertexAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
     if ( vertexZ > fVertexZ[1] ) fOverFlow++;
     return;
   }
-  // call ProcessEvent() from AliFemtoAnalysis-base
-  AliFemtoAnalysis::ProcessEvent(hbtEvent);
+  // call ProcessEvent() from AliFemtoSimpleAnalysis-base
+  AliFemtoSimpleAnalysis::ProcessEvent(hbtEvent);
 }
