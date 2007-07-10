@@ -7,7 +7,9 @@
 #include "Rtypes.h"
 #include "AliHLTFileWriter.h"
 #include <vector>
+#include "AliHLTPHOSConstants.h"
 
+using namespace PhosHLTConst;
 
 class AliRawReaderMemory;
 class AliCaloRawStream;
@@ -26,7 +28,7 @@ class AliHLTPHOSFileWriterComponent:public AliHLTFileWriter
   virtual int Deinit();
   virtual int DoDeinit();
   virtual const char* GetComponentID();
-  virtual void GetInputDataTypes( vector <AliHLTComponentDataType>&);
+  virtual void GetInputDataTypes( std::vector <AliHLTComponentDataType>&);
   virtual AliHLTComponentDataType GetOutputDataType();
   virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
   virtual AliHLTComponent* Spawn();
