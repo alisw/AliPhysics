@@ -47,14 +47,19 @@ AliPMDCalibData::AliPMDCalibData(const AliPMDCalibData& calibda) :
   SetName(calibda.GetName());
   SetTitle(calibda.GetName());
   Reset();
-  for(Int_t det=0;det<2;det++){
-    for(Int_t smn=0;smn<24;smn++) {
-      for(Int_t row=0;row<96;row++) {
-	for(Int_t col=0;col<96;col++) {
-	  fGainFact[det][smn][row][col]=calibda.GetGainFact(det,smn,row,col);
-	}
+  for(Int_t det = 0; det < kDet; det++)
+  {
+      for(Int_t smn = 0; smn < kModule; smn++)
+      {
+	  for(Int_t row = 0; row < kRow; row++)
+	  {
+	      for(Int_t col = 0; col < kCol; col++)
+	      {
+		  fGainFact[det][smn][row][col] = 
+		      calibda.GetGainFact(det,smn,row,col);
+	      }
+	  }
       }
-    }
   }
 }
 // ----------------------------------------------------------------- //
@@ -64,14 +69,19 @@ AliPMDCalibData &AliPMDCalibData::operator =(const AliPMDCalibData& calibda)
   SetName(calibda.GetName());
   SetTitle(calibda.GetName());
   Reset();
-  for(Int_t det=0;det<2;det++){
-    for(Int_t smn=0;smn<24;smn++) {
-      for(Int_t row=0;row<96;row++) {
-	for(Int_t col=0;col<96;col++) {
-	  fGainFact[det][smn][row][col]=calibda.GetGainFact(det,smn,row,col);
-	}
+  for(Int_t det = 0; det < kDet; det++)
+  {
+      for(Int_t smn = 0; smn < kModule; smn++)
+      {
+	  for(Int_t row = 0; row < kRow; row++)
+	  {
+	      for(Int_t col = 0; col < kCol; col++)
+	      {
+		  fGainFact[det][smn][row][col] = 
+		      calibda.GetGainFact(det,smn,row,col);
+	      }
+	  }
       }
-    }
   }
   return *this;
 }
@@ -83,15 +93,20 @@ AliPMDCalibData::~AliPMDCalibData()
 // ----------------------------------------------------------------- //
 void AliPMDCalibData::Reset()
 {
-  //memset(fgainfact ,1,2*24*96*96*sizeof(Float_t));
-  for(Int_t det=0;det<2;det++){
-    for(Int_t smn=0;smn<24;smn++) {
-      for(Int_t row=0;row<96;row++) {
-	for(Int_t col=0;col<96;col++) {
-	  fGainFact[det][smn][row][col]=1.0;
-	}
+  //memset(fgainfact ,1,2*24*48*96*sizeof(Float_t));
+
+  for(Int_t det = 0; det < kDet; det++)
+  {
+      for(Int_t smn = 0; smn < kModule; smn++)
+      {
+	  for(Int_t row = 0; row < kRow; row++)
+	  {
+	      for(Int_t col = 0; col < kCol; col++)
+	      {
+		  fGainFact[det][smn][row][col] = 1.0;
+	      }
+	  }
       }
-    }
   }
 }
 // ----------------------------------------------------------------- //
@@ -109,15 +124,16 @@ void AliPMDCalibData::SetGainFact(Int_t det, Int_t smn, Int_t row, Int_t col, Fl
 void AliPMDCalibData::Print(Option_t *) const
 {
   printf("\n ######gain factors for each cells are ####\n");
-  for(Int_t det=0;det<2;det++)
+  for(Int_t det = 0; det < kDet; det++)
     {
-      for(Int_t smn=0;smn<24;smn++)
+      for(Int_t smn = 0; smn < kModule; smn++)
 	{
-	  for(Int_t row=0;row<96;row++)
+	  for(Int_t row = 0; row < kRow; row++)
 	    {
-	      for(Int_t col=0;col<96; col++)
+	      for(Int_t col = 0; col < kCol; col++)
 		{
-		  printf("%4.1f",fGainFact[det][smn][row][col]);
+		  printf("Gain[%d,%d,%d,%d]= %4.1f \n",det,smn,row,col,
+			 fGainFact[det][smn][row][col]);
 		}
 	      printf("\n");
 	    }

@@ -19,4 +19,5 @@
 #pragma link C++ class  AliPMDCalibrator+;
 #pragma link C++ class  AliPMDPreprocessor+;
 #pragma link C++ class  AliPMDRawToSDigits+;
+#pragma link C++ class  AliPMDPedestal+;
 #endif

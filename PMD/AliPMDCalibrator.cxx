@@ -42,26 +42,26 @@
 
 ClassImp(AliPMDCalibrator)
 
-const Int_t kDet =2;
-const Int_t kMaxSMN = 24;
-const Int_t kMaxRow =96;
-const Int_t kMaxCol =96;
+//const Int_t kDet    = 2;
+//const Int_t kMaxSMN = 24;
+//const Int_t kMaxRow = 48;
+//const Int_t kMaxCol = 96;
 
 AliPMDCalibrator::AliPMDCalibrator():
-  fCalibData(new AliPMDCalibData())
+  fCalibGain(new AliPMDCalibData())
 {
   // Standard Constructor
-  for(Int_t d=0;d<2;d++)
+  for(Int_t idet = 0; idet < kDet; idet++)
     {
-      for(Int_t i=0;i<24;i++)
+      for(Int_t ismn = 0; ismn < kMaxSMN; ismn++)
 	{
-	  fHsmIso[d][i] = NULL ;
-	  for(Int_t j=0;j<96;j++)
+	  fHsmIso[idet][ismn] = NULL ;
+	  for(Int_t jrow = 0; jrow < kMaxRow; jrow++)
 	    {
-	      for(Int_t k=0;k<96;k++)
+	      for(Int_t kcol = 0; kcol < kMaxCol; kcol++)
 		{
-		  fGainFact[d][i][j][k] = 0.0;
-		  fHadcIso[d][i][j][k]  = NULL;
+		  fGainFact[idet][ismn][jrow][kcol] = 0.0;
+		  fHadcIso[idet][ismn][jrow][kcol]  = NULL;
 		}
 	    }
 	}
@@ -69,19 +69,19 @@ AliPMDCalibrator::AliPMDCalibrator():
 }
 // ------------------------------------------------------------------------ //
 AliPMDCalibrator::AliPMDCalibrator(const AliPMDCalibrator &pmdcalibrator):
-  fCalibData(new AliPMDCalibData())
+  fCalibGain(new AliPMDCalibData())
 {
-  for(Int_t d=0;d<2;d++)
+  for(Int_t idet = 0; idet < 2; idet++)
     {
-      for(Int_t i=0;i<24;i++)
+      for(Int_t ismn = 0; ismn < kMaxSMN; ismn++)
 	{
-	  fHsmIso[d][i] = pmdcalibrator.fHsmIso[d][i] ;
-	  for(Int_t j=0;j<96;j++)
+	  fHsmIso[idet][ismn] = pmdcalibrator.fHsmIso[idet][ismn] ;
+	  for(Int_t jrow = 0; jrow < kMaxRow; jrow++)
 	    {
-	      for(Int_t k=0;k<96;k++)
+	      for(Int_t kcol = 0; kcol < kMaxCol; kcol++)
 		{
-		  fGainFact[d][i][j][k] = pmdcalibrator.fGainFact[d][i][j][k];
-		  fHadcIso[d][i][j][k]  = pmdcalibrator.fHadcIso[d][i][j][k];
+		  fGainFact[idet][ismn][jrow][kcol] = pmdcalibrator.fGainFact[idet][ismn][jrow][kcol];
+		  fHadcIso[idet][ismn][jrow][kcol]  = pmdcalibrator.fHadcIso[idet][ismn][jrow][kcol];
 		}
 	    }
 	}
@@ -93,19 +93,19 @@ AliPMDCalibrator &AliPMDCalibrator::operator=(const AliPMDCalibrator &pmdcalibra
 {
   if(this != &pmdcalibrator)
     {
-      for(Int_t d=0;d<2;d++)
+      for(Int_t idet = 0; idet < kDet; idet++)
 	{
-	  for(Int_t i=0;i<24;i++)
+	  for(Int_t ismn = 0; ismn < kMaxSMN; ismn++)
 	    {
-	      fHsmIso[d][i] = pmdcalibrator.fHsmIso[d][i] ;
-	      for(Int_t j=0;j<96;j++)
+	      fHsmIso[idet][ismn] = pmdcalibrator.fHsmIso[idet][ismn] ;
+	      for(Int_t jrow = 0; jrow < kMaxRow;jrow++)
 		{
-		  for(Int_t k=0;k<96;k++)
+		  for(Int_t kcol = 0; kcol < kMaxCol; kcol++)
 		    {
-		      fGainFact[d][i][j][k] =
-			pmdcalibrator.fGainFact[d][i][j][k];
-		      fHadcIso[d][i][j][k]  =
-			pmdcalibrator.fHadcIso[d][i][j][k];
+		      fGainFact[idet][ismn][jrow][kcol] =
+			pmdcalibrator.fGainFact[idet][ismn][jrow][kcol];
+		      fHadcIso[idet][ismn][jrow][kcol]  =
+			pmdcalibrator.fHadcIso[idet][ismn][jrow][kcol];
 		    }
 		}
 	    }
@@ -119,7 +119,7 @@ AliPMDCalibrator::~AliPMDCalibrator()
   // dtor
   if(fHsmIso)  delete fHsmIso ;
   if(fHadcIso) delete fHadcIso ;
-  delete fCalibData;
+  delete fCalibGain;
 }
 // ------------------------------------------------------------------------ //
 
@@ -139,8 +139,8 @@ void AliPMDCalibrator::Init()
   char hnameiso[120];
   char htitle1[120];
 
-  for(Int_t d=0;d<2;d++) {
-    for(Int_t i1=0; i1<kMaxSMN;i1++) {
+  for(Int_t d = 0; d < kDet; d++) {
+    for(Int_t i1 = 0; i1 < kMaxSMN; i1++) {
       sprintf(hname,"det_%d_iso_sm_%2d",d,i1);
       sprintf(hname24,"det_%d_iso_sm_%2d",d,i1);
       fHsmIso[d][i1]= new TH1F(hname,hname24,100,0,1000);
@@ -205,25 +205,6 @@ void AliPMDCalibrator::CalculateIsoCell()
   AliPMDRawStream stream(&reader);
   while(reader.NextEvent())
     {
-      // printf("In CalculateIsoCell before while(stream.Next()), ...\n");
-      
-      /*
-      while(stream.Next())
-	{
-	  Int_t idet = stream.GetDetector();
-	  Int_t ismn = stream.GetSMN();
-	  Int_t ichno = stream.GetChannel();
-	  Int_t irow = stream.GetRow();
-	  Int_t icol = stream.GetColumn();
-	  Int_t isig = stream.GetSignal();
-	  
-	  if (isig>0)
-	    {
-	      d1[idet][ismn][irow][icol] = isig;
-	      ch[idet][ismn][irow][icol] = ichno;
-	    }
-	}
-      */
       // New PMD Reader is plugged in
       
       for (Int_t iddl = 0; iddl < kDDL; iddl++)
@@ -301,23 +282,24 @@ void AliPMDCalibrator::CalculateIsoCell()
 	    }
 	} //event loop
     }
-  Double_t histMean[2][24];
-  Double_t isoMean[2][24][96][96];
-  for(Int_t d1=0;d1<2;d1++)
+  Double_t histMean[kDet][kMaxSMN];
+  Double_t isoMean[kDet][kMaxSMN][kMaxRow][kMaxCol];
+
+  for(Int_t d1 = 0; d1 < kDet; d1++)
     {
-      for(Int_t i1=0;i1<24;i1++)
+      for(Int_t i1 = 0; i1 < kMaxSMN; i1++)
 	{
 	  histMean[d1][i1]= fHsmIso[d1][i1]->GetMean();
-	  for(Int_t j1=0;j1<96;j1++)
+	  for(Int_t j1 = 0; j1 < kMaxRow; j1++)
 	    {
-	      for(Int_t k1=0;k1<96;k1++)
+	      for(Int_t k1 = 0; k1 < kMaxCol; k1++)
 		{
 		  isoMean[d1][i1][j1][k1]=fHadcIso[d1][i1][j1][k1]->GetMean();
 		  if(isoMean[d1][i1][j1][k1]>0.0 && histMean[d1][i1]>0.0)
 		    {
 		      fGainFact[d1][i1][j1][k1]=isoMean[d1][i1][k1][j1]/histMean[d1][i1];
-		      Float_t gain=fGainFact[d1][i1][j1][k1];
-		      fCalibData->SetGainFact(d1,i1,j1,k1,gain);
+		      Float_t gain = fGainFact[d1][i1][j1][k1];
+		      fCalibGain->SetGainFact(d1,i1,j1,k1,gain);
 		    }                              
 		}
 	    }
@@ -342,7 +324,7 @@ Bool_t AliPMDCalibrator::Store()
   //fCalibData->Print(0);
   //printf("\n\n\n fCalibData\n");
   
-  Bool_t result = man->Put(fCalibData,id,&md);
+  Bool_t result = man->Put(fCalibGain,id,&md);
 
   return result;
 }

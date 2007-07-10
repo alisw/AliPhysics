@@ -41,6 +41,7 @@
 #include "AliPMDrechit.h"
 #include "AliPMDRawStream.h"
 #include "AliPMDCalibData.h"
+#include "AliPMDPedestal.h"
 #include "AliPMDddldata.h"
 
 #include "AliDAQ.h"
@@ -54,7 +55,8 @@ ClassImp(AliPMDClusterFinder)
 AliPMDClusterFinder::AliPMDClusterFinder():
   fRunLoader(0),
   fPMDLoader(0),
-  fCalibData(GetCalibData()),
+  fCalibGain(GetCalibGain()),
+  fCalibPed(GetCalibPed()),
   fTreeD(0),
   fTreeR(0),
   fDigits(new TClonesArray("AliPMDdigit", 1000)),
@@ -73,7 +75,8 @@ AliPMDClusterFinder::AliPMDClusterFinder():
 AliPMDClusterFinder::AliPMDClusterFinder(AliRunLoader* runLoader):
   fRunLoader(runLoader),
   fPMDLoader(runLoader->GetLoader("PMDLoader")),
-  fCalibData(GetCalibData()),
+  fCalibGain(GetCalibGain()),
+  fCalibPed(GetCalibPed()),
   fTreeD(0),
   fTreeR(0),
   fDigits(new TClonesArray("AliPMDdigit", 1000)),
@@ -93,7 +96,8 @@ AliPMDClusterFinder::AliPMDClusterFinder(const AliPMDClusterFinder & finder):
   TObject(finder),
   fRunLoader(0),
   fPMDLoader(0),
-  fCalibData(GetCalibData()),
+  fCalibGain(GetCalibGain()),
+  fCalibPed(GetCalibPed()),
   fTreeD(0),
   fTreeR(0),
   fDigits(NULL),
@@ -201,7 +205,7 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
 	  adc    = pmddigit->GetADC();
 	  
 	  // CALIBRATION
-	  Float_t gain = fCalibData->GetGainFact(det,smn,xpos,ypos);
+	  Float_t gain = fCalibGain->GetGainFact(det,smn,xpos,ypos);
 	  // printf("adc = %d gain = %f\n",adc,gain);
 	  
 	  adc = adc*gain;
@@ -305,12 +309,21 @@ void AliPMDClusterFinder::Digits2RecPoints(TTree *digitsTree,
 	  xpos   = pmddigit->GetRow();
 	  ypos   = pmddigit->GetColumn();
 	  adc    = pmddigit->GetADC();
-	  
+
+	  // Pedestal Subtraction
+	  Int_t   pedmeanrms = fCalibPed->GetPedMeanRms(det,smn,xpos,ypos);
+	  Int_t   pedrms1    = (Int_t) pedmeanrms%1000;
+	  Float_t pedrms     = (Float_t)pedrms1/10.;
+	  Float_t pedmean    = (Float_t) (pedmeanrms - pedrms1)/1000.0;
+	  //printf("%f %f\n",pedmean, pedrms);
+
+	  Float_t adc1 = adc - (pedmean + 3.0*pedrms);
+
 	  // CALIBRATION
-	  Float_t gain = fCalibData->GetGainFact(det,smn,xpos,ypos);
+	  Float_t gain = fCalibGain->GetGainFact(det,smn,xpos,ypos);
 	  // printf("adc = %d gain = %f\n",adc,gain);
-	  
-	  adc = adc*gain;
+
+	  adc = adc1*gain;
 
 	  //Int_t trno   = pmddigit->GetTrackNumber();
 	  fCellADC[xpos][ypos] = (Double_t) adc;
@@ -445,9 +458,19 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 	  Int_t col = pmdddl->GetColumn();
 	  Int_t sig = pmdddl->GetSignal();
 
-	  Float_t sig1 = (Float_t) sig;
+	  // Pedestal Subtraction
+	  Int_t   pedmeanrms = fCalibPed->GetPedMeanRms(det,smn,row,col);
+	  Int_t   pedrms1    = (Int_t) pedmeanrms%1000;
+	  Float_t pedrms     = (Float_t)pedrms1/10.;
+	  Float_t pedmean    = (Float_t) (pedmeanrms - pedrms1)/1000.0;
+
+	  //printf("%f %f\n",pedmean, pedrms);
+
+	  // Float_t sig1 = (Float_t) sig;
+	  Float_t sig1 = (Float_t) sig - (pedmean + 3.0*pedrms);
+
 	  // CALIBRATION
-	  Float_t gain = fCalibData->GetGainFact(det,smn,row,col);
+	  Float_t gain = fCalibGain->GetGainFact(det,smn,row,col);
 	  //printf("sig = %d gain = %f\n",sig,gain);
 	  sig = (Int_t) (sig1*gain);
 
@@ -673,9 +696,18 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
 	  Int_t col = pmdddl->GetColumn();
 	  Int_t sig = pmdddl->GetSignal();
 
-	  Float_t sig1 = (Float_t) sig;
+	  // Pedestal Subtraction
+	  Int_t   pedmeanrms = fCalibPed->GetPedMeanRms(det,smn,row,col);
+	  Int_t   pedrms1    = (Int_t) pedmeanrms%1000;
+	  Float_t pedrms     = (Float_t)pedrms1/10.;
+	  Float_t pedmean    = (Float_t) (pedmeanrms - pedrms1)/1000.0;
+
+	  //printf("%f %f\n",pedmean, pedrms);
+
+	  //Float_t sig1 = (Float_t) sig;
+	  Float_t sig1 = (Float_t) sig - (pedmean + 3.0*pedrms);
 	  // CALIBRATION
-	  Float_t gain = fCalibData->GetGainFact(det,smn,row,col);
+	  Float_t gain = fCalibGain->GetGainFact(det,smn,row,col);
 
 	  //printf("sig = %d gain = %f\n",sig,gain);
 	  sig = (Int_t) (sig1*gain);
@@ -910,12 +942,12 @@ void AliPMDClusterFinder::UnLoadClusters()
 }
 // ------------------------------------------------------------------------- //
 
-AliPMDCalibData* AliPMDClusterFinder::GetCalibData() const
+AliPMDCalibData* AliPMDClusterFinder::GetCalibGain() const
 {
   // The run number will be centralized in AliCDBManager,
   // you don't need to set it here!
   // Added by ZA
-  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("PMD/Calib/Data");
+  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("PMD/Calib/Gain");
   
   if(!entry)  AliFatal("Calibration object retrieval failed! ");
   
@@ -925,4 +957,22 @@ AliPMDCalibData* AliPMDClusterFinder::GetCalibData() const
   if (!calibdata)  AliFatal("No calibration data from calibration database !");
   
   return calibdata;
+}
+
+// ------------------------------------------------------------------------- //
+
+AliPMDPedestal* AliPMDClusterFinder::GetCalibPed() const
+{
+  // The run number will be centralized in AliCDBManager,
+  // you don't need to set it here!
+  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("PMD/Calib/Ped");
+  
+  if(!entry) AliFatal("Pedestal object retrieval failed!");
+    
+  AliPMDPedestal *pedestal = 0;
+  if (entry) pedestal = (AliPMDPedestal*) entry->GetObject();
+  
+  if (!pedestal)  AliFatal("No pedestal data from pedestal database !");
+  
+  return pedestal;
 }

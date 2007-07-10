@@ -19,6 +19,7 @@ class AliLoader;
 class AliRunLoader;
 class AliRawReader;
 class AliPMDCalibData;
+class AliPMDPedestal;
 
 class AliPMDClusterFinder : public TObject
 {
@@ -46,13 +47,15 @@ class AliPMDClusterFinder : public TObject
   void UnLoad();
   void UnLoadClusters();
 
-  AliPMDCalibData *GetCalibData() const;
+  AliPMDCalibData *GetCalibGain() const;
+  AliPMDPedestal  *GetCalibPed() const;
 
  protected:
   AliRunLoader *fRunLoader; // Pointer to Run Loader
   AliLoader    *fPMDLoader; // Pointer to specific detector loader
 
-  AliPMDCalibData *fCalibData;  //! calibration data
+  AliPMDCalibData *fCalibGain;  //! Gain calibration data
+  AliPMDPedestal  *fCalibPed;   //! Pedestal calibration data
 
   TTree        *fTreeD;     // Digits tree
   TTree        *fTreeR;     // Reconstructed points
@@ -70,7 +73,7 @@ class AliPMDClusterFinder : public TObject
   static const Int_t fgkCol = 96; // Total number of cols in one unitmodule
   Double_t fCellADC[fgkRow][fgkCol]; // Array containing individual cell ADC
 
-  ClassDef(AliPMDClusterFinder,11) // To run PMD clustering
+  ClassDef(AliPMDClusterFinder,12) // To run PMD clustering
 };
 #endif
 

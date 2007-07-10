@@ -23,9 +23,16 @@ class AliPMDCalibData: public TNamed
   virtual void Print(Option_t *) const;
   
  protected:
-  
-  Float_t fGainFact[2][24][96][96];
 
-  ClassDef(AliPMDCalibData,1) // calibration class for gainfactors
+  enum
+      {
+	  kDet = 2,        // Number of plane
+	  kModule = 24,    // Modules per plane
+	  kRow    = 48,    // Maximum row
+	  kCol    = 96     // Maximum Column
+      };
+  Float_t fGainFact[kDet][kModule][kRow][kCol];
+
+  ClassDef(AliPMDCalibData,2) // calibration class for gainfactors
 };
 #endif

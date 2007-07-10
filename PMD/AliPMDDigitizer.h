@@ -36,6 +36,7 @@ class AliPMDcell;
 class AliPMDsdigit;
 class AliPMDdigit;
 class AliPMDCalibData;
+class AliPMDPedestal;
 
 class AliPMDDigitizer:public AliDigitizer
 {
@@ -70,7 +71,8 @@ class AliPMDDigitizer:public AliDigitizer
 
   Float_t  Gain(Int_t det, Int_t smn, Int_t row, Int_t col) const;
 
-  AliPMDCalibData *GetCalibData() const;
+  AliPMDCalibData *GetCalibGain() const;
+  AliPMDPedestal  *GetCalibPed() const;
 
  protected:
   AliRunLoader *fRunLoader;  //! Pointer to Run Loader
@@ -79,7 +81,8 @@ class AliPMDDigitizer:public AliDigitizer
                              // and Hits containers 
   AliLoader    *fPMDLoader;  //! Pointer to specific detector loader
 
-  AliPMDCalibData *fCalibData;  //! calibration data
+  AliPMDCalibData *fCalibGain;  //! Gain calibration data
+  AliPMDPedestal  *fCalibPed;   //! Pedestal calibration data
 
   TClonesArray *fSDigits;    //! List of summable digits
   TClonesArray *fDigits;     //! List of digits
@@ -101,8 +104,7 @@ class AliPMDDigitizer:public AliDigitizer
   Int_t   fPRETrackNo[fgkTotUM][fgkRow][fgkCol]; //! PRE Array containing track number
   Int_t   fCPVTrackNo[fgkTotUM][fgkRow][fgkCol]; //! CPV Array containing track number
 
-
-  ClassDef(AliPMDDigitizer,6)    // To digitize PMD Hits
+  ClassDef(AliPMDDigitizer,7)    // To digitize PMD Hits
 };
 #endif
 

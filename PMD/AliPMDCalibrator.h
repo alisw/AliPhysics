@@ -23,11 +23,20 @@ class AliPMDCalibrator
   Bool_t Store();
   
  private:
-  Float_t fGainFact[2][24][96][96];
-  TH1F *fHsmIso[2][24];             //histos of isolated cell modulewise
-  TH1F *fHadcIso[2][24][96][96];    // histos of isolated cells cellwise
-  AliPMDCalibData *fCalibData;
 
-ClassDef(AliPMDCalibrator,2)        // description 
+  enum
+      {
+	  kDet = 2,      // Number of Planes
+	  kMaxSMN = 24,  // Number of Modules
+	  kMaxRow = 48,  // Number of Rows
+	  kMaxCol = 96   // Number of Columns
+      };
+  Float_t fGainFact[kDet][kMaxSMN][kMaxRow][kMaxCol];
+  TH1F *fHsmIso[kDet][kMaxSMN];     //histos of isolated cell modulewise
+  TH1F *fHadcIso[kDet][kMaxSMN][kMaxRow][kMaxCol];    // histos of isolated cells cellwise
+
+  AliPMDCalibData *fCalibGain;
+
+ClassDef(AliPMDCalibrator,3)        // description 
 };
 #endif // AliPMDCALIBRATOR_H

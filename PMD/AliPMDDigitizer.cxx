@@ -54,6 +54,7 @@
 #include "AliPMDsdigit.h"
 #include "AliPMDdigit.h"
 #include "AliPMDCalibData.h"
+#include "AliPMDPedestal.h"
 #include "AliPMDDigitizer.h"
 
 
@@ -64,7 +65,8 @@ AliPMDDigitizer::AliPMDDigitizer() :
   fPMDHit(0),
   fPMD(0),
   fPMDLoader(0),
-  fCalibData(GetCalibData()),
+  fCalibGain(GetCalibGain()),
+  fCalibPed(GetCalibPed()),
   fSDigits(0),
   fDigits(0),
   fCell(0),
@@ -90,7 +92,6 @@ AliPMDDigitizer::AliPMDDigitizer() :
 	}
     }
 
-
 }
 //____________________________________________________________________________
 AliPMDDigitizer::AliPMDDigitizer(const AliPMDDigitizer& digitizer):
@@ -99,7 +100,8 @@ AliPMDDigitizer::AliPMDDigitizer(const AliPMDDigitizer& digitizer):
   fPMDHit(0),
   fPMD(0),
   fPMDLoader(0),
-  fCalibData(GetCalibData()),
+  fCalibGain(GetCalibGain()),
+  fCalibPed(GetCalibPed()),
   fSDigits(0),
   fDigits(0),
   fCell(0),
@@ -127,7 +129,8 @@ AliPMDDigitizer::AliPMDDigitizer(AliRunDigitizer* manager):
   fPMDHit(0),
   fPMD(0),
   fPMDLoader(0),
-  fCalibData(GetCalibData()),
+  fCalibGain(GetCalibGain()),
+  fCalibPed(GetCalibPed()),
   fSDigits(new TClonesArray("AliPMDsdigit", 1000)),
   fDigits(new TClonesArray("AliPMDdigit", 1000)),
   fCell(0),
@@ -719,7 +722,20 @@ void AliPMDDigitizer::Hits2Digits(Int_t ievt)
 		      {
 			  adc = 0.;
 		      }
-		      AddDigit(trno,detno,ism,jrow,kcol,adc);
+
+		      // Pedestal Decalibration
+		      Int_t   pedmeanrms = 
+			  fCalibPed->GetPedMeanRms(idet,ism,jrow,kcol);
+		      Int_t   pedrms1    = (Int_t) pedmeanrms%1000;
+		      Float_t pedrms     = (Float_t)pedrms1/10.;
+		      Float_t pedmean    = 
+			  (Float_t) (pedmeanrms - pedrms1)/1000.0;
+		      //printf("%f %f\n",pedmean, pedrms);
+		      if (adc > 0.)
+		      {
+			  adc += (pedmean + 3.0*pedrms);
+			  AddDigit(trno,detno,ism,jrow,kcol,adc);
+		      }
 		  }
 	      } // column loop
 	  } // row    loop
@@ -788,6 +804,7 @@ void AliPMDDigitizer::SDigits2Digits(Int_t ievt)
 
 	  MeV2ADC(edep,adc);
 
+	  
 	  // To decalibrte the adc values
 	  //
 	  Float_t gain1 = Gain(det,smn,irow,icol);
@@ -800,8 +817,18 @@ void AliPMDDigitizer::SDigits2Digits(Int_t ievt)
 	  {
 	      adc = 0.;
 	  }
+	  // Pedestal Decalibration
+	  Int_t   pedmeanrms = fCalibPed->GetPedMeanRms(det,smn,irow,icol);
+	  Int_t   pedrms1    = (Int_t) pedmeanrms%1000;
+	  Float_t pedrms     = (Float_t)pedrms1/10.;
+	  Float_t pedmean    = (Float_t) (pedmeanrms - pedrms1)/1000.0;
+	  //printf("%f %f\n",pedmean, pedrms);
+	  if(adc > 0.)
+	  {
+	      adc += (pedmean + 3.0*pedrms);
+	      AddDigit(trno,det,smn,irow,icol,adc);
+	  }
 
-	  AddDigit(trno,det,smn,irow,icol,adc);
 	}
       treeD->Fill();
       ResetDigit();
@@ -875,10 +902,12 @@ void AliPMDDigitizer::Exec(Option_t *option)
 		  if (deltaE > 0.)
 		    {
 		      MeV2ADC(deltaE,adc);
+
                       //
-		      // To decalibrte the adc values
+		      // Gain decalibration
 		      //
 		      Float_t gain1 = Gain(idet,ism,jrow,kcol);
+
 		      if (gain1 != 0.)
 		      {
 			  Int_t adcDecalib = (Int_t)(adc/gain1);
@@ -888,8 +917,20 @@ void AliPMDDigitizer::Exec(Option_t *option)
 		      {
 			  adc = 0.;
 		      }
+		      // Pedestal Decalibration
+		      Int_t   pedmeanrms = 
+			  fCalibPed->GetPedMeanRms(idet,ism,jrow,kcol);
+		      Int_t   pedrms1    = (Int_t) pedmeanrms%1000;
+		      Float_t pedrms     = (Float_t)pedrms1/10.;
+		      Float_t pedmean    = 
+			  (Float_t) (pedmeanrms - pedrms1)/1000.0;
+		      //printf("%f %f\n",pedmean, pedrms);
+		      if (adc > 0.)
+		      {
+			  adc += (pedmean + 3.0*pedrms);
+			  AddDigit(trno,detno,ism,jrow,kcol,adc);
+		      }
 
-		      AddDigit(trno,detno,ism,jrow,kcol,adc);
 		    }
 		} // column loop
 	    } // row    loop
@@ -1311,23 +1352,23 @@ Float_t AliPMDDigitizer::Gain(Int_t det, Int_t smn, Int_t row, Int_t col) const
   //cout<<" I am here in gain "<<fCalibData<< "smn,row, col "<<smn
   //<<" "<<row<<" "<<col<<endl;
 
-  if(!fCalibData) {
+  if(!fCalibGain) {
     AliError("No calibration data loaded from CDB!!!");
     return 1;
   }
 
   Float_t GainFact;
-  GainFact = fCalibData->GetGainFact(det,smn,row,col);
+  GainFact = fCalibGain->GetGainFact(det,smn,row,col);
   return GainFact;
 }
 //----------------------------------------------------------------------
-AliPMDCalibData* AliPMDDigitizer::GetCalibData() const
+AliPMDCalibData* AliPMDDigitizer::GetCalibGain() const
 {
   // The run number will be centralized in AliCDBManager,
   // you don't need to set it here!
   // Added this method by ZA
   // Cleaned up by Alberto
-  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("PMD/Calib/Data");
+  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("PMD/Calib/Gain");
   
   if(!entry) AliFatal("Calibration object retrieval failed!");
   
@@ -1337,4 +1378,21 @@ AliPMDCalibData* AliPMDDigitizer::GetCalibData() const
   if (!calibdata)  AliFatal("No calibration data from calibration database !");
   
   return calibdata;
+}
+//----------------------------------------------------------------------
+AliPMDPedestal* AliPMDDigitizer::GetCalibPed() const
+{
+  // The run number will be centralized in AliCDBManager,
+  // you don't need to set it here!
+
+  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("PMD/Calib/Ped");
+  
+  if(!entry) AliFatal("Pedestal object retrieval failed!");
+  
+  AliPMDPedestal *pedestal=0;
+  if (entry) pedestal = (AliPMDPedestal*) entry->GetObject();
+  
+  if (!pedestal)  AliFatal("No pedestal data from calibration database !");
+  
+  return pedestal;
 }
