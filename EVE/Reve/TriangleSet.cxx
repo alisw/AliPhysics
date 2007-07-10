@@ -18,6 +18,7 @@
 
 #include "TriangleSet.h"
 #include "RGBAPalette.h"
+#include "RGTopFrame.h"
 
 #include <TMath.h>
 #include <TVector3.h>
@@ -114,7 +115,7 @@ void TriangleSet::GenerateZNormalColors(Float_t fac, Int_t min, Int_t max,
       Int_t v = TMath::Nint(fac * N[2]);
       pal.ColorFromValue(v, C, kFALSE);
     }
-  gPad->Modified(); gPad->Update();
+  gReve->Redraw3D();
 }
 
 /**************************************************************************/
