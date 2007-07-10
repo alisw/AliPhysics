@@ -34,9 +34,10 @@ AliHMPIDReconstructor::AliHMPIDReconstructor():AliReconstructor(),fUserCut(0),fD
 //ctor
 //
   AliHMPIDParam::Instance();                                                        //geometry loaded for reconstruction
+  fUserCut = new Int_t(7);
   fClu=new TObjArray(AliHMPIDParam::kMaxCh+1); fClu->SetOwner(kTRUE);
   fDig=new TObjArray(AliHMPIDParam::kMaxCh+1); fDig->SetOwner(kTRUE);
-
+  
   for(int i=AliHMPIDParam::kMinCh;i<=AliHMPIDParam::kMaxCh;i++){ 
     fDig->AddAt(new TClonesArray("AliHMPIDDigit"),i);
     TClonesArray *pClus = new TClonesArray("AliHMPIDCluster");
@@ -46,52 +47,20 @@ AliHMPIDReconstructor::AliHMPIDReconstructor():AliReconstructor(),fUserCut(0),fD
   
   AliCDBEntry *pUserCutEnt =AliCDBManager::Instance()->Get("HMPID/Calib/UserCut");    //contains TObjArray of 14 TObject with n. of sigmas to cut charge 
   if(!pUserCutEnt) return;                                                            //No request from User to apply a more severe cut on pad charge  
+  TObjArray *pUserCut = (TObjArray*)pUserCutEnt->GetObject(); 
+  for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){                  //chambers loop 
+    fUserCut[iCh] = pUserCut->At(iCh)->GetUniqueID();
+    Printf("HMPID: UserCut successfully loaded for chamber %i -> %i ",iCh,fUserCut[iCh]);
+  }
+
   
-  fUserCut = pUserCutEnt->GetObject()->GetUniqueID();
-
-  Printf(" usercut %i ",fUserCut);
-  
-  AliCDBEntry *pDaqCutEnt =AliCDBManager::Instance()->Get("HMPID/Calib/DaqSigCut");     //contains TObjArray of 14 TObject with n. of sigmas to cut charge 
-  if(!pDaqCutEnt) AliFatal("No pedestal sigmas cut!");
-  TObjArray *pDaqCut = (TObjArray*)pDaqCutEnt->GetObject();
-
-
-  for(Int_t ddl=0;ddl<14;ddl++){
-    if(fUserCut<=(Int_t)pDaqCut->At(ddl)->GetUniqueID()) continue;
-    AliCDBEntry *pDaqSigEnt =AliCDBManager::Instance()->Get("HMPID/Calib/DaqSig");  //contains TObjArray of TObjArray 14 TMatrixF sigmas values for pads 
-    if(!pDaqSigEnt) AliFatal("No pedestals from DAQ!");
-    TObjArray *pDaqSig = (TObjArray*)pDaqSigEnt->GetObject();
-    SigConv(pDaqSig);
-    break;
+  AliCDBEntry *pDaqSigEnt =AliCDBManager::Instance()->Get("HMPID/Calib/DaqSig");  //contains TObjArray of TObjArray 14 TMatrixF sigmas values for pads 
+  if(!pDaqSigEnt) AliFatal("No pedestals from DAQ!");
+  fDaqSig = (TObjArray*)pDaqSigEnt->GetObject();
+  for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){                  //chambers loop 
+    Printf(" HMPID: DaqSigCut successfully loaded for chamber %i -> %i ",iCh,(Int_t)fDaqSig->At(iCh)->GetUniqueID());
   }
 }//AliHMPIDReconstructor
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDReconstructor::SigConv(TObjArray *pDaqSig)
-{
-// Conversion from the pedestal objects in to 7 TMatrixF(padX,padY)
-//Arguments: pDaqSig pointer to the pedestal objects from OCDB
-//   Returs: none
-//
-  fDaqSig = new TObjArray(AliHMPIDParam::kMaxCh+1);fDaqSig->SetOwner(kTRUE);
-  
-  for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) fDaqSig->AddAt(new TMatrixF(1,10,0,47),iCh);
- 
-  AliHMPIDDigit dig;
-   
-  for(Int_t ddl=0;ddl<=13;ddl++){
-    for(Int_t row=1;row<=24;row++)
-      for(Int_t dil=1;dil<=10;dil++)
-        for(Int_t adr=0;adr<=47;adr++){
-          TObjArray *pDdl = (TObjArray*)pDaqSig->At(ddl);
-          TObjArray *pRow = (TObjArray*)pDdl->At(row-1);
-          TMatrixF *pM = (TMatrixF*)pRow;
-          Float_t sigma = (*pM)(dil,adr);
-          dig.Raw(ddl,row,dil,adr);
-          TMatrixF* pMConv = (TMatrixF*)(fDaqSig->At(dig.Ch()));
-          (*pMConv)(dig.PadChX(),dig.PadChY()) = sigma;
-        }
-  }
-}//SigConv()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDReconstructor::Dig2Clu(TObjArray *pDigAll,TObjArray *pCluAll,Bool_t isTryUnfold)
 {

@@ -27,10 +27,23 @@ UInt_t AliHMPIDPreprocessor::Process(TMap* pMap)
 {
 // Process all information from DCS and DAQ
 // Arguments: pMap- map of DCS aliases
-//   Returns: 0 on success or 1 on error    
-  if(! pMap)                     return 1; 
-  if(ProcDcs(pMap) && ProcPed()) return 0;
-  else                           return 1;     
+//   Returns: 0 on success or 1 on error
+  Printf("HMPID - Process in Preprocessor started");
+  if(! pMap) {Printf(" - Not map of DCS aliases for HMPID - ");return 1;}   
+  
+  TString runType = GetRunType();
+  Printf(" AliHMPIDPreprocessor: RunType is %s",runType.Data());
+  Bool_t result1,result2;
+  if (runType == "PEDESTAL_RUN"){
+    result1 = ProcPed(); return result1;
+  } else if ( runType == "PHYSICS" ){
+    result1 = ProcPed(); 
+    result2 = ProcDcs(pMap); return (result1&&result2);
+  } else {
+    Log("Nothing to do with preprocessor for HMPID, bye!");
+  return kFALSE;
+  }
+  
 }//Process()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Bool_t AliHMPIDPreprocessor::ProcDcs(TMap* pMap)
@@ -49,10 +62,11 @@ Bool_t AliHMPIDPreprocessor::ProcDcs(TMap* pMap)
 // Qthr is estimated as 3*A0
   TF2 thr("RthrCH4"  ,"3*10^(3.01e-3*x-4.72)+170745848*exp(-y*0.0162012)"             ,2000,3000,900,1200); 
   
-  TObjArray arTmean(21); arTmean.SetOwner(kTRUE);     //21 Tmean=f(time) one per radiator
-  TObjArray arPress(7);  arPress.SetOwner(kTRUE);     //7  Press=f(time) one pre chamber
-  TObjArray arNmean(21); arNmean.SetOwner(kTRUE);     //21 Nmean=f(time) one per radiator
-  TObjArray arQthre(7);  arQthre.SetOwner(kTRUE);     //7  Qthre=f(time) one pre chamber
+  TObjArray arTmean(21);       arTmean.SetOwner(kTRUE);     //21 Tmean=f(time) one per radiator
+  TObjArray arPress(7);        arPress.SetOwner(kTRUE);     //7  Press=f(time) one pre chamber
+  TObjArray arNmean(21);       arNmean.SetOwner(kTRUE);     //21 Nmean=f(time) one per radiator
+  TObjArray arQthre(7);        arQthre.SetOwner(kTRUE);     //7  Qthre=f(time) one pre chamber
+  TObjArray arUserCut(7);    arUserCut.SetOwner(kTRUE);     //7  user cut in number of sigmas
   
   AliDCSValue *pVal; Int_t cnt=0;
     
@@ -64,7 +78,9 @@ Bool_t AliHMPIDPreprocessor::ProcDcs(TMap* pMap)
     if( cnt!=0) pGrP->Fit(new TF1(Form("P%i",iCh),"1005+x*[0]",fStartTime,fEndTime),"Q");                       //clm: if no DCS map entry don't fit
     delete pGrP;   
     
-    arQthre.AddAt(new TF1(Form("HMP_Qthre%i",iCh),"100",fStartTime,fEndTime),iCh);    
+    arQthre.AddAt(new TF1(Form("HMP_Qthre%i",iCh),"100",fStartTime,fEndTime),iCh);
+    TObject *pUserCut = new TObject();pUserCut->SetUniqueID(1);
+    arUserCut.AddAt(pUserCut,iCh);    
     
     for(Int_t iRad=0;iRad<3;iRad++){
       TObjArray *pT1=(TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_LIQ_LOOP.actual.sensors.Rad%iIn_Temp",iCh,iCh,iRad));  TIter nextT1(pT1);//Tin
@@ -86,10 +102,10 @@ Bool_t AliHMPIDPreprocessor::ProcDcs(TMap* pMap)
   
   AliCDBMetaData metaData; metaData.SetBeamPeriod(0); metaData.SetResponsible("AliHMPIDPreprocessor"); metaData.SetComment("SIMULATED");
   
-//  Store("Calib", "Press" , &arPress , &metaData)  Store("Calib", "Tmean" , &arTmean , &metaData);
-  
-  if(Store("Calib","Qthre",&arQthre,&metaData,0,kTRUE) && Store("Calib","Nmean",&arNmean,&metaData,0,kTRUE) ) return kTRUE; //all OK
-  else                                                                                                        return 1;
+  if(Store("Calib","Qthre",&arQthre,&metaData,0,kTRUE) && 
+     Store("Calib","Nmean",&arNmean,&metaData,0,kTRUE) &&
+     Store("Calib","UserCut",&arUserCut,&metaData,0,kTRUE)) return kTRUE; //all OK
+  else return kFALSE;
 }//Process()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Bool_t AliHMPIDPreprocessor::ProcPed()
@@ -106,7 +122,7 @@ Bool_t AliHMPIDPreprocessor::ProcPed()
   Int_t nSigCut,r,d,a,hard;  Float_t mean,sigma;
   for(Int_t ddl=0;ddl<14;ddl++){  
     ifstream infile(Form("HmpidPedDdl%02i.txt",ddl));
-    if(!infile.is_open()) return kFALSE;
+    if(!infile.is_open()) {Printf("No pedestal file found for HMPID,bye!");return kFALSE;}
     TMatrix *pM=(TMatrixF*)aDaqSig.At(ddl/2);
     infile>>nSigCut; pM->SetUniqueID(nSigCut); //n. of pedestal distribution sigmas used to create zero suppresion table
     while(!infile.eof()){

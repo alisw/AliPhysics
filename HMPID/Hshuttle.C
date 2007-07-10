@@ -1,31 +1,36 @@
-void Hshuttle(Int_t runTime=1500)
+  void Hshuttle(Int_t runTime=1500)
 {// this macro is to simulate the functionality of SHUTTLE.
-  gSystem->Load("libTestShuttle.so");
-  AliTestShuttle::SetMainCDB(TString("local://$HOME/CDB"));
+  gSystem->Load("$ALICE_ROOT/SHUTTLE/TestShuttle/libTestShuttle.so");
+//  AliTestShuttle::SetMainCDB(TString("local://$HOME/CDB"));
+  AliTestShuttle::SetMainCDB(TString("local://$HOME"));
   
   TMap *pDcsMap = new TMap;       pDcsMap->SetOwner(1);          //DCS archive map
   
   AliTestShuttle* pShuttle = new AliTestShuttle(0,0,1000000);   
+  pShuttle->SetInputRunType("PHYSICS");
   SimPed();   for(Int_t ldc=1;ldc<=4;ldc++) pShuttle->AddInputFile(AliTestShuttle::kDAQ,"HMP","pedestals",Form("LDC%i",ldc),Form("HmpidPeds%i.tar",ldc));
   SimMap(pDcsMap,runTime); pShuttle->SetDCSInput(pDcsMap);                                    //DCS map
   
   AliPreprocessor* pp = new AliHMPIDPreprocessor(pShuttle); pShuttle->Process();  delete pp;  //here goes preprocessor 
 
   DrawInput(pDcsMap); DrawOutput();
+  gSystem->Exec("rm -rf HmpidPedDdl*.txt");
+  gSystem->Exec("rm -rf HmpidPeds*.tar");
 }//Hshuttle()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void SimPed()
 {
+  Int_t nSigmas = 1;             // value stored in the ddl files of pedestals
   ofstream out;
   for(Int_t ddl=0;ddl<=13;ddl++){
     out.open(Form("HmpidPedDdl%02i.txt",ddl));
-    out << 3 <<endl;
+    out << nSigmas <<endl;
     for(Int_t row=1;row<=24;row++)
       for(Int_t dil=1;dil<=10;dil++)
         for(Int_t adr=0;adr<=47;adr++){
           Float_t mean  = 150+200*gRandom->Rndm();
-          Float_t sigma = ddl+gRandom->Gaus();
-          Int_t inhard=((Int_t(mean))<<9)+Int_t(mean+3*sigma);
+          Float_t sigma = 1+0.3*gRandom->Gaus();
+          Int_t inhard=((Int_t(mean))<<9)+Int_t(mean+nSigmas*sigma);
           out << Form("%2i %2i %2i %5.2f %5.2f %x\n",row,dil,adr,mean,sigma,inhard);
         }
 
@@ -36,7 +41,6 @@ void SimPed()
   gSystem->Exec("tar cf HmpidPeds2.tar HmpidPedDdl04.txt HmpidPedDdl05.txt HmpidPedDdl06.txt HmpidPedDdl07.txt");
   gSystem->Exec("tar cf HmpidPeds3.tar HmpidPedDdl08.txt HmpidPedDdl09.txt HmpidPedDdl10.txt HmpidPedDdl11.txt");
   gSystem->Exec("tar cf HmpidPeds4.tar HmpidPedDdl12.txt HmpidPedDdl13.txt");
-  gSystem->Exec("rm -rf ped*.txt");
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void SimMap(TMap *pDcsMap,Int_t runTime=1500)
@@ -48,11 +52,19 @@ void SimMap(TMap *pDcsMap,Int_t runTime=1500)
   for(Int_t iCh=0;iCh<7;iCh++){//chambers loop
     TObjArray *pP=new TObjArray;  pP->SetOwner(1);
     TObjArray *pHV=new TObjArray; pHV->SetOwner(1); 
-    for(Int_t time=0;time<runTime;time+=stepTime)  pP->Add(new AliDCSValue((Float_t)1005.0 ,time));   //sample CH4 pressure [mBar]
-                                                   pHV->Add(new AliDCSValue((Float_t)2010.0,time));   //sample chamber HV [V]
+    TObjArray *pUserCut=new TObjArray; pUserCut->SetOwner(1); 
+    TObjArray *pDaqSigCut=new TObjArray; pDaqSigCut->SetOwner(1); 
+    for(Int_t time=0;time<runTime;time+=stepTime) {
+       pP->Add(new AliDCSValue((Float_t)1005.0 ,time));   //sample CH4 pressure [mBar]
+       pHV->Add(new AliDCSValue((Float_t)2010.0,time));   //sample chamber HV [V]
+       pUserCut->Add(new AliDCSValue(3,time));            //User Cut in number of sigmas
+       pDaqSigCut->Add(new AliDCSValue(1,time));          //Cut in sigmas applied to electronics
+    }
     pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_MP%i/HMP_MP%i_GAS/HMP_MP%i_GAS_PMWC.actual.value"           ,iCh,iCh,iCh)),pP); 
     pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_MP%i/HMP_MP%i_PW/HMP_MP%i_SEC0/HMP_MP%i_SEC0_HV.actual.vMon",iCh,iCh,iCh)),pHV); 
-        
+    pDcsMap->Add(new TObjString(Form("HMP_%i.UserCut",iCh)),pUserCut); 
+    pDcsMap->Add(new TObjString(Form("HMP_%i.DaqSigCut",iCh)),pDaqSigCut); 
+
     for(Int_t iRad=0;iRad<3;iRad++){//radiators loop
       TObjArray *pT1=new TObjArray; pT1->SetOwner(1); 
       TObjArray *pT2=new TObjArray; pT2->SetOwner(1); 
@@ -94,7 +106,8 @@ void DrawInput(TMap *pDcsMap)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void DrawOutput()
 {
-  AliCDBManager::Instance()->SetDefaultStorage("local://$HOME/CDB"); AliCDBManager::Instance()->SetRun(0);
+//  AliCDBManager::Instance()->SetDefaultStorage("local://$HOME/CDB"); AliCDBManager::Instance()->SetRun(0);
+  AliCDBManager::Instance()->SetDefaultStorage("local://$HOME"); AliCDBManager::Instance()->SetRun(0);
   AliCDBEntry *pQthreEnt =AliCDBManager::Instance()->Get("HMPID/Calib/Qthre");
   AliCDBEntry *pNmeanEnt =AliCDBManager::Instance()->Get("HMPID/Calib/Nmean");
   AliCDBEntry *pDaqSigEnt=AliCDBManager::Instance()->Get("HMPID/Calib/DaqSig");

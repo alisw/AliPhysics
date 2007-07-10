@@ -36,9 +36,8 @@ public:
   static        void           FormClu (AliHMPIDCluster *pClu,AliHMPIDDigit *pDig,TClonesArray *pDigLst,TMatrixF *pPadMap);//cluster formation recursive algorithm
   static inline AliHMPIDDigit* UseDig  (Int_t padX,Int_t padY,                    TClonesArray *pDigLst,TMatrixF *pDigMap);//use this pad's digit to form a cluster
   inline Bool_t                IsDigSurvive(AliHMPIDDigit *pDig                                                     )const;//check for sigma cut
-  void                         SigConv(TObjArray *pDaqSig                                                                );//conversion to 7 TMatrixF for sigmas
   protected:
-  Int_t      fUserCut;                 // n sigma for pedestals decided by the User (if in OCDB)
+  Int_t     *fUserCut;                 // n sigmas for pedestals decided by the User for each chamber(if in OCDB)
   TObjArray *fDaqSig;                  // container for the pad pedestal sigmas
   TObjArray *fDig;                     // tmp list of digits
   TObjArray *fClu;                     // tmp list of clusters
@@ -64,10 +63,12 @@ Bool_t AliHMPIDReconstructor::IsDigSurvive(AliHMPIDDigit *pDig)const
 //Check if the current digit survive to a riapllied sigma cut
 //Arguments: pDig pointer to the current digit
 //  Returns: kTRUE if charge > mean+n*sigma
-  if(!fUserCut) return kTRUE;
+  Int_t iCh = pDig->Ch();
+  Int_t iDaqSigCut =(Int_t)fDaqSig->At(iCh)->GetUniqueID(); 
+  if(fUserCut[iCh]<=iDaqSigCut) return kTRUE;
   TMatrixF *pM = (TMatrixF*)fDaqSig->At(pDig->Ch());
   Float_t sig = (*pM)(pDig->PadChX(),pDig->PadChY());
-  if(pDig->Q()>fUserCut*sig) return kTRUE;
+  if(pDig->Q()>fUserCut[iCh]*sig) return kTRUE;
   else return kFALSE;
 }
 
