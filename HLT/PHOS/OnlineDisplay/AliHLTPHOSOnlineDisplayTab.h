@@ -5,6 +5,9 @@
 #include "HOMERReader.h"
 #include "AliHLTPHOSCommonDefs.h"
 
+#include "AliHLTPHOSConstants.h"
+using namespace PhosHLTConst;
+
 class HOMERReader;
 
 

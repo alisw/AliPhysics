@@ -9,6 +9,10 @@
 #include <TCanvas.h>
 #include "AliHLTDataTypes.h"
 
+#include "AliHLTPHOSConstants.h"
+using namespace PhosHLTConst;
+
+
 class AliHLTPHOSGetEventButton;
 class AliHLTPHOSOnlineDisplayCalibTab : public AliHLTPHOSOnlineDisplayTab
 {

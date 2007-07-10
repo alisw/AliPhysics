@@ -15,13 +15,17 @@
 #include <TRootEmbeddedCanvas.h>
 #include <TCanvas.h>
 #include "TGFrame.h"
-#include "AliHLTPHOSCommonDefs.h"
+//#include "AliHLTPHOSCommonDefs.h";
+//#include "AliHLTPHOSConstants.h"
 #include "AliHLTPHOSRcuChannelDataStruct.h"
 #include "AliHLTPHOSOnlineDisplayEventTab.h"
 #include "AliHLTPHOSOnlineDisplayCalibTab.h"
 #include "AliHLTPHOSOnlineDisplayRawTab.h"
 
-#include "AliHLTPHOSCommonDefs.h"
+//#include "AliHLTPHOSCommonDefs.h"
+
+#include "AliHLTPHOSConstants.h"
+using namespace PhosHLTConst;
 
 
 class TCanvas;

@@ -7,6 +7,10 @@
 #include <TCanvas.h>
 #include <TH2D.h>
 
+#include "AliHLTPHOSConstants.h"
+using namespace PhosHLTConst;
+
+
 class AliHLTPHOSGetEventButton;
 class HOMERReader;
 class AliHLTPHOSRcuCellEnergyDataStruct;
