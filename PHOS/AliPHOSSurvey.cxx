@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.4  2007/05/17 17:34:54  kharlov
+ * Merging differences if v1.2 and 1.3
+ *
  * Revision 1.3  2007/05/17 17:13:32  kharlov
  * Coding convensions satisfied (T.Pocheptsov)
  *
@@ -38,6 +41,8 @@
 #include <TGeoManager.h>
 #include <TString.h>
 #include <TMath.h>
+
+#include "AliSurveyObj.h"
 
 #include "AliPHOSEMCAGeometry.h"
 #include "AliAlignObjAngles.h"
@@ -86,19 +91,6 @@ AliPHOSSurvey::AliPHOSSurvey(const TString &txtFileName)
 
   AliPHOSEMCAGeometry * emcaGeom = phosGeom->GetEMCAGeometry();
   fStrNum = emcaGeom->GetNStripX() * emcaGeom->GetNStripZ();
-  const Float_t *strip = emcaGeom->GetStripHalfSize();
-  const Float_t *cell = emcaGeom->GetSteelCellHalfSize(); 
-
-  AliPHOSStripCoords *idealStrips = new AliPHOSStripCoords[fStrNum];//1
-  for (Int_t ix = 0, stripNumber = 0; ix < emcaGeom->GetNStripX(); ++ix) {
-    for (Int_t iz = 0; iz < emcaGeom->GetNStripZ(); ++iz) {
-      AliPHOSStripCoords &str = idealStrips[stripNumber++];
-      str.fX1 = ix * 2 * strip[0];
-      str.fX2 = str.fX1 + 14 * cell[0];
-      str.fZ1 = iz * 2 * strip[2];
-      str.fZ2 = str.fZ1 + 2 * cell[2];
-    }
-  }
 
   Int_t dummyInt = 0;
   Double_t dummyY = 0.;
@@ -108,7 +100,6 @@ AliPHOSSurvey::AliPHOSSurvey(const TString &txtFileName)
   for (Int_t i = 0; i < fStrNum * 2; ++i) {
     if (!inputFile) {
       AliError("Error while reading input file.");
-      delete [] idealStrips;
       delete [] xReal;
       delete [] zReal;
       return;
@@ -118,36 +109,10 @@ AliPHOSSurvey::AliPHOSSurvey(const TString &txtFileName)
     zReal[i] *= 0.1;
   }
 
-  AliPHOSStripCoords *realStrips = new AliPHOSStripCoords[fStrNum];//4
+  InitStripData(xReal, zReal);
 
-  for (Int_t j = 0, stripNumber = 0; j < emcaGeom->GetNStripX() * 2; j += 2) {
-    for (Int_t i = 0; i < emcaGeom->GetNStripZ(); ++i) {
-      AliPHOSStripCoords &str = realStrips[stripNumber++];
-      str.fX1 = xReal[i + j * emcaGeom->GetNStripZ()];
-      str.fZ1 = zReal[i + j * emcaGeom->GetNStripZ()];
-      str.fX2 = xReal[i + (j + 1) * emcaGeom->GetNStripZ()];
-      str.fZ2 = zReal[i + (j + 1) * emcaGeom->GetNStripZ()];
-    }
-  }
-
-  fStripData = new AliPHOSStripDelta[fStrNum];
-  
-  for (Int_t i = 0; i < fStrNum; ++i) {
-    const AliPHOSStripCoords &real = realStrips[i];
-    const AliPHOSStripCoords &ideal = idealStrips[i];
-    AliPHOSStripDelta &t = fStripData[i];
-    t.fTheta = TMath::ATan((real.fZ2 - real.fZ1)  / (real.fX2 - real.fX1)) - 
-               TMath::ATan((ideal.fZ2 - ideal.fZ1) / (ideal.fX2 - ideal.fX1));
-    t.fTheta *= TMath::RadToDeg();
-    t.fXShift = (real.fX1 + real.fX2) / 2 - (ideal.fX1 + ideal.fX2) / 2;
-    t.fZShift = (real.fZ1 + real.fZ2) / 2 - (ideal.fZ1 + ideal.fZ2) / 2;
-    t.fYShift = 0., t.fPsi = 0., t.fPhi = 0.;
-  }
-  
-  delete [] realStrips;
   delete [] zReal;
   delete [] xReal;
-  delete [] idealStrips;
 }
 
 //____________________________________________________________________________
@@ -221,4 +186,52 @@ AliPHOSSurvey::AliPHOSStripDelta AliPHOSSurvey::GetStripTransformation(Int_t str
   if (module != 3 || !fStripData)
     return t;
   return fStripData[stripIndex];
+}
+
+//____________________________________________________________________________
+void AliPHOSSurvey::InitStripData(const Double_t *xReal, const Double_t *zReal)
+{
+  const AliPHOSGeometry *phosGeom = AliPHOSGeometry::GetInstance("IHEP", "IHEP");
+  AliPHOSEMCAGeometry * emcaGeom = phosGeom->GetEMCAGeometry();
+  const Float_t *strip = emcaGeom->GetStripHalfSize();
+  const Float_t *cell = emcaGeom->GetSteelCellHalfSize(); 
+
+  AliPHOSStripCoords *idealStrips = new AliPHOSStripCoords[fStrNum];//1
+  for (Int_t ix = 0, stripNumber = 0; ix < emcaGeom->GetNStripX(); ++ix) {
+    for (Int_t iz = 0; iz < emcaGeom->GetNStripZ(); ++iz) {
+      AliPHOSStripCoords &str = idealStrips[stripNumber++];
+      str.fX1 = ix * 2 * strip[0];
+      str.fX2 = str.fX1 + 14 * cell[0];
+      str.fZ1 = iz * 2 * strip[2];
+      str.fZ2 = str.fZ1 + 2 * cell[2];
+    }
+  }
+
+  AliPHOSStripCoords *realStrips = new AliPHOSStripCoords[fStrNum];//4
+  for (Int_t j = 0, stripNumber = 0; j < emcaGeom->GetNStripX() * 2; j += 2) {
+    for (Int_t i = 0; i < emcaGeom->GetNStripZ(); ++i) {
+      AliPHOSStripCoords &str = realStrips[stripNumber++];
+      str.fX1 = xReal[i + j * emcaGeom->GetNStripZ()];
+      str.fZ1 = zReal[i + j * emcaGeom->GetNStripZ()];
+      str.fX2 = xReal[i + (j + 1) * emcaGeom->GetNStripZ()];
+      str.fZ2 = zReal[i + (j + 1) * emcaGeom->GetNStripZ()];
+    }
+  }
+
+  fStripData = new AliPHOSStripDelta[fStrNum];
+  
+  for (Int_t i = 0; i < fStrNum; ++i) {
+    const AliPHOSStripCoords &real = realStrips[i];
+    const AliPHOSStripCoords &ideal = idealStrips[i];
+    AliPHOSStripDelta &t = fStripData[i];
+    t.fTheta = TMath::ATan((real.fZ2 - real.fZ1)  / (real.fX2 - real.fX1)) - 
+               TMath::ATan((ideal.fZ2 - ideal.fZ1) / (ideal.fX2 - ideal.fX1));
+    t.fTheta *= TMath::RadToDeg();
+    t.fXShift = (real.fX1 + real.fX2) / 2 - (ideal.fX1 + ideal.fX2) / 2;
+    t.fZShift = (real.fZ1 + real.fZ2) / 2 - (ideal.fZ1 + ideal.fZ2) / 2;
+    t.fYShift = 0., t.fPsi = 0., t.fPhi = 0.;
+  }
+
+  delete [] realStrips;
+  delete [] idealStrips;
 }

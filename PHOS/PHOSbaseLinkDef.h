@@ -31,5 +31,6 @@
 #pragma link C++ class AliPHOSRawDigiProducer+;
 #pragma link C++ class AliPHOSEmcBadChannelsMap+;
 #pragma link C++ class AliPHOSSurvey+;
+#pragma link C++ class AliPHOSSurvey1+;
 
 #endif

@@ -9,12 +9,13 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.2  2007/05/17 17:13:32  kharlov
+ * Coding convensions satisfied (T.Pocheptsov)
+ *
  * Revision 1.1  2007/04/19 15:47:20  kharlov
  * Add misalignment of strip units with AliPHOSSurvey class
  *
  */
-
-#include <vector>
 
 #include <TObject.h>
 #include <Rtypes.h>
@@ -54,16 +55,17 @@ protected:
     Float_t fPhi;    //phi
   };
 
+  Int_t 	           fStrNum; // Number of strips.
+  AliPHOSStripDelta *fStripData; // Strip unit transformation data
+
+  void InitStripData(const Double_t *xReal, const Double_t *zReal);
+
 private:
   //Calculate shifts and rotations for strip number stripIndex in a module moduleIndex.
   virtual AliPHOSStripDelta GetStripTransformation(Int_t stripIndex, Int_t moduleIndex)const;
 
   AliPHOSSurvey(const AliPHOSSurvey &);
   AliPHOSSurvey &operator = (const AliPHOSSurvey &);
-
-private:
-  Int_t 	     fStrNum; // Number of strips.
-  AliPHOSStripDelta *fStripData; // Strip unit transformation data
 
   ClassDef(AliPHOSSurvey, 1) //Survey data reader
 };
