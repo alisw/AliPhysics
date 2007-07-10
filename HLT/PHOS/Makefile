@@ -1,39 +1,43 @@
-ObjSuf		= o
-SrcSuf		= cxx
-HeadSuf		= h
-
-ROOTLIBS	= -L$(ROOTSYS)/lib -lNew -lCint \
-		-lGraf -lGraf3d -lHist -lHtml -lMatrix -lMinuit\
-		-lPostscript -lTree -lASImage \
-		-lCore -lEG -lFoam -lFumili -lGedOld -lGed \
-		-lGeom -lGpad -lGraf -lGuiBld -lGui -lMatrix\
-		-lRint -lRootAuth  -lThread -lVMC
+include Makefile.arch
 
 
-PEAKFINDERTESTO		= PeakFinderTest.$(ObjSuf)
-PEAKFINDERTESTS		= PeakFinderTest.$(SrcSuf)
+MAINO       = testDecoder.$(ObjSuf) AliHLTAltroData.$(ObjSuf)  AliHLTAltroBunch.$(ObjSuf) AliHLTDDLDecoder.$(ObjSuf)
 
-ALIHLTPHOSPULSEGENERATORO	= AliHLTPHOSPulseGenerator.$(ObjSuf)
-ALIHLTPHOSPULSEGENERATORS	= AliHLTPHOSPulseGenerator.$(SrcSuf)
-ALIHLTPHOSPULSEGENERATORH	= AliHLTPHOSPulseGenerator.$(HeadSuf)
+MAINS       = testDecoder.$(SrcSuf) AliHLTAltroData.$(SrcSuf)  AliHLTAltroBunch.$(SrcSuf) AliHLTDDLDecoder.$(SrcSuf)
 
-ALIHLTPHOSPEAKFINDERO		= AliHLTPHOSPeakFinder.$(ObjSuf)
-ALIHLTPHOSPEAKFINDERS		= AliHLTPHOSPeakFinder.$(SrcSuf)
-ALIHLTPHOSPEAKFINDERH		= AliHLTPHOSPeakFinder.$(HeadSuf)
+MAIN        = testDecoder$(ExeSuf)
 
-OBJS	= $(PEAKFINDERTESTO)  $(ALIHLTPHOSPULSEGENERATORO) $(ALIHLTPHOSPEAKFINDERO)
 
-pftest:$(OBJS)
-	g++ $(ROOTLIBS) $(ROOTGLIBS) $(OBJS) -o pftest
+OBJS          = $(MAINO) 
+PROGRAMS      = $(MAIN) 
 
-$(PEAKFINDERTESTO):$(PEAKFINDERTESTS)
-	g++ -I$(ROOTSYS)/include -c $(PEAKFINDERTESTS)
 
-$(ALIHLTPHOSPULSEGENERATORO):$(ALIHLTPHOSPULSEGENERATORS) $(ALIHLTPHOSPULSEGENERATORH)
-	g++ -I$(ROOTSYS)/include -c $(ALIHLTPHOSPULSEGENERATORS)
+.SUFFIXES: .$(SrcSuf) .$(ObjSuf) .$(DllSuf)
 
-$(ALIHLTPHOSPEAKFINDERO):$(ALIHLTPHOSPEAKFINDERS) $(ALIHLTPHOSPEAKFINDERH)
-	g++ -I$(ROOTSYS)/include -c $(ALIHLTPHOSPEAKFINDERS)
+all:            $(PROGRAMS)
+
+
+$(MAIN):	$(MAINO)
+		$(LD) $(LDFLAGS) $^ $(LIBS) $(GLIBS) -lTreePlayer -lMathCore -lThread -lpthread $(OutPutOpt)$(MAIN)
+		@echo "$@ done"
+
 
 clean:
-	@rm -f *o *~ *# pftest
+		@rm -f $(OBJS) core
+
+distclean:      clean
+		-@mv -f linearIO.root linearIO.roott
+		@rm -f $(PROGRAMS) $(EVENTSO) $(EVENTLIB) *Dict.* *.def *.exp \
+		   *.root *.ps *.so *.lib *.dll *.d .def so_locations
+		@rm -rf cxx_repository
+		-@mv -f linearIO.roott linearIO.root
+		-@cd RootShower && $(MAKE) distclean
+
+.SUFFIXES: .$(SrcSuf)
+	
+AliHLTAltroData.$(ObjSuf): AliHLTAltroData.h
+AliHLTDDLDecoder.$(ObjSuf): AliHLTDDLDecoder.h
+testDecoder.$(ObjSuf): AliHLTAltroData.h AliHLTDDLDecoder.h
+
+.$(SrcSuf).$(ObjSuf):
+	$(CXX) $(CXXFLAGS) -c $<
