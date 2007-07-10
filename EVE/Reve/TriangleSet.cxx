@@ -46,7 +46,7 @@ TriangleSet::TriangleSet(Int_t nv, Int_t nt, Bool_t norms, Bool_t cols) :
   TNamed("TriangleSet", 0),
   fNVerts  (nv), fVerts(0),
   fNTrings (nt), fTrings(0), fTringNorms(0), fTringCols(0),
-  fColor   (2),
+  fColor   (2),  fTransp(0),
   fHMTrans ()
 {
   fVerts  = new Float_t[3*fNVerts];
@@ -139,7 +139,7 @@ void TriangleSet::Paint(Option_t* )
   // Section kCore
   buffer.fID           = this;
   buffer.fColor        = fColor;
-  buffer.fTransparency = 0;
+  buffer.fTransparency = fTransp;
   fHMTrans.SetBuffer3D(buffer);
   buffer.SetSectionsValid(TBuffer3D::kCore);
    
@@ -183,3 +183,4 @@ TriangleSet* TriangleSet::ReadTrivialFile(const char* file)
 
   return ts;
 }
+
