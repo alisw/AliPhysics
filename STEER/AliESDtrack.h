@@ -229,7 +229,7 @@ public:
      x=fHMPIDtrkX; y=fHMPIDtrkY; th=fHMPIDtrkTheta; ph=fHMPIDtrkPhi;
   }
   void    SetHMPIDmip(Float_t  x, Float_t  y, Int_t q, Int_t nph=0) {
-     fHMPIDmipX=x; fHMPIDmipY=y; fHMPIDqn=100000*q+nph;
+     fHMPIDmipX=x; fHMPIDmipY=y; fHMPIDqn=1000000*q+nph;
   }
   void    GetHMPIDmip(Float_t &x,Float_t &y,Int_t &q,Int_t &nph) const {
      x=fHMPIDmipX; y=fHMPIDmipY; q=fHMPIDqn/1000000; nph=fHMPIDqn%1000000;
