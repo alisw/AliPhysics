@@ -406,7 +406,9 @@ class AliHLTComponent : public AliHLTLogging {
     /** constructor */
     AliHLTStopwatchGuard(TStopwatch* pStart);
     /** copy constructor (not for use) */
-    AliHLTStopwatchGuard(AliHLTStopwatchGuard&);
+    AliHLTStopwatchGuard(const AliHLTStopwatchGuard&);
+    /** assignment operator (not for use) */
+    AliHLTStopwatchGuard& operator=(const AliHLTStopwatchGuard&);
     /** destructor */
     ~AliHLTStopwatchGuard();
 

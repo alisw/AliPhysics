@@ -8,25 +8,11 @@
 #include "AliHLTTPCRootTypes.h"
  
 class AliHLTTPCVertexArray {
-  private:
-
-  Char_t fArray[8320][8][8]; //array
-  Double_t fZSector;    //sector
-  Double_t fZSectorErr; //sector error
-  Int_t fMaxSeed;  //max seed
-  Int_t fNSeed;    //number of seeds
-  Float_t fZSeed[400]; //seed in Z
-  Float_t fRSeed[400]; //seed in XY
-  Int_t fSecSeed[400]; //seed for sectors
-
-  void FindMean(Float_t *vertex,Int_t *array, Int_t len);
-  void AnalyzeSector(Float_t *vertex, Int_t *array, Int_t len);
-
-  public:
-  AliHLTTPCVertexArray(){fNSeed=0;fMaxSeed=400;}
-  AliHLTTPCVertexArray(AliHLTTPCVertexArray&){fNSeed=0;fMaxSeed=400;}
-  AliHLTTPCVertexArray(Int_t maxseed){fNSeed=0;fMaxSeed=maxseed;}
-  virtual ~AliHLTTPCVertexArray(){;}
+ public:
+  AliHLTTPCVertexArray();
+  AliHLTTPCVertexArray(AliHLTTPCVertexArray&);
+  AliHLTTPCVertexArray(Int_t maxseed);
+  virtual ~AliHLTTPCVertexArray();
   
   Int_t GetContent(Float_t z,Float_t r,Int_t sec);
   Int_t Trace(Float_t z,Float_t r,Int_t sec,Float_t vertex);
@@ -46,8 +32,20 @@ class AliHLTTPCVertexArray {
   void FindSectorVertex(Double_t pos = 0,Double_t range = 60,Int_t nbin = 60);
   void ResetSector();
 
-  ClassDef(AliHLTTPCVertexArray,1)  //The HLTTPC Fast Vertex Finder Base Class
+ private:
+  void FindMean(Float_t *vertex,Int_t *array, Int_t len);
+  void AnalyzeSector(Float_t *vertex, Int_t *array, Int_t len);
 
+  Char_t fArray[8320][8][8]; //array
+  Double_t fZSector;    //sector
+  Double_t fZSectorErr; //sector error
+  Int_t fMaxSeed;  //max seed
+  Int_t fNSeed;    //number of seeds
+  Float_t fZSeed[400]; //seed in Z
+  Float_t fRSeed[400]; //seed in XY
+  Int_t fSecSeed[400]; //seed for sectors
+
+  ClassDef(AliHLTTPCVertexArray,1)  //The HLTTPC Fast Vertex Finder Base Class
 };
 
 inline void AliHLTTPCVertexArray::FillSector3D(Float_t x, Float_t y, Float_t z)

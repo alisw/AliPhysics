@@ -39,21 +39,37 @@ using namespace std;
 ClassImp(AliHLTTPCVertexFinder)
 
 AliHLTTPCVertexFinder::AliHLTTPCVertexFinder()
+  :
+  fX(0),
+  fY(0),
+  fZ(0),
+  fPhi(0),
+  fR(0),
+  fXErr(1),
+  fYErr(1),
+  fZErr(1),
+  fMWxy(1.)
 {
   //
   // default constructor for the AliHLTTPCVertexFinder class. 
   //
 
   //Set vertex to zero.
-  SetX(0);
-  SetY(0);
-  SetZ(0);
-  SetXErr(1);
-  SetYErr(1);
-  SetZErr(1);
-  fR=0;
-  fPhi=0;
-  fMWxy = 1.;
+}
+
+AliHLTTPCVertexFinder::AliHLTTPCVertexFinder(AliHLTTPCVertexFinder &vf)
+  :
+  AliHLTTPCVertexArray(vf),
+  fX(0),
+  fY(0),
+  fZ(0),
+  fPhi(0),
+  fR(0),
+  fXErr(1),
+  fYErr(1),
+  fZErr(1),
+  fMWxy(1.)
+{
 }
 
 AliHLTTPCVertexFinder::~AliHLTTPCVertexFinder()

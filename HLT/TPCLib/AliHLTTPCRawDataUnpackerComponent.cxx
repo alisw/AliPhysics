@@ -43,14 +43,29 @@ AliHLTTPCRawDataUnpackerComponent gAliHLTTPCRawDataUnpackerComponent;
 ClassImp(AliHLTTPCRawDataUnpackerComponent)
 
 AliHLTTPCRawDataUnpackerComponent::AliHLTTPCRawDataUnpackerComponent()
-    {
-    fRawMemoryReader = NULL;
-    fTPCRawStream = NULL;
-    }
+  :
+  fRawMemoryReader(NULL),
+  fTPCRawStream(NULL)
+{
+}
+
+AliHLTTPCRawDataUnpackerComponent::AliHLTTPCRawDataUnpackerComponent(const AliHLTTPCRawDataUnpackerComponent&)
+  :
+  fRawMemoryReader(NULL),
+  fTPCRawStream(NULL)
+{
+  // see header file for class documentation
+}
+
+AliHLTTPCRawDataUnpackerComponent& AliHLTTPCRawDataUnpackerComponent::operator=(const AliHLTTPCRawDataUnpackerComponent&)
+{ 
+  // see header file for class documentation
+  return *this;
+}
 
 AliHLTTPCRawDataUnpackerComponent::~AliHLTTPCRawDataUnpackerComponent()
-    {
-    }
+{
+}
 
 // Public functions to implement AliHLTComponent's interface.
 // These functions are required for the registration process

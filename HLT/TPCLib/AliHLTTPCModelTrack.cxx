@@ -21,23 +21,45 @@ using namespace std;
 
 ClassImp(AliHLTTPCModelTrack)
 
-AliHLTTPCModelTrack::AliHLTTPCModelTrack() 
+AliHLTTPCModelTrack::AliHLTTPCModelTrack()
+  :
+  fClusterCharge(0),
+  fClusters(0),
+  fTrackModel(0),
+  fNClusters(0),
+  fMaxOverlaps(0),
+  fNoverlaps(0),
+  fOverlap(0),
+  fParSigmaY2(0),
+  fParSigmaZ2(0),
+  fCrossingAngle(0),
+  fPatch(0),
+  fArraysCreated(kFALSE),
+  fPad(0),
+  fTime(0)
 {
   // default constructor
-  fNClusters = 0;
-  fClusters = 0;
-  fOverlap = 0;
-  fPad=0;
-  fTime=0;
-  fNoverlaps=0;
-  fClusterCharge=0;
-  fTrackModel=0;
-  fCrossingAngle=0;
-  fParSigmaY2=0;
-  fParSigmaZ2=0;
-  fArraysCreated=kFALSE;
 }
 
+AliHLTTPCModelTrack::AliHLTTPCModelTrack(const AliHLTTPCModelTrack&)
+  :
+  fClusterCharge(0),
+  fClusters(0),
+  fTrackModel(0),
+  fNClusters(0),
+  fMaxOverlaps(0),
+  fNoverlaps(0),
+  fOverlap(0),
+  fParSigmaY2(0),
+  fParSigmaZ2(0),
+  fCrossingAngle(0),
+  fPatch(0),
+  fArraysCreated(kFALSE),
+  fPad(0),
+  fTime(0)
+{
+  // dummy copy constructor
+}
 
 AliHLTTPCModelTrack::~AliHLTTPCModelTrack()
 {

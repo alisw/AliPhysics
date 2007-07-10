@@ -35,6 +35,37 @@ using namespace std;
 
 ClassImp(AliHLTTPCVertexArray)
 
+AliHLTTPCVertexArray::AliHLTTPCVertexArray()
+  :
+  fZSector(0),
+  fZSectorErr(0),
+  fMaxSeed(400),
+  fNSeed(0)
+{
+}
+
+AliHLTTPCVertexArray::AliHLTTPCVertexArray(AliHLTTPCVertexArray&)
+  :
+  fZSector(0),
+  fZSectorErr(0),
+  fMaxSeed(400),
+  fNSeed(0)
+{
+}
+
+AliHLTTPCVertexArray::AliHLTTPCVertexArray(Int_t maxseed)
+  :
+  fZSector(0),
+  fZSectorErr(0),
+  fMaxSeed(maxseed),
+  fNSeed(0)
+{
+}
+
+AliHLTTPCVertexArray::~AliHLTTPCVertexArray()
+{
+}
+
 void AliHLTTPCVertexArray::AnalyzeSector(Float_t *vertex, Int_t *array, Int_t len)
 {
   //loop over all seeds and all vertex position

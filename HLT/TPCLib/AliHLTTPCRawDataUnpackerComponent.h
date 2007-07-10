@@ -43,6 +43,10 @@ class AliHLTTPCRawDataUnpackerComponent : public AliHLTProcessor
 		     AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
 	
     private:
+      /** not a valid copy constructor, defined according to effective C++ style */
+      AliHLTTPCRawDataUnpackerComponent(const AliHLTTPCRawDataUnpackerComponent&);
+      /** not a valid assignment op, but defined according to effective C++ style */
+      AliHLTTPCRawDataUnpackerComponent& operator=(const AliHLTTPCRawDataUnpackerComponent&);
 
 	// Initialize AliROOT TPC raw stream parsing class
 	AliRawReaderMemory *fRawMemoryReader;

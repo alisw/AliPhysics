@@ -34,8 +34,8 @@ class AliHLTTPCVertex {
     void SetXYWeight(Double_t f) {fMWxy = f;}
 
   private:
-    AliHLTTPCVertex(const AliHLTTPCVertex&){;}
-    AliHLTTPCVertex& operator=(const AliHLTTPCVertex&){return *this;}
+    AliHLTTPCVertex(const AliHLTTPCVertex&);
+    AliHLTTPCVertex& operator=(const AliHLTTPCVertex&);
 
     Double_t fX;   //x 
     Double_t fY;   //y 

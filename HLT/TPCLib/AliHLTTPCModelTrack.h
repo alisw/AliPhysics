@@ -57,6 +57,10 @@ class AliHLTTPCModelTrack : public AliHLTTPCTrack {
   void GetClusterLabel(Int_t row,Int_t *trackID);
     
  private:
+  /** not a valid copy constructor, defined according to effective C++ style */
+  AliHLTTPCModelTrack(const AliHLTTPCModelTrack&);
+  /** not a valid assignment op, but defined according to effective C++ style */
+  AliHLTTPCModelTrack& operator=(const AliHLTTPCModelTrack&);
   
   Short_t fClusterCharge; //Average cluster charge
   AliHLTTPCClusterModel *fClusters; //! Clusters

@@ -48,6 +48,11 @@ AliHLTTPCFitter::AliHLTTPCFitter()
   fVertexConstraint(0)
 {
   //constructor
+  // see header file for class documentation
+  // or
+  // refer to README to build package
+  // or
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
   memset(fClusters,0,36*6*sizeof(AliHLTTPCSpacePointData*));
   memset(fNcl,0,36*6*sizeof(UInt_t));
 }
@@ -70,11 +75,13 @@ AliHLTTPCFitter& AliHLTTPCFitter::operator=(const AliHLTTPCFitter& src)
 }
 
 AliHLTTPCFitter::AliHLTTPCFitter(AliHLTTPCVertex *vertex,Bool_t vertexconstraint)
+  :
+  fTrack(NULL),
+  fVertex(vertex),
+  fVertexConstraint(vertexconstraint)
 {
   //constructor
   fTrack=0;
-  fVertex = vertex;
-  fVertexConstraint=vertexconstraint;
   memset(fClusters,0,36*6*sizeof(AliHLTTPCSpacePointData*));
 }
 

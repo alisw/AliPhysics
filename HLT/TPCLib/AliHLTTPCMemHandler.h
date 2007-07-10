@@ -25,7 +25,7 @@ class AliHLTTPCRandomDigitData;
 
 class AliRunLoader;
 class AliRawEvent;
-class AliTPCRawStream;
+#include "AliTPCRawStream.h"
 
 class AliHLTTPCMemHandler { 
 

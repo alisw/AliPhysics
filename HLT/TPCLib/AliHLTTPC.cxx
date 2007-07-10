@@ -36,7 +36,7 @@
 #include "AliHLTTPCTrackSegmentData.h"
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCVertexData.h"
-#include "AliHLTTPCDDLDataFileHandler.h"
+//#include "AliHLTTPCDDLDataFileHandler.h"
 
 /** \class AliHLTTPC
 <pre>
@@ -181,15 +181,19 @@ void AliHLTTPC::Init(Char_t *path,EFileType filetype,Int_t npatches)
   fInterMerger = new AliHLTTPCInterMerger();
   fGlobalMerger = new AliHLTTPCGlobalMerger();
   SetMergerParameters();//Set default merger parameters
-  if(filetype==kRoot){
+  if(filetype==kRoot){    
     fFileHandler = new AliHLTTPCFileHandler(kTRUE); //static version
     fFileHandler->SetAliInput(fInputFile);
   }else if(filetype==kRaw){
-    fFileHandler = new AliHLTTPCDDLDataFileHandler();
-    fFileHandler->SetReaderInput(fInputFile);
+    LOG(AliHLTTPCLog::kFatal,"AliHLTTPC::Init","Files")
+      <<"AliHLTTPCDDLDataFileHandler not available in this build"<<ENDLOG;
+//     fFileHandler = new AliHLTTPCDDLDataFileHandler();
+//     fFileHandler->SetReaderInput(fInputFile);
   }else if(filetype==kDate){
-    fFileHandler = new AliHLTTPCDDLDataFileHandler();
-    fFileHandler->SetReaderInput(fInputFile,-1);
+    LOG(AliHLTTPCLog::kFatal,"AliHLTTPC::Init","Files")
+      <<"AliHLTTPCDDLDataFileHandler not available in this build"<<ENDLOG;
+//     fFileHandler = new AliHLTTPCDDLDataFileHandler();
+//     fFileHandler->SetReaderInput(fInputFile,-1);
   }
   else if(filetype==kRunLoader){
     fFileHandler = new AliHLTTPCFileHandler(kTRUE); //static version

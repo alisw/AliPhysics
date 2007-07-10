@@ -55,7 +55,8 @@ ClassImp(AliHLTTPCCATrackerComponent)
 AliHLTTPCCATrackerComponent::AliHLTTPCCATrackerComponent()
   :
   fTracker(NULL),
-  fVertex(NULL)
+  fVertex(NULL),
+  fBField(0)
 {
   // see header file for class documentation
   // or
@@ -67,7 +68,8 @@ AliHLTTPCCATrackerComponent::AliHLTTPCCATrackerComponent()
 AliHLTTPCCATrackerComponent::AliHLTTPCCATrackerComponent(const AliHLTTPCCATrackerComponent&)
   :
   fTracker(NULL),
-  fVertex(NULL)
+  fVertex(NULL),
+  fBField(0)
 {
   // see header file for class documentation
   HLTFatal("copy constructor untested");

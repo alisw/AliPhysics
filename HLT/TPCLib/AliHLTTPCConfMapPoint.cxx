@@ -45,40 +45,105 @@ ClassImp(AliHLTTPCConfMapPoint);
 Bool_t AliHLTTPCConfMapPoint::fgDontMap=kFALSE;
 
 AliHLTTPCConfMapPoint::AliHLTTPCConfMapPoint()
+  :
+  fHitNumber(-1),
+  fTrackNumber(0),
+  fNextHitNumber(0),
+  fUsed(0),
+  fPadrow(0),
+  fSector(0),
+  fx(0),
+  fy(0),
+  fz(0),
+  fxerr(0),
+  fyerr(0),
+  fzerr(0),
+  fWxy(0),
+  fWz(0),
+  fs(0),
+  fXt(0),
+  fYt(0),
+  fZt(0),
+  fXterr(0),
+  fYterr(0),
+  fZterr(0),
+  fXprime(0),
+  fYprime(0),
+  fXprimeerr(0),
+  fYprimeerr(0),
+  fXv(0),
+  fYv(0),
+  fZv(0),
+  fXverr(0),
+  fYverr(0),
+  fZverr(0),
+  fPhi(0),
+  fEta(0),
+  fNextVolumeHit(0),
+  fNextRowHit(0),
+  fNextTrackHit(0),
+  fPhiIndex(0),
+  fEtaIndex(0),
+  fXYChi2(0),
+  fSZChi2(0)
 {
   //Constructor
   
   SetUsage(false);
-  SetHitNumber(-1);
-  SetX(0);
-  SetY(0);
-  SetZ(0);
-  SetXerr(0);
-  SetYerr(0);
-  SetZerr(0);
-
-  SetPhi(0.);
-  SetEta(0.);
-  
-  SetXprime(0.);
-  SetYprime(0.);
-  SetXprimeerr(0.);
-  SetYprimeerr(0.);
   SetIntPoint(0., 0., 0., 0., 0., 0.);
   SetShiftedCoord();
   SetMCTrackID(0,0,0);
 }
 
 AliHLTTPCConfMapPoint::AliHLTTPCConfMapPoint(const AliHLTTPCConfMapPoint&)
+  :
+  fHitNumber(-1),
+  fTrackNumber(0),
+  fNextHitNumber(0),
+  fUsed(0),
+  fPadrow(0),
+  fSector(0),
+  fx(0),
+  fy(0),
+  fz(0),
+  fxerr(0),
+  fyerr(0),
+  fzerr(0),
+  fWxy(0),
+  fWz(0),
+  fs(0),
+  fXt(0),
+  fYt(0),
+  fZt(0),
+  fXterr(0),
+  fYterr(0),
+  fZterr(0),
+  fXprime(0),
+  fYprime(0),
+  fXprimeerr(0),
+  fYprimeerr(0),
+  fXv(0),
+  fYv(0),
+  fZv(0),
+  fXverr(0),
+  fYverr(0),
+  fZverr(0),
+  fPhi(0),
+  fEta(0),
+  fNextVolumeHit(0),
+  fNextRowHit(0),
+  fNextTrackHit(0),
+  fPhiIndex(0),
+  fEtaIndex(0),
+  fXYChi2(0),
+  fSZChi2(0)
 {
   // dummy copy constructor
-  //HLTFatal("copy constructor untested");
 }
 
 AliHLTTPCConfMapPoint& AliHLTTPCConfMapPoint::operator=(const AliHLTTPCConfMapPoint&)
 { 
   // dummy assignment operator
-  //HLTFatal("assignment operator untested");
   return *this;
 }
 

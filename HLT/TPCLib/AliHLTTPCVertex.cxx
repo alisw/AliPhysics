@@ -39,6 +39,40 @@ AliHLTTPCVertex::AliHLTTPCVertex()
   SetZero();  
 }
 
+AliHLTTPCVertex::AliHLTTPCVertex(const AliHLTTPCVertex&)
+  :
+  fX(0.0),
+  fY(0.0),  
+  fZ(0.0),  
+  fPhi(0.0),
+  fR(0.0),  
+  fXErr(1.0),
+  fYErr(1.0),
+  fZErr(1.0),
+  fMWxy(1.0)
+{
+  //
+  // copy constructor not for use
+  //
+}
+
+AliHLTTPCVertex& AliHLTTPCVertex::operator=(const AliHLTTPCVertex&)
+{
+  //
+  // assignment operator not for use
+  //
+  fX=0.0;
+  fY=0.0;  
+  fZ=0.0;  
+  fPhi=0.0;
+  fR=0.0;  
+  fXErr=1.0;
+  fYErr=1.0;
+  fZErr=1.0;
+  fMWxy=1.0;
+  return *this;
+}
+
 AliHLTTPCVertex::~AliHLTTPCVertex()
 {
   //

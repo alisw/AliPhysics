@@ -42,6 +42,10 @@ class AliHLTTPCVertexFinderComponent : public AliHLTProcessor
 		     AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
 	
     private:
+      /** not a valid copy constructor, defined according to effective C++ style */
+      AliHLTTPCVertexFinderComponent(const AliHLTTPCVertexFinderComponent&);
+      /** not a valid assignment op, but defined according to effective C++ style */
+      AliHLTTPCVertexFinderComponent& operator=(const AliHLTTPCVertexFinderComponent&);
 
 	AliHLTTPCVertexFinder* fVertexFinder;
 

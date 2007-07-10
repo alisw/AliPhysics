@@ -10,7 +10,6 @@ MODULE_SRCS= 	AliHLTTPCLog.cxx \
 		AliHLTTPCFitter.cxx \
 		AliHLTTPCFileHandler.cxx \
 		AliHLTTPCBenchmark.cxx \
-		AliHLTTPCDDLDataFileHandler.cxx \
 		AliHLTTPCClusterFinder.cxx \
 		AliHLTTPCDigitReader.cxx \
 		AliHLTTPCDigitReaderPacked.cxx \
@@ -52,6 +51,7 @@ MODULE_SRCS= 	AliHLTTPCLog.cxx \
 		AliHLTTPCCATrackerComponent.cxx \
 		AliHLTTPCEsdWriterComponent.cxx
 
+# 		AliHLTTPCDDLDataFileHandler.cxx \
 #		AliHLTTPCCalibPedestalComponent.cxx \
 #		AliHLTTPCCalibSignalComponent.cxx
 
@@ -61,7 +61,6 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		AliHLTTPCFitter.h \
 		AliHLTTPCFileHandler.h \
 		AliHLTTPCBenchmark.h \
-		AliHLTTPCDDLDataFileHandler.h \
 		AliHLTTPCClusterFinder.h \
 		AliHLTTPCDigitReader.h \
 		AliHLTTPCDigitReaderPacked.h \
@@ -104,6 +103,7 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		AliHLTTPCCATrackerComponent.h \
 		AliHLTTPCEsdWriterComponent.h
 
+# 		AliHLTTPCDDLDataFileHandler.h \
 #		AliHLTTPCCalibPedestalComponent.h \
 #		AliHLTTPCCalibSignalComponent.h
 

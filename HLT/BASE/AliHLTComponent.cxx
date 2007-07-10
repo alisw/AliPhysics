@@ -884,12 +884,24 @@ AliHLTComponent::AliHLTStopwatchGuard::AliHLTStopwatchGuard(TStopwatch* pStopwat
   if (fpStopwatch && bStart==1) fpStopwatch->Start(kFALSE);
 }
 
-AliHLTComponent::AliHLTStopwatchGuard::AliHLTStopwatchGuard(AliHLTStopwatchGuard&)
+AliHLTComponent::AliHLTStopwatchGuard::AliHLTStopwatchGuard(const AliHLTStopwatchGuard&)
   :
   fpStopwatch(NULL),
   fpPrec(NULL)
 {
-  // copy constructor (not for use)
+  //
+  // copy constructor not for use
+  //
+}
+
+AliHLTComponent::AliHLTStopwatchGuard& AliHLTComponent::AliHLTStopwatchGuard::operator=(const AliHLTStopwatchGuard&)
+{
+  //
+  // assignment operator not for use
+  //
+  fpStopwatch=NULL;
+  fpPrec=NULL;
+  return *this;
 }
 
 AliHLTComponent::AliHLTStopwatchGuard* AliHLTComponent::AliHLTStopwatchGuard::fgpCurrent=NULL;

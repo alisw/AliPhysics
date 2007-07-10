@@ -25,7 +25,7 @@ class AliHLTTPCVertexFinder:public AliHLTTPCVertexArray {
 
  public:
   AliHLTTPCVertexFinder(); 
-  AliHLTTPCVertexFinder(AliHLTTPCVertexFinder &vf) : AliHLTTPCVertexArray(vf){;}
+  AliHLTTPCVertexFinder(AliHLTTPCVertexFinder &vf);
   virtual ~AliHLTTPCVertexFinder();
 
   void Reset();

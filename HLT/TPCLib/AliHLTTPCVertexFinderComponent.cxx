@@ -42,13 +42,27 @@ AliHLTTPCVertexFinderComponent gAliHLTTPCVertexFinderComponent;
 ClassImp(AliHLTTPCVertexFinderComponent)
 
 AliHLTTPCVertexFinderComponent::AliHLTTPCVertexFinderComponent()
-    {
-    fVertexFinder = NULL;
-    }
+  :
+  fVertexFinder(NULL)
+{
+}
+
+AliHLTTPCVertexFinderComponent::AliHLTTPCVertexFinderComponent(const AliHLTTPCVertexFinderComponent&)
+  :
+  fVertexFinder(NULL)
+{
+  // see header file for class documentation
+}
+
+AliHLTTPCVertexFinderComponent& AliHLTTPCVertexFinderComponent::operator=(const AliHLTTPCVertexFinderComponent&)
+{ 
+  // see header file for class documentation
+  return *this;
+}
 
 AliHLTTPCVertexFinderComponent::~AliHLTTPCVertexFinderComponent()
-    {
-    }
+{
+}
 
 // Public functions to implement AliHLTComponent's interface.
 // These functions are required for the registration process

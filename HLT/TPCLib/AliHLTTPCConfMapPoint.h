@@ -29,10 +29,6 @@ class AliHLTTPCConfMapPoint {
  public:
 
   AliHLTTPCConfMapPoint();
-  /** not a valid copy constructor, defined according to effective C++ style */
-  AliHLTTPCConfMapPoint(const AliHLTTPCConfMapPoint&);
-  /** not a valid assignment op, but defined according to effective C++ style */
-  AliHLTTPCConfMapPoint& operator=(const AliHLTTPCConfMapPoint&);
   /** destructor */
   virtual ~AliHLTTPCConfMapPoint();
   
@@ -149,6 +145,10 @@ class AliHLTTPCConfMapPoint {
   void SetConfCoord();// conformal mapping
 
  private:
+  /** not a valid copy constructor, defined according to effective C++ style */
+  AliHLTTPCConfMapPoint(const AliHLTTPCConfMapPoint&);
+  /** not a valid assignment op, but defined according to effective C++ style */
+  AliHLTTPCConfMapPoint& operator=(const AliHLTTPCConfMapPoint&);
 
   Int_t fHitNumber;     //hit number
   Int_t fTrackNumber;   //track number

@@ -56,8 +56,6 @@ int AliHLTTPCDigitReader::InitBlock(void* ptr,unsigned long size,Int_t firstrow,
   return InitBlock(ptr, size, patch, slice);
 }
 
-void AliHLTTPCDigitReader::SetOldRCUFormat(Bool_t oldrcuformat){
-  if (oldrcuformat==NULL) {
-    // this is currently just to get rid of the warning "unused parameter"
-  }
+void AliHLTTPCDigitReader::SetOldRCUFormat(Bool_t /*oldrcuformat*/)
+{
 }
