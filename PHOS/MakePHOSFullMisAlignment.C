@@ -60,7 +60,10 @@ void MakePHOSFullMisAlignment(){
   new(alobj[i++]) AliAlignObjAngles("PHOS/Wheel3",
 	  volid, 0., 0., +displacement, dpsi, dtheta, dphi, kTRUE);
 
-  AliPHOSSurvey geodesicData("phos_mod3_survey.txt");
+//  AliPHOSSurvey geodesicData("phos_mod3_survey.txt");
+//  geodesicData.CreateAliAlignObjAngles(alobj);
+
+  AliPHOSSurvey1 geodesicData("phos_mod3_survey_EDMS.txt", "T1_");
   geodesicData.CreateAliAlignObjAngles(alobj);
 
   // *************************    2nd step    ***************
