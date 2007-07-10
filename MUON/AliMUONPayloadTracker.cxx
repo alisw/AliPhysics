@@ -126,7 +126,8 @@ Bool_t AliMUONPayloadTracker::Decode(UInt_t* buffer, Int_t totalDDLSize)
 
       if (fDspHeader->GetErrorWord()) {
 	fDspHeader->Print("");
-	if (fDspHeader->GetErrorWord() == (0x000000B1 |  fBlockHeader->GetDspId())){
+	if ( fDspHeader->GetErrorWord() == (0x000000B1 |  fBlockHeader->GetDspId())
+	     ||  fDspHeader->GetErrorWord() == (0x00000091 |  fBlockHeader->GetDspId()) ){
 	  // an event with a glitch in the readout  has been detected
 	  // it means that somewhere a 1 byte word has been randomly inserted
 	  // all the readout sequence is shifted  untill the next event 
