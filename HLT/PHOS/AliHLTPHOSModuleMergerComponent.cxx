@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+
+
 #include "AliHLTPHOSModuleMergerComponent.h"
 #include "AliRawReaderMemory.h"
 #include "AliCaloRawStream.h"
@@ -26,7 +28,7 @@ const AliHLTComponentDataType  AliHLTPHOSModuleMergerComponent::fgkOutputDataTyp
 AliHLTPHOSModuleMergerComponent gAliHLTPHOSModuleMergerComponent;
 
 //_____________________________________________________________________________________________________
-AliHLTPHOSModuleMergerComponent:: AliHLTPHOSModuleMergerComponent():AliHLTProcessor(),  fPhosEventCount(0),  fEquippmentID(0)
+AliHLTPHOSModuleMergerComponent:: AliHLTPHOSModuleMergerComponent():AliHLTPHOSProcessor(),  fPhosEventCount(0),  fEquippmentID(0)
 {
 
 } 
@@ -40,7 +42,7 @@ AliHLTPHOSModuleMergerComponent::~ AliHLTPHOSModuleMergerComponent()
 
 
 //_____________________________________________________________________________________________________
-AliHLTPHOSModuleMergerComponent::AliHLTPHOSModuleMergerComponent(const  AliHLTPHOSModuleMergerComponent & ) : AliHLTProcessor(),  fPhosEventCount(0),  fEquippmentID(0)
+AliHLTPHOSModuleMergerComponent::AliHLTPHOSModuleMergerComponent(const  AliHLTPHOSModuleMergerComponent & ) : AliHLTPHOSProcessor(),  fPhosEventCount(0),  fEquippmentID(0)
 {
 
 }

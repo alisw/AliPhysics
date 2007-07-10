@@ -1,52 +1,91 @@
-#ifndef ALIPHOSCOMMONDEFS_H
-#define ALIPHOSCOMMONDEFS_H
+#ifndef COMMONDEFS_H
+#define COMMONDEFS_H
 
-//Hardware constants
-#define N_MODULES          5                             /**<Number of modules of the PHOS detector*/
-#define N_RCUS             4                             /**<Number of RCUs per Module*/
-#define N_RCUS_PER_MODULE  4                             /**<Number of RCUs per Module*/
-#define N_RCUS_PER_TOTAL   N_MODULES*N_RCUS_PER_MODULE   /**<Total number of RCUs for PHOS*/
-#define N_BRANCHES         2                             /**<Number of branches per RCU*/
-#define N_FEECS           14                             /**<Number of Frontend cards per branch*/
-#define N_ALTROS           4                             /**<Number of ALTROs per frontend card*/
-#define N_ALTROCHANNELS   16                             /**<Number of readout channles per ALTRO*/
-#define ALTRO_MAX_SAMPLES 1008                           /**<The maximum number of samples of the ALTRO*/
+/**************************************************************************
+ * This file is property of and copyright by the Experimental Nuclear     *
+ * Physics Group, Dep. of Physics                                         *
+ * University of Oslo, Norway, 2006                                       *
+ *                                                                        * 
+ * Author: Per Thomas Hille perthi@fys.uio.no for the ALICE DCS Project.  *
+ * Contributors are mentioned in the code where appropriate.              *
+ * Please report bugs to perthi@fys.uio.no                                * 
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 
-//Geometry constants
-#define N_ROWS_MOD         56                            /**<Number of rows per module*/       
-#define N_COLUMNS_MOD      64                            /**<Number of columns per module*/ 
+#include "PhosConst.h"
 
-#define N_ROWS_RCU         28                            /**<Number of rows per module*/       
-#define N_COLUMNS_RCU      32   
-#define N_ZROWS_RCU        N_ROWS_RCU                    /**<Number of rows per module*/       
-#define N_XCOLUMNS_RCU     N_COLUMNS_RCU 
+#define PHOS_CRYSTALS	(PHOS_MODS*PHOS_ROWS*PHOS_COLS)  // Total number of PHOS crystals
 
-#define N_ZROWS_MOD        N_ROWS_MOD                    /**<Number of rows per module*/       
-#define N_XCOLUMNS_MOD     N_COLUMNS_MOD                 /**<Number of columns per module*/ 
+//#define unsigned long int PHOS_CHANNELS	(PHOS_GAINS*PHOS_CRYSTALS) // Total number of PHOS channels
+//#define unsigned long int MP_MAP_FILE_NAME	"phosmp.map" // Shared memory map file name
+//#define unsigned long int MP_MAP_FILE_SIZE	(PHOS_CHANNELS*1024*8) // Shared memory map file size
+//#define unsigned long int MP_RESULT_DIR	"mp_result" // Directory to store result to
 
-#define N_GAINS            2                             /**<Number of gains per ALTRO channel*/
-#define N_DATATYPES        10                            /**<Max number of output datatypes for a single component*/
+#define  PHOS_CHANNELS	(PHOS_GAINS*PHOS_CRYSTALS) // Total number of PHOS channels
+#define  MP_MAP_FILE_NAME	"phosmp.map" // Shared memory map file name
+#define  MP_MAP_FILE_SIZE	(PHOS_CHANNELS*1024*8) // Shared memory map file size
+#define  MP_RESULT_DIR	"mp_result" // Directory to store result to
 
-//peakfinder constatnts
-#define PF_MAX_PATH_LENGTH 256
-#define PF_VECTOR_DIR "/HLT/PHOS/PFVectors"
-#define PF_DEFAULT_N_SAMPLES 70
-#define PF_DEFAULT_STARTINDEX 0
 
-//analysis constatnts
-#define LOW_GAIN 1
-#define HIGH_GAIN 0
+////#define unsigned long int TRUE	1 // General purpose definition
+////#define FALSE	0 // General purpose definition
 
-//general altro signal constatnts
-#define DEFAULT_TAU 2    /**<Assume that the signal rise time of the altrp pulses is 2 us (nominal value of the electronics)*/
-#define DEFAULT_FS  10   /**<Assume that the signal is samples with 10 MHZ samle rate*/
 
-//HOMER
-#define MAX_BIN_VALUE 1023
-#define MAX_HOSTS 20
-#define MAX_HOSTNAME_LENGTH 64
-#define DEFAULT_EVENT_PORT 42001 
-#define DEFAULT_HISTO_PORT 42002 
+#define MIN(x,y) ((x)>(y)?(y):(x))
+#define MAX(x,y) ((x)>(y)?(x):(y))
+#define ADJUST_TO_HIGHER(size,step) ((((size)+(step)-1)/(step))*(step))
+#define ADJUST_TO_LOWER(size,step) (((size)/(step))*(step))
+
+/////////////////////////////////////////////
+// Find index of maximum in array of any type
+/////////////////////////////////////////////
+
+#define __IMPLEMENT__findIndexOfMax(type)			\
+	inline int findIndexOfMax(type *data, int count)	\
+	{ int m=0; for(int i=1; i<count; i++) if(data[i]>data[m]) m=i; return m;}
+__IMPLEMENT__findIndexOfMax(char)
+__IMPLEMENT__findIndexOfMax(unsigned char)
+__IMPLEMENT__findIndexOfMax(int)
+__IMPLEMENT__findIndexOfMax(unsigned int)
+__IMPLEMENT__findIndexOfMax(short int)
+__IMPLEMENT__findIndexOfMax(unsigned short int)
+__IMPLEMENT__findIndexOfMax(long long)
+__IMPLEMENT__findIndexOfMax(unsigned long long)
+__IMPLEMENT__findIndexOfMax(float)
+__IMPLEMENT__findIndexOfMax(double)
+	
+/////////////////////////////////////////////
+// Find index of minimum in array of any type
+/////////////////////////////////////////////
+#define __IMPLEMENT__findIndexOfMin(type)			\
+	inline int findIndexOfMin(type *data, int count)	\
+	{ int m=0; for(int i=1; i<count; i++) if(data[i]<data[m]) m=i; return m;}
+__IMPLEMENT__findIndexOfMin(char)
+__IMPLEMENT__findIndexOfMin(unsigned char)
+__IMPLEMENT__findIndexOfMin(int)
+__IMPLEMENT__findIndexOfMin(unsigned int)
+__IMPLEMENT__findIndexOfMin(short int)
+__IMPLEMENT__findIndexOfMin(unsigned short int)
+__IMPLEMENT__findIndexOfMin(long long)
+__IMPLEMENT__findIndexOfMin(unsigned long long)
+__IMPLEMENT__findIndexOfMin(float)
+__IMPLEMENT__findIndexOfMin(double)
+	
+//////////////////////////////////////
+// Fill struct x of any type with zero
+//////////////////////////////////////
+#define FILL_ZERO(x)	memset(&(x),0,sizeof(x))
+
+//////////////
+// END OF FILE
+//////////////
 
 #endif
 

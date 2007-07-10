@@ -21,9 +21,6 @@
 #include "AliHLTPHOSRcuCellAccumulatedEnergyDataStruct.h"
 
 
-//const AliHLTComponentDataType  AliHLTPHOSRcuHistogramProducerComponent::fgkInputDataTypes[]={kAliHLTVoidDataType,{0,"",""}}; //'zero' terminated array
-//const AliHLTComponentDataType  AliHLTPHOSRcuHistogramProducerComponent::fgkOutputDataType=kAliHLTVoidDataType;
-
 AliHLTPHOSRcuHistogramProducerComponent gAliHLTPHOSRcuHistogramProducerComponent;
 
 

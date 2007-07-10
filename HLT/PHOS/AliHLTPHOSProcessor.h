@@ -2,6 +2,10 @@
 #define ALIHLTPHOSPROCESSOR_H
 
 #include "AliHLTProcessor.h"
+#include "AliHLTPHOSConstants.h"
+#include "AliHLTPHOSCommonDefs.h"
+
+using namespace PhosHLTConst;
 
 class AliHLTPHOSProcessor:public AliHLTProcessor
 {

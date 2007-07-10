@@ -16,7 +16,10 @@
  * provided "as is" without express or implied warranty.                   *
  **************************************************************************/
 
-#include "AliHLTPHOSCommonDefs.h"
+
+//#include "AliHLTPHOSCommonDefs.h"
+#include "AliHLTPHOSConstants.h"
+using namespace PhosHLTConst;
 
 
 struct AliHLTPHOSRcuCellAccumulatedEnergyDataStruct
