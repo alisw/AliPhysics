@@ -44,7 +44,8 @@ AliHLTPHOSRawAnalyzerLMS::AliHLTPHOSRawAnalyzerLMS():AliHLTPHOSRawAnalyzer()
 //_____________________________________________________________________________________________________
 AliHLTPHOSRawAnalyzerLMS::AliHLTPHOSRawAnalyzerLMS(double *dtaPtr, double fs):AliHLTPHOSRawAnalyzer() 
 {
-  fFloatDataPtr = dtaPtr;  
+  //  fFloatDataPtr = dtaPtr;  
+
   fSampleFrequency = fs;
 } //end   AliHLTPHOSRawAnalyzerLMS 
 

@@ -105,8 +105,7 @@ AliHLTPHOSRawAnalyzerPeakFinder::Evaluate(Int_t start, Int_t length)
     }
   else
     {
- 
-     
+
       if(length <  fTVectorSize)
 	{
 	  tmpLength = length;
@@ -118,17 +117,21 @@ AliHLTPHOSRawAnalyzerPeakFinder::Evaluate(Int_t start, Int_t length)
       
       for(int i=0; i < tmpLength; i++)
 	{  
-	  fDAmpl += fAVectorPtr[i]*fFloatDataPtr[i];    
+	  //	  fDAmpl += fAVectorPtr[i]*fFloatDataPtr[i];    
+	  fDAmpl += fAVectorPtr[i]*fIntDataPtr[i];   
 	}
 
       for(int i=0; i < tmpLength; i++)
 	{   
-	  fDTof += fTVectorPtr[i]*fFloatDataPtr[i]; 
+	  //	  fDTof += fTVectorPtr[i]*fFloatDataPtr[i]; 
+	  fDTof += fTVectorPtr[i]*fIntDataPtr[i]; 
 	}
       
       if(fDAmpl > 900)
 	{
-	  Double_t tmpMax = GetMaxValue(fFloatDataPtr, tmpLength);
+	  //	  Double_t tmpMax = GetMaxValue(fFloatDataPtr, tmpLength);
+	  Double_t tmpMax = GetMaxValue(fIntDataPtr, tmpLength);
+                                 
 	  if(tmpMax == 1023)
 	    {
 	      fDAmpl = tmpMax;
