@@ -657,7 +657,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
     // Same volume name definitions as in St3
     const Int_t   kNslats4          = 7;  // number of slats per quadrant
     const Int_t   kNPCB4[kNslats4]  = {5, 6, 5, 5, 4, 3, 2}; // n PCB per slat
-    const Float_t kXpos4[kNslats4]  = {38.2, 0., 0., 0., 0., 0., 0.};
+    const Float_t kXpos4[kNslats4]  = {38.75, 0., 0., 0., 0., 0., 0.}; // J.C. Correct value
     const Float_t kYpos41[kNslats4] = {0., 38.2, 34.40, 36.60, 29.3, 37.0, 28.6};
     const Float_t kYpos42[kNslats4] = {0., 38.2, 37.85, 37.55, 29.4, 37.0, 28.6};
     Float_t slatLength4[kNslats4];     
@@ -960,7 +960,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
     
     const Int_t   kNslats5         = 7;  // number of slats per quadrant
     const Int_t   kNPCB5[kNslats5] = {5, 6, 6, 6, 5, 4, 3}; // n PCB per slat
-    const Float_t kXpos5[kNslats5] = {38.2, 0., 0., 0., 0., 0., 0.};
+    const Float_t kXpos5[kNslats5] = {38.75, 0., 0., 0., 0., 0., 0.}; // J.C. Correct value  
     const Float_t kYpos5[kNslats5] = {0., 38.2, 37.9, 37.6, 37.3, 37.05, 36.75};
     Float_t slatLength5[kNslats5]; 
 
