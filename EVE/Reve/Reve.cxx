@@ -17,6 +17,8 @@
 
 #include <TGClient.h>
 
+#include <list>
+#include <algorithm>
 #include <iostream>
 
 //______________________________________________________________________

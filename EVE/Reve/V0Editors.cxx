@@ -376,18 +376,19 @@ void V0ListEditor::FillCanvas() {
 //_________________________________________________________________________
 void V0ListEditor::UpdateSelectedTab() {
 
+  Int_t i, j;
   Pixel_t yellow;
   Pixel_t grey;
   gClient->GetColorByName("yellow", yellow);
   gClient->GetColorByName("grey", grey);
 
   TGTabElement *tabElem; 
-  for (Int_t i=0; i<fMainTabA->GetNumberOfTabs(); i++) {
+  for (i=0; i<fMainTabA->GetNumberOfTabs(); i++) {
 
     tabElem = fMainTabA->GetTabTab(i);
     tabElem->ChangeBackground(grey);
 
-    for (Int_t j=0; j<fTabA[i]->GetNumberOfTabs();j++) {
+    for (j=0; j<fTabA[i]->GetNumberOfTabs();j++) {
       tabElem = fTabA[i]->GetTabTab(j);
       tabElem->ChangeBackground(grey);
     }
@@ -402,7 +403,7 @@ void V0ListEditor::UpdateSelectedTab() {
 
   TCanvas *c1;
   Int_t iCan = 0;
-  Int_t i=0;
+  i=0;
 
   while (currentTab>i) {
     iCan += fTabA[i]->GetNumberOfTabs();
@@ -415,12 +416,12 @@ void V0ListEditor::UpdateSelectedTab() {
 
   //---
 
-  for (Int_t i=0; i<fMainTabB->GetNumberOfTabs(); i++) {
+  for (i=0; i<fMainTabB->GetNumberOfTabs(); i++) {
 
     tabElem = fMainTabB->GetTabTab(i);
     tabElem->ChangeBackground(grey);
 
-    for (Int_t j=0; j<fTabB[i]->GetNumberOfTabs();j++) {
+    for (j=0; j<fTabB[i]->GetNumberOfTabs();j++) {
       tabElem = fTabB[i]->GetTabTab(j);
       tabElem->ChangeBackground(grey);
     }

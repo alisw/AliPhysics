@@ -13,6 +13,9 @@
 #include <TCanvas.h>
 
 #include <vector>
+#include <algorithm>
+#include <functional>
+#include <iostream>
 
 using namespace Reve;
 
