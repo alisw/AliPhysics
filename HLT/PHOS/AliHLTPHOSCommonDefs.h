@@ -19,7 +19,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include "PhosConst.h"
+//#include "PhosConst.h"
 
 #define PHOS_CRYSTALS	(PHOS_MODS*PHOS_ROWS*PHOS_COLS)  // Total number of PHOS crystals
 

@@ -213,7 +213,7 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 	      printf("size = %d\n", fAltroDataPtr->fDataSize);
 	      printf("harware adress = %d\n", fAltroDataPtr->fHadd);
 	      //	      DumpData(fAltroDataPtr->fData,  fAltroDataPtr->fDataSize, 4);
-	      DumpData(fAltroDataPtr->fData,  128, 4);
+	      //   DumpData(fAltroDataPtr->fData,  128, 4);
 	      //	  cout << "gain =" <<fMapperPtr->ALTRO_MAP[fAltroDataPtr->fHadd].gain  << endl;
 	      //	  cout << "row =" <<fMapperPtr->ALTRO_MAP[fAltroDataPtr->fHadd].row  << endl;
 	      //	  cout << "col =" <<fMapperPtr->ALTRO_MAP[fAltroDataPtr->fHadd].col  << endl; 

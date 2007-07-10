@@ -18,6 +18,9 @@ class AliCaloRawStream;
 class AliHLTPHOSRawAnalyzer;
 class AliHLTPHOSRcuCellEnergyDataStruct;
 class AliHLTPHOSRcuChannelDataStruct;
+class AliHLTPHOSMapper;
+class AliHLTDDLDecoder;
+class AliHLTAltroData;
 
 class AliHLTPHOSRawAnalyzerComponent: public AliHLTPHOSProcessor
 {
@@ -54,6 +57,11 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTPHOSProcessor
   AliCaloRawStream *fPHOSRawStream;                   /**<Streamer for PHOS raw data, used by fPHOSRawMemory reader*/ 
   AliRawReaderMemory *fRawMemoryReader;               /**<Decoder to read PHOS raw data on the altro format*/  
   AliHLTPHOSRcuCellEnergyDataStruct* fOutPtr;         /**<Pointer to outputbuffer to write results from the component into shared memory*/
+ 
+  AliHLTPHOSMapper *fMapperPtr;
+
+  AliHLTDDLDecoder *fDecoderPtr;
+  AliHLTAltroData  *fAltroDataPtr;
 };
 #endif
 
