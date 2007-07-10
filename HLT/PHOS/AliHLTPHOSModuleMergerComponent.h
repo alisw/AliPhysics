@@ -4,11 +4,12 @@
 /* Copyright(c) 2006, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice  */ 
 
-#include "AliHLTProcessor.h"
+//#include "AliHLTProcessor.h"
+#include "AliHLTPHOSProcessor.h"
 #include "AliHLTPHOSDefinitions.h"
 #include "AliHLTPHOSCommonDefs.h"
 
-class AliHLTPHOSModuleMergerComponent:public AliHLTProcessor
+class AliHLTPHOSModuleMergerComponent:public AliHLTPHOSProcessor
 {
  public:
   AliHLTPHOSModuleMergerComponent();
