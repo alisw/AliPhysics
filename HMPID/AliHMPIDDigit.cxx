@@ -143,8 +143,10 @@ void AliHMPIDDigit::WriteRaw(TObjArray *pDigAll)
     Int_t    cntL=0,cntR=0;                           //data words counters for DDLs
     AliRawDataHeader header; header.SetAttribute(0);  //empty DDL header
 
-    ddlL = new AliFstream(AliDAQ::DdlFileName("HMPID",2*iCh)); 
-    ddlR = new AliFstream(AliDAQ::DdlFileName("HMPID",2*iCh+1));      //open both DDL of this chamber in parallel
+//    ddlL = new AliFstream(AliDAQ::DdlFileName("HMPID",2*iCh)); 
+//    ddlR = new AliFstream(AliDAQ::DdlFileName("HMPID",2*iCh+1));      //open both DDL of this chamber in parallel
+    ddlL = new AliFstream(AliDAQ::DdlFileName("HMPID",2*iCh+1)); //left and right looking at the IP
+    ddlR = new AliFstream(AliDAQ::DdlFileName("HMPID",2*iCh));   //open both DDL of this chamber in parallel
     ddlL->WriteBuffer((char*)&header,sizeof(header));            //write dummy header as place holder, actual 
     ddlR->WriteBuffer((char*)&header,sizeof(header));            //will be rewritten later when total size of DDL is known
   
