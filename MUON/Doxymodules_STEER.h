@@ -11,7 +11,7 @@
  *  @ingroup STEER
  *  @{
  */
-// From STEERLinkDef.h revision 1.99
+// From STEERLinkDef.h revision 1.107
 
     class AliPDG {};
 
@@ -39,6 +39,7 @@
     class AliLegoGeneratorXYZ {};
     class AliLegoGeneratorPhiZ {};
     class AliLegoGeneratorEta {};
+    class AliLegoGeneratorEtaR {};
     class AliDigitNew {};
     class AliGeometry {};
     class AliRecPoint {};
@@ -87,6 +88,7 @@
 
     class AliDetectorEventHeader {};
 
+    class AliGeomManager {};
     class AliAlignObj {};
     class AliAlignObjAngles {};
     class AliAlignObjMatrix {};
@@ -114,12 +116,12 @@
     class AliTriggerCondition {};
     class AliTriggerDescriptor {};
     class AliCentralTrigger {};
-    class AliCTPRawData {};
     class AliCTPRawStream {};
     class AliMathBase {};
     class AliSignalProcesor {};
     class  AliHelix {};
     class  AliCluster {};
+    class  AliCluster3D {};
     class  AliTracker {};
     class  AliV0 {};
     class  AliKink {};
@@ -128,6 +130,18 @@
 
     class  AliSplineFit {};
 
+    class  AliDCSValue {};
+    class  AliDCSSensor {};
+    class  AliDCSSensorArray {};
+
+    class  AliSurveyObj {};
+    class  AliSurveyPoint {};
+
+    class  AliCodeTimer {};
+    class  AliCodeTimer::AliPair {};
+
+    class  AliFstream {};
+    class  AliCTPRawData {};
 
 /** @} */
 
@@ -136,11 +150,16 @@
  *  @ingroup STEER
  *  @{
  */
-// From ESDLinkDef.h revision 1.32
+// From ESDLinkDef.h revision 1.35
 
-    enum  AliLog::EType_t {};
+    enum   AliLog::EType_t {};
+    enum   AliESD::ESDListIndex_t {};
 
     class  AliESD {};
+    class  AliESDRun {};
+    class  AliESDHeader {};
+    class  AliESDZDC {};
+    class  AliESDCaloTrigger {};
     class  AliESDfriend {};
     class  AliESDtrack {};
     class  AliESDfriendTrack {};
@@ -156,6 +175,10 @@
     class  AliESDkink {};
     class  AliESDV0Params {};
     class  AliESDCaloCluster {};
+
+    class  AliKFParticleBase {};
+    class  AliKFParticle {};
+    class  AliKFVertex {};
 
     class  AliKalmanTrack {};
     class  AliExternalTrackParam {};
@@ -174,6 +197,7 @@
     class AliTagCreator {};
     class AliRunTagCuts {};
     class AliLHCTagCuts {};
+    class AliDetectorTagCuts {};
     class AliEventTagCuts {};
 
     class AliTrackPointArray {};
@@ -184,6 +208,7 @@
     class  AliFMDFloatMap {};
 
     class  AliESDVZERO {};
+    class  AliESDTZERO {};
 
     class  AliESDMultITS {};
     class  AliMultiplicity {};
@@ -220,10 +245,6 @@
     class AliCDBGridFactory {};
     class AliCDBGridParam {};
 
-    class AliDCSValue {};
-    class AliDCSSensor {};
-    class AliDCSSensorArray {};
-
     class AliPreprocessor {};
 
     class AliShuttleInterface {};
@@ -238,7 +259,7 @@
  *  @ingroup STEER
  *  @{
  */
-// From AODLinkDef.h revision 1.5
+// From AODLinkDef.h revision 1.8
 
     enum   AliAODVertex::AODVtx_t {};
     enum   AliAODTrack::AODTrk_t {};
@@ -253,6 +274,12 @@
     class  AliAODVertex {};
     class  AliAODCluster {};
     class  AliAODJet {};
+    class  AliAODPhoton {};
     class  AliAODRedCov<Int_t> {};
+    class  AliAODRedCov<Int_t> {};
+    class  AliAODRedCov<Int_t> {};
+    class  AliAODRecoDecay;
+    class  AliVirtualEventHandler {};
+    class  AliAODHandler {};
 
 /** @} */

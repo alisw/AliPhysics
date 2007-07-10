@@ -1,6 +1,6 @@
 // $Id$
 // The class categories definitions for Doxygen
-// From EVGENLinkDef.h revision 1.66
+// From EVGENLinkDef.h revision 1.68
 
 /** @defgroup EVGEN EVGEN
  *  Category of AliRoot event generator classes
@@ -51,6 +51,8 @@
     class  AliGenReaderEMD {};
     class  AliDecayerPolarized {};
     class  AliGenCorrHF {};
+    class  AliGenCosmicsParam {};
+    class  AliGenKrypton {};
 
 /** @} */
 
