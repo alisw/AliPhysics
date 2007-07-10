@@ -22,20 +22,9 @@ AliHLTAltroData::NextBunch(AliHLTAltroBunch &altroBunch)
   if(fIsComplete == true)
     {
 
-      /*
-      cout <<"AliHLTAltroData::NextBunch" << endl;
-
-      cout <<  "fDataSize = " << fDataSize << endl;
-      cout <<  "fWc = " << fWc << endl;
-      */
-
       if(fBunchCounter == 0)
 	{
 	  fBunchData = &fData[fDataSize - 1];
-	}
-      else
-	{
-	  //     fBunchData ++;
 	}
 
       if(fWc < fDataSize)
@@ -46,22 +35,13 @@ AliHLTAltroData::NextBunch(AliHLTAltroBunch &altroBunch)
 	  altroBunch.fBunchSize = *fBunchData -2;
 	  fBunchData --;
 	  altroBunch.fEndTimeBin = *fBunchData;
-	  //      fBunchData = fBunchData - 
-
-	  //  fBunchData --;
-	  //  fBunchData = fBunchData  -  (altroBunch.fBunchSize +3);
 	  fBunchData = fBunchData  -  (altroBunch.fBunchSize +1);
-
 	  fBunchCounter ++;
-	  //   fBunchData --;
-	  //   fBunchData --;
-	  //     cout <<"AliHLTAltroData::NextBunch, TRUE" << endl;
 	  return true;
 	}
       else
 	{
 	  fBunchCounter = 0;
-	  //    cout <<"AliHLTAltroData::NextBunch, FALSE" << endl;
 	  fWc = 0;
 	  return false;
 	}
