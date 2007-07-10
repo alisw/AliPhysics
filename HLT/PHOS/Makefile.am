@@ -46,8 +46,13 @@ libAliHLTPHOS_la_SOURCES	= AliHLTPHOSPulseGenerator.cxx \
 				  AliHLTPHOSPhysicsAnalyzerSpectrumComponent.cxx \
 				  AliHLTPHOSPhysicsAnalyzer.cxx \
 				  AliHLTPHOSPhysicsDefinitions.cxx \
-				  AliHLTPHOSPhysicsAnalyzerPeakFitter.cxx
+				  AliHLTPHOSPhysicsAnalyzerPeakFitter.cxx \
+			          AliHLTDDLDecoder.cxx \
+				  AliHLTAltroData.cxx \
+				  AliHLTAltroBunch.cxx \
+			          AliHLTPHOSMapper.cxx \
 				  PeakFinderTest.cxx
+
 
 # class header files, the link definition for the root dictionary
 # will be created from the names of the header files
@@ -81,8 +86,11 @@ CLASS_HDRS			= AliHLTPHOSPulseGenerator.h \
 				  AliHLTPHOSPhysicsAnalyzerSpectrumComponent.h \
 				  AliHLTPHOSPhysicsAnalyzer.h \
 				  AliHLTPHOSPhysicsDefinitions.h \
-				  AliHLTPHOSPhysicsAnalyzerPeakFitter.h
-
+				  AliHLTPHOSPhysicsAnalyzerPeakFitter.h \
+				  AliHLTDDLDecoder.h \
+				  AliHLTAltroData.h \
+				  AliHLTPHOSMapper.h \
+				  AliHLTPHOSMapper.h
 
 pkginclude_HEADERS		= $(CLASS_HDRS) \
 				  AliHLTPHOSCommonDefs.h \
@@ -96,11 +104,12 @@ pkginclude_HEADERS		= $(CLASS_HDRS) \
 				  AliHLTPHOSRcuCellAccumulatedEnergyDataStruct.h \
 			 	  AliHLTPHOSRcuCellAverageEnergyDataStruct.h \
 				  AliHLTPHOSRcuChannelDataStruct.h \
-				  AliHLTPHOSValidChannelDataStruct.h \
+				  AliHLTPHOSValidChannelDataStruct.h
 				  AliHLTPHOSClusterDataStruct.h \
 				  AliHLTPHOSRecPointDataStruct.h \
 				  AliHLTPHOSPhysicsDefinitions.h \
-				  AliHLTPHOSRecPointListDataStruct.h
+				  AliHLTPHOSRecPointListDataStruct.h \
+				  PhosConst.h
 
 # version info and linking flags for the library
 libAliHLTPHOS_la_LIBADD		= $(top_builddir)/BASE/util/libAliHLTUtil.la
