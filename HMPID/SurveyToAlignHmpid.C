@@ -156,7 +156,7 @@ TGeoHMatrix GetResSurvAlign(Int_t survNch, Int_t& offNch)
 			md[i] = (ngA[i] + ngD[i]) * 0.5;//modified!!!!!!!!!
 		}
 	}
-	cout<<endl<<"The center of the box from Survey data: "<<md[0]<<"  "<<md[1]<<"  "<<md[2]<<endl;
+	cout<<"The center of the box from Survey data: "<<md[0]<<"  "<<md[1]<<"  "<<md[2]<<endl;
 	const Double_t zdepth=-0.9-4.85; //the fiducial marks are down the radiator (behind the honeycomb structure). They
 	//lay on 4 cylinders whose height is 9 mm.
 
@@ -167,7 +167,7 @@ TGeoHMatrix GetResSurvAlign(Int_t survNch, Int_t& offNch)
 	orig[1] = md[1] - (-plane[1])*(zdepth+plane[3]);
 	orig[2] = md[2] - (-plane[2])*(zdepth+plane[3]);
 
-	cout<<endl<<"The origin of the box: "<<orig[0]<<"  "<<orig[1]<<"  "<<orig[2]<<endl;
+	cout<<"The origin of the box: "<<orig[0]<<"  "<<orig[1]<<"  "<<orig[2]<<endl;
 
 	// get x,y local directions needed to write the global rotation matrix
 	// for the surveyed volume by normalising vectors ab and bc
@@ -176,18 +176,27 @@ TGeoHMatrix GetResSurvAlign(Int_t survNch, Int_t& offNch)
 		for(i=0;i<3;i++){
 			ab[i] /= sx;
 		}
-		cout<<endl<<"x "<<ab[0]<<"  "<<ab[1]<<"  "<<ab[2]<<endl;
+		cout<<"x "<<ab[0]<<"  "<<ab[1]<<"  "<<ab[2]<<endl;
 	}
 	Double_t sy = TMath::Sqrt(bc[0]*bc[0] + bc[1]*bc[1] + bc[2]*bc[2]);
 	if(sy>1.e-8){
 		for(i=0;i<3;i++){
 			bc[i] /= sy;
 		}
-		cout<<endl<<"y "<<bc[0]<<"  "<<bc[1]<<"  "<<bc[2]<<endl;
+		cout<<"y "<<bc[0]<<"  "<<bc[1]<<"  "<<bc[2]<<endl;
 	}
 
 
 	// the global matrix for the surveyed volume - ng
+        TVector3 v1;
+        v1.SetXYZ(md[0],md[1],md[2]);
+
+        TVector3 w=v1.Unit();
+        Double_t chamberCenter[3];
+        chamberCenter[0]=-w.X()*(zdepth-v1.Mag());
+        chamberCenter[1]=-w.Y()*(zdepth-v1.Mag());
+        chamberCenter[2]=-w.Z()*(zdepth-v1.Mag());
+
 	Double_t rot[9] = {-ab[0],bc[0],-plane[0],-ab[1],bc[1],-plane[1],-ab[2],bc[2],-plane[2]};
 	TGeoHMatrix ng;
 	ng.SetTranslation(md);
