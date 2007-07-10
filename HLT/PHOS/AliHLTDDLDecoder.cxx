@@ -135,7 +135,7 @@ AliHLTDDLDecoder::GetFailureRate()
   float tmp = 0;
   cout << "Number of Complete channles = " << fComplete <<endl;
   cout << "Number of InComplete channles = " << fInComplete <<endl;
-  tmp = (100*(float)fInComplete)/(float)fComplete;
+  tmp = (100*(float)fInComplete)/((float)fComplete + (float)fInComplete);
 
   cout <<"There are "<<  tmp <<"% incomplete channels"<<endl;
 
