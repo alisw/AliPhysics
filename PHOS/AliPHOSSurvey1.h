@@ -9,7 +9,14 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.1  2007/07/10 12:41:38  kharlov
+ * Added a new class AliPHOSSurvet1 which read survey data from EDMS files
+ *
  */
+
+// A survey "reader" class, based on AliSurveyObj class.
+// The source of input data is a text file in a standartized format
+// downloaded from EDMS
 
 #include "AliPHOSSurvey.h"
 

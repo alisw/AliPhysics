@@ -17,7 +17,20 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.1  2007/07/10 12:41:38  kharlov
+ * Added a new class AliPHOSSurvet1 which read survey data from EDMS files
+ *
  */
+
+// AliPHOSSurvey1 class is survey "reader" class, based on AliSurveyObj class.
+// The first ctor parameter is a survey file's name.
+// Now it's a "local" file, later, when AliSurveyObj will be modified,
+// survey files can be somewhere else.
+// The second parameter is a prefix, for example "T1_" or "T2_", it's used to select
+// survey (T1_ == data from 08.09.2006 and T2_ == data from 11.09.2006).
+// The survey data is available from http://dcdb.cern.ch/surveydepot-production/
+//!
+// Author: Timur Pocheptsov
 
 #include "AliSurveyPoint.h"
 #include "AliSurveyObj.h"
@@ -32,6 +45,10 @@ ClassImp(AliPHOSSurvey1)
 //____________________________________________________________________________
 AliPHOSSurvey1::AliPHOSSurvey1(const TString &fileName, const TString &namePrefix)
 {
+  // AliPHOSSurvey1 ctor. Creates AliSurveyObj, which reads data from EDMS,
+  // convert this data (a set of AliSurveyPoint objects) into translations
+  // and rotations from strips.
+
   const AliPHOSGeometry *phosGeom = AliPHOSGeometry::GetInstance("IHEP", "IHEP");
   if (!phosGeom) {
     AliError("Cannot obtain AliPHOSGeometry instance.");
