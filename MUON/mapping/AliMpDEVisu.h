@@ -108,7 +108,7 @@ private:
 
     enum {kChamberCombo, kDECombo, kPlaneType, kDEName, kManuEntries, kLogMessage, kZoomMode};
 
-    ClassDef(AliMpDEVisu,1)
+    ClassDef(AliMpDEVisu,1) //GUI for drawing detection element segmentation
 };
 #endif
 

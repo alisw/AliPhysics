@@ -179,6 +179,7 @@ public:
   static Int_t fgNDetElemCh[10]; ///< Number of detection elements per chamber
   static Int_t fgSNDetElemCh[10];///< Sum of detection elements up to this chamber (inc)
 
-ClassDef(AliMUONAlignment, 0)};
+ClassDef(AliMUONAlignment, 0) //Class for alignment of muon spectrometer
+};
 
 #endif

@@ -41,7 +41,7 @@ private:
     AliMUONVClusterFinder* fClusterFinder; //!< the preclustering we use
   AliMUONMathieson* fMathieson; //!< Mathieson to compute the charge repartition
   
-  ClassDef(AliMUONClusterFinderSimpleFit,1) // 
+  ClassDef(AliMUONClusterFinderSimpleFit,1) // Basic cluster finder
 };
 
 #endif

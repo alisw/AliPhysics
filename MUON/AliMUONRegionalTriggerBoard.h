@@ -41,7 +41,7 @@ class AliMUONRegionalTriggerBoard : public AliMUONTriggerBoard
       UShort_t fLocalResponse[16]; ///< Local trigger inputs
       UShort_t fMask[16];          ///< Entry mask
       
-      ClassDef(AliMUONRegionalTriggerBoard,1)
+      ClassDef(AliMUONRegionalTriggerBoard,1) // Regional trigger - real HW algorithm is implemented
 };
 #endif
 

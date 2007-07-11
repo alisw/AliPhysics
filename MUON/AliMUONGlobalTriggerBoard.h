@@ -43,6 +43,6 @@ class AliMUONGlobalTriggerBoard : public AliMUONTriggerBoard
       UShort_t fRegionalResponse[16]; ///< REGIONAL BOARD RESPONSES
       UShort_t fMask[16];             ///< MASK
 
-   ClassDef(AliMUONGlobalTriggerBoard,1) 
+   ClassDef(AliMUONGlobalTriggerBoard,1) //Global trigger board
 };
 #endif

@@ -45,6 +45,6 @@ class AliMUONTriggerCrate : public TNamed
       TObjArray *fBoards;         ///< Pointer to board objects
       TString   fSourceFileName;  ///< Source file
 
-   ClassDef(AliMUONTriggerCrate,1)
+   ClassDef(AliMUONTriggerCrate,1) //Trigger Crate
 };
 #endif

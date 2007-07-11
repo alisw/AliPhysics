@@ -67,7 +67,7 @@ private:
 
   Bool_t fIsOn;                   ///< True if the map is open
 
-  ClassDef(AliMUONTriggerGUIdimap,1)
+  ClassDef(AliMUONTriggerGUIdimap,1) //Trigger GUI utility class: digits maps of the trigger chambers
    
 };
 

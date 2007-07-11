@@ -38,7 +38,7 @@ private:
 private:
     AliMUONVClusterFinder* fPreClusterFinder; ///< the preclustering we use
 
-  ClassDef(AliMUONClusterFinderCOG,1) // 
+  ClassDef(AliMUONClusterFinderCOG,1) // A very basic (and mostly useless, probably) cluster finder
 };
 
 #endif

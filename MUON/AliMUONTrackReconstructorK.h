@@ -8,10 +8,6 @@
 /// \ingroup rec
 /// \class AliMUONTrackReconstructorK
 /// \brief Class for the MUON track reconstruction using kalman filter
-///
-////////////////////////////////////////////////
-/// MUON track reconstructor using kalman filter
-////////////////////////////////////////////////
 
 #include "AliMUONVTrackReconstructor.h"
 

@@ -7,7 +7,7 @@
 
 /// \ingroup trigger
 /// \class AliMUONTriggerBoard
-/// \brief TRIGGER BOARD BASE CLASS
+/// \brief Trigger board base class
 ///
 //  Author Rachid Guernane (LPCCFd)
 
@@ -49,7 +49,7 @@ class AliMUONTriggerBoard : public TNamed
       /// Not implemented
       AliMUONTriggerBoard& operator=(const AliMUONTriggerBoard &rhs);
 
-   ClassDef(AliMUONTriggerBoard,1)
+   ClassDef(AliMUONTriggerBoard,1) //Trigger board base class
 };
 #endif
 

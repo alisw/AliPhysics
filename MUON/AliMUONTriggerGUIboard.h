@@ -166,7 +166,7 @@ private:
 
   Bool_t         fIsOpen;          ///< Selection flag for the digits map
 
-  ClassDef(AliMUONTriggerGUIboard,1)
+  ClassDef(AliMUONTriggerGUIboard,1) //Trigger GUI utility class: single board object
 
 };
 

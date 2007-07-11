@@ -149,6 +149,6 @@ public:
 
    TClonesArray* fLocalArray;   ///< array of local structure
 
-   ClassDef(AliMUONRegHeader,3)
+   ClassDef(AliMUONRegHeader,3) //MUON regional header for trigger
 };
 #endif

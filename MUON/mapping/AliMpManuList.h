@@ -36,7 +36,7 @@ public:
   /// number of channels in a given manu (<=64)
   static Int_t NumberOfChannels(Int_t detElemId, Int_t manuId);
   
-  ClassDef(AliMpManuList,1) // 
+  ClassDef(AliMpManuList,1) //Cache of often used information
 };
 
 #endif

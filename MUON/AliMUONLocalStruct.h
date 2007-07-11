@@ -7,7 +7,7 @@
 
 /// \ingroup raw
 /// \class AliMUONLocalStruct
-/// \brief rawdata local card structure for trigger
+/// \brief Rawdata local card structure for trigger
 ///
 //  Author Christian Finck
 
@@ -163,6 +163,6 @@ public:
    static const UInt_t fgkEndOfLocal;   ///< end of local info word
    static const UInt_t fgkDisableWord;  ///< Word for "empty" slots
 
-   ClassDef(AliMUONLocalStruct,3)
+   ClassDef(AliMUONLocalStruct,3) //Rawdata local card structure for trigger
 };
 #endif
