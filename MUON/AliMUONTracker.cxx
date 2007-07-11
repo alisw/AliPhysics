@@ -15,6 +15,7 @@
 
 /* $Id$ */
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONTracker
 ///
 /// Steering class for use in global tracking framework;
@@ -23,6 +24,7 @@
 /// Actual tracking is performed by some AliMUONVTrackReconstructor children
 ///
 /// \author Christian Finck and Laurent Aphecetche, SUBATECH Nantes
+//-----------------------------------------------------------------------------
 
 #include "AliMUONTracker.h"
 
@@ -46,6 +48,11 @@
 
 #include <Riostream.h>
 #include <TTree.h>
+
+/// \cond CLASSIMP
+ClassImp(AliMUONTracker)
+/// \endcond
+
 
 //_____________________________________________________________________________
 AliMUONTracker::AliMUONTracker(AliLoader* loader,

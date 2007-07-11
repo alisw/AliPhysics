@@ -13,23 +13,25 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$*/
+// $Id$
 
-///////////////////////////////////////////////////
-//
-// Reconstructed Trigger track
-// in
-// ALICE
-// dimuon
-// spectrometer
-// note: equivalent to AliMUONTriggerTrack for tracking,
-// no need for a AliMUONTriggerTrackParam
-///////////////////////////////////////////////////
+//-----------------------------------------------------------------------------
+// Class AliMUONTriggerTrack
+//---------------------------
+// Reconstructed Trigger track in ALICE dimuon spectrometer
+// Note: equivalent to AliMUONTriggerTrack for tracking,
+// No need for a AliMUONTriggerTrackParam
+// Author: Philippe Crochet
+//-----------------------------------------------------------------------------
 
 #include "AliMUONTriggerTrack.h"
 #include "AliMUONTrackReconstructor.h" 
 #include <Riostream.h>
 #include "AliLog.h"
+
+/// \cond CLASSIMP
+ClassImp(AliMUONTriggerTrack)
+/// \endcond
 
 //__________________________________________________________________________
 AliMUONTriggerTrack::AliMUONTriggerTrack()
