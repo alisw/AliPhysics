@@ -196,31 +196,9 @@ AliESDEvent::~AliESDEvent()
   // Standard destructor
   //
 
+  // everthing on the list gets deleted automatically
   delete fESDObjects;
   fESDObjects = 0;
-
-  // everthing on the list gets deleted automatically
-
-  /*
-  fHLTConfMapTracks.Delete();
-  fHLTHoughTracks.Delete();
-  fMuonTracks.Delete();  
-  fPmdTracks.Delete();
-  fTrdTracks.Delete();
-  fV0s.Delete();
-  fCascades.Delete();
-  fKinks.Delete();
-  fCaloClusters.Delete();
-  */
-//   fEMCALTriggerPosition->Delete();
-//   fEMCALTriggerAmplitudes->Delete();
-//   fPHOSTriggerPosition->Delete();
-//   fPHOSTriggerAmplitudes->Delete();
-//   delete fEMCALTriggerPosition;
-//   delete fEMCALTriggerAmplitudes;
-//   delete fPHOSTriggerPosition;
-//   delete fPHOSTriggerAmplitudes;
-
 }
 
 //______________________________________________________________________________
@@ -232,7 +210,7 @@ void AliESDEvent::Reset()
   ResetStdContent(); 
 
   if(fESDOld)fESDOld->Reset();
-
+  // call reset for user supplied data?
 }
 
 void AliESDEvent::ResetStdContent()
@@ -403,7 +381,7 @@ void AliESDEvent::AddObject(TObject* obj)
 void AliESDEvent::GetStdContent() 
 {
   // set pointers for standard content
-
+  // eventually get by name?
   fESDRun = (AliESDRun*)fESDObjects->At(kESDRun);
   fHeader = (AliESDHeader*)fESDObjects->At(kHeader);
   fESDZDC = (AliESDZDC*)fESDObjects->At(kESDZDC);
@@ -479,27 +457,18 @@ void AliESDEvent::CreateStdContent()
 
 }
 
+TObject* AliESDEvent::FindListObject(const char *name){
+  if(fESDObjects)return fESDObjects->FindObject(name);
+  return 0;
+} 
+
 void AliESDEvent::ReadFromTree(TTree *tree){
   
  
-  // if we just replace the TList we produce a memory leak...
-  // so better replace the TList 
-
-  if(fESDObjects->GetEntries()!=0){
-    // this should not happen here put a warning?
-  }
- 
-  // prevent a memory leak when reading back the TList
-  delete fESDObjects;
-  fESDObjects = 0;
-  
-
-
-  // if we find the esd on the tree we do have the old structuru
+  // if we find the "ESD" branch on the tree we do have the old structure
   if(tree->GetBranch("ESD")){
     printf("%s %d AliESDEvent::ReadFromTree() Reading old Tree \n",(char*)__FILE__,__LINE__);
     tree->SetBranchAddress("ESD",&fESDOld);
-    fESDObjects = new TList();
     CreateStdContent(); // create for copy
     // when reading back we are not owner of the list 
     // must not delete it
@@ -515,11 +484,16 @@ void AliESDEvent::ReadFromTree(TTree *tree){
   esdEvent = (AliESDEvent*)tree->GetTree()->GetUserInfo()->FindObject("AliESDEvent");
 
 
-  if(esdEvent){
+  if(esdEvent){   
+    if(fESDObjects->GetEntries()!=0){
+      // this should not happen here put a warning?
+    }
+    // prevent a memory leak when reading back the TList
+    delete fESDObjects;
+    fESDObjects = 0;
     // create a new TList from the UserInfo TList... 
     // copy constructor does not work...
     fESDObjects = (TList*)(esdEvent->GetList()->Clone());
-    // fESDObjects = esdEvent->GetList(); 
     if(fESDObjects->GetEntries()<kESDListN){
       printf("%s %d AliESDEvent::ReadFromTree() TList contains less than the standard contents %d < %d \n",(char*)__FILE__,__LINE__,fESDObjects->GetEntries(),kESDListN);
     }
@@ -532,7 +506,6 @@ void AliESDEvent::ReadFromTree(TTree *tree){
       if(bname.CompareTo("AliESDfriend")==0)
 	{
 	  // AliESDfriend does not have a name ...
-	  // tree->SetBranchStatus("ESDfriend.*",1); // Use a flag to activate... 
 	  tree->SetBranchAddress("ESDfriend.",fESDObjects->GetObjectRef(el));
 	}
       else{
@@ -545,8 +518,8 @@ void AliESDEvent::ReadFromTree(TTree *tree){
     fESDObjects->SetOwner(kFALSE);
   }// no esdEvent
   else {
-    // Hack.... we can't get the list from the user data try create and set it by hand...
-    fESDObjects = new TList(); 
+    // we can't get the list from the user data, create standard content
+    // and set it by hand (no ESDfriend at the moment
     CreateStdContent();
     TIter next(fESDObjects);
     TNamed *el;

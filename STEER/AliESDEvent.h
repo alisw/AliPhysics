@@ -307,6 +307,7 @@ public:
 
   void AddObject(TObject* obj);
   void ReadFromTree(TTree *tree);
+  TObject* FindListObject(const char *name);
   AliESD *GetAliESDOld(){return fESDOld;}
   const void WriteToTree(TTree* tree) const {tree->Branch(fESDObjects);}
   void GetStdContent();
