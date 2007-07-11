@@ -3,17 +3,13 @@
 #ifndef ALIDNDETAANALYSISESDSELECTOR_H
 #define ALIDNDETAANALYSISESDSELECTOR_H
 
-#include "AliSelectorRL.h"
+#include "AliSelector.h"
 
 class AliESDtrackCuts;
 class dNdEtaAnalysis;
-class AlidNdEtaCorrection;
 class TH1F;
 
-// TODO this derives from AliSelectorRL to track down the effect of the vertex bias
-//      however, it should of course only depend on the ESD and thus be changed to AliSelector
-
-class AlidNdEtaAnalysisESDSelector : public AliSelectorRL {
+class AlidNdEtaAnalysisESDSelector : public AliSelector {
   public:
     AlidNdEtaAnalysisESDSelector();
     virtual ~AlidNdEtaAnalysisESDSelector();
