@@ -596,6 +596,9 @@ Bool_t AliReconstruction::Run(const char* input)
   esd = NULL; hltesd = NULL;
   */
   // create the branch with ESD additions
+
+
+
   AliESDfriend *esdf = 0; 
   if (fWriteESDfriend) {
     esdf = new AliESDfriend();
@@ -603,6 +606,7 @@ Bool_t AliReconstruction::Run(const char* input)
     br->SetFile("AliESDfriends.root");
     esd->AddObject(esdf);
   }
+
   
   // Get the diamond profile from OCDB
   AliCDBEntry* entry = AliCDBManager::Instance()
@@ -778,9 +782,14 @@ Bool_t AliReconstruction::Run(const char* input)
     if (fCheckPointLevel > 0)  WriteESD(esd, "final"); 
     esd->Reset();
     hltesd->Reset();
+    if (fWriteESDfriend) {
+      new (esdf) AliESDfriend(); // Reset...
+    }
     // esdf->Reset();
     // delete esdf; esdf = 0;
   } 
+
+
 
 
   tree->GetUserInfo()->Add(esd);
