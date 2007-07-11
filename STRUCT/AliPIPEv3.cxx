@@ -1623,7 +1623,7 @@ void AliPIPEv3::CreateGeometry()
     voRB24->AddNode(voRB24ValveMo, 1, new TGeoTranslation(0., 0., z));
     z += (kRB24ValveWz/2.+ kRB24VMABCRBT1L/2. + 1.);
     // VMABC close to forward detectors
-    voRB24->AddNode(voRB24VMABCRB, 2, new TGeoTranslation(0., 0., z));
+    voRB24->AddNode(voRB24VMABCRB, 3, new TGeoTranslation(0., 0., z));
 //
 //   RB24/2
 //     
