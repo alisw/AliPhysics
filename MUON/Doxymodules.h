@@ -67,14 +67,16 @@
 /** @} */
 
 /** @defgroup raw raw
- *  Category of classes for raw data
+ *  Category of classes for raw data, 
+ *  see more in \ref README_raw
  *  @ingroup MUON
  *  @{
  */
 /** @} */
 
 /** @defgroup calib calib
- *  Category of basic classes for calibration
+ *  Category of basic classes for calibration, 
+ *  see more in \ref README_calib
  *  @ingroup MUON
  *  @{
  */
@@ -82,6 +84,7 @@
 
 /** @defgroup geometry geometry
  *  Category of geometry framework classes
+ *  see more in \ref README_geometry
  *  @ingroup MUON
  *  @{
  */
@@ -89,6 +92,7 @@
 
 /** @defgroup trigger trigger
  *  Category of classes for trigger
+ *  see more in \ref README_trigger
  *  @ingroup MUON
  *  @{
  */
@@ -96,6 +100,7 @@
 
 /** @defgroup base base
  *  Category of basic classes
+ *  see more in \ref README_main
  *  @ingroup MUON
  *  @{
  */
@@ -103,6 +108,7 @@
 
 /** @defgroup shuttle shuttle
  *  Category of classes for shuttle
+ *  see more in \ref README_shuttle
  *  @ingroup MUON
  *  @{
  */
@@ -110,6 +116,7 @@
 
 /** @defgroup sim sim
  *  Category of classes for simulation
+ *  see more in \ref README_main
  *  @ingroup MUON
  *  @{
  */
@@ -117,6 +124,7 @@
 
 /** @defgroup rec rec
  *  Category of classes for reconstruction
+ *  see more in \ref README_main
  *  @ingroup MUON
  *  @{
  */
@@ -124,6 +132,7 @@
 
 /** @defgroup evaluation evaluation
  *  Category of classes for evaluation
+ *  see more in \ref README_evaluation
  *  @ingroup MUON
  *  @{
  */

@@ -1,4 +1,4 @@
-/*! \mainpage Main page
+/*! \mainpage MUON code documentation 
 
 This is the documentation for the MUON simulation and reconstruction code.
 It is a mix of general concepts and code implementation details...
@@ -53,5 +53,16 @@ All the simulation and reconstruction use containers (called stores in MUON jarg
  the data we're dealing with : hits, (s)digits, trigger, clusters, tracks and trigger tracks.
  All those stores share some commonalities, in particular with respect to how they are read/written from/to
  TTree. @ref AliMUONVStore "More..."
+
+See more in:
+- \ref README_main 
+- \ref README_raw 
+- \ref README_mapping 
+- \ref README_calib 
+- \ref README_geometry 
+- \ref README_trigger 
+- \ref README_shuttle 
+- \ref README_evaluation 
+- \ref README_fast
 
 */
