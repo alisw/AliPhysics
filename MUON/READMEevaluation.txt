@@ -1,6 +1,11 @@
-============================================================
- How to run MUONRecoCheck macro
-============================================================
+// $Id$
+
+/*! 
+
+\page README_evaluation README evaluation
+ 
+
+\section evaluation_s1 How to run MUONRecoCheck macro
 
 To check the muon reconstruction by comparing the reconstructed tracks
 with the reference tracks made of "AliTrackReference" for the hits in chamber (0..9)
@@ -10,19 +15,21 @@ momentum resolution ... but also to make physics analysis whenever
 track identification is needed.   
 
 To compile MUONRecoCheck.C
+<pre>
 .includepath $ALICE_ROOT/STEER
 .includepath $ALICE_ROOT/MUON
 .L $ALICE_ROOT/MUON/MUONRecoCheck.C+
+</pre>
 
-// To run MUONRecoCheck
+To run MUONRecoCheck
+<pre>
 MUONRecoCheck(nEvent,"geometry.root", "galice.root"); // nEvent = nb of events
+</pre>
 
 
-==========================================================
-Macros for MC studies
-==========================================================
+\section evaluation_s2 Macros for MC studies
 
-For MC studies the classes "AliMUONTrackLight" and "AliMUONPairLight" can be 
+For MC studies the classes AliMUONTrackLight and AliMUONPairLight can be 
 used in order to fill not only the single muon / dimuon's kinematics (charge, 
 pT, rapidity, etc) at the generation AND reconstruction level, but also for 
 "decoding" the Pythia output and for the storing of the single muon's history. 
@@ -52,12 +59,19 @@ To read a generation/reconstrution from PDC06 preproduction, and write a file
 with a tree of AliMUONTrackLight / AliMUONPairLight :
 go to the directory containing the generation/reconstruction. From there run
 aliroot
+
+<pre>
 .L DecodeRecoCocktail.C+
 DecodeRecoCocktail();
 .q
+</pre>
 
 To read the file previously generated:
+<pre>
 aliroot
 .L ReadRecoCocktail.C+
 ReadRecoCocktail();
 .q
+</pre>
+
+*/

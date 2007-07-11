@@ -1,4 +1,8 @@
-$Id$
+// $Id$
+
+/*! 
+
+\page README_shuttle README shuttle 
 
 How to test the Shuttle preprocessor(s) for MUON.
 
@@ -11,23 +15,22 @@ Depending on the subsystem and on the task to be performed (based on the run typ
 Output of most processors will end up in OCDB (Offine Condition DataBase). A set of helper functions
  to peek at this OCDB are gathered in AiMUONCDB class.
  
--------
-TestMUONPreprocessor.C
--------
+
+\section shuttle_s1 TestMUONPreprocessor.C
 
 This is the master macro used to check the MUON part of the Shuttle.
 Depending on what you want to test, you'll have to modify the input files 
 (using shuttle->AddInputFile) and/or the run type (using shuttle->AddInputRunParameter())
 
--------
-AliMUONPreprocessor(const TString& detName)
--------
+
+\section shuttle_s2 AliMUONPreprocessor(const TString& detName)
 
 Depending on how this one is constructed, and depending on the runtype, it will
  perform differents tasks. Note that for the moment the runtypes are "fake", i.e.
  put by hand in the TestMUONPreprocessor.C macro, and might not correspond to
  the final values to be used by the DAQ.
- 
+
+<pre> 
 detName   runType                     task to be done           worker class (AliMUONVSubprocessor child)
 --------------------------------------------------------------------------------------------------------
 MCH       PEDESTAL_RUN                read ASCII ped files      AliMUONPedestalSubprocessor
@@ -43,10 +46,10 @@ MCH       ELECTRONICS_CALIBRATION_RUN read ASCII gain files     prototype only =
                                       and put them into OCDB
                                       
 MTR       to be defined               to be defined             to be done
+</pre>
 
-----------
-Pedestals
-----------
+
+\section shuttle_s3 Pedestals
 
 Two options here. You can either use a pre-done set of ASCII pedestals files (generated as
  explained below for the 2nd option), located at /afs/cern.ch/user/l/laphecet/public/LDC*.ped, 
@@ -58,15 +61,18 @@ using the WritePedestals() method of AliMUONCDB class
 
 So first generate a valid pedestal CDB entry by using the AliMUONCDB class
 
+<pre>
 root[] const char* cdbpath="local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB"; // where to put the CDB
 root[] AliMUONCDB cdb(cdbpath)
 root[] Bool_t defaultValues = kFALSE; // to generate random values instead of plain zeros...
 root[] Int_t startRun = 80;
 root[] Int_t endRun = 80;
 root[] cdb.WritePedestals(defaultValues, startRun, endRun);
+</pre>
 
 Expected output is (don't worry about the warnings, they are harmless) :
 
+<pre>
 I-AliMUONCDB::ManuList: Generating ManuList...
 I-AliMUONCDB::ManuList: Manu List generated.
 I-AliMUONCDB::MakePedestalStore: 16828 Manus and 1064008 channels.
@@ -74,10 +80,12 @@ I-AliMUONCDB::WritePedestals: Ngenerated = 1064008
 I-AliCDBManager::Init: AliEn classes enabled in Root. AliCDBGrid factory registered.
 I-AliCDBManager::SetDefaultStorage: Setting Default storage to: local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB
 I-AliCDBLocal::PutEntry: CDB object stored into file ($ALICE_ROOT)/SHUTTLE/TestShuttle/TestCDB/MUON/Calib/Pedestals/Run80_80_v0_s0.root
+</pre>
 
 Then use the AliMUONPedestalEventGenerator to produce simulated pedestal events.
 
 Usage (from the Root prompt) :
+<pre>
 AliCDBManager::Instance()->SetDefaultStorage(cdbpath); // so you will read 
 // back pedestals values generated in the previous step
 const char* dateFileName = "raw.date"; // base filename for the output
@@ -86,6 +94,7 @@ Int_t nevents = 100; // # of events to generate. 100 should be enough
 gSystem->Load("libMUONshuttle"); // needed or not depending on whether it's already loaded or not
 AliMUONPedestalEventGenerator ped(runNumber,nevents,dateFileName);
 ped.Exec("");
+</pre>
 
 It *will* take a lot of time (mainly due to the fact that we're writing a 
 bunch of ASCII files = DDL files), so please be patient.
@@ -102,9 +111,11 @@ The raw.date.LDC* files are then processed using the makeped online program
  under /afs/cern.ch/user/a/abaldiss/public/v16; Please contact Alberto to check 
  it's the latest version) which outputs manus-*.ped ASCII files (one per LDC) :
  
+<pre>
  makeped -f raw.date.LCDi -a LDCi.ped (i=0,1,2,3)
  
  (repeat for each LDC)
+</pre>
 
 The LDCi.ped files are the input for the pedestal subprocessor,
 which is tested using the TestMUONPreprocessor.C macro. 
@@ -112,9 +123,8 @@ The output of the pedestal subprocessor (upon success only) is written into the 
 Difference between the input and the output can be inferred using the diff() function
 of MUONCDB.C macro.
 
-----------
-Gains
-----------
+
+\section shuttle_s4 Gains
 
 Like pedestals, you have two options here. You can either use a pre-done set of 
 ASCII gain files (generated as explained below for the 2nd option), 
@@ -128,6 +138,7 @@ The pedestal and gain values are taken from the Offline Condition DataBase (OCDB
 So first you need to generate a valid pedestal CDB entry and a valid gain CDB 
 entry by using the AliMUONCDB class, from the Root prompt:
 
+<pre>
 const char* cdbpath="local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB"; // where to put the CDB
 AliMUONCDB cdb(cdbpath)
 Bool_t defaultValues = kFALSE; // to generate random values instead of plain zeros...
@@ -135,6 +146,7 @@ Int_t gainRun = 80;
 Int_t pedRun = 81;
 cdb.WritePedestals(defaultValues, pedRun, pedRun);
 cdb.WriteGains(defaultValues, gainRun, gainRun);
+</pre>
 
 Expected output is (don't worry about the warnings, they are harmless) :
 
@@ -144,6 +156,7 @@ will be n x 4 date files (n is the number of fake injections, currently 9, and 4
 
 Usage (again, from the Root prompt) :
 
+<pre>
 const char* cdbpath="local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB"; // where to get the CDB
 AliCDBManager::Instance()->SetDefaultStorage(cdbpath); // so you will read 
 // back pedestals and gain values generated in the previous step
@@ -155,6 +168,7 @@ Int_t nevents = 100; // # of events to generate. 100 should be enough for testin
 gSystem->Load("libMUONshuttle"); // needed or not depending on whether it's already loaded or not
 AliMUONGainEventGenerator g(gainRunNumber,pedRunNumber,nevents,dateFileName);
 g.Exec("");
+</pre>
 
 It *will* take a lot of time (mainly due to the fact that we're writing a 
 bunch of ASCII files = DDL files), so please be patient.
@@ -164,25 +178,27 @@ containing the normal simulated sequence of MUON.Hits.root, MUON.SDigits.root,
  MUON.Digits.root, raw/*.ddl files and raw.date.LDCi where i=0-3 (i.e. one DATE file
 per LDC, as will be used in real life), the latter ones being roughly 100 MB each.
 
+<pre>
 // FIXME
 // Below should follow instructions on how to feed the MUONTRKda with the
 // generated files.
+</pre>
 
--------
-HV
--------
+
+\section shuttle_s5 HV
 
 HV DCS values are created in CreateDCSAliasMap() of TestMUONPreprocessor.C
 You might want to modify this function to create a given set of error conditions
  in order to test whether the HVSubprocessor is reacting properly to those errors.
 
--------
-GMS
--------
+
+\section shuttle_s6 GMS
 
 The GMS alignment data for testing can be generated with
 the macro MUONGenerateTestGMS.C:
 The matrices of TGeoHMatrix type, with TObject::fUniqueID equal to the geometry
 module Id, are put in a TClonesArray and saved in the Root file with a 
 key "GMSarray".
+
+*/
  

@@ -1,15 +1,18 @@
- $Id$
+// $Id$
+
+/*! 
+
+\page README_geometry README geometry
 
 
-===========================================================
-General Information about MUON Geometry
-===========================================================
+\section geometry_s1 General Information about MUON Geometry
 
 Our geometry is described in the geometry builder classes.
 Main geometrical constants are set in the class AliMUONConstants.
 The code can then generate the geometry data files
 transform.dat and svmap.dat (see description below) via the macro  
 MUONGenerateGeometryData.C (more info below).
+
 The geometry data files have to be recreated each time the code 
 of the geometry is modified. The info (well updated) in this files 
 (svmap) is need during the simulation.
@@ -29,57 +32,30 @@ Misalignments are in the official AliRoot code applied to the geometry.root
 file.
 
 
-Geometry data files description
- 
- transform.dat
- -------------
- 
- List of transformations for chambers geometry modules and detection
- elements; in format:
- 
- KEY   ID  [nofDE]  pos: posX posY posZ  rot: theX phiX theY phiY theZ phiZ
-  
- where  KEY  = CH or DE
-        ID   = chamberId or detElemId
-	pos: posX posY posZ  = position in cm
-	rot: theX phiX theY phiY theZ phiZ = rotation angles as in Geant3 in deg
+\section geometry_s2 How to check the Geometry with the new Geometrical modeler
 
- svmap.dat
- -------------
+\see ftp://root.cern.ch/root/doc/chapter16.pdf
+\see http://agenda.cern.ch/fullAgenda.php?ida=a05212
 
- Map of sensitive volumes to detction element Ids;
- in format:
- KEY  volpath  detElemId
-  
- where  KEY  = SV
-	volpath   = volume path in format /volname1_copyNo1/volname2_copyNo2/...
-        detElemId = detection element Id
- 
-
-
-============================================================
- How to check the Geometry with the new Geometrical modeler
- ftp://root.cern.ch/root/doc/chapter16.pdf
- http://agenda.cern.ch/fullAgenda.php?ida=a05212
-============================================================
+<pre>
 gAlice->Init("$ALICE_ROOT/MUON/Config.C");
 gGeoManager->GetMasterVolume()->Draw();
+</pre>
 
 
-============================================================
- How to check the overlap with the new Geometrical modeler
- ftp://root.cern.ch/root/doc/chapter16.pdf
- http://agenda.cern.ch/fullAgenda.php?ida=a05212
-============================================================
+\section geometry_s3  How to check the overlap with the new Geometrical modeler
+
+\see  ftp://root.cern.ch/root/doc/chapter16.pdf
+\see  http://agenda.cern.ch/fullAgenda.php?ida=a05212
+
+<pre>
 gAlice->Init("$ALICE_ROOT/MUON/Config.C");
 gGeoManager->CheckOverlaps();
 gGeoManager->PrintOverlaps();
+</pre>
 
 
-
-===========================================================
- Macro  MUONGenerateGeometryData.C
-===========================================================
+\section geometry_s4 Macro  MUONGenerateGeometryData.C
 						
 Macro for generating the geometry data files
 
@@ -97,24 +73,26 @@ input files must be re-generated via the macro
 MUONGenerateGeometryData.C
 
 To be run from aliroot:
+<pre>
 .x MUONGenerateGeometryData.C
+</pre>
 
 The generated files do not replace the existing ones
 but have different names (with extension ".out").
 Replacement with new files has to be done manually.
 
 
-===========================================================
- Macros to generate Mis-alignment data
-===========================================================
+\section geometry_s5 Macros to generate Mis-alignment data
 						
-Macro for generating the geometry mis-alignment data: 
-MakeMUONFullMisAlignment.C
-MakeMUONResMisAlignment.C
-MakeMUONZeroMisAlignment.C
+Macros for generating the geometry mis-alignment data: 
+- MakeMUONFullMisAlignment.C
+- MakeMUONResMisAlignment.C
+- MakeMUONZeroMisAlignment.C
 
 To be run from aliroot:
+<pre>
 .x MakeMUONFullMisAlignment.C etc.
+</pre>
 
 If the environment variable TOCDB is not set to "kTRUE",
 the misalignment data are generated in a local file:
@@ -130,9 +108,8 @@ misalignment after all our alignment procedure has been applied.
 Full misalignment: Default is our current estimate of initial
 misalignment.
 
-==========================================================
-How to check the alignment software
-==========================================================
+
+\section geometry_s6 How to check the alignment software
 
 The script AlirootRun_MUONtestAlign.sh  allows you to check the software for
 the alignment with physics tracks. The script will:
@@ -142,7 +119,9 @@ the alignment with physics tracks. The script will:
 - Run the alignment code over the above events using MUONAlignment.C
 
 To run you need to type:
+<pre>
 $ALICE_ROOT/MUON/AlirootRun_MUONtestAlign.sh
+</pre>
 
 The results of the test are saved in test_align/ directory. The file measShifts.root
 contains useful graphs for studying the alignment performances. A local CDB
@@ -155,3 +134,34 @@ IMPORTANT NOTE: For a useful test of the alignment performances, the
 order of 100 000 tracks is needed, it is then advisable to generate and
 reconstruct enough events separately and run MUONAlignment.C providing a file list
 afterwards.
+
+\section geometry_s7 Geometry data files description
+ 
+\subsection geometry_s2_sub1 transform.dat
+ 
+ List of transformations for chambers geometry modules and detection
+ elements; in format:
+<pre> 
+ KEY   ID  [nofDE]  pos: posX posY posZ  rot: theX phiX theY phiY theZ phiZ
+  
+ where  KEY  = CH or DE
+        ID   = chamberId or detElemId
+	pos: posX posY posZ  = position in cm
+	rot: theX phiX theY phiY theZ phiZ = rotation angles as in Geant3 in deg
+</pre>
+
+\subsection geometry_s2_sub2  svmap.dat
+
+ Map of sensitive volumes to detction element Ids;
+ in format:
+
+<pre> 
+ KEY  volpath  detElemId
+  
+ where  KEY  = SV
+	volpath   = volume path in format /volname1_copyNo1/volname2_copyNo2/...
+        detElemId = detection element Id
+ </pre>
+
+
+*/

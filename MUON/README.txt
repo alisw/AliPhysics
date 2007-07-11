@@ -1,30 +1,40 @@
-$Id$
+// $Id$
 
-==========================================================
+/*! 
+
+\page README_main README main
+ 
 Please add  to this README file all information concerning 
 general items about the MUON code or the libraries 
-base, simu and reco
-Other README file of the muon code are
-READMEevaluation
-READMEgeometry
-READMEraw
-READMEshuttle
-READMEtrigger
+\ref base, \ref sim and \ref rec.
 
-==========================================================
- How to check that your aliroot is working well
-==========================================================
+Other README pages of the muon code are
+- \ref README_raw 
+- \ref README_mapping 
+- \ref README_calib 
+- \ref README_geometry 
+- \ref README_trigger 
+- \ref README_shuttle 
+- \ref README_evaluation 
+- \ref README_fast
+
+\section s1 How to check that your aliroot is working well
+
 There is a script file AlirootRun_MUONtest.sh which 
 allows for simulating, reconstructing and making the
 invariant analysis of the generated Upsilon (1S).
 The used configuration file is Config.C in MUON 
 directory.
+
 You have to type :
+<pre>
 $ALICE_ROOT/MUON/AlirootRun_MUONtest.sh [option]
+</pre>
 
 The complete list of the option is printed when you call
 the script with whatever non valid option, .eg. h:
 
+<pre>
 ./AlirootRun_MUONtest.sh h
 ERROR : extra option not recognized
 Usage: AlirootRun_MUONtest.sh options (-SRXsrxn:p:d:c:)
@@ -35,6 +45,7 @@ Usage: AlirootRun_MUONtest.sh options (-SRXsrxn:p:d:c:)
        -p recoptions (quotified string) reconstruction options to use (default "SAVEDIGITS")
        -d full path to output directory (default /work/projects/alice/dev/AliRoot/MUON/test_out.100)
        -c full path to configuration file for simulation (default /work/projects/alice/dev/AliRoot/MUON/Config.C)
+</pre>
 
 The results of this test are saved in test_out.nevent directory.
 Please note that the CDB (Condition DataBase) is now always *required* 
@@ -43,9 +54,8 @@ of that CDB is stored in CVS, so you should have one already in MUON/Calib
 subdirectories.
 
 
-==========================================================
- How to check that your aliroot is working VERY well
-==========================================================
+\section s2 How to check that your aliroot is working VERY well
+
 There is a script file AlirootRun_MUONlongtest.sh which
 allows for simulating, reconstructing and making the
 -+invariant analysis of the generated Upsilon (1S).
@@ -53,12 +63,15 @@ This script generates a large number of Upsilon (20k)
 in order to access differential quantities. 
 The used configuration file is Config.C in MUON
 directory.
+
 One should really run this script to check if the MUON 
 code can process a large number of events WITHOUT errors,
 in particular before making important commits !!
 
 You have to type :
+<pre>
 $ALICE_ROOT/MUON/AlirootRun_MUONtestlong.sh
+</pre>
 The results of this test are saved in testlong_out/ directory
 and will be kept in CVS
 
@@ -66,35 +79,37 @@ and will be kept in CVS
 and MUONplotEfficiency.C are also able to handle J/Psi if 
 Config.C is modified accordingly )
 
-==========================================================
- How to run a MUON generation
-==========================================================
+\section s3  How to run a MUON generation
+
 You only need to run the simulation part of the test script
 AlirootRun_MUONtest.sh
 
-============================================================
- How to dump the content of Root data files 
-============================================================
+\section s4 How to dump the content of Root data files 
+
 To check the content of Root data files, the AliMUON*DataInterface classes
 provides the functions to produce an ASCII output on the screen
 which can be redirected on the file:
 
 for MC information, use AliMUONMCDataInterface :
 
+<pre>
 > aliroot (or root with just the loading of MUON libs, see loadlibs.C)
 root [0] AliMUONMCDataInterface mcdi("galice.root");
 root [1] mcdi.DumpKine(5);       > dump.kine
 root [2] mcdi.DumpHits(5);       > dump.hits
 root [3] mcdi.DumpTrackRefs(5);  > dump.trackrefs
+</pre>
 
 for all other information, use AliMUONDataInterface :
 
+<pre>
 > aliroot
 root [0] AliMUONDataInterface di("galice.root");
 root [1] di.DumpDigits(5);     > dump.digits
 root [2] di.DumpSDigits(5);    > dump.sdigits
 root [3] di.DumpRecPoints(5);  > dump.recpoints
 root [4] di.DumpTrigger(5); > dump.rectrigger
+</pre>
 
 Remind that during simulation and reconstruction two 
 differents galice.root are generated: one for the generation 
@@ -106,9 +121,8 @@ root [1] mcdi.DumpKine(5);
 W-AliRunLoader::GetEvent: Stack not found in header
 E-TFile::TFile: file ./Kinematics.root does not exist
 
-============================================================
- Tracking parameters, cuts, energy loss and physics processes
-============================================================
+\section s5 Tracking parameters, cuts, energy loss and physics processes
+
 Tracking parameters in MUON are automatically defined by GEANT
 MUON takes the default values of CUTs  and physics processes
 defined by the Config files, except for the gas mixture medium 
@@ -118,9 +132,8 @@ in the data directory. In particular ILOSS parameter MUST be
 equal unity (1) in order simulate a realistic energy loss
 distribution (mean value and fluctuations) in the active gas.
 
-============================================================
- Tracking of particle in the magnetic field
-============================================================
+\section s6  Tracking of particle in the magnetic field
+
 GEANT has two ways for tracking charged particles in the 
 magnetic field: HELIX et RKUTA.
 HELIX is faster and works well if the gradient of magnetic 
@@ -129,16 +142,17 @@ For MUON, HELIX is a not a good approximation and we must
 use RKUTA to get the optimal mass resolution of the 
 spectrometer. The choice of HELIX or RKUTA is done in the
 config file when the magnetic field is defined:
+<pre>
   AliMagFMaps* field = new AliMagFMaps("Maps","Maps", TRACKING, FACTOR, MAXB, AliMagFMaps::k5kG);
   gAlice->SetField(field);
+</pre>  
 TRACKING must be 1 for RKUTA and 2 for HELIX (the default value for aliroot is 2 (HELIX))
 FACTOR allows you to set the magnetic field to 0, just putting FACTOR=0. Default value is 1.
 MAXB is the maximum magnetic field which is 10.T
 
-===========================================================
- How to tune muon track reconstruction
-===========================================================
-several options and adjustable parameters are available for both Kalman and Original
+\section s7 How to tune muon track reconstruction
+
+Several options and adjustable parameters are available for both Kalman and Original
 tracking algorithms (hard coded for the moment in AliMUONVTrackReconstructor.cxx):
 - *fgkSigmaToCutForTracking* : quality cut used to select new clusters to be
   attached to the track candidate and to select good tracks.
@@ -157,9 +171,8 @@ tracking algorithms (hard coded for the moment in AliMUONVTrackReconstructor.cxx
 - *fgkSigmaToCutForImprovement* : quality cut used when we try to improve the
   quality of the tracks.
 
-===========================================================
- MUON cocktail for physics ..............
-===========================================================
+\section s8 MUON cocktail for physics ..............
+
 There is a MUON cocktail generator of the muon sources in the
 EVGEN directory. This class derives from AliGenCocktail.
 In the init of this class I have filled the cocktail with 
@@ -179,6 +192,7 @@ there are 2 data members in the class fNsuceeded adn fNGenerate
 which tell us what is the biais source.
 
 Enclose an example to use this generator:   
+<pre>
 AliGenMUONCocktail * gener = new AliGenMUONCocktail();
 gener->SetPtRange(1.,100.);       // Transverse momentum range  
 gener->SetPhiRange(0.,360.);    // Azimuthal angle range 
@@ -191,10 +205,10 @@ gener->SetVertexSmear(kPerTrack);
 gener->SetOrigin(0,0,0);        // Vertex position
 gener->SetSigma(0,0,0.0);       // Sigma in (X,Y,Z) (cm) on IP position
 gener->Init();
+</pre>
  
-==========================================================
-How to simulate events with misaligned geometry in local CDB
-==========================================================
+
+\section s9 How to simulate events with misaligned geometry in local CDB
 
 If you want to use a misaligned geometry to simulate some
 events you can use a local CDB. For this need to follow
@@ -214,6 +228,7 @@ default storage and set the specific storage for MUON/Align/Data,
 before instantiating AliSimulation (see for example the commented
 lines AlirootRun_MUONtest.sh).
 
+<pre>
 aliroot -b  >& testSim.out << EOF
 AliCDBManager* man = AliCDBManager::Instance();
 man->SetDefaultStorage("local://$ALICE_ROOT");
@@ -223,11 +238,9 @@ MuonSim.SetWriteRawData("MUON");
 MuonSim.Run(10);
 .q
 EOF
+</pre>
 
-
-==========================================================
- How to Merge events
-==========================================================
+\section s10 How to Merge events
 
 You can merge 2 types of simulated events. For example, 
 you can simulate Hijing events, and then simulate muons
@@ -243,11 +256,13 @@ won't need Kinematics files of the Hijing simulation...
 
 Hijing simulation
 
+<pre>
 aliroot -b << EOF
 AliSimulation HijingSim("$HIJING_SIM/YourConfigForHIJING.C")
 HijingSim.Run(5)
 .q
 EOF
+</pre>
 
 You cand build YourConfigFroHIJING.C File from the 
 ConfigPPR file in AliRoot/macros module.
@@ -257,7 +272,7 @@ merging both simulated events. In next example, we are
 merging 20 times each Hijing event in order to simulate 
 100 muons merged with 5 Hijing events.
 
-
+<pre>
 aliroot -b << EOF
 AliSimulation MuonSim("$ALICE_ROOT/MUON/Config.C")
 MuonSim.MergeWith("$HIJING_SIM/galice.root",20) //parameters are the Hijing simulation file and the number of times we use each Hijing event
@@ -277,10 +292,9 @@ MuonRec.SetFillESD("MUON")
 MuonRec.Run()
 .q
 EOF
+</pre>
 
-==========================================================
-...on track numbering 
-==========================================================
+\section s11 ...On track numbering 
 
 All generated particles, including primary and secondary
 particles are put on the stack. The secondary particles are kept
@@ -303,6 +317,7 @@ without a hit in MUON.
 The correspondence between "track ID" in the hits-tree ("itr") and the
 particle ID for particles on the stack (i.e. generated particles) can be
 obtained via:
+<pre>
 for (Int_t itr = 0; itr < ntracks; itr++) {
     AliMUONVHitStore* hitStore = mcDataInterface.HitStore(event,itr);
     //track "itr" of the hits-tree
@@ -315,6 +330,7 @@ for (Int_t itr = 0; itr < ntracks; itr++) {
        TParticle* particle = mcDataInterface.Stack(event)->Particle(id);
     }  
 }
+</pre>
 
 where mcDataInterface has been obtained by
 AliMUONMCDataInterface mcDataInterface("galice.root");
@@ -330,6 +346,7 @@ referred to in the hit-tree. To know which is the generated particle
 that deposited a given digit one has to follow the sequence of the kind:
 (shown here using the simple, but not fast, DataInterface interfaces) :
 
+<pre>
 AliMUONMCDataInterface mcdi("galice.root");
 AliMUONDataInterface di("galice.root");
 
@@ -350,14 +367,15 @@ for (int tr = 0; tr < mDigit->Ntracks(); tr++)
     Int_t idTrack = mHit->Particle(); //gives flavour code of the particle
    }
 }
+</pre>
 
 
-===========================================================
- How to process invariant mass spectra for J/psi or Upsilon
-===========================================================
+\section s12 How to process invariant mass spectra for J/psi or Upsilon
+
 The macro MUONmassPlot_ESD.C reads back the MUON ESD informations and compute 
 the invariant mass spectra and corresponding uncorelated background. 
 Moreover gives the number of event in the resonance peak and the number of triggers.
+<pre>
 Usage:
 root [0] .L $ALICE_ROOT/MUON/MUONmassPlot_ESD.C+
 root [1] MUONmassPlot_ESD(ExtrapToVertex, 
@@ -384,9 +402,8 @@ PtCutMin    (default 1):     keep only tracks with transverse momentum > PtCutMi
 PtCutMax    (default 10000): keep only tracks with transverse momentum < PtCutMax
 massMin     (default 9.17 for Upsilon) keep only invariant masses with 
 massMax     (default 9.77 for Upsilon) massMin < mass < massMax
+</pre>
 
+\section s13  Still working ..............
 
-
-===========================================================
- Still working ..............
-===========================================================
+*/
