@@ -132,6 +132,7 @@ void AliITSVertexer::FindMultiplicity(Int_t evnumber){
   delete [] dphi;
   delete [] ths;
   delete [] phs;
+  delete [] labels;
   itsLoader->UnloadRecPoints();
   delete multReco;
   return;
