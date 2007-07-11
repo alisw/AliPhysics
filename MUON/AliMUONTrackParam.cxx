@@ -15,15 +15,11 @@
 
 /* $Id$ */
 
-///////////////////////////////////////////////////
-//
-// Track parameters
-// in
-// ALICE
-// dimuon
-// spectrometer
-//
-///////////////////////////////////////////////////
+//-----------------------------------------------------------------------------
+// Class AliMUONTrackParam
+//-------------------------
+// Track parameters in ALICE dimuon spectrometer
+//-----------------------------------------------------------------------------
 
 #include "AliMUONTrackParam.h"
 #include "AliMUONHitForRec.h"

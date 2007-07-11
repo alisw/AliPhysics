@@ -15,18 +15,12 @@
 
 /* $Id$ */
 
-///////////////////////////////////////////////////
-//
-// Tools
-// for
-// track
-// extrapolation
-// in
-// ALICE
-// dimuon
-// spectrometer
-//
-///////////////////////////////////////////////////
+//-----------------------------------------------------------------------------
+// Class AliMUONTrackExtrap
+// ------------------------
+// Tools for track extrapolation in ALICE dimuon spectrometer
+// Author: Philippe Pillot
+//-----------------------------------------------------------------------------
 
 #include "AliMUONTrackExtrap.h" 
 #include "AliMUONTrackParam.h"
