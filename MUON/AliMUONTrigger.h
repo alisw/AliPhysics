@@ -9,6 +9,8 @@
 /// \ingroup sim
 /// \class AliMUONTrigger
 /// \brief MUON trigger detector class
+//  Author: E. Lopez Torres
+
 
 #include "AliTriggerDetector.h"
 

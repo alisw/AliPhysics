@@ -9,6 +9,7 @@
 /// \ingroup rec
 /// \class AliMUONTriggerTrack
 /// \brief Reconstructed trigger track in ALICE dimuon spectrometer
+/// \author Philippe Crochet
 
 #include <TObject.h>
 

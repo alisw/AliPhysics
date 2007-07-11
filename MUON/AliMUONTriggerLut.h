@@ -10,7 +10,7 @@
 /// \class AliMUONTriggerLut
 /// \brief MUON trigger look up table class 
 ///
-/// \author Philippe Crochet
+//  Author: Philippe Crochet
 
 #include <TNamed.h>
 
