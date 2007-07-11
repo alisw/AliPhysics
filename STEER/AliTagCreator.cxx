@@ -36,6 +36,7 @@
 #include "AliRunTag.h"
 #include "AliEventTag.h"
 #include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliESDVertex.h"
 #include "AliLog.h"
 
@@ -326,14 +327,13 @@ void AliTagCreator::CreateTag(TFile* file, const char *guid, const char *md5, co
   
   Int_t firstEvent = 0,lastEvent = 0;
   TTree *t = (TTree*) file->Get("esdTree");
-  TBranch * b = t->GetBranch("ESD");
-  AliESD *esd = 0;
-  b->SetAddress(&esd);
+  AliESDEvent *esd = new AliESDEvent();
+  esd->ReadFromTree(t);
   
-  b->GetEntry(0);
+  t->GetEntry(0);
   Int_t iInitRunNumber = esd->GetRunNumber();
 
-  Int_t iNumberOfEvents = (Int_t)b->GetEntries();
+  Int_t iNumberOfEvents = (Int_t)t->GetEntries();
   for (Int_t iEventNumber = 0; iEventNumber < iNumberOfEvents; iEventNumber++) {
     ntrack = 0;
     nPos = 0;
@@ -362,7 +362,7 @@ void AliTagCreator::CreateTag(TFile* file, const char *guid, const char *md5, co
     totalP = .0;
     fVertexflag = 1;
     
-    b->GetEntry(iEventNumber);
+    t->GetEntry(iEventNumber);
     iRunNumber = esd->GetRunNumber();
     if(iRunNumber != iInitRunNumber) AliFatal("Inconsistency of run numbers in the AliESD!!!");
     const AliESDVertex * vertexIn = esd->GetVertex();
@@ -632,14 +632,13 @@ void AliTagCreator::CreateTag(TFile* file, const char *filepath, Int_t Counter) 
   Int_t firstEvent = 0,lastEvent = 0;
   
   TTree *t = (TTree*) file->Get("esdTree");
-  TBranch * b = t->GetBranch("ESD");
-  AliESD *esd = 0;
-  b->SetAddress(&esd);
+  AliESDEvent *esd = new AliESDEvent();
+  esd->ReadFromTree(t);
   
-  b->GetEntry(0);
+  t->GetEntry(0);
   Int_t iInitRunNumber = esd->GetRunNumber();
 
-  Int_t iNumberOfEvents = (Int_t)b->GetEntries();
+  Int_t iNumberOfEvents = (Int_t)t->GetEntries();
   for (Int_t iEventNumber = 0; iEventNumber < iNumberOfEvents; iEventNumber++) {
     ntrack = 0;
     nPos = 0;
@@ -668,7 +667,7 @@ void AliTagCreator::CreateTag(TFile* file, const char *filepath, Int_t Counter) 
     totalP = .0;
     fVertexflag = 1;
     
-    b->GetEntry(iEventNumber);
+    t->GetEntry(iEventNumber);
     iRunNumber = esd->GetRunNumber();
     if(iRunNumber != iInitRunNumber) AliFatal("Inconsistency of run numbers in the AliESD!!!");
     const AliESDVertex * vertexIn = esd->GetVertex();
