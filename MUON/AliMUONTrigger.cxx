@@ -24,7 +24,8 @@
 #include "AliRunLoader.h"
 #include "AliTriggerInput.h"
 
-///
+
+//-----------------------------------------------------------------------------
 /// \class AliMUONTrigger
 ///
 /// Implementation of AliTriggerDetector for MUON detector
@@ -32,6 +33,9 @@
 /// So far, the inputs are taken from AliMUONTriggerDecision object
 /// April 06, E.L.T.
 /// May 06, taken info from Global Trigger branch (Ch.F)
+///
+/// \author E. Lopez Torres
+//-----------------------------------------------------------------------------
 
 //----------------------------------------------------------------------
 /// \cond CLASSIMP
