@@ -12,40 +12,37 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+//  $Id$
 
-// $Id$
-
-///
-/// Class to get organized with the way we're timing our methods...
-///
-/// Typical usage is based on macros (like for AliLog related ones AliDebug...)
-///
-/// The idea is to instrument the code with a few macro calls, and then,
-/// at the end of the execution, get a printout of *all* the timers, by using
-/// AliCodeTimer::Instance()->Print()
-/// instead of getting scattered outputs all over the place.
-///
-/// To time a given method, use :
-///
-/// void ClassA::MethodA(....)
-/// {
-///    AliCodeTimerAuto("")
-/// }
-///
-/// To get several timers within a same method, use : 
-///
-/// void ClassA::MethodB(...)
-/// {
-///   AliCodeTimerStart("doing something")
-///   ....
-///   AliCodeTimerStop("doing something")
-///
-///   AliCodeTimerStart("doing something else")
-///   ....
-///   AliCodeTimerStop("doing something else")
-/// }
-///
-///
+//_________________________________________________________________________
+// Class to get organized with the way we're timing our methods...
+//
+// Typical usage is based on macros (like for AliLog related ones AliDebug...)
+//
+// The idea is to instrument the code with a few macro calls, and then,
+// at the end of the execution, get a printout of *all* the timers, by using
+// AliCodeTimer::Instance()->Print()
+// instead of getting scattered outputs all over the place.
+//
+// To time a given method, use :
+//
+// void ClassA::MethodA(....)
+// {
+//    AliCodeTimerAuto("")
+// }
+//
+// To get several timers within a same method, use : 
+//
+// void ClassA::MethodB(...)
+// {
+//   AliCodeTimerStart("doing something")
+//   ....
+//   AliCodeTimerStop("doing something")
+//
+//   AliCodeTimerStart("doing something else")
+//   ....
+//   AliCodeTimerStop("doing something else")
+// }
 
 #include "AliCodeTimer.h"
 

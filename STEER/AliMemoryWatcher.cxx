@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 /* $Id$ */
+
 //_________________________________________________________________________
 //Basic Memory Leak utility.    
 //     You can use this tiny class to *see* if your program is leaking.
@@ -42,6 +43,7 @@
 //     But by fitting the VSIZE by a pol1 under ROOT, you'll see right away
 //     by how much your program is leaking.          
 //*-- Author: Laurent Aphecetche(SUBATECH)
+
 // --- std system ---
 #include <cassert> 
 #ifdef __APPLE__
