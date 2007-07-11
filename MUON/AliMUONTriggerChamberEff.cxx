@@ -15,12 +15,14 @@
 
 /* $Id$ */
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONTriggerChamberEff
-/// implementation of the trigger chamber efficiency determination from
+/// Implementation of the trigger chamber efficiency determination from
 /// data, and returns the
 /// efficiencyCells.dat with the calculated efficiencies
 ///
 /// \author Diego Stocco (Torino)
+//-----------------------------------------------------------------------------
 
 #include "AliMUONTriggerChamberEff.h"
 #include "AliMUONVDigit.h"

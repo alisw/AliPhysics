@@ -15,12 +15,13 @@
 
 // $Id$
 // $MpId: AliMpBusPatch.cxx,v 1.4 2006/05/24 13:58:34 ivana Exp $
-//
-// --------------------
+
+//-----------------------------------------------------------------------------
 // Class AliMpBusPatch
 // --------------------
 // The class defines the properties of BusPatch
 // Author: Ivana Hrivnacova, IPN Orsay
+//-----------------------------------------------------------------------------
 
 #include "AliMpBusPatch.h"
 #include "AliMpConstants.h"

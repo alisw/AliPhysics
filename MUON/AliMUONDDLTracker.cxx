@@ -20,12 +20,14 @@
 #include "AliMUONDspHeader.h"
 #include "AliMUONBlockHeader.h"
 
-///
+
+//-----------------------------------------------------------------------------
 /// \class AliMUONDDLTracker
 ///
 /// A wrapper object for 1 DDL of the MUON tracking chambers.
 ///
 /// \author C. Finck
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUONDDLTracker)

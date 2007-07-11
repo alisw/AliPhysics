@@ -16,12 +16,14 @@
 // $Id$
 // $MpId: AliMpSector.cxx,v 1.14 2006/05/24 13:58:46 ivana Exp $
 // Category: sector
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMpSector
 // -----------------
 // Class describing the sector of the MUON chamber of station 1.
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+//-----------------------------------------------------------------------------
 
 #include "AliMpSector.h"
 #include "AliMpSectorPadIterator.h"

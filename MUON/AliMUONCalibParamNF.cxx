@@ -23,12 +23,13 @@
 #include "TMath.h"
 #include "TString.h"
 
-///
+//-----------------------------------------------------------------------------
 /// \class AliMUONCalibParamNF
 ///
 /// Handle the case of N floating point parameters per channel.
 ///
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUONCalibParamNF)

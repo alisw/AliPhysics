@@ -16,12 +16,14 @@
 // $Id$
 // $MpId: AliMpDEManager.cxx,v 1.4 2006/05/24 13:58:34 ivana Exp $
 // Category: management
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMpDEManager
 // --------------------
 // The manager class for definition of detection element types
 // Authors: Ivana Hrivnacova, IPN Orsay
 //          Laurent Aphecetche, SUBATECH Nantes
+//-----------------------------------------------------------------------------
 
 #include "AliMpDEManager.h"
 #include "AliMpDEStore.h"

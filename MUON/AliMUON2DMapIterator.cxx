@@ -17,12 +17,14 @@
 
 #include "AliMUON2DMapIterator.h"
 
+//-----------------------------------------------------------------------------
 /// \class AliMUON2DMapIterator
 /// Implementation of TIterator for 2Dmaps
 /// 
 /// A simple implementation of VDataIterator for 2Dmaps.
 ///
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 #include "AliMpExMap.h"
 

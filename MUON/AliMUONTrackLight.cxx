@@ -15,11 +15,7 @@
 
 /* $Id$ */
 
-//===================================================================
-//This class was prepared by INFN Cagliari, July 2006
-//(authors: H.Woehri, A.de Falco)
-// 
-// 
+//-----------------------------------------------------------------------------
 // Compact information for the muon generated tracks in the MUON arm 
 // useful at the last stage of the analysis chain
 // provides a link between the reconstructed track and the generated particle 
@@ -28,7 +24,10 @@
 // mother process 
 // 
 // To be used together with AliMUONPairLight
-//===================================================================
+//
+// This class was prepared by INFN Cagliari, July 2006
+// (authors: H.Woehri, A.de Falco)
+//-----------------------------------------------------------------------------
 
 #include "AliMUONTrackLight.h"
 #include "AliMUONTrack.h"

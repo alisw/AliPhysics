@@ -25,12 +25,14 @@
 #include "AliMpDEManager.h"
 #include "AliMpConstants.h"
 
+//-----------------------------------------------------------------------------
 /// \class AliMUON2DMap
 /// Basic implementation of AliMUONVStore container using
 /// AliMpExMap internally.
 /// What we store is a "double" map : an AliMpExMap of AliMpExMaps
 ///
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUON2DMap)

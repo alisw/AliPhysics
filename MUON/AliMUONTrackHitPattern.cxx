@@ -16,8 +16,7 @@
 /* $Id$ */
 
 
-////////////////////////////////////
-///
+//-----------------------------------------------------------------------------
 /// \class AliMUONTrackHitPattern
 ///
 /// This class propagates tracks to trigger chambers 
@@ -36,8 +35,7 @@
 /// * GetHitPattern
 ///
 ///  \author Diego Stocco
-///
-////////////////////////////////////
+//-----------------------------------------------------------------------------
 
 
 #include "AliMUONTrackHitPattern.h"

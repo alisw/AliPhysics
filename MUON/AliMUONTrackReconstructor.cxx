@@ -15,6 +15,7 @@
 
 /* $Id$ */
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONTrackReconstructor
 /// MUON track reconstructor using the original method
 ///
@@ -23,7 +24,7 @@
 ///
 /// It contains as methods, among others:
 /// - MakeTracks to build the tracks
-///
+//-----------------------------------------------------------------------------
 
 #include "AliMUONTrackReconstructor.h"
 

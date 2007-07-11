@@ -16,13 +16,15 @@
 // $Id$
 // $MpId: AliMpZone.cxx,v 1.7 2006/05/24 13:58:46 ivana Exp $
 // Category: sector
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMpZone
 // ---------------
 // Class describing a zone composed of the zone segments.
 // The zone contains pads of the same dimensions.
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+//-----------------------------------------------------------------------------
 
 #include "AliMpZone.h"
 #include "AliMpSubZone.h"

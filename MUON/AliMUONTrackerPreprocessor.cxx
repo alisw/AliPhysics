@@ -27,6 +27,7 @@
 #include "Riostream.h"
 #include "TObjArray.h"
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONTrackerPreprocessor
 ///
 /// Shuttle preprocessor for MUON tracker
@@ -35,6 +36,7 @@
 /// (of type AliMUONVSubprocessor).
 ///
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUONTrackerPreprocessor)

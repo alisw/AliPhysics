@@ -16,12 +16,14 @@
 // $Id$
 // $MpId: AliMpConstants.cxx,v 1.11 2006/05/24 13:58:29 ivana Exp $
 // Category: basic
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMpConstants
 // --------------------
 // Class for globally used constants definition.
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+//-----------------------------------------------------------------------------
 
 #include "AliMpConstants.h"
 

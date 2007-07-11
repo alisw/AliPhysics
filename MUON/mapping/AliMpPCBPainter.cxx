@@ -16,12 +16,14 @@
 // $Id$
 // $MpId: AliMpPCBPainter.cxx,v 1.8 2006/05/24 13:58:32 ivana Exp $
 
-///
+
+//-----------------------------------------------------------------------------
 /// \class AliMpPCBPainter
 /// 
 /// Class for drawing a PCB into canvas
 /// 
 /// \author L. Aphecetche
+//-----------------------------------------------------------------------------
 
 #include "AliMpPCBPainter.h"
 

@@ -16,12 +16,14 @@
 // $Id$
 // $MpId: AliMpRowSegmentPainter.cxx,v 1.8 2006/05/24 13:58:32 ivana Exp $
 // Category: graphics
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMpRowSegmentPainter
 // ----------------------------
 // Class for drawing a motif into canvas
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, IPN Orsay
+//-----------------------------------------------------------------------------
  
 #include "AliMpRowSegmentPainter.h"
 #include "AliMpGraphContext.h"

@@ -15,13 +15,14 @@
 
 // $Id$
 //
-// Authors: David Guez, Ivana Hrivnacova, Marion MacCormick; IPN Orsay
-//
+//-----------------------------------------------------------------------------
 // Class AliMUONSt1GeometryBuilderV2
 // ---------------------------------
 // MUON Station1 detailed geometry construction class.
 // (Originally defined in AliMUONv2.cxx - now removed.)
 // Included in AliRoot 2004/01/23
+// Authors: David Guez, Ivana Hrivnacova, Marion MacCormick; IPN Orsay
+//-----------------------------------------------------------------------------
 
 #include "AliMUONSt1GeometryBuilderV2.h"
 #include "AliMUONSt1SpecialMotif.h"

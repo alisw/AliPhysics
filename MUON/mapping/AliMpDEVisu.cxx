@@ -54,13 +54,15 @@
 #include <TGTextEntry.h>
 
 // Category: graphics
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMpDEVisu
 // -----------------------
 // GUI for drawing segmentation
 // motif manu and associated channels
 // date: 2007/01/26
 // Author: Ch. Finck
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMpDEVisu)

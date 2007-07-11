@@ -16,12 +16,14 @@
 // $Id$
 // $MpId: AliMpConnection.cxx,v 1.7 2006/05/24 13:58:41 ivana Exp $
 // Category: motif
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMpConnection
 // ----------------
 // Class that defines a connexion properties.
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+//-----------------------------------------------------------------------------
 
 #include "AliMpConnection.h"
 #include "AliLog.h"

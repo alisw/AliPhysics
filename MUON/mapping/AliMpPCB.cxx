@@ -31,7 +31,8 @@
 #include "TMath.h"
 #include <sstream>
 
-/// 
+ 
+//-----------------------------------------------------------------------------
 /// \class AliMpPCB
 ///
 /// A PCB for station 3,4 or 5
@@ -48,6 +49,7 @@
 /// the enveloppe.
 ///
 /// \author L. Aphecetche
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMpPCB)

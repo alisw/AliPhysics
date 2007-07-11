@@ -16,7 +16,8 @@
 // $Id$
 // $MpId: AliMpPad.cxx,v 1.9 2006/05/24 13:58:29 ivana Exp $
 // Category: basic
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMpPad
 // ---------------
 // Class which encapsuate all informations about a pad
@@ -24,6 +25,7 @@
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 // root [0] .x testSectorAreaIterator.C
 // Real time 0:00:56, CP time 36.270
+//-----------------------------------------------------------------------------
 
 #include "AliMpPad.h"
 #include "AliLog.h"

@@ -16,12 +16,14 @@
 // $Id$
 // $MpId: AliMpDDL.cxx,v 1.4 2006/05/24 13:58:34 ivana Exp $
 // Category: management
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMpDDL
 // --------------------
 // The class defines electronics properties of DDL
 // Authors: Ivana Hrivnacova, IPN Orsay
 //          Christian Finck, SUBATECH Nantes
+//-----------------------------------------------------------------------------
 
 #include "AliMpDDL.h"
 #include "AliMpDEManager.h"

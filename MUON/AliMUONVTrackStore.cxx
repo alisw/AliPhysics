@@ -15,6 +15,7 @@
 
 // $Id$
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONVTrackStore
 ///
 /// Base class of a track store
@@ -23,6 +24,7 @@
 /// might evolve to a virtual AliMUONVTrack for instance in the future...
 ///
 /// \author Laurent Aphecetche, Subatech
+//-----------------------------------------------------------------------------
 
 #include "AliMUONVTrackStore.h"
 #include "AliMUONTrack.h"

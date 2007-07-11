@@ -16,12 +16,14 @@
 // $Id$
 // $MpId: AliMpZonePainter.cxx,v 1.8 2006/05/24 13:58:32 ivana Exp $
 // Category: graphics
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMpZonePainter
 // ----------------------
 // Class for drawing a zone into canvas
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, IPN Orsay
+//-----------------------------------------------------------------------------
  
 #include "AliMpZonePainter.h"
 #include "AliMpGraphContext.h"

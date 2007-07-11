@@ -17,6 +17,7 @@
 
 #include "AliMUONDigitStoreV1.h"
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONDigitStoreV1
 ///
 /// (Legacy) Implementation of AliMUONVDigitStore. 
@@ -25,7 +26,7 @@
 /// to data stores.
 ///
 // \author Laurent Aphecetche, Subatech
-///
+//-----------------------------------------------------------------------------
 
 #include "AliLog.h"
 #include "AliMUONDigit.h"

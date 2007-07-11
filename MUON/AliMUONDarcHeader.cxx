@@ -18,6 +18,7 @@
 #include "AliMUONDarcHeader.h"
 #include "AliMUONRegHeader.h"
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONDarcHeader
 /// Darc structure for trigger raw data.
 /// Each DDL contains one Darc structure
@@ -27,6 +28,7 @@
 /// regional structures.
 ///
 /// \author Christian Finck
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUONDarcHeader)

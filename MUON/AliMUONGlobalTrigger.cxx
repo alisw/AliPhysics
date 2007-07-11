@@ -21,6 +21,7 @@
 #include "AliLog.h"
 #include "AliMUONLocalStruct.h"
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONGlobalTrigger
 /// Global Trigger algorithm data output.
 /// Built from Local and Regional algorithms.                          \n 
@@ -28,6 +29,7 @@
 /// add SetGlobalPattern and GetGlobalPattern method for rawdata 
 /// (Ch. Finck)
 /// \author Ph. Crochet
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUONGlobalTrigger)

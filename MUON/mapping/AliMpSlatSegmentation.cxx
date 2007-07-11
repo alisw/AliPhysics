@@ -16,11 +16,13 @@
 // $Id$
 // $MpId: AliMpSlatSegmentation.cxx,v 1.12 2006/05/24 13:58:50 ivana Exp $
 
+//-----------------------------------------------------------------------------
 // Caution !!
 // Implementation note.
 // The position(s) used in the interface are supposed to be relative
 // to the slat center (AliMpSlat::Position()), whereas internally
 // the x,y are relative to bottom-left corner.
+//-----------------------------------------------------------------------------
 
 #include "AliMpSlatSegmentation.h"
 

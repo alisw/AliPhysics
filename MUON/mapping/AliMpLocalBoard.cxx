@@ -13,13 +13,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+// $Id$
 
-//
-// --------------------
+//-----------------------------------------------------------------------------
 // Class AliMpLocalBoard
 // --------------------
 // The class defines the properties of local board
 // Author: Ch. Finck, Subatech Nantes
+//-----------------------------------------------------------------------------
 
 #include "AliMpLocalBoard.h"
 #include "AliMpConstants.h"

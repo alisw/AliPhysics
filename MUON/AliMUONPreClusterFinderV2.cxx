@@ -26,6 +26,7 @@
 #include "AliMUONVDigit.h"
 #include "AliMUONVDigitStore.h"
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONPreClusterFinderV2
 ///
 /// Implementation of AliMUONVClusterFinder
@@ -33,6 +34,7 @@
 /// This one ressembles the preclustering stage in the original ClusterFinderAZ
 ///
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 ClassImp(AliMUONPreClusterFinderV2)
 

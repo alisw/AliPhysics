@@ -16,12 +16,14 @@
 // $Id$
 // $MpId: AliMpVRowSegment.cxx,v 1.6 2006/05/24 13:58:46 ivana Exp $
 // Category: sector
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMpVRowSegment
 // ----------------------
 // Class describing an interface for a row segment.
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+//-----------------------------------------------------------------------------
 
 #include "AliMpVRowSegment.h"
 

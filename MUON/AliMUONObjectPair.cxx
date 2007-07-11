@@ -20,6 +20,7 @@
 #include "AliLog.h"
 #include <Riostream.h>
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONObjectPair
 ///
 /// The equivalent of a std::pair<TObject*,TObject*> ;-)
@@ -31,6 +32,7 @@
 /// we decide on the ownership of the first and/or second object...
 ///
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUONObjectPair)

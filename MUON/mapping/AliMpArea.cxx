@@ -16,12 +16,14 @@
 // $Id$
 // $MpId: AliMpArea.cxx,v 1.8 2006/05/24 13:58:29 ivana Exp $
 // Category: basic
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMpArea
 // ----------------
 // Class that defines a rectangle area positioned in plane..
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+//-----------------------------------------------------------------------------
 
 #include "AliMpArea.h"
 #include "AliMpConstants.h"

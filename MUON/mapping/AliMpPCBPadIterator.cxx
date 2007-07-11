@@ -28,12 +28,14 @@
 #include "Riostream.h"
 #include "TMath.h"
 
-/// 
+
+//-----------------------------------------------------------------------------
 /// \class AliMpPCBPadIterator
 /// 
 /// Iterates over slat pads within a region of constant pad size.
 /// 
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMpPCBPadIterator)

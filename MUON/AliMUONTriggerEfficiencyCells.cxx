@@ -29,6 +29,7 @@
 #include <fstream>
 #include <cassert>
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONTriggerEfficiencyCells
 /// A class to store and give access to the trigger chamber efficiency.
 ///
@@ -70,6 +71,7 @@
 /// (generated using the MUONCDB.C macro)
 ///
 /// \author Diego Stocco; INFN Torino
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUONTriggerEfficiencyCells)

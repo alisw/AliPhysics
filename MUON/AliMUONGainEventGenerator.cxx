@@ -17,6 +17,7 @@
 
 #include "AliMUONGainEventGenerator.h"
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONGainEventGenerator
 ///
 /// Generate raw data files that mimics the one we'll get from the 
@@ -40,6 +41,7 @@
 /// the first step, to check that everything is OK in the whole procedure.
 ///
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 #include "AliMUONCalibrationData.h"
 #include "AliMUONVStore.h"

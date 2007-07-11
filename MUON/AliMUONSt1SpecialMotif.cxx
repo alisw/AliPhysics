@@ -15,13 +15,14 @@
 
 /* $Id$ */
 
-// Authors: David Guez, Ivana Hrivnacova, Marion MacCormick; IPN Orsay
-//
+//-----------------------------------------------------------------------------
 // Class AliMUONSt1SpecialMotif
 // ----------------------------
 // Encapsulate the distance between the center of a given daughter card
 // and the pad/kapton connector.
 // Included in AliRoot 2003/01/28
+// Authors: David Guez, Ivana Hrivnacova, Marion MacCormick; IPN Orsay
+//-----------------------------------------------------------------------------
 
 #include "AliMUONSt1SpecialMotif.h"
 

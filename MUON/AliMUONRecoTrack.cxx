@@ -15,11 +15,13 @@
 
 /* $Id$ */
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONRecoTrack 
 /// This class represents a reconstructed muon track
 /// in the tree of reconstructed events.   
 ///         
 /// \author Mihaela Gheata, Andrei Gheata 09/10/00
+//-----------------------------------------------------------------------------
 
 #include <Riostream.h>
 

@@ -16,11 +16,13 @@
 // $Id$
 // $MpId: AliMpExMap.cxx,v 1.5 2006/05/24 13:58:29 ivana Exp $
 // Category: basic
-// ------------------------
+
+//-----------------------------------------------------------------------------
 // Class AliMpExMap
 // ------------------------
 // Helper class making Root persistent TExMap
 // Author:Ivana Hrivnacova; IPN Orsay
+//-----------------------------------------------------------------------------
 
 #include "AliMpExMap.h"
 #include "AliMpIntPair.h"

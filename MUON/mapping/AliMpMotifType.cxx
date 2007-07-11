@@ -16,12 +16,14 @@
 // $Id$
 // $MpId: AliMpMotifType.cxx,v 1.10 2006/05/24 13:58:41 ivana Exp $
 // Category: motif
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMpMotifType
 // --------------------
 // Class that defines the motif properties.
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+//-----------------------------------------------------------------------------
 
 #include "AliMpMotifType.h"
 #include "AliMpMotifTypePadIterator.h"

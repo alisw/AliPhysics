@@ -15,12 +15,14 @@
 
 /* $Id$ */
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONTriggerCrate
 ///  Collection of trigger boards
 ///  - one regional
 ///  - sixteen local
 ///  slot 0 holds the regional board
 /// \author Rachid Guernane (LPCCFd)
+//-----------------------------------------------------------------------------
 
 #include <TObjArray.h>
 

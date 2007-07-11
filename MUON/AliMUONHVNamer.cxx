@@ -34,14 +34,14 @@
 #include "TString.h"
 #include "TSystem.h"
 
-/// $Id$
-///
+//-----------------------------------------------------------------------------
 /// \class AliMUONHVNamer
 /// 
 /// A utility class to manage HV DCS aliases names, in particular the
 /// two conventions used to number the detection elements within a detector.
 ///
 /// \author: Laurent Aphecetche, Subatech
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUONHVNamer)

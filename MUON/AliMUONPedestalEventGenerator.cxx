@@ -41,7 +41,7 @@
 #include <TSystem.h>
 #include "AliDAQ.h"
 
-///
+//-----------------------------------------------------------------------------
 /// \class AliMUONPedestalEventGenerator
 ///
 /// Generate simulated pedestal events for MUON TRK, to be able to e.g. test
@@ -56,7 +56,7 @@
 /// + raw (date files, one per LDC), depending of ctor and MakeDDL() method.
 ///
 /// \author L. Aphecetche
-///
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUONPedestalEventGenerator)

@@ -15,7 +15,7 @@
 
 // $Id$
 
-/// 
+//-----------------------------------------------------------------------------
 /// \class AliMUONTriggerStoreV1
 ///
 /// Implementation of AliMUONVTriggerStore, which is backward compatible,
@@ -23,6 +23,7 @@
 /// before the introduction of the AliMUONVStore concept.
 /// 
 /// \author Laurent Aphecetche, Subatech
+//-----------------------------------------------------------------------------
 
 #include "AliMUONTriggerStoreV1.h"
 

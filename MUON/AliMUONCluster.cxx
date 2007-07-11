@@ -26,6 +26,7 @@
 #include "AliLog.h"
 #include "AliMUONPad.h"
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONCluster
 ///
 /// A group of adjacent pads
@@ -35,6 +36,7 @@
 ///
 /// \author Laurent Aphecetche
 ///
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUONCluster)

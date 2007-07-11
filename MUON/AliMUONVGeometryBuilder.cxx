@@ -14,12 +14,14 @@
  **************************************************************************/
 
 // $Id$
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMUONVGeometryBuilder
 // -----------------------------
 // Abstract base class for geometry construction per geometry module(s).
 // Author: Ivana Hrivnacova, IPN Orsay
 // 23/01/2004
+//-----------------------------------------------------------------------------
 
 #include "AliMUONVGeometryBuilder.h"
 #include "AliMUONGeometryModule.h"

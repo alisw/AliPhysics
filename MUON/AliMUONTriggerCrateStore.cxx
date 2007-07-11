@@ -31,13 +31,15 @@
 #include <TSystem.h>
 #include <Riostream.h>
 
-/// 
+
+//-----------------------------------------------------------------------------
 /// \class AliMUONTriggerCrateStore
 /// 
 /// A container of trigger crate objects that offers iteration
 /// over both the crates themselves and the local boards they contain
 ///
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUONTriggerCrateStore)

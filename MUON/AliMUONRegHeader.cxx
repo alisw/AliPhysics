@@ -19,6 +19,7 @@
 #include "AliMUONRegHeader.h"
 #include "AliMUONLocalStruct.h"
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONRegHeader
 /// Regional structure for trigger raw data.
 /// Each Reg structure contains 16 (at most) local card structure.
@@ -26,6 +27,7 @@
 /// regional inputs
 /// 
 /// \author Christian Finck
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUONRegHeader)

@@ -15,8 +15,7 @@
 
 /* $Id$ */
 
-////////////////////////////////////
-///
+//-----------------------------------------------------------------------------
 /// \class AliMUONVTrackReconstructor
 /// Virtual MUON track reconstructor in ALICE (class renamed from AliMUONEventReconstructor)
 ///
@@ -48,8 +47,7 @@
 ///   quality of the tracks.
 ///
 ///  \author Philippe Pillot
-///
-////////////////////////////////////
+//-----------------------------------------------------------------------------
 
 #include "AliMUONVTrackReconstructor.h"
 

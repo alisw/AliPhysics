@@ -27,7 +27,7 @@
 #include "AliMpSlat.h"
 #include "AliMpTrigger.h"
 
-/// 
+//-----------------------------------------------------------------------------
 /// \class AliMpTriggerSegmentation
 ///
 /// Implementation of AliMpVSegmentation for trigger slats.
@@ -35,6 +35,7 @@
 /// \todo Implement CreateIterator method, if needed.
 ///
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMpTriggerSegmentation)

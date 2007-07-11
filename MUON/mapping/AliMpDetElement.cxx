@@ -16,12 +16,14 @@
 // $Id$
 // $MpId: AliMpDetElement.cxx,v 1.4 2006/05/24 13:58:34 ivana Exp $
 // Category: management
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMpDetElement
 // --------------------
 // The class defines the electronics properties of detection element
 // Authors: Ivana Hrivnacova, IPN Orsay
 //          Laurent Aphecetche, Christian Finck, SUBATECH Nantes
+//-----------------------------------------------------------------------------
 
 #include "AliMpDetElement.h"
 

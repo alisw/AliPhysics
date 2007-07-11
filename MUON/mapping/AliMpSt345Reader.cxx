@@ -37,7 +37,8 @@
 
 #include <sstream>
 
-/// 
+ 
+//-----------------------------------------------------------------------------
 /// \class AliMpSt345Reader
 //
 /// Read slat and pcb ASCII files.
@@ -47,6 +48,7 @@
 /// - AliMpPCB ReadPCB()
 ///
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMpSt345Reader)

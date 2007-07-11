@@ -15,6 +15,7 @@
 
 // $Id$
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONClusterStoreV1
 ///
 /// Implementation of VClusterStore.
@@ -25,6 +26,7 @@
 ///
 /// \author Laurent Aphecetche, Subatech
 ///
+//-----------------------------------------------------------------------------
 
 #include "AliMUONClusterStoreV1.h"
 

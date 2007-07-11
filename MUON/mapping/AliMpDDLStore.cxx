@@ -16,7 +16,8 @@
 // $Id$
 // $MpId: AliMpDDLStore.cxx,v 1.4 2006/05/24 13:58:34 ivana Exp $
 // Category: management
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMpDDLStore
 // --------------------
 // The top container class for DDLs, det elements and bus patched
@@ -24,6 +25,7 @@
 // via various characteristics.
 // Authors: Ivana Hrivnacova, IPN Orsay
 //          Christian Finck, SUBATECH Nantes
+//-----------------------------------------------------------------------------
 
 #include "AliMpDDLStore.h"
 #include "AliMpConstants.h"

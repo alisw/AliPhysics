@@ -15,11 +15,13 @@
 
 // $Id$
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONTriggerGUI
 /// Graphical User Interface utility class for the MUON trigger detector
 /// It creates, after initialisation with a data file, a sensitive map
 /// of the trigger boards
 /// \author Bogdan Vulpescu, LPC Clermont-Ferrand
+//-----------------------------------------------------------------------------
 
 #include "AliMUONTriggerGUI.h"
 #include "AliMUONTriggerGUIboard.h"

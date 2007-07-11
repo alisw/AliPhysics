@@ -15,11 +15,13 @@
 
 // $Id$
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONVTriggerTrackStore
 ///
 /// Base class of a trigger track store
 ///
 /// \author Laurent Aphecetche, Subatech
+//-----------------------------------------------------------------------------
 
 #include "AliMUONVTriggerTrackStore.h"
 #include "AliMUONTriggerTrack.h"

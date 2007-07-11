@@ -17,6 +17,7 @@
 
 #include "AliMUONVSubprocessor.h"
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONVSubprocessor
 ///
 /// Base class for a shuttle sub-task for MUON (either TRK or TRG)
@@ -25,7 +26,7 @@
 /// to be performed within the MUON shuttle's preprocessors
 ///
 /// \author Laurent Aphecetche
-///
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUONVSubprocessor)

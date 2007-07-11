@@ -24,12 +24,13 @@
 #include "TString.h"
 #include "TMap.h"
 
-///
+//-----------------------------------------------------------------------------
 /// \class AliMpHelper
 ///
 /// Helper class used to parse mapping files for St345 slats.
 ///
 /// \author L. Aphecetche
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMpHelper)

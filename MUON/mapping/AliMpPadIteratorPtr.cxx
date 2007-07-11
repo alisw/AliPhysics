@@ -16,7 +16,8 @@
 // $Id$
 // $MpId: AliMpPadIteratorPtr.cxx,v 1.7 2006/05/24 13:58:29 ivana Exp $
 // Category: basic
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMpPadIteratorPtr
 // --------------------------
 // Pointer to the virtual pad iterator;
@@ -27,6 +28,7 @@
 //
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+//-----------------------------------------------------------------------------
 
 #include "AliMpPadIteratorPtr.h"
 #include "AliMpVPadIterator.h"

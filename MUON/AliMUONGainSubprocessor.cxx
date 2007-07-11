@@ -33,7 +33,7 @@
 #include <TSystem.h>
 #include <sstream>
 
-///
+//-----------------------------------------------------------------------------
 /// \class AliMUONGainSubprocessor
 ///
 /// Implementation of AliMUONVSubprocessor class to deal with MUON TRK Gains.
@@ -48,6 +48,7 @@
 ///
 /// \author L. Aphecetche
 ///
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUONGainSubprocessor)

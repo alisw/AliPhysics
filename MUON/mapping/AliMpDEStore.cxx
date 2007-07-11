@@ -16,12 +16,14 @@
 // $Id$
 // $MpId: AliMpDEStore.cxx,v 1.4 2006/05/24 13:58:34 ivana Exp $
 // Category: management
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMpDEStore
 // --------------------
 // The container class for detection element objects
 // Authors: Ivana Hrivnacova, IPN Orsay
 //          Laurent Aphecetche, Christian Finck, SUBATECH Nantes
+//-----------------------------------------------------------------------------
 
 #include "AliMpDEStore.h"
 #include "AliMpDEManager.h"

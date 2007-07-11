@@ -13,6 +13,9 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+// $Id$
+
+//-----------------------------------------------------------------------------
 /// \class AliMUONDigitMaker
 /// MUON Digit maker from rawdata.
 ///
@@ -37,6 +40,7 @@
 /// and for trigger. Create trigger inverse mapping.
 ///
 /// \author Ch. Finck, oct 06 
+//-----------------------------------------------------------------------------
 
 #include "AliMUONDigitMaker.h"
 

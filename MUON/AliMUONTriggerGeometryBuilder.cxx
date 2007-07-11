@@ -15,13 +15,14 @@
 
 // $Id$
 
-// -----------------------------------
-// Class AliMUONTriggerGeometryBuilder
+//-----------------------------------------------------------------------------
+/// Class AliMUONTriggerGeometryBuilder
 // -----------------------------------
 // MUON Trigger stations geometry 
 // construction class.
 // Author: Philippe Crochet (LPCCFd)
 // Support for trigger chambers added April 07 by Enrico Scomparin (INFN To)
+//-----------------------------------------------------------------------------
 
 #include <TVirtualMC.h>
 #include <TGeoMatrix.h>

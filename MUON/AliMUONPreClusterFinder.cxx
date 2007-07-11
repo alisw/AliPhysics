@@ -28,6 +28,7 @@
 #include "AliMUONVDigitStore.h"
 //#include "AliCodeTimer.h"
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONPreClusterFinder
 ///
 /// Implementation of AliMUONVClusterFinder
@@ -35,6 +36,7 @@
 /// This class simply find adjacent pads to form clusters
 ///
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 ClassImp(AliMUONPreClusterFinder)
 

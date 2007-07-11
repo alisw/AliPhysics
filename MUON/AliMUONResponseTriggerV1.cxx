@@ -15,11 +15,12 @@
 
 /* $Id$ */
 
-// ------------------
+//-----------------------------------------------------------------------------
 // Class AliMUONTriggerResponseV1
 // ------------------
 // Trigger chamber response 
 // with cluster size activated
+//-----------------------------------------------------------------------------
 
 #include "AliMUONResponseTriggerV1.h"
 #include "AliMUON.h"

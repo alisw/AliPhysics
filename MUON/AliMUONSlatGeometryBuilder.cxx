@@ -16,6 +16,7 @@
 // $Id$
 //
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONSlatGeometryBuilder
 /// This Builder is designed according to the enveloppe methode. The basic idea is to be able to allow moves 
 /// of the slats on the support panels. 
@@ -29,6 +30,7 @@
 /// Reference system is the one described in the note ALICE-INT-2003-038  v.2  EDMS Id 406391 
 ///
 /// \author Eric Dumonteil (dumontei@cea.fr)
+//-----------------------------------------------------------------------------
 
 #include "AliMUONSlatGeometryBuilder.h"
 #include "AliMUON.h"

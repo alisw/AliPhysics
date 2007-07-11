@@ -15,11 +15,13 @@
 
 // $Id$
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONTriggerGUIboard
 ///
 /// Single trigger board object with geometry information, strips and digits
 ///
 /// \author Bogdan Vulpescu, LPC Clermont-Ferrand
+//-----------------------------------------------------------------------------
 
 #include <TBox.h>
 

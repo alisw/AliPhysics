@@ -19,6 +19,7 @@
 #include "AliMUONBusStruct.h"
 #include <Riostream.h>
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONDspHeader
 /// DSP structure for tracker raw data.
 /// Each block contains at most 5 Dsp structures.
@@ -27,6 +28,7 @@
 /// and event word (1 for nb of word is odd and 0 if not 
 ///
 /// \author Christian Finck
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUONDspHeader)

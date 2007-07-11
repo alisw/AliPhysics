@@ -16,11 +16,13 @@
 // $Id$
 // $MpId: AliMpArrayI.cxx,v 1.5 2006/05/24 13:58:29 ivana Exp $
 // Category: basic
-// ------------------------
+
+//-----------------------------------------------------------------------------
 // Class AliMpArrayI
 // ------------------------
 // Helper class for sorted integer array
 // Author:Ivana Hrivnacova; IPN Orsay
+//-----------------------------------------------------------------------------
 
 #include "AliMpArrayI.h"
 

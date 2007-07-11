@@ -15,11 +15,13 @@
 
 // $Id$
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONTriggerGUIbdmap
 ///
 /// The gui map of a single board object, strips/digits
 ///
 /// \author Bogdan Vulpescu, LPC Clermont-Ferrand
+//-----------------------------------------------------------------------------
 
 #include <TPolyLine.h>
 #include <TStyle.h>

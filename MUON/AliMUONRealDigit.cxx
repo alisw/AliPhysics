@@ -17,6 +17,7 @@
 
 #include "AliMUONRealDigit.h"
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONRealDigit
 ///
 /// Implementation of AliMUONVDigit for real digit.
@@ -24,7 +25,7 @@
 /// This class should store the bare minimum in order to save disk space
 ///
 /// \author Laurent Aphecetche
-///
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUONRealDigit)

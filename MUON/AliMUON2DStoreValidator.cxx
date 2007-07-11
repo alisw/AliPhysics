@@ -31,6 +31,7 @@
 #include <TObjArray.h>
 #include <TObjString.h>
 
+//-----------------------------------------------------------------------------
 /// \class AliMUON2DStoreValidator
 ///
 /// Determine which channels, manus, DEs, stations are missing
@@ -58,6 +59,7 @@
 /// contains k TObjString = Form("%d",manuChannel)
 ///
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUON2DStoreValidator)

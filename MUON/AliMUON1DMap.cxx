@@ -21,13 +21,14 @@
 #include "AliMpExMap.h"
 #include "AliMUON1DMapIterator.h"
 
-///
+//-----------------------------------------------------------------------------
 /// \class AliMUON1DMap
 /// This class is simply a wrapper to an AliMpExMap, offering in addition a
 /// control over the replacement policy when you add
 /// something to it.
 ///
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUON1DMap)

@@ -14,12 +14,14 @@
  **************************************************************************/
 
 // $Id$
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMUONGMSSubprocessor
 // -----------------------------
 // The shuttle subprocessor for GMS data
 // Author: Ivana Hrivnacova, IPN Orsay
 // 16/09/2006
+//-----------------------------------------------------------------------------
 
 #include "AliMUONGMSSubprocessor.h"
 #include "AliMUONPreprocessor.h"

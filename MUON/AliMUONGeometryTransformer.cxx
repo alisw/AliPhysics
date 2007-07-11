@@ -14,12 +14,13 @@
  **************************************************************************/
 
 // $Id$
-//
-// ----------------------------
+
+//-----------------------------------------------------------------------------
 // Class AliMUONGeometryTransformer
 // ----------------------------
 // Top container class for geometry transformations
 // Author: Ivana Hrivnacova, IPN Orsay
+//-----------------------------------------------------------------------------
 
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONGeometryModuleTransformer.h"

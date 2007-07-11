@@ -16,13 +16,15 @@
 // $Id$
 // $MpId: AliMpSectorAreaHPadIterator.cxx,v 1.7 2006/05/24 13:58:46 ivana Exp $
 // Category: sector
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMpSectorAreaHPadIterator
 // ---------------------------------
 // Class, which defines an iterator over the pads 
 // inside a given area in a sector in horizontal direction.
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+//-----------------------------------------------------------------------------
 
 #include "AliMpSectorAreaHPadIterator.h"
 #include "AliMpSectorSegmentation.h"

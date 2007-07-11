@@ -15,6 +15,7 @@
 
 // $Id$
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONClusterSplitterMLEM
 /// 
 /// Splitter class for the MLEM algorithm...
@@ -23,6 +24,7 @@
 ///
 /// \author Laurent Aphecetche (for the "new" C++ structure) and 
 /// Alexander Zinchenko, JINR Dubna, for the hardcore of it ;-)
+//-----------------------------------------------------------------------------
 
 #include "AliMUONClusterSplitterMLEM.h"
 

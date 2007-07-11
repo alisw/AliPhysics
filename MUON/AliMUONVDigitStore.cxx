@@ -15,6 +15,7 @@
 
 // $Id$
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONVDigitStore
 ///
 /// Interface for a digit (or sdigit) container
@@ -23,6 +24,7 @@
 /// can create iterators to loop over (part of) the elements.
 ///
 /// \author Laurent Aphecetche, Subatech
+//-----------------------------------------------------------------------------
 
 #include "AliMUONVDigitStore.h"
 

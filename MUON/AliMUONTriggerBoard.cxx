@@ -15,14 +15,15 @@
 
 /* $Id$ */
 
+//-----------------------------------------------------------------------------
 ///  \class AliMUONTriggerBoard
-///  TRIGGER BOARD SUPER CLASS IMPLEMENTATION
-///  CAN BE A LOCAL, REGIONAL, OR GLOBAL BOARD
-///  REGIONAL BOARD IS PER CONVENTION
-///  ALWAYS IN THE SLOT 0
-/// \todo Change comments in capital letters to normal text
+///
+///  Trigger board super class implementation.
+///  Can be a local, regional, or global board
+///  Regional board is per convention always in the slot 0
 ///
 ///  \author Rachid Guernane (LPCCFd)
+//-----------------------------------------------------------------------------
 
 #include "AliMUONTriggerBoard.h"
 #include "AliLog.h"

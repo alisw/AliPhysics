@@ -16,13 +16,15 @@
 // $Id$
 // $MpId: AliMpVPadRowSegment.cxx,v 1.7 2006/05/24 13:58:46 ivana Exp $
 // Category: sector
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMpVPadRowSegment
 // --------------------
 // The abstract base class for a pad row segment composed of the 
 // the identic pads.
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+//-----------------------------------------------------------------------------
 
 #include "AliMpVPadRowSegment.h"
 #include "AliMpPadRow.h"

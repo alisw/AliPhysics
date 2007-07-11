@@ -22,11 +22,13 @@
 #include <Riostream.h>
 #include <TArrayS.h>
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONLocalTrigger
 /// Local Trigger algorithm data outputs
 /// (contains local trigger decision and bit patterns)                \n
 /// Add SetLocalStruct method for rawdata  (Ch. Finck)
 /// \author Ph. Crochet
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUONLocalTrigger)

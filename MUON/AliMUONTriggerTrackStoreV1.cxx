@@ -15,6 +15,7 @@
 
 // $Id$
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONTriggerTrackStoreV1
 ///
 /// Implementation of AliMUONVTriggerTrackStore which should be
@@ -22,6 +23,7 @@
 /// the introduction of the AliMUONVStore concept
 ///
 /// \author Laurent Aphecetche, Subatech
+//-----------------------------------------------------------------------------
 
 #include "AliMUONTriggerTrackStoreV1.h"
 

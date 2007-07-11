@@ -16,7 +16,8 @@
 // $Id$
 // $MpId: AliMpVSegmentation.cxx,v 1.5 2006/05/24 13:58:29 ivana Exp $
 // Category: basic
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMpVSegmentation
 // ------------------------
 // The abstract base class for the segmentation.
@@ -27,6 +28,8 @@
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 //         Laurent Aphecetche, SUBATECH
+//-----------------------------------------------------------------------------
+
 
 #include "AliMpVSegmentation.h"
 #include "AliMpArea.h"

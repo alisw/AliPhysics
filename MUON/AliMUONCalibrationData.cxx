@@ -28,6 +28,7 @@
 #include "Riostream.h"
 #include "TMap.h"
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONCalibrationData
 ///
 /// For the moment, this class stores pedestals, gains, hv (for tracker)
@@ -41,6 +42,7 @@
 /// containers/calibration classes.
 ///
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUONCalibrationData)

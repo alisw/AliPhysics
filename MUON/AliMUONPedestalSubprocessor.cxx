@@ -32,7 +32,7 @@
 #include <TSystem.h>
 #include <sstream>
 
-///
+//-----------------------------------------------------------------------------
 /// \class AliMUONPedestalSubprocessor
 ///
 /// Implementation of AliMUONVSubprocessor class to deal with MUON TRK pedestals.
@@ -43,7 +43,7 @@
 ///---------------------------------------------------------------------------\n
 ///
 /// \author L. Aphecetche
-///
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUONPedestalSubprocessor)

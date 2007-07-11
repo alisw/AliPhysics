@@ -15,11 +15,12 @@
 
 /* $Id$ */
 
-// ------------------------
+//-----------------------------------------------------------------------------
 // Class AliMUONHitForRec
 // ------------------------
 // Hit for reconstruction in ALICE dimuon spectrometer
 // Author: J. Gosset
+//-----------------------------------------------------------------------------
 
 #include "AliTrackReference.h" 
 #include "AliMUONHitForRec.h" 

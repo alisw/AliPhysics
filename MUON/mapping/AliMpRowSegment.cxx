@@ -16,13 +16,15 @@
 // $Id$
 // $MpId: AliMpRowSegment.cxx,v 1.10 2006/05/24 13:58:46 ivana Exp $
 // Category: sector
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMpRowSegment
 // ---------------------
 // Class describing a row segment composed of the 
 // the identic motifs.
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+//-----------------------------------------------------------------------------
 
 #include "AliMpRowSegment.h"
 #include "AliMpRow.h"

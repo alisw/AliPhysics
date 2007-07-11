@@ -15,12 +15,16 @@
 
 /* $Id$ */
 
-//*-- Author: Rachid Guernane (LPCCFd)
-//*   Manager class for muon trigger electronics
-//*   Client of trigger board classes
-//*   Debugged by Ph. Crochet & Ch. Finck
-//*   Interfaced with new mapping Ch. Finck
-//*
+//-----------------------------------------------------------------------------
+// Class AliMUONTriggerElectronics
+//--------------------------------
+// Manager class for muon trigger electronics
+// Client of trigger board classes
+// Debugged by Ph. Crochet & Ch. Finck
+// Interfaced with new mapping Ch. Finck
+//
+// Author: Rachid Guernane (LPCCFd)
+//-----------------------------------------------------------------------------
 
 #include "AliLoader.h"
 #include "AliLog.h"

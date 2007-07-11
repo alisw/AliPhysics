@@ -4,10 +4,12 @@
 // $Id$
 // $MpId: AliMpStationType.h,v 1.9 2006/05/24 13:58:07 ivana Exp $
 
+//-----------------------------------------------------------------------------
 // \enum AliMpStationType
 // Enumeration for refering to a MUON station
 //
 // Author: David Guez, Ivana Hrivnacova; IPN Orsay
+//-----------------------------------------------------------------------------
  
 #include "AliMpStationType.h"
 

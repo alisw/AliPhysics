@@ -14,12 +14,14 @@
  **************************************************************************/
 
 // $Id$
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMUONCommonGeometryBuilder
 // ----------------------------------
 // Geometry construction common to all stations
 // (material definition).
 // separated from AliMUONGeometryBuilder
+//-----------------------------------------------------------------------------
 
 
 #include <TVirtualMC.h>

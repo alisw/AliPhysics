@@ -15,12 +15,13 @@
 
 // $Id$
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONMCDataInterface
 ///
 /// Easy to use MC data accessor
 ///
 /// \author Laurent Aphecetche, Subatech
-///
+//-----------------------------------------------------------------------------
 
 #include "AliMUONMCDataInterface.h"
 #include "AliMUONVDigitStore.h"

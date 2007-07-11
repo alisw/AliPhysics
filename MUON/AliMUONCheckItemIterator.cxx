@@ -20,12 +20,14 @@
 #include "AliMpExMap.h"
 #include "AliMUONCheckItem.h"
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONCheckItemIterator
 ///
 /// Iterator on AliMUONCheckItem objects
 /// 
 ///
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUONCheckItemIterator)

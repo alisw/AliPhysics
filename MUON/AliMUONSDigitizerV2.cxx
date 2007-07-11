@@ -32,7 +32,7 @@
 #include "AliMUONVDigitStore.h"
 #include "AliMUONVHitStore.h"
 
-///
+//-----------------------------------------------------------------------------
 /// The sdigitizer performs the transformation from hits (energy deposits by
 /// the transport code) to sdigits (equivalent of charges on pad).
 ///
@@ -46,7 +46,7 @@
 /// Please note that we do *not* merge sdigits after creation, which means
 /// that after sdigitization, a given pad can have several sdigits. This
 /// merging is taken care of later on by the digitizer(V3).
-///
+//-----------------------------------------------------------------------------
 
 ClassImp(AliMUONSDigitizerV2)
 

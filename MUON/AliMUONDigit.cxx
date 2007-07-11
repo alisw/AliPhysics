@@ -17,6 +17,7 @@
 
 #include "AliMUONDigit.h"
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONDigit
 /// A class representing a digit (with MC information if possible)
 /// in the MUON spectrometer either in tracking or trigger chambers.
@@ -27,6 +28,7 @@
 /// This class is used to represent either sdigits (purely simulated digit, 
 /// with no electronic noise whatsoever) or digits (simulated ones but 
 /// including electronic noise and de-calibration, to closely ressemble real ones).
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUONDigit)

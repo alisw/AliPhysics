@@ -16,12 +16,14 @@
 // $Id$
 // $MpId: AliMpMotifTypePadIterator.cxx,v 1.6 2006/05/24 13:58:41 ivana Exp $
 // Category: motif
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMpMotifTypePadIterator
 // -------------------------------
 // Class, which defines an iterator over the pads of a given motif type
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+//-----------------------------------------------------------------------------
 
 #include "AliMpMotifTypePadIterator.h"
 #include "AliMpMotifType.h"

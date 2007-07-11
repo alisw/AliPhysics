@@ -15,6 +15,7 @@
 
 /* $Id$ */
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONGlobalTriggerBoard
 /// Global trigger implementation:
 /// - inputs are regional responses
@@ -23,6 +24,7 @@
 /// \todo Change member functions comments in capital letters to normal text
 ///
 /// \author Rachid Guernane (LPCCFd)
+//-----------------------------------------------------------------------------
 
 #include "AliMUONGlobalTriggerBoard.h"
 #include "AliLog.h"

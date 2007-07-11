@@ -22,13 +22,14 @@
 #include "AliMUONRegHeader.h"
 #include "AliMUONDarcHeader.h"
 
-///
+
+//-----------------------------------------------------------------------------
 /// \class AliMUONDDLTrigger
 ///
 /// One DDL for trigger part of the MUON spectrometer.
 /// 
 /// \author C. Finck
-///
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUONDDLTrigger)

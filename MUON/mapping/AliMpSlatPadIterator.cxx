@@ -24,7 +24,8 @@
 #include "AliMpSlat.h"
 #include "AliMpPCBPadIterator.h"
 
-///
+
+//-----------------------------------------------------------------------------
 /// \class AliMpSlatPadIterator
 ///
 /// Implementation of AliMpVPadIterator for slats.
@@ -35,7 +36,7 @@
 /// AliMpSlatZonePadIterator objects.
 ///
 /// \author L. Aphecetche
-///
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMpSlatPadIterator)

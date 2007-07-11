@@ -15,6 +15,7 @@
 
 /* $Id$ */
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONTriggerCircuit
 /// Contains as data members the Y positions of the X declusturized strips and 
 /// the X positions of the (doubled or not) Y strips.
@@ -22,6 +23,7 @@
 /// local trigger output (see AliMUONTrackReconstructor::MakeTriggerTrack)
 ///
 /// \author Philippe Crochet (LPCCFd)
+//-----------------------------------------------------------------------------
 
 #include "AliMUONTriggerCircuit.h"
 

@@ -15,12 +15,14 @@
 
 // $Id$
 // $MpId: AliMpMotifPosition.cxx,v 1.9 2006/05/24 13:58:41 ivana Exp $
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMpMotifPosition
 // ------------------------
 // Class that represents a placed motif.
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+//-----------------------------------------------------------------------------
 
 #include "AliMpMotifPosition.h"
 #include "AliMpMotifPositionPadIterator.h"

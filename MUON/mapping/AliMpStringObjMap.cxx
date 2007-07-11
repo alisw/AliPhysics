@@ -16,12 +16,13 @@
 // $Id$
 // $MpId: AliMpStringObjMap.cxx,v 1.4 2006/05/24 13:58:29 ivana Exp $
 
-// ------------------------------------ 
+//-----------------------------------------------------------------------------
 // Class AliMpStringObjMap
 // ------------------------------------ 
 // Helper class that substitutes map <string, int> 
 // which ALICE does not allow to use 
 // Author: Ivana Hrivnacova, IPN Orsay
+//-----------------------------------------------------------------------------
 
 #include "AliMpStringObjMap.h"
 

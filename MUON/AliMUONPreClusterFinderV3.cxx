@@ -29,6 +29,7 @@
 #include <Riostream.h>
 //#include "AliCodeTimer.h"
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONPreClusterFinderV3
 ///
 /// Implementation of AliMUONVClusterFinder
@@ -44,6 +45,7 @@
 /// should not depend on the order of the input digits.
 ///
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 ClassImp(AliMUONPreClusterFinderV3)
 

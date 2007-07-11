@@ -15,6 +15,7 @@
 
 // $Id$
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONDigitStoreVImpl
 ///
 /// Base implementation of VDigitStore, where digits are simply put
@@ -35,6 +36,7 @@
 /// methods.
 ///
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 #include "AliMUONDigitStoreVImpl.h"
 

@@ -15,6 +15,7 @@
 
 // $Id$
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONVStore
 ///
 /// A store is a container, which can be searched for (using FindObject methods),
@@ -90,6 +91,7 @@
 ///
 /// In the write case, one *must* specify a concrete class for the container
 ///
+//-----------------------------------------------------------------------------
 
 #include "AliMUONVStore.h"
 

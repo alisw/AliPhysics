@@ -15,6 +15,7 @@
 
 // $Id$
 
+//-----------------------------------------------------------------------------
 /// \class AliMUON2DMapIteratorByI
 ///
 /// Implementation of TIterator for 2D maps
@@ -24,6 +25,7 @@
 /// (i,j) used to index values in the map).
 ///
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 #include "AliMUON2DMapIteratorByI.h"
 

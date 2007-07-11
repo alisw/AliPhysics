@@ -15,6 +15,7 @@
 
 /* $Id$ */
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONClusterReconstructor
 ///
 /// This class is just a steering class to loop over detection elements of tracking chambers,
@@ -23,6 +24,7 @@
 ///
 /// \author C. Finck and L. Aphecetche, Subatech
 ///
+//-----------------------------------------------------------------------------
 
 #include "AliMUONClusterReconstructor.h"
 

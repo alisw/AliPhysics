@@ -15,6 +15,7 @@
 
 /* $Id$ */
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONClusterFinderMLEM
 /// 
 /// Clusterizer class based on the Expectation-Maximization algorithm
@@ -25,6 +26,7 @@
 ///
 /// \author Laurent Aphecetche (for the "new" C++ structure) and 
 /// Alexander Zinchenko, JINR Dubna, for the hardcore of it ;-)
+//-----------------------------------------------------------------------------
 
 #include "AliMUONClusterFinderMLEM.h"
 #include "AliLog.h"

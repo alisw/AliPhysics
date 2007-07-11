@@ -21,6 +21,7 @@
 #include "AliLog.h"
 #include "Riostream.h"
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONLogger
 ///
 /// A logger that keeps track of the number of times a message appeared.
@@ -33,6 +34,7 @@
 /// only once when DigitizerV3 is destroyed.
 ///
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUONLogger)

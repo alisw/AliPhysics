@@ -16,13 +16,15 @@
 // $Id$
 // $MpId: AliMpPadPair.cxx,v 1.7 2006/05/24 13:58:29 ivana Exp $
 // Category: basic
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMpPadPair
 // ------------------
 // Wrap up for std::pair<AliMpPad, AliMpPad>
 // to avoid problems with CINT.
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+//-----------------------------------------------------------------------------
 
 #include "AliMpPadPair.h"
 

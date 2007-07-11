@@ -13,7 +13,8 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-/// 
+
+//-----------------------------------------------------------------------------
 /// \class AliMpSlatMotifMap
 //
 /// Basically this class provide a garbage collection of AliMpMotif and
@@ -21,6 +22,7 @@
 ///
 ///
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 
 // $Id$

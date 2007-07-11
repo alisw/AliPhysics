@@ -15,6 +15,7 @@
 
 // $Id$
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONCheck
 ///
 /// This class check the ESD tree, providing the matching with the trigger
@@ -27,6 +28,7 @@
 /// DumpDigit() as a replacement of the function from MUONCheck.C macro.
 ///
 /// \author Frederic Yermia, INFN Torino
+//-----------------------------------------------------------------------------
 
 #include "AliMUONCheck.h"
 #include "AliMUONConstants.h"

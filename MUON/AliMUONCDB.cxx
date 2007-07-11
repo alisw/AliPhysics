@@ -15,6 +15,7 @@
 
 /* $Id$ */
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONCDB
 ///
 /// Helper class to experience the OCDB
@@ -25,6 +26,7 @@
 /// For more information, please see READMECDB
 ///
 // \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 #include "AliMUONCDB.h"
 

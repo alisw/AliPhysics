@@ -15,12 +15,14 @@
 
 // $Id$
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONVHitStore
 ///
 /// Base class of a MUON hit store
 ///
 /// \author Laurent Aphecetche, Subatech
 ///
+//-----------------------------------------------------------------------------
 
 #include "AliMUONVHitStore.h"
 #include "AliMUONHit.h"

@@ -15,8 +15,8 @@
 
 /* $Id$ */
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONTrackReconstructorK
-/////////////////////////////////////
 ///
 /// MUON track reconstructor using the kalman method
 ///
@@ -26,7 +26,7 @@
 /// It contains as methods, among others:
 /// - MakeTracks to build the tracks
 ///
-////////////////////////////////////
+//-----------------------------------------------------------------------------
 
 #include "AliMUONTrackReconstructorK.h"
 #include "AliMUONConstants.h"

@@ -16,13 +16,15 @@
 // $Id$
 // $MpId: AliMpRowSegmentRSpecial.cxx,v 1.7 2006/05/24 13:58:46 ivana Exp $
 // Category: sector
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMpRowSegmentRSpecial
 // -----------------------------
 // Class describing a special outer row segment composed of the 
 // pad rows.
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+//-----------------------------------------------------------------------------
 
 #include "AliMpRowSegmentRSpecial.h"
 #include "AliMpRow.h"

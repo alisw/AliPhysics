@@ -15,7 +15,7 @@
 
 /* $Id$ */
 
-//===================================================================
+//-----------------------------------------------------------------------------
 //This class was prepared by INFN Cagliari, July 2006
 //(authors: H.Woehri, A.de Falco)
 // 
@@ -29,7 +29,7 @@
 // for information about the dimuon, use PrintInfo with the appropriate
 // printflag
 // To be used together with AliMUONTrackLight
-//===================================================================
+//-----------------------------------------------------------------------------
 
 
 //MUON classes

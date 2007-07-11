@@ -15,11 +15,13 @@
 
 // $Id$
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONTriggerGUIdimap
 ///
 /// The digit maps of the four trigger chambers, all boards
 ///
 /// \author Bogdan Vulpescu, LPC Clermont-Ferrand
+//-----------------------------------------------------------------------------
 
 #include <TCanvas.h>
 #include <TGButton.h>

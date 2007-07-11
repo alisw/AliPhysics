@@ -22,6 +22,7 @@
 #include "Riostream.h"
 #include "AliMUONCheckItemIterator.h"
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONCheckItem
 ///
 /// A structure used to gather information at different levels (ch,manu,de,chamber)
@@ -30,6 +31,7 @@
 ///
 /// 
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUONCheckItem)

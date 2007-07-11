@@ -16,13 +16,15 @@
 // $Id$
 // $MpId: AliMpVMotif.cxx,v 1.9 2006/05/24 13:58:41 ivana Exp $
 // Category: motif
-///
+
+//-----------------------------------------------------------------------------
 // Class AliMpVMotif
 // -----------------
 // Class that defines a motif with its unique ID
 // and the motif type.
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+//-----------------------------------------------------------------------------
 
 #include "AliMpVMotif.h"
 #include "AliMpMotifType.h"

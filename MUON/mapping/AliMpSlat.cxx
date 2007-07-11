@@ -26,7 +26,7 @@
 
 #include "TArrayI.h"
 
-///
+//-----------------------------------------------------------------------------
 /// Representation of a slat cathode (bending or non-bending).
 ///
 /// A slat can be viewed as a "collection" of PCBs of various densities
@@ -37,6 +37,7 @@
 /// width varies)
 // 
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMpSlat)

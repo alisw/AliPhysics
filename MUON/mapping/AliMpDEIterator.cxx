@@ -17,11 +17,12 @@
 // $MpId: AliMpDEIterator.cxx,v 1.6 2006/05/24 13:58:34 ivana Exp $
 // Category: management
 
-// ------------------------
+//-----------------------------------------------------------------------------
 // Class AliMpDEIterator
 // ------------------------
 // The iterator over valid detection elements
 // Author: Ivana Hrivnacova, IPN Orsay
+//-----------------------------------------------------------------------------
 
 #include "AliMpDEIterator.h"
 #include "AliMpDEStore.h"

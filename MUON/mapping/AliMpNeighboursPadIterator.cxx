@@ -16,12 +16,14 @@
 // $Id$
 // $MpId: AliMpNeighboursPadIterator.cxx,v 1.12 2006/05/24 13:58:46 ivana Exp $
 // Category: sector
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMpNeighboursPadIterator
 // --------------------------------
 // Class, which defines an iterator over the pads surrounding a given pad
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+//-----------------------------------------------------------------------------
 
 #include "AliMpNeighboursPadIterator.h"
 #include "AliMpIntPair.h"

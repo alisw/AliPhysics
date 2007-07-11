@@ -16,7 +16,8 @@
 // $Id$
 // $MpId: AliMpFiles.cxx,v 1.12 2006/05/23 13:09:54 ivana Exp $
 // Category: basic
-// ----------------
+
+//-----------------------------------------------------------------------------
 // Class AliMpFiles
 // ----------------
 // Class for generating file names and paths.
@@ -27,6 +28,7 @@
 //
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+//-----------------------------------------------------------------------------
 
 #include "AliMpFiles.h"
 

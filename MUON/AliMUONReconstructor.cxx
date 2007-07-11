@@ -14,6 +14,7 @@
  **************************************************************************/
 /* $Id$ */
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONReconstructor
 ///
 /// Implementation of AliReconstructor for MUON subsystem.
@@ -60,6 +61,7 @@
 /// DIGITSTOREV2R : use the V2R implementation of the digitstore 
 ///
 /// \author Laurent Aphecetche, Subatech
+//-----------------------------------------------------------------------------
 
 #include "AliMUONReconstructor.h"
 

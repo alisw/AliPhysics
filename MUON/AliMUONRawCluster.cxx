@@ -15,12 +15,13 @@
 
 /* $Id$ */
 
-// -------------------------
+//-----------------------------------------------------------------------------
 // Class AliMUONRawCluster
 // -------------------------
 // Class for the MUON RecPoint
 // It contains the properties of the physics cluters found in the tracking chambers
 // RawCluster contains also the information from the both cathode of the chambers.
+//-----------------------------------------------------------------------------
 
 
 #include "Riostream.h"

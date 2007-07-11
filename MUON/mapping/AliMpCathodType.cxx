@@ -4,11 +4,13 @@
 // $Id$
 // $MpId: AliMpCathodType.h,v 1.8 2006/05/24 13:58:07 ivana Exp $
 
+//-----------------------------------------------------------------------------
 // \ingroup basic
 // \enum AliMpCathodType
 // Enumeration for refering to cath0 and cath1.
 //
 // \author Ivana Hrivnacova; IPN Orsay
+//-----------------------------------------------------------------------------
  
 #include "AliMpCathodType.h"
 

@@ -14,12 +14,14 @@
  **************************************************************************/
 
 // $Id$
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMUONSt2GeometryBuilder
 // -------------------------------
 // MUON Station2 coarse geometry construction class.
 // Extracted from AliMUONv1
 // Dummy version of station 2 with the right DE id (Ch. Finck)
+//-----------------------------------------------------------------------------
 
 #include <TVirtualMC.h>
 #include <TGeoMatrix.h>

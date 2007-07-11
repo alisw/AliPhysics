@@ -19,11 +19,12 @@
 #include "AliMUONRegionalTrigger.h"
 #include "AliLog.h"
 
-// -----------------------------
+//-----------------------------------------------------------------------------
 // Class AliMUONRegionalTrigger
 // -----------------------------
 // Regional Trigger algorithm data outputs
 // Author:  Ch. Finck
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUONRegionalTrigger)

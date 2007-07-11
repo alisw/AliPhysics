@@ -24,13 +24,14 @@
 #include "AliMUONGeometryTransformer.h"
 #include "AliLog.h"
 
-///
+//-----------------------------------------------------------------------------
 /// \class AliMUONChamberTrigger
 ///
 /// Implementation of AliMUONChamber for the trigger
 ///
 /// \deprecated This class is to be deprecated.
 ///
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUONChamberTrigger)

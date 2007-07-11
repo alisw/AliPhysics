@@ -28,6 +28,7 @@
 #include "AliMUONVStore.h"
 #include "AliMUONVCalibParam.h"
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONDigitCalibrator
 /// Class used to calibrate digits (either real or simulated ones).
 ///
@@ -44,6 +45,7 @@
 /// bad digits).
 ///
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 
 /// \cond CLASSIMP

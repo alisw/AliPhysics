@@ -18,6 +18,7 @@
 #include "AliMUONVClusterFinder.h"
 #include "AliLog.h"
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONVClusterFinder
 ///
 /// Defines an interface for a cluster finder.
@@ -27,6 +28,7 @@
 /// particular DE)
 ///
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUONVClusterFinder)

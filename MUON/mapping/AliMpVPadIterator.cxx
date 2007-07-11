@@ -16,12 +16,14 @@
 // $Id$
 // $MpId: AliMpVPadIterator.cxx,v 1.6 2006/05/24 13:58:29 ivana Exp $
 // Category: basic
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMpVPadIterator
 // -----------------------
 // Abstract base class, which defines an iterator over pads
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+//-----------------------------------------------------------------------------
 
 #include "AliMpVPadIterator.h"
 

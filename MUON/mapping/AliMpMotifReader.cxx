@@ -16,12 +16,14 @@
 // $Id$
 // $MpId: AliMpMotifReader.cxx,v 1.10 2006/05/24 13:58:41 ivana Exp $
 // Category: sector
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMpMotifReader
 // -------------------
 // Class that takes care of reading the sector data.
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+//-----------------------------------------------------------------------------
 
 #include "AliMpFiles.h"
 #include "AliMpMotifReader.h"

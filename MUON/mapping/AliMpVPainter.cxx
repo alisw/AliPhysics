@@ -16,12 +16,14 @@
 // $Id$
 // $MpId: AliMpVPainter.cxx,v 1.10 2006/05/24 13:58:32 ivana Exp $
 // Category: graphics
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMpVPainter
 // --------------
 // Class for drawing objects into canvas
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, IPN Orsay
+//-----------------------------------------------------------------------------
   
 #include "AliMpVPainter.h"
 #include "AliMpGraphContext.h"

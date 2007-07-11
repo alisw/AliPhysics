@@ -25,6 +25,7 @@
 #include "TVector2.h"
 #include "AliMUONVDigitStore.h"
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONClusterFinderCOG
 ///
 /// A very basic (and mostly useless, probably) cluster finder.
@@ -37,6 +38,7 @@
 /// direction with the better resolution.
 ///
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUONClusterFinderCOG)

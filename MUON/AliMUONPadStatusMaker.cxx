@@ -15,12 +15,14 @@
 
 // $Id$
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONPadStatusMaker
 ///
 /// Make a 2DStore of pad statuses, using different sources of information,
 /// like pedestal values, gain values, and HV values.
 ///
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 #include "AliMUONPadStatusMaker.h"
 

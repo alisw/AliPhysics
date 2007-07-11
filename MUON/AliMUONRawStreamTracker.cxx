@@ -16,8 +16,7 @@
 /* $Id $ */
 
 
-///////////////////////////////////////////////////////////////////////////////
-///
+//-----------------------------------------------------------------------------
 /// \class AliMUONRawStreamTracker
 /// This class provides access to MUON digits in raw data.
 ///
@@ -30,7 +29,7 @@
 /// Version implement for Tracker
 ///
 /// \author Christian Finck & Laurent Aphecetche
-///////////////////////////////////////////////////////////////////////////////
+//-----------------------------------------------------------------------------
 
 #include "AliMUONRawStreamTracker.h"
 

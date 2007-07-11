@@ -13,13 +13,15 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+// $Id$
+// $MpId: AliMpTrigger.cxx,v 1.4 2006/05/24 13:58:52 ivana Exp $
 
-//
-// --------------------
+//-----------------------------------------------------------------------------
 // Class AliMpTriggerCrate
 // --------------------
 // The class defines the properties of trigger crate
 // Author: Ch. Finck, Subatech Nantes
+//-----------------------------------------------------------------------------
 
 #include "AliMpTriggerCrate.h"
 #include "AliMpDEManager.h"

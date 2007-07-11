@@ -13,7 +13,9 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+// $Id$
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONPayloadTrigger
 /// Class Payload
 ///
@@ -22,6 +24,7 @@
 /// First version implement for Trigger
 ///
 /// \author Christian Finck
+//-----------------------------------------------------------------------------
 
 #include "AliMUONPayloadTrigger.h"
 

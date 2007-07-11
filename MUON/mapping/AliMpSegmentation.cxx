@@ -17,12 +17,13 @@
 // $MpId: AliMpSegmentation.cxx,v 1.7 2006/05/24 13:58:34 ivana Exp $
 // Category: management
 
-// -----------------------
+//-----------------------------------------------------------------------------
 // Class AliMpSegmentation
 // -----------------------
 // Singleton container class for mapping segmentations
 // Authors: Ivana Hrivnacova, IPN Orsay
 //          Laurent Aphecetche, SUBATECH
+//-----------------------------------------------------------------------------
 
 #include "AliMpSegmentation.h"
 

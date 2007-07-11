@@ -16,12 +16,14 @@
 // $Id$
 // $MpId: AliMpVIndexed.cxx,v 1.7 2006/05/24 13:58:29 ivana Exp $
 // Category: basic
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMpVIndexed
 // -------------------
 // Class that defines the limits of global pad indices.
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+//-----------------------------------------------------------------------------
 
 #include "AliMpVIndexed.h"
 

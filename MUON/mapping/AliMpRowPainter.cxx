@@ -16,12 +16,14 @@
 // $Id$
 // $MpId: AliMpRowPainter.cxx,v 1.8 2006/05/24 13:58:32 ivana Exp $
 // Category: graphics
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMpRowPainter
 // ---------------------
 // Class for drawing a row into canvas
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, IPN Orsay
+//-----------------------------------------------------------------------------
   
 #include "AliMpRowPainter.h"
 #include "AliMpGraphContext.h"

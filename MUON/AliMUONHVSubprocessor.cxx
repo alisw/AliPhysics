@@ -14,6 +14,8 @@
 **************************************************************************/
 
 /// $Id$
+
+//-----------------------------------------------------------------------------
 /// \class AliMUONHVSubprocessor
 ///
 /// A subprocessor to read HV values for one run
@@ -22,6 +24,7 @@
 /// from the MUON TRK, and dumps this copy into the CDB
 ///
 /// \author Laurent Aphecetche, Subatech
+//-----------------------------------------------------------------------------
 
 #include "AliMUONHVSubprocessor.h"
 #include "AliMUONHVNamer.h"

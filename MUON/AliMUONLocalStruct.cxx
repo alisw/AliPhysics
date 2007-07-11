@@ -17,6 +17,7 @@
 
 #include "AliMUONLocalStruct.h"
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONLocalStruct
 /// Local structure for trigger raw data.
 /// The structure includes the information
@@ -25,6 +26,7 @@
 /// x position)
 ///
 /// \author Christian Finck
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUONLocalStruct)

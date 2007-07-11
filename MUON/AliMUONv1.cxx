@@ -15,11 +15,12 @@
 
 /* $Id$ */
 
-// --------------------
+//-----------------------------------------------------------------------------
 // Class AliMUONv1
 // --------------------
 // AliDetector class for MUON subsystem which implements
 // functions for simulation 
+//-----------------------------------------------------------------------------
 
 #include "AliMUONv1.h"
 #include "AliMUONConstants.h"

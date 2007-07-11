@@ -27,13 +27,15 @@
 #include "TArrayI.h"
 #include "TList.h"
 
-///
+
+//-----------------------------------------------------------------------------
 /// \class AliMpManuList
 ///
 /// A sort of cache for mapping information we use often (or that are
 /// time consuming to recompute).
 ///
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMpManuList)

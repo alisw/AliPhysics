@@ -13,13 +13,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// -----------------------------
+/* $Id$ */
+
+//-----------------------------------------------------------------------------
 // Class AliMUONResponseFactory
 // -----------------------------
 // Factory for muon response
 // Class separated from AliMUONFactoryV4
-
-/* $Id$ */
+//-----------------------------------------------------------------------------
 
 #include "AliMUONResponseFactory.h"
 #include "AliRun.h"

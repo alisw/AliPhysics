@@ -14,7 +14,8 @@
  **************************************************************************/
 
 // $Id$
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMUONGeometryModule
 // -----------------------------
 // Class for definition of the detector module parameters
@@ -22,6 +23,7 @@
 //  sensitive volumes and detection elements).
 //
 // Author: Ivana Hrivnacova, IPN Orsay
+//-----------------------------------------------------------------------------
 
 #include "AliMUONGeometryModule.h"
 #include "AliMUONGeometryModuleTransformer.h"

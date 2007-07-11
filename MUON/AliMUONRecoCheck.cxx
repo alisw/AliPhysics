@@ -15,11 +15,13 @@
 
 /* $Id$ */
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONRecoCheck
 /// Utility class to check reconstruction
 /// Reconstructed tracks are compared to reference tracks. 
 /// The reference tracks are built from AliTrackReference for the
 /// hit in chamber (0..9) and from kinematics for the vertex parameters.     
+//-----------------------------------------------------------------------------
 
 #include "AliMUONRecoCheck.h"
 #include "AliMUONHitForRec.h"

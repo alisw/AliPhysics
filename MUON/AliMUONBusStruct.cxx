@@ -21,6 +21,7 @@
 #include <Riostream.h>
 #include <string.h>
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONBusStruct
 /// Bus patch structure for tracker raw data
 /// each Dsp contains at most 5 bus patch structure
@@ -30,6 +31,7 @@
 /// 12 bits for charge)
 ///
 /// \author Christian Finck
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUONBusStruct)

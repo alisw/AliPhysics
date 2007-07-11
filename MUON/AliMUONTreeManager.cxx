@@ -15,8 +15,7 @@
 
 // $Id$
 
-
-/// 
+//-----------------------------------------------------------------------------
 /// \class AliMUONTreeManager
 ///
 /// Helper class to handle the relationships TTree<->MUON data containers
@@ -38,6 +37,7 @@
 /// TTree to store the relationship branch -> MUON store classname.
 ///
 /// \author Laurent Aphecetche, Subatech
+//-----------------------------------------------------------------------------
 
 #include "AliMUONTreeManager.h"
 

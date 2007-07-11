@@ -43,7 +43,7 @@
 #include <TNtuple.h>
 #include <TSystem.h>
 
-///
+//-----------------------------------------------------------------------------
 /// \class AliMUONDataInterface
 ///
 /// An easy to use interface to the MUON data data stored in
@@ -57,6 +57,7 @@
 /// it is the easiest.
 ///
 /// \author Laurent Aphecetche, Subatech
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUONDataInterface)

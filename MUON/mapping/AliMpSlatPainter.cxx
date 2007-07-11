@@ -16,12 +16,14 @@
 // $Id$
 // $MpId: AliMpSlatPainter.cxx,v 1.10 2006/05/24 13:58:32 ivana Exp $
 
-///
+
+//-----------------------------------------------------------------------------
 /// \class AliMpSlatPainter
 /// 
 /// Class for drawing a slat into canvas
 ///
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 #include "AliMpSlatPainter.h"
 

@@ -40,7 +40,7 @@
 #include <TArrayI.h>
 #include <sstream>
 
-/// 
+//-----------------------------------------------------------------------------
 /// \class AliMpTriggerReader
 /// Read trigger slat ASCII files
 /// Basically provides two methods:
@@ -48,6 +48,7 @@
 /// - AliMpPCB* ReadPCB()
 ///
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMpTriggerReader)

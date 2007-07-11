@@ -17,11 +17,12 @@
 // $MpId: $
 // Category: management
 
-// -----------------------
+//-----------------------------------------------------------------------------
 // Class AliMpCDB
 // -----------------------
 // Manager class for mapping CDB IO
 // Author: Ivana Hrivnacova, IPN Orsay
+//-----------------------------------------------------------------------------
 
 #include "AliMpCDB.h"
 

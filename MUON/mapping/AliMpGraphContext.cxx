@@ -16,13 +16,15 @@
 // $Id$
 // $MpId: AliMpGraphContext.cxx,v 1.11 2006/05/24 13:58:32 ivana Exp $
 // Category: graphics
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMpGraphContext
 // -----------------------
 // Class describing a the correspondance between a given area
 // in pad, and a zone of real (cm) position
 // Included in AliRoot: 2003/05/02
 // Author: David GUEZ, IPN Orsay
+//-----------------------------------------------------------------------------
 
 #include "AliMpGraphContext.h"
 

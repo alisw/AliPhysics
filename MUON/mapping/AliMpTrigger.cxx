@@ -26,7 +26,7 @@
 #include "TArrayI.h"
 #include "TObjArray.h"
 
-/// 
+//-----------------------------------------------------------------------------
 /// \class AliMpTrigger
 /// 
 /// A trigger 'slat' object. 
@@ -37,6 +37,7 @@
 /// "locations".
 ///
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMpTrigger)

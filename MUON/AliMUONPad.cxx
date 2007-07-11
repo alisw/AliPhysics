@@ -26,6 +26,7 @@
 #include "TVector2.h"
 #include "TMath.h"
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONPad
 ///
 /// Object gathering information about a hit pad.
@@ -37,6 +38,7 @@
 /// get neighboring information.
 ///
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUONPad)

@@ -16,7 +16,8 @@
 // $Id$
 // $MpId: AliMpIntPair.cxx,v 1.7 2006/05/24 13:58:29 ivana Exp $
 // Category: basic
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMpIntPair
 // --------------
 // Class that defines the pair of integers.
@@ -25,6 +26,7 @@
 //
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+//-----------------------------------------------------------------------------
 
 #include "AliMpIntPair.h"
 

@@ -17,12 +17,13 @@
 
 #include "AliMUONHitStoreV1.h"
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONHitStoreV1
 ///
 /// Implementation of AliMUONVHitStore
 ///
 /// \author Laurent Aphecetche, Subatech
-///
+//-----------------------------------------------------------------------------
 
 #include <TClonesArray.h>
 #include <TTree.h>

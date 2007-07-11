@@ -15,12 +15,14 @@
 
 // $Id$
 
+//-----------------------------------------------------------------------------
 /// \class AliMUON1DMapIterator
 /// Implementation of TIterator for 1Dmaps
 /// 
 /// A simple implementation of VDataIterator for 1Dmaps.
 ///
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 #include "AliMUON1DMapIterator.h"
 #include "AliMpExMap.h"

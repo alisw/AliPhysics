@@ -15,6 +15,7 @@
 
 // $Id$
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONVDigit
 ///
 /// This is the base class of a MUON digit that most client code should deal with.
@@ -38,6 +39,7 @@
 /// the (half) dimensions (in cm) of the pad it corresponds to.
 ///
 /// \author Laurent Aphecetche, Subatech
+//-----------------------------------------------------------------------------
 
 #include "AliMUONVDigit.h"
 

@@ -15,13 +15,14 @@
 
 /* $Id$ */
 
-/// -----------------------
-/// Class AliMUONTriggerLut
-/// -----------------------
+//-----------------------------------------------------------------------------
+/// \class AliMUONTriggerLut
+/// 
 /// Local Trigger Look Up Table
 /// reading interface LUT data is stored into TH3S histograms and readout 
 /// from the Local Trigger algorithm
-/// Author: Philippe Crochet
+/// \author Philippe Crochet
+//-----------------------------------------------------------------------------
 
 #include "AliMUONTriggerLut.h"
 
@@ -47,7 +48,7 @@ AliMUONTriggerLut::AliMUONTriggerLut()
       fAptMinu(0),
       fAptUnde(0)
 {
-    //ctor
+/// ctor
 }
 
 //----------------------------------------------------------------------

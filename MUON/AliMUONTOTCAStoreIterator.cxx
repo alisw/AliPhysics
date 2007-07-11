@@ -15,14 +15,14 @@
 
 // $Id$
 
-///
+//-----------------------------------------------------------------------------
 /// \class AliMUONTOTCAStoreIterator
 ///
 /// An iterator to access TObject stored in a TObjArray of TClonesArray
 ///
 ///
 /// \author Laurent Aphecetche, Subatech
-///
+//-----------------------------------------------------------------------------
 
 #include "AliMUONTOTCAStoreIterator.h"
 

@@ -23,7 +23,7 @@
 #include "TClass.h"
 #include "AliMpConstants.h"
 
-///
+//-----------------------------------------------------------------------------
 /// \class AliMUONConstants
 /// This class holds various constants to be used in many places,
 /// such as the number of tracking and trigger chambers, 
@@ -32,7 +32,7 @@
 /// Those constants should as much as possible replace hard-coded values
 /// which are to be considered strictly illegal in the MUON code (or any code,
 /// by the way).
-///
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUONConstants)

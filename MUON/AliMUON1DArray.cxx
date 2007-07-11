@@ -21,13 +21,15 @@
 #include <TClass.h>
 #include <TObjArray.h>
 #include <Riostream.h>
-///
+
+//-----------------------------------------------------------------------------
 /// \class AliMUON1DArray
 /// This class is simply a wrapper to a TObjArray, offering in addition a
 /// control over the replacement policy when you add
 /// something to it.
 ///
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUON1DArray)

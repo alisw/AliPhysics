@@ -16,12 +16,14 @@
 // $Id$
 // $MpId: AliMpSectorReader.cxx,v 1.9 2006/05/24 13:58:46 ivana Exp $
 // Category: sector
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMpSectorReader
 // -----------------------
 // Class that takes care of reading the sector data.
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+//-----------------------------------------------------------------------------
 
 #include "AliMpSectorReader.h"
 #include "AliMpSector.h"

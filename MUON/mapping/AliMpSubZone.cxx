@@ -16,13 +16,15 @@
 // $Id$
 // $MpId: AliMpSubZone.cxx,v 1.8 2006/05/24 13:58:46 ivana Exp $
 // Category: sector
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMpSubZone
 // ------------------
 // Class describing a zone segment composed of the 
 // line segments with the same motif type.
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+//-----------------------------------------------------------------------------
 
 #include "AliMpSubZone.h"
 #include "AliMpVRowSegment.h"

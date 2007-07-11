@@ -34,6 +34,7 @@
 #include "AliMUONVDigitStore.h"
 #include <Riostream.h>
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONClusterFinderSimpleFit
 ///
 /// Basic cluster finder 
@@ -45,6 +46,7 @@
 /// FIXME: this one is still at the developping stage...
 ///
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUONClusterFinderSimpleFit)

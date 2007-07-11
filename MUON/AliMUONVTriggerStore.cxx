@@ -15,13 +15,14 @@
 
 // $Id$
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONVTriggerStore
 ///
 /// Base class of a trigger container, which holds local, regional and
 /// global information for one event.
 ///
 /// \author Laurent Aphecetche, Subatech
-///
+//-----------------------------------------------------------------------------
 
 #include "AliMUONVTriggerStore.h"
 #include "AliMUONLocalTrigger.h"

@@ -15,11 +15,12 @@
 
 /* $Id$ */
 
-// -----------------------
+//-----------------------------------------------------------------------------
 // Class AliMUONChamber
 // -----------------------
 // MUON tracking chamber class
 // now only providing DisIntegration function
+//-----------------------------------------------------------------------------
 
 // --- ROOT includes ---
 #include <TRandom.h>

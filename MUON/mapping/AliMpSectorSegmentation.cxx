@@ -16,7 +16,8 @@
 // $Id$
 // $MpId: AliMpSectorSegmentation.cxx,v 1.15 2006/05/24 13:58:46 ivana Exp $
 // Category: sector
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMpSectorSegmentation
 // -----------------------------
 // Class describing the segmentation of the sector.        
@@ -25,6 +26,7 @@
 // finding pad neighbour.
 //
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+//-----------------------------------------------------------------------------
 
 #include "AliMpSectorSegmentation.h"
 #include "AliMpSector.h"

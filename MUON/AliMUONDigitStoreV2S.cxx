@@ -17,12 +17,14 @@
 
 #include "AliMUONDigitStoreV2S.h"
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONDigitStoreV2S
 ///
 /// Concrete implementation of AliMUONVDigitStore for simulated digits, using
 /// the AliMUONDigitStoreVImpl base implementation
 /// 
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 
 #include "AliMUONDigit.h"

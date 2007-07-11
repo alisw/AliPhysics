@@ -15,12 +15,14 @@
 
 // $Id$
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONDigitStoreV2R
 ///
 /// Concrete implementation of AliMUONVDigitStore for real digits, using
 /// the AliMUONDigitStoreVImpl base implementation
 /// 
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 #include "AliMUONDigitStoreV2R.h"
 

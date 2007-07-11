@@ -15,6 +15,7 @@
 
 // $Id$
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONVClusterStore
 ///
 /// An interface of a cluster container
@@ -24,6 +25,7 @@
 /// This is likely to change to something like AliMUONVCluster...
 ///
 /// \author Laurent Aphecetche, Subatech
+//-----------------------------------------------------------------------------
 
 #include "AliMUONVClusterStore.h"
 #include "AliMUONRawCluster.h"

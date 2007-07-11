@@ -15,12 +15,13 @@
 
 /* $Id$ */
 
-// -----------------------
+//-----------------------------------------------------------------------------
 // Class AliMUONMathieson
 // -----------------------
 // Implementation of Mathieson response
 // Separated from other classes by CH. Finck with removing circular
 // dependencies 
+//-----------------------------------------------------------------------------
 
 #include "AliMUONMathieson.h"
 

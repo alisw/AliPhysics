@@ -16,13 +16,15 @@
 // $Id$
 // $MpId: AliMpMotifMap.cxx,v 1.16 2006/05/24 13:58:41 ivana Exp $
 // Category: motif
-// -------------------
+
+//-----------------------------------------------------------------------------
 // Class AliMpMotifMap
 // -------------------
 // Class describing the motif map container, where motifs are
 // mapped to their string IDs.
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+//-----------------------------------------------------------------------------
 
 #include "AliMpMotifMap.h"
 #include "AliMpVMotif.h"

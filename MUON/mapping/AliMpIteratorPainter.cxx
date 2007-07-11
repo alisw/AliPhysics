@@ -29,13 +29,14 @@
 #include "TVector2.h"
 #include "TMath.h"
 
-/// 
+//-----------------------------------------------------------------------------
 /// \class AliMpIteratorPainter
 ///
 /// A painter for a group of pads, which is defined by an iterator
 ///
 ///
 /// \author L. Aphecetche
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMpIteratorPainter)

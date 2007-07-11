@@ -16,12 +16,14 @@
 // $Id$
 // $MpId: AliMpSubZonePainter.cxx,v 1.8 2006/05/24 13:58:32 ivana Exp $
 // Category: graphics
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMpSubZonePainter
 // -------------------------
 // Class for drawing a subzone into canvas
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, IPN Orsay
+//-----------------------------------------------------------------------------
   
 #include "AliMpSubZonePainter.h"
 #include "AliMpGraphContext.h"

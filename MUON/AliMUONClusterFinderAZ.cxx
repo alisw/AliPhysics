@@ -15,11 +15,12 @@
 
 /* $Id$ */
 
-// -------------------------------
+//-----------------------------------------------------------------------------
 // Class AliMUONClusterFinderAZ
 // -------------------------------
 // Clusterizer class based on the Expectation-Maximization algorithm
 // Author: Alexander Zinchenko, JINR Dubna
+//-----------------------------------------------------------------------------
 
 #include "AliMUONClusterFinderAZ.h"
 #include "AliMpVSegmentation.h"

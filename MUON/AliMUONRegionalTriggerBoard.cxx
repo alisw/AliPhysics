@@ -15,6 +15,7 @@
 
 /* $Id$ */
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONRegionalTriggerBoard
 /// Dimuon regional trigger implementation:
 /// - entry are local board responses
@@ -23,6 +24,7 @@
 /// \todo Change member functions comments in capital letters to normal text
 ///
 /// \author Rachid Guernane (LPCCFd)
+//-----------------------------------------------------------------------------
 
 #include "AliMUONRegionalTriggerBoard.h"
 

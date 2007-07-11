@@ -15,13 +15,14 @@
 
 // $Id$
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONTrackStoreV1
 ///
 /// Implementation of AliMUONTrackStoreV1, which should be backward
 /// compatible, i.e. able to read old TreeT files
 ///
 /// \author Laurent Aphecetche, Subatech
-///
+//-----------------------------------------------------------------------------
 
 #include "AliMUONTrackStoreV1.h"
 

@@ -23,7 +23,7 @@
 #include "TMath.h"
 #include "TString.h"
 
-///
+//-----------------------------------------------------------------------------
 /// \class AliMUONCalibParamNI
 ///
 /// Handle the case of N integer parameters per channel.
@@ -35,6 +35,7 @@
 /// and use the correct type.
 ///
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUONCalibParamNI)

@@ -15,12 +15,14 @@
 
 // $Id$
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONDigitStoreVImplIterator
 ///
 /// Implementation of AliMUONVDataIterator for AliMUONDigitStoreVImpl
 ///
 /// \author Laurent Aphecetche, Subatech
 ///
+//-----------------------------------------------------------------------------
 
 #include "AliMUONDigitStoreVImplIterator.h"
 

@@ -15,6 +15,7 @@
 
 /* $Id$ */
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONRawWriter
 /// MUON Raw Data generaton in ALICE-MUON
 /// Raw data structure could be found in Alice-note.
@@ -40,6 +41,7 @@
 /// Using AliMpDDLStore::GetBusPatchId.
 ///
 /// \author Ch. Finck, Feb. 07.
+//-----------------------------------------------------------------------------
 
 
 #include "AliMUONRawWriter.h"

@@ -53,7 +53,8 @@
 #include <TSystem.h>
 
 #include "AliMUONGeometryTransformer.h" //ADDED for trigger noise
-///
+
+//-----------------------------------------------------------------------------
 /// \class AliMUONDigitizerV3
 /// The digitizer is performing the transformation to go from SDigits (digits
 /// w/o any electronic noise) to Digits (w/ electronic noise, and decalibration)
@@ -68,6 +69,7 @@
 /// here, at the digitization level).
 ///
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 namespace
 {

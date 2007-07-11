@@ -15,7 +15,7 @@
 
 // $Id$
 //
-//__________________________________________________________________
+//-----------------------------------------------------------------------------
 /// \class AliMUONGeometryMisAligner
 ///
 /// This performs the misalignment on an existing muon arm geometry
@@ -42,6 +42,7 @@
 /// two angles are alignable as well.
 ///
 /// \author Bruce Becker, Javier Castillo
+//-----------------------------------------------------------------------------
 
 #include "AliMUONGeometryMisAligner.h"
 #include "AliMUONGeometryTransformer.h"

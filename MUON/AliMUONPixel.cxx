@@ -15,11 +15,13 @@
 
 /* $Id$ */
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONPixel
 /// Basic object of the cluster / rec. point finder based 
 /// on Expectation-Minimization approach (AZ cluster finder)
 ///
 /// \author Alexander Zinchenko, JINR Dubna
+//-----------------------------------------------------------------------------
 
 #include "AliMUONPixel.h"
 

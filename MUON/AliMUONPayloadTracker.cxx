@@ -13,12 +13,15 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-///
+// $Id$
+
+//-----------------------------------------------------------------------------
 /// \class AliMUONPayloadTracker
 /// Decodes rawdata from buffer and stores in TClonesArray.
 /// First version implement for Tracker
 ///
 /// \author Christian Finck
+//-----------------------------------------------------------------------------
 
 #include "AliMUONPayloadTracker.h"
 

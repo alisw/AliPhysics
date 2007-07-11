@@ -14,6 +14,8 @@
 **************************************************************************/
 
 // $Id$
+
+//-----------------------------------------------------------------------------
 /// \class AliMUONPadStatusMapMaker
 /// 
 /// Convert a pad status container into a pad status *map* container
@@ -46,6 +48,7 @@
 /// (i.e. a non-existing neighbour is considered = bad).
 ///
 /// \author Laurent Aphecetche
+//-----------------------------------------------------------------------------
 
 #include "AliMUONPadStatusMapMaker.h"
 

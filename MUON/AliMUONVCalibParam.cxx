@@ -19,7 +19,7 @@
 
 #include "AliLog.h"
 
-/// 
+//-----------------------------------------------------------------------------
 /// \class AliMUONVCalibParam
 ///  
 /// Defines an interface for a calibration container object.
@@ -32,6 +32,7 @@
 /// can be identified by a single integer)
 ///
 /// \author Laurent Aphecetche, Subatech
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUONVCalibParam)

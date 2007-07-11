@@ -14,13 +14,15 @@
  **************************************************************************/
 
 // $Id$
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMUONSt1GeometryBuilder
 // -------------------------------
 // MUON Station1 coarse geometry construction class.
 // Extracted from AliMUONv1
 // by Ivana Hrivnacova, IPN Orsay
 // Included in AliRoot 2004/01/23
+//-----------------------------------------------------------------------------
 
 #include <TVirtualMC.h>
 #include <TGeoMatrix.h>

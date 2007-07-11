@@ -15,12 +15,14 @@
 
 /* $Id$ */
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONLocalTriggerBoard
 /// A local trigger board has as input a bit pattern and returns 
 /// the local trigger response after comparison w/ a LUT
 /// \todo Change member functions comments in capital letters to normal text
 ///
 /// \author Rachid Guernane (LPCCFd)
+//-----------------------------------------------------------------------------
 
 #include "AliMUONLocalTriggerBoard.h"
 #include "AliMUONTriggerLut.h"

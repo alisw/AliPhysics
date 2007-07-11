@@ -16,13 +16,15 @@
 // $Id$
 // $MpId: AliMpRowSegmentLSpecial.cxx,v 1.7 2006/05/24 13:58:46 ivana Exp $
 // Category: sector
-//
+
+//-----------------------------------------------------------------------------
 // Class AliMpRowSegmentLSpecial
 // -----------------------------
 // Class describing a special inner row segment composed of the 
 // pad rows.
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+//-----------------------------------------------------------------------------
 
 #include <Riostream.h>
 #include <TMath.h>

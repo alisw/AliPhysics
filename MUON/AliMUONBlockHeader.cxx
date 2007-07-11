@@ -20,6 +20,7 @@
 
 #include <Riostream.h>
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONBlockHeader
 /// Block structure for tracker raw data
 /// each DDL contains two blocks,
@@ -28,6 +29,7 @@
 /// the header of the block contains the front end DSP id, trigger words and paddind word
 ///
 /// \author Christian Finck
+//-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUONBlockHeader)

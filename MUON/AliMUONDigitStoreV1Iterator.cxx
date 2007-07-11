@@ -15,12 +15,14 @@
 
 // $Id$
 
+//-----------------------------------------------------------------------------
 /// \class AliMUONDigitStoreV1Iterator
 ///
 /// Implementation of TIteraor for AliMUONVDigitStoreV1
 /// Reuses the AliMUONTOTCAStoreIterator iterator
 ///
 /// \author Laurent Aphecetche, Subatech
+//-----------------------------------------------------------------------------
 
 #include "AliMUONDigitStoreV1Iterator.h"
 
