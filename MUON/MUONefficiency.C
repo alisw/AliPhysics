@@ -60,7 +60,7 @@
 #include "AliLoader.h"
 #include "AliStack.h"
 #include "AliMagFMaps.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliTracker.h"
 
 // MUON includes
@@ -221,7 +221,7 @@ Bool_t MUONefficiency( char* filename = "galice.root", char* geoFilename = "geom
     return kFALSE;
   }
   
-  AliESD* esd = new AliESD();
+  AliESDEvent* esd = new AliESDEvent();
   TTree* tree = (TTree*) esdFile->Get("esdTree");
   if (!tree) {
     Error("CheckESD", "no ESD tree found");
