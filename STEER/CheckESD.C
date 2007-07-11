@@ -12,7 +12,7 @@
 
 #include "AliRunLoader.h"
 #include "AliLoader.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliRun.h"
 #include "AliStack.h"
 #include "AliHeader.h"
@@ -158,7 +158,7 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
     Error("CheckESD", "opening ESD file %s failed", esdFileName);
     return kFALSE;
   }
-  AliESD* esd = new AliESD;
+  AliESDEvent * esd = new AliESDEvent;
   TTree* tree = (TTree*) esdFile->Get("esdTree");
   if (!tree) {
     Error("CheckESD", "no ESD tree found");
@@ -166,7 +166,7 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
   }
   esd->ReadFromTree(tree);
 
-  // efficienc and resolution histograms
+  // efficiency and resolution histograms
   Int_t nBinsPt = 15;
   Float_t minPt = 0.1;
   Float_t maxPt = 3.1;

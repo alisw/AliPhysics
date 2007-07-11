@@ -26,7 +26,7 @@
 #include <TVector3.h>
 
 #include "AliLog.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliMonitorDataTPC.h"
 #include "AliMonitorHisto.h"
 #include "AliMonitorTPC.h"
@@ -155,7 +155,7 @@ void AliMonitorTPC::CreateBranches(TTree* tree)
 
 //_____________________________________________________________________________
 void AliMonitorTPC::FillHistos(AliRunLoader* runLoader, 
-			       AliRawReader* rawReader, AliESD* esd)
+			       AliRawReader* rawReader, AliESDEvent* esd)
 {
 // fill the TPC monitor histogrms
 

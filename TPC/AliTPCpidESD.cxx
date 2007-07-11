@@ -20,7 +20,7 @@
 //-----------------------------------------------------------------
 
 #include "AliTPCpidESD.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliESDtrack.h"
 
 ClassImp(AliTPCpidESD)
@@ -53,7 +53,7 @@ Double_t AliTPCpidESD::Bethe(Double_t bg) {
 }
 
 //_________________________________________________________________________
-Int_t AliTPCpidESD::MakePID(AliESD *event)
+Int_t AliTPCpidESD::MakePID(AliESDEvent *event)
 {
   //
   //  This function calculates the "detector response" PID probabilities 

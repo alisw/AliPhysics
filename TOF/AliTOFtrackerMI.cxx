@@ -29,7 +29,7 @@
 #include "TTreeStream.h"
 
 #include "AliRun.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliESDtrack.h"
 
 #include "AliTOFRecoParam.h"
@@ -164,7 +164,7 @@ AliTOFtrackerMI::~AliTOFtrackerMI(){
 }
 
 //_____________________________________________________________________________
-Int_t AliTOFtrackerMI::PropagateBack(AliESD* event) {
+Int_t AliTOFtrackerMI::PropagateBack(AliESDEvent* event) {
   //
   // Gets seeds from ESD event and Match with TOF Clusters
   //

@@ -11,7 +11,7 @@
 #include <AliLog.h>
 
 class AliCluster;
-class AliESD;
+class AliESDEvent;
 class TTree;
 class AliRunLoader;
 
@@ -30,11 +30,11 @@ public:
     return *this;
   }
 
-  Int_t Clusters2Tracks(AliESD *) {AliDebug(1,"Start.");return 0;}
-  Int_t RefitInward(AliESD *)     {AliDebug(1,"Start.");return 0;}
+  Int_t Clusters2Tracks(AliESDEvent *) {AliDebug(1,"Start.");return 0;}
+  Int_t RefitInward(AliESDEvent *)     {AliDebug(1,"Start.");return 0;}
   void UnloadClusters()           {AliDebug(1,"Start.");}
   AliCluster *GetCluster(Int_t ) const {AliDebug(1,"Start.");return 0;}
-  Int_t PropagateBack(AliESD *);
+  Int_t PropagateBack(AliESDEvent *);
   Int_t LoadClusters(TTree *) {AliDebug(1,"Start.");return 0;}
 
   static void                SetDebug()   { fgDebug = kTRUE ; }

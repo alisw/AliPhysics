@@ -23,7 +23,7 @@
 
 class AliRunLoader;
 class AliRawReader;
-class AliESD;
+class AliESDEvent;
 class TTree;
 
 /******************************************************************************/
@@ -33,9 +33,9 @@ class TTree;
  * The class implements the basic interface to the AliRoot objects during
  * reconstructions.
  * It serves as a base class for offline source and sink interface components
- * and provides access methods for the AliRunLoader, AliRawReader and AliESD
+ * and provides access methods for the AliRunLoader, AliRawReader and AliESDEvent
  * objects. The AliRunLoader and the AliRawReader are fixed during one run,
- * while the AliESD object will be changed from event to event.<br>
+ * while the AliESDEvent object will be changed from event to event.<br>
  * \em Note: The digits and clusters trees are not available through this
  * interface class as they are completetly detector (AliLoader) dependend.
  *
@@ -72,12 +72,12 @@ class AliHLTOfflineInterface : public TObject {
   /**
    * Set AliRoot ESD for the current event.
    */
-  int SetESD(Int_t eventNo, AliESD* pESD);
+  int SetESD(Int_t eventNo, AliESDEvent* pESD);
 
   /**
    * Get the AliRoot ESD
    */
-  AliESD* GetESD() const;
+  AliESDEvent* GetESD() const;
 
   /**
    * Set AliRoot external params.
@@ -109,10 +109,10 @@ class AliHLTOfflineInterface : public TObject {
    * @param eventNo       event No. \em Note: this is an internal enumeration of the
    *                      processed events.
    * @param runLoader     the AliRoot runloader
-   * @param esd           an AliESD instance
+   * @param esd           an AliESDEvent instance
    * @return neg. error code if failed 
    */
-  virtual int FillESD(int eventNo, AliRunLoader* runLoader, AliESD* esd)=0;
+  virtual int FillESD(int eventNo, AliRunLoader* runLoader, AliESDEvent* esd)=0;
 
   /**
    * Fill ESD for one event.
@@ -122,10 +122,10 @@ class AliHLTOfflineInterface : public TObject {
    * @param eventNo       event No. \em Note: this is an internal enumeration of the
    *                      processed events.
    * @param runLoader     the AliRoot runloader
-   * @param esd           an AliESD instance
+   * @param esd           an AliESDEvent instance
    * @return neg. error code if failed 
    */
-  static int FillComponentESDs(int eventNo, AliRunLoader* runLoader, AliESD* esd);
+  static int FillComponentESDs(int eventNo, AliRunLoader* runLoader, AliESDEvent* esd);
 
   /**
    * Reset AliRoot internal params of all active components.
@@ -159,7 +159,7 @@ protected:
   /** private AliRoot raw reader instance */
   AliRawReader* fpRawReader;                                      //! transient
   /** AliRoot HLT ESD instance */
-  AliESD* fpESD;                                                  //! transient
+  AliESDEvent* fpESD;                                                  //! transient
 
   /** the list of active interfaces */
   static AliHLTOfflineInterface* fAnchor;                         //! transient
@@ -173,7 +173,7 @@ protected:
   /** number of interfaces */
   static int fCount;                                              //! see above
 
-  ClassDef(AliHLTOfflineInterface, 2);
+  ClassDef(AliHLTOfflineInterface, 3);
 };
 
 #endif

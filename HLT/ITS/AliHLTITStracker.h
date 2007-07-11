@@ -19,7 +19,7 @@
 
 #include "AliITStrackerV2.h"
 
-class AliESD;
+class AliESDEvent;
 class AliHLTITStrack;
 
 //-------------------------------------------------------------------------
@@ -28,9 +28,9 @@ public:
   AliHLTITStracker():AliITStrackerV2(){ fConstraint[0]=1; fConstraint[1]=0; }
   AliHLTITStracker(const Char_t *geom) : AliITStrackerV2(geom){ fConstraint[0]=1; fConstraint[1]=0; }
 
-  Int_t Clusters2Tracks(AliESD *event);
-  Int_t PropagateBack(AliESD *event);
-  Int_t RefitInward(AliESD *event);
+  Int_t Clusters2Tracks(AliESDEvent *event);
+  Int_t PropagateBack(AliESDEvent *event);
+  Int_t RefitInward(AliESDEvent *event);
 
   ClassDef(AliHLTITStracker,1)   //HLT ITS tracker
 };

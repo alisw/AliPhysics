@@ -95,7 +95,7 @@ int AliHLTSampleOfflineSinkComponent::DumpEvent(const AliHLTComponentEventData& 
   return iResult;
 }
 
-int AliHLTSampleOfflineSinkComponent::FillESD(int eventNo, AliRunLoader* runLoader, AliESD* esd) 
+int AliHLTSampleOfflineSinkComponent::FillESD(int eventNo, AliRunLoader* runLoader, AliESDEvent* esd) 
 {
   // see header file for class documentation
   int iResult=0;

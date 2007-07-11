@@ -19,7 +19,7 @@
 #  include "TString.h"
 #endif
 
-class AliESD;
+class AliESDEvent;
 class TTree;
 class TH1F ;
 

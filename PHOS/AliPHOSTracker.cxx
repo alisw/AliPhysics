@@ -4,19 +4,19 @@
 #include "AliPHOSTrackSegmentMakerv2.h"
 #include "AliPHOSPIDv1.h"
 #include "AliRunLoader.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 
 //-------------------------------------------------------------------------
 //                          PHOS tracker.
 // Matches ESD tracks with the PHOS and makes the PID.  
-// Currently, has only one function implemented : PropagateBack(AliESD*)
+// Currently, has only one function implemented : PropagateBack(AliESDEvent*)
 //-------------------------------------------------------------------------
 
 ClassImp(AliPHOSTracker)
 
 Bool_t AliPHOSTracker::fgDebug = kFALSE ; 
 
-Int_t AliPHOSTracker::PropagateBack(AliESD *esd) {
+Int_t AliPHOSTracker::PropagateBack(AliESDEvent *esd) {
   // Called by AliReconstruction 
   // Creates the tracksegments and Recparticles
   // Makes the PID

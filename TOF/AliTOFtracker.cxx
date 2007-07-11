@@ -37,7 +37,7 @@
 
 #include "AliAlignObj.h"
 #include "AliESDtrack.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliLog.h"
 #include "AliTrackPointArray.h"
 
@@ -194,7 +194,7 @@ AliTOFtracker::~AliTOFtracker() {
   delete fCalTree;
 }
 //_____________________________________________________________________________
-Int_t AliTOFtracker::PropagateBack(AliESD* event) {
+Int_t AliTOFtracker::PropagateBack(AliESDEvent* event) {
   //
   // Gets seeds from ESD event and Match with TOF Clusters
   //
@@ -961,14 +961,14 @@ Float_t AliTOFtracker::CorrectTimeWalk( Float_t dist, Float_t tof) {
   return tofcorr;
 }
 //_________________________________________________________________________
-Float_t AliTOFtracker::GetTimeZerofromT0(AliESD *event) const {
+Float_t AliTOFtracker::GetTimeZerofromT0(AliESDEvent *event) const {
 
   //Returns TimeZero as measured by T0 detector
 
   return event->GetT0();
 }
 //_________________________________________________________________________
-Float_t AliTOFtracker::GetTimeZerofromTOF(AliESD * /*event*/) const {
+Float_t AliTOFtracker::GetTimeZerofromTOF(AliESDEvent * /*event*/) const {
 
   //dummy, for the moment. T0 algorithm using tracks on TOF
   {

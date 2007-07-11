@@ -33,7 +33,7 @@ class AliHLTConfigurationHandler;
 class AliHLTTask;
 class AliRunLoader;
 class AliRawReader;
-class AliESD;
+class AliESDEvent;
 class TObjArray;
 class TStopwatch;
 
@@ -230,10 +230,10 @@ class AliHLTSystem : public AliHLTLogging {
    *                      processing counter and is not related to the nature/
    *                      origin of the event
    * @param runLoader     the AliRoot runloader
-   * @param esd           an AliESD instance
+   * @param esd           an AliESDEvent instance
    * @return neg. error code if failed 
    */
-  int FillESD(int eventNo, AliRunLoader* runLoader, AliESD* esd);
+  int FillESD(int eventNo, AliRunLoader* runLoader, AliESDEvent* esd);
 
   /**
    * Load component libraries.

@@ -11,7 +11,7 @@
 
 #include "TObject.h"
 
-class AliESD;
+class AliESDEvent;
 
 class AliTOFGeometry;
 
@@ -22,8 +22,8 @@ public:
  AliTOFpidESD(Double_t *param);
  ~AliTOFpidESD(){}
 
-  Int_t MakePID(AliESD *event);
-  Int_t MakePID(AliESD *event, Double_t timeZero);
+  Int_t MakePID(AliESDEvent *event);
+  Int_t MakePID(AliESDEvent *event, Double_t timeZero);
   void  SetEventNumber(Int_t n) {fEventN=n;}
   Int_t GetEventNumber() const {return fEventN;}
 

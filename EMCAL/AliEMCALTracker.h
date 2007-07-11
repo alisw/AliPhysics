@@ -27,7 +27,7 @@
 class TList;
 class TTree;
 class TObjArray;
-class AliESD;
+class AliESDEvent;
 class AliESDCaloCluster;
 class AliEMCALTrack;
 class AliEMCALRecPoint;
@@ -44,12 +44,12 @@ public:
 	virtual ~AliEMCALTracker() {Clear();}
 	
 	virtual void        Clear(Option_t *option="ALL");
-	virtual Int_t       Clusters2Tracks(AliESD*) {return -1;}
+	virtual Int_t       Clusters2Tracks(AliESDEvent*) {return -1;}
 	virtual Int_t       LoadClusters(TTree*);
-	        Int_t       LoadClusters(AliESD* esd);
-	        Int_t       LoadTracks(AliESD* esd);
-	virtual Int_t       PropagateBack(AliESD* esd);
-	virtual Int_t       RefitInward(AliESD*) {return -1;}
+	        Int_t       LoadClusters(AliESDEvent* esd);
+	        Int_t       LoadTracks(AliESDEvent* esd);
+	virtual Int_t       PropagateBack(AliESDEvent* esd);
+	virtual Int_t       RefitInward(AliESDEvent*) {return -1;}
 	virtual void        UnloadClusters();
 	virtual AliCluster* GetCluster(Int_t) const {return NULL;};
 	TTree*              SearchTrueMatches();

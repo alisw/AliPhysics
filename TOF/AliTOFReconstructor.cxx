@@ -37,7 +37,7 @@
 
 class TTree;
 
-class AliESD;
+class AliESDEvent;
 
 extern TDirectory *gDirectory;
 extern TFile *gFile;
@@ -172,7 +172,7 @@ AliTracker* AliTOFReconstructor::CreateTracker(AliRunLoader* /*runLoader*/) cons
 
 //_____________________________________________________________________________
 void AliTOFReconstructor::FillESD(AliRunLoader* /*runLoader*/, 
-				  AliESD* /*esd*/) const
+				  AliESDEvent* /*esd*/) const
 {
 // nothing to be done
 

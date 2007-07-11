@@ -39,7 +39,7 @@
 #include "AliRunLoader.h"
 #include "AliTRDgeometry.h"
 #include "AliRun.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliTrackReference.h"
 
@@ -651,7 +651,7 @@ void  AliTRDtrackingAnalysis::CheckFiles()
   }
   
   fEsdTree = (TTree*)esdFile->Get("esdTree"); 
-  fESD = new AliESD();
+  fESD = new AliESDEvent();
   fESD->ReadFromTree(fEsdTree);
   //fEsdTree->SetBranchAddress("ESD", &fESD);
 }

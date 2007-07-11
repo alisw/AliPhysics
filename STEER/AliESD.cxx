@@ -22,101 +22,118 @@
 //      Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
 //-----------------------------------------------------------------
 
-#include "TList.h"
-#include <TNamed.h>
-
 #include "AliESD.h"
 #include "AliESDfriend.h"
-#include "AliESDVZERO.h"
-#include "AliESDHLTtrack.h"
-#include "AliESDFMD.h"
-
 
 ClassImp(AliESD)
 
 //______________________________________________________________________________
 AliESD::AliESD():
-  fESDObjects(new TList()),
-  fESDRun(0),
-  fHeader(0),
-  fESDZDC(0),
-  fESDFMD(0),
-  fESDVZERO(0),
-  fESDTZERO(0),
-  fSPDVertex(0),
-  fPrimaryVertex(0),
-  fSPDMult(0),
-  fPHOSTrigger(0),
-  fEMCALTrigger(0),
-  fTracks(0),
-  fMuonTracks(0),
-  fPmdTracks(0),
-  fTrdTracks(0),
-  fV0s(0),  
-  fCascades(0),
-  fKinks(0),
-  fCaloClusters(0),
-  fErrorLogs(0),
+  fEventNumberInFile(0),
+  fBunchCrossNumber(0),
+  fOrbitNumber(0),
+  fPeriodNumber(0),
+  fRunNumber(0),
+  fTimeStamp(0),
+  fEventType(0),
+  fTriggerMask(0),
+  fTriggerCluster(0),
+  fRecoVersion(0),
+  fMagneticField(0),
+  fZDCN1Energy(0),
+  fZDCP1Energy(0),
+  fZDCN2Energy(0),
+  fZDCP2Energy(0),
+  fZDCEMEnergy(0),
+  fZDCParticipants(0),
+  fT0zVertex(0),
+  fSPDVertex(),
+  fPrimaryVertex(),
+  fSPDMult(),
+  fT0timeStart(0),
+  fTracks("AliESDtrack",15000),
+  fHLTConfMapTracks("AliESDHLTtrack",25000),
+  fHLTHoughTracks("AliESDHLTtrack",15000),
+  fMuonTracks("AliESDMuonTrack",30),
+  fPmdTracks("AliESDPmdTrack",3000),
+  fTrdTracks("AliESDTrdTrack",300),
+  fV0s("AliESDv0",200),  
+  fCascades("AliESDcascade",20),
+  fKinks("AliESDkink",4000),
+  fCaloClusters("AliESDCaloCluster",10000),
   fEMCALClusters(0), 
   fFirstEMCALCluster(-1),
+  fEMCALTriggerPosition(0x0),
+  fEMCALTriggerAmplitudes(0x0),
   fPHOSClusters(0), 
-  fFirstPHOSCluster(-1)
+  fFirstPHOSCluster(-1),
+  fPHOSTriggerPosition(0x0),
+  fPHOSTriggerAmplitudes(0x0),
+  fESDFMD(0x0),
+  fESDVZERO(0x0),
+  fErrorLogs("AliRawDataErrorLog",5)
+
 {
+  for (Int_t i=0; i<24; i++) {
+    fT0time[i] = 0;
+    fT0amplitude[i] = 0;
+  }
+  for (Int_t i=0; i<2; i++) fDiamondXY[i]=0.;
+  for (Int_t i=0; i<3; i++) fDiamondCovXY[i]=0.;
 }
 //______________________________________________________________________________
 AliESD::AliESD(const AliESD& esd):
   TObject(esd),
-  fESDObjects(new TList()),
-  fESDRun(new AliESDRun(*esd.fESDRun)),
-  fHeader(new AliESDHeader(*esd.fHeader)),
-  fESDZDC(new AliESDZDC(*esd.fESDZDC)),
-  fESDFMD(new AliESDFMD(*esd.fESDFMD)),
-  fESDVZERO(new AliESDVZERO(*esd.fESDVZERO)),
-  fESDTZERO(new AliESDTZERO(*esd.fESDTZERO)),
-  fSPDVertex(new AliESDVertex(*esd.fSPDVertex)),
-  fPrimaryVertex(new AliESDVertex(*esd.fPrimaryVertex)),
-  fSPDMult(new AliMultiplicity(*esd.fSPDMult)),
-  fPHOSTrigger(new AliESDCaloTrigger(*esd.fPHOSTrigger)),
-  fEMCALTrigger(new AliESDCaloTrigger(*esd.fEMCALTrigger)),
-  fTracks(new TClonesArray(*esd.fTracks)),
-  fMuonTracks(new TClonesArray(*esd.fMuonTracks)),
-  fPmdTracks(new TClonesArray(*esd.fPmdTracks)),
-  fTrdTracks(new TClonesArray(*esd.fTrdTracks)),
-  fV0s(new TClonesArray(*esd.fV0s)),  
-  fCascades(new TClonesArray(*esd.fCascades)),
-  fKinks(new TClonesArray(*esd.fKinks)),
-  fCaloClusters(new TClonesArray(*esd.fCaloClusters)),
-  fErrorLogs(new TClonesArray(*esd.fErrorLogs)),
+  fEventNumberInFile(esd.fEventNumberInFile),
+  fBunchCrossNumber(esd.fBunchCrossNumber),
+  fOrbitNumber(esd.fOrbitNumber),
+  fPeriodNumber(esd.fPeriodNumber),
+  fRunNumber(esd.fRunNumber),
+  fTimeStamp(esd.fTimeStamp),
+  fEventType(esd.fEventType),
+  fTriggerMask(esd.fTriggerMask),
+  fTriggerCluster(esd.fTriggerCluster),
+  fRecoVersion(esd.fRecoVersion),
+  fMagneticField(esd.fMagneticField),
+  fZDCN1Energy(esd.fZDCN1Energy),
+  fZDCP1Energy(esd.fZDCP1Energy),
+  fZDCN2Energy(esd.fZDCN2Energy),
+  fZDCP2Energy(esd.fZDCP2Energy),
+  fZDCEMEnergy(esd.fZDCEMEnergy),
+  fZDCParticipants(esd.fZDCParticipants),
+  fT0zVertex(esd.fT0zVertex),
+  fSPDVertex(esd.fSPDVertex),
+  fPrimaryVertex(esd.fPrimaryVertex),
+  fSPDMult(esd.fSPDMult),
+  fT0timeStart(esd.fT0timeStart),
+  fTracks(*((TClonesArray*)esd.fTracks.Clone())),
+  fHLTConfMapTracks(*((TClonesArray*)esd.fHLTConfMapTracks.Clone())),
+  fHLTHoughTracks(*((TClonesArray*)esd.fHLTHoughTracks.Clone())),
+  fMuonTracks(*((TClonesArray*)esd.fMuonTracks.Clone())),
+  fPmdTracks(*((TClonesArray*)esd.fPmdTracks.Clone())),
+  fTrdTracks(*((TClonesArray*)esd.fTrdTracks.Clone())),
+  fV0s(*((TClonesArray*)esd.fV0s.Clone())),  
+  fCascades(*((TClonesArray*)esd.fCascades.Clone())),
+  fKinks(*((TClonesArray*)esd.fKinks.Clone())),
+  fCaloClusters(*((TClonesArray*)esd.fCaloClusters.Clone())),
   fEMCALClusters(esd.fEMCALClusters), 
   fFirstEMCALCluster(esd.fFirstEMCALCluster),
+  fEMCALTriggerPosition(esd. fEMCALTriggerPosition),
+  fEMCALTriggerAmplitudes(esd.fEMCALTriggerAmplitudes),
   fPHOSClusters(esd.fPHOSClusters), 
-  fFirstPHOSCluster(esd.fFirstPHOSCluster)
-
+  fFirstPHOSCluster(esd.fFirstPHOSCluster),
+  fPHOSTriggerPosition(esd.fPHOSTriggerPosition),
+  fPHOSTriggerAmplitudes(esd.fPHOSTriggerAmplitudes),
+  fESDFMD(esd.fESDFMD),
+  fESDVZERO(esd.fESDVZERO),
+  fErrorLogs(*((TClonesArray*)esd.fErrorLogs.Clone()))
 {
-  // CKB init in the constructor list and only add here ...
-  AddObject(fESDRun);
-  AddObject(fHeader);
-  AddObject(fESDZDC);
-  AddObject(fESDFMD);
-  AddObject(fESDVZERO);
-  AddObject(fESDTZERO);
-  AddObject(fSPDVertex);
-  AddObject(fPrimaryVertex);
-  AddObject(fSPDMult);
-  AddObject(fPHOSTrigger);
-  AddObject(fEMCALTrigger);
-  AddObject(fTracks);
-  AddObject(fMuonTracks);
-  AddObject(fPmdTracks);
-  AddObject(fTrdTracks);
-  AddObject(fV0s);
-  AddObject(fCascades);
-  AddObject(fKinks);
-  AddObject(fCaloClusters);
-  AddObject(fErrorLogs);
-
-  GetStdContent();
-
+  for (Int_t i=0; i<24; i++) {
+    fT0time[i] = esd.fT0time[i];
+    fT0amplitude[i] = esd.fT0amplitude[i];
+  }
+  for (Int_t i=0; i<2; i++) fDiamondXY[i]=esd.fDiamondXY[i];
+  for (Int_t i=0; i<3; i++) fDiamondCovXY[i]=esd.fDiamondCovXY[i];
 }
 
 //______________________________________________________________________________
@@ -125,61 +142,57 @@ AliESD & AliESD::operator=(const AliESD& source) {
   // Assignment operator
 
   if(&source == this) return *this;
-  TObject::operator=(source);
 
-  fESDRun = new AliESDRun(*source.fESDRun);
-  fHeader = new AliESDHeader(*source.fHeader);
-  fESDZDC = new AliESDZDC(*source.fESDZDC);
-  fESDFMD = new AliESDFMD(*source.fESDFMD);
-  fESDVZERO = new AliESDVZERO(*source.fESDVZERO);
-  fESDTZERO = new AliESDTZERO(*source.fESDTZERO);
-  fSPDVertex = new AliESDVertex(*source.fSPDVertex);
-  fPrimaryVertex = new AliESDVertex(*source.fPrimaryVertex);
-  fSPDMult = new AliMultiplicity(*source.fSPDMult);
-  fPHOSTrigger = new AliESDCaloTrigger(*source.fPHOSTrigger);
-  fEMCALTrigger = new AliESDCaloTrigger(*source.fEMCALTrigger);
-  fTracks = new TClonesArray(*source.fTracks);
-  fMuonTracks = new TClonesArray(*source.fMuonTracks);
-  fPmdTracks = new TClonesArray(*source.fPmdTracks);
-  fTrdTracks = new TClonesArray(*source.fTrdTracks);
-  fV0s = new TClonesArray(*source.fV0s);
-  fCascades = new TClonesArray(*source.fCascades);
-  fKinks = new TClonesArray(*source.fKinks);
-  fCaloClusters = new TClonesArray(*source.fCaloClusters);
-  fErrorLogs = new TClonesArray(*source.fErrorLogs);
-
-  // CKB this way?? or 
-  // or AddObject(  fESDZDC = new AliESDZDC(*source.fESDZDC));
-
-  fESDObjects = new TList();
-  AddObject(fESDRun);
-  AddObject(fHeader);
-  AddObject(fESDZDC);
-  AddObject(fESDFMD);
-  AddObject(fESDVZERO);
-  AddObject(fESDTZERO);
-  AddObject(fSPDVertex);
-  AddObject(fPrimaryVertex);
-  AddObject(fSPDMult);
-  AddObject(fPHOSTrigger);
-  AddObject(fEMCALTrigger);
-  AddObject(fTracks);
-  AddObject(fMuonTracks);
-  AddObject(fPmdTracks);
-  AddObject(fTrdTracks);
-  AddObject(fV0s);
-  AddObject(fCascades);
-  AddObject(fKinks);
-  AddObject(fCaloClusters);
-  AddObject(fErrorLogs);
-
-
+  fEventNumberInFile = source.fEventNumberInFile;
+  fBunchCrossNumber = source.fBunchCrossNumber;
+  fOrbitNumber = source.fOrbitNumber;
+  fPeriodNumber = source.fPeriodNumber;
+  fRunNumber = source.fRunNumber;
+  fTimeStamp   = source.fTimeStamp;
+  fEventType   = source.fEventType;
+  fTriggerMask = source.fTriggerMask;
+  fTriggerCluster = source.fTriggerCluster;
+  fRecoVersion = source.fRecoVersion;
+  fMagneticField = source.fMagneticField;
+  fZDCN1Energy = source.fZDCN1Energy;
+  fZDCP1Energy = source.fZDCP1Energy;
+  fZDCN2Energy = source.fZDCN2Energy;
+  fZDCP2Energy = source.fZDCP2Energy;
+  fZDCEMEnergy = source.fZDCEMEnergy;
+  fZDCParticipants = source.fZDCParticipants;
+  fT0zVertex = source.fT0zVertex;
+  fSPDVertex = source.fSPDVertex;
+  fPrimaryVertex = source.fPrimaryVertex;
+  fSPDMult = source.fSPDMult;
+  fT0timeStart = source.fT0timeStart;
+  fTracks = *((TClonesArray*)source.fTracks.Clone());
+  fHLTConfMapTracks = *((TClonesArray*)source.fHLTConfMapTracks.Clone());
+  fHLTHoughTracks = *((TClonesArray*)source.fHLTHoughTracks.Clone());
+  fMuonTracks = *((TClonesArray*)source.fMuonTracks.Clone());
+  fPmdTracks = *((TClonesArray*)source.fPmdTracks.Clone());
+  fTrdTracks = *((TClonesArray*)source.fTrdTracks.Clone());
+  fV0s = *((TClonesArray*)source.fV0s.Clone());
+  fCascades = *((TClonesArray*)source.fCascades.Clone());
+  fKinks = *((TClonesArray*)source.fKinks.Clone());
+  fCaloClusters = *((TClonesArray*)source.fCaloClusters.Clone());
   fEMCALClusters = source.fEMCALClusters;
   fFirstEMCALCluster = source.fFirstEMCALCluster;
   fPHOSClusters = source.fPHOSClusters;
   fFirstPHOSCluster = source.fFirstPHOSCluster;
+  fESDFMD = source.fESDFMD;
+  fESDVZERO = source.fESDVZERO;
+  fEMCALTriggerPosition=source. fEMCALTriggerPosition;
+  fEMCALTriggerAmplitudes=source.fEMCALTriggerAmplitudes;
+  fPHOSTriggerPosition=source.fPHOSTriggerPosition;
+  fPHOSTriggerAmplitudes=source.fPHOSTriggerAmplitudes;
+  fErrorLogs = *((TClonesArray*)source.fErrorLogs.Clone());
 
-
+  for (Int_t i=0; i<24; i++) {
+    fT0time[i] = source.fT0time[i];
+    fT0amplitude[i] = source.fT0amplitude[i];
+  }
+  for (Int_t i=0; i<2; i++) fDiamondXY[i]=source.fDiamondXY[i];
+  for (Int_t i=0; i<3; i++) fDiamondCovXY[i]=source.fDiamondCovXY[i];
 
   return *this;
 
@@ -192,23 +205,18 @@ AliESD::~AliESD()
   //
   // Standard destructor
   //
-
-  delete fESDObjects;
-  fESDObjects = 0;
-
-  // everthing on the list gets deleted automatically
-
-  /*
+  fTracks.Delete();
   fHLTConfMapTracks.Delete();
   fHLTHoughTracks.Delete();
-  fMuonTracks.Delete();  
+  fMuonTracks.Delete();
   fPmdTracks.Delete();
   fTrdTracks.Delete();
   fV0s.Delete();
   fCascades.Delete();
   fKinks.Delete();
   fCaloClusters.Delete();
-  */
+  delete fESDFMD;
+  delete fESDVZERO;
 //   fEMCALTriggerPosition->Delete();
 //   fEMCALTriggerAmplitudes->Delete();
 //   fPHOSTriggerPosition->Delete();
@@ -217,57 +225,63 @@ AliESD::~AliESD()
 //   delete fEMCALTriggerAmplitudes;
 //   delete fPHOSTriggerPosition;
 //   delete fPHOSTriggerAmplitudes;
+  fErrorLogs.Delete();
 
 }
 
 //______________________________________________________________________________
 void AliESD::Reset()
 {
-  // Reset the standard contents
-  if(fESDRun) fESDRun->Reset();
-  if(fHeader) fHeader->Reset();
-  if(fESDZDC) fESDZDC->Reset();
-  if(fESDFMD) fESDFMD->Clear(); // why clear.... need consistend names
-  // if(fESDVZERO) fESDVZERO->; // NOT IMPLEMENTED 
-  //  if(fESDVZERO) new (fESDVZERO) AliESDVZERO();
-  if(fESDTZERO) fESDTZERO->Reset(); 
-  // CKB no clear/reset implemented
-  if(fSPDVertex){
-    new (fSPDVertex) AliESDVertex();
-    fSPDVertex->SetName("SPDVertex");
-  }
-  if(fPrimaryVertex){
-    new (fPrimaryVertex) AliESDVertex();
-    fPrimaryVertex->SetName("PrimaryVertex");
-  }
-  if(fSPDMult)new (fSPDMult) AliMultiplicity();
-  if(fPHOSTrigger)fPHOSTrigger->Reset(); 
-  if(fEMCALTrigger)fEMCALTrigger->Reset(); 
-  if(fTracks)fTracks->Clear();
-  if(fMuonTracks)fMuonTracks->Clear();
-  if(fPmdTracks)fPmdTracks->Clear();
-  if(fTrdTracks)fTrdTracks->Clear();
-  if(fV0s)fV0s->Clear();
-  if(fCascades)fCascades->Clear();
-  if(fKinks)fKinks->Clear();
-  if(fCaloClusters)fCaloClusters->Clear();
-  if(fErrorLogs) fErrorLogs->Clear();
-
-
+  fEventNumberInFile=0;
+  fBunchCrossNumber=0;
+  fOrbitNumber=0;
+  fPeriodNumber=0;
+  fRunNumber=0;
+  fTimeStamp = 0;
+  fEventType = 0;
+  fTriggerMask=0;
+  fTriggerCluster=0;
+  fRecoVersion=0;
+  fMagneticField=0;
+  fZDCN1Energy=0;
+  fZDCP1Energy=0;
+  fZDCN2Energy=0;
+  fZDCP2Energy=0;
+  fZDCEMEnergy=0;
+  fZDCParticipants=0;
+  fT0zVertex=0;
+  fT0timeStart = 0;
+  new (&fSPDVertex) AliESDVertex();
+  new (&fPrimaryVertex) AliESDVertex();
+  new (&fSPDMult) AliMultiplicity();
+  fTracks.Clear();
+  fHLTConfMapTracks.Clear();
+  fHLTHoughTracks.Clear();
+  fMuonTracks.Clear();
+  fPmdTracks.Clear();
+  fTrdTracks.Clear();
+  fV0s.Clear();
+  fCascades.Clear();
+  fCaloClusters.Clear();
   fEMCALClusters=0; 
   fFirstEMCALCluster=-1; 
   fPHOSClusters=0; 
   fFirstPHOSCluster=-1; 
+  if (fESDFMD) fESDFMD->Clear();
+//   fEMCALTriggerPosition->Clear();
+//   fEMCALTriggerAmplitudes->Clear();
+//   fPHOSTriggerPosition->Clear();
+//   fPHOSTriggerAmplitudes->Clear();
+  fErrorLogs.Clear();
 }
 
 Int_t AliESD::AddV0(const AliESDv0 *v) {
   //
   // Add V0
   //
-  TClonesArray &fv = *fV0s;
-  Int_t idx=fV0s->GetEntriesFast();
-  new(fv[idx]) AliESDv0(*v);
-  return idx;
+    Int_t idx=fV0s.GetEntriesFast();
+    new(fV0s[idx]) AliESDv0(*v);
+    return idx;
 }  
 
 //______________________________________________________________________________
@@ -285,16 +299,19 @@ void AliESD::Print(Option_t *) const
 	 GetRunNumber(),
 	 GetTriggerMask(),
 	 GetMagneticField() );
-  printf("Vertex: (%.4f +- %.4f, %.4f +- %.4f, %.4f +- %.4f) cm\n",
-	   fPrimaryVertex->GetXv(), fPrimaryVertex->GetXRes(),
-	   fPrimaryVertex->GetYv(), fPrimaryVertex->GetYRes(),
-	   fPrimaryVertex->GetZv(), fPrimaryVertex->GetZRes());
+    printf("Vertex: (%.4f +- %.4f, %.4f +- %.4f, %.4f +- %.4f) cm\n",
+	   fPrimaryVertex.GetXv(), fPrimaryVertex.GetXRes(),
+	   fPrimaryVertex.GetYv(), fPrimaryVertex.GetYRes(),
+	   fPrimaryVertex.GetZv(), fPrimaryVertex.GetZRes());
     printf("Mean vertex in RUN: X=%.4f Y=%.4f cm\n",
 	   GetDiamondX(),GetDiamondY());
     printf("SPD Multiplicity. Number of tracklets %d \n",
-           fSPDMult->GetNumberOfTracklets());
+           fSPDMult.GetNumberOfTracklets());
+  printf("Event from reconstruction version %d \n",fRecoVersion);
   printf("Number of tracks: \n");
   printf("                 charged   %d\n", GetNumberOfTracks());
+  printf("                 hlt CF    %d\n", GetNumberOfHLTConfMapTracks());
+  printf("                 hlt HT    %d\n", GetNumberOfHLTHoughTracks());
   printf("                 muon      %d\n", GetNumberOfMuonTracks());
   printf("                 pmd       %d\n", GetNumberOfPmdTracks());
   printf("                 trd       %d\n", GetNumberOfTrdTracks());
@@ -315,49 +332,11 @@ void AliESD::SetESDfriend(const AliESDfriend *ev) {
   if (!ev) return;
 
   Int_t ntrk=ev->GetNumberOfTracks();
- 
+
   for (Int_t i=0; i<ntrk; i++) {
     const AliESDfriendTrack *f=ev->GetTrack(i);
     GetTrack(i)->SetFriendTrack(f);
   }
-}
-
-Int_t  AliESD::AddTrack(const AliESDtrack *t) {
-    // Add track
-    TClonesArray &ftr = *fTracks;
-    AliESDtrack * track = new(ftr[fTracks->GetEntriesFast()])AliESDtrack(*t);
-    track->SetID(fTracks->GetEntriesFast()-1);
-    return  track->GetID();    
-}
-
-Int_t AliESD::AddKink(const AliESDkink *c) {
-    // Add kink
-    TClonesArray &fk = *fKinks;
-    AliESDkink * kink = new(fk[fKinks->GetEntriesFast()]) AliESDkink(*c);
-    kink->SetID(fKinks->GetEntriesFast()); // CKB different from the other imps..
-    return fKinks->GetEntriesFast()-1;
-}
-
-Int_t AliESD::AddCaloCluster(const AliESDCaloCluster *c) {
-    // Add calocluster
-    TClonesArray &fc = *fCaloClusters;
-    AliESDCaloCluster *clus = new(fc[fCaloClusters->GetEntriesFast()]) AliESDCaloCluster(*c);
-    clus->SetID(fCaloClusters->GetEntriesFast()-1);
-    return fCaloClusters->GetEntriesFast()-1;
-  }
-
-
-void AliESD::SetFMDData(AliESDFMD * obj) { 
-  // use already allocated space
-  if(fESDFMD){
-    new(fESDFMD) AliESDFMD(*obj); 
-  }
-}
-
-void AliESD::SetVZEROData(AliESDVZERO * obj){ 
-  // use already allocated space
-  if(fESDVZERO)
-    new(fESDVZERO) AliESDVZERO(*obj);
 }
 
 void AliESD::GetESDfriend(AliESDfriend *ev) const {
@@ -374,136 +353,3 @@ void AliESD::GetESDfriend(AliESDfriend *ev) const {
     ev->AddTrack(f);
   }
 }
-
-
-void AliESD::AddObject(TObject* obj) 
-{
-  // Add an object to the list of object.
-  // Please be aware that in order to increase performance you should
-  // refrain from using TObjArrays (if possible). Use TClonesArrays, instead.
-  fESDObjects->AddLast(obj);
-}
-
-
-void AliESD::GetStdContent() 
-{
-  // set pointers for standard content
-
-  fESDRun = (AliESDRun*)fESDObjects->At(kESDRun);
-  fHeader = (AliESDHeader*)fESDObjects->At(kHeader);
-  fESDZDC = (AliESDZDC*)fESDObjects->At(kESDZDC);
-  fESDFMD = (AliESDFMD*)fESDObjects->At(kESDFMD);
-  fESDVZERO = (AliESDVZERO*)fESDObjects->At(kESDVZERO);
-  fESDTZERO = (AliESDTZERO*)fESDObjects->At(kESDTZERO);
-  fSPDVertex = (AliESDVertex*)fESDObjects->At(kSPDVertex);
-  fPrimaryVertex = (AliESDVertex*)fESDObjects->At(kPrimaryVertex);
-  fSPDMult =       (AliMultiplicity*)fESDObjects->At(kSPDMult);
-  fPHOSTrigger = (AliESDCaloTrigger*)fESDObjects->At(kPHOSTrigger);
-  fEMCALTrigger = (AliESDCaloTrigger*)fESDObjects->At(kEMCALTrigger);
-  fTracks = (TClonesArray*)fESDObjects->At(kTracks);
-  fMuonTracks = (TClonesArray*)fESDObjects->At(kMuonTracks);
-  fPmdTracks = (TClonesArray*)fESDObjects->At(kPmdTracks);
-  fTrdTracks = (TClonesArray*)fESDObjects->At(kTrdTracks);
-  fV0s = (TClonesArray*)fESDObjects->At(kV0s);
-  fCascades = (TClonesArray*)fESDObjects->At(kCascades);
-  fKinks = (TClonesArray*)fESDObjects->At(kKinks);
-  fCaloClusters = (TClonesArray*)fESDObjects->At(kCaloClusters);
-  fErrorLogs = (TClonesArray*)fESDObjects->At(kErrorLogs);
-
-}
-
-void AliESD::SetStdNames(){
-  // Set the names of the standard contents
-  fSPDVertex->SetName("SPDVertex");
-  fPrimaryVertex->SetName("PrimaryVertex");
-  fPHOSTrigger->SetName("PHOSTrigger");
-  fEMCALTrigger->SetName("EMCALTrigger");
-  fTracks->SetName("Tracks");
-  fMuonTracks->SetName("MuonTracks");
-  fPmdTracks->SetName("PmdTracks");
-  fTrdTracks->SetName("TrdTracks");
-  fV0s->SetName("V0s");
-  fCascades->SetName("Cascades");
-  fKinks->SetName("Kinks");
-  fCaloClusters->SetName("CaloClusters");
-
-} 
-
-void AliESD::CreateStdContent() 
-{
-  // create the standard AOD content and set pointers
-
-  // create standard objects and add them to the TList of objects
-  AddObject(new AliESDRun());
-  AddObject(new AliESDHeader());
-  AddObject(new AliESDZDC());
-  AddObject(new AliESDFMD());
-  AddObject(new AliESDVZERO());
-  AddObject(new AliESDTZERO());
-  AddObject(new AliESDVertex());
-  AddObject(new AliESDVertex());
-  AddObject(new AliMultiplicity());
-  AddObject(new AliESDCaloTrigger());
-  AddObject(new AliESDCaloTrigger());
-  AddObject(new TClonesArray("AliESDtrack",0));
-  AddObject(new TClonesArray("AliESDMuonTrack",0));
-  AddObject(new TClonesArray("AliESDPmdTrack",0));
-  AddObject(new TClonesArray("AliESDTrdTrack",0));
-  AddObject(new TClonesArray("AliESDv0",0));
-  AddObject(new TClonesArray("AliESDcascade",0));
-  AddObject(new TClonesArray("AliESDkink",0));
-  AddObject(new TClonesArray("AliESDCaloCluster",0));
-  AddObject(new TClonesArray("AliRawDataErrorLog",0));
-
-  // check the order of the indices against enum...
-
-  // read back pointers
-  GetStdContent();
-  // set names
-  SetStdNames();
-
-}
-
-void AliESD::ReadFromTree(TTree *tree){
-  
-
-  // is this really so smart that an ESDObject has a pointer to a list
-  // of another ESDObject...
-
-  fESDObjects = (TList*)((AliESD*)tree->GetTree()->GetUserInfo()->FindObject("AliESD"))->GetList(); 
-
-  // if list is empty
-  // we could still set the branch adresses based on 
-  // tree->GetListOfBranches() CKB
-  // or create standard list 
-
-  if(fESDObjects->GetEntries()<kESDListN){
-    printf("%s %d AliESD::ReadFromTree() TList contains less than the standard contents %d < %d \n",(char*)__FILE__,__LINE__,fESDObjects->GetEntries(),kESDListN);
-  }
-
-
-
-  // set the branch addresses
-  TIter next(fESDObjects);
-  TNamed *el;
-  while((el=(TNamed*)next())){
-    TString bname(el->GetName());
-
-    if(bname.CompareTo("AliESDfriend")==0)
-      {
-	// AliESDfriend does not have a name ...
-      tree->SetBranchStatus("ESDfriend.*",1);
-      tree->SetBranchAddress("ESDfriend.",fESDObjects->GetObjectRef(el));
-
-
-    }
-    else{
-      tree->SetBranchAddress(bname.Data(),fESDObjects->GetObjectRef(el));
-    }
-  }
-
-  GetStdContent();
-}
-
-
-

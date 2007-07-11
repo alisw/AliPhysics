@@ -28,7 +28,7 @@
 #include <TObjArray.h>
 #include <TTree.h>
 
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliESDv0.h"
 #include "AliESDcascade.h"
 #include "AliCascadeVertexer.h"
@@ -54,7 +54,7 @@ Double_t
   AliCascadeVertexer::fgRmax=100.;      //max radius of the fiducial volume
   
 
-Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESD *event) {
+Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
   //--------------------------------------------------------------------
   // This function reconstructs cascade vertices
   //      Adapted to the ESD by I.Belikov (Jouri.Belikov@cern.ch)

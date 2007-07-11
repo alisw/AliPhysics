@@ -56,8 +56,10 @@
 #include "libDateEb.h"
 #endif
 
+#include "AliMDC.h"
+
 #include <AliLog.h>
-#include <AliESD.h>
+#include <AliESDEvent.h>
 
 #include "AliRawEvent.h"
 #include "AliRawEventHeaderBase.h"
@@ -74,7 +76,7 @@
 #include "AliRawEventTag.h"
 #include "AliFilter.h"
 
-#include "AliMDC.h"
+
 
 ClassImp(AliMDC)
 
@@ -127,7 +129,7 @@ AliMDC::AliMDC(Int_t compress, Bool_t deleteFiles, EFilterMode filterMode,
 					"TStreamerInfo()");
 
   if (fFilterMode != kFilterOff) {
-    fESD = new AliESD;
+    fESD = new AliESDEvent();
   }
 
   // Create the guid files folder if it does not exist

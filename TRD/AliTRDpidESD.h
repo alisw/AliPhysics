@@ -15,7 +15,7 @@
 
 #include <TObject.h>
 
-class AliESD;
+class AliESDEvent;
 class AliESDtrack;
 class AliExternalTrackParam;
 class AliTRDpidESD : public TObject {
@@ -29,7 +29,7 @@ class AliTRDpidESD : public TObject {
 
   virtual void    Copy(TObject &p) const;
   static  Bool_t  CheckTrack(AliESDtrack *t);
-          Int_t   MakePID(AliESD *event);
+          Int_t   MakePID(AliESDEvent *event);
 
           void    SetCheckTrackStatus(Bool_t status = kTRUE) { fCheckTrackStatus = status; };
           void    SetCheckKinkStatus(Bool_t status = kTRUE)  { fCheckKinkStatus  = status; };

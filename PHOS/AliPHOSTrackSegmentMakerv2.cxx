@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.4  2007/05/04 14:49:29  policheh
+ * AliPHOSRecPoint inheritance from AliCluster
+ *
  * Revision 1.3  2007/04/25 19:39:42  kharlov
  * Track extracpolation improved
  *
@@ -68,7 +71,7 @@
 #include "AliPHOSTrackSegment.h"
 #include "AliPHOSLink.h"
 #include "AliPHOSGetter.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliESDtrack.h"
 
 ClassImp( AliPHOSTrackSegmentMakerv2) 

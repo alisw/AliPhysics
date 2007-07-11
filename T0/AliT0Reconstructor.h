@@ -27,10 +27,10 @@ class AliT0Reconstructor: public AliReconstructor {
   virtual  void   Reconstruct(AliRawReader*rawReader , TTree* recTree) const;
   virtual  void   Reconstruct(AliRunLoader* ) const  {};
   
-  virtual void         FillESD(AliRunLoader* runLoader, AliESD* esd) const;
-  virtual void         FillESD(AliRunLoader* , AliRawReader*, AliESD* ) const  {};
-  virtual void         FillESD(  AliRawReader*,  TTree*, AliESD* ) const  {};
-  virtual void         FillESD( TTree*,  TTree*, AliESD* ) const  {};
+  virtual void         FillESD(AliRunLoader* runLoader, AliESDEvent* esd) const;
+  virtual void         FillESD(AliRunLoader* , AliRawReader*, AliESDEvent* ) const  {};
+  virtual void         FillESD(  AliRawReader*,  TTree*, AliESDEvent* ) const  {};
+  virtual void         FillESD( TTree*,  TTree*, AliESDEvent* ) const  {};
   virtual Bool_t       HasLocalReconstruction() const {return kTRUE;}
   virtual Bool_t       HasDigitConversion() const {return kFALSE;}
  public:

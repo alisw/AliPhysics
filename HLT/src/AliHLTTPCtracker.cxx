@@ -24,7 +24,7 @@
 //       Origin: Cvetan Cheshkov, CERN, Cvetan.Cheshkov@cern.ch
 //-------------------------------------------------------------------------
 
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliRunLoader.h"
 #include "AliHLTTPCtracker.h"
 #include "AliHLTHough.h"
@@ -45,7 +45,7 @@ AliHLTTPCtracker::AliHLTTPCtracker(AliRunLoader *runLoader):AliTracker()
   fRunLoader = runLoader;
 }
 
-Int_t AliHLTTPCtracker::Clusters2Tracks(AliESD *event)
+Int_t AliHLTTPCtracker::Clusters2Tracks(AliESDEvent *event)
 {
   //--------------------------------------------------------------------
   // This method reconstructs HLT TPC Hough tracks

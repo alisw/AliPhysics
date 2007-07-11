@@ -1,4 +1,4 @@
-SRCS = AliESD.cxx AliESDfriend.cxx\
+SRCS = AliESDEvent.cxx AliESDfriend.cxx AliESD.cxx \
        AliESDtrack.cxx AliESDfriendTrack.cxx\
        AliESDMuonTrack.cxx AliESDPmdTrack.cxx AliESDTrdTrack.cxx AliESDHLTtrack.cxx \
        AliESDv0.cxx AliESDcascade.cxx AliVertex.cxx AliESDVertex.cxx \

@@ -41,7 +41,7 @@
 #include <TGeoMatrix.h>
 
 #include "AliLog.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliKalmanTrack.h"
 #include "AliEMCALRecPoint.h"
@@ -270,7 +270,7 @@ Int_t AliEMCALTracker::LoadClusters(TTree *cTree)
 //
 //------------------------------------------------------------------------------
 //
-Int_t AliEMCALTracker::LoadClusters(AliESD *esd) 
+Int_t AliEMCALTracker::LoadClusters(AliESDEvent *esd) 
 {
 	//
 	// Load EMCAL clusters in the form of AliESDCaloClusters,
@@ -306,7 +306,7 @@ Int_t AliEMCALTracker::LoadClusters(AliESD *esd)
 //
 //------------------------------------------------------------------------------
 //
-Int_t AliEMCALTracker::LoadTracks(AliESD *esd)
+Int_t AliEMCALTracker::LoadTracks(AliESDEvent *esd)
 {
 	//
 	// Load ESD tracks.
@@ -359,7 +359,7 @@ Int_t AliEMCALTracker::LoadTracks(AliESD *esd)
 //
 //------------------------------------------------------------------------------
 //
-Int_t AliEMCALTracker::PropagateBack(AliESD* esd)
+Int_t AliEMCALTracker::PropagateBack(AliESDEvent* esd)
 {
 	//
 	// Main operation method.

@@ -5,6 +5,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.12  2007/02/20 20:17:43  hristov
+ * Corrected array size, removed warnings (icc)
+ *
  * Revision 1.11  2006/12/19 08:49:35  gustavo
  * New PID class for EMCAL, bayesian analysis done with ESD data, PID information filled when calling AliEMCALPID in AliEMCALReconstructor::FillESD()
  *
@@ -17,7 +20,7 @@
 
 #include "TTask.h"
 #include "TArrayD.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliPID.h" 
 
 class AliEMCALPID : public TTask {
@@ -27,7 +30,7 @@ public:
   AliEMCALPID();
   virtual ~AliEMCALPID() { }
   
-  void     RunPID(AliESD *esd);
+  void     RunPID(AliESDEvent *esd);
   void     ComputePID(Double_t energy, Double_t lambda0); // give the PID of a cluster
   TArrayD  DistLambda0(Double_t energy, Int_t nature); // compute lambda0 distributions
   

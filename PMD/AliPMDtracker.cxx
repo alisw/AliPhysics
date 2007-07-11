@@ -44,7 +44,7 @@
 #include "AliPMDtracker.h"
 
 #include "AliESDPmdTrack.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliLog.h"
 
 ClassImp(AliPMDtracker)
@@ -129,7 +129,7 @@ void AliPMDtracker::LoadClusters(TTree *treein)
   fTreeR = treein;
 }
 //--------------------------------------------------------------------//
-void AliPMDtracker::Clusters2Tracks(AliESD *event)
+void AliPMDtracker::Clusters2Tracks(AliESDEvent *event)
 {
   // Converts digits to recpoints after running clustering
   // algorithm on CPV plane and PREshower plane

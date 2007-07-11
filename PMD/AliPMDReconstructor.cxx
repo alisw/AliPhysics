@@ -27,7 +27,7 @@
 #include "AliPMDtracker.h"
 #include "AliRawReader.h"
 #include "AliESDPmdTrack.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliLog.h"
 
 ClassImp(AliPMDReconstructor)
@@ -104,7 +104,7 @@ void AliPMDReconstructor::Reconstruct(TTree *digitsTree,
 
 // ------------------------------------------------------------------------ //
 
-//void AliPMDReconstructor::FillESD(AliRunLoader* runLoader,AliESD* esd) const
+//void AliPMDReconstructor::FillESD(AliRunLoader* runLoader,AliESDEvent* esd) const
 //{
 //  AliLoader* loader = runLoader->GetLoader("PMDLoader");
 //  if (!loader) {
@@ -121,7 +121,7 @@ void AliPMDReconstructor::Reconstruct(TTree *digitsTree,
 
 // ------------------------------------------------------------------------ //
 void AliPMDReconstructor::FillESD(AliRawReader* /*rawReader*/,
-				  TTree* clustersTree, AliESD* esd) const
+				  TTree* clustersTree, AliESDEvent* esd) const
 {
   AliPMDtracker pmdtracker;
   pmdtracker.LoadClusters(clustersTree);
@@ -129,7 +129,7 @@ void AliPMDReconstructor::FillESD(AliRawReader* /*rawReader*/,
 }
 // ------------------------------------------------------------------------ //
 void AliPMDReconstructor::FillESD(TTree * /*digitsTree*/,
-				  TTree* clustersTree, AliESD* esd) const
+				  TTree* clustersTree, AliESDEvent* esd) const
 {
   AliPMDtracker pmdtracker;
   pmdtracker.LoadClusters(clustersTree);

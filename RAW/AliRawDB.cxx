@@ -36,7 +36,7 @@
 
 #include <TObjString.h>
 
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliRawEvent.h"
 #include "AliRawDataArray.h"
 #include "AliRawEventHeaderBase.h"
@@ -53,7 +53,7 @@ const char *AliRawDB::fgkAliRootTag = "$Name$";
 
 //______________________________________________________________________________
 AliRawDB::AliRawDB(AliRawEvent *event,
-		   AliESD *esd, 
+		   AliESDEvent *esd, 
 		   Int_t compress,
                    const char* fileName) :
   fRawDB(NULL),
@@ -279,7 +279,7 @@ void AliRawDB::MakeTree()
      fESDTree = new TTree("esdTree", Form("ALICE HLT ESD tree (%s)", GetAliRootTag()));
      fESDTree->SetAutoSave(2000000000);  // autosave when 2 Gbyte written
      split   = 0;
-     fESDTree->Branch("ESD", "AliESD", &fESD, bufsize, split);
+     fESDTree->Branch("ESD", "AliESDEvent", &fESD, bufsize, split);
    }
 
 }

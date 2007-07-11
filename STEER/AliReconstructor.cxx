@@ -90,7 +90,7 @@ void AliReconstructor::Reconstruct(AliRunLoader* /*runLoader*/,
 
 //_____________________________________________________________________________
 void AliReconstructor::FillESD(TTree* /*digitsTree*/, TTree* /*clustersTree*/,
-			       AliESD* /*esd*/) const
+			       AliESDEvent* /*esd*/) const
 {
 // fill the ESD.
 // by default nothing is done
@@ -99,7 +99,7 @@ void AliReconstructor::FillESD(TTree* /*digitsTree*/, TTree* /*clustersTree*/,
 
 //_____________________________________________________________________________
 void AliReconstructor::FillESD(AliRawReader* /*rawReader*/, 
-			       TTree* clustersTree, AliESD* esd) const
+			       TTree* clustersTree, AliESDEvent* esd) const
 {
 // fill the ESD in case of raw data input.
 // by default the FillESD method for MC is called
@@ -109,7 +109,7 @@ void AliReconstructor::FillESD(AliRawReader* /*rawReader*/,
 
 //_____________________________________________________________________________
 void AliReconstructor::FillESD(AliRunLoader* /*runLoader*/, 
-			       AliESD* /*esd*/) const
+			       AliESDEvent* /*esd*/) const
 {
 // fill the ESD.
 // by default nothing is done
@@ -118,7 +118,7 @@ void AliReconstructor::FillESD(AliRunLoader* /*runLoader*/,
 
 //_____________________________________________________________________________
 void AliReconstructor::FillESD(AliRunLoader* runLoader, 
-			       AliRawReader* /*rawReader*/, AliESD* esd) const
+			       AliRawReader* /*rawReader*/, AliESDEvent* esd) const
 {
 // fill the ESD in case of raw data input.
 // by default the FillESD method for MC is called

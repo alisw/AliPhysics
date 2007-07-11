@@ -27,7 +27,7 @@ class AliTRDtrack;
 class AliTRDtracklet;
 class AliTRDcluster;
 class AliTRDseed;
-class AliESD;
+class AliESDEvent;
 class TTreeSRedirector;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -94,9 +94,9 @@ class AliTRDtracker : public AliTracker {
   return (AliCluster *) fClusters->UncheckedAt(index); }
   
   static  Int_t    Freq(Int_t n, const Int_t *inlist, Int_t *outlist, Bool_t down);    
-  Int_t    Clusters2Tracks(AliESD *event);
-  Int_t    PropagateBack(AliESD *event);
-  Int_t    RefitInward(AliESD *event);
+  Int_t    Clusters2Tracks(AliESDEvent *event);
+  Int_t    PropagateBack(AliESDEvent *event);
+  Int_t    RefitInward(AliESDEvent *event);
   
   virtual void     CookLabel(AliKalmanTrack *t, Float_t wrong) const;
   
@@ -261,7 +261,7 @@ class AliTRDtracker : public AliTracker {
  private:
   
   AliTRDtrack *RegisterSeed(AliTRDseed *seeds, Double_t *params);
-  void     MakeSeedsMI(Int_t inner, Int_t outer, AliESD *esd = 0);
+  void     MakeSeedsMI(Int_t inner, Int_t outer, AliESDEvent *esd = 0);
   
   Int_t    FollowBackProlongation(AliTRDtrack &t);
   Int_t    FollowProlongation(AliTRDtrack &t);

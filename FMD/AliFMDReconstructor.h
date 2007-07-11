@@ -31,7 +31,7 @@ class TClonesArray;
 class AliFMDDigit;
 class AliRawReader;
 class AliRunLoader;
-class AliESD;
+class AliESDEvent;
 class AliESDFMD;
 class TH1;
 
@@ -92,9 +92,9 @@ public:
       @param esd ESD object to store data in. 
   */
   virtual void   FillESD(TTree* digitsTree, TTree* clusterTree, 
-			 AliESD* esd) const;
+			 AliESDEvent* esd) const;
   /** Not used */
-  virtual void   SetESD(AliESD* esd) { fESD = esd; }
+  virtual void   SetESD(AliESDEvent* esd) { fESD = esd; }
   /** Set the noise factor 
       @param f Factor to use */
   virtual void SetNoiseFactor(Float_t f=3) { fNoiseFactor = f; }
@@ -186,7 +186,7 @@ protected:
   Bool_t                fAngleCorrect;  // Whether to angle correct
   mutable Vertex_t      fVertexType;    // What kind of vertex we got
   AliRunLoader*         fRunLoader;     // Run loader passed to Init  
-  AliESD*               fESD;           // ESD object(?)
+  AliESDEvent*          fESD;           // ESD object(?)
   Bool_t                fDiagnostics;   // Wheter to do diagnostics
   TH1*                  fDiagStep1;	// Diagnostics histogram
   TH1*                  fDiagStep2;	// Diagnostics histogram
@@ -201,13 +201,13 @@ private:
   /** Hide base classes unused function */
   void Reconstruct(AliRunLoader*, AliRawReader*) const;
   /** Hide base classes unused function */
-  void FillESD(AliRawReader*, TTree*, AliESD*) const;
+  void FillESD(AliRawReader*, TTree*, AliESDEvent*) const;
   /** Hide base classes unused function */
-  void FillESD(AliRunLoader*, AliESD*) const;
+  void FillESD(AliRunLoader*, AliESDEvent*) const;
   /** Hide base classes unused function */
-  void FillESD(AliRunLoader*, AliRawReader*, AliESD*) const;
+  void FillESD(AliRunLoader*, AliRawReader*, AliESDEvent*) const;
   
-  ClassDef(AliFMDReconstructor, 0)  // class for the FMD reconstruction
+  ClassDef(AliFMDReconstructor, 1)  // class for the FMD reconstruction
 }; 
 #endif
 //____________________________________________________________________

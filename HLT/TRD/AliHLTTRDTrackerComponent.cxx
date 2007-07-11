@@ -33,7 +33,7 @@ using namespace std;
 
 #include "AliTRDclusterizerV1HLT.h"
 #include "AliTRDReconstructor.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliTRDtrackerHLT.h"
 #include "AliTRDCalibraFillHisto.h"
 #include "AliMagFMaps.h"
@@ -285,8 +285,8 @@ int AliHLTTRDTrackerComponent::DoEvent( const AliHLTComponentEventData & evtData
 
   AliTRDReconstructor::SetSeedingOn(kTRUE);
 
-  AliESD *esd = new AliESD();
-
+  AliESDEvent *esd = new AliESDEvent();
+  esd->CreateStdContent();
   //fTracker->MakeSeedsMI(3, 5, esd);
   fTracker->PropagateBack(esd);
 

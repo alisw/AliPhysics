@@ -28,7 +28,7 @@ class AliLoader;
 class AliTracker;
 class AliVertexer;
 class AliESDVertex;
-class AliESD;
+class AliESDEvent;
 class TFile;
 class TTree;
 
@@ -105,13 +105,13 @@ public:
 private:
   Bool_t         RunLocalReconstruction(const TString& detectors);
   Bool_t         RunLocalEventReconstruction(const TString& detectors);
-  Bool_t         RunVertexFinder(AliESD*& esd);
-  Bool_t         RunHLTTracking(AliESD*& esd);
-  Bool_t         RunMuonTracking(AliESD*& esd);
-  Bool_t         RunTracking(AliESD*& esd);
-  Bool_t         FillESD(AliESD*& esd, const TString& detectors);
-  Bool_t         FillTriggerESD(AliESD*& esd);
-  Bool_t         FillRawEventHeaderESD(AliESD*& esd);
+  Bool_t         RunVertexFinder(AliESDEvent*& esd);
+  Bool_t         RunHLTTracking(AliESDEvent*& esd);
+  Bool_t         RunMuonTracking(AliESDEvent*& esd);
+  Bool_t         RunTracking(AliESDEvent*& esd);
+  Bool_t         FillESD(AliESDEvent*& esd, const TString& detectors);
+  Bool_t         FillTriggerESD(AliESDEvent*& esd);
+  Bool_t         FillRawEventHeaderESD(AliESDEvent*& esd);
 
   Bool_t         IsSelected(TString detName, TString& detectors) const;
   Bool_t         InitRunLoader();
@@ -120,8 +120,8 @@ private:
   Bool_t         CreateTrackers(const TString& detectors);
   void           CleanUp(TFile* file = NULL, TFile* fileOld = NULL);
 
-  Bool_t         ReadESD(AliESD*& esd, const char* recStep) const;
-  void           WriteESD(AliESD* esd, const char* recStep) const;
+  Bool_t         ReadESD(AliESDEvent*& esd, const char* recStep) const;
+  void           WriteESD(AliESDEvent* esd, const char* recStep) const;
 
  
   //===========================================//
@@ -129,9 +129,9 @@ private:
   //==========================================//
   void           ESDFile2AODFile(TFile* esdFile, TFile* aodFile);
 
-  void           WriteAlignmentData(AliESD* esd);
+  void           WriteAlignmentData(AliESDEvent* esd);
 
-  void           FillRawDataErrorLog(Int_t iEvent, AliESD* esd);
+  void           FillRawDataErrorLog(Int_t iEvent, AliESDEvent* esd);
 
   //*** Global reconstruction flags *******************
   Bool_t         fUniformField;       // uniform field tracking flag
@@ -176,7 +176,7 @@ private:
   TString	 fCDBUri;	      // Uri of the default CDB storage
   TObjArray      fSpecCDBUri;         // Array with detector specific CDB storages
 
-  ClassDef(AliReconstruction, 10)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 11)      // class for running the reconstruction
 };
 
 #endif

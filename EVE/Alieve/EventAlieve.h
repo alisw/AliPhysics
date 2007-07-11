@@ -8,7 +8,7 @@
 #include <Reve/EventBase.h>
 
 class AliRunLoader;
-class AliESD;
+class AliESDEvent;
 class AliESDfriend;
 
 class AliMagF;
@@ -33,7 +33,7 @@ protected:
 
   TFile*        fESDFile;
   TTree*        fESDTree;
-  AliESD*       fESD;
+  AliESDEvent*       fESD;
   AliESDfriend* fESDfriend;
   Bool_t        fESDfriendExists;
 
@@ -67,13 +67,13 @@ public:
   Int_t         GetEventId()   const { return fEventId; }
   AliRunLoader* GetRunLoader() const { return fRunLoader; }
   TTree*        GetESDTree()   const { return fESDTree; }
-  AliESD*       GetESD()       const { return fESD; }
+  AliESDEvent*       GetESD()       const { return fESD; }
   AliESDfriend* GetESDfriend()       const { return fESDfriend; }
   Bool_t        GetESDfriendExists() const { return fESDfriendExists; }
   virtual const Text_t* GetTitle()   const { return fPath.Data(); }
 
   static AliRunLoader* AssertRunLoader();
-  static AliESD*       AssertESD();
+  static AliESDEvent*       AssertESD();
   static AliESDfriend* AssertESDfriend();
 
   static AliMagF*      AssertMagField();

@@ -87,13 +87,13 @@ AliRawReader* AliHLTOfflineInterface::GetRawReader() const
   return fpRawReader!=NULL?fpRawReader:fgpRawReader;
 }
 
-int AliHLTOfflineInterface::SetESD(Int_t eventNo, AliESD* pESD)
+int AliHLTOfflineInterface::SetESD(Int_t eventNo, AliESDEvent* pESD)
 {
   fpESD=pESD;
   return 0;
 }
 
-AliESD* AliHLTOfflineInterface::GetESD() const
+AliESDEvent* AliHLTOfflineInterface::GetESD() const
 {
   return fpESD;
 }
@@ -166,7 +166,7 @@ int AliHLTOfflineInterface::ResetComponents()
   return iResult;
 }
 
-int AliHLTOfflineInterface::FillComponentESDs(int eventNo, AliRunLoader* runLoader, AliESD* esd)
+int AliHLTOfflineInterface::FillComponentESDs(int eventNo, AliRunLoader* runLoader, AliESDEvent* esd)
 {
   // see header file for class documentation
   int iResult=0;

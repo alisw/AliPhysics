@@ -34,7 +34,7 @@
 #include <TSocket.h>
 
 #include "AliLog.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliITSclustererV2.h"
 #include "AliITSgeom.h"
 #include "AliITStrackerV2.h"
@@ -458,7 +458,7 @@ Bool_t AliMonitorProcess::ProcessFile()
     AliInfo(Form("run: %d  event: %d %d\n", rawReader.GetRunNumber(),
 		 rawReader.GetEventId()[0], rawReader.GetEventId()[1]));
 
-    AliESD esd;
+    AliESDEvent esd;
     if (IsSelected("TPC")) {
       CheckForConnections();
       if (!ReconstructTPC(&rawReader, &esd)) return kFALSE;
@@ -597,7 +597,7 @@ Int_t AliMonitorProcess::GetNumberOfEvents(const char* fileName) const
 }
 
 //_____________________________________________________________________________
-Bool_t AliMonitorProcess::ReconstructTPC(AliRawReader* rawReader, AliESD* esd)
+Bool_t AliMonitorProcess::ReconstructTPC(AliRawReader* rawReader, AliESDEvent* esd)
 {
 // find TPC clusters and tracks
 
@@ -631,7 +631,7 @@ Bool_t AliMonitorProcess::ReconstructTPC(AliRawReader* rawReader, AliESD* esd)
 }
 
 //_____________________________________________________________________________
-Bool_t AliMonitorProcess::ReconstructITS(AliRawReader* rawReader, AliESD* esd)
+Bool_t AliMonitorProcess::ReconstructITS(AliRawReader* rawReader, AliESDEvent* esd)
 {
 // find ITS clusters and tracks
 
@@ -663,7 +663,7 @@ Bool_t AliMonitorProcess::ReconstructITS(AliRawReader* rawReader, AliESD* esd)
 }
 
 //_____________________________________________________________________________
-Bool_t AliMonitorProcess::ReconstructV0s(AliESD* esd)
+Bool_t AliMonitorProcess::ReconstructV0s(AliESDEvent* esd)
 {
 // find V0s
 

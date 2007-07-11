@@ -180,7 +180,7 @@ AliTracker* AliTPCReconstructor::CreateTracker(AliRunLoader* /* runLoader */) co
 
 //_____________________________________________________________________________
 void AliTPCReconstructor::FillESD(AliRunLoader* /*runLoader*/, 
-				  AliESD* esd) const
+				  AliESDEvent* esd) const
 {
 // make PID
 

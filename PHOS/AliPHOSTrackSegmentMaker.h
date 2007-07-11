@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.40  2006/08/29 11:41:19  kharlov
+ * Missing implementation of ctors and = operator are added
+ *
  * Revision 1.39  2006/08/25 16:00:53  kharlov
  * Compliance with Effective C++AliPHOSHit.cxx
  *
@@ -36,7 +39,7 @@ class TFile ;
 
 class AliPHOSClusterizer ;
 class AliPHOSGeometry ;
-class AliESD ;
+class AliESDEvent ;
 
 class  AliPHOSTrackSegmentMaker : public TTask {
 
@@ -55,12 +58,12 @@ public:
 
   void SetEventRange(Int_t first=0, Int_t last=-1) {fFirstEvent=first; fLastEvent=last; }
   void SetEventFolderName(TString name) { fEventFolderName = name ; }
-  void SetESD(AliESD *esd) { fESD = esd; }
+  void SetESD(AliESDEvent *esd) { fESD = esd; }
 
   TString GetEventFolderName() const {return fEventFolderName;}
   Int_t   GetFirstEvent()      const {return fFirstEvent;     }
   Int_t   GetLastEvent()       const {return fLastEvent;      }
-  AliESD *GetESD()             const {return fESD;            }
+  AliESDEvent *GetESD()             const {return fESD;            }
 
   virtual void WriteTrackSegments() = 0;
   
@@ -68,9 +71,9 @@ protected:
   TString fEventFolderName ;  // event folder name
   Int_t   fFirstEvent;        // first event to process
   Int_t   fLastEvent;         // last  event to process
-  AliESD * fESD;              //! ESD object
+  AliESDEvent * fESD;              //! ESD object
 
-  ClassDef( AliPHOSTrackSegmentMaker,4)  // Algorithm class to make PHOS track segments (Base Class)
+  ClassDef( AliPHOSTrackSegmentMaker,5)  // Algorithm class to make PHOS track segments (Base Class)
 };
 
 #endif // ALIPHOSTRACKSEGMENTMAKER_H

@@ -20,7 +20,7 @@
 #include <TDirectory.h>
 
 #include "AliRunLoader.h"
-#include <AliESD.h>
+#include <AliESDEvent.h>
 #include "AliLog.h"
 #include "AliT0Loader.h"
 #include "AliT0RecPoint.h"
@@ -327,7 +327,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 }
 //____________________________________________________________
 
-void AliT0Reconstructor::FillESD(AliRunLoader* runLoader, AliESD *pESD) const
+void AliT0Reconstructor::FillESD(AliRunLoader* runLoader, AliESDEvent *pESD) const
 {
 
   /***************************************************

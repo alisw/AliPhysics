@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.12  2007/06/11 20:43:06  hristov
+ * Changes required by the updated AliESDCaloCluster (Gustavo)
+ *
  * Revision 1.11  2007/03/30 13:50:34  gustavo
  * PID for particles with E < 5 GeV was not done, temporal solution found (Guenole)
  *
@@ -100,7 +103,7 @@
 // #include "AliLoader.h"
 // #include "AliStack.h"
 // #include "AliESDtrack.h"
-// #include "AliESD.h"
+// #include "AliESDEvent.h"
 #include "AliLog.h"
 #include "AliEMCALPID.h"
   
@@ -232,7 +235,7 @@ ClassImp(AliEMCALPID)
 }
 
 //______________________________________________
-void AliEMCALPID::RunPID(AliESD *esd)
+void AliEMCALPID::RunPID(AliESDEvent *esd)
 {
 //
 // Make the PID for all the EMCAL clusters containedin the ESDs File

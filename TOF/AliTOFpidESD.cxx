@@ -24,7 +24,7 @@
 #include "AliLog.h"
 
 #include "AliESDtrack.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 
 #include "AliTOFpidESD.h"
 
@@ -54,7 +54,7 @@ AliTOFpidESD::AliTOFpidESD(Double_t *param):
 }
 
 //_________________________________________________________________________
-Int_t AliTOFpidESD::MakePID(AliESD *event, Double_t timeZero)
+Int_t AliTOFpidESD::MakePID(AliESDEvent *event, Double_t timeZero)
 {
   //
   //  This function calculates the "detector response" PID probabilities
@@ -100,7 +100,7 @@ Int_t AliTOFpidESD::MakePID(AliESD *event, Double_t timeZero)
 }
 
 //_________________________________________________________________________
-Int_t AliTOFpidESD::MakePID(AliESD *event)
+Int_t AliTOFpidESD::MakePID(AliESDEvent *event)
 {
   //
   //  This function calculates the "detector response" PID probabilities

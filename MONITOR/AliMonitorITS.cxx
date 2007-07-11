@@ -26,7 +26,7 @@
 #include <TVector3.h>
 
 #include "AliLog.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliITSRawStreamSDD.h"
 #include "AliITSRawStreamSSD.h"
 #include "AliITSclusterV2.h"
@@ -150,7 +150,7 @@ void AliMonitorITS::CreateHistos(TFolder* folder)
 
 //_____________________________________________________________________________
 void AliMonitorITS::FillHistos(AliRunLoader* runLoader, 
-			       AliRawReader* rawReader, AliESD* esd)
+			       AliRawReader* rawReader, AliESDEvent* esd)
 {
 // fill the ITS monitor histogrms
 

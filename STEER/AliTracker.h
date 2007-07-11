@@ -16,16 +16,16 @@ class AliMagF;
 class AliCluster;
 class TTree;
 class AliKalmanTrack;
-class AliESD;
+class AliESDEvent;
 class AliTrackPoint;
 
 class AliTracker : public TObject {
 public:
   AliTracker();
   virtual ~AliTracker(){}
-  virtual Int_t Clusters2Tracks(AliESD *event)=0;
-  virtual Int_t PropagateBack(AliESD *event)=0;
-  virtual Int_t RefitInward(AliESD *event)=0;
+  virtual Int_t Clusters2Tracks(AliESDEvent *event)=0;
+  virtual Int_t PropagateBack(AliESDEvent *event)=0;
+  virtual Int_t RefitInward(AliESDEvent *event)=0;
   void SetVertex(const Double_t *xyz, const Double_t *ers=0) { 
      fX=xyz[0]; fY=xyz[1]; fZ=xyz[2];
      if (ers) { fSigmaX=ers[0]; fSigmaY=ers[1]; fSigmaZ=ers[2]; } 

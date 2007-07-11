@@ -46,7 +46,7 @@
 #include "AliStack.h"
 #include "AliTrackReference.h"
 #include "AliTracker.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliESDMuonTrack.h"
 #include "AliMagFMaps.h"
 #include "AliLog.h"
@@ -150,7 +150,7 @@ AliMUONCheck::CheckESD(Bool_t pdc06TriggerResponse)
   Double_t fPxRec1, fPyRec1, fPzRec1, fE1;
   Int_t fZ1;
   
-  AliESD* fESD = new AliESD();
+  AliESDEvent* fESD = new AliESDEvent();
   TTree* tree = (TTree*) esdFile->Get("esdTree");
   if (!tree) 
   {

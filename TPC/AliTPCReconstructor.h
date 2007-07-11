@@ -24,17 +24,17 @@ public:
   virtual void         Reconstruct(AliRawReader* rawReader, TTree* clustersTree) const;
 
   virtual AliTracker*  CreateTracker(AliRunLoader* runLoader) const;
-  virtual void         FillESD(AliRunLoader* runLoader, AliESD* esd) const;
+  virtual void         FillESD(AliRunLoader* runLoader, AliESDEvent* esd) const;
   virtual void         FillESD(TTree* digitsTree, TTree* clustersTree, 
-			       AliESD* esd) const {
+			       AliESDEvent* esd) const {
     AliReconstructor::FillESD(digitsTree,clustersTree,esd);
   }
   virtual void         FillESD(AliRawReader* rawReader, TTree* clustersTree, 
-			       AliESD* esd) const {
+			       AliESDEvent* esd) const {
     AliReconstructor::FillESD(rawReader,clustersTree,esd);
   }
   virtual void         FillESD(AliRunLoader* runLoader, 
-			       AliRawReader* rawReader, AliESD* esd) const {
+			       AliRawReader* rawReader, AliESDEvent* esd) const {
     AliReconstructor::FillESD(runLoader,rawReader,esd);
   }
 

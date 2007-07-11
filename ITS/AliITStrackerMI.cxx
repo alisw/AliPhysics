@@ -29,7 +29,7 @@
 #include <TTreeStream.h>
 #include <TTree.h>
 
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliV0.h"
 #include "AliHelix.h"
 #include "AliITSRecPoint.h"
@@ -303,7 +303,7 @@ static Int_t CorrectForDeadZoneMaterial(AliITStrackMI *t) {
   return 0;
 }
 //------------------------------------------------------------------------
-Int_t AliITStrackerMI::Clusters2Tracks(AliESD *event) {
+Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
   //--------------------------------------------------------------------
   // This functions reconstructs ITS tracks
   // The clusters must be already loaded !
@@ -448,7 +448,7 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESD *event) {
   return 0;
 }
 //------------------------------------------------------------------------
-Int_t AliITStrackerMI::PropagateBack(AliESD *event) {
+Int_t AliITStrackerMI::PropagateBack(AliESDEvent *event) {
   //--------------------------------------------------------------------
   // This functions propagates reconstructed ITS tracks back
   // The clusters must be loaded !
@@ -507,7 +507,7 @@ Int_t AliITStrackerMI::PropagateBack(AliESD *event) {
   return 0;
 }
 //------------------------------------------------------------------------
-Int_t AliITStrackerMI::RefitInward(AliESD *event) {
+Int_t AliITStrackerMI::RefitInward(AliESDEvent *event) {
   //--------------------------------------------------------------------
   // This functions refits ITS tracks using the 
   // "inward propagated" TPC tracks
@@ -3507,7 +3507,7 @@ Int_t AliITStrackerMI::GetNearestLayer(const Double_t *xr) const{
   return res;
 }
 //------------------------------------------------------------------------
-void AliITStrackerMI::UpdateTPCV0(AliESD *event){
+void AliITStrackerMI::UpdateTPCV0(AliESDEvent *event){
   //
   //try to update, or reject TPC  V0s
   //
@@ -3618,7 +3618,7 @@ void AliITStrackerMI::UpdateTPCV0(AliESD *event){
   //
 }
 //------------------------------------------------------------------------
-void  AliITStrackerMI::FindV02(AliESD *event)
+void  AliITStrackerMI::FindV02(AliESDEvent *event)
 {
   //
   // V0 finder
@@ -4238,7 +4238,7 @@ void  AliITStrackerMI::FindV02(AliESD *event)
   delete   pvertex;
 }
 //------------------------------------------------------------------------
-void AliITStrackerMI::RefitV02(AliESD *event)
+void AliITStrackerMI::RefitV02(AliESDEvent *event)
 {
   //
   //try to refit  V0s in the third path of the reconstruction

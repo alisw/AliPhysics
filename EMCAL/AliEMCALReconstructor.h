@@ -19,7 +19,7 @@
 class AliEMCALDigitizer ;
 class AliEMCALClusterizer ;
 class AliEMCALSDigitizer ;
-class AliESD ;
+class AliESDEvent ;
 class AliRawReader ;
 
 // --- Standard library ---
@@ -38,7 +38,7 @@ public:
   Bool_t       Debug() const { return fDebug ; }
 
   using AliReconstructor::FillESD;
-  virtual void FillESD(AliRunLoader* runLoader, AliESD* esd) const ;
+  virtual void FillESD(AliRunLoader* runLoader, AliESDEvent* esd) const ;
   AliTracker*  CreateTracker         (AliRunLoader*                      )const{return new AliEMCALTracker;} 
   using AliReconstructor::Reconstruct;
   virtual void Reconstruct(AliRunLoader* runLoader) const ;

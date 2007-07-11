@@ -13,7 +13,7 @@
 
 class TTree;
 class TTreeSRedirector;
-class AliESD;
+class AliESDEvent;
 
 #include <TObjArray.h>
 #include "AliITSRecPoint.h"
@@ -34,9 +34,9 @@ public:
                         {return fgLayers[layn].GetNumberOfClusters();}
   Int_t LoadClusters(TTree *cf);
   void UnloadClusters();
-  Int_t Clusters2Tracks(AliESD *event);
-  Int_t PropagateBack(AliESD *event);
-  Int_t RefitInward(AliESD *event);
+  Int_t Clusters2Tracks(AliESDEvent *event);
+  Int_t PropagateBack(AliESDEvent *event);
+  Int_t RefitInward(AliESDEvent *event);
   Bool_t RefitAt(Double_t x, AliITStrackMI *seed, 
 		 const AliITStrackMI *t, Bool_t extra=kFALSE);
   Bool_t RefitAt(Double_t x, AliITStrackMI *seed, const Int_t *clindex);
@@ -173,9 +173,9 @@ public:
 
 protected:
   Int_t GetNearestLayer(const Double_t *xr) const;  //get nearest upper layer close to the point xr
-  void FindV02(AliESD *event);  //try to find V0
-  void RefitV02(AliESD *event);  //try to refit  V0's
-  void UpdateTPCV0(AliESD *event);  //try to update, or reject TPC  V0s
+  void FindV02(AliESDEvent *event);  //try to find V0
+  void RefitV02(AliESDEvent *event);  //try to refit  V0's
+  void UpdateTPCV0(AliESDEvent *event);  //try to update, or reject TPC  V0s
   void CookLabel(AliKalmanTrack *t,Float_t wrong) const;
   void CookLabel(AliITStrackMI *t,Float_t wrong) const;
   Double_t GetEffectiveThickness(Double_t y, Double_t z) const;
@@ -229,12 +229,12 @@ protected:
   Int_t fLayersNotToSkip[kMaxLayer];     // layer masks
   Int_t fLastLayerToTrackTo;             // the innermost layer to track to
   Float_t * fCoeficients;                //! working array with errors and mean cluser shape
-  AliESD  * fEsd;                        //! pointer to the ESD event
+  AliESDEvent  * fEsd;                        //! pointer to the ESD event
   TTreeSRedirector *fDebugStreamer;     //!debug streamer
 private:
   AliITStrackerMI(const AliITStrackerMI &tracker);
   AliITStrackerMI & operator=(const AliITStrackerMI &tracker);
-  ClassDef(AliITStrackerMI,2)   //ITS tracker MI
+  ClassDef(AliITStrackerMI,3)   //ITS tracker MI
 };
 
 

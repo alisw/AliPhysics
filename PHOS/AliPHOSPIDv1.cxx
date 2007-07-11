@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.111  2007/05/04 14:49:29  policheh
+ * AliPHOSRecPoint inheritance from AliCluster
+ *
  * Revision 1.110  2007/04/24 10:08:03  kharlov
  * Vertex extraction from GenHeader
  *
@@ -130,7 +133,7 @@
 #include "AliPHOS.h"
 #include "AliPHOSPIDv1.h"
 #include "AliPHOSGetter.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliESDVertex.h"
 #include "AliHeader.h"
 #include "AliGenEventHeader.h"

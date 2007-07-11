@@ -30,7 +30,7 @@ ClassImp(AliRawNullDB)
 
 //______________________________________________________________________________
 AliRawNullDB::AliRawNullDB(AliRawEvent *event,
-			   AliESD *esd,
+			   AliESDEvent *esd,
 			   Int_t compress,
 			   const char* fileName)
    : AliRawDB(event, esd, compress, fileName)

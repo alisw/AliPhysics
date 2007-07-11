@@ -19,6 +19,7 @@ class AliITStrackSA;
 class AliESDVertex;
 class AliITSVertexer;
 class TTree;
+class AliESDEvent;
 class TArrayD;
 
 class AliITStrackerSA : public AliITStrackerMI {
@@ -33,8 +34,8 @@ class AliITStrackerSA : public AliITStrackerMI {
   AliITStrackerSA(const AliITStrackerSA& tracker);
   AliITStrackerSA& operator=(const AliITStrackerSA& source);
   virtual ~AliITStrackerSA();  
-  virtual Int_t Clusters2Tracks(AliESD *event);
-  Int_t FindTracks(AliESD* event);
+  virtual Int_t Clusters2Tracks(AliESDEvent *event);
+  Int_t FindTracks(AliESDEvent* event);
 
   AliITStrackV2* FitTrack(AliITStrackSA* tr,Double_t* primaryVertex);
 
@@ -107,7 +108,7 @@ class AliITStrackerSA : public AliITStrackerMI {
   TClonesArray** fCluLayer; //! array with clusters 
   TClonesArray** fCluCoord; //! array with cluster info
 
-  ClassDef(AliITStrackerSA,4)
+  ClassDef(AliITStrackerSA,5)
 };
 
 #endif

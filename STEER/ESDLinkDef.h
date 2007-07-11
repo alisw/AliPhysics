@@ -9,9 +9,11 @@
 #pragma link off all functions;
  
 #pragma link C++ enum   AliLog::EType_t;
-#pragma link C++ enum   AliESD::ESDListIndex_t;
+#pragma link C++ enum   AliESDEvent::ESDListIndex_t;
+
 
 #pragma link C++ class  AliESD+;
+#pragma link C++ class  AliESDEvent+;
 #pragma link C++ class  AliESDRun+;
 #pragma link C++ class  AliESDHeader+;
 #pragma link C++ class  AliESDZDC+;

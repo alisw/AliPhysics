@@ -6,7 +6,7 @@
 
 #include <AliRunLoader.h>
 #include <AliRun.h>
-#include <AliESD.h>
+#include <AliESDEvent.h>
 #include <AliESDfriend.h>
 #include <AliMagFMaps.h>
 #include <AliCDBManager.h>
@@ -129,7 +129,7 @@ void Event::Open()
     fESDFile = new TFile(esd_path);
     if(fESDFile->IsZombie() == kFALSE)
     {
-      fESD = new AliESD();
+      fESD = new AliESDEvent();
       fESDTree = (TTree*) fESDFile->Get("esdTree");
       if (fESDTree != 0)
       {
@@ -271,7 +271,7 @@ AliRunLoader* Event::AssertRunLoader()
   return gEvent->fRunLoader;
 }
 
-AliESD* Event::AssertESD()
+AliESDEvent* Event::AssertESD()
 {
   static const Exc_t eH("Event::AssertESD ");
 

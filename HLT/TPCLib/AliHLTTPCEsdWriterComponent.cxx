@@ -24,7 +24,7 @@
 
                                                                           */
 #include "AliHLTTPCEsdWriterComponent.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "TTree.h"
 #include "AliHLTTPCTrack.h"
 #include "AliHLTTPCTrackArray.h"
@@ -58,11 +58,12 @@ int AliHLTTPCEsdWriterComponent::InitWriter()
 {
   // see header file for class documentation
   int iResult=0;
-  fESD = new AliESD;
+  fESD = new AliESDEvent;
+  fESD->CreateStdContent();
   if (fESD) {
     fTree = new TTree("esdTree", "Tree with HLT ESD objects");
     if (fTree) {
-      fTree->Branch("ESD", "AliESD", &fESD);
+      fESD->WriteToTree(fTree);
     }
     delete fESD;
     fESD=NULL;
@@ -97,9 +98,10 @@ int AliHLTTPCEsdWriterComponent::DumpEvent( const AliHLTComponentEventData& evtD
   int iResult=0;
   TTree* pTree=fTree;
   if (pTree) {
-    fESD = new AliESD;
+    fESD = new AliESDEvent;
+    fESD->CreateStdContent();
     if (fESD) {
-      AliESD* pESD=fESD;
+      AliESDEvent* pESD=fESD;
 
       const AliHLTComponentBlockData* iter = NULL;
       AliHLTTPCTrackletData* inPtr=NULL;
@@ -138,7 +140,7 @@ int AliHLTTPCEsdWriterComponent::DumpEvent( const AliHLTComponentEventData& evtD
 	pTree->Fill();
       }
 
-      fESD=NULL;
+      fESD->Reset();
       delete pESD;
     } else {
       iResult=-ENOMEM;
@@ -154,7 +156,7 @@ int AliHLTTPCEsdWriterComponent::ScanArgument(int argc, const char** argv)
   return iResult;
 }
 
-int AliHLTTPCEsdWriterComponent::Tracks2ESD(AliHLTTPCTrackArray* pTracks, AliESD* pESD)
+int AliHLTTPCEsdWriterComponent::Tracks2ESD(AliHLTTPCTrackArray* pTracks, AliESDEvent* pESD)
 {
   // see header file for class documentation
   int iResult=0;

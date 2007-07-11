@@ -11,13 +11,13 @@
 //#include <Rtypes.h>
 #include <TObject.h>
 
-class AliESD;
+class AliESDEvent;
 
 class AliITSpidESD : public TObject {
 public:
   AliITSpidESD();
   virtual ~AliITSpidESD() {}
-  virtual Int_t MakePID(AliESD *event) =0;
+  virtual Int_t MakePID(AliESDEvent *event) =0;
   static Double_t Bethe(Double_t p,Double_t mass);
 private:
   ClassDef(AliITSpidESD,1)   // ITS PID class

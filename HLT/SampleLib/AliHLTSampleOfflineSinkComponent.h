@@ -62,10 +62,10 @@ class AliHLTSampleOfflineSinkComponent : public AliHLTOfflineDataSink {
    * @param eventNo       event No. \em Note: this is an internal enumeration of the
    *                      processed events.
    * @param runLoader     the AliRoot runloader
-   * @param esd           an AliESD instance
+   * @param esd           an AliESDEvent instance
    * @return neg. error code if failed 
    */
-  int FillESD(int eventNo, AliRunLoader* runLoader, AliESD* esd);
+  int FillESD(int eventNo, AliRunLoader* runLoader, AliESDEvent* esd);
 
  protected:
   /**

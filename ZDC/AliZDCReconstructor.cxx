@@ -26,7 +26,7 @@
 
 #include "AliRunLoader.h"
 #include "AliRawReader.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliZDCDigit.h"
 #include "AliZDCRawStream.h"
 #include "AliZDCReco.h"
@@ -316,7 +316,7 @@ void AliZDCReconstructor::ReconstructEvent(AliLoader* loader, Float_t zn1corr,
 
 //_____________________________________________________________________________
 void AliZDCReconstructor::FillESD(AliRunLoader* runLoader, 
-				  AliESD* esd) const
+				  AliESDEvent* esd) const
 {
 // fill energies and number of participants to the ESD
 

@@ -19,7 +19,7 @@ class AliRunLoader;
 class AliRawReader;
 class AliVertexer;
 class AliTracker;
-class AliESD;
+class AliESDEvent;
 
 
 class AliReconstructor: public TObject {
@@ -45,12 +45,12 @@ public:
     {return NULL;}
 
   virtual void         FillESD(TTree* digitsTree, TTree* clustersTree, 
-			       AliESD* esd) const;
+			       AliESDEvent* esd) const;
   virtual void         FillESD(AliRawReader* rawReader, TTree* clustersTree, 
-			       AliESD* esd) const;
-  virtual void         FillESD(AliRunLoader* runLoader, AliESD* esd) const;
+			       AliESDEvent* esd) const;
+  virtual void         FillESD(AliRunLoader* runLoader, AliESDEvent* esd) const;
   virtual void         FillESD(AliRunLoader* runLoader, 
-			       AliRawReader* rawReader, AliESD* esd) const;
+			       AliRawReader* rawReader, AliESDEvent* esd) const;
 
   virtual const char*  GetDetectorName() const;
 

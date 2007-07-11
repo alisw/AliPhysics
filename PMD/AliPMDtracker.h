@@ -21,7 +21,7 @@ class AliPMDrecpoint1;
 class AliPMDUtility;
 class AliPMDDiscriminator;
 
-class AliESD;
+class AliESDEvent;
 
 class AliPMDtracker:public TObject
 {
@@ -35,7 +35,7 @@ class AliPMDtracker:public TObject
   virtual ~AliPMDtracker();
 
   void LoadClusters(TTree *treein);
-  void Clusters2Tracks(AliESD *event);
+  void Clusters2Tracks(AliESDEvent *event);
   void SetVertex(Double_t vtx[3], Double_t evtx[3]);
   void ResetClusters();
 

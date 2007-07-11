@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.9  2006/11/15 16:05:03  kharlov
+ * New FillESD() for raw data is added
+ *
  * Revision 1.8  2005/05/28 14:19:04  schutz
  * Compilation warnings fixed by T.P.
  *
@@ -29,7 +32,7 @@ class AliPHOSClusterizer ;
 class AliPHOSTrackSegmentMaker ;
 class AliPHOSPID ;
 class AliPHOSSDigitizer ;
-class AliESD ;
+class AliESDEvent ;
 class AliRawReader; 
 
 // --- Standard library ---
@@ -52,8 +55,8 @@ public:
   static Bool_t              Debug() { return fgDebug ; }
   AliTracker *CreateTracker(AliRunLoader* runLoader) const;
   using AliReconstructor::FillESD;
-  virtual void               FillESD(AliRunLoader* runLoader, AliESD* esd) const ;
-  virtual void FillESD(AliRunLoader* runLoader,AliRawReader* rawReader,AliESD* esd) const;
+  virtual void               FillESD(AliRunLoader* runLoader, AliESDEvent* esd) const ;
+  virtual void FillESD(AliRunLoader* runLoader,AliRawReader* rawReader,AliESDEvent* esd) const;
   using AliReconstructor::Reconstruct;
   virtual void               Reconstruct(AliRunLoader* runLoader) const ;
   virtual void               Reconstruct(AliRunLoader* runLoader, AliRawReader * rawreader) const ;

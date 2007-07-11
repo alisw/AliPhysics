@@ -24,13 +24,13 @@
 //-----------------------------------------------------------------
 
 #include "AliESDpid.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliESDtrack.h"
 
 ClassImp(AliESDpid)
 
 //_________________________________________________________________________
-Int_t AliESDpid::MakePID(AliESD *event)
+Int_t AliESDpid::MakePID(AliESDEvent *event)
 {
   //
   // Combine the information of various detectors

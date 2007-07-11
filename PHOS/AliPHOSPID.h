@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.38  2007/04/01 15:40:15  kharlov
+ * Correction for actual vertex position implemented
+ *
  * Revision 1.37  2006/08/29 11:41:19  kharlov
  * Missing implementation of ctors and = operator are added
  *
@@ -36,7 +39,7 @@ class TClonesArray ;
 // --- Standard library ---
 
 // --- AliRoot header files ---
-class AliESD ;
+class AliESDEvent ;
 class AliPHOSGeometry ;
 class AliPHOSClusterizer ;
 class AliPHOSTrackSegmentMaker ;
@@ -62,7 +65,7 @@ class AliPHOSPID : public TTask {
   Int_t   GetFirstEvent()      const {return fFirstEvent;     }
   Int_t   GetLastEvent()       const {return fLastEvent;      }
 
-  void SetESD(AliESD *esd) { fESD = esd; }
+  void SetESD(AliESDEvent *esd) { fESD = esd; }
 
   virtual const char * Version() const { Warning("Version", "not defined" ) ; return 0 ; }  
   virtual void WriteRecParticles() = 0;
@@ -71,12 +74,12 @@ protected:
   TString fEventFolderName ;  // event folder name
   Int_t   fFirstEvent;        // first event to process
   Int_t   fLastEvent;         // last  event to process
-  AliESD * fESD;              //! ESD object
+  AliESDEvent * fESD;              //! ESD object
 
 private: 
   virtual void Init() { Warning("Init", "not defined" ) ; } 
 
-  ClassDef(AliPHOSPID,4)  // Particle Identifier algorithm (base class)
+  ClassDef(AliPHOSPID,5)  // Particle Identifier algorithm (base class)
 
 } ;
 

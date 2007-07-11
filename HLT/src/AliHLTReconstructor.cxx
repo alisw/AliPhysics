@@ -15,7 +15,7 @@
 #include <AliRunLoader.h>
 #include <AliHeader.h>
 #include <AliGenEventHeader.h>
-#include <AliESD.h>
+#include <AliESDEvent.h>
 #include <AliESDHLTtrack.h>
 
 #include "AliHLTStandardIncludes.h"
@@ -320,7 +320,7 @@ void AliHLTReconstructor::ReconstructWithHoughTransform(AliRunLoader* runLoader,
 }
 
 void AliHLTReconstructor::FillESD(AliRunLoader* runLoader, 
-				  AliESD* esd) const
+				  AliESDEvent* esd) const
 {
   //fill the esd file with found tracks
   if(!runLoader) {
@@ -345,7 +345,7 @@ void AliHLTReconstructor::FillESD(AliRunLoader* runLoader,
   */
 }
 
-void AliHLTReconstructor::FillESDforConformalMapping(AliESD* esd,Int_t iEvent) const
+void AliHLTReconstructor::FillESDforConformalMapping(AliESDEvent* esd,Int_t iEvent) const
 {
   //fill esd with tracks from conformal mapping
   /*
@@ -395,7 +395,7 @@ void AliHLTReconstructor::FillESDforConformalMapping(AliESD* esd,Int_t iEvent) c
   */
 }
 
-void AliHLTReconstructor::FillESDforHoughTransform(AliESD* esd,Int_t iEvent) const
+void AliHLTReconstructor::FillESDforHoughTransform(AliESDEvent* esd,Int_t iEvent) const
 {
   //fill esd with tracks from hough
   char filename[256];

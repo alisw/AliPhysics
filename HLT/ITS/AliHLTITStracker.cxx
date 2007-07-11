@@ -20,7 +20,7 @@
 //          Origin: Cvetan Cheshkov, CERN, Cvetan.Cheshkov@cern.ch
 //-------------------------------------------------------------------------
 
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliHLTITStrack.h"
 #include "AliHLTITStracker.h"
 
@@ -60,7 +60,7 @@ static Int_t CorrectForDeadZoneMaterial(AliITStrackV2 *t) {
   return 0;
 }
 
-Int_t AliHLTITStracker::Clusters2Tracks(AliESD *event) {
+Int_t AliHLTITStracker::Clusters2Tracks(AliESDEvent *event) {
   //--------------------------------------------------------------------
   // This functions reconstructs HLT ITS tracks
   //--------------------------------------------------------------------
@@ -148,7 +148,7 @@ Int_t AliHLTITStracker::Clusters2Tracks(AliESD *event) {
   return 0;
 }
 
-Int_t AliHLTITStracker::PropagateBack(AliESD *event) {
+Int_t AliHLTITStracker::PropagateBack(AliESDEvent *event) {
   //--------------------------------------------------------------------
   // This functions propagates reconstructed ITS tracks back
   //--------------------------------------------------------------------
@@ -157,7 +157,7 @@ Int_t AliHLTITStracker::PropagateBack(AliESD *event) {
   return 0;
 }
 
-Int_t AliHLTITStracker::RefitInward(AliESD *event) {
+Int_t AliHLTITStracker::RefitInward(AliESDEvent *event) {
   //--------------------------------------------------------------------
   // This functions refits ITS tracks using the 
   // "inward propagated" TPC tracks

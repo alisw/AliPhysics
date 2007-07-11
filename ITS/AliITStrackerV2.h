@@ -13,7 +13,7 @@
 #include "AliITStrackV2.h"
 
 class AliITSRecPoint;
-class AliESD;
+class AliESDEvent;
 class TTree;
 
 
@@ -32,9 +32,9 @@ public:
   }   
   Int_t LoadClusters(TTree *cf);
   void UnloadClusters();
-  Int_t Clusters2Tracks(AliESD *event);
-  Int_t PropagateBack(AliESD *event);
-  Int_t RefitInward(AliESD *event);
+  Int_t Clusters2Tracks(AliESDEvent *event);
+  Int_t PropagateBack(AliESDEvent *event);
+  Int_t RefitInward(AliESDEvent *event);
   Bool_t RefitAt(Double_t x, AliITStrackV2 *seed, 
                  const AliITStrackV2 *t, Bool_t extra=kFALSE);
   void SetupFirstPass(Int_t *flags, Double_t *cuts=0);

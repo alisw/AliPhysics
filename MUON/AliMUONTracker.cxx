@@ -38,7 +38,7 @@
 #include "AliMUONVClusterStore.h"
 #include "AliMUONVTriggerStore.h"
 
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliESDMuonTrack.h"
 #include "AliESDVertex.h"
 #include "AliLoader.h"
@@ -113,7 +113,7 @@ AliMUONTracker::LoadClusters(TTree* clustersTree)
 
 //_____________________________________________________________________________
 Int_t
-AliMUONTracker::Clusters2Tracks(AliESD* esd)
+AliMUONTracker::Clusters2Tracks(AliESDEvent* esd)
 {
   /// Performs the tracking and store the resulting tracks in both
   /// the TreeT and the ESD
@@ -145,7 +145,7 @@ AliMUONTracker::Clusters2Tracks(AliESD* esd)
 }
 
 //_____________________________________________________________________________
-Int_t AliMUONTracker::Clusters2Tracks(TTree& tracksTree, AliESD* esd)
+Int_t AliMUONTracker::Clusters2Tracks(TTree& tracksTree, AliESDEvent* esd)
 {
   /// Performs the tracking
   
@@ -195,7 +195,7 @@ Int_t AliMUONTracker::Clusters2Tracks(TTree& tracksTree, AliESD* esd)
 
 //_____________________________________________________________________________
 void 
-AliMUONTracker::FillESD(AliMUONVTrackStore& trackStore, AliESD* esd) const
+AliMUONTracker::FillESD(AliMUONVTrackStore& trackStore, AliESDEvent* esd) const
 {
   /// Fill the ESD from the trackStore
   

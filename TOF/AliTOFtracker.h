@@ -24,7 +24,7 @@
 
 class TClonesArray;
 
-class AliESD;
+class AliESDEvent;
 
 class AliTOFcluster;
 class AliTOFRecoParam;
@@ -43,9 +43,9 @@ public:
  AliTOFtracker& operator=(const AliTOFtracker &source); // ass. op.
 
  virtual ~AliTOFtracker();
-  virtual Int_t Clusters2Tracks(AliESD* /*event*/) {return -1;};
-  virtual Int_t PropagateBack(AliESD* event);
-  virtual Int_t RefitInward(AliESD* /*event*/) {return -1;};
+  virtual Int_t Clusters2Tracks(AliESDEvent* /*event*/) {return -1;};
+  virtual Int_t PropagateBack(AliESDEvent* event);
+  virtual Int_t RefitInward(AliESDEvent* /*event*/) {return -1;};
   virtual Int_t LoadClusters(TTree * cTree); // Load Clusters
   virtual void  UnloadClusters();// UnLoad Clusters
   virtual AliCluster *GetCluster(Int_t /*index*/) const {return NULL;};
@@ -58,8 +58,8 @@ private:
   Int_t FindClusterIndex(Double_t z) const; // Returns cluster index 
   void  MatchTracks(Bool_t mLastStep); // Matching Algorithm 
   void  CollectESD(); // Select starting Set for Matching 
-  Float_t  GetTimeZerofromTOF(AliESD* /*event*/) const; // T0 from TOF
-  Float_t  GetTimeZerofromT0(AliESD* event) const; // T0 from T0
+  Float_t  GetTimeZerofromTOF(AliESDEvent* /*event*/) const; // T0 from TOF
+  Float_t  GetTimeZerofromT0(AliESDEvent* event) const; // T0 from T0
   Float_t  CorrectTimeWalk(Float_t dist,Float_t tof); // Time Walk correction
 
   AliTOFRecoParam* fRecoParam;           // Pointer to TOF Recon. Pars

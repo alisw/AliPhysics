@@ -7,7 +7,7 @@
 #include <AliLog.h>
 #include <AliESDMuonTrack.h>
 #include <AliTrackReference.h>
-#include <AliESD.h>
+#include <AliESDEvent.h>
 #include <AliRunLoader.h>
 #include <AliRun.h>
 
@@ -336,7 +336,7 @@ void MUONTrack::PrintESDTrackInfo()
     setw(8) << setprecision(4) <<
     mtp->P()  << "  GeV/c" << endl;
   
-  AliESD* esd = Alieve::Event::AssertESD();
+  AliESDEvent* esd = Alieve::Event::AssertESD();
   
   Double_t spdVertexX = 0;
   Double_t spdVertexY = 0;
@@ -432,7 +432,7 @@ void MUONTrack::MUONTriggerInfo()
   }
   if (fIsESDTrack) {
 
-    AliESD* esd = Alieve::Event::AssertESD();
+    AliESDEvent* esd = Alieve::Event::AssertESD();
     ULong64_t triggerMask = esd->GetTriggerMask();
 
     cout << endl;

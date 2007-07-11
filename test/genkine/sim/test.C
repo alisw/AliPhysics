@@ -33,10 +33,9 @@ void test() {
   name = "AliESDs.root";
   TFile * fSig = TFile::Open(name.Data());
   TTree * tSig = (TTree*)fSig->Get("esdTree");
-  TBranch * bSig = tSig->GetBranch("ESD");  
 
-  AliESD * esdSig = 0; // The signal ESD object is put here
-  bSig->SetAddress(&esdSig);
+  AliESDEvent * esdSig = new AliESDEvent; // The signal ESD object is put here
+  esdSig->ReadFromTree(tSig);
 
   // Run loader
   name = "galice.root";
@@ -59,7 +58,7 @@ void test() {
     cout << "Signal event " << iev << endl;
 
     // Get ESD
-    bSig->GetEntry(iev);
+    tSig->GetEntry(iev);
 
     // Get MC
     rlSig->GetEvent(iev);

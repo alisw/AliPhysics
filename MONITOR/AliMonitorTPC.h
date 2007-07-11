@@ -19,7 +19,7 @@ public:
   virtual void     CreateHistos(TFolder* folder);
   virtual void     CreateBranches(TTree* tree);
   virtual void     FillHistos(AliRunLoader* runLoader, 
-			      AliRawReader* rawReader, AliESD* esd);
+			      AliRawReader* rawReader, AliESDEvent* esd);
 
 private:
   AliMonitorTPC(const AliMonitorTPC& monitor);

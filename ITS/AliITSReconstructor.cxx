@@ -36,7 +36,7 @@
 #include "AliITSVertexer3D.h"
 #include "AliITSVertexerZ.h"
 #include "AliITSVertexerCosmics.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliITSpidESD.h"
 #include "AliITSpidESD1.h"
 #include "AliITSpidESD2.h"
@@ -235,7 +235,7 @@ AliVertexer* AliITSReconstructor::CreateVertexer(AliRunLoader* /*runLoader*/) co
 
 //_____________________________________________________________________________
 void AliITSReconstructor::FillESD(AliRunLoader* runLoader, 
-				  AliESD* esd) const
+				  AliESDEvent* esd) const
 {
 // make PID, find V0s and cascade
   AliITSLoader *loader = (AliITSLoader*)runLoader->GetLoader("ITSLoader");

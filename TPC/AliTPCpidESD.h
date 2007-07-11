@@ -10,14 +10,14 @@
 //-------------------------------------------------------
 #include <Rtypes.h>
 
-class AliESD;
+class AliESDEvent;
 
 class AliTPCpidESD {
 public:
   AliTPCpidESD():fMIP(0.),fRes(0.),fRange(0.){}
   AliTPCpidESD(Double_t *param);
   virtual ~AliTPCpidESD() {}
-  Int_t MakePID(AliESD *event);
+  Int_t MakePID(AliESDEvent *event);
   static Double_t Bethe(Double_t bg);
 private:
   Double_t fMIP;          // dEdx for MIP

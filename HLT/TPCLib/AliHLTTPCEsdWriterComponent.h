@@ -16,7 +16,7 @@
 
 // forward declarations
 class TTree;
-class AliESD;
+class AliESDEvent;
 class AliHLTTPCTrackArray;
 
 /**
@@ -118,14 +118,14 @@ class AliHLTTPCEsdWriterComponent : public AliHLTRootFileWriterComponent
    * @param pESD     pointer to ESD
    * @return neg. error code if failed
    */
-  int Tracks2ESD(AliHLTTPCTrackArray* pTracks, AliESD* pESD);
+  int Tracks2ESD(AliHLTTPCTrackArray* pTracks, AliESDEvent* pESD);
 
   /** the ESD tree */
   TTree* fTree; //! transient value
 
   /** the ESD */
-  AliESD* fESD; //! transient value
+  AliESDEvent* fESD; //! transient value
 
-  ClassDef(AliHLTTPCEsdWriterComponent, 0)
+  ClassDef(AliHLTTPCEsdWriterComponent, 1)
 };
 #endif

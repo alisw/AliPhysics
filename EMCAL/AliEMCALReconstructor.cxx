@@ -29,7 +29,7 @@
 #include "AliEMCALReconstructor.h"
 
 #include "AliRun.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliRunLoader.h"
 #include "AliEMCALLoader.h"
@@ -126,7 +126,7 @@ void AliEMCALReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* r
 }
 
 //____________________________________________________________________________
-void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
+void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESDEvent* esd) const
 {
   // Called by AliReconstruct after Reconstruct() and global tracking and vertexing 
   const double timeScale = 1.e+11; // transition constant from sec to 0.01 ns 

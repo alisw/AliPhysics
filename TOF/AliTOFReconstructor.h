@@ -16,7 +16,7 @@
 
 class TTree;
 
-class AliESD;
+class AliESDEvent;
 class AliRawReader;
 class AliRunLoader;
 
@@ -39,10 +39,10 @@ public:
   virtual void         Reconstruct(TTree* digitsTree, TTree* clusterTree) const;
   virtual void         ConvertDigits(AliRawReader* reader, TTree* digitsTree) const;
   virtual AliTracker*  CreateTracker(AliRunLoader* runLoader) const;
-  virtual void         FillESD(AliRunLoader*, AliRawReader*, AliESD*) const { };
-  virtual void         FillESD(AliRawReader*, TTree*, AliESD*) const { };
-  virtual void         FillESD(TTree*, TTree*, AliESD*) const { };
-  virtual void         FillESD(AliRunLoader* runLoader, AliESD* esd) const;
+  virtual void         FillESD(AliRunLoader*, AliRawReader*, AliESDEvent*) const { };
+  virtual void         FillESD(AliRawReader*, TTree*, AliESDEvent*) const { };
+  virtual void         FillESD(TTree*, TTree*, AliESDEvent*) const { };
+  virtual void         FillESD(AliRunLoader* runLoader, AliESDEvent* esd) const;
 
 private:
   AliTOFGeometry *fTOFGeometry; // pointer to TOF geometry

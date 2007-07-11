@@ -62,7 +62,7 @@ public:
 //  AliTracker*  CreateTracker(AliRunLoader*) const;
 
   /** fill esd for one event */
-  void FillESD(AliRunLoader* runLoader, AliESD* esd) const;
+  void FillESD(AliRunLoader* runLoader, AliESDEvent* esd) const;
 
   virtual void         Reconstruct(TTree* digitsTree, TTree* clustersTree) const{
     AliReconstructor::Reconstruct(digitsTree,clustersTree);
@@ -72,15 +72,15 @@ public:
   }
 
   virtual void         FillESD(TTree* digitsTree, TTree* clustersTree, 
-			       AliESD* esd) const {
+			       AliESDEvent* esd) const {
     AliReconstructor::FillESD(digitsTree,clustersTree,esd);
   }
   virtual void         FillESD(AliRawReader* rawReader, TTree* clustersTree, 
-			       AliESD* esd) const {
+			       AliESDEvent* esd) const {
     AliReconstructor::FillESD(rawReader,clustersTree,esd);
   }
   virtual void         FillESD(AliRunLoader* runLoader, 
-			       AliRawReader* rawReader, AliESD* esd) const {
+			       AliRawReader* rawReader, AliESDEvent* esd) const {
     AliReconstructor:: FillESD(runLoader,rawReader,esd);
   }
   void SetDoBench(Bool_t b){fDoBench=b;}
@@ -92,8 +92,8 @@ public:
 private:
   void ReconstructWithConformalMapping(AliRunLoader* runLoader,Int_t iEvent) const;
   void ReconstructWithHoughTransform(AliRunLoader* runLoader,Int_t iEvent) const;
-  void FillESDforConformalMapping(AliESD* esd,Int_t iEvent) const;
-  void FillESDforHoughTransform(AliESD* esd,Int_t iEvent) const;
+  void FillESDforConformalMapping(AliESDEvent* esd,Int_t iEvent) const;
+  void FillESDforHoughTransform(AliESDEvent* esd,Int_t iEvent) const;
 
   Bool_t fDoHough;   //do the hough transform
   Bool_t fDoTracker; //do the standard conformal tracker

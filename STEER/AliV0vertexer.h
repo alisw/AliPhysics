@@ -12,7 +12,7 @@
 #include "TObject.h"
 
 class TTree;
-class AliESD;
+class AliESDEvent;
 
 //_____________________________________________________________________________
 class AliV0vertexer : public TObject {
@@ -21,7 +21,7 @@ public:
   void SetCuts(const Double_t cuts[7]);
   static void SetDefaultCuts(const Double_t cuts[7]);
 
-  Int_t Tracks2V0vertices(AliESD *event);
+  Int_t Tracks2V0vertices(AliESDEvent *event);
 
   void GetCuts(Double_t cuts[7]) const;
   static void GetDefaultCuts(Double_t cuts[7]);

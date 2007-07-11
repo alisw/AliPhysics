@@ -35,13 +35,13 @@ class AliRawEvent;
 class AliRawDataArray;
 class AliStats;
 class TFile;
-class AliESD;
+class AliESDEvent;
 
 class AliRawDB : public TObject {
 
 public:
    AliRawDB(AliRawEvent *event,
-	    AliESD *esd,
+	    AliESDEvent *esd,
 	    Int_t compress,
             const char* fileName = NULL);
    virtual ~AliRawDB();
@@ -78,7 +78,7 @@ protected:
    AliRawEvent   *fEvent;         // AliRawEvent via which data is stored
    AliRawDataArray  *fDetRawData[AliDAQ::kNDetectors+1]; // Detectors raw-data payload
    TTree         *fESDTree;       // tree for storing HLT ESD information
-   AliESD        *fESD;           // pointer to HLT ESD object
+   AliESDEvent        *fESD;           // pointer to HLT ESD object
    Int_t          fCompress;      // compression mode (1 default)
    Double_t       fMaxSize;       // maximum size in bytes of the raw DB
    TString        fFS1;           // first raw DB file system location
@@ -95,7 +95,7 @@ private:
    AliRawDB(const AliRawDB& rawDB);
    AliRawDB& operator = (const AliRawDB& rawDB);
 
-   ClassDef(AliRawDB,0)  // Raw DB
+   ClassDef(AliRawDB,1)  // Raw DB
 };
 
 #endif

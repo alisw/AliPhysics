@@ -21,7 +21,7 @@ class TBranch;
 class AliTPCParam;
 class TObjArray;
 class TClonesArray;
-class AliESD;
+class AliESDEvent;
 
 class AliTPCtracker : public AliTracker {
 public:
@@ -35,9 +35,9 @@ public:
    void UnloadClusters();
 
    AliCluster *GetCluster(Int_t index) const;
-   Int_t Clusters2Tracks(AliESD *event);
-   Int_t PropagateBack(AliESD *event);
-   Int_t RefitInward(AliESD *event);
+   Int_t Clusters2Tracks(AliESDEvent *event);
+   Int_t PropagateBack(AliESDEvent *event);
+   Int_t RefitInward(AliESDEvent *event);
 
    virtual void  CookLabel(AliKalmanTrack *t,Float_t wrong) const; 
 

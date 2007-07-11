@@ -21,7 +21,7 @@
 //-----------------------------------------------------------------
 #include "AliITSpidESD.h"
 #include "AliITSpidESD1.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliESDtrack.h"
 
 ClassImp(AliITSpidESD1)
@@ -44,7 +44,7 @@ fRange(param[1])
 
 
 //_________________________________________________________________________
-Int_t AliITSpidESD1::MakePID(AliESD *event)
+Int_t AliITSpidESD1::MakePID(AliESDEvent *event)
 {
   //
   //  This function calculates the "detector response" PID probabilities 

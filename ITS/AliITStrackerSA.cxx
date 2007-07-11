@@ -29,7 +29,7 @@
 #include <TObjArray.h>
 #include <TTree.h>
 
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliESDVertex.h"
 #include "AliESDtrack.h"
 #include "AliITSVertexer.h"
@@ -234,7 +234,7 @@ AliITStrackerSA::~AliITStrackerSA(){
 }
 
 //____________________________________________________________________________
-Int_t AliITStrackerSA::Clusters2Tracks(AliESD *event){
+Int_t AliITStrackerSA::Clusters2Tracks(AliESDEvent *event){
 // This method is used to find and fit the tracks. By default the corresponding
 // method in the parent class is invoked. In this way a combined tracking
 // TPC+ITS is performed. If the flag fITSStandAlone is true, the tracking
@@ -291,7 +291,7 @@ void AliITStrackerSA::ResetForFinding(){
  
 
 //______________________________________________________________________
-Int_t AliITStrackerSA::FindTracks(AliESD* event){
+Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
 
 // Track finder using the ESD object
 

@@ -24,7 +24,7 @@
 
 #include "AliMonitorV0s.h"
 #include "AliMonitorHisto.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliLog.h"
 #include <TFolder.h>
 #include <TPDGCode.h>
@@ -75,7 +75,7 @@ void AliMonitorV0s::CreateHistos(TFolder* folder)
 
 //_____________________________________________________________________________
 void AliMonitorV0s::FillHistos(AliRunLoader* /*runLoader*/, 
-			       AliRawReader*, AliESD* esd)
+			       AliRawReader*, AliESDEvent* esd)
 {
 // fill the V0s monitor histogrms
 

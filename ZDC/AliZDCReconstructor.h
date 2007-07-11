@@ -31,12 +31,12 @@ public:
   	        {AliReconstructor::Reconstruct(digitsTree,clustersTree);}
   virtual void Reconstruct(AliRawReader* rawReader, TTree* clustersTree) const 
   	        {AliReconstructor::Reconstruct(rawReader,clustersTree);}
-  virtual void FillESD(AliRunLoader* runLoader, AliESD* esd) const;
-  virtual void FillESD(TTree* digitsTree, TTree* clustersTree, AliESD* esd) const 
+  virtual void FillESD(AliRunLoader* runLoader, AliESDEvent* esd) const;
+  virtual void FillESD(TTree* digitsTree, TTree* clustersTree, AliESDEvent* esd) const 
   	        {AliReconstructor::FillESD(digitsTree,clustersTree,esd);}
-  virtual void FillESD(AliRawReader* rawReader, TTree* clustersTree, AliESD* esd) const 
+  virtual void FillESD(AliRawReader* rawReader, TTree* clustersTree, AliESDEvent* esd) const 
   	        {AliReconstructor::FillESD(rawReader,clustersTree,esd);}
-  virtual void FillESD(AliRunLoader* runLoader, AliRawReader* rawReader, AliESD* esd) const 
+  virtual void FillESD(AliRunLoader* runLoader, AliRawReader* rawReader, AliESDEvent* esd) const 
   		  {AliReconstructor::FillESD(runLoader,rawReader,esd);}
   
   AliCDBStorage   *SetStorage(const char* uri);

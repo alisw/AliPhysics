@@ -31,7 +31,7 @@
 //---- AliRoot headers -----
 #include "AliStrLine.h"
 #include "AliVertexerTracks.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliESDtrack.h"
 
 ClassImp(AliVertexerTracks)
@@ -112,7 +112,7 @@ AliVertexerTracks::~AliVertexerTracks()
   if(fTrksToSkip) { delete [] fTrksToSkip; fTrksToSkip=NULL; }
 }
 //----------------------------------------------------------------------------
-AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliESD *esdEvent)
+AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliESDEvent *esdEvent)
 {
 //
 // Primary vertex for current ESD event
@@ -944,7 +944,7 @@ Bool_t AliVertexerTracks::TrackToPoint(AliESDtrack *t,
   return kTRUE;
 } 
 //---------------------------------------------------------------------------
-void AliVertexerTracks::TooFewTracks(const AliESD* esdEvent) 
+void AliVertexerTracks::TooFewTracks(const AliESDEvent* esdEvent) 
 {
 //
 // When the number of tracks is < fMinTracks

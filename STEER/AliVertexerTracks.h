@@ -29,7 +29,7 @@
 #include <TMatrixD.h>
 
 class TTree; 
-class AliESD;
+class AliESDEvent;
 
 class AliVertexerTracks : public TObject {
   
@@ -38,7 +38,7 @@ class AliVertexerTracks : public TObject {
   AliVertexerTracks(Double_t fieldkG); 
   virtual ~AliVertexerTracks();
 
-  AliESDVertex* FindPrimaryVertex(const AliESD *esdEvent);
+  AliESDVertex* FindPrimaryVertex(const AliESDEvent *esdEvent);
   AliESDVertex* VertexForSelectedTracks(TTree *trkTree,Bool_t optUseFitter=kTRUE, Bool_t optPropagate=kTRUE);
   AliESDVertex* VertexForSelectedTracks(TObjArray *trkArray, Bool_t optUseFitter=kTRUE, Bool_t optPropagate=kTRUE);
   AliESDVertex* RemoveTracksFromVertex(AliESDVertex *inVtx,TTree *trksTree,Float_t *diamondxy); 
@@ -87,7 +87,7 @@ class AliVertexerTracks : public TObject {
   void     VertexFinder(Int_t optUseWeights=0);
   void     VertexFitter(Bool_t useConstraint=kFALSE);
   void     StrLinVertexFinderMinDist(Int_t optUseWeights=0);
-  void     TooFewTracks(const AliESD *esdEvent);
+  void     TooFewTracks(const AliESDEvent *esdEvent);
 
   AliESDVertex fVert;         // vertex after vertex finder
   AliESDVertex *fCurrentVertex;  // ESD vertex after fitter

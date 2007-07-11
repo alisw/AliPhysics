@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.89  2007/07/03 08:13:04  kharlov
+ * Bug fix in CPV local coordinates
+ *
  * Revision 1.88  2007/06/27 09:11:07  kharlov
  * Bug fix for CPV-EMC distance
  *
@@ -108,7 +111,7 @@
 #include "AliPHOSTrackSegment.h"
 #include "AliPHOSLink.h"
 #include "AliPHOSGetter.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliESDtrack.h"
 
 ClassImp( AliPHOSTrackSegmentMakerv1) 

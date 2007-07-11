@@ -2,7 +2,7 @@
 #include "AliHMPIDCluster.h"     //GetTrackPoint(),PropagateBack() 
 #include "AliHMPIDParam.h"       //GetTrackPoint(),PropagateBack()
 #include "AliHMPIDRecon.h"       //Recon()
-#include <AliESD.h>              //PropagateBack(),Recon()  
+#include <AliESDEvent.h>              //PropagateBack(),Recon()  
 #include <AliRun.h>              //GetTrackPoint(),PropagateBack()  
 #include <AliTrackPointArray.h>  //GetTrackPoint()
 #include <AliAlignObj.h>         //GetTrackPoint()
@@ -75,7 +75,7 @@ Int_t AliHMPIDTracker::LoadClusters(TTree *pCluTree)
   return 0;  
 }//LoadClusters()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Int_t AliHMPIDTracker::PropagateBack(AliESD *pEsd)
+Int_t AliHMPIDTracker::PropagateBack(AliESDEvent *pEsd)
 {
 // Interface pure virtual in AliTracker. Invoked from AliReconstruction::RunTracking() after invocation of AliTracker::LoadClusters() once per event
 // Agruments: pEsd - pointer to ESD
@@ -88,7 +88,7 @@ Int_t AliHMPIDTracker::PropagateBack(AliESD *pEsd)
   return Recon(pEsd,fClu,(TObjArray*)pNmeanEnt->GetObject());  
 }//PropagateBack()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Int_t AliHMPIDTracker::Recon(AliESD *pEsd,TObjArray *pClus,TObjArray *pNmean)
+Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmean)
 {
 // Static method to reconstruct Theta Ckov for all valid tracks of a given event.
 // Arguments: pEsd- pointer ESD; pClu- pointer to clusters for all chambers; pNmean - pointer to all function Nmean=f(time)

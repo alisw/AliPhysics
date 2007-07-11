@@ -132,7 +132,7 @@
 #include "AliRawReaderDate.h"
 #include "AliRawReaderRoot.h"
 #include "AliRawEventHeaderBase.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliESDfriend.h"
 #include "AliESDVertex.h"
 #include "AliMultiplicity.h"
@@ -559,7 +559,7 @@ Bool_t AliReconstruction::Run(const char* input)
   }
 
   // get the possibly already existing ESD file and tree
-  AliESD* esd = new AliESD(); AliESD* hltesd = new AliESD();
+  AliESDEvent* esd = new AliESDEvent(); AliESDEvent* hltesd = new AliESDEvent();
   TFile* fileOld = NULL;
   TTree* treeOld = NULL; TTree *hlttreeOld = NULL;
   if (!gSystem->AccessPathName("AliESDs.root")){
@@ -582,12 +582,12 @@ Bool_t AliReconstruction::Run(const char* input)
   }
 
   TTree* tree = new TTree("esdTree", "Tree with ESD objects");
-  esd = new AliESD();
+  esd = new AliESDEvent();
   esd->CreateStdContent();
   esd->WriteToTree(tree);
 
   TTree* hlttree = new TTree("HLTesdTree", "Tree with HLT ESD objects");
-  hltesd = new AliESD();
+  hltesd = new AliESDEvent();
   hltesd->CreateStdContent();
   hltesd->WriteToTree(hlttree);
 
@@ -936,7 +936,7 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
 }
 
 //_____________________________________________________________________________
-Bool_t AliReconstruction::RunVertexFinder(AliESD*& esd)
+Bool_t AliReconstruction::RunVertexFinder(AliESDEvent*& esd)
 {
 // run the barrel tracking
 
@@ -992,7 +992,7 @@ Bool_t AliReconstruction::RunVertexFinder(AliESD*& esd)
 }
 
 //_____________________________________________________________________________
-Bool_t AliReconstruction::RunHLTTracking(AliESD*& esd)
+Bool_t AliReconstruction::RunHLTTracking(AliESDEvent*& esd)
 {
 // run the HLT barrel tracking
 
@@ -1048,7 +1048,7 @@ Bool_t AliReconstruction::RunHLTTracking(AliESD*& esd)
 }
 
 //_____________________________________________________________________________
-Bool_t AliReconstruction::RunMuonTracking(AliESD*& esd)
+Bool_t AliReconstruction::RunMuonTracking(AliESDEvent*& esd)
 {
 // run the muon spectrometer tracking
 
@@ -1108,7 +1108,7 @@ Bool_t AliReconstruction::RunMuonTracking(AliESD*& esd)
 
 
 //_____________________________________________________________________________
-Bool_t AliReconstruction::RunTracking(AliESD*& esd)
+Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
 {
 // run the barrel tracking
 
@@ -1232,7 +1232,7 @@ Bool_t AliReconstruction::RunTracking(AliESD*& esd)
 }
 
 //_____________________________________________________________________________
-Bool_t AliReconstruction::FillESD(AliESD*& esd, const TString& detectors)
+Bool_t AliReconstruction::FillESD(AliESDEvent*& esd, const TString& detectors)
 {
 // fill the event summary data
 
@@ -1295,7 +1295,7 @@ Bool_t AliReconstruction::FillESD(AliESD*& esd, const TString& detectors)
 }
 
 //_____________________________________________________________________________
-Bool_t AliReconstruction::FillTriggerESD(AliESD*& esd)
+Bool_t AliReconstruction::FillTriggerESD(AliESDEvent*& esd)
 {
   // Reads the trigger decision which is
   // stored in Trigger.root file and fills
@@ -1341,7 +1341,7 @@ Bool_t AliReconstruction::FillTriggerESD(AliESD*& esd)
 
 
 //_____________________________________________________________________________
-Bool_t AliReconstruction::FillRawEventHeaderESD(AliESD*& esd)
+Bool_t AliReconstruction::FillRawEventHeaderESD(AliESDEvent*& esd)
 {
   // 
   // Filling information from RawReader Header
@@ -1655,7 +1655,8 @@ void AliReconstruction::CleanUp(TFile* file, TFile* fileOld)
 
 
 //_____________________________________________________________________________
-Bool_t AliReconstruction::ReadESD(AliESD*& esd, const char* recStep) const
+
+Bool_t AliReconstruction::ReadESD(AliESDEvent*& esd, const char* recStep) const
 {
 // read the ESD event from a file
 
@@ -1676,14 +1677,17 @@ Bool_t AliReconstruction::ReadESD(AliESD*& esd, const char* recStep) const
 
   gROOT->cd();
   delete esd;
-  esd = (AliESD*) file->Get("ESD");
+  esd = (AliESDEvent*) file->Get("ESD");
   file->Close();
   delete file;
   return kTRUE;
+
 }
 
+
+
 //_____________________________________________________________________________
-void AliReconstruction::WriteESD(AliESD* esd, const char* recStep) const
+void AliReconstruction::WriteESD(AliESDEvent* esd, const char* recStep) const
 {
 // write the ESD event to a file
 
@@ -1763,7 +1767,7 @@ void AliReconstruction::CreateTag(TFile* file)
   }  
   Int_t lastEvent = 0;
   TTree *b = (TTree*) file->Get("esdTree");
-  AliESD *esd = new AliESD();
+  AliESDEvent *esd = new AliESDEvent();
   esd->ReadFromTree(b);
 
   b->GetEntry(fFirstEvent);
@@ -2017,7 +2021,7 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
 
   // connect to ESD
   TTree *t = (TTree*) esdFile->Get("esdTree");
-  AliESD *esd = new AliESD();
+  AliESDEvent *esd = new AliESDEvent();
   esd->ReadFromTree(t);
 
   Int_t nEvents = t->GetEntries();
@@ -2683,7 +2687,7 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
   return;
 }
 
-void AliReconstruction::WriteAlignmentData(AliESD* esd)
+void AliReconstruction::WriteAlignmentData(AliESDEvent* esd)
 {
   // Write space-points which are then used in the alignment procedures
   // For the moment only ITS, TRD and TPC
@@ -2736,7 +2740,7 @@ void AliReconstruction::WriteAlignmentData(AliESD* esd)
 }
 
 //_____________________________________________________________________________
-void AliReconstruction::FillRawDataErrorLog(Int_t iEvent, AliESD* esd)
+void AliReconstruction::FillRawDataErrorLog(Int_t iEvent, AliESDEvent* esd)
 {
   // The method reads the raw-data error log
   // accumulated within the rawReader.

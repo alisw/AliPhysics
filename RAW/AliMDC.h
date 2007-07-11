@@ -33,7 +33,16 @@ class AliRawDB;
 class AliTagDB;
 class AliRawEventTag;
 class AliStats;
-class AliESD;
+class AliESDEvent;
+
+#include "AliRawEvent.h"
+#include "AliESDEvent.h"
+#include "AliStats.h"
+#include "AliRawDB.h"
+#include "AliTagDB.h"
+#include "AliRawData.h"
+#include "AliRawDataArray.h"
+#include "AliRawEventTag.h"
 
 class AliMDC : public TObject {
 
@@ -87,7 +96,7 @@ private:
    };
 
    AliRawEvent *fEvent;       // produced AliRawEvent
-   AliESD      *fESD;         // pointer to HLT ESD object
+   AliESDEvent      *fESD;         // pointer to HLT ESD object
    AliStats    *fStats;       // statistics
    AliRawDB    *fRawDB;       // raw data DB
    AliTagDB    *fTagDB;       // tag DB
@@ -115,7 +124,7 @@ private:
                                  Bool_t isSwapped, char*& data);
    Int_t     ReadRawData(AliRawData &raw, Int_t size, char*& data);
 
-   ClassDef(AliMDC,0)  // MDC processor
+   ClassDef(AliMDC,1)  // MDC processor
 };
 
 #endif

@@ -23,7 +23,7 @@ public:
   AliITSpidESD2();
   AliITSpidESD2(AliITStrackerMI *tracker,AliITSLoader* loader);
   virtual ~AliITSpidESD2();
-  virtual Int_t MakePID(AliESD *event);
+  virtual Int_t MakePID(AliESDEvent *event);
   AliITSpidESD2(const AliITSpidESD2 &ob); // copy constructor
   AliITSpidESD2& operator=(const AliITSpidESD2 & source); // ass. op.
 

@@ -44,7 +44,7 @@
 #include "AliFMDReconstructor.h"           // ALIFMDRECONSTRUCTOR_H
 #include "AliFMDRawReader.h"               // ALIFMDRAWREADER_H
 #include "AliFMDRecPoint.h"	   	   // ALIFMDMULTNAIIVE_H
-#include "AliESD.h"			   // ALIESD_H
+#include "AliESDEvent.h"		   // ALIESDEVENT_H
 #include <AliESDFMD.h>			   // ALIESDFMD_H
 #include <TH1.h>
 #include <TH2.h>
@@ -476,7 +476,7 @@ AliFMDReconstructor::PhysicalCoordinates(AliFMDDigit* digit,
 void 
 AliFMDReconstructor::FillESD(TTree*  /* digitsTree */, 
 			     TTree*  /* clusterTree */,
-			     AliESD* esd) const
+			     AliESDEvent* esd) const
 {
   // nothing to be done
   // FIXME: The vertex may not be known when Reconstruct is executed,
@@ -546,7 +546,7 @@ AliFMDReconstructor::Reconstruct(AliRunLoader*, AliRawReader*) const
 }
 //____________________________________________________________________
 void 
-AliFMDReconstructor::FillESD(AliRawReader*,TTree*,AliESD*) const 
+AliFMDReconstructor::FillESD(AliRawReader*,TTree*,AliESDEvent*) const 
 {
   // Cannot be used.  See member function with same name but with 2
   // TTree arguments.   Make sure you do local reconstrucion 
@@ -555,7 +555,7 @@ AliFMDReconstructor::FillESD(AliRawReader*,TTree*,AliESD*) const
 }
 //____________________________________________________________________
 void 
-AliFMDReconstructor::FillESD(AliRunLoader*,AliESD*) const
+AliFMDReconstructor::FillESD(AliRunLoader*,AliESDEvent*) const
 {
   // Cannot be used.  See member function with same name but with 2
   // TTree arguments.   Make sure you do local reconstrucion 
@@ -564,7 +564,7 @@ AliFMDReconstructor::FillESD(AliRunLoader*,AliESD*) const
 }
 //____________________________________________________________________
 void 
-AliFMDReconstructor::FillESD(AliRunLoader*,AliRawReader*,AliESD*) const 
+AliFMDReconstructor::FillESD(AliRunLoader*,AliRawReader*,AliESDEvent*) const 
 {
   // Cannot be used.  See member function with same name but with 2
   // TTree arguments.   Make sure you do local reconstrucion 

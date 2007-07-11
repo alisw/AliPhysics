@@ -24,7 +24,7 @@
 //-----------------------------------------------------------------------//
 
 #include "AliITSpidESD2.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliITStrackV2.h"
 #include "AliITSRecPoint.h"
@@ -81,7 +81,7 @@ AliITSpidESD2& AliITSpidESD2::operator=(const AliITSpidESD2& ob ){
 }
 
 //_________________________________________________________________________
-Int_t AliITSpidESD2::MakePID(AliESD *event)
+Int_t AliITSpidESD2::MakePID(AliESDEvent *event)
 {
 
   //

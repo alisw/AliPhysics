@@ -24,7 +24,7 @@ class TFile;
 class AliTPCParam;
 class AliTPCseed;
 class AliTPCTrackerPoint;
-class AliESD;   
+class AliESDEvent;   
 class TTree;
 class AliESDkink;
 class TTreeSRedirector;
@@ -37,22 +37,22 @@ public:
   virtual ~AliTPCtrackerMI();
   //
   void SetIteration(Int_t iteration){fIteration = iteration;}
-  virtual Int_t Clusters2Tracks (AliESD *esd);
-  virtual Int_t RefitInward (AliESD *esd);
+  virtual Int_t Clusters2Tracks (AliESDEvent *esd);
+  virtual Int_t RefitInward (AliESDEvent *esd);
   virtual Int_t LoadClusters (TTree * tree);
   Int_t  LoadClusters();
   void   UnloadClusters();
   void   Transform(AliTPCclusterMI * cluster);
   //
   void SetIO();  //set default IO from folders
-  void SetIO(TTree * input, TTree * output, AliESD * event);
+  void SetIO(TTree * input, TTree * output, AliESDEvent * event);
   void FillESD(TObjArray* arr);
   void WriteTracks();
   void WriteTracks(TTree * tree);  
   void DeleteSeeds();
   void SetDebug(Int_t debug){ fDebug = debug;}
-  void FindKinks(TObjArray * array, AliESD * esd);
-  void FindV0s(TObjArray * array, AliESD * esd);
+  void FindKinks(TObjArray * array, AliESDEvent * esd);
+  void FindV0s(TObjArray * array, AliESDEvent * esd);
   void UpdateKinkQualityM(AliTPCseed * seed);
   void UpdateKinkQualityD(AliTPCseed * seed);
   Int_t CheckKinkPoint(AliTPCseed*seed, AliTPCseed &mother, AliTPCseed &daughter, AliESDkink &kink);
@@ -80,7 +80,7 @@ public:
    Int_t FollowToNextCluster( AliTPCseed& t, Int_t nr);
 
    Int_t PropagateBack(TObjArray * arr);
-   Int_t PropagateBack(AliESD * event);
+   Int_t PropagateBack(AliESDEvent * event);
    Int_t PropagateBack(AliTPCseed *pt, Int_t row0, Int_t row1);   
    Int_t PropagateForward();
    Int_t PropagateForward2(TObjArray * arr);
@@ -227,7 +227,7 @@ private:
    Float_t  GetSigmaZ(AliTPCseed * seed);
    void GetShape(AliTPCseed * seed, Int_t row);
  
-   void ReadSeeds(AliESD *event, Int_t direction);  //read seeds from the event
+   void ReadSeeds(AliESDEvent *event, Int_t direction);  //read seeds from the event
 
    void MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, Float_t cuts[4], Float_t deltay = -1, Int_t ddsec=0); 
    void MakeSeeds5(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, Float_t cuts[4], Float_t deltay = -1);
@@ -272,7 +272,7 @@ private:
    TTree * fOutput;      // output tree with tracks
    TTree * fSeedTree;    // output tree with seeds - filled in debug mode 1
    TTree * fTreeDebug;   // output with a debug information about track
-   AliESD * fEvent;      // output with esd tracks
+   AliESDEvent * fEvent;      // output with esd tracks
    Int_t    fDebug;      // debug option        
    Bool_t   fNewIO;      // indicated if we have data using New IO 
    Int_t fNtracks;                     //current number of tracks
@@ -285,7 +285,7 @@ private:
    Double_t fPadLength[200];                // max y for given pad row
    const AliTPCParam *fParam;          //pointer to the parameters
    TTreeSRedirector *fDebugStreamer;     //!debug streamer
-   ClassDef(AliTPCtrackerMI,1) 
+   ClassDef(AliTPCtrackerMI,2) 
 };
 
 

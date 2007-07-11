@@ -20,7 +20,7 @@
 // Implementation of the TRD PID class                                    //
 //                                                                        //
 // Assigns the electron and pion likelihoods to each ESD track.           //
-// The function MakePID(AliESD *event) calculates the probability         //
+// The function MakePID(AliESDEvent *event) calculates the probability         //
 // of having dedx and a maximum timbin at a given                         //
 // momentum (mom) and particle type k                                     //
 // from the precalculated distributions.                                  //
@@ -32,7 +32,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "AliLog.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliTracker.h"
 
@@ -108,7 +108,7 @@ void AliTRDpidESD::Copy(TObject &p) const
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDpidESD::MakePID(AliESD *event)
+Int_t AliTRDpidESD::MakePID(AliESDEvent *event)
 {
   //
   // This function calculates the PID probabilities based on TRD signals

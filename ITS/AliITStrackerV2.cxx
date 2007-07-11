@@ -32,7 +32,7 @@
 #include "AliITSgeomTGeo.h"
 #include "AliAlignObj.h"
 #include "AliITSRecPoint.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliITSRecPoint.h"
 #include "AliITSReconstructor.h"
 #include "AliITStrackerV2.h"
@@ -263,7 +263,7 @@ static Int_t CorrectForDeadZoneMaterial(AliITStrackV2 *t) {
   return 0;
 }
 
-Int_t AliITStrackerV2::Clusters2Tracks(AliESD *event) {
+Int_t AliITStrackerV2::Clusters2Tracks(AliESDEvent *event) {
   //--------------------------------------------------------------------
   // This functions reconstructs ITS tracks
   // The clusters must be already loaded !
@@ -346,7 +346,7 @@ Int_t AliITStrackerV2::Clusters2Tracks(AliESD *event) {
   return 0;
 }
 
-Int_t AliITStrackerV2::PropagateBack(AliESD *event) {
+Int_t AliITStrackerV2::PropagateBack(AliESDEvent *event) {
   //--------------------------------------------------------------------
   // This functions propagates reconstructed ITS tracks back
   // The clusters must be loaded !
@@ -404,7 +404,7 @@ Int_t AliITStrackerV2::PropagateBack(AliESD *event) {
   return 0;
 }
 
-Int_t AliITStrackerV2::RefitInward(AliESD *event) {
+Int_t AliITStrackerV2::RefitInward(AliESDEvent *event) {
   //--------------------------------------------------------------------
   // This functions refits ITS tracks using the 
   // "inward propagated" TPC tracks

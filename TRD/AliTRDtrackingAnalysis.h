@@ -23,7 +23,7 @@ class TGraphErrors;
 
 class AliRunLoader;
 class AliTRDgeometry;
-class AliESD;
+class AliESDEvent;
 class AliTRDcluster;
 class AliTRDtracker;
 
@@ -61,7 +61,7 @@ class AliTRDtrackingAnalysis : public TObject {
 
   AliRunLoader *fLoader;          // AliRunLoader instance
   TTree  *fEsdTree;               // ESD tree
-  AliESD *fESD;                   // ESD
+  AliESDEvent *fESD;                   // ESD
 
   AliTRDtracker *fTracker;        // TRD tracker instance
 

@@ -104,7 +104,8 @@ int main(int argc, char** argv)
   if (!AliHLTTransform::Init("./", kFALSE)) {
     ::Fatal("AliHLTTransform::Init", "HLT initialization failed");
   }
-  AliESD *esd = new AliESD;
+  AliESDEvent *esd = new AliESDEvent;
+  esd->CreateStdContent();
   //  AliKalmanTrack::SetConvConst(
   //     1000/0.299792458/AliHLTTransform::GetSolenoidField()
   //  );

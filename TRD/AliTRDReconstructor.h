@@ -33,10 +33,10 @@ class AliTRDReconstructor: public AliReconstructor {
 
   virtual AliTracker *CreateTracker(AliRunLoader *runLoader) const;
 
-  virtual void        FillESD(AliRunLoader *runLoader, AliRawReader *rawReader, AliESD *esd) const;
-  virtual void        FillESD(AliRawReader *rawReader, TTree *clusterTree, AliESD *esd) const;
-  virtual void        FillESD(TTree *digitsTree, TTree *clusterTree, AliESD *esd) const;
-  virtual void        FillESD(AliRunLoader *runLoader, AliESD *esd) const;
+  virtual void        FillESD(AliRunLoader *runLoader, AliRawReader *rawReader, AliESDEvent *esd) const;
+  virtual void        FillESD(AliRawReader *rawReader, TTree *clusterTree, AliESDEvent *esd) const;
+  virtual void        FillESD(TTree *digitsTree, TTree *clusterTree, AliESDEvent *esd) const;
+  virtual void        FillESD(AliRunLoader *runLoader, AliESDEvent *esd) const;
 
   static  void        SetSeedingOn(Bool_t seeding)               { fgkSeedingOn  = seeding; }  
   static  void        SetStreamLevel(Int_t level)                { fgStreamLevel = level;   }

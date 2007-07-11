@@ -17,7 +17,7 @@ public:
   AliITSpidESD1();
   AliITSpidESD1(Double_t *param);
   virtual ~AliITSpidESD1() {}
-  virtual Int_t MakePID(AliESD *event);
+  virtual Int_t MakePID(AliESDEvent *event);
 
 private:
   Double_t fRes;          // relative dEdx resolution

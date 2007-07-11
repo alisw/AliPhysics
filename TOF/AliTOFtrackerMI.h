@@ -21,7 +21,7 @@
 class TTreeSRedirector;
 class TClonesArray;
 
-class AliESD;
+class AliESDEvent;
 
 class AliTOFcluster;
 class AliTOFRecoParam;
@@ -40,9 +40,9 @@ public:
 
  //  virtual ~AliTOFtrackerMI() {delete fTOFpid;}
  virtual ~AliTOFtrackerMI();
- virtual Int_t Clusters2Tracks(AliESD* /*event*/) {return -1;};
- virtual Int_t PropagateBack(AliESD* event);
- virtual Int_t RefitInward(AliESD* /*event*/) {return -1;};
+ virtual Int_t Clusters2Tracks(AliESDEvent* /*event*/) {return -1;};
+ virtual Int_t PropagateBack(AliESDEvent* event);
+ virtual Int_t RefitInward(AliESDEvent* /*event*/) {return -1;};
  virtual Int_t LoadClusters(TTree *dTree); // Loading Clusters from Digits
  virtual void  UnloadClusters();// UnLoad Clusters
  virtual AliCluster *GetCluster(Int_t /*index*/) const {return NULL;};

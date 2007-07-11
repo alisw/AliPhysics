@@ -12,15 +12,15 @@
 //-------------------------------------------------------
 #include <Rtypes.h>
 
-class AliESD;
+class AliESDEvent;
 
 class AliESDpid {
 public:
   AliESDpid(){}
   virtual ~AliESDpid() {}
-  static Int_t MakePID(AliESD *event);
+  static Int_t MakePID(AliESDEvent *event);
 private:
-  ClassDef(AliESDpid,1)   // TPC PID class
+  ClassDef(AliESDpid,2)   // TPC PID class
 };
 
 #endif

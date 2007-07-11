@@ -47,7 +47,6 @@
 #include <TRandom.h>
 #include <TTUBE.h>
 #include <TVirtualMC.h>
-#include <AliESD.h>
 
 #include "AliLog.h"
 #include "AliMC.h"

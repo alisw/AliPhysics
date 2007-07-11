@@ -38,7 +38,7 @@
 #include <TTreeStream.h>
 
 #include "AliLog.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliAlignObj.h"
 #include "AliRieman.h"
 #include "AliTrackPointArray.h"
@@ -657,7 +657,7 @@ Int_t  AliTRDtrackerHLT::GetLastPlane(AliTRDtrack *track)
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDtrackerHLT::Clusters2Tracks(AliESD *event)
+Int_t AliTRDtrackerHLT::Clusters2Tracks(AliESDEvent *event)
 {
   //
   // Finds tracks within the TRD. The ESD event is expected to contain seeds 
@@ -716,7 +716,7 @@ Int_t AliTRDtrackerHLT::Clusters2Tracks(AliESD *event)
 }     
      
 //_____________________________________________________________________________
-Int_t AliTRDtrackerHLT::PropagateBack(AliESD *event) 
+Int_t AliTRDtrackerHLT::PropagateBack(AliESDEvent *event) 
 {
   //
   // Gets seeds from ESD event. The seeds are AliTPCtrack's found and
@@ -1001,7 +1001,7 @@ Int_t AliTRDtrackerHLT::PropagateBack(AliESD *event)
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDtrackerHLT::RefitInward(AliESD *event)
+Int_t AliTRDtrackerHLT::RefitInward(AliESDEvent *event)
 {
   //
   // Refits tracks within the TRD. The ESD event is expected to contain seeds 
@@ -1593,7 +1593,7 @@ void AliTRDtrackerHLT::UnloadClusters()
 }
 
 //_____________________________________________________________________________
-void AliTRDtrackerHLT::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESD *esd)
+void AliTRDtrackerHLT::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESDEvent *esd)
 {
   //
   // Creates  seeds using clusters between  position inner plane  and outer plane 

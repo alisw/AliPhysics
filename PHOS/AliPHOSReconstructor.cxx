@@ -26,7 +26,7 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliPHOSReconstructor.h"
 #include "AliPHOSClusterizerv1.h"
 #include "AliPHOSTrackSegmentMakerv1.h"
@@ -60,7 +60,7 @@ void AliPHOSReconstructor::Reconstruct(AliRunLoader* runLoader) const
 {
   // method called by AliReconstruction; 
   // Only the clusterization is performed,; the rest of the reconstruction is done in FillESD because the track
-  // segment maker needs access to the AliESD object to retrieve the tracks reconstructed by 
+  // segment maker needs access to the AliESDEvent object to retrieve the tracks reconstructed by 
   // the global tracking.
  
   TString headerFile(runLoader->GetFileName()) ; 
@@ -80,7 +80,7 @@ void AliPHOSReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
 {
   // method called by AliReconstruction; 
   // Only the clusterization is performed,; the rest of the reconstruction is done in FillESD because the track
-  // segment maker needs access to the AliESD object to retrieve the tracks reconstructed by 
+  // segment maker needs access to the AliESDEvent object to retrieve the tracks reconstructed by 
   // the global tracking.
   // Here we reconstruct from Raw Data
 
@@ -104,7 +104,7 @@ void AliPHOSReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
 }
 
 //____________________________________________________________________________
-void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
+void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader, AliESDEvent* esd) const
 {
   // This function creates AliESDtracks from AliPHOSRecParticles
   //         and
@@ -263,7 +263,7 @@ void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
 
 //____________________________________________________________________________
 void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader,
-				   AliRawReader* rawReader, AliESD* esd) const
+				   AliRawReader* rawReader, AliESDEvent* esd) const
 {
   //This function creates AliESDtracks from AliPHOSRecParticles 
   //and writes them to the ESD in the case of raw data reconstruction.

@@ -13,7 +13,7 @@
 #include "AliTracker.h"
 
 class AliCluster;
-class AliESD;
+class AliESDEvent;
 class AliLoader;
 class AliMUONDigitMaker;
 class AliMUONGeometryTransformer;
@@ -37,7 +37,7 @@ class AliMUONTracker : public AliTracker
   virtual ~AliMUONTracker();
   
   /// Main entry point.
-  virtual Int_t Clusters2Tracks(AliESD* esd);
+  virtual Int_t Clusters2Tracks(AliESDEvent* esd);
 
   /// 
   virtual Int_t LoadClusters(TTree* clustersTree);
@@ -46,9 +46,9 @@ class AliMUONTracker : public AliTracker
   virtual void  UnloadClusters();
 
   /// Dummy implementation
-  virtual Int_t PropagateBack(AliESD* /*event*/) {return 0;}
+  virtual Int_t PropagateBack(AliESDEvent* /*event*/) {return 0;}
   /// Dummy implementation
-  virtual Int_t RefitInward(AliESD* /*event*/) {return 0;}
+  virtual Int_t RefitInward(AliESDEvent* /*event*/) {return 0;}
   /// Dummy implementation
   virtual AliCluster *GetCluster(Int_t /*index*/) const {return 0;}
   /// Set option
@@ -60,9 +60,9 @@ private:
   /// Not implemented
   AliMUONTracker& operator=(const AliMUONTracker& rhs);
     
-  Int_t Clusters2Tracks(TTree& tracksTree, AliESD* esd);
+  Int_t Clusters2Tracks(TTree& tracksTree, AliESDEvent* esd);
 
-  void FillESD(AliMUONVTrackStore& trackStore, AliESD* esd) const;
+  void FillESD(AliMUONVTrackStore& trackStore, AliESDEvent* esd) const;
 
 private:
   AliLoader* fLoader; //!< loader to get access to trees

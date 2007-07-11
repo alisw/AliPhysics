@@ -17,7 +17,7 @@ public:
 
   virtual void     CreateHistos(TFolder* folder);
   virtual void     FillHistos(AliRunLoader* runLoader, 
-			      AliRawReader* rawReader, AliESD* esd);
+			      AliRawReader* rawReader, AliESDEvent* esd);
 
 private:
   AliMonitorHLT(const AliMonitorHLT& monitor);

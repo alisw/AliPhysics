@@ -23,7 +23,7 @@ class AliHLTBenchmark;
 #include <../RAW/AliRawEvent.h>
 #endif
 #ifdef use_aliroot
-#include <AliESD.h>
+#include <AliESDEvent.h>
 #include <AliESDHLTtrack.h>
 #endif
 
@@ -61,7 +61,7 @@ class AliHLTHough {
   void WriteTracks(Int_t slice,Char_t *path="./");
   void WriteTracks(Char_t *path);
 #ifdef use_aliroot
-  Int_t FillESD(AliESD *esd);
+  Int_t FillESD(AliESDEvent *esd);
 #endif
   void WriteDigits(Char_t *outfile="output_digits.root");
   void InitEvaluate();

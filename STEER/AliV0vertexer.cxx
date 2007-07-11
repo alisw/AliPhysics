@@ -24,7 +24,7 @@
 #include <TObjArray.h>
 #include <TTree.h>
 
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliESDv0.h"
 #include "AliESDtrack.h"
 #include "AliV0vertexer.h"
@@ -41,7 +41,7 @@ Double_t AliV0vertexer::fgCPAmax=0.99; //max cosine of V0's pointing angle
 Double_t AliV0vertexer::fgRmin=0.2;    //min radius of the fiducial volume
 Double_t AliV0vertexer::fgRmax=100.;   //max radius of the fiducial volume
 
-Int_t AliV0vertexer::Tracks2V0vertices(AliESD *event) {
+Int_t AliV0vertexer::Tracks2V0vertices(AliESDEvent *event) {
   //--------------------------------------------------------------------
   //This function reconstructs V0 vertices
   //--------------------------------------------------------------------

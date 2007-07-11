@@ -556,7 +556,7 @@ int AliHLTSystem::Reconstruct(int nofEvents, AliRunLoader* runLoader,
   return iResult;
 }
 
-int AliHLTSystem::FillESD(int eventNo, AliRunLoader* runLoader, AliESD* esd)
+int AliHLTSystem::FillESD(int eventNo, AliRunLoader* runLoader, AliESDEvent* esd)
 {
   // see header file for class documentation
   int iResult=0;

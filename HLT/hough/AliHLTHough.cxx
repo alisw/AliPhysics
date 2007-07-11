@@ -1311,7 +1311,7 @@ void AliHLTHough::WriteTracks(Int_t slice,Char_t *path)
 }
 
 #ifdef use_aliroot
-Int_t AliHLTHough::FillESD(AliESD *esd)
+Int_t AliHLTHough::FillESD(AliESDEvent *esd)
 {
   // Fill the found hough transform tracks
   // into the ESD. The tracks are stored as

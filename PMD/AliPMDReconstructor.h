@@ -17,18 +17,18 @@ public:
 
   virtual Bool_t HasLocalReconstruction() const { return kTRUE; }
 
-  //virtual void   FillESD(AliRunLoader* runLoader, AliESD* esd) const;
+  //virtual void   FillESD(AliRunLoader* runLoader, AliESDEvent* esd) const;
   virtual void   FillESD(AliRawReader* /*rawReader*/, TTree* clustersTree, 
-			 AliESD* esd) const;
+			 AliESDEvent* esd) const;
 
   virtual void   FillESD(TTree* /*digitsTree*/, TTree* clustersTree, 
-			 AliESD* esd) const;
+			 AliESDEvent* esd) const;
 
-  virtual void   FillESD(AliRunLoader* runLoader, AliESD* esd) const {
+  virtual void   FillESD(AliRunLoader* runLoader, AliESDEvent* esd) const {
     AliReconstructor::FillESD(runLoader,esd);
   }
   virtual void   FillESD(AliRunLoader* runLoader, 
-			 AliRawReader* rawReader, AliESD* esd) const {
+			 AliRawReader* rawReader, AliESDEvent* esd) const {
     AliReconstructor::FillESD(runLoader,rawReader,esd);
   }
  

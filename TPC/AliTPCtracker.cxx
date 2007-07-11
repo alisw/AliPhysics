@@ -25,7 +25,7 @@
 #include <TFile.h>
 #include <TTree.h>
 
-#include "AliESD.h"
+#include "AliESDEvent.h"
 
 #include "AliTPCtracker.h"
 #include "AliTPCcluster.h"
@@ -569,7 +569,7 @@ Int_t AliTPCtracker::ReadSeeds(const TFile *inp) {
 }
 
 //_____________________________________________________________________________
-Int_t AliTPCtracker::Clusters2Tracks(AliESD *event) {
+Int_t AliTPCtracker::Clusters2Tracks(AliESDEvent *event) {
   //-----------------------------------------------------------------
   // This is a track finder.
   // The clusters must be already loaded ! 
@@ -635,7 +635,7 @@ Int_t AliTPCtracker::Clusters2Tracks(AliESD *event) {
 }
 
 //_____________________________________________________________________________
-Int_t AliTPCtracker::RefitInward(AliESD* event) {
+Int_t AliTPCtracker::RefitInward(AliESDEvent* event) {
   //
   // The function propagates tracks throught TPC inward
   // using already associated clusters.
@@ -688,7 +688,7 @@ Int_t AliTPCtracker::RefitInward(AliESD* event) {
   return 0;
 }
 
-Int_t AliTPCtracker::PropagateBack(AliESD *event) {
+Int_t AliTPCtracker::PropagateBack(AliESDEvent *event) {
   //-----------------------------------------------------------------
   // This function propagates tracks back through the TPC.
   // The clusters must be already loaded !

@@ -27,7 +27,7 @@
 #include "AliRawReader.h"
 #include "AliLog.h"
 #include "AliESDTrdTrack.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 
 #include "AliTRDReconstructor.h"
 #include "AliTRDclusterizerV1.h"
@@ -167,7 +167,7 @@ AliTracker *AliTRDReconstructor::CreateTracker(AliRunLoader *runLoader) const
 //_____________________________________________________________________________
 void AliTRDReconstructor::FillESD(AliRunLoader* /*runLoader*/
 				, AliRawReader* /*rawReader*/
-		         	, AliESD *esd) const
+		         	, AliESDEvent *esd) const
 {
   //
   // Make PID
@@ -181,7 +181,7 @@ void AliTRDReconstructor::FillESD(AliRunLoader* /*runLoader*/
 //_____________________________________________________________________________
 void AliTRDReconstructor::FillESD(AliRawReader* /*rawReader*/
 				, TTree* /*clusterTree*/
-				, AliESD *esd) const
+				, AliESDEvent *esd) const
 {
   //
   // Make PID
@@ -195,7 +195,7 @@ void AliTRDReconstructor::FillESD(AliRawReader* /*rawReader*/
 //_____________________________________________________________________________
 void AliTRDReconstructor::FillESD(TTree* /*digitsTree*/
 				, TTree* /*clusterTree*/
-				, AliESD *esd) const
+				, AliESDEvent *esd) const
 {
   //
   // Make PID
@@ -208,7 +208,7 @@ void AliTRDReconstructor::FillESD(TTree* /*digitsTree*/
 
 //_____________________________________________________________________________
 void AliTRDReconstructor::FillESD(AliRunLoader* /*runLoader*/
-				, AliESD *esd) const
+				, AliESDEvent *esd) const
 {
   //
   // Make PID

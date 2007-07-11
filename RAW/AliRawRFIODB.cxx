@@ -33,7 +33,7 @@ ClassImp(AliRawRFIODB)
 
 //______________________________________________________________________________
 AliRawRFIODB::AliRawRFIODB(AliRawEvent *event,
-			   AliESD *esd,
+			   AliESDEvent *esd,
 			   Int_t compress,
 			   const char* fileName)
    : AliRawDB(event, esd, compress, fileName)

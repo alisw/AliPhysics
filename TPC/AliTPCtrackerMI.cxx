@@ -33,7 +33,7 @@
 #include "AliLog.h"
 
 #include "AliComplexCluster.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliKink.h"
 #include "AliV0.h"
 #include "AliHelix.h"
@@ -352,7 +352,7 @@ void AliTPCtrackerMI::SetIO()
 }
 
 
-void AliTPCtrackerMI::SetIO(TTree * input, TTree * output, AliESD * event)
+void AliTPCtrackerMI::SetIO(TTree * input, TTree * output, AliESDEvent * event)
 {
 
   // set input
@@ -2617,7 +2617,7 @@ void  AliTPCtrackerMI::StopNotActive(AliTPCseed * seed, Int_t row0, Float_t th0,
 }
 
 
-Int_t AliTPCtrackerMI::RefitInward(AliESD *event)
+Int_t AliTPCtrackerMI::RefitInward(AliESDEvent *event)
 {
   //
   // back propagation of ESD tracks
@@ -2684,7 +2684,7 @@ Int_t AliTPCtrackerMI::RefitInward(AliESD *event)
 }
 
 
-Int_t AliTPCtrackerMI::PropagateBack(AliESD *event)
+Int_t AliTPCtrackerMI::PropagateBack(AliESDEvent *event)
 {
   //
   // back propagation of ESD tracks
@@ -2747,7 +2747,7 @@ void AliTPCtrackerMI::DeleteSeeds()
   fSeeds =0;
 }
 
-void AliTPCtrackerMI::ReadSeeds(AliESD *event, Int_t direction)
+void AliTPCtrackerMI::ReadSeeds(AliESDEvent *event, Int_t direction)
 {
   //
   //read seeds from the event
@@ -4078,7 +4078,7 @@ AliTPCseed *AliTPCtrackerMI::ReSeed(AliTPCseed *track,Int_t r0, Bool_t forward)
   return seed;
 }
 
-void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESD *esd)
+void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESDEvent *esd)
 {
   //
   //  find kinks
@@ -4769,7 +4769,7 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESD *esd)
   timer.Print();
 }
 
-void  AliTPCtrackerMI::FindV0s(TObjArray * array, AliESD *esd)
+void  AliTPCtrackerMI::FindV0s(TObjArray * array, AliESDEvent *esd)
 {
   //
   //  find V0s
@@ -5492,7 +5492,7 @@ Int_t AliTPCtrackerMI::ReadSeeds(const TFile *inp) {
   return 0;
 }
 
-Int_t AliTPCtrackerMI::Clusters2Tracks (AliESD *esd)
+Int_t AliTPCtrackerMI::Clusters2Tracks (AliESDEvent *esd)
 {
   //
   if (fSeeds) DeleteSeeds();
