@@ -164,7 +164,8 @@ TChain *AliTagAnalysis::QueryTags(AliRunTagCuts *runTagCuts, AliLHCTagCuts *lhcT
 	    turl = evTag->GetTURL(); 
 	    path = evTag->GetPath();
 	    fLocalList->SetTreeName(fAliceFile.Data());
-	    fLocalList->SetFileName(turl.Data());
+	    if(turl!="") fLocalList->SetFileName(turl.Data());
+	    else fLocalList->SetFileName(path.Data());
 	    if(evTagCuts->IsAccepted(evTag)) fLocalList->Enter(i);
 	  }//event loop
 	  
