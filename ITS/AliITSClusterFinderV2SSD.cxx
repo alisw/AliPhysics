@@ -66,7 +66,8 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(TClonesArray *alldigits) {
 
   Int_t smaxall=alldigits->GetEntriesFast();
   if (smaxall==0) return;
-  TObjArray *digits = new TObjArray;
+  //  TObjArray *digits = new TObjArray;
+  TObjArray digits;
   for (Int_t i=0;i<smaxall; i++){
     AliITSdigitSSD *d=(AliITSdigitSSD*)alldigits->UncheckedAt(i);
 
@@ -79,9 +80,9 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(TClonesArray *alldigits) {
     d->SetSignal(Int_t(q));
 
     if (d->GetSignal()<3) continue;
-    digits->AddLast(d);
+    digits.AddLast(d);
   }
-  Int_t smax = digits->GetEntriesFast();
+  Int_t smax = digits.GetEntriesFast();
   if (smax==0) return;
   
   const Int_t kMax=1000;
@@ -90,7 +91,7 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(TClonesArray *alldigits) {
   Float_t y=0., q=0., qmax=0.; 
   Int_t lab[4]={-2,-2,-2,-2};
   
-  AliITSdigitSSD *d=(AliITSdigitSSD*)digits->UncheckedAt(0);
+  AliITSdigitSSD *d=(AliITSdigitSSD*)digits.UncheckedAt(0);
   q += d->GetSignal();
   y += d->GetCoord2()*d->GetSignal();
   qmax=d->GetSignal();
@@ -107,7 +108,7 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(TClonesArray *alldigits) {
   milab[0]=d->GetTrack(0); milab[1]=d->GetTrack(1); milab[2]=d->GetTrack(2);
 
   for (Int_t s=1; s<smax; s++) {
-      d=(AliITSdigitSSD*)digits->UncheckedAt(s);      
+      d=(AliITSdigitSSD*)digits.UncheckedAt(s);      
       Int_t strip=d->GetCoord2();
       if ((strip-curr) > 1 || flag!=d->GetCoord1()) {
          c[*n].SetY(y/q);
