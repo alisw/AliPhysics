@@ -2331,6 +2331,7 @@ void AliMUONSt1GeometryBuilderV2::CreateMaterials()
 //  AliMedium(12, "VETRONITE         ",  32, 0, iSXFLD, ... 
 //  AliMedium(13, "CARBON            ",  33, 0, iSXFLD, ... 
 //  AliMedium(14, "Rohacell          ",  34, 0, iSXFLD, ... 
+//  AliMedium(24, "FrameCH$          ",  44, 1, iSXFLD, ...
 
   //
   // --- Define materials for GEANT ---
@@ -2413,9 +2414,6 @@ void AliMUONSt1GeometryBuilderV2::CreateMaterials()
   fMUON->AliMedium(21, "ALU_II$",    41, 0, iSXFLD, sXMGMX, 
                    tmaxfd, maxStepAlu, maxDestepAlu, epsil, stmin);
 
-		   // was med: 15  mat: 31 
-  fMUON->AliMedium(24, "FrameCH$",   44, 1, iSXFLD, sXMGMX, 
-                   10.0, 0.001, 0.001, 0.001, 0.001);
 		   // was med: 20  mat: 36
   fMUON->AliMedium(25, "ARG_CO2_II", 45, 1, iSXFLD, sXMGMX,
                    tmaxfd, maxStepGas, maxDestepAlu, epsil, stmin);
