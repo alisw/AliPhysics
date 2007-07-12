@@ -263,13 +263,13 @@ Bool_t AliTRDpidESD::RecalculateTrackSegmentKine(AliESDtrack *esd, Int_t plan, F
 		mom    = op->GetP();
 		s      = op->GetSnp();
 		t      = op->GetTgl();
-	  length /= TMath::Sqrt((1. - s*s) / (1. - t*t));
+	        if (s < 1.) length /= TMath::Sqrt((1. - s*s) / (1. + t*t));
 		return kFALSE;
 	}
 	mom        = param->GetP();
 	s = param->GetSnp();
 	t = param->GetTgl();
-	length    /= TMath::Sqrt((1. - s*s) / (1. - t*t));
+	if (s < 1.) length    /= TMath::Sqrt((1. - s*s) / (1. + t*t));
 
 	// check if track is crossing tracking sector by propagating to chamber exit- maybe is too much :)
 	Double_t alpha = param->GetAlpha();
