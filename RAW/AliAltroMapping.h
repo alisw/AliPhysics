@@ -32,11 +32,11 @@ class AliAltroMapping: public TObject {
   virtual Bool_t ReadMapping() = 0;
   virtual void   DeleteMappingArrays() = 0;
 
-  ifstream *fIn;               // External mapping file
+  ifstream *fIn;               //! External mapping file
   Int_t     fNumberOfChannels; // Number of ALTRO channels
   Int_t     fMaxHWAddress;     // Maximum HW adress
 
-  ClassDef(AliAltroMapping,1)  // Altro mapping handler class
+  ClassDef(AliAltroMapping,2)  // Altro mapping handler class
 };
 
 #endif
