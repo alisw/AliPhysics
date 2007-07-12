@@ -131,6 +131,8 @@
 #include "AliCentralTrigger.h"
 #include "AliCTPRawData.h"
 #include "AliRawReaderFile.h"
+#include "AliRawReaderRoot.h"
+#include "AliRawReaderDate.h"
 #include "AliESD.h"
 #include "AliHeader.h"
 #include "AliGenEventHeader.h"
@@ -1215,7 +1217,18 @@ Bool_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* e
     }
     //
     // Create the RawReader
-    AliRawReaderFile* rawReader = new AliRawReaderFile(rawDirectory);
+    TString fileName(rawDirectory);
+    AliRawReader* rawReader = 0x0;
+    if (fileName.EndsWith("/")) {
+      rawReader = new AliRawReaderFile(fileName);
+    } else if (fileName.EndsWith(".root")) {
+      rawReader = new AliRawReaderRoot(fileName);
+    } else if (!fileName.IsNull()) {
+      rawReader = new AliRawReaderDate(fileName);
+      rawReader->SelectEvents(7);
+    }
+//     if (!fEquipIdMap.IsNull() && fRawReader)
+//       fRawReader->LoadEquipmentIdsMap(fEquipIdMap);
     //
     // Get list of detectors
     TObjArray* detArray = runLoader->GetAliRun()->Detectors();
@@ -1223,6 +1236,7 @@ Bool_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* e
     // Get Header
     AliHeader* header = runLoader->GetHeader();
     //
+    TString detStr = fMakeSDigits;
     // Event loop
     Int_t nev = 0;
     while(kTRUE) {
@@ -1231,9 +1245,12 @@ Bool_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* e
 	// Detector loop
 	for (iDet = 0; iDet < detArray->GetEntriesFast(); iDet++) {
 	    AliModule* det = (AliModule*) detArray->At(iDet);
-	    AliInfo(Form("Calling Raw2SDigits for %s\n", det->GetName()));
-	    det->Raw2SDigits(rawReader);
-	    rawReader->Reset();
+	    if (!det || !det->IsActive()) continue;
+	    if (IsSelected(det->GetName(), detStr)) {
+	      AliInfo(Form("Calling Raw2SDigits for %s\n", det->GetName()));
+	      det->Raw2SDigits(rawReader);
+	      rawReader->Reset();
+	    }
 	} // detectors
 
 	//
