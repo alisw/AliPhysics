@@ -306,6 +306,10 @@ void AliESDEvent::SetESDfriend(const AliESDfriend *ev) {
   //
   if (!ev) return;
 
+  // to be sure that we set the tracks also
+  // in case of old esds 
+  if(fESDOld)CopyFromOldESD();
+
   Int_t ntrk=ev->GetNumberOfTracks();
  
   for (Int_t i=0; i<ntrk; i++) {
