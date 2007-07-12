@@ -30,7 +30,7 @@
   #include "AliTrackReference.h"
   #include "AliRunLoader.h"
   #include "AliRun.h"
-  #include "AliESD.h"
+  #include "AliESDEvent.h"
 #endif
 
 Int_t GoodTracksTRD(const Char_t *dir=".");
@@ -152,13 +152,13 @@ Int_t AliTRDComparisonV2
          return 4;
       }
    }
-   AliESD* event = new AliESD;
+   AliESDEvent* event = new AliESDEvent();
    TTree* esdTree = (TTree*) ef->Get("esdTree");
    if (!esdTree) {
       ::Error("AliTRDComparisonV2.C", "no ESD tree found");
       return 6;
    }
-   esdTree->SetBranchAddress("ESD", &event);
+   event->ReadFromTree(esdTree);
 
 
    //******* Loop over events *********
@@ -286,6 +286,7 @@ Int_t AliTRDComparisonV2
    } //***** End of the loop over events
 
    delete event;
+   delete esdTree;
    ef->Close();
    
    delete trdTree;

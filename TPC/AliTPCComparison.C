@@ -30,7 +30,7 @@
   #include "AliTrackReference.h"
   #include "AliRunLoader.h"
   #include "AliRun.h"
-  #include "AliESD.h"
+  #include "AliESDEvent.h"
 
   #include "AliSimDigits.h"
   #include "AliTPC.h"
@@ -146,13 +146,13 @@ Int_t AliTPCComparison
          return 5;
       }
    }
-   AliESD* event = new AliESD;
+   AliESDEvent* event = new AliESDEvent();
    TTree* esdTree = (TTree*) ef->Get("esdTree");
    if (!esdTree) {
       ::Error("AliTPCComparison.C", "no ESD tree found");
       return 6;
    }
-   esdTree->SetBranchAddress("ESD", &event);
+   event->ReadFromTree(esdTree);
 
 
    //******* Loop over events *********
@@ -277,6 +277,7 @@ Int_t AliTPCComparison
   }// ***** End of the loop over events
 
    delete event;
+   delete esdTree;
    ef->Close();
 
    delete tpcTree;

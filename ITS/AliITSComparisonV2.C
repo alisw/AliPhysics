@@ -29,7 +29,7 @@
   #include "AliTrackReference.h"
   #include "AliRunLoader.h"
   #include "AliRun.h"
-  #include "AliESD.h"
+  #include "AliESDEvent.h"
 
   #include "AliITSRecPoint.h"
   #include "AliITSLoader.h"
@@ -93,7 +93,7 @@ Int_t AliITSComparisonV2
 
    TH1F *he=(TH1F*)gROOT->FindObject("he");
    if (!he) 
-      he =new TH1F("he","dE/dX for pions with 0.4<p<0.5 GeV/c",50,0.,100.);
+      he =new TH1F("he","dE/dX for pions with 0.4<p<0.5 GeV/c",50,0.,200.);
 
    TH2F *hep=(TH2F*)gROOT->FindObject("hep");
    if (!hep) hep=new TH2F("hep","dE/dX vs momentum",50,0.,2.,50,0.,400.);
@@ -142,13 +142,13 @@ Int_t AliITSComparisonV2
          return 4;
       }
    }
-   AliESD* event = new AliESD;
+   AliESDEvent* event = new AliESDEvent();
    TTree* esdTree = (TTree*) ef->Get("esdTree");
    if (!esdTree) {
       ::Error("AliITSComparison.C", "no ESD tree found");
       return 6;
    }
-   esdTree->SetBranchAddress("ESD", &event);
+   event->ReadFromTree(esdTree);
 
 
    //******* Loop over events *********
@@ -267,6 +267,7 @@ Int_t AliITSComparisonV2
    } //***** End of the loop over events
 
    delete event;
+   delete esdTree;
    ef->Close();
    
    delete itsTree;

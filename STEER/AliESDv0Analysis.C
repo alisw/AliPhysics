@@ -32,7 +32,7 @@ Int_t AliESDv0Analysis(const Char_t *dir=".") {
    if (!ef||!ef->IsOpen()) {cerr<<"Can't AliESDs.root !\n"; return 1;}
    cerr<<"\n****** "<<fname<<" ******\n";
 
-   AliESDEvent* event = new AliESDEvent;
+   AliESDEvent* event = new AliESDEvent();
 
 
    TTree* tree = (TTree*) ef->Get("esdTree");
@@ -102,6 +102,7 @@ Int_t AliESDv0Analysis(const Char_t *dir=".") {
    }
 
    delete event;
+   delete tree;
    ef->Close();
 
    TCanvas *c1=(TCanvas*)gROOT->FindObject("c1");

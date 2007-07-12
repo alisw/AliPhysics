@@ -27,7 +27,7 @@
   #include "AliTrackReference.h"
   #include "AliRunLoader.h"
   #include "AliRun.h"
-  #include "AliESD.h"
+  #include "AliESDEvent.h"
 
   #include "AliTOFcluster.h"
   #include "AliLoader.h"
@@ -147,13 +147,13 @@ Int_t AliTOFComparison(const Char_t *dir=".") {
       delete rl;
       return 4;
    }
-   AliESD* event = new AliESD;
+   AliESDEvent* event = new AliESDEvent();
    TTree* esdTree = (TTree*) ef->Get("esdTree");
    if (!esdTree) {
       ::Error("AliTOFComparison.C", "no ESD tree found");
       return 5;
    }
-   esdTree->SetBranchAddress("ESD", &event);
+   event->ReadFromTree(esdTree);
 
 
 
@@ -251,6 +251,7 @@ Int_t AliTOFComparison(const Char_t *dir=".") {
    } //***** End of the loop over events
 
    delete event;
+   delete esdTree;
    ef->Close();
    
    delete tofTree;

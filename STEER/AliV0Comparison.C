@@ -164,7 +164,7 @@ Int_t AliV0Comparison(Int_t code=310, const Char_t *dir=".") {
          return 5;
       }
    }
-   AliESD* event = new AliESDEvent;
+   AliESDEvent* event = new AliESDEvent();
    TTree* esdTree = (TTree*) ef->Get("esdTree");
    if (!esdTree) {
       ::Error("AliV0Comparison.C", "no ESD tree found");
@@ -282,6 +282,7 @@ Int_t AliV0Comparison(Int_t code=310, const Char_t *dir=".") {
    } //**** End of the loop over events
 
    delete event;
+   delete esdTree;
    ef->Close();
    
    delete v0Tree;

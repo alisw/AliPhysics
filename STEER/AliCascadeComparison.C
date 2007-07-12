@@ -27,7 +27,7 @@
   #include "AliTrackReference.h"
   #include "AliRunLoader.h"
   #include "AliRun.h"
-  #include "AliESD.h"
+  #include "AliESDEvent.h"
 #else
 const Int_t kXiMinus    = 3312;
 const Int_t kXiPlusBar  = -3312;
@@ -190,13 +190,13 @@ Int_t AliCascadeComparison(Int_t code=3312, const Char_t *dir=".") {
          return 5;
       }
    }
-   AliESD* event = new AliESD;
+   AliESDEvent* event = new AliESDEvent();
    TTree* esdTree = (TTree*) ef->Get("esdTree");
    if (!esdTree) {
       ::Error("AliCascadeComparison.C", "no ESD tree found");
       return 6;
    }
-   esdTree->SetBranchAddress("ESD", &event);
+   event->ReadFromTree(esdTree);
 
 
    //******* Loop over events *********
@@ -321,6 +321,7 @@ Int_t AliCascadeComparison(Int_t code=3312, const Char_t *dir=".") {
    } //**** End of the loop over events
 
    delete event;
+   delete esdTree;
    ef->Close();
 
    delete csTree;

@@ -214,6 +214,7 @@ Int_t AliESDComparison(const Char_t *dir=".") {
    } // ***** End of the loop over events
 
    delete event;
+   delete tree;
    ef->Close();
 
    TCanvas *c1=(TCanvas*)gROOT->FindObject("c1");
