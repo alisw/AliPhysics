@@ -23,7 +23,7 @@
 #include "AliAnalysisTaskJets.h"
 #include "AliAnalysisManager.h"
 #include "AliJetFinder.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliAODHandler.h"
 
@@ -65,6 +65,7 @@ void AliAnalysisTaskJets::CreateOutputObjects()
 // Create the output container
 //
 //  Default AOD
+    if (fDebug > 1) printf("AnalysisTaskJets::CreateOutPutData() \n");
     AliAODHandler* handler = (AliAODHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetEventHandler());
     fAOD   = handler->GetAOD();
     fTreeA = handler->GetTree();
@@ -92,22 +93,10 @@ void AliAnalysisTaskJets::Init()
 void AliAnalysisTaskJets::ConnectInputData(Option_t */*option*/)
 {
 // Connect the input data
-//
     if (fDebug > 1) printf("AnalysisTaskJets::ConnectInputData() \n");
     fChain = (TChain*)GetInputData(0);
-
-    char ** address = (char **)GetBranchAddress(0, "ESD");
-    if (address)     {
-	
-// Branch has been already connected
-	fESD = (AliESD*)(*address);
-    }
-    else     {
-// First task taking the branch enables it
-	fESD = new AliESD();
-	SetBranchAddress(0, "ESD", &fESD);
-    }
-    
+    fESD = new AliESDEvent();
+    fESD->ReadFromTree(fChain);
     fJetFinder->ConnectTree(fChain, fESD);
 }
 

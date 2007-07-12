@@ -27,7 +27,7 @@
 #include <TMath.h>
 #include "AliJetESDmcReader.h"
 #include "AliJetESDReaderHeader.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliHeader.h"
 

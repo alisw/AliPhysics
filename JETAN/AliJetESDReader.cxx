@@ -29,7 +29,7 @@
 
 #include "AliJetESDReader.h"
 #include "AliJetESDReaderHeader.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliESDtrack.h"
 //#include "AliEMCALGeometry.h"
 #include "AliJetDummyGeo.h"
@@ -119,8 +119,8 @@ void AliJetESDReader::OpenInputFiles()
 
 void AliJetESDReader::ConnectTree(TTree* tree, TObject* data) {
     // Connect the tree
-     fChain = (TChain*) tree;
-     fESD   = (AliESD*) data;
+     fChain = (TChain*)      tree;
+     fESD   = (AliESDEvent*) data;
      
      Int_t nMax = fChain->GetEntries(); 
      printf("\n AliJetESDReader: Total number of events in chain= %5d \n", nMax);
@@ -156,6 +156,8 @@ Bool_t AliJetESDReader::FillMomentumArray(Int_t event)
   
   // get number of tracks in event (for the loop)
   nt = fESD->GetNumberOfTracks();
+  printf("Fill Momentum Array %5d ", nt);
+  
   // temporary storage of signal and pt cut flag
   Int_t* sflag  = new Int_t[nt];
   Int_t* cflag  = new Int_t[nt];

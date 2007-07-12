@@ -28,7 +28,7 @@
 // From AliRoot ...
 #include "AliJetMCReader.h"
 #include "AliJetMCReaderHeader.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliESDtrack.h"
 
 ClassImp(AliJetMCReader)

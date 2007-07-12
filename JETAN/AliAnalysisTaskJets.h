@@ -6,7 +6,7 @@
  
 #include "AliAnalysisTask.h"
 class AliJetFinder;
-class AliESD;
+class AliESDEvent;
 class TChain;
 class AliAODEvent;
 
@@ -29,7 +29,7 @@ class AliAnalysisTaskJets : public AliAnalysisTask
     Int_t         fDebug;     //  Debug flag
     AliJetFinder* fJetFinder; //  Pointer to the jet finder 
     TChain*       fChain;     //! chained files
-    AliESD*       fESD;       //! ESD
+    AliESDEvent*  fESD;       //! ESD
     AliAODEvent*  fAOD;       //! AOD
     TTree*        fTreeA;     //  tree of reconstructed jets
     TH1F*         fHisto;     //  Histogram
