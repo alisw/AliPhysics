@@ -817,11 +817,12 @@ Bool_t AliReconstruction::Run(const char* input)
   }
 
   gROOT->cd();
+  CleanUp(file, fileOld);
+  
   // Create tags for the events in the ESD tree (the ESD tree is always present)
   // In case of empty events the tags will contain dummy values
-  CreateTag(file);
+  CreateTag("AliESDs.root");
 
- CleanUp(file, fileOld);
 
   return kTRUE;
 }
@@ -1720,7 +1721,7 @@ void AliReconstruction::WriteESD(AliESDEvent* esd, const char* recStep) const
 
 
 //_____________________________________________________________________________
-void AliReconstruction::CreateTag(TFile* file)
+void AliReconstruction::CreateTag(const char* fESDfilename)
 {
   //GRP
   Float_t lhcLuminosity = 0.0;
@@ -1768,7 +1769,8 @@ void AliReconstruction::CreateTag(TFile* file)
   btag->SetCompressionLevel(9);
   
   AliInfo(Form("Creating the tags......."));	
-  
+
+  TFile *file = TFile::Open(fESDfilename);
   if (!file || !file->IsOpen()) {
     AliError(Form("opening failed"));
     delete file;

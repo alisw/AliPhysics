@@ -125,7 +125,7 @@ private:
 
  
   //===========================================//
-  void           CreateTag(TFile* file);
+  void           CreateTag(const char *fESDfilename);
   //==========================================//
   void           ESDFile2AODFile(TFile* esdFile, TFile* aodFile);
 
