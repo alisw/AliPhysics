@@ -45,7 +45,7 @@ Bool_t gkFixFailedITSExtr = kFALSE;
 
 Reve::TrackList* esd_tracks(Double_t min_pt=0.1, Double_t max_pt=100)
 {
-  AliESD* esd = Alieve::Event::AssertESD();
+  AliESDEvent* esd = Alieve::Event::AssertESD();
 
   Double_t minptsq = min_pt*min_pt;
   Double_t maxptsq = max_pt*max_pt;
@@ -103,7 +103,7 @@ Reve::TrackList* esd_tracks(Double_t min_pt=0.1, Double_t max_pt=100)
 // esd_tracks_from_array()
 /**************************************************************************/
 
-Reve::TrackList* esd_tracks_from_array(TCollection* col, AliESD* esd=0)
+Reve::TrackList* esd_tracks_from_array(TCollection* col, AliESDEvent* esd=0)
 {
   // Retrieves AliESDTrack's from collection.
   // See example usage with AliAnalysisTrackCuts in the next function.
@@ -153,7 +153,7 @@ Reve::TrackList* esd_tracks_from_array(TCollection* col, AliESD* esd=0)
 
 void esd_tracks_alianalcuts_demo()
 {
-  AliESD* esd = Alieve::Event::AssertESD();
+  AliESDEvent* esd = Alieve::Event::AssertESD();
   gSystem->Load("libANALYSIS");
 
   AliAnalysisTrackCuts atc;
@@ -213,7 +213,7 @@ Reve::RenderElementList* esd_tracks_vertex_cut()
   // Import ESD tracks, separate them into five containers according to
   // primary-vertex cut and ITS refit status.
 
-  AliESD* esd = Alieve::Event::AssertESD();
+  AliESDEvent* esd = Alieve::Event::AssertESD();
 
   Reve::RenderElementList* cont = new Reve::RenderElementList("ESD Tracks", 0, kTRUE);
   gReve->AddRenderElement(cont);

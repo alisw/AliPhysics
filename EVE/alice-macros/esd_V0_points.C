@@ -3,7 +3,7 @@
 Reve::PointSet*
 esd_V0_points()
 {
-  AliESD* esd = Alieve::Event::AssertESD();
+  AliESDEvent* esd = Alieve::Event::AssertESD();
 
   Int_t NV0s = esd->GetNumberOfV0s();
   Reve::PointSet* points = new Reve::PointSet("V0 CA points", NV0s);

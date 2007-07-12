@@ -59,7 +59,7 @@ Reve::Cascade* esd_make_cas(Reve::TrackRnrStyle* rnrStyle, AliESDVertex* primVtx
 Reve::CascadeList* esd_Cascade(Double_t min_pt=0.1, Double_t max_pt=100)
 {
 
-  AliESD* esd = Alieve::Event::AssertESD();
+  AliESDEvent* esd = Alieve::Event::AssertESD();
   AliESDVertex* primVertex =(AliESDVertex*) esd->GetVertex();
 
   Reve::CascadeList* cont = new Reve::CascadeList("ESD cascade"); 

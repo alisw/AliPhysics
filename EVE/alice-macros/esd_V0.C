@@ -75,7 +75,7 @@ Reve::V0* esd_make_v0(Reve::TrackRnrStyle* rnrStyle, AliESDVertex* primVtx,
 Reve::V0List* esd_V0(Double_t min_pt=0.1, Double_t max_pt=100)
 {
 
-  AliESD* esd = Alieve::Event::AssertESD();
+  AliESDEvent* esd = Alieve::Event::AssertESD();
   AliESDVertex* primVertex =(AliESDVertex*) esd->GetVertex();
 
   Reve::V0List* cont = new Reve::V0List("ESD v0"); 

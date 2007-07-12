@@ -8,7 +8,7 @@ public:
 
 Reve::StraightLineSet* esd_spd_tracklets(Float_t rad=8)
 {
-  AliESD         * esd = Alieve::Event::AssertESD();
+  AliESDEvent         * esd = Alieve::Event::AssertESD();
   AliESDVertex   * pv  = esd->GetPrimaryVertex();
   AliMultiplicity* mul = esd->GetMultiplicity();
 

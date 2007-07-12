@@ -2,7 +2,7 @@
 
 Reve::PointSet* clusters_from_index(Int_t index=0, RenderElement* cont=0)
 {
-  AliESD* esd = Alieve::Event::AssertESD();
+  AliESDEvent* esd = Alieve::Event::AssertESD();
 
   if (index < 0) {
     Warning("clusters_from_index", "index not set.");

@@ -1,7 +1,7 @@
 Reve::TrackList* primary_vertex_tracks()
 {
   Reve::LoadMacro("esd_tracks.C");
-  AliESD       *esd = Alieve::Event::AssertESD();
+  AliESDEvent   *esd = Alieve::Event::AssertESD();
   AliESDVertex *pv  = esd->GetPrimaryVertex();
 
   Reve::TrackList* cont = new Reve::TrackList("Tracks for Primary Vertex"); 

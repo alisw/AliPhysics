@@ -50,7 +50,7 @@ void register_vertex_marker(TPolyMarker3D* m)
 
 void primary_vertex(Bool_t showSPD=kTRUE, Bool_t showBoxes=kFALSE)
 {
-  AliESD* esd = Alieve::Event::AssertESD();
+  AliESDEvent* esd = Alieve::Event::AssertESD();
 
   AliESDVertex*  pv  = esd->GetPrimaryVertex();
   TPolyMarker3D* pvm = make_vertex_marker(pv, "Primary Vertex");

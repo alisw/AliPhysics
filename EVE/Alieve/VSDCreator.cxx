@@ -11,7 +11,7 @@
 #include <AliHit.h>
 #include <AliSimDigits.h>
 #include <AliKalmanTrack.h>
-#include <AliESD.h>
+#include <AliESDEvent.h>
 #include <AliESDv0.h>
 #include <AliTPCclusterMI.h>
 #include <AliTPCClustersRow.h>
@@ -641,9 +641,10 @@ void VSDCreator::ConvertRecTracks()
     throw(eH + "no esdTree.");
 
  
-  AliESD *fEvent=0;  
-  tree->SetBranchAddress("ESD", &fEvent);
+  AliESDEvent *fEvent= new AliESDEvent();  
+  fEvent->ReadFromTree(tree);
   tree->GetEntry(mEvent); 
+  if(fEvent->GetAliESDOld())fEvent->CopyFromOldESD();
 
  
   // reconstructed tracks
@@ -662,6 +663,7 @@ void VSDCreator::ConvertRecTracks()
     mTreeR->Fill();
   }
   mTreeR->BuildIndex("label");
+  delete fEvent;
 }
 
 /**************************************************************************/
@@ -687,9 +689,10 @@ void VSDCreator::ConvertV0()
   if (tree == 0) 
     throw(eH + "no esdTree.");
 
-  AliESD *fEvent=0;  
-  tree->SetBranchAddress("ESD", &fEvent);
+  AliESDEvent *fEvent= new AliESDEvent();  
+  fEvent->ReadFromTree(tree);
   tree->GetEntry(mEvent); 
+  if(fEvent->GetAliESDOld())fEvent->CopyFromOldESD();
 
   for (Int_t n =0; n< fEvent->GetNumberOfV0s(); n++)
   {
@@ -735,6 +738,7 @@ void VSDCreator::ConvertV0()
     mTreeV0->Fill();
   }
   // if(fEvent->GetNumberOfV0s()) mTreeV0->BuildIndex("label");
+  delete fEvent;
 }
 
 /**************************************************************************/
@@ -760,9 +764,12 @@ void VSDCreator::ConvertKinks()
   if (tree == 0) 
     throw(eH + "no esdTree.");
 
-  AliESD *fEvent=0;  
-  tree->SetBranchAddress("ESD", &fEvent);
+
+  AliESDEvent *fEvent= new AliESDEvent();  
+  fEvent->ReadFromTree(tree);
   tree->GetEntry(mEvent); 
+  if(fEvent->GetAliESDOld())fEvent->CopyFromOldESD();
+
 
   //  printf("CONVERT KINK Read %d entries in tree kinks \n",  fEvent->GetNumberOfKinks());
   for (Int_t n =0; n< fEvent->GetNumberOfKinks(); n++) {
@@ -798,6 +805,7 @@ void VSDCreator::ConvertKinks()
     mTreeKK->Fill();
   }
   if(fEvent->GetNumberOfKinks()) mTreeKK->BuildIndex("label");
+  delete fEvent;
 }
 /**************************************************************************/
 // GenInfo
