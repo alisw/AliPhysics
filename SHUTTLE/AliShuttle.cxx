@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.53  2007/07/12 09:26:28  jgrosseo
+updating hlt fxs base path
+
 Revision 1.52  2007/07/12 08:06:45  jgrosseo
 adding log messages in getfile... functions
 adding not implemented copy constructor in alishuttleconfigholder
@@ -1991,11 +1994,7 @@ const char* AliShuttle::GetFile(Int_t system, const char* detector,
 			Log(detector, Form("GetFileName - Copy of file %s from %s FXS failed",
 					filePath.Data(), GetSystemName(system)));
 			continue;
-		} else {
-			AliInfo(Form("File %s copied from %s FXS into %s/%s",
-						filePath.Data(), GetSystemName(system),
-						GetShuttleTempDir(), localFileName.Data()));
-		}
+		} 
 
 		if (fileChecksum.Length()>0)
 		{
