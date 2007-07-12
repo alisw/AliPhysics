@@ -467,13 +467,22 @@ void AliESDEvent::ReadFromTree(TTree *tree){
  
   // if we find the "ESD" branch on the tree we do have the old structure
   if(tree->GetBranch("ESD")){
-    printf("%s %d AliESDEvent::ReadFromTree() Reading old Tree \n",(char*)__FILE__,__LINE__);
-    tree->SetBranchAddress("ESD",&fESDOld);
-    CreateStdContent(); // create for copy
-    // when reading back we are not owner of the list 
-    // must not delete it
-    fESDObjects->SetOwner(kFALSE);
-    return;
+      char ** address = (char **)(tree->GetBranch("ESD")->GetAddress());
+      if (!address) {
+	  printf("%s %d AliESDEvent::ReadFromTree() Reading old Tree \n",(char*)__FILE__,__LINE__);
+	  tree->SetBranchAddress("ESD",&fESDOld);
+      } else {
+	  printf("%s %d AliESDEvent::ReadFromTree() Reading old Tree \n",(char*)__FILE__,__LINE__);
+	  printf("%s %d Branch already connected. Using existing branch address. \n",(char*)__FILE__,__LINE__);
+	  fESDOld = (AliESD*) (*address);
+      }
+      
+      
+      CreateStdContent(); // create for copy
+      // when reading back we are not owner of the list 
+      // must not delete it
+      fESDObjects->SetOwner(kFALSE);
+      return;
   }
 
   fESDOld = 0;
