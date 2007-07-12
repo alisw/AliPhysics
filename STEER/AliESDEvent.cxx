@@ -485,6 +485,16 @@ void AliESDEvent::ReadFromTree(TTree *tree){
 
 
   if(esdEvent){   
+      // Check if already connected to tree
+      TList* connectedList = (TList*) (tree->GetTree()->GetUserInfo()->FindObject("ESDObjectsConnectedToTree"));
+      if (connectedList) {
+	  // If connected use the connected list if objects
+	  fESDObjects->Delete();
+	  fESDObjects = connectedList;
+	  GetStdContent();
+	  return;
+      }
+      // Connect to tree
     if(fESDObjects->GetEntries()!=0){
       // this should not happen here put a warning?
     }
@@ -495,7 +505,8 @@ void AliESDEvent::ReadFromTree(TTree *tree){
     // copy constructor does not work...
     fESDObjects = (TList*)(esdEvent->GetList()->Clone());
     if(fESDObjects->GetEntries()<kESDListN){
-      printf("%s %d AliESDEvent::ReadFromTree() TList contains less than the standard contents %d < %d \n",(char*)__FILE__,__LINE__,fESDObjects->GetEntries(),kESDListN);
+      printf("%s %d AliESDEvent::ReadFromTree() TList contains less than the standard contents %d < %d \n",
+	     (char*)__FILE__,__LINE__,fESDObjects->GetEntries(),kESDListN);
     }
     // set the branch addresses
     TIter next(fESDObjects);
@@ -516,6 +527,9 @@ void AliESDEvent::ReadFromTree(TTree *tree){
     // when reading back we are not owner of the list 
     // must not delete it
     fESDObjects->SetOwner(kFALSE);
+    // Add list to user info
+    fESDObjects->SetName("ESDObjectsConnectedToTree");
+    tree->GetTree()->GetUserInfo()->Add(fESDObjects);
   }// no esdEvent
   else {
     // we can't get the list from the user data, create standard content
