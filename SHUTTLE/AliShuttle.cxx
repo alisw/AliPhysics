@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.51  2007/07/03 17:24:52  acolla
+root moved to v5-16-00. TFileMerger->Cp moved to TFile::Cp.
+
 Revision 1.50  2007/07/02 17:19:32  acolla
 preprocessor is run in a temp directory that is removed when process is finished.
 
@@ -2017,12 +2020,11 @@ const char* AliShuttle::GetFile(Int_t system, const char* detector,
 	fFXSlist[system].Add(fileParams);
 
 	static TString fullLocalFileName;
-	fullLocalFileName = TString::Format("%s/%s", GetShuttleTempDir(), localFileName.Data());
+	fullLocalFileName.Form("%s/%s", GetShuttleTempDir(), localFileName.Data());
 
-	AliInfo(Form("fullLocalFileName = %s", fullLocalFileName.Data()));
+	Log(fCurrentDetector, Form("GetFile - Retrieved file with id %s and source %s from %s to %s", id, source, GetSystemName(system), fullLocalFileName.Data()));
 
 	return fullLocalFileName.Data();
-
 }
 
 //______________________________________________________________________________________________
@@ -2085,6 +2087,8 @@ TList* AliShuttle::GetFileSources(Int_t system, const char* detector, const char
 	// Get sources producing the condition file Id from file exchange servers
 	// if id is NULL all sources are returned (distinct)
 	//
+
+	Log(detector, Form("GetFileSources - Retrieving sources with id %s from %s", id, GetSystemName(system)));
 	
 	// check if test mode should simulate a FXS error
 	if (fTestMode & kErrorFXSSources)
@@ -2092,7 +2096,6 @@ TList* AliShuttle::GetFileSources(Int_t system, const char* detector, const char
 		Log(detector, Form("GetFileSources - In TESTMODE - Simulating error while connecting to %s FXS", GetSystemName(system)));
 		return 0;
 	}
-
 
 	if (system == kDCS)
 	{
@@ -2148,8 +2151,9 @@ TList* AliShuttle::GetFileSources(Int_t system, const char* detector, const char
 		return list;
 	}
 
-	TSQLRow* aRow;
+	Log(detector, Form("GetFileSources - Found %d sources", aResult->GetRowCount()));
 
+	TSQLRow* aRow;
 	while ((aRow = aResult->Next()))
 	{
 
@@ -2171,6 +2175,8 @@ TList* AliShuttle::GetFileIDs(Int_t system, const char* detector, const char* so
 	// Get all ids of condition files produced by a given source from file exchange servers
 	//
 	
+        Log(detector, Form("GetFileIDs - Retrieving ids with source %s with %s", source, GetSystemName(system)));
+
 	// check if test mode should simulate a FXS error
 	if (fTestMode & kErrorFXSSources)
 	{
@@ -2222,6 +2228,8 @@ TList* AliShuttle::GetFileIDs(Int_t system, const char* detector, const char* so
 		delete aResult;
 		return list;
 	}
+
+        Log(detector, Form("GetFileIDs - Found %d ids", aResult->GetRowCount()));
 
 	TSQLRow* aRow;
 

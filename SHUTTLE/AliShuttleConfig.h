@@ -97,6 +97,9 @@ private:
 		void ExpandAndAdd(TObjArray* target, const char* entry);
 
 	private:
+		AliShuttleConfigHolder(const AliShuttleConfigHolder& other);  // not implemented
+		AliShuttleConfigHolder& operator= (const AliShuttleConfigHolder& other);  // not implemented
+
 		TString fDetector;  	// Detector name
 		TString fDCSHost; 	// Host name of the DCS server
 		Int_t 	fDCSPort; 	// port of the DCS server
