@@ -94,11 +94,12 @@ void AliTPCPreprocessor::Initialize(Int_t run, UInt_t startTime,
 
   // Preprocessor configuration
 
-	AliCDBEntry* entry = GetFromOCDB("Config", "Temperature");
+	AliCDBEntry* entry = GetFromOCDB("Config", "Preprocessor");
         if (entry) fConfEnv = (TEnv*) entry->GetObject();
         if ( fConfEnv==0 ) {
-           AliWarning(Form("Preprocessor Config OCDB entry missing.\n"));
            Log("AliTPCPreprocsessor: Preprocessor Config OCDB entry missing.\n");
+	   fConfigOK = kFALSE;
+           return;
         }
 
   // Temperature sensors
@@ -107,7 +108,6 @@ void AliTPCPreprocessor::Initialize(Int_t run, UInt_t startTime,
 	entry = GetFromOCDB("Config", "Temperature");
         if (entry) confTree = (TTree*) entry->GetObject();
         if ( confTree==0 ) {
-           AliError(Form("Temperature Config OCDB entry missing.\n"));
            Log("AliTPCPreprocsessor: Temperature Config OCDB entry missing.\n");
 	   fConfigOK = kFALSE;
 	   return;
@@ -123,7 +123,6 @@ void AliTPCPreprocessor::Initialize(Int_t run, UInt_t startTime,
 	entry = GetFromOCDB("Config", "Pressure");
         if (entry) confTree = (TTree*) entry->GetObject();
         if ( confTree==0 ) {
-           AliError(Form("Pressure Config OCDB entry missing.\n"));
            Log("AliTPCPreprocsessor: Pressure Config OCDB entry missing.\n");
 	   fConfigOK = kFALSE;
 	   return;
@@ -190,7 +189,6 @@ UInt_t AliTPCPreprocessor::MapTemperature(TMap* dcsAliasMap)
     fTemp->MakeSplineFit(map);
     AliInfo(Form("Temperature values extracted, fits performed.\n"));
   } else {
-    AliError(Form("No temperature map extracted.\n"));
     Log("AliTPCPreprocsessor: no temperature map extracted. \n");
     result=9;
   }
@@ -224,7 +222,6 @@ UInt_t AliTPCPreprocessor::MapPressure(TMap* dcsAliasMap)
     fPressure->MakeSplineFit(map);
     AliInfo(Form("Pressure values extracted, fits performed.\n"));
   } else {
-    AliError(Form("No atmospheric pressure map extracted.\n"));
     Log("AliTPCPreprocsessor: no atmospheric pressure map extracted. \n");
     result=9;
   }
@@ -259,7 +256,6 @@ UInt_t AliTPCPreprocessor::ExtractPedestals(Int_t sourceFXS)
  AliCDBEntry* entry = GetFromOCDB("Calib", "Pedestals");
  if (entry) calPadPed = (AliTPCCalPad*)entry->GetObject();
  if ( calPadPed==NULL ) {
-     AliWarning(Form("No previous TPC pedestal entry available.\n"));
      Log("AliTPCPreprocsessor: No previous TPC pedestal entry available.\n");
      calPadPed = new AliTPCCalPad("PedestalsMean","PedestalsMean");
  }
@@ -268,7 +264,6 @@ UInt_t AliTPCPreprocessor::ExtractPedestals(Int_t sourceFXS)
  entry = GetFromOCDB("Calib", "Noise");
  if (entry) calPadRMS = (AliTPCCalPad*)entry->GetObject();
  if ( calPadRMS==NULL ) {
-     AliWarning(Form("No previous TPC noise entry available.\n"));
      Log("AliTPCPreprocsessor: No previous TPC noise entry available.\n");
      calPadRMS = new AliTPCCalPad("PedestalsRMS","PedestalsRMS");
  }
