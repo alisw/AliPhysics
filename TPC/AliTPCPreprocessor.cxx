@@ -26,6 +26,8 @@
 #include "AliTPCCalPad.h"
 #include "AliTPCCalibPedestal.h"
 #include "TFile.h"
+#include "TTree.h"
+#include "TEnv.h"
 
 #include <TTimeStamp.h>
 
@@ -44,7 +46,7 @@ ClassImp(AliTPCPreprocessor)
 //______________________________________________________________________________________________
 AliTPCPreprocessor::AliTPCPreprocessor(AliShuttleInterface* shuttle) :
   AliPreprocessor("TPC",shuttle),
-  fTemp(0), fPressure(0), fConfigOK(kTRUE), fROC(0)
+  fConfEnv(0), fTemp(0), fPressure(0), fConfigOK(kTRUE), fROC(0)
 {
   // constructor
   fROC = AliTPCROC::Instance();
@@ -52,7 +54,7 @@ AliTPCPreprocessor::AliTPCPreprocessor(AliShuttleInterface* shuttle) :
 //______________________________________________________________________________________________
 // AliTPCPreprocessor::AliTPCPreprocessor(const AliTPCPreprocessor& org) :
 //   AliPreprocessor(org),
-//   fTemp(0), fPressure(0), fConfigOK(kTRUE)
+//   fConfEnv(0), fTemp(0), fPressure(0), fConfigOK(kTRUE)
 // {
 //   // copy constructor not implemented
 //   //   -- missing underlying copy constructor in AliPreprocessor
@@ -90,10 +92,19 @@ void AliTPCPreprocessor::Initialize(Int_t run, UInt_t startTime,
 		TTimeStamp(startTime).AsString(),
 		TTimeStamp(endTime).AsString()));
 
+  // Preprocessor configuration
+
+	AliCDBEntry* entry = GetFromOCDB("Config", "Temperature");
+        if (entry) fConfEnv = (TEnv*) entry->GetObject();
+        if ( fConfEnv==0 ) {
+           AliWarning(Form("Preprocessor Config OCDB entry missing.\n"));
+           Log("AliTPCPreprocsessor: Preprocessor Config OCDB entry missing.\n");
+        }
+
   // Temperature sensors
 
         TTree *confTree = 0;
-	AliCDBEntry* entry = GetFromOCDB("Config", "Temperature");
+	entry = GetFromOCDB("Config", "Temperature");
         if (entry) confTree = (TTree*) entry->GetObject();
         if ( confTree==0 ) {
            AliError(Form("Temperature Config OCDB entry missing.\n"));
@@ -129,6 +140,7 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
   // Amanda servers provide information directly through dcsAliasMap
 
   if (!dcsAliasMap) return 9;
+  if (dcsAliasMap->GetEntries() == 0 ) return 9;
   if (!fConfigOK) return 9;
 
   TString runType = GetRunType();
@@ -154,8 +166,13 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
 
 
   if(runType == kPedestalRunType) {
-    UInt_t pedestalResult = ExtractPedestals();
+    Int_t pedestalSource = AliShuttleInterface::kDAQ;
+    TString source = fConfEnv->GetValue("Pedestal","DAQ");
+    source.ToUpper();
+    if ( source == "HLT" ) pedestalSource = AliShuttleInterface::kHLT;
+    UInt_t pedestalResult = ExtractPedestals(pedestalSource);
     result += pedestalResult;
+
   }
 
 
@@ -192,8 +209,10 @@ UInt_t AliTPCPreprocessor::MapTemperature(TMap* dcsAliasMap)
    }
 
    return result;
+
 }
 //______________________________________________________________________________________________
+
 UInt_t AliTPCPreprocessor::MapPressure(TMap* dcsAliasMap)
 {
 
@@ -224,9 +243,13 @@ UInt_t AliTPCPreprocessor::MapPressure(TMap* dcsAliasMap)
    }
 
    return result;
+
 }
+
+
 //______________________________________________________________________________________________
-UInt_t AliTPCPreprocessor::ExtractPedestals()
+
+UInt_t AliTPCPreprocessor::ExtractPedestals(Int_t sourceFXS)
 {
  //
  //  Read pedestal file from file exchage server
@@ -238,13 +261,23 @@ UInt_t AliTPCPreprocessor::ExtractPedestals()
  if ( calPadPed==NULL ) {
      AliWarning(Form("No previous TPC pedestal entry available.\n"));
      Log("AliTPCPreprocsessor: No previous TPC pedestal entry available.\n");
-     calPadPed = new AliTPCCalPad("pedestals","pedestals");
+     calPadPed = new AliTPCCalPad("PedestalsMean","PedestalsMean");
  }
+
+ AliTPCCalPad *calPadRMS=0;
+ entry = GetFromOCDB("Calib", "Noise");
+ if (entry) calPadRMS = (AliTPCCalPad*)entry->GetObject();
+ if ( calPadRMS==NULL ) {
+     AliWarning(Form("No previous TPC noise entry available.\n"));
+     Log("AliTPCPreprocsessor: No previous TPC noise entry available.\n");
+     calPadRMS = new AliTPCCalPad("PedestalsRMS","PedestalsRMS");
+ }
+
 
  UInt_t result=0;
 
  Int_t nSectors = fROC->GetNSectors();
- TList* list = GetFileSources(AliShuttleInterface::kDAQ,"pedestals");
+ TList* list = GetFileSources(sourceFXS,"pedestals");
  if (list) {
 
 //  loop through all files from LDCs
@@ -253,7 +286,7 @@ UInt_t AliTPCPreprocessor::ExtractPedestals()
     while (list->At(index)!=NULL) {
      TObjString* fileNameEntry = (TObjString*) list->At(index);
      if (fileNameEntry!=NULL) {
-        TString fileName = GetFile(AliShuttleInterface::kDAQ, "pedestals",
+        TString fileName = GetFile(sourceFXS, "pedestals",
 	                                 fileNameEntry->GetString().Data());
         TFile *f = TFile::Open(fileName);
         AliTPCCalibPedestal *calPed;
@@ -262,8 +295,10 @@ UInt_t AliTPCPreprocessor::ExtractPedestals()
         //  replace entries for the sectors available in the present file
 
         for (Int_t sector=0; sector<nSectors; sector++) {
-           AliTPCCalROC *roc=calPed->GetCalRocPedestal(sector, kFALSE);
-           if ( roc )  calPadPed->SetCalROC(roc,sector);
+           AliTPCCalROC *rocPed=calPed->GetCalRocPedestal(sector, kFALSE);
+           if ( rocPed )  calPadPed->SetCalROC(rocPed,sector);
+           AliTPCCalROC *rocRMS=calPed->GetCalRocRMS(sector, kFALSE);
+           if ( rocRMS )  calPadRMS->SetCalROC(rocRMS,sector);
         }
       }
      ++index;
@@ -277,8 +312,15 @@ UInt_t AliTPCPreprocessor::ExtractPedestals()
     metaData.SetComment("Preprocessor AliTPC data base entries.");
 
     Bool_t storeOK = Store("Calib", "Pedestals", calPadPed, &metaData, 0, kTRUE);
-    if ( !storeOK ) result=1;
+    if ( !storeOK ) ++result;
+    storeOK = Store("Calib", "PadNoise", calPadRMS, &metaData, 0, kTRUE);
+    if ( !storeOK ) ++result;
 
-  }  // if(list)
+  }
+
   return result;
 }
+
+//______________________________________________________________________________________________
+
+
