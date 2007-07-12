@@ -671,7 +671,19 @@ Bool_t AliMpDDLStore::SetBusPatchLength()
 	} while(line[0] == '#');
 
 	TString tmp(AliMpHelper::Normalize(line));
-	Float_t length = tmp.Atof();
+
+	TObjArray* stringList = tmp.Tokenize(TString(" "));
+	
+	TString sLocalBusId = ((TObjString*)stringList->At(0))->GetString();
+	Int_t   localBusId  = sLocalBusId.Atoi();
+
+	TString sLength = ((TObjString*)stringList->At(1))->GetString();
+	Float_t length  = sLength.Atof();
+
+	delete stringList;
+
+	if (localBusId != iBusPatch + 1)
+	    AliWarning(Form("Wrong local buspatch id %d instead of %d", iBusPatch+1, localBusId));
 
 	Int_t busPatchId = ddl->GetBusPatchId(iBusPatch);
 	AliMpBusPatch* busPatch = GetBusPatch(busPatchId);
