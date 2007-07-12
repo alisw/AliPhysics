@@ -491,11 +491,12 @@ void AliESDEvent::ReadFromTree(TTree *tree){
   // Try to find AliESDEvent
   AliESDEvent *esdEvent = 0;
   esdEvent = (AliESDEvent*)tree->GetTree()->GetUserInfo()->FindObject("AliESDEvent");
-
+  //esdEvent = (AliESDEvent*)tree->GetUserInfo()->FindObject("AliESDEvent");
 
   if(esdEvent){   
       // Check if already connected to tree
-      TList* connectedList = (TList*) (tree->GetTree()->GetUserInfo()->FindObject("ESDObjectsConnectedToTree"));
+//      TList* connectedList = (TList*) (tree->GetTree()->GetUserInfo()->FindObject("ESDObjectsConnectedToTree"));
+      TList* connectedList = (TList*) (tree->GetUserInfo()->FindObject("ESDObjectsConnectedToTree"));
       if (connectedList) {
 	  // If connected use the connected list if objects
 	  fESDObjects->Delete();
@@ -538,7 +539,7 @@ void AliESDEvent::ReadFromTree(TTree *tree){
     fESDObjects->SetOwner(kFALSE);
     // Add list to user info
     fESDObjects->SetName("ESDObjectsConnectedToTree");
-    tree->GetTree()->GetUserInfo()->Add(fESDObjects);
+    tree->GetUserInfo()->Add(fESDObjects);
   }// no esdEvent
   else {
     // we can't get the list from the user data, create standard content
