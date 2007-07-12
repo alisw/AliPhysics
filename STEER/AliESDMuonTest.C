@@ -34,7 +34,7 @@
 #include "AliHeader.h"
 #include "AliLoader.h"
 #include "AliStack.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 
 // MUON includes
 #include "AliMUON.h"
@@ -92,10 +92,10 @@ void AliESDMuonTest(char * filename="galice.root", Int_t run=0){
     RunLoader->GetEvent(ievent);
 
     // setting ESD class pointer
-    AliESD* event = new AliESD();
+    AliESDEvent* event = new AliESDEvent();
+    event->CreateStdContent();
     char name[255];
-    sprintf(name,"%s","AliESD");
-    treeE->Branch(name,"AliESD", &event);
+    event->WriteToTree(treeE);
 
     event->SetRunNumber(run);
     event->SetEventNumber(ievent);
@@ -166,18 +166,18 @@ void AliESDMuonTest(char * filename="galice.root", Int_t run=0){
       Double_t ptInv = TMath::Abs(muonTrack->GetInverseBendingMomentum());
       cout << "  ptInv: "<<ptInv <<"  nb track: "<< event->GetNumberOfMuonTracks() << endl;
     }
-    treeE->SetBranchAddress(name, &event);
     treeE->Fill();
-    delete event;
+    event->Reset();
         
     muondata.ResetRecTracks();
     muondata.ResetRecTriggerTracks();
 
-  } // end loop on event  
+  } // end loop on event
+  treeE->GetUserInfo()->Add(event);
   ef->Write();
   ef->Close();
   MUONLoader->UnloadTracks();
-  //  delete event;
+  delete event;
 
 }
 

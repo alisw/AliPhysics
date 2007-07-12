@@ -11,7 +11,7 @@
 #include "AliAODTrack.h"
 #include "AliAODCluster.h"
 
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliESDMuonTrack.h"
 #include "AliESDVertex.h"
@@ -38,7 +38,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
   // connect to ESD
   TFile *inFile = TFile::Open(inFileName, "READ");
   TTree *t = (TTree*) inFile->Get("esdTree");
-  AliESD *esd = new AliESD();
+  AliESDEvent *esd = new AliESDEvent();
   esd->ReadFromTree(t);
 
   Int_t nEvents = t->GetEntries();

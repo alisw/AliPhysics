@@ -20,7 +20,7 @@
   #include <AliStack.h>
   #include <AliRunLoader.h>
   #include <AliRun.h>
-  #include <AliESD.h>
+  #include <AliESDEvent.h>
 #endif
 
 extern AliRun *gAlice;
@@ -117,14 +117,14 @@ Int_t AliESDComparison(const Char_t *dir=".") {
       delete rl;
       return 1;
    }
-   AliESD* event = new AliESD;
+   AliESDEvent* event = new AliESDEvent();
    TTree* tree = (TTree*) ef->Get("esdTree");
    if (!tree) {
       ::Error("AliESDComparison.C", "no ESD tree found");
       delete rl;
       return 1;
    }
-   tree->SetBranchAddress("ESD", &event);
+   event->ReadFromTree(tree);
 
    //****** Tentative particle type "concentrations"
    Double_t c[5]={0.01, 0.01, 0.85, 0.10, 0.05};

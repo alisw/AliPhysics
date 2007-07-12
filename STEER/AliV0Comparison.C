@@ -27,7 +27,7 @@
   #include "AliTrackReference.h"
   #include "AliRunLoader.h"
   #include "AliRun.h"
-  #include "AliESD.h"
+  #include "AliESDEvent.h"
 #endif
 
 Int_t GoodV0s(const Char_t *dir=".");
@@ -164,13 +164,13 @@ Int_t AliV0Comparison(Int_t code=310, const Char_t *dir=".") {
          return 5;
       }
    }
-   AliESD* event = new AliESD;
+   AliESD* event = new AliESDEvent;
    TTree* esdTree = (TTree*) ef->Get("esdTree");
    if (!esdTree) {
       ::Error("AliV0Comparison.C", "no ESD tree found");
       return 6;
    }
-   esdTree->SetBranchAddress("ESD", &event);
+   event->ReadFromTree(esdTree);
 
 
    //******* Loop over events *********

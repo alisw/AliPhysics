@@ -170,7 +170,7 @@ TProfile prof("prof","prof",10,0.5,5);
 #include "AliTracker.h"
 #include "AliComplexCluster.h"
 #include "AliMagF.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliITStrackMI.h"
 #include "AliTRDtrack.h"
@@ -307,7 +307,7 @@ void  AliESDRecInfo::UpdatePoints(AliESDtrack*track)
 
 //
 //
-void AliESDRecInfo::Update(AliMCInfo* info,AliTPCParam * /*par*/, Bool_t reconstructed, AliESD *event)
+void AliESDRecInfo::Update(AliMCInfo* info,AliTPCParam * /*par*/, Bool_t reconstructed, AliESDEvent *event)
 {
   //
   //
@@ -880,19 +880,11 @@ Int_t ESDCmpTr::SetIO(Int_t eventNr)
   //
  
   TTree* tree = (TTree*) f.Get("esdTree");
-  if (!tree) { 
-    Char_t ename[100]; 
-    sprintf(ename,"%d",eventNr);
-    fEvent = (AliESD*)f.Get(ename);
-    if (!fEvent){
-      sprintf(ename,"ESD%d",eventNr);
-      fEvent = (AliESD*)f.Get(ename);
-    }
-  }
-  else{
-    tree->SetBranchAddress("ESD", &fEvent);
-    tree->GetEntry(eventNr);
-  }
+  if(fEvent)delete fEvent;
+  fEvent = new AliESDEvent();
+  fEvent->ReadFromTree(tree);
+  tree->GetEntry(eventNr);
+
 
 
   /*

@@ -13,7 +13,7 @@
   #include "TStyle.h"
   #include "TStopwatch.h"
 
-  #include "AliESD.h"
+  #include "AliESDEvent.h"
 #endif
 
 extern TStyle *gStyle;
@@ -34,10 +34,10 @@ Int_t AliESDanalysis() {
 //****** File with the ESD
    TFile *ef=TFile::Open("AliESDs.root");
    if (!ef || !ef->IsOpen()) {cerr<<"Can't AliESDs.root !\n"; return 1;}
-   AliESD* event = new AliESD;
+   AliESDEvent* event = new AliESDEvent();
    TTree* tree = (TTree*) ef->Get("esdTree");
    if (!tree) {cerr<<"no ESD tree found\n"; return 1;};
-   tree->SetBranchAddress("ESD", &event);
+   event->ReadFromTree(tree);
 
    Int_t n=0;
 

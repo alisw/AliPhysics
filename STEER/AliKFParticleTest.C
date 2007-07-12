@@ -35,7 +35,7 @@
 
   #include "AliRun.h"
   #include "AliStack.h"
-  #include "AliESD.h"
+  #include "AliESDEvent.h"
   #include "AliTracker.h"
   #include "AliKFParticle.h"
   #include "AliKFVertex.h"
@@ -131,7 +131,7 @@ public:
   Int_t mcMotherID;        //* Monte Carlo ID of its mother
 };
 
-void RunV0(  AliESD *event )
+void RunV0(  AliESDEvent *event )
 {
   //* V0 finder
 
@@ -344,7 +344,7 @@ Int_t AliKFParticleTest(Int_t n1=0,Int_t n2=1000,char *dire="/d/alice10/sma/my_v
     if (!ef || !ef->IsOpen()) {cerr<<"Error open AliESDs.root !\n"; continue ;}
 
     //create event object
-    AliESD *event = new AliESD;
+    AliESD *event = new AliESDEvent;
 
     //Set pointer to the esd tree in the file
     TTree* tree = (TTree*) ef->Get("esdTree");
@@ -353,7 +353,7 @@ Int_t AliKFParticleTest(Int_t n1=0,Int_t n2=1000,char *dire="/d/alice10/sma/my_v
     if (!tree) {cerr<<"no ESD tree found\n"; continue;};
     
     //Set pointer to the esd object in the tree
-    tree->SetBranchAddress("ESD", &event);
+    event->ReadFromTree(event);
     
     //Number of events
     Int_t nevents=tree->GetEntriesFast();

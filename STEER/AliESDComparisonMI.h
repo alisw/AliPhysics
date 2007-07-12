@@ -206,7 +206,7 @@ private:
   Short_t *fSignedV0;                //! indicator that kink was not fake
   //
   TObjArray *fRecArray;           // container with rec infos
-  AliESD *fEvent;                 //!event
+  AliESDEvent *fEvent;                 //!event
   //
   AliTPCParam* fParamTPC;         //! AliTPCParam
   Int_t fNParticles;              //! number of particles in the input tree genTracks

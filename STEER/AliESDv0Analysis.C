@@ -14,7 +14,7 @@
   #include <TH1F.h>
   #include <TCanvas.h>
 
-  #include "AliESD.h"
+  #include "AliESDEvent.h"
 
 #endif
 
@@ -32,12 +32,12 @@ Int_t AliESDv0Analysis(const Char_t *dir=".") {
    if (!ef||!ef->IsOpen()) {cerr<<"Can't AliESDs.root !\n"; return 1;}
    cerr<<"\n****** "<<fname<<" ******\n";
 
-   AliESD* event = new AliESD;
+   AliESDEvent* event = new AliESDEvent;
 
 
    TTree* tree = (TTree*) ef->Get("esdTree");
    if (!tree) {cerr<<"no ESD tree found\n"; return 1;};
-   tree->SetBranchAddress("ESD", &event);
+   event->ReadFromTree(tree);
 
    Int_t rc=0,n=0;
 
