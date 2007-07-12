@@ -8,10 +8,11 @@
 /* $Id$ */
 
 //-------------------------------------------------------------------------
-//                          Class AliESD
-//   This is the class to deal with during the physical analysis of data
+//                          Class AliESDEvent
+//   This is the class to deal with during the physical analysis of data.
+//   It also ensures the backward compatibility with the old ESD format.
 //      
-//         Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
+// Origin: Christian Klein-Boesing, CERN, Christian.Klein-Boesing@cern.ch 
 //-------------------------------------------------------------------------
 
 #include <TClonesArray.h>

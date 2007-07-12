@@ -16,10 +16,11 @@
 /* $Id$ */
 
 //-----------------------------------------------------------------
-//           Implementation of the ESD class
-//   This is the class to deal with during the phisical analysis of data
-//   This class is generated directly by the reconstruction methods
-//      Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
+//           Implementation of the AliESDEvent class
+//   This is the class to deal with during the phisical analysis of data.
+//   It also ensures the backward compatibility with the old ESD format.
+//
+// Origin: Christian Klein-Boesing, CERN, Christian.Klein-Boesing@cern.ch
 //-----------------------------------------------------------------
 
 #include "TList.h"
