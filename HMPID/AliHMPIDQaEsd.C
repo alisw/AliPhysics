@@ -23,7 +23,7 @@
 #include <TROOT.h>
 #include <TVector3.h> 
 
-#include <AliESD.h> 
+#include <AliESDEvent.h> 
 #include <AliLog.h>
 #include <AliPID.h>
 
@@ -45,7 +45,7 @@ public:
 
 private:
   TTree   * fChain ;            //!pointer to the analyzed TTree or TChain
-  AliESD  * fESD ;              //! Declaration of leave types
+  AliESDEvent  * fESD ;              //! Declaration of leave types
 
   TObjArray * fOutputContainer; //output data container
 
@@ -77,9 +77,9 @@ void AliHMPIDQaEsd::ConnectInputData(const Option_t*)
   // One should first check if the branch address was taken by some other task
   char ** address = (char **)GetBranchAddress(0, "ESD");
   if (address) {
-    fESD = (AliESD*)(*address);
+    fESD = (AliESDEvent*)(*address);
   } else {
-    fESD = new AliESD();
+    fESD = new AliESDEvent();
     fESD->ReadFromTree(fChain);                                                                   //clm: new ESD access works for local, need to test it for PROOF!
     //SetBranchAddress(0, "esdTree", &fESD);
     //fChain->SetBranchStatus("*", 1);

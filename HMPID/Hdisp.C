@@ -12,7 +12,7 @@
 #include <TLegend.h>
 #include <TPolyMarker.h>
 #include <TBox.h>
-#include <AliESD.h>
+#include <AliESDEvent.h>
 #include <AliCDBManager.h>
 #include <AliCDBEntry.h>
 #include "AliHMPIDHit.h"
@@ -32,7 +32,7 @@ TFile *fHitFile; TTree *fHitTree; TClonesArray *fHitLst; TPolyMarker *fRenMip[7]
                                   TClonesArray *fSdiLst; 
 TFile *fDigFile; TTree *fDigTree; TObjArray    *fDigLst; TPolyMarker *fRenDig[7];    
 TFile *fCluFile; TTree *fCluTree; TObjArray    *fCluLst; TPolyMarker *fRenClu[7];    
-TFile *fEsdFile; TTree *fEsdTree;  AliESD      *fEsd;    TPolyMarker *fRenTxC[7]; TPolyMarker *fRenRin[7];  
+TFile *fEsdFile; TTree *fEsdTree;  AliESDEvent      *fEsd;    TPolyMarker *fRenTxC[7]; TPolyMarker *fRenRin[7];  
 TFile *fCosFile; TTree *fCosTree;
 AliRunLoader *gAL=0; 
 
@@ -43,7 +43,7 @@ void CreateContainers()
   fSdiLst=new TClonesArray("AliHMPIDDigit");
   fDigLst=new TObjArray(7); for(Int_t i=0;i<7;i++) fDigLst->AddAt(new TClonesArray("AliHMPIDDigit"),i);       fDigLst->SetOwner(kTRUE);
   fCluLst=new TObjArray(7); for(Int_t i=0;i<7;i++) fCluLst->AddAt(new TClonesArray("AliHMPIDCluster"),i);     fCluLst->SetOwner(kTRUE); 
-  fEsd   =new AliESD;
+  fEsd   =new AliESDEvent;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void CreateRenders()
@@ -211,7 +211,7 @@ void RenderClu(TObjArray *pClus)
   }//hits loop for this entry
 }//RenderClus()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void RenderEsd(AliESD *pEsd)
+void RenderEsd(AliESDEvent *pEsd)
 {//used by ReadEvent() or SimulateEvent() to render ESD to polymarker structures for rings and intersections one per chamber
   AliHMPIDRecon rec;
   for(Int_t iTrk=0;iTrk<pEsd->GetNumberOfTracks();iTrk++){//tracks loop to collect cerenkov rings and intersection points
@@ -232,7 +232,7 @@ void RenderEsd(AliESD *pEsd)
   }//tracks loop  
 }//RenEsd()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void SimulateEsd(AliESD *pEsd)
+void SimulateEsd(AliESDEvent *pEsd)
 {
   TParticle part; TLorentzVector mom;
   for(Int_t iTrk=0;iTrk<100;iTrk++){//stack loop
@@ -247,7 +247,7 @@ void SimulateEsd(AliESD *pEsd)
   }//stack loop  
 }//EsdFromStack()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void SimulateHits(AliESD *pEsd, TClonesArray *pHits)
+void SimulateHits(AliESDEvent *pEsd, TClonesArray *pHits)
 {//used by SimulateEvent to simulate hits out from provided ESD
   const Int_t kCerenkov=50000050;
   const Int_t kFeedback=50000051;

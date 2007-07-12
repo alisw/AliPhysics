@@ -15,7 +15,7 @@ void HESDfromKin(const char *name="default")
 
     AliLoader *pHL=gAL->GetDetectorLoader("HMPID");
     pHL->LoadRecPoints();
-    AliESD *pEsd = new AliESD();   
+    AliESDEvent *pEsd = new AliESDEvent();   
     TFile *pEsdFl=TFile::Open("AliESDs.root","recreate"); 
     gEsdTr=new TTree("esdTree","Sim ESD from kinematics"); 
     pEsd->CreateStdContent();    pEsd->WriteToTree(gEsdTr);  //clm: new ESD write schema: see Task Force meeting 20th June, 2007
@@ -34,7 +34,7 @@ void HESDfromKin(const char *name="default")
   pEsdFl->Write();pEsdFl->Close();        
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void SimEsd(AliLoader *pHL,AliESD *pEsd)
+void SimEsd(AliLoader *pHL,AliESDEvent *pEsd)
 {
   Printf("-----------------------------------------------");
   Printf("| SimESD: Utility to embed ESD from kinematics|");
@@ -65,7 +65,7 @@ void SimEsd(AliLoader *pHL,AliESD *pEsd)
   gAL->UnloadHeader();  gAL->UnloadKinematics();
 }//Esd()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void SimEsdHidden(AliLoader *pHL,AliESD *pEsd)
+void SimEsdHidden(AliLoader *pHL,AliESDEvent *pEsd)
 {
   Double_t rd=TMath::RadToDeg();
   Printf("----------------------------------------------");

@@ -5,7 +5,7 @@
 #include <TBenchmark.h>
 #include <TFile.h>    //docosmic()    
 #include <AliSelector.h>      //base class
-#include <AliESD.h>           
+#include <AliESDEvent.h>           
 #include <AliBitPacking.h> //HmpidPayload()
 #include "AliHMPIDDigit.h" 
 #include "AliHMPIDParam.h" 
@@ -33,7 +33,7 @@ class AliHMPIDSelector : public AliSelector {
 
  private: 
   TTree          *fChain ;   //!pointer to the analyzed TTree or TChain
-  AliESD         *fEsd ;     //!
+  AliESDEvent    *fEsd ;     //!
 
   TH2F           *fCkovP,*fMipXY;                //!
   TH1F           *fDifX;                         //!
