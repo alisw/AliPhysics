@@ -81,6 +81,7 @@ AliESD::AliESD():
   for (Int_t i=0; i<2; i++) fDiamondXY[i]=0.;
   for (Int_t i=0; i<3; i++) fDiamondCovXY[i]=0.;
 }
+
 //______________________________________________________________________________
 AliESD::AliESD(const AliESD& esd):
   TObject(esd),
@@ -135,69 +136,6 @@ AliESD::AliESD(const AliESD& esd):
   for (Int_t i=0; i<2; i++) fDiamondXY[i]=esd.fDiamondXY[i];
   for (Int_t i=0; i<3; i++) fDiamondCovXY[i]=esd.fDiamondCovXY[i];
 }
-
-//______________________________________________________________________________
-AliESD & AliESD::operator=(const AliESD& source) {
-
-  // Assignment operator
-
-  if(&source == this) return *this;
-
-  fEventNumberInFile = source.fEventNumberInFile;
-  fBunchCrossNumber = source.fBunchCrossNumber;
-  fOrbitNumber = source.fOrbitNumber;
-  fPeriodNumber = source.fPeriodNumber;
-  fRunNumber = source.fRunNumber;
-  fTimeStamp   = source.fTimeStamp;
-  fEventType   = source.fEventType;
-  fTriggerMask = source.fTriggerMask;
-  fTriggerCluster = source.fTriggerCluster;
-  fRecoVersion = source.fRecoVersion;
-  fMagneticField = source.fMagneticField;
-  fZDCN1Energy = source.fZDCN1Energy;
-  fZDCP1Energy = source.fZDCP1Energy;
-  fZDCN2Energy = source.fZDCN2Energy;
-  fZDCP2Energy = source.fZDCP2Energy;
-  fZDCEMEnergy = source.fZDCEMEnergy;
-  fZDCParticipants = source.fZDCParticipants;
-  fT0zVertex = source.fT0zVertex;
-  fSPDVertex = source.fSPDVertex;
-  fPrimaryVertex = source.fPrimaryVertex;
-  fSPDMult = source.fSPDMult;
-  fT0timeStart = source.fT0timeStart;
-  fTracks = *((TClonesArray*)source.fTracks.Clone());
-  fHLTConfMapTracks = *((TClonesArray*)source.fHLTConfMapTracks.Clone());
-  fHLTHoughTracks = *((TClonesArray*)source.fHLTHoughTracks.Clone());
-  fMuonTracks = *((TClonesArray*)source.fMuonTracks.Clone());
-  fPmdTracks = *((TClonesArray*)source.fPmdTracks.Clone());
-  fTrdTracks = *((TClonesArray*)source.fTrdTracks.Clone());
-  fV0s = *((TClonesArray*)source.fV0s.Clone());
-  fCascades = *((TClonesArray*)source.fCascades.Clone());
-  fKinks = *((TClonesArray*)source.fKinks.Clone());
-  fCaloClusters = *((TClonesArray*)source.fCaloClusters.Clone());
-  fEMCALClusters = source.fEMCALClusters;
-  fFirstEMCALCluster = source.fFirstEMCALCluster;
-  fPHOSClusters = source.fPHOSClusters;
-  fFirstPHOSCluster = source.fFirstPHOSCluster;
-  fESDFMD = source.fESDFMD;
-  fESDVZERO = source.fESDVZERO;
-  fEMCALTriggerPosition=source. fEMCALTriggerPosition;
-  fEMCALTriggerAmplitudes=source.fEMCALTriggerAmplitudes;
-  fPHOSTriggerPosition=source.fPHOSTriggerPosition;
-  fPHOSTriggerAmplitudes=source.fPHOSTriggerAmplitudes;
-  fErrorLogs = *((TClonesArray*)source.fErrorLogs.Clone());
-
-  for (Int_t i=0; i<24; i++) {
-    fT0time[i] = source.fT0time[i];
-    fT0amplitude[i] = source.fT0amplitude[i];
-  }
-  for (Int_t i=0; i<2; i++) fDiamondXY[i]=source.fDiamondXY[i];
-  for (Int_t i=0; i<3; i++) fDiamondCovXY[i]=source.fDiamondCovXY[i];
-
-  return *this;
-
-}
-
 
 //______________________________________________________________________________
 AliESD::~AliESD()

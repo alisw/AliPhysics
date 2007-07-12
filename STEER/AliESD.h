@@ -38,6 +38,7 @@ class AliESDfriend;
 class AliESD : public TObject {
 public:
   AliESD();
+  AliESD(const AliESD&);  
   virtual ~AliESD(); 
 
   void SetESDfriend(const AliESDfriend *f);
@@ -242,12 +243,9 @@ public:
     new(fErrorLogs[fErrorLogs.GetEntriesFast()]) AliRawDataErrorLog(*log);
   }
   Int_t GetNumberOfErrorLogs()   const {return fErrorLogs.GetEntriesFast();}
-  AliESD(const AliESD&);  
-  AliESD &operator=(const AliESD& source);
 
 protected:
-  
-
+  AliESD &operator=(const AliESD& source);
 
   // Event Identification
 
