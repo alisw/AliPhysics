@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.52  2007/07/12 08:06:45  jgrosseo
+adding log messages in getfile... functions
+adding not implemented copy constructor in alishuttleconfigholder
+
 Revision 1.51  2007/07/03 17:24:52  acolla
 root moved to v5-16-00. TFileMerger->Cp moved to TFile::Cp.
 
@@ -2060,7 +2064,7 @@ Bool_t AliShuttle::RetrieveFile(UInt_t system, const char* fxsFileName, const ch
 	}
 	else if (system == kHLT)
 	{
-		baseFXSFolder = "/opt/FXS";
+		baseFXSFolder = "/opt/FXS/";
 	}
 
 
