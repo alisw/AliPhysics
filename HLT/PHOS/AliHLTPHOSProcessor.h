@@ -4,6 +4,8 @@
 #include "AliHLTProcessor.h"
 #include "AliHLTPHOSConstants.h"
 #include "AliHLTPHOSCommonDefs.h"
+#include "TString.h"
+#include "AliHLTPHOSDefinitions.h"
 
 using namespace PhosHLTConst;
 

@@ -8,13 +8,14 @@
 //Base class for PHOS HLT raw data analysis components
 // see cxx file for more details
 
-#include "AliHLTPHOSDefinitions.h"
-#include "AliHLTPHOSCommonDefs.h"
+//#include "AliHLTPHOSDefinitions.h"
+//#include "AliHLTPHOSCommonDefs.h"
+
 #include "AliHLTPHOSProcessor.h"
 
 
-class AliRawReaderMemory;
-class AliCaloRawStream;
+//class AliRawReaderMemory;
+//class AliCaloRawStream;
 class AliHLTPHOSRawAnalyzer;
 class AliHLTPHOSRcuCellEnergyDataStruct;
 class AliHLTPHOSRcuChannelDataStruct;
@@ -56,8 +57,10 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTPHOSProcessor
   Bool_t fSendChannelData;       /**<wether or not to send raw data from the component into shared memory*/
   Double_t fTmpChannelData[ALTRO_MAX_SAMPLES];                        /**<temporary variable to store raw samples from a single altro channel*/
   Double_t fMaxValues[N_MODULES][N_ROWS_MOD][N_COLUMNS_MOD][N_GAINS]; /**<array to store cell energies*/
-  AliCaloRawStream *fPHOSRawStream;                   /**<Streamer for PHOS raw data, used by fPHOSRawMemory reader*/ 
-  AliRawReaderMemory *fRawMemoryReader;               /**<Decoder to read PHOS raw data on the altro format*/  
+
+  //  AliCaloRawStream *fPHOSRawStream;                   /**<Streamer for PHOS raw data, used by fPHOSRawMemory reader*/ 
+  //  AliRawReaderMemory *fRawMemoryReader;               /**<Decoder to read PHOS raw data on the altro format*/  
+
   AliHLTPHOSRcuCellEnergyDataStruct* fOutPtr;         /**<Pointer to outputbuffer to write results from the component into shared memory*/
  
   AliHLTPHOSMapper *fMapperPtr;

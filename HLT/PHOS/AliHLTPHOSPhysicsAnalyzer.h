@@ -8,6 +8,9 @@
 //Intended to be a base class for analysis
 
 #include "Rtypes.h"
+#include "AliHLTPHOSConstants.h"
+using namespace PhosHLTConst;
+
 
 class TObjArray;
 class TH1F;

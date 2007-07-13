@@ -2,15 +2,19 @@
  * See cxx source for full Copyright notice                               */
   
 /** @file   AliHLTPHOSClusterizer.h
-    @author Øystein Djuvsland
+    @author Ãystein Djuvsland
     @date   
     @brief  A temporary clusterizer for PHOS
 */
+
 
 #ifndef ALIHLTPHOSCLUSTERIZER_H
 #define ALIHLTPHOSCLUSTERIZER_H
 
 #include "AliHLTPHOSCommonDefs.h"
+#include "AliHLTPHOSConstants.h"
+
+using namespace PhosHLTConst;
 
 struct AliHLTPHOSClusterDataStruct;
 struct AliHLTPHOSRecPointDataStruct;

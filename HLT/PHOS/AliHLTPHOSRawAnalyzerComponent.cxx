@@ -31,66 +31,43 @@
 
 #include "AliHLTPHOSRawAnalyzer.h"
 #include "AliHLTPHOSRawAnalyzerComponent.h"
-#include "AliRawReaderMemory.h"
-#include "AliCaloRawStream.h"
 #include "AliHLTPHOSRcuCellEnergyDataStruct.h"
 #include "AliHLTPHOSRcuChannelDataStruct.h"
 #include "AliHLTDDLDecoder.h"
 #include "AliHLTAltroData.h"
-
 #include "AliHLTPHOSMapper.h"
+
 
 using namespace std;
 
-
-//_________________________________________________________________________________________________
 AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent():AliHLTPHOSProcessor(), fAnalyzerPtr(0), 
-fSendChannelData(kFALSE),fPHOSRawStream(0), fRawMemoryReader(0), fOutPtr(0)
+fSendChannelData(kFALSE),fOutPtr(0)
 {
   fMapperPtr = new AliHLTPHOSMapper();
 } 
 
-//_________________________________________________________________________________________________
+
 AliHLTPHOSRawAnalyzerComponent::~AliHLTPHOSRawAnalyzerComponent()
 {
-  if(fRawMemoryReader != 0)
-    {
-      delete fRawMemoryReader;
-    }
-    if(fPHOSRawStream != 0)
-    {
-      delete fPHOSRawStream;
-    }
+
 }
 
-//_________________________________________________________________________________________________
+
 AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent(const AliHLTPHOSRawAnalyzerComponent & ) : AliHLTPHOSProcessor(), fAnalyzerPtr(0), 
-fSendChannelData(kFALSE),fPHOSRawStream(0), fRawMemoryReader(0), fOutPtr(0)
+fSendChannelData(kFALSE),fOutPtr(0)
 {
 
 }
 
-//_________________________________________________________________________________________________
+
 int 
 AliHLTPHOSRawAnalyzerComponent::Deinit()
 {
   Logging(kHLTLogInfo, "HLT", "PHOS", ",AliHLTPHOSRawAnalyzerComponen Deinit");
-
-  if(fRawMemoryReader !=0)
-    {
-      delete fRawMemoryReader;
-    }
-    
-  if(fPHOSRawStream != 0)
-    {
-      delete fPHOSRawStream;
-    }
-  return 0;
-
   return 0;
 }
 
-//_________________________________________________________________________________________________
+
 const char* 
 AliHLTPHOSRawAnalyzerComponent::GetComponentID()
 {
@@ -98,7 +75,6 @@ AliHLTPHOSRawAnalyzerComponent::GetComponentID()
 }
 
 
-//_________________________________________________________________________________________________
 void
 AliHLTPHOSRawAnalyzerComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
 {
@@ -109,7 +85,7 @@ AliHLTPHOSRawAnalyzerComponent::GetInputDataTypes( vector<AliHLTComponentDataTyp
   }
 }
 
-//_________________________________________________________________________________________________
+
 AliHLTComponentDataType 
 AliHLTPHOSRawAnalyzerComponent::GetOutputDataType()
 {
@@ -117,7 +93,6 @@ AliHLTPHOSRawAnalyzerComponent::GetOutputDataType()
 }
 
 
-//_________________________________________________________________________________________________
 void
 AliHLTPHOSRawAnalyzerComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier )
 
@@ -126,20 +101,15 @@ AliHLTPHOSRawAnalyzerComponent::GetOutputDataSize(unsigned long& constBase, doub
   inputMultiplier = 1;
 }
 
-//_________________________________________________________________________________________________
+
 int 
 AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
 {
-  Int_t sampleCnt         = 0;
-  Int_t processedChannels = 0;
   UInt_t offset           = 0; 
   UInt_t mysize           = 0;
   UInt_t tSize            = 0;
   Int_t tmpChannelCnt     = 0;
-  Int_t tmpStartIndex     = 0;
   AliHLTUInt8_t* outBPtr;
-  unsigned long first;
-  unsigned long last;
   outBPtr = outputPtr;
   const AliHLTComponentBlockData* iter = NULL; 
   unsigned long ndx;
@@ -160,8 +130,6 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
       fDecoderPtr->Decode();
       fOutPtr =  (AliHLTPHOSRcuCellEnergyDataStruct*)outBPtr;
 
-      //      int tmpCnt = 0;
-
       while( fDecoderPtr->NextChannel(fAltroDataPtr) == true )
 	{
 
@@ -174,7 +142,6 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 	  fOutPtr->fValidData[tmpChannelCnt].fEnergy  = (float)fAnalyzerPtr->GetEnergy();
 	  fOutPtr->fValidData[tmpChannelCnt].fTime    = (float)fAnalyzerPtr->GetTiming();
 	  tmpChannelCnt ++;
-	  //	  tmpCnt ++; 
 	}
 
       mysize += sizeof(AliHLTPHOSRcuCellEnergyDataStruct);
@@ -218,30 +185,18 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 }//end DoEvent
 
 
-
-//_________________________________________________________________________________________________
 int
 AliHLTPHOSRawAnalyzerComponent::DoInit( int argc, const char** argv )
 {
-
-cout <<"AliHLTPHOSRawAnalyzerComponent::DoInit( int argc, const char** argv ) "<< endl;
-
+  cout <<"AliHLTPHOSRawAnalyzerComponent::DoInit( int argc, const char** argv ) "<< endl;
   fAltroDataPtr = new AliHLTAltroData();
   fDecoderPtr = new AliHLTDDLDecoder();
   fSendChannelData = kFALSE;
   fPrintInfo = kFALSE;
   Reset();
-  fRawMemoryReader = new AliRawReaderMemory();
-  fPHOSRawStream = new  AliCaloRawStream(fRawMemoryReader,"PHOS");
-
-  //  fPHOSRawStream->SetOldRCUFormat(kFALSE);
-
-  fPHOSRawStream->SetOldRCUFormat(kTRUE);
-
   int iResult=0;
   TString argument="";
   iResult = ScanArguments(argc, argv);
-
 
   if(fIsSetEquippmentID == kFALSE)
     {
@@ -252,69 +207,16 @@ cout <<"AliHLTPHOSRawAnalyzerComponent::DoInit( int argc, const char** argv ) "<
     }
   else
     {
-      fRawMemoryReader->SetEquipmentID(fkEquippmentID);
+      iResult = 0; 
+      //      fRawMemoryReader->SetEquipmentID(fkEquippmentID);
     }
 
+  //  return iResult;
+  //  return 0;
   return iResult;
-
-
-return 0;
-
 }
 
-/*
-//_________________________________________________________________________________________________
-void
-AliHLTPHOSRawAnalyzerComponent::DumpData(int gain) const
-{
-  for(int mod = 0; mod < N_MODULES; mod ++)
-    {
-      printf("\n ***********  MODULE %d ************\n", mod);
-      for(int row = 0; row <  N_ROWS_MOD; row ++)
-	{
-	  for(int col = 0; col <  N_COLUMNS_MOD; col ++)
-	    {
-	      if( fMaxValues[mod][row][col][0] != 0)
-		{ 
-		  cout << fMaxValues[mod][row][col][gain] << "\t";
-		}
-	    }
-	} 
-    }
-}
-*/
 
-
-//_________________________________________________________________________________________________
-
-/*
-void
-AliHLTPHOSRawAnalyzerComponent::DumpChannelData(Double_t *data) const
-{
-  cout << endl;
-  for(int i=0; i<  ALTRO_MAX_SAMPLES; i++)
-    {
-      if (data[i] != 0)
-	{
-	  cout <<i <<"\t";
-	}
-    }
-  cout << endl;
-  
-  for(int i=0; i<  ALTRO_MAX_SAMPLES; i++)
-    {
-      if (data[i] != 0)
-	{
-	  cout <<data[i] <<"\t";
-	}
-    }
-  
-  cout << endl;
-}
-*/
-
-
-//_________________________________________________________________________________________________
 void
 AliHLTPHOSRawAnalyzerComponent::Reset()
 {
@@ -337,9 +239,6 @@ AliHLTPHOSRawAnalyzerComponent::Reset()
 } // end Reset
 
 
-
-
-//_________________________________________________________________________________________________
 void
 AliHLTPHOSRawAnalyzerComponent::ResetDataPtr(int startindex, int sampleCnt)
 {

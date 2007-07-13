@@ -31,6 +31,9 @@
 #include "AliHLTPHOSValidCellDataStruct.h"
 #include "AliHLTPHOSRecPointDataStruct.h"
 #include "AliHLTPHOSClusterDataStruct.h"
+#include "AliHLTPHOSConstants.h"
+
+using namespace PhosHLTConst;
 
 
 ClassImp(AliHLTPHOSClusterizer);

@@ -1,6 +1,6 @@
 #include "AliHLTPHOSProcessor.h"
-#include "AliHLTPHOSCommonDefs.h"
-#include "TString.h"
+//#include "AliHLTPHOSCommonDefs.h"
+//#include "TString.h"
 
 const AliHLTComponentDataType AliHLTPHOSProcessor::fgkInputDataTypes[]={kAliHLTVoidDataType,{0,"",""}}; //'zero' terminated array
 
