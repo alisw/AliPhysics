@@ -1,3 +1,8 @@
+2007-07-13  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* alice-macros/tpc_clusters.C:
+	New macro from Jouri: display TPC clusters.
+
 2007-07-12  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* alice-macros/clusters_from_index.C:
