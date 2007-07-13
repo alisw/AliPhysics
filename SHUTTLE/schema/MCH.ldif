@@ -9,7 +9,7 @@ DCSPort: 4242
 DCSalias: MchHvLvRight/Chamber[00..03]Right/Quad0Sect[0..2].actual.vMon
 DCSalias: MchHvLvLeft/Chamber[00..03]Left/Quad1Sect[0..2].actual.vMon
 DCSalias: MchHvLvLeft/Chamber[00..03]Left/Quad2Sect[0..2].actual.vMon
-DCSalias: MchHvLvRight/Chamber[00..03]Right/Quad3Sect[2..0].actual.vMon
+DCSalias: MchHvLvRight/Chamber[00..03]Right/Quad3Sect[0..2].actual.vMon
 DCSalias: MchHvLvRight/Chamber[04..09]Right/Slat[00..08].actual.vMon
 DCSalias: MchHvLvLeft/Chamber[04..09]Left/Slat[00..08].actual.vMon
 DCSalias: MchHvLvRight/Chamber[06..09]Right/Slat[09..12].actual.vMon
