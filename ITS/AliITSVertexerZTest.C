@@ -38,18 +38,11 @@ void AliITSVertexerZTest(Float_t delphi=0.05,Float_t window=3.,Float_t initx=0.,
     cerr<<"AliITSVertexerZTest.C : LoadKinematics returned error"<<endl;
     return;
   }
-  TGeoManager::Import("geometry.root");
-  AliITSLoader* ITSloader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
+  
+  AliGeomManager::LoadGeometry("geometry.root");
 
-  if(!ITSloader){
-    cerr<<"AliITSVertexerZTest.C :  ITS loader not found"<<endl;
-    return;
-  }
-  //  ITSloader->LoadRecPoints("read");
-  //  TFile *fo = new TFile("vertici.root","recreate");
-  //  AliITSVertexerPPZ *dovert = new AliITSVertexerPPZ("default",initx,inity);
   AliITSVertexerZ *dovert = new AliITSVertexerZ("default",initx,inity);
-  dovert->SetDebug(0);
+  //dovert->SetDebug(0);
   //  dovert->SetDiffPhiMax(delphi);
   //  dovert->SetWindow(window);
   dovert->PrintStatus();
