@@ -28,6 +28,7 @@
 #include <TStopwatch.h>
 #include <TSystem.h>
 #include <TVirtualMC.h>
+#include <TROOT.h>
  
 #include "AliLog.h"
 #include "AliDetector.h"
@@ -42,6 +43,9 @@
 #include "AliTrackReference.h"
 #include "AliSimulation.h"
 #include "AliGeomManager.h"
+#include "AliCDBManager.h"
+#include "AliCDBStorage.h"
+#include "AliCDBEntry.h"
 
 
 ClassImp(AliMC)
@@ -152,15 +156,25 @@ void  AliMC::ConstructGeometry()
   // at InitGeometry().
   //
 
-  if(gAlice->IsRootGeometry()){
-    // Load geometry
-    const char *geomfilename = gAlice->GetGeometryFileName();
-    if(gSystem->ExpandPathName(geomfilename)){
-      AliInfo(Form("Loading geometry from file:\n %40s\n\n",geomfilename));
-      TGeoManager::Import(geomfilename);
+  if(gAlice->IsRootGeometry()){ //load geometry either from CDB or from file
+    if(gAlice->IsGeomFromCDB()){
+      AliInfo("Loading geometry from CDB default storage");
+      AliCDBPath path("GRP","Geometry","Data");
+      AliCDBEntry *entry=AliCDBManager::Instance()->Get(path.GetPath());
+      if(!entry) AliFatal("Unable to load geometry from CDB!");
+      entry->SetOwner(0);
+      gGeoManager = (TGeoManager*) entry->GetObject();
+      if (!gGeoManager) AliFatal("TGeoManager object not found in the specified CDB entry!");
     }else{
-      AliInfo(Form("Geometry file %40s not found!\n",geomfilename));
-      return;
+      // Load geometry
+      const char *geomfilename = gAlice->GetGeometryFileName();
+      if(gSystem->ExpandPathName(geomfilename)){
+	AliInfo(Form("Loading geometry from file:\n %40s",geomfilename));
+	TGeoManager::Import(geomfilename);
+      }else{
+	AliInfo(Form("Geometry file %40s not found!\n",geomfilename));
+	return;
+      }
     }
   }else{
     // Create modules, materials, geometry
@@ -185,8 +199,10 @@ Bool_t  AliMC::MisalignGeometry()
 {
 // Call misalignment code if AliSimulation object was defined.
 
-   //Set alignable volumes for the whole geometry
-   SetAllAlignableVolumes();
+   if(!gAlice->IsRootGeometry()){
+     //Set alignable volumes for the whole geometry
+     SetAllAlignableVolumes();
+   }
    // Misalign geometry via AliSimulation instance
    if (!AliSimulation::GetInstance()) return kFALSE;
    AliGeomManager::SetGeometry(gGeoManager);

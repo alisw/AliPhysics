@@ -60,6 +60,11 @@ void Config()
 
     new     TGeant3TGeo("C++ Interface to Geant3");
 
+    if(!AliCDBManager::Instance()->IsDefaultStorageSet()){
+      AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+      AliCDBManager::Instance()->SetRun(0);
+    }
+
     AliRunLoader* rl=0x0;
 
     AliLog::Message(AliLog::kInfo, "Creating Run Loader", "Config.C", "Config.C", "Config()"," Config.C", __LINE__);
@@ -75,6 +80,8 @@ void Config()
     rl->SetCompressionLevel(2);
     rl->SetNumberOfEventsPerFile(3);
     gAlice->SetRunLoader(rl);
+    // gAlice->SetGeometryFromFile("geometry.root");
+    // gAlice->SetGeometryFromCDB();
 
     // Set the trigger configuration
     gAlice->SetTriggerDescriptor("Pb-Pb");

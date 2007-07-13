@@ -82,7 +82,12 @@ public:
    Bool_t         IsRootGeometry() const {return fIsRootGeometry;}
    void           SetRootGeometry(Bool_t flag=kTRUE);
    const char*    GetGeometryFileName() const {return fGeometryFileName.Data();}
-   void           SetGeometryFileName(const char *name) {fGeometryFileName = name;}
+   void           SetGeometryFromFile(const char *filename) {
+     SetRootGeometry();
+     fGeometryFileName = filename;
+   }
+   void           SetGeometryFromCDB();
+   Bool_t         IsGeomFromCDB() const {return fGeometryFromCDB;}
    const char*    GetTriggerDescriptor() const {return fTriggerDescriptor.Data();}
    void           SetTriggerDescriptor(const char *name) {fTriggerDescriptor = name;}
    virtual  void  ResetDigits();
@@ -160,6 +165,7 @@ protected:
   TRandom       *fRandom;            //  Pointer to the random number generator
   TString        fBaseFileName;      //  Name of the base root file
   Bool_t         fIsRootGeometry;    //! Flag telling if the geometry is loaded from file
+  Bool_t         fGeometryFromCDB;  //! Flag telling if the geometry is to be loaded from OCDB
   TString        fGeometryFileName;  //! Name of the geometry file
   TString        fTriggerDescriptor; //  Trigger descriptor identifier
   AliRunLoader  *fRunLoader;         //!run getter - written as a separate object

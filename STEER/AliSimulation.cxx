@@ -276,7 +276,7 @@ void AliSimulation::InitCDBStorage()
   {
     AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     AliWarning("Default CDB storage has been already set !");
-    AliWarning(Form("Ignoring the default storage declared in AliReconstruction: %s",fCDBUri.Data()));
+    AliWarning(Form("Ignoring the default storage declared in AliSimulation: %s",fCDBUri.Data()));
     AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     fCDBUri = "";
   }
@@ -385,7 +385,7 @@ Bool_t AliSimulation::MisalignGeometry(AliRunLoader *runLoader)
   }
 
   // Export ideal geometry 
-  AliGeomManager::GetGeometry()->Export("geometry.root");
+  if(!gAlice->IsRootGeometry()) AliGeomManager::GetGeometry()->Export("geometry.root");
 
   // Load alignment data from CDB and apply to geometry through AliGeomManager
   if(fLoadAlignFromCDB){
