@@ -27,7 +27,9 @@ UInt_t AliHLTPHOSPhysicsAnalyzerSpectrumComponent::fgCount = 0;
 AliHLTPHOSPhysicsAnalyzerSpectrumComponent gAliHLTPHOSPhysicsAnalyzerSpectrumComponent;
 
 AliHLTPHOSPhysicsAnalyzerSpectrumComponent::AliHLTPHOSPhysicsAnalyzerSpectrumComponent():AliHLTProcessor(), fAnalyzerPtr(0), 
-											       fRootHistPtr(0)
+											 fPeakFitter(0), fRootHistPtr(0),
+											 fWriteInterval(0)
+							 
 {
   //Constructor
 }
@@ -55,9 +57,9 @@ AliHLTPHOSPhysicsAnalyzerSpectrumComponent::~AliHLTPHOSPhysicsAnalyzerSpectrumCo
       
 }
 
-AliHLTPHOSPhysicsAnalyzerSpectrumComponent::AliHLTPHOSPhysicsAnalyzerSpectrumComponent(const AliHLTPHOSPhysicsAnalyzerSpectrumComponent &):AliHLTProcessor(),
-																		    fAnalyzerPtr(0),
-																		    fRootHistPtr(0)
+AliHLTPHOSPhysicsAnalyzerSpectrumComponent::AliHLTPHOSPhysicsAnalyzerSpectrumComponent(const AliHLTPHOSPhysicsAnalyzerSpectrumComponent &):AliHLTProcessor(), fAnalyzerPtr(0), 
+																	   fPeakFitter(0), fRootHistPtr(0), 
+																	   fWriteInterval(0)
 {
   //Copy constructor not implemented 
 }
@@ -128,16 +130,17 @@ AliHLTPHOSPhysicsAnalyzerSpectrumComponent::GetOutputDataSize(unsigned long& con
 {
   //Get the data size of the output
   constBase = 30;
-  inputMultiplier = 1;
+  inputMultiplier = 2;
 }
 
 
-Int_t 
-AliHLTPHOSPhysicsAnalyzerSpectrumComponent::DoEvent(const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks,
-						    AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* /*outputPtr*/, AliHLTUInt32_t& /*size*/,
-						    std::vector<AliHLTComponentBlockData>& /*outputBlocks*/)
-{
+//Int_t 
+//AliHLTPHOSPhysicsAnalyzerSpectrumComponent::DoEvent(const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks,
+//					    AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* /*outputPtr*/, AliHLTUInt32_t& /*size*/,
+//					    std::vector<AliHLTComponentBlockData>& /*outputBlocks*/)
+//{
   //Do event
+  /*
   const AliHLTComponentBlockData* iter = NULL; 
   unsigned long ndx; 
   
@@ -159,17 +162,60 @@ AliHLTPHOSPhysicsAnalyzerSpectrumComponent::DoEvent(const AliHLTComponentEventDa
 
   if(fgCount%fWriteInterval == 0 && fgCount != 0)
     {
-      PushBack(fRootHistPtr, kAliHLTAnyDataType, (AliHLTUInt32_t)0);
+      //    PushBack(fRootHistPtr, kAliHLTAnyDataType, (AliHLTUInt32_t)0);
     }
 
   fgCount++; 
+
+  // if(fgCount%100==0) 
+  // {
+  //  printf("fgCount: %d\n\n", fgCount);
+  cout << "fgCount: " << fgCount << endl;
+      // }
   
   return 0;
   
 }
+*/
+
+int 
+AliHLTPHOSPhysicsAnalyzerSpectrumComponent::DoEvent(const AliHLTComponentEventData &/*evtData*/, AliHLTComponentTriggerData &/*trigData*/) 	
+{
+  const AliHLTComponentBlockData* iter = NULL; 
+  int ndx = 0;
+  //int nBlocks = GetNumberOfInputBlocks();
+
+  if((iter = GetFirstInputBlock(AliHLTPHOSPhysicsDefinitions::fgkAliHLTClusterDataType)))
+    {
+    fClusterArrayPtr[ndx] = reinterpret_cast<AliHLTPHOSClusterDataStruct*>(iter->fPtr);
+    }
+
+  while((iter = GetNextInputBlock()))
+    {
+      ndx++;
+      fClusterArrayPtr[ndx] = reinterpret_cast<AliHLTPHOSClusterDataStruct*>(iter->fPtr);
+    }
+  
+  fAnalyzerPtr->Analyze(fClusterArrayPtr, ndx);
+  
+  if(fgCount%fWriteInterval == 0 && fgCount != 0)
+    {
+      PushBack(fRootHistPtr, kAliHLTAnyDataType, (AliHLTUInt32_t)0);
+    }
+  
+  fgCount++; 
+
+  if(fgCount%100==0) 
+    {
+      //printf("fgCount: %d\n\n", fgCount);
+      cout << "fgCount: " << fgCount << endl;
+    }
+  
+  return 0;
+}
 
 Int_t
-AliHLTPHOSPhysicsAnalyzerSpectrumComponent::DoInit(int argc, const char** argv )
+AliHLTPHOSPhysicsAnalyzerSpectrumComponent::DoInit(Int_t argc, const Char_t** argv )
 {
   //Initialize the component
   Float_t firstThreshold = atof(argv[0]);

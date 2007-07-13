@@ -6,7 +6,7 @@
 
 
 
-AliHLTDDLDecoder::AliHLTDDLDecoder() : f32DtaPtr(0), f8DtaPtr(0),fN32HeaderWords(8), fN32RcuTrailerWords(1), fNDDLBlocks(0), 
+AliHLTDDLDecoder::AliHLTDDLDecoder() : f32DtaPtr(0), f8DtaPtr(0),fN32HeaderWords(8), fN32RcuTrailerWords(2), fNDDLBlocks(0), 
 				       fBufferPos(0), fN40AltroWords(0), fN40RcuAltroWords(0), fSize(0), fSegmentation(0), 
 				       f32LastDDLBlockSize(5), f32PayloadSize(0),fBufferIndex(0), fN10bitWords(0)
 {
@@ -66,6 +66,13 @@ AliHLTDDLDecoder::Decode()
     }
 }
 
+/*
+  int tmpMarker = 0;
+  int tmpMask = 0x3c0;
+  tmpMarker = (buffer[index] << 4 ) | ((buffer[index-1] & tmpMask) >> 6);  
+  return tmpMarker;
+*/
+
 bool
 AliHLTDDLDecoder::NextChannel(AliHLTAltroData *altroDataPtr)
 {
@@ -73,9 +80,23 @@ AliHLTDDLDecoder::NextChannel(AliHLTAltroData *altroDataPtr)
 
   if(fBufferPos >  fN32HeaderWords)
     {
-      tmp  =  GetMarker(fBuffer, fBufferPos);
+      //      tmp  =  GetMarker(fBuffer, fBufferPos);
+      
+      if((fBuffer[fBufferPos] << 4 ) | ((fBuffer[fBufferPos-1] & 0x3c0) >> 6) == 0x2aaa)
+	{
+	  altroDataPtr->fIsComplete = true;
+	  fComplete ++;
+	}
+      else
+	{
+	  altroDataPtr->fIsComplete = false;
+	  fInComplete ++;
+	  printf("\nERROR!!!!     marker = 0x%x\n", tmp);
+	}
+
       //   printf("\nmarker = 0x%x", GetMarker(fBuffer, fBufferPos));
- 
+
+      /* 
       if(tmp == 0x2aaa)
 	{
 	  //	  printf("\nmarker = 0x%x", tmp);
@@ -88,6 +109,7 @@ AliHLTDDLDecoder::NextChannel(AliHLTAltroData *altroDataPtr)
 	  fInComplete ++;
 	  //	  printf("\nERROR!!!!     marker = 0x%x\n", tmp);
 	}
+      */
 
       fBufferPos --;
       fNAltro10bitWords = ( (fBuffer[fBufferPos] & 0x3f) << 4 )   |  ((fBuffer[fBufferPos -1]  & (0xF << 6)) >> 6) ;

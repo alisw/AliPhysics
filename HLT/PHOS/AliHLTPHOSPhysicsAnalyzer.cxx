@@ -2,7 +2,7 @@
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
- * Author: Ãystein Djuvsland <oysteind@ift.uib.no>                        *
+ * Author: Øystein Djuvsland <oysteind@ift.uib.no>                        *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
@@ -24,12 +24,10 @@
 #include "AliHLTPHOSCommonDefs.h"
 #include "AliHLTPHOSClusterDataStruct.h"
  
-#include "AliHLTPHOSConstants.h"
-using namespace PhosHLTConst;
 
 ClassImp(AliHLTPHOSPhysicsAnalyzer);
 
-AliHLTPHOSPhysicsAnalyzer::AliHLTPHOSPhysicsAnalyzer():fClustersPtr(NULL)
+AliHLTPHOSPhysicsAnalyzer::AliHLTPHOSPhysicsAnalyzer():fClustersPtr(0), fRootHistPtr(0), fPHOSRadius(0)
 						    
 						       
 {
@@ -47,7 +45,7 @@ AliHLTPHOSPhysicsAnalyzer::AliHLTPHOSPhysicsAnalyzer():fClustersPtr(NULL)
     }
 }
 
-AliHLTPHOSPhysicsAnalyzer::AliHLTPHOSPhysicsAnalyzer(const AliHLTPHOSPhysicsAnalyzer &):fClustersPtr(NULL)
+AliHLTPHOSPhysicsAnalyzer::AliHLTPHOSPhysicsAnalyzer(const AliHLTPHOSPhysicsAnalyzer &):fClustersPtr(0), fRootHistPtr(0), fPHOSRadius(0)
 
 {
   //Cooy constructor

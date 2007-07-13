@@ -32,7 +32,6 @@ AliHLTPHOSClusterizerComponent::AliHLTPHOSClusterizerComponent():AliHLTProcessor
 								 fRecPointStructArrayPtr(0), fRecPointListPtr(0)
 {
   //Constructor
-
 }
 
 AliHLTPHOSClusterizerComponent::~AliHLTPHOSClusterizerComponent()
@@ -53,10 +52,14 @@ AliHLTPHOSClusterizerComponent::~AliHLTPHOSClusterizerComponent()
 
   if(fRecPointStructArrayPtr)
     {
+      for(int i = 0; i < 1000; i++) 
+	{
+	  fRecPointStructArrayPtr[i].Del();
+	}
       delete fRecPointStructArrayPtr;
       fRecPointStructArrayPtr = 0;
     }
-
+  
 }
 
 AliHLTPHOSClusterizerComponent::AliHLTPHOSClusterizerComponent(const AliHLTPHOSClusterizerComponent &):AliHLTProcessor(), 
@@ -68,7 +71,7 @@ AliHLTPHOSClusterizerComponent::AliHLTPHOSClusterizerComponent(const AliHLTPHOSC
   //Copy constructor, not implemented
 }
 
-Int_t
+int
 AliHLTPHOSClusterizerComponent::Deinit()
 {
   //Deinitialization
@@ -84,17 +87,30 @@ AliHLTPHOSClusterizerComponent::Deinit()
       delete fRecPointListPtr;
       fRecPointListPtr = 0;
     }
-
+  
+  for(int i = 0; i < 1000; i++) 
+    {
+      fRecPointStructArrayPtr[i].Del();
+    }
+  
   if(fRecPointStructArrayPtr)
     {
+      for(int i = 0; i < 1000; i++) 
+	{
+	  fRecPointStructArrayPtr[i].Del();
+	}
       delete fRecPointStructArrayPtr;
       fRecPointStructArrayPtr = 0;
     }
 
+
+
+
+
   return 0;
 }
 
-Int_t
+int
 AliHLTPHOSClusterizerComponent::DoDeinit()
 {
   //Do deinitialization
@@ -132,10 +148,10 @@ AliHLTPHOSClusterizerComponent::GetOutputDataSize(unsigned long& constBase, doub
 
 {
   constBase = 30;
-  inputMultiplier = 1;
+  inputMultiplier = 0.2;
 }
 
-Int_t 
+int 
 AliHLTPHOSClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks,
 					AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size,
 					std::vector<AliHLTComponentBlockData>& outputBlocks)
@@ -163,11 +179,13 @@ AliHLTPHOSClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
 	  continue;
 	}
       index = fClusterizerPtr->BuildCellEnergyArray( reinterpret_cast<AliHLTPHOSRcuCellEnergyDataStruct*>(iter->fPtr),
-						     fRecPointListPtr);
+      						     fRecPointListPtr);
       
     }
-  
+ 
   nRecPoints = fClusterizerPtr->CreateRecPointStructArray(fRecPointStructArrayPtr, fRecPointListPtr, index);
+  
+  cout << "Number of clusters found: " << nRecPoints << endl;
   
   for(Int_t i = 0; i < nRecPoints; i++)
     {
@@ -176,7 +194,8 @@ AliHLTPHOSClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
       
       fOutPtr =  (AliHLTPHOSClusterDataStruct*)outBPtr;
       fClusterizerPtr->CalculateCenterOfGravity(&fRecPointStructArrayPtr[i]);
-      fClusterizerPtr->ClusterizeStruct(&fRecPointStructArrayPtr[i], fOutPtr);
+      //      fClusterizerPtr->CalculateMoments(&fRecPointStructArrayPtr[i], 0);
+      //     fClusterizerPtr->ClusterizeStruct(&fRecPointStructArrayPtr[i], fOutPtr);
 
       mysize += sizeof(AliHLTPHOSClusterDataStruct);
       
@@ -207,25 +226,39 @@ AliHLTPHOSClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
 
 }
 
-Int_t
+int
 AliHLTPHOSClusterizerComponent::DoInit(int argc, const char** argv )
 {
   //Do initialization
-  
   fClusterizerPtr = new AliHLTPHOSClusterizer();
-  fClusterizerPtr->SetThreshold(atof(argv[0]));
-  fClusterizerPtr->SetClusterThreshold(atof(argv[1]));
-  fClusterizerPtr->SetHighGainFactor(atof(argv[2]));
-  fClusterizerPtr->SetLowGainFactor(atof(argv[3]));
-  fClusterizerPtr->SetArraySize(atoi(argv[4]));
+  for(int i = 0; i < argc; i++)
+    {
+      if(!strcmp("-threshold", argv[i]))
+	fClusterizerPtr->SetThreshold(atof(argv[i+1]));
+      if(!strcmp("-clusterthreshold", argv[i]))
+	fClusterizerPtr->SetClusterThreshold(atof(argv[i+1]));
+      if(!strcmp("-highgain", argv[i]))
+	fClusterizerPtr->SetHighGainFactor(atof(argv[i+1]));
+      if(!strcmp("-lowgain", argv[i]))
+	fClusterizerPtr->SetLowGainFactor(atof(argv[i+1]));
+      if(!strcmp("-arraysize", argv[i]))
+	fClusterizerPtr->SetArraySize(atoi(argv[i+1]));
+    }
   fClusterizerPtr->ResetCellEnergyArray();
   fRecPointListPtr = new AliHLTPHOSRecPointListDataStruct[N_ROWS_MOD*N_COLUMNS_MOD];
   fRecPointStructArrayPtr = new AliHLTPHOSRecPointDataStruct[1000];
+  for(int i = 0; i < 1000; i++) 
+    {
+      fRecPointStructArrayPtr[i].fMultiplicity = atoi(argv[4])* atoi(argv[4]);
+      fRecPointStructArrayPtr[i].New();
+    }
+  printf("Clusterizer component started with:\n");
+  printf(" Cell threshold:     %f\n", fClusterizerPtr->GetThreshold());
+  printf(" Cluster threshold:  %f\n", fClusterizerPtr->GetClusterThreshold());
+  printf(" High gain factor:   %f\n", fClusterizerPtr->GetHighGainFactor());
+  printf(" Low gain factor:    %f\n", fClusterizerPtr->GetLowGainFactor());
+  printf(" Cluster array size: %d\n\n", fClusterizerPtr->GetArraySize());
 
-  if (argc==0 && argv==NULL) {
-    // this is currently just to get rid of the warning "unused parameter"
-  }
-  
   return 0;
 }
 

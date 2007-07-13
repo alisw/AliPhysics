@@ -26,15 +26,26 @@ ClassImp(AliHLTPHOSPhysicsAnalyzerPeakFitter);
 AliHLTPHOSPhysicsAnalyzerPeakFitter::AliHLTPHOSPhysicsAnalyzerPeakFitter() : fGainLow(80), fGainHigh(5),
 									     fRootHistPtr(0)
 {
+  //Constructor
 }
 
 AliHLTPHOSPhysicsAnalyzerPeakFitter::~AliHLTPHOSPhysicsAnalyzerPeakFitter()
 {
+  //Destructor
 }
+
+AliHLTPHOSPhysicsAnalyzerPeakFitter::AliHLTPHOSPhysicsAnalyzerPeakFitter(const AliHLTPHOSPhysicsAnalyzerPeakFitter&): fGainLow(80), fGainHigh(5),
+														      fRootHistPtr(0)
+{
+  //Copy constructor
+}
+
 
 Int_t
 AliHLTPHOSPhysicsAnalyzerPeakFitter::FitGaussian()
 {
+  //FitGaussian
+
   Int_t maxBin = fRootHistPtr->GetMaximumBin();
   Float_t binWidth = fRootHistPtr->GetBinWidth(maxBin);
   Float_t maxBinValue = (Float_t)(maxBin * binWidth);
@@ -42,9 +53,7 @@ AliHLTPHOSPhysicsAnalyzerPeakFitter::FitGaussian()
   Float_t highRange = maxBinValue + 0.03;
 
   TF1* gaussian = new TF1("gaussian", "gaus", 0.1, 0.2);
-  Double_t params[3] = {maxBinValue, 0};
-  
-  
+    
   fRootHistPtr->Fit(gaussian->GetName(), "", "",lowRange, highRange);
   
   return 0;
@@ -54,15 +63,12 @@ AliHLTPHOSPhysicsAnalyzerPeakFitter::FitGaussian()
 Int_t
 AliHLTPHOSPhysicsAnalyzerPeakFitter::FitLorentzian()
 {
-
-
+  //FitLorentzian
   Int_t maxBin = fRootHistPtr->GetMaximumBin();
   Float_t binWidth = fRootHistPtr->GetBinWidth(maxBin);
   Float_t maxBinValue = (Float_t)(maxBin * binWidth);
   Double_t lowRange = maxBinValue - 0.03;
   Double_t highRange = maxBinValue + 0.03;
-
-  Int_t npar = 3;
 
   char* name = "lorentzian";
   
@@ -75,7 +81,7 @@ AliHLTPHOSPhysicsAnalyzerPeakFitter::FitLorentzian()
 
   lorentzian->GetParameters(params);
 
-  TFile *outfile = new TFile("/home/odjuvsla/pi0HistFit.root","recreate");  
+  TFile *outfile = new TFile("/afsuser/odjuvsland","recreate");  
   fRootHistPtr->Write();
   outfile->Close();
 

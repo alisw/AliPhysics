@@ -34,13 +34,13 @@ class AliHLTPHOSClusterizerComponent: public AliHLTProcessor
       return *this;
     }
   const char* GetComponentID();
-  void GetInputDataTypes(std::vector<AliHLTComponentDataType, std::allocator<AliHLTComponentDataType> >&);
+  void GetInputDataTypes(std::vector<AliHLTComponentDataType>& list);
 
   AliHLTComponentDataType GetOutputDataType();
 
   void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
 
-  Int_t DoEvent(const AliHLTComponentEventData&, const AliHLTComponentBlockData*,
+  int DoEvent(const AliHLTComponentEventData&, const AliHLTComponentBlockData*,
 		AliHLTComponentTriggerData&, AliHLTUInt8_t*, AliHLTUInt32_t&,
 		std::vector<AliHLTComponentBlockData>&);
 
@@ -48,9 +48,9 @@ class AliHLTPHOSClusterizerComponent: public AliHLTProcessor
 
  protected:
 
-  Int_t DoInit(int argc, const char** argv);
-  Int_t Deinit();
-  Int_t DoDeinit();
+  int DoInit(int argc, const char** argv);
+  int Deinit();
+  int DoDeinit();
 
  private:
   AliHLTPHOSClusterizer* fClusterizerPtr;                       //Pointer to the clusterizer

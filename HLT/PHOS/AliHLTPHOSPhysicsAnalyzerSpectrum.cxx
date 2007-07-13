@@ -24,7 +24,7 @@ ClassImp(AliHLTPHOSPhysicsAnalyzerSpectrum);
 
 
 
-AliHLTPHOSPhysicsAnalyzerSpectrum::AliHLTPHOSPhysicsAnalyzerSpectrum():AliHLTPHOSPhysicsAnalyzer()
+AliHLTPHOSPhysicsAnalyzerSpectrum::AliHLTPHOSPhysicsAnalyzerSpectrum():AliHLTPHOSPhysicsAnalyzer(), fPos0Ptr(0), fPos1Ptr(0), fThresholdPtr(0), fEnergyPtr(0)
 {
   //Constructor
 
@@ -37,7 +37,7 @@ AliHLTPHOSPhysicsAnalyzerSpectrum::AliHLTPHOSPhysicsAnalyzerSpectrum():AliHLTPHO
   
 }
 
-AliHLTPHOSPhysicsAnalyzerSpectrum::AliHLTPHOSPhysicsAnalyzerSpectrum(const AliHLTPHOSPhysicsAnalyzerSpectrum &):AliHLTPHOSPhysicsAnalyzer()
+AliHLTPHOSPhysicsAnalyzerSpectrum::AliHLTPHOSPhysicsAnalyzerSpectrum(const AliHLTPHOSPhysicsAnalyzerSpectrum &):AliHLTPHOSPhysicsAnalyzer(), fPos0Ptr(0), fPos1Ptr(0), fThresholdPtr(0), fEnergyPtr(0)
 {
   //Copy constructor not implemented
 }
@@ -136,8 +136,6 @@ Int_t
 AliHLTPHOSPhysicsAnalyzerSpectrum::SetThreshold(Float_t photonEnergy0, Float_t photonEnergy1)
 {
   //Setting the cut thresholds
-
-  if(!fThresholdPtr) fThresholdPtr = new Float_t[2];
 
   fThresholdPtr[0] = photonEnergy0;
 

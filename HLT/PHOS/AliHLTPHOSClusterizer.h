@@ -1,8 +1,8 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
-
+  
 /** @file   AliHLTPHOSClusterizer.h
-    @author Ãystein Djuvsland
+    @author Øystein Djuvsland
     @date   
     @brief  A temporary clusterizer for PHOS
 */
@@ -10,9 +10,7 @@
 #ifndef ALIHLTPHOSCLUSTERIZER_H
 #define ALIHLTPHOSCLUSTERIZER_H
 
-//#include "AliHLTPHOSCommonDefs.h"
-#include "AliHLTPHOSConstants.h"
-using namespace PhosHLTConst;
+#include "AliHLTPHOSCommonDefs.h"
 
 struct AliHLTPHOSClusterDataStruct;
 struct AliHLTPHOSRecPointDataStruct;
@@ -30,25 +28,29 @@ class AliHLTPHOSClusterizer
   AliHLTPHOSClusterizer(const AliHLTPHOSClusterizer &);
   AliHLTPHOSClusterizer & operator = (const AliHLTPHOSClusterizer &) {return *this;}
    
-  void    SetThreshold(Float_t threshold) {fThreshold = threshold;}
-  void    SetClusterThreshold(Float_t clusterThreshold) {fClusterThreshold = clusterThreshold;}
+  void    SetThreshold(float threshold) {fThreshold = threshold;}
+  void    SetClusterThreshold(float clusterThreshold) {fClusterThreshold = clusterThreshold;}
   
-  void    SetHighGainFactor(Float_t highGain) {fHighGainFactor = highGain;}
-  void    SetLowGainFactor(Float_t lowGain) {fLowGainFactor = lowGain;}
-  void    SetArraySize(Int_t size) 
+  void    SetHighGainFactor(float highGain) {fHighGainFactor = highGain;}
+  void    SetLowGainFactor(float lowGain) {fLowGainFactor = lowGain;}
+  void    SetArraySize(int size) 
   { 
     fArraySize = size;
     fMultiplicity = fArraySize * fArraySize;
   }
+  float GetThreshold() {return fThreshold;}
+  float GetClusterThreshold() {return fClusterThreshold;}
+  float GetHighGainFactor() {return fHighGainFactor;}
+  float GetLowGainFactor() {return fLowGainFactor;}
+  float GetArraySize() {return fArraySize;}
+  float GetMultiplicity() {return fMultiplicity;}
   
-  Float_t GetHighGainFactor() {return fHighGainFactor;}
-  Float_t GetLowGainFactor() {return fLowGainFactor;}
-  
-  Int_t   BuildCellEnergyArray(AliHLTPHOSRcuCellEnergyDataStruct *structPtr, AliHLTPHOSRecPointListDataStruct* recPointList);
-  Int_t   CreateRecPointStructArray(AliHLTPHOSRecPointDataStruct* rectStructsPtr, AliHLTPHOSRecPointListDataStruct* list, Int_t nPoints);
-  Int_t   CalculateCenterOfGravity(AliHLTPHOSRecPointDataStruct* recPointPtr);
-  Int_t   ClusterizeStruct(AliHLTPHOSRecPointDataStruct* recArrayPtr, AliHLTPHOSClusterDataStruct* clusterArrayPtr);
-  Int_t   ResetCellEnergyArray();
+  int   BuildCellEnergyArray(AliHLTPHOSRcuCellEnergyDataStruct *structPtr, AliHLTPHOSRecPointListDataStruct* recPointList);
+  int   CreateRecPointStructArray(AliHLTPHOSRecPointDataStruct* rectStructsPtr, AliHLTPHOSRecPointListDataStruct* list, int nPoints);
+  int   CalculateCenterOfGravity(AliHLTPHOSRecPointDataStruct* recPointPtr);
+  int   CalculateMoments(AliHLTPHOSRecPointDataStruct* recPointPtr, Bool_t axisOnly);
+  int   ClusterizeStruct(AliHLTPHOSRecPointDataStruct* recArrayPtr, AliHLTPHOSClusterDataStruct* clusterArrayPtr);
+  int   ResetCellEnergyArray();
 
   
  private:

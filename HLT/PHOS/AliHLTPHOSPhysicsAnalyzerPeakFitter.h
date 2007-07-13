@@ -19,6 +19,8 @@ class AliHLTPHOSPhysicsAnalyzerPeakFitter
 
   AliHLTPHOSPhysicsAnalyzerPeakFitter();
   virtual ~AliHLTPHOSPhysicsAnalyzerPeakFitter();
+  AliHLTPHOSPhysicsAnalyzerPeakFitter(const AliHLTPHOSPhysicsAnalyzerPeakFitter &);
+  AliHLTPHOSPhysicsAnalyzerPeakFitter & operator = (const AliHLTPHOSPhysicsAnalyzerPeakFitter &) {return *this;}
 
   void    SetHistogram(TH1F* histPtr)            { fRootHistPtr = histPtr; }
 

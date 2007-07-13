@@ -30,17 +30,17 @@ class AliHLTPHOSPhysicsAnalyzerSpectrumComponent: public AliHLTProcessor
       return *this;
     }
   const char* GetComponentID();
-  void GetInputDataTypes(std::vector<AliHLTComponentDataType, std::allocator<AliHLTComponentDataType> >&);
+  void GetInputDataTypes(std::vector<AliHLTComponentDataType>& list);
 
   AliHLTComponentDataType GetOutputDataType();
 
   void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
 
-
+  /* 
   Int_t DoEvent(const AliHLTComponentEventData&, const AliHLTComponentBlockData*,
 		AliHLTComponentTriggerData&, AliHLTUInt8_t*, AliHLTUInt32_t&,
-		std::vector<AliHLTComponentBlockData>&);
-  
+		std::vector<AliHLTComponentBlockData>&);*/
+  int DoEvent(const AliHLTComponentEventData&, AliHLTComponentTriggerData&);
 
   AliHLTComponent* Spawn();
 

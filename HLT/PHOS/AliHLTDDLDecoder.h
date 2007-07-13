@@ -28,7 +28,8 @@ class AliHLTDDLDecoder
   bool CheckPayload();
   bool Decode();
   bool NextChannel(AliHLTAltroData *altroDataPtr);
-  bool NextBunch();
+
+  //  bool NextBunch();
 
   template<typename T> 
   void  DumpData(T *array, int N, int nPerLine)

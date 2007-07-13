@@ -22,7 +22,27 @@ struct AliHLTPHOSRecPointDataStruct
   AliHLTUInt8_t fCoordinatesPtr[2]; 
   Float_t fX;
   Float_t fZ;
+  Float_t fM2x;
+  Float_t fM2z;
+  Float_t fM3x;
+  Float_t fM4z;
+  Float_t fPhixe;
+  Float_t fDistanceToBadChannel;
   Float_t* fEnergiesListPtr;
+
+  void New()
+  {
+    fEnergiesListPtr = new Float_t[fMultiplicity];
+  }
+
+  void Del()
+  {
+    if(fEnergiesListPtr)
+      {
+	delete [] fEnergiesListPtr;
+	fEnergiesListPtr = 0;
+      }
+  }
 };
 
 #endif
