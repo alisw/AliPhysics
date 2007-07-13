@@ -15,6 +15,11 @@ void Config(char directory[100]="", char option[6]="trg1mu")
   new TGeant3TGeo("C++ Interface to Geant3");
   //=======================================================================
 
+  if(!AliCDBManager::Instance()->IsDefaultStorageSet()){
+    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+    AliCDBManager::Instance()->SetRun(0);
+  }
+  
   // Set Random Number seed
   gRandom->SetSeed(sseed);
 
@@ -32,6 +37,8 @@ void Config(char directory[100]="", char option[6]="trg1mu")
   rl->SetCompressionLevel(2);
   rl->SetNumberOfEventsPerFile(1000);
   gAlice->SetRunLoader(rl);
+  // gAlice->SetGeometryFromFile("geometry.root");
+  // gAlice->SetGeometryFromCDB();
   
   //=======================================================================
   // Set the trigger configuration
