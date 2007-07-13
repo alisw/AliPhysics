@@ -1,7 +1,7 @@
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
- * Authors: Øystein Djuvsland <oysteind@ift.uib.no>                       *
+ * Authors: Ãystein Djuvsland <oysteind@ift.uib.no>                       *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
@@ -245,7 +245,7 @@ AliHLTPHOSClusterizerComponent::DoInit(int argc, const char** argv )
 	fClusterizerPtr->SetArraySize(atoi(argv[i+1]));
     }
   fClusterizerPtr->ResetCellEnergyArray();
-  fRecPointListPtr = new AliHLTPHOSRecPointListDataStruct[N_ROWS_MOD*N_COLUMNS_MOD];
+  fRecPointListPtr = new AliHLTPHOSRecPointListDataStruct[N_ZROWS_MOD*N_XCOLUMNS_MOD];
   fRecPointStructArrayPtr = new AliHLTPHOSRecPointDataStruct[1000];
   for(int i = 0; i < 1000; i++) 
     {

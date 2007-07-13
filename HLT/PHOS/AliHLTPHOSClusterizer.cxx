@@ -88,8 +88,8 @@ AliHLTPHOSClusterizer::BuildCellEnergyArray(AliHLTPHOSRcuCellEnergyDataStruct* c
       x = (cellData->fValidData[cell]).fX;
       gain = (cellData->fValidData[cell]).fGain;
 
-      zMod = z + (cellData->fRcuZ)*N_ROWS_RCU;
-      xMod = x + (cellData->fRcuX)*N_COLUMNS_RCU;
+      zMod = z + (cellData->fRcuZ)*N_ZROWS_RCU;
+      xMod = x + (cellData->fRcuX)*N_XCOLUMNS_RCU;
       
       energyCount = (cellData->fValidData[cell]).fEnergy;
 
@@ -165,12 +165,12 @@ AliHLTPHOSClusterizer::CreateRecPointStructArray(AliHLTPHOSRecPointDataStruct* r
       x = list[point].fX;
       if(z == -1) continue;
 
-      if((z-fArraySize/2) < 0/*= - N_ROWS_MOD/2*/ || (z+fArraySize/2) >= N_ROWS_MOD/*/2*/) 
+      if((z-fArraySize/2) < 0/*= - N_ZROWS_MOD/2*/ || (z+fArraySize/2) >= N_ZROWS_MOD/*/2*/) 
 	{
 	  edgeFlagRows = 1;
 	  continue;
 	}
-      if((x-fArraySize/2) < 0/*= - N_COLUMNS_MOD/2*/ || (x+fArraySize/2) >= N_COLUMNS_MOD) 
+      if((x-fArraySize/2) < 0/*= - N_COLUMNS_MOD/2*/ || (x+fArraySize/2) >= N_XCOLUMNS_MOD) 
 	{
 	  edgeFlagCols = 1;
 	  continue;
@@ -215,7 +215,6 @@ AliHLTPHOSClusterizer::CreateRecPointStructArray(AliHLTPHOSRecPointDataStruct* r
 	  nRecPoints++;
 	}
     }
-
   if(energiesList)
     {
       delete [] energiesList;
@@ -475,9 +474,9 @@ AliHLTPHOSClusterizer::ResetCellEnergyArray()
 {
   //ResetCellEnergyArray
 
-  for(Int_t x = 0; x < N_ROWS_MOD; x++)
+  for(Int_t x = 0; x < N_ZROWS_MOD; x++)
     {
-      for(Int_t z = 0; z < N_COLUMNS_MOD; z++)
+      for(Int_t z = 0; z < N_XCOLUMNS_MOD; z++)
 	{
 	  fEnergyArray[x][z] = 0;
 	}

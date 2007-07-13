@@ -60,7 +60,7 @@ class AliHLTPHOSClusterizer
  private:
 
   AliHLTUInt8_t fPHOSModule;                                     /**<Number of the PHOSModule*/
-  Float_t fEnergyArray[N_COLUMNS_MOD][N_ROWS_MOD];               /**<2D array of cell energies*/
+  Float_t fEnergyArray[N_XCOLUMNS_MOD][N_ZROWS_MOD];             /**<2D array of cell energies*/
   Float_t fThreshold;                                            /**<Energy threshold*/
   Float_t fClusterThreshold;                                     /**<Cluster threshold*/
   Float_t fHighGainFactor;                                       /**<High gain factor*/

@@ -2,7 +2,7 @@
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
- * Author: Øystein Djuvsland <oysteind@ift.uib.no>                        *
+ * Author: Ãystein Djuvsland <oysteind@ift.uib.no>                        *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
@@ -91,13 +91,13 @@ AliHLTPHOSPhysicsAnalyzer::GlobalPosition(AliHLTPHOSClusterDataStruct* clusterPt
 
   Int_t module = clusterPtr->fPHOSModule;
 
-  tempPosX = kCRYSTAL_SIZE*(clusterPtr->fLocalPositionPtr[0]-N_COLUMNS_MOD/2) + kCRYSTAL_SIZE/2;
+  tempPosX = kCRYSTAL_SIZE*(clusterPtr->fLocalPositionPtr[0]-N_XCOLUMNS_MOD/2) + kCRYSTAL_SIZE/2;
 
   positionPtr[0] = tempPosX*fRotParametersSin[module] + fPHOSRadius*fRotParametersCos[module];
 
   positionPtr[1] = tempPosX*fRotParametersCos[module] - fPHOSRadius*fRotParametersSin[module];
 
-  positionPtr[2] = kCRYSTAL_SIZE*(clusterPtr->fLocalPositionPtr[1]-N_ROWS_MOD/2) + kCRYSTAL_SIZE/2;
+  positionPtr[2] = kCRYSTAL_SIZE*(clusterPtr->fLocalPositionPtr[1]-N_ZROWS_MOD/2) + kCRYSTAL_SIZE/2;
 
 }
 
@@ -106,11 +106,11 @@ AliHLTPHOSPhysicsAnalyzer::GlobalPosition(Float_t* locPositionPtr, Float_t* posi
 { 
   //Get global position from local postion and module number
 
-  positionPtr[0] = kCRYSTAL_SIZE*(locPositionPtr[0]-N_COLUMNS_MOD/2)*fRotParametersCos[module-1] + fPHOSRadius*fRotParametersSin[module-1];
+  positionPtr[0] = kCRYSTAL_SIZE*(locPositionPtr[0]-N_XCOLUMNS_MOD/2)*fRotParametersCos[module-1] + fPHOSRadius*fRotParametersSin[module-1];
 
-  positionPtr[1] = kCRYSTAL_SIZE*(locPositionPtr[0]-N_COLUMNS_MOD/2)*fRotParametersSin[module-1] - fPHOSRadius*fRotParametersCos[module-1];
+  positionPtr[1] = kCRYSTAL_SIZE*(locPositionPtr[0]-N_XCOLUMNS_MOD/2)*fRotParametersSin[module-1] - fPHOSRadius*fRotParametersCos[module-1];
   
-  positionPtr[2] = kCRYSTAL_SIZE*(locPositionPtr[1]-N_ROWS_MOD);
+  positionPtr[2] = kCRYSTAL_SIZE*(locPositionPtr[1]-N_ZROWS_MOD);
 
 }
 
