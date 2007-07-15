@@ -4,7 +4,8 @@
 /**************************************************************************
  * Copyright(c) 2006, ALICE Experiment at CERN, All rights reserved.      *
  *                                                                        *
- * Authors: Per Thomas Hille <perthi@fys.uio.no>, after                   * 
+ * Authors: Per Thomas Hille <perthi@fys.uio.no>,                         *
+ *          Øystein Djuvsland <oysteind@ift.uib.no>after                  * 
  *          Matthias Richter <Matthias.Richter@ift.uib.no>                *
  *          Timm Steinbeck <timm@kip.uni-heidelberg.de>                   *
  *          for the ALICE Offline Project.                                *
@@ -30,8 +31,6 @@
 #include "AliHLTPHOSDefinitions.h"
 
 
-
-
 const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkDDLPackedRawDataType          = { sizeof(AliHLTComponentDataType),       {'D','D','L','_','R','W','P','K'},{'P','H','O','S'}};;
 const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkCellEnergyDataType            = { sizeof(AliHLTComponentDataType),       {'C','E','L','L','E','N','E','R'},{'P','H','O','S'}};;
 const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkCellEnergyHistogramDataType   = { sizeof(AliHLTComponentDataType),       {'E','N','E','R','H','I','S','T'},{'P','H','O','S'}};;
@@ -40,3 +39,6 @@ const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkCellAccumulatedEnergyDat
 const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkCellTimingHistogramDataType   = { sizeof(AliHLTComponentDataType),       {'T','I','M','E','H','I','S','T'},{'P','H','O','S'}};;    
 const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkCellTimingAverageDataType     = { sizeof(AliHLTComponentDataType),       {'T','I','M','E','A','V','E','R'},{'P','H','O','S'}};;
 const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkCellChannelDataDataType       = { sizeof(AliHLTComponentDataType),       {'C','H','A','N','D','A','T','A'},{'P','H','O','S'}};;
+const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkAliHLTClusterDataType         = { sizeof(AliHLTComponentDataType),       {'C','L','U','S','T','R','T','Y'},{'P','H','O','S'}};;
+const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkAliHLTHistDataType            = { sizeof(AliHLTComponentDataType),       {'H','I','S','T','T','Y','P','E'},{'P','H','O','S'}};;
+const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkAliHLTSpectrumDataType        = { sizeof(AliHLTComponentDataType),       {'S','P','E','C','T','Y','P','E'},{'P','H','O','S'}};;

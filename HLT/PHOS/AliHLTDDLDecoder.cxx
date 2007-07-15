@@ -26,6 +26,7 @@ AliHLTDDLDecoder::AliHLTDDLDecoder() : f32DtaPtr(0), f8DtaPtr(0),fN32HeaderWords
 
 }
 
+
 AliHLTDDLDecoder::~AliHLTDDLDecoder()
 {
 
@@ -44,14 +45,15 @@ AliHLTDDLDecoder::CheckPayload()
       return true;
 
     }
-
 }
+
 
 bool
 AliHLTDDLDecoder::Decode()
 {
-   fComplete = 0;
-   fInComplete = 0;
+  //  int naaa;
+  fComplete = 0;
+  fInComplete = 0;
 
   if((CheckPayload() == true)  &&  (fSize > 32) )
     {
@@ -59,7 +61,8 @@ AliHLTDDLDecoder::Decode()
       fBufferIndex = 0;
       fN10bitWords = 0;
       
-      for(fI=0; fI < fNDDLBlocks; fI++)
+      //     for(fI=0; fI < fNDDLBlocks; fI++)
+      for(int=0; i < fNDDLBlocks; i++)
 	{
 	  DecodeDDLBlock();
 	}
@@ -70,7 +73,6 @@ AliHLTDDLDecoder::Decode()
 
   else
     {
-
       cout <<"ERROR: data integrity check failed, discarding data" << endl;
       cout << "Size of datablock is  " << fSize   << endl;
       cout << "fN40AltroWords = "      << fN40AltroWords   << endl;
@@ -123,6 +125,14 @@ AliHLTDDLDecoder::NextChannel(AliHLTAltroData *altroDataPtr)
     {
       return false;
     }
+}
+
+
+int 
+AliHLTDDLDecoder::countAAApaddings()
+{
+  
+
 }
 
 
@@ -179,6 +189,14 @@ AliHLTDDLDecoder::SetMemory(UChar_t *dtaPtr, UInt_t size)
   fN40RcuAltroWords =  *f32DtaPtr;
   f32DtaPtr = (UInt_t *)dtaPtr + fN32HeaderWords;
   fBufferPos =  fN40AltroWords*4  -  1;
+  
+  UShort_t  *tmpBufferPos =  fBufferPos;
+  tmpBufferPos =  tmpBufferPos - 2*fN32RcuTrailerWords;
+
+  for(int i=0; i<4; i++)
+    {
+      printf("\nAliHLTDDLDecoder::SetMemory i= %d,  content = 0x%x\n", i, *tmpBufferPos);
+    }
 }
 
 void

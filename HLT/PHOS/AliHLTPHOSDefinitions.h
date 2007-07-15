@@ -21,6 +21,9 @@ class AliHLTPHOSDefinitions
       static const AliHLTComponentDataType fgkCellTimingHistogramDataType;  /**<Histogram for per cell/gain time distribution*/      
       static const AliHLTComponentDataType fgkCellTimingAverageDataType;  /**<Histogram for per cell/gain time distribution*/  
       static const AliHLTComponentDataType fgkCellChannelDataDataType;  /**<Time dependent signal from the readout channels*/  
+      static const AliHLTComponentDataType fgkAliHLTClusterDataType;  //Cluster data type
+      static const AliHLTComponentDataType fgkAliHLTHistDataType;     //hist data type
+      static const AliHLTComponentDataType fgkAliHLTSpectrumDataType; //spectrum data type
     };
 
 #endif

@@ -67,6 +67,8 @@ class AliHLTDDLDecoder
   void DecodeDDLBlock();
   void DecodeLastDDLBlock();
   int GetMarker(UInt_t *buffer, int index);
+  int countAAApaddings();
+
   UInt_t  *f32DtaPtr;
   UChar_t *f8DtaPtr;   
   long int fN32HeaderWords;
