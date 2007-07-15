@@ -21,7 +21,6 @@ CLASS_HDRS:=	PHOS/AliHLTPHOSPulseGenerator.h \
 		PHOS/AliHLTPHOSRawAnalyzerCrudeComponent.h \
 		PHOS/AliHLTPHOSRawAnalyzerPeakFinderComponent.h \
 		PHOS/AliHLTPHOSDefinitions.h \
-		PHOS/AliHLTPHOSModuleMergerComponent.h\
 		PHOS/AliHLTPHOSRcuCellEnergyData.h \
 		PHOS/AliHLTPHOSModuleCellEnergyData.h \
 		PHOS/AliHLTPHOSFileWriterComponent.h \
@@ -29,10 +28,8 @@ CLASS_HDRS:=	PHOS/AliHLTPHOSPulseGenerator.h \
 		PHOS/AliHLTPHOSFileWriter.h \
 		PHOS/AliHLTPHOSDDLPackedFileWriter.h \
 		PHOS/AliHLTPHOSCellEnergiesFileWriter.h \
-		PHOS/AliHLTPHOSHistogramProducerComponent.h \
 		PHOS/AliHLTPHOSRcuHistogramProducer.h \
 		PHOS/AliHLTPHOSRcuHistogramProducerComponent.h \
-		PHOS/AliHLTPHOSDDLDecoderComponent.h \
 		PHOS/AliHLTPHOSModuleCellAccumulatedEnergyDataStruct.h \
 		PHOS/AliHLTPHOSModuleCellAverageEnergyDataStruct.h \
 		PHOS/AliHLTPHOSRcuChannelDataStruct.h \
@@ -65,15 +62,12 @@ MODULE_SRCS:=   PHOS/AliHLTPHOSPulseGenerator.cxx \
 		PHOS/AliHLTPHOSRawAnalyzerCrudeComponent.cxx \
 		PHOS/AliHLTPHOSRawAnalyzerPeakFinderComponent.cxx \
 		PHOS/AliHLTPHOSDefinitions.cxx \
-		PHOS/AliHLTPHOSModuleMergerComponent.cxx \
 		PHOS/AliHLTPHOSFileWriterComponent.cxx \
 		PHOS/AliHLTPHOSFileWriter.cxx \
 		PHOS/AliHLTPHOSDDLPackedFileWriter.cxx \
 		PHOS/AliHLTPHOSCellEnergiesFileWriter.cxx \
-		PHOS/AliHLTPHOSHistogramProducerComponent.cxx \
 		PHOS/AliHLTPHOSRcuHistogramProducer.cxx \
 		PHOS/AliHLTPHOSRcuHistogramProducerComponent.cxx \
-		PHOS/AliHLTPHOSDDLDecoderComponent.cxx \
 		PHOS/AliHLTPHOSDataCorruptor.cxx \
 		PHOS/AliHLTPHOSDataQualityMonitor.cxx \
 		PHOS/AliHLTPHOSRcuDataQualityMonitorComponent.cxx \
