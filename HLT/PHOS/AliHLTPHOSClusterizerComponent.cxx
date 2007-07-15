@@ -13,10 +13,12 @@
  **************************************************************************/
 
 
+
+
 #include "AliHLTPHOSClusterizerComponent.h"
 #include "AliHLTPHOSClusterizer.h"
-#include "AliHLTPHOSPhysicsDefinitions.h"
-#include "AliHLTPHOSDefinitions.h"
+//#include "AliHLTPHOSPhysicsDefinitions.h"
+//#include "AliHLTPHOSDefinitions.h"
 #include "AliHLTPHOSRecPointDataStruct.h"
 #include "AliHLTPHOSClusterDataStruct.h"
 #include "AliHLTPHOSRecPointListDataStruct.h"
@@ -28,7 +30,7 @@ const AliHLTComponentDataType AliHLTPHOSClusterizerComponent::fgkInputDataTypes[
 
 AliHLTPHOSClusterizerComponent gAliHLTPHOSClusterizerComponent;
 
-AliHLTPHOSClusterizerComponent::AliHLTPHOSClusterizerComponent():AliHLTProcessor(), fClusterizerPtr(0), fOutPtr(0), 
+AliHLTPHOSClusterizerComponent::AliHLTPHOSClusterizerComponent(): AliHLTPHOSBase(), AliHLTProcessor(), fClusterizerPtr(0), fOutPtr(0), 
 								 fRecPointStructArrayPtr(0), fRecPointListPtr(0)
 {
   //Constructor
@@ -62,14 +64,14 @@ AliHLTPHOSClusterizerComponent::~AliHLTPHOSClusterizerComponent()
   
 }
 
-AliHLTPHOSClusterizerComponent::AliHLTPHOSClusterizerComponent(const AliHLTPHOSClusterizerComponent &):AliHLTProcessor(), 
-												       fClusterizerPtr(0), 
-												       fOutPtr(0),
-												       fRecPointStructArrayPtr(0),
-												       fRecPointListPtr(0)
-{
+// PTH AliHLTPHOSClusterizerComponent::AliHLTPHOSClusterizerComponent(const AliHLTPHOSClusterizerComponent &):AliHLTProcessor(), 
+//												       fClusterizerPtr(0), 
+//												       fOutPtr(0),
+//												       fRecPointStructArrayPtr(0),
+//												       fRecPointListPtr(0)
+//{
   //Copy constructor, not implemented
-}
+//}
 
 int
 AliHLTPHOSClusterizerComponent::Deinit()
@@ -140,7 +142,8 @@ AliHLTPHOSClusterizerComponent::GetInputDataTypes( vector<AliHLTComponentDataTyp
 AliHLTComponentDataType 
 AliHLTPHOSClusterizerComponent::GetOutputDataType()
 {
-  return AliHLTPHOSPhysicsDefinitions::fgkAliHLTClusterDataType;
+  //  return AliHLTPHOSPhysicsDefinitions::fgkAliHLTClusterDataType;
+  return AliHLTPHOSDefinitions::fgkAliHLTClusterDataType;
 }
 
 void
@@ -203,7 +206,8 @@ AliHLTPHOSClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
       FillBlockData( bd );
       bd.fOffset = offset;
       bd.fSize = mysize;
-      bd.fDataType = AliHLTPHOSPhysicsDefinitions::fgkAliHLTClusterDataType;
+      // PTH      bd.fDataType = AliHLTPHOSPhysicsDefinitions::fgkAliHLTClusterDataType;
+      bd.fDataType = AliHLTPHOSDefinitions::fgkAliHLTClusterDataType;
       bd.fSpecification = 0xFFFFFFFF;
       outputBlocks.push_back( bd );
        

@@ -83,10 +83,10 @@ am_libAliHLTPHOS_la_OBJECTS = AliHLTPHOSPulseGenerator.lo \
 	AliHLTPHOSClusterizerComponent.lo \
 	AliHLTPHOSPhysicsAnalyzerSpectrum.lo \
 	AliHLTPHOSPhysicsAnalyzerSpectrumComponent.lo \
-	AliHLTPHOSPhysicsAnalyzer.lo AliHLTPHOSPhysicsDefinitions.lo \
+	AliHLTPHOSPhysicsAnalyzer.lo \
 	AliHLTPHOSPhysicsAnalyzerPeakFitter.lo AliHLTDDLDecoder.lo \
 	AliHLTAltroData.lo AliHLTAltroBunch.lo AliHLTPHOSMapper.lo \
-	AliHLTPHOSRcuProcessor.lo PeakFinderTest.lo
+	AliHLTPHOSRcuProcessor.lo AliHLTPHOSBase.lo PeakFinderTest.lo
 am__objects_1 = AliHLTPHOSCompileInfo.lo
 am__objects_2 = AliHLTPHOS-DICT.lo
 nodist_libAliHLTPHOS_la_OBJECTS = $(am__objects_1) $(am__objects_2)
@@ -303,13 +303,13 @@ libAliHLTPHOS_la_SOURCES = AliHLTPHOSPulseGenerator.cxx \
 				  AliHLTPHOSPhysicsAnalyzerSpectrum.cxx \
 				  AliHLTPHOSPhysicsAnalyzerSpectrumComponent.cxx \
 				  AliHLTPHOSPhysicsAnalyzer.cxx \
-				  AliHLTPHOSPhysicsDefinitions.cxx \
 				  AliHLTPHOSPhysicsAnalyzerPeakFitter.cxx \
 			          AliHLTDDLDecoder.cxx \
 				  AliHLTAltroData.cxx \
 				  AliHLTAltroBunch.cxx \
 			          AliHLTPHOSMapper.cxx \
 				  AliHLTPHOSRcuProcessor.cxx \
+				  AliHLTPHOSBase.cxx\
 				  PeakFinderTest.cxx
 
 
@@ -341,12 +341,12 @@ CLASS_HDRS = AliHLTPHOSPulseGenerator.h \
 				  AliHLTPHOSPhysicsAnalyzerSpectrum.h \
 				  AliHLTPHOSPhysicsAnalyzerSpectrumComponent.h \
 				  AliHLTPHOSPhysicsAnalyzer.h \
-				  AliHLTPHOSPhysicsDefinitions.h \
 				  AliHLTPHOSPhysicsAnalyzerPeakFitter.h \
 				  AliHLTDDLDecoder.h \
 				  AliHLTAltroData.h \
 				  AliHLTPHOSMapper.h \
 				  AliHLTPHOSRcuProcessor.h \
+				  AliHLTPHOSBase.h \
 				  AliHLTPHOSMapper.h
 
 pkginclude_HEADERS = $(CLASS_HDRS) \
@@ -482,6 +482,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AliHLTAltroData.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AliHLTDDLDecoder.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AliHLTPHOS-DICT.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AliHLTPHOSBase.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AliHLTPHOSCellEnergiesFileWriter.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AliHLTPHOSClusterizer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AliHLTPHOSClusterizerComponent.Plo@am__quote@
@@ -498,7 +499,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AliHLTPHOSPhysicsAnalyzerPeakFitter.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AliHLTPHOSPhysicsAnalyzerSpectrum.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AliHLTPHOSPhysicsAnalyzerSpectrumComponent.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AliHLTPHOSPhysicsDefinitions.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AliHLTPHOSProcessor.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AliHLTPHOSPulseGenerator.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AliHLTPHOSRawAnalyzer.Plo@am__quote@

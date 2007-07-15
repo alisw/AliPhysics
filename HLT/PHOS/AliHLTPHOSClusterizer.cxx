@@ -21,9 +21,9 @@
 
 
 
-#include "AliHLTPHOSPhysicsDefinitions.h"
+//#include "AliHLTPHOSDefinitions.h"
 #include "AliHLTPHOSClusterizer.h"
-#include "AliHLTPHOSCommonDefs.h"
+//#include "AliHLTPHOSCommonDefs.h"
 #include "TVector3.h"
 #include "TMath.h"
 #include "AliHLTPHOSRcuCellEnergyDataStruct.h"
@@ -31,9 +31,10 @@
 #include "AliHLTPHOSValidCellDataStruct.h"
 #include "AliHLTPHOSRecPointDataStruct.h"
 #include "AliHLTPHOSClusterDataStruct.h"
-#include "AliHLTPHOSConstants.h"
+//#include "AliHLTPHOSConstants.h"
 
-using namespace PhosHLTConst;
+//using namespace PhosHLTConst;
+
 
 
 ClassImp(AliHLTPHOSClusterizer);
@@ -41,7 +42,7 @@ ClassImp(AliHLTPHOSClusterizer);
 /**
 * Main constructor
 **/
-AliHLTPHOSClusterizer::AliHLTPHOSClusterizer():fPHOSModule(0), fThreshold(0), fClusterThreshold(0), 
+AliHLTPHOSClusterizer::AliHLTPHOSClusterizer():AliHLTPHOSBase(),fPHOSModule(0), fThreshold(0), fClusterThreshold(0), 
 					       fHighGainFactor(0.005), fLowGainFactor(0.08),
 					       fArraySize(3), fMultiplicity(fArraySize*fArraySize)
 {
@@ -49,7 +50,7 @@ AliHLTPHOSClusterizer::AliHLTPHOSClusterizer():fPHOSModule(0), fThreshold(0), fC
   
 }//end
 
-AliHLTPHOSClusterizer::AliHLTPHOSClusterizer(const AliHLTPHOSClusterizer &):fPHOSModule(0), fThreshold(0), fClusterThreshold(0), 
+AliHLTPHOSClusterizer::AliHLTPHOSClusterizer(const AliHLTPHOSClusterizer &):AliHLTPHOSBase(),fPHOSModule(0), fThreshold(0), fClusterThreshold(0), 
 									    fHighGainFactor(0.005), fLowGainFactor(0.08),
 									    fArraySize(3), fMultiplicity(fArraySize*fArraySize)
 {
@@ -313,7 +314,9 @@ AliHLTPHOSClusterizer::CalculateMoments(AliHLTPHOSRecPointDataStruct* recPointPt
 	  zj = zc + j;
 	  if (fEnergyArray[xi][zj] > 0) 
 	    {
-	      w     = TMath::Max(0.,logWeight + log( fEnergyArray[xi][zj]/fEnergyArray[xc][zc] ) ) ;
+
+	      //	      w     = TMath::Max(0.,logWeight + log( fEnergyArray[xi][zj]/fEnergyArray[xc][zc] ) ) ;
+
 	      //printf("log in mom: %f\n", TMath::Log( fEnergyArray[xi][zj] / fEnergyArray[xc][zc]));
 	      x    += w * xi ;
 	      z    += w * zj ; 

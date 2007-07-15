@@ -62,7 +62,7 @@ AliHLTDDLDecoder::Decode()
       fN10bitWords = 0;
       
       //     for(fI=0; fI < fNDDLBlocks; fI++)
-      for(int=0; i < fNDDLBlocks; i++)
+      for(int i = 0; i < fNDDLBlocks; i++)
 	{
 	  DecodeDDLBlock();
 	}
@@ -190,12 +190,13 @@ AliHLTDDLDecoder::SetMemory(UChar_t *dtaPtr, UInt_t size)
   f32DtaPtr = (UInt_t *)dtaPtr + fN32HeaderWords;
   fBufferPos =  fN40AltroWords*4  -  1;
   
-  UShort_t  *tmpBufferPos =  fBufferPos;
-  tmpBufferPos =  tmpBufferPos - 2*fN32RcuTrailerWords;
+  //  UShort_t  *tmpBufferPos =  fBufferPos;
+
+  //  tmpBufferPos =  tmpBufferPos - 2*fN32RcuTrailerWords;
 
   for(int i=0; i<4; i++)
     {
-      printf("\nAliHLTDDLDecoder::SetMemory i= %d,  content = 0x%x\n", i, *tmpBufferPos);
+      //      printf("\nAliHLTDDLDecoder::SetMemory i= %d,  content = 0x%x\n", i, *tmpBufferPos);
     }
 }
 

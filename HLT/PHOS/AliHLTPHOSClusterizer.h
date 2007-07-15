@@ -11,10 +11,15 @@
 #ifndef ALIHLTPHOSCLUSTERIZER_H
 #define ALIHLTPHOSCLUSTERIZER_H
 
-#include "AliHLTPHOSCommonDefs.h"
-#include "AliHLTPHOSConstants.h"
+//#include "AliHLTPHOSProcessor.h"
 
-using namespace PhosHLTConst;
+#include "AliHLTPHOSBase.h" 
+
+
+//#include "AliHLTPHOSCommonDefs.h"
+//#include "AliHLTPHOSConstants.h"
+
+//using namespace PhosHLTConst;
 
 struct AliHLTPHOSClusterDataStruct;
 struct AliHLTPHOSRecPointDataStruct;
@@ -22,7 +27,8 @@ struct AliHLTPHOSValidCellDataStruct;
 struct AliHLTPHOSRecPointListDataStruct;
 struct AliHLTPHOSRcuCellEnergyDataStruct;
 
-class AliHLTPHOSClusterizer
+//class AliHLTPHOSClusterizer: public AliHLTPHOSProcessor
+class AliHLTPHOSClusterizer: public AliHLTPHOSBase
 {
   
  public: 

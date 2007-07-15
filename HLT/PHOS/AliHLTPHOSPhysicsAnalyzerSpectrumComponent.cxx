@@ -1,7 +1,7 @@
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
- * Authors: Øystein Djuvsland <oysteind@ift.uib.no>                       *
+ * Authors: Ãystein Djuvsland <oysteind@ift.uib.no>                   *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
@@ -14,10 +14,10 @@
 
 #include "AliHLTPHOSPhysicsAnalyzerSpectrumComponent.h"
 #include "AliHLTPHOSPhysicsAnalyzerPeakFitter.h"
-#include "AliHLTPHOSPhysicsDefinitions.h"
+//#include "AliHLTPHOSPhysicsDefinitions.h"
 #include "AliHLTPHOSPhysicsAnalyzerSpectrum.h"
 #include "AliHLTPHOSPhysicsAnalyzerSpectrumComponent.h"
-#include "Rtypes.h"
+//#include "Rtypes.h"
 
 class AliHLTPHOSDefinitions;
 
@@ -26,7 +26,7 @@ UInt_t AliHLTPHOSPhysicsAnalyzerSpectrumComponent::fgCount = 0;
 
 AliHLTPHOSPhysicsAnalyzerSpectrumComponent gAliHLTPHOSPhysicsAnalyzerSpectrumComponent;
 
-AliHLTPHOSPhysicsAnalyzerSpectrumComponent::AliHLTPHOSPhysicsAnalyzerSpectrumComponent():AliHLTProcessor(), fAnalyzerPtr(0), 
+AliHLTPHOSPhysicsAnalyzerSpectrumComponent::AliHLTPHOSPhysicsAnalyzerSpectrumComponent():AliHLTPHOSBase(), AliHLTProcessor(), fAnalyzerPtr(0), 
 											 fPeakFitter(0), fRootHistPtr(0),
 											 fWriteInterval(0)
 							 
@@ -57,12 +57,12 @@ AliHLTPHOSPhysicsAnalyzerSpectrumComponent::~AliHLTPHOSPhysicsAnalyzerSpectrumCo
       
 }
 
-AliHLTPHOSPhysicsAnalyzerSpectrumComponent::AliHLTPHOSPhysicsAnalyzerSpectrumComponent(const AliHLTPHOSPhysicsAnalyzerSpectrumComponent &):AliHLTProcessor(), fAnalyzerPtr(0), 
-																	   fPeakFitter(0), fRootHistPtr(0), 
-																	   fWriteInterval(0)
-{
+// PTH AliHLTPHOSPhysicsAnalyzerSpectrumComponent::AliHLTPHOSPhysicsAnalyzerSpectrumComponent(const AliHLTPHOSPhysicsAnalyzerSpectrumComponent &):AliHLTProcessor(), fAnalyzerPtr(0), 
+//																	   fPeakFitter(0), fRootHistPtr(0), 
+//																	   fWriteInterval(0)
+//{
   //Copy constructor not implemented 
-}
+//}
 
 Int_t
 AliHLTPHOSPhysicsAnalyzerSpectrumComponent::Deinit()
@@ -121,7 +121,8 @@ AliHLTPHOSPhysicsAnalyzerSpectrumComponent::GetInputDataTypes( vector<AliHLTComp
 AliHLTComponentDataType 
 AliHLTPHOSPhysicsAnalyzerSpectrumComponent::GetOutputDataType()
 {
-  return AliHLTPHOSPhysicsDefinitions::fgkAliHLTSpectrumDataType;
+  //  return AliHLTPHOSPhysicsDefinitions::fgkAliHLTSpectrumDataType;
+  return AliHLTPHOSDefinitions::fgkAliHLTSpectrumDataType;
 }
 
 void
@@ -185,7 +186,8 @@ AliHLTPHOSPhysicsAnalyzerSpectrumComponent::DoEvent(const AliHLTComponentEventDa
   int ndx = 0;
   //int nBlocks = GetNumberOfInputBlocks();
 
-  if((iter = GetFirstInputBlock(AliHLTPHOSPhysicsDefinitions::fgkAliHLTClusterDataType)))
+  // PTH  if((iter = GetFirstInputBlock(AliHLTPHOSPhysicsDefinitions::fgkAliHLTClusterDataType)))
+  if((iter = GetFirstInputBlock(AliHLTPHOSDefinitions::fgkAliHLTClusterDataType)))
     {
     fClusterArrayPtr[ndx] = reinterpret_cast<AliHLTPHOSClusterDataStruct*>(iter->fPtr);
     }

@@ -42,13 +42,13 @@ libAliHLTPHOS_la_SOURCES	= AliHLTPHOSPulseGenerator.cxx \
 				  AliHLTPHOSPhysicsAnalyzerSpectrum.cxx \
 				  AliHLTPHOSPhysicsAnalyzerSpectrumComponent.cxx \
 				  AliHLTPHOSPhysicsAnalyzer.cxx \
-				  AliHLTPHOSPhysicsDefinitions.cxx \
 				  AliHLTPHOSPhysicsAnalyzerPeakFitter.cxx \
 			          AliHLTDDLDecoder.cxx \
 				  AliHLTAltroData.cxx \
 				  AliHLTAltroBunch.cxx \
 			          AliHLTPHOSMapper.cxx \
 				  AliHLTPHOSRcuProcessor.cxx \
+				  AliHLTPHOSBase.cxx\
 				  PeakFinderTest.cxx
 
 
@@ -80,12 +80,12 @@ CLASS_HDRS			= AliHLTPHOSPulseGenerator.h \
 				  AliHLTPHOSPhysicsAnalyzerSpectrum.h \
 				  AliHLTPHOSPhysicsAnalyzerSpectrumComponent.h \
 				  AliHLTPHOSPhysicsAnalyzer.h \
-				  AliHLTPHOSPhysicsDefinitions.h \
 				  AliHLTPHOSPhysicsAnalyzerPeakFitter.h \
 				  AliHLTDDLDecoder.h \
 				  AliHLTAltroData.h \
 				  AliHLTPHOSMapper.h \
 				  AliHLTPHOSRcuProcessor.h \
+				  AliHLTPHOSBase.h \
 				  AliHLTPHOSMapper.h
 
 pkginclude_HEADERS		= $(CLASS_HDRS) \

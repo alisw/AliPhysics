@@ -6,6 +6,7 @@
 #define ALIHLTPHOSPHYSICSANALYZERSPECTRUMCOMPONENT_H
 
 #include "AliHLTProcessor.h"
+#include "AliHLTPHOSBase.h"
 
 class TH1F;
 class AliHLTPHOSPhysicsAnalyzerSpectrum;
@@ -18,17 +19,18 @@ class TFile;
 struct AliHLTPHOSClusterDataStruct;
 
 
-class AliHLTPHOSPhysicsAnalyzerSpectrumComponent: public AliHLTProcessor
+class AliHLTPHOSPhysicsAnalyzerSpectrumComponent: public AliHLTPHOSBase, public AliHLTProcessor
 {
  public:
 
   AliHLTPHOSPhysicsAnalyzerSpectrumComponent();
   ~AliHLTPHOSPhysicsAnalyzerSpectrumComponent();
-  AliHLTPHOSPhysicsAnalyzerSpectrumComponent(const AliHLTPHOSPhysicsAnalyzerSpectrumComponent &);
-  AliHLTPHOSPhysicsAnalyzerSpectrumComponent & operator = (const AliHLTPHOSPhysicsAnalyzerSpectrumComponent &)
-    {
-      return *this;
-    }
+
+  // PTH  AliHLTPHOSPhysicsAnalyzerSpectrumComponent(const AliHLTPHOSPhysicsAnalyzerSpectrumComponent &);
+  //  AliHLTPHOSPhysicsAnalyzerSpectrumComponent & operator = (const AliHLTPHOSPhysicsAnalyzerSpectrumComponent &)
+  //   {
+  //     return *this;
+  //  }
   const char* GetComponentID();
   void GetInputDataTypes(std::vector<AliHLTComponentDataType>& list);
 

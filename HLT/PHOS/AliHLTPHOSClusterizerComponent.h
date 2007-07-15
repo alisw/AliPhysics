@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 /** @file   AliHLTPHOSClusterizerComponent.h
-    @author Øystein Djuvsland
+    @author Ãystein Djuvsland
     @date   
     @brief  A clusterizer component for PHOS HLT
 */
@@ -11,28 +11,37 @@
 #ifndef ALIHLTPHOSCLUSTERIZERCOMPONENT_H
 #define ALIHLTPHOSCLUSTERIZERCOMPONENT_H
 
-#include "AliHLTProcessor.h"
 
+
+#include "AliHLTProcessor.h"
+#include "AliHLTPHOSBase.h"
+//#include "AliHLTPHOSDefinitions.h"
+//#include "AliHLTProcessor.h"
 
 class AliHLTPHOSClusterizer;
-class Rtypes;
+
+//class Rtypes;
+
 struct AliHLTPHOSRcuCellEnergyDataStruct;
 struct AliHLTPHOSClusterDataStruct;
 struct AliHLTPHOSRecPointDataStruct;
 struct AliHLTPHOSRecPointListDataStruct;
 
 
-class AliHLTPHOSClusterizerComponent: public AliHLTProcessor
+class AliHLTPHOSClusterizerComponent:  public AliHLTPHOSBase, public AliHLTProcessor
 {
  public:
 
   AliHLTPHOSClusterizerComponent();
   ~AliHLTPHOSClusterizerComponent();
-  AliHLTPHOSClusterizerComponent(const AliHLTPHOSClusterizerComponent &);
-  AliHLTPHOSClusterizerComponent & operator = (const AliHLTPHOSClusterizerComponent &)
-    {
-      return *this;
-    }
+
+  //  AliHLTPHOSClusterizerComponent(const AliHLTPHOSClusterizerComponent &);
+  //  AliHLTPHOSClusterizerComponent & operator = (const AliHLTPHOSClusterizerComponent &)
+  //   {
+
+  //     return *this;
+  //   }
+
   const char* GetComponentID();
   void GetInputDataTypes(std::vector<AliHLTComponentDataType>& list);
 

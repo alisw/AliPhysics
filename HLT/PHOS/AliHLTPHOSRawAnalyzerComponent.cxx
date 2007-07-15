@@ -110,6 +110,8 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
       fDecoderPtr->Decode();
       fOutPtr =  (AliHLTPHOSRcuCellEnergyDataStruct*)outBPtr;
 
+      fOutPtr->fModuleID =fModuleID;
+
       while( fDecoderPtr->NextChannel(fAltroDataPtr) == true )
 	{
 
