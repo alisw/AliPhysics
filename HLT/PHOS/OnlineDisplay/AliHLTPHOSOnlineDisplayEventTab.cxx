@@ -72,6 +72,9 @@ AliHLTPHOSOnlineDisplayEventTab::ReadBlockData(HOMERReader *homeReaderPtr)
       Int_t moduleID;
       const AliHLTPHOSRcuCellEnergyDataStruct* cellEnergiesPtr = (const AliHLTPHOSRcuCellEnergyDataStruct*)homeReaderPtr->GetBlockData( blk );  
       moduleID = cellEnergiesPtr->fModuleID ;
+
+      cout <<"AliHLTPHOSOnlineDisplayEventTab::ReadBlockData,  fModuleID =" <<moduleID << endl; 
+
       Int_t tmpCount = cellEnergiesPtr->fCnt;
       Int_t tmpZ;
       Int_t tmpX;
