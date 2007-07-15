@@ -43,7 +43,6 @@ class AliHLTPHOSProcessor:public AliHLTProcessor
   template<typename T> 
     void  Reset(T *array, int N)
     {
-      cout <<   "DumpData N=  " << N <<endl;
       for(int i= 0; i< N; i++)
 	{
 	  array[i] = 0;
