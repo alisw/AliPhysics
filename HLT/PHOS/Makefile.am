@@ -27,15 +27,12 @@ libAliHLTPHOS_la_SOURCES	= AliHLTPHOSPulseGenerator.cxx \
 				  AliHLTPHOSRawAnalyzerCrudeComponent.cxx \
 				  AliHLTPHOSRawAnalyzerPeakFinderComponent.cxx \
 			          AliHLTPHOSDefinitions.cxx \
-				  AliHLTPHOSModuleMergerComponent.cxx \
 				  AliHLTPHOSFileWriterComponent.cxx \
 				  AliHLTPHOSFileWriter.cxx \
 				  AliHLTPHOSDDLPackedFileWriter.cxx \
 				  AliHLTPHOSCellEnergiesFileWriter.cxx \
-				  AliHLTPHOSHistogramProducerComponent.cxx \
 				  AliHLTPHOSRcuHistogramProducer.cxx \
 				  AliHLTPHOSRcuHistogramProducerComponent.cxx \
-				  AliHLTPHOSDDLDecoderComponent.cxx \
 				  AliHLTPHOSDataCorruptor.cxx \
 				  AliHLTPHOSDataQualityMonitor.cxx \
 				  AliHLTPHOSRcuDataQualityMonitorComponent.cxx \
@@ -51,6 +48,7 @@ libAliHLTPHOS_la_SOURCES	= AliHLTPHOSPulseGenerator.cxx \
 				  AliHLTAltroData.cxx \
 				  AliHLTAltroBunch.cxx \
 			          AliHLTPHOSMapper.cxx \
+				  AliHLTPHOSRcuProcessor.cxx \
 				  PeakFinderTest.cxx
 
 
@@ -67,15 +65,12 @@ CLASS_HDRS			= AliHLTPHOSPulseGenerator.h \
 				  AliHLTPHOSRawAnalyzerComponent.h \
 				  AliHLTPHOSRawAnalyzerCrudeComponent.h \
 				  AliHLTPHOSRawAnalyzerPeakFinderComponent.h \
-				  AliHLTPHOSModuleMergerComponent.h \
                                   AliHLTPHOSFileWriterComponent.h \
 				  AliHLTPHOSFileWriter.h \
 				  AliHLTPHOSDDLPackedFileWriter.h \
 				  AliHLTPHOSCellEnergiesFileWriter.h \
 				  AliHLTPHOSRcuHistogramProducer.h \
 				  AliHLTPHOSRcuHistogramProducerComponent.h \
-				  AliHLTPHOSHistogramProducerComponent.h \
-				  AliHLTPHOSDDLDecoderComponent.h \
 				  AliHLTPHOSDataCorruptor.h \
 				  AliHLTPHOSDataQualityMonitor.h \
 				  AliHLTPHOSRcuDataQualityMonitorComponent.h \
@@ -90,6 +85,7 @@ CLASS_HDRS			= AliHLTPHOSPulseGenerator.h \
 				  AliHLTDDLDecoder.h \
 				  AliHLTAltroData.h \
 				  AliHLTPHOSMapper.h \
+				  AliHLTPHOSRcuProcessor.h \
 				  AliHLTPHOSMapper.h
 
 pkginclude_HEADERS		= $(CLASS_HDRS) \
