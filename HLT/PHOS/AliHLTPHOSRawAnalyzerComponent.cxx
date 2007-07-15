@@ -16,19 +16,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
-/// @class AliHLTPHOSRawAnalyzerComponent
-/// Base class of PHOS HLT online raw analysis component.
-/// The class provides a common interface for the implementation of PHOS 
-/// HLT raw data
-/// processors components. The class is intended for processing of 
-/// arrays of raw data samples to evaluate energy and timing.
-/// The Energy will be given in entities of ADC leves ranging from 0 to
-/// 1023. Timing will be given in entities of samples periods.
-/// Drived clases  must implement the fucntions
-/// - @ref GetComponentID
-/// - @ref Spawn
-
 #include "AliHLTPHOSRawAnalyzer.h"
 #include "AliHLTPHOSRawAnalyzerComponent.h"
 #include "AliHLTPHOSRcuCellEnergyDataStruct.h"
@@ -40,7 +27,7 @@
 
 using namespace std;
 
-AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent():AliHLTPHOSProcessor(), fAnalyzerPtr(0), 
+AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent():AliHLTPHOSRcuProcessor(), fAnalyzerPtr(0), 
 fSendChannelData(kFALSE),fOutPtr(0)
 {
   fMapperPtr = new AliHLTPHOSMapper();
@@ -49,14 +36,7 @@ fSendChannelData(kFALSE),fOutPtr(0)
 
 AliHLTPHOSRawAnalyzerComponent::~AliHLTPHOSRawAnalyzerComponent()
 {
-
-}
-
-
-AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent(const AliHLTPHOSRawAnalyzerComponent & ) : AliHLTPHOSProcessor(), fAnalyzerPtr(0), 
-fSendChannelData(kFALSE),fOutPtr(0)
-{
-
+  delete  fMapperPtr;
 }
 
 
@@ -122,7 +102,7 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 
       if ( iter->fDataType != AliHLTPHOSDefinitions::fgkDDLPackedRawDataType )
 	{
-	  cout <<"WARNING: notAliHLTPHOSDefinitions::fgkDDLPackedRawDataTyp  "  << endl;
+	  cout <<"WARNING: notAliHLTPHOSDefinitions::fgkDDLPackedRawDataType  "  << endl;
 	  //	  continue;
 	}
 
@@ -168,6 +148,8 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
       		   , tSize, size );
       	  return EMSGSIZE;
       	}
+      //   fDecoderPtr->GetFailureRate();
+
     }
 
   fPhosEventCount++; 
@@ -222,9 +204,9 @@ AliHLTPHOSRawAnalyzerComponent::Reset()
 {
   for(int mod = 0; mod < N_MODULES; mod ++)
     {
-      for(int row = 0; row < N_ROWS_MOD; row ++)
+      for(int row = 0; row < N_ZROWS_MOD; row ++)
 	{
-	  for(int col = 0; col < N_COLUMNS_MOD; col ++)
+	  for(int col = 0; col < N_XCOLUMNS_MOD; col ++)
 	    {
 	      for(int gain = 0; gain < N_GAINS; gain ++ )
 		{

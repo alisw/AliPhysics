@@ -5,17 +5,17 @@
  * See cxx source for full Copyright notice  */ 
 
 
-#include "AliHLTPHOSProcessor.h"
+#include "AliHLTPHOSRcuProcessor.h"
 #include "AliHLTPHOSDefinitions.h"
 #include "AliHLTPHOSCommonDefs.h"
 //#include "AliHLTPHOSRcuCellAccumulatedEnergyDataStruct.h"
-#include "Rtypes.h"
+//#include "Rtypes.h"
 
 
 class AliHLTPHOSRcuHistogramProducer;
 class AliHLTPHOSRcuCellAccumulatedEnergyDataStruct;
 
-class AliHLTPHOSRcuHistogramProducerComponent:public AliHLTPHOSProcessor
+class AliHLTPHOSRcuHistogramProducerComponent:public AliHLTPHOSRcuProcessor
 {
  public:
   AliHLTPHOSRcuHistogramProducerComponent();
@@ -32,11 +32,13 @@ class AliHLTPHOSRcuHistogramProducerComponent:public AliHLTPHOSProcessor
   virtual const char* GetComponentID();
 
  private:
+  /*
   AliHLTPHOSRcuHistogramProducerComponent(const AliHLTPHOSRcuHistogramProducerComponent & );
   AliHLTPHOSRcuHistogramProducerComponent & operator = (const AliHLTPHOSRcuHistogramProducerComponent &)
    {
       return *this;
    };
+  */
 
   AliHLTPHOSRcuHistogramProducer* fRcuHistoProducerPtr;   /**<Pointer to a phos histoproducer object*/
   AliHLTPHOSRcuCellAccumulatedEnergyDataStruct*  fOutPtr; /**<Pointer to outputbuffer to write results from the component into shared memory*/

@@ -63,7 +63,7 @@ class AliHLTPHOSMapper
  
   //Function to generate Active Channel List (ACL)for each of the four readout partitions
   //Of the Phos Module. The ACL register is 256x16 bit big.
-  void GenerateACL(int startZ, int endZ, int startX, int endX, int mID, int acl[RCUS_PER_MODULE][256], unsigned long int afl[RCUS_PER_MODULE]);
+  //  void GenerateACL(int startZ, int endZ, int startX, int endX, int mID, int acl[RCUS_PER_MODULE][256], unsigned long int afl[RCUS_PER_MODULE]);
 
   void InitAltroCspMapping();
 
@@ -89,10 +89,10 @@ class AliHLTPHOSMapper
   void InitAltroMapping(int saveMapping);
   void PrintHistMapInfo(char *objName);
 
-  FEE_CSP_MAP CSP_MAP[FEE_ALTROS][FEE_CHANS];
-  ALTRO_GEO_MAP ALTRO_MAP[PHOS_MODS*FEE_RCUS*FEE_BRANCHS*FEE_FECS*FEE_ALTROS*FEE_CHANS];  
-  int hdw2geo[PHOS_MODS][FEE_RCUS][FEE_BRANCHS][FEE_FECS][FEE_ALTROS][FEE_CHANS];
-  int geo2hdw[PHOS_MODS][PHOS_GAINS][PHOS_ROWS][PHOS_COLS]; 
+  FEE_CSP_MAP CSP_MAP[N_ALTROS][N_ALTROCHANNELS];
+  ALTRO_GEO_MAP ALTRO_MAP[N_MODULES*N_RCUS*N_BRANCHES*N_FEECS*N_ALTROS*N_ALTROCHANNELS];  
+  int hdw2geo[N_MODULES][N_RCUS][N_BRANCHES][N_FEECS][N_ALTROS][N_ALTROCHANNELS];
+  int geo2hdw[N_MODULES][N_GAINS][ N_XCOLUMNS_MOD][N_ZROWS_MOD]; 
 
  private:
 

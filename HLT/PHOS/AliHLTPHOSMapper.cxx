@@ -24,6 +24,7 @@ AliHLTPHOSMapper::AliHLTPHOSMapper()
   InitAltroMapping(0); 
 }
 
+/*
 void 
 AliHLTPHOSMapper::GenerateACL(int startZ, int endZ, int startX, int endX, int modID, int acl[RCUS_PER_MODULE][256], unsigned long int afl[RCUS_PER_MODULE])
 {
@@ -72,6 +73,7 @@ AliHLTPHOSMapper::GenerateACL(int startZ, int endZ, int startX, int endX, int mo
 	}
     }
 }
+*/
 
 void 
 AliHLTPHOSMapper::AddCsp(int csp, int chip, int chHi, int chLo, int numHi, int numLo)
@@ -86,9 +88,9 @@ AliHLTPHOSMapper::AddCsp(int csp, int chip, int chHi, int chLo, int numHi, int n
   assert((csp>=0)&&(csp<32));
   assert((numHi>=0)&&(numHi<64));
   assert((numLo>=0)&&(numLo<64));
-  assert((chHi>=0)&&(chHi<FEE_CHANS));
-  assert((chLo>=0)&&(chLo<FEE_CHANS));
-  assert((chip>=0)&&(chip<FEE_ALTROS));
+  assert((chHi>=0)&&(chHi< N_ALTROCHANNELS));
+  assert((chLo>=0)&&(chLo< N_ALTROCHANNELS));
+  assert((chip>=0)&&(chip<N_ALTROS));
   // Fill CSP array
   CSP_MAP[chip][chHi].row=row;	CSP_MAP[chip][chLo].row=row;
   CSP_MAP[chip][chHi].col=col;	CSP_MAP[chip][chLo].col=col;
@@ -206,20 +208,20 @@ AliHLTPHOSMapper::InitAltroMapping(int saveMapping)
 
   // Clear index arrays
   //
-  for(int m=0; m<PHOS_MODS; m++)
-    for(int g=0; g<PHOS_GAINS;g++)
-      for(int r=0; r<PHOS_ROWS; r++)
-	for(int c=0; c<PHOS_COLS; c++)
+  for(int m=0; m<N_MODULES; m++)
+    for(int g=0; g<N_GAINS;g++)
+      for(int r=0; r< N_XCOLUMNS_MOD; r++)
+	for(int c=0; c<N_ZROWS_MOD; c++)
 	  {	
 	    geo2hdw[m][g][r][c]=-1; 
 	  }
   
-  for(int m=0; m<PHOS_MODS;   m++)
-    for(int r=0; r<FEE_RCUS;    r++)
-      for(int b=0; b<FEE_BRANCHS; b++)
-	for(int f=0; f<FEE_FECS;    f++)
-	  for(int a=0; a<FEE_ALTROS;  a++)
-	    for(int c=0; c<FEE_CHANS;   c++)
+  for(int m=0; m<N_MODULES;   m++)
+    for(int r=0; r<N_RCUS;    r++)
+      for(int b=0; b<N_BRANCHES; b++)
+	for(int f=0; f<N_FEECS;    f++)
+	  for(int a=0; a<N_ALTROS;  a++)
+	    for(int c=0; c<N_ALTROCHANNELS;   c++)
 	      { 
 		hdw2geo[m][r][b][f][a][c]=-1; 
 	      }
@@ -227,12 +229,12 @@ AliHLTPHOSMapper::InitAltroMapping(int saveMapping)
   // Fill all FEE cards via formula
   //
   int index=0;
-  for(int m=0; m<PHOS_MODS;   m++)
-    for(int r=0; r<FEE_RCUS;    r++)
-      for(int b=0; b<FEE_BRANCHS; b++)
-	for(int f=0; f<FEE_FECS;    f++)
-	  for(int a=0; a<FEE_ALTROS;  a++)
-	    for(int c=0; c<FEE_CHANS;   c++)
+  for(int m=0; m<N_MODULES;   m++)
+    for(int r=0; r<N_RCUS;    r++)
+      for(int b=0; b<N_BRANCHES; b++)
+	for(int f=0; f<N_FEECS;    f++)
+	  for(int a=0; a<N_ALTROS;  a++)
+	    for(int c=0; c<N_ALTROCHANNELS;   c++)
 	      {
 		int row  = (r/2)*32 + b*16 + CSP_MAP[a][c].row;
 		int col  = (r%2)*28 + f*2  + CSP_MAP[a][c].col;
@@ -252,31 +254,31 @@ AliHLTPHOSMapper::InitAltroMapping(int saveMapping)
 		ALTRO_MAP[index].num=num;
 		ALTRO_MAP[index].hid=Geo2hid(m,gain,row,col);
 		hdw2geo[m][r][b][f][a][c]=index;
-		if((row>=0)&&(row<PHOS_ROWS))
-		  if((col>=0)&&(col<PHOS_COLS))
-		    if((gain>=0)&&(gain<PHOS_GAINS)) geo2hdw[m][gain][row][col]=index;
+		if((row>=0)&&(row< N_XCOLUMNS_MOD))
+		  if((col>=0)&&(col<N_ZROWS_MOD))
+		    if((gain>=0)&&(gain<N_GAINS)) geo2hdw[m][gain][row][col]=index;
 		index++;
 	      }
  
   //
   // Check if geo2hdw map table is filled
   //
-  for(int m=0; m<PHOS_MODS; m++)
-    for(int g=0; g<PHOS_GAINS;g++)
-      for(int r=0; r<PHOS_ROWS; r++)
-	for(int c=0; c<PHOS_COLS; c++) 
+  for(int m=0; m<N_MODULES; m++)
+    for(int g=0; g<N_GAINS;g++)
+      for(int r=0; r< N_XCOLUMNS_MOD; r++)
+	for(int c=0; c< N_ZROWS_MOD; c++) 
 	  {
 	    assert(geo2hdw[m][g][r][c] >= 0);
 	  }
   //
   // Check if hdw2geo map table is filled
   //
-  for(int m=0; m<PHOS_MODS;   m++)
-    for(int r=0; r<FEE_RCUS;    r++)
-      for(int b=0; b<FEE_BRANCHS; b++)
-	for(int f=0; f<FEE_FECS;    f++)
-	  for(int a=0; a<FEE_ALTROS;  a++)
-	    for(int c=0; c<FEE_CHANS;   c++) 
+  for(int m=0; m<N_MODULES;   m++)
+    for(int r=0; r<N_RCUS;    r++)
+      for(int b=0; b<N_BRANCHES; b++)
+	for(int f=0; f<N_FEECS;    f++)
+	  for(int a=0; a<N_ALTROS;  a++)
+	    for(int c=0; c<N_ALTROCHANNELS;   c++) 
 	      {
 		assert(hdw2geo[m][r][b][f][a][c] >= 0);
 	      }

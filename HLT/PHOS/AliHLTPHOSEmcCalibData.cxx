@@ -60,8 +60,8 @@ AliHLTPHOSEmcCalibData::AliHLTPHOSEmcCalibData(const AliHLTPHOSEmcCalibData& cal
 
   //  for(Int_t gain = 0; gain < N_GAINS; gain ++){
   for(Int_t module=0; module<N_MODULES; module++) {
-    for(Int_t column=0; column< N_COLUMNS_MOD; column++) {
-      for(Int_t row=0; row<N_ROWS_MOD; row++) {
+    for(Int_t column=0; column< N_XCOLUMNS_MOD; column++) {
+      for(Int_t row=0; row<N_ZROWS_MOD; row++) {
 	for(Int_t gain = 0; gain < N_GAINS; gain ++){
 	  fADCchannelEnergy[module][column][row][gain] =  calibda.fADCchannelEnergy[module][column][row][gain];
 	  fADCpedestalEmcMeasured[module][column][row][gain] = calibda.fADCpedestalEmcMeasured[module][column][row][gain];
@@ -82,8 +82,8 @@ AliHLTPHOSEmcCalibData &AliHLTPHOSEmcCalibData::operator =(const AliHLTPHOSEmcCa
     SetTitle(calibda.GetName());
     //    for(Int_t gain = 0; gain < N_GAINS; gain ++){
     for(Int_t module=0; module<N_MODULES; module++) {
-      for(Int_t column=0; column< N_COLUMNS_MOD; column++) {
-	for(Int_t row=0; row<N_ROWS_MOD; row++) {
+      for(Int_t column=0; column< N_XCOLUMNS_MOD; column++) {
+	for(Int_t row=0; row<N_ZROWS_MOD; row++) {
 	  for(Int_t gain = 0; gain < N_GAINS; gain ++){
 	    fADCchannelEnergy[module][column][row][gain] = calibda.fADCchannelEnergy[module][column][row][gain];
 	    fADCpedestalEmcMeasured[module][column][row][gain] = calibda.fADCpedestalEmcMeasured[module][column][row][gain];
@@ -108,8 +108,8 @@ void AliHLTPHOSEmcCalibData::Reset()
 
   //  for(Int_t gain = 0; gain < PHOS_GAINS; gain ++){
     for (Int_t module=0; module<N_MODULES; module++){
-      for (Int_t column=0; column< N_COLUMNS_MOD; column++){
-	for (Int_t row=0; row<N_ROWS_MOD; row++){
+      for (Int_t column=0; column< N_XCOLUMNS_MOD; column++){
+	for (Int_t row=0; row<N_ZROWS_MOD; row++){
 	  for(Int_t gain = 0; gain < N_GAINS; gain ++){
 	  fADCpedestalEmcMeasured[module][column][row][gain] = 0.;
 	  fADCchannelEnergy[module][column][row][gain]  = 1.;
@@ -129,8 +129,8 @@ void  AliHLTPHOSEmcCalibData::Print(Option_t *option) const
     //    for(Int_t gain = 0; gain < N_GAINS; gain ++){
       for (Int_t module=0; module<N_MODULES; module++){
 	printf("============== Module %d\n",module+1);
-	for (Int_t column=0; column< N_COLUMNS_MOD; column++){
-	  for (Int_t row=0; row<N_ROWS_MOD; row++){
+	for (Int_t column=0; column< N_XCOLUMNS_MOD; column++){
+	  for (Int_t row=0; row<N_ZROWS_MOD; row++){
 	    for(Int_t gain = 0; gain < N_GAINS; gain ++){
 	    printf("%4.1f",fADCpedestalEmcMeasured[module][column][row][gain]);
 	  }
@@ -145,8 +145,8 @@ void  AliHLTPHOSEmcCalibData::Print(Option_t *option) const
     //   for(Int_t gain = 0; gain < N_GAINS; gain ++){ 
     for (Int_t module=0; module<N_MODULES; module++){
       printf("============== Module %d\n",module+1);
-      for (Int_t column=0; column< N_COLUMNS_MOD; column++){
-	for (Int_t row=0; row<N_ROWS_MOD; row++){
+      for (Int_t column=0; column< N_XCOLUMNS_MOD; column++){
+	for (Int_t row=0; row<N_ZROWS_MOD; row++){
 	  for(Int_t gain = 0; gain < N_GAINS; gain ++){ 
 	    printf("%4.1f",fADCchannelEnergy[module][column][row][gain]);
 	  }
@@ -163,8 +163,8 @@ AliHLTPHOSEmcCalibData::MakeADCpedestalCorrectionTable()
 {
   for (Int_t module=0; module<N_MODULES; module++){
     printf("============== Module %d\n",module+1);
-    for (Int_t column=0; column< N_COLUMNS_MOD; column++){
-      for (Int_t row=0; row<N_ROWS_MOD; row++){
+    for (Int_t column=0; column< N_XCOLUMNS_MOD; column++){
+      for (Int_t row=0; row<N_ZROWS_MOD; row++){
 	for(Int_t gain = 0; gain < N_GAINS; gain ++){ 
 	  fADCpedestalCorrectionTable[module][column][row][gain] = fADCpedestalEmcMeasured[module][column][row][gain] - fADCpedestalAltroReg[module][column][row][gain];
 	  //	  printf("%4.1f",fADCchannelEnergy[module][column][row][gain]);

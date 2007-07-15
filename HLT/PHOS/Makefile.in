@@ -72,15 +72,12 @@ am_libAliHLTPHOS_la_OBJECTS = AliHLTPHOSPulseGenerator.lo \
 	AliHLTPHOSEmcCalibData.lo AliHLTPHOSRawAnalyzerComponent.lo \
 	AliHLTPHOSRawAnalyzerCrudeComponent.lo \
 	AliHLTPHOSRawAnalyzerPeakFinderComponent.lo \
-	AliHLTPHOSDefinitions.lo AliHLTPHOSModuleMergerComponent.lo \
-	AliHLTPHOSFileWriterComponent.lo AliHLTPHOSFileWriter.lo \
-	AliHLTPHOSDDLPackedFileWriter.lo \
+	AliHLTPHOSDefinitions.lo AliHLTPHOSFileWriterComponent.lo \
+	AliHLTPHOSFileWriter.lo AliHLTPHOSDDLPackedFileWriter.lo \
 	AliHLTPHOSCellEnergiesFileWriter.lo \
-	AliHLTPHOSHistogramProducerComponent.lo \
 	AliHLTPHOSRcuHistogramProducer.lo \
 	AliHLTPHOSRcuHistogramProducerComponent.lo \
-	AliHLTPHOSDDLDecoderComponent.lo AliHLTPHOSDataCorruptor.lo \
-	AliHLTPHOSDataQualityMonitor.lo \
+	AliHLTPHOSDataCorruptor.lo AliHLTPHOSDataQualityMonitor.lo \
 	AliHLTPHOSRcuDataQualityMonitorComponent.lo \
 	AliHLTPHOSProcessor.lo AliHLTPHOSClusterizer.lo \
 	AliHLTPHOSClusterizerComponent.lo \
@@ -89,7 +86,7 @@ am_libAliHLTPHOS_la_OBJECTS = AliHLTPHOSPulseGenerator.lo \
 	AliHLTPHOSPhysicsAnalyzer.lo AliHLTPHOSPhysicsDefinitions.lo \
 	AliHLTPHOSPhysicsAnalyzerPeakFitter.lo AliHLTDDLDecoder.lo \
 	AliHLTAltroData.lo AliHLTAltroBunch.lo AliHLTPHOSMapper.lo \
-	PeakFinderTest.lo
+	AliHLTPHOSRcuProcessor.lo PeakFinderTest.lo
 am__objects_1 = AliHLTPHOSCompileInfo.lo
 am__objects_2 = AliHLTPHOS-DICT.lo
 nodist_libAliHLTPHOS_la_OBJECTS = $(am__objects_1) $(am__objects_2)
@@ -291,15 +288,12 @@ libAliHLTPHOS_la_SOURCES = AliHLTPHOSPulseGenerator.cxx \
 				  AliHLTPHOSRawAnalyzerCrudeComponent.cxx \
 				  AliHLTPHOSRawAnalyzerPeakFinderComponent.cxx \
 			          AliHLTPHOSDefinitions.cxx \
-				  AliHLTPHOSModuleMergerComponent.cxx \
 				  AliHLTPHOSFileWriterComponent.cxx \
 				  AliHLTPHOSFileWriter.cxx \
 				  AliHLTPHOSDDLPackedFileWriter.cxx \
 				  AliHLTPHOSCellEnergiesFileWriter.cxx \
-				  AliHLTPHOSHistogramProducerComponent.cxx \
 				  AliHLTPHOSRcuHistogramProducer.cxx \
 				  AliHLTPHOSRcuHistogramProducerComponent.cxx \
-				  AliHLTPHOSDDLDecoderComponent.cxx \
 				  AliHLTPHOSDataCorruptor.cxx \
 				  AliHLTPHOSDataQualityMonitor.cxx \
 				  AliHLTPHOSRcuDataQualityMonitorComponent.cxx \
@@ -315,6 +309,7 @@ libAliHLTPHOS_la_SOURCES = AliHLTPHOSPulseGenerator.cxx \
 				  AliHLTAltroData.cxx \
 				  AliHLTAltroBunch.cxx \
 			          AliHLTPHOSMapper.cxx \
+				  AliHLTPHOSRcuProcessor.cxx \
 				  PeakFinderTest.cxx
 
 
@@ -331,15 +326,12 @@ CLASS_HDRS = AliHLTPHOSPulseGenerator.h \
 				  AliHLTPHOSRawAnalyzerComponent.h \
 				  AliHLTPHOSRawAnalyzerCrudeComponent.h \
 				  AliHLTPHOSRawAnalyzerPeakFinderComponent.h \
-				  AliHLTPHOSModuleMergerComponent.h \
                                   AliHLTPHOSFileWriterComponent.h \
 				  AliHLTPHOSFileWriter.h \
 				  AliHLTPHOSDDLPackedFileWriter.h \
 				  AliHLTPHOSCellEnergiesFileWriter.h \
 				  AliHLTPHOSRcuHistogramProducer.h \
 				  AliHLTPHOSRcuHistogramProducerComponent.h \
-				  AliHLTPHOSHistogramProducerComponent.h \
-				  AliHLTPHOSDDLDecoderComponent.h \
 				  AliHLTPHOSDataCorruptor.h \
 				  AliHLTPHOSDataQualityMonitor.h \
 				  AliHLTPHOSRcuDataQualityMonitorComponent.h \
@@ -354,6 +346,7 @@ CLASS_HDRS = AliHLTPHOSPulseGenerator.h \
 				  AliHLTDDLDecoder.h \
 				  AliHLTAltroData.h \
 				  AliHLTPHOSMapper.h \
+				  AliHLTPHOSRcuProcessor.h \
 				  AliHLTPHOSMapper.h
 
 pkginclude_HEADERS = $(CLASS_HDRS) \
@@ -493,7 +486,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AliHLTPHOSClusterizer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AliHLTPHOSClusterizerComponent.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AliHLTPHOSCompileInfo.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AliHLTPHOSDDLDecoderComponent.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AliHLTPHOSDDLPackedFileWriter.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AliHLTPHOSDataCorruptor.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AliHLTPHOSDataQualityMonitor.Plo@am__quote@
@@ -501,9 +493,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AliHLTPHOSEmcCalibData.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AliHLTPHOSFileWriter.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AliHLTPHOSFileWriterComponent.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AliHLTPHOSHistogramProducerComponent.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AliHLTPHOSMapper.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AliHLTPHOSModuleMergerComponent.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AliHLTPHOSPhysicsAnalyzer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AliHLTPHOSPhysicsAnalyzerPeakFitter.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AliHLTPHOSPhysicsAnalyzerSpectrum.Plo@am__quote@
@@ -523,6 +513,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AliHLTPHOSRcuDataQualityMonitorComponent.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AliHLTPHOSRcuHistogramProducer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AliHLTPHOSRcuHistogramProducerComponent.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AliHLTPHOSRcuProcessor.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PeakFinderTest.Plo@am__quote@
 
 .cxx.o:

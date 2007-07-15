@@ -32,7 +32,7 @@ AliHLTPHOSRcuHistogramProducerComponent gAliHLTPHOSRcuHistogramProducerComponent
 * and it fills the histograms with amplitudes per channel.               * 
 * Usage example see in PHOS/macros/Shuttle/AliPHOSCalibHistoProducer.C   *
 **************************************************************************/
-AliHLTPHOSRcuHistogramProducerComponent:: AliHLTPHOSRcuHistogramProducerComponent():AliHLTPHOSProcessor(), fRcuHistoProducerPtr(0)
+AliHLTPHOSRcuHistogramProducerComponent:: AliHLTPHOSRcuHistogramProducerComponent():AliHLTPHOSRcuProcessor(), fRcuHistoProducerPtr(0)
 {
   //Default constructor
 } 
@@ -44,11 +44,12 @@ AliHLTPHOSRcuHistogramProducerComponent::~ AliHLTPHOSRcuHistogramProducerCompone
 }
 
 
-AliHLTPHOSRcuHistogramProducerComponent::AliHLTPHOSRcuHistogramProducerComponent(const  AliHLTPHOSRcuHistogramProducerComponent & ) : AliHLTPHOSProcessor(), fRcuHistoProducerPtr(0)
+/*
+AliHLTPHOSRcuHistogramProducerComponent::AliHLTPHOSRcuHistogramProducerComponent(const  AliHLTPHOSRcuHistogramProducerComponent & ) : AliHLTPHOSRcuProcessor(), fRcuHistoProducerPtr(0)
 {
 
 }
-
+*/
 
 int 
 AliHLTPHOSRcuHistogramProducerComponent::Deinit()

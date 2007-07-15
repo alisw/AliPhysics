@@ -1,12 +1,25 @@
 #include  "AliHLTDDLDecoder.h"
 #include  "AliHLTAltroData.h"
 
+/**************************************************************************
+ * This file is property of and copyright by the Experimental Nuclear     *
+ * Physics Group, Dep. of Physics                                         *
+ * University of Oslo, Norway, 2007                                       *
+ *                                                                        * 
+ * Author: Per Thomas Hille <perthi@fys.uio.no> for the ALICE HLT Project.*
+ * Contributors are mentioned in the code where appropriate.              *
+ * Please report bugs to perthi@fys.uio.no                                * 
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 
-
-
-
-
-AliHLTDDLDecoder::AliHLTDDLDecoder() : f32DtaPtr(0), f8DtaPtr(0),fN32HeaderWords(8), fN32RcuTrailerWords(2), fNDDLBlocks(0), 
+AliHLTDDLDecoder::AliHLTDDLDecoder() : f32DtaPtr(0), f8DtaPtr(0),fN32HeaderWords(8), fN32RcuTrailerWords(1), fNDDLBlocks(0), 
 				       fBufferPos(0), fN40AltroWords(0), fN40RcuAltroWords(0), fSize(0), fSegmentation(0), 
 				       f32LastDDLBlockSize(5), f32PayloadSize(0),fBufferIndex(0), fN10bitWords(0)
 {
@@ -66,22 +79,12 @@ AliHLTDDLDecoder::Decode()
     }
 }
 
-/*
-  int tmpMarker = 0;
-  int tmpMask = 0x3c0;
-  tmpMarker = (buffer[index] << 4 ) | ((buffer[index-1] & tmpMask) >> 6);  
-  return tmpMarker;
-*/
-
 bool
 AliHLTDDLDecoder::NextChannel(AliHLTAltroData *altroDataPtr)
 {
-  int tmp = 0;
 
   if(fBufferPos >  fN32HeaderWords)
     {
-      //      tmp  =  GetMarker(fBuffer, fBufferPos);
-      
       if((fBuffer[fBufferPos] << 4 ) | ((fBuffer[fBufferPos-1] & 0x3c0) >> 6) == 0x2aaa)
 	{
 	  altroDataPtr->fIsComplete = true;
@@ -91,25 +94,7 @@ AliHLTDDLDecoder::NextChannel(AliHLTAltroData *altroDataPtr)
 	{
 	  altroDataPtr->fIsComplete = false;
 	  fInComplete ++;
-	  printf("\nERROR!!!!     marker = 0x%x\n", tmp);
 	}
-
-      //   printf("\nmarker = 0x%x", GetMarker(fBuffer, fBufferPos));
-
-      /* 
-      if(tmp == 0x2aaa)
-	{
-	  //	  printf("\nmarker = 0x%x", tmp);
-	  altroDataPtr->fIsComplete = true;
-	  fComplete ++;
-	}
-      else
-	{
-	  altroDataPtr->fIsComplete = false;
-	  fInComplete ++;
-	  //	  printf("\nERROR!!!!     marker = 0x%x\n", tmp);
-	}
-      */
 
       fBufferPos --;
       fNAltro10bitWords = ( (fBuffer[fBufferPos] & 0x3f) << 4 )   |  ((fBuffer[fBufferPos -1]  & (0xF << 6)) >> 6) ;
@@ -119,12 +104,10 @@ AliHLTDDLDecoder::NextChannel(AliHLTAltroData *altroDataPtr)
 
       if(fNAltro10bitWords%4 == 0)
 	{
-	  //	  altroDataPtr->fBunchPos  = fBufferPos; 
 	  fBufferPos = fBufferPos  -  fNAltro10bitWords;
 	}
       else
 	{
-	  //	  altroDataPtr->fBunchPos  = fBufferPos -(4 - fNAltro10bitWords%4);
 	  fBufferPos = fBufferPos - fNAltro10bitWords -(4 - fNAltro10bitWords%4);
 	}
 
@@ -133,7 +116,7 @@ AliHLTDDLDecoder::NextChannel(AliHLTAltroData *altroDataPtr)
       altroDataPtr->fDataSize =  fNAltro10bitWords ;
       altroDataPtr->fHadd = fHadd; 
 
-
+      
       return true;
     }
   else
@@ -141,14 +124,6 @@ AliHLTDDLDecoder::NextChannel(AliHLTAltroData *altroDataPtr)
       return false;
     }
 }
-
-/*
-bool
-AliHLTDDLDecoder::NextBunch()
-{
-
-}
-*/
 
 
 float
@@ -158,11 +133,10 @@ AliHLTDDLDecoder::GetFailureRate()
   cout << "Number of Complete channles = " << fComplete <<endl;
   cout << "Number of InComplete channles = " << fInComplete <<endl;
   tmp = (100*(float)fInComplete)/((float)fComplete + (float)fInComplete);
-
   cout <<"There are "<<  tmp <<"% incomplete channels"<<endl;
-
   return  tmp;
 }
+
 
 int
 AliHLTDDLDecoder::GetMarker(UInt_t *buffer, int index)
@@ -188,6 +162,7 @@ AliHLTDDLDecoder::PrintInfo(AliHLTAltroData &altrodata, int n, int nPerLine)
     }
   printf("\n");
 }
+
 
 void                     
 AliHLTDDLDecoder::SetMemory(UChar_t *dtaPtr, UInt_t size)
