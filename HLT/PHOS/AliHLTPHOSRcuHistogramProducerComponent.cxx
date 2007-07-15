@@ -14,7 +14,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include <iostream>
+//#include <iostream>
 #include "AliHLTPHOSRcuCellEnergyDataStruct.h"
 #include "AliHLTPHOSRcuHistogramProducer.h"
 #include "AliHLTPHOSRcuHistogramProducerComponent.h"
@@ -43,13 +43,6 @@ AliHLTPHOSRcuHistogramProducerComponent::~ AliHLTPHOSRcuHistogramProducerCompone
   //Destructor
 }
 
-
-/*
-AliHLTPHOSRcuHistogramProducerComponent::AliHLTPHOSRcuHistogramProducerComponent(const  AliHLTPHOSRcuHistogramProducerComponent & ) : AliHLTPHOSRcuProcessor(), fRcuHistoProducerPtr(0)
-{
-
-}
-*/
 
 int 
 AliHLTPHOSRcuHistogramProducerComponent::Deinit()
@@ -112,13 +105,13 @@ int  AliHLTPHOSRcuHistogramProducerComponent::DoEvent( const AliHLTComponentEven
   AliHLTPHOSRcuCellEnergyDataStruct *cellDataPtr;
   AliHLTUInt8_t* outBPtr;
   int tmpCnt;
-
+  
+  
   for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
       iter = blocks+ndx;
       cellDataPtr = (AliHLTPHOSRcuCellEnergyDataStruct*)( iter->fPtr);
       tmpCnt =  cellDataPtr->fCnt;
-
       for(int i= 0; i <= tmpCnt; i ++)
 	{
 	  fRcuHistoProducerPtr->FillEnergy(cellDataPtr->fValidData[i].fX,
@@ -128,10 +121,10 @@ int  AliHLTPHOSRcuHistogramProducerComponent::DoEvent( const AliHLTComponentEven
 	}
     }
   
+  
   outBPtr = outputPtr;
   fOutPtr =  (AliHLTPHOSRcuCellAccumulatedEnergyDataStruct*)outBPtr;
   const AliHLTPHOSRcuCellAccumulatedEnergyDataStruct  &innPtr = fRcuHistoProducerPtr->GetCellAccumulatedEnergies();
-
   fOutPtr->fModuleID = fModuleID;
   fOutPtr->fRcuX     = fRcuX;
   fOutPtr->fRcuZ     = fRcuZ;
@@ -139,7 +132,7 @@ int  AliHLTPHOSRcuHistogramProducerComponent::DoEvent( const AliHLTComponentEven
 
   for(int x=0; x < N_XCOLUMNS_RCU; x ++)
     {
-      for(int z=0; z < N_XCOLUMNS_RCU; z ++)
+      for(int z=0; z < N_ZROWS_RCU; z ++)
 	{
 	  for(int gain =0;  gain < N_GAINS; gain ++)
 	    {
@@ -184,7 +177,6 @@ AliHLTPHOSRcuHistogramProducerComponent::DoInit( int argc, const char** argv )
   int iResult=0;
   TString argument="";
   iResult = ScanArguments(argc, argv);
-
   if(fIsSetEquippmentID == kFALSE)
     {
       Logging( kHLTLogFatal, "HLT::AliHLTPHOSRcuHistogramProducerComponent::DoInt( int argc, const char** argv )", "Missing argument",
@@ -192,7 +184,6 @@ AliHLTPHOSRcuHistogramProducerComponent::DoInit( int argc, const char** argv )
       iResult = -2; 
     }
   fRcuHistoProducerPtr = new AliHLTPHOSRcuHistogramProducer( fModuleID, fRcuX, fRcuZ);
-
   return iResult; 
   
 }

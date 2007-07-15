@@ -18,63 +18,103 @@
 
 #include "AliHLTPHOSMapper.h"
 
-AliHLTPHOSMapper::AliHLTPHOSMapper()
+
+AliHLTPHOSMapper::AliHLTPHOSMapper() : AliHLTPHOSBase(), hw2geomapPtr(0)
 {
   //  printf("\nCreating new mapper\n");
-  InitAltroMapping(0); 
+  InitAltroMapping(); 
 }
+
+
+AliHLTPHOSMapper::~AliHLTPHOSMapper()
+{
+  
+}
+
+
+void
+AliHLTPHOSMapper::InitAltroMapping()
+{
+  char filename[256];
+  char *base =  getenv("ALICE_ROOT");
+
+  int nChannels = 0;
+  int maxaddr = 0;
+
+  int tmpHwaddr = 0;
+  int tmpZRow = 0;
+  int tmpXCol = 0;
+  int tmpGain = 0;
+
+  if(base !=0)
+    {
+      sprintf(filename,"%s/PHOS/mapping/RCU0.data", base);
+      //      printf("AliHLTPHOSMapper::InitAltroMapping()")
+      FILE *fp = fopen(filename, "r");
+      if(fp != 0)
+	{
+	  cout << "mapping file found" << endl;
+	  fscanf(fp, "%d", &nChannels);
+	  fscanf(fp, "%d", &maxaddr);
+	  printf("nChannels = %d", nChannels);
+	  printf("maxaddr = %d", maxaddr);
+	  hw2geomapPtr = new altromap[maxaddr +1]; 
+
+
+	  for(int i=0; i<  nChannels; i ++)
+	    {
+	      hw2geomapPtr[i].col = 0;
+	      hw2geomapPtr[i].row = 0;
+	      hw2geomapPtr[i].gain = 0;
+	    }
+
+	  printf("\n");
+
+	  for(int i=0; i<nChannels; i ++)
+	    {
+	      fscanf(fp, "%d %d %d %d\n", &tmpHwaddr, &tmpXCol, &tmpZRow,  &tmpGain);
+	      //	      printf("tmpHwaddr =  %d\t  tmpXCol = %d\t tmpZRow = %d\t tmpGain = %d\n", tmpHwaddr, tmpXCol, tmpZRow, tmpGain);
+	      
+	      hw2geomapPtr[tmpHwaddr].col   = tmpXCol;
+	      hw2geomapPtr[tmpHwaddr].row   = tmpZRow;
+	      hw2geomapPtr[tmpHwaddr].gain  = tmpGain;
+	     
+	    }
+	  
+	  printf("\n");
+	  //	  for(int i=0; i<  nChannels; i ++)
+
+
+	  /*Æ
+	  for(int i=120; i<  500; i ++)
+	    {
+	      printf( "%d\t%d\t%d\t%d\n", i,   hw2geomapPtr[i].col, hw2geomapPtr[i].row, hw2geomapPtr[i].gain);
+	    }
+	  
+	  printf("\n");
+	  */
+
+
+
+	}
+      else
+	{
+	  cout << "ERROR could not find mapping file" << endl;
+	}
+
+    }
+  else
+    {
+      printf("AliHLTPHOSMapper::InitAltroMapping(), ERROR environment ALICE_ROOT is not set, cannot find mapping file");
+    }
+
+} 
+
+
+
+
 
 /*
-void 
-AliHLTPHOSMapper::GenerateACL(int startZ, int endZ, int startX, int endX, int modID, int acl[RCUS_PER_MODULE][256], unsigned long int afl[RCUS_PER_MODULE])
-{
-
-  for(int i=0; i<RCUS_PER_MODULE; i++)
-    {
-      for(int j=0; j<256; j++)
-	{
-	  acl[i][j] = 0;
-	}
-    }
-
-  int index;
-  int aclIndex;
-
-  int rcu = 99;
-  int branch = 99;
-  int card = 99;;
-  int altro = 99;
-  int channel = 99;
-  int csp = 99;
-
-  for(int i = startZ; i <= endZ; i++)
-    {
-      for(int j = startX; j <= endX; j++)
-	{
-	  for(int k = 0; k < PHOS_GAINS; k++)
-	    {
-	      index = geo2hdw[modID][k][j][i]; 
-	      rcu = ALTRO_MAP[index].rcu;
-	      branch = ALTRO_MAP[index].branch;
-	      card = ALTRO_MAP[index].card;
-	      altro = ALTRO_MAP[index].chip;  
-	      channel = ALTRO_MAP[index].chan;
-	      csp = ALTRO_MAP[index].csp;
-	  
-	      if(altro > 0)
-		{
-		  altro = altro + 1; //to fix bug in mp
-		}
-
-	      aclIndex = branch*128+(card +1)*8+altro;
-	      acl[rcu][aclIndex] =  acl[rcu][aclIndex] | 1<<channel;
-	      afl[rcu] = (long int)afl[rcu] | (1<< ((long int)(card+1) +(long int)branch*16));
-	    }
-	}
-    }
-}
-*/
-
 void 
 AliHLTPHOSMapper::AddCsp(int csp, int chip, int chHi, int chLo, int numHi, int numLo)
 {
@@ -98,12 +138,16 @@ AliHLTPHOSMapper::AddCsp(int csp, int chip, int chHi, int chLo, int numHi, int n
   CSP_MAP[chip][chHi].csp=csp;	CSP_MAP[chip][chLo].csp=csp;
   CSP_MAP[chip][chHi].num=numHi;	CSP_MAP[chip][chLo].num=numLo;
 }
+*/
+
 
  /////////////////////////////////////////////////////////////////
  // Initialize CSP mapping table.
  // Note we use (0,1,2,3) instead of (0,2,3,4) ALTRO chip numbers.
  // So strange numbers we have due to well known RCU firmware bug.
  /////////////////////////////////////////////////////////////////
+
+ /*
 void 
 AliHLTPHOSMapper::InitAltroCspMapping()
 {
@@ -145,6 +189,7 @@ AliHLTPHOSMapper::InitAltroCspMapping()
   AddCsp(	31,	3,	8,	9,	56,	57);
 } 
 
+*/
 //void
 //AliHLTPHOSMapper::GeomToAFL(int startZ, int endZ, int startX, int endX, int rcuZ, int rcuX)
 //{
@@ -153,6 +198,8 @@ AliHLTPHOSMapper::InitAltroCspMapping()
 //}
 
 //inline int 
+
+/*
 int
 AliHLTPHOSMapper::Geo2hid(int mod, int gain, int row, int col)
 { 
@@ -284,6 +331,11 @@ AliHLTPHOSMapper::InitAltroMapping(int saveMapping)
 	      }
 }
 
+
+*/
+
+/*
+
 ////////////////////////////////////////////////////////////////////////
 // Return histogramm id from histogramm name or -1 on error.
 // extractHid("hMax011426")=11426;
@@ -326,3 +378,6 @@ AliHLTPHOSMapper::PrintHistMapInfo(char *objName){
     printf("%06d\t%d\t%d\t%02d\t%02d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n",hid,mod,gain,row,col,rcu,bran,fec,chip,chan,csp,num);
   }
 }
+
+
+*/

@@ -6,8 +6,8 @@
 
 
 #include "AliHLTPHOSRcuProcessor.h"
-#include "AliHLTPHOSDefinitions.h"
-#include "AliHLTPHOSCommonDefs.h"
+//#include "AliHLTPHOSDefinitions.h"
+//#include "AliHLTPHOSCommonDefs.h"
 //#include "AliHLTPHOSRcuCellAccumulatedEnergyDataStruct.h"
 //#include "Rtypes.h"
 

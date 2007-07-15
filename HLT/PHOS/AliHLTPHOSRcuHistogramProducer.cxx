@@ -25,7 +25,7 @@ using  namespace std;
 
 
 /*************************************************************************
-* Class AliHLTPHOSRcuHistogramProducer accumulating histograms     *
+* Class AliHLTPHOSRcuHistogramProducer accumulating histograms           *
 * with amplitudes per PHOS channel                                       *
 * It is intended to run at the HLT farm                                  *
 * and it fills the histograms with amplitudes per channel.               * 
@@ -81,15 +81,10 @@ AliHLTPHOSRcuHistogramProducer::Init()
 	      fHits[x][z][gain]                = 0;
 	      sprintf(tmpHistoName, "Edistribution_%d_%d_%d_%d",(int)fModuleID,  geomx, geomz, gain);
 	      fEnergyHistogramPtrs[x][z][gain] = 0;
-
 	      fEnergyHistogramPtrs[x][z][gain] = new TH1F( tmpHistoName, tmpHistoName, N_BINS, XBIN_LOW, XBIN_UP);
-
 	      sprintf(tmpHistoName, "TOFdistribution_%d_%d_%d_%d",(int)fModuleID,  geomx, geomz, gain);
-	
 	      fTimingHistogramPtrs[x][z][gain] = 0;
-
 	      fTimingHistogramPtrs[x][z][gain] = new TH1F(tmpHistoName , tmpHistoName, N_BINS, XBIN_LOW, XBIN_UP);
-
 	      fCellAccEnergy.fAccumulatedEnergies[x][z][gain] = 0;
 	      fCellAccEnergy.fHits[x][z][gain] = 0;
 	      fCellAccEnergy.fModuleID = 0;
@@ -133,6 +128,7 @@ AliHLTPHOSRcuHistogramProducer::SetModuleID(AliHLTUInt8_t moduleID)
 void 
 AliHLTPHOSRcuHistogramProducer::FillEnergy(AliHLTUInt8_t x, AliHLTUInt8_t z,  AliHLTUInt8_t gain, float energy)
 {
+  //  cout << "AliHLTPHOSRcuHistogramProducer::FillEnergy x = " << (int)x<< "  z=  " << (int)z<<endl;
   //See header file for documentation
   fCellAccEnergy.fAccumulatedEnergies[x][z][gain] += energy;
   fCellAccEnergy.fHits[x][z][gain] ++; 

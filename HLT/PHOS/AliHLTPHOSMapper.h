@@ -21,19 +21,46 @@
 
 //#include "PhosFeeClient.h"
 
-#include "stdio.h"
-#include <iostream>
+//#include "stdio.h"
+//#include <iostream>
+#include <cstdlib>
 #include <assert.h>
-#include "AliHLTPHOSCommonDefs.h"
-#include "AliHLTPHOSConstants.h"
+//#include "AliHLTPHOSCommonDefs.h"
+//#include "AliHLTPHOSConstants.h"
+#include "AliHLTPHOSBase.h"
     
 //            PhosHLTConst
+using namespace std;
 using namespace PhosHLTConst;
 
-class AliHLTPHOSMapper
+class AliHLTPHOSMapper : public AliHLTPHOSBase
 {
  public:
   AliHLTPHOSMapper();
+  virtual ~AliHLTPHOSMapper();
+  void InitAltroMapping(); 
+  
+
+  struct altromap{ 
+    //    int mod;
+    int row;
+    int col;
+    int gain;
+    //    int rcu;
+    //    int branch;
+    //    int card;
+    //    int chip;
+    //    int chan;
+    //    int csp;
+    //    int num;
+    //    int hid;
+  };
+
+
+altromap *hw2geomapPtr;
+
+
+  /*
   struct FEE_CSP_MAP{ 
     int row;
     int col;
@@ -41,7 +68,9 @@ class AliHLTPHOSMapper
     int csp;
     int num;
   };
+  */
 
+  /*
   struct ALTRO_GEO_MAP{ 
     int mod;
     int gain;
@@ -56,16 +85,16 @@ class AliHLTPHOSMapper
     int num;
     int hid;
   };
+  */
 
-
-  void AddCsp(int csp, int chip, int chHi, int chLo, int numHi, int numLo);
+  //  void AddCsp(int csp, int chip, int chHi, int chLo, int numHi, int numLo);
 
  
   //Function to generate Active Channel List (ACL)for each of the four readout partitions
   //Of the Phos Module. The ACL register is 256x16 bit big.
   //  void GenerateACL(int startZ, int endZ, int startX, int endX, int mID, int acl[RCUS_PER_MODULE][256], unsigned long int afl[RCUS_PER_MODULE]);
 
-  void InitAltroCspMapping();
+  //  void InitAltroCspMapping();
 
   /*
   inline int Geo2hid(int mod, int gain, int row, int col);
@@ -79,6 +108,7 @@ class AliHLTPHOSMapper
   inline void PrintHistMapInfo(char *objName);
   */
 
+  /*
   int Geo2hid(int mod, int gain, int row, int col);
   int Hid2mod(int hid);
   int Hid2gain(int hid);
@@ -93,6 +123,7 @@ class AliHLTPHOSMapper
   ALTRO_GEO_MAP ALTRO_MAP[N_MODULES*N_RCUS*N_BRANCHES*N_FEECS*N_ALTROS*N_ALTROCHANNELS];  
   int hdw2geo[N_MODULES][N_RCUS][N_BRANCHES][N_FEECS][N_ALTROS][N_ALTROCHANNELS];
   int geo2hdw[N_MODULES][N_GAINS][ N_XCOLUMNS_MOD][N_ZROWS_MOD]; 
+  */
 
  private:
 
