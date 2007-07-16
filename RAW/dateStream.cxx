@@ -967,20 +967,64 @@ void initEvent( struct eventHeaderStruct * const ev ) {
   loadTimestamp( ev );
 } /* End of initEvent */
 
+int Swap(int x)
+{
+   // Swap the endianess of the integer value 'x'
+
+   return (((x & 0x000000ffU) << 24) | ((x & 0x0000ff00U) <<  8) |
+           ((x & 0x00ff0000U) >>  8) | ((x & 0xff000000U) >> 24));
+}
+
 void outputEvent( const void * const ev,
 		  const int size ) {
   int done;
 
   DBG_VERBOSE {
-    const long32 * const v = (long32 *)ev;
+    const long32 * const v = (long32 *)ev; 
     printf( "Writing %d bytes @ %p (%d)\n", size, ev, *v );
   }
 
-  if ( (done = fwrite( ev, size, 1, outF )) != 1 ) {
-    fprintf( stderr,
-	     "%s: failed to write event size:%d bytes, errno:%d (%s)\n",
-	     myName, size, errno, strerror( errno ) );
-    exit( 1 );
+  // .............................Test endianess..............................
+  int temp = 1;
+  char* ptemp = (char*) &temp;
+
+  if (ptemp[0]!=1) { // Mac platform: ptemp != 1..............................................................................
+     int  bufSize= size; if (bufSize > (int) sizeof(eventHeaderStruct)) { bufSize = sizeof(eventHeaderStruct); }
+     char* evTemp = (char*) malloc (bufSize);
+     memcpy(evTemp, ev, bufSize);
+
+     if ((bufSize % sizeof(int)) != 0) {
+            fprintf( stderr, "%s: size of the input buffer ev is not multiple of 4 (size = %d)\n", myName, bufSize);
+            exit( 1 );
+          }
+     else {
+            // Invert header to evTemp.....................................................
+            int* buf = (int*) evTemp; 
+            for (int i=0; i < (int) (bufSize / sizeof(int)); i++, buf++) {
+                 int value = Swap(*buf); 
+                 memcpy(evTemp + (i * sizeof(int)), &value, sizeof(int)); 
+            }
+
+            // Write inverted header to file...............................................
+            if ((done = fwrite( evTemp, bufSize, 1, outF )) != 1 ) {
+                 fprintf( stderr, "%s: failed to write inverted header. event size:%d bytes, errno:%d (%s)\n", myName, size, errno, strerror( errno ) );
+                 exit( 1 );
+            }
+
+            if (size > bufSize) {  // Still theraw-data payload to write (but not inverted, since it is inverted eariler).............
+                if ((done = fwrite( (char*)ev + bufSize, size - bufSize, 1, outF )) != 1 ) {
+                    fprintf( stderr, "%s: failed to write additional event size:%d bytes, errno:%d (%s)\n", myName, size, errno, strerror( errno ) );
+                    exit( 1 );
+               }
+            }
+     }
+     free(evTemp);
+  }
+  else {             // Intel platform: ptemp == 1............................................................................
+     if ((done = fwrite( ev, size, 1, outF )) != 1 ) {
+          fprintf( stderr, "%s: failed to write event size:%d bytes, errno:%d (%s)\n", myName, size, errno, strerror( errno ) );
+          exit( 1 );
+     }
   }
 } /* End of outputEvent */
 
