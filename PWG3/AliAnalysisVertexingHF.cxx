@@ -25,7 +25,7 @@
 #include <TTree.h>
 #include <TDatabasePDG.h>
 #include <TString.h>
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliVertexerTracks.h"
 #include "AliESDVertex.h"
 #include "AliESDv0.h"
@@ -60,7 +60,7 @@ AliAnalysisVertexingHF::~AliAnalysisVertexingHF() {
   if(fV1) delete fV1;
 }
 //----------------------------------------------------------------------------
-void AliAnalysisVertexingHF::FindCandidates(AliESD *esd,TTree treeout[])
+void AliAnalysisVertexingHF::FindCandidates(AliESDEvent *esd,TTree treeout[])
 {
   // Find heavy-flavour vertex candidates
 
@@ -312,7 +312,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliESD *esd,TTree treeout[])
 }
 //----------------------------------------------------------------------------
 AliAODRecoDecayHF2Prong *AliAnalysisVertexingHF::Make2Prong(
-				   TObjArray *twoTrackArray1,AliESD *esd,
+				   TObjArray *twoTrackArray1,AliESDEvent *esd,
 				   AliESDVertex *secVertexESD,Double_t dca,
 				   Bool_t &okD0,Bool_t &okJPSI) const
 {
@@ -418,7 +418,7 @@ AliAODRecoDecayHF2Prong *AliAnalysisVertexingHF::Make2Prong(
 }
 //----------------------------------------------------------------------------
 AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
-                             TObjArray *threeTrackArray,AliESD *esd,
+                             TObjArray *threeTrackArray,AliESDEvent *esd,
 			     AliESDVertex *vertexp1n1,AliESDVertex *vertexp2n1,
 			     Double_t dcap1n1,Double_t dcap2n1,Double_t dcap1p2,
 			     Bool_t &ok3Prong) const
@@ -539,7 +539,7 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
 }
 //----------------------------------------------------------------------------
 AliAODRecoDecayHF4Prong* AliAnalysisVertexingHF::Make4Prong(
-                             TObjArray *fourTrackArray,AliESD *esd,
+                             TObjArray *fourTrackArray,AliESDEvent *esd,
 			     AliESDVertex *vertexp1n1,AliESDVertex *vertexp2n1,
 			     Double_t dcap1n1,Double_t dcap1n2,Double_t dcap2n1,
 			     Bool_t &ok4Prong) const
@@ -663,7 +663,7 @@ AliAODRecoDecayHF4Prong* AliAnalysisVertexingHF::Make4Prong(
 //-----------------------------------------------------------------------------
 AliESDVertex* AliAnalysisVertexingHF::OwnPrimaryVertex(Int_t ntrks,
 						       TObjArray *trkArray,
-						       AliESD *esd) const
+						       AliESDEvent *esd) const
 {
   // Returns primary vertex specific to this candidate
  
@@ -818,7 +818,7 @@ Bool_t AliAnalysisVertexingHF::SelectInvMass(Int_t decay,
   return retval;
 }
 //-----------------------------------------------------------------------------
-void AliAnalysisVertexingHF::SelectTracks(AliESD *esd,
+void AliAnalysisVertexingHF::SelectTracks(AliESDEvent *esd,
 					  TObjArray &trksP,Int_t &nTrksP,
 					  TObjArray &trksN,Int_t &nTrksN) const
 {

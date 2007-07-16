@@ -27,7 +27,7 @@
 #include <TString.h>
 #include <TSystem.h>
 #include <TParticle.h>
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliMC.h"
 #include "AliRun.h"
 #include "AliRunLoader.h"
@@ -187,13 +187,13 @@ void AliBtoJPSItoEleAnalysis::FindCandidates(Int_t evFirst,Int_t evLast,
 
   // open file with tracks
   TFile *esdFile = TFile::Open(esdName.Data());
-  AliESD* event = new AliESD;
+  AliESDEvent* event = new AliESDEvent();
   TTree* tree = (TTree*) esdFile->Get("esdTree");
   if(!tree) {
     Error("FindCandidatesESD", "no ESD tree found");
     return;
   }
-  tree->SetBranchAddress("ESD",&event);
+  event->ReadFromTree(tree);
 
   // loop on events in file
   for(Int_t iEvent = evFirst; iEvent < tree->GetEntries(); iEvent++) {
@@ -430,7 +430,7 @@ Bool_t AliBtoJPSItoEleAnalysis::SelectInvMass(const Double_t p[6]) const {
   return kFALSE;
 }
 //-----------------------------------------------------------------------------
-void AliBtoJPSItoEleAnalysis::SelectTracks(AliESD *event,
+void AliBtoJPSItoEleAnalysis::SelectTracks(AliESDEvent *event,
         TObjArray &trksP,Int_t *trkEntryP,Int_t &nTrksP,
         TObjArray &trksN,Int_t *trkEntryN,Int_t &nTrksN) const {
   // Create two TObjArrays with positive and negative tracks and 
@@ -526,9 +526,9 @@ void AliBtoJPSItoEleAnalysis::MakeTracksRefFile(AliRun *gAlice,
   TParticle *gmumpart;
   REFTRACK   reftrk;
   
-  AliESD* event = new AliESD;
+  AliESDEvent* event = new AliESDEvent();
   TTree* tree = (TTree*) esdFile->Get("esdTree");
-  tree->SetBranchAddress("ESD",&event);
+  event->ReadFromTree(tree);
   // loop on events in file
   for(Int_t iEvent=evFirst; iEvent<tree->GetEntries(); iEvent++) {
     if(iEvent>evLast) break;

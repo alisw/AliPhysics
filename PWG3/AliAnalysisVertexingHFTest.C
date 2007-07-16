@@ -50,10 +50,10 @@ void AliAnalysisVertexingHFTest(Int_t evFirst=0,
   trees[2].Branch("Charmto3Prong","AliAODRecoDecayHF3Prong",&rd3);
   trees[3].Branch("D0to4Prong","AliAODRecoDecayHF4Prong",&rd4);
 
-  TFile *inesd=new TFile(infile.Data());
+  TFile *inesd = new TFile(infile.Data());
+  AliESDEvent *esd = new AliESDEvent();
   TTree *esdTree = (TTree*)inesd->Get("esdTree");
-  AliESD *esd=0;
-  esdTree->SetBranchAddress("ESD",&esd);
+  esd->ReadFromTree(esdTree);
 
   if(esdTree->GetEntries()<evLast) evLast=esdTree->GetEntries()-1;
   for(Int_t i=evFirst; i<=evLast; i++) {

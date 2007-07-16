@@ -12,7 +12,7 @@
 
 #include <TString.h>
 #include <TNamed.h>
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliRun.h"
 
 //-----------------------------------------------------------------------------
@@ -67,7 +67,7 @@ class AliD0toKpiAnalysis : public TNamed {
   //
   Double_t CalculateTOFmass(Double_t mom,Double_t length,Double_t time) const;
   Bool_t   SelectInvMass(const Double_t p[6]) const;
-  void     SelectTracks(AliESD *event,
+  void     SelectTracks(AliESDEvent *event,
 			TObjArray &trksP,Int_t *trkEntryP,Int_t &nTrksP,
 			TObjArray &trksN,Int_t *trkEntryN,Int_t &nTrksN) const;
   void     SetVertex1(Double_t x=0.,Double_t y=0.,Double_t z=0.) 
