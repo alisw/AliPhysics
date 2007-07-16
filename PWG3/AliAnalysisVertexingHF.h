@@ -12,7 +12,7 @@
 
 #include <TNamed.h>
 #include <TTree.h>
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliESDVertex.h"
 #include "AliAODRecoDecayHF.h"
 #include "AliAODRecoDecayHF2Prong.h"
@@ -26,16 +26,16 @@ class AliAnalysisVertexingHF : public TNamed {
   AliAnalysisVertexingHF();
   virtual ~AliAnalysisVertexingHF();
 
-  void FindCandidates(AliESD *esd,TTree treeout[]);
-  AliAODRecoDecayHF2Prong* Make2Prong(TObjArray *twoTrackArray1,AliESD *esd,
+  void FindCandidates(AliESDEvent *esd,TTree treeout[]);
+  AliAODRecoDecayHF2Prong* Make2Prong(TObjArray *twoTrackArray1,AliESDEvent *esd,
 				     AliESDVertex *vertexp1n1,Double_t dcap1n1,
 				     Bool_t &okD0,Bool_t &okJPSI) const;
-  AliAODRecoDecayHF3Prong* Make3Prong(TObjArray *threeTrackArray,AliESD *esd,
+  AliAODRecoDecayHF3Prong* Make3Prong(TObjArray *threeTrackArray,AliESDEvent *esd,
 				     AliESDVertex *vertexp1n1,
 				     AliESDVertex *vertexp2n1,
 				     Double_t dcap1n1,Double_t dcap2n1,Double_t dcap1p2,
 				     Bool_t &ok3Prong) const;
-  AliAODRecoDecayHF4Prong* Make4Prong(TObjArray *fourTrackArray,AliESD *esd,
+  AliAODRecoDecayHF4Prong* Make4Prong(TObjArray *fourTrackArray,AliESDEvent *esd,
 			       AliESDVertex *vertexp1n1,
 			       AliESDVertex *vertexp2n1,
 			       Double_t dcap1n1,Double_t dcap1n2,
@@ -144,10 +144,10 @@ class AliAnalysisVertexingHF : public TNamed {
                           // 11 = dca cut (cm)
 
   //
-  AliESDVertex* OwnPrimaryVertex(Int_t ntrks,TObjArray *trkArray,AliESD *esd) const;
+  AliESDVertex* OwnPrimaryVertex(Int_t ntrks,TObjArray *trkArray,AliESDEvent *esd) const;
   Bool_t SelectInvMass(Int_t decay,Int_t nprongs,
 		       Double_t *px,Double_t *py,Double_t *pz) const;
-  void SelectTracks(AliESD *esd,
+  void SelectTracks(AliESDEvent *esd,
 		    TObjArray &trksP,Int_t &nTrksP,
 		    TObjArray &trksN,Int_t &nTrksN) const;
   void SetPrimaryVertex(AliESDVertex* v1) { fV1 = v1; }
