@@ -351,7 +351,6 @@ protected:
 
   AliESD    *fESDOld;              //! Old esd Structure
 
-
   // Remove this stuff CKB
   Int_t        fEMCALClusters;   // Number of EMCAL clusters (subset of caloclusters)
   Int_t        fFirstEMCALCluster; // First EMCAL cluster in the fCaloClusters list 

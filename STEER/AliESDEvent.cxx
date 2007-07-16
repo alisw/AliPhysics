@@ -177,7 +177,6 @@ AliESDEvent & AliESDEvent::operator=(const AliESDEvent& source) {
   AddObject(fCaloClusters);
   AddObject(fErrorLogs);
 
-
   fEMCALClusters = source.fEMCALClusters;
   fFirstEMCALCluster = source.fFirstEMCALCluster;
   fPHOSClusters = source.fPHOSClusters;
@@ -198,8 +197,11 @@ AliESDEvent::~AliESDEvent()
   //
 
   // everthing on the list gets deleted automatically
-  delete fESDObjects;
+
+  
+  if(fESDObjects)delete fESDObjects;
   fESDObjects = 0;
+
 }
 
 //______________________________________________________________________________
@@ -500,16 +502,19 @@ void AliESDEvent::ReadFromTree(TTree *tree){
 
   if(esdEvent){   
       // Check if already connected to tree
-//      TList* connectedList = (TList*) (tree->GetTree()->GetUserInfo()->FindObject("ESDObjectsConnectedToTree"));
-      TList* connectedList = (TList*) (tree->GetUserInfo()->FindObject("ESDObjectsConnectedToTree"));
-      if (connectedList) {
-	  // If connected use the connected list if objects
-	  fESDObjects->Delete();
-	  fESDObjects = connectedList;
-	  GetStdContent();
-	  return;
+    TList* connectedList = (TList*) (tree->GetUserInfo()->FindObject("ESDObjectsConnectedToTree"));
+    if (connectedList) {
+      // If connected use the connected list if objects
+      fESDObjects->Delete();
+      //	  fESDObjects = connectedList; 
+      fESDObjects = new TList();
+      // place the pointers in the list...
+      for(int i = 0;i < connectedList->GetEntries();i++){
+	fESDObjects->Add(connectedList->At(i));
       }
-      // Connect to tree
+      return;
+    }
+    // Connect to tree
     if(fESDObjects->GetEntries()!=0){
       // this should not happen here put a warning?
     }
@@ -519,6 +524,7 @@ void AliESDEvent::ReadFromTree(TTree *tree){
     // create a new TList from the UserInfo TList... 
     // copy constructor does not work...
     fESDObjects = (TList*)(esdEvent->GetList()->Clone());
+    fESDObjects->SetOwner(kFALSE);
     if(fESDObjects->GetEntries()<kESDListN){
       printf("%s %d AliESDEvent::ReadFromTree() TList contains less than the standard contents %d < %d \n",
 	     (char*)__FILE__,__LINE__,fESDObjects->GetEntries(),kESDListN);
@@ -542,9 +548,20 @@ void AliESDEvent::ReadFromTree(TTree *tree){
     // when reading back we are not owner of the list 
     // must not delete it
     fESDObjects->SetOwner(kFALSE);
+
+    // will be deleted when closing the file
+    TList *conList = new TList();
+
+    // place the pointers in the list...
+    for(int i = 0;i < fESDObjects->GetEntries();i++){
+      conList->Add(fESDObjects->At(i));
+    }    
     // Add list to user info
-    fESDObjects->SetName("ESDObjectsConnectedToTree");
-    tree->GetUserInfo()->Add(fESDObjects);
+    conList->SetName("ESDObjectsConnectedToTree");
+    // we are not owner of the list objects 
+    // must not delete it
+    conList->SetOwner(kFALSE);
+    tree->GetUserInfo()->Add(conList);
   }// no esdEvent
   else {
     // we can't get the list from the user data, create standard content
