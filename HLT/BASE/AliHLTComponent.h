@@ -3,7 +3,8 @@
 
 #ifndef ALIHLTCOMPONENT_H
 #define ALIHLTCOMPONENT_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+/* This file is property of and copyright by the ALICE HLT Project        * 
+ * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
 
 /** @file   AliHLTComponent.h
@@ -46,6 +47,7 @@ typedef AliHLTComponentEventDoneData AliHLTComponent_EventDoneData;
 class AliHLTComponentHandler;
 class TObjArray;
 class TStopwatch;
+class AliHLTMemoryFile;
 
 /**
  * @class AliHLTComponent
@@ -147,8 +149,11 @@ class TStopwatch;
  *        add event information to the output
  * 
  * In addition, the processing methods are simplified a bit by cutting out most of
- * the parameters. The component implementation 
- * @see AliHLTProcessor AliHLTDataSource AliHLTDataSink
+ * the parameters.
+ * @see 
+ * - @ref AliHLTProcessor::DoEvent
+ * - @ref AliHLTDataSource::GetEvent
+ * - @ref AliHLTDataSink::DumpEvent
  *
  * \em IMPORTANT: objects and block descriptors provided by the high-level interface
  *  <b>MUST NOT BE DELETED</b> by the caller.
@@ -689,25 +694,35 @@ class AliHLTComponent : public AliHLTLogging {
 
   /**
    * Insert an object into the output.
+   * If header is specified, it will be inserted before the root object,
+   * default is no header.
    * @param pObject     pointer to root object
    * @param dt          data type of the object
    * @param spec        data specification
+   * @param pHeader     pointer to header
+   * @param headerSize  size of Header
    * @return neg. error code if failed 
    */
   int PushBack(TObject* pObject, const AliHLTComponentDataType& dt, 
-	       AliHLTUInt32_t spec=kAliHLTVoidDataSpec);
+	       AliHLTUInt32_t spec=kAliHLTVoidDataSpec, 
+	       void* pHeader=NULL, int headerSize=0);
 
   /**
    * Insert an object into the output.
+   * If header is specified, it will be inserted before the root object,
+   * default is no header.
    * @param pObject     pointer to root object
    * @param dtID        data type ID of the object
    * @param dtOrigin    data type origin of the object
    * @param spec        data specification
+   * @param pHeader     pointer to header
+   * @param headerSize  size of Header
    * @return neg. error code if failed 
    */
   int PushBack(TObject* pObject, const char* dtID, const char* dtOrigin,
-	       AliHLTUInt32_t spec=kAliHLTVoidDataSpec);
-
+	       AliHLTUInt32_t spec=kAliHLTVoidDataSpec,
+	       void* pHeader=NULL, int headerSize=0);
+ 
   /**
    * Insert an object into the output.
    * @param pBuffer     pointer to buffer
@@ -737,6 +752,98 @@ class AliHLTComponent : public AliHLTLogging {
    * @return buffer size in byte
    */
   int EstimateObjectSize(TObject* pObject) const;
+
+  /**
+   * Create a memory file in the output stream.
+   * This method creates a TFile object which stores all data in
+   * memory instead of disk. The TFile object is published as binary data.
+   * The instance can be used like a normal TFile object. The TFile::Close
+   * or @ref CloseMemoryFile method has to be called in order to flush the
+   * output stream.
+   *
+   * \b Note: The returned object is deleted by the framework.
+   * @param capacity    total size reserved for the memory file
+   * @param dtID        data type ID of the file
+   * @param dtOrigin    data type origin of the file
+   * @param spec        data specification
+   * @return file handle, NULL if failed 
+   */
+  AliHLTMemoryFile* CreateMemoryFile(int capacity, const char* dtID, const char* dtOrigin,
+				     AliHLTUInt32_t spec=kAliHLTVoidDataSpec);
+
+  /**
+   * Create a memory file in the output stream.
+   * This method creates a TFile object which stores all data in
+   * memory instead of disk. The TFile object is published as binary data.
+   * The instance can be used like a normal TFile object. The TFile::Close
+   * or @ref CloseMemoryFile method has to be called in order to flush the
+   * output stream.
+   *
+   * \b Note: The returned object is deleted by the framework.
+   * @param capacity    total size reserved for the memory file
+   * @param dt          data type of the file
+   * @param spec        data specification
+   * @return file handle, NULL if failed 
+   */
+  AliHLTMemoryFile* CreateMemoryFile(int capacity, 
+				     const AliHLTComponentDataType& dt=kAliHLTAnyDataType,
+				     AliHLTUInt32_t spec=kAliHLTVoidDataSpec);
+
+  /**
+   * Create a memory file in the output stream.
+   * This method creates a TFile object which stores all data in
+   * memory instead of disk. The TFile object is published as binary data.
+   * The instance can be used like a normal TFile object. The TFile::Close
+   * or @ref CloseMemoryFile method has to be called in order to flush the
+   * output stream.
+   *
+   * \b Note: The returned object is deleted by the framework.
+   * @param dtID        data type ID of the file
+   * @param dtOrigin    data type origin of the file
+   * @param spec        data specification
+   * @param capacity    fraction of the available output buffer size
+   * @return file handle, NULL if failed 
+   */
+  AliHLTMemoryFile* CreateMemoryFile(const char* dtID, const char* dtOrigin,
+				     AliHLTUInt32_t spec=kAliHLTVoidDataSpec,
+				     float capacity=1.0);
+
+  /**
+   * Create a memory file in the output stream.
+   * This method creates a TFile object which stores all data in
+   * memory instead of disk. The TFile object is published as binary data.
+   * The instance can be used like a normal TFile object. The TFile::Close
+   * or @ref CloseMemoryFile method has to be called in order to flush the
+   * output stream.
+   *
+   * \b Note: The returned object is deleted by the framework.
+   * @param dt          data type of the file
+   * @param spec        data specification
+   * @param capacity    fraction of the available output buffer size
+   * @return file handle, NULL if failed 
+   */
+  AliHLTMemoryFile* CreateMemoryFile(const AliHLTComponentDataType& dt=kAliHLTAnyDataType,
+				     AliHLTUInt32_t spec=kAliHLTVoidDataSpec,
+				     float capacity=1.0);
+
+  /**
+   * Write an object to memory file in the output stream.
+   * @param pFile       file handle
+   * @param pObject     pointer to root object
+   * @param key         key in ROOT file
+   * @param option      options, see TObject::Write
+   * @return neg. error code if failed
+   *         - -ENOSPC    no space left
+   */
+  int Write(AliHLTMemoryFile* pFile, const TObject* pObject, const char* key=NULL, int option=TObject::kOverwrite);
+
+  /**
+   * Close object memory file.
+   * @param pFile       file handle
+   * @return neg. error code if failed
+   *         - -ENOSPC    buffer size too small
+   */
+  int CloseMemoryFile(AliHLTMemoryFile* pFile);
 
   /**
    * Insert event-done data information into the output.
@@ -816,16 +923,19 @@ class AliHLTComponent : public AliHLTLogging {
    * This is the only method to insert blocks into the output stream, called
    * from all types of the Pushback method. The actual data might have been
    * written to the output buffer already. In that case NULL can be provided
-   * as buffer, only the block descriptor will be build.
+   * as buffer, only the block descriptor will be build. If a header is specified, 
+   * it will be inserted before the buffer, default is no header.
    * @param pBuffer     pointer to buffer
    * @param iSize       size of the buffer in byte
    * @param dt          data type
    * @param spec        data specification
+   * @param pHeader     pointer to header
+   * @param iHeaderSize size of Header
    */
-  int InsertOutputBlock(void* pBuffer, int iSize,
+  int InsertOutputBlock(void* pBuffer, int iBufferSize,
 			const AliHLTComponentDataType& dt,
-			AliHLTUInt32_t spec);
-
+			AliHLTUInt32_t spec,
+			void* pHeader=NULL, int iHeaderSize=0);
 
   /** The global component handler instance */
   static AliHLTComponentHandler* fgpComponentHandler;              //! transient
@@ -875,6 +985,9 @@ class AliHLTComponent : public AliHLTLogging {
   /** stopwatch array */
   TObjArray* fpStopwatches;                                        //! transient
 
-  ClassDef(AliHLTComponent, 2)
+  /** array of memory files AliHLTMemoryFile */
+  vector<AliHLTMemoryFile*> fMemFiles;                             //! transient
+
+  ClassDef(AliHLTComponent, 3)
 };
 #endif

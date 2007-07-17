@@ -29,6 +29,8 @@
 ClassImp(AliHLTModuleAgent)
 
 AliHLTModuleAgent::AliHLTModuleAgent()
+  :
+  fpNext(NULL)
 {
   // see header file for class documentation
   // or
@@ -41,7 +43,8 @@ AliHLTModuleAgent::AliHLTModuleAgent()
 AliHLTModuleAgent::AliHLTModuleAgent(const AliHLTModuleAgent&)
   :
   TObject(),
-  AliHLTLogging()
+  AliHLTLogging(),
+  fpNext(NULL)
 {
   // see header file for function documentation
 }

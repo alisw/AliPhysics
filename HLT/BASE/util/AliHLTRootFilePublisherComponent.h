@@ -3,7 +3,8 @@
 
 #ifndef ALIHLTROOTFILEPUBLISHERCOMPONENT_H
 #define ALIHLTROOTFILEPUBLISHERCOMPONENT_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+/* This file is property of and copyright by the ALICE HLT Project        * 
+ * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
 
 /** @file   AliHLTRootFilePublisherComponent.h
@@ -18,8 +19,12 @@
 
 /**
  * @class AliHLTRootFilePublisherComponent
- * An HLT data source component which publishes data from one or a sequence
- * of files.<br>
+ * \Note: This component is not what it pretends to be. So far it was just
+ * used for debugging purpose. If you need a component like this make a
+ * feature request at                                                  <br>
+ * https://savannah.cern.ch/projects/alicehlt/
+ * and assign it to richterm.                                          <br>
+ * Any contributions are of course welcome.
  *
  * Component ID: \b RootFilePublisherComponent <br>
  * Library: \b libHLTBase (in order to use the component from the external

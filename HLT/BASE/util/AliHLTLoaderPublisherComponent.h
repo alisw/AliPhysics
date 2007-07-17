@@ -3,7 +3,8 @@
 
 #ifndef ALIHLTLOADERPUBLISHERCOMPONENT_H
 #define ALIHLTLOADERPUBLISHERCOMPONENT_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+/* This file is property of and copyright by the ALICE HLT Project        * 
+ * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
 
 /** @file   AliHLTLoaderPublisherComponent.h
@@ -103,6 +104,11 @@ class AliHLTLoaderPublisherComponent : public AliHLTOfflineDataSource {
 	       AliHLTComponentTriggerData& trigData);
 
  private:
+  /** not a valid copy constructor, defined according to effective C++ style */
+  AliHLTLoaderPublisherComponent(const AliHLTLoaderPublisherComponent&);
+  /** not a valid assignment op, but defined according to effective C++ style */
+  AliHLTLoaderPublisherComponent& operator=(const AliHLTLoaderPublisherComponent&);
+
   /**
    * Get tree of type specified in fTreeType from loader.
    */

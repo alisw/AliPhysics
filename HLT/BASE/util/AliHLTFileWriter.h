@@ -2,7 +2,8 @@
 
 #ifndef ALIHLTFILEWRITER_H
 #define ALIHLTFILEWRITER_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+/* This file is property of and copyright by the ALICE HLT Project        * 
+ * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
 
 /** @file   AliHLTFileWriter.h
@@ -91,7 +92,7 @@ class AliHLTFileWriter : public AliHLTDataSink  {
   virtual int InitWriter();
 
   /**
-   * Init the writer.
+   * Close the writer.
    * The DoDeinit function is not available for child classes. CloseWriter is the
    * corresponding function for classes derived from AliHLTFileWriter.
    */

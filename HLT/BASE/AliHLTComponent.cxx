@@ -32,8 +32,10 @@ using namespace std;
 #include "AliHLTMessage.h"
 #include "TString.h"
 #include "TObjArray.h"
+#include "TObjectTable.h"
 #include "TClass.h"
 #include "TStopwatch.h"
+#include "AliHLTMemoryFile.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTComponent);
@@ -63,7 +65,8 @@ AliHLTComponent::AliHLTComponent()
   fOutputBufferSize(0),
   fOutputBufferFilled(0),
   fOutputBlocks(),
-  fpStopwatches(new TObjArray(kSWTypeCount))
+  fpStopwatches(new TObjArray(kSWTypeCount)),
+  fMemFiles()
 {
   // see header file for class documentation
   // or
@@ -93,16 +96,15 @@ AliHLTComponent::AliHLTComponent(const AliHLTComponent&)
   fOutputBufferSize(0),
   fOutputBufferFilled(0),
   fOutputBlocks(),
-  fpStopwatches(NULL)
+  fpStopwatches(NULL),
+  fMemFiles()
 {
   // see header file for class documentation
-  HLTFatal("copy constructor untested");
 }
 
 AliHLTComponent& AliHLTComponent::operator=(const AliHLTComponent&)
 { 
   // see header file for class documentation
-  HLTFatal("assignment operator untested");
   return *this;
 }
 
@@ -112,6 +114,19 @@ AliHLTComponent::~AliHLTComponent()
   CleanupInputObjects();
   if (fpStopwatches!=NULL) delete fpStopwatches;
   fpStopwatches=NULL;
+  vector<AliHLTMemoryFile*>::iterator element=fMemFiles.begin();
+  while (element!=fMemFiles.end()) {
+    if (*element) {
+      if ((*element)->IsClosed()==0) {
+	HLTWarning("memory file has not been closed, possible data loss or incomplete buffer");
+	// close but do not flush as we dont know whether the buffer is still valid
+	(*element)->Close(0);
+      }
+      delete *element;
+      *element=NULL;
+    }
+    element++;
+  }
 }
 
 AliHLTComponentHandler* AliHLTComponent::fgpComponentHandler=NULL;
@@ -454,9 +469,9 @@ const TObject* AliHLTComponent::GetFirstInputObject(const AliHLTComponentDataTyp
   if (classname) fClassName=classname;
   else fClassName.clear();
   int idx=FindInputBlock(fSearchDataType, 0, 1);
-  HLTDebug("found block %d when searching for data type %s", idx, DataType2Text(dt).c_str());
   TObject* pObj=NULL;
   if (idx>=0) {
+    HLTDebug("found block %d when searching for data type %s", idx, DataType2Text(dt).c_str());
     if ((pObj=GetInputObject(idx, fClassName.c_str(), bForce))!=NULL) {
       fCurrentInputBlock=idx;
     } else {
@@ -575,7 +590,11 @@ int AliHLTComponent::CleanupInputObjects()
   fpInputObjects=NULL;
   for (int i=0; i<array->GetEntries(); i++) {
     TObject* pObj=array->At(i);
-    if (pObj) delete pObj;
+    // grrr, garbage collection strikes back: When read via AliHLTMessage
+    // (CreateInputObject), and written to a TFile afterwards, the
+    // TFile::Close calls ROOOT's garbage collection. No clue why the
+    // object ended up in the key list and needs to be deleted
+    if (pObj && gObjectTable->PtrIsValid(pObj)) delete pObj;
   }
   delete array;
   return 0;
@@ -700,7 +719,8 @@ AliHLTUInt32_t AliHLTComponent::GetSpecification(const AliHLTComponentBlockData*
   return iSpec;
 }
 
-int AliHLTComponent::PushBack(TObject* pObject, const AliHLTComponentDataType& dt, AliHLTUInt32_t spec)
+int AliHLTComponent::PushBack(TObject* pObject, const AliHLTComponentDataType& dt, AliHLTUInt32_t spec, 
+			      void* pHeader, int headerSize)
 {
   // see header file for function documentation
   ALIHLTCOMPONENT_BASE_STOPWATCH();
@@ -711,7 +731,7 @@ int AliHLTComponent::PushBack(TObject* pObject, const AliHLTComponentDataType& d
     Int_t iMsgLength=msg.Length();
     if (iMsgLength>0) {
       msg.SetLength(); // sets the length to the first (reserved) word
-      iResult=InsertOutputBlock(msg.Buffer(), iMsgLength, dt, spec);
+      iResult=InsertOutputBlock(msg.Buffer(), iMsgLength, dt, spec, pHeader, headerSize);
       if (iResult>=0) {
 	HLTDebug("object %s (%p) size %d inserted to output", pObject->ClassName(), pObject, iMsgLength);
       }
@@ -725,13 +745,14 @@ int AliHLTComponent::PushBack(TObject* pObject, const AliHLTComponentDataType& d
   return iResult;
 }
 
-int AliHLTComponent::PushBack(TObject* pObject, const char* dtID, const char* dtOrigin, AliHLTUInt32_t spec)
+int AliHLTComponent::PushBack(TObject* pObject, const char* dtID, const char* dtOrigin, AliHLTUInt32_t spec,
+			      void* pHeader, int headerSize)
 {
   // see header file for function documentation
   ALIHLTCOMPONENT_BASE_STOPWATCH();
   AliHLTComponentDataType dt;
   SetDataType(dt, dtID, dtOrigin);
-  return PushBack(pObject, dt, spec);
+  return PushBack(pObject, dt, spec, pHeader, headerSize);
 }
 
 int AliHLTComponent::PushBack(void* pBuffer, int iSize, const AliHLTComponentDataType& dt, AliHLTUInt32_t spec)
@@ -750,31 +771,40 @@ int AliHLTComponent::PushBack(void* pBuffer, int iSize, const char* dtID, const 
   return PushBack(pBuffer, iSize, dt, spec);
 }
 
-int AliHLTComponent::InsertOutputBlock(void* pBuffer, int iSize, const AliHLTComponentDataType& dt, AliHLTUInt32_t spec)
+int AliHLTComponent::InsertOutputBlock(void* pBuffer, int iBufferSize, const AliHLTComponentDataType& dt, AliHLTUInt32_t spec,
+			      void* pHeader, int iHeaderSize)
 {
   // see header file for function documentation
   int iResult=0;
+  int iBlkSize = iBufferSize + iHeaderSize;
   if (pBuffer) {
-    if (fpOutputBuffer && iSize<=(int)(fOutputBufferSize-fOutputBufferFilled)) {
+    if (fpOutputBuffer && iBlkSize<=(int)(fOutputBufferSize-fOutputBufferFilled)) {
       AliHLTUInt8_t* pTgt=fpOutputBuffer+fOutputBufferFilled;
       AliHLTComponentBlockData bd;
       FillBlockData( bd );
       bd.fOffset        = fOutputBufferFilled;
       bd.fPtr           = pTgt;
-      bd.fSize          = iSize;
+      bd.fSize          = iBlkSize;
       bd.fDataType      = dt;
       bd.fSpecification = spec;
+      if (pHeader!=NULL && pHeader!=pTgt) {
+	memcpy(pTgt, pHeader, iHeaderSize);
+      }
+
+      pTgt += (AliHLTUInt8_t) iHeaderSize;
+
       if (pBuffer!=NULL && pBuffer!=pTgt) {
-	memcpy(pTgt, pBuffer, iSize);
+	memcpy(pTgt, pBuffer, iBufferSize);
+	
 	//AliHLTUInt32_t firstWord=*((AliHLTUInt32_t*)pBuffer);	
-	//HLTDebug("copy %d bytes from %p to output buffer %p, first word %#x", iSize, pBuffer, pTgt, firstWord);
+	//HLTDebug("copy %d bytes from %p to output buffer %p, first word %#x", iBufferSize, pBuffer, pTgt, firstWord);
       }
       fOutputBufferFilled+=bd.fSize;
       fOutputBlocks.push_back( bd );
-      //HLTDebug("buffer inserted to output: size %d data type %s spec %#x", iSize, DataType2Text(dt).c_str(), spec);
+      //HLTDebug("buffer inserted to output: size %d data type %s spec %#x", iBlkSize, DataType2Text(dt).c_str(), spec);
     } else {
       if (fpOutputBuffer) {
-	HLTError("too little space in output buffer: %d, required %d", fOutputBufferSize-fOutputBufferFilled, iSize);
+	HLTError("too little space in output buffer: %d, required %d", fOutputBufferSize-fOutputBufferFilled, iBlkSize);
       } else {
 	HLTError("output buffer not available");
       }
@@ -793,6 +823,138 @@ int AliHLTComponent::EstimateObjectSize(TObject* pObject) const
     AliHLTMessage msg(kMESS_OBJECT);
     msg.WriteObject(pObject);
     return msg.Length();  
+}
+
+AliHLTMemoryFile* AliHLTComponent::CreateMemoryFile(int capacity, const char* dtID,
+						    const char* dtOrigin,
+						    AliHLTUInt32_t spec)
+{
+  // see header file for function documentation
+  ALIHLTCOMPONENT_BASE_STOPWATCH();
+  AliHLTComponentDataType dt;
+  SetDataType(dt, dtID, dtOrigin);
+  return CreateMemoryFile(capacity, dt, spec);
+}
+
+AliHLTMemoryFile* AliHLTComponent::CreateMemoryFile(int capacity,
+						    const AliHLTComponentDataType& dt,
+						    AliHLTUInt32_t spec)
+{
+  // see header file for function documentation
+  ALIHLTCOMPONENT_BASE_STOPWATCH();
+  AliHLTMemoryFile* pFile=NULL;
+  if (capacity>=0 && capacity<=fOutputBufferSize-fOutputBufferFilled){
+    AliHLTUInt8_t* pTgt=fpOutputBuffer+fOutputBufferFilled;
+    pFile=new AliHLTMemoryFile((char*)pTgt, capacity);
+    if (pFile) {
+      int nofBlocks=fOutputBlocks.size();
+      if (nofBlocks+1>fMemFiles.size()) {
+	fMemFiles.resize(nofBlocks+1, NULL);
+      }
+      if (nofBlocks<fMemFiles.size()) {
+	fMemFiles[nofBlocks]=pFile;
+	AliHLTComponentBlockData bd;
+	FillBlockData( bd );
+	bd.fOffset        = fOutputBufferFilled;
+	bd.fPtr           = pTgt;
+	bd.fSize          = capacity;
+	bd.fDataType      = dt;
+	bd.fSpecification = spec;
+	fOutputBufferFilled+=bd.fSize;
+	fOutputBlocks.push_back( bd );
+      } else {
+	HLTError("can not allocate/grow object array");
+	pFile->Close(0);
+	delete pFile;
+	pFile=NULL;
+      }
+    }
+  } else {
+    HLTError("can not create memory file of size %d (%d available)", capacity, fOutputBufferSize-fOutputBufferFilled);
+  }
+  return pFile;
+}
+
+AliHLTMemoryFile* AliHLTComponent::CreateMemoryFile(const char* dtID,
+						    const char* dtOrigin,
+						    AliHLTUInt32_t spec,
+						    float capacity)
+{
+  // see header file for function documentation
+  ALIHLTCOMPONENT_BASE_STOPWATCH();
+  AliHLTComponentDataType dt;
+  SetDataType(dt, dtID, dtOrigin);
+  int size=fOutputBufferSize-fOutputBufferFilled;
+  if (capacity<0 || capacity>1.0) {
+    HLTError("invalid parameter: capacity %f", capacity);
+    return NULL;
+  }
+  size=(int)(size*capacity);
+  return CreateMemoryFile(size, dt, spec);
+}
+
+AliHLTMemoryFile* AliHLTComponent::CreateMemoryFile(const AliHLTComponentDataType& dt,
+						    AliHLTUInt32_t spec,
+						    float capacity)
+{
+  // see header file for function documentation
+  ALIHLTCOMPONENT_BASE_STOPWATCH();
+  int size=fOutputBufferSize-fOutputBufferFilled;
+  if (capacity<0 || capacity>1.0) {
+    HLTError("invalid parameter: capacity %f", capacity);
+    return NULL;
+  }
+  size=(int)(size*capacity);
+  return CreateMemoryFile(size, dt, spec);
+}
+
+int AliHLTComponent::Write(AliHLTMemoryFile* pFile, const TObject* pObject,
+			   const char* key, int option)
+{
+  int iResult=0;
+  if (pFile && pObject) {
+    pFile->cd();
+    iResult=pObject->Write(key, option);
+    if (iResult>0) {
+      // success
+    } else {
+      iResult=-pFile->GetErrno();
+      if (iResult==-ENOSPC) {
+	HLTError("error writing memory file, buffer too small");
+      }
+    }
+  } else {
+    iResult=-EINVAL;
+  }
+  return iResult;
+}
+
+int AliHLTComponent::CloseMemoryFile(AliHLTMemoryFile* pFile)
+{
+  int iResult=0;
+  if (pFile) {
+    vector<AliHLTMemoryFile*>::iterator element=fMemFiles.begin();
+    int i=0;
+    while (element!=fMemFiles.end() && iResult>=0) {
+      if (*element && *element==pFile) {
+	iResult=pFile->Close();
+	
+	// sync memory files and descriptors
+	if (iResult>=0) {
+	  fOutputBlocks[i].fSize=(*element)->GetSize()+(*element)->GetHeaderSize();
+	}
+	delete *element;
+	*element=NULL;
+	return iResult;
+      }
+      element++; i++;
+    }
+    HLTError("can not find memory file %p", pFile);
+    iResult=-ENOENT;
+  } else {
+    iResult=-EINVAL;
+  }
+  return iResult;
 }
 
 int AliHLTComponent::CreateEventDoneData(AliHLTComponentEventDoneData edd)
@@ -834,12 +996,29 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
   if (iResult>=0) {
     if (fOutputBlocks.size()>0) {
       //HLTDebug("got %d block(s) via high level interface", fOutputBlocks.size());
-      if (blockData.size()>0) {
-	HLTError("low level and high interface must not be mixed; use PushBack methods to insert data blocks");
-	iResult=-EFAULT;
-      } else {
-	iResult=MakeOutputDataBlockList(fOutputBlocks, &outputBlockCnt, &outputBlocks);
-	size=fOutputBufferFilled;
+      
+      // sync memory files and descriptors
+      vector<AliHLTMemoryFile*>::iterator element=fMemFiles.begin();
+      int i=0;
+      while (element!=fMemFiles.end() && iResult>=0) {
+	if (*element) {
+	  if ((*element)->IsClosed()==0) {
+	    HLTWarning("memory file has not been closed, force flush");
+	    iResult=CloseMemoryFile(*element);
+	  }
+	}
+	element++; i++;
+      }
+
+      if (iResult>=0) {
+	// create the descriptor list
+	if (blockData.size()>0) {
+	  HLTError("low level and high interface must not be mixed; use PushBack methods to insert data blocks");
+	  iResult=-EFAULT;
+	} else {
+	  iResult=MakeOutputDataBlockList(fOutputBlocks, &outputBlockCnt, &outputBlocks);
+	  size=fOutputBufferFilled;
+	}
       }
     } else {
       iResult=MakeOutputDataBlockList(blockData, &outputBlockCnt, &outputBlocks);

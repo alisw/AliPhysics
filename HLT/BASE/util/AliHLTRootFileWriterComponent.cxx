@@ -71,6 +71,16 @@ AliHLTRootFileWriterComponent::~AliHLTRootFileWriterComponent()
   // see header file for class documentation
 }
 
+int AliHLTRootFileWriterComponent::CloseWriter()
+{
+  // see header file for class documentation
+  if (fCurrentFile!=NULL) {
+    HLTDebug("close root file");
+    TFile* pFile=fCurrentFile; fCurrentFile=NULL;
+    pFile->Close(); delete pFile;
+  }
+}
+
 int AliHLTRootFileWriterComponent::DumpEvent( const AliHLTComponentEventData& evtData,
 					    const AliHLTComponentBlockData* blocks, 
 					    AliHLTComponentTriggerData& trigData )
@@ -91,7 +101,7 @@ int AliHLTRootFileWriterComponent::DumpEvent( const AliHLTComponentEventData& ev
     }
     pObj=GetNextInputObject();
   }
-  HLTDebug("wrote %d of %d object(s) to file", count, GetNumberOfInputBlocks());
+  HLTDebug("wrote %d object(s) from %d input blocks to file", count, GetNumberOfInputBlocks());
   return iResult;
 }
 

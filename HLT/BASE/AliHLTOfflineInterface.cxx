@@ -32,7 +32,8 @@ AliHLTOfflineInterface::AliHLTOfflineInterface()
   :
   fpRunLoader(NULL),
   fpRawReader(NULL),
-  fpESD(NULL)
+  fpESD(NULL),
+  fpNext(NULL)
 {
   // see header file for class documentation
   // or
@@ -51,7 +52,8 @@ AliHLTOfflineInterface::AliHLTOfflineInterface(AliRunLoader* pRunLoader, AliRawR
   :
   fpRunLoader(pRunLoader),
   fpRawReader(pRawReader),
-  fpESD(NULL)
+  fpESD(NULL),
+  fpNext(NULL)
 {
 }
 
@@ -60,7 +62,8 @@ AliHLTOfflineInterface::AliHLTOfflineInterface(const AliHLTOfflineInterface&)
   TObject(),
   fpRunLoader(NULL),
   fpRawReader(NULL),
-  fpESD(NULL)
+  fpESD(NULL),
+  fpNext(NULL)
 {
   // see header file for class documentation
   //HLTFatal("copy constructor untested");

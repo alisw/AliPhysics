@@ -1,3 +1,11 @@
+2007-07-17 HLT base
+	- extended high-level component interface in order to allow header
+	  buffer before TObjects
+	- ROOT memory file added
+	- ROOT file streamer added
+	- workaround for ROOT garbage collection causing crashes when
+	  cleaning up input objects
+	
 2007-05-09 version HLT-v0-6 tagged
 	Highlights
 	BASE libHLTbase version 3.1.0
