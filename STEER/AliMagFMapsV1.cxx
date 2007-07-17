@@ -108,7 +108,7 @@ void AliMagFMapsV1::Field(Float_t *x, Float_t *b) const
 	// Match to measure map
 	b[0] = - b[0] * kScale;
 	b[2] = - b[2] * kScale;
-	b[1] =   b[1] * kScale;
+	b[1] = - b[1] * kScale;
     }
 }
 
