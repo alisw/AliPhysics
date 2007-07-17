@@ -108,8 +108,8 @@ private:
    Bool_t       fStop;        // stop execution (triggered by SIGUSR1)
    Bool_t       fIsTagDBCreated; // is tag db already created
    Double_t     fMaxSizeTagDB;// max size of the tag DB
-   const char*  fFileNameTagDB;// tag DB file name
-   const char*  fGuidFileFolder; // guid files folder
+   TString      fFileNameTagDB;// tag DB file name
+   TString      fGuidFileFolder; // guid files folder
 
    // Filter names
    enum {kNFilters = 1};
@@ -124,7 +124,7 @@ private:
                                  Bool_t isSwapped, char*& data);
    Int_t     ReadRawData(AliRawData &raw, Int_t size, char*& data);
 
-   ClassDef(AliMDC,1)  // MDC processor
+   ClassDef(AliMDC,2)  // MDC processor
 };
 
 #endif

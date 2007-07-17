@@ -70,7 +70,7 @@ public:
    Int_t        GetCompressionMode() const { return fRawDB->GetCompressionLevel(); }
    void         Stop() { fStop = kTRUE; }
    static const char *GetAliRootTag();
-   Bool_t       WriteGuidFile(const char *guidFileFolder);
+   Bool_t       WriteGuidFile(TString &guidFileFolder);
 
 protected:
    TFile         *fRawDB;         // DB to store raw data
@@ -95,7 +95,7 @@ private:
    AliRawDB(const AliRawDB& rawDB);
    AliRawDB& operator = (const AliRawDB& rawDB);
 
-   ClassDef(AliRawDB,1)  // Raw DB
+   ClassDef(AliRawDB,2)  // Raw DB
 };
 
 #endif

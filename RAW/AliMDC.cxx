@@ -133,11 +133,11 @@ AliMDC::AliMDC(Int_t compress, Bool_t deleteFiles, EFilterMode filterMode,
   }
 
   // Create the guid files folder if it does not exist
-  if (fGuidFileFolder) {
+  if (!fGuidFileFolder.IsNull()) {
     gSystem->ResetErrno();
-    gSystem->MakeDirectory(fGuidFileFolder);
+    gSystem->MakeDirectory(fGuidFileFolder.Data());
     if (gSystem->GetErrno() && gSystem->GetErrno() != EEXIST) {
-      SysError("AliMDC", "mkdir %s", fGuidFileFolder);
+      SysError("AliMDC", "mkdir %s", fGuidFileFolder.Data());
     }
   }
 
@@ -386,14 +386,14 @@ Int_t AliMDC::ProcessEvent(void* event, Bool_t isIovecArray)
   // Create Tag DB here only after the raw data header
   // version was already identified
   if (!fIsTagDBCreated) {
-    if (fFileNameTagDB) {
+    if (!fFileNameTagDB.IsNull()) {
       if (fMaxSizeTagDB > 0) {
 	fTagDB = new AliTagDB(fEventTag, NULL);
 	fTagDB->SetMaxSize(fMaxSizeTagDB);
-	fTagDB->SetFS(fFileNameTagDB);
+	fTagDB->SetFS(fFileNameTagDB.Data());
 	if (!fTagDB->Create()) return kErrTagFile;
       } else {
-	fTagDB = new AliTagDB(fEventTag, fFileNameTagDB);
+	fTagDB = new AliTagDB(fEventTag, fFileNameTagDB.Data());
 	if (fTagDB->IsZombie()) return kErrTagFile;
       }
     }

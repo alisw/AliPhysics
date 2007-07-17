@@ -447,7 +447,7 @@ const char *AliRawDB::GetAliRootTag()
 }
 
 //______________________________________________________________________________
-Bool_t AliRawDB::WriteGuidFile(const char *guidFileFolder)
+Bool_t AliRawDB::WriteGuidFile(TString &guidFileFolder)
 {
   // Write the guid file
   // in the specified folder or
@@ -455,7 +455,7 @@ Bool_t AliRawDB::WriteGuidFile(const char *guidFileFolder)
   // file is.
 
    TString guidFileName;
-   if (guidFileFolder) {
+   if (!guidFileFolder.IsNull()) {
      guidFileName = guidFileFolder;
 
      TString pathStr = fRawDB->GetName();
