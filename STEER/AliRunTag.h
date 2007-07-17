@@ -47,6 +47,8 @@ class AliRunTag : public TObject {
   void SetDetectorTag(UInt_t mask);
   void AddEventTag(const AliEventTag &t);
   void Clear(const char * opt = "");
+
+  void CopyStandardContent(AliRunTag *oldtag);
   
   //____________________________________________________//
   Int_t       GetRunId() const {return fAliceRunId;}

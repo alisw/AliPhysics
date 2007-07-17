@@ -58,6 +58,25 @@ AliRunTag::~AliRunTag() {
 }
 
 //___________________________________________________________________________
+void AliRunTag::CopyStandardContent(AliRunTag *oldtag) {
+  //function that copies the run, lhc and detector levels
+  SetRunId(oldtag->GetRunId());
+  SetMagneticField(oldtag->GetMagneticField());
+  SetRunStartTime(oldtag->GetRunStartTime());
+  SetRunStopTime(oldtag->GetRunStopTime());
+  SetAlirootVersion(oldtag->GetAlirootVersion());
+  SetRootVersion(oldtag->GetRootVersion());
+  SetGeant3Version(oldtag->GetGeant3Version());
+  SetRunQuality(oldtag->GetRunQuality());
+  SetBeamEnergy(oldtag->GetBeamEnergy());
+  SetBeamType(oldtag->GetBeamType());
+  SetCalibVersion(oldtag->GetCalibVersion());
+  SetDataType(oldtag->GetDataType());
+  SetLHCTag(oldtag->GetLHCTag()->GetLuminosity(),oldtag->GetLHCTag()->GetLHCState());
+  //SetDetectorTag(oldtag->GetDetectorTags());
+}
+
+//___________________________________________________________________________
 void AliRunTag::SetLHCTag(Float_t lumin, TString type) {
   //Setter for the LHC tags
   fLHCTag.SetLHCTag(lumin,type);
