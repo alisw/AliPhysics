@@ -1,10 +1,11 @@
 
 include HLT/hlt.conf
 
-SRCS:=  PHOS/AliHLTPHOSPulseGenerator.cxx \
+SRCS:= 
 
 
-HDRS:=  PHOS/AliHLTPHOSPulseGenerator.h \
+
+HDRS:= 
 
 
 DHDR=   PHOS/AliHLTPHOSLinkDef.h
