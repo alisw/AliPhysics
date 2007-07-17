@@ -1072,10 +1072,11 @@ TGeoVolume* AliITSv11GeometrySPD::CreateLadder
 	// Creates the "ladder" = silicon sensor + 5 chips.
 	// All parts are implemented as TGeoBBox and inserted 
 	// into a container which is the return value of this method.
-	// This will allow to replicate this object many times, as required
-	// for the implementation of half-staves.
 	// The sizes of the components come from drawings 
-	// of the Technical office of INFN Padova
+	// of the Technical office of INFN Padova.
+	// Due to the requirement to specify the sensitive volume separately from the rest,
+	// the sensor is implemented as the sum of a central sensitive part + a guard ring.
+	// Also the bump-bondings are added in form of small cylinders.
 	// ---
 	// Arguments:
 	//  - the layer which will own this ladder (MUST be 1 or 2)
@@ -1101,63 +1102,117 @@ TGeoVolume* AliITSv11GeometrySPD::CreateLadder
 	
 	// ** CRITICAL CHECK **
 	// layer number can be ONLY 1 or 2
-	if (layer != 1 && layer != 2) AliFatal("Required that layer number be 1 or 2");
+	if (layer != 1 && layer != 2) AliFatal("Layer number MUST be 1 or 2");
 	
 	// instantiate all required media
-	TGeoMedium *medVacuum    = mgr->GetMedium("VACUUM");
+	TGeoMedium *medAir       = mgr->GetMedium("Air");
 	TGeoMedium *medSPDSiChip = mgr->GetMedium("SPD SI CHIP");
-	TGeoMedium *medSi        = mgr->GetMedium("SI");
+	TGeoMedium *medSi        = mgr->GetMedium("Si");
+	TGeoMedium *medBumpBond  = mgr->GetMedium("BumpBond");
 	
-	// define sizes:
+	// ** Define sizes **
 	// they are expressed in mm in the drawings so they require conversion
-	// 'widths' are in the direction of the detector length (Z axis)
+	// 'length'    is in the direction of the detector length (Z axis)
 	// 'thickness' is obvious
-	// 'heights' are in the direction orthogonal to 'width' and 'thickness'
-	Double_t chipThickness = fgkmm *  0.15;
-	Double_t chipWidth     = fgkmm * 15.95;
-	Double_t chipLength    = fgkmm * 13.60;
-	Double_t chipSpacing   = fgkmm *  0.40;
-	Double_t chipBorder    = fgkmm *  0.56;
-	Double_t sensThickness = fgkmm *  0.20;
-	Double_t sensWidth     = fgkmm * 13.92;
-	Double_t sensLength    = fgkmm * 70.72;
+	// 'width'     is in the direction orthogonal to 'width' and 'thickness'
 	
-	// create the container, bounded exactly around the limits of the ladder size
-	// the 'thickness' is the sum of both thicknesses
-	// the 'height' is the chip's one, which is larger
-	// the 'width' is the one of the sensor, which contains all chips + a border
-	// the name depends on the chosen layer number, 
-	// in order to respect ALICE sensitive volumes naming conventions
-	thickness = sensThickness + chipThickness;
-	width = chipWidth;
-	length = sensLength;
-	TGeoVolume *container = mgr->MakeBox(Form("LAY%d_LADDER", layer), medVacuum, 0.5*thickness, 0.5*width, 0.5*length);
+	// for the chip, also the spacing between them is required
+	Double_t chipThickness  = fgkmm *  0.150;
+	Double_t chipWidth      = fgkmm * 15.950;
+	Double_t chipLength     = fgkmm * 13.600;
+	Double_t chipSpacing    = fgkmm *  0.400;
+	
+	// for the sensor, we define the area of sensitive volume
+	// while the guard ring is added as a separate piece
+	Double_t sensThickness  = fgkmm *  0.200;
+	Double_t sensLength     = fgkmm * 69.600;
+	Double_t sensWidth      = fgkmm * 13.920;
+	Double_t guardRingWidth = fgkmm *  0.560;
+	
+	// bump bond is defined as a small stripe of height = 0.012 mm
+	// and a suitable width to keep the same volume it has 
+	// before being compressed (a line of spheres of 0.025 mm radius)
+	Double_t bbLength    = fgkmm * 0.042;
+	Double_t bbWidth     = sensWidth;
+	Double_t bbThickness = fgkmm * 0.012;
+	Double_t bbPos       = 0.080;           // Z position w.r. to left pixel edge
 		
-	// create two volume boxes which describe the two involved objects:
-	// - the sensor (large box, used once)
-	// - the chip (small box, used 5 times)
-	TGeoVolume *volSens = mgr->MakeBox("SENSOR", medSi, 0.5*sensThickness, 0.5*sensWidth, 0.5*sensLength);
+	// ** Create volumes **
+	// the container is the return value, and is built as a box
+	// whose edges exactly enclose the stuff we inserted here, filled with air.
+	// Its name depends on the layer number.
+	width = chipWidth;
+	length = sensLength + 2.0*guardRingWidth;
+	thickness = sensThickness + chipThickness + bbThickness;
+	TGeoVolume *container = mgr->MakeBox(Form("LAY%d_LADDER", layer), medAir, 0.5*thickness, 0.5*width, 0.5*length);
+	
+	// the chip is a simple box:
 	TGeoVolume *volChip = mgr->MakeBox("CHIP", medSPDSiChip, 0.5*chipThickness, 0.5*chipWidth, 0.5*chipLength);
+	
+	// the sensor is the union of a box and a border, to separate sensitive part from the rest
+	// the sensitive volume (inner part) is named according to the owner layer.
+	// To compute the shape subtraction which is needed for this we create two shapes,
+	// which are two boxes with the same center.
+	// The smaller one is then used to define the sensor, while the subtraction of the two
+	// is used for the guard ring.
+	TGeoBBox  *shSens = new TGeoBBox(0.5*sensThickness, 0.5*sensWidth, 0.5*sensLength);
+	TGeoBBox  *shIn   = new TGeoBBox(sensThickness, 0.5*sensWidth, 0.5*sensLength);
+	TGeoBBox  *shOut  = new TGeoBBox(0.5*sensThickness, 0.5*sensWidth + guardRingWidth, 0.5*sensLength + guardRingWidth);
+	shIn->SetName("innerBox");
+	shOut->SetName("outerBox");
+	TGeoCompositeShape *shBorder = new TGeoCompositeShape("", "outerBox-innerBox");
+	TGeoVolume *volSens = new TGeoVolume(Form("LAY%d_SENSOR", layer), shSens, medSi);
+	TGeoVolume *volBorder = new TGeoVolume("GUARD_RING", shBorder, medSi);
+	
+	// one line of bumpbonds
+	TGeoVolume *volBB = mgr->MakeBox("BB", medBumpBond, 0.5*bbThickness, 0.5*bbWidth, 0.5*bbLength);
+			
+	// set colors of all objects for visualization	
 	volSens->SetLineColor(kYellow + 1);
 	volChip->SetLineColor(kGreen);
+	volBorder->SetLineColor(kYellow + 3);
 
-	// translation for the sensor box: direction of width (moved to edge of container) and thickness (moved up)
-	Double_t x = 0.5 * (thickness - sensThickness);
-	Double_t y = 0.5 * (width - sensWidth);
-	Double_t z = 0.0;
-	TGeoTranslation *trSens    = new TGeoTranslation(x, y, z);
 	// translations for the chip box: direction of length and thickness (moved down)
 	TGeoTranslation *trChip[5] = {0, 0, 0, 0, 0};
-	x = 0.5 * (chipThickness - thickness);
-	y = 0.0;
+	Double_t x = 0.5 * (chipThickness - thickness);
+	Double_t y = 0.0;
+	Double_t z = 0.0;
 	Int_t i;
 	for (i = 0; i < 5; i++) {
-		z = -0.5*length + chipBorder + (Double_t)i*chipSpacing + ((Double_t)(i) + 0.5)*chipLength;
+		z = -0.5*length + guardRingWidth + (Double_t)i*chipSpacing + ((Double_t)(i) + 0.5)*chipLength;
 		trChip[i] = new TGeoTranslation(x, y, z);
 	}
 	
+	// translation for the sensor parts: direction of width (moved to edge of container) and thickness (moved up)
+	x = 0.5 * (thickness - sensThickness);
+	y = 0.5 * (width - sensWidth - 2.0*guardRingWidth);
+	z = 0.0;
+	TGeoTranslation *trSens = new TGeoTranslation(x, y, z);
+	
+	// translation for the bump bonds:
+	// keep same y used for sensors, but change the Z
+	TGeoTranslation *trBB[160];
+	//x = 0.5 * (thickness - bbThickness) + 0.5*sensThickness;
+	x = 0.5 * (thickness - bbThickness) - sensThickness;
+	z = -0.5 * sensLength + guardRingWidth + fgkmm*0.425 - bbPos;
+	for (i = 0; i < 160; i++) {
+		trBB[i] = new TGeoTranslation(x, y, z);
+		switch(i) {
+			case  31:
+			case  63:
+			case  95:
+			case 127:
+				z += fgkmm * 0.625 + fgkmm * 0.2;
+				break;
+			default:
+				z += fgkmm * 0.425;
+		}
+	}
+		
 	// add nodes to container
 	container->AddNode(volSens, 1, trSens);
+	container->AddNode(volBorder, 1, trSens);
+	for (i = 0; i < 160; i++) container->AddNode(volBB, i, trBB[i]);
 	for (i = 0; i < 5; i++) container->AddNode(volChip, i + 2, trChip[i]);
 	
 	// return the container
