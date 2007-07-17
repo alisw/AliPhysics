@@ -48,8 +48,8 @@ libAliHLTPHOS_la_SOURCES	= AliHLTPHOSPulseGenerator.cxx \
 				  AliHLTAltroBunch.cxx \
 			          AliHLTPHOSMapper.cxx \
 				  AliHLTPHOSRcuProcessor.cxx \
-				  AliHLTPHOSBase.cxx\
-				  PeakFinderTest.cxx
+				  AliHLTPHOSBase.cxx
+
 
 
 # class header files, the link definition for the root dictionary
@@ -104,8 +104,7 @@ pkginclude_HEADERS		= $(CLASS_HDRS) \
 				  AliHLTPHOSClusterDataStruct.h \
 				  AliHLTPHOSRecPointDataStruct.h \
 				  AliHLTPHOSPhysicsDefinitions.h \
-				  AliHLTPHOSRecPointListDataStruct.h \
-				  PhosConst.h
+				  AliHLTPHOSRecPointListDataStruct.h
 
 # version info and linking flags for the library
 libAliHLTPHOS_la_LIBADD		= $(top_builddir)/BASE/util/libAliHLTUtil.la
