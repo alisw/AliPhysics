@@ -256,9 +256,9 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
 	if(timeGaus[ipmt]<besttimeC){
 	  besttimeC=timeGaus[ipmt]; //timeC
 	  pmtBestC=ipmt;}
-     }
+      }
     }
-     for ( Int_t ipmt=12; ipmt<24; ipmt++){
+    for ( Int_t ipmt=12; ipmt<24; ipmt++){
       if(countE[ipmt] > threshold) {
 	timeGaus[ipmt]=gRandom->Gaus(time[ipmt],25); 
 	if(timeGaus[ipmt]<besttimeA) {
@@ -266,25 +266,7 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
 	  pmtBestA=ipmt;}
       }	
     }
-   //folding with alignmentz position distribution  
-    if( besttimeC > 10000. && besttimeC <15000)
-      bestCTDC=Int_t ((besttimeC+timeDelayCFD[pmtBestC])
-			 /channelWidth);
- 
-    if( besttimeA > 10000. && besttimeA <15000)
-      bestATDC=Int_t ((besttimeA+timeDelayCFD[pmtBestA])
-			/channelWidth);
 
-    if (bestATDC < 99999 && bestCTDC < 99999)
-      {
-	timeDiff=Int_t (((besttimeC-besttimeA)+1000*delayVertex)
-			/channelWidth);
-	meanTime=Int_t (((besttimeC+timeDelayCFD[pmtBestC]+
-			  besttimeA+timeDelayCFD[pmtBestA])/2.)
-			/channelWidth);
-      }
-	AliDebug(10,Form(" time A& C %i %i  time diff && mean time in channels %i %i",bestATDC,bestCTDC, timeDiff, meanTime));
-	  timeDelayCFD[0] = fParam->GetTimeDelayCFD(0);
     for (Int_t i=0; i<24; i++)
       {
        	Float_t  al = countE[i]; 
@@ -323,6 +305,26 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
 
 	}
       } //pmt loop
+
+    //folding with alignmentz position distribution  
+    if( besttimeC > 10000. && besttimeC <15000)
+      bestCTDC=Int_t ((besttimeC+timeDelayCFD[pmtBestC])
+			 /channelWidth);
+ 
+    if( besttimeA > 10000. && besttimeA <15000)
+      bestATDC=Int_t ((besttimeA+timeDelayCFD[pmtBestA])
+			/channelWidth);
+
+    if (bestATDC < 99999 && bestCTDC < 99999)
+      {
+	timeDiff=Int_t (((besttimeC-besttimeA)+1000*delayVertex)
+			/channelWidth);
+	meanTime=Int_t (((besttimeC+timeDelayCFD[pmtBestC]+
+			  besttimeA+timeDelayCFD[pmtBestA])/2.)
+			/channelWidth);
+      }
+	AliDebug(10,Form(" time A& C %i %i  time diff && mean time in channels %i %i",bestATDC,bestCTDC, timeDiff, meanTime));
+	  timeDelayCFD[0] = fParam->GetTimeDelayCFD(0);
 
     if (sumMult > threshold){
       fSumMult =  Int_t (1000.* TMath::Log(Double_t(sumMult) / Double_t(sumMultCoeff))
