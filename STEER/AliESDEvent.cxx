@@ -56,7 +56,7 @@ ClassImp(AliESDEvent)
 						       "PmdTracks",
 						       "TrdTracks",
 						       "V0s",
-						       "Cascadess",
+						       "Cascades",
 						       "Kinks",
 						       "CaloClusters",
 						       "AliRawDataErrorLogs"};
