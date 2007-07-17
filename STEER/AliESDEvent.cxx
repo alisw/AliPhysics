@@ -560,7 +560,8 @@ void AliESDEvent::ReadFromTree(TTree *tree){
     if (connectedList) {
       // If connected use the connected list if objects
       fESDObjects->Delete();
-      fESDObjects = connectedList; 
+      fESDObjects = connectedList;
+      GetStdContent(); 
       fConnected = true;
       return;
     }
