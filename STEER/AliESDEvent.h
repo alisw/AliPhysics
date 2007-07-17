@@ -161,17 +161,10 @@ public:
 
 
 
-  void SetVertex(const AliESDVertex *vertex) {
-    *fSPDVertex  = *vertex;
-    fSPDVertex->SetName("SPDVertex");// error prone use class wide names?
-    //CKB or new with placement
-  }
+  void SetVertex(const AliESDVertex *vertex); 
   const AliESDVertex *GetVertex() const {return fSPDVertex;}
 
-  void SetPrimaryVertex(const AliESDVertex *vertex) {
-    *fPrimaryVertex = *vertex;
-    fPrimaryVertex->SetName("PrimaryVertex");// error prone use class wide names?
-  }
+  void SetPrimaryVertex(const AliESDVertex *vertex);
   const AliESDVertex *GetPrimaryVertex() const {return fPrimaryVertex;}
 
   void SetMultiplicity(const AliMultiplicity *mul) {
@@ -350,6 +343,9 @@ protected:
 
 
   AliESD    *fESDOld;              //! Old esd Structure
+  Bool_t    fConnected;            //! flag if leaves are alreday connected
+
+  static const char* fESDListName[kESDListN];
 
   // Remove this stuff CKB
   Int_t        fEMCALClusters;   // Number of EMCAL clusters (subset of caloclusters)
@@ -358,7 +354,7 @@ protected:
   Int_t        fPHOSClusters;     // Number of PHOS clusters (subset of caloclusters)
   Int_t        fFirstPHOSCluster; // First PHOS cluster in the fCaloClusters list 
 
-  ClassDef(AliESDEvent,1)  //ESDEvent class 
+  ClassDef(AliESDEvent,2)  //ESDEvent class 
 };
 #endif 
 
