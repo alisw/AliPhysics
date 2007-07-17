@@ -12,16 +12,18 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
+//
 // This class Defines the Geometry for the ITS services and support cones
 // outside of the ceneteral volume (except for the Ceneteral support 
 // cylinders. Other classes define the rest of the ITS. Specificaly the ITS
-// The SSD support cone,SSD Support centeral cylinder, SDD support cone,
+// The SSD support cone, SSD Support centeral cylinder, SDD support cone,
 // The SDD cupport centeral cylinder, the SPD Thermal Sheald, The supports
 // and cable trays on both the RB26 (muon dump) and RB24 sides, and all of
-// the cabling from the ladders/stave ends out past the TPC. 
+// the cabling from the ladders/stave ends out past the TPC.
+//
 
 /* $Id$ */
+
 // General Root includes
 #include <Riostream.h>
 #include <TMath.h>
@@ -32,19 +34,21 @@
 #include <TGeoVolume.h>
 #include <TGeoPcon.h>
 #include <TGeoCone.h>
-#include <TGeoTube.h> // contaings TGeoTubeSeg
+#include <TGeoTube.h> // contains TGeoTubeSeg
 #include <TGeoArb8.h>
 #include <TGeoEltu.h>
 #include <TGeoXtru.h>
-#include <TGeoCompositeShape.h>
 #include <TGeoMatrix.h>
-#include <TGeoMaterial.h>
-#include <TGeoMedium.h>
-#include "AliMagF.h"
-#include "AliRun.h"
 //#include <TGeoRotation.h>
 //#include <TGeoCombiTrans.h>
 //#include <TGeoTranslation.h>
+#include <TGeoMaterial.h>
+#include <TGeoMedium.h>
+#include <TGeoCompositeShape.h>
+// AliRoot includes
+#include "AliMagF.h"
+#include "AliRun.h"
+// Declaration file
 #include "AliITSv11GeometrySPD.h"
 
 ClassImp(AliITSv11GeometrySPD)
@@ -52,8 +56,8 @@ ClassImp(AliITSv11GeometrySPD)
 #define SQ(A) (A)*(A)
 
 //______________________________________________________________________
-Int_t AliITSv11GeometrySPD::CreateSPDCenteralMaterials(Int_t &medOffset,
-						       Int_t &matOffset){
+Int_t AliITSv11GeometrySPD::CreateSPDCenteralMaterials(Int_t &medOffset, Int_t &matOffset)
+{
     // Define the specific materials used for the ITS SPD centeral
     // detectors. Note, These are the same old names. By the ALICE
     // naming convension, these should start out at ITS SPD ....
@@ -236,7 +240,7 @@ void AliITSv11GeometrySPD::InitSPDCenteral(Int_t offset,TVirtualMC *vmc){
     // Multiple scattering. The variable IMULS controls this process. For 
     // more information see [PHYS320 or 325 or 328].
     // 0 - No multiple scattering.
-    // 1 - Multiple scattering according to Molière theory. Default setting.
+    // 1 - Multiple scattering according to Moliï¿½re theory. Default setting.
     // 2 - Same as 1. Kept for backward compatibility.
     // 3 - Pure Gaussian scattering according to the Rossi formula.
     // "DRAY"
@@ -325,7 +329,8 @@ void AliITSv11GeometrySPD::SPDSector(TGeoVolume *moth,TGeoManager *mgr){
     vCarbonFiberSector = new TGeoVolumeAssembly("ITSSPDCarbonFiberSectorV");
     vCarbonFiberSector->SetMedium(medSPDcf);
     CarbonFiberSector(vCarbonFiberSector,xAAtubeCenter0,yAAtubeCenter0);
-    vCarbonFiberSector->SetVisibility(kFALSE); // logical volume
+    //SectorPlusStaves(vCarbonFiberSector,xAAtubeCenter0,yAAtubeCenter0);
+    vCarbonFiberSector->SetVisibility(kTRUE); // logical volume
     // Compute the radial shift out of the sectors.
     radiusSector = kBeamPipeRadius+kSPDclossesStaveAA+staveThicknessAA;
     radiusSector *= radiusSector; // squaring;
@@ -451,7 +456,8 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth,
     const Double_t ksecY8   = +17.486*fgkmm;
     const Double_t ksecR8   = +0.6*fgkmm; // Inside
     const Double_t ksecX9   = +0.562*fgkmm;
-    const Double_t ksecY9   = +14.486*fgkmm;
+    //const Double_t ksecY9   = +14.486*fgkmm;  // correction by
+    const Double_t ksecY9   = +14.107*fgkmm;    // Alberto
     const Double_t ksecR9   = -0.6*fgkmm; // Outside
     //const Double_t ksecDip4 = 6.978*fgkmm;
     //
@@ -546,7 +552,7 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth,
     Double_t *yp[ksecNRadii],*yp2[ksecNRadii];
     TGeoXtru *sA0,*sA1,*sB0,*sB1;
     TGeoEltu *sTA0,*sTA1;
-    TGeoTube *sTB0,*sTB1,*sM0;
+    TGeoTube *sTB0,*sTB1; //,*sM0;
     TGeoRotation    *rot;
     TGeoTranslation *trans;
     TGeoCombiTrans  *rotrans;
@@ -809,6 +815,8 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth,
     //vM0->SetLineWidth(1);
     //vM0->SetFillColor(vM0->GetLineColor());
     //vM0->SetFillStyle(4090); // 90% transparent
+    // ALBERTO
+    StavesInSector(vM0);
     vA0 = new TGeoVolume("ITSSPDCarbonFiberSupportSectorA0",sA0,medSPDcf);
     vA0->SetVisibility(kTRUE);
     vA0->SetLineColor(4); // Blue
@@ -955,25 +963,6 @@ const Double_t *yc,const Double_t *r,const Double_t *ths,const Double_t *the,
     //
     return;
 }
-//______________________________________________________________________
-void AliITSv11GeometrySPD::HalfStave(TGeoVolume *moth,Double_t &thicknessAA,
-				     TGeoManager *mgr){
-    // Define the detail SPD Half Stave geometry.
-    // Inputs:
-    //   TGeoVolume  *moth  The mother volume to place this object.
-    //   Int_t      &thicknessAA Thickness of stave at section A-A
-    //   TGeoManager *mgr   TGeoManager default gGeoManager
-    // Outputs:
-    //  none.
-    // Return:
-    //  none.
-
-    thicknessAA = 1.03*fgkmm; // Default value
-    if(moth==0){
-      Error("HalfStave","moth=%p mgr=%p",moth,mgr);
-        return;
-    } // end if moth==0
-}
 //----------------------------------------------------------------------
 void AliITSv11GeometrySPD::CreateFigure0(const Char_t *filepath,
                                          const Char_t *type,
@@ -1074,3 +1063,1568 @@ void AliITSv11GeometrySPD::CreateFigure0(const Char_t *filepath,
     txt.DrawLatex(x+2.5,y,"Section");
     //
 }
+
+//___________________________________________________________________________________________________________________
+TGeoVolume* AliITSv11GeometrySPD::CreateLadder
+(Int_t layer, Double_t &length, Double_t &width, Double_t &thickness, TGeoManager *mgr)
+{
+	//
+	// Creates the "ladder" = silicon sensor + 5 chips.
+	// All parts are implemented as TGeoBBox and inserted 
+	// into a container which is the return value of this method.
+	// This will allow to replicate this object many times, as required
+	// for the implementation of half-staves.
+	// The sizes of the components come from drawings 
+	// of the Technical office of INFN Padova
+	// ---
+	// Arguments:
+	//  - the layer which will own this ladder (MUST be 1 or 2)
+	//  - the used TGeoManager
+	// ---
+	// Returns:
+	//  - the container TGeoBBox (return value)
+	//  - the size of the container box (arguments passed by reference)
+	// ---
+	// NOTE 1
+	// Here and in the other methods which contribute to the stave definition
+	// a convention is used for the naming of the three dimensions of the volumes:
+	//  - 'length'    refers to the size in the Z direction of the ALICE reference frame
+	//  - 'width'     refers to the "large" dimension orthogonal to Z axis in the local reference 
+	//                frame of the object being implemented (e.g., 15.95 mm for the chips)
+	//  - 'thickness' refers to the "small" dimension orthogonal to Z axis, which is also
+	//                the direction along which the components are superimposed on each other
+	// ---
+	// NOTE 2
+	// all sizes taken are expressed in mm in drawings, and this is kept as is, to avoid confusion
+	// the conversion is made multiplying by the conversion factor
+	//
+	
+	// ** CRITICAL CHECK **
+	// layer number can be ONLY 1 or 2
+	if (layer != 1 && layer != 2) AliFatal("Required that layer number be 1 or 2");
+	
+	// instantiate all required media
+	TGeoMedium *medVacuum    = mgr->GetMedium("VACUUM");
+	TGeoMedium *medSPDSiChip = mgr->GetMedium("SPD SI CHIP");
+	TGeoMedium *medSi        = mgr->GetMedium("SI");
+	
+	// define sizes:
+	// they are expressed in mm in the drawings so they require conversion
+	// 'widths' are in the direction of the detector length (Z axis)
+	// 'thickness' is obvious
+	// 'heights' are in the direction orthogonal to 'width' and 'thickness'
+	Double_t chipThickness = fgkmm *  0.15;
+	Double_t chipWidth     = fgkmm * 15.95;
+	Double_t chipLength    = fgkmm * 13.60;
+	Double_t chipSpacing   = fgkmm *  0.40;
+	Double_t chipBorder    = fgkmm *  0.56;
+	Double_t sensThickness = fgkmm *  0.20;
+	Double_t sensWidth     = fgkmm * 13.92;
+	Double_t sensLength    = fgkmm * 70.72;
+	
+	// create the container, bounded exactly around the limits of the ladder size
+	// the 'thickness' is the sum of both thicknesses
+	// the 'height' is the chip's one, which is larger
+	// the 'width' is the one of the sensor, which contains all chips + a border
+	// the name depends on the chosen layer number, 
+	// in order to respect ALICE sensitive volumes naming conventions
+	thickness = sensThickness + chipThickness;
+	width = chipWidth;
+	length = sensLength;
+	TGeoVolume *container = mgr->MakeBox(Form("LAY%d_LADDER", layer), medVacuum, 0.5*thickness, 0.5*width, 0.5*length);
+		
+	// create two volume boxes which describe the two involved objects:
+	// - the sensor (large box, used once)
+	// - the chip (small box, used 5 times)
+	TGeoVolume *volSens = mgr->MakeBox("SENSOR", medSi, 0.5*sensThickness, 0.5*sensWidth, 0.5*sensLength);
+	TGeoVolume *volChip = mgr->MakeBox("CHIP", medSPDSiChip, 0.5*chipThickness, 0.5*chipWidth, 0.5*chipLength);
+	volSens->SetLineColor(kYellow + 1);
+	volChip->SetLineColor(kGreen);
+
+	// translation for the sensor box: direction of width (moved to edge of container) and thickness (moved up)
+	Double_t x = 0.5 * (thickness - sensThickness);
+	Double_t y = 0.5 * (width - sensWidth);
+	Double_t z = 0.0;
+	TGeoTranslation *trSens    = new TGeoTranslation(x, y, z);
+	// translations for the chip box: direction of length and thickness (moved down)
+	TGeoTranslation *trChip[5] = {0, 0, 0, 0, 0};
+	x = 0.5 * (chipThickness - thickness);
+	y = 0.0;
+	Int_t i;
+	for (i = 0; i < 5; i++) {
+		z = -0.5*length + chipBorder + (Double_t)i*chipSpacing + ((Double_t)(i) + 0.5)*chipLength;
+		trChip[i] = new TGeoTranslation(x, y, z);
+	}
+	
+	// add nodes to container
+	container->AddNode(volSens, 1, trSens);
+	for (i = 0; i < 5; i++) container->AddNode(volChip, i + 2, trChip[i]);
+	
+	// return the container
+	return container;
+}
+
+/*
+//___________________________________________________________________________________________________________________
+TGeoVolume* AliITSv11GeometrySPD::CreateGroundingFoilSingle
+(Bool_t kaptonLayer, Double_t &length, Double_t &width, Double_t &thickness, TGeoManager *mgr)
+{
+	//
+	// Creates the grounding foil layer made in Kapton.
+	// Both layers of the grounding foil have the same shape, but with small
+	// differences in the size of some parts (holes, overall size).
+	// The Kapton layer is a little bit wider and has smaller holes.
+	// ---
+	// The complete object is created as the superimposition of an XTRU with some holes
+	// ---
+	// Whenever possible, the size of the parts is parameterized with 
+	// variable names, even if their value is fixed according 
+	// to the design parameters given by engineers' drawings.
+	// ---
+	// Returns: a TGeoVolume object which contains all parts of this layer
+	//
+	
+	// The shape of the grounding foil is an irregular polygon, which can easily be implemented as 
+	// a TGeoXtru using the corners as reference points:
+	// 
+	// 0                                                                                                     1
+	//  +---------------------------------------------------------------------------------------------------+
+	//  |                                                            7              6      3                |
+	//  |                                                            +--------------+      +----------------+ 2
+	//  |                                                O           |              |      |
+	//  |                                                    9 /-----+ 8            +------+ 4
+	//  |                                                     /                    5
+	//  |                                  11 /--------------/ 10
+	//  +------------------------------------/ 
+	// 13                                    12
+	//
+	// in total: 14 points (X is just a referencem but is unused in the implementation.
+	// The whole shape can be subdivided into sectors delimited by vertical lines passing
+	// througth the points in the lower part of the shape. This convention is used to names
+	// their length which is different for each one (the widths, instead, are common for some)	
+
+	// instantiate the media:
+	// - kapton/aluminum for the pysical volumes
+	TGeoMedium *material = kaptonLayer ? mgr->GetMedium("KAPTON") : mgr->GetMedium("AL");
+	
+	// label
+	char type[3];
+	if (kaptonLayer) {
+		strcpy(type, "KP"); 
+		thickness = fgkmm * 0.05;
+	}
+	else {
+		strcpy(type, "AL");
+		thickness = fgkmm * 0.02;
+	}
+	
+	// define the length of all sectors (from leftmost to rightmost)
+	Int_t i;
+	Double_t sectorLength[] = { 140.71,  2.48,  26.78,  4.00,  10.00,  24.40,  10.00,  24.81 };
+	if (!kaptonLayer) {
+		sectorLength[0] -= 0.2;
+		sectorLength[4] -= 0.2;
+		sectorLength[5] += 0.4;
+		sectorLength[6] -= 0.4;
+	}
+	length = 0.0;
+	for (i = 0; i < 8; i++) {
+		sectorLength[i] *= fgkmm;
+		length += sectorLength[i];
+	}
+		
+	// as shown in the drawing, we have three different widths in this shape:
+	Double_t widthMax  = fgkmm * 15.95;
+	Double_t widthMed1 = fgkmm * 15.00;
+	Double_t widthMed2 = fgkmm * 11.00;
+	Double_t widthMin  = fgkmm *  4.40;
+	if (!kaptonLayer) {
+		widthMax  -= fgkmm * 0.4;
+		widthMed1 -= fgkmm * 0.4;
+		widthMed2 -= fgkmm * 0.4;
+		widthMin  -= fgkmm * 0.4;
+	}
+	width = widthMax;
+	
+	// the vertices of the polygon are arrays correctly ordered in the counterclockwise direction:
+	// initially we place the point 0 in the origin, and all others will be defined accordingly
+	Double_t x[14], y[14];
+	x[ 0] = 0.0;
+	y[ 0] = 0.0;
+	
+	x[ 1] = x[0] + length;
+	y[ 1] = 0.0;
+	
+	x[ 2] = x[1];
+	y[ 2] = -widthMin;
+	
+	x[ 3] = x[2] - sectorLength[7];
+	y[ 3] = y[2];
+	
+	x[ 4] = x[3];
+	y[ 4] = -widthMed2;
+	
+	x[ 5] = x[4] - sectorLength[6];
+	y[ 5] = y[4];
+	
+	x[ 6] = x[5];
+	y[ 6] = -widthMin;
+	
+	x[ 7] = x[6] - sectorLength[5];
+	y[ 7] = y[6];
+	
+	x[ 8] = x[7];
+	y[ 8] = -widthMed2;
+	
+	x[ 9] = x[8] - sectorLength[4];
+	y[ 9] = y[8];
+	
+	x[10] = x[9] - sectorLength[3];
+	y[10] = -widthMed1;
+	 
+	x[11] = x[10] - sectorLength[2];
+	y[11] = y[10];
+	
+	x[12] = x[11] - sectorLength[1];
+	y[12] = -widthMax;
+	
+	x[13] = x[0];
+	y[13] = -widthMax;
+	
+	// then, we shift all points in such a way that the origin will be at the centers
+	for (i = 0; i < 14; i++) {
+		x[i] -= 0.5*length;
+		y[i] += 0.5*width;
+	}
+	
+	// create the shape
+	char shName[200];
+	sprintf(shName, "SH_%sGFOIL_FULL", type);
+	TGeoXtru *shGroundFull = new TGeoXtru(2);
+	shGroundFull->SetName(shName);
+	shGroundFull->DefinePolygon(14, x, y);
+	shGroundFull->DefineSection(0, -0.5*thickness, 0., 0., 1.0);
+	shGroundFull->DefineSection(1,  0.5*thickness, 0., 0., 1.0);
+	
+	// this volume contains some holes which are here implemented as simple boxes
+	// of fixed size, which are displaced along the shape itself and then composed
+	// using the facilities of the TGeo package
+	
+	Double_t holeLength = fgkmm * 10.00;
+	Double_t holeWidth  = fgkmm *  7.50;
+	Double_t holeSepX0  = fgkmm *  7.05;  // separation between center of first hole and left border
+	Double_t holeSepXC  = fgkmm * 14.00;  // separation between the centers of two consecutive holes
+	Double_t holeSepX1  = fgkmm * 15.42;  // separation between centers of 5th and 6th hole
+	Double_t holeSepX2  = fgkmm * 22.00;  // separation between centers of 10th and 11th hole
+	if (!kaptonLayer) {
+		holeSepX0  -= fgkmm * 0.2;
+		holeLength += fgkmm * 0.4;
+		holeWidth  += fgkmm * 0.4;
+	}
+	
+	// X position of hole center (will change for each hole)
+	Double_t holeX = -0.5*length;
+	// Y position of center of all holes (= 4.4 mm from upper border)
+	Double_t holeY = 0.5*(width - holeWidth) - widthMin;
+	//if (!kaptonLayer) holeY += 0.02;
+		
+	// create a shape for the holes (common)
+	char holeName[200];
+	sprintf(holeName, "%sHOLE", type);
+	TGeoBBox *shHole = 0;
+	shHole = new TGeoBBox(holeName, 0.5*holeLength, 0.5*holeWidth, thickness);
+	
+	// insert the holes in the XTRU shape:
+	// starting from the first value of X, they are simply shifted along this axis
+	char trName[200];
+	TGeoTranslation *transHole[11];
+	TString strComposite(shName);
+	strComposite.Append("-(");
+	for (Int_t i = 0; i < 11; i++) {
+		// set the position of the hole, depending on index
+		if (i == 0) {
+			holeX += holeSepX0;
+		}
+		else if (i < 4) {
+			holeX += holeSepXC;
+		}
+		else if (i == 4) {
+			holeX += holeSepX1;
+		}
+		else if (i < 10) {
+			holeX += holeSepXC;
+		}
+		else {
+			holeX += holeSepX2;
+		}
+		sprintf(trName, "%sTR%d", type, i);
+		transHole[i] = new TGeoTranslation(trName, holeX, holeY, 0.0);
+		transHole[i]->RegisterYourself();
+		strComposite.Append(holeName);
+		strComposite.Append(":");
+		strComposite.Append(trName);
+		if (i < 10) strComposite.Append("+");
+		cout << holeX << endl;
+	}
+	strComposite.Append(")");
+	cout << strComposite.Data() << endl;
+	
+	// create composite shape (with holes)
+	TGeoCompositeShape *shGround = new TGeoCompositeShape(Form("SH_%sGFOIL", type), strComposite.Data());
+	
+	// create the volume
+	TGeoVolume *vol = new TGeoVolume(Form("%sGFOIL", type), shGround, material);
+	return vol;
+}
+*/
+
+//___________________________________________________________________________________________________________________
+TGeoVolume* AliITSv11GeometrySPD::CreateGroundingFoilSingle
+(Bool_t kaptonLayer, Double_t &length, Double_t &width, Double_t &thickness, TGeoManager *mgr)
+{
+	//
+	// Creates the grounding foil layer made in Kapton.
+	// Both layers of the grounding foil have the same shape, but with small
+	// differences in the size of some parts (holes, overall size).
+	// The Kapton layer is a little bit wider and has smaller holes.
+	// ---
+	// The complete object is created as the sum of the following parts:
+	// 1) the part which is connected to the chips, which is a 
+	//    simple BOX with some box-shaped holes at regular intervals
+	// 2) a trapezoidal connection where the Y size changes
+	// 3) another box with a unique hole of the same shape and size as above
+	// 4) another trapezoidal connection where the Y size changes
+	// 5) a final part which is built as a sequence of 4 BOX volumes
+	//    where the first and the third are equal and the others have same size in Y.
+	// ---
+	// Whenever possible, the size of the parts is parameterized with 
+	// variable names, even if their value is fixed according 
+	// to the design parameters given by engineers' drawings.
+	// ---
+	// Returns: a TGeoVolume object which contanis all parts of this layer
+	//
+
+	// instantiate the media:
+	// - vacuum for the container volume
+	// - kapton for the pysical volumes
+	TGeoMedium *vacuum   = mgr->GetMedium("VACUUM");
+	TGeoMedium *material = mgr->GetMedium("KAPTON");
+	
+	// === Define size of all elements ===
+	Double_t sizeZ      = fgkmm *   0.05;
+	
+	Double_t part1X     = fgkmm * 140.71;
+	Double_t part2X     = fgkmm *   2.48;
+	Double_t part3X     = fgkmm *  26.78;
+	Double_t part4X     = fgkmm *   4.00;
+	Double_t part5X     = fgkmm *  10.00;
+	Double_t part6X     = fgkmm *  24.40;
+	Double_t part7X     = fgkmm *  10.00;
+	Double_t part8X     = fgkmm *  24.81;
+	
+	Double_t sizeYMax   = fgkmm *  15.95;
+	Double_t sizeYMed1  = fgkmm *  15.00;
+	Double_t sizeYMed2  = fgkmm *  11.00;
+	Double_t sizeYMin   = fgkmm *   4.40;
+	
+	Double_t holeX      = fgkmm *  10.00;
+	Double_t holeY      = fgkmm *   7.50;
+	Double_t holeSepX   = fgkmm *  14.00;  // separation between the centers of two consecutive holes
+	Double_t holeSepX1  = fgkmm *   1.42;  // to be added after 4th hole in volume 1
+	Double_t holeFirstX = fgkmm *   7.05;  // position of center of first hole
+	Double_t holeSepY   = fgkmm *   4.40;  // dist between hole's and volume's upper border
+	Double_t holeAloneX = fgkmm *  13.28;  // position of hole center in box "part 3"
+	
+	// correct data in case we are on Aluminum foil
+	if (!kaptonLayer) {
+		material = mgr->GetMedium("AL");
+		sizeZ       = fgkmm * 0.02;
+		part1X     -= fgkmm * 0.2;
+		part5X     -= fgkmm * 0.2;
+		part6X     += fgkmm * 0.4;
+		part7X     -= fgkmm * 0.4;
+			
+		sizeYMax   -= fgkmm * 0.4;
+		sizeYMed1  -= fgkmm * 0.4;
+		sizeYMed2  -= fgkmm * 0.4;
+		sizeYMin   -= fgkmm * 0.4;
+	
+		holeX      += fgkmm * 0.4;
+		holeY      += fgkmm * 0.4;
+		holeFirstX -= fgkmm * 0.2;
+		holeSepY   -= fgkmm * 0.4;
+	}
+	
+	// define names for the object
+	char type[4];
+	if (kaptonLayer) strcpy(type, "KAP"); else strcpy(type, "ALU");
+	
+	// compute full length and width
+	length = part1X + part2X + part3X + part4X + part5X + part6X + part7X + part8X;
+	width = sizeYMax;
+	thickness = sizeZ;
+		
+	// grounding foil world, bounded exactly around the limits of the structure
+	TGeoVolume *container = mgr->MakeBox(Form("GFOIL_%s", type), vacuum, 0.5*length, 0.5*sizeYMax, 0.5*sizeZ);
+	
+	// === PART 1: box with holes ===
+	
+	TGeoBBox *shBox1 = 0, *shHole = 0;
+	shBox1 = new TGeoBBox(Form("GF%s_BOX1", type), 0.5*part1X, 0.5*sizeYMax, 0.5*sizeZ);
+	shHole = new TGeoBBox(Form("GF%s_HOLE", type), 0.5*holeX, 0.5*holeY, 0.5*sizeZ + 0.01);
+	
+	// define the position of all holes and compose the expression
+	// to define the composite shape (box - holes)
+	Double_t firstX = -0.5*part1X + holeFirstX;
+	Double_t transY =  0.5*sizeYMax - holeSepY - 0.5*holeY;
+	Double_t transX;
+	TGeoTranslation *transHole[10];
+	TString strComposite(Form("%s - (", shBox1->GetName()));
+	for (Int_t i = 0; i < 10; i++) {
+		transX = firstX + (Double_t)i * holeSepX;
+		if (i > 4) transX += holeSepX1;
+		transHole[i] = new TGeoTranslation(Form("TGF%s_HOLE%d", type, i), transX, transY, 0.0);
+		transHole[i]->RegisterYourself();
+		strComposite.Append(Form("%s:%s", shHole->GetName(), transHole[i]->GetName()));
+		if (i < 9) strComposite.Append("+"); else strComposite.Append(")");
+}
+	// create composite shape
+	TGeoCompositeShape *shPart1 = new TGeoCompositeShape(Form("GF%s_PART1_SHAPE", type), strComposite.Data());
+	// create the volume
+	TGeoVolume *volPart1 = new TGeoVolume(Form("GF%s_PART1", type), shPart1, material);
+	
+	// === PART 2: first trapezoidal connection
+	
+	TGeoArb8 *shTrap1 = new TGeoArb8(0.5*sizeZ);
+	shTrap1->SetVertex(0, -0.5*part2X,  0.5*sizeYMax);
+	shTrap1->SetVertex(1,  0.5*part2X,  0.5*sizeYMax);
+	shTrap1->SetVertex(2,  0.5*part2X,  0.5*sizeYMax - sizeYMed1);
+	shTrap1->SetVertex(3, -0.5*part2X, -0.5*sizeYMax);
+	shTrap1->SetVertex(4, -0.5*part2X,  0.5*sizeYMax);
+	shTrap1->SetVertex(5,  0.5*part2X,  0.5*sizeYMax);
+	shTrap1->SetVertex(6,  0.5*part2X,  0.5*sizeYMax - sizeYMed1);
+	shTrap1->SetVertex(7, -0.5*part2X, -0.5*sizeYMax);
+	TGeoVolume *volPart2 = new TGeoVolume(Form("GF%s_PART2", type), shTrap1, material);
+	
+	// === PART 3: other box with one hole
+	
+	TGeoBBox *shBox2 = 0;
+	shBox2 = new TGeoBBox(Form("GF%s_BOX2", type), 0.5*part3X, 0.5*sizeYMed1, 0.5*sizeZ);
+		
+	// define the position of the hole
+	transX = holeAloneX - 0.5*part3X;
+	TGeoTranslation *transHoleAlone = new TGeoTranslation(Form("TGF%s_HOLE_ALONE", type), transX, transY, 0.0);
+	transHoleAlone->RegisterYourself();
+	// create composite shape
+	TGeoCompositeShape *shPart3 = new TGeoCompositeShape(Form("GF%sPART3_SHAPE", type), Form("%s - %s:%s", shBox2->GetName(), shHole->GetName(), transHoleAlone->GetName()));
+	// create the volume
+	TGeoVolume *volPart3 = new TGeoVolume(Form("GF%s_PART3", type), shPart3, material);
+		
+	// === PART 4: second trapezoidal connection
+	
+	TGeoArb8 *shTrap2 = new TGeoArb8(0.5*sizeZ);
+	shTrap2->SetVertex(0, -0.5*part4X,  0.5*sizeYMed1);
+	shTrap2->SetVertex(1,  0.5*part4X,  0.5*sizeYMed1);
+	shTrap2->SetVertex(2,  0.5*part4X,  0.5*sizeYMed1 - sizeYMed2);
+	shTrap2->SetVertex(3, -0.5*part4X, -0.5*sizeYMed1);
+	shTrap2->SetVertex(4, -0.5*part4X,  0.5*sizeYMed1);
+	shTrap2->SetVertex(5,  0.5*part4X,  0.5*sizeYMed1);
+	shTrap2->SetVertex(6,  0.5*part4X,  0.5*sizeYMed1 - sizeYMed2);
+	shTrap2->SetVertex(7, -0.5*part4X, -0.5*sizeYMed1);
+	TGeoVolume *volPart4 = new TGeoVolume(Form("GF%s_PART4", type), shTrap2, material);
+		
+	// === PART 5 --> 8: sequence of boxes ===
+	
+	TGeoVolume *volPart5 = mgr->MakeBox(Form("GF%s_BOX3", type), material, 0.5*part5X, 0.5*sizeYMed2, 0.5*sizeZ);
+	TGeoVolume *volPart6 = mgr->MakeBox(Form("GF%s_BOX4", type), material, 0.5*part6X, 0.5*sizeYMin , 0.5*sizeZ);
+	TGeoVolume *volPart7 = mgr->MakeBox(Form("GF%s_BOX5", type), material, 0.5*part7X, 0.5*sizeYMed2, 0.5*sizeZ);
+	TGeoVolume *volPart8 = mgr->MakeBox(Form("GF%s_BOX6", type), material, 0.5*part8X, 0.5*sizeYMin , 0.5*sizeZ);
+	
+	// === SET COLOR ===
+	if (kaptonLayer) {
+		volPart1->SetLineColor(kRed + 3);
+		volPart2->SetLineColor(kRed + 3);
+		volPart3->SetLineColor(kRed + 3);
+		volPart4->SetLineColor(kRed + 3);
+		volPart5->SetLineColor(kRed + 3);
+		volPart6->SetLineColor(kRed + 3);
+		volPart7->SetLineColor(kRed + 3);
+		volPart8->SetLineColor(kRed + 3);
+	}
+	else {
+		volPart1->SetLineColor(kGreen);
+		volPart2->SetLineColor(kGreen);
+		volPart3->SetLineColor(kGreen);
+		volPart4->SetLineColor(kGreen);
+		volPart5->SetLineColor(kGreen);
+		volPart6->SetLineColor(kGreen);
+		volPart7->SetLineColor(kGreen);
+		volPart8->SetLineColor(kGreen);
+	}
+		
+	// === TRANSLATION OF ALL PARTS ===
+	
+	transX = 0.5*(part1X - length);
+	TGeoTranslation *transPart1 = new TGeoTranslation(transX, 0.0, 0.0);
+	transX += 0.5*(part1X + part2X);
+	TGeoTranslation *transPart2 = new TGeoTranslation(transX, 0.0, 0.0);
+	transX += 0.5*(part2X + part3X);
+	transY  = 0.5*(sizeYMax - sizeYMed1);
+	TGeoTranslation *transPart3 = new TGeoTranslation(transX, transY, 0.0);
+	transX += 0.5*(part3X + part4X);
+	TGeoTranslation *transPart4 = new TGeoTranslation(transX, transY, 0.0);
+	transX += 0.5*(part4X + part5X);
+	transY  = 0.5*(sizeYMax - sizeYMed2);
+	TGeoTranslation *transPart5 = new TGeoTranslation(transX, transY, 0.0);
+	transX += 0.5*(part5X + part6X);
+	transY  = 0.5*(sizeYMax - sizeYMin);
+	TGeoTranslation *transPart6 = new TGeoTranslation(transX, transY, 0.0);
+	transX += 0.5*(part6X + part7X);
+	transY  = 0.5*(sizeYMax - sizeYMed2);
+	TGeoTranslation *transPart7 = new TGeoTranslation(transX, transY, 0.0);
+	transX += 0.5*(part7X + part8X);
+	transY  = 0.5*(sizeYMax - sizeYMin);
+	TGeoTranslation *transPart8 = new TGeoTranslation(transX, transY, 0.0);
+	
+	// add the partial volumes to the container
+	container->AddNode(volPart1, 1, transPart1);
+	container->AddNode(volPart2, 2, transPart2);
+	container->AddNode(volPart3, 3, transPart3);
+	container->AddNode(volPart4, 4, transPart4);
+	container->AddNode(volPart5, 5, transPart5);
+	container->AddNode(volPart6, 6, transPart6);
+	container->AddNode(volPart7, 7, transPart7);
+	container->AddNode(volPart8, 8, transPart8);
+			
+	return container;
+}
+
+//___________________________________________________________________________________________________________________
+TGeoVolume* AliITSv11GeometrySPD::CreateGroundingFoil(Double_t &thickness, TGeoManager *mgr)
+{
+	//
+	// Joins two Kapton and two Aluminum layers of the grounding foil
+	// in order to create the complete grounding foil for a whole stave.
+	// into a unique container volume, which is returned as output.
+	// The use of the TGeoXtru shape requires that in the separate foils, the Z axis
+	// lies perpendicularly to the polygonal basis of this shape; this caused the components
+	// to have their Z axis corresponding to the X axis of the ALICE reference frame and 
+	// vieceversa; to correct this, a rotation is necessary around their middle axis, 
+	// to exchange X and Z axes and displace the object correctly in the ALICE frame.
+	// ---
+	// Arguments:
+	//  - the sizes of the container box (passed by reference and filled here)
+	//  - the TGeoManager
+	// ---
+	// Returns: 
+	//  - the container TGeoBBox (return value)
+	//  - the size of the container (reference variables)
+	//
+	
+	// sizes of the added volumes, which are filled by passing them 
+	// to the volume creation methods
+	Double_t kpLength, kpWidth, kpThick;
+	Double_t alLength, alWidth, alThick;
+	Double_t separation = fgkmm * 1.42;  // separation between left and right volumes
+	
+	// create the two component volumes (each one will be replicated twice)
+	// this gives also the size of their virtual container boxes (just a reference, not a volume)
+	TGeoVolume *kVol = CreateGroundingFoilSingle(kTRUE, kpLength, kpWidth, kpThick, mgr);
+	TGeoVolume *aVol = CreateGroundingFoilSingle(kFALSE, alLength, alWidth, alThick, mgr);
+	kVol->SetLineColor(kRed);
+	aVol->SetLineColor(kGray);
+	
+	// kapton leads the total size of the foil (including spagcing of 1.42 mm between them in the center)
+	Double_t length, width;
+	length    = 2.0 * kpLength + separation;
+	width     = kpWidth;
+	thickness = kpThick + alThick;
+	
+	// create the container
+	TGeoMedium *vacuum = mgr->GetMedium("VACUUM");
+	TGeoVolume *container = mgr->MakeBox("GFOIL", vacuum, 0.5*thickness, 0.5*width, 0.5*length);
+	
+	// create the common correction rotations
+	TGeoRotation *rotCorr1 = new TGeoRotation(*gGeoIdentity);
+	TGeoRotation *rotCorr2 = new TGeoRotation(*gGeoIdentity);
+	rotCorr1->RotateY(-90.0);
+	rotCorr2->RotateY( 90.0);
+		
+	// compute the translations to place the objects at the edges of the volume
+	// the kapton foils are also shifted down, and the aluminum foils are shifted up
+	// with respect to the thickness direction
+	TGeoTranslation *kTrans1 = new TGeoTranslation(0.5*(-thickness + kpThick), 0.0, 0.5*( length - kpLength));
+	TGeoTranslation *kTrans2 = new TGeoTranslation(0.5*(-thickness + kpThick), 0.0, 0.5*(-length + kpLength));
+	TGeoTranslation *aTrans1 = new TGeoTranslation(0.5*( thickness - alThick), 0.0, 0.5*( length - alLength) - 0.02);
+	TGeoTranslation *aTrans2 = new TGeoTranslation(0.5*( thickness - alThick), 0.0, 0.5*(-length + alLength) + 0.02);
+	
+	// combine translations and rotations
+	TGeoCombiTrans *kCombi1 = new TGeoCombiTrans(*kTrans1, *rotCorr1);
+	TGeoCombiTrans *kCombi2 = new TGeoCombiTrans(*kTrans2, *rotCorr2);
+	TGeoCombiTrans *aCombi1 = new TGeoCombiTrans(*aTrans1, *rotCorr1);
+	TGeoCombiTrans *aCombi2 = new TGeoCombiTrans(*aTrans2, *rotCorr2);
+		
+	// add to container
+	container->AddNode(kVol, 0, kCombi1);
+	container->AddNode(kVol, 1, kCombi2);
+	container->AddNode(aVol, 0, aCombi1);
+	container->AddNode(aVol, 1, aCombi2);
+	
+	return container;
+}
+
+//______________________________________________________________________
+TGeoVolume* AliITSv11GeometrySPD::CreateMCMBase(TGeoManager *geom)
+{
+	//
+	// Creates the MCM basis volume.
+	// It is a little bit more complicated because this is a plain base
+	// with a poly shape similar to the one of grounding foil but there are also
+	// some chips glued to its base and covered with a cave cap.
+	// ---
+	// The complete MCM object is created as the sum of the following parts:
+	// 1) a planar basis shaped according to the MCM typical shape
+	// 2) some boxes which represent the chips and devices mounted on this base
+	// 3) a cave cap which covers the portion of MCM containing these chips
+	// ---
+	// Due to the different widths of MCM, it is implemented in a more complicated way:
+	// - cap and chips will define a sub-volume of this structure, which can be bounded
+	//   by a complete box
+	// - base of MCM will be a separate volume
+	// - these two objects will need to be glued together into an upper-level volume
+	// ---
+	// This metod creates only the thin base (point 1 in the list)
+	//
+	
+	// medium
+	TGeoMedium *medBase = geom->GetMedium("MCM BASE");
+	
+	// parameterize the interesting sizes of MCM
+	// it is divided into 3 sectors which have different size in X and Y and 
+	// are connected by trapezoidal-based shapes, where the oblique angle
+	// makes a 45 degrees angle with the vertical, so that the X size and Y size
+	// of these "intermezzo"'s is the same
+	// +--------------------------------+
+	// |                   sect 2       |
+	// | sect 1     --------------------+
+	// +-----------/
+	Double_t sizeZ = fgkmm * 0.35;
+	Double_t sizeXtot = fgkmm * 105.6;
+	Double_t sizeXsector[3] = {fgkmm * 28.4, fgkmm * 41.4, fgkmm * 28.8};
+	Double_t sizeYsector[3] = {fgkmm * 15.0, fgkmm * 11.0, fgkmm *  8.0};
+	Double_t sizeSep01 = fgkmm * 4.0, sizeSep12 = fgkmm * 3.0;
+	Double_t sizeHole = fgkmm * 1.0;
+	Double_t posHoleX = fgkmm * -0.5*sizeXtot + 26.7 + 0.5*sizeHole;
+	Double_t posHoleY = fgkmm * -0.5*sizeYsector[0] + 0.5*sizeHole;
+	
+	// define the shape of base volume as an XTRU with two identical faces 
+	// distantiated by the width of the  itself
+	Double_t x[8], y[8];
+	x[0] = -0.5*sizeXtot;
+	y[0] =  0.5*sizeYsector[0];
+	x[1] = -x[0];
+	y[1] =  y[0];
+	x[2] =  x[1];
+	y[2] =  y[1] - sizeYsector[2];
+	x[3] =  x[2] - sizeXsector[2];
+	y[3] =  y[2];
+	x[4] =  x[3] - sizeSep12;
+	y[4] =  y[3] - sizeSep12;
+	x[5] =  x[4] - sizeXsector[1];
+	y[5] =  y[4];
+	x[6] =  x[5] - sizeSep01;
+	y[6] =  y[5] - sizeSep01;
+	x[7] =  x[0];
+	y[7] = -y[0];
+	
+	// create shape
+	TGeoXtru *shPoly = new TGeoXtru(2);
+	shPoly->SetName("SH_MCMBASE_POLY");
+	shPoly->DefinePolygon(8, x, y);
+	shPoly->DefineSection(0, -0.5*sizeZ, 0., 0., 1.0);
+	shPoly->DefineSection(1,  0.5*sizeZ, 0., 0., 1.0);
+	
+	// create small hole
+	TGeoBBox *shHole = 0;
+	shHole = new TGeoBBox("SH_MCMBASE_HOLE", 0.5*sizeHole, 0.5*sizeHole, 0.5*sizeZ+0.01);
+	TGeoTranslation *transHole = new TGeoTranslation("TR_MCMBASE_HOLE", posHoleX, posHoleY, 0.0);
+	transHole->RegisterYourself(); 
+	
+	// create shape intersection
+	TGeoCompositeShape *shBase = new TGeoCompositeShape("SH_MCMBASE", "SH_MCMBASE_POLY - SH_MCMBASE_HOLE:TR_MCMBASE_HOLE");
+	
+	// create volume
+	TGeoVolume *volBase = new TGeoVolume("VOL_MCMBASE", shBase, medBase);
+	volBase->SetLineColor(kRed);
+	
+	return volBase;
+}
+
+
+//______________________________________________________________________
+TGeoVolume* AliITSv11GeometrySPD::CreateMCMCoverBorder(TGeoManager *geom)
+{
+	//
+	// Creates the MCM basis volume.
+	// It is a little bit more complicated because this is a plain base
+	// with a poly shape similar to the one of grounding foil but there are also
+	// some chips glued to its base and covered with a cave cap.
+	// ---
+	// The complete MCM object is created as the sum of the following parts:
+	// 1) a planar basis shaped according to the MCM typical shape
+	// 2) some boxes which represent the chips and devices mounted on this base
+	// 3) a cave cap which covers the portion of MCM containing these chips
+	// ---
+	// Due to the different widths of MCM, it is implemented in a more complicated way:
+	// - cap and chips will define a sub-volume of this structure, which can be bounded
+	//   by a complete box
+	// - base of MCM will be a separate volume
+	// - these two objects will need to be glued together into an upper-level volume
+	// ---
+	// This metod creates the thicker cap and its contents (points 2-3 in the list).
+	// Since it covers only two of the three sectors of the MCM base with different width
+	// the computations and variables related to the largest sector are removed, while
+	// the other are the same as the other part of the MCM.
+	//
+	
+	// media
+	TGeoMedium *medCap  = geom->GetMedium("MCM COVER");
+	
+	// parameterize the interesting sizes of MCM
+	// it is divided into 3 sectors which have different size in X and Y and 
+	// are connected by trapezoidal-based shapes, where the oblique angle
+	// makes a 45 degrees angle with the vertical, so that the X size and Y size
+	// of these "intermezzo"'s is the same
+	// +--------------------------------+
+	// |                   sect 2       |
+	// | sect 1     --------------------+
+	// +-----------/
+	Double_t sizeZ = fgkmm * 0.3;
+	Double_t capHeight = fgkmm * 1.7 - sizeZ;
+	Double_t sizeXtot = fgkmm * 73.2;
+	Double_t sizeXsector[2] = {fgkmm * 41.4, fgkmm * 28.8};
+	Double_t sizeYsector[2] = {fgkmm * 11.0, fgkmm *  8.0};
+	Double_t sizeSep = fgkmm * 3.0;
+	
+	// === PART 1: border ===
+	
+	// define the shape of base volume as an XTRU with two identical faces 
+	// distantiated by the width of the  itself
+	Double_t x[6], y[6];
+	x[0] = -0.5*sizeXtot;
+	y[0] =  0.5*sizeYsector[0];
+	x[1] = -x[0];
+	y[1] =  y[0];
+	x[2] =  x[1];
+	y[2] =  y[1] - sizeYsector[1];
+	x[3] =  x[2] - sizeXsector[1];
+	y[3] =  y[2];
+	x[4] =  x[3] - sizeSep;
+	y[4] =  y[3] - sizeSep;
+	x[5] =  x[0];
+	y[5] = -y[0];
+	
+	// create outer border shape with above coordinates
+	TGeoXtru *capOut = new TGeoXtru(2);
+	capOut->SetName("SH_MCMCAPOUT");
+	capOut->DefinePolygon(6, x, y);
+	capOut->DefineSection(0, -0.5*capHeight, 0., 0., 1.0);
+	capOut->DefineSection(1,  0.5*capHeight, 0., 0., 1.0);
+	
+	// the inner border is built similarly but subtracting the thickness
+	Double_t angle = 45.0;
+	Double_t cs = TMath::Cos( 0.5*(TMath::Pi() - angle*TMath::DegToRad()) );
+	Double_t xin[6], yin[6];
+	xin[0] = x[0] + sizeZ;
+	yin[0] = y[0] - sizeZ;
+	xin[1] = x[1] - sizeZ;
+	yin[1] = yin[0];
+	xin[2] = xin[1];
+	yin[2] = y[2] + sizeZ;
+	xin[3] = x[3] - sizeZ*cs;
+	yin[3] = yin[2];
+	xin[4] = xin[3] - sizeSep;
+	yin[4] = y[4] + sizeZ;
+	xin[5] = xin[0];
+	yin[5] = yin[4];
+		
+	// create inner border shape
+	TGeoXtru *capIn = new TGeoXtru(2);
+	capIn->SetName("SH_MCMCAPIN");
+	capIn->DefinePolygon(6, xin, yin);
+	capIn->DefineSection(0, -0.5*capHeight-0.01, 0., 0., 1.0);
+	capIn->DefineSection(1,  0.5*capHeight+0.01, 0., 0., 1.0);
+	
+	// compose shape
+	TGeoCompositeShape *shBorder = new TGeoCompositeShape("SH_MCMCAPBORDER", "SH_MCMCAPOUT-SH_MCMCAPIN");
+	
+	// create volume
+	TGeoVolume *volBorder = new TGeoVolume("VOL_MCMCAPBORDER", shBorder, medCap);
+	volBorder->SetLineColor(kGreen);
+	
+	return volBorder;
+}
+
+//______________________________________________________________________
+TGeoVolume* AliITSv11GeometrySPD::CreateMCMCoverTop(TGeoManager *geom)
+{
+	//
+	// Creates the MCM basis volume.
+	// It is a little bit more complicated because this is a plain base
+	// with a poly shape similar to the one of grounding foil but there are also
+	// some chips glued to its base and covered with a cave cap.
+	// ---
+	// The complete MCM object is created as the sum of the following parts:
+	// 1) a planar basis shaped according to the MCM typical shape
+	// 2) some boxes which represent the chips and devices mounted on this base
+	// 3) a cave cap which covers the portion of MCM containing these chips
+	// ---
+	// Due to the different widths of MCM, it is implemented in a more complicated way:
+	// - cap and chips will define a sub-volume of this structure, which can be bounded
+	//   by a complete box
+	// - base of MCM will be a separate volume
+	// - these two objects will need to be glued together into an upper-level volume
+	// ---
+	// This metod creates the thicker cap and its contents (points 2-3 in the list).
+	// Since it covers only two of the three sectors of the MCM base with different width
+	// the computations and variables related to the largest sector are removed, while
+	// the other are the same as the other part of the MCM.
+	//
+	
+	// media
+	TGeoMedium *medCap  = geom->GetMedium("MCM COVER");
+	
+	// parameterize the interesting sizes of MCM
+	// it is divided into 3 sectors which have different size in X and Y and 
+	// are connected by trapezoidal-based shapes, where the oblique angle
+	// makes a 45 degrees angle with the vertical, so that the X size and Y size
+	// of these "intermezzo"'s is the same
+	// +--------------------------------+
+	// |                   sect 2       |
+	// | sect 1     --------------------+
+	// +-----------/
+	Double_t sizeZ = fgkmm * 0.3;
+	Double_t sizeXtot = fgkmm * 73.2;
+	Double_t sizeXsector[2] = {fgkmm * 41.4, fgkmm * 28.8};
+	Double_t sizeYsector[2] = {fgkmm * 11.0, fgkmm *  8.0};
+	Double_t sizeSep = fgkmm * 3.0;
+	
+	// === PART 1: border ===
+	
+	// define the shape of base volume as an XTRU with two identical faces 
+	// distantiated by the width of the  itself
+	Double_t x[6], y[6];
+	x[0] = -0.5*sizeXtot;
+	y[0] =  0.5*sizeYsector[0];
+	x[1] = -x[0];
+	y[1] =  y[0];
+	x[2] =  x[1];
+	y[2] =  y[1] - sizeYsector[1];
+	x[3] =  x[2] - sizeXsector[1];
+	y[3] =  y[2];
+	x[4] =  x[3] - sizeSep;
+	y[4] =  y[3] - sizeSep;
+	x[5] =  x[0];
+	y[5] = -y[0];
+	
+	// create outer border shape with above coordinates
+	TGeoXtru *capOut = new TGeoXtru(2);
+	capOut->SetName("SH_MCMCAPOUT");
+	capOut->DefinePolygon(6, x, y);
+	capOut->DefineSection(0, -0.5*sizeZ, 0., 0., 1.0);
+	capOut->DefineSection(1,  0.5*sizeZ, 0., 0., 1.0);
+	
+	// the inner border is built similarly but subtracting the thickness
+	Double_t angle = 45.0;
+	Double_t cs = TMath::Cos( 0.5*(TMath::Pi() - angle*TMath::DegToRad()) );
+	Double_t xin[6], yin[6];
+	xin[0] = x[0] + sizeZ;
+	yin[0] = y[0] - sizeZ;
+	xin[1] = x[1] - sizeZ;
+	yin[1] = yin[0];
+	xin[2] = xin[1];
+	yin[2] = y[2] + sizeZ;
+	xin[3] = x[3] - sizeZ*cs;
+	yin[3] = yin[2];
+	xin[4] = xin[3] - sizeSep;
+	yin[4] = y[4] + sizeZ;
+	xin[5] = xin[0];
+	yin[5] = yin[4];
+		
+	// coverage of upper part (equal to external border, but full)
+	TGeoXtru *shCover = new TGeoXtru(2);
+	shCover->SetName("SH_MCMCAPCOVER");
+	shCover->DefinePolygon(6, x, y);
+	shCover->DefineSection(0, -0.5*sizeZ, 0., 0., 1.0);
+	shCover->DefineSection(1,  0.5*sizeZ, 0., 0., 1.0);
+	
+	// create volume
+	TGeoVolume *volCover  = new TGeoVolume("VOL_MCMCAPCOVER", shCover, medCap);
+	volCover->SetLineColor(kBlue);
+	
+	return volCover;
+}
+
+//______________________________________________________________________
+TGeoVolumeAssembly* AliITSv11GeometrySPD::CreateStave
+(Int_t layer, Double_t &fullThickness, TGeoManager *mgr)
+{
+	//
+	// Creates the complete stave as an assembly which contains all the stuff defined
+	// in the "CreateStaveBase" method (which are the thin part of the structure)
+	// and adds to this the thick cover of the MCM and the Pixel bus.
+	// This is done as an assembly to avoid the problem of a "ghost" overlap which occurs
+	// when putting the stave on the carbon fiber sector, in the case that we define it
+	// as a volume container.
+	// ---
+	// Arguments:
+	//     - the layer where the stave has to be put (hard check on this)
+	//     - the geometry manager
+	//
+	
+	// ** CRITICAL CHECK **
+	// layer number can be ONLY 1 or 2
+	if (layer != 1 && layer != 2) AliFatal("Required that layer number be 1 or 2");
+	
+	// sizes regarding the components
+	Double_t baseWidth, baseHeight, baseThickness;
+	Double_t mcmCapBorderThickness = fgkmm *  0.3;
+	Double_t mcmCapThickness       = fgkmm *  1.7 - mcmCapBorderThickness;
+	Double_t mcmCapHeight          = fgkmm * 11.0;
+	Double_t mcmCapWidth           = fgkmm * 73.2;
+	
+	// create container
+	TGeoVolumeAssembly *container = new TGeoVolumeAssembly(Form("LAY%d_FULLSTAVE", layer));
+	
+	// create subvolumes
+	TGeoVolume *staveBase = CreateStaveBase(layer, baseWidth, baseHeight, baseThickness, mgr);
+	TGeoVolume *mcmCapBorder = CreateMCMCoverBorder(mgr);
+	TGeoVolume *mcmCapTop = CreateMCMCoverTop(mgr);
+	TGeoVolumeAssembly *bus0 = CreatePixelBusAndExtensions(kTRUE, mgr);   // bus in z > 0
+	TGeoVolumeAssembly *bus1 = CreatePixelBusAndExtensions(kFALSE, mgr);  // bus in z < 0
+	
+	// the full width and height of the area which contains all components
+	// corresponds to the one of the stave base built with the "CreateStaveBase" method
+	// while the thickness must be computed as the sum of this base + the cover
+	fullThickness = baseThickness + mcmCapThickness + mcmCapBorderThickness;
+	
+	// 1 - MCM cover	
+		
+	// translations (in the X direction, MCM is at the same level as ladder)
+	Double_t xBase = -0.5*fullThickness + 0.5*baseThickness;
+	TGeoTranslation *trBase = new TGeoTranslation(xBase, 0.0, 0.0);
+	Double_t xMCMCapB = xBase + 0.5*baseThickness + 0.5*mcmCapThickness;
+	Double_t xMCMCapT = xMCMCapB + 0.5*mcmCapThickness + 0.5*mcmCapBorderThickness;
+	Double_t yMCMCap  = 0.5*(baseHeight - mcmCapHeight);
+	Double_t zMCMCap1 = 0.5*baseWidth - 0.5*mcmCapWidth;
+	Double_t zMCMCap0 = -zMCMCap1;
+	// correction rotations
+	TGeoRotation *rotCorr0 = new TGeoRotation(*gGeoIdentity);
+	TGeoRotation *rotCorr1 = new TGeoRotation(*gGeoIdentity);
+	rotCorr0->RotateY( 90.0);
+	rotCorr1->RotateY(-90.0);
+	TGeoCombiTrans  *trMCMCapBorder0 = new TGeoCombiTrans(xMCMCapB, yMCMCap, zMCMCap0, rotCorr0);
+	TGeoCombiTrans  *trMCMCapBorder1 = new TGeoCombiTrans(xMCMCapB, yMCMCap, zMCMCap1, rotCorr1);
+	TGeoCombiTrans  *trMCMCapTop0 = new TGeoCombiTrans(xMCMCapT, yMCMCap, zMCMCap0, rotCorr0);
+	TGeoCombiTrans  *trMCMCapTop1 = new TGeoCombiTrans(xMCMCapT, yMCMCap, zMCMCap1, rotCorr1);
+	// add to container
+	container->AddNode(staveBase, 0, trBase);
+	container->AddNode(mcmCapBorder, 0, trMCMCapBorder0);
+	container->AddNode(mcmCapBorder, 1, trMCMCapBorder1);
+	container->AddNode(mcmCapTop, 0, trMCMCapTop0);
+	container->AddNode(mcmCapTop, 1, trMCMCapTop1);
+	
+	// 2 - Pixel Bus
+	
+	// translations
+	// for the moment, a correction amount of 0.04 is required to place correctly the object in X
+	// and another correction of 0.015 in Z
+	Double_t busHeight  = fgkmm * 13.8;
+	Double_t xPixelBus  = xBase + baseThickness + 0.04;
+	Double_t yPixelBus1 = 0.5*baseHeight - 0.5*busHeight + 0.5*(baseHeight - busHeight);
+	Double_t zPixelBus0 = -0.25*baseWidth + 0.015 - 0.03;
+	//Double_t zPixelBus0 = -0.5*(0.5*baseWidth - 0.04);
+	Double_t zPixelBus1 = -zPixelBus0;
+	// correction rotations
+	TGeoRotation *rotCorrBus1 = new TGeoRotation(*gGeoIdentity);
+	rotCorrBus1->RotateX(180.0);
+	//TGeoCombiTrans *trBus0 = new TGeoCombiTrans(xPixelBus, 0.0, zPixelBus0, rotCorrBus);
+	TGeoTranslation *trBus0 = new TGeoTranslation(xPixelBus, 0.0, zPixelBus0);
+	//TGeoTranslation *trBus1 = new TGeoTranslation(xPixelBus, 0.0, zPixelBus1);
+	TGeoCombiTrans *trBus1 = new TGeoCombiTrans(xPixelBus, yPixelBus1, zPixelBus1, rotCorrBus1);
+
+	// add to container
+	container->AddNode(bus0, 0, trBus0);
+	container->AddNode(bus1, 1, trBus1);
+	
+	return container;
+}
+
+//______________________________________________________________________
+TGeoVolumeAssembly* AliITSv11GeometrySPD::CreatePixelBusAndExtensions(Bool_t zpos, TGeoManager *mgr)
+{
+  //
+  // Creates an assembly which contains the pixel bus and its extension
+  // and the extension of the MCM.
+  // By: Renaud Vernet
+  // NOTE: to be defined its material and its extension in the outside direction
+  //
+  
+  // ====   constants   =====
+
+  //get the media
+  TGeoMedium   *medPixelBus    = mgr->GetMedium("PIXEL BUS") ;
+  TGeoMedium   *medPBExtender  = mgr->GetMedium("PIXEL BUS EXTENDER") ;
+  TGeoMedium   *medMCMExtender = mgr->GetMedium("MCM EXTENDER") ;
+
+  //geometrical constants
+  const Double_t groundingThickness    =   0.07  * fgkmm ;
+  const Double_t grounding2pixelBusDz  =   0.625 * fgkmm ;
+  const Double_t pixelBusThickness     =   0.28  * fgkmm ;
+  const Double_t groundingWidthX       = 170.501 * fgkmm ;
+  const Double_t pixelBusContactDx     =   1.099 * fgkmm ;
+  const Double_t pixelBusWidthY        =  13.8   * fgkmm ;
+  const Double_t pixelBusContactPhi    =  20.0   * TMath::Pi()/180. ; //design=20 deg.
+  const Double_t pbExtenderPsi         =  70.0   * TMath::Pi()/180. ; //design=?? 70 deg. seems OK
+  const Double_t pbExtenderWidthY      =  11.0   * fgkmm ;
+  const Double_t pbExtenderTopZ        =   2.72  * fgkmm ;
+  const Double_t mcmThickness          =   0.35  * fgkmm ;
+  const Double_t mcmExtenderThickness  =   0.20  * fgkmm ;
+  const Double_t deltaMcmMcmextender   =   1.6   * fgkmm ;
+  const Double_t halfStaveTotalLength  = 247.64  * fgkmm ;
+  const Double_t deltaYOrigin          =  15.95/2.* fgkmm ;
+  const Double_t deltaXOrigin          =   1.1    * fgkmm ;
+  const Double_t deltaZOrigin          = halfStaveTotalLength / 2. ;
+
+  const Double_t grounding2pixelBusDz2 = grounding2pixelBusDz+groundingThickness/2. + pixelBusThickness/2. ;
+  const Double_t pixelBusWidthX        = groundingWidthX ;
+  const Double_t pixelBusRaiseLength   = (pixelBusContactDx-pixelBusThickness*TMath::Sin(pixelBusContactPhi))/TMath::Cos(pixelBusContactPhi) ;
+  const Double_t pbExtenderBaseZ       = grounding2pixelBusDz2 + pixelBusRaiseLength*TMath::Sin(pixelBusContactPhi) + 2*pixelBusThickness*TMath::Sin(pixelBusContactPhi)*TMath::Tan(pixelBusContactPhi) ;
+  const Double_t pbExtenderDeltaZ      = pbExtenderTopZ-pbExtenderBaseZ ;
+
+  const Double_t pbExtenderEndPointX   = 2*deltaZOrigin - groundingWidthX - 2*pixelBusThickness*TMath::Sin(pixelBusContactPhi) ;
+  const Double_t mcmextenderEndPointX  = deltaZOrigin - 48.2 * fgkmm ;
+  const Double_t mcmExtenderWidthY     = pbExtenderWidthY ;
+
+  //=====  end constants  =====
+
+  
+
+  // -----------------   CREATE THE PIXEL BUS --------------------------
+  // At the end of the pixel bus, a small piece is added for the contact 
+  // with the pixel bus extender.
+  // The whole piece is made with an extrusion, using 7 points
+  //
+  //                                   4
+  //                                  /\
+  // 6                            5  /  \ 3
+  //  +-----------------------------+    /
+  //  |                                 /
+  //  +-----------------------------+--+
+  // 0                              1   2
+  //
+  // The length of the pixel bus is defined (170.501mm) by the technical design
+  // this length corresponds to distance [0-1] and [6-5]
+
+
+
+  TGeoVolumeAssembly *pixelBus = new TGeoVolumeAssembly("PIXEL BUS");
+
+  // definition of the 7 points for the extrusion
+  Double_t pixelBusXtruX[7] = {
+    -pixelBusWidthX/2. ,
+    pixelBusWidthX/2. ,
+    pixelBusWidthX/2. + pixelBusThickness * TMath::Sin(pixelBusContactPhi) ,
+    pixelBusWidthX/2. + pixelBusThickness * TMath::Sin(pixelBusContactPhi) + pixelBusRaiseLength * TMath::Cos(pixelBusContactPhi) ,
+    pixelBusWidthX/2. + pixelBusRaiseLength * TMath::Cos(pixelBusContactPhi) ,
+    pixelBusWidthX/2. ,
+    -pixelBusWidthX/2.
+  } ;
+  Double_t pixelBusXtruY[7] = {
+    -pixelBusThickness/2. ,
+    -pixelBusThickness/2. ,
+    -pixelBusThickness/2. + pixelBusThickness * (1 - TMath::Cos(pixelBusContactPhi)) ,
+    -pixelBusThickness/2. + pixelBusThickness * (1 - TMath::Cos(pixelBusContactPhi)) + pixelBusRaiseLength * TMath::Sin(pixelBusContactPhi) ,
+    pixelBusThickness/2.  + pixelBusRaiseLength * TMath::Sin(pixelBusContactPhi) ,
+    pixelBusThickness/2. ,
+    pixelBusThickness/2.
+  } ;
+
+  // creation of the volume
+  TGeoXtru   *pixelBusXtru    = new TGeoXtru(2);
+  TGeoVolume* pixelBusXtruVol = new TGeoVolume("pixelBusXtru",pixelBusXtru,medPixelBus) ;
+  pixelBusXtru->DefinePolygon(7,pixelBusXtruX,pixelBusXtruY);
+  pixelBusXtru->DefineSection(0,-pixelBusWidthY/2.);
+  pixelBusXtru->DefineSection(1, pixelBusWidthY/2.);
+  // --------------- END PIXEL BUS ----------------------------------------------------
+
+
+  // ------------------------- CREATE THE PIXEL BUS EXTENDER --------------------------
+  // The geometry of the extender is a bit complicated sinceit is constrained
+  // to be in contact with the pixel bus.
+  // It consists of an extrusion using 13 points as shows the scheme below :
+  //                                                                                     
+  //                             8     7                       6                         
+  //                               +---+---------------------+                           
+  //                              /                          |                           
+  //                             /                           |                           
+  //                            /      +---------------------+                           
+  //                           /      / 4                     5                          
+  //                          /      /                                                   
+  //       11  10          9 /      /                                                    
+  //        +---+-----------+      /                                                     
+  //       /                      /                                                      
+  //      /                      /                                                       
+  //     /      +-----------+---+                                                        
+  // 12 +      / 1         2     3                                                       
+  //     \    /                                                                          
+  //      \  /                                                                           
+  //        +                                                                            
+  //        0                                                                            
+  //                                                                                     
+
+
+  // ====   constants   =====
+  const Double_t pbExtenderXtru3L   = 1.5 * fgkmm ; //arbitrary ?
+  const Double_t pbExtenderXtru4L   = (pbExtenderDeltaZ + pixelBusThickness*(TMath::Cos(pbExtenderPsi)-2))/TMath::Sin(pbExtenderPsi) ;
+  //=====  end constants  =====
+
+  TGeoVolumeAssembly *pbExtender = new TGeoVolumeAssembly("PIXEL BUS EXTENDER");
+
+  Double_t pbExtenderXtruX[13] = {
+    0, 
+    pixelBusRaiseLength * TMath::Cos(pixelBusContactPhi) , 
+    pixelBusRaiseLength * TMath::Cos(pixelBusContactPhi) + pbExtenderXtru3L ,
+    pixelBusRaiseLength * TMath::Cos(pixelBusContactPhi) + pbExtenderXtru3L + pixelBusThickness * TMath::Sin(pbExtenderPsi) , 
+    pixelBusRaiseLength * TMath::Cos(pixelBusContactPhi) + pbExtenderXtru3L + pixelBusThickness * TMath::Sin(pbExtenderPsi) + pbExtenderXtru4L * TMath::Cos(pbExtenderPsi) ,
+    pbExtenderEndPointX ,
+    pbExtenderEndPointX ,
+    pixelBusRaiseLength * TMath::Cos(pixelBusContactPhi) + pbExtenderXtru3L + pixelBusThickness * TMath::Sin(pbExtenderPsi) + pbExtenderXtru4L * TMath::Cos(pbExtenderPsi) ,
+    pixelBusRaiseLength * TMath::Cos(pixelBusContactPhi)  + pbExtenderXtru3L + pixelBusThickness * TMath::Sin(pbExtenderPsi) + pbExtenderXtru4L * TMath::Cos(pbExtenderPsi) - pixelBusThickness * TMath::Sin(pbExtenderPsi),
+    pixelBusRaiseLength * TMath::Cos(pixelBusContactPhi) + pbExtenderXtru3L ,
+    pixelBusRaiseLength * TMath::Cos(pixelBusContactPhi) , 
+    pixelBusRaiseLength * TMath::Cos(pixelBusContactPhi) - pixelBusThickness*TMath::Sin(pixelBusContactPhi) , 
+    -pixelBusThickness * TMath::Sin(pixelBusContactPhi)
+  } ;
+  Double_t pbExtenderXtruY[13] = {
+    0, 
+    pixelBusRaiseLength * TMath::Sin(pixelBusContactPhi) , 
+    pixelBusRaiseLength * TMath::Sin(pixelBusContactPhi) ,
+    pixelBusRaiseLength * TMath::Sin(pixelBusContactPhi) + pixelBusThickness * (1-TMath::Cos(pbExtenderPsi)) ,
+    pixelBusRaiseLength * TMath::Sin(pixelBusContactPhi) + pixelBusThickness * (1-TMath::Cos(pbExtenderPsi)) + pbExtenderXtru4L * TMath::Sin(pbExtenderPsi) ,
+    pixelBusRaiseLength * TMath::Sin(pixelBusContactPhi) + pixelBusThickness * (1-TMath::Cos(pbExtenderPsi)) + pbExtenderXtru4L * TMath::Sin(pbExtenderPsi) ,
+    pixelBusRaiseLength * TMath::Sin(pixelBusContactPhi) + pixelBusThickness * (1-TMath::Cos(pbExtenderPsi)) + pbExtenderXtru4L * TMath::Sin(pbExtenderPsi) + pixelBusThickness ,
+    pixelBusRaiseLength * TMath::Sin(pixelBusContactPhi) + pixelBusThickness * (1-TMath::Cos(pbExtenderPsi)) + pbExtenderXtru4L * TMath::Sin(pbExtenderPsi) + pixelBusThickness ,
+    pixelBusRaiseLength * TMath::Sin(pixelBusContactPhi) + pixelBusThickness + pbExtenderXtru4L * TMath::Sin(pbExtenderPsi)
+    ,
+    pixelBusRaiseLength * TMath::Sin(pixelBusContactPhi) + pixelBusThickness ,
+    pixelBusRaiseLength * TMath::Sin(pixelBusContactPhi) + pixelBusThickness ,
+    pixelBusRaiseLength * TMath::Sin(pixelBusContactPhi) + pixelBusThickness*TMath::Cos(pixelBusContactPhi) ,
+    pixelBusThickness * TMath::Cos(pixelBusContactPhi)
+  } ;
+  
+  // creation of the volume
+  TGeoXtru   *pbExtenderXtru    = new TGeoXtru(2);
+  TGeoVolume *pbExtenderXtruVol = new TGeoVolume("pbExtenderXtru",pbExtenderXtru,medPBExtender) ;
+  pbExtenderXtru->DefinePolygon(13,pbExtenderXtruX,pbExtenderXtruY);
+  pbExtenderXtru->DefineSection(0,-pbExtenderWidthY/2.);
+  pbExtenderXtru->DefineSection(1, pbExtenderWidthY/2.);
+  // -------------- END PIXEL BUS EXTENDER -------------------------------------------------
+
+
+  // ------------------   CREATE THE MCM EXTENDER    ------------------------------------
+  // 
+  // The MCM extender is located betwen the MCM and the Pixel Bus Extender
+  // It consists of an extrusion using 10 points as shows the scheme below :
+  //                                                                                     
+  //                             7     6                       5                         
+  //                               +---+---------------------+                           
+  //                              /                          |                           
+  //                             /                           |                           
+  //                            /      +---------------------+                           
+  //                           /      / 3                     4                          
+  //                          /      /                                                   
+  //            9          8 /      /                                                    
+  //            +-----------+      /                                                     
+  //            |                 /                                                      
+  //            |                /                                                       
+  //            +-----------+---+                                                        
+  //            0          1     2                                                       
+  //                                                                                     
+
+
+  //constants
+  const Double_t mcmExtenderXtru3L  = 1.5  * fgkmm ;
+  //end constants
+
+  TGeoVolumeAssembly *mcmExtender   = new TGeoVolumeAssembly("MCM EXTENDER");
+  Double_t mcmExtenderXtruX[10] = {
+    0 ,
+    mcmExtenderXtru3L ,
+    mcmExtenderXtru3L + mcmExtenderThickness * TMath::Sin(pbExtenderPsi) , 
+    mcmExtenderXtru3L + mcmExtenderThickness * TMath::Sin(pbExtenderPsi) + deltaMcmMcmextender / TMath::Tan(pbExtenderPsi) ,
+    mcmextenderEndPointX ,
+    mcmextenderEndPointX ,
+    mcmExtenderXtru3L + mcmExtenderThickness * TMath::Sin(pbExtenderPsi) + deltaMcmMcmextender / TMath::Tan(pbExtenderPsi) ,
+    mcmExtenderXtru3L + deltaMcmMcmextender / TMath::Tan(pbExtenderPsi) ,
+    mcmExtenderXtru3L ,
+    0
+  } ;
+
+  Double_t mcmExtenderXtruY[10] = {
+    0 ,
+    0 ,
+    mcmExtenderThickness * (1-TMath::Cos(pbExtenderPsi)) ,
+    mcmExtenderThickness * (1-TMath::Cos(pbExtenderPsi)) + deltaMcmMcmextender ,
+    mcmExtenderThickness * (1-TMath::Cos(pbExtenderPsi)) + deltaMcmMcmextender ,
+    mcmExtenderThickness * (2-TMath::Cos(pbExtenderPsi)) + deltaMcmMcmextender ,
+    mcmExtenderThickness * (2-TMath::Cos(pbExtenderPsi)) + deltaMcmMcmextender ,
+    mcmExtenderThickness + deltaMcmMcmextender ,
+    mcmExtenderThickness ,
+    mcmExtenderThickness ,
+  } ;
+
+  // creation of the volume
+  TGeoXtru   *mcmExtenderXtru    = new TGeoXtru(2);
+  TGeoVolume *mcmExtenderXtruVol = new TGeoVolume("mcmExtenderXtru",mcmExtenderXtru,medMCMExtender) ;
+  mcmExtenderXtru->DefinePolygon(10,mcmExtenderXtruX,mcmExtenderXtruY);
+  mcmExtenderXtru->DefineSection(0,-mcmExtenderWidthY/2.);
+  mcmExtenderXtru->DefineSection(1, mcmExtenderWidthY/2.);
+
+
+  //--------------   DEFINITION OF GEOMETRICAL TRANSFORMATIONS -------------------
+  TGeoRotation    * commonRot       = new TGeoRotation("commonRot",0,90,0);
+  commonRot->MultiplyBy(new TGeoRotation("rot",-90,0,0)) ;
+  TGeoTranslation * pixelBusTrans   = new TGeoTranslation(pixelBusThickness/2. - deltaXOrigin + 0.52*fgkmm ,
+							  -pixelBusWidthY/2.     + deltaYOrigin , 
+							  -groundingWidthX/2.    + deltaZOrigin) ;
+  TGeoRotation    * pixelBusRot     = new TGeoRotation(*commonRot);
+  TGeoTranslation * pbExtenderTrans = new TGeoTranslation(*pixelBusTrans) ;
+  TGeoRotation    * pbExtenderRot   = new TGeoRotation(*pixelBusRot) ;
+  pbExtenderTrans->SetDz(*(pbExtenderTrans->GetTranslation()+2) - pixelBusWidthX/2. - 2*pixelBusThickness*TMath::Sin(pixelBusContactPhi)) ;  
+  if (!zpos) {
+    pbExtenderTrans->SetDy(*(pbExtenderTrans->GetTranslation()+1) - (pixelBusWidthY - pbExtenderWidthY)/2.);
+  }
+  else {
+    pbExtenderTrans->SetDy(*(pbExtenderTrans->GetTranslation()+1) + (pixelBusWidthY - pbExtenderWidthY)/2.);
+  }
+  pbExtenderTrans->SetDx(*(pbExtenderTrans->GetTranslation()) + pixelBusThickness/2 + 2*pixelBusThickness*TMath::Sin(pixelBusContactPhi)*TMath::Tan(pixelBusContactPhi)) ;
+  TGeoTranslation * mcmExtenderTrans = new TGeoTranslation(0.12*fgkmm + mcmThickness - deltaXOrigin,
+							   pbExtenderTrans->GetTranslation()[1],
+							   -4.82);
+  TGeoRotation    * mcmExtenderRot   = new TGeoRotation(*pbExtenderRot);
+  
+
+  //ADD NODES TO ASSEMBLIES
+  pixelBus    ->AddNode((TGeoVolume*)pixelBusXtruVol,0);
+  pbExtender  ->AddNode((TGeoVolume*)pbExtenderXtruVol,0);
+  mcmExtender ->AddNode((TGeoVolume*)mcmExtenderXtruVol,0);
+//   mcmExtender ->AddNode((TGeoVolume*)mcmExtenderXtru3Vol,0);
+//   mcmExtender ->AddNode((TGeoVolume*)mcmExtenderXtru3PrimVol,1);
+//   mcmExtender ->AddNode((TGeoVolume*)mcmExtenderXtru4Vol,2);
+//   mcmExtender ->AddNode((TGeoVolume*)mcmExtenderXtru4PrimVol,3);
+//   mcmExtender ->AddNode((TGeoVolume*)mcmExtenderXtru5Vol,4);
+
+
+  //CREATE FINAL VOLUME ASSEMBLY AND ROTATE IT
+  TGeoVolumeAssembly *assembly = new TGeoVolumeAssembly("EXTENDERS");
+  assembly->AddNode((TGeoVolume*)pixelBus    ,0, new TGeoCombiTrans(*pixelBusTrans,*pixelBusRot));
+  assembly->AddNode((TGeoVolume*)pbExtender  ,0, new TGeoCombiTrans(*pbExtenderTrans,*pbExtenderRot));
+  assembly->AddNode((TGeoVolume*)mcmExtender ,0, new TGeoCombiTrans(*mcmExtenderTrans,*mcmExtenderRot));
+assembly->SetTransparency(50);
+  return assembly ;
+}
+
+//______________________________________________________________________
+TGeoVolume* AliITSv11GeometrySPD::CreateStaveBase
+(Int_t layer, Double_t &fullWidth, Double_t &fullHeight, Double_t &fullThickness, TGeoManager *mgr)
+{
+	//
+	// Creates a box which contains the followin parts of the whole stave:
+	// - the two layers of grounding foil
+	// - the ladders
+	// - the thin base of the MCM (except its thick cover)
+	// - the pixel bus
+	// ---
+	// Since it is required by detector numbering conventions, 
+	// it is required as argument the layer which owns this stave.
+	// This number will be used to define the name of the ladder volume, 
+	// which must be different for layer1 and layer2 objects.
+	// ---
+	// Arguments:
+	//    - layer number (will be checked to be 1 or 2)
+	//    - geometry manager
+	// ---
+	// Returns:
+	//    - a TGeoBBox volume containing all this stuff
+	//    - the size of the container box are stored in the reference-passed variables
+	//
+	
+	// sizes of all objects to be inserted
+	// these values are used to compute the total volume of the container
+	// and to compute parametrically the position of each piece, instead
+	// of putting hard-coded number (this helps in eventually modifying everything)
+	Double_t mcmThickness    = fgkmm * 0.35;
+	Double_t grndThickness   = fgkmm * 0.07; // = 0.05 + 0.02
+	Double_t sepThickness    = fgkmm * 0.05;
+
+	Double_t ladderWidth     = fgkmm *  70.72;
+	Double_t mcmWidth        = fgkmm * 105.60;
+	Double_t sepLaddersWidth = fgkmm *   0.20;
+	Double_t sepMCMWidth     = fgkmm *   0.30;
+	Double_t sepLaddersCtr   = fgkmm *   0.40; // separations between central ladders in the two half-staves 
+
+	Double_t mcmHeight       = fgkmm *  15.00;
+	
+	// compute the size of the container
+	fullWidth     = 2.0*sepLaddersCtr + 4.0*ladderWidth + 2.0*sepMCMWidth + 2.0*sepLaddersWidth + 2.0*mcmWidth;
+	fullHeight    = fgkmm * 15.95;
+	fullThickness = grndThickness + sepThickness + mcmThickness;
+	
+	// create the container
+	TGeoVolume *container = mgr->MakeBox(Form("LAY%d_STAVE", layer), mgr->GetMedium("VACUUM"), 0.5*fullThickness, 0.5*fullHeight, 0.5*fullWidth);
+		
+	// fill the container going from bottom to top 
+	// with respect to the thickness direction
+	
+	// 1 - Grounding foil
+	// volume
+	TGeoVolume *grndVol = CreateGroundingFoil(grndThickness);
+	// translation
+	Double_t xGrnd = -0.5*fullThickness + 0.5*grndThickness;
+	TGeoTranslation *grndTrans = new TGeoTranslation(xGrnd, 0.0, 0.0);
+	// add to container
+	container->AddNode(grndVol, 1, grndTrans);
+	
+	// 2 - Ladders
+	// volume (will be replicated 4 times)
+	Double_t ladderLength, ladderThickness;
+	TGeoVolume *ladder = CreateLadder(layer, ladderLength, ladderWidth, ladderThickness, mgr);
+	// translations (in thickness direction, the MCM thickness is used)
+	// layers are sorted going from the one at largest Z to the one at smallest Z:
+	// -|Zmax| ------> |Zmax|
+	//      0   1   2   3
+	// but it is more comfortable to start defining their Z position from center
+	Double_t xLad  = xGrnd + 0.5*grndThickness + 0.5*mcmThickness + sepThickness;
+	Double_t zLad1 = -0.5*ladderWidth - sepLaddersCtr;
+	Double_t zLad0 = zLad1 - ladderWidth - sepLaddersWidth;
+	Double_t zLad2 = -zLad1;
+	Double_t zLad3 = -zLad0;
+	TGeoRotation   *rotLad = new TGeoRotation(*gGeoIdentity);// rotLad->RotateZ(180.0);
+	TGeoCombiTrans *trLad0 = new TGeoCombiTrans(xLad, 0.0, zLad0, rotLad);
+	TGeoCombiTrans *trLad1 = new TGeoCombiTrans(xLad, 0.0, zLad1, rotLad);
+	TGeoCombiTrans *trLad2 = new TGeoCombiTrans(xLad, 0.0, zLad2, rotLad);
+	TGeoCombiTrans *trLad3 = new TGeoCombiTrans(xLad, 0.0, zLad3, rotLad);
+	// add to container
+	container->AddNode(ladder, 0, trLad0);
+	container->AddNode(ladder, 1, trLad1);
+	container->AddNode(ladder, 2, trLad2);
+	container->AddNode(ladder, 3, trLad3);
+	
+	// 3 - MCM (only the base, the cover is added as a separate volume in a more global 'stave' assembly
+	// volume (will be replicated twice)
+	TGeoVolume *mcm = CreateMCMBase(mgr);
+	// translations (in the X direction, MCM is at the same level as ladder)
+	// the two copies of the MCM are placed at the same distance from the center, on both sides
+	// and their sorting is the same as ladders' one (MCM0 is at Z < 0, MCM1 at Z > 0);
+	Double_t xMCM  = xLad;
+	Double_t yMCM  = 0.5*(fullHeight - mcmHeight);
+	Double_t zMCM1 = zLad3 + 0.5*ladderWidth + 0.5*mcmWidth + sepMCMWidth;
+	Double_t zMCM0 = -zMCM1;
+	// create the common correction rotations
+	TGeoRotation *rotCorr0 = new TGeoRotation(*gGeoIdentity);
+	TGeoRotation *rotCorr1 = new TGeoRotation(*gGeoIdentity);
+	rotCorr0->RotateY( 90.0);
+	rotCorr1->RotateY(-90.0);
+	TGeoCombiTrans *trMCM0 = new TGeoCombiTrans(xMCM, yMCM, zMCM0, rotCorr0);
+	TGeoCombiTrans *trMCM1 = new TGeoCombiTrans(xMCM, yMCM, zMCM1, rotCorr1);
+	// add to container
+	container->AddNode(mcm, 0, trMCM0);
+	container->AddNode(mcm, 1, trMCM1);
+		
+	return container;
+}
+
+//______________________________________________________________________
+void AliITSv11GeometrySPD::StavesInSector(TGeoVolume *moth, TGeoManager *mgr)
+{
+	//
+	// Unification of essentially two methods:
+	// - the one which creates the sector structure
+	// - the one which returns the complete stave
+	// ---
+	// For compatibility, this method requires the same arguments
+	// asked by "CarbonFiberSector" method, which is recalled here.
+	// Like this cited method, this one does not return any value,
+	// but it inserts in the mother volume (argument 'moth') all the stuff
+	// which composes the complete SPD sector.
+	// ---
+	// Arguments: see description of "CarbonFiberSector" method.
+	//
+	
+	// This service class is useful to this method only
+	// to store in a meaningful way the data about the 
+	// rounded corners of the support, and some computations
+	// which could turn out to be useful for stave placement
+	// 'left' and 'right' (L/R) here are considered looking the support
+	// from the positive Z side.
+	// The sign of the radius is used to know what kind of tangent
+	// must be found for the two circles which describe the rounded angles.
+	class clsSupportPlane {
+	public:
+		Double_t xL, yL, rL, sL;  // curvature center and radius (with sign) of left corner
+		Double_t xR, yR, rR, sR;  // curvature center and radius (with sign) of right corner
+		Double_t shift;           // shift from the innermost position (where the stave edge is
+		                          // in the point where the rounded corner begins
+		
+		// Constructor with arguments which allow to set directly everything
+		// since the values are given in millimiters from drawings, they must be converted to cm
+		clsSupportPlane
+		(Double_t xLin, Double_t yLin, Double_t rLin, Double_t sLin, 
+		 Double_t xRin, Double_t yRin, Double_t rRin, Double_t sRin, Double_t shiftin) :
+		 xL(xLin), yL(yLin), rL(rLin), sL(sLin), xR(xRin), yR(yRin), rR(rRin), sR(sRin), shift(shiftin) 
+		{
+			xL *= fgkmm;
+			yL *= fgkmm;
+			rL *= fgkmm;
+			xR *= fgkmm;
+			yR *= fgkmm;
+			rR *= fgkmm;
+			shift *= fgkmm;
+		}
+		
+		// Computation of the line tangent to both circles defined here
+		// which is taken above or below the center according to the radius sign.
+		// This method returns:
+		//   - the mid-popint of the segment between the two points where the tangent touches the two circles, 
+		//   - the inclination of this segment
+		//   - the half-length of this segment
+		Double_t TangentSegment(Double_t &midX, Double_t &midY, Double_t &phi)
+		{
+			// compute the straight line which is tangent to the two circles
+			// and extract its inclination 'phi' w.r. to X axis
+			Double_t dx = xL - xR;
+			Double_t dy = yL - yR;
+			Double_t R  = rL*sL + rR*sR;
+			Double_t delta = dy*dy + dx*dx - R*R;
+			Double_t tan05phi = (-dy + TMath::Sqrt(delta)) / (R - dx);
+			phi = 2.0 * TMath::ATan(tan05phi);
+			// compute the points where this line touchs the two circles
+			Double_t leftX  = xL + sL*rL*TMath::Cos(phi);
+			Double_t leftY  = yL + sL*rL*TMath::Sin(phi);
+			Double_t rightX = xR + sR*rR*TMath::Cos(phi);
+			Double_t rightY = yR + sR*rR*TMath::Sin(phi);
+			// compute the mid point
+			midX = 0.5 * (leftX + rightX);
+			midY = 0.5 * (leftY + rightY);
+			// compute angular coefficient for the line joining
+			// the two points found using the above method
+			dx = rightX - leftX;
+			dy = rightY - leftY;
+			phi = TMath::ATan2(dy, dx);
+			// compute the half-length of this segment
+			Double_t len = 0.5*TMath::Sqrt((rightX-leftX)*(rightX-leftX) + (rightY-leftY)*(rightY-leftY));
+			cout << 2.0*len << endl;
+			return len;
+		}
+	};
+	
+	// instantiate this class for each layer1 and layer2 corners
+	clsSupportPlane *plane[6] = {0, 0, 0, 0, 0, 0};
+	
+	// layer 2
+	plane[0] = new clsSupportPlane( 10.830,  16.858, 0.60,  1.,  19.544,  10.961, 0.8,  1.,  1.816);
+	plane[1] = new clsSupportPlane(- 0.733,  17.486, 0.60,  1.,  11.581,  13.371, 0.6, -1., -0.610);
+	plane[2] = new clsSupportPlane(-12.252,  16.298, 0.60,  1.,   0.562,  14.107, 0.6, -1., -0.610);
+	plane[3] = new clsSupportPlane(-22.276,  12.948, 0.85,  1., -10.445,  13.162, 0.6, -1., -0.610);
+	// layer 1
+	plane[4] = new clsSupportPlane(- 3.123, -14.618, 0.50,  1.,  11.280, -14.473, 0.9, -1., -0.691);
+	plane[5] = new clsSupportPlane(-13.187, -19.964, 0.50, -1., - 3.833, -17.805, 0.6, -1.,  1.300);
+	
+	// put the sector in the container
+	//CarbonFiberSector(moth, xAAtubeCenter0, yAAtubeCenter0, mgr);
+	
+	// create stave volume
+	Double_t staveHeight = 1.595, staveThickness;
+	TGeoVolume *stave1 = CreateStave(1, staveThickness, gGeoManager);
+	TGeoVolume *stave2 = CreateStave(2, staveThickness, gGeoManager);
+		
+	// compute positions and rotation angles
+	Double_t xm, ym, halfPlaneHeight, heightDiff, position, phi, xPos, yPos;
+	for (Int_t i = 0; i < 6; i++) {
+		// recall the geometry computations defined for the classe
+		halfPlaneHeight = plane[i]->TangentSegment(xm, ym, phi);
+		// compute the difference between plane and stave heights
+		heightDiff = halfPlaneHeight - 0.5*staveHeight;
+		// It is necessary to shift the stave by at least 
+		// an amount equal to this difference
+		// to avoid overlaps.
+		// Moreover, some more shift is done for building reasons,
+		// and it depends on the single plane (data-member 'shift')
+		position = heightDiff + plane[i]->shift;
+		// taking into account this shift plus another in the direction
+		// normal to the support plane, due to the stave thickness,
+		// the final position of the stave is computed in a temporary reference frame
+		// where the mid-point of the support plane is in the origin
+		if (i < 4) {
+			ParallelPosition(0.5*staveThickness, position, phi, xPos, yPos);
+		}
+		else if (i == 4) {
+			ParallelPosition(-0.5*staveThickness, -position, phi, xPos, yPos);
+		}
+		else {
+			ParallelPosition(-0.5*staveThickness, -position, phi, xPos, yPos);
+		}
+		// then we go into the true reference frame
+		xPos += xm;
+		yPos += ym;
+		/*
+		// TEMP
+		TGeoVolume *tubeTemp1 = mgr->MakeTube("tubeTemp1", NULL, 0.0, 0.01, 50.0);
+		TGeoTranslation *trTemp1 = new TGeoTranslation(xm, ym, 0.0);
+		tubeTemp1->SetLineColor(kRed);
+		moth->AddNode(tubeTemp1, i + 1, trTemp1);
+		TGeoVolume *tubeTemp2 = mgr->MakeTube("tubeTemp2", NULL, 0.0, 0.01, 50.0);
+		TGeoTranslation *trTemp2 = new TGeoTranslation(xPos, yPos, 0.0);
+		tubeTemp2->SetLineColor(kBlue);
+		moth->AddNode(tubeTemp2, i + 1, trTemp2);
+		// END TEMP
+		*/
+		// using the parameters found here, compute the 
+		// translation and rotation of this stave:
+		TGeoRotation *rot = new TGeoRotation(*gGeoIdentity);
+		if (i >= 4) rot->RotateY(180.0);
+		rot->RotateZ(90.0 + phi * TMath::RadToDeg());
+		TGeoCombiTrans *trans = new TGeoCombiTrans(xPos, yPos, 0.0, rot);
+		if (i < 4) {
+			moth->AddNode(stave2, i, trans);
+		}
+		else {
+			moth->AddNode(stave1, i - 4, trans);
+		}
+	}
+}
+
+//______________________________________________________________________
+void AliITSv11GeometrySPD::ParallelPosition(Double_t dist1, Double_t dist2, Double_t phi, Double_t &x, Double_t &y)
+{
+	//
+	// Performs the following steps:
+	// 1 - finds a straight line parallel to the one passing through the origin and with angle 'phi' with X axis
+	//     (phi in RADIANS);
+	// 2 - finds another line parallel to the previous one, with a distance 'dist1' from it
+	// 3 - takes a reference point in the second line in the intersection between the normal to both lines 
+	//     passing through the origin
+	// 4 - finds a point whith has distance 'dist2' from this reference, in the second line (point 2)
+	// ----
+	// According to the signs given to dist1 and dist2, the point is found in different position w.r. to the origin
+	//
+	
+	// compute the point
+	Double_t cs = TMath::Cos(phi);
+	Double_t sn = TMath::Sin(phi);
+	
+	x = dist2*cs - dist1*sn;
+	y = dist1*cs + dist2*sn;
+}
+
