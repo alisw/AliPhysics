@@ -1,11 +1,12 @@
 void JetAnalysisManagerLoc()
 {
-      gSystem->Load("libTree.so");
-      gSystem->Load("libGeom.so");
-      gSystem->Load("libVMC.so");
-      gSystem->Load("libESD.so");
-      gSystem->Load("libANALYSIS.so");
-      gSystem->Load("libJETAN.so");
+    gSystem->Load("libTree.so");
+    gSystem->Load("libGeom.so");
+    gSystem->Load("libVMC.so");
+    gSystem->Load("libANALYSIS.so");
+    gSystem->Load("libAOD.so");
+    gSystem->Load("libESD.so");
+    gSystem->Load("libJETAN.so");
      //
     if (gApplication) gApplication->InitializeGraphics();
     // Create the chain
