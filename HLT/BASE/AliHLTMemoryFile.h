@@ -49,7 +49,7 @@ class AliHLTMemoryFile : public TFile, public AliHLTLogging {
    * @return neg. error code if failed
    *         - -ENOSPC    buffer size too small
    */
-  int WriteHeader(const char* pHeader, int size);
+  int WriteHeader(const char* pHeader, int iSize);
 
   /**
    * Write a header at the beginning of the file.

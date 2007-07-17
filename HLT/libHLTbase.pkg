@@ -19,6 +19,7 @@ MODULE_SRCS= 	AliHLTComponent.cxx \
 		AliHLTOfflineDataSink.cxx \
 		AliHLTModuleAgent.cxx \
 		AliHLTMemoryFile.cxx \
+		AliHLTDataTypes.cxx \
 		AliHLTMessage.cxx
 
 CLASS_HDRS:=  	AliHLTComponent.h \

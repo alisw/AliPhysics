@@ -926,7 +926,7 @@ class AliHLTComponent : public AliHLTLogging {
    * as buffer, only the block descriptor will be build. If a header is specified, 
    * it will be inserted before the buffer, default is no header.
    * @param pBuffer     pointer to buffer
-   * @param iSize       size of the buffer in byte
+   * @param iBufferSize size of the buffer in byte
    * @param dt          data type
    * @param spec        data specification
    * @param pHeader     pointer to header
