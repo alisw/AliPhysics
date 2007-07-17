@@ -61,12 +61,13 @@ AliHLTPHOSMapper::InitAltroMapping()
 	  hw2geomapPtr = new altromap[maxaddr +1]; 
 
 
-	  for(int i=0; i<  nChannels; i ++)
+	  for(int i=0; i< maxaddr + 1 ; i ++)
 	    {
 	      hw2geomapPtr[i].col = 0;
 	      hw2geomapPtr[i].row = 0;
 	      hw2geomapPtr[i].gain = 0;
 	    }
+
 
 	  printf("\n");
 

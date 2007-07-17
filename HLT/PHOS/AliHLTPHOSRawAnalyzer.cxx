@@ -14,15 +14,13 @@
  **************************************************************************/
 
 #include "AliHLTPHOSRawAnalyzer.h"
-#include <iostream>
+//#include <iostream>
 
-using std::cout;
-using std::endl;
+//using std::cout;
+//using std::endl;
 
-//AliHLTPHOSRawAnalyzer:: AliHLTPHOSRawAnalyzer():fFloatDataPtr(0), fSampleFrequency(10), fTau(2), fDTof(99999), fDAmpl(99999)
-AliHLTPHOSRawAnalyzer:: AliHLTPHOSRawAnalyzer():fIntDataPtr(0), fSampleFrequency(10), fTau(2), fDTof(99999), fDAmpl(99999)
+AliHLTPHOSRawAnalyzer:: AliHLTPHOSRawAnalyzer(): AliHLTPHOSBase(), fIntDataPtr(0), fSampleFrequency(10), fTau(2), fDTof(99999), fDAmpl(99999)
 {
-  //  fFloatDataPtr = new double[1008];
  fIntDataPtr = new UInt_t[1008];
 }
 
@@ -31,21 +29,21 @@ AliHLTPHOSRawAnalyzer::~AliHLTPHOSRawAnalyzer()
 
 }
 
-//AliHLTPHOSRawAnalyzer::AliHLTPHOSRawAnalyzer(AliHLTPHOSRawAnalyzer const&):fFloatDataPtr(0), fSampleFrequency(10), fTau(2), fDTof(99999), fDAmpl(99999), fStartIndex(0)
+/*
 AliHLTPHOSRawAnalyzer::AliHLTPHOSRawAnalyzer(AliHLTPHOSRawAnalyzer const&):fIntDataPtr(0), fSampleFrequency(10), fTau(2), fDTof(99999), fDAmpl(99999), fStartIndex(0)
 {
 
 }
+*/
+
 
 /**
 * Main constructor
 * @param dtaPtr Data array for wich a subarray will be taken to perform the fit
 * @param fs the sampling frequency in entities of MHz. Needed in order to calculate physical time
 **/
-//AliHLTPHOSRawAnalyzer::AliHLTPHOSRawAnalyzer(double *dtaPtr, double fs):fFloatDataPtr(0), fSampleFrequency(10), fTau(2), fDTof(99999), fDAmpl(99999), fStartIndex(0)
-AliHLTPHOSRawAnalyzer::AliHLTPHOSRawAnalyzer(double *dtaPtr, double fs):fIntDataPtr(0), fSampleFrequency(10), fTau(2), fDTof(99999), fDAmpl(99999), fStartIndex(0)
+AliHLTPHOSRawAnalyzer::AliHLTPHOSRawAnalyzer(double *dtaPtr, double fs): AliHLTPHOSBase(), fIntDataPtr(0), fSampleFrequency(10), fTau(2), fDTof(99999), fDAmpl(99999), fStartIndex(0)
 {
-  //  fIntDataPtr = dtaPtr;  
   fSampleFrequency = fs;
 } //end  
 
@@ -61,8 +59,6 @@ AliHLTPHOSRawAnalyzer::AliHLTPHOSRawAnalyzer(double *dtaPtr, double fs):fIntData
 void 
 AliHLTPHOSRawAnalyzer::BaselineCorrection(double *dataPtr, int N)
 {
-  //  fFloatDataPtr = dataPtr;  
-
   cout << "Baseline correction not yet implemeted" << endl;
 } //end BaselineCorrection
 
@@ -76,7 +72,6 @@ AliHLTPHOSRawAnalyzer::BaselineCorrection(double *dataPtr, int N)
 void 
 AliHLTPHOSRawAnalyzer::BaselineCorrection(double *dataPtr, double baselineValue)
 {
-  //  fFloatDataPtr = dataPtr;   
   printf("\nbaselineValue = %f\n", baselineValue);
   cout << "Baseline correction not yet implemeted" << endl;
 } //end BaslineCorrection
@@ -107,15 +102,9 @@ AliHLTPHOSRawAnalyzer::GetEnergy() const
 /**
  * Set data array. Overrides data data array set in the constructor.
  **/
-//void 
-//AliHLTPHOSRawAnalyzer::SetData(double *data)
-//{
-//  fFloatDataPtr = data;
-//}
 void 
 AliHLTPHOSRawAnalyzer::SetData(UInt_t *data)
 {
-  //  fFloatDataPtr = data;
   fIntDataPtr = data;
 }
 
@@ -173,11 +162,13 @@ AliHLTPHOSRawAnalyzer::SetStartIndex(int index)
 }
 
 
+
 void 
 AliHLTPHOSRawAnalyzer::SetTVector(Double_t *tVector, Int_t size)
 {
   cout <<"ERROR: AliHLTPHOSRawAnalyzer::SetTVector:  You cannot set the peakfindervector here, must be set in derived class peakfinder"<<endl;
 }
+
 
 
 void
@@ -187,28 +178,10 @@ AliHLTPHOSRawAnalyzer::SetAVector(Double_t *aVector, Int_t size)
 }
 
 
-UInt_t
-AliHLTPHOSRawAnalyzer::GetMaxValue(UInt_t *dta, Int_t size) const
-{
-
-  Double_t tmpMax = 0;
-
-  for(int i = 0; i < size; i++)
-    {
-      if(dta[i] > tmpMax)
-	{
-	  tmpMax = dta[i];
-	}
-    }
-  
-  return tmpMax;
-
-}
-
 
 /*
-Double_t
-AliHLTPHOSRawAnalyzer::GetMaxValue(Double_t *dta, Int_t size) const
+UInt_t
+AliHLTPHOSRawAnalyzer::GetMaxValue(UInt_t *dta, Int_t size) const
 {
 
   Double_t tmpMax = 0;

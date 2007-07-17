@@ -11,6 +11,7 @@ class AliHLTPHOSRcuChannelDataStruct;
 class AliHLTPHOSMapper;
 class AliHLTDDLDecoder;
 class AliHLTAltroData;
+class AliHLTAltroBunch;
 
 class AliHLTPHOSRawAnalyzerComponent: public AliHLTPHOSRcuProcessor
 {
@@ -40,6 +41,7 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTPHOSRcuProcessor
   AliHLTPHOSMapper *fMapperPtr;
   AliHLTDDLDecoder *fDecoderPtr;
   AliHLTAltroData  *fAltroDataPtr;
+  AliHLTAltroBunch *fAltroBunchPtr;
 };
 #endif
 

@@ -15,10 +15,8 @@
 
 #include "AliHLTPHOSRawAnalyzerPeakFinderComponent.h"
 #include "AliHLTPHOSRawAnalyzerPeakFinder.h"
-#include <cstdlib>
-#include "AliHLTPHOSCommonDefs.h"
-
-
+//#include <cstdlib>
+//#include "AliHLTPHOSCommonDefs.h"
 
 
 AliHLTPHOSRawAnalyzerPeakFinderComponent gAliHLTPHOSRawAnalyzerPeakFinderComponent;

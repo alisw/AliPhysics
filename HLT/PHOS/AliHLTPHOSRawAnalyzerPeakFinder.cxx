@@ -17,8 +17,9 @@
  **************************************************************************/
 
 #include "AliHLTPHOSRawAnalyzerPeakFinder.h"
-#include <iostream>
+//#include <iostream>
 #include <cmath>
+
 
 using std::cout;
 using std::endl;
@@ -26,11 +27,11 @@ using std::endl;
 ClassImp(AliHLTPHOSRawAnalyzerPeakFinder) 
 
 
-AliHLTPHOSRawAnalyzerPeakFinder::AliHLTPHOSRawAnalyzerPeakFinder(const AliHLTPHOSRawAnalyzerPeakFinder&):AliHLTPHOSRawAnalyzer() , fTVectorPtr(0), fAVectorPtr(0), fTVectorSize(0), fAVectorSize(0)
-{
+  //AliHLTPHOSRawAnalyzerPeakFinder::AliHLTPHOSRawAnalyzerPeakFinder(const AliHLTPHOSRawAnalyzerPeakFinder&):AliHLTPHOSRawAnalyzer() , fTVectorPtr(0), fAVectorPtr(0), fTVectorSize(0), fAVectorSize(0)
+  //{
 
 
-}
+  //}
 
 
 /**
@@ -50,6 +51,8 @@ AliHLTPHOSRawAnalyzerPeakFinder::~AliHLTPHOSRawAnalyzerPeakFinder()
 {
 
 } //end AliHLTPHOSRawAnalyzerPeakFinder
+
+
 
 void 
 AliHLTPHOSRawAnalyzerPeakFinder::SetTVector(Double_t *tVec, Int_t size)
@@ -91,6 +94,7 @@ AliHLTPHOSRawAnalyzerPeakFinder::SetAVector(Double_t *aVec, Int_t size)
 }
 
 
+
 //___________________________________________________________________
 void 
 AliHLTPHOSRawAnalyzerPeakFinder::Evaluate(Int_t start, Int_t length)
@@ -98,6 +102,10 @@ AliHLTPHOSRawAnalyzerPeakFinder::Evaluate(Int_t start, Int_t length)
   fDTof = 0;
   fDAmpl = 0;
   Int_t tmpLength;
+
+  //  cout << "AliHLTPHOSRawAnalyzerPeakFinder::Evaluate(), dumping data" << endl; 
+
+  //  DumpData(fIntDataPtr, length, 16);
 
   if(fTVectorPtr == 0 || fAVectorPtr == 0)
     {
@@ -130,8 +138,10 @@ AliHLTPHOSRawAnalyzerPeakFinder::Evaluate(Int_t start, Int_t length)
       if(fDAmpl > 900)
 	{
 	  //	  Double_t tmpMax = GetMaxValue(fFloatDataPtr, tmpLength);
-	  Double_t tmpMax = GetMaxValue(fIntDataPtr, tmpLength);
-                                 
+	  //	  Double_t tmpMax = GetMaxValue(fIntDataPtr, tmpLength);
+ 
+	  Double_t tmpMax = MaxValue(fIntDataPtr, tmpLength); 
+	  
 	  if(tmpMax == 1023)
 	    {
 	      fDAmpl = tmpMax;

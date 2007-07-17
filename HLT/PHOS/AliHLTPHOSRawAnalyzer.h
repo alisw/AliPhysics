@@ -5,19 +5,21 @@
 
 /* $Id$ */
 
-#include "Rtypes.h"
+//#include "Rtypes.h"
 
-class AliHLTPHOSRawAnalyzer
+#include "AliHLTPHOSBase.h"
+
+class AliHLTPHOSRawAnalyzer: public AliHLTPHOSBase
 {
  public:
   AliHLTPHOSRawAnalyzer();
   virtual ~AliHLTPHOSRawAnalyzer();
   AliHLTPHOSRawAnalyzer(double *dataPtr, double fs);
-  AliHLTPHOSRawAnalyzer(const AliHLTPHOSRawAnalyzer & );
-  AliHLTPHOSRawAnalyzer & operator = (const AliHLTPHOSRawAnalyzer &)
-    {
-      return *this;
-    }
+  //  AliHLTPHOSRawAnalyzer(const AliHLTPHOSRawAnalyzer & );
+  //  AliHLTPHOSRawAnalyzer & operator = (const AliHLTPHOSRawAnalyzer &)
+  //   {
+  //      return *this;
+  //   }
 
   void BaselineCorrection(double *dataPtr, int N);
   void BaselineCorrection(double *dataPtr, double baselineValue);  
@@ -32,20 +34,22 @@ class AliHLTPHOSRawAnalyzer
   void SetStartIndex(int startIndex);
   void MakeInitialGuess();
   void MakeInitialGuess(int treshold);
+  
+
   virtual void SetTVector(Double_t *tVector, Int_t size);
   virtual void SetAVector(Double_t *aVector, Int_t size);
+
 
   /**
    *Abstratct class documentation
    */
   virtual void Evaluate(Int_t start = 0, Int_t lenght = 100) = 0;
   //  Double_t GetMaxValue(Double_t *dta, Int_t size) const;
-  UInt_t GetMaxValue(UInt_t *dta, Int_t size) const;
+  //  UInt_t GetMaxValue(UInt_t *dta, Int_t size) const;
 
  protected:
   Double_t   *fFloatDataPtr;   /**<Float representation of data that should be fitted */
   UInt_t   *fIntDataPtr;   /**<data that should be fitted */
-
   double     fSampleFrequency; /**<The ADC sample frequency in MHz used under data taking */
   double     fDTofGuess;       /**<Initial guess for t0*/
   double     fDAmplGuess;      /**<Initial guess for amplitude*/

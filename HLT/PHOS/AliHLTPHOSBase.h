@@ -61,9 +61,30 @@ class  AliHLTPHOSBase
 	}
     }
  
+  template<typename T> 
+    T  MaxValue(T *array, int N)
+    {
+      Double_t tmpMax = 0;
+
+      for(int i = 0; i < N; i++)
+	{
+	  if(array[i] > tmpMax)
+	    {
+	      tmpMax = array[i];
+	    }
+	}
+  
+      return tmpMax;
+    }
+
+
  private:
   AliHLTPHOSBase(const AliHLTPHOSBase & );
   AliHLTPHOSBase & operator = (const AliHLTPHOSBase &);
+
+
+  ///  const struct THIS IS STRANGE;
+
 
 };
 

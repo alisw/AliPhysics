@@ -128,7 +128,9 @@ AliHLTPHOSRcuHistogramProducer::SetModuleID(AliHLTUInt8_t moduleID)
 void 
 AliHLTPHOSRcuHistogramProducer::FillEnergy(AliHLTUInt8_t x, AliHLTUInt8_t z,  AliHLTUInt8_t gain, float energy)
 {
-  //  cout << "AliHLTPHOSRcuHistogramProducer::FillEnergy x = " << (int)x<< "  z=  " << (int)z<<endl;
+  //  cout << "AliHLTPHOSRcuHistogramProducer::FillEnergy x = " << (int)x<< "  z=  " << (int)z;
+  //  cout << " Energy =" <<  energy;
+  //  cout << " Accumulated energy" <<fCellAccEnergy.fAccumulatedEnergies[x][z][gain] << endl; 
   //See header file for documentation
   fCellAccEnergy.fAccumulatedEnergies[x][z][gain] += energy;
   fCellAccEnergy.fHits[x][z][gain] ++; 
