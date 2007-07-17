@@ -911,7 +911,6 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
     Int_t thickness = fMinorVersion/10;
     Int_t option    = fMinorVersion - 10*thickness;
 
-
     // Define some variables for SDD
 
 
@@ -1924,14 +1923,15 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
      dits[1] = 7.75;
      dits[2] = 26.1;
      gMC->Gsvolu("IT12", "TUBE", idtmed[254], dits, 3);   
-
+     /*
      dits[0] = 3.7;
      dits[1] = 7.7;
      dits[2] = 24;
      dits[3] = 57;
      dits[4] = 100;
-     gMC->Gsvolu("I12B", "TUBS", idtmed[254], dits, 5);   // sector
-
+     gMC->Gsvolu("I12B", "TUBS", idtmed[254], dits, 5);   // sector */
+     //    TGeoVolumeAssembly *i12b = gGeoManager->MakeVolumeAssembly("I12B");
+     gGeoManager->MakeVolumeAssembly("I12B");
      di10b[0] = 0.843;
      di10b[1] = ddet1+dchip1+dbus+0.0025;  
      di10b[2] = 19.344;
@@ -3526,16 +3526,16 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
 
   if (option == 2) {
 
-     gMC->Gspos("I12B",1,"IT12",0.0,0.0,0.0,0,"MANY");
-     gMC->Gspos("I12B",8,"IT12",0.0,0.0,0.0,idrotm[233],"MANY");
-     gMC->Gspos("I12B",7,"IT12",0.0,0.0,0.0,idrotm[244],"MANY");
-     gMC->Gspos("I12B",6,"IT12",0.0,0.0,0.0,idrotm[236],"MANY");
-     gMC->Gspos("I12B",2,"IT12",0.0,0.0,0.0,idrotm[245],"MANY");
-     gMC->Gspos("I12B",3,"IT12",0.0,0.0,0.0,idrotm[234],"MANY");
-     gMC->Gspos("I12B",4,"IT12",0.0,0.0,0.0,idrotm[246],"MANY");
-     gMC->Gspos("I12B",5,"IT12",0.0,0.0,0.0,idrotm[247],"MANY");
-     gMC->Gspos("I12B",9,"IT12",0.0,0.0,0.0,idrotm[248],"MANY");
-     gMC->Gspos("I12B",10,"IT12",0.0,0.0,0.0,idrotm[249],"MANY");
+    gMC->Gspos("I12B",1,"IT12",0.0,0.0,0.0,0,"ONLY"/*"MANY"*/);
+     gMC->Gspos("I12B",8,"IT12",0.0,0.0,0.0,idrotm[233],"ONLY"/*"MANY"*/);
+     gMC->Gspos("I12B",7,"IT12",0.0,0.0,0.0,idrotm[244],"ONLY"/*"MANY"*/);
+     gMC->Gspos("I12B",6,"IT12",0.0,0.0,0.0,idrotm[236],"ONLY"/*"MANY"*/);
+     gMC->Gspos("I12B",2,"IT12",0.0,0.0,0.0,idrotm[245],"ONLY"/*"MANY"*/);
+     gMC->Gspos("I12B",3,"IT12",0.0,0.0,0.0,idrotm[234],"ONLY"/*"MANY"*/);
+     gMC->Gspos("I12B",4,"IT12",0.0,0.0,0.0,idrotm[246],"ONLY"/*"MANY"*/);
+     gMC->Gspos("I12B",5,"IT12",0.0,0.0,0.0,idrotm[247],"ONLY"/*"MANY"*/);
+     gMC->Gspos("I12B",9,"IT12",0.0,0.0,0.0,idrotm[248],"ONLY"/*"MANY"*/);
+     gMC->Gspos("I12B",10,"IT12",0.0,0.0,0.0,idrotm[249],"ONLY"/*"MANY"*/);
      deltax=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Cos(270.*TMath::Pi()/180.);  // see definition of idrotm[238]
 	  deltay=((ddet1-0.01/2.)+(dchip1-0.015/2.))*TMath::Sin(270.*TMath::Pi()/180.);  // see definition of idrotm[238]
      gMC->Gspos("I10B",2,"I12B",0.203+deltax,3.8206+deltay,0.0,idrotm[238],"ONLY");	  
