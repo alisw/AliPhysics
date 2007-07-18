@@ -73,7 +73,7 @@ void AliRunTag::CopyStandardContent(AliRunTag *oldtag) {
   SetCalibVersion(oldtag->GetCalibVersion());
   SetDataType(oldtag->GetDataType());
   SetLHCTag(oldtag->GetLHCTag()->GetLuminosity(),oldtag->GetLHCTag()->GetLHCState());
-  //SetDetectorTag(oldtag->GetDetectorTags());
+  SetDetectorTag(oldtag->GetDetectorTags()->GetIntDetectorMask());
 }
 
 //___________________________________________________________________________

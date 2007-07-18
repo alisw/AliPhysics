@@ -28,6 +28,7 @@ class AliDetectorTag : public TObject {
   //____________________________________________________//
   void SetDetectorMask(UInt_t mask) {fMask = mask; Int2Bin();}
   TObjArray *GetDetectorMask() {return fDetectorArray;}
+  UInt_t GetIntDetectorMask();
   void PrintDetectorMask();
 
   //____________________________________________________//
