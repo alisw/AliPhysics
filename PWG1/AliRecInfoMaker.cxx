@@ -31,13 +31,14 @@ Usage:
 
 gSystem->Load("libPWG1.so");
 //
-AliRecInfoMaker *t2 = new AliRecInfoMaker("genTracks.root","cmpESDTracks.root","galice.root",-1,0,0);
+AliRecInfoMaker *t2 = new AliRecInfoMaker("genTracks.root","cmpESDTracks.root","galice.root",0,0);
 t2->Exec();
 
 
 TFile f("cmpESDTracks.root");
-AliTreeDraw comp;
 TTree * tree = (TTree*)f.Get("ESDcmpTracks");
+
+AliTreeDraw comp;
 comp.SetTree(tree)
 
 
@@ -138,45 +139,25 @@ TProfile prof("prof","prof",10,0.5,5);
 #include "Rtypes.h"
 #include "TFile.h"
 #include "TTree.h"
-#include "TChain.h"
-#include "TCut.h"
-#include "TString.h"
-#include "TBenchmark.h"
 #include "TStopwatch.h"
-#include "TParticle.h"
-#include "TSystem.h"
-#include "TTimer.h"
 #include "TVector3.h"
-#include "TPad.h"
-#include "TCanvas.h"
-#include "TH1F.h"
-#include "TH2F.h"
-#include "TF1.h"
-#include "TText.h"
 #include "Getline.h"
-#include "TStyle.h"
+//
 //ALIROOT includes
+//
 #include "AliRun.h"
-#include "AliStack.h"
 #include "AliESDtrack.h"
-#include "AliSimDigits.h"
 #include "AliTPCParam.h"
 #include "AliTPC.h"
-#include "AliTPCLoader.h"
-#include "AliDetector.h"
 #include "AliTrackReference.h"
-#include "AliRun.h"
 #include "AliTPCParamSR.h"
 #include "AliTracker.h"
-#include "AliComplexCluster.h"
-#include "AliMagF.h"
+#include "AliESDEvent.h"
 #include "AliESD.h"
 #include "AliESDfriend.h"
 #include "AliESDtrack.h"
 #include "AliTPCseed.h"
 #include "AliITStrackMI.h"
-#include "AliTRDtrack.h"
-#include "AliHelix.h"
 #include "AliESDVertex.h"
 #include "AliExternalTrackParam.h"
 #include "AliESDkink.h"
@@ -196,6 +177,9 @@ ClassImp(AliRecInfoMaker)
 
 
 AliTPCParam * AliRecInfoMaker::GetTPCParam(){
+  //
+  // create TPC param
+  //
   AliTPCParamSR * par = new AliTPCParamSR;
   par->Update();
   return par;
@@ -231,18 +215,31 @@ void MakeAliases(AliTreeDraw&comp)
 }
 
 
-////////////////////////////////////////////////////////////////////////
-AliRecInfoMaker::AliRecInfoMaker()
-{
-  Reset();
-}
+// ////////////////////////////////////////////////////////////////////////
+// AliRecInfoMaker::AliRecInfoMaker()
+// {
+//   //
+//   // Default constructor - never used
+//   //
+//   Reset();
+// }
 
 ////////////////////////////////////////////////////////////////////////
 AliRecInfoMaker::AliRecInfoMaker(const char* fnGenTracks,
 		   const char* fnCmp,
-		   const char* fnGalice, Int_t direction,
+		   const char* fnGalice,
 		   Int_t nEvents, Int_t firstEvent)
 {
+  // AliRecInfoMaker - connencts the MC information with reconstructed information
+  // fnGenTracks  - file with MC to be created before using AliGenInfoMaker
+  // fnCmp        - file name  to be created  
+  // fnGalice     - file with Loaders - usualy galice.root 
+  //  
+  // nEvent       - number of event s to be analyzed
+  // AliRecInfoMaker *t2 = new AliRecInfoMaker("genTracks.root","cmpESDTracks.root","galice.root",0,0);
+  //
+
+
   Reset();
   //  fFnGenTracks = fnGenTracks;
   //  fFnCmp = fnCmp;
@@ -252,7 +249,6 @@ AliRecInfoMaker::AliRecInfoMaker(const char* fnGenTracks,
   fFirstEventNr = firstEvent;
   fEventNr = firstEvent;
   fNEvents = nEvents;
-  fDirection = direction;
   //
   fLoader = AliRunLoader::Open(fnGalice);
   if (gAlice){
@@ -321,41 +317,22 @@ Int_t AliRecInfoMaker::SetIO(Int_t eventNr)
   //
  
   TTree* tree = (TTree*) f.Get("esdTree");
-  if (!tree) { 
-    Char_t ename[100]; 
-    sprintf(ename,"%d",eventNr);
-    fEvent = (AliESD*)f.Get(ename);
-    if (!fEvent){
-      sprintf(ename,"ESD%d",eventNr);
-      fEvent = (AliESD*)f.Get(ename);
-    }
-  }
-  else{
-    tree->SetBranchStatus("*",1);
-    tree->SetBranchAddress("ESD", &fEvent);
-    tree->SetBranchAddress("ESDfriend.",&fESDfriend);
-    tree->GetEntry(eventNr);
-    fEvent->SetESDfriend(fESDfriend);    
-  }
-
-
-  /*
-  Char_t ename[100]; 
-  sprintf(ename,"%d",eventNr);
-  fEvent = (AliESD*)f.Get(ename);
-  if (!fEvent){
-    sprintf(ename,"ESD%d",eventNr);
-    fEvent = (AliESD*)f.Get(ename);
-  }
+  tree->SetBranchStatus("*",1);
+  fEvent = new AliESDEvent;
   
-  TTree* tree = (TTree*) f.Get("esdTree");
-  if (!tree) {
-    Error("CheckESD", "no ESD tree found");
-    return kFALSE;
-  }
-  tree->SetBranchAddress("ESD", &fEvent);
-  tree->GetEntry(eventNr);
-  */
+  if (tree->GetBranch("ESD")){
+    //    tree->SetBranchAddress("ESD", &fEvent);
+    // tree->SetBranchAddress("ESDfriend.",&fESDfriend);
+    // tree->GetEntry(eventNr);
+    // fEvent->SetESDfriend(fESDfriend);    
+  }else{
+    fEvent->ReadFromTree(tree);
+    fESDfriend = (AliESDfriend*)fEvent->FindListObject("AliESDfriend"); 
+    tree->GetEntry(eventNr);
+    fEvent->SetESDfriend(fESDfriend); 
+  }    
+  
+
 
   if (!fEvent) return 1;
 
@@ -367,6 +344,9 @@ Int_t AliRecInfoMaker::SetIO(Int_t eventNr)
 ////////////////////////////////////////////////////////////////////////
 void AliRecInfoMaker::Reset()
 {
+  //
+  // Reset the class
+  //
   fEventNr = 0;
   fNEvents = 0;
   fTreeCmp = 0;
@@ -383,6 +363,9 @@ void AliRecInfoMaker::Reset()
 ////////////////////////////////////////////////////////////////////////
 Int_t AliRecInfoMaker::Exec(Int_t nEvents, Int_t firstEventNr)
 {
+  //
+  // Exec comparison for subrange of events
+  //
   fNEvents = nEvents;
   fFirstEventNr = firstEventNr;
   return Exec();
@@ -391,6 +374,9 @@ Int_t AliRecInfoMaker::Exec(Int_t nEvents, Int_t firstEventNr)
 ////////////////////////////////////////////////////////////////////////
 Int_t AliRecInfoMaker::Exec()
 {
+  //
+  // Exec comparison
+  //
   TStopwatch timer;
   timer.Start();
 
@@ -513,6 +499,9 @@ Bool_t AliRecInfoMaker::ConnectGenTree()
 ////////////////////////////////////////////////////////////////////////
 void AliRecInfoMaker::CreateTreeCmp() 
 {
+  //
+  // Create file and tree with comparison information 
+  //
   fFileCmp = TFile::Open(fFnCmp,"RECREATE");
   if (!fFileCmp) {
     cerr<<"Error in CreateTreeCmp: cannot open file "<<fFnCmp<<endl;
@@ -548,9 +537,14 @@ void AliRecInfoMaker::CreateTreeCmp()
   fTreeCmpKinks->AutoSave(); 
   fTreeCmpV0->AutoSave(); 
 }
+
 ////////////////////////////////////////////////////////////////////////
 void AliRecInfoMaker::CloseOutputFile()  
 {
+  //
+  // Close output file
+  //
+
   if (!fFileCmp) {
     cerr<<"File "<<fFnCmp<<" not found as an open file."<<endl;
     return;
@@ -568,6 +562,10 @@ void AliRecInfoMaker::CloseOutputFile()
 TVector3 AliRecInfoMaker::TR2Local(AliTrackReference *trackRef,
 			    AliTPCParam *paramTPC) {
 
+  //
+  // Transform position to the local coord frame
+  //
+  
   Float_t x[3] = { trackRef->X(),trackRef->Y(),trackRef->Z()};
   Int_t index[4];
   paramTPC->Transform0to1(x,index);
@@ -606,7 +604,6 @@ Int_t AliRecInfoMaker::TreeTLoop()
   //
   AliESDtrack * track=0;
   for (Int_t iEntry=0; iEntry<nEntries;iEntry++){
-    //track = (AliESDtrack*)fTracks->UncheckedAt(iEntry);
     track = (AliESDtrack*)fEvent->GetTrack(iEntry);
     //
     Int_t label = track->GetLabel();
@@ -715,7 +712,6 @@ Int_t AliRecInfoMaker::TreeGenLoop(Int_t eventNr)
     local.GetXYZ(fRecInfo->fTRLocalCoord);	
     //
     if (fIndexRecTracks[fMCInfo->fLabel*20] >= 0) {
-      //track= (AliESDtrack*)fTracks->UncheckedAt(fIndexRecTracks[fMCInfo->fLabel*4]);
       track= (AliESDtrack*)fEvent->GetTrack(fIndexRecTracks[fMCInfo->fLabel*20]);
       //
       //
@@ -776,17 +772,16 @@ Int_t AliRecInfoMaker::TreeGenLoop(Int_t eventNr)
       fRecInfo->fFake     = fFakeRecTracks[fMCInfo->fLabel];
       fRecInfo->fMultiple = fMultiRecTracks[fMCInfo->fLabel];
       //
-      fRecInfo->Update(fMCInfo,fParamTPC,kTRUE, fEvent);          
+      fRecInfo->Update(fMCInfo,fParamTPC,kTRUE);          
     }
     else{
       fRecInfo->SetESDtrack(&dummytrack);
-      fRecInfo->Update(fMCInfo,fParamTPC,kFALSE, fEvent);
+      fRecInfo->Update(fMCInfo,fParamTPC,kFALSE);
     }
     fRecArray->AddAt(new AliESDRecInfo(*fRecInfo),fMCInfo->fLabel);
     fTreeCmp->Fill();
   }
   fTreeCmp->AutoSave();
-  //fTracks->Delete();
   printf("Time spended in TreeGenLoop\n");
   timer.Print();
   if (fDebug > 2) cerr<<"end of TreeGenLoop"<<endl;

@@ -15,6 +15,7 @@
 
 #include "TObject.h"
 #include "AliESD.h"
+#include "AliESDEvent.h"
 
 #include "AliESDtrack.h"
 #include "AliV0.h"
@@ -35,10 +36,10 @@ class AliTPCseed;
 class AliRecInfoMaker {
 
 public:
-  AliRecInfoMaker();
+  //AliRecInfoMaker();
   AliRecInfoMaker(const char* fnGenTracks,
 	   const char* fnCmpRes      ="cmpTracks.root", 
-	   const char* fnGalice      ="galice.root", Int_t direction=0,
+	   const char* fnGalice      ="galice.root",
 	   Int_t nEvents=1, Int_t firstEvent=0);
   virtual ~AliRecInfoMaker();
   void Reset();
@@ -80,7 +81,6 @@ private:
   TTree *fTreeGenV0;            // tree with gen V0
   //
   //
-  Int_t  fDirection;
   //
   AliRunLoader * fLoader;         //! pointer to the run loader
   //TTree *fTreeRecTracks;          //! tree with reconstructed tracks
@@ -98,7 +98,7 @@ private:
   Short_t *fSignedV0;                //! indicator that kink was not fake
   //
   TObjArray *fRecArray;           // container with rec infos
-  AliESD *fEvent;                 //!event
+  AliESDEvent *fEvent;             //!event
   AliESDfriend *fESDfriend;              //!event friend
   //
   AliTPCParam* fParamTPC;         //! AliTPCParam
