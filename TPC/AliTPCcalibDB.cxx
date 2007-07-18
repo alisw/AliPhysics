@@ -48,7 +48,7 @@
 #include "TObjString.h"
 #include "TString.h"
 #include "AliTPCCalPad.h"
-#include "AliTPCCalibSignal.h"
+#include "AliTPCCalibPulser.h"
 #include "AliTPCCalibPedestal.h"
 #include "AliTPCCalibCE.h"
 
@@ -309,7 +309,7 @@ void AliTPCcalibDB::CreateObjectList(const Char_t *filename, TObjArray *calibObj
          calibObjects->Add(calPad);         
                   
       } else if ( sType == "Pulser") {
-         AliTPCCalibSignal *sig = (AliTPCCalibSignal*)fIn->Get("AliTPCCalibSignal");
+         AliTPCCalibPulser *sig = (AliTPCCalibPulser*)fIn->Get("AliTPCCalibPulser");
          
          calPad = new AliTPCCalPad((TObjArray*)sig->GetCalPadT0());         
          calPad->SetNameTitle("PulserTmean","PulserTmean");
