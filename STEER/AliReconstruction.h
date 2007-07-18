@@ -32,11 +32,6 @@ class AliESDEvent;
 class TFile;
 class TTree;
 
-class AliRunTag;
-class AliLHCTag;
-class AliDetectorTag;
-class AliEventTag;
-
 
 class AliReconstruction: public TNamed {
 public:
@@ -123,10 +118,7 @@ private:
   Bool_t         ReadESD(AliESDEvent*& esd, const char* recStep) const;
   void           WriteESD(AliESDEvent* esd, const char* recStep) const;
 
- 
-  //===========================================//
-  void           CreateTag(const char *fESDfilename);
-  //==========================================//
+   //==========================================//
   void           ESDFile2AODFile(TFile* esdFile, TFile* aodFile);
 
   void           WriteAlignmentData(AliESDEvent* esd);

@@ -49,6 +49,7 @@ class AliTagCreator : public TObject {
   Bool_t ReadLocalCollection(const char *localpath);
   Bool_t ReadCAFCollection(const char *filename);
 
+  void CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent);
   void CreateAODTags(Int_t fFirstEvent, Int_t fLastEvent);
 
   //____________________________________________________//
