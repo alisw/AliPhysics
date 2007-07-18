@@ -107,10 +107,10 @@ void AliVertexerTracksTest(Double_t nSigma=3.,
     return;
   }
   TFile *fin = TFile::Open("AliESDs.root");
+  AliESDEvent *esd = new AliESDEvent();
   TTree *esdTree = (TTree*)fin->Get("esdTree");
   if(!esdTree) return;
-  AliESD *esd = 0;
-  esdTree->SetBranchAddress("ESD",&esd);
+  esd->ReadFromTree(esdTree);
   Int_t events = esdTree->GetEntries();
   printf("Number of events in ESD tree: %d\n",events);
 
@@ -325,10 +325,10 @@ void VertexForOneEvent(Int_t iev=0,
     return;
   }
   TFile *fin = TFile::Open("AliESDs.root");
+  AliESDEvent *esd = new AliESDEvent();
   TTree *esdTree = (TTree*)fin->Get("esdTree");
   if(!esdTree) return;
-  AliESD *esd = 0;
-  esdTree->SetBranchAddress("ESD",&esd);
+  esd->ReadFromTree(esdTree);
 
   TArrayF o;
 
@@ -1432,10 +1432,10 @@ void TestRmTracks(Int_t iev=0) {
     return;
   }
   TFile *fin = TFile::Open("AliESDs.root");
+  AliESDEvent *esd = new AliESDEvent();
   TTree *esdTree = (TTree*)fin->Get("esdTree");
   if(!esdTree) return;
-  AliESD *esd = 0;
-  esdTree->SetBranchAddress("ESD",&esd);
+  esd->ReadFromTree(esdTree);
 
   TArrayF o;
 
@@ -1514,7 +1514,7 @@ void AliComputeVtxMeanFromESD(TString file="AliESDs.root",
 
   Double_t vtx[3],covvtx[6];
   TTree *esdTree = 0;
-  AliESD *esd = 0;
+  AliESDEvent *esd = new AliESDEvent();
   AliESDVertex *vertex = 0;
   TString vtitle;
   Int_t nc,events,total=0;
@@ -1560,7 +1560,7 @@ void AliComputeVtxMeanFromESD(TString file="AliESDs.root",
     TFile *fin = TFile::Open(inname.Data());
     esdTree = (TTree*)fin->Get("esdTree");
     if(!esdTree) continue;
-    esdTree->SetBranchAddress("ESD",&esd);
+    esd->ReadFromTree(esdTree);
     events = esdTree->GetEntries();
     printf("Number of events in ESD tree: %d\n",events);
     total += events;
@@ -1617,7 +1617,7 @@ void AliComputeVtxMeanFromESD(TString file="AliESDs.root",
     TFile *fin = TFile::Open(inname.Data());
     esdTree = (TTree*)fin->Get("esdTree");
     if(!esdTree) continue;
-    esdTree->SetBranchAddress("ESD",&esd);
+    esd->ReadFromTree(esdTree);
     events = esdTree->GetEntries();
     for(Int_t iev=0; iev<events; iev++) { //LOOP ON EVENTS
       esdTree->GetEvent(iev);

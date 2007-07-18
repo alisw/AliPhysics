@@ -293,7 +293,7 @@ Int_t AliTPCtrackerParam::Init() {
   return 0;
 }
 //-----------------------------------------------------------------------------
-Int_t AliTPCtrackerParam::BuildTPCtracks(AliESD *event) {
+Int_t AliTPCtrackerParam::BuildTPCtracks(AliESDEvent *event) {
 //-----------------------------------------------------------------------------
 // This function creates the TPC parameterized tracks and writes them
 // as AliESDtrack objects in the ESD event

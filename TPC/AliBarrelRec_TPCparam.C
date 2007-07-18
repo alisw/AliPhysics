@@ -13,10 +13,11 @@ void AliBarrelRec_TPCparam(Int_t firstEvent=0,Int_t lastEvent=0) {
   // A. Dainese - INFN Legnaro
   //
 
+
   Int_t  collcode = 1; // pp collisions
   Bool_t useMeanVtx = kFALSE;
   
-  TGeoManager::Import("geometry.root");
+  AliGeomManager::LoadGeometry("geometry.root");
   
   if (gAlice) {
     delete gAlice->GetRunLoader();
@@ -67,18 +68,13 @@ void AliBarrelRec_TPCparam(Int_t firstEvent=0,Int_t lastEvent=0) {
   }
   itsl->LoadRecPoints("read");
   
-  AliITS *dITS = (AliITS*)gAlice->GetDetector("ITS");
-  if (!dITS) {
-    cerr<<"Cannot find the ITS detector !"<<endl;
-    return;
-  }
-  AliITSgeom *geom = dITS->GetITSgeom();
+  AliITSRecoParam * itsRecoParam = AliITSRecoParam::GetLowFluxParam();
+  AliITSReconstructor::SetRecoParam(itsRecoParam);
   
   // Instance of the ITS tracker
-  AliITStrackerSA itsTracker(geom);
+  AliITStrackerSA itsTracker(0);
   Int_t ITSclusters[6] = {1,1,1,1,1,1};
-  itsTracker.SetLayersNotToSkip(ITSclusters);
-  
+  itsTracker.SetLayersNotToSkip(ITSclusters);  
   
   // Primary vertex reconstruction in pp
   AliESDVertex *initVertex = 0;
@@ -93,7 +89,7 @@ void AliBarrelRec_TPCparam(Int_t firstEvent=0,Int_t lastEvent=0) {
   }
   invtx->Close();
   delete invtx;
-  AliVertexerTracks *vertexer = new AliVertexerTracks();
+  AliVertexerTracks *vertexer = new AliVertexerTracks(AliTracker::GetBz());
   vertexer->SetVtxStart(initVertex);
   vertexer->SetDebug(0);
   delete initVertex;
@@ -101,8 +97,10 @@ void AliBarrelRec_TPCparam(Int_t firstEvent=0,Int_t lastEvent=0) {
   
   /***** The TREE for ESD is born *****/
   TTree *esdTree=new TTree("esdTree","Tree with ESD objects");
-  AliESD *event=0; AliESD *eventTPCin=0;
-  esdTree->Branch("ESD","AliESD",&event);
+  AliESDEvent *event=0; AliESDEvent *eventTPCin=0;
+  event = new AliESDEvent();
+  event->CreateStdContent();
+  event->WriteToTree(esdTree);
   
   if(firstEvent>rl->GetNumberOfEvents()) firstEvent=rl->GetNumberOfEvents()-1;
   if(lastEvent>rl->GetNumberOfEvents())  lastEvent=rl->GetNumberOfEvents()-1;
@@ -121,9 +119,9 @@ void AliBarrelRec_TPCparam(Int_t firstEvent=0,Int_t lastEvent=0) {
   for(Int_t i=firstEvent; i<=lastEvent; i++) { 
     
     cout<<" Processing event number : "<<i<<endl;
-    AliESD *event = new AliESD(); 
+    //AliESDEvent *event = new AliESDEvent(); 
     event->SetRunNumber(gAlice->GetRunNumber());
-    event->SetEventNumber(i);
+    event->SetEventNumberInFile(i);
     event->SetMagneticField(gAlice->Field()->SolenoidField());
     rl->GetEvent(i);
 
@@ -131,7 +129,7 @@ void AliBarrelRec_TPCparam(Int_t firstEvent=0,Int_t lastEvent=0) {
     sprintf(zver,"Event%d/Vertex",i);
     vertexSPD = (AliESDVertex*)ppZ->Get(zver);
     if(!vertexSPD) {
-      esdTree->Fill(); delete event;
+      esdTree->Fill(); event->Reset();
       continue;
     }      
     event->SetVertex(vertexSPD);
@@ -141,7 +139,7 @@ void AliBarrelRec_TPCparam(Int_t firstEvent=0,Int_t lastEvent=0) {
     //***** TPC tracking
     if ( (trc=tpcTrackerPar.BuildTPCtracks(event)) ) {
       printf("exiting TPC tracker with code %d in event %d\n",trc,i);
-      esdTree->Fill(); delete event;
+      esdTree->Fill(); event->Reset();
       continue;
     }
 
@@ -150,17 +148,18 @@ void AliBarrelRec_TPCparam(Int_t firstEvent=0,Int_t lastEvent=0) {
 
     //***** ITS tracking
     itsTracker.AliTracker::SetVertex(vtx,sigmavtx);
+    //    itsl->LoadRecPoints("read");
     TTree *itsTree=itsl->TreeR();
     if (!itsTree) {
       cerr<<"Can't get the ITS cluster tree !\n";
-      esdTree->Fill(); delete event;
+      esdTree->Fill(); event->Reset();
       return;
     }     
     itsTracker.UnloadClusters();
     itsTracker.LoadClusters(itsTree);
     if ( (trc=itsTracker.Clusters2Tracks(event)) ) {
       printf("exiting ITS tracker with code %d in event %d\n",trc,i);
-      esdTree->Fill(); delete event;
+      esdTree->Fill(); event->Reset();
       continue;
     }
 
@@ -181,7 +180,7 @@ void AliBarrelRec_TPCparam(Int_t firstEvent=0,Int_t lastEvent=0) {
     }
     
     esdTree->Fill();
-    delete event;
+    event->Reset();
 
   }//<-----------------------------------The Loop over events ends here
   timer.Stop(); timer.Print();
@@ -201,7 +200,7 @@ void AliBarrelRec_TPCparam(Int_t firstEvent=0,Int_t lastEvent=0) {
   return;
 }
 //--------------------------------------------------------------------------
-void BackToTPCInnerWall(AliESD *event,AliESD *eventTPC) {
+void BackToTPCInnerWall(AliESDEvent *event,AliESDEvent *eventTPC) {
 
   Int_t ntracks = eventTPC->GetNumberOfTracks();
   AliESDtrack *esdTrackTPC = 0;

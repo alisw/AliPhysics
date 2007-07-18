@@ -30,7 +30,7 @@ class TTree;
 #include "AliConfig.h"
 #include "AliTPCkineGrid.h"
 #include "AliTPCtrack.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 //----------------------------
 
 class AliTPC;
@@ -49,7 +49,7 @@ class AliTPCtrackerParam:
   AliTPCtrackerParam(const AliTPCtrackerParam& p);
   //
   Int_t Init();
-  Int_t BuildTPCtracks(AliESD* event);
+  Int_t BuildTPCtracks(AliESDEvent* event);
   // these functions are used to create a DB of cov. matrices,
   // including regularization, efficiencies and dE/dx
   void  AllGeantTracks() { fSelAndSmear=kFALSE; return; }
