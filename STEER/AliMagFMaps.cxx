@@ -93,7 +93,6 @@ AliMagFMaps::~AliMagFMaps()
   delete fFieldMap[0];
   delete fFieldMap[1];
   delete fFieldMap[2];    
-  fgReadField = kTRUE;
 }
 
 //_______________________________________________________________________
@@ -103,8 +102,8 @@ void AliMagFMaps::ReadField()
   //
   //  don't read twice
   //
-    if (!fgReadField) return;
-    fgReadField = 0;
+    if (!fReadField) return;
+    fReadField = kFALSE;
   //    
   char* fname;
   TFile* file = 0;
@@ -252,9 +251,9 @@ void AliMagFMaps::Streamer(TBuffer &R__b)
 {
   // Stream an object of class AliMagFMaps.
   if (R__b.IsReading()) {
-    AliMagFMaps::Class()->ReadBuffer(R__b, this);
+   R__b.ReadClassBuffer(AliMagFMaps::Class(), this);
     ReadField();
   } else {
-    AliMagFMaps::Class()->WriteBuffer(R__b, this);
+    R__b.WriteClassBuffer(AliMagFMaps::Class(), this);
   }
 }

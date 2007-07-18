@@ -23,7 +23,7 @@
 
 #include "AliLog.h"
 #include "AliMagF.h"
-Bool_t AliMagF::fgReadField = kTRUE;
+
 ClassImp(AliMagF)
 
 //_______________________________________________________________________
@@ -33,7 +33,8 @@ AliMagF::AliMagF():
   fInteg(0),
   fPrecInteg(1),
   fFactor(0),
-  fMax(0)
+  fMax(0),
+  fReadField(1)
 {
   //
   // Default constructor
@@ -49,7 +50,8 @@ AliMagF::AliMagF(const char *name, const char *title, Int_t integ,
   fInteg(0),
   fPrecInteg(1),
   fFactor(factor),
-  fMax(fmax)
+  fMax(fmax),
+  fReadField(1)
 {
   //
   // Standard constructor
