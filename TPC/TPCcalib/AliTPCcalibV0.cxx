@@ -4,7 +4,13 @@
 #include <TFile.h>
 #include <TH3F.h>
 //
+#include "TParticle.h"
 #include "TDatabasePDG.h"
+#include "AliRunLoader.h"
+#include "AliStack.h"
+
+
+
 #include <TPDGCode.h>
 #include <TStyle.h>
 #include "TLinearFitter.h"
@@ -41,9 +47,11 @@ ClassImp(AliTPCcalibV0)
 AliTPCcalibV0::AliTPCcalibV0() : 
    TNamed(),
    fDebugStream(0),
+   fStack(0),
    fOutput(0),
    fESD(0),
    fPdg(0),
+   fParticles(0),
    fV0s(0),
    fGammas(0),
    fV0type(0),
@@ -72,14 +80,173 @@ void AliTPCcalibV0::ProofSlaveBegin(TList * output)
 }
 
 
-void  AliTPCcalibV0::ProcessESD(AliESD *esd){
+void  AliTPCcalibV0::ProcessESD(AliESD *esd, AliStack *stack){
   //
   //
   //
   fESD = esd;
   AliKFParticle::SetField(esd->GetMagneticField());
   MakeV0s();
+  if (stack) {
+    fStack = stack;
+    MakeMC();
+  }else{
+    fStack =0;
+  }
 }
+
+void AliTPCcalibV0::MakeMC(){
+  //
+  // MC comparison 
+  //    1. Select interesting particles
+  //    2. Assign the recosntructed particles 
+  //
+  //1. Select interesting particles
+  const Float_t kMinP   = 0.2;
+  const Float_t kMinPt  = 0.1;
+  const Float_t kMaxR   = 0.5;
+  const Float_t kMaxTan = 1.2;
+  const Float_t kMaxRad = 150;
+  //
+  if (!fParticles) fParticles = new TObjArray;
+  TParticle *part=0;
+  //  
+  Int_t entries = fStack->GetNtrack();
+  for (Int_t ipart=0; ipart<entries; ipart++){
+    part = fStack->Particle(ipart);
+    if (!part) continue;
+    if (part->P()<kMinP) continue;
+    if (part->R()>kMaxR) continue;
+    if (TMath::Abs(TMath::Tan(part->Theta()-TMath::Pi()*0.5))>kMaxTan) continue;
+    Bool_t isInteresting = kFALSE;
+    if (part->GetPdgCode()==22) isInteresting =kTRUE;
+    if (part->GetPdgCode()==310) isInteresting =kTRUE;
+    if (part->GetPdgCode()==111) isInteresting =kTRUE;
+    if (TMath::Abs(part->GetPdgCode()==3122)) isInteresting =kTRUE;
+
+    //
+    if (!isInteresting) continue;    
+    fParticles->AddLast(new TParticle(*part));
+  }
+  if (fParticles->GetEntries()<1) {
+    return;
+  }
+  //
+  //
+  //
+  Int_t sentries=fParticles->GetEntries();;
+  for (Int_t ipart=0; ipart<sentries; ipart++){
+    TParticle *part = (TParticle*)fParticles->At(ipart);
+    TParticle *p0 = 0;
+    TParticle *p1 = 0;
+
+    Int_t nold =0;
+    Int_t nnew =0;
+    Int_t id0  = part->GetDaughter(0);
+    Int_t id1  = part->GetDaughter(1);    
+    if (id0>=fStack->GetNtrack() ) id0*=-1;
+    if (id1>=fStack->GetNtrack() ) id1*=-1;
+    Bool_t findable = kTRUE;
+    if (id0<0 || id1<0) findable = kFALSE;
+    Int_t charge =0; 
+    if (findable){
+      p0 = fStack->Particle(id0);
+      if (p0->R()>kMaxRad) findable = kFALSE;
+      if (p0->Pt()<kMinPt) findable = kFALSE;
+      if (p0->Vz()>250) findable= kFALSE;
+      if (TMath::Abs(TMath::Tan(p0->Theta()-TMath::Pi()*0.5))>2) findable=kFALSE;
+      if (fPdg->GetParticle(p0->GetPdgCode())->Charge()==0) charge++;
+
+      p1 = fStack->Particle(id1);
+      if (p1->R()>kMaxRad) findable = kFALSE;
+      if (p1->Pt()<kMinPt) findable = kFALSE;
+      if (TMath::Abs(p1->Vz())>250) findable= kFALSE;
+      if (TMath::Abs(TMath::Tan(p1->Theta()-TMath::Pi()*0.5))>2) findable=kFALSE;
+      if (fPdg->GetParticle(p1->GetPdgCode())->Charge()==0) charge++;
+			  
+    }
+    //   (*fDebugStream)<<"MC0"<<
+    //       "P.="<<part<<
+    //       "findable="<<findable<<
+    //       "id0="<<id0<<
+    //       "id1="<<id1<<
+    //       "\n";
+    if (!findable) continue;
+    Float_t minpt = TMath::Min(p0->Pt(), p1->Pt());
+    Int_t type=-1;
+    
+    //
+    // 
+    AliKFVertex primVtx(*(fESD->GetPrimaryVertex()));
+    for (Int_t ivertex=0; ivertex<fESD->GetNumberOfV0s(); ivertex++){
+      AliESDv0 * v0 = fESD->GetV0(ivertex);
+      // select coresponding track
+      AliESDtrack * trackN = fESD->GetTrack(v0->GetIndex(0));
+      if (TMath::Abs(trackN->GetLabel())!=id0 && TMath::Abs(trackN->GetLabel())!=id1) continue;
+      AliESDtrack * trackP = fESD->GetTrack(v0->GetIndex(1));
+      if (TMath::Abs(trackP->GetLabel())!=id0 && TMath::Abs(trackP->GetLabel())!=id1) continue;
+      TParticle *pn = fStack->Particle(TMath::Abs(trackN->GetLabel()));
+      TParticle *pp = fStack->Particle(TMath::Abs(trackP->GetLabel()));
+      //
+      //
+      if ( v0->GetOnFlyStatus()) nnew++;
+      if (!v0->GetOnFlyStatus()) nold++;
+      if (part->GetPdgCode()==22 && TMath::Abs(pn->GetPdgCode())==11 &&  TMath::Abs(pp->GetPdgCode())==11) 
+	type =1;
+      if (part->GetPdgCode()==310 && TMath::Abs(pn->GetPdgCode())==211 &&  TMath::Abs(pp->GetPdgCode())==211) 
+	type =0;
+      if (part->GetPdgCode()==3122){
+	if (TMath::Abs(pn->GetPdgCode())==210 ) type=2;
+	else type=3;
+      }
+      AliKFParticle *v0kf       = Fit(primVtx,v0,pn->GetPdgCode(),pp->GetPdgCode());
+      v0kf->SetProductionVertex( primVtx );
+      AliKFParticle *v0kfc       = Fit(primVtx,v0,pn->GetPdgCode(),pp->GetPdgCode());
+      v0kfc->SetProductionVertex( primVtx );
+      v0kfc->SetMassConstraint(fPdg->GetParticle(part->GetPdgCode())->Mass());
+      Float_t chi2 = v0kf->GetChi2();
+      Float_t chi2C = v0kf->GetChi2();
+      //
+      //
+      (*fDebugStream)<<"MCRC"<<
+	"P.="<<part<<
+	"type="<<type<<
+	"chi2="<<chi2<<
+	"chi2C="<<chi2C<<
+	"minpt="<<minpt<<
+	"id0="<<id0<<
+	"id1="<<id1<<
+	"Pn.="<<pn<<
+	"Pp.="<<pp<<
+	"tn.="<<trackN<<
+	"tp.="<<trackP<<
+	"nold="<<nold<<
+	"nnew="<<nnew<<
+   	"v0.="<<v0<<
+	"v0kf.="<<v0kf<<
+	"v0kfc.="<<v0kfc<<
+	"\n";     
+      delete v0kf;
+      delete v0kfc; 
+      //
+    }
+    (*fDebugStream)<<"MC"<<
+      "P.="<<part<<
+      "charge="<<charge<<
+      "type="<<type<<
+      "minpt="<<minpt<<
+      "id0="<<id0<<
+      "id1="<<id1<<
+      "P0.="<<p0<<
+      "P1.="<<p1<<
+      "nold="<<nold<<
+      "nnew="<<nnew<<
+      "\n";
+  }
+  fParticles->Delete(); 
+
+}
+
 
 
 void AliTPCcalibV0::MakeV0s(){
@@ -238,6 +405,12 @@ void AliTPCcalibV0::ProcessV0(Int_t ftype){
     if (chi2Gamma<minChi2) { minChi2= chi2Gamma; type0=1;}
     if (chi2Lambda42<minChi2) { minChi2= chi2Lambda42; type0=2;}
     if (chi2Lambda24<minChi2) { minChi2= chi2Lambda24; type0=3;}
+    Float_t betaGammaP  = trackN->GetP()/fPdg->GetParticle(-2212)->Mass(); 
+    Float_t betaGammaPi = trackN->GetP()/fPdg->GetParticle(-211)->Mass();
+    Float_t betaGammaEl = trackN->GetP()/fPdg->GetParticle(11)->Mass();
+    Float_t dedxTeorP = TPCBetheBloch(betaGammaP);
+    Float_t dedxTeorPi = TPCBetheBloch(betaGammaPi);;
+    Float_t dedxTeorEl = TPCBetheBloch(betaGammaEl);;
     //
     //
     if (minChi2>50) continue;
@@ -246,6 +419,10 @@ void AliTPCcalibV0::ProcessV0(Int_t ftype){
       "v0.="<<v0<<
       "trackN.="<<trackN<<
       "trackP.="<<trackP<<
+      //
+      "dedxTeorP="<<dedxTeorP<<
+      "dedxTeorPi="<<dedxTeorPi<<
+      "dedxTeorEl="<<dedxTeorEl<<
       //
       "type="<<type<<
       "chi2C="<<minChi2C<<
@@ -356,6 +533,26 @@ AliKFParticle * AliTPCcalibV0::Fit(AliKFVertex & primVtx, AliESDv0 *v0, Int_t PD
   *(V0)+=p1;
   *(V0)+=p2;
   return V0;  
+}
+
+
+
+Float_t AliTPCcalibV0::TPCBetheBloch(Float_t bg)
+{
+ //
+ // Bethe-Bloch energy loss formula
+ //
+ const Double_t kp1=0.76176e-1;
+ const Double_t kp2=10.632;
+ const Double_t kp3=0.13279e-4;
+ const Double_t kp4=1.8631;
+ const Double_t kp5=1.9479;
+ Double_t dbg = (Double_t) bg;
+ Double_t beta = dbg/TMath::Sqrt(1.+dbg*dbg);
+ Double_t aa = TMath::Power(beta,kp4);
+ Double_t bb = TMath::Power(1./dbg,kp5);
+ bb=TMath::Log(kp3+bb);
+ return ((Float_t)((kp2-aa-bb)*kp1/aa));
 }
 
 
