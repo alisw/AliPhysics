@@ -20,6 +20,8 @@
 //   This class deals with the DCS related info of the GRP
 //   Origin: Panos Christakoglou, UOA-CERN, Panos.Christakoglou@cern.ch
 //-----------------------------------------------------------------
+#include "Riostream.h"
+#include "TError.h"
 
 #include "AliGRPDCS.h"
 #include "AliDCSValue.h"
@@ -47,7 +49,8 @@ AliGRPDCS::AliGRPDCS(TObjArray *dcsArray, UInt_t fStart, UInt_t fStop):
 
 //___________________________________________________________________________
 AliGRPDCS::AliGRPDCS(const AliGRPDCS& grpDcs):
-  TObject(grpDcs) {
+  TObject(grpDcs), 
+  fStartTime(grpDcs.fStartTime), fStopTime(grpDcs.fStopTime) {
   //copy constructor
 
   if (grpDcs.fDCSArray) fDCSArray = new TObjArray();
@@ -56,6 +59,11 @@ AliGRPDCS::AliGRPDCS(const AliGRPDCS& grpDcs):
 //_______________________________________________________________
 const char* AliGRPDCS::ProcessDCS(Int_t iType) {
   // process the dcs dps
+  if(!fDCSArray->GetEntries()) {
+    Error("AliGRPDCS::ProcessDCS","No entries in array!!!");
+    return 0;
+  }
+
   //0:Int - 1:UInt - 2:Float - 3:String - 4:Bool
   TString fDCSDataPointValue;
   switch (iType) {
@@ -73,6 +81,7 @@ const char* AliGRPDCS::ProcessDCS(Int_t iType) {
   }
   case 3: {
     fDCSDataPointValue += ProcessString();
+    cout<<fDCSDataPointValue.Data()<<endl;
     break;
   }
   case 4: {
@@ -82,6 +91,7 @@ const char* AliGRPDCS::ProcessDCS(Int_t iType) {
   default: break;
   }//switch
 
+  cout<<fDCSDataPointValue.Data()<<endl;
   return fDCSDataPointValue.Data();
 }
 
@@ -149,12 +159,18 @@ const char* AliGRPDCS::ProcessString() {
   Int_t iCount = 0;
 
   AliDCSValue *v = 0x0;
+
+  printf("Entries: %d\n",fDCSArray->GetEntries());
+  printf("Start: %d - Stop: %d\n",fStartTime,fStopTime);
+
   while(!kFound) {
     v = (AliDCSValue *)fDCSArray->At(iCount);
     iCount += 1;
+    cout<<"Time: "<<v->GetTimeStamp()<<endl;
     if((v->GetTimeStamp() >= fStartTime) &&(v->GetTimeStamp() <= fStopTime)) kFound = kTRUE;
   }
   fDCSTemp = v->GetChar();
+  cout<<"Found: "<<kFound<<" - String: "<<fDCSTemp.Data()<<endl;
   for(Int_t i = 0; i < fDCSArray->GetEntries(); i++) {
     AliDCSValue *v1 = (AliDCSValue *)fDCSArray->At(i);
     if((v1->GetTimeStamp() >= fStartTime) &&(v1->GetTimeStamp() <= fStopTime)) {
@@ -163,6 +179,7 @@ const char* AliGRPDCS::ProcessString() {
     }
   }
   TString fDCSDataPointValue = fDCSString;
+  cout<<"Returned String: "<<fDCSDataPointValue.Data()<<endl;
 
   return fDCSDataPointValue.Data();
 }
