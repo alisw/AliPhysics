@@ -31,40 +31,13 @@
 #include <string.h>
 //ROOT includes
 #include "Rtypes.h"
-#include "TFile.h"
-#include "TTree.h"
-#include "TChain.h"
-#include "TCut.h"
-#include "TString.h"
-#include "TBenchmark.h"
-#include "TStopwatch.h"
-#include "TParticle.h"
-#include "TSystem.h"
-#include "TTimer.h"
-#include "TVector3.h"
-#include "TPad.h"
-#include "TCanvas.h"
-#include "TH1F.h"
-#include "TH2F.h"
-#include "TF1.h"
-#include "TText.h"
-#include "Getline.h"
-#include "TStyle.h"
+//
 //ALIROOT includes
-#include "AliRun.h"
-#include "AliStack.h"
+//
 #include "AliESDtrack.h"
-#include "AliSimDigits.h"
 #include "AliTPCParam.h"
-#include "AliTPC.h"
-#include "AliTPCLoader.h"
-#include "AliDetector.h"
 #include "AliTrackReference.h"
-#include "AliRun.h"
 #include "AliTPCParamSR.h"
-#include "AliTracker.h"
-#include "AliComplexCluster.h"
-#include "AliMagF.h"
 #include "AliESD.h"
 #include "AliESDfriend.h"
 #include "AliESDtrack.h"
@@ -262,7 +235,7 @@ void  AliESDRecInfo::UpdatePoints(AliESDtrack*track)
 
 //
 //
-void AliESDRecInfo::Update(AliMCInfo* info,AliTPCParam * /*par*/, Bool_t reconstructed, AliESD */*event*/)
+void AliESDRecInfo::Update(AliMCInfo* info,AliTPCParam * /*par*/, Bool_t reconstructed)
 {
   //
   //
