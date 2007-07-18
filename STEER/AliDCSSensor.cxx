@@ -22,19 +22,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-// Running instructions:
-/*
-  TClonesArray * arr = AliDCSSensor::ReadList("TempSensor.txt");
-  TFile f("TempSensors.root","RECREATE");
-  TTree * tree = new TTree("TempSensor", "TempSensor");
-  tree->Branch("Temp",&arr);
-  tree->Fill();
-  tree->Write();
-  
- */
-//
-
-
 #include "AliDCSSensor.h"
 ClassImp(AliDCSSensor)
 
@@ -153,7 +140,7 @@ TGraph* AliDCSSensor::MakeGraph(Int_t nPoints) const
   graph->GetXaxis()->SetTimeDisplay(1);
   graph->GetXaxis()->SetLabelOffset(0.02);
   graph->GetXaxis()->SetTimeFormat("#splitline{%d/%m}{%H:%M}");
-  
+
   return graph;
 }
 
@@ -163,9 +150,9 @@ TClonesArray * AliDCSSensor::ReadTree(TTree* tree) {
   //
   // read values from ascii file
   //
-  
+
   Int_t nentries = tree->GetEntries();
-  
+
   char stringId[100];
   Int_t num=0;
   Int_t idDCS=0;

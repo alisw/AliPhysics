@@ -28,26 +28,26 @@ class AliDCSSensorArray : public TNamed {
   AliDCSSensorArray(TClonesArray *arr);
   AliDCSSensorArray(Int_t run, const char* dbEntry);
   AliDCSSensorArray(UInt_t startTime, UInt_t endTime, TTree* confTree);
-  AliDCSSensorArray(const AliDCSSensorArray &c);   
+  AliDCSSensorArray(const AliDCSSensorArray &c);
   virtual ~AliDCSSensorArray();
   AliDCSSensorArray &operator=(const AliDCSSensorArray &c);
   virtual void Copy (TObject &c) const;
   void SetStartTime (const TTimeStamp& start) { fStartTime = start; }
   void SetEndTime   (const TTimeStamp& end) { fEndTime = end; }
-  TTimeStamp GetStartTime () const { return fStartTime; } 
-  TTimeStamp GetEndTime () const { return fEndTime; } 
+  TTimeStamp GetStartTime () const { return fStartTime; }
+  TTimeStamp GetEndTime () const { return fEndTime; }
   void  SetMinGraph(const Int_t minGraph) { fMinGraph=minGraph;}
   Int_t GetMinGraph()  const { return fMinGraph; }
   void  SetMinPoints(const Int_t minPoints) { fMinPoints=minPoints;}
   Int_t GetMinPoints() const { return fMinPoints; }
-  void  SetIter(const Int_t iter ) { fIter=iter; } 
-  Int_t GetIter() const { return fIter; }             
+  void  SetIter(const Int_t iter ) { fIter=iter; }
+  Int_t GetIter() const { return fIter; }
   void  SetMaxDelta(const Double_t maxDelta) { fMaxDelta= maxDelta;}
-  Double_t GetMaxDelta() const { return fMaxDelta; }   
+  Double_t GetMaxDelta() const { return fMaxDelta; }
   void  SetFitReq(const Int_t fitReq) { fFitReq=fitReq; }
   Int_t GetFitReq() const {return fFitReq;}
   void  SetValCut(const Int_t valCut) { fValCut=valCut;}
-  Int_t GetValCut() const {return fValCut;} 
+  Int_t GetValCut() const {return fValCut;}
   void  SetDiffCut(const Int_t diffCut) { fDiffCut=diffCut; }
   Int_t GetDiffCut() const {return fDiffCut;}
 
@@ -56,16 +56,18 @@ class AliDCSSensorArray : public TNamed {
   TMap* ExtractDCS  (TMap *dcsMap);
   TGraph* MakeGraph (TObjArray *valueSet);
   void ClearGraph();
-  void ClearFit(); 
+  void ClearFit();
   Double_t GetValue  (UInt_t timeSec, Int_t sensor);
   AliDCSSensor* GetSensor (Int_t IdDCS);
   AliDCSSensor* GetSensor (Double_t x, Double_t y, Double_t z);
   AliDCSSensor* GetSensor (const TString& stringID);
   AliDCSSensor* GetSensorNum (Int_t ind);
+  void RemoveSensorNum(Int_t ind);
+  void RemoveSensor(Int_t IdDCS);
   Int_t NumSensors() const { return fSensors->GetEntries(); }
-   
+
   Int_t GetFirstIdDCS() const;
-  Int_t GetLastIdDCS()  const; 
+  Int_t GetLastIdDCS()  const;
 
  protected:
   Int_t  fMinGraph;              // minimum #points of graph to be fitted
