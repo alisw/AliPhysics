@@ -27,9 +27,6 @@ class AliMUONDigit : public AliMUONVDigit
     
     virtual Bool_t HasMCInformation() const { return kTRUE; }
     
-    virtual Bool_t IsSortable() const {return kTRUE;}        ///< Return true if sortable
-    virtual Int_t Compare(const TObject *obj) const;
-
     virtual Int_t DetElemId()const     {return fDetElemId;}  ///< Return detection element ID  
     virtual Int_t PadX() const         {return fPadX;}       ///< Return pad number along x
     virtual Int_t PadY() const         {return fPadY;}       ///< Return pad number along y

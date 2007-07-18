@@ -166,50 +166,6 @@ AliMUONDigit::Clear(Option_t*)
   fNtracks=0;
 }
 
-//_____________________________________________________________________________
-Int_t AliMUONDigit::Compare(const TObject *obj) const
-{
-  /// The order defined below is first by DE, then Signal, then 
-  /// manuId, and then manuChannel, i.e. it should be a total ordering...
-
-  const AliMUONDigit* d = static_cast<const AliMUONDigit*>(obj);
-  
-  if ( DetElemId() > d->DetElemId() ) 
-  {
-    return 1;
-  }
-  else if ( DetElemId() < d->DetElemId() )
-  {
-    return -1;
-  }
-  else
-  {
-    if ( Charge() > d->Charge() )
-    {
-      return 1;
-    }
-    else if ( Charge() < d->Charge() )
-    {
-      return -1;
-    }
-    else
-    {
-      if ( ManuId() < d->ManuId() )
-      {
-        return 1;
-      }
-      else if ( ManuId() > d->ManuId() )
-      {
-        return -1;
-      }
-      else
-      {
-        return ( ManuChannel() < d->ManuChannel() ) ? 1 : -1;
-      }
-    }
-  }
-}
-
 //______________________________________________________________________________
 void 
 AliMUONDigit::Copy(TObject& obj) const
