@@ -18,7 +18,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/** @file   AliHLTComponent.cxx
+/** @file   AliHLTDataTypes.cxx
     @author Matthias Richter, Timm Steinbeck, Jochen Thaeder
     @date   
     @brief  Implementation of data types. */
