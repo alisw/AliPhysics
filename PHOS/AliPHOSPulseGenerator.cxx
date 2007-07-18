@@ -310,3 +310,12 @@ void AliPHOSPulseGenerator::Draw(Option_t*)
   graphLG->GetHistogram()->SetYTitle("Amplitude, ADC counts");
   c1->Update();
 }
+
+//__________________________________________________________________
+Double_t AliPHOSPulseGenerator::GeV2ADC()
+{
+  //Return GeV to ADC counts conversion factor. 
+  //adc_counts = energy[GeV]*AliPHOSPulseGenerator::GeV2ADC().
+
+  return RawResponseFunctionMax(fgHighCharge,fgHighGain);
+}

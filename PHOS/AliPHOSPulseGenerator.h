@@ -48,6 +48,7 @@ public:
   Double_t        GetRawFormatTimeTrigger() const { return fgTimeTrigger ; }
   static Double_t RawResponseFunctionMax(Double_t charge, Double_t gain) ;
   static Double_t RawResponseFunction   (Double_t *x, Double_t *par) ;
+  static Double_t GeV2ADC();
 
   virtual void Print(Option_t*) const;
   virtual void Draw (Option_t*);
