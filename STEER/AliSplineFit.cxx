@@ -15,23 +15,21 @@
 
 //-------------------------------------------------------------------------
 //                Implementation of the AliSplineFit class
-//   The class performs a spline fit on an incoming TGraph. The graph is 
-//   divided into several parts (identified by knots between each part). 
+//   The class performs a spline fit on an incoming TGraph. The graph is
+//   divided into several parts (identified by knots between each part).
 //   Spline fits are performed on each part. According to user parameters,
-//   the function, first and second derivative are requested to be continuous 
+//   the function, first and second derivative are requested to be continuous
 //   at each knot.
 //        Origin: Marian Ivanov, CERN, Marian.Ivanov@cern.ch
 //   Adjustments by Haavard Helstrup,  Haavard.Helstrup@cern.ch
 //-------------------------------------------------------------------------
 
-#include <TMath.h>
 
 #include "AliSplineFit.h"
- 
+
 ClassImp(AliSplineFit)
 
-TLinearFitter*
-AliSplineFit::fitterStatic()
+TLinearFitter* AliSplineFit::fitterStatic()
 {
   static TLinearFitter* fit = new TLinearFitter(4,"pol3","");
   return fit;
@@ -41,6 +39,7 @@ AliSplineFit::AliSplineFit() :
   fBDump(kFALSE),
   fGraph (0),
   fNmin (0),
+  fMinPoints(0),
   fSigma (0),
   fMaxDelta (0),
   fN0 (0),
@@ -65,11 +64,19 @@ AliSplineFit::AliSplineFit(const AliSplineFit& source) :
   fBDump (source.fBDump),
   fGraph (source.fGraph),
   fNmin  (source.fNmin),
+  fMinPoints (source.fMinPoints),
   fSigma (source.fSigma),
   fMaxDelta (source.fMaxDelta),
   fN0    (source.fN0),
+  fParams (0),
+  fCovars (0),
+  fIndex (0),
   fN     (source.fN),
-  fChi2  (source.fChi2)
+  fChi2  (0.0),
+  fX   (0),
+  fY0  (0),
+  fY1  (0),
+  fChi2I  (source.fChi2I)
 {
 //
 //  Copy constructor
@@ -80,7 +87,7 @@ AliSplineFit::AliSplineFit(const AliSplineFit& source) :
   fParams = (TClonesArray*)source.fParams->Clone();
   fCovars = (TClonesArray*)source.fCovars->Clone();
   for (Int_t i=0; i<fN0; i++) fIndex[i] = source.fIndex[i];
-  
+
   fX     = new Double_t[fN];
   fY0    = new Double_t[fN];
   fY1    = new Double_t[fN];
@@ -95,14 +102,14 @@ AliSplineFit::AliSplineFit(const AliSplineFit& source) :
 AliSplineFit& AliSplineFit::operator=(const AliSplineFit& source){
 //
 //  assignment operator
-//    
+//
   if (&source == this) return *this;
 
 //
 // reassign memory as previous fit could have a different size
 //
 
-  if ( fN0 != source.fN0) { 
+  if ( fN0 != source.fN0) {
 
     delete fParams;
     delete fCovars;
@@ -113,13 +120,13 @@ AliSplineFit& AliSplineFit::operator=(const AliSplineFit& source){
     fParams = new TClonesArray("TVectorD",fN0);
     fCovars = new TClonesArray("TMatrixD",fN0);
   }
-  if ( fN != source.fN) { 
+  if ( fN != source.fN) {
 
     delete []fX;
     delete []fY0;
     delete []fY1;
     delete []fChi2I;
-    fN = source.fN;  
+    fN = source.fN;
     fX     = new Double_t[fN];
     fY0    = new Double_t[fN];
     fY1    = new Double_t[fN];
@@ -127,13 +134,13 @@ AliSplineFit& AliSplineFit::operator=(const AliSplineFit& source){
   }
 
 // use copy constructor (without reassigning memory) to copy values
-  
+
   new (this) AliSplineFit(source);
-  
+
   return *this;
 }
 
-  
+
 AliSplineFit::~AliSplineFit(){
   //
   // destructor. Don't delete fGraph, as this normally comes as input parameter
@@ -156,7 +163,7 @@ Double_t   AliSplineFit::Eval(Double_t x, Int_t deriv) const{
   //         = 3: 3rd derivative
   //
   //  a2 = -(3*a0 -3*b0 + 2*a1*dx +b1*dx)/(dx*dx)
-  //  a3 = -(-2*a0+2*b0 - a1*dx - b1*dx)/(dx*dx*dx) 
+  //  a3 = -(-2*a0+2*b0 - a1*dx - b1*dx)/(dx*dx*dx)
 
   Int_t index = TMath::BinarySearch(fN,fX,x);
   if (index<0) index =0;
@@ -223,7 +230,7 @@ TGraph * AliSplineFit::GenerGraph(Int_t npoints, Double_t fraction, Double_t s1,
   }
 
   TGraph * graph = new TGraph(npoints,time,value);
- 
+
   delete [] value;
   delete [] time; 
   return graph;  
@@ -248,7 +255,7 @@ TGraph * AliSplineFit::GenerNoise(TGraph * graph0, Double_t sigma0){
   delete [] time;
   return graph;  
 }
- 
+
 
 TGraph * AliSplineFit::MakeGraph(Double_t xmin, Double_t xmax, Int_t npoints, Int_t deriv) const {
   //
@@ -276,7 +283,7 @@ TGraph * AliSplineFit::MakeGraph(Double_t xmin, Double_t xmax, Int_t npoints, In
 
 TGraph * AliSplineFit::MakeDiff(TGraph * graph0) const {
   //
-  // Make graph of difference to reference graph 
+  // Make graph of difference to reference graph
   //
   
   Int_t npoints=graph0->GetN();
@@ -296,11 +303,11 @@ TGraph * AliSplineFit::MakeDiff(TGraph * graph0) const {
 
 TH1F * AliSplineFit::MakeDiffHisto(TGraph * graph0) const {
   //
-  // Make histogram of difference to reference graph 
+  // Make histogram of difference to reference graph
   //
 
   Int_t npoints=graph0->GetN();
-  Float_t min=1e+33,max=-1e+33;
+  Float_t min=1e+39,max=-1e+39;
   for (Int_t ip=0; ip<npoints; ip++){
     Double_t x = graph0->GetX()[ip];
     Double_t y = Eval(x,0)-graph0->GetY()[ip];
@@ -310,7 +317,7 @@ TH1F * AliSplineFit::MakeDiffHisto(TGraph * graph0) const {
     }else{
       if (y<min) min=y;
       if (y>max) max=y;
-    }    
+    }
   }
 
   TH1F *his = new TH1F("hdiff","hdiff", 100, min, max);
@@ -327,7 +334,7 @@ TH1F * AliSplineFit::MakeDiffHisto(TGraph * graph0) const {
 
 void AliSplineFit::InitKnots(TGraph * graph, Int_t min, Int_t iter, Double_t maxDelta){
   //
-  // initialize knots + estimate sigma of noise + make initial parameters 
+  // initialize knots + estimate sigma of noise + make initial parameters
   //
   //
 
@@ -336,6 +343,14 @@ void AliSplineFit::InitKnots(TGraph * graph, Int_t min, Int_t iter, Double_t max
   fNmin   = min;
   fMaxDelta = maxDelta;
   Int_t npoints = fGraph->GetN();
+
+  // Make simple spline if too few points in graph
+
+  if (npoints < fMinPoints ) {
+    CopyGraph();
+    return;
+  }
+
   fN0           = (npoints/fNmin)+1;
   Float_t delta = Double_t(npoints)/Double_t(fN0-1);
 
@@ -379,7 +394,7 @@ void AliSplineFit::InitKnots(TGraph * graph, Int_t min, Int_t iter, Double_t max
   for (Int_t iKnot=0; iKnot<fN0; iKnot++){
     TMatrixD & cov = *((TMatrixD*)fCovars->At(iKnot));
     cov*=fSigma*fSigma;
-  }  
+  }
   OptimizeKnots(iter);
 
   fN = 0;
@@ -390,7 +405,7 @@ void AliSplineFit::InitKnots(TGraph * graph, Int_t min, Int_t iter, Double_t max
   fChi2I = new Double_t[fN];
   Int_t iKnot=0;
   for (Int_t i=0; i<fN0; i++){
-    if (fIndex[i]<0) continue; 
+    if (fIndex[i]<0) continue;
     if (iKnot>=fN) {
       printf("AliSplineFit::InitKnots: Knot number > Max knot number\n");
       break;
@@ -398,7 +413,7 @@ void AliSplineFit::InitKnots(TGraph * graph, Int_t min, Int_t iter, Double_t max
     TVectorD   * param = (TVectorD*) fParams->At(i);
     fX[iKnot]  = fGraph->GetX()[fIndex[i]];
     fY0[iKnot] = (*param)(0);
-    fY1[iKnot] = (*param)(1);    
+    fY1[iKnot] = (*param)(1);
     fChi2I[iKnot] = 0;
     iKnot++;
   }
@@ -553,7 +568,7 @@ Float_t AliSplineFit::CheckKnot(Int_t iKnot){
 
   TVectorD  sPrevious = tPrevious*pPrevious+tNext*pNext;
   TVectorD  sKnot     = tpKnot*sPrevious;
-  TVectorD  sNext     = tpNext*sPrevious;  
+  TVectorD  sNext     = tpNext*sPrevious;
   
   TMatrixD csPrevious00(tPrevious, TMatrixD::kMult,cPrevious);
   csPrevious00 *= tPrevious.T();
@@ -600,16 +615,16 @@ Float_t AliSplineFit::CheckKnot(Int_t iKnot){
 
 
 }
-                  
+
 void AliSplineFit::SplineFit(Int_t nder){
   //
   // Cubic spline fit of graph
-  // 
+  //
   // nder
   // nder<0  - no continuity requirement
   //     =0  - continous  0 derivative
   //     =1  - continous  1 derivative
-  //     >1  - continous  2 derivative  
+  //     >1  - continous  2 derivative
   //
   if (!fGraph) return;
   TGraph * graph = fGraph;
@@ -620,7 +635,7 @@ void AliSplineFit::SplineFit(Int_t nder){
   //
   // spline fit
   // each knot 4 parameters  
-  // 
+  //
   TMatrixD       *pmatrix = 0;
   TVectorD       *pvalues = 0;  
   if (nder>1){
@@ -998,7 +1013,7 @@ void AliSplineFit::Test(Int_t npoints, Int_t ntracks, Float_t snoise){
     delete h2;
     delete hS;
   }
-  delete pcstream;    
+  delete pcstream;
 }
 
 void AliSplineFit::Cleanup(){
@@ -1011,4 +1026,21 @@ void AliSplineFit::Cleanup(){
      delete fCovars; fCovars=0;
      delete [] fIndex; fIndex=0;
      delete [] fChi2I; fChi2I=0;
+}
+
+
+void AliSplineFit::CopyGraph() {
+  //
+  // enter graph points directly to fit parameters 
+  // (to bee used when too few points are available)
+  //
+  fN = fGraph->GetN();
+  fX = new Double_t[fN];
+  fY0 = new Double_t[fN];
+  fY1 = new Double_t[fN];
+  for (Int_t i=0; i<fN; i++ ) {
+    fX[i]  = fGraph->GetX()[i];
+    fY0[i] = fGraph->GetY()[i];
+    fY1[i] = 0;
+  }
 }

@@ -15,6 +15,7 @@
 #include "TH1F.h"
 #include "TObject.h"
 #include "TClonesArray.h"
+#include "TMath.h"
 
 #include "TTreeStream.h"
 
@@ -28,10 +29,11 @@ class AliSplineFit : public TObject {
   void       InitKnots(TGraph * graph, Int_t min, Int_t iter, Double_t maxDelta);
   void       MakeKnots0(TGraph * graph, Double_t maxdelta, Int_t minpoints);
   void       SplineFit(Int_t nder);
+  void       CopyGraph();
   void       MakeSmooth(TGraph * graph, Float_t ratio, char * type);
   void       Update(TSpline3 *spline, Int_t nknots);
   void       Cleanup();
-  Int_t      GetKnots() const {return fN;} 
+  Int_t      GetKnots() const {return fN;}
   Double_t*  GetX() const {return fX;}
   Double_t*  GetY0() const {return fY0;}
   Double_t*  GetY1() const {return fY1;}
@@ -47,6 +49,10 @@ class AliSplineFit : public TObject {
   static TGraph * GenerGraph(Int_t npoints, Double_t fraction, Double_t s1, Double_t s2, Double_t s3, Int_t der=0);
   static TGraph * GenerNoise(TGraph * graph0, Double_t s0);
 
+  void SetGraph (TGraph* graph) { fGraph=graph; }
+  void SetMinPoints (Int_t minPoints) { fMinPoints=minPoints;}
+  const Int_t GetMinPoints() const { return fMinPoints; }
+
  protected:
 
   //
@@ -59,22 +65,23 @@ class AliSplineFit : public TObject {
   Bool_t        fBDump;   //  dump debug information flag
   TGraph       *fGraph;   //! initial graph
   Int_t         fNmin;    //  number of points per one knot in iteration 0
+  Int_t         fMinPoints; // minimum number of points to create AliSplineFit
   Double_t      fSigma;   //  locally estimated sigma
-  Double_t      fMaxDelta;//  maximal deviation of the spline fit 
-  Int_t         fN0;      //  number of knots in iteration 0 
+  Double_t      fMaxDelta;//  maximal deviation of the spline fit
+  Int_t         fN0;      //  number of knots in iteration 0
   TClonesArray *fParams;  //  object array of parameters in knots
   TClonesArray *fCovars;  //  object array of covariance in knots
   Int_t        *fIndex;   //[fN0] index of point corresponding to knot
   static TLinearFitter* fitterStatic(); // static fitter to save processing time
   //
-  // 
   //
-  Int_t    fN;            //  number of knots after compression 
-  Double_t fChi2;         //  chi2 per degree of freedom 
+  //
+  Int_t    fN;            //  number of knots after compression
+  Double_t fChi2;         //  chi2 per degree of freedom
   Double_t *fX;           //[fN] - xknot value
   Double_t *fY0;          //[fN] - y value at X
   Double_t *fY1;          //[fN] - y derivative value at X
   Double_t *fChi2I;       //[fN] - chi2 on interval
   ClassDef(AliSplineFit, 1);
 };
-#endif 
+#endif
