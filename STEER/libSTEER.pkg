@@ -40,6 +40,7 @@ AliHelix.cxx AliV0.cxx AliKink.cxx \
 AliSelectorRL.cxx AliSplineFit.cxx \
 AliMagFMapsV1.cxx \
 AliDCSValue.cxx AliDCSSensor.cxx AliDCSSensorArray.cxx \
+AliDCSGenDB.cxx \
 AliSurveyObj.cxx AliSurveyPoint.cxx \
 AliCodeTimer.cxx \
 AliFstream.cxx \
