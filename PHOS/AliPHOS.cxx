@@ -16,6 +16,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.112  2007/02/25 22:59:13  policheh
+ * Digits2Raw(): ALTRO buffer and mapping created per each DDL.
+ *
  * Revision 1.111  2007/02/18 15:21:47  kharlov
  * Corrections for memory leak in Digits2Raw due to AliAltroMapping
  *
@@ -659,6 +662,12 @@ Bool_t AliPHOS::Raw2SDigits(AliRawReader* rawReader)
   AliPHOSRawDecoder dc(rawReader);
   AliPHOSRawDigiProducer pr;
   pr.MakeDigits(sdigits,&dc);
+
+  //ADC counts -> GeV
+  for(Int_t i=0; i<sdigits->GetEntries(); i++) {
+    AliPHOSDigit* sdigit = (AliPHOSDigit*)sdigits->At(i);
+    sdigit->SetEnergy(sdigit->GetEnergy()/AliPHOSPulseGenerator::GeV2ADC());
+  }
 
   Int_t bufferSize = 32000 ;
   TBranch * sdigitsBranch = tree->Branch("PHOS",&sdigits,bufferSize);
