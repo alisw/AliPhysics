@@ -116,17 +116,24 @@ AliMUONVDigit::Compare(const TObject* object) const
     }
     else
     {
-      if ( ManuId() < d->ManuId() )
+      if ( ManuId() > d->ManuId() )
       {
         return 1;
       }
-      else if ( ManuId() > d->ManuId() )
+      else if ( ManuId() < d->ManuId() )
       {
         return -1;
       }
       else
       {
-        return ( ManuChannel() < d->ManuChannel() ) ? 1 : -1;
+        if ( ManuChannel() > d->ManuChannel() )
+        {
+          return 1;
+        }
+        else if ( ManuChannel() < d->ManuChannel() )
+        {
+          return -1;
+        }
       }
     }
   }
