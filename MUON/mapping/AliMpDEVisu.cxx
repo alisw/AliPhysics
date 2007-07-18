@@ -38,6 +38,7 @@
 #include "AliMpPad.h"
 #include "AliMpDDLStore.h"
 #include "AliMpVPadIterator.h"
+#include "AliMpCDB.h"
 
 #include "AliLog.h"
 
@@ -90,10 +91,24 @@ AliMpDEVisu::AliMpDEVisu(UInt_t w, UInt_t h)
   fCurrentDetElem(100),
   fCurrentDEName(),
   fSegmentation(),
-  fDDLStore(AliMpDDLStore::Instance()),
   fZoomMode(false)
 {
 /// Standard constructor
+
+  // Load mapping
+  if ( ! AliMpCDB::LoadMpSegmentation() ) 
+  {
+    AliFatal("Could not access mapping from OCDB !");
+  }
+  
+  // Load DDL store
+  if ( ! AliMpCDB::LoadDDLStore() ) 
+  {
+    AliFatal("Could not access DDL Store from OCDB !");
+  }
+
+  fDDLStore = AliMpDDLStore::Instance();
+
 
   fTrashList.SetOwner(kFALSE);
   
