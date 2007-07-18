@@ -748,7 +748,13 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader,Bool_t isOldRCUFormat)
   TClonesArray * digits = Digits() ;
   AliPHOSRawDigiProducer pr;
   pr.MakeDigits(digits,&dc);
-
+  
+  //ADC counts -> GeV
+  for(Int_t i=0; i<digits->GetEntries(); i++) {
+    AliPHOSDigit* digit = (AliPHOSDigit*)digits->At(i);
+    digit->SetEnergy(digit->GetEnergy()/AliPHOSPulseGenerator::GeV2ADC());
+  }
+  
   //!!!!for debug!!!
   Int_t modMax=-111;
   Int_t colMax=-111;
