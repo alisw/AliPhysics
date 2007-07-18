@@ -66,7 +66,7 @@ void AliGenFixed::Generate()
   }
   Int_t i, j, nt;
   //
-  Float_t o[3];
+  Float_t o[3] = {0., 0., 0.}; 
   if(fVertexSmear == kPerEvent) {
       Vertex();
       for (j = 0;j < 3; j++) o[j] = fVertex[j];
