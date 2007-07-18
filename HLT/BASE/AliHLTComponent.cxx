@@ -66,7 +66,10 @@ AliHLTComponent::AliHLTComponent()
   fOutputBufferFilled(0),
   fOutputBlocks(),
   fpStopwatches(new TObjArray(kSWTypeCount)),
-  fMemFiles()
+  fMemFiles(),
+  fpRunDesc(NULL),
+  fpDDLList(NULL)
+
 {
   // see header file for class documentation
   // or
@@ -97,7 +100,9 @@ AliHLTComponent::AliHLTComponent(const AliHLTComponent&)
   fOutputBufferFilled(0),
   fOutputBlocks(),
   fpStopwatches(NULL),
-  fMemFiles()
+  fMemFiles(),
+  fpRunDesc(NULL),
+  fpDDLList(NULL)
 {
   // see header file for class documentation
 }
@@ -209,6 +214,12 @@ int AliHLTComponent::Deinit()
   // see header file for function documentation
   int iResult=0;
   iResult=DoDeinit();
+  if (fpRunDesc) {
+    HLTWarning("did not receive EOR for run %d", fpRunDesc->fRunNo);
+    AliHLTRunDesc* pRunDesc=fpRunDesc;
+    fpRunDesc=NULL;
+    delete pRunDesc;
+  }
   return iResult;
 }
 
@@ -987,6 +998,48 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
   fOutputBufferSize=size;
   fOutputBufferFilled=0;
   fOutputBlocks.clear();
+
+  // find special events
+  if (fpInputBlocks) {
+    for (int i=0; i<evtData.fBlockCnt && iResult>=0; i++) {
+      if (fpInputBlocks[i].fDataType==kAliHLTDataTypeSOR) {
+	// start of run
+	if (fpRunDesc==NULL) {
+	  fpRunDesc=new AliHLTRunDesc;
+	  if (fpRunDesc) {
+	    if ((iResult=CopyStruct(fpRunDesc, sizeof(AliHLTRunDesc), i, "AliHLTRunDesc", "SOR"))>0) {
+	      HLTDebug("set run decriptor, run no %d", fpRunDesc->fRunNo);
+	    }
+	  } else {
+	    iResult=-ENOMEM;
+	  }
+	} else {
+	  HLTWarning("already received SOR event run no %d, ignoring SOR", fpRunDesc->fRunNo);
+	}
+      } else if (fpInputBlocks[i].fDataType==kAliHLTDataTypeEOR) {
+	if (fpRunDesc!=NULL) {
+	  if (fpRunDesc) {
+	    AliHLTRunDesc rundesc;
+	    if ((iResult=CopyStruct(&rundesc, sizeof(AliHLTRunDesc), i, "AliHLTRunDesc", "SOR"))>0) {
+	      if (fpRunDesc->fRunNo!=rundesc.fRunNo) {
+		HLTWarning("run no missmatch: SOR %d, EOR %d", fpRunDesc->fRunNo, rundesc.fRunNo);
+	      } else {
+		HLTDebug("EOR run no %d", fpRunDesc->fRunNo);
+	      }
+	    }
+	    AliHLTRunDesc* pRunDesc=fpRunDesc;
+	    fpRunDesc=NULL;
+	    delete pRunDesc;
+	  }
+	} else {
+	  HLTWarning("did not receive SOR, ignoring EOR");
+	}
+	// end of run
+      } else if (fpInputBlocks[i].fDataType==kAliHLTDataTypeDDL) {
+	// DDL list
+      }
+    }
+  }
   
   vector<AliHLTComponentBlockData> blockData;
   { // dont delete, sets the scope for the stopwatch guard
@@ -1143,5 +1196,55 @@ int AliHLTComponent::SetStopwatches(TObjArray* pStopwatches)
   int iResult=0;
   for (int i=0 ; i<(int)kSWTypeCount && pStopwatches->GetEntries(); i++)
     SetStopwatch(pStopwatches->At(i), (AliHLTStopwatchType)i);
+  return iResult;
+}
+
+AliHLTUInt32_t AliHLTComponent::GetRunNo() const
+{
+  if (fpRunDesc==NULL) return 0;
+  return fpRunDesc->fRunNo;
+}
+
+AliHLTUInt32_t AliHLTComponent::GetRunType() const
+{
+  if (fpRunDesc==NULL) return 0;
+  return fpRunDesc->fRunType;
+}
+
+int AliHLTComponent::CopyStruct(void* pStruct, int iStructSize, int iBlockNo,
+				const char* structname, const char* eventname)
+{
+  int iResult=0;
+  if (pStruct!=NULL && iStructSize>sizeof(AliHLTUInt32_t)) {
+    if (fpInputBlocks!=NULL && iBlockNo<fCurrentEventData.fBlockCnt) {
+      AliHLTUInt32_t* pTgt=(AliHLTUInt32_t*)pStruct;
+      if (fpInputBlocks[iBlockNo].fPtr && fpInputBlocks[iBlockNo].fSize) {
+	AliHLTUInt8_t* pSrc=((AliHLTUInt8_t*)fpInputBlocks[iBlockNo].fPtr)+fpInputBlocks[iBlockNo].fOffset;
+	AliHLTUInt32_t copy=*((AliHLTUInt32_t*)pSrc);
+	if (fpInputBlocks[iBlockNo].fSize!=copy) {
+	  HLTWarning("%s event: missmatch of block size (%d) and structure size (%d)", eventname, fpInputBlocks[iBlockNo].fSize, copy);
+	  if (copy>fpInputBlocks[iBlockNo].fSize) copy=fpInputBlocks[iBlockNo].fSize;
+	}
+	if (copy!=iStructSize) {
+	  HLTWarning("%s event: missmatch in %s version (data type version %d)", eventname, structname, ALIHLT_DATA_TYPES_VERSION);
+	  if (copy>iStructSize) {
+	    copy=iStructSize;
+	  } else {
+	    memset(pTgt, 0, iStructSize);
+	  }
+	}
+	memcpy(pTgt, pSrc, copy);
+	*pTgt=iStructSize;
+	iResult=copy;
+      } else {
+	HLTWarning("%s event: missing data block", eventname);
+      }
+    } else {
+      iResult=-ENODATA;
+    }
+  } else {
+    HLTError("invalid struct");
+    iResult=-EINVAL;
+  }
   return iResult;
 }

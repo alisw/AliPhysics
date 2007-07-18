@@ -209,10 +209,6 @@ class AliHLTComponent : public AliHLTLogging {
  public:
   /** standard constructor */
   AliHLTComponent();
-  /** not a valid copy constructor, defined according to effective C++ style */
-  AliHLTComponent(const AliHLTComponent&);
-  /** not a valid assignment op, but defined according to effective C++ style */
-  AliHLTComponent& operator=(const AliHLTComponent&);
   /** standard destructor */
   virtual ~AliHLTComponent();
 
@@ -851,7 +847,39 @@ class AliHLTComponent : public AliHLTLogging {
    */
   int CreateEventDoneData(AliHLTComponentEventDoneData edd);
 
+  /**
+   * Get current run number
+   */
+  AliHLTUInt32_t GetRunNo() const;
+
+  /**
+   * Get the current run type.
+   */
+  AliHLTUInt32_t GetRunType() const;
+
+  /**
+   * Copy a struct from block data.
+   * The function checks for block size and struct size. The least common
+   * size will be copied to the target struct, remaining fields are initialized
+   * to zero.<br>
+   * The target struct must have a 32bit struct size indicator as first member.
+   * @param pStruct     target struct
+   * @param iStructSize size of the struct
+   * @param pData       block data
+   * @param iBlockNo    index of input block
+   * @param structname  name of the struct (log messages)
+   * @param eventname   name of the event (log messages)
+   * @return size copied, neg. error if failed
+   */
+  int CopyStruct(void* pStruct, int iStructSize, int iBlockNo,
+		 const char* structname="", const char* eventname="");
+
  private:
+  /** not a valid copy constructor, defined according to effective C++ style */
+  AliHLTComponent(const AliHLTComponent&);
+  /** not a valid assignment op, but defined according to effective C++ style */
+  AliHLTComponent& operator=(const AliHLTComponent&);
+
   /**
    * Increment the internal event counter.
    * To be used by the friend classes AliHLTProcessor, AliHLTDataSource
@@ -987,6 +1015,12 @@ class AliHLTComponent : public AliHLTLogging {
 
   /** array of memory files AliHLTMemoryFile */
   vector<AliHLTMemoryFile*> fMemFiles;                             //! transient
+
+  /** descriptor of the current run */
+  AliHLTRunDesc* fpRunDesc;                                        //! transient
+
+  /** the current DDL list */
+  AliHLTEventDDL* fpDDLList;                                       //! transient
 
   ClassDef(AliHLTComponent, 3)
 };

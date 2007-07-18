@@ -1,3 +1,7 @@
+2007-07-18 HLT base
+	- analysis framework handles SOR and EOR events, GetRunNo/Type
+	  added to AliHLTComponent
+
 2007-07-17 HLT base
 	- extended high-level component interface in order to allow header
 	  buffer before TObjects

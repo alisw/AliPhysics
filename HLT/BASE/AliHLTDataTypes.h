@@ -165,7 +165,7 @@ extern "C" {
 
   /**
    * @struct AliHLTComponentDataType
-   * Data type decriptor for data blocks transferred through the processing
+   * Data type descriptor for data blocks transferred through the processing
    * chain.
    */
   struct AliHLTComponentDataType
