@@ -14,8 +14,7 @@
 
 
 #include "TObject.h"
-#include "AliESD.h"
-
+#include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliV0.h"
 #include "AliESDfriendTrack.h"
@@ -25,13 +24,16 @@ class AliTPCseed;
 
 /////////////////////////////////////////////////////////////////////////
 class AliESDRecInfo: public TObject {
-  
+  friend class  AliRecInfoMaker;
+  friend class  AliESDRecV0Info;
+  friend class  AliESDRecKinkInfo;
+
 public:
   AliESDRecInfo();
   AliESDRecInfo(const AliESDRecInfo& recinfo);
   ~AliESDRecInfo();
   void UpdatePoints(AliESDtrack* track);
-  void Update(AliMCInfo* info,AliTPCParam * par, Bool_t reconstructed, AliESD *event);
+  void Update(AliMCInfo* info,AliTPCParam * par, Bool_t reconstructed);
   void Reset();
   //
   void SetESDtrack(const AliESDtrack *track);
@@ -40,6 +42,7 @@ public:
   AliTPCseed *GetTPCtrack() const { return fTPCtrack;}
   AliITStrackMI *GetITStrack() const { return fITStrack;}
   AliTRDtrack   *GetTRDtrack() const { return fTRDtrack;}
+protected:
   //
   Float_t  fTPCPoints[10]; //start , biggest end points,max density .. density at the last 30 pad-rows
   Double_t fTPCinR0[5];   //generated position of the track at inner tpc - radius [3] and fi [4]
@@ -90,8 +93,10 @@ private:
 
 
 class AliESDRecV0Info: public TObject {
+  friend class  AliRecInfoMaker;
 public:
   void Update(Float_t vertex[3]);
+protected:
   AliESDRecInfo  fT1;      //track1
   AliESDRecInfo  fT2;      //track2  
   Double_t       fDist1;    //info about closest distance according closest MC - linear DCA
@@ -114,8 +119,8 @@ public:
   AliV0*         fV0tpc;           // Vo information from reconsturction according TPC
   AliV0*         fV0its;           // Vo information from reconsturction according ITS
   AliV0*         fV0rec;           // V0 information form the reconstruction
-  Int_t          fMultiple;
-  Int_t          fV0Multiple;
+  Int_t          fMultiple;     // how man times V0 was recostructed 
+  Int_t          fV0Multiple;   // how man times was V0 reconstucted
   Int_t          fRecStatus;    // status form the reconstuction
   ClassDef(AliESDRecV0Info,2)   // container for  
 };
@@ -123,8 +128,10 @@ public:
 
 
 class AliESDRecKinkInfo: public TObject {
+friend class  AliRecInfoMaker;
 public:
   void Update();
+protected:
   AliESDRecInfo  fT1;      //track1
   AliESDRecInfo  fT2;      //track2  
   AliESDkink     fKink;    //kink
@@ -146,8 +153,8 @@ public:
   Float_t        fPointAngle;   //point angle full
   Int_t          fStatus;       //status -tracks 
   Int_t          fRecStatus;    //kink -status- 0 - not found  1-good -  fake
-  Int_t          fMultiple;
-  Int_t          fKinkMultiple;
+  Int_t          fMultiple;     // how many times was kink reconstructed
+  Int_t          fKinkMultiple; // how many times was kink reconstructed
   ClassDef(AliESDRecKinkInfo,1)   // container for  
 };
 

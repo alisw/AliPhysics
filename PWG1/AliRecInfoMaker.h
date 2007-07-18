@@ -36,7 +36,6 @@ class AliTPCseed;
 class AliRecInfoMaker {
 
 public:
-  //AliRecInfoMaker();
   AliRecInfoMaker(const char* fnGenTracks,
 	   const char* fnCmpRes      ="cmpTracks.root", 
 	   const char* fnGalice      ="galice.root",
