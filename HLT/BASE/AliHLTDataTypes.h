@@ -14,6 +14,18 @@
 
 //////////////////////////////////////////////////////////////////////////
 //
+// version no of HLT data types
+//
+//////////////////////////////////////////////////////////////////////////
+
+/* Version   Description
+ *   1       first version until June 07; implicite, not tagged
+ *   2       introduced June 07, enhanced/cleaned/arranged structure
+ */
+#define ALIHLT_DATA_TYPES_VERSION 2
+
+//////////////////////////////////////////////////////////////////////////
+//
 // HLT data origin defines
 //
 //////////////////////////////////////////////////////////////////////////
@@ -69,12 +81,12 @@ const int kAliHLTComponentDataTypefIDsize=8;
 # define kAliHLTFXSCalibDataTypeID {'F','X','S','_','C','A','L',' '}
 
 /** start of run (SOR) event 
- * @ref AliHLTEventDesc
+ * @ref AliHLTRunDesc
  */
 # define kAliHLTSORDataTypeID      {'S','T','A','R','T','O','F','R'}
 
 /** end of run (EOR) event 
- * @ref AliHLTEventDesc
+ * @ref AliHLTRunDesc
  */
 # define kAliHLTEORDataTypeID      {'E','N','D','O','F','R','U','N'}
 
@@ -201,11 +213,11 @@ extern "C" {
   };
 
   /**
-   * @struct AliHLTEventDesc
+   * @struct AliHLTRunDesc
    * Event descriptor.
    * The struct is send with the SOR and EOR events.
    */
-  struct AliHLTEventDesc
+  struct AliHLTRunDesc
   {
     AliHLTUInt32_t fStructSize;
     AliHLTUInt32_t fRunNo;
