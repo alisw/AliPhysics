@@ -11,6 +11,7 @@
 /// \brief Implementation of RPC response
 
 #include "AliMUONResponse.h"
+#include "AliMUONTriggerEfficiencyCells.h"
 
 class AliMUONResponseTrigger : public AliMUONResponse
 {
@@ -22,23 +23,20 @@ class AliMUONResponseTrigger : public AliMUONResponse
   virtual Int_t SetGenerCluster(){return 0;}
 
   virtual void DisIntegrate(const AliMUONHit& hit, TList& digits);
+
+  virtual void InitTriggerEfficiency(AliMUONTriggerEfficiencyCells* triggerEfficiency);
+
+ protected:
+  AliMUONTriggerEfficiencyCells* fTriggerEfficiency; //!< trigger efficiency map
   
  private:
+  /// Not implemented
+  AliMUONResponseTrigger(const AliMUONResponseTrigger& other);
+  /// Not implemented
+  AliMUONResponseTrigger& operator=(const AliMUONResponseTrigger& other); // assignment operator
+  
 
-  ClassDef(AliMUONResponseTrigger,1) // Implementation of RPC response
+  ClassDef(AliMUONResponseTrigger,2) // Implementation of RPC response
     
 };
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-

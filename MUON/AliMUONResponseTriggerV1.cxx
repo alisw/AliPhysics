@@ -149,6 +149,8 @@ void AliMUONResponseTriggerV1::DisIntegrate(const AliMUONHit& hit, TList& digits
     twentyNano=1;
   }
 
+  Bool_t isTrig[2]={kTRUE, kTRUE};
+
   for ( Int_t cath = AliMp::kCath0; cath <= AliMp::kCath1; ++cath )
   {
     const AliMpVSegmentation* seg 
@@ -165,6 +167,16 @@ void AliMUONResponseTriggerV1::DisIntegrate(const AliMUONHit& hit, TList& digits
     d->SetPadXY(ix,iy);
 
     d->SetCharge(twentyNano);
+
+    if(fTriggerEfficiency){
+      if(cath==0){
+	Int_t nboard = pad.GetLocation(0).GetFirst();
+	fTriggerEfficiency->IsTriggered(detElemId, nboard, 
+					isTrig[0], isTrig[1]);
+      }
+      if(!isTrig[cath]) continue;
+    }
+
     digits.Add(d);
 
     SetGenerCluster(); // 1 randum number per cathode (to be checked)

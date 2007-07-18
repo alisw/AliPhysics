@@ -26,7 +26,6 @@
 #include "AliMUONConstants.h"
 #include "AliMUONDigit.h"
 #include "AliMUONLogger.h"
-#include "AliMUONTriggerEfficiencyCells.h"
 #include "AliMUONTriggerElectronics.h"
 #include "AliMUONTriggerStoreV1.h"
 #include "AliMUONVCalibParam.h"
@@ -98,7 +97,6 @@ AliMUONDigitizerV3::AliMUONDigitizerV3(AliRunDigitizer* manager,
 fIsInitialized(kFALSE),
 fCalibrationData(0x0),
 fTriggerProcessor(0x0),
-fTriggerEfficiency(0x0),
 fNoiseFunction(0x0),
 fNoiseFunctionTrig(0x0),
   fGenerateNoisyDigits(generateNoisyDigits),
@@ -183,63 +181,6 @@ AliMUONDigitizerV3::ApplyResponseToTrackerDigit(AliMUONVDigit& digit, Bool_t add
 }
 
 //_____________________________________________________________________________
-void 
-AliMUONDigitizerV3::ApplyResponseToTriggerDigit(const AliMUONVDigitStore& digitStore,
-                                                AliMUONVDigit& digit)
-{
-  /// \todo add comment
-
-  if ( !fTriggerEfficiency ) return;
-
-  if (digit.IsEfficiencyApplied()) return;
-
-  AliMUONVDigit* correspondingDigit = FindCorrespondingDigit(digitStore,digit);
-
-  if (!correspondingDigit) return; //reject bad correspondences
-
-  Int_t detElemId = digit.DetElemId();
-
-  AliMpSegmentation* segmentation = AliMpSegmentation::Instance();
-  const AliMpVSegmentation* segment[2] = 
-  {
-    segmentation->GetMpSegmentation(detElemId,AliMp::GetCathodType(digit.Cathode())), 
-    segmentation->GetMpSegmentation(detElemId,AliMp::GetCathodType(correspondingDigit->Cathode()))
-  };
-
-  AliMpPad pad[2] = 
-  {
-    segment[0]->PadByIndices(AliMpIntPair(digit.PadX(),digit.PadY()),kTRUE), 
-    segment[1]->PadByIndices(AliMpIntPair(correspondingDigit->PadX(),correspondingDigit->PadY()),kTRUE)
-  };
-
-  Int_t p0(1);
-  if (digit.Cathode()==0) p0=0;
-
-  AliMpIntPair location = pad[p0].GetLocation(0);
-  Int_t nboard = location.GetFirst();
-
-  Bool_t isTrig[2];
-
-  fTriggerEfficiency->IsTriggered(detElemId, nboard, 
-                                  isTrig[0], isTrig[1]);
-  digit.EfficiencyApplied(kTRUE);
-  correspondingDigit->EfficiencyApplied(kTRUE);
-
-  if (!isTrig[digit.Cathode()])
-  {
-	  digit.SetCharge(0);
-  }
-  
-  if ( &digit != correspondingDigit )
-  {
-	  if (!isTrig[correspondingDigit->Cathode()])
-    {
-      correspondingDigit->SetCharge(0);
-	  }
-  }
-}
-
-//_____________________________________________________________________________
 void
 AliMUONDigitizerV3::ApplyResponse(const AliMUONVDigitStore& store,
                                   AliMUONVDigitStore& filteredStore)
@@ -262,10 +203,7 @@ AliMUONDigitizerV3::ApplyResponse(const AliMUONVDigitStore& store,
     {
       ApplyResponseToTrackerDigit(*digit,kAddNoise);
     }
-    else
-    {
-      ApplyResponseToTriggerDigit(store,*digit);
-    }
+
     if ( digit->ADC() > 0  || digit->Charge() > 0 )
     {
       filteredStore.Add(*digit,AliMUONVDigitStore::kIgnore);
@@ -490,31 +428,6 @@ AliMUONDigitizerV3::Exec(Option_t*)
   fTriggerStore->Clear();
   fDigitStore->Clear();
   fOutputDigitStore->Clear();
-}
-
-//_____________________________________________________________________________
-AliMUONVDigit* 
-AliMUONDigitizerV3::FindCorrespondingDigit(const AliMUONVDigitStore& digitStore,
-                                           AliMUONVDigit& digit) const
-{                                                
-  /// Find, if it exists, the digit corresponding to digit.Hit(), in the 
-  /// other cathode
-
-  AliCodeTimerAuto("")
-  
-  TIter next(digitStore.CreateIterator());
-  AliMUONVDigit* d;
-  
-  while ( ( d = static_cast<AliMUONVDigit*>(next()) ) )
-  {
-    if ( d->DetElemId() == digit.DetElemId() &&
-         d->Hit() == digit.Hit() &&
-         d->Cathode() != digit.Cathode() )
-    {
-      return d;
-    }      
-  }    
-  return 0x0;
 }
 
 
@@ -803,20 +716,6 @@ AliMUONDigitizerV3::Init()
     AliFatal("Could not access gains from OCDB !");
   }
   fTriggerProcessor = new AliMUONTriggerElectronics(fCalibrationData);
-  
-  if ( muon()->GetTriggerEffCells() )
-  {
-    fTriggerEfficiency = fCalibrationData->TriggerEfficiency();
-    if ( fTriggerEfficiency )
-    {
-      AliDebug(1, "Will apply trigger efficiency");
-    }
-    else
-    {
-      AliFatal("I was requested to apply trigger efficiency, but I could "
-               "not get it !");
-    }
-  }
   
   AliDebug(1, Form("Will %s generate noise-only digits for tracker",
                      (fGenerateNoisyDigits ? "":"NOT")));

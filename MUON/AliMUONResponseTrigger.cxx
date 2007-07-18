@@ -30,6 +30,7 @@
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONHit.h"
 #include "AliMUONConstants.h"
+#include "AliMUONTriggerEfficiencyCells.h"
 
 #include "AliMpPad.h"
 #include "AliMpCathodType.h"
@@ -68,7 +69,8 @@ namespace
 
 //------------------------------------------------------------------   
 AliMUONResponseTrigger::AliMUONResponseTrigger()
-  : AliMUONResponse()
+  : AliMUONResponse(),
+    fTriggerEfficiency(0x0)
 {
 /// Default constructor
 }
@@ -102,7 +104,9 @@ AliMUONResponseTrigger::DisIntegrate(const AliMUONHit& hit, TList& digits)
   {
     twentyNano=1;
   }
-  
+
+  Bool_t isTrig[2]={kTRUE,kTRUE};
+
   for ( Int_t cath = AliMp::kCath0; cath <= AliMp::kCath1; ++cath )
   {
     const AliMpVSegmentation* seg 
@@ -131,12 +135,36 @@ AliMUONResponseTrigger::DisIntegrate(const AliMUONHit& hit, TList& digits)
     //FIXME : a trigger digit can have several locations. 
     //this is not currently supported by the digit class. Change that or not ?
     d->SetCharge(twentyNano);
+
+    if(fTriggerEfficiency){
+      if(cath==0){
+	Int_t nboard = pad.GetLocation(0).GetFirst();
+	fTriggerEfficiency->IsTriggered(detElemId, nboard, 
+					isTrig[0], isTrig[1]);
+      }
+      if(!isTrig[cath]) continue;
+    }
+
     digits.Add(d);   
   }
   
 }
 
 
+//_____________________________________________________________________________
+void
+AliMUONResponseTrigger::InitTriggerEfficiency(AliMUONTriggerEfficiencyCells *triggerEfficiency)
+{
+/// Initialize trigger chamber efficiency (on demand)
 
-
-
+  fTriggerEfficiency = triggerEfficiency;
+  if ( fTriggerEfficiency )
+  {
+    AliDebug(1, "Will apply trigger efficiency");
+  }
+  else
+  {
+    AliFatal("I was requested to apply trigger efficiency, but I could "
+	     "not get it !");
+  }
+}

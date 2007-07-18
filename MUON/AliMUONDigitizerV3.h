@@ -19,7 +19,6 @@
 class AliMUONCalibrationData;
 class AliMUONVDigit;
 class AliMUONLogger;
-class AliMUONTriggerEfficiencyCells;
 class TClonesArray;
 class TF1;
 class TString;
@@ -55,14 +54,10 @@ private:
   void ApplyResponse(const AliMUONVDigitStore& store, AliMUONVDigitStore& filteredStore);
 
   void ApplyResponseToTrackerDigit(AliMUONVDigit& digit, Bool_t addNoise);
-  void ApplyResponseToTriggerDigit(const AliMUONVDigitStore& digitStore, AliMUONVDigit& digit);
 
   AliLoader* GetLoader(const TString& foldername);
   
 private:  
-
-  AliMUONVDigit* FindCorrespondingDigit(const AliMUONVDigitStore& digitStore,
-                                       AliMUONVDigit& digit) const;
 
   void GenerateNoisyDigits(AliMUONVDigitStore& digitStore);
   void GenerateNoisyDigitsForOneCathode(AliMUONVDigitStore& digitStore, 
@@ -77,7 +72,6 @@ private:
   Bool_t fIsInitialized; ///< are we initialized ?
   AliMUONCalibrationData* fCalibrationData; //!< pointer to access calib parameters
   AliMUONTriggerElectronics* fTriggerProcessor; ///< pointer to the trigger part of the job
-  AliMUONTriggerEfficiencyCells* fTriggerEfficiency; ///< trigger efficiency map  
   TF1* fNoiseFunction; //!< function to randomly get signal above n*sigma_ped
   TF1* fNoiseFunctionTrig; //!< function to get noise disribution on trig. chambers
   Int_t fGenerateNoisyDigits; //!< whether or not we should generate noise-only digits for tracker (1) and trigger (2)
