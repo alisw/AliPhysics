@@ -52,6 +52,18 @@ public:
 
     TH1S* GetHistoTmean(Int_t sector, Bool_t force=kFALSE);           // get refernce histogram
 
+    //needed here to merge ClibCE objects
+    TObjArray* GetParamArrayPol1(Int_t sector, Bool_t force=kFALSE);
+    TObjArray* GetParamArrayPol2(Int_t sector, Bool_t force=kFALSE);
+
+//    TObjArray*  GetTMeanArrayEvent(){ return &fTMeanArrayEvent; }
+//    TObjArray*  GetQMeanArrayEvent(){ return &fQMeanArrayEvent; }
+    TVectorF* GetTMeanEvents(Int_t sector, Bool_t force=kFALSE);
+    TVectorF* GetQMeanEvents(Int_t sector, Bool_t force=kFALSE);
+
+    TVectorD*   GetEventTimes()     { return &fVEventTime;      }
+    TVectorD*   GetEventIds()       { return &fVEventNumber;    }
+
     Short_t GetDebugLevel()     const { return fDebugLevel;    }
     //
     void  SetRangeTime (Int_t firstTimeBin, Int_t lastTimeBin) { fFirstTimeBin=firstTimeBin;   fLastTimeBin=lastTimeBin;  } //Set range in which the pulser signal is expected
@@ -60,8 +72,10 @@ public:
     void  SetRangeRefT0 (Int_t nBins, Float_t xMin, Float_t xMax){ fNbinsT0  = nBins; fXminT0  = xMin; fXmaxT0  = xMax; }   //Set range for T0 reference histograms
     void  SetRangeRefRMS(Int_t nBins, Float_t xMin, Float_t xMax){ fNbinsRMS = nBins; fXminRMS = xMin; fXmaxRMS = xMax; }   //Set range for T0 reference histograms
     //
-    void  SetTimeStampEvent(Float_t timestamp){ fTimeStamp = timestamp; }
-    void  SetRunNumber(Float_t eventnumber){ fRunNumber = eventnumber; }
+    void  SetTimeStampEvent(Double_t timestamp){ fTimeStamp = timestamp; }
+    void  SetRunNumber(Double_t eventnumber){ fRunNumber = eventnumber; }
+
+    void  SetEventInfo(Double_t runNumber, Double_t timestamp, Double_t eventId){ fRunNumber=runNumber; fTimeStamp=timestamp; fEventId=eventId;}
 
     void  SetOldRCUformat(Bool_t format=kTRUE){ fOldRCUformat = format; }
 
@@ -73,6 +87,8 @@ public:
     Int_t GetLastTimeBin()    const { return fLastTimeBin;   }
 
     Int_t GetNeventsProcessed() { return fNevents; }
+
+    void Merge(AliTPCCalibCE *ce);
 
     TGraph *MakeGraphTimeCE(Int_t sector, Int_t xVariable=0, Int_t fitType=0, Int_t fitParameter=0);
 
@@ -116,7 +132,6 @@ private:
 
     TObjArray fHistoTmean;            //! Calibration histograms of the mean CE position for all sectors
 
-    TObjArray fParamArrayEvent;       //  Store mean arrival time parameters for each event
     TObjArray fParamArrayEventPol1;   //  Store mean arrival time parameters for each sector event by event from global plane fit
     TObjArray fParamArrayEventPol2;   //  Store mean arrival time parameters for each sector event by event from global parabola fit
     TObjArray fTMeanArrayEvent;       //  Store mean arrival time for each sector event by event
@@ -124,9 +139,10 @@ private:
     TVectorD  fVEventTime;            //  Timestamps of the events
     TVectorD  fVEventNumber;          //  Eventnumbers of the events
     Int_t     fNevents;               //  Event counter
-    Double_t   fTimeStamp;             //! Timestamp of the current event
-    Double_t   fRunNumber;             //! Run Number of the current event
-    Double_t   fOldRunNumber;          //! Old Run Number
+    Double_t  fTimeStamp;             //! Timestamp of the current event
+    Double_t  fEventId;               //! Event Id of the current event
+    Double_t  fRunNumber;             //! Run Number of the current event
+    Double_t  fOldRunNumber;          //! Old Run Number
 
     TObjArray fPadTimesArrayEvent;    //! Pad Times for the event, before mean Time0 corrections
     TObjArray fPadQArrayEvent;        //! Charge for the event, only needed for debugging streamer
@@ -146,7 +162,6 @@ private:
     TVectorD  fVTime0OffsetCounter;   //!  Time0 Offset counter for each sector;
     TVectorD  fVMeanQ;                //!  Mean Q for each sector;
     TVectorD  fVMeanQCounter;         //!  Mean Q counter for each sector;
-//    TH1F      *fHTime0;                //!  Time0 Offset ( mean Time0 )                          ???????????????????????????
     //debugging
     Int_t fEvent;
     TTreeSRedirector *fDebugStreamer;  //! debug streamer
@@ -167,11 +182,10 @@ private:
 
     AliTPCCalROC* GetCalRoc(Int_t sector, TObjArray* arr, Bool_t force);
 
+    TVectorF* GetVectSector(Int_t sector, TObjArray *arr, UInt_t size, Bool_t force=kFALSE);
     TVectorF* GetPadTimesEvent(Int_t sector, Bool_t force=kFALSE);
 
     TObjArray* GetParamArray(Int_t sector, TObjArray *arr, Bool_t force=kFALSE);
-    TObjArray* GetParamArrayPol1(Int_t sector, Bool_t force=kFALSE);
-    TObjArray* GetParamArrayPol2(Int_t sector, Bool_t force=kFALSE);
 
     void ResetEvent();
     void ResetPad();
@@ -180,7 +194,6 @@ private:
 
 
     //debug
-    TVectorF* GetPadInfoEvent(Int_t sector, TObjArray *arr, Bool_t force=kFALSE);
     TVectorF* GetPadQEvent(Int_t sector, Bool_t force=kFALSE);
     TVectorF* GetPadRMSEvent(Int_t sector, Bool_t force=kFALSE);
     TVectorF* GetPadPedestalEvent(Int_t sector, Bool_t force=kFALSE);
@@ -189,7 +202,8 @@ private:
 public:
 
 
-  ClassDef(AliTPCCalibCE,1)
+    ClassDef(AliTPCCalibCE,2)  //Implementation of the TPC Central Electrode calibration
+
 };
 
 

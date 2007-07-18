@@ -17,13 +17,6 @@
 
 
 
-//-------------------------------------------------------
-//          Implementation of the TPC pulser calibration
-//
-//   Origin: Jens Wiechula, Marian Ivanov   J.Wiechula@gsi.de, Marian.Ivanov@cern.ch
-// 
-// 
-//-------------------------------------------------------
 
 
 /* $Id$ */
@@ -40,6 +33,7 @@
 #include <TMatrixD.h>
 #include <TMath.h>
 #include <TGraph.h>
+#include <TString.h>
 
 #include <TDirectory.h>
 #include <TSystem.h>
@@ -62,9 +56,250 @@
 
 //date
 #include "event.h"
-ClassImp(AliTPCCalibCE) /*FOLD00*/
+ClassImp(AliTPCCalibCE)
 
-AliTPCCalibCE::AliTPCCalibCE() : /*FOLD00*/
+//////////////////////////////////////////////////////////////////////////////////////
+//          Implementation of the TPC Central Electrode calibration
+//
+//   Origin: Jens Wiechula, Marian Ivanov   J.Wiechula@gsi.de, Marian.Ivanov@cern.ch
+// 
+//
+//
+// *************************************************************************************
+// *                                Class Description                                  *
+// *************************************************************************************
+//
+/* BEGIN_HTML
+ <h4>The AliTPCCalibCE class is used to get calibration data from the Central Electrode
+ using laser runs.</h4>
+
+ The information retrieved is
+ <ul style="list-style-type: square;">
+   <li>Time arrival from the CE</li>
+   <li>Signal width</li>
+   <li>Signal sum</li>
+ </ul>
+
+<h4>Overview:</h4>
+ <ol style="list-style-type: upper-roman;">
+   <li><a href="#working">Working principle</a></li>
+   <li><a href="#user">User interface for filling data</a></li>
+   <li><a href="#info">Stored information</a></li>
+ </ol>
+
+ <h3><a name="working">I. Working principle</a></h3>
+
+ <h4>Raw laser data is processed by calling one of the ProcessEvent(...) functions
+ (see below). These in the end call the Update(...) function.</h4>
+
+ <ul style="list-style-type: square;">
+   <li>the Update(...) function:<br />
+       In this function the array fPadSignal is filled with the adc signals between the specified range
+       fFirstTimeBin and fLastTimeBin for the current pad.
+       before going to the next pad the ProcessPad() function is called, which analyses the data for one pad
+       stored in fPadSignal.
+   </li>
+   <ul style="list-style-type: square;">
+   <li>the ProcessPad() function:</li>
+   <ol style="list-style-type: decimal;">
+     <li>Find Pedestal and Noise information</li>
+     <ul style="list-style-type: square;">
+       <li>use database information which has to be set by calling<br />
+           SetPedestalDatabase(AliTPCCalPad *pedestalTPC, AliTPCCalPad *padNoiseTPC)</li>
+       <li>if no information from the pedestal data base
+           is available the informaion is calculated on the fly
+           ( see FindPedestal() function )</li>
+     </ul>
+     <li>Find local maxima of the pad signal</li>
+     <ul style="list-style-type: square;">
+       <li>maxima arise from the laser tracks, the CE and also periodic postpeaks after the CE signal have
+       have been observed ( see FindLocalMaxima(...) )</li>
+     </ul>
+     <li>Find the CE signal information</li>
+     <ul style="list-style-type: square;">
+       <li>to find the position of the CE signal the Tmean information from the previos event is used
+           as the CE signal the local maximum closest to this Tmean is identified</li>
+       <li>calculate  mean = T0, RMS = signal width and Q sum in a range of -4+7 timebins around Q max position
+           the Q sum is scaled by pad area (see FindPulserSignal(...) function)</li>
+     </ul>
+     <li>Fill a temprary array for the T0 information (GetPadTimesEvent(fCurrentSector,kTRUE)) (why see below)</li>
+     <li>Fill the Q sum and RMS values in the histograms (GetHisto[RMS,Q](ROC,kTRUE))</li>
+     </ol>
+   </ul>
+ </ul>
+
+ <h4>At the end of each event the EndEvent() function is called</h4>
+
+ <ul style="list-style-type: square;">
+   <li>the EndEvent() function:</li>
+   <ul style="list-style-type: square;">
+     <li>calculate the mean T0 for side A and side C. Fill T0 histogram with Time0-<Time0 for side[A,C]>
+         This is done to overcome syncronisation problems between the trigger and the fec clock.</li>
+     <li>calculate Mean T for each ROC using the COG aroud the median of the LocalMaxima distribution in one sector</li>
+     <li>calculate Mean Q</li>
+     <li>calculate Global fit parameters for Pol1 and Pol2 fits</li>
+   </ul>
+ </ul>
+
+ <h4>After accumulating the desired statistics the Analyse() function has to be called.</h4>
+  <ul style="list-style-type: square;">
+  <li>the Analyse() function:</li>
+    <ul style="list-style-type: square;">
+      <li>calculate the mean values of T0, RMS, Q for each pad, using
+          the AliMathBase::GetCOG(...) function</li>
+      <li>fill the calibration storage classes (AliTPCCalROC) for each ROC</li>
+         (The calibration information is stored in the TObjArrays fCalRocArrayT0, fCalRocArrayRMS and fCalRocArrayQ</li>
+    </ul>
+  </ul>
+
+ <h3><a name="user">II. User interface for filling data</a></h3>
+
+ <h4>To Fill information one of the following functions can be used:</h4>
+
+ <ul style="list-style-type: none;">
+  <li> Bool_t ProcessEvent(eventHeaderStruct *event);</li>
+    <ul style="list-style-type: square;">
+      <li>process Date event</li>
+      <li>use AliTPCRawReaderDate and call ProcessEvent(AliRawReader *rawReader)</li>
+    </ul>
+    <br />
+
+  <li> Bool_t ProcessEvent(AliRawReader *rawReader);</li>
+    <ul style="list-style-type: square;">
+      <li>process AliRawReader event</li>
+      <li>use AliTPCRawStream to loop over data and call ProcessEvent(AliTPCRawStream *rawStream)</li>
+    </ul>
+    <br />
+
+  <li> Bool_t ProcessEvent(AliTPCRawStream *rawStream);</li>
+    <ul style="list-style-type: square;">
+      <li>process event from AliTPCRawStream</li>
+      <li>call Update function for signal filling</li>
+    </ul>
+    <br />
+
+  <li> Int_t Update(const Int_t isector, const Int_t iRow, const Int_t
+              iPad,  const Int_t iTimeBin, const Float_t signal);</li>
+    <ul style="list-style-type: square;">
+      <li>directly  fill signal information (sector, row, pad, time bin, pad)
+          to the reference histograms</li>
+    </ul>
+ </ul>
+
+ <h4>It is also possible to merge two independently taken calibrations using the function</h4>
+
+ <ul style="list-style-type: none;">
+  <li> void Merge(AliTPCCalibSignal *sig)</li>
+    <ul style="list-style-type: square;">
+      <li>copy histograms in 'sig' if they do not exist in this instance</li>
+      <li>Add histograms in 'sig' to the histograms in this instance if the allready exist</li>
+      <li>After merging call Analyse again!</li>
+    </ul>
+ </ul>
+
+
+ <h4>example: filling data using root raw data:</h4>
+ <pre> 
+ void fillCE(Char_t *filename)
+ {
+    rawReader = new AliRawReaderRoot(fileName);
+    if ( !rawReader ) return;
+    AliTPCCalibCE *calib = new AliTPCCalibCE;
+    while (rawReader->NextEvent()){
+      calib->ProcessEvent(rawReader);
+    }
+    calib->Analyse();
+    calib->DumpToFile("CEData.root");
+    delete rawReader;
+    delete calib;
+ }
+ </pre>
+
+ <h3><a name="info">III. What kind of information is stored and how to retrieve it</a></h4>
+
+ <h4><a name="info:stored">III.1 Stored information</a></h4>
+ <ul style="list-style-type: none;">
+  <li>Histograms:</li>
+  <ul style="list-style-type: none;">
+    <li>For each ROC three TH2S histos 'Reference Histograms'  (ROC channel vs. [Time0, signal width, Q sum])
+        is created when it is filled for the first time (GetHisto[T0,RMS,Q](ROC,kTRUE)). The histos are
+        stored in the TObjArrays fHistoT0Array, fHistoRMSArray and fHistoQArray.</li>
+  </ul>
+  <br />
+
+ <li>Calibration Data:</li>
+ <ul style="list-style-type: none;">
+      <li>For each ROC three types of calibration data (AliTPCCalROC) is stored: for the mean arrival Time,
+          the signal width and the signal Sum. The AliTPCCalROC objects are stored in the TObjArrays
+          fCalRocArrayT0, fCalRocArrayRMS , fCalRocArrayQ. The object for each roc is created the first time it
+          is accessed (GetCalRoc[T0,RMS,Q](ROC,kTRUE));</li>
+ </ul>
+ <br />
+
+ <li>For each event the following information is stored:</li>
+   
+ <ul style="list-style-type: square;">
+   <li>event time ( TVectorD  fVEventTime )</li>
+   <li>event id   ( TVectorD  fVEventNumber )</li>
+   <br />
+   <li>mean arrival time for each ROC                ( TObjArray fTMeanArrayEvent )</li>
+   <li>mean Q for each ROC                           ( TObjArray fQMeanArrayEvent )</li>
+   <li>parameters of a plane fit for each ROC        ( TObjArray fParamArrayEventPol1 )</li>
+   <li>parameters of a 2D parabola fit for each ROC  ( TObjArray fParamArrayEventPol2 )</li>
+  </ul>
+ </ul>
+
+ <h4><a name="info:retrieve">III.2 Retrieving information</a></h4>
+ <ul style="list-style-type: none;">
+  <li>Accessing the 'Reference Histograms' (Time0, signal width and Q sum information pad by pad):</li>
+    <ul style="list-style-type: square;">
+      <li>TH2F *GetHistoT0(Int_t sector);</li>
+      <li>TH2F *GetHistoRMS(Int_t sector);</li>
+      <li>TH2F *GetHistoQ(Int_t sector);</li>
+    </ul>
+    <br />
+    
+  <li>Accessing the calibration storage objects:</li>
+    <ul style="list-style-type: square;">
+      <li>AliTPCCalROC *GetCalRocT0(Int_t sector);   // for the Time0 values</li>
+      <li>AliTPCCalROC *GetCalRocRMS(Int_t sector);  // for the signal width values</li>
+      <li>AliTPCCalROC *GetCalRocQ(Int_t sector);    // for the Q sum values</li>
+    </ul>
+    <br />
+
+  <li>Accessin the event by event information:</li>
+    <ul style="list-style-type: square;">
+      <li>The event by event information can be displayed using the</li>
+      <li>MakeGraphTimeCE(Int_t sector, Int_t xVariable, Int_t fitType, Int_t fitParameter)</li>
+      <li>which creates a graph from the specified variables</li>
+    </ul>
+  </ul>
+  
+  <h4>example for visualisation:</h4>
+  <pre>
+  //if the file "CEData.root" was created using the above example one could do the following:
+  TFile fileCE("CEData.root")
+  AliTPCCalibCE *ce = (AliTPCCalibCE*)fileCE->Get("AliTPCCalibCE");
+  ce->GetCalRocT0(0)->Draw("colz");
+  ce->GetCalRocRMS(0)->Draw("colz");
+
+  //or use the AliTPCCalPad functionality:
+  AliTPCCalPad padT0(ped->GetCalPadT0());
+  AliTPCCalPad padSigWidth(ped->GetCalPadRMS());
+  padT0->MakeHisto2D()->Draw("colz");       //Draw A-Side Time0 Information
+  padSigWidth->MakeHisto2D()->Draw("colz"); //Draw A-Side signal width Information
+
+  //display event by event information:
+  //Draw mean arrival time as a function of the event time for oroc sector A00
+  ce->MakeGraphTimeCE(36, 0, 2)->Draw("alp");
+  //Draw first derivative in local x from a plane fit as a function of the event time for oroc sector A00
+  ce->MakeGraphTimeCE(36, 0, 0, 1)->Draw("alp");  
+  </pre>
+END_HTML */
+//////////////////////////////////////////////////////////////////////////////////////
+
+
+AliTPCCalibCE::AliTPCCalibCE() :
     TObject(),
     fFirstTimeBin(650),
     fLastTimeBin(1000),
@@ -93,15 +328,15 @@ AliTPCCalibCE::AliTPCCalibCE() : /*FOLD00*/
     fHistoT0Array(72),
     fHistoRMSArray(72),
     fHistoTmean(72),
-    fParamArrayEvent(1000),
     fParamArrayEventPol1(72),
     fParamArrayEventPol2(72),
-    fTMeanArrayEvent(1000),
-    fQMeanArrayEvent(1000),
-    fVEventTime(1000),
-    fVEventNumber(1000),
+    fTMeanArrayEvent(72),
+    fQMeanArrayEvent(72),
+    fVEventTime(10),
+    fVEventNumber(10),
     fNevents(0),
     fTimeStamp(0),
+    fEventId(-1),
     fRunNumber(-1),
     fOldRunNumber(-1),
     fPadTimesArrayEvent(72),
@@ -120,7 +355,6 @@ AliTPCCalibCE::AliTPCCalibCE() : /*FOLD00*/
     fVTime0OffsetCounter(72),
     fVMeanQ(72),
     fVMeanQCounter(72),
-//    fHTime0(0x0),
     fEvent(-1),
     fDebugStreamer(0x0),
     fDebugLevel(0)
@@ -160,15 +394,15 @@ AliTPCCalibCE::AliTPCCalibCE(const AliTPCCalibCE &sig) :
     fHistoT0Array(72),
     fHistoRMSArray(72),
     fHistoTmean(72),
-    fParamArrayEvent(1000),
     fParamArrayEventPol1(72),
     fParamArrayEventPol2(72),
-    fTMeanArrayEvent(1000),
-    fQMeanArrayEvent(1000),
+    fTMeanArrayEvent(72),
+    fQMeanArrayEvent(72),
     fVEventTime(1000),
     fVEventNumber(1000),
     fNevents(sig.fNevents),
     fTimeStamp(0),
+    fEventId(-1),
     fRunNumber(-1),
     fOldRunNumber(-1),
     fPadTimesArrayEvent(72),
@@ -187,16 +421,15 @@ AliTPCCalibCE::AliTPCCalibCE(const AliTPCCalibCE &sig) :
     fVTime0OffsetCounter(72),
     fVMeanQ(72),
     fVMeanQCounter(72),
-//    fHTime0(0x0),
     fEvent(-1),
     fDebugStreamer(0x0),
     fDebugLevel(sig.fDebugLevel)
 {
     //
-    // AliTPCSignal default constructor
+    // AliTPCSignal copy constructor
     //
 
-    for (Int_t iSec = 0; iSec < 72; iSec++){
+    for (Int_t iSec = 0; iSec < 72; ++iSec){
 	const AliTPCCalROC *calQ   = (AliTPCCalROC*)sig.fCalRocArrayQ.UncheckedAt(iSec);
 	const AliTPCCalROC *calT0  = (AliTPCCalROC*)sig.fCalRocArrayT0.UncheckedAt(iSec);
 	const AliTPCCalROC *calRMS = (AliTPCCalROC*)sig.fCalRocArrayRMS.UncheckedAt(iSec);
@@ -212,29 +445,66 @@ AliTPCCalibCE::AliTPCCalibCE(const AliTPCCalibCE &sig) :
         if ( calOut != 0x0 ) fCalRocArrayOutliers.AddAt(new AliTPCCalROC(*calOut), iSec);
 
 	if ( hQ != 0x0 ){
+//	    TDirectory *dir = hQ->GetDirectory();
+//	    hQ->SetDirectory(0);
 	    TH2S *hNew = new TH2S(*hQ);
 	    hNew->SetDirectory(0);
 	    fHistoQArray.AddAt(hNew,iSec);
+//            hQ->SetDirectory(dir);
 	}
 	if ( hT0 != 0x0 ){
+//	    TDirectory *dir = hT0->GetDirectory();
+//	    hT0->SetDirectory(0);
 	    TH2S *hNew = new TH2S(*hT0);
 	    hNew->SetDirectory(0);
-	    fHistoQArray.AddAt(hNew,iSec);
+	    fHistoT0Array.AddAt(hNew,iSec);
+//            hT0->SetDirectory(dir);
 	}
 	if ( hRMS != 0x0 ){
+//	    TDirectory *dir = hRMS->GetDirectory();
+//	    hRMS->SetDirectory(0);
 	    TH2S *hNew = new TH2S(*hRMS);
 	    hNew->SetDirectory(0);
-	    fHistoQArray.AddAt(hNew,iSec);
+	    fHistoRMSArray.AddAt(hNew,iSec);
+//            hRMS->SetDirectory(dir);
 	}
     }
-    for (Int_t iEvent=0; iEvent<sig.fParamArrayEvent.GetSize(); iEvent++)
-	fParamArrayEvent.AddAtAndExpand(sig.fParamArrayEvent.At(iEvent),iEvent);
-    Int_t nrows = sig.fVEventTime.GetNrows();
-    fVEventTime.ResizeTo(nrows);
-    for (Int_t iEvent=0; iEvent<nrows; iEvent++)
-        fVEventTime[iEvent] = sig.fVEventTime[iEvent];
 
-//    fHTime0 = new TH1F("hTime0Event","hTime0Event",(fLastTimeBin-fFirstTimeBin)*10,fFirstTimeBin,fLastTimeBin);
+    //copy fit parameters event by event
+    TObjArray *arr=0x0;
+    for (Int_t iSec=0; iSec<72; ++iSec){
+	arr = (TObjArray*)sig.fParamArrayEventPol1.UncheckedAt(iSec);
+	if ( arr ){
+            TObjArray *arrEvents = new TObjArray(arr->GetSize());
+	    fParamArrayEventPol1.AddAt(arrEvents, iSec);
+	    for (Int_t iEvent=0; iEvent<arr->GetSize(); ++iEvent)
+		if ( TVectorD *vec=(TVectorD*)arr->UncheckedAt(iEvent) )
+		    arrEvents->AddAt(new TVectorD(*vec),iEvent);
+	}
+
+	arr = (TObjArray*)sig.fParamArrayEventPol2.UncheckedAt(iSec);
+	if ( arr ){
+            TObjArray *arrEvents = new TObjArray(arr->GetSize());
+	    fParamArrayEventPol2.AddAt(arrEvents, iSec);
+	    for (Int_t iEvent=0; iEvent<arr->GetSize(); ++iEvent)
+		if ( TVectorD *vec=(TVectorD*)arr->UncheckedAt(iEvent) )
+		    arrEvents->AddAt(new TVectorD(*vec),iEvent);
+	}
+
+	TVectorF *vMeanTime = (TVectorF*)sig.fTMeanArrayEvent.UncheckedAt(iSec);
+	TVectorF *vMeanQ    = (TVectorF*)sig.fQMeanArrayEvent.UncheckedAt(iSec);
+	if ( vMeanTime )
+	    fTMeanArrayEvent.AddAt(new TVectorF(*vMeanTime), iSec);
+	if ( vMeanQ )
+	    fQMeanArrayEvent.AddAt(new TVectorF(*vMeanQ), iSec);
+    }
+
+
+    fVEventTime.ResizeTo(sig.fVEventTime);
+    fVEventNumber.ResizeTo(sig.fVEventNumber);
+    fVEventTime.SetElements(sig.fVEventTime.GetMatrixArray());
+    fVEventNumber.SetElements(sig.fVEventNumber.GetMatrixArray());
+
 }
 //_____________________________________________________________________
 AliTPCCalibCE& AliTPCCalibCE::operator = (const  AliTPCCalibCE &source)
@@ -257,10 +527,18 @@ AliTPCCalibCE::~AliTPCCalibCE()
     fCalRocArrayT0.Delete();
     fCalRocArrayQ.Delete();
     fCalRocArrayRMS.Delete();
+    fCalRocArrayOutliers.Delete();
 
     fHistoQArray.Delete();
     fHistoT0Array.Delete();
     fHistoRMSArray.Delete();
+
+    fHistoTmean.Delete();
+
+    fParamArrayEventPol1.Delete();
+    fParamArrayEventPol2.Delete();
+    fTMeanArrayEvent.Delete();
+    fQMeanArrayEvent.Delete();
 
     fPadTimesArrayEvent.Delete();
     fPadQArrayEvent.Delete();
@@ -273,7 +551,7 @@ AliTPCCalibCE::~AliTPCCalibCE()
     delete fParam;
 }
 //_____________________________________________________________________
-Int_t AliTPCCalibCE::Update(const Int_t icsector, /*FOLD00*/
+Int_t AliTPCCalibCE::Update(const Int_t icsector,
 				const Int_t icRow,
 				const Int_t icPad,
 				const Int_t icTimeBin,
@@ -318,9 +596,10 @@ void AliTPCCalibCE::FindPedestal(Float_t part)
     // find pedestal and noise for the current pad. Use either database or
     // truncated mean with part*100%
     //
-    Bool_t noPedestal = kTRUE;;
+    Bool_t noPedestal = kTRUE;
+
+    //use pedestal database if set
     if (fPedestalTPC&&fPadNoiseTPC){
-        //use pedestal database
         //only load new pedestals if the sector has changed
 	if ( fCurrentSector!=fLastSector ){
 	    fPedestalROC = fPedestalTPC->GetCalROC(fCurrentSector);
@@ -351,7 +630,8 @@ void AliTPCCalibCE::FindPedestal(Float_t part)
 	UShort_t histo[kPedMax];
 	memset(histo,0,kPedMax*sizeof(UShort_t));
 
-	for (Int_t i=fFirstTimeBin; i<=fLastTimeBin; i++){
+        //fill pedestal histogram
+	for (Int_t i=fFirstTimeBin; i<=fLastTimeBin; ++i){
             padSignal = fPadSignal.GetMatrixArray()[i];
 	    if (padSignal<=0) continue;
 	    if (padSignal>max && i>10) {
@@ -362,8 +642,8 @@ void AliTPCCalibCE::FindPedestal(Float_t part)
 	    histo[int(padSignal+0.5)]++;
 	    count0++;
 	}
-	    //
-	for (Int_t i=1; i<kPedMax; i++){
+	//find median
+	for (Int_t i=1; i<kPedMax; ++i){
 	    if (count1<count0*0.5) median=i;
 	    count1+=histo[i];
 	}
@@ -371,7 +651,7 @@ void AliTPCCalibCE::FindPedestal(Float_t part)
 	//
 	Float_t count=histo[median] ,mean=histo[median]*median,  rms=histo[median]*median*median ;
 	//
-	for (Int_t idelta=1; idelta<10; idelta++){
+	for (Int_t idelta=1; idelta<10; ++idelta){
 	    if (median-idelta<=0) continue;
 	    if (median+idelta>kPedMax) continue;
 	    if (count<part*count1){
@@ -411,8 +691,9 @@ void AliTPCCalibCE::FindCESignal(TVectorD &param, Float_t &qSum, const TVectorF 
     Float_t minDist  = 25;  //initial minimum distance betweek roc mean ce signal and pad ce signal
 
     // find maximum closest to the sector mean from the last event
-    for ( Int_t imax=0; imax<maxima.GetNrows(); imax++){
-	Float_t tmean = (*((TVectorF*)(fTMeanArrayEvent[fTMeanArrayEvent.GetLast()])))[fCurrentSector];
+    for ( Int_t imax=0; imax<maxima.GetNrows(); ++imax){
+        // get sector mean of last event
+	Float_t tmean = (*GetTMeanEvents(fCurrentSector))[fNevents-1];
 	    if ( TMath::Abs( tmean-maxima[imax] ) < minDist ) {
 		minDist  = tmean-maxima[imax];
                 cemaxpos = (Int_t)maxima[imax];
@@ -421,12 +702,14 @@ void AliTPCCalibCE::FindCESignal(TVectorD &param, Float_t &qSum, const TVectorF 
 
     if (cemaxpos!=0){
         ceQmax = fPadSignal.GetMatrixArray()[cemaxpos]-fPadPedestal;
-	for (Int_t i=cemaxpos-kCemin; i<cemaxpos+kCemax; i++){
-            Float_t signal = fPadSignal.GetMatrixArray()[i]-fPadPedestal;
-	    if ( (i>fFirstTimeBin) && (i<fLastTimeBin) && (signal>0) ){
-		ceTime+=signal*(i+0.5);
-                ceRMS +=signal*(i+0.5)*(i+0.5);
-		ceQsum+=signal;
+	for (Int_t i=cemaxpos-kCemin; i<cemaxpos+kCemax; ++i){
+	    if ( (i>fFirstTimeBin) && (i<fLastTimeBin) ){
+		Float_t signal = fPadSignal.GetMatrixArray()[i]-fPadPedestal;
+		if (signal>0) {
+		    ceTime+=signal*(i+0.5);
+		    ceRMS +=signal*(i+0.5)*(i+0.5);
+		    ceQsum+=signal;
+		}
 	    }
 	}
     }
@@ -460,11 +743,12 @@ Bool_t AliTPCCalibCE::IsPeak(Int_t pos, Int_t tminus, Int_t tplus)
     // Check if 'pos' is a Maximum. Consider 'tminus' timebins before
     // and 'tplus' timebins after 'pos'
     //
-    for (Int_t iTime = pos; iTime>pos-tminus; iTime--)
+    if ( (pos-tminus)<fFirstTimeBin || (pos+tplus)>fLastTimeBin ) return kFALSE;
+    for (Int_t iTime = pos; iTime>pos-tminus; --iTime)
 	if ( fPadSignal[iTime-1] >= fPadSignal[iTime] ) return kFALSE;
-    for (Int_t iTime = pos, iTime2=pos; iTime<pos+tplus; iTime++,iTime2++){
+    for (Int_t iTime = pos, iTime2=pos; iTime<pos+tplus; ++iTime, ++iTime2){
 	if ( (iTime==pos) && (fPadSignal[iTime+1]==fPadSignal[iTime]) ) // allow two timebins with same adc value
-	    iTime2++;
+	    ++iTime2;
 	if ( fPadSignal[iTime2+1] >= fPadSignal[iTime2] ) return kFALSE;
     }
     return kTRUE;
@@ -479,22 +763,26 @@ void AliTPCCalibCE::FindLocalMaxima(TVectorF &maxima)
     Int_t   count       = 0;
     Int_t   tminus      = 2;
     Int_t   tplus       = 3;
-    for (Int_t i=fLastTimeBin-tplus-1; i>=fFirstTimeBin+tminus; i--){
+    for (Int_t i=fLastTimeBin-tplus-1; i>=fFirstTimeBin+tminus; --i){
 	if ( (fPadSignal[i]-fPadPedestal)>ceThreshold && IsPeak(i,tminus,tplus) ){
+	  if (count<maxima.GetNrows()){
 	    maxima.GetMatrixArray()[count++]=i;
 	    GetHistoTmean(fCurrentSector,kTRUE)->Fill(i);
+	  }
 	}
     }
 }
 //_____________________________________________________________________
-void AliTPCCalibCE::ProcessPad() /*FOLD00*/
+void AliTPCCalibCE::ProcessPad()
 {
     //
     //  Process data of current pad
     //
     FindPedestal();
 
-    TVectorF maxima(10);
+    TVectorF maxima(15);     // the expected maximum number of maxima in the complete TPC should be 8 laser beam layers
+                             // + central electrode and possibly post peaks from the CE signal
+                             // however if we are on a high noise pad a lot more peaks due to the noise might occur
     FindLocalMaxima(maxima);
     if ( (fNevents == 0) || (fOldRunNumber!=fRunNumber) ) return;  // return because we don't have Time0 info for the CE yet
 
@@ -527,7 +815,7 @@ void AliTPCCalibCE::ProcessPad() /*FOLD00*/
     ResetPad();
 }
 //_____________________________________________________________________
-void AliTPCCalibCE::EndEvent() /*FOLD00*/
+void AliTPCCalibCE::EndEvent()
 {
     //
     //  Process data of current pad
@@ -542,16 +830,16 @@ void AliTPCCalibCE::EndEvent() /*FOLD00*/
 
     TVectorD param(3);
     TMatrixD dummy(3,3);
-    TVectorF vMeanTime(72);
-    TVectorF vMeanQ(72);
-    AliTPCCalROC calIroc(0);
-    AliTPCCalROC calOroc(36);
+//    TVectorF vMeanTime(72);
+//    TVectorF vMeanQ(72);
+    AliTPCCalROC *calIroc=new AliTPCCalROC(0);
+    AliTPCCalROC *calOroc=new AliTPCCalROC(36);
 
     //find mean time0 offset for side A and C
     Double_t time0Side[2];       //time0 for side A:0 and C:0
     Double_t time0SideCount[2];  //time0 counter for side A:0 and C:0
     time0Side[0]=0;time0Side[1]=0;time0SideCount[0]=0;time0SideCount[1]=0;
-    for ( Int_t iSec = 0; iSec<72; iSec++ ){
+    for ( Int_t iSec = 0; iSec<72; ++iSec ){
 	time0Side[(iSec/18)%2] += fVTime0Offset.GetMatrixArray()[iSec];
 	time0SideCount[(iSec/18)%2] += fVTime0OffsetCounter.GetMatrixArray()[iSec];
     }
@@ -562,16 +850,16 @@ void AliTPCCalibCE::EndEvent() /*FOLD00*/
     // end find time0 offset
 
     //loop over all ROCs, fill CE Time histogram corrected for the mean Time0 of each ROC
-    for ( Int_t iSec = 0; iSec<72; iSec++ ){
-
+    for ( Int_t iSec = 0; iSec<72; ++iSec ){
       //find median and then calculate the mean around it
-	TH1S *hMeanT    = GetHistoTmean(iSec);
+	TH1S *hMeanT    = GetHistoTmean(iSec); //histogram with local maxima position information
 	if ( !hMeanT ) continue;
+
 	Double_t entries = hMeanT->GetEntries();
 	Double_t sum     = 0;
 	Short_t *arr     = hMeanT->GetArray()+1;
         Int_t ibin=0;
-	for ( ibin=0; ibin<hMeanT->GetNbinsX(); ibin++){
+	for ( ibin=0; ibin<hMeanT->GetNbinsX(); ++ibin){
 	    sum+=arr[ibin];
             if ( sum>=(entries/2) ) break;
 	}
@@ -581,29 +869,42 @@ void AliTPCCalibCE::EndEvent() /*FOLD00*/
         if ( firstBin<fFirstTimeBin ) firstBin=fFirstTimeBin;
         if ( lastBin>fLastTimeBin   ) lastBin =fLastTimeBin;
 	Float_t median =AliMathBase::GetCOG(arr+ibin-delta,2*delta,firstBin,lastBin);
-	vMeanTime.GetMatrixArray()[iSec]=median;
+
+	// check boundaries for ebye info of mean time
+	TVectorF *vMeanTime=GetTMeanEvents(iSec,kTRUE);
+        Int_t vSize=vMeanTime->GetNrows();
+	if ( vSize < fNevents+1 )
+            vMeanTime->ResizeTo(vSize+100);
+
+	vMeanTime->GetMatrixArray()[fNevents]=median;
       // end find median
 
 	TVectorF *vTimes = GetPadTimesEvent(iSec);
-	if ( !vTimes ) continue;
+	if ( !vTimes ) continue;                     //continue if no time information for this sector is available
+
+
 	AliTPCCalROC calIrocOutliers(0);
 	AliTPCCalROC calOrocOutliers(36);
 
         // calculate mean Q of the sector
 	Float_t meanQ = 0;
 	if ( fVMeanQCounter.GetMatrixArray()[iSec]>0 ) meanQ=fVMeanQ.GetMatrixArray()[iSec]/fVMeanQCounter.GetMatrixArray()[iSec];
-        vMeanQ.GetMatrixArray()[iSec]=meanQ;
+	TVectorF *vMeanQ=GetQMeanEvents(iSec,kTRUE);
+	if ( vSize < fNevents+1 )           // vSize is the same as for vMeanTime!
+            vMeanQ->ResizeTo(vSize+100);
 
-	for ( UInt_t iChannel=0; iChannel<fROC->GetNChannels(iSec); iChannel++ ){
+	vMeanQ->GetMatrixArray()[fNevents]=meanQ;
+
+	for ( UInt_t iChannel=0; iChannel<fROC->GetNChannels(iSec); ++iChannel ){
 	    Float_t Time  = (*vTimes).GetMatrixArray()[iChannel];
 
 	    //set values for temporary roc calibration class
 	    if ( iSec < 36 ) {
-		calIroc.SetValue(iChannel, Time);
+		calIroc->SetValue(iChannel, Time);
                 if ( Time == 0 ) calIrocOutliers.SetValue(iChannel,1);
 
 	    } else {
-		calOroc.SetValue(iChannel, Time);
+		calOroc->SetValue(iChannel, Time);
                 if ( Time == 0 ) calOrocOutliers.SetValue(iChannel,1);
 	    }
 
@@ -641,7 +942,7 @@ void AliTPCCalibCE::EndEvent() /*FOLD00*/
 //				    fFirstTimeBin,fLastTimeBin);
 //		h1->SetDirectory(0);
 //
-//		for (Int_t i=fFirstTimeBin; i<fLastTimeBin+1; i++)
+//		for (Int_t i=fFirstTimeBin; i<fLastTimeBin+1; ++i)
 //		    h1->Fill(i,fPadSignal(i));
 
 		Double_t T0Sec = 0;
@@ -650,7 +951,7 @@ void AliTPCCalibCE::EndEvent() /*FOLD00*/
 		Double_t T0Side = time0Side[(iSec/18)%2];
 		(*fDebugStreamer) << "DataPad" <<
 		    "Event=" << fNevents <<
-		    "EventNumber=" << fRunNumber <<
+		    "RunNumber=" << fRunNumber <<
 		    "TimeStamp="   << fTimeStamp <<
 		    "Sector="<< sector <<
 		    "Row="   << row<<
@@ -682,11 +983,11 @@ void AliTPCCalibCE::EndEvent() /*FOLD00*/
 
 	if ( (fNevents>0) && (fOldRunNumber==fRunNumber) ){
 	    if ( iSec < 36 ){
-		calIroc.GlobalFit(&calIrocOutliers,0,paramPol1,matPol1,chi2Pol1,0);
-		calIroc.GlobalFit(&calIrocOutliers,0,paramPol2,matPol2,chi2Pol2,1);
+		calIroc->GlobalFit(&calIrocOutliers,0,paramPol1,matPol1,chi2Pol1,0);
+		calIroc->GlobalFit(&calIrocOutliers,0,paramPol2,matPol2,chi2Pol2,1);
 	    } else {
-		calOroc.GlobalFit(&calOrocOutliers,0,paramPol1,matPol1,chi2Pol1,0);
-		calOroc.GlobalFit(&calOrocOutliers,0,paramPol2,matPol2,chi2Pol2,1);
+		calOroc->GlobalFit(&calOrocOutliers,0,paramPol1,matPol1,chi2Pol1,0);
+		calOroc->GlobalFit(&calOrocOutliers,0,paramPol2,matPol2,chi2Pol2,1);
 	    }
 
 	    GetParamArrayPol1(iSec,kTRUE)->AddAtAndExpand(new TVectorD(paramPol1), fNevents);
@@ -704,7 +1005,7 @@ void AliTPCCalibCE::EndEvent() /*FOLD00*/
 	    }
 	    (*fDebugStreamer) << "DataRoc" <<
 		"Event=" << fEvent <<
-		"EventNumber=" << fRunNumber <<
+		"RunNumber=" << fRunNumber <<
 		"TimeStamp="   << fTimeStamp <<
 		"Sector="<< iSec <<
 		"hMeanT.=" << hMeanT <<
@@ -720,29 +1021,23 @@ void AliTPCCalibCE::EndEvent() /*FOLD00*/
 	//-------------------------------  Debug end  ------------------------------
     }// end sector loop
 
-/*    AliMathBase::FitGaus(fHTime0->GetArray()+1,
-			 fHTime0->GetNbinsX(),
-			 fHTime0->GetXaxis()->GetXmin(),
-			 fHTime0->GetXaxis()->GetXmax(),
-			 &param, &dummy);*/
-//    fHTime0->Reset();
-
-    //    fParamArrayEvent.AddAtAndExpand(new TVectorD(param),fNevents);
-    fTMeanArrayEvent.AddAtAndExpand(new TVectorF(vMeanTime),fNevents);
-    fQMeanArrayEvent.AddAtAndExpand(new TVectorF(vMeanQ),fNevents);
-    if ( fVEventTime.GetNrows() < fNevents ) {
-	fVEventTime.ResizeTo((Int_t)(fVEventTime.GetNrows()+1000));
-	fVEventNumber.ResizeTo((Int_t)(fVEventNumber.GetNrows()+1000));
+//    fTMeanArrayEvent.AddAtAndExpand(new TVectorF(vMeanTime),fNevents);
+//    fQMeanArrayEvent.AddAtAndExpand(new TVectorF(vMeanQ),fNevents);
+    if ( fVEventTime.GetNrows() < fNevents+1 ) {
+	fVEventTime.ResizeTo((Int_t)(fVEventTime.GetNrows()+100));
+	fVEventNumber.ResizeTo((Int_t)(fVEventNumber.GetNrows()+100));
     }
-    fVEventTime[fNevents] = fTimeStamp;
-    fVEventNumber[fNevents] = fRunNumber;
+    fVEventTime.GetMatrixArray()[fNevents] = fTimeStamp;
+    fVEventNumber.GetMatrixArray()[fNevents] = fEventId;
 
     fNevents++;
     fOldRunNumber = fRunNumber;
 
+    delete calIroc;
+    delete calOroc;
 }
 //_____________________________________________________________________
-Bool_t AliTPCCalibCE::ProcessEvent(AliTPCRawStream *rawStream) /*FOLD00*/
+Bool_t AliTPCCalibCE::ProcessEvent(AliTPCRawStream *rawStream)
 {
   //
   // Event Processing loop - AliTPCRawStream
@@ -785,11 +1080,12 @@ Bool_t AliTPCCalibCE::ProcessEvent(AliRawReader *rawReader)
     AliRawEventHeaderBase* eventHeader = (AliRawEventHeaderBase*)rawReader->GetEventHeader();
     if (eventHeader){
 	fTimeStamp   = eventHeader->Get("Timestamp");
-        fRunNumber = eventHeader->Get("RunNb");
+	fRunNumber = eventHeader->Get("RunNb");
     }
+    fEventId = *rawReader->GetEventId();
 
 
-  rawReader->Select("TPC");
+    rawReader->Select("TPC");
 
   return ProcessEvent(&rawStream);
 }
@@ -806,7 +1102,7 @@ Bool_t AliTPCCalibCE::ProcessEvent(eventHeaderStruct *event)
 
 }
 //_____________________________________________________________________
-TH2S* AliTPCCalibCE::GetHisto(Int_t sector, TObjArray *arr, /*FOLD00*/
+TH2S* AliTPCCalibCE::GetHisto(Int_t sector, TObjArray *arr,
 				  Int_t nbinsY, Float_t ymin, Float_t ymax,
 				  Char_t *type, Bool_t force)
 {
@@ -817,7 +1113,7 @@ TH2S* AliTPCCalibCE::GetHisto(Int_t sector, TObjArray *arr, /*FOLD00*/
     if ( !force || arr->UncheckedAt(sector) )
 	return (TH2S*)arr->UncheckedAt(sector);
 
-    // if we are forced and histogram doesn't yes exist create it
+    // if we are forced and histogram doesn't exist yet create it
     Char_t name[255], title[255];
 
     sprintf(name,"hCalib%s%.2d",type,sector);
@@ -832,7 +1128,7 @@ TH2S* AliTPCCalibCE::GetHisto(Int_t sector, TObjArray *arr, /*FOLD00*/
     return hist;
 }
 //_____________________________________________________________________
-TH2S* AliTPCCalibCE::GetHistoT0(Int_t sector, Bool_t force) /*FOLD00*/
+TH2S* AliTPCCalibCE::GetHistoT0(Int_t sector, Bool_t force)
 {
     //
     // return pointer to T0 histogram
@@ -842,7 +1138,7 @@ TH2S* AliTPCCalibCE::GetHistoT0(Int_t sector, Bool_t force) /*FOLD00*/
     return GetHisto(sector, arr, fNbinsT0, fXminT0, fXmaxT0, "T0", force);
 }
 //_____________________________________________________________________
-TH2S* AliTPCCalibCE::GetHistoQ(Int_t sector, Bool_t force) /*FOLD00*/
+TH2S* AliTPCCalibCE::GetHistoQ(Int_t sector, Bool_t force)
 {
     //
     // return pointer to Q histogram
@@ -852,7 +1148,7 @@ TH2S* AliTPCCalibCE::GetHistoQ(Int_t sector, Bool_t force) /*FOLD00*/
     return GetHisto(sector, arr, fNbinsQ, fXminQ, fXmaxQ, "Q", force);
 }
 //_____________________________________________________________________
-TH2S* AliTPCCalibCE::GetHistoRMS(Int_t sector, Bool_t force) /*FOLD00*/
+TH2S* AliTPCCalibCE::GetHistoRMS(Int_t sector, Bool_t force)
 {
     //
     // return pointer to Q histogram
@@ -896,7 +1192,7 @@ TH1S* AliTPCCalibCE::GetHistoTmean(Int_t sector, Bool_t force)
     return GetHisto(sector, arr, "LastTmean", force);
 }
 //_____________________________________________________________________
-TVectorF* AliTPCCalibCE::GetPadInfoEvent(Int_t sector, TObjArray *arr, Bool_t force) /*FOLD00*/
+TVectorF* AliTPCCalibCE::GetVectSector(Int_t sector, TObjArray *arr, UInt_t size, Bool_t force)
 {
     //
     // return pointer to Pad Info from 'arr' for the current event and sector
@@ -905,22 +1201,22 @@ TVectorF* AliTPCCalibCE::GetPadInfoEvent(Int_t sector, TObjArray *arr, Bool_t fo
     if ( !force || arr->UncheckedAt(sector) )
 	return (TVectorF*)arr->UncheckedAt(sector);
 
-    TVectorF *vect = new TVectorF(fROC->GetNChannels(sector));
+    TVectorF *vect = new TVectorF(size);
     arr->AddAt(vect,sector);
     return vect;
 }
 //_____________________________________________________________________
-TVectorF* AliTPCCalibCE::GetPadTimesEvent(Int_t sector, Bool_t force) /*FOLD00*/
+TVectorF* AliTPCCalibCE::GetPadTimesEvent(Int_t sector, Bool_t force)
 {
     //
     // return pointer to Pad Times Array for the current event and sector
     // if force is true create it if it doesn't exist allready
     //
     TObjArray *arr = &fPadTimesArrayEvent;
-    return GetPadInfoEvent(sector,arr,force);
+    return GetVectSector(sector,arr,fROC->GetNChannels(sector),force);
 }
 //_____________________________________________________________________
-TVectorF* AliTPCCalibCE::GetPadQEvent(Int_t sector, Bool_t force) /*FOLD00*/
+TVectorF* AliTPCCalibCE::GetPadQEvent(Int_t sector, Bool_t force)
 {
     //
     // return pointer to Pad Q Array for the current event and sector
@@ -929,10 +1225,10 @@ TVectorF* AliTPCCalibCE::GetPadQEvent(Int_t sector, Bool_t force) /*FOLD00*/
     //
 
     TObjArray *arr = &fPadQArrayEvent;
-    return GetPadInfoEvent(sector,arr,force);
+    return GetVectSector(sector,arr,fROC->GetNChannels(sector),force);
 }
 //_____________________________________________________________________
-TVectorF* AliTPCCalibCE::GetPadRMSEvent(Int_t sector, Bool_t force) /*FOLD00*/
+TVectorF* AliTPCCalibCE::GetPadRMSEvent(Int_t sector, Bool_t force)
 {
     //
     // return pointer to Pad RMS Array for the current event and sector
@@ -940,10 +1236,10 @@ TVectorF* AliTPCCalibCE::GetPadRMSEvent(Int_t sector, Bool_t force) /*FOLD00*/
     // for debugging purposes only
     //
     TObjArray *arr = &fPadRMSArrayEvent;
-    return GetPadInfoEvent(sector,arr,force);
+    return GetVectSector(sector,arr,fROC->GetNChannels(sector),force);
 }
 //_____________________________________________________________________
-TVectorF* AliTPCCalibCE::GetPadPedestalEvent(Int_t sector, Bool_t force) /*FOLD00*/
+TVectorF* AliTPCCalibCE::GetPadPedestalEvent(Int_t sector, Bool_t force)
 {
     //
     // return pointer to Pad RMS Array for the current event and sector
@@ -951,10 +1247,30 @@ TVectorF* AliTPCCalibCE::GetPadPedestalEvent(Int_t sector, Bool_t force) /*FOLD0
     // for debugging purposes only
     //
     TObjArray *arr = &fPadPedestalArrayEvent;
-    return GetPadInfoEvent(sector,arr,force);
+    return GetVectSector(sector,arr,fROC->GetNChannels(sector),force);
 }
 //_____________________________________________________________________
-AliTPCCalROC* AliTPCCalibCE::GetCalRoc(Int_t sector, TObjArray* arr, Bool_t force) /*FOLD00*/
+TVectorF* AliTPCCalibCE::GetTMeanEvents(Int_t sector, Bool_t force)
+{
+    //
+    // return pointer to the EbyE info of the mean arrival time for 'sector'
+    // if force is true create it if it doesn't exist allready
+    //
+    TObjArray *arr = &fTMeanArrayEvent;
+    return GetVectSector(sector,arr,100,force);
+}
+//_____________________________________________________________________
+TVectorF* AliTPCCalibCE::GetQMeanEvents(Int_t sector, Bool_t force)
+{
+    //
+    // return pointer to the EbyE info of the mean arrival time for 'sector'
+    // if force is true create it if it doesn't exist allready
+    //
+    TObjArray *arr = &fQMeanArrayEvent;
+    return GetVectSector(sector,arr,100,force);
+}
+//_____________________________________________________________________
+AliTPCCalROC* AliTPCCalibCE::GetCalRoc(Int_t sector, TObjArray* arr, Bool_t force)
 {
     //
     // return pointer to ROC Calibration
@@ -967,15 +1283,11 @@ AliTPCCalROC* AliTPCCalibCE::GetCalRoc(Int_t sector, TObjArray* arr, Bool_t forc
 
     // new AliTPCCalROC for T0 information. One value for each pad!
     AliTPCCalROC *croc = new AliTPCCalROC(sector);
-    //init values
-    for ( UInt_t iChannel = 0; iChannel<croc->GetNchannels(); iChannel++){
-	croc->SetValue(iChannel, 0);
-    }
     arr->AddAt(croc,sector);
     return croc;
 }
 //_____________________________________________________________________
-AliTPCCalROC* AliTPCCalibCE::GetCalRocT0(Int_t sector, Bool_t force) /*FOLD00*/
+AliTPCCalROC* AliTPCCalibCE::GetCalRocT0(Int_t sector, Bool_t force)
 {
     //
     // return pointer to Carge ROC Calibration
@@ -985,7 +1297,7 @@ AliTPCCalROC* AliTPCCalibCE::GetCalRocT0(Int_t sector, Bool_t force) /*FOLD00*/
     return GetCalRoc(sector, arr, force);
 }
 //_____________________________________________________________________
-AliTPCCalROC* AliTPCCalibCE::GetCalRocQ(Int_t sector, Bool_t force) /*FOLD00*/
+AliTPCCalROC* AliTPCCalibCE::GetCalRocQ(Int_t sector, Bool_t force)
 {
     //
     // return pointer to T0 ROC Calibration
@@ -995,7 +1307,7 @@ AliTPCCalROC* AliTPCCalibCE::GetCalRocQ(Int_t sector, Bool_t force) /*FOLD00*/
     return GetCalRoc(sector, arr, force);
 }
 //_____________________________________________________________________
-AliTPCCalROC* AliTPCCalibCE::GetCalRocRMS(Int_t sector, Bool_t force) /*FOLD00*/
+AliTPCCalROC* AliTPCCalibCE::GetCalRocRMS(Int_t sector, Bool_t force)
 {
     //
     // return pointer to signal width ROC Calibration
@@ -1052,7 +1364,7 @@ TObjArray* AliTPCCalibCE::GetParamArrayPol2(Int_t sector, Bool_t force)
     return GetParamArray(sector, arr, force);
 }
 //_____________________________________________________________________
-void AliTPCCalibCE::ResetEvent() /*FOLD00*/
+void AliTPCCalibCE::ResetEvent()
 {
     //
     //  Reset global counters  -- Should be called before each event is processed
@@ -1069,7 +1381,7 @@ void AliTPCCalibCE::ResetEvent() /*FOLD00*/
     fPadRMSArrayEvent.Delete();
     fPadPedestalArrayEvent.Delete();
 
-    for ( Int_t i=0; i<72; i++ ){
+    for ( Int_t i=0; i<72; ++i ){
 	fVTime0Offset.GetMatrixArray()[i]=0;
 	fVTime0OffsetCounter.GetMatrixArray()[i]=0;
 	fVMeanQ.GetMatrixArray()[i]=0;
@@ -1077,12 +1389,12 @@ void AliTPCCalibCE::ResetEvent() /*FOLD00*/
     }
 }
 //_____________________________________________________________________
-void AliTPCCalibCE::ResetPad() /*FOLD00*/
+void AliTPCCalibCE::ResetPad()
 {
     //
     //  Reset pad infos -- Should be called after a pad has been processed
     //
-    for (Int_t i=fFirstTimeBin; i<fLastTimeBin+1; i++)
+    for (Int_t i=fFirstTimeBin; i<fLastTimeBin+1; ++i)
 	fPadSignal.GetMatrixArray()[i] = 0;
     fMaxTimeBin   = -1;
     fMaxPadSignal = -1;
@@ -1090,13 +1402,128 @@ void AliTPCCalibCE::ResetPad() /*FOLD00*/
     fPadNoise     = -1;
 }
 //_____________________________________________________________________
-TGraph *AliTPCCalibCE::MakeGraphTimeCE(Int_t sector, Int_t xVariable, Int_t fitType, Int_t fitParameter) /*FOLD00*/
+void AliTPCCalibCE::Merge(AliTPCCalibCE *ce)
 {
     //
-    // Make graph from fit parameters of pol1 or pol2 fit
-    // xVariable:    0-run time, 1-run number, 2-internal event counter
-    // fitType:      0-pol1 fit, 1-pol2 fit, 2-mean time, 2-mean Q
-    // fitParameter: fit parameter ( 0-2 for pol1, 0-5 for pol2, 0 for mean time )
+    //  Merge ce to the current AliTPCCalibCE
+    //
+
+    //merge histograms
+    for (Int_t iSec=0; iSec<72; ++iSec){
+	TH2S *hRefQmerge   = ce->GetHistoQ(iSec);
+	TH2S *hRefT0merge  = ce->GetHistoT0(iSec);
+	TH2S *hRefRMSmerge = ce->GetHistoRMS(iSec);
+
+
+	if ( hRefQmerge ){
+	    TDirectory *dir = hRefQmerge->GetDirectory(); hRefQmerge->SetDirectory(0);
+	    TH2S *hRefQ   = GetHistoQ(iSec);
+	    if ( hRefQ ) hRefQ->Add(hRefQmerge);
+	    else {
+		TH2S *hist = new TH2S(*hRefQmerge);
+                hist->SetDirectory(0);
+		fHistoQArray.AddAt(hist, iSec);
+	    }
+	    hRefQmerge->SetDirectory(dir);
+	}
+	if ( hRefT0merge ){
+	    TDirectory *dir = hRefT0merge->GetDirectory(); hRefT0merge->SetDirectory(0);
+	    TH2S *hRefT0  = GetHistoT0(iSec);
+	    if ( hRefT0 ) hRefT0->Add(hRefT0merge);
+	    else {
+		TH2S *hist = new TH2S(*hRefT0merge);
+                hist->SetDirectory(0);
+		fHistoT0Array.AddAt(hist, iSec);
+	    }
+	    hRefT0merge->SetDirectory(dir);
+	}
+	if ( hRefRMSmerge ){
+	    TDirectory *dir = hRefRMSmerge->GetDirectory(); hRefRMSmerge->SetDirectory(0);
+	    TH2S *hRefRMS = GetHistoRMS(iSec);
+	    if ( hRefRMS ) hRefRMS->Add(hRefRMSmerge);
+	    else {
+		TH2S *hist = new TH2S(*hRefRMSmerge);
+                hist->SetDirectory(0);
+		fHistoRMSArray.AddAt(hist, iSec);
+	    }
+	    hRefRMSmerge->SetDirectory(dir);
+	}
+
+    }
+
+    // merge time information
+
+
+    Int_t nCEevents = ce->GetNeventsProcessed();
+    for (Int_t iSec=0; iSec<72; ++iSec){
+	TObjArray *arrPol1CE  = ce->GetParamArrayPol1(iSec);
+	TObjArray *arrPol2CE  = ce->GetParamArrayPol2(iSec);
+	TVectorF *vMeanTimeCE = ce->GetTMeanEvents(iSec);
+	TVectorF *vMeanQCE    = ce->GetQMeanEvents(iSec);
+
+	TObjArray *arrPol1  = 0x0;
+	TObjArray *arrPol2  = 0x0;
+	TVectorF *vMeanTime = 0x0;
+	TVectorF *vMeanQ    = 0x0;
+
+	//resize arrays
+	if ( arrPol1CE && arrPol2CE ){
+	    arrPol1 = GetParamArrayPol1(iSec,kTRUE);
+	    arrPol2 = GetParamArrayPol2(iSec,kTRUE);
+	    arrPol1->Expand(fNevents+nCEevents);
+            arrPol2->Expand(fNevents+nCEevents);
+	}
+	if ( vMeanTimeCE && vMeanQCE ){
+	    vMeanTime = GetTMeanEvents(iSec);
+	    vMeanQCE  = GetQMeanEvents(iSec);
+	    vMeanTime->ResizeTo(fNevents+nCEevents);
+	    vMeanQ->ResizeTo(fNevents+nCEevents);
+	}
+
+
+	for (Int_t iEvent=0; iEvent<nCEevents; ++iEvent){
+	    if ( arrPol1CE && arrPol2CE ){
+		TVectorD *paramPol1 = (TVectorD*)(arrPol1CE->UncheckedAt(iEvent));
+		TVectorD *paramPol2 = (TVectorD*)(arrPol2CE->UncheckedAt(iEvent));
+		if ( paramPol1 && paramPol2 ){
+		    GetParamArrayPol1(iSec,kTRUE)->AddAt(new TVectorD(*paramPol1), fNevents+iEvent);
+		    GetParamArrayPol2(iSec,kTRUE)->AddAt(new TVectorD(*paramPol2), fNevents+iEvent);
+		}
+	    }
+	    if ( vMeanTimeCE && vMeanQCE ){
+		vMeanTime->GetMatrixArray()[fNevents+iEvent]=vMeanTimeCE->GetMatrixArray()[iEvent];
+                vMeanQ->GetMatrixArray()[fNevents+iEvent]=vMeanQCE->GetMatrixArray()[iEvent];
+	    }
+	}
+    }
+
+
+
+    TVectorD*  eventTimes  = ce->GetEventTimes();
+    TVectorD*  eventIds  = ce->GetEventIds();
+    fVEventTime.ResizeTo(fNevents+nCEevents);
+    fVEventNumber.ResizeTo(fNevents+nCEevents);
+
+    for (Int_t iEvent=0; iEvent<nCEevents; ++iEvent){
+	Double_t evTime     = eventTimes->GetMatrixArray()[iEvent];
+        Double_t evId       = eventIds->GetMatrixArray()[iEvent];
+	fVEventTime.GetMatrixArray()[fNevents+iEvent] = evTime;
+	fVEventNumber.GetMatrixArray()[fNevents+iEvent] = evId;
+    }
+    fNevents+=nCEevents; //increase event counter
+
+}
+//_____________________________________________________________________
+TGraph *AliTPCCalibCE::MakeGraphTimeCE(Int_t sector, Int_t xVariable, Int_t fitType, Int_t fitParameter)
+{
+    //
+    // Make graph from fit parameters of pol1 fit, pol2 fit, mean arrival time or mean Q for ROC 'sector'
+    // xVariable:    0-event time, 1-event id, 2-internal event counter
+    // fitType:      0-pol1 fit, 1-pol2 fit, 2-mean time, 3-mean Q
+    // fitParameter: fit parameter ( 0-2 for pol1 ([0]+[1]*x+[2]*y),
+    //                               0-5 for pol2 ([0]+[1]*x+[2]*y+[3]*x*x+[4]*y*y+[5]*x*y),
+    //                               not used for mean time and mean Q )
+    // for an example see class description at the beginning
     //
 
     Double_t *x = new Double_t[fNevents];
@@ -1126,21 +1553,23 @@ TGraph *AliTPCCalibCE::MakeGraphTimeCE(Int_t sector, Int_t xVariable, Int_t fitT
     if ( xVariable == 1 ) xVar = &fVEventNumber;
     if ( xVariable == 2 ) {
 	xVar = new TVectorD(fNevents);
-	for ( Int_t i=0;i<fNevents; i++) (*xVar)[i]=i;
+	for ( Int_t i=0;i<fNevents; ++i) (*xVar)[i]=i;
     }
 
-    for (Int_t ievent =0; ievent<fNevents; ievent++){
+    for (Int_t ievent =0; ievent<fNevents; ++ievent){
 	if ( fitType<2 ){
 	    TObjArray *events = (TObjArray*)(aType->At(sector));
             if ( events->GetSize()<=ievent ) break;
 	    TVectorD *v = (TVectorD*)(events->At(ievent));
-	    if ( v!=0x0 ) { x[npoints]=(*xVar)[ievent]; y[npoints]=(*v)[fitParameter]; npoints++;}
+	    if ( (v!=0x0) && ((*xVar)[ievent]>0) ) { x[npoints]=(*xVar)[ievent]; y[npoints]=(*v)[fitParameter]; npoints++;}
 	} else if (fitType == 2) {
-            Double_t yValue=(*((TVectorF*)(fTMeanArrayEvent[ievent])))[sector];
-	    if ( yValue>0 ) { x[npoints]=(*xVar)[ievent]; y[npoints]=yValue;npoints++;}
+            Double_t xValue=(*xVar)[ievent];
+	    Double_t yValue=(*GetTMeanEvents(sector))[ievent];
+	    if ( yValue>0 && xValue>0 ) { x[npoints]=xValue; y[npoints]=yValue;npoints++;}
 	}else if (fitType == 3) {
-            Double_t yValue=(*((TVectorF*)(fQMeanArrayEvent[ievent])))[sector];
-	    if ( yValue>0 ) { x[npoints]=(*xVar)[ievent]; y[npoints]=yValue;npoints++;}
+            Double_t xValue=(*xVar)[ievent];
+            Double_t yValue=(*GetQMeanEvents(sector))[ievent];
+	    if ( yValue>0 && xValue>0 ) { x[npoints]=xValue; y[npoints]=yValue;npoints++;}
 	}
     }
 
@@ -1148,7 +1577,7 @@ TGraph *AliTPCCalibCE::MakeGraphTimeCE(Int_t sector, Int_t xVariable, Int_t fitT
     //sort xVariable increasing
     Int_t    *sortIndex = new Int_t[npoints];
     TMath::Sort(npoints,x,sortIndex);
-    for (Int_t i=0;i<npoints;i++){
+    for (Int_t i=0;i<npoints;++i){
 	gr->SetPoint(i,x[sortIndex[i]],y[sortIndex[i]]);
     }
 
@@ -1171,7 +1600,7 @@ void AliTPCCalibCE::Analyse()
     TVectorD paramRMS(3);
     TMatrixD dummy(3,3);
 
-    for (Int_t iSec=0; iSec<72; iSec++){
+    for (Int_t iSec=0; iSec<72; ++iSec){
 	TH2S *hT0 = GetHistoT0(iSec);
         if (!hT0 ) continue;
 
@@ -1195,7 +1624,7 @@ void AliTPCCalibCE::Analyse()
 	Int_t padc=0;
 	//! debug
 
-	for (UInt_t iChannel=0; iChannel<nChannels; iChannel++){
+	for (UInt_t iChannel=0; iChannel<nChannels; ++iChannel){
 
 
 	    Float_t cogTime0 = -1000;
@@ -1208,14 +1637,6 @@ void AliTPCCalibCE::Analyse()
 	    Int_t offsetT0 = (fNbinsT0+2)*(iChannel+1)+1;
 	    Int_t offsetRMS = (fNbinsRMS+2)*(iChannel+1)+1;
 
-/*
-	    AliMathBase::FitGaus(array_hQ+offsetQ,fNbinsQ,fXminQ,fXmaxQ,&paramQ,&dummy);
-	    AliMathBase::FitGaus(array_hT0+offsetT0,fNbinsT0,fXminT0,fXmaxT0,&paramT0,&dummy);
-            AliMathBase::FitGaus(array_hRMS+offsetRMS,fNbinsRMS,fXminRMS,fXmaxRMS,&paramRMS,&dummy);
-	    cogQ     = paramQ[1];
-	    cogTime0 = paramT0[1];
-	    cogRMS   = paramRMS[1];
-*/
 	    cogQ     = AliMathBase::GetCOG(array_hQ+offsetQ,fNbinsQ,fXminQ,fXmaxQ);
 	    cogTime0 = AliMathBase::GetCOG(array_hT0+offsetT0,fNbinsT0,fXminT0,fXmaxT0);
             cogRMS   = AliMathBase::GetCOG(array_hRMS+offsetRMS,fNbinsRMS,fXminRMS,fXmaxRMS);
@@ -1223,6 +1644,7 @@ void AliTPCCalibCE::Analyse()
 
 
 	    /*
+             //outlier specifications
 	    if ( (cogQ < ??) && (cogTime0 > ??) && (cogTime0<??) && ( cogRMS>??) ){
 		cogOut = 1;
 		cogTime0 = 0;
@@ -1265,7 +1687,7 @@ void AliTPCCalibCE::Analyse()
 	}
 
     }
-    fDebugStreamer->GetFile()->Write();
+    if ( fDebugStreamer ) fDebugStreamer->GetFile()->Write();
 //    delete fDebugStreamer;
 //    fDebugStreamer = 0x0;
 }
