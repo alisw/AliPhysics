@@ -169,62 +169,77 @@ void RGBrowser::SetupClassicLook(RGEditor*& editor, TCanvas* glpad)
 
 void RGBrowser::SetupEditorLook(RGEditor*& editor, TCanvas* glpad)
 {
-  fClient->SetRoot(fV2);
+  fV2->SetEditDisabled(kEditEnable);
+  fV2->SetEditable();
   editor = new RGEditor(glpad);
   editor->GetTGCanvas()->ChangeOptions(0);
-  fV2->RemoveFrame(editor);
-  fV2->AddFrame(editor, new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX | kLHintsExpandY, 0, 0, 2, 2));
-  fClient->SetRoot();
+  fV2->SetEditable(kEditDisable);
+  fV2->SetEditable(kFALSE);
 
-  /*
-    editor->UnmapWindow();
-    fV2->AddFrame(editor, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 0, 0, 2, 2));
-    Int_t x, y;
-    CalculateReparentXY(fV2, x, y);
-    editor->ReparentWindow(fV2, x, y);
-  */
+  TGFrameElement *el = 0;
+  TIter next(fV2->GetList());
+  while ((el = (TGFrameElement *)next())) {
+      if (el->fFrame == editor)
+         if (el->fLayout) {
+            el->fLayout->SetLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX | kLHintsExpandY);
+            el->fLayout->SetPadLeft(0);
+            el->fLayout->SetPadRight(0);
+            el->fLayout->SetPadTop(2);
+            el->fLayout->SetPadBottom(2);
+            break;
+         }
+  }
 
   fV2->MapSubwindows();
 }
 
 void RGBrowser::SetupGLViewerLook(RGEditor*& editor, TCanvas* glpad)
 {
-  TGLayoutHints *lo;
 
+  TGFrameElement *el = 0;
+  fV2->SetEditDisabled(kEditEnable);
+  fV2->SetEditable();
   TGLSAViewer* v = new TGLSAViewer(fV2, glpad);
   v->GetFrame()->SetMinWidth(200);
-  lo = new TGLayoutHints(kLHintsLeft | kLHintsExpandX | kLHintsExpandY);
-  fV2->AddFrame(v->GetFrame(), lo);
+  v->GetFrame()->SetCleanup(kNoCleanup);
+  fV2->SetEditable(kEditDisable);
+  fV2->SetEditable(kFALSE);
   glpad->SetViewer3D(v);
-
+  TIter next2(fV2->GetList());
+  while ((el = (TGFrameElement *)next2())) {
+     if (el->fFrame == v->GetFrame()) {
+         el->fLayout = new TGLayoutHints(kLHintsLeft | kLHintsExpandX | kLHintsExpandY);
+         break;
+     }
+  }
   fSelectionFrame->Resize(fSelectionFrame->GetWidth(), fSelectionFrame->GetHeight()/2);
 
   TGHSplitter *splitter = new TGHSplitter(fV1);
-  lo = new TGLayoutHints(kLHintsTop | kLHintsExpandX, 4, 2, 2, 0);
-  fSelectionFrame->AddFrame(splitter, lo);
+  fV1->AddFrame(splitter, new TGLayoutHints(kLHintsTop | kLHintsExpandX, 4, 2, 2, 0));
 
-  fClient->SetRoot(fV1);
+  fV1->SetEditDisabled(kEditEnable);
+  fV1->SetEditable();
   editor = new RGEditor(glpad);
+  editor->SetGlobal(kFALSE);
   editor->GetTGCanvas()->ChangeOptions(0);
   editor->ChangeOptions(editor->GetOptions() | kFixedHeight);
-  fV1->RemoveFrame(editor);
-  fV1->AddFrame(editor, new TGLayoutHints(kLHintsTop | kLHintsExpandX, 0,2,2,2));
-  fClient->SetRoot();
+  fV1->SetEditable(kEditDisable);
+  fV1->SetEditable(kFALSE);
 
-  /*
-    editor->UnmapWindow();
-    editor->ChangeOptions(editor->GetOptions() | kFixedHeight);
-    lo = new TGLayoutHints(kLHintsTop | kLHintsExpandX, 0,2,2,2);
-    fV1->AddFrame(editor, lo);
-    Int_t x, y;
-    CalculateReparentXY(fV1, x, y);
-    editor->ReparentWindow(fV1, x, y);
-  */
-
+  TIter next(fV1->GetList());
+  while ((el = (TGFrameElement *)next())) {
+      if (el->fFrame == editor)
+         if (el->fLayout) {
+            el->fLayout->SetLayoutHints(kLHintsTop | kLHintsExpandX);
+            el->fLayout->SetPadLeft(0);
+            el->fLayout->SetPadRight(2);
+            el->fLayout->SetPadTop(2);
+            el->fLayout->SetPadBottom(2);
+            break;
+         }
+  }
   splitter->SetFrame(editor, kFALSE);
-
   fV1->MapSubwindows();
-  v->GetFrame()->MapWindow();
 }
 
 
