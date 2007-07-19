@@ -21,7 +21,7 @@
 
 AliHLTDDLDecoder::AliHLTDDLDecoder() : f32DtaPtr(0), f8DtaPtr(0),fN32HeaderWords(8), fN32RcuTrailerWords(1), fNDDLBlocks(0), 
 				       fBufferPos(0), fN40AltroWords(0), fN40RcuAltroWords(0), fSize(0), fSegmentation(0), 
-				       f32LastDDLBlockSize(5), f32PayloadSize(0),fBufferIndex(0), fN10bitWords(0)
+				       f32LastDDLBlockSize(5), f32PayloadSize(0),fBufferIndex(0), fN10bitWords(0), fBad(0),fGood(0)
 {
 
 }
@@ -67,17 +67,52 @@ AliHLTDDLDecoder::Decode()
 	  DecodeDDLBlock();
 	}
 
+      
       DecodeLastDDLBlock(); 
-      return true;
+      fGood ++;
+ 
+      /*
+      printf("\n");
+      DumpData(fBuffer, 1000, 4);
+      printf("\n");
+      */
+
+    return true;
     }
 
   else
     {
-      cout <<"ERROR: data integrity check failed, discarding data" << endl;
+      cout <<"WARNING: data integrity check failed, discarding data" << endl;
       cout << "Size of datablock is  " << fSize   << endl;
       cout << "fN40AltroWords = "      << fN40AltroWords   << endl;
       cout << "fN40RcuAltroWords = "   << fN40RcuAltroWords  << endl;
-      return false;
+      fBad ++;
+      float badPercent = (100*(float)fBad)/((float)fBad + (float)fGood);
+
+      cout << "there are" <<  badPercent <<"  % corrupted DDL corrupted blocks" << endl;
+ 
+      fDDLBlockCnt = 0;
+      fBufferIndex = 0;
+      fN10bitWords = 0;
+      
+      //     for(fI=0; fI < fNDDLBlocks; fI++)
+      for(int i = 0; i < fNDDLBlocks; i++)
+	{
+	  DecodeDDLBlock();
+	}
+
+      
+      DecodeLastDDLBlock();
+      
+      /*
+      printf("\n"); 
+      DumpData(fBuffer, 1000, 4);
+      printf("\n"); 
+      */
+
+      return true;
+
+      //     return false;
     }
 }
 
@@ -90,10 +125,12 @@ AliHLTDDLDecoder::NextChannel(AliHLTAltroData *altroDataPtr)
       if((fBuffer[fBufferPos] << 4 ) | ((fBuffer[fBufferPos-1] & 0x3c0) >> 6) == 0x2aaa)
 	{
 	  altroDataPtr->fIsComplete = true;
+	  //	  printf("\nAliHLTDDLDecoder::NextChannel data is complete 0x2aaa endmarker present\n");
 	  fComplete ++;
 	}
       else
 	{
+	  //	  printf("\nAliHLTDDLDecoder::NextChannel ERROR, data is incomplete 0x2aaa endmarker missing\n");
 	  altroDataPtr->fIsComplete = false;
 	  fInComplete ++;
 	}
@@ -181,6 +218,11 @@ AliHLTDDLDecoder::SetMemory(UChar_t *dtaPtr, UInt_t size)
   fSize = size;
   f32PayloadSize = fSize/4 -  (fN32HeaderWords + fN32RcuTrailerWords);
   fN40AltroWords = (32*f32PayloadSize)/40; 
+
+  //  cout << "AliHLTDDLDecoder::SetMemory f32PayloadSize =" << f32PayloadSize <<endl;
+  // cout << "AliHLTDDLDecoder::SetMemory 32*f32PayloadSize =" << 32*f32PayloadSize <<endl;
+  // cout << "AliHLTDDLDecoder::SetMemory (32*f32PayloadSize)/40 =" << (32*f32PayloadSize)/40 <<endl;
+
   f32LastDDLBlockSize =  f32PayloadSize%DDL_32BLOCK_SIZE;
   fNDDLBlocks =  f32PayloadSize/5;
   f8DtaPtr =f8DtaPtr + fSize;
@@ -262,10 +304,11 @@ AliHLTDDLDecoder::DecodeLastDDLBlock()
   DecodeDDLBlock();
 }
 
+/*
 void 
 AliHLTDDLDecoder::SetNTrailerWords(int n)
 {
   fN32RcuTrailerWords = n;
 }
-
+*/
 

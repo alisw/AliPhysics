@@ -17,7 +17,7 @@ AliHLTAltroData::~AliHLTAltroData()
 
 
 bool
-AliHLTAltroData::NextBunch(AliHLTAltroBunch &altroBunch)
+AliHLTAltroData::NextBunch(AliHLTAltroBunch *altroBunch)
 {
   if(fIsComplete == true)
     {
@@ -31,11 +31,13 @@ AliHLTAltroData::NextBunch(AliHLTAltroBunch &altroBunch)
 	{
 	  if(*fBunchData == 0){ fWc += 1;};
 	  fWc += *fBunchData;
-	  altroBunch.fData = fData - *fBunchData -1; ;
-	  altroBunch.fBunchSize = *fBunchData -2;
+	  altroBunch->fData = fData - *fBunchData -1; ;
+	  altroBunch->fBunchSize = *fBunchData -2;
 	  fBunchData --;
-	  altroBunch.fEndTimeBin = *fBunchData;
-	  fBunchData = fBunchData  -  (altroBunch.fBunchSize +1);
+	  altroBunch->fEndTimeBin = *fBunchData;
+	  fBunchData = fBunchData  -  (altroBunch->fBunchSize +1);
+
+
 	  fBunchCounter ++;
 	  return true;
 	}

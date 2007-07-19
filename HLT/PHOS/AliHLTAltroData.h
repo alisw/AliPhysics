@@ -9,7 +9,7 @@ class AliHLTAltroData
 public:
   AliHLTAltroData();
   ~ AliHLTAltroData();
-  bool NextBunch(AliHLTAltroBunch &altrobunch);
+  bool NextBunch(AliHLTAltroBunch *altrobunch);
 
   int GetChannel();
   int GetChip();

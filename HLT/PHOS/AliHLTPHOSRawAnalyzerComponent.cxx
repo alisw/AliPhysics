@@ -99,11 +99,8 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
   const AliHLTComponentBlockData* iter = NULL; 
   unsigned long ndx;
 
-
-
   for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
-      //      Int_t tmpChannelCnt= 0;
       iter = blocks+ndx;
       mysize = 0;
       offset = tSize;
@@ -117,46 +114,15 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
       fDecoderPtr->SetMemory(reinterpret_cast<UChar_t*>( iter->fPtr ), iter->fSize);
       fDecoderPtr->Decode();
       fOutPtr =  (AliHLTPHOSRcuCellEnergyDataStruct*)outBPtr;
+      fOutPtr->fRcuX = fRcuX;
+      fOutPtr->fRcuZ = fRcuZ;
 
       fOutPtr->fModuleID =fModuleID;
 
       while( fDecoderPtr->NextChannel(fAltroDataPtr) == true )
 	{
-	  //	  if(fAltroDataPtr->fDataSize != 0)
-	  //	    {
-	  //	      cout << "AliHLTPHOSRawAnalyzerComponent::DoEvent, dumping data, size ="<< fAltroDataPtr->fDataSize<< endl;
-	  //	      DumpData(fAltroDataPtr->fData, fAltroDataPtr->fDataSize, 4);
-	  //	      if(fAltroDataPtr->fIsComplete == true)
-	  //		{
-	  //		  while(fAltroDataPtr->NextBunch(fAltroBunchPtr) == true)
-	  //		    {
-	  //	      cout << "bunchsize =" << fAltroBunchPtr->fBunchSize <<endl;
- 
-	  //		    }
-
 	  fAnalyzerPtr->SetData(fAltroDataPtr->fData);
 	  fAnalyzerPtr->Evaluate(0, fAltroDataPtr->fDataSize -2);  
-	  
-	  if(MaxValue(fAltroDataPtr->fData, fAltroDataPtr->fDataSize) > 100)
-	    {
-	      DumpData(fAltroDataPtr->fData,fAltroDataPtr->fDataSize, 4);
-	    }
-
-	  //	  cout << "AliHLTPHOSRawAnalyzerComponent::DoEvent, cnt = " <<tmpChannelCnt <<endl;
-	  //	  cout << "branch =" <<  fAltroDataPtr->GetBranch()<< "  card = " <<fAltroDataPtr->GetCard() <<  "chip = " <<  fAltroDataPtr->GetChip() <<" channel"
-	  
-	  
-		  
-	  //  fAnalyzerPtr->SetData(fAltroBunchPtr->fData);
-	  //	  fAnalyzerPtr->Evaluate(0, fAltroBunchPtr->fBunchSize);  
-	  //	  DumpData();
-
-	  /*
-	    cout << "AliHLTPHOSRawAnalyzerComponent::DoEven. dumping data"  << endl;
-	    DumpData(fAltroBunchPtr->fData, fAltroBunchPtr->fBunchSize,4);
-	    cout << endl;
-	    cout << "AliHLTPHOSRawAnalyzerComponent::DoEvent. finnsihed dumping data"  << endl;
-	  */
 
 	  fOutPtr->fValidData[tmpChannelCnt].fZ  = fMapperPtr->hw2geomapPtr[fAltroDataPtr->fHadd].row;
 	  fOutPtr->fValidData[tmpChannelCnt].fX  = fMapperPtr->hw2geomapPtr[fAltroDataPtr->fHadd].col; 
@@ -164,15 +130,7 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 	  fOutPtr->fValidData[tmpChannelCnt].fEnergy  = (float)fAnalyzerPtr->GetEnergy();
 	  fOutPtr->fValidData[tmpChannelCnt].fTime    = (float)fAnalyzerPtr->GetTiming();
 	  tmpChannelCnt ++;
-	  //		}
-	  //	      else
-	  //		{
-	  //		  cout << "AliHLTPHOSRawAnalyzerComponent::DoEvent, WARNING, altroblock is incomplete" << endl;
-	  //		}
-		  
 	}
-	 
-      //  }
     
 
       mysize += sizeof(AliHLTPHOSRcuCellEnergyDataStruct);

@@ -19,7 +19,6 @@
 #include "AliHLTPHOSValidCellDataStruct.h"
 #include "Rtypes.h"
 
-//#include "AliHLTPHOSConstants.h"
 #include "AliHLTPHOSConstants.h"
 using namespace PhosHLTConst;
 

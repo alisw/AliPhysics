@@ -58,7 +58,9 @@ class AliHLTDDLDecoder
 
 
   void SetMemory(UChar_t  *dtaPtr, UInt_t size);
-  void SetNTrailerWords(int N);
+
+  //  void SetNTrailerWords(int N);
+
   void PrintInfo(AliHLTAltroData &altrodata, int n = 0, int nPerLine = 4);
   float GetFailureRate();
 
@@ -71,12 +73,17 @@ class AliHLTDDLDecoder
 
   UInt_t  *f32DtaPtr;
   UChar_t *f8DtaPtr;   
-  long int fN32HeaderWords;
-  long int fN32RcuTrailerWords;
+
+  const long int fN32HeaderWords;
+  const long int fN32RcuTrailerWords;
+ 
+
   unsigned int fNDDLBlocks;
   long int fBufferPos;
+
   unsigned long  fN40AltroWords;
   unsigned long  fN40RcuAltroWords;
+
   UInt_t  fSize;
   unsigned int fSegmentation;
   unsigned int f32LastDDLBlockSize;
@@ -92,6 +99,9 @@ class AliHLTDDLDecoder
   UInt_t fI;
   int fComplete;
   int fInComplete;
+
+  int fBad;
+  int fGood;
 
 };
 
