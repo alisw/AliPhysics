@@ -105,6 +105,8 @@ void AliMagFMaps::ReadField()
     if (!fReadField) return;
     fReadField = kFALSE;
   //    
+   
+
   char* fname;
   TFile* file = 0;
   if (fMap == k2kG) {
@@ -252,7 +254,9 @@ void AliMagFMaps::Streamer(TBuffer &R__b)
   // Stream an object of class AliMagFMaps.
   if (R__b.IsReading()) {
    R__b.ReadClassBuffer(AliMagFMaps::Class(), this);
-    ReadField();
+   // 
+   fReadField = kTRUE;
+   ReadField();
   } else {
     R__b.WriteClassBuffer(AliMagFMaps::Class(), this);
   }
