@@ -267,6 +267,8 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
       }	
     }
 
+    timeDelayCFD[0] = fParam->GetTimeDelayCFD(0);
+
     for (Int_t i=0; i<24; i++)
       {
        	Float_t  al = countE[i]; 
@@ -324,7 +326,6 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
 			/channelWidth);
       }
 	AliDebug(10,Form(" time A& C %i %i  time diff && mean time in channels %i %i",bestATDC,bestCTDC, timeDiff, meanTime));
-	  timeDelayCFD[0] = fParam->GetTimeDelayCFD(0);
 
     if (sumMult > threshold){
       fSumMult =  Int_t (1000.* TMath::Log(Double_t(sumMult) / Double_t(sumMultCoeff))
