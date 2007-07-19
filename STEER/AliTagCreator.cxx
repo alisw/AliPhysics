@@ -231,6 +231,7 @@ Bool_t AliTagCreator::MergeTags() {
   }
 
   fgChain->Merge(filename);
+  gSystem->Exec("rm Run*.Event*");
 
   return kTRUE;
 }
