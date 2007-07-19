@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 #include "AliT0LookUpValue.h"
+#include "iostream.h"
 
 ClassImp(AliT0LookUpValue)
 
@@ -27,34 +28,33 @@ ClassImp(AliT0LookUpValue)
 
   ///
 }
-
+//--------------------------------------------------------------------------------------
  AliT0LookUpValue:: AliT0LookUpValue(Int_t trm, Int_t tdc, Int_t chain, Int_t channel) : TObject(),
   fTRM(trm),
   fTDC(tdc),
   fChain(chain),
   fChannel(channel)
 {
+
+//--------------------------------------------------------------------------------------
  
 }
  Bool_t AliT0LookUpValue:: IsEqual(const TObject* obj) const
 {
      AliT0LookUpValue *b = ( AliT0LookUpValue*)obj;
-/*
-printf("IsEqual %i %i\n %i %i\n %i %i\n %i %i\n \n",b->GetTRM(), fTRM, 
-b->GetTDC(), fTDC, b->GetChain(), fChain, b->GetChannel(), fChannel );
-*/
      if ( b->GetTRM() == fTRM && 
 	  b->GetTDC() == fTDC && 
 	  b->GetChain() == fChain &&
 	  b->GetChannel() == fChannel  ) return kTRUE;
      else return kFALSE;
 }
-ULong_t AliT0LookUpValue:: Hash(void) const 
+
+//------------------------------------------------------------------------------------ 
+void AliT0LookUpValue::Print(Option_t *) const
 {
-  ULong_t hash = 1000*fTRM+100*fTDC+10*fChain+1*fChannel;
-  //printf("hash=%i\n",hash);
-  return hash; 
+  printf("AliT0LookUpValue TRM %i, TDC %i, chain %i channel %i\n",fTRM,fTDC,fChain,fChannel);
 }
+//--------------------------------------------------------------------------------------
 
 ClassImp(AliT0LookUpKey)
 
@@ -66,6 +66,7 @@ ClassImp(AliT0LookUpKey)
  
  }
 
+//--------------------------------------------------------------------------------------
  AliT0LookUpKey::AliT0LookUpKey(Int_t key):
    TObject(),
    fKey(key),
@@ -74,6 +75,7 @@ ClassImp(AliT0LookUpKey)
  
  }
 
+//--------------------------------------------------------------------------------------
  AliT0LookUpKey::AliT0LookUpKey(TString name):
    TObject(),
    fKey(),
@@ -81,6 +83,7 @@ ClassImp(AliT0LookUpKey)
  {
  
  }
+//--------------------------------------------------------------------------------------
 
 Bool_t AliT0LookUpKey:: IsEqual(const TObject* obj) const
 {
@@ -88,4 +91,10 @@ Bool_t AliT0LookUpKey:: IsEqual(const TObject* obj) const
 //  printf("IsEqual\n");
     k=((AliT0LookUpKey*)obj)->GetKey();
     if (k==fKey) return kTRUE; else return kFALSE;
+}
+//--------------------------------------------------------------------------------------
+void AliT0LookUpKey::Print(Option_t *) const
+{
+  printf(" AliT0LookUpKey key %i name %s\n",fKey,fName.Data());
+
 }

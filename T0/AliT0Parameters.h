@@ -74,7 +74,7 @@ public:
   //  void SetMeanT0(Int_t mean=500) { fMeanT0 = mean; };
   Int_t GetMeanT0 (); //{return fMeanT0;};
 
-  TMap * GetMapLookup();
+    TMap * GetMapLookup();
   Int_t GetChannel(Int_t trm,  Int_t tdc, Int_t chain, Int_t channel);
   Int_t GetNumberOfTRMs();
   void SetNumberOfTRMs(Int_t ntrms=2) {fNumberOfTRMs = ntrms;}

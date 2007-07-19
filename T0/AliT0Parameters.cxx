@@ -103,23 +103,22 @@ AliT0Parameters::Init()
    if (fIsInit) return;
 
    AliCDBManager *stor =AliCDBManager::Instance();
-
    //time equalizing
-  fCalibentry  = stor->Get("T0/Calib/TimeDelay");
-  if (fCalibentry)
-   fgCalibData  = (AliT0CalibData*)fCalibentry->GetObject();
-  else {
-    AliFatal(" ALARM !!!! No time delays in CDB "); 
-    fIsInit = kFALSE;
-    return;
-  }
+   fCalibentry  = stor->Get("T0/Calib/TimeDelay");
+   if (fCalibentry)
+     fgCalibData  = (AliT0CalibData*)fCalibentry->GetObject();
+   else {
+         AliFatal(" ALARM !!!! No time delays in CDB "); 
+     fIsInit = kFALSE;
+     return;
+   }
  //slewing correction
   fSlewCorr  = stor->Get("T0/Calib/Slewing_Walk");
   if (fSlewCorr){
     fgSlewCorr  = (AliT0CalibData*)fSlewCorr->GetObject();
   }
   else {
-    AliFatal(" ALARM !!!! No slewing correction in CDB "); 
+      AliFatal(" ALARM !!!! No slewing correction in CDB "); 
     fIsInit = kFALSE;
     return;
   }
@@ -129,7 +128,7 @@ AliT0Parameters::Init()
     fgLookUp  = (AliT0CalibData*)fLookUpentry->GetObject();
   }
   else {
-    AliFatal(" ALARM !!!! No Lookup table  in CDB "); 
+     AliFatal(" ALARM !!!! No Lookup table  in CDB "); 
     fIsInit = kFALSE;
     return;
   }
@@ -271,20 +270,18 @@ Int_t
 AliT0Parameters::GetChannel(Int_t trm,  Int_t tdc, Int_t chain, Int_t channel)
 {
 
-  
-  AliT0LookUpKey * lookkey;  //= new AliT0LookUpKey();
-  AliT0LookUpValue * lookvalue= new AliT0LookUpValue(trm,tdc,chain,channel);
+  AliT0LookUpKey * val;  //= new AliT0LookUpKey();
+  AliT0LookUpValue * key= new AliT0LookUpValue(trm,tdc,chain,channel);
   if (fgLookUp)
-       lookkey = (AliT0LookUpKey*) fgLookUp->GetMapLookup()->GetValue((TObject*)lookvalue);
+       val = (AliT0LookUpKey*) fgLookUp->GetMapLookup()->GetValue((TObject*)key);
    else
-   lookkey = (AliT0LookUpKey*) fLookUp.GetValue((TObject*)lookvalue);
-
-  if (!lookkey ) {
+     cout<<" !!!!!!!!! no look up table !!!"<<endl;
+  if (!val ) {
     AliInfo(Form("No such address (%d %d %d %d)!",trm,tdc,chain,channel));
     return -1;
   }
   
-  return lookkey->GetKey();
+  return val->GetKey();
   
 
 }
@@ -310,6 +307,7 @@ AliT0Parameters::GetNumberOfTRMs()
   } 
   return  fgLookUp ->GetNumberOfTRMs();
 }
+/*
 //________________________________________________________________________________
 Double_t AliT0Parameters::GetZPosition(const char* symname){
 // Get the global z coordinate of the given T0 alignable volume
@@ -317,6 +315,33 @@ Double_t AliT0Parameters::GetZPosition(const char* symname){
   Double_t *tr = AliGeomManager::GetMatrix(symname)->GetTranslation();
 
   return tr[2];
+}
+*/
+//________________________________________________________________________________
+Double_t AliT0Parameters::GetZPosition(const char* symname){
+// Get the global z coordinate of the given T0 alignable volume
+//
+  Double_t *tr;
+  
+  cout<<symname<<endl;
+  TGeoPNEntry *pne = gGeoManager->GetAlignableEntry(symname);
+  if (!pne) return 0;
+  
+
+  TGeoPhysicalNode *pnode = pne->GetPhysicalNode();
+  if(pnode){
+          TGeoHMatrix* hm = pnode->GetMatrix();
+           tr = hm->GetTranslation();
+  }else{
+          const char* path = pne->GetTitle();
+          if(!gGeoManager->cd(path)){
+                  AliErrorClass(Form("Volume path %s not valid!",path));
+                  return 0;
+          }
+         tr = gGeoManager->GetCurrentMatrix()->GetTranslation();
+  }
+  return tr[2];
+
 }
 //________________________________________________________________________________
 

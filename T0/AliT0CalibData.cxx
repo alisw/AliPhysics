@@ -128,24 +128,32 @@ void  AliT0CalibData::PrintLookup(Option_t*, Int_t iTRM, Int_t iTDC, Int_t iChan
   AliT0LookUpValue*  lookvalue= new AliT0LookUpValue();
 
   cout<<" Number Of TRMs in setup "<<GetNumberOfTRMs()<<endl;
-  lookvalue->SetTRM(iTRM);
-  lookvalue->SetTDC(iTDC);
-  lookvalue->SetChain(0);
-  lookvalue->SetChannel(iChannel);
+  iTRM=0; iTDC=0; Int_t chain=0; iChannel=0;
 
-  
-  printf(" AliT0CalibData::PrintLookup ::start GetValue %i %i %i \n",iTRM, iTDC, iChannel);
-  lookkey = (AliT0LookUpKey*) fLookup.GetValue((TObject*)lookvalue);
-  
-
-  if (lookkey)
-    {
-      cout<<" lookup KEY!!! "<<lookkey->GetKey()<<" VALUE "<<lookvalue->GetTRM()<<" "
-	  <<lookvalue->GetTDC()<<" "
-	  << lookvalue->GetChain()<<" "
+  for (Int_t ik=0; ik<105; ik++){
+    lookvalue->SetTRM(iTRM);
+    lookvalue->SetTDC(iTDC);
+    lookvalue->SetChain(chain);
+    lookvalue->SetChannel(iChannel);
+    
+    if (iChannel<6) iChannel +=2;
+    else {iChannel = 0; iTDC++;}
+    if(ik==57) { iTDC=0; iChannel=0; iTRM=1;}
+   
+  printf(" AliT0CalibData::PrintLookup ::start GetValue %i %i %i %i\n",iTRM, iTDC,chain, iChannel);
+    lookkey = (AliT0LookUpKey*) fLookup.GetValue((TObject*)lookvalue);
+    cout<<"  lookkey "<< lookkey<<endl;
+    //    TString name= lookkey->GetChannelName();
+    // cout<<name.Data()<<endl;
+    if (lookkey)
+      {
+	TString name= lookkey->GetChannelName();
+	cout<<" lookup KEY!!! "<<name.Data()<<" "<<lookkey->GetKey()<<" VALUE "<<lookvalue->GetTRM()<<" "
+	    <<lookvalue->GetTDC()<<" "
+	    << lookvalue->GetChain()<<" "
 	  <<lookvalue->GetChannel()<<endl;
-    }
-  
+      }
+  }
   
 }
 
@@ -310,6 +318,7 @@ void AliT0CalibData::ReadAsciiLookup(const Char_t *filename)
 	  lookvalue->SetChain(chain);
 	  lookvalue->SetChannel(channel);
 	  lookkey->SetKey(key);
+	  lookkey->SetChannelName(varname);
 	  cout<<"lookup "<<varname<<" "<<key<<" "<<trm<<" "<<chain<<" "<<tdc<<" "<<channel<<endl;	  
 	  
 	  fLookup.Add((TObject*)lookvalue,(TObject*)lookkey);

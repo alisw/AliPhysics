@@ -99,12 +99,12 @@ uncertances
   for( Int_t iline=0; iline<106; iline++)
     {
       lookvalue = ( AliT0LookUpValue*) iter->Next();
-      lookkey = (AliT0LookUpKey*) lookup->GetValue((TObject*)lookvalue);
-      fLookUp.Add((TObject*)lookkey,(TObject*)lookvalue);
+      lookkey = (AliT0LookUpKey*) lookup->GetValue(lookvalue);
+      fLookUp.Add(lookkey, lookvalue);
       lookkey= new AliT0LookUpKey();
       lookvalue= new AliT0LookUpValue();
     }
- 
+    
 }
 
 //_____________________________________________________________________________
@@ -225,14 +225,11 @@ void AliT0RawData::GetDigits(AliT0digit *fDigits)
   Int_t channel=0;
   Int_t trm1words=0;
   Int_t itrm=0, oldtrm=0;
-  
- 
+  AliT0LookUpKey * lookkey  = new AliT0LookUpKey();
+  AliT0LookUpValue * lookvalue ;//= new AliT0LookUpValue(trm,tdc,chain,channel);
   for (Int_t det = 0; det < 105; det++) {
     time = allData->At(det);
-     if (time >0) {
-      
-      AliT0LookUpKey * lookkey = new AliT0LookUpKey();
-      AliT0LookUpValue * lookvalue ;//= new AliT0LookUpValue(trm,tdc,chain,channel);
+    if (time >0) {
       lookkey->SetKey(det);
       lookvalue = (AliT0LookUpValue*) fLookUp.GetValue((TObject*)lookkey);     
       if (lookvalue ) 
@@ -258,7 +255,6 @@ void AliT0RawData::GetDigits(AliT0digit *fDigits)
 	  chain = lookvalue->GetChain();
 	  iTDC = lookvalue->GetTDC();
 	  channel = lookvalue->GetChannel();
-	  //	  cout<<det<<" "<<itrm<<" "<<chain<<" "<<iTDC<<" "<<channel<<" time "<<time<<endl;
 	  FillTime(channel,  iTDC,  time);
 	}
       else
@@ -277,7 +273,7 @@ void AliT0RawData::GetDigits(AliT0digit *fDigits)
   WriteTrailer(15,0,fEventNumber,5); // 1st TRM trailer
   
   
- trm1words = fIndex - startTRM;
+  trm1words = fIndex - startTRM;
   //space for 2st TRM header
   
   WriteTRMDataHeader(1, trm1words , positionOfTRMHeader);
