@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -32,8 +32,8 @@
 #include <TPolyLine.h>
 // Root Geometry includes
 #include <TGeoVolume.h>
-#include <TGeoPcon.h>
-#include <TGeoCone.h>
+//#include <TGeoPcon.h>
+//#include <TGeoCone.h>
 #include <TGeoTube.h> // contains TGeoTubeSeg
 #include <TGeoArb8.h>
 #include <TGeoEltu.h>
@@ -56,9 +56,9 @@ ClassImp(AliITSv11GeometrySPD)
 #define SQ(A) (A)*(A)
 
 //______________________________________________________________________
-Int_t AliITSv11GeometrySPD::CreateSPDCenteralMaterials(Int_t &medOffset, Int_t &matOffset)
+Int_t AliITSv11GeometrySPD::CreateSPDCentralMaterials(Int_t &medOffset, Int_t &matOffset) const
 {
-    // Define the specific materials used for the ITS SPD centeral
+    // Define the specific materials used for the ITS SPD central
     // detectors. Note, These are the same old names. By the ALICE
     // naming convension, these should start out at ITS SPD ....
     // This data has been taken from AliITSvPPRasymmFMD::CreateMaterials().
@@ -232,8 +232,8 @@ Int_t AliITSv11GeometrySPD::CreateSPDCenteralMaterials(Int_t &medOffset, Int_t &
     return matOffset;
 }
 //______________________________________________________________________
-void AliITSv11GeometrySPD::InitSPDCenteral(Int_t offset,TVirtualMC *vmc){
-    // Do any SPD Centeral detector related initilizations, setting
+void AliITSv11GeometrySPD::InitSPDCentral(Int_t offset,TVirtualMC *vmc) const {
+    // Do any SPD Central detector related initilizations, setting
     // transport cuts for example.
     // Some GEANT3 Physics switches
     // "MULTS"
@@ -1419,10 +1419,10 @@ TGeoVolume* AliITSv11GeometrySPD::CreateGroundingFoilSingle
 		strComposite.Append(":");
 		strComposite.Append(trName);
 		if (i < 10) strComposite.Append("+");
-		cout << holeX << endl;
+		//MM		cout << holeX << endl;
 	}
 	strComposite.Append(")");
-	cout << strComposite.Data() << endl;
+	//MM	cout << strComposite.Data() << endl;
 	
 	// create composite shape (with holes)
 	TGeoCompositeShape *shGround = new TGeoCompositeShape(Form("SH_%sGFOIL", type), strComposite.Data());
@@ -1729,7 +1729,7 @@ TGeoVolume* AliITSv11GeometrySPD::CreateGroundingFoil(Double_t &thickness, TGeoM
 }
 
 //______________________________________________________________________
-TGeoVolume* AliITSv11GeometrySPD::CreateMCMBase(TGeoManager *geom)
+TGeoVolume* AliITSv11GeometrySPD::CreateMCMBase(TGeoManager *geom) const
 {
 	//
 	// Creates the MCM basis volume.
@@ -2133,38 +2133,38 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreatePixelBusAndExtensions(Bool_t zpo
   TGeoMedium   *medMCMExtender = mgr->GetMedium("MCM EXTENDER") ;
 
   //geometrical constants
-  const Double_t groundingThickness    =   0.07  * fgkmm ;
-  const Double_t grounding2pixelBusDz  =   0.625 * fgkmm ;
-  const Double_t pixelBusThickness     =   0.28  * fgkmm ;
-  const Double_t groundingWidthX       = 170.501 * fgkmm ;
-  const Double_t pixelBusContactDx     =   1.099 * fgkmm ;
-  const Double_t pixelBusWidthY        =  13.8   * fgkmm ;
-  const Double_t pixelBusContactPhi    =  20.0   * TMath::Pi()/180. ; //design=20 deg.
-  const Double_t pbExtenderPsi         =  70.0   * TMath::Pi()/180. ; //design=?? 70 deg. seems OK
-  const Double_t pbExtenderWidthY      =  11.0   * fgkmm ;
-  const Double_t pbExtenderTopZ        =   2.72  * fgkmm ;
-  const Double_t mcmThickness          =   0.35  * fgkmm ;
-  const Double_t mcmExtenderThickness  =   0.20  * fgkmm ;
-  const Double_t deltaMcmMcmextender   =   1.6   * fgkmm ;
-  const Double_t halfStaveTotalLength  = 247.64  * fgkmm ;
-  const Double_t deltaYOrigin          =  15.95/2.* fgkmm ;
-  const Double_t deltaXOrigin          =   1.1    * fgkmm ;
-  const Double_t deltaZOrigin          = halfStaveTotalLength / 2. ;
+  const Double_t kGroundingThickness    =   0.07  * fgkmm ;
+  const Double_t kGrounding2pixelBusDz  =   0.625 * fgkmm ;
+  const Double_t kPixelBusThickness     =   0.28  * fgkmm ;
+  const Double_t kGroundingWidthX       = 170.501 * fgkmm ;
+  const Double_t kPixelBusContactDx     =   1.099 * fgkmm ;
+  const Double_t kPixelBusWidthY        =  13.8   * fgkmm ;
+  const Double_t kPixelBusContactPhi    =  20.0   * TMath::Pi()/180. ; //design=20 deg.
+  const Double_t kPbExtenderPsi         =  70.0   * TMath::Pi()/180. ; //design=?? 70 deg. seems OK
+  const Double_t kPbExtenderWidthY      =  11.0   * fgkmm ;
+  const Double_t kPbExtenderTopZ        =   2.72  * fgkmm ;
+  const Double_t kMcmThickness          =   0.35  * fgkmm ;
+  const Double_t kMcmExtenderThickness  =   0.20  * fgkmm ;
+  const Double_t kDeltaMcmMcmextender   =   1.6   * fgkmm ;
+  const Double_t kHalfStaveTotalLength  = 247.64  * fgkmm ;
+  const Double_t kDeltaYOrigin          =  15.95/2.* fgkmm ;
+  const Double_t kDeltaXOrigin          =   1.1    * fgkmm ;
+  const Double_t kDeltaZOrigin          = kHalfStaveTotalLength / 2. ;
 
-  const Double_t grounding2pixelBusDz2 = grounding2pixelBusDz+groundingThickness/2. + pixelBusThickness/2. ;
-  const Double_t pixelBusWidthX        = groundingWidthX ;
-  const Double_t pixelBusRaiseLength   = (pixelBusContactDx-pixelBusThickness*TMath::Sin(pixelBusContactPhi))/TMath::Cos(pixelBusContactPhi) ;
-  const Double_t pbExtenderBaseZ       = grounding2pixelBusDz2 + pixelBusRaiseLength*TMath::Sin(pixelBusContactPhi) + 2*pixelBusThickness*TMath::Sin(pixelBusContactPhi)*TMath::Tan(pixelBusContactPhi) ;
-  const Double_t pbExtenderDeltaZ      = pbExtenderTopZ-pbExtenderBaseZ ;
+  const Double_t kGrounding2pixelBusDz2 = kGrounding2pixelBusDz+kGroundingThickness/2. + kPixelBusThickness/2. ;
+  const Double_t kPixelBusWidthX        = kGroundingWidthX ;
+  const Double_t kPixelBusRaiseLength   = (kPixelBusContactDx-kPixelBusThickness*TMath::Sin(kPixelBusContactPhi))/TMath::Cos(kPixelBusContactPhi) ;
+  const Double_t kPbExtenderBaseZ       = kGrounding2pixelBusDz2 + kPixelBusRaiseLength*TMath::Sin(kPixelBusContactPhi) + 2*kPixelBusThickness*TMath::Sin(kPixelBusContactPhi)*TMath::Tan(kPixelBusContactPhi) ;
+  const Double_t kPbExtenderDeltaZ      = kPbExtenderTopZ-kPbExtenderBaseZ ;
 
-  const Double_t pbExtenderEndPointX   = 2*deltaZOrigin - groundingWidthX - 2*pixelBusThickness*TMath::Sin(pixelBusContactPhi) ;
-  const Double_t mcmextenderEndPointX  = deltaZOrigin - 48.2 * fgkmm ;
-  const Double_t mcmExtenderWidthY     = pbExtenderWidthY ;
+  const Double_t kPbExtenderEndPointX   = 2*kDeltaZOrigin - kGroundingWidthX - 2*kPixelBusThickness*TMath::Sin(kPixelBusContactPhi) ;
+  const Double_t kMcmextenderEndPointX  = kDeltaZOrigin - 48.2 * fgkmm ;
+  const Double_t kMcmExtenderWidthY     = kPbExtenderWidthY ;
 
   //=====  end constants  =====
 
   
-
+  /*
   // -----------------   CREATE THE PIXEL BUS --------------------------
   // At the end of the pixel bus, a small piece is added for the contact 
   // with the pixel bus extender.
@@ -2181,36 +2181,36 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreatePixelBusAndExtensions(Bool_t zpo
   // The length of the pixel bus is defined (170.501mm) by the technical design
   // this length corresponds to distance [0-1] and [6-5]
 
-
+  */
 
   TGeoVolumeAssembly *pixelBus = new TGeoVolumeAssembly("PIXEL BUS");
 
   // definition of the 7 points for the extrusion
   Double_t pixelBusXtruX[7] = {
-    -pixelBusWidthX/2. ,
-    pixelBusWidthX/2. ,
-    pixelBusWidthX/2. + pixelBusThickness * TMath::Sin(pixelBusContactPhi) ,
-    pixelBusWidthX/2. + pixelBusThickness * TMath::Sin(pixelBusContactPhi) + pixelBusRaiseLength * TMath::Cos(pixelBusContactPhi) ,
-    pixelBusWidthX/2. + pixelBusRaiseLength * TMath::Cos(pixelBusContactPhi) ,
-    pixelBusWidthX/2. ,
-    -pixelBusWidthX/2.
+    -kPixelBusWidthX/2. ,
+    kPixelBusWidthX/2. ,
+    kPixelBusWidthX/2. + kPixelBusThickness * TMath::Sin(kPixelBusContactPhi) ,
+    kPixelBusWidthX/2. + kPixelBusThickness * TMath::Sin(kPixelBusContactPhi) + kPixelBusRaiseLength * TMath::Cos(kPixelBusContactPhi) ,
+    kPixelBusWidthX/2. + kPixelBusRaiseLength * TMath::Cos(kPixelBusContactPhi) ,
+    kPixelBusWidthX/2. ,
+    -kPixelBusWidthX/2.
   } ;
   Double_t pixelBusXtruY[7] = {
-    -pixelBusThickness/2. ,
-    -pixelBusThickness/2. ,
-    -pixelBusThickness/2. + pixelBusThickness * (1 - TMath::Cos(pixelBusContactPhi)) ,
-    -pixelBusThickness/2. + pixelBusThickness * (1 - TMath::Cos(pixelBusContactPhi)) + pixelBusRaiseLength * TMath::Sin(pixelBusContactPhi) ,
-    pixelBusThickness/2.  + pixelBusRaiseLength * TMath::Sin(pixelBusContactPhi) ,
-    pixelBusThickness/2. ,
-    pixelBusThickness/2.
+    -kPixelBusThickness/2. ,
+    -kPixelBusThickness/2. ,
+    -kPixelBusThickness/2. + kPixelBusThickness * (1 - TMath::Cos(kPixelBusContactPhi)) ,
+    -kPixelBusThickness/2. + kPixelBusThickness * (1 - TMath::Cos(kPixelBusContactPhi)) + kPixelBusRaiseLength * TMath::Sin(kPixelBusContactPhi) ,
+    kPixelBusThickness/2.  + kPixelBusRaiseLength * TMath::Sin(kPixelBusContactPhi) ,
+    kPixelBusThickness/2. ,
+    kPixelBusThickness/2.
   } ;
 
   // creation of the volume
   TGeoXtru   *pixelBusXtru    = new TGeoXtru(2);
   TGeoVolume* pixelBusXtruVol = new TGeoVolume("pixelBusXtru",pixelBusXtru,medPixelBus) ;
   pixelBusXtru->DefinePolygon(7,pixelBusXtruX,pixelBusXtruY);
-  pixelBusXtru->DefineSection(0,-pixelBusWidthY/2.);
-  pixelBusXtru->DefineSection(1, pixelBusWidthY/2.);
+  pixelBusXtru->DefineSection(0,-kPixelBusWidthY/2.);
+  pixelBusXtru->DefineSection(1, kPixelBusWidthY/2.);
   // --------------- END PIXEL BUS ----------------------------------------------------
 
 
@@ -2240,50 +2240,50 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreatePixelBusAndExtensions(Bool_t zpo
 
 
   // ====   constants   =====
-  const Double_t pbExtenderXtru3L   = 1.5 * fgkmm ; //arbitrary ?
-  const Double_t pbExtenderXtru4L   = (pbExtenderDeltaZ + pixelBusThickness*(TMath::Cos(pbExtenderPsi)-2))/TMath::Sin(pbExtenderPsi) ;
+  const Double_t kPbExtenderXtru3L   = 1.5 * fgkmm ; //arbitrary ?
+  const Double_t kPbExtenderXtru4L   = (kPbExtenderDeltaZ + kPixelBusThickness*(TMath::Cos(kPbExtenderPsi)-2))/TMath::Sin(kPbExtenderPsi) ;
   //=====  end constants  =====
 
   TGeoVolumeAssembly *pbExtender = new TGeoVolumeAssembly("PIXEL BUS EXTENDER");
 
   Double_t pbExtenderXtruX[13] = {
     0, 
-    pixelBusRaiseLength * TMath::Cos(pixelBusContactPhi) , 
-    pixelBusRaiseLength * TMath::Cos(pixelBusContactPhi) + pbExtenderXtru3L ,
-    pixelBusRaiseLength * TMath::Cos(pixelBusContactPhi) + pbExtenderXtru3L + pixelBusThickness * TMath::Sin(pbExtenderPsi) , 
-    pixelBusRaiseLength * TMath::Cos(pixelBusContactPhi) + pbExtenderXtru3L + pixelBusThickness * TMath::Sin(pbExtenderPsi) + pbExtenderXtru4L * TMath::Cos(pbExtenderPsi) ,
-    pbExtenderEndPointX ,
-    pbExtenderEndPointX ,
-    pixelBusRaiseLength * TMath::Cos(pixelBusContactPhi) + pbExtenderXtru3L + pixelBusThickness * TMath::Sin(pbExtenderPsi) + pbExtenderXtru4L * TMath::Cos(pbExtenderPsi) ,
-    pixelBusRaiseLength * TMath::Cos(pixelBusContactPhi)  + pbExtenderXtru3L + pixelBusThickness * TMath::Sin(pbExtenderPsi) + pbExtenderXtru4L * TMath::Cos(pbExtenderPsi) - pixelBusThickness * TMath::Sin(pbExtenderPsi),
-    pixelBusRaiseLength * TMath::Cos(pixelBusContactPhi) + pbExtenderXtru3L ,
-    pixelBusRaiseLength * TMath::Cos(pixelBusContactPhi) , 
-    pixelBusRaiseLength * TMath::Cos(pixelBusContactPhi) - pixelBusThickness*TMath::Sin(pixelBusContactPhi) , 
-    -pixelBusThickness * TMath::Sin(pixelBusContactPhi)
+    kPixelBusRaiseLength * TMath::Cos(kPixelBusContactPhi) , 
+    kPixelBusRaiseLength * TMath::Cos(kPixelBusContactPhi) + kPbExtenderXtru3L ,
+    kPixelBusRaiseLength * TMath::Cos(kPixelBusContactPhi) + kPbExtenderXtru3L + kPixelBusThickness * TMath::Sin(kPbExtenderPsi) , 
+    kPixelBusRaiseLength * TMath::Cos(kPixelBusContactPhi) + kPbExtenderXtru3L + kPixelBusThickness * TMath::Sin(kPbExtenderPsi) + kPbExtenderXtru4L * TMath::Cos(kPbExtenderPsi) ,
+    kPbExtenderEndPointX ,
+    kPbExtenderEndPointX ,
+    kPixelBusRaiseLength * TMath::Cos(kPixelBusContactPhi) + kPbExtenderXtru3L + kPixelBusThickness * TMath::Sin(kPbExtenderPsi) + kPbExtenderXtru4L * TMath::Cos(kPbExtenderPsi) ,
+    kPixelBusRaiseLength * TMath::Cos(kPixelBusContactPhi)  + kPbExtenderXtru3L + kPixelBusThickness * TMath::Sin(kPbExtenderPsi) + kPbExtenderXtru4L * TMath::Cos(kPbExtenderPsi) - kPixelBusThickness * TMath::Sin(kPbExtenderPsi),
+    kPixelBusRaiseLength * TMath::Cos(kPixelBusContactPhi) + kPbExtenderXtru3L ,
+    kPixelBusRaiseLength * TMath::Cos(kPixelBusContactPhi) , 
+    kPixelBusRaiseLength * TMath::Cos(kPixelBusContactPhi) - kPixelBusThickness*TMath::Sin(kPixelBusContactPhi) , 
+    -kPixelBusThickness * TMath::Sin(kPixelBusContactPhi)
   } ;
   Double_t pbExtenderXtruY[13] = {
     0, 
-    pixelBusRaiseLength * TMath::Sin(pixelBusContactPhi) , 
-    pixelBusRaiseLength * TMath::Sin(pixelBusContactPhi) ,
-    pixelBusRaiseLength * TMath::Sin(pixelBusContactPhi) + pixelBusThickness * (1-TMath::Cos(pbExtenderPsi)) ,
-    pixelBusRaiseLength * TMath::Sin(pixelBusContactPhi) + pixelBusThickness * (1-TMath::Cos(pbExtenderPsi)) + pbExtenderXtru4L * TMath::Sin(pbExtenderPsi) ,
-    pixelBusRaiseLength * TMath::Sin(pixelBusContactPhi) + pixelBusThickness * (1-TMath::Cos(pbExtenderPsi)) + pbExtenderXtru4L * TMath::Sin(pbExtenderPsi) ,
-    pixelBusRaiseLength * TMath::Sin(pixelBusContactPhi) + pixelBusThickness * (1-TMath::Cos(pbExtenderPsi)) + pbExtenderXtru4L * TMath::Sin(pbExtenderPsi) + pixelBusThickness ,
-    pixelBusRaiseLength * TMath::Sin(pixelBusContactPhi) + pixelBusThickness * (1-TMath::Cos(pbExtenderPsi)) + pbExtenderXtru4L * TMath::Sin(pbExtenderPsi) + pixelBusThickness ,
-    pixelBusRaiseLength * TMath::Sin(pixelBusContactPhi) + pixelBusThickness + pbExtenderXtru4L * TMath::Sin(pbExtenderPsi)
+    kPixelBusRaiseLength * TMath::Sin(kPixelBusContactPhi) , 
+    kPixelBusRaiseLength * TMath::Sin(kPixelBusContactPhi) ,
+    kPixelBusRaiseLength * TMath::Sin(kPixelBusContactPhi) + kPixelBusThickness * (1-TMath::Cos(kPbExtenderPsi)) ,
+    kPixelBusRaiseLength * TMath::Sin(kPixelBusContactPhi) + kPixelBusThickness * (1-TMath::Cos(kPbExtenderPsi)) + kPbExtenderXtru4L * TMath::Sin(kPbExtenderPsi) ,
+    kPixelBusRaiseLength * TMath::Sin(kPixelBusContactPhi) + kPixelBusThickness * (1-TMath::Cos(kPbExtenderPsi)) + kPbExtenderXtru4L * TMath::Sin(kPbExtenderPsi) ,
+    kPixelBusRaiseLength * TMath::Sin(kPixelBusContactPhi) + kPixelBusThickness * (1-TMath::Cos(kPbExtenderPsi)) + kPbExtenderXtru4L * TMath::Sin(kPbExtenderPsi) + kPixelBusThickness ,
+    kPixelBusRaiseLength * TMath::Sin(kPixelBusContactPhi) + kPixelBusThickness * (1-TMath::Cos(kPbExtenderPsi)) + kPbExtenderXtru4L * TMath::Sin(kPbExtenderPsi) + kPixelBusThickness ,
+    kPixelBusRaiseLength * TMath::Sin(kPixelBusContactPhi) + kPixelBusThickness + kPbExtenderXtru4L * TMath::Sin(kPbExtenderPsi)
     ,
-    pixelBusRaiseLength * TMath::Sin(pixelBusContactPhi) + pixelBusThickness ,
-    pixelBusRaiseLength * TMath::Sin(pixelBusContactPhi) + pixelBusThickness ,
-    pixelBusRaiseLength * TMath::Sin(pixelBusContactPhi) + pixelBusThickness*TMath::Cos(pixelBusContactPhi) ,
-    pixelBusThickness * TMath::Cos(pixelBusContactPhi)
+    kPixelBusRaiseLength * TMath::Sin(kPixelBusContactPhi) + kPixelBusThickness ,
+    kPixelBusRaiseLength * TMath::Sin(kPixelBusContactPhi) + kPixelBusThickness ,
+    kPixelBusRaiseLength * TMath::Sin(kPixelBusContactPhi) + kPixelBusThickness*TMath::Cos(kPixelBusContactPhi) ,
+    kPixelBusThickness * TMath::Cos(kPixelBusContactPhi)
   } ;
   
   // creation of the volume
   TGeoXtru   *pbExtenderXtru    = new TGeoXtru(2);
   TGeoVolume *pbExtenderXtruVol = new TGeoVolume("pbExtenderXtru",pbExtenderXtru,medPBExtender) ;
   pbExtenderXtru->DefinePolygon(13,pbExtenderXtruX,pbExtenderXtruY);
-  pbExtenderXtru->DefineSection(0,-pbExtenderWidthY/2.);
-  pbExtenderXtru->DefineSection(1, pbExtenderWidthY/2.);
+  pbExtenderXtru->DefineSection(0,-kPbExtenderWidthY/2.);
+  pbExtenderXtru->DefineSection(1, kPbExtenderWidthY/2.);
   // -------------- END PIXEL BUS EXTENDER -------------------------------------------------
 
 
@@ -2309,62 +2309,62 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreatePixelBusAndExtensions(Bool_t zpo
 
 
   //constants
-  const Double_t mcmExtenderXtru3L  = 1.5  * fgkmm ;
+  const Double_t kMcmExtenderXtru3L  = 1.5  * fgkmm ;
   //end constants
 
   TGeoVolumeAssembly *mcmExtender   = new TGeoVolumeAssembly("MCM EXTENDER");
   Double_t mcmExtenderXtruX[10] = {
     0 ,
-    mcmExtenderXtru3L ,
-    mcmExtenderXtru3L + mcmExtenderThickness * TMath::Sin(pbExtenderPsi) , 
-    mcmExtenderXtru3L + mcmExtenderThickness * TMath::Sin(pbExtenderPsi) + deltaMcmMcmextender / TMath::Tan(pbExtenderPsi) ,
-    mcmextenderEndPointX ,
-    mcmextenderEndPointX ,
-    mcmExtenderXtru3L + mcmExtenderThickness * TMath::Sin(pbExtenderPsi) + deltaMcmMcmextender / TMath::Tan(pbExtenderPsi) ,
-    mcmExtenderXtru3L + deltaMcmMcmextender / TMath::Tan(pbExtenderPsi) ,
-    mcmExtenderXtru3L ,
+    kMcmExtenderXtru3L ,
+    kMcmExtenderXtru3L + kMcmExtenderThickness * TMath::Sin(kPbExtenderPsi) , 
+    kMcmExtenderXtru3L + kMcmExtenderThickness * TMath::Sin(kPbExtenderPsi) + kDeltaMcmMcmextender / TMath::Tan(kPbExtenderPsi) ,
+    kMcmextenderEndPointX ,
+    kMcmextenderEndPointX ,
+    kMcmExtenderXtru3L + kMcmExtenderThickness * TMath::Sin(kPbExtenderPsi) + kDeltaMcmMcmextender / TMath::Tan(kPbExtenderPsi) ,
+    kMcmExtenderXtru3L + kDeltaMcmMcmextender / TMath::Tan(kPbExtenderPsi) ,
+    kMcmExtenderXtru3L ,
     0
   } ;
 
   Double_t mcmExtenderXtruY[10] = {
     0 ,
     0 ,
-    mcmExtenderThickness * (1-TMath::Cos(pbExtenderPsi)) ,
-    mcmExtenderThickness * (1-TMath::Cos(pbExtenderPsi)) + deltaMcmMcmextender ,
-    mcmExtenderThickness * (1-TMath::Cos(pbExtenderPsi)) + deltaMcmMcmextender ,
-    mcmExtenderThickness * (2-TMath::Cos(pbExtenderPsi)) + deltaMcmMcmextender ,
-    mcmExtenderThickness * (2-TMath::Cos(pbExtenderPsi)) + deltaMcmMcmextender ,
-    mcmExtenderThickness + deltaMcmMcmextender ,
-    mcmExtenderThickness ,
-    mcmExtenderThickness ,
+    kMcmExtenderThickness * (1-TMath::Cos(kPbExtenderPsi)) ,
+    kMcmExtenderThickness * (1-TMath::Cos(kPbExtenderPsi)) + kDeltaMcmMcmextender ,
+    kMcmExtenderThickness * (1-TMath::Cos(kPbExtenderPsi)) + kDeltaMcmMcmextender ,
+    kMcmExtenderThickness * (2-TMath::Cos(kPbExtenderPsi)) + kDeltaMcmMcmextender ,
+    kMcmExtenderThickness * (2-TMath::Cos(kPbExtenderPsi)) + kDeltaMcmMcmextender ,
+    kMcmExtenderThickness + kDeltaMcmMcmextender ,
+    kMcmExtenderThickness ,
+    kMcmExtenderThickness ,
   } ;
 
   // creation of the volume
   TGeoXtru   *mcmExtenderXtru    = new TGeoXtru(2);
   TGeoVolume *mcmExtenderXtruVol = new TGeoVolume("mcmExtenderXtru",mcmExtenderXtru,medMCMExtender) ;
   mcmExtenderXtru->DefinePolygon(10,mcmExtenderXtruX,mcmExtenderXtruY);
-  mcmExtenderXtru->DefineSection(0,-mcmExtenderWidthY/2.);
-  mcmExtenderXtru->DefineSection(1, mcmExtenderWidthY/2.);
+  mcmExtenderXtru->DefineSection(0,-kMcmExtenderWidthY/2.);
+  mcmExtenderXtru->DefineSection(1, kMcmExtenderWidthY/2.);
 
 
   //--------------   DEFINITION OF GEOMETRICAL TRANSFORMATIONS -------------------
   TGeoRotation    * commonRot       = new TGeoRotation("commonRot",0,90,0);
   commonRot->MultiplyBy(new TGeoRotation("rot",-90,0,0)) ;
-  TGeoTranslation * pixelBusTrans   = new TGeoTranslation(pixelBusThickness/2. - deltaXOrigin + 0.52*fgkmm ,
-							  -pixelBusWidthY/2.     + deltaYOrigin , 
-							  -groundingWidthX/2.    + deltaZOrigin) ;
+  TGeoTranslation * pixelBusTrans   = new TGeoTranslation(kPixelBusThickness/2. - kDeltaXOrigin + 0.52*fgkmm ,
+							  -kPixelBusWidthY/2.     + kDeltaYOrigin , 
+							  -kGroundingWidthX/2.    + kDeltaZOrigin) ;
   TGeoRotation    * pixelBusRot     = new TGeoRotation(*commonRot);
   TGeoTranslation * pbExtenderTrans = new TGeoTranslation(*pixelBusTrans) ;
   TGeoRotation    * pbExtenderRot   = new TGeoRotation(*pixelBusRot) ;
-  pbExtenderTrans->SetDz(*(pbExtenderTrans->GetTranslation()+2) - pixelBusWidthX/2. - 2*pixelBusThickness*TMath::Sin(pixelBusContactPhi)) ;  
+  pbExtenderTrans->SetDz(*(pbExtenderTrans->GetTranslation()+2) - kPixelBusWidthX/2. - 2*kPixelBusThickness*TMath::Sin(kPixelBusContactPhi)) ;  
   if (!zpos) {
-    pbExtenderTrans->SetDy(*(pbExtenderTrans->GetTranslation()+1) - (pixelBusWidthY - pbExtenderWidthY)/2.);
+    pbExtenderTrans->SetDy(*(pbExtenderTrans->GetTranslation()+1) - (kPixelBusWidthY - kPbExtenderWidthY)/2.);
   }
   else {
-    pbExtenderTrans->SetDy(*(pbExtenderTrans->GetTranslation()+1) + (pixelBusWidthY - pbExtenderWidthY)/2.);
+    pbExtenderTrans->SetDy(*(pbExtenderTrans->GetTranslation()+1) + (kPixelBusWidthY - kPbExtenderWidthY)/2.);
   }
-  pbExtenderTrans->SetDx(*(pbExtenderTrans->GetTranslation()) + pixelBusThickness/2 + 2*pixelBusThickness*TMath::Sin(pixelBusContactPhi)*TMath::Tan(pixelBusContactPhi)) ;
-  TGeoTranslation * mcmExtenderTrans = new TGeoTranslation(0.12*fgkmm + mcmThickness - deltaXOrigin,
+  pbExtenderTrans->SetDx(*(pbExtenderTrans->GetTranslation()) + kPixelBusThickness/2 + 2*kPixelBusThickness*TMath::Sin(kPixelBusContactPhi)*TMath::Tan(kPixelBusContactPhi)) ;
+  TGeoTranslation * mcmExtenderTrans = new TGeoTranslation(0.12*fgkmm + kMcmThickness - kDeltaXOrigin,
 							   pbExtenderTrans->GetTranslation()[1],
 							   -4.82);
   TGeoRotation    * mcmExtenderRot   = new TGeoRotation(*pbExtenderRot);
@@ -2579,7 +2579,7 @@ void AliITSv11GeometrySPD::StavesInSector(TGeoVolume *moth, TGeoManager *mgr)
 			phi = TMath::ATan2(dy, dx);
 			// compute the half-length of this segment
 			Double_t len = 0.5*TMath::Sqrt((rightX-leftX)*(rightX-leftX) + (rightY-leftY)*(rightY-leftY));
-			cout << 2.0*len << endl;
+			//MM			cout << 2.0*len << endl;
 			return len;
 		}
 	};

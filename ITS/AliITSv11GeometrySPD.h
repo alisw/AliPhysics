@@ -2,21 +2,22 @@
 #define ALIITSV11GEOMETRYSPD_H
 
 /* 
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved.
+ * Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved.
  * See cxx source for full Copyright notice.
  */
 
-/*
- * Implementation of the SPD v11 central geometry.
- * Contains also:
- *  - the materials/media used for its volumes;
- *  - settings for the related transport parameters (GEANT3 types for the moment).
- */
+
 
 /*
  * $Id$
  */
 
+//
+// Implementation of the SPD v11 central geometry.
+// Contains also:
+//  - the materials/media used for its volumes;
+//  - settings for the related transport parameters (GEANT3 types for the moment).
+//
 #include <TGeoManager.h>
 #include <TVirtualMC.h>
 #include <AliITSv11Geometry.h>
@@ -33,9 +34,9 @@ public:
 	/* Settings */
 	
 	// define/create materials
-	virtual Int_t CreateSPDCenteralMaterials(Int_t &medOffset, Int_t &matOffset);
-	// set SPD Centeral, GEANT3 type, tracking parameters
-	virtual void InitSPDCenteral(Int_t offset,TVirtualMC *mc=gMC);
+	virtual Int_t CreateSPDCentralMaterials(Int_t &medOffset, Int_t &matOffset) const;
+	// set SPD Central, GEANT3 type, tracking parameters
+	virtual void InitSPDCentral(Int_t offset,TVirtualMC *mc=gMC) const;
 	
 	/* Monitoring */
 	
@@ -50,7 +51,7 @@ public:
 	TGeoVolume* CreateGroundingFoilSingle(Bool_t kapLayer, Double_t &len, Double_t &wid, Double_t &thick, TGeoManager *mgr = gGeoManager);
 	TGeoVolume* CreateGroundingFoil(Double_t &thickness, TGeoManager *mgr = gGeoManager);
 	// the MCM (incomplete: missing the internal chips)
-	TGeoVolume* CreateMCMBase(TGeoManager *mgr = gGeoManager);
+	TGeoVolume* CreateMCMBase(TGeoManager *mgr = gGeoManager) const;
 	TGeoVolume* CreateMCMCoverBorder(TGeoManager *mgr = gGeoManager);
 	TGeoVolume* CreateMCMCoverTop(TGeoManager *mgr = gGeoManager);
 	// the Pixel Bus & extenders
