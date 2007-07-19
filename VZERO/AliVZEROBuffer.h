@@ -23,15 +23,16 @@ public:
   virtual ~AliVZEROBuffer(); //destructor
   AliVZEROBuffer(const AliVZEROBuffer &source); // copy constructor
   AliVZEROBuffer& operator=(const AliVZEROBuffer &source); // ass. op.
-  void    WriteBinary(Int_t cell,Int_t ADC, Int_t Time);
-  UInt_t  GetDigNumber()const{return fNumberOfDigits;}
+  void    WriteTriggerInfo(UInt_t trigger);
+  void    WriteChannel(Int_t cell,Int_t ADC, Int_t Time);
+  void    WriteScalers();
+  void    WriteMBInfo();
   void    SetVerbose(Int_t val){fVerbose=val;}
   Int_t   GetVerbose() const{return  fVerbose;} 
   
 private:
   Int_t fVerbose; //Verbosity level: 0-silent, 1:cout msg, 2: txt files for checking
   AliFstream* f;      //The IO file name
-  UInt_t  fNumberOfDigits; //Number of VZERO digits
   ClassDef(AliVZEROBuffer,1)
 };
 

@@ -23,9 +23,17 @@ class AliVZERORawStream: public TObject {
     virtual void             Reset();
     virtual Bool_t           Next();
 
-    Int_t                    GetCell() { return fCell; }
-    Int_t                    GetADC()  { return fADC; }
-    Int_t                    GetTime() { return fTime; }
+    UShort_t                 GetADC(Int_t channel) const
+      { return fADC[channel][kNEvOfInt/2]; }
+    UInt_t                   GetTime(Int_t channel) const
+      { return fTime[channel]; }
+
+    enum EVZERORawDataParams {
+      kNChannels = 64,
+      kNEvOfInt = 21, // Number of events of interest
+      kNScalers = 16,
+      kNBunches = 10
+    };
 
     enum EVZERORawStreamError {
       kRawDataSizeErr = 1
@@ -36,17 +44,33 @@ class AliVZERORawStream: public TObject {
     AliVZERORawStream(const AliVZERORawStream& stream);
     AliVZERORawStream& operator = (const AliVZERORawStream& stream);
 
-    Int_t GetNextWord();
+    UInt_t GetNextWord();
+    UShort_t GetNextShort();
 
-    Int_t           fCell;     // current VZERO cell
-    Int_t           fADC;      // current ADC count
-    Int_t           fTime;     // current time
+    ULong64_t       fBBScalers[kNChannels];       // 'Beam-Beam' scalers for all channels
+    ULong64_t       fBGScalers[kNChannels];       // 'Beam-Gas' scalers for all channels
+    UInt_t          fScalers[kNScalers];          // Trigger scalers
+    UInt_t          fBunchNumbers[kNBunches];     // Bunch numbers for the previous 10 MB events
+    UShort_t        fChargeMB[kNChannels][kNBunches]; // ADC counts for all channels for the previous 10 MB events
+    Bool_t          fIsIntMB[kNChannels][kNBunches];  // 'Interaction' flag for all channels for the previous 10 MB events
+    Bool_t          fIsBBMB[kNChannels][kNBunches];   // 'Beam-Beam' flag for all channels for the previous 10 MB events
+    Bool_t          fIsBGMB[kNChannels][kNBunches];   // 'Beam-Gas' for all channels for the previous 10 MB events
 
-    Int_t           fPosition; // current position in raw-data stream
+    UShort_t        fADC[kNChannels][kNEvOfInt];   // ADC counts for all channels and all events of interest
+    Bool_t          fIsInt[kNChannels][kNEvOfInt]; // 'Interaction' flag for all channels
+    Bool_t          fIsBB[kNChannels][kNEvOfInt];  // 'Beam-Beam' flag for all channels
+    Bool_t          fIsBG[kNChannels][kNEvOfInt];  // 'Beam-Gas' flag for all channels
+    Int_t           fTime[kNChannels];            // leading time for all channels
+    Int_t           fWidth[kNChannels];           // signal width for all channels
 
-    AliRawReader*    fRawReader;   // object for reading the raw data
+    UShort_t        fTrigger;      // VZERO trigger inputs
+    UShort_t        fTriggerMask;  // VZERO trigger inputs mask
 
-    UChar_t*         fData;        // pointer to raw data payload
+    Int_t           fPosition;     // current position in the raw-data payload
+
+    AliRawReader*   fRawReader;    // object for reading the raw data
+
+    UChar_t*        fData;         // pointer to raw data payload
 
     ClassDef(AliVZERORawStream, 0) // class for reading VZERO DDL raw data
 };

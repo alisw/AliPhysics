@@ -290,10 +290,27 @@ void AliVZERO::Digits2Raw()
   
   ofstream ftxt;
   buffer->SetVerbose(0);
-  Int_t fVerbose = buffer->GetVerbose();
+  Int_t verbose = buffer->GetVerbose();
 
+  // Get Trigger information first
+  // Read trigger inputs from trigger-detector object
+  AliDataLoader * dataLoader = fLoader->GetDigitsDataLoader();
+  if( !dataLoader->IsFileOpen() ) 
+    dataLoader->OpenFile( "READ" );
+  AliTriggerDetector* trgdet = (AliTriggerDetector*)dataLoader->GetDirectory()->Get( "Trigger" );
+  UInt_t triggerInfo = 0;
+  if(trgdet) {
+    triggerInfo = trgdet->GetMask() & 0xffff;
+  }
+  else {
+    AliError(Form("There is no trigger object for %s",fLoader->GetName()));
+  }
+  buffer->WriteTriggerInfo((UInt_t)triggerInfo);
+
+  // Now write the channel information: charge+time
+  // We assume here an ordered (by PMNumber) array of
+  // digits!!
   Int_t nEntries = Int_t(digits->GetEntries());
-  
   for (Int_t i = 0; i < nEntries; i++) {
   
     fVZERO->ResetDigits();
@@ -301,22 +318,25 @@ void AliVZERO::Digits2Raw()
     Int_t ndig = VZEROdigits->GetEntriesFast(); 
    
     if(ndig == 0) continue;
-    if(fVerbose == 2) {ftxt.open("VZEROdigits.txt",ios::app);}
+    if(verbose == 2) {ftxt.open("VZEROdigits.txt",ios::app);}
     for(Int_t k=0; k<ndig; k++){
         AliVZEROdigit* fVZERODigit = (AliVZEROdigit*) VZEROdigits->At(k);			
 	Int_t ADC       = fVZERODigit->ADC();
 	Int_t PMNumber  = fVZERODigit->PMNumber();
 	Int_t Time      = fVZERODigit->Time();
-        if(fVerbose == 1) { cout <<"DDL: "<<fileName<< "\tdigit number: "<< k<<"\tPM number: "
+        if(verbose == 1) { cout <<"DDL: "<<fileName<< "\tdigit number: "<< k<<"\tPM number: "
 	                    <<PMNumber<<"\tADC: "<< ADC << "\tTime: "<< Time << endl;} 
-	if(fVerbose == 2) {
+	if(verbose == 2) {
 	    ftxt<<"DDL: "<<fileName<< "\tdigit number: "<< k<<"\tPM number: "
 	                   <<PMNumber<<"\tADC: "<< ADC << "\tTime: "<< Time << endl;	      
 	}
-        buffer->WriteBinary(PMNumber, ADC, Time);
+        buffer->WriteChannel(PMNumber, ADC, Time);
     }
-  if(fVerbose==2) ftxt.close();
+  if(verbose==2) ftxt.close();
   }
+
+  buffer->WriteScalers();
+  buffer->WriteMBInfo();
 
   delete buffer;
   fLoader->UnloadDigits();

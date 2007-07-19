@@ -85,12 +85,13 @@ void AliVZEROReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
 
   rawReader->Reset();
   AliVZERORawStream rawStream(rawReader);
-  while (rawStream.Next()) {
-    Int_t pmNumber = rawStream.GetCell();
-    Int_t adc = rawStream.GetADC();  
-    Int_t time = rawStream.GetTime();
+  if (rawStream.Next()) {
+    for(Int_t iChannel = 0; iChannel < 64; iChannel++) {
+    Int_t adc = rawStream.GetADC(iChannel);  
+    Int_t time = rawStream.GetTime(iChannel);
     new ((*digitsArray)[digitsArray->GetEntriesFast()])
-      AliVZEROdigit(pmNumber,adc,time);
+      AliVZEROdigit(iChannel,adc,time);
+    }
   }
 
   digitsTree->Fill();
