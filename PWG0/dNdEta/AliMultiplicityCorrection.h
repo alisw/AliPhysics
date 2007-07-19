@@ -24,7 +24,8 @@ class TCollection;
 class AliMultiplicityCorrection : public TNamed {
   public:
     enum EventType { kTrVtx = 0, kMB, kINEL };
-    enum RegularizationType { kNone = 0, kPol0, kPol1, kEntropy, kCurvature, kTest };
+    enum RegularizationType { kNone = 0, kPol0, kPol1, kLog, kEntropy, kCurvature };
+    enum { kESDHists = 4, kMCHists = 5, kCorrHists = 8, kQualityRegions = 3 };
 
     AliMultiplicityCorrection();
     AliMultiplicityCorrection(const Char_t* name, const Char_t* title);
@@ -37,7 +38,7 @@ class AliMultiplicityCorrection : public TNamed {
 
     void FillCorrection(Float_t vtx, Int_t generated05, Int_t generated10, Int_t generated15, Int_t generated20, Int_t generatedAll, Int_t measured05, Int_t measured10, Int_t measured15, Int_t measured20);
 
-    Bool_t LoadHistograms(const Char_t* dir);
+    Bool_t LoadHistograms(const Char_t* dir = 0);
     void SaveHistograms();
     void DrawHistograms();
     void DrawComparison(const char* name, Int_t inputRange, Bool_t fullPhaseSpace, Bool_t normalizeESD, TH1* mcHist, Bool_t simple = kFALSE);
@@ -47,7 +48,8 @@ class AliMultiplicityCorrection : public TNamed {
 
     void ApplyNBDFit(Int_t inputRange, Bool_t fullPhaseSpace);
 
-    void ApplyBayesianMethod(Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType, Float_t regPar = 0.1, Int_t nIterations = 15, TH1* inputDist = 0);
+    void ApplyBayesianMethod(Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType, Float_t regPar = 1, Int_t nIterations = 100, TH1* inputDist = 0, Bool_t determineError = kTRUE);
+    TH1* BayesianStatisticsEffect(Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType, Bool_t randomizeMeasured, Bool_t randomizeResponse, Float_t regPar = 1, Int_t nIterations = 100, TH1* compareTo = 0);
 
     void ApplyGaussianMethod(Int_t inputRange, Bool_t fullPhaseSpace);
 
@@ -61,9 +63,9 @@ class AliMultiplicityCorrection : public TNamed {
     TH3F* GetCorrelation(Int_t i) { return fCorrelation[i]; }
     TH1F* GetMultiplicityESDCorrected(Int_t i) { return fMultiplicityESDCorrected[i]; }
 
-    void SetMultiplicityESD(Int_t i, TH2F* hist)  { fMultiplicityESD[i] = hist; }
-    void SetMultiplicityVtx(Int_t i, TH2F* hist)  { fMultiplicityVtx[i] = hist; }
-    void SetMultiplicityMB(Int_t i, TH2F* hist)   { fMultiplicityMB[i] = hist; }
+    void SetMultiplicityESD(Int_t i, TH2F* hist)  { fMultiplicityESD[i]  = hist; }
+    void SetMultiplicityVtx(Int_t i, TH2F* hist)  { fMultiplicityVtx[i]  = hist; }
+    void SetMultiplicityMB(Int_t i, TH2F* hist)   { fMultiplicityMB[i]   = hist; }
     void SetMultiplicityINEL(Int_t i, TH2F* hist) { fMultiplicityINEL[i] = hist; }
     void SetCorrelation(Int_t i, TH3F* hist) { fCorrelation[i] = hist; }
     void SetMultiplicityESDCorrected(Int_t i, TH1F* hist) { fMultiplicityESDCorrected[i] = hist; }
@@ -74,11 +76,16 @@ class AliMultiplicityCorrection : public TNamed {
     static void NormalizeToBinWidth(TH1* hist);
     static void NormalizeToBinWidth(TH2* hist);
 
-    void GetComparisonResults(Float_t* mc, Int_t* mcLimit, Float_t* residuals);
+    void GetComparisonResults(Float_t* mc = 0, Int_t* mcLimit = 0, Float_t* residuals = 0, Float_t* ratioAverage = 0);
+
+    TH1* GetEfficiency(Int_t inputRange, EventType eventType);
+
+    static void SetQualityRegions(Bool_t SPDStudy);
+    Float_t GetQuality(Int_t region) { return fQuality[region]; }
+
+    void FFT(Int_t dir, Int_t m, Double_t *x, Double_t *y);
 
   protected:
-    enum { kESDHists = 4, kMCHists = 5, kCorrHists = 8 };
-
     static const Int_t fgMaxParams;  // bins in unfolded histogram = number of fit params
     static const Int_t fgMaxInput;   // bins in measured histogram
 
@@ -86,14 +93,15 @@ class AliMultiplicityCorrection : public TNamed {
     static Double_t RegularizationPol1(TVectorD& params);
     static Double_t RegularizationTotalCurvature(TVectorD& params);
     static Double_t RegularizationEntropy(TVectorD& params);
-    static Double_t RegularizationTest(TVectorD& params);
+    static Double_t RegularizationLog(TVectorD& params);
 
     static void MinuitFitFunction(Int_t&, Double_t*, Double_t& chi2, Double_t *params, Int_t);
     static void MinuitNBD(Int_t& unused1, Double_t* unused2, Double_t& chi2, Double_t *params, Int_t unused3);
 
     void SetupCurrentHists(Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType, Bool_t createBigBin);
 
-    Float_t BayesCovarianceDerivate(Float_t matrixM[251][251], TH2* hResponse, TH1* fCurrentEfficiency, Int_t k, Int_t i, Int_t r, Int_t u);
+    Float_t BayesCovarianceDerivate(Float_t matrixM[251][251], TH2* hResponse, Int_t k, Int_t i, Int_t r, Int_t u);
+    TH1* UnfoldWithBayesian(TH1* measured, Float_t regPar, Int_t nIterations, TH1* inputDist);
 
     static TH1* fCurrentESD;         // static variable to be accessed by MINUIT
     static TH1* fCurrentCorrelation; // static variable to be accessed by MINUIT
@@ -120,6 +128,11 @@ class AliMultiplicityCorrection : public TNamed {
     Float_t fLastChi2MC;        // last Chi2 between MC and unfolded ESD (calculated in DrawComparison)
     Int_t   fLastChi2MCLimit;   // bin where the last chi2 breached a certain threshold, used to evaluate the multiplicity reach (calc. in DrawComparison)
     Float_t fLastChi2Residuals; // last Chi2 of the ESD and the folded unfolded ESD (calculated in DrawComparison)
+    Float_t fRatioAverage;      // last average of |ratio-1| where ratio = unfolded / mc (bin 2..150)
+
+    static Int_t   fgQualityRegionsB[kQualityRegions]; // begin, given in multiplicity units
+    static Int_t   fgQualityRegionsE[kQualityRegions]; // end
+    Float_t fQuality[kQualityRegions];        // stores the quality of the last comparison (calculated in DrawComparison). Contains 3 values that are averages of (MC - unfolded) / e(MC) in 3 regions, these are defined in fQualityRegionB,E
 
  private:
     AliMultiplicityCorrection(const AliMultiplicityCorrection&);
