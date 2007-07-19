@@ -1,3 +1,9 @@
+2007-07-19  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* RGBrowser.cxx:
+	From Bertrand: improve setup of single-window mode so that it
+	works on windows, too.
+
 2007-07-10  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* CascadeEditors.cxx:
