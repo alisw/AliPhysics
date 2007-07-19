@@ -104,7 +104,6 @@ void MUONTriggerEfficiencyPt(const char* filenameSim="galice_sim.root",
     TH1F *ptcoinc  = new TH1F("ptcoinc","",50,0.15,5.);  
         
     TParticle *particle;
-    AliStack* stack; 
     
     Int_t nevents;
     Double_t coincmuon=0;
