@@ -4,6 +4,7 @@
 #include "TH1.h"
 #include "TCanvas.h"
 #include "TSystem.h"
+#include "Riostream.h"
 
 #include "AliAnalysisTask.h"
 
@@ -56,8 +57,8 @@ void AliAnalysisTaskPt::Exec(Option_t *) {
   Long64_t ientry = chain->GetReadEntry();
   if (!fESD) return;
 
-  printf("Tracks: %d \n",fESD->GetNumberOfTracks());
-
+  cout<<"Entry: "<<ientry<<" - Tracks: "<<fESD->GetNumberOfTracks()<<endl;
+  
   for(Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
     AliESDtrack * ESDTrack = fESD->GetTrack(iTracks);
     //UInt_t status = ESDTrack->GetStatus();

@@ -2,13 +2,16 @@
 void demoLocal() {
   //____________________________________________//
   AliTagAnalysis *TagAna = new AliTagAnalysis(); 
-  TagAna->ChainLocalTags(".");
+  TagAna->ChainLocalTags("../../Tags");
 
-  AliRunTagCuts *RunCuts = new AliRunTagCuts();
-  AliEventTagCuts *EvCuts = new AliEventTagCuts();
-  EvCuts->SetMultiplicityRange(11,12);  
+  AliRunTagCuts *runCuts = new AliRunTagCuts();
+  AliLHCTagCuts *lhcCuts = new AliLHCTagCuts();
+  AliDetectorTagCuts *detCuts = new AliDetectorTagCuts();
+  AliEventTagCuts *evCuts = new AliEventTagCuts();
+  evCuts->SetMultiplicityRange(11,12);  
+  
   TChain* chain = 0x0;
-  chain = TagAna->QueryTags(RunCuts,EvCuts);
+  chain = TagAna->QueryTags(runCuts,lhcCuts,detCuts,evCuts);
 
   //____________________________________________//
   // Make the analysis manager
