@@ -1,6 +1,7 @@
 void runAnalysis() {
   TStopwatch timer;
   timer.Start();
+  gSystem->Load("libProofPlayer.so");
 
   printf("*** Connect to AliEn ***\n");
   TGrid::Connect("alien://");
@@ -16,7 +17,7 @@ void runAnalysis() {
   //_____________Setting up ANALYSIS_NEW.par_____________________//
   //_____________________________________________________________//
   setupPar("ANALYSIS");
-  gSystem->Load("ANALYSIS/libANALYSIS.so");
+  gSystem->Load("libANALYSIS.so");
 
   gROOT->LoadMacro("AliAnalysisTaskPt.cxx+");
   gROOT->LoadMacro("demoInteractive.C");
