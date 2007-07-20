@@ -29,6 +29,7 @@
 #include "AliMUONVTrackStore.h"
 #include "AliMUONVTriggerStore.h"
 #include "AliMUONVTriggerTrackStore.h"
+#include "AliMpCDB.h"
 
 #include "AliLoader.h"
 #include "AliLog.h"
@@ -337,6 +338,18 @@ AliMUONDataInterface::NtupleTrigger(const char* treeLetter)
   transformer.LoadGeometryData(Form("%s/geometry.root",
                                     gSystem->DirName(fLoader->GetRunLoader()->GetFileName())));
   
+  // Load mapping
+  if ( ! AliMpCDB::LoadMpSegmentation() ) 
+  {
+    AliFatal("Could not access mapping from OCDB !");
+  }
+  
+  // Load DDL store
+  if ( ! AliMpCDB::LoadDDLStore() ) 
+  {
+    AliFatal("Could not access DDL Store from OCDB !");
+  }
+
   AliMUONTriggerCircuit triggerCircuit(&transformer);
 
   // select output file name from selected Tree
