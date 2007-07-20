@@ -1,32 +1,40 @@
 void runTagCreator() {
   TStopwatch timer;
   timer.Start();
-
-  //____________________________________________________//
+  gSystem->Load("libTree.so");
+   //____________________________________________________//
   //_____________Setting up ESD.par_____________________//
   //____________________________________________________//
-  const char* pararchivename1 = "ESD";
-  //////////////////////////////////////////
-  // Libraries required to load
-  //////////////////////////////////////////
+  setupPar("ESD");
+  gSystem->Load("libVMC.so");
+  gSystem->Load("libESD.so");
+                                                                                                                                               
+  gROOT->LoadMacro("CreateTags.C");
+  CreateTags();
 
-  //////////////////////////////////////////////////////////////////
-  // Setup PAR File
-  if (pararchivename1) {
+  timer.Stop();
+  timer.Print();
+}
+
+Int_t setupPar(const char* pararchivename) {
+  ///////////////////
+  // Setup PAR File//
+  ///////////////////
+  if (pararchivename) {
     char processline[1024];
-    sprintf(processline,".! tar xvzf %s.par",pararchivename1);
+    sprintf(processline,".! tar xvzf %s.par",pararchivename);
     gROOT->ProcessLine(processline);
     const char* ocwd = gSystem->WorkingDirectory();
-    gSystem->ChangeDirectory(pararchivename1);
-
+    gSystem->ChangeDirectory(pararchivename);
+                                                                                                                                               
     // check for BUILD.sh and execute
     if (!gSystem->AccessPathName("PROOF-INF/BUILD.sh")) {
       printf("*******************************\n");
       printf("*** Building PAR archive    ***\n");
       printf("*******************************\n");
-
+                                                                                                                                               
       if (gSystem->Exec("PROOF-INF/BUILD.sh")) {
-        Error("runProcess","Cannot Build the PAR Archive! - Abort!");
+        Error("runAnalysis","Cannot Build the PAR Archive! - Abort!");
         return -1;
       }
     }
@@ -37,15 +45,8 @@ void runTagCreator() {
       printf("*******************************\n");
       gROOT->Macro("PROOF-INF/SETUP.C");
     }
-    
+                                                                                                                                               
     gSystem->ChangeDirectory("../");
-  }
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libESD.so");
-
-  gROOT->LoadMacro("CreateTags.C");  
-  CreateTags();
-
-  timer.Stop();
-  timer.Print();
+  }                                                                                                                                               
+  return 1;
 }
