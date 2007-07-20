@@ -86,333 +86,330 @@ AliHLTTPCClusterFinderComponent& AliHLTTPCClusterFinderComponent::operator=(cons
 }
 
 AliHLTTPCClusterFinderComponent::~AliHLTTPCClusterFinderComponent()
-    {
+{
   // see header file for class documentation
-    }
+}
 
 // Public functions to implement AliHLTComponent's interface.
 // These functions are required for the registration process
 
 const char* AliHLTTPCClusterFinderComponent::GetComponentID()
-    {
+{
   // see header file for class documentation
-      if (fPackedSwitch) return "TPCClusterFinderPacked";
-      else return "TPCClusterFinderUnpacked";
-    }
+  if (fPackedSwitch) return "TPCClusterFinderPacked";
+  else return "TPCClusterFinderUnpacked";
+}
 
 void AliHLTTPCClusterFinderComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
-    {
+{
   // see header file for class documentation
-    list.clear(); 
-    if (fPackedSwitch) list.push_back( AliHLTTPCDefinitions::fgkDDLPackedRawDataType );
-    else list.push_back( AliHLTTPCDefinitions::fgkUnpackedRawDataType );
+  list.clear(); 
+  if (fPackedSwitch) list.push_back( AliHLTTPCDefinitions::fgkDDLPackedRawDataType );
+  else list.push_back( AliHLTTPCDefinitions::fgkUnpackedRawDataType );
    
-    }
+}
 
 AliHLTComponentDataType AliHLTTPCClusterFinderComponent::GetOutputDataType()
-    {
+{
   // see header file for class documentation
-    return AliHLTTPCDefinitions::fgkClustersDataType;
-    }
+  return AliHLTTPCDefinitions::fgkClustersDataType;
+}
 
 void AliHLTTPCClusterFinderComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
-    {
+{
   // see header file for class documentation
-    // XXX TODO: Find more realistic values.  
-    constBase = 0;
-    if (fPackedSwitch)  inputMultiplier = (6 * 0.4);
-    else  inputMultiplier = 0.4;
-    }
+  // XXX TODO: Find more realistic values.  
+  constBase = 0;
+  if (fPackedSwitch)  inputMultiplier = (6 * 0.4);
+  else  inputMultiplier = 0.4;
+}
 
 AliHLTComponent* AliHLTTPCClusterFinderComponent::Spawn()
-    {
+{
   // see header file for class documentation
-    return new AliHLTTPCClusterFinderComponent(fPackedSwitch);
-    }
+  return new AliHLTTPCClusterFinderComponent(fPackedSwitch);
+}
 	
 int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
-    {
+{
   // see header file for class documentation
-    if ( fClusterFinder )
-	return EINPROGRESS;
+  if ( fClusterFinder )
+    return EINPROGRESS;
 
-    fClusterFinder = new AliHLTTPCClusterFinder();
+  fClusterFinder = new AliHLTTPCClusterFinder();
 
-    Int_t rawreadermode =  -1;
-    Int_t sigthresh = -1;
-    Float_t occulimit = 1.0;
-    Int_t oldRCUFormat=0;
-    // Data Format version numbers:
-    // 0: RCU Data format as delivered during TPC commissioning, pads/padrows are sorted, RCU trailer is one 32 bit word.
-    // 1: As 0, but pads/padrows are delivered "as is", without sorting
-    // 2: As 0, but RCU trailer is 3 32 bit words.
-    // 3: As 1, but RCU trailer is 3 32 bit words.
-    // -1: use offline raw reader
+  Int_t rawreadermode =  -1;
+  Int_t sigthresh = -1;
+  Float_t occulimit = 1.0;
+  Int_t oldRCUFormat=0;
+  // Data Format version numbers:
+  // 0: RCU Data format as delivered during TPC commissioning, pads/padrows are sorted, RCU trailer is one 32 bit word.
+  // 1: As 0, but pads/padrows are delivered "as is", without sorting
+  // 2: As 0, but RCU trailer is 3 32 bit words.
+  // 3: As 1, but RCU trailer is 3 32 bit words.
+  // -1: use offline raw reader
 
-    Int_t i = 0;
-    Char_t* cpErr;
+  Int_t i = 0;
+  Char_t* cpErr;
 
-    while ( i < argc ) {      
+  while ( i < argc ) {      
 
-      // -- raw reader mode option
-      if ( !strcmp( argv[i], "rawreadermode" ) ) {
-	if ( argc <= i+1 ) {
-	  Logging( kHLTLogError, "HLT::TPCClusterFinder::DoInit", "Missing rawreadermode", "Raw Reader Mode not specified" );
-	  return ENOTSUP;
-	}
-
-	// Decodes the rawreader mode: either number or string and returns the rawreadermode
-	// -1 on failure, -2 for offline
-	rawreadermode = AliHLTTPCDigitReaderRaw::DecodeMode( argv[i+1] );
-
-	if (rawreadermode == -1 ) {
-	  Logging( kHLTLogError, "HLT::TPCClusterFinder::DoInit", "Missing rawreadermode", "Cannot convert rawreadermode specifier '%s'.", argv[i+1] );
-	  return EINVAL;
-	}
-
-	i += 2;
-	continue;
+    // -- raw reader mode option
+    if ( !strcmp( argv[i], "rawreadermode" ) ) {
+      if ( argc <= i+1 ) {
+	Logging( kHLTLogError, "HLT::TPCClusterFinder::DoInit", "Missing rawreadermode", "Raw Reader Mode not specified" );
+	return ENOTSUP;
       }
 
-      // -- pp run option
-      if ( !strcmp( argv[i], "pp-run" ) ) {
-	fClusterDeconv = false;
-	i++;
-	continue;
+      // Decodes the rawreader mode: either number or string and returns the rawreadermode
+      // -1 on failure, -2 for offline
+      rawreadermode = AliHLTTPCDigitReaderRaw::DecodeMode( argv[i+1] );
+
+      if (rawreadermode == -1 ) {
+	Logging( kHLTLogError, "HLT::TPCClusterFinder::DoInit", "Missing rawreadermode", "Cannot convert rawreadermode specifier '%s'.", argv[i+1] );
+	return EINVAL;
       }
 
-      // -- zero suppression threshold
-      if ( !strcmp( argv[i], "adc-threshold" ) ) {
-	sigthresh = strtoul( argv[i+1], &cpErr ,0);
-	if ( *cpErr ) {
-	  HLTError("Cannot convert threshold specifier '%s'.", argv[i+1]);
-	  return EINVAL;
-	}
-	i+=2;
-	continue;
-      }
-
-      // -- pad occupancy limit
-      if ( !strcmp( argv[i], "occupancy-limit" ) ) {
-	occulimit = strtof( argv[i+1], &cpErr);
-	if ( *cpErr ) {
-	  HLTError("Cannot convert occupancy specifier '%s'.", argv[i+1]);
-	  return EINVAL;
-	}
-	i+=2;
-	continue;
-      }
-
-      // -- number of timebins (default 1024)
-      if ( !strcmp( argv[i], "timebins" ) ) {
-	TString parameter(argv[i+1]);
-	parameter.Remove(TString::kLeading, ' '); // remove all blanks
-	if (parameter.IsDigit()) {
-	  AliHLTTPCTransform::SetNTimeBins(parameter.Atoi());
-	  HLTInfo("number of timebins set to %d", AliHLTTPCTransform::GetNTimeBins());
-	} else {
-	  HLTError("Cannot timebin specifier '%s'.", argv[i+1]);
-	  return EINVAL;
-	}
-	i+=2;
-	continue;
-      }
-
-      // -- checking for rcu format
-      if ( !strcmp( argv[i], "oldrcuformat" ) ) {
-      	oldRCUFormat = strtoul( argv[i+1], &cpErr ,0);
-      	if ( *cpErr ){
-      	  HLTError("Cannot convert oldrcuformat specifier '%s'. Should  be 0(off) or 1(on), must be integer", argv[i+1]);
-      	  return EINVAL;
-      	}
-      	i+=2;
-      	continue;
-      }
-      
-
-      Logging(kHLTLogError, "HLT::TPCClusterFinder::DoInit", "Unknown Option", "Unknown option '%s'", argv[i] );
-      return EINVAL;
-
+      i += 2;
+      continue;
     }
 
-    // Choose reader
+    // -- pp run option
+    if ( !strcmp( argv[i], "pp-run" ) ) {
+      fClusterDeconv = false;
+      i++;
+      continue;
+    }
 
-    if (fPackedSwitch) { 
-      if (rawreadermode == -2) {
-#if defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
-	fReader = new AliHLTTPCDigitReaderPacked();
-	if(oldRCUFormat==1){
-	  fReader->SetOldRCUFormat(kTRUE);
-	}
-	else if(oldRCUFormat!=0){
-	  HLTWarning("Wrong oldrcuformat specifier %d; oldrcuformat set to default(kFALSE)",oldRCUFormat);
-	}
-	fClusterFinder->SetReader(fReader);
-#else // ! defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
-	HLTFatal("DigitReaderPacked not available - check your build");
-	return -ENODEV;
-#endif //  defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
+    // -- zero suppression threshold
+    if ( !strcmp( argv[i], "adc-threshold" ) ) {
+      sigthresh = strtoul( argv[i+1], &cpErr ,0);
+      if ( *cpErr ) {
+	HLTError("Cannot convert threshold specifier '%s'.", argv[i+1]);
+	return EINVAL;
+      }
+      i+=2;
+      continue;
+    }
+
+    // -- pad occupancy limit
+    if ( !strcmp( argv[i], "occupancy-limit" ) ) {
+      occulimit = strtof( argv[i+1], &cpErr);
+      if ( *cpErr ) {
+	HLTError("Cannot convert occupancy specifier '%s'.", argv[i+1]);
+	return EINVAL;
+      }
+      i+=2;
+      continue;
+    }
+
+    // -- number of timebins (default 1024)
+    if ( !strcmp( argv[i], "timebins" ) ) {
+      TString parameter(argv[i+1]);
+      parameter.Remove(TString::kLeading, ' '); // remove all blanks
+      if (parameter.IsDigit()) {
+	AliHLTTPCTransform::SetNTimeBins(parameter.Atoi());
+	HLTInfo("number of timebins set to %d", AliHLTTPCTransform::GetNTimeBins());
       } else {
+	HLTError("Cannot timebin specifier '%s'.", argv[i+1]);
+	return EINVAL;
+      }
+      i+=2;
+      continue;
+    }
+
+    // -- checking for rcu format
+    if ( !strcmp( argv[i], "oldrcuformat" ) ) {
+      oldRCUFormat = strtoul( argv[i+1], &cpErr ,0);
+      if ( *cpErr ){
+	HLTError("Cannot convert oldrcuformat specifier '%s'. Should  be 0(off) or 1(on), must be integer", argv[i+1]);
+	return EINVAL;
+      }
+      i+=2;
+      continue;
+    }
+      
+    Logging(kHLTLogError, "HLT::TPCClusterFinder::DoInit", "Unknown Option", "Unknown option '%s'", argv[i] );
+    return EINVAL;
+
+  }
+
+  // Choose reader
+
+  if (fPackedSwitch) { 
+    if (rawreadermode == -2) {
+#if defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
+      fReader = new AliHLTTPCDigitReaderPacked();
+      if(oldRCUFormat==1){
+	fReader->SetOldRCUFormat(kTRUE);
+      }
+      else if(oldRCUFormat!=0){
+	HLTWarning("Wrong oldrcuformat specifier %d; oldrcuformat set to default(kFALSE)",oldRCUFormat);
+      }
+      fClusterFinder->SetReader(fReader);
+#else // ! defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
+      HLTFatal("DigitReaderPacked not available - check your build");
+      return -ENODEV;
+#endif //  defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
+    } else {
 #if defined(HAVE_TPC_MAPPING)
-	fReader = new AliHLTTPCDigitReaderRaw(rawreadermode);
-	fClusterFinder->SetReader(fReader);
+      fReader = new AliHLTTPCDigitReaderRaw(rawreadermode);
+      fClusterFinder->SetReader(fReader);
 #else //! defined(HAVE_TPC_MAPPING)
       HLTFatal("DigitReaderRaw not available - check your build");
       return -ENODEV;
 #endif //defined(HAVE_TPC_MAPPING)
-      }
     }
-    else {
-      fReader = new AliHLTTPCDigitReaderUnpacked();
-      fClusterFinder->SetReader(fReader);
-    }
+  }
+  else {
+    fReader = new AliHLTTPCDigitReaderUnpacked();
+    fClusterFinder->SetReader(fReader);
+  }
 
-    // if pp-run use occupancy limit else set to 1. ==> use all 
-    if ( !fClusterDeconv )
-      fClusterFinder->SetOccupancyLimit(occulimit);
-    else 
-      fClusterFinder->SetOccupancyLimit(1.0);
+  // if pp-run use occupancy limit else set to 1. ==> use all 
+  if ( !fClusterDeconv )
+    fClusterFinder->SetOccupancyLimit(occulimit);
+  else 
+    fClusterFinder->SetOccupancyLimit(1.0);
       
-    // Variables to setup the Clusterfinder
-    // TODO: this sounds strange and has to be verified; is the cluster finder not working when
-    // fClusterDeconv = false ?
-    fClusterDeconv = true;
-    fXYClusterError = -1;
-    fZClusterError = -1;
+  // Variables to setup the Clusterfinder
+  // TODO: this sounds strange and has to be verified; is the cluster finder not working when
+  // fClusterDeconv = false ?
+  fClusterDeconv = true;
+  fXYClusterError = -1;
+  fZClusterError = -1;
 
  
-    fClusterFinder->SetDeconv( fClusterDeconv );
-    fClusterFinder->SetXYError( fXYClusterError );
-    fClusterFinder->SetZError( fZClusterError );
-    if ( (fXYClusterError>0) && (fZClusterError>0) )
-      fClusterFinder->SetCalcErr( false );
-    fClusterFinder->SetSignalThreshold(sigthresh);
+  fClusterFinder->SetDeconv( fClusterDeconv );
+  fClusterFinder->SetXYError( fXYClusterError );
+  fClusterFinder->SetZError( fZClusterError );
+  if ( (fXYClusterError>0) && (fZClusterError>0) )
+    fClusterFinder->SetCalcErr( false );
+  fClusterFinder->SetSignalThreshold(sigthresh);
     
-    return 0;
-    }
+  return 0;
+}
 
 int AliHLTTPCClusterFinderComponent::DoDeinit()
-    {
+{
   // see header file for class documentation
 
-    if ( fClusterFinder )
-	delete fClusterFinder;
-    fClusterFinder = NULL;
+  if ( fClusterFinder )
+    delete fClusterFinder;
+  fClusterFinder = NULL;
  
-    if ( fReader )
-	delete fReader;
-    fReader = NULL;
+  if ( fReader )
+    delete fReader;
+  fReader = NULL;
     
-    return 0;
-    }
+  return 0;
+}
 
 int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& evtData, 
 					      const AliHLTComponentBlockData* blocks, 
 					      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 					      AliHLTUInt32_t& size, 
 					      vector<AliHLTComponentBlockData>& outputBlocks )
-    {
+{
   // see header file for class documentation
 
-    //  == init iter (pointer to datablock)
-    const AliHLTComponentBlockData* iter = NULL;
-    unsigned long ndx;
+  //  == init iter (pointer to datablock)
+  const AliHLTComponentBlockData* iter = NULL;
+  unsigned long ndx;
 
-    //  == OUTdatatype pointer
-    AliHLTTPCClusterData* outPtr;
+  //  == OUTdatatype pointer
+  AliHLTTPCClusterData* outPtr;
 
-    AliHLTUInt8_t* outBPtr;
-    UInt_t offset, mysize, nSize, tSize = 0;
+  AliHLTUInt8_t* outBPtr;
+  UInt_t offset, mysize, nSize, tSize = 0;
 
-    outBPtr = outputPtr;
-    outPtr = (AliHLTTPCClusterData*)outBPtr;
+  outBPtr = outputPtr;
+  outPtr = (AliHLTTPCClusterData*)outBPtr;
 
-    Int_t slice, patch, row[2];
-    unsigned long maxPoints, realPoints = 0;
+  Int_t slice, patch, row[2];
+  unsigned long maxPoints, realPoints = 0;
 
-    for ( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
-	{
-	iter = blocks+ndx;
-	mysize = 0;
-	offset = tSize;
+  for ( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
+    {
+      iter = blocks+ndx;
+      mysize = 0;
+      offset = tSize;
 
 
-	if (fPackedSwitch) {	
-	  char tmp1[14], tmp2[14];
-	  DataType2Text( iter->fDataType, tmp1 );
-	  DataType2Text( AliHLTTPCDefinitions::fgkDDLPackedRawDataType, tmp2 );
-	  Logging( kHLTLogDebug, "HLT::TPCClusterFinder::DoEvent", "Event received", 
-		   "Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s",
-		   evtData.fEventID, evtData.fEventID, tmp1, tmp2 );
+      if (fPackedSwitch) {	
+	char tmp1[14], tmp2[14];
+	DataType2Text( iter->fDataType, tmp1 );
+	DataType2Text( AliHLTTPCDefinitions::fgkDDLPackedRawDataType, tmp2 );
+	Logging( kHLTLogDebug, "HLT::TPCClusterFinder::DoEvent", "Event received", 
+		 "Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s",
+		 evtData.fEventID, evtData.fEventID, tmp1, tmp2 );
 
-	  if ( iter->fDataType != AliHLTTPCDefinitions::fgkDDLPackedRawDataType ) continue;
+	if ( iter->fDataType != AliHLTTPCDefinitions::fgkDDLPackedRawDataType ) continue;
 
-	}
-	else {
-	  char tmp1[14], tmp2[14];
-	  DataType2Text( iter->fDataType, tmp1 );
-	  DataType2Text( AliHLTTPCDefinitions::fgkUnpackedRawDataType, tmp2 );
-	  Logging( kHLTLogDebug, "HLT::TPCClusterFinder::DoEvent", "Event received", 
-		   "Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s",
-		   evtData.fEventID, evtData.fEventID, tmp1, tmp2 );
+      }
+      else {
+	char tmp1[14], tmp2[14];
+	DataType2Text( iter->fDataType, tmp1 );
+	DataType2Text( AliHLTTPCDefinitions::fgkUnpackedRawDataType, tmp2 );
+	Logging( kHLTLogDebug, "HLT::TPCClusterFinder::DoEvent", "Event received", 
+		 "Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s",
+		 evtData.fEventID, evtData.fEventID, tmp1, tmp2 );
 
-	  if ( iter->fDataType != AliHLTTPCDefinitions::fgkUnpackedRawDataType ) continue;
+	if ( iter->fDataType != AliHLTTPCDefinitions::fgkUnpackedRawDataType ) continue;
 
-	}
+      }
     	
-	slice = AliHLTTPCDefinitions::GetMinSliceNr( *iter );
-	patch = AliHLTTPCDefinitions::GetMinPatchNr( *iter );
-	row[0] = AliHLTTPCTransform::GetFirstRow( patch );
-	row[1] = AliHLTTPCTransform::GetLastRow( patch );
+      slice = AliHLTTPCDefinitions::GetMinSliceNr( *iter );
+      patch = AliHLTTPCDefinitions::GetMinPatchNr( *iter );
+      row[0] = AliHLTTPCTransform::GetFirstRow( patch );
+      row[1] = AliHLTTPCTransform::GetLastRow( patch );
 	
-	Logging( kHLTLogDebug, "HLT::TPCClusterFinder::DoEvent", "Input Spacepoints", 
-		 "Input: Number of spacepoints: %lu Slice/Patch/RowMin/RowMax: %d/%d/%d/%d.",
-		 realPoints, slice, patch, row[0], row[1] );
+      Logging( kHLTLogDebug, "HLT::TPCClusterFinder::DoEvent", "Input Spacepoints", 
+	       "Input: Number of spacepoints: %lu Slice/Patch/RowMin/RowMax: %d/%d/%d/%d.",
+	       realPoints, slice, patch, row[0], row[1] );
 	
-	outPtr = (AliHLTTPCClusterData*)outBPtr;
+      outPtr = (AliHLTTPCClusterData*)outBPtr;
 
-	maxPoints = (size-tSize-sizeof(AliHLTTPCClusterData))/sizeof(AliHLTTPCSpacePointData);
+      maxPoints = (size-tSize-sizeof(AliHLTTPCClusterData))/sizeof(AliHLTTPCSpacePointData);
 
-	fClusterFinder->InitSlice( slice, patch, row[0], row[1], maxPoints );
-	fClusterFinder->SetOutputArray( outPtr->fSpacePoints );
-	fClusterFinder->Read(iter->fPtr, iter->fSize );
-	fClusterFinder->ProcessDigits();
-	realPoints = fClusterFinder->GetNumberOfClusters();
+      fClusterFinder->InitSlice( slice, patch, row[0], row[1], maxPoints );
+      fClusterFinder->SetOutputArray( outPtr->fSpacePoints );
+      fClusterFinder->Read(iter->fPtr, iter->fSize );
+      fClusterFinder->ProcessDigits();
+      realPoints = fClusterFinder->GetNumberOfClusters();
 	
-	Logging( kHLTLogDebug, "HLT::TPCClusterFinder::DoEvent", "Spacepoints", 
-		 "Number of spacepoints found: %lu.", realPoints );
+      Logging( kHLTLogDebug, "HLT::TPCClusterFinder::DoEvent", "Spacepoints", 
+	       "Number of spacepoints found: %lu.", realPoints );
 	
-	outPtr->fSpacePointCnt = realPoints;
-	nSize = sizeof(AliHLTTPCSpacePointData)*realPoints;
-	mysize += nSize+sizeof(AliHLTTPCClusterData);
+      outPtr->fSpacePointCnt = realPoints;
+      nSize = sizeof(AliHLTTPCSpacePointData)*realPoints;
+      mysize += nSize+sizeof(AliHLTTPCClusterData);
 	
-	Logging( kHLTLogDebug, "HLT::TPCClusterFinder::DoEvent", "Input Spacepoints", 
-		 "Number of spacepoints: %lu Slice/Patch/RowMin/RowMax: %d/%d/%d/%d.",
-		 realPoints, slice, patch, row[0], row[1] );
-	AliHLTComponentBlockData bd;
-	FillBlockData( bd );
-	bd.fOffset = offset;
-	bd.fSize = mysize;
-	bd.fSpecification = iter->fSpecification;
-	//AliHLTSubEventDescriptor::FillBlockAttributes( bd.fAttributes );
-	outputBlocks.push_back( bd );
+      Logging( kHLTLogDebug, "HLT::TPCClusterFinder::DoEvent", "Input Spacepoints", 
+	       "Number of spacepoints: %lu Slice/Patch/RowMin/RowMax: %d/%d/%d/%d.",
+	       realPoints, slice, patch, row[0], row[1] );
+      AliHLTComponentBlockData bd;
+      FillBlockData( bd );
+      bd.fOffset = offset;
+      bd.fSize = mysize;
+      bd.fSpecification = iter->fSpecification;
+      //AliHLTSubEventDescriptor::FillBlockAttributes( bd.fAttributes );
+      outputBlocks.push_back( bd );
 	
-	tSize += mysize;
-	outBPtr += mysize;
-	outPtr = (AliHLTTPCClusterData*)outBPtr;
+      tSize += mysize;
+      outBPtr += mysize;
+      outPtr = (AliHLTTPCClusterData*)outBPtr;
 	
-	if ( tSize > size )
-	    {
-	    Logging( kHLTLogFatal, "HLT::TPCClusterFinder::DoEvent", "Too much data", 
-		     "Data written over allowed buffer. Amount written: %lu, allowed amount: %lu.",
-		     tSize, size );
-	    return EMSGSIZE;
-	    }
+      if ( tSize > size )
+	{
+	  Logging( kHLTLogFatal, "HLT::TPCClusterFinder::DoEvent", "Too much data", 
+		   "Data written over allowed buffer. Amount written: %lu, allowed amount: %lu.",
+		   tSize, size );
+	  return EMSGSIZE;
 	}
-    
-    size = tSize;
-
-    return 0;
     }
+    
+  size = tSize;
 
-   
+  return 0;
+}

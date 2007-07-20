@@ -98,6 +98,11 @@ class AliHLTTPCEsdWriterComponent : public AliHLTRootFileWriterComponent
   int ScanArgument(int argc, const char** argv);
 
  private:
+  /** not a valid copy constructor, defined according to effective C++ style */
+  AliHLTTPCEsdWriterComponent(const AliHLTTPCEsdWriterComponent&);
+  /** not a valid assignment op, but defined according to effective C++ style */
+  AliHLTTPCEsdWriterComponent& operator=(const AliHLTTPCEsdWriterComponent&);
+
   /**
    * Init the writer.
    * The DoInit function is not available for this child class. InitWriter is the
