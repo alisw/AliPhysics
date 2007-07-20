@@ -31,6 +31,7 @@ MODULE_SRCS= 	AliHLTTPCLog.cxx \
 		tracking/AliHLTTPCHistogram.cxx \
 		tracking/AliHLTTPCHistogram1D.cxx \
 		tracking/AliHLTTPCHistogramAdaptive.cxx \
+		AliHLTTPCClusters.cxx \
 		AliHLTTPCConfMapFit.cxx \
 		AliHLTTPCConfMapTrack.cxx \
 		AliHLTTPCConfMapPoint.cxx \
@@ -42,6 +43,7 @@ MODULE_SRCS= 	AliHLTTPCLog.cxx \
 		AliHLTTPCInterMerger.cxx \
 		AliHLTTPCCATracker.cxx \
 		AliHLTTPCPad.cxx \
+		AliHLTTPCPadArray.cxx \
 		AliHLTTPCDefinitions.cxx \
 		AliHLTTPCRawDataUnpackerComponent.cxx \
 		AliHLTTPCClusterFinderComponent.cxx \
@@ -82,6 +84,7 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		tracking/AliHLTTPCHistogram.h \
 		tracking/AliHLTTPCHistogram1D.h \
 		tracking/AliHLTTPCHistogramAdaptive.h \
+		AliHLTTPCClusters.h \
 		AliHLTTPCConfMapFit.h \
 		AliHLTTPCConfMapTrack.h \
 		AliHLTTPCConfMapPoint.h \
@@ -93,6 +96,7 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		AliHLTTPCInterMerger.h \
 		AliHLTTPCCATracker.h \
 		AliHLTTPCPad.h \
+		AliHLTTPCPadArray.h \
 		AliHLTTPCSpacePointData.h \
 		AliHLTTPCDefinitions.h \
 		AliHLTTPCRawDataUnpackerComponent.h \

@@ -59,3 +59,5 @@ int AliHLTTPCDigitReader::InitBlock(void* ptr,unsigned long size,Int_t firstrow,
 void AliHLTTPCDigitReader::SetOldRCUFormat(Bool_t /*oldrcuformat*/)
 {
 }
+void AliHLTTPCDigitReader::SetUnsorted(Bool_t /*unsorted*/){
+}

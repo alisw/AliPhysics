@@ -37,9 +37,12 @@ using namespace std;
 #include "AliHLTTPCRawDataFormat.h"
 #include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTTPCTransform.h"
+#include "AliHLTTPCClusters.h"
 #include <stdlib.h>
 #include <errno.h>
 #include "TString.h"
+#include "TStopwatch.h"
+#include <sys/time.h>
 
 // this is a global object used for automatic component registration, do not use this
 // use fPackedSwitch = true for packed inputtype "gkDDLPackedRawDataType"
@@ -56,7 +59,10 @@ AliHLTTPCClusterFinderComponent::AliHLTTPCClusterFinderComponent(bool packed)
   fClusterDeconv(true),
   fXYClusterError(-1),
   fZClusterError(-1),
-  fPackedSwitch(packed)
+  fPackedSwitch(packed),
+  fPatch(0),
+  fUnsorted(0),
+  fPadArray(NULL)
 {
   // see header file for class documentation
   // or
@@ -72,7 +78,10 @@ AliHLTTPCClusterFinderComponent::AliHLTTPCClusterFinderComponent(const AliHLTTPC
   fClusterDeconv(true),
   fXYClusterError(-1),
   fZClusterError(-1),
-  fPackedSwitch(0)
+  fPackedSwitch(0),
+  fPatch(0),
+  fUnsorted(0),
+  fPadArray(NULL)
 {
   // see header file for class documentation
   HLTFatal("copy constructor untested");
@@ -229,6 +238,28 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
       continue;
     }
       
+    // -- checking for unsorted clusterfinding
+    if ( !strcmp( argv[i], "unsorted" ) ) {
+      fUnsorted = strtoul( argv[i+1], &cpErr ,0);
+      if ( *cpErr ){
+	HLTError("Cannot convert unsorted specifier '%s'. Should  be 0(off) or 1(on), must be integer", argv[i+1]);
+	return EINVAL;
+      }
+      i+=2;
+      continue;
+    }
+      
+    // -- checking for unsorted clusterfinding
+    if ( !strcmp( argv[i], "patch" ) ) {
+      fPatch = strtoul( argv[i+1], &cpErr ,0);
+      if ( *cpErr ){
+	HLTError("Cannot convert patch specifier '%s'. Should  be between 0 and 5, must be integer", argv[i+1]);
+	return EINVAL;
+      }
+      i+=2;
+      continue;
+    }
+
     Logging(kHLTLogError, "HLT::TPCClusterFinder::DoInit", "Unknown Option", "Unknown option '%s'", argv[i] );
     return EINVAL;
 
@@ -245,6 +276,9 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
       }
       else if(oldRCUFormat!=0){
 	HLTWarning("Wrong oldrcuformat specifier %d; oldrcuformat set to default(kFALSE)",oldRCUFormat);
+      }
+      if(fUnsorted){
+	fReader->SetUnsorted(kTRUE);
       }
       fClusterFinder->SetReader(fReader);
 #else // ! defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
@@ -287,6 +321,11 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
     fClusterFinder->SetCalcErr( false );
   fClusterFinder->SetSignalThreshold(sigthresh);
     
+  if(fUnsorted&&fPatch>-1&&fPatch<6){
+    fPadArray = new AliHLTTPCPadArray(fPatch);
+    fPadArray->InitializeVector();
+  }
+
   return 0;
 }
 
@@ -370,12 +409,46 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
 	
       outPtr = (AliHLTTPCClusterData*)outBPtr;
 
+#ifndef KENNETH
       maxPoints = (size-tSize-sizeof(AliHLTTPCClusterData))/sizeof(AliHLTTPCSpacePointData);
+#else
+      maxPoints = (size-tSize-sizeof(AliHLTTPCClusters))/sizeof(AliHLTTPCSpacePointData);
+#endif 
 
       fClusterFinder->InitSlice( slice, patch, row[0], row[1], maxPoints );
       fClusterFinder->SetOutputArray( outPtr->fSpacePoints );
-      fClusterFinder->Read(iter->fPtr, iter->fSize );
-      fClusterFinder->ProcessDigits();
+	
+      if(fUnsorted){
+
+
+	fClusterFinder->SetPadArray(fPadArray);
+	  
+	double totalT=0;
+	struct timeval startT, endT;
+	gettimeofday( &startT, NULL );
+
+	fClusterFinder->ReadDataUnsorted(iter->fPtr, iter->fSize );
+
+	gettimeofday( &endT, NULL );
+	unsigned long long dt;
+	dt = endT.tv_sec-startT.tv_sec;
+	dt *= 1000000ULL;
+	dt += endT.tv_usec-startT.tv_usec;
+	double dtd = ((double)dt);
+	totalT += dtd;
+	//	  dtd = dtd / (double)eventIterations;
+	//	  if ( iterations<=1 )
+	cout<<endl;
+	printf( "Time needed to read data: %f microsec. / %f millisec. / %f s\n", 
+		dtd, dtd/1000.0, dtd/1000000.0 );
+	  
+	cout<<endl;
+	fClusterFinder->FindClusters();
+      }
+      else{
+	fClusterFinder->Read(iter->fPtr, iter->fSize );
+	fClusterFinder->ProcessDigits();
+      }
       realPoints = fClusterFinder->GetNumberOfClusters();
 	
       Logging( kHLTLogDebug, "HLT::TPCClusterFinder::DoEvent", "Spacepoints", 
@@ -383,7 +456,11 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
 	
       outPtr->fSpacePointCnt = realPoints;
       nSize = sizeof(AliHLTTPCSpacePointData)*realPoints;
+#ifndef KENNETH
       mysize += nSize+sizeof(AliHLTTPCClusterData);
+#else
+      mysize += nSize+sizeof(AliHLTTPCClusters);
+#endif 
 	
       Logging( kHLTLogDebug, "HLT::TPCClusterFinder::DoEvent", "Input Spacepoints", 
 	       "Number of spacepoints: %lu Slice/Patch/RowMin/RowMax: %d/%d/%d/%d.",

@@ -5,10 +5,9 @@
  * This file is property of and copyright by the ALICE HLT Project        * 
  * ALICE Experiment at CERN, All rights reserved.                         *
  *                                                                        *
- * Primary Authors: Anders Vestbo <mailto:vestbo@fi.uib.no>, 		  *
- *          Constantin Loizides <mailto:loizides@ikf.uni-frankfurt.de>    *
- *          Jochen Thaeder <mailto:thaeder@kip.uni-heidelberg.de>         *
- *          for The ALICE Off-line Project.                               *
+ * Primary Authors: Anders Vestbo, Constantin Loizides, Jochen Thaeder    *
+ *                  Kenneth Aamodt <kenneth.aamodt@student.uib.no>        *
+ *                  for The ALICE HLT Project.                            *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
@@ -20,9 +19,8 @@
  **************************************************************************/
 
 /** @file   AliHLTTPCClusterFinder.cxx
-    @author Anders Vestbo <mailto:vestbo@fi.uib.no>, 		     
-	    Constantin Loizides <mailto:loizides@ikf.uni-frankfurt.de>
-	    Jochen Thaeder <mailto:thaeder@kip.uni-heidelberg.de>     
+    @author Anders Vestbo, Constantin Loizides, Jochen Thaeder
+	    Kenneth Aamodt kenneth.aamodt@student.uib.no
     @date   
     @brief  Cluster Finder for the TPC
 */
@@ -36,6 +34,7 @@
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCMemHandler.h"
 #include "AliHLTTPCPad.h"
+#include "AliHLTTPCPadArray.h"
 
 #if __GNUC__ >= 3
 using namespace std;
@@ -45,7 +44,15 @@ using namespace std;
 //
 // The current cluster finder for HLT
 // (Based on STAR L3)
-// 
+//
+//Basically we have two versions for the cluster finder now.
+//The default version, reads the data pad by pad, and find the
+//clusters as it reads the data. The other version has now been
+//developed to cope with unsorted data. New methods for the unsorted
+//version can  be found at the end of the default one i the source file.
+//Currently the new version is only build to manage zero-suppressed data.
+//More functionality will be added later.
+//
 // The cluster finder is initialized with the Init function, 
 // providing the slice and patch information to work on. 
 //
@@ -133,7 +140,8 @@ AliHLTTPCClusterFinder::AliHLTTPCClusterFinder()
   fMaxNClusters(0),
   fXYErr(0.2),
   fZErr(0.3),
-  fOccupancyLimit(1.0)
+  fOccupancyLimit(1.0),
+  fPadArray(NULL)
 {
   //constructor
 }
@@ -161,7 +169,8 @@ AliHLTTPCClusterFinder::AliHLTTPCClusterFinder(const AliHLTTPCClusterFinder& src
   fMaxNClusters(src.fMaxNClusters),
   fXYErr(src.fXYErr),
   fZErr(src.fZErr),
-  fOccupancyLimit(src.fOccupancyLimit)
+  fOccupancyLimit(src.fOccupancyLimit),
+  fPadArray(NULL)
 {
 }
 
@@ -712,3 +721,136 @@ void AliHLTTPCClusterFinder::GetTrackID(Int_t pad,Int_t time,Int_t *trackID)
   }
 }
 #endif
+
+//----------------------------------Methods for the new unsorted way of reading the data --------------------------------
+
+void AliHLTTPCClusterFinder::SetPadArray(AliHLTTPCPadArray * padArray){
+  fPadArray=padArray;
+}
+
+void AliHLTTPCClusterFinder::ReadDataUnsorted(void* ptr,unsigned long size){
+  //set input pointer
+  fPtr = (UChar_t*)ptr;
+  fSize = size;
+
+  fDigitReader->InitBlock(fPtr,fSize,fFirstRow,fLastRow,fCurrentPatch,fCurrentSlice);
+
+  fPadArray->SetDigitReader(fDigitReader);
+  fPadArray->ReadData();
+}
+void AliHLTTPCClusterFinder::FindClusters(){
+  fPadArray->FindClusterCandidates();
+  fPadArray->FindClusters(fMatch);
+  AliHLTTPCClusters clusterlist[fPadArray->fClusters.size()]; //Clusterlist
+  for(int i=0;i<fPadArray->fClusters.size();i++){
+    clusterlist[i] = fPadArray->fClusters[i];
+  }
+  WriteClusters(fPadArray->fClusters.size(),clusterlist);
+}
+void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliHLTTPCClusters *list)//This is used when using the AliHLTTPCClusters class for cluster data
+{
+  //write cluster to output pointer
+  Int_t thisrow,thissector;
+  UInt_t counter = fNClusters;
+  
+  for(int j=0; j<nclusters; j++)
+    {
+      if(!list[j].fFlags) continue; //discard single pad clusters
+      if(list[j].fTotalCharge < fThreshold) continue; //noise cluster
+
+      Float_t xyz[3];      
+      Float_t fpad =(Float_t)list[j].fPad / list[j].fTotalCharge;
+      Float_t fpad2=fXYErr*fXYErr; //fixed given error
+      Float_t ftime =(Float_t)list[j].fTime / list[j].fTotalCharge;
+      Float_t ftime2=fZErr*fZErr;  //fixed given error
+
+      if(fCalcerr) { //calc the errors, otherwice take the fixed error 
+	Int_t patch = AliHLTTPCTransform::GetPatch(fCurrentRow);
+	UInt_t q2=list[j].fTotalCharge*list[j].fTotalCharge;
+	Float_t sy2=list[j].fPad2 * list[j].fTotalCharge - list[j].fPad * list[j].fPad;
+	sy2/=q2;
+	if(sy2 < 0) {
+	    LOG(AliHLTTPCLog::kError,"AliHLTTPCClusterFinder::WriteClusters","Cluster width")
+	      <<"SigmaY2 negative "<<sy2<<" on row "<<fCurrentRow<<" "<<fpad<<" "<<ftime<<ENDLOG;
+	    continue;
+	} else {
+	  if(!fRawSP){
+	    fpad2 = (sy2 + 1./12)*AliHLTTPCTransform::GetPadPitchWidth(patch)*AliHLTTPCTransform::GetPadPitchWidth(patch);
+	    if(sy2 != 0){
+	      fpad2*=0.108; //constants are from offline studies
+	      if(patch<2)
+		fpad2*=2.07;
+	    }
+	  } else fpad2=sy2; //take the width not the error
+	}
+	Float_t sz2=list[j].fTime2*list[j].fTotalCharge - list[j].fTime*list[j].fTime;
+	sz2/=q2;
+	if(sz2 < 0){
+	  LOG(AliHLTTPCLog::kError,"AliHLTTPCClusterFinder::WriteClusters","Cluster width")
+	    <<"SigmaZ2 negative "<<sz2<<" on row "<<fCurrentRow<<" "<<fpad<<" "<<ftime<<ENDLOG;
+	  continue;
+	} else {
+	  if(!fRawSP){
+	    ftime2 = (sz2 + 1./12)*AliHLTTPCTransform::GetZWidth()*AliHLTTPCTransform::GetZWidth();
+	    if(sz2 != 0) {
+	      ftime2 *= 0.169; //constants are from offline studies
+	      if(patch<2)
+		ftime2 *= 1.77;
+	    }
+	  } else ftime2=sz2; //take the width, not the error
+	}
+      }
+      if(fStdout==kTRUE)
+	cout<<"WriteCluster: padrow "<<fCurrentRow<<" pad "<<fpad << " +- "<<fpad2<<" time "<<ftime<<" +- "<<ftime2<<" charge "<<list[j].fTotalCharge<<endl;
+      
+      if(!fRawSP){
+	AliHLTTPCTransform::Slice2Sector(fCurrentSlice,fCurrentRow,thissector,thisrow);
+	AliHLTTPCTransform::Raw2Local(xyz,thissector,thisrow,fpad,ftime);
+	
+	if(xyz[0]==0) LOG(AliHLTTPCLog::kError,"AliHLTTPCClustFinder","Cluster Finder")
+	  <<AliHLTTPCLog::kDec<<"Zero cluster"<<ENDLOG;
+	if(fNClusters >= fMaxNClusters)
+	  {
+	    LOG(AliHLTTPCLog::kError,"AliHLTTPCClustFinder::WriteClusters","Cluster Finder")
+	      <<AliHLTTPCLog::kDec<<"Too many clusters "<<fNClusters<<ENDLOG;
+	    return;
+	  }  
+	
+	fSpacePointData[counter].fX = xyz[0];
+	fSpacePointData[counter].fY = xyz[1];
+	fSpacePointData[counter].fZ = xyz[2];
+	
+      } else {
+	fSpacePointData[counter].fX = fCurrentRow;
+	fSpacePointData[counter].fY = fpad;
+	fSpacePointData[counter].fZ = ftime;
+      }
+      
+      fSpacePointData[counter].fCharge = list[j].fTotalCharge;
+      fSpacePointData[counter].fPadRow = fCurrentRow;
+      fSpacePointData[counter].fSigmaY2 = fpad2;
+      fSpacePointData[counter].fSigmaZ2  = ftime2;
+
+      fSpacePointData[counter].fUsed = kFALSE;         // only used / set in AliHLTTPCDisplay
+      fSpacePointData[counter].fTrackN = -1;           // only used / set in AliHLTTPCDisplay
+
+      Int_t patch=fCurrentPatch;
+      if(patch==-1) patch=0; //never store negative patch number
+      fSpacePointData[counter].fID = counter
+	+((fCurrentSlice&0x7f)<<25)+((patch&0x7)<<22);//Uli
+
+#ifdef do_mc
+      Int_t trackID[3];
+      GetTrackID((Int_t)rint(fpad),(Int_t)rint(ftime),trackID);
+
+      fSpacePointData[counter].fTrackID[0] = trackID[0];
+      fSpacePointData[counter].fTrackID[1] = trackID[1];
+      fSpacePointData[counter].fTrackID[2] = trackID[2];
+
+      //cout<<"padrow "<<fCurrentRow<<" pad "<<(Int_t)rint(fpad)<<" time "<<(Int_t)rint(ftime)<<" Trackid "<<trackID[0]<<endl;
+#endif
+      
+      fNClusters++;
+      counter++;
+    }
+}

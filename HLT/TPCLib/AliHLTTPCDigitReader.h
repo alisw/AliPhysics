@@ -4,7 +4,8 @@
 #ifndef ALIHLTTPCDIGITREADER_H
 #define ALIHLTTPCDIGITREADER_H
 
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+/* This file is property of and copyright by the ALICE HLT Project        * 
+ * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
 
 /** @file   AliHLTTPCDigitReader.h
@@ -90,6 +91,11 @@ public:
    * Method to use old rcu fomat.
    */
   virtual void SetOldRCUFormat(Bool_t oldrcuformat);
+
+  /**
+   * Method to set read unsorted flag.
+   */
+  virtual void SetUnsorted(Bool_t unsorted);
 
 protected:
 	

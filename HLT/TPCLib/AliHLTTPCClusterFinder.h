@@ -1,11 +1,27 @@
 // @(#) $Id$
 // Original: AliHLTClustFinderNew.h,v 1.13 2004/06/18 10:55:26 loizides 
 
-#ifndef AliHLTTPC_ClusterFinder
-#define AliHLTTPC_ClusterFinder
+#ifndef AliHLTTPC_CLUSTERFINDER
+#define AliHLTTPC_CLUSTERFINDER
+/* This file is property of and copyright by the ALICE HLT Project        * 
+ * ALICE Experiment at CERN, All rights reserved.                         *
+ * See cxx source for full Copyright notice                               */
+
+/** @file   AliHLTTPCClusterFinder.h
+    @author Anders Vestbo, Constantin Loizides, Jochen Thaeder
+	    Kenneth Aamodt kenneth.aamodt@student.uib.no
+    @date   
+    @brief  Cluster Finder for the TPC
+*/
+
+// see below for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTLogging.h"
-
+#include "AliHLTTPCPadArray.h"
 class AliHLTTPCSpacePointData;
 class AliHLTTPCDigitReader;
 
@@ -56,6 +72,8 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   
   Float_t fOccupancyLimit; // Occupancy Limit
 
+  AliHLTTPCPadArray * fPadArray; //! transient
+
 
 #ifdef do_mc
   void GetTrackID(Int_t pad,Int_t time,Int_t *trackID);
@@ -92,7 +110,13 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   void SetRawSP(Bool_t f=kFALSE) {fRawSP=f;}
   void SetReader(AliHLTTPCDigitReader* f){fDigitReader = f;}
   Int_t GetNumberOfClusters() const {return fNClusters;}
+
+  //----------------------------------Methods for the new unsorted way of reading data ----------
+  void SetPadArray(AliHLTTPCPadArray *padArray);
+  void ReadDataUnsorted(void* ptr,unsigned long size);
+  void FindClusters();
+  void WriteClusters(Int_t nclusters,AliHLTTPCClusters *list);
   
-  ClassDef(AliHLTTPCClusterFinder,0) //Fast cluster finder
+  ClassDef(AliHLTTPCClusterFinder,1) //Fast cluster finder
 };
 #endif

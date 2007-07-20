@@ -5,6 +5,7 @@
  * ALICE Experiment at CERN, All rights reserved.                         *
  *                                                                        *
  * Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
+ *                  Kenneth Aamodt   <Kenneth.aamodt@ift.uib.no>          *
  *                  for The ALICE HLT Project.                            *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
@@ -17,7 +18,7 @@
  **************************************************************************/
 
 /** @file   AliHLTTPCPad.cxx
-    @author Matthias Richter
+    @author Matthias Richter, Kenneth Aamodt
     @date   
     @brief  Container Class for TPC Pads.
 */
@@ -29,6 +30,13 @@ using namespace std;
 #include <cerrno>
 #include "AliHLTTPCPad.h"
 #include "AliHLTStdIncludes.h"
+
+
+//added by kenneth
+#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCClusters.h"
+#include <sys/time.h>
+//------------------------------
 
 /** margin for the base line be re-avaluated */
 #define ALIHLTPAD_BASELINE_MARGIN (2*fAverage)
@@ -53,13 +61,25 @@ AliHLTTPCPad::AliHLTTPCPad()
   fFirstBLBin(0),
   fNofBins(0),
   fReadPos(0),
-  fpRawData(NULL)
+  fpRawData(NULL),
+  fClusterCandidates(),
+  fUsedClusterCandidates(0),
+  fDataSignals(NULL),
+  fSignalPositionArray(NULL),
+  fSizeOfSignalPositionArray(0)
 {
   // see header file for class documentation
   // or
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+  //  HLTInfo("Entering default constructor");
+  fDataSignals= new AliHLTTPCSignal_t[AliHLTTPCTransform::GetNTimeBins()];
+  memset( fDataSignals, 0xFF, sizeof(Int_t)*(AliHLTTPCTransform::GetNTimeBins()));
+
+  fSignalPositionArray= new AliHLTTPCSignal_t[AliHLTTPCTransform::GetNTimeBins()];
+  memset( fSignalPositionArray, 0xFF, sizeof(Int_t)*(AliHLTTPCTransform::GetNTimeBins()));
+  fSizeOfSignalPositionArray=0;
 }
 
 AliHLTTPCPad::AliHLTTPCPad(Int_t offset, Int_t nofBins)
@@ -79,7 +99,12 @@ AliHLTTPCPad::AliHLTTPCPad(Int_t offset, Int_t nofBins)
   fFirstBLBin(offset),
   fNofBins(nofBins),
   fReadPos(0),
-  fpRawData(NULL)
+  fpRawData(NULL),
+  fClusterCandidates(),
+  fUsedClusterCandidates(0),
+  fDataSignals(NULL),
+  fSignalPositionArray(NULL),
+  fSizeOfSignalPositionArray(0)
 {
   // see header file for class documentation
 }
@@ -101,7 +126,12 @@ AliHLTTPCPad::AliHLTTPCPad(const AliHLTTPCPad& srcPad)
   fFirstBLBin(0),
   fNofBins(0),
   fReadPos(0),
-  fpRawData(NULL)
+  fpRawData(NULL),
+  fClusterCandidates(),
+  fUsedClusterCandidates(0),
+  fDataSignals(NULL),
+  fSignalPositionArray(NULL),
+  fSizeOfSignalPositionArray(0)
 {
   // see header file for class documentation
   HLTFatal("copy constructor not implemented");
@@ -121,6 +151,17 @@ AliHLTTPCPad::~AliHLTTPCPad()
     HLTWarning("event data acquisition not stopped");
     StopEvent();
   }
+  if (fDataSignals) {
+    AliHLTTPCSignal_t* pData=fDataSignals;
+    fDataSignals=NULL;
+   delete [] pData;
+  }
+  if (fSignalPositionArray) {
+    AliHLTTPCSignal_t* pData=fSignalPositionArray;
+    fSignalPositionArray=NULL;
+    //   delete [] pData;
+  }
+
 }
 
 Int_t AliHLTTPCPad::SetID(Int_t rowno, Int_t padno)
@@ -422,4 +463,143 @@ Float_t AliHLTTPCPad::GetAveragedOccupancy() const
 
   // history is not yet implemented
   return GetOccupancy();
+}
+void AliHLTTPCPad::PrintRawData(){
+  for(Int_t bin=0;bin<AliHLTTPCTransform::GetNTimeBins();bin++){
+    if(GetDataSignal(bin)>0)
+      cout<<fRowNo<<"\t"<<fPadNo<<"\t"<<bin<<"\t"<<GetDataSignal(bin)<<endl;;
+  }
+  cout<<"bins: "<<AliHLTTPCTransform::GetNTimeBins()<<endl;
+}
+
+void AliHLTTPCPad::SetDataToDefault(){
+  if(fpRawData){
+    memset( fDataSignals, 0xFF, sizeof(Int_t)*(AliHLTTPCTransform::GetNTimeBins()));
+    memset( fSignalPositionArray, 0xFF, sizeof(Int_t)*(AliHLTTPCTransform::GetNTimeBins()));
+    fSizeOfSignalPositionArray=0;
+  }
+}
+void AliHLTTPCPad::SetDataSignal(Int_t bin,Int_t signal){
+  fDataSignals[bin]=signal;
+  fSignalPositionArray[fSizeOfSignalPositionArray]=bin;
+  fSizeOfSignalPositionArray++;
+}
+Int_t AliHLTTPCPad::GetDataSignal(Int_t bin){
+  return fDataSignals[bin];
+}
+void AliHLTTPCPad::FindClusterCandidates(){
+  UInt_t seqcharge=0;
+  UInt_t seqaverage=0;
+  UInt_t seqerror=0;
+  vector<Int_t> tmpPos;
+  vector<Int_t> tmpSig;
+  UInt_t isFalling=0;
+
+  for(Int_t pos=fSizeOfSignalPositionArray-2;pos>=0;pos--){
+
+    if(fSignalPositionArray[pos]==fSignalPositionArray[pos+1]+1){
+      seqcharge+=fDataSignals[fSignalPositionArray[pos+1]];	
+      seqaverage += fSignalPositionArray[pos+1]*fDataSignals[fSignalPositionArray[pos+1]];
+      seqerror += fSignalPositionArray[pos+1]*fSignalPositionArray[pos+1]*fDataSignals[fSignalPositionArray[pos+1]];
+	  
+      tmpPos.push_back(fSignalPositionArray[pos+1]);
+      tmpSig.push_back(fDataSignals[fSignalPositionArray[pos+1]]);
+
+      if(fDataSignals[fSignalPositionArray[pos+1]]>fDataSignals[fSignalPositionArray[pos]]){
+	isFalling=1;
+      }
+      if(fDataSignals[fSignalPositionArray[pos+1]]<fDataSignals[fSignalPositionArray[pos]]&&isFalling){
+	Int_t seqmean=0;
+	seqmean = seqaverage/seqcharge;
+	
+	//Calculate mean in pad direction:
+	Int_t padmean = seqcharge*fPadNo;
+	Int_t paderror = fPadNo*padmean;
+	AliHLTTPCClusters candidate;
+	candidate.fTotalCharge   = seqcharge;
+	candidate.fPad       = padmean;
+	candidate.fPad2      = paderror;
+	candidate.fTime      = seqaverage;
+	candidate.fTime2     = seqerror;
+	candidate.fMean          = seqmean;
+	candidate.fLastMergedPad = fPadNo;
+	fClusterCandidates.push_back(candidate);
+	fUsedClusterCandidates.push_back(0);
+	isFalling=0;
+	seqcharge=0;
+	seqaverage=0;
+	seqerror=0;
+
+	tmpPos.clear();
+	tmpSig.clear();
+
+	continue;
+      }
+	 
+      if(pos<1){
+	seqcharge+=fDataSignals[fSignalPositionArray[0]];	
+	seqaverage += fSignalPositionArray[0]*fDataSignals[fSignalPositionArray[0]];
+	seqerror += fSignalPositionArray[0]*fSignalPositionArray[0]*fDataSignals[fSignalPositionArray[0]];
+	tmpPos.push_back(fSignalPositionArray[0]);
+	tmpSig.push_back(fDataSignals[fSignalPositionArray[0]]);
+	  
+	//Calculate mean of sequence:
+	Int_t seqmean=0;
+	seqmean = seqaverage/seqcharge;
+	  
+	//Calculate mean in pad direction:
+	Int_t padmean = seqcharge*fPadNo;
+	Int_t paderror = fPadNo*padmean;
+	AliHLTTPCClusters candidate;
+	candidate.fTotalCharge   = seqcharge;
+	candidate.fPad       = padmean;
+	candidate.fPad2      = paderror;
+	candidate.fTime      = seqaverage;
+	candidate.fTime2     = seqerror;
+	candidate.fMean          = seqmean;
+	candidate.fLastMergedPad = fPadNo;
+	fClusterCandidates.push_back(candidate);
+	fUsedClusterCandidates.push_back(0);
+	isFalling=0;
+	seqcharge=0;
+	seqaverage=0;
+	seqerror=0;
+
+	tmpPos.clear();
+	tmpSig.clear();
+      }
+    }
+    else if(seqcharge>0){
+      seqcharge+=fDataSignals[fSignalPositionArray[pos+1]];	
+      seqaverage += fSignalPositionArray[pos+1]*fDataSignals[fSignalPositionArray[pos+1]];
+	seqerror += fSignalPositionArray[pos+1]*fSignalPositionArray[pos+1]*fDataSignals[fSignalPositionArray[pos+1]];
+	tmpPos.push_back(fSignalPositionArray[pos+1]);
+	tmpSig.push_back(fDataSignals[fSignalPositionArray[pos+1]]);
+
+	//Calculate mean of sequence:
+	Int_t seqmean=0;
+	seqmean = seqaverage/seqcharge;
+	
+	//Calculate mean in pad direction:
+	Int_t padmean = seqcharge*fPadNo;
+	Int_t paderror = fPadNo*padmean;
+	AliHLTTPCClusters candidate;
+	candidate.fTotalCharge   = seqcharge;
+	candidate.fPad       = padmean;
+	candidate.fPad2      = paderror;
+	candidate.fTime      = seqaverage;
+	candidate.fTime2     = seqerror;
+	candidate.fMean          = seqmean;
+	candidate.fLastMergedPad = fPadNo;
+	fClusterCandidates.push_back(candidate);
+	fUsedClusterCandidates.push_back(0);
+	isFalling=0;
+	seqcharge=0;
+	seqaverage=0;
+	seqerror=0;
+
+	tmpPos.clear();
+	tmpSig.clear();
+    }
+  }
 }

@@ -3,7 +3,8 @@
 
 #ifndef ALIHLTPAD_H
 #define ALIHLTPAD_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+/* This file is property of and copyright by the ALICE HLT Project        * 
+ * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
 
 /** @file   AliHLTTPCPad.h
@@ -13,6 +14,8 @@
 */
 
 #include "AliHLTLogging.h"
+#include "AliHLTTPCClusters.h"
+#include <vector>
 
 typedef Int_t AliHLTTPCSignal_t;
 
@@ -29,7 +32,7 @@ typedef Int_t AliHLTTPCSignal_t;
  * @ingroup alihlt_tpc
  */
 class AliHLTTPCPad : public AliHLTLogging {
- public:
+public:
   /** standard constructor */
   AliHLTTPCPad();
 
@@ -47,6 +50,24 @@ class AliHLTTPCPad : public AliHLTLogging {
   AliHLTTPCPad& operator=(const AliHLTTPCPad&);
   /** standard destructor */
   virtual ~AliHLTTPCPad();
+
+  
+  struct AliClusterData
+  {
+    UInt_t fTotalCharge;   //tot charge of cluster
+    UInt_t fPad;       //pad value
+    UInt_t fTime;      //time value
+    ULong64_t fPad2;   //for error in XY direction
+    ULong64_t fTime2;  //for error in Z  direction
+    UInt_t fMean;          //mean in time
+    UInt_t fFlags;         //different flags
+    UInt_t fChargeFalling; //for deconvolution
+    UInt_t fLastCharge;    //for deconvolution
+    UInt_t fLastMergedPad; //dont merge twice per pad
+  }; 
+
+  typedef struct AliClusterData AliClusterData; //!
+
 
   /**
    * Set the address the pad.
@@ -223,7 +244,41 @@ class AliHLTTPCPad : public AliHLTLogging {
    * Get the size (number of time bins) of the pad
    * @return number of bins 
    */
-   Int_t GetSize() const {return fNofBins;}
+  Int_t GetSize() const {return fNofBins;}
+  
+  /**
+   * Set the data array to -1
+   */
+  void SetDataToDefault();
+  /**
+   * Stores the signal in the data array, stores the timebin number of the signal,
+   * and increments a counter.
+   */
+  void SetDataSignal(Int_t bin,Int_t signal);
+
+  /**
+   * Returns the signal in the specified bin
+   */
+  Int_t GetDataSignal(Int_t bin);
+  /**
+   * Finds the cluster candidate. If atleast two signals in the data array are neighbours
+   * they are stored in a cluster candidate vector.
+   */
+  void FindClusterCandidates();
+  /**
+   * Prints the raw data og this pad.
+   */
+  void PrintRawData();
+ 
+  /**
+   * Vector of cluster candidates
+   */
+  vector<AliHLTTPCClusters> fClusterCandidates;
+
+  /**
+   * Vector of used clustercandidates, used so one do not use candidates multiple times
+   */
+  vector<Int_t> fUsedClusterCandidates;
 
  private:
   /**
@@ -269,6 +324,17 @@ class AliHLTTPCPad : public AliHLTLogging {
 
   /** The raw data history */
   AliHLTTPCSignal_t* fpRawData;                                    //! transient
+
+  /**
+   * Array containing the data
+   */
+  AliHLTTPCSignal_t* fDataSignals;
+
+  /**
+   * Array containing info on which bins have signals
+   */
+  Int_t *fSignalPositionArray;
+  Int_t fSizeOfSignalPositionArray;
 
   ClassDef(AliHLTTPCPad, 0)
 };

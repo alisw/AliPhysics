@@ -3,7 +3,8 @@
 #ifndef ALIHLTTPCCLUSTERFINDERCOMPONENT_H
 #define ALIHLTTPCCLUSTERFINDERCOMPONENT_H
 
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+/* This file is property of and copyright by the ALICE HLT Project        * 
+ * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
 
 /** @file   AliHLTTPCClusterFinderComponent.h
@@ -19,6 +20,7 @@
 #include "AliHLTTPCDigitReaderRaw.h"
 
 class AliHLTTPCClusterFinder;
+class AliHLTTPCPadArray;
 
 /**
  * @class AliHLTTPCClusterFinderComponent
@@ -31,11 +33,14 @@ class AliHLTTPCClusterFinder;
  * instantiate different digit readers depending on the arguments.
  * 
  * The component has the following component arguments:
- * - rawreadermode   the mode for the @ref AliHLTTPCDigitReaderRaw
+ * - rawreadermode   the mode for the @ref AliHLTTPCDigitReaderRaw, use -2 if using unsorted
  * - adc-threshold   ADC count threshold for zero suppression, if <0 the base line
  *                   calculation and subtraction is switched off
  * - pp-run          set parameters specific to a pp run; currently this switches
- *                   cluster deconvolution off for pp runs
+ *                   cluster deconvolution off for pp runs (not true for unsorted reading)
+ * - unsorted        if 1 the data will be read unsorted in to a PadArray object. This should
+ *                   only be done on patch level since it use a lot of memory
+ * - patch           specify on which patch to resd the data unsorted
  *
  * @ingroup alihlt_tpc
  */
@@ -96,7 +101,25 @@ class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
        */
       Int_t fPackedSwitch;                                                           // see above
       
-      ClassDef(AliHLTTPCClusterFinderComponent, 0)
+      /*
+       * Reads the data the new unsorted way if true
+       *
+       */
+      Int_t fUnsorted;                                                               //!transient
+
+      /*
+       * Patch number to be read, currently given as component argument,
+       * will be changed later.
+       */
+      Int_t fPatch;                                                                  //!transient
+
+      /*
+       * Pointer to a PadArray object containing a double array of all the pads in
+       * the current patch.
+       */
+      AliHLTTPCPadArray * fPadArray;                                                 //!transient
+
+      ClassDef(AliHLTTPCClusterFinderComponent, 1)
 
     };
 #endif
