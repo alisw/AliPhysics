@@ -46,11 +46,12 @@ AliHMPIDReconstructor::AliHMPIDReconstructor():AliReconstructor(),fUserCut(0),fD
   }
   
   AliCDBEntry *pUserCutEnt =AliCDBManager::Instance()->Get("HMPID/Calib/UserCut");    //contains TObjArray of 14 TObject with n. of sigmas to cut charge 
-  if(!pUserCutEnt) return;                                                            //No request from User to apply a more severe cut on pad charge  
-  TObjArray *pUserCut = (TObjArray*)pUserCutEnt->GetObject(); 
-  for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){                  //chambers loop 
-    fUserCut[iCh] = pUserCut->At(iCh)->GetUniqueID();
-    Printf("HMPID: UserCut successfully loaded for chamber %i -> %i ",iCh,fUserCut[iCh]);
+  if(pUserCutEnt) {
+    TObjArray *pUserCut = (TObjArray*)pUserCutEnt->GetObject(); 
+    for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){                  //chambers loop 
+      fUserCut[iCh] = pUserCut->At(iCh)->GetUniqueID();
+      Printf("HMPID: UserCut successfully loaded for chamber %i -> %i ",iCh,fUserCut[iCh]);
+    }
   }
 
   
