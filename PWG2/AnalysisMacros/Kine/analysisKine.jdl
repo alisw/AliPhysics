@@ -12,8 +12,8 @@ SplitMaxInputFileNumber="100";
 Requirements=( member(other.GridPartitions,"Analysis") );
 
 # we need ROOT and the API service configuration package
-Packages={"APISCONFIG::V2.2","pchrist@ROOT::v5.15.04","pchrist@AliRoot::v4-04-Release-a"};
-TTL = "30000";
+Packages={"APISCONFIG::V2.4","VO_ALICE@ROOT::v5-15-08","VO_ALICE@AliRoot::v4-04-Rev-14"};
+TTTL = "30000";
 
 #ROOT will read this collection file to know, which files to analyze
 InputDataList="wn.xml";
