@@ -16,7 +16,7 @@ extern "C" {
 #include <stdlib.h>
 
 //AliRoot
-//#include "AliHMPIDRawStream.h"
+#include "AliHMPIDRawStream.h"
 #include "AliRawReaderDate.h"
 #include "AliBitPacking.h"
 #include "TMath.h"
@@ -56,7 +56,8 @@ int main(int argc, char **argv){
 
 
   /* init some counters */
-  Float_t SummQ[14][48][11][25], SummQ2[14][48][11][25];
+  Double_t SummQ[14][48][11][25], SummQ2[14][48][11][25];
+  Int_t   nEntries[14][48][11][25];
   Bool_t  isDDLOn[14];
   for(Int_t ddl=0;ddl<=13;ddl++) {
     isDDLOn[ddl] = kFALSE;
@@ -66,6 +67,7 @@ int main(int argc, char **argv){
 	  {
 	    SummQ[ddl][adr][dil][row]=0;
 	    SummQ2[ddl][adr][dil][row]=0;
+	    nEntries[ddl][adr][dil][row]=0;
 	  }
   }
 
@@ -94,7 +96,7 @@ int main(int argc, char **argv){
       if (status==MON_ERR_EOF) break; /* end of monitoring file has been reached */
       if (status!=0) {
         printf("monitorGetEventDynamic() failed : %s\n",monitorDecodeError(status));
-        return -1;
+	return -1;
       }
 
       /* retry if got no event */
@@ -105,32 +107,37 @@ int main(int argc, char **argv){
       /* use event - here, just write event id to result file */
       eventT=event->eventType;
 
-      if (eventT==CALIBRATION_EVENT) {
+      if (eventT==PHYSICS_EVENT) {
 	
 	iEvtNcal++;
 
-	AliRawReader *pRR = new AliRawReaderDate((void*)event);
-	
-	pRR->Select("HMPID");//select only one DDL files 
-      
-	UInt_t RawDataWord=0;
-      
-	while(pRR->ReadNextInt(RawDataWord)) //raw records loop (in selected DDL files)
-	  {	  	    
-	    Int_t ddl = pRR->GetDDLID();       
+	AliRawReader *reader = new AliRawReaderDate((void*)event);
 
-	    Int_t a = AliBitPacking::UnpackWord(RawDataWord,12,17); assert(0<=a&&a<=47);   // 1098 7654 3210 9876 5432 1098 7654 3210 DILOGIC address (0..47)
-	    Int_t d = AliBitPacking::UnpackWord(RawDataWord,18,21); assert(1<=d&&d<=10);   // 3322 2222 2222 1111 1111 1000 0000 0000 DILOGIC number  (1..10)      
-	    Int_t r = AliBitPacking::UnpackWord(RawDataWord,22,26); assert(1<=r&&r<=24);   // Row number (1..24)
-	  
-	    Int_t q = AliBitPacking::UnpackWord(RawDataWord, 0,11); assert(0<=q&&q<=4095); // 0000 0rrr rrdd ddaa aaaa qqqq qqqq qqqq Qdc        (0..4095)
-
-	    SummQ[ddl][a][d][r]+=q;
-            SummQ2[ddl][a][d][r]+=(q*q);
-	    isDDLOn[ddl] = kTRUE;
-	  }//raw records loop
+	// Temporary there. Shall be removed as soon as the equipment ID is set correctly
+	// For the moment ddl.map file contains one line which maps
+	// the observed eqID=225 to the first HMPID DDL with ID=1536
+	//	reader->LoadEquipmentIdsMap("ddl.map");
 	
-	delete pRR;
+	AliHMPIDRawStream stream(reader);
+
+	while(stream.Next()) {
+
+	  Int_t ddl = stream.GetDDLNumber();
+
+	  for(Int_t row=1; row < 25; row++)
+	    for(Int_t dil=1; dil < 11; dil++)
+	      for(Int_t adr=0; adr < 48; adr++) {
+		Short_t q = stream.GetCharge(row,dil,adr);
+		if (q<0) continue;
+
+		SummQ[ddl][adr][dil][row] += q;
+		SummQ2[ddl][adr][dil][row] += (q*q);
+		nEntries[ddl][adr][dil][row]++;
+		isDDLOn[ddl] = kTRUE;
+	      }
+	} //raw data loop
+	
+	delete reader;
 
       }// if CALIBRATION_EVENT
 
@@ -167,8 +174,17 @@ int main(int argc, char **argv){
       for(Int_t dil=1; dil < 11; dil++)
 	for(Int_t adr=0; adr < 48; adr++) {
 
-	  Float_t mean = SummQ[ddl][adr][dil][row]/iEvtNcal;
-          Float_t sigma = TMath::Sqrt(SummQ2[ddl][adr][dil][row]/iEvtNcal - (SummQ[ddl][adr][dil][row]/iEvtNcal)*(SummQ[ddl][adr][dil][row]/iEvtNcal));
+	  Int_t n = nEntries[ddl][adr][dil][row];
+	  if (!n) {
+	    printf("No data for channel: %d %d %d %d\n",ddl,adr,dil,row);
+	    continue;
+	  }
+	  Double_t mean = SummQ[ddl][adr][dil][row]/n;
+	  if ((SummQ2[ddl][adr][dil][row]/n - (SummQ[ddl][adr][dil][row]/n)*(SummQ[ddl][adr][dil][row]/n)) < 0) {
+	    printf("Invalid sums: %d %d %d   %d  %f %f\n",row,dil,adr,n,SummQ[ddl][adr][dil][row],SummQ2[ddl][adr][dil][row]);
+	    return -1;
+	  }
+          Float_t sigma = TMath::Sqrt(SummQ2[ddl][adr][dil][row]/n - (mean*mean));
 	  Int_t inhard=((Int_t(mean))<<9)+Int_t(mean+3*sigma);
 
 	  out << Form("%2i %2i %2i %5.2f %5.2f %x\n",row,dil,adr,mean,sigma,inhard);
