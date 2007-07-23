@@ -22,11 +22,14 @@ void on_new_event()
 {
   Reve::LoadMacro("primary_vertex.C");
   Reve::LoadMacro("esd_tracks.C");
-  Reve::LoadMacro("its_hits.C");
-  Reve::LoadMacro("tpc_hits.C");
+  Reve::LoadMacro("its_clusters.C");
+  Reve::LoadMacro("tpc_clusters.C");
 
-  Reve::PointSet* p = its_hits();
-  p->SetMarkerStyle(4);
+  Reve::PointSet* itsc = its_clusters();
+  itsc->SetMarkerColor(5);
+
+  Reve::PointSet* tpcc = tpc_clusters();
+  tpcc->SetMarkerColor(4);
 
   primary_vertex(1, 1);
 
