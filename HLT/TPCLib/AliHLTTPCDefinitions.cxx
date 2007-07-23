@@ -29,18 +29,18 @@
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCDefinitions)
 
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkDDLPackedRawDataType = { sizeof(AliHLTComponentDataType),         {'D','D','L','_','R','W','P','K'},{'T','P','C',' '}};;
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkDDLEncodedEntropyRawDataType = { sizeof(AliHLTComponentDataType), {'D','D','L','E','N','C','E','N'},{'T','P','C',' '}};;
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkDDLPackedRawDataType = { sizeof(AliHLTComponentDataType),         {'D','D','L','_','R','W','P','K'},kAliHLTDataOriginTPC};;
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkDDLEncodedEntropyRawDataType = { sizeof(AliHLTComponentDataType), {'D','D','L','E','N','C','E','N'},kAliHLTDataOriginTPC};;
 
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkPackedRawDataType = { sizeof(AliHLTComponentDataType), {'R','A','W','P','A','K','E','D'},{'T','P','C',' '}};;
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkUnpackedRawDataType = { sizeof(AliHLTComponentDataType), {'R','A','W','U','N','P','A','K'},{'T','P','C',' '}};;
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkClustersDataType = { sizeof(AliHLTComponentDataType), {'C','L','U','S','T','E','R','S'},{'T','P','C',' '}};;
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkVertexDataType = { sizeof(AliHLTComponentDataType), {'V','E','R','T','E','X',' ',' '},{'T','P','C',' '}};;
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkTrackSegmentsDataType = { sizeof(AliHLTComponentDataType), {'T','R','A','K','S','E','G','S'},{'T','P','C',' '}};;
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkTracksDataType = { sizeof(AliHLTComponentDataType), {'T','R','A','C','K','S',' ',' '},{'T','P','C',' '}};;
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkPackedRawDataType = { sizeof(AliHLTComponentDataType), {'R','A','W','P','A','K','E','D'},kAliHLTDataOriginTPC};;
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkUnpackedRawDataType = { sizeof(AliHLTComponentDataType), {'R','A','W','U','N','P','A','K'},kAliHLTDataOriginTPC};;
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkClustersDataType = { sizeof(AliHLTComponentDataType), {'C','L','U','S','T','E','R','S'},kAliHLTDataOriginTPC};;
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkVertexDataType = { sizeof(AliHLTComponentDataType), {'V','E','R','T','E','X',' ',' '},kAliHLTDataOriginTPC};;
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkTrackSegmentsDataType = { sizeof(AliHLTComponentDataType), {'T','R','A','K','S','E','G','S'},kAliHLTDataOriginTPC};;
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkTracksDataType = { sizeof(AliHLTComponentDataType), {'T','R','A','C','K','S',' ',' '},kAliHLTDataOriginTPC};;
 
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkCalibPedestalDataType = { sizeof(AliHLTComponentDataType), {'C','A','L','_','P','E','D',' '},{'T','P','C',' '}};;
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkCalibSignalDataType = { sizeof(AliHLTComponentDataType), {'C','A','L','_','S','I','G',' '},{'T','P','C',' '}};;
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkCalibPedestalDataType = { sizeof(AliHLTComponentDataType), {'C','A','L','_','P','E','D',' '},kAliHLTDataOriginTPC};;
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkCalibSignalDataType = { sizeof(AliHLTComponentDataType), {'C','A','L','_','S','I','G',' '},kAliHLTDataOriginTPC};;
 
 
 AliHLTTPCDefinitions::AliHLTTPCDefinitions()
