@@ -3,7 +3,8 @@
 
 #ifndef ALIHLTTASK_H
 #define ALIHLTTASK_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+/* This file is property of and copyright by the ALICE HLT Project        * 
+ * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
 
 /** @file   AliHLTTask.h

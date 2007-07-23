@@ -109,6 +109,7 @@ class AliHLTMemoryFile;
  * member functions for those environment dependend functions. The member 
  * functions are used by the component implementation and are re-mapped to the
  * corresponding functions.
+ *
  * @section alihltcomponent-interfaces Component interfaces
  * Each of the 3 standard component base classes AliHLTProcessor, AliHLTDataSource
  * and AliHLTDataSink provides it's own processing method (see
@@ -118,6 +119,16 @@ class AliHLTMemoryFile;
  * output buffer and handle all block descriptors. 
  * The @ref alihltcomponent-high-level-interface is the standard processing
  * method and will be used whenever the low-level method is not overloaded.
+ *
+ * In both cases it is necessary to calculate/estimate the size of the output
+ * buffer before the processing. Output buffers can never be allocated inside
+ * the component because of the push-architecture of the HLT.
+ * For that reason the @ref GetOutputDataSize function should return a rough
+ * estimatian of the data to be produced by the component. The component is
+ * responsible for checking the memory size and must return -ENOSPC if the
+ * available buffer is to small, and update the estimator respectively. The
+ * framework will allocate a buffer of appropriate size and call the processing
+ * again.
  *
  * @subsection alihltcomponent-high-level-interface High-level interface
  * The high-level component interface provides functionality to exchange ROOT
@@ -865,7 +876,6 @@ class AliHLTComponent : public AliHLTLogging {
    * The target struct must have a 32bit struct size indicator as first member.
    * @param pStruct     target struct
    * @param iStructSize size of the struct
-   * @param pData       block data
    * @param iBlockNo    index of input block
    * @param structname  name of the struct (log messages)
    * @param eventname   name of the event (log messages)
@@ -959,6 +969,7 @@ class AliHLTComponent : public AliHLTLogging {
    * @param spec        data specification
    * @param pHeader     pointer to header
    * @param iHeaderSize size of Header
+   * @return neg. error code if failed
    */
   int InsertOutputBlock(void* pBuffer, int iBufferSize,
 			const AliHLTComponentDataType& dt,

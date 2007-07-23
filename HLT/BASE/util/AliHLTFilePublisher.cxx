@@ -235,15 +235,14 @@ int AliHLTFilePublisher::DoDeinit()
   return iResult;
 }
 
-int AliHLTFilePublisher::GetEvent( const AliHLTComponentEventData& evtData,
-	      AliHLTComponentTriggerData& trigData,
+int AliHLTFilePublisher::GetEvent( const AliHLTComponentEventData& /*evtData*/,
+				   AliHLTComponentTriggerData& /*trigData*/,
 	      AliHLTUInt8_t* outputPtr, 
 	      AliHLTUInt32_t& size,
 	      vector<AliHLTComponentBlockData>& outputBlocks )
 {
   int iResult=0;
-  TObjLink *lnk=NULL;
-  if (fpCurrent) lnk=fpCurrent->Next();
+  TObjLink *lnk=fpCurrent;
   if (lnk==NULL) lnk=fFiles.FirstLink();
   fpCurrent=lnk;
   if (lnk) {
@@ -251,10 +250,7 @@ int AliHLTFilePublisher::GetEvent( const AliHLTComponentEventData& evtData,
     if (pFile) {
       int iCopy=pFile->GetSize();
       pFile->Seek(0);
-      if (iCopy>(int)size) {
-	iCopy=size;
-	HLTWarning("buffer to small, data of file %s truncated", pFile->GetName());
-      }
+      if (iCopy<=(int)size) {
       if (pFile->ReadBuffer((char*)outputPtr, iCopy)!=0) {
 	// ReadBuffer returns 1 in case of failure and 0 in case of success
 	iResult=-EIO;
@@ -269,6 +265,11 @@ int AliHLTFilePublisher::GetEvent( const AliHLTComponentEventData& evtData,
 	outputBlocks.push_back(bd);
 	size=iCopy;
       }
+      } else {
+	// output buffer too small, update GetOutputDataSize for the second trial
+	fMaxSize=iCopy;
+	iResult=-ENOSPC;
+      }
     } else {
       HLTError("no file available");
       iResult=-EFAULT;
@@ -276,9 +277,8 @@ int AliHLTFilePublisher::GetEvent( const AliHLTComponentEventData& evtData,
   } else {
     iResult=-ENOENT;
   }
-  if (evtData.fStructSize==0 && trigData.fStructSize==0) {
-    // this is just to get rid of the warning "unused parameter"
-  }
+  if (iResult>=0 && fpCurrent) fpCurrent=fpCurrent->Next();
+
   return iResult;
 }
 

@@ -3,7 +3,8 @@
 
 #ifndef ALIHLTDATASOURCE_H
 #define ALIHLTDATASOURCE_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+/* This file is property of and copyright by the ALICE HLT Project        * 
+ * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
 
 /** @file   AliHLTDataSource.h
@@ -47,7 +48,8 @@ class AliHLTDataSource : public AliHLTComponent {
    * Event processing function.
    * The method is called by the framework to process one event. After 
    * preparation of data structures. The call is redirected to GetEvent.
-   * @return neg. error code if failed
+   * @return neg. error code if failed                                <br>
+   *         -ENOSPC      output buffer too small
    */
   int DoProcessing( const AliHLTComponentEventData& evtData,
 		    const AliHLTComponentBlockData* blocks, 

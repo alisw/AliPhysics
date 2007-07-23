@@ -3,7 +3,8 @@
 
 #ifndef ALIHLTPROCESSOR_H
 #define ALIHLTPROCESSOR_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+/* This file is property of and copyright by the ALICE HLT Project        * 
+ * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
 
 /** @file   AliHLTProcessor.h
@@ -81,7 +82,8 @@ class AliHLTProcessor : public AliHLTComponent {
    * @param size	  <i>input</i>: size of target buffer
    *            	  <i>output</i>:size of produced data
    * @param outputBlocks  list to receive output block descriptors
-   * @return neg. error code if failed
+   * @return neg. error code if failed                                <br>
+   *         -ENOSPC      output buffer too small
    */
   virtual int DoEvent( const AliHLTComponentEventData& evtData,
 		       const AliHLTComponentBlockData* blocks, 

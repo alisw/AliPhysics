@@ -895,13 +895,25 @@ int AliHLTTask::ProcessTask(Int_t eventNo)
     }
 
     // process the event
+    int iNofTrial=0; // repeat processing if component returns -ENOSPC
+    AliHLTUInt32_t size=0;
     if (iResult>=0) {
+    do {
       long unsigned int iConstBase=0;
       double fInputMultiplier=0;
       if (pComponent->GetComponentType()!=AliHLTComponent::kSink)
 	pComponent->GetOutputDataSize(iConstBase, fInputMultiplier);
-      int iOutputDataSize=int(fInputMultiplier*iInputDataVolume) + iConstBase;
+      if (fInputMultiplier<0) {
+	HLTWarning("ignoring negative input multiplier");
+	fInputMultiplier=0;
+      }
+      long unsigned int iOutputDataSize=int(fInputMultiplier*iInputDataVolume) + iConstBase;
       //HLTDebug("task %s: reqired output size %d", GetName(), iOutputDataSize);
+      if (iNofTrial>0) {
+	// dont process again if the buffer size is the same
+	if (size==iOutputDataSize) break;
+	HLTInfo("processing task %s again with buffer size %d", GetName(), iOutputDataSize);
+      }
       AliHLTUInt8_t* pTgtBuffer=NULL;
       if (iOutputDataSize>0) pTgtBuffer=fpDataBuffer->GetTargetBuffer(iOutputDataSize);
       //HLTDebug("provided raw buffer %p", pTgtBuffer);
@@ -910,7 +922,7 @@ int AliHLTTask::ProcessTask(Int_t eventNo)
       evtData.fEventID=(AliHLTEventID_t)eventNo;
       evtData.fBlockCnt=iSourceDataBlock;
       AliHLTComponentTriggerData trigData;
-      AliHLTUInt32_t size=iOutputDataSize;
+      size=iOutputDataSize;
       AliHLTUInt32_t outputBlockCnt=0;
       AliHLTComponentBlockData* outputBlocks=NULL;
       AliHLTComponentEventDoneData* edd;
@@ -920,11 +932,14 @@ int AliHLTTask::ProcessTask(Int_t eventNo)
 	if (iResult>=0 && pTgtBuffer) {
 	  iResult=fpDataBuffer->SetSegments(pTgtBuffer, outputBlocks, outputBlockCnt);
 	  delete [] outputBlocks; outputBlocks=NULL; outputBlockCnt=0;
+	} else {
+	  fpDataBuffer->Reset();
 	}
       } else {
 	HLTError("task %s: no target buffer available", GetName());
 	iResult=-EFAULT;
       }
+    } while (iResult==-ENOSPC && iNofTrial++<1);
     }
 
     // now release all buffers which we have subscribed to

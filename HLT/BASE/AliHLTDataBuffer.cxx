@@ -278,6 +278,9 @@ AliHLTUInt8_t* AliHLTDataBuffer::GetTargetBuffer(int iMinSize)
 {
   // see header file for function documentation
   AliHLTUInt8_t* pTargetBuffer=NULL;
+  if (fpBuffer!=NULL) {
+    HLTWarning("data buffer not properly reset, possible memory leak\n");
+  }
   fpBuffer=CreateRawBuffer(iMinSize);
   if (fpBuffer) {
     pTargetBuffer=(AliHLTUInt8_t*)fpBuffer->fPtr;
