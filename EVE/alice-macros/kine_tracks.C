@@ -11,10 +11,10 @@ static Color_t MesCol1  = 3;
 static Color_t MesCol2  = 38;
 static Color_t BarCol   = 10;
 
-
 Reve::TrackList*
 kine_tracks(Double_t min_pt  = 0.1,   Double_t min_p   = 0.2,
-	    Bool_t   pdg_col = kTRUE, Bool_t   recurse = kTRUE)
+	    Bool_t   pdg_col = kTRUE, Bool_t   recurse = kTRUE,
+	    Bool_t   use_track_refs = kTRUE)
 {
   AliRunLoader* rl =  Alieve::Event::AssertRunLoader();
   rl->LoadKinematics();
@@ -65,9 +65,12 @@ kine_tracks(Double_t min_pt  = 0.1,   Double_t min_p   = 0.2,
   // set path marks
   Alieve::KineTools kt; 
   kt.SetDaughterPathMarks(cont, stack, recurse);
-  rl->LoadTrackRefs();
-  kt.SetTrackReferences(cont, rl->TreeTR(), recurse);
-  cont->SetEditPathMarks(kTRUE);
+  if (use_track_refs && rl->LoadTrackRefs())
+  {
+    kt.SetTrackReferences(cont, rl->TreeTR(), recurse);
+    cont->SetEditPathMarks(kTRUE);
+  }
+  kt.SortPathMarks(cont, recurse);
 
   //PH  const Text_t* tooltip = Form("min pT=%.2lf, min P=%.2lf), N=%d", min_pt, min_p, count);
   char tooltip[1000];
