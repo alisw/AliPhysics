@@ -1,6 +1,9 @@
 Package: ALICE HLT
 
-This package implements the ALICE High Level Trigger analysis framework.
+This package implements the ALICE High Level Trigger analysis framework
+and analysis component libraries. All files are property of and copyright
+by the ALICE HLT Project unless stated differently.
+
 All contributions are under the terms of the 
 GNU General Public License as published by the Free Software 
 Foundation. Also see files AUTHORS and THANKS.
@@ -42,6 +45,8 @@ of the AliRoot compilation.
  - \b PHOS: The HLT code for PHOS
 
  - \b TRD: The HLT code for TRD
+
+ - \b MUON: The HLT code for MUON
 
 2. Requirements
 ===============
@@ -137,6 +142,15 @@ Some important options (all options are on by default):
   --disable-trd              # disable compilation the TRD library
   --disable-aliroot-logging  # disable logging
 
+Debugging (default disabled)
+
+  --enable-debug             # enable debugging: symbols & messages
+
+Optimization (default -O2)
+
+  --disable-optimization     # disable compiler optimization
+  --enable-optimization<=l>  # enable compiler optimization level l
+
 5.5 External packages
 ---------------------
 PubSub framework: the TPC online display needs the HOMER interface, which
@@ -183,9 +197,9 @@ A wiki with detailed information is set up at
 Please include the following information into your request:
  - config.log from your build directory
  - output of the make process. Note: Redirect BOTH the stdout and stderr
-   channel to a log file. Redirection depends on the shell you are using:
-    bash: make 2>&1 | tee make.log 
-    csh: make |& tee make.log
+   channel to a log file. Redirection depends on the shell you are using:     <br>
+    bash: make 2>&1 | tee make.log                                            <br>
+    csh: make |& tee make.log                                                 <br>
    The 'tee' command just duplicates the output.
  - history of the commands you are using for compilation
    history > history.log

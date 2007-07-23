@@ -26,7 +26,7 @@ AC_DEFUN([AC_DEBUG],
   AC_MSG_CHECKING(whether to make debug objects)
   AC_ARG_ENABLE(debug,
     [AC_HELP_STRING([--enable-debug],[Enable debugging symbols in objects])],
-    [],[enable_debug=yes])
+    [],[enable_debug=no])
   if test "x$enable_debug" = "xno" ; then
     CFLAGS=`echo $CFLAGS | sed 's,-g,,'`
     CXXFLAGS=`echo $CXXFLAGS | sed 's,-g,,'`

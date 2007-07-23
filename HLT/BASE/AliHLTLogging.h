@@ -2,7 +2,8 @@
 
 #ifndef ALIHLTLOGGING_H
 #define ALIHLTLOGGING_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+/* This file is property of and copyright by the ALICE HLT Project        * 
+ * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
 
 /** @file   AliHLTLogging.h
@@ -35,11 +36,15 @@ class AliHLTComponentHandler;
 
 // the following macros are filtered by the Global and Local Log Filter
 #define HLTBenchmark( ... ) LoggingVarargs(kHLTLogBenchmark, Class_Name() , FUNCTIONNAME() , __FILE__ , __LINE__ , __VA_ARGS__ )
-#define HLTDebug( ... )     LoggingVarargs(kHLTLogDebug,     Class_Name() , FUNCTIONNAME() , __FILE__ , __LINE__ , __VA_ARGS__ )
-#define HLTInfo( ... )      LoggingVarargs(kHLTLogInfo,      Class_Name() , FUNCTIONNAME() , __FILE__ , __LINE__ , __VA_ARGS__ )
-#define HLTWarning( ... )   LoggingVarargs(kHLTLogWarning,   Class_Name() , FUNCTIONNAME() , __FILE__ , __LINE__ , __VA_ARGS__ )
-#define HLTError( ... )     LoggingVarargs(kHLTLogError,     Class_Name() , FUNCTIONNAME() , __FILE__ , __LINE__ , __VA_ARGS__ )
-#define HLTFatal( ... )     LoggingVarargs(kHLTLogFatal,     Class_Name() , FUNCTIONNAME() , __FILE__ , __LINE__ , __VA_ARGS__ )
+#ifdef __DEBUG
+#define HLTDebug( ... )     if (CheckFilter(kHLTLogDebug) && CheckGroup(Class_Name())) LoggingVarargs(kHLTLogDebug,     Class_Name() , FUNCTIONNAME() , __FILE__ , __LINE__ , __VA_ARGS__ )
+#else
+#define HLTDebug( ... )
+#endif
+#define HLTInfo( ... )      if (CheckFilter(kHLTLogInfo))    LoggingVarargs(kHLTLogInfo,      Class_Name() , FUNCTIONNAME() , __FILE__ , __LINE__ , __VA_ARGS__ )
+#define HLTWarning( ... )   if (CheckFilter(kHLTLogWarning)) LoggingVarargs(kHLTLogWarning,   Class_Name() , FUNCTIONNAME() , __FILE__ , __LINE__ , __VA_ARGS__ )
+#define HLTError( ... )     if (CheckFilter(kHLTLogError))   LoggingVarargs(kHLTLogError,     Class_Name() , FUNCTIONNAME() , __FILE__ , __LINE__ , __VA_ARGS__ )
+#define HLTFatal( ... )     if (CheckFilter(kHLTLogFatal))   LoggingVarargs(kHLTLogFatal,     Class_Name() , FUNCTIONNAME() , __FILE__ , __LINE__ , __VA_ARGS__ )
 
 // helper macro to set the keyword
 #define HLTLogKeyword(a)    AliHLTKeyword hltlogTmpkey__LINE__(this, a)
@@ -109,6 +114,26 @@ public:
   int LoggingVarargs(AliHLTComponentLogSeverity severity, 
 		     const char* originClass, const char* originFunc,
 		     const char* file, int line, ... ) const;
+
+  /**
+   * Evaluate the group of the debug message from the class name.
+   * @return 1 if message should be printed
+   */
+  int CheckGroup(const char* originClass) const;
+
+  /**
+   * Set the black list of classes.
+   * If the white list is set, debug messages are skipped for
+   * all classes matching one of the regular expressions in the string.
+   */
+  static int SetBlackList(const char* classnames);
+
+  /**
+   * Set the white list of classes.
+   * If the white list is set, debug messages are only printed for
+   * classes matching one of the regular expressions in the string.
+   */
+  static int SetWhiteList(const char* classnames);
 
   /**
    * Apply filter
@@ -214,8 +239,14 @@ private:
   
   /** the maximum size of the buffer */
   static const int fgkALIHLTLOGGINGMAXBUFFERSIZE;                  //! transient
+
+  /** groups of classes not to print debug messages */
+  static TString fgBlackList;                                      //! transient
   
-  ClassDef(AliHLTLogging, 2)
+  /** groups of classes not to print debug messages */
+  static TString fgWhiteList;                                      //! transient
+  
+  ClassDef(AliHLTLogging, 3)
 };
 
 /* the class AliHLTKeyword is a simple helper class used by the HLTLogKeyword macro

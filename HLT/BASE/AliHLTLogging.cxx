@@ -75,6 +75,9 @@ AliHLTfctLogging AliHLTLogging::fgLoggingFunc=NULL;
 AliHLTLogging::AliHLTDynamicMessage AliHLTLogging::fgAliLoggingFunc=NULL;
 int AliHLTLogging::fgUseAliLog=1;
 
+TString AliHLTLogging::fgBlackList="";
+TString AliHLTLogging::fgWhiteList="";
+
 AliHLTLogging::~AliHLTLogging()
 {
   // see header file for class documentation
@@ -280,7 +283,7 @@ int AliHLTLogging::LoggingVarargs(AliHLTComponentLogSeverity severity,
   if (file==NULL && line==0) {
     // this is currently just to get rid of the warning "unused parameter"
   }
-  int iResult=CheckFilter(severity);
+  int iResult=1; //CheckFilter(severity); // check moved to makro
   if (iResult>0) {
     const char* separator="";
     TString origin;
@@ -343,4 +346,29 @@ AliHLTComponentLogSeverity AliHLTLogging::GetLocalLoggingLevel()
   // see header file for class documentation
 
   return fLocalLogFilter;
+}
+
+int AliHLTLogging::CheckGroup(const char* originClass) const
+{
+  // see header file for class documentation
+
+  return 1;
+}
+
+int AliHLTLogging::SetBlackList(const char* classnames)
+{
+  // see header file for class documentation
+
+  if (classnames)
+    fgBlackList=classnames;
+  return 0;
+}
+
+int AliHLTLogging::SetWhiteList(const char* classnames)
+{
+  // see header file for class documentation
+
+  if (classnames)
+    fgWhiteList=classnames;
+  return 0;
 }
