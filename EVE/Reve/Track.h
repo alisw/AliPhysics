@@ -43,7 +43,7 @@ protected:
 
   TrackRnrStyle*    fRnrStyle;
 
-public: 
+public:
   Track();
   Track(TParticle* t, Int_t label, TrackRnrStyle* rs);
   Track(Reve::MCTrack*  t, TrackRnrStyle* rs);
@@ -62,12 +62,12 @@ public:
 
   void  AddPathMark(Reve::PathMark* pm) { fPathMarks.push_back(pm); }
   void  SortPathMarksByTime();
- 
+
   //--------------------------------
 
   void ImportHits();              // *MENU*
   void ImportClusters();          // *MENU*
-  void ImportClustersFromIndex(); // *MENU*  
+  void ImportClustersFromIndex(); // *MENU*
   void ImportKine();              // *MENU*
   void ImportKineWithArgs(Bool_t importMother=kTRUE,
 			  Bool_t impDaugters =kTRUE); // *MENU*
@@ -100,11 +100,11 @@ public:
   Color_t                  fColor;
   Width_t                  fWidth;
   Style_t                  fStyle;
-  Float_t                  fMagField;  
+  Float_t                  fMagField;
   // track limits
-  Float_t                  fMaxR;       
-  Float_t                  fMaxZ;       
-  // helix limits 
+  Float_t                  fMaxR;
+  Float_t                  fMaxZ;
+  // helix limits
   Float_t                  fMaxOrbs; // Maximal angular path of tracks' orbits (1 ~ 2Pi).
   Float_t                  fMinAng;  // Minimal angular step between two helix points.
   Float_t                  fDelta;   // Maximal error at the mid-point of the line connecting to helix points.
@@ -119,9 +119,9 @@ public:
   Style_t                  fPMStyle;
   Size_t                   fPMSize;
 
-  Bool_t                   fFitDaughters;   
-  Bool_t                   fFitReferences;   
-  Bool_t                   fFitDecay;   
+  Bool_t                   fFitDaughters;
+  Bool_t                   fFitReferences;
+  Bool_t                   fFitDecay;
 
   Bool_t                   fRnrDaughters;
   Bool_t                   fRnrReferences;
@@ -184,7 +184,7 @@ public:
   virtual void SetMarkerStyle(Style_t s) { TAttMarker::SetMarkerStyle(s); if(fRnrStyle) fRnrStyle->fPMStyle = s; }
   virtual void SetMarkerSize(Size_t s)   { TAttMarker::SetMarkerSize(s);  if(fRnrStyle) fRnrStyle->fPMSize  = s; }
 
-  TrackRnrStyle* GetRnrStyle()           { fRnrStyle->fPMColor = GetMarkerColor();fRnrStyle->fPMStyle = GetMarkerStyle();fRnrStyle->fPMSize = GetMarkerSize(); return fRnrStyle; } 
+  TrackRnrStyle* GetRnrStyle()           { fRnrStyle->fPMColor = GetMarkerColor();fRnrStyle->fPMStyle = GetMarkerStyle();fRnrStyle->fPMSize = GetMarkerSize(); return fRnrStyle; }
   void   SetRnrStyle(TrackRnrStyle* rst) { fRnrStyle= rst; }
 
   Bool_t GetEditPathMarks() const   { return fEditPathMarks; }
@@ -218,7 +218,7 @@ public:
   Float_t GetMaxOrbs()      const { return fRnrStyle->fMaxOrbs; }
   Float_t GetMinAng()       const { return fRnrStyle->fMinAng; }
   Float_t GetDelta()        const { return fRnrStyle->fDelta; }
-  
+
   Float_t GetMinPt()        const { return fRnrStyle->fMinPt; }
   Float_t GetMaxPt()        const { return fRnrStyle->fMaxPt; }
 

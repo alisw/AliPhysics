@@ -58,8 +58,8 @@ void TrackGL::DirectDraw(TGLRnrCtx & rnrCtx) const
 
   LineGL::DirectDraw(rnrCtx);
 
-  if ( ! fTrack->fPathMarks.empty()){
-
+  if ( ! fTrack->fPathMarks.empty())
+  {
     TrackRnrStyle* rs = fTrack->GetRnrStyle();
     Int_t  style = rs->fPMStyle;
 
@@ -119,7 +119,7 @@ void TrackGL::DirectDraw(TGLRnrCtx & rnrCtx) const
     else 
     {
       // crosses
-      if ( style== 28) 
+      if (style == 28) 
       {
 	glEnable(GL_BLEND);
 	glEnable(GL_LINE_SMOOTH);
@@ -133,7 +133,6 @@ void TrackGL::DirectDraw(TGLRnrCtx & rnrCtx) const
       glBegin(GL_LINES);
       Bool_t accept;
       Float_t d = 2* rs->fPMSize;
-      Float_t p[3];
       std::vector<PathMark*>& pm = fTrack->fPathMarks;     
       for(std::vector<PathMark*>::iterator i=pm.begin(); i!=pm.end(); ++i) 
       {
@@ -154,10 +153,10 @@ void TrackGL::DirectDraw(TGLRnrCtx & rnrCtx) const
 	{
 	  if((TMath::Abs((*i)->V.z) < rs->fMaxZ) && ((*i)->V.Perp() < rs->fMaxR))
 	  {
-	    p[0] = (*i)->V.x; p[1] = (*i)->V.y; p[2] = (*i)->V.z;
-	    glVertex3f(p[0]-d, p[1], p[2]); glVertex3f(p[0]+d, p[1], p[2]);
-	    glVertex3f(p[0], p[1]-d, p[2]); glVertex3f(p[0], p[1]+d, p[2]);
-	    glVertex3f(p[0], p[1], p[2]-d); glVertex3f(p[0], p[1], p[2]+d);
+	    const Float_t &x=(*i)->V.x, &y=(*i)->V.y, &z=(*i)->V.z;
+	    glVertex3f(x-d, y,   z);    glVertex3f(x+d, y,   z);
+	    glVertex3f(x,   y-d, z);    glVertex3f(x,   y+d, z);
+	    glVertex3f(x,   y,   z-d);  glVertex3f(x,   y,   z+d);
 	  }
 	}
       } 
