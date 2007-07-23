@@ -97,8 +97,8 @@ Bool_t AliHMPIDRawStream::Next()
   // Look over rows
   for(Int_t iRow = 1; iRow < kNRows; iRow++) {
     // Read row marker
-    UInt_t rowMarker = GetNextWord();
-    if ((rowMarker != 0x1ea32a8) && (rowMarker != 0xa1ea32a8)) {
+    UInt_t rowMarker = GetNextWord() & 0x1ffffff;
+    if (rowMarker != 0x1ea32a8) {
       fRawReader->AddMajorErrorLog(kRowMarkerErr);
       AliWarning(Form("Wrong row marker %x for row %d, expected 0xx1ea32a8!",rowMarker,iRow));
       return kTRUE;
@@ -129,7 +129,7 @@ Bool_t AliHMPIDRawStream::Next()
 	fCharge[row][dilogic][pad] = data & 0xfff;
       }
       // Now read the end-of-event word
-      UInt_t eOfEvent = GetNextWord();
+      UInt_t eOfEvent = GetNextWord() & 0xfffffff;
       if (!((eOfEvent >> 27) & 0x1)) {
       	fRawReader->AddMajorErrorLog(kEoEFlagErr);
       	AliWarning(Form("Missing end-of-event flag! (%x)",eOfEvent));
