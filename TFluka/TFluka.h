@@ -407,8 +407,10 @@ class TFluka : public TVirtualMC {
   TFluka(const TFluka &mc); //: TVirtualMC(mc) {;}
   TFluka & operator=(const TFluka &); // {return (*this);}
  
-  void PrintHeader();
-  void AddParticlesToPdgDataBase() const;
+  void  PrintHeader();
+  void  AddParticlesToPdgDataBase() const;
+  Int_t GetIonPdg(Int_t z, Int_t a, Int_t i = 0) const;
+  
   //
 
   Int_t   fVerbosityLevel; //Verbosity level (0 lowest - 3 highest)

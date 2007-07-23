@@ -990,7 +990,7 @@ Int_t TFluka::PDGFromId(Int_t id) const
   //
   // Return PDG code and pseudo ENDF code from Fluka code
   //                      Alpha     He3       Triton    Deuteron  gen. ion  opt. photon   
-    Int_t idSpecial[6] = {10020040, 10020030, 10010030, 10010020, 10000000, 50000050};
+    Int_t idSpecial[6] = {GetIonPdg(2,4), GetIonPdg(2, 3), GetIonPdg(1,3), GetIonPdg(1,2), GetIonPdg(0,0), 50000050};
   // IPTOKP array goes from official to internal
 
     if (id == kFLUKAoptical) {
@@ -1623,7 +1623,7 @@ Int_t TFluka::CorrectFlukaId() const
                << " assign parent PDG=" << PDGFromId(TRACKR.ispusr[mkbmx2 - 3]) << endl;
       return TRACKR.ispusr[mkbmx2 - 3]; // assign parent identity
    }
-   if (TRACKR.jtrack <= 64) {
+   if (TRACKR.jtrack <= 64){
        return TRACKR.jtrack;
    } else {
        return TRACKR.j0trck;
@@ -1650,6 +1650,7 @@ Double_t TFluka::TrackCharge() const
 // Return charge of the track currently transported
 // PAPROP.ichrge = electric charge of the particle
 // TRACKR.jtrack = identity number of the particle
+    
   FlukaCallerCode_t caller = GetCaller();
   if (caller != kEEDRAW) 
      return PAPROP.ichrge[CorrectFlukaId()+6];
@@ -2301,8 +2302,6 @@ void TFluka::AddParticlesToPdgDataBase() const
 
     TDatabasePDG *pdgDB = TDatabasePDG::Instance();
 
-    const Int_t kion=10000000;
-
     const Double_t kAu2Gev   = 0.9314943228;
     const Double_t khSlash   = 1.0545726663e-27;
     const Double_t kErg2Gev  = 1/1.6021773349e-3;
@@ -2311,15 +2310,14 @@ void TFluka::AddParticlesToPdgDataBase() const
 //
 // Ions
 //
-
   pdgDB->AddParticle("Deuteron","Deuteron",2*kAu2Gev+8.071e-3,kTRUE,
-                     0,3,"Ion",kion+10020);
+                     0,3,"Ion",GetIonPdg(1,2));
   pdgDB->AddParticle("Triton","Triton",3*kAu2Gev+14.931e-3,kFALSE,
-                     khShGev/(12.33*kYear2Sec),3,"Ion",kion+10030);
+                     khShGev/(12.33*kYear2Sec),3,"Ion",GetIonPdg(1,3));
   pdgDB->AddParticle("Alpha","Alpha",4*kAu2Gev+2.424e-3,kTRUE,
-                     khShGev/(12.33*kYear2Sec),6,"Ion",kion+20040);
+                     khShGev/(12.33*kYear2Sec),6,"Ion",GetIonPdg(2,4));
   pdgDB->AddParticle("HE3","HE3",3*kAu2Gev+14.931e-3,kFALSE,
-                     0,6,"Ion",kion+20030);
+                     0,6,"Ion",GetIonPdg(2,3));
 }
 
 //
@@ -2366,4 +2364,11 @@ void TFluka::GetPrimaryElectronPosition(Int_t i, Double_t& x, Double_t& y, Doubl
 	return;
 }
 
+Int_t TFluka::GetIonPdg(Int_t z, Int_t a, Int_t i) const
+{
+// Acording to
+// http://cepa.fnal.gov/psm/stdhep/pdg/montecarlorpp-2006.pdf
 
+  return 1000000000 + 10*1000*z + 10*a + i;
+}  
+     
