@@ -71,8 +71,8 @@ int AliHLTTPCEsdWriterComponent::InitWriter()
   // see header file for class documentation
   int iResult=0;
   fESD = new AliESDEvent;
-  fESD->CreateStdContent();
   if (fESD) {
+    fESD->CreateStdContent();
     fTree = new TTree("esdTree", "Tree with HLT ESD objects");
     if (fTree) {
       fESD->WriteToTree(fTree);
@@ -111,8 +111,8 @@ int AliHLTTPCEsdWriterComponent::DumpEvent( const AliHLTComponentEventData& evtD
   TTree* pTree=fTree;
   if (pTree) {
     fESD = new AliESDEvent;
-    fESD->CreateStdContent();
     if (fESD) {
+      fESD->CreateStdContent();
       AliESDEvent* pESD=fESD;
 
       const AliHLTComponentBlockData* iter = NULL;
