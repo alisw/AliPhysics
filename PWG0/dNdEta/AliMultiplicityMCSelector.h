@@ -9,6 +9,8 @@ class AliESDtrackCuts;
 class AliMultiplicityCorrection;
 class AliCorrection;
 class TNtuple;
+class TF1;
+class TH1;
 
 class AliMultiplicityMCSelector : public AliSelectorRL {
   public:
@@ -33,6 +35,8 @@ class AliMultiplicityMCSelector : public AliSelectorRL {
                                            // for each of the species: pi, k, p, other; for systematic study of pt cut off
     Int_t fSelectProcessType;        // 0 = all (default), 1 = ND, 2 = SD, 3 = DD (for systematic study)
     TNtuple *fParticleSpecies;       // per event: vtx_mc, (pi, k, p, rest (in |eta| < 2)) X (true, recon); (for systematic study)
+
+    TH1* fPtSpectrum;                // function that modifies the pt spectrum (syst. study)
 
  private:
     AliMultiplicityMCSelector(const AliMultiplicityMCSelector&);
