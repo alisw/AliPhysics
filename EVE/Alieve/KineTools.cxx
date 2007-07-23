@@ -43,17 +43,17 @@ void KineTools::SetDaughterPathMarks(RenderElement* cont, AliStack* stack, Bool_
     TParticle* p = stack->Particle(track->GetLabel());
     if(p->GetNDaughters()) {
       Int_t d0 = p->GetDaughter(0), d1 = p->GetDaughter(1);
-      for(int d=d0; d>0 && d<=d1;++d) 
+      for(int d=d0; d>0 && d<=d1; ++d) 
       {	
 	TParticle* dp = stack->Particle(d);
 	Reve::PathMark* pm = new PathMark(PathMark::Daughter);
-        pm->V.Set(dp->Vx(),dp->Vy(), dp->Vz());
-	pm->P.Set(dp->Px(),dp->Py(), dp->Pz()); 
+        pm->V.Set(dp->Vx(), dp->Vy(), dp->Vz());
+	pm->P.Set(dp->Px(), dp->Py(), dp->Pz()); 
         pm->time = dp->T();
         track->AddPathMark(pm);
-	if (recurse)
-	  SetDaughterPathMarks(track, stack, recurse);
       }
+      if (recurse)
+	SetDaughterPathMarks(track, stack, recurse);
     }
     ++iter;
   }
@@ -138,10 +138,19 @@ void KineTools::SetTrackReferences(RenderElement* cont, TTree* treeTR, Bool_t re
     } // loop primaries, clones arrays
     delete arr;
   } // end loop through top branches
+}
+
+void KineTools::SortPathMarks(RenderElement* cont, Bool_t recurse)
+{
+  // Sort path-marks for all tracks by time.
+
+  // Fill map
+  map<Int_t, Track*> tracks;
+  slurp_tracks(tracks, cont, recurse);
 
   // sort 
   for(map<Int_t, Track*>::iterator j=tracks.begin(); j!=tracks.end(); ++j)
   {
-    (j->second)->SortPathMarksByTime();
+    j->second->SortPathMarksByTime();
   }
 }

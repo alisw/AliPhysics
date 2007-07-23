@@ -32,6 +32,7 @@ public:
   // data from TreeTR
   void SetDaughterPathMarks(Reve::RenderElement* cont, AliStack* stack, Bool_t recurse=kFALSE);
   void SetTrackReferences  (Reve::RenderElement* cont, TTree* treeTR=0, Bool_t recurse=kFALSE);
+  void SortPathMarks       (Reve::RenderElement* cont, Bool_t recurse=kFALSE);
 
   ClassDef(KineTools, 1);
 }; // endclass KineTools
