@@ -1,3 +1,11 @@
+2007-07-23  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* alice-macros/kine_tracks.C:
+	New optional argument: Bool_t use_track_refs=kTRUE.
+
+	* macros/trackcount_init.C:
+	Load ITS/TPC clusters instead of hits.
+
 2007-07-13  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* alice-macros/tpc_clusters.C:

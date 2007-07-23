@@ -1,3 +1,13 @@
+2007-07-23  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* KineTools.cxx:
+	* KineTools.h:
+	Added function SortPathMarks().
+	Bugfix in SetDaughterPathMarks(): move recursive descent
+	over daughters outside of a loop. This caused insane memory usage
+	for events with full kine-stack (lots of low-energy
+	electrons and photons). Reported by Cvetan and Jochen Klein.
+
 2007-07-12  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* VSDCreator.cxx:
