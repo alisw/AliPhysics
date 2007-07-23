@@ -151,8 +151,11 @@ void Track::MakeTrack(Bool_t recurse)
    
     MCHelix helix(fRnrStyle, &mc_v0, TMath::C()*fBeta, &track_points, a); //m->cm
     helix.Init(TMath::Sqrt(px*px+py*py), pz);
+    // Set max number of points for loop-to-vertex.
+    // loop-to-bounds (last step) does this separately.
+    helix.NMax = 4096;
    
-    if(!fPathMarks.empty())
+    if (!fPathMarks.empty())
     {
       for(std::vector<Reve::PathMark*>::iterator i=fPathMarks.begin(); i!=fPathMarks.end(); ++i)
       {
@@ -160,8 +163,8 @@ void Track::MakeTrack(Bool_t recurse)
         
 	if (RS.fFitReferences && pm->type == Reve::PathMark::Reference)
 	{
-	  if(TMath::Abs(pm->V.z) > RS.fMaxZ 
-	     || TMath::Sqrt(pm->V.x*pm->V.x + pm->V.y*pm->V.y) > RS.fMaxR )
+	  if(TMath::Abs(pm->V.z) > RS.fMaxZ ||
+	     TMath::Sqrt(pm->V.x*pm->V.x + pm->V.y*pm->V.y) > RS.fMaxR )
 	    goto helix_bounds;
 
 	  // printf("%s fit reference  \n", fName.Data()); 
@@ -190,6 +193,12 @@ void Track::MakeTrack(Bool_t recurse)
 	  helix.LoopToVertex(px, py, pz, pm->V.x, pm->V.y, pm->V.z);
           decay = true;
           break;
+	}
+	if (track_points.size() > 4096)
+	{
+	  Warning("Track::MakeTrack", "exceeding 4k points (%u) for '%s'; aborting extrapolation.",
+		  track_points.size(), GetName());
+	  goto make_polyline;
 	}
       }
     }
@@ -237,9 +246,16 @@ void Track::MakeTrack(Bool_t recurse)
 
   }
 make_polyline:
-  Reset(track_points.size());
-  for(std::vector<MCVertex>::iterator i=track_points.begin(); i!=track_points.end(); ++i)
-    SetNextPoint(i->x, i->y, i->z);
+  {
+    Int_t size = TMath::Min(4096, (Int_t) track_points.size());
+    // printf("track '%s'   N = %u\n", GetName(), track_points.size());
+    Reset(size);
+    for(Int_t i=0; i<size; ++i)
+    {
+      MCVertex& v = track_points[i];
+      SetNextPoint(v.x, v.y, v.z);
+    }
+  }
 
   if(recurse) {
     for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i)
@@ -264,7 +280,7 @@ struct cmp_pathmark
 
 void Track::SortPathMarksByTime()
 {
- sort(fPathMarks.begin(), fPathMarks.end(), cmp_pathmark());
+  std::sort(fPathMarks.begin(), fPathMarks.end(), cmp_pathmark());
 }
 
 /**************************************************************************/
@@ -338,14 +354,14 @@ void Track::PrintPathMarks()
   if (fLabel < 0)
     throw(eH + "label not set.");
 
-  printf("Number of path marks %d label %d\n",
-	 fPathMarks.size(), fLabel);
+  printf("Track '%s', number of path marks %d, label %d\n",
+	 GetName(), fPathMarks.size(), fLabel);
 
   PathMark* pm;
   for(vpPathMark_i i=fPathMarks.begin(); i!=fPathMarks.end(); i++) 
   {
     pm = *i;
-    printf("Reve::PathMark: %-9s  p: %8f %8f %8f Vertex: %8e %8e %8e %g \n",
+    printf("  %-9s  p: %8f %8f %8f Vertex: %8e %8e %8e %g \n",
 	   pm->type_name(),
 	   pm->P.x,  pm->P.y, pm->P.z,
 	   pm->V.x,  pm->V.y, pm->V.z,

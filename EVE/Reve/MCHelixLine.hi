@@ -120,7 +120,7 @@ struct MCHelix : public MCStruct
     Float_t py_t = py*cos + px*sin ;
     px = px_t;
     py = py_t;
-    fN++;
+    ++fN;
   }
 
 
@@ -135,20 +135,24 @@ struct MCHelix : public MCStruct
     Float_t cosf = TMath::Cos(fnsteps*fPhiStep);
 
     { 
-      if(nsteps > 0){
+      if (nsteps > 0)
+      {
         Float_t xf  = fV.x + (px*sinf - py*(1 - cosf))/fA;  
         Float_t yf =  fV.y + (py*sinf + px*(1 - cosf))/fA;
         x_off =  (ex - xf)/fnsteps;
         y_off =  (ey - yf)/fnsteps;
         Float_t xforw, yforw, zforw;
-        for (Int_t l=0; l<nsteps; l++) {
+        for (Int_t l=0; l<nsteps; l++)
+	{
           xforw  = fV.x + (px*sin - py*(1 - cos))/fA + x_off;
           yforw =  fV.y + (py*sin + px*(1 - cos))/fA + y_off;
           zforw =  fV.z + fLam*TMath::Abs(fR*fPhiStep);
           if ((xforw*xforw+yforw*yforw > fRnrMod->fMaxR*fRnrMod->fMaxR) ||(TMath::Abs(zforw) > fRnrMod->fMaxZ) ) {
             return false;
           }
-          Step(px,py,pz); 
+          Step(px,py,pz);
+	  if (fN > NMax)
+	    break;
         }
 	 
       }
@@ -180,10 +184,12 @@ struct MCHelix : public MCStruct
   {
     //    printf("MC helix  loop_to_bounds\n");
     SetBounds();
-    if(NMax > 0){
+    if (NMax > 0)
+    {
       // printf("NMAx MC helix  loop_to_bounds\n");
       Float_t xforw,yforw,zforw;
-      while(fN < NMax){
+      while (fN < NMax)
+      {
         xforw = fV.x + (px*sin - py*(1 - cos))/fA + x_off;
         yforw = fV.y + (py*sin + px*(1 - cos))/fA + y_off;
         zforw = fV.z + fLam*TMath::Abs(fR*fPhiStep);
