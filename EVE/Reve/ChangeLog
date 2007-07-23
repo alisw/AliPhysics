@@ -1,3 +1,13 @@
+2007-07-23  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* Track.h:
+	* TrackGL.cxx:
+	Whitespace.
+
+	* MCHelixLine.hi:
+	* Track.cxx:
+	Set limit on number of steps in track extrapolation.
+
 2007-07-19  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* RGBrowser.cxx:
