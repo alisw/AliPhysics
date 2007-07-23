@@ -32,13 +32,9 @@
 #include <TParticle.h>
 #include <TParticlePDG.h>
 #include <TTree.h>
+#include <TDirectory.h>
 
 #include "AliLog.h"
-#include "AliHit.h"
-#include "AliModule.h"
-#include "AliRun.h"
-#include "AliMC.h"
-#include "AliRunLoader.h"
 #include "AliStack.h"
 
 ClassImp(AliStack)
@@ -57,7 +53,7 @@ AliStack::AliStack():
   fCurrentPrimary(-1),
   fHgwmk(0),
   fLoadPoint(0),
-  fEventFolderName(AliConfig::GetDefaultEventFolderName())
+  fTrackLabelMap(0)
 {
   //
   // Default constructor
@@ -65,7 +61,7 @@ AliStack::AliStack():
 }
 
 //_______________________________________________________________________
-AliStack::AliStack(Int_t size, const char* evfoldname):
+AliStack::AliStack(Int_t size, const char* /*evfoldname*/):
   fParticles(new TClonesArray("TParticle",1000)),
   fParticleMap(new TObjArray(size)),
   fParticleFileMap(0),
@@ -78,7 +74,7 @@ AliStack::AliStack(Int_t size, const char* evfoldname):
   fCurrentPrimary(-1),
   fHgwmk(0),
   fLoadPoint(0),
-  fEventFolderName(evfoldname)
+  fTrackLabelMap(0)
 {
   //
   //  Constructor
@@ -100,10 +96,9 @@ AliStack::AliStack(const AliStack& st):
     fCurrentPrimary(-1),
     fHgwmk(0),
     fLoadPoint(0),
-    fEventFolderName(0)
+    fTrackLabelMap(0)
 {
     // Copy constructor
-    ConnectTree();
 }
 
 
@@ -125,7 +120,6 @@ AliStack::~AliStack()
     delete fParticles;
   }
   delete fParticleMap;
-  //PH???  delete fTreeK;
 }
 
 //
@@ -208,7 +202,6 @@ void AliStack::PushTrack(Int_t done, Int_t parent, Int_t pdg,
   // Note: the energy is not calculated from the static mass but
   // it is passed by argument e.
 
-
   const Int_t kFirstDaughter=-1;
   const Int_t kLastDaughter=-1;
 
@@ -233,23 +226,22 @@ void AliStack::PushTrack(Int_t done, Int_t parent, Int_t pdg,
   fParticleMap->AddAtAndExpand(particle, fNtrack);//CHECK!!
 
   if(parent>=0) {
-    particle = dynamic_cast<TParticle*>(fParticleMap->At(parent));
-    if (particle) {
-      particle->SetLastDaughter(fNtrack);
-      if(particle->GetFirstDaughter()<0) particle->SetFirstDaughter(fNtrack);
-    }
-    else {
-      AliError(Form("Parent %d does not exist",parent));
-    }
-  } 
-  else { 
-    //
-    // This is a primary track. Set high water mark for this event
-    fHgwmk = fNtrack;
-    //
-    // Set also number if primary tracks
-    fNprimary = fHgwmk+1;
-    fCurrentPrimary++;
+      particle = dynamic_cast<TParticle*>(fParticleMap->At(parent));
+      if (particle) {
+	  particle->SetLastDaughter(fNtrack);
+	  if(particle->GetFirstDaughter()<0) particle->SetFirstDaughter(fNtrack);
+      }
+      else {
+	  AliError(Form("Parent %d does not exist",parent));
+      }
+  } else { 
+      //
+      // This is a primary track. Set high water mark for this event
+      fHgwmk = fNtrack;
+      //
+      // Set also number if primary tracks
+      fNprimary = fHgwmk+1;
+      fCurrentPrimary++;
   }
   ntr = fNtrack++;
 }
@@ -302,28 +294,28 @@ void AliStack::PurifyKine()
   TObjArray &particles = *fParticleMap;
   int nkeep=fHgwmk+1, parent, i;
   TParticle *part, *father;
-  TArrayI map(particles.GetLast()+1);
+  fTrackLabelMap.Set(particles.GetLast()+1);
 
   // Save in Header total number of tracks before compression
   // If no tracks generated return now
   if(fHgwmk+1 == fNtrack) return;
 
   // First pass, invalid Daughter information
-   for(i=0; i<fNtrack; i++) {
-    // Preset map, to be removed later
-    if(i<=fHgwmk) map[i]=i ; 
-    else {
-      map[i] = -99;
-      if((part=dynamic_cast<TParticle*>(particles.At(i)))) {
+  for(i=0; i<fNtrack; i++) {
+      // Preset map, to be removed later
+      if(i<=fHgwmk) fTrackLabelMap[i]=i ; 
+      else {
+	  fTrackLabelMap[i] = -99;
+	  if((part=dynamic_cast<TParticle*>(particles.At(i)))) {
 //
 //        Check of this track should be kept for physics reasons 
-          if (KeepPhysics(part)) KeepTrack(i);
+	      if (KeepPhysics(part)) KeepTrack(i);
 //
-          part->ResetBit(kDaughtersBit);
-          part->SetFirstDaughter(-1);
-          part->SetLastDaughter(-1);
+	      part->ResetBit(kDaughtersBit);
+	      part->SetFirstDaughter(-1);
+	      part->SetLastDaughter(-1);
+	  }
       }
-    }
   }
   // Invalid daughter information for the parent of the first particle
   // generated. This may or may not be the current primary according to
@@ -332,93 +324,61 @@ void AliStack::PurifyKine()
   particles.At(part->GetFirstMother())->ResetBit(kDaughtersBit);
   // Second pass, build map between old and new numbering
   for(i=fHgwmk+1; i<fNtrack; i++) {
-    if(particles.At(i)->TestBit(kKeepBit)) {
-      
-      // This particle has to be kept
-      map[i]=nkeep;
-      // If old and new are different, have to move the pointer
-      if(i!=nkeep) particles[nkeep]=particles.At(i);
-      part = dynamic_cast<TParticle*>(particles.At(nkeep));
-      
-      // as the parent is always *before*, it must be already
-      // in place. This is what we are checking anyway!
-      if((parent=part->GetFirstMother())>fHgwmk) 
-	if(map[parent]==-99) Fatal("PurifyKine","map[%d] = -99!\n",parent);
-	else part->SetFirstMother(map[parent]);
-
-      nkeep++;
-    }
+      if(particles.At(i)->TestBit(kKeepBit)) {
+	  
+	  // This particle has to be kept
+	  fTrackLabelMap[i]=nkeep;
+	  // If old and new are different, have to move the pointer
+	  if(i!=nkeep) particles[nkeep]=particles.At(i);
+	  part = dynamic_cast<TParticle*>(particles.At(nkeep));
+	  
+	  // as the parent is always *before*, it must be already
+	  // in place. This is what we are checking anyway!
+	  if((parent=part->GetFirstMother())>fHgwmk) 
+	      if(fTrackLabelMap[parent]==-99) Fatal("PurifyKine","fTrackLabelMap[%d] = -99!\n",parent);
+	      else part->SetFirstMother(fTrackLabelMap[parent]);
+	  
+	  nkeep++;
+      }
   }
   
   // Fix daughters information
   for (i=fHgwmk+1; i<nkeep; i++) {
-    part = dynamic_cast<TParticle*>(particles.At(i));
-    parent = part->GetFirstMother();
-    if(parent>=0) {
-      father = dynamic_cast<TParticle*>(particles.At(parent));
-      if(father->TestBit(kDaughtersBit)) {
-      
-	if(i<father->GetFirstDaughter()) father->SetFirstDaughter(i);
-	if(i>father->GetLastDaughter())  father->SetLastDaughter(i);
-      } else {
-	// Initialise daughters info for first pass
-	father->SetFirstDaughter(i);
-	father->SetLastDaughter(i);
-	father->SetBit(kDaughtersBit);
+      part = dynamic_cast<TParticle*>(particles.At(i));
+      parent = part->GetFirstMother();
+      if(parent>=0) {
+	  father = dynamic_cast<TParticle*>(particles.At(parent));
+	  if(father->TestBit(kDaughtersBit)) {
+	      
+	      if(i<father->GetFirstDaughter()) father->SetFirstDaughter(i);
+	      if(i>father->GetLastDaughter())  father->SetLastDaughter(i);
+	  } else {
+	      // Initialise daughters info for first pass
+	      father->SetFirstDaughter(i);
+	      father->SetLastDaughter(i);
+	      father->SetBit(kDaughtersBit);
+	  }
       }
-    }
   }
-
-  
-  // Now loop on all registered hit lists
-  TList* hitLists = gAlice->GetMCApp()->GetHitLists();
-  TIter next(hitLists);
-  TCollection *hitList;
-  
-  while((hitList = dynamic_cast<TCollection*>(next()))) {
-    TIter nexthit(hitList);
-    AliHit *hit;
-    
-    while((hit = dynamic_cast<AliHit*>(nexthit()))) {
-	hit->SetTrack(map[hit->GetTrack()]);
-    }
-  }
-
-  // 
-  // This for detectors which have a special mapping mechanism
-  // for hits, such as TPC and TRD
   //
+  // Now the output bit, from fHgwmk to nkeep we write everything and we erase
+  if(nkeep > fParticleFileMap.GetSize()) fParticleFileMap.Set(Int_t (nkeep*1.5));
+  for (i=fHgwmk+1; i<nkeep; ++i) {
+      fParticleBuffer = dynamic_cast<TParticle*>(particles.At(i));
+      fParticleFileMap[i]=static_cast<Int_t>(TreeK()->GetEntries());
+      TreeK()->Fill();
+      particles[i]=fParticleBuffer=0;
+  }
   
-   TObjArray* modules = gAlice->Modules();
-   TIter nextmod(modules);
-   AliModule *detector;
-   while((detector = dynamic_cast<AliModule*>(nextmod()))) {
-     detector->RemapTrackHitIDs(map.GetArray());
-     detector->RemapTrackReferencesIDs(map.GetArray());
-   }
-   //
-   gAlice->GetMCApp()->RemapTrackReferencesIDs(map.GetArray());
-
-   // Now the output bit, from fHgwmk to nkeep we write everything and we erase
-   if(nkeep>fParticleFileMap.GetSize()) fParticleFileMap.Set(Int_t (nkeep*1.5));
-
-   for (i=fHgwmk+1; i<nkeep; ++i) {
-     fParticleBuffer = dynamic_cast<TParticle*>(particles.At(i));
-     fParticleFileMap[i]=static_cast<Int_t>(TreeK()->GetEntries());
-     TreeK()->Fill();
-     particles[i]=fParticleBuffer=0;
-    }
-
-   for (i=nkeep; i<fNtrack; ++i) particles[i]=0;
-
-   Int_t toshrink = fNtrack-fHgwmk-1;
-   fLoadPoint-=toshrink;
-
-   
-   for(i=fLoadPoint; i<fLoadPoint+toshrink; ++i) fParticles->RemoveAt(i);
-
-   fNtrack=nkeep;
-   fHgwmk=nkeep-1;
+  for (i=nkeep; i<fNtrack; ++i) particles[i]=0;
+  
+  Int_t toshrink = fNtrack-fHgwmk-1;
+  fLoadPoint-=toshrink;
+  
+  
+  for(i=fLoadPoint; i<fLoadPoint+toshrink; ++i) fParticles->RemoveAt(i);
+  fNtrack=nkeep;
+  fHgwmk=nkeep-1;
 }
 
 void AliStack::ReorderKine()
@@ -510,42 +470,14 @@ void AliStack::ReorderKine()
       //
       // Build map for remapping of hits
       // 
-      TArrayI map(fNtrack);
+      fTrackLabelMap.Set(fNtrack);
       for (i = 0; i < fNtrack; i ++) {
 	  if (i <= fHgwmk) {
-	      map[i] = i;
+	      fTrackLabelMap[i] = i;
 	  } else{
-	      map[i] = map1[i - fHgwmk -1];
+	      fTrackLabelMap[i] = map1[i - fHgwmk -1];
 	  }
       }
-      
-      // Now loop on all registered hit lists
-      
-      TList* hitLists = gAlice->GetMCApp()->GetHitLists();
-      TIter next(hitLists);
-      TCollection *hitList;
-      
-      while((hitList = dynamic_cast<TCollection*>(next()))) {
-	  TIter nexthit(hitList);
-	  AliHit *hit;
-	  while((hit = dynamic_cast<AliHit*>(nexthit()))) {
-	      hit->SetTrack(map[hit->GetTrack()]);
-	  }
-      }
-  
-  // 
-  // This for detectors which have a special mapping mechanism
-  // for hits, such as TPC and TRD
-  //
-  
-      TObjArray* modules = gAlice->Modules();
-      TIter nextmod(modules);
-      AliModule *detector;
-      while((detector = dynamic_cast<AliModule*>(nextmod()))) {
-	  detector->RemapTrackHitIDs(map.GetArray());
-	  detector->RemapTrackReferencesIDs(map.GetArray());
-      }
-      gAlice->GetMCApp()->RemapTrackReferencesIDs(map.GetArray());
   } // new particles poduced
 }
 
@@ -586,7 +518,6 @@ void AliStack::FinishEvent()
   
 // Update event header
 
-
   if (!TreeK()) {
 //    Fatal("FinishEvent", "No kinematics tree is defined.");
 //    Don't panic this is a probably a lego run
@@ -594,7 +525,7 @@ void AliStack::FinishEvent()
   }  
   
   CleanParents();
-  if(TreeK()->GetEntries() ==0) {
+   if(TreeK()->GetEntries() ==0) {
     // set the fParticleFileMap size for the first time
     fParticleFileMap.Set(fHgwmk+1);
   }
@@ -606,7 +537,6 @@ void AliStack::FinishEvent()
       fParticleBuffer = dynamic_cast<TParticle*>(part);
       fParticleFileMap[i]= static_cast<Int_t>(TreeK()->GetEntries());
       TreeK()->Fill();
-      //PH      (*fParticleMap)[i]=fParticleBuffer=0;      
       fParticleBuffer=0;      
       fParticleMap->AddAt(0,i);      
       
@@ -699,13 +629,11 @@ void AliStack::SetHighWaterMark(Int_t)
   //
   // Set high water mark for last track in event
   //
-
     
-  fHgwmk = fNtrack-1;
-  fCurrentPrimary=fHgwmk;
-  // Set also number of primary tracks
-  fNprimary = fHgwmk+1;
-  fNtrack   = fHgwmk+1;      
+    fHgwmk = fNtrack-1;
+    fCurrentPrimary=fHgwmk;
+    // Set also number of primary tracks
+    fNprimary = fHgwmk+1;
 }
 
 //_____________________________________________________________________________
@@ -713,8 +641,7 @@ TParticle* AliStack::Particle(Int_t i)
 {
   //
   // Return particle with specified ID
-  
-  //PH  if(!(*fParticleMap)[i]) {
+
   if(!fParticleMap->At(i)) {
     Int_t nentries = fParticles->GetEntriesFast();
     // algorithmic way of getting entry index
@@ -728,12 +655,13 @@ TParticle* AliStack::Particle(Int_t i)
         "!! The algorithmic way and map are different: !!\n entry: %d map: %d",
 	entry, fParticleFileMap[i])); 
     } 
-      
+    // Load particle at entry into fParticleBuffer
     TreeK()->GetEntry(entry);
+    // Add to the TClonesarray
     new ((*fParticles)[nentries]) TParticle(*fParticleBuffer);
+    // Store a pointer in the TObjArray
     fParticleMap->AddAt((*fParticles)[nentries],i);
   }
-  //PH  return dynamic_cast<TParticle *>((*fParticleMap)[i]);
   return dynamic_cast<TParticle*>(fParticleMap->At(i));
 }
 
@@ -753,9 +681,18 @@ TParticle* AliStack::ParticleFromTreeK(Int_t id) const
 Int_t AliStack::TreeKEntry(Int_t id) const 
 {
 //
-// return entry number in the TreeK for particle with label id
-// return negative number if label>fNtrack
+// Return entry number in the TreeK for particle with label id
+// Return negative number if label>fNtrack
 //
+// The order of particles in TreeK reflects the order of the transport of primaries and production of secondaries:
+//
+// Before transport there are fNprimary particles on the stack.
+// They are transported one by one and secondaries (fNtrack - fNprimary) are produced. 
+// After the transport of each particles secondaries are written to the TreeK
+// They occupy the entries 0 ... fNtrack - fNprimary - 1
+// The primaries are written after they have been transported and occupy 
+// fNtrack - fNprimary .. fNtrack - 1
+
   Int_t entry;
   if (id<fNprimary)
     entry = id+fNtrack-fNprimary;
@@ -804,8 +741,6 @@ void AliStack::DumpPart (Int_t i) const
   //
   // Dumps particle i in the stack
   //
-  
-  //PH  dynamic_cast<TParticle*>((*fParticleMap)[i])->Print();
   dynamic_cast<TParticle*>(fParticleMap->At(i))->Print();
 }
 
@@ -929,38 +864,18 @@ TParticle* AliStack::GetNextParticle()
 TTree* AliStack::TreeK()
 {
 //returns TreeK
-  if (fTreeK)
-   {
-     return fTreeK;
-   }
-  else
-   {
-     AliRunLoader *rl = AliRunLoader::GetRunLoader(fEventFolderName);
-     if (rl == 0x0)
-      {
-        AliFatal(Form("Can not get RunLoader from event folder named %s",fEventFolderName.Data()));
-        return 0x0;//pro forma
-      }
-    fTreeK = rl->TreeK();
-    if ( fTreeK )
-     {
-      ConnectTree();
-     }
-    else
-     {
-      //don't panic - could be Lego
-      AliWarning(Form("Can not get TreeK from RL. Ev. Folder is %s",fEventFolderName.Data()));
-     }
-   }
-  return fTreeK;//never reached
+    return fTreeK;
 }
 //__________________________________________________________________________________________
 
-void AliStack::ConnectTree()
+void AliStack::ConnectTree(TTree* tree)
 {
 //
 //  Creates branch for writing particles
 //
+    
+  fTreeK = tree;
+    
   AliDebug(1, "Connecting TreeK");
   if (fTreeK == 0x0)
    {
@@ -985,10 +900,10 @@ void AliStack::ConnectTree()
   else
     AliWarning("DIR IS NOT SET !!!");
   
-  TBranch *branch=fTreeK->GetBranch(AliRunLoader::GetKineBranchName());
+  TBranch *branch=fTreeK->GetBranch("Particles");
   if(branch == 0x0)
    {
-    branch = fTreeK->Branch(AliRunLoader::GetKineBranchName(), "TParticle", &fParticleBuffer, 4000);
+    branch = fTreeK->Branch("Particles", "TParticle", &fParticleBuffer, 4000);
     AliDebug(2, "Creating Branch in Tree");
    }  
   else
@@ -1025,25 +940,11 @@ Bool_t AliStack::GetEvent()
 // Get new event from TreeK
 
     // Reset/Create the particle stack
-    fTreeK = 0x0;
-
-    if (TreeK() == 0x0) //forces connecting
-     {
-      AliError("cannot find Kine Tree for current event");
-      return kFALSE;
-     }
-      
     Int_t size = (Int_t)TreeK()->GetEntries();
     ResetArrays(size);
     return kTRUE;
 }
 //_____________________________________________________________________________
-
-void AliStack::SetEventFolderName(const char* foldname)
-{
- //Sets event folder name
- fEventFolderName = foldname;
-}
 
 Bool_t AliStack::IsStable(Int_t pdg) const
 {

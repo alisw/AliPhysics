@@ -38,6 +38,7 @@
 #include "AliMC.h"
 #include "AliMCQA.h"
 #include "AliRun.h"
+#include "AliHit.h"
 #include "AliStack.h"
 #include "AliMagF.h"
 #include "AliTrackReference.h"
@@ -581,10 +582,13 @@ void AliMC::FinishPrimary()
   //  const Int_t times=10;
   // This primary is finished, purify stack
 #if ROOT_VERSION_CODE > 262152
-  if (!(gMC->SecondariesAreOrdered()))
-       runloader->Stack()->ReorderKine();
+  if (!(gMC->SecondariesAreOrdered())) {
+      runloader->Stack()->ReorderKine();
+      RemapHits();
+  }
 #endif
   runloader->Stack()->PurifyKine();
+  RemapHits();
   
   TIter next(gAlice->Modules());
   AliModule *detector;
@@ -600,6 +604,40 @@ void AliMC::FinishPrimary()
 
   // Write out track references if any
   if (runloader->TreeTR()) runloader->TreeTR()->Fill();
+}
+
+void AliMC::RemapHits()
+{
+//    
+// Remaps the track labels of the hits
+    AliRunLoader *runloader=gAlice->GetRunLoader();
+    AliStack* stack = runloader->Stack();
+    TList* hitLists = GetHitLists();
+    TIter next(hitLists);
+    TCollection *hitList;
+    
+    while((hitList = dynamic_cast<TCollection*>(next()))) {
+	TIter nexthit(hitList);
+	AliHit *hit;
+	while((hit = dynamic_cast<AliHit*>(nexthit()))) {
+	    hit->SetTrack(stack->TrackLabel(hit->GetTrack()));
+	}
+    }
+    
+    // 
+    // This for detectors which have a special mapping mechanism
+    // for hits, such as TPC and TRD
+    //
+    
+    TObjArray* modules = gAlice->Modules();
+    TIter nextmod(modules);
+    AliModule *detector;
+    while((detector = dynamic_cast<AliModule*>(nextmod()))) {
+	detector->RemapTrackHitIDs(stack->TrackLabelMap());
+	detector->RemapTrackReferencesIDs(stack->TrackLabelMap());
+    }
+    //
+    RemapTrackReferencesIDs(stack->TrackLabelMap());
 }
 
 //_______________________________________________________________________

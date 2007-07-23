@@ -21,12 +21,13 @@ class TTree;
 class AliHeader;
 #include "AliConfig.h"
 
+enum {kKeepBit=1, kDaughtersBit=2, kDoneBit=4};
 
 class AliStack : public TVirtualMCStack
 {
   public:
     // creators, destructors
-    AliStack(Int_t size, const char* evfoldname = AliConfig::GetDefaultEventFolderName());
+    AliStack(Int_t size, const char* name = "");
     AliStack();
     AliStack(const AliStack& st);
     virtual ~AliStack();
@@ -51,19 +52,19 @@ class AliStack : public TVirtualMCStack
     virtual TParticle* GetCurrentTrack() const {return fCurrentTrack;}
     virtual TParticle* PopPrimaryForTracking(Int_t i);    
 
-    void  ConnectTree();
-    void  BeginEvent();
-    void  FinishRun();
+    void   ConnectTree(TTree* tree);
+    void   BeginEvent();
+    void   FinishRun();
     Bool_t GetEvent();
-    void  PurifyKine();
-    void  ReorderKine();
-    void  FinishEvent();
-    void  FlagTrack(Int_t track);
-    void  KeepTrack(Int_t itrack); 
-    void  Reset(Int_t size = 0);
-    void  DumpPart(Int_t i) const;
-    void  DumpPStack ();
-    void  DumpLoadedStack () const;
+    void   PurifyKine();
+    void   ReorderKine();
+    void   FinishEvent();
+    void   FlagTrack(Int_t track);
+    void   KeepTrack(Int_t itrack); 
+    void   Reset(Int_t size = 0);
+    void   DumpPart(Int_t i) const;
+    void   DumpPStack ();
+    void   DumpLoadedStack () const;
 
     // set methods
     void  SetNtrack(Int_t ntrack);
@@ -78,10 +79,12 @@ class AliStack : public TVirtualMCStack
     TParticle*  Particle(Int_t id);
     Int_t       GetPrimary(Int_t id);
     TTree*      TreeK();
-    void        SetEventFolderName(const char* foldname);
     TParticle*  ParticleFromTreeK(Int_t id) const;
     Int_t       TreeKEntry(Int_t id) const;
     Bool_t      IsPhysicalPrimary(Int_t i);
+    Int_t       TrackLabel(Int_t label) {return fTrackLabelMap[label];}
+    Int_t*      TrackLabelMap() {return fTrackLabelMap.GetArray();}
+	    
   protected:
     // methods
     void  CleanParents();
@@ -105,9 +108,8 @@ class AliStack : public TVirtualMCStack
     Int_t          fCurrentPrimary;    //! Last primary track returned from the stack
     Int_t          fHgwmk;             //! Last track purified
     Int_t          fLoadPoint;         //! Next free position in the particle buffer
-    
-    TString        fEventFolderName;   //! Folder name where event is mounted
-    ClassDef(AliStack,4) //Particles stack
+    TArrayI        fTrackLabelMap;     //! Map of track labels
+    ClassDef(AliStack,5) //Particles stack
 };
 
 // inline
