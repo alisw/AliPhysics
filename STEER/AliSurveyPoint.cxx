@@ -15,7 +15,7 @@
 
 /////////////////////////////////////////////////////////////////////
 //                                                                 //
-//  class AliSurveyPoint						   //
+//  class AliSurveyPoint					   //
 //  Retrieve and Convert survey data into ROOT Objects		   //
 //                                                                 //
 /////////////////////////////////////////////////////////////////////
@@ -36,7 +36,7 @@ AliSurveyPoint::AliSurveyPoint():
   fType(' '),
   fTargetUsed(kTRUE)
 {
-  // constructor
+  // Constructor
   
 }
 
@@ -54,7 +54,7 @@ AliSurveyPoint::AliSurveyPoint(TString name, Float_t x, Float_t y,
   fType(type),
   fTargetUsed(Target)
 {
-  //constructor
+  // Constructor
   
 }
 
@@ -66,6 +66,7 @@ AliSurveyPoint::~AliSurveyPoint() {
 
 //_____________________________________________________________________________
 void AliSurveyPoint::PrintPoint() {
+  // Prints X, Y and Z coordinates of the point
   printf("Point Coordinates \"%s\": %f %f %f\n", (const char*) fPointName, fX, fY, fZ);
   return;
 }
