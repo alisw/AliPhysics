@@ -634,8 +634,8 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 					     0, // no ITSClusterMap
 					     pid,
 					     primary,
- 					     kTRUE,  // check if this is right
-					     kTRUE,  // not used for vertex fit
+ 					     kFALSE,  // muon tracks are not used to fit the primary vtx
+					     kFALSE,  // not used for vertex fit
 					     AliAODTrack::kPrimary)
 	  );
 	aodTrack->SetHitsPatternInTrigCh(esdMuTrack->GetHitsPatternInTrigCh());

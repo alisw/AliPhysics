@@ -2336,8 +2336,8 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
 					     0, // no ITSClusterMap
 					     pid,
 					     primary,
- 					     kTRUE,  // check if this is right
-					     kTRUE,  // not used for vertex fit
+ 					     kFALSE,    // muon tracks are not used to fit the primary vtx
+					     kFALSE,    // not used for vertex fit
 					     AliAODTrack::kPrimary)
 	  );
     }
