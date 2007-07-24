@@ -42,6 +42,7 @@
 #include "AliEMCALGeometry.h"
 #include "AliRun.h"
 #include "AliMC.h"
+#include "AliStack.h"
 
 ClassImp(AliEMCALv1)
 

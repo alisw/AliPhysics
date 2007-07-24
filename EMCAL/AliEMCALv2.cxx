@@ -44,6 +44,7 @@
 #include "AliRun.h"
 #include "AliHeader.h"
 #include "AliMC.h"
+#include "AliStack.h"
 #include "AliPoints.h"
 // for TRD1 case only; May 31,2006
 

@@ -43,6 +43,7 @@
 #include "AliRun.h"
 #include "AliHeader.h"
 #include "AliMC.h"
+#include "AliStack.h"
 #include "AliPoints.h"
 // for TRD1,2 case
 

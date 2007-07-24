@@ -72,6 +72,7 @@
 #include "AliTPCTrackHitsV2.h"
 #include "AliTrackReference.h"
 #include "AliMC.h"
+#include "AliStack.h"
 #include "AliTPCDigitizer.h"
 #include "AliTPCBuffer.h"
 #include "AliTPCDDLRawData.h"
@@ -108,8 +109,6 @@ ClassImp(AliTPC)
 #else
   fHitType = 2; //default CONTAINERS - based on ROOT structure
 #endif 
-
-
 }
  
 //_____________________________________________________________________________
@@ -174,8 +173,6 @@ AliTPC::AliTPC(const char *name, const char *title)
     AliWarning("In Config.C you must set non-default parameters.");
     fTPCParam=0;
   }
-
-
 }
 
 //_____________________________________________________________________________

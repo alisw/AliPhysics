@@ -25,6 +25,7 @@
 #include "AliITSgeom.h"
 #include "AliITShit.h"
 #include "AliMC.h"
+#include "AliStack.h"
 
 
 ClassImp(AliITShit)
