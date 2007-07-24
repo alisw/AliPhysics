@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.110  2007/03/10 08:58:52  kharlov
+ * Protection for noCPV geometry
+ *
  * Revision 1.109  2007/03/01 11:37:37  kharlov
  * Strip units changed from 8x1 to 8x2 (T.Pocheptsov)
  *
@@ -64,6 +67,7 @@
 #include "AliPHOSv1.h"
 #include "AliRun.h"
 #include "AliMC.h"
+#include "AliStack.h"
 
 ClassImp(AliPHOSv1)
 
