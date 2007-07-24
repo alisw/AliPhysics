@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.7  2007/06/20 08:50:14  gustavo
+ * Change wrong directory data name from EmcGainPedestals to Data
+ *
  * Revision 1.6  2007/04/29 15:06:19  gustavo
  * New return value, and some minor fixes
  *
@@ -113,7 +116,7 @@ UInt_t AliEMCALPreprocessor::Process(TMap* /*valueSet*/)
 	
     if(!f.IsOpen()) {
       Log(Form("File %s is not opened, something goes wrong!",fileName.Data()));
-      return 0;
+      return 1;
     }
 	
 	
