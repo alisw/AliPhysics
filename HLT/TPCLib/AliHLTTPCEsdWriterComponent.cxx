@@ -127,11 +127,11 @@ int AliHLTTPCEsdWriterComponent::DumpEvent( const AliHLTComponentEventData& evtD
 	  Int_t maxslice=AliHLTTPCDefinitions::GetMaxSliceNr(iter->fSpecification);
 	  if (bIsTrackSegs==0) {
 	    // slice parameter and data specification ignored, tracks already in global coordinates
-	    minslice=0;
-	    maxslice=0;
+	    minslice=-1;
+	    maxslice=-1;
 	  }
 	  //HLTDebug("dataspec %#x minslice %d", iter->fSpecification, minslice);
-	  if (minslice >=0 && minslice<36) {
+	  if (minslice >=-1 && minslice<36) {
 	    if (minslice!=maxslice) {
 	      HLTWarning("data from multiple sectors in one block: "
 			 "possible missmatch in treatment of local coordinate system");
