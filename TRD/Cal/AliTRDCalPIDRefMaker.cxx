@@ -692,7 +692,12 @@ void  AliTRDCalPIDRefMaker::Prepare2D()
 
 				// interpolation inside the covariance ellipse
 				if(position < 1.){
-					estimate = Estimate2D2(hProj, (Float_t)rxy[0], (Float_t)rxy[1]);
+				  Float_t xTemp = rxy[0];
+                                  Float_t yTemp = rxy[1];
+					estimate = Estimate2D2((TH2 *) hProj, xTemp, yTemp); 
+					rxy[0] = xTemp;
+                                        rxy[1] = yTemp;
+					//					estimate = Estimate2D2((TH2 *) hProj, (Float_t)rxy[0], (Float_t)rxy[1]);
 					h2dEdx[ispec]->SetBinContent(ibin, jbin, estimate/xy[0]/xy[1]);
 				} else { // interpolation outside the covariance ellipse
 					r = sqrt(rxy[0]*rxy[0] + rxy[1]*rxy[1]);
