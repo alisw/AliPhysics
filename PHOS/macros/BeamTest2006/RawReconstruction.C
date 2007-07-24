@@ -5,9 +5,14 @@ void RawReconstruction(TString file="2006run2211.root")
   // and has to be converted to root format
   // Author: Boris Polichtchouk, August 2006
 
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
-  AliCDBManager::Instance()->SetSpecificStorage("PHOS","local://CalibDB");
+  //   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  //   AliCDBManager::Instance()->SetSpecificStorage("PHOS/*","local://CalibDB");
 
+  // Set reconstruction parameters other then the default ones
+  //   AliPHOSRecoParam* recEmc = new AliPHOSRecoParamEmc();
+  //   recEmc->SetMinE(0.05);
+  //   AliPHOSReconstructor::SetRecoParamEmc(recEmc);
+  
   AliReconstruction rec ;
   rec.SetOption("PHOS","OldRCUFormat");
   rec.SetRunTracking("PHOS") ;
