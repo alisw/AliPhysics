@@ -27,6 +27,7 @@
 #include "AliHit.h"
 #include "AliRun.h"
 #include "AliMC.h"
+#include "AliStack.h"
 
 ClassImp(AliHit)
 
@@ -74,9 +75,7 @@ AliHit::AliHit(Int_t shunt, Int_t track):
 	break;
     }
     fTrack=current;   
-  }
-
-  else {
+  } else {
     fTrack=track;
     gAlice->GetMCApp()->FlagTrack(fTrack);
   }

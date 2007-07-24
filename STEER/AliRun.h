@@ -30,7 +30,6 @@ class AliMC;
 class AliMagF;
 class AliStack;
 
-enum {kKeepBit=1, kDaughtersBit=2, kDoneBit=4};
 
 class AliRun : public TNamed {
 public:
