@@ -1,3 +1,9 @@
+2007-07-24  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* binalieve.pkg:
+	* binreve.pkg:
+	Link also against libTreeViewer.
+
 2007-07-23  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* alice-macros/kine_tracks.C:
