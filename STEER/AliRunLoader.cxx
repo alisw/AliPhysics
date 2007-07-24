@@ -261,15 +261,6 @@ Int_t AliRunLoader::GetEvent(Int_t evno)
   //Reload stack (If header was loaded)
   if (TreeE()) fStack = GetHeader()->Stack();
   //Set event folder in stack (it does not mean that we read kinematics from file)
-  if (fStack) 
-   { 
-     fStack->SetEventFolderName(fEventFolder->GetName());
-   }
-  else
-   {
-     AliWarning("Stack not found in header");
-   }
-
    if( GetTrigger() && TreeCT() ) {
       retval = TreeCT()->GetEvent(fCurrentEvent);
       if ( retval < 0 )      {
@@ -303,6 +294,8 @@ Int_t AliRunLoader::GetEvent(Int_t evno)
 
   if (fStack && fKineDataLoader->GetBaseLoader(0)->IsLoaded())
     {
+	fStack->ConnectTree(TreeK());
+	
       if (fStack->GetEvent() == kFALSE)
 	{
 	  AliError(Form("Error occured while GetEvent for Stack. Event %d",evno));
@@ -568,8 +561,10 @@ void AliRunLoader::MakeHeader()
         fStack = fHeader->Stack(); //should be safe - if we created Stack, header returns pointer to the same object
         if (fStack)
          {
-           fStack->SetEventFolderName(fEventFolder->GetName());
-           if (TreeK()) fStack->GetEvent();
+           if (TreeK()) {
+	       fStack->ConnectTree(TreeK());
+	       fStack->GetEvent();
+	   }
          }
         else
         {
@@ -587,7 +582,6 @@ void AliRunLoader::MakeStack()
   if(fStack == 0x0)
    { 
      fStack = new AliStack(10000);
-     fStack->SetEventFolderName(fEventFolder->GetName());
    }
 }
 /**************************************************************************/
@@ -616,21 +610,23 @@ void AliRunLoader::MakeTree(Option_t *option)
   const char *oK  = strstr(option,"K");  //Kine
   const char *oE  = strstr(option,"E");  //Header
   const char *oGG = strstr(option,"GG"); //Central TriGGer
-
-  if(oK && !TreeK())
-   { 
-     if (fKineDataLoader->GetBaseLoader(0)->IsLoaded() == kFALSE)
+  
+  if(oK)
+  { 
+      if (fKineDataLoader->GetBaseLoader(0)->IsLoaded() == kFALSE)
       {
-        AliError("Load Kinematics first");
+	  AliError("Load Kinematics first");
       }
-     else
+      else
       {
-        fKineDataLoader->MakeTree();
-        MakeStack();
-        fStack->ConnectTree();
-        WriteKinematics("OVERWRITE");
-     }
-   }
+	  if (!TreeK()) {
+	      fKineDataLoader->MakeTree();
+	      MakeStack();
+	  } 
+	  fStack->ConnectTree(TreeK());
+	  WriteKinematics("OVERWRITE");
+      }
+  } // TreeK
   
   if(oE && !TreeE())
    { 
@@ -795,7 +791,8 @@ Int_t AliRunLoader::LoadKinematics(Option_t* option)
   }
  if (fStack) 
   {
-    retval = fStack->GetEvent();
+      fStack->ConnectTree(TreeK());
+      retval = fStack->GetEvent();
     if ( retval == kFALSE)
      {
        AliError("Error occured while loading kinamatics tree.");
@@ -1189,7 +1186,6 @@ Int_t AliRunLoader::SetEventFolderName(const TString& name)
   fEventFolder = AliConfig::Instance()->BuildEventFolder(name,"Event Folder");
   fEventFolder->Add(this);//put myself to the folder to accessible for all
   
-  if (Stack()) Stack()->SetEventFolderName(fEventFolder->GetName());
   TIter next(fLoaders);
   AliLoader *loader;
   while((loader = (AliLoader*)next()))
