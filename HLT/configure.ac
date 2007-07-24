@@ -157,6 +157,15 @@ if test ! "x$have_aliroot" = "xno" ; then
   CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS"
   LDFLAGS="$save_LDFLAGS -L${ROOTLIBDIR} $ALIROOT_LDFLAGS"
   
+  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
+  CHECKLIB=AOD
+  AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"])
+
+  # CBD library is present since AliRoot version v4-05-00 (02.06.2006)
+  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
+  CHECKLIB=CDB
+  AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"])
+
   # check for certain AliRoot libraries/files/features
   # splitted RAW libraries since AliRoot version v4-04-Rev-07 (09.08.2006)
   have_alirawdata=no
@@ -189,14 +198,46 @@ if test ! "x$have_aliroot" = "xno" ; then
   AC_MSG_CHECKING([for AliRawReader classes in RAWData libraries])
   AC_MSG_RESULT([$have_alirawdata])
 
-  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
-  CHECKLIB=AOD
-  AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"])
-
-  # CBD library is present since AliRoot version v4-05-00 (02.06.2006)
-  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
-  CHECKLIB=CDB
-  AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"])
+  dnl
+  dnl required header files and libraries for the AliHLTTPC library  
+  dnl
+  if test ! "x$have_aliroot" = "xno" ; then
+    # the HLTTPCLib needs to link agains TPCbase and TPCrec
+    # TPC library for AliTPCParam and AliSimDigits used in 
+    # AliHLTTPCFileHandler.h and AliHLTTPCDisplay.cxx
+    # fram May 07 TPCbase depends on libGui.so
+    saveALIROOT_CPPFLAGS="$ALIROOT_CPPFLAGS"
+    ALIROOT_CPPFLAGS="$saveALIROOT_CPPFLAGS -I${ALICE_ROOT}/TPC"
+    CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS"
+    have_alitpc=yes
+    AC_MSG_CHECKING(for required classes in TPC libraries)
+    if test ! "x$have_alitpc" = "xno" ; then
+      save_ALIROOT_LIBS=$ALIROOT_LIBS
+      ALIROOT_LIBS="$save_ALIROOT_LIBS -lTPCbase -lTPCrec -lGui -lSTEER"
+      LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
+      AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliSimDigits.h>
+  				       #include <AliTPCParam.h>
+				       #include <AliTPCParamSR.h>
+				       #include <AliTPCDigitsArray.h>
+				       #include <AliTPCClustersArray.h>
+				       #include <AliTPCcluster.h>     
+				       #include <AliTPCClustersRow.h>], 
+                                      [AliSimDigits dig;
+  				       AliTPCParam param;
+				       AliTPCParamSR paramsr;
+				       AliTPCDigitsArray digarray;
+				       AliTPCClustersArray clustarray;
+				       AliTPCcluster clust;
+				       AliTPCClustersRow row])],
+                                      [AC_DEFINE(HAVE_ALITPC)
+				       saveALIROOT_CPPFLAGS=$ALIROOT_CPPFLAGS
+				       saveALIROOT_LIBS=$ALIROOT_LIBS], 
+  				      [have_alitpc=no
+				       ALIROOT_CPPFLAGS=$saveALIROOT_CPPFLAGS
+				       ALIROOT_LIBS=$saveALIROOT_LIBS])
+    fi
+    AC_MSG_RESULT($have_alitpc)
+  fi
 
   LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
   CHECKLIB=STEER
@@ -249,47 +290,6 @@ if test ! "x$have_aliroot" = "xno" ; then
   dnl required header files and libraries for the AliHLTTRD library  
   dnl
   AC_CHECK_HEADERS([AliGeomManager.h], [], [AC_DEFINE([HAVNT_ALIGEOMMANAGER])])
-
-  dnl
-  dnl required header files and libraries for the AliHLTTPC library  
-  dnl
-  if test ! "x$have_aliroot" = "xno" ; then
-    # the HLTTPCLib needs to link agains TPCbase and TPCrec
-    # TPC library for AliTPCParam and AliSimDigits used in 
-    # AliHLTTPCFileHandler.h and AliHLTTPCDisplay.cxx
-    # fram May 07 TPCbase depends on libGui.so
-    saveALIROOT_CPPFLAGS="$ALIROOT_CPPFLAGS"
-    ALIROOT_CPPFLAGS="$saveALIROOT_CPPFLAGS -I${ALICE_ROOT}/TPC"
-    CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS"
-    have_alitpc=yes
-    AC_MSG_CHECKING(for required classes in TPC libraries)
-    if test ! "x$have_alitpc" = "xno" ; then
-      save_ALIROOT_LIBS=$ALIROOT_LIBS
-      ALIROOT_LIBS="$save_ALIROOT_LIBS -lTPCbase -lTPCrec -lGui"
-      LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
-      AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliSimDigits.h>
-  				       #include <AliTPCParam.h>
-				       #include <AliTPCParamSR.h>
-				       #include <AliTPCDigitsArray.h>
-				       #include <AliTPCClustersArray.h>
-				       #include <AliTPCcluster.h>     
-				       #include <AliTPCClustersRow.h>], 
-                                      [AliSimDigits dig;
-  				       AliTPCParam param;
-				       AliTPCParamSR paramsr;
-				       AliTPCDigitsArray digarray;
-				       AliTPCClustersArray clustarray;
-				       AliTPCcluster clust;
-				       AliTPCClustersRow row])],
-                                      [AC_DEFINE(HAVE_ALITPC)
-				       saveALIROOT_CPPFLAGS=$ALIROOT_CPPFLAGS
-				       saveALIROOT_LIBS=$ALIROOT_LIBS], 
-  				      [have_alitpc=no
-				       ALIROOT_CPPFLAGS=$saveALIROOT_CPPFLAGS
-				       ALIROOT_LIBS=$saveALIROOT_LIBS])
-    fi
-    AC_MSG_RESULT($have_alitpc)
-  fi
 
   if test ! "x$have_alirawdata" = "xno" ; then
     # check for header files needed by the TPCLib/AliHLTTPCDigitReaderPacket
