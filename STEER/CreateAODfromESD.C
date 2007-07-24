@@ -10,6 +10,7 @@
 #include "AliAODVertex.h"
 #include "AliAODTrack.h"
 #include "AliAODCluster.h"
+#include "AliAODTracklets.h"
 
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
@@ -687,6 +688,20 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 					       ttype);
 
     } // end of loop on calo clusters
+
+    // tracklets
+    const AliMultiplicity *mult = esd->GetMultiplicity();
+    if (mult) {
+      if (mult->GetNumberOfTracklets()>0) {
+	aod->GetTracklets()->CreateContainer(mult->GetNumberOfTracklets());
+
+	for (Int_t n=0; n<mult->GetNumberOfTracklets(); n++) {
+	  aod->GetTracklets()->SetTracklet(n, mult->GetTheta(n), mult->GetPhi(n), mult->GetDeltaPhi(n), mult->GetLabel(n));
+	}
+      }
+    } else {
+      Printf("ERROR: AliMultiplicity could not be retrieved from ESD");
+    }
 
     delete [] usedTrack;
     delete [] usedV0;

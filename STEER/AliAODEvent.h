@@ -21,6 +21,7 @@
 #include "AliAODVertex.h"
 #include "AliAODCluster.h"
 #include "AliAODJet.h"
+#include "AliAODTracklets.h"
 
 class TTree;
 
@@ -76,6 +77,9 @@ class AliAODEvent : public TObject {
   void          AddJet(const AliAODJet* vtx)
     {new((*fJets)[fJets->GetEntries()]) AliAODJet(*vtx);}
 
+  // -- Tracklets
+  AliAODTracklets *GetTracklets() const { return fTracklets; }
+
   // -- Services
   void    CreateStdContent();
   void    GetStdContent();
@@ -91,13 +95,14 @@ class AliAODEvent : public TObject {
   TList *fAODObjects; //  list of AODObjects
   
   // standard content
-  AliAODHeader  *fHeader;   //! event information
-  TClonesArray  *fTracks;   //! charged tracks
-  TClonesArray  *fVertices; //! vertices
-  TClonesArray  *fClusters; //! neutral particles
-  TClonesArray  *fJets;     //! jets
+  AliAODHeader    *fHeader;    //! event information
+  TClonesArray    *fTracks;    //! charged tracks
+  TClonesArray    *fVertices;  //! vertices
+  TClonesArray    *fClusters;  //! neutral particles
+  TClonesArray    *fJets;      //! jets
+  AliAODTracklets *fTracklets; //! SPD tracklets
 
-  ClassDef(AliAODEvent,1);
+  ClassDef(AliAODEvent,2);
 };
 
 #endif
