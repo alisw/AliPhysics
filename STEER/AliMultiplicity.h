@@ -36,6 +36,9 @@ class AliMultiplicity : public TObject {
   Float_t GetPhiSingle(Int_t i) const { if(i>=0 && i<fNsingle) {return fPhisingle[i];}
   else {Error("GetPhisingle","Invalid cluster number %d",i); return -9999.;}}
 
+  Short_t GetFiredChips(Int_t layer) { return fFiredChips[layer]; }
+  void SetFiredChips(Int_t layer, Short_t firedChips) { fFiredChips[layer] = firedChips; }
+
   protected:
   void Duplicate(const AliMultiplicity &m);  // used by copy ctr.
   Int_t fNtracks;         // Number of tracklets
@@ -48,7 +51,9 @@ class AliMultiplicity : public TObject {
   Float_t *fThsingle;     //[fNsingle] array with theta values of L1 clusters
   Float_t *fPhisingle;    //[fNsingle] array with phi values of L2 clusters
 
-  ClassDef(AliMultiplicity,3);
+  Short_t fFiredChips[2]; // number of fired chips in the two SPD layers
+
+  ClassDef(AliMultiplicity,4);
 };
 
 #endif

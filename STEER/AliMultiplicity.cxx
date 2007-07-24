@@ -17,6 +17,9 @@ AliMultiplicity::AliMultiplicity():
 
 {
   // Default Constructor
+
+  fFiredChips[0] = -1;
+  fFiredChips[1] = -1;
 }
 
 //______________________________________________________________________
@@ -52,6 +55,9 @@ AliMultiplicity::AliMultiplicity(Int_t ntr, Float_t *t,  Float_t *ph, Float_t *d
       fPhisingle[i]=ps[i];
     }
   }
+
+  fFiredChips[0] = -1;
+  fFiredChips[1] = -1;
 }
 
 //______________________________________________________________________
@@ -120,6 +126,9 @@ void AliMultiplicity::Duplicate(const AliMultiplicity& m){
   memcpy(fLabels,m.fLabels,fNtracks*sizeof(Int_t));
   memcpy(fThsingle,m.fThsingle,fNsingle*sizeof(Float_t));
   memcpy(fPhisingle,m.fPhisingle,fNsingle*sizeof(Float_t));
+
+  fFiredChips[0] = m.fFiredChips[0];
+  fFiredChips[1] = m.fFiredChips[1];
 }
 
 //______________________________________________________________________
