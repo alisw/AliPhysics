@@ -36,15 +36,29 @@
 #include "AliRawReader.h"
 #include "AliPHOSTrigger.h"
 #include "AliPHOSGeometry.h"
+#include "AliPHOSRecoParamEmc.h"
+#include "AliPHOSRecoParamCpv.h"
 
 ClassImp(AliPHOSReconstructor)
 
 Bool_t AliPHOSReconstructor::fgDebug = kFALSE ; 
+AliPHOSRecoParam* AliPHOSReconstructor::fgkRecoParamEmc =0;  // EMC rec. parameters
+AliPHOSRecoParam* AliPHOSReconstructor::fgkRecoParamCpv =0;  // CPV rec. parameters
 
 //____________________________________________________________________________
   AliPHOSReconstructor::AliPHOSReconstructor() 
 {
   // ctor
+
+  if (!fgkRecoParamEmc) {
+    AliWarning("The Reconstruction parameters for EMC nonitialized - Used default one");
+    fgkRecoParamEmc = AliPHOSRecoParamEmc::GetEmcDefaultParameters();
+  }
+
+  if (!fgkRecoParamCpv) {
+    AliWarning("The Reconstruction parameters for CPV nonitialized - Used default one");
+    fgkRecoParamCpv = AliPHOSRecoParamCpv::GetCpvDefaultParameters();
+  }
 
 } 
 

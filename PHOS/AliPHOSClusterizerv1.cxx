@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.108  2007/06/18 07:00:51  kharlov
+ * Bug fix for attempt to use AliPHOSEmcRecPoint after its deletion
+ *
  * Revision 1.107  2007/05/25 14:12:26  policheh
  * Local to tracking CS transformation added for CPV rec. points
  *
@@ -159,6 +162,8 @@
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
+#include "AliPHOSReconstructor.h"
+#include "AliPHOSRecoParam.h"
 
 ClassImp(AliPHOSClusterizerv1)
   
@@ -489,18 +494,24 @@ void AliPHOSClusterizerv1::InitParameters()
 
   fNumberOfCpvClusters     = 0 ; 
   fNumberOfEmcClusters     = 0 ; 
-  
-  fCpvClusteringThreshold  = 0.0;
-  fEmcClusteringThreshold  = 0.2;   
-  
-  fEmcLocMaxCut            = 0.03 ;
-  fCpvLocMaxCut            = 0.03 ;
 
-  fEmcMinE                 = 0.01 ;
-  fCpvMinE                 = 0.0  ;
+  const AliPHOSRecoParam* parEmc = AliPHOSReconstructor::GetRecoParamEmc();
+  if(!parEmc) AliFatal("Reconstruction parameters for EMC not set!");
 
-  fW0                      = 4.5 ;
-  fW0CPV                   = 4.0 ;
+  const AliPHOSRecoParam* parCpv = AliPHOSReconstructor::GetRecoParamCpv(); 
+  if(!parCpv) AliFatal("Reconstruction parameters for CPV not set!");
+
+  fCpvClusteringThreshold  = parCpv->GetClusteringThreshold();
+  fEmcClusteringThreshold  = parEmc->GetClusteringThreshold();
+  
+  fEmcLocMaxCut            = parEmc->GetLocalMaxCut();
+  fCpvLocMaxCut            = parCpv->GetLocalMaxCut();
+
+  fEmcMinE                 = parEmc->GetMinE();
+  fCpvMinE                 = parCpv->GetMinE();
+
+  fW0                      = parEmc->GetLogWeight();
+  fW0CPV                   = parCpv->GetLogWeight();
 
   fEmcTimeGate             = 1.e-8 ; 
   

@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.10  2007/07/11 13:43:30  hristov
+ * New class AliESDEvent, backward compatibility with the old AliESD (Christian)
+ *
  * Revision 1.9  2006/11/15 16:05:03  kharlov
  * New FillESD() for raw data is added
  *
@@ -34,6 +37,7 @@ class AliPHOSPID ;
 class AliPHOSSDigitizer ;
 class AliESDEvent ;
 class AliRawReader; 
+class AliPHOSRecoParam;
 
 // --- Standard library ---
 
@@ -67,9 +71,17 @@ public:
     return *this ; 
   }
   
+  void SetRecoParamEmc(AliPHOSRecoParam * param){ fgkRecoParamEmc = param;}
+  void SetRecoParamCpv(AliPHOSRecoParam * param){ fgkRecoParamCpv = param;}
+
+  static const AliPHOSRecoParam* GetRecoParamEmc(){ return fgkRecoParamEmc;}
+  static const AliPHOSRecoParam* GetRecoParamCpv(){ return fgkRecoParamCpv;}
+
 private:
   
   static Bool_t fgDebug ; //! verbosity controller
+  static AliPHOSRecoParam*   fgkRecoParamEmc; // reconstruction parameters for EMC
+  static AliPHOSRecoParam*   fgkRecoParamCpv; // reconstruction parameters for EMC
 
   ClassDef(AliPHOSReconstructor,2)  // Reconstruction algorithm class (Base Class)
 
