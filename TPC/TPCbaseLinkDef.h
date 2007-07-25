@@ -52,6 +52,9 @@
 #pragma link C++ class AliTPCCalibViewer+;
 #pragma link C++ class AliTPCCalibViewerGUI+;
 
+#pragma link C++ class AliTPCCalibVdrift+;
+#pragma link C++ class AliTPCTempMap+;
+
 
 #pragma link C++ class AliCorrector+;
 #pragma link C++ class AliTPCExBExact+;
