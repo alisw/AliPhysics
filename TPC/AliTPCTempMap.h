@@ -21,7 +21,6 @@ class AliTPCSensorTempArray;
 class AliTPCTempMap : public TNamed  {
  public:
   AliTPCTempMap(AliTPCSensorTempArray *SensorsDCS);
-  AliTPCTempMap(const char *fname);
   AliTPCTempMap(const AliTPCTempMap &c);   
   virtual ~AliTPCTempMap();
   AliTPCTempMap &operator=(const AliTPCTempMap &c);
@@ -39,7 +38,11 @@ class AliTPCTempMap : public TNamed  {
   TString fStringFEsimulation; // Placeholder for file of FiniteElement 
                                // Simulation under ideal conditions - not existing yet
 
-  ClassDef(AliTPCTempMap,1)      //  
+ private:
+
+  AliTPCTempMap(const char *fname);
+
+  ClassDef(AliTPCTempMap,2)      //  
 
 };
 
