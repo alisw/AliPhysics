@@ -120,13 +120,13 @@ void AliMUONTrackHitPattern::GetHitPattern(AliMUONVTrackStore& trackStore,
     while ( ( muonTrack = static_cast<AliMUONTrack*>(next()) ) )
     {
       pattern = 0;
-      AliMUONTrackParam *trackParam = static_cast<AliMUONTrackParam*> 
-        (muonTrack->GetTrackParamAtHit()->Last());
+      AliMUONTrackParam trackParam = (*(static_cast<AliMUONTrackParam*> 
+        (muonTrack->GetTrackParamAtHit()->Last())));
       
       for(Int_t ch=0; ch<4; ++ch)
       {
-        AliMUONTrackExtrap::ExtrapToZCov(trackParam, AliMUONConstants::DefaultChamberZ(10+ch));
-        FindPadMatchingTrack(digitStore,*trackParam, isMatch, ch);
+        AliMUONTrackExtrap::ExtrapToZCov(&trackParam, AliMUONConstants::DefaultChamberZ(10+ch));
+        FindPadMatchingTrack(digitStore,trackParam, isMatch, ch);
         for(Int_t cath=0; cath<2; ++cath)
         {
           if(isMatch[cath]) pattern |= kMask[cath][ch];
