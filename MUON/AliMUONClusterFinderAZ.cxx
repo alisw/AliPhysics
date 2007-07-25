@@ -294,7 +294,7 @@ next:
 	}
       }
     } // for (Int_t i=0; i<nMax;
-    if (nMax > 1) ((TH2D*) gROOT->FindObject("anode"))->Delete();
+    delete gROOT->FindObject("anode");
     TH2D *mlem = (TH2D*) gROOT->FindObject("mlem");
     if (mlem) mlem->Delete();
   }
