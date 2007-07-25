@@ -42,45 +42,54 @@ using namespace std;
 // this is a global object used for automatic component registration, do not use this
 AliHLTTRDClusterizerComponent gAliHLTTRDClusterizerComponent;
 
-ClassImp(AliHLTTRDClusterizerComponent)
-    
-  AliHLTTRDClusterizerComponent::AliHLTTRDClusterizerComponent()
+ClassImp(AliHLTTRDClusterizerComponent);
+   
+AliHLTTRDClusterizerComponent::AliHLTTRDClusterizerComponent()
+  : AliHLTProcessor()
+  , fOutputPercentage(100) // By default we copy to the output exactly what we got as input  
+  , fStrorageDBpath("local://$ALICE_ROOT")
+  , fClusterizer(NULL)
+  , fCDB(NULL)
+  , fMemReader(NULL)
 {
-  fOutputPercentage = 100; // By default we copy to the output exactly what we got as input
-  
+  // Default constructor
 }
 
 AliHLTTRDClusterizerComponent::~AliHLTTRDClusterizerComponent()
 {
+  // Destructor
+  ;
 }
 
 const char* AliHLTTRDClusterizerComponent::GetComponentID()
 {
+  // Return the component ID const char *
   return "TRDClusterizer"; // The ID of this component
 }
 
 void AliHLTTRDClusterizerComponent::GetInputDataTypes( vector<AliHLTComponent_DataType>& list)
 {
+  // Get the list of input data
   list.clear(); // We do not have any requirements for our input data type(s).
   list.push_back( AliHLTTRDDefinitions::fgkDDLRawDataType );
 }
 
 AliHLTComponent_DataType AliHLTTRDClusterizerComponent::GetOutputDataType()
 {
+  // Get the output data type
   return AliHLTTRDDefinitions::fgkClusterDataType;
 }
 
 void AliHLTTRDClusterizerComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
 {
+  // Get the output data size
   constBase = 0;
   inputMultiplier = ((double)fOutputPercentage)/100.0;
 }
 
-
-
-// Spawn function, return new instance of this class
 AliHLTComponent* AliHLTTRDClusterizerComponent::Spawn()
 {
+  // Spawn function, return new instance of this class
   return new AliHLTTRDClusterizerComponent;
 };
 
@@ -143,38 +152,39 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
       return EINVAL;
     }
 
-  cdb = AliCDBManager::Instance();
-  if (!cdb)
+  fCDB = AliCDBManager::Instance();
+  if (!fCDB)
     {
-      Logging(kHLTLogError, "HLT::TRDCalibration::DoInit", "Could not get CDB instance", "cdb 0x%x", cdb);
+      Logging(kHLTLogError, "HLT::TRDCalibration::DoInit", "Could not get CDB instance", "fCDB 0x%x", fCDB);
     }
   else
     {
-      cdb->SetRun(0); // THIS HAS TO BE RETRIEVED !!!
-      cdb->SetDefaultStorage(fStrorageDBpath.c_str());
-      Logging(kHLTLogDebug, "HLT::TRDCalibration::DoInit", "CDB instance", "cdb 0x%x", cdb);
+      fCDB->SetRun(0); // THIS HAS TO BE RETRIEVED !!!
+      fCDB->SetDefaultStorage(fStrorageDBpath.c_str());
+      Logging(kHLTLogDebug, "HLT::TRDCalibration::DoInit", "CDB instance", "fCDB 0x%x", fCDB);
     }
 
-  rmem = new AliRawReaderMemory;
-  clusterizer = new AliTRDclusterizerV1HLT("TRDCclusterizer", "TRDCclusterizer");
-  clusterizer->SetRawDataVersion(fRawDataVersion);
-  clusterizer->InitClusterTree();
+  fMemReader = new AliRawReaderMemory;
+  fClusterizer = new AliTRDclusterizerV1HLT("TRDCclusterizer", "TRDCclusterizer");
+  fClusterizer->SetRawDataVersion(fRawDataVersion);
+  fClusterizer->InitClusterTree();
   return 0;
 }
 
 int AliHLTTRDClusterizerComponent::DoDeinit()
 {
-  delete rmem;
-  rmem = 0;
-  delete clusterizer;
-  clusterizer = 0;
+  // Deinitialization of the component
+  delete fMemReader;
+  fMemReader = 0;
+  delete fClusterizer;
+  fClusterizer = 0;
   return 0;
 
-  if (cdb)
+  if (fCDB)
     {
-      Logging( kHLTLogDebug, "HLT::TRDCalibration::DoDeinit", "destroy", "cdb");
-      cdb->Destroy();
-      cdb = 0;
+      Logging( kHLTLogDebug, "HLT::TRDCalibration::DoDeinit", "destroy", "fCDB");
+      fCDB->Destroy();
+      fCDB = 0;
     }
 }
 
@@ -182,6 +192,7 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponent_EventData& evt
 					    AliHLTComponent_TriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 					    AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks )
 {
+  // Process an event
   Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "Output percentage set", "Output percentage set to %lu %%", fOutputPercentage );
   Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "BLOCKS", "NofBlocks %lu", evtData.fBlockCnt );
   // Process an event
@@ -236,10 +247,10 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponent_EventData& evt
 
   Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "COPY STATS", "total=%lu copied=%lu", totalSize, copied);
 
-  rmem->Reset();
-  rmem->SetMemory((UChar_t*)memBufIn, totalSize);
-  //rmem->Reset();
-  Bool_t ihead = rmem->ReadHeader();
+  fMemReader->Reset();
+  fMemReader->SetMemory((UChar_t*)memBufIn, totalSize);
+  //fMemReader->Reset();
+  Bool_t ihead = fMemReader->ReadHeader();
   if (ihead == kTRUE)
     {
       Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "HEADER", "Header read successfully");
@@ -250,8 +261,8 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponent_EventData& evt
       //return -1; -- not FATAL
     }
 
-  clusterizer->ResetTree();
-  Bool_t ireadD = clusterizer->ReadDigits(rmem);
+  fClusterizer->ResetTree();
+  Bool_t ireadD = fClusterizer->ReadDigits(fMemReader);
   if (ireadD == kTRUE)
     {
       Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "DIGITS", "Digits read successfully");
@@ -262,7 +273,7 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponent_EventData& evt
       return -1;
     }
 
-  Bool_t iclustered = clusterizer->MakeClusters();
+  Bool_t iclustered = fClusterizer->MakeClusters();
   if (iclustered == kTRUE)
     {
       Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "CLUSTERS", "Clustered successfully");
@@ -276,12 +287,12 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponent_EventData& evt
   free(memBufIn);
 
   //UInt_t memBufOutSize = 0;
-  //   void *memBufOut = clusterizer->WriteClustersToMemory(memBufOut, memBufOutSize);
-  Int_t iNclusters = clusterizer->GetNclusters();
+  //   void *memBufOut = fClusterizer->WriteClustersToMemory(memBufOut, memBufOutSize);
+  Int_t iNclusters = fClusterizer->GetNclusters();
   Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "COUNT", "N of Clusters = %d", iNclusters);
 
   // put the tree into output blocks of TObjArrays
-  TTree *fcTree = clusterizer->GetClusterTree();
+  TTree *fcTree = fClusterizer->GetClusterTree();
   TList *lt = (TList*)fcTree->GetListOfBranches();
   TIter it(lt);
   it.Reset();

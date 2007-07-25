@@ -55,13 +55,14 @@ class AliHLTTRDClusterizerComponent : public AliHLTProcessor
 
 	// The size of the output data produced, as a percentage of the input data's size.
 	// Can be greater than 100 (%)
-	unsigned fOutputPercentage;
 
-	string fStrorageDBpath;
+	unsigned fOutputPercentage; // Output volume in percentage of the input
 
-	AliTRDclusterizerV1HLT *clusterizer; //!
-	AliCDBManager *cdb; //!
-	AliRawReaderMemory *rmem; //!
+	string fStrorageDBpath; // Default path for OCDB
+
+	AliTRDclusterizerV1HLT *fClusterizer; //! Offline derived HLT clusterizer
+	AliCDBManager *fCDB; //! Pointer to OCDB
+	AliRawReaderMemory *fMemReader; //! Input raw data reader
 	
 	ClassDef(AliHLTTRDClusterizerComponent, 0)
 

@@ -60,19 +60,19 @@ class AliHLTTRDTrackerComponent : public AliHLTProcessor
 
 	// The size of the output data produced, as a percentage of the input data's size.
 	// Can be greater than 100 (%)
-	unsigned fOutputPercentage;
+	unsigned fOutputPercentage; // Output volume in percentage of the input
 
-	string fStrorageDBpath;
-	AliTRDclusterizerV1HLT *fClusterizer; //!
-	AliCDBManager *fCDB; //!
+	string fStrorageDBpath; // Default path for OCDB
+	AliTRDclusterizerV1HLT *fClusterizer; //! Offline derived HLT clusterizer
+	AliCDBManager *fCDB; //! Pointer to OCDB
 
 	AliMagFMaps* fField; //! magn. field settings
 
-	string fGeometryFileName;
-	TFile *fGeometryFile; //!
-	TGeoManager *fGeoManager; //!
+	string fGeometryFileName; // Path to geometry file 
+	TFile *fGeometryFile; //! // Pointer to the geom root file
+	TGeoManager *fGeoManager; //! Pointer to geometry manager 
 
-	AliTRDtrackerHLT *fTracker;//!
+	AliTRDtrackerHLT *fTracker;//! Offline-like/HLT tracker
 
 	ClassDef(AliHLTTRDTrackerComponent, 0)
 

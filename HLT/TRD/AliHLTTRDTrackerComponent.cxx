@@ -50,10 +50,17 @@ AliHLTTRDTrackerComponent gAliHLTTRDTrackerComponent;
 ClassImp(AliHLTTRDTrackerComponent);
     
 AliHLTTRDTrackerComponent::AliHLTTRDTrackerComponent()
+  : AliHLTProcessor()
+  , fOutputPercentage(100) // By default we copy to the output exactly what we got as input  
+  , fStrorageDBpath("local://$ALICE_ROOT")
+  , fCDB(NULL)
+  , fField(NULL)
+  , fGeometryFileName("")
+  , fGeometryFile(NULL)
+  , fGeoManager(NULL)
+  , fTracker(NULL)
 {
-  fOutputPercentage = 100; // By default we copy to the output exactly what we got as input
-
-  fStrorageDBpath = "local://$ALICE_ROOT";
+  // Default constructor
   fCDB = AliCDBManager::Instance();
   //fCDB->SetDefaultStorage(fStrorageDBpath.c_str());
   fCDB->SetRun(0);
@@ -64,26 +71,31 @@ AliHLTTRDTrackerComponent::AliHLTTRDTrackerComponent()
 
 AliHLTTRDTrackerComponent::~AliHLTTRDTrackerComponent()
 {
+  // Destructor
 }
 
 const char* AliHLTTRDTrackerComponent::GetComponentID()
 {
+  // Return the component ID const char *
   return "TRDTracker"; // The ID of this component
 }
 
 void AliHLTTRDTrackerComponent::GetInputDataTypes( vector<AliHLTComponent_DataType>& list)
 {
+  // Get the list of input data  
   list.clear(); // We do not have any requirements for our input data type(s).
   list.push_back( AliHLTTRDDefinitions::fgkClusterDataType );
 }
 
 AliHLTComponent_DataType AliHLTTRDTrackerComponent::GetOutputDataType()
 {
+  // Get the output data type
   return AliHLTTRDDefinitions::fgkClusterDataType;
 }
 
 void AliHLTTRDTrackerComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
 {
+  // Get the output data size
   constBase = 0;
   inputMultiplier = ((double)fOutputPercentage)/100.0;
 }
@@ -91,6 +103,7 @@ void AliHLTTRDTrackerComponent::GetOutputDataSize( unsigned long& constBase, dou
 // Spawn function, return new instance of this class
 AliHLTComponent* AliHLTTRDTrackerComponent::Spawn()
 {
+  // Spawn function, return new instance of this class
   return new AliHLTTRDTrackerComponent;
 };
 
@@ -192,10 +205,13 @@ int AliHLTTRDTrackerComponent::DoInit( int argc, const char** argv )
 
 int AliHLTTRDTrackerComponent::DoDeinit()
 {
+  // Deinitialization of the component
+
   delete fClusterizer;
   fClusterizer = 0;
 
   delete fField;
+  fField = 0;
 
   delete fTracker;
   fTracker = 0;
@@ -204,11 +220,13 @@ int AliHLTTRDTrackerComponent::DoDeinit()
     {
       fGeometryFile->Close();
       delete fGeometryFile;
+      fGeometryFile = 0;
     }
 
   AliTRDCalibraFillHisto *calibra = AliTRDCalibraFillHisto::Instance();
   if (calibra)
     {
+      // should not write in here!
       calibra->Write2d();
       calibra->Destroy();
     }
@@ -219,6 +237,8 @@ int AliHLTTRDTrackerComponent::DoDeinit()
 int AliHLTTRDTrackerComponent::DoEvent( const AliHLTComponentEventData & evtData,
 					AliHLTComponentTriggerData & trigData )
 {
+  // Process an event
+  
   Logging( kHLTLogInfo, "HLT::TRDTracker::DoEvent", "Output percentage set", "Output percentage set to %lu %%", fOutputPercentage );
   Logging( kHLTLogInfo, "HLT::TRDTracker::DoEvent", "BLOCKS", "NofBlocks %lu", evtData.fBlockCnt );
 
