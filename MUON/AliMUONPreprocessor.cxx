@@ -21,6 +21,9 @@
 #include "AliMUONHVSubprocessor.h"
 #include "AliMUONGMSSubprocessor.h"
 
+#include "AliMpSegmentation.h"
+#include "AliMpDDLStore.h"
+
 #include "AliLog.h"
 #include "AliShuttleInterface.h"
 #include "Riostream.h"
@@ -79,7 +82,17 @@ AliMUONPreprocessor::Add(AliMUONVSubprocessor* sub, Bool_t processDCS)
 void
 AliMUONPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
 {
-  /// loop over subtasks and initialize them
+/// Load mapping and initialize subtasks  
+
+  // Delete previous mapping
+  delete AliMpSegmentation::Instance(false);
+  delete AliMpDDLStore::Instance(false);
+  
+  // Load mapping from CDB for this run
+  GetFromOCDB("Calib", "Mapping");
+  GetFromOCDB("Calib", "DDLStore");
+
+  // loop over subtasks and initialize them
   for ( Int_t i = 0; i <= fSubprocessors->GetLast(); ++i )
   {
     Subprocessor(i)->Initialize(run,startTime,endTime);
