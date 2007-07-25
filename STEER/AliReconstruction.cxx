@@ -821,7 +821,7 @@ Bool_t AliReconstruction::Run(const char* input)
   // In case of empty events the tags will contain dummy values
   AliTagCreator *tagCreator = new AliTagCreator();
   tagCreator->CreateESDTags(fFirstEvent,fLastEvent);
-  if (fWriteAOD) tagCreator->CreateAODTags(fFirstEvent,fLastEvent);
+  //if (fWriteAOD) tagCreator->CreateAODTags(fFirstEvent,fLastEvent);
 
   return kTRUE;
 }

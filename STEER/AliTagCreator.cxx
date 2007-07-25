@@ -40,9 +40,9 @@
 #include "AliESDVertex.h"
 #include "AliLog.h"
 
-#include "AliAODEvent.h"
-#include "AliAODVertex.h"
-#include "AliAODTrack.h"
+//#include "AliAODEvent.h"
+//#include "AliAODVertex.h"
+//#include "AliAODTrack.h"
 
 #include "AliTagCreator.h"
 
@@ -1184,7 +1184,7 @@ void AliTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent) {
 }
 
 //__________________________________________________________________________
-void AliTagCreator::CreateAODTags(Int_t fFirstEvent, Int_t fLastEvent) {
+/*void AliTagCreator::CreateAODTags(Int_t fFirstEvent, Int_t fLastEvent) {
   //creates tag files for AODs
   
   Float_t fLowPtCut = 1.0;
@@ -1391,4 +1391,4 @@ void AliTagCreator::CreateAODTags(Int_t fFirstEvent, Int_t fLastEvent) {
   ftag->Close();
   file->cd();
   file->Close();
-}
+  }*/
