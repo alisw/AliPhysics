@@ -50,9 +50,9 @@ ClassImp(AliTRDclusterizerV1HLT)
 //_____________________________________________________________________________
 AliTRDclusterizerV1HLT::AliTRDclusterizerV1HLT() 
   : AliTRDclusterizerV1(),
+    fTreeCreatedHere(kFALSE),
     fNclusters(-1),
     fRawDataVersion(2),
-    fTreeCreatedHere(kFALSE),
     fRawDataSource(0)
 {
   //
@@ -63,9 +63,9 @@ AliTRDclusterizerV1HLT::AliTRDclusterizerV1HLT()
 //_____________________________________________________________________________
 AliTRDclusterizerV1HLT::AliTRDclusterizerV1HLT(const Text_t *name, const Text_t *title) 
   : AliTRDclusterizerV1(name,title),
+    fTreeCreatedHere(kFALSE),
     fNclusters(-1),
     fRawDataVersion(2),
-    fTreeCreatedHere(kFALSE),
     fRawDataSource(0)
 {
   //
@@ -76,9 +76,9 @@ AliTRDclusterizerV1HLT::AliTRDclusterizerV1HLT(const Text_t *name, const Text_t 
 //_____________________________________________________________________________
 AliTRDclusterizerV1HLT::AliTRDclusterizerV1HLT(const AliTRDclusterizerV1HLT &c)
   : AliTRDclusterizerV1(c),
+    fTreeCreatedHere(kFALSE),
     fNclusters(-1),
     fRawDataVersion(2),
-    fTreeCreatedHere(kFALSE),
     fRawDataSource(0)
 {
   //
