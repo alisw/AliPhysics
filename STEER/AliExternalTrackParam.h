@@ -87,8 +87,8 @@ class AliExternalTrackParam: public TObject {
   void GetDZ(Double_t x,Double_t y,Double_t z,Double_t b,Float_t dz[2]) const; 
   Double_t GetD(Double_t xv, Double_t yv, Double_t b) const; 
   Double_t GetLinearD(Double_t xv, Double_t yv) const; 
-  Bool_t CorrectForMaterial(Double_t d, Double_t x0, Double_t mass,
-			    Double_t (*f)(Double_t)=ApproximateBetheBloch);
+  Bool_t CorrectForMeanMaterial(Double_t xOverX0, Double_t xTimesRho, 
+        Double_t mass, Double_t (*f)(Double_t)=ApproximateBetheBloch);
   Double_t GetPredictedChi2(Double_t p[2],Double_t cov[3]) const;
 
   Double_t 
@@ -123,6 +123,10 @@ class AliExternalTrackParam: public TObject {
   Bool_t GetZAt(Double_t x,  Double_t b,  Double_t &z) const;
   void Print(Option_t* option = "") const;
   Double_t GetSnpAt(Double_t x,Double_t b) const;
+
+  //Deprecated
+  Bool_t CorrectForMaterial(Double_t d, Double_t x0, Double_t mass,
+			    Double_t (*f)(Double_t)=ApproximateBetheBloch);
 
 protected:
   Double_t &Par(Int_t i) {return fP[i];}

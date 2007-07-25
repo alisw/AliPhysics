@@ -181,9 +181,63 @@ Double_t AliExternalTrackParam::GetLinearD(Double_t xv,Double_t yv) const {
   return -d;
 }
 
+Bool_t AliExternalTrackParam::CorrectForMeanMaterial
+(Double_t xOverX0,  Double_t xTimesRho, Double_t mass, 
+Double_t (*Bethe)(Double_t)) {
+  //------------------------------------------------------------------
+  // This function corrects the track parameters for the crossed material.
+  // "xOverX0"   - X/X0, the thickness in units of the radiation length.
+  // "xTimesRho" - is the product length*density (g/cm^2). 
+  // "mass" - the mass of this particle (GeV/c^2).
+  //------------------------------------------------------------------
+  Double_t &fP2=fP[2];
+  Double_t &fP3=fP[3];
+  Double_t &fP4=fP[4];
+
+  Double_t &fC22=fC[5];
+  Double_t &fC33=fC[9];
+  Double_t &fC43=fC[13];
+  Double_t &fC44=fC[14];
+
+  Double_t p=GetP();
+  Double_t p2=p*p;
+  Double_t beta2=p2/(p2 + mass*mass);
+  xOverX0*=TMath::Sqrt((1.+ fP3*fP3)/(1.- fP2*fP2));
+
+  //Multiple scattering******************
+  if (xOverX0 != 0) {
+     Double_t theta2=14.1*14.1/(beta2*p2*1e6)*TMath::Abs(xOverX0);
+     //Double_t theta2=1.0259e-6*14*14/28/(beta2*p2)*TMath::Abs(d)*9.36*2.33;
+     fC22 += theta2*(1.- fP2*fP2)*(1. + fP3*fP3);
+     fC33 += theta2*(1. + fP3*fP3)*(1. + fP3*fP3);
+     fC43 += theta2*fP3*fP4*(1. + fP3*fP3);
+     fC44 += theta2*fP3*fP4*fP3*fP4;
+  }
+
+  //Energy losses************************
+  if ((xTimesRho != 0.) && (beta2 < 1.)) {
+     Double_t dE=Bethe(beta2)*xTimesRho;
+     Double_t e=TMath::Sqrt(p2 + mass*mass);
+     if ( TMath::Abs(dE) > 0.3*e ) return kFALSE; //30% energy loss is too much!
+     fP4*=(1.- e/p2*dE);
+
+     // Approximate energy loss fluctuation (M.Ivanov)
+     const Double_t knst=0.07; // To be tuned.  
+     Double_t sigmadE=knst*TMath::Sqrt(TMath::Abs(dE)); 
+     fC44+=((sigmadE*e/p2*fP4)*(sigmadE*e/p2*fP4)); 
+ 
+  }
+
+  return kTRUE;
+}
+
+
 Bool_t AliExternalTrackParam::CorrectForMaterial
 (Double_t d,  Double_t x0, Double_t mass, Double_t (*Bethe)(Double_t)) {
   //------------------------------------------------------------------
+  //                    Deprecated function !   
+  //       Better use CorrectForMeanMaterial instead of it.
+  //
   // This function corrects the track parameters for the crossed material
   // "d"    - the thickness (fraction of the radiation length)
   // "x0"   - the radiation length (g/cm^2) 
