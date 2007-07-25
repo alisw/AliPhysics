@@ -3,6 +3,7 @@ createTriggerDescriptor_MUON()
   // create Trigger Descriptor for MUON standalone
   // macro inspired from STEER/createTriggerDescriptor_*.C
   // May 2006, Ch. Finck
+// modified in order to be compatible with AliMUONTrigger.cxx (Clermont)
 
    AliTriggerDescriptor descrip( "MUON", "Standalone Trigger for MUON" );
 
@@ -20,23 +21,23 @@ createTriggerDescriptor_MUON()
                          (ULong64_t)0x1 << 1 );
 
    // 100
-   descrip.AddCondition( "MUON_Like_LPt_L0", 
-                         "MUON_Like_LPt_L0",    "Di Muon Like sign Low Pt",
+   descrip.AddCondition( "MUON_Unlike_LPt_L0", 
+                         "MUON_Unlike_LPt_L0",    "Di Muon UnLike sign Low Pt",
                          (ULong64_t)0x1 << 2 );
 
    // 1000
-   descrip.AddCondition( "MUON_Like_HPt_L0", 
-                         "MUON_Like_HPt_L0",    "Di Muon Like sign High Pt",
+   descrip.AddCondition( "MUON_Unlike_HPt_L0", 
+                         "MUON_Unlike_HPt_L0",    "Di Muon UnLike sign High Pt",
                          (ULong64_t)0x1 << 3 );
 
    // 10000
-   descrip.AddCondition( "MUON_Unlike_LPt_L0", 
-                         "MUON_Unlike_LPt_L0",    "Di Muon Unlike sign Low Pt",
+   descrip.AddCondition( "MUON_Like_LPt_L0", 
+                         "MUON_Like_LPt_L0",    "Di Muon Like sign Low Pt",
                          (ULong64_t)0x1 << 4 );
 
    // 100000
-   descrip.AddCondition( "MUON_Unlike_HPt_L0", 
-                         "MUON_Unlike_HPt_L0",    "Di Muon Unlike sign High Pt",
+   descrip.AddCondition( "MUON_Like_HPt_L0", 
+                         "MUON_Like_HPt_L0",    "Di Muon Like sign High Pt",
                          (ULong64_t)0x1 << 5 );
 
 
