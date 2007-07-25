@@ -83,10 +83,6 @@ void TestMUONPreprocessor(Int_t runNumber=80, const char* runType="PEDESTAL_RUN"
   printf("Test OCDB storage Uri: %s\n", AliShuttleInterface::GetMainCDB().Data());
   printf("Test Reference storage Uri: %s\n", AliShuttleInterface::GetMainRefStorage().Data());
   
-  // Load mapping from CDB
-  AliMpCDB::LoadMpSegmentation();
-  AliMpCDB::LoadDDLStore();
-
   // Create DCS HV aliases
   TMap* dcsAliasMap = CreateDCSAliasMap();
 
@@ -142,6 +138,10 @@ TMap* CreateDCSAliasMap()
   ///     <valueList> is a TObjArray of AliDCSValue
   ///     An AliDCSValue consists of timestamp and a value in form of a AliSimpleValue
   
+  // Load mapping from CDB
+  AliMpCDB::LoadMpSegmentation();
+  AliMpCDB::LoadDDLStore();
+
   TMap* aliasMap = new TMap;
   aliasMap->SetOwner(kTRUE);
   
