@@ -33,24 +33,28 @@
 // By Laurent Aphecetche, SUBATECH Nantes
 
 #include "TestMUONPreprocessor.h"
+
+#include "AliMUONTrackerPreprocessor.h"
+#include "AliMUONHVNamer.h"
+
+#include "AliMpExMap.h"
+#include "AliMpHelper.h"
+#include "AliMpCDB.h"
+
 #include "AliCDBManager.h"
-#include "AliShuttleInterface.h"
+#include "AliCDBEntry.h"
 #include "AliCDBId.h"
+#include "AliShuttleInterface.h"
 #include "AliTestShuttle.h"
-#include "TMap.h"
+#include "AliDCSValue.h"
+
 #include "Riostream.h"
 #include "TSystem.h"
-#include "AliMpExMap.h"
 #include "TMap.h"
-#include "TString.h"
 #include "TObjArray.h"
-#include "AliMpHelper.h"
-#include "AliDCSValue.h"
 #include "TObjString.h"
+#include "TString.h"
 #include "TRandom.h"
-#include "AliMUONTrackerPreprocessor.h"
-#include "AliCDBEntry.h"
-#include "AliMUONHVNamer.h"
 #endif
 
 void TestMUONPreprocessor(Int_t runNumber=80, const char* runType="PEDESTAL_RUN")
@@ -79,6 +83,10 @@ void TestMUONPreprocessor(Int_t runNumber=80, const char* runType="PEDESTAL_RUN"
   printf("Test OCDB storage Uri: %s\n", AliShuttleInterface::GetMainCDB().Data());
   printf("Test Reference storage Uri: %s\n", AliShuttleInterface::GetMainRefStorage().Data());
   
+  // Load mapping from CDB
+  AliMpCDB::LoadMpSegmentation();
+  AliMpCDB::LoadDDLStore();
+
   // Create DCS HV aliases
   TMap* dcsAliasMap = CreateDCSAliasMap();
 
