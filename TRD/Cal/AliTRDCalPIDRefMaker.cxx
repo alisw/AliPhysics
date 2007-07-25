@@ -716,7 +716,7 @@ void  AliTRDCalPIDRefMaker::Prepare2D()
 		Int_t xbin, ybin;
 		for(int iphi=0; iphi<nPhi; iphi++){
 			Phi = iphi * dPhi - TMath::Pi();
-			if(fabs(fabs(Phi)-TMath::Pi()) < 100.*TMath::DegToRad()) continue;
+			if(TMath::Abs(TMath::Abs(Phi)-TMath::Pi()) < 100.*TMath::DegToRad()) continue;
 				
 			
 			refsFitter[iphi].Eval();
