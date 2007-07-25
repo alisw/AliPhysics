@@ -31,7 +31,8 @@ ClassImp(AliMagFC)
 //________________________________________
 AliMagFC::AliMagFC(const char *name, const char *title, Int_t integ, 
 		   Float_t factor, Float_t fmax)
-  : AliMagF(name,title,integ,factor,fmax)
+    : AliMagF(name,title,integ,factor,fmax),
+      fCompensator(kFALSE)
 {
   // 
   // Standard constructor
@@ -73,8 +74,17 @@ void AliMagFC::Field(Float_t *x, Float_t *b) const
 void AliMagFC::ZDCField(Float_t *x, Float_t *b) const
 {
 //This is the ZDC part
-    Float_t rad2=x[0]*x[0]+x[1]*x[1];
+    Float_t rad2 = x[0] * x[0] + x[1] * x[1];
 
+    if (fCompensator && (x[2] > 919. && x[2] < 1231.) && rad2 < 16.) {
+      // Compensator magnet at z = 1075 m 
+	b[0] = 10.9;
+	b[1] = 0.;
+	b[2] = 0.;
+	return;
+    }
+    
+    
     if(x[2] < kCORBEG2 && x[2] > kCOREND2){
 	if(rad2<kCOR2RA2){
 	    b[0] = - kFCORN2;

@@ -25,7 +25,10 @@ public:
   virtual void Field(Float_t *x, Float_t *b) const;
   virtual void ReadField() {}
   virtual void ZDCField(Float_t *x, Float_t *b) const;
-  ClassDef(AliMagFC,1)  //Class for all Alice Constant MagField 
+  virtual void SetCompensatorMagnet(Bool_t flag) {fCompensator = flag;}
+ private:
+  Bool_t  fCompensator; // Flag for compensator magnetic field (kTrue -> ON)
+  ClassDef(AliMagFC,2)  //Class for all Alice Constant MagField 
 };
 
 
