@@ -25,6 +25,7 @@ class AliHLTBenchmark;
 #ifdef use_aliroot
 #include <AliESDEvent.h>
 #include <AliESDHLTtrack.h>
+#include "AliESDtrack.h"
 #endif
 
 class AliHLTHough {

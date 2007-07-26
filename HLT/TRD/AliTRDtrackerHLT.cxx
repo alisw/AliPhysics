@@ -39,6 +39,7 @@
 
 #include "AliLog.h"
 #include "AliESDEvent.h"
+#include "AliESDtrack.h"
 #include "AliAlignObj.h"
 #include "AliRieman.h"
 #include "AliTrackPointArray.h"

@@ -21,6 +21,7 @@
 //-------------------------------------------------------------------------
 
 #include "AliESDEvent.h"
+#include "AliESDtrack.h"
 #include "AliHLTITStrack.h"
 #include "AliHLTITStracker.h"
 

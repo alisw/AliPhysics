@@ -25,6 +25,7 @@
                                                                           */
 #include "AliHLTTPCEsdWriterComponent.h"
 #include "AliESDEvent.h"
+#include "AliESDtrack.h"
 #include "TTree.h"
 #include "AliHLTTPCTrack.h"
 #include "AliHLTTPCTrackArray.h"
