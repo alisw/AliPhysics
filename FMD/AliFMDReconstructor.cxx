@@ -45,7 +45,9 @@
 #include "AliFMDRawReader.h"               // ALIFMDRAWREADER_H
 #include "AliFMDRecPoint.h"	   	   // ALIFMDMULTNAIIVE_H
 #include "AliESDEvent.h"		   // ALIESDEVENT_H
+#include "AliESDVertex.h"		   // ALIESDVERTEX_H
 #include <AliESDFMD.h>			   // ALIESDFMD_H
+#include <TMath.h>
 #include <TH1.h>
 #include <TH2.h>
 #include <TFile.h>

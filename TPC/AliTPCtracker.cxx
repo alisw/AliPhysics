@@ -26,6 +26,7 @@
 #include <TTree.h>
 
 #include "AliESDEvent.h"
+#include "AliESDtrack.h"
 
 #include "AliTPCtracker.h"
 #include "AliTPCcluster.h"

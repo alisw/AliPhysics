@@ -30,6 +30,7 @@
 #include <TTree.h>
 
 #include "AliESDEvent.h"
+#include "AliESDtrack.h"
 #include "AliV0.h"
 #include "AliHelix.h"
 #include "AliITSRecPoint.h"

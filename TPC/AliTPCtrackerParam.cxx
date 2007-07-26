@@ -90,6 +90,7 @@
 #include "AliTPCtrack.h"
 #include "AliTPCtrackerParam.h"
 #include "AliTrackReference.h"
+#include "AliESDtrack.h"
 //-----------------------------
 
 Double_t RegFunc(Double_t *x,Double_t *par) {

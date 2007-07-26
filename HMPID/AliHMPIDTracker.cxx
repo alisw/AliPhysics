@@ -3,6 +3,7 @@
 #include "AliHMPIDParam.h"       //GetTrackPoint(),PropagateBack()
 #include "AliHMPIDRecon.h"       //Recon()
 #include <AliESDEvent.h>              //PropagateBack(),Recon()  
+#include <AliESDtrack.h>              //Intersect()  
 #include <AliRun.h>              //GetTrackPoint(),PropagateBack()  
 #include <AliTrackPointArray.h>  //GetTrackPoint()
 #include <AliAlignObj.h>         //GetTrackPoint()

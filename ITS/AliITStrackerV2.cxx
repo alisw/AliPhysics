@@ -33,6 +33,7 @@
 #include "AliAlignObj.h"
 #include "AliITSRecPoint.h"
 #include "AliESDEvent.h"
+#include "AliESDtrack.h"
 #include "AliITSRecPoint.h"
 #include "AliITSReconstructor.h"
 #include "AliITStrackerV2.h"

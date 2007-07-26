@@ -31,9 +31,10 @@
 #include <TObjArray.h>
 #include <TTree.h>
 #include "AliLog.h"
-
 #include "AliComplexCluster.h"
 #include "AliESDEvent.h"
+#include "AliESDtrack.h"
+#include "AliESDVertex.h"
 #include "AliKink.h"
 #include "AliV0.h"
 #include "AliHelix.h"

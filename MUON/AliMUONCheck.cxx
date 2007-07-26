@@ -50,6 +50,7 @@
 #include "AliTracker.h"
 #include "AliESDEvent.h"
 #include "AliESDMuonTrack.h"
+#include "AliESDVertex.h"
 #include "AliMagFMaps.h"
 #include "AliLog.h"
 
