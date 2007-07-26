@@ -27,6 +27,7 @@
 
 // --- AliRoot header files ---
 #include "AliESDEvent.h"
+#include "AliESDCaloCluster.h"
 #include "AliPHOSReconstructor.h"
 #include "AliPHOSClusterizerv1.h"
 #include "AliPHOSTrackSegmentMakerv1.h"
