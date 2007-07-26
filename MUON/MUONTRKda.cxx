@@ -47,7 +47,9 @@ extern "C" {
 #include "TF1.h"
 #include "TROOT.h"
 #include "TPluginManager.h"
+#include "TFitter.h"
 
+#define  NFITPARAMS 4
 
 // global variables
 AliMUONVStore* pedestalStore =  new AliMUON2DMap(kFALSE);
@@ -339,7 +341,7 @@ void MakeGainStore(TString flatOutputFile)
     }
       
     // Q = f(ADC)
-    TF1* func = new TF1("func",fitFunc, 0., 2500., 4);
+    TF1* func = new TF1("func",fitFunc, 0., 2500., NFITPARAMS);
     // TF1* func = new TF1("func","pol1");
 
     // iterates over the first pedestal run
@@ -376,7 +378,7 @@ void MakeGainStore(TString flatOutputFile)
 	  n++;
 	}
 
-	if (n > 4) {
+	if (n > NFITPARAMS) {
 	  // if (n > 1) {
 	  //fit 
 	  TGraph *gain = new TGraphErrors(n, pedMean, injCharge, pedSigma, injChargeErr);
@@ -422,6 +424,8 @@ int main(Int_t argc, Char_t **argv)
 					  "RIO",
 					  "TStreamerInfo()"); 
 
+    TFitter *minuitFit = new TFitter(NFITPARAMS);
+    TVirtualFitter::SetFitter(minuitFit);
 
     Int_t printLevel = 0;  // Global variable defined as extern in the others .cxx files
     Int_t skipEvents = 0;
@@ -643,6 +647,9 @@ int main(Int_t argc, Char_t **argv)
   
 
   delete pedestalStore;
+
+  delete minuitFit;
+  TVirtualFitter::SetFitter(0);
 
   timers.Stop();
 
