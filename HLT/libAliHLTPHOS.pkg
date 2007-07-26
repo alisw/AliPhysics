@@ -1,89 +1,15 @@
-
 include HLT/hlt.conf
 
-SRCS:= 
 
+HDRS:=		
+		
+		
+		
 
+SRCS:=		
+		
 
-HDRS:= 
-
-
-DHDR=   PHOS/AliHLTPHOSLinkDef.h
- 					    
-
-CLASS_HDRS:=	PHOS/AliHLTPHOSPulseGenerator.h \
-		PHOS/AliHLTPHOSRawAnalyzer.h \
-		PHOS/AliHLTPHOSRawAnalyzerCrude.h \
-		PHOS/AliHLTPHOSRawAnalyzerChiSquareFit.h \
-		PHOS/AliHLTPHOSRawAnalyzerKLevel.h \
-		PHOS/AliHLTPHOSRawAnalyzerLMS.h \
-		PHOS/AliHLTPHOSRawAnalyzerPeakFinder.h \
-		PHOS/AliHLTPHOSEmcCalibData.h \
-		PHOS/AliHLTPHOSRawAnalyzerComponent.h \
-		PHOS/AliHLTPHOSRawAnalyzerCrudeComponent.h \
-		PHOS/AliHLTPHOSRawAnalyzerPeakFinderComponent.h \
-		PHOS/AliHLTPHOSDefinitions.h \
-		PHOS/AliHLTPHOSRcuCellEnergyData.h \
-		PHOS/AliHLTPHOSModuleCellEnergyData.h \
-		PHOS/AliHLTPHOSFileWriterComponent.h \
-		PHOS/AliHLTPHOSDataHeaderStruct.h \
-		PHOS/AliHLTPHOSFileWriter.h \
-		PHOS/AliHLTPHOSDDLPackedFileWriter.h \
-		PHOS/AliHLTPHOSCellEnergiesFileWriter.h \
-		PHOS/AliHLTPHOSRcuHistogramProducer.h \
-		PHOS/AliHLTPHOSRcuHistogramProducerComponent.h \
-		PHOS/AliHLTPHOSModuleCellAccumulatedEnergyDataStruct.h \
-		PHOS/AliHLTPHOSModuleCellAverageEnergyDataStruct.h \
-		PHOS/AliHLTPHOSRcuChannelDataStruct.h \
-		PHOS/AliHLTPHOSValidChannelDataStruct.h \
-		PHOS/AliHLTPHOSDataCorruptor.h \
-		PHOS/AliHLTPHOSDataQualityMonitor.h \
-		PHOS/AliHLTRcuPHOSDataQualityMonitorComponent.h \
-		PHOS/AliHLTPHOSProcessor.h \
-		PHOS/AliHLTPHOSClusterizer.h \
-		PHOS/AliHLTPHOSClusterizerComponent.h \
-		PHOS/AliHLTPHOSPhysicsAnalyzerSpectrum.h \
-		PHOS/AliHLTPHOSPhysicsAnalyzerSpectrumComponent.h \
-		PHOS/AliHLTPHOSPhysicsAnalyzer.h \
-		PHOS/AliHLTPHOSPhysicsDefinitions.h \
-		PHOS/AliHLTPHOSPhysicsAnalyzerPeakFitter.h \
-		PHOS/AliHLTPHOSRecPointDataStruct.h \
-		PHOS/AliHLTPHOSRecPointListDataStruct.h \
-		PHOS/AliHLTPHOSClusterDataStruct.h \
-		PHOS/AliHLTPHOSBase.h \
-		PHOS/AliHLTAltroData.h
-
-MODULE_SRCS:=   PHOS/AliHLTPHOSPulseGenerator.cxx \
-		PHOS/AliHLTPHOSRawAnalyzer.cxx \
-		PHOS/AliHLTPHOSRawAnalyzerCrude.cxx\
-		PHOS/AliHLTPHOSRawAnalyzerChiSquareFit.cxx \
-		PHOS/AliHLTPHOSRawAnalyzerKLevel.cxx \
-		PHOS/AliHLTPHOSRawAnalyzerLMS.cxx\
-		PHOS/AliHLTPHOSRawAnalyzerPeakFinder.cxx \
-		PHOS/AliHLTPHOSEmcCalibData.cxx \
-		PHOS/AliHLTPHOSRawAnalyzerComponent.cxx \
-		PHOS/AliHLTPHOSRawAnalyzerCrudeComponent.cxx \
-		PHOS/AliHLTPHOSRawAnalyzerPeakFinderComponent.cxx \
-		PHOS/AliHLTPHOSDefinitions.cxx \
-		PHOS/AliHLTPHOSFileWriterComponent.cxx \
-		PHOS/AliHLTPHOSFileWriter.cxx \
-		PHOS/AliHLTPHOSDDLPackedFileWriter.cxx \
-		PHOS/AliHLTPHOSCellEnergiesFileWriter.cxx \
-		PHOS/AliHLTPHOSRcuHistogramProducer.cxx \
-		PHOS/AliHLTPHOSRcuHistogramProducerComponent.cxx \
-		PHOS/AliHLTPHOSDataCorruptor.cxx \
-		PHOS/AliHLTPHOSDataQualityMonitor.cxx \
-		PHOS/AliHLTPHOSRcuDataQualityMonitorComponent.cxx \
-		PHOS/AliHLTPHOSProcessor.cxx \
-		PHOS/AliHLTPHOSClusterizer.cxx \
-		PHOS/AliHLTPHOSClusterizerComponent.cxx \
-		PHOS/AliHLTPHOSPhysicsAnalyzerSpectrum.cxx \
-		PHOS/AliHLTPHOSPhysicsAnalyzerSpectrumComponent.cxx \
-		PHOS/AliHLTPHOSPhysicsAnalyzer.cxx \
-		PHOS/AliHLTPHOSPhysicsDefinitions.cxx \
-		PHOS/AliHLTPHOSPhysicsAnalyzerPeakFitter.cxx \
-		PHOS/AliHLTPHOSBase.cxx \
-		PHOS/AliHLTAltroData.cxx
+DHDR=   	PHOS/AliHLTPHOSLinkDef.h
 
 EINCLUDE+= HLT/BASE HLT/BASE/util HLT/src HLT/hough HLT/comp HLT/misc HLT/ITS HLT/MUON/src TPC ITS MUON STEER RAW PHOS
 
