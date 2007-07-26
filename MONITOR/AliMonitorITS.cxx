@@ -27,6 +27,7 @@
 
 #include "AliLog.h"
 #include "AliESDEvent.h"
+#include "AliESDtrack.h"
 #include "AliITSRawStreamSDD.h"
 #include "AliITSRawStreamSSD.h"
 #include "AliITSclusterV2.h"

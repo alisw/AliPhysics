@@ -39,6 +39,7 @@
 #include <AliMagFMaps.h>
 #include <AliKalmanTrack.h>
 #include <AliITSgeom.h>
+#include <AliESDVertex.h>
 
 ClassImp(AliHoughFilter)
 

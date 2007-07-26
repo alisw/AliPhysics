@@ -25,9 +25,11 @@
 #include "AliMonitorV0s.h"
 #include "AliMonitorHisto.h"
 #include "AliESDEvent.h"
+#include "AliESDv0.h"
 #include "AliLog.h"
 #include <TFolder.h>
 #include <TPDGCode.h>
+#include <TMath.h>
 
 
 ClassImp(AliMonitorV0s) 
