@@ -270,19 +270,20 @@ Int_t
 AliT0Parameters::GetChannel(Int_t trm,  Int_t tdc, Int_t chain, Int_t channel)
 {
 
-  AliT0LookUpKey * val;  //= new AliT0LookUpKey();
-  AliT0LookUpValue * key= new AliT0LookUpValue(trm,tdc,chain,channel);
-  if (fgLookUp)
-       val = (AliT0LookUpKey*) fgLookUp->GetMapLookup()->GetValue((TObject*)key);
-   else
-     cout<<" !!!!!!!!! no look up table !!!"<<endl;
-  if (!val ) {
-    AliInfo(Form("No such address (%d %d %d %d)!",trm,tdc,chain,channel));
+  if (fgLookUp) {
+    AliT0LookUpValue key(trm,tdc,chain,channel);
+    AliT0LookUpKey *val = (AliT0LookUpKey*) fgLookUp->GetMapLookup()->GetValue((TObject*)&key);
+    if (val )
+      return val->GetKey();
+    else {
+      AliWarning(Form("No such address (%d %d %d %d)!",trm,tdc,chain,channel));
+      return -1;
+    }
+  }
+  else {
+    AliError("No look up table has been loader!");
     return -1;
   }
-  
-  return val->GetKey();
-  
 
 }
 //__________________________________________________________________
