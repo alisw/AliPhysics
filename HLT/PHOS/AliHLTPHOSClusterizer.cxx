@@ -37,7 +37,7 @@
 
 
 
-ClassImp(AliHLTPHOSClusterizer);
+ClassImp(AliHLTPHOSClusterizer)
 
 /**
 * Main constructor

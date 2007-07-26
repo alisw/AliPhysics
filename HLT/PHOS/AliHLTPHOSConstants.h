@@ -40,7 +40,9 @@ namespace PhosHLTConst
   const unsigned int N_DATATYPES     =   10;    
 
   const unsigned int  PF_MAX_PATH_LENGTH = 256;
+#ifndef __CINT__
   const unsigned char PF_VECTOR_DIR[] = "/HLT/PHOS/PFVectors";
+#endif
   const unsigned int PF_DEFAULT_N_SAMPLES = 70;
   const unsigned int PF_DEFAULT_STARTINDEX = 0;
 
@@ -72,7 +74,7 @@ namespace PhosHLTConst
   const unsigned int N_ALTROS        =   4;                             /**<Number of ALTROs per frontend card*/
   const unsigned int N_ALTROCHANNELS =  16;
   const unsigned int N_BRANCHES      =   2;      
-};
+}
 
 
 #endif
