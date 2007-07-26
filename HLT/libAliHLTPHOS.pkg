@@ -1,21 +1,54 @@
-include HLT/hlt.conf
+#-*- Mode: Makefile -*-
+#include fuck/hlt.conf
+include $(MODDIR)/hlt.conf
 
+SRCS:=	\
+		  PHOS/AliHLTAltroBunch.cxx \
+		  PHOS/AliHLTAltroData.cxx \
+		  PHOS/AliHLTPHOSBase.cxx \
+		  PHOS/AliHLTPHOSCellEnergiesFileWriter.cxx \
+		  PHOS/AliHLTPHOSClusterizer.cxx \
+		  PHOS/AliHLTPHOSClusterizerComponent.cxx \
+		  PHOS/AliHLTPHOSDDLDecoderComponent.cxx \
+		  PHOS/AliHLTPHOSDDLPackedFileWriter.cxx \
+		  PHOS/AliHLTPHOSDataCorruptor.cxx \
+		  PHOS/AliHLTPHOSDataQualityMonitor.cxx \
+		  PHOS/AliHLTPHOSDefinitions.cxx \
+		  PHOS/AliHLTPHOSEmcCalibData.cxx \
+		  PHOS/AliHLTPHOSFileWriter.cxx \
+		  PHOS/AliHLTPHOSFileWriterComponent.cxx \
+		  PHOS/AliHLTPHOSPhysicsAnalyzer.cxx \
+		  PHOS/AliHLTPHOSPhysicsAnalyzerPeakFitter.cxx \
+		  PHOS/AliHLTPHOSPhysicsAnalyzerSpectrum.cxx \
+		  PHOS/AliHLTPHOSPhysicsAnalyzerSpectrumComponent.cxx \
+		  PHOS/AliHLTPHOSProcessor.cxx \
+		  PHOS/AliHLTPHOSPulseGenerator.cxx \
+		  PHOS/AliHLTPHOSRawAnalyzer.cxx \
+		  PHOS/AliHLTPHOSRawAnalyzerChiSquareFit.cxx \
+		  PHOS/AliHLTPHOSRawAnalyzerComponent.cxx \
+		  PHOS/AliHLTPHOSRawAnalyzerCrude.cxx \
+		  PHOS/AliHLTPHOSRawAnalyzerCrudeComponent.cxx \
+		  PHOS/AliHLTPHOSRawAnalyzerKLevel.cxx \
+		  PHOS/AliHLTPHOSRawAnalyzerLMS.cxx \
+		  PHOS/AliHLTPHOSRawAnalyzerPeakFinderComponent.cxx \
+		  PHOS/AliHLTPHOSRcuDataQualityMonitorComponent.cxx \
+		  PHOS/AliHLTPHOSRcuHistogramProducer.cxx \
+		  PHOS/AliHLTPHOSRcuHistogramProducerComponent.cxx \
+		  PHOS/AliHLTPHOSRcuProcessor.cxx \
+	          PHOS/AliHLTDDLDecoder.cxx \
+	          PHOS/AliHLTPHOSMapper.cxx \
+	          PHOS/AliHLTPHOSRawAnalyzerPeakFinder.cxx
 
-HDRS:=		
-		
-		
-		
-
-SRCS:=		
-		
-
-DHDR=   	PHOS/AliHLTPHOSLinkDef.h
-
-EINCLUDE+= HLT/BASE HLT/BASE/util HLT/src HLT/hough HLT/comp HLT/misc HLT/ITS HLT/MUON/src TPC ITS MUON STEER RAW PHOS
+HDRS:=		  $(SRCS:.cxx=.h)
 
 EDEFINE      := ${HLTDEFS}
 PACKCXXFLAGS := ${HLTCXXFLAGS}
 PACKCFLAGS   := ${HLTCLFAGS}
-PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
+PACKDCXXFLAGS:= ${HLTDCXXFLAGS}		
+
+DHDR=   	  PHOS/HLTPHOSLinkDef.h
+
+EINCLUDE+= HLT/BASE HLT/BASE/util HLT/src HLT/comp HLT/misc  STEER RAW PHOS
+#EINCLUDE+= HLT/BASE HLT/BASE/util HLT/src HLT/hough HLT/comp HLT/misc HLT/ITS HLT/MUON/src TPC ITS MUON STEER RAW PHOS
 
 
