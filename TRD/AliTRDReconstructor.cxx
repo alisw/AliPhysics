@@ -167,54 +167,54 @@ AliTracker *AliTRDReconstructor::CreateTracker(AliRunLoader *runLoader) const
 //_____________________________________________________________________________
 void AliTRDReconstructor::FillESD(AliRunLoader* /*runLoader*/
 				, AliRawReader* /*rawReader*/
-		         	, AliESDEvent *esd) const
+				, AliESDEvent* /*esd*/) const
 {
   //
   // Make PID
   //
 
-  AliTRDpidESD trdPID;
-  trdPID.MakePID(esd);
+  //AliTRDpidESD trdPID;
+  //trdPID.MakePID(esd);
 
 }
 
 //_____________________________________________________________________________
 void AliTRDReconstructor::FillESD(AliRawReader* /*rawReader*/
 				, TTree* /*clusterTree*/
-				, AliESDEvent *esd) const
+				, AliESDEvent* /*esd*/) const
 {
   //
   // Make PID
   //
 
-  AliTRDpidESD trdPID;
-  trdPID.MakePID(esd);
+  //AliTRDpidESD trdPID;
+  //trdPID.MakePID(esd);
 
 }
 
 //_____________________________________________________________________________
 void AliTRDReconstructor::FillESD(TTree* /*digitsTree*/
 				, TTree* /*clusterTree*/
-				, AliESDEvent *esd) const
+			        , AliESDEvent* /*esd*/) const
 {
   //
   // Make PID
   //
 
-  AliTRDpidESD trdPID;
-  trdPID.MakePID(esd);
+  //AliTRDpidESD trdPID;
+  //trdPID.MakePID(esd);
 
 }
 
 //_____________________________________________________________________________
 void AliTRDReconstructor::FillESD(AliRunLoader* /*runLoader*/
-				, AliESDEvent *esd) const
+				, AliESDEvent* /*esd*/) const
 {
   //
   // Make PID
   //
 
-  AliTRDpidESD trdPID;
-  trdPID.MakePID(esd);
+  //AliTRDpidESD trdPID;
+  //trdPID.MakePID(esd);
 
 }
