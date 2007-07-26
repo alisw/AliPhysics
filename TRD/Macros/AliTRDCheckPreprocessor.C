@@ -53,7 +53,7 @@ void AliTRDCheckPreprocessorold()
   //Test reference data gain HLT
   //***************************
   Int_t ErrorRefDataGainHLT = 0;
-  AliCDBEntry* entry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainRefStorage())->Get("TRD/HLTData/Gain", 12);  
+  AliCDBEntry* entry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainRefStorage())->Get("TRD/HLTData/Gain", 8);  
   if(!entry) ErrorRefDataGainHLT = 1;
   else{
     TH2I *histogainhlt = (TH2I *) entry->GetObject();
@@ -72,7 +72,7 @@ void AliTRDCheckPreprocessorold()
   //***************************
   Int_t ErrorRefDataVdriftT0HLT = 0;
   if(entry) delete entry;
-  entry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainRefStorage())->Get("TRD/HLTData/VdriftT0", 12);
+  entry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainRefStorage())->Get("TRD/HLTData/VdriftT0", 8);
   if(!entry) ErrorRefDataVdriftT0HLT = 1;
   else{
     TProfile2D *histovdriftt0hlt = (TProfile2D *) entry->GetObject();
@@ -91,7 +91,7 @@ void AliTRDCheckPreprocessorold()
   //***************************
   Int_t ErrorRefDataPRFHLT = 0;
   if(entry) delete entry;
-  entry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainRefStorage())->Get("TRD/HLTData/PRF", 12);
+  entry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainRefStorage())->Get("TRD/HLTData/PRF", 8);
   if(!entry) ErrorRefDataPRFHLT = 1;
   else{
     TProfile2D *histoprfhlt = (TProfile2D *) entry->GetObject();
@@ -109,72 +109,86 @@ void AliTRDCheckPreprocessorold()
   //Test reference data PadStatus DAQ
   //***************************
   Int_t ErrorRefDataPadStatus = 0;
-  if(entry) delete entry;
-  entry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainRefStorage())->Get("TRD/DAQData/PadStatus", 12);
-  if(!entry) ErrorRefDataPadStatus = 1;
-  else{
-    AliTRDCalibPadStatus *calpadstatus = (AliTRDCalibPadStatus *) entry->GetObject();
-    if(!calpadstatus) ErrorRefDataPadStatus = 2;
-    else{
-      //Make the AliTRDCalDet correspondant
-      AliTRDCalDet *calDet = new AliTRDCalDet("dummy","dummy for mean");
-      for(Int_t k = 0; k < 540; k++){
-	calDet->SetValue(k,10.0);
-      }
 
-      //Make the AliTRDCalPad correspondant
-      AliTRDCalPad *calPad1 = new AliTRDCalPad("meanpad","dummy for mean");
-      AliTRDCalPad *calPad2 = new AliTRDCalPad("squarespad","dummy for squares");
-      AliTRDCalROC *calROC1 = 0x0;
-      AliTRDCalROC *calROC2 = 0x0;
-      for (Int_t det=0; det<AliTRDgeometry::kNdet; ++det)
-    {
-      AliTRDCalROC *calROC11 = calPad1->GetCalROC(det);
-      AliTRDCalROC *calROC22 = calPad2->GetCalROC(det);
-      calROC1                = calpadstatus->GetCalRocMean(det,kTRUE);
-      calROC2                = calpadstatus->GetCalRocRMS(det,kTRUE);
-      for(Int_t k = 0; k < calROC22->GetNchannels(); k++){
-	calROC11->SetValue(k,calROC1->GetValue(k));
-	calROC22->SetValue(k,calROC2->GetValue(k));
-      }
-    }
-      TCanvas *cpadstatusm = new TCanvas("cpadstatusm","cpadstatusm",50,50,600,800);
-      cpadstatusm->Divide(3,2);
-      cpadstatusm->cd(1);
-      ((TH2F *)calPad1->MakeHisto2DSmPl(1,0,calDet,0,9.0,11.0,-1))->Draw("colz");
-      cpadstatusm->cd(2);
-      ((TH2F *)calPad1->MakeHisto2DSmPl(1,1,calDet,0,9.0,11.0,-1))->Draw("colz");
-      cpadstatusm->cd(3);
-      ((TH2F *)calPad1->MakeHisto2DSmPl(1,2,calDet,0,9.0,11.0,-1))->Draw("colz");
-      cpadstatusm->cd(4);
-      ((TH2F *)calPad1->MakeHisto2DSmPl(1,3,calDet,0,9.0,11.0,-1))->Draw("colz");
-      cpadstatusm->cd(5);
-      ((TH2F *)calPad1->MakeHisto2DSmPl(1,4,calDet,0,9.0,11.0,-1))->Draw("colz");
-      cpadstatusm->cd(6);
-      ((TH2F *)calPad1->MakeHisto2DSmPl(1,5,calDet,0,9.0,11.0,-1))->Draw("colz");
+  Int_t nbsm = 0;
+  
+  for(Int_t k = 0; k < 18; k++){
 
-      TCanvas *cpadstatusrms = new TCanvas("cpadstatusrrms","cpadstatusrms",50,50,600,800);
-      cpadstatusrms->Divide(3,2);
-      cpadstatusrms->cd(1);
-      ((TH2F *)calPad2->MakeHisto2DSmPl(1,0,calDet,0,0.2,2.0,-1))->Draw("colz");
-      cpadstatusrms->cd(2);
-      ((TH2F *)calPad2->MakeHisto2DSmPl(1,1,calDet,0,0.2,2.0,-1))->Draw("colz");
-      cpadstatusrms->cd(3);
-      ((TH2F *)calPad2->MakeHisto2DSmPl(1,2,calDet,0,0.2,2.0,-1))->Draw("colz");
-      cpadstatusrms->cd(4);
-      ((TH2F *)calPad2->MakeHisto2DSmPl(1,3,calDet,0,0.2,2.0,-1))->Draw("colz");
-      cpadstatusrms->cd(5);
-      ((TH2F *)calPad2->MakeHisto2DSmPl(1,4,calDet,0,0.2,2.0,-1))->Draw("colz");
-      cpadstatusrms->cd(6);
-      ((TH2F *)calPad2->MakeHisto2DSmPl(1,5,calDet,0,0.2,2.0,-1))->Draw("colz");
+    TString padstatus("TRD/DAQData/PadStatus");
+    padstatus += k;
+    
+    if(entry) delete entry;
+    entry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainRefStorage())->Get((const char*)padstatus, 8);
+    if(entry){
+      AliTRDCalibPadStatus *calpadstatus = (AliTRDCalibPadStatus *) entry->GetObject();
+      if(!calpadstatus) ErrorRefDataPadStatus = 2;
+      else{
+	//Make the AliTRDCalDet correspondant
+	AliTRDCalDet calDet = AliTRDCalDet("dummy","dummy for mean");
+	for(Int_t l = 0; l < 540; l++){
+	  calDet.SetValue(l,10.0);
+	}
+	
+	//Make the AliTRDCalPad correspondant
+	AliTRDCalPad calPad1 = AliTRDCalPad("meanpad","dummy for mean");
+	AliTRDCalPad calPad2 = AliTRDCalPad("squarespad","dummy for squares");
+	AliTRDCalROC *calROC1 = 0x0;
+	AliTRDCalROC *calROC2 = 0x0;
+	for (Int_t det=0; det<AliTRDgeometry::kNdet; ++det)
+	  {
+	    AliTRDCalROC *calROC11 = calPad1.GetCalROC(det);
+	    AliTRDCalROC *calROC22 = calPad2.GetCalROC(det);
+	    calROC1                = calpadstatus->GetCalRocMean(det,kTRUE);
+	    calROC2                = calpadstatus->GetCalRocRMS(det,kTRUE);
+	    for(Int_t k = 0; k < calROC22->GetNchannels(); k++){
+	      calROC11->SetValue(k,calROC1->GetValue(k));
+	      calROC22->SetValue(k,calROC2->GetValue(k));
+	    }
+	  }
+	TCanvas *cpadstatusm = new TCanvas((const char*)padstatus,(const char*)padstatus,50,50,600,800);
+	cpadstatusm->Divide(3,2);
+	cpadstatusm->cd(1);
+	((TH2F *)calPad1.MakeHisto2DSmPl(k,0,&calDet,0,9.0,11.0,-1))->Draw("colz");
+	cpadstatusm->cd(2);
+	((TH2F *)calPad1.MakeHisto2DSmPl(k,1,&calDet,0,9.0,11.0,-1))->Draw("colz");
+	cpadstatusm->cd(3);
+	((TH2F *)calPad1.MakeHisto2DSmPl(k,2,&calDet,0,9.0,11.0,-1))->Draw("colz");
+	cpadstatusm->cd(4);
+	((TH2F *)calPad1.MakeHisto2DSmPl(k,3,&calDet,0,9.0,11.0,-1))->Draw("colz");
+	cpadstatusm->cd(5);
+	((TH2F *)calPad1.MakeHisto2DSmPl(k,4,&calDet,0,9.0,11.0,-1))->Draw("colz");
+	cpadstatusm->cd(6);
+	((TH2F *)calPad1.MakeHisto2DSmPl(k,5,&calDet,0,9.0,11.0,-1))->Draw("colz");
+	
+	padstatus += 1982;
+
+	TCanvas *cpadstatusrms = new TCanvas((const char*)padstatus,(const char*)padstatus,50,50,600,800);
+	cpadstatusrms->Divide(3,2);
+	cpadstatusrms->cd(1);
+	((TH2F *)calPad2.MakeHisto2DSmPl(k,0,&calDet,0,0.2,2.0,-1))->Draw("colz");
+	cpadstatusrms->cd(2);
+	((TH2F *)calPad2.MakeHisto2DSmPl(k,1,&calDet,0,0.2,2.0,-1))->Draw("colz");
+	cpadstatusrms->cd(3);
+	((TH2F *)calPad2.MakeHisto2DSmPl(k,2,&calDet,0,0.2,2.0,-1))->Draw("colz");
+	cpadstatusrms->cd(4);
+	((TH2F *)calPad2.MakeHisto2DSmPl(k,3,&calDet,0,0.2,2.0,-1))->Draw("colz");
+	cpadstatusrms->cd(5);
+	((TH2F *)calPad2.MakeHisto2DSmPl(k,4,&calDet,0,0.2,2.0,-1))->Draw("colz");
+	cpadstatusrms->cd(6);
+	((TH2F *)calPad2.MakeHisto2DSmPl(k,5,&calDet,0,0.2,2.0,-1))->Draw("colz");
+	nbsm++;
+      }
     }
   }
+  printf("there is %d with Padstatus reference entries\n",nbsm);
+  if(nbsm==0) ErrorRefDataPadStatus = 1;
+
 
   //Test reference data vdriftt0 DAQ
   //***************************
   Int_t ErrorRefDataVdriftT0DAQ = 0;
   if(entry) delete entry;
-  entry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainRefStorage())->Get("TRD/DAQData/VdriftT0", 12);
+  entry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainRefStorage())->Get("TRD/DAQData/VdriftT0", 8);
   if(!entry) ErrorRefDataVdriftT0DAQ = 1;
   else{
     TProfile2D *histovdriftt0daq = (TProfile2D *) entry->GetObject();
@@ -199,7 +213,7 @@ void AliTRDCheckPreprocessorold()
   AliTRDCalPad *calPad = 0x0;
   Int_t ErrorGainPad = 0;
   if(entry) delete entry;
-  entry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())->Get("TRD/Calib/LocalGainFactor", 12);
+  entry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())->Get("TRD/Calib/LocalGainFactor", 8);
   if(!entry) ErrorGainPad++;
   else{
     calPad = (AliTRDCalPad *) entry->GetObject();
@@ -219,7 +233,7 @@ void AliTRDCheckPreprocessorold()
   Int_t ErrorVdriftPad = 0;
   if(entry) delete entry;
   if(calPad) delete calPad;
-  entry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())->Get("TRD/Calib/LocalVdrift", 12);
+  entry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())->Get("TRD/Calib/LocalVdrift", 8);
   if(!entry) ErrorVdriftPad++;
   else{
     calPad = (AliTRDCalPad *) entry->GetObject();
@@ -239,7 +253,7 @@ void AliTRDCheckPreprocessorold()
   Int_t ErrorT0Pad = 0;
   if(entry) delete entry;
   if(calPad) delete calPad;
-  entry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())->Get("TRD/Calib/LocalT0", 12);
+  entry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())->Get("TRD/Calib/LocalT0", 8);
   if(!entry) ErrorT0Pad++;
   else{
     calPad = (AliTRDCalPad *) entry->GetObject();
@@ -259,7 +273,7 @@ void AliTRDCheckPreprocessorold()
   //********
   Int_t ErrorPRFWidthPad = 0;
   if(entry) delete entry;
-  entry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())->Get("TRD/Calib/PRFWidth", 12);
+  entry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())->Get("TRD/Calib/PRFWidth", 8);
   if(!entry) ErrorPRFWidthPad++;
   else{
     AliTRDCalPad *calPadPrf = (AliTRDCalPad *) entry->GetObject();
@@ -297,27 +311,34 @@ void AliTRDCheckPreprocessorold()
   //Padstatus
   //********
   Int_t ErrorPadStatusPad = 0;
+    
   if(entry) delete entry;
-  entry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())->Get("TRD/Calib/PadStatus", 12);
+  entry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())->Get("TRD/Calib/PadStatus", 8);
   if(!entry) ErrorPadStatusPad++;
   else{
     AliTRDCalPadStatus *calPadStatus = (AliTRDCalPadStatus *) entry->GetObject();
     if(!calPadStatus) ErrorPadStatusPad++;
     else{
-      TCanvas *cpadstatus = new TCanvas("cpadstatus","cpadstatus",50,50,600,800);
-      cpadstatus->Divide(3,2);
-      cpadstatus->cd(1);
-      ((TH2F *)calPadStatus->MakeHisto2DSmPl(1,0))->Draw("colz");
-      cpadstatus->cd(2);
-      ((TH2F *)calPadStatus->MakeHisto2DSmPl(1,1))->Draw("colz");
-      cpadstatus->cd(3);
-      ((TH2F *)calPadStatus->MakeHisto2DSmPl(1,2))->Draw("colz");
-      cpadstatus->cd(4);
-      ((TH2F *)calPadStatus->MakeHisto2DSmPl(1,3))->Draw("colz");
-      cpadstatus->cd(5);
-      ((TH2F *)calPadStatus->MakeHisto2DSmPl(1,4))->Draw("colz");
-      cpadstatus->cd(6);
-      ((TH2F *)calPadStatus->MakeHisto2DSmPl(1,5))->Draw("colz");
+      for(Int_t k = 0; k < 18; k++){
+	
+	TString padstatus("PadStatus");
+	padstatus += k;
+
+	TCanvas *cpadstatus = new TCanvas((const char*)padstatus,(const char*)padstatus,50,50,600,800);
+	cpadstatus->Divide(3,2);
+	cpadstatus->cd(1);
+	((TH2F *)calPadStatus->MakeHisto2DSmPl(k,0))->Draw("colz");
+	cpadstatus->cd(2);
+	((TH2F *)calPadStatus->MakeHisto2DSmPl(k,1))->Draw("colz");
+	cpadstatus->cd(3);
+	((TH2F *)calPadStatus->MakeHisto2DSmPl(k,2))->Draw("colz");
+	cpadstatus->cd(4);
+	((TH2F *)calPadStatus->MakeHisto2DSmPl(k,3))->Draw("colz");
+	cpadstatus->cd(5);
+	((TH2F *)calPadStatus->MakeHisto2DSmPl(k,4))->Draw("colz");
+	cpadstatus->cd(6);
+	((TH2F *)calPadStatus->MakeHisto2DSmPl(k,5))->Draw("colz");
+      }
     }
   }
 
@@ -328,7 +349,7 @@ void AliTRDCheckPreprocessorold()
   //******
   Int_t ErrorGainDetector = 0;
   if(entry) delete entry;
-  entry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())->Get("TRD/Calib/ChamberGainFactor", 12);  
+  entry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())->Get("TRD/Calib/ChamberGainFactor", 8);  
   if(!entry) ErrorGainDetector++;
   else{
     AliTRDCalDet *objectg = (AliTRDCalDet *) entry->GetObject();
@@ -348,7 +369,7 @@ void AliTRDCheckPreprocessorold()
   //******
   Int_t ErrorVdriftDetector = 0;
   if(entry) delete entry;
-  entry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())->Get("TRD/Calib/ChamberVdrift", 12);  
+  entry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())->Get("TRD/Calib/ChamberVdrift", 8);  
   if(!entry) ErrorVdriftDetector++;
   else{
     AliTRDCalDet *objectv = (AliTRDCalDet *) entry->GetObject();
@@ -368,7 +389,7 @@ void AliTRDCheckPreprocessorold()
   //******
   Int_t ErrorT0Detector = 0;
   if(entry) delete entry;
-  entry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())->Get("TRD/Calib/ChamberT0", 12);  
+  entry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())->Get("TRD/Calib/ChamberT0", 8);  
   if(!entry) ErrorT0Detector++;
   else{
     AliTRDCalDet *objectt = (AliTRDCalDet *) entry->GetObject();

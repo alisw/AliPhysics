@@ -612,7 +612,7 @@ void AliTRDCalibPadStatus::AnalyseHisto() /*FOLD00*/
             Int_t offset = (nbinsAdc+2)*(iChannel+1)+1;
 	    Double_t ret = AliMathBase::FitGaus(array_hP+offset,nbinsAdc,fAdcMin,fAdcMax,&param,&dummy);
             // if the fitting failed set noise and pedestal to 0
-	    if ((ret == -4) || (ret == -1)) {
+	    if ((ret==-4) || (ret==-1) || (ret==-2)) {
 		param[1]=0.0;
 		param[2]=0.0;
 	    }
@@ -629,7 +629,7 @@ void AliTRDCalibPadStatus::AnalyseHisto() /*FOLD00*/
 AliTRDCalPadStatus* AliTRDCalibPadStatus::CreateCalPadStatus()
 {
   //
-  //
+  // Create Pad Status out of Mean and RMS values
   //
 
   AliTRDCalPadStatus* obj = new AliTRDCalPadStatus("padstatus", "padstatus");
@@ -639,7 +639,6 @@ AliTRDCalPadStatus* AliTRDCalibPadStatus::CreateCalPadStatus()
       AliTRDCalSingleChamberStatus *calROC = obj->GetCalROC(idet);
 
       //Take the stuff
-      fCalEntries = ((AliTRDarrayF *)GetCalEntries(idet));
       AliTRDCalROC *calRocMean    = ((AliTRDCalROC *)GetCalRocMean(idet));
       AliTRDCalROC *calRocRMS     = ((AliTRDCalROC *)GetCalRocRMS(idet));
 
@@ -647,44 +646,25 @@ AliTRDCalPadStatus* AliTRDCalibPadStatus::CreateCalPadStatus()
 	for(Int_t k = 0; k < calROC->GetNchannels(); k++){
 	  calROC->SetStatus(k,AliTRDCalPadStatus::kMasked);
 	}
-	//printf("no fCalRocMean for %d\n",idet);
 	continue;
       }
-
+      
       //Range
       Int_t channels = calROC->GetNchannels();
-          
-
-      //Mean 
-      Float_t meanentries = 0.0;
-      if(!fCalEntries){
-	if(GetHisto(idet)){
-	  meanentries = GetHisto(idet)->GetEntries()/(channels);
-	}
-      }
-      else meanentries       = TMath::Mean(channels,((TArrayF *)fCalEntries)->GetArray());
-      //Double_t meanmean      = calRocMean->GetMean()*10.0;
-      //Double_t meansquares   = calRocRMS->GetMean()*10.0;
+      
+      Double_t rmsmean       = calRocMean->GetRMS()*10.0;
+      Double_t meanmean      = calRocMean->GetMean()*10.0;
+      Double_t meansquares   = calRocRMS->GetMean()*10.0;
 
 
       for(Int_t ich = 0; ich < channels; ich++){
 	
-	Float_t entries = 0.0;
-	if(!fCalEntries){
-	  if(GetHisto(idet)){
-	    for(Int_t bin = 0; bin < (fAdcMax-fAdcMin); bin++){
-	      entries += GetHisto(idet)->GetArray()[(ich+1)*(fAdcMax-fAdcMin+2)+(bin+1)];
-	    }
-	  }
-	}
-	else entries     = fCalEntries->At(ich);
-	//Float_t mean     = calRocMean->GetValue(ich)*10.0;
+	Float_t mean     = calRocMean->GetValue(ich)*10.0;
 	Float_t rms      = calRocRMS->GetValue(ich)*10.0;
-	//if(ich > 1720) printf("rms %f\n",rms);
-		
-	//if((entries < 0.3*meanentries) || (TMath::Abs(rms-meansquares) > ((Float_t)(fAdcMax-fAdcMin)/2.0)) || (rms == 0.0)) calROC->SetStatus(ich, AliTRDCalPadStatus::kMasked);
-	if(rms <= 0.0001) calROC->SetStatus(ich, AliTRDCalPadStatus::kMasked);
-	}
+	
+	if((rms <= 0.0001) || (TMath::Abs(mean-meanmean)>(5*rmsmean)) || (TMath::Abs(rms)>(5.0*TMath::Abs(meansquares)))) calROC->SetStatus(ich, AliTRDCalPadStatus::kMasked);
+      
+      }
     }
   
   return obj;
@@ -717,6 +697,46 @@ void AliTRDCalibPadStatus::DumpToFile(const Char_t *filename, const Char_t *dir,
     f.Close();
 
     if ( backup ) backup->cd();
+}
+
+//_____________________________________________________________________
+void AliTRDCalibPadStatus::SetCalRocMean(AliTRDCalROC *mean, Int_t det) /*FOLD00*/
+{
+    //
+    //  Put the AliTRDCalROC in the array fCalRocArrayMean
+    //
+
+
+  AliTRDCalROC *rocMean = GetCalRocMean(det,kTRUE);
+  
+  Int_t nChannels = rocMean->GetNchannels();
+  
+  for (Int_t iChannel=0; iChannel<nChannels; iChannel++){
+    
+    rocMean->SetValue(iChannel,mean->GetValue(iChannel));
+    
+  }
+  
+}
+
+//_____________________________________________________________________
+void AliTRDCalibPadStatus::SetCalRocRMS(AliTRDCalROC *rms, Int_t det) /*FOLD00*/
+{
+    //
+    //  Put the AliTRDCalROC in the array fCalRocArrayRMS
+    //
+
+
+  AliTRDCalROC *rocRms = GetCalRocRMS(det,kTRUE);
+  
+  Int_t nChannels = rocRms->GetNchannels();
+  
+  for (Int_t iChannel=0; iChannel<nChannels; iChannel++){
+    
+    rocRms->SetValue(iChannel,rms->GetValue(iChannel));
+    
+  }
+  
 }
 
 //_____________________________________________________________________________

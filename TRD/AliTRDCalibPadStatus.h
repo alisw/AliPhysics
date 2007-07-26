@@ -43,9 +43,13 @@ public:
 	       const Int_t signal, const Int_t rowMax);
   Int_t UpdateHisto(const Int_t idet, const Int_t iRow, const Int_t iCol,
 		    const Int_t signal, const Int_t crowMax);
+
   void Analyse();
   void AnalyseHisto();
   AliTRDCalPadStatus *CreateCalPadStatus();
+
+  void SetCalRocMean(AliTRDCalROC *mean, Int_t det);
+  void SetCalRocRMS(AliTRDCalROC *rms, Int_t det);  
 
   //
   AliTRDarrayF* GetCalEntries(Int_t det, Bool_t force=kFALSE);    // get calibration object

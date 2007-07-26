@@ -21,6 +21,9 @@ contact: alice-datesupport@cern.ch
 
 */
 
+#define RESULT_FILE "trdCalibrationv.root"
+
+
 extern "C" {
 #include <daqDA.h>
 }
@@ -52,7 +55,6 @@ extern "C" {
 //
 // TRD calibration algorithm includes
 //
-#include "AliTRDCalibPadStatus.h"
 #include "AliTRDCalibraFillHisto.h"
 
 
@@ -94,7 +96,7 @@ int main(int argc, char **argv) {
   
 
   /* log start of process */
-  printf("DA example case2 monitoring program started\n");  
+  printf("TRD DA VDRIFT started\n");  
 
 
   /* init some counters */
@@ -107,10 +109,6 @@ int main(int argc, char **argv) {
   man->SetRun(0);
   //Instance of AliTRDCalibraFillHisto
   AliTRDCalibraFillHisto *calibra      = AliTRDCalibraFillHisto::Instance();
-  //AliTRDCalibPadStatus
-  AliTRDCalibPadStatus      calibpad   = AliTRDCalibPadStatus();
-  // pad status on: no zero suppression (special runs)
-  Bool_t passpadstatus = kTRUE;
   // everythings are okey for vdrift
   Bool_t passvdrift  = kTRUE;    // if timebin okey
   Int_t  nbvdrift    = 0;     // number of events with entries for vdrift
@@ -121,7 +119,7 @@ int main(int argc, char **argv) {
   //for(Int_t k = 0; k < 20; k++) {
     struct eventHeaderStruct *event;
     eventTypeType eventT;
-  
+
     /* check shutdown condition */
     if (daqDA_checkShutdown()) {break;}
     
@@ -142,29 +140,17 @@ int main(int argc, char **argv) {
       continue;
     }
 
-    printf(" event number %d (physic event number %d) will be processed\n",(Int_t) nevents_total,(Int_t) nevents_physics);  
+    if( ((Int_t)nevents_total)%100 == 0 ) printf(" event number %d (physic event number %d) will be processed\n",(Int_t) nevents_total,(Int_t) nevents_physics);  
 
 
     /* use event - here, just write event id to result file */
     eventT=event->eventType;
-    //
-    // pad status calibration: we try a first time to see if zero suppressed or not
-    //
-    if(passpadstatus){
-      printf("pad status calibration\n");
-      AliRawReader *rawReader = new AliRawReaderDate((void*)event);
-      AliTRDRawStream *trdRawStream = new AliTRDRawStream((AliRawReader *) rawReader);
-      if(!calibpad.ProcessEvent(trdRawStream,(Bool_t)nevents_total)) passpadstatus = kFALSE;
-      
-      delete trdRawStream;
-      delete rawReader;
-    }
+    
     //
     // vdrift calibration: run only for physics events
     //
-    if ((eventT==PHYSICS_EVENT) && (!passpadstatus)  && (passvdrift)) {
+    if ((eventT==PHYSICS_EVENT) && (passvdrift)) {
       //if (eventT==PHYSICS_EVENT) {
-      printf("vdrift calibration\n");
       AliRawReader *rawReader = new AliRawReaderDate((void*)event);
       AliTRDRawStream *trdRawStream = new AliTRDRawStream((AliRawReader *) rawReader);
       Int_t result = calibra->ProcessEventDAQ(trdRawStream,(Bool_t)nevents_physics);
@@ -195,38 +181,27 @@ int main(int argc, char **argv) {
     }
   }
 
+
+  /* report progress */
+  printf("%d events processed and %d used\n",nevents_total,nbvdrift);
+  
   //
   // Write a local file and put it on the FX 
   //
-  TFile  *fileTRD     = new TFile("trdCalibration.root","recreate");
-  Bool_t passwrite   = kFALSE;
-  //
-  // pad status
-  //
-  if(passpadstatus){
-    // We do this at the shuttle maybe!
-    //calibpad.AnalyseHisto();
-    //AliTRDCalPadStatus *calPadStatus = calibpad.CreateCalPadStatus();
-    calibpad.Write("calibpadstatus");
-    passwrite  = kTRUE; 
-  }
-  //
-  // vdrift
-  //
+  TFile  *fileTRD     = new TFile(RESULT_FILE,"recreate");
+ 
   if((nbvdrift > 0) && passvdrift){
-    Double_t *stat = calibra->StatH((TH2 *)(calibra->GetPH2d()),1);
-    // write only of enough statistics
-    if((stat[6] < 0.20) && (stat[5] > 3000.0)) {
-      calibra->GetPH2d()->Write();
-      passwrite = kTRUE;
-    }
-    
+    //Double_t *stat = calibra->StatH((TH2 *)(calibra->GetPH2d()),1);
+    //if((stat[6] < 0.20) && (stat[5] > 3000.0)) {
+    // write the histogram in any case to see if problems
+    calibra->GetPH2d()->Write();
+    //}
   }
   fileTRD->Close();
   status=0;
-  if(passwrite) {
-    if(daqDA_FES_storeFile("trdCalibration.root","trdCalibration.root")) status = -2;
-  }
+  // Export the file in any case to see if problems
+  if(daqDA_FES_storeFile(RESULT_FILE,RESULT_FILE)) status = -2;
+  
   delete fileTRD;  
 
   return status;
