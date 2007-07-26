@@ -20,6 +20,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
 #define DDL_32BLOCK_SIZE 5
 
 #include "Rtypes.h"
@@ -59,9 +60,15 @@ class AliHLTDDLDecoder
    */
   bool Decode();
 
-
+  /*
+   *Reads the next altro channels 
+   */
   bool NextChannel(AliHLTAltroData *altroDataPtr);
 
+  /* 
+   * DONT use !
+   * For debugging purphoses only, will be removed in near future
+   */
   template<typename T> 
   void  DumpData(T *array, int N, int nPerLine)
   {
@@ -79,15 +86,13 @@ class AliHLTDDLDecoder
   }
 
 
-
-
-
-
   void SetMemory(UChar_t  *dtaPtr, UInt_t size);
+  
   void PrintInfo(AliHLTAltroData &altrodata, int n = 0, int nPerLine = 4);
 
   /*
-   *
+   * Prints to stdout the percent of altroblocks that
+   * is missing the 2aaa trailer.
    */
   float GetFailureRate();
 
@@ -103,6 +108,12 @@ class AliHLTDDLDecoder
   */
   void DecodeLastDDLBlock();
 
+  /*
+   *Use for simulated data only.
+   *Patch for incorrectly simulated data. Counts the number of 
+   *aaaa word in the trailer of the payload and tries to figure out
+   *the correct number of 40 bit altro words in the RCU pauload
+   */
   int countAAApaddings();
 
   UInt_t  *f32DtaPtr;                     /**<Pointer to dat of the input buffer in entities of 32 bit words (the RCU/DDL block) */
