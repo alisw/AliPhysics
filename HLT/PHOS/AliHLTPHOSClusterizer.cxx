@@ -45,17 +45,21 @@ ClassImp(AliHLTPHOSClusterizer);
 AliHLTPHOSClusterizer::AliHLTPHOSClusterizer():AliHLTPHOSBase(),fPHOSModule(0), fThreshold(0), fClusterThreshold(0), 
 					       fHighGainFactor(0.005), fLowGainFactor(0.08),
 					       fArraySize(3), fMultiplicity(fArraySize*fArraySize)
+//AliHLTPHOSClusterizer::AliHLTPHOSClusterizer():AliHLTPHOSProcessor(),fPHOSModule(0), fThreshold(0), fClusterThreshold(0), 
+//					       fHighGainFactor(0.005), fLowGainFactor(0.08),
+//					       fArraySize(3), fMultiplicity(fArraySize*fArraySize)
 {
   //See header file for documentation
   
 }//end
 
-AliHLTPHOSClusterizer::AliHLTPHOSClusterizer(const AliHLTPHOSClusterizer &):AliHLTPHOSBase(),fPHOSModule(0), fThreshold(0), fClusterThreshold(0), 
-									    fHighGainFactor(0.005), fLowGainFactor(0.08),
-									    fArraySize(3), fMultiplicity(fArraySize*fArraySize)
-{
+// PTH AliHLTPHOSClusterizer::AliHLTPHOSClusterizer(const AliHLTPHOSClusterizer &):AliHLTPHOSBase(),fPHOSModule(0), fThreshold(0), fClusterThreshold(0), 
+//									    fHighGainFactor(0.005), fLowGainFactor(0.08),
+//									    fArraySize(3), fMultiplicity(fArraySize*fArraySize)
+
+//{
   //Copy constructor, not implemented
-}//end
+//}//end
 
 AliHLTPHOSClusterizer:: ~AliHLTPHOSClusterizer()  
 {

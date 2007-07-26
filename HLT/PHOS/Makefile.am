@@ -48,6 +48,7 @@ libAliHLTPHOS_la_SOURCES	= AliHLTPHOSPulseGenerator.cxx \
 				  AliHLTAltroBunch.cxx \
 			          AliHLTPHOSMapper.cxx \
 				  AliHLTPHOSRcuProcessor.cxx \
+				  AliHLTPHOSDDLDecoderComponent.cxx \
 				  AliHLTPHOSBase.cxx
 
 
@@ -55,7 +56,6 @@ libAliHLTPHOS_la_SOURCES	= AliHLTPHOSPulseGenerator.cxx \
 # class header files, the link definition for the root dictionary
 # will be created from the names of the header files
 CLASS_HDRS			= AliHLTPHOSPulseGenerator.h \
-				  AliHLTPHOSRawAnalyzer.h \
 				  AliHLTPHOSRawAnalyzerPeakFinder.h \
 				  AliHLTPHOSRawAnalyzerCrude.h \
 				  AliHLTPHOSRawAnalyzerKLevel.h \
@@ -86,10 +86,12 @@ CLASS_HDRS			= AliHLTPHOSPulseGenerator.h \
 				  AliHLTPHOSMapper.h \
 				  AliHLTPHOSRcuProcessor.h \
 				  AliHLTPHOSBase.h \
+				  AliHLTPHOSDDLDecoderComponent.h \
 				  AliHLTPHOSMapper.h
 
 pkginclude_HEADERS		= $(CLASS_HDRS) \
 				  AliHLTPHOSCommonDefs.h \
+	 			  AliHLTPHOSRawAnalyzer.h \
 			          AliHLTPHOSDefinitions.h \
 				  AliHLTPHOSModuleCellEnergyDataStruct.h\
 				  AliHLTPHOSRcuCellEnergyDataStruct.h \

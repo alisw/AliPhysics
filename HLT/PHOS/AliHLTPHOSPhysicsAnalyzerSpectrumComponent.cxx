@@ -26,10 +26,13 @@ UInt_t AliHLTPHOSPhysicsAnalyzerSpectrumComponent::fgCount = 0;
 
 AliHLTPHOSPhysicsAnalyzerSpectrumComponent gAliHLTPHOSPhysicsAnalyzerSpectrumComponent;
 
-AliHLTPHOSPhysicsAnalyzerSpectrumComponent::AliHLTPHOSPhysicsAnalyzerSpectrumComponent():AliHLTPHOSBase(), AliHLTProcessor(), fAnalyzerPtr(0), 
+// removed by PTH AliHLTPHOSPhysicsAnalyzerSpectrumComponent::AliHLTPHOSPhysicsAnalyzerSpectrumComponent():AliHLTPHOSBase(), AliHLTProcessor(), fAnalyzerPtr(0), 
+//											 fPeakFitter(0), fRootHistPtr(0),
+//											 fWriteInterval(0)
+							 
+AliHLTPHOSPhysicsAnalyzerSpectrumComponent::AliHLTPHOSPhysicsAnalyzerSpectrumComponent():AliHLTPHOSProcessor(), fAnalyzerPtr(0), // added by PTH 
 											 fPeakFitter(0), fRootHistPtr(0),
 											 fWriteInterval(0)
-							 
 {
   //Constructor
 }

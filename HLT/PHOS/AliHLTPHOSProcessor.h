@@ -4,11 +4,13 @@
 #include "AliHLTProcessor.h"
 #include "AliHLTPHOSBase.h"
 #include "AliHLTPHOSDefinitions.h"
+#include "AliHLTDataTypes.h"
 
 using namespace PhosHLTConst;
 
 class AliHLTPHOSProcessor:public AliHLTProcessor, public AliHLTPHOSBase
 {
+
  public:
   AliHLTPHOSProcessor();
   virtual ~AliHLTPHOSProcessor();

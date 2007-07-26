@@ -62,7 +62,7 @@ int main()
     }
 
 
-   tSystError = tSystError*pow(10, 9); //to give systematic error of timing in nanoseconds
+   tSystError = tSystError*pow((double)10, (double)9); //to give systematic error of timing in nanoseconds
    aSystError = aSystError*100;        //to give systematic error of amplitude in percent
 
 

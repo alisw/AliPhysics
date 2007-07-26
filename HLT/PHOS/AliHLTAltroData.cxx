@@ -2,7 +2,13 @@
 
 
 
-AliHLTAltroData::AliHLTAltroData(): fBunchCounter(0), fBunchData(0), fData(0), fDataSize(0), fWc(0), fHadd(0), fIsComplete(true)
+AliHLTAltroData::AliHLTAltroData(): fData(0),
+				    fBunchData(0),
+				    fDataSize(0),
+				    fWc(0),
+				    fHadd(0),
+				    fBunchCounter(0),
+				    fIsComplete(0)
 {
 
 

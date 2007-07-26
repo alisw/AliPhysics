@@ -110,7 +110,7 @@ AliHLTPHOSOnlineDisplay::InitDisplay()
   AddFrame(fTab, fL1);
   MapSubwindows();
   Resize();
-  SetWindowName("online display");
+  SetWindowName("IFRAX");
   MapWindow();
   MoveResize(100,100,1200,1000);
 }

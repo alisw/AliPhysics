@@ -30,8 +30,10 @@ const AliHLTComponentDataType AliHLTPHOSClusterizerComponent::fgkInputDataTypes[
 
 AliHLTPHOSClusterizerComponent gAliHLTPHOSClusterizerComponent;
 
-AliHLTPHOSClusterizerComponent::AliHLTPHOSClusterizerComponent(): AliHLTPHOSBase(), AliHLTProcessor(), fClusterizerPtr(0), fOutPtr(0), 
-								 fRecPointStructArrayPtr(0), fRecPointListPtr(0)
+//AliHLTPHOSClusterizerComponent::AliHLTPHOSClusterizerComponent(): AliHLTPHOSBase(), AliHLTProcessor(), fClusterizerPtr(0), fOutPtr(0), 
+//								 fRecPointStructArrayPtr(0), fRecPointListPtr(0)
+AliHLTPHOSClusterizerComponent::AliHLTPHOSClusterizerComponent(): AliHLTPHOSProcessor(), fClusterizerPtr(0), fOutPtr(0), 
+								  fRecPointStructArrayPtr(0), fRecPointListPtr(0)
 {
   //Constructor
 }
@@ -63,6 +65,14 @@ AliHLTPHOSClusterizerComponent::~AliHLTPHOSClusterizerComponent()
     }
   
 }
+
+/*
+int 
+AliHLTPHOSClusterizerComponent::AliHLTPHOSClusterizerComponent::Deinit()
+{
+  ////////// PTH WARNING you should Define a class AliHLTPHOSModuleProcessor
+}
+*/
 
 // PTH AliHLTPHOSClusterizerComponent::AliHLTPHOSClusterizerComponent(const AliHLTPHOSClusterizerComponent &):AliHLTProcessor(), 
 //												       fClusterizerPtr(0), 

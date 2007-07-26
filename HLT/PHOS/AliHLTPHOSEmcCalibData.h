@@ -11,11 +11,9 @@
 
 
 #include "TNamed.h"
-#include "AliHLTPHOSCommonDefs.h"
 #include "AliHLTPHOSConstants.h"
 
 
-//              PhosHLTConst
 using namespace PhosHLTConst;
 
 class AliHLTPHOSEmcCalibData: public TNamed {

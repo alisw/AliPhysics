@@ -5,7 +5,8 @@
 #ifndef ALIHLTPHOSPHYSICSANALYZERSPECTRUMCOMPONENT_H
 #define ALIHLTPHOSPHYSICSANALYZERSPECTRUMCOMPONENT_H
 
-#include "AliHLTProcessor.h"
+// removed  PTH#include "AliHLTProcessor.h"
+#include "AliHLTPHOSProcessor.h" // added by PTH
 #include "AliHLTPHOSBase.h"
 
 class TH1F;
@@ -19,7 +20,8 @@ class TFile;
 struct AliHLTPHOSClusterDataStruct;
 
 
-class AliHLTPHOSPhysicsAnalyzerSpectrumComponent: public AliHLTPHOSBase, public AliHLTProcessor
+// PTH class AliHLTPHOSPhysicsAnalyzerSpectrumComponent: public AliHLTPHOSBase, public AliHLTProcessor
+class AliHLTPHOSPhysicsAnalyzerSpectrumComponent: public AliHLTPHOSProcessor // added by PTH
 {
  public:
 

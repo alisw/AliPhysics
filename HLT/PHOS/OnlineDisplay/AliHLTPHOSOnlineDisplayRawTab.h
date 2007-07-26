@@ -8,6 +8,7 @@
 #include <TRootEmbeddedCanvas.h>
 #include <TCanvas.h>
 #include "AliHLTDataTypes.h"
+#include "AliHLTPHOSTH1D.h"
 
 #include "AliHLTPHOSConstants.h"
 using namespace PhosHLTConst;
@@ -38,7 +39,8 @@ class AliHLTPHOSOnlineDisplayRawTab : public AliHLTPHOSOnlineDisplayTab
   TH2D *fgLegoPlotLGPtr;
   TH2D *fgLegoPlotHGPtr;
   AliHLTPHOSGetEventButton* fgEventButtPtr; 
-  TH1D                *fgChannelDataPlotPtr[N_ZROWS_RCU][N_XCOLUMNS_RCU];
+  // TH1D                *fgChannelDataPlotPtr[N_ZROWS_RCU][N_XCOLUMNS_RCU];
+  AliHLTPHOSTH1D                *fgChannelDataPlotPtr[N_ZROWS_RCU][N_XCOLUMNS_RCU];
 };
 
 

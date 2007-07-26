@@ -124,8 +124,8 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 	  fAnalyzerPtr->SetData(fAltroDataPtr->fData);
 	  fAnalyzerPtr->Evaluate(0, fAltroDataPtr->fDataSize -2);  
 
-	  fOutPtr->fValidData[tmpChannelCnt].fZ  = fMapperPtr->hw2geomapPtr[fAltroDataPtr->fHadd].row;
-	  fOutPtr->fValidData[tmpChannelCnt].fX  = fMapperPtr->hw2geomapPtr[fAltroDataPtr->fHadd].col; 
+	  fOutPtr->fValidData[tmpChannelCnt].fZ  = fMapperPtr->hw2geomapPtr[fAltroDataPtr->fHadd].zRow;
+	  fOutPtr->fValidData[tmpChannelCnt].fX  = fMapperPtr->hw2geomapPtr[fAltroDataPtr->fHadd].xCol; 
 	  fOutPtr->fValidData[tmpChannelCnt].fGain  = fMapperPtr->hw2geomapPtr[fAltroDataPtr->fHadd].gain; 
 	  fOutPtr->fValidData[tmpChannelCnt].fEnergy  = (float)fAnalyzerPtr->GetEnergy();
 	  fOutPtr->fValidData[tmpChannelCnt].fTime    = (float)fAnalyzerPtr->GetTiming();

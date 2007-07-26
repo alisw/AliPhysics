@@ -23,18 +23,23 @@
 #include <Rtypes.h>
 #include "TString.h"
 #include "AliHLTDataTypes.h"
-#include "AliHLTPHOSDefinitions.h"
+//#include "AliHLTPHOSDefinitions.h"
+//#include "AliHLTPHOSCommonDefs.h"
 #include "AliHLTPHOSConstants.h"
-#include "AliHLTPHOSCommonDefs.h"
 
 using namespace PhosHLTConst;
+
+
+
 using namespace std;
+
 
 class  AliHLTPHOSBase
 {
  public:
   AliHLTPHOSBase();
   virtual ~AliHLTPHOSBase();
+
 
   template<typename T> 
     void  DumpData(T *array, int N, int nPerLine)
@@ -64,7 +69,9 @@ class  AliHLTPHOSBase
   template<typename T> 
     T  MaxValue(T *array, int N)
     {
-      Double_t tmpMax = 0;
+      //   Double_t tmpMax = 0;
+      
+      T tmpMax = 0;
 
       for(int i = 0; i < N; i++)
 	{
@@ -79,8 +86,9 @@ class  AliHLTPHOSBase
 
 
  private:
-  AliHLTPHOSBase(const AliHLTPHOSBase & );
-  AliHLTPHOSBase & operator = (const AliHLTPHOSBase &);
+  //  AliHLTPHOSBase(const AliHLTPHOSBase & );
+  // AliHLTPHOSBase & operator = (const AliHLTPHOSBase &);
+
 
 
   ///  const struct THIS IS STRANGE;

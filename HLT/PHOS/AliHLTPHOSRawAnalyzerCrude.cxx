@@ -15,19 +15,19 @@
 
 
 #include "AliHLTPHOSRawAnalyzerCrude.h"
-#include <iostream>
-
-using std::cout;
-using std::endl;
-
-ClassImp(AliHLTPHOSRawAnalyzerCrude) 
+//#include <iostream>
 
 
-//____________________________________________________________________________
-AliHLTPHOSRawAnalyzerCrude::AliHLTPHOSRawAnalyzerCrude(const AliHLTPHOSRawAnalyzerCrude&):AliHLTPHOSRawAnalyzer()
-{
+//using std::cout;
+//using std::endl;
 
-}
+//ClassImp(AliHLTPHOSRawAnalyzerCrude) 
+
+
+//AliHLTPHOSRawAnalyzerCrude::AliHLTPHOSRawAnalyzerCrude(const AliHLTPHOSRawAnalyzerCrude&):AliHLTPHOSRawAnalyzer()
+//{
+//
+//}
 
 /**
  * The AliHLTPHOSPeakfinder class is the class for extracting the basic signal parameters
@@ -47,6 +47,7 @@ AliHLTPHOSRawAnalyzerCrude::~AliHLTPHOSRawAnalyzerCrude()
 {
 
 } //end AliHLTPHOSRawAnalyzerCrude
+
 
 
 

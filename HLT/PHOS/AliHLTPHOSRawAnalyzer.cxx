@@ -26,15 +26,9 @@ AliHLTPHOSRawAnalyzer:: AliHLTPHOSRawAnalyzer(): AliHLTPHOSBase(), fIntDataPtr(0
 
 AliHLTPHOSRawAnalyzer::~AliHLTPHOSRawAnalyzer()
 {
-
+  delete[] fIntDataPtr;
 }
 
-/*
-AliHLTPHOSRawAnalyzer::AliHLTPHOSRawAnalyzer(AliHLTPHOSRawAnalyzer const&):fIntDataPtr(0), fSampleFrequency(10), fTau(2), fDTof(99999), fDAmpl(99999), fStartIndex(0)
-{
-
-}
-*/
 
 
 /**
@@ -176,8 +170,6 @@ AliHLTPHOSRawAnalyzer::SetAVector(Double_t *aVector, Int_t size)
 {
  cout <<"ERROR: AliHLTPHOSRawAnalyzer::SetAVector:  You cannot set the peakfindervector here, must be set in derived class peakfinder"<<endl;
 }
-
-
 
 /*
 UInt_t

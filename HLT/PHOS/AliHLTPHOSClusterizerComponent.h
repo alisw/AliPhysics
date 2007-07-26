@@ -13,8 +13,9 @@
 
 
 
-#include "AliHLTProcessor.h"
-#include "AliHLTPHOSBase.h"
+#include "AliHLTPHOSProcessor.h"
+
+//#include "AliHLTPHOSBase.h"
 //#include "AliHLTPHOSDefinitions.h"
 //#include "AliHLTProcessor.h"
 
@@ -28,7 +29,10 @@ struct AliHLTPHOSRecPointDataStruct;
 struct AliHLTPHOSRecPointListDataStruct;
 
 
-class AliHLTPHOSClusterizerComponent:  public AliHLTPHOSBase, public AliHLTProcessor
+
+// PTH class AliHLTPHOSClusterizerComponent:  public AliHLTPHOSBase, public AliHLTProcessor
+class AliHLTPHOSClusterizerComponent: public AliHLTPHOSProcessor
+//class AliHLTPHOSClusterizerComponent:  public AliHLTPHOSBase, public AliHLTProcessor
 {
  public:
 
@@ -41,6 +45,8 @@ class AliHLTPHOSClusterizerComponent:  public AliHLTPHOSBase, public AliHLTProce
 
   //     return *this;
   //   }
+
+
 
   const char* GetComponentID();
   void GetInputDataTypes(std::vector<AliHLTComponentDataType>& list);
@@ -57,8 +63,9 @@ class AliHLTPHOSClusterizerComponent:  public AliHLTPHOSBase, public AliHLTProce
 
  protected:
 
+
   int DoInit(int argc, const char** argv);
-  int Deinit();
+  virtual int Deinit(); ////////// PTH WARNING you should Define a class AliHLTPHOSModuleProcessor
   int DoDeinit();
 
  private:

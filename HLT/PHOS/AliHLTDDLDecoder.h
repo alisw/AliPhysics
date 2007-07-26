@@ -20,24 +20,46 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+#define DDL_32BLOCK_SIZE 5
 
 #include "Rtypes.h"
 #include <iostream>
+#include "AliHLTPHOSConstants.h"
+
 using  std::cout;
 using  std::endl;
-#define DDL_32BLOCK_SIZE 5
-#include "AliHLTPHOSConstants.h"
 using namespace PhosHLTConst;
+
+
 class AliHLTAltroData;
 
 
 class AliHLTDDLDecoder
 {
  public:
+ 
+  /*
+   *Default constructor
+   */
   AliHLTDDLDecoder();
+
+  /*
+   *Default destructor
+   */
   virtual ~AliHLTDDLDecoder();
+
+  /*
+   *Check wether or not there is consistency between the number of 40 bit altro words given by
+   *the RCU payload and the number of 40 bit words calculated from the size of the RCU payload.
+   */
   bool CheckPayload();
+
+  /*
+   *Decode the RCU/DDL payload 
+   */
   bool Decode();
+
+
   bool NextChannel(AliHLTAltroData *altroDataPtr);
 
   template<typename T> 
@@ -57,52 +79,50 @@ class AliHLTDDLDecoder
   }
 
 
+
+
+
+
   void SetMemory(UChar_t  *dtaPtr, UInt_t size);
-
-  //  void SetNTrailerWords(int N);
-
   void PrintInfo(AliHLTAltroData &altrodata, int n = 0, int nPerLine = 4);
+
+  /*
+   *
+   */
   float GetFailureRate();
 
-
  private:
+  /*
+   *Decode one 160 bit DDL block into 16 x 16 bit integers (only least significant 10 bits are filled)
+   */
   void DecodeDDLBlock();
+ 
+  /*
+   *Decode one 160 bit DDL block into 16 integers, 
+   *if the las blaock does not align with 160 bits then first pad with zeroes 
+  */
   void DecodeLastDDLBlock();
-  int GetMarker(UInt_t *buffer, int index);
+
   int countAAApaddings();
 
-  UInt_t  *f32DtaPtr;
-  UChar_t *f8DtaPtr;   
-
-  const long int fN32HeaderWords;
-  const long int fN32RcuTrailerWords;
- 
-
-  unsigned int fNDDLBlocks;
-  long int fBufferPos;
-
-  unsigned long  fN40AltroWords;
-  unsigned long  fN40RcuAltroWords;
-
-  UInt_t  fSize;
-  unsigned int fSegmentation;
-  unsigned int f32LastDDLBlockSize;
-  UInt_t f32PayloadSize;
-  UInt_t fBufferIndex;
-  UInt_t fN10bitWords;
-  UInt_t fBuffer[N_FEECS*N_BRANCHES*8*N_ALTROCHANNELS*(ALTRO_MAX_SAMPLES + ALTRO_MAX_TRALER_SIZE)];  
-  UInt_t fDDLBlockDummy[DDL_BLOCK_SIZE];
-  UInt_t fDDLBlockCnt;
-  UInt_t fNAltro10bitWords;
-  UInt_t fNAltroLastSequence10bitWords;
-  UInt_t fHadd;
-  UInt_t fI;
-  int fComplete;
-  int fInComplete;
-
-  int fBad;
-  int fGood;
-
+  UInt_t  *f32DtaPtr;                     /**<Pointer to dat of the input buffer in entities of 32 bit words (the RCU/DDL block) */
+  UChar_t *f8DtaPtr;                      /**<Pointer to dat of the input buffer in entities of 8 bit words (the RCU/DDL block) */
+  const long int fN32HeaderWords;         /**<Number of 32 bit words in the common data header*/
+  const long int fN32RcuTrailerWords;     /**<Number of 32 bit words in the RCU trailer*/
+  int  fN40AltroWords;                    /**<Number of 40 bit altro words contained in the RCU payload as calculated form the payload size*/
+  int  fN40RcuAltroWords;                 /**<Number of 40 bit altro words contained in the RCU payload as given by the RCU trailer*/            
+  int fNDDLBlocks;                        /**<Number of DDL blocks in the payload (the last blocj might/ight not be 160 bits )*/
+  int  f32LastDDLBlockSize;               /**<Size of the last DDL block*/ 
+  UInt_t fDDLBlockDummy[DDL_BLOCK_SIZE];  /**<buffer to contain the las DDL block, if the block is not aligned with 160 bitm the remaining fileds are padded with zeroes*/
+  UInt_t f32PayloadSize;                  /**<The size of the payload in entities of 32 bit words (after subtraction of the RCU header and the RCU trailer words)*/
+  long int fOutBufferIndex;               /**<current buffer position of the buffer for the decoded data (10 bit words represnted as int's)*/
+  UInt_t  fSize;                          /**<The size of the input RCU/DDL payload in entities of bytes, inluding the RCU header and trailer */  
+  UInt_t fOutBuffer[N_FEECS*N_BRANCHES*8*N_ALTROCHANNELS*(ALTRO_MAX_SAMPLES + ALTRO_MAX_TRALER_SIZE)];  /**<Buffer to hold the decoded data*/
+  UInt_t fNAltro10bitWords;               /**<The total number of 10 bit altro words in the RCU payload, including trailers (disregardin that the altro trialer is not aligned with 10 bit)*/
+  int fComplete;                          /**<Number of altro channels that is only partially read out  (0x2aaa pattern missing in trailer)*/
+  int fInComplete;                        /**<Number of altro channels that is read out properly*/       
+  bool fDecodeIfCorruptedTrailer;         /**<Wether or not to try to decode the data if the RCU trailer is incorrect (will succseed in most cases)*/ 
+  bool fIsDecoded;                        /**<Wether or not the buffer set last by the "SetMemory()" function has been decoded*/
 };
 
 #endif

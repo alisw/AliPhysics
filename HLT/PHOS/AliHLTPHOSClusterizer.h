@@ -11,8 +11,9 @@
 #ifndef ALIHLTPHOSCLUSTERIZER_H
 #define ALIHLTPHOSCLUSTERIZER_H
 
-//#include "AliHLTPHOSProcessor.h"
 
+
+//#include "AliHLTPHOSProcessor.h"
 #include "AliHLTPHOSBase.h" 
 
 
@@ -28,6 +29,7 @@ struct AliHLTPHOSRecPointListDataStruct;
 struct AliHLTPHOSRcuCellEnergyDataStruct;
 
 //class AliHLTPHOSClusterizer: public AliHLTPHOSProcessor
+
 class AliHLTPHOSClusterizer: public AliHLTPHOSBase
 {
   
@@ -35,8 +37,8 @@ class AliHLTPHOSClusterizer: public AliHLTPHOSBase
   
   AliHLTPHOSClusterizer();
   virtual ~AliHLTPHOSClusterizer();
-  AliHLTPHOSClusterizer(const AliHLTPHOSClusterizer &);
-  AliHLTPHOSClusterizer & operator = (const AliHLTPHOSClusterizer &) {return *this;}
+  //  AliHLTPHOSClusterizer(const AliHLTPHOSClusterizer &);
+  //AliHLTPHOSClusterizer & operator = (const AliHLTPHOSClusterizer &) {return *this;}
    
   void    SetThreshold(float threshold) {fThreshold = threshold;}
   void    SetClusterThreshold(float clusterThreshold) {fClusterThreshold = clusterThreshold;}
