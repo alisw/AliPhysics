@@ -20,24 +20,22 @@ class AliESDtrack;
 class AliTrackReference;
 class AliTRDcluster;
 
-const unsigned kMAXCLUSTERSPERTRACK = 210; 
+const unsigned kMAXCLUSTERSPERTRACK = 210;
 
 class AliTRDtrack : public AliKalmanTrack {
 
  public:
    
-  enum { kNdet      = 540
+  enum { kNdet     = 540
        , kNstacks   =  90
        , kNplane    =   6
        , kNcham     =   5
        , kNsect     =  18
-       , kNslice    =   3
-       , kMidTimeBin=  14};
+       , kNslice    =   3};
 
    AliTRDtrack();
-   AliTRDtrack(const AliTRDcluster *c, Int_t index, const Double_t xx[5]
-              ,const Double_t cc[15], Double_t xr, Double_t alpha);  
-   AliTRDtrack(const AliTRDtrack &t);    
+   AliTRDtrack(/*const */AliTRDcluster *c, Int_t index, const Double_t xx[5], const Double_t cc[15], Double_t xr, Double_t alpha);
+   AliTRDtrack(const AliTRDtrack &t/*, const Bool_t owner = kTRUE*/);    
    AliTRDtrack(const AliESDtrack &t);
    ~AliTRDtrack();
    AliTRDtrack(const AliKalmanTrack &t, Double_t alpha); 
@@ -91,17 +89,29 @@ class AliTRDtrack : public AliKalmanTrack {
            void     SetNExpectedLast(Int_t nexp)                            { fNExpectedLast             = nexp;   }
            void     SetChi2Last(Float_t chi2)                               { fChi2Last                  = chi2;   }
            void     SetTracklets(Int_t i, AliTRDtracklet t)                 { fTracklets[i]              = t;      }
-           void     SetBudget(Int_t i, Float_t budget)                      { fBudget[i]                 = budget; }
+					 void     SetBudget(Int_t i, Float_t budget)                      { fBudget[i]                 = budget; }
 
-           Int_t    PropagateToX(Double_t xr, Double_t step);
-           Int_t    PropagateToR(Double_t xr, Double_t step);
-           Int_t    UpdateMI(const AliTRDcluster *c, Double_t chi2, Int_t i, Double_t h01, Int_t plane);
-           void     MakeBackupTrack();
+// A. Bercuci new functions
+					void		SetTrackSegmentDirMom(const Int_t plane);
+					void		CookdEdx(Double_t low = 0.05, Double_t up = 0.7);
+					void		CookdEdxTimBin();
+					Int_t		CookPID(AliESDtrack *p);
+					void		SetCluster(AliTRDcluster* cl, Int_t index = -1) {fClusters[(index == -1) ? GetNumberOfClusters()-1 : index] = cl;}
+	inline	AliTRDcluster* GetCluster(Int_t layer){ return (layer >= 0 && layer < GetNumberOfClusters()) ?  fClusters[layer] : 0x0;}
+	inline	Float_t	GetMomentumPlane(Int_t plane) const {return (plane >= 0 && plane < kNplane) ? fMom[plane] : 0.;}
+	inline	Float_t	GetSnpPlane(Int_t plane) const {return (plane >= 0 && plane < kNplane) ? fSnp[plane] : 0.;}
+	inline	Float_t	GetTglPlane(Int_t plane) const {return (plane >= 0 && plane < kNplane) ? fTgl[plane] : 0.;}
+	inline	Float_t	GetTrackLengthPlane(Int_t plane) const;
+//end A.Bercuci
+
+					 void     MakeBackupTrack();
            Bool_t   PropagateTo(Double_t xr, Double_t x0 = 8.72, Double_t rho = 5.86e-3);
-           Bool_t   Update(const AliTRDcluster *c, Double_t chi2, Int_t i, Double_t h01);
+           Int_t    PropagateToR(Double_t xr, Double_t step);
+           Int_t    PropagateToX(Double_t xr, Double_t step);
            Bool_t   Rotate(Double_t angle, Bool_t absolute = kFALSE);
-           void     CookdEdx(Double_t low = 0.05, Double_t up = 0.7);   
            Float_t  StatusForTOF();
+           Bool_t   Update(const AliTRDcluster *c, Double_t chi2, Int_t i, Double_t h01);
+           Int_t    UpdateMI(/*const */AliTRDcluster *c, Double_t chi2, Int_t i, Double_t h01, Int_t plane);
  
  protected:
 
@@ -117,12 +127,20 @@ class AliTRDtrack : public AliKalmanTrack {
            Float_t  fdEdxPlane[kNplane][kNslice];       //  dE/dx from all 6 planes in 3 slices each
            Int_t    fTimBinPlane[kNplane];              //  Time bin of Max cluster from all 6 planes
 
-           Bool_t   fStopped;                           //  Track stop indication
+					// A.Bercuci
+					 Float_t  fMom[kNplane];                      //  Track momentum at chamber entrance
+					 Float_t  fSnp[kNplane];                   //  track direction
+					 Float_t  fTgl[kNplane];                   //  track direction
+           AliTRDcluster*   fClusters[kMAXCLUSTERSPERTRACK];
+           Bool_t   fClusterOwner;         // indicates the track is owner of cluster
+           // end A.Bercuci
+					 
+					 Bool_t   fStopped;                           //  Track stop indication
            Int_t    fIndex[kMAXCLUSTERSPERTRACK];       //  Global indexes of clusters  
            Int_t    fIndexBackup[kMAXCLUSTERSPERTRACK]; //  Backup indexes of clusters - used in iterations
            Float_t  fdQdl[kMAXCLUSTERSPERTRACK];        //  Cluster amplitudes corrected for track angles    
-                           
-           Float_t  fLhElectron;                        //  Likelihood to be an electron    
+           
+					 Float_t  fLhElectron;                        //  Likelihood to be an electron
            Int_t    fNWrong;                            //  Number of wrong clusters
            Int_t    fNRotate;                           //  Number of rotation
            Int_t    fNCross;                            //  Number of the cross materials

@@ -716,7 +716,7 @@ Int_t AliTRDtracker::PropagateBack(AliESDEvent *event)
       Int_t foundClr = track->GetNumberOfClusters();
       if (foundClr >= foundMin) {
 	track->CookdEdx(); 
-	CookdEdxTimBin(*track);
+	track->CookdEdxTimBin(); // A.Bercuci 25.07.07
 	CookLabel(track,1 - fgkLabelFraction);
 	if (track->GetBackupTrack()) {
           UseClusters(track->GetBackupTrack());
@@ -977,18 +977,21 @@ Int_t AliTRDtracker::RefitInward(AliESDEvent *event)
     }  
         
     //AliTRDtrack *pt = seed2;
-    AliTRDtrack &t = *pt; 
-    FollowProlongation(t); 
-    if (t.GetNumberOfClusters() >= foundMin) {
+		// A.Bercuci 25.07.07
+		//AliTRDtrack &t = *pt; 
+    FollowProlongation(*pt); 
+    if (pt->GetNumberOfClusters() >= foundMin) {
       //UseClusters(&t);
       //CookLabel(pt, 1-fgkLabelFraction);
-      t.CookdEdx();
-      CookdEdxTimBin(t);
+      pt->CookdEdx();
+      pt->CookdEdxTimBin();
+			pt->CookPID(seed);
+			//pt->Calibrate(); // slot for calibration
     }
     found++;
 
     Double_t xTPC = 250.0;
-    if (PropagateToX(t,xTPC,fgkMaxStep)) {
+    if (PropagateToX(*pt,xTPC,fgkMaxStep)) {
 
       seed->UpdateTrackParams(pt,AliESDtrack::kTRDrefit);
       fHRefit->Fill(5);
@@ -1009,21 +1012,27 @@ Int_t AliTRDtracker::RefitInward(AliESDEvent *event)
       delete seed2;
       if (PropagateToX(*pt2,xTPC,fgkMaxStep)) { 
         pt2->CookdEdx( ); 
-        CookdEdxTimBin(*pt2);
-	seed->UpdateTrackParams(pt2,AliESDtrack::kTRDrefit);
-	fHRefit->Fill(6);
+        pt2->CookdEdxTimBin(); // A.Bercuci 25.07.07
+				seed->UpdateTrackParams(pt2,AliESDtrack::kTRDrefit);
+				fHRefit->Fill(6);
 
         for (Int_t i = 0; i < AliESDtrack::kNPlane; i++) {
           for (Int_t j = 0; j < AliESDtrack::kNSlice; j++) {
             seed->SetTRDsignals(pt2->GetPIDsignals(i,j),i,j);
-	  }
+	  			}
           seed->SetTRDTimBin(pt2->GetPIDTimBin(i),i);
         }
       }
+			// A.Bercuci 25.07.07
+			// Add TRD track to ESDfriendTrack - maybe this tracks are not useful for post-processing - TODO make decission
+			if (AliTRDReconstructor::StreamLevel()>0)  seed->AddCalibObject(new AliTRDtrack(*pt2/*, kTRUE*/));
       delete pt2;
     }
 
     delete pt;
+		// A.Bercuci 25.07.07
+		// Add TRD track to ESDfriendTrack
+		if (AliTRDReconstructor::StreamLevel()>0)  seed->AddCalibObject(new AliTRDtrack(*pt/*, kTRUE*/));
 
   }   
 
@@ -1037,142 +1046,149 @@ Int_t AliTRDtracker::RefitInward(AliESDEvent *event)
 //_____________________________________________________________________________
 Int_t AliTRDtracker::FollowProlongation(AliTRDtrack &t)
 {
-  //
-  // Starting from current position on track=t this function tries
-  // to extrapolate the track up to timeBin=0 and to confirm prolongation
-  // if a close cluster is found. Returns the number of clusters
-  // expected to be found in sensitive layers
-  // GeoManager used to estimate mean density
-  //
+	//
+	// Starting from current position on track=t this function tries
+	// to extrapolate the track up to timeBin=0 and to confirm prolongation
+	// if a close cluster is found. Returns the number of clusters
+	// expected to be found in sensitive layers
+	// GeoManager used to estimate mean density
+	//
 
-  Int_t    sector;
-  Int_t    lastplane = GetLastPlane(&t);
-  Double_t radLength = 0.0;
-  Double_t rho       = 0.0;
-  Int_t    expectedNumberOfClusters = 0;
+	Int_t    sector;
+	Int_t    lastplane = GetLastPlane(&t);
+	Double_t radLength = 0.0;
+	Double_t rho       = 0.0;
+	Int_t    expectedNumberOfClusters = 0;
 
-  for (Int_t iplane = lastplane; iplane >= 0; iplane--) {
+	for (Int_t iplane = lastplane; iplane >= 0; iplane--) {
 
-    Int_t row0    = GetGlobalTimeBin(0,iplane,GetTimeBinsPerPlane()-1);
-    Int_t rowlast = GetGlobalTimeBin(0,iplane,0);
+		Int_t row0    = GetGlobalTimeBin(0,iplane,GetTimeBinsPerPlane()-1);
+		Int_t rowlast = GetGlobalTimeBin(0,iplane,0);
 
-    //
-    // Propagate track close to the plane if neccessary
-    //
-    Double_t currentx  = fTrSec[0]->GetLayer(rowlast)->GetX();
-    if (currentx < (-fgkMaxStep + t.GetX())) {
-      // Propagate closer to chamber - safety space fgkMaxStep      
-      if (!PropagateToX(t,currentx+fgkMaxStep,fgkMaxStep)) {
-        break;
-      }
-    }
+		//
+		// Propagate track close to the plane if neccessary
+		//
+		Double_t currentx  = fTrSec[0]->GetLayer(rowlast)->GetX();
+		if (currentx < (-fgkMaxStep + t.GetX())) {
+			// Propagate closer to chamber - safety space fgkMaxStep
+			if (!PropagateToX(t,currentx+fgkMaxStep,fgkMaxStep)) {
+				break;
+			}
+		}
 
-    if (!AdjustSector(&t)) {
-      break;
-    }
+		if (!AdjustSector(&t)) {
+			break;
+		}
 
-    //
-    // Get material budget
-    //
-    Double_t xyz0[3];
-    Double_t xyz1[3];
-    Double_t param[7];
-    Double_t x;
-    Double_t y;
-    Double_t z;
+		//
+		// Get material budget
+		//
+		Double_t xyz0[3];
+		Double_t xyz1[3];
+		Double_t param[7];
+		Double_t x;
+		Double_t y;
+		Double_t z;
 
-    // Starting global position
-    t.GetXYZ(xyz0);   
-    // End global position
-    x = fTrSec[0]->GetLayer(row0)->GetX();
-    if (!t.GetProlongation(x,y,z)) {
-      break;
-    }
-    xyz1[0] =  x * TMath::Cos(t.GetAlpha()) - y * TMath::Sin(t.GetAlpha()); 
-    xyz1[1] = +x * TMath::Sin(t.GetAlpha()) + y * TMath::Cos(t.GetAlpha());
-    xyz1[2] =  z;
-    AliKalmanTrack::MeanMaterialBudget(xyz0,xyz1,param);	
-    rho       = param[0];
-    radLength = param[1]; // Get mean propagation parameters
+		// Starting global position
+		t.GetXYZ(xyz0);
+		// End global position
+		x = fTrSec[0]->GetLayer(row0)->GetX();
+		if (!t.GetProlongation(x,y,z)) {
+			break;
+		}
+		xyz1[0] =  x * TMath::Cos(t.GetAlpha()) - y * TMath::Sin(t.GetAlpha());
+		xyz1[1] = +x * TMath::Sin(t.GetAlpha()) + y * TMath::Cos(t.GetAlpha());
+		xyz1[2] =  z;
+		AliKalmanTrack::MeanMaterialBudget(xyz0,xyz1,param);
+		rho       = param[0];
+		radLength = param[1]; // Get mean propagation parameters
+		// A.Bercuci 25.07.07
+		// Flags for marking the track momentum and direction. The track is
+		// marked only if it has at least 1 cluster picked up in the current
+		// chamber.
+		Bool_t kUPDATED = kFALSE, kMARKED = kFALSE;
 
-    //
-    // Propagate and update
-    //
-    sector = t.GetSector();
-    //for (Int_t itime=GetTimeBinsPerPlane()-1;itime>=0;itime--) {
-    for (Int_t itime = 0 ; itime < GetTimeBinsPerPlane(); itime++) {
+		//
+		// Propagate and update
+		//
+		sector = t.GetSector();
+		//for (Int_t itime=GetTimeBinsPerPlane()-1;itime>=0;itime--) {
+		for (Int_t itime = 0 ; itime < GetTimeBinsPerPlane(); itime++) {
+			// A.Bercuci 25.07.07
+			// Mark track kinematics
+			if(itime > 10 && kUPDATED && !kMARKED){
+				t.SetTrackSegmentDirMom(iplane);
+				kMARKED = kTRUE;
+			}
 
-      Int_t ilayer = GetGlobalTimeBin(0,iplane,itime);
-      expectedNumberOfClusters++;       
-      t.SetNExpected(t.GetNExpected() + 1);
-      if (t.GetX() > 345.0) {
-        t.SetNExpectedLast(t.GetNExpectedLast() + 1);
-      }
-      AliTRDpropagationLayer &timeBin = *(fTrSec[sector]->GetLayer(ilayer));
-      AliTRDcluster *cl = 0;
-      UInt_t   index   = 0;
-      Double_t maxChi2 = fgkMaxChi2;
-      x = timeBin.GetX();
+			Int_t ilayer = GetGlobalTimeBin(0,iplane,itime);
+			expectedNumberOfClusters++;
+			t.SetNExpected(t.GetNExpected() + 1);
+			if (t.GetX() > 345.0) {
+				t.SetNExpectedLast(t.GetNExpectedLast() + 1);
+			}
+			AliTRDpropagationLayer &timeBin = *(fTrSec[sector]->GetLayer(ilayer));
+			AliTRDcluster *cl = 0;
+			UInt_t   index   = 0;
+			Double_t maxChi2 = fgkMaxChi2;
+			x = timeBin.GetX();
 
-      if (timeBin) {
+			if (timeBin) {
 
-	AliTRDcluster *cl0 = timeBin[0];
-	if (!cl0) {
-          // No clusters in given time bin
-          continue;         
+				AliTRDcluster *cl0 = timeBin[0];
+				if (!cl0) {
+					// No clusters in given time bin
+					continue;
+				}
+
+				Int_t plane   = fGeom->GetPlane(cl0->GetDetector());
+				if (plane > lastplane) {
+								continue;
+				}
+
+				Int_t timebin = cl0->GetLocalTimeBin();
+				AliTRDcluster *cl2 = GetCluster(&t,plane,timebin,index);
+
+				if (cl2) {
+					cl = cl2;
+					//Double_t h01 = GetTiltFactor(cl);    //I.B's fix
+					//maxChi2=t.GetPredictedChi2(cl,h01);
+				}
+				if (cl) {
+					//if (cl->GetNPads()<5)
+					Double_t dxsample = timeBin.GetdX();
+					t.SetSampledEdx(TMath::Abs(cl->GetQ()/dxsample));
+								Double_t h01      = GetTiltFactor(cl);
+					Int_t    det      = cl->GetDetector();
+					Int_t    plane    = fGeom->GetPlane(det);
+					if (t.GetX() > 345.0) {
+						t.SetNLast(t.GetNLast() + 1);
+						t.SetChi2Last(t.GetChi2Last() + maxChi2);
+					}
+
+					Double_t xcluster = cl->GetX();
+					t.PropagateTo(xcluster,radLength,rho);
+					
+					if (!AdjustSector(&t)) {
+						break;           //I.B's fix
+					}
+					maxChi2 = t.GetPredictedChi2(cl,h01);
+					
+					if (maxChi2<1e+10)
+						if (!t.UpdateMI(cl,maxChi2,index,h01,plane)) {
+							// ????
+						} else {
+							// A.Bercuci 25.07.07
+							//SetCluster(cl, GetNumberOfClusters()-1);
+							kUPDATED = kTRUE;
+						}
+				}
+			}
+		}
 	}
 
-	Int_t plane   = fGeom->GetPlane(cl0->GetDetector());
-	if (plane > lastplane) {
-          continue;
-	}
-
-	Int_t timebin = cl0->GetLocalTimeBin();
-	AliTRDcluster *cl2 = GetCluster(&t,plane,timebin,index);
-
-	if (cl2) {
-
-	  cl = cl2;	
-	  //Double_t h01 = GetTiltFactor(cl);    //I.B's fix
-	  //maxChi2=t.GetPredictedChi2(cl,h01);
-
-	}	
-        if (cl) {
-
-	  //if (cl->GetNPads()<5) 
-	  Double_t dxsample = timeBin.GetdX();
-	  t.SetSampledEdx(TMath::Abs(cl->GetQ()/dxsample)); 
-          Double_t h01      = GetTiltFactor(cl);
-	  Int_t    det      = cl->GetDetector();    
-	  Int_t    plane    = fGeom->GetPlane(det);
-	  if (t.GetX() > 345.0) {
-	    t.SetNLast(t.GetNLast() + 1);
-	    t.SetChi2Last(t.GetChi2Last() + maxChi2);
-	  }
-
-	  Double_t xcluster = cl->GetX();
-	  t.PropagateTo(xcluster,radLength,rho);
-
-          if (!AdjustSector(&t)) {
-            break;           //I.B's fix
-	  }
-	  maxChi2 = t.GetPredictedChi2(cl,h01);
-          
-	  if (maxChi2<1e+10)
-	    if (!t.UpdateMI(cl,maxChi2,index,h01,plane)) {
-	      // ????
-	    }
-
-	}			
-
-      }
-
-    } 
-
-  }
-
-  return expectedNumberOfClusters;  
-
+	return expectedNumberOfClusters;
 }                
 
 //_____________________________________________________________________________
@@ -1324,7 +1340,8 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack &t)
 	      if (!t.Update(cl,maxChi2,index,h01)) {
 		// ????
 	      }
-	    }  
+	    } // else SetCluster(cl, GetNumberOfClusters()-1); // A.Bercuci 25.07.07
+  
 
           if (calibra->GetMITracking()) {
             calibra->UpdateHistograms(cl,&t);
@@ -3437,94 +3454,6 @@ Double_t AliTRDtracker::GetTiltFactor(const AliTRDcluster *c)
 
 }
 
-//_____________________________________________________________________________
-void AliTRDtracker::CookdEdxTimBin(AliTRDtrack &TRDtrack)
-{
-  //
-  // This is setting fdEdxPlane and fTimBinPlane
-  // Sums up the charge in each plane for track TRDtrack and also get the 
-  // Time bin for Max. Cluster
-  // Prashant Shukla (shukla@physi.uni-heidelberg.de)
-  //
-
-  Double_t  clscharge[AliESDtrack::kNPlane][AliESDtrack::kNSlice];
-  Double_t  maxclscharge[AliESDtrack::kNPlane];
-  Int_t     nCluster[AliESDtrack::kNPlane][AliESDtrack::kNSlice];
-  Int_t     timebin[AliESDtrack::kNPlane];
-
-  // Initialization of cluster charge per plane.  
-  for (Int_t iPlane = 0; iPlane < AliESDtrack::kNPlane; iPlane++) {
-    for (Int_t iSlice = 0; iSlice < AliESDtrack::kNSlice; iSlice++) {
-      clscharge[iPlane][iSlice] = 0.0;
-      nCluster[iPlane][iSlice]  = 0;
-    }
-  }
-
-  // Initialization of cluster charge per plane.  
-  for (Int_t iPlane = 0; iPlane < AliESDtrack::kNPlane; iPlane++) {
-    timebin[iPlane]      =  -1;
-    maxclscharge[iPlane] = 0.0;
-  }
-
-  // Loop through all clusters associated to track TRDtrack
-  Int_t nClus = TRDtrack.GetNumberOfClusters();  // from Kalmantrack
-  for (Int_t iClus = 0; iClus < nClus; iClus++) {
-    Double_t charge = TRDtrack.GetClusterdQdl(iClus);
-    Int_t    index  = TRDtrack.GetClusterIndex(iClus);
-    AliTRDcluster *pTRDcluster = (AliTRDcluster *) GetCluster(index); 
-    if (!pTRDcluster) {
-      continue;
-    }
-    Int_t    tb     = pTRDcluster->GetLocalTimeBin();
-    if (!tb) {
-      continue;
-    }
-    Int_t detector  = pTRDcluster->GetDetector();
-    Int_t iPlane    = fGeom->GetPlane(detector);
-    if (iPlane >= AliESDtrack::kNPlane) {
-      AliError(Form("Wrong plane %d",iPlane));
-      continue;
-    }
-    Int_t iSlice    = tb * AliESDtrack::kNSlice 
-                         / AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
-    if (iSlice >= AliESDtrack::kNSlice) {
-      AliError(Form("Wrong slice %d",iSlice));
-      continue;
-    }
-    clscharge[iPlane][iSlice] = clscharge[iPlane][iSlice] + charge;
-    if (charge > maxclscharge[iPlane]) {
-      maxclscharge[iPlane] = charge;
-      timebin[iPlane]      = tb;
-    }
-    nCluster[iPlane][iSlice]++;
-  } // End of loop over cluster
-
-  // Setting the fdEdxPlane and fTimBinPlane variabales 
-  Double_t totalCharge = 0.0;
-
-  for (Int_t iPlane = 0; iPlane < AliESDtrack::kNPlane; iPlane++) {
-    for (Int_t iSlice = 0; iSlice < AliESDtrack::kNSlice; iSlice++) {
-      if (nCluster[iPlane][iSlice]) {
-        clscharge[iPlane][iSlice] /= nCluster[iPlane][iSlice];
-      }
-      TRDtrack.SetPIDsignals(clscharge[iPlane][iSlice],iPlane,iSlice);
-      totalCharge = totalCharge+clscharge[iPlane][iSlice];
-    }
-    TRDtrack.SetPIDTimBin(timebin[iPlane],iPlane);     
-  }
-
-  // Still needed ????
-  //  Int_t i;
-  //  Int_t nc=TRDtrack.GetNumberOfClusters(); 
-  //  Float_t dedx=0;
-  //  for (i=0; i<nc; i++) dedx += TRDtrack.GetClusterdQdl(i);
-  //  dedx /= nc;
-  //  for (Int_t iPlane = 0; iPlane < kNPlane; iPlane++) {
-  //    TRDtrack.SetPIDsignals(dedx, iPlane);
-  //    TRDtrack.SetPIDTimBin(timbin[iPlane], iPlane);
-  //  }
-
-}
 
 //_____________________________________________________________________________
 Int_t AliTRDtracker::FindClusters(Int_t sector, Int_t t0, Int_t t1
@@ -4291,7 +4220,8 @@ AliTRDtrack *AliTRDtracker::RegisterSeed(AliTRDseed *seeds, Double_t *params)
                                       ,c
                                       ,params[0]
                                       ,params[6]*alpha+shift);
-  track->PropagateTo(params[0]-5.0);
+	// SetCluster(cl, 0); // A. Bercuci
+	track->PropagateTo(params[0]-5.0);
   track->ResetCovariance(1);
 
   Int_t rc = FollowBackProlongation(*track);
@@ -4301,7 +4231,7 @@ AliTRDtrack *AliTRDtracker::RegisterSeed(AliTRDseed *seeds, Double_t *params)
   }
   else {
     track->CookdEdx();
-    CookdEdxTimBin(*track);
+    track->CookdEdxTimBin();
     CookLabel(track,0.9);
   }
 

@@ -265,7 +265,6 @@ class AliTRDtracker : public AliTracker {
   
   Int_t    FollowBackProlongation(AliTRDtrack &t);
   Int_t    FollowProlongation(AliTRDtrack &t);
-  void     CookdEdxTimBin(AliTRDtrack &t);  
   Int_t    PropagateToX(AliTRDtrack &t, Double_t xToGo, Double_t maxStep);
   Double_t ExpectedSigmaY2(Double_t r, Double_t tgl, Double_t pt) const;
   Double_t ExpectedSigmaZ2(Double_t r, Double_t tgl) const;
