@@ -77,7 +77,7 @@ AliTRDCalPIDRefMaker::AliTRDCalPIDRefMaker()
 
 	// histogram settings
 	for(int ispec=0; ispec<AliPID::kSPECIES; ispec++){
-		h2dEdx[ispec] = 0x0;
+		fH2dEdx[ispec] = 0x0;
 		fPrinc[ispec] = 0x0;
 	}
 }
@@ -91,9 +91,9 @@ AliTRDCalPIDRefMaker::AliTRDCalPIDRefMaker(const AliTRDCalPIDRefMaker &ref)
   // 
 
 	for(int ispec=0; ispec<AliPID::kSPECIES; ispec++){
-		if(ref.h2dEdx[ispec]){
-			h2dEdx[ispec] = new  TH2D((TH2D&)*(ref.h2dEdx[ispec]));
-		} else h2dEdx[ispec] = 0x0;
+		if(ref.fH2dEdx[ispec]){
+		       fH2dEdx[ispec] = new  TH2D((TH2D&)*(ref.fH2dEdx[ispec]));
+		} else fH2dEdx[ispec] = 0x0;
 		fPrinc[ispec] = 0x0;
 	}
 }
@@ -106,7 +106,7 @@ AliTRDCalPIDRefMaker::~AliTRDCalPIDRefMaker()
   //
 
 	for(int ispec=0; ispec<AliPID::kSPECIES; ispec++){
-		if(h2dEdx[ispec]) delete h2dEdx[ispec];
+		if(fH2dEdx[ispec]) delete fH2dEdx[ispec];
 		if(fPrinc[ispec]) delete fPrinc[ispec]; 
 	}	
 	if(fFitter2D1){ delete fFitter2D1; fFitter2D1 = 0x0;}
@@ -122,7 +122,7 @@ AliTRDCalPIDRefMaker& AliTRDCalPIDRefMaker::operator=(const AliTRDCalPIDRefMaker
   //
 
 	for(int ispec=0; ispec<AliPID::kSPECIES; ispec++){
-		if(ref.h2dEdx[ispec]) (ref.h2dEdx[ispec])->Copy(*h2dEdx[ispec]);
+		if(ref.fH2dEdx[ispec]) (ref.fH2dEdx[ispec])->Copy(*fH2dEdx[ispec]);
 		fPrinc[ispec] = 0x0;
 	}
 	return *this;
@@ -136,7 +136,7 @@ Bool_t AliTRDCalPIDRefMaker::BuildLQReferences(Char_t *File, Char_t *dir)
 	// The simulations are looked in the
 	// directories with the general form Form("p%3.1f", momentum)
 	// starting from dir (default .). Here momentum belongs to the list
-	// of known momentum to PID (see fTrackMomentum).
+	// of known momentum to PID (see trackMomentum).
 	// The output histograms are
 	// written to the file "File" in cwd (default
 	// TRDPIDHistograms.root). In order to build a DB entry
@@ -169,10 +169,10 @@ Bool_t AliTRDCalPIDRefMaker::BuildLQReferences(Char_t *File, Char_t *dir)
 	}
 
 	// Build PID reference/working objects
-	h1TB[0] = new TH1F("h1TB_0", "", nTimeBins, -.5, nTimeBins-.5);
-	h1TB[0]->SetLineColor(4);
-	h1TB[1] = new TH1F("h1TB_1", "", nTimeBins, -.5, nTimeBins-.5);
-	h1TB[1]->SetLineColor(2);
+	fH1TB[0] = new TH1F("h1TB_0", "", nTimeBins, -.5, nTimeBins-.5);
+	fH1TB[0]->SetLineColor(4);
+	fH1TB[1] = new TH1F("h1TB_1", "", nTimeBins, -.5, nTimeBins-.5);
+	fH1TB[1]->SetLineColor(2);
 	for(Int_t ispec=0; ispec<AliPID::kSPECIES; ispec++) if(!fPrinc[ispec]) fPrinc[ispec] = new TPrincipal(2, "ND");
 
 	// Print statistics header
@@ -181,8 +181,9 @@ Bool_t AliTRDCalPIDRefMaker::BuildLQReferences(Char_t *File, Char_t *dir)
 	for(Int_t ispec=0; ispec<AliPID::kSPECIES; ispec++) printf(" %s[%%] ", AliTRDCalPIDLQ::fpartSymb[ispec]);
 	printf("\n-----------------------------------------------\n");
 	
-	Float_t fTrackMomentum[AliTRDCalPIDLQ::kNMom], fTrackSegLength[AliTRDCalPIDLQ::kNLength];
-	for(int i=0; i<AliTRDCalPIDLQ::kNMom; i++) fTrackMomentum[i] = AliTRDCalPIDLQ::GetMomentum(i);
+	Float_t trackMomentum[AliTRDCalPIDLQ::kNMom];
+        //Float_t trackSegLength[AliTRDCalPIDLQ::kNLength];
+	for(int i=0; i<AliTRDCalPIDLQ::kNMom; i++) trackMomentum[i] = AliTRDCalPIDLQ::GetMomentum(i);
 	AliRunLoader *fRunLoader = 0x0;
 	TFile *esdFile = 0x0;
 	TTree *esdTree = 0x0;
@@ -201,31 +202,31 @@ Bool_t AliTRDCalPIDRefMaker::BuildLQReferences(Char_t *File, Char_t *dir)
 		// loop over production directories
 		for(Int_t ibatch = 0; ibatch<nBatches; ibatch++){
 			// open run loader and load gAlice, kinematics and header
-			fRunLoader = AliRunLoader::Open(Form("%s/%3.1fGeV/%03d/galice.root", dir, fTrackMomentum[imom], ibatch));
+			fRunLoader = AliRunLoader::Open(Form("%s/%3.1fGeV/%03d/galice.root", dir, trackMomentum[imom], ibatch));
 			if (!fRunLoader) {
-				AliError(Form("Getting run loader for momentum %3.1f GeV/c batch %03d failed.", fTrackMomentum[imom], ibatch));
+				AliError(Form("Getting run loader for momentum %3.1f GeV/c batch %03d failed.", trackMomentum[imom], ibatch));
 				return kFALSE;
 			}
-			TString s; s.Form("%s/%3.1fGeV/%03d/", dir, fTrackMomentum[imom], ibatch);
+			TString s; s.Form("%s/%3.1fGeV/%03d/", dir, trackMomentum[imom], ibatch);
 			fRunLoader->SetDirName(s);
 			fRunLoader->LoadgAlice();
 			gAlice = fRunLoader->GetAliRun();
 			if (!gAlice) {
-				AliError(Form("galice object not found for momentum %3.1f GeV/c batch %03d.", fTrackMomentum[imom], ibatch));
+				AliError(Form("galice object not found for momentum %3.1f GeV/c batch %03d.", trackMomentum[imom], ibatch));
 				return kFALSE;
 			}
 			fRunLoader->LoadKinematics();
 			fRunLoader->LoadHeader();
 	
 			// open the ESD file
-			esdFile = TFile::Open(Form("%s/%3.1fGeV/%03d/AliESDs.root", dir, fTrackMomentum[imom], ibatch));
+			esdFile = TFile::Open(Form("%s/%3.1fGeV/%03d/AliESDs.root", dir, trackMomentum[imom], ibatch));
 			if (!esdFile || esdFile->IsZombie()) {
-				AliError(Form("Opening ESD file failed for momentum  %3.1f GeV/c batch %03d.", fTrackMomentum[imom], ibatch));
+				AliError(Form("Opening ESD file failed for momentum  %3.1f GeV/c batch %03d.", trackMomentum[imom], ibatch));
 				return kFALSE;
 			}
 			esdTree = (TTree*)esdFile->Get("esdTree");
 			if (!esdTree) {
-				AliError(Form("ESD tree not found for momentum %3.1f GeV/c batch %03d.", fTrackMomentum[imom], ibatch));
+				AliError(Form("ESD tree not found for momentum %3.1f GeV/c batch %03d.", trackMomentum[imom], ibatch));
 				return kFALSE;
 			}
 			esd = new AliESD;
@@ -244,7 +245,7 @@ Bool_t AliTRDCalPIDRefMaker::BuildLQReferences(Char_t *File, Char_t *dir)
 				// Load event summary data
 				esdTree->GetEvent(iEvent);
 				if (!esd) {
-					AliWarning(Form("ESD object not found for event %d. (@ momentum %3.1f GeV/c, batch %03d)", iEvent, fTrackMomentum[imom], ibatch));
+					AliWarning(Form("ESD object not found for event %d. (@ momentum %3.1f GeV/c, batch %03d)", iEvent, trackMomentum[imom], ibatch));
 					continue;
 				}
 	
@@ -265,7 +266,7 @@ Bool_t AliTRDCalPIDRefMaker::BuildLQReferences(Char_t *File, Char_t *dir)
 					if (label > stack->GetNtrack()) continue;     // background
 					TParticle* particle = stack->Particle(label);
 					if(!particle){
-						AliWarning(Form("Retriving particle with index %d from AliStack failed. [@ momentum %3.1f batch %03d event %d track %d]", label, fTrackMomentum[imom], ibatch, iEvent, iTrack));
+						AliWarning(Form("Retriving particle with index %d from AliStack failed. [@ momentum %3.1f batch %03d event %d track %d]", label, trackMomentum[imom], ibatch, iEvent, iTrack));
 						continue;
 					}
 					if(particle->Pt() < 1.E-3) continue;
@@ -288,7 +289,8 @@ Bool_t AliTRDCalPIDRefMaker::BuildLQReferences(Char_t *File, Char_t *dir)
 	
 					nPart[iGen]++; nTotPart++;
 					
-					Float_t mom, length;
+					Float_t mom;
+                                        //Float_t length;
 					Double_t dedx[AliTRDtrack::kNslice], dEdx;
 					Int_t timebin;
 					for (Int_t iPlane=0; iPlane<AliTRDgeometry::kNplan; iPlane++){
@@ -307,14 +309,14 @@ Bool_t AliTRDCalPIDRefMaker::BuildLQReferences(Char_t *File, Char_t *dir)
 						
 						// find segment length and momentum bin
 						Int_t jmom = 1, refMom = -1;
-						while(jmom<AliTRDCalPIDLQ::kNMom-1 && mom>fTrackMomentum[jmom]) jmom++;
-						if(TMath::Abs(fTrackMomentum[jmom-1] - mom) < fTrackMomentum[jmom-1] * .2) refMom = jmom-1;
-						else if(TMath::Abs(fTrackMomentum[jmom] - mom) < fTrackMomentum[jmom] * .2) refMom = jmom;
+						while(jmom<AliTRDCalPIDLQ::kNMom-1 && mom>trackMomentum[jmom]) jmom++;
+						if(TMath::Abs(trackMomentum[jmom-1] - mom) < trackMomentum[jmom-1] * .2) refMom = jmom-1;
+						else if(TMath::Abs(trackMomentum[jmom] - mom) < trackMomentum[jmom] * .2) refMom = jmom;
 						if(refMom<0){
-							AliInfo(Form("Momentum at plane %d entrance not in momentum window. [@ momentum %3.1f batch %03d event %d track %d]", iPlane, fTrackMomentum[imom], ibatch, iEvent, iTrack));
+							AliInfo(Form("Momentum at plane %d entrance not in momentum window. [@ momentum %3.1f batch %03d event %d track %d]", iPlane, trackMomentum[imom], ibatch, iEvent, iTrack));
 							continue;
 						}
-						/*while(jleng<AliTRDCalPIDLQ::kNLength-1 && length>fTrackSegLength[jleng]) jleng++;*/
+						/*while(jleng<AliTRDCalPIDLQ::kNLength-1 && length>trackSegLength[jleng]) jleng++;*/
 						
 						// this track segment has fulfilled all requierments
 						//nPlanePID++;
@@ -323,7 +325,7 @@ Bool_t AliTRDCalPIDRefMaker::BuildLQReferences(Char_t *File, Char_t *dir)
 							dedx[0] = log(dedx[0]); dedx[1] = log(dedx[1]);
 							fPrinc[iGen]->AddRow(dedx);
 						}
-						h1TB[(iGen>0)?1:0]->Fill(timebin);
+						fH1TB[(iGen>0)?1:0]->Fill(timebin);
 					} // end plane loop
 				} // end track loop
 			} // end events loop
@@ -344,7 +346,7 @@ Bool_t AliTRDCalPIDRefMaker::BuildLQReferences(Char_t *File, Char_t *dir)
 
 			
 		// print momentum statistics
-		printf("  %3.1f  ", fTrackMomentum[imom]);
+		printf("  %3.1f  ", trackMomentum[imom]);
 		for(Int_t ispec=0; ispec<AliPID::kSPECIES; ispec++) printf(" %5.2f ", 100.*nPart[ispec]/nTotPart);
 		printf("\n");
 	} // end momentum loop
@@ -362,7 +364,7 @@ Bool_t AliTRDCalPIDRefMaker::BuildLQReferences(Char_t *File, Char_t *dir)
 }
 
 //__________________________________________________________________
-Bool_t AliTRDCalPIDRefMaker::BuildNNReferences(Char_t *File, Char_t *dir)
+Bool_t AliTRDCalPIDRefMaker::BuildNNReferences(Char_t* /*File*/, Char_t* /*dir*/)
 {
 	return kTRUE;
 }
@@ -559,9 +561,9 @@ void  AliTRDCalPIDRefMaker::Prepare2D()
 		nbinsx = nbinsy = nBinsSector * nSectors;
 		xmin = ymin = 0.;
 		xmax = 8000.; ymax = 6000.;
-		if(!h2dEdx[ispec]){
-			h2dEdx[ispec] = new  TH2D(Form("h2%s", AliTRDCalPIDLQ::fpartSymb[ispec]), "", nbinsx, xmin, xmax, nbinsy, ymin, ymax);
-			h2dEdx[ispec]->SetLineColor(color[ispec]);
+		if(!fH2dEdx[ispec]){
+			fH2dEdx[ispec] = new  TH2D(Form("h2%s", AliTRDCalPIDLQ::fpartSymb[ispec]), "", nbinsx, xmin, xmax, nbinsy, ymin, ymax);
+			fH2dEdx[ispec]->SetLineColor(color[ispec]);
 		}
 	}
 
@@ -597,7 +599,7 @@ void  AliTRDCalPIDRefMaker::Prepare2D()
 	// define radial sectors
 	const Int_t   nPhi      = 36;
 	const Float_t dPhi      = TMath::TwoPi()/nPhi;
-	const Float_t dPhiRange = .1;
+	//const Float_t dPhiRange = .1;
 	Int_t nPoints[nPhi], nFitPoints, binStart, binStop;
 	TLinearFitter refsFitter[nPhi], refsLongFitter(6, "1++x++y++x*x++y*y++x*y");
 	Float_t fFitterRange[nPhi];
@@ -611,7 +613,8 @@ void  AliTRDCalPIDRefMaker::Prepare2D()
 	std::vector<UShort_t> storeX[nPhi], storeY[nPhi];
 
 	// define working variables
-	Float_t x0, y0, rx, ry, rc, rmin, rmax, dr, dCT;
+	Float_t x0, y0, rx, ry;
+	//Float_t rc, rmin, rmax, dr, dCT;
 	Double_t Phi, r;
 	Int_t iPhi;
 	Double_t entries;
@@ -675,8 +678,8 @@ void  AliTRDCalPIDRefMaker::Prepare2D()
 		}
 		
 		// do interpolation
-		ax=h2dEdx[ispec]->GetXaxis();
-		ay=h2dEdx[ispec]->GetYaxis();
+		ax=fH2dEdx[ispec]->GetXaxis();
+		ay=fH2dEdx[ispec]->GetYaxis();
 		for(int ibin=1; ibin<=ax->GetNbins(); ibin++){
 			xy[0]  = ax->GetBinCenter(ibin);
 			lxy[0] = log(xy[0]);
@@ -698,7 +701,7 @@ void  AliTRDCalPIDRefMaker::Prepare2D()
 					rxy[0] = xTemp;
                                         rxy[1] = yTemp;
 					//					estimate = Estimate2D2((TH2 *) hProj, (Float_t)rxy[0], (Float_t)rxy[1]);
-					h2dEdx[ispec]->SetBinContent(ibin, jbin, estimate/xy[0]/xy[1]);
+					fH2dEdx[ispec]->SetBinContent(ibin, jbin, estimate/xy[0]/xy[1]);
 				} else { // interpolation outside the covariance ellipse
 					r = sqrt(rxy[0]*rxy[0] + rxy[1]*rxy[1]);
 					Phi   = ((rxy[1] > 0.) ? 1. : -1.) * TMath::ACos(rxy[0]/r); // [-pi, pi]
@@ -721,7 +724,7 @@ void  AliTRDCalPIDRefMaker::Prepare2D()
 			
 			refsFitter[iphi].Eval();
 			refsFitter[iphi].GetParameters(vec);
-			for(int ipoint=0; ipoint<storeX[iphi].size(); ipoint++){
+			for(UInt_t ipoint=0; ipoint<storeX[iphi].size(); ipoint++){
 				xbin = storeX[iphi].at(ipoint);
 				ybin = storeY[iphi].at(ipoint);
 				xy[0] = ax->GetBinCenter(xbin); lxy[0] = log(xy[0]);
@@ -730,7 +733,7 @@ void  AliTRDCalPIDRefMaker::Prepare2D()
 				// rotate to PCA
 				fPrinc[ispec]->X2P(lxy, rxy);
 				estimate = exp(vec[0] + rxy[0]*vec[1] + rxy[1]*vec[2]);//+ rxy[0]*rxy[0]*vec[3]+ rxy[1]*rxy[1]*vec[4]+ rxy[0]*rxy[1]*vec[5]);
-				h2dEdx[ispec]->SetBinContent(xbin, ybin, estimate/xy[0]/xy[1]);
+				fH2dEdx[ispec]->SetBinContent(xbin, ybin, estimate/xy[0]/xy[1]);
 			}
 		}
 		
@@ -749,7 +752,7 @@ void  AliTRDCalPIDRefMaker::Prepare2D()
 				xy[0] = ax->GetBinCenter(ibin);
 				for(int jbin=binStart; jbin<=binStop; jbin++){
 					xy[1] = ay->GetBinCenter(jbin);
-					if((entries = h2dEdx[ispec]->GetBinContent(ibin, jbin)) > 0.){
+					if((entries = fH2dEdx[ispec]->GetBinContent(ibin, jbin)) > 0.){
 						refsLongFitter.AddPoint(xy, log(entries), 1.e-7);
 						nPoints[0]++;
 					} else {
@@ -766,14 +769,14 @@ void  AliTRDCalPIDRefMaker::Prepare2D()
 				continue;
 			}
 			refsLongFitter.GetParameters(vec);
-			for(int ipoint=0; ipoint<storeX[0].size(); ipoint++){
+			for(UInt_t ipoint=0; ipoint<storeX[0].size(); ipoint++){
 				xbin = storeX[0].at(ipoint);
 				ybin = storeY[0].at(ipoint);
 				xy[0] = ax->GetBinCenter(xbin);
 				xy[1] = ay->GetBinCenter(ybin);
 				
 				estimate = vec[0] + xy[0]*vec[1] + xy[1]*vec[2] + xy[0]*xy[0]*vec[3]+ xy[1]*xy[1]*vec[4]+ xy[0]*xy[1]*vec[5];
-				h2dEdx[ispec]->SetBinContent(xbin, ybin, exp(estimate));
+				fH2dEdx[ispec]->SetBinContent(xbin, ybin, exp(estimate));
 			}
 		}
 
@@ -792,7 +795,7 @@ void  AliTRDCalPIDRefMaker::Prepare2D()
 				xy[1] = ay->GetBinCenter(jbin);
 				for(int ibin=binStart; ibin<=binStop; ibin++){
 					xy[0] = ax->GetBinCenter(ibin);
-					if((entries = h2dEdx[ispec]->GetBinContent(ibin, jbin)) > 0.){
+					if((entries = fH2dEdx[ispec]->GetBinContent(ibin, jbin)) > 0.){
 						refsLongFitter.AddPoint(xy, log(entries), 1.e-7);
 						nPoints[0]++;
 					} else {
@@ -811,23 +814,23 @@ void  AliTRDCalPIDRefMaker::Prepare2D()
 				continue;
 			}
 			refsLongFitter.GetParameters(vec);
-			for(int ipoint=0; ipoint<storeX[0].size(); ipoint++){
+			for(UInt_t ipoint=0; ipoint<storeX[0].size(); ipoint++){
 				xbin = storeX[0].at(ipoint);
 				ybin = storeY[0].at(ipoint);
 				xy[0] = ax->GetBinCenter(xbin);
 				xy[1] = ay->GetBinCenter(ybin);
 				
 				estimate = vec[0] + xy[0]*vec[1] + xy[1]*vec[2] + xy[0]*xy[0]*vec[3]+ xy[1]*xy[1]*vec[4]+ xy[0]*xy[1]*vec[5];
-				h2dEdx[ispec]->SetBinContent(xbin, ybin, exp(estimate));
+				fH2dEdx[ispec]->SetBinContent(xbin, ybin, exp(estimate));
 			}
 		}
 
 		
-		h2dEdx[ispec]->Scale(1./h2dEdx[ispec]->Integral());
+		fH2dEdx[ispec]->Scale(1./fH2dEdx[ispec]->Integral());
 		
 		// debug plot
 		if(kDebugPlot){
-			h2dEdx[ispec]->Draw("cont1"); gPad->SetLogz();
+			fH2dEdx[ispec]->Draw("cont1"); gPad->SetLogz();
 			gPad->Modified(); gPad->Update();
 		}
 	}
@@ -842,11 +845,11 @@ void	AliTRDCalPIDRefMaker::Reset()
   //
 
 	for(int ispec=0; ispec<AliPID::kSPECIES; ispec++){
-		if(h2dEdx[ispec]) h2dEdx[ispec]->Reset();
+		if(fH2dEdx[ispec]) fH2dEdx[ispec]->Reset();
 		fPrinc[ispec]->Clear();
 	}	
-	if(h1TB[0]) h1TB[0]->Reset(); 
-	if(h1TB[1]) h1TB[1]->Reset();
+	if(fH1TB[0]) fH1TB[0]->Reset(); 
+	if(fH1TB[1]) fH1TB[1]->Reset();
 }
 
 //__________________________________________________________________
@@ -873,7 +876,7 @@ void  AliTRDCalPIDRefMaker::SaveReferences(const Int_t mom, const char *fn)
 	// save dE/dx references
 	TH2 *h2 = 0x0;
 	for(int ispec=0; ispec<AliPID::kSPECIES; ispec++){
-		h2 = (TH2D*)h2dEdx[ispec]->Clone(Form("h2dEdx%s%d", AliTRDCalPIDLQ::fpartSymb[ispec], mom));
+		h2 = (TH2D*)fH2dEdx[ispec]->Clone(Form("h2dEdx%s%d", AliTRDCalPIDLQ::fpartSymb[ispec], mom));
 		h2->SetTitle(Form("2D dEdx for particle %s @ %d", AliTRDCalPIDLQ::fpartName[ispec], mom));
 		h2->GetXaxis()->SetTitle("dE/dx_{TRD}^{amplif} [au]");
 		h2->GetYaxis()->SetTitle("dE/dx_{TRD}^{drift} [au]");
@@ -883,13 +886,13 @@ void  AliTRDCalPIDRefMaker::SaveReferences(const Int_t mom, const char *fn)
 
 	// save maximum time bin references 
 	TH1 *h1 = 0x0;
-	h1 = (TH1F*)h1TB[0]->Clone(Form("h1MaxTBEL%02d", mom));
+	h1 = (TH1F*)fH1TB[0]->Clone(Form("h1MaxTBEL%02d", mom));
 	h1->SetTitle(Form("Maximum Time Bin distribution for electrons @ %4.1f GeV", fmom));
 	h1->GetXaxis()->SetTitle("time [100 ns]");
 	h1->GetYaxis()->SetTitle("Probability");
 	h1->Write();
 
-	h1 = (TH1F*)h1TB[1]->Clone(Form("h1MaxTBPI%02d", mom));
+	h1 = (TH1F*)fH1TB[1]->Clone(Form("h1MaxTBPI%02d", mom));
 	h1->SetTitle(Form("Maximum Time Bin distribution for pions @ %4.1f GeV", fmom));
 	h1->GetXaxis()->SetTitle("time [100 ns]");
 	h1->GetYaxis()->SetTitle("Probability");

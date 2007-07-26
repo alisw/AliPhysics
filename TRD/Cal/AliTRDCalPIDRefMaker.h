@@ -29,8 +29,8 @@ public:
   ~AliTRDCalPIDRefMaker();
   AliTRDCalPIDRefMaker& operator=(const AliTRDCalPIDRefMaker &ref);
 
-         Bool_t   BuildLQReferences(Char_t *File="TRDpidLQ.root", Char_t *dir =".");
-         Bool_t   BuildNNReferences(Char_t *File="TRDpidNN.root", Char_t *dir =".");
+         Bool_t   BuildLQReferences(Char_t *filename="TRDpidLQ.root", Char_t *dir =".");
+         Bool_t   BuildNNReferences(Char_t *filename="TRDpidNN.root", Char_t *dir =".");
  
   static Double_t Estimate2D2(TH2 *h, Float_t &x, Float_t &y);
   static Double_t Estimate2D1(TH2 *h, Float_t &x, Float_t &y, Float_t &dCT, Float_t &rmin, Float_t &rmax);
@@ -47,10 +47,10 @@ private:
          TPrincipal    *fPrinc[5];  // Used for principal component analysis
   static TLinearFitter *fFitter2D2; // Working object for linear fitter
   static TLinearFitter *fFitter2D1; // Working object for linear fitter
-         TH2           *h2dEdx[5];  // dE/dx data holders
-         TH1           *h1TB[2];    // Max time bin data holders
+         TH2           *fH2dEdx[5]; // dE/dx data holders
+         TH1           *fH1TB[2];   // Max time bin data holders
 
-  ClassDef(AliTRDCalPIDRefMaker, 1) // Reference histograms builder
+  ClassDef(AliTRDCalPIDRefMaker, 2) // Reference histograms builder
 
 };
 
