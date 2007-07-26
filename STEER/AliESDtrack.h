@@ -160,8 +160,8 @@ public:
   void    SetTRDpid(const Double_t *p);
   
 // A.Bercuci
-	void    SetTRDpidQuality(UChar_t q){fTRDpidQuality = q;}
-	UChar_t GetTRDpidQuality() const {return fTRDpidQuality;}
+  void    SetTRDpidQuality(UChar_t q){fTRDpidQuality = q;}
+  UChar_t GetTRDpidQuality() const {return fTRDpidQuality;}
 // end A.Bercuci
 	
 	void    SetTRDQuality(Float_t quality){fTRDQuality=quality;}

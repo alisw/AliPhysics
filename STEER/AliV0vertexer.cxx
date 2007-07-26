@@ -28,6 +28,7 @@
 #include "AliESDv0.h"
 #include "AliESDtrack.h"
 #include "AliV0vertexer.h"
+#include "AliESDVertex.h"
 
 ClassImp(AliV0vertexer)
 

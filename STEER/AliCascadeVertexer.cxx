@@ -32,6 +32,8 @@
 #include "AliESDv0.h"
 #include "AliESDcascade.h"
 #include "AliCascadeVertexer.h"
+#include "AliESDtrack.h"
+#include "AliESDVertex.h"
 
 ClassImp(AliCascadeVertexer)
 

@@ -50,7 +50,7 @@ protected:
   TObjArray      *fCalibContainer; //Array of objects for calibration    
   AliKalmanTrack *fITStrack; //! pointer to the ITS track (debug purposes) 
   AliKalmanTrack *fTRDtrack; //! pointer to the TRD track (debug purposes) 
-
+  
 private:
   AliESDfriendTrack &operator=(const AliESDfriendTrack & /* t */) {return *this;}
 

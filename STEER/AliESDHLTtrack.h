@@ -7,6 +7,7 @@
 //   This is the class to handle HLT reconstruted TPC tracks
 //-------------------------------------------------------------------------
 #include "TObject.h"
+#include "TMath.h"
 
 class AliKalmanTrack;
 
@@ -49,8 +50,8 @@ public:
   Float_t    GetSizeX()  const {return fSizeX;}
   Float_t    GetSizeY()  const {return fSizeY;}
 
-  Double_t GetPx() const {return fPt*cos(fPsi);}
-  Double_t GetPy() const {return fPt*sin(fPsi);}
+  Double_t GetPx() const {return fPt*TMath::Cos(fPsi);}
+  Double_t GetPy() const {return fPt*TMath::Sin(fPsi);}
   Double_t GetPz() const {return fPt*fTanl;}
 
   Double_t GetP() const;

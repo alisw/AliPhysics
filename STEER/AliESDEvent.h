@@ -23,30 +23,31 @@
 class TList;
 
 
-#include "AliESDMuonTrack.h"
-#include "AliESDPmdTrack.h"
-#include "AliESDTrdTrack.h"
-#include "AliESDVertex.h"
-#include "AliESDcascade.h"
-#include "AliESDkink.h"
-#include "AliESDtrack.h"
-#include "AliESDCaloCluster.h"
-#include "AliESDv0.h"
-#include "AliESDFMD.h"
-#include "AliESDVZERO.h"
-#include "AliMultiplicity.h"
-#include "AliRawDataErrorLog.h"
+// some includes for delegeated methds
+#include "AliESDCaloTrigger.h"
 #include "AliESDRun.h"
 #include "AliESDHeader.h"
-#include "AliESDZDC.h"
 #include "AliESDTZERO.h"
-#include "AliESDCaloTrigger.h"
+#include "AliESDZDC.h"
 
 class AliESDfriend;
 class AliESDVZERO;
 class AliESDHLTtrack;
+class AliESDVertex;
+class AliESDPmdTrack;
 class AliESDFMD;
+class AliESDkink;
+class AliESDtrack;
+class AliESDCaloCluster;
+class AliESDv0;
+class AliESDFMD;
+class AliMultiplicity;
+class AliRawDataErrorLog;
+class AliESDRun;
+class AliESDTrdTrack;
+class AliESDMuonTrack;
 class AliESD;
+class AliESDcascade;
 
 class AliESDEvent : public TObject {
 public:
@@ -167,12 +168,11 @@ public:
   void SetPrimaryVertex(const AliESDVertex *vertex);
   const AliESDVertex *GetPrimaryVertex() const {return fPrimaryVertex;}
 
-  void SetMultiplicity(const AliMultiplicity *mul) {
-    *fSPDMult = *mul;
-    // CKB 
-    //     new (&fSPDMult) AliMultiplicity(*mul);
-  }
+  void SetMultiplicity(const AliMultiplicity *mul);
+
   const AliMultiplicity *GetMultiplicity() const {return fSPDMult;}
+
+
   
   AliESDtrack *GetTrack(Int_t i) const {
     return (AliESDtrack *)fTracks->UncheckedAt(i);
@@ -204,26 +204,22 @@ public:
   AliESDMuonTrack *GetMuonTrack(Int_t i) const {
     return (AliESDMuonTrack *)fMuonTracks->UncheckedAt(i);
   }
-  void AddMuonTrack(const AliESDMuonTrack *t) {
-    TClonesArray &fmu = *fMuonTracks;
-    new(fmu[fMuonTracks->GetEntriesFast()]) AliESDMuonTrack(*t);
-  }
+
+  void AddMuonTrack(const AliESDMuonTrack *t);
 
   AliESDPmdTrack *GetPmdTrack(Int_t i) const {
     return (AliESDPmdTrack *)fPmdTracks->UncheckedAt(i);
   }
-  void AddPmdTrack(const AliESDPmdTrack *t) {
-    TClonesArray &fpmd = *fPmdTracks;
-    new(fpmd[fPmdTracks->GetEntriesFast()]) AliESDPmdTrack(*t);
-  }
+
+  void AddPmdTrack(const AliESDPmdTrack *t);
+
 
   AliESDTrdTrack *GetTrdTrack(Int_t i) const {
     return (AliESDTrdTrack *)fTrdTracks->UncheckedAt(i);
   }
-  void AddTrdTrack(const AliESDTrdTrack *t) {
-    TClonesArray &ftrd = *fTrdTracks;
-    new(ftrd[fTrdTracks->GetEntriesFast()]) AliESDTrdTrack(*t);
-  }
+
+  
+  void AddTrdTrack(const AliESDTrdTrack *t);
 
   AliESDv0 *GetV0(Int_t i) const {
     return (AliESDv0*)fV0s->UncheckedAt(i);
@@ -233,10 +229,8 @@ public:
   AliESDcascade *GetCascade(Int_t i) const {
     return (AliESDcascade *)fCascades->UncheckedAt(i);
   }
-  void AddCascade(const AliESDcascade *c) {
-    TClonesArray &fc = *fCascades;
-    new(fc[fCascades->GetEntriesFast()]) AliESDcascade(*c);
-  }
+
+  void AddCascade(const AliESDcascade *c);
 
   AliESDkink *GetKink(Int_t i) const {
     return (AliESDkink *)fKinks->UncheckedAt(i);
@@ -251,11 +245,8 @@ public:
   AliRawDataErrorLog *GetErrorLog(Int_t i) const {
     return (AliRawDataErrorLog *)fErrorLogs->UncheckedAt(i);
   }
-  void  AddRawDataErrorLog(const AliRawDataErrorLog *log) {
-    // CKB inline this??
-    TClonesArray &errlogs = *fErrorLogs;
-    new(errlogs[errlogs.GetEntriesFast()])  AliRawDataErrorLog(*log);
-  }
+  void  AddRawDataErrorLog(const AliRawDataErrorLog *log);
+
   Int_t GetNumberOfErrorLogs()   const {return fErrorLogs->GetEntriesFast();}
 
     
@@ -263,7 +254,6 @@ public:
   void AddPHOSTriggerAmplitudes(TArrayF array) { fPHOSTrigger->AddTriggerAmplitudes(array);}
   void AddEMCALTriggerPosition(TArrayF array)  { fEMCALTrigger->AddTriggerPosition(array); }
   void AddEMCALTriggerAmplitudes(TArrayF array){ fEMCALTrigger->AddTriggerAmplitudes(array); }
-
 
   Int_t GetNumberOfTracks()     const {return fTracks->GetEntriesFast();}
   Int_t GetNumberOfHLTConfMapTracks()     const {return 0;} 
