@@ -43,6 +43,7 @@
 #include "AliLog.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
+#include "AliESDCaloCluster.h"
 #include "AliKalmanTrack.h"
 #include "AliEMCALRecPoint.h"
 #include "AliRunLoader.h"

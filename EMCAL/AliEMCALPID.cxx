@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.13  2007/07/11 13:43:29  hristov
+ * New class AliESDEvent, backward compatibility with the old AliESD (Christian)
+ *
  * Revision 1.12  2007/06/11 20:43:06  hristov
  * Changes required by the updated AliESDCaloCluster (Gustavo)
  *
@@ -106,6 +109,7 @@
 // #include "AliESDEvent.h"
 #include "AliLog.h"
 #include "AliEMCALPID.h"
+#include "AliESDCaloCluster.h"
   
 ClassImp(AliEMCALPID)
 
