@@ -19,6 +19,7 @@
 #include <AliITSclusterV2.h>
 #include <AliTrackReference.h>
 #include <AliESDkink.h>
+#include <AliESDtrack.h>
 
 #include <AliRun.h>
 #include <AliTPCParam.h>

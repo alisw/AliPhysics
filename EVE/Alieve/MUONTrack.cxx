@@ -8,6 +8,7 @@
 #include <AliESDMuonTrack.h>
 #include <AliTrackReference.h>
 #include <AliESDEvent.h>
+#include <AliESDVertex.h>
 #include <AliRunLoader.h>
 #include <AliRun.h>
 
