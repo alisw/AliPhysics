@@ -15,7 +15,7 @@
 
 class AliCDBEntry;
 
-class AliTRDCalPIDLQ;
+class AliTRDCalPID;
 class AliTRDCalMonitoring;
 class AliTRDCalROC;
 class AliTRDCalDet;
@@ -66,7 +66,7 @@ class AliTRDcalibDB : public TObject {
   Bool_t                     IsChamberMasked(Int_t det);
 
   const AliTRDCalMonitoring *GetMonitoringObject();
-  const AliTRDCalPIDLQ      *GetPIDLQObject();
+  const AliTRDCalPID        *GetPIDLQObject();
 
   // Related functions, these depend on calibration data
   static Float_t             GetOmegaTau(Float_t vdrift, Float_t bz);

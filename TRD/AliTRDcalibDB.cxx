@@ -45,7 +45,7 @@
 #include "Cal/AliTRDCalPad.h"
 #include "Cal/AliTRDCalDet.h"
 #include "Cal/AliTRDCalFEE.h"
-#include "Cal/AliTRDCalPIDLQ.h"
+#include "Cal/AliTRDCalPID.h"
 #include "Cal/AliTRDCalMonitoring.h"
 #include "Cal/AliTRDCalChamberStatus.h"
 #include "Cal/AliTRDCalPadStatus.h"
@@ -798,13 +798,13 @@ Bool_t AliTRDcalibDB::IsChamberMasked(Int_t det)
 }
 
 //_____________________________________________________________________________
-const AliTRDCalPIDLQ *AliTRDcalibDB::GetPIDLQObject()
+const AliTRDCalPID *AliTRDcalibDB::GetPIDLQObject()
 {
   //
   // Returns the object storing the distributions for PID with likelihood
   //
 
-  return dynamic_cast<const AliTRDCalPIDLQ *> 
+  return dynamic_cast<const AliTRDCalPID *> 
          (GetCachedCDBObject(kIDPIDLQ));
 
 }

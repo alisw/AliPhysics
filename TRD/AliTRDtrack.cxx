@@ -30,7 +30,7 @@
 
 // A. Bercuci - used for PID calculations
 #include "AliTRDcalibDB.h"
-#include "Cal/AliTRDCalPIDLQ.h"
+#include "Cal/AliTRDCalPID.h"
 
 ClassImp(AliTRDtrack)
 
@@ -578,7 +578,7 @@ Int_t AliTRDtrack::CookPID(AliESDtrack *esd)
   // The method produces probabilities based on the charge
   // and the position of the maximum time bin in each layer.
   // The dE/dx information can be used as global charge or 2 to 3
-  // slices. Check AliTRDCalPIDLQ and AliTRDCalPIDLQRef for the actual
+  // slices. Check AliTRDCalPID and AliTRDCalPIDRefMaker for the actual
   // implementation.
   //
   // Author
@@ -592,9 +592,9 @@ Int_t AliTRDtrack::CookPID(AliESDtrack *esd)
 	}
 	
 	// Retrieve the CDB container class with the probability distributions
-	const AliTRDCalPIDLQ *pd = calibration->GetPIDLQObject();
+	const AliTRDCalPID *pd = calibration->GetPIDLQObject();
 	if (!pd) {
-		AliError("No access to AliTRDCalPIDLQ");
+		AliError("No access to AliTRDCalPID");
 		return -1;
 	}
 

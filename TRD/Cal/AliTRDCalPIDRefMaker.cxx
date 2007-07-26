@@ -55,7 +55,7 @@
 #include "AliESDtrack.h"
 
 #include "AliTRDCalPIDRefMaker.h"
-#include "AliTRDCalPIDLQ.h"
+#include "AliTRDCalPID.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDtrack.h"
@@ -178,12 +178,12 @@ Bool_t AliTRDCalPIDRefMaker::BuildLQReferences(Char_t *File, Char_t *dir)
 	// Print statistics header
 	Int_t nPart[AliPID::kSPECIES], nTotPart;
 	printf("P[GeV/c] ");
-	for(Int_t ispec=0; ispec<AliPID::kSPECIES; ispec++) printf(" %s[%%] ", AliTRDCalPIDLQ::fpartSymb[ispec]);
+	for(Int_t ispec=0; ispec<AliPID::kSPECIES; ispec++) printf(" %s[%%] ", AliTRDCalPID::fpartSymb[ispec]);
 	printf("\n-----------------------------------------------\n");
 	
-	Float_t trackMomentum[AliTRDCalPIDLQ::kNMom];
-        //Float_t trackSegLength[AliTRDCalPIDLQ::kNLength];
-	for(int i=0; i<AliTRDCalPIDLQ::kNMom; i++) trackMomentum[i] = AliTRDCalPIDLQ::GetMomentum(i);
+	Float_t trackMomentum[AliTRDCalPID::kNMom];
+        //Float_t trackSegLength[AliTRDCalPID::kNLength];
+	for(int i=0; i<AliTRDCalPID::kNMom; i++) trackMomentum[i] = AliTRDCalPID::GetMomentum(i);
 	AliRunLoader *fRunLoader = 0x0;
 	TFile *esdFile = 0x0;
 	TTree *esdTree = 0x0;
@@ -192,7 +192,7 @@ Bool_t AliTRDCalPIDRefMaker::BuildLQReferences(Char_t *File, Char_t *dir)
 	
 	//
 	// Momentum loop
-	for (Int_t imom = 0; imom < AliTRDCalPIDLQ::kNMom; imom++) {
+	for (Int_t imom = 0; imom < AliTRDCalPID::kNMom; imom++) {
 		Reset();
 		
 		// init statistics for momentum
@@ -309,14 +309,14 @@ Bool_t AliTRDCalPIDRefMaker::BuildLQReferences(Char_t *File, Char_t *dir)
 						
 						// find segment length and momentum bin
 						Int_t jmom = 1, refMom = -1;
-						while(jmom<AliTRDCalPIDLQ::kNMom-1 && mom>trackMomentum[jmom]) jmom++;
+						while(jmom<AliTRDCalPID::kNMom-1 && mom>trackMomentum[jmom]) jmom++;
 						if(TMath::Abs(trackMomentum[jmom-1] - mom) < trackMomentum[jmom-1] * .2) refMom = jmom-1;
 						else if(TMath::Abs(trackMomentum[jmom] - mom) < trackMomentum[jmom] * .2) refMom = jmom;
 						if(refMom<0){
 							AliInfo(Form("Momentum at plane %d entrance not in momentum window. [@ momentum %3.1f batch %03d event %d track %d]", iPlane, trackMomentum[imom], ibatch, iEvent, iTrack));
 							continue;
 						}
-						/*while(jleng<AliTRDCalPIDLQ::kNLength-1 && length>trackSegLength[jleng]) jleng++;*/
+						/*while(jleng<AliTRDCalPID::kNLength-1 && length>trackSegLength[jleng]) jleng++;*/
 						
 						// this track segment has fulfilled all requierments
 						//nPlanePID++;
@@ -517,9 +517,9 @@ Int_t AliTRDCalPIDRefMaker::CheckProdDirTree(Char_t *dir)
 
 	Int_t iDir;
 	Int_t nDir = Int_t(1.E6);
-	for(int imom=0; imom<AliTRDCalPIDLQ::kNMom; imom++){
-		if(!gSystem->ChangeDirectory(Form("%3.1fGeV", AliTRDCalPIDLQ::GetMomentum(imom)))){
-			AliError(Form("Couldn't find data for momentum %3.1f GeV/c.", AliTRDCalPIDLQ::GetMomentum(imom)));
+	for(int imom=0; imom<AliTRDCalPID::kNMom; imom++){
+		if(!gSystem->ChangeDirectory(Form("%3.1fGeV", AliTRDCalPID::GetMomentum(imom)))){
+			AliError(Form("Couldn't find data for momentum %3.1f GeV/c.", AliTRDCalPID::GetMomentum(imom)));
 			return 0;	
 		}
 		
@@ -552,7 +552,7 @@ void  AliTRDCalPIDRefMaker::Prepare2D()
 	for(int ispec=0; ispec<AliPID::kSPECIES; ispec++){
 		// check PCA data
 		if(!fPrinc[ispec]){
-			AliError(Form("No data defined for %s.", AliTRDCalPIDLQ::fpartName[ispec]));
+			AliError(Form("No data defined for %s.", AliTRDCalPID::fpartName[ispec]));
 			return;
 		}
 		// build reference histograms
@@ -562,7 +562,7 @@ void  AliTRDCalPIDRefMaker::Prepare2D()
 		xmin = ymin = 0.;
 		xmax = 8000.; ymax = 6000.;
 		if(!fH2dEdx[ispec]){
-			fH2dEdx[ispec] = new  TH2D(Form("h2%s", AliTRDCalPIDLQ::fpartSymb[ispec]), "", nbinsx, xmin, xmax, nbinsy, ymin, ymax);
+			fH2dEdx[ispec] = new  TH2D(Form("h2%s", AliTRDCalPID::fpartSymb[ispec]), "", nbinsx, xmin, xmax, nbinsy, ymin, ymax);
 			fH2dEdx[ispec]->SetLineColor(color[ispec]);
 		}
 	}
@@ -871,13 +871,13 @@ void  AliTRDCalPIDRefMaker::SaveReferences(const Int_t mom, const char *fn)
 	if(!kFOUND) fSave = TFile::Open(fn, "RECREATE");
 	fSave->cd();
 
-	Float_t fmom = AliTRDCalPIDLQ::GetMomentum(mom);
+	Float_t fmom = AliTRDCalPID::GetMomentum(mom);
 	
 	// save dE/dx references
 	TH2 *h2 = 0x0;
 	for(int ispec=0; ispec<AliPID::kSPECIES; ispec++){
-		h2 = (TH2D*)fH2dEdx[ispec]->Clone(Form("h2dEdx%s%d", AliTRDCalPIDLQ::fpartSymb[ispec], mom));
-		h2->SetTitle(Form("2D dEdx for particle %s @ %d", AliTRDCalPIDLQ::fpartName[ispec], mom));
+		h2 = (TH2D*)fH2dEdx[ispec]->Clone(Form("h2dEdx%s%d", AliTRDCalPID::fpartSymb[ispec], mom));
+		h2->SetTitle(Form("2D dEdx for particle %s @ %d", AliTRDCalPID::fpartName[ispec], mom));
 		h2->GetXaxis()->SetTitle("dE/dx_{TRD}^{amplif} [au]");
 		h2->GetYaxis()->SetTitle("dE/dx_{TRD}^{drift} [au]");
 		h2->GetZaxis()->SetTitle("Entries");

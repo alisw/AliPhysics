@@ -19,7 +19,7 @@ SRCS= AliTRDarrayI.cxx \
       Cal/AliTRDCalPad.cxx \
       Cal/AliTRDCalDet.cxx \
       Cal/AliTRDCalFEE.cxx \
-      Cal/AliTRDCalPIDLQ.cxx \
+      Cal/AliTRDCalPID.cxx \
       Cal/AliTRDCalPIDRefMaker.cxx \
       Cal/AliTRDCalMonitoring.cxx \
       Cal/AliTRDCalChamberStatus.cxx \

@@ -33,7 +33,7 @@
 #include "AliTRDcalibDB.h"
 #include "AliTRDltuTracklet.h"
 #include "AliTRDgtuTrack.h"
-#include "Cal/AliTRDCalPIDLQ.h"
+#include "Cal/AliTRDCalPID.h"
 
 ClassImp(AliTRDgtuTrack)
 
@@ -390,7 +390,7 @@ void AliTRDgtuTrack::MakePID()
     AliError("No instance of AliTRDcalibDB.");
     return;  
   }
-  const AliTRDCalPIDLQ *pd = calibration->GetPIDLQObject();
+  const AliTRDCalPID *pd = calibration->GetPIDLQObject();
   
   AliTRDltuTracklet *trk;
   Int_t   nTracklets = GetNtracklets();

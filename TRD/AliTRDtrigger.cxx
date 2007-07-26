@@ -45,7 +45,7 @@
 #include "AliTRDmcm.h"
 #include "AliTRDzmaps.h"
 #include "AliTRDCalibraFillHisto.h"
-#include "Cal/AliTRDCalPIDLQ.h"
+#include "Cal/AliTRDCalPID.h"
 
 ClassImp(AliTRDtrigger)
 

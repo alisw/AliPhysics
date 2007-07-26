@@ -101,7 +101,7 @@ class AliTRDtrack : public AliKalmanTrack {
 	inline	Float_t	GetMomentumPlane(Int_t plane) const {return (plane >= 0 && plane < kNplane) ? fMom[plane] : 0.;}
 	inline	Float_t	GetSnpPlane(Int_t plane) const {return (plane >= 0 && plane < kNplane) ? fSnp[plane] : 0.;}
 	inline	Float_t	GetTglPlane(Int_t plane) const {return (plane >= 0 && plane < kNplane) ? fTgl[plane] : 0.;}
-	inline	Float_t	GetTrackLengthPlane(Int_t plane) const;
+		Float_t	GetTrackLengthPlane(Int_t plane) const;
 //end A.Bercuci
 
 					 void     MakeBackupTrack();

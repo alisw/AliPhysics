@@ -41,7 +41,7 @@
 #include "AliTRDcalibDB.h"
 #include "AliRun.h"
 #include "AliTRDtrack.h"
-#include "Cal/AliTRDCalPIDLQ.h"
+#include "Cal/AliTRDCalPID.h"
 
 
 ClassImp(AliTRDpidESD)
@@ -116,7 +116,7 @@ Int_t AliTRDpidESD::MakePID(AliESDEvent *event)
   // The method produces probabilities based on the charge
   // and the position of the maximum time bin in each layer.
   // The dE/dx information can be used as global charge or 2 to 3
-  // slices. Check AliTRDCalPIDLQ and AliTRDCalPIDLQRef for the actual
+  // slices. Check AliTRDCalPID and AliTRDCalPIDRefMaker for the actual
   // implementation.
   //
   // Author
@@ -130,10 +130,10 @@ Int_t AliTRDpidESD::MakePID(AliESDEvent *event)
 	}
 	
 	// Retrieve the CDB container class with the probability distributions
-	const AliTRDCalPIDLQ *pd = calibration->GetPIDLQObject();
+	const AliTRDCalPID *pd = calibration->GetPIDLQObject();
 	if (!pd) {
 		AliErrorGeneral("AliTRDpidESD::MakePID()"
-			,"No access to AliTRDCalPIDLQ");
+			,"No access to AliTRDCalPID");
 		return -1;
 	}
 
