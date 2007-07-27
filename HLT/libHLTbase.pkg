@@ -8,6 +8,7 @@ MODULE_SRCS= 	AliHLTComponent.cxx \
 		AliHLTSystem.cxx \
 		AliHLT_C_Component_WrapperInterface.cxx \
 		AliHLTProcessor.cxx \
+		AliHLTCalibrationProcessor.cxx \
 		AliHLTConfiguration.cxx \
 		AliHLTLogging.cxx \
 		AliHLTDataBuffer.cxx \
@@ -26,6 +27,7 @@ CLASS_HDRS:=  	AliHLTComponent.h \
 		AliHLTComponentHandler.h \
 		AliHLTSystem.h \
 		AliHLTProcessor.h \
+		AliHLTCalibrationProcessor.h \
 		AliHLTConfiguration.h \
 		AliHLTConfigurationHandler.h \
 		AliHLTTask.h \

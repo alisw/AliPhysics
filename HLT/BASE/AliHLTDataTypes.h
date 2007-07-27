@@ -95,6 +95,11 @@ const int kAliHLTComponentDataTypefIDsize=8;
  */
 # define kAliHLTDDLDataTypeID      {'D','D','L','L','I','S','T',' '}
 
+/** EventType event 
+ * - empty payload, specification gives eventType
+ */
+# define kAliHLTEventDataTypeID    {'E','V','E','N','T','T','Y','P'}
+
 using namespace std;
 
 extern "C" {
@@ -237,6 +242,31 @@ extern "C" {
     AliHLTUInt32_t fCount;
     AliHLTUInt32_t fList[gkAliHLTDDLListSize];
   };
+
+  //////////////////////////////////////////////////////////////////////////
+  //
+  // HLT Event Type Specification
+  //
+  //////////////////////////////////////////////////////////////////////////
+
+  /** Unknown eventType specification */
+  static const AliHLTUInt32_t gkAliEventTypeUnknown = ~(AliHLTUInt32_t)0;
+  /** SOR eventType specification */ 
+  static const AliHLTUInt32_t gkAliEventTypeStartOfRun=1;
+  /** Data eventType specification */
+  static const AliHLTUInt32_t gkAliEventTypeData=2;
+  /** EOR eventType specification */ 
+  static const AliHLTUInt32_t gkAliEventTypeEndOfRun=4;
+  /** Corrupt eventType specification */
+  static const AliHLTUInt32_t gkAliEventTypeCorruptID=8;
+  /** Calibration eventType specification */ 
+  static const AliHLTUInt32_t gkAliEventTypeCalibration=16;
+  /** DataReplay eventType specification */
+  static const AliHLTUInt32_t gkAliEventTypeDataReplay=32;
+  /** Tick eventType specification */ 
+  static const AliHLTUInt32_t gkAliEventTypeTick=64;
+  /** Max eventType specification */ 
+  static const AliHLTUInt32_t gkAliEventTypeMax=64;
 
   //////////////////////////////////////////////////////////////////////////
   //

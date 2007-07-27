@@ -766,20 +766,22 @@ int AliHLTComponent::PushBack(TObject* pObject, const char* dtID, const char* dt
   return PushBack(pObject, dt, spec, pHeader, headerSize);
 }
 
-int AliHLTComponent::PushBack(void* pBuffer, int iSize, const AliHLTComponentDataType& dt, AliHLTUInt32_t spec)
+int AliHLTComponent::PushBack(void* pBuffer, int iSize, const AliHLTComponentDataType& dt, AliHLTUInt32_t spec,
+			      void* pHeader, int headerSize)
 {
   // see header file for function documentation
   ALIHLTCOMPONENT_BASE_STOPWATCH();
-  return InsertOutputBlock(pBuffer, iSize, dt, spec);
+  return InsertOutputBlock(pBuffer, iSize, dt, spec, pHeader, headerSize);
 }
 
-int AliHLTComponent::PushBack(void* pBuffer, int iSize, const char* dtID, const char* dtOrigin, AliHLTUInt32_t spec)
+int AliHLTComponent::PushBack(void* pBuffer, int iSize, const char* dtID, const char* dtOrigin, AliHLTUInt32_t spec,
+			      void* pHeader, int headerSize)
 {
   // see header file for function documentation
   ALIHLTCOMPONENT_BASE_STOPWATCH();
   AliHLTComponentDataType dt;
   SetDataType(dt, dtID, dtOrigin);
-  return PushBack(pBuffer, iSize, dt, spec);
+  return PushBack(pBuffer, iSize, dt, spec, pHeader, headerSize);
 }
 
 int AliHLTComponent::InsertOutputBlock(void* pBuffer, int iBufferSize, const AliHLTComponentDataType& dt, AliHLTUInt32_t spec,

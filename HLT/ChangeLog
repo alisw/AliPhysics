@@ -1,3 +1,7 @@
+2007-07-27 Calibration Processor and TPC calibration components (Jochen)
+	- calibration processor base class added
+	- TPC pulser and pedestal calibration components adapted
+	
 2007-07-18 HLT base
 	- analysis framework handles SOR and EOR events, GetRunNo/Type
 	  added to AliHLTComponent

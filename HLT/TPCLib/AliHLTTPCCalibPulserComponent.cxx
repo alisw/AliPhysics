@@ -14,10 +14,10 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/** @file   AliHLTTPCCalibPedestalComponent.cxx
+/** @file   AliHLTTPCCalibPulserComponent.cxx
     @author Jochen Thaeder
     @date   
-    @brief  A pedestal calibration component for the TPC.
+    @brief  A pulser calibration component for the TPC.
 */
 
 #if __GNUC__>= 3
@@ -27,28 +27,30 @@ using namespace std;
 #include "AliHLTTPCLogging.h"
 #include "AliHLTTPCTransform.h"
 
-#include "AliHLTTPCCalibPedestalComponent.h"
+#include "AliHLTTPCCalibPulserComponent.h"
 
 #include "AliRawDataHeader.h"
 #include "AliRawReaderMemory.h"
 #include "AliTPCRawStream.h"
 
-#include "AliTPCCalibPedestal.h"
+#ifdef HAVE_ALITPCCALIBPULSER
+#include "AliTPCCalibPulser.h"
+#endif // HAVE_ALITPCCALIBPULSER
 
 #include <stdlib.h>
 #include <errno.h>
 #include "TString.h"
 
 // this is a global object used for automatic component registration, do not use this
-AliHLTTPCCalibPedestalComponent gAliHLTTPCCalibPedestalComponent;
+AliHLTTPCCalibPulserComponent gAliHLTTPCCalibPulserComponent;
 
-ClassImp(AliHLTTPCCalibPedestalComponent)
+ClassImp(AliHLTTPCCalibPulserComponent)
 
-AliHLTTPCCalibPedestalComponent::AliHLTTPCCalibPedestalComponent()
+AliHLTTPCCalibPulserComponent::AliHLTTPCCalibPulserComponent()
   :
   fRawReader(NULL),
   fRawStream(NULL),
-  fCalibPedestal(NULL),
+  fCalibPulser(NULL),
   fRCUFormat(kFALSE),
   fMinPatch(5),
   fMaxPatch(0),
@@ -61,11 +63,11 @@ AliHLTTPCCalibPedestalComponent::AliHLTTPCCalibPedestalComponent()
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
 
-AliHLTTPCCalibPedestalComponent::AliHLTTPCCalibPedestalComponent(const AliHLTTPCCalibPedestalComponent&)
+AliHLTTPCCalibPulserComponent::AliHLTTPCCalibPulserComponent(const AliHLTTPCCalibPulserComponent&)
   :
   fRawReader(NULL),
   fRawStream(NULL),
-  fCalibPedestal(NULL),
+  fCalibPulser(NULL),
   fRCUFormat(kFALSE),
   fMinPatch(5),
   fMaxPatch(0),
@@ -76,40 +78,40 @@ AliHLTTPCCalibPedestalComponent::AliHLTTPCCalibPedestalComponent(const AliHLTTPC
   HLTFatal("copy constructor untested");
 }
 
-AliHLTTPCCalibPedestalComponent& AliHLTTPCCalibPedestalComponent::operator=(const AliHLTTPCCalibPedestalComponent&) { 
+AliHLTTPCCalibPulserComponent& AliHLTTPCCalibPulserComponent::operator=(const AliHLTTPCCalibPulserComponent&) { 
   // see header file for class documentation
 
   HLTFatal("assignment operator untested");
   return *this;
 }	
 
-AliHLTTPCCalibPedestalComponent::~AliHLTTPCCalibPedestalComponent() {
+AliHLTTPCCalibPulserComponent::~AliHLTTPCCalibPulserComponent() {
   // see header file for class documentation
 }
 
 // Public functions to implement AliHLTComponent's interface.
 // These functions are required for the registration process
 
-const char* AliHLTTPCCalibPedestalComponent::GetComponentID() {
+const char* AliHLTTPCCalibPulserComponent::GetComponentID() {
   // see header file for class documentation
 
-  return "TPCCalibPedestal";
+  return "TPCCalibPulser";
 }
 
-void AliHLTTPCCalibPedestalComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list) {
+void AliHLTTPCCalibPulserComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list) {
   // see header file for class documentation
 
   list.clear(); 
   list.push_back( AliHLTTPCDefinitions::fgkDDLPackedRawDataType );
 }
 
-AliHLTComponentDataType AliHLTTPCCalibPedestalComponent::GetOutputDataType() {
+AliHLTComponentDataType AliHLTTPCCalibPulserComponent::GetOutputDataType() {
   // see header file for class documentation
 
-  return AliHLTTPCDefinitions::fgkCalibPedestalDataType;
+  return AliHLTTPCDefinitions::fgkCalibPulserDataType;
 }
 
-void AliHLTTPCCalibPedestalComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) {
+void AliHLTTPCCalibPulserComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) {
   // see header file for class documentation
 
   // XXX TODO: Find more realistic values.  
@@ -117,14 +119,14 @@ void AliHLTTPCCalibPedestalComponent::GetOutputDataSize( unsigned long& constBas
   inputMultiplier = (2.0);
 }
 
-AliHLTComponent* AliHLTTPCCalibPedestalComponent::Spawn() {
+AliHLTComponent* AliHLTTPCCalibPulserComponent::Spawn() {
   // see header file for class documentation
 
-  return new AliHLTTPCCalibPedestalComponent();
+  return new AliHLTTPCCalibPulserComponent();
 }  
 
 
-Int_t AliHLTTPCCalibPedestalComponent::ScanArgument( Int_t argc, const char** argv ) {
+Int_t AliHLTTPCCalibPulserComponent::ScanArgument( Int_t argc, const char** argv ) {
   // see header file for class documentation
 
   Int_t iResult = 0;
@@ -172,14 +174,15 @@ Int_t AliHLTTPCCalibPedestalComponent::ScanArgument( Int_t argc, const char** ar
   return iResult;
 }
 
-Int_t AliHLTTPCCalibPedestalComponent::InitCalibration() {
+Int_t AliHLTTPCCalibPulserComponent::InitCalibration() {
   // see header file for class documentation
     
-  // ** Create pedestal calibration
-  if ( fCalibPedestal )
+#ifdef HAVE_ALITPCCALIBPULSER
+  // ** Create pulser calibration
+  if ( fCalibPulser )
     return EINPROGRESS;
   
-  fCalibPedestal = new AliTPCCalibPedestal();
+  fCalibPulser = new AliTPCCalibPulser();
 
   // **  Create AliRoot Memory Reader
   if (fRawReader)
@@ -193,26 +196,31 @@ Int_t AliHLTTPCCalibPedestalComponent::InitCalibration() {
 #endif
 
   return 0;
+#else //!HAVE_ALITPCCALIBPULSER
+#warning AliTPCCalibPulser not available in this AliRoot version - AliHLTTPCCalibPulserComponent not functional
+  HLTFatal("AliTPCCalibPulser  not available - check your build");
+  return -ENODEV;
+#endif //HAVE_ALITPCCALIBPULSER
 }
 
-Int_t AliHLTTPCCalibPedestalComponent::DeinitCalibration() {
+Int_t AliHLTTPCCalibPulserComponent::DeinitCalibration() {
   // see header file for class documentation
 
   if ( fRawReader )
     delete fRawReader;
   fRawReader = NULL;
 
-  if ( fCalibPedestal )
-    delete fCalibPedestal;
-  fCalibPedestal = NULL;
+  if ( fCalibPulser )
+    delete fCalibPulser;
+  fCalibPulser = NULL;
 
   return 0;
 }
 
 /*
- * --- setter for rcuformat need in AliTPCCalibPedestal class
+ * --- setter for rcuformat need in AliTPCCalibPulser class
  */
-Int_t AliHLTTPCCalibPedestalComponent::ProcessCalibration( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData ) {
+Int_t AliHLTTPCCalibPulserComponent::ProcessCalibration( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData ) {
   // see header file for class documentation
   
   const AliHLTComponentBlockData* iter = NULL;
@@ -253,8 +261,13 @@ Int_t AliHLTTPCCalibPedestalComponent::ProcessCalibration( const AliHLTComponent
     fRawStream = new AliTPCRawStream( fRawReader );
     fRawStream->SetOldRCUFormat( fRCUFormat );
 
-    // ** Process actual Pedestal Calibration - Fill histograms
-    fCalibPedestal->ProcessEvent( fRawStream );
+#ifdef HAVE_ALITPCCALIBPULSER
+    // ** Process actual Pulser Calibration - Fill histograms
+    fCalibPulser->ProcessEvent( fRawStream );
+#else //!HAVE_ALITPCCALIBPULSER
+    HLTFatal("AliTPCCalibPulser  not available - check your build");
+    return -ENODEV;
+#endif //HAVE_ALITPCCALIBPULSER
   
     // ** Delete TPCRawStream
     if ( fRawStream )
@@ -270,22 +283,25 @@ Int_t AliHLTTPCCalibPedestalComponent::ProcessCalibration( const AliHLTComponent
   fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification( slice, slice, fMinPatch, fMaxPatch );
 
   // ** PushBack data to shared memory ... 
-  PushBack( (TObject*) fCalibPedestal, AliHLTTPCDefinitions::fgkCalibPedestalDataType, fSpecification);
+  PushBack( (TObject*) fCalibPulser, AliHLTTPCDefinitions::fgkCalibPulserDataType, fSpecification);
   
   return 0;
-} // Int_t AliHLTTPCCalibPedestalComponent::ProcessCalibration( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData ) {
+} // Int_t AliHLTTPCCalibPulserComponent::ProcessCalibration( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData ) {
 
 
-Int_t AliHLTTPCCalibPedestalComponent::ShipDataToFXS( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData ) {
+Int_t AliHLTTPCCalibPulserComponent::ShipDataToFXS( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData ) {
   // see header file for class documentation
     
+#ifdef HAVE_ALITPCCALIBPULSER
   if ( fEnableAnalysis )
-    fCalibPedestal->Analyse();
+    fCalibPulser->Analyse();
+#else //!HAVE_ALITPCCALIBPULSER
+  HLTFatal("AliTPCCalibPulser  not available - check your build");
+  return -ENODEV;
+#endif //HAVE_ALITPCCALIBPULSER
   
   // ** PushBack data to FXS ...
-  PushToFXS( (TObject*) fCalibPedestal, "TPC", "Pedestal" ) ;
+  PushToFXS( (TObject*) fCalibPulser, "TPC", "Pulser" ) ;
   
   return 0;
-} // Int_t AliHLTTPCCalibPedestalComponent::ShipDataToFXS( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData ) {
-
-
+} // Int_t AliHLTTPCCalibPulserComponent::ShipDataToFXS( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData ) {

@@ -55,3 +55,10 @@ const AliHLTComponentDataType kAliHLTDataTypeEOR  = {
   kAliHLTEORDataTypeID,
   kAliHLTDataOriginPrivate
 };
+
+/** Event type specification */
+const AliHLTComponentDataType kAliHLTDataTypeEvent  = {
+  sizeof(AliHLTComponentDataType),
+  kAliHLTEventDataTypeID,
+  kAliHLTDataOriginPrivate
+};

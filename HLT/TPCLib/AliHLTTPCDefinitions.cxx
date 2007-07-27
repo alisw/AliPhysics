@@ -40,7 +40,7 @@ const AliHLTComponentDataType AliHLTTPCDefinitions::fgkTrackSegmentsDataType = {
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkTracksDataType = { sizeof(AliHLTComponentDataType), {'T','R','A','C','K','S',' ',' '},kAliHLTDataOriginTPC};;
 
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkCalibPedestalDataType = { sizeof(AliHLTComponentDataType), {'C','A','L','_','P','E','D',' '},kAliHLTDataOriginTPC};;
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkCalibSignalDataType = { sizeof(AliHLTComponentDataType), {'C','A','L','_','S','I','G',' '},kAliHLTDataOriginTPC};;
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkCalibPulserDataType = { sizeof(AliHLTComponentDataType), {'C','A','L','_','P','U','L','S'},kAliHLTDataOriginTPC};;
 
 
 AliHLTTPCDefinitions::AliHLTTPCDefinitions()

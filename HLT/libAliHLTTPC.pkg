@@ -51,11 +51,11 @@ MODULE_SRCS= 	AliHLTTPCLog.cxx \
 		AliHLTTPCSliceTrackerComponent.cxx \
 		AliHLTTPCGlobalMergerComponent.cxx \
 		AliHLTTPCCATrackerComponent.cxx \
-		AliHLTTPCEsdWriterComponent.cxx
+		AliHLTTPCEsdWriterComponent.cxx \
+		AliHLTTPCCalibPedestalComponent.cxx \
+		AliHLTTPCCalibPulserComponent.cxx
 
-# 		AliHLTTPCDDLDataFileHandler.cxx \
-#		AliHLTTPCCalibPedestalComponent.cxx \
-#		AliHLTTPCCalibSignalComponent.cxx
+# 		AliHLTTPCDDLDataFileHandler.cxx
 
 CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		AliHLTTPCMemHandler.h \
@@ -105,11 +105,13 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		AliHLTTPCSliceTrackerComponent.h \
 		AliHLTTPCGlobalMergerComponent.h \
 		AliHLTTPCCATrackerComponent.h \
-		AliHLTTPCEsdWriterComponent.h
+		AliHLTTPCEsdWriterComponent.h \
+		AliHLTTPCCalibPedestalComponent.h \
+		AliHLTTPCCalibPulserComponent.h
 
-# 		AliHLTTPCDDLDataFileHandler.h \
-#		AliHLTTPCCalibPedestalComponent.h \
-#		AliHLTTPCCalibSignalComponent.h
+
+
+# 		AliHLTTPCDDLDataFileHandler.h
 
 MODULE_HDRS:= 	$(CLASS_HDRS) \
 		AliHLTTPCLog.h \

@@ -1,15 +1,15 @@
 //-*- Mode: C++ -*-
-#ifndef ALIHLTTPCCALIBPEDESTALCOMPONENT_H
-#define ALIHLTTPCCALIBPEDESTALCOMPONENT_H
+#ifndef ALIHLTTPCCALIBPULSERCOMPONENT_H
+#define ALIHLTTPCCALIBPULSERCOMPONENT_H
 
 /* This file is property of and copyright by the ALICE HLT Project        * 
  * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
 
-/** @file   AliHLTTPCCalibPedestalComponent.h
+/** @file   AliHLTTPCCalibPulserComponent.h
     @author Jochen Thaeder
     @date   
-    @brief  A pedestal calibration component for the TPC.
+    @brief  A pulser calibration component for the TPC.
 */
 
 #include "AliHLTCalibrationProcessor.h"
@@ -17,16 +17,16 @@
 
 class AliTPCRawStream;
 class AliRawReaderMemory;
-class AliTPCCalibPedestal;
+class AliTPCCalibPulser;
 
 /**
- * @class AliHLTTPCCalibPedestalComponent
+ * @class AliHLTTPCCalibPulserComponent
  * 
- * This class is the calibration component for the AliTPCCalibPedestal class 
- * used for pedestal calibration of the TPC. 
+ * This class is the calibration component for the AliTPCCalibPulser class 
+ * used for pulser calibration of the TPC. 
  * 
  * It inherits from the @ref AliHLTCalibrationProcessor and uses the high-level 
- * interface. The output is the class @ref AliTPCCalibPedestal as a TObject.
+ * interface. The output is the class @ref AliTPCCalibPulser as a TObject.
  *
  * The component has the following component arguments:
  *   -rcuformat <old/new>  : Wether to use old or new rcuformat ( default is new )
@@ -34,17 +34,17 @@ class AliTPCCalibPedestal;
  *
  * @ingroup alihlt_tpc
  */
-class AliHLTTPCCalibPedestalComponent : public AliHLTCalibrationProcessor
+class AliHLTTPCCalibPulserComponent : public AliHLTCalibrationProcessor
     {
     public:
       /** constructor */
-      AliHLTTPCCalibPedestalComponent();
+      AliHLTTPCCalibPulserComponent();
       /** not a valid copy constructor, defined according to effective C++ style */
-      AliHLTTPCCalibPedestalComponent(const AliHLTTPCCalibPedestalComponent&);
+      AliHLTTPCCalibPulserComponent(const AliHLTTPCCalibPulserComponent&);
       /** not a valid assignment op, but defined according to effective C++ style */
-      AliHLTTPCCalibPedestalComponent& operator=(const AliHLTTPCCalibPedestalComponent&);
+      AliHLTTPCCalibPulserComponent& operator=(const AliHLTTPCCalibPulserComponent&);
       /** destructor */
-      virtual ~AliHLTTPCCalibPedestalComponent();
+      virtual ~AliHLTTPCCalibPulserComponent();
       
       // Public functions to implement AliHLTComponent's interface.
       // These functions are required for the registration process
@@ -84,8 +84,8 @@ class AliHLTTPCCalibPedestalComponent : public AliHLTCalibrationProcessor
       /** The reader object for reading TPC raw data */  
       AliTPCRawStream* fRawStream;                                                 //!transient
 
-      /** Pedestal Calibration class */
-      AliTPCCalibPedestal * fCalibPedestal;                                        //!transient
+      /** Pulser Calibration class */
+      AliTPCCalibPulser * fCalibPulser;                                        //!transient
       
       /** Wether to use old RCU format */
       Bool_t fRCUFormat;                                                           // see above
@@ -102,7 +102,8 @@ class AliHLTTPCCalibPedestalComponent : public AliHLTCalibrationProcessor
       /** Analysze calibration data before shipping to FXS */
       Bool_t fEnableAnalysis;                                                      // see above
 
-      ClassDef(AliHLTTPCCalibPedestalComponent, 1)
+      ClassDef(AliHLTTPCCalibPulserComponent, 0)
 
     };
+
 #endif

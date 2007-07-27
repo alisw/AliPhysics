@@ -736,10 +736,13 @@ class AliHLTComponent : public AliHLTLogging {
    * @param iSize       size of the buffer
    * @param dt          data type of the object
    * @param spec        data specification
+   * @param pHeader     pointer to header
+   * @param iHeaderSize size of Header
    * @return neg. error code if failed 
    */
   int PushBack(void* pBuffer, int iSize, const AliHLTComponentDataType& dt,
-	       AliHLTUInt32_t spec=kAliHLTVoidDataSpec);
+	       AliHLTUInt32_t spec=kAliHLTVoidDataSpec,
+	       void* pHeader=NULL, int headerSize=0);
 
   /**
    * Insert an object into the output.
@@ -748,10 +751,13 @@ class AliHLTComponent : public AliHLTLogging {
    * @param dtID        data type ID of the object
    * @param dtOrigin    data type origin of the object
    * @param spec        data specification
+   * @param pHeader     pointer to header
+   * @param iHeaderSize size of Header
    * @return neg. error code if failed 
    */
   int PushBack(void* pBuffer, int iSize, const char* dtID, const char* dtOrigin,
-	       AliHLTUInt32_t spec=kAliHLTVoidDataSpec);
+	       AliHLTUInt32_t spec=kAliHLTVoidDataSpec,
+	       void* pHeader=NULL, int headerSize=0);
 
   /**
    * Estimate size of a TObject

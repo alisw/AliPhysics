@@ -79,7 +79,7 @@ public:
   /** pedestal calibration data */
   static const AliHLTComponentDataType fgkCalibPedestalDataType;   // see above
   /** signal calibration data */
-  static const AliHLTComponentDataType fgkCalibSignalDataType;     // see above
+  static const AliHLTComponentDataType fgkCalibPulserDataType;     // see above
 
   ClassDef(AliHLTTPCDefinitions, 0);
 
