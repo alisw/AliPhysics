@@ -53,7 +53,7 @@
 #include "AliAlignObj.h"
 #include "AliTrackPointArray.h"
 
-#include "AliTPCTransform.h"
+//#include "AliTPCTransform.h"
 
 //
 
@@ -1245,18 +1245,21 @@ void AliTPCtrackerMI::UnloadClusters()
 }
 
 void   AliTPCtrackerMI::Transform(AliTPCclusterMI * cluster){
-  AliTPCTransform trafo;
+  //
+  //
+  //
+//   AliTPCTransform trafo;
 
-  Double_t x[3]={cluster->GetX(),cluster->GetY(),cluster->GetZ()};
-  Int_t i[1]={cluster->GetDetector()};
+//   Double_t x[3]={cluster->GetX(),cluster->GetY(),cluster->GetZ()};
+//   Int_t i[1]={cluster->GetDetector()};
 
-  trafo.Transform(x,i,0,1);
+//   trafo.Transform(x,i,0,1);
 
-  cluster->SetX(x[0]);
-  cluster->SetY(x[1]);
-  cluster->SetZ(x[2]);
+//   cluster->SetX(x[0]);
+//   cluster->SetY(x[1]);
+//   cluster->SetZ(x[2]);
 
-  return;
+//   return;
 
   // The old stuff:
 
