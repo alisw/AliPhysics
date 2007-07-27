@@ -56,11 +56,11 @@
 #pragma link C++ class AliTPCTempMap+;
 
 
-#pragma link C++ class AliCorrector+;
 #pragma link C++ class AliTPCExBExact+;
 #pragma link C++ class AliTPCExBFirst+ ;
 #pragma link C++ class AliTPCExB+;
-
+#pragma link C++ class AliTransform+;
+#pragma link C++ class AliTPCTransform+;
 
 
 #endif

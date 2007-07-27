@@ -1,18 +1,19 @@
 #ifndef ALITPC_EXB
 #define ALITPC_EXB
 
-#include "AliCorrector.h"
+#include "TObject.h"
 
-class AliTPCExB:public AliCorrector {
+class AliTPCExB:public TObject {
 public:
   virtual ~AliTPCExB() {};
-  void SetDriftVelocity(Double_t driftVelocity) {
-    fDriftVelocity=driftVelocity;
-  };
-protected:
-  Double_t fDriftVelocity; // The electron drift velocity.
-  
-  ClassDef(AliTPCExB,1)
+  virtual void Correct(const Double_t *position,Double_t *corrected)=0;
+  virtual void CorrectInverse(const Double_t *position,Double_t *corrected) {
+    Correct(position,corrected);
+    for (Int_t i=0;i<3;++i)
+      corrected[i]=position[i]-(corrected[i]-position[i]);
+  }
+
+  ClassDef(AliTPCExB,0)
 };
 
 #endif

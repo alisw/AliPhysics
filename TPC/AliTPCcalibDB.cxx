@@ -99,6 +99,7 @@ void AliTPCcalibDB::Terminate()
 //_____________________________________________________________________________
 AliTPCcalibDB::AliTPCcalibDB():
   fRun(-1),
+  fExB(0),
   fPadGainFactor(0),
   fPadTime0(0),
   fPadPRFWidth(0),
@@ -106,8 +107,8 @@ AliTPCcalibDB::AliTPCcalibDB():
   fPedestals(0),
   fTemperature(0),
   fPressure(0),
-  fParam(0)
-
+  fParam(0),
+  fTrafo(0)
 {
   //
   // constructor
@@ -221,7 +222,6 @@ void AliTPCcalibDB::Update(){
     fPressure = (AliDCSSensorArray*)entry->GetObject();
   }
 
-
   entry          = GetCDBEntry("TPC/Calib/Parameters");
   if (entry){
     //if (fPadNoise) delete fPadNoise;
@@ -229,6 +229,14 @@ void AliTPCcalibDB::Update(){
     fParam = (AliTPCParam*)(entry->GetObject()->Clone());
   }
 
+  entry          = GetCDBEntry("TPC/Calib/ExB");
+  if (entry) {
+    entry->SetOwner(kTRUE);
+    fExB=dynamic_cast<AliTPCExB*>(entry->GetObject()->Clone());
+  }
+
+  delete fTrafo;
+  fTrafo=new AliTPCTransform(); 
 
   //
   AliCDBManager::Instance()->SetCacheFlag(cdbCache); // reset original CDB cache

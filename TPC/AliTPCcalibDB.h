@@ -10,6 +10,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
+#include "AliTPCTransform.h"
+#include "AliTPCExB.h"
 #include "TObject.h"
 class AliTPCCalPad;
 class AliTPCSensorTempArray;
@@ -27,6 +29,8 @@ class AliTPCcalibDB : public TObject
   static void Terminate();
   void   SetRun(Long64_t run);   
   //
+  AliTPCTransform* GetTransform() {return fTrafo;}
+  AliTPCExB* GetExB() {return fExB;}
   AliTPCCalPad* GetPadGainFactor() {return fPadGainFactor;}
   AliTPCCalPad* GetPadTime0() {return fPadTime0;}
   AliTPCCalPad* GetPadPRFWidth() {return fPadPRFWidth;}
@@ -42,7 +46,9 @@ class AliTPCcalibDB : public TObject
 protected:
   void         Update();  //update entries
   AliCDBEntry* GetCDBEntry(const char* cdbPath);   
-  Long64_t        fRun;         // current run number            
+  Long64_t        fRun;         // current run number
+  AliTPCTransform *fTrafo; // object responsible for spacial corrections
+  AliTPCExB *fExB;
 //  AliCDBStorage* fLocator;      // Storage locator retrieved from AliCDBManager
   //
   // calibration parameters per pad

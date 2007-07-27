@@ -7,28 +7,47 @@ ClassImp(AliTPCExBFirst)
 const Double_t AliTPCExBFirst::fgkEM=1.602176487e-19/9.10938215e-31;
 const Double_t AliTPCExBFirst::fgkDriftField=40.e3;
 
+AliTPCExBFirst::AliTPCExBFirst()
+  : fDriftVelocity(0),
+    fkNX(0),fkNY(0),fkNZ(0),
+    fkXMin(-250.),fkXMax(250.),fkYMin(-250.),fkYMax(250.),
+    fkZMin(-250.),fkZMax(250.),
+    fkNMean(0),
+    fkMeanBx(0),fkMeanBy(0),fkMeanBz(0.) {
+  //
+  // purely for I/O
+  //
+}
+
 AliTPCExBFirst::AliTPCExBFirst(const AliMagF *bField,
 			       Double_t driftVelocity,
 			       Int_t nx,Int_t ny,Int_t nz)
-  : fkNX(nx),fkNY(ny),fkNZ(nz),
+  : fDriftVelocity(driftVelocity),
+    fkNX(nx),fkNY(ny),fkNZ(nz),
     fkXMin(-250.),fkXMax(250.),fkYMin(-250.),fkYMax(250.),
-    fkZMin(-250.),fkZMax(250.) {
+    fkZMin(-250.),fkZMax(250.),
+    fkNMean(0),
+    fkMeanBx(0),fkMeanBy(0),fkMeanBz(0.) {
   //
   // The constructor. One has to supply a magnetic field and an (initial)
   // drift velocity. Since some kind of lookuptable is created the
   // number of its meshpoints can be supplied.
   //
-  fDriftVelocity=driftVelocity;
   ConstructCommon(0,bField);
 }
 
 AliTPCExBFirst::AliTPCExBFirst(const AliFieldMap *bFieldMap,
-			       Double_t driftVelocity) {
+			       Double_t driftVelocity) 
+  : fDriftVelocity(driftVelocity),
+    fkNX(0),fkNY(0),fkNZ(0),
+    fkXMin(-250.),fkXMax(250.),fkYMin(-250.),fkYMax(250.),
+    fkZMin(-250.),fkZMax(250.),
+    fkNMean(0),
+    fkMeanBx(0),fkMeanBy(0),fkMeanBz(0.) {
   //
   // The constructor. One has to supply a field map and an (initial)
   // drift velocity.
   //
-  fDriftVelocity=driftVelocity;
 
   fkXMin=bFieldMap->Xmin()
     -TMath::Ceil( (bFieldMap->Xmin()+250.0)/bFieldMap->DelX())
@@ -60,53 +79,47 @@ AliTPCExBFirst::~AliTPCExBFirst() {
   //
   // destruct the poor object.
   //
-  delete[] fMeanBx;
-  delete[] fMeanBy;
+  delete[] fkMeanBx;
+  delete[] fkMeanBy;
 }
 
 void AliTPCExBFirst::Correct(const Double_t *position,Double_t *corrected) {
   //
   // correct for the distortion
   //
-  Double_t r=TMath::Sqrt(position[0]*position[0]+position[1]*position[1]);
-  if (TMath::Abs(position[2])>250.||r<90.||250.<r) {
-    for (Int_t i=0;i<3;++i) corrected[i]=position[i];
-  }
-  else {
-    Double_t Bx,By;
-    GetMeanFields(position[0],position[1],position[2],&Bx,&By);
-    if (position[2]>0.) {
-      Double_t Bxe,Bye;
-      GetMeanFields(position[0],position[1],250.,&Bxe,&Bye);
-      if (position[2]!=250.) {
-	Bx=(500.*Bxe-(position[2]+250.)*Bx)/(250.-position[2]);
-	By=(500.*Bye-(position[2]+250.)*By)/(250.-position[2]);
-      }
-      else {
-	Bx=Bxe;
-	By=Bye;
-      }
-    }
-
-    Double_t mu=fDriftVelocity/fgkDriftField;
-    Double_t wt=mu*fMeanBz;
-
-    corrected[0]=mu*(wt*Bx-By)/(1.+wt*wt);
-    corrected[1]=mu*(wt*By+Bx)/(1.+wt*wt);
-
-    if (position[2]>0.) {
-      corrected[0]*=(250.-position[2]);
-      corrected[1]*=(250.-position[2]);
+  Double_t Bx,By;
+  GetMeanFields(position[0],position[1],position[2],&Bx,&By);
+  if (position[2]>0.) {
+    Double_t Bxe,Bye;
+    GetMeanFields(position[0],position[1],250.,&Bxe,&Bye);
+    if (position[2]!=250.) {
+      Bx=(500.*Bxe-(position[2]+250.)*Bx)/(250.-position[2]);
+      By=(500.*Bye-(position[2]+250.)*By)/(250.-position[2]);
     }
     else {
-      corrected[0]*=(-250.-position[2]);
-      corrected[1]*=(-250.-position[2]);
+      Bx=Bxe;
+      By=Bye;
     }
-
-    corrected[0]=position[0]-corrected[0];
-    corrected[1]=position[1]-corrected[1];
-    corrected[2]=position[2];
   }
+  
+  Double_t mu=fDriftVelocity/fgkDriftField;
+  Double_t wt=mu*fkMeanBz;
+  
+  corrected[0]=mu*(wt*Bx-By)/(1.+wt*wt);
+  corrected[1]=mu*(wt*By+Bx)/(1.+wt*wt);
+  
+  if (position[2]>0.) {
+    corrected[0]*=(250.-position[2]);
+    corrected[1]*=(250.-position[2]);
+  }
+  else {
+    corrected[0]*=(-250.-position[2]);
+    corrected[1]*=(-250.-position[2]);
+  }
+
+  corrected[0]=position[0]-corrected[0];
+  corrected[1]=position[1]-corrected[1];
+  corrected[2]=position[2];
 }
 
 void AliTPCExBFirst::TestThisBeautifulObject(const char* fileName) {
@@ -152,12 +165,13 @@ void AliTPCExBFirst::ConstructCommon(const AliFieldMap *bFieldMap,
   //
   // THIS IS PRIVATE! (a helper for the constructor)
   //
-  fMeanBx=new Double_t[fkNX*fkNY*fkNZ];
-  fMeanBy=new Double_t[fkNX*fkNY*fkNZ];
+  fkNMean=fkNX*fkNY*fkNZ;
+  fkMeanBx=new Double_t[fkNMean];
+  fkMeanBy=new Double_t[fkNMean];
 
   Double_t x[3];
   Double_t nBz=0;
-  fMeanBz=0.;
+  fkMeanBz=0.;
   for (int i=0;i<fkNX;++i) {
     x[0]=fkXMin+i*(fkXMax-fkXMin)/(fkNX-1);
     for (int j=0;j<fkNY;++j) {
@@ -178,19 +192,19 @@ void AliTPCExBFirst::ConstructCommon(const AliFieldMap *bFieldMap,
 	Bx+=B[0]/10.;
 	By+=B[1]/10.;
 	/*old
-	fMeanBx[(k*fkNY+j)*fkNX+i]=Bx/(k+1);
-	fMeanBy[(k*fkNY+j)*fkNX+i]=By/(k+1);
+	fkMeanBx[(k*fkNY+j)*fkNX+i]=Bx/(k+1);
+	fkMeanBy[(k*fkNY+j)*fkNX+i]=By/(k+1);
 	*/
-	fMeanBx[(k*fkNY+j)*fkNX+i]=Bx;
-	fMeanBy[(k*fkNY+j)*fkNX+i]=By;
+	fkMeanBx[(k*fkNY+j)*fkNX+i]=Bx;
+	fkMeanBy[(k*fkNY+j)*fkNX+i]=By;
 	if (90.<=R&&R<=250.) {
-	  fMeanBz+=B[2]/10.;
+	  fkMeanBz+=B[2]/10.;
 	  ++nBz;
 	}
       }
     }
   }
-  fMeanBz/=nBz;
+  fkMeanBz/=nBz;
 }
 
 void AliTPCExBFirst::GetMeanFields(Double_t rx,Double_t ry,Double_t rz,
@@ -218,44 +232,44 @@ void AliTPCExBFirst::GetMeanFields(Double_t rx,Double_t ry,Double_t rz,
   Int_t zi2=zi1+1;
   Double_t dz=(z-zi1);
 
-  double s0x=fMeanBx[yi1*fkNX+xi1]*dx1*dy1
-	    +fMeanBx[yi2*fkNX+xi1]*dx1*dy
-            +fMeanBx[yi1*fkNX+xi2]*dx *dy
-            +fMeanBx[yi2*fkNX+xi2]*dx *dy1;
-  double s0y=fMeanBy[yi1*fkNX+xi1]*dx1*dy1
-	    +fMeanBy[yi2*fkNX+xi1]*dx1*dy
-            +fMeanBy[yi1*fkNX+xi2]*dx *dy
-            +fMeanBy[yi2*fkNX+xi2]*dx *dy1;
+  double s0x=fkMeanBx[yi1*fkNX+xi1]*dx1*dy1
+	    +fkMeanBx[yi2*fkNX+xi1]*dx1*dy
+            +fkMeanBx[yi1*fkNX+xi2]*dx *dy
+            +fkMeanBx[yi2*fkNX+xi2]*dx *dy1;
+  double s0y=fkMeanBy[yi1*fkNX+xi1]*dx1*dy1
+	    +fkMeanBy[yi2*fkNX+xi1]*dx1*dy
+            +fkMeanBy[yi1*fkNX+xi2]*dx *dy
+            +fkMeanBy[yi2*fkNX+xi2]*dx *dy1;
   Int_t zi0=zi1-1;
   double snmx,snmy;
   if (zi0>=0) {
-    snmx=fMeanBx[(zi0*fkNY+yi1)*fkNX+xi1]*dx1*dy1
-        +fMeanBx[(zi0*fkNY+yi2)*fkNX+xi1]*dx1*dy
-        +fMeanBx[(zi0*fkNY+yi1)*fkNX+xi2]*dx *dy
-        +fMeanBx[(zi0*fkNY+yi2)*fkNX+xi2]*dx *dy1;
-    snmy=fMeanBy[(zi0*fkNY+yi1)*fkNX+xi1]*dx1*dy1
-        +fMeanBy[(zi0*fkNY+yi2)*fkNX+xi1]*dx1*dy
-        +fMeanBy[(zi0*fkNY+yi1)*fkNX+xi2]*dx *dy
-        +fMeanBy[(zi0*fkNY+yi2)*fkNX+xi2]*dx *dy1;
+    snmx=fkMeanBx[(zi0*fkNY+yi1)*fkNX+xi1]*dx1*dy1
+        +fkMeanBx[(zi0*fkNY+yi2)*fkNX+xi1]*dx1*dy
+        +fkMeanBx[(zi0*fkNY+yi1)*fkNX+xi2]*dx *dy
+        +fkMeanBx[(zi0*fkNY+yi2)*fkNX+xi2]*dx *dy1;
+    snmy=fkMeanBy[(zi0*fkNY+yi1)*fkNX+xi1]*dx1*dy1
+        +fkMeanBy[(zi0*fkNY+yi2)*fkNX+xi1]*dx1*dy
+        +fkMeanBy[(zi0*fkNY+yi1)*fkNX+xi2]*dx *dy
+        +fkMeanBy[(zi0*fkNY+yi2)*fkNX+xi2]*dx *dy1;
   }
   else
     snmx=snmy=0.;
-  double snx=fMeanBx[(zi1*fkNY+yi1)*fkNX+xi1]*dx1*dy1
- 	    +fMeanBx[(zi1*fkNY+yi2)*fkNX+xi1]*dx1*dy
-            +fMeanBx[(zi1*fkNY+yi1)*fkNX+xi2]*dx *dy
-            +fMeanBx[(zi1*fkNY+yi2)*fkNX+xi2]*dx *dy1;
-  double sny=fMeanBy[(zi1*fkNY+yi1)*fkNX+xi1]*dx1*dy1
- 	    +fMeanBy[(zi1*fkNY+yi2)*fkNX+xi1]*dx1*dy
-            +fMeanBy[(zi1*fkNY+yi1)*fkNX+xi2]*dx *dy
-            +fMeanBy[(zi1*fkNY+yi2)*fkNX+xi2]*dx *dy1;
-  double snpx=fMeanBx[(zi2*fkNY+yi1)*fkNX+xi1]*dx1*dy1
-	     +fMeanBx[(zi2*fkNY+yi2)*fkNX+xi1]*dx1*dy
-             +fMeanBx[(zi2*fkNY+yi1)*fkNX+xi2]*dx *dy
-             +fMeanBx[(zi2*fkNY+yi2)*fkNX+xi2]*dx *dy1;
-  double snpy=fMeanBy[(zi2*fkNY+yi1)*fkNX+xi1]*dx1*dy1
-	     +fMeanBy[(zi2*fkNY+yi2)*fkNX+xi1]*dx1*dy
-             +fMeanBy[(zi2*fkNY+yi1)*fkNX+xi2]*dx *dy
-             +fMeanBy[(zi2*fkNY+yi2)*fkNX+xi2]*dx *dy1;
+  double snx=fkMeanBx[(zi1*fkNY+yi1)*fkNX+xi1]*dx1*dy1
+ 	    +fkMeanBx[(zi1*fkNY+yi2)*fkNX+xi1]*dx1*dy
+            +fkMeanBx[(zi1*fkNY+yi1)*fkNX+xi2]*dx *dy
+            +fkMeanBx[(zi1*fkNY+yi2)*fkNX+xi2]*dx *dy1;
+  double sny=fkMeanBy[(zi1*fkNY+yi1)*fkNX+xi1]*dx1*dy1
+ 	    +fkMeanBy[(zi1*fkNY+yi2)*fkNX+xi1]*dx1*dy
+            +fkMeanBy[(zi1*fkNY+yi1)*fkNX+xi2]*dx *dy
+            +fkMeanBy[(zi1*fkNY+yi2)*fkNX+xi2]*dx *dy1;
+  double snpx=fkMeanBx[(zi2*fkNY+yi1)*fkNX+xi1]*dx1*dy1
+	     +fkMeanBx[(zi2*fkNY+yi2)*fkNX+xi1]*dx1*dy
+             +fkMeanBx[(zi2*fkNY+yi1)*fkNX+xi2]*dx *dy
+             +fkMeanBx[(zi2*fkNY+yi2)*fkNX+xi2]*dx *dy1;
+  double snpy=fkMeanBy[(zi2*fkNY+yi1)*fkNX+xi1]*dx1*dy1
+	     +fkMeanBy[(zi2*fkNY+yi2)*fkNX+xi1]*dx1*dy
+             +fkMeanBy[(zi2*fkNY+yi1)*fkNX+xi2]*dx *dy
+             +fkMeanBy[(zi2*fkNY+yi2)*fkNX+xi2]*dx *dy1;
   *Bx=0.5*(((snpx-2.*snx+snmx)*dz+2.*(snx-snmx))*dz+snx-s0x+snmx);
   *By=0.5*(((snpy-2.*sny+snmy)*dz+2.*(sny-snmy))*dz+sny-s0y+snmy);
   //TODO: make this nice

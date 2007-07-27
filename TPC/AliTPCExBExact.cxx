@@ -7,13 +7,27 @@ ClassImp(AliTPCExBExact)
 const Double_t AliTPCExBExact::fgkEM=1.602176487e-19/9.10938215e-31;
 const Double_t AliTPCExBExact::fgkDriftField=40.e3;
 
+AliTPCExBExact::AliTPCExBExact()
+  : fDriftVelocity(0),
+    fkMap(0),fkField(0),fkN(0),
+    fkNX(0),fkNY(0),fkNZ(0),
+    fkXMin(-250.),fkXMax(250.),fkYMin(-250.),fkYMax(250.),
+    fkZMin(-250.),fkZMax(250.),
+    fkNLook(0),fkLook(0) {
+  //
+  // purely for I/O
+  //
+}
+
 AliTPCExBExact::AliTPCExBExact(const AliMagF *bField,
 			       Double_t driftVelocity,
 			       Int_t nx,Int_t ny,Int_t nz,Int_t n)
-  : fkMap(0),fkField(bField),fkN(n),
+  : fDriftVelocity(driftVelocity),
+    fkMap(0),fkField(bField),fkN(n),
     fkNX(nx),fkNY(ny),fkNZ(nz),
     fkXMin(-250.),fkXMax(250.),fkYMin(-250.),fkYMax(250.),
-    fkZMax(250.) {
+    fkZMin(-250.),fkZMax(250.),
+    fkNLook(0),fkLook(0) {
   //
   // The constructor. One has to supply a magnetic field and an (initial)
   // drift velocity. Since some kind of lookuptable is created the
@@ -21,20 +35,23 @@ AliTPCExBExact::AliTPCExBExact(const AliMagF *bField,
   // n sets the number of integration steps to be used when integrating
   // over the full drift length.
   //
-  fDriftVelocity=driftVelocity;
   CreateLookupTable();
 }
 
 AliTPCExBExact::AliTPCExBExact(const AliFieldMap *bFieldMap,
 			       Double_t driftVelocity,Int_t n) 
-  : fkMap(bFieldMap),fkField(0),fkN(n) {
+  : fDriftVelocity(driftVelocity),
+    fkMap(bFieldMap),fkField(0),fkN(n), 
+    fkNX(0),fkNY(0),fkNZ(0),
+    fkXMin(-250.),fkXMax(250.),fkYMin(-250.),fkYMax(250.),
+    fkZMin(-250.),fkZMax(250.),
+    fkNLook(0),fkLook(0) {
   //
   // The constructor. One has to supply a field map and an (initial)
   // drift velocity.
   // n sets the number of integration steps to be used when integrating
   // over the full drift length.
   //
-  fDriftVelocity=driftVelocity;
 
   fkXMin=bFieldMap->Xmin()
     -TMath::Ceil( (bFieldMap->Xmin()+250.0)/bFieldMap->DelX())
@@ -64,59 +81,70 @@ AliTPCExBExact::~AliTPCExBExact() {
   //
   // destruct the poor object.
   //
-  delete[] fLook;
+  delete[] fkLook;
 }
 
-void AliTPCExBExact::Correct(const Double_t *position,Double_t *corrected) {
-  Double_t r=TMath::Sqrt(position[0]*position[0]+position[1]*position[1]);
-  if (TMath::Abs(position[2])>250.||r<90.||250.<r) {
-    for (Int_t i=0;i<3;++i) corrected[i]=position[i];
+void AliTPCExBExact::Correct(const Double_t *position, Double_t *corrected) {
+  //
+  // correct for the distortion
+  //
+  Double_t x=(position[0]-fkXMin)/(fkXMax-fkXMin)*(fkNX-1);
+  Int_t xi1=static_cast<Int_t>(x);
+  xi1=TMath::Max(TMath::Min(xi1,fkNX-2),0);
+  Int_t xi2=xi1+1;
+  Double_t dx=(x-xi1);
+  Double_t dx1=(xi2-x);
+  
+  Double_t y=(position[1]-fkYMin)/(fkYMax-fkYMin)*(fkNY-1);
+  Int_t yi1=static_cast<Int_t>(y);
+  yi1=TMath::Max(TMath::Min(yi1,fkNY-2),0);
+  Int_t yi2=yi1+1;
+  Double_t dy=(y-yi1);
+  Double_t dy1=(yi2-y);
+  
+  Double_t z=position[2]/fkZMax*(fkNZ-1);
+  Int_t side;
+  if (z>0) {
+    side=1;
   }
   else {
-    Double_t x=(position[0]-fkXMin)/(fkXMax-fkXMin)*(fkNX-1);
-    Int_t xi1=static_cast<Int_t>(x);
-    xi1=TMath::Max(TMath::Min(xi1,fkNX-2),0);
-    Int_t xi2=xi1+1;
-    Double_t dx=(x-xi1);
-    Double_t dx1=(xi2-x);
-
-    Double_t y=(position[1]-fkYMin)/(fkYMax-fkYMin)*(fkNY-1);
-    Int_t yi1=static_cast<Int_t>(y);
-    yi1=TMath::Max(TMath::Min(yi1,fkNY-2),0);
-    Int_t yi2=yi1+1;
-    Double_t dy=(y-yi1);
-    Double_t dy1=(yi2-y);
-  
-    Double_t z=position[2]/fkZMax*(fkNZ-1);
-    Int_t side;
-    if (z>0) {
-      side=1;
-    }
-    else {
-      z=-z;
-      side=0;
-    }
-    Int_t zi1=static_cast<Int_t>(z);
-    zi1=TMath::Max(TMath::Min(zi1,fkNZ-2),0);
-    Int_t zi2=zi1+1;
-    Double_t dz=(z-zi1);
-    Double_t dz1=(zi2-z);
-
-    for (int i=0;i<3;++i)
-      corrected[i]
-	=fLook[(((xi1*fkNY+yi1)*fkNZ+zi1)*2+side)*3+i]*dx1*dy1*dz1
-	+fLook[(((xi1*fkNY+yi1)*fkNZ+zi2)*2+side)*3+i]*dx1*dy1*dz
-	+fLook[(((xi1*fkNY+yi2)*fkNZ+zi1)*2+side)*3+i]*dx1*dy *dz1
-	+fLook[(((xi1*fkNY+yi2)*fkNZ+zi2)*2+side)*3+i]*dx1*dy *dz
-	+fLook[(((xi2*fkNY+yi2)*fkNZ+zi1)*2+side)*3+i]*dx *dy *dz1
-	+fLook[(((xi2*fkNY+yi2)*fkNZ+zi2)*2+side)*3+i]*dx *dy *dz
-	+fLook[(((xi2*fkNY+yi1)*fkNZ+zi1)*2+side)*3+i]*dx *dy1*dz1
-	+fLook[(((xi2*fkNY+yi1)*fkNZ+zi2)*2+side)*3+i]*dx *dy1*dz ;
-    //    corrected[2]=position[2];
+    z=-z;
+    side=0;
   }
+  Int_t zi1=static_cast<Int_t>(z);
+  zi1=TMath::Max(TMath::Min(zi1,fkNZ-2),0);
+  Int_t zi2=zi1+1;
+  Double_t dz=(z-zi1);
+  Double_t dz1=(zi2-z);
+  
+  for (int i=0;i<3;++i)
+    corrected[i]
+      =fkLook[(((xi1*fkNY+yi1)*fkNZ+zi1)*2+side)*3+i]*dx1*dy1*dz1
+      +fkLook[(((xi1*fkNY+yi1)*fkNZ+zi2)*2+side)*3+i]*dx1*dy1*dz
+      +fkLook[(((xi1*fkNY+yi2)*fkNZ+zi1)*2+side)*3+i]*dx1*dy *dz1
+      +fkLook[(((xi1*fkNY+yi2)*fkNZ+zi2)*2+side)*3+i]*dx1*dy *dz
+      +fkLook[(((xi2*fkNY+yi2)*fkNZ+zi1)*2+side)*3+i]*dx *dy *dz1
+      +fkLook[(((xi2*fkNY+yi2)*fkNZ+zi2)*2+side)*3+i]*dx *dy *dz
+      +fkLook[(((xi2*fkNY+yi1)*fkNZ+zi1)*2+side)*3+i]*dx *dy1*dz1
+      +fkLook[(((xi2*fkNY+yi1)*fkNZ+zi2)*2+side)*3+i]*dx *dy1*dz ;
+  //    corrected[2]=position[2];
 }
 
-void AliTPCExBExact::TestThisBeautifulObject(const char* fileName) {
+void AliTPCExBExact::TestThisBeautifulObject(const AliFieldMap *bFieldMap,
+					     const char* fileName) {
+  fkMap=bFieldMap;
+  fkField=0;
+  TestThisBeautifulObjectGeneric(fileName);
+}
+
+void AliTPCExBExact::TestThisBeautifulObject(const AliMagF *bField,
+					     const char* fileName) {
+  fkField=bField;
+  fkMap=0;
+  TestThisBeautifulObjectGeneric(fileName);
+}
+
+void AliTPCExBExact::TestThisBeautifulObjectGeneric(const char* fileName) {
   //
   // well, as the name sais...
   //
@@ -166,7 +194,8 @@ void AliTPCExBExact::CreateLookupTable() {
   //
   // Helper function to fill the lookup table.
   //
-  fLook=new Double_t[fkNX*fkNY*fkNZ*2*3];
+  fkNLook=fkNX*fkNY*fkNZ*2*3;
+  fkLook=new Double_t[fkNLook];
   Double_t x[3];
   for (int i=0;i<fkNX;++i) {
     x[0]=fkXMin+(fkXMax-fkXMin)/(fkNX-1)*i;
@@ -175,9 +204,9 @@ void AliTPCExBExact::CreateLookupTable() {
       for (int k=0;k<fkNZ;++k) {
 	x[2]=1.*fkZMax/(fkNZ-1)*k;
 	x[2]=TMath::Max((Double_t)0.0001,x[2]); //ugly
-	CalculateDistortion(x,&fLook[(((i*fkNY+j)*fkNZ+k)*2+1)*3]);
+	CalculateDistortion(x,&fkLook[(((i*fkNY+j)*fkNZ+k)*2+1)*3]);
 	x[2]=-x[2];
-	CalculateDistortion(x,&fLook[(((i*fkNY+j)*fkNZ+k)*2+0)*3]);
+	CalculateDistortion(x,&fkLook[(((i*fkNY+j)*fkNZ+k)*2+0)*3]);
       }
     }
   }
