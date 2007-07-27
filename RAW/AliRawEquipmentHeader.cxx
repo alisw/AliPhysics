@@ -41,18 +41,27 @@ AliRawEquipmentHeader::AliRawEquipmentHeader():
 }
 
 //______________________________________________________________________________
+UInt_t AliRawEquipmentHeader::SwapWord(UInt_t x) const
+{
+   // Swap the endianess of the integer value 'x'
+
+   return (((x & 0x000000ffU) << 24) | ((x & 0x0000ff00U) <<  8) |
+           ((x & 0x00ff0000U) >>  8) | ((x & 0xff000000U) >> 24));
+}
+
+//______________________________________________________________________________
 void AliRawEquipmentHeader::Swap()
 {
    // Swap equipment header data. There is no way to see if the data
    // has already been swapped. This method is only called when the
    // header is read from the DATE event builder (GDC).
 
-   fSize                 = net2host(fSize);
-   fEquipmentType        = net2host(fEquipmentType);
-   fEquipmentID          = net2host(fEquipmentID);
-   fBasicElementSizeType = net2host(fBasicElementSizeType);
+   fSize                 = SwapWord(fSize);
+   fEquipmentType        = SwapWord(fEquipmentType);
+   fEquipmentID          = SwapWord(fEquipmentID);
+   fBasicElementSizeType = SwapWord(fBasicElementSizeType);
    for (int i = 0; i < kAttributeWords; i++)
-      fTypeAttribute[i] = net2host(fTypeAttribute[i]);
+      fTypeAttribute[i] = SwapWord(fTypeAttribute[i]);
 }
 
 //______________________________________________________________________________

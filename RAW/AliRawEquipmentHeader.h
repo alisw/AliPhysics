@@ -25,6 +25,7 @@ public:
 
    void         *HeaderBegin() { return (void *) &fSize; }
    Int_t         HeaderSize() const { return (Long_t) &fBasicElementSizeType - (Long_t) &fSize + sizeof(fBasicElementSizeType); }
+   UInt_t        SwapWord(UInt_t x) const;
    void          Swap();
 
    UInt_t        GetEquipmentSize() const { return fSize; }

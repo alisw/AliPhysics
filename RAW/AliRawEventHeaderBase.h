@@ -30,6 +30,8 @@ public:
    Bool_t        IsSwapped() const { return (fMagic == fgkEventMagicNumberSwapped) ? kTRUE : kFALSE; }
    Bool_t        IsValid() const { return IsSwapped() ? kTRUE : ((fMagic == fgkEventMagicNumber) ? kTRUE : kFALSE); }
    void          Swap();
+   UInt_t        SwapWord(UInt_t x) const;
+   void          SwapData(const void* data, const void* buf, UInt_t size);
 
    UInt_t        GetEventSize() const { return fSize; }
    UInt_t        GetMagic() const { return fMagic; }

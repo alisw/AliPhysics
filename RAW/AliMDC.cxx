@@ -568,7 +568,7 @@ Int_t AliMDC::Run(const char* inputFile, Bool_t loop,
 	eventSize = 2 * hdr->GetEventSize();
 	event = new char[eventSize];
       }
-      memcpy(event, hdr->HeaderBaseBegin(), hdr->HeaderBaseSize());
+      memcpy(event, header.HeaderBaseBegin(), header.HeaderBaseSize());
       memcpy(event+hdr->HeaderBaseSize(), hdr->HeaderBegin(), hdr->HeaderSize());
       if (hdr->GetExtendedDataSize() != 0)
 	memcpy(event+hdr->HeaderBaseSize()+hdr->HeaderSize(),

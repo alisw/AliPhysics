@@ -93,6 +93,14 @@ Int_t AliRawEventHeaderBase::HeaderSize() const
 }
 
 //______________________________________________________________________________
+UInt_t AliRawEventHeaderBase::SwapWord(UInt_t x) const
+{
+   // Swap the endianess of the integer value 'x'
+
+   return (((x & 0x000000ffU) << 24) | ((x & 0x0000ff00U) <<  8) |
+           ((x & 0x00ff0000U) >>  8) | ((x & 0xff000000U) >> 24));
+}
+
 void AliRawEventHeaderBase::Swap()
 {
    // Swap base header data.
@@ -102,10 +110,10 @@ void AliRawEventHeaderBase::Swap()
 
    if (IsSwapped()) {
       fIsSwapped    = kTRUE;
-      fSize         = net2host(fSize);
-      fMagic        = net2host(fMagic);
-      fHeadSize     = net2host(fHeadSize);
-      fVersion      = net2host(fVersion);
+      fSize         = SwapWord(fSize);
+      fMagic        = SwapWord(fMagic);
+      fHeadSize     = SwapWord(fHeadSize);
+      fVersion      = SwapWord(fVersion);
    }
 }
 
@@ -248,6 +256,18 @@ AliRawEventHeaderBase* AliRawEventHeaderBase::Create(char*& data)
   return hdr;
 }
 
+void AliRawEventHeaderBase::SwapData(const void* inbuf, const void* outbuf, UInt_t size) {
+  // The method swaps the contents of the
+  // raw-data event header
+  UInt_t  intCount = size/sizeof(UInt_t);
+
+  UInt_t* buf = (UInt_t*) inbuf;    // temporary integers buffer
+  for (UInt_t i=0; i<intCount; i++, buf++) {
+      UInt_t value = SwapWord(*buf);
+      memcpy((UInt_t*)outbuf+i, &value, sizeof(UInt_t)); 
+  }
+}
+
 //______________________________________________________________________________
 Int_t AliRawEventHeaderBase::ReadHeader(char*& data)
 {
@@ -257,12 +277,12 @@ Int_t AliRawEventHeaderBase::ReadHeader(char*& data)
   Long_t start = (Long_t)data;
   // Swap header data if needed
   if (DataIsSwapped()) {
-    swab(data,HeaderBaseBegin(), HeaderBaseSize());
+    SwapData(data, HeaderBaseBegin(), HeaderBaseSize());
     data += HeaderBaseSize();
-    swab(data, HeaderBegin(), HeaderSize());
+    SwapData(data, HeaderBegin(), HeaderSize());
     data += HeaderSize();
     if(GetExtendedDataSize()>0) {
-      swab(data, GetExtendedData(), GetExtendedDataSize());
+      SwapData(data, GetExtendedData(), GetExtendedDataSize());
       data += GetExtendedDataSize();
     }
   }
