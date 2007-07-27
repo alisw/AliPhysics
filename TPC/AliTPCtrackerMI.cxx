@@ -53,6 +53,8 @@
 #include "AliAlignObj.h"
 #include "AliTrackPointArray.h"
 
+#include "AliTPCTransform.h"
+
 //
 
 ClassImp(AliTPCtrackerMI)
@@ -1243,6 +1245,21 @@ void AliTPCtrackerMI::UnloadClusters()
 }
 
 void   AliTPCtrackerMI::Transform(AliTPCclusterMI * cluster){
+  AliTPCTransform trafo;
+
+  Double_t x[3]={cluster->GetX(),cluster->GetY(),cluster->GetZ()};
+  Int_t i[1]={cluster->GetDetector()};
+
+  trafo.Transform(x,i,0,1);
+
+  cluster->SetX(x[0]);
+  cluster->SetY(x[1]);
+  cluster->SetZ(x[2]);
+
+  return;
+
+  // The old stuff:
+
   //
   // 
   //
@@ -2035,7 +2052,11 @@ void  AliTPCtrackerMI::SignShared(AliTPCseed * s1, AliTPCseed * s2)
     //    if ( (s1->GetClusterIndex2(i)&0xFFFF8FFF)==(s2->GetClusterIndex2(i)&0xFFFF8FFF) && s1->GetClusterIndex2(i)>0) {
     if ( (s1->GetClusterIndex2(i))==(s2->GetClusterIndex2(i)) && s1->GetClusterIndex2(i)>0) {
       sumshared++;
+      s1->SetSharedMapBit(i, kTRUE);
+      s2->SetSharedMapBit(i, kTRUE);
     }
+    if (s1->GetClusterIndex2(i)>0)
+      s1->SetClusterMapBit(i, kTRUE);
   }
   if (sumshared>cutN0){
     // sign clusters
@@ -2071,7 +2092,6 @@ void  AliTPCtrackerMI::SignShared(AliTPCseed * s1, AliTPCseed * s2)
       }	
     }    
   }
-  
 }
 
 void  AliTPCtrackerMI::SignShared(TObjArray * arr)
@@ -2644,9 +2664,12 @@ Int_t AliTPCtrackerMI::RefitInward(AliESDEvent *event)
 
     seed->PropagateTo(fParam->GetInnerRadiusLow());
     seed->UpdatePoints();
+    MakeBitmaps(seed);
     AliESDtrack *esd=event->GetTrack(i);
     seed->CookdEdx(0.02,0.6);
     CookLabel(seed,0.1); //For comparison only
+    esd->SetTPCClusterMap(seed->GetClusterMap());
+    esd->SetTPCSharedMap(seed->GetSharedMap());
     //
     if (AliTPCReconstructor::StreamLevel()>0 && seed!=0&&esd!=0) {
       TTreeSRedirector &cstream = *fDebugStreamer;
@@ -6649,3 +6672,28 @@ AliTPCclusterMI * AliTPCtrackerMI::AliTPCRow::FindNearest3(Double_t y, Double_t 
 // }
 
 
+void AliTPCtrackerMI::MakeBitmaps(AliTPCseed *t)
+{
+  //-----------------------------------------------------------------------
+  // Fill the cluster and sharing bitmaps of the track
+  //-----------------------------------------------------------------------
+
+  Int_t firstpoint = 0;
+  Int_t lastpoint = 159;
+  AliTPCTrackerPoint *point;
+  
+  for (int iter=firstpoint; iter<lastpoint; iter++) {
+    point = t->GetTrackPoint(iter);
+    if (point) {
+      t->SetClusterMapBit(iter, kTRUE);
+      if (point->IsShared())
+	t->SetSharedMapBit(iter,kTRUE);
+      else
+	t->SetSharedMapBit(iter, kFALSE);
+    }
+    else {
+      t->SetClusterMapBit(iter, kFALSE);
+      t->SetSharedMapBit(iter, kFALSE);
+    }
+  }
+}

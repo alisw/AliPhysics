@@ -14,6 +14,7 @@
 //-------------------------------------------------------
 
 #include <TError.h>
+#include <TBits.h>
 
 #include "AliTPCtrack.h"
 #include "AliComplexCluster.h"
@@ -125,6 +126,13 @@ class AliTPCseed : public AliTPCtrack {
      Float_t GetErrorZ2() const {return fErrorZ2;}
      //
      //
+     void SetClusterMapBit(int ibit, Bool_t state);
+     Bool_t GetClusterMapBit(int ibit);
+     void SetSharedMapBit(int ibit, Bool_t state);
+     Bool_t GetSharedMapBit(int ibit);
+     const TBits& GetClusterMap() const { return fClusterMap; };
+     const TBits& GetSharedMap() const { return fSharedMap; };
+
  private:
      //     AliTPCseed & operator = (const AliTPCseed &)
      //  {::Fatal("= operator","Not Implemented\n");return *this;}
@@ -162,6 +170,8 @@ class AliTPCseed : public AliTPCtrack {
      Float_t fMAngular;           // mean angular factor
      Char_t   fCircular;           // indicates curlin track
      AliTPCTrackerPoint  fTrackPoints[160];  //track points - array track points
+     TBits   fClusterMap;       // bit is 1 if track has a hit on padrow
+     TBits   fSharedMap;        // bit is 1 if track shares a hit on padrow
      ClassDef(AliTPCseed,1)  
 };
 

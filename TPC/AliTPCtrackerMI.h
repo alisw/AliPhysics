@@ -259,6 +259,7 @@ private:
    void SetSampledEdx(AliTPCseed */*t*/, Float_t /*q*/, Int_t /*i*/) {;}
    Int_t UpdateTrack(AliTPCseed *t, Int_t accept); //update trackinfo
 
+   void MakeBitmaps(AliTPCseed *t);
 
    const Int_t fkNIS;        //number of inner sectors
    AliTPCSector *fInnerSec;  //array of inner sectors;

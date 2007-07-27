@@ -53,7 +53,9 @@ AliTPCseed::AliTPCseed():
   fSeed1(-1),
   fSeed2(-1),
   fMAngular(0),
-  fCircular(0)
+  fCircular(0),
+  fClusterMap(159),
+  fSharedMap(159)
 {
   //
   for (Int_t i=0;i<160;i++) SetClusterIndex2(i,-3);
@@ -66,6 +68,8 @@ AliTPCseed::AliTPCseed():
     fNCDEDX[i] = 0;
   }
   for (Int_t i=0;i<12;i++) fOverlapLabels[i] = -1;
+  for (Int_t i=0;i<160;i++) fClusterMap[i]=kFALSE;
+  for (Int_t i=0;i<160;i++) fSharedMap[i]=kFALSE;
 }
 
 AliTPCseed::AliTPCseed(const AliTPCseed &s, Bool_t clusterOwner):
@@ -92,7 +96,9 @@ AliTPCseed::AliTPCseed(const AliTPCseed &s, Bool_t clusterOwner):
   fSeed1(-1),
   fSeed2(-1),
   fMAngular(0),
-  fCircular(0)
+  fCircular(0),
+  fClusterMap(s.fClusterMap),
+  fSharedMap(s.fSharedMap)
 {
   //---------------------
   // dummy copy constructor
@@ -115,6 +121,7 @@ AliTPCseed::AliTPCseed(const AliTPCseed &s, Bool_t clusterOwner):
     fNCDEDX[i] = s.fNCDEDX[i];
   }
   for (Int_t i=0;i<12;i++) fOverlapLabels[i] = s.fOverlapLabels[i];
+
 }
 
 
@@ -142,7 +149,9 @@ AliTPCseed::AliTPCseed(const AliTPCtrack &t):
   fSeed1(-1),
   fSeed2(-1),
   fMAngular(0),
-  fCircular(0)
+  fCircular(0),
+  fClusterMap(159),
+  fSharedMap(159)
 {
   //
   // Constructor from AliTPCtrack
@@ -165,6 +174,8 @@ AliTPCseed::AliTPCseed(const AliTPCtrack &t):
     fNCDEDX[i] = 0;
   }
   for (Int_t i=0;i<12;i++) fOverlapLabels[i] = -1;
+  for (Int_t i=0;i<160;i++) fClusterMap[i]=kFALSE;
+  for (Int_t i=0;i<160;i++) fSharedMap[i]=kFALSE;
 }
 
 AliTPCseed::AliTPCseed(Double_t xr, Double_t alpha, const Double_t xx[5],
@@ -192,7 +203,9 @@ AliTPCseed::AliTPCseed(Double_t xr, Double_t alpha, const Double_t xx[5],
   fSeed1(-1),
   fSeed2(-1),
   fMAngular(0),
-  fCircular(0)
+  fCircular(0),
+  fClusterMap(159),
+  fSharedMap(159)
 {
   //
   // Constructor
@@ -222,6 +235,8 @@ AliTPCseed::~AliTPCseed(){
       delete fClusterPointer[icluster];
     }
   }
+  for (Int_t i=0;i<160;i++) fClusterMap[i]=kFALSE;
+  for (Int_t i=0;i<160;i++) fSharedMap[i]=kFALSE;
 }
 //_________________________________________________
 AliTPCseed & AliTPCseed::operator =(const AliTPCseed & param)
@@ -956,3 +971,19 @@ Double_t AliTPCseed::GetYat(Double_t xk) const {
     return GetY() + (xk-GetX())*(c1+c2)/(r1+r2);
 }
 
+void AliTPCseed::SetClusterMapBit(int ibit, Bool_t state)
+{
+  fClusterMap[ibit] = state;
+}
+Bool_t AliTPCseed::GetClusterMapBit(int ibit)
+{
+  return fClusterMap[ibit];
+}
+void AliTPCseed::SetSharedMapBit(int ibit, Bool_t state)
+{
+  fSharedMap[ibit] = state;
+}
+Bool_t AliTPCseed::GetSharedMapBit(int ibit)
+{
+  return fSharedMap[ibit];
+}
