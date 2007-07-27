@@ -359,7 +359,7 @@ void AliRun::FinishRun()
   //
   // Called at the end of the run.
   //
-  
+
   if(fLego) 
    {
     AliDebug(1, "Finish Lego");
@@ -387,8 +387,8 @@ void AliRun::FinishRun()
   AliDebug(1, "fRunLoader->Stack()->FinishRun()");
   fRunLoader->Stack()->FinishRun();
 
-  if(fMCApp) fMCApp->FinishRun();
 
+  if(fMCApp) fMCApp->FinishRun();  
   fRunLoader->Synchronize();
 }
 
@@ -476,8 +476,8 @@ Int_t AliRun::GetEvent(Int_t event)
 
   // Set Trees branch addresses
   TIter next(fModules);
-  AliModule *detector;
-  while((detector = dynamic_cast<AliModule*>(next()))) 
+  AliDetector *detector;
+  while((detector = dynamic_cast<AliDetector*>(next()))) 
    {
      detector->SetTreeAddress();
    }
@@ -488,6 +488,7 @@ Int_t AliRun::GetEvent(Int_t event)
 //_______________________________________________________________________
 TGeometry *AliRun::GetGeometry()
 {
+
   // Create the TNode geometry for the event display
   if (!fGeometry) { 
     BuildSimpleGeometry();
@@ -585,11 +586,10 @@ void AliRun::InitMC(const char *setup)
   AliCDBManager::Instance()->SetRun(GetRunNumber());
   
   fRunLoader->CdGAFile();
-
+    
   AliPDG::AddParticlesToPdgDataBase();  
 
   fNdets = fModules->GetLast()+1;
-
   TIter next(fModules);
   for(Int_t i=0; i<fNdets; ++i)
    {
@@ -808,6 +808,7 @@ void AliRun::RunLego(const char *setup, Int_t nc1, Float_t c1min,
   if (!gener) gener  = new AliLegoGenerator();
   //
   // Configure Generator
+  
   gener->SetRadiusRange(rmin, rmax);
   gener->SetZMax(zmax);
   gener->SetCoor1Range(nc1, c1min, c1max);
@@ -827,8 +828,8 @@ void AliRun::RunLego(const char *setup, Int_t nc1, Float_t c1min,
   
   //Run Lego Object
 
+
   if (fRunLoader) fRunLoader->SetNumberOfEventsPerFile(nev);
-  //gMC->ProcessRun(nc1*nc2+1);
   gMC->ProcessRun(nev);
   
   // End of this run, close files
@@ -859,10 +860,12 @@ void AliRun::Field(const Double_t* x, Double_t *b) const
   //
   // Return the value of the magnetic field
   //
+    
   Float_t xfloat[3];
   for (Int_t i=0; i<3; i++) xfloat[i] = x[i]; 
   
   if (Field()) {
+
     Float_t bfloat[3];
     Field()->Field(xfloat,bfloat);
     for (Int_t j=0; j<3; j++) b[j] = bfloat[j]; 
@@ -871,6 +874,8 @@ void AliRun::Field(const Double_t* x, Double_t *b) const
     AliError("No mag field defined!");
     b[0]=b[1]=b[2]=0.;
   }
+
+  
 }      
 
 // 
