@@ -31,6 +31,7 @@
 #include "AliConst.h"
 #include "AliMC.h"
 #include "AliLog.h"
+#include "AliTrackReference.h"
  
 ClassImp(AliFRAMEv2)
 
@@ -836,12 +837,14 @@ void AliFRAMEv2::CreateGeometry()
 //
 // Thermal shield
 //
+
   Float_t dyM  =  99.0 - 4.;
   MakeHeatScreen("M",   dyM, idrotm[2090], idrotm[2091]);
   Float_t dyAM = 119.5 - 4.;
   MakeHeatScreen("AM", dyAM, idrotm[2090], idrotm[2091]);
   Float_t dyA  = 128.0 - 4.;
   MakeHeatScreen("A" ,  dyA, idrotm[2090], idrotm[2091]);
+
 //
 //
 //
@@ -862,7 +865,7 @@ void AliFRAMEv2::CreateGeometry()
       gMC->Gspos("BTSH_A" , i+19, nameMo, 0., -dy, dz, 0, "ONLY"); 
 }
   
-  
+
   //
   // TRD mother volumes
   //
@@ -1350,7 +1353,7 @@ void AliFRAMEv2::StepManager()
   //
   // Add the reference track
   //
-  AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
+  AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kFRAME);
 }
 
   

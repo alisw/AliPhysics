@@ -1686,10 +1686,7 @@ void AliITSv11::StepManager(){
     Bool_t sensvol = kFALSE;
     for(Int_t kk=0;kk<6;kk++)if(id == fIdSens[kk])sensvol=kTRUE;
     if(sensvol && (gMC->IsTrackExiting())){
-	copy = fTrackReferences->GetEntriesFast();
-	TClonesArray &lTR = *fTrackReferences;
-	// Fill TrackReference structure with this new TrackReference.
-	new(lTR[copy]) AliTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
+	AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kITS);
     } // if Outer ITS mother Volume
 
 

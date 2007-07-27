@@ -34,6 +34,7 @@
 
 #include "AliConst.h"
 #include "AliLog.h"
+#include "AliTrackReference.h"
 #include "AliMC.h"
 #include "AliRun.h"
 
@@ -529,7 +530,7 @@ void AliTRDv1::StepManagerGeant()
         // Create a track reference at the entrance of each
         // chamber that contains the momentum components of the particle
         gMC->TrackMomentum(mom);
-        AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
+        AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kTRD);
 
         // Create the hits from TR photons if electron/positron is
         // entering the drift volume
@@ -545,7 +546,7 @@ void AliTRDv1::StepManagerGeant()
         // Create a track reference at the exit of each
         // chamber that contains the momentum components of the particle
         gMC->TrackMomentum(mom);
-        AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
+        AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kTRD);
 
       }
 
@@ -776,7 +777,7 @@ void AliTRDv1::StepManagerErmilova()
         // Create a track reference at the entrance of each
         // chamber that contains the momentum components of the particle
         gMC->TrackMomentum(mom);
-        AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
+        AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kTRD);
 
         // Create the hits from TR photons if electron/positron is
         // entering the drift volume
@@ -792,7 +793,7 @@ void AliTRDv1::StepManagerErmilova()
         // Create a track reference at the exit of each
         // chamber that contains the momentum components of the particle
         gMC->TrackMomentum(mom);
-        AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
+        AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kTRD);
 
       }
 
@@ -971,7 +972,7 @@ void AliTRDv1::StepManagerFixedStep()
     // Create a track reference at the entrance of each
     // chamber that contains the momentum components of the particle
     gMC->TrackMomentum(mom);
-    AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
+    AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kTRD);
     trkStat = 1;
 
     // Create the hits from TR photons if electron/positron is
@@ -988,7 +989,7 @@ void AliTRDv1::StepManagerFixedStep()
     // Create a track reference at the exit of each
     // chamber that contains the momentum components of the particle
     gMC->TrackMomentum(mom);
-    AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
+    AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kTRD);
     trkStat = 2;
 
   }

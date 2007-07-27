@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2007/06/24 20:56:19  hristov
+TPC version for the krypton runs (Marek)
+
 */
 
 //
@@ -38,6 +41,7 @@ $Log$
 #include <TPDGCode.h>
 #include <TString.h>
 #include "AliLog.h"
+#include "AliTrackReference.h"
 #include "AliTPCParam.h"
 #include "AliTPCTrackHitsV2.h"
 #include "AliTPCv4.h"
@@ -1228,7 +1232,7 @@ void AliTPCv4::StepManager()
   if(sector != fSecOld){
     fSecOld=sector;
     // add track reference
-    AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
+    AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kTPC);
   }  
   // track is in the sensitive strip
   if(id == fIdSens){

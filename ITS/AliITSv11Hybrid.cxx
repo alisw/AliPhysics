@@ -16,6 +16,9 @@
 // $Id$
 
 // $Log$
+// Revision 1.5  2007/06/28 10:17:25  masera
+// Introduction of the new SSD geometry in simulation (AliITSv11Hybrid) and suppression of overlaps between old and new parts
+//
 // Revision 1.4  2007/05/09 20:40:41  masera
 // Bug fix (V11Hybrid geometry)
 //
@@ -5589,11 +5592,7 @@ void AliITSv11Hybrid::StepManager(){
     if (notSens) return;
 
     if(gMC->IsTrackExiting()) {
-      copy = fTrackReferences->GetEntriesFast();
-      TClonesArray &lTR = *fTrackReferences;
-      // Fill TrackReference structure with this new TrackReference.
-      new(lTR[copy]) AliTrackReference(
-		     gAlice->GetMCApp()->GetCurrentTrackNumber());
+	AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kITS);
     } // if Outer ITS mother Volume
 
     static TLorentzVector position, momentum; // Saves on calls to construtors

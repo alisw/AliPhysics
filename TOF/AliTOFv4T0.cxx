@@ -48,6 +48,7 @@
 #include "AliMagF.h"
 #include "AliMC.h"
 #include "AliRun.h"
+#include "AliTrackReference.h"
 
 #include "AliTOFGeometry.h"
 #include "AliTOFGeometryV4.h"
@@ -1121,7 +1122,7 @@ void AliTOFv4T0::StepManager()
 
     AliMC *mcApplication = (AliMC*)gAlice->GetMCApp();
 
-    AddTrackReference(mcApplication->GetCurrentTrackNumber());
+    AddTrackReference(mcApplication->GetCurrentTrackNumber(), AliTrackReference::kTOF);
     //AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
 
     // getting information about hit volumes

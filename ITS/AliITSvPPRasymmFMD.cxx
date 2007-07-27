@@ -6282,11 +6282,7 @@ void AliITSvPPRasymmFMD::StepManager(){
     if(!sensvol) return; // not an ITS tracking volume;
 
     if(gMC->IsTrackExiting()){
-        copy = fTrackReferences->GetEntriesFast();
-        TClonesArray &lTR = *fTrackReferences;
-        // Fill TrackReference structure with this new TrackReference.
-        new(lTR[copy]) AliTrackReference(
-            gAlice->GetMCApp()->GetCurrentTrackNumber());
+	AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kITS);
     } // if Outer ITS mother Volume
 
     static TLorentzVector position, momentum; // Saves on calls to construtors

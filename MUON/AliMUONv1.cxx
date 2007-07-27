@@ -284,7 +284,7 @@ void AliMUONv1::StepManager()
   // Filling TrackRefs file for MUON. Our Track references are the active volume of the chambers
   if ( (gMC->IsTrackEntering() || gMC->IsTrackExiting() ) ) {
     AliTrackReference* trackReference    
-      = AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
+      = AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kMUON);
     trackReference->SetUserId(detElemId);
   }  
   

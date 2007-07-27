@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2007/05/14 14:41:13  decaro
+Fix a bug in FTOA volume positionig inside BTOF13,14,15,16,17 in case of holes in 11th and 12th sectors
+
 Revision 1.16  2007/05/04 12:59:26  arcelli
 Change the TOF SM paths for misalignment (one layer up)
 
@@ -106,6 +109,7 @@ Revision 0.1 2004 November G. Cara Romeo and A. De Caro
 #include "AliMagF.h"
 #include "AliMC.h"
 #include "AliRun.h"
+#include "AliTrackReference.h"
 
 #include "AliTOFGeometry.h"
 #include "AliTOFGeometryV5.h"
@@ -1532,7 +1536,7 @@ void AliTOFv5T0::StepManager()
 
     AliMC *mcApplication = (AliMC*)gAlice->GetMCApp();
 
-    AddTrackReference(mcApplication->GetCurrentTrackNumber());
+    AddTrackReference(mcApplication->GetCurrentTrackNumber(), AliTrackReference::kTOF);
     //AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
 
     // getting information about hit volumes

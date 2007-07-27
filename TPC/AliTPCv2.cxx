@@ -35,6 +35,7 @@
 #include <TPDGCode.h>
 #include <TString.h>
 #include "AliLog.h"
+#include "AliTrackReference.h"
 #include "AliTPCParam.h"
 #include "AliTPCTrackHitsV2.h"
 #include "AliTPCv2.h"
@@ -1225,7 +1226,7 @@ void AliTPCv2::StepManager()
   if(sector != fSecOld){
     fSecOld=sector;
     // add track reference
-    AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
+    AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kTPC);
   }  
   // track is in the sensitive strip
   if(id == fIdSens){

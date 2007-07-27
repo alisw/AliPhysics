@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2007/05/29 16:51:05  decaro
+Update of the front-end electronics and cooling system description
+
 Revision 1.3.2  2007/05/29  decaro
 FEA+cooling zone description: update
      FEA+cooling orientation (side A/ side C) -> correction
@@ -77,6 +80,7 @@ Revision 0.1 2007 March G. Cara Romeo and A. De Caro
 #include "AliMagF.h"
 #include "AliMC.h"
 #include "AliRun.h"
+#include "AliTrackReference.h"
 
 #include "AliTOFGeometry.h"
 #include "AliTOFGeometryV5.h"
@@ -1645,7 +1649,7 @@ void AliTOFv6T0::StepManager()
 
     AliMC *mcApplication = (AliMC*)gAlice->GetMCApp();
 
-    AddTrackReference(mcApplication->GetCurrentTrackNumber());
+    AddTrackReference(mcApplication->GetCurrentTrackNumber(), AliTrackReference::kTOF);
     //AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
 
     // getting information about hit volumes
