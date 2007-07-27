@@ -17,11 +17,19 @@
 class AliExternalTrackParam;
 
 class AliTrackReference : public TObject {
-
 public:
 
+    enum constants {kDisappeared = -1,
+		    kITS   = 0,
+		    kTPC   = 1,
+		    kFRAME = 2,
+		    kTRD   = 3,
+		    kTOF   = 4,
+		    kMUON  = 5
+    };
   AliTrackReference();
-  AliTrackReference(Int_t label);
+  AliTrackReference(Int_t label, Int_t id = -999);
+  AliTrackReference(const AliTrackReference &tr);
   virtual ~AliTrackReference() {}
 
   static AliExternalTrackParam * MakeTrack(const AliTrackReference *ref, Double_t mass);
@@ -45,6 +53,7 @@ public:
   virtual Float_t Pz() const {return fPz;}
   virtual Float_t P() const {return TMath::Sqrt(fPx*fPx+fPy*fPy+fPz*fPz);}
   virtual Int_t   UserId() const {return fUserId;}
+  virtual Int_t   DetectorId() const {return fDetectorId;}
   virtual void SetPosition(Float_t x, Float_t y, Float_t z){fX=x; fY=y; fZ=z;}
   virtual void SetMomentum(Float_t px, Float_t py, Float_t pz){fPx=px; fPy=py; fPz=pz;}
   virtual void SetUserId(Int_t userId){fUserId=userId;}
@@ -69,17 +78,17 @@ public:
   virtual void Print(Option_t* opt="") const;
     
 protected:
-  Int_t     fTrack;  // Track number
-  Float_t   fX;      // X reference position of the track
-  Float_t   fY;      // Y reference position of the track
-  Float_t   fZ;      // Z reference position of the track
-  Float_t   fPx;     // momentum
-  Float_t   fPy;     // momentum
-  Float_t   fPz;     // momentum
-  Float_t   fLength; // track lenght from its origin in cm
-  Float_t   fTime;   // time of flight in cm  
-  Int_t     fUserId; // optional Id defined by user
-
-  ClassDef(AliTrackReference,5)  //Base class for all Alice track references
+  Int_t     fTrack;      // Track number
+  Float_t   fX;          // X reference position of the track
+  Float_t   fY;          // Y reference position of the track
+  Float_t   fZ;          // Z reference position of the track
+  Float_t   fPx;         // momentum
+  Float_t   fPy;         // momentum
+  Float_t   fPz;         // momentum
+  Float_t   fLength;     // track lenght from its origin in cm
+  Float_t   fTime;       // time of flight in cm  
+  Int_t     fUserId;     // optional Id defined by user
+  Int_t     fDetectorId; // Detector Id
+  ClassDef(AliTrackReference,6)  //Base class for all Alice track references
 };
 #endif

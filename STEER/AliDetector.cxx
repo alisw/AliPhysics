@@ -413,8 +413,6 @@ void AliDetector::SetTreeAddress()
     branch = treeD->GetBranch(GetName());
     if (branch) branch->SetAddress(&fDigits);
   }
-  
-  AliModule::SetTreeAddress();
 }
 
 //_______________________________________________________________________

@@ -127,7 +127,6 @@ public:
   virtual void        ResetSDigits() {}
   virtual void        ResetHits() {}
   virtual void        ResetPoints() {}
-  virtual void        SetTreeAddress();
   virtual void        SetTimeGate(Float_t) {}
   virtual Float_t     GetTimeGate() const {return 1.e10;}
   virtual void        StepManager() {}
@@ -141,13 +140,9 @@ public:
   virtual void        ReadEuclidMedia(const char *filnam);
 // Track reference related
   TClonesArray *TrackReferences()   const {return fTrackReferences;}
-  virtual void        RemapTrackHitIDs(Int_t *) {}
-  virtual void        RemapTrackReferencesIDs(Int_t *map); //remaping track references MI
-  virtual void        ResetTrackReferences();
-  virtual  AliTrackReference * AddTrackReference(Int_t label);
+  virtual  AliTrackReference * AddTrackReference(Int_t label, Int_t id = -999);
   virtual  AliTrackReference * FirstTrackReference(Int_t track);
   virtual  AliTrackReference * NextTrackReference();
-  virtual void        MakeBranchTR(Option_t *opt=" ");
   TTree* TreeTR();  //shorcut method for accessing treeTR from folder
 
   void                SetRunLoader(AliRunLoader* runLoader) 

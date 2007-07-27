@@ -16,8 +16,9 @@
 /* $Id$ */
 
 #include "TVirtualMC.h"
+#include "TParticle.h"
 
-#include "AliRun.h"
+#include "AliStack.h"
 #include "AliTrackReference.h"
 #include "AliExternalTrackParam.h"
 #include "AliKalmanTrack.h"
@@ -50,7 +51,8 @@ ClassImp(AliTrackReference)
    fPz(0),
    fLength(0),
    fTime(0),
-   fUserId(0)
+   fUserId(0),
+   fDetectorId(-999)
 {
   //
   // Default constructor
@@ -59,8 +61,25 @@ ClassImp(AliTrackReference)
   for(Int_t i=0; i<16; i++) ResetBit(BIT(i));
 }
 
+AliTrackReference::AliTrackReference(const AliTrackReference &tr) :
+  TObject(),
+  fTrack(tr.fTrack),
+  fX(tr.fX),
+  fY(tr.fY),
+  fZ(tr.fZ),
+  fPx(tr.fPx),
+  fPy(tr.fPy),
+  fPz(tr.fPz),
+  fLength(tr.fLength),
+  fTime(tr.fTime),
+  fUserId(tr.fUserId),
+  fDetectorId(tr.fDetectorId)
+{
+    // Copy Constructor
+}
+
 //_______________________________________________________________________
-AliTrackReference::AliTrackReference(Int_t label) :
+AliTrackReference::AliTrackReference(Int_t label, Int_t id) :
   TObject(),
   fTrack(label),
   fX(0),
@@ -71,7 +90,8 @@ AliTrackReference::AliTrackReference(Int_t label) :
   fPz(0),
   fLength(gMC->TrackLength()),
   fTime(gMC->TrackTime()),
-  fUserId(0)
+  fUserId(0),
+  fDetectorId(id)
 {
   //
   // Create Reference object out of label and
@@ -111,6 +131,9 @@ AliTrackReference::AliTrackReference(Int_t label) :
   SetBit(BIT(5), gMC->IsTrackInside());
   SetBit(BIT(6), gMC->IsTrackOut());
   SetBit(BIT(7), gMC->IsTrackStop()); 
+  //
+  // This particle has to be kept
+
 }
 //_______________________________________________________________________
 AliExternalTrackParam * AliTrackReference::MakeTrack(const AliTrackReference *ref, Double_t mass)
@@ -141,7 +164,7 @@ AliExternalTrackParam * AliTrackReference::MakeTrack(const AliTrackReference *re
 
 //_______________________________________________________________________
 void
-AliTrackReference::Print(Option_t* opt) const
+AliTrackReference::Print(Option_t* /*opt*/) const
 {
   cout << Form("Label %d P=%7.2f (X,Y,Z)=(%7.2f,%7.2f,%7.2f) (PX,PY,PZ)=(%7.2f,%7.2f,%7.2f)"
                " Length=%7.2f Time=%7.2f UserId=%d",

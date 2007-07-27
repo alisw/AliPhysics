@@ -660,160 +660,63 @@ void AliModule::AddAlignableVolumes() const
 }
 
 //_______________________________________________________________________
-void AliModule::RemapTrackReferencesIDs(Int_t *map)
-{
-  // 
-  // Remapping track reference
-  // Called at finish primary
-  //
-  if (!fTrackReferences) return;
-  Int_t nEntries = fTrackReferences->GetEntries();
-  
-  for (Int_t i=0;i<nEntries;i++){
-    AliTrackReference * ref = dynamic_cast<AliTrackReference*>(fTrackReferences->UncheckedAt(i));
-    if (ref) {
-      Int_t newID = map[ref->GetTrack()];
-      if (newID>=0) ref->SetTrack(newID);
-      else {
-        ref->SetBit(kNotDeleted,kFALSE);
-        fTrackReferences->RemoveAt(i);  
-      }      
-    }
-  }
-  fTrackReferences->Compress();
-
-}
-
-
-//_______________________________________________________________________
-AliTrackReference* AliModule::FirstTrackReference(Int_t track)
-{
-  //
-  // Initialise the hit iterator
-  // Return the address of the first hit for track
-  // If track>=0 the track is read from disk
-  // while if track<0 the first hit of the current
-  // track is returned
-  // 
-  if(track>=0) 
-   {
-     if (fRunLoader == 0x0)
-       AliFatal("AliRunLoader not initialized. Can not proceed");
-     fRunLoader->GetAliRun()->GetMCApp()->ResetTrackReferences();
-     fRunLoader->TreeTR()->GetEvent(track);
-   }
-  //
-  fMaxIterTrackRef     = fTrackReferences->GetEntriesFast();
-  fCurrentIterTrackRef = 0;
-  if(fMaxIterTrackRef) return dynamic_cast<AliTrackReference*>(fTrackReferences->UncheckedAt(0));
-  else            return 0;
-}
-
-//_______________________________________________________________________
-AliTrackReference* AliModule::NextTrackReference()
-{
-  //
-  // Return the next hit for the current track
-  //
-  if(fMaxIterTrackRef) {
-    if(++fCurrentIterTrackRef<fMaxIterTrackRef) 
-      return dynamic_cast<AliTrackReference*>(fTrackReferences->UncheckedAt(fCurrentIterTrackRef));
-    else        
-      return 0;
-  } else {
-    AliWarning("Iterator called without calling FistTrackReference before");
-    return 0;
-  }
-}
-
-
-//_______________________________________________________________________
-void AliModule::ResetTrackReferences()
-{
-  //
-  // Reset number of hits and the hits array
-  //
-  fMaxIterTrackRef   = 0;
-  if (fTrackReferences)   fTrackReferences->Clear();
-}
- 
-//_____________________________________________________________________________
 
 AliLoader*  AliModule::MakeLoader(const char* /*topfoldername*/)
 {
   return 0x0;
 }
  
-//PH Merged with v3-09-08 |
-//                        V
-//_____________________________________________________________________________
-
-void AliModule::SetTreeAddress()
-{
-  //
-  // Set branch address for track reference Tree
-  //
-
-  TBranch *branch;
-
-  // Branch address for track reference tree
-  TTree *treeTR = TreeTR();
-
-  if (treeTR && fTrackReferences) {
-     branch = treeTR->GetBranch(GetName());
-    if (branch) 
-     {
-       AliDebug(3, Form("(%s) Setting for TrackRefs",GetName()));
-       branch->SetAddress(&fTrackReferences);
-     }
-    else
-     { 
-     //can be called before MakeBranch and than does not make sense to issue the warning
-       AliDebug(1, Form("(%s) Failed for Track References. Can not find branch in tree.",
-                 GetName()));
-     }
-  }
-}
 
 //_____________________________________________________________________________
-AliTrackReference*  AliModule::AddTrackReference(Int_t label){
+AliTrackReference*  AliModule::AddTrackReference(Int_t label, Int_t id){
   //
   // add a trackrefernce to the list
-  if (!fTrackReferences) {
-    AliError("Container trackrefernce not active");
-    return 0;
-  }
-  Int_t nref = fTrackReferences->GetEntriesFast();
-  TClonesArray &lref = *fTrackReferences;
-  return new(lref[nref]) AliTrackReference(label);
+    return (gAlice->GetMCApp()->AddTrackReference(label, id));
 }
 
-
-//_____________________________________________________________________________
-void AliModule::MakeBranchTR(Option_t */*option*/)
-{ 
+ //_______________________________________________________________________
+AliTrackReference* AliModule::FirstTrackReference(Int_t track)
+{
     //
-    // Makes branch in treeTR
-    //  
-  AliDebug(2,Form("Making Track Refs. Branch for %s",GetName()));
-  TTree * tree = TreeTR();
-  if (fTrackReferences && tree) 
-   {
-      TBranch *branch = tree->GetBranch(GetName());
-     if (branch) 
-       {  
-	 AliDebug(2,Form("Branch %s is already in tree.",GetName()));
-	 return;
-       }
-  
-     branch = tree->Branch(GetName(),&fTrackReferences);
-   }
-  else
+    // Initialise the hit iterator
+    // Return the address of the first hit for track
+    // If track>=0 the track is read from disk
+    // while if track0 the first hit of the current
+    // track is returned
+    //
+    if(track>=0)
     {
-      AliDebug(2,Form("FAILED for %s: tree=%#x fTrackReferences=%#x",
-	     GetName(),tree,fTrackReferences));
+	if (fRunLoader == 0x0)
+	    AliFatal("AliRunLoader not initialized. Can not proceed");
+	fRunLoader->GetAliRun()->GetMCApp()->ResetTrackReferences();
+	fRunLoader->TreeTR()->GetEvent(track);
+    }
+    //
+    fMaxIterTrackRef     = fTrackReferences->GetEntriesFast();
+    fCurrentIterTrackRef = 0;
+    if(fMaxIterTrackRef) return dynamic_cast<AliTrackReference*>(fTrackReferences->UncheckedAt(0));
+    else            return 0;
+}
+
+ //_______________________________________________________________________
+AliTrackReference* AliModule::NextTrackReference()
+{
+    //
+    // Return the next hit for the current track
+    //
+    if(fMaxIterTrackRef) {
+	if(++fCurrentIterTrackRef < fMaxIterTrackRef)
+	    return dynamic_cast<AliTrackReference*>(fTrackReferences->UncheckedAt(fCurrentIterTrackRef));
+	else
+	    return 0;
+    } else {
+	AliWarning("Iterator called without calling FistTrackReference before");
+	return 0;
     }
 }
+
+
+
 
 //_____________________________________________________________________________
 TTree* AliModule::TreeTR()

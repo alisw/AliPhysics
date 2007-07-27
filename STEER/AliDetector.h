@@ -61,6 +61,7 @@ public:
   virtual TBranch*    MakeBranchInTree(TTree *tree, const char* cname, const char* name, void* address, Int_t size=32000, Int_t splitlevel=99, const char *file=0);
   
   void MakeTree(Option_t *option); //skowron
+  virtual void        RemapTrackHitIDs(Int_t *) {}
   
   virtual AliLoader* MakeLoader(const char* topfoldername); //builds standard getter (AliLoader type)
   void    SetLoader(AliLoader* loader){fLoader = loader;}

@@ -28,6 +28,7 @@
 #include <TStopwatch.h>
 #include <TSystem.h>
 #include <TVirtualMC.h>
+#include <TParticle.h>
 #include <TROOT.h>
  
 #include "AliLog.h"
@@ -373,7 +374,8 @@ void AliMC::Stepping()
     //
     // write tracke reference for track which is dissapearing - MI
     if (gMC->IsTrackDisappeared()) {      
-	if (gMC->Etot()>0.05) AddTrackReference(GetCurrentTrackNumber());
+	if (gMC->Etot()>0.05) AddTrackReference(GetCurrentTrackNumber(), 
+						AliTrackReference::kDisappeared);
     }
   
     //Call the appropriate stepping routine;
@@ -388,7 +390,7 @@ void AliMC::Stepping()
 //_______________________________________________________________________
 void AliMC::EnergySummary()
 {
-  //
+  //e
   // Print summary of deposited energy
   //
 
@@ -486,7 +488,9 @@ void AliMC::BeginEvent()
   else
     runloader->MakeStack();//or make a new one
   
-  if(gAlice->Lego() == 0x0)
+//  runloader->Stack()->BeginEvent();
+  
+if(gAlice->Lego() == 0x0)
    { 
      AliDebug(1, "fRunLoader->MakeTree(K)");
      runloader->MakeTree("K");
@@ -529,10 +533,6 @@ void AliMC::BeginEvent()
    {
     AliDebug(2, Form("%s->MakeBranch(H)",detector->GetName()));
     detector->MakeBranch("H"); 
-    AliDebug(2, Form("%s->MakeBranchTR()",detector->GetName()));
-    detector->MakeBranchTR();
-    AliDebug(2, Form("%s->SetTreeAddress()",detector->GetName()));
-    detector->SetTreeAddress();
    }
   // make branch for AliRun track References
   TTree * treeTR = runloader->TreeTR();
@@ -540,7 +540,7 @@ void AliMC::BeginEvent()
     // make branch for central track references
     if (!fTrackReferences) fTrackReferences = new TClonesArray("AliTrackReference",0);
     TBranch *branch;
-    branch = treeTR->Branch("AliRun",&fTrackReferences);
+    branch = treeTR->Branch("TrackReferences",&fTrackReferences);
     branch->SetAddress(&fTrackReferences);
   }
   //
@@ -631,10 +631,9 @@ void AliMC::RemapHits()
     
     TObjArray* modules = gAlice->Modules();
     TIter nextmod(modules);
-    AliModule *detector;
-    while((detector = dynamic_cast<AliModule*>(nextmod()))) {
+    AliDetector *detector;
+    while((detector = dynamic_cast<AliDetector*>(nextmod()))) {
 	detector->RemapTrackHitIDs(stack->TrackLabelMap());
-	detector->RemapTrackReferencesIDs(stack->TrackLabelMap());
     }
     //
     RemapTrackReferencesIDs(stack->TrackLabelMap());
@@ -1107,16 +1106,20 @@ void AliMC::SetCurrentTrack(Int_t track) const
 }
 
 //_______________________________________________________________________
-void  AliMC::AddTrackReference(Int_t label){
+AliTrackReference*  AliMC::AddTrackReference(Int_t label, Int_t id) 
+{
   //
   // add a trackrefernce to the list
   if (!fTrackReferences) {
     AliError("Container trackrefernce not active");
-    return;
+    return NULL;
   }
+  Int_t primary = GetPrimary(label);
+  Particle(primary)->SetBit(kKeepBit);
+
   Int_t nref = fTrackReferences->GetEntriesFast();
   TClonesArray &lref = *fTrackReferences;
-  new(lref[nref]) AliTrackReference(label);
+  return new(lref[nref]) AliTrackReference(label, id);
 }
 
 
@@ -1128,12 +1131,6 @@ void AliMC::ResetTrackReferences()
   //  Reset all  references
   //
   if (fTrackReferences)   fTrackReferences->Clear();
-
-  TIter next(gAlice->Modules());
-  AliModule *detector;
-  while((detector = dynamic_cast<AliModule*>(next()))) {
-     detector->ResetTrackReferences();
-  }
 }
 
 void AliMC::RemapTrackReferencesIDs(Int_t *map)

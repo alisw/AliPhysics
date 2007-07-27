@@ -20,6 +20,7 @@
 class TParticle;
 class AliGenerator;
 class AliMCQA;
+class AliTrackReference;
 
 class AliMC : public TVirtualMCApplication {
 public:
@@ -104,12 +105,12 @@ public:
    virtual  void  KeepTrack(Int_t itra) const;
    virtual  void  FlagTrack(Int_t track) const;
    virtual  void  SetCurrentTrack(Int_t track) const;                           
-// Track reference related 
-   virtual void   AddTrackReference(Int_t label);
-   TClonesArray   *TrackReferences()   const {return fTrackReferences;}
-   virtual void   RemapTrackReferencesIDs(Int_t *map); //remaping track references MI
-   virtual void   ResetTrackReferences();
-   virtual void   FixParticleDecaytime();
+// Track reference related
+   AliTrackReference* AddTrackReference(Int_t label, Int_t id = -999);
+   TClonesArray*      TrackReferences()   const {return fTrackReferences;}
+   virtual void       RemapTrackReferencesIDs(Int_t *map); //remaping track references MI
+   virtual void       ResetTrackReferences();
+   virtual void       FixParticleDecaytime();
 
 private:
    void Copy (TObject &mc) const;
