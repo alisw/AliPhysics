@@ -81,6 +81,7 @@ AliESDtrack::AliESDtrack() :
   fTPCncls(0),
   fTPCnclsF(0),
   fTPCClusterMap(159),//number of padrows
+  fTPCSharedMap(159),//number of padrows
   fTPCsignal(0),
   fTPCsignalN(0),
   fTPCsignalS(0),
@@ -162,6 +163,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fTPCncls(track.fTPCncls),
   fTPCnclsF(track.fTPCnclsF),
   fTPCClusterMap(track.fTPCClusterMap),
+  fTPCSharedMap(track.fTPCSharedMap),
   fTPCsignal(track.fTPCsignal),
   fTPCsignalN(track.fTPCsignalN),
   fTPCsignalS(track.fTPCsignalS),
@@ -248,6 +250,7 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   fTPCncls(0),
   fTPCnclsF(0),
   fTPCClusterMap(159),//number of padrows
+  fTPCSharedMap(159),//number of padrows
   fTPCsignal(0),
   fTPCsignalN(0),
   fTPCsignalS(0),
@@ -463,6 +466,7 @@ void AliESDtrack::MakeMiniESDtrack(){
   fTPCncls = 0;       
   fTPCnclsF = 0;       
   fTPCClusterMap = 0;  
+  fTPCSharedMap = 0;  
   fTPCsignal= 0;      
   fTPCsignalS= 0;      
   fTPCsignalN= 0;      

@@ -156,7 +156,9 @@ public:
   Int_t   GetKinkIndex(Int_t i) const { return fKinkIndexes[i];}
   Int_t   GetV0Index(Int_t i) const { return fV0Indexes[i];}
   const TBits& GetTPCClusterMap() const {return fTPCClusterMap;}
-  
+  const TBits& GetTPCSharedMap() const {return fTPCSharedMap;}
+  void    SetTPCClusterMap(const TBits amap) {fTPCClusterMap = amap;}
+  void    SetTPCSharedMap(const TBits amap) {fTPCSharedMap = amap;}
   void    SetTRDpid(const Double_t *p);
   
 // A.Bercuci
@@ -312,6 +314,7 @@ protected:
   Int_t    fTPCncls;       // number of clusters assigned in the TPC
   UShort_t fTPCnclsF;      // number of findable clusters in the TPC
   TBits    fTPCClusterMap; // Map of clusters, one bit per padrow; 1 if has a cluster on given padrow
+  TBits    fTPCSharedMap;  // Map of clusters, one bit per padrow; 1 if has a shared cluster on given padrow
   Float_t  fTPCsignal;     // detector's PID signal
   UShort_t fTPCsignalN;    // number of points used for dEdx
   Float_t  fTPCsignalS;    // RMS of dEdx measurement
@@ -370,7 +373,7 @@ protected:
 
   AliESDtrack & operator=(const AliESDtrack & ) {return *this;}
 
-  ClassDef(AliESDtrack,37)  //ESDtrack 
+  ClassDef(AliESDtrack,38)  //ESDtrack 
 };
 
 #endif 
