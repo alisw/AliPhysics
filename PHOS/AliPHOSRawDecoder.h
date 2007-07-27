@@ -37,6 +37,8 @@ public:
   Int_t GetRow() { return fRow; }
   Bool_t IsLowGain() { return fCaloStream->IsLowGain(); }
 
+  const AliRawReader* GetRawReader() const { return fRawReader; }
+
 protected:   
   
   AliRawReader* fRawReader;      // raw data reader
