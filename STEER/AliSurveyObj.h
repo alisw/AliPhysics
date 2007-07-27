@@ -27,10 +27,9 @@ class AliSurveyObj: public TObject {
   ~AliSurveyObj();
   Bool_t FillFromLocalFile(const Char_t* filename);
   Bool_t Fill(TString detector, Int_t year, Int_t reportNumber,
-	      Int_t reportVersion);
-  
-
-  
+	      Int_t reportVersion, TString username);
+ 
+  // Number of points (AliSurveyPoint) in the TObjArray
   Int_t GetEntries() const {return fDataPoints->GetEntries();};
 
   TString GetReportTitle() const {return fTitle;};
@@ -39,11 +38,23 @@ class AliSurveyObj: public TObject {
   TString GetURL() const {return fURL;};
   Int_t GetReportNumber() const {return fReportNr;};
   Int_t GetReportVersion() const {return fVersion;};
+
+  // General comments and observations
   TString GetObservations() const {return fObs;};
+
+  // Coordinate system used for the measurements
   TString GetCoordSys() const {return fCoordSys;};
+
+  // Units used in the measurement
   TString GetUnits() const {return fUnits;};
+
+  // Number of columns read from file (in the "Data" section)
   Int_t GetNrColumns() const {return fNrColumns;};
+
+  // TObjArray with the names of the columns read
   TObjArray *GetColumnNames() const {return fColNames.Tokenize(',');};
+
+  // TObjArray with the points read (AliSurveyPoint)
   TObjArray *GetData() const {return fDataPoints;};
 
   Bool_t IsValid() const {return fIsValid;};
@@ -62,6 +73,8 @@ class AliSurveyObj: public TObject {
   Int_t fNrColumns;   // Number of columns in data values
   TString fColNames;  // Column names sepparated by commas
   Bool_t fIsValid;    // Is the data valid? (sucessfully parsed)
+
+  TString fGridUser;  // Username to be used for the connection to GRID
   
   TObjArray *fDataPoints;	// Actual Data
   
@@ -71,8 +84,8 @@ class AliSurveyObj: public TObject {
   Bool_t ParseBuffer(const Char_t* buf);
   void Reset();
 
-  AliSurveyObj (const AliSurveyObj& surveyObj);            // copy constructor
-  AliSurveyObj& operator=(const AliSurveyObj& surveyObj);  // assignment operator 
+  AliSurveyObj (const AliSurveyObj& surveyObj);
+  AliSurveyObj& operator=(const AliSurveyObj& surveyObj); 
   void AddPoint(AliSurveyPoint* point);
 
   ClassDef(AliSurveyObj, 1);

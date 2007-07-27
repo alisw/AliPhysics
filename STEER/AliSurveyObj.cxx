@@ -33,9 +33,6 @@
 //AliROOT includes
 #include "AliLog.h"
 
-//System includes
-//#include <time.h> //for sleep(3); // not used anymore!?
-
 ClassImp(AliSurveyObj)
   
 //_____________________________________________________________________________
@@ -53,6 +50,7 @@ AliSurveyObj::AliSurveyObj():
   fNrColumns(-1),
   fColNames(""),
   fIsValid(kFALSE),
+  fGridUser(""),
   fDataPoints(new TObjArray(1))
 {
   // constructor
@@ -86,6 +84,7 @@ AliSurveyObj::AliSurveyObj(const AliSurveyObj& surveyObj):
   fNrColumns(surveyObj.fNrColumns),
   fColNames(surveyObj.fColNames),
   fIsValid(surveyObj.fIsValid),
+  fGridUser(surveyObj.fGridUser),
   fDataPoints(new TObjArray(1))
 {
   // copy constructor
@@ -113,20 +112,20 @@ AliSurveyObj& AliSurveyObj::operator=(const AliSurveyObj& surveyObj)
     fNrColumns = surveyObj.fNrColumns;
     fColNames = surveyObj.fColNames;
     fIsValid = surveyObj.fIsValid;
-    
+    fGridUser = surveyObj.fGridUser;
     TObject *curr = surveyObj.fDataPoints->First();
     while (curr != 0) {
       fDataPoints->Add(curr);
       curr = surveyObj.fDataPoints->After(curr);
     }
   }
-  
   return *this;
 }
 
 
 //_____________________________________________________________________________
 void AliSurveyObj::AddPoint(AliSurveyPoint* point) {
+  // Adds a point to the TObjArray which containst the list of points
   fDataPoints->Add(point);
   return;
 }
@@ -134,8 +133,9 @@ void AliSurveyObj::AddPoint(AliSurveyPoint* point) {
 
 //_____________________________________________________________________________
 Bool_t AliSurveyObj::Connect(const char *gridUrl, const char *user) {
+  // Connects to the grid
 
-  // if the same Grid is alreay active, skip connection
+  // If the same "Grid" is alreay active, skip connection
   if (!gGrid || gridUrl != gGrid->GridUrl() ||
       (( user != "" ) && ( user != gGrid->GetUser() )) ) {
     // connection to the Grid
@@ -159,11 +159,16 @@ Bool_t AliSurveyObj::Connect(const char *gridUrl, const char *user) {
 
 //_____________________________________________________________________________
 Bool_t AliSurveyObj::OpenFile(TString openString) {
+  // Opens the file and reads it to a buffer
   TString storage = "alien://alice.cern.ch";
 
   Printf("TFile::Open string: \n -> \"%s\"\n", openString.Data());
 
-  if (openString.BeginsWith("alien://")) Connect(storage.Data(), "rsilva");
+  if (openString.BeginsWith("alien://"))
+    if (!Connect(storage.Data(), fGridUser.Data())) {
+      AliError(Form("Error connecting to GRID"));
+      return kFALSE;
+    }
 
   TFile *file = TFile::Open(openString.Data(), "READ");
   if ( !file ) {
@@ -173,24 +178,16 @@ Bool_t AliSurveyObj::OpenFile(TString openString) {
 
   Int_t size = file->GetSize();
 
-  char *buf = new Char_t[size];
-  memset(buf, '\0', size);
-
-  //--size;
+  char *buf = new Char_t[size + 1];
+  memset(buf, '\0', size + 1);
 
   file->Seek(0);  
   if ( file->ReadBuffer(buf, size) ) {
     AliError("Error reading file contents to buffer!");
     return kFALSE;
   }
-
-  // Printf("%d bytes read!\n", size);
   Printf("%d bytes read!\n", file->GetBytesRead());
   
-  // Printf("->\n%s\n<- ", buf);
-
-  // Printf("%d AQUI!\n", size);
-
   ParseBuffer(buf);
 
   file->Close();
@@ -202,8 +199,10 @@ Bool_t AliSurveyObj::OpenFile(TString openString) {
 
 //_____________________________________________________________________________
 Bool_t AliSurveyObj::Fill(TString detector, Int_t year, Int_t reportNumber,
-                         Int_t reportVersion) {
-  TString baseFolder = "/alice/cern.ch/user/r/rsilva/";
+                         Int_t reportVersion, TString username) {
+  // Fills the object from a file in the default storage location in AliEn
+
+  TString baseFolder = "/alice/data/Reference/";
   TString validDetectors = "ACORDE,BABYFRAME,BACKFRAME,EMCAL,FMD,HMPID,ITS,L3 MAGNET,MUON,MUON ABSORBERS,MUON DIPOLE,PHOS,PMD,SPACEFRAME,SUPERSTRUCTURE,T0,TOF,TPC,TRD,V0,ZDC";
   TString GRPDetectors = "BABYFRAME,BACKFRAME,L3 MAGNET,SPACEFRAME,MUON DIPOLE,MUON ABSORBERS";
   TString MUONDetectors = "MUON,SUPERSTRUCTURE";
@@ -219,6 +218,7 @@ Bool_t AliSurveyObj::Fill(TString detector, Int_t year, Int_t reportNumber,
   dets->Delete();
   dets = 0;
 
+  // Some "detectors" don't have a folder of their own
   dets = GRPDetectors.Tokenize(',');
   if (dets->FindObject(detector)) detector = "GRP";
   dets->Delete();
@@ -229,22 +229,27 @@ Bool_t AliSurveyObj::Fill(TString detector, Int_t year, Int_t reportNumber,
   dets->Delete();
   dets = 0;
 
-  // Check if <year>, <reportNumber> and <reportVersion> are valid
+  // Check if <year>, <reportNumber> and <reportVersion> are valid (roughly)
   if ((year < 1950) || (reportNumber < 1) || (reportVersion < 1)) {
     AliError("Invalid parameter values for AliSurveyObj::Fill. (Year, Report Number or Report Version)");
     return kFALSE;
   }
 
+  // Finally composes the full string
   TString fullOpenString = "alien://" + baseFolder + detector + "/RawSurvey/";
   fullOpenString += Form("%d/%d_v%d.txt?filetype=raw", year, reportNumber, reportVersion);
-  // !Still need to check it's a valid path before actually using it
-  
+
+  // Set the GRID username variable to connect to the GRID
+  fGridUser = username;
+
   return OpenFile(fullOpenString);
 }
 
 
 //_____________________________________________________________________________
 Bool_t AliSurveyObj::FillFromLocalFile(const Char_t* filename) {
+  // Fills the object from a file in a local filesystem
+
   TString fullOpenString = "file://" + TString(filename) + "?filetype=raw";
 
   return OpenFile(fullOpenString);
@@ -253,6 +258,9 @@ Bool_t AliSurveyObj::FillFromLocalFile(const Char_t* filename) {
 
 //_____________________________________________________________________________
 TString &AliSurveyObj::Sanitize(TString str) {
+  // Cleans up a line of new line and carriage return characters.
+  // (Specially usefull for files created in Windows.)
+
   str.Remove(TString::kTrailing, '\r');
   str.Remove(TString::kTrailing, '\n');
   str.Remove(TString::kTrailing, '\r');
@@ -266,13 +274,19 @@ TString &AliSurveyObj::Sanitize(TString str) {
 
 //_____________________________________________________________________________
 Bool_t AliSurveyObj::ParseBuffer(const Char_t* buf) {
+  // Parses a character buffer assuming the format defined with the TS/SU
+  // http://aliceinfo/Offline/Activities/Alignment/SurveyInformation.html
+
+  // If the object is already filled clean it up
   if (fIsValid) Reset();
 
+  // Copy the buffer to a TString to use Tokenize
   TString buffer = TString(buf);
   TObjArray *lines = buffer.Tokenize('\n');
-  TObjArray *dataLine = NULL; // Used to Tokenize each point read
+  TObjArray *dataLine = NULL; // Used to Tokenize each point/line read
   TObjArray *colLine = NULL; // Used to Tokenize the column names
 
+  // Some local variables declarations and initializations
   const Int_t kFieldCheck = 10;
   Bool_t check[kFieldCheck];
   TString tmp_name = "";
@@ -281,23 +295,27 @@ Bool_t AliSurveyObj::ParseBuffer(const Char_t* buf) {
   Char_t tmp_type = '\0';
   Bool_t tmp_targ = kTRUE;
   AliSurveyPoint *dp = 0;
-  
   for (Int_t i = 0; i < kFieldCheck; ++i) check[i] = kFALSE;
 
   Int_t nrLines = lines->GetEntries();
   Printf("Lines in file: %d\n", nrLines); 
 
+  // The main cycle, the buffer is parsed a line at a time
   TString currLine = "", nextLine = "";
   for (Int_t i = 0; i < nrLines; ++i) {
+
+    // Get the next line
     currLine = ((TObjString *)(lines->At(i)))->GetString().Data();
     nextLine = ((i + 1) < nrLines ? ((TObjString *)(lines->At(i + 1)))->GetString().Data() : "");
     currLine = Sanitize(currLine);
     nextLine = Sanitize(nextLine);
-    //Printf("\n%d: \"\"%s\"\"\"\n", i + 1, currLine.Data());
+    // Printf("\n%d: \"\"%s\"\"\"\n", i + 1, currLine.Data());
     
-    if (0 == currLine.Length()) {
-      Printf("Info: Empty line skipped\n\n");
-    } else if (currLine.BeginsWith(">") && !nextLine.BeginsWith(">")) {
+    // Skip empty line
+    if (0 == currLine.Length()) Printf("Info: Empty line skipped\n\n");
+
+    // The line contains a keyword
+    else if (currLine.BeginsWith(">") && !nextLine.BeginsWith(">")) {
       currLine.Remove(TString::kLeading, '>');
       currLine.Remove(TString::kTrailing, ':');
       currLine.Remove(TString::kBoth, ' ');
@@ -324,9 +342,7 @@ Bool_t AliSurveyObj::ParseBuffer(const Char_t* buf) {
 	  nextLine.Remove(TString::kTrailing, '/');
 	  nextLine = nextLine(nextLine.Last('/') + 1, nextLine.Length() - nextLine.Last('/') + 1);
 	  
-	  Printf("## %s ##\n", nextLine.Data());
 	  Int_t sscanf_tmp = 0;
-	  //if (!nextLine.IsDigit()) {
 	  if (1 != sscanf(nextLine.Data(), "%d", &sscanf_tmp)) {
 	    AliError("Survey text file sintax error! (incorrectly formated Report URL)");
 	    lines->Delete();
@@ -335,11 +351,13 @@ Bool_t AliSurveyObj::ParseBuffer(const Char_t* buf) {
 	  fReportNr = nextLine.Atoi();
 	  //Printf(" $$ %d $$\n", fReportNr);
 	  ++i;
-	} else { // URL incorrectly formated
+	} else { 
+	  // URL incorrectly formated
 	  AliError("Survey text file sintax error! (incorrectly formated Report URL)");
 	  return kFALSE;
 	}
       } else if (currLine.BeginsWith("Version", TString::kIgnoreCase)) {
+	// Report version
 	if (!nextLine.IsDigit()) {
 	  lines->Delete();
 	  AliError("Survey text file sintax error! (incorrectly formated Report Version)");
@@ -348,21 +366,25 @@ Bool_t AliSurveyObj::ParseBuffer(const Char_t* buf) {
 	fVersion = nextLine.Atoi();
 	++i;
       } else if (currLine.BeginsWith("General Observations", TString::kIgnoreCase)) {
+	// Observations
 	fObs = "";
-	while (('>' != nextLine[0]) && nextLine.Length() > 0) {	
+	// Can be more than 1 line. Loop until another keyword is found
+	while (('>' != nextLine[0]) && (nextLine.Length() > 0) && (i < nrLines)) {	
 	  fObs += (0 == fObs.Length()) ? nextLine : " / " + nextLine;
 	  ++i;
 	  nextLine = ((i + 1) < nrLines ? ((TObjString *)(lines->At(i + 1)))->GetString().Data() : "");
 	  nextLine = Sanitize(nextLine);
 	}
-	// Printf("->%s<-\n", fObs.Data());
       } else if (currLine.BeginsWith("Coordinate System", TString::kIgnoreCase)) {
+	// Coordinate System
 	fCoordSys = nextLine;
 	++i;
       } else if (currLine.BeginsWith("Units", TString::kIgnoreCase)) {
+	// Measurement Unit
 	fUnits = nextLine;
 	++i;
       } else if (currLine.BeginsWith("Nr Columns", TString::kIgnoreCase)) {
+	// Number of columns in the "Data" section
 	if (!nextLine.IsDigit()) {
 	  lines->Delete();
 	  AliError("Survey text file sintax error! (incorrectly formated Number of Columns)");
@@ -371,6 +393,7 @@ Bool_t AliSurveyObj::ParseBuffer(const Char_t* buf) {
 	fNrColumns = nextLine.Atoi();
 	++i;
       } else if (currLine.BeginsWith("Column Names", TString::kIgnoreCase)) {
+	// Column names separated by commas
 	fColNames = nextLine;
 	colLine = nextLine.Tokenize(',');
 	if (colLine->GetEntries() != fNrColumns) {
@@ -381,29 +404,35 @@ Bool_t AliSurveyObj::ParseBuffer(const Char_t* buf) {
 	}
 	++i;
       } else if (currLine.BeginsWith("Data", TString::kIgnoreCase)) {
+	// Data section!
 	while ((nextLine.Length() > 0) && ('>' != nextLine[0])) {
-	  Printf("Data LINE: \"%s\": %d\n", nextLine.Data(), nextLine.Length());
-	  if (2 == nextLine.Length()) for(Int_t g = 0; g < 2; ++g) Printf("'%c'", nextLine[g]);
 
+	  // Printf("Data LINE: \"%s\": %d\n", nextLine.Data(), nextLine.Length());
+
+	  // What is the separator used between fields?
+	  // The allowed are: comma (','), tab ('\t'), and space (' ')
           if (fNrColumns == nextLine.CountChar(',') + 1) dataLine = nextLine.Tokenize(',');
           else if (fNrColumns == nextLine.CountChar('\t') + 1) dataLine = nextLine.Tokenize('\t');
           else if (fNrColumns == nextLine.CountChar(' ') + 1) dataLine = nextLine.Tokenize(' ');
           else {
-            //Error
+            // Error (No separator was found!)
             AliError("Survey text file syntax error! Error processing data line!");
             lines->Delete();
             return kFALSE;
           }
-
+	  
 	  if (dataLine->GetEntries() != fNrColumns) {
+	    // The number of columns doesn't match the number specified in the header
 	    AliError("Survey text file sintax error! (Number of entries in line is different from declared Number of Columns)");
 	    dataLine->Delete();
 	    lines->Delete();
 	    return kFALSE;
 	  }
 
+	  // Reset the bits used to check if all the required fields are present
 	  for (Int_t t = 0; t < kFieldCheck; ++t) check[t] = 0;
 
+	  // Process the data line using the column names as index
 	  for (Int_t j = 0; j < dataLine->GetEntries(); ++j) {
 	    TString cn = ((TObjString *)(colLine->At(j)))->GetString();
 	    TString value = ((TObjString *)(dataLine->At(j)))->GetString();
@@ -455,6 +484,8 @@ Bool_t AliSurveyObj::ParseBuffer(const Char_t* buf) {
 
 	    //Printf("--> %s\n", ((TObjString *)(dataLine->At(j)))->GetString().Data());
 	  }
+
+	  // Check if all the mandatory fields exist
 	  Bool_t res = kTRUE, precInd = kTRUE;
 
 	  // Target
@@ -501,8 +532,10 @@ Bool_t AliSurveyObj::ParseBuffer(const Char_t* buf) {
 }
 
 //_____________________________________________________________________________
-void AliSurveyObj::Reset()
-{
+void AliSurveyObj::Reset() {
+  // Resets the AliSurveyObj to a clean object.
+  // Used if the same object is filled more than once
+  
   if (fDataPoints) {
     for (Int_t i = 0; i < fDataPoints->GetEntries(); ++i) delete fDataPoints->At(i);
     fDataPoints->Delete();
