@@ -14,7 +14,7 @@
 
 class TH1F;
 class TFile;
-class AliRawReader;
+class AliPHOSRawDecoder;
 
 class AliPHOSCalibHistoProducer : public TObject {
 public:
@@ -28,16 +28,15 @@ public:
   void UpdateHistoFile();
   void SetUpdatingRate(Int_t rate) {fUpdatingRate = rate;}
   void SetOldRCUFormat(Bool_t isOldRCUFormat) { fIsOldRCUFormat = isOldRCUFormat; }
-  void SetRawReader(AliRawReader* rawReader) { fRawReader = rawReader; }
+  void SetRawDecoder(AliPHOSRawDecoder* decoder) { fRawDecoder = decoder; }
 
 protected:
 
   TH1F* fAmpHisto[5][56][64]; // amplitudes in [module][column][row].
-  AliRawReader* fRawReader;   // raw data reader.
+  AliPHOSRawDecoder* fRawDecoder;   // raw data decoder.
   TFile* fHistoFile;          // root file to store histograms in
   Int_t fUpdatingRate;        // update rate
   Bool_t fIsOldRCUFormat;     // Old RCU format flag.
-  TClonesArray* fDigits;      // digits of one event
   Int_t fEvents;
 
   ClassDef(AliPHOSCalibHistoProducer,1)
