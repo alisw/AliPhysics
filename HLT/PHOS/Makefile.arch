@@ -26,11 +26,13 @@ HASTHREAD    := $(shell $(ROOTCONFIG) --has-thread)
 
 ifeq ($(ARCH),linux)
 # Linux with egcs, gcc 2.9x, gcc 3.x (>= RedHat 5.2)
+
 CXX           = g++
 #CXXFLAGS      = -O9 -Wall -fPIC
 
 #CXXFLAGS      = -O9 -Wall -fPIC -g
 CXXFLAGS      = -O9 -Wall 
+#CXXFLAGS      = -g -Wall 
 
 LD            = g++
 LDFLAGS       = -O

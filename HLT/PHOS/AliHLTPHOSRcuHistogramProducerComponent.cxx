@@ -118,6 +118,11 @@ int  AliHLTPHOSRcuHistogramProducerComponent::DoEvent( const AliHLTComponentEven
 					   cellDataPtr->fValidData[i].fZ, 
 					   cellDataPtr->fValidData[i].fGain, 
 					   cellDataPtr->fValidData[i].fEnergy);
+
+	  if(cellDataPtr->fValidData[i].fEnergy > 1024)
+	    {
+	      cout << " AliHLTPHOSRcuHistogramProducerComponent::DoEvent ERROR: cellDataPtr->fValidData[i].fEnergy =" <<  cellDataPtr->fValidData[i].fEnergy << endl;
+	    }
 	}
     }
   

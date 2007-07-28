@@ -90,33 +90,33 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
   UInt_t offset           = 0; 
   UInt_t mysize           = 0;
   UInt_t tSize            = 0;
-  Int_t tmpChannelCnt     = 0;
+  //  Int_t tmpChannelCnt     = 0;
   AliHLTUInt8_t* outBPtr;
 
   AliHLTAltroBunch *bunchPtr;
-
   outBPtr = outputPtr;
   const AliHLTComponentBlockData* iter = NULL; 
   unsigned long ndx;
 
   for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
+      Int_t tmpChannelCnt     = 0;
       iter = blocks+ndx;
       mysize = 0;
       offset = tSize;
 
       if ( iter->fDataType != AliHLTPHOSDefinitions::fgkDDLPackedRawDataType )
 	{
-	  cout <<"WARNING: notAliHLTPHOSDefinitions::fgkDDLPackedRawDataType  "  << endl;
-	  //	  continue;
+	  cout <<"WARNING: not AliHLTPHOSDefinitions::fgkDDLPackedRawDataType  "  << endl;
+	  //	  continue; //!!!!! Commented out to read TPC data, remember to put back
 	}
 
       fDecoderPtr->SetMemory(reinterpret_cast<UChar_t*>( iter->fPtr ), iter->fSize);
+      //    fDecoderPtr->SetMemory2(reinterpret_cast<UChar_t*>( iter->fPtr ), iter->fSize);
       fDecoderPtr->Decode();
       fOutPtr =  (AliHLTPHOSRcuCellEnergyDataStruct*)outBPtr;
       fOutPtr->fRcuX = fRcuX;
       fOutPtr->fRcuZ = fRcuZ;
-
       fOutPtr->fModuleID =fModuleID;
 
       while( fDecoderPtr->NextChannel(fAltroDataPtr) == true )
@@ -132,9 +132,10 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 	  tmpChannelCnt ++;
 	}
     
-
-      mysize += sizeof(AliHLTPHOSRcuCellEnergyDataStruct);
+  
       fOutPtr->fCnt =  tmpChannelCnt;
+      mysize += sizeof(AliHLTPHOSRcuCellEnergyDataStruct);
+
       AliHLTComponentBlockData bd;
       FillBlockData( bd );
       bd.fOffset = offset;

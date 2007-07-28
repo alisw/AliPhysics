@@ -27,10 +27,9 @@ namespace PhosHLTConst
   const unsigned int HIGH_GAIN    =   1;
   const unsigned int LOW_GAIN     =   0;
 
-
   const unsigned int ALTRO_MAX_SAMPLES = 1008;                           /**<The maximum number of samples of the ALTRO*/
-  const unsigned int ALTRO_MAX_TRALER_SIZE = 7;  
-  const unsigned int  DDL_BLOCK_SIZE = 5;
+  //  const unsigned int ALTRO_MAX_TRALER_SIZE = 7;  
+  //  const unsigned int  DDL_BLOCK_SIZE = 5;
 
   const unsigned int N_ZROWS_RCU     =   28;                    /**<Number of rows per module*/       
   const unsigned int N_XCOLUMNS_RCU  =   32; 
@@ -40,9 +39,11 @@ namespace PhosHLTConst
   const unsigned int N_DATATYPES     =   10;    
 
   const unsigned int  PF_MAX_PATH_LENGTH = 256;
+
 #ifndef __CINT__
   const unsigned char PF_VECTOR_DIR[] = "/HLT/PHOS/PFVectors";
 #endif
+
   const unsigned int PF_DEFAULT_N_SAMPLES = 70;
   const unsigned int PF_DEFAULT_STARTINDEX = 0;
 
