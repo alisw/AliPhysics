@@ -5,17 +5,18 @@
 
 /* $Id$ */
 
-/*  @file   AliHLTMUONHitReconstructorComponent.h
- *  @author Indranil Das <indra.das@saha.ac.in> | <indra.ehep@gmail.com>
- *  @date   
- *  @brief  Hit Reconstruction processing component for the dimuon HLT. 
- */
+///*  @file   AliHLTMUONHitReconstructorComponent.h
+// *  @author Indranil Das <indra.das@saha.ac.in> | <indra.ehep@gmail.com>
+// *  @date   
+// *  @brief  Hit Reconstruction processing component for the dimuon HLT. 
+// */
 
 #include "AliHLTProcessor.h"
 #include "AliHLTMUONConstants.h"
-#include "AliHLTMUONHitReconstructor.h"
 
+#include "AliHLTMUONHitReconstructor.h"
 //class AliHLTMUONHitReconstructor;
+
 
 class AliHLTMUONHitReconstructorComponent : public AliHLTProcessor {
 
@@ -23,18 +24,18 @@ public:
   AliHLTMUONHitReconstructorComponent();
   virtual ~AliHLTMUONHitReconstructorComponent();
 
-  const char* GetComponentID() { return "MUONHitRec";}
+  const char* GetComponentID() /*const*/ { return "MUONHitRec";}
 
   void GetInputDataTypes( vector<AliHLTComponentDataType>& list) {
     list.clear();
     list.push_back( AliHLTMUONConstants::TrackingDDLRawDataType() );
   }
   
-  AliHLTComponentDataType GetOutputDataType() {return AliHLTMUONConstants::RecHitsBlockDataType();}
+  AliHLTComponentDataType GetOutputDataType() /*const*/ {return AliHLTMUONConstants::RecHitsBlockDataType();}
   virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) {constBase = 0;inputMultiplier = 0;};
 
   // Spawn function, return new class instance
-  AliHLTComponent* Spawn() {return new AliHLTMUONHitReconstructorComponent;};
+  AliHLTComponent* Spawn() /*const*/ {return new AliHLTMUONHitReconstructorComponent;};
 
  protected:
   
@@ -45,10 +46,15 @@ public:
 		       AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
 
 private:
+  
+  // Do not allow to copy these objects.
+  AliHLTMUONHitReconstructorComponent(const AliHLTMUONHitReconstructorComponent& /*object*/);
+  AliHLTMUONHitReconstructorComponent& operator = (const AliHLTMUONHitReconstructorComponent& /*object*/);
+  
   /** array of input data types */
 
-  AliHLTMUONHitReconstructor* fHitRec;
-  bool ReadLookUpTable(DHLTLut* lookupTable, const char* lutpath, int iDDL);
+  AliHLTMUONHitReconstructor* fHitRec;   // Class instance implementing the hit reconstruction algorithm.
+  bool ReadLookUpTable(AliHLTMUONHitReconstructor::DHLTLut* lookupTable, const char* lutpath, int iDDL);
   bool ReadBusPatchToDetElemFile(BusToDetElem& busToDetElem, const char* buspatchmappath);
 
 

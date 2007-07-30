@@ -15,15 +15,15 @@
 
 /* $Id$ */
 
-/*
-
-  The HitRec Component is designed to deal the rawdata inputfiles to findout the 
-  the reconstructed hits. The output is send to the output block for further 
-  processing.
-
-  Author : Indranil Das ( indra.das@saha.ac.in || indra.ehep@gmail.com )
- 
-*/
+///*
+//
+//  The HitRec Component is designed to deal the rawdata inputfiles to findout the 
+//  the reconstructed hits. The output is send to the output block for further 
+//  processing.
+//
+//  Author : Indranil Das ( indra.das@saha.ac.in || indra.ehep@gmail.com )
+// 
+//*/
 
 #if __GNUC__>= 3
 using namespace std;
@@ -31,6 +31,7 @@ using namespace std;
 
 #include "AliHLTMUONHitReconstructorComponent.h"
 #include "AliHLTMUONHitReconstructor.h"
+#include "AliHLTMUONRecHitsBlockStruct.h"
 #include "AliHLTLogging.h"
 #include "AliHLTSystem.h"
 #include "AliHLTDefinitions.h"
@@ -73,7 +74,7 @@ int AliHLTMUONHitReconstructorComponent::DoInit( int argc, const char** argv ){
 
   Int_t i = 0;
   char lutFileName[500],buspatchFileName[500];
-  int iDDL;
+  int iDDL = -1;
   while(i<argc){
     if ( !strcmp( argv[i], "lut" ) ) {
       if ( argc <= i+1 ) {
@@ -117,7 +118,7 @@ int AliHLTMUONHitReconstructorComponent::DoInit( int argc, const char** argv ){
   }// end of while loop
 
   int lutline = fHitRec->GetLutLine(iDDL);
-  DHLTLut* lookupTable = new DHLTLut[lutline];
+  AliHLTMUONHitReconstructor::DHLTLut* lookupTable = new AliHLTMUONHitReconstructor::DHLTLut[lutline];
   if(!ReadLookUpTable(lookupTable,lutFileName,iDDL)){
     Logging(kHLTLogInfo, "AliHLTMUONHitReconstructorComponent::DoInit", "Failed to read lut", "lut cannot be read, DoInit");
     return ENOENT ; /* No such file or directory */
@@ -192,15 +193,15 @@ int AliHLTMUONHitReconstructorComponent::DoEvent( const AliHLTComponentEventData
     
 
     int totalDDLSize = blocks[i].fSize/4;
-    int ddlRawDataSize = totalDDLSize - AliHLTMUONHitReconstructor::fgkDDLHeaderSize;
+    int ddlRawDataSize = totalDDLSize - AliHLTMUONHitReconstructor::GetkDDLHeaderSize();
     int ddlHeader[8];
-    memcpy((char *) & ddlHeader,blocks[i].fPtr,(size_t)4*(AliHLTMUONHitReconstructor::fgkDDLHeaderSize));
+    memcpy((char *) & ddlHeader,blocks[i].fPtr,(size_t)4*(AliHLTMUONHitReconstructor::GetkDDLHeaderSize()));
 
 //     for(int j=0;j<8;j++)
 //       HLTDebug("ddlHeader[%d] : %d\n",j,ddlHeader[j]);
 
     int* buffer = new int[ddlRawDataSize];
-    memcpy((int*)buffer,((int*)blocks[i].fPtr + AliHLTMUONHitReconstructor::fgkDDLHeaderSize),(sizeof(int)*ddlRawDataSize));
+    memcpy((int*)buffer,((int*)blocks[i].fPtr + AliHLTMUONHitReconstructor::GetkDDLHeaderSize()),(sizeof(int)*ddlRawDataSize));
 
 //     for(int j=0;j<ddlRawDataSize;j++)
 //       HLTDebug("buffer[%d] : %x\n",j,buffer[j]);
@@ -285,11 +286,13 @@ int AliHLTMUONHitReconstructorComponent::DoEvent( const AliHLTComponentEventData
 
 
 bool AliHLTMUONHitReconstructorComponent::ReadLookUpTable(
-		DHLTLut* lookupTable, const char* lutpath, int iDDL
+		AliHLTMUONHitReconstructor::DHLTLut* lookupTable, const char* lutpath, int iDDL
 	)
 {
-	if (iDDL < AliHLTMUONHitReconstructor::fgkDDLOffSet ||
-		iDDL >= AliHLTMUONHitReconstructor::fgkDDLOffSet + AliHLTMUONHitReconstructor::fgkNofDDL)
+// Reads in a lookup table for the hit reconstruction algorithm from file.
+
+	if (iDDL < AliHLTMUONHitReconstructor::GetkDDLOffSet() ||
+		iDDL >= AliHLTMUONHitReconstructor::GetkDDLOffSet() + AliHLTMUONHitReconstructor::GetkNofDDL())
 	{
 // 		Logging(kHLTLogError, "AliHLTMUONHitReconstructorComponent::ReadLookUpTable", "Invalid DDL")
 // 			<< "DDL number is out of range (must be " << AliHLTLog::kDec << HLTMUONHitRec::fgkDDLOffSet
@@ -340,6 +343,8 @@ bool AliHLTMUONHitReconstructorComponent::ReadBusPatchToDetElemFile(
 		BusToDetElem& busToDetElem, const char* buspatchmappath
 	)
 {
+// Loads the bus patch to detector element ID map from an ASCII file. 
+	
 	char getLine[80];
 	char temp;
 	int detElem, minBusPatch, maxBusPatch;

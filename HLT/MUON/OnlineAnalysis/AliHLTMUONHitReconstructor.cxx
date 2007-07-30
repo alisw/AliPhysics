@@ -22,9 +22,19 @@
 //
 //Email :  indra.das@saha.ac.in
 //         sukalyan.chattopadhyay@saha.ac.in 
-///////////////////////////////////////////////
+//
+// This class implements a hit reconstruction algorithm for the dimuon
+// high level trigger.
+// The algorithm finds 3 pad clusters by looking for unique pads with a charge
+// above a certain threshold. A centre of gravity type calculation is applied
+// to the three pads forming the cluster to find the hit's X or Y coordinate
+// along the non-bending and bending planes individually.
+// The sepperate X and Y coordinates are then merged to give the full coordinate
+// of the hit.
+/////////////////////////////////////////////////
 
 #include "AliHLTMUONHitReconstructor.h"
+#include "AliHLTMUONRecHitsBlockStruct.h"
 
 
 const int AliHLTMUONHitReconstructor::fgkDetectorId = 0xA00;
@@ -47,9 +57,31 @@ const float AliHLTMUONHitReconstructor::fgkHalfPadSize[3] = {1.25, 2.50, 5.00};
 
 ClassImp(AliHLTMUONHitReconstructor)
 
-AliHLTMUONHitReconstructor::AliHLTMUONHitReconstructor(): 
+AliHLTMUONHitReconstructor::AliHLTMUONHitReconstructor():
+  fkBlockHeaderSize(8),
+  fkDspHeaderSize(8),
+  fkBuspatchHeaderSize(4),
   fDCCut(0),
-  fDebugLevel(0)
+  fPadData(NULL),
+  fLookUpTableData(NULL),
+  fRecPoints(NULL),
+  fRecPointsCount(NULL),
+  fMaxRecPointsCount(0),
+  fCentralCountB(0),
+  fCentralCountNB(0),
+  fIdOffSet(0),
+  fDDLId(0),
+  fDigitPerDDL(0),
+  fDetManuChannelIdList(NULL),
+  fCentralChargeB(NULL),
+  fCentralChargeNB(NULL),
+  fRecX(NULL),
+  fRecY(NULL),
+  fAvgChargeX(NULL),
+  fAvgChargeY(NULL),
+  fNofFiredDetElem(0),
+  fDebugLevel(0),
+  fBusToDetElem()
 {
   // ctor 
   
@@ -69,26 +101,6 @@ AliHLTMUONHitReconstructor::AliHLTMUONHitReconstructor():
 }
 
 
-AliHLTMUONHitReconstructor::AliHLTMUONHitReconstructor(const AliHLTMUONHitReconstructor& rhs)
-{
-// Protected copy constructor
-
-  printf("Not implemented.\n");
-}
-
-
-AliHLTMUONHitReconstructor & 
-AliHLTMUONHitReconstructor::operator=(const AliHLTMUONHitReconstructor& rhs)
-{
-// Protected assignement operator
-
-  if (this == &rhs) return *this;
-
-  printf("Not implemented.\n");
-    
-  return *this;  
-}
-
 AliHLTMUONHitReconstructor::~AliHLTMUONHitReconstructor()
 {
   // dtor
@@ -100,7 +112,7 @@ AliHLTMUONHitReconstructor::~AliHLTMUONHitReconstructor()
 
 }
 
-int AliHLTMUONHitReconstructor::GetLutLine(int iDDL){ return ( iDDL<16 ) ? fgkLutLine[0] : fgkLutLine[1] ;}
+int AliHLTMUONHitReconstructor::GetLutLine(int iDDL) const { return ( iDDL<16 ) ? fgkLutLine[0] : fgkLutLine[1] ;}
 
 bool AliHLTMUONHitReconstructor::LoadLookUpTable(DHLTLut* lookUpTableData, int lookUpTableId)
 {

@@ -24,36 +24,35 @@
 #include <map>
 
 #include <AliHLTLogging.h>
-#include "AliHLTMUONRecHitsBlockStruct.h"
 
 using namespace std;
 
 typedef  map<int,int> BusToDetElem ;
 
-
-struct DHLTLut{
-  int fIdManuChannel;
-  int fIX,fIY;
-  float fRealX,fRealY,fRealZ;
-  int fPlane,fPcbZone;
-};
-
-struct DHLTPad{
-  int fDetElemId;
-  int fBuspatchId;
-  int fIdManuChannel;
-  int fIX,fIY;
-  float fRealX,fRealY,fRealZ;
-  int fPlane,fPcbZone;
-  int fCharge;
-};
-
-
+struct AliHLTMUONRecHitStruct;
 
 
 class AliHLTMUONHitReconstructor : public AliHLTLogging
 {
 public:
+
+  struct DHLTLut{
+    int fIdManuChannel;  // Manu channel address
+    int fIX,fIY;  // The X,Y number of the pad.
+    float fRealX,fRealY,fRealZ;  // The real coordinate of the pad.
+    int fPlane,fPcbZone;  // The plane and PCB zone ID numbers.
+  };
+
+  struct DHLTPad{
+    int fDetElemId;  // The detector element ID of the pad.
+    int fBuspatchId;  // The bus patch ID number for the pad.
+    int fIdManuChannel;  // The Manu channel address.
+    int fIX,fIY;  // The X,Y number of the pad.
+    float fRealX,fRealY,fRealZ;   // The real coordinate of the pad.
+    int fPlane,fPcbZone;   // The plane and PCB zone ID numbers.
+    int fCharge;  // The charge measured on the pad.
+  };
+
 
   AliHLTMUONHitReconstructor();
   virtual ~AliHLTMUONHitReconstructor(void);
@@ -66,11 +65,17 @@ public:
 
   void SetDCCut(int dcCut) {fDCCut = dcCut;}
   void SetDebugLevel(int debugLevel) {fDebugLevel = debugLevel;}
-  int GetDebugLevel(){return fDebugLevel;}
+  int GetDebugLevel() const {return fDebugLevel;}
   int GetDEId(int iBusPatch) {return fBusToDetElem[iBusPatch] ;}           
     
-  int GetLutLine(int iDDL);
+  int GetLutLine(int iDDL) const;
+
+  static int GetkDetectorId() { return fgkDetectorId; }
+  static int GetkDDLOffSet() { return fgkDDLOffSet; }
+  static int GetkNofDDL() { return fgkNofDDL; }
+  static int GetkDDLHeaderSize() { return fgkDDLHeaderSize; }
   
+private: 
   static const int fgkDetectorId ;            // DDL Offset
   static const int fgkDDLOffSet ;             // DDL Offset
   static const int fgkNofDDL ;                // Number of DDL 
@@ -114,7 +119,7 @@ private:
   int fGetIdTotalData[336][80][2] ;                    // an array of idManuChannel with argumrnt of centralX,centralY and  planeType
   int fNofFiredDetElem,fMaxFiredPerDetElem[13];        // counter for detector elements that are fired 
   int fDebugLevel;
-  BusToDetElem fBusToDetElem;
+  BusToDetElem fBusToDetElem;             // Mapping between bus address and detector element ID.
 
   bool ReadDDL(int* rawData, int *rawDataSize);
   void FindCentralHits(int minPadId, int maxPadId);

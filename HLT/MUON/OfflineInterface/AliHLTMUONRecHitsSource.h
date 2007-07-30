@@ -67,8 +67,12 @@ protected:
 	
 private:
 
-  AliMUONMCDataInterface* fMCDataInterface; // access to MUON MC-related data
-  AliMUONDataInterface* fDataInterface; // access to MUON data
+	// Prevent copying of these objects.
+	AliHLTMUONRecHitsSource(const AliHLTMUONRecHitsSource& /*object*/);
+	AliHLTMUONRecHitsSource& operator = (const AliHLTMUONRecHitsSource& /*object*/);
+	
+	AliMUONMCDataInterface* fMCDataInterface; // access to MUON MC-related data
+	AliMUONDataInterface* fDataInterface; // access to MUON data
 
 	enum SelectionType
 	{
