@@ -8,6 +8,7 @@
 //
 // class that contains the correction matrix and the functions for
 // correction the multiplicity spectrum
+// implements a several unfolding methods: e.g. chi2 minimization and bayesian unfolding
 //
 
 class TH1;
@@ -18,6 +19,11 @@ class TH3F;
 class TF1;
 class TCollection;
 
+// defined here, because it does not seem possible to predeclare these (or i do not know how)
+// -->
+// $ROOTSYS/include/TVectorDfwd.h:21: conflicting types for `typedef struct TVectorT<Double_t> TVectorD'
+// PWG0/dNdEta/AliMultiplicityCorrection.h:21: previous declaration as `struct TVectorD'
+
 #include <TMatrixD.h>
 #include <TVectorD.h>
 
@@ -25,6 +31,7 @@ class AliMultiplicityCorrection : public TNamed {
   public:
     enum EventType { kTrVtx = 0, kMB, kINEL };
     enum RegularizationType { kNone = 0, kPol0, kPol1, kLog, kEntropy, kCurvature };
+    enum MethodType { kChi2Minimization = 0, kBayesian = 1 };
     enum { kESDHists = 4, kMCHists = 5, kCorrHists = 8, kQualityRegions = 3 };
 
     AliMultiplicityCorrection();
@@ -43,13 +50,15 @@ class AliMultiplicityCorrection : public TNamed {
     void DrawHistograms();
     void DrawComparison(const char* name, Int_t inputRange, Bool_t fullPhaseSpace, Bool_t normalizeESD, TH1* mcHist, Bool_t simple = kFALSE);
 
-    Int_t ApplyMinuitFit(Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType, Bool_t check = kFALSE, TH1* inputDist = 0);
+    Int_t ApplyMinuitFit(Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType, Bool_t check = kFALSE, TH1* initialConditions = 0);
     void SetRegularizationParameters(RegularizationType type, Float_t weight);
+    void SetBayesianParameters(Float_t smoothing, Int_t nIterations);
 
     void ApplyNBDFit(Int_t inputRange, Bool_t fullPhaseSpace);
 
-    void ApplyBayesianMethod(Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType, Float_t regPar = 1, Int_t nIterations = 100, TH1* inputDist = 0, Bool_t determineError = kTRUE);
-    TH1* BayesianStatisticsEffect(Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType, Bool_t randomizeMeasured, Bool_t randomizeResponse, Float_t regPar = 1, Int_t nIterations = 100, TH1* compareTo = 0);
+    void ApplyBayesianMethod(Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType, Float_t regPar = 1, Int_t nIterations = 100, TH1* initialConditions = 0, Bool_t determineError = kTRUE);
+
+    TH1* StatisticalUncertainty(MethodType methodType, Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType, Bool_t randomizeMeasured, Bool_t randomizeResponse, TH1* compareTo = 0);
 
     void ApplyGaussianMethod(Int_t inputRange, Bool_t fullPhaseSpace);
 
@@ -76,18 +85,18 @@ class AliMultiplicityCorrection : public TNamed {
     static void NormalizeToBinWidth(TH1* hist);
     static void NormalizeToBinWidth(TH2* hist);
 
-    void GetComparisonResults(Float_t* mc = 0, Int_t* mcLimit = 0, Float_t* residuals = 0, Float_t* ratioAverage = 0);
+    void GetComparisonResults(Float_t* mc = 0, Int_t* mcLimit = 0, Float_t* residuals = 0, Float_t* ratioAverage = 0) const;
 
     TH1* GetEfficiency(Int_t inputRange, EventType eventType);
 
     static void SetQualityRegions(Bool_t SPDStudy);
-    Float_t GetQuality(Int_t region) { return fQuality[region]; }
+    Float_t GetQuality(Int_t region) const { return fQuality[region]; }
 
     void FFT(Int_t dir, Int_t m, Double_t *x, Double_t *y);
 
   protected:
-    static const Int_t fgMaxParams;  // bins in unfolded histogram = number of fit params
-    static const Int_t fgMaxInput;   // bins in measured histogram
+    static const Int_t fgkMaxParams;  //! bins in unfolded histogram = number of fit params
+    static const Int_t fgkMaxInput;   //! bins in measured histogram
 
     static Double_t RegularizationPol0(TVectorD& params);
     static Double_t RegularizationPol1(TVectorD& params);
@@ -101,44 +110,51 @@ class AliMultiplicityCorrection : public TNamed {
     void SetupCurrentHists(Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType, Bool_t createBigBin);
 
     Float_t BayesCovarianceDerivate(Float_t matrixM[251][251], TH2* hResponse, Int_t k, Int_t i, Int_t r, Int_t u);
-    TH1* UnfoldWithBayesian(TH1* measured, Float_t regPar, Int_t nIterations, TH1* inputDist);
+    static Int_t UnfoldWithBayesian(TH1* correlation, TH1* aEfficiency, TH1* measured, TH1* initialConditions, TH1* aResult, Float_t regPar, Int_t nIterations);
+    static Int_t UnfoldWithMinuit(TH1* correlation, TH1* aEfficiency, TH1* measured, TH1* initialConditions, TH1* result, Bool_t check);
 
-    static TH1* fCurrentESD;         // static variable to be accessed by MINUIT
-    static TH1* fCurrentCorrelation; // static variable to be accessed by MINUIT
-    static TH1* fCurrentEfficiency;  // static variable to be accessed by MINUIT
+    TH1* fCurrentESD;         //! static variable to be accessed by MINUIT
+    TH1* fCurrentCorrelation; //! static variable to be accessed by MINUIT
+    TH1* fCurrentEfficiency;  //! static variable to be accessed by MINUIT
 
-    static TMatrixD* fCorrelationMatrix;            // contains fCurrentCorrelation in matrix form
-    static TMatrixD* fCorrelationCovarianceMatrix;  // contains the errors of fCurrentESD
-    static TVectorD* fCurrentESDVector;             // contains fCurrentESD
-    static TVectorD* fEntropyAPriori;               // a-priori distribution for entropy regularization
+    // static variable to be accessed by MINUIT
+    static TMatrixD* fgCorrelationMatrix;            //! contains fCurrentCorrelation in matrix form
+    static TMatrixD* fgCorrelationCovarianceMatrix;  //! contains the errors of fCurrentESD
+    static TVectorD* fgCurrentESDVector;             //! contains fCurrentESD
+    static TVectorD* fgEntropyAPriori;               //! a-priori distribution for entropy regularization
 
-    static TF1* fNBD;   // negative binomial distribution
+    static TF1* fgNBD;   //! negative binomial distribution
 
-    static RegularizationType fRegularizationType; // regularization that is used during Chi2 method
-    static Float_t fRegularizationWeight;          // factor for regularization term
+    static RegularizationType fgRegularizationType; //! regularization that is used during Chi2 method
+    static Float_t fgRegularizationWeight;          //! factor for regularization term
 
-    TH2F* fMultiplicityESD[kESDHists]; // multiplicity histogram: vtx vs multiplicity; array: |eta| < 0.5, 1, 1.5, 2 (0..3)
-    TH2F* fMultiplicityVtx[kMCHists];  // multiplicity histogram of events that have a reconstructed vertex : vtx vs multiplicity; array: |eta| < 0.5, 1, 1.5, 2, inf (0..4)
-    TH2F* fMultiplicityMB[kMCHists];   // multiplicity histogram of triggered events                        : vtx vs multiplicity; array: |eta| < 0.5, 1, 1.5, 2, inf (0..4)
-    TH2F* fMultiplicityINEL[kMCHists]; // multiplicity histogram of all (inelastic) events                  : vtx vs multiplicity; array: |eta| < 0.5, 1, 1.5, 2, inf (0..4)
+    static Float_t fgBayesianSmoothing;             //! smoothing parameter (0 = no smoothing)
+    static Int_t   fgBayesianIterations;            //! number of iterations in Bayesian method
+
+    TH2F* fMultiplicityESD[kESDHists]; // multiplicity histogram: vtx vs multiplicity; array: |eta| < 0.5, 0.9, 1.5, 2 (0..3)
+
+    TH2F* fMultiplicityVtx[kMCHists];  // multiplicity histogram of events that have a reconstructed vertex : vtx vs multiplicity; array: |eta| < 0.5, 0.9, 1.5, 2, inf (0..4)
+    TH2F* fMultiplicityMB[kMCHists];   // multiplicity histogram of triggered events                        : vtx vs multiplicity; array: |eta| < 0.5, 0.9, 1.5, 2, inf (0..4)
+    TH2F* fMultiplicityINEL[kMCHists]; // multiplicity histogram of all (inelastic) events                  : vtx vs multiplicity; array: |eta| < 0.5, 0.9, 1.5, 2, inf (0..4)
 
     TH3F* fCorrelation[kCorrHists];              // vtx vs. (gene multiplicity (trig+vtx)) vs. (meas multiplicity); array: |eta| < 0.5, 1, 1.5, 2 (0..3 and 4..7), the first corrects to the eta range itself, the second to full phase space
+
     TH1F* fMultiplicityESDCorrected[kCorrHists]; // corrected histograms
 
-    Float_t fLastChi2MC;        // last Chi2 between MC and unfolded ESD (calculated in DrawComparison)
-    Int_t   fLastChi2MCLimit;   // bin where the last chi2 breached a certain threshold, used to evaluate the multiplicity reach (calc. in DrawComparison)
-    Float_t fLastChi2Residuals; // last Chi2 of the ESD and the folded unfolded ESD (calculated in DrawComparison)
-    Float_t fRatioAverage;      // last average of |ratio-1| where ratio = unfolded / mc (bin 2..150)
+    Float_t fLastChi2MC;        //! last Chi2 between MC and unfolded ESD (calculated in DrawComparison)
+    Int_t   fLastChi2MCLimit;   //! bin where the last chi2 breached a certain threshold, used to evaluate the multiplicity reach (calc. in DrawComparison)
+    Float_t fLastChi2Residuals; //! last Chi2 of the ESD and the folded unfolded ESD (calculated in DrawComparison)
+    Float_t fRatioAverage;      //! last average of |ratio-1| where ratio = unfolded / mc (bin 2..150)
 
-    static Int_t   fgQualityRegionsB[kQualityRegions]; // begin, given in multiplicity units
-    static Int_t   fgQualityRegionsE[kQualityRegions]; // end
-    Float_t fQuality[kQualityRegions];        // stores the quality of the last comparison (calculated in DrawComparison). Contains 3 values that are averages of (MC - unfolded) / e(MC) in 3 regions, these are defined in fQualityRegionB,E
+    static Int_t   fgQualityRegionsB[kQualityRegions]; //! begin, given in multiplicity units
+    static Int_t   fgQualityRegionsE[kQualityRegions]; //! end
+    Float_t fQuality[kQualityRegions];                 //! stores the quality of the last comparison (calculated in DrawComparison). Contains 3 values that are averages of (MC - unfolded) / e(MC) in 3 regions, these are defined in fQualityRegionB,E
 
  private:
     AliMultiplicityCorrection(const AliMultiplicityCorrection&);
     AliMultiplicityCorrection& operator=(const AliMultiplicityCorrection&);
 
-  ClassDef(AliMultiplicityCorrection, 1);
+  ClassDef(AliMultiplicityCorrection, 2);
 };
 
 #endif

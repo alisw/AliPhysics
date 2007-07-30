@@ -10,7 +10,10 @@
 void runMultiplicitySelector(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kFALSE, Bool_t aDebug = kFALSE, Bool_t aProof = kFALSE, const char* option = "")
 {
   if (aProof)
+  {
+    TProof::Mgr("lxb6046")->SetROOTVersion("vHEAD-07Jun2007b_dbg");
     connectProof("lxb6046");
+  }
 
   TString libraries("libEG;libGeom;libESD;libPWG0base");
   TString packages("PWG0base");
@@ -37,6 +40,16 @@ void runMultiplicitySelector(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_
 
   TList inputList;
   inputList.Add(esdTrackCuts);
+
+  // pt study
+  if (TString(option).Contains("pt-spectrum-func"))
+  {
+    //TF1* func = new TF1("func", "0.7 + x", 0, 0.3);
+    //TF1* func = new TF1("func", "1.3 - x", 0, 0.3);
+    TF1* func = new TF1("func", "1", 0, 0.3);
+    new TCanvas; func->Draw();
+    inputList.Add(func->GetHistogram()->Clone("pt-spectrum"));
+  }
 
   TChain* chain = CreateESDChain(data, nRuns, offset, kFALSE, kFALSE);
 
@@ -131,7 +144,7 @@ void fitOther(const char* fileNameMC = "multiplicityMC_3M.root", const char* fol
   }
   else
   {
-    mult->ApplyBayesianMethod(histID, kFALSE, AliMultiplicityCorrection::kTrVtx, 1, 100);
+    mult->ApplyBayesianMethod(histID, kFALSE, AliMultiplicityCorrection::kTrVtx, 0.2, 100);
     mult->DrawComparison("Bayesian", histID, kFALSE, kTRUE, hist2->ProjectionY("mymchist2"));
   }
 
@@ -1772,9 +1785,10 @@ void BuildResponseFromTree(const char* fileName, const char* target)
 
   Int_t tracks = 0; // control variables
   Int_t noLabel = 0;
+  Int_t secondaries = 0;
   Int_t doubleCount = 0;
 
-  for (Int_t num = 0; num < 7; num++)
+  for (Int_t num = 0; num < 1; num++)
   {
     AliMultiplicityCorrection* fMultiplicity = new AliMultiplicityCorrection(Form("Multiplicity_%d", num), Form("Multiplicity_%d", num));
 
@@ -1812,19 +1826,20 @@ void BuildResponseFromTree(const char* fileName, const char* target)
       tracks += f[9];
       noLabel += f[9];
 
-      // add the double counted
-      tracks += f[10];
-      doubleCount += f[10];
+      // secondaries are already part of meas!
+      secondaries += f[10];
 
-      // TODO fake, add the ones w/o label and the double counted to check the method
+      // double counted are already part of meas!
+      doubleCount += f[11];
+
+      // ones w/o label are added without weighting to allow comparison to default analysis. however this is only valid when their fraction is low enough!
       meas += f[9];
-      meas += f[10];
 
       //Printf("%.f %.f %.f %.f %.f", f[5], f[6], f[7], f[8], f[9]);
 
-      fMultiplicity->FillCorrection(f[0], 0, 0, 0, gene, 0, 0, 0, 0, meas);
-      fMultiplicity->FillGenerated(f[0], kTRUE, kTRUE, 0, 0, 0, gene, 0);
-      fMultiplicity->FillMeasured(f[0], 0, 0, 0, meas);
+      fMultiplicity->FillCorrection(f[0], gene, gene, gene, gene, 0, meas, meas, meas, meas);
+      fMultiplicity->FillGenerated(f[0], kTRUE, kTRUE, gene, gene, gene, gene, 0);
+      fMultiplicity->FillMeasured(f[0], meas, meas, meas, meas);
     }
 
     //fMultiplicity->DrawHistograms();
@@ -1834,7 +1849,11 @@ void BuildResponseFromTree(const char* fileName, const char* target)
     file->Close();
 
     if (num == 0)
-      Printf("%d total tracks, %d w/o label = %.2f %%, %d double counted = %.2f %% ", tracks, noLabel, 100.0 * noLabel / tracks, doubleCount, 100.0 * doubleCount / tracks);
+    {
+      Printf("%d total tracks, %d w/o label = %.2f %%, %d double counted = %.2f %%, secondaries = %.2f %%", tracks, noLabel, 100.0 * noLabel / tracks, doubleCount, 100.0 * doubleCount / tracks, 100.0 * secondaries / tracks);
+      if ((Float_t) noLabel / tracks > 0.02)
+        Printf("WARNING: More than 2%% of tracks without label, this might bias the study!");
+    }
   }
 }
 

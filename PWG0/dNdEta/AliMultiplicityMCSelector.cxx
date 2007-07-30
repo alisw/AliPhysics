@@ -30,8 +30,8 @@
 #include "AliCorrection.h"
 #include "AliCorrectionMatrix3D.h"
 
-//#define TPCMEASUREMENT
-#define ITSMEASUREMENT
+#define TPCMEASUREMENT
+//#define ITSMEASUREMENT
 
 ClassImp(AliMultiplicityMCSelector)
 
@@ -83,6 +83,12 @@ void AliMultiplicityMCSelector::ReadUserObjects(TTree* tree)
 
   if (!fEsdTrackCuts)
      AliDebug(AliLog::kError, "ERROR: Could not read EsdTrackCuts from input list.");
+
+  if (!fPtSpectrum && fInput)
+    fPtSpectrum = dynamic_cast<TH1*> (fInput->FindObject("pt-spectrum"));
+
+  if (!fPtSpectrum && tree)
+    fPtSpectrum = dynamic_cast<TH1*> (tree->GetUserInfo()->FindObject("pt-spectrum"));
 }
 
 void AliMultiplicityMCSelector::SlaveBegin(TTree* tree)
@@ -141,16 +147,24 @@ void AliMultiplicityMCSelector::SlaveBegin(TTree* tree)
 
   if (option.Contains("pt-spectrum-func"))
   {
-    fPtSpectrum = new TH1F("fPtSpectrum", "fPtSpectrum", 1, 0, 100);
-    fPtSpectrum->SetBinContent(1, 1);	
+    if (fPtSpectrum)
+    {
+      Printf("Using function from input list for systematic p_t study");
+    }
+    else
+    {
+      fPtSpectrum = new TH1F("fPtSpectrum", "fPtSpectrum", 1, 0, 100);
+      fPtSpectrum->SetBinContent(1, 1);
+    }
 
     if (fPtSpectrum)
       AliInfo("WARNING: Systematic study enabled. Pt spectrum will be modified");
   }
 
-
   if (option.Contains("particle-species"))
     fParticleSpecies = new TNtuple("fParticleSpecies", "fParticleSpecies", "vtx:Pi_True:K_True:p_True:o_True:Pi_Rec:K_Rec:p_Rec:o_Rec:nolabel:doublePrim:doubleCount");
+
+  // TODO set seed for random generator
 }
 
 void AliMultiplicityMCSelector::Init(TTree* tree)
@@ -172,6 +186,7 @@ void AliMultiplicityMCSelector::Init(TTree* tree)
 
     #ifdef TPCMEASUREMENT
       AliESDtrackCuts::EnableNeededBranches(tree);
+      tree->SetBranchStatus("fTracks.fLabel", 1);
     #endif
 
     tree->SetCacheSize(0);
@@ -285,7 +300,7 @@ Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
 
   // tracks in different eta ranges
   Int_t nMCTracks05 = 0;
-  Int_t nMCTracks10 = 0;
+  Int_t nMCTracks09 = 0;
   Int_t nMCTracks15 = 0;
   Int_t nMCTracks20 = 0;
   Int_t nMCTracksAll = 0;
@@ -294,6 +309,12 @@ Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
   Int_t nMCTracksSpecies[4]; // (pi, K, p, other)
   for (Int_t i = 0; i<4; ++i)
     nMCTracksSpecies[i] = 0;
+  // eta range for nMCTracksSpecies, nESDTracksSpecies
+#ifdef ITSMEASUREMENT
+  const Float_t etaRange = 2.0;
+#else
+  const Float_t etaRange = 0.9;
+#endif
 
   for (Int_t iMc = 0; iMc < nPrim; ++iMc)
   {
@@ -327,24 +348,24 @@ Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
 
     // in case of systematic study, weight according to the change of the pt spectrum
     // it cannot be just multiplied because we cannot count "half of a particle"
-    // instead a random generator decides if the particle is counted twice (if value > 1) 
+    // instead a random generator decides if the particle is counted twice (if value > 1)
     // or not (if value < 0)
-    if (fPtSpectrum) 
+    if (fPtSpectrum)
     {
       Int_t bin = fPtSpectrum->FindBin(pt);
       if (bin > 0 && bin <= fPtSpectrum->GetNbinsX())
       {
-	Float_t factor = fPtSpectrum->GetBinContent(bin);
-	if (factor > 0)
-	{
-	  Float_t random = gRandom->Uniform();
-	  if (factor > 1 && random < factor - 1)
-	  {
-	    particleWeight = 2;
-	  }
-	  else if (factor < 1 && random < 1 - factor)
-	    particleWeight = 0;
-	}
+        Float_t factor = fPtSpectrum->GetBinContent(bin);
+        if (factor > 0)
+        {
+          Float_t random = gRandom->Uniform();
+          if (factor > 1 && random < factor - 1)
+          {
+            particleWeight = 2;
+          }
+          else if (factor < 1 && random < 1 - factor)
+            particleWeight = 0;
+        }
       }
     }
 
@@ -353,8 +374,8 @@ Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
     if (TMath::Abs(particle->Eta()) < 0.5)
       nMCTracks05 += particleWeight;
 
-    if (TMath::Abs(particle->Eta()) < 1.0)
-      nMCTracks10 += particleWeight;
+    if (TMath::Abs(particle->Eta()) < 0.9)
+      nMCTracks09 += particleWeight;
 
     if (TMath::Abs(particle->Eta()) < 1.5)
       nMCTracks15 += particleWeight;
@@ -374,20 +395,20 @@ Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
         case 2212: id = 2; break;
         default: id = 3; break;
       }
-      if (TMath::Abs(particle->Eta()) < 2.0)
+      if (TMath::Abs(particle->Eta()) < etaRange)
         nMCTracksSpecies[id]++;
       if (fParticleCorrection[id])
         fParticleCorrection[id]->GetTrackCorrection()->FillGene(vtxMC[2], particle->Eta(), particle->Pt());
     }
   }// end of mc particle
 
-  fMultiplicity->FillGenerated(vtxMC[2], eventTriggered, eventVertex, (Int_t) nMCTracks05, (Int_t) nMCTracks10, (Int_t) nMCTracks15, (Int_t) nMCTracks20, (Int_t) nMCTracksAll);
+  fMultiplicity->FillGenerated(vtxMC[2], eventTriggered, eventVertex, (Int_t) nMCTracks05, (Int_t) nMCTracks09, (Int_t) nMCTracks15, (Int_t) nMCTracks20, (Int_t) nMCTracksAll);
 
   if (!eventTriggered || !eventVertex)
     return kTRUE;
 
   Int_t nESDTracks05 = 0;
-  Int_t nESDTracks10 = 0;
+  Int_t nESDTracks09 = 0;
   Int_t nESDTracks15 = 0;
   Int_t nESDTracks20 = 0;
 
@@ -400,7 +421,7 @@ Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
   for (Int_t i=0; i<nPrim; i++)
     foundPrimaries[i] = kFALSE;
 
-  Bool_t* foundTracks = new Bool_t[nMCPart]; // to prevent double counting
+  Bool_t* foundTracks = new Bool_t[nMCPart];    // to prevent double counting
   for (Int_t i=0; i<nMCPart; i++)
     foundTracks[i] = kFALSE;
 
@@ -420,6 +441,9 @@ Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
 
     Float_t theta = mult->GetTheta(i);
     Float_t eta   = -TMath::Log(TMath::Tan(theta/2.));
+
+    // TODO define needed, because this only works with new AliRoot
+    Int_t label = mult->GetLabel(i);
 #endif
 #ifdef TPCMEASUREMENT
   // get multiplicity from ESD tracks
@@ -436,13 +460,15 @@ Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
     }
 
     Double_t p[3];
-    esdTrack->GetConstrainedPxPyPz(p); // ### TODO should be okay because we have a vertex, however GetInnerPxPyPy / GetOuterPxPyPy also exist
+    esdTrack->GetConstrainedPxPyPz(p); 
     TVector3 vector(p);
 
     Float_t theta = vector.Theta();
     Float_t eta   = -TMath::Log(TMath::Tan(theta/2.));
-    Float_t pt = vector.Pt();
 
+    Int_t label = esdTrack->GetLabel();
+
+    //Float_t pt = vector.Pt();
     //if (pt < kPtCut)
     //  continue;
 #endif
@@ -454,16 +480,16 @@ Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
     {
       TParticle* mother = 0;
 
-      // TODO define needed, because this only works with new AliRoot
-      Int_t label = mult->GetLabel(i);
-      if (label >= 0)
-	label = AliPWG0depHelper::FindPrimaryMotherLabel(stack, label);
-      if (label >= 0)
-	mother = stack->Particle(label);
+      // preserve label for later
+      Int_t labelCopy = label;
+      if (labelCopy >= 0)
+        labelCopy = AliPWG0depHelper::FindPrimaryMotherLabel(stack, labelCopy);
+      if (labelCopy >= 0)
+        mother = stack->Particle(labelCopy);
 
-      // in this case we do not count it!!!
+      // in case of pt study we do not count particles w/o label, because they cannot be scaled
       if (!mother)
-	continue;
+        continue;
 
       // it cannot be just multiplied because we cannot count "half of a particle"
       // instead a random generator decides if the particle is counted twice (if value > 1) 
@@ -471,17 +497,17 @@ Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
       Int_t bin = fPtSpectrum->FindBin(mother->Pt());
       if (bin > 0 && bin <= fPtSpectrum->GetNbinsX())
       {
-	Float_t factor = fPtSpectrum->GetBinContent(bin);
-	if (factor > 0)
-	{
-	  Float_t random = gRandom->Uniform();
-	  if (factor > 1 && random < factor - 1)
-	  {
-	    particleWeight = 2;
-	  }
-	  else if (factor < 1 && random < 1 - factor)
-	    particleWeight = 0;
-	}
+        Float_t factor = fPtSpectrum->GetBinContent(bin);
+        if (factor > 0)
+        {
+          Float_t random = gRandom->Uniform();
+          if (factor > 1 && random < factor - 1)
+          {
+            particleWeight = 2;
+          }
+          else if (factor < 1 && random < 1 - factor)
+            particleWeight = 0;
+        }
       }
     }
 
@@ -490,8 +516,8 @@ Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
     if (TMath::Abs(eta) < 0.5)
       nESDTracks05 += particleWeight;
 
-    if (TMath::Abs(eta) < 1.0)
-      nESDTracks10 += particleWeight;
+    if (TMath::Abs(eta) < 0.9)
+      nESDTracks09 += particleWeight;
 
     if (TMath::Abs(eta) < 1.5)
       nESDTracks15 += particleWeight;
@@ -499,49 +525,27 @@ Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
     if (TMath::Abs(eta) < 2.0)
       nESDTracks20 += particleWeight;
 
+
     if (fParticleCorrection[0] || fParticleSpecies)
     {
-      // TODO define needed, because this only works with new AliRoot
-      Int_t label = mult->GetLabel(i);
-
-      // TODO double counting ok for particle ratio study!!!
-      // check if we already counted this particle, this way distinguishes double counted particles (bug) or double counted primaries due to secondaries (physics)
-      if (label >= 0)
-      {
-	if (foundTracks[label])
-	{
-	  if (TMath::Abs(eta) < 2.0)
-	    nESDTracksSpecies[6]++;
-	  continue;
-	}
-	foundTracks[label] = kTRUE;
-      }
-
+      Int_t motherLabel = -1;
       TParticle* mother = 0;
 
       // find mother
       if (label >= 0)
-	label = AliPWG0depHelper::FindPrimaryMotherLabel(stack, label);
-      if (label >= 0)
-	mother = stack->Particle(label);
+        motherLabel = AliPWG0depHelper::FindPrimaryMotherLabel(stack, label);
+      if (motherLabel >= 0)
+        mother = stack->Particle(motherLabel);
 
       if (!mother)
       {
-	// count tracks that did not have a label
-	if (TMath::Abs(eta) < 2.0)
-	  nESDTracksSpecies[4]++;
+        // count tracks that did not have a label
+        if (TMath::Abs(eta) < etaRange)
+          nESDTracksSpecies[4]++;
         continue;
-      } 
-
-      // particle (primary) already counted?
-      if (foundPrimaries[label])
-      {
-	if (TMath::Abs(eta) < 2.0)
-	  nESDTracksSpecies[5]++;
-	continue;
       }
-      foundPrimaries[label] = kTRUE;
 
+      // get particle type (pion, proton, kaon, other)
       Int_t id = -1;
       switch (TMath::Abs(mother->GetPdgCode()))
       {
@@ -550,8 +554,31 @@ Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
         case 2212: id = 2; break;
         default: id = 3; break;
       }
-      if (TMath::Abs(eta) < 2.0)
+
+      // double counting is ok for particle ratio study
+      if (TMath::Abs(eta) < etaRange)
         nESDTracksSpecies[id]++;
+
+      // double counting is not ok for efficiency study
+
+      // check if we already counted this particle, this way distinguishes double counted particles (bug/artefact in tracking) or double counted primaries due to secondaries (physics)
+      if (foundTracks[label])
+      {
+        if (TMath::Abs(eta) < etaRange)
+          nESDTracksSpecies[6]++;
+        continue;
+      }
+      foundTracks[label] = kTRUE;
+
+      // particle (primary) already counted?
+      if (foundPrimaries[motherLabel])
+      {
+        if (TMath::Abs(eta) < etaRange)
+          nESDTracksSpecies[5]++;
+        continue;
+      }
+      foundPrimaries[motherLabel] = kTRUE;
+
       if (fParticleCorrection[id])
         fParticleCorrection[id]->GetTrackCorrection()->FillMeas(vtxMC[2], mother->Eta(), mother->Pt());
     }
@@ -561,18 +588,18 @@ Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
   delete[] foundPrimaries;
 
   if ((Int_t) nMCTracks20 == 0 && nESDTracks20 > 3)
-    printf("WARNING: Event %lld has %d generated and %d reconstructed...\n", entry, (Int_t) nMCTracks20, (Int_t) nESDTracks20);
+    printf("WARNING: Event %lld has %d generated and %d reconstructed...\n", entry, nMCTracks20, nESDTracks20);
 
   //printf("%.2f generated and %.2f reconstructed\n", nMCTracks20, nESDTracks20);
 
-  //Printf("%f %f %f %f %f %f %f %f %f %f", vtxMC[2], nMCTracks05, nMCTracks10, nMCTracks15, nMCTracks20, nMCTracksAll, nESDTracks05, nESDTracks10, nESDTracks15, nESDTracks20);
+  //Printf("%f %f %f %f %f %f %f %f %f %f", vtxMC[2], nMCTracks05, nMCTracks09, nMCTracks15, nMCTracks20, nMCTracksAll, nESDTracks05, nESDTracks09, nESDTracks15, nESDTracks20);
 
-  //Printf("%f %f %f %f %f %f %f %f %f %f", vtxMC[2], nMCTracks05, nMCTracks10, nMCTracks15, nMCTracks20, nMCTracksAll, nESDTracks05, nESDTracks10, nESDTracks15, nESDTracks20);
+  //Printf("%f %f %f %f %f %f %f %f %f %f", vtxMC[2], nMCTracks05, nMCTracks09, nMCTracks15, nMCTracks20, nMCTracksAll, nESDTracks05, nESDTracks09, nESDTracks15, nESDTracks20);
 
-  fMultiplicity->FillMeasured(vtx[2], (Int_t) nESDTracks05, (Int_t) nESDTracks10, (Int_t) nESDTracks15, (Int_t) nESDTracks20);
+  fMultiplicity->FillMeasured(vtx[2], nESDTracks05, nESDTracks09, nESDTracks15, nESDTracks20);
 
   // fill response matrix using vtxMC (best guess)
-  fMultiplicity->FillCorrection(vtxMC[2], (Int_t) nMCTracks05, (Int_t) nMCTracks10, (Int_t) nMCTracks15, (Int_t) nMCTracks20, (Int_t) nMCTracksAll, (Int_t) nESDTracks05, (Int_t) nESDTracks10, (Int_t) nESDTracks15, (Int_t) nESDTracks20);
+  fMultiplicity->FillCorrection(vtxMC[2],  nMCTracks05,  nMCTracks09,  nMCTracks15,  nMCTracks20,  nMCTracksAll,  nESDTracks05,  nESDTracks09,  nESDTracks15,  nESDTracks20);
 
   if (fParticleSpecies)
     fParticleSpecies->Fill(vtxMC[2], nMCTracksSpecies[0], nMCTracksSpecies[1], nMCTracksSpecies[2], nMCTracksSpecies[3], nESDTracksSpecies[0], nESDTracksSpecies[1], nESDTracksSpecies[2], nESDTracksSpecies[3], nESDTracksSpecies[4], nESDTracksSpecies[5], nESDTracksSpecies[6]);
