@@ -518,26 +518,37 @@ void AliHighMultiplicitySelector::ReadHistograms(const char* filename)
   }
 }
 
-TH1* AliHighMultiplicitySelector::GetXSectionCut(TH1* xSection, TH2* multVsLayer, Int_t cut)
+TH1* AliHighMultiplicitySelector::GetTriggerEfficiency(TH2* multVsLayer, Int_t cut)
 {
-  // returns the rel. cross section of the true spectrum that is measured when a cut at <cut> is performed
+  //
+  // returns the trigger efficiency as function of multiplicity with a given cut
+  //
 
   //cut and multiply with x-section
-  TH1* allEvents = multVsLayer->ProjectionX("fMvsL_x_total", 1, 1000);
+  TH1* allEvents = multVsLayer->ProjectionX("fMvsL_x_total", 1, 1001);
   //allEvents->Sumw2();
 
   //cut and multiply with x-section
-  TH1* proj = multVsLayer->ProjectionX(Form("%s_x", multVsLayer->GetName()), cut, 1000);
+  TH1* proj = multVsLayer->ProjectionX(Form("%s_x", multVsLayer->GetName()), cut, 1001);
   //proj->Sumw2();
 
-  new TCanvas; allEvents->DrawCopy(); gPad->SetLogy();
-  new TCanvas; proj->DrawCopy(); gPad->SetLogy();
+  //new TCanvas; allEvents->DrawCopy(); gPad->SetLogy();
+  //new TCanvas; proj->DrawCopy(); gPad->SetLogy();
 
   // make probability distribution out of it
   // TODO binomial errors do not work??? weird...
   proj->Divide(proj, allEvents, 1, 1, "B");
 
-  new TCanvas; proj->DrawCopy(); gPad->SetLogy();
+  return proj;
+}
+
+TH1* AliHighMultiplicitySelector::GetXSectionCut(TH1* xSection, TH2* multVsLayer, Int_t cut)
+{
+  // returns the rel. cross section of the true spectrum that is measured when a cut at <cut> is performed
+
+  TH1* proj = GetTriggerEfficiency(multVsLayer, cut);
+
+  //new TCanvas; proj->DrawCopy(); gPad->SetLogy();
 
   for (Int_t i=1; i<=proj->GetNbinsX(); i++)
   {
@@ -559,16 +570,73 @@ TH1* AliHighMultiplicitySelector::GetXSectionCut(TH1* xSection, TH2* multVsLayer
     }
   }
 
-  new TCanvas; proj->DrawCopy(); gPad->SetLogy();
+  //new TCanvas; proj->DrawCopy(); gPad->SetLogy();
 
   return proj;
 }
 
+void AliHighMultiplicitySelector::MakeGraphs2(const char* title, TH1* xSection, TH2* fMvsL)
+{
+  TGraph* effGraph = new TGraph;
+  effGraph->SetTitle(Form("%s;Cut on fired chips;mult. where eff. >50%%", title));
+  TGraph* ratioGraph = new TGraph;
+  ratioGraph->SetTitle(Form("%s;Cut on fired chips;x-section_(>=eff. limit) / x-section_(total)", title));
+  TGraph* totalGraph = new TGraph;
+  totalGraph->SetTitle(Form("%s;Cut on fired chips;rel x-section_(>=eff. limit)", title));
+
+  for (Int_t cut = 0; cut <= 300; cut+=50)
+  {
+    TH1* proj = (TH1*) GetTriggerEfficiency(fMvsL, cut)->Clone("clone");
+
+    //proj->Rebin(3);
+    //proj->Scale(1.0 / 3);
+
+    new TCanvas; proj->DrawCopy();
+
+    Int_t limitBin = proj->GetNbinsX()+1;
+    while (limitBin > 1 && proj->GetBinContent(limitBin-1) > 0.5)
+      limitBin--;
+
+    Float_t limit = proj->GetXaxis()->GetBinCenter(limitBin);
+
+    effGraph->SetPoint(effGraph->GetN(), cut, limit);
+
+    proj = GetXSectionCut(xSection, fMvsL, cut);
+
+    Double_t ratio = 0;
+    Double_t total = 0;
+    if (proj->Integral(1, 1001) > 0)
+    {
+      ratio = proj->Integral(proj->FindBin(limit), 1001) / proj->Integral(1, 1001);
+      total = proj->Integral(proj->FindBin(limit), 1001);
+    }
+
+    ratioGraph->SetPoint(ratioGraph->GetN(), cut, ratio);
+    totalGraph->SetPoint(totalGraph->GetN(), cut, total);
+
+    Printf("Cut at %d --> trigger eff. is > 0.5 for mult. >= %.2f. That is the case for %f of the triggered, %e of all events", cut, limit, ratio, total);
+  }
+
+  TCanvas* canvas = new TCanvas(Form("%s_Efficiency", title), Form("%s_Efficiency", title), 1200, 800);
+  canvas->Divide(2, 2);
+
+  canvas->cd(1);
+  effGraph->Draw("A*");
+
+  for (Int_t i=8; i<=10; ++i)
+  {
+    TLine* line = new TLine(0, xSection->GetMean() * i, 300, xSection->GetMean() * i);
+    line->Draw();
+  }
+
+  canvas->cd(2);  ratioGraph->Draw("A*");
+  canvas->cd(3);  gPad->SetLogy(); totalGraph->Draw("A*");
+
+  canvas->SaveAs(Form("%s.gif", canvas->GetName()));
+}
+
 void AliHighMultiplicitySelector::MakeGraphs(const char* title, TH1* xSection, TH2* fMvsL, Int_t limit)
 {
-  if (!xSection)
-    return;
-
   // relative x-section, once we have a collision
   xSection->Scale(1.0 / xSection->Integral());
 
@@ -667,15 +735,22 @@ void AliHighMultiplicitySelector::JPRPlots()
     //Int_t cut = (i == 0) ? 178 : 166; // 9 times the mean
     Int_t cut = (i == 0) ? 190 : 182; // 10 times the mean
 
-    xSection->SetStats(kFALSE);
-    xSection->SetTitle((i == 0) ? "SPD Layer 1" : "SPD Layer 2");
-    xSection->GetXaxis()->SetTitle(Form("true multiplicity in |#eta| < %.1f", (i == 0) ? 2.0 : 1.5));
-    xSection->GetXaxis()->SetRangeUser(0, (i == 0) ? 400 : 350);
-    xSection->GetYaxis()->SetTitle("relative cross section");
-    xSection->GetYaxis()->SetTitleOffset(1.2);
-
     // limit is N times the mean
     Int_t limit = (Int_t) (xSection->GetMean() * 10);
+
+    // 10^28 lum --> 1.2 kHz
+    // 10^31 lum --> 1200 kHz
+    Float_t rate = 1200e3;
+
+    // time in s
+    Float_t lengthRun = 1e6;
+
+    xSection->SetStats(kFALSE);
+    xSection->SetTitle(""); //(i == 0) ? "SPD Layer 1" : "SPD Layer 2");
+    xSection->GetXaxis()->SetTitle(Form("true multiplicity in |#eta| < %.1f", (i == 0) ? 2.0 : 1.5));
+    xSection->GetXaxis()->SetRangeUser(0, (i == 0) ? 400 : 350);
+    //xSection->GetYaxis()->SetTitle("relative cross section");
+    xSection->GetYaxis()->SetTitleOffset(1.2);
 
     // relative x-section, once we have a collision
     xSection->Scale(1.0 / xSection->Integral());
@@ -712,17 +787,19 @@ void AliHighMultiplicitySelector::JPRPlots()
     canvas->SaveAs(Form("%s.gif", canvas->GetName()));
 
     TCanvas* canvas2 = new TCanvas(Form("HMPlots_%d_Random", i), Form("HMPlots_%d_Random", i), 800, 600);
+    //canvas2->SetTopMargin(0.05);
+    //canvas2->SetRightMargin(0.05);
     canvas2->SetLogy();
-    xSection->DrawCopy();
+    xSection->DrawCopy("HIST");
 
-    TLegend* legend2 = new TLegend(0.15, 0.15, 0.5, 0.3);
+    TLegend* legend2 = new TLegend(0.15, 0.15, 0.6, 0.3);
     legend2->SetFillColor(0);
     legend2->AddEntry(xSection, "no trigger");
 
     TH1* proj2 = (TH1*) proj->Clone("random");
     proj2->Reset();
-    // MB 10^5 s 100 Hz
-    Int_t nTrigger = (Int_t) (100 * 1e5 * proj->Integral(1, 1000));
+    // MB lengthRun s 100 Hz
+    Int_t nTrigger = (Int_t) (100 * lengthRun * proj->Integral(1, 1000));
     proj2->FillRandom(proj, nTrigger);
 
     TH1* proj3 = (TH1*) proj2->Clone("random_clone");
@@ -730,13 +807,15 @@ void AliHighMultiplicitySelector::JPRPlots()
     proj3->Fit("pol0", "0", "");
     proj2->Scale(1.0 / proj3->GetFunction("pol0")->GetParameter(0));
 
+    /*
     proj2->DrawCopy("SAME");
     legend2->AddEntry(proj2, Form("%d evts, FO > %d chips (%d evts)", nTrigger, cut, (Int_t) (nTrigger * ratio)));
+    */
 
     proj2 = (TH1*) proj->Clone("random2");
     proj2->Reset();
-    // 10^31 lum --> 1200 kHz; 1e5 s
-    nTrigger = (Int_t) (12e5 * proj->Integral(1, 1000) * 1e5);
+    // 10^31 lum --> 1200 kHz; lengthRun s
+    nTrigger = (Int_t) (rate * proj->Integral(1, 1000) * lengthRun);
     proj2->FillRandom(proj, nTrigger);
 
     proj3 = (TH1*) proj2->Clone("random_clone2");
@@ -745,13 +824,17 @@ void AliHighMultiplicitySelector::JPRPlots()
     proj2->Scale(1.0 / proj3->GetFunction("pol0")->GetParameter(0));
 
     proj2->SetLineColor(4);
-    proj2->DrawCopy("SAME");
-    legend2->AddEntry(proj2, Form("%d evts, FO > %d chips (%d evts)", nTrigger, cut, (Int_t) (nTrigger * ratio)));
+    proj2->SetMarkerStyle(7);
+    proj2->SetMarkerColor(4);
+    proj2->DrawCopy("SAME P");
+    //legend2->AddEntry(proj2, Form("%d evts, FO > %d chips (%d evts)", nTrigger, cut, (Int_t) (nTrigger * ratio)));
+    legend2->AddEntry(proj2, Form("FO trigger > %d chips", cut));
 
     legend2->Draw();
     line->Draw();
 
     canvas2->SaveAs(Form("%s.gif", canvas2->GetName()));
+    canvas2->SaveAs(Form("%s.eps", canvas2->GetName()));
   }
 }
 
@@ -802,12 +885,15 @@ void AliHighMultiplicitySelector::DrawHistograms()
   gPad->SetLogz();
   canvas->SaveAs("L1vsL2.gif");*/
 
-  TCanvas *canvas = new TCanvas("L1", "L1", 600, 400);
+  TCanvas *canvas = new TCanvas("L1", "L1", 800, 600);
+  canvas->SetTopMargin(0.05);
+  canvas->SetRightMargin(0.12);
   fMvsL1->SetStats(kFALSE);
   fMvsL1->DrawCopy("COLZ");
   gPad->SetLogz();
 
   canvas->SaveAs("L1NoCurve.gif");
+  canvas->SaveAs("L1NoCurve.eps");
 
   // draw corresponding theoretical curve
   TF1* func = new TF1("func", "[0]*(1-(1-1/[0])**x)", 1, 1000);
@@ -824,6 +910,30 @@ void AliHighMultiplicitySelector::DrawHistograms()
   func->SetParameter(0, 800-5*4);
   func->DrawCopy("SAME");
   canvas->SaveAs("L2.gif");
+
+  // get x-sections
+  TFile* file = TFile::Open("crosssectionEx.root");
+  if (file)
+  {
+    TH1* xSection2 = dynamic_cast<TH1*> (gFile->Get("xSection2Ex"));
+    TH1* xSection15 = dynamic_cast<TH1*> (gFile->Get("xSection15Ex"));
+
+    MakeGraphs2("Layer1", xSection2, fMvsL1);
+    return;
+
+    // 5 times the mean
+    //MakeGraphs("Layer1", xSection2, fMvsL1, (Int_t) (xSection2->GetMean() * 5)); //75 * 2 * 2);
+    //MakeGraphs("Layer2", xSection15, fMvsL2, (Int_t) (xSection15->GetMean() * 5)); //(Int_t) (75 * 1.5 * 2));
+
+    MakeGraphs("Layer1", xSection2, fMvsL1, (Int_t) (xSection2->GetMean() * 8));
+    MakeGraphs("Layer2", xSection15, fMvsL2, (Int_t) (xSection15->GetMean() * 8));
+    MakeGraphs("Layer1", xSection2, fMvsL1, (Int_t) (xSection2->GetMean() * 9));
+    MakeGraphs("Layer2", xSection15, fMvsL2, (Int_t) (xSection15->GetMean() * 9));
+    MakeGraphs("Layer1", xSection2, fMvsL1, (Int_t) (xSection2->GetMean() * 10));
+    MakeGraphs("Layer2", xSection15, fMvsL2, (Int_t) (xSection15->GetMean() * 10));
+
+    file->Close();
+  }
 
   // make spread hists
   TGraph* spread = new TGraph;
@@ -861,27 +971,6 @@ void AliHighMultiplicitySelector::DrawHistograms()
 
   spread2->Fit(log, "", "", 1, 150);
   log->DrawCopy("SAME");
-
-  // get x-sections
-  TFile* file = TFile::Open("crosssectionEx.root");
-  if (file)
-  {
-    TH1* xSection2 = dynamic_cast<TH1*> (gFile->Get("xSection2Ex"));
-    TH1* xSection15 = dynamic_cast<TH1*> (gFile->Get("xSection15Ex"));
-
-    // 5 times the mean
-    //MakeGraphs("Layer1", xSection2, fMvsL1, (Int_t) (xSection2->GetMean() * 5)); //75 * 2 * 2);
-    //MakeGraphs("Layer2", xSection15, fMvsL2, (Int_t) (xSection15->GetMean() * 5)); //(Int_t) (75 * 1.5 * 2));
-
-    MakeGraphs("Layer1", xSection2, fMvsL1, (Int_t) (xSection2->GetMean() * 8));
-    MakeGraphs("Layer2", xSection15, fMvsL2, (Int_t) (xSection15->GetMean() * 8));
-    MakeGraphs("Layer1", xSection2, fMvsL1, (Int_t) (xSection2->GetMean() * 9));
-    MakeGraphs("Layer2", xSection15, fMvsL2, (Int_t) (xSection15->GetMean() * 9));
-    MakeGraphs("Layer1", xSection2, fMvsL1, (Int_t) (xSection2->GetMean() * 10));
-    MakeGraphs("Layer2", xSection15, fMvsL2, (Int_t) (xSection15->GetMean() * 10));
-
-    file->Close();
-  }
 
   canvas = new TCanvas("Clusters_L1", "Clusters_L1", 600, 400);
   fClvsL1->SetStats(kFALSE);

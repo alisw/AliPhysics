@@ -30,7 +30,10 @@ class AliHighMultiplicitySelector : public AliSelectorRL {
 
  protected:
     void MakeGraphs(const char* title, TH1* xSection, TH2* fMvsL, Int_t limit);
+    void MakeGraphs2(const char* title, TH1* xSection, TH2* fMvsL);
+
     TH1* GetXSectionCut(TH1* xSection, TH2* multVsLayer, Int_t cut);
+    TH1* GetTriggerEfficiency(TH2* multVsLayer, Int_t cut);
 
     TH1F* fChipsLayer1;
     TH1F* fChipsLayer2;
