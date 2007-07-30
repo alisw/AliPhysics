@@ -238,7 +238,8 @@ if test ! "x$have_aliroot" = "xno" ; then
     fi
     AC_MSG_RESULT($have_alitpc)
   fi
-  AC_CHECK_HEADERS([AliTPCCalibPulser.h AliTPCCalibPedestal.h])
+  AC_CHECK_HEADERS([AliTPCCalibPulser.h], [], [AC_DEFINE(HAVE_NOT_ALITPCCALIBPULSER)])
+  AC_CHECK_HEADERS([AliTPCCalibPedestal.h], [], [AC_DEFINE(HAVE_NOT_ALITPCCALIBPEDESTAL)])
 
   LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
   CHECKLIB=STEER
