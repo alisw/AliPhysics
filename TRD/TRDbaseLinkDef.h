@@ -19,6 +19,8 @@
 #pragma link C++ class  AliTRDsegmentArrayBase+;
 #pragma link C++ class  AliTRDsegmentArray+;
 
+#pragma link C++ class  AliTRDSignalIndex+;
+
 #pragma link C++ class  AliTRDgeometry+;
 #pragma link C++ class  AliTRDpadPlane+;
 

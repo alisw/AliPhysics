@@ -31,6 +31,8 @@
 
 #include "AliTRDReconstructor.h"
 #include "AliTRDclusterizerV1.h"
+#include "AliTRDclusterizerV2.h"
+//#include "AliTRDclusterizerV2xMP.h"
 #include "AliTRDtracker.h"
 #include "AliTRDpidESD.h"
 #include "AliTRDgtuTrack.h"
@@ -50,6 +52,8 @@ void AliTRDReconstructor::ConvertDigits(AliRawReader *rawReader
   // Convert raw data digits into digit objects in a root tree
   //
 
+  AliInfo("Convert raw data digits into digit objects [RawReader -> Digit TTree]");
+
   AliTRDrawData rawData;
   rawReader->Reset();
   rawReader->Select("TRD");
@@ -67,7 +71,7 @@ void AliTRDReconstructor::Reconstruct(AliRunLoader *runLoader
   // Reconstruct clusters
   //
 
-  AliInfo("Reconstruct TRD clusters from RAW data");
+  AliInfo("Reconstruct TRD clusters from RAW data [RunLoader, RawReader]");
 
   AliLoader *loader = runLoader->GetLoader("TRDLoader");
   loader->LoadRecPoints("recreate");
@@ -79,12 +83,22 @@ void AliTRDReconstructor::Reconstruct(AliRunLoader *runLoader
   rawReader->Select("TRD");
 
   for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
+
     if (!rawReader->NextEvent()) break;
-    AliTRDclusterizerV1 clusterer("clusterer","TRD clusterizer");
+
+    // Old (slow) cluster finder
+    //AliTRDclusterizerV1 clusterer("clusterer","TRD clusterizer");
+    //clusterer.Open(runLoader->GetFileName(),iEvent);
+    //clusterer.ReadDigits(rawReader);
+    //clusterer.MakeClusters();
+
+    // New (fast) cluster finder
+    AliTRDclusterizerV2 clusterer("clusterer","TRD clusterizer");
     clusterer.Open(runLoader->GetFileName(),iEvent);
-    clusterer.ReadDigits(rawReader);
-    clusterer.MakeClusters();
+    clusterer.Raw2ClustersChamber(rawReader);
+
     clusterer.WriteClusters(-1);
+
   }
 
   loader->UnloadRecPoints();
@@ -99,15 +113,22 @@ void AliTRDReconstructor::Reconstruct(AliRawReader *rawReader
   // Reconstruct clusters
   //
 
-  AliInfo("Reconstruct TRD clusters from RAW data");
+  AliInfo("Reconstruct TRD clusters from RAW data [RawReader -> Cluster TTree]");
 
   rawReader->Reset();
   rawReader->Select("TRD");
 
-  AliTRDclusterizerV1 clusterer("clusterer","TRD clusterizer");
+  // Old (slow) cluster finder
+  //AliTRDclusterizerV1 clusterer("clusterer","TRD clusterizer");
+  //clusterer.OpenOutput(clusterTree);
+  //clusterer.ReadDigits(rawReader);
+  //clusterer.MakeClusters();
+
+  // New (fast) cluster finder
+  AliTRDclusterizerV2 clusterer("clusterer","TRD clusterizer");
   clusterer.OpenOutput(clusterTree);
-  clusterer.ReadDigits(rawReader);
-  clusterer.MakeClusters();
+  clusterer.SetAddLabels(kFALSE);
+  clusterer.Raw2ClustersChamber(rawReader);
 
 }
 
@@ -118,8 +139,10 @@ void AliTRDReconstructor::Reconstruct(TTree *digitsTree
   //
   // Reconstruct clusters
   //
+  AliInfo("Reconstruct TRD clusters from Digits [Digit TTree -> Cluster TTree]");
 
   AliTRDclusterizerV1 clusterer("clusterer","TRD clusterizer");
+  //AliTRDclusterizerV2 clusterer("clusterer","TRD clusterizer");
   clusterer.OpenOutput(clusterTree);
   clusterer.ReadDigits(digitsTree);
   clusterer.MakeClusters();
@@ -133,6 +156,7 @@ void AliTRDReconstructor::Reconstruct(AliRunLoader *runLoader) const
   // Reconstruct clusters
   //
 
+  AliInfo("Reconstruct TRD clusters [AliRunLoader]");
   AliLoader *loader = runLoader->GetLoader("TRDLoader");
   loader->LoadRecPoints("recreate");
 
@@ -141,6 +165,7 @@ void AliTRDReconstructor::Reconstruct(AliRunLoader *runLoader) const
 
   for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
     AliTRDclusterizerV1 clusterer("clusterer","TRD clusterizer");
+    //AliTRDclusterizerV2 clusterer("clusterer","TRD clusterizer");
     clusterer.Open(runLoader->GetFileName(),iEvent);
     clusterer.ReadDigits();
     clusterer.MakeClusters();
@@ -195,7 +220,7 @@ void AliTRDReconstructor::FillESD(AliRawReader* /*rawReader*/
 //_____________________________________________________________________________
 void AliTRDReconstructor::FillESD(TTree* /*digitsTree*/
 				, TTree* /*clusterTree*/
-			        , AliESDEvent* /*esd*/) const
+				, AliESDEvent* /*esd*/) const
 {
   //
   // Make PID

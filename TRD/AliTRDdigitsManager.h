@@ -4,7 +4,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id: AliTRDdigitsManager.h,v */
+/* $Id$ */
 
 /////////////////////////////////////////////////////////////
 //  Manages the TRD digits                                 //
@@ -18,6 +18,7 @@ class TTree;
 class AliTRDsegmentArray;
 class AliTRDdataArrayI;
 class AliTRDdigit;
+class AliTRDSignalIndex;
 
 class AliTRDdigitsManager : public TObject {
 
@@ -55,8 +56,17 @@ class AliTRDdigitsManager : public TObject {
 
           AliTRDdataArrayI   *GetDigits(Int_t det) const;
           AliTRDdataArrayI   *GetDictionary(Int_t det, Int_t i) const;
+
+	  void                RemoveDigits(Int_t det);
+	  void                RemoveDictionaries(Int_t det);
+	  void                ClearIndexes(Int_t det);
+
           Int_t               GetTrack(Int_t track, AliTRDdigit *Digit) const;
           Short_t             GetDigitAmp(Int_t row, Int_t col, Int_t time, Int_t det) const;
+
+	  AliTRDSignalIndex   *GetIndexes(Int_t det);
+	  TObjArray           *GetIndexes() {return fSignalIndexes;};
+  virtual Bool_t              BuildIndexes(Int_t det);
 
  protected:
 
@@ -72,7 +82,9 @@ class AliTRDdigitsManager : public TObject {
   Bool_t              fIsRaw;              //  Flag indicating raw digits
   Bool_t              fSDigits;            //  Switch for the summable digits
 
-  ClassDef(AliTRDdigitsManager,5)          //  Manages the TRD digits
+  TObjArray          *fSignalIndexes;      //  Provides access to the active pads and tbins
+
+  ClassDef(AliTRDdigitsManager,6)          //  Manages the TRD digits
 
 };
 

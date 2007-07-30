@@ -15,6 +15,7 @@
 
 class AliTRDgeometry;
 class AliRawReader;
+class AliTRDdigitsManager;
 
 // Some constants:
 const UInt_t kEndoftrackletmarker = 0xAAAAAAAA; /*This marks the end of tracklet data words*/
@@ -30,6 +31,7 @@ class AliTRDRawStream: public TObject {
     virtual ~AliTRDRawStream();
 
     virtual Bool_t       Next();              // Read the next data
+    virtual Int_t NextChamber(AliTRDdigitsManager *man); // read next chamber data
     virtual Int_t        Init();              // Init for the fRawVersion > 1
 
     enum { kDDLOffset = 0x400 };              // Offset for DDL numbers
@@ -69,6 +71,7 @@ class AliTRDRawStream: public TObject {
     Int_t GetRow() const { return fROW;}
     Int_t GetCol() const { return fCOL;}                            //  Detector Pad coordinates
     Int_t GetDet() const { return fDET;} // helper
+    Int_t GetLastDet() const { return fLastDET;} // helper
     Int_t GetMaxRow() const { return fRowMax;}
     Int_t GetMaxCol() const { return fColMax;}
     Int_t GetNumberOfTimeBins() const {return fTBins;}
@@ -90,6 +93,7 @@ class AliTRDRawStream: public TObject {
     Int_t    fROW;                            //  Detector Row coordinates
     Int_t    fCOL;                            //  Detector Pad coordinates
     Int_t    fDET;                            //  Current detector - version > 1
+    Int_t    fLastDET;                        //  Previous detector - version > 1
 
     Int_t    fBCctr;                          //  Counters from HC header (>=V2)
     Int_t    fPTctr;                          //  Counters from HC header (>=V2)

@@ -2,6 +2,7 @@ SRCS= AliTRDcluster.cxx \
       AliTRDclusterMI.cxx \
       AliTRDclusterizer.cxx \
       AliTRDclusterizerV1.cxx \
+      AliTRDclusterizerV2.cxx \
       AliTRDclusterCorrection.cxx \
       AliTRDtracklet.cxx \
       AliTRDtrack.cxx \

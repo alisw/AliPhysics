@@ -37,6 +37,8 @@
 #include "AliTRDdigit.h"
 #include "AliTRDgeometry.h"
 
+#include "AliTRDSignalIndex.h"
+
 ClassImp(AliTRDdigitsManager)
 
 //_____________________________________________________________________________
@@ -52,6 +54,7 @@ AliTRDdigitsManager::AliTRDdigitsManager()
   ,fDigits(0)
   ,fIsRaw(0)
   ,fSDigits(0)
+  ,fSignalIndexes(NULL)
 {
   //
   // Default constructor
@@ -60,7 +63,10 @@ AliTRDdigitsManager::AliTRDdigitsManager()
   for (Int_t iDict = 0; iDict < kNDict; iDict++) {
     fDictionary[iDict] = NULL;
   }
-
+  
+  //fSignalIndexes = new TList();
+  fSignalIndexes = new TObjArray(AliTRDgeometry::Ndet());
+  
 }
 
 //_____________________________________________________________________________
@@ -71,6 +77,7 @@ AliTRDdigitsManager::AliTRDdigitsManager(const AliTRDdigitsManager &m)
   ,fDigits(0)
   ,fIsRaw(m.fIsRaw)
   ,fSDigits(m.fSDigits)
+  ,fSignalIndexes(NULL)
 {
   //
   // AliTRDdigitsManager copy constructor
@@ -97,6 +104,11 @@ AliTRDdigitsManager::~AliTRDdigitsManager()
     fDictionary[iDict] = NULL;
   }
 
+  delete fSignalIndexes;
+  fSignalIndexes = NULL;
+//   for (Int_t i = 0; i < AliTRDgeometry::Ndet(); i++)
+//     delete fSignalIndexes[i];
+
 }
 
 //_____________________________________________________________________________
@@ -121,7 +133,8 @@ void AliTRDdigitsManager::Copy(TObject &m) const
   ((AliTRDdigitsManager &) m).fIsRaw   = fIsRaw;
   ((AliTRDdigitsManager &) m).fEvent   = fEvent;
   ((AliTRDdigitsManager &) m).fSDigits = fSDigits;
-
+  
+  ((AliTRDdigitsManager &) m).fSignalIndexes = fSignalIndexes;
   TObject::Copy(m);
 
 }
@@ -140,6 +153,10 @@ void AliTRDdigitsManager::CreateArrays()
                                                ,AliTRDgeometry::Ndet());
   }
 
+  for (Int_t i = 0; i < AliTRDgeometry::Ndet(); i++)
+    {
+      fSignalIndexes->AddLast(new AliTRDSignalIndex());
+    }
 }
 //_____________________________________________________________________________
 void AliTRDdigitsManager::ResetArrays()
@@ -161,6 +178,11 @@ void AliTRDdigitsManager::ResetArrays()
                                                ,AliTRDgeometry::Ndet());
   }
 
+  for (Int_t i = 0; i < AliTRDgeometry::Ndet(); i++)
+    {
+      AliTRDSignalIndex *idx = (AliTRDSignalIndex *)fSignalIndexes->At(i);
+      idx->Reset();
+    }
 }
 
 //_____________________________________________________________________________
@@ -394,5 +416,109 @@ Int_t AliTRDdigitsManager::GetTrack(Int_t track, AliTRDdigit *Digit) const
   Int_t det  = Digit->GetDetector();
 
   return GetTrack(track,row,col,time,det);
+
+}
+
+//_____________________________________________________________________________
+AliTRDSignalIndex *AliTRDdigitsManager::GetIndexes(Int_t det) 
+{
+  // 
+  // Returns indexes of active pads
+  //
+
+  return (AliTRDSignalIndex*)fSignalIndexes->At(det);
+
+}
+
+//_____________________________________________________________________________
+void AliTRDdigitsManager::RemoveDigits(Int_t det) 
+{
+  // 
+  // Clear memory
+  //
+
+  fDigits->ClearSegment(det);
+
+}
+
+//_____________________________________________________________________________
+void AliTRDdigitsManager::RemoveDictionaries(Int_t det) 
+{
+  // 
+  // Clear memory
+  //
+
+  for (Int_t i = 0; i < kNDict; i++) {
+    fDictionary[i]->ClearSegment(det);
+  }
+
+}
+
+//_____________________________________________________________________________
+void AliTRDdigitsManager::ClearIndexes(Int_t det) 
+{
+  // 
+  // Clear memory
+  //
+  fSignalIndexes->At(det)->Clear();  
+}
+
+
+//_____________________________________________________________________________
+Bool_t AliTRDdigitsManager::BuildIndexes(Int_t det)
+{
+  //
+  // Build the list of indices
+  //
+
+  Int_t nRows = 0;
+  Int_t nCols = 0;
+  Int_t nTbins = 0;
+
+  AliTRDgeometry    geom;
+  AliTRDdataArrayI *digits = GetDigits(det);
+  //digits should be expanded by now!!!
+  if (digits->GetNtime() > 0) 
+    {
+      digits->Expand();
+      nRows = digits->GetNrow();
+      nCols = digits->GetNcol();
+      nTbins = digits->GetNtime();
+
+      //AliInfo(Form("rows %d cols %d tbins %d", nRows, nCols, nTbins));
+
+      AliTRDSignalIndex* indexes = GetIndexes(det);
+      indexes->SetSM(geom.GetSector(det));
+      indexes->SetChamber(geom.GetChamber(det));
+      indexes->SetPlane(geom.GetPlane(det));
+      indexes->SetDetNumber(det);
+      if (indexes->IsAllocated() == kFALSE)
+	{
+	  indexes->Allocate(nRows, nCols, nTbins);
+	  //AliInfo(Form("Allocating 0x%x %d", indexes->GetArray(), indexes->GetArray()->GetSize()));
+	}
+      for (Int_t ir = 0; ir < nRows; ir++)
+	{
+	  for (Int_t ic = 0; ic < nCols; ic++)
+	    {
+	      for (Int_t it = 0; it < nTbins; it++)
+		{	  
+		  //AliInfo(Form("row %d col %d tbin %d", ir, ic, it));
+		  
+		  Int_t isig = digits->GetDataUnchecked(ir, ic, it);
+  		  if (isig > 0)
+		    {
+		      //AliInfo(Form("row %d col %d tbin %d", ir, ic, it));
+		      indexes->AddIndexTBin(ir, ic, it);	    
+		    }
+		} //tbins
+	    } //cols
+	} // rows
+    } // if GetNtime
+  else
+    {
+      return kFALSE;
+    }
+  return kTRUE;
 
 }

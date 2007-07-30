@@ -22,7 +22,8 @@ class AliTRDReconstructor: public AliReconstructor {
   AliTRDReconstructor():AliReconstructor()                       { };
   virtual ~AliTRDReconstructor()                                 { };
 
-  virtual Bool_t      HasDigitConversion() const                 { return kTRUE; };
+  //virtual Bool_t      HasDigitConversion() const                 { return kTRUE; };
+  virtual Bool_t      HasDigitConversion() const                 { return kFALSE; };
   virtual void        ConvertDigits(AliRawReader *rawReader, TTree *digitsTree) const;
 
   virtual Bool_t      HasLocalReconstruction() const             { return kTRUE; };

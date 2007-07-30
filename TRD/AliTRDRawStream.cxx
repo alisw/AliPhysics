@@ -34,6 +34,10 @@
 #include "AliTRDgeometry.h"
 #include "AliTRDcalibDB.h"
 
+#include "AliTRDdigitsManager.h"
+#include "AliTRDdataArrayI.h"
+#include "AliTRDSignalIndex.h"
+
 ClassImp(AliTRDRawStream)
 
 //_____________________________________________________________________________
@@ -54,6 +58,7 @@ AliTRDRawStream::AliTRDRawStream()
   ,fROW(0)
   ,fCOL(0)
   ,fDET(0)
+  ,fLastDET(-1)
   ,fBCctr(0)
   ,fPTctr(0)
   ,fPTphase(0)
@@ -132,6 +137,7 @@ AliTRDRawStream::AliTRDRawStream(AliRawReader *rawReader)
   ,fROW(0)
   ,fCOL(0)
   ,fDET(0)
+  ,fLastDET(-1)
   ,fBCctr(0)
   ,fPTctr(0)
   ,fPTphase(0)
@@ -212,6 +218,7 @@ AliTRDRawStream::AliTRDRawStream(const AliTRDRawStream& stream)
   ,fROW(-1)
   ,fCOL(-1)
   ,fDET(0)
+  ,fLastDET(-1)
   ,fBCctr(-1)
   ,fPTctr(-1)
   ,fPTphase(-1)
@@ -355,6 +362,7 @@ Int_t AliTRDRawStream::Init()
   fWordCtr   = 0;  
 
   fDET     = 0;
+  fLastDET     = -1;
   fRetVal = 0;
   fEqID     = 0;
   fDataSize = 0;
@@ -461,19 +469,27 @@ Bool_t AliTRDRawStream::Next()
 		fNextStatus = fkNextHC;
 		continue;
 	      }
-	    if ( fADC > 1 && fADC < (Int_t)fGeo->ADCmax()-1 ) 
-	      {	      
-		// Write Digits
-		if ( fCOL >= 0 && fCOL < fColMax && fROW >= 0 && fROW < fRowMax ) 
-		  {  // A real pad
-		    fTB += 3;		
-		    return kTRUE;
-		  }	       
-	      }
-	    else 
+	    if ( fRetVal == 1)
 	      {
-		fCOL = -1;	       
+		{  // A real pad
+		  fTB += 3;		
+		  return kTRUE;
+		}	       		
 	      }
+	    // following ifs have been moved to DEcodeDatawordV1V2
+// 	    if ( fADC > 1 && fADC < (Int_t)fGeo->ADCmax()-1 ) 
+// 	      {	      
+// 		// Write Digits
+// 		if ( fCOL >= 0 && fCOL < fColMax && fROW >= 0 && fROW < fRowMax ) 
+// 		  {  // A real pad
+// 		    fTB += 3;		
+// 		    return kTRUE;
+// 		  }	       
+// 	      }
+// 	    else 
+// 	      {
+// 		fCOL = -1;	       
+// 	      }
 	  }// fkNextData  
 	
 	continue;
@@ -537,6 +553,7 @@ Bool_t AliTRDRawStream::Next()
 	  if ( (*fDataWord & 0x00000003) == 1 ) 
 	    { // HC header
 	      DecodeHCheader(fTimeBinsCalib); // This is the new header!
+	      fLastDET = fDET;
 	      fDET    = fGeo->GetDetector(fLAYER, fSTACK, fSM);
 	      fRowMax = fGeo->GetRowMax(fLAYER,fSTACK,fSM);
 	      fColMax = fGeo->GetColMax(fROC);
@@ -593,6 +610,276 @@ Bool_t AliTRDRawStream::Next()
 
   AliDebug(1, Form("That's all folks! %d", fSM));
   return kFALSE;
+}
+
+//____________________________________________________________________________
+Int_t AliTRDRawStream::NextChamber(AliTRDdigitsManager *man)
+{
+  //
+  // Updates the next data word pointer
+  //
+
+  AliTRDdataArrayI *digits = 0;
+  AliTRDdataArrayI *track0 = 0;
+  AliTRDdataArrayI *track1 = 0;
+  AliTRDdataArrayI *track2 = 0; 
+  AliTRDSignalIndex *indexes = 0;
+	  
+  if (fNextStatus == fkStart)
+    {
+      Init();
+    }
+
+  while (fNextStatus != fkStop)
+    { // !fkStop
+      NextData();
+      if (fNextStatus == fkNextMCM || fNextStatus == fkNextData)
+      //while (fNextStatus == fkNextMCM || fNextStatus == fkNextData)
+	{
+	  fHCdataCtr += 4;
+	  
+	  if( ((*fDataWord & 0x80000000) == 0x0) && ((*fDataWord & 0x0000000f) == 0xC) )
+	    { // MCM Header
+	      DecodeMCMheader();
+	      if ( fMCM < 0 || fMCM > 15 || fROB < 0 || fROB > 7 ) 
+		{
+		  AliWarning("Wrong fMCM or fROB. Skip this data");
+		  fRawReader->AddMajorErrorLog(kWrongMCMorROB,Form("MCM=%d, ROB=%d",fMCM,fROB));
+		  fNextStatus = fkNextHC;
+		  continue;
+		}
+	      fTbSwitch    = 3;  // For first adc channel we expect: (*fDataWord & 3) = 3
+	      fTbSwitchCtr = 0;  // 
+	      fADC = fTB   = 0;  // Reset Counter
+	      fNextStatus = fkNextData;
+
+// 	      NextData(); // if while loop!
+	      continue; // if if
+	    }
+	  
+	  if ( *fDataWord == kEndofrawdatamarker ) 
+	    {  // End of half-chamber data, finished
+	      fGTUctr1 = -1;
+	      fNextStatus = fkNextHC;
+	      // full chamber processed ?
+	      if (fChamberDone[fDET] == 2)
+		{
+		  return fDET;
+		}
+	      else
+		{
+// 		  break; // if while loop
+		  continue; // if if
+		}
+	    }
+	  
+	  if (fNextStatus == fkNextData )
+	    {       // MCM header is set, ADC data is valid.
+	      
+	      // Found some data. Decode it now:
+	      fRetVal = DecodeDataWord();
+	      if ( fRetVal ==  0 ) continue;
+	      if ( fRetVal == -1 ) 
+		{
+		  fNextStatus = fkNextHC;
+
+// 		  NextData(); // if while loop!
+// 		  break; //if while loop!
+		  continue;// if if
+		}
+	      
+	    if ( fRetVal == 1)
+	      {
+		{  // A real pad
+		  // here fill the data arrays
+		  //return kTRUE;
+		  for (Int_t it = 0; it < 3; it++)
+		    {
+		      if ( GetTimeBin() + it < GetNumberOfTimeBins() )
+			{
+			  if (GetSignals()[it] > 0)
+			    {
+			      digits->SetDataUnchecked(fROW, fCOL, fTB + it, fSig[it]);
+			      indexes->AddIndexTBin(fROW, fCOL, fTB + it);
+			      track0->SetDataUnchecked(fROW, fCOL, fTB + it, 0);
+			      track1->SetDataUnchecked(fROW, fCOL, fTB + it, 0);
+			      track2->SetDataUnchecked(fROW, fCOL, fTB + it, 0);
+			    }
+			} // check the tbins range
+		    } // for each tbin of current 3
+		  fTB += 3;		
+		}// real pad	       		
+	      } // if fRetVal == 1
+	    
+	    // following ifs have been moved to DEcodeDatawordV1V2
+// 	    if ( fADC > 1 && fADC < (Int_t)fGeo->ADCmax()-1 ) 
+// 	      {	      
+// 		// Write Digits
+// 		if ( fCOL >= 0 && fCOL < fColMax && fROW >= 0 && fROW < fRowMax ) 
+// 		  {  // A real pad
+// 		    fTB += 3;		
+// 		    return kTRUE;
+// 		  }	       
+// 	      }
+// 	    else 
+// 	      {
+// 		fCOL = -1;	       
+// 	      }
+	    }// fkNextData  
+	  
+// 	  NextData(); // if while loop!
+	  continue; //if if
+	} //next mcm
+
+      if ( fNextStatus == fkNextHC )
+	{
+	  //
+	  // 1) Find end_of_tracklet_marker
+	  //
+	  // GTU Link Mask?
+	  if ( (*fDataWord & 0xfffff000) ==  0xe0000000 ) 
+	    {
+	      DecodeGTUlinkMask();
+	      continue;
+	    }
+	  
+	  // endoftrackletmarker?
+	  if ( *fDataWord == kEndoftrackletmarker ) 
+	    {
+	      AliDebug(3, "end-of-tracklet-marker found");
+	      fNextStatus = fkSeekNonEoTracklet;
+	      continue;
+	    } 
+	  else 
+	    {
+	      // Tracklets found
+	      AliDebug(3, "Tracklet found");
+	      DecodeTracklet();
+	      continue;
+	    }
+	} //if next HC
+
+      if (fNextStatus == fkSeekNonEoTracklet)
+	{
+	  //
+	  // 2) Look for non-end_of_tracklet_marker
+	  //
+	  //printf("Word %d: 0x%08x\n", fWordCtr, *fDataWord); 
+
+	  if ( *fDataWord != kEndoftrackletmarker ) 
+	    {
+	      fNextStatus = fkDecodeHC;
+	      AliDebug(3, "NON end-of-tracklet-marker found");
+	      //// no do not continue - this should be the hcheader
+	    }
+	  else
+	    {
+	      //just go on and find the non-end_of_tracklet_marker
+	      continue;
+	    }
+	}
+
+      if ( fNextStatus == fkDecodeHC )
+	{
+	  AliDebug(3, "Decode HC");
+
+	  //
+	  // 3) This Word must be Half Chamber Header
+	  //
+	  if ( (*fDataWord & 0x00000003) == 1 ) 
+	    { // HC header
+	      DecodeHCheader(fTimeBinsCalib); // This is the new header!
+	      fDET    = fGeo->GetDetector(fLAYER, fSTACK, fSM);
+	      fRowMax = fGeo->GetRowMax(fLAYER,fSTACK,fSM);
+	      fColMax = fGeo->GetColMax(fROC);
+
+	      if (fLastDET != fDET)
+		{
+		  AliDebug(4, "New DET!");	      
+		  // allocate stuff for the new det
+		  digits = man->GetDigits(fDET);
+		  track0 = man->GetDictionary(fDET,0);
+		  track1 = man->GetDictionary(fDET,1);
+		  track2 = man->GetDictionary(fDET,2);
+		  
+		  // Allocate memory space for the digits buffer
+		  if (digits->GetNtime() == 0) 
+		    {
+		      AliDebug(4, "Allocating digits");	      
+		      //AliDebug(5, Form("Alloc digits for det %d", det));
+		      digits->Allocate(fRowMax, fColMax, fTBins);
+		      track0->Allocate(fRowMax, fColMax, fTBins);
+		      track1->Allocate(fRowMax, fColMax, fTBins);
+		      track2->Allocate(fRowMax, fColMax, fTBins);
+		    }
+		  
+		  indexes = man->GetIndexes(fDET);
+		  indexes->SetSM(fSM);
+		  indexes->SetStack(fSTACK);
+		  indexes->SetLayer(fLAYER);
+		  indexes->SetDetNumber(fDET);
+		  
+		  if (indexes->IsAllocated() == kFALSE)
+		    {
+		      AliDebug(4, "Allocating indexes");	      
+		      indexes->Allocate(fRowMax, fColMax, fTBins);
+		    }
+		  fLastDET = fDET;
+		}
+	      
+	      fMCMHctr2 = 0;
+	      fHCdataCtr = 0;
+	      
+	      fChamberDone[fDET]++;
+	      fNextStatus = fkNextMCM;
+	      AliDebug(3, "Decode HC OK");	      
+	      continue;
+	    } //HC header
+	  else
+	    {
+	      AliDebug(3, "Decode HC NOT OK");	      
+	      fNextStatus = fkNextSM;
+	      continue;
+	    }
+	} // if decode HC
+
+      if (fNextStatus == fkNextSM)
+	{
+	  
+	  fDET     = 0;
+	  fRetVal = 0;
+	  fEqID     = 0;
+	  fDataSize = 0;
+	  fSizeOK = kFALSE;
+	  
+	  // After reading the first word check for size of this data and get Eq. ID
+	  if ( fWordCtr == 1 ) 
+	    {
+	      fDataSize = fRawReader->GetDataSize()/4;  // Size of this payload in 32bit words
+	      fEqID     = fRawReader->GetEquipmentId(); // Get Equipment ID
+	      if ( fDataSize > 0 ) fSizeOK = kTRUE;
+	    }
+	  
+	  // GTU Link Mask?
+	  if ( (*fDataWord & 0xfffff000) ==  0xe0000000 ) 
+	    {
+	      DecodeGTUlinkMask();
+	      fNextStatus = fkNextHC;
+	      continue;
+	    } 
+	  else 
+	    {
+	      AliWarning(Form("Equipment %d: First data word is not GTU Link Mask!", fEqID));
+              fRawReader->AddMajorErrorLog(kGTULinkMaskMissing,Form("Equipment %d",fEqID));
+	      fNextStatus = fkStop;
+	    }	    
+	}// if nextSM
+
+    } // not fkStop
+
+  AliDebug(1, Form("That's all folks! %d", fSM));
+  //return kFALSE;
+  return -1;
 }
 
 //============================================================================
@@ -895,8 +1182,16 @@ Int_t  AliTRDRawStream::DecodeDataWordV1V2()
   // return -1 means break data loop
   //
 
+//   //  check the content first! - something wrong with that...
+//   // Decode 32 bit data words with information from 3 time bins and copy the data
+//   fSig[0] = (*fDataWord & 0x00000ffc) >> 2;
+//   fSig[1] = (*fDataWord & 0x003ff000) >> 12;
+//   fSig[2] = (*fDataWord & 0xffc00000) >> 22;  
+//   if (fSig[0] <= 0 && fSig[1] <= 0 && fSig[2] <= 0)
+//     return 0;
+
   if ( (*fDataWord & 0x00000003) != 0x2 && (*fDataWord & 0x00000003) != 0x3) {
-    AliWarning(Form("Data %08x : Data Word ends neither with b11 nor b10", (Int_t)*fDataWord));
+    //AliWarning(Form("Data %08x : Data Word ends neither with b11 nor b10", (Int_t)*fDataWord));
     fRawReader->AddMinorErrorLog(kDataMaskError,Form("Data %08x", (Int_t)*fDataWord));
     return -1;
   }
@@ -912,14 +1207,14 @@ Int_t  AliTRDRawStream::DecodeDataWordV1V2()
 
   // We have only timeTotal time bins
   if ( fTbSwitchCtr > fTimeWords ) {
-    AliWarning(Form("Data is strange. Already found %d words for this ADC channel", (Int_t)fTbSwitchCtr));
+    //AliWarning(Form("Data is strange. Already found %d words for this ADC channel", (Int_t)fTbSwitchCtr));
     fRawReader->AddMinorErrorLog(kADCNumberOverflow,Form("%d words", (Int_t)fTbSwitchCtr));
     return 0;
   }
 
   // We have only 21 ADC channels.
   if ( fADC > (Int_t)fGeo->ADCmax()-1 ) {
-    AliWarning(Form("Data %08x : Data is strange. fADC is already %d", (Int_t)*fDataWord, (Int_t)fADC));
+    //AliWarning(Form("Data %08x : Data is strange. fADC is already %d", (Int_t)*fDataWord, (Int_t)fADC));
     fRawReader->AddMinorErrorLog(kADCChannelOverflow,Form("Data %08x : fADC=%d", (Int_t)*fDataWord, (Int_t)fADC));
     return 0;
   }
@@ -932,18 +1227,27 @@ Int_t  AliTRDRawStream::DecodeDataWordV1V2()
     fCOL = fGeo->GetPadColFromADC(fROB, fMCM, fADC);
 
     // We have only 144 Pad Columns
-    if ( fCOL > fColMax-1 || fCOL < 0 ) {
-      AliWarning(Form("SM%d L%dS%d: Wrong Pad column (%d) fROB=%d, fSIDE=%d, fMCM=%02d", fSM,
-		    fLAYER, fSTACK, fCOL, fROB, fSIDE, fMCM ));
-      fRawReader->AddMajorErrorLog(kWrongPadcolumn,Form("SM%d L%dS%d: column (%d) fROB=%d, fSIDE=%d, fMCM=%02d", fSM,
-		    fLAYER, fSTACK, fCOL, fROB, fSIDE, fMCM ));
-    }
-
-    // Decode 32 bit data words with information from 3 time bins and copy the data
-    fSig[0] = (*fDataWord & 0x00000ffc) >> 2;
-    fSig[1] = (*fDataWord & 0x003ff000) >> 12;
-    fSig[2] = (*fDataWord & 0xffc00000) >> 22;
-
+    //if ( fCOL > fColMax-1 || fCOL < 0 ) {
+    if ( fCOL >= 0 && fCOL < fColMax && fROW >= 0 && fROW < fRowMax ) 
+      {
+	// Decode 32 bit data words with information from 3 time bins and copy the data
+	fSig[0] = (*fDataWord & 0x00000ffc) >> 2;
+	fSig[1] = (*fDataWord & 0x003ff000) >> 12;
+	fSig[2] = (*fDataWord & 0xffc00000) >> 22;
+	
+	if (fSig[0] > 0 || fSig[1] > 0 || fSig[2] > 0)
+	  return 1;
+	else
+	  return 0;
+      }
+    else
+      {
+// 	AliWarning(Form("SM%d L%dS%d: Wrong Pad column (%d) fROB=%d, fSIDE=%d, fMCM=%02d", fSM,
+// 			fLAYER, fSTACK, fCOL, fROB, fSIDE, fMCM ));
+	fRawReader->AddMajorErrorLog(kWrongPadcolumn,Form("SM%d L%dS%d: column (%d) fROB=%d, fSIDE=%d, fMCM=%02d", fSM,
+							  fLAYER, fSTACK, fCOL, fROB, fSIDE, fMCM ));
+	return 0;
+      }
     // Print data to screen:
     // Do NOT switch on for default production, it is VERY slow
     //    AliDebug(5, Form("SM%d L%dS%d: ROB%d MCM=%d ADC=%d (ROW=%d COL=%d): Data %04d %04d %04d\n",
@@ -953,7 +1257,7 @@ Int_t  AliTRDRawStream::DecodeDataWordV1V2()
   else {
     
     fCOL = -1;
-    
+    return 0;
   }
 
   return 1;

@@ -38,6 +38,7 @@
 #include "AliTRDcalibDB.h"
 #include "AliFstream.h"
 
+#include "AliTRDSignalIndex.h"
 ClassImp(AliTRDrawData)
 
 //_____________________________________________________________________________
@@ -420,6 +421,7 @@ AliTRDdigitsManager *AliTRDrawData::Raw2Digits(AliRawReader *rawReader)
   AliTRDdataArrayI *track1 = 0;
   AliTRDdataArrayI *track2 = 0; 
 
+  AliTRDSignalIndex *indexes = 0;
   // Create the digits manager
   AliTRDdigitsManager* digitsManager = new AliTRDdigitsManager();
   digitsManager->CreateArrays();
@@ -461,21 +463,34 @@ AliTRDdigitsManager *AliTRDrawData::Raw2Digits(AliRawReader *rawReader)
 	      track1->Allocate(input.GetMaxRow(),input.GetMaxCol(), input.GetNumberOfTimeBins());
 	      track2->Allocate(input.GetMaxRow(),input.GetMaxCol(), input.GetNumberOfTimeBins());
 	    }
+
+	  indexes = digitsManager->GetIndexes(det);
+	  indexes->SetSM(input.GetSM());
+	  indexes->SetStack(input.GetStack());
+	  indexes->SetLayer(input.GetLayer());
+	  indexes->SetDetNumber(det);
+	  if (indexes->IsAllocated() == kFALSE)
+	    indexes->Allocate(input.GetMaxRow(), input.GetMaxCol(), input.GetNumberOfTimeBins());
 	}
     
       for (it = 0; it < 3; it++)
 	{
 	  if ( input.GetTimeBin() + it < input.GetNumberOfTimeBins() )
 	    {
-	      digits->SetDataUnchecked(input.GetRow(), input.GetCol(),
-				       input.GetTimeBin() + it, input.GetSignals()[it]);
-	      track0->SetDataUnchecked(input.GetRow(), input.GetCol(),
-				       input.GetTimeBin() + it, 0);
-	      track1->SetDataUnchecked(input.GetRow(), input.GetCol(),
-				       input.GetTimeBin() + it, 0);
-	      track2->SetDataUnchecked(input.GetRow(), input.GetCol(),
-				       input.GetTimeBin() + it, 0);
+	      if (input.GetSignals()[it] > 0)
+		{
+		  digits->SetDataUnchecked(input.GetRow(), input.GetCol(),
+					   input.GetTimeBin() + it, input.GetSignals()[it]);
 
+		  indexes->AddIndexTBin(input.GetRow(), input.GetCol(),
+					input.GetTimeBin() + it);
+		  track0->SetDataUnchecked(input.GetRow(), input.GetCol(),
+					   input.GetTimeBin() + it, 0);
+		  track1->SetDataUnchecked(input.GetRow(), input.GetCol(),
+					   input.GetTimeBin() + it, 0);
+		  track2->SetDataUnchecked(input.GetRow(), input.GetCol(),
+					   input.GetTimeBin() + it, 0);
+		}
 	    }
 	}
   }
