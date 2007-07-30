@@ -37,25 +37,25 @@ void generatePIDDB(const char *file = "Refs.root")
   if (!gStorLoc) return;
 
   
-	AliTRDCalPIDLQ *pid = new AliTRDCalPIDLQ("pid", "TRD PID object");
+	AliTRDCalPID *pid = new AliTRDCalPID("pid", "TRD PID object");
 	pid->LoadLQReferences(file);
 
 	AliCDBMetaData *md= new AliCDBMetaData();
   md->SetObjectClassName("AliTRDCalPIDLQ");
   md->SetResponsible("Alex Bercuci");
   md->SetBeamPeriod(1);
-  md->SetAliRootVersion("v4-05-Release"); //root version
+  md->SetAliRootVersion("v4-06-HEAD"); //root version
   md->SetComment("2D PID for TRD");
 
 	gStorLoc->Put(pid, AliCDBId("TRD/Calib/PIDLQ", 0, 0), md);
 }
 
 //___________________________________________________________________
-AliTRDCalPIDLQ* getPIDObject()
+AliTRDCalPID* getPIDObject()
 {
 // Returns PIDLQ object.
 // In order to browse histos do:
-//   > AliTRDCalPIDLQ *pid = getPIDObject();
+//   > AliTRDCalPID *pid = getPIDObject();
 //   > pid->GetHistogram(0, 3);
 
 	gStyle->SetOptStat(0);
@@ -65,7 +65,7 @@ AliTRDCalPIDLQ* getPIDObject()
 	CDBManager->SetRun(0);
 
 	AliCDBEntry *wrap = CDBManager->Get("TRD/Calib/PIDLQ", 0);
-	AliTRDCalPIDLQ *pid = dynamic_cast<const AliTRDCalPIDLQ *>wrap->GetObject();
+	AliTRDCalPID *pid = dynamic_cast<const AliTRDCalPID *>wrap->GetObject();
 	AliCDBMetaData *meta = wrap->GetMetaData();
 	if(!pid){
 		printf("Error while retriving pid object from DB.\n");
