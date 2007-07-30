@@ -32,6 +32,24 @@
 #include "AliESDHLTtrack.h"
 #include "AliESDFMD.h"
 #include "AliESD.h"
+#include "AliESDMuonTrack.h"
+#include "AliESDPmdTrack.h"
+#include "AliESDTrdTrack.h"
+#include "AliESDVertex.h"
+#include "AliESDcascade.h"
+#include "AliESDPmdTrack.h"
+#include "AliESDTrdTrack.h"
+#include "AliESDVertex.h"
+#include "AliESDcascade.h"
+#include "AliESDkink.h"
+#include "AliESDtrack.h"
+#include "AliESDHLTtrack.h"
+#include "AliESDCaloCluster.h"
+#include "AliESDv0.h"
+#include "AliESDFMD.h"
+#include "AliESDVZERO.h"
+#include "AliMultiplicity.h"
+#include "AliRawDataErrorLog.h"
 
 
 ClassImp(AliESDEvent)
@@ -362,6 +380,24 @@ Int_t  AliESDEvent::AddTrack(const AliESDtrack *t) {
     return  track->GetID();    
 }
 
+ void AliESDEvent::AddMuonTrack(const AliESDMuonTrack *t) {
+    TClonesArray &fmu = *fMuonTracks;
+    new(fmu[fMuonTracks->GetEntriesFast()]) AliESDMuonTrack(*t);
+}
+
+void AliESDEvent::AddPmdTrack(const AliESDPmdTrack *t) {
+  TClonesArray &fpmd = *fPmdTracks;
+  new(fpmd[fPmdTracks->GetEntriesFast()]) AliESDPmdTrack(*t);
+}
+
+void AliESDEvent::AddTrdTrack(const AliESDTrdTrack *t) {
+  TClonesArray &ftrd = *fTrdTracks;
+  new(ftrd[fTrdTracks->GetEntriesFast()]) AliESDTrdTrack(*t);
+}
+
+
+
+
 Int_t AliESDEvent::AddKink(const AliESDkink *c) {
     // Add kink
     TClonesArray &fk = *fKinks;
@@ -369,6 +405,13 @@ Int_t AliESDEvent::AddKink(const AliESDkink *c) {
     kink->SetID(fKinks->GetEntriesFast()); // CKB different from the other imps..
     return fKinks->GetEntriesFast()-1;
 }
+
+
+void AliESDEvent::AddCascade(const AliESDcascade *c) {
+  TClonesArray &fc = *fCascades;
+  new(fc[fCascades->GetEntriesFast()]) AliESDcascade(*c);
+}
+
 
 Int_t AliESDEvent::AddCaloCluster(const AliESDCaloCluster *c) {
     // Add calocluster
@@ -378,6 +421,11 @@ Int_t AliESDEvent::AddCaloCluster(const AliESDCaloCluster *c) {
     return fCaloClusters->GetEntriesFast()-1;
   }
 
+
+  void  AliESDEvent::AddRawDataErrorLog(const AliRawDataErrorLog *log) {
+    TClonesArray &errlogs = *fErrorLogs;
+    new(errlogs[errlogs.GetEntriesFast()])  AliRawDataErrorLog(*log);
+  }
 
 void  AliESDEvent::SetVertex(const AliESDVertex *vertex) {
   // use already allocated space
@@ -394,6 +442,13 @@ void  AliESDEvent::SetPrimaryVertex(const AliESDVertex *vertex) {
     fPrimaryVertex->SetName(fESDListName[kPrimaryVertex]);
   }
 }
+
+void AliESDEvent::SetMultiplicity(const AliMultiplicity *mul) {
+  if(fSPDMult){
+    new (fSPDMult) AliMultiplicity(*mul);
+  }
+}
+
 
 void AliESDEvent::SetFMDData(AliESDFMD * obj) { 
   // use already allocated space
@@ -589,7 +644,6 @@ void AliESDEvent::ReadFromTree(TTree *tree){
       if(bname.CompareTo("AliESDfriend")==0)
 	{
 	  // AliESDfriend does not have a name ...
-	  printf("Setting AlieSDFrien \n");
 	  tree->SetBranchAddress("ESDfriend.",fESDObjects->GetObjectRef(el));
 	}
       else{
