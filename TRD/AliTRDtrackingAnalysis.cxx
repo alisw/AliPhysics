@@ -42,11 +42,11 @@
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliTrackReference.h"
+#include "AliTracker.h"
 
 #include "AliTRDcluster.h"
 #include "AliTRDpadPlane.h"
 #include "AliTRDcalibDB.h"
-#include "AliTracker.h"
 #include "AliTRDtracker.h"
 //#include "AliTRDtracklet.h"
 
@@ -674,26 +674,21 @@ void  AliTRDtrackingAnalysis::LoadRefs()
   //AliStack* stack = gAlice->Stack();
   TTree *refTree = fLoader->TreeTR();
     
-  const int kNBranch = 2;
-  const char *brName[] = {"TPC", "TRD"};
   TClonesArray *clRefs = new TClonesArray("AliTrackReference");
-  
-  for(int b=0; b<kNBranch; b++) {
       
-    TBranch *branch = refTree->GetBranch(brName[b]);
-    refTree->SetBranchAddress(brName[b],&clRefs);
+  TBranch *branch = refTree->GetBranch("TrackReferences");
+  refTree->SetBranchAddress("TrackReferences",&clRefs);
     
-    int nEntries = branch->GetEntries();      
-    for(int iTrack = 0; iTrack < nEntries; iTrack++) {
+  int nEntries = branch->GetEntries();      
+  for(int iTrack = 0; iTrack < nEntries; iTrack++) {
 	
-      refTree->GetEvent(iTrack);
-      int nPoints =  clRefs->GetEntries();
-      for(int iPoint=0; iPoint<nPoints; iPoint++) {
-	AliTrackReference *ref = (AliTrackReference*)clRefs->At(iPoint);
-	if (b == 0) fRefTPC->Add(new AliTrackReference(*ref));
-	if (b == 1) fRefTRD->Add(new AliTrackReference(*ref));	  
-      }	
-    }
+    refTree->GetEvent(iTrack);
+    int nPoints =  clRefs->GetEntries();
+    for(int iPoint=0; iPoint<nPoints; iPoint++) {
+      AliTrackReference *ref = (AliTrackReference*)clRefs->At(iPoint);
+	if (ref->DetectorId() == AliTrackReference::kTPC) fRefTPC->Add(new AliTrackReference(*ref));
+	if (ref->DetectorId() == AliTrackReference::kTRD) fRefTRD->Add(new AliTrackReference(*ref));	  
+    }	
   }
   
   fRefTPC->Sort();
