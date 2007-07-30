@@ -33,9 +33,9 @@ using namespace std;
 #include "AliRawReaderMemory.h"
 #include "AliTPCRawStream.h"
 
-#ifdef HAVE_ALITPCCALIBPULSER
+#ifndef HAVE_NOT_ALITPCCALIBPULSER
 #include "AliTPCCalibPulser.h"
-#endif // HAVE_ALITPCCALIBPULSER
+#endif // HAVE_NOT_ALITPCCALIBPULSER
 
 #include <stdlib.h>
 #include <errno.h>
@@ -177,7 +177,7 @@ Int_t AliHLTTPCCalibPulserComponent::ScanArgument( Int_t argc, const char** argv
 Int_t AliHLTTPCCalibPulserComponent::InitCalibration() {
   // see header file for class documentation
     
-#ifdef HAVE_ALITPCCALIBPULSER
+#ifndef HAVE_NOT_ALITPCCALIBPULSER
   // ** Create pulser calibration
   if ( fCalibPulser )
     return EINPROGRESS;
@@ -196,11 +196,11 @@ Int_t AliHLTTPCCalibPulserComponent::InitCalibration() {
 #endif
 
   return 0;
-#else //!HAVE_ALITPCCALIBPULSER
+#else // HAVE_NOT_ALITPCCALIBPULSER
 #warning AliTPCCalibPulser not available in this AliRoot version - AliHLTTPCCalibPulserComponent not functional
   HLTFatal("AliTPCCalibPulser  not available - check your build");
   return -ENODEV;
-#endif //HAVE_ALITPCCALIBPULSER
+#endif //HAVE_NOT_ALITPCCALIBPULSER
 }
 
 Int_t AliHLTTPCCalibPulserComponent::DeinitCalibration() {
@@ -210,8 +210,11 @@ Int_t AliHLTTPCCalibPulserComponent::DeinitCalibration() {
     delete fRawReader;
   fRawReader = NULL;
 
-  if ( fCalibPulser )
+#ifndef HAVE_NOT_ALITPCCALIBPULSER
+  if ( fCalibPulser ) {
     delete fCalibPulser;
+  }
+#endif
   fCalibPulser = NULL;
 
   return 0;
@@ -261,13 +264,13 @@ Int_t AliHLTTPCCalibPulserComponent::ProcessCalibration( const AliHLTComponentEv
     fRawStream = new AliTPCRawStream( fRawReader );
     fRawStream->SetOldRCUFormat( fRCUFormat );
 
-#ifdef HAVE_ALITPCCALIBPULSER
+#ifndef HAVE_NOT_ALITPCCALIBPULSER
     // ** Process actual Pulser Calibration - Fill histograms
     fCalibPulser->ProcessEvent( fRawStream );
-#else //!HAVE_ALITPCCALIBPULSER
+#else //!HAVE_NOT_ALITPCCALIBPULSER
     HLTFatal("AliTPCCalibPulser  not available - check your build");
     return -ENODEV;
-#endif //HAVE_ALITPCCALIBPULSER
+#endif //HAVE_NOT_ALITPCCALIBPULSER
   
     // ** Delete TPCRawStream
     if ( fRawStream )
@@ -292,13 +295,13 @@ Int_t AliHLTTPCCalibPulserComponent::ProcessCalibration( const AliHLTComponentEv
 Int_t AliHLTTPCCalibPulserComponent::ShipDataToFXS( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData ) {
   // see header file for class documentation
     
-#ifdef HAVE_ALITPCCALIBPULSER
+#ifndef HAVE_NOT_ALITPCCALIBPULSER
   if ( fEnableAnalysis )
     fCalibPulser->Analyse();
-#else //!HAVE_ALITPCCALIBPULSER
+#else //!HAVE_NOT_ALITPCCALIBPULSER
   HLTFatal("AliTPCCalibPulser  not available - check your build");
   return -ENODEV;
-#endif //HAVE_ALITPCCALIBPULSER
+#endif //HAVE_NOT_ALITPCCALIBPULSER
   
   // ** PushBack data to FXS ...
   PushToFXS( (TObject*) fCalibPulser, "TPC", "Pulser" ) ;
