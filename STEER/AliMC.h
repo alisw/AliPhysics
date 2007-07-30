@@ -18,6 +18,9 @@
 #include <TVirtualMCApplication.h>
 
 class TParticle;
+class TFile;
+class TTree;
+
 class AliGenerator;
 class AliMCQA;
 class AliTrackReference;
@@ -111,8 +114,10 @@ public:
    virtual void       RemapTrackReferencesIDs(Int_t *map); //remaping track references MI
    virtual void       ResetTrackReferences();
    virtual void       FixParticleDecaytime();
-
-private:
+ private:
+   void MakeTmpTrackRefsTree();
+   void ReorderAndExpandTreeTR();
+ private:
    void Copy (TObject &mc) const;
    void RemapHits();
    AliGenerator  *fGenerator;         //  Generator used in the MC
@@ -127,11 +132,13 @@ private:
    TArrayI       *fImedia;            //! Array of correspondence between media and detectors
    TString        fTransParName;      //  Name of the transport parameters file
    AliMCQA       *fMCQA;              //  Pointer to MC Quality assurance class
-   //PH
    TList         *fHitLists;          //! Lists of hits to be remapped by PurifyKine
-  TClonesArray *fTrackReferences;     //!list of track references - for one primary track only -MI
-    
-    ClassDef(AliMC,2)
+   //Temporary Track Reference tree related
+   TTree         *fTmpTreeTR;            //! Temporary track reference tree
+   TFile         *fTmpFileTR;            //! Temporary track reference file
+   TClonesArray  *fTrackReferences;      //! List of track references - for one primary track only
+   TClonesArray  *fTmpTrackReferences;   //! Temporary list of track references - for one primary track only
+   ClassDef(AliMC, 3)
 };
 
  

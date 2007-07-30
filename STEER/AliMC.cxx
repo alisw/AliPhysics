@@ -30,6 +30,7 @@
 #include <TVirtualMC.h>
 #include <TParticle.h>
 #include <TROOT.h>
+#include <TFile.h>
  
 #include "AliLog.h"
 #include "AliDetector.h"
@@ -67,7 +68,10 @@ AliMC::AliMC() :
   fTransParName("\0"),
   fMCQA(0),
   fHitLists(0),
-  fTrackReferences(0)
+  fTmpTreeTR(0),
+  fTmpFileTR(0),
+  fTrackReferences(0),
+  fTmpTrackReferences(0)
 
 {
   //default constructor
@@ -90,7 +94,10 @@ AliMC::AliMC(const char *name, const char *title) :
   fTransParName("\0"),
   fMCQA(0),
   fHitLists(new TList()),
-  fTrackReferences(new TClonesArray("AliTrackReference", 100))
+  fTmpTreeTR(0),
+  fTmpFileTR(0),
+  fTrackReferences(new TClonesArray("AliTrackReference", 100)),
+  fTmpTrackReferences(new TClonesArray("AliTrackReference", 100))
 {
   //constructor
   // Set transport parameters
@@ -116,7 +123,10 @@ AliMC::AliMC(const AliMC &mc) :
   fTransParName("\0"),
   fMCQA(0),
   fHitLists(0),
-  fTrackReferences(0)
+  fTmpTreeTR(0),
+  fTmpFileTR(0),
+  fTrackReferences(0),
+  fTmpTrackReferences(0)
 {
   //
   // Copy constructor for AliMC
@@ -137,6 +147,12 @@ AliMC::~AliMC()
     fTrackReferences->Delete();
     delete fTrackReferences;
     fTrackReferences     = 0;
+  }
+
+if (fTmpTrackReferences) {
+    fTmpTrackReferences->Delete();
+    delete fTmpTrackReferences;
+    fTmpTrackReferences     = 0;
   }
 
 }
@@ -324,7 +340,6 @@ void AliMC::BeginPrimary()
   // Reset Hits info
   ResetHits();
   ResetTrackReferences();
-
 }
 
 //_______________________________________________________________________
@@ -467,7 +482,7 @@ void AliMC::BeginEvent()
   AliDebug(1, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
   AliDebug(1, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
     
-    AliRunLoader *runloader=gAlice->GetRunLoader();
+  AliRunLoader *runloader=gAlice->GetRunLoader();
 
   /*******************************/    
   /*   Clean after eventual      */
@@ -484,18 +499,17 @@ void AliMC::BeginEvent()
     // Clean detector information
   
   if (runloader->Stack())
-    runloader->Stack()->Reset();//clean stack -> tree is unloaded
+      runloader->Stack()->Reset();//clean stack -> tree is unloaded
   else
-    runloader->MakeStack();//or make a new one
+      runloader->MakeStack();//or make a new one
   
-//  runloader->Stack()->BeginEvent();
   
-if(gAlice->Lego() == 0x0)
-   { 
-     AliDebug(1, "fRunLoader->MakeTree(K)");
-     runloader->MakeTree("K");
-   }
-   
+  if(gAlice->Lego() == 0x0)
+  { 
+      AliDebug(1, "fRunLoader->MakeTree(K)");
+      runloader->MakeTree("K");
+  }
+  
   AliDebug(1, "gMC->SetStack(fRunLoader->Stack())");
   gMC->SetStack(gAlice->GetRunLoader()->Stack());//Was in InitMC - but was moved here 
                                      //because we don't have guarantee that 
@@ -506,14 +520,14 @@ if(gAlice->Lego() == 0x0)
   //
     
   runloader->GetHeader()->Reset(gAlice->GetRunNumber(),gAlice->GetEvNumber(),
-    gAlice->GetEventNrInRun());
+				gAlice->GetEventNrInRun());
 //  fRunLoader->WriteKinematics("OVERWRITE");  is there any reason to rewrite here since MakeTree does so
 
   if(gAlice->Lego()) 
-   {
-    gAlice->Lego()->BeginEvent();
-    return;
-   }
+  {
+      gAlice->Lego()->BeginEvent();
+      return;
+  }
   
 
   AliDebug(1, "ResetHits()");
@@ -522,28 +536,17 @@ if(gAlice->Lego() == 0x0)
   AliDebug(1, "fRunLoader->MakeTree(H)");
   runloader->MakeTree("H");
   
-  AliDebug(1, "fRunLoader->MakeTrackRefsContainer()");
-  runloader->MakeTrackRefsContainer();//for insurance
 
 
+  MakeTmpTrackRefsTree();
   //create new branches and SetAdresses
   TIter next(gAlice->Modules());
   AliModule *detector;
   while((detector = (AliModule*)next()))
    {
-    AliDebug(2, Form("%s->MakeBranch(H)",detector->GetName()));
-    detector->MakeBranch("H"); 
+       AliDebug(2, Form("%s->MakeBranch(H)",detector->GetName()));
+       detector->MakeBranch("H"); 
    }
-  // make branch for AliRun track References
-  TTree * treeTR = runloader->TreeTR();
-  if (treeTR){
-    // make branch for central track references
-    if (!fTrackReferences) fTrackReferences = new TClonesArray("AliTrackReference",0);
-    TBranch *branch;
-    branch = treeTR->Branch("TrackReferences",&fTrackReferences);
-    branch->SetAddress(&fTrackReferences);
-  }
-  //
 }
 
 //_______________________________________________________________________
@@ -603,7 +606,7 @@ void AliMC::FinishPrimary()
   }
 
   // Write out track references if any
-  if (runloader->TreeTR()) runloader->TreeTR()->Fill();
+  if (fTmpTreeTR) fTmpTreeTR->Fill();
 }
 
 void AliMC::RemapHits()
@@ -677,9 +680,11 @@ void AliMC::FinishEvent()
   header->SetNprimary(stack->GetNprimary());
   header->SetNtrack(stack->GetNtrack());  
 
-  
   // Write out the kinematics
   if (!gAlice->Lego()) stack->FinishEvent();
+
+  // Synchronize the TreeTR with TreeK
+  ReorderAndExpandTreeTR();
    
   // Write out the event Header information
   TTree* treeE = runloader->TreeE();
@@ -1117,8 +1122,8 @@ AliTrackReference*  AliMC::AddTrackReference(Int_t label, Int_t id)
   Int_t primary = GetPrimary(label);
   Particle(primary)->SetBit(kKeepBit);
 
-  Int_t nref = fTrackReferences->GetEntriesFast();
-  TClonesArray &lref = *fTrackReferences;
+  Int_t nref = fTmpTrackReferences->GetEntriesFast();
+  TClonesArray &lref = *fTmpTrackReferences;
   return new(lref[nref]) AliTrackReference(label, id);
 }
 
@@ -1130,7 +1135,7 @@ void AliMC::ResetTrackReferences()
   //
   //  Reset all  references
   //
-  if (fTrackReferences)   fTrackReferences->Clear();
+  if (fTmpTrackReferences)   fTmpTrackReferences->Clear();
 }
 
 void AliMC::RemapTrackReferencesIDs(Int_t *map)
@@ -1139,20 +1144,20 @@ void AliMC::RemapTrackReferencesIDs(Int_t *map)
   // Remapping track reference
   // Called at finish primary
   //
-  if (!fTrackReferences) return;
-  Int_t nEntries = fTrackReferences->GetEntries();
+  if (!fTmpTrackReferences) return;
+  Int_t nEntries = fTmpTrackReferences->GetEntries();
   for (Int_t i=0; i < nEntries; i++){
-      AliTrackReference * ref = dynamic_cast<AliTrackReference*>(fTrackReferences->UncheckedAt(i));
+      AliTrackReference * ref = dynamic_cast<AliTrackReference*>(fTmpTrackReferences->UncheckedAt(i));
       if (ref) {
 	  Int_t newID = map[ref->GetTrack()];
 	  if (newID>=0) ref->SetTrack(newID);
 	  else {
 	      ref->SetBit(kNotDeleted,kFALSE);
-	      fTrackReferences->RemoveAt(i);  
+	      fTmpTrackReferences->RemoveAt(i);  
 	  }      
       } // if ref
   }
-  fTrackReferences->Compress();
+  fTmpTrackReferences->Compress();
 }
 
 void AliMC::FixParticleDecaytime()
@@ -1202,3 +1207,113 @@ void AliMC::FixParticleDecaytime()
     //
     gMC->ForceDecayTime(t / 2.99792458e10);
 }
+
+void AliMC::MakeTmpTrackRefsTree()
+{
+    // Make the temporary track reference tree
+    fTmpFileTR = new TFile("TrackRefsTmp.root", "recreate");
+    fTmpTreeTR = new TTree("TreeTR", "Track References");
+    if (!fTmpTrackReferences)  fTmpTrackReferences = new TClonesArray("AliTrackReference", 100);
+    fTmpTreeTR->Branch("TrackReferences", "TClonesArray", &fTmpTrackReferences, 4000);
+}
+
+void AliMC::ReorderAndExpandTreeTR()
+{
+//
+//  Reorder and expand the temporary track reference tree in order to match the kinematics tree
+//
+
+    AliRunLoader *rl = gAlice->GetRunLoader();
+//
+//  TreeTR
+    AliDebug(1, "fRunLoader->MakeTrackRefsContainer()");
+    rl->MakeTrackRefsContainer(); 
+    TTree * treeTR = rl->TreeTR();
+    if (treeTR){
+	// make branch for central track references
+	if (!fTrackReferences) fTrackReferences = new TClonesArray("AliTrackReference",0);
+	TBranch *branch;
+	branch = treeTR->Branch("TrackReferences",&fTrackReferences);
+	branch->SetAddress(&fTrackReferences);
+    }
+
+    AliStack* stack  = rl->Stack();
+    Int_t np = stack->GetNprimary();
+    Int_t nt = fTmpTreeTR->GetEntries();
+    if (nt != np)  AliWarning("TreeTR: Less Entries than primaries in TreeK !");
+
+
+    //
+    // Loop over tracks and find the secondaries with the help of the kine tree
+    
+    for (Int_t it = 0; it < nt; it++) {
+	fTmpTreeTR->GetEntry(it);
+	Int_t nh = fTmpTrackReferences->GetEntries();
+	TParticle *part = stack->Particle(nt - it - 1);
+	// Determine range of secondaries produced by this primary
+	Int_t dau1  = part->GetFirstDaughter();
+	Int_t dau2  = -1;
+	if (dau1 > -1) {
+	    Int_t inext = nt - it - 2;
+	    while (dau2 < 0) {
+		if (inext >= 0) {
+		    part = stack->Particle(inext);
+		    dau2 = part->GetFirstDaughter() - 1;
+		} else {
+		    dau2 = stack->GetNtrack() - 1;
+		}
+		inext--;
+	    }
+	}
+	// 
+	// Loop over reference hits and find secondary label
+	for (Int_t id = dau1; (id <= dau2) && (dau1 > -1); id++) {
+	    for (Int_t ih = 0; ih < nh; ih++) {
+		AliTrackReference* tr = (AliTrackReference*) fTmpTrackReferences->At(ih);
+		Int_t label = tr->Label();
+//		printf("Secondary id: %5d ih: %5d label: %5d \n", id, ih, label);
+		if (label == (nt - it - 1)) continue;
+		if (label > dau2 || label < dau1) AliWarning("Track Reference Label out of range !");
+		if (label == id) {
+		    // secondary found
+		    Int_t nref =  fTrackReferences->GetEntriesFast();
+		    TClonesArray &lref = *fTrackReferences;
+		    new(lref[nref]) AliTrackReference(*tr);
+		}
+	    } // hits
+	    treeTR->Fill();
+	    fTrackReferences->Clear();
+	} // daughters
+    } // tracks
+
+    //
+    // Now loop again and write the primaries
+    for (Int_t it = nt -1; it > -1; it--) {
+	fTmpTreeTR->GetEntry(it);
+	Int_t nh = fTmpTrackReferences->GetEntries();
+	// 
+	// Loop over reference hits and find primary labels
+	for (Int_t ih = 0; ih < nh; ih++) {
+	    AliTrackReference* tr = (AliTrackReference*)  fTmpTrackReferences->At(ih);
+	    Int_t label = tr->Label();
+	    if (label == (nt - it -1)) {
+		Int_t nref = fTrackReferences->GetEntriesFast();
+		TClonesArray &lref = *fTrackReferences;
+		new(lref[nref]) AliTrackReference(*tr);
+	    }
+	}
+	treeTR->Fill();
+	fTrackReferences->Clear();
+    } // tracks
+
+
+//
+//  Clean-up
+    delete fTmpTreeTR;
+    fTmpFileTR->Close();
+    delete fTmpFileTR;
+    delete fTmpTrackReferences;
+    fTmpTrackReferences = 0;
+    gSystem->Exec("rm -rf TrackRefsTmp.root");
+}
+
