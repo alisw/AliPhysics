@@ -34,7 +34,7 @@ using namespace std;
 #include <TObjString.h>
 #include <TFile.h>
 
-ClassImp(AliHLTCalibrationProcessor)
+ClassImp(AliHLTCalibrationProcessor);
 
 
 const AliHLTUInt32_t AliHLTCalibrationProcessor::fgkFXSProtocolHeaderSize = 204;
