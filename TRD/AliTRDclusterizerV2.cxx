@@ -59,6 +59,7 @@ AliTRDclusterizerV2::AliTRDclusterizerV2()
   ,fDigitsManager(NULL)
   ,fGeometry(NULL)
   ,fAddLabels(kTRUE)
+  ,fRawVersion(2)
 {
   //
   // AliTRDclusterizerV2 default constructor
@@ -72,6 +73,7 @@ AliTRDclusterizerV2::AliTRDclusterizerV2(const Text_t *name, const Text_t *title
   ,fDigitsManager(new AliTRDdigitsManager())
   ,fGeometry(NULL)
   ,fAddLabels(kTRUE)
+  ,fRawVersion(2)
 {
   //
   // AliTRDclusterizerV2 constructor
@@ -87,6 +89,7 @@ AliTRDclusterizerV2::AliTRDclusterizerV2(const AliTRDclusterizerV2 &c)
   ,fDigitsManager(NULL)
   ,fGeometry(NULL)
   ,fAddLabels(kTRUE)
+  ,fRawVersion(2)
 {
   //
   // AliTRDclusterizerV2 copy constructor
@@ -257,8 +260,7 @@ Bool_t AliTRDclusterizerV2::Raw2Clusters(AliRawReader *rawReader)
   //delete fDigitsManager;
 
   AliTRDRawStream input(rawReader);
-  //input.SetRawVersion( fRawVersion );
-  input.SetRawVersion( 2 );
+  input.SetRawVersion( fRawVersion );
   input.Init();
 
   // Loop through the digits
@@ -380,8 +382,7 @@ Bool_t AliTRDclusterizerV2::Raw2ClustersChamber(AliRawReader *rawReader)
 
 
   AliTRDRawStream input(rawReader);
-  //input.SetRawVersion( fRawVersion );
-  input.SetRawVersion( 2 );
+  input.SetRawVersion( fRawVersion );
   input.Init();
   
   Int_t det    = 0;

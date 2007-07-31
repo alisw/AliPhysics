@@ -40,9 +40,9 @@ class AliTRDclusterizerV2 : public AliTRDclusterizer {
   virtual Bool_t   ReadDigits(AliRawReader *rawReader);
   virtual Bool_t   ReadDigits(TTree *digitsTree);
 
-  virtual Bool_t AddLabels(Int_t idet, Int_t firstClusterROC, Int_t nClusterROC);
-
-  virtual Bool_t SetAddLabels(Bool_t kset) { fAddLabels = kset; return fAddLabels;}
+  virtual Bool_t   AddLabels(Int_t idet, Int_t firstClusterROC, Int_t nClusterROC);
+  virtual Bool_t   SetAddLabels(Bool_t kset) { fAddLabels = kset; return fAddLabels;} // should we assign labels to clusters
+  virtual void     SetRawVersion(Int_t iver) { fRawVersion = iver;} // set the expected raw data version
 
  protected:
 
@@ -68,6 +68,7 @@ class AliTRDclusterizerV2 : public AliTRDclusterizer {
   AliTRDgeometry      *fGeometry;           //! default TRD geometry
 
   Bool_t              fAddLabels;           // should clusters have MC labels?
+  Int_t               fRawVersion;          // expected raw version of the data - default is 2
   ClassDef(AliTRDclusterizerV2,1)           //  TRD-Cluster finder, slow simulator
 
 };
