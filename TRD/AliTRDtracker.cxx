@@ -978,16 +978,15 @@ Int_t AliTRDtracker::RefitInward(AliESDEvent *event)
     }  
         
     //AliTRDtrack *pt = seed2;
-		// A.Bercuci 25.07.07
-		//AliTRDtrack &t = *pt; 
+    //AliTRDtrack &t = *pt; 
     FollowProlongation(*pt); 
     if (pt->GetNumberOfClusters() >= foundMin) {
       //UseClusters(&t);
       //CookLabel(pt, 1-fgkLabelFraction);
       pt->CookdEdx();
       pt->CookdEdxTimBin();
-			pt->CookPID(seed);
-			//pt->Calibrate(); // slot for calibration
+      pt->CookPID(seed);
+      //pt->Calibrate(); // slot for calibration
     }
     found++;
 
@@ -1013,9 +1012,9 @@ Int_t AliTRDtracker::RefitInward(AliESDEvent *event)
       delete seed2;
       if (PropagateToX(*pt2,xTPC,fgkMaxStep)) { 
         pt2->CookdEdx( ); 
-        pt2->CookdEdxTimBin(); // A.Bercuci 25.07.07
-				seed->UpdateTrackParams(pt2,AliESDtrack::kTRDrefit);
-				fHRefit->Fill(6);
+        pt2->CookdEdxTimBin(); 
+	seed->UpdateTrackParams(pt2,AliESDtrack::kTRDrefit);
+	fHRefit->Fill(6);
 
         for (Int_t i = 0; i < AliESDtrack::kNPlane; i++) {
           for (Int_t j = 0; j < AliESDtrack::kNSlice; j++) {
@@ -1024,16 +1023,19 @@ Int_t AliTRDtracker::RefitInward(AliESDEvent *event)
           seed->SetTRDTimBin(pt2->GetPIDTimBin(i),i);
         }
       }
-			// A.Bercuci 25.07.07
-			// Add TRD track to ESDfriendTrack - maybe this tracks are not useful for post-processing - TODO make decission
-			if (AliTRDReconstructor::StreamLevel()>0)  seed->AddCalibObject(new AliTRDtrack(*pt2/*, kTRUE*/));
+
+      // Add TRD track to ESDfriendTrack - maybe this tracks are not useful for post-processing - TODO make decission
+      if (AliTRDReconstructor::StreamLevel() > 0)  {
+        seed->AddCalibObject(new AliTRDtrack(*pt2/*, kTRUE*/));
+      }
       delete pt2;
     }
 
+    // Add TRD track to ESDfriendTrack
+    if (AliTRDReconstructor::StreamLevel() > 0)  {
+      seed->AddCalibObject(new AliTRDtrack(*pt/*, kTRUE*/));
+    }
     delete pt;
-		// A.Bercuci 25.07.07
-		// Add TRD track to ESDfriendTrack
-		if (AliTRDReconstructor::StreamLevel()>0)  seed->AddCalibObject(new AliTRDtrack(*pt/*, kTRUE*/));
 
   }   
 
