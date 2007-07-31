@@ -289,7 +289,7 @@ void AliGenMUONCocktailpp::Generate()
 	AliRunLoader * runloader = gAlice->GetRunLoader();
 	if (runloader)
 	    if (runloader->Stack())
-		runloader->Stack()->Reset();
+		runloader->Stack()->Clean();
 	// Loop over generators and generate events
 	Int_t igen = 0;
 	Int_t npart = 0;	
