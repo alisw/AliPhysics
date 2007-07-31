@@ -149,24 +149,6 @@ AliTRDCalPadStatus *CreatePadStatusObject()
 }
 
 //_____________________________________________________________________________
-AliTRDCalPIDLQ *CreatePIDObject()
-{
-
-  AliTRDCalPIDLQ         *pid = new AliTRDCalPID("pidobject"
-                                                ,"pidobject");
-
-  pid->ReadData("$ALICE_ROOT/TRD/TRDdEdxHistogramsV1.root");
-
-  // The factor is the ratio of Mean of pi charge dist.
-  // for the New TRD code divided by the Mean of pi charge
-  // dist. given in AliTRDCalPID object
-  pid->SetMeanChargeRatio(1.0); 
-  
-  return pid;
-
-}
-
-//_____________________________________________________________________________
 AliTRDCalMonitoring *CreateMonitoringObject()
 {
   AliTRDCalMonitoring    *obj = new AliTRDCalMonitoring();
@@ -181,10 +163,10 @@ AliCDBMetaData *CreateMetaObject(const char *objectClassName)
 
   AliCDBMetaData *md1= new AliCDBMetaData(); 
   md1->SetObjectClassName(objectClassName);
-  md1->SetResponsible("Jan Fiete Grosse-Oetringhaus");
+  md1->SetResponsible("Christoph Blume");
   md1->SetBeamPeriod(1);
-  md1->SetAliRootVersion("05-06-00"); //root version
-  md1->SetComment("The dummy values in this calibration file are for testing only");
+  md1->SetAliRootVersion("05-16-00"); //root version
+  md1->SetComment("Ideal calibration values");
   
   return md1;
 
@@ -271,10 +253,6 @@ void AliTRDCreateDummyCDB()
   metaData = CreateMetaObject("AliTRDCalPadStatus");
   obj = CreatePadStatusObject();
   StoreObject("TRD/Calib/PadStatus"         ,obj,metaData);
-
-  //metaData = CreateMetaObject("AliTRDCalPID");
-  //obj = CreatePIDObject();
-  //StoreObject("TRD/Calib/PIDLQ"             ,obj,metaData);
 
   //
   // Monitoring object
