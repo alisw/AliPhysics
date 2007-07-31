@@ -1205,6 +1205,10 @@ Double_t IntSpecGeant(Double_t *x, Double_t *)
   Int_t    i;
   Double_t energy = x[0];
 
+  if (energy >= arre[npts-1]) {
+    return 0.0;
+  }
+
   for (i = 0; i < npts; i++) {
     if (energy < arre[i]) {
       break;
