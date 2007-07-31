@@ -47,7 +47,7 @@ AliTRDtrack::AliTRDtrack()
   ,fSeedLab(-1)
   ,fdEdx(0)
   ,fDE(0)
-	,fClusterOwner(kFALSE) // A.Bercuci
+  ,fClusterOwner(kFALSE)
   ,fStopped(kFALSE)
   ,fLhElectron(0)
   ,fNWrong(0)
@@ -97,7 +97,7 @@ AliTRDtrack::AliTRDtrack(AliTRDcluster *c, Int_t index
   ,fSeedLab(-1)
   ,fdEdx(0)
   ,fDE(0)
-	,fClusterOwner(kFALSE) // A.Bercuci
+  ,fClusterOwner(kFALSE)
   ,fStopped(kFALSE)
   ,fLhElectron(0)
   ,fNWrong(0)
@@ -178,7 +178,7 @@ AliTRDtrack::AliTRDtrack(const AliTRDtrack &t/*, const Bool_t owner*/)
   ,fSeedLab(t.GetSeedLabel())
   ,fdEdx(t.fdEdx)
   ,fDE(t.fDE)
-	,fClusterOwner(kTRUE) // A.Bercuci
+  ,fClusterOwner(kTRUE)
   ,fStopped(t.fStopped)
   ,fLhElectron(0)
   ,fNWrong(t.fNWrong)
@@ -239,7 +239,7 @@ AliTRDtrack::AliTRDtrack(const AliKalmanTrack &t, Double_t /*alpha*/)
   ,fSeedLab(-1)
   ,fdEdx(t.GetPIDsignal())
   ,fDE(0)
-	,fClusterOwner(kFALSE) // A.Bercuci
+  ,fClusterOwner(kFALSE)
   ,fStopped(kFALSE)
   ,fLhElectron(0.0)
   ,fNWrong(0)
@@ -292,7 +292,7 @@ AliTRDtrack::AliTRDtrack(const AliESDtrack &t)
   ,fSeedLab(-1)
   ,fdEdx(t.GetTRDsignal())
   ,fDE(0)
-	,fClusterOwner(kFALSE) // A.Bercuci
+  ,fClusterOwner(kFALSE)
   ,fStopped(kFALSE)
   ,fLhElectron(0)
   ,fNWrong(0)
@@ -607,7 +607,6 @@ Int_t AliTRDtrack::CookPID(AliESDtrack *esd)
 	Double_t p[] = {p0, p0, p0, p0, p0};
 	Float_t length;  // track segment length in chamber
 	Int_t nPlanePID = 0;
-		
 	// Skip tracks which have no TRD signal at all
 	if (fdEdx == 0.) return -1;
 	
@@ -619,7 +618,6 @@ Int_t AliTRDtrack::CookPID(AliESDtrack *esd)
 		if((fdEdxPlane[iPlane][0] + fdEdxPlane[iPlane][1] + fdEdxPlane[iPlane][2]) <=  0.
 		|| fTimBinPlane[iPlane] == -1.) continue;
 
-		
 		// this track segment has fulfilled all requierments
 		nPlanePID++;
 

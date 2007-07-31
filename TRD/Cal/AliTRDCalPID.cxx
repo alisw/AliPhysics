@@ -325,7 +325,7 @@ Double_t AliTRDCalPID::GetProbability(Int_t spec, Float_t mom, Float_t *dedx, Fl
 	}
 	Int_t imom = 1;
   while(imom<kNMom-1 && mom>fTrackMomentum[imom]) imom++;
-	
+
 	Int_t nbinsx, nbinsy;
 	TAxis *ax = 0x0, *ay = 0x0;
 	Double_t LQ1, LQ2;
@@ -339,7 +339,7 @@ Double_t AliTRDCalPID::GetProbability(Int_t spec, Float_t mom, Float_t *dedx, Fl
 	ax = hist->GetXaxis(); nbinsx = ax->GetNbins();
 	ay = hist->GetYaxis(); nbinsy = ay->GetNbins();
 	Float_t x = dedx[0]+dedx[1], y = dedx[2];
-  Bool_t kX = (x < ax->GetBinUpEdge(nbinsx));
+        Bool_t kX = (x < ax->GetBinUpEdge(nbinsx));
 	Bool_t kY = (y < ay->GetBinUpEdge(nbinsy));
 	if(kX)
 		if(kY) LQ1 = hist->GetBinContent( hist->FindBin(x, y)); 
@@ -362,10 +362,11 @@ Double_t AliTRDCalPID::GetProbability(Int_t spec, Float_t mom, Float_t *dedx, Fl
 	else
 		if(kY) LQ2 = hist->GetBinContent(nbinsx, ay->FindBin(y));
 	 	else LQ2 = hist->GetBinContent(nbinsx, nbinsy);
-
 	
-	// return interpolation over momentum binning
-  return LQ1 + (LQ2 - LQ1)*(mom - mom1)/(mom2 - mom1);
+        // return interpolation over momentum binning
+        if(mom < fTrackMomentum[0]) return LQ1;
+        else if(mom > fTrackMomentum[kNMom-1]) return LQ2;
+        else return LQ1 + (LQ2 - LQ1)*(mom - mom1)/(mom2 - mom1);
 
 }
 
