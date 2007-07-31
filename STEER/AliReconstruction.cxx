@@ -152,7 +152,7 @@
 #include "AliESDpid.h"
 #include "AliESDtrack.h"
 
-#include "AliTagCreator.h"
+#include "AliESDTagCreator.h"
 
 #include "AliGeomManager.h"
 #include "AliTrackPointArray.h"
@@ -824,8 +824,8 @@ Bool_t AliReconstruction::Run(const char* input)
   
   // Create tags for the events in the ESD tree (the ESD tree is always present)
   // In case of empty events the tags will contain dummy values
-  AliTagCreator *tagCreator = new AliTagCreator();
-  tagCreator->CreateESDTags(fFirstEvent,fLastEvent);
+  AliESDTagCreator *esdtagCreator = new AliESDTagCreator();
+  esdtagCreator->CreateESDTags(fFirstEvent,fLastEvent);
   //if (fWriteAOD) tagCreator->CreateAODTags(fFirstEvent,fLastEvent);
 
   return kTRUE;

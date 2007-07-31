@@ -1,13 +1,13 @@
-#ifndef ALITAGCREATOR_H
-#define ALITAGCREATOR_H
+#ifndef ALIESDTAGCREATOR_H
+#define ALIESDTAGCREATOR_H
 /*  See cxx source for full Copyright notice */
 
 
 /* $Id$ */
 
 //-------------------------------------------------------------------------
-//                          Class AliTagCreator
-//   This is the AliTagCreator class for the tag creation (post process)
+//                          Class AliESDTagCreator
+//   This is the AliESDTagCreator class for the tag creation (post process)
 //
 //    Origin: Panos Christakoglou, UOA-CERN, Panos.Christakoglou@cern.ch
 //-------------------------------------------------------------------------
@@ -16,7 +16,7 @@
 
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
-//                        AliTagCreator                                 //
+//                        AliESDTagCreator                              //
 //                                                                      //
 //           Implementation of the tag creation mechanism.              //
 //                                                                      //
@@ -24,33 +24,32 @@
 
 
 //ROOT
-#include <TObject.h>
+//#include <TObject.h>
 
+#include <AliTagCreator.h>
+
+class TFile;
 class TGridResult;
 
 
 //___________________________________________________________________________
-class AliTagCreator : public TObject {
+class AliESDTagCreator : public AliTagCreator {
 
  public:
-  AliTagCreator();
-  ~AliTagCreator(); 
+  AliESDTagCreator();
+  ~AliESDTagCreator(); 
 
-  //____________________________________________________//
-  Bool_t MergeTags();
-  Bool_t MergeTags(TGridResult *result);
+  void CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent);
 
-  void SetSE(const char *se){fSE = se;}
-  void SetStorage(Int_t storage);
-  void SetGridPath(const char *gridpath){fgridpath = gridpath;}
-
-  //____________________________________________________//
- protected:
-  TString fSE;   //the defined storage element
-  TString fgridpath;   //the alien location of the tag files
-  Int_t fStorage;  //0:local - 1:grid
-   
-  ClassDef(AliTagCreator,0)  
+  Bool_t ReadGridCollection(TGridResult *result);
+  Bool_t ReadLocalCollection(const char *localpath);
+  Bool_t ReadCAFCollection(const char *filename);
+  
+ protected:  
+  void CreateTag(TFile* file, const char *guid, const char *md5, const char *turl, Long64_t size, Int_t Counter);
+  void CreateTag(TFile* file, const char *filepath, Int_t Counter);
+ 
+  ClassDef(AliESDTagCreator,0)  
 };
 
 #endif
