@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 /*
-$Log
+$Log$
 */
 
 // task to perform TOF calibration
