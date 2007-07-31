@@ -23,9 +23,10 @@
 
 #endif
 
-// Run number for the dummy file
-const Int_t    gkDummyRun = 0;
-AliCDBStorage *gStorLoc   = 0;
+// Run numbers for the dummy file
+const Int_t    gkDummyRunBeg = 0;
+const Int_t    gkDummyRunEnd = 999999999;
+AliCDBStorage *gStorLoc      = 0;
 
 //_____________________________________________________________________________
 TObject *CreatePadObject(const char *shortName, const char *description
@@ -148,17 +149,17 @@ AliTRDCalPadStatus *CreatePadStatusObject()
 }
 
 //_____________________________________________________________________________
-AliTRDCalPIDLQ *CreatePIDLQObject()
+AliTRDCalPIDLQ *CreatePIDObject()
 {
 
-  AliTRDCalPIDLQ         *pid = new AliTRDCalPIDLQ("pidobject"
-                                                  ,"pidobject");
+  AliTRDCalPIDLQ         *pid = new AliTRDCalPID("pidobject"
+                                                ,"pidobject");
 
   pid->ReadData("$ALICE_ROOT/TRD/TRDdEdxHistogramsV1.root");
 
   // The factor is the ratio of Mean of pi charge dist.
   // for the New TRD code divided by the Mean of pi charge
-  // dist. given in AliTRDCalPIDLQ object
+  // dist. given in AliTRDCalPID object
   pid->SetMeanChargeRatio(1.0); 
   
   return pid;
@@ -193,7 +194,7 @@ AliCDBMetaData *CreateMetaObject(const char *objectClassName)
 void StoreObject(const char *cdbPath, TObject *object, AliCDBMetaData *metaData)
 {
 
-  AliCDBId id1(cdbPath,gkDummyRun,gkDummyRun); 
+  AliCDBId id1(cdbPath,gkDummyRunBeg,gkDummyRunEnd); 
   gStorLoc->Put(object,id1,metaData); 
 
 }
@@ -203,8 +204,10 @@ void AliTRDCreateDummyCDB()
 {
 
   cout << endl 
-       << "TRD :: Creating dummy CDB with event number " 
-       << gkDummyRun 
+       << "TRD :: Creating dummy CDB for the runs " 
+       << gkDummyRunBeg
+       << " -- " 
+       << gkDummyRunEnd
        << endl;
   
   AliCDBManager *man = AliCDBManager::Instance();
@@ -269,9 +272,9 @@ void AliTRDCreateDummyCDB()
   obj = CreatePadStatusObject();
   StoreObject("TRD/Calib/PadStatus"         ,obj,metaData);
 
-  metaData = CreateMetaObject("AliTRDCalPIDLQ");
-  obj = CreatePIDLQObject();
-  StoreObject("TRD/Calib/PIDLQ"             ,obj,metaData);
+  //metaData = CreateMetaObject("AliTRDCalPID");
+  //obj = CreatePIDObject();
+  //StoreObject("TRD/Calib/PIDLQ"             ,obj,metaData);
 
   //
   // Monitoring object
