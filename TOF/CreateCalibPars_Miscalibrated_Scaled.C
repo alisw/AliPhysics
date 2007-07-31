@@ -33,6 +33,8 @@ void CreateCalibPars_Miscalibrated_Scaled(){
 
   // Fill the Sim calibration object
 
+  AliCDBManager *man = AliCDBManager::Instance();
+  man->SetDefaultStorage("local://$ALICE");
   TRandom *rnd   = new TRandom(4357);
   for (Int_t ipad = 0 ; ipad<tofCal->NPads(); ipad++){
     AliTOFChannel *calChannel = tofCal->GetChannel(ipad);

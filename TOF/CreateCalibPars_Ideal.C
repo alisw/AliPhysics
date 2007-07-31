@@ -1,6 +1,8 @@
 void CreateCalibPars_Ideal(){
   // Create TOF Calibration Object for Ideal calibration and 
   // write it on CDB
+  AliCDBManager *man = AliCDBManager::Instance();
+  man->SetDefaultStorage("local://$ALICE");
   AliTOFGeometry *geom = new AliTOFGeometryV5(); 
   AliTOFcalib *tofcalib = new AliTOFcalib(geom);
   AliTOFCal *tofCal= new AliTOFCal(geom);
