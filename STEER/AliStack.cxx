@@ -590,10 +590,10 @@ void AliStack::KeepTrack(Int_t track)
 }
 
 //_____________________________________________________________________________
-void  AliStack::Reset(Int_t size) 
+void  AliStack::Clean(Int_t size) 
 {
   //
-  // Resets stack
+  // Reset stack data except for fTreeK
   //
   
   fNtrack=0;
@@ -601,8 +601,19 @@ void  AliStack::Reset(Int_t size)
   fHgwmk=0;
   fLoadPoint=0;
   fCurrent = -1;
-  fTreeK = 0x0;
   ResetArrays(size);
+}
+
+//_____________________________________________________________________________
+void  AliStack::Reset(Int_t size) 
+{
+  //
+  // Reset stack data including fTreeK
+  //
+
+  Clean(size);
+  
+  fTreeK = 0x0;
 }
 
 //_____________________________________________________________________________
@@ -873,7 +884,7 @@ void AliStack::ConnectTree(TTree* tree)
 //
 //  Creates branch for writing particles
 //
-    
+
   fTreeK = tree;
     
   AliDebug(1, "Connecting TreeK");
@@ -918,20 +929,7 @@ void AliStack::ConnectTree(TTree* tree)
   else
     AliWarning("Branch Dir is NOT SET");
 }
-//__________________________________________________________________________________________
 
-
-void AliStack::BeginEvent()
-{
-// start a new event
- Reset();
-}
-
-//_____________________________________________________________________________
-void AliStack::FinishRun()
-{
-// Clean TreeK information
-}
 //_____________________________________________________________________________
 
 Bool_t AliStack::GetEvent()

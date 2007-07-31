@@ -53,14 +53,13 @@ class AliStack : public TVirtualMCStack
     virtual TParticle* PopPrimaryForTracking(Int_t i);    
 
     void   ConnectTree(TTree* tree);
-    void   BeginEvent();
-    void   FinishRun();
     Bool_t GetEvent();
     void   PurifyKine();
     void   ReorderKine();
     void   FinishEvent();
     void   FlagTrack(Int_t track);
     void   KeepTrack(Int_t itrack); 
+    void   Clean(Int_t size = 0);
     void   Reset(Int_t size = 0);
     void   DumpPart(Int_t i) const;
     void   DumpPStack ();

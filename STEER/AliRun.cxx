@@ -383,11 +383,6 @@ void AliRun::FinishRun()
   Write(0,TObject::kOverwrite);//write AliRun
   fRunLoader->Write(0,TObject::kOverwrite);//write RunLoader itself
   
-  // Clean tree information
-  AliDebug(1, "fRunLoader->Stack()->FinishRun()");
-  fRunLoader->Stack()->FinishRun();
-
-
   if(fMCApp) fMCApp->FinishRun();  
   fRunLoader->Synchronize();
 }
