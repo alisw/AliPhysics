@@ -38,7 +38,7 @@ $Log
   
 #include "AliTOFCalibTask.h" 
 #include "AliTOFChannelTask.h" 
-#include "AliESD.h" 
+#include "AliESDEvent.h" 
 #include "AliESDtrack.h" 
 #include "AliLog.h"
 //______________________________________________________________________________
@@ -81,6 +81,16 @@ AliTOFCalibTask::AliTOFCalibTask(const char *name) :
   // Output slot #0 writes into a TH1 container
   DefineOutput(0,  TObjArray::Class()) ; 
   fdir = gDirectory->GetPath();
+  fbigarray = new Float_t*[TOFCHANNELS];
+  findexarray = new Int_t[TOFCHANNELS];
+
+  for (Int_t i =0;i<TOFCHANNELS;i++){
+    fbigarray[i] = new Float_t[CHENTRIES];
+    findexarray[i]=0;
+    for (Int_t j =0;j<CHENTRIES;j++){
+      fbigarray[i][j]=-1;
+    }
+  }
 }
 
 //______________________________________________________________________________
@@ -129,8 +139,6 @@ AliTOFCalibTask::AliTOFCalibTask(const AliTOFCalibTask &calibtask) :
   fExpTimePr=calibtask.fExpTimePr;
   ftree=calibtask.ftree;
   fMinTime=calibtask.fMinTime;
-  fbigarray=calibtask.fbigarray;
-  findexarray=calibtask.findexarray;
   fnESD=calibtask.fnESD;
   fnESDselected=calibtask.fnESDselected;
   fnESDkTOFout=calibtask.fnESDkTOFout;
@@ -146,6 +154,18 @@ AliTOFCalibTask::AliTOFCalibTask(const AliTOFCalibTask &calibtask) :
   fhPID=calibtask.fhPID;
   fhch=calibtask.fhch;
   fOutputContainer=calibtask.fOutputContainer; 
+
+  fbigarray = new Float_t*[TOFCHANNELS];
+  findexarray = new Int_t[TOFCHANNELS];
+
+  for (Int_t i =0;i<TOFCHANNELS;i++){
+    fbigarray[i] = new Float_t[CHENTRIES];
+    findexarray[i]=calibtask.findexarray[i];
+    for (Int_t j =0;j<CHENTRIES;j++){
+      fbigarray[i][j]=calibtask.fbigarray[i][j];
+    }
+  }
+
 }
 //______________________________________________________________________________
 AliTOFCalibTask:: ~AliTOFCalibTask() 
@@ -180,8 +200,6 @@ AliTOFCalibTask& AliTOFCalibTask::operator=(const AliTOFCalibTask &calibtask)
   this->fExpTimePr=calibtask.fExpTimePr;
   this->ftree=calibtask.ftree;
   this->fMinTime=calibtask.fMinTime;
-  this->fbigarray=calibtask.fbigarray;
-  this->findexarray=calibtask.findexarray;
   this->fnESD=calibtask.fnESD;
   this->fnESDselected=calibtask.fnESDselected;
   this->fnESDkTOFout=calibtask.fnESDkTOFout;
@@ -197,6 +215,16 @@ AliTOFCalibTask& AliTOFCalibTask::operator=(const AliTOFCalibTask &calibtask)
   this->fOutputContainer=calibtask.fOutputContainer; 
   this->fhPID=calibtask.fhPID;
   this->fhch=calibtask.fhch;
+
+  this->fbigarray = new Float_t*[TOFCHANNELS];
+  this->findexarray = new Int_t[TOFCHANNELS];
+  for (Int_t i =0;i<TOFCHANNELS;i++){
+    this->fbigarray[i] = new Float_t[CHENTRIES];
+    this->findexarray[i]=calibtask.findexarray[i];
+    for (Int_t j =0;j<CHENTRIES;j++){
+      this->fbigarray[i][j]=calibtask.fbigarray[i][j];
+    }
+  }
   return *this;
 }
 //--------------------------------------------------------------------------
@@ -319,24 +347,45 @@ void AliTOFCalibTask::ConnectInputData(const Option_t*)
   // One should first check if the branch address was taken by some other task
   char ** address = (char **)GetBranchAddress(0, "ESD");
   if (address) {
-    fESD = (AliESD*)(*address);
+    fESD = (AliESDEvent*)(*address);
   } else {
-    fESD = new AliESD();
+    fESD = new AliESDEvent();
+    AliInfo(" qui ok ");
+    //    fESD = (AliESDEvent*)fChain->GetTree()->GetUserInfo()->FindObject("AliESDEvent");
     fESD->ReadFromTree(fChain) ;  
-  }
-  fbigarray = new Float_t*[TOFCHANNELS];
-  findexarray = new Int_t[TOFCHANNELS];
-  for (Int_t i =0;i<TOFCHANNELS;i++){
-    fbigarray[i] = new Float_t[CHENTRIES];
-    findexarray[i]=0;
-    for (Int_t j =0;j<CHENTRIES;j++){
-      fbigarray[i][j]=-1;
-    }
   }
 
   BookHistos();
 
 }
+//-----------------------------------------------------------------------
+Bool_t AliTOFCalibTask::Notify()
+{
+  // Initialisation of branch container and histograms 
+    
+  AliInfo(Form("*** We are in  %s::Notify()", GetName())) ; 
+  
+  // Get input data
+  fChain = dynamic_cast<TChain *>(GetInputData(0)) ;
+  if (!fChain) {
+    AliError(Form("Input 0 for %s not found\n", GetName()));
+    return kFALSE;
+  }
+  
+  // One should first check if the branch address was taken by some other task
+  char ** address = (char **)GetBranchAddress(0, "ESD") ;
+  if (address) 
+    fESD = (AliESDEvent *)(*address) ; 
+  else {
+    fESD = new AliESDEvent();
+    //    fESD = (AliESDEvent*)fChain->GetTree()->GetUserInfo()->FindObject("AliESDEvent");
+    fESD->ReadFromTree(fChain) ;  
+    //SetBranchAddress(0,"ESD",&fESD);
+  }
+
+  return kTRUE;
+}
+
 //________________________________________________________________________
 void AliTOFCalibTask::CreateOutputObjects()
 {
@@ -381,7 +430,7 @@ void AliTOFCalibTask::Exec(Option_t * opt)
     AliDebug(2,Form(" ESD in channel %i, filling array %i",t->GetTOFCalChannel(),ich));
     Float_t tot = t->GetTOFsignalToT();
     Float_t time = t->GetTOFsignalRaw();
-    AliDebug(2,Form(" track # %i in channel %i, time = %f \n",ntrk,ich,time)); 
+    AliDebug(2,Form(" track # %i in schannel %i, time = %f \n",ntrk,ich,time)); 
     Double_t expTime[10]; 
     t->GetIntegratedTimes(expTime);
     Float_t expTimePi = expTime[2]*1.E-3;
@@ -437,6 +486,7 @@ void AliTOFCalibTask::Terminate(Option_t *)
     }
     if (!CombPID(&fbigarray[i][0], size)) AliError("ERROR!!!!ERROR!!!");
   }
+  
   DrawHistos();
 
   // saving data in a tree
@@ -530,12 +580,12 @@ void AliTOFCalibTask::Terminate(Option_t *)
   }
   dir->cd();
   Int_t calibrationStatus = 0;
-  Int_t ch[2]={3,1003};
-  calibrationStatus = Calibrate(2,ch,"save");
+  //  Int_t ch[2]={3,1003};
+  //  calibrationStatus = Calibrate(2,ch,"save");
   //calibrationStatus = Calibrate(3,4,"save");
   //calibrationStatus = CalibrateFromProfile(3,"save");
-  //calibrationStatus = Calibrate(3,"save");
-  //  calibrationStatus = Calibrate("");
+  //  calibrationStatus = Calibrate(3,"save");
+  calibrationStatus = Calibrate("");
   AliInfo(Form("Calibration Status = %i, bye.... \n",calibrationStatus));
   
 }
@@ -1156,7 +1206,7 @@ Int_t AliTOFCalibTask::Calibrate(Option_t *optionSave, Option_t *optionFit){
       Float_t tot = p[idxexToT];
       Float_t time = p[idxexTime]-p[idxexExTime];
       AliDebug (2,Form("track = %i, time = %f, tot = %f, time-meantime = %f",j,time, tot, time-meantime));
-      hSlewingProf->Fill(tot,time-meantime);  // if meantime is not used, the fill may be moved in the loop above
+      hSlewingProf->Fill(tot,time);  // if meantime is not used, the fill may be moved in the loop above
       htimetot->Fill(tot,time-meantime);  // if meantime is not used, the fill may be moved in the loop above
     }
 
@@ -1391,7 +1441,7 @@ Bool_t AliTOFCalibTask::CombPID(Float_t *smallarray, Int_t size){
       Int_t idxextimePr = ((kntracksinset*i+kk)*NIDX)+DELTAIDXEXTIMEPR; 
       // storing in third slot of smallarray the assigned expected time
       fhPID->Fill(assparticle[kk]);
-      assparticle[kk]=0;
+      //      assparticle[kk]=0;  //assuming all particles are pions
       if (assparticle[kk]==0){       //assigned to be a Pi
 	smallarray[idxextimeKa]=-1;
 	smallarray[idxextimePr]=-1;
@@ -1529,13 +1579,14 @@ Int_t AliTOFCalibTask::FindBins(TH1F* h, Double_t *binsProfile) const{
   Int_t cont = 0;
   Int_t startBin = 1;
   Int_t nbin = h->GetNbinsX();
+  Int_t nentries = (Int_t)h->GetEntries();
   Float_t max = h->GetBinLowEdge(nbin);
   Int_t nusefulbins=0;
   Int_t maxcont=0;
   // setting maxvalue of entries per bin
-  if (nbin <= 60) maxcont = 2;
-  else  if (nbin <= 100) maxcont = 5;
-  else  if (nbin <= 500) maxcont = 10;
+  if (nentries <= 60) maxcont = 2;
+  else  if (nentries <= 100) maxcont = 5;
+  else  if (nentries <= 500) maxcont = 10;
   else  maxcont = 20;
   for (Int_t j=1;j<=nbin;j++) {
     cont += (Int_t)h->GetBinContent(j);

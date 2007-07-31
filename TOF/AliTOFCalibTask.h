@@ -50,7 +50,7 @@ class TH1F ;
 class TH1I ;
 class TH1D ;
 class TH2F ;
-class AliESD ; 
+class AliESDEvent ; 
 
 class AliTOFCalibTask : public AliAnalysisTask {
 
@@ -63,6 +63,7 @@ public:
   virtual void ConnectInputData(Option_t *) ;
   virtual void CreateOutputObjects();
   virtual void Terminate(Option_t * opt = "") ;
+  virtual Bool_t Notify();
 
  public: 
   class AliTOFArrayTask : public TObject {
@@ -120,7 +121,7 @@ private:
   const Char_t *fdir;              // initial directory
   TTree* fChain ;            //!pointer to the analyzed TTree or TChain
   //leaf types
-  AliESD* fESD ;              //! Declaration of leave types
+  AliESDEvent* fESD ;              //! Declaration of leave types
   Int_t fMinEntries;            // minimum number of entries to steer the task
   Int_t fIch;                   // TOF channel number
   Float_t fToT;                 // Time over Threshold, ns
