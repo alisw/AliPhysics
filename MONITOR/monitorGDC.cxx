@@ -42,6 +42,7 @@
 #include <AliHLTHoughBaseTransformer.h>
 #include <AliHLTHough.h>
 #include <AliHLTBenchmark.h>
+#include "AliESDVertex.h"
 #include <AliKalmanTrack.h>
 #include "AliITSgeomTGeo.h"
 #include "AliITSgeom.h"
