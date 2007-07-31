@@ -29,11 +29,12 @@
 // TTimeStamp endTime(2006,10,19,0,0,0,0,kFALSE)
 // Int_t run=2546
 // AliDCSGenDB db
-// db->Init(run,"TPC/Config/Temperature","TPC/*/*")
-// db->MakeCalib("PressureSensor.txt","DCSMap.root",startTime,endTime,firstRun,lastRun,"TPC/Calib/Temperature")
+// db->Init(run,"TPC/Config/Pressure","TPC/*/*")
+// db->MakeCalib("PressureSensor.txt","DCSMap.root",startTime,endTime,firstRun,lastRun,"TPC/Calib/Pressure")
 
 
 #include "AliDCSGenDB.h"
+#include "AliLog.h"
 
 const char *kDefaultStorage="local:///afs/cern.ch/alice/tpctest/AliRoot/HEAD";
 const char *kSpecificStorage="local:///afs/cern.ch/alice/tpctest/Calib/";
@@ -51,7 +52,6 @@ AliDCSGenDB::AliDCSGenDB():
    fDefaultStorage(kDefaultStorage),
    fSensor(0),
    fStorLoc(0),
-   fCalib(0),
    fMetaData(0),
    fConfTree(0)
 //
@@ -69,7 +69,6 @@ AliDCSGenDB::AliDCSGenDB(const AliDCSGenDB& org):
   fDefaultStorage(org.fDefaultStorage),
   fSensor(0),
   fStorLoc(0),
-  fCalib(0),
   fMetaData(0),
   fConfTree(0)
 {
@@ -77,7 +76,8 @@ AliDCSGenDB::AliDCSGenDB(const AliDCSGenDB& org):
 //  Copy constructor
 //
 
- ((AliDCSGenDB &) org).Copy(*this);
+ AliError("copy constructor not implemented");
+
 }
 
 //______________________________________________________________________________________________
@@ -85,7 +85,6 @@ AliDCSGenDB::~AliDCSGenDB(){
 //
 // destructor
 //
-   fCalib->Terminate();
    delete fSensor;
    delete fMetaData;
    delete fConfTree;
@@ -97,23 +96,12 @@ AliDCSGenDB& AliDCSGenDB::operator= (const AliDCSGenDB& org )
  //
  // assignment operator
  //
- if (&org == this) return *this;
-
- new (this) AliDCSGenDB(org);
+ AliError("assignment operator not implemented");
  return *this;
 }
 
 //______________________________________________________________________________________________
-void AliDCSGenDB::Copy(TObject &c) const
-{
-  //
-  // Copy function
-  //
 
-  TObject::Copy(c);
-}
-
-//______________________________________________________________________________________________
 void AliDCSGenDB::MakeCalib(const char *list, const char *mapDCS,
                              const TTimeStamp& startTime,
 			     const TTimeStamp& endTime,
@@ -193,7 +181,9 @@ void AliDCSGenDB::Init(Int_t run, const char *configDir, const char *specificDir
    fStorLoc = man->GetStorage(fSpecificStorage);
    if (!fStorLoc)    return;
 
-   fCalib = AliTPCcalibDB::Instance();
+   Bool_t cdbCache = AliCDBManager::Instance()->GetCacheFlag(); // save cache status
+   AliCDBManager::Instance()->SetCacheFlag(kTRUE); // activate CDB cache
+   
 
 }
 

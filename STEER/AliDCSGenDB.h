@@ -16,7 +16,6 @@
 #include <TFile.h>
 #include <TObjArray.h>
 
-#include "AliTPCcalibDB.h"
 #include "AliCDBMetaData.h"
 #include "AliCDBManager.h"
 #include "AliCDBId.h"
@@ -32,10 +31,7 @@ public:
 // Constructors
 
   AliDCSGenDB();
-  AliDCSGenDB(const AliDCSGenDB& org);
   ~AliDCSGenDB();
-  AliDCSGenDB& operator= (const AliDCSGenDB& org);
-  void            Copy(TObject &c) const;
 
 // Functionality
 
@@ -66,6 +62,8 @@ public:
 
 
 protected:
+  AliDCSGenDB(const AliDCSGenDB& org);
+  AliDCSGenDB& operator= (const AliDCSGenDB& org);
 
    Int_t          fFirstRun;        // first run in validity period
    Int_t          fLastRun;         // last run in validity period
@@ -73,7 +71,6 @@ protected:
    TString        fDefaultStorage;  // default storage for data base
    AliDCSSensorArray  *fSensor;     // array of DCS sensors
    AliCDBStorage  *fStorLoc;        // pointer to CDB storage
-   AliTPCcalibDB  *fCalib;          // calibration object
    AliCDBMetaData *fMetaData;       // data base metadata
    TTree          *fConfTree;	    // configuration tree
 
