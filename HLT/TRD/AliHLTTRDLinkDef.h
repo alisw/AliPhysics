@@ -5,6 +5,7 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliTRDclusterizerV1HLT;
+#pragma link C++ class AliTRDclusterizerV2HLT;
 #pragma link C++ class AliHLTTRDClusterizerComponent;
 #pragma link C++ class AliHLTTRDTrackerComponent;
 #pragma link C++ class AliHLTTRDDefinitions;

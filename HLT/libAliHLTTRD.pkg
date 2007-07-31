@@ -11,18 +11,22 @@ include $(MODDIR)/hlt.conf
 # library sources
 MODULE_SRCS= \
         AliHLTTRDClusterizerComponent.cxx \
+        AliHLTTRDClusterizerComponentV2.cxx \
         AliHLTTRDDefinitions.cxx \
         AliHLTTRDTrackerComponent.cxx \
         AliTRDclusterizerV1HLT.cxx \
+        AliTRDclusterizerV2HLT.cxx \
 	AliTRDtrackerHLT.cxx
 
 # class header files, the link definition for the root dictionary
 # will be created from the names of the header files
 CLASS_HDRS:= \
         AliHLTTRDClusterizerComponent.h \
+        AliHLTTRDClusterizerComponentV2.h \
         AliHLTTRDDefinitions.h \
         AliHLTTRDTrackerComponent.h \
         AliTRDclusterizerV1HLT.h \
+        AliTRDclusterizerV2HLT.h \
 	AliTRDtrackerHLT.h
 
 # library headers
