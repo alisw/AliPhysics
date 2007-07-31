@@ -20,11 +20,11 @@
 // and quark fragmentation functions.
 // Is a generalisation of AliGenParam class for correlated pairs of hadrons.
 // In this version quark pairs and fragmentation functions are obtained from
-// Pythia6.124 using 100K events generated with kCharmppMNRwmi & kBeautyppMNRwmi 
+// Pythia6.124 using 100K events generated with kCharmppMNRwmi&kBeautyppMNRwmi 
 // in pp collisions at 14 TeV.
 // Decays are performed by Pythia. Used AliRoot version: v4-04-Release
 // Author: S. Grigoryan, LPC Clermont-Fd & YerPhI, Smbat.Grigoryan@cern.ch
-//
+// July 07: added quarks in the stack (B. Vulpescu)
 //-------------------------------------------------------------------------
 // How it works (for the given flavor):
 //
@@ -93,6 +93,7 @@
 #include <TRandom.h>
 #include <TTree.h>
 #include <TVirtualMC.h>
+#include <TVector3.h>
 
 #include "AliGenCorrHF.h"
 #include "AliLog.h"
@@ -206,7 +207,7 @@ void AliGenCorrHF::Init()
     }
 
     ComputeIntegral(fFile);
-
+    
     fParentWeight = 1./fNpart;   // fNpart is number of HF-hadron pairs
 
 // particle decay related initialization
@@ -239,14 +240,17 @@ void AliGenCorrHF::Generate()
   Float_t phi, theta;         // Phi and theta spherical angles of the parent particle momentum
   Float_t p[3], pc[3], och[3];// Momentum, polarisation and origin of the children particles from lujet
 
+  Float_t pq1[3], pq2[3];     // Momenta of the two quarks
 
-  Double_t dphi=0, ptq[2], yq[2], pth[2], plh[2], ph[2], phih[2];
+  Double_t dphi=0, ptq[2], yq[2], pth[2], plh[2], ph[2], phih[2], phiq[2];
   Int_t i, j, ipair, ihadron[2];
   for (i=0; i<2; i++) { 
-    ptq[i] =0; 
-    yq[i]  =0; 
-    pth[i] =0; 
-    plh[i] =0; 
+    ptq[i]     =0; 
+    yq[i]      =0; 
+    pth[i]     =0; 
+    plh[i]     =0;
+    phih[i]    =0; 
+    phiq[i]    =0;
     ihadron[i] =0; 
   }
 
@@ -266,6 +270,8 @@ void AliGenCorrHF::Generate()
   Float_t wgtp, wgtch, random[6];
   Int_t ipap = 0;
   Int_t nt   = 0;
+  Int_t ntq1 = 0;
+  Int_t ntq2 = 0;
 
 // Generating fNpart HF-hadron pairs per event
   while(ipap<fNpart) {
@@ -274,6 +280,35 @@ void AliGenCorrHF::Generate()
 
       GetQuarkPair(fFile, fgIntegral, yq[0], yq[1], ptq[0], ptq[1], dphi);
 
+// Add the quarks in the stack
+
+      phiq[0] = Rndm()*k2PI;
+      phiq[1] = phiq[0] + dphi*kDegrad; 
+      TVector3 qvect1 = TVector3();
+      TVector3 qvect2 = TVector3();
+      qvect1.SetPtEtaPhi(ptq[0],yq[0],phiq[0]);
+      qvect2.SetPtEtaPhi(ptq[1],yq[1],phiq[1]);
+      pq1[0] = qvect1.Px();
+      pq1[1] = qvect1.Py();
+      pq1[2] = qvect1.Pz();
+      pq2[0] = qvect2.Px();
+      pq2[1] = qvect2.Py();
+      pq2[2] = qvect2.Pz();
+      
+      wgtp  = fParentWeight;
+
+      PushTrack(0, -1, +fQuark, pq1, origin0, polar, 0, 
+		kPPrimary, nt, wgtp);
+      KeepTrack(nt);
+      ntq1 = nt;
+
+      PushTrack(0, -1, -fQuark, pq2, origin0, polar, 0, 
+		kPPrimary, nt, wgtp);
+      KeepTrack(nt);
+      ntq2 = nt;
+
+      nt = 2;
+      
       GetHadronPair(fFile, fQuark, yq[0], yq[1], ptq[0], ptq[1], ihadron[0], ihadron[1], plh[0], plh[1], pth[0], pth[1]);
 
 // Here we assume that  |phi_H1 - phi_H2| = |phi_Q1 - phi_Q2| = dphi
@@ -430,7 +465,7 @@ void AliGenCorrHF::Generate()
 		      p1[0] = p[0]; p1[1] = p[1]; p1[2] = p[2];
 		  } else {
 		      ipap++;
-		      PushTrack(0, -1, ihadron[0], p1, origin0, polar, 0, 
+		      PushTrack(0, ntq1, ihadron[0], p1, origin0, polar, 0, 
 				kPPrimary, nt, wgtp);
 		      KeepTrack(nt);
 		      for (i = 1; i < np1; i++) {
@@ -444,7 +479,7 @@ void AliGenCorrHF::Generate()
 			  KeepTrack(nt);
 			  }
 		      }
-		      PushTrack(0, -1, iPart, p, origin0, polar, 0, kPPrimary, nt, wgtp);
+		      PushTrack(0, ntq2, iPart, p, origin0, polar, 0, kPPrimary, nt, wgtp);
 		      KeepTrack(nt);
 		  } 
 		  pParent[0] = nt;
@@ -502,9 +537,9 @@ void AliGenCorrHF::Generate()
 	    } else {
 	        ipap++;
 		gAlice->GetMCApp()->
-		PushTrack(fTrackIt,-1,ihadron[0],p1,origin0,polar,0,kPPrimary,nt,wgtp);
+		PushTrack(fTrackIt,ntq1,ihadron[0],p1,origin0,polar,0,kPPrimary,nt,wgtp);
 		gAlice->GetMCApp()->
-		PushTrack(fTrackIt,-1,iPart,p,origin0,polar,0,kPPrimary,nt,wgtp);
+		PushTrack(fTrackIt,ntq2,iPart,p,origin0,polar,0,kPPrimary,nt,wgtp);
 	    }
 	  }
 	  if (nhadron == 0) break;

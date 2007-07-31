@@ -22,7 +22,8 @@
 // The free parameeters are :
 //      pp reaction cross-section
 //      production cross-sections in pp collisions 
-// 
+// July 07:added heavy quark production from AliGenCorrHF and heavy quark 
+//         production switched off in Pythia 
 
 #include <TObjArray.h>
 #include <TParticle.h>
@@ -41,7 +42,7 @@
 #include "AliDecayer.h"
 #include "AliLog.h"
 #include "AliGenPythia.h"
-
+#include "AliGenCorrHF.h"
 
 ClassImp(AliGenMUONCocktailpp)  
   
@@ -93,7 +94,9 @@ void AliGenMUONCocktailpp::Init()
     Double_t ratioupsilon;
     Double_t ratioupsilonP;
     Double_t ratioupsilonPP;
-    
+    Double_t ratioccbar;
+    Double_t ratiobbbar;
+
 // Cross sections in barns (from PPR Vol. II p: 552) pp - 14 TeV and 
 // corrected from feed down of higher resonances 
 
@@ -102,6 +105,8 @@ void AliGenMUONCocktailpp::Init()
     Double_t sigmaupsilon = 0.989e-6;  
     Double_t sigmaupsilonP = 0.502e-6;  
     Double_t sigmaupsilonPP = 0.228e-6;
+    Double_t sigmaccbar = 11.2e-3;
+    Double_t sigmabbbar = 0.51e-3;
     
     AliInfo(Form("the parametrised resonances uses the decay mode %d",fDecayModeResonance));
 
@@ -212,7 +217,30 @@ void AliGenMUONCocktailpp::Init()
     genupsilonPP->Init(); // generation in selected kinematical range
     AddGenerator(genupsilonPP,"UpsilonPP", ratioupsilonPP); // Adding Generator
     fTotalRate+=ratioupsilonPP;
+
 //------------------------------------------------------------------
+// Generator of charm
+    
+    AliGenCorrHF *gencharm = new AliGenCorrHF(1, 4);  
+          gencharm->SetMomentumRange(0,9999);
+          gencharm->SetForceDecay(kAll);
+	  ratioccbar = sigmaccbar/sigmaReaction;
+          gencharm->Init();
+          AddGenerator(gencharm,"CorrHFCharm",ratioccbar);
+	  fTotalRate+=ratioccbar;
+
+//------------------------------------------------------------------
+// Generator of beauty
+
+	  AliGenCorrHF *genbeauty = new AliGenCorrHF(1, 5);  
+          genbeauty->SetMomentumRange(0,9999);
+          genbeauty->SetForceDecay(kAll);
+	  ratiobbbar = sigmabbbar/sigmaReaction;
+	  genbeauty->Init();
+          AddGenerator(genbeauty,"CorrHFBeauty",ratiobbbar); 
+	  fTotalRate+=ratiobbbar;
+
+//--------------------------t----------------------------------------
 // Pythia generator
     AliGenPythia *pythia = new AliGenPythia(1);
     pythia->SetProcess(kPyMbMSEL1);
@@ -224,6 +252,7 @@ void AliGenMUONCocktailpp::Init()
     pythia->SetYRange(-8.,8.);
     pythia->SetPhiRange(0.,360.);
     pythia->SetPtHard(2.76,-1.0);
+    pythia->SwitchHFOff();
     pythia->Init(); 
     AddGenerator(pythia,"Pythia",1);
     fTotalRate+=1.;
@@ -290,9 +319,7 @@ void AliGenMUONCocktailpp::Generate()
 // in the muon spectrometer acceptance
 	Int_t iPart;
 	fNGenerated++;
-	Int_t numberOfMuons=0;	
-
-    	Int_t maxPart = partArray->GetEntriesFast();
+	Int_t numberOfMuons=0;Int_t maxPart = partArray->GetEntriesFast();
 	for(iPart=0; iPart<maxPart; iPart++){      
 	    
 	  TParticle *part = gAlice->GetMCApp()->Particle(iPart);
