@@ -74,6 +74,7 @@ public:
   void SetRunHLTTracking(Bool_t flag=kTRUE) {fRunHLTTracking=flag;};
   void SetStopOnError(Bool_t flag=kTRUE) {fStopOnError=flag;}
   void SetWriteAlignmentData(Bool_t flag=kTRUE){fWriteAlignmentData=flag;}
+  void SetCleanESD(Bool_t flag=kTRUE){fCleanESD=flag;}
   void SetWriteESDfriend(Bool_t flag=kTRUE){fWriteESDfriend=flag;}
   void SetWriteAOD(Bool_t flag=kTRUE){fWriteAOD=flag;}
   void SetFillTriggerESD(Bool_t flag=kTRUE){fFillTriggerESD=flag;}
@@ -104,6 +105,7 @@ private:
   Bool_t         RunHLTTracking(AliESDEvent*& esd);
   Bool_t         RunMuonTracking(AliESDEvent*& esd);
   Bool_t         RunTracking(AliESDEvent*& esd);
+  Bool_t         CleanESD(AliESDEvent *esd);
   Bool_t         FillESD(AliESDEvent*& esd, const TString& detectors);
   Bool_t         FillTriggerESD(AliESDEvent*& esd);
   Bool_t         FillRawEventHeaderESD(AliESDEvent*& esd);
@@ -132,6 +134,7 @@ private:
   Bool_t         fRunMuonTracking;     // run the HLT tracking
   Bool_t         fStopOnError;        // stop or continue on errors
   Bool_t         fWriteAlignmentData; // write track space-points flag
+  Bool_t         fCleanESD;           // clean ESD flag
   Bool_t         fWriteESDfriend;     // write ESD friend flag
   Bool_t         fWriteAOD;           // write AOD flag
   Bool_t         fFillTriggerESD;     // fill trigger info into ESD
@@ -168,7 +171,7 @@ private:
   TString	 fCDBUri;	      // Uri of the default CDB storage
   TObjArray      fSpecCDBUri;         // Array with detector specific CDB storages
 
-  ClassDef(AliReconstruction, 11)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 12)      // class for running the reconstruction
 };
 
 #endif

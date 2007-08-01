@@ -187,6 +187,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename, const char* cdb
   fRunMuonTracking(kFALSE),
   fStopOnError(kFALSE),
   fWriteAlignmentData(kFALSE),
+  fCleanESD(kTRUE),
   fWriteESDfriend(kFALSE),
   fWriteAOD(kFALSE),
   fFillTriggerESD(kTRUE),
@@ -236,6 +237,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fRunMuonTracking(rec.fRunMuonTracking),
   fStopOnError(rec.fStopOnError),
   fWriteAlignmentData(rec.fWriteAlignmentData),
+  fCleanESD(rec.fCleanESD),
   fWriteESDfriend(rec.fWriteESDfriend),
   fWriteAOD(rec.fWriteAOD),
   fFillTriggerESD(rec.fFillTriggerESD),
@@ -773,6 +775,7 @@ Bool_t AliReconstruction::Run(const char* input)
     }
  
     // write ESD
+    if (fCleanESD) CleanESD(esd);
     if (fWriteESDfriend) {
       new (esdf) AliESDfriend(); // Reset...
       esd->GetESDfriend(esdf);
@@ -1242,6 +1245,32 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
     track->RelateToVertex(esd->GetVertex(),fieldZ, kMaxD);
   }
   
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliReconstruction::CleanESD(AliESDEvent *esd){
+  //
+  // Remove the data which are not needed for the physics analysis.
+  //
+
+  AliInfo("Cleaning the ESD...");
+
+  const AliESDVertex *vertex=esd->GetVertex();
+  Double_t vz=vertex->GetZv();
+  
+  Int_t nTracks=esd->GetNumberOfTracks();
+  for (Int_t i=0; i<nTracks; i++) {
+    AliESDtrack *track=esd->GetTrack(i);
+
+    Float_t xy,z; track->GetImpactParameters(xy,z);
+    if (TMath::Abs(xy) < 50.)    continue;  
+    if (vertex->GetStatus())
+      if (TMath::Abs(vz-z) < 5.) continue;  
+
+    esd->RemoveTrack(i);
+  }
+
   return kTRUE;
 }
 

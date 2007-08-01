@@ -372,6 +372,26 @@ void AliESDEvent::SetESDfriend(const AliESDfriend *ev) {
   }
 }
 
+Bool_t  AliESDEvent::RemoveTrack(Int_t /*i*/) {
+  // ---------------------------------------------------------
+  // Remove track
+  // ---------------------------------------------------------
+
+  // Check if this track comes from a reconstructed decay
+  // if (yes) return kFALSE
+
+  // Remap the indices of the daughters of recosntructed decays
+
+  // Remove the track
+  // delete fTracks->RemoveAt(i);
+
+  // Compress the array with tracks
+  // fTracks->Compress();
+
+  return kTRUE;
+}
+
+
 Int_t  AliESDEvent::AddTrack(const AliESDtrack *t) {
     // Add track
     TClonesArray &ftr = *fTracks;

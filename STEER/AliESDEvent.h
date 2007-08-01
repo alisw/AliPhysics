@@ -173,7 +173,8 @@ public:
   const AliMultiplicity *GetMultiplicity() const {return fSPDMult;}
 
 
-  
+  Bool_t  RemoveTrack(Int_t i);
+
   AliESDtrack *GetTrack(Int_t i) const {
     return (AliESDtrack *)fTracks->UncheckedAt(i);
   }

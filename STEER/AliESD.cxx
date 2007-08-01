@@ -213,6 +213,25 @@ void AliESD::Reset()
   fErrorLogs.Clear();
 }
 
+Bool_t  AliESD::RemoveTrack(Int_t /*i*/) {
+  // ---------------------------------------------------------
+  // Remove track
+  // ---------------------------------------------------------
+
+  // Check if this track comes from a reconstructed decay
+  // if (yes) return kFALSE
+
+  // Remap the indices of the daughters of recosntructed decays
+
+  // Remove the track
+  // delete fTracks->RemoveAt(i);
+
+  // Compress the array with tracks
+  // fTracks->Compress();
+
+  return kTRUE;
+}
+
 Int_t AliESD::AddV0(const AliESDv0 *v) {
   //
   // Add V0
