@@ -1246,10 +1246,12 @@ void AliMC::ReorderAndExpandTreeTR()
     Int_t it = 0;
     for (Int_t ip = np - 1; ip > -1; ip--) {
 	TParticle *part = stack->Particle(ip);
+//	printf("Particle %5d %5d %5d %5d %5d \n", ip, part->GetPdgCode(), part->GetFirstMother(), part->GetFirstDaughter(), part->GetLastDaughter());
+	
 	// Skip primaries that have not been transported
 	Int_t dau1  = part->GetFirstDaughter();
 	Int_t dau2  = -1;
-	if (dau1 > -1 && dau1 < np) continue;
+	if ((dau1 > -1 && dau1 < np) || part->GetStatusCode() > 1) continue;
 	//
 	fTmpTreeTR->GetEntry(it++);
 	Int_t nh = fTmpTrackReferences->GetEntries();
@@ -1271,6 +1273,8 @@ void AliMC::ReorderAndExpandTreeTR()
 		inext--;
 	    } // find upper bound
 	}  // dau2 < 0
+//	printf("Check (1) %5d %5d %5d %5d %5d \n", ip, np, it, dau1, dau2);
+	
 	// 
 	// Loop over reference hits and find secondary label
 	for (Int_t id = dau1; (id <= dau2) && (dau1 > -1); id++) {
@@ -1279,7 +1283,8 @@ void AliMC::ReorderAndExpandTreeTR()
 		Int_t label = tr->Label();
 		// Skip primaries
 		if (label == ip) continue;
-		if (label > dau2 || label < dau1) AliWarning("Track Reference Label out of range !");
+		if (label > dau2 || label < dau1) 
+		    AliWarning(Form("Track Reference Label out of range !: %5d %5d %5d \n", label, dau1, dau2));
 		if (label == id) {
 		    // secondary found
 		    Int_t nref =  fTrackReferences->GetEntriesFast();
@@ -1297,7 +1302,7 @@ void AliMC::ReorderAndExpandTreeTR()
     it = nt - 1;
     for (Int_t ip = 0; ip < np; ip++) {
 	TParticle* part = stack->Particle(ip);
-	if (part->GetFirstDaughter() == -1 || part->GetFirstDaughter() >= np) {
+	if ((part->GetFirstDaughter() == -1 && part->GetStatusCode() <= 1) || part->GetFirstDaughter() >= np) {
 	    // Skip particles that have not been transported
 	    fTmpTreeTR->GetEntry(it--);
 	    Int_t nh = fTmpTrackReferences->GetEntries();
