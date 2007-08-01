@@ -27,7 +27,8 @@ class AliAODHandler : public AliVirtualEventHandler {
     virtual void         SetOutputFileName(char* fname) {fName = fname;}
     virtual char*        GetOutputFileName() {return fName;}
     virtual Bool_t       InitIO(Option_t* option);
-    virtual Bool_t       Fill();
+    virtual Bool_t       BeginEvent(){ return kTRUE;}
+    virtual Bool_t       FinishEvent();
     virtual Bool_t       Terminate();
     virtual Bool_t       TerminateIO();
     virtual Bool_t       Notify() {return kTRUE;}

@@ -80,7 +80,7 @@ Bool_t AliAODHandler::InitIO(Option_t* opt)
     return kTRUE;
 }
 
-Bool_t AliAODHandler::Fill()
+Bool_t AliAODHandler::FinishEvent()
 {
     // Fill data structures
     FillTree();
