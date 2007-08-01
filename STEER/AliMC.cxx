@@ -1240,39 +1240,45 @@ void AliMC::ReorderAndExpandTreeTR()
     AliStack* stack  = rl->Stack();
     Int_t np = stack->GetNprimary();
     Int_t nt = fTmpTreeTR->GetEntries();
-    if (nt != np)  AliWarning("TreeTR: Less Entries than primaries in TreeK !");
-
-
     //
     // Loop over tracks and find the secondaries with the help of the kine tree
-    
-    for (Int_t it = 0; it < nt; it++) {
-	fTmpTreeTR->GetEntry(it);
-	Int_t nh = fTmpTrackReferences->GetEntries();
-	TParticle *part = stack->Particle(nt - it - 1);
-	// Determine range of secondaries produced by this primary
+    Int_t ifills = 0;
+    Int_t it = 0;
+    for (Int_t ip = np - 1; ip > -1; ip--) {
+	TParticle *part = stack->Particle(ip);
+	// Skip primaries that have not been transported
 	Int_t dau1  = part->GetFirstDaughter();
 	Int_t dau2  = -1;
+	if (dau1 > -1 && dau1 < np) continue;
+	//
+	fTmpTreeTR->GetEntry(it++);
+	Int_t nh = fTmpTrackReferences->GetEntries();
+	// Determine range of secondaries produced by this primary
 	if (dau1 > -1) {
-	    Int_t inext = nt - it - 2;
+	    Int_t inext = ip - 1;
 	    while (dau2 < 0) {
 		if (inext >= 0) {
 		    part = stack->Particle(inext);
-		    dau2 = part->GetFirstDaughter() - 1;
+		    dau2 =  part->GetFirstDaughter();
+		    if (dau2 == -1 || dau2 < np) {
+			dau2 = -1;
+		    } else {
+			dau2--;
+		    }
 		} else {
 		    dau2 = stack->GetNtrack() - 1;
 		}
 		inext--;
-	    }
-	}
+	    } // find upper bound
+	}  // dau2 < 0
 	// 
 	// Loop over reference hits and find secondary label
 	for (Int_t id = dau1; (id <= dau2) && (dau1 > -1); id++) {
 	    for (Int_t ih = 0; ih < nh; ih++) {
 		AliTrackReference* tr = (AliTrackReference*) fTmpTrackReferences->At(ih);
 		Int_t label = tr->Label();
-//		printf("Secondary id: %5d ih: %5d label: %5d \n", id, ih, label);
-		if (label == (nt - it - 1)) continue;
+		// Skip primaries
+		if (label == ip) continue;
 		if (label > dau2 || label < dau1) AliWarning("Track Reference Label out of range !");
 		if (label == id) {
 		    // secondary found
@@ -1283,30 +1289,37 @@ void AliMC::ReorderAndExpandTreeTR()
 	    } // hits
 	    treeTR->Fill();
 	    fTrackReferences->Clear();
+	    ifills++;
 	} // daughters
     } // tracks
-
     //
     // Now loop again and write the primaries
-    for (Int_t it = nt -1; it > -1; it--) {
-	fTmpTreeTR->GetEntry(it);
-	Int_t nh = fTmpTrackReferences->GetEntries();
-	// 
-	// Loop over reference hits and find primary labels
-	for (Int_t ih = 0; ih < nh; ih++) {
-	    AliTrackReference* tr = (AliTrackReference*)  fTmpTrackReferences->At(ih);
-	    Int_t label = tr->Label();
-	    if (label == (nt - it -1)) {
-		Int_t nref = fTrackReferences->GetEntriesFast();
-		TClonesArray &lref = *fTrackReferences;
-		new(lref[nref]) AliTrackReference(*tr);
-	    }
+    it = nt - 1;
+    for (Int_t ip = 0; ip < np; ip++) {
+	TParticle* part = stack->Particle(ip);
+	if (part->GetFirstDaughter() == -1 || part->GetFirstDaughter() >= np) {
+	    // Skip particles that have not been transported
+	    fTmpTreeTR->GetEntry(it--);
+	    Int_t nh = fTmpTrackReferences->GetEntries();
+	    // 
+	    // Loop over reference hits and find primary labels
+	    for (Int_t ih = 0; ih < nh; ih++) {
+		AliTrackReference* tr = (AliTrackReference*)  fTmpTrackReferences->At(ih);
+		Int_t label = tr->Label();
+		if (label == ip) {
+		    Int_t nref = fTrackReferences->GetEntriesFast();
+		    TClonesArray &lref = *fTrackReferences;
+		    new(lref[nref]) AliTrackReference(*tr);
+		}
+	    } 
 	}
 	treeTR->Fill();
 	fTrackReferences->Clear();
+	ifills++;
     } // tracks
-
-
+    // Check
+    if (ifills != stack->GetNtrack()) 
+	AliWarning(Form("Number of entries in TreeTR (%5d) unequal to TreeK (%5d) \n", ifills, stack->GetNtrack()));
 //
 //  Clean-up
     delete fTmpTreeTR;
