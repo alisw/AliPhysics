@@ -29,6 +29,9 @@ class AliTRDSignalIndex : public TObject
   virtual void   Allocate(Int_t nrow, Int_t ncol,Int_t ntime);
   virtual void   Reset();
 
+  virtual void   ResetContentConditional(Int_t nrow, Int_t ncol,Int_t ntime);
+  virtual void   ResetContent();
+
   virtual void   ResetCounters()
   {
     // reset the counters/iterators
@@ -112,17 +115,23 @@ class AliTRDSignalIndex : public TObject
     fDet = ix;
   }
   
-  const Int_t GetDetNumber()     {return fDet;} // Get Det number
-  const Int_t GetLayer()   {return fLayer;} // Layer = Plane = position of the chamber in TRD
-  const Int_t GetPlane()   {return fLayer;} // Layer = Plane = position of the chamber in TRD
-  const Int_t GetStack()   {return fStack;} // Stack = Chameber = position of the chamber in TRD
-  const Int_t GetChamber() {return fStack;} // Stack = Chameber = position of the chamber in TRD
-  const Int_t GetSM()      {return fSM;} // Super module of the TRD
+  virtual Int_t GetDetNumber() const {return fDet;} // Get Det number
+  virtual Int_t GetLayer() const     {return fLayer;} // Layer = Plane = position of the chamber in TRD
+  virtual Int_t GetPlane() const     {return fLayer;} // Layer = Plane = position of the chamber in TRD
+  virtual Int_t GetStack() const     {return fStack;} // Stack = Chameber = position of the chamber in TRD
+  virtual Int_t GetChamber() const   {return fStack;} // Stack = Chameber = position of the chamber in TRD
+  virtual Int_t GetSM() const        {return fSM;} // Super module of the TRD
 
-  const Bool_t HasEntry() {return fHasEntry;} // Return status if has an entry
+  virtual Bool_t HasEntry() const    {return fHasEntry;} // Return status if has an entry
 
-  TArrayI *GetArray() {return fIndex;} // Get the tarrayi pointer for god knows what reason
-  
+          TArrayI *GetArray() const  {return fIndex;} // Get the tarrayi pointer for god knows what reason
+
+  virtual Int_t GetNrow() const      {return fNrows;} // Get Nrows
+  virtual Int_t GetNcol() const      {return fNcols;} // Get Ncols
+  virtual Int_t GetNtime() const     {return fNtbins;} // Get Ntbins
+
+  //enum { kMaxRows = 16, kMaxTbins = 24, kMaxCols = 144};
+
  private:
 
   Int_t   fDet;  // det number

@@ -198,6 +198,43 @@ void AliTRDSignalIndex::Reset()
 }
 
 //_____________________________________________________________________________
+void AliTRDSignalIndex::ResetContent()
+{
+  //
+  // Reset the array but keep the size - no realloc
+  //
+
+  fIndex->Reset(-1);
+  ResetCounters();
+  fHasEntry = kFALSE;
+}
+
+//_____________________________________________________________________________
+void AliTRDSignalIndex::ResetContentConditional(Int_t nrow, Int_t ncol,Int_t ntime)
+{
+  //
+  // Reset the array but keep the size if no need to enlarge - no realloc
+  //
+
+  fDet = -1;
+  fLayer = -1;
+  fStack = -1;
+  fSM = -1;
+
+  if (nrow > fNrows || ncol > fNcols || ntime > fNtbins)
+    {
+      Allocate(nrow, ncol, ntime);
+    }
+  else
+    {
+      fIndex->Reset(-1);
+      ResetCounters();
+      fHasEntry = kFALSE;
+    }
+}
+
+
+//_____________________________________________________________________________
 void AliTRDSignalIndex::ClearAll()
 {
   //

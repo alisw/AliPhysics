@@ -433,66 +433,66 @@ Bool_t AliTRDRawStream::Next()
       if (fNextStatus == fkNextMCM || fNextStatus == fkNextData)
 	{
 	  fHCdataCtr += 4;
-
-	if( ((*fDataWord & 0x80000000) == 0x0) && ((*fDataWord & 0x0000000f) == 0xC) )
-	  { // MCM Header
-	    DecodeMCMheader();
-	    if ( fMCM < 0 || fMCM > 15 || fROB < 0 || fROB > 7 ) 
-	      {
-		AliWarning("Wrong fMCM or fROB. Skip this data");
-                fRawReader->AddMajorErrorLog(kWrongMCMorROB,Form("MCM=%d, ROB=%d",fMCM,fROB));
-		fNextStatus = fkNextHC;
-		continue;
-	      }
-	    fTbSwitch    = 3;  // For first adc channel we expect: (*fDataWord & 3) = 3
-	    fTbSwitchCtr = 0;  // 
-	    fADC = fTB   = 0;  // Reset Counter
-	    fNextStatus = fkNextData;
-	    continue;
-	  }
-    
-	if ( *fDataWord == kEndofrawdatamarker ) 
-	  {  // End of half-chamber data, finished
-	    fGTUctr1 = -1;
-	    fNextStatus = fkNextHC;
-	    continue;
-	  }
-
-	if (fNextStatus == fkNextData )
-	  {       // MCM header is set, ADC data is valid.
-    
-	    // Found some data. Decode it now:
-	    fRetVal = DecodeDataWord();
-	    if ( fRetVal ==  0 ) continue;
-	    if ( fRetVal == -1 ) 
-	      {
-		fNextStatus = fkNextHC;
-		continue;
-	      }
-	    if ( fRetVal == 1)
-	      {
-		{  // A real pad
-		  fTB += 3;		
-		  return kTRUE;
-		}	       		
-	      }
-	    // following ifs have been moved to DEcodeDatawordV1V2
-// 	    if ( fADC > 1 && fADC < (Int_t)fGeo->ADCmax()-1 ) 
-// 	      {	      
-// 		// Write Digits
-// 		if ( fCOL >= 0 && fCOL < fColMax && fROW >= 0 && fROW < fRowMax ) 
-// 		  {  // A real pad
-// 		    fTB += 3;		
-// 		    return kTRUE;
-// 		  }	       
-// 	      }
-// 	    else 
-// 	      {
-// 		fCOL = -1;	       
-// 	      }
-	  }// fkNextData  
-	
-	continue;
+	  
+	  if( ((*fDataWord & 0x80000000) == 0x0) && ((*fDataWord & 0x0000000f) == 0xC) )
+	    { // MCM Header
+	      DecodeMCMheader();
+	      if ( fMCM < 0 || fMCM > 15 || fROB < 0 || fROB > 7 ) 
+		{
+		  AliWarning("Wrong fMCM or fROB. Skip this data");
+		  fRawReader->AddMajorErrorLog(kWrongMCMorROB,Form("MCM=%d, ROB=%d",fMCM,fROB));
+		  fNextStatus = fkNextHC;
+		  continue;
+		}
+	      fTbSwitch    = 3;  // For first adc channel we expect: (*fDataWord & 3) = 3
+	      fTbSwitchCtr = 0;  // 
+	      fADC = fTB   = 0;  // Reset Counter
+	      fNextStatus = fkNextData;
+	      continue;
+	    }
+	  
+	  if ( *fDataWord == kEndofrawdatamarker ) 
+	    {  // End of half-chamber data, finished
+	      fGTUctr1 = -1;
+	      fNextStatus = fkNextHC;
+	      continue;
+	    }
+	  
+	  if (fNextStatus == fkNextData )
+	    {       // MCM header is set, ADC data is valid.
+	      
+	      // Found some data. Decode it now:
+	      fRetVal = DecodeDataWord();
+	      if ( fRetVal ==  0 ) continue;
+	      if ( fRetVal == -1 ) 
+		{
+		  fNextStatus = fkNextHC;
+		  continue;
+		}
+	      if ( fRetVal == 1)
+		{
+		  {  // A real pad
+		    fTB += 3;		
+		    return kTRUE;
+		  }	       		
+		}
+	      // following ifs have been moved to DEcodeDatawordV1V2
+	      // 	    if ( fADC > 1 && fADC < (Int_t)fGeo->ADCmax()-1 ) 
+	      // 	      {	      
+	      // 		// Write Digits
+	      // 		if ( fCOL >= 0 && fCOL < fColMax && fROW >= 0 && fROW < fRowMax ) 
+	      // 		  {  // A real pad
+	      // 		    fTB += 3;		
+	      // 		    return kTRUE;
+	      // 		  }	       
+	      // 	      }
+	      // 	    else 
+	      // 	      {
+	      // 		fCOL = -1;	       
+	      // 	      }
+	    }// fkNextData  
+	  
+	  continue;
 	} //next mcm
 
       if ( fNextStatus == fkNextHC )
@@ -701,9 +701,12 @@ Int_t AliTRDRawStream::NextChamber(AliTRDdigitsManager *man)
 			    {
 			      digits->SetDataUnchecked(fROW, fCOL, fTB + it, fSig[it]);
 			      indexes->AddIndexTBin(fROW, fCOL, fTB + it);
-			      track0->SetDataUnchecked(fROW, fCOL, fTB + it, 0);
-			      track1->SetDataUnchecked(fROW, fCOL, fTB + it, 0);
-			      track2->SetDataUnchecked(fROW, fCOL, fTB + it, 0);
+			      if (man->UsesDictionaries())
+				{
+				  track0->SetDataUnchecked(fROW, fCOL, fTB + it, 0);
+				  track1->SetDataUnchecked(fROW, fCOL, fTB + it, 0);
+				  track2->SetDataUnchecked(fROW, fCOL, fTB + it, 0);
+				}
 			    }
 			} // check the tbins range
 		    } // for each tbin of current 3
@@ -797,6 +800,7 @@ Int_t AliTRDRawStream::NextChamber(AliTRDdigitsManager *man)
 		{
 		  AliDebug(4, "New DET!");	      
 		  // allocate stuff for the new det
+		  //man->ResetArrays();
 		  digits = man->GetDigits(fDET);
 		  track0 = man->GetDictionary(fDET,0);
 		  track1 = man->GetDictionary(fDET,1);
@@ -808,9 +812,12 @@ Int_t AliTRDRawStream::NextChamber(AliTRDdigitsManager *man)
 		      AliDebug(4, "Allocating digits");	      
 		      //AliDebug(5, Form("Alloc digits for det %d", det));
 		      digits->Allocate(fRowMax, fColMax, fTBins);
-		      track0->Allocate(fRowMax, fColMax, fTBins);
-		      track1->Allocate(fRowMax, fColMax, fTBins);
-		      track2->Allocate(fRowMax, fColMax, fTBins);
+		      if (man->UsesDictionaries())
+			{
+			  track0->Allocate(fRowMax, fColMax, fTBins);
+			  track1->Allocate(fRowMax, fColMax, fTBins);
+			  track2->Allocate(fRowMax, fColMax, fTBins);
+			}
 		    }
 		  
 		  indexes = man->GetIndexes(fDET);

@@ -67,6 +67,8 @@ class AliTRDdigitsManager : public TObject {
 	  AliTRDSignalIndex   *GetIndexes(Int_t det);
 	  TObjArray           *GetIndexes() {return fSignalIndexes;};
   virtual Bool_t              BuildIndexes(Int_t det);
+  virtual void                SetUseDictionaries(Bool_t kval) {fUseDictionaries = kval;}
+  virtual Bool_t              UsesDictionaries() const {return fUseDictionaries;}
 
  protected:
 
@@ -83,7 +85,7 @@ class AliTRDdigitsManager : public TObject {
   Bool_t              fSDigits;            //  Switch for the summable digits
 
   TObjArray          *fSignalIndexes;      //  Provides access to the active pads and tbins
-
+  Bool_t              fUseDictionaries;    //  Use dictionaries or not (case of real data)
   ClassDef(AliTRDdigitsManager,6)          //  Manages the TRD digits
 
 };

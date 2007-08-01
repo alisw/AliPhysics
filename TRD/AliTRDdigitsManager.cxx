@@ -55,6 +55,7 @@ AliTRDdigitsManager::AliTRDdigitsManager()
   ,fIsRaw(0)
   ,fSDigits(0)
   ,fSignalIndexes(NULL)
+  ,fUseDictionaries(kTRUE)
 {
   //
   // Default constructor
@@ -78,6 +79,7 @@ AliTRDdigitsManager::AliTRDdigitsManager(const AliTRDdigitsManager &m)
   ,fIsRaw(m.fIsRaw)
   ,fSDigits(m.fSDigits)
   ,fSignalIndexes(NULL)
+  ,fUseDictionaries(kTRUE)
 {
   //
   // AliTRDdigitsManager copy constructor
@@ -135,6 +137,8 @@ void AliTRDdigitsManager::Copy(TObject &m) const
   ((AliTRDdigitsManager &) m).fSDigits = fSDigits;
   
   ((AliTRDdigitsManager &) m).fSignalIndexes = fSignalIndexes;
+  ((AliTRDdigitsManager &) m).fUseDictionaries = fUseDictionaries;
+
   TObject::Copy(m);
 
 }
@@ -148,10 +152,13 @@ void AliTRDdigitsManager::CreateArrays()
 
   fDigits = new AliTRDsegmentArray("AliTRDdataArrayI",AliTRDgeometry::Ndet());
 
-  for (Int_t iDict = 0; iDict < kNDict; iDict++) {
-    fDictionary[iDict] = new AliTRDsegmentArray("AliTRDdataArrayI"
-                                               ,AliTRDgeometry::Ndet());
-  }
+  if (fUseDictionaries)
+    {
+      for (Int_t iDict = 0; iDict < kNDict; iDict++) {
+	fDictionary[iDict] = new AliTRDsegmentArray("AliTRDdataArrayI"
+						    ,AliTRDgeometry::Ndet());
+      }
+    }
 
   for (Int_t i = 0; i < AliTRDgeometry::Ndet(); i++)
     {
@@ -170,13 +177,16 @@ void AliTRDdigitsManager::ResetArrays()
   }
   fDigits = new AliTRDsegmentArray("AliTRDdataArrayI",AliTRDgeometry::Ndet());
 
-  for (Int_t iDict = 0; iDict < kNDict; iDict++) {
-    if (fDictionary[iDict]) {  
-      delete fDictionary[iDict];
+  if (fUseDictionaries)
+    {
+      for (Int_t iDict = 0; iDict < kNDict; iDict++) {
+	if (fDictionary[iDict]) {  
+	  delete fDictionary[iDict];
+	}
+	fDictionary[iDict] = new AliTRDsegmentArray("AliTRDdataArrayI"
+						    ,AliTRDgeometry::Ndet());
+      }
     }
-    fDictionary[iDict] = new AliTRDsegmentArray("AliTRDdataArrayI"
-                                               ,AliTRDgeometry::Ndet());
-  }
 
   for (Int_t i = 0; i < AliTRDgeometry::Ndet(); i++)
     {
@@ -244,28 +254,31 @@ Bool_t AliTRDdigitsManager::MakeBranch(TTree *tree)
     status = kFALSE;
   }
 
-  // Make the branches for the dictionaries
-  for (Int_t iDict = 0; iDict < kNDict; iDict++) {
-    Char_t branchname[15];
-    sprintf(branchname,"TRDdictionary%d",iDict);
-    if (fDictionary[iDict]) {
-      const AliTRDdataArray *kDictionary = 
-              (AliTRDdataArray *) fDictionary[iDict]->At(0);
-      if (kDictionary) {
-	if (!fTree) return kFALSE;
-	TBranch* branch = fTree->GetBranch(branchname);
-	if (!branch) fTree->Branch(branchname,kDictionary->IsA()->GetName(),
+  if (fUseDictionaries)
+    {
+      // Make the branches for the dictionaries
+      for (Int_t iDict = 0; iDict < kNDict; iDict++) {
+	Char_t branchname[15];
+	sprintf(branchname,"TRDdictionary%d",iDict);
+	if (fDictionary[iDict]) {
+	  const AliTRDdataArray *kDictionary = 
+	    (AliTRDdataArray *) fDictionary[iDict]->At(0);
+	  if (kDictionary) {
+	    if (!fTree) return kFALSE;
+	    TBranch* branch = fTree->GetBranch(branchname);
+	    if (!branch) fTree->Branch(branchname,kDictionary->IsA()->GetName(),
 				   &kDictionary,buffersize,99);
-        AliDebug(1,Form("Making branch %s\n",branchname));
-      }
-      else {
-        status = kFALSE;
+	    AliDebug(1,Form("Making branch %s\n",branchname));
+	  }
+	  else {
+	    status = kFALSE;
+	  }
+	}
+	else {
+	  status = kFALSE;
+	}
       }
     }
-    else {
-      status = kFALSE;
-    }
-  }
 
   return status;
 
@@ -293,11 +306,20 @@ Bool_t AliTRDdigitsManager::ReadDigits(TTree *tree)
 
   status = fDigits->LoadArray("TRDdigits",fTree);
 
-  for (Int_t iDict = 0; iDict < kNDict; iDict++) {
-    Char_t branchname[15];
-    sprintf(branchname,"TRDdictionary%d",iDict);
-    status = fDictionary[iDict]->LoadArray(branchname,fTree);
-  }  
+  if (fUseDictionaries)
+    {
+      for (Int_t iDict = 0; iDict < kNDict; iDict++) {
+	Char_t branchname[15];
+	sprintf(branchname,"TRDdictionary%d",iDict);
+	status = fDictionary[iDict]->LoadArray(branchname,fTree);
+	if (status == kFALSE)
+	  {
+	    fUseDictionaries = kFALSE;
+	    AliWarning("Unable to load dict arrays. Will not use them.\n");
+	    break;
+	  }
+      }  
+    }
 
   if (fDigits->TestBit(AliTRDdigit::RawDigit())) {
     fIsRaw = kTRUE;
@@ -322,14 +344,18 @@ Bool_t AliTRDdigitsManager::WriteDigits()
     AliError("Error while storing digits in branch TRDdigits\n");
     return kFALSE;
   }
-  for (Int_t iDict = 0; iDict < kNDict; iDict++) {
-    Char_t branchname[15];
-    sprintf(branchname,"TRDdictionary%d",iDict);
-    if (!fDictionary[iDict]->StoreArray(branchname,fTree)) {
-      AliError(Form("Error while storing dictionary in branch %s\n",branchname));
-      return kFALSE;
+
+  if (fUseDictionaries)
+    {
+      for (Int_t iDict = 0; iDict < kNDict; iDict++) {
+	Char_t branchname[15];
+	sprintf(branchname,"TRDdictionary%d",iDict);
+	if (!fDictionary[iDict]->StoreArray(branchname,fTree)) {
+	  AliError(Form("Error while storing dictionary in branch %s\n",branchname));
+	  return kFALSE;
+	}
+      }
     }
-  }
 
   // Write the new tree to the output file
   fTree->AutoSave();  // Modification by Jiri
@@ -375,6 +401,10 @@ Int_t AliTRDdigitsManager::GetTrack(Int_t track
     return -1;
   }
 
+  if (fUseDictionaries == kFALSE)
+    {
+      return -1;
+    }
   // Array contains index+1 to allow data compression
   return (GetDictionary(det,track)->GetData(row,col,time) - 1);
 
@@ -398,6 +428,10 @@ AliTRDdataArrayI *AliTRDdigitsManager::GetDictionary(Int_t det, Int_t i) const
   //
   // Returns the dictionary for one detector
   //
+  if (fUseDictionaries == kFALSE)
+    {
+      return NULL;
+    }
 
   return (AliTRDdataArrayI *) fDictionary[i]->At(det);
 
@@ -447,6 +481,10 @@ void AliTRDdigitsManager::RemoveDictionaries(Int_t det)
   // 
   // Clear memory
   //
+  if (fUseDictionaries == kFALSE)
+    {
+      return;
+    }
 
   for (Int_t i = 0; i < kNDict; i++) {
     fDictionary[i]->ClearSegment(det);

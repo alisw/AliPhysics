@@ -60,6 +60,8 @@ AliTRDclusterizerV2::AliTRDclusterizerV2()
   ,fGeometry(NULL)
   ,fAddLabels(kTRUE)
   ,fRawVersion(2)
+  ,fIndexesOut(NULL)
+  ,fIndexesMaxima(NULL)
 {
   //
   // AliTRDclusterizerV2 default constructor
@@ -74,6 +76,8 @@ AliTRDclusterizerV2::AliTRDclusterizerV2(const Text_t *name, const Text_t *title
   ,fGeometry(NULL)
   ,fAddLabels(kTRUE)
   ,fRawVersion(2)
+  ,fIndexesOut(NULL)
+  ,fIndexesMaxima(NULL)
 {
   //
   // AliTRDclusterizerV2 constructor
@@ -90,6 +94,8 @@ AliTRDclusterizerV2::AliTRDclusterizerV2(const AliTRDclusterizerV2 &c)
   ,fGeometry(NULL)
   ,fAddLabels(kTRUE)
   ,fRawVersion(2)
+  ,fIndexesOut(NULL)
+  ,fIndexesMaxima(NULL)
 {
   //
   // AliTRDclusterizerV2 copy constructor
@@ -114,6 +120,18 @@ AliTRDclusterizerV2::~AliTRDclusterizerV2()
       delete fGeometry;
       fGeometry = NULL;
     }
+
+  if (fIndexesOut)
+    {
+      delete fIndexesOut;
+      fIndexesOut = NULL;
+    }
+
+  if (fIndexesMaxima)
+    {
+      delete fIndexesMaxima;
+      fIndexesMaxima = NULL;
+    }
 }
 
 //_____________________________________________________________________________
@@ -135,10 +153,48 @@ void AliTRDclusterizerV2::Copy(TObject &c) const
   // Copy function
   //
 
-  ((AliTRDclusterizerV2 &) c).fDigitsManager = 0;
-
+  ((AliTRDclusterizerV2 &) c).fDigitsManager = NULL;
+  ((AliTRDclusterizerV2 &) c).fGeometry = NULL;
+  ((AliTRDclusterizerV2 &) c).fAddLabels = fAddLabels;
+  ((AliTRDclusterizerV2 &) c).fRawVersion = fRawVersion;
+  ((AliTRDclusterizerV2 &) c).fIndexesOut = NULL;
+  ((AliTRDclusterizerV2 &) c).fIndexesMaxima = NULL;
+  
   AliTRDclusterizer::Copy(c);
 
+}
+
+//_____________________________________________________________________________
+void AliTRDclusterizerV2::ResetHelperIndexes(AliTRDSignalIndex *indexesIn)
+{
+  // 
+  // Reset the helper indexes
+  //
+  if (fIndexesOut)
+    {
+      // carefull here - we assume that only row number may change - most probable
+      if (indexesIn->GetNrow() <= fIndexesOut->GetNrow())
+ 	fIndexesOut->ResetContent();
+      else
+	fIndexesOut->ResetContentConditional(indexesIn->GetNrow(), indexesIn->GetNcol(), indexesIn->GetNtime());
+    }
+  else
+    {
+      fIndexesOut = new AliTRDSignalIndex(indexesIn->GetNrow(), indexesIn->GetNcol(), indexesIn->GetNtime());
+    }
+  
+  if (fIndexesMaxima)
+    {
+      // carefull here - we assume that only row number may change - most probable
+      if (indexesIn->GetNrow() <= fIndexesMaxima->GetNrow())
+ 	fIndexesMaxima->ResetContent();
+      else
+	fIndexesMaxima->ResetContentConditional(indexesIn->GetNrow(), indexesIn->GetNcol(), indexesIn->GetNtime());
+    }
+  else
+    {
+      fIndexesMaxima = new AliTRDSignalIndex(indexesIn->GetNrow(), indexesIn->GetNcol(), indexesIn->GetNtime());
+    }
 }
 
 //_____________________________________________________________________________
@@ -196,6 +252,10 @@ Bool_t AliTRDclusterizerV2::MakeClusters()
   // Creates clusters from digits
   //
 
+  //propagate info from the digits manager
+  if (fAddLabels == kTRUE)
+    fAddLabels = fDigitsManager->UsesDictionaries();
+    
   Bool_t fReturn = kTRUE;
   for (Int_t i = 0; i < AliTRDgeometry::kNdet; i++)
     {
@@ -232,6 +292,7 @@ Bool_t AliTRDclusterizerV2::MakeClusters()
       fDigitsManager->RemoveDictionaries(i);      
       fDigitsManager->ClearIndexes(i);
     }
+
   return fReturn;
 }
 
@@ -257,7 +318,6 @@ Bool_t AliTRDclusterizerV2::Raw2Clusters(AliRawReader *rawReader)
       fDigitsManager = new AliTRDdigitsManager();
       fDigitsManager->CreateArrays();
     }
-  //delete fDigitsManager;
 
   AliTRDRawStream input(rawReader);
   input.SetRawVersion( fRawVersion );
@@ -277,14 +337,6 @@ Bool_t AliTRDclusterizerV2::Raw2Clusters(AliRawReader *rawReader)
 	  if (lastdet != -1)
 	    {
 	      digits = fDigitsManager->GetDigits(lastdet);
-// 	      if (digits->GetNtime() == 0) 
-// 		{
-// 		  AliDebug(5, Form("No Ntime? %d", lastdet));
-// 		}	      
-// 	      else
-// 		{
-// 		  AliDebug(5, Form("Ntime ok %d", lastdet));
-// 		}
 	      if (indexes->HasEntry())
 		MakeClusters(lastdet);
 	    }
@@ -356,9 +408,8 @@ Bool_t AliTRDclusterizerV2::Raw2Clusters(AliRawReader *rawReader)
 	}
     }
 
-//   fDigitsManager->Delete();
-//   delete fDigitsManager;
-//   fDigitsManager = NULL;
+  delete fDigitsManager;
+  fDigitsManager = NULL;
   return kTRUE;
 }
 
@@ -378,8 +429,8 @@ Bool_t AliTRDclusterizerV2::Raw2ClustersChamber(AliRawReader *rawReader)
       fDigitsManager = new AliTRDdigitsManager();
       fDigitsManager->CreateArrays();
     }
-  //delete fDigitsManager;
 
+  fDigitsManager->SetUseDictionaries(fAddLabels);
 
   AliTRDRawStream input(rawReader);
   input.SetRawVersion( fRawVersion );
@@ -395,8 +446,8 @@ Bool_t AliTRDclusterizerV2::Raw2ClustersChamber(AliRawReader *rawReader)
       fDigitsManager->ClearIndexes(det);
     }
 
-//   delete fDigitsManager;
-//   fDigitsManager = NULL;
+  delete fDigitsManager;
+  fDigitsManager = NULL;
   return kTRUE;
 }
 
@@ -485,7 +536,7 @@ Bool_t AliTRDclusterizerV2::MakeClusters(Int_t det)
   Int_t    imodule = icham + AliTRDgeometry::Ncham() * isect;
   UShort_t volid   = AliGeomManager::LayerToVolUID(ilayer,imodule); 
 
-  Int_t nRowMax = digitsIn->GetNrow();
+  //Int_t nRowMax = digitsIn->GetNrow();
   Int_t nColMax = digitsIn->GetNcol();
   Int_t nTimeTotal = digitsIn->GetNtime();
 
@@ -507,31 +558,29 @@ Bool_t AliTRDclusterizerV2::MakeClusters(Int_t det)
 						     ,digitsIn->GetNcol()
 						     ,digitsIn->GetNtime()); 
 
-  AliTRDSignalIndex *indexesOut = new AliTRDSignalIndex(digitsIn->GetNrow()
-							,digitsIn->GetNcol()
-							,digitsIn->GetNtime()); 
+//   AliInfo(Form("nrows %d cols %d time %d", 
+// 	       digitsIn->GetNrow()
+// 	       ,digitsIn->GetNcol()
+// 	       ,digitsIn->GetNtime())); 
 
-  AliTRDSignalIndex *indexesMaxima = new AliTRDSignalIndex(digitsIn->GetNrow()
-							   ,digitsIn->GetNcol()
-							   ,digitsIn->GetNtime()); 
-	
+  ResetHelperIndexes(indexesIn);
 
   Transform(digitsIn
 	    ,digitsOut
 	    ,indexesIn
-	    ,indexesOut
-	    ,nRowMax,nColMax,nTimeTotal
+	    ,fIndexesOut
+	    ,nTimeTotal
 	    ,ADCthreshold
 	    ,calGainFactorROC
-	    ,calGainFactorDetValue);
+	    ,calGainFactorDetValue);	
 	
   Int_t row   = 0;
   Int_t col   = 0;
   Int_t time  = 0;
   Int_t iPad  = 0;
     
-  indexesOut->ResetCounters();
-  while (indexesOut->NextRCTbinIndex(row, col, time))
+  fIndexesOut->ResetCounters();
+  while (fIndexesOut->NextRCTbinIndex(row, col, time))
     {
       Float_t signalM = TMath::Abs(digitsOut->GetDataUnchecked(row,col,time));
 	    
@@ -554,7 +603,7 @@ Bool_t AliTRDclusterizerV2::MakeClusters(Int_t det)
 		{
 		  // Maximum found, mark the position by a negative signal
 		  digitsOut->SetDataUnchecked(row,col,time,-signalM);
-		  indexesMaxima->AddIndexTBin(row,col,time);
+		  fIndexesMaxima->AddIndexTBin(row,col,time);
 		}
 	    }	
 	}	    
@@ -566,8 +615,8 @@ Bool_t AliTRDclusterizerV2::MakeClusters(Int_t det)
   Int_t nClusterROC     =  0;
 
   // Now check the maxima and calculate the cluster position
-  indexesMaxima->ResetCounters();
-  while (indexesMaxima->NextRCTbinIndex(row, col, time)) 
+  fIndexesMaxima->ResetCounters();
+  while (fIndexesMaxima->NextRCTbinIndex(row, col, time)) 
     {
       // Maximum found ?             
       if (digitsOut->GetDataUnchecked(row,col,time) < 0.0) {
@@ -739,8 +788,8 @@ Bool_t AliTRDclusterizerV2::MakeClusters(Int_t det)
 
     }
   delete digitsOut;
-  delete indexesOut;
-  delete indexesMaxima;
+  //delete fIndexesOut;
+  //delete fIndexesMaxima;
 
   if (fAddLabels)
     AddLabels(idet, firstClusterROC, nClusterROC);
@@ -908,7 +957,6 @@ void AliTRDclusterizerV2::Transform(AliTRDdataArrayI *digitsIn
 				    , AliTRDdataArrayF *digitsOut
 				    , AliTRDSignalIndex *indexesIn
 				    , AliTRDSignalIndex *indexesOut
-				    , Int_t /*nRowMax*/, Int_t /*nColMax*/
                                     , Int_t nTimeTotal
 				    , Float_t ADCthreshold
 				    , AliTRDCalROC *calGainFactorROC
@@ -939,8 +987,7 @@ void AliTRDclusterizerV2::Transform(AliTRDdataArrayI *digitsIn
                                      * calGainFactorROCValue;
 
       for (iTime = 0; iTime < nTimeTotal; iTime++) 
-	{
-	  
+	{	  
 	  //
 	  // Add gain
 	  //
@@ -960,7 +1007,7 @@ void AliTRDclusterizerV2::Transform(AliTRDdataArrayI *digitsIn
 	  if (outADC[iTime] > ADCthreshold) 
 	    {
 	      digitsOut->SetDataUnchecked(iRow,iCol,iTime,outADC[iTime]);
-	      AliDebug(5, Form("add index %d", indexesIn->GetDetNumber()));
+	      //AliDebug(5, Form("add index %d", indexesIn->GetDetNumber()));
 	      indexesOut->AddIndexTBin(iRow,iCol,iTime);
 	    }	  
 	} //while itime
@@ -969,7 +1016,7 @@ void AliTRDclusterizerV2::Transform(AliTRDdataArrayI *digitsIn
   delete [] inADC;
   delete [] outADC;
 
-  AliDebug(5, Form("Stop %d", indexesIn->GetDetNumber()));
+  //AliDebug(5, Form("Stop %d", indexesIn->GetDetNumber()));
 
   return;
 
