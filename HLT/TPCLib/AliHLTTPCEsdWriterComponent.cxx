@@ -78,8 +78,6 @@ int AliHLTTPCEsdWriterComponent::InitWriter()
     if (fTree) {
       fESD->WriteToTree(fTree);
     }
-    delete fESD;
-    fESD=NULL;
   }
   if (fTree==NULL) {
     iResult=-ENOMEM;
@@ -111,9 +109,7 @@ int AliHLTTPCEsdWriterComponent::DumpEvent( const AliHLTComponentEventData& evtD
   int iResult=0;
   TTree* pTree=fTree;
   if (pTree) {
-    fESD = new AliESDEvent;
     if (fESD) {
-      fESD->CreateStdContent();
       AliESDEvent* pESD=fESD;
 
       const AliHLTComponentBlockData* iter = NULL;
@@ -154,7 +150,6 @@ int AliHLTTPCEsdWriterComponent::DumpEvent( const AliHLTComponentEventData& evtD
       }
 
       fESD->Reset();
-      delete pESD;
     } else {
       iResult=-ENOMEM;
     }
