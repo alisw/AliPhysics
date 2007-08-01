@@ -22,7 +22,8 @@ class AliVirtualEventHandler : public TNamed {
     virtual void         SetOutputFileName(char* fname)  = 0;
     virtual char*        GetOutputFileName()             = 0;
     virtual Bool_t       InitIO(Option_t* opt)           = 0;
-    virtual Bool_t       Fill()                          = 0;
+    virtual Bool_t       BeginEvent()                    = 0;
+    virtual Bool_t       FinishEvent()                   = 0;
     virtual Bool_t       Terminate()                     = 0;
     virtual Bool_t       TerminateIO()                   = 0;
  private :
