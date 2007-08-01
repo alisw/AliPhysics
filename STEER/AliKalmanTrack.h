@@ -56,8 +56,6 @@ public:
 
   static 
   Double_t MeanMaterialBudget(Double_t *start,Double_t *end,Double_t *mparam);
-  static Double_t 
-  MeanMaterialBudgetNew(Double_t *start,Double_t *end,Double_t *mparam);
 
   // Time integration (S.Radomski@gsi.de)
   void StartTimeIntegral();

@@ -45,6 +45,9 @@ public:
   Double_t GetSigmaY() const {return fSigmaY;}
   Double_t GetSigmaZ() const {return fSigmaZ;}
 
+  static 
+  Double_t MeanMaterialBudget(Double_t *start,Double_t *end,Double_t *mparam);
+
   static void SetFieldMap(const AliMagF* map, Bool_t uni);
   static const AliMagF *GetFieldMap() {return fgkFieldMap;}
   static Double_t GetBz(Float_t *r); 
