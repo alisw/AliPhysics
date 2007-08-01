@@ -28,7 +28,7 @@ void GetFinalDecayProducts(Int_t ind, AliStack & stack , TArrayI & ar);
 void fastGen(Int_t nev = 1, char* filename = "galice.root")
 {
   AliPDG::AddParticlesToPdgDataBase();
-  TDatabasePDG*  pPdg = TDatabasePDG::Instance();
+  TDatabasePDG::Instance();
  
 
 
@@ -102,7 +102,6 @@ void fastGen(Int_t nev = 1, char* filename = "galice.root")
     //  Generate event
     Int_t nprim = 0;
     Int_t ntrial = 0;
-    Int_t minmult = 1000;
     Int_t ndstar = 0;
    
    
@@ -110,9 +109,9 @@ void fastGen(Int_t nev = 1, char* filename = "galice.root")
     //-------------------------------------------------------------------------------------
 
     while(!ndstar) {
-      // Selection of events with multiplicity
-      // bigger than "minmult"
+      // Selection of events with D*
       stack->Reset();
+      stack->ConnectTree(rl->TreeK());
       gener->Generate();
       ntrial++;
       nprim = stack->GetNprimary();
@@ -176,8 +175,6 @@ void fastGen(Int_t nev = 1, char* filename = "galice.root")
   //                         Termination
   //  Generator
   gener->FinishRun();
-  //  Stack
-  stack->FinishRun();
   //  Write file
   rl->WriteHeader("OVERWRITE");
   gener->Write();
