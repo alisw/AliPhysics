@@ -182,17 +182,16 @@ Bool_t  AliT0RawReader::Next()
 	  }
       } //TRM loop
     word = GetNextWord(); //
-    header = AliBitPacking::UnpackWord(word,28,31);
-    uu = word&FILLER;
     if (word == FILLER )  word = GetNextWord(); 
-    if( header !=5 )
-      {
-	AliWarning(Form(" !!!! wrong DRM GLOBAL trailer  %x!!!!", word));
-	fRawReader->AddFatalErrorLog(kWrongDRMTrailer,Form("w=%x",word));
+     header = AliBitPacking::UnpackWord(word,28,31);
+     if( header !=5 )
+       {
+	 AliWarning(Form(" !!!! wrong DRM GLOBAL trailer  %x!!!!", word));
+	 fRawReader->AddFatalErrorLog(kWrongDRMTrailer,Form("w=%x",word));
       }
-    cout.setf( ios_base::dec, ios_base::basefield );
+     cout.setf( ios_base::dec, ios_base::basefield );
     
-    return kTRUE;
+     return kTRUE;
 }
 //_____________________________________________________________________________
 Int_t AliT0RawReader::GetPosition()
