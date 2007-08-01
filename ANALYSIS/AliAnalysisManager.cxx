@@ -738,7 +738,7 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
          }   
          task->ExecuteTask(option);
       }
-      if (fEventHandler) fEventHandler->Fill();
+      if (fEventHandler) fEventHandler->FinishEvent();
       return;
    }   
    // The event loop is not controlled by TSelector   
@@ -750,7 +750,7 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
       }   
       task->ExecuteTask(option);
    }   
-   if (fEventHandler) fEventHandler->Fill();
+   if (fEventHandler) fEventHandler->FinishEvent();
 }
 
 //______________________________________________________________________________
