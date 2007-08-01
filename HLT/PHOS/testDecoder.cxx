@@ -1,4 +1,6 @@
+
 #include "AliHLTDDLDecoder.h"
+
 #include "AliHLTAltroData.h"
 #include "Rtypes.h"
 #include <iostream>
@@ -8,13 +10,13 @@
 #include <time.h>
 #include "stdio.h"
 
+
 using namespace std;
-
-
 
 int main(int argc, const char** argv)
 {
-  int n_loops = 10000;
+  
+  int n_loops = 200000;
 
   clock_t  start;
   clock_t  end;
@@ -75,5 +77,7 @@ int main(int argc, const char** argv)
   decoder->GetFailureRate();
 
   //  cnt ++;
-  return 0;
+  
+ return 0;
+ 
 }  

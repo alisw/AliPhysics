@@ -31,7 +31,8 @@ CXX           = g++
 #CXXFLAGS      = -O9 -Wall -fPIC
 
 #CXXFLAGS      = -O9 -Wall -fPIC -g
-CXXFLAGS      = -O9 -Wall 
+#CXXFLAGS      = -O9 -Wall 
+CXXFLAGS      = -O9 -g -Wall 
 #CXXFLAGS      = -g -Wall 
 
 LD            = g++

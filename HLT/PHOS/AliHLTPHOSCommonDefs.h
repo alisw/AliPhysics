@@ -6,7 +6,7 @@
  * Physics Group, Dep. of Physics                                         *
  * University of Oslo, Norway, 2006                                       *
  *                                                                        * 
- * Author: Per Thomas Hille perthi@fys.uio.no for the ALICE DCS Project.  *
+ * Author: Per Thomas Hille perthi@fys.uio.no for the ALICE HLT Project.  *
  * Contributors are mentioned in the code where appropriate.              *
  * Please report bugs to perthi@fys.uio.no                                * 
  *                                                                        *
