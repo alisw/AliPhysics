@@ -1,3 +1,10 @@
+2007-08-02  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* binalieve.pkg:
+	* binreve.pkg:
+	Remove linking against libTreeViewer, this dependency has been
+	removed in root head.
+
 2007-07-24  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* binalieve.pkg:
