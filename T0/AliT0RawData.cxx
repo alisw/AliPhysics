@@ -94,11 +94,11 @@ uncertances
   AliT0LookUpKey* lookkey= new AliT0LookUpKey();
   AliT0LookUpValue*  lookvalue= new AliT0LookUpValue();
   TMap *lookup = fParam->GetMapLookup();
-  TMapIter *iter = new TMapIter(lookup);
+  TMapIter iter(lookup);
 
   for( Int_t iline=0; iline<106; iline++)
     {
-      lookvalue = ( AliT0LookUpValue*) iter->Next();
+      lookvalue = ( AliT0LookUpValue*) iter.Next();
       lookkey = (AliT0LookUpKey*) lookup->GetValue(lookvalue);
       fLookUp.Add(lookkey, lookvalue);
       lookkey= new AliT0LookUpKey();

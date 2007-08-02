@@ -52,6 +52,7 @@ AliAltroMapping::AliAltroMapping(const char *mappingFile):
 //_____________________________________________________________________________
 AliAltroMapping::~AliAltroMapping()
 {
+  CloseMappingFile();
   // destructor
 }
 
@@ -106,6 +107,7 @@ Bool_t AliAltroMapping::CloseMappingFile()
   // file
   if (fIn) {
     fIn->close();
+    delete fIn;
     fIn = NULL;
   }
 

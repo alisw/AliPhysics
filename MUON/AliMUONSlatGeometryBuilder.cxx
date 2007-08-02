@@ -1175,7 +1175,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
       gMC->Gspos("S10E",2*index-1,"S10B", xx, 0.,-kBframeWidth/2. + kNulocWidth/2, 0, "ONLY");
       gMC->Gspos("S10E",2*index  ,"S10B", xx, 0., kBframeWidth/2. - kNulocWidth/2, 0, "ONLY");
     }
-
+  
 
     // position the volumes approximating the circular section of the pipe
     Float_t epsilon = 0.001; 
@@ -1251,6 +1251,9 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
     // cout << "Geometry for Station 5...... done" << endl;
 
   }
+
+  delete [] fStations;
+
 }
 
 

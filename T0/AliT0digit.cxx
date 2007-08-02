@@ -59,6 +59,7 @@ AliT0digit::~AliT0digit() {
 void AliT0digit::SetTimeCFD (TArrayI &o)
 {
   ////////////////////////////////////////
+  if(fTimeCFD)delete  fTimeCFD;
   fTimeCFD = new TArrayI(24);
 
   Int_t i;
@@ -92,6 +93,7 @@ void AliT0digit::GetQT0 (TArrayI &o)
 void AliT0digit::SetQT0 (TArrayI &o)
 {
   //
+  if(fQT0)delete fQT0;
   fQT0  = new TArrayI(24);
   Int_t i;
   for (i=0; i<24; i++)
@@ -104,6 +106,7 @@ void AliT0digit::SetQT0 (TArrayI &o)
 void AliT0digit::SetTimeLED (TArrayI &o)
 {
   ////////////////////////////////////////
+  if(fTimeLED)delete fTimeLED;
   fTimeLED = new TArrayI(24);
 
   Int_t i;
@@ -137,6 +140,7 @@ void AliT0digit::GetQT1 (TArrayI &o)
 void AliT0digit::SetQT1 (TArrayI &o)
 {
   //
+  if(fQT1)delete fQT1;
   fQT1  = new TArrayI(24);
   Int_t i;
   for (i=0; i<24; i++)
