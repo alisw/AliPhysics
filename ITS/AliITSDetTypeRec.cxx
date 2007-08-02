@@ -987,6 +987,11 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader){
     cTree->SetBranchAddress("ITSRecPoints",&array);
     cTree->Fill();
     nClusters+=array->GetEntriesFast();
+
+    if (array != emptyArray) {
+      array->Delete();
+      delete array;
+    }
   }
   delete emptyArray;
 
