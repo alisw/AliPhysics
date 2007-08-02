@@ -6,7 +6,8 @@ SRCS:=  AliFilter.cxx \
 	AliRawReaderMemory.cxx \
 	AliAltroRawStream.cxx \
 	AliAltroRawStreamOld.cxx AliCaloRawStream.cxx \
-	AliVMERawStream.cxx
+	AliVMERawStream.cxx \
+	AliAltroDecoder.cxx AliAltroData.cxx AliAltroBunch.cxx AliAltroRawStreamFast.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 
