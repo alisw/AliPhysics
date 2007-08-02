@@ -595,8 +595,8 @@ Bool_t AliTPCParam::Update()
   //
   //response data
   //
-  if (fResponseBin==0) delete [] fResponseBin;
-  if (fResponseWeight==0) delete [] fResponseBin;
+  if (fResponseBin) delete [] fResponseBin;
+  if (fResponseWeight) delete [] fResponseWeight;
   fResponseBin    = new Int_t[3*fNResponseMax];
   fResponseWeight = new Float_t[fNResponseMax];
 
