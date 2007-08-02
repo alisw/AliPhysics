@@ -216,7 +216,15 @@ void AliStack::PushTrack(Int_t done, Int_t parent, Int_t pdg,
   particle->SetWeight(weight);
   particle->SetUniqueID(mech);
 
-  if(!done) particle->SetBit(kDoneBit);
+  
+  
+  if(!done) {
+      particle->SetBit(kDoneBit);
+  } else {
+      particle->SetBit(kTransportBit);
+  }
+  
+  
 
   //  Declare that the daughter information is valid
   particle->SetBit(kDaughtersBit);

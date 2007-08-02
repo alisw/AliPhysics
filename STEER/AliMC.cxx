@@ -1251,7 +1251,8 @@ void AliMC::ReorderAndExpandTreeTR()
 	// Skip primaries that have not been transported
 	Int_t dau1  = part->GetFirstDaughter();
 	Int_t dau2  = -1;
-	if ((dau1 > -1 && dau1 < np) || part->GetStatusCode() > 1) continue;
+	// if ((dau1 > -1 && dau1 < np) || part->GetStatusCode() > 1) continue;
+	if (!part->TestBit(kTransportBit)) continue;
 	//
 	fTmpTreeTR->GetEntry(it++);
 	Int_t nh = fTmpTrackReferences->GetEntries();
@@ -1302,7 +1303,9 @@ void AliMC::ReorderAndExpandTreeTR()
     it = nt - 1;
     for (Int_t ip = 0; ip < np; ip++) {
 	TParticle* part = stack->Particle(ip);
-	if ((part->GetFirstDaughter() == -1 && part->GetStatusCode() <= 1) || part->GetFirstDaughter() >= np) {
+//	if ((part->GetFirstDaughter() == -1 && part->GetStatusCode() <= 1) || part->GetFirstDaughter() >= np) 
+	if (part->TestBit(kTransportBit));
+	{
 	    // Skip particles that have not been transported
 	    fTmpTreeTR->GetEntry(it--);
 	    Int_t nh = fTmpTrackReferences->GetEntries();
