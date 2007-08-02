@@ -221,7 +221,7 @@ void AliGenHijing::Generate()
   Float_t tof;
 
 //  converts from mm/c to s
-  const Float_t kconv = 0.001/2.999792458e8;
+  const Float_t kconv = 0.001/2.99792458e8;
 //
   Int_t nt  = 0;
   Int_t jev = 0;
