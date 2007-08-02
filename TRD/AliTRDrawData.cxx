@@ -220,7 +220,7 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
     delete of;
   }
 
-  delete hc_buffer;
+  delete [] hc_buffer;
   return kTRUE;
 
 }
@@ -389,7 +389,7 @@ Int_t AliTRDrawData::ProduceHcDataV1andV2(AliTRDdataArrayI *digits, Int_t side
           AliDebug(2,Form("Large RMS (>1.7)  (ROB,MCM,ADC)=(%02d,%02d,%02d), avg=%03.1f, rms=%03.1f"
 			  ,iRob,iMcm,iAdc,avg,rms));
 	}
-        delete a;
+        delete [] a;
       }
     }
   }
