@@ -11,7 +11,7 @@ SRCS          = AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx \
 		AliGenReader.cxx AliGenReaderCwn.cxx AliGenReaderTreeK.cxx \
                 AliGenReaderEcalHijing.cxx AliGenReaderEcalJets.cxx\
 		AliGenHIJINGparaBa.cxx AliGeVSimParticle.cxx AliGenGeVSim.cxx\
-		AliGenThetaSlice.cxx AliGenSTRANGElib.cxx AliGenBeamGas.cxx\
+		AliGenThetaSlice.cxx AliGenSTRANGElib.cxx AliGenBeamGas.cxx AliGenBeamGasNew.cxx\
 		AliGenAfterBurnerFlow.cxx \
 		AliGenSlowNucleons.cxx \
 	        AliGenGeVSimEventHeader.cxx\
@@ -29,6 +29,6 @@ DHDR:=EVGENLinkDef.h
 
 EXPORT:=AliDecayer.h AliGenMC.h AliGenCocktailAfterBurner.h AliGenCocktail.h
 
-EINCLUDE:=FASTSIM PYTHIA6
+EINCLUDE:=FASTSIM THijing PYTHIA6
 
 
