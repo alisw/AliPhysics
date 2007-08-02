@@ -22,7 +22,7 @@ ELIBS    := Reve Alieve \
   AliHLTHough AliHLTITS \
 # THerwig herwig TPHIC
 
-PACKBLIBS := $(ROOTCLIBS) $(ROOTPLIBS) -lTreePlayer -lTreeViewer -lGeomPainter -lGed -lFTGL -lRGL $(SYSLIBS)
+PACKBLIBS := $(ROOTCLIBS) $(ROOTPLIBS) -lTreePlayer -lGeomPainter -lGed -lFTGL -lRGL $(SYSLIBS)
 
 
 ifeq (macosx,$(ALICE_TARGET))

@@ -5,7 +5,7 @@ EINCLUDE :=
 ELIBSDIR :=
 ELIBS    := Reve
 
-PACKBLIBS := $(ROOTCLIBS) -lTreePlayer -lTreeViewer -lGeomPainter -lGed \
+PACKBLIBS := $(ROOTCLIBS) -lTreePlayer -lGeomPainter -lGed \
 	     -L$(shell root-config --libdir)/$(dir $(shell root-config --version)) -lFTGL -lRGL \
 	     $(SYSLIBS)
 
