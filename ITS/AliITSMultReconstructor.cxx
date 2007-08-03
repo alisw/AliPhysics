@@ -496,6 +496,11 @@ AliITSMultReconstructor::LoadClusterArrays(TTree* itsClusterTree) {
     }// end of cluster loop
   } // end of its "subdetector" loop  
   
+  if (itsClusters) {
+    itsClusters->Delete();
+    delete itsClusters;
+    itsClusters = 0;
+  }
   AliDebug(1,Form("(clusters in layer 1 : %d,  layer 2: %d)",fNClustersLay1,fNClustersLay2));
 }
 //____________________________________________________________________
