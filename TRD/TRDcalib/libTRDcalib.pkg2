@@ -1,0 +1,12 @@
+SRCS = AliTRDcalib.cxx
+       
+
+HDRS:= $(SRCS:.cxx=.h) 
+
+EINCLUDE:=RAW TRD STEER
+
+DHDR= TRDcalibLinkDef.h
+
+EXPORT:=$(SRCS:.cxx=.h)
+
+
