@@ -222,7 +222,7 @@ AliITSDetTypeRec::~AliITSDetTypeRec(){
   delete [] fNctype;
   delete [] fNdtype;
   delete [] fNMod;
-  if(fLoader) delete fLoader;
+  //if(fLoader) delete fLoader; // MvL: Loader is not owned by this class; do not delete
   
 }
 
@@ -889,7 +889,6 @@ void AliITSDetTypeRec::DigitsToRecPoints(Int_t evNumber,Int_t lastentry,Option_t
   TTree *treeC=fLoader->TreeC();
   if(!treeC){
     MakeTreeC();
-    MakeBranchC();
   }
   AliITSClusterFinder *rec     = 0;
   Int_t id,module,first=0;
@@ -905,7 +904,7 @@ void AliITSDetTypeRec::DigitsToRecPoints(Int_t evNumber,Int_t lastentry,Option_t
                 evNumber);
           exit(1);
       } 
-      ResetDigits();
+      ResetDigits();  // MvL: Not sure we neeed this when rereading anyways
       TTree *lTD = fLoader->TreeD();
       if (all) {
           lTD->GetEvent(lastentry+module);
@@ -927,6 +926,7 @@ void AliITSDetTypeRec::DigitsToRecPoints(Int_t evNumber,Int_t lastentry,Option_t
       
   fLoader->WriteRecPoints("OVERWRITE");
   fLoader->WriteRawClusters("OVERWRITE");
+  fLoader->CleanRawClusters();
 }
 //______________________________________________________________________
 void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader){
