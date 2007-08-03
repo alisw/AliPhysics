@@ -135,7 +135,9 @@ void AliITSReconstructor::Reconstruct(AliRunLoader* runLoader) const
 
   loader->UnloadRecPoints();
   loader->UnloadDigits();
+  loader->UnloadRawClusters();
   runLoader->UnloadKinematics();
+  delete rec;
 }
 
 //_________________________________________________________________
@@ -166,6 +168,8 @@ void AliITSReconstructor::Reconstruct(AliRunLoader* runLoader,
   }
 
   loader->UnloadRecPoints();
+  loader->UnloadRawClusters();
+  delete rec;
 }
 
 //_____________________________________________________________________________
