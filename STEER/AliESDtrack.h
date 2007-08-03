@@ -82,6 +82,8 @@ public:
               (Double_t &alpha, Double_t &x, Double_t p[5]) const;
   Bool_t GetConstrainedExternalCovariance(Double_t cov[15]) const;
   Double_t GetConstrainedChi2() const {return fCchi2;}
+  //
+    
 
 
   Bool_t GetInnerPxPyPz(Double_t *p) const {
@@ -89,6 +91,7 @@ public:
     return fIp->GetPxPyPz(p);
   }
   const AliExternalTrackParam * GetInnerParam() const { return fIp;}
+  const AliExternalTrackParam * GetTPCInnerParam() const {return fTPCInner;}
   Bool_t GetInnerXYZ(Double_t *r) const {
     if (!fIp) return kFALSE;
     return fIp->GetXYZ(r);
@@ -297,6 +300,7 @@ protected:
 
 
   AliExternalTrackParam *fIp; // Track parameters at the first measured point (TPC)
+  AliExternalTrackParam *fTPCInner; // Track parameters at the first measured point (TPC) - first itteration
 
 
   AliExternalTrackParam *fOp; // Track parameters at the last measured point (TPC or TRD) 
@@ -373,7 +377,7 @@ protected:
 
   AliESDtrack & operator=(const AliESDtrack & ) {return *this;}
 
-  ClassDef(AliESDtrack,38)  //ESDtrack 
+  ClassDef(AliESDtrack,39)  //ESDtrack 
 };
 
 #endif 

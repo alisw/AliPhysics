@@ -71,6 +71,7 @@ AliESDtrack::AliESDtrack() :
   fCp(0),
   fCchi2(1e10),
   fIp(0),
+  fTPCInner(0),
   fOp(0),
   fITSchi2(0),
   fITSncls(0),
@@ -153,6 +154,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fCp(0),
   fCchi2(track.fCchi2),
   fIp(0),
+  fTPCInner(0),
   fOp(0),
   fITSchi2(track.fITSchi2),
   fITSncls(track.fITSncls),
@@ -222,6 +224,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
 
   if (track.fCp) fCp=new AliExternalTrackParam(*track.fCp);
   if (track.fIp) fIp=new AliExternalTrackParam(*track.fIp);
+  if (track.fTPCInner) fTPCInner=new AliExternalTrackParam(*track.fTPCInner);
   if (track.fOp) fOp=new AliExternalTrackParam(*track.fOp);
 
   if (track.fFriendTrack) fFriendTrack=new AliESDfriendTrack(*(track.fFriendTrack));
@@ -240,6 +243,7 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   fCp(0),
   fCchi2(1e10),
   fIp(0),
+  fTPCInner(0),
   fOp(0),
   fITSchi2(0),
   fITSncls(0),
@@ -406,6 +410,7 @@ AliESDtrack::~AliESDtrack(){
   //
   //printf("Delete track\n");
   delete fIp; 
+  delete fTPCInner; 
   delete fOp;
   delete fCp; 
   delete fFriendTrack;
@@ -449,7 +454,7 @@ void AliESDtrack::MakeMiniESDtrack(){
 
   // Reset track parameters at the inner wall of TPC
   fIp = 0;
-
+  fTPCInner=0;
   // Reset track parameters at the inner wall of the TRD
   fOp = 0;
 
@@ -582,6 +587,7 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
     
   case kTPCin: case kTPCrefit:
     fTPCLabel = t->GetLabel();
+    if (flags==kTPCin)  fTPCInner=new AliExternalTrackParam(*t);
     if (!fIp) fIp=new AliExternalTrackParam(*t);
     else 
       fIp->Set(t->GetX(),t->GetAlpha(),t->GetParameter(),t->GetCovariance());
