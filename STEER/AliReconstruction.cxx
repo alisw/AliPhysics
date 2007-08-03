@@ -1241,7 +1241,7 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
     AliESDtrack * track = esd->GetTrack(itrack);
     if (!track) continue;
     if (track->IsOn(AliESDtrack::kITSrefit)) continue;
-    track->PropagateTo(kRadius, fieldZ, track->GetMass(),kMaxStep,kTRUE);
+   AliTracker::PropagateTrackTo(track,kRadius,track->GetMass(),kMaxStep,kTRUE);
     track->RelateToVertex(esd->GetVertex(),fieldZ, kMaxD);
   }
   
