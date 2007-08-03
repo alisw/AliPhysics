@@ -25,25 +25,26 @@
 
 //------------------------------------------------------------------------
 // This class implements a method to construct a "fake" primary
-// vertex for cosmic events in which the muon crosses the SPD inner
-// layer (SPD1). A fake primary vertex is needed for the reconstruction,
+// vertex for cosmic events in which the muon crosses one of 5 inner
+// ITS layers. A fake primary vertex is needed for the reconstruction,
 // with e.g. AliITStrackerSA, of the two tracks produced by the muon 
 // in the ITS.
-//   We build pairs of clusters on SPD1 and define the fake vertex as
+//   We build pairs of clusters on a given layer and define the fake vertex as
 // the mid-point of the straight line joining the two clusters.
-//   We reject the backgroung by requiring at least one clusters on SPD2
-// closer than fMaxDistOnSPD2 to the tracklet prolongation.
+//   We use the innermost layer that has at least two clusters.
+//   We reject the background by requiring at least one cluster on the outer
+// layer, closer than fMaxDistOnOuterLayer to the tracklet prolongation.
 //   We can reject (potentially pathological) events with the muon track
-// tangential to the SPD1 layer by the requiring the radial position of
+// tangential to the layer by the requiring the radial position of
 // the vertex to be smaller than fMaxVtxRadius.
 //   Due to background clusters, more than one vertex per event can 
 // be found. We consider the first found.
+//   The errors on x,y,z of the vertex are calculated as errors on the mean
+// of clusters coordinates. Non-diag elements of vertex cov. mat. are set to 0.
 //   The number of contributors set in the AliESDVertex object is the
-// number of vertices found in the event; if this number is <1, 
+// number of the layer on which the tracklet was built; if this number is -1, 
 // the procedure could not find a vertex position and by default 
 // the vertex coordinates are set to (0,0,0) with large errors (100,100,100)
-// Number of contributors = 0  --> No SPD1 tracklets matching criteria 
-// Number of contributors = -1 --> No SPD1 recpoints
 //
 // Origin: A.Dainese, andrea.dainese@lnl.infn.it
 //-------------------------------------------------------------------------
@@ -52,19 +53,23 @@ ClassImp(AliITSVertexerCosmics)
 
 //-------------------------------------------------------------------------
 AliITSVertexerCosmics::AliITSVertexerCosmics():AliITSVertexer(),
-fFirstSPD1(0),
-fLastSPD1(0),
-fFirstSPD2(0),
-fLastSPD2(0),
-fMaxDistOnSPD2(0),
-fMaxVtxRadius(0),
+fMaxDistOnOuterLayer(0),
 fMinDist2Vtxs(0)
 {
   // Default constructor
-  SetSPD1Modules();
-  SetSPD2Modules();
-  SetMaxDistOnSPD2();
-  SetMaxVtxRadius();
+  SetFirstLastModules(0,0,79);
+  SetFirstLastModules(1,80,239);
+  SetFirstLastModules(2,240,323);
+  SetFirstLastModules(3,324,499);
+  SetFirstLastModules(4,500,1247);
+  SetFirstLastModules(5,1248,2197);
+  SetMaxVtxRadius(0,3.5);
+  SetMaxVtxRadius(1,6.5);
+  SetMaxVtxRadius(2,14.5);
+  SetMaxVtxRadius(3,23.5);
+  SetMaxVtxRadius(4,37.5);
+  SetMaxVtxRadius(5,42.5);
+  SetMaxDistOnOuterLayer();
   SetMinDist2Vtxs();
 }
 //--------------------------------------------------------------------------
@@ -83,76 +88,106 @@ AliESDVertex* AliITSVertexerCosmics::FindVertexForCurrentEvent(Int_t evnumber)
   TClonesArray *recpoints=new TClonesArray("AliITSRecPoint",10000);
   rpTree->SetBranchAddress("ITSRecPoints",&recpoints);
 
-  Double_t xclspd1[100],yclspd1[100],zclspd1[100],modclspd1[100];
-  Int_t nclspd1stored=0;
-  Double_t xclspd2[100],yclspd2[100],zclspd2[100],modclspd2[100];
-  Int_t nclspd2stored=0;
-  Int_t nrecpoints,nrecpointsSPD1=0;
-
-  Double_t gc[3]={0.,0.,0.};
-  Double_t lc[3]={0.,0.,0.};
   Int_t lay,lad,det; 
 
-  Double_t x[100],y[100],z[100],p1[3],p2[3],p3[3];
-  Int_t nvtxs;
-  Bool_t good,matchtospd2;
-  Double_t xvtx,yvtx,zvtx,rvtx;
+  // Search for innermost layer with at least two clusters 
+  // on two different modules
+  Int_t ilayer=0;
+  while(ilayer<6) {
+    Int_t nHitModules=0;
+    for(Int_t imodule=fFirst[ilayer]; imodule<=fLast[ilayer]; imodule++) {
+      rpTree->GetEvent(imodule);
+      AliITSgeomTGeo::GetModuleId(imodule,lay,lad,det);
+      lay -= 1;  // AliITSgeomTGeo gives layer from 1 to 6, we want 0 to 5
+      if(lay!=ilayer) AliFatal("Layer mismatch!");
+      if(recpoints->GetEntriesFast()>0) nHitModules++;
+    }
+    if(nHitModules>=2) break;
+    ilayer++;
+  }
+  printf("Building tracklets on layer %d\n",ilayer);
 
-  for(Int_t imodule=fFirstSPD1; imodule<fLastSPD2; imodule++) { // SPD
+
+  Float_t xclInnLay[100],yclInnLay[100],zclInnLay[100],modclInnLay[100];
+  Float_t e2xclInnLay[100],e2yclInnLay[100],e2zclInnLay[100];
+  Int_t nclInnLayStored=0;
+  Float_t xclOutLay[100],yclOutLay[100],zclOutLay[100],modclOutLay[100];
+  Int_t nclOutLayStored=0;
+  Int_t nRecPoints,nRecPointsInnLay=0;
+
+  Float_t gc[3],gcov[5];
+
+  Float_t x[100],y[100],z[100],e2x[100],e2y[100],e2z[100];
+  Double_t p1[3],p2[3],p3[3];
+  Int_t nvtxs;
+  Bool_t good,matchtoOutLay;
+  Float_t xvtx,yvtx,zvtx,rvtx;
+
+  // Collect clusters in the selected layer and the outer one
+  for(Int_t imodule=fFirst[ilayer]; imodule<=fLast[ilayer+1]; imodule++) {
     rpTree->GetEvent(imodule);
     AliITSgeomTGeo::GetModuleId(imodule,lay,lad,det);
-    nrecpoints=recpoints->GetEntriesFast();
-    if(imodule<fLastSPD1) nrecpointsSPD1 += nrecpoints;
-    //printf("cosmics: module %d clusters %d\n",imodule,nrecpoints);
-    for(Int_t irp=0; irp<nrecpoints; irp++) {
+    lay -= 1; // AliITSgeomTGeo gives layer from 1 to 6, we want 0 to 5
+    nRecPoints=recpoints->GetEntriesFast();
+    if(imodule<=fLast[ilayer]) nRecPointsInnLay += nRecPoints;
+    //printf("cosmics: module %d clusters %d\n",imodule,nRecPoints);
+    for(Int_t irp=0; irp<nRecPoints; irp++) {
       AliITSRecPoint *rp=(AliITSRecPoint*)recpoints->UncheckedAt(irp);
       // Local coordinates of this recpoint
-      lc[0]=rp->GetDetLocalX();
-      lc[2]=rp->GetDetLocalZ();
-      AliITSgeomTGeo::LocalToGlobal(imodule,lc,gc); // global coordinates
-      if(lay==1) { // store SPD1 clusters
-	xclspd1[nclspd1stored]=gc[0];
-	yclspd1[nclspd1stored]=gc[1];
-	zclspd1[nclspd1stored]=gc[2];
-	modclspd1[nclspd1stored]=imodule;
-	nclspd1stored++;
+      rp->GetGlobalXYZ(gc);
+      if(lay==ilayer) { // store InnLay clusters
+	xclInnLay[nclInnLayStored]=gc[0];
+	yclInnLay[nclInnLayStored]=gc[1];
+	zclInnLay[nclInnLayStored]=gc[2];
+	rp->GetGlobalCov(gcov);
+	e2xclInnLay[nclInnLayStored]=gcov[0];
+	e2yclInnLay[nclInnLayStored]=gcov[3];
+	e2zclInnLay[nclInnLayStored]=gcov[5];
+	modclInnLay[nclInnLayStored]=imodule;
+	nclInnLayStored++;
       }
-      if(lay==2) { // store SPD2 clusters
-	xclspd2[nclspd2stored]=gc[0];
-	yclspd2[nclspd2stored]=gc[1];
-	zclspd2[nclspd2stored]=gc[2];
-	modclspd2[nclspd2stored]=imodule;
-	nclspd2stored++;
+      if(lay==ilayer+1) { // store OutLay clusters
+	xclOutLay[nclOutLayStored]=gc[0];
+	yclOutLay[nclOutLayStored]=gc[1];
+	zclOutLay[nclOutLayStored]=gc[2];
+	modclOutLay[nclOutLayStored]=imodule;
+	nclOutLayStored++;
       }
-      if(nclspd1stored>100 || nclspd2stored>100) 
-	AliFatal("More than 100 clusters per layer in SPD");
+      if(nclInnLayStored>100 || nclOutLayStored>100) 
+	AliFatal("More than 100 clusters per layer");
     }// end clusters in a module
-  }// end SPD modules for a given event
+  }// end modules
 
   // build fake vertices
   nvtxs=0;
-  // SPD1 - first cluster
-  for(Int_t i1spd1=0; i1spd1<nclspd1stored; i1spd1++) { 
-    p1[0]=xclspd1[i1spd1]; p1[1]=yclspd1[i1spd1]; p1[2]=zclspd1[i1spd1];
-    // SPD1 - second cluster
-    for(Int_t i2spd1=i1spd1+1; i2spd1<nclspd1stored; i2spd1++) { 
-      if(modclspd1[i1spd1]==modclspd1[i2spd1]) continue;
-      p2[0]=xclspd1[i2spd1]; p2[1]=yclspd1[i2spd1]; p2[2]=zclspd1[i2spd1];
-      // look for point on SPD2
-      AliStrLine spd1line(p1,p2,kTRUE);
-      matchtospd2 = kFALSE;
-      for(Int_t ispd2=0; ispd2<nclspd2stored; ispd2++) {
-	p3[0]=xclspd2[ispd2]; p3[1]=yclspd2[ispd2]; p3[2]=zclspd2[ispd2];
-	//printf(" %f\n",spd1line.GetDistFromPoint(p3));
-	if(spd1line.GetDistFromPoint(p3)<fMaxDistOnSPD2) 
-	  { matchtospd2 = kTRUE; break; }
+  // InnLay - first cluster
+  for(Int_t i1InnLay=0; i1InnLay<nclInnLayStored; i1InnLay++) { 
+    p1[0]=xclInnLay[i1InnLay]; 
+    p1[1]=yclInnLay[i1InnLay]; 
+    p1[2]=zclInnLay[i1InnLay];
+    // InnLay - second cluster
+    for(Int_t i2InnLay=i1InnLay+1; i2InnLay<nclInnLayStored; i2InnLay++) { 
+      if(modclInnLay[i1InnLay]==modclInnLay[i2InnLay]) continue;
+      p2[0]=xclInnLay[i2InnLay]; 
+      p2[1]=yclInnLay[i2InnLay]; 
+      p2[2]=zclInnLay[i2InnLay];
+      // look for point on OutLay
+      AliStrLine InnLayline(p1,p2,kTRUE);
+      matchtoOutLay = kFALSE;
+      for(Int_t iOutLay=0; iOutLay<nclOutLayStored; iOutLay++) {
+	p3[0]=xclOutLay[iOutLay]; 
+	p3[1]=yclOutLay[iOutLay]; 
+	p3[2]=zclOutLay[iOutLay];
+	//printf(" %f\n",InnLayline.GetDistFromPoint(p3));
+	if(InnLayline.GetDistFromPoint(p3)<fMaxDistOnOuterLayer) 
+	  { matchtoOutLay = kTRUE; break; }
       }
-      if(!matchtospd2) continue;
-      xvtx = 0.5*(xclspd1[i1spd1]+xclspd1[i2spd1]);
-      yvtx = 0.5*(yclspd1[i1spd1]+yclspd1[i2spd1]);
-      zvtx = 0.5*(zclspd1[i1spd1]+zclspd1[i2spd1]);
+      if(!matchtoOutLay) continue;
+      xvtx = 0.5*(xclInnLay[i1InnLay]+xclInnLay[i2InnLay]);
+      yvtx = 0.5*(yclInnLay[i1InnLay]+yclInnLay[i2InnLay]);
+      zvtx = 0.5*(zclInnLay[i1InnLay]+zclInnLay[i2InnLay]);
       rvtx = TMath::Sqrt(xvtx*xvtx+yvtx*yvtx);
-      if(rvtx>fMaxVtxRadius) continue;
+      if(rvtx>fMaxVtxRadius[ilayer]) continue;
       good = kTRUE;
       for(Int_t iv=0; iv<nvtxs; iv++) {
 	if(TMath::Sqrt((xvtx- x[iv])*(xvtx- x[iv])+
@@ -164,10 +199,13 @@ AliESDVertex* AliITSVertexerCosmics::FindVertexForCurrentEvent(Int_t evnumber)
 	x[nvtxs]=xvtx;
 	y[nvtxs]=yvtx;
 	z[nvtxs]=zvtx;
+	e2x[nvtxs]=0.25*(e2xclInnLay[i1InnLay]+e2xclInnLay[i2InnLay]);
+	e2y[nvtxs]=0.25*(e2yclInnLay[i1InnLay]+e2yclInnLay[i2InnLay]);
+	e2z[nvtxs]=0.25*(e2zclInnLay[i1InnLay]+e2zclInnLay[i2InnLay]);
 	nvtxs++;
       }
-    } // SPD1 - second cluster
-  } // SPD1 - first cluster
+    } // InnLay - second cluster
+  } // InnLay - first cluster
 
 
   Double_t pos[3]={0.,0.,0.};
@@ -176,16 +214,19 @@ AliESDVertex* AliITSVertexerCosmics::FindVertexForCurrentEvent(Int_t evnumber)
     pos[0]=x[0]; 
     pos[1]=y[0]; 
     pos[2]=z[0];
-    err[0]=0.1; 
-    err[1]=0.1; 
-    err[2]=0.1;
+    err[0]=TMath::Sqrt(e2x[0]); 
+    err[1]=TMath::Sqrt(e2y[0]); 
+    err[2]=TMath::Sqrt(e2z[0]);
   }
-  if(!nrecpointsSPD1) nvtxs=-1;
   fCurrentVertex = new AliESDVertex(pos,err,"cosmics");
-  fCurrentVertex->SetNContributors(nvtxs);
+  if(nvtxs) {
+    fCurrentVertex->SetNContributors(ilayer);
+  } else {
+    fCurrentVertex->SetNContributors(-1);
+  }
   fCurrentVertex->SetTitle("cosmics fake vertex");
 
-  //if(nvtxs>0) fCurrentVertex->Print();
+  if(nvtxs>=0) fCurrentVertex->Print();
 
   delete recpoints;
   itsLoader->UnloadRecPoints();
@@ -213,11 +254,9 @@ void AliITSVertexerCosmics::PrintStatus() const
 {
   // Print current status
   printf("=======================================================\n");
-  printf(" fMaxDistOnSPD2: %f\n",fMaxDistOnSPD2);
-  printf(" fMaxVtxRadius:  %f\n",fMaxVtxRadius);
+  printf(" fMaxDistOnOuterLayer: %f\n",fMaxDistOnOuterLayer);
+  printf(" fMaxVtxRadius[0]:  %f\n",fMaxVtxRadius[0]);
   printf(" fMinDist2Vtxs:  %f\n",fMinDist2Vtxs);
-  printf(" First layer first and last modules: %d, %d\n",fFirstSPD1,fLastSPD1);
-  printf(" Second layer first and last modules: %d, %d\n",fFirstSPD2,fLastSPD2);
   printf("=======================================================\n");
 }
 //-------------------------------------------------------------------------

@@ -17,9 +17,9 @@
 class AliITSclusterTable;
 class AliITStrackSA;
 class AliESDVertex;
+class AliESDEvent;
 class AliITSVertexer;
 class TTree;
-class AliESDEvent;
 class TArrayD;
 
 class AliITStrackerSA : public AliITStrackerMI {
@@ -38,13 +38,15 @@ class AliITStrackerSA : public AliITStrackerMI {
   Int_t FindTracks(AliESDEvent* event);
 
   AliITStrackV2* FitTrack(AliITStrackSA* tr,Double_t* primaryVertex);
-
+  AliITStrackV2* FitShortTrack(AliITStrackSA* tr,Double_t *primaryVertex,Int_t innLay);
   Int_t FindTrackLowChiSquare(TObjArray* tracklist, Int_t dim) const;
-  Int_t LoadClusters(TTree *cf) {Int_t rc=AliITStrackerMI::LoadClusters(cf); SetClusterTree(cf);SetSixPoints(kTRUE); return rc;}
+  Int_t LoadClusters(TTree *cf) {Int_t rc=AliITStrackerMI::LoadClusters(cf); SetClusterTree(cf); SetSixPoints(kTRUE); return rc;}
   void SetVertex(AliESDVertex *vtx){fVert = vtx;}
   void SetClusterTree(TTree * itscl){fITSclusters = itscl;}
   void SetSixPoints(Bool_t sp = kFALSE){fSixPoints = sp;}
   Bool_t GetSixPoints() const {return fSixPoints;}
+  void SetOuterStartLayer(Int_t osl = 0) {if(osl>(AliITSgeomTGeo::GetNLayers()-2)) osl=AliITSgeomTGeo::GetNLayers()-2; fOuterStartLayer = osl;}
+  Int_t GetOuterStartLayer() const {return fOuterStartLayer;}
   void SetSAFlag(Bool_t fl){fITSStandAlone=fl;}  // StandAlone flag setter
   Bool_t GetSAFlag() const {return fITSStandAlone;} // StandAlone flag getter
   void SetWindowSizes(Int_t n=46, Double_t *phi=0, Double_t *lam=0);
@@ -104,11 +106,12 @@ class AliITStrackerSA : public AliITStrackerMI {
   TObjArray *fListOfTracks;   //! container for found tracks 
   TTree *fITSclusters;        //! pointer to ITS tree of clusters
   Bool_t fSixPoints;          // If true 6/6 points are required (default). 5/6 otherwise
+  Int_t fOuterStartLayer;     // Search for tracks with <6 points: outer layer to start from
 
   TClonesArray** fCluLayer; //! array with clusters 
   TClonesArray** fCluCoord; //! array with cluster info
 
-  ClassDef(AliITStrackerSA,5)
+  ClassDef(AliITStrackerSA,6)
 };
 
 #endif

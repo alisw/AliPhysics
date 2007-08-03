@@ -59,6 +59,7 @@ fVertexer(0),
 fListOfTracks(0),
 fITSclusters(0),
 fSixPoints(0),
+fOuterStartLayer(0),
 fCluLayer(0),
 fCluCoord(0){
   // Default constructor
@@ -82,6 +83,7 @@ fVertexer(0),
 fListOfTracks(0),
 fITSclusters(0),
 fSixPoints(0),
+fOuterStartLayer(0),
 fCluLayer(0),
 fCluCoord(0) 
 {
@@ -112,6 +114,7 @@ fVertexer(0),
 fListOfTracks(0),
 fITSclusters(0),
 fSixPoints(0),
+fOuterStartLayer(0),
 fCluLayer(0),
 fCluCoord(0)
 {
@@ -140,6 +143,7 @@ fVertexer(vertexer),
 fListOfTracks(0),
 fITSclusters(0),
 fSixPoints(0),
+fOuterStartLayer(0),
 fCluLayer(0),
 fCluCoord(0)
 {
@@ -169,6 +173,7 @@ fVertexer(tracker.fVertexer),
 fListOfTracks(tracker.fListOfTracks),
 fITSclusters(tracker.fITSclusters),
 fSixPoints(tracker.fSixPoints),
+fOuterStartLayer(tracker.fOuterStartLayer),
 fCluLayer(tracker.fCluLayer),
 fCluCoord(tracker.fCluCoord) {
   // Copy constructor
@@ -268,6 +273,7 @@ void AliITStrackerSA::Init(){
     SetWindowSizes();
     fITSclusters = 0;
     SetSixPoints();
+    SetOuterStartLayer(0);
     SetSAFlag(kFALSE);
     fListOfTracks=new TObjArray(0,0);
     fCluLayer = 0;
@@ -319,6 +325,7 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
      }
    }
 
+   //Get primary vertex
    Double_t primaryVertex[3];
    event->GetVertex()->GetXYZ(primaryVertex);
    //Creates TClonesArray with clusters for each layer. The clusters already used
@@ -368,7 +375,6 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
    }
    
  
-  //Get primary vertex
 
    Int_t ntrack=0;
    //loop on the different windows
@@ -454,10 +460,10 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
    }
    
    //if 5/6 points are required, second loop starting 
-   //from second layer, to find tracks with point of 
-   //layer 1 missing
-   
-   if(!fSixPoints){
+   //from second layer (SPD2), to find tracks with point of 
+   //layer 1 missing   
+   if(!fSixPoints) {
+     //printf("looking from SPD2\n");
      //   counter for clusters on each layer  
      Int_t * nn = new Int_t[AliITSgeomTGeo::GetNLayers()-1];      
      for(Int_t nloop=0;nloop<fNloop;nloop++){
@@ -520,14 +526,88 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
 	   ntrack++;
 
 	 }   
-	
-       
+              
         delete trs;
       }//end loop on clusters of layer2
      }
    
     delete [] nn;
-  }  //end opt="5/6"  
+  } //end opt="5/6"  
+
+
+
+   // search for tracks starting from SPD2, SDD1, SDD2, SSD2
+   // for cosmics (A. Dainese 31.07.07)
+   if(fOuterStartLayer>0) {
+     for(Int_t innLay=1; innLay<=fOuterStartLayer; innLay++) {
+       printf("Searching from layer %d outward\n",innLay);
+       //   counter for clusters on each layer  
+       Int_t * nn = new Int_t[AliITSgeomTGeo::GetNLayers()-innLay];      
+       for(Int_t nloop=0;nloop<fNloop;nloop++){
+	 Int_t nclInnLay=fCluLayer[innLay]->GetEntries();
+	 while(nclInnLay--){ //loop starting from layer innLay
+	   ResetForFinding();
+	   Int_t pflag=0;
+	   AliITSRecPoint* cl = (AliITSRecPoint*)fCluLayer[innLay]->At(nclInnLay);
+	 
+	   if(!cl) continue;
+	   AliITSclusterTable* arr = (AliITSclusterTable*)GetClusterCoord(innLay,nclInnLay);
+	   fPhic = arr->GetPhi();
+	   fLambdac = arr->GetLambda();
+	   fPhiEstimate = fPhic;
+         
+	   AliITStrackSA* trs = new AliITStrackSA(); 
+	   fPoint1[0]=primaryVertex[0];
+	   fPoint1[1]=primaryVertex[1];
+	   fPoint2[0]=arr->GetX();
+	   fPoint2[1]=arr->GetY();
+
+	   Int_t kk;
+	   for(kk=0;kk<AliITSgeomTGeo::GetNLayers()-innLay;kk++) nn[kk] = 0;
+
+	   kk=0;
+	   nn[kk] = SearchClusters(innLay,fPhiWin[nloop],fLambdaWin[nloop],
+				  trs,primaryVertex[2],pflag);
+	   for(Int_t nextLay=innLay+1; nextLay<AliITSgeomTGeo::GetNLayers(); nextLay++) {
+	     kk++;
+	     nn[kk] = SearchClusters(nextLay,fPhiWin[nloop],fLambdaWin[nloop],
+				     trs,primaryVertex[2],pflag);
+	     if(nn[kk]!=0){
+	       pflag=1;
+	       if(kk==1) {
+		 fPoint3[0]=fPointc[0];
+		 fPoint3[1]=fPointc[1];
+	       } else {
+		 UpdatePoints();
+	       }
+	     }
+	   }
+
+	   Int_t fl=0;
+	   for(Int_t nnp=0;nnp<AliITSgeomTGeo::GetNLayers()-innLay;nnp++){
+	     if(nn[nnp]!=0) fl+=1;
+	   }
+	   if(fl>=AliITSgeomTGeo::GetNLayers()-innLay){ 
+	     AliITStrackV2* tr2 = FitShortTrack(trs,primaryVertex,innLay);
+	     if(tr2==0){
+	       continue;
+	     }
+	     
+	     AliESDtrack outtrack;
+	     outtrack.UpdateTrackParams(tr2,AliESDtrack::kITSin);
+	     event->AddTrack(&outtrack);
+	     ntrack++;
+	     
+	   }   
+              
+	   delete trs;
+	 }//end loop on clusters of innLay
+       } //end loop on window sizes
+   
+       delete [] nn;
+     } //end loop on innLay
+   } //end if(fOuterStartLayer>0)
+
    
   delete [] firstmod;
   Info("FindTracks","Number of found tracks: %d",event->GetNumberOfTracks());
@@ -616,7 +696,7 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
   Int_t nlist=0;
 
   if(end[0]==0) end[0]=1; //for tracks with cluster on layer 0 missing
-  for(Int_t l1=0;l1<end[0];l1++){//loop on layer 1
+  for(Int_t l1=0;l1<end[0];l1++){ //loop on layer 1
     AliITSRecPoint* cl0 = (AliITSRecPoint*)listlayer[0]->At(l1); 
     Double_t x1,y1,z1,sx1,sy1,sz1;
     Double_t x2,y2,z2,sx2,sy2,sz2;
@@ -629,7 +709,7 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
     Int_t lay1=0;
     Int_t lay2=1;
     Int_t module1=-1;
-    for(Int_t l2=0;l2<end[1];l2++){//loop on layer 2
+    for(Int_t l2=0;l2<end[1];l2++){ //loop on layer 2
       AliITSRecPoint* cl1 = (AliITSRecPoint*)listlayer[1]->At(l2); 
       index2=clind1[l2];
       mrk2 = mark1[l2];
@@ -637,44 +717,51 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
         AliITSRecPoint* cl2 = (AliITSRecPoint*)listlayer[2]->At(l3);
 
         if(cl0==0 && cl1!=0) {
-          p2 = cl2;index1=clind2[l3];mrk1=mark2[l3];lay1=2;
           p1=cl1;
+          p2=cl2;
+	  index1=clind1[l2];mrk1=mark1[l2];
+	  index2=clind2[l3];mrk2=mark2[l3];
+	  lay1=1;
+	  lay2=2;
           module1 = p1->GetDetectorIndex()+firstmod[1]; 
         }
         if(cl0!=0 && cl1==0){
           p1=cl0;
-          p2=cl2;index2=clind2[l3];mrk2=mark2[l3];lay2=2;
+          p2=cl2;index2=clind2[l3];mrk2=mark2[l3];
+	  lay1=0;
+	  lay2=2;
 	  module1 = p1->GetDetectorIndex()+firstmod[0];
         }
         if(cl0!=0 && cl1!=0){
           p1=cl0;
           p2=cl1;
+	  lay1=0;
+	  lay2=1;
 	  module1 = p1->GetDetectorIndex()+firstmod[0];
         }
 	
 	Int_t cln1=mrk1;
 	Int_t cln2=mrk2;
-	AliITSclusterTable* arr = (AliITSclusterTable*)GetClusterCoord(lay1,cln1);
-	AliITSclusterTable* arr1= (AliITSclusterTable*)GetClusterCoord(lay2,cln2);
-	x1 = arr->GetX();
-	x2 = arr1->GetX();
-	y1 = arr->GetY();
-	y2 = arr1->GetY();
-	z1 = arr->GetZ();
-	z2 = arr1->GetZ();
-	sx1 = arr->GetSx();
-	sx2 = arr1->GetSx();
-	sy1 = arr->GetSy();
-	sy2 = arr1->GetSy();
-	sz1 = arr->GetSz();
-	sz2 = arr1->GetSz();
+	AliITSclusterTable* arr1 = (AliITSclusterTable*)GetClusterCoord(lay1,cln1);
+	AliITSclusterTable* arr2 = (AliITSclusterTable*)GetClusterCoord(lay2,cln2);
+	x1 = arr1->GetX();
+	x2 = arr2->GetX();
+	y1 = arr1->GetY();
+	y2 = arr2->GetY();
+	z1 = arr1->GetZ();
+	z2 = arr2->GetZ();
+	sx1 = arr1->GetSx();
+	sx2 = arr2->GetSx();
+	sy1 = arr1->GetSy();
+	sy2 = arr2->GetSy();
+	sz1 = arr1->GetSz();
+	sz2 = arr2->GetSz();
 	
 	Int_t layer,ladder,detector;
 	AliITSgeomTGeo::GetModuleId(module1,layer,ladder,detector);
         Float_t yclu1 = p1->GetY();
         Float_t zclu1 = p1->GetZ();
-        Double_t cv=Curvature(primaryVertex[0],primaryVertex[1],x1,y1,x2,y2);
-        
+        Double_t cv=Curvature(primaryVertex[0],primaryVertex[1],x1,y1,x2,y2);        
 	Double_t tgl2 = (z2-z1)/TMath::Sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
 	Double_t phi2 = TMath::ATan2((y2-y1),(x2-x1));
 
@@ -718,12 +805,12 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
               ot->ResetCovariance(10.);
               ot->ResetClusters();
               
-              if(RefitAt(49.,ot,trac)){ //fit from layer 1 to layer 6
+              if(RefitAt(krInsideITSscreen,ot,trac)){ //fit from layer 1 to layer 6
                 AliITStrackMI *otrack2 = new AliITStrackMI(*ot);
                 otrack2->ResetCovariance(10.); 
                 otrack2->ResetClusters();
                 //fit from layer 6 to layer 1
-                if(RefitAt(3.7,otrack2,ot)) {
+                if(RefitAt(krInsideSPD1,otrack2,ot)) {
 		  fListOfTracks->AddLast(otrack2);
 		  new (tri[nlist]) AliITStrackSA(*trac);
 		  nlist++;
@@ -737,8 +824,7 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
               delete trac;
             }//end loop layer 6
           }//end loop layer 5
-        }//end loop layer 4
-        
+        }//end loop layer 4        
       }//end loop layer 3
     }//end loop layer 2 
   }//end loop layer 1
@@ -813,6 +899,300 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
   otrack->SetLabel(label);  
   //remove clusters of found track
 
+  for(Int_t nlay=0;nlay<AliITSgeomTGeo::GetNLayers();nlay++){
+    for(Int_t cln=0;cln<trsa->GetNumberOfMarked(nlay);cln++){
+      Int_t index = trsa->GetClusterMark(nlay,cln);
+      fCluLayer[nlay]->RemoveAt(index);
+      RemoveClusterCoord(nlay,index);
+      fCluLayer[nlay]->Compress();
+    }    
+  }
+  listSA->Delete();
+  delete listSA;
+
+  for(Int_t i=0;i<AliITSgeomTGeo::GetNLayers();i++){
+    delete listlayer[i];
+  }
+  delete [] listlayer; 
+  delete [] firstmod;
+  return otrack;
+
+}
+
+//________________________________________________________________________
+
+AliITStrackV2* AliITStrackerSA::FitShortTrack(AliITStrackSA* tr,Double_t *primaryVertex,Int_t innLay){
+  //fit of the found track (short tracks, <6 points, for cosmics). A.Dainese 31.07.07 
+
+  
+  Int_t * firstmod = new Int_t[AliITSgeomTGeo::GetNLayers()];
+  for(Int_t i=0;i<AliITSgeomTGeo::GetNLayers();i++){
+    firstmod[i]=AliITSgeomTGeo::GetModuleIndex(i+1,1,1);
+  }  
+
+  Int_t nclusters = tr->GetNumberOfClustersSA();
+  TObjArray** listlayer = new TObjArray*[AliITSgeomTGeo::GetNLayers()];
+  for(Int_t i=0;i<AliITSgeomTGeo::GetNLayers();i++){
+    listlayer[i] = new TObjArray(0,0);
+  }
+
+  TArrayI clind0(20);
+  TArrayI clind1(20);
+  TArrayI clind2(20);
+  TArrayI clind3(20);
+  TArrayI clind4(20);
+  TArrayI clind5(20);
+
+  TArrayI mark0(20);
+  TArrayI mark1(20);
+  TArrayI mark2(20);
+  TArrayI mark3(20);
+  TArrayI mark4(20);
+  TArrayI mark5(20);
+
+
+  Int_t * nnn = new Int_t[AliITSgeomTGeo::GetNLayers()];
+  Int_t * kkk = new Int_t[AliITSgeomTGeo::GetNLayers()];
+  for(Int_t i=0;i<AliITSgeomTGeo::GetNLayers();i++) {nnn[i]=0;kkk[i]=0;}
+  
+  for(Int_t ncl=0;ncl<nclusters;ncl++){
+    Int_t index = tr->GetClusterIndexSA(ncl); 
+    AliITSRecPoint* cl = (AliITSRecPoint*)GetCluster(index);
+    if(cl->TestBit(kSAflag)==kTRUE) cl->ResetBit(kSAflag);
+    Int_t lay = (index & 0xf0000000) >> 28;
+    if(lay==0) { listlayer[0]->AddLast(cl); clind0[nnn[0]]=index;nnn[0]++;}
+    if(lay==1) { listlayer[1]->AddLast(cl); clind1[nnn[1]]=index;nnn[1]++;}
+    if(lay==2) { listlayer[2]->AddLast(cl); clind2[nnn[2]]=index;nnn[2]++;}
+    if(lay==3) { listlayer[3]->AddLast(cl); clind3[nnn[3]]=index;nnn[3]++;}
+    if(lay==4) { listlayer[4]->AddLast(cl); clind4[nnn[4]]=index;nnn[4]++;}
+    if(lay==5) { listlayer[5]->AddLast(cl); clind5[nnn[5]]=index;nnn[5]++;}    
+  }
+  delete [] nnn;
+
+  for(Int_t nlay=0;nlay<AliITSgeomTGeo::GetNLayers();nlay++){
+    for(Int_t ncl=0;ncl<tr->GetNumberOfMarked(nlay);ncl++){
+      Int_t mark = tr->GetClusterMark(nlay,ncl);
+      if(nlay==0) { mark0[kkk[0]]=mark;kkk[0]++;}
+      if(nlay==1) { mark1[kkk[1]]=mark;kkk[1]++;}
+      if(nlay==2) { mark2[kkk[2]]=mark;kkk[2]++;}
+      if(nlay==3) { mark3[kkk[3]]=mark;kkk[3]++;}
+      if(nlay==4) { mark4[kkk[4]]=mark;kkk[4]++;}
+      if(nlay==5) { mark5[kkk[5]]=mark;kkk[5]++;}
+
+    }
+  }
+
+  delete [] kkk;
+
+ 
+  Int_t * end = new Int_t[AliITSgeomTGeo::GetNLayers()];
+  for(Int_t i=0;i<AliITSgeomTGeo::GetNLayers();i++){
+    if(listlayer[i]->GetEntries()==0) end[i]=1;
+    else end[i]=listlayer[i]->GetEntries();
+  }
+
+  TClonesArray* listSA = new TClonesArray("AliITStrackSA");
+  TClonesArray &tri = *listSA;
+  Int_t nlist=0;
+
+  //  if(end[0]==0) end[0]=1; //for tracks with cluster on layer 0 missing
+  for(Int_t l1=0;l1<end[0];l1++){ //loop on layer 1
+    AliITSRecPoint* cl0 = (AliITSRecPoint*)listlayer[0]->At(l1); 
+    for(Int_t l2=0;l2<end[1];l2++){ //loop on layer 2
+      AliITSRecPoint* cl1 = (AliITSRecPoint*)listlayer[1]->At(l2); 
+      for(Int_t l3=0;l3<end[2];l3++){  //loop on layer 3
+        AliITSRecPoint* cl2 = (AliITSRecPoint*)listlayer[2]->At(l3);
+        for(Int_t l4=0;l4<end[3];l4++){ //loop on layer 4   
+          AliITSRecPoint* cl3 = (AliITSRecPoint*)listlayer[3]->At(l4);
+          for(Int_t l5=0;l5<end[4];l5++){ //loop on layer 5
+            AliITSRecPoint* cl4 = (AliITSRecPoint*)listlayer[4]->At(l5);
+            for(Int_t l6=0;l6<end[5];l6++){ //loop on layer 6  
+              AliITSRecPoint* cl5 = (AliITSRecPoint*)listlayer[5]->At(l6);
+
+
+	      Double_t x1,y1,z1,sx1,sy1,sz1;
+	      Double_t x2,y2,z2,sx2,sy2,sz2;
+	      AliITSRecPoint* p1=0;
+	      AliITSRecPoint* p2=0;
+	      Int_t index1=0,index2=0;
+	      Int_t mrk1=0,mrk2=0;
+	      if(innLay==1) {
+		p1=cl1;
+		p2=cl2;
+		index1=clind1[l2];mrk1=mark1[l2];
+		index2=clind2[l3];mrk2=mark2[l3];
+	      } else if(innLay==2) {
+		p1=cl2;
+		p2=cl3;
+		index1=clind2[l3];mrk1=mark2[l3];
+		index2=clind3[l4];mrk2=mark3[l4];
+	      } else if(innLay==3) {
+		p1=cl3;
+		p2=cl4;
+		index1=clind3[l4];mrk1=mark3[l4];
+		index2=clind4[l5];mrk2=mark4[l5];
+	      } else if(innLay==4) {
+		p1=cl4;
+		p2=cl5;
+		index1=clind4[l5];mrk1=mark4[l5];
+		index2=clind5[l6];mrk2=mark5[l6];
+	      }
+	      Int_t lay1=innLay;
+	      Int_t lay2=innLay+1;
+	      Int_t module1 = p1->GetDetectorIndex()+firstmod[innLay]; 
+	      
+	      Int_t cln1=mrk1;
+	      Int_t cln2=mrk2;
+	      AliITSclusterTable* arr1 = (AliITSclusterTable*)GetClusterCoord(lay1,cln1);
+	      AliITSclusterTable* arr2 = (AliITSclusterTable*)GetClusterCoord(lay2,cln2);
+	      x1 = arr1->GetX();
+	      x2 = arr2->GetX();
+	      y1 = arr1->GetY();
+	      y2 = arr2->GetY();
+	      z1 = arr1->GetZ();
+	      z2 = arr2->GetZ();
+	      sx1 = arr1->GetSx();
+	      sx2 = arr2->GetSx();
+	      sy1 = arr1->GetSy();
+	      sy2 = arr2->GetSy();
+	      sz1 = arr1->GetSz();
+	      sz2 = arr2->GetSz();
+	      
+	      Int_t layer,ladder,detector;
+	      AliITSgeomTGeo::GetModuleId(module1,layer,ladder,detector);
+	      Float_t yclu1 = p1->GetY();
+	      Float_t zclu1 = p1->GetZ();
+	      Double_t cv=Curvature(primaryVertex[0],primaryVertex[1],x1,y1,x2,y2);        
+	      Double_t tgl2 = (z2-z1)/TMath::Sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
+	      Double_t phi2 = TMath::ATan2((y2-y1),(x2-x1));
+	      //printf("phi2: %f   tgl2: %f\n",phi2,tgl2);
+              AliITStrackSA* trac = new AliITStrackSA(layer,ladder,detector,yclu1,zclu1,phi2,tgl2,cv,1);
+                              
+	      //Float_t clxyz[3]; 
+              if(cl5!=0) {
+		trac->AddClusterV2(5,(clind5[l6] & 0x0fffffff)>>0);
+		trac->AddClusterMark(5,mark5[l6]);
+		//cl5->GetGlobalXYZ(clxyz);printf("gcl %f %f %f\n",clxyz[0],clxyz[1],clxyz[2]);	      
+	      }
+              if(cl4!=0){
+		trac->AddClusterV2(4,(clind4[l5] & 0x0fffffff)>>0);
+		trac->AddClusterMark(4,mark4[l5]);
+		//cl4->GetGlobalXYZ(clxyz);printf("gcl %f %f %f\n",clxyz[0],clxyz[1],clxyz[2]);	      
+	      }
+              if(cl3!=0){
+		trac->AddClusterV2(3,(clind3[l4] & 0x0fffffff)>>0);
+		trac->AddClusterMark(3,mark3[l4]);
+		//cl3->GetGlobalXYZ(clxyz);printf("gcl %f %f %f\n",clxyz[0],clxyz[1],clxyz[2]);	      
+	      }
+              if(cl2!=0){
+		trac->AddClusterV2(2,(clind2[l3] & 0x0fffffff)>>0);
+		trac->AddClusterMark(2,mark2[l3]);
+		//cl2->GetGlobalXYZ(clxyz);printf("gcl %f %f %f\n",clxyz[0],clxyz[1],clxyz[2]);	      
+	      }
+              if(cl1!=0){
+		trac->AddClusterV2(1,(clind1[l2] & 0x0fffffff)>>0);
+		trac->AddClusterMark(1,mark1[l2]);
+		//cl1->GetGlobalXYZ(clxyz);printf("gcl %f %f %f\n",clxyz[0],clxyz[1],clxyz[2]);	      
+	      }
+              if(cl0!=0){
+		trac->AddClusterV2(0,(clind0[l1] & 0x0fffffff)>>0);
+		trac->AddClusterMark(0,mark0[l1]);
+		//cl0->GetGlobalXYZ(clxyz);printf("gcl %f %f %f\n",clxyz[0],clxyz[1],clxyz[2]);	      
+	      }
+
+
+              //fit with Kalman filter using AliITStrackerMI::RefitAt()
+	      AliITStrackMI* ot = new AliITStrackSA(*trac);
+              
+              ot->ResetCovariance(10.);
+              ot->ResetClusters();
+              
+	      //printf("%d  \n",trac->GetNumberOfClusters());for(Int_t ijk=0;ijk<trac->GetNumberOfClusters();ijk++) printf("    %d",trac->GetClusterIndex(ijk)); printf("\n");
+              if(RefitAt(krInsideITSscreen,ot,trac)){ //fit from layer 1 to layer 6
+                AliITStrackMI *otrack2 = new AliITStrackMI(*ot);
+                otrack2->ResetCovariance(10.); 
+                otrack2->ResetClusters();
+                //fit from layer 6 to layer 1
+                if(RefitAt(krInsideSPD1,otrack2,ot)) {
+		  fListOfTracks->AddLast(otrack2);
+		  new (tri[nlist]) AliITStrackSA(*trac);
+		  nlist++;
+		} else {
+		  delete otrack2;
+		}
+                              
+              }       
+          
+              delete ot;
+              delete trac;
+            }//end loop layer 6
+          }//end loop layer 5
+        }//end loop layer 4        
+      }//end loop layer 3
+    }//end loop layer 2 
+  }//end loop layer 1
+
+  delete [] end;
+
+ 
+
+  Int_t dim=fListOfTracks->GetEntries();
+  if(dim==0){
+    for(Int_t i=0;i<AliITSgeomTGeo::GetNLayers();i++){
+      delete listlayer[i];
+    }
+    delete [] listlayer;
+    listSA->Delete();
+    delete listSA;
+    delete [] firstmod;
+    return 0;
+  }
+
+  Int_t lowchi2 = FindTrackLowChiSquare(fListOfTracks,dim);
+  AliITStrackV2* otrack =(AliITStrackV2*)fListOfTracks->At(lowchi2);
+  AliITStrackSA* trsa = (AliITStrackSA*)listSA->At(lowchi2);
+ 
+  if(otrack==0) {
+    for(Int_t i=0;i<AliITSgeomTGeo::GetNLayers();i++){
+      delete listlayer[i];
+    }
+    delete [] listlayer; 
+    listSA->Delete();
+    delete listSA;
+    delete [] firstmod;
+    return 0;
+  }
+  Int_t * indexc = new Int_t[AliITSgeomTGeo::GetNLayers()];
+  for(Int_t i=0;i<AliITSgeomTGeo::GetNLayers();i++) indexc[i]=0;
+  for(Int_t nind=0;nind<otrack->GetNumberOfClusters();nind++){
+    indexc[nind] = otrack->GetClusterIndex(nind);
+  }      
+  Int_t labl[6][3];
+  for(Int_t i=0;i<AliITSgeomTGeo::GetNLayers();i++) {
+    if(i<otrack->GetNumberOfClusters()) {
+      AliITSRecPoint* cl = (AliITSRecPoint*)GetCluster(indexc[i]);
+      labl[i][0]=cl->GetLabel(0);
+      labl[i][1]=cl->GetLabel(1);
+      labl[i][2]=cl->GetLabel(2);
+    } else {
+      labl[i][0]=-1;
+      labl[i][1]=-1;
+      labl[i][2]=-1;
+    }
+  }
+  delete [] indexc;
+  Int_t numberofpoints=AliITSgeomTGeo::GetNLayers()-innLay;
+  CookLabel(otrack,0.); //MI change - to see fake ratio
+ 
+  Int_t label=FindLabel(labl[0][0],labl[1][0],labl[2][0],labl[3][0],labl[4][0],labl[5][0]);
+  Int_t lflag=0;
+  for(Int_t i=0;i<numberofpoints;i++)
+    if(labl[i][0]==label || labl[i][1]==label || labl[i][2]==label) lflag++;
+  
+  if(lflag<numberofpoints) label = -label;
+  otrack->SetLabel(label);  
+
+  //remove clusters of found track
   for(Int_t nlay=0;nlay<AliITSgeomTGeo::GetNLayers();nlay++){
     for(Int_t cln=0;cln<trsa->GetNumberOfMarked(nlay);cln++){
       Int_t index = trsa->GetClusterMark(nlay,cln);

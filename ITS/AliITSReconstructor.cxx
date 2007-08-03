@@ -187,6 +187,8 @@ AliTracker* AliITSReconstructor::CreateTracker(AliRunLoader* runLoader)const
     AliITStrackerSA *sat=(AliITStrackerSA*)tracker;
     if(selectedTracker.Contains("onlyITS"))sat->SetSAFlag(kTRUE);
     if(sat->GetSAFlag())AliDebug(1,"Tracking Performed in ITS only\n");
+    if(selectedTracker.Contains("cosmics")||selectedTracker.Contains("COSMICS"))
+      sat->SetOuterStartLayer(AliITSgeomTGeo::GetNLayers()-2);
   }
 
   TString selectedPIDmethod = GetOption();
