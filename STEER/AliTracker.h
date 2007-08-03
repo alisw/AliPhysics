@@ -17,6 +17,7 @@ class AliCluster;
 class TTree;
 class AliKalmanTrack;
 class AliESDEvent;
+class AliExternalTrackParam;
 class AliTrackPoint;
 
 class AliTracker : public TObject {
@@ -47,6 +48,9 @@ public:
 
   static 
   Double_t MeanMaterialBudget(Double_t *start,Double_t *end,Double_t *mparam);
+  static
+  Bool_t PropagateTrackTo(AliExternalTrackParam *track, Double_t x, Double_t m,
+	 Double_t maxStep, Bool_t rotateTo=kTRUE, Double_t maxSnp=0.8);  
 
   static void SetFieldMap(const AliMagF* map, Bool_t uni);
   static const AliMagF *GetFieldMap() {return fgkFieldMap;}
