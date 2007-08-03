@@ -42,7 +42,6 @@ AliTRDCalibraVdriftLinearFit::AliTRDCalibraVdriftLinearFit() : /*FOLD00*/
     // default constructor
     //
 }
-
 //_____________________________________________________________________
 AliTRDCalibraVdriftLinearFit::AliTRDCalibraVdriftLinearFit(const AliTRDCalibraVdriftLinearFit &ped) : /*FOLD00*/
   TObject(ped),
@@ -67,6 +66,26 @@ AliTRDCalibraVdriftLinearFit::AliTRDCalibraVdriftLinearFit(const AliTRDCalibraVd
       fLinearFitterHistoArray.AddAt(hNew,idet);
     }
     
+  }
+}
+//_____________________________________________________________________
+AliTRDCalibraVdriftLinearFit::AliTRDCalibraVdriftLinearFit(const TObjArray &obja) : /*FOLD00*/
+  TObject(),
+  fVersion(0),
+  fLinearFitterHistoArray(540),
+  fLinearFitterPArray(540),
+  fLinearFitterEArray(540)
+{
+  //
+  // constructor from a TObjArray
+  //
+  for (Int_t idet = 0; idet < 540; idet++){
+    const TH2F         *hped        = (TH2F*)obja.UncheckedAt(idet);
+    if ( hped != 0x0 ){
+      TH2F *hNew = new TH2F(*hped);
+      hNew->SetDirectory(0);
+      fLinearFitterHistoArray.AddAt(hNew,idet);
+    }
   }
 }
 //_____________________________________________________________________

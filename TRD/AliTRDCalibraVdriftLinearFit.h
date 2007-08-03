@@ -12,6 +12,8 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "TObjArray.h"
+
 class TObjArray;
 class TH2F;
 class TTreeSRedirector;
@@ -22,6 +24,7 @@ public:
 
   AliTRDCalibraVdriftLinearFit();
   AliTRDCalibraVdriftLinearFit(const AliTRDCalibraVdriftLinearFit &ped);
+  AliTRDCalibraVdriftLinearFit(const TObjArray &obja);
   virtual ~AliTRDCalibraVdriftLinearFit();
 
   AliTRDCalibraVdriftLinearFit& operator = (const  AliTRDCalibraVdriftLinearFit &source);
@@ -35,6 +38,7 @@ public:
 
   TObjArray       *GetPArray()                   { return &fLinearFitterPArray;       };
   TObjArray       *GetEArray()                   { return &fLinearFitterEArray;       };
+  TObjArray       GetHistoArray()                { return fLinearFitterHistoArray;    };
 
 private:
    

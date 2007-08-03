@@ -44,6 +44,9 @@ class AliTRDcluster;
 class AliTRDtrack;
 class AliTRDmcmTracklet;
 class AliTRDgeometry;
+class AliTRDCalDet;
+class AliTRDCalROC;
+
 
 struct eventHeaderStruct;
 
@@ -61,9 +64,11 @@ class AliTRDCalibraFillHisto : public TObject {
 
   // Functions for initialising the AliTRDCalibraFillHisto in the code
           Bool_t   Init2Dhistos();
+	  Bool_t   Init2Dhistostrack();
 
   // Functions for filling the histos in the code
           Bool_t   ResetTrack();
+	  Bool_t   UpdateHistograms(AliTRDtrack *t);
           Bool_t   UpdateHistograms(AliTRDcluster *cl, AliTRDtrack *t);
           Bool_t   UpdateHistogramcm(AliTRDmcmTracklet *trk);
  
@@ -119,6 +124,7 @@ class AliTRDCalibraFillHisto : public TObject {
   TProfile2D      *GetPRF2d() const                                          { return fPRF2d;                  } 
   TObjArray        GetLinearFitterArray() const                              { return fLinearFitterArray;      }
   TLinearFitter   *GetLinearFitter(Int_t detector, Bool_t force=kFALSE);
+  AliTRDCalibraVdriftLinearFit *GetVdriftLinearFit() const                   { return fLinearVdriftFit;        }
   
  
   // How to fill the 2D
@@ -222,18 +228,23 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
   //
   // Vector method
   //
-  
-	  
-  AliTRDCalibraVector *fCalibraVector; // The vector object
+  	  
+	  AliTRDCalibraVector *fCalibraVector; // The vector object
  
  
   // Histograms to store the info from the digits, from the tracklets or from the tracks
-  TProfile2D      *fPH2d;                         // 2D average pulse height
-  TProfile2D      *fPRF2d;                        // 2D PRF
-  TH2I            *fCH2d;                         // 2D deposited charge
-  TObjArray       fLinearFitterArray;             // TObjArray of Linear Fitters for the detectors 
-  AliTRDCalibraVdriftLinearFit *fLinearVdriftFit; // Info Linear Fit
-  
+	  TProfile2D      *fPH2d;                         // 2D average pulse height
+	  TProfile2D      *fPRF2d;                        // 2D PRF
+	  TH2I            *fCH2d;                         // 2D deposited charge
+	  TObjArray       fLinearFitterArray;             // TObjArray of Linear Fitters for the detectors 
+	  AliTRDCalibraVdriftLinearFit *fLinearVdriftFit; // Info Linear Fit
+	  
+ // Current calib object: to correct for the database used
+	  AliTRDCalDet *fCalDetGain;                      // Current calib object gain
+	  AliTRDCalROC *fCalROCGain;                      // Current calib object gain
+	  AliTRDCalDet *fCalDetT0;                        // Current calib object T0
+	  AliTRDCalROC *fCalROCT0;                        // Current calib object T0
+
  
   //
   // A lot of internal functions......
@@ -248,14 +259,18 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
           void     FillTheInfoOfTheTrackCH();
 	  void     FillCH2d(Int_t x, Float_t y);
 	  Bool_t   FindP1TrackPH();
+	  Bool_t   FindP1TrackPHtrack(AliTRDtrack *t, Int_t index0, Int_t index1);
           void     ResetfVariables();
+	  void     ResetfVariablestrack();
           Bool_t   LocalisationDetectorXbins(Int_t detector);
 	  Int_t   *CalculateRowCol(AliTRDcluster *cl) const;
 	  void     CheckGoodTracklet(Int_t detector, Int_t *rowcol);
 	  Int_t    CalculateCalibrationGroup(Int_t i, Int_t *rowcol) const;
 	  Int_t    CalculateTotalNumberOfBins(Int_t i);
-	  void     StoreInfoCHPH(AliTRDcluster *cl, AliTRDtrack *t, Int_t *group);
+	  void     StoreInfoCHPH(AliTRDcluster *cl, AliTRDtrack *t, Int_t *group, Int_t *rowcol);
+	  void     StoreInfoCHPHtrack(AliTRDcluster *cl, AliTRDtrack *t, Int_t index, Int_t *group, Int_t *rowcol);
 	  Bool_t   HandlePRF();
+	  Bool_t   HandlePRFtrack(AliTRDtrack *t, Int_t index0, Int_t index1);
  
   // LinearFitter
 	  void     AnalyseLinearFitter();
@@ -267,6 +282,8 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
   virtual Int_t    GetPlane(Int_t d) const;
   virtual Int_t    GetChamber(Int_t d) const;
   virtual Int_t    GetSector(Int_t d) const;
+	  
+          Int_t    Arrondi(Double_t x)const;
  
 
   // Instance of this class and so on
