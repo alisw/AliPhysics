@@ -77,6 +77,10 @@ AliAODJet::AliAODJet(const AliAODJet& jet) :
 {
   // Copy constructor
     fMomentum = new TLorentzVector(*jet.fMomentum);
+    fBackgEnergy[0]   = jet.fBackgEnergy[0];     
+    fBackgEnergy[1]   = jet.fBackgEnergy[1];
+    fEffectiveArea[0] = jet.fEffectiveArea[0];   
+    fEffectiveArea[1] = jet.fEffectiveArea[1];   
     
 }
 
