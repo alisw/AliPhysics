@@ -34,6 +34,10 @@ AliITSRecoParam::AliITSRecoParam()
   // constructor
   //
   SetLayersParameters();
+  SetUseTGeoInTracker(kFALSE);
+  SetAllowSharedClusters(kTRUE);
+  SetFindV0s(kTRUE);
+  SetAddVirtualClustersInDeadZone(kTRUE);
 }
 //_____________________________________________________________________________
 AliITSRecoParam::~AliITSRecoParam() 
@@ -81,6 +85,8 @@ AliITSRecoParam *AliITSRecoParam::GetHighFluxParam()
   param->fMaxNormChi2C[3] = 18.;
   param->fMaxNormChi2C[4] = 30.;
   param->fMaxNormChi2C[5] = 35.;
+
+  param->fMaxNormChi2NonCForHypothesis = 7.;
   
   param->fMaxChi2 = 35.;
 
@@ -114,6 +120,20 @@ AliITSRecoParam *AliITSRecoParam::GetHighFluxParam()
   param->fSigmaZV = 0.0100;
 
   param->fVertexCut = 25.;
+
+  param->fMaxDZforPrimTrk = 0.4;
+  param->fMaxDZToUseConstraint = 3.;
+
+  param->fMaxDforV0dghtrForProlongation = 30.;
+  param->fMaxDForProlongation = 10.;
+  param->fMaxDZForProlongation = 20.;
+  param->fMinPtForProlongation = 0.120;
+
+  param->fZWindowDeadZone = 2.0;
+  param->fSigmaXDeadZoneHit2 = 0.004/12.;
+  param->fSigmaZDeadZoneHit2 = 0.001/12.;
+  param->fXPassDeadZoneHits = 0.018;
+
   
   return param;
 }

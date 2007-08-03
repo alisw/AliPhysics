@@ -22,16 +22,21 @@ public:
   AliITStrackV2(AliESDtrack& t,Bool_t c=kFALSE) throw (const Char_t *);
   AliITStrackV2(const AliITStrackV2& t);
 
-  Bool_t CorrectForMaterial(Double_t d, Double_t x0=21.82) {
+  Bool_t CorrectForMaterial(Double_t d, Double_t x0=kX0Air) {
     return AliExternalTrackParam::CorrectForMaterial(d,x0,GetMass());
   }
-  Bool_t PropagateTo(Double_t xr, Double_t d, Double_t x0=21.82);
+  Bool_t CorrectForMeanMaterial(Double_t xOverX0, Double_t xTimesRho) {
+    return AliExternalTrackParam::CorrectForMeanMaterial(xOverX0,xTimesRho,GetMass());
+  }
+  Bool_t PropagateTo(Double_t xr, Double_t d, Double_t x0=kX0Air);
+  Bool_t PropagateToTGeo(Double_t xToGo, Int_t nstep=1);
   Double_t GetPredictedChi2(const AliCluster *cluster) const;
   Bool_t Update(const AliCluster *cl, Double_t chi2, Int_t i);
 
   Bool_t 
      PropagateToVertex(const AliESDVertex *v,Double_t d=0.,Double_t x0=0.);
   Bool_t Propagate(Double_t alpha, Double_t xr);
+  Bool_t MeanBudgetToPrimVertex(Double_t xyz[3], Double_t step, Double_t &d) const;
   Bool_t Improve(Double_t x0,Double_t xyz[3],Double_t ers[3]);
 
   void SetdEdx(Double_t dedx) {fdEdx=dedx;}

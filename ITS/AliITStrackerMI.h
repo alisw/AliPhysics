@@ -3,7 +3,6 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
 
 //-------------------------------------------------------------------------
 //                          ITS tracker
@@ -206,12 +205,12 @@ protected:
   Float_t GetNumberOfSharedClusters(AliITStrackMI* track,Int_t id, Int_t list[6], AliITSRecPoint *clist[6]);
   Int_t GetOverlapTrack(AliITStrackMI *track, Int_t trackID, Int_t &shared, Int_t clusterlist[6], Int_t overlist[6]);
   AliITStrackMI * GetBest2Tracks(Int_t trackID1, Int_t treackID2, Float_t th0, Float_t th1);
-  Float_t  * GetErrY(Int_t trackindex) const {return &fCoeficients[trackindex*48];}
-  Float_t  * GetErrZ(Int_t trackindex) const {return &fCoeficients[trackindex*48+12];}
-  Float_t  * GetNy(Int_t trackindex) const {return &fCoeficients[trackindex*48+24];}
-  Float_t  * GetNz(Int_t trackindex) const {return &fCoeficients[trackindex*48+36];}
+  Float_t  * GetErrY(Int_t trackindex) const {return &fCoefficients[trackindex*48];}
+  Float_t  * GetErrZ(Int_t trackindex) const {return &fCoefficients[trackindex*48+12];}
+  Float_t  * GetNy(Int_t trackindex) const {return &fCoefficients[trackindex*48+24];}
+  Float_t  * GetNz(Int_t trackindex) const {return &fCoefficients[trackindex*48+36];}
   void       SignDeltas( TObjArray *ClusterArray, Float_t zv);
-  void MakeCoeficients(Int_t ntracks);
+  void MakeCoefficients(Int_t ntracks);
   void UpdateESDtrack(AliITStrackMI* track, ULong_t flags) const;
   Int_t fI;                              // index of the current layer
   static AliITSlayer fgLayers[kMaxLayer];// ITS layers
@@ -228,8 +227,10 @@ protected:
   Bool_t fAfterV0;                       //indicates V0 founded
   Int_t fLayersNotToSkip[kMaxLayer];     // layer masks
   Int_t fLastLayerToTrackTo;             // the innermost layer to track to
-  Float_t * fCoeficients;                //! working array with errors and mean cluser shape
-  AliESDEvent  * fEsd;                        //! pointer to the ESD event
+  Float_t * fCoefficients;                //! working array with errors and mean cluster shape
+  AliESDEvent  * fEsd;                   //! pointer to the ESD event
+  Double_t fSPDdetzcentre[4];            // centres of SPD modules in z
+  Bool_t fUseTGeo;                       // use TGeo to get material budget
   TTreeSRedirector *fDebugStreamer;     //!debug streamer
 private:
   AliITStrackerMI(const AliITStrackerMI &tracker);

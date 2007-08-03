@@ -146,15 +146,58 @@ Bool_t AliITStrackV2::PropagateTo(Double_t xk, Double_t d, Double_t x0) {
   //------------------------------------------------------------------
   //This function propagates a track
   //------------------------------------------------------------------
+
   Double_t oldX=GetX(), oldY=GetY(), oldZ=GetZ();
   
   Double_t bz=GetBz();
   if (!AliExternalTrackParam::PropagateTo(xk,bz)) return kFALSE;
- if (!AliExternalTrackParam::CorrectForMaterial(d,x0,GetMass())) return kFALSE;
+  if (!AliExternalTrackParam::CorrectForMaterial(d,x0,GetMass())) return kFALSE;
 
   Double_t x=GetX(), y=GetY(), z=GetZ();
   if (IsStartedTimeIntegral() && x>oldX) {
     Double_t l2 = (x-oldX)*(x-oldX) + (y-oldY)*(y-oldY) + (z-oldZ)*(z-oldZ);
+    AddTimeStep(TMath::Sqrt(l2));
+  }
+
+  return kTRUE;
+}
+
+//____________________________________________________________________________
+Bool_t AliITStrackV2::PropagateToTGeo(Double_t xToGo, Int_t nstep) {
+  //-------------------------------------------------------------------
+  //  Propagates the track to a reference plane x=xToGo in n steps.
+  //  These n steps are only used to take into account the curvature.
+  //  The material is calculated with TGeo. (L.Gaudichet)
+  //-------------------------------------------------------------------
+  
+  Double_t startx = GetX(), starty = GetY(), startz = GetZ();
+  Double_t sign = (startx<xToGo) ? -1.:1.;
+  Double_t step = (xToGo-startx)/TMath::Abs(nstep);
+
+  Double_t start[3], end[3], mparam[7], bz = GetBz();
+  Double_t x = startx;
+  
+  for (Int_t i=0; i<nstep; i++) {
+    
+    GetXYZ(start);   //starting global position
+    x += step;
+    if (!GetXYZAt(x, bz, end)) return kFALSE;
+    if (!AliExternalTrackParam::PropagateTo(x, bz)) return kFALSE;
+    AliTracker::MeanMaterialBudget(start, end, mparam);
+    //printf("mparam: %f %f %f %f %f %f %f\n",mparam[0],mparam[1],mparam[2],mparam[3],mparam[4],mparam[5],mparam[6]);
+    if (mparam[1]<900000) {
+      Double_t lengthTimesMeanDensity = sign*mparam[4]*mparam[0];
+      Double_t xOverX0 = mparam[1];
+      //printf("%f %f %f CorrectForMeanMaterial(%f,%f)\n",startx,xToGo,sign,xOverX0,lengthTimesMeanDensity);
+      if (!AliExternalTrackParam::CorrectForMeanMaterial(xOverX0,
+				      lengthTimesMeanDensity,GetMass())) return kFALSE;
+    }
+  }
+
+  if (IsStartedTimeIntegral() && GetX()>startx) {
+    Double_t l2 = ( (GetX()-startx)*(GetX()-startx) +
+		    (GetY()-starty)*(GetY()-starty) +
+		    (GetZ()-startz)*(GetZ()-startz) );
     AddTimeStep(TMath::Sqrt(l2));
   }
 
@@ -238,6 +281,41 @@ Bool_t AliITStrackV2::Propagate(Double_t alp,Double_t xk) {
   if (!Invariant()) {
      AliWarning("Wrong invariant !");
      return kFALSE;
+  }
+
+  return kTRUE;
+}
+
+Bool_t AliITStrackV2::MeanBudgetToPrimVertex(Double_t xyz[3], Double_t step, Double_t &d) const {
+
+  //-------------------------------------------------------------------
+  //  Get the mean material budget between the actual point and the
+  //  primary vertex. (L.Gaudichet)
+  //-------------------------------------------------------------------
+
+  Double_t cs=TMath::Cos(GetAlpha()), sn=TMath::Sin(GetAlpha());
+  Double_t vertexX = xyz[0]*cs + xyz[1]*sn;
+
+  Int_t nstep = Int_t((GetX()-vertexX)/step);
+  if (nstep<1) nstep = 1;
+  step = (GetX()-vertexX)/nstep;
+
+  Double_t mparam[7], densMean=0, radLength=0, length=0;
+  Double_t p1[3], p2[3], x = GetX(), bz = GetBz();
+  GetXYZ(p1);
+
+  d=0.;
+
+  for (Int_t i=0; i<nstep; i++) {
+    x  += step;
+    if (!GetXYZAt(x, bz, p2)) return kFALSE;
+    AliTracker::MeanMaterialBudget(p1, p2, mparam);
+    if (mparam[1]>900000) return kFALSE;
+    d  += mparam[1];
+
+    p1[0] = p2[0];
+    p1[1] = p2[1];
+    p1[2] = p2[2];
   }
 
   return kTRUE;
