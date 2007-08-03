@@ -1018,7 +1018,7 @@ Bool_t AliSimulation::ConvertDateToRoot(const char* dateFileName,
   const Int_t kDBSize = 2000000000;
   const Int_t kTagDBSize = 1000000000;
   const Bool_t kFilter = kFALSE;
-  const Int_t kCompression = 0;
+  const Int_t kCompression = 1;
 
   char* path = gSystem->Which(gSystem->Getenv("PATH"), "alimdc");
   if (!path) {
