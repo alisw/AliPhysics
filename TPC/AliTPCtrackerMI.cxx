@@ -5888,8 +5888,10 @@ TObjArray * AliTPCtrackerMI::Tracking()
   fdensity = 2.;
   cuts[0]=0.0080;
 
+  Int_t fLastSeedRowSec=AliTPCReconstructor::GetRecoParam()->GetLastSeedRowSec();
+
   // find secondaries
-  for (Int_t delta = 30; delta<90; delta+=10){
+  for (Int_t delta = 30; delta<fLastSeedRowSec; delta+=10){
     //
     cuts[0] = 0.3;
     cuts[1] = 3.5;

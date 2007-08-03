@@ -49,7 +49,8 @@ AliTPCRecoParam::AliTPCRecoParam():
   fMinUpDownCutSigma(8.),
   fMaxC(0.3),
   fBSpecialSeeding(kFALSE),
-  fBKinkFinder(kTRUE)
+  fBKinkFinder(kTRUE),
+  fLastSeedRowSec(120)
 {
   //
   // constructor

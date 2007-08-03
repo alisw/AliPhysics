@@ -34,7 +34,7 @@ class AliTPCRecoParam : public TObject
   Float_t  GetMinMaxCutSigma()       const  { return fMinMaxCutSigma; }
   Float_t  GetMinLeftRightCutSigma() const  { return fMinLeftRightCutSigma;}  // minimal amplitude left right - PRF
   Float_t  GetMinUpDownCutSigma()    const  { return fMinUpDownCutSigma;}  // minimal amplitude up-down - TRF 
-
+  Int_t    GetLastSeedRowSec()       const  { return fLastSeedRowSec;} 
   //
   Bool_t   GetDoKinks() const      { return fBKinkFinder;}
   Float_t  GetMaxC()    const      { return fMaxC;}
@@ -70,6 +70,7 @@ class AliTPCRecoParam : public TObject
   Float_t  fMaxC;            // maximal curvature for tracking
   Bool_t   fBSpecialSeeding; // special seeding with big inclination angles allowed (for Cosmic and laser)
   Bool_t   fBKinkFinder;     // do kink finder reconstruction
+  Int_t    fLastSeedRowSec;     // Most Inner Row to make seeding for secondaries
   ClassDef(AliTPCRecoParam, 1)
 };
 
