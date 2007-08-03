@@ -77,7 +77,7 @@ AliClusters::~AliClusters()
    //
    //default destructor
   //
-   if (fClusters !=0) fClusters->Clear();
+   if (fClusters !=0) fClusters->Delete();
    delete fClusters;
 }
 

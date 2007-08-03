@@ -87,6 +87,7 @@ AliTPCclusterMI & AliTPCclusterMI::operator = (const AliTPCclusterMI & cluster)
   fRow  = cluster.fRow;
   fTimeBin = cluster.fTimeBin;
   fPad     = cluster.fPad;
+  delete fInfo;
   fInfo = 0;
   if (cluster.fInfo) fInfo = new AliTPCclusterInfo(*(cluster.fInfo));
   return *this;
@@ -117,6 +118,7 @@ AliTPCclusterMI::~AliTPCclusterMI() {
   // destructor
   //
   if (fInfo) delete fInfo;
+  fInfo = 0;
 }
 
 
