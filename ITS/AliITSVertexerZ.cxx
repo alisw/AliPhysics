@@ -364,6 +364,8 @@ void AliITSVertexerZ::VertexZFinder(Int_t evnumber){
     ResetHistograms();
     itsLoader->UnloadRecPoints();
     fCurrentVertex = new AliESDVertex(0.,5.3,-1);
+    points->Delete();
+    delete points; 
     return;
   }
 

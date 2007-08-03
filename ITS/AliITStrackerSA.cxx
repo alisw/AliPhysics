@@ -217,6 +217,7 @@ AliITStrackerSA::~AliITStrackerSA(){
   if(fPhiWin)delete []fPhiWin;
   if(fLambdaWin)delete []fLambdaWin;
   fListOfTracks->Delete();
+  delete fListOfTracks;
   if(fCluLayer){
     for(Int_t i=0;i<AliITSgeomTGeo::GetNLayers();i++){
       if(fCluLayer[i]){
@@ -333,9 +334,14 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
    
    Int_t nclusters[6]={0,0,0,0,0,0};
    Int_t dmar[6]={0,0,0,0,0,0};
+   if (fCluLayer == 0) {
    fCluLayer = new TClonesArray*[AliITSgeomTGeo::GetNLayers()];
    fCluCoord = new TClonesArray*[AliITSgeomTGeo::GetNLayers()];
-
+     for(Int_t i=0;i<AliITSgeomTGeo::GetNLayers();i++) {
+        fCluLayer[i]=0;
+        fCluCoord[i]=0;
+     }
+   }
    for(Int_t i=0;i<AliITSgeomTGeo::GetNLayers();i++){
      AliITSlayer &layer=fgLayers[i];
      for(Int_t cli=0;cli<layer.GetNumberOfClusters();cli++){
@@ -345,7 +351,9 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event){
        nclusters[i]++;
      }
      dmar[i]=0;
+     delete fCluLayer[i];
      fCluLayer[i] = new TClonesArray("AliITSRecPoint",nclusters[i]);
+     delete fCluCoord[i];
      fCluCoord[i] = new TClonesArray("AliITSclusterTable",nclusters[i]);
    }
 
