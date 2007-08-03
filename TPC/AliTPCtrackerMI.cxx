@@ -2485,13 +2485,22 @@ void AliTPCtrackerMI::SignClusters(TObjArray * arr, Float_t fnumber, Float_t fde
     meanchi  = sumchi/sum;
     //
     sdensity = sumdens2/sum-mdensity*mdensity;
-    sdensity = TMath::Sqrt(sdensity);
+    if (sdensity >= 0)
+       sdensity = TMath::Sqrt(sdensity);
+    else
+       sdensity = 0.1;
     //
     smeann   = sumn2/sum-meann*meann;
-    smeann   = TMath::Sqrt(smeann);
+    if (smeann >= 0)
+      smeann   = TMath::Sqrt(smeann);
+    else 
+      smeann   = 10;
     //
     smeanchi = sumchi2/sum - meanchi*meanchi;
-    smeanchi = TMath::Sqrt(smeanchi);
+    if (smeanchi >= 0)
+      smeanchi = TMath::Sqrt(smeanchi);
+    else
+      smeanchi = 0.4;
   }
 
 
@@ -4305,6 +4314,10 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESDEvent *esd)
   for (Int_t i =0;i<nentries;i++){
     if (sign[i]==0) continue;
     AliTPCseed * track0 = (AliTPCseed*)array->At(i);
+    if (track0==0) {
+      AliInfo("seed==0");
+      continue;
+    }
     ntracks++;
     //
     Double_t cradius0 = 40*40;
@@ -5961,7 +5974,7 @@ TObjArray * AliTPCtrackerMI::TrackingSpecial()
 }
 
 
-void AliTPCtrackerMI::SumTracks(TObjArray *arr1,TObjArray *arr2) const
+void AliTPCtrackerMI::SumTracks(TObjArray *arr1,TObjArray *&arr2) const
 {
   //
   //sum tracks to common container
@@ -6001,7 +6014,7 @@ void AliTPCtrackerMI::SumTracks(TObjArray *arr1,TObjArray *arr2) const
       }
     }
   }
-  delete arr2;  
+  delete arr2;  arr2 = 0;
 }
 
 
@@ -6529,7 +6542,12 @@ AliTPCtrackerMI::AliTPCRow::AliTPCRow():
 
 AliTPCtrackerMI::AliTPCRow::~AliTPCRow(){
   //
-
+  for (Int_t i = 0; i < fN1; i++)
+    fClusters1[i].~AliTPCclusterMI();
+  delete [] fClusters1;
+  for (Int_t i = 0; i < fN2; i++)
+    fClusters2[i].~AliTPCclusterMI();
+  delete [] fClusters2;
 }
 
 
@@ -6553,15 +6571,20 @@ AliTPCtrackerMI::AliTPCRow::InsertCluster(const AliTPCclusterMI* c, UInt_t index
 void AliTPCtrackerMI::AliTPCRow::ResetClusters() {
    //
    // reset clusters
+   // MvL: Need to call destructors for AliTPCclusterMI, to delete fInfo
+   for (Int_t i = 0; i < fN1; i++)
+     fClusters1[i].~AliTPCclusterMI();
+   delete [] fClusters1;  fClusters1=0;
+   for (Int_t i = 0; i < fN2; i++)
+     fClusters2[i].~AliTPCclusterMI();
+   delete [] fClusters2;  fClusters2=0;
+
    fN  = 0; 
    fN1 = 0;
    fN2 = 0;
    //delete[] fClusterArray; 
-   if (fClusters1) delete []fClusters1; 
-   if (fClusters2) delete []fClusters2; 
+
    //fClusterArray=0;
-   fClusters1 = 0;
-   fClusters2 = 0;
 }
 
 

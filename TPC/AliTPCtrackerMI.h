@@ -131,8 +131,8 @@ public:
      AliTPCclusterMI* GetClusters2() const {return fClusters2;}
      void SetClusters1(AliTPCclusterMI* cl) {fClusters1=cl;}
      void SetClusters2(AliTPCclusterMI* cl) {fClusters2=cl;}
-     void SetCluster1(Int_t i, AliTPCclusterMI cl) {fClusters1[i]=cl;}
-     void SetCluster2(Int_t i, AliTPCclusterMI cl) {fClusters2[i]=cl;}
+     void SetCluster1(Int_t i, const AliTPCclusterMI &cl) {fClusters1[i]=cl;}
+     void SetCluster2(Int_t i, const AliTPCclusterMI &cl) {fClusters2[i]=cl;}
      AliTPCclusterMI* GetCluster1(Int_t i) const {return &fClusters1[i];}
      AliTPCclusterMI* GetCluster2(Int_t i) const {return &fClusters2[i];}
      Short_t GetFastCluster(Int_t i) const {return fFastCluster[i];}
@@ -252,7 +252,7 @@ private:
    TObjArray * Tracking(Int_t seedtype, Int_t i1, Int_t i2, Float_t cuts[4], Float_t dy=-1, Int_t dsec=0);
    TObjArray * Tracking();
    TObjArray * TrackingSpecial();
-   void SumTracks(TObjArray *arr1,TObjArray *arr2) const;
+   void SumTracks(TObjArray *arr1,TObjArray *&arr2) const;
    void PrepareForBackProlongation(TObjArray * arr, Float_t fac) const;
    void PrepareForProlongation(TObjArray * arr, Float_t fac) const;
 
