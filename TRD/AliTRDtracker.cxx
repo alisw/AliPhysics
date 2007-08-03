@@ -1059,8 +1059,8 @@ Int_t AliTRDtracker::FollowProlongation(AliTRDtrack &t)
 
 	Int_t    sector;
 	Int_t    lastplane = GetLastPlane(&t);
-	Double_t radLength = 0.0;
-	Double_t rho       = 0.0;
+	Double_t xx0 = 0.0;
+	Double_t xrho= 0.0;
 	Int_t    expectedNumberOfClusters = 0;
 
 	for (Int_t iplane = lastplane; iplane >= 0; iplane--) {
@@ -1103,9 +1103,9 @@ Int_t AliTRDtracker::FollowProlongation(AliTRDtrack &t)
 		xyz1[0] =  x * TMath::Cos(t.GetAlpha()) - y * TMath::Sin(t.GetAlpha());
 		xyz1[1] = +x * TMath::Sin(t.GetAlpha()) + y * TMath::Cos(t.GetAlpha());
 		xyz1[2] =  z;
-		AliKalmanTrack::MeanMaterialBudget(xyz0,xyz1,param);
-		rho       = param[0];
-		radLength = param[1]; // Get mean propagation parameters
+		AliTracker::MeanMaterialBudget(xyz0,xyz1,param);
+		xrho= param[0]*param[4];
+		xx0 = param[1]; // Get mean propagation parameters
 		// A.Bercuci 25.07.07
 		// Flags for marking the track momentum and direction. The track is
 		// marked only if it has at least 1 cluster picked up in the current
@@ -1171,7 +1171,7 @@ Int_t AliTRDtracker::FollowProlongation(AliTRDtrack &t)
 					}
 
 					Double_t xcluster = cl->GetX();
-					t.PropagateTo(xcluster,radLength,rho);
+					t.PropagateTo(xcluster,xx0,xrho);
 					
 					if (!AdjustSector(&t)) {
 						break;           //I.B's fix
@@ -1210,8 +1210,8 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack &t)
 
   Int_t    sector;
   Int_t    clusters[1000];
-  Double_t radLength = 0.0;
-  Double_t rho       = 0.0;
+  Double_t xx0  = 0.0;
+  Double_t xrho = 0.0;
   Int_t    expectedNumberOfClusters = 0;
   Float_t  ratio0    = 0.0;
   AliTRDtracklet tracklet;
@@ -1280,9 +1280,9 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack &t)
     xyz1[0] =  x * TMath::Cos(t.GetAlpha()) - y * TMath::Sin(t.GetAlpha()); 
     xyz1[1] = +x * TMath::Sin(t.GetAlpha()) + y * TMath::Cos(t.GetAlpha());
     xyz1[2] =  z;
-    AliKalmanTrack::MeanMaterialBudget(xyz0,xyz1,param);	
-    rho       = param[0];
-    radLength = param[1]; // Get mean propagation parameters
+    AliTracker::MeanMaterialBudget(xyz0,xyz1,param);	
+    xrho = param[0]*param[4];
+    xx0  = param[1]; // Get mean propagation parameters
 
     //
     // Find clusters
@@ -1335,7 +1335,7 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack &t)
 	    t.SetChi2Last(t.GetChi2Last() + maxChi2);
 	  }
 	  Double_t xcluster = cl->GetX();
-	  t.PropagateTo(xcluster,radLength,rho);
+	  t.PropagateTo(xcluster,xx0,xrho);
 	  maxChi2 = t.GetPredictedChi2(cl,h01);
 
 	  if (maxChi2<1e+10)
@@ -1417,8 +1417,8 @@ Int_t AliTRDtracker::PropagateToX(AliTRDtrack &t, Double_t xToGo, Double_t maxSt
     xyz1[1] = +x * TMath::Sin(t.GetAlpha()) + y * TMath::Cos(t.GetAlpha());
     xyz1[2] =  z;
 
-    AliKalmanTrack::MeanMaterialBudget(xyz0,xyz1,param);	
-    if (!t.PropagateTo(x,param[1],param[0])) {
+    AliTracker::MeanMaterialBudget(xyz0,xyz1,param);	
+    if (!t.PropagateTo(x,param[1],param[0]*param[4])) {
       return 0;
     }
     AdjustSector(&t);
