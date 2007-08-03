@@ -1,50 +1,65 @@
 #ifndef AliPHOSTracker_h
 #define AliPHOSTracker_h
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
+/* History of cvs commits:
+ *
+ * $Log$
+ */
 
 //-------------------------------------------------------------------------
 //                          PHOS tracker.
 // Matches ESD tracks with the PHOS and makes the PID.  
-// Currently, has only one function implemented : PropagateBack(AliESD*).
+// 
 //-------------------------------------------------------------------------
 
 #include <AliTracker.h>
-#include <AliLog.h>
+
+class AliRunLoader;   // Bad !
+
+class TClonesArray;
+class TTree;
 
 class AliCluster;
 class AliESDEvent;
-class TTree;
-class AliRunLoader;
 
 class AliPHOSTracker : public AliTracker
 {
 public:
-  AliPHOSTracker():AliTracker(), fRunLoader(0) {}
-  AliPHOSTracker(AliRunLoader *loader):AliTracker(), fRunLoader(loader) {}
-  AliPHOSTracker(const AliPHOSTracker & rhs):AliTracker(rhs), fRunLoader(rhs.fRunLoader){}
+  AliPHOSTracker();
+  AliPHOSTracker(AliRunLoader *loader);  // Bad !
+  virtual ~AliPHOSTracker();
   
-  virtual ~AliPHOSTracker()       {AliDebug(1,"Start.");}
-  
-  AliPHOSTracker & operator = (const AliPHOSTracker & rhs)
-  {
-    fRunLoader = rhs.fRunLoader;
-    return *this;
-  }
+  Int_t LoadClusters(TTree *ct);
+  Int_t PropagateBack(AliESDEvent *ev);
+  AliCluster *GetCluster(Int_t idx) const;
+  void UnloadClusters();
 
-  Int_t Clusters2Tracks(AliESDEvent *) {AliDebug(1,"Start.");return 0;}
-  Int_t RefitInward(AliESDEvent *)     {AliDebug(1,"Start.");return 0;}
-  void UnloadClusters()           {AliDebug(1,"Start.");}
-  AliCluster *GetCluster(Int_t ) const {AliDebug(1,"Start.");return 0;}
-  Int_t PropagateBack(AliESDEvent *);
-  Int_t LoadClusters(TTree *) {AliDebug(1,"Start.");return 0;}
+  Int_t Clusters2Tracks(AliESDEvent *) {return 0;}
+  Int_t RefitInward(AliESDEvent *)     {return 0;}
 
   static void                SetDebug()   { fgDebug = kTRUE ; }
   static void                ResetDebug() { fgDebug = kFALSE ; }
   static Bool_t              Debug() { return fgDebug ; }
 
+protected:
+  AliPHOSTracker(const AliPHOSTracker & rhs): AliTracker(rhs){}
+
 private:
+  Int_t PropagateBackOld(AliESDEvent *ev); //Bad function: uses RunLoader ;(
+
+  AliPHOSTracker &operator=(const AliPHOSTracker &rhs);
+
+  AliRunLoader *fRunLoader;  //! Bad !
+
   static Bool_t fgDebug ;    //! Verbosity controller
-  AliRunLoader *fRunLoader;  //! Pointer to the run loader
-  ClassDef(AliPHOSTracker,0)
+
+  TClonesArray *fModules[5];
+
+  ClassDef(AliPHOSTracker,1)
 };
 
 #endif
