@@ -17,14 +17,19 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.5  2007/08/03 13:52:16  kharlov
+ * Working skeleton of matching the ESD tracks and ESD clusters (Iouri Belikov)
+ *
  */
 
 #include <TClonesArray.h>
+#include <TMath.h>
 
 #include <AliLog.h>
 #include "AliPHOSTracker.h"
 #include "AliPHOSEmcRecPoint.h"
 #include "AliESDEvent.h"
+#include "AliESDtrack.h"
 
 //-------------------------------------------------------------------------
 //                          PHOS tracker.
