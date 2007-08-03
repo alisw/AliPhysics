@@ -650,12 +650,15 @@ Int_t AliTRDtrack::CookPID(AliESDtrack *esd)
 
 
 //_____________________________________________________________________________
-Bool_t AliTRDtrack::PropagateTo(Double_t xk, Double_t x0, Double_t rho)
+Bool_t AliTRDtrack::PropagateTo(Double_t xk, Double_t xx0, Double_t xrho)
 {
   //
-  // Propagates a track of particle with mass=pm to a reference plane 
-  // defined by x=xk through media of density=rho and radiationLength=x0
+  // Propagates this track to a reference plane defined by "xk" [cm] 
+  // correcting for the mean crossed material.
   //
+  // "xx0"  - thickness/rad.length [units of the radiation length] 
+  // "xrho" - thickness*density    [g/cm^2] 
+  // 
 
   if (xk == GetX()) {
     return kTRUE;
@@ -674,12 +677,11 @@ Bool_t AliTRDtrack::PropagateTo(Double_t xk, Double_t x0, Double_t rho)
   Double_t x = GetX();
   Double_t y = GetY();
   Double_t z = GetZ();
-  Double_t d = TMath::Sqrt((x-oldX)*(x-oldX)
-                         + (y-oldY)*(y-oldY)
-                         + (z-oldZ)*(z-oldZ));
+
   if (oldX < xk) {
+    xrho = -xrho;
     if (IsStartedTimeIntegral()) {
-      Double_t l2  = d;
+      Double_t l2  = (x-oldX)*(x-oldX) + (y-oldY)*(y-oldY) + (z-oldZ)*(z-oldZ);
       Double_t crv = GetC();
       if (TMath::Abs(l2*crv) > 0.0001) {
         // Make correction for curvature if neccesary
@@ -691,8 +693,7 @@ Bool_t AliTRDtrack::PropagateTo(Double_t xk, Double_t x0, Double_t rho)
     }
   }
 
-  Double_t ll = (oldX < xk) ? -d : d;
-  if (!AliExternalTrackParam::CorrectForMaterial(ll*rho/x0,x0,GetMass())) { 
+  if (!AliExternalTrackParam::CorrectForMeanMaterial(xx0,xrho,GetMass())) { 
     return kFALSE;
   }
 
@@ -707,9 +708,8 @@ Bool_t AliTRDtrack::PropagateTo(Double_t xk, Double_t x0, Double_t rho)
 
     Double_t dE    = 0.153e-3 / beta2 
                    * (log(5940.0 * beta2/(1.0 - beta2 + 1.0e-10)) - beta2)
-                   * d * rho;
-    Float_t budget = d * rho;
-    fBudget[0] += budget;
+                   * xrho;
+    fBudget[0] += xrho;
 
     /*
     // Suspicious part - think about it ?
@@ -1109,11 +1109,11 @@ Int_t AliTRDtrack::PropagateToX(Double_t xr, Double_t step)
     xyz1[1] = x * TMath::Sin(GetAlpha()) - y * TMath::Cos(GetAlpha());
     xyz1[2] = z;
     Double_t param[7];
-    AliKalmanTrack::MeanMaterialBudget(xyz0,xyz1,param);
+    AliTracker::MeanMaterialBudget(xyz0,xyz1,param);
 
     if ((param[0] > 0) &&
         (param[1] > 0)) {
-      PropagateTo(x,param[1],param[0]);
+      PropagateTo(x,param[1],param[0]*param[4]);
     }
 
     if (GetY() >  GetX()*kTalphac) {
@@ -1159,11 +1159,11 @@ Int_t   AliTRDtrack::PropagateToR(Double_t r,Double_t step)
     xyz1[1] = x * TMath::Sin(alpha) - y * TMath::Cos(alpha);
     xyz1[2] = z;
     Double_t param[7];
-    AliKalmanTrack::MeanMaterialBudget(xyz0,xyz1,param);
+    AliTracker::MeanMaterialBudget(xyz0,xyz1,param);
     if (param[1] <= 0) {
       param[1] = 100000000;
     }
-    PropagateTo(x,param[1],param[0]);
+    PropagateTo(x,param[1],param[0]*param[4]);
 
   } 
 
@@ -1176,12 +1176,12 @@ Int_t   AliTRDtrack::PropagateToR(Double_t r,Double_t step)
   xyz1[1] = r * TMath::Sin(alpha) - y * TMath::Cos(alpha);
   xyz1[2] = z;
   Double_t param[7];
-  AliKalmanTrack::MeanMaterialBudget(xyz0,xyz1,param);
+  AliTracker::MeanMaterialBudget(xyz0,xyz1,param);
 
   if (param[1] <= 0) {
     param[1] = 100000000;
   }
-  PropagateTo(r,param[1],param[0]);
+  PropagateTo(r,param[1],param[0]*param[4]);
 
   return 0;
 
