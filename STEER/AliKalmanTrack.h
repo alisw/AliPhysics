@@ -54,9 +54,6 @@ public:
     for (Int_t i=0; i<15; i++) cov[i]=GetCovariance()[i];
   }
 
-  static 
-  Double_t MeanMaterialBudget(Double_t *start,Double_t *end,Double_t *mparam);
-
   // Time integration (S.Radomski@gsi.de)
   void StartTimeIntegral();
   void SetIntegratedLength(Double_t l) {fIntegratedLength=l;}
