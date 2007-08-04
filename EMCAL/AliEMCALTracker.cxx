@@ -787,7 +787,7 @@ Double_t AliEMCALTracker::CheckPairV3
 	Double_t distance = 2.0 * fMaxDist;
 	Double_t dx, dy, dz;
 	Double_t phi, alpha, slope, tgtXnum, tgtXden, sectorWidth = 20.0 * TMath::DegToRad();
-	Double_t xcurr, xprop, param[6] = {0., 0., 0., 0., 0., 0.}, d, x0, rho, bz;
+	Double_t xcurr, xprop, param[6] = {0., 0., 0., 0., 0., 0.}, x0, rho, bz;
 	Double_t x[3], x1[3], x2[3];
 	
 	// get initial track position
@@ -809,10 +809,9 @@ Double_t AliEMCALTracker::CheckPairV3
 	bz = tr.GetBz();
 	if (!tr.GetXYZAt(xprop, bz, x2)) return distance;
 	//AliKalmanTrack::MeanMaterialBudget(x1, x2, param);
-	d = param[4];
-	rho = param[0];
+	rho = param[0]*param[4];
 	x0 = param[1];
-	if (!tr.PropagateTo(xprop, d*rho/x0, x0)) return distance;
+	if (!tr.PropagateTo(xprop, x0, rho)) return distance;
 	//if (!tr.PropagateTo(xprop, 0.0, 0.0)) return distance;
 	
 	// get propagated position at the end
@@ -835,7 +834,7 @@ Bool_t AliEMCALTracker::PropagateToEMCAL(AliEMCALTrack *tr)
 	// Propagates the track to the proximity of the EMCAL surface
 	//
 	
-	Double_t xcurr, xtemp, xprop = 438.0, step = 10.0, param[6], d, x0, rho, bz;
+	Double_t xcurr, xtemp, xprop = 438.0, step = 10.0, param[6], x0, rho, bz;
 	Double_t x1[3], x2[3];
 	
 	// get initial track position
@@ -851,7 +850,7 @@ Bool_t AliEMCALTracker::PropagateToEMCAL(AliEMCALTrack *tr)
 		MeanMaterialBudget(x1, x2, param);
 		rho = param[0]*param[4];
 		x0 = param[1];
-		if (!tr->PropagateTo(xtemp, rho, x0)) return kFALSE;
+		if (!tr->PropagateTo(xtemp, x0, rho)) return kFALSE;
 	}
 	
 	return kTRUE;
