@@ -294,5 +294,5 @@ Bool_t AliEMCALTrack::SimplePropagation(Double_t xk, Double_t d, Double_t x0)
 	
 	// EL correction is computed only if requested...
 	if (!fgCorrectForEL) return kTRUE;
-	return AliExternalTrackParam::CorrectForMaterial(d, x0, GetMass());
+	return AliExternalTrackParam::CorrectForMeanMaterial(d, x0, GetMass());
 }

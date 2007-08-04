@@ -44,7 +44,6 @@
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliESDCaloCluster.h"
-#include "AliKalmanTrack.h"
 #include "AliEMCALRecPoint.h"
 #include "AliRunLoader.h"
 #include "AliEMCALTrack.h"
@@ -562,8 +561,8 @@ Double_t AliEMCALTracker::CheckPair
 		pos2[0] = cl->X();
 		pos2[1] = cl->Y();
 		pos2[2] = cl->Z();
-		AliKalmanTrack::MeanMaterialBudget(pos1, pos2, param);
-		rho = param[0];
+		MeanMaterialBudget(pos1, pos2, param);
+		rho = param[0]*param[4];
 		x0 = param[1];
 	}
 	else if (fTrackCorrMode == kTrackCorrFixed) {
@@ -691,8 +690,8 @@ Double_t AliEMCALTracker::CheckPairV2
 		pos2[0] = cl->X();
 		pos2[1] = cl->Y();
 		pos2[2] = cl->Z();
-		AliKalmanTrack::MeanMaterialBudget(pos1, pos2, param);
-		rho = param[0];
+		MeanMaterialBudget(pos1, pos2, param);
+		rho = param[0]*param[4];
 		x0 = param[1];
 	}
 	else if (fTrackCorrMode == kTrackCorrFixed) {
@@ -849,11 +848,10 @@ Bool_t AliEMCALTracker::PropagateToEMCAL(AliEMCALTrack *tr)
 		tr->GetXYZ(x1);
 		bz = tr->GetBz();
 		if (!tr->GetXYZAt(xtemp, bz, x2)) return kFALSE;
-		AliKalmanTrack::MeanMaterialBudget(x1, x2, param);
-		d = param[4];
-		rho = param[0];
+		MeanMaterialBudget(x1, x2, param);
+		rho = param[0]*param[4];
 		x0 = param[1];
-		if (!tr->PropagateTo(xtemp, d*rho/x0, x0)) return kFALSE;
+		if (!tr->PropagateTo(xtemp, rho, x0)) return kFALSE;
 	}
 	
 	return kTRUE;
