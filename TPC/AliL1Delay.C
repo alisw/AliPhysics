@@ -1,3 +1,4 @@
+
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
 // This is a macro which measures the time delay of L1 trigger in TPC      //
@@ -332,7 +333,7 @@ Bool_t PropagateToVertexG(AliESDtrack *track, Float_t *vtxXYZ)
     xyz1[0] = x*TMath::Cos(alpha)-y*TMath::Sin(alpha);
     xyz1[1] = x*TMath::Sin(alpha)+y*TMath::Cos(alpha);
     xyz1[2] = z;
-    AliKalmanTrack::MeanMaterialBudget(xyz0,xyz1,param);
+    AliTracker::MeanMaterialBudget(xyz0,xyz1,param);
     if (!etrack.PropagateTo(x,param[1],param[0])) return 0;
   }
   etrack.PropagateTo(r,1,0);

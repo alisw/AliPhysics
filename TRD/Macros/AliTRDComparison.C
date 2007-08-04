@@ -1130,8 +1130,9 @@ void MakeTree()
 	  Double_t xyz0[3], param[7];
 	  trd0->GetGlobalXYZ(xyz0[0],xyz0[1],xyz0[2]);
 	  Double_t xyz1[3]={ref->X(),ref->Y(),ref->Z()};
-	  AliKalmanTrack::MeanMaterialBudget(xyz0,xyz1,param);
-	  if (!trd0->PropagateTo(radius,param[1],param[0])) trd0->SetStop(kTRUE);
+	  AliTracker::MeanMaterialBudget(xyz0,xyz1,param);
+	  if (!trd0->PropagateTo(radius,param[1],param[0]*param[4])) 
+             trd0->SetStop(kTRUE);
 	}
 	trdb->SetStop(kFALSE);
 	if (!trdb->Rotate(phi-trdb->GetAlpha())) trdb->SetStop(kTRUE);
