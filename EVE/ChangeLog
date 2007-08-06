@@ -1,3 +1,8 @@
+2007-08-06  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* alice-macros/jetplane.C:
+	From Cesar: Macro to visualize jets.
+
 2007-08-02  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* binalieve.pkg:

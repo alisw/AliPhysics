@@ -1,3 +1,16 @@
+2007-08-06  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* JetPlane.cxx:
+	* JetPlane.h:
+	* JetPlaneEditor.cxx:
+	* JetPlaneEditor.h:
+	* JetPlaneGL.cxx:
+	* JetPlaneGL.h:
+	From Cesar: First version of jet visualization code.
+
+	* LinkDef.h:
+	Register JePlane classes.
+
 2007-07-23  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* KineTools.cxx:
