@@ -31,6 +31,7 @@
   #include "AliRunLoader.h"
   #include "AliRun.h"
   #include "AliESDEvent.h"
+  #include "AliESDtrack.h"
 
   #include "AliSimDigits.h"
   #include "AliTPC.h"
@@ -568,7 +569,7 @@ Int_t GoodTracksTPC(const Char_t *dir) {
 
      //**** check if there is also information at the entrance of the TPC
      TTree *TR=rl->TreeTR();
-     TBranch *branch=TR->GetBranch("TPC");
+     TBranch *branch=TR->GetBranch("TrackReferences");
      if (branch==0) {
         ::Error("GoodTracksTPC","No track references !");
         delete rl;
@@ -580,8 +581,18 @@ Int_t GoodTracksTPC(const Char_t *dir) {
      for (Int_t r=0; r<nr; r++) {
          //cerr<<r<<' '<<nr<<'\r';
          TR->GetEvent(r);
-         if (tpcRefs->GetEntriesFast()==0) continue;
-         AliTrackReference *tpcRef=(AliTrackReference*)tpcRefs->UncheckedAt(0);
+
+	 Int_t nref = tpcRefs->GetEntriesFast();
+         if (!nref) continue;
+         AliTrackReference *tpcRef= 0x0;	 
+	 for (Int_t iref=0; iref<nref; ++iref) {
+	   tpcRef = (AliTrackReference*)tpcRefs->UncheckedAt(iref);
+	   if (tpcRef->DetectorId() == AliTrackReference::kTPC) break;
+	   tpcRef = 0x0;
+	 }
+
+	 if (!tpcRef) continue;
+
          Int_t j;
 	 AliTrackReference *ref=0;
          for (j=0; j<nt; j++) {
