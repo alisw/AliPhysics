@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.54  2007/07/12 09:51:25  jgrosseo
+removed duplicated log message in GetFile
+
 Revision 1.53  2007/07/12 09:26:28  jgrosseo
 updating hlt fxs base path
 
@@ -2905,6 +2908,24 @@ const char* AliShuttle::GetRunType()
 	}
 
 	return fLogbookEntry->GetRunType();
+}
+
+//______________________________________________________________________________________________
+Bool_t AliShuttle::GetHLTStatus()
+{
+  	// Return HLT status (ON=1 OFF=0)
+  	// Converts the HLT status from the status string read in the run logbook (not just a bool)
+
+	if(!fLogbookEntry) {
+		AliError("No logbook entry!");
+		return 0;
+	}
+
+	// TODO implement when HLTStatus is inserted in run logbook
+	//TString hltStatus = fLogbookEntry->GetRunParameter("HLTStatus");
+	//if(hltStatus == "OFF") {return kFALSE};
+
+	return kTRUE;
 }
 
 //______________________________________________________________________________________________

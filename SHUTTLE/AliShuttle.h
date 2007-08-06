@@ -62,6 +62,7 @@ public:
 	virtual const char* GetRunParameter(const char* lbEntry);
 	virtual AliCDBEntry* GetFromOCDB(const char* detector, const AliCDBPath& path);
 	virtual const char* GetRunType();
+    	virtual Bool_t GetHLTStatus();
 	virtual void Log(const char* detector, const char* message);
 
 	void SetLogbookEntry(AliShuttleLogbookEntry* entry) {fLogbookEntry=entry;}
