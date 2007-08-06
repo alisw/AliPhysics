@@ -22,6 +22,7 @@
 #include "AliStack.h"
 #include "AliMagFMaps.h"
 #include "AliESDEvent.h"
+#include "AliESDVertex.h"
 #include "AliTracker.h"
 
 // MUON includes
