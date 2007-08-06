@@ -67,6 +67,8 @@ void TestPreprocessor()
   shuttle->AddInputFile(AliShuttleInterface::kDAQ, "TPC", "DRIFTVELOCITY", "LDC0", "file2a.root");
   shuttle->AddInputFile(AliShuttleInterface::kDAQ, "TPC", "DRIFTVELOCITY", "LDC1", "file2b.root");
   shuttle->AddInputFile(AliShuttleInterface::kDAQ, "TPC", "DRIFTVELOCITY", "LDC2", "file2c.root");
+  shuttle->AddInputFile(AliShuttleInterface::kHLT, "TPC", "HLTData", "source1", "hlt_file1.root");
+  shuttle->AddInputFile(AliShuttleInterface::kHLT, "TPC", "HLTData", "source2", "hlt_file2.root");
 
   // TODO(3)
   //
@@ -85,26 +87,32 @@ void TestPreprocessor()
 
   // TODO(5)
   //
-  // The shuttle can query condition parameters valid from the current run from the OCDB
-  // To test it, we must first store the object into the OCDB. It will be retrieved in the preprocessor
-  // using GetFromOCDB function.
+  // The shuttle can read run parameters stored in the DAQ run logbook.
+  // To test it, we must provide the run parameters manually. They will be retrieved in the preprocessor
+  // using GetRunParameter function.
+  shuttle->AddInputRunParameter("totalEvents", "30000");
+  shuttle->AddInputRunParameter("NumberOfGDCs", "15");
 
-  TObjString obj("This is a condition parameter stored in OCDB");
-  AliCDBId id("TPC/Calib/Data", 0, AliCDBRunRange::Infinity());
-  AliCDBMetaData md;
-  AliCDBEntry entry(&obj, id, &md);
+  // TODO(6) NEW!
+  //
+  // This is for preprocessor that require data from HLT.
+  // Since HLT may be switched off, the preprocessor should first query the Run logbook where
+  // the HLT status is stored. SHUTTLE implements a shortcut function (GetHLTStatus) that returns
+  // a bool directly. 1 = HLT ON, 0 = HLT OFF
+  //
 
-  shuttle->AddInputCDBEntry(&entry);
+  Bool_t hltStatus=kTRUE;
+  shuttle->SetInputHLTStatus(hltStatus);
 
 
-  // TODO(6)
+  // TODO(7)
   // Create the preprocessor that should be tested, it registers itself automatically to the shuttle
   AliPreprocessor* test = new AliTestPreprocessor(shuttle);
 
   // Test the preprocessor
   shuttle->Process();
 
-  // TODO(7)
+  // TODO(8)
   // In the preprocessor AliShuttleInterface::Store should be called to put the final
   // data to the CDB. To check if all went fine have a look at the files produced in
   // $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB/<detector>/SHUTTLE/Data

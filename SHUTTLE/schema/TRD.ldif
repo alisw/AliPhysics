@@ -3,13 +3,12 @@ dn: det=TRD,o=alice,dc=cern,dc=ch
 objectClass: AliShuttleDetector
 det: TRD
 StrictRunOrder: 0
-responsible: not_yet_set
+responsible: r.bailhache@gsi.de
 DCSHost: aldcs052.cern.ch
 DCSPort: 4242
 DCSalias: trd_chamberByteStatus[000..539]
 DCSalias: trd_goofyHv
-DCSalias: trd_goofyPeakPos00
-DCSalias: trd_goofyPeakPos01
+DCSalias: trd_goofyPeakPos[00..01]
 DCSalias: trd_goofyPeakArea[00..01]
 DCSalias: trd_goofyTemp[00..01]
 DCSalias: trd_goofyPressure
@@ -25,7 +24,3 @@ DCSalias: trd_hvDriftImon[000..539]
 DCSalias: trd_hvAnodeUmon[000..539]
 DCSalias: trd_hvDriftUmon[000..539]
 DCSalias: trd_adcClkPhase
-DCSalias: trd_atmPressure
-DCSalias: trd_luminosity
-DCSalias: trd_magneticField
-#DCSalias: trd_preTrigger

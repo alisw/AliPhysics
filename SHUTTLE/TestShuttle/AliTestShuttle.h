@@ -29,6 +29,7 @@ class AliTestShuttle : public AliShuttleInterface
     void SetDCSInput(TMap* dcsAliasMap) { fDcsAliasMap = dcsAliasMap; }
     void AddInputRunParameter(const char* key, const char* value);
     void SetInputRunType(const char* runType) { fRunType = runType; }
+    void SetInputHLTStatus(Bool_t status) { fHLTStatus = status; }
     Bool_t AddInputCDBEntry(AliCDBEntry* entry);
 
     void Process();
@@ -44,6 +45,7 @@ class AliTestShuttle : public AliShuttleInterface
     virtual const char* GetRunParameter(const char* key);
     virtual AliCDBEntry* GetFromOCDB(const char* detector, const AliCDBPath& path);
     virtual const char* GetRunType();
+    virtual Bool_t GetHLTStatus() {return fHLTStatus;}
     virtual void Log(const char* detector, const char* message);
 
     virtual void RegisterPreprocessor(AliPreprocessor* preprocessor);
@@ -66,6 +68,7 @@ class AliTestShuttle : public AliShuttleInterface
     TMap* fInputFiles;      // files for GetFile, GetFileSources
     TMap* fRunParameters;   // run parameters
     TString fRunType; 	    // run type
+    Bool_t fHLTStatus; 	    // HLT status for current run (on=1/off=0)
     TObjArray* fPreprocessors; // list of preprocessors that are to be tested
     TMap* fDcsAliasMap; // DCS data for testing
 

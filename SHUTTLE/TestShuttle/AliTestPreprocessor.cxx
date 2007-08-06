@@ -72,7 +72,7 @@ UInt_t AliTestPreprocessor::Process(TMap* dcsAliasMap)
   	Log("ERROR: No DCS map provided by SHUTTLE!");
   	return 1;
   }
-  
+
   // The processing of the DCS input data is forwarded to AliTestDataDCS
   fData->ProcessData(*dcsAliasMap);
 
@@ -84,13 +84,25 @@ UInt_t AliTestPreprocessor::Process(TMap* dcsAliasMap)
 
   // Example of how to retrieve the list of sources that produced the file with id DRIFTVELOCITY
   TList* sourceList = GetFileSources(kDAQ, "DRIFTVELOCITY");
+  sourceList = GetFileSources(kHLT, "HLTData");
   if (!sourceList)
   {
-  	Log("Error: No sources found for id DRIFTVELOCITY!");
-	return 1;
+  	Log("Error retrieving list of sources from FXS!");
+  	return 1;
   }
-  
-  // TODO We have the list of sources that produced the files with Id DRIFTVELOCITY. 
+
+  if (sourceList->GetEntries() == 0)
+  {
+  	Log("No sources found for id HLTData!");
+  	// TODO What to do now depends on the expected behaviour of the
+  	// online DA: if it expected to produce data for the FXS every run, then
+  	// if no sources are found it means a problem happened and you should return error;
+  	// if DA may or may not send files to FXS, then you shouldn't return error
+  	// and go on with the analysis!
+  	return 1;
+  }
+
+  // TODO We have the list of sources that produced the files with Id DRIFTVELOCITY.
   // Now we will loop on the list and we'll query the files one by one. 
   Log("The following sources produced files with the id DRIFTVELOCITY");
   sourceList->Print();
@@ -104,6 +116,48 @@ UInt_t AliTestPreprocessor::Process(TMap* dcsAliasMap)
   }
 
   delete sourceList;
+
+  // Example of retrieving files from HLT, including how to query HLT status
+
+  Bool_t hltStatus = GetHLTStatus(); // 1 = HLT ON (=> Query HLT), 0 = HLT OFF (=> skip HLT query)
+
+  if (hltStatus)
+  {
+  	Log("HLT is ON, let's query our files");
+  	sourceList = GetFileSources(kHLT, "HLTData");
+  	if (!sourceList)
+  	{
+  		Log("Error retrieving list of sources from FXS!");
+		return 1;
+  	}
+
+  	if (sourceList->GetEntries() == 0)
+  	{
+  		Log("No sources found for id HLTData!");
+		// TODO What to do now depends on the expected behaviour of the
+		// online DA: if it expected to produce data for the FXS every run, then
+		// if no sources are found it means a problem happened and you should return error;
+		// if DA may or may not send files to FXS, then you shouldn't return error
+		// and go on with the analysis!
+		return 1;
+  	}
+  	Log("The following sources produced files with the id HLTData");
+
+	sourceList->Print();
+
+  	TIter iter(sourceList);
+  	TObjString *source = 0;
+  	while((source=dynamic_cast<TObjString*> (iter.Next()))){
+  		TString fileName = GetFile(kHLT, "HLTData", source->GetName());
+  		if (fileName.Length() > 0)
+  			Log(Form("Got the file %s from HLT, now we can extract some values.", fileName.Data()));
+  	}
+
+  	delete sourceList;
+
+  } else {
+	Log("HLT is OFF, skipping query...");
+  }
 
   // Example of how to retrieve the list of sources that produced files
   sourceList = GetFileSources(kDAQ);
@@ -155,8 +209,8 @@ UInt_t AliTestPreprocessor::Process(TMap* dcsAliasMap)
   {
 	Log("No object found in OCDB!");
   } else {
-	TObjString *obj = dynamic_cast<TObjString*> (entry->GetObject());
-	Log(Form("Got TPC/Calib/Data object from OCDB. The object says: %s",obj->GetName()));
+	Log("Got TPC/Calib/Data object from OCDB. The object's metadata is: ");
+	entry->PrintMetaData();
   }
 
 

@@ -15,6 +15,13 @@
 
 /*
 $Log$
+Revision 1.13  2007/05/30 06:35:21  jgrosseo
+Adding functionality to the Shuttle/TestShuttle:
+o) Function to retrieve list of sources from a given system (GetFileSources with id=0)
+o) Function to retrieve list of IDs for a given source      (GetFileIDs)
+These functions are needed for dealing with the tag files that are saved for the GRP preprocessor
+Example code has been added to the TestProcessor in TestShuttle
+
 Revision 1.12  2007/04/27 07:06:48  jgrosseo
 GetFileSources returns empty list in case of no files, but successful query
 No mails sent in testmode
@@ -520,7 +527,7 @@ const char* AliTestShuttle::GetRunType()
 	// get a run parameter
 	//
 
-	return fRunType;
+	return fRunType.Data();
 }
 
 //______________________________________________________________________________________________
