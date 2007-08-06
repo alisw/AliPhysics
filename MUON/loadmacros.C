@@ -29,7 +29,7 @@
 // MakeMUONZeroMisAlignment.C    - ok, comp,  README; Javier, Ivana
 // MUONAlignment.C               - ok, comp,  README; Javier
 // MUONCheck.C                   - ok, comp,  x,      Frederic, in test
-// MUONCheckDI.C                 - x,  !comp, x       Artur     
+// MUONCheckDI.C                 - x,  comp,  x       Artur     
 // MUONCheckMisAligner.C         - ok, comp,  x,      Javier
 // MUONdisplay.C                 - ok, comp,  deprecated
 // MUONefficiency.C              - ok, comp,  README; Christophe, in test
@@ -110,7 +110,7 @@ void loadmacros ()
   gROOT->LoadMacro("$ALICE_ROOT/MUON/MakeMUONZeroMisAlignment.C++");
   gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONAlignment.C++");           
   gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONCheck.C++");               
-  // gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONCheckDI.C++");          
+  gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONCheckDI.C++");          
   gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONCheckMisAligner.C++");     
   gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONefficiency.C++");          
   gROOT->LoadMacro("$ALICE_ROOT/MUON/MUONGenerateBusPatch.C++");    
