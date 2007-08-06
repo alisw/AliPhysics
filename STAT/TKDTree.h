@@ -49,11 +49,12 @@ public:
 
 protected:
 									void		Build();  // build tree
-									void		Clear(){};  // clear memory allocation
 									
 private:
+									TKDTree(const TKDTree &); // not implemented
+									TKDTree<Index, Value>& operator=(const TKDTree<Index, Value>&); // not implemented
 									void		CookBoundariesTerminal(Int_t parent_node, Bool_t left);
-									void		OrderIndexes();
+
 public:
 	struct TKDNode{
 		Char_t fAxis;

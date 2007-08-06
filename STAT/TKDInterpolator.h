@@ -19,7 +19,10 @@ public:
 	Double_t Eval(Float_t *point);
 	void		DrawNodes(Int_t depth = -1, Int_t ax1 = 0, Int_t ax2 = 1);
 	void		DrawNode(Int_t node, Int_t ax1 = 0, Int_t ax2 = 1);
+
 private:
+	TKDInterpolator(const TKDInterpolator &);
+	TKDInterpolator& operator=(const TKDInterpolator &);	
 	void		Build();
 	
 protected:
@@ -43,7 +46,7 @@ Bool_t	TKDInterpolator::GetEstimate(Int_t node, Float_t *coord, Float_t &val, Fl
 
 	for(int idim=0; idim<fNDim; idim++) coord[idim] = fRefPoints[idim][node];
 	val   = fRefValues[node];
-	//error = ...;
+	error = fRefValues[node]; // to be implemented
 	return kTRUE;
 }
 

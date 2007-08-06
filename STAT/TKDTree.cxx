@@ -38,12 +38,15 @@ TKDTree<Index, Value>::TKDTree() :
 	,fNDim(0)
 	,fNpoints(0)
 	,fBucketSize(0)
-	,fIndPoints(0x0)
 	,fData(0x0)
 	,fRange(0x0)
 	,fBoundaries(0x0)
 	,fNodes(0x0)
 	,fkNN(0x0)
+	,fIndPoints(0x0)
+	,fRowT0(0)
+	,fCrossNode(0)
+	,fOffset(0)
 {
 // Default constructor. Nothing is built
 }
@@ -58,18 +61,20 @@ TKDTree<Index, Value>::TKDTree(Index npoints, Index ndim, UInt_t bsize, Value **
 	,fNDim(ndim)
 	,fNpoints(npoints)
 	,fBucketSize(bsize)
-	,fIndPoints(0x0)
 	,fData(data) //Columnwise!!!!!
 	,fRange(0x0)
 	,fBoundaries(0x0)
 	,fNodes(0x0)
 	,fkNN(0x0)
+	,fIndPoints(0x0)
+	,fRowT0(0)
+	,fCrossNode(0)
+	,fOffset(0)
 {
 	// Allocate data by hand. See TKDTree(TTree*, const Char_t*) for an automatic method.
 	
 	Build();
 }
-
 
 //_________________________________________________________________
 template <typename  Index, typename Value>
@@ -222,7 +227,6 @@ void TKDTree<Index, Value>::Build(){
 			if (nleft<0 || nright<0) Warning("Build()", "Problem Negative number");
 		}
 	}
-	OrderIndexes();
 	
 	//printf("NBuckets\t%d\n", nbucketsall);
 	//fData = 0;
@@ -404,7 +408,10 @@ Index TKDTree<Index, Value>::FindNode(const Value * point){
 			stackNode[currentIndex]=(inode*2)+2;
 		}
 	}
+	
+	return -1;
 }
+
 
 
 //_________________________________________________________________
@@ -750,18 +757,6 @@ void TKDTree<Index, Value>::CookBoundariesTerminal(Int_t parent_node, Bool_t LEF
 		LEFT = parent_node%2;
 		parent_node =  parent_node/2 + (parent_node%2) - 1;
 	}
-}
-
-//_________________________________________________________________
-template <typename Index, typename Value>
-void TKDTree<Index, Value>::OrderIndexes()
-{
-// Order array of point's indexes in increasing order of terminal nodes
-// indexes such that first bucket points correspond to first terminal
-// node (index fNnodes) and so on.
-
-	printf("fRowT0 %d fCrossNode %d fOffset %d\n", fRowT0, fCrossNode, fOffset);
-
 }
 
 template class TKDTree<Int_t, Float_t>;

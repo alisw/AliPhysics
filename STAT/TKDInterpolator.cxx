@@ -247,7 +247,6 @@ void TKDInterpolator::DrawNodes(Int_t depth, Int_t ax1, Int_t ax2)
 	TGraph *ref = new TGraph(GetNTerminalNodes());
 	ref->SetMarkerStyle(2);
 	ref->SetMarkerColor(2);
-	Float_t val, error;
 	for(int inode = 0; inode < GetNTerminalNodes(); inode++) ref->SetPoint(inode, fRefPoints[ax1][inode], fRefPoints[ax2][inode]);
 	ref->Draw("p");
 	return;
