@@ -30,8 +30,8 @@
 #include "TCint.h"
 #include "TH1I.h"
 //
-#include "AliMagF.h"
 #include "AliTracker.h"
+#include "AliMagF.h"
 //
 #include "AliESD.h"
 #include "AliESDtrack.h"
@@ -42,6 +42,7 @@
 #include "AliClusterMap.h"
 //
 #include "AliTPCcalibTracks.h"
+//#include "AliTPCcalibTracks.cxx"
 #include "AliTPCSelectorTracks.h" 
 
 
@@ -82,10 +83,9 @@ void AliTPCSelectorTracks::SlaveBegin(TTree * tree)
   fOutput->AddLast(fNtracks);
   fOutput->AddLast(fNtracksFriend);
   fOutput->AddLast(fNClusters);
-  fCalibTracks = new AliTPCcalibTracks;
-  //
-  fCalibTracks->ProofSlaveBegin(fOutput);
-
+  
+  fCalibTracks = new AliTPCcalibTracks("calibTracks", "calibTracks");
+  fOutput->AddLast(fCalibTracks);
 
 }
 
@@ -127,30 +127,30 @@ Bool_t AliTPCSelectorTracks::Process(Long64_t entry)
   try {
     fChain->GetTree()->GetEntry(entry);
   } catch (std::bad_alloc) {
-    printf("Pica vyjebana pojebany skurveny kokot piciak\n");
+    Info("Procces","Pica vyjebana pojebany skurveny kokot piciak\n");
     fESD =0;
     fESDfriend = 0;
     return 0;
   }
   //
-  //Info("Procces","0");
+  // Info("Procces","0");
   if (!fESD) { 
-    fESD =0;
-    fESDfriend=0;
+    fESD = 0;
+    fESDfriend = 0;
     //CleanESD();
     return kFALSE;
   }
   Int_t ntracks = fESD->GetNumberOfTracks();   
 
   fNtracks->Fill(ntracks);
-  //Info("Procces",Form("1-Ntracks=%d",ntracks));
+  Info("Procces", Form("entry\t%d: Ntracks = %d",entry, ntracks));
   
-  if (!fESDfriend || fESDfriend->GetNumberOfTracks()!=ntracks) {
-    fESD =0;
-    fESDfriend=0;
+  if (!fESDfriend || fESDfriend->GetNumberOfTracks() != ntracks) {
+    fESD = 0;
+    fESDfriend = 0;
     //    CleanESD(); 
     if (fESDfriend) fNtracksFriend->Fill(fESDfriend->GetNumberOfTracks());
-    //Info("Procces","2- PROBLEM");
+    Info("Procces","2: PROBLEM");
     return kFALSE;
   }
   fESD->SetESDfriend(fESDfriend);
@@ -160,10 +160,11 @@ Bool_t AliTPCSelectorTracks::Process(Long64_t entry)
   AliTPCseed *seed;
   AliTPCclusterMI cl;
   
-  for (Int_t tr=0; tr < ntracks; tr++){ 
-    AliESDtrack * esdTrack = (AliESDtrack*) fESD->GetTrack(tr);
-    AliESDfriendTrack *friendtrack = (AliESDfriendTrack*) fESD->GetTrack(tr)->GetFriendTrack();
+  for (Int_t tr = 0; tr < ntracks; tr++){ 
+    AliESDtrack *esdTrack = (AliESDtrack*) fESD->GetTrack(tr);
+    AliESDfriendTrack *friendtrack = (AliESDfriendTrack*) fESD->GetTrack(tr)->GetFriendTrack();    
     seed = (AliTPCseed*)(friendtrack->GetCalibObject(0));
+    Info("Process",Form("Proccessing track%d\n",tr));
     if (seed) { 
       if (!fCalibTracks->AcceptTrack(seed)) continue;
       //      FillHistoCluster(seed);
@@ -174,7 +175,7 @@ Bool_t AliTPCSelectorTracks::Process(Long64_t entry)
       //
     }
   }
-  CleanESD(); 
+  CleanESD();
   return kTRUE;
   
 }
@@ -194,11 +195,26 @@ void AliTPCSelectorTracks::Terminate()
    // The Terminate() function is the last function to be called during
    // a query. It always runs on the client, it can be used to present
    // the results graphically or save the results to file.
-
+   
+  printf ("Terminate... \n");
   if (!fOutput) return;
   TFile file("Output.root","recreate");
+  printf("fOutput contains the following: \n");
+  fOutput->Print();
+  printf("Trying to write the file 'Output.root'... \n");
   fOutput->Write();
+  file.Close();
+  
+//   fCalibTracks->MakePlots(1);
+//   fCalibTracks->FitResolutionNew(1);
+//  fCalibTracks->MakeReport(1);
+  
+
+  
+  
 }
+
+
 void AliTPCSelectorTracks::Init(TTree *tree)
 {
    // The Init() function is called when the selector needs to initialize
@@ -216,15 +232,15 @@ void AliTPCSelectorTracks::Init(TTree *tree)
    tree->SetBranchStatus("*",1);
    //   fChain->SetMakeClass(1);
    fChain->SetBranchAddress("ESD",&fESD);
-   //Info("Init","Enter");
+   Info("Init","Enter");
    Bool_t isOK=kFALSE;
    if (fChain->GetBranch("ESDfriend")) {
      fChain->SetBranchAddress("ESDfriend",&fESDfriend);
-     //Info("Init","V0-ESDfriend.");
+     Info("Init","V0-ESDfriend.");
      isOK=kTRUE;
    }
    if (fChain->GetBranch("ESDfriend.")){
-     //Info("Init","V1-ESDfriend.");
+     Info("Init","V1-ESDfriend.");
      fChain->SetBranchAddress("ESDfriend.",&fESDfriend);
      isOK=kTRUE;
    }
@@ -234,21 +250,21 @@ void AliTPCSelectorTracks::Init(TTree *tree)
    // Try to solve problem
    //
 
-   //Info("Init","Problem");
+   Info("Init","Problem");
    if (tree->GetBranch("ESD")){
-     //Info("InitTree",tree->GetBranch("ESD")->GetFile()->GetName());
+     Info("InitTree",tree->GetBranch("ESD")->GetFile()->GetName());
      char  fname[1000];
      sprintf(fname,"%s/AliESDfriends.root",gSystem->DirName(tree->GetBranch("ESD")->GetFile()->GetName()));
-     //Info("InitFile",fname);
+     Info("InitFile",fname);
      if (tree->AddFriend("esdFriendTree",fname)){
-       //Info("InitFileOK",fname);
+       Info("InitFileOK",fname);
        if (fChain->GetBranch("ESDfriend")) {
 	 fChain->SetBranchAddress("ESDfriend",&fESDfriend);
-	 //Info("Init","V0-ESDfriend.");
+	 Info("Init","V0-ESDfriend.");
 	 isOK=kTRUE;
        }
        if (fChain->GetBranch("ESDfriend.")){
-	 //Info("Init","V1-ESDfriend.");
+	 Info("Init","V1-ESDfriend.");
 	 fChain->SetBranchAddress("ESDfriend.",&fESDfriend);
 	 isOK=kTRUE;
        }       

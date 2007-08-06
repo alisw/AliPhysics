@@ -63,6 +63,16 @@ AliTPCcalibV0::AliTPCcalibV0() :
   G__SetCatchException(0);     
   fDebugStream = new TTreeSRedirector("V0debug.root");
   fPdg = new TDatabasePDG;     
+
+  
+  // create output histograms
+  fTPCdEdx   = new TH2F("TPCdEdX",  "dE/dX; BetaGamma; TPC signal (a.u.)", 1000, 0.1, 10000, 300, 0, 300);
+  BinLogX(fTPCdEdx); 
+  fTPCdEdxPi = new TH2F("TPCdEdXPi","dE/dX; BetaGamma; TPC signal (a.u.)", 1000, 0.1, 10000, 300, 0, 300);
+  fTPCdEdxEl = new TH2F("TPCdEdXEl","dE/dX; BetaGamma; TPC signal (a.u.)", 1000, 0.1, 10000, 300, 0, 300);  
+  fTPCdEdxP  = new TH2F("TPCdEdXP", "dE/dX; BetaGamma; TPC signal (a.u.)", 1000, 0.1, 10000, 300, 0, 300);        
+  
+  
 }   
 
 AliTPCcalibV0::~AliTPCcalibV0(){
@@ -155,14 +165,18 @@ void AliTPCcalibV0::MakeMC(){
       if (p0->Pt()<kMinPt) findable = kFALSE;
       if (p0->Vz()>250) findable= kFALSE;
       if (TMath::Abs(TMath::Tan(p0->Theta()-TMath::Pi()*0.5))>2) findable=kFALSE;
-      if (fPdg->GetParticle(p0->GetPdgCode())->Charge()==0) charge++;
-
+      if (fPdg->GetParticle(p0->GetPdgCode())==0) findable =kFALSE;
+      else
+	if (fPdg->GetParticle(p0->GetPdgCode())->Charge()==0) charge++;
+	  
       p1 = fStack->Particle(id1);
       if (p1->R()>kMaxRad) findable = kFALSE;
       if (p1->Pt()<kMinPt) findable = kFALSE;
       if (TMath::Abs(p1->Vz())>250) findable= kFALSE;
       if (TMath::Abs(TMath::Tan(p1->Theta()-TMath::Pi()*0.5))>2) findable=kFALSE;
-      if (fPdg->GetParticle(p1->GetPdgCode())->Charge()==0) charge++;
+      if (fPdg->GetParticle(p1->GetPdgCode())==0) findable = kFALSE;
+      else
+	if (fPdg->GetParticle(p1->GetPdgCode())->Charge()==0) charge++;
 			  
     }
     //   (*fDebugStream)<<"MC0"<<
@@ -220,8 +234,8 @@ void AliTPCcalibV0::MakeMC(){
 	"Pp.="<<pp<<
 	"tn.="<<trackN<<
 	"tp.="<<trackP<<
-	"nold="<<nold<<
-	"nnew="<<nnew<<
+	"nold.="<<nold<<
+	"nnew.="<<nnew<<
    	"v0.="<<v0<<
 	"v0kf.="<<v0kf<<
 	"v0kfc.="<<v0kfc<<
@@ -318,12 +332,170 @@ void AliTPCcalibV0::MakeV0s(){
   fV0s->Clear();
 }
 
+
+
+
+
+
+// void AliTPCcalibV0::ProcessV0(Int_t ftype){
+//   //
+//   //
+//   const Double_t ktimeK0     = 2.684;
+//   const Double_t ktimeLambda = 7.89; 
+  
+  
+//   if (! fGammas) fGammas = new TObjArray(10);
+//   fGammas->Clear();
+//   Int_t nV0s  = fV0s->GetEntries();
+//   if (nV0s==0) return;
+//   AliKFVertex primVtx(*(fESD->GetPrimaryVertex()));
+//   //
+//   for (Int_t ivertex=0; ivertex<nV0s; ivertex++){
+//     AliESDv0 * v0 = (AliESDv0*)fV0s->At(ivertex);
+//     AliESDtrack * trackN = fESD->GetTrack(v0->GetIndex(0));
+//     AliESDtrack * trackP = fESD->GetTrack(v0->GetIndex(1));
+//     // 
+//     // 
+//     //
+//     AliKFParticle *v0K0       = Fit(primVtx,v0,211,211);
+//     AliKFParticle *v0Gamma    = Fit(primVtx,v0,11,-11);
+//     AliKFParticle *v0Lambda42 = Fit(primVtx,v0,2212,211);
+//     AliKFParticle *v0Lambda24 = Fit(primVtx,v0,211,2212);
+//     //Set production vertex
+//     v0K0->SetProductionVertex( primVtx );
+//     v0Gamma->SetProductionVertex( primVtx );
+//     v0Lambda42->SetProductionVertex( primVtx );
+//     v0Lambda24->SetProductionVertex( primVtx );
+//     Double_t massK0, massGamma, massLambda42,massLambda24, massSigma;
+//     v0K0->GetMass( massK0,massSigma);
+//     v0Gamma->GetMass( massGamma,massSigma);
+//     v0Lambda42->GetMass( massLambda42,massSigma);
+//     v0Lambda24->GetMass( massLambda24,massSigma);
+//     Float_t chi2K0       = v0K0->GetChi2()/v0K0->GetNDF();
+//     Float_t chi2Gamma    = v0Gamma->GetChi2()/v0Gamma->GetNDF();
+//     Float_t chi2Lambda42 = v0Lambda42->GetChi2()/v0Lambda42->GetNDF();
+//     Float_t chi2Lambda24 = v0Lambda24->GetChi2()/v0Lambda24->GetNDF();
+//     //
+//     // Mass Contrained params
+//     //
+//     AliKFParticle *v0K0C       = Fit(primVtx,v0,211,211);
+//     AliKFParticle *v0GammaC    = Fit(primVtx,v0,11,-11);
+//     AliKFParticle *v0Lambda42C = Fit(primVtx,v0,2212,211);
+//     AliKFParticle *v0Lambda24C = Fit(primVtx,v0,211,2212);
+//     //   
+//     v0K0C->SetProductionVertex( primVtx );
+//     v0GammaC->SetProductionVertex( primVtx );
+//     v0Lambda42C->SetProductionVertex( primVtx );
+//     v0Lambda24C->SetProductionVertex( primVtx );
+
+//     v0K0C->SetMassConstraint(fPdg->GetParticle(310)->Mass());
+//     v0GammaC->SetMassConstraint(0);
+//     v0Lambda42C->SetMassConstraint(fPdg->GetParticle(3122)->Mass());
+//     v0Lambda24C->SetMassConstraint(fPdg->GetParticle(-3122)->Mass());
+//     //    
+//     Double_t timeK0, sigmaTimeK0;  
+//     Double_t timeLambda42, sigmaTimeLambda42;  
+//     Double_t timeLambda24, sigmaTimeLambda24;  
+//     v0K0C->GetLifeTime(timeK0, sigmaTimeK0);
+//     //v0K0Gamma->GetLifeTime(timeK0, sigmaTimeK0);
+//     v0Lambda42C->GetLifeTime(timeLambda42, sigmaTimeLambda42);
+//     v0Lambda24C->GetLifeTime(timeLambda24, sigmaTimeLambda24);
+    
+
+//     //
+//     Float_t chi2K0C       = v0K0C->GetChi2()/v0K0C->GetNDF();
+//     if (chi2K0C<0) chi2K0C=100;
+//     Float_t chi2GammaC    = v0GammaC->GetChi2()/v0GammaC->GetNDF();
+//     if (chi2GammaC<0) chi2GammaC=100;
+//     Float_t chi2Lambda42C = v0Lambda42C->GetChi2()/v0Lambda42C->GetNDF();
+//     if (chi2Lambda42C<0) chi2Lambda42C=100;
+//     Float_t chi2Lambda24C = v0Lambda24C->GetChi2()/v0Lambda24C->GetNDF();
+//     if (chi2Lambda24C<0) chi2Lambda24C=100;
+//     //
+//     Float_t  minChi2C=99;
+//     Int_t   type   =-1;
+//     if (chi2K0C<minChi2C) { minChi2C= chi2K0C; type=0;}
+//     if (chi2GammaC<minChi2C) { minChi2C= chi2GammaC; type=1;}
+//     if (chi2Lambda42C<minChi2C) { minChi2C= chi2Lambda42C; type=2;}
+//     if (chi2Lambda24C<minChi2C) { minChi2C= chi2Lambda24C; type=3;}
+//     Float_t  minChi2=99;
+//     Int_t   type0   =-1;
+//     if (chi2K0<minChi2) { minChi2= chi2K0; type0=0;}
+//     if (chi2Gamma<minChi2) { minChi2= chi2Gamma; type0=1;}
+//     if (chi2Lambda42<minChi2) { minChi2= chi2Lambda42; type0=2;}
+//     if (chi2Lambda24<minChi2) { minChi2= chi2Lambda24; type0=3;}
+//     Float_t betaGammaP  = trackN->GetP()/fPdg->GetParticle(-2212)->Mass(); 
+//     Float_t betaGammaPi = trackN->GetP()/fPdg->GetParticle(-211)->Mass();
+//     Float_t betaGammaEl = trackN->GetP()/fPdg->GetParticle(11)->Mass();
+//     Float_t dedxTeorP = TPCBetheBloch(betaGammaP);
+//     Float_t dedxTeorPi = TPCBetheBloch(betaGammaPi);;
+//     Float_t dedxTeorEl = TPCBetheBloch(betaGammaEl);;
+//     //
+//     //
+//     if (minChi2>50) continue;
+//     (*fDebugStream)<<"V0"<<
+//       "ftype="<<ftype<<
+//       "v0.="<<v0<<
+//       "trackN.="<<trackN<<
+//       "trackP.="<<trackP<<
+//       //
+//       "dedxTeorP="<<dedxTeorP<<
+//       "dedxTeorPi="<<dedxTeorPi<<
+//       "dedxTeorEl="<<dedxTeorEl<<
+//       //
+//       "type="<<type<<
+//       "chi2C="<<minChi2C<<
+//       "v0K0.="<<v0K0<<
+//       "v0Gamma.="<<v0Gamma<<
+//       "v0Lambda42.="<<v0Lambda42<<
+//       "v0Lambda24.="<<v0Lambda24<<
+//       //
+//       "chi20K0.="<<chi2K0<<
+//       "chi2Gamma.="<<chi2Gamma<<
+//       "chi2Lambda42.="<<chi2Lambda42<<
+//       "chi2Lambda24.="<<chi2Lambda24<<
+//       //
+//       "chi20K0c.="<<chi2K0C<<
+//       "chi2Gammac.="<<chi2GammaC<<
+//       "chi2Lambda42c.="<<chi2Lambda42C<<
+//       "chi2Lambda24c.="<<chi2Lambda24C<<
+//       //
+//       "v0K0C.="<<v0K0C<<
+//       "v0GammaC.="<<v0GammaC<<
+//       "v0Lambda42C.="<<v0Lambda42C<<
+//       "v0Lambda24C.="<<v0Lambda24C<<
+//       //
+//       "massK0="<<massK0<<
+//       "massGamma="<<massGamma<<
+//       "massLambda42="<<massLambda42<<
+//       "massLambda24="<<massLambda24<<
+//       //
+//       "timeK0="<<timeK0<<
+//       "timeLambda42="<<timeLambda42<<
+//       "timeLambda24="<<timeLambda24<<
+//       "\n";
+//     if (type==1) fGammas->AddLast(v0); 
+//     //
+//     //
+//     //
+//     delete v0K0;
+//     delete v0Gamma;
+//     delete v0Lambda42;
+//     delete v0Lambda24;    
+//     delete v0K0C;
+//     delete v0GammaC;
+//     delete v0Lambda42C;
+//     delete v0Lambda24C;    
+//   }
+//   ProcessPI0(); 
+// }
+
+
+
+
 void AliTPCcalibV0::ProcessV0(Int_t ftype){
   //
   //
-  const Double_t ktimeK0     = 2.684;
-  const Double_t ktimeLambda = 7.89; 
-  
   
   if (! fGammas) fGammas = new TObjArray(10);
   fGammas->Clear();
@@ -333,15 +505,21 @@ void AliTPCcalibV0::ProcessV0(Int_t ftype){
   //
   for (Int_t ivertex=0; ivertex<nV0s; ivertex++){
     AliESDv0 * v0 = (AliESDv0*)fV0s->At(ivertex);
-    AliESDtrack * trackN = fESD->GetTrack(v0->GetIndex(0));
-    AliESDtrack * trackP = fESD->GetTrack(v0->GetIndex(1));
+    AliESDtrack * trackN = fESD->GetTrack(v0->GetIndex(0)); // negative track
+    AliESDtrack * trackP = fESD->GetTrack(v0->GetIndex(1)); // positive track
+    
+    const AliExternalTrackParam * paramInNeg = trackN->GetInnerParam();
+    const AliExternalTrackParam * paramInPos = trackP->GetInnerParam();
+  
+    if (!paramInPos) continue; // in case the inner paramters do not exist
+    if (!paramInNeg) continue;
     // 
     // 
     //
-    AliKFParticle *v0K0       = Fit(primVtx,v0,211,211);
+    AliKFParticle *v0K0       = Fit(primVtx,v0,-211,211);
     AliKFParticle *v0Gamma    = Fit(primVtx,v0,11,-11);
-    AliKFParticle *v0Lambda42 = Fit(primVtx,v0,2212,211);
-    AliKFParticle *v0Lambda24 = Fit(primVtx,v0,211,2212);
+    AliKFParticle *v0Lambda42 = Fit(primVtx,v0,-2212,211);
+    AliKFParticle *v0Lambda24 = Fit(primVtx,v0,-211,2212);
     //Set production vertex
     v0K0->SetProductionVertex( primVtx );
     v0Gamma->SetProductionVertex( primVtx );
@@ -359,10 +537,10 @@ void AliTPCcalibV0::ProcessV0(Int_t ftype){
     //
     // Mass Contrained params
     //
-    AliKFParticle *v0K0C       = Fit(primVtx,v0,211,211);
+    AliKFParticle *v0K0C       = Fit(primVtx,v0,-211,211);
     AliKFParticle *v0GammaC    = Fit(primVtx,v0,11,-11);
-    AliKFParticle *v0Lambda42C = Fit(primVtx,v0,2212,211);
-    AliKFParticle *v0Lambda24C = Fit(primVtx,v0,211,2212);
+    AliKFParticle *v0Lambda42C = Fit(primVtx,v0,-2212,211); //lambdaBar
+    AliKFParticle *v0Lambda24C = Fit(primVtx,v0,-211,2212); //lambda
     //   
     v0K0C->SetProductionVertex( primVtx );
     v0GammaC->SetProductionVertex( primVtx );
@@ -371,8 +549,8 @@ void AliTPCcalibV0::ProcessV0(Int_t ftype){
 
     v0K0C->SetMassConstraint(fPdg->GetParticle(310)->Mass());
     v0GammaC->SetMassConstraint(0);
-    v0Lambda42C->SetMassConstraint(fPdg->GetParticle(3122)->Mass());
-    v0Lambda24C->SetMassConstraint(fPdg->GetParticle(-3122)->Mass());
+    v0Lambda42C->SetMassConstraint(fPdg->GetParticle(-3122)->Mass());
+    v0Lambda24C->SetMassConstraint(fPdg->GetParticle(3122)->Mass());
     //    
     Double_t timeK0, sigmaTimeK0;  
     Double_t timeLambda42, sigmaTimeLambda42;  
@@ -405,14 +583,49 @@ void AliTPCcalibV0::ProcessV0(Int_t ftype){
     if (chi2Gamma<minChi2) { minChi2= chi2Gamma; type0=1;}
     if (chi2Lambda42<minChi2) { minChi2= chi2Lambda42; type0=2;}
     if (chi2Lambda24<minChi2) { minChi2= chi2Lambda24; type0=3;}
-    Float_t betaGammaP  = trackN->GetP()/fPdg->GetParticle(-2212)->Mass(); 
-    Float_t betaGammaPi = trackN->GetP()/fPdg->GetParticle(-211)->Mass();
-    Float_t betaGammaEl = trackN->GetP()/fPdg->GetParticle(11)->Mass();
-    Float_t dedxTeorP = TPCBetheBloch(betaGammaP);
-    Float_t dedxTeorPi = TPCBetheBloch(betaGammaPi);;
-    Float_t dedxTeorEl = TPCBetheBloch(betaGammaEl);;
+    
+     // 0 is  negative particle; 1 is positive particle
+    Float_t betaGamma0 = 0;
+    Float_t betaGamma1 = 0;
+    
+    switch (type) {
+     case 0:
+      betaGamma0 = paramInNeg->GetP()/fPdg->GetParticle(-211)->Mass();
+      betaGamma1 = paramInPos->GetP()/fPdg->GetParticle(211)->Mass();
+      break;
+     case 1:
+      betaGamma0 = paramInNeg->GetP()/fPdg->GetParticle(11)->Mass();
+      betaGamma1 = paramInPos->GetP()/fPdg->GetParticle(-11)->Mass();
+      break;
+     case 2:
+      betaGamma0 = paramInNeg->GetP()/fPdg->GetParticle(-2212)->Mass();
+      betaGamma1 = paramInPos->GetP()/fPdg->GetParticle(211)->Mass();
+      break;
+     case 3:
+      betaGamma0 = paramInNeg->GetP()/fPdg->GetParticle(-211)->Mass();
+      betaGamma1 = paramInPos->GetP()/fPdg->GetParticle(2212)->Mass();
+      break;
+    }
+ 
+    // cuts and histogram filling
+    Int_t numCand = 0; // number of particle types which have a chi2 < 10*minChi2
+        
+    if (minChi2C < 2 && ftype == 1) {
+     //
+     if (chi2K0C < 10*minChi2C) numCand++;
+     if (chi2GammaC < 10*minChi2C) numCand++;
+     if (chi2Lambda42C < 10*minChi2C) numCand++;
+     if (chi2Lambda24C < 10*minChi2C) numCand++;
+     //
+     if (numCand < 2) {
+      if (paramInNeg->GetP() > 0.4) fTPCdEdx->Fill(betaGamma0, trackN->GetTPCsignal());
+      if (paramInPos->GetP() > 0.4) fTPCdEdx->Fill(betaGamma1, trackP->GetTPCsignal());
+     }    
+    }
+    
     //
     //
+    // write output tree
     if (minChi2>50) continue;
     (*fDebugStream)<<"V0"<<
       "ftype="<<ftype<<
@@ -420,9 +633,8 @@ void AliTPCcalibV0::ProcessV0(Int_t ftype){
       "trackN.="<<trackN<<
       "trackP.="<<trackP<<
       //
-      "dedxTeorP="<<dedxTeorP<<
-      "dedxTeorPi="<<dedxTeorPi<<
-      "dedxTeorEl="<<dedxTeorEl<<
+      "betaGamma0="<<betaGamma0<<
+      "betaGamma1="<<betaGamma1<<
       //
       "type="<<type<<
       "chi2C="<<minChi2C<<
@@ -466,10 +678,11 @@ void AliTPCcalibV0::ProcessV0(Int_t ftype){
     delete v0K0C;
     delete v0GammaC;
     delete v0Lambda42C;
-    delete v0Lambda24C;    
+    delete v0Lambda24C; 
   }
   ProcessPI0(); 
 }
+
 
 
 void AliTPCcalibV0::ProcessPI0(){
@@ -554,6 +767,45 @@ Float_t AliTPCcalibV0::TPCBetheBloch(Float_t bg)
  bb=TMath::Log(kp3+bb);
  return ((Float_t)((kp2-aa-bb)*kp1/aa));
 }
+
+
+
+
+
+
+
+TH2F * AliTPCcalibV0::GetHistograms() {
+  //
+  //
+  //
+ return fTPCdEdx;
+}
+
+
+
+
+void AliTPCcalibV0::BinLogX(TH2F *h) {
+  //
+  //
+  //
+   TAxis *axis = h->GetXaxis();
+   int bins = axis->GetNbins();
+
+   Double_t from = axis->GetXmin();
+   Double_t to = axis->GetXmax();
+   Double_t *new_bins = new Double_t[bins + 1];
+   
+   new_bins[0] = from;
+   Double_t factor = pow(to/from, 1./bins);
+  
+   for (int i = 1; i <= bins; i++) {
+     new_bins[i] = factor * new_bins[i-1];
+   }
+   axis->Set(bins, new_bins);
+   delete new_bins;
+   
+}
+
 
 
 
