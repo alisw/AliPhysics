@@ -228,10 +228,10 @@ AliAnalysisDataContainer *  AliAnalysisGoodies::ConnectOuput(AliAnalysisTask * t
   char filename[20] ; 
 
     if (opt == "AOD" ) {    
-      if ( fAmgr->GetEventHandler() == 0x0) {
+      if ( fAmgr->GetOutputEventHandler() == 0x0) {
 	AliAODHandler * aodHandler = new AliAODHandler() ; 
 	aodHandler->SetOutputFileName(Form("%s_0.root",task->GetName())) ; 
-	fAmgr->SetEventHandler(aodHandler) ;
+	fAmgr->SetOutputEventHandler(aodHandler) ;
       } 
       sprintf(filename, "default") ; 
     } 
