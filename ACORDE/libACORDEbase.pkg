@@ -1,6 +1,9 @@
 SRCS = AliACORDE.cxx AliACORDEConstants.cxx AliACORDEModule.cxx \
-       AliGenACORDE.cxx AliACORDEhit.cxx AliACORDEdigit.cxx
+       AliGenACORDE.cxx AliACORDEhit.cxx AliACORDEdigit.cxx \
+       AliACORDEPreprocessor.cxx AliACORDECalibModule.cxx \
+       AliACORDEDataModule.cxx
                                                                                           
 HDRS:= $(SRCS:.cxx=.h)
                                                                                           
 DHDR:=ACORDEbaseLinkDef.h
+
