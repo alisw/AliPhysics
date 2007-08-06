@@ -96,3 +96,9 @@
 #pragma link C++ class Alieve::TOFDigitsInfoEditor+;
 #pragma link C++ class Alieve::TOFSectorEditor+;
 #pragma link C++ class Alieve::TOFStripEditor+;
+
+// JetPlane
+#pragma link C++ class Alieve::JetPlane+;
+#pragma link C++ class Alieve::JetPlaneGL+;
+#pragma link C++ class Alieve::JetPlaneEditor+;
+#pragma link C++ class Alieve::JetPlaneEditor::StaticDataWindow+;
