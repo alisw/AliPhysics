@@ -83,9 +83,12 @@ enum EAliAnalysisFlags {
    void                SetCurrentEntry(Long64_t entry) {fCurrentEntry = entry;}
    void                SetDebugLevel(UInt_t level) {fDebug = level;}
    void                SetDisableBranches(Bool_t disable=kTRUE) {TObject::SetBit(kDisableBranches,disable);}
-   void                SetEventHandler(AliVirtualEventHandler* handler) {fEventHandler = handler;}
+   void                SetOutputEventHandler(AliVirtualEventHandler*  handler) {fOutputEventHandler  = handler;}
+   void                SetMCtruthEventHandler(AliVirtualEventHandler* handler) {fMCtruthEventHandler = handler;}
    AliVirtualEventHandler*
-                       GetEventHandler() {return fEventHandler;}
+       GetOutputEventHandler()  {return fOutputEventHandler;}
+   AliVirtualEventHandler*
+       GetMCtruthEventHandler() {return fMCtruthEventHandler;}
 
    // Container handling
    AliAnalysisDataContainer *CreateContainer(const char *name, TClass *datatype, 
@@ -118,18 +121,19 @@ protected:
    void                 SetEventLoop(Bool_t flag=kTRUE) {TObject::SetBit(kEventLoop,flag);}
 
 private:
-   TTree                  *fTree;         //! Input tree in case of TSelector model
-   AliVirtualEventHandler *fEventHandler; //  Output event handler
-   Long64_t                fCurrentEntry; //! Current processed entry in the tree
-   EAliAnalysisExecMode    fMode;         // Execution mode
-   Bool_t                  fInitOK;       // Initialisation done
-   UInt_t                  fDebug;        // Debug level
-   TObjArray              *fTasks;        // List of analysis tasks
-   TObjArray              *fTopTasks;     // List of top tasks
-   TObjArray              *fZombies;      // List of zombie tasks
-   TObjArray              *fContainers;   // List of all containers
-   TObjArray              *fInputs;       // List of containers with input data
-   TObjArray              *fOutputs;      // List of containers with results
+   TTree                  *fTree;                //! Input tree in case of TSelector model
+   AliVirtualEventHandler *fOutputEventHandler;  //  Optional common output event handler
+   AliVirtualEventHandler *fMCtruthEventHandler; //  Optional common MC Truth event handler
+   Long64_t                fCurrentEntry;        //! Current processed entry in the tree
+   EAliAnalysisExecMode    fMode;                // Execution mode
+   Bool_t                  fInitOK;              // Initialisation done
+   UInt_t                  fDebug;               // Debug level
+   TObjArray              *fTasks;               // List of analysis tasks
+   TObjArray              *fTopTasks;            // List of top tasks
+   TObjArray              *fZombies;             // List of zombie tasks
+   TObjArray              *fContainers;          // List of all containers
+   TObjArray              *fInputs;              // List of containers with input data
+   TObjArray              *fOutputs;             // List of containers with results
 
    static AliAnalysisManager *fgAnalysisManager; //! static pointer to object instance
    ClassDef(AliAnalysisManager,1)  // Analysis manager class
