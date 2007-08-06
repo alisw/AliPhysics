@@ -128,7 +128,7 @@ void AliAnaGammaPhos::CreateOutputObjects()
   // Create the outputs containers
  
   OpenFile(0) ;
-  AliAODHandler* handler = (AliAODHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetEventHandler());  
+  AliAODHandler* handler = (AliAODHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());  
   fTreeA = handler->GetTree() ; 
   fAOD   = handler->GetAOD();
   fAODPhotons = fAOD->GetClusters() ; 
