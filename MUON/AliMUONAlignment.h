@@ -34,6 +34,10 @@ public:
     fTransform = transformer;
   }
 
+  /// Set flag for Magnetic field On/Off
+  void SetBFieldOn(Bool_t bBFieldOn) {
+    fBFieldOn =  bBFieldOn;
+  }
   void FixStation(Int_t iSt);
   void FixHalfSpectrometer(Bool_t *bStOnOff, Bool_t *bSpecLROnOff);
   void AllowVariations(Bool_t *bStOnOff);
