@@ -60,7 +60,10 @@ AliMCEventHandler::AliMCEventHandler() :
     fEvent(-1),
     fNprimaries(-1),
     fNparticles(-1),
-    fPathName("./")
+    fPathName("./"),
+    fExtension(""),
+    fFileNumber(0),
+    fEventsPerFile(0)
 {
     // Default constructor
 }
@@ -82,7 +85,10 @@ AliMCEventHandler::AliMCEventHandler(const char* name, const char* title) :
     fEvent(-1),
     fNprimaries(-1),
     fNparticles(-1),
-    fPathName("./")
+    fPathName("./"),
+    fExtension(""),
+    fFileNumber(0),
+    fEventsPerFile(0)
 {
     // Constructor
 }
@@ -106,32 +112,46 @@ Bool_t AliMCEventHandler::InitIO(Option_t* /*opt*/)
     fNEvent = fTreeE->GetEntries();
     //
     // Tree K
-    fFileK = new TFile(Form("%sKinematics.root", fPathName));
+    fFileK = new TFile(Form("%sKinematics%s.root", fPathName, fExtension));
     if (!fFileK) printf("AliMCEventHandler:Kinematics.root not found in directory %s ! \n", fPathName);
+    fEventsPerFile = fFileK->GetNkeys() - fFileK->GetNProcessIDs();
     //
     // Tree TR
-    fFileTR = new TFile(Form("%sTrackRefs.root", fPathName));
+    fFileTR = new TFile(Form("%sTrackRefs%s.root", fPathName, fExtension));
     if (!fFileTR) printf("AliMCEventHandler:TrackRefs.root not found in directory %s ! \n", fPathName);
     //
     // Reset the event number
     fEvent = -1;
+    fFileNumber = 0;
+    
     printf("AliMCEventHandler:Number of events in this directory %5d \n", fNEvent);
     return kTRUE;
     
 }
 
-Bool_t AliMCEventHandler::BeginEvent()
-{ 
-    // Read the next event
-    fEvent++;
+Bool_t AliMCEventHandler::GetEvent(Int_t iev)
+{
+    // Load the event number iev
+    Int_t inew  = iev/fEventsPerFile;
+    if (inew != fFileNumber) {
+	fFileNumber = inew;
+	if (!OpenFile(fFileNumber)){
+	    return kFALSE;
+	}
+    }
+    
     char folder[20];
-    sprintf(folder, "Event%d", fEvent);
+    sprintf(folder, "Event%d", iev);
     // TreeE
-    fTreeE->GetEntry(fEvent);
+    fTreeE->GetEntry(iev);
     fStack = fHeader->Stack();
     // Tree K
     TDirectoryFile* dirK  = 0;
     fFileK->GetObject(folder, dirK);
+    if (!dirK) {
+	printf("AliMCEventHandler: Event #%5d not found\n", iev);
+	return kFALSE;
+    }
     dirK->GetObject("TreeK", fTreeK);
     fStack->ConnectTree(fTreeK);
     fStack->GetEvent();
@@ -153,6 +173,46 @@ Bool_t AliMCEventHandler::BeginEvent()
     printf("AliMCEventHandler: Event#: %5d Number of particles %5d \n", fEvent, fNparticles);
     
     return kTRUE;
+
+}
+
+Bool_t AliMCEventHandler::OpenFile(Int_t i)
+{
+    // Open file i
+    Bool_t ok = kTRUE;
+    if (i > 0) {
+	fExtension = Form("%d", i);
+    } else {
+	fExtension = "";
+    }
+    
+    
+    delete fFileK;
+    fFileK = new TFile(Form("%sKinematics%s.root", fPathName, fExtension));
+    if (!fFileK) {
+	printf("AliMCEventHandler:Kinematics%s.root not found in directory %s ! \n", fExtension, fPathName);
+	ok = kFALSE;
+    }
+    
+    delete fFileTR;
+    fFileTR = new TFile(Form("%sTrackRefs%s.root", fPathName, fExtension));
+    if (!fFileTR) {
+	printf("AliMCEventHandler:TrackRefs%s.root not found in directory %s ! \n", fExtension, fPathName);
+	ok = kFALSE;
+    }
+    
+    return ok;
+}
+
+Bool_t AliMCEventHandler::BeginEvent()
+{ 
+    // Read the next event
+    fEvent++;
+    if (fEvent >= fNEvent) {
+	printf("AliMCEventHandler: Event number out of range %5d\n", fEvent);
+	return kFALSE;
+    }
+    return GetEvent(fEvent);
 }
 
 Int_t AliMCEventHandler::GetParticleAndTR(Int_t i, TParticle*& particle, TClonesArray*& trefs)

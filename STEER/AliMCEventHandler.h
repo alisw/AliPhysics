@@ -42,12 +42,15 @@ public:
     virtual Bool_t       Terminate();
     virtual Bool_t       TerminateIO();
     virtual void         ResetIO();
+    virtual Bool_t       GetEvent(Int_t iev);
+    
     //
     AliStack* Stack()  {return fStack;}
     TTree*    TreeTR() {return fTreeTR;}
     Int_t     GetParticleAndTR(Int_t i, TParticle*& particle, TClonesArray*& trefs);
     void      DrawCheck(Int_t i, Bool_t search=kFALSE);
 private:
+    Bool_t    OpenFile(Int_t i);
     void      ReorderAndExpandTreeTR();
     
 private:
@@ -67,6 +70,9 @@ private:
     Int_t             fNprimaries;       //! Number of primaries
     Int_t             fNparticles;       //! Number of particles
     char             *fPathName;         //! Input file path 
+    char             *fExtension;        //! File name extension 
+    Int_t             fFileNumber;       //! Input file number
+    Int_t             fEventsPerFile;    //! Number of events per file
     ClassDef(AliMCEventHandler,1)  //MC Truth EventHandler class 
 };
 #endif 
