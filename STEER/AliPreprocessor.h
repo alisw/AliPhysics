@@ -49,6 +49,7 @@ class AliPreprocessor : public TNamed
     const char* GetRunParameter(const char* param);
     AliCDBEntry* GetFromOCDB(const char* pathLevel2, const char* pathLevel3);
     const char* GetRunType();
+    Bool_t GetHLTStatus();
     void Log(const char* message);
 
     Int_t fRun;         // current run

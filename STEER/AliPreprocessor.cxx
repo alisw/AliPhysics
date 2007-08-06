@@ -15,6 +15,13 @@
 
 /*
 $Log$
+Revision 1.14  2007/05/30 06:35:21  jgrosseo
+Adding functionality to the Shuttle/TestShuttle:
+o) Function to retrieve list of sources from a given system (GetFileSources with id=0)
+o) Function to retrieve list of IDs for a given source      (GetFileIDs)
+These functions are needed for dealing with the tag files that are saved for the GRP preprocessor
+Example code has been added to the TestProcessor in TestShuttle
+
 Revision 1.13  2007/04/12 08:26:33  jgrosseo
 updated commment
 
@@ -307,4 +314,15 @@ const char* AliPreprocessor::GetRunType()
   // The call is delegated to AliShuttleInterface
 
   return fShuttle->GetRunType();
+}
+
+//______________________________________________________________________________________________
+Bool_t AliPreprocessor::GetHLTStatus()
+{
+  // Return HLT status (ON or OFF)
+  // Converts the HLT status from the status string read in the run logbook (not just a bool)
+  // The call is delegated to AliShuttleInterface
+
+  return fShuttle->GetHLTStatus();
+
 }
