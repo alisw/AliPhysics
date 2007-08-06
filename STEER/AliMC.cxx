@@ -1304,7 +1304,7 @@ void AliMC::ReorderAndExpandTreeTR()
     for (Int_t ip = 0; ip < np; ip++) {
 	TParticle* part = stack->Particle(ip);
 //	if ((part->GetFirstDaughter() == -1 && part->GetStatusCode() <= 1) || part->GetFirstDaughter() >= np) 
-	if (part->TestBit(kTransportBit));
+	if (part->TestBit(kTransportBit))
 	{
 	    // Skip particles that have not been transported
 	    fTmpTreeTR->GetEntry(it--);
