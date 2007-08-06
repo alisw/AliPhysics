@@ -42,6 +42,7 @@
 #include "AliMUONTrackParam.h"
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONDataInterface.h"
+#include "AliMUONVTrackStore.h"
 
 #include "AliMagFMaps.h"
 #include "AliTracker.h"
@@ -119,6 +120,9 @@ void MUONAlignment(Int_t nEvents = 100000, char* geoFilename = "geometry.root", 
   AliMUONGeometryTransformer *transform = new AliMUONGeometryTransformer();
   transform->LoadGeometryData();
   alig->SetGeometryTransformer(transform);
+
+  // Do alignment with magnetic field off
+  alig->SetBFieldOn(kFALSE);
   
   // Set tracking station to use
   Bool_t bStOnOff[5] = {kTRUE,kTRUE,kTRUE,kTRUE,kTRUE};
@@ -139,8 +143,10 @@ void MUONAlignment(Int_t nEvents = 100000, char* geoFilename = "geometry.root", 
 
 
   char cFileName[100];  
-  AliMUONDataInterface amdi;
-
+  AliMUONDataInterface *amdi =0x0;
+  AliMUONVTrackStore *trackStore =0x0;
+  AliMUONTrack* track =0x0;  
+    
   Int_t lMaxFile = 1000;
   Int_t iFile = 0;
   Int_t iEvent = 0;
@@ -160,23 +166,26 @@ void MUONAlignment(Int_t nEvents = 100000, char* geoFilename = "geometry.root", 
     }
     if (!strstr(cFileName,"galice.root")) continue;      
     cout << "Using file: " << cFileName << endl;
-    amdi.SetFile(cFileName);
-    Int_t nevents = amdi.NumberOfEvents();
+
+    if (!amdi) amdi = new AliMUONDataInterface(cFileName);
+    else amdi->Open(cFileName);
+
+    Int_t nevents = amdi->NumberOfEvents();
     cout << "... with " << nevents << endl;
     for(Int_t event = 0; event < nevents; event++) {
-      amdi.GetEvent(event);
       if (iEvent >= nEvents){
 	bKeepLoop = kFALSE;
 	break;
       }
       iEvent++;
 
-      Int_t ntracks = amdi.NumberOfRecTracks();
+      trackStore = amdi->TrackStore(event);
+
+      Int_t ntracks = trackStore->GetSize();
       if (!event%100)
 	cout << " there are " << ntracks << " tracks in event " << event << endl;
-      Int_t iTrack=0;
-      AliMUONTrack* track = amdi.RecTrack(iTrack);
-      while(track) {   
+      TIter next(trackStore->CreateIterator());
+      while ( ( track = static_cast<AliMUONTrack*>(next()) ) ) {
 	AliMUONTrackParam trackParam(*((AliMUONTrackParam*)(track->GetTrackParamAtHit()->First())));
 	AliMUONTrackExtrap::ExtrapToVertex(&trackParam,0.,0.,0.);
 	Double_t invBenMom = trackParam.GetInverseBendingMomentum();
@@ -186,9 +195,7 @@ void MUONAlignment(Int_t nEvents = 100000, char* geoFilename = "geometry.root", 
 	  alig->ProcessTrack(track);
 	  alig->LocalFit(iTrackOk++,trackParams,0);
 	}
-	iTrack++;
 	iTrackTot++;
-	track = amdi.RecTrack(iTrack);
       }
     }
     cout << "Processed " << iTrackTot << " Tracks so far." << endl;
