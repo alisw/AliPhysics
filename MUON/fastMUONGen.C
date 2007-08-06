@@ -105,7 +105,6 @@ void fastMUONGen(Int_t nev = 1, char* filename = "galice.root", Int_t mult = 2)
   } // event loop
   
   gener->FinishRun();
-  stack->FinishRun();
   rl->WriteHeader("OVERWRITE");
   gener->Write();
   rl->Write();  
