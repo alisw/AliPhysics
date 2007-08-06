@@ -27,6 +27,7 @@ void loadlibs ()
   gSystem->Load("libTree");
   
   gSystem->Load("libESD");
+  gSystem->Load("libAOD");
   
   gSystem->Load("libSTEER"); 
   gSystem->Load("libCDB");
