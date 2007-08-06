@@ -46,7 +46,7 @@ public:
     AliStack* Stack()  {return fStack;}
     TTree*    TreeTR() {return fTreeTR;}
     Int_t     GetParticleAndTR(Int_t i, TParticle*& particle, TClonesArray*& trefs);
-    void      DrawCheck(Int_t i);
+    void      DrawCheck(Int_t i, Bool_t search=kFALSE);
 private:
     void      ReorderAndExpandTreeTR();
     

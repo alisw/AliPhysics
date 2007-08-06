@@ -99,7 +99,7 @@ Bool_t AliMCEventHandler::InitIO(Option_t* /*opt*/)
     // Initialize input
     //
     fFileE = new TFile(Form("%sgalice.root", fPathName));
-    if (!fFileE) printf("galice.root not found in directory %s ! \n", fPathName);
+    if (!fFileE) printf("AliMCEventHandler:galice.root not found in directory %s ! \n", fPathName);
 
     fFileE->GetObject("TE", fTreeE);
     fTreeE->SetBranchAddress("Header", &fHeader);
@@ -107,15 +107,15 @@ Bool_t AliMCEventHandler::InitIO(Option_t* /*opt*/)
     //
     // Tree K
     fFileK = new TFile(Form("%sKinematics.root", fPathName));
-    if (!fFileK) printf("Kinematics.root not found in directory %s ! \n", fPathName);
+    if (!fFileK) printf("AliMCEventHandler:Kinematics.root not found in directory %s ! \n", fPathName);
     //
     // Tree TR
     fFileTR = new TFile(Form("%sTrackRefs.root", fPathName));
-    if (!fFileTR) printf("TrackRefs.root not found in directory %s ! \n", fPathName);
+    if (!fFileTR) printf("AliMCEventHandler:TrackRefs.root not found in directory %s ! \n", fPathName);
     //
     // Reset the event number
     fEvent = -1;
-    printf("Number of events in this directory %5d \n", fNEvent);
+    printf("AliMCEventHandler:Number of events in this directory %5d \n", fNEvent);
     return kTRUE;
     
 }
@@ -123,8 +123,6 @@ Bool_t AliMCEventHandler::InitIO(Option_t* /*opt*/)
 Bool_t AliMCEventHandler::BeginEvent()
 { 
     // Read the next event
-    printf("AliMCEventHandler::BeginEvent called \n");
-    
     fEvent++;
     char folder[20];
     sprintf(folder, "Event%d", fEvent);
@@ -152,7 +150,7 @@ Bool_t AliMCEventHandler::BeginEvent()
     //
     fNparticles = fStack->GetNtrack();
     fNprimaries = fStack->GetNprimary();
-    printf("Event#: %5d Number of particles %5d \n", fEvent, fNparticles);
+    printf("AliMCEventHandler: Event#: %5d Number of particles %5d \n", fEvent, fNparticles);
     
     return kTRUE;
 }
@@ -167,13 +165,10 @@ Int_t AliMCEventHandler::GetParticleAndTR(Int_t i, TParticle*& particle, TClones
     }
     particle = fStack->Particle(i);
     trefs    = fTrackReferences;
-    printf("Returning %5d \n", particle->GetPdgCode());
-    
     return trefs->GetEntries();
-    
 }
 
-void AliMCEventHandler::DrawCheck(Int_t i)
+void AliMCEventHandler::DrawCheck(Int_t i, Bool_t search)
 {
     // Retrieve entry i and draw momentum vector and hits
     if (i > -1 && i < fNparticles) {
@@ -182,9 +177,19 @@ void AliMCEventHandler::DrawCheck(Int_t i)
 	printf("AliMCEventHandler::GetEntry: Index out of range");
     }
 
-    TParticle* particle = fStack->Particle(i);
-    Int_t nh =  fTrackReferences->GetEntries();
+    Int_t nh = fTrackReferences->GetEntries();
     
+    
+    if (search) {
+	while(nh == 0 && i < fNparticles - 1) {
+	    i++;
+	    fTreeTR->GetEntry(fStack->TreeKEntry(i));
+	    nh =  fTrackReferences->GetEntries();
+	}
+	printf("Found Hits at %5d\n", i);
+    }
+    TParticle* particle = fStack->Particle(i);
+
     TH2F*    h = new TH2F("", "", 100, -500, 500, 100, -500, 500);
     Float_t x0 = particle->Vx();
     Float_t y0 = particle->Vy();
@@ -210,6 +215,8 @@ void AliMCEventHandler::DrawCheck(Int_t i)
 Bool_t AliMCEventHandler::Notify()
 {
     // Notify about directory change
+    //
+    // Reconnect trees
     TTree* tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
     TFile *curfile = tree->GetCurrentFile();
     TString fileName(curfile->GetName());
@@ -223,6 +230,7 @@ Bool_t AliMCEventHandler::Notify()
     
 void AliMCEventHandler::ResetIO()
 {
+    // Reset files
     if (fFileE)  delete fFileE;
     if (fFileK)  delete fFileK;
     if (fFileTR) delete fFileTR;
@@ -291,11 +299,11 @@ void AliMCEventHandler::ReorderAndExpandTreeTR()
 //	printf("Particle %5d %5d %5d %5d %5d %5d \n", 
 //	       ip, part->GetPdgCode(), part->GetFirstMother(), part->GetFirstDaughter(), 
 //	       part->GetLastDaughter(), part->TestBit(kTransportBit));
-	
-	// Skip primaries that have not been transported
+
+	// Determine range of secondaries produced by this primary during transport	
 	Int_t dau1  = part->GetFirstDaughter();
+	if (dau1 < np) continue;  // This particle has no secondaries produced during transport
 	Int_t dau2  = -1;
-	// Determine range of secondaries produced by this primary
 	if (dau1 > -1) {
 	    Int_t inext = ip - 1;
 	    while (dau2 < 0) {
@@ -313,16 +321,18 @@ void AliMCEventHandler::ReorderAndExpandTreeTR()
 		inext--;
 	    } // find upper bound
 	}  // dau2 < 0
+	
 
 //	printf("Check (1) %5d %5d %5d %5d %5d \n", ip, np, it, dau1, dau2);
-	
-	// 
-	// Loop over reference hits and find secondary label
+//
+// Loop over reference hits and find secondary label
+// First the tricky part: find the entry in treeTR than contains the hits or
+// make sure that no hits exist.
+//
 	Bool_t hasHits   = kFALSE;
 	Bool_t isOutside = kFALSE;
+
 	it = itlast;
-	if (dau1 < np) continue;
-	
 	while (!hasHits && !isOutside && it < nt) {
 	    fTreeTR->GetEntry(it++);
 	    for (Int_t ib = 0; ib < 7; ib++) {
@@ -334,21 +344,26 @@ void AliMCEventHandler::ReorderAndExpandTreeTR()
 		    if (label >= dau1 && label <= dau2) {
 			hasHits = kTRUE;
 			itlast = it - 1;
+			break;
 		    }
 		    if (label > dau2 || label < ip) {
 			isOutside = kTRUE;
 			itlast = it - 1;
+			break;
 		    }
 		} // hits
+		if (hasHits || isOutside) break;
 	    } // branches
 	} // entries
 
 	if (!hasHits) {
+	    // Write empty entries
 	    for (Int_t id = dau1; (id <= dau2); id++) {
 		fTmpTreeTR->Fill();
 		ifills++;
 	    } 
 	} else {
+	    // Collect all hits
 	    fTreeTR->GetEntry(itlast);
 	    for (Int_t id = dau1; (id <= dau2) && (dau1 > -1); id++) {
 		for (Int_t ib = 0; ib < 7; ib++) {
@@ -360,7 +375,8 @@ void AliMCEventHandler::ReorderAndExpandTreeTR()
 			// Skip primaries
 			if (label == ip) continue;
 			if (label > dau2 || label < dau1) 
-			    printf("Track Reference Label out of range !: %5d %5d %5d %5d \n", itlast, label, dau1, dau2);
+			    printf("AliMCEventHandler::Track Reference Label out of range !: %5d %5d %5d %5d \n", 
+				   itlast, label, dau1, dau2);
 			if (label == id) {
 			    // secondary found
 			    tr->SetDetectorId(ib-1);
@@ -376,9 +392,9 @@ void AliMCEventHandler::ReorderAndExpandTreeTR()
 	    } // daughters
 	} // has hits
     } // tracks
-    printf("Secondaries %5d %5d \n", ifills, fStack->GetNtrack() - fStack->GetNprimary());
     //
     // Now loop again and write the primaries
+    //
     it = nt - 1;
     for (Int_t ip = 0; ip < np; ip++) {
 	Int_t labmax = -1;
@@ -411,9 +427,8 @@ void AliMCEventHandler::ReorderAndExpandTreeTR()
 	ifills++;
     } // tracks
     // Check
-    printf("All %5d %5d \n", ifills, fStack->GetNtrack());
     if (ifills != fStack->GetNtrack()) 
-	printf("Number of entries in TreeTR (%5d) unequal to TreeK (%5d) \n", ifills, fStack->GetNtrack());
+	printf("AliMCEventHandler:Number of entries in TreeTR (%5d) unequal to TreeK (%5d) \n", 
+	       ifills, fStack->GetNtrack());
     fTreeTR = fTmpTreeTR;
-    
 }
