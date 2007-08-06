@@ -144,6 +144,6 @@
 
 #pragma link C++ class AliFstream+;
 #pragma link C++ class AliCTPRawData+;
-#pragma link C++ class AliMCEvent+;
+#pragma link C++ class AliMCEventHandler+;
 
 #endif

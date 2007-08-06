@@ -45,7 +45,7 @@ AliSurveyObj.cxx AliSurveyPoint.cxx \
 AliCodeTimer.cxx \
 AliFstream.cxx \
 AliCTPRawData.cxx \
-AliMCEvent.cxx	
+AliMCEventHandler.cxx	
 
 
 
