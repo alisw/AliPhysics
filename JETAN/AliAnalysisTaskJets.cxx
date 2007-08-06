@@ -26,6 +26,8 @@
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliAODHandler.h"
+#include "AliMCEventHandler.h"
+#include "AliStack.h"
 
 
 ClassImp(AliAnalysisTaskJets)
@@ -66,7 +68,8 @@ void AliAnalysisTaskJets::CreateOutputObjects()
 //
 //  Default AOD
     if (fDebug > 1) printf("AnalysisTaskJets::CreateOutPutData() \n");
-    AliAODHandler* handler = (AliAODHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetEventHandler());
+    AliAODHandler* handler = (AliAODHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
+    
     fAOD   = handler->GetAOD();
     fTreeA = handler->GetTree();
     fJetFinder->ConnectAOD(fAOD);
@@ -74,6 +77,7 @@ void AliAnalysisTaskJets::CreateOutputObjects()
 //  Histogram
     OpenFile(1);
     fHisto = new TH1F("fHisto", "Jet Et", 100, 0., 100.);
+    
 }
 
 void AliAnalysisTaskJets::Init()
@@ -104,6 +108,11 @@ void AliAnalysisTaskJets::Exec(Option_t */*option*/)
 {
 // Execute analysis for current event
 //
+    AliMCEventHandler*    mctruth = (AliMCEventHandler*) 
+	((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
+    AliStack* stack = mctruth->Stack();
+    printf("AliAnalysisTaskJets: Number of tracks %5d\n", stack->GetNtrack());
+
     Long64_t ientry = fChain->GetReadEntry();
     if (fDebug > 1) printf("Analysing event # %5d\n", (Int_t) ientry);
     fJetFinder->ProcessEvent(ientry);
