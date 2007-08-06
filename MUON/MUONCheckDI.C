@@ -16,323 +16,694 @@
 /* $Id$ */
 
 //
-// Macro for checking aliroot output and associated files contents
-// with using AliMUONDataInterface
+// Macro for checking AliMUONDataInterface and AliMUONMCDataInterface.
 // By Bruce Becker, DAPNIA/SPhN/CEA Saclay
-// According to MUONCheck.C
 //
+// Modified to updated versions of data interfaces.
+//  Artur Szostak <artursz@iafrica.com> (University of Cape Town)
+//
+
 #if !defined(__CINT__) || defined(__MAKECINT__)
-// ROOT includes
-#include "TBranch.h"
-#include "TClonesArray.h"
-#include "TFile.h"
-#include "TH1.h"
-#include "TParticle.h"
-#include "TTree.h"
-
-// STEER includes
-#include "AliRun.h"
-#include "AliRunLoader.h"
-#include "AliHeader.h"
-#include "AliLoader.h"
-#include "AliStack.h"
-
-// MUON includes
-#include "AliMUON.h"
-#include "AliMUONData.h"
+#include <Rtypes.h>
+#include <Riostream.h>
+#include <TObjArray.h>
+#include <TIterator.h>
 #include "AliMUONHit.h"
-#include "AliMUONConstants.h"
-#include "AliMUONDigit.h"
+#include "AliMUONVDigit.h"
 #include "AliMUONRawCluster.h"
-#include "AliMUONGlobalTrigger.h"
-#include "AliMUONLocalTrigger.h"
 #include "AliMUONTrack.h"
+#include "AliMUONLocalTrigger.h"
+#include "AliMUONRegionalTrigger.h"
+#include "AliMUONGlobalTrigger.h"
+#include "AliMUONTriggerTrack.h"
+#include "AliMUONMCDataInterface.h"
 #include "AliMUONDataInterface.h"
+#include "AliMUONVDigitStore.h"
+#include "AliMUONVClusterStore.h"
+#include "AliMUONVTrackStore.h"
+#include "AliMUONVTriggerStore.h"
+#include "AliMUONVTriggerTrackStore.h"
+#include "AliMpConstants.h"
+#include "AliMpDEManager.h"
+#include <cstdlib>
 #endif
 
 
-void MUONkine(char * filename="galice.root")
+/**
+ * This routine implements a the comparison functionality which is missing for
+ * classes like AliMUONTrack and the various AliMUONxxxTrigger classes.
+ * A result of -1 is returned if a < b, 0 if a == b and +1 if a > b.
+ */
+Int_t Compare(const TObject* a, const TObject* b)
 {
-  AliMUONDataInterface amdi;
-  amdi.SetFile(filename);
-  Int_t nevents = amdi.NumberOfEvents();
-  
-  for(Int_t ievent=0; ievent<nevents; ievent++) 
-    {  // Event loop
-      Int_t iparticle, nparticles;
-      // Getting event ievent
-      amdi.GetEvent(ievent); 
-      nparticles = amdi.NumberOfParticles();
-      printf(">>> Event %d, Number of particles is %d \n",ievent, nparticles);
-      for(iparticle=0; iparticle<nparticles; iparticle++) 
+	int result = -999;
+	if (a->IsA() == AliMUONTrack::Class() && b->IsA() == AliMUONTrack::Class())
 	{
-	amdi.Particle(iparticle)->Print("");
+		const AliMUONTrack* ta = static_cast<const AliMUONTrack*>(a);
+		const AliMUONTrack* tb = static_cast<const AliMUONTrack*>(b);
+		if (ta->GetNTrackHits() < tb->GetNTrackHits()) return -1;
+		if (ta->GetNTrackHits() > tb->GetNTrackHits()) return 1;
+		if (ta->GetMatchTrigger() < tb->GetMatchTrigger()) return -1;
+		if (ta->GetMatchTrigger() > tb->GetMatchTrigger()) return 1;
+		if (ta->GetLoTrgNum() < tb->GetLoTrgNum()) return -1;
+		if (ta->GetLoTrgNum() > tb->GetLoTrgNum()) return 1;
+		if (ta->GetChi2MatchTrigger() < tb->GetChi2MatchTrigger()) return -1;
+		if (ta->GetChi2MatchTrigger() > tb->GetChi2MatchTrigger()) return 1;
+		const AliMUONTrackParam* tpa = static_cast<const AliMUONTrackParam*>(ta->GetTrackParamAtHit()->First());
+		const AliMUONTrackParam* tpb = static_cast<const AliMUONTrackParam*>(tb->GetTrackParamAtHit()->First());
+		if (tpa->GetNonBendingCoor() < tpb->GetNonBendingCoor()) return -1;
+		if (tpa->GetNonBendingCoor() > tpb->GetNonBendingCoor()) return 1;
+		if (tpa->GetNonBendingSlope() < tpb->GetNonBendingSlope()) return -1;
+		if (tpa->GetNonBendingSlope() > tpb->GetNonBendingSlope()) return 1;
+		if (tpa->GetBendingCoor() < tpb->GetBendingCoor()) return -1;
+		if (tpa->GetBendingCoor() > tpb->GetBendingCoor()) return 1;
+		if (tpa->GetBendingSlope() < tpb->GetBendingSlope()) return -1;
+		if (tpa->GetBendingSlope() > tpb->GetBendingSlope()) return 1;
+		if (tpa->GetInverseBendingMomentum() < tpb->GetInverseBendingMomentum()) return -1;
+		if (tpa->GetInverseBendingMomentum() > tpb->GetInverseBendingMomentum()) return 1;
+		if (tpa->GetCharge() < tpb->GetCharge()) return -1;
+		if (tpa->GetCharge() > tpb->GetCharge()) return 1;
+		return 0;
 	}
-    }
-}
-
-
-void MUONhits(char * filename="galice.root")
-{
-  
-  AliMUONDataInterface amdi;
-  amdi.SetFile(filename);
-  Int_t nevents = amdi.NumberOfEvents();
-  
-  for(Int_t ievent=0; ievent<nevents; ievent++) 
-    {  // Event loop
-      printf(">>> Event %d \n",ievent);
-      // Getting event ievent
-      amdi.GetEvent(ievent); 
-      Int_t ntracks = amdi.NumberOfTracks();
-      for (Int_t itrack=0; itrack<ntracks; itrack++) 
-	{ // Track loop
-	  printf(">>> Track %d \n",itrack);
-	  //Getting List of Hits of Track itrack
-	  // amdi.GetTrack(itrack); 
-	  
-	  Int_t ihit, nhits;
-	  nhits = amdi.NumberOfHits(itrack);
-	  printf(">>> Number of hits  %d \n",nhits);
-	  AliMUONHit* mHit;
-	  for(ihit=0; ihit<nhits; ihit++) 
-	    {
-	      mHit = amdi.Hit(itrack,ihit);
-	      Int_t Nch      = mHit->Chamber();  // chamber number
-	      Int_t detele   = mHit-> DetElemId(); // Detection element if defined
-	      Int_t hittrack = mHit->Track();
-	      Float_t x      = mHit->X();
-	      Float_t y      = mHit->Y();
-	      Float_t z      = mHit->Z();
-	      Float_t elos   = mHit->Eloss();
-	      // Float_t theta  = mHit->Theta();
-	      // Float_t phi    = mHit->Phi();
-	      Float_t momentum = mHit->Momentum();
-	      printf(">>> Hit %2d Chamber %2d DetEle %4d Track %4d x %6.3f y %6.3f z %7.3f elos %g  momentum %5.3f\n",
-		     ihit, Nch, detele, hittrack,x,y,z,elos,momentum);
-	    }
-	} // end track loop
-    }  // end event loop
-}
-
-
-void MUONdigits(char * filename="galice.root")
-{
-  
-  AliMUONDataInterface amdi;
-  amdi.SetFile(filename);
-  Int_t ievent, nevents;
-  nevents = amdi.NumberOfEvents();
-  AliMUONDigit * mDigit;
-  
-  for(ievent=0; ievent<nevents; ievent++) 
-    {
-      printf(">>> Event %d \n",ievent);
-      amdi.GetEvent(ievent);
-      
-      // Addressing
-      Int_t ichamber, nchambers;
-      nchambers = AliMUONConstants::NCh(); ;
-      
-      //      Int_t icathode, ncathodes;
-      //      ncathodes=2;
-      for( ichamber=0; ichamber<nchambers; ichamber++) 
+	else if (a->IsA() == AliMUONLocalTrigger::Class() && b->IsA() == AliMUONLocalTrigger::Class())
 	{
-	  printf(">>> Chamber %d\n",ichamber+1);
-	  
-	  Int_t idigit, ndigits;
-	  ndigits = amdi.NumberOfDigits(ichamber,0); // second parameter here is cathode...
-	  
-	  for(idigit=0; idigit<ndigits; idigit++) 
-	    {
-	      mDigit = amdi.Digit(ichamber,0,idigit);
-	      Int_t PadX   = mDigit->PadX();     // Pad X number
-	      Int_t PadY   = mDigit->PadY();     // Pad Y number
-	      Int_t Signal = mDigit->Charge();   // Physics Signal
-	      Int_t Physics= mDigit->Physics();  // Physics contribution to signal
-	      Int_t Hit    = mDigit->Hit();      // iHit
-	      Int_t Cathode= mDigit->Cathode();  // Cathode
-	      Int_t Track0 = mDigit->Track(0);
-	      Int_t Track1 = mDigit->Track(1); 
-	      Int_t Track2 = mDigit->Track(2);
-	      Int_t TCharges0 = mDigit->TrackCharge(0);  //charge per track making this digit (up to 10)
-	      Int_t TCharges1 = mDigit->TrackCharge(1);
-	      Int_t TCharges2 = mDigit->TrackCharge(2);
-	      Int_t idDE = mDigit->DetElemId();
-	      //	  printf(">>> Cathode %d\n",Cathode);
-	      
-	      printf(">>>IdDE %d Digit %4d cathode %1d hit %4d PadX %3d PadY %3d Signal %4d Physics %4d Track0 %4d TrackCharge0 %4d Track1 %4d TrackCharge1 %4d Track2 %4d TrackCharge2 %4d \n",
-		     idDE, idigit, Cathode,Hit, PadX, PadY, Signal, Physics, Track0, 
-		     TCharges0, Track1, TCharges1, Track2, TCharges2);
-	    } // end digit loop
-	} // end chamber loop
-    }  // end event loop
-}
-
-void MUONrecpoints(char * filename="galice.root") 
-{
-  AliMUONDataInterface amdi;
-  amdi.SetFile(filename);
-  
-  Int_t ievent, nevents;
-  nevents = amdi.NumberOfEvents();
-  AliMUONRawCluster * mRecPoint = 0;
-  
-  for(ievent=0; ievent<nevents; ievent++) 
-    {
-      printf(">>> Event %d \n",ievent);
-      amdi.GetEvent(ievent);
-      Int_t ichamber, nchambers;
-      nchambers = AliMUONConstants::NTrackingCh();
-      // Loop on chambers
-      for( ichamber=0; ichamber<nchambers; ichamber++) 
+		result = memcmp(a, b, sizeof(AliMUONLocalTrigger));
+	}
+	else if (a->IsA() == AliMUONRegionalTrigger::Class() && b->IsA() == AliMUONRegionalTrigger::Class())
 	{
-	  printf(">>> Chamber %d\n",ichamber);
-	  Int_t irecpoint, nrecpoints;
-	  nrecpoints = amdi.NumberOfRawClusters(ichamber);
-	  printf("number of recpoints = %6d \n",nrecpoints);
-	  for(irecpoint=0; irecpoint<nrecpoints; irecpoint++) 
-	    {
-	      mRecPoint = amdi.RawCluster(ichamber,irecpoint);
-	      //     Int_t       fTracks[3];        //labels of overlapped tracks
-	      //     Int_t       fQ[2]  ;           // Q of cluster (in ADC counts)     
-	      //     Float_t     fX[2]  ;           // X of cluster
-	      //     Float_t     fY[2]  ;           // Y of cluster
-	      //     Float_t     fZ[2]  ;           // Z of cluster
-	      //     Int_t       fPeakSignal[2];    // Peak signal 
-	      //     Int_t       fIndexMap[50][2];  // indeces of digits
-	      //     Int_t       fOffsetMap[50][2]; // Emmanuel special
-	      //     Float_t     fContMap[50][2];   // Contribution from digit
-	      //     Int_t       fPhysicsMap[50];   // Distinguish signal and background contr.
-	      //     Int_t       fMultiplicity[2];  // Cluster multiplicity
-	      //     Int_t       fNcluster[2];      // Number of clusters
-	      //     Int_t       fClusterType;      // Cluster type
-	      //     Float_t     fChi2[2];          // Chi**2 of fit
-	      //     Int_t       fGhost;            // 0 if not a ghost or ghost problem solved
-	      //                                    // >0 if ghost problem remains because
-	      //                                    // 1 both (true and ghost) satify 
-	      //                                    //   charge chi2 compatibility
-	      //                                    // 2 none give satisfactory chi2
-	      
-	      Int_t Track0 = mRecPoint->GetTrack(0);
-	      Int_t Track1 = mRecPoint->GetTrack(1); 
-	      Int_t Track2 = mRecPoint->GetTrack(2);
-	      Int_t Q0 = mRecPoint->GetCharge(0);
-	      Int_t Q1 = mRecPoint->GetCharge(1);
-	      Float_t x0 = mRecPoint->GetX(0);
-	      Float_t x1 = mRecPoint->GetX(1);
-	      Float_t y0 = mRecPoint->GetY(0);
-	      Float_t y1 = mRecPoint->GetY(1);
-	      Float_t z0 = mRecPoint->GetZ(0);
-	      Float_t z1 = mRecPoint->GetZ(1);
-	      Float_t chi2_0 =  mRecPoint->GetChi2(0);
-	      Float_t chi2_1 =  mRecPoint->GetChi2(1);
-	      Int_t de = mRecPoint->GetDetElemId();
-	      printf(">>> RecPoint %4d  DetElem %2d x %6.3f %6.3f y %6.3f %6.3f z %6.3f %6.3f Q0 %4d  Q1 %4d Hit %4d Track1 %4d Track2 %4d Chi2 %6.3f %6.3f \n",
-		     irecpoint,de,x0,x1,y0,y1,z0,z1,Q0,Q1,Track0, Track1, Track2, chi2_0, chi2_1);
-	    } // end recpoint loop
-	} // end chamber loop
-    }  // end event loop
-}
-
-void MUONTestTrigger (char * filename="galice.root")
-{
-  // reads and dumps trigger objects from MUON.RecPoints.root
-  
-  AliMUONDataInterface amdi;
-  amdi.SetFile(filename);
-  
-  Int_t ievent, nevents;
-  nevents = amdi.NumberOfEvents();
-  
-  AliMUONGlobalTrigger *gloTrg;
-  AliMUONLocalTrigger *locTrg;
-  
-  for (ievent=0; ievent<nevents; ievent++) 
-    {
-      amdi.GetEvent(ievent);
-      Int_t nglobals = amdi.NumberOfGlobalTriggers(); // should be 1
-      Int_t nlocals  = amdi.NumberOfLocalTriggers(); // up to 234
-      printf("###################################################\n");
-      cout << " event " << ievent 
-	   << " nglobals nlocals: " << nglobals << " " << nlocals << "\n"; 
-      
-      for (Int_t iglobal=0; iglobal<nglobals; iglobal++) 
-	{ // Global Trigger
-	  gloTrg = amdi.GlobalTrigger(iglobal);
-	  
-	  printf("===================================================\n");
-	  printf(" Global Trigger output       Low pt  High pt   All\n");
-	  printf(" number of Single Plus      :\t");
-	  printf("%i\t%i\t%i\t",gloTrg->SinglePlusLpt(),
-		 gloTrg->SinglePlusHpt(),gloTrg->SinglePlusApt());
-	  printf("\n");
-	  printf(" number of Single Minus     :\t");
-	  printf("%i\t%i\t%i\t",gloTrg->SingleMinusLpt(),
-		 gloTrg->SingleMinusHpt(),gloTrg->SingleMinusApt());
-	  printf("\n");
-	  printf(" number of Single Undefined :\t"); 
-	  printf("%i\t%i\t%i\t",gloTrg->SingleUndefLpt(),
-		 gloTrg->SingleUndefHpt(),gloTrg->SingleUndefApt());
-	  printf("\n");
-	  printf(" number of UnlikeSign pair  :\t"); 
-	  printf("%i\t%i\t%i\t",gloTrg->PairUnlikeLpt(),
-		 gloTrg->PairUnlikeHpt(),gloTrg->PairUnlikeApt());
-	  printf("\n");
-	  printf(" number of LikeSign pair    :\t");  
-	  printf("%i\t%i\t%i\t",gloTrg->PairLikeLpt(),
-		 gloTrg->PairLikeHpt(),gloTrg->PairLikeApt());
-	  printf("\n");
-	  printf("===================================================\n");
-	  
-	} // end of loop on Global Trigger
-      
-      for (Int_t ilocal=0; ilocal<nlocals; ilocal++) 
-	{ // Local Trigger
-	  cout << " >>> Output for Local Trigger " << ilocal << "\n";
-	  locTrg = amdi.LocalTrigger(ilocal);
-	  cout << "Circuit StripX Dev StripY: " 
-	       << locTrg->LoCircuit() << " " 
-	       << locTrg->LoStripX() << " " 
-	       << locTrg->LoDev() << " " 
-	       << locTrg->LoStripY() 
-	       << "\n";
-	  cout << "Lpt Hpt Apt: "     
-	       << locTrg->LoLpt() << " "   
-	       << locTrg->LoHpt() << " "  
-	       << locTrg->LoApt() << "\n";
-	  
-	} // end of loop on Local Trigger
-    } // end loop on event  
-}
-
-void MUONRecTracks (char * filename="galice.root")
-{
-  
-  // reads and dumps trigger objects from MUON.RecPoints.root
-  AliMUONDataInterface amdi;
-  amdi.SetFile(filename);
-  AliMUONTrack* rectrack;
-  AliMUONTrackParam* trackparam;
-  Double_t x,y,z;
-  Int_t ievent, nevents;
-  nevents = amdi.NumberOfEvents();
-  
-  
-  for (ievent=0; ievent<nevents; ievent++) 
-    {
-      amdi.GetEvent(ievent);
-      Int_t nrectracks = amdi.NumberOfRecTracks(); 
-      printf(">>> Event %d Number of Recconstructed tracks %d \n",ievent, nrectracks);
-      // loop over rec tracks and print vertex parameters
-      for(Int_t rectracki=0; rectracki < nrectracks;rectracki++)
+		result = memcmp(a, b, sizeof(AliMUONRegionalTrigger));
+	}
+	else if (a->IsA() == AliMUONGlobalTrigger::Class() && b->IsA() == AliMUONGlobalTrigger::Class())
 	{
-	  rectrack  = amdi.RecTrack(rectracki);
-	  trackparam = rectrack->GetTrackParamAtVertex(); // meaningless since the vertex is not known at the tracking level
-	  x = trackparam->GetNonBendingCoor();
-	  y = trackparam->GetBendingCoor();
-	  z = trackparam->GetZ();
-	  printf("Track Vertex : (x,y,z) = (%f,%f,%f \n",x,y,z);
-	} // end of loop over tracks
-    } // end loop on event  
+		result = memcmp(a, b, sizeof(AliMUONGlobalTrigger));
+	}
+	else if (a->IsA() == AliMUONTriggerTrack::Class() && b->IsA() == AliMUONTriggerTrack::Class())
+	{
+		const AliMUONTriggerTrack* ta = static_cast<const AliMUONTriggerTrack*>(a);
+		const AliMUONTriggerTrack* tb = static_cast<const AliMUONTriggerTrack*>(b);
+		if (ta->GetX11() < tb->GetX11()) return -1;
+		if (ta->GetX11() > tb->GetX11()) return 1;
+		if (ta->GetY11() < tb->GetY11()) return -1;
+		if (ta->GetY11() > tb->GetY11()) return 1;
+		if (ta->GetThetax() < tb->GetThetax()) return -1;
+		if (ta->GetThetax() > tb->GetThetax()) return 1;
+		if (ta->GetThetay() < tb->GetThetay()) return -1;
+		if (ta->GetThetay() > tb->GetThetay()) return 1;
+		if (ta->GetLoTrgNum() < tb->GetLoTrgNum()) return -1;
+		if (ta->GetLoTrgNum() > tb->GetLoTrgNum()) return 1;
+		if (ta->GetGTPattern() < tb->GetGTPattern()) return -1;
+		if (ta->GetGTPattern() > tb->GetGTPattern()) return 1;
+		return 0;
+	}
+	else
+	{
+		result = memcmp(a, b, sizeof(TObject));
+	}
+	
+	if (result < 0) return -1;
+	if (result > 0) return 1;
+	return 0;
+}
+
+/**
+ * This method fills internal arrays with local and regional triggers returned
+ * by AliMUONMCDataInterface. For each set of interface methods available in
+ * AliMUONMCDataInterface a TObjArray is created for local and another for regional
+ * triggers. These arrays are filled with copies of the trigger objects.
+ * The global trigger object is also copied out using the 2 different methods.
+ * The arrays and objects are then compared to each other. The arrays and objects
+ * should contain the same information if everything is working correctly with
+ * AliMUONMCDataInterface. If not then the difference is printed together with an
+ * error message and kFALSE is returned.
+ */
+bool SimTriggersOk()
+{
+	AliMUONMCDataInterface data;
+	for (Int_t event = 0; event < data.NumberOfEvents(); event++)
+	{
+		TObjArray localsFromStore, regionalsFromStore;
+		localsFromStore.SetOwner(kTRUE);
+		regionalsFromStore.SetOwner(kTRUE);
+		AliMUONVTriggerStore* store = data.TriggerStore(event);
+		AliMUONGlobalTrigger* globalFromStore = static_cast<AliMUONGlobalTrigger*>(store->Global()->Clone());
+		TIter nextLocal(store->CreateLocalIterator());
+		AliMUONLocalTrigger* localTrig;
+		while ( (localTrig = static_cast<AliMUONLocalTrigger*>( nextLocal() )) != NULL )
+		{
+			localsFromStore.Add(localTrig->Clone());
+		}
+		TIter nextRegional(store->CreateRegionalIterator());
+		AliMUONRegionalTrigger* regionalTrig;
+		while ( (regionalTrig = static_cast<AliMUONRegionalTrigger*>( nextRegional() )) != NULL )
+		{
+			regionalsFromStore.Add(regionalTrig->Clone());
+		}
+		
+		TObjArray localsByIndex, regionalsByIndex;
+		localsByIndex.SetOwner(kTRUE);
+		regionalsByIndex.SetOwner(kTRUE);
+		data.GetEvent(event);
+		AliMUONGlobalTrigger* globalByMethod = static_cast<AliMUONGlobalTrigger*>(data.GlobalTrigger()->Clone());
+		Int_t nlocals = data.NumberOfLocalTriggers();
+		for (Int_t i = 0; i < nlocals; i++)
+		{
+			localTrig = data.LocalTrigger(i);
+			localsByIndex.Add(localTrig->Clone());
+		}
+		Int_t nregionals = data.NumberOfRegionalTriggers();
+		for (Int_t i = 0; i < nregionals; i++)
+		{
+			regionalTrig = data.RegionalTrigger(i);
+			regionalsByIndex.Add(regionalTrig->Clone());
+		}
+		
+		// Now check that all the lists of local, regional and global triggers
+		// contain the same results.
+		// They must. If they do not then something is wrong with the implementation
+		// of AliMUONMCDataInterface.
+		if (Compare(globalFromStore, globalByMethod) != 0)
+		{
+			Error(	"SimTriggersOk",
+				"The AliMUONMCDataInterface does not return identical global"
+				  " triggers through all its user interface methods."
+			);
+			globalFromStore->Print();
+			globalByMethod->Print();
+			return false;
+		}
+		delete globalFromStore;
+		delete globalByMethod;
+		if (localsFromStore.GetEntriesFast() != localsByIndex.GetEntriesFast())
+		{
+			Error(	"SimTriggersOk",
+				"The AliMUONMCDataInterface does not return all the local triggers"
+				  " correctly through all its user interface methods. We got the"
+				  " following numbers of local triggers: %d and %d",
+				localsFromStore.GetEntriesFast(),
+				localsByIndex.GetEntriesFast()
+			);
+			return false;
+		}
+		if (regionalsFromStore.GetEntriesFast() != regionalsByIndex.GetEntriesFast())
+		{
+			Error(	"SimTriggersOk",
+				"The AliMUONMCDataInterface does not return all the regional triggers"
+				  " correctly through all its user interface methods. We got the"
+				  " following numbers of regional triggers: %d and %d",
+				regionalsFromStore.GetEntriesFast(),
+				regionalsByIndex.GetEntriesFast()
+			);
+			return false;
+		}
+		for (Int_t i = 0; i < localsFromStore.GetEntriesFast(); i++)
+		{
+			if (Compare(localsFromStore[i], localsByIndex[i]) != 0)
+			{
+				Error(	"SimTriggersOk",
+					"The AliMUONMCDataInterface does not return identical local"
+					  " triggers through all its user interface methods. The"
+					  " incorrect local trigger has index %d.",
+					i
+				);
+				localsFromStore[i]->Print();
+				localsByIndex[i]->Print();
+				return false;
+			}
+		}
+		for (Int_t i = 0; i < regionalsFromStore.GetEntriesFast(); i++)
+		{
+			if (Compare(regionalsFromStore[i], regionalsByIndex[i]) != 0)
+			{
+				Error(	"SimTriggersOk",
+					"The AliMUONMCDataInterface does not return identical regional"
+					  " triggers through all its user interface methods. The"
+					  " incorrect regional trigger has index %d.",
+					i
+				);
+				regionalsFromStore[i]->Print();
+				regionalsByIndex[i]->Print();
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+/**
+ * This method fills internal arrays with digits returned by the AliMUONDataInterface.
+ * For each set of interface methods available a TObjArray is filled with copies of 
+ * the digits. These arrays are sorted and then compared to each other. The arrays
+ * should contain the same digit information if everything is working correctly with
+ * AliMUONDataInterface. If not then the difference is printed together with an
+ * error message and kFALSE is returned.
+ */
+bool RecDigitsOk()
+{
+	AliMUONDataInterface data;
+	for (Int_t event = 0; event < data.NumberOfEvents(); event++)
+	{
+		TObjArray digitsFromStore;
+		digitsFromStore.SetOwner(kTRUE);
+		AliMUONVDigitStore* store = data.DigitStore(event);
+		TIter next(store->CreateIterator());
+		AliMUONVDigit* digit;
+		while ( (digit = static_cast<AliMUONVDigit*>( next() )) != NULL )
+		{
+			digitsFromStore.Add(digit->Clone());
+		}
+		digitsFromStore.Sort();
+		
+		TObjArray digitsByDetElem;
+		digitsByDetElem.SetOwner(kTRUE);
+		data.GetEvent(event);
+		for (Int_t detElem = 0; detElem < 1500; detElem++)
+		{
+			if (! AliMpDEManager::IsValidDetElemId(detElem)) continue;
+			Int_t ndigits = data.NumberOfDigits(detElem);
+			for (Int_t i = 0; i < ndigits; i++)
+			{
+				AliMUONVDigit* digit = data.Digit(detElem, i);
+				digitsByDetElem.Add(digit->Clone());
+			}
+		}
+		digitsByDetElem.Sort();
+		
+		TObjArray digitsByChamber;
+		digitsByChamber.SetOwner(kTRUE);
+		data.GetEvent(event);
+		for (Int_t chamber = 0; chamber < AliMpConstants::NofChambers(); chamber++)
+		for (Int_t cathode = 0; cathode < 2; cathode++)
+		{
+			Int_t ndigits = data.NumberOfDigits(chamber, cathode);
+			for (Int_t i = 0; i < ndigits; i++)
+			{
+				AliMUONVDigit* digit = data.Digit(chamber, cathode, i);
+				digitsByChamber.Add(digit->Clone());
+			}
+		}
+		digitsByChamber.Sort();
+		
+		// Now check that all the lists of digits contain the same results.
+		// They must. If they do not then something is wrong with the implementation
+		// of AliMUONDataInterface.
+		if (digitsFromStore.GetEntriesFast() != digitsByDetElem.GetEntriesFast()
+		    || digitsFromStore.GetEntriesFast() != digitsByChamber.GetEntriesFast())
+		{
+			Error(	"RecDigitsOk",
+				"The AliMUONDataInterface does not return all the digits correctly"
+				  " through all its user interface methods. We got the following"
+				  " numbers of digits: %d, %d and %d",
+				digitsFromStore.GetEntriesFast(),
+				digitsByDetElem.GetEntriesFast(),
+				digitsByChamber.GetEntriesFast()
+			);
+			return false;
+		}
+		for (Int_t i = 0; i < digitsFromStore.GetEntriesFast(); i++)
+		{
+			if (digitsFromStore[i]->Compare(digitsByDetElem[i]) != 0
+			    || digitsFromStore[i]->Compare(digitsByChamber[i]) != 0)
+			{
+				Error(	"RecDigitsOk",
+					"The AliMUONDataInterface does not return identical digits"
+					  " through all its user interface methods. The incorrect"
+					  " digit has index %d after sorting.",
+					i
+				);
+				digitsFromStore[i]->Print();
+				digitsByChamber[i]->Print();
+				digitsByDetElem[i]->Print();
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+/**
+ * This method fills internal arrays with raw clusters returned by AliMUONDataInterface.
+ * For each set of interface methods available in AliMUONDataInterface a TObjArray is
+ * filled with copies of the raw clusters. These arrays are sorted and then compared
+ * to each other. The arrays should contain the same information if everything is
+ * working correctly with AliMUONDataInterface. If not then the difference is printed
+ * together with an error message and kFALSE is returned.
+ */
+bool RawClustersOk()
+{
+	AliMUONDataInterface data;
+	for (Int_t event = 0; event < data.NumberOfEvents(); event++)
+	{
+		TObjArray clustersFromStore;
+		clustersFromStore.SetOwner(kTRUE);
+		AliMUONVClusterStore* store = data.ClusterStore(event);
+		TIter next(store->CreateIterator());
+		AliMUONRawCluster* cluster;
+		while ( (cluster = static_cast<AliMUONRawCluster*>( next() )) != NULL )
+		{
+			clustersFromStore.Add(cluster->Clone());
+		}
+		clustersFromStore.Sort();
+		
+		TObjArray clustersByChamber;
+		clustersByChamber.SetOwner(kTRUE);
+		data.GetEvent(event);
+		for (Int_t chamber = 0; chamber < AliMpConstants::NofChambers(); chamber++)
+		{
+			Int_t nclusters = data.NumberOfRawClusters(chamber);
+			for (Int_t i = 0; i < nclusters; i++)
+			{
+				AliMUONRawCluster* cluster = data.RawCluster(chamber, i);
+				clustersByChamber.Add(cluster->Clone());
+			}
+		}
+		clustersByChamber.Sort();
+		
+		// Now check that all the lists of clusters contain the same results.
+		// They must. If they do not then something is wrong with the implementation
+		// of AliMUONDataInterface.
+		if (clustersFromStore.GetEntriesFast() != clustersByChamber.GetEntriesFast())
+		{
+			Error(	"RawClustersOk",
+				"The AliMUONDataInterface does not return all the clusters correctly"
+				  " through all its user interface methods. We got the following"
+				  " numbers of clusters: %d and %d",
+				clustersFromStore.GetEntriesFast(),
+				clustersByChamber.GetEntriesFast()
+			);
+			return false;
+		}
+		for (Int_t i = 0; i < clustersFromStore.GetEntriesFast(); i++)
+		{
+			if (clustersFromStore[i]->Compare(clustersByChamber[i]) != 0)
+			{
+				Error(	"RawClustersOk",
+					"The AliMUONDataInterface does not return identical clusters"
+					  " through all its user interface methods. The incorrect"
+					  " cluster has index %d after sorting.",
+					i
+				);
+				clustersFromStore[i]->Print();
+				clustersByChamber[i]->Print();
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+/**
+ * This method fills internal arrays with tracks returned by AliMUONDataInterface.
+ * For each set of interface methods available in AliMUONDataInterface a TObjArray is
+ * filled with copies of the raw clusters. These arrays are then compared to each
+ * other. The arrays should contain the same information if everything is working
+ * correctly with AliMUONDataInterface. If not then the difference is printed
+ * together with an error message and kFALSE is returned.
+ */
+bool TracksOk()
+{
+	AliMUONDataInterface data;
+	for (Int_t event = 0; event < data.NumberOfEvents(); event++)
+	{
+		TObjArray tracksFromStore;
+		tracksFromStore.SetOwner(kTRUE);
+		AliMUONVTrackStore* store = data.TrackStore(event);
+		TIter next(store->CreateIterator());
+		AliMUONTrack* track;
+		while ( (track = static_cast<AliMUONTrack*>( next() )) != NULL )
+		{
+			tracksFromStore.Add(track->Clone());
+		}
+		
+		TObjArray tracksByIndex;
+		tracksByIndex.SetOwner(kTRUE);
+		data.GetEvent(event);
+		Int_t ntracks = data.NumberOfTracks();
+		for (Int_t i = 0; i < ntracks; i++)
+		{
+			AliMUONTrack* track = data.Track(i);
+			tracksByIndex.Add(track->Clone());
+		}
+		
+		// Now check that all the lists of tracks contain the same results.
+		// They must. If they do not then something is wrong with the implementation
+		// of AliMUONDataInterface.
+		if (tracksFromStore.GetEntriesFast() != tracksByIndex.GetEntriesFast())
+		{
+			Error(	"TracksOk",
+				"The AliMUONDataInterface does not return all the tracks correctly"
+				  " through all its user interface methods. We got the following"
+				  " numbers of tracks: %d and %d",
+				tracksFromStore.GetEntriesFast(),
+				tracksByIndex.GetEntriesFast()
+			);
+			return false;
+		}
+		for (Int_t i = 0; i < tracksFromStore.GetEntriesFast(); i++)
+		{
+			if (Compare(tracksFromStore[i], tracksByIndex[i]) != 0)
+			{
+				Error(	"TracksOk",
+					"The AliMUONDataInterface does not return identical tracks"
+					  " through all its user interface methods. The incorrect"
+					  " track has index %d.",
+					i
+				);
+				tracksFromStore[i]->Print();
+				tracksByIndex[i]->Print();
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+/**
+ * This method fills internal arrays with local and regional triggers returned
+ * by AliMUONDataInterface. For each set of interface methods available in
+ * AliMUONDataInterface a TObjArray is created for local and another for regional
+ * triggers. These arrays are filled with copies of the trigger objects.
+ * The global trigger object is also copied out using the 2 different methods.
+ * The arrays and objects are then compared to each other. The arrays and objects
+ * should contain the same information if everything is working correctly with
+ * AliMUONDataInterface. If not then the difference is printed together with an
+ * error message and kFALSE is returned.
+ */
+bool TriggersOk()
+{
+	AliMUONDataInterface data;
+	for (Int_t event = 0; event < data.NumberOfEvents(); event++)
+	{
+		TObjArray localsFromStore, regionalsFromStore;
+		localsFromStore.SetOwner(kTRUE);
+		regionalsFromStore.SetOwner(kTRUE);
+		AliMUONVTriggerStore* store = data.TriggerStore(event);
+		AliMUONGlobalTrigger* globalFromStore = static_cast<AliMUONGlobalTrigger*>(store->Global()->Clone());
+		TIter nextLocal(store->CreateLocalIterator());
+		AliMUONLocalTrigger* localTrig;
+		while ( (localTrig = static_cast<AliMUONLocalTrigger*>( nextLocal() )) != NULL )
+		{
+			localsFromStore.Add(localTrig->Clone());
+		}
+		TIter nextRegional(store->CreateRegionalIterator());
+		AliMUONRegionalTrigger* regionalTrig;
+		while ( (regionalTrig = static_cast<AliMUONRegionalTrigger*>( nextRegional() )) != NULL )
+		{
+			regionalsFromStore.Add(regionalTrig->Clone());
+		}
+		
+		TObjArray localsByIndex, regionalsByIndex;
+		localsByIndex.SetOwner(kTRUE);
+		regionalsByIndex.SetOwner(kTRUE);
+		data.GetEvent(event);
+		AliMUONGlobalTrigger* globalByMethod = static_cast<AliMUONGlobalTrigger*>(data.GlobalTrigger()->Clone());
+		Int_t nlocals = data.NumberOfLocalTriggers();
+		for (Int_t i = 0; i < nlocals; i++)
+		{
+			localTrig = data.LocalTrigger(i);
+			localsByIndex.Add(localTrig->Clone());
+		}
+		Int_t nregionals = data.NumberOfRegionalTriggers();
+		for (Int_t i = 0; i < nregionals; i++)
+		{
+			regionalTrig = data.RegionalTrigger(i);
+			regionalsByIndex.Add(regionalTrig->Clone());
+		}
+		
+		// Now check that all the lists of local, regional and global triggers
+		// contain the same results.
+		// They must. If they do not then something is wrong with the implementation
+		// of AliMUONDataInterface.
+		if (Compare(globalFromStore, globalByMethod) != 0)
+		{
+			Error(	"TriggersOk",
+				"The AliMUONDataInterface does not return identical global"
+				  " triggers through all its user interface methods."
+			);
+			globalFromStore->Print();
+			globalByMethod->Print();
+			return false;
+		}
+		delete globalFromStore;
+		delete globalByMethod;
+		if (localsFromStore.GetEntriesFast() != localsByIndex.GetEntriesFast())
+		{
+			Error(	"TriggersOk",
+				"The AliMUONDataInterface does not return all the local triggers"
+				  " correctly through all its user interface methods. We got the"
+				  " following numbers of local triggers: %d and %d",
+				localsFromStore.GetEntriesFast(),
+				localsByIndex.GetEntriesFast()
+			);
+			return false;
+		}
+		if (regionalsFromStore.GetEntriesFast() != regionalsByIndex.GetEntriesFast())
+		{
+			Error(	"TriggersOk",
+				"The AliMUONDataInterface does not return all the regional triggers"
+				  " correctly through all its user interface methods. We got the"
+				  " following numbers of regional triggers: %d and %d",
+				regionalsFromStore.GetEntriesFast(),
+				regionalsByIndex.GetEntriesFast()
+			);
+			return false;
+		}
+		for (Int_t i = 0; i < localsFromStore.GetEntriesFast(); i++)
+		{
+			if (Compare(localsFromStore[i], localsByIndex[i]) != 0)
+			{
+				Error(	"TriggersOk",
+					"The AliMUONDataInterface does not return identical local"
+					  " triggers through all its user interface methods. The"
+					  " incorrect local trigger has index %d.",
+					i
+				);
+				localsFromStore[i]->Print();
+				localsByIndex[i]->Print();
+				return false;
+			}
+		}
+		for (Int_t i = 0; i < regionalsFromStore.GetEntriesFast(); i++)
+		{
+			if (Compare(regionalsFromStore[i], regionalsByIndex[i]) != 0)
+			{
+				Error(	"TriggersOk",
+					"The AliMUONDataInterface does not return identical regional"
+					  " triggers through all its user interface methods. The"
+					  " incorrect regional trigger has index %d.",
+					i
+				);
+				regionalsFromStore[i]->Print();
+				regionalsByIndex[i]->Print();
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+/**
+ * This method fills internal arrays with trigger tracks returned by AliMUONDataInterface.
+ * For each set of interface methods available in AliMUONDataInterface a TObjArray is
+ * filled with copies of the trigger tracks. These arrays are then compared to each
+ * other. The arrays should contain the same information if everything is working
+ * correctly with AliMUONDataInterface. If not then the difference is printed
+ * together with an error message and kFALSE is returned.
+ */
+bool TriggerTracksOk()
+{
+	AliMUONDataInterface data;
+	for (Int_t event = 0; event < data.NumberOfEvents(); event++)
+	{
+		TObjArray tracksFromStore;
+		tracksFromStore.SetOwner(kTRUE);
+		AliMUONVTriggerTrackStore* store = data.TriggerTrackStore(event);
+		TIter next(store->CreateIterator());
+		AliMUONTriggerTrack* track;
+		while ( (track = static_cast<AliMUONTriggerTrack*>( next() )) != NULL )
+		{
+			tracksFromStore.Add(track->Clone());
+		}
+		
+		TObjArray tracksByIndex;
+		tracksByIndex.SetOwner(kTRUE);
+		data.GetEvent(event);
+		Int_t ntracks = data.NumberOfTriggerTracks();
+		for (Int_t i = 0; i < ntracks; i++)
+		{
+			AliMUONTriggerTrack* track = data.TriggerTrack(i);
+			tracksByIndex.Add(track->Clone());
+		}
+		
+		// Now check that all the lists of trigger tracks contain the same results.
+		// They must. If they do not then something is wrong with the implementation
+		// of AliMUONDataInterface.
+		if (tracksFromStore.GetEntriesFast() != tracksByIndex.GetEntriesFast())
+		{
+			Error(	"TriggerTracksOk",
+				"The AliMUONDataInterface does not return all the trigger tracks"
+				  " correctly through all its user interface methods. We got the"
+				  " following numbers of tracks: %d and %d",
+				tracksFromStore.GetEntriesFast(),
+				tracksByIndex.GetEntriesFast()
+			);
+			return false;
+		}
+		for (Int_t i = 0; i < tracksFromStore.GetEntriesFast(); i++)
+		{
+			if (Compare(tracksFromStore[i], tracksByIndex[i]) != 0)
+			{
+				Error(	"TriggerTracksOk",
+					"The AliMUONDataInterface does not return identical trigger"
+					  " tracks through all its user interface methods. The"
+					  " incorrect track has index %d.",
+					i
+				);
+				tracksFromStore[i]->Print();
+				tracksByIndex[i]->Print();
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+/**
+ * This method performs a check of the AliMUONDataInterface and AliMUONMCDataInterface
+ * classes. Basically there are at least 2 ways to fetch data using these interfaces:
+ * The expert way using the store objects returned by these interface classes or
+ * the much slower but easier way of using the NumberOfxxx and Digit(...),
+ * RawCluster(...), Track(...) etc. methods to fetch individual data objects.
+ * The MUONCheckDI will check that all these various ways of fetching data results
+ * in the same information being returned. If yes then kTRUE is returned and a
+ * confirmation message is printed, if not then kFALSE is returned with the failure
+ * reason printed to screen.
+ */
+bool MUONCheckDI()
+{
+	// TODO: complete checking AliMUONMCDataInterface.
+	//cout << "Checking simulated triggers..." << endl;
+	//if (! SimTriggersOk()) return false;
+	//cout << "Simulated triggers look OK." << endl;
+	
+	cout << "Checking reconstructed digits..." << endl;
+	if (! RecDigitsOk()) return false;
+	cout << "Reconstructed digits look OK." << endl;
+	
+	cout << "Checking raw clusters..." << endl;
+	if (! RawClustersOk()) return false;
+	cout << "Raw clusters look OK." << endl;
+
+	cout << "Checking reconstructed tracks..." << endl;
+	if (! TracksOk()) return false;
+	cout << "Reconstructed tracks look OK." << endl;
+
+	cout << "Checking reconstructed triggers..." << endl;
+	if (! TriggersOk()) return false;
+	cout << "Reconstructed triggers look OK." << endl;
+
+	cout << "Checking reconstructed trigger tracks..." << endl;
+	if (! TriggerTracksOk()) return false;
+	cout << "Reconstructed trigger tracks look OK." << endl;
+	
+	return true;
 }
