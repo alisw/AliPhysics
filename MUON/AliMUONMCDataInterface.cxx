@@ -21,13 +21,25 @@
 /// Easy to use MC data accessor
 ///
 /// \author Laurent Aphecetche, Subatech
+///
+// Moved parts of old AliMUONDataInterface interface to AliMUONMCDataInterface
+//  Artur Szostak <artursz@iafrica.com> (University of Cape Town)
 //-----------------------------------------------------------------------------
 
 #include "AliMUONMCDataInterface.h"
 #include "AliMUONVDigitStore.h"
 #include "AliMUONVHitStore.h"
-#include "AliMUONVStore.h"
 #include "AliMUONVTriggerStore.h"
+#include "AliMUONHit.h"
+#include "AliMUONVDigit.h"
+#include "AliMUONLocalTrigger.h"
+#include "AliMUONRegionalTrigger.h"
+#include "AliMUONGlobalTrigger.h"
+
+#include "AliMpIntPair.h"
+#include "AliMpDEManager.h"
+#include "AliMpConstants.h"
+#include "AliMpSegmentation.h"
 
 #include "AliLog.h"
 #include "AliRunLoader.h"
@@ -37,6 +49,9 @@
 #include <TClonesArray.h>
 #include <TList.h>
 #include <TParticle.h>
+#include <TIterator.h>
+#include <cstdlib>
+#include <cassert>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONMCDataInterface)
@@ -54,7 +69,12 @@ fDigitStore(0x0),
 fTriggerStore(0x0),
 fTrackRefs(0x0),
 fCurrentEvent(-1),
-fIsValid(kFALSE)
+fIsValid(kFALSE),
+fCurrentIteratorType(kNoIterator),
+fCurrentIndex(-1),
+fDataX(-1),
+fDataY(-1),
+fIterator(0x0)
 {
   /// ctor
   
@@ -75,30 +95,111 @@ AliMUONMCDataInterface::~AliMUONMCDataInterface()
 }
 
 //_____________________________________________________________________________
+AliMUONVHitStore* 
+AliMUONMCDataInterface::HitStore(Int_t event, Int_t track)
+{
+  /// Return the hitStore for a given track of one event
+  /// Return 0x0 if event and/or track not found
+  /// Returned pointer should not be deleted
+  
+  if (not IsValid()) return 0x0;
+  if (event == fCurrentEvent
+      and fDataX == track  // using fDataX as track number.
+      and fHitStore != 0x0
+     )
+      return fHitStore;
+  
+  ResetStores();
+  if (not LoadEvent(event)) return 0x0;
+  
+  fLoader->LoadHits();
+  
+  TTree* treeH = fLoader->TreeH();
+  if (treeH == 0x0)
+  {
+    AliError("Could not get treeH");
+    return 0x0;
+  }
+  
+  fHitStore = AliMUONVHitStore::Create(*treeH);
+  AliDebug(1,"Creating hitStore from treeH");
+  if ( fHitStore != 0x0 )
+  {
+    fHitStore->Connect(*treeH);
+    if ( treeH->GetEvent(track) == 0 ) 
+    {
+      AliError(Form("Could not read track %d",track));
+      fHitStore->Clear();
+      return 0x0;
+    }
+    fDataX = track; // using fDataX as track number.
+  }
+  
+  fLoader->UnloadHits();
+
+  return fHitStore;
+}
+
+//_____________________________________________________________________________
+AliMUONVDigitStore*
+AliMUONMCDataInterface::SDigitStore(Int_t event)
+{
+  /// Return the SDigit store for a given event.
+  /// Return 0 if event not found
+  /// Returned pointer should not be deleted
+  
+  if (not IsValid()) return 0x0;
+  if (event == fCurrentEvent and fSDigitStore != 0x0) return fSDigitStore;
+  
+  ResetStores();
+  if (not LoadEvent(event)) return 0x0;
+  
+  fLoader->LoadSDigits();
+  
+  TTree* treeS = fLoader->TreeS();
+  if (treeS == 0x0)
+  {
+    AliError("Could not get treeS");
+    return 0x0;
+  }
+  
+  fSDigitStore = AliMUONVDigitStore::Create(*treeS);
+  if ( fSDigitStore != 0x0 )
+  {
+    fSDigitStore->Clear();
+    fSDigitStore->Connect(*treeS);
+    treeS->GetEvent(0);
+  }
+  
+  fLoader->UnloadSDigits();
+  
+  return fSDigitStore;
+}
+
+//_____________________________________________________________________________
 AliMUONVDigitStore*
 AliMUONMCDataInterface::DigitStore(Int_t event)
 {
   /// Return a pointer to the digitStore for a given event (or 0 if not found)
   /// Returned pointer should not be deleted
   
-  if ( LoadEvent(event) ) return 0x0;
+  if (not IsValid()) return 0x0;
+  if (event == fCurrentEvent and fDigitStore != 0x0) return fDigitStore;
+  
+  ResetStores();
+  if (not LoadEvent(event)) return 0x0;
   
   fLoader->LoadDigits();
   
   TTree* treeD = fLoader->TreeD();
-  
-  if (!treeD)
+  if (treeD == 0x0)
   {
     AliError("Could not get treeD");
     return 0x0;
   }
   
-  if (!fDigitStore)
-  {
-    fDigitStore = AliMUONVDigitStore::Create(*treeD);
-  }
-  
-  if ( fDigitStore ) 
+  fDigitStore = AliMUONVDigitStore::Create(*treeD);
+  if ( fDigitStore != 0x0 ) 
   {
     fDigitStore->Clear();
     fDigitStore->Connect(*treeD);
@@ -111,13 +212,113 @@ AliMUONMCDataInterface::DigitStore(Int_t event)
 }
 
 //_____________________________________________________________________________
+AliStack*
+AliMUONMCDataInterface::Stack(Int_t event)
+{
+  /// Get the Stack (list of generated particles) for one event
+  /// Returned pointer should not be deleted
+  
+  if ( not IsValid() ) return 0x0;
+
+  if (event != fCurrentEvent)
+  {
+    ResetStores();
+    if ( not LoadEvent(event) ) return 0x0;
+  }
+  
+  fLoader->GetRunLoader()->LoadKinematics();
+  
+  return fLoader->GetRunLoader()->Stack();
+}
+
+//_____________________________________________________________________________
+TClonesArray*
+AliMUONMCDataInterface::TrackRefs(Int_t event, Int_t track)
+{
+  /// Get the track references for a given (generated) track of one event
+  /// Returned pointer should not be deleted
+  
+  if ( not IsValid() ) return 0x0;
+
+  if (event != fCurrentEvent)
+  {
+    ResetStores();
+    if ( not LoadEvent(event) ) return 0x0;
+  }
+  
+  if (track == fDataX)  // using fDataX as track number.
+    return fTrackRefs;
+  
+  fLoader->GetRunLoader()->LoadTrackRefs();
+  
+  TTree* treeTR = fLoader->GetRunLoader()->TreeTR();
+  
+  if ( fTrackRefs != 0x0 ) fTrackRefs->Clear("C");
+  
+  if (treeTR != 0x0)
+  {
+    if ( treeTR->GetEvent(track) > 0 ) 
+    {
+      TBranch* branch = treeTR->GetBranch("MUON");
+      branch->SetAddress(&fTrackRefs);
+      branch->GetEvent(track);
+      fDataX = track;  // using fDataX as track number.
+    }
+  }
+  else
+  {
+    AliError("Could not get TreeTR");
+  }
+  
+  fLoader->GetRunLoader()->UnloadTrackRefs();
+  
+  return fTrackRefs;
+}
+
+//_____________________________________________________________________________
+AliMUONVTriggerStore*
+AliMUONMCDataInterface::TriggerStore(Int_t event)
+{
+  /// Return the triggerStore for a given event.
+  /// Return 0x0 if event not found.
+  /// Returned pointer should not be deleted.
+  
+  if (not IsValid()) return 0x0;
+  if (event == fCurrentEvent and fTriggerStore != 0x0) return fTriggerStore;
+  
+  ResetStores();
+  if (not LoadEvent(event)) return 0x0;
+  
+  fLoader->LoadDigits();
+  
+  TTree* treeD = fLoader->TreeD();
+  if ( treeD == 0x0 ) 
+  {
+    AliError("Could not get treeD");
+    return 0x0;
+  }
+  
+  fTriggerStore = AliMUONVTriggerStore::Create(*treeD);
+  if ( fTriggerStore != 0x0 )
+  {
+    fTriggerStore->Clear();
+    fTriggerStore->Connect(*treeD);
+    treeD->GetEvent(0);
+  }
+  
+  fLoader->UnloadDigits();
+  
+  return fTriggerStore;
+}
+
+//_____________________________________________________________________________
 void
 AliMUONMCDataInterface::DumpDigits(Int_t event, Bool_t sorted)
 {
   /// Dump the digits for a given event, sorted if requested.
   DigitStore(event);
   
-  if ( fDigitStore ) 
+  if ( fDigitStore != 0x0 ) 
   {
     if ( sorted ) 
     {
@@ -156,7 +357,7 @@ AliMUONMCDataInterface::DumpKine(Int_t event)
   /// Dump all generated particles for one event
   AliStack* stack = Stack(event);
   
-  if ( stack ) 
+  if ( stack != 0x0 ) 
   {
     Int_t nparticles = (Int_t) stack->GetNtrack();
   
@@ -178,7 +379,7 @@ AliMUONMCDataInterface::DumpSDigits(Int_t event, Bool_t sorted)
   /// Dump the SDigits for a given event, sorted if requested
   SDigitStore(event);
   
-  if ( fSDigitStore ) 
+  if ( fSDigitStore != 0x0 ) 
   {
     if ( sorted ) 
     {
@@ -222,7 +423,7 @@ AliMUONMCDataInterface::DumpTrackRefs(Int_t event)
   for ( Int_t i = 0; i < ntrackrefs; ++i ) 
   {
     TrackRefs(event,i);
-    if ( fTrackRefs ) 
+    if ( fTrackRefs != 0x0 ) 
     {
       fTrackRefs->Print("","*");
     }
@@ -237,84 +438,29 @@ AliMUONMCDataInterface::DumpTrigger(Int_t event)
   
   TriggerStore(event);
 
-  if ( fTriggerStore ) 
+  if ( fTriggerStore != 0x0 ) 
   {
     fTriggerStore->Print();
   }
 }
 
 //_____________________________________________________________________________
-AliMUONVHitStore* 
-AliMUONMCDataInterface::HitStore(Int_t event, Int_t track)
-{
-  /// Return the hitStore for a given track of one event
-  /// Return 0 if event and/or track not found
-  /// Returned pointer should not be deleted
-  
-  if ( !IsValid() ) return 0x0;
-  
-  if ( LoadEvent(event) ) return 0x0;
-
-  if ( fHitStore) fHitStore->Clear();
-  
-  fLoader->LoadHits();
-  
-  TTree* treeH = fLoader->TreeH();
-  
-  if (!treeH) 
-  {
-    AliError("Could not get treeH");
-    return 0x0;
-  }
-  
-  if ( !fHitStore ) 
-  {
-    fHitStore = AliMUONVHitStore::Create(*treeH);
-    AliDebug(1,"Creating hitStore from treeH");
-  }
-  
-  if ( fHitStore )
-  {
-    fHitStore->Connect(*treeH);
-    if ( treeH->GetEvent(track) == 0 ) 
-    {
-      AliError(Form("Could not read track %d",track));
-      fHitStore->Clear();
-    }
-  }
-  
-  fLoader->UnloadHits();
-
-  return fHitStore;
-}
-
-//_____________________________________________________________________________
 Bool_t
-AliMUONMCDataInterface::IsValid() const
-{
-  /// Whether we were initialized properly or not
-  return fIsValid;
-}
-
-//_____________________________________________________________________________
-Int_t
 AliMUONMCDataInterface::LoadEvent(Int_t event)
 {
   /// Load event if different from the current one.
-  if ( event != fCurrentEvent ) 
+  /// Returns kFALSE on error and kTRUE if the event was loaded.
+  
+  assert( IsValid() );
+  
+  AliDebug(1,Form("Loading event %d using runLoader %p",event,fLoader->GetRunLoader()));
+  if (fLoader->GetRunLoader()->GetEvent(event) == 0)
   {
     fCurrentEvent = event;
-    AliDebug(1,Form("Loading event %d using runLoader %p",event,fLoader->GetRunLoader()));
-    if ( event < NumberOfEvents() )
-    {
-      return fLoader->GetRunLoader()->GetEvent(event);
-    }
-    else
-    {
-      return 1;
-    }
+    return kTRUE;
   }
-  return 0;
+  else
+    return kFALSE;
 }
 
 
@@ -323,7 +469,7 @@ Int_t
 AliMUONMCDataInterface::NumberOfEvents() const
 {
   /// Number of events in the file we're connected to
-  if (!IsValid()) return 0;
+  if (not IsValid()) return -1;
   return fLoader->GetRunLoader()->GetNumberOfEvents();
 }
 
@@ -332,16 +478,20 @@ Int_t
 AliMUONMCDataInterface::NumberOfTracks(Int_t event)
 {
   /// Number of tracks in the event
-  if (!IsValid()) return 0;
+  if ( not IsValid()) return -1;
   
-  if ( LoadEvent(event) ) return 0;
+  if (event != fCurrentEvent)
+  {
+    ResetStores();
+    if ( not LoadEvent(event) ) return -1;
+  }
   
   fLoader->LoadHits();
   
-  Int_t rv(0);
+  Int_t rv(-1);
   
   TTree* treeH = fLoader->TreeH();
-  if (treeH)
+  if (treeH != 0x0)
   {
     rv = static_cast<Int_t>(treeH->GetEntries());
   }
@@ -360,16 +510,20 @@ Int_t
 AliMUONMCDataInterface::NumberOfTrackRefs(Int_t event)
 {
   /// Number of track references in the event
-  if (!IsValid()) return 0;
+  if ( not IsValid()) return -1;
   
-  if ( LoadEvent(event) ) return 0;
+  if (event != fCurrentEvent)
+  {
+    ResetStores();
+    if ( not LoadEvent(event) ) return -1;
+  }
 
   fLoader->GetRunLoader()->LoadTrackRefs();
   
-  Int_t rv(0);
+  Int_t rv(-1);
   
   TTree* treeTR = fLoader->GetRunLoader()->TreeTR();
-  if (treeTR)
+  if (treeTR != 0x0)
   {
     rv = static_cast<Int_t>(treeTR->GetEntries());
   }
@@ -389,20 +543,11 @@ AliMUONMCDataInterface::Open(const char* filename)
 {
   /// Connect to a given galice.root file
   
-  delete fHitStore; 
-  fHitStore=0x0;
-  delete fSDigitStore;
-  fSDigitStore=0x0;
-  delete fDigitStore;
-  fDigitStore=0x0;
-  delete fTrackRefs;
-  fTrackRefs=0x0;
-  delete fTriggerStore;
-  fTriggerStore=0x0;
+  ResetStores();
   
   fCurrentEvent=-1;
 
-  if ( fLoader ) 
+  if ( fLoader != 0x0 )
   {
     delete fLoader->GetRunLoader();
   }
@@ -419,146 +564,512 @@ AliMUONMCDataInterface::Open(const char* filename)
   }
   
   AliRunLoader* runLoader = AliRunLoader::Open(filename,foldername);
-  if (!runLoader) 
+  if (runLoader == 0x0)
   {
     AliError(Form("Cannot open file %s",filename));    
     fIsValid = kFALSE;
   }
   fLoader = runLoader->GetDetectorLoader("MUON");
-  if (!fLoader) 
+  if (fLoader == 0x0)
   {
     AliError("Cannot get AliMUONLoader");
     fIsValid = kFALSE;
   }
   
-  if (!IsValid())
+  if (not IsValid())
   {
     AliError(Form("Could not access %s filename. Object is unuseable",filename));
   }
 }
 
 //_____________________________________________________________________________
-AliMUONVDigitStore*
-AliMUONMCDataInterface::SDigitStore(Int_t event)
+Bool_t AliMUONMCDataInterface::GetEvent(Int_t event)
 {
-  /// Return the SDigit store for a given event.
-  /// Return 0 if event not found
-  /// Returned pointer should not be deleted
-  
-  if ( LoadEvent(event) ) return 0x0;
-  
-  fLoader->LoadSDigits();
-  
-  TTree* treeS = fLoader->TreeS();
-  
-  if (!treeS)
+/// Loads all simulated data for the given event.
+
+  if (HitStore(event, 0) == 0x0) return kFALSE;
+  if (SDigitStore(event) == 0x0) return kFALSE;
+  if (DigitStore(event) == 0x0) return kFALSE;
+  if (TriggerStore(event) == 0x0) return kFALSE;
+  if (TrackRefs(event, 0) == 0x0) return kFALSE;
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+Int_t AliMUONMCDataInterface::NumberOfParticles()
+{
+/// Returns the total number of particles in the kinematics tree.
+
+  AliStack* stack = Stack(fCurrentEvent);
+  if ( stack == 0x0 ) return -1;
+  return (Int_t) stack->GetNtrack();
+}
+
+//_____________________________________________________________________________
+TParticle* AliMUONMCDataInterface::Particle(Int_t index)
+{
+/// Returns the index'th particle in the kinematics tree.
+/// @param index  The index number of the particle in the range [0 ... N-1]
+///               where N = NumberOfParticles()
+
+  AliStack* stack = Stack(fCurrentEvent);
+  if ( stack == 0x0 ) return 0x0;
+  return static_cast<TParticle*>( stack->Particle(index) );
+}
+
+//_____________________________________________________________________________
+Int_t AliMUONMCDataInterface::NumberOfTracks()
+{
+/// Returns the number of primary tracks (from primary particles) in the current event.
+
+  return NumberOfTracks(fCurrentEvent);
+}
+
+//_____________________________________________________________________________
+Int_t AliMUONMCDataInterface::NumberOfHits(Int_t track)
+{
+/// Returns the number of hits for a given primary track/particle.
+/// @param track  The track number in the range [0 .. N-1]
+///               where N = NumberOfTracks()
+
+  TIterator* iter = GetIterator(kHitIterator, track);
+  return CountObjects(iter);
+}
+
+//_____________________________________________________________________________
+AliMUONHit* 
+AliMUONMCDataInterface::Hit(Int_t track, Int_t index)
+{
+/// Returns a pointer to the index'th hit object.
+/// @param track  The track number in the range [0 .. N-1]
+///               where N = NumberOfTracks()
+/// @param index  The index number of the hit in the range [0 ... M-1]
+///               where M = NumberOfHits(track)
+
+  TIterator* iter = GetIterator(kHitIterator, track);
+  return static_cast<AliMUONHit*>( FetchObject(iter, index) );
+}
+
+//_____________________________________________________________________________
+Int_t AliMUONMCDataInterface::NumberOfSDigits(Int_t detElemId)
+{
+/// Returns the number of summable digits to be found on a given detector element.
+/// @param detElemId  The detector element ID number to search on.
+
+  TIterator* iter = GetIterator(kSDigitIteratorByDetectorElement, detElemId);
+  return CountObjects(iter);
+}
+
+//_____________________________________________________________________________
+AliMUONVDigit* AliMUONMCDataInterface::SDigit(Int_t detElemId, Int_t index)
+{
+/// Returns the a pointer to the index'th summable digit on the specified detector element.
+/// @param detElemId  The detector element ID number to search on.
+/// @param index  The index number of the digit to fetch in the range [0 .. N-1],
+///   where N = NumberOfDigits(detElemId)
+
+  TIterator* iter = GetIterator(kSDigitIteratorByDetectorElement, detElemId);
+  return static_cast<AliMUONVDigit*>( FetchObject(iter, index) );
+}
+
+//_____________________________________________________________________________
+Int_t AliMUONMCDataInterface::NumberOfSDigits(Int_t chamber, Int_t cathode)
+{
+/// Returns the number of summable digits to be found on a specific chamber and cathode.
+/// @param chamber  The chamber number in the range [0 .. 13].
+/// @param cathode  The cathode in the range [0 .. 1], where 0 is the bending and
+///   1 is the non-bending plane.
+
+  TIterator* iter = GetIterator(kSDigitIteratorByChamberAndCathode, chamber, cathode);
+  return CountObjects(iter);
+}
+
+//_____________________________________________________________________________
+AliMUONVDigit* AliMUONMCDataInterface::SDigit(Int_t chamber, Int_t cathode, Int_t index)
+{
+/// Returns the a pointer to the index'th summable digit on the specified chamber and cathode.
+/// @param chamber  The chamber number in the range [0 .. 13].
+/// @param cathode  The cathode in the range [0 .. 1], where 0 is the bending and
+///   1 is the non-bending plane.
+/// @param index  The index number of the digit to fetch in the range [0 .. N-1],
+///   where N = NumberOfDigits(chamber, cathode)
+
+  TIterator* iter = GetIterator(kSDigitIteratorByChamberAndCathode, chamber, cathode);
+  return static_cast<AliMUONVDigit*>( FetchObject(iter, index) );
+}
+
+//_____________________________________________________________________________
+Int_t AliMUONMCDataInterface::NumberOfDigits(Int_t detElemId)
+{
+/// Returns the number of simulated digits to be found on a given detector element.
+/// @param detElemId  The detector element ID number to search on.
+
+  TIterator* iter = GetIterator(kDigitIteratorByDetectorElement, detElemId);
+  return CountObjects(iter);
+}
+
+//_____________________________________________________________________________
+AliMUONVDigit* AliMUONMCDataInterface::Digit(Int_t detElemId, Int_t index)
+{
+/// Returns the a pointer to the index'th simulated digit on the specified detector element.
+/// @param detElemId  The detector element ID number to search on.
+/// @param index  The index number of the digit to fetch in the range [0 .. N-1],
+///   where N = NumberOfDigits(detElemId)
+
+  TIterator* iter = GetIterator(kDigitIteratorByDetectorElement, detElemId);
+  return static_cast<AliMUONVDigit*>( FetchObject(iter, index) );
+}
+
+//_____________________________________________________________________________
+Int_t AliMUONMCDataInterface::NumberOfDigits(Int_t chamber, Int_t cathode)
+{
+/// Returns the number of simulated digits to be found on a specific chamber and cathode.
+/// @param chamber  The chamber number in the range [0 .. 13].
+/// @param cathode  The cathode in the range [0 .. 1], where 0 is the bending and
+///   1 is the non-bending plane.
+
+  TIterator* iter = GetIterator(kDigitIteratorByChamberAndCathode, chamber, cathode);
+  return CountObjects(iter);
+}
+
+//_____________________________________________________________________________
+AliMUONVDigit* AliMUONMCDataInterface::Digit(Int_t chamber, Int_t cathode, Int_t index)
+{
+/// Returns the a pointer to the index'th simulated digit on the specified chamber and cathode.
+/// @param chamber  The chamber number in the range [0 .. 13].
+/// @param cathode  The cathode in the range [0 .. 1], where 0 is the bending and
+///   1 is the non-bending plane.
+/// @param index  The index number of the digit to fetch in the range [0 .. N-1],
+///   where N = NumberOfDigits(chamber, cathode)
+
+  TIterator* iter = GetIterator(kDigitIteratorByChamberAndCathode, chamber, cathode);
+  return static_cast<AliMUONVDigit*>( FetchObject(iter, index) );
+}
+
+//_____________________________________________________________________________
+Int_t AliMUONMCDataInterface::NumberOfLocalTriggers()
+{
+/// Returns the number of simulated local trigger objects.
+
+  TIterator* iter = GetIterator(kLocalTriggerIterator);
+  return CountObjects(iter);
+}
+
+//_____________________________________________________________________________
+AliMUONLocalTrigger* AliMUONMCDataInterface::LocalTrigger(Int_t index)
+{
+/// Returns a pointer to the index'th simulated local trigger object.
+/// @param index  The index number of the local trigger object to fetch in the range [0 .. N-1],
+///   where N = NumberOfLocalTriggers()
+
+  TIterator* iter = GetIterator(kLocalTriggerIterator);
+  return static_cast<AliMUONLocalTrigger*>( FetchObject(iter, index) );
+}
+
+//_____________________________________________________________________________
+Int_t AliMUONMCDataInterface::NumberOfRegionalTriggers()
+{
+/// Returns the number of simulated regional trigger objects.
+
+  TIterator* iter = GetIterator(kRegionalTriggerIterator);
+  return CountObjects(iter);
+}
+
+//_____________________________________________________________________________
+AliMUONRegionalTrigger* AliMUONMCDataInterface::RegionalTrigger(Int_t index)
+{
+/// Returns a pointer to the index'th simulated regional trigger object.
+/// @param index  The index number of the regional trigger object to fetch in the range [0 .. N-1],
+///   where N = NumberOfRegionalTriggers()
+
+  TIterator* iter = GetIterator(kRegionalTriggerIterator);
+  return static_cast<AliMUONRegionalTrigger*>( FetchObject(iter, index) );
+}
+
+//_____________________________________________________________________________
+AliMUONGlobalTrigger* AliMUONMCDataInterface::GlobalTrigger()
+{
+/// Returns a pointer to the simulated global trigger object for the event.
+
+  AliMUONVTriggerStore* store = TriggerStore(fCurrentEvent);
+  if (store == 0x0) return 0x0;
+  return store->Global();
+}
+
+//_____________________________________________________________________________
+Int_t AliMUONMCDataInterface::NumberOfTrackRefs()
+{
+/// Number of track references in the currently selected event.
+
+  return NumberOfTrackRefs(fCurrentEvent);
+}
+
+//_____________________________________________________________________________
+TClonesArray* AliMUONMCDataInterface::TrackRefs(Int_t track)
+{
+/// Returns the track references for a given track in the current event.
+/// @param track  The track to returns track references for. In the range [0 .. N-1]
+///               where N = NumberOfTrackRefs()
+
+  return TrackRefs(fCurrentEvent, track);
+}
+
+//_____________________________________________________________________________
+void AliMUONMCDataInterface::ResetStores()
+{
+/// Deletes all the store objects that have been created and resets the pointers to 0x0.
+/// The temporary iterator object is automatically reset. See ResetIterator for more details.
+
+  ResetIterator();
+  if (fHitStore != 0x0)
   {
-    AliError("Could not get treeS");
+    delete fHitStore;
+    fHitStore = 0x0;
+  }
+  if (fSDigitStore != 0x0)
+  {
+    delete fSDigitStore;
+    fSDigitStore = 0x0;
+  }
+  if (fDigitStore != 0x0)
+  {
+    delete fDigitStore;
+    fDigitStore = 0x0;
+  }
+  if (fTrackRefs != 0x0)
+  {
+    delete fTrackRefs;
+    fTrackRefs = 0x0;
+  }
+  if (fTriggerStore != 0x0)
+  {
+    delete fTriggerStore;
+    fTriggerStore = 0x0;
+  }
+}
+
+//_____________________________________________________________________________
+TIterator* AliMUONMCDataInterface::GetIterator(IteratorType type, Int_t x, Int_t y)
+{
+/// Creates an appropriate iterator object and returns it.
+/// If the iterator has already been created then that one is returned otherwise
+/// a new object is created.
+/// Depending on the value of 'type' the semantics of parameters x and y can change.
+/// @param type  The type of iterator to create.
+/// @param x  This is the detector element ID if type equals kDigitIteratorByDetectorElement
+///           or kSDigitIteratorByDetectorElement.
+///           If type equals kDigitIteratorByChamberAndCathode or
+///           kSDigitIteratorByChamberAndCathode then this is the chamber number.
+///           For type == kHitIterator the parameter x is the track number.
+///           In all other cases this parameter is ignored.
+/// @param y  If type equals kDigitIteratorByChamberAndCathode or
+///           kSDigitIteratorByChamberAndCathode then this parameter is the cathode
+///           number. In all other cases this parameter is ignored.
+
+  if (type == fCurrentIteratorType and fDataX == x and fDataY == y)
+  	return fIterator;
+  
+  if (fCurrentEvent == -1)
+  {
+    AliError("No event was selected. Try first using GetEvent().");
     return 0x0;
   }
   
-  if (!fSDigitStore)
+  ResetIterator();
+  
+  switch (type)
   {
-    fSDigitStore = AliMUONVDigitStore::Create(*treeS);
-  }
-  
-  if ( fSDigitStore ) 
-  {
-    fSDigitStore->Clear();
-    fSDigitStore->Connect(*treeS);
-    treeS->GetEvent(0);
-  }
-  
-  fLoader->UnloadSDigits();
-  
-  return fSDigitStore;
-}
-
-//_____________________________________________________________________________
-AliStack*
-AliMUONMCDataInterface::Stack(Int_t event)
-{
-  /// Get the Stack (list of generated particles) for one event
-  /// Returned pointer should not be deleted
-  
-  if (!IsValid()) return 0x0;
-
-  if ( LoadEvent(event) ) return 0;
-  
-  fLoader->GetRunLoader()->LoadKinematics();
-  
-  return fLoader->GetRunLoader()->Stack();
-}
-
-//_____________________________________________________________________________
-TClonesArray*
-AliMUONMCDataInterface::TrackRefs(Int_t event, Int_t track)
-{
-  /// Get the track references for a given (generated) track of one event
-  /// Returned pointer should not be deleted
-  
-  if ( !IsValid() ) return 0x0;
-
-  if ( LoadEvent(event) ) return 0;
-  
-  fLoader->GetRunLoader()->LoadTrackRefs();
-  
-  TTree* treeTR = fLoader->GetRunLoader()->TreeTR();
-  
-  if ( fTrackRefs ) fTrackRefs->Clear("C");
-  
-  if (treeTR)
-  {
-    if ( treeTR->GetEvent(track) > 0 ) 
+  case kHitIterator:
     {
-      TBranch* branch = treeTR->GetBranch("MUON");
-      branch->SetAddress(&fTrackRefs);
-      branch->GetEvent(track);
+      Int_t track = x;
+      AliMUONVHitStore* store = HitStore(fCurrentEvent, track);
+      if (store == 0x0) return 0x0;
+      fIterator = store->CreateIterator();
+      if (fIterator == 0x0) return 0x0;
+      fCurrentIteratorType = kHitIterator;
+      return fIterator;
     }
+    
+  case kSDigitIteratorByDetectorElement:
+    {
+      Int_t detElem = x;
+      AliMUONVDigitStore* store = SDigitStore(fCurrentEvent);
+      if (store == 0x0) return 0x0;
+      AliMpSegmentation::ReadData(kFALSE); // kFALSE so that we do not get warning message.
+      fIterator = store->CreateIterator(detElem, detElem, 2);
+      if (fIterator == 0x0) return 0x0;
+      fCurrentIteratorType = kSDigitIteratorByDetectorElement;
+      fDataX = detElem;
+      return fIterator;
+    }
+    
+  case kSDigitIteratorByChamberAndCathode:
+    {
+      Int_t chamber = x;
+      Int_t cathode = y;
+      if (chamber < 0 or AliMpConstants::NofChambers() <= chamber)
+      {
+        AliError(Form(
+          "Must have give a chamber value in the range [0..%d], but got a value of: %d",
+          AliMpConstants::NofChambers() - 1,
+          chamber
+        ));
+        return 0x0;
+      }
+      if (cathode < 0 or 1 < cathode)
+      {
+        AliError(Form("Must have give a cathode value in the range [0..1], but got a value of: %d", cathode));
+        return 0x0;
+      }
+      
+      AliMUONVDigitStore* store = SDigitStore(fCurrentEvent);
+      if (store == 0x0) return 0x0;
+      AliMpSegmentation::ReadData(kFALSE); // kFALSE so that we do not get warning message.
+      AliMpIntPair pair = AliMpDEManager::GetDetElemIdRange(chamber);
+      fIterator = store->CreateIterator(pair.GetFirst(), pair.GetSecond(), cathode);
+      if (fIterator == 0x0) return 0x0;
+      fCurrentIteratorType = kSDigitIteratorByChamberAndCathode;
+      fDataX = chamber;
+      fDataY = cathode;
+      return fIterator;
+    }
+    
+  case kDigitIteratorByDetectorElement:
+    {
+      Int_t detElem = x;
+      AliMUONVDigitStore* store = DigitStore(fCurrentEvent);
+      if (store == 0x0) return 0x0;
+      AliMpSegmentation::ReadData(kFALSE); // kFALSE so that we do not get warning message.
+      fIterator = store->CreateIterator(detElem, detElem, 2);
+      if (fIterator == 0x0) return 0x0;
+      fCurrentIteratorType = kDigitIteratorByDetectorElement;
+      fDataX = detElem;
+      return fIterator;
+    }
+    
+  case kDigitIteratorByChamberAndCathode:
+    {
+      Int_t chamber = x;
+      Int_t cathode = y;
+      if (chamber < 0 or AliMpConstants::NofChambers() <= chamber)
+      {
+        AliError(Form(
+          "Must have give a chamber value in the range [0..%d], but got a value of: %d",
+          AliMpConstants::NofChambers() - 1,
+          chamber
+        ));
+        return 0x0;
+      }
+      if (cathode < 0 or 1 < cathode)
+      {
+        AliError(Form("Must have give a cathode value in the range [0..1], but got a value of: %d", cathode));
+        return 0x0;
+      }
+      
+      AliMUONVDigitStore* store = DigitStore(fCurrentEvent);
+      if (store == 0x0) return 0x0;
+      AliMpSegmentation::ReadData(kFALSE); // kFALSE so that we do not get warning message.
+      AliMpIntPair pair = AliMpDEManager::GetDetElemIdRange(chamber);
+      fIterator = store->CreateIterator(pair.GetFirst(), pair.GetSecond(), cathode);
+      if (fIterator == 0x0) return 0x0;
+      fCurrentIteratorType = kDigitIteratorByChamberAndCathode;
+      fDataX = chamber;
+      fDataY = cathode;
+      return fIterator;
+    }
+    
+  case kLocalTriggerIterator:
+    {
+      AliMUONVTriggerStore* store = TriggerStore(fCurrentEvent);
+      if (store == 0x0) return 0x0;
+      fIterator = store->CreateLocalIterator();
+      if (fIterator == 0x0) return 0x0;
+      fCurrentIteratorType = kLocalTriggerIterator;
+      return fIterator;
+    }
+    
+  case kRegionalTriggerIterator:
+    {
+      AliMUONVTriggerStore* store = TriggerStore(fCurrentEvent);
+      if (store == 0x0) return 0x0;
+      fIterator = store->CreateRegionalIterator();
+      if (fIterator == 0x0) return 0x0;
+      fCurrentIteratorType = kRegionalTriggerIterator;
+      return fIterator;
+    }
+    
+  default:
+    return 0x0;
   }
-  else
-  {
-    AliError("Could not get TreeTR");
-  }
-  
-  fLoader->GetRunLoader()->UnloadTrackRefs();
-  
-  return fTrackRefs;
 }
 
 //_____________________________________________________________________________
-AliMUONVTriggerStore*
-AliMUONMCDataInterface::TriggerStore(Int_t event)
+void AliMUONMCDataInterface::ResetIterator()
 {
-  /// Return the triggerStore for a given event.
-  /// Return 0x0 if event not found.
-  /// Returned pointer should not be deleted.
-  
-  if ( LoadEvent(event) ) return 0x0;
-  
-  fLoader->LoadDigits();
-  
-  TTree* treeD = fLoader->TreeD();
-  
-  if ( !treeD ) 
+/// The temporary iterator object is deleted if it exists and the pointer reset to 0x0.
+/// The iterator type and temporary data indicating the state of the iterator are
+/// also reset.
+
+  if (fIterator != 0x0) delete fIterator;
+  fCurrentIteratorType = kNoIterator;
+  fCurrentIndex = fDataX = fDataY = -1;
+  fIterator = 0x0;
+}
+
+//_____________________________________________________________________________
+Int_t AliMUONMCDataInterface::CountObjects(TIterator* iter)
+{
+/// Counts the number of objects in the iterator and resets it.
+/// @return The number of objects in 'iter'.
+
+  if (iter == 0x0) return -1;
+  Int_t count = 0;
+  iter->Reset();
+  while ( iter->Next() != 0x0 ) count++;
+  iter->Reset();
+  fCurrentIndex = -1;
+  return count;
+}
+
+//_____________________________________________________________________________
+TObject* AliMUONMCDataInterface::FetchObject(TIterator* iter, Int_t index)
+{
+/// Fetches the index'th object from the iterator counting the first object
+/// returned by iterator after it is reset as index == 0. The next object
+/// has index == 1 and so on where the last object returned by the iterator
+/// has index == N-1 where N = CountObjects(iter)
+/// This method will only reset the iterator if index is smaller than
+/// fCurrentIndex, which is used to track the iteration progress and is
+/// updated when a new object if returned by this method.
+/// @param iter  The iterator to fetch an object from.
+/// @param index The index number of the object to fetch in the range [0 .. N-1]
+///        where N = CountObjects(iter)
+
+  if (index < 0)
   {
-    AliError("Could not get treeD");
+    AliError(Form("Index is out of bounds. Got a value of %d.", index));
     return 0x0;
   }
-  
-  if (!fTriggerStore)
+
+  if (iter == 0x0) return 0x0;
+  if (index <= fCurrentIndex)
   {
-    fTriggerStore = AliMUONVTriggerStore::Create(*treeD);
+    iter->Reset();
+    fCurrentIndex = -1;
   }
   
-  if ( fTriggerStore ) 
+  TObject* object = 0x0;
+  while (fCurrentIndex < index)
   {
-    fTriggerStore->Clear();
-    fTriggerStore->Connect(*treeD);
-    treeD->GetEvent(0);
+    object = iter->Next();
+    if (object == 0x0)
+    {
+      AliError(Form("Index is out of bounds. Got a value of %d.", index));
+      iter->Reset();
+      fCurrentIndex = -1;
+      return 0x0;
+    }
+    fCurrentIndex++;
   }
-  
-  fLoader->UnloadDigits();
-  
-  return fTriggerStore;
+  return object;
 }

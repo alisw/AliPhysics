@@ -16,13 +16,14 @@
 /* $Id$ */
 
 #include "AliMUONDataInterface.h"
-#include "AliMUONDigit.h"
 #include "AliMUONGeometryTransformer.h"
-#include "AliMUONGlobalTrigger.h"
-#include "AliMUONHit.h"
-#include "AliMUONLocalTrigger.h"
+#include "AliMUONVDigit.h"
 #include "AliMUONRawCluster.h"
 #include "AliMUONTrack.h"
+#include "AliMUONLocalTrigger.h"
+#include "AliMUONRegionalTrigger.h"
+#include "AliMUONGlobalTrigger.h"
+#include "AliMUONTriggerTrack.h"
 #include "AliMUONTriggerCircuit.h"
 #include "AliMUONVClusterStore.h"
 #include "AliMUONVDigitStore.h"
@@ -31,8 +32,12 @@
 #include "AliMUONVTriggerTrackStore.h"
 #include "AliMpCDB.h"
 
+#include "AliMpIntPair.h"
+#include "AliMpDEManager.h"
+#include "AliMpConstants.h"
+#include "AliMpSegmentation.h"
+
 #include "AliLoader.h"
-#include "AliLog.h"
 #include "AliLog.h"
 #include "AliRunLoader.h"
 
@@ -43,6 +48,9 @@
 #include <TList.h>
 #include <TNtuple.h>
 #include <TSystem.h>
+#include <TIterator.h>
+#include <cstdlib>
+#include <cassert>
 
 //-----------------------------------------------------------------------------
 /// \class AliMUONDataInterface
@@ -57,21 +65,13 @@
 /// This interface in not necessarily the fastest way to fetch the data but
 /// it is the easiest.
 ///
-/// \author Laurent Aphecetche, Subatech
+/// \author Laurent Aphecetche, Subatech & Artur Szostak <artursz@iafrica.com> (University of Cape Town)
 //-----------------------------------------------------------------------------
 
 /// \cond CLASSIMP
 ClassImp(AliMUONDataInterface)
 /// \endcond
 
-//AliLoader* fLoader; //!< Tree accessor
-//AliMUONVDigitStore* fDigitStore; //!< current digit store (owner)
-//AliMUONVTriggerStore* fTriggerStore; //!< current trigger store (owner)
-//AliMUONVClusterStore* fClusterStore; //!< current cluster store (owner)
-//AliMUONVTrackStore* fTrackStore; //!< current track store (owner)
-//AliMUONVTriggerTrackStore* fTriggerTrackStore; //!< current trigger track store (owner)
-//Int_t fCurrentEvent; //!< Current event we've read in
-//Bool_t fIsValid; //!< whether we were initialized properly or not
 
 Int_t AliMUONDataInterface::fgInstanceCounter(0);
 
@@ -85,7 +85,12 @@ fClusterStore(0x0),
 fTrackStore(0x0),
 fTriggerTrackStore(0x0),
 fCurrentEvent(-1),
-fIsValid(kFALSE)
+fIsValid(kFALSE),
+fCurrentIteratorType(kNoIterator),
+fCurrentIndex(-1),
+fDataX(-1),
+fDataY(-1),
+fIterator(0x0)
 {
   /// ctor
   /// @param filename should be the full path to a valid galice.root file
@@ -99,48 +104,12 @@ fIsValid(kFALSE)
 AliMUONDataInterface::~AliMUONDataInterface()
 {
   /// dtor
-  if ( fLoader ) 
+  ResetStores();
+  if ( fLoader != 0x0 ) 
   {
     delete fLoader->GetRunLoader();
   }
   --fgInstanceCounter;  
-}
-
-//______________________________________________________________________________
-AliMUONVClusterStore*
-AliMUONDataInterface::ClusterStore(Int_t event)
-{
-  /// Return clusterStore for a given event.
-  /// Return 0x0 if event not found.
-  /// Returned pointer should not be deleted
-  
-  if ( LoadEvent(event) ) return 0x0;
-  
-  fLoader->LoadRecPoints();
-  
-  TTree* treeR = fLoader->TreeR();
-  
-  if (!treeR)
-  {
-    AliError("Could not get treeR");
-    return 0x0;
-  }
-  
-  if (!fClusterStore)
-  {
-    fClusterStore = AliMUONVClusterStore::Create(*treeR);
-  }
-  
-  if ( fClusterStore ) 
-  {
-    fClusterStore->Clear();
-    fClusterStore->Connect(*treeR);
-    treeR->GetEvent(0);
-  }
-  
-  fLoader->UnloadRecPoints();
-  
-  return fClusterStore;
 }
 
 //______________________________________________________________________________
@@ -151,24 +120,23 @@ AliMUONDataInterface::DigitStore(Int_t event)
   /// Return 0x0 if event not found.
   /// Returned pointer should not be deleted
   
-  if ( LoadEvent(event) ) return 0x0;
+  if (not IsValid()) return 0x0;
+  if (event == fCurrentEvent and fDigitStore != 0x0) return fDigitStore;
+  
+  ResetStores();
+  if (not LoadEvent(event)) return 0x0;
   
   fLoader->LoadDigits();
   
   TTree* treeD = fLoader->TreeD();
-  
-  if (!treeD)
+  if (treeD == 0x0)
   {
     AliError("Could not get treeD");
     return 0x0;
   }
   
-  if (!fDigitStore)
-  {
-    fDigitStore = AliMUONVDigitStore::Create(*treeD);
-  }
-  
-  if ( fDigitStore ) 
+  fDigitStore = AliMUONVDigitStore::Create(*treeD);
+  if ( fDigitStore != 0x0 ) 
   {
     fDigitStore->Clear();
     fDigitStore->Connect(*treeD);
@@ -181,12 +149,177 @@ AliMUONDataInterface::DigitStore(Int_t event)
 }
 
 //______________________________________________________________________________
+AliMUONVClusterStore*
+AliMUONDataInterface::ClusterStore(Int_t event)
+{
+  /// Return clusterStore for a given event.
+  /// Return 0x0 if event not found.
+  /// Returned pointer should not be deleted
+  
+  if (not IsValid()) return 0x0;
+  if (event == fCurrentEvent and fClusterStore != 0x0) return fClusterStore;
+  
+  ResetStores();
+  if (not LoadEvent(event)) return 0x0;
+  
+  fLoader->LoadRecPoints();
+  
+  TTree* treeR = fLoader->TreeR();
+  if (treeR == 0x0)
+  {
+    AliError("Could not get treeR");
+    return 0x0;
+  }
+  
+  fClusterStore = AliMUONVClusterStore::Create(*treeR);
+  if ( fClusterStore != 0x0 ) 
+  {
+    fClusterStore->Clear();
+    fClusterStore->Connect(*treeR);
+    treeR->GetEvent(0);
+  }
+  
+  fLoader->UnloadRecPoints();
+  
+  return fClusterStore;
+}
+
+//______________________________________________________________________________
+AliMUONVTrackStore* 
+AliMUONDataInterface::TrackStore(Int_t event)
+{
+  /// Return the trackStore for a given event.
+  /// Return 0x0 if event not found.
+  /// Returned pointer should not be deleted
+  
+  if (not IsValid()) return 0x0;
+  if (event == fCurrentEvent and fTrackStore != 0x0) return fTrackStore;
+  
+  ResetStores();
+  if (not LoadEvent(event)) return 0x0;
+  
+  fLoader->LoadTracks();
+  
+  TTree* treeT = fLoader->TreeT();
+  if (treeT == 0x0)
+  {
+    AliError("Could not get treeT");
+    return 0x0;
+  }
+  
+  fTrackStore = AliMUONVTrackStore::Create(*treeT);
+  if ( fTrackStore != 0x0 )
+  {
+    fTrackStore->Clear();
+    fTrackStore->Connect(*treeT);
+    treeT->GetEvent(0);
+  }
+  
+  fLoader->UnloadTracks();
+  
+  return fTrackStore;
+}
+
+//______________________________________________________________________________
+AliMUONVTriggerTrackStore* 
+AliMUONDataInterface::TriggerTrackStore(Int_t event)
+{
+  /// Return the triggerTrackStore for a given event.
+  /// Return 0x0 if event not found.
+  /// Returned pointer should not be deleted
+  
+  if (not IsValid()) return 0x0;
+  if (event == fCurrentEvent and fTriggerTrackStore != 0x0) return fTriggerTrackStore;
+  
+  ResetStores();
+  if (not LoadEvent(event)) return 0x0;
+  
+  fLoader->LoadTracks();
+  
+  TTree* treeT = fLoader->TreeT();
+  if (treeT == 0x0)
+  {
+    AliError("Could not get treeT");
+    return 0x0;
+  }
+  
+  fTriggerTrackStore = AliMUONVTriggerTrackStore::Create(*treeT);
+  if ( fTriggerTrackStore != 0x0 ) 
+  {
+    fTriggerTrackStore->Clear();
+    fTriggerTrackStore->Connect(*treeT);
+    treeT->GetEvent(0);
+  }
+  
+  fLoader->UnloadTracks();
+  
+  return fTriggerTrackStore;  
+}
+
+//_____________________________________________________________________________
+AliMUONVTriggerStore*
+AliMUONDataInterface::TriggerStore(Int_t event, const char* treeLetter)
+{
+  /// Return the triggerStore for a given event.
+  /// Return 0x0 if event not found.
+  /// Returned pointer should not be deleted
+  /// treeLetter can be R or D to tell from which tree to read the information
+  
+  if (not IsValid()) return 0x0;
+  if (event == fCurrentEvent and fTriggerStore != 0x0) return fTriggerStore;
+  
+  ResetStores();
+  if (not LoadEvent(event)) return 0x0;
+  
+  TTree* tree(0x0);
+  
+  TString stree(treeLetter);
+  stree.ToUpper();
+  
+  if ( stree == "D" )
+  {
+    fLoader->LoadDigits();    
+    tree = fLoader->TreeD();
+  }
+  else if ( stree == "R" )
+  {
+    fLoader->LoadRecPoints();
+    tree = fLoader->TreeR();
+  }
+  
+  if ( tree == 0x0 ) 
+  {
+    AliError(Form("Could not get tree%s",treeLetter));
+    return 0x0;
+  }
+  
+  fTriggerStore = AliMUONVTriggerStore::Create(*tree);
+  if ( fTriggerStore != 0x0 ) 
+  {
+    fTriggerStore->Clear();
+    fTriggerStore->Connect(*tree);
+    tree->GetEvent(0);
+  }
+  
+  if ( stree == "D" )
+  {
+    fLoader->UnloadDigits();    
+  }
+  else if ( stree == "R" )
+  {
+    fLoader->UnloadRecPoints();
+  }
+  
+  return fTriggerStore;
+}
+
+//______________________________________________________________________________
 void
 AliMUONDataInterface::DumpDigits(Int_t event, Bool_t sorted)
 {
   /// Dump the digits for a given event, sorted if so required
   DigitStore(event);
-  if ( fDigitStore ) 
+  if ( fDigitStore != 0x0 ) 
   {
     if ( sorted ) 
     {
@@ -205,7 +338,7 @@ AliMUONDataInterface::DumpRecPoints(Int_t event, Bool_t sorted)
 {
   /// Dump the recpoints for a given event, sorted if so required
   ClusterStore(event);
-  if ( fClusterStore ) 
+  if ( fClusterStore != 0x0 ) 
   {
     if ( sorted ) 
     {
@@ -247,7 +380,7 @@ AliMUONDataInterface::DumpTracks(Int_t event, Bool_t sorted)
   
   TrackStore(event);
   
-  if ( fTrackStore ) 
+  if ( fTrackStore != 0x0 ) 
   {
     if ( sorted ) 
     {
@@ -268,7 +401,7 @@ AliMUONDataInterface::DumpTriggerTracks(Int_t event, Bool_t sorted)
 
   TriggerTrackStore(event);
   
-  if ( fTriggerTrackStore ) 
+  if ( fTriggerTrackStore != 0x0 ) 
   {
     if ( sorted ) 
     {
@@ -297,7 +430,7 @@ AliMUONDataInterface::DumpTrigger(Int_t event, const char* treeLetter)
   {
     TriggerStore(event,treeLetter);
   
-    if ( fTriggerStore ) 
+    if ( fTriggerStore != 0x0 ) 
     {
       fTriggerStore->Print();
     }
@@ -448,33 +581,23 @@ AliMUONDataInterface::NtupleTrigger(const char* treeLetter)
   myFile.Close();
 }
 
-//______________________________________________________________________________
-Bool_t
-AliMUONDataInterface::IsValid() const
-{
-  /// Whether we were properly initialized from a valid galice.root file
-  return fIsValid;
-}
-
 //_____________________________________________________________________________
-Int_t
+Bool_t
 AliMUONDataInterface::LoadEvent(Int_t event)
 {
   /// Load event if different from the current one.
-  if ( event != fCurrentEvent ) 
+  /// Returns kFALSE on error and kTRUE if the event was loaded.
+  
+  assert( IsValid() );
+  
+  AliDebug(1,Form("Loading event %d using runLoader %p",event,fLoader->GetRunLoader()));
+  if (fLoader->GetRunLoader()->GetEvent(event) == 0)
   {
     fCurrentEvent = event;
-    AliDebug(1,Form("Loading event %d using runLoader %p",event,fLoader->GetRunLoader()));
-    if ( event < NumberOfEvents() )
-    {
-      return fLoader->GetRunLoader()->GetEvent(event);
-    }
-    else
-    {
-      return 1;
-    }
+    return kTRUE;
   }
-  return 0;
+  else
+    return kFALSE;
 }
 
 //______________________________________________________________________________
@@ -482,7 +605,7 @@ Int_t
 AliMUONDataInterface::NumberOfEvents() const
 {
   /// Number of events in the current galice.root file we're attached to 
-  if (!IsValid()) return 0;
+  if (not IsValid()) return -1;
   return fLoader->GetRunLoader()->GetNumberOfEvents();
 }
 
@@ -492,20 +615,11 @@ AliMUONDataInterface::Open(const char* filename)
 {
   /// Connect to a given galice.root file
   
-  delete fDigitStore;
-  fDigitStore=0x0;
-  delete fTriggerStore;
-  fTriggerStore=0x0;
-  delete fClusterStore;
-  fClusterStore=0x0;
-  delete fTrackStore;
-  fTrackStore=0x0;
-  delete fTriggerTrackStore;
-  fTriggerTrackStore=0x0;
+  ResetStores();
   
   fCurrentEvent=-1;
   
-  if ( fLoader ) 
+  if ( fLoader != 0x0 ) 
   {
     delete fLoader->GetRunLoader();
   }
@@ -516,496 +630,434 @@ AliMUONDataInterface::Open(const char* filename)
   
   TString foldername(Form("%s-%d",ClassName(),fgInstanceCounter));
   
-  while (AliRunLoader::GetRunLoader(foldername)) 
+  while (AliRunLoader::GetRunLoader(foldername) != 0x0) 
   {
     delete AliRunLoader::GetRunLoader(foldername);
   }
   
   AliRunLoader* runLoader = AliRunLoader::Open(filename,foldername);
-  if (!runLoader) 
+  if (runLoader == 0x0) 
   {
     AliError(Form("Cannot open file %s",filename));    
     fIsValid = kFALSE;
   }
   fLoader = runLoader->GetDetectorLoader("MUON");
-  if (!fLoader) 
+  if (fLoader == 0x0) 
   {
     AliError("Cannot get AliMUONLoader");
     fIsValid = kFALSE;
   }
   
-  if (!IsValid())
+  if (not IsValid())
   {
     AliError(Form("Could not access %s filename. Object is unuseable",filename));
   }
 }
 
-//______________________________________________________________________________
-AliMUONVTrackStore* 
-AliMUONDataInterface::TrackStore(Int_t event)
+//_____________________________________________________________________________
+Bool_t AliMUONDataInterface::GetEvent(Int_t event)
 {
-  /// Return the trackStore for a given event.
-  /// Return 0x0 if event not found.
-  /// Returned pointer should not be deleted
-  
-  if ( LoadEvent(event) ) return 0x0;
-  
-  fLoader->LoadTracks();
-  
-  TTree* treeT = fLoader->TreeT();
-  
-  if (!treeT)
-  {
-    AliError("Could not get treeT");
-    return 0x0;
-  }
-  
-  if (!fTrackStore)
-  {
-    fTrackStore = AliMUONVTrackStore::Create(*treeT);
-  }
-  
-  if ( fTrackStore ) 
-  {
-    fTrackStore->Clear();
-    fTrackStore->Connect(*treeT);
-    treeT->GetEvent(0);
-  }
-  
-  fLoader->UnloadTracks();
-  
-  return fTrackStore;
-}
+/// Loads all reconstructed data for the given event.
 
-//______________________________________________________________________________
-AliMUONVTriggerTrackStore* 
-AliMUONDataInterface::TriggerTrackStore(Int_t event)
-{
-  /// Return the triggerTrackStore for a given event.
-  /// Return 0x0 if event not found.
-  /// Returned pointer should not be deleted
-  
-  if ( LoadEvent(event) ) return 0x0;
-  
-  fLoader->LoadTracks();
-  
-  TTree* treeT = fLoader->TreeT();
-  
-  if (!treeT)
-  {
-    AliError("Could not get treeT");
-    return 0x0;
-  }
-  
-  if (!fTriggerTrackStore)
-  {
-    fTriggerTrackStore = AliMUONVTriggerTrackStore::Create(*treeT);
-  }
-  
-  if ( fTriggerTrackStore ) 
-  {
-    fTriggerTrackStore->Clear();
-    fTriggerTrackStore->Connect(*treeT);
-    treeT->GetEvent(0);
-  }
-  
-  fLoader->UnloadTracks();
-  
-  return fTriggerTrackStore;  
+  if (DigitStore(event) == 0x0) return kFALSE;
+  if (ClusterStore(event) == 0x0) return kFALSE;
+  if (TrackStore(event) == 0x0) return kFALSE;
+  if (TriggerStore(event) == 0x0) return kFALSE;
+  if (TriggerTrackStore(event) == 0x0) return kFALSE;
+  return kTRUE;
 }
 
 //_____________________________________________________________________________
-AliMUONVTriggerStore*
-AliMUONDataInterface::TriggerStore(Int_t event, const char* treeLetter)
+Int_t AliMUONDataInterface::NumberOfDigits(Int_t detElemId)
 {
-  /// Return the triggerStore for a given event.
-  /// Return 0x0 if event not found.
-  /// Returned pointer should not be deleted
-  /// treeLetter can be R or D to tell from which tree to read the information
-  
-  if ( LoadEvent(event) ) return 0x0;
-  
-  TTree* tree(0x0);
-  
-  TString stree(treeLetter);
-  stree.ToUpper();
-  
-  if ( stree == "D" )
+/// Returns the number of digits to be found on a given detector element.
+/// @param detElemId  The detector element ID number to search on.
+
+  TIterator* iter = GetIterator(kDigitIteratorByDetectorElement, detElemId);
+  return CountObjects(iter);
+}
+
+//_____________________________________________________________________________
+AliMUONVDigit* AliMUONDataInterface::Digit(Int_t detElemId, Int_t index)
+{
+/// Returns the a pointer to the index'th digit on the specified detector element.
+/// @param detElemId  The detector element ID number to search on.
+/// @param index  The index number of the digit to fetch in the range [0 .. N-1],
+///   where N = NumberOfDigits(detElemId)
+
+  TIterator* iter = GetIterator(kDigitIteratorByDetectorElement, detElemId);
+  return static_cast<AliMUONVDigit*>( FetchObject(iter, index) );
+}
+
+//_____________________________________________________________________________
+Int_t AliMUONDataInterface::NumberOfDigits(Int_t chamber, Int_t cathode)
+{
+/// Returns the number of digits to be found on a specific chamber and cathode.
+/// @param chamber  The chamber number in the range [0 .. 13].
+/// @param cathode  The cathode in the range [0 .. 1], where 0 is the bending and
+///   1 is the non-bending plane.
+
+  TIterator* iter = GetIterator(kDigitIteratorByChamberAndCathode, chamber, cathode);
+  return CountObjects(iter);
+}
+
+//_____________________________________________________________________________
+AliMUONVDigit* AliMUONDataInterface::Digit(Int_t chamber, Int_t cathode, Int_t index)
+{
+/// Returns the a pointer to the index'th digit on the specified chamber and cathode.
+/// @param chamber  The chamber number in the range [0 .. 13].
+/// @param cathode  The cathode in the range [0 .. 1], where 0 is the bending and
+///   1 is the non-bending plane.
+/// @param index  The index number of the digit to fetch in the range [0 .. N-1],
+///   where N = NumberOfDigits(chamber, cathode)
+
+  TIterator* iter = GetIterator(kDigitIteratorByChamberAndCathode, chamber, cathode);
+  return static_cast<AliMUONVDigit*>( FetchObject(iter, index) );
+}
+
+//_____________________________________________________________________________
+Int_t AliMUONDataInterface::NumberOfRawClusters(Int_t chamber)
+{
+/// Returns the number of reconstructed raw clusters on the specified chamber.
+/// @param chamber  The chamber number in the range [0 .. 13].
+
+  TIterator* iter = GetIterator(kRawClusterIterator, chamber);
+  return CountObjects(iter);
+}
+
+//_____________________________________________________________________________
+AliMUONRawCluster* AliMUONDataInterface::RawCluster(Int_t chamber, Int_t index)
+{
+/// Returns a pointer to the index'th raw cluster on the specified chamber.
+/// @param chamber  The chamber number in the range [0 .. 13].
+/// @param index  The index number of the raw cluster to fetch in the range [0 .. N-1],
+///   where N = NumberOfRawClusters(chamber)
+
+  TIterator* iter = GetIterator(kRawClusterIterator, chamber);
+  return static_cast<AliMUONRawCluster*>( FetchObject(iter, index) );
+}
+
+//_____________________________________________________________________________
+Int_t AliMUONDataInterface::NumberOfTracks()
+{
+/// Returns the number of reconstructed tracks.
+
+  TIterator* iter = GetIterator(kTrackIterator);
+  return CountObjects(iter);
+}
+
+//_____________________________________________________________________________
+AliMUONTrack* AliMUONDataInterface::Track(Int_t index)
+{
+/// Returns a pointer to the index'th reconstructed track.
+/// @param index  The index number of the track to fetch in the range [0 .. N-1],
+///   where N = NumberOfTracks()
+
+  TIterator* iter = GetIterator(kTrackIterator);
+  return static_cast<AliMUONTrack*>( FetchObject(iter, index) );
+}
+
+//_____________________________________________________________________________
+Int_t AliMUONDataInterface::NumberOfLocalTriggers()
+{
+/// Returns the number of reconstructed local trigger objects.
+
+  TIterator* iter = GetIterator(kLocalTriggerIterator);
+  return CountObjects(iter);
+}
+
+//_____________________________________________________________________________
+AliMUONLocalTrigger* AliMUONDataInterface::LocalTrigger(Int_t index)
+{
+/// Returns a pointer to the index'th local trigger object.
+/// @param index  The index number of the local trigger object to fetch in the range [0 .. N-1],
+///   where N = NumberOfLocalTriggers()
+
+  TIterator* iter = GetIterator(kLocalTriggerIterator);
+  return static_cast<AliMUONLocalTrigger*>( FetchObject(iter, index) );
+}
+
+//_____________________________________________________________________________
+Int_t AliMUONDataInterface::NumberOfRegionalTriggers()
+{
+/// Returns the number of regional trigger objects reconstructed.
+
+  TIterator* iter = GetIterator(kRegionalTriggerIterator);
+  return CountObjects(iter);
+}
+
+//_____________________________________________________________________________
+AliMUONRegionalTrigger* AliMUONDataInterface::RegionalTrigger(Int_t index)
+{
+/// Returns a pointer to the index'th regional trigger object.
+/// @param index  The index number of the regional trigger object to fetch in the range [0 .. N-1],
+///   where N = NumberOfRegionalTriggers()
+
+  TIterator* iter = GetIterator(kRegionalTriggerIterator);
+  return static_cast<AliMUONRegionalTrigger*>( FetchObject(iter, index) );
+}
+
+//_____________________________________________________________________________
+AliMUONGlobalTrigger* AliMUONDataInterface::GlobalTrigger()
+{
+/// Returns a pointer to the reconstructed global trigger object for the event.
+
+  AliMUONVTriggerStore* store = TriggerStore(fCurrentEvent);
+  if (store == 0x0) return 0x0;
+  return store->Global();
+}
+
+//_____________________________________________________________________________
+Int_t AliMUONDataInterface::NumberOfTriggerTracks()
+{
+/// Returns the number of reconstructed tracks in the trigger chambers.
+
+  TIterator* iter = GetIterator(kTriggerTrackIterator);
+  return CountObjects(iter);
+}
+
+//_____________________________________________________________________________
+AliMUONTriggerTrack* AliMUONDataInterface::TriggerTrack(Int_t index)
+{
+/// Returns a pointer to the index'th reconstructed trigger track object.
+/// @param index  The index number of the trigger track to fetch in the range [0 .. N-1],
+///   where N = NumberOfTriggerTracks()
+
+  TIterator* iter = GetIterator(kTriggerTrackIterator);
+  return static_cast<AliMUONTriggerTrack*>( FetchObject(iter, index) );
+}
+
+//_____________________________________________________________________________
+void AliMUONDataInterface::ResetStores()
+{
+/// Deletes all the store objects that have been created and resets the pointers to 0x0.
+/// The temporary iterator object is automatically reset. See ResetIterator for more details.
+
+  ResetIterator();
+  if (fDigitStore != 0x0)
   {
-    fLoader->LoadDigits();    
-    tree = fLoader->TreeD();
+    delete fDigitStore;
+    fDigitStore = 0x0;
   }
-  else if ( stree == "R" )
+  if (fTriggerStore != 0x0)
   {
-    fLoader->LoadRecPoints();
-    tree = fLoader->TreeR();
+    delete fTriggerStore;
+    fTriggerStore = 0x0;
   }
-  
-  if ( !tree ) 
+  if (fClusterStore != 0x0)
   {
-    AliError(Form("Could not get tree%s",treeLetter));
+    delete fClusterStore;
+    fClusterStore = 0x0;
+  }
+  if (fTrackStore != 0x0)
+  {
+    delete fTrackStore;
+    fTrackStore = 0x0;
+  }
+  if (fTriggerTrackStore != 0x0)
+  {
+    delete fTriggerTrackStore;
+    fTriggerTrackStore = 0x0;
+  }
+}
+
+//_____________________________________________________________________________
+TIterator* AliMUONDataInterface::GetIterator(IteratorType type, Int_t x, Int_t y)
+{
+/// Creates an appropriate iterator object and returns it.
+/// If the iterator has already been created then that one is returned otherwise
+/// a new object is created.
+/// Depending on the value of 'type' the semantics of parameters x and y can change.
+/// @param type  The type of iterator to create.
+/// @param x  This is the detector element ID if type == kDigitIteratorByDetectorElement
+///           If type equals kDigitIteratorByChamberAndCathode or kRawClusterIterator
+///           then this is the chamber number. In all other cases this parameter is
+///           ignored.
+/// @param y  If type == kDigitIteratorByChamberAndCathode then this parameter is the
+///           cathode number. In all other cases this parameter is
+///           ignored.
+
+  if (type == fCurrentIteratorType and fDataX == x and fDataY == y)
+  	return fIterator;
+  
+  if (fCurrentEvent == -1)
+  {
+    AliError("No event was selected. Try first using GetEvent().");
     return 0x0;
   }
   
-  if (!fTriggerStore)
+  ResetIterator();
+  
+  switch (type)
   {
-    fTriggerStore = AliMUONVTriggerStore::Create(*tree);
+  case kDigitIteratorByDetectorElement:
+    {
+      Int_t detElem = x;
+      AliMUONVDigitStore* store = DigitStore(fCurrentEvent);
+      if (store == 0x0) return 0x0;
+      AliMpSegmentation::ReadData(kFALSE); // kFALSE so that we do not get warning message.
+      fIterator = store->CreateIterator(detElem, detElem, 2);
+      if (fIterator == 0x0) return 0x0;
+      fCurrentIteratorType = kDigitIteratorByDetectorElement;
+      fDataX = detElem;
+      return fIterator;
+    }
+    
+  case kDigitIteratorByChamberAndCathode:
+    {
+      Int_t chamber = x;
+      Int_t cathode = y;
+      if (chamber < 0 or AliMpConstants::NofChambers() <= chamber)
+      {
+        AliError(Form(
+          "Must have give a chamber value in the range [0..%d], but got a value of: %d",
+          AliMpConstants::NofChambers() - 1,
+          chamber
+        ));
+        return 0x0;
+      }
+      if (cathode < 0 or 1 < cathode)
+      {
+        AliError(Form("Must have give a cathode value in the range [0..1], but got a value of: %d", cathode));
+        return 0x0;
+      }
+      
+      AliMUONVDigitStore* store = DigitStore(fCurrentEvent);
+      if (store == 0x0) return 0x0;
+      AliMpSegmentation::ReadData(kFALSE); // kFALSE so that we do not get warning message.
+      AliMpIntPair pair = AliMpDEManager::GetDetElemIdRange(chamber);
+      fIterator = store->CreateIterator(pair.GetFirst(), pair.GetSecond(), cathode);
+      if (fIterator == 0x0) return 0x0;
+      fCurrentIteratorType = kDigitIteratorByChamberAndCathode;
+      fDataX = chamber;
+      fDataY = cathode;
+      return fIterator;
+    }
+    
+  case kRawClusterIterator:
+    {
+      Int_t chamber = x;
+      AliMUONVClusterStore* store = ClusterStore(fCurrentEvent);
+      if (store == 0x0) return 0x0;
+      fIterator = store->CreateChamberIterator(chamber, chamber);
+      if (fIterator == 0x0) return 0x0;
+      fCurrentIteratorType = kRawClusterIterator;
+      fDataX = chamber;
+      return fIterator;
+    }
+    
+  case kTrackIterator:
+    {
+      AliMUONVTrackStore* store = TrackStore(fCurrentEvent);
+      if (store == 0x0) return 0x0;
+      fIterator = store->CreateIterator();
+      if (fIterator == 0x0) return 0x0;
+      fCurrentIteratorType = kTrackIterator;
+      return fIterator;
+    }
+    
+  case kLocalTriggerIterator:
+    {
+      AliMUONVTriggerStore* store = TriggerStore(fCurrentEvent);
+      if (store == 0x0) return 0x0;
+      fIterator = store->CreateLocalIterator();
+      if (fIterator == 0x0) return 0x0;
+      fCurrentIteratorType = kLocalTriggerIterator;
+      return fIterator;
+    }
+    
+  case kRegionalTriggerIterator:
+    {
+      AliMUONVTriggerStore* store = TriggerStore(fCurrentEvent);
+      if (store == 0x0) return 0x0;
+      fIterator = store->CreateRegionalIterator();
+      if (fIterator == 0x0) return 0x0;
+      fCurrentIteratorType = kRegionalTriggerIterator;
+      return fIterator;
+    }
+    
+  case kTriggerTrackIterator:
+    {
+      AliMUONVTriggerTrackStore* store = TriggerTrackStore(fCurrentEvent);
+      if (store == 0x0) return 0x0;
+      fIterator = store->CreateIterator();
+      if (fIterator == 0x0) return 0x0;
+      fCurrentIteratorType = kTriggerTrackIterator;
+      return fIterator;
+    }
+    
+  default:
+    return 0x0;
+  }
+}
+
+//_____________________________________________________________________________
+void AliMUONDataInterface::ResetIterator()
+{
+/// The temporary iterator object is deleted if it exists and the pointer reset to 0x0.
+/// The iterator type and temporary data indicating the state of the iterator are
+/// also reset.
+
+  if (fIterator != 0x0) delete fIterator;
+  fCurrentIteratorType = kNoIterator;
+  fCurrentIndex = fDataX = fDataY = -1;
+  fIterator = 0x0;
+}
+
+//_____________________________________________________________________________
+Int_t AliMUONDataInterface::CountObjects(TIterator* iter)
+{
+/// Counts the number of objects in the iterator and resets it.
+/// @return The number of objects in 'iter'.
+
+  if (iter == 0x0) return -1;
+  Int_t count = 0;
+  iter->Reset();
+  while ( iter->Next() != 0x0 ) count++;
+  iter->Reset();
+  fCurrentIndex = -1;
+  return count;
+}
+
+//_____________________________________________________________________________
+TObject* AliMUONDataInterface::FetchObject(TIterator* iter, Int_t index)
+{
+/// Fetches the index'th object from the iterator counting the first object
+/// returned by iterator after it is reset as index == 0. The next object
+/// has index == 1 and so on where the last object returned by the iterator
+/// has index == N-1 where N = CountObjects(iter)
+/// This method will only reset the iterator if index is smaller than
+/// fCurrentIndex, which is used to track the iteration progress and is
+/// updated when a new object if returned by this method.
+/// @param iter  The iterator to fetch an object from.
+/// @param index The index number of the object to fetch in the range [0 .. N-1]
+///        where N = CountObjects(iter)
+
+  if (index < 0)
+  {
+    AliError(Form("Index is out of bounds. Got a value of %d.", index));
+    return 0x0;
+  }
+
+  if (iter == 0x0) return 0x0;
+  if (index <= fCurrentIndex)
+  {
+    iter->Reset();
+    fCurrentIndex = -1;
   }
   
-  if ( fTriggerStore ) 
+  TObject* object = 0x0;
+  while (fCurrentIndex < index)
   {
-    fTriggerStore->Clear();
-    fTriggerStore->Connect(*tree);
-    tree->GetEvent(0);
+    object = iter->Next();
+    if (object == 0x0)
+    {
+      AliError(Form("Index is out of bounds. Got a value of %d.", index));
+      iter->Reset();
+      fCurrentIndex = -1;
+      return 0x0;
+    }
+    fCurrentIndex++;
   }
-  
-  if ( stree == "D" )
-  {
-    fLoader->UnloadDigits();    
-  }
-  else if ( stree == "R" )
-  {
-    fLoader->UnloadRecPoints();
-  }
-  
-  return fTriggerStore;
-}
-
-//______________________________________________________________________________
-//______________________________________________________________________________
-//______________________________________________________________________________
-//______________________________________________________________________________
-
-void AliMUONDataInterface::Reset()
-{
-/// \deprecated Method is going to be removed
-
-  AliFatal("Deprecated");
-}
-
-Bool_t AliMUONDataInterface::UseCurrentRunLoader()
-{
-/// \deprecated Method is going to be removed
-
-  AliFatal("Deprecated");
-  return kFALSE;
-}
-  
-Int_t AliMUONDataInterface::NumberOfEvents(TString , TString )
-{
-/// \deprecated Method is going to be removed
-
-  AliFatal("Deprecated");
-  return 0;
-}
-
-
-Int_t AliMUONDataInterface::NumberOfParticles(TString , TString , Int_t )
-{
-/// \deprecated Method is going to be removed
-
-  AliFatal("Deprecated");
-  return 0;
-}
-
-
-TParticle* AliMUONDataInterface::Particle(
-		TString , TString , Int_t , Int_t 
-	)
-{
-/// \deprecated Method is going to be removed
-
-  AliFatal("Deprecated");
-  return 0;
-}
-
-
-Int_t AliMUONDataInterface::NumberOfTracks(TString , TString , Int_t )
-{
-/// \deprecated Method is going to be removed
-
-  AliFatal("Deprecated");
-  return 0;
-}
-
-
-Int_t AliMUONDataInterface::NumberOfHits(
-		TString , TString , Int_t , Int_t 
-	)
-{
-/// \deprecated Method is going to be removed
-
-  AliFatal("Deprecated");
-  return 0;
-}
-
-
-AliMUONHit* AliMUONDataInterface::Hit(
-		TString , TString , Int_t ,
-		Int_t , Int_t 
-	)
-{
-/// \deprecated Method is going to be removed
-
-  AliFatal("Deprecated");
-  return 0;
-}
-
-
-Int_t AliMUONDataInterface::NumberOfSDigits(
-		TString , TString , Int_t ,
-		Int_t , Int_t 
-	)
-{
-/// \deprecated Method is going to be removed
-
-  AliFatal("Deprecated");
-  return 0;
-}
-
-
-AliMUONDigit* AliMUONDataInterface::SDigit(
-		TString , TString , Int_t ,
-		Int_t , Int_t , Int_t 
-	)
-{
-/// \deprecated Method is going to be removed
-
-  AliFatal("Deprecated");
-  return 0;
-}
-
-
-Int_t AliMUONDataInterface::NumberOfDigits(
-		TString , TString , Int_t ,
-		Int_t , Int_t 
-	)
-{
-/// \deprecated Method is going to be removed
-
-  AliFatal("Deprecated");
-  return 0;
-}
-
-
-AliMUONDigit* AliMUONDataInterface::Digit(
-		TString , TString , Int_t ,
-		Int_t , Int_t , Int_t 
-	)
-{
-/// \deprecated Method is going to be removed
-
-  AliFatal("Deprecated");
-  return 0;
-}
-
-
-Int_t AliMUONDataInterface::NumberOfRawClusters(
-		TString , TString , Int_t , Int_t 
-	)
-{
-/// \deprecated Method is going to be removed
-
-  AliFatal("Deprecated");
-  return 0;
-}
-
-
-AliMUONRawCluster* AliMUONDataInterface::RawCluster(
-		TString , TString , Int_t ,
-		Int_t , Int_t 
-	)
-{
-/// \deprecated Method is going to be removed
-
-  AliFatal("Deprecated");
-  return 0;
-}
-
-
-Int_t AliMUONDataInterface::NumberOfLocalTriggers(TString , TString , Int_t )
-{
-/// \deprecated Method is going to be removed
-
-  AliFatal("Deprecated");
-  return 0;
-}
-
-
-AliMUONLocalTrigger* AliMUONDataInterface::LocalTrigger(
-		TString , TString , Int_t , Int_t 
-	)
-{
-/// \deprecated Method is going to be removed
-
-  AliFatal("Deprecated");
-  return 0;
-}
-
-Bool_t AliMUONDataInterface::SetFile(TString , TString )
-{
-/// \deprecated Method is going to be removed
-
-  AliFatal("Deprecated");
-  return 0;
-}
-
-
-Bool_t AliMUONDataInterface::GetEvent(Int_t )
-{
-/// \deprecated Method is going to be removed
-
-  AliFatal("Deprecated");
-  return 0;
-}
-
-Int_t AliMUONDataInterface::NumberOfParticles()
-{
-/// \deprecated Method is going to be removed
-
-  AliFatal("Deprecated");
-  return 0;
-}
-
-
-TParticle* AliMUONDataInterface::Particle(Int_t )
-{
-/// \deprecated Method is going to be removed
-
-  AliFatal("Deprecated");
-  return 0;
-}
-
-
-Int_t AliMUONDataInterface::NumberOfTracks()
-{
-/// \deprecated Method is going to be removed
-
-  AliFatal("Deprecated");
-  return 0;
-}
-
-
-Int_t AliMUONDataInterface::NumberOfHits(Int_t )
-{
-/// \deprecated Method is going to be removed
-
-  AliFatal("Deprecated");
-  return 0;
-}
-
-
-AliMUONHit* 
-AliMUONDataInterface::Hit(Int_t , Int_t )
-{
-/// \deprecated Method is going to be removed
-
-  AliFatal("Deprecated");
-  return 0;
-}
-
-
-Int_t AliMUONDataInterface::NumberOfSDigits(Int_t , Int_t )
-{
-/// \deprecated Method is going to be removed
-
-  AliFatal("Deprecated");
-  return 0;
-}
-
-
-AliMUONDigit* AliMUONDataInterface::SDigit(Int_t , Int_t , Int_t )
-{
-/// \deprecated Method is going to be removed
-
-  AliFatal("Deprecated");
-  return 0;
-
-}
-
-
-Int_t AliMUONDataInterface::NumberOfDigits(Int_t , Int_t )
-{
-/// \deprecated Method is going to be removed
-
-  AliFatal("Deprecated");
-  return 0;
-
-}
-
-
-AliMUONDigit* AliMUONDataInterface::Digit(Int_t , Int_t , Int_t )
-{
-/// \deprecated Method is going to be removed
-
-  AliFatal("Deprecated");
-  return 0;
-}
-
-
-Int_t AliMUONDataInterface::NumberOfRawClusters(Int_t )
-{
-/// \deprecated Method is going to be removed
-
-  AliFatal("Deprecated");
-  return 0;
-}
-
-
-AliMUONRawCluster* AliMUONDataInterface::RawCluster(Int_t , Int_t )
-{
-/// \deprecated Method is going to be removed
-
-  AliFatal("Deprecated");
-  return 0;
-}
-
-
-Int_t AliMUONDataInterface::NumberOfLocalTriggers()
-{
-/// \deprecated Method is going to be removed
-
-  AliFatal("Deprecated");
-  return 0;
-}
-
-
-AliMUONLocalTrigger* AliMUONDataInterface::LocalTrigger(Int_t )
-{
-/// \deprecated Method is going to be removed
-
-  AliFatal("Deprecated");
-  return 0;
-}
-
-Int_t AliMUONDataInterface::NumberOfGlobalTriggers()
-{
-/// \deprecated Method is going to be removed
-
-  AliFatal("Deprecated");
-  return 0;
-}
-
-AliMUONGlobalTrigger* AliMUONDataInterface::GlobalTrigger(Int_t )
-{
-/// \deprecated Method is going to be removed
-
-  AliFatal("Deprecated");
-  return 0;
-}
-
-Int_t AliMUONDataInterface::NumberOfRecTracks()
-{
-/// \deprecated Method is going to be removed
-
-  AliFatal("Deprecated");
-  return 0;
-}
-
-AliMUONTrack* AliMUONDataInterface::RecTrack(Int_t )
-{
-/// \deprecated Method is going to be removed
-
-  AliFatal("Deprecated");
-  return 0;
+  return object;
 }
