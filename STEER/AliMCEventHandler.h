@@ -37,7 +37,7 @@ public:
     virtual char*        GetInputPath() {return fPathName;}
     virtual Bool_t       InitIO(Option_t* opt);
     virtual Bool_t       BeginEvent();
-    virtual Bool_t       Notify();
+    virtual Bool_t       Notify(const char* path);
     virtual Bool_t       FinishEvent();
     virtual Bool_t       Terminate();
     virtual Bool_t       TerminateIO();

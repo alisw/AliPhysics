@@ -255,8 +255,13 @@ Bool_t AliAnalysisManager::Notify()
       // Call Notify for all tasks
       while ((task=(AliAnalysisTask*)next())) 
          task->Notify();
+
       // Call Notify of the MC truth handler
-      if (fMCtruthEventHandler) fMCtruthEventHandler->Notify();
+      if (fMCtruthEventHandler) {
+	TString fileName(curfile->GetName());
+	fileName.ReplaceAll("AliESDs.root", "");
+	fMCtruthEventHandler->Notify(fileName.Data());
+      }
    }
    return kTRUE;
 }    

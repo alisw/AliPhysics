@@ -23,12 +23,12 @@ class AliVirtualEventHandler : public TNamed {
     virtual char*        GetOutputFileName()             = 0;
     virtual Bool_t       InitIO(Option_t* opt)           = 0;
     virtual Bool_t       BeginEvent()                    = 0;
-    virtual Bool_t       Notify()                        = 0;    
+    virtual Bool_t       Notify(const char *path)        = 0;    
     virtual Bool_t       FinishEvent()                   = 0;
     virtual Bool_t       Terminate()                     = 0;
     virtual Bool_t       TerminateIO()                   = 0;
  private :
-  ClassDef(AliVirtualEventHandler, 1);
+  ClassDef(AliVirtualEventHandler, 2);
 };
 
 #endif

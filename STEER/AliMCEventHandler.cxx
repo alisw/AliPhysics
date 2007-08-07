@@ -29,7 +29,6 @@
 #include "AliTrackReference.h"
 #include "AliHeader.h"
 #include "AliStack.h"
-#include "AliAnalysisManager.h"
 
 #include <TTree.h>
 #include <TFile.h>
@@ -272,17 +271,14 @@ void AliMCEventHandler::DrawCheck(Int_t i, Bool_t search)
     }
 }
 
-Bool_t AliMCEventHandler::Notify()
+Bool_t AliMCEventHandler::Notify(const char *path)
 {
     // Notify about directory change
-    //
+    // The directory is taken from the 'path' argument
     // Reconnect trees
-    TTree* tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
-    TFile *curfile = tree->GetCurrentFile();
-    TString fileName(curfile->GetName());
-    fileName.ReplaceAll("AliESDs.root", "");
-    printf("AliMCEventHandler::Notify() file: %s\n", fileName.Data());
-    fPathName = Form("%s",  fileName.Data());
+
+    printf("AliMCEventHandler::Notify() file: %s\n", path);
+    fPathName = Form("%s",  path);
     ResetIO();
     InitIO("");
     return kTRUE;
