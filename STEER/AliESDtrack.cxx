@@ -549,6 +549,32 @@ Double_t AliESDtrack::GetMass() const {
   return AliPID::ParticleMass(AliPID::kPion);
 }
 
+//______________________________________________________________________________
+Double_t AliESDtrack::E() const
+{
+  // Returns the energy of the particle given its assumed mass.
+  // Assumes the pion mass if the particle can't be identified properly.
+  
+  Double_t m = M();
+  Double_t p = P();
+  return TMath::Sqrt(p*p + m*m);
+}
+
+//______________________________________________________________________________
+Double_t AliESDtrack::Y() const
+{
+  // Returns the rapidity of a particle given its assumed mass.
+  // Assumes the pion mass if the particle can't be identified properly.
+  
+  Double_t e = E();
+  Double_t pz = Pz();
+  if (e!=pz) { // energy was not equal to pz
+    return 0.5*TMath::Log((e+pz)/(e-pz));
+  } else { // energy was equal to pz
+    return -999.;
+  }
+}
+
 //_______________________________________________________________________
 Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
   //

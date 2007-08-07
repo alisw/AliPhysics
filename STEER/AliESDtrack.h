@@ -68,6 +68,9 @@ public:
   Double_t GetIntegratedLength() const {return fTrackLength;}
   void GetIntegratedTimes(Double_t *times) const;
   Double_t GetMass() const;
+  Double_t M() const { return GetMass(); }
+  Double_t E() const;
+  Double_t Y() const;
 
   Bool_t GetConstrainedPxPyPz(Double_t *p) const {
     if (!fCp) return kFALSE;
