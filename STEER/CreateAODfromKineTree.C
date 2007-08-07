@@ -77,7 +77,7 @@ void CreateAODfromKineTree(const char *inFileName,
   TFile *outFile = TFile::Open(outFileName, "RECREATE");
 
   // create the tree
-  TTree *aodTree = new TTree("AOD", "AliAOD tree");
+  TTree *aodTree = new TTree("aodTree", "AliAOD tree");
   aodTree->Branch(aod->GetList());
 
   AliRunLoader *runLoader;

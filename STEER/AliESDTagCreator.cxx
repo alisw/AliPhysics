@@ -1106,7 +1106,7 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent) {
     delete file;
     return ;
   }
-  TTree *aodTree = (TTree*)file->Get("AOD");
+  TTree *aodTree = (TTree*)file->Get("aodTree");
   AliAODEvent *aod = (AliAODEvent*)aodTree->GetUserInfo()->FindObject("AliAODEvent");
   TIter next(aod->GetList());
   TObject *el;
