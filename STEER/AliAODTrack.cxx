@@ -22,11 +22,14 @@
 
 #include "AliAODTrack.h"
 
+//#include <TPDGCode.h>
+//#include <TDatabasePDG.h>
+
 ClassImp(AliAODTrack)
 
 //______________________________________________________________________________
 AliAODTrack::AliAODTrack() : 
-  AliVirtualParticle(),
+  AliVParticle(),
   fChi2perNDF(-999.),
   fID(-999),
   fLabel(-999),
@@ -61,7 +64,7 @@ AliAODTrack::AliAODTrack(Int_t id,
 			 Bool_t usedForPrimVtxFit,
 			 AODTrk_t ttype,
 			 UInt_t selectInfo) :
-  AliVirtualParticle(),
+  AliVParticle(),
   fChi2perNDF(-999.),
   fID(id),
   fLabel(label),
@@ -100,7 +103,7 @@ AliAODTrack::AliAODTrack(Int_t id,
 			 Bool_t usedForPrimVtxFit,
 			 AODTrk_t ttype,
 			 UInt_t selectInfo) :
-  AliVirtualParticle(),
+  AliVParticle(),
   fChi2perNDF(-999.),
   fID(id),
   fLabel(label),
@@ -132,7 +135,7 @@ AliAODTrack::~AliAODTrack()
 
 //______________________________________________________________________________
 AliAODTrack::AliAODTrack(const AliAODTrack& trk) :
-  AliVirtualParticle(trk),
+  AliVParticle(trk),
   fChi2perNDF(trk.fChi2perNDF),
   fID(trk.fID),
   fLabel(trk.fLabel),
@@ -161,7 +164,7 @@ AliAODTrack& AliAODTrack::operator=(const AliAODTrack& trk)
   // Assignment operator
   if(this!=&trk) {
 
-    AliVirtualParticle::operator=(trk);
+    AliVParticle::operator=(trk);
 
     trk.GetP(fMomentum);
     trk.GetPosition(fPosition);
@@ -192,47 +195,44 @@ AliAODTrack& AliAODTrack::operator=(const AliAODTrack& trk)
 Double_t AliAODTrack::M(AODTrkPID_t pid) const
 {
   // Returns the mass.
-  // In the case of elementary particles the hard coded mass values were taken 
-  // from the PDG. In all cases the errors on the values do not affect 
-  // the last digit.
-  
+  // Masses for nuclei don't exist in the PDG tables, therefore they were put by hand.
 
   switch (pid) {
 
   case kElectron :
-    return 0.000510999;
+    return 0.000510999; //TDatabasePDG::Instance()->GetParticle(11/*::kElectron*/)->Mass();
     break;
 
   case kMuon :
-    return 0.1056584;
+    return 0.1056584; //TDatabasePDG::Instance()->GetParticle(13/*::kMuonMinus*/)->Mass();
     break;
 
   case kPion :
-    return 0.13957;
+    return 0.13957; //TDatabasePDG::Instance()->GetParticle(211/*::kPiPlus*/)->Mass();
     break;
 
   case kKaon :
-    return 0.4937;
+    return 0.4937; //TDatabasePDG::Instance()->GetParticle(321/*::kKPlus*/)->Mass();
     break;
 
   case kProton :
-    return 0.9382720;
+    return 0.9382720; //TDatabasePDG::Instance()->GetParticle(2212/*::kProton*/)->Mass();
     break;
 
   case kDeuteron :
-    return 1.8756;
+    return 1.8756; //TDatabasePDG::Instance()->GetParticle(1000010020)->Mass();
     break;
 
   case kTriton :
-    return 2.8089;
+    return 2.8089; //TDatabasePDG::Instance()->GetParticle(1000010030)->Mass();
     break;
 
   case kHelium3 :
-    return 2.8084;
+    return 2.8084; //TDatabasePDG::Instance()->GetParticle(1000020030)->Mass();
     break;
 
   case kAlpha :
-    return 3.7274;
+    return 3.7274; //TDatabasePDG::Instance()->GetParticle(1000020040)->Mass();
     break;
 
   case kUnknown :
@@ -260,7 +260,7 @@ Double_t AliAODTrack::E(AODTrkPID_t pid) const
 //______________________________________________________________________________
 Double_t AliAODTrack::Y(AODTrkPID_t pid) const
 {
-  // Returns the energy of the particle of a given pid.
+  // Returns the rapidity of a particle of a given pid.
   
   if (pid != kUnknown) { // particle was identified
     Double_t e = E(pid);
@@ -278,7 +278,7 @@ Double_t AliAODTrack::Y(AODTrkPID_t pid) const
 //______________________________________________________________________________
 Double_t AliAODTrack::Y(Double_t m) const
 {
-  // Returns the energy of the particle of a given mass.
+  // Returns the rapidity of a particle of a given mass.
   
   if (m >= 0.) { // mass makes sense
     Double_t e = E(m);
