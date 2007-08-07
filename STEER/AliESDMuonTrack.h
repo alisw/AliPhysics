@@ -11,11 +11,13 @@
 //  Author: G.Martinez
 
 
-#include "TObject.h"
+#include <TMath.h>
+
+#include "AliVParticle.h"
 
 class TLorentzVector;
 
-class AliESDMuonTrack : public TObject {
+class AliESDMuonTrack : public AliVParticle {
 public:
   AliESDMuonTrack(); //Constructor
   virtual ~AliESDMuonTrack(){} // Destructor
@@ -86,6 +88,18 @@ public:
   Double_t PUncorrected() const;
   void     LorentzPUncorrected(TLorentzVector& vP) const;
   
+  // additional methods to comply with AliVParticle
+  Double_t Pt() const { return TMath::Sqrt(Px()*Px() + Py()*Py()); }
+  Double_t OneOverPt() const { return 1./Pt(); }
+  Double_t Phi() const { return TMath::ATan2(Py(), Px()); }
+  Double_t Theta() const { return TMath::ATan2(Pt(), Pz()); }
+  Double_t E() const { return -999.; }
+  Double_t M() const { return -999.; }
+  Double_t Eta() const { return -TMath::Log(TMath::Tan(0.5 * Theta()));}
+  Double_t Y() const { return -999.; }
+  Short_t Charge() const { return (Short_t)TMath::Sign(1., GetInverseBendingMomentum()); }
+  const Double_t *PID() const { return (Double_t*)0x0; }
+    
   
 protected:
  // parameters at vertex
@@ -115,7 +129,7 @@ protected:
   UShort_t fHitsPatternInTrigCh; ///< Word containing info on the hits left in trigger chambers
 
 
-  ClassDef(AliESDMuonTrack,5)  //MUON ESD track class 
+  ClassDef(AliESDMuonTrack,6)  //MUON ESD track class 
 };
 
 #endif 
