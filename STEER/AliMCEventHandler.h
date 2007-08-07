@@ -16,7 +16,7 @@
 // Origin: Andreas Morsch, CERN, andreas.morsch@cern.ch 
 //-------------------------------------------------------------------------
 
-#include "AliVirtualEventHandler.h"
+#include "AliVEventHandler.h"
 class TFile;
 class TTree;
 class TParticle;
@@ -25,7 +25,7 @@ class AliHeader;
 class AliStack;
 
 
-class AliMCEventHandler : public AliVirtualEventHandler 
+class AliMCEventHandler : public AliVEventHandler 
 {
 public:
     AliMCEventHandler();

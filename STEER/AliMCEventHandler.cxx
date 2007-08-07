@@ -43,7 +43,7 @@
 ClassImp(AliMCEventHandler)
 
 AliMCEventHandler::AliMCEventHandler() :
-    AliVirtualEventHandler(),
+    AliVEventHandler(),
     fFileE(0),
     fFileK(0),
     fFileTR(0),
@@ -68,7 +68,7 @@ AliMCEventHandler::AliMCEventHandler() :
 }
 
 AliMCEventHandler::AliMCEventHandler(const char* name, const char* title) :
-    AliVirtualEventHandler(name, title),
+    AliVEventHandler(name, title),
     fFileE(0),
     fFileK(0),
     fFileTR(0),

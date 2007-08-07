@@ -37,7 +37,7 @@
 #include "AliAnalysisTask.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliAnalysisDataSlot.h"
-#include "AliVirtualEventHandler.h"
+#include "AliVEventHandler.h"
 #include "AliAnalysisManager.h"
 
 ClassImp(AliAnalysisManager)
