@@ -591,6 +591,7 @@ void AliMC::FinishPrimary()
   }
 #endif
   runloader->Stack()->PurifyKine();
+  
   RemapHits();
   
   TIter next(gAlice->Modules());
@@ -631,12 +632,14 @@ void AliMC::RemapHits()
     // This for detectors which have a special mapping mechanism
     // for hits, such as TPC and TRD
     //
+
     
     TObjArray* modules = gAlice->Modules();
     TIter nextmod(modules);
-    AliDetector *detector;
-    while((detector = dynamic_cast<AliDetector*>(nextmod()))) {
-	detector->RemapTrackHitIDs(stack->TrackLabelMap());
+    AliModule *module;
+    while((module = (AliModule*) nextmod())) {
+	AliDetector* det = dynamic_cast<AliDetector*> (module);
+	if (det) det->RemapTrackHitIDs(stack->TrackLabelMap());
     }
     //
     RemapTrackReferencesIDs(stack->TrackLabelMap());
