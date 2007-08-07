@@ -13,7 +13,11 @@ SRCS = 	AliJet.cxx AliJetHeader.cxx \
 	AliJetFillUnitArrayTracks.cxx \
 	AliJetDummyGeo.cxx \
 	AliJetFinderTypes.cxx \
-	AliAnalysisTaskJets.cxx
+	AliAnalysisTaskJets.cxx \
+	AliDAJetFinder.cxx \
+	AliDAJetHeader.cxx \
+	AliJetAODReader.cxx \
+	AliJetAODReaderHeader.cxx
 
 
 HDRS:= $(SRCS:.cxx=.h) 

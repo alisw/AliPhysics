@@ -28,4 +28,8 @@
 #pragma link C++ class AliJetFillUnitArrayTracks+;
 #pragma link C++ class AliJetDummyGeo+;
 #pragma link C++ class AliAnalysisTaskJets+;
+#pragma link C++ class AliDAJetFinder+;
+#pragma link C++ class AliDAJetHeader+;
+#pragma link C++ class AliJetAODReader+;
+#pragma link C++ class AliJetAODReaderHeader+;
 #endif
