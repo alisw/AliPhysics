@@ -54,6 +54,7 @@ public:
   virtual Float_t P() const {return TMath::Sqrt(fPx*fPx+fPy*fPy+fPz*fPz);}
   virtual Int_t   UserId() const {return fUserId;}
   virtual Int_t   DetectorId() const {return fDetectorId;}
+  virtual void SetDetectorId(Int_t id){fDetectorId = id;}
   virtual void SetPosition(Float_t x, Float_t y, Float_t z){fX=x; fY=y; fZ=z;}
   virtual void SetMomentum(Float_t px, Float_t py, Float_t pz){fPx=px; fPy=py; fPz=pz;}
   virtual void SetUserId(Int_t userId){fUserId=userId;}
