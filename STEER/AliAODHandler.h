@@ -10,7 +10,7 @@
 //     Author: Andreas Morsch, CERN
 //-------------------------------------------------------------------------
 
-#include "AliVirtualEventHandler.h"
+#include "AliVEventHandler.h"
 
 class AliAODEvent;
 class TFile;
@@ -18,7 +18,7 @@ class TTree;
 
 
 
-class AliAODHandler : public AliVirtualEventHandler {
+class AliAODHandler : public AliVEventHandler {
     
  public:
     AliAODHandler();
