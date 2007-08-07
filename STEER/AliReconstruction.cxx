@@ -1771,7 +1771,7 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
   aodFile->cd();
   
   // create the tree
-  TTree *aodTree = new TTree("AOD", "AliAOD tree");
+  TTree *aodTree = new TTree("aodTree", "AliAOD tree");
   aodTree->Branch(aod->GetList());
 
   // connect to ESD
@@ -1797,7 +1797,7 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
     Int_t nTracks   = esd->GetNumberOfTracks();
     Int_t nPosTracks = 0;
     for (Int_t iTrack=0; iTrack<nTracks; ++iTrack) 
-      if (esd->GetTrack(iTrack)->GetSign()> 0) nPosTracks++;
+      if (esd->GetTrack(iTrack)->Charge()> 0) nPosTracks++;
 
     // Update the header
     AliAODHeader* header = aod->GetHeader();
@@ -1964,7 +1964,7 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
 					   pos,
 					   kFALSE,
 					   covTr, 
-					   (Short_t)esdTrack->GetSign(),
+					   (Short_t)esdTrack->Charge(),
 					   esdTrack->GetITSClusterMap(), 
 					   pid,
 					   vV0FromCascade,
@@ -1999,7 +1999,7 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
 					   pos,
 					   kFALSE,
 					   covTr, 
-					   (Short_t)esdTrack->GetSign(),
+					   (Short_t)esdTrack->Charge(),
 					   esdTrack->GetITSClusterMap(), 
 					   pid,
 					   vV0FromCascade,
@@ -2036,7 +2036,7 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
 					   pos,
 					   kFALSE,
 					   covTr, 
-					   (Short_t)esdTrack->GetSign(),
+					   (Short_t)esdTrack->Charge(),
 					   esdTrack->GetITSClusterMap(), 
 					   pid,
 					   vcascade,
@@ -2097,7 +2097,7 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
 					   pos,
 					   kFALSE,
 					   covTr, 
-					   (Short_t)esdTrack->GetSign(),
+					   (Short_t)esdTrack->Charge(),
 					   esdTrack->GetITSClusterMap(), 
 					   pid,
 					   vV0,
@@ -2132,7 +2132,7 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
 					   pos,
 					   kFALSE,
 					   covTr, 
-					   (Short_t)esdTrack->GetSign(),
+					   (Short_t)esdTrack->Charge(),
 					   esdTrack->GetITSClusterMap(), 
 					   pid,
 					   vV0,
@@ -2218,7 +2218,7 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
 					   pos,
 					   kFALSE,
 					   covTr, 
-					   (Short_t)esdTrack->GetSign(),
+					   (Short_t)esdTrack->Charge(),
 					   esdTrack->GetITSClusterMap(), 
 					   pid,
 					   primary,
@@ -2264,7 +2264,7 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
 					   pos,
 					   kFALSE,
 					   covTr, 
-					   (Short_t)esdTrack->GetSign(),
+					   (Short_t)esdTrack->Charge(),
 					   esdTrack->GetITSClusterMap(), 
 					   pid,
 					   vkink,
@@ -2316,7 +2316,7 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
 					 pos,
 					 kFALSE,
 					 covTr, 
-					 (Short_t)esdTrack->GetSign(),
+					 (Short_t)esdTrack->Charge(),
 					 esdTrack->GetITSClusterMap(), 
 					 pid,
 					 primary,
@@ -2336,7 +2336,7 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
 					 pos,
 					 kFALSE,
 					 covTr, 
-					 (Short_t)esdTrack->GetSign(),
+					 (Short_t)esdTrack->Charge(),
 					 esdTrack->GetITSClusterMap(), 
 					 pid,
 					 NULL,
@@ -2370,8 +2370,8 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
 					     pos,
 					     kFALSE,
 					     NULL, // no covariance matrix provided
-					     (Short_t)-99, // no charge provided
-					     0, // no ITSClusterMap
+					     esdMuTrack->Charge(),
+					     0, // no ITSMuonClusterMap
 					     pid,
 					     primary,
  					     kFALSE,    // muon tracks are not used to fit the primary vtx
