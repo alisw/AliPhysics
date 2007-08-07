@@ -14,7 +14,7 @@ void runProofESD(const char *selectorfile) {
   //that contains the latest ANALYSIS developments
   gSystem->AddIncludePath("-I\"$ALICE_ROOT/include\"");
   printf("****** Connect to PROOF *******\n");
-  TProof::Open("proof://pchrist@lxb6046.cern.ch"); 
+  TProof::Open("proof://<username>@lxb6046.cern.ch"); 
 
   // Enable the Analysis Package
   gProof->UploadPackage("ESD.par");
