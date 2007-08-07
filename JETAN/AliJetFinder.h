@@ -13,11 +13,11 @@
 
 #include <TObject.h>
 #include "AliAODJet.h"
+#include "AliJetReader.h"
 
 class TFile;
 class TTree;
 class AliJet;
-class AliJetReader;
 class AliJetHeader;
 class AliJetControlPlots;
 class AliLeading;
@@ -31,6 +31,7 @@ class AliJetFinder : public TObject
   virtual ~AliJetFinder();
 
   // getters
+  virtual AliJetReader *GetReader() {return fReader;}
   virtual AliJet *GetJets() {return fJets;}
   virtual Bool_t GetPlotMode() const {return fPlotMode;}
   virtual TFile* GetOutputFile() {return fOut;}
@@ -46,7 +47,7 @@ class AliJetFinder : public TObject
   virtual void   WriteRHeaderToFile();  
   // the following have to be implemented for each specific finder
   virtual void Init() {}
-  virtual void Reset() {}
+  virtual void Reset() {fNAODjets = 0;}
   virtual void FindJets() {}
   virtual void FindJetsTPC(){}
   virtual void WriteJHeaderToFile() { }

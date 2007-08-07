@@ -803,7 +803,7 @@ void AliUA1JetFinderV1::Reset()
 {
   fLego->Reset();
   fJets->ClearJets();
-  fNAODjets = 0;
+  AliJetFinder::Reset();
 }
 
 ////////////////////////////////////////////////////////////////////////
