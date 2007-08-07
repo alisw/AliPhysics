@@ -241,7 +241,7 @@ Int_t AliTRDComparisonV2
 
         hc->Fill(esd->GetTRDclusters(0));
 
-        Float_t pt_1=TMath::Abs(out.Get1Pt());
+        Float_t pt_1=out.OneOverPt();
         hpt->Fill((pt_1 - 1/ptg)/(1/ptg)*100.);
 
         Float_t y=out.GetY();

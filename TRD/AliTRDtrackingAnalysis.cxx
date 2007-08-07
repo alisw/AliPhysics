@@ -260,7 +260,7 @@ void AliTRDtrackingAnalysis::DrawResolutionPt(int startEvent, int stopEvent)
 
       if (!(status & AliESDtrack::kTRDout)) continue;
       if (!(status & AliESDtrack::kTRDrefit)) continue;
-      if (TMath::Abs(esdTrack->GetOuterParam()->GetPt()) < 1.0) continue;
+      if (esdTrack->GetOuterParam()->Pt() < 1.0) continue;
 
       int ch=0;
       while(param->GetX() > fGeo->GetTime0(ch)+2) ch++;
@@ -287,7 +287,7 @@ void AliTRDtrackingAnalysis::DrawResolutionPt(int startEvent, int stopEvent)
 	AliExternalTrackParam out(*param);
 	out.PropagateTo(aRef->LocalX(),bz);
 	
-	double dp = aRef->Pt() + out.GetPt();
+	double dp = aRef->Pt() + out.GetSignedPt();
 	double dy = 10. * (aRef->LocalY() - out.GetY()); // in mm
 
 	fDeltaPt->Fill(100. * dp / aRef->Pt());

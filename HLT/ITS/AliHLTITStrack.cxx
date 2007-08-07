@@ -58,8 +58,8 @@ Int_t AliHLTITStrack::Compare(const TObject *o) const {
   // This function compares tracks according to the their curvature
   //-----------------------------------------------------------------
   AliHLTITStrack *t=(AliHLTITStrack*)o;
-  Double_t co=TMath::Abs(t->Get1Pt());
-  Double_t c =TMath::Abs(Get1Pt());
+  Double_t co=t->OneOverPt();
+  Double_t c =OneOverPt();
   //  Double_t co=t->GetSigmaY2()*t->GetSigmaZ2();
   //  Double_t c =GetSigmaY2()*GetSigmaZ2();
   if (c>co) return 1;

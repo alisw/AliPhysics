@@ -146,7 +146,7 @@ Int_t AliITStrackMI::CorrectForMaterial(Double_t d, Double_t x0) {
   //------------------------------------------------------------------
   //d=x0=0.;
 
-  Double_t p2=(1.+ GetTgl()*GetTgl())/(Get1Pt()*Get1Pt());
+  Double_t p2=(1.+ GetTgl()*GetTgl())/(GetSigned1Pt()*GetSigned1Pt());
   Double_t et   = p2 + GetMass()*GetMass();
   Double_t beta2=p2/et;
   et = sqrt(et);  
@@ -158,8 +158,8 @@ Int_t AliITStrackMI::CorrectForMaterial(Double_t d, Double_t x0) {
      //Double_t theta2=1.0259e-6*14*14/28/(beta2*p2)*TMath::Abs(d)*9.36*2.33;
      Cov(5) += theta2*(1.- GetSnp()*GetSnp())*(1. + GetTgl()*GetTgl());
      Cov(9) += theta2*(1. + GetTgl()*GetTgl())*(1. + GetTgl()*GetTgl());
-     Cov(13)+= theta2*GetTgl()*Get1Pt()*(1. + GetTgl()*GetTgl());
-     Cov(14)+= theta2*GetTgl()*Get1Pt()*GetTgl()*Get1Pt();
+     Cov(13)+= theta2*GetTgl()*GetSigned1Pt()*(1. + GetTgl()*GetTgl());
+     Cov(14)+= theta2*GetTgl()*GetSigned1Pt()*GetTgl()*GetSigned1Pt();
   }
 
   //Energy losses************************
@@ -177,7 +177,7 @@ Int_t AliITStrackMI::CorrectForMaterial(Double_t d, Double_t x0) {
      //}
 
      Par(4)*=(1.- et/p2*dE);
-     Double_t delta44 = (dE*Get1Pt()*et/p2);
+     Double_t delta44 = (dE*GetSigned1Pt()*et/p2);
      delta44*=delta44;
      Cov(14)+= delta44/400.;
   }

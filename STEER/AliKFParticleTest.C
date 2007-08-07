@@ -168,7 +168,7 @@ void RunV0(  AliESDEvent *event )
       if ( !( pTrack->GetStatus()&AliESDtrack::kITSrefit ) ) continue;
       Int_t indi[12];
       if( pTrack->GetITSclusters(indi) <5 ) continue;
-      Int_t PDG = ( pTrack->Get1Pt() <0 ) ?321 :211;
+      Int_t PDG = ( pTrack->GetSigned1Pt() <0 ) ?321 :211;
 
       //* take MC PDG  
       { 

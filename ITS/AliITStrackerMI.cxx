@@ -380,7 +380,7 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
 	  delete t;
 	  continue;
 	}
-	if (TMath::Abs(1/t->Get1Pt())<AliITSReconstructor::GetRecoParam()->GetMinPtForProlongation()) {
+	if (t->Pt()<AliITSReconstructor::GetRecoParam()->GetMinPtForProlongation()) {
 	  delete t;
 	  continue;
 	}
@@ -2148,7 +2148,7 @@ Double_t AliITStrackerMI::GetMatchingChi2(AliITStrackMI * track1, AliITStrackMI 
   vec(1,0)=track1->GetZ()   - track3.GetZ();
   vec(2,0)=track1->GetSnp() - track3.GetSnp();
   vec(3,0)=track1->GetTgl() - track3.GetTgl();
-  vec(4,0)=track1->Get1Pt() - track3.Get1Pt();
+  vec(4,0)=track1->GetSigned1Pt() - track3.GetSigned1Pt();
   //
   TMatrixD cov(5,5);
   cov(0,0) = track1->GetSigmaY2()+track3.GetSigmaY2();
@@ -2262,7 +2262,7 @@ Double_t AliITStrackerMI::GetInterpolatedChi2(AliITStrackMI * forwardtrack, AliI
     npoints++;
   }
   if (npoints>1) return 
-		   TMath::Max(TMath::Abs(0.3*forwardtrack->Get1Pt())-0.5,0.)+
+                   TMath::Max(0.3*forwardtrack->OneOverPt()-0.5,0.)+
 		   //2*forwardtrack->fNUsed+
 		   res/TMath::Max(double(npoints-forwardtrack->GetNSkipped()),
 				  1./(1.+forwardtrack->GetNSkipped()));
@@ -2486,7 +2486,7 @@ AliITStrackMI *  AliITStrackerMI::GetBest2Tracks(Int_t trackID1, Int_t trackID2,
   //
   AliITStrackMI * track10=(AliITStrackMI*) arr1->UncheckedAt(0);
   AliITStrackMI * track20=(AliITStrackMI*) arr2->UncheckedAt(0);
-  if (TMath::Abs(1./track10->Get1Pt())>0.5+TMath::Abs(1/track20->Get1Pt())) return track10;
+  if (track10->Pt()>0.5+track20->Pt()) return track10;
 
   for (Int_t itrack=0;itrack<entries1;itrack++){
     AliITStrackMI * track=(AliITStrackMI*) arr1->UncheckedAt(itrack);
@@ -2549,11 +2549,11 @@ AliITStrackMI *  AliITStrackerMI::GetBest2Tracks(Int_t trackID1, Int_t trackID2,
   //
   w1 = (d2/(d1+d2)+ 2*s2/(s1+s2)+
 	+s2/(s1+s2)*0.5*(chi22+2.)/(chi21+chi22+4.)
-	+1.*TMath::Abs(1./track10->Get1Pt())/(TMath::Abs(1./track10->Get1Pt())+TMath::Abs(1./track20->Get1Pt()))
+	+1.*track10->Pt()/(track10->Pt()+track20->Pt())
 	);
   w2 = (d1/(d1+d2)+ 2*s1/(s1+s2)+
 	s1/(s1+s2)*0.5*(chi21+2.)/(chi21+chi22+4.)
-	+1.*TMath::Abs(1./track20->Get1Pt())/(TMath::Abs(1./track10->Get1Pt())+TMath::Abs(1./track20->Get1Pt()))
+	+1.*track20->Pt()/(track10->Pt()+track20->Pt())
 	);
 
   Double_t sumw = w1+w2;

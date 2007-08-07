@@ -38,7 +38,7 @@ AliKFParticle::AliKFParticle( const AliExternalTrackParam &track, Int_t PID )
   Double_t energy = TMath::Sqrt( mass*mass + fP[3]*fP[3] + fP[4]*fP[4] + fP[5]*fP[5]);
   fP[6] = energy;
   fP[7] = 0;
-  fQ = (track.Get1Pt() >0 ) ?1 :-1;
+  fQ = (track.GetSigned1Pt() >0 ) ?1 :-1; // fQ = track->GetSign() would do the same thing
   fNDF = 0;
   fChi2 = 0;
   fAtProductionVertex = 0;

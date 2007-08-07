@@ -807,7 +807,7 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistograms(AliTRDcluster *cl, AliTRDtrack *
   fPar1[time] = t->GetZ();
   fPar2[time] = t->GetSnp();
   fPar3[time] = t->GetTgl();
-  fPar4[time] = t->Get1Pt();
+  fPar4[time] = t->GetSigned1Pt();
 
   // Store the info bis of the tracklet
   Int_t *rowcol   = CalculateRowCol(cl);

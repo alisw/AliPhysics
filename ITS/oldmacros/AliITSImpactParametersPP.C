@@ -110,7 +110,7 @@ void   AliITSImpactParametersPP(Int_t evFirst=0,Int_t evLast=0) {
       itstrack = (AliITStrackV2*)tArray.At(i);
 
       // pt
-      pt = 1./TMath::Abs(itstrack->Get1Pt());
+      pt = itstrack->Pt();
 
       // primary vertex from other tracks in event
       Bool_t goodVtx = kFALSE;

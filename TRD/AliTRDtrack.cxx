@@ -700,7 +700,7 @@ Bool_t AliTRDtrack::PropagateTo(Double_t xk, Double_t xx0, Double_t xrho)
   {
 
     // Energy losses************************
-    Double_t p2    = (1.0 + GetTgl()*GetTgl()) / (Get1Pt()*Get1Pt());
+    Double_t p2    = (1.0 + GetTgl()*GetTgl()) / (GetSigned1Pt()*GetSigned1Pt());
     Double_t beta2 = p2 / (p2 + GetMass()*GetMass());
     if (beta2<1.0e-10 || (5940.0 * beta2/(1.0 - beta2 + 1.0e-10) - beta2) < 0.0) {
       return kFALSE;
@@ -853,6 +853,7 @@ Int_t AliTRDtrack::UpdateMI(AliTRDcluster *c, Double_t chisq, Int_t index, Doubl
 
   return kTRUE;
 
+
 }                     
 
 // //_____________________________________________________________________________
@@ -949,6 +950,7 @@ Int_t AliTRDtrack::UpdateMI(AliTRDcluster *c, Double_t chisq, Int_t index, Doubl
 //   fCtt-=k30*oldty+k31*oldtz;
 //   fCct-=k40*oldty+k41*oldtz;
 //   //
+
 //   fCcc-=k40*oldcy+k41*oldcz;                 
 //   //
   

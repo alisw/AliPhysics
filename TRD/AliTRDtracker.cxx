@@ -706,7 +706,7 @@ Int_t AliTRDtracker::PropagateBack(AliESDEvent *event)
     /**/
     // inter-tracks competition ???
     if ((TMath::Abs(track->GetC() - p4) / TMath::Abs(p4) < 0.2) || 
-        (TMath::Abs(track->GetPt())                      > 0.8)) {
+        (track->Pt()                                     > 0.8)) {
       
       fHBackfit->Fill(4);
       
@@ -726,7 +726,7 @@ Int_t AliTRDtracker::PropagateBack(AliESDEvent *event)
         // Sign only gold tracks
 	if (track->GetChi2() / track->GetNumberOfClusters() < 4) {   
  	  if ((seed->GetKinkIndex(0)      ==   0) &&
-              (TMath::Abs(track->GetPt()) <  1.5)) {
+              (track->Pt()                <  1.5)) {
             UseClusters(track);
 	  }
 	}
@@ -3514,7 +3514,7 @@ Int_t AliTRDtracker::FindClusters(Int_t sector, Int_t t0, Int_t t1
     tany *= -1.0;
   }
 
-  Double_t sy2       = ExpectedSigmaY2(x0,track->GetTgl(),track->GetPt());
+  Double_t sy2       = ExpectedSigmaY2(x0,track->GetTgl(),track->GetSignedPt());
   Double_t sz2       = ExpectedSigmaZ2(x0,track->GetTgl());
   Double_t road      = 15.0 * TMath::Sqrt(track->GetSigmaY2() + sy2);
   if (road > 6.0) {
@@ -3637,7 +3637,7 @@ Int_t AliTRDtracker::FindClusters(Int_t sector, Int_t t0, Int_t t1
       fHFindCl[iCheckPoint]->Fill(checkPoint[iCheckPoint]);
 
     if (checkPoint[3]) {
-      if (track->GetPt() > 0) fHMinYPos->Fill(minY);
+      if (track->GetSignedPt() > 0) fHMinYPos->Fill(minY);
       else fHMinYNeg->Fill(minY);
 
     fHMinD->Fill(minD[0], minD[1]);

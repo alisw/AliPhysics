@@ -97,8 +97,8 @@ Int_t AliITStrackV2::Compare(const TObject *o) const {
   // This function compares tracks according to the their curvature
   //-----------------------------------------------------------------
   AliITStrackV2 *t=(AliITStrackV2*)o;
-  //Double_t co=TMath::Abs(t->Get1Pt());
-  //Double_t c =TMath::Abs(Get1Pt());
+  //Double_t co=OneOverPt();
+  //Double_t c =OneOverPt();
   Double_t co=t->GetSigmaY2()*t->GetSigmaZ2();
   Double_t c =GetSigmaY2()*GetSigmaZ2();
   if (c>co) return 1;
@@ -332,7 +332,7 @@ Bool_t AliITStrackV2::Improve(Double_t x0,Double_t xyz[3],Double_t ers[3]) {
 
   Double_t dy = Par(0) - yv, dz = Par(1) - zv;
   Double_t r2=GetX()*GetX() + dy*dy;
-  Double_t p2=(1.+ GetTgl()*GetTgl())/(Get1Pt()*Get1Pt());
+  Double_t p2=(1.+ GetTgl()*GetTgl())/(GetSigned1Pt()*GetSigned1Pt());
   Double_t beta2=p2/(p2 + GetMass()*GetMass());
   x0*=TMath::Sqrt((1.+ GetTgl()*GetTgl())/(1.- GetSnp()*GetSnp()));
   Double_t theta2=14.1*14.1/(beta2*p2*1e6)*x0;

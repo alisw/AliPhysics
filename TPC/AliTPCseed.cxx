@@ -471,11 +471,11 @@ Int_t AliTPCseed::Compare(const TObject *o) const {
   }
   else {
     Float_t f2 =1;
-    f2 = 1-20*TMath::Sqrt(t->GetSigma1Pt2())/(TMath::Abs(t->Get1Pt())+0.0066);
+    f2 = 1-20*TMath::Sqrt(t->GetSigma1Pt2())/(t->OneOverPt()+0.0066);
     if (t->fBConstrain) f2=1.2;
 
     Float_t f1 =1;
-    f1 = 1-20*TMath::Sqrt(GetSigma1Pt2())/(TMath::Abs(Get1Pt())+0.0066);
+    f1 = 1-20*TMath::Sqrt(GetSigma1Pt2())/(OneOverPt()+0.0066);
 
     if (fBConstrain)   f1=1.2;
  

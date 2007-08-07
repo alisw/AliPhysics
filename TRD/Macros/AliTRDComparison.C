@@ -651,7 +651,7 @@ void MakeAlias(){
   comp.fTree->SetAlias("dt","(abs(MC.fPdg)==2212)*dtp+(abs(MC.fPdg)==211)*dtpi+(abs(MC.fPdg)==321)*dtk"); //delta time
   comp.fTree->SetAlias("Beta","sqrt(TR.P()**2/(TR.P()**2+MC.fMass**2))");
   comp.fTree->SetAlias("dtsigma","10+(1-Beta)*280");
-  comp.fTree->SetAlias("dptrel","(abs(TRD0.GetPt())-MC.fTOFReferences[0].Pt())/MC.fTOFReferences[0].Pt()");
+  comp.fTree->SetAlias("dptrel","(abs(TRD0.GetSignedPt())-MC.fTOFReferences[0].Pt())/MC.fTOFReferences[0].Pt()");
   //
   comp.fTree->SetAlias("dphi","atan2(TR.fY,TR..fX)-atan2(TR.fPy,TR..fPx)");
   comp.fTree->SetAlias("dphi0","acos((TR.fX*TR.fPx+TR.fY*TR.fPy)/(TR.Pt()*TR.R()))");

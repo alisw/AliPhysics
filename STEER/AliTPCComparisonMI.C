@@ -616,7 +616,7 @@ Int_t TPCCmpTr::TreeGenLoop(Int_t eventNr)
 	//if multifound find track with biggest pt - returning tracks - loos energy
 	//
 	if (fIndexRecTracks[fMCInfo->fLabel*4]+1){
-	  Double_t pt = TMath::Abs(1/fTPCTrack->Get1Pt());
+	  Double_t pt = fTPCTrack-Pt();
 	  for (Int_t i=1;i<4;i++){
 	    if (fIndexRecTracks[fMCInfo->fLabel*4+i]>=0){
 	      AliTPCtrack * track = (AliTPCtrack*)fTracks->UncheckedAt(fIndexRecTracks[fMCInfo->fLabel*4+i]);

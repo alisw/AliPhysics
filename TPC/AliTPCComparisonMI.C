@@ -1345,7 +1345,7 @@ void AliTPCComparisonDraw::ResPt()
   p2->cd();
   p2->Draw();
   TH1F* his2 =  new TH1F("Ptresolution","Ptresolution",40,-5.,5.);
-  fTree->Draw("100.*(abs(1./fTPCTrack.Get1Pt())-MC.fTrackRef.Pt())/MC.fTrackRef.Pt()>>Ptresolution","MC.fRowsWithDigits>100&&RC.fTPCTrack.fN>50&&RC.fMultiple==1"+cteta1+cpos1+cprim);
+  fTree->Draw("100.*(fTPCTrack.Pt()-MC.fTrackRef.Pt())/MC.fTrackRef.Pt()>>Ptresolution","MC.fRowsWithDigits>100&&RC.fTPCTrack.fN>50&&RC.fMultiple==1"+cteta1+cpos1+cprim);
   AliLabelAxes(his2, "#Delta p_{t} / p_{t} [%]", "entries");
   his2->Fit("gaus");
   his2->Draw();
@@ -1464,7 +1464,7 @@ TH1F * AliTPCComparisonDraw::ResPtvsPt(const char* selection, const char * quali
   Double_t maxRes = 10.;
   TH2F* hRes2 = new TH2F("hRes2", "residuals", nBins, bins, nBinsRes, -maxRes, maxRes);
   
-  fTree->Draw("100.*(abs(1./fTPCTrack.Get1Pt())-MC.fTrackRef.Pt())/MC.fTrackRef.Pt():MC.fTrackRef.Pt()>>hRes2", selection, "groff");
+  fTree->Draw("100.*(fTPCTrack.Pt()-MC.fTrackRef.Pt())/MC.fTrackRef.Pt():MC.fTrackRef.Pt()>>hRes2", selection, "groff");
 
   TH1F* hMean=0;
   TH1F* hRes = CreateResHisto(hRes2, &hMean);
@@ -1484,7 +1484,7 @@ TH1F * AliTPCComparisonDraw::MeanPtvsPt(const char* selection, const char * qual
   Double_t maxRes = 10.;
   TH2F* hRes2 = new TH2F("hRes2", "residuals", nBins, bins, nBinsRes, -maxRes, maxRes);
   
-  fTree->Draw("100.*(1./fTPCTrack.Get1Pt()-MC.fTrackRef.Pt())/MC.fTrackRef.Pt():MC.fTrackRef.Pt()>>hRes2", selection, "groff");
+  fTree->Draw("100.*(fTPCTrack.Pt()-MC.fTrackRef.Pt())/MC.fTrackRef.Pt():MC.fTrackRef.Pt()>>hRes2", selection, "groff");
 
   TH1F* hMean=0;
   TH1F* hRes = CreateResHisto(hRes2, &hMean);

@@ -453,7 +453,7 @@ void AliTRDbackTrackAnalysis() {
 
     hfound->Fill(p->Pt());
 
-    Pt = TMath::Abs(rt->GetPt()); 
+    Pt = rt->Pt(); 
     Double_t cc = TMath::Abs(rt->GetSigmaC2()); 
     mct->GetPxPyPzXYZ(mcPx,mcPy,mcPz,x,y,z,-1);
     rt->GetPxPyPz(Px,Py,Pz);      

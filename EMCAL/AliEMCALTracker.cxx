@@ -895,7 +895,7 @@ Int_t AliEMCALTracker::CreateMatches()
 				candidate->SetIndexT(it);
 				candidate->SetIndexC(ic);
 				candidate->SetDistance(dist);
-				candidate->SetPt(track->GetPt());
+				candidate->SetPt(track->GetSignedPt());
 				fMatches->Add(candidate);
 				count++;
 			}
