@@ -1,0 +1,10 @@
+SRCS = AliVParticle.cxx \
+       AliVEvent.cxx \
+       AliVHeader.cxx \
+       AliVEventHandler.cxx \
+
+HDRS:= $(SRCS:.cxx=.h) 
+
+DHDR= STEERBaseLinkDef.h
+
+EXPORT:=$(SRCS:.cxx=.h)
