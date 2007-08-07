@@ -27,20 +27,30 @@ ClassImp(AliESDHeader)
 
 //______________________________________________________________________________
 AliESDHeader::AliESDHeader() :
-  TObject(),
+  AliVHeader(),
   fTriggerMask(0),
   fOrbitNumber(0),
   fTimeStamp(0),
   fEventType(0),
   fEventNumberInFile(0),
   fBunchCrossNumber(0),
+  fPeriodNumber(0),
   fTriggerCluster(0)
 {
+  // default constructor
+
+  SetName("AliESDHeader");
+}
+
+
+AliESDHeader::~AliESDHeader() 
+{
+  // destructor
 }
 
 
 AliESDHeader::AliESDHeader(const AliESDHeader &header) :
-  TObject(header),
+  AliVHeader(header),
   fTriggerMask(header.fTriggerMask),
   fOrbitNumber(header.fOrbitNumber),
   fTimeStamp(header.fTimeStamp),
@@ -50,13 +60,16 @@ AliESDHeader::AliESDHeader(const AliESDHeader &header) :
   fTriggerCluster(header.fTriggerCluster)
 {
   // copy constructor
+
+  SetName(header.fName);
+  SetTitle(header.fTitle);
 }
 
 AliESDHeader& AliESDHeader::operator=(const AliESDHeader &header)
 { 
   // assigment operator
   if(this!=&header) {
-    TObject::operator=(header);
+    AliVHeader::operator=(header);
     fTriggerMask = header.fTriggerMask;
     fOrbitNumber = header.fOrbitNumber;
     fTimeStamp = header.fTimeStamp;
@@ -65,6 +78,10 @@ AliESDHeader& AliESDHeader::operator=(const AliESDHeader &header)
     fBunchCrossNumber = header.fBunchCrossNumber;
     fTriggerCluster = header.fTriggerCluster;
   } 
+  
+  SetName(header.fName);
+  SetTitle(header.fTitle);
+  
   return *this;
 }
 
