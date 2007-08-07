@@ -27,6 +27,7 @@
 #include "AliRunLoader.h"
 #include "AliRawReader.h"
 #include "AliITSDetTypeRec.h"
+#include "AliITSgeom.h"
 #include "AliITSLoader.h"
 #include "AliITStrackerMI.h"
 #include "AliITStrackerV2.h"
@@ -49,7 +50,8 @@ AliITSRecoParam *AliITSReconstructor::fgkRecoParam =0;  // reconstruction parame
 
 //___________________________________________________________________________
 AliITSReconstructor::AliITSReconstructor() : AliReconstructor(),
-fItsPID(0)
+fItsPID(0),
+fDetTypeRec(0)
 {
   // Default constructor
   if (!fgkRecoParam) {
@@ -62,10 +64,13 @@ AliITSReconstructor::~AliITSReconstructor(){
 // destructor
   delete fItsPID;
   if(fgkRecoParam) delete fgkRecoParam;
+  if(fDetTypeRec) delete fDetTypeRec;
 } 
 //______________________________________________________________________
 AliITSReconstructor::AliITSReconstructor(const AliITSReconstructor &ob) :AliReconstructor(ob),
-									 fItsPID(ob.fItsPID)
+									 fItsPID(ob.fItsPID),
+									 fDetTypeRec(ob.fDetTypeRec)
+
 {
   // Copy constructor
 }
@@ -77,8 +82,9 @@ AliITSReconstructor& AliITSReconstructor::operator=(const AliITSReconstructor&  
   new(this) AliITSReconstructor(ob);
   return *this;
 }
+
 //______________________________________________________________________
-void AliITSReconstructor::Init(AliRunLoader *runLoader) const{
+void AliITSReconstructor::Init(AliRunLoader */*runLoader*/) {
     // Initalize this constructor bet getting/creating the objects
     // nesseary for a proper ITS reconstruction.
     // Inputs:
@@ -93,83 +99,36 @@ void AliITSReconstructor::Init(AliRunLoader *runLoader) const{
     AliITSInitGeometry initgeom;
     AliITSgeom *geom = initgeom.CreateAliITSgeom();
     AliInfo(Form("Geometry name: %s",(initgeom.GetGeometryName()).Data()));
-    AliITSLoader* loader = static_cast<AliITSLoader*>
-	(runLoader->GetLoader("ITSLoader"));
-    if (!loader) {
-	Error("Init", "ITS loader not found");
-	return;
-    }
-    loader->SetITSgeom(geom);
+
+    fDetTypeRec = new AliITSDetTypeRec();
+    fDetTypeRec->SetITSgeom(geom);
+    fDetTypeRec->SetDefaults();
+    
     return;
 }
+
 //_____________________________________________________________________________
-void AliITSReconstructor::Reconstruct(AliRunLoader* runLoader) const
+void AliITSReconstructor::Reconstruct(TTree *digitsTree, TTree *clustersTree) const
 {
 // reconstruct clusters
 
-
-  AliITSLoader* loader = static_cast<AliITSLoader*>(runLoader->GetLoader("ITSLoader"));
-  if (!loader) {
-    Error("Reconstruct", "ITS loader not found");
-    return;
-  }
-  AliITSDetTypeRec* rec = new AliITSDetTypeRec(loader);
-  rec->SetDefaults();
-
-  loader->LoadRecPoints("recreate");
-  loader->LoadDigits("read");
-  runLoader->LoadKinematics();
   TString option = GetOption();
   Bool_t clusfinder=kTRUE;   // Default: V2 cluster finder
   if(option.Contains("OrigCF"))clusfinder=kFALSE;
 
-  Int_t nEvents = runLoader->GetNumberOfEvents();
-
-  for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
-    runLoader->GetEvent(iEvent);
-    if(loader->TreeR()==0x0) loader->MakeTree("R");
-    rec->MakeBranch("R");
-    rec->SetTreeAddress();
-    rec->DigitsToRecPoints(iEvent,0,"All",clusfinder);    
-  }
-
-  loader->UnloadRecPoints();
-  loader->UnloadDigits();
-  loader->UnloadRawClusters();
-  runLoader->UnloadKinematics();
-  delete rec;
+  fDetTypeRec->SetTreeAddressD(digitsTree);
+  fDetTypeRec->MakeBranch(clustersTree,"R");
+  fDetTypeRec->SetTreeAddressR(clustersTree);
+  fDetTypeRec->DigitsToRecPoints(digitsTree,clustersTree,0,"All",clusfinder);    
 }
 
 //_________________________________________________________________
-void AliITSReconstructor::Reconstruct(AliRunLoader* runLoader, 
-                                      AliRawReader* rawReader) const
+void AliITSReconstructor::Reconstruct(AliRawReader* rawReader, TTree *clustersTree) const
 {
-// reconstruct clusters
-
+  // reconstruct clusters from raw data
  
-  AliITSLoader* loader = static_cast<AliITSLoader*>(runLoader->GetLoader("ITSLoader"));
-  if (!loader) {
-    Error("Reconstruct", "ITS loader not found");
-    return;
-  }
-
-  AliITSDetTypeRec* rec = new AliITSDetTypeRec(loader);
-  rec->SetDefaults();
-  rec->SetDefaultClusterFindersV2(kTRUE);
-
-  loader->LoadRecPoints("recreate");
-
-  Int_t iEvent = 0;
-
-  while(rawReader->NextEvent()) {
-    runLoader->GetEvent(iEvent++);
-    if(loader->TreeR()==0x0) loader->MakeTree("R");
-    rec->DigitsToRecPoints(rawReader);
-  }
-
-  loader->UnloadRecPoints();
-  loader->UnloadRawClusters();
-  delete rec;
+  fDetTypeRec->SetDefaultClusterFindersV2(kTRUE);
+  fDetTypeRec->DigitsToRecPoints(rawReader,clustersTree);
 }
 
 //_____________________________________________________________________________
@@ -261,25 +220,4 @@ void AliITSReconstructor::FillESD(AliRunLoader* runLoader,
   else {
     Error("FillESD","!! cannot do the PID !!\n");
   }
-}
-
-
-//_____________________________________________________________________________
-AliITSgeom* AliITSReconstructor::GetITSgeom(AliRunLoader* runLoader) const
-{
-// get the ITS geometry
-
-  if (!runLoader->GetAliRun()) runLoader->LoadgAlice();
-  if (!runLoader->GetAliRun()) {
-    Error("GetITSgeom", "couldn't get AliRun object");
-    return NULL;
-  }
-  AliITSLoader *loader = (AliITSLoader*)runLoader->GetLoader("ITSLoader");
-  AliITSgeom* geom = (AliITSgeom*)loader->GetITSgeom();
-  if(!geom){
-    Error("GetITSgeom","no ITS geometry available");
-    return NULL;
-  }
-  
-  return geom;
 }

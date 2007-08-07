@@ -9,7 +9,7 @@
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 
-class AliVertex;
+#include "AliVertex.h"
 class TClonesArray;
 
 class AliITSVertexer3D : public AliITSVertexer {

@@ -161,7 +161,8 @@ Bool_t AliITSreconstruction::Init(){
     //fRunLoader->CdGAFile();
     fITSgeom = fLoader->GetITSgeom();
 
-    fDetTypeRec = new AliITSDetTypeRec(fLoader);
+    fDetTypeRec = new AliITSDetTypeRec();
+    fDetTypeRec->SetITSgeom(fITSgeom);
     fDetTypeRec->SetDefaults();
     fDet[0] = fDet[1] = fDet[2] = kTRUE;
     fEnt0 = 0;
@@ -171,13 +172,10 @@ Bool_t AliITSreconstruction::Init(){
 
     fLoader->LoadDigits("read");
     fLoader->LoadRecPoints("recreate");
-    fLoader->LoadRawClusters("recreate");
     if (fLoader->TreeR() == 0x0) fLoader->MakeTree("R");
-    if (fLoader->TreeC() == 0x0) fLoader->MakeTree("C");
  
-    fDetTypeRec->MakeBranchR(0);
-    fDetTypeRec->MakeBranchC();
-    fDetTypeRec->SetTreeAddress();
+    fDetTypeRec->SetTreeAddressD(fLoader->TreeD());
+    fDetTypeRec->MakeBranchR(fLoader->TreeR());
     fDetTypeRec->SetTreeAddressR(fLoader->TreeR());
 
     fInit = InitRec();
@@ -278,13 +276,9 @@ void AliITSreconstruction::Exec(const Option_t *opt){
       fRunLoader->GetEvent(evnt);
       if (fLoader->TreeR() == 0x0) fLoader->MakeTree("R");
       fDetTypeRec->MakeBranchR(0);
-      if (fLoader->TreeC() == 0x0){
-	fDetTypeRec->MakeTreeC();
-	fDetTypeRec->MakeBranchC();
-      }
       fDetTypeRec->SetTreeAddressR(fLoader->TreeR());
       fDetTypeRec->SetTreeAddressD(fLoader->TreeD());
-      fDetTypeRec->DigitsToRecPoints(evnt,0,lopt);
+      fDetTypeRec->DigitsToRecPoints(fLoader->TreeD(),fLoader->TreeR(),0,lopt);
     } // end for evnt
 }
 //______________________________________________________________________ 

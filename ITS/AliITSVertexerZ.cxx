@@ -18,6 +18,7 @@
 #include<TH1.h>
 #include <TString.h>
 #include<TTree.h>
+#include "AliRunLoader.h"
 #include "AliITSLoader.h"
 #include "AliITSgeomTGeo.h"
 #include "AliITSDetTypeRec.h"

@@ -30,6 +30,7 @@
 #include "AliITSDetTypeRec.h"
 #include "AliITSCalibrationSDD.h"
 #include "AliITSsegmentationSDD.h"
+#include "AliITSgeom.h"
 #include "AliLog.h"
 
 ClassImp(AliITSClusterFinderSDD)

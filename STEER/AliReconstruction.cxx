@@ -1482,6 +1482,10 @@ Bool_t AliReconstruction::InitRunLoader()
       return kFALSE;
     }
 
+    //PH This is a temporary fix to give access to the kinematics
+    //PH that is needed for the labels of ITS clusters
+    fRunLoader->LoadKinematics();
+
   } else {               // galice.root does not exist
     if (!fRawReader) {
       AliError(Form("the file %s does not exist", fGAliceFileName.Data()));

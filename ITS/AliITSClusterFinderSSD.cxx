@@ -32,7 +32,7 @@
 #include "AliITSclusterSSD.h"
 #include "AliITSpackageSSD.h"
 #include "AliITSsegmentationSSD.h"
-//#include "AliITSgeom.h"
+#include "AliITSgeom.h"
 #include "AliITSCalibrationSSD.h"
 #include "AliLog.h"
 

@@ -24,6 +24,7 @@
 #include "AliITSRecPoint.h"
 #include "AliITSdigitSPD.h"
 #include "AliITSsegmentationSPD.h"
+#include "AliITSgeom.h"
 #include "AliLog.h"
 
 //#define DEBUG

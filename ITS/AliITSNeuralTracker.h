@@ -15,6 +15,8 @@
 class TObjArray;
 class TCanvas;
 
+#include <TTree.h>
+
 #include "AliITSNeuralPoint.h"
 
 class AliITSNeuralTracker : public TObject {
@@ -179,7 +181,7 @@ public:
 	Bool_t   Update();                     // an updating cycle
 	void     CleanNetwork();               // removes deactivated units and resolves competitions
 	Int_t    Save(Int_t sectoridx);        // save found tracks for # sector
-	TTree*   GetChains()                   {return fChains;}
+	TTree*   GetChains() const             {return fChains;}
 	void     WriteChains()                 {fChains->Write();}
 
 private:

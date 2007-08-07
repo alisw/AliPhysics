@@ -14,10 +14,10 @@
 #include "AliITSRecoParam.h"
 
 class AliITSgeom;
-class AliLoader;
 class AliTracker;
 class AliITStrackerMI;
 class AliITSpidESD;
+class AliITSDetTypeRec;
 
 class AliITSReconstructor: public AliReconstructor {
 public:
@@ -25,15 +25,17 @@ public:
   virtual ~AliITSReconstructor();
   AliITSReconstructor(const AliITSReconstructor &ob); // copy constructor
   AliITSReconstructor& operator=(const AliITSReconstructor & ob); // ass. op.
-  virtual void Init(AliRunLoader* runLoader) const;
+  virtual void Init(AliRunLoader* runLoader);
   
-  virtual void         Reconstruct(AliRunLoader* runLoader) const;
+  virtual Bool_t       HasLocalReconstruction() const {return kTRUE;};
+
+  virtual void         Reconstruct(AliRunLoader* runLoader) const
+    {AliReconstructor::Reconstruct(runLoader);}
   virtual void         Reconstruct(AliRunLoader* runLoader,
-				   AliRawReader* rawReader) const;
-  virtual void         Reconstruct(AliRawReader* rawReader, TTree* clustersTree) const 
-    {AliReconstructor::Reconstruct(rawReader,clustersTree);}
-  virtual void         Reconstruct(TTree* digitsTree, TTree* clustersTree) const 
-    {AliReconstructor::Reconstruct(digitsTree, clustersTree);}
+				   AliRawReader* rawReader) const
+    {AliReconstructor::Reconstruct(runLoader,rawReader);}
+  virtual void         Reconstruct(AliRawReader* rawReader, TTree* clustersTree) const;
+  virtual void         Reconstruct(TTree* digitsTree, TTree* clustersTree) const;
 
   virtual AliTracker*  CreateTracker(AliRunLoader* runLoader) const;
   virtual AliVertexer* CreateVertexer(AliRunLoader* runLoader) const;
@@ -53,12 +55,11 @@ public:
   static const AliITSRecoParam* GetRecoParam(){ return fgkRecoParam;}
 
 private:
-  // methods
-  AliITSgeom*          GetITSgeom(AliRunLoader* runLoader) const;
   //data
-  static AliITSRecoParam *   fgkRecoParam; // reconstruction parameters
-  AliITSpidESD *fItsPID; //Pid for ITS
-  ClassDef(AliITSReconstructor, 1)   // class for the ITS reconstruction
+  static AliITSRecoParam *fgkRecoParam; // reconstruction parameters
+  AliITSpidESD           *fItsPID;      // Pid for ITS
+  AliITSDetTypeRec       *fDetTypeRec;  // reconstructor
+  ClassDef(AliITSReconstructor, 2)   // class for the ITS reconstruction
 };
 
 #endif

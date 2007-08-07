@@ -8,6 +8,8 @@
   $Id$
 */
 
+#include <TArrayI.h>
+
 #include "AliITSClusterFinder.h"
 #include "AliITSDetTypeRec.h"
 

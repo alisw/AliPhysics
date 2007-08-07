@@ -15,8 +15,11 @@ $Id$
 #include <TObjArray.h>
 #include <TClonesArray.h>
 
-#include "AliITSLoader.h"
-#include "AliRunLoader.h"
+class TTree;
+class TBranch;
+
+//#include "AliITSLoader.h"
+//#include "AliRunLoader.h"
 
 class AliITSsegmentation;
 class AliITSCalibration;
@@ -30,17 +33,15 @@ class AliITSgeom;
 class AliITSDetTypeRec : public TObject {
   public:
     AliITSDetTypeRec(); // Default constructor
-    AliITSDetTypeRec(AliITSLoader *loader); // Standard constructor
  
     virtual ~AliITSDetTypeRec(); // Proper Destructor
-    AliITSgeom* GetITSgeom()const{return GetLoader()->GetITSgeom();}
 
-    AliITSLoader* GetLoader() const {return fLoader;}
+    virtual AliITSgeom* GetITSgeom() const { return fITSgeom; }
+    virtual void SetITSgeom(AliITSgeom *geom) { fITSgeom = geom; }
     virtual void SetDefaults();
     virtual void SetDefaultClusterFinders();
     virtual void SetDefaultClusterFindersV2(Bool_t rawdata=kFALSE);
-    virtual void MakeBranch(Option_t *opt);
-    virtual void SetTreeAddress();
+    virtual void MakeBranch(TTree *tree,Option_t *opt);
     virtual void SetTreeAddressD(TTree* treeD);
 
     virtual void SetSegmentationModel(Int_t dettype, AliITSsegmentation *seg);
@@ -67,13 +68,10 @@ class AliITSDetTypeRec : public TObject {
     TClonesArray *DigitsAddress(Int_t id) const {return ((TClonesArray*)(*fDigits)[id]);}
     virtual void SelectVertexer(TString sel=" "){fSelectedVertexer = sel;}
     //
-    virtual void MakeTreeC();
-    virtual void GetTreeC(Int_t event);
     virtual void AddCluster(Int_t branch, AliITSRawCluster *c);
     virtual void ResetClusters(); 
     virtual void ResetClusters(Int_t branch);
-    virtual void MakeBranchC();
-    TBranch* MakeBranchInTree(TTree *tree, const char* name, const char *classname, void* address,Int_t size, Int_t splitlevel, const char */*file*/);
+    TBranch* MakeBranchInTree(TTree *tree, const char* name, const char *classname, void* address,Int_t size, Int_t splitlevel);
 
     TObjArray    *Ctype()  {return fCtype;}
     Int_t        *Nctype() {return fNctype;}
@@ -81,34 +79,29 @@ class AliITSDetTypeRec : public TObject {
     virtual void ResetDigits();
     virtual void ResetDigits(Int_t branch);
 
-    void MakeBranchR(const char *file, Option_t *opt=" ");
+    void MakeBranchR(TTree *treeR,Option_t *opt=" ");
     void SetTreeAddressR(TTree *treeR);
     void AddRecPoint(const AliITSRecPoint &p);
     void ResetRecPoints(){if(fRecPoints) fRecPoints->Clear();fNRecPoints = 0;};
     // Return pointer to rec points 
     TClonesArray  *RecPoints()   {return fRecPoints;}
-    void MakeBranchRF(const char *file){MakeBranchR(file,"Fast");}
-    //    void HitsToFastRecPoints(Int_t evNumber,Int_t bgrev,Int_t size,
-    //             Option_t *add, Option_t *det, const char *filename);
-    void Digits2Reco(){
-        DigitsToRecPoints(fLoader->GetRunLoader()->GetEventNumber(),0,"All");}
-    void DigitsToRecPoints(Int_t evNumber,Int_t lastEntry,Option_t *det,Bool_t v2=kFALSE);
-    void DigitsToRecPoints(AliRawReader* rawReader);
-
-    virtual void SetRunNumber(Int_t rn=0){fRunNumber = rn;}
-    virtual Int_t GetRunNumber() const {return fRunNumber;}
+    void MakeBranchRF(TTree *treeR){MakeBranchR(treeR,"Fast");}
+    void DigitsToRecPoints(TTree *treeD,TTree *treeR,Int_t lastEntry,Option_t *det,Bool_t v2=kFALSE);
+    void DigitsToRecPoints(AliRawReader* rawReader,TTree *treeR);
 
   private:
     // private methods
     AliITSDetTypeRec(const AliITSDetTypeRec& rec);
     AliITSDetTypeRec& operator=(const AliITSDetTypeRec &source);
  
-    virtual void SetLoader(AliITSLoader* loader) {fLoader=loader;}
+    //    virtual void SetLoader(AliITSLoader* loader) {fLoader=loader;}
     static const Int_t fgkNdettypes;          // number of det. types
     static const Int_t fgkDefaultNModulesSPD; // Total numbers of SPD modules by default
     static const Int_t fgkDefaultNModulesSDD; // Total numbers of SDD modules by default
     static const Int_t fgkDefaultNModulesSSD; // Total numbers of SSD modules by default
     Int_t *fNMod;     // numbers of modules from different types
+
+    AliITSgeom   *fITSgeom;       //! ITS geometry
 
     TObjArray    *fReconstruction;//! [NDet]
     TObjArray    *fSegmentation;  //! [NDet]
@@ -128,11 +121,9 @@ class AliITSDetTypeRec : public TObject {
     Int_t         fNRecPoints; // Number of rec points
 
     TString fSelectedVertexer; // Vertexer selected in CreateVertexer
-    AliITSLoader* fLoader;     //! ITS loader
-    Int_t         fRunNumber;  //! run number (to access DB)
     Bool_t fFirstcall;         //! flag
 
-    ClassDef(AliITSDetTypeRec,6) // ITS Reconstruction structure
+    ClassDef(AliITSDetTypeRec,7) // ITS Reconstruction structure
 };
 
 #endif

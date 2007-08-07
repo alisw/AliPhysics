@@ -15,6 +15,7 @@
 #include <TTask.h>
 
 class AliRunLoader;
+class AliITSLoader;
 class TString;
 
 class AliITSreconstruction : public TTask{
