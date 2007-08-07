@@ -28,6 +28,7 @@
   #include "AliRunLoader.h"
   #include "AliRun.h"
   #include "AliESDEvent.h"
+  #include "AliESDtrack.h"
 
   #include "AliTOFcluster.h"
   #include "AliLoader.h"
