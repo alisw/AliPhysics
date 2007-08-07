@@ -30,6 +30,7 @@
   #include "AliRunLoader.h"
   #include "AliRun.h"
   #include "AliESDEvent.h"
+  #include "AliESDtrack.h"
 
   #include "AliITSRecPoint.h"
   #include "AliITSLoader.h"
