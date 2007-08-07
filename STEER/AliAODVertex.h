@@ -55,9 +55,9 @@ class AliAODVertex : public TObject {
 
   void     SetParent(TObject *parent) { fParent = parent; }
 
-  Double_t  GetX() const { return fPosition[0]; }
-  Double_t  GetY() const { return fPosition[1]; }
-  Double_t  GetZ() const { return fPosition[2]; }
+  Double_t GetX() const { return fPosition[0]; }
+  Double_t GetY() const { return fPosition[1]; }
+  Double_t GetZ() const { return fPosition[2]; }
   template <class T> void GetPosition(T *pos) const
     {pos[0]=fPosition[0]; pos[1]=fPosition[1]; pos[2]=fPosition[2];}
 
@@ -73,12 +73,12 @@ class AliAODVertex : public TObject {
 
   template <class T> void     GetSigmaXYZ(T *sigma) const;
 
-  Double_t  GetChi2perNDF() const { return fChi2perNDF; }
-  Double_t  GetChi2() const { return fChi2perNDF*(Double_t)GetNDF(); }
-  Int_t     GetNDF() const { return 2*GetNContributors()-3; }
+  Double_t GetChi2perNDF() const { return fChi2perNDF; }
+  Double_t GetChi2() const { return fChi2perNDF*(Double_t)GetNDF(); }
+  Int_t    GetNDF() const { return 2*GetNContributors()-3; }
 
-  Char_t    GetType() const { return fType; }
-  void      SetType(AODVtx_t vtype) { fType=vtype; }
+  Char_t   GetType() const { return fType; }
+  void     SetType(AODVtx_t vtype) { fType=vtype; }
 
   TObject* GetParent() const   { return fParent.GetObject(); }
   Bool_t   HasParent(TObject *parent) const { return (fParent.GetObject() == parent) ? kTRUE : kFALSE; }
