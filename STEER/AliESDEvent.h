@@ -22,13 +22,17 @@
 
 class TList;
 
-
-// some includes for delegeated methds
+#include "AliVEvent.h"
+// some includes for delegeated methods
 #include "AliESDCaloTrigger.h"
 #include "AliESDRun.h"
 #include "AliESDHeader.h"
 #include "AliESDTZERO.h"
 #include "AliESDZDC.h"
+
+// AliESDtrack has to be included so that the compiler 
+// knows its inheritance tree (= that it is a AliVParticle).
+#include "AliESDtrack.h"
 
 class AliESDfriend;
 class AliESDVZERO;
@@ -37,7 +41,6 @@ class AliESDVertex;
 class AliESDPmdTrack;
 class AliESDFMD;
 class AliESDkink;
-class AliESDtrack;
 class AliESDCaloCluster;
 class AliESDv0;
 class AliESDFMD;
@@ -49,7 +52,7 @@ class AliESDMuonTrack;
 class AliESD;
 class AliESDcascade;
 
-class AliESDEvent : public TObject {
+class AliESDEvent : public AliVEvent {
 public:
 
 
@@ -85,22 +88,22 @@ public:
   const AliESDRun*    GetESDRun() const {return fESDRun;}
 
   // Delegated methods for fESDRun
-  void    SetRunNumber(Int_t n) {fESDRun->SetRunNumber(n);}
-  Int_t   GetRunNumber() const {return fESDRun->GetRunNumber();}
-  void    SetPeriodNumber(Int_t n){fESDRun->SetPeriodNumber(n);}
-  Int_t   GetPeriodNumber() const {return fESDRun->GetPeriodNumber();}
-  void    SetMagneticField(Float_t mf){fESDRun->SetMagneticField(mf);}
-  Float_t GetMagneticField() const {return fESDRun->GetMagneticField();}
-  void SetDiamond(const AliESDVertex *vertex) { fESDRun->SetDiamond(vertex);}
-  Float_t GetDiamondX() const {return fESDRun->GetDiamondX();}
-  Float_t GetDiamondY() const {return fESDRun->GetDiamondY();}
-  Float_t GetSigma2DiamondX() const {return  fESDRun->GetSigma2DiamondX();}
-  Float_t GetSigma2DiamondY() const {return  fESDRun->GetSigma2DiamondY();}
-  void GetDiamondCovXY(Float_t cov[3]) const {fESDRun->GetDiamondCovXY(cov);}   
+  void     SetRunNumber(Int_t n) {fESDRun->SetRunNumber(n);}
+  Int_t    GetRunNumber() const {return fESDRun->GetRunNumber();}
+  void     SetPeriodNumber(UInt_t n){fESDRun->SetPeriodNumber(n);}
+  UInt_t   GetPeriodNumber() const {return fESDRun->GetPeriodNumber();}
+  void     SetMagneticField(Double_t mf){fESDRun->SetMagneticField(mf);}
+  Double_t GetMagneticField() const {return fESDRun->GetMagneticField();}
+  void     SetDiamond(const AliESDVertex *vertex) { fESDRun->SetDiamond(vertex);}
+  Float_t  GetDiamondX() const {return fESDRun->GetDiamondX();}
+  Float_t  GetDiamondY() const {return fESDRun->GetDiamondY();}
+  Float_t  GetSigma2DiamondX() const {return  fESDRun->GetSigma2DiamondX();}
+  Float_t  GetSigma2DiamondY() const {return  fESDRun->GetSigma2DiamondY();}
+  void     GetDiamondCovXY(Float_t cov[3]) const {fESDRun->GetDiamondCovXY(cov);}   
   
 
   // HEADER
-  const AliESDHeader* GetHeader() const {return fHeader;}
+  AliESDHeader* GetHeader() const {return fHeader;}
 
   // Delegated methods for fHeader
   void      SetTriggerMask(ULong64_t n) {fHeader->SetTriggerMask(n);}
@@ -123,11 +126,11 @@ public:
   const AliESDZDC*    GetESDZDC() const {return fESDZDC;}
 
   // Delegated methods for fESDZDC
-  Float_t GetZDCN1Energy() const {return fESDZDC->GetZDCN1Energy();}
-  Float_t GetZDCP1Energy() const {return fESDZDC->GetZDCP1Energy();}
-  Float_t GetZDCN2Energy() const {return fESDZDC->GetZDCN2Energy();}
-  Float_t GetZDCP2Energy() const {return fESDZDC->GetZDCP2Energy();}
-  Float_t GetZDCEMEnergy() const {return fESDZDC->GetZDCEMEnergy();}
+  Double_t GetZDCN1Energy() const {return fESDZDC->GetZDCN1Energy();}
+  Double_t GetZDCP1Energy() const {return fESDZDC->GetZDCP1Energy();}
+  Double_t GetZDCN2Energy() const {return fESDZDC->GetZDCN2Energy();}
+  Double_t GetZDCP2Energy() const {return fESDZDC->GetZDCP2Energy();}
+  Double_t GetZDCEMEnergy() const {return fESDZDC->GetZDCEMEnergy();}
   Int_t   GetZDCParticipants() const {return fESDZDC->GetZDCParticipants();}
   void    SetZDC(Float_t n1Energy, Float_t p1Energy, Float_t emEnergy,
                  Float_t n2Energy, Float_t p2Energy, Int_t participants)
@@ -300,7 +303,7 @@ public:
   void CreateStdContent();
   void SetStdNames();
   void CopyFromOldESD();
-  TList* GetList(){return fESDObjects;}
+  TList* GetList() const {return fESDObjects;}
 
 protected:
   AliESDEvent(const AliESDEvent&);
@@ -336,7 +339,7 @@ protected:
   AliESD    *fESDOld;              //! Old esd Structure
   Bool_t    fConnected;            //! flag if leaves are alreday connected
 
-  static const char* fESDListName[kESDListN];
+  static const char* fESDListName[kESDListN]; //!
 
   // Remove this stuff CKB
   Int_t        fEMCALClusters;   // Number of EMCAL clusters (subset of caloclusters)
@@ -345,7 +348,7 @@ protected:
   Int_t        fPHOSClusters;     // Number of PHOS clusters (subset of caloclusters)
   Int_t        fFirstPHOSCluster; // First PHOS cluster in the fCaloClusters list 
 
-  ClassDef(AliESDEvent,2)  //ESDEvent class 
+  ClassDef(AliESDEvent,1)  //ESDEvent class 
 };
 #endif 
 
