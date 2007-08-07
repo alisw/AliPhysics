@@ -29,7 +29,8 @@ ClassImp(AliAODJet)
 //______________________________________________________________________________
 AliAODJet::AliAODJet() :
     AliVirtualParticle(),
-    fMomentum(0)
+    fMomentum(0),
+    fRefTracks(new TRefArray())
 {
   // constructor
     fBackgEnergy[0]   = 0.;     
@@ -40,7 +41,8 @@ AliAODJet::AliAODJet() :
 
 AliAODJet::AliAODJet(Double_t px, Double_t py, Double_t pz, Double_t e):
     AliVirtualParticle(),
-    fMomentum(0)
+    fMomentum(0),
+    fRefTracks(new TRefArray())
 {
   // constructor
     fMomentum = new TLorentzVector(px, py, pz, e);
@@ -52,7 +54,8 @@ AliAODJet::AliAODJet(Double_t px, Double_t py, Double_t pz, Double_t e):
 
 AliAODJet::AliAODJet(TLorentzVector & p):
     AliVirtualParticle(),
-    fMomentum(0)
+    fMomentum(0),
+    fRefTracks(new TRefArray())
 {
   // constructor
     fMomentum = new TLorentzVector(p);
@@ -68,6 +71,7 @@ AliAODJet::~AliAODJet()
 {
   // destructor
     delete fMomentum;
+    delete fRefTracks;
 }
 
 //______________________________________________________________________________
@@ -76,12 +80,12 @@ AliAODJet::AliAODJet(const AliAODJet& jet) :
     fMomentum(0)
 {
   // Copy constructor
-    fMomentum = new TLorentzVector(*jet.fMomentum);
-    fBackgEnergy[0]   = jet.fBackgEnergy[0];     
+    fMomentum  = new TLorentzVector(*jet.fMomentum);
+    fRefTracks = new TRefArray(*jet.fRefTracks);
+    fBackgEnergy[0]   = jet.fBackgEnergy[0];
     fBackgEnergy[1]   = jet.fBackgEnergy[1];
-    fEffectiveArea[0] = jet.fEffectiveArea[0];   
-    fEffectiveArea[1] = jet.fEffectiveArea[1];   
-    
+    fEffectiveArea[0] = jet.fEffectiveArea[0];
+    fEffectiveArea[1] = jet.fEffectiveArea[1];
 }
 
 //______________________________________________________________________________
