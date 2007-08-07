@@ -11,12 +11,12 @@
 //-------------------------------------------------------------------------
 
 #include <TLorentzVector.h>
+#include "AliVParticle.h"
 #include <TArrayI.h>
-#include "AliVirtualParticle.h"
 #include "AliAODVertex.h"
 
 
-class AliAODJet : public AliVirtualParticle {
+class AliAODJet : public AliVParticle {
 
  public:
     AliAODJet();
@@ -25,7 +25,7 @@ class AliAODJet : public AliVirtualParticle {
     virtual ~AliAODJet();
     AliAODJet(const AliAODJet& jet); 
     AliAODJet& operator=(const AliAODJet& jet);
-// AliVirtualParticle methods
+// AliVParticle methods
     virtual Double_t Px()         const { return fMomentum->Px();      }
     virtual Double_t Py()         const { return fMomentum->Py();      }
     virtual Double_t Pz()         const { return fMomentum->Pz();      }
@@ -67,7 +67,7 @@ class AliAODJet : public AliVirtualParticle {
     TRefArray*      fRefTracks;          // array of references to the tracks belonging to the jet
     Double_t        fBackgEnergy[2];     // Subtracted background energy
     Double_t        fEffectiveArea[2];   // Effective jet area used for background subtraction
-    ClassDef(AliAODJet, 2);
+    ClassDef(AliAODJet,2);
 };
 
 #endif

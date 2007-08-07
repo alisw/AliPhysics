@@ -28,14 +28,14 @@ ClassImp(AliAODPhoton)
 
 //______________________________________________________________________________
 AliAODPhoton::AliAODPhoton() :
-    AliVirtualParticle(),
+    AliVParticle(),
     fMomentum(0)
 {
   // constructor
 }
 
 AliAODPhoton::AliAODPhoton(Double_t px, Double_t py, Double_t pz, Double_t e):
-    AliVirtualParticle(),
+    AliVParticle(),
     fMomentum(0)
 {
   // constructor
@@ -43,7 +43,7 @@ AliAODPhoton::AliAODPhoton(Double_t px, Double_t py, Double_t pz, Double_t e):
 }
 
 AliAODPhoton::AliAODPhoton(TLorentzVector & p):
-    AliVirtualParticle(),
+    AliVParticle(),
     fMomentum(0)
 {
   // constructor
@@ -60,7 +60,7 @@ AliAODPhoton::~AliAODPhoton()
 
 //______________________________________________________________________________
 AliAODPhoton::AliAODPhoton(const AliAODPhoton& photon) :
-    AliVirtualParticle(photon),
+    AliVParticle(photon),
     fMomentum(0)
 {
   // Copy constructor

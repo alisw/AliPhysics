@@ -22,14 +22,14 @@
 
 #include <TDatabasePDG.h>
 #include <TVector3.h>
-#include "AliVirtualParticle.h"
+#include "AliVParticle.h"
 #include "AliAODRecoDecay.h"
 
 ClassImp(AliAODRecoDecay)
 
 //--------------------------------------------------------------------------
 AliAODRecoDecay::AliAODRecoDecay() :
-  AliVirtualParticle(),
+  AliVParticle(),
   fSecondaryVtx(0x0),
   fCharge(0),
   fNProngs(0), fNDCA(0), fNPID(0),
@@ -49,7 +49,7 @@ AliAODRecoDecay::AliAODRecoDecay(AliAODVertex *vtx2,Int_t nprongs,
 				 Short_t charge,
 				 Double_t *px,Double_t *py,Double_t *pz,
 				 Double_t *d0) :
-  AliVirtualParticle(),
+  AliVParticle(),
   fSecondaryVtx(vtx2),
   fCharge(charge),
   fNProngs(nprongs), fNDCA(0), fNPID(0),
@@ -78,7 +78,7 @@ AliAODRecoDecay::AliAODRecoDecay(AliAODVertex *vtx2,Int_t nprongs,
 AliAODRecoDecay::AliAODRecoDecay(AliAODVertex *vtx2,Int_t nprongs,
 				 Short_t charge,
 				 Double_t *d0) :
-  AliVirtualParticle(),
+  AliVParticle(),
   fSecondaryVtx(vtx2),
   fCharge(charge),
   fNProngs(nprongs), fNDCA(0), fNPID(0),
@@ -97,7 +97,7 @@ AliAODRecoDecay::AliAODRecoDecay(AliAODVertex *vtx2,Int_t nprongs,
 }
 //--------------------------------------------------------------------------
 AliAODRecoDecay::AliAODRecoDecay(const AliAODRecoDecay &source) :
-  AliVirtualParticle(source),
+  AliVParticle(source),
   fSecondaryVtx(source.fSecondaryVtx),
   fCharge(source.fCharge),
   fNProngs(source.fNProngs), fNDCA(source.fNDCA), fNPID(source.fNPID),

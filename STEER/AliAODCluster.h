@@ -12,11 +12,11 @@
 
 #include <TRef.h>
 
-#include "AliVirtualParticle.h"
+#include "AliVParticle.h"
 #include "AliAODVertex.h"
 #include "AliAODTrack.h"
 
-class AliAODCluster : public AliVirtualParticle {
+class AliAODCluster : public AliVParticle {
 
  public:
   
@@ -149,7 +149,7 @@ class AliAODCluster : public AliVirtualParticle {
   Char_t        fType;
 
 
-  ClassDef(AliAODCluster,1);
+  ClassDef(AliAODCluster,2);
 };
 
 #endif

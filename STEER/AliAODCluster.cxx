@@ -26,7 +26,7 @@ ClassImp(AliAODCluster)
 
 //______________________________________________________________________________
 AliAODCluster::AliAODCluster() : 
-  AliVirtualParticle(),
+  AliVParticle(),
   fEnergy(0),
   fChi2(-999.),
   fID(-999),
@@ -52,7 +52,7 @@ AliAODCluster::AliAODCluster(Int_t id,
 			     AliAODVertex *prodVertex,
 			     AliAODTrack *primTrack,
 			     Char_t ttype) :
-  AliVirtualParticle(),
+  AliVParticle(),
   fEnergy(energy),
   fChi2(-999.),
   fID(id),
@@ -80,7 +80,7 @@ AliAODCluster::AliAODCluster(Int_t id,
 			     AliAODVertex *prodVertex,
 			     AliAODTrack *primTrack,
 			     Char_t ttype) :
-  AliVirtualParticle(),
+  AliVParticle(),
   fEnergy(energy),
   fChi2(-999.),
   fID(id),
@@ -109,7 +109,7 @@ AliAODCluster::~AliAODCluster()
 
 //______________________________________________________________________________
 AliAODCluster::AliAODCluster(const AliAODCluster& clus) :
-  AliVirtualParticle(clus),
+  AliVParticle(clus),
   fEnergy(clus.fEnergy),
   fChi2(clus.fChi2),
   fID(clus.fID),
@@ -133,7 +133,7 @@ AliAODCluster& AliAODCluster::operator=(const AliAODCluster& clus)
   // Assignment operator
   if(this!=&clus) {
 
-    AliVirtualParticle::operator=(clus);
+    AliVParticle::operator=(clus);
 
     clus.GetPosition(fPosition);
     clus.GetPID(fPID);

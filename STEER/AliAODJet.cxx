@@ -28,7 +28,7 @@ ClassImp(AliAODJet)
 
 //______________________________________________________________________________
 AliAODJet::AliAODJet() :
-    AliVirtualParticle(),
+    AliVParticle(),
     fMomentum(0),
     fRefTracks(new TRefArray())
 {
@@ -40,7 +40,7 @@ AliAODJet::AliAODJet() :
 }
 
 AliAODJet::AliAODJet(Double_t px, Double_t py, Double_t pz, Double_t e):
-    AliVirtualParticle(),
+    AliVParticle(),
     fMomentum(0),
     fRefTracks(new TRefArray())
 {
@@ -53,7 +53,7 @@ AliAODJet::AliAODJet(Double_t px, Double_t py, Double_t pz, Double_t e):
 }
 
 AliAODJet::AliAODJet(TLorentzVector & p):
-    AliVirtualParticle(),
+    AliVParticle(),
     fMomentum(0),
     fRefTracks(new TRefArray())
 {
@@ -76,7 +76,7 @@ AliAODJet::~AliAODJet()
 
 //______________________________________________________________________________
 AliAODJet::AliAODJet(const AliAODJet& jet) :
-    AliVirtualParticle(jet),
+    AliVParticle(jet),
     fMomentum(0)
 {
   // Copy constructor

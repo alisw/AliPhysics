@@ -11,9 +11,9 @@
 
 #include <TMath.h>
 #include "AliAODVertex.h"
-#include "AliVirtualParticle.h"
+#include "AliVParticle.h"
 
-class AliAODRecoDecay : public AliVirtualParticle {
+class AliAODRecoDecay : public AliVParticle {
 
  public:
 
@@ -136,7 +136,7 @@ class AliAODRecoDecay : public AliVirtualParticle {
   void    Print(Option_t* option = "") const;
   //void    PrintIndices() const {fSecondaryVtx->PrintIndices();}
 
-  // dummy functions for inheritance from AliVirtualParticle
+  // dummy functions for inheritance from AliVParticle
   Double_t E() const 
     {printf("Dummy function; use AliAODRecoDecay::E(UInt_t pdg) instead"); return (Double_t)-999.;}
   Double_t Y() const 
