@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.41  2007/07/11 13:43:30  hristov
+ * New class AliESDEvent, backward compatibility with the old AliESD (Christian)
+ *
  * Revision 1.40  2006/08/29 11:41:19  kharlov
  * Missing implementation of ctors and = operator are added
  *
@@ -35,11 +38,10 @@ class TFile ;
 //#include <iostream>
 
 // --- AliRoot header files ---
-
-
 class AliPHOSClusterizer ;
 class AliPHOSGeometry ;
 class AliESDEvent ;
+class AliPHOSQualAssDataMaker ; 
 
 class  AliPHOSTrackSegmentMaker : public TTask {
 
@@ -67,11 +69,16 @@ public:
 
   virtual void WriteTrackSegments() = 0;
   
+  AliPHOSQualAssDataMaker * GetQualAssDataMaker() const { return fQADM ; } 
+
 protected:
+
   TString fEventFolderName ;  // event folder name
   Int_t   fFirstEvent;        // first event to process
   Int_t   fLastEvent;         // last  event to process
   AliESDEvent * fESD;              //! ESD object
+
+  AliPHOSQualAssDataMaker * fQADM ; //!Quality Assurance Data Maker
 
   ClassDef( AliPHOSTrackSegmentMaker,5)  // Algorithm class to make PHOS track segments (Base Class)
 };

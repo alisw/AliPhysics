@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.6  2007/08/03 14:41:37  cvetan
+ * Missing header files
+ *
  * Revision 1.5  2007/08/03 13:52:16  kharlov
  * Working skeleton of matching the ESD tracks and ESD clusters (Iouri Belikov)
  *
@@ -29,7 +32,11 @@
 #include "AliPHOSTracker.h"
 #include "AliPHOSEmcRecPoint.h"
 #include "AliESDEvent.h"
+#include "AliPHOSQualAssDataMaker.h" 
+#include "AliPHOSGetter.h"
 #include "AliESDtrack.h"
+#include "AliPHOSTrackSegmentMakerv1.h"
+#include "AliPHOSPIDv1.h"
 
 //-------------------------------------------------------------------------
 //                          PHOS tracker.
@@ -52,15 +59,28 @@ const Double_t kZmax=65.; // Approximately: the maximal possible z-coord.(cm)
 
 
 
-AliPHOSTracker::AliPHOSTracker(): AliTracker(), fRunLoader(0) {
+//____________________________________________________________________________
+AliPHOSTracker::AliPHOSTracker(): 
+  AliTracker(), 
+  fRunLoader(0), 
+  fTSM(0x0), 
+  fPID(0x0) 
+{
   //--------------------------------------------------------------------
   // The default constructor
   //--------------------------------------------------------------------
   for (Int_t i=0; i<5; i++) 
       fModules[i]=new TClonesArray("AliPHOSEmcRecPoint",777);
+  
+  fTSM = new AliPHOSTrackSegmentMakerv1("to be set", "to be set");
+  fTSM->GetQualAssDataMaker()->Init(AliQualAss::kTRACKSEGMENTS) ; 
+  fPID = new AliPHOSPIDv1("to be set", "to be set");
+  fPID->GetQualAssDataMaker()->Init(AliQualAss::kRECPARTICLES) ;    
 }
 
-AliPHOSTracker::~AliPHOSTracker() {
+//____________________________________________________________________________
+AliPHOSTracker::~AliPHOSTracker() 
+{
   //--------------------------------------------------------------------
   // The destructor
   //--------------------------------------------------------------------
@@ -68,8 +88,11 @@ AliPHOSTracker::~AliPHOSTracker() {
       (fModules[i])->Delete();
       delete fModules[i];
   }
+  delete fTSM ;
+  delete fPID ; 
 }
 
+//____________________________________________________________________________
 Int_t AliPHOSTracker::LoadClusters(TTree *cTree) {
   //--------------------------------------------------------------------
   // This function loads the PHOS clusters
@@ -115,7 +138,7 @@ Int_t AliPHOSTracker::LoadClusters(TTree *cTree) {
   return 0;
 }
 
-
+//____________________________________________________________________________
 Int_t AliPHOSTracker::PropagateBack(AliESDEvent *esd) {
   //--------------------------------------------------------------------
   // Called by AliReconstruction 
@@ -224,6 +247,7 @@ Int_t AliPHOSTracker::PropagateBack(AliESDEvent *esd) {
   return 0;
 }
 
+//____________________________________________________________________________
 AliCluster *AliPHOSTracker::GetCluster(Int_t index) const {
   //--------------------------------------------------------------------
   // Returns the pointer to a given cluster
@@ -234,6 +258,7 @@ AliCluster *AliPHOSTracker::GetCluster(Int_t index) const {
   return (AliCluster*)(fModules[m])->UncheckedAt(i);
 }
 
+//____________________________________________________________________________
 void AliPHOSTracker::UnloadClusters() {
   //--------------------------------------------------------------------
   // This function unloads the PHOS clusters
@@ -251,44 +276,65 @@ void AliPHOSTracker::UnloadClusters() {
 #include "AliPHOSPIDv1.h"
 #include "AliRunLoader.h"
 
+//____________________________________________________________________________
 Int_t AliPHOSTracker::PropagateBackOld(AliESDEvent *esd) {
   // Bad function: it uses RunLoader ;(  
   // Creates the tracksegments and Recparticles
   // Makes the PID
   
-  Int_t eventNumber = fRunLoader->GetEventNumber() ;
+  AliPHOSGetter * gime = AliPHOSGetter::Instance() ;  
+  Int_t eventNumber = gime->PhosLoader()->GetRunLoader()->GetEventNumber() ;
 
-  TString headerFile(fRunLoader->GetFileName()) ; 
-  TString branchName(fRunLoader->GetEventFolder()->GetName()) ;  
- 
-  AliPHOSTrackSegmentMakerv1 tsm(headerFile, branchName);
-//  AliPHOSTrackSegmentMakerv2 tsm(headerFile, branchName);
-  tsm.SetESD(esd) ; 
-  AliPHOSPIDv1 pid(headerFile, branchName);
-  pid.SetESD(esd) ; 
-
-  //PH  SetDebug() ;
+  TString headerFile(gime->PhosLoader()->GetRunLoader()->GetFileName()) ; 
+  TString branchName(gime->PhosLoader()->GetRunLoader()->GetEventFolder()->GetName()) ;  
 
   // do current event; the loop over events is done by AliReconstruction::Run()
-  tsm.SetEventRange(eventNumber, eventNumber) ; 
-  pid.SetEventRange(eventNumber, eventNumber) ; 
-  if ( Debug() ) {
-   tsm.ExecuteTask("deb all") ;
-   pid.ExecuteTask("deb all") ;
-  }
-  else {
-    tsm.ExecuteTask("") ;
-    pid.ExecuteTask("") ;
-  }
+
+  fTSM->SetTitle(headerFile) ; 
+  fTSM->SetEventFolderName(branchName) ;
+  fTSM->SetESD(esd) ; 
+  fTSM->SetEventRange(eventNumber, eventNumber) ; 
+  if ( Debug() ) 
+   fTSM->ExecuteTask("deb all") ;
+  else 
+    fTSM->ExecuteTask("") ;
   
+  fTSM->GetQualAssDataMaker()->SetData(gime->TrackSegments()) ; 
+  fTSM->GetQualAssDataMaker()->Exec(AliQualAss::kTRACKSEGMENTS) ; 
+
+  fPID->SetTitle(headerFile) ; 
+  fPID->SetEventFolderName(branchName) ;
+  fPID->SetESD(esd) ; 
+  fPID->SetEventRange(eventNumber, eventNumber) ; 
+  if ( Debug() ) 
+   fPID->ExecuteTask("deb all") ;
+  else 
+    fPID->ExecuteTask("") ;
+
+  fPID->GetQualAssDataMaker()->SetData(gime->RecParticles()) ; 
+  fPID->GetQualAssDataMaker()->Exec(AliQualAss::kRECPARTICLES) ; 
+  
+  if ( eventNumber == gime->MaxEvent()-1 ) {
+	fTSM->GetQualAssDataMaker()->Finish(AliQualAss::kTRACKSEGMENTS) ; 
+	fPID->GetQualAssDataMaker()->Finish(AliQualAss::kRECPARTICLES) ; 
+  }
+	
   return 0;
 }
 
-AliPHOSTracker::AliPHOSTracker(AliRunLoader *l): AliTracker(), fRunLoader(l) {
+//____________________________________________________________________________
+AliPHOSTracker::AliPHOSTracker(AliRunLoader *l) : 
+  AliTracker(), 
+  fRunLoader(0), 
+  fTSM(0x0), 
+  fPID(0x0) 
+{
   //--------------------------------------------------------------------
   // Bad constructor:  uses RunLoader ;(
   //--------------------------------------------------------------------
   for (Int_t i=0; i<5; i++) 
       fModules[i]=new TClonesArray("AliPHOSEmcRecPoint",777);
+  fTSM = new AliPHOSTrackSegmentMakerv1("to be set", "to be set");
+  fPID = new AliPHOSPIDv1("to be set", "to be set");
 }
 

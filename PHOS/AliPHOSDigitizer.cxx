@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.96  2007/04/28 10:43:36  policheh
+ * Dead channels simulation: digit energy sets to 0.
+ *
  * Revision 1.95  2007/04/10 07:20:52  kharlov
  * Decalibration should use the same CDB as calibration in AliPHOSClusterizerv1
  *
@@ -109,6 +112,7 @@
 #include "AliPHOSSDigitizer.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSTick.h"
+#include "AliPHOSQualAssDataMaker.h" 
 
 ClassImp(AliPHOSDigitizer)
 
@@ -138,7 +142,9 @@ AliPHOSDigitizer::AliPHOSDigitizer() :
   fNADCcpv(0),
   fEventFolderName(""),
   fFirstEvent(0),
-  fLastEvent(0)
+  fLastEvent(0), 
+  fQADM (0x0), 
+  fEventCounter(0)
 {
   // ctor
   InitParameters() ; 
@@ -171,13 +177,18 @@ AliPHOSDigitizer::AliPHOSDigitizer(TString alirunFileName,
   fNADCcpv(0),
   fEventFolderName(eventFolderName),
   fFirstEvent(0),
-  fLastEvent(0)
+  fLastEvent(0), 
+  fQADM (0x0), 
+  fEventCounter(0)
 {
   // ctor
   InitParameters() ; 
   Init() ;
   fDefaultInit = kFALSE ; 
   fManager = 0 ;                     // We work in the standalong mode
+  //Initialize the quality assurance data maker only once
+  fQADM = new AliPHOSQualAssDataMaker() ;  
+  GetQualAssDataMaker()->Init(AliQualAss::kDIGITS) ;    
 }
 
 //____________________________________________________________________________ 
@@ -205,11 +216,16 @@ AliPHOSDigitizer::AliPHOSDigitizer(const AliPHOSDigitizer & d) :
   fNADCcpv(d.fNADCcpv),
   fEventFolderName(d.fEventFolderName),
   fFirstEvent(d.fFirstEvent),
-  fLastEvent(d.fLastEvent)
+  fLastEvent(d.fLastEvent), 
+  fQADM (d.fQADM), 
+  fEventCounter(0)
+
 {
   // copyy ctor 
   SetName(d.GetName()) ; 
   SetTitle(d.GetTitle()) ; 
+//Initialize the quality assurance data maker only once
+  GetQualAssDataMaker()->Init(AliQualAss::kDIGITS) ;    
 }
 
 //____________________________________________________________________________ 
@@ -237,13 +253,19 @@ AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * rd) :
   fNADCcpv(0),
   fEventFolderName(fManager->GetInputFolderName(0)),
   fFirstEvent(0),
-  fLastEvent(0)
+  fLastEvent(0), 
+  fQADM (0x0), 
+  fEventCounter(0)
+
 {
   // ctor Init() is called by RunDigitizer
   fManager = rd ; 
   SetTitle(dynamic_cast<AliStream*>(fManager->GetInputStream(0))->GetFileName(0));
   InitParameters() ; 
   fDefaultInit = kFALSE ; 
+//Initialize the quality assurance data maker only once
+  fQADM = new AliPHOSQualAssDataMaker() ;  
+  GetQualAssDataMaker()->Init(AliQualAss::kDIGITS) ;    
 }
 
 //____________________________________________________________________________ 
@@ -256,7 +278,9 @@ AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * rd) :
   // dtor
   delete [] fInputFileNames ; 
   delete [] fEventNames ; 
- 
+
+  delete fQADM ; 
+
 }
 
 //____________________________________________________________________________
@@ -595,11 +619,15 @@ void AliPHOSDigitizer::Exec(Option_t *option)
   Int_t ievent ;
 
   for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
- 
+    fEventCounter++ ; 
     gime->Event(ievent,"S") ;
 
     Digitize(ievent) ; //Add prepared SDigits to digits and add the noise
 
+    //makes the quality assurance data
+    GetQualAssDataMaker()->SetData(gime->Digits()) ; 
+    GetQualAssDataMaker()->Exec(AliQualAss::kDIGITS) ; 
+				   
     WriteDigits() ;
 
     if(strstr(option,"deb"))
@@ -608,6 +636,10 @@ void AliPHOSDigitizer::Exec(Option_t *option)
     //increment the total number of Digits per run 
     fDigitsInRun += gime->Digits()->GetEntriesFast() ;  
  }
+ 
+   //Write the quality assurance data only after the last event 
+ if ( fEventCounter == gime->MaxEvent() ) 
+	GetQualAssDataMaker()->Finish(AliQualAss::kDIGITS) ;
   
   gime->PhosLoader()->CleanDigitizer();
 

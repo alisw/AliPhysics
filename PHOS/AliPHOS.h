@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.72  2007/02/13 10:52:08  policheh
+ * Raw2SDigits() implemented
+ *
  * Revision 1.71  2007/02/05 10:43:25  hristov
  * Changes for correct initialization of Geant4 (Mihaela)
  *
@@ -93,6 +96,9 @@ public:
   virtual AliLoader* MakeLoader(const char* topfoldername);
   virtual void    SetTreeAddress();   
   virtual const TString Version() const {return TString(" ") ; } 
+
+  //QA methods
+  virtual void   CheckQA()  ; 
 
  private:                                        
   AliPHOS(AliPHOS & phos);

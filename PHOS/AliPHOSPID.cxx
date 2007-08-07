@@ -34,6 +34,7 @@
 #include "AliConfig.h"
 #include "AliPHOSPID.h"
 #include "AliPHOSGetter.h"
+#include "AliPHOSQualAssDataMaker.h" 
 
 ClassImp(AliPHOSPID)
 
@@ -42,7 +43,9 @@ AliPHOSPID::AliPHOSPID():
   TTask("",""),
   fEventFolderName(""),
   fFirstEvent(0),
-  fLastEvent(-1)
+  fLastEvent(-1),
+  fESD(0x0), 
+  fQADM(0x0)
 {
   // ctor
 }
@@ -53,15 +56,21 @@ AliPHOSPID::AliPHOSPID(const TString alirunFileName, const TString eventFolderNa
   TTask("PHOS"+AliConfig::Instance()->GetPIDTaskName(), alirunFileName), 
   fEventFolderName(eventFolderName),
   fFirstEvent(0),
-  fLastEvent(-1)
+  fLastEvent(-1), 
+  fESD(0x0), 
+  fQADM(0x0)
 {
   // ctor
+  fQADM = new  AliPHOSQualAssDataMaker() ; //!Quality Assurance Data Maker
+  GetQualAssDataMaker()->Init(AliQualAss::kRECPARTICLES) ;    
 }
 
 //____________________________________________________________________________
 AliPHOSPID::AliPHOSPID(const AliPHOSPID & pid) :
   TTask(pid),fEventFolderName(pid.GetEventFolderName()),
-  fFirstEvent(pid.GetFirstEvent()),fLastEvent(pid.GetLastEvent())
+  fFirstEvent(pid.GetFirstEvent()),fLastEvent(pid.GetLastEvent()), 
+  fESD(pid.fESD), 
+  fQADM(pid.fQADM)
 {
   // Copy constructor
 }
@@ -72,5 +81,6 @@ AliPHOSPID::~AliPHOSPID()
  //Remove this from the parental task before destroying
   if(AliPHOSGetter::Instance()->PhosLoader())
     AliPHOSGetter::Instance()->PhosLoader()->CleanPIDTask();
+  delete fQADM ; 
 }
 

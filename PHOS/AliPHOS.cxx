@@ -16,6 +16,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.113  2007/07/18 16:29:54  policheh
+ * Raw Sdigits energy converted to GeV.
+ *
  * Revision 1.112  2007/02/25 22:59:13  policheh
  * Digits2Raw(): ALTRO buffer and mapping created per each DDL.
  *
@@ -39,55 +42,6 @@
  *
  * Revision 1.105  2007/01/12 21:44:29  kharlov
  * Simulate and reconstruct two gains simulaneouslsy
- *
- * Revision 1.104  2006/11/23 13:40:44  hristov
- * Common class for raw data reading and ALTRO mappiing for PHOS and EMCAL (Gustavo, Cvetan)
- *
- * Revision 1.103  2006/11/14 17:11:15  hristov
- * Removing inheritances from TAttLine, TAttMarker and AliRndm in AliModule. The copy constructor and assignment operators are moved to the private part of the class and not implemented. The corresponding changes are propagated to the detectors
- *
- * Revision 1.102  2006/10/27 17:14:27  kharlov
- * Introduce AliDebug and AliLog (B.Polichtchouk)
- *
- * Revision 1.101  2006/10/13 06:47:29  kharlov
- * Simulation of RAW data applies real mapping (B.Polichtchouk)
- *
- * Revision 1.100  2006/08/11 12:36:26  cvetan
- * Update of the PHOS code needed in order to read and reconstruct the beam test raw data (i.e. without an existing galice.root)
- *
- * Revision 1.99  2006/06/28 11:36:09  cvetan
- * New detector numbering scheme (common for DAQ/HLT/Offline). All the subdetectors shall use the AliDAQ class for the sim and rec of the raw data. The AliDAQ and raw reader classes now provide all the necessary interfaces to write and select the detector specific raw-data payload. Look into the AliDAQ.h and AliRawReader.h for more details.
- *
- * Revision 1.98  2006/05/11 11:30:48  cvetan
- * Major changes in AliAltroBuffer. Now it can be used only for writing of raw data. All the corresponding read method are removed. It is based now on AliFstream in order to avoid endianess problems. The altro raw data is written always with little endian
- *
- * Revision 1.97  2006/04/22 10:30:17  hristov
- * Add fEnergy to AliPHOSDigit and operate with EMC amplitude in energy units (Yu.Kharlov)
- *
- * Revision 1.96  2006/04/07 08:41:59  hristov
- * Follow AliAlignObj framework and remove AliPHOSAlignData (Yu.Kharlov)
- *
- * Revision 1.95  2006/03/14 19:40:41  kharlov
- * Remove De-digitizing of raw data and digitizing the raw data fit
- *
- * Revision 1.94  2006/03/07 18:56:25  kharlov
- * CDB is passed via environment variable
- *
- * Revision 1.93  2005/11/22 08:45:11  kharlov
- * Calibration is read from CDB if any (Boris Polichtchouk)
- *
- * Revision 1.92  2005/11/03 13:09:19  hristov
- * Removing meaningless const declarations (linuxicc)
- *
- * Revision 1.91  2005/07/27 15:08:53  kharlov
- * Mixture ArCO2 is corrected
- *
- * Revision 1.90  2005/06/17 07:39:07  hristov
- * Removing GetDebug and SetDebug from AliRun and AliModule. Using AliLog for the messages
- *
- * Revision 1.89  2005/05/28 12:10:07  schutz
- * Copy constructor is corrected (by T.P.)
- *
  */
 
 //_________________________________________________________________________
@@ -132,6 +86,7 @@ class TFile;
 #include "AliDAQ.h"
 #include "AliPHOSRawDecoder.h"
 #include "AliPHOSRawDigiProducer.h"
+#include "AliPHOSQualAssChecker.h"
 
 ClassImp(AliPHOS)
 
@@ -676,4 +631,13 @@ Bool_t AliPHOS::Raw2SDigits(AliRawReader* rawReader)
   fLoader->WriteSDigits("OVERWRITE");
   return kTRUE;
     
+}
+
+//____________________________________________________________________________
+void AliPHOS::CheckQA()   
+{ 
+  // check the Quality Assurance data
+
+  AliPHOSQualAssChecker phosQA ;
+  phosQA.Exec() ; 
 }

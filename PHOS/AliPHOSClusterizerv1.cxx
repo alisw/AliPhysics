@@ -18,6 +18,10 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.109  2007/07/24 17:20:35  policheh
+ * Usage of RecoParam objects instead of hardcoded parameters in reconstruction.
+ * (See $ALICE_ROOT/PHOS/macros/BeamTest2006/RawReconstruction.C).
+ *
  * Revision 1.108  2007/06/18 07:00:51  kharlov
  * Bug fix for attempt to use AliPHOSEmcRecPoint after its deletion
  *
@@ -164,6 +168,7 @@
 #include "AliCDBEntry.h"
 #include "AliPHOSReconstructor.h"
 #include "AliPHOSRecoParam.h"
+#include "AliPHOSQualAssDataMaker.h" 
 
 ClassImp(AliPHOSClusterizerv1)
   
@@ -177,7 +182,7 @@ AliPHOSClusterizerv1::AliPHOSClusterizerv1() :
   fCpvClusteringThreshold(0), fEmcMinE(0),              fCpvMinE(0),
   fEmcLocMaxCut(0),           fW0(0),                   fCpvLocMaxCut(0),
   fW0CPV(0),                  fRecPointsInRun(0),       fEmcTimeGate(0),
-  fIsOldRCUFormat(0)
+  fIsOldRCUFormat(0), fEventCounter(0)
 {
   // default ctor (to be used mainly by Streamer)
   
@@ -195,7 +200,7 @@ AliPHOSClusterizerv1::AliPHOSClusterizerv1(const TString alirunFileName, const T
   fCpvClusteringThreshold(0), fEmcMinE(0),              fCpvMinE(0),
   fEmcLocMaxCut(0),           fW0(0),                   fCpvLocMaxCut(0),
   fW0CPV(0),                  fRecPointsInRun(0),       fEmcTimeGate(0),
-  fIsOldRCUFormat(0)
+  fIsOldRCUFormat(0), fEventCounter(0)
 {
   // ctor with the indication of the file where header Tree and digits Tree are stored
   
@@ -214,7 +219,7 @@ AliPHOSClusterizerv1::AliPHOSClusterizerv1(const AliPHOSClusterizerv1 & obj) :
   fCpvClusteringThreshold(0), fEmcMinE(0),              fCpvMinE(0),
   fEmcLocMaxCut(0),           fW0(0),                   fCpvLocMaxCut(0),
   fW0CPV(0),                  fRecPointsInRun(0),       fEmcTimeGate(0),
-  fIsOldRCUFormat(0)
+  fIsOldRCUFormat(0), fEventCounter(0)
 {
   // Copy constructor
 }
@@ -315,6 +320,7 @@ void AliPHOSClusterizerv1::Exec(Option_t *option)
 
   Int_t ievent ;
   for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
+	fEventCounter++ ; 
     if (fRawReader == 0)
       gime->Event(ievent    ,"D"); // Read digits from simulated data
     else {
@@ -333,7 +339,13 @@ void AliPHOSClusterizerv1::Exec(Option_t *option)
 
     if(fToUnfold)             
       MakeUnfolding() ;
-    
+
+    //makes the quality assurance data
+    GetQualAssDataMaker()->SetData(gime->EmcRecPoints()) ; 
+    GetQualAssDataMaker()->Exec(AliQualAss::kRECPOINTS) ; 
+    GetQualAssDataMaker()->SetData(gime->CpvRecPoints()) ; 
+    GetQualAssDataMaker()->Exec(AliQualAss::kRECPOINTS) ; 
+  
     WriteRecPoints();
 
     if(strstr(option,"deb"))  
@@ -344,7 +356,11 @@ void AliPHOSClusterizerv1::Exec(Option_t *option)
     fRecPointsInRun += gime->CpvRecPoints()->GetEntriesFast() ;  
   }
   
-  if(fWrite) //do not unload in "on flight" mode
+  //Write the quality assurance data only after the last event 
+  if ( fEventCounter == gime->MaxEvent()) 
+	GetQualAssDataMaker()->Finish(AliQualAss::kRECPOINTS) ;
+
+ if(fWrite) //do not unload in "on flight" mode
     Unload();
   
   if(strstr(option,"tim")){

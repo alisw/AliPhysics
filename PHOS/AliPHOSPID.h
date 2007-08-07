@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.39  2007/07/11 13:43:30  hristov
+ * New class AliESDEvent, backward compatibility with the old AliESD (Christian)
+ *
  * Revision 1.38  2007/04/01 15:40:15  kharlov
  * Correction for actual vertex position implemented
  *
@@ -43,6 +46,7 @@ class AliESDEvent ;
 class AliPHOSGeometry ;
 class AliPHOSClusterizer ;
 class AliPHOSTrackSegmentMaker ;
+class AliPHOSQualAssDataMaker ; 
 
 class AliPHOSPID : public TTask {
 
@@ -69,15 +73,18 @@ class AliPHOSPID : public TTask {
 
   virtual const char * Version() const { Warning("Version", "not defined" ) ; return 0 ; }  
   virtual void WriteRecParticles() = 0;
+  AliPHOSQualAssDataMaker * GetQualAssDataMaker() const { return fQADM ; } 
 
 protected:
+
   TString fEventFolderName ;  // event folder name
   Int_t   fFirstEvent;        // first event to process
   Int_t   fLastEvent;         // last  event to process
-  AliESDEvent * fESD;              //! ESD object
+  AliESDEvent * fESD;         //! ESD object
 
 private: 
   virtual void Init() { Warning("Init", "not defined" ) ; } 
+  AliPHOSQualAssDataMaker * fQADM ; //!Quality Assurance Data Maker
 
   ClassDef(AliPHOSPID,5)  // Particle Identifier algorithm (base class)
 

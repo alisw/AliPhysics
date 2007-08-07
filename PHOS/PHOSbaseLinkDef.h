@@ -33,4 +33,7 @@
 #pragma link C++ class AliPHOSSurvey+;
 #pragma link C++ class AliPHOSSurvey1+;
 
+#pragma link C++ class AliPHOSQualAssDataMaker+;
+#pragma link C++ class AliPHOSQualAssChecker+;
+
 #endif

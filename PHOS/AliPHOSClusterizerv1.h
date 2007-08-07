@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.51  2007/04/11 11:55:45  policheh
+ * SetDistancesToBadChannels() added.
+ *
  * Revision 1.50  2007/03/28 19:18:15  kharlov
  * RecPoints recalculation in TSM removed
  *
@@ -167,6 +170,7 @@ private:
   Float_t fEmcTimeGate ;             // Maximum time difference between the digits in ont EMC cluster
 
   Bool_t  fIsOldRCUFormat;           // assume old RCU raw data format
+  Int_t fEventCounter ;              //! counts the events processed
 
   ClassDef(AliPHOSClusterizerv1,4)   // Clusterizer implementation version 1
 

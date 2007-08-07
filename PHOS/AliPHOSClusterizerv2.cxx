@@ -35,6 +35,7 @@
 #include "AliPHOSRecCpvManager.h"
 #include "AliPHOSRecEmcManager.h"
 #include "AliPHOSGeometry.h"
+#include "AliPHOSQualAssDataMaker.h" 
 
 ClassImp(AliPHOSClusterizerv2)
 
@@ -173,6 +174,12 @@ void AliPHOSClusterizerv2::Exec(Option_t* option)
 	 gime->CpvRecPoints()->GetEntries(),cpvRecPoints->GetEntries(), 
 	 nOldEmc, 
 	 gime->EmcRecPoints()->GetEntries(), emcRecPoints->GetEntries() )); 
+    
+    GetQualAssDataMaker()->Init(AliQualAss::kRECPOINTS) ;    
+    GetQualAssDataMaker()->SetData(gime->EmcRecPoints()) ; 
+    GetQualAssDataMaker()->Exec(AliQualAss::kRECPOINTS) ; 
+    GetQualAssDataMaker()->SetData(gime->CpvRecPoints()) ; 
+    GetQualAssDataMaker()->Exec(AliQualAss::kRECPOINTS) ; 
 
     WriteRecPoints();
 

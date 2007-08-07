@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.34  2006/04/29 20:25:30  hristov
+ * Decalibration is implemented (Yu.Kharlov)
+ *
  * Revision 1.33  2005/05/28 14:19:04  schutz
  * Compilation warnings fixed by T.P.
  *
@@ -32,6 +35,7 @@ class TClonesArray ;
 // --- AliRoot header files ---
 #include "AliDigitizer.h"
 class AliPHOSSDigitizer ;
+class AliPHOSQualAssDataMaker ; 
 class AliRunDigitizer ;
 
 class AliPHOSDigitizer: public AliDigitizer {
@@ -88,7 +92,9 @@ public:
     return *this ; 
   }
 
+  
 private:
+  AliPHOSQualAssDataMaker * GetQualAssDataMaker() const { return fQADM ; } 
 
   virtual Bool_t Init() ; 
   void    InitParameters() ; 
@@ -135,9 +141,11 @@ private:
   Int_t   fNADCcpv ;                // number of channels in CPV ADC
 
   TString fEventFolderName;         // skowron: name of EFN to read data from in stand alone mode
-  Int_t   fFirstEvent;        // first event to process
-  Int_t   fLastEvent;         // last  event to process 
- 
+  Int_t   fFirstEvent;              // first event to process
+  Int_t   fLastEvent;               // last  event to process 
+  AliPHOSQualAssDataMaker * fQADM ; //!Quality Assurance Data Maker
+  Int_t fEventCounter ;             //! counts the events processed
+
   ClassDef(AliPHOSDigitizer,3)  // description 
 
 };
