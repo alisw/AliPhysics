@@ -135,7 +135,7 @@ void AliJetESDReader::ConnectTree(TTree* tree, TObject* data) {
 
 //____________________________________________________________________________
 
-Bool_t AliJetESDReader::FillMomentumArray(Int_t event)
+Bool_t AliJetESDReader::FillMomentumArray(Int_t /*event*/)
 {
   // Fill momentum array
 
