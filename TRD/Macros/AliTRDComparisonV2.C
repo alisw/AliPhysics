@@ -31,6 +31,7 @@
   #include "AliRunLoader.h"
   #include "AliRun.h"
   #include "AliESDEvent.h"
+  #include "AliESDtrack.h"
 #endif
 
 Int_t GoodTracksTRD(const Char_t *dir=".");
@@ -438,7 +439,7 @@ Int_t GoodTracksTRD(const Char_t *dir) {
 
 
      TTree *TR=rl->TreeTR();
-     TBranch *branch=TR->GetBranch("TRD");
+     TBranch *branch=TR->GetBranch("TrackReferences");
      if (branch==0) {
         ::Error("GoodTracksTRD","No TRD track references !");
         delete rl;
@@ -460,9 +461,14 @@ Int_t GoodTracksTRD(const Char_t *dir) {
 	 AliTrackReference *ref0=(AliTrackReference *)refs->UncheckedAt(0);
          if (ref0->LocalX() > 300.) continue;
 
-	 AliTrackReference *refn=(AliTrackReference *)refs->UncheckedAt(n-1);
-         if (refn->LocalX() < 363.) continue;
-
+	 AliTrackReference *refn=0x0;
+	 for (Int_t iref=n-1; iref>=0; --iref) {
+	   refn = (AliTrackReference *)refs->UncheckedAt(iref);
+	   if (refn->LocalX() > 363. &&
+	       refn->DetectorId() == AliTrackReference::kTRD) break;
+	   refn = 0x0;
+	 }
+	 if (!refn) continue;
          if (TMath::Abs(ref0->Alpha() - refn->Alpha()) > 1e-5) continue;   
 
          new((*trdRefs)[nt++]) AliTrackReference(*refn);
