@@ -14,21 +14,27 @@ void runProofESD(const char *selectorfile) {
   //that contains the latest ANALYSIS developments
   gSystem->AddIncludePath("-I\"$ALICE_ROOT/include\"");
   printf("****** Connect to PROOF *******\n");
-  TProof::Open("proof://<username>@lxb6046.cern.ch"); 
+  TProof::Open("proof://pchrist@lxb6046.cern.ch"); 
 
   // Enable the Analysis Package
   gProof->UploadPackage("ESD.par");
   gProof->EnablePackage("ESD");
+  gProof->UploadPackage("AOD.par");
+  gProof->EnablePackage("AOD");
   gProof->UploadPackage("ANALYSIS.par");
   gProof->EnablePackage("ANALYSIS");
+
+  gProof->GetManager()->ShowROOTVersions();
+  gProof->ShowEnabledPackages();
   
   // You should get this macro and the txt file from:
   // http://aliceinfo.cern.ch/Offline/Analysis/CAF/
   gROOT->LoadMacro("CreateESDChain.C");
   TChain* chain = 0x0;
-  chain = CreateESDChain("ESD100_110_v2.txt",10);
+  chain = CreateESDChain("ESD1.txt",100);
 
   gROOT->LoadMacro(selectorfile);
+  gProof->Load(selectorfile);
   gROOT->LoadMacro("demoCAF.C");
   demoCAF(chain,"proof");
  

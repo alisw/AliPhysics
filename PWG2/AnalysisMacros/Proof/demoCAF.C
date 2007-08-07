@@ -1,5 +1,5 @@
 //________________________________________________________________________
-void demoCAF(TChain *chain, const char* mode) {
+void demoCAF(TChain *chain, const char *mode="proof") {
   //____________________________________________//
   // Make the analysis manager
   AliAnalysisManager *mgr = new AliAnalysisManager("testAnalysis");
@@ -9,14 +9,15 @@ void demoCAF(TChain *chain, const char* mode) {
   mgr->AddTask(task1);
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("cchain1",TChain::Class(),AliAnalysisManager::kInputContainer);
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("chist1", TH1::Class(),AliAnalysisManager::kOutputContainer, "Pt.ESD.1.root");
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("chist2", TH1::Class(),AliAnalysisManager::kOutputContainer, "Pt.ESD.1.root");
   //____________________________________________//
-                                                                                                                                              
+
   mgr->ConnectInput(task1,0,cinput1);
   mgr->ConnectOutput(task1,0,coutput1);
+  mgr->SetDebugLevel(2);
   if (mgr->InitAnalysis()) mgr->PrintStatus();
   else return;
-
+  
   mgr->StartAnalysis(mode,chain);
 }                         
                       
