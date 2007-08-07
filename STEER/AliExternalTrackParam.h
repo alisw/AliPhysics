@@ -18,8 +18,9 @@
  * system rotated by angle alpha with respect to the global coord.system.    *
  *        Origin: I.Belikov, CERN, Jouri.Belikov@cern.ch                     *
  *****************************************************************************/
-#include "TObject.h"
 #include "TMath.h"
+
+#include "AliVParticle.h"
 
 const Double_t kAlmost1=0.999;
 const Double_t kAlmost0=1e-33;
@@ -33,10 +34,11 @@ class AliESDVertex;
 
 Double_t ApproximateBetheBloch(Double_t);
 
-class AliExternalTrackParam: public TObject {
+class AliExternalTrackParam: public AliVParticle {
  public:
   AliExternalTrackParam();
   AliExternalTrackParam(const AliExternalTrackParam &);
+  AliExternalTrackParam& operator=(const AliExternalTrackParam & trkPar);
   AliExternalTrackParam(Double_t x, Double_t alpha, 
 			const Double_t param[5], const Double_t covar[15]);
   virtual ~AliExternalTrackParam(){}
@@ -59,7 +61,7 @@ class AliExternalTrackParam: public TObject {
   Double_t GetZ()    const {return fP[1];}
   Double_t GetSnp()  const {return fP[2];}
   Double_t GetTgl()  const {return fP[3];}
-  Double_t Get1Pt()  const {return fP[4];}
+  Double_t GetSigned1Pt()  const {return fP[4];}
 
   Double_t GetSigmaY2() const {return fC[0];}
   Double_t GetSigmaZY() const {return fC[1];}
@@ -77,9 +79,25 @@ class AliExternalTrackParam: public TObject {
   Double_t GetSigma1PtTgl() const {return fC[13];}
   Double_t GetSigma1Pt2() const {return fC[14];}
 
+  // additional functions for AliVParticle
+  Double_t Px() const;
+  Double_t Py() const;
+  Double_t Pz() const;
+  Double_t Pt() const { return TMath::Abs(GetSignedPt()); }
+  Double_t P() const { return GetP(); }
+  Double_t OneOverPt() const { return 1./Pt(); }
+  Double_t Phi() const;
+  Double_t Theta() const;
+  virtual Double_t E() const;
+  virtual Double_t M() const;
+  Double_t Eta() const;
+  virtual Double_t Y() const;
+  Short_t  Charge() const { return (Short_t)GetSign(); }
+  const Double_t *PID() const { return 0x0; }
+
   Double_t GetSign() const {return (fP[4]>0) ? 1 : -1;}
   Double_t GetP() const;
-  Double_t GetPt() const {
+  Double_t GetSignedPt() const {
     return (TMath::Abs(fP[4])>kAlmost0) ? 1./fP[4]:TMath::Sign(kVeryBig,fP[4]);
   }
   Double_t Get1P() const;
@@ -140,7 +158,7 @@ private:
 
   static Double32_t    fgMostProbablePt; // "Most probable" pt
                                          // (to be used if Bz=0)
-  ClassDef(AliExternalTrackParam, 6)
+  ClassDef(AliExternalTrackParam, 7)
 };
 
 inline void AliExternalTrackParam::ResetCovariance(Double_t s2) {

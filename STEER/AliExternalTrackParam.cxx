@@ -36,7 +36,7 @@ Double32_t AliExternalTrackParam::fgMostProbablePt=kMostProbablePt;
  
 //_____________________________________________________________________________
 AliExternalTrackParam::AliExternalTrackParam() :
-  TObject(),
+  AliVParticle(),
   fX(0),
   fAlpha(0)
 {
@@ -49,7 +49,7 @@ AliExternalTrackParam::AliExternalTrackParam() :
 
 //_____________________________________________________________________________
 AliExternalTrackParam::AliExternalTrackParam(const AliExternalTrackParam &track):
-  TObject(track),
+  AliVParticle(track),
   fX(track.fX),
   fAlpha(track.fAlpha)
 {
@@ -61,10 +61,29 @@ AliExternalTrackParam::AliExternalTrackParam(const AliExternalTrackParam &track)
 }
 
 //_____________________________________________________________________________
+AliExternalTrackParam& AliExternalTrackParam::operator=(const AliExternalTrackParam &trkPar)
+{
+  //
+  // assignment operator
+  //
+  
+  if (this!=&trkPar) {
+    AliVParticle::operator=(trkPar);
+    fX = trkPar.fX;
+    fAlpha = trkPar.fAlpha;
+
+    for (Int_t i = 0; i < 5; i++) fP[i] = trkPar.fP[i];
+    for (Int_t i = 0; i < 15; i++) fC[i] = trkPar.fC[i];
+  }
+
+  return *this;
+}
+
+//_____________________________________________________________________________
 AliExternalTrackParam::AliExternalTrackParam(Double_t x, Double_t alpha, 
 					     const Double_t param[5], 
 					     const Double_t covar[15]) :
-  TObject(),
+  AliVParticle(),
   fX(x),
   fAlpha(alpha)
 {
@@ -438,7 +457,7 @@ Double_t p[3], Double_t bz) const {
   //+++++++++++++++++++++++++++++++++++++++++    
   GetXYZ(x);
     
-  if (TMath::Abs(Get1Pt()) < kAlmost0 || TMath::Abs(bz) < kAlmost0Field ){ //straight-line tracks
+  if (OneOverPt() < kAlmost0 || TMath::Abs(bz) < kAlmost0Field ){ //straight-line tracks
      Double_t unit[3]; GetDirection(unit);
      x[0]+=unit[0]*len;   
      x[1]+=unit[1]*len;   
@@ -950,6 +969,81 @@ Bool_t AliExternalTrackParam::GetPxPyPz(Double_t *p) const {
   //---------------------------------------------------------------------
   p[0]=fP[4]; p[1]=fP[2]; p[2]=fP[3];
   return Local2GlobalMomentum(p,fAlpha);
+}
+
+Double_t AliExternalTrackParam::Px() const {
+  // return x-component of momentum
+
+  Double_t p[3];
+  GetPxPyPz(p);
+
+  return p[0];
+}
+
+Double_t AliExternalTrackParam::Py() const {
+  // return y-component of momentum
+
+  Double_t p[3];
+  GetPxPyPz(p);
+
+  return p[1];
+}
+
+Double_t AliExternalTrackParam::Pz() const {
+  // return z-component of momentum
+
+  Double_t p[3];
+  GetPxPyPz(p);
+
+  return p[2];
+}
+
+Double_t AliExternalTrackParam::Theta() const {
+  // return theta angle of momentum
+
+  return TMath::ATan2(Pt(), Pz());
+}
+
+Double_t AliExternalTrackParam::Phi() const {
+  // return phi angle of momentum
+
+  Double_t p[3];
+  GetPxPyPz(p);
+
+  return TMath::ATan2(p[1], p[0]);
+}
+
+Double_t AliExternalTrackParam::M() const {
+  // return particle mass
+
+  // No mass information available so far.
+  // Redifine in derived class!
+
+  return -999.;
+}
+
+Double_t AliExternalTrackParam::E() const {
+  // return particle energy
+
+  // No PID information available so far.
+  // Redifine in derived class!
+
+  return -999.;
+}
+
+Double_t AliExternalTrackParam::Eta() const { 
+  // return pseudorapidity
+
+  return -TMath::Log(TMath::Tan(0.5 * Theta())); 
+}
+
+Double_t AliExternalTrackParam::Y() const {
+  // return rapidity
+
+  // No PID information available so far.
+  // Redifine in derived class!
+
+  return -999.;
 }
 
 Bool_t AliExternalTrackParam::GetXYZ(Double_t *r) const {
