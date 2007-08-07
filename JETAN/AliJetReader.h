@@ -19,6 +19,7 @@
 class TTree;
 class TTask;
 class TClonesArray;
+class TRefArray;
 class AliJetReaderHeader;
 class AliJetUnitArray;
 class AliJetHadronCorrectionv1;
@@ -31,17 +32,18 @@ class AliJetReader : public TObject
   virtual ~AliJetReader();
 
   // Getters
-  virtual TClonesArray *GetMomentumArray() {return fMomentumArray;}
-
-  virtual AliJetUnitArray     *GetUnitArray() const {return fUnitArray;}  
-  virtual AliJetUnitArray     *GetUnitArrayNoCuts() const {return fUnitArrayNoCuts;}
+  virtual TClonesArray*        GetMomentumArray()   const {return fMomentumArray;}
+  virtual TRefArray*           GetReferences()      const {return 0;}   
+  virtual AliJetUnitArray*     GetUnitArray()       const {return fUnitArray;}  
+  virtual AliJetUnitArray*     GetUnitArrayNoCuts() const {return fUnitArrayNoCuts;}
   
-  virtual AliJetReaderHeader* GetReaderHeader() { return fReaderHeader;}
-  virtual Int_t GetSignalFlag(Int_t i) const {return fSignalFlag[i];}
-  virtual Int_t GetCutFlag(Int_t i)    const {return fCutFlag[i];}
-  virtual Int_t GetArrayInitialised() {return fArrayInitialised;}
+  virtual AliJetReaderHeader*  GetReaderHeader()    const {return fReaderHeader;}
+  virtual Int_t GetSignalFlag(Int_t i)              const {return fSignalFlag[i];}
+  virtual Int_t GetCutFlag(Int_t i)                 const {return fCutFlag[i];}
+  virtual Int_t GetArrayInitialised()               const {return fArrayInitialised;}
   
   // Setters
+  virtual void   SetEvent(TObject */*ev*/) {}
   virtual Bool_t FillMomentumArray(Int_t) {return kTRUE;}
   virtual void   FillUnitArrayFromTPCTracks(Int_t) {}     // temporarily not used
   virtual void   FillUnitArrayFromEMCALHits() {}          // temporarily not used
