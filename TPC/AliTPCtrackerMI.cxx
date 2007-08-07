@@ -4199,11 +4199,11 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESDEvent *esd)
       if ( TMath::Abs(track1->GetTgl()+track0->GetTgl())>0.1) continue;
       if (track0->GetBConstrain()&&track1->GetBConstrain()) continue;
       if (TMath::Abs(1./track1->GetC())>200) continue;
-      if (track1->Get1Pt()*track0->Get1Pt()>0)      continue;
+      if (track1->GetSigned1Pt()*track0->GetSigned1Pt()>0)      continue;
       if (track1->GetTgl()*track0->GetTgl()>0)      continue;
       if (TMath::Max(TMath::Abs(1./track0->GetC()),TMath::Abs(1./track1->GetC()))>190) continue;
-      if (track0->GetBConstrain()&&TMath::Abs(track1->Get1Pt())<TMath::Abs(track0->Get1Pt())) continue; //returning - lower momenta
-      if (track1->GetBConstrain()&&TMath::Abs(track0->Get1Pt())<TMath::Abs(track1->Get1Pt())) continue; //returning - lower momenta
+      if (track0->GetBConstrain()&&track1->OneOverPt()<track0->OneOverPt()) continue; //returning - lower momenta
+      if (track1->GetBConstrain()&&track0->OneOverPt()<track1->OneOverPt()) continue; //returning - lower momenta
       //
       Float_t mindcar = TMath::Min(TMath::Abs(dca[i0]),TMath::Abs(dca[i1]));
       if (mindcar<5)   continue;
@@ -4267,7 +4267,7 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESDEvent *esd)
 	if (sign){
 	  circular[i0] = kTRUE;
 	  circular[i1] = kTRUE;
-	  if (TMath::Abs(track0->Get1Pt())<TMath::Abs(track1->Get1Pt())){
+	  if (track0->OneOverPt()<track1->OneOverPt()){
 	    track0->SetCircular(track0->GetCircular()+1);
 	    track1->SetCircular(track1->GetCircular()+2);
 	  }
@@ -4712,7 +4712,7 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESDEvent *esd)
   for (Int_t i=0;i<nentries;i++){
     AliTPCseed * track0 = (AliTPCseed*)array->At(i);
     if (!track0) continue;
-    if (track0->GetPt()<1.4) continue;
+    if (track0->Pt()<1.4) continue;
     //remove double high momenta tracks - overlapped with kink candidates
     Int_t shared=0;
     Int_t all   =0;
@@ -4744,7 +4744,7 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESDEvent *esd)
 	delete pkink;
 	continue;  //too short tracks
       }
-      if (mother.GetPt()<1.4) {
+      if (mother.Pt()<1.4) {
 	delete pmother;
 	delete pdaughter;
 	delete pkink;
@@ -4913,7 +4913,7 @@ void  AliTPCtrackerMI::FindV0s(TObjArray * array, AliESDEvent *esd)
 	"\n";
     }
     //
-    if (track0->Get1Pt()<0) continue;
+    if (track0->GetSigned1Pt()<0) continue;
     if (track0->GetKinkIndex(0)>0||isPrim[i]) continue;   //daughter kink
     //
     if (TMath::Abs(helixes[i].GetHelix(4))<0.000000001) continue;
