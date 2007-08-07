@@ -28,7 +28,7 @@ RAW/module.mk:           RAW/libRAWDatabase.pkg RAW/libRAWDatasim.pkg RAW/libRAW
 HMPID/module.mk:		 HMPID/libHMPIDbase.pkg HMPID/libHMPIDrec.pkg HMPID/libHMPIDsim.pkg
 SHUTTLE/module.mk:	 SHUTTLE/libSHUTTLE.pkg
 T0/module.mk:	 T0/libT0base.pkg T0/libT0sim.pkg T0/libT0rec.pkg
-STEER/module.mk:	 STEER/libESD.pkg STEER/libCDB.pkg STEER/libSTEER.pkg STEER/libAOD.pkg
+STEER/module.mk:	 STEER/libSTEERBase.pkg STEER/libESD.pkg STEER/libCDB.pkg STEER/libSTEER.pkg STEER/libAOD.pkg
 STRUCT/module.mk:	 STRUCT/libSTRUCT.pkg
 TEPEMGEN/module.mk:      TEPEMGEN/libTEPEMGEN.pkg
 TFluka/module.mk:        TFluka/libTFluka.pkg

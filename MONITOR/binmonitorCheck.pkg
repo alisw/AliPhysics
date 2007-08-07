@@ -18,7 +18,7 @@ ifdef DATE_ROOT
 
 PACKBLIBS += $(shell date-config --monitorlibs)
 ELIBSDIR:=
-ELIBS:= ESD AOD CDB STEER RAWDatabase RAWDatarec RAWDatasim TPCbase TPCsim TPCrec ITSbase ITSsim ITSrec HLTbase AliHLTSrc AliHLTComp AliHLTMisc AliHLTHough AliHLTITS MUONsim MUONrec MUONbase MUONgeometry MUONraw MUONcalib MUONmapping MUONtrigger MUONevaluation
+ELIBS:=STEERBase ESD AOD CDB STEER RAWDatabase RAWDatarec RAWDatasim TPCbase TPCsim TPCrec ITSbase ITSsim ITSrec HLTbase AliHLTSrc AliHLTComp AliHLTMisc AliHLTHough AliHLTITS MUONsim MUONrec MUONbase MUONgeometry MUONraw MUONcalib MUONmapping MUONtrigger MUONevaluation
 EINCLUDE+= ${DATE_COMMON_DEFS} ${DATE_MONITOR_DIR}
 
 endif

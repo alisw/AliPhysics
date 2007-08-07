@@ -16,7 +16,7 @@ ELIBS:= MUONgeometry MUONrec MUONsim MUONbase MUONtrigger MUONraw MUONcalib MUON
         HMPIDbase HMPIDrec HMPIDsim \
         ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec \
         EMCALbase EMCALsim EMCALrec EMCALjet BCM \
-        STRUCT T0base T0sim T0rec EVGEN ESD AOD CDB STEER \
+        STRUCT T0base T0sim T0rec EVGEN STEERBase ESD AOD CDB STEER \
         pythia6 AliPythia6 lhapdf THijing \
         hijing TMEVSIM mevsim THbtp HBTP TEPEMGEN EPEMGEN \
         FASTSIM microcern \
