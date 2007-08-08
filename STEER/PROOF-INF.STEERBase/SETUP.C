@@ -1,6 +1,7 @@
 void SETUP()
 {
-   // Load the ESD library
+   // Load the STEERBase library
+   gSystem->Load("libVMC");
    gSystem->Load("libSTEERBase");
 
    // Set the Inlucde paths
