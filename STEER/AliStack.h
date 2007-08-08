@@ -19,7 +19,6 @@ class TTree;
 #include <TVirtualMCStack.h>
 
 class AliHeader;
-#include "AliConfig.h"
 
 enum {kKeepBit=1, kDaughtersBit=2, kDoneBit=4, kTransportBit=BIT(14)};
 
