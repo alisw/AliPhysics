@@ -28,4 +28,13 @@
 
 #pragma link C++ class AliTagCreator+;
 
+#pragma link C++ class AliHeader+;
+#pragma link C++ class AliGenEventHeader+;
+#pragma link C++ class AliDetectorEventHeader+;
+
+#pragma link C++ class AliStack+;
+#pragma link C++ class AliMCEventHandler+;
+
+#pragma link C++ class AliTrackReference+;
+
 #endif

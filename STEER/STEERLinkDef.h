@@ -23,7 +23,6 @@
 #pragma link C++ class  AliDetector+;
 #pragma link C++ class  AliDigit+;
 #pragma link C++ class  AliHit+;
-#pragma link C++ class  AliHeader+;
 #pragma link C++ class  AliDisplay+;
 #pragma link C++ class  AliPoints+;
 #pragma link C++ class  AliMagF+;
@@ -49,9 +48,7 @@
 #pragma link C++ class  AliRndm+;
 #pragma link C++ class  AliMCQA+;
 #pragma link C++ class  AliDebugVolume+;
-#pragma link C++ class  AliStack+;
 #pragma link C++ class  AliConfig+;
-#pragma link C++ class  AliGenEventHeader+;
 #pragma link C++ class  AliDigitizer+;
 #pragma link C++ class  AliRunDigitizer+;
 #pragma link C++ class  AliStream+;
@@ -65,7 +62,6 @@
 #pragma link C++ class  AliTreeLoader+;
 #pragma link C++ class  AliTaskLoader+;
 #pragma link C++ class  AliRunLoader+;
-#pragma link C++ class  AliTrackReference+;
 #pragma link C++ class  AliReconstructor+;
 #pragma link C++ class  AliTrackMap+;
 #pragma link C++ class  AliTrackMapper+;
@@ -86,8 +82,6 @@
 #pragma link C++ class AliTriggerCondition+;
 #pragma link C++ class AliTriggerDescriptor+;
 #pragma link C++ class AliCentralTrigger+;
-
-#pragma link C++ class  AliDetectorEventHeader+;
 
 #pragma link C++ class AliGeomManager+;
 #pragma link C++ class AliAlignObj+;
@@ -144,7 +138,6 @@
 
 #pragma link C++ class AliFstream+;
 #pragma link C++ class AliCTPRawData+;
-#pragma link C++ class AliMCEventHandler+;
 
 #pragma link C++ class AliQualAss+;
 #pragma link C++ class AliQualAssDataMaker+;

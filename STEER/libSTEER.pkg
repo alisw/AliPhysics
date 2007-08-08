@@ -10,17 +10,17 @@ AliMagFDM.cxx	AliLegoGenerator.cxx AliLegoGeneratorXYZ.cxx\
 AliLegoGeneratorPhiZ.cxx AliLegoGeneratorEta.cxx AliLegoGeneratorEtaR.cxx \
 AliRndm.cxx \
 AliMCQA.cxx AliPDG.cxx AliDebugVolume.cxx \
-AliGenEventHeader.cxx AliStack.cxx AliConfig.cxx \
+AliConfig.cxx \
 AliRunDigitizer.cxx AliDigitizer.cxx AliStream.cxx \
 AliMergeCombi.cxx AliMagFMaps.cxx AliFieldMap.cxx \
 AliMagFCheb.cxx AliCheb3D.cxx \
-AliGausCorr.cxx AliTrackReference.cxx \
+AliGausCorr.cxx \
 AliTrackMap.cxx AliTrackMapper.cxx AliCollisionGeometry.cxx \
 AliMemoryWatcher.cxx \
 AliVertexer.cxx \
 AliV0vertexer.cxx AliCascadeVertexer.cxx\
 AliMC.cxx AliSimulation.cxx AliReconstruction.cxx AliVertexGenFile.cxx \
-AliReconstructor.cxx AliDetectorEventHeader.cxx TTreeStream.cxx\
+AliReconstructor.cxx TTreeStream.cxx\
 AliGeomManager.cxx \
 AliAlignObj.cxx AliAlignObjAngles.cxx AliAlignObjMatrix.cxx \
 AliTriggerInput.cxx \
@@ -45,7 +45,6 @@ AliSurveyObj.cxx AliSurveyPoint.cxx \
 AliCodeTimer.cxx \
 AliFstream.cxx \
 AliCTPRawData.cxx \
-AliMCEventHandler.cxx \
 AliQualAss.cxx \
 AliQualAssDataMaker.cxx \
 AliQualAssChecker.cxx \
