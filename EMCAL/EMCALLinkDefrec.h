@@ -9,6 +9,7 @@
 #pragma link C++ class AliEMCALTrack+;
 #pragma link C++ class AliEMCALTracker+;
 #pragma link C++ class AliEMCALPID+;
+#pragma link C++ class AliEMCALRecPointsQaESDSelector+;
 #pragma link C++ class AliEMCALRecParam+;
 
 #endif

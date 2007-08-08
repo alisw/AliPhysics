@@ -1,0 +1,178 @@
+/**************************************************************************
+ * Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
+//_________________________________________________________________________
+// Top EMCAL folder which will keep all information about EMCAL itself,
+// super Modules (SM), modules, towers, set of hists and so on.
+//
+//*-- Author: Aleksei Pavlinov (WSU, Detroit, USA) 
+
+#include "AliEMCALSuperModule.h"
+#include "AliEMCALFolder.h"
+#include "AliEMCALCell.h"
+#include "AliEMCALHistoUtilities.h"
+
+#include <TROOT.h>
+#include <TStyle.h>
+#include <TList.h>
+#include <TH1.h>
+#include <TF1.h>
+#include <TCanvas.h>
+#include <TLegend.h>
+#include <TLegendEntry.h>
+
+typedef  AliEMCALHistoUtilities u;
+
+ClassImp(AliEMCALSuperModule)
+
+AliEMCALSuperModule::AliEMCALSuperModule() : TObjectSet(),
+fSMNumber(0)
+{
+}
+
+AliEMCALSuperModule::AliEMCALSuperModule(const Int_t m, const char* title) : 
+TObjectSet(Form("SM%2.2i",m)),
+fSMNumber(m)
+{
+  SetTitle(title);
+} 
+
+AliEMCALSuperModule::~AliEMCALSuperModule()
+{
+  // dtor
+}
+
+void AliEMCALSuperModule::Init()
+{
+  if(GetHists()==0) this->AddObject(BookHists(), kTRUE);
+}
+
+void  AliEMCALSuperModule::AddCellToEtaRow(AliEMCALCell *cell, const Int_t etaRow)
+{
+  static TDataSet *set;
+  set = FindByName(Form("ETA%2.2i",etaRow)); 
+  if(set==0) {
+    set = new  TDataSet(Form("ETA%2.2i",etaRow));
+    Add(set);
+  }
+  set->Add(cell);
+}
+
+void AliEMCALSuperModule::FitForAllCells()
+{
+  Int_t ncells=0;
+  for(int eta=0; eta<48; eta++) { // eta row
+    TDataSet *setEta = FindByName(Form("ETA%2.2i",eta));
+    if(setEta) {
+      printf(" eta %i : %s : cells %i \n", eta, setEta->GetName(), setEta->GetListSize());
+      for(int phi=0; phi<setEta->GetListSize(); phi++) { // cycle on cells (phi directions)
+        AliEMCALCell* cell = (AliEMCALCell*)setEta->At(phi);
+        cell->FitEffMassHist();
+
+        u::FillH1(GetHists(), 1, cell->GetCcIn()*1.e+3);
+        u::FillH1(GetHists(), 2, cell->GetCcOut()*1.e+3);
+
+        TF1 *f = cell->GetFunction();
+        u::FillH1(GetHists(), 3, f->GetParameter(1));
+        u::FillH1(GetHists(), 4, f->GetParameter(2));
+        u::FillH1(GetHists(), 5, f->GetChisquare()/f->GetNDF());
+        u::FillH1(GetHists(), 6, f->GetParameter(0));
+
+        ncells++;
+      }
+    }
+  }
+  printf(" <I> AliEMCALSuperModule::FitForAllCells() : ncells %i with fit \n", ncells);
+}
+
+void AliEMCALSuperModule::FitEffMassHist()
+{
+  TH1* h = (TH1*)GetHists()->At(0);
+  AliEMCALCell::FitHist(h, GetName());
+}
+
+
+void AliEMCALSuperModule::PrintInfo()
+{
+  printf(" Super Module :   %s    :   %i \n", GetName(), fSMNumber);
+  printf(" # of active cells                %i \n", GetNumberOfCells());
+  TH1* h = (TH1*)GetHists()->At(0);
+  printf(" # h->Integral() of eff.mass hist %i \n", int(h->Integral()));
+}
+
+void AliEMCALSuperModule::DrawCC(int iopt)
+{
+  TCanvas *c=0; 
+  if(iopt==1) c = new TCanvas("ccInOut","ccInOut");
+ 
+  gStyle->SetOptStat(0);
+
+  TH1 *hCCIn  = (TH1*)GetHists()->At(1);
+  TH1 *hCCOut = (TH1*)GetHists()->At(2);
+
+  hCCIn->SetStats(kFALSE);
+  hCCOut->SetStats(kFALSE);
+  hCCOut->SetTitle("CC in and out");
+  hCCOut->SetXTitle("cc in MeV");
+  hCCOut->SetYTitle("  N  ");
+
+  u::DrawHist(hCCOut,2);
+  hCCOut->SetAxisRange(10., 24.);
+  u::DrawHist(hCCIn,2, kRed, "same");
+
+  TLegend *leg = new TLegend(0.5,0.36, 0.97,0.80);
+  TLegendEntry *leIn = leg->AddEntry(hCCIn, Form("input cc : %6.2f #pm %6.2f", hCCIn->GetMean(),hCCIn->GetRMS()), "L");
+  leIn->SetTextColor(hCCIn->GetLineColor());
+  leg->AddEntry(hCCOut, Form("output cc : %6.2f #pm %6.2f", hCCOut->GetMean(),hCCOut->GetRMS()), "L");
+  leg->Draw();
+
+  if(c) c->Update();
+}
+
+Int_t AliEMCALSuperModule::GetNumberOfCells()
+{
+  Int_t ncells=0;
+  for(int eta=0; eta<GetListSize(); eta++) { // cycle on eta row
+    TDataSet *set = At(eta);
+    ncells += set->GetListSize();
+  }
+  return ncells;
+}
+
+TList* AliEMCALSuperModule::BookHists()
+{
+  gROOT->cd();
+  TH1::AddDirectory(1);
+
+  AliEMCALFolder* EMCAL = (AliEMCALFolder*)GetParent(); 
+  Int_t it = EMCAL->GetIterationNumber();
+
+  new TH1F("00_EffMass",  "effective mass of #gamma,#gamma(m_{#pi^{0}}=134.98 MeV) ", 250,0.0,0.5);
+  new TH1F("01_CCInput",  "input CC dist.(MEV) ", 200, 5., 25.);
+  new TH1F("02_CCOutput", "output CC dist.(MEV) ", 200, 5., 25.);
+  new TH1F("03_MPI0", "mass of #pi_{0} dist. ", 170, 0.05, 0.22);
+  new TH1F("04_RESPI0", "resolution at #pi_{0} dist. ", 50, 0.0, 0.05);
+  new TH1F("05_XI2/NDF", "#chi^{2} / ndf", 50, 0.0, 5.0);
+  new TH1F("06_NPI0", "number of #pi_{0}", 150, 0.0, 1500.);
+
+  TList *l = AliEMCALHistoUtilities::MoveHistsToList(Form("HistsOfSM_%2.2i",fSMNumber), kFALSE);
+  AliEMCALHistoUtilities::AddToNameAndTitleToList(l, Form("_%2.2i_It%i",fSMNumber, it), 
+						  Form(" SM %2.2i, Iter %i",fSMNumber, it));
+
+  TH1::AddDirectory(0);
+  return l;
+}
