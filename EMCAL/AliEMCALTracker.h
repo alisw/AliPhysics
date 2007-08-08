@@ -75,11 +75,11 @@ public:
 		AliEMCALMatchCluster(Int_t ID, AliESDCaloCluster *caloCluster);
 		virtual ~AliEMCALMatchCluster() { }
 		//----------------------------------------------------------------------------
-		Int_t&     Index() {return fIndex;}
-		Int_t&     Label() {return fLabel;}
-		Double_t&  X() {return fX;}
-		Double_t&  Y() {return fY;}
-		Double_t&  Z() {return fZ;}
+		Int_t     Index() {return fIndex;}
+		Int_t     Label() {return fLabel;}
+		Double_t  X() {return fX;}
+		Double_t  Y() {return fY;} 
+		Double_t  Z() {return fZ;}
 		Double_t   Phi() {return TMath::ATan2(fY, fX);}
 	private:
 		Int_t     fIndex;  // index of cluster in its native container (ESD or TClonesArray)
