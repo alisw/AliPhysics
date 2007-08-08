@@ -22,7 +22,7 @@
 void SimPed()
 {
   Int_t iDDLmin=0,iDDLmax=13;
-  Int_t nSigmas = 1;             // value stored in the ddl files of pedestals
+  Int_t nSigmas = 3;             // value stored in the ddl files of pedestals
   ofstream out;
   for(Int_t ddl=iDDLmin;ddl<=iDDLmax;ddl++){
     out.open(Form("HmpidPedDdl%02i.txt",ddl));
