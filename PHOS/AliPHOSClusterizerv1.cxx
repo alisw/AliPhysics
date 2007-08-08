@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.110  2007/08/07 14:16:00  kharlov
+ * Quality assurance added (Yves Schutz)
+ *
  * Revision 1.109  2007/07/24 17:20:35  policheh
  * Usage of RecoParam objects instead of hardcoded parameters in reconstruction.
  * (See $ALICE_ROOT/PHOS/macros/BeamTest2006/RawReconstruction.C).
@@ -341,11 +344,13 @@ void AliPHOSClusterizerv1::Exec(Option_t *option)
       MakeUnfolding() ;
 
     //makes the quality assurance data
-    GetQualAssDataMaker()->SetData(gime->EmcRecPoints()) ; 
-    GetQualAssDataMaker()->Exec(AliQualAss::kRECPOINTS) ; 
-    GetQualAssDataMaker()->SetData(gime->CpvRecPoints()) ; 
-    GetQualAssDataMaker()->Exec(AliQualAss::kRECPOINTS) ; 
-  
+    if (GetQualAssDataMaker()) {
+      GetQualAssDataMaker()->SetData(gime->EmcRecPoints()) ; 
+      GetQualAssDataMaker()->Exec(AliQualAss::kRECPOINTS) ; 
+      GetQualAssDataMaker()->SetData(gime->CpvRecPoints()) ; 
+      GetQualAssDataMaker()->Exec(AliQualAss::kRECPOINTS) ; 
+    }
+
     WriteRecPoints();
 
     if(strstr(option,"deb"))  
@@ -357,7 +362,7 @@ void AliPHOSClusterizerv1::Exec(Option_t *option)
   }
   
   //Write the quality assurance data only after the last event 
-  if ( fEventCounter == gime->MaxEvent()) 
+  if (GetQualAssDataMaker() && fEventCounter == gime->MaxEvent()) 
 	GetQualAssDataMaker()->Finish(AliQualAss::kRECPOINTS) ;
 
  if(fWrite) //do not unload in "on flight" mode

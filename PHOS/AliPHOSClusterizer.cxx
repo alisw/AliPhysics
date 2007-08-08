@@ -37,7 +37,8 @@ AliPHOSClusterizer::AliPHOSClusterizer():
   fEventFolderName(""),
   fFirstEvent(0),
   fLastEvent(-1),
-  fRawReader(0)
+  fRawReader(0),
+  fQADM(0)
 {
   // ctor
 }
@@ -49,7 +50,8 @@ AliPHOSClusterizer::AliPHOSClusterizer(const TString alirunFileName,
 	alirunFileName), fEventFolderName(eventFolderName),
   fFirstEvent(0),
   fLastEvent(-1),
-  fRawReader(0)
+  fRawReader(0),
+  fQADM(0)
 {
   // ctor
 }
@@ -58,7 +60,9 @@ AliPHOSClusterizer::AliPHOSClusterizer(const TString alirunFileName,
 AliPHOSClusterizer::AliPHOSClusterizer(const AliPHOSClusterizer & clusterizer) :
   TTask(clusterizer),fEventFolderName(clusterizer.GetEventFolderName()),
   fFirstEvent(clusterizer.GetFirstEvent()),fLastEvent(clusterizer.GetLastEvent()),
-  fRawReader(clusterizer.GetRawReader())
+  fRawReader(clusterizer.GetRawReader()),
+  fQADM(clusterizer.GetQualAssDataMaker())
+  
 {
   //Copy constructor
 }
