@@ -1,3 +1,9 @@
+2007-08-08  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	Create branch EVE-dev.
+	Tag HEAD:    EVE-head-after-merge.
+	Tag EVE-dev: EVE-dev-after-merge.
+
 2007-08-06  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* alice-macros/jetplane.C:
