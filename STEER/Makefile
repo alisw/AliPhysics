@@ -4,12 +4,25 @@ include $(ROOTSYS)/test/Makefile.arch
 include lib$(PACKAGE).pkg
 
 ifndef PACKCXXFLAGS
-PACKCXXFLAGS = $(CXXFLAGS)
+   PACKCXXFLAGS = $(CXXFLAGS)
 endif
 
+ALICEINC = -I.
+
 ifneq ($(ESD_INCLUDE),)
-   PACKCXXFLAGS += -I../$(ESD_INCLUDE)
+   ALICEINC += -I../$(ESD_INCLUDE) 
 endif
+
+ifneq ($(AOD_INCLUDE),)
+   ALICEINC += -I../$(AOD_INCLUDE) 
+endif
+
+ifneq ($(STEERBase_INCLUDE),)
+   ALICEINC += -I../$(STEERBase_INCLUDE)
+endif
+
+CXXFLAGS += $(ALICEINC) -g
+
 SRCS         += G__$(PACKAGE).cxx
 OBJS          = $(SRCS:.cxx=.o)
 
@@ -31,6 +44,6 @@ clean:
 	@rm -f $(OBJS) *.so G__$(PACKAGE).*
 
 G__$(PACKAGE).cxx G__$(PACKAGE).h: $(HDRS) $(DHDR)
-	@echo "Generating dictionary ..."
+	@echo "Generating dictionaries ..." $(ALICEINC)
 	rootcint -f $@ -c $(CINTFLAGS) $(ALICEINC) $^
 
