@@ -18,7 +18,6 @@
 #include "TVirtualMC.h"
 #include "TParticle.h"
 
-#include "AliStack.h"
 #include "AliTrackReference.h"
 #include "AliExternalTrackParam.h"
 #include "AliKalmanTrack.h"
