@@ -12,7 +12,7 @@
 // about the suitability of this software for any purpose. It is          
 // provided "as is" without express or implied warranty.                  
 //========================================================================  
-//                       
+//                        
 //                       Class AliEMCALTrack 
 //                      ---------------------
 //    A class implementing a track which is propagated to EMCAL and 
@@ -56,6 +56,7 @@ AliEMCALTrack::AliEMCALTrack()
 	// Sets to meaningless values the indexes corresponding to
 	// ESD seed track and matched cluster.
 	//
+
 }
 //
 //------------------------------------------------------------------------------
@@ -75,8 +76,13 @@ AliEMCALTrack::AliEMCALTrack(const AliESDtrack& t)
 	// parameters are chosen according to static variable fUseOuterParams
 	Double_t alpha, x, params[5], cov[15];
 	if (fgUseOuterParams) {
-		t.GetOuterExternalParameters(alpha, x, params);
-		t.GetOuterExternalCovariance(cov);
+	  if(t.GetOuterParam()){
+	    t.GetOuterExternalParameters(alpha, x, params);
+	    t.GetOuterExternalCovariance(cov);
+	  }
+	  else{ // no outer param available leave the default as is
+	    return;
+	  }
 	}
 	else {
 		alpha = t.GetAlpha();
@@ -122,7 +128,6 @@ AliEMCALTrack& AliEMCALTrack::operator=(const AliEMCALTrack &t)
 	
 	fSeedIndex = t.fSeedIndex;
 	fSeedLabel = t.fSeedLabel;
-
 	return *this;
 }
 //
