@@ -180,13 +180,11 @@
 #pragma link C++ class Reve::GeoShapeRnrEl+;
 
 // TrianlgeSet
-#pragma link C++ class Reve::TriangleSet;
-#pragma link C++ class Reve::TriangleSetEditor;
-#pragma link C++ class Reve::TriangleSetGL;
-
+#pragma link C++ class Reve::TriangleSet+;
+#pragma link C++ class Reve::TriangleSetEditor+;
+#pragma link C++ class Reve::TriangleSetGL+;
 
 // StraightLineSet
-#pragma link C++ class Reve::StraightLineSet;
-#pragma link C++ class Reve::StraightLineSetGL;
-#pragma link C++ class Reve::StraightLineSetEditor;
-
+#pragma link C++ class Reve::StraightLineSet+;
+#pragma link C++ class Reve::StraightLineSetGL+;
+#pragma link C++ class Reve::StraightLineSetEditor+;
