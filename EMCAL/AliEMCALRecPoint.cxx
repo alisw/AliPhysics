@@ -65,11 +65,12 @@ AliEMCALRecPoint::AliEMCALRecPoint()
 {
   // ctor
   AliRunLoader *rl = AliRunLoader::GetRunLoader();
-  if (rl->GetAliRun() && rl->GetAliRun()->GetDetector("EMCAL"))
+  if (rl && rl->GetAliRun() && rl->GetAliRun()->GetDetector("EMCAL"))
     fGeomPtr = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
   else
-    fGeomPtr = AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaulGeometryName());
-  fGeomPtr->GetTransformationForSM(); // Global <-> Local
+    fGeomPtr = AliEMCALGeometry::GetInstance();
+  //fGeomPtr = AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaulGeometryName());
+    //  fGeomPtr->GetTransformationForSM(); // Global <-> Local
 }
 
 //____________________________________________________________________________
@@ -108,11 +109,12 @@ AliEMCALRecPoint::AliEMCALRecPoint(const char * opt)
   }
 
   AliRunLoader *rl = AliRunLoader::GetRunLoader();
-  if (rl->GetAliRun() && rl->GetAliRun()->GetDetector("EMCAL"))
+  if (rl && rl->GetAliRun() && rl->GetAliRun()->GetDetector("EMCAL"))
     fGeomPtr = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
   else
-    fGeomPtr = AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaulGeometryName());
-  fGeomPtr->GetTransformationForSM(); // Global <-> Local
+    fGeomPtr = AliEMCALGeometry::GetInstance();
+  //    fGeomPtr = AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaulGeometryName());
+  //  fGeomPtr->GetTransformationForSM(); // Global <-> Local
 }
 
 //____________________________________________________________________________
@@ -917,10 +919,10 @@ Float_t AliEMCALRecPoint::ThetaToEta(Float_t arg) const
 }
 
 //____________________________________________________________________________
-void AliEMCALRecPoint::Print(Option_t *) const
+void AliEMCALRecPoint::Print(Option_t *opt) const
 {
   // Print the list of digits belonging to the cluster
-  return;
+  if(strlen(opt)==0) return;
   TString message ; 
   message  = "AliEMCALRecPoint:\n" ;
   message +=  " digits # = " ; 
