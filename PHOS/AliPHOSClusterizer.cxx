@@ -29,6 +29,9 @@
 #include "AliPHOSClusterizer.h"
 #include "AliPHOSGetter.h" 
 
+// --- AliRoot header files ---
+#include "AliPHOSQualAssDataMaker.h"
+
 ClassImp(AliPHOSClusterizer)
 
 //____________________________________________________________________________
@@ -54,6 +57,9 @@ AliPHOSClusterizer::AliPHOSClusterizer(const TString alirunFileName,
   fQADM(0)
 {
   // ctor
+  fQADM = new AliPHOSQualAssDataMaker() ;  
+  //initiaizes the quality assurance data maker
+  fQADM ->Init(AliQualAss::kRECPOINTS) ;    
 }
 
 //____________________________________________________________________________
