@@ -14,8 +14,6 @@
 #include "TObject.h"
 #include "TMath.h"
 
-class AliExternalTrackParam;
-
 class AliTrackReference : public TObject {
 public:
 
