@@ -153,6 +153,7 @@
 #include "AliESDtrack.h"
 
 #include "AliESDTagCreator.h"
+#include "AliAODTagCreator.h"
 
 #include "AliGeomManager.h"
 #include "AliTrackPointArray.h"
@@ -829,7 +830,10 @@ Bool_t AliReconstruction::Run(const char* input)
   // In case of empty events the tags will contain dummy values
   AliESDTagCreator *esdtagCreator = new AliESDTagCreator();
   esdtagCreator->CreateESDTags(fFirstEvent,fLastEvent);
-  //if (fWriteAOD) tagCreator->CreateAODTags(fFirstEvent,fLastEvent);
+  if (fWriteAOD) {
+    AliAODTagCreator *aodtagCreator = new AliAODTagCreator();
+    aodtagCreator->CreateAODTags(fFirstEvent,fLastEvent);
+  }
 
   return kTRUE;
 }

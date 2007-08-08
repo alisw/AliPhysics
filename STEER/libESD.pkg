@@ -7,9 +7,8 @@ SRCS = AliESDEvent.cxx AliESDfriend.cxx AliESD.cxx \
        AliKFParticleBase.cxx AliKFParticle.cxx AliKFVertex.cxx\
        AliKalmanTrack.cxx AliExternalTrackParam.cxx \
        AliVertexerTracks.cxx AliStrLine.cxx \
-       AliLog.cxx AliPID.cxx AliESDV0Params.cxx \
-       AliRunTag.cxx AliLHCTag.cxx AliDetectorTag.cxx AliEventTag.cxx \
-       AliTagCreator.cxx AliESDTagCreator.cxx \
+       AliESDV0Params.cxx \
+       AliESDTagCreator.cxx \
        AliEventTagCuts.cxx AliRunTagCuts.cxx\
        AliLHCTagCuts.cxx AliDetectorTagCuts.cxx AliTrackPointArray.cxx \
        AliESDFMD.cxx AliFMDMap.cxx AliFMDFloatMap.cxx \

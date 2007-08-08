@@ -1,7 +1,7 @@
 SRCS = AliAODEvent.cxx AliAODHeader.cxx \
 	AliAODTrack.cxx AliAODVertex.cxx AliAODCluster.cxx \
 	AliAODJet.cxx AliAODPhoton.cxx AliAODRedCov.cxx AliAODRecoDecay.cxx \
-	AliAODHandler.cxx AliAODTracklets.cxx
+	AliAODHandler.cxx AliAODTracklets.cxx AliAODTagCreator.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 

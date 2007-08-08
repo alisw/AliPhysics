@@ -13,4 +13,14 @@
 #pragma link C++ class AliVHeader+;
 #pragma link C++ class AliVEventHandler+;
 
+#pragma link C++ class  AliPID+;
+#pragma link C++ class AliLog+;
+
+#pragma link C++ class AliRunTag+;
+#pragma link C++ class AliLHCTag+;
+#pragma link C++ class AliDetectorTag+;
+#pragma link C++ class AliEventTag+;
+
+#pragma link C++ class AliTagCreator+;
+
 #endif
