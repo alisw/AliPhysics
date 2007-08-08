@@ -4,6 +4,8 @@ SRCS = AliVParticle.cxx \
        AliVEventHandler.cxx \
        AliPID.cxx AliLog.cxx \
        AliRunTag.cxx AliLHCTag.cxx AliDetectorTag.cxx AliEventTag.cxx \
+       AliEventTagCuts.cxx AliRunTagCuts.cxx \
+       AliLHCTagCuts.cxx AliDetectorTagCuts.cxx \
        AliTagCreator.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
