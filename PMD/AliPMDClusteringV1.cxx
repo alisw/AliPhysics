@@ -107,7 +107,10 @@ void AliPMDClusteringV1::DoClust(Int_t idet, Int_t ismn,
   Float_t  clusdata[6];
   Double_t cutoff, ave;
   Double_t edepcell[kNMX];
-
+  
+  
+  Double_t *cellenergy = new Double_t [11424];// Ajay
+  
   const float ktwobysqrt3 = 1.1547; // 2./sqrt(3.)
 
   // ndimXr and ndimYr are different because of different module size
@@ -125,6 +128,12 @@ void AliPMDClusteringV1::DoClust(Int_t idet, Int_t ismn,
       ndimXr = 48;
       ndimYr = 96;
     }
+
+  for (Int_t i =0; i < 11424; i++)
+  {
+      cellenergy[i] = 0.;
+  }
+
 
   Int_t kk = 0;
   for (Int_t i = 0; i < kNDIMX; i++)
@@ -144,23 +153,32 @@ void AliPMDClusteringV1::DoClust(Int_t idet, Int_t ismn,
 	  j = jd;
 	  i = id+(ndimYr/2-1)-(jd/2);
 
-	  //PH	  Int_t ij = i + j*kNDIMX;
-	  Int_t ij = i + j*ndimXr;
-
+	  Int_t ij = i + j*kNDIMX;
+	  // BKN Int_t ij = i + j*ndimXr;
+	  
 	  if (ismn < 12)
 	    {
-	      edepcell[ij]    = celladc[jd][id];
+	      //edepcell[ij]    = celladc[jd][id];
+	      cellenergy[ij]    = celladc[jd][id];//Ajay
 	      fCellTrNo[i][j] = jd*10000+id;  // for association 
 	    }
 	  else if (ismn >= 12 && ismn <= 23)
 	    {
-	      edepcell[ij]    = celladc[id][jd];
+	      //edepcell[ij]    = celladc[id][jd];
+	      cellenergy[ij]    = celladc[id][jd];//Ajay
 	      fCellTrNo[i][j] = id*10000+jd;  // for association 
 	    }
-
 	}
     }
   
+  //Ajay
+  for (Int_t i = 0; i < kNMX; i++)
+  {
+    edepcell[i] = cellenergy[i];
+  }
+
+  delete [] cellenergy;
+
   Int_t iord1[kNMX];
   TMath::Sort(kNMX,edepcell,iord1);// order the data
   cutoff = fCutoff;                // cutoff to discard cells
@@ -177,12 +195,11 @@ void AliPMDClusteringV1::DoClust(Int_t idet, Int_t ismn,
 	  nmx1++;
 	}
     }
-
+  
   AliDebug(1,Form("Number of cells having energy >= %f are %d",cutoff,nmx1));
 
   if (nmx1 == 0) nmx1 = 1;
   ave = ave/nmx1;
-
   AliDebug(1,Form("Number of cells in a SuperM = %d and Average = %f",
 		  kNMX,ave));
   
