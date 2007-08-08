@@ -1,6 +1,6 @@
 #ifndef ALIEMCALRECPOINT_H
 #define ALIEMCALRECPOINT_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+/* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 //_________________________________________________________________________
 //  Base Class for EMCAL Reconstructed Points  
