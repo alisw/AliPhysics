@@ -45,7 +45,11 @@ AliSurveyObj.cxx AliSurveyPoint.cxx \
 AliCodeTimer.cxx \
 AliFstream.cxx \
 AliCTPRawData.cxx \
-AliMCEventHandler.cxx	
+AliMCEventHandler.cxx \
+AliQualAss.cxx \
+AliQualAssDataMaker.cxx \
+AliQualAssChecker.cxx \
+AliQualAssCheckerBase.cxx
 
 
 

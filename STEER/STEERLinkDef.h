@@ -146,4 +146,9 @@
 #pragma link C++ class AliCTPRawData+;
 #pragma link C++ class AliMCEventHandler+;
 
+#pragma link C++ class AliQualAss+;
+#pragma link C++ class AliQualAssDataMaker+;
+#pragma link C++ class AliQualAssChecker+;
+#pragma link C++ class AliQualAssCheckerBase+;
+
 #endif
