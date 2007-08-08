@@ -32,7 +32,7 @@ public:
   AliTrackReference(const AliTrackReference &tr);
   virtual ~AliTrackReference() {}
 
-  static AliExternalTrackParam * MakeTrack(const AliTrackReference *ref, Double_t mass);
+//  static AliExternalTrackParam * MakeTrack(const AliTrackReference *ref, Double_t mass);
   virtual Int_t GetTrack() const {return fTrack;}
   virtual void SetTrack(Int_t track) {fTrack=track;}
   virtual void SetLength(Float_t length){fLength=length;}
@@ -58,7 +58,7 @@ public:
   virtual void SetPosition(Float_t x, Float_t y, Float_t z){fX=x; fY=y; fZ=z;}
   virtual void SetMomentum(Float_t px, Float_t py, Float_t pz){fPx=px; fPy=py; fPz=pz;}
   virtual void SetUserId(Int_t userId){fUserId=userId;}
-
+ 
   // Methods to get position of the track reference in 
   // in the TPC/TRD/TOF Tracking coordinate system
 
