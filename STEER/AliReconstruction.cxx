@@ -2375,13 +2375,21 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
 					     kFALSE,
 					     NULL, // no covariance matrix provided
 					     esdMuTrack->Charge(),
-					     0, // no ITSMuonClusterMap
+					     0, // ITSClusterMap is set below
 					     pid,
 					     primary,
  					     kFALSE,    // muon tracks are not used to fit the primary vtx
 					     kFALSE,    // not used for vertex fit
 					     AliAODTrack::kPrimary)
 	  );
+    
+        aodTrack->SetHitsPatternInTrigCh(esdMuTrack->GetHitsPatternInTrigCh());
+        Int_t track2Trigger = esdMuTrack->GetMatchTrigger();
+        aodTrack->SetMatchTrigger(track2Trigger);
+        if (track2Trigger) 
+  	  aodTrack->SetChi2MatchTrigger(esdMuTrack->GetChi2MatchTrigger());
+        else 
+	  aodTrack->SetChi2MatchTrigger(0.);
     }
     
     // Access to the AOD container of clusters

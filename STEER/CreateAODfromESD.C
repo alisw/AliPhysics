@@ -632,7 +632,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 					     kFALSE,
 					     NULL, // no covariance matrix provided
 					     esdMuTrack->Charge(),
-					     0, // no ITSMuonClusterMap
+					     0, // ITSClusterMap is set below
 					     pid,
 					     primary,
  					     kFALSE,  // muon tracks are not used to fit the primary vtx
