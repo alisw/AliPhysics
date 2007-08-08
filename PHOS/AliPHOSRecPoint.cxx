@@ -43,7 +43,7 @@ ClassImp(AliPHOSRecPoint)
 //____________________________________________________________________________
 AliPHOSRecPoint::AliPHOSRecPoint()
   : AliCluster(),fPHOSMod(0),
-    fMulTrack(0),fMaxDigit(100),fMulDigit(0),fMaxTrack(0),
+    fMulTrack(0),fMaxDigit(100),fMulDigit(0),fMaxTrack(200),
     fDigitsList(0),fTracksList(0),fAmp(0),
     fIndexInList(-1), // to be set when the point is already stored
     fLocPos(0,0,0),fLocPosM(0)
@@ -56,7 +56,7 @@ AliPHOSRecPoint::AliPHOSRecPoint()
 AliPHOSRecPoint::AliPHOSRecPoint(const char * ) 
   : AliCluster(),fPHOSMod(0),
     fMulTrack(0),fMaxDigit(100),fMulDigit(0),fMaxTrack(200),
-    fDigitsList(new int[fMaxDigit]),fTracksList(new int[fMaxTrack]),fAmp(0),
+    fDigitsList(new Int_t[fMaxDigit]),fTracksList(new Int_t[fMaxTrack]),fAmp(0),
     fIndexInList(-1), // to be set when the point is already stored
     fLocPos(0,0,0),fLocPosM(new TMatrixF(3,3))
 
@@ -78,16 +78,16 @@ AliPHOSRecPoint::~AliPHOSRecPoint()
 AliPHOSRecPoint::AliPHOSRecPoint(const AliPHOSRecPoint &rp) : 
   AliCluster(rp),
   fPHOSMod(rp.fPHOSMod),fMulTrack(rp.fMulTrack),fMaxDigit(rp.fMaxDigit),
-  fMulDigit(rp.fMulDigit),fMaxTrack(rp.fMaxTrack),fDigitsList(new int[rp.fMaxDigit]),
-  fTracksList(new int[rp.fMaxTrack]),fAmp(rp.fAmp),fIndexInList(rp.fIndexInList), 
+  fMulDigit(rp.fMulDigit),fMaxTrack(rp.fMaxTrack),fDigitsList(new Int_t[rp.fMaxDigit]),
+  fTracksList(new Int_t[rp.fMaxTrack]),fAmp(rp.fAmp),fIndexInList(rp.fIndexInList), 
   fLocPos(rp.fLocPos),fLocPosM(rp.fLocPosM)
 {
   //copy ctor
 
-  for(Int_t i=0; i<fMaxDigit; i++)
+  for(Int_t i=0; i<fMulDigit; i++)
     fDigitsList[i] = rp.fDigitsList[i];
 
-  for(Int_t i=0; i<fMaxTrack; i++)
+  for(Int_t i=0; i<fMulTrack; i++)
     fTracksList[i] = rp.fTracksList[i];
   
 }
@@ -293,8 +293,10 @@ void  AliPHOSRecPoint::EvalPrimaries(TClonesArray * digits)
     }
   } // all digits
 
-  if(fMulTrack)
+  if(fMulTrack > 0){
+    if(fTracksList)delete [] fTracksList;
     fTracksList = new Int_t[fMulTrack] ;
+  }
   for(index = 0; index < fMulTrack; index++)
     fTracksList[index] = tempo[index] ;
   
