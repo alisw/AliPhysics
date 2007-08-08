@@ -36,7 +36,6 @@
 #include "AliRunTag.h"
 #include "AliEventTag.h"
 #include "AliPID.h"
-#include "AliAOD.h"
 #include "AliAODEvent.h"
 #include "AliAODVertex.h"
 #include "AliLog.h"
