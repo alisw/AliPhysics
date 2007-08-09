@@ -90,7 +90,8 @@ Bool_t AliHMPIDPreprocessor::ProcDcs(TMap* pMap)
 // evaluate Qthre
     arQthre.AddAt(new TF1(Form("HMP_Qthre%i",iCh),"100",fStartTime,fEndTime),iCh);
 // evaluate UserCut
-    TObject *pUserCut = new TObject();pUserCut->SetUniqueID(1);
+    Int_t nSigmaUserCut = 3;
+    TObject *pUserCut = new TObject();pUserCut->SetUniqueID(nSigmaUserCut);
     arUserCut.AddAt(pUserCut,iCh);    
 // evaluate Temperatures    
     for(Int_t iRad=0;iRad<3;iRad++){

@@ -49,28 +49,24 @@ void SimMap(TMap *pDcsMap,Int_t runTime=1500)
   Int_t stepTime=100; //time interval between measurements
   Int_t startTime=0;
   
-  
   for(Int_t iCh=0;iCh<7;iCh++){//chambers loop
     TObjArray *pP=new TObjArray;  pP->SetOwner(1);
     TObjArray *pHV=new TObjArray; pHV->SetOwner(1);
-    TObjArray *pUserCut=new TObjArray; pUserCut->SetOwner(1); 
     for(Int_t time=0;time<runTime;time+=stepTime) {
        pP->Add(new AliDCSValue((Float_t)1005.0 ,time));   //sample CH4 pressure [mBar]
        pHV->Add(new AliDCSValue((Float_t)2050.0,time));   //sample chamber HV [V]
-       pUserCut->Add(new AliDCSValue(3,time));            //User Cut in number of sigmas
     }
     pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_MP%i/HMP_MP%i_GAS/HMP_MP%i_GAS_PMWC.actual.value"           ,iCh,iCh,iCh)),pP); 
     pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_MP%i/HMP_MP%i_PW/HMP_MP%i_SEC0/HMP_MP%i_SEC0_HV.actual.vMon",iCh,iCh,iCh)),pHV); 
-    pDcsMap->Add(new TObjString(Form("HMP_%i.UserCut",iCh)),pUserCut); 
 
     for(Int_t iRad=0;iRad<3;iRad++){//radiators loop
-      TObjArray *pT1=new TObjArray; pT1->SetOwner(1); 
-      TObjArray *pT2=new TObjArray; pT2->SetOwner(1); 
+      TObjArray *pT1=new TObjArray; pT1->SetOwner(1);
+      TObjArray *pT2=new TObjArray; pT2->SetOwner(1);
       for (Int_t time=0;time<runTime;time+=stepTime)  pT1->Add(new AliDCSValue(13,time));  //sample inlet temperature    Nmean=1.292 @ 13 degrees
       for (Int_t time=0;time<runTime;time+=stepTime)  pT2->Add(new AliDCSValue(14,time));  //sample outlet temperature
       pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_MP%i/HMP_MP%i_LIQ_LOOP.actual.sensors.Rad%iIn_Temp",iCh,iCh,iRad)) ,pT1); 
       pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_MP%i/HMP_MP%i_LIQ_LOOP.actual.sensors.Rad%iOut_Temp",iCh,iCh,iRad)),pT2);
-    }//radiators loop    
+    }//radiators loop
   }//chambers loop
 }//SimMap()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
