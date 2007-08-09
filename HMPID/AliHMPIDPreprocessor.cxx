@@ -1,9 +1,11 @@
 #include "AliHMPIDPreprocessor.h" //header no includes
 #include "AliHMPIDDigit.h"        //ProcPed()
 #include <Riostream.h>            //ProcPed()  
+#include <AliLog.h>               //all
 #include <AliCDBMetaData.h>       //ProcPed(), ProcDcs()
 #include <AliDCSValue.h>          //ProcDcs()
 #include <TObjString.h>           //ProcDcs(), ProcPed()
+#include <TTimeStamp.h>           //Initialize()
 #include <TF1.h>                  //Process()
 #include <TF2.h>                  //Process()
 #include <TGraph.h>               //Process()
@@ -21,26 +23,30 @@ ClassImp(AliHMPIDPreprocessor)
 void AliHMPIDPreprocessor::Initialize(Int_t run, UInt_t startTime,UInt_t endTime)
 {
   AliPreprocessor::Initialize(run, startTime, endTime);
+  
+  AliInfo(Form("HMPID started for Run %d \n\tStartTime %s \n\t  EndTime %s", run,TTimeStamp(startTime).AsString(),TTimeStamp(endTime).AsString()));
+
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 UInt_t AliHMPIDPreprocessor::Process(TMap* pMap)
 {
 // Process all information from DCS and DAQ
 // Arguments: pMap- map of DCS aliases
-//   Returns: 0 on success or 1 on error
-  Printf("HMPID - Process in Preprocessor started");
-  if(! pMap) {Printf(" - Not map of DCS aliases for HMPID - ");return 1;}   
+// Returns: 0 on success or 1 on error (opposite to Store!)
+  
+  Log("HMPID - Process in Preprocessor started");
+  if(! pMap) {Log(" - Not map of DCS aliases for HMPID - ");return 1;}   
   
   TString runType = GetRunType();
-  Printf(" AliHMPIDPreprocessor: RunType is %s",runType.Data());
+  Log(Form(" AliHMPIDPreprocessor: RunType is %s",runType.Data()));
   Bool_t result1,result2;
   if (runType == "PEDESTAL_RUN"){
-    result1 = ProcPed(); return result1;
+    result1 = ProcPed(); return !result1;
   } else if ( runType == "PHYSICS" ){
     result1 = ProcPed(); 
-    result2 = ProcDcs(pMap); return (result1&&result2);
+    result2 = ProcDcs(pMap); return !(result1&&result2);
   } else {
-    Log("Nothing to do with preprocessor for HMPID, bye!");
+    Log("HMPID - Nothing to do with preprocessor for HMPID, bye!");
   return kFALSE;
   }
   
@@ -54,6 +60,8 @@ Bool_t AliHMPIDPreprocessor::ProcDcs(TMap* pMap)
 // Assume that: HV is the same during the run for a given chamber, different chambers might have different HV
 //              P=f(t), different for different chambers
 // Returns: kTRUE on success  
+
+  Bool_t stDcsStore=kFALSE;
 
   TF2 idx("RidxC4F14","sqrt(1+0.554*(1239.84/x)^2/((1239.84/x)^2-5796)-0.0005*(y-20))",5.5 ,8.5 ,0  ,50);  //N=f(Ephot,T) [eV,grad C] DiMauro mail
   
@@ -71,17 +79,20 @@ Bool_t AliHMPIDPreprocessor::ProcDcs(TMap* pMap)
   AliDCSValue *pVal; Int_t cnt=0;
     
   for(Int_t iCh=0;iCh<7;iCh++){                   
+// evaluate High Voltage
 //    TObjArray *pHV=(TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_PW/HMP_MP%i_SEC0/HMP_MP%i_SEC0_HV.actual.vMon",iCh,iCh,iCh,iCh)); //HV
+// evaluate Pressure
     TObjArray *pP =(TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_GAS/HMP_MP%i_GAS_PMWC.actual.value"           ,iCh,iCh,iCh));    TIter nextP(pP);
     TGraph *pGrP=new TGraph; cnt=0; 
     while((pVal=(AliDCSValue*)nextP())) pGrP->SetPoint(cnt++,pVal->GetTimeStamp(),pVal->GetFloat());            //P
     if( cnt!=0) pGrP->Fit(new TF1(Form("P%i",iCh),"1005+x*[0]",fStartTime,fEndTime),"Q");                       //clm: if no DCS map entry don't fit
     delete pGrP;   
-    
+// evaluate Qthre
     arQthre.AddAt(new TF1(Form("HMP_Qthre%i",iCh),"100",fStartTime,fEndTime),iCh);
+// evaluate UserCut
     TObject *pUserCut = new TObject();pUserCut->SetUniqueID(1);
     arUserCut.AddAt(pUserCut,iCh);    
-    
+// evaluate Temperatures    
     for(Int_t iRad=0;iRad<3;iRad++){
       TObjArray *pT1=(TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_LIQ_LOOP.actual.sensors.Rad%iIn_Temp",iCh,iCh,iRad));  TIter nextT1(pT1);//Tin
       TObjArray *pT2=(TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_LIQ_LOOP.actual.sensors.Rad%iOut_Temp",iCh,iCh,iRad)); TIter nextT2(pT2);//Tout      
@@ -96,34 +107,47 @@ Bool_t AliHMPIDPreprocessor::ProcDcs(TMap* pMap)
 	
 	    
 //      arTmean.Add(pRadTempF);  
+// evaluate Mean Refractive Index
       arNmean.AddAt(new TF1(Form("HMP_Nmean%i-%i",iCh,iRad),"1.292",fStartTime,fEndTime),3*iCh+iRad); //Nmean=f(t)
     }//radiators loop
   }//chambers loop
   
-  AliCDBMetaData metaData; metaData.SetBeamPeriod(0); metaData.SetResponsible("AliHMPIDPreprocessor"); metaData.SetComment("SIMULATED");
-  
-  if(Store("Calib","Qthre",&arQthre,&metaData,0,kTRUE) && 
-     Store("Calib","Nmean",&arNmean,&metaData,0,kTRUE) &&
-     Store("Calib","UserCut",&arUserCut,&metaData,0,kTRUE)) return kTRUE; //all OK
-  else return kFALSE;
+  AliCDBMetaData metaData; 
+  metaData.SetBeamPeriod(0); 
+  metaData.SetResponsible("AliHMPIDPreprocessor"); 
+  metaData.SetComment("SIMULATED");
+
+  stDcsStore =   Store("Calib","Qthre",&arQthre,&metaData,0,kTRUE) && 
+                 Store("Calib","Nmean",&arNmean,&metaData,0,kTRUE) &&
+                 Store("Calib","UserCut",&arUserCut,&metaData,0,kTRUE);
+  if(!stDcsStore) {
+    Log("HMPID - failure to store DCS data results in OCDB");    
+  }
+  return stDcsStore;
 }//Process()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Bool_t AliHMPIDPreprocessor::ProcPed()
 {
 // Process pedestal files and create 7 M(padx,pady)=sigma, one for each chamber
 // Arguments:
-//   Returns:    
+//   Returns: kTRUE on success
+  
+  Bool_t stPedStore=kFALSE;
+
   TObjArray aDaqSig(7); aDaqSig.SetOwner(kTRUE); for(Int_t i=0;i<7;i++) aDaqSig.AddAt(new TMatrix(160,144),i); //TObjArray of 7 TMatrixF, m(padx,pady)=sigma
   
   TList *pLdc=GetFileSources(kDAQ,"pedestals"); //get list of LDC names containing id "pedestals"
-  Printf("HMPID - Pedestal files to be read --> %i LDCs for HMPID",pLdc->GetEntries());
+  Log(Form("HMPID - Pedestal files to be read --> %i LDCs for HMPID",pLdc->GetEntries()));
+  
   for(Int_t i=0;i<pLdc->GetEntries();i++)//lists of LDCs
     gSystem->Exec(Form("tar xf %s",GetFile(kDAQ,"pedestals",((TObjString*)pLdc->At(i))->GetName()))); //untar pedestal files from current LDC
+  
   AliHMPIDDigit dig;
   Int_t nSigCut,r,d,a,hard;  Float_t mean,sigma;
+  
   for(Int_t ddl=0;ddl<14;ddl++){  
     ifstream infile(Form("HmpidPedDdl%02i.txt",ddl));
-    if(!infile.is_open()) {Printf("No pedestal file found for HMPID,bye!");return kFALSE;}
+    if(!infile.is_open()) {Log("No pedestal file found for HMPID,bye!");return kFALSE;}
     TMatrix *pM=(TMatrixF*)aDaqSig.At(ddl/2);
     infile>>nSigCut; pM->SetUniqueID(nSigCut); //n. of pedestal distribution sigmas used to create zero suppresion table
     while(!infile.eof()){
@@ -132,11 +156,21 @@ Bool_t AliHMPIDPreprocessor::ProcPed()
       (*pM)(dig.PadChX(),dig.PadChY()) = sigma;
     }
     infile.close();
-    Printf("Pedestal file for DDL %i read successfully",ddl);
+    Log(Form("Pedestal file for DDL %i read successfully",ddl));
   }
-//  gSystem->Exec("rm -rf HmpidPed*");
-  AliCDBMetaData metaData; metaData.SetBeamPeriod(0); metaData.SetResponsible("AliHMPIDPreprocessor"); metaData.SetComment("SIMULATED");
-  return Store("Calib","DaqSig",&aDaqSig,&metaData,0,kTRUE);
+  
+  AliCDBMetaData metaData; 
+  metaData.SetBeamPeriod(0); 
+  metaData.SetResponsible("AliHMPIDPreprocessor"); 
+  metaData.SetComment("SIMULATED");
+  
+  stPedStore = Store("Calib","DaqSig",&aDaqSig,&metaData,0,kTRUE);
+  
+  if(!stPedStore) {
+    Log("HMPID - failure to store PEDESTAL data results in OCDB");    
+  }
+  return stPedStore;
+  
 }//ProcPed()  
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Double_t ProcTrans()

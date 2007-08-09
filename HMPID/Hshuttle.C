@@ -46,25 +46,22 @@ void SimPed()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void SimMap(TMap *pDcsMap,Int_t runTime=1500)
 {
-  Int_t stepTime=100; //time interval between mesuraments
+  Int_t stepTime=100; //time interval between measurements
   Int_t startTime=0;
   
   
   for(Int_t iCh=0;iCh<7;iCh++){//chambers loop
     TObjArray *pP=new TObjArray;  pP->SetOwner(1);
-    TObjArray *pHV=new TObjArray; pHV->SetOwner(1); 
+    TObjArray *pHV=new TObjArray; pHV->SetOwner(1);
     TObjArray *pUserCut=new TObjArray; pUserCut->SetOwner(1); 
-    TObjArray *pDaqSigCut=new TObjArray; pDaqSigCut->SetOwner(1); 
     for(Int_t time=0;time<runTime;time+=stepTime) {
        pP->Add(new AliDCSValue((Float_t)1005.0 ,time));   //sample CH4 pressure [mBar]
        pHV->Add(new AliDCSValue((Float_t)2050.0,time));   //sample chamber HV [V]
        pUserCut->Add(new AliDCSValue(3,time));            //User Cut in number of sigmas
-       pDaqSigCut->Add(new AliDCSValue(1,time));          //Cut in sigmas applied to electronics
     }
     pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_MP%i/HMP_MP%i_GAS/HMP_MP%i_GAS_PMWC.actual.value"           ,iCh,iCh,iCh)),pP); 
     pDcsMap->Add(new TObjString(Form("HMP_DET/HMP_MP%i/HMP_MP%i_PW/HMP_MP%i_SEC0/HMP_MP%i_SEC0_HV.actual.vMon",iCh,iCh,iCh)),pHV); 
     pDcsMap->Add(new TObjString(Form("HMP_%i.UserCut",iCh)),pUserCut); 
-    pDcsMap->Add(new TObjString(Form("HMP_%i.DaqSigCut",iCh)),pDaqSigCut);
 
     for(Int_t iRad=0;iRad<3;iRad++){//radiators loop
       TObjArray *pT1=new TObjArray; pT1->SetOwner(1); 
