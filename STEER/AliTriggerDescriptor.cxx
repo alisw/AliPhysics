@@ -62,12 +62,18 @@
 #include <TObjArray.h>
 #include <TSystem.h>
 #include <TKey.h>
+#include <TList.h>
+#include <TMap.h>
 #include <TFile.h>
 
 #include "AliLog.h"
 #include "AliRun.h"
 #include "AliRunLoader.h"
 #include "AliModule.h"
+
+#include "AliCDBManager.h"
+#include "AliCDBPath.h"
+#include "AliCDBEntry.h"
 
 #include "AliTriggerInput.h"
 #include "AliTriggerDetector.h"
@@ -163,16 +169,14 @@ void AliTriggerDescriptor::AddCondition( TString & cond, TString & name, TString
    fConditions.AddLast( acond );
 }
 
-
 //_____________________________________________________________________________
 AliTriggerDescriptor* AliTriggerDescriptor::LoadDescriptor( TString & descriptor, const char* filename )
 {
    // Load one pre-created Descriptors from database/file that match
    // with the input string 'descriptor'
    // Ej: "Pb-Pb" or "p-p-DIMUON CALIBRATION-CENTRAL-BARREL"
-
    // Load the selected descriptor
-   TString path;
+  /*TString path;
    if( !filename[0] ) {
       path += gSystem->Getenv("ALICE_ROOT");
       path += fgkDescriptorFileName;
@@ -190,7 +194,23 @@ AliTriggerDescriptor* AliTriggerDescriptor::LoadDescriptor( TString & descriptor
 
    file.Close();
 
-   return des;
+   return des;*/
+  AliTriggerDescriptor *des = 0x0;
+  cout<<"GETTING TRIGGER DESCRIPTORS FROM CDB!!!"<<endl;
+ 
+  AliCDBPath path("GRP","CTP","Trigger");
+	
+  AliCDBEntry *entry=AliCDBManager::Instance()->Get(path.GetPath());
+  if(!entry) AliFatalClass("Couldn't load trigger description data from CDB!");
+
+  TList *list = (TList *) entry->GetObject();
+  for(Int_t i =  0; i < list->GetEntries(); i++) {
+    TMap *map = (TMap *)list->At(i);
+    des = (AliTriggerDescriptor *)map->GetValue(descriptor.Data());
+    if(des) return des;
+  }
+
+  return des;
 }
 
 //_____________________________________________________________________________
