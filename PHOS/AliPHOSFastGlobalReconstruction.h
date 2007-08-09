@@ -17,6 +17,7 @@
 class AliGenerator;
 class TClonesArray;
 class AliPHOSGetter;
+class TLorentzVector;
 
 class AliPHOSFastGlobalReconstruction : public TObject {
 
