@@ -20,23 +20,39 @@ void MakeHMPIDResMisAlignment(){
 
 //   pCA->Print();
   
+  const char* macroname = "MakeHMPIDResMisAlignment.C";
   if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){
     // save on file
-    TFile f("HMPIDresidualMisalignment.root","RECREATE");
-    if(!f) cerr<<"cannot open file for output\n";
+    const char* filename = "HMPIDresidualMisalignment.root";
+    TFile f(filename,"RECREATE");
+    if(!f){
+      Error(macroname,"cannot open file for output\n");
+      return;
+    }
+    Info(macroname,"Saving alignment objects to the file %s", filename);
     f.cd();
     f.WriteObject(pCA,"HMPIDAlignObjs","kSingleKey");
     f.Close();
   }else{
     // save in CDB storage
-    const char* Storage = gSystem->Getenv("STORAGE");
+    TString Storage = gSystem->Getenv("STORAGE");
+    if(!Storage.BeginsWith("local://") && !Storage.BeginsWith("alien://")) {
+      Error(macroname,"STORAGE variable set to %s is not valid. Exiting\n",Storage.Data());
+      return;
+    }
+    Info(macroname,"Saving alignment objects in CDB storage %s",
+	 Storage.Data());
     AliCDBManager* cdb = AliCDBManager::Instance();
-    AliCDBStorage* storage = cdb->GetStorage(Storage);
+    AliCDBStorage* storage = cdb->GetStorage(Storage.Data());
+    if(!storage){
+      Error(macroname,"Unable to open storage %s\n",Storage.Data());
+      return;
+    }
     AliCDBMetaData *pMeta= new AliCDBMetaData();  
     pMeta->SetResponsible("HMPID Expert");
     pMeta->SetComment("Residual alignment objects for HMPID produced with sigmaTrans=1mm and sigmaRot=1mrad");
     pMeta->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
-    AliCDBId id("HMPID/Align/Data",0,9999999);
+    AliCDBId id("HMPID/Align/Data",0,AliCDBRunRange::Infinity());
     storage->Put(pCA,id,pMeta);
   }
   

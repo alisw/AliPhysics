@@ -4,7 +4,12 @@ void MakeTOFFullMisAlignment(){
   TClonesArray *array = new TClonesArray("AliAlignObjAngles",2000);
   TClonesArray &alobj = *array;
    
-  if(!gGeoManager) TGeoManager::Import("/home/rgrosso/Prove/AliRoot/geometry.root");
+  if(!AliGeomManager::GetGeometry()){
+    if(!(AliCDBManager::Instance())->IsDefaultStorageSet())
+      AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+    AliCDBManager::Instance()->SetRun(0);
+    AliGeomManager::LoadGeometry();
+  }
 
   AliAlignObjAngles a;
   Double_t sfdpsi=0.,sfdtheta=0.,sfdphi=0.;
@@ -102,9 +107,9 @@ void MakeTOFFullMisAlignment(){
       return;
     }
   }
-  gGeoManager->Export("/home/rgrosso/MacroAllineamento010207/geom_misalBSEGMO.root");
-  gGeoManager=0x0;
-  TGeoManager::Import("/home/rgrosso/MacroAllineamento010207/geom_misalBSEGMO.root");
+  gGeoManager->Export("./geom_misalBSEGMO.root");
+  
+  AliGeomManager::LoadGeometry("./geom_misalBSEGMO.root");
 
   // TOF part !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   Int_t nSMTOF = 18;
@@ -132,11 +137,9 @@ void MakeTOFFullMisAlignment(){
       return;
     }
   }
-  gGeoManager->Export("/home/rgrosso/MacroAllineamento010207/geom_misalBSEGMO_tofSM.root");
+  gGeoManager->Export("./geom_misalBSEGMO_tofSM.root");
 
-
-  gGeoManager=0x0;
-  TGeoManager::Import("/home/rgrosso/MacroAllineamento010207/geom_misalBSEGMO_tofSM.root");
+  AliGeomManager::LoadGeometry("./geom_misalBSEGMO_tofSM.root");
   // tof strips as in residual
   AliGeomManager::ELayerID idTOF = AliGeomManager::kTOF;
 
@@ -157,27 +160,44 @@ void MakeTOFFullMisAlignment(){
     new(alobj[j++]) AliAlignObjAngles(AliGeomManager::SymName(idTOF,i), AliGeomManager::LayerToVolUID(idTOF,i), sdx, sdy, sdz, sdpsi, sdtheta, sdphi, kFALSE);
   }
 
+  const char* macroname = "MakeTOFFullMisAlignment.C";
   if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){
     // save on file
-    TFile f("TOFfullMisalignment.root","RECREATE");
-    if(!f) cerr<<"cannot open file for output\n";
+    const char* filename = "TOFfullMisalignment.root";
+    TFile f(filename,"RECREATE");
+    if(!f){
+      Error(macroname,"cannot open file for output\n");
+      return;
+    }
+    Info(macroname,"Saving alignment objects to the file %s", filename);
     f.cd();
     f.WriteObject(array,"TOFAlignObjs","kSingleKey");
     f.Close();
   }else{
     // save in CDB storage
-    const char* Storage = gSystem->Getenv("STORAGE");
+    TString Storage = gSystem->Getenv("STORAGE");
+    if(!Storage.BeginsWith("local://") && !Storage.BeginsWith("alien://")) {
+      Error(macroname,"STORAGE variable set to %s is not valid. Exiting\n",Storage.Data());
+      return;
+    }
+    Info(macroname,"Saving alignment objects in CDB storage %s",
+	 Storage.Data());
     AliCDBManager* cdb = AliCDBManager::Instance();
-    AliCDBStorage* storage = cdb->GetStorage(Storage);
+    AliCDBStorage* storage = cdb->GetStorage(Storage.Data());
+    if(!storage){
+      Error(macroname,"Unable to open storage %s\n",Storage.Data());
+      return;
+    }
     AliCDBMetaData* md = new AliCDBMetaData();
     md->SetResponsible("Silvia Arcelli");
     md->SetComment("Full misalignment for TOF and FRAME");
     md->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
-    AliCDBId id("TOF/Align/Data",0,9999999);
+    AliCDBId id("TOF/Align/Data",0,AliCDBRunRange::Infinity());
     storage->Put(array,id,md);
   }
 
   array->Delete();
+  gGeoManager = 0x0;
 
 }
 

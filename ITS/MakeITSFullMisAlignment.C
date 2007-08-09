@@ -4,7 +4,12 @@ void MakeITSFullMisAlignment(){
   TClonesArray *array = new TClonesArray("AliAlignObjAngles",4000);
   TClonesArray &alobj = *array;
    
-  if(!gGeoManager) TGeoManager::Import("geometry.root");
+  if(!AliGeomManager::GetGeometry()){
+    if(!(AliCDBManager::Instance())->IsDefaultStorageSet())
+      AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+      AliCDBManager::Instance()->SetRun(0);
+    AliGeomManager::LoadGeometry();
+  }
   // needed for the constructors with local coordinates not to fail
 
   Double_t globalZ = 0.015; // in cm, = 150 microns
@@ -87,22 +92,39 @@ void MakeITSFullMisAlignment(){
     }
   }
 
+  const char* macroname = "MakeITSFullMisAlignment.C";
   if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){
     // save on file
-    TFile f("ITSfullMisalignment.root","RECREATE");
-    if(!f) {cerr<<"cannot open file for output\n";}
+    const char* filename = "ITSfullMisalignment.root";
+    TFile f(filename,"RECREATE");
+    if(!f){
+      Error(macroname,"cannot open file for output\n");
+      return;
+    }
+    Info(macroname,"Saving alignment objects to the file %s", filename);
+    f.cd();
     f.WriteObject(array,"ITSAlignObjs","kSingleKey");
     f.Close();
   }else{
     // save in CDB storage
-    const char* Storage = gSystem->Getenv("STORAGE");
-    AliCDBManager *CDB = AliCDBManager::Instance();
-    AliCDBStorage* storage = CDB->GetStorage(Storage);
+    TString Storage = gSystem->Getenv("STORAGE");
+    if(!Storage.BeginsWith("local://") && !Storage.BeginsWith("alien://")) {
+      Error(macroname,"STORAGE variable set to %s is not valid. Exiting\n",Storage.Data());
+      return;
+    }
+    Info(macroname,"Saving alignment objects in CDB storage %s",
+	 Storage.Data());
+    AliCDBManager* cdb = AliCDBManager::Instance();
+    AliCDBStorage* storage = cdb->GetStorage(Storage.Data());
+    if(!storage){
+      Error(macroname,"Unable to open storage %s\n",Storage.Data());
+      return;
+    }
     AliCDBMetaData *md= new AliCDBMetaData();
     md->SetResponsible("Ludovic Gaudichet");
     md->SetComment("Alignment objects with actual ITS misalignment");
     md->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
-    AliCDBId id("ITS/Align/Data",0,9999999);
+    AliCDBId id("ITS/Align/Data",0,AliCDBRunRange::Infinity());
     storage->Put(array,id, md);
   }
 

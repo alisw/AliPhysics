@@ -16,13 +16,11 @@ void MakeAllDETsFullMisAlignment(Char_t* CDBstorage = "local://$HOME/Full"){
     gSystem->Setenv("ARVERSION","v4-05-08");
   }
 
-  // if not already present, create geometry file needed by those detectors
-  // producing their objects in the local RS
-  if(gSystem->AccessPathName("./geometry.root")){
-    gAlice->Init();
-    gGeoManager->Export("geometry.root");
-  }else{
-    TGeoManager::Import("geometry.root");
+  if(!AliGeomManager::GetGeometry()){
+    if(!(AliCDBManager::Instance())->IsDefaultStorageSet())
+      AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+      AliCDBManager::Instance()->SetRun(0);
+    AliGeomManager::LoadGeometry();
   }
 
   TString dets = "EMCAL,FMD,ITS,MUON,PHOS,PMD,HMPID,T0,TOF,TPC,TRD,VZERO,ZDC";

@@ -42,8 +42,12 @@
 void MakeMUONFullMisAlignment()
 {
   // Load geometry, if not yet loaded,
-  if ( ! AliGeomManager::GetGeometry() )
-    AliGeomManager::LoadGeometry("geometry.root");
+  if(!AliGeomManager::GetGeometry()){
+    if(!(AliCDBManager::Instance())->IsDefaultStorageSet())
+      AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+    AliCDBManager::Instance()->SetRun(0);
+    AliGeomManager::LoadGeometry();
+  }
 
   AliMUONGeometryTransformer transformer;
   transformer.LoadGeometryData();
@@ -53,32 +57,38 @@ void MakeMUONFullMisAlignment()
     = misAligner.MisAlign(&transformer, true);
   const TClonesArray* array = newTransform->GetMisAlignmentData();
   
+  const char* macroname = "MakeMUONFullMisAlignment.C";
   if ( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ) {
-    cout << "Generating full misalignment data in a file" << endl;
-
-    // Create a File to store the alignment data
-    TFile f("MUONfullMisalignment.root","RECREATE");
-    if ( !f.IsOpen() ) {
-      cerr << "cannot open file for output" << endl;
+    const char* filename = "MUONfullMisalignment.root";
+    TFile f(filename,"RECREATE");
+    if(!f){
+      Error(macroname,"cannot open file for output\n");
+      return;
     }
-    
+    Info(macroname,"Saving alignment objects to the file %s", filename);
     f.cd();
-    f.WriteObject(array,"MUONAlignObjs ","kSingleKey");
+    f.WriteObject(array,"MUONAlignObjs","kSingleKey");
     f.Close();
   }
   else {
-    cout << "Generating full misalignment data in CDB" << endl;
-
-    // save in CDB storage
-    const char* Storage = gSystem->Getenv("STORAGE");
-    
-    AliCDBManager* cdbManager = AliCDBManager::Instance();
-    AliCDBStorage* storage = cdbManager->GetStorage(Storage);
+    TString Storage = gSystem->Getenv("STORAGE");
+    if(!Storage.BeginsWith("local://") && !Storage.BeginsWith("alien://")) {
+      Error(macroname,"STORAGE variable set to %s is not valid. Exiting\n",Storage.Data());
+      return;
+    }
+    Info(macroname,"Saving alignment objects in CDB storage %s",
+	 Storage.Data());
+    AliCDBManager* cdb = AliCDBManager::Instance();
+    AliCDBStorage* storage = cdb->GetStorage(Storage.Data());
+    if(!storage){
+      Error(macroname,"Unable to open storage %s\n",Storage.Data());
+      return;
+    }
     AliCDBMetaData* cdbData = new AliCDBMetaData();
     cdbData->SetResponsible("Dimuon Offline project");
     cdbData->SetComment("MUON alignment objects with full misalignment");
     cdbData->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
-    AliCDBId id("MUON/Align/Data", 0, 9999999); 
+    AliCDBId id("MUON/Align/Data", 0, AliCDBRunRange::Infinity()); 
     storage->Put(const_cast<TClonesArray*>(array), id, cdbData);
   }   
   delete newTransform;
