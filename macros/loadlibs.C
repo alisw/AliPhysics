@@ -25,6 +25,10 @@ void loadlibs ()
 
   gSystem->Load("libEGPythia6");
 
+  gSystem->Load("libNet");
+  gSystem->Load("libTree");
+ 
+  gSystem->Load("libSTEERBase");
   gSystem->Load("libESD");
   gSystem->Load("libCDB");
   gSystem->Load("libSTEER");

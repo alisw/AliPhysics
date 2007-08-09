@@ -17,6 +17,10 @@ void loadlibsrec ()
   gSystem->Load("libGeom");
   gSystem->Load("libVMC");
 
+  gSystem->Load("libNet");
+  gSystem->Load("libTree");
+
+  gSystem->Load("libSTEERBase");
   gSystem->Load("libESD");
   gSystem->Load("libCDB");
   gSystem->Load("libSTEER");
