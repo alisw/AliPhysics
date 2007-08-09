@@ -19,6 +19,7 @@ class AliRawReader;
 
 class AliTRDdigitsManager;
 class AliTRDgeometry;
+class AliTRDfeeParam;
 class AliTRDdataArrayI;
 
 class AliTRDrawData : public TObject {
@@ -32,21 +33,20 @@ class AliTRDrawData : public TObject {
   AliTRDrawData &operator=(const AliTRDrawData &/*r*/) { return *this; }
 
   virtual Bool_t       Digits2Raw(TTree *digits, TTree *tracks = NULL);
-  virtual Bool_t       SetRawVersion(Int_t v);
 
   virtual AliTRDdigitsManager* Raw2Digits(AliRawReader *rawReader);
 
  protected:
 
   virtual Bool_t       Digits2Raw(AliTRDdigitsManager* digitsManager); // for fRawVersion > 0
-
   virtual Int_t        ProduceHcDataV1andV2(AliTRDdataArrayI *digits, Int_t side, Int_t det, UInt_t *buf, Int_t maxSize);
+  virtual Int_t        ProduceHcDataV3(AliTRDdataArrayI *digits, Int_t side, Int_t det, UInt_t *buf, Int_t maxSize);
   
-  Int_t                fRawVersion;     //  Which version of raw simulator is used
   AliTRDgeometry      *fGeo;            //! Geometry
+  AliTRDfeeParam      *fFee;            //! Fee Parameters
   Int_t                fNumberOfDDLs;   //  Number of DDLs
 
-  ClassDef(AliTRDrawData,4)             //  TRD raw data class
+  ClassDef(AliTRDrawData,5)             //  TRD raw data class
 
 };
 #endif

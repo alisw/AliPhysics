@@ -66,6 +66,7 @@
 #pragma link C++ class  AliTRDtrigParam+;
 #pragma link C++ class  AliTRDmcmTracklet+;
 #pragma link C++ class  AliTRDmcm+;
+#pragma link C++ class  AliTRDmcmSim+;
 #pragma link C++ class  AliTRDltuTracklet+;
 #pragma link C++ class  AliTRDgtuTrack+;
 #pragma link C++ class  AliTRDmodule+;

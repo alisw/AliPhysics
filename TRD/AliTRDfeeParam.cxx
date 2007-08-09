@@ -71,27 +71,27 @@ AliTRDfeeParam::AliTRDfeeParam()
   :TObject()
   //  ,fGeo(0)
   ,fCP(0)
-  ,fTFaR1(0)
-  ,fTFaR2(0)
-  ,fTFaC1(0)
-  ,fTFaC2(0)
+  ,fTFr1(0)
+  ,fTFr2(0)
+  ,fTFc1(0)
+  ,fTFc2(0)
 {
   //
   // Default constructor
   //
   
   // PASA V.4
-  if      (fgkTFaNExp == 1) {
-    fTFaR1 = 1.1563;
-    fTFaR2 = 0.1299;
-    fTFaC1 = 0.0657;
-    fTFaC2 = 0.0000;
+  if      (fgkTFnExp == 1) {
+    fTFr1 = 1.1563;
+    fTFr2 = 0.1299;
+    fTFc1 = 0.0657;
+    fTFc2 = 0.0000;
   }
-  else if (fgkTFaNExp == 2) {
-    fTFaR1 = 1.1563;
-    fTFaR2 = 0.1299;
-    fTFaC1 = 0.1141;
-    fTFaC2 = 0.6241;
+  else if (fgkTFnExp == 2) {
+    fTFr1 = 1.1563;
+    fTFr2 = 0.1299;
+    fTFc1 = 0.1141;
+    fTFc2 = 0.6241;
   }
 
   //  fGeo = AliTRDgeometry::Instance();
@@ -104,10 +104,10 @@ AliTRDfeeParam::AliTRDfeeParam(const AliTRDfeeParam &p)
   :TObject(p)
   //  ,fGeo(p.fGeo)
   ,fCP(p.fCP)
-  ,fTFaR1(p.fTFaR1)
-  ,fTFaR2(p.fTFaR2)
-  ,fTFaC1(p.fTFaC1)
-  ,fTFaC2(p.fTFaC2)
+  ,fTFr1(p.fTFr1)
+  ,fTFr2(p.fTFr2)
+  ,fTFc1(p.fTFc1)
+  ,fTFc2(p.fTFc2)
 {
   //
   // AliTRDfeeParam copy constructor
@@ -144,10 +144,10 @@ void AliTRDfeeParam::Copy(TObject &p) const
 
   //  ((AliTRDfeeParam &) p).fGeo     = fGeo;
   ((AliTRDfeeParam &) p).fCP      = fCP;
-  ((AliTRDfeeParam &) p).fTFaR1   = fTFaR1;
-  ((AliTRDfeeParam &) p).fTFaR2   = fTFaR2;
-  ((AliTRDfeeParam &) p).fTFaC1   = fTFaC1;
-  ((AliTRDfeeParam &) p).fTFaC2   = fTFaC2;
+  ((AliTRDfeeParam &) p).fTFr1   = fTFr1;
+  ((AliTRDfeeParam &) p).fTFr2   = fTFr2;
+  ((AliTRDfeeParam &) p).fTFc1   = fTFc1;
+  ((AliTRDfeeParam &) p).fTFc2   = fTFc2;
   
   TObject::Copy(p);
 }

@@ -39,32 +39,38 @@
 #include "AliFstream.h"
 
 #include "AliTRDSignalIndex.h"
+
+#include "AliTRDfeeParam.h"
+#include "AliTRDmcmSim.h"
+
 ClassImp(AliTRDrawData)
 
 //_____________________________________________________________________________
 AliTRDrawData::AliTRDrawData()
   :TObject()
-  ,fRawVersion(2)    // Default Raw Data version set here
-  ,fGeo(0)
+  ,fGeo(NULL)
+  ,fFee(NULL)
   ,fNumberOfDDLs(0)
 {
   //
   // Default constructor
   //
-
+  fFee = AliTRDfeeParam::Instance();
+  fNumberOfDDLs = AliDAQ::NumberOfDdls("TRD");
 }
 
 //_____________________________________________________________________________
 AliTRDrawData::AliTRDrawData(const AliTRDrawData &r)
   :TObject(r)
-  ,fRawVersion(2)    // Default Raw Data version set here
-  ,fGeo(0)
+  ,fGeo(NULL)
+  ,fFee(NULL)
   ,fNumberOfDDLs(0)
 {
   //
   // Copy constructor
   //
-
+  fFee = AliTRDfeeParam::Instance();
+  fNumberOfDDLs = AliDAQ::NumberOfDdls("TRD");
 }
 
 //_____________________________________________________________________________
@@ -73,23 +79,6 @@ AliTRDrawData::~AliTRDrawData()
   //
   // Destructor
   //
-
-}
-
-//_____________________________________________________________________________
-Bool_t AliTRDrawData::SetRawVersion(Int_t v)
-{
-  //
-  // Set the raw data version (Currently only version 0, 1 and 2 are available)
-  //
-
-  if ( (v >= 0) && (v <= 2) ) {
-    fRawVersion = v;
-    return kTRUE;
-  }
-
-  return kFALSE;
-
 }
 
 //_____________________________________________________________________________
@@ -102,8 +91,6 @@ Bool_t AliTRDrawData::Digits2Raw(TTree *digitsTree, TTree *tracks )
   // Currently tracklet output is not spported yet and it
   // will be supported in higher version simulator.
   //
-
-  fNumberOfDDLs = AliDAQ::NumberOfDdls("TRD");
 
   AliTRDdigitsManager* digitsManager = new AliTRDdigitsManager();
 
@@ -128,12 +115,13 @@ Bool_t AliTRDrawData::Digits2Raw(TTree *digitsTree, TTree *tracks )
   }
 
   Int_t retval = kTRUE;
+  Int_t rv     = fFee->GetRAWversion();
 
   // Call appropriate Raw Simulator
-  if ( fRawVersion > 0 && fRawVersion <= 2 ) retval = Digits2Raw(digitsManager); 
+  if ( rv > 0 && rv <= 3 ) retval = Digits2Raw(digitsManager); 
   else {
     retval = kFALSE;
-    AliWarning(Form("Unsupported raw version (fRawVersion=%d).",fRawVersion));
+    AliWarning(Form("Unsupported raw version (%d).", rv));
   }
 
   // Cleanup
@@ -198,17 +186,21 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
         digits->Expand();
 
         Int_t hcwords = 0;
+	Int_t rv = fFee->GetRAWversion();
 
         // Process A side of the chamber
-	if ( fRawVersion >= 1 && fRawVersion <= 2 ) hcwords = ProduceHcDataV1andV2(digits,0,iDet,hc_buffer,kMaxHcWords);
+	if ( rv >= 1 && rv <= 2 ) hcwords = ProduceHcDataV1andV2(digits,0,iDet,hc_buffer,kMaxHcWords);
+	if ( rv == 3 )            hcwords = ProduceHcDataV3     (digits,0,iDet,hc_buffer,kMaxHcWords);
+
         of->WriteBuffer((char *) hc_buffer, hcwords*4);
         npayloadbyte += hcwords*4;
 
         // Process B side of the chamber
-	if ( fRawVersion >= 1 && fRawVersion <= 2 ) hcwords = ProduceHcDataV1andV2(digits,1,iDet,hc_buffer,kMaxHcWords);
+	if ( rv >= 1 && rv <= 2 ) hcwords = ProduceHcDataV1andV2(digits,1,iDet,hc_buffer,kMaxHcWords);
+	if ( rv >= 3 )            hcwords = ProduceHcDataV3     (digits,1,iDet,hc_buffer,kMaxHcWords);
+
         of->WriteBuffer((char *) hc_buffer, hcwords*4);
         npayloadbyte += hcwords*4;
-
       }
     }
 
@@ -230,8 +222,8 @@ Int_t AliTRDrawData::ProduceHcDataV1andV2(AliTRDdataArrayI *digits, Int_t side
                                         , Int_t det, UInt_t *buf, Int_t maxSize)
 {
   //
-  // This function simulates: 1) SM-I commissiong data Oct. 06 (fRawVersion == 1).
-  //                          2) Full Raw Production Version   (fRawVersion == 2)
+  // This function simulates: 1) SM-I commissiong data Oct. 06 (Raw Version == 1).
+  //                          2) Full Raw Production Version   (Raw Version == 2)
   //
   // Produce half chamber data (= an ORI data) for the given chamber (det) and side (side)
   // where
@@ -259,6 +251,7 @@ Int_t AliTRDrawData::ProduceHcDataV1andV2(AliTRDdataArrayI *digits, Int_t side
   Int_t      kCtype = 0;                       // Chamber type (0:C0, 1:C1)
   Int_t         iEv = 0xA;                     // Event ID. Now fixed to 10, how do I get event id?
   UInt_t          x = 0;                       // General used number
+  Int_t          rv = fFee->GetRAWversion();
 
   // Check the nCol and nRow.
   if ((nCol == 144) && 
@@ -285,7 +278,7 @@ Int_t AliTRDrawData::ProduceHcDataV1andV2(AliTRDdataArrayI *digits, Int_t side
   }
 
   // Half Chamber header
-  if      ( fRawVersion == 1 ) {
+  if      ( rv == 1 ) {
     // Now it is the same version as used in SM-I commissioning.
     Int_t  dcs = det+100;      // DCS Serial (in simulation, it is meaningless
     x = (dcs<<20) | (sect<<15) | (plan<<12) | (cham<<9) | (side<<8) | 1;
@@ -296,11 +289,11 @@ Int_t AliTRDrawData::ProduceHcDataV1andV2(AliTRDdataArrayI *digits, Int_t side
       of++;
     }
   } 
-  else if ( fRawVersion == 2 ) {
+  else if ( rv == 2 ) {
     // h[0] (there are 3 HC header)
     Int_t minorv = 0;      // The minor version number
     Int_t add    = 1;      // The number of additional header words to follow
-    x = (1<<31) | (fRawVersion<<24) | (minorv<<17) | (add<<14) | (sect<<9) | (plan<<6) | (cham<<3) | (side<<2) | 1;
+    x = (1<<31) | (rv<<24) | (minorv<<17) | (add<<14) | (sect<<9) | (plan<<6) | (cham<<3) | (side<<2) | 1;
     if (nw < maxSize) {
       buf[nw++] = x; 
     }
@@ -409,6 +402,143 @@ Int_t AliTRDrawData::ProduceHcDataV1andV2(AliTRDdataArrayI *digits, Int_t side
 
 }
 
+
+//_____________________________________________________________________________
+Int_t AliTRDrawData::ProduceHcDataV3(AliTRDdataArrayI *digits, Int_t side
+				     , Int_t det, UInt_t *buf, Int_t maxSize)
+{
+  //
+  // This function simulates: Raw Version == 3 (Zero Suppression Prototype)
+  //
+
+  Int_t          nw = 0;                       // Number of written    words
+  Int_t          of = 0;                       // Number of overflowed words
+  Int_t        plan = fGeo->GetPlane( det );   // Plane
+  Int_t        cham = fGeo->GetChamber( det ); // Chamber
+  Int_t        sect = fGeo->GetSector( det );  // Sector (=iDDL)
+  Int_t        nRow = fGeo->GetRowMax( plan, cham, sect );
+  Int_t        nCol = fGeo->GetColMax( plan );
+  const Int_t nTBin = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
+  Int_t      kCtype = 0;                       // Chamber type (0:C0, 1:C1)
+  Int_t         iEv = 0xA;                     // Event ID. Now fixed to 10, how do I get event id?
+  UInt_t          x = 0;                       // General used number
+  Int_t          rv = fFee->GetRAWversion();
+
+  // Check the nCol and nRow.
+  if ((nCol == 144) && 
+      (nRow == 16 || nRow == 12)) {
+    kCtype = (nRow-12) / 4;
+  } 
+  else {
+    AliError(Form("This type of chamber is not supported (nRow=%d, nCol=%d)."
+                 ,nRow,nCol));
+    return 0;
+  }
+
+  AliDebug(1,Form("Producing raw data for sect=%d plan=%d cham=%d side=%d"
+                 ,sect,plan,cham,side));
+
+  // Tracklet should be processed here but not implemented yet
+
+  // Write end of tracklet marker
+  if (nw < maxSize) {
+    buf[nw++] = kEndoftrackletmarker;
+  } 
+  else {
+    of++;
+  }
+
+  // Half Chamber header
+  // h[0] (there are 3 HC header)
+  Int_t minorv = 0;    // The minor version number
+  Int_t add    = 1;    // The number of additional header words to follow
+  x = (1<<31) | (rv<<24) | (minorv<<17) | (add<<14) | (sect<<9) | (plan<<6) | (cham<<3) | (side<<2) | 1;
+  if (nw < maxSize) {
+    buf[nw++] = x; 
+  }
+  else {
+    of++;
+  }
+  // h[1]
+  Int_t bc_ctr   = 99; // bunch crossing counter. Here it is set to 99 always for no reason
+  Int_t pt_ctr   = 15; // pretrigger counter. Here it is set to 15 always for no reason
+  Int_t pt_phase = 11; // pretrigger phase. Here it is set to 11 always for no reason
+  x = (bc_ctr<<16) | (pt_ctr<<12) | (pt_phase<<8) | ((nTBin-1)<<2) | 1;
+  if (nw < maxSize) {
+    buf[nw++] = x; 
+  }
+  else {
+    of++;
+  }
+  // h[2]
+  Int_t ped_setup       = 1;  // Pedestal filter setup (0:1). Here it is always 1 for no reason
+  Int_t gain_setup      = 1;  // Gain filter setup (0:1). Here it is always 1 for no reason
+  Int_t tail_setup      = 1;  // Tail filter setup (0:1). Here it is always 1 for no reason
+  Int_t xt_setup        = 0;  // Cross talk filter setup (0:1). Here it is always 0 for no reason
+  Int_t nonlin_setup    = 0;  // Nonlinearity filter setup (0:1). Here it is always 0 for no reason
+  Int_t bypass_setup    = 0;  // Filter bypass (for raw data) setup (0:1). Here it is always 0 for no reason
+  Int_t common_additive = 10; // Digital filter common additive (0:63). Here it is always 10 for no reason
+  x = (ped_setup<<31) | (gain_setup<<30) | (tail_setup<<29) | (xt_setup<<28) | (nonlin_setup<<27)
+    | (bypass_setup<<26) | (common_additive<<20) | 1;
+  if (nw < maxSize) {
+    buf[nw++] = x; 
+  }
+  else {
+    of++;
+  }
+
+  AliTRDmcmSim *mcm = new AliTRDmcmSim();
+
+  // Scan for ROB and MCM
+  for (Int_t iRobRow = 0; iRobRow < (kCtype + 3); iRobRow++ ) {
+    Int_t iRob = iRobRow * 2 + side;
+    for (Int_t iMcm = 0; iMcm < fGeo->MCMmax(); iMcm++ ) {
+
+      mcm->Init( det, iRob, iMcm );
+      Int_t padrow = mcm->GetRow();
+
+      // Copy ADC data to MCM simulator
+      for (Int_t iAdc = 0; iAdc < 21; iAdc++ ) {
+	Int_t padcol = mcm->GetCol( iAdc );
+	if ((padcol >=    0) && (padcol <  nCol)) {
+	  for (Int_t iT = 0; iT < nTBin; iT++) { 
+	    mcm->SetData( iAdc, iT, digits->GetDataUnchecked( padrow, padcol, iT) );
+	  } 
+	} else {  // this means it is out of chamber, and masked ADC
+	  mcm->SetDataPedestal( iAdc );
+	}
+      }
+      // Simulate process in MCM
+      mcm->Filter();     // Apply filter
+      mcm->ZSMapping();  // Calculate zero suppression mapping
+
+      // Write MCM data to buffer
+      Int_t temp_nw =  mcm->ProduceRawStream( &buf[nw], maxSize - nw );
+      if( temp_nw < 0 ) {
+	of += temp_nw;
+	nw += maxSize - nw;
+	AliError(Form("Buffer overflow detected. Please increase the buffer size and recompile."));
+      } else {
+	nw += temp_nw;
+      }
+    }
+  }
+
+  // Write end of raw data marker
+  if (nw < maxSize) {
+    buf[nw++] = kEndofrawdatamarker; 
+  }
+  else {
+    of++;
+  }
+  if (of != 0) {
+    AliWarning("Buffer overflow. Data is truncated. Please increase buffer size and recompile.");
+  }
+
+  return nw;
+
+}
+
 //_____________________________________________________________________________
 AliTRDdigitsManager *AliTRDrawData::Raw2Digits(AliRawReader *rawReader)
 {
@@ -427,7 +557,7 @@ AliTRDdigitsManager *AliTRDrawData::Raw2Digits(AliRawReader *rawReader)
   digitsManager->CreateArrays();
 
   AliTRDRawStream input(rawReader);
-  input.SetRawVersion( fRawVersion );
+  input.SetRawVersion( fFee->GetRAWversion() );
   input.Init();
 
   // Loop through the digits

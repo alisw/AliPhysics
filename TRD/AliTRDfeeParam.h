@@ -54,6 +54,17 @@ class AliTRDfeeParam : public TObject
   static  Int_t    GetNrowC0()            { return fgkNrowC0; }
   static  Int_t    GetNrowC1()            { return fgkNrowC1; }
 
+  static  Int_t    GetADCpedestal()       { return fgkADCpedestal; }
+  static  Int_t    GetADCnoise()          { return fgkADCnoise; }
+  static  Int_t    GetADCDAC()            { return fgkADCDAC; }
+
+  static  Bool_t   isPFon()               { return fgkPFon; }
+  static  Bool_t   isGFon()               { return fgkGFon; }
+  static  Bool_t   isTFon()               { return fgkTFon; }
+
+  static  Int_t    GetPFtimeConstant()    {  return fgkPFtimeConstant; }
+  static  Int_t    GetPFeffectPedestal()  {  return fgkPFeffectPedestal; }
+
   //          Float_t  GetClusThr()           { return fClusThr; };
   //        Float_t  GetPadThr() const { return fPadThr; };
   //        Int_t    GetTailCancelation() const { return fTCOn; };
@@ -61,8 +72,23 @@ class AliTRDfeeParam : public TObject
   //virtual void     GetFilterParam(Float_t &r1, Float_t &r2, Float_t &c1, Float_t &c2, Float_t &ped) const;
   //        Int_t    GetFilterType() const { return fFilterType; };
 
-  static  Float_t  GetTFattenuationParam() { return ((Float_t)fgkTFattenuationParameter1) / ((Float_t)fgkTFattenuationParameter2) ; }
-  static  Float_t  GetTFf0()               { return 1 + fgkTFon*(-1+GetTFattenuationParam()); }   // 1 if TC off
+  static  Int_t    GetTFtype()            { return fgkTFtype; }
+  static  Int_t    GetTFnExp()            { return fgkTFnExp; }
+          Float_t  GetTFr1()              { return fTFr1; }
+          Float_t  GetTFr2()              { return fTFr2; }
+          Float_t  GetTFc1()              { return fTFc1; }
+          Float_t  GetTFc2()              { return fTFc2; }
+
+  static  Float_t  GetTFattPar()          { return ((Float_t)fgkTFattPar1) / ((Float_t)fgkTFattPar2) ; }
+  static  Float_t  GetTFf0()              { return 1 + fgkTFon*(-1+GetTFattPar()); }   // 1 if TC off
+  
+  static  Int_t    GetEBsglIndThr()       { return fgkEBsglIndThr; }
+  static  Int_t    GetEBsumIndThr()       { return fgkEBsumIndThr; }
+  static  Int_t    GetEBindLUT()          { return fgkEBindLUT; }
+  static  Int_t    GetEBignoreNeighbour() { return fgkEBignoreNeighbour; }
+
+  static  Int_t    GetRAWversion()        { return fgkRAWversion; }
+  static  Bool_t   GetRAWstoreRaw()       { return fgkRAWstoreRaw; }
 
  protected:
 
@@ -89,7 +115,7 @@ class AliTRDfeeParam : public TObject
   static const Int_t    fgkNrowC1            = 16;        // Number of Rows per C1 chamber  (old fgkRowmaxC1)
 
   // ADC intrinsic parameters
-  static const Int_t    fgkADCpedestal       = 100000;    // ADC baseline * 100 (old name fPedestal)
+  static const Int_t    fgkADCpedestal       = 0;         // ADC baseline * 100 (old name fPedestal) it is not PFeffectPedestal
   static const Int_t    fgkADCnoise          = 10;        // ADC noise    * 100 (not contained in the digitizer) [in ADC] 
   static const Int_t    fgkADCDAC            = 0;         // 5 bit ADC gain parameter
 
@@ -106,40 +132,44 @@ class AliTRDfeeParam : public TObject
   static const Int_t    fgkGFnoise           =  0;        // Noise level increased by gain filter x 100 [in ADC] (to be measured)
 
   // TF setup
-  static const Int_t    fgkTFtype                 = 2;    // TC type (0=analog, 1=digital, 2=TRAPsim) (old name fFilterType)
-  static const Int_t    fgkTFlongDecayWeight      = 270;  // 0 to 1024 corresponds to 0 to 0.5
-  static const Int_t    fgkTFlongDecayParameter   = 348;  // 0 to 511 corresponds to 0.75 to 1
-  static const Int_t    fgkTFshortDecayParameter  = 449;  // 0 to 511 correponds to 0.25 to 0.5
-  static const Int_t    fgkTFattenuationParameter1= 45;   // attenuationParameter = fgkTFattenuationParameter1/fgkTFattenuationParameter2
-  static const Int_t    fgkTFattenuationParameter2= 14;   //                      = -alphaL/ln(lambdaL)-(1-alphaL)/ln(lambdaS)
+  static const Int_t    fgkTFtype            = 1;    // TC type (0=analog, 1=digital, 2=MI) (old name fFilterType)
 
-  // OLD TF setup (calculated from above)  (valid only for fgkTFtype = 0 or 1)
-  static const Int_t    fgkTFaNExp                 = 1;    // Number of exponential
-               Float_t  fTFaR1;                        // Time constant [microseconds] long (old name fR1)
-               Float_t  fTFaR2;                        // Time constant [microseconds] short(old name fR2)
-               Float_t  fTFaC1;                        // Weight long  (old name fC1)
-               Float_t  fTFaC2;                        // Weight short (old name fC2)
+  // OLD TF setup (calculated from above)  (valid only for fgkTFsimType = 0 or 1)
+  static const Int_t    fgkTFnExp          = 1;    // Number of exponential for simType 0 and 1
 
-  // Zero suppression parameters
-  static const Int_t    fgkEBsingleIndicatorThreshold = 3;    // used in EBIS, in ADC units above the pedestal
-  static const Int_t    fgkEBsumIndicatorThreshold    = 4;    // used in EBIT, in ADC units above the pedestal
-  static const Int_t    fgkEBindicatorLookupTable     = 0xF0; // see the TRAP user manual, used in EBIL
-  static const Int_t    fgkEBmarkIgnoreNeighbour      = 1;    // used in EBIN
+  // following need Instance because initialized in constructor
+               Float_t  fTFr1;                        // Time constant [us] long (old name fR1)
+               Float_t  fTFr2;                        // Time constant [us] short(old name fR2)
+               Float_t  fTFc1;                        // Weight long  (old name fC1)
+               Float_t  fTFc2;                        // Weight short (old name fC2)
+
+  // here is for TRAP simulation (not yet used)
+  static const Int_t    fgkTFdecayWeightL     = 270;  // 0 to 1024 corresponds to 0 to 0.5
+  static const Int_t    fgkTFdecayParL        = 348;  // 0 to 511 corresponds to 0.75 to 1
+  static const Int_t    fgkTFdecayParS        = 449;  // 0 to 511 correponds to 0.25 to 0.5
+  static const Int_t    fgkTFattPar1          = 45;   // attenuationParameter = fgkTFattenuationParameter1/fgkTFattenuationParameter2
+  static const Int_t    fgkTFattPar2          = 14;   //                      = -alphaL/ln(lambdaL)-(1-alphaL)/ln(lambdaS)
+
+  // ZS parameters
+  static const Int_t    fgkEBsglIndThr        = 3;    // EBIS in ADC units
+  static const Int_t    fgkEBsumIndThr        = 4;    // EBIT in ADC units
+  static const Int_t    fgkEBindLUT           = 0xF0; // EBIL lookup table
+  static const Int_t    fgkEBignoreNeighbour  = 1;    // EBIN 0:include neighbor
 
   // Charge accumulators
-  static const Int_t    fgkPREPqAcc0Start             =  0;   // Preprocessor Charge Accumulator 0 Start
-  static const Int_t    fgkPREPqAcc0End               = 10;   // Preprocessor Charge Accumulator 0 End
-  static const Int_t    fgkPREPqAcc1Start             = 11;   // Preprocessor Charge Accumulator 1 Start
-  static const Int_t    fgkPREPqAcc1End               = 20;   // Preprocessor Charge Accumulator 1 End
-  static const Int_t    fgkMinClusterCharge           = 20;   // Hit detection [in ADC units]
+  static const Int_t    fgkPREPqAcc0Start      =  0;   // Preprocessor Charge Accumulator 0 Start
+  static const Int_t    fgkPREPqAcc0End        = 10;   // Preprocessor Charge Accumulator 0 End
+  static const Int_t    fgkPREPqAcc1Start      = 11;   // Preprocessor Charge Accumulator 1 Start
+  static const Int_t    fgkPREPqAcc1End        = 20;   // Preprocessor Charge Accumulator 1 End
+  static const Int_t    fgkMinClusterCharge    = 20;   // Hit detection [in ADC units]
 
   // OLD TRAP processing parameters calculated from above
   //static const Float_t  fClusThr;                     // Cluster threshold
   //static const Float_t  fPadThr;                      // Pad threshold
 
   // For raw production
-  static const Int_t    fgkRAWversion            = 1;         // Raw data production version
-  static const Bool_t   fgkRAWstoreRaw           = kTRUE;     // Store unfiltered data for raw data stream
+  static const Int_t    fgkRAWversion          = 2;     // Raw data production version
+  static const Bool_t   fgkRAWstoreRaw         = kTRUE; // Store unfiltered data for raw data stream
 
  private:
 
