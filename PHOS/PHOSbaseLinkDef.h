@@ -35,5 +35,10 @@
 
 #pragma link C++ class AliPHOSQualAssDataMaker+;
 #pragma link C++ class AliPHOSQualAssChecker+;
+#pragma link C++ class AliPHOSRecParticle+;
+#pragma link C++ class AliPHOSRecPoint+;
+#pragma link C++ class AliPHOSCpvRecPoint+;
+#pragma link C++ class AliPHOSEmcRecPoint+;
+#pragma link C++ class AliPHOSTrackSegment+;
 
 #endif
