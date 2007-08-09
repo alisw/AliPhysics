@@ -375,7 +375,7 @@ void AliTRDSimParam::SampleTRF()
 		index = i+6;
 		if(index >= kNpasa) break;
 		x += .02;
-		signal[index]=k1*(pow((x-t0)/t1, 2.5)*(exp(-(x-t0)/t1))+k2*exp(-(x-t0)/t2));
+		signal[index]=k1*(TMath::Power((x-t0)/t1, 2.5)*(exp(-(x-t0)/t1))+k2*exp(-(x-t0)/t2));
 	}
 
 	Float_t xtalk[kNpasa];
