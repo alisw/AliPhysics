@@ -5,8 +5,8 @@ AliEMCALClusterizerv1.cxx \
 AliEMCALTrack.cxx \
 AliEMCALTracker.cxx \
 AliEMCALPID.cxx \
-AliEMCALRecPointsQaESDSelector.cxx \
-AliEMCALRecParam.cxx
+AliEMCALRecParam.cxx \
+# AliEMCALRecPointsQaESDSelector.cxx \
 
 HDRS= $(SRCS:.cxx=.h) 
 
