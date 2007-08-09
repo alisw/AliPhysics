@@ -15,7 +15,9 @@
 
 // --- ROOT system ---
 #include <TNamed.h>
+#include "AliLog.h"
 class TFile ; 
+class TH1;
 
 // --- Standard library ---
 
@@ -33,7 +35,7 @@ public:
 
 protected:
   void Init() ; 
-  virtual const Double_t Check(const Option_t *) {AliInfo("To be implemented by detectors") ; } 
+  virtual const Double_t Check(const Option_t *) {AliInfo("To be implemented by detectors"); return 0; } 
   const Double_t DiffC(const TH1 * href, const TH1 * hin) const ;   
   const Double_t DiffK(const TH1 * href, const TH1 * hin) const ;   
   void           Finish() const ; 

@@ -9,7 +9,8 @@
 // Quality Assurance Object
 //
 
-#include <TNamed.h> 
+#include <TNamed.h>
+#include "AliLog.h" 
 class TFile ; 
 
 class AliQualAss : public TNamed {
