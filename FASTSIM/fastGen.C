@@ -66,8 +66,6 @@ void fastGen(Int_t nev = 1, char* filename = "galice.root")
 //                         Termination
 //  Generator
     gener->FinishRun();
-//  Stack
-    stack->FinishRun();
 //  Write file
     rl->WriteHeader("OVERWRITE");
     gener->Write();
