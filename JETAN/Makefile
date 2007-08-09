@@ -10,12 +10,8 @@ ALICEINC      = -I.
 ifneq ($(ESD_INCLUDE),)
    ALICEINC += -I../$(ESD_INCLUDE)
    ALICEINC += -I../$(AOD_INCLUDE)
-   ifneq ($(ANALYSIS_NEW_INCLUDE),)
-       ALICEINC += -I../$(ANALYSIS_NEW_INCLUDE)
-    endif
-   ifneq ($(ANALYSIS_INCLUDE),)
-       ALICEINC += -I../$(ANALYSIS_INCLUDE)
-    endif
+   ALICEINC += -I../$(STEERBase_INCLUDE)
+   ALICEINC += -I../$(ANALYSIS_INCLUDE)
  else
     ifneq ($(ALICE_ROOT),)
        ALICEINC += -I$(ALICE_ROOT)/include
