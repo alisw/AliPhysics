@@ -137,7 +137,7 @@ Bool_t AliTRDclusterizerV1HLT::ReadDigits(AliRawReaderMemory *rawReader)
   if (fRawDataSource == 0)
     fRawDataSource = new AliTRDrawData;
 
-  fRawDataSource->SetRawVersion(fRawDataVersion);
+  //PH  fRawDataSource->SetRawVersion(fRawDataVersion);
   fDigitsManager = fRawDataSource->Raw2Digits((AliRawReader*)rawReader);
   //AliInfo(Form("Digits manager at 0x%x", fDigitsManager));
   AliDebug(1, Form("Digits manager at 0x%x", fDigitsManager));
