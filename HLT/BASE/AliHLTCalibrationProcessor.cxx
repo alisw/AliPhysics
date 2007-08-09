@@ -338,6 +338,7 @@ Int_t AliHLTCalibrationProcessor::CreateFXSHeader( AliHLTFXSHeader &pHeader, con
   // To take care if DDLNumber which are longer than gkAliHLTFXSHeaderfDDLNumberSize, write one 0 is cheaper than an if.
   pHeader.fDDLNumber[gkAliHLTFXSHeaderfDDLNumberSize] = 0;
 
+  return iResult;
 }  // Int_t AliHLTCalibrationProcessor::CreateFXSHeader( AliHLTXSHeader &pHeader, const char* pDetector, const char* pFileID, const char* pDDLNumber ) {
 
 /*

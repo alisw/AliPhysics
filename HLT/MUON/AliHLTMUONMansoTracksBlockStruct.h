@@ -65,7 +65,11 @@ struct AliHLTMUONMansoTracksBlockStruct
 	AliHLTMUONDataBlockHeader fHeader; // Common data block header.
 
 	// Array of Manso tracks.
+#ifndef __SUNPRO_CC
 	AliHLTMUONMansoTrackStruct fTrack[/*fHeader.fNrecords*/];
+#else
+	AliHLTMUONMansoTrackStruct fTrack[1];
+#endif
 };
 
 } // extern "C"

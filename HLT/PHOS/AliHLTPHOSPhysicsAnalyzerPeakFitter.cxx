@@ -14,7 +14,7 @@
  **************************************************************************/
 
 
-
+#include <Riostream.h>
 #include "AliHLTPHOSPhysicsAnalyzerPeakFitter.h"
 #include "TMath.h"
 #include "TF1.h"

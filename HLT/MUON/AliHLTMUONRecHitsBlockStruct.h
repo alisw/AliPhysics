@@ -43,7 +43,11 @@ struct AliHLTMUONRecHitsBlockStruct
 	AliHLTMUONDataBlockHeader fHeader; // Common data block header
 
 	// Array of reconstructed hits.
+#ifndef __SUNPRO_CC
 	AliHLTMUONRecHitStruct fHit[/*fHeader.fNrecords*/];
+#else
+	AliHLTMUONRecHitStruct fHit[1];
+#endif
 };
 
 } // extern "C"

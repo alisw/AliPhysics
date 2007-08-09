@@ -47,7 +47,11 @@ struct AliHLTMUONTriggerChannelsBlockStruct
 	AliHLTMUONDataBlockHeader fHeader; // Common data block header
 
 	// Array of trigger channels/strips.
+#ifndef __SUNPRO_CC
 	AliHLTMUONTriggerChannelStruct fChannel[/*fHeader.fNrecords*/];
+#else
+	AliHLTMUONTriggerChannelStruct fChannel[1];
+#endif
 };
 
 } // extern "C"

@@ -57,7 +57,11 @@ struct AliHLTMUONMansoCandidatesBlockStruct
 	AliHLTMUONDataBlockHeader fHeader; // Common data block header.
 
 	// Array of Manso track candidates.
+#ifndef __SUNPRO_CC
 	AliHLTMUONMansoCandidateStruct fCandidate[/*fHeader.fNrecords*/];
+#else
+	AliHLTMUONMansoCandidateStruct fCandidate[1];
+#endif
 };
 
 } // extern "C"

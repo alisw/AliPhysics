@@ -13,7 +13,11 @@
 struct AliHLTTPCTrackletData
     {
 	AliHLTUInt32_t fTrackletCnt;
+#ifndef __SUNPRO_CC
 	AliHLTTPCTrackSegmentData fTracklets[];
+#else
+	AliHLTTPCTrackSegmentData fTracklets[1];
+#endif
 	//AliHLTTPCSpacePointData fSpacePoints[];
     };
 

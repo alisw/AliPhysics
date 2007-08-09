@@ -58,7 +58,11 @@ struct AliHLTMUONTriggerRecordsBlockStruct
 	AliHLTMUONDataBlockHeader fHeader; // Common data block header
 
 	// Array of trigger records.
+#ifndef __SUNPRO_CC
 	AliHLTMUONTriggerRecordStruct fTriggerRecord[/*fHeader.fNrecords*/];
+#else
+	AliHLTMUONTriggerRecordStruct fTriggerRecord[1];
+#endif
 };
 
 } // extern "C"

@@ -26,7 +26,7 @@
 #include "TFile.h"
 #include "TMath.h"
 
-#if __GNUC__ >= 3
+#if __GNUC__ >= 3 || defined __SUNPRO_CC
 using namespace std;
 #endif
 
@@ -42,6 +42,8 @@ using namespace std;
 #include "AliHLTTPCConfMapPoint.h"
 #include "AliHLTTPCTrackArray.h"
 #include <iostream>
+#include <algorithm>
+#include <vector>
 
 ClassImp(AliHLTTPCCATracker)
 

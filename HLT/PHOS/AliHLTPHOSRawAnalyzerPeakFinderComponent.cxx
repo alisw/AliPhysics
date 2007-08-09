@@ -71,8 +71,8 @@ Bool_t
 AliHLTPHOSRawAnalyzerPeakFinderComponent::LoadPFVector(int startIndex, int nSamples, int tau, int fs)
 {
   char tmpPFPath[PF_MAX_PATH_LENGTH];
-  Double_t tmpAVector[nSamples];
-  Double_t tmpTVector[nSamples]; 
+  Double_t * tmpAVector = new Double_t[nSamples];
+  Double_t * tmpTVector = new Double_t[nSamples]; 
   sprintf(tmpPFPath,"%s%s/start%dN%dtau%dfs%d.txt", getenv("ALICE_ROOT"), PF_VECTOR_DIR, startIndex, nSamples, tau, fs);
   FILE *fp;
   fp = fopen(tmpPFPath, "r");
@@ -93,11 +93,15 @@ AliHLTPHOSRawAnalyzerPeakFinderComponent::LoadPFVector(int startIndex, int nSamp
       fAnalyzerPtr->SetAVector(tmpAVector,  nSamples);
       fAnalyzerPtr->SetTVector(tmpTVector,  nSamples);
       fclose(fp);
+      delete [] tmpAVector;
+      delete [] tmpTVector;
       return kTRUE;
     }
   
   else
     {
+      delete [] tmpAVector;
+      delete [] tmpTVector;
       HLTFatal("ERROR: could not  open PF vector file");
       return kFALSE;
     }

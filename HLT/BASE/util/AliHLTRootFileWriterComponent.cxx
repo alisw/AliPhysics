@@ -79,6 +79,7 @@ int AliHLTRootFileWriterComponent::CloseWriter()
     TFile* pFile=fCurrentFile; fCurrentFile=NULL;
     pFile->Close(); delete pFile;
   }
+  return 0;
 }
 
 int AliHLTRootFileWriterComponent::DumpEvent( const AliHLTComponentEventData& evtData,
