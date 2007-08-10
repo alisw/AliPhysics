@@ -29,6 +29,7 @@
 #include "AliTrackReference.h"
 #include "AliHeader.h"
 #include "AliStack.h"
+#include "AliLog.h"
 
 #include <TTree.h>
 #include <TFile.h>
@@ -104,7 +105,7 @@ Bool_t AliMCEventHandler::InitIO(Option_t* /*opt*/)
     // Initialize input
     //
     fFileE = new TFile(Form("%sgalice.root", fPathName));
-    if (!fFileE) printf("AliMCEventHandler:galice.root not found in directory %s ! \n", fPathName);
+    if (!fFileE) AliFatal(Form("AliMCEventHandler:galice.root not found in directory %s ! \n", fPathName));
 
     fFileE->GetObject("TE", fTreeE);
     fTreeE->SetBranchAddress("Header", &fHeader);
@@ -112,18 +113,18 @@ Bool_t AliMCEventHandler::InitIO(Option_t* /*opt*/)
     //
     // Tree K
     fFileK = new TFile(Form("%sKinematics%s.root", fPathName, fExtension));
-    if (!fFileK) printf("AliMCEventHandler:Kinematics.root not found in directory %s ! \n", fPathName);
+    if (!fFileK) AliFatal(Form("AliMCEventHandler:Kinematics.root not found in directory %s ! \n", fPathName));
     fEventsPerFile = fFileK->GetNkeys() - fFileK->GetNProcessIDs();
     //
     // Tree TR
     fFileTR = new TFile(Form("%sTrackRefs%s.root", fPathName, fExtension));
-    if (!fFileTR) printf("AliMCEventHandler:TrackRefs.root not found in directory %s ! \n", fPathName);
+    if (!fFileTR) AliWarning(Form("AliMCEventHandler:TrackRefs.root not found in directory %s ! \n", fPathName));
     //
     // Reset the event number
-    fEvent = -1;
-    fFileNumber = 0;
+    fEvent      = -1;
+    fFileNumber =  0;
     
-    printf("AliMCEventHandler:Number of events in this directory %5d \n", fNEvent);
+    AliInfo(Form("AliMCEventHandler:Number of events in this directory %5d \n", fNEvent));
     return kTRUE;
     
 }
@@ -131,6 +132,8 @@ Bool_t AliMCEventHandler::InitIO(Option_t* /*opt*/)
 Bool_t AliMCEventHandler::GetEvent(Int_t iev)
 {
     // Load the event number iev
+    //
+    // Calculate the file number
     Int_t inew  = iev/fEventsPerFile;
     if (inew != fFileNumber) {
 	fFileNumber = inew;
@@ -138,9 +141,10 @@ Bool_t AliMCEventHandler::GetEvent(Int_t iev)
 	    return kFALSE;
 	}
     }
-    
+    // Folder name
     char folder[20];
     sprintf(folder, "Event%d", iev);
+
     // TreeE
     fTreeE->GetEntry(iev);
     fStack = fHeader->Stack();
@@ -148,31 +152,32 @@ Bool_t AliMCEventHandler::GetEvent(Int_t iev)
     TDirectoryFile* dirK  = 0;
     fFileK->GetObject(folder, dirK);
     if (!dirK) {
-	printf("AliMCEventHandler: Event #%5d not found\n", iev);
+	AliWarning(Form("AliMCEventHandler: Event #%5d not found\n", iev));
 	return kFALSE;
     }
     dirK->GetObject("TreeK", fTreeK);
     fStack->ConnectTree(fTreeK);
     fStack->GetEvent();
     //Tree TR 
-    TDirectoryFile* dirTR = 0;
-    fFileTR->GetObject(folder, dirTR);
-    dirTR->GetObject("TreeTR", fTreeTR);
-    if (fTreeTR->GetBranch("AliRun")) {
-	// This is an old format with one branch per detector not in synch with TreeK
-	ReorderAndExpandTreeTR();
-    } else {
-	// New format 
-	fTreeTR->SetBranchAddress("TrackReferences", &fTrackReferences);
+    if (fTreeTR) {
+	TDirectoryFile* dirTR = 0;
+	fFileTR->GetObject(folder, dirTR);
+	dirTR->GetObject("TreeTR", fTreeTR);
+	if (fTreeTR->GetBranch("AliRun")) {
+	    // This is an old format with one branch per detector not in synch with TreeK
+	    ReorderAndExpandTreeTR();
+	} else {
+	    // New format 
+	    fTreeTR->SetBranchAddress("TrackReferences", &fTrackReferences);
+	}
     }
-	
+    
     //
     fNparticles = fStack->GetNtrack();
     fNprimaries = fStack->GetNprimary();
-    printf("AliMCEventHandler: Event#: %5d Number of particles %5d \n", fEvent, fNparticles);
+    AliInfo(Form("AliMCEventHandler: Event#: %5d Number of particles %5d \n", fEvent, fNparticles));
     
     return kTRUE;
-
 }
 
 Bool_t AliMCEventHandler::OpenFile(Int_t i)
@@ -189,14 +194,14 @@ Bool_t AliMCEventHandler::OpenFile(Int_t i)
     delete fFileK;
     fFileK = new TFile(Form("%sKinematics%s.root", fPathName, fExtension));
     if (!fFileK) {
-	printf("AliMCEventHandler:Kinematics%s.root not found in directory %s ! \n", fExtension, fPathName);
+	AliFatal(Form("AliMCEventHandler:Kinematics%s.root not found in directory %s ! \n", fExtension, fPathName));
 	ok = kFALSE;
     }
     
     delete fFileTR;
     fFileTR = new TFile(Form("%sTrackRefs%s.root", fPathName, fExtension));
     if (!fFileTR) {
-	printf("AliMCEventHandler:TrackRefs%s.root not found in directory %s ! \n", fExtension, fPathName);
+	AliWarning(Form("AliMCEventHandler:TrackRefs%s.root not found in directory %s ! \n", fExtension, fPathName));
 	ok = kFALSE;
     }
     
@@ -208,7 +213,7 @@ Bool_t AliMCEventHandler::BeginEvent()
     // Read the next event
     fEvent++;
     if (fEvent >= fNEvent) {
-	printf("AliMCEventHandler: Event number out of range %5d\n", fEvent);
+	AliWarning(Form("AliMCEventHandler: Event number out of range %5d\n", fEvent));
 	return kFALSE;
     }
     return GetEvent(fEvent);
@@ -218,24 +223,36 @@ Int_t AliMCEventHandler::GetParticleAndTR(Int_t i, TParticle*& particle, TClones
 {
     // Retrieve entry i
     if (i > -1 && i < fNparticles) {
-	fTreeTR->GetEntry(fStack->TreeKEntry(i));
-    } else {
-	printf("AliMCEventHandler::GetEntry: Index out of range");
+	AliWarning(Form("AliMCEventHandler::GetEntry: Index out of range"));
+	particle = 0;
+	trefs    = 0;
+	return (-1);
     }
     particle = fStack->Particle(i);
-    trefs    = fTrackReferences;
-    return trefs->GetEntries();
+    if (fFileTR) {
+	fTreeTR->GetEntry(fStack->TreeKEntry(i));
+	trefs    = fTrackReferences;
+	return trefs->GetEntries();
+    } else {
+	trefs = 0;
+	return -1;
+    }
 }
 
 void AliMCEventHandler::DrawCheck(Int_t i, Bool_t search)
 {
     // Retrieve entry i and draw momentum vector and hits
+    if (!fFileTR) {
+	AliWarning("No Track Reference information available");
+	return;
+    } 
+
     if (i > -1 && i < fNparticles) {
 	fTreeTR->GetEntry(fStack->TreeKEntry(i));
     } else {
-	printf("AliMCEventHandler::GetEntry: Index out of range");
+	AliWarning("AliMCEventHandler::GetEntry: Index out of range");
     }
-
+    
     Int_t nh = fTrackReferences->GetEntries();
     
     
