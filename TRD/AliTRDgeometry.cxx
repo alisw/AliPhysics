@@ -1316,7 +1316,7 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   // The cooling water
   parTube[0] =  0.0;
   parTube[1] =  0.2/2.0;
-  parTube[2] = -1.;
+  parTube[2] =  1.;
   gMC->Gsvolu("UTCH","TUBE",idtmed[1314-1],parTube,kNparTube);
   // Water inside the cooling pipe
   xpos = 0.0;
