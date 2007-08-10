@@ -8,7 +8,6 @@
 #pragma link off all classes;
 #pragma link off all functions;
  
-#pragma link C++ enum   AliLog::EType_t;
 #pragma link C++ enum   AliESDEvent::ESDListIndex_t;
 
 
@@ -42,7 +41,6 @@
 #pragma link C++ class  AliExternalTrackParam+;
 #pragma link C++ class  AliVertexerTracks+;
 #pragma link C++ class  AliStrLine+;
-#pragma link C++ class  AliLog+;
 #pragma link C++ class  AliTrackPointArray+;
 #pragma link C++ class  AliTrackPoint+;
 

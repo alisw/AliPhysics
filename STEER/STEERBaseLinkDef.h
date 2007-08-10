@@ -7,13 +7,15 @@
 #pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
+
+#pragma link C++ enum   AliLog::EType_t;
  
 #pragma link C++ class AliVParticle+;
 #pragma link C++ class AliVEvent+;
 #pragma link C++ class AliVHeader+;
 #pragma link C++ class AliVEventHandler+;
 
-#pragma link C++ class  AliPID+;
+#pragma link C++ class AliPID+;
 #pragma link C++ class AliLog+;
 
 #pragma link C++ class AliRunTag+;
