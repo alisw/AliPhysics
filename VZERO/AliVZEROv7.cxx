@@ -612,7 +612,7 @@ void AliVZEROv7::CreateGeometry()
     TGeoVolume *v0APMT2 = new TGeoVolume("V0APMT2", sV0APMT2, medV0APMAlum);
     TGeoVolume *v0APMT = new TGeoVolumeAssembly("V0APMT");
     TGeoTube *sV0APMTT = new TGeoTube("sV0APMTT", 0., fV0APMTR4, fV0APMTB/2.);
-    TGeoVolume *v0APMTT = new TGeoVolume("V0APMT1", sV0APMTT, medV0APMAlum);
+    TGeoVolume *v0APMTT = new TGeoVolume("V0APMTT", sV0APMTT, medV0APMAlum);
     v0APMT1->SetLineColor(kV0AColorPMG);
     v0APMT2->SetLineColor(kV0AColorPMA);
     v0APMTT->SetLineColor(kV0AColorPMA);
