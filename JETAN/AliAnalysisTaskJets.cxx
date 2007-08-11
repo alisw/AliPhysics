@@ -12,6 +12,8 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
+/* $Id$ */
  
 #include <TROOT.h>
 #include <TSystem.h>
@@ -110,9 +112,11 @@ void AliAnalysisTaskJets::Exec(Option_t */*option*/)
 //
     AliMCEventHandler*    mctruth = (AliMCEventHandler*) 
 	((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
-    AliStack* stack = mctruth->Stack();
-    printf("AliAnalysisTaskJets: Number of tracks %5d\n", stack->GetNtrack());
-
+    if (mctruth) {
+	AliStack* stack = mctruth->Stack();
+	printf("AliAnalysisTaskJets: Number of tracks on stack %5d\n", stack->GetNtrack());
+    }
+    
     Long64_t ientry = fChain->GetReadEntry();
     if (fDebug > 1) printf("Analysing event # %5d\n", (Int_t) ientry);
     fJetFinder->ProcessEvent(ientry);
