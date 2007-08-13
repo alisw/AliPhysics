@@ -31,10 +31,10 @@ AliAODCluster::AliAODCluster() :
   fChi2(-999.),
   fID(-999),
   fLabel(-999),
+  fType(kUndef),
   fCovMatrix(NULL),
   fProdVertex(0x0),
-  fPrimTrack(NULL),
-  fType(kUndef)
+  fPrimTrack(NULL)
 {
   // default constructor
 
@@ -57,10 +57,10 @@ AliAODCluster::AliAODCluster(Int_t id,
   fChi2(-999.),
   fID(id),
   fLabel(label),
+  fType(ttype),
   fCovMatrix(NULL),
   fProdVertex(prodVertex),
-  fPrimTrack(primTrack),
-  fType(ttype)
+  fPrimTrack(primTrack)
 {
   // constructor
  
@@ -85,10 +85,10 @@ AliAODCluster::AliAODCluster(Int_t id,
   fChi2(-999.),
   fID(id),
   fLabel(label),
+  fType(ttype),
   fCovMatrix(NULL),
   fProdVertex(prodVertex),
-  fPrimTrack(primTrack),
-  fType(ttype)
+  fPrimTrack(primTrack)
 {
   // constructor
  
@@ -114,10 +114,10 @@ AliAODCluster::AliAODCluster(const AliAODCluster& clus) :
   fChi2(clus.fChi2),
   fID(clus.fID),
   fLabel(clus.fLabel),
+  fType(clus.fType),
   fCovMatrix(NULL),
   fProdVertex(clus.fProdVertex),
-  fPrimTrack(clus.fPrimTrack),
-  fType(clus.fType)
+  fPrimTrack(clus.fPrimTrack)
 {
   // Copy constructor
 
@@ -143,14 +143,15 @@ AliAODCluster& AliAODCluster::operator=(const AliAODCluster& clus)
 
     fID = clus.fID;
     fLabel = clus.fLabel;    
+
+    fType = clus.fType;
     
     delete fCovMatrix;
     if(clus.fCovMatrix) fCovMatrix=new AliAODRedCov<4>(*clus.fCovMatrix);
     else fCovMatrix=NULL;
+
     fProdVertex = clus.fProdVertex;
     fPrimTrack = clus.fPrimTrack;
-
-    fType = clus.fType;
   }
 
   return *this;

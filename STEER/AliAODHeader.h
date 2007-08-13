@@ -97,17 +97,17 @@ class AliAODHeader : public AliVHeader {
   Double32_t  fZDCP2Energy;         // reconstructed energy in the proton2 ZDC
   Double32_t  fZDCEMEnergy;         // reconstructed energy in the electromagnetic ZDC
   ULong64_t   fTriggerMask;         // Trigger Type (mask)
-  UInt_t      fEventType;           // Type of Event
-  UShort_t    fBunchCrossNumber;    // BunchCrossingNumber
-  UInt_t      fOrbitNumber;         // Orbit Number
-  UInt_t      fPeriodNumber;        // Period Number
   Int_t       fRunNumber;           // Run Number
   Int_t       fRefMult;             // reference multiplicity
   Int_t       fRefMultPos;          // reference multiplicity of positive particles
   Int_t       fRefMultNeg;          // reference multiplicity of negative particles
+  UInt_t      fEventType;           // Type of Event
+  UInt_t      fOrbitNumber;         // Orbit Number
+  UInt_t      fPeriodNumber;        // Period Number
+  UShort_t    fBunchCrossNumber;    // BunchCrossingNumber
   UChar_t     fTriggerCluster;      // Trigger cluster (mask)
   
-  ClassDef(AliAODHeader,4);
+  ClassDef(AliAODHeader,5);
 };
 
 #endif

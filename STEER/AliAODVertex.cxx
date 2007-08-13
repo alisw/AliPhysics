@@ -32,11 +32,11 @@ ClassImp(AliAODVertex)
 AliAODVertex::AliAODVertex() : 
   TObject(),
   fChi2perNDF(-999.),
+  fType(kUndef),
   fCovMatrix(NULL),
   fParent(0x0),
-  fDaughters(),
-  fType(kUndef)
- {
+  fDaughters()
+  {
   // default constructor
 
   fPosition[0] = fPosition[1] = fPosition[2] = -999.;
@@ -50,10 +50,10 @@ AliAODVertex::AliAODVertex(const Double_t position[3],
 			   Char_t vtype) :
   TObject(),
   fChi2perNDF(chi2perNDF),
+  fType(vtype),
   fCovMatrix(NULL),
   fParent(parent),
-  fDaughters(),
-  fType(vtype)
+  fDaughters()
 {
   // constructor
 
@@ -70,10 +70,10 @@ AliAODVertex::AliAODVertex(const Float_t position[3],
 
   TObject(),
   fChi2perNDF(chi2perNDF),
+  fType(vtype),
   fCovMatrix(NULL),
   fParent(parent),
-  fDaughters(),
-  fType(vtype)
+  fDaughters()
 {
   // constructor
 
@@ -87,10 +87,10 @@ AliAODVertex::AliAODVertex(const Double_t position[3],
 			   Char_t vtype) :
   TObject(),
   fChi2perNDF(chi2perNDF),
+  fType(vtype),
   fCovMatrix(NULL),
   fParent(0x0),
-  fDaughters(),
-  fType(vtype)
+  fDaughters()
 {
   // constructor without covariance matrix
 
@@ -103,10 +103,10 @@ AliAODVertex::AliAODVertex(const Float_t position[3],
 			   Char_t vtype) :
   TObject(),
   fChi2perNDF(chi2perNDF),
+  fType(vtype),
   fCovMatrix(NULL),
   fParent(0x0),
-  fDaughters(),
-  fType(vtype)
+  fDaughters()
 {
   // constructor without covariance matrix
 
@@ -125,10 +125,10 @@ AliAODVertex::~AliAODVertex()
 AliAODVertex::AliAODVertex(const AliAODVertex& vtx) :
   TObject(vtx),
   fChi2perNDF(vtx.fChi2perNDF),
+  fType(vtx.fType),
   fCovMatrix(NULL),
   fParent(vtx.fParent),
-  fDaughters(vtx.fDaughters),
-  fType(vtx.fType)
+  fDaughters(vtx.fDaughters)
 {
   // Copy constructor.
   
@@ -152,6 +152,7 @@ AliAODVertex& AliAODVertex::operator=(const AliAODVertex& vtx)
       fPosition[i] = vtx.fPosition[i];
     
     fChi2perNDF = vtx.fChi2perNDF;
+    fType = vtx.fType;
 
     //covariance matrix
     delete fCovMatrix;
@@ -161,7 +162,6 @@ AliAODVertex& AliAODVertex::operator=(const AliAODVertex& vtx)
     //other stuff
     fParent = vtx.fParent;
     fDaughters = vtx.fDaughters;
-    fType = vtx.fType;
   }
   
   return *this;

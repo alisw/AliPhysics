@@ -135,21 +135,21 @@ class AliAODCluster : public AliVParticle {
   Double32_t    fEnergy;         // energy
   Double32_t    fPosition[3];    // position of the cluster
 
-  Double32_t    fPID[9];         // [0.,1.,8] pointer to PID object
   Double32_t    fChi2;           // chi2 (probably not necessary for PMD)
+  Double32_t    fPID[9];         // [0.,1.,8] pointer to PID object
 
   Int_t         fID;             // unique cluster ID, points back to the ESD cluster
   Int_t         fLabel;          // particle label, points back to MC track
   
+  Char_t        fType;           // cluster type
+
   AliAODRedCov<4> *fCovMatrix;   // covariance matrix (x, y, z, E)
   TRef          fProdVertex;     // vertex of origin (not necessary for PMD)
   TRef          fPrimTrack;      // primary track associated with this cluster (not necessary for PMD)
 
-  // TRef      fAssocCluster;   // for PMD: cluster of other layer associated with this cluster
-  Char_t        fType;
+  // TRef      fAssocCluster;       // for PMD: cluster of other layer associated with this cluster
 
-
-  ClassDef(AliAODCluster,2);
+  ClassDef(AliAODCluster,3);
 };
 
 #endif

@@ -63,11 +63,13 @@ class AliAODJet : public AliVParticle {
     
     
  private:
+    Double32_t      fBackgEnergy[2];     // Subtracted background energy
+    Double32_t      fEffectiveArea[2];   // Effective jet area used for background subtraction
+
     TLorentzVector* fMomentum;           // Jet 4-momentum vector
     TRefArray*      fRefTracks;          // array of references to the tracks belonging to the jet
-    Double_t        fBackgEnergy[2];     // Subtracted background energy
-    Double_t        fEffectiveArea[2];   // Effective jet area used for background subtraction
-    ClassDef(AliAODJet,2);
+
+    ClassDef(AliAODJet,3);
 };
 
 #endif

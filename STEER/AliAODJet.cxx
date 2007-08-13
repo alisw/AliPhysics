@@ -45,11 +45,11 @@ AliAODJet::AliAODJet(Double_t px, Double_t py, Double_t pz, Double_t e):
     fRefTracks(new TRefArray())
 {
   // constructor
-    fMomentum = new TLorentzVector(px, py, pz, e);
     fBackgEnergy[0]   = 0.;     
     fBackgEnergy[1]   = 0.;
     fEffectiveArea[0] = 0.;   
     fEffectiveArea[1] = 0.;   
+    fMomentum = new TLorentzVector(px, py, pz, e);
 }
 
 AliAODJet::AliAODJet(TLorentzVector & p):
@@ -58,11 +58,11 @@ AliAODJet::AliAODJet(TLorentzVector & p):
     fRefTracks(new TRefArray())
 {
   // constructor
-    fMomentum = new TLorentzVector(p);
     fBackgEnergy[0]   = 0.;     
     fBackgEnergy[1]   = 0.;
     fEffectiveArea[0] = 0.;   
     fEffectiveArea[1] = 0.;   
+    fMomentum = new TLorentzVector(p);
 }
 
 
@@ -80,12 +80,13 @@ AliAODJet::AliAODJet(const AliAODJet& jet) :
     fMomentum(0)
 {
   // Copy constructor
-    fMomentum  = new TLorentzVector(*jet.fMomentum);
-    fRefTracks = new TRefArray(*jet.fRefTracks);
     fBackgEnergy[0]   = jet.fBackgEnergy[0];
     fBackgEnergy[1]   = jet.fBackgEnergy[1];
     fEffectiveArea[0] = jet.fEffectiveArea[0];
     fEffectiveArea[1] = jet.fEffectiveArea[1];
+
+    fMomentum  = new TLorentzVector(*jet.fMomentum);
+    fRefTracks = new TRefArray(*jet.fRefTracks);
 }
 
 //______________________________________________________________________________
@@ -93,6 +94,16 @@ AliAODJet& AliAODJet::operator=(const AliAODJet& jet)
 {
   // Assignment operator
   if(this!=&jet) {
+
+    fBackgEnergy[0]   = jet.fBackgEnergy[0];
+    fBackgEnergy[1]   = jet.fBackgEnergy[1];
+    fEffectiveArea[0] = jet.fEffectiveArea[0];
+    fEffectiveArea[1] = jet.fEffectiveArea[1];
+
+    delete fMomentum;
+    fMomentum  = new TLorentzVector(*jet.fMomentum);
+    delete fRefTracks;
+    fRefTracks = new TRefArray(*jet.fRefTracks);    
   }
 
   return *this;

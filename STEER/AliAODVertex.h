@@ -110,14 +110,15 @@ class AliAODVertex : public TObject {
 
  private :
 
-  Double32_t    fPosition[3]; // vertex position
-  Double32_t    fChi2perNDF;  // chi2/NDF of vertex fit
-  AliAODRedCov<3> *fCovMatrix;   // vertex covariance matrix; values of and below the diagonal
-  TRef          fParent;      // reference to the parent particle
-  TRefArray     fDaughters;   // references to the daughter particles
-  Char_t        fType;        // Vertex type
+  Double32_t      fPosition[3]; // vertex position
+  Double32_t      fChi2perNDF;  // chi2/NDF of vertex fit
+  Char_t          fType;        // Vertex type
 
-  ClassDef(AliAODVertex,2);
+  AliAODRedCov<3> *fCovMatrix;  // vertex covariance matrix; values of and below the diagonal
+  TRef            fParent;      // reference to the parent particle
+  TRefArray       fDaughters;   // references to the daughter particles
+
+  ClassDef(AliAODVertex,3);
 };
 
 #endif

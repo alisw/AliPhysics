@@ -209,23 +209,23 @@ class AliAODTrack : public AliVParticle {
   Double32_t    fMomentum[3];       // momemtum stored in pt, phi, theta
   Double32_t    fPosition[3];       // position of first point on track or dca
 
-  Double32_t    fPID[10];           // [0.,1.,8] pointer to PID object
   Double32_t    fChi2perNDF;        // chi2/NDF of mometum fit
+  Double32_t    fChi2MatchTrigger;  // chi2 of trigger/track matching
+  Double32_t    fPID[10];           // [0.,1.,8] pointer to PID object
 
   Int_t         fID;                // unique track ID, points back to the ESD track
   Int_t         fLabel;             // track label, points back to MC track
   
+  UInt_t        fITSMuonClusterMap; // map of ITS and muon clusters, one bit per layer (ITS: bit 1-8, muon: bit 17-32) 
+  UInt_t        fFilterMap;         // filter information, one bit per set of cuts
+
+  Char_t        fCharge;            // particle charge
+  Char_t        fType;              // Track Type
+
   AliAODRedCov<6> *fCovMatrix;      // covariance matrix (x, y, z, px, py, pz)
   TRef          fProdVertex;        // vertex of origin
 
-  Char_t        fCharge;            // particle charge
-  UInt_t        fITSMuonClusterMap; // map of ITS and muon clusters, one bit per layer (ITS: bit 1-8, muon: bit 17-32) 
-  Char_t        fType;              // Track Type
-
-  Double_t      fChi2MatchTrigger;  // chi2 of trigger/track matching
-  UInt_t        fFilterMap;         // filter information, one bit per set of cuts
-
-  ClassDef(AliAODTrack,4);
+  ClassDef(AliAODTrack,5);
 };
 
 #endif

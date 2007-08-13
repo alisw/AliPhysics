@@ -36,14 +36,14 @@ AliAODHeader::AliAODHeader() :
   fZDCP2Energy(-999.),
   fZDCEMEnergy(-999.),
   fTriggerMask(0),
-  fEventType(0),
-  fBunchCrossNumber(0),
-  fOrbitNumber(0),
-  fPeriodNumber(0),
   fRunNumber(-999),  
   fRefMult(-999),
   fRefMultPos(-999),
   fRefMultNeg(-999),
+  fEventType(0),
+  fOrbitNumber(0),
+  fPeriodNumber(0),
+  fBunchCrossNumber(0),
   fTriggerCluster(0)
 {
   // default constructor
@@ -67,14 +67,14 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fZDCP2Energy(-999.),
   fZDCEMEnergy(-999.),
   fTriggerMask(0),
-  fEventType(0),
-  fBunchCrossNumber(nBunchX),
-  fOrbitNumber(nOrbit),
-  fPeriodNumber(nPeriod),
-  fRunNumber(nRun),
+   fRunNumber(nRun),
   fRefMult(-999),
   fRefMultPos(-999),
   fRefMultNeg(-999),
+  fEventType(0),
+  fOrbitNumber(nOrbit),
+  fPeriodNumber(nPeriod),
+  fBunchCrossNumber(nBunchX),
   fTriggerCluster(0)
 {
   // constructor
@@ -113,14 +113,14 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fZDCP2Energy(p2Energy),
   fZDCEMEnergy(emEnergy),
   fTriggerMask(trigMask),
-  fEventType(evttype),
-  fBunchCrossNumber(nBunchX),
-  fOrbitNumber(nOrbit),
-  fPeriodNumber(nPeriod),
   fRunNumber(nRun),  
   fRefMult(refMult),
   fRefMultPos(refMultPos),
   fRefMultNeg(refMultNeg),
+  fEventType(evttype),
+  fOrbitNumber(nOrbit),
+  fPeriodNumber(nPeriod),
+  fBunchCrossNumber(nBunchX),
   fTriggerCluster(trigClus)
 {
   // constructor
@@ -147,14 +147,14 @@ AliAODHeader::AliAODHeader(const AliAODHeader& hdr) :
   fZDCP2Energy(hdr.fZDCP2Energy),
   fZDCEMEnergy(hdr.fZDCEMEnergy),
   fTriggerMask(hdr.fTriggerMask),
-  fEventType(hdr.fEventType),
-  fBunchCrossNumber(hdr.fBunchCrossNumber),
-  fOrbitNumber(hdr.fOrbitNumber),
-  fPeriodNumber(hdr.fPeriodNumber),
   fRunNumber(hdr.fRunNumber),  
   fRefMult(hdr.fRefMult), 
   fRefMultPos(hdr.fRefMultPos), 
   fRefMultNeg(hdr.fRefMultNeg),
+  fEventType(hdr.fEventType),
+  fOrbitNumber(hdr.fOrbitNumber),
+  fPeriodNumber(hdr.fPeriodNumber),
+  fBunchCrossNumber(hdr.fBunchCrossNumber),
   fTriggerCluster(hdr.fTriggerCluster)
 {
   // Copy constructor.
@@ -180,14 +180,14 @@ AliAODHeader& AliAODHeader::operator=(const AliAODHeader& hdr)
     fZDCP2Energy      = hdr.fZDCP2Energy;
     fZDCEMEnergy      = hdr.fZDCEMEnergy;
     fTriggerMask      = hdr.fTriggerMask;
-    fEventType        = hdr.fEventType;
-    fBunchCrossNumber = hdr.fBunchCrossNumber;
-    fOrbitNumber      = hdr.fOrbitNumber;
-    fPeriodNumber     = hdr.fPeriodNumber;
     fRunNumber        = hdr.fRunNumber;
     fRefMult          = hdr.fRefMult;
     fRefMultPos       = hdr.fRefMultPos;
     fRefMultNeg       = hdr.fRefMultNeg;
+    fEventType        = hdr.fEventType;
+    fOrbitNumber      = hdr.fOrbitNumber;
+    fPeriodNumber     = hdr.fPeriodNumber;
+    fBunchCrossNumber = hdr.fBunchCrossNumber;
     fTriggerCluster   = hdr.fTriggerCluster;
   }
 
