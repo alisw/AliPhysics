@@ -722,8 +722,7 @@ void    AliTPC::SetActiveSectors(Int_t * sectors, Int_t n)
 {
   // activate interesting sectors
   SetTreeAddress();//just for security
-  if (fActiveSectors) delete [] fActiveSectors;
-  fActiveSectors = new Bool_t[fTPCParam->GetNSector()];
+  if (!fActiveSectors) fActiveSectors = new Bool_t[fTPCParam->GetNSector()];
   for (Int_t i=0;i<fTPCParam->GetNSector();i++) fActiveSectors[i]=kFALSE;
   for (Int_t i=0;i<n;i++) 
     if ((sectors[i]>=0) && sectors[i]<fTPCParam->GetNSector())  fActiveSectors[sectors[i]]=kTRUE;
@@ -737,8 +736,7 @@ void    AliTPC::SetActiveSectors(Int_t flag)
   //loop over tracks
   SetTreeAddress();//just for security
   if (fHitType==0) return;  // if Clones hit - not short volume ID information
-  if (fActiveSectors) delete [] fActiveSectors;
-  fActiveSectors = new Bool_t[fTPCParam->GetNSector()];
+  if (!fActiveSectors) fActiveSectors = new Bool_t[fTPCParam->GetNSector()];
   if (flag) {
     for (Int_t i=0;i<fTPCParam->GetNSector();i++) fActiveSectors[i]=kTRUE;
     return;
@@ -765,8 +763,17 @@ void    AliTPC::SetActiveSectors(Int_t flag)
       br1->GetEvent(track);
       br2->GetEvent(track);
       Int_t *volumes = fTrackHits->GetVolumes();
-      for (Int_t j=0;j<fTrackHits->GetNVolumes(); j++)
-	fActiveSectors[volumes[j]]=kTRUE;
+      for (Int_t j=0;j<fTrackHits->GetNVolumes(); j++) {
+	if (volumes[j]<fTPCParam->GetNSector()) {
+	  fActiveSectors[volumes[j]]=kTRUE;
+	}
+	else {
+	    AliError(Form("Volume %d -> sector number %d is outside (0..%d)",
+			  j,
+			  volumes[j],
+			  fTPCParam->GetNSector()));
+	}
+      }
     }
     
     //
@@ -1213,7 +1220,7 @@ void AliTPC::Hits2Digits()
   AliRunLoader* runLoader = fLoader->GetRunLoader(); 
 
   for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
-    runLoader->GetEvent(iEvent);
+    //PH    runLoader->GetEvent(iEvent);
     SetActiveSectors();   
     Hits2Digits(iEvent);
   }
