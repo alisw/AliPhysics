@@ -764,7 +764,7 @@ void    AliTPC::SetActiveSectors(Int_t flag)
       br2->GetEvent(track);
       Int_t *volumes = fTrackHits->GetVolumes();
       for (Int_t j=0;j<fTrackHits->GetNVolumes(); j++) {
-	if (volumes[j]<fTPCParam->GetNSector()) {
+	if (volumes[j]>-1 && volumes[j]<fTPCParam->GetNSector()) {
 	  fActiveSectors[volumes[j]]=kTRUE;
 	}
 	else {
