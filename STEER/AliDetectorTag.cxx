@@ -132,7 +132,7 @@ UInt_t AliDetectorTag::GetIntDetectorMask() {
   // Returns the detector mask UInt_t
   UInt_t mask = 0;
   for(Int_t k = 0; k < 20; k++) 
-    if(fDetectors[k] == 1) mask += TMath::Power(2,k);
+    if(fDetectors[k] == 1) mask += (UInt_t)TMath::Power(2,k);
   
   return mask;
 }
