@@ -104,11 +104,7 @@ Bool_t AliMCEventHandler::InitIO(Option_t* /*opt*/)
 { 
     // Initialize input
     //
-    
-    char* name;
-    name = Form("%sgalice.root", fPathName);
-    printf("Here (1) %s \n", name);
-    fFileE = new TFile(name);
+    fFileE = TFile::Open(Form("%sgalice.root", fPathName));
     if (!fFileE) AliFatal(Form("AliMCEventHandler:galice.root not found in directory %s ! \n", fPathName));
 
     fFileE->GetObject("TE", fTreeE);
@@ -116,14 +112,12 @@ Bool_t AliMCEventHandler::InitIO(Option_t* /*opt*/)
     fNEvent = fTreeE->GetEntries();
     //
     // Tree K
-    printf("Here (2) \n");
-    fFileK = new TFile(Form("%sKinematics%s.root", fPathName, fExtension));
+    fFileK = TFile::Open(Form("%sKinematics%s.root", fPathName, fExtension));
     if (!fFileK) AliFatal(Form("AliMCEventHandler:Kinematics.root not found in directory %s ! \n", fPathName));
     fEventsPerFile = fFileK->GetNkeys() - fFileK->GetNProcessIDs();
     //
     // Tree TR
-    printf("Here (3) \n");
-    fFileTR = new TFile(Form("%sTrackRefs%s.root", fPathName, fExtension));
+    fFileTR = TFile::Open(Form("%sTrackRefs%s.root", fPathName, fExtension));
     if (!fFileTR) AliWarning(Form("AliMCEventHandler:TrackRefs.root not found in directory %s ! \n", fPathName));
     //
     // Reset the event number
