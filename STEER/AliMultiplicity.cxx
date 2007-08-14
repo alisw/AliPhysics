@@ -123,9 +123,9 @@ void AliMultiplicity::Duplicate(const AliMultiplicity& m){
   memcpy(fTh,m.fTh,fNtracks*sizeof(Float_t));
   memcpy(fPhi,m.fPhi,fNtracks*sizeof(Float_t));
   memcpy(fDeltPhi,m.fDeltPhi,fNtracks*sizeof(Float_t));
-  memcpy(fLabels,m.fLabels,fNtracks*sizeof(Int_t));
-  memcpy(fThsingle,m.fThsingle,fNsingle*sizeof(Float_t));
-  memcpy(fPhisingle,m.fPhisingle,fNsingle*sizeof(Float_t));
+  if (m.fLabels)   memcpy(fLabels,m.fLabels,fNtracks*sizeof(Int_t));
+  if (m.fThsingle) memcpy(fThsingle,m.fThsingle,fNsingle*sizeof(Float_t));
+  if (m.fPhisingle) memcpy(fPhisingle,m.fPhisingle,fNsingle*sizeof(Float_t));
 
   fFiredChips[0] = m.fFiredChips[0];
   fFiredChips[1] = m.fFiredChips[1];
