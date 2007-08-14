@@ -747,7 +747,7 @@ void AliESDEvent::CopyFromOldESD()
     //  leave amps out
 
     // VZERO
-    SetVZEROData(fESDOld->GetVZEROData());
+    if (fESDOld->GetVZEROData()) SetVZEROData(fESDOld->GetVZEROData());
 
     SetVertex(fESDOld->GetVertex());
 
