@@ -339,7 +339,7 @@ Bool_t AliROCESDAnalysisSelector::AcceptTrack(const AliTPCseed* track, Int_t min
   if (track->GetNumberOfClusters()<kMinClusters) return kFALSE;
   Float_t ratio = track->GetNumberOfClusters()/(track->GetNFoundable()+1.);
   if (ratio<kMinRatio) return kFALSE;
-  Float_t mpt = track->Get1Pt();
+  Float_t mpt = track->GetSigned1Pt();
   if (TMath::Abs(mpt)>kMax1pt) return kFALSE;
 
   //if (TMath::Abs(track->GetZ())>240.) return kFALSE;
