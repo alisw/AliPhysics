@@ -87,9 +87,9 @@ void AliZDCTrigger::Trigger()
    }
    tD->SetBranchAddress("ZDC", &pdigit);
    //
-   Float_t signalZNLeft[2], signalZPLeft[2], signalZDCLeftSum[2];
-   Float_t signalZNRight[2], signalZPRight[2], signalZDCRightSum[2];
-   Float_t signalZEMSum[2];
+   Float_t signalZNLeft[]={0,0}, signalZPLeft[]={0,0}, signalZDCLeftSum[]={0,0};
+   Float_t signalZNRight[]={0,0}, signalZPRight[]={0,0}, signalZDCRightSum[]={0,0};
+   Float_t signalZEMSum[]={0,0};
    for(Int_t iDigit=0; iDigit<tD->GetEntries(); iDigit++){
       tD->GetEntry(iDigit);
       //
