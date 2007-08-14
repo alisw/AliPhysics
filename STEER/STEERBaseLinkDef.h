@@ -33,6 +33,10 @@
 #pragma link C++ class AliHeader+;
 #pragma link C++ class AliGenEventHeader+;
 #pragma link C++ class AliDetectorEventHeader+;
+#pragma link C++ class AliGenCocktailEventHeader+;
+#pragma link C++ class AliGenPythiaEventHeader+;
+#pragma link C++ class AliGenHijingEventHeader+;
+#pragma link C++ class AliCollisionGeometry+;
 
 #pragma link C++ class AliStack+;
 #pragma link C++ class AliMCEventHandler+;

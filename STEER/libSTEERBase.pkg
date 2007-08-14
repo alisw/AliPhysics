@@ -8,6 +8,8 @@ SRCS = AliVParticle.cxx \
        AliLHCTagCuts.cxx AliDetectorTagCuts.cxx \
        AliTagCreator.cxx \
        AliHeader.cxx AliGenEventHeader.cxx AliDetectorEventHeader.cxx \
+       AliGenPythiaEventHeader.cxx AliGenCocktailEventHeader.cxx \
+       AliGenHijingEventHeader.cxx AliCollisionGeometry.cxx \
        AliStack.cxx AliMCEventHandler.cxx \
        AliTrackReference.cxx		   	
 
