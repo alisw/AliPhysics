@@ -53,7 +53,6 @@
 #pragma link C++ class  AliSlowNucleonModel+;
 #pragma link C++ class  AliSlowNucleonModelExp+;
 #pragma link C++ class  AliGenHBTosl+;
-#pragma link C++ class  AliGenCocktailEventHeader+;
 #pragma link C++ class  AliGenReaderEMD+;
 #pragma link C++ class  AliDecayerPolarized+;
 #pragma link C++ class  AliGenCorrHF+;
