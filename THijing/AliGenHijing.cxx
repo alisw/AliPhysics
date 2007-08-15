@@ -231,6 +231,7 @@ void AliGenHijing::Generate()
 
     
   fTrials = 0;
+  
   for (j = 0;j < 3; j++) origin0[j] = fOrigin[j];
   if(fVertexSmear == kPerEvent) {
       Vertex();
@@ -250,6 +251,7 @@ void AliGenHijing::Generate()
 // --------------------------------------------------------------------------
       fHijing->GenerateEvent();
       fTrials++;
+      fNprimaries = 0;
       fHijing->ImportParticles(fParticles,"All");
       if (fTrigger != kNoTrigger) {
 	  if (!CheckTrigger()) continue;
@@ -380,8 +382,7 @@ void AliGenHijing::Generate()
 	      } // if has mother   
 	      Bool_t tFlag = (fTrackIt && !hasDaughter);
 	      PushTrack(tFlag,imo,kf,p,origin,polar,tof,kPNoProcess,nt, 1., ks);
-
-	      
+	      fNprimaries++;
 	      KeepTrack(nt);
 	      newPos[i] = nt;
 	  } // if selected
@@ -545,7 +546,7 @@ void AliGenHijing::MakeHeader()
 {
 // Builds the event header, to be called after each event
     AliGenEventHeader* header = new AliGenHijingEventHeader("Hijing");
-    ((AliGenHijingEventHeader*) header)->SetNProduced(fHijing->GetNATT());
+    ((AliGenHijingEventHeader*) header)->SetNProduced(fNprimaries);
     ((AliGenHijingEventHeader*) header)->SetImpactParameter(fHijing->GetHINT1(19));
     ((AliGenHijingEventHeader*) header)->SetTotalEnergy(fHijing->GetEATT());
     ((AliGenHijingEventHeader*) header)->SetHardScatters(fHijing->GetJATT());
@@ -589,16 +590,6 @@ void AliGenHijing::MakeHeader()
     header->SetPrimaryVertex(fVertex);
     AddHeader(header);
     fCollisionGeometry = (AliGenHijingEventHeader*)  header;
-}
-
-void AliGenHijing::AddHeader(AliGenEventHeader* header)
-{
-    // Passes header either to the container or to gAlice
-    if (fContainer) {
-	fContainer->AddHeader(header);
-    } else {
-	gAlice->SetGenEventHeader(header);	
-    }
 }
 
 

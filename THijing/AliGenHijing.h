@@ -54,7 +54,6 @@ class AliGenHijing : public AliGenMC
 	{fPhiMinJet = TMath::Pi()*phimin/180.; fPhiMaxJet = TMath::Pi()*phimax/180.;}
     virtual void    SetBoostLHC(Int_t flag = 0)         {fLHC        = flag;}
     virtual void    SetRandomPz(Bool_t flag = 0)        {fRandomPz   = flag;}
-    virtual void    AddHeader(AliGenEventHeader* header);
     virtual void    SwitchOffHeavyQuarks(Bool_t flag = kTRUE) {fNoHeavyQuarks = flag;}
     
 	    
@@ -120,7 +119,6 @@ class AliGenHijing : public AliGenMC
     Int_t       fRadiation;      // Flag to switch on/off initial and final state radiation
     Int_t       fSimpleJet;      // Flag to produce simple tiggered jet topology
     Int_t       fNoGammas;       // Don't write gammas if flag "on"
-    
 // ZDC proposal (by Chiara) to store num. of SPECTATORS protons and neutrons
     Int_t 	fProjectileSpecn;// Num. of spectator neutrons from projectile nucleus
     Int_t 	fProjectileSpecp;// Num. of spectator protons from projectile nucleus
