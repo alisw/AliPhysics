@@ -23,8 +23,8 @@
 
 #include <AliHeader.h>
 #include <AliGenEventHeader.h>
-#include <../PYTHIA6/AliGenPythiaEventHeader.h>
-#include <../EVGEN/AliGenCocktailEventHeader.h>
+#include <../STEER/AliGenPythiaEventHeader.h>
+#include <../STEER/AliGenCocktailEventHeader.h>
 
 #include "esdTrackCuts/AliESDtrackCuts.h"
 #include "dNdEta/AlidNdEtaCorrection.h"
