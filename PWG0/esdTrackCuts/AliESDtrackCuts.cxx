@@ -55,7 +55,7 @@ const Char_t* AliESDtrackCuts::fgkCutNames[kNCuts] = {
 };
 
 //____________________________________________________________________
-AliESDtrackCuts::AliESDtrackCuts() : TNamed(),
+AliESDtrackCuts::AliESDtrackCuts() : AliAnalysisCuts(),
   fCutMinNClusterTPC(0),
   fCutMinNClusterITS(0),
   fCutMaxChi2PerClusterTPC(0),
@@ -97,7 +97,7 @@ AliESDtrackCuts::AliESDtrackCuts() : TNamed(),
 }
 
 //____________________________________________________________________
-AliESDtrackCuts::AliESDtrackCuts(Char_t* name, Char_t* title) : TNamed(name,title),
+AliESDtrackCuts::AliESDtrackCuts(Char_t* name, Char_t* title) : AliAnalysisCuts(name,title),
   fCutMinNClusterTPC(0),
   fCutMinNClusterITS(0),
   fCutMaxChi2PerClusterTPC(0),
@@ -160,7 +160,7 @@ AliESDtrackCuts::AliESDtrackCuts(Char_t* name, Char_t* title) : TNamed(name,titl
 }
 
 //_____________________________________________________________________________
-AliESDtrackCuts::AliESDtrackCuts(const AliESDtrackCuts &c) : TNamed(c),
+AliESDtrackCuts::AliESDtrackCuts(const AliESDtrackCuts &c) : AliAnalysisCuts(c),
   fCutMinNClusterTPC(0),
   fCutMinNClusterITS(0),
   fCutMaxChi2PerClusterTPC(0),
