@@ -23,23 +23,24 @@
 #ifndef ALIESDTRACKCUTS_H
 #define ALIESDTRACKCUTS_H
 
-#include <TNamed.h>
 #include <TF1.h>
 #include <TH2.h>
+#include "AliAnalysisCuts.h"
 
 class AliESD;
 class AliESDtrack;
 class AliLog;
 class TTree;
 
-class AliESDtrackCuts : public TNamed 
+class AliESDtrackCuts : public AliAnalysisCuts 
 {
 
 public:
   AliESDtrackCuts();
   AliESDtrackCuts(Char_t* name, Char_t* title="");
   virtual ~AliESDtrackCuts();
-
+  Bool_t IsSelected(TObject* obj)
+       {return AcceptTrack((AliESDtrack*)obj);}
   Bool_t AcceptTrack(AliESDtrack* esdTrack);
   TObjArray* GetAcceptedTracks(AliESD* esd);
   Int_t CountAcceptedTracks(AliESD* esd);
