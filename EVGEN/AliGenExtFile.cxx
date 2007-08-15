@@ -133,6 +133,7 @@ void AliGenExtFile::Generate()
     //
     // Stack filling loop
     //
+    fNprimaries = 0;
     for (i = 0; i < nTracks; i++) {
 	TParticle* iparticle = fReader->NextParticle();
 	Bool_t selected = KinematicSelection(iparticle,0); 
@@ -161,15 +162,15 @@ void AliGenExtFile::Generate()
 	
 	PushTrack(doTracking,parent,idpart,p,origin,polar,0,kPPrimary,nt);
 	KeepTrack(nt);
+	fNprimaries++;
     } // track loop
 
     // Generated event header
     
     AliGenEventHeader * header = new AliGenEventHeader();
-    header->SetNProduced(nt+1);
+    header->SetNProduced(fNprimaries);
     header->SetPrimaryVertex(fVertex);
-    AliRunLoader::GetRunLoader()->GetHeader()->SetGenEventHeader(header);
-
+    AddHeader(header);
     break;
     
   } // event loop

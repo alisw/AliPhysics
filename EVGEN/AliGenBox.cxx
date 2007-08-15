@@ -105,7 +105,14 @@ void AliGenBox::Generate()
 
     AliGenEventHeader* header = new AliGenEventHeader("BOX");
     header->SetPrimaryVertex(fVertex);
-    gAlice->SetGenEventHeader(header); 
+    header->SetNProduced(fNpart);
+    
+ // Passes header either to the container or to gAlice
+    if (fContainer) {
+	fContainer->AddHeader(header);
+    } else {
+	gAlice->SetGenEventHeader(header);	
+    }
 }
 
 //_____________________________________________________________________________

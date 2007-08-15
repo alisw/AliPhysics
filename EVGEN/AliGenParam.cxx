@@ -38,6 +38,7 @@
 #include "AliGenParam.h"
 #include "AliMC.h"
 #include "AliRun.h"
+#include "AliGenEventHeader.h"
 
 ClassImp(AliGenParam)
 
@@ -283,6 +284,8 @@ void AliGenParam::Generate()
   Int_t ipa=0;
   
 // Generating fNpart particles
+  fNprimaries = 0;
+  
   while (ipa<fNpart) {
       while(1) {
 //
@@ -437,6 +440,8 @@ void AliGenParam::Generate()
 		  PushTrack(0, -1, iPart, p, origin0, polar, 0, kPPrimary, nt, wgtp);
 		  pParent[0] = nt;
 		  KeepTrack(nt); 
+		  fNprimaries++;
+		  
 //
 // Decay Products
 //		  
@@ -464,6 +469,7 @@ void AliGenParam::Generate()
 					   0, kPDecay, nt, wgtch);
 			  pParent[i] = nt;
 			  KeepTrack(nt); 
+			  fNprimaries++;
 		      } // Selected
 		  } // Particle loop 
 	      }  // Decays by Lujet
@@ -478,11 +484,18 @@ void AliGenParam::Generate()
 	    gAlice->GetMCApp()->
 		PushTrack(fTrackIt,-1,iPart,p,origin0,polar,0,kPPrimary,nt,wgtp);
             ipa++; 
+	    fNprimaries++;
 	  }
 	  break;
     } // while
   } // event loop
+  
   SetHighWaterMark(nt);
+
+  AliGenEventHeader* header = new AliGenEventHeader("PARAM");
+  header->SetPrimaryVertex(fVertex);
+  header->SetNProduced(fNprimaries);
+  AddHeader(header);
 }
 //____________________________________________________________________________________
 Float_t AliGenParam::GetRelativeArea(Float_t ptMin, Float_t ptMax, Float_t yMin, Float_t yMax, Float_t phiMin, Float_t phiMax)
