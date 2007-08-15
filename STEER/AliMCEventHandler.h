@@ -17,11 +17,13 @@
 //-------------------------------------------------------------------------
 
 #include "AliVEventHandler.h"
+#include "AliHeader.h"
 class TFile;
 class TTree;
 class TParticle;
 class TClonesArray;
 class AliHeader;
+class AliGenEventHeader;
 class AliStack;
 
 
@@ -43,9 +45,10 @@ public:
     virtual Bool_t       TerminateIO();
     virtual void         ResetIO();
     virtual Bool_t       GetEvent(Int_t iev);
-    
     //
-    AliStack* Stack()  {return fStack;}
+    AliStack*    Stack()   {return fStack;}
+    AliHeader*   Header()  {return fHeader;}
+    AliGenEventHeader* GenEventHeader() {return (fHeader->GenEventHeader());}
     TTree*    TreeTR() {return fTreeTR;}
     Int_t     GetParticleAndTR(Int_t i, TParticle*& particle, TClonesArray*& trefs);
     void      DrawCheck(Int_t i, Bool_t search=kFALSE);
