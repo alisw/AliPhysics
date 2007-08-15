@@ -103,6 +103,7 @@ void AliAnalysisTaskJets::ConnectInputData(Option_t */*option*/)
     fChain = (TChain*)GetInputData(0);
     fESD = new AliESDEvent();
     fESD->ReadFromTree(fChain);
+
     fJetFinder->ConnectTree(fChain, fESD);
 }
 
@@ -115,6 +116,12 @@ void AliAnalysisTaskJets::Exec(Option_t */*option*/)
     if (mctruth) {
 	AliStack* stack = mctruth->Stack();
 	printf("AliAnalysisTaskJets: Number of tracks on stack %5d\n", stack->GetNtrack());
+    }
+    
+    AliESD* old = fESD->GetAliESDOld();
+    if (old) {
+	fChain->SetBranchStatus("*FMD*", 0);
+	fESD->CopyFromOldESD();
     }
     
     Long64_t ientry = fChain->GetReadEntry();
