@@ -27,6 +27,7 @@
 #include <TParticle.h>
 
 #include "AliGenMC.h"
+#include "AliRun.h"
 #include "AliGeometry.h"
 
 ClassImp(AliGenMC)
@@ -60,7 +61,8 @@ AliGenMC::AliGenMC()
      fDyBoost(0.),
      fGeometryAcceptance(0),
      fPdgCodeParticleforAcceptanceCut(0),
-     fNumberOfAcceptedParticles(2)
+     fNumberOfAcceptedParticles(0),
+     fNprimaries(0)
 {
 // Default Constructor
 }
@@ -94,7 +96,8 @@ AliGenMC::AliGenMC(Int_t npart)
      fDyBoost(0.),
      fGeometryAcceptance(0),
      fPdgCodeParticleforAcceptanceCut(0),
-     fNumberOfAcceptedParticles(2)
+     fNumberOfAcceptedParticles(0),
+     fNprimaries(0)
 {
 //  Constructor
 // 
@@ -368,5 +371,15 @@ void AliGenMC::Boost()
 	Double_t pzb =   -gb * e +   gamma * pz;
 
 	iparticle->SetMomentum(px, py, pzb, eb);
+    }
+}
+
+void AliGenMC::AddHeader(AliGenEventHeader* header)
+{
+    // Passes header either to the container or to gAlice
+    if (fContainer) {
+	fContainer->AddHeader(header);
+    } else {
+	gAlice->SetGenEventHeader(header);	
     }
 }

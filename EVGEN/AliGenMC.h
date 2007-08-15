@@ -18,6 +18,8 @@ class TParticle;
 #include <TString.h>
 
 class AliGeometry;
+class AliGenEventHeader;
+
 #include "AliDecayer.h"
 #include "AliGenerator.h"
 
@@ -58,7 +60,7 @@ class AliGenMC : public AliGenerator
 	{fTarget = tar; fATarget = a; fZTarget = z;}
     virtual void   SetCrossingAngle(Float_t phiX, Float_t phiY) {fXingAngleX = phiX; fXingAngleY = phiY;}
     virtual void Boost();
-
+    virtual void AddHeader(AliGenEventHeader* header);
  protected:
     // check if particle is selected as parent particle
     Bool_t ParentSelected(Int_t ip) const;
@@ -97,7 +99,8 @@ class AliGenMC : public AliGenerator
     AliGeometry * fGeometryAcceptance; // Geometry to which particles must be simulated
     Int_t       fPdgCodeParticleforAcceptanceCut;  // Abs(PDG Code) of the particle to which the GeometryAcceptance must be applied
     Int_t       fNumberOfAcceptedParticles;  // Number of accepted particles in GeometryAcceptance with the right Abs(PdgCode) 
-
+    Int_t       fNprimaries;                 // Number of produced and stored particles
+    
  private:
     AliGenMC(const AliGenMC &MC);
     AliGenMC & operator=(const AliGenMC & rhs);
