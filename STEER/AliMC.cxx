@@ -687,7 +687,7 @@ void AliMC::FinishEvent()
   if (!gAlice->Lego()) stack->FinishEvent();
 
   // Synchronize the TreeTR with TreeK
-  ReorderAndExpandTreeTR();
+  if (fTmpTreeTR) ReorderAndExpandTreeTR();
    
   // Write out the event Header information
   TTree* treeE = runloader->TreeE();
