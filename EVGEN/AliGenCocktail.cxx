@@ -231,6 +231,7 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp)
 
 // Event Vertex
     fHeader->SetPrimaryVertex(eventVertex);
+    fHeader->CalcNProduced();
     gAlice->SetGenEventHeader(fHeader); 
 }
 
