@@ -104,7 +104,10 @@ void AliAnalysisTaskJets::ConnectInputData(Option_t */*option*/)
     fESD = new AliESDEvent();
     fESD->ReadFromTree(fChain);
 
-    fJetFinder->ConnectTree(fChain, fESD);
+    AliMCEventHandler*    mcTruth = (AliMCEventHandler*) 
+	((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
+
+    fJetFinder->GetReader()->SetInputEvent(fESD, fAOD, mcTruth);
 }
 
 void AliAnalysisTaskJets::Exec(Option_t */*option*/)
@@ -120,7 +123,6 @@ void AliAnalysisTaskJets::Exec(Option_t */*option*/)
     
     AliESD* old = fESD->GetAliESDOld();
     if (old) {
-	fChain->SetBranchStatus("*FMD*", 0);
 	fESD->CopyFromOldESD();
     }
     
