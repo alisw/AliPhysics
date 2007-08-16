@@ -3233,7 +3233,9 @@ void AliITStrackerMI::CookLabel(AliITStrackMI *track,Float_t wrong) const {
      track->SetChi2MIP(9,track->GetChi2MIP(9)+isWrong*(2<<l));
      nwrong+=isWrong;
    }
-   track->SetFakeRatio(double(nwrong)/double(track->GetNumberOfClusters()));
+   Int_t nclusters = track->GetNumberOfClusters();
+   if (nclusters > 0) //PH Some tracks don't have any cluster
+     track->SetFakeRatio(double(nwrong)/double(nclusters));
    if (tpcLabel>0){
      if (track->GetFakeRatio()>wrong) track->SetLabel(-tpcLabel);
      else
