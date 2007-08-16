@@ -38,7 +38,8 @@ extern "C" {
 // FLKSTK.npflka  = stack pointer
 // FLKSTK.louse   = user flag
 // TRACKR.llouse = user defined flag for the current particle
-  FLKSTK.louse[FLKSTK.npflka] = TRACKR.llouse;
+    
+   FLKSTK.louse[FLKSTK.npflka] = TRACKR.llouse;
 
 // mkbmx1 = dimension for kwb real spare array in fluka stack in DIMPAR
 // mkbmx2 = dimension for kwb int. spare array in fluka stack in DIMPAR
@@ -47,22 +48,26 @@ extern "C" {
 // TRACKR.spausr = user defined spare variables for the current particle
 // TRACKR.ispusr = user defined spare flags for the current particle
   Int_t ispr;
-  for (ispr = 0; ispr <= mkbmx1 - 1; ispr++) {
-    FLKSTK.sparek[FLKSTK.npflka][ispr] = TRACKR.spausr[ispr];
-  }  
-  for (ispr = 0; ispr <= mkbmx2 - 1; ispr++) {
-    FLKSTK.ispark[FLKSTK.npflka][ispr] = TRACKR.ispusr[ispr];
-  }  
- 
+  if (numsec <= npprmr) {
+      for (ispr = 0; ispr <= mkbmx1 - 1; ispr++) {
+	  FLKSTK.sparek[FLKSTK.npflka][ispr] = TRACKR.spausr[ispr];
+	  TRACKR.spausr[ispr] = 0.;
+      }  
+      for (ispr = 0; ispr <= mkbmx2 - 1; ispr++) {
+	  FLKSTK.ispark[FLKSTK.npflka][ispr] = TRACKR.ispusr[ispr];
+	  TRACKR.ispusr[ispr] = 0;
+      }  
+  }
+  
   // save parent info
-  FLKSTK.ispark[FLKSTK.npflka][mkbmx2 - 3] = TRACKR.jtrack;   // fluka particle id
+  FLKSTK.ispark[FLKSTK.npflka][mkbmx2 - 3] = TRACKR.jtrack;              // fluka particle id
   FLKSTK.ispark[FLKSTK.npflka][mkbmx2 - 4] = TRACKR.ispusr[mkbmx2 - 1];  // current track number
-  FLKSTK.ispark[FLKSTK.npflka][mkbmx2 - 5] = npprmr; // flag special case when npprmr>0
+  FLKSTK.ispark[FLKSTK.npflka][mkbmx2 - 5] = npprmr;                     // flag npprmr>0
 
 // Get the pointer to the VMC
   TFluka* fluka =  (TFluka*) gMC;
   Int_t verbosityLevel = fluka->GetVerbosityLevel();
-  Bool_t debug = (verbosityLevel>=3)?kTRUE:kFALSE;
+  Bool_t debug = (verbosityLevel>=3)? kTRUE:kFALSE;
   
   fluka->SetTrackIsNew(kTRUE);
 //  TVirtualMC* fluka = TFluka::GetMC();
@@ -81,8 +86,8 @@ extern "C" {
 // Now call the PushTrack(...)
     Int_t done = 0;
 
-    Int_t parent =  TRACKR.ispusr[mkbmx2-1];
-    Int_t kpart  = GENSTK.kpart[numsec-1];
+    Int_t parent  =  TRACKR.ispusr[mkbmx2-1];
+    Int_t kpart   = GENSTK.kpart[numsec-1];
     if (kpart < -6) return; // -7 to -12 = "heavy" fragment
     Int_t  pdg  = fluka->PDGFromId(kpart);
      
@@ -101,6 +106,7 @@ extern "C" {
     Double_t polz = GENSTK.czrpol[numsec-1];
     
 
+    
     TMCProcess mech = kPHadronic;
     if (EVTFLG.ldecay == 1) {
         mech = kPDecay;
@@ -145,8 +151,8 @@ extern "C" {
     if (debug)
 	cout << endl << " !!! stuprf: ntr=" << ntr << " pdg " << pdg << " parent=" << parent
 	     << " parent_pdg="<< fluka->PDGFromId(TRACKR.jtrack) << " numsec "
-	     << numsec << " npprmr " << npprmr << " icode=" << fluka->GetIcode() << endl
-	     << endl;
+	     << numsec << " npprmr " << npprmr << " icode=" << fluka->GetIcode() 
+	     << "kin. energy [keV] = " <<  GENSTK.tki[numsec-1] * 1.e6 << endl << endl;
 	
 
 //
