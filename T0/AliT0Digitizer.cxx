@@ -95,7 +95,7 @@ AliT0Digitizer::AliT0Digitizer(AliRunDigitizer* manager)
     Double_t *x1 = new Double_t[np];
     Double_t *y1 = new Double_t[np];
     for (Int_t ii=0; ii<np; ii++) {
-      y1[ii]=y[np-ii]; x1[ii]=x[np-ii];
+      y1[ii]=y[np-ii-1]; x1[ii]=x[np-ii-1];
     }
     
     TGraph *grInverse = new TGraph(np,y1,x1);
