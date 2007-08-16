@@ -1757,6 +1757,7 @@ Bool_t   TFluka::IsTrackDisappeared() const
 {
 // All inelastic interactions and decays
 // fIcode from usdraw
+    
   FlukaProcessCode_t icode = GetIcode();
   if (icode == kKASKADinelint    || // inelastic interaction
       icode == kKASKADdecay      || // particle decay
@@ -1799,8 +1800,27 @@ Bool_t   TFluka::IsTrackStop() const
 Bool_t   TFluka::IsTrackAlive() const
 {
 // means not disappeared or not out
-  if (IsTrackDisappeared() || IsTrackOut() ) return 0;
-  else return 1;
+    FlukaProcessCode_t icode = GetIcode();
+
+    if (IsTrackOut() || IsTrackStop()) {
+	return 0;
+    } else if 
+	(
+	IsTrackDisappeared()    &&
+	icode != kKASKADdray    &&
+	icode != kKASKADpair    &&
+	icode != kKASKADbrems   &&
+	icode != kEMFSCObrems   &&
+	icode != kEMFSCOmoller  &&
+	icode != kEMFSCObhabha  &&
+	icode != kEMFSCOcompton
+	) 
+    {
+	// Exclude the cases for which the particle has disappeared (paused) but will reappear later (= alive).
+	return 0;
+    } else {
+	return 1;
+    }
 }
 
 //
