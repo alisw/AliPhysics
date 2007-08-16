@@ -58,9 +58,22 @@ void AliGenCocktailEventHeader::AddHeader(AliGenEventHeader* header)
     fHeaders->Add(header);
 }
 
+Int_t AliGenCocktailEventHeader::CalcNProduced()
+{
+    // Calculate the total number of produced and stored particles
+    TIter next(fHeaders);
+    AliGenEventHeader *entry;
+    //
+    Int_t np = 0;
+    while((entry = (AliGenEventHeader*)next())) {np += (entry->NProduced());}
+    fNProduced = np;
+    return (np);
+}
+
 AliGenCocktailEventHeader& AliGenCocktailEventHeader::operator=(const  AliGenCocktailEventHeader& rhs)
 {
 // Assignment operator
     rhs.Copy(*this); 
     return (*this);
 }
+
