@@ -27,7 +27,7 @@ class AliJetAODReader : public AliJetReader
   Bool_t FillMomentumArray(Int_t event); 
   void   OpenInputFiles();
   void   ConnectTree(TTree* tree, TObject* data);
-  void   SetEvent(TObject *ev) {fAOD = (AliAODEvent*) ev;}
+  void   SetInputEvent(TObject* /*esd*/, TObject* aod, TObject* /*mc*/) {fAOD = (AliAODEvent*) aod;}
 
  private:
   TChain                     *fChain;  //! chain for reconstructed tracks

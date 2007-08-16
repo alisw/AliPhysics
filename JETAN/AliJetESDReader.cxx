@@ -30,6 +30,7 @@
 #include "AliJetESDReader.h"
 #include "AliJetESDReaderHeader.h"
 #include "AliESDEvent.h"
+#include "AliESD.h"
 #include "AliESDtrack.h"
 //#include "AliEMCALGeometry.h"
 #include "AliJetDummyGeo.h"
@@ -117,20 +118,9 @@ void AliJetESDReader::OpenInputFiles()
   }
 }
 
-void AliJetESDReader::ConnectTree(TTree* tree, TObject* data) {
+void AliJetESDReader::SetInputEvent(TObject* esd, TObject* /*aod*/, TObject* /*mc*/) {
     // Connect the tree
-     fChain = (TChain*)      tree;
-     fESD   = (AliESDEvent*) data;
-     
-     Int_t nMax = fChain->GetEntries(); 
-     printf("\n AliJetESDReader: Total number of events in chain= %5d \n", nMax);
-     // set number of events in header
-     if (fReaderHeader->GetLastEvent() == -1)
-	 fReaderHeader->SetLastEvent(nMax);
-     else {
-	 Int_t nUsr = fReaderHeader->GetLastEvent();
-	 fReaderHeader->SetLastEvent(TMath::Min(nMax,nUsr));
-     }
+     fESD   = (AliESDEvent*) esd;
 }
 
 //____________________________________________________________________________
@@ -147,16 +137,15 @@ Bool_t AliJetESDReader::FillMomentumArray(Int_t /*event*/)
   // clear momentum array
   ClearArray();
   fDebug = fReaderHeader->GetDebug();
-  // get event from chain
-  // fChain->GetTree()->GetEntry(event);
   
   if (!fESD) {
       return kFALSE;
   }
   
+
   // get number of tracks in event (for the loop)
   nt = fESD->GetNumberOfTracks();
-  printf("Fill Momentum Array %5d ", nt);
+  printf("Fill Momentum Array %5d  \n", nt);
   
   // temporary storage of signal and pt cut flag
   Int_t* sflag  = new Int_t[nt];

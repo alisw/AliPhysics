@@ -43,7 +43,6 @@ class AliJetReader : public TObject
   virtual Int_t GetArrayInitialised()               const {return fArrayInitialised;}
   
   // Setters
-  virtual void   SetEvent(TObject */*ev*/) {}
   virtual Bool_t FillMomentumArray(Int_t) {return kTRUE;}
   virtual void   FillUnitArrayFromTPCTracks(Int_t) {}     // temporarily not used
   virtual void   FillUnitArrayFromEMCALHits() {}          // temporarily not used
@@ -55,6 +54,7 @@ class AliJetReader : public TObject
 	  
   // Others
   virtual void   OpenInputFiles() {}
+  virtual void   SetInputEvent(TObject* /*esd*/, TObject* /*aod*/, TObject* /*mc*/) {;}
   virtual void   ConnectTree(TTree* /*tree*/, TObject* /*data*/) {}
   virtual Bool_t GetGenJets(AliJet* /*genJets*/) {return kFALSE;}
   
