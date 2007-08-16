@@ -7,6 +7,7 @@
 #include "Ftrackr.h"  //(TRACKR) fluka common
 #include "Fltclcm.h"  //(LTCLCM) fluka common
 #include "Femfstk.h"  //(EMFSTK) fluka common
+#include "Fflkstk.h"  //(FLKSTK) fluka common
 #ifndef WIN32
 # define usdraw usdraw_
 #else
@@ -27,6 +28,9 @@ void usdraw(Int_t& icode, Int_t& mreg,
   fluka->SetCaller(kUSDRAW);
   fluka->SetIcode((FlukaProcessCode_t) icode);
 
+//
+// Catch paused tracks
+//
   if (icode/100 == kEMFSCO) {
       for (Int_t npnw = EMFSTK.npstrt-1; npnw <= EMFSTK.npemf-1; npnw++) {
           if (EMFSTK.iespak[npnw][mkbmx2-1] ==  TRACKR.ispusr[mkbmx2 - 1] ) {
@@ -47,6 +51,24 @@ void usdraw(Int_t& icode, Int_t& mreg,
       } // Loop over emf stack 
   } // Electromagnetic process
 
+  if (icode == kKASKADdray || icode == kKASKADpair || icode == kKASKADbrems) {
+      printf("Save paused particle ! \n");
+	TRACKR.ispusr[mkbmx2-2] = 1;
+	TLorentzVector p;
+	gMC->TrackMomentum(p);
+	TRACKR.spausr[0] = xsco;               // x
+	TRACKR.spausr[1] = ysco;               // y
+	TRACKR.spausr[2] = zsco;               // z
+	TRACKR.spausr[3] = gMC->TrackTime();   // t
+	TRACKR.spausr[4] = p[0];               // px
+	TRACKR.spausr[5] = p[1];               // py
+	TRACKR.spausr[6] = p[2];               // pz
+	TRACKR.spausr[7] = p[3];               // e
+	TRACKR.spausr[8] = gMC->TrackLength(); // Length
+  }
+  
+  //
+  //
   Int_t mlttc = TRACKR.lt1trk; //LTCLCM.mlatm1;
   fluka->SetMreg(mreg, mlttc);
   fluka->SetXsco(xsco);
