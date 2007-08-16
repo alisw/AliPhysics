@@ -52,7 +52,6 @@ void usdraw(Int_t& icode, Int_t& mreg,
   } // Electromagnetic process
 
   if (icode == kKASKADdray || icode == kKASKADpair || icode == kKASKADbrems) {
-      printf("Save paused particle ! \n");
 	TRACKR.ispusr[mkbmx2-2] = 1;
 	TLorentzVector p;
 	gMC->TrackMomentum(p);
