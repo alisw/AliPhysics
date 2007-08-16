@@ -46,9 +46,9 @@ class AliAODTagCreator : public AliTagCreator {
   Bool_t ReadCAFCollection(const char *filename);
   
  protected:  
-  //void CreateTag(TFile* file, const char *guid, const char *md5, const char *turl, Long64_t size, Int_t Counter);
-  //void CreateTag(TFile* file, const char *filepath, Int_t Counter);
- 
+  void CreateTag(TFile* file, const char *guid, const char *md5, const char *turl, Long64_t size, Int_t Counter);
+  void CreateTag(TFile* file, const char *filepath, Int_t Counter);
+  
   ClassDef(AliAODTagCreator,0)  
 };
 

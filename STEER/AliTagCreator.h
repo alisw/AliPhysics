@@ -37,8 +37,8 @@ class AliTagCreator : public TObject {
   ~AliTagCreator(); 
 
   //____________________________________________________//
-  Bool_t MergeTags();
-  Bool_t MergeTags(TGridResult *result);
+  Bool_t MergeTags(const char* type);
+  Bool_t MergeTags(const char* type, TGridResult *result);
 
   void SetSE(const char *se){fSE = se;}
   void SetStorage(Int_t storage);

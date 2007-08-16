@@ -74,14 +74,14 @@ void AliTagCreator::SetStorage(Int_t storage) {
 }
 
 //__________________________________________________________________________
-Bool_t AliTagCreator::MergeTags() {
+Bool_t AliTagCreator::MergeTags(const char *type) {
   //Merges the tags and stores the merged tag file 
   //locally if fStorage=0 or in the grid if fStorage=1
   AliInfo(Form("Merging tags....."));
   TChain *fgChain = new TChain("T");
+  TString tagPattern = type; tagPattern += ".tag.root"; 
 
   if(fStorage == 0) {
-    const char * tagPattern = "tag";
     // Open the working directory
     void * dirp = gSystem->OpenDirectory(gSystem->pwd());
     const char * name = 0x0;
@@ -96,8 +96,8 @@ Bool_t AliTagCreator::MergeTags() {
     TString alienLocation = gGrid->Pwd();
     alienLocation += fgridpath.Data();
     alienLocation += "/";
-
-    TGridResult *tagresult = gGrid->Query(alienLocation,"*tag.root","","");
+    TString queryPattern = "*."; queryPattern += tagPattern;
+    TGridResult *tagresult = gGrid->Query(alienLocation,queryPattern.Data(),"","");
     Int_t nEntries = tagresult->GetEntries();
     for(Int_t i = 0; i < nEntries; i++) {
       TString alienUrl = tagresult->GetKey(i,"turl");
@@ -110,7 +110,7 @@ Bool_t AliTagCreator::MergeTags() {
   fgChain->SetBranchAddress("AliTAG",&tag);
   fgChain->GetEntry(0);
   TString localFileName = "Run"; localFileName += tag->GetRunId(); 
-  localFileName += ".Merged"; localFileName += ".ESD.tag.root";
+  localFileName += ".Merged."; localFileName += tagPattern.Data();
      
   TString filename = 0x0;
   
@@ -137,10 +137,11 @@ Bool_t AliTagCreator::MergeTags() {
 }
 
 //__________________________________________________________________________
-Bool_t AliTagCreator::MergeTags(TGridResult *result) {
+Bool_t AliTagCreator::MergeTags(const char *type, TGridResult *result) {
   //Merges the tags that are listed in the TGridResult 
   AliInfo(Form("Merging tags....."));
   TChain *fgChain = new TChain("T");
+  TString tagPattern = "."; tagPattern += type; tagPattern += ".tag.root";
 
   Int_t nEntries = result->GetEntries();
 
@@ -155,7 +156,7 @@ Bool_t AliTagCreator::MergeTags(TGridResult *result) {
   fgChain->GetEntry(0);
     
   TString localFileName = "Run"; localFileName += tag->GetRunId(); 
-  localFileName += ".Merged"; localFileName += ".ESD.tag.root";
+  localFileName += ".Merged"; localFileName += tagPattern.Data();
      
   TString filename = 0x0;
   
