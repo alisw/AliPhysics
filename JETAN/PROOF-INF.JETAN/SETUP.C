@@ -1,10 +1,7 @@
 void SETUP()
 {
    // Load some ROOT libraries
-   gSystem->Load("libEG");
-   gSystem->Load("libGeom");
-   gSystem->Load("libVMC");
-   gSystem->Load("libESD");
+   gSystem->Load("libJETAN");
 
    // Set the Inlucde paths
    gSystem->SetIncludePath("-I$ROOTSYS/include -IJETAN");
