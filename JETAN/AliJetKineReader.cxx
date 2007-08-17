@@ -29,20 +29,22 @@
 #include <TDatabasePDG.h>
 #include <TRandom.h>
 // From AliRoot ...
-#include "AliJet.h"
+#include "AliAODJet.h"
 #include "AliJetKineReaderHeader.h"
 #include "AliJetKineReader.h"
-#include "AliRunLoader.h"
+#include "AliMCEventHandler.h"
 #include "AliStack.h"
 #include "AliHeader.h"
 #include "AliGenPythiaEventHeader.h"
+#include "AliLog.h"
 
 ClassImp(AliJetKineReader)
 
 AliJetKineReader::AliJetKineReader():
     AliJetReader(),  
-    fRunLoader(0x0),
-    fAliHeader(0x0)
+    fAliHeader(0),
+    fMCEventHandler(0),
+    fGenJets(0)
 {
   // Default constructor
 }
@@ -60,24 +62,7 @@ AliJetKineReader::~AliJetKineReader()
 void AliJetKineReader::OpenInputFiles()
 {
   // Opens the input file using the run loader
-  const char* dirName = fReaderHeader->GetDirectory();
-  char path[256];
-  sprintf(path, "%s/galice.root",dirName);
-  fRunLoader = AliRunLoader::Open(path);
-  fRunLoader->LoadKinematics();
-  fRunLoader->LoadHeader(); 
-  
-  // get number of events
-  Int_t nMax = fRunLoader->GetNumberOfEvents();
-  printf("\nTotal number of events = %d", nMax);
-  
-  // set number of events in header
-  if (fReaderHeader->GetLastEvent() == -1)
-    fReaderHeader->SetLastEvent(nMax);
-  else {
-    Int_t nUsr = fReaderHeader->GetLastEvent();
-    fReaderHeader->SetLastEvent(TMath::Min(nMax, nUsr));
-  }
+  // Not used anymore   
 }
 
 //____________________________________________________________________________
@@ -85,127 +70,97 @@ void AliJetKineReader::OpenInputFiles()
 Bool_t AliJetKineReader::FillMomentumArray(Int_t event)
 {
   // Fill momentum array for event
-  char path[256];
-  const char* dirName   = fReaderHeader->GetDirectory();
-  const char* bgdirName = fReaderHeader->GetBgDirectory();
-  Int_t goodTrack = 0;
-  // Clear array
-  // temporary storage of signal and cut flags
-  Int_t* sflag  = new Int_t[50000];
-  Int_t* cflag  = new Int_t[50000];
-  Int_t  spb = 0;
+    Int_t goodTrack = 0;
+    // Clear array
+    // temporary storage of signal and cut flags
+    Int_t* sflag  = new Int_t[50000];
+    Int_t* cflag  = new Int_t[50000];
   
-  ClearArray();
-  for (Int_t i = 0; i < 2; i++) {
-      if (i == 1) {
-// Pythia Events
-	  if (fRunLoader) delete fRunLoader;
-	  sprintf(path, "%s/galice.root", dirName);
-	  fRunLoader = AliRunLoader::Open(path);
-	  fRunLoader->LoadKinematics();
-	  fRunLoader->LoadHeader(); 
-	  // Get event from runloader
-	  fRunLoader->GetEvent(event);
-      } else {
-// Background events
-	  if ((spb = fReaderHeader->GetSignalPerBg()) > 0) {
-	      if (fRunLoader) delete fRunLoader;
-	      sprintf(path, "%s/galice.root", bgdirName);
-	      fRunLoader = AliRunLoader::Open(path);
-	      fRunLoader->LoadKinematics();
-	      fRunLoader->LoadHeader(); 
-	      // Get event from runloader
-	      fRunLoader->GetEvent(event / spb);
-	  } else {
-	      continue;
-	  }
-      }
-
-      // Get the stack
-      AliStack* stack = fRunLoader->Stack();
-      // Number of primaries
-      Int_t nt = stack->GetNprimary();
+    ClearArray();
+    // Get the stack
+    AliStack* stack = fMCEventHandler->Stack();
+    // Number of primaries
+    Int_t nt = stack->GetNprimary();
       
-      // Get cuts set by user and header
-      Double_t ptMin = ((AliJetKineReaderHeader*) fReaderHeader)->GetPtCut();
-      Float_t etaMin = fReaderHeader->GetFiducialEtaMin();
-      Float_t etaMax = fReaderHeader->GetFiducialEtaMax();  
-      fAliHeader = fRunLoader->GetHeader();
+    // Get cuts set by user and header
+    Double_t ptMin = ((AliJetKineReaderHeader*) fReaderHeader)->GetPtCut();
+    Float_t etaMin = fReaderHeader->GetFiducialEtaMin();
+    Float_t etaMax = fReaderHeader->GetFiducialEtaMax();  
+    fAliHeader = fMCEventHandler->Header();
       
-      
-      TLorentzVector p4;
-      // Loop over particles
-      for (Int_t it = 0; it < nt; it++) {
-	  TParticle *part = stack->Particle(it);
-	  Int_t   status  = part->GetStatusCode();
-	  Int_t   pdg     = TMath::Abs(part->GetPdgCode());
-	  Float_t pt      = part->Pt(); 
+    
+    TLorentzVector p4;
+    // Loop over particles
+    for (Int_t it = 0; it < nt; it++) {
+	TParticle *part = stack->Particle(it);
+	Int_t   status  = part->GetStatusCode();
+	Int_t   pdg     = TMath::Abs(part->GetPdgCode());
+	Float_t pt      = part->Pt(); 
 	  
-	  // Skip non-final state particles, neutrinos 
-	  // and particles with pt < pt_min 
-	  if ((status != 1)            
-	      || (pdg == 12 || pdg == 14 || pdg == 16)) continue; 
-	  
-	  Float_t p       = part->P();
-	  Float_t p0      = p;
-	  Float_t eta     = part->Eta();
-	  Float_t phi     = part->Phi();
-	  
-	  // Fast simulation of TPC if requested
-	  if (((AliJetKineReaderHeader*)fReaderHeader)->FastSimTPC()) {
-	      // Charged particles only
-	      Float_t charge = 
-		  TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
-	      if (charge == 0)               continue;
-	      // Simulate efficiency
-	      if (!Efficiency(p0, eta, phi)) continue;
-	      // Simulate resolution
-	      p = SmearMomentum(4, p0);
-	  } // End fast TPC
+	// Skip non-final state particles, neutrinos 
+	// and particles with pt < pt_min 
+	if ((status != 1)            
+	    || (pdg == 12 || pdg == 14 || pdg == 16)) continue; 
+	
+	Float_t p       = part->P();
+	Float_t p0      = p;
+	Float_t eta     = part->Eta();
+	Float_t phi     = part->Phi();
+	
+	// Fast simulation of TPC if requested
+	if (((AliJetKineReaderHeader*)fReaderHeader)->FastSimTPC()) {
+	    // Charged particles only
+	    Float_t charge = 
+		TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
+	    if (charge == 0)               continue;
+	    // Simulate efficiency
+	    if (!Efficiency(p0, eta, phi)) continue;
+	    // Simulate resolution
+	    p = SmearMomentum(4, p0);
+	} // End fast TPC
 	  
 	  // Fast simulation of EMCAL if requested
-	  if (((AliJetKineReaderHeader*)fReaderHeader)->FastSimEMCAL()) {
-	      Float_t charge = 
-		  TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
-	      // Charged particles only
-	      if (charge != 0){
-		  // Simulate efficiency
-		  if (!Efficiency(p0, eta, phi)) continue;
-		  // Simulate resolution
-		  p = SmearMomentum(4, p0);
-	      } // end "if" charged particles
+	if (((AliJetKineReaderHeader*)fReaderHeader)->FastSimEMCAL()) {
+	    Float_t charge = 
+		TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
+	    // Charged particles only
+	    if (charge != 0){
+		// Simulate efficiency
+		if (!Efficiency(p0, eta, phi)) continue;
+		// Simulate resolution
+		p = SmearMomentum(4, p0);
+	    } // end "if" charged particles
 	      // Neutral particles (exclude K0L, n, nbar)
-	      if (pdg == kNeutron || pdg == kK0Long) continue;
-	  } // End fast EMCAL
-    	  
+	    if (pdg == kNeutron || pdg == kK0Long) continue;
+	} // End fast EMCAL
+	
 	  // Fill momentum array
-	  Float_t r  = p/p0;
-	  Float_t px = r * part->Px(); 
-	  Float_t py = r * part->Py(); 
-	  Float_t pz = r * part->Pz();
-	  Float_t m  = part->GetMass();
-	  Float_t e  = TMath::Sqrt(px * px + py * py + pz * pz + m * m);
-	  p4 = TLorentzVector(px, py, pz, e);
-	  if ( (p4.Eta()>etaMax) || (p4.Eta()<etaMin)) continue;
-	  new ((*fMomentumArray)[goodTrack]) TLorentzVector(p4);
-	  
-	  // all tracks are signal ... ?
-	  sflag[goodTrack]=1;
-	  cflag[goodTrack]=0;
-	  if (pt > ptMin) cflag[goodTrack]=1; // track surviving pt cut
-	  goodTrack++;
-      }
-  }
+	Float_t r  = p/p0;
+	Float_t px = r * part->Px(); 
+	Float_t py = r * part->Py(); 
+	Float_t pz = r * part->Pz();
+	Float_t m  = part->GetMass();
+	Float_t e  = TMath::Sqrt(px * px + py * py + pz * pz + m * m);
+	p4 = TLorentzVector(px, py, pz, e);
+	if ( (p4.Eta()>etaMax) || (p4.Eta()<etaMin)) continue;
+	new ((*fMomentumArray)[goodTrack]) TLorentzVector(p4);
+	
+	// all tracks are signal ... ?
+	sflag[goodTrack]=1;
+	cflag[goodTrack]=0;
+	if (pt > ptMin) cflag[goodTrack] = 1; // track surviving pt cut
+	goodTrack++;
+    } // track loop
 
-  // set the signal flags
-  fSignalFlag.Set(goodTrack, sflag);
-  fCutFlag.Set(goodTrack, cflag);
-  printf("\nIn event %d, number of good tracks %d \n", event, goodTrack);
-  
-  delete[] sflag;
-  delete[] cflag;
-  
-  return kTRUE;
+// set the signal flags
+    fSignalFlag.Set(goodTrack, sflag);
+    fCutFlag.Set(goodTrack, cflag);
+    AliInfo(Form("\n In event %d, number of good tracks %d \n", event, goodTrack));
+    
+    delete[] sflag;
+    delete[] cflag;
+    
+    return kTRUE;
 }
 
 
@@ -265,27 +220,35 @@ Bool_t AliJetKineReader::Efficiency(Float_t p, Float_t /*eta*/, Float_t phi)
 
 }
 
-Bool_t AliJetKineReader::GetGenJets(AliJet* genJets)
+TClonesArray*  AliJetKineReader::GetGeneratedJets()
 {
+    //
     // Get generated jets from mc header
+    //
+    if (!fGenJets) {
+	fGenJets = new TClonesArray("AliAODJets", 100);
+    } else {
+	fGenJets->Clear();
+    }
+    
+    
     AliHeader* alih = GetAliHeader(); 
-    if (alih == 0) return kFALSE;
+    if (alih == 0) return 0;
     AliGenEventHeader * genh = alih->GenEventHeader();
-    if (genh == 0) return kFALSE;
+    if (genh == 0) return 0;
+
     Int_t nj =((AliGenPythiaEventHeader*)genh)->NTriggerJets(); 
-    Int_t* m = new Int_t[nj];
-    Int_t* k = new Int_t[nj];
-    for (Int_t i=0; i< nj; i++) {
+    for (Int_t i = 0; i < nj; i++) {
 	Float_t p[4];
 	((AliGenPythiaEventHeader*)genh)->TriggerJet(i,p);
-	genJets->AddJet(p[0],p[1],p[2],p[3]);
-	m[i]=1;
-	k[i]=i;
+	new ((*fGenJets)[i]) AliAODJet(p[0], p[1], p[2], p[3]);
     }
-    genJets->SetNinput(nj);
-    genJets->SetMultiplicities(m);
-    genJets->SetInJet(k);
-    delete[] k;
-    delete[] m;
-    return kTRUE;
+
+    return fGenJets;
+}
+
+void AliJetKineReader::SetInputEvent(TObject* /*esd*/, TObject* /*aod*/, TObject* mc)
+{
+    // Connect the input event
+    fMCEventHandler = (AliMCEventHandler*) mc;
 }

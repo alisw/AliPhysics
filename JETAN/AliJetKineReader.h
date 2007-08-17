@@ -12,6 +12,9 @@
 
 class AliRunLoader;
 class AliHeader;
+class AliMCEventHandler;
+class TClonesArray;
+
 
 class AliJetKineReader : public AliJetReader
 {
@@ -21,19 +24,21 @@ class AliJetKineReader : public AliJetReader
   // Setters
   Bool_t  FillMomentumArray(Int_t event);
   void    OpenInputFiles();
+  void    SetInputEvent(TObject* esd, TObject* aod, TObject* mc);
   // Fast Simulation
   Float_t SmearMomentum(Int_t ind, Float_t p);
   Bool_t  Efficiency(Float_t pt, Float_t eta, Float_t phi);
   // Others
-  virtual Bool_t GetGenJets(AliJet* /*genJets*/);
-  virtual AliHeader* GetAliHeader() {return fAliHeader;}
+  TClonesArray*      GetGeneratedJets();
+  virtual AliHeader* GetAliHeader() const {return fAliHeader;}
   
  protected:
   AliJetKineReader(const AliJetKineReader& rJetKine);
   AliJetKineReader& operator = (const AliJetKineReader& rkr);
 
-  AliRunLoader *fRunLoader;       //! Pointer to the run loader
-  AliHeader    *fAliHeader;       //! Header
+  AliHeader          *fAliHeader;       //! Header
+  AliMCEventHandler  *fMCEventHandler;  //! Monte Carlo Event Handler
+  TClonesArray       *fGenJets;         //! List of generated jets
   ClassDef(AliJetKineReader,1)
 };
  
