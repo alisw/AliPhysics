@@ -288,14 +288,14 @@ void AliESDEvent::ResetStdContent()
   if(fSPDMult)new (fSPDMult) AliMultiplicity();
   if(fPHOSTrigger)fPHOSTrigger->Reset(); 
   if(fEMCALTrigger)fEMCALTrigger->Reset(); 
-  if(fTracks)fTracks->Clear();
+  if(fTracks)fTracks->Delete();
   if(fMuonTracks)fMuonTracks->Clear();
   if(fPmdTracks)fPmdTracks->Clear();
   if(fTrdTracks)fTrdTracks->Clear();
   if(fV0s)fV0s->Clear();
   if(fCascades)fCascades->Clear();
   if(fKinks)fKinks->Clear();
-  if(fCaloClusters)fCaloClusters->Clear();
+  if(fCaloClusters)fCaloClusters->Delete();
   if(fErrorLogs) fErrorLogs->Clear();
 
   // don't reset fconnected fConnected ;
