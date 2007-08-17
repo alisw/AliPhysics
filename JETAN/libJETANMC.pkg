@@ -1,10 +1,6 @@
 #-*-Mode: Makefile-*-
 
-SRCS = 	AliJetKineReader.cxx \
-	AliJetKineReaderHeader.cxx \
-	AliJetMCReader.cxx \
-	AliJetMCReaderHeader.cxx \
-	AliJetESDmcReader.cxx
+SRCS = AliJetESDmcReader.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 EINCLUDE:= PYTHIA6

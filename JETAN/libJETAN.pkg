@@ -17,7 +17,11 @@ SRCS = 	AliJet.cxx AliJetHeader.cxx \
 	AliDAJetFinder.cxx \
 	AliDAJetHeader.cxx \
 	AliJetAODReader.cxx \
-	AliJetAODReaderHeader.cxx
+	AliJetAODReaderHeader.cxx \
+	AliJetKineReader.cxx \
+	AliJetKineReaderHeader.cxx \
+	AliJetMCReader.cxx \
+	AliJetMCReaderHeader.cxx
 
 
 HDRS:= $(SRCS:.cxx=.h) 

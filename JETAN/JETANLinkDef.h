@@ -32,4 +32,8 @@
 #pragma link C++ class AliDAJetHeader+;
 #pragma link C++ class AliJetAODReader+;
 #pragma link C++ class AliJetAODReaderHeader+;
+#pragma link C++ class AliJetKineReader;
+#pragma	link C++ class AliJetKineReaderHeader;
+#pragma	link C++ class AliJetMCReader;
+#pragma	link C++ class AliJetMCReaderHeader;
 #endif
