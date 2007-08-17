@@ -7,26 +7,15 @@
 /* History of cvs commits:
  *
  * $Log$
- * Revision 1.3  2007/03/08 10:24:32  schutz
- * Coding convention
- *
- * Revision 1.2  2007/02/09 18:40:40  schutz
- * BNew version from Gustavo
- *
- * Revision 1.1  2007/01/23 17:17:29  schutz
- * New Gamma package
+ * Revision 1.4.4.3  2007/07/26 10:32:09  schutz
+ * new analysis classes in the the new analysis framework
  *
  *
  */
 
 //_________________________________________________________________________
 
-// Class for the analysis of gamma 
-// This class only contains 3 methods: one to fill lists of particles (ESDs) comming 
-//  from the CTS (ITS+TPC) and the calorimeters; the other search in the 
-//  corresponing calorimeter for the highest energy cluster, identify it as 
-//  prompt photon(Shower Shape and Isolation Cut), the last method does the 
-//  isolation selection
+// Class for the analysis of prompt gamma, isolation cut. 
 //
 //  Class created from old AliPHOSGammaJet
 //  (see AliRoot versions previous Release 4-09)
@@ -36,95 +25,81 @@
 // --- ROOT system ---
 #include <TParticle.h> 
 #include <TClonesArray.h> 
-#include <TTree.h> 
-#include "AliAnalysisTask.h" 
+#include "TObject.h" 
 #include <TH2F.h>
 
-class AliESD ; 
- 
-class AliAnaGammaDirect : public AliAnalysisTask {
+class TList ;
+
+class AliAnaGammaDirect : public TObject {
 
 public: 
 
-  AliAnaGammaDirect(const char *name) ; // default ctor
+  AliAnaGammaDirect() ; // default ctor
   AliAnaGammaDirect(const AliAnaGammaDirect & g) ; // cpy ctor
   AliAnaGammaDirect & operator = (const AliAnaGammaDirect & g) ;//cpy assignment
   virtual ~AliAnaGammaDirect() ; //virtual dtor
-
-  virtual void Exec(Option_t * opt = "") ;
-  virtual void ConnectInputData(Option_t *);
-  virtual void CreateOutputObjects();
-  virtual void Terminate(Option_t * opt = "");
   
-  void InitParameters();
-  TTree *     GetChain()                const {return fChain ; }
-  AliESD *    GetESD()                  const {return fESD ; }
-  TObjArray * GetOutputContainer()      const {return fOutputContainer ; }
+  enum anatype_t {kNoIC, kPtIC, kSumPtIC, kSeveralIC};
+  
   Double_t  GetMinGammaPt()    const {return fMinGammaPt ; }
-  TString    GetCalorimeter()       const {return fCalorimeter ; }
-  Bool_t      GetPrintInfo()           const {return fPrintInfo ; }
   Float_t     GetConeSize()          const {return fConeSize ; }
   Float_t     GetPtThreshold()      const {return fPtThreshold ; }
   Float_t     GetPtSumThres()     const {return fPtSumThreshold ; }
-  Int_t        GetICMethod()          const {return fMakeICMethod ; }
+  Int_t        GetICMethod()          const {return fICMethod ; }
 
-  Bool_t   IsEMCALPIDOn() const {return fEMCALPID ; }
-  Bool_t   IsPHOSPIDOn() const {return fPHOSPID ; }
-  Float_t  GetEMCALPhotonWeight() { return  fEMCALPhotonWeight  ; }
-  Float_t  GetEMCALPi0Weight()    {  return fEMCALPi0Weight  ; }
-  Float_t  GetPHOSPhotonWeight()  {  return fPHOSPhotonWeight  ; }
-
-  void Print(const Option_t * opt)const;
-
-  void SetMinGammaPt(Double_t ptcut){fMinGammaPt =ptcut;}
-  void SetCalorimeter(TString calo){ fCalorimeter= calo ; }
-  void SetPrintInfo(Bool_t print){ fPrintInfo = print ; }
-  void SetConeSize(Float_t r)              {fConeSize = r ; }
-  void SetPtThreshold(Float_t pt)        {fPtThreshold = pt; };
-  void SetPtSumThreshold(Float_t pt) {fPtSumThreshold = pt; };
-  void SetICMethod(Int_t i )          {fMakeICMethod = i ; }
-  
-  void SetEMCALPIDOn(Bool_t pid){ fEMCALPID= pid ; }
-  void SetPHOSPIDOn(Bool_t pid){ fPHOSPID= pid ; }
-  void SetEMCALPhotonWeight(Float_t  w){  fEMCALPhotonWeight = w ; }
-  void SetEMCALPi0Weight(Float_t  w){  fEMCALPi0Weight = w ; }
-  void SetPHOSPhotonWeight(Float_t  w){  fPHOSPhotonWeight = w ; }
-
-  void CreateParticleList(TClonesArray * particleList, 
-			  TClonesArray * plCh, TClonesArray * plNe, 
-			  TClonesArray * plNePHOS);
-  
-  
+  TList *  GetCreateOutputObjects();
   void GetPromptGamma(TClonesArray * plNe, TClonesArray * plCTS, TParticle * pGamma, Bool_t &Is)  const;
   
+  void MakeSeveralICAnalysis(TClonesArray * plCalo, TClonesArray * plCTS); 
   void MakeIsolationCut(TClonesArray * plCTS, TClonesArray * plNe, 
 			TParticle *pCandidate, Int_t index, 
 			Bool_t &imcpt, Bool_t &icms, Float_t &ptsum) const ;  
   
- private:
+  void Print(const Option_t * opt)const;
+  
+  void SetMinGammaPt(Double_t ptcut){fMinGammaPt =ptcut;}
+  void SetConeSize(Float_t r)              {fConeSize = r ; }
+  void SetPtThreshold(Float_t pt)        {fPtThreshold = pt; };
+  void SetPtSumThreshold(Float_t pt) {fPtSumThreshold = pt; };
+  void SetICMethod(Int_t i )          {fICMethod = i ; }
+  
+  Int_t    GetNCones()                  const {return fNCones ; }
+  Int_t    GetNPtThresholds()                const {return fNPtThres ; }
+  Float_t GetConeSizes(Int_t i)      const {return fConeSizes[i] ; }
+  Float_t GetPtThresholds(Int_t i)  const {return fPtThresholds[i] ; }
+  
+  void InitParameters();
+ 
+  void SetNCones(Int_t ncs)              {fNCones = ncs ; }
+  void SetNPtThresholds(Int_t npt)        {fNPtThres = npt; }
+  void SetConeSizes(Int_t i, Float_t r)         {fConeSizes[i] = r ; }
+  void SetPtThresholds(Int_t i, Float_t pt)   {fPtThresholds[i] = pt; }
 
-  TTree       *fChain ;   //!pointer to the analyzed TTree or TChain
-  AliESD       *fESD ;     //! Declaration of leave types
-  TObjArray  *fOutputContainer ; //! output data container
-  Bool_t        fPrintInfo ;      //Print most interesting information on screen
+  
+  private:
+     
   Double_t    fMinGammaPt ;  // Min pt in Calorimeter
-  TString      fCalorimeter ; //PHOS or EMCAL detects Gamma
-  Bool_t       fEMCALPID ;//Fill EMCAL particle lists with particles with corresponding pid
-  Bool_t       fPHOSPID;  //Fill PHOS particle lists with particles with corresponding pid
-  Float_t      fEMCALPhotonWeight; //Bayesian PID weight for photons in EMCAL 
-  Float_t      fEMCALPi0Weight;  //Bayesian PID weight for pi0 in EMCAL 
-  Float_t      fPHOSPhotonWeight; //Bayesian PID weight for photons in PHOS 
   Float_t      fConeSize ; //Size of the isolation cone 
   Float_t      fPtThreshold ; //Mimium pt of the particles in the cone to set isolation
   Float_t      fPtSumThreshold ; //Mimium pt sum of the particles in the cone to set isolation  
-  Int_t        fMakeICMethod ; //Isolation cut method to be used
-                                           // 0: No isolation
-                                           // 1: Pt threshold method
-                                           // 2: Cone pt sum method
+  Int_t        fICMethod ; //Isolation cut method to be used
+                                           // kNoIC: No isolation
+                                           // kPtIC: Pt threshold method
+                                           // kSumPtIC: Cone pt sum method
+                                           // kSeveralIC: Analysis for several cuts
   //Histograms  
-  TH1F * fhNGamma    ; 
-  TH2F * fhPhiGamma    ; 
-  TH2F * fhEtaGamma    ; 
+  TH1F * fhNGamma    ;  //Number of (isolated) gamma identified
+  TH2F * fhPhiGamma    ; // Phi of identified gamma
+  TH2F * fhEtaGamma    ; // eta of identified gamma
+  
+  //Prompt photon analysis data members for multiple cones and pt thresholds kIsolationCut
+  Int_t         fNCones   ; //Number of cone sizes to test
+  Int_t         fNPtThres ; //Number of ptThres to test
+  Float_t     fConeSizes[10] ; // Array with cones to test
+  Float_t     fPtThresholds[10] ; // Array with pt thresholds to test
+  
+  TH1F* fhPtThresIsolated[20][20]; // Isolated gamma with pt threshold 
+  TH2F* fhPtSumIsolated[20] ;  //  Isolated gamma with threshold on cone pt sume
 
   ClassDef(AliAnaGammaDirect,0)
 } ;

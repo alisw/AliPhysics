@@ -138,7 +138,7 @@ void AliAnaGammaPhos::CreateOutputObjects()
 
   fhPHOSPos            = new TNtuple("PHOSPos"         , "Position in PHOS"  , "x:y:z");
   fhPHOS               = new TNtuple("PHOS"            , "PHOS"  , "event:digits:clusters:photons");
-  fhPHOSEnergy         = new TH1D("PHOSEnergy"         , "PHOSEnergy"        , 1000, 0., 10. ) ;
+  fhPHOSEnergy         = new TH1D("PHOSEnergy"         , "PHOSEnergy"        , 100, 0., 100. ) ;
   fhPHOSDigits         = new TH1I("PHOSDigitsCluster"  , "PHOSDigits"        , 20 , 0 , 20  ) ;
   fhPHOSRecParticles   = new TH1D("PHOSRecParticles"   , "PHOSRecParticles" , 20 , 0., 20. ) ;
   fhPHOSPhotons        = new TH1I("PHOSPhotons"        , "PHOSPhotons"       , 20 , 0 , 20  ) ;
