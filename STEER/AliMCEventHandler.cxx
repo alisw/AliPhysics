@@ -335,7 +335,7 @@ void AliMCEventHandler::ReorderAndExpandTreeTR()
 //  Copy the information from different branches into one
 //
 //  TreeTR
-    if (fTmpTreeTR) delete fTmpTreeTR;
+    if (fTmpTreeTR) fTmpTreeTR->Delete();
     if (fTmpFileTR) {
 	fTmpFileTR->Close();
 	delete fTmpFileTR;
