@@ -25,8 +25,8 @@ class AliTPCCalibPulser;
  * This class is the calibration component for the AliTPCCalibPulser class 
  * used for pulser calibration of the TPC. 
  * 
- * It inherits from the @ref AliHLTCalibrationProcessor and uses the high-level 
- * interface. The output is the class @ref AliTPCCalibPulser as a TObject.
+ * It inherits from the AliHLTCalibrationProcessor and uses the high-level 
+ * interface. The output is the class AliTPCCalibPulser as a TObject.
  *
  * The component has the following component arguments:
  *   -rcuformat <old/new>  : Wether to use old or new rcuformat ( default is new )

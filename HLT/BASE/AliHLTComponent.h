@@ -737,7 +737,7 @@ class AliHLTComponent : public AliHLTLogging {
    * @param dt          data type of the object
    * @param spec        data specification
    * @param pHeader     pointer to header
-   * @param iHeaderSize size of Header
+   * @param headerSize size of Header
    * @return neg. error code if failed 
    */
   int PushBack(void* pBuffer, int iSize, const AliHLTComponentDataType& dt,
@@ -752,7 +752,7 @@ class AliHLTComponent : public AliHLTLogging {
    * @param dtOrigin    data type origin of the object
    * @param spec        data specification
    * @param pHeader     pointer to header
-   * @param iHeaderSize size of Header
+   * @param headerSize size of Header
    * @return neg. error code if failed 
    */
   int PushBack(void* pBuffer, int iSize, const char* dtID, const char* dtOrigin,

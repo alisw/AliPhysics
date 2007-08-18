@@ -445,7 +445,7 @@ AliHLTPHOSClusterizer::CalculateMoments(AliHLTPHOSRecPointDataStruct* recPointPt
 * Create a simpler data struct for a rec point, containing
 * only coordinates, energy and timing
 * @param recPointPtr pointer to the rec point
-* @clusterStructPtr pointer to the cluster struct
+* @param clusterStructPtr pointer to the cluster struct
 **/
 int
 AliHLTPHOSClusterizer::ClusterizeStruct(AliHLTPHOSRecPointDataStruct* recPointPtr, AliHLTPHOSClusterDataStruct* clusterStructPtr)

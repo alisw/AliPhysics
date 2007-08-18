@@ -49,7 +49,7 @@ class AliHLTPHOSClusterizerComponent: public AliHLTPHOSProcessor
 
 
   const char* GetComponentID();
-  void GetInputDataTypes(std::vector<AliHLTComponentDataType>& list);
+  void GetInputDataTypes(vector<AliHLTComponentDataType>& list);
 
   AliHLTComponentDataType GetOutputDataType();
 

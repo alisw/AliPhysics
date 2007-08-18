@@ -82,7 +82,7 @@ class AliHLTCalibrationProcessor : public AliHLTProcessor {
    *                    automatically if not supplied by the componenet.
    * @return neg. error code if failed 
    */
-   Int_t PushToFXS(void* pBuffer, int iSize, const char* pDdetector, const char* pFileID, const char* pDDLNumber = "");
+   Int_t PushToFXS(void* pBuffer, int iSize, const char* pDetector, const char* pFileID, const char* pDDLNumber = "");
 
  private:
 
@@ -115,7 +115,7 @@ class AliHLTCalibrationProcessor : public AliHLTProcessor {
    *         -EINVAL unknown argument <br>
    *         -EPROTO parameter for argument missing <br>
    */
-  virtual Int_t ScanArgument(Int_t argc, const char** argv);
+  virtual Int_t ScanArgument(int argc, const char** argv);
 
 
   /*

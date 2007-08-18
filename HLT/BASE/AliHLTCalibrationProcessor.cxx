@@ -66,7 +66,7 @@ AliHLTCalibrationProcessor::~AliHLTCalibrationProcessor() {
  * ######################## InitCalibration #####################
  */
 
-Int_t AliHLTCalibrationProcessor::DoInit( Int_t argc, const Char_t** argv ) {
+Int_t AliHLTCalibrationProcessor::DoInit( int argc, const char** argv ) {
   // see header file for class documentation
 
   Int_t iResult = 0;
@@ -140,7 +140,7 @@ Int_t AliHLTCalibrationProcessor::InitCalibration() {
 }
 
 
-Int_t AliHLTCalibrationProcessor::ScanArgument(Int_t argc, const Char_t** argv) {
+Int_t AliHLTCalibrationProcessor::ScanArgument(int argc, const char** argv) {
   // see header file for class documentation
   
   // there are no other arguments than the standard ones

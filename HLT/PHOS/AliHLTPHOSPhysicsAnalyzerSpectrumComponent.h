@@ -34,7 +34,7 @@ class AliHLTPHOSPhysicsAnalyzerSpectrumComponent: public AliHLTPHOSProcessor // 
   //     return *this;
   //  }
   const char* GetComponentID();
-  void GetInputDataTypes(std::vector<AliHLTComponentDataType>& list);
+  void GetInputDataTypes(vector<AliHLTComponentDataType>& list);
 
   AliHLTComponentDataType GetOutputDataType();
 
@@ -44,7 +44,7 @@ class AliHLTPHOSPhysicsAnalyzerSpectrumComponent: public AliHLTPHOSProcessor // 
   Int_t DoEvent(const AliHLTComponentEventData&, const AliHLTComponentBlockData*,
 		AliHLTComponentTriggerData&, AliHLTUInt8_t*, AliHLTUInt32_t&,
 		std::vector<AliHLTComponentBlockData>&);*/
-  int DoEvent(const AliHLTComponentEventData&, AliHLTComponentTriggerData&);
+  int DoEvent(const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData);
 
   AliHLTComponent* Spawn();
 
