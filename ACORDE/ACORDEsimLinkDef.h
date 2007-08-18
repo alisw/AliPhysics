@@ -9,6 +9,10 @@
 
 
 #pragma link C++ class  AliACORDEv0+;
-#pragma link C++ class  AliACORDEv1+;
+#pragma link C++ class  AliACORDEhit+;
+#pragma link C++ class  AliACORDEdigit+;
+#pragma link C++ class  AliACORDEDigitizer+;
+#pragma link C++ class  AliACORDETrigger+;
+#pragma link C++ class  AliACORDERawData+;
 
 #endif

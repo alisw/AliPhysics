@@ -16,13 +16,23 @@ public:
   AliACORDEv0(const char *name, const char *title);
   virtual ~AliACORDEv0();
 
-  virtual void CreateGeometry();
+  virtual TString Version() { return TString("v0"); }
+  virtual Int_t IsVersion() const { return 1; }
+  virtual void AddHit(Int_t track, Int_t *vol, Float_t *hits);
+
   virtual void BuildGeometry();
+  virtual void CreateGeometry();
+
+  virtual void Init();
   virtual void DrawDetector() const;
+  virtual void StepManager();
+
 
 protected:
-  virtual void CreateMolasse() {}
-  virtual void CreateShafts() {}
+  virtual void CreateCavern();
+  virtual void CreateShafts();
+  virtual void CreateMolasse();
+  virtual void CreateAcorde();
 
 private: 
   AliACORDEv0(const AliACORDEv0& crt);

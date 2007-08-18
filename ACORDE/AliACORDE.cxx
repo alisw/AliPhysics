@@ -40,18 +40,20 @@
 #include <TClonesArray.h>
 #include <TTree.h>
 #include <TVirtualMC.h>
+#include <TGeoManager.h>
 
 #include "AliACORDE.h"
-#include "AliACORDEModule.h"
 #include "AliMagF.h"
 #include "AliRun.h"
+#include "AliACORDERawData.h"
 
 ClassImp(AliACORDE)
 
 //_____________________________________________________________________________
 AliACORDE::AliACORDE()
   : AliDetector(),
-    fModule(0)
+    fCreateCavern(0),
+    fITSGeometry(0)
 {
   //
   // Default constructor
@@ -61,13 +63,12 @@ AliACORDE::AliACORDE()
 //_____________________________________________________________________________
 AliACORDE::AliACORDE(const char *name, const char *title)
   : AliDetector(name, title),
-    fModule(0)
+    fCreateCavern(kFALSE),
+    fITSGeometry(kTRUE)
+
 {
   //
   // Standard constructor
-  //
-  //fHits =  new TClonesArray("AliACORDEhit", 400);
-  //gAlice->GetMCApp()->AddHitList(fHits);
 }
 
 //_____________________________________________________________________________
@@ -76,7 +77,6 @@ AliACORDE::~AliACORDE()
   //
   // Default destructor
   //
-  if ( fModule ) { delete fModule; fModule = 0; }
 }
 
 //_____________________________________________________________________________
@@ -213,6 +213,67 @@ void AliACORDE::MakeBranch(Option_t* opt)
     fNhits = 0;
   }
   AliDetector::MakeBranch(opt);
+}
+
+AliLoader* AliACORDE::MakeLoader(const char* topfoldername)
+{ 
+ 
+  AliDebug(1,Form("Creating AliACORDELoader, Top folder is %s ",
+		  topfoldername));
+  fLoader = new AliACORDELoader(GetName(),topfoldername);
+  return fLoader;
+}
+
+
+AliDigitizer* AliACORDE::CreateDigitizer(AliRunDigitizer* manager) const
+{
+  //
+  //
+  return new AliACORDEDigitizer(manager);
+}
+
+void AliACORDE::Digits2Raw()
+{
+  // Produce Raw data starting from digits
+  // 1. Get digits
+  // 2. From digits get an array with the state of the modules
+  // 3. Unload digits
+  // 4. Write raw data
+
+  // 1. Get digits
+
+  // 1.1 Get detector, load digits and set branch
+  AliACORDE* acorde = (AliACORDE*)gAlice->GetDetector("ACORDE");
+  fLoader->LoadDigits("READ");
+  TTree* treeD = fLoader->TreeD();
+  if (!treeD) {
+    Error("Digits2Raw", "no digits tree");
+    return;
+  }
+  TClonesArray *adigits = new TClonesArray ("AliACORDEdigit", 1000);
+  treeD->GetBranch("ACORDEdigit")->SetAddress(&adigits);
+  // 1.2 Get first entry (there is always only one)
+  acorde->ResetDigits();
+  treeD->GetEvent(0);
+  
+  // 2. From digits get an array with the state of the modules
+  // 2.1 Define and initialize the array
+  Bool_t Modules[60];
+  for (Int_t i=0;i<60;i++) Modules[i]= kFALSE;
+  // 2.2 Loop over all digits
+  Int_t ndig = adigits->GetEntriesFast();
+  for (Int_t idig=0;idig<ndig;idig++) {
+    // 2.3 set the array entry for each digit
+    AliACORDEdigit* digit = (AliACORDEdigit*) adigits->At(idig);
+    Int_t mod = digit->GetModule();
+    Modules[mod-1]=kTRUE;
+  } 
+  // 3. Unload digits
+  fLoader->UnloadDigits();
+
+  // 4. Write raw data
+  AliACORDERawData rawdata;
+  rawdata.WriteACORDERawData(Modules);
 }
 
 //_____________________________________________________________________________

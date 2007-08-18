@@ -14,30 +14,24 @@
 
 #include "AliDigit.h"
 
-class TArrayF;
-class TArrayI;
-
 class AliACORDEdigit: public AliDigit  {
-public:
+
+ public:
   AliACORDEdigit();
-  AliACORDEdigit(Int_t* tracks, Int_t* vol, Float_t* digit);
-  AliACORDEdigit(const AliACORDEdigit& digit);
+  AliACORDEdigit(Int_t* tracks, Int_t module, Float_t pulse_time);
   virtual ~AliACORDEdigit();
 
-  AliACORDEdigit& operator= (const AliACORDEdigit& digit);
+  Int_t GetModule() const { return fModule;}
+  Float_t GetTime() const { return fTime;}
 
-protected:
-  Int_t     fSector;  // number of sector
-  Int_t     fPlate;   // number of plate
-  Int_t     fStrip;   // number of strip
-  Int_t     fPadx;    // number of pad along x
-  Int_t     fPadz;    // number of pad along z
-  Int_t     fNDigits;  // dimension of fTdc array
-  TArrayF*  fTdc;     // tdc values for sdigit
-  TArrayF*  fAdc;     // adc values for sdigit
-
+  
 private:
-    ClassDef(AliACORDEdigit,1)  //Digit (Header) object for set : ACORDE (ACORDE)
+  Int_t fModule; // module producing the digit (1-60)
+  Float_t fTime; //  time of the start of the square pulse
+  
+  
+  ClassDef(AliACORDEdigit,1)  //Digit (Header) object for set : ACORDE (ACORDE)
+
 };
 
 typedef AliACORDEdigit AliCRTdigit; // for backward compatibility

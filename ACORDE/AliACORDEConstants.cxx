@@ -31,21 +31,46 @@
 
 AliACORDEConstants* AliACORDEConstants::fgInstance = 0;
 
-const Float_t AliACORDEConstants::fgkCageLenght          = 477.6;
-const Float_t AliACORDEConstants::fgkCageWidth           = 166.7;
-const Float_t AliACORDEConstants::fgkCageHeight          =  10.7;
-const Float_t AliACORDEConstants::fgkSinglePaletteLenght = 363.0;
-const Float_t AliACORDEConstants::fgkSinglePaletteWidth  =  19.7;
-const Float_t AliACORDEConstants::fgkSinglePaletteHeight =   1;
-const Float_t AliACORDEConstants::fgkActiveAreaGap       = 0.7;
-const Float_t AliACORDEConstants::fgkActiveAreaLenght    = AliACORDEConstants::fgkSinglePaletteLenght;
-const Float_t AliACORDEConstants::fgkActiveAreaWidth     = 156.7;
-const Float_t AliACORDEConstants::fgkActiveAreaHeight    = 2*AliACORDEConstants::fgkSinglePaletteHeight + AliACORDEConstants::fgkActiveAreaGap;
-const Float_t AliACORDEConstants::fgkMagnetWidth         = 654.4;
-const Float_t AliACORDEConstants::fgkMagnetLenght        = 1200;
-const Float_t AliACORDEConstants::fgkMagMinRadius        = 790;
-const Float_t AliACORDEConstants::fgkMagMaxRadius        = AliACORDEConstants::fgkMagMinRadius + 20;
-const Float_t AliACORDEConstants::fgkDepth               =4420; // cm
+const Float_t AliACORDEConstants::fgkModuleLength          = 300.0;
+const Float_t AliACORDEConstants::fgkModuleWidth           = 26.0;
+const Float_t AliACORDEConstants::fgkModuleHeight          =  10.0;
+const Float_t AliACORDEConstants::fgkPlasticLength = 190.0;
+const Float_t AliACORDEConstants::fgkPlasticWidth  =  20.0;
+const Float_t AliACORDEConstants::fgkPlasticHeight =   1.0;
+const Float_t AliACORDEConstants::fgkProfileWidth =    3.8;
+const Float_t AliACORDEConstants::fgkProfileThickness = 0.3;
+const Float_t AliACORDEConstants::fgkDepth               =4420; 
+
+const Float_t AliACORDEConstants::fgkHitEnergyThreshold = 1.52; // MeV
+const Float_t AliACORDEConstants::fgkMaxHitTimeDifference = 40.0; // ns
+const Int_t AliACORDEConstants::fgkMultiMuonThreshold = 2;
+const Float_t AliACORDEConstants::fgkMultiMuonWindow = 25;
+const Float_t AliACORDEConstants::fgkModulePositionX[60] = {
+  641, 641, 641, 641, 641, 641, 641, 641, 641, 641,
+  426, 426, 426, 426, 426, 426, 426, 426, 426, 426,
+  153, 153, 153, 153, 153, 153, 153, 153, 153, 153,
+  -153, -153, -153, -153, -153, -153, -153, -153, -153,
+  -153, -426, -426, -426, -426, -426, -426, -426, -426,
+  -426, -426, -644, -644, -644, -644, -644, -619, -623,
+  -641, -641, -641};
+const Float_t AliACORDEConstants::fgkModulePositionY[60] = {
+  582, 582, 582, 582, 582, 582, 582, 582, 582, 582,
+  797, 797, 797, 797, 797, 797, 797, 797, 797, 797,
+  850, 850, 850, 850, 850, 850, 850, 850, 850, 850,
+  850, 850, 850, 850, 850, 850, 850, 850, 850, 850,
+  797, 797, 797, 797, 797, 797, 797, 797, 797, 797,
+  576, 576, 576, 576, 576, 609, 605, 582, 582, 582};
+const Float_t AliACORDEConstants::fgkModulePositionZ[60] = {
+  450, 350, 250, 150, 50, -50, -120, -280, -350, -450,
+  450, 350, 250, 150, 50, -50, -150, -250, -350, -450,
+  450, 350, 250, 150, 50, -50, -150, -250, -350, -450,
+  450, 350, 250, 150, 50, -50, -150, -250, -350, -450,
+  450, 350, 250, 150, 50, -50, -150, -250, -350, -450,
+  450, 350, 250, 104, 50, -76, -176, -250, -350, -450};
+
+const Float_t AliACORDEConstants::fgkExtraModulePositionZ[4] = {93.0, 18., -18, -93};
+const Float_t AliACORDEConstants::fgkExtraModulePositionX = 0.0;
+const Float_t AliACORDEConstants::fgkExtraModulePositionY = 850.0;
 
 ClassImp(AliACORDEConstants)
 
@@ -56,19 +81,6 @@ AliACORDEConstants::AliACORDEConstants()
   // Default constructor
 }
 
-//_____________________________________________________________________________
-AliACORDEConstants::AliACORDEConstants(const AliACORDEConstants& ct)
-  : TObject(ct)
-{
-  // Copy constructor
-}
-
-//_____________________________________________________________________________
-AliACORDEConstants& AliACORDEConstants::operator=(const AliACORDEConstants&)
-{
-  // Asingment operator
-  return *this;
-}
 
 //_____________________________________________________________________________
 AliACORDEConstants* AliACORDEConstants::Instance()
@@ -86,102 +98,98 @@ AliACORDEConstants::~AliACORDEConstants()
 }
 
 //_____________________________________________________________________________
-Float_t AliACORDEConstants::CageLenght() const
+Float_t AliACORDEConstants::ModulePositionX(Int_t i) const
 {
   // Module lenght
-  return fgkCageLenght;
+  return fgkModulePositionX[i];
 }
 
 //_____________________________________________________________________________
-Float_t AliACORDEConstants::CageWidth() const
+Float_t AliACORDEConstants::ModulePositionY(Int_t i) const
+{
+  // Module lenght
+  return fgkModulePositionY[i];
+}
+//_____________________________________________________________________________
+Float_t AliACORDEConstants::ModulePositionZ(Int_t i) const
+{
+  // Module lenght
+  return fgkModulePositionZ[i];
+}
+
+Float_t AliACORDEConstants::ExtraModulePositionX() const
+{
+  // Module lenght
+  return fgkExtraModulePositionX;
+}
+
+//_____________________________________________________________________________
+Float_t AliACORDEConstants::ExtraModulePositionY() const
+{
+  // Module lenght
+  return fgkExtraModulePositionY;
+}
+//_____________________________________________________________________________
+Float_t AliACORDEConstants::ExtraModulePositionZ(Int_t i) const
+{
+  // Module lenght
+  return fgkExtraModulePositionZ[i];
+}
+
+//_____________________________________________________________________________
+Float_t AliACORDEConstants::ModuleLength() const
+{
+  // Module lenght
+  return fgkModuleLength;
+}
+
+//_____________________________________________________________________________
+Float_t AliACORDEConstants::ModuleWidth() const
 {
   // Module width
-  return fgkCageWidth;
+  return fgkModuleWidth;
 }
 
 //_____________________________________________________________________________
-Float_t AliACORDEConstants::CageHeight() const
+Float_t AliACORDEConstants::ModuleHeight() const
 {
   // Module height
-  return fgkCageHeight;
+  return fgkModuleHeight;
 }
 
 //_____________________________________________________________________________
-Float_t AliACORDEConstants::SinglePaletteLenght() const
+Float_t AliACORDEConstants::PlasticLength() const
 {
-  // Lenght of the scintillator active zone for a single counter
-  return fgkSinglePaletteLenght;
+  // Length of the scintillator active zone for a single counter
+  return fgkPlasticLength;
 }
 
 //_____________________________________________________________________________
-Float_t AliACORDEConstants::SinglePaletteWidth() const
+Float_t AliACORDEConstants::PlasticWidth() const
 {
   // Width of the scintillator active zone for a single counter
-  return fgkSinglePaletteWidth;
+  return fgkPlasticWidth;
 }
 
 //_____________________________________________________________________________
-Float_t AliACORDEConstants::SinglePaletteHeight() const
+Float_t AliACORDEConstants::PlasticHeight() const
 {
   // Height of the scintillator active zone for a single counter
-  return fgkSinglePaletteHeight;
+  return fgkPlasticHeight;
 }
 
-//_____________________________________________________________________________
-Float_t AliACORDEConstants::ActiveAreaGap() const
-{ 
-  // Gap betwen scintillators
-  return fgkActiveAreaGap;
-}
-
-//_____________________________________________________________________________
-Float_t AliACORDEConstants::ActiveAreaLenght() const
+Float_t AliACORDEConstants::ProfileWidth() const
 {
-  // Lenght of the scintillator active zone
-  return fgkActiveAreaLenght;
+  // Width of the profile of the Al box
+  return fgkProfileWidth;
 }
 
-//_____________________________________________________________________________
-Float_t AliACORDEConstants::ActiveAreaWidth() const
+Float_t AliACORDEConstants::ProfileThickness() const
 {
-  // Width of the scintillator active zone
-  return fgkActiveAreaWidth;
+  // Thickness of the profile of the Al box
+  return fgkProfileThickness;
 }
 
-//_____________________________________________________________________________
-Float_t AliACORDEConstants::ActiveAreaHeight() const
-{
-  // Height of the scintillator active zone
-  return fgkActiveAreaHeight;
-}
-
-//_____________________________________________________________________________
-Float_t AliACORDEConstants::MagnetWidth() const
-{
-  // Magnet  width
-  return fgkMagnetWidth;
-}
-
-//_____________________________________________________________________________
-Float_t AliACORDEConstants::MagnetLenght() const
-{
-  // Magnet lenght
-  return fgkMagnetLenght;
-}
-
-//_____________________________________________________________________________
-Float_t AliACORDEConstants::MagMinRadius() const
-{
-  // Magnet Inner radius
-  return fgkMagMinRadius;
-}
-
-//_____________________________________________________________________________
-Float_t AliACORDEConstants::MagMaxRadius() const
-{
-  // Magnet outer radius
-  return fgkMagMaxRadius;
-}
 
 //_____________________________________________________________________________
 Float_t AliACORDEConstants::Depth() const

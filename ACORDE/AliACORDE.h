@@ -10,7 +10,9 @@
 ////////////////////////////////////////////////
 
 #include "AliDetector.h"
-#include <TGeoManager.h>
+#include "AliACORDELoader.h"
+#include "AliACORDEDigitizer.h"
+#include "AliACORDETrigger.h"
 
 class AliACORDEModule;
 
@@ -27,16 +29,28 @@ public:
   virtual TString Version() { return TString(""); }
 
   virtual void SetTreeAddress();
-  virtual void SetModule(AliACORDEModule* module) {fModule = module;}
-  virtual const AliACORDEModule* GetModule() const {return fModule; }
   virtual void MakeBranch(Option_t* opt = "");
   virtual void AddAlignableVolumes() const;
 
-protected:
-  AliACORDEModule* fModule;
+  virtual AliLoader* MakeLoader(const char* topfoldername);
+
+  AliDigitizer*  CreateDigitizer(AliRunDigitizer* manager) const;
+
+  virtual AliTriggerDetector* CreateTriggerDetector() const
+  { return new AliACORDETrigger(); }
+
+  void  Digits2Raw ();
+  virtual void SetCreateCavern(Bool_t b) {fCreateCavern = b;}
+  virtual void SetITSGeometry(Bool_t b) {fITSGeometry = b;}
+  virtual Bool_t GetCreateCavern() const {return fCreateCavern;}
+  virtual Bool_t GetITSGeometry() const {return fITSGeometry;}
+
 private:
   AliACORDE(const AliACORDE& crt);
   AliACORDE& operator=(const AliACORDE& crt);
+
+  Bool_t fCreateCavern;
+  Bool_t fITSGeometry;
 
   ClassDef(AliACORDE, 1) // Cosmic Ray Trigger (ACORDE) base class
 };

@@ -15,6 +15,19 @@
 
 /* $Id$ */
 
+// volume: 
+//  [0] = module number 1-60 (1==>(0-0), 60 (5-9)
+//  [1] = Plastic number: 0 (down) to 1 (up)
+//
+// hit
+// [0] = PID
+// [1-3] = x, y, z 
+// [4] = time 
+// [5-7] = px, py, pz
+// [8] = energy 
+// [9] = energy loss
+// [10] = trak length in plastic
+
 #include "AliACORDEhit.h"
 
 #include <TMath.h>
@@ -26,12 +39,16 @@ ClassImp(AliACORDEhit)
 //____________________________________________________________________________
 AliACORDEhit::AliACORDEhit()
   : AliHit(),
-    fId(0),
+    fModule(0),
+    fPlastic(0),
+    fTrackId(0),
+    fTime(0),
     fPx(0),
     fPy(0),
     fPz(0),
     fEloss(0),
-    fMedium(0)
+    fEnergy(0),
+    fTrkLength(0)
 {
   //
   // default ctor for AliACORDEhit object
@@ -41,12 +58,16 @@ AliACORDEhit::AliACORDEhit()
 //_____________________________________________________________________________
 AliACORDEhit::AliACORDEhit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits)
   : AliHit(shunt, track),
-    fId(hits[0]),
-    fPx(hits[4]),
-    fPy(hits[5]),
-    fPz(hits[6]),
-    fEloss(hits[7]),
-    fMedium(vol[0])
+    fModule(vol[0]),
+    fPlastic(vol[1]),
+    fTrackId((Int_t) hits[0]),
+    fTime(hits[4]),
+    fPx(hits[5]),
+    fPy(hits[6]),
+    fPz(hits[7]),
+    fEloss(hits[9]),
+    fEnergy(hits[8]),
+    fTrkLength(hits[10])
 {
   //
   // Constructor of hit object
@@ -56,23 +77,6 @@ AliACORDEhit::AliACORDEhit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits)
   fZ = hits[3];
 }
 
-//____________________________________________________________________________
-AliACORDEhit::AliACORDEhit(const AliACORDEhit & hit)
-  : AliHit(hit),
-    fId(hit.fId),
-    fPx(hit.fPx),
-    fPy(hit.fPy),
-    fPz(hit.fPz),
-    fEloss(hit.fEloss),
-    fMedium(hit.fMedium)
-{
-  //
-  // copy ctor
-  //
-  fX      = hit.fX;
-  fY      = hit.fY;
-  fZ      = hit.fZ;
-}
 
 //_____________________________________________________________________________
 AliACORDEhit::~AliACORDEhit()
@@ -82,32 +86,6 @@ AliACORDEhit::~AliACORDEhit()
   //
 }
 
-//_____________________________________________________________________________
-AliACORDEhit& AliACORDEhit::operator=(const AliACORDEhit & hit)
-{
-  //
-  // aisngment operator.
-  //
-  fId     = hit.fId;
-  fX      = hit.fX;
-  fY      = hit.fY;
-  fZ      = hit.fZ;
-  fPx     = hit.fPx;
-  fPy     = hit.fPy;
-  fPz     = hit.fPz;
-  fEloss  = hit.fEloss;
-  fMedium = hit.fMedium;
-  return *this;
-}
-
-//_____________________________________________________________________________
-Float_t AliACORDEhit::Energy() const
-{
-  //
-  //
-  //
-  return TMath::Sqrt(fPx*fPx + fPy*fPy + fPz*fPz);
-}
 
 //_____________________________________________________________________________
 Float_t AliACORDEhit::PolarAngle() const
@@ -115,7 +93,8 @@ Float_t AliACORDEhit::PolarAngle() const
   //
   //
   //
-  return kRaddeg*TMath::ACos(-fPy/this->Energy());
+  //  return kRaddeg*TMath::ACos(-fPy/this->Energy());
+  return kRaddeg*TMath::ACos(fPz/this->Energy());
 }
 
 //_____________________________________________________________________________
@@ -124,28 +103,6 @@ Float_t AliACORDEhit::AzimuthAngle() const
   //
   //
   //
-  return kRaddeg*TMath::ATan2(-fPx, -fPz);
-}
-
-//_____________________________________________________________________________
-Bool_t AliACORDEhit::operator==(const AliACORDEhit& hit)
-{
-  //
-  //
-  //
-  Float_t energy = TMath::Sqrt(fPx*fPx + fPy*fPy + fPz*fPz);
-  Float_t energy2=TMath::Sqrt(hit.fPx*hit.fPx+hit.fPy*hit.fPy+hit.fPz*hit.fPz);
-  return (energy == energy2);
-  //return (fTrack == hit.fTrack);
-}
-
-//_____________________________________________________________________________
-Bool_t AliACORDEhit::operator<(const AliACORDEhit& hit)
-{
-  //
-  //
-  //
-  Float_t energy = TMath::Sqrt(fPx*fPx + fPy*fPy + fPz*fPz);
-  Float_t energy2=TMath::Sqrt(hit.fPx*hit.fPx+hit.fPy*hit.fPy+hit.fPz*hit.fPz);
-  return (energy < energy2);
+  //  return kRaddeg*TMath::ATan2(-fPx, -fPz);
+  return kRaddeg*TMath::ATan2(fPx, fPz);
 }
