@@ -316,6 +316,9 @@ extern "C" {
   /** EOR data type */
   extern const AliHLTComponentDataType kAliHLTDataTypeEOR;
 
+  /** Event type specification */
+  extern const AliHLTComponentDataType kAliHLTDataTypeEvent;
+
   //////////////////////////////////////////////////////////////////////////
   //
   // FXS subscriber meta information
