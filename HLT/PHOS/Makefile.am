@@ -91,6 +91,11 @@ CLASS_HDRS			= AliHLTPHOSPulseGenerator.h \
 
 pkginclude_HEADERS		= $(CLASS_HDRS) \
 				  AliHLTPHOSCommonDefs.h \
+				  AliHLTPHOSConstants.h \
+				  AliHLTAltroBunch.h \
+				  AliHLTPHOSRecPointListDataStruct.h \
+				  AliHLTPHOSRecPointDataStruct.h \
+				  AliHLTPHOSClusterDataStruct.h \
 	 			  AliHLTPHOSRawAnalyzer.h \
 			          AliHLTPHOSDefinitions.h \
 				  AliHLTPHOSModuleCellEnergyDataStruct.h\

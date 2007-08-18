@@ -137,11 +137,24 @@ To install all libraries in the AliRoot lib dir:
 Some important options (all options are on by default):
 
   --disable-sample           # disable compilation the sample library
+  --disable-util             # disable compilation the util library
   --disable-tpc              # disable compilation the TPC library
   --disable-phos             # disable compilation the PHOS library
   --disable-trd              # disable compilation the TRD library
+  --disable-dimuon           # disable compilation the MUON library
   --disable-aliroot-logging  # disable logging
 
+All detector libraries (including sample and util lib) require AliRoot,
+compilation is disabled if no working AliRoot version was found. This can
+occur even if an AliRoot version is set up correctly since the configure
+script checks for the usability of the AliRoot libraries (mainly STEER and
+the ones it depends on). If new dependencies are introduced, the check
+might fail.
+
+Compilation of detector libraries can be forced by the switch
+
+  --enable-detector, e.g. --enable-phos
+ 
 Debugging (default disabled)
 
   --enable-debug             # enable debugging: symbols & messages

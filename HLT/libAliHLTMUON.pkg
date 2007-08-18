@@ -29,7 +29,8 @@ MODULE_SRCS :=	$(CLASS_HDRS:.h=.cxx) \
 
 MODULE_HDRS := 	$(MODULE_SRCS:.cxx=.h) \
 		AliHLTMUONDataBlockReader.h \
-		AliHLTMUONDataBlockWriter.h
+		AliHLTMUONDataBlockWriter.h \
+		AliHLTMUONDataTypes.h
 
 # The dictionary linkdef header for rootcint:
 DICTIONARY := 	HLTMUONLinkDef.h

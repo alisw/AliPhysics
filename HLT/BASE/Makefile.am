@@ -8,7 +8,11 @@
 #    e.g. for libHLTbase, MODULE=HLTbase
 MODULE				= HLTbase
 
-SUBDIRS 			= . util interface
+if EN_HLT_UTIL
+UTIL_DIR=util
+endif
+
+SUBDIRS 			= . $(UTIL_DIR) interface
 
 EXTRA_DIST			= HLTbaseLinkDef.h
 

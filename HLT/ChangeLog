@@ -1,3 +1,9 @@
+2007-08-17 version HLT-v0-7 tagged
+	- corresponds to AliRoot v4-06-Rev-00
+	- calibration framework
+	- TPC calibration components
+	- see below for further changes
+
 2007-07-27 Calibration Processor and TPC calibration components (Jochen)
 	- calibration processor base class added
 	- TPC pulser and pedestal calibration components adapted

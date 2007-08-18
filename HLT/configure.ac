@@ -5,7 +5,7 @@ dnl template for the configuration script for the Alice HLT
 dnl framework and components
 dnl 
 dnl ------------------------------------------------------------------
-AC_INIT([Alice High Level Trigger] , [0.7-dev], [Matthias.Richter@ift.uib.no], alice-hlt)
+AC_INIT([Alice High Level Trigger] , [0.8-dev], [Matthias.Richter@ift.uib.no], alice-hlt)
 
 dnl ------------------------------------------------------------------
 dnl the package from CVS contains the old Makefiles as well. In order to
@@ -157,6 +157,11 @@ if test ! "x$have_aliroot" = "xno" ; then
   CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS"
   LDFLAGS="$save_LDFLAGS -L${ROOTLIBDIR} $ALIROOT_LDFLAGS"
   
+  # libSTEERBase present since Aug 7 2007
+  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
+  CHECKLIB=STEERBase
+  AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"])
+
   LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
   CHECKLIB=AOD
   AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"])
@@ -243,19 +248,21 @@ if test ! "x$have_aliroot" = "xno" ; then
 
   LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
   CHECKLIB=STEER
-  AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"])
+  AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"],[have_aliroot=no])
 
   dnl
   dnl check whether AliLog supports notification callback
   dnl
   LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
   have_alilog_notification=no
+  if test ! "x$have_aliroot" = "xno" ; then
   AC_MSG_CHECKING([whether AliLog supports notification callback])
   AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliLog.h>], 
 		                  [AliLog::AliLogNotification fct])],
                                   [have_alilog_notification=yes], 
 				  [AC_DEFINE(NO_ALILOG_NOTIFICATION)])
   AC_MSG_RESULT([$have_alilog_notification])
+  fi
 
   dnl
   dnl Check for the interface of AliExternalTrackParam which has been changed
@@ -320,7 +327,15 @@ if test ! "x$have_aliroot" = "xno" ; then
   AC_MSG_RESULT([$have_tpc_mapping])
 
   if test "x$have_aliroot" = "xno" ; then
-    ALIROOT_CPPFLAGS=
+    # 2007-08-18 dont reset ALIROOT_CPPFLAGS in order to allow compilation
+    # but library dependencies might not be resolved completely
+    #ALIROOT_CPPFLAGS=
+    AC_MSG_WARN([some of the AliRoot library dependencies are not resolved. You
+    can force compilation of detector libs by --enable-<detector>, but be aware
+    of unresolved references at runtime.])
+    AC_MSG_WARN([       ------------------------------------------ ])
+    AC_MSG_WARN([       Report this to $PACKAGE_BUGREPORT ])
+    AC_MSG_WARN([       ------------------------------------------ ])
     ALIROOT_LDFLAGS=
     ALIROOT_LIBS=
   fi
@@ -455,9 +470,14 @@ dnl ------------------------------------------------------------------
 AC_MSG_CHECKING([whether to compile sample library])
 AH_TEMPLATE([HLT_SAMPLE],[hlt sample library])
 AC_ARG_ENABLE(sample,
-  [AC_HELP_STRING([--enable-sample],
+  [AC_HELP_STRING([--disable-sample],
       [compile the sample library ])],
-  [],[enable_sample=yes])
+  [sample_force=yes],[enable_sample=yes])
+if test "x$sample_force" = "xyes" ; then
+   enable_sample="yes"   
+elif test "x$have_aliroot" = "xno" ; then
+   enable_sample="no...requires.AliRoot"
+fi
 if test "x$enable_sample" = "xyes" ; then 
   AC_DEFINE(HLT_SAMPLE)
 fi
@@ -465,13 +485,34 @@ AM_CONDITIONAL(EN_HLT_SAMPLE, test x$enable_sample = xyes)
 AC_MSG_RESULT([$enable_sample])
 
 dnl ------------------------------------------------------------------
+AC_MSG_CHECKING([whether to compile util library])
+AH_TEMPLATE([HLT_UTIL],[HLT utility library])
+AC_ARG_ENABLE(util,
+  [AC_HELP_STRING([--disable-util],
+      [compile the util library ])],
+  [util_force=yes],[enable_util=yes])
+if test "x$util_force" = "xyes" ; then
+   enable_util="yes"   
+elif test "x$have_aliroot" = "xno" ; then
+   enable_util="no...requires.AliRoot"
+fi
+
+if test "x$enable_util" = "xyes" ; then 
+  AC_DEFINE(HLT_UTIL)
+fi
+AM_CONDITIONAL(EN_HLT_UTIL, test x$enable_util = xyes)
+AC_MSG_RESULT([$enable_util])
+
+dnl ------------------------------------------------------------------
 AC_MSG_CHECKING([whether to compile tpc library])
 AH_TEMPLATE([HLT_TPC],[hlt tpc library])
 AC_ARG_ENABLE(tpc,
-  [AC_HELP_STRING([--enable-tpc],
+  [AC_HELP_STRING([--disable-tpc],
       [compile the tpc library ])],
-  [],[enable_tpc=yes])
-if test "x$have_aliroot" = "xno" ; then
+  [tpc_force=yes],[enable_tpc=yes])
+if test "x$tpc_force" = "xyes" ; then
+   enable_tpc="yes"   
+elif test "x$have_aliroot" = "xno" ; then
    enable_tpc="no...requires.AliRoot"
 elif test "x$have_alitpc" = "xno" ; then
    enable_tpc="no...requires.AliRoot.TPC.libraries"
@@ -486,10 +527,12 @@ dnl ------------------------------------------------------------------
 AC_MSG_CHECKING([whether to compile phos library])
 AH_TEMPLATE([HLT_PHOS],[hlt phos library])
 AC_ARG_ENABLE(phos,
-  [AC_HELP_STRING([--enable-phos],
+  [AC_HELP_STRING([--disable-phos],
       [compile the phos library ])],
-  [],[enable_phos=yes])
-if test "x$have_aliroot" = "xno" ; then
+  [phos_force=yes],[enable_phos=yes])
+if test "x$phos_force" = "xyes" ; then
+   enable_phos="yes"   
+elif test "x$have_aliroot" = "xno" ; then
    enable_phos="no...requires.AliRoot"
 elif ! test "x$have_alicalorawstream" = "xyes"; then
    enable_phos="no...requires.AliRoot>v4-05-07"
@@ -504,10 +547,12 @@ dnl ------------------------------------------------------------------
 AC_MSG_CHECKING([whether to compile trd library])
 AH_TEMPLATE([HLT_TRD],[hlt trd library])
 AC_ARG_ENABLE(trd,
-  [AC_HELP_STRING([--enable-trd],
+  [AC_HELP_STRING([--disable-trd],
       [compile the trd library ])],
-  [],[enable_trd=yes])
-if test "x$have_aliroot" = "xno" ; then
+  [trd_force=yes],[enable_trd=yes])
+if test "x$trd_force" = "xyes" ; then
+   enable_trd="yes"   
+elif test "x$have_aliroot" = "xno" ; then
    enable_trd="no...requires.AliRoot"
 fi
 if test "x$enable_trd" = "xyes" ; then 
@@ -520,10 +565,12 @@ dnl ------------------------------------------------------------------
 AC_MSG_CHECKING([whether to compile dimuon library])
 AH_TEMPLATE([HLT_MUON],[hlt dimuon library])
 AC_ARG_ENABLE(dimuon,
-  [AC_HELP_STRING([--enable-dimuon],
+  [AC_HELP_STRING([--disable-dimuon],
       [compile the dimuon library ])],
-  [],[enable_dimuon=yes])
-if test "x$have_aliroot" = "xno" ; then
+  [dimuon_force=yes],[enable_dimuon=yes])
+if test "x$dimuon_force" = "xyes" ; then
+   enable_dimuon="yes"   
+elif test "x$have_aliroot" = "xno" ; then
    enable_dimuon="no...requires.AliRoot"
 fi
 if test "x$enable_dimuon" = "xyes" ; then 
@@ -539,6 +586,9 @@ AC_ARG_ENABLE(aliroot-logging,
   [AC_HELP_STRING([--disable-aliroot-logging],
       [disable logging through AliRoot logging methods])],
   [],[enable_aliroot_logging=no])
+if test "x$have_aliroot" = "xno" ; then
+  enable_aliroot_logging=yes # this means 'disable'
+fi
 if test "x$enable_aliroot_logging" != "xno" ; then 
   AC_DEFINE(NOALIROOT_LOGGING)
 fi
