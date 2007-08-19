@@ -125,7 +125,7 @@ int AliHLTRootFilePublisherComponent::GetEvent( const AliHLTComponentEventData& 
 	      vector<AliHLTComponentBlockData>& outputBlocks )
 {
   int iResult=0;
-  if (GetCurrentSpecification()==0) {
+  if (GetEventCount()%2==0) {
     TH1F *hpx = new TH1F("hpx","px distribution",100,-4,4);
     hpx->FillRandom("gaus",1000);
     PushBack(hpx, "TH1F", "ROOT");

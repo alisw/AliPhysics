@@ -56,8 +56,8 @@ class AliHLTRootFilePublisherComponent : public AliHLTFilePublisher  {
 
   /**
    * Open all files.
-   * Opens all files from the file name list @ref fFileNames and adds TFile
-   * opjects to the TFiles list.
+   * Opens all files for all events from the event list @ref fEvents and adds TFile
+   * opjects to the internal list.
    */
   int OpenFiles();
 
