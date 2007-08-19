@@ -428,8 +428,7 @@ AliHLTTask::AliHLTTask()
   fpDataBuffer(NULL),
   fListTargets(),
   fListDependencies(),
-  fpBlockDataArray(NULL),
-  fBlockDataArraySize(0)
+  fBlockDataArray()
 {
   // see header file for function documentation
 }
@@ -441,32 +440,9 @@ AliHLTTask::AliHLTTask(AliHLTConfiguration* pConf)
   fpDataBuffer(NULL),
   fListTargets(),
   fListDependencies(),
-  fpBlockDataArray(NULL),
-  fBlockDataArraySize(0)
+  fBlockDataArray()
 {
   // see header file for function documentation
-}
-
-AliHLTTask::AliHLTTask(const AliHLTTask&)
-  :
-  TObject(),
-  AliHLTLogging(),
-  fpConfiguration(NULL),
-  fpComponent(NULL),
-  fpDataBuffer(NULL),
-  fListTargets(),
-  fListDependencies(),
-  fpBlockDataArray(NULL),
-  fBlockDataArraySize(0)
-{
-  HLTFatal("copy constructor untested");
-}
-
-AliHLTTask& AliHLTTask::operator=(const AliHLTTask&)
-{ 
-  // see header file for function documentation
-  HLTFatal("assignment operator untested");
-  return *this;
 }
 
 AliHLTTask::~AliHLTTask()
@@ -488,8 +464,6 @@ AliHLTTask::~AliHLTTask()
 
   if (fpComponent) delete fpComponent;
   fpComponent=NULL;
-  if (fpBlockDataArray) delete[] fpBlockDataArray;
-  fpBlockDataArray=NULL;
 }
 
 int AliHLTTask::Init(AliHLTConfiguration* pConf, AliHLTComponentHandler* pCH)
@@ -757,11 +731,9 @@ int AliHLTTask::StartRun()
       lnk=lnk->Next();
     }
     if (iResult>=0) {
-      if (fpBlockDataArray) {
+      if (fBlockDataArray.size()>0) {
 	HLTWarning("block data array for task %s (%p) was not cleaned", GetName(), this);
-	delete [] fpBlockDataArray;
-	fpBlockDataArray=NULL;
-	fBlockDataArraySize=0;
+	fBlockDataArray.resize(0);
       }
 
       // component init
@@ -772,13 +744,9 @@ int AliHLTTask::StartRun()
       // allocate internal task variables for bookkeeping aso.
       // we allocate the BlockData array with at least one member
       if (iNofInputDataBlocks==0) iNofInputDataBlocks=1;
-      fpBlockDataArray=new AliHLTComponentBlockData[iNofInputDataBlocks];
-      if (fpBlockDataArray) {
-	fBlockDataArraySize=iNofInputDataBlocks;
-      } else {
-	HLTError("memory allocation failed");
-	iResult=-ENOMEM;
-      }
+      AliHLTComponentBlockData init;
+      memset(&init, 0, sizeof(AliHLTComponentBlockData));
+      fBlockDataArray.resize(iNofInputDataBlocks, init);
 
       // allocate the data buffer, which controls the output buffer and subscriptions
       if (iResult>=0) {
@@ -814,10 +782,8 @@ int AliHLTTask::EndRun()
 {
   // see header file for function documentation
   int iResult=0;
-  if (fpBlockDataArray) {
-    fBlockDataArraySize=0;
-    delete [] fpBlockDataArray;
-    fpBlockDataArray=0;
+  if (fBlockDataArray.size()>0) {
+    fBlockDataArray.resize(0);
   } else {
     HLTWarning("task %s (%p) doesn't seem to be in running mode", GetName(), this);
   }
@@ -840,19 +806,6 @@ int AliHLTTask::ProcessTask(Int_t eventNo)
     int iSourceDataBlock=0;
     int iInputDataVolume=0;
 
-    int iNofInputDataBlocks=0;
-    /* TODO: the assumption of only one output data type per component is the current constraint
-     * later it should be checked how many output blocks of the source component match the input
-     * data types of the consumer component (GetNofMatchingDataBlocks). If one assumes that a
-     * certain output block is always been produced, the initialization could be done in the
-     * StartRun. Otherwise the fpBlockDataArray has to be adapted each time.
-     */
-    iNofInputDataBlocks=fListDependencies.GetSize(); // one block per source
-    // is not been used since the allocation was done in StartRun, but check the size
-    if (iNofInputDataBlocks>fBlockDataArraySize) {
-      HLTError("block data array too small");
-    }
-
     AliHLTTask* pSrcTask=NULL;
     TList subscribedTaskList;
     TObjLink* lnk=fListDependencies.FirstLink();
@@ -862,29 +815,23 @@ int AliHLTTask::ProcessTask(Int_t eventNo)
       pSrcTask=(AliHLTTask*)lnk->GetObject();
       if (pSrcTask) {
 	int iMatchingDB=pSrcTask->GetNofMatchingDataBlocks(this);
-	if (iMatchingDB<=fBlockDataArraySize-iSourceDataBlock) {
-	  if (fpBlockDataArray) {
-	  if ((iResult=pSrcTask->Subscribe(this, &fpBlockDataArray[iSourceDataBlock],fBlockDataArraySize-iSourceDataBlock))>0) {
-	    for (int i=0; i<iResult; i++) {
-	      iInputDataVolume+=fpBlockDataArray[i+iSourceDataBlock].fSize;
-	      // put the source task as many times into the list as it provides data blocks
-	      // makes the bookkeeping for the data release easier
-	      subscribedTaskList.Add(pSrcTask);
-	    }
-	    iSourceDataBlock+=iResult;
-	    HLTDebug("Task %s (%p) successfully subscribed to %d data block(s) of task %s (%p)", GetName(), this, iResult, pSrcTask->GetName(), pSrcTask);
-	    iResult=0;
-	  } else {
-	    HLTError("Task %s (%p): subscription to task %s (%p) failed with error %d", GetName(), this, pSrcTask->GetName(), pSrcTask, iResult);
-	    iResult=-EFAULT;
+	if (iMatchingDB>fBlockDataArray.size()-iSourceDataBlock) {
+	  AliHLTComponentBlockData init;
+	  memset(&init, 0, sizeof(AliHLTComponentBlockData));
+	  fBlockDataArray.resize(iSourceDataBlock+iMatchingDB, init);
+	}
+	if ((iResult=pSrcTask->Subscribe(this, &fBlockDataArray[iSourceDataBlock],fBlockDataArray.size()-iSourceDataBlock))>0) {
+	  for (int i=0; i<iResult; i++) {
+	    iInputDataVolume+=fBlockDataArray[i+iSourceDataBlock].fSize;
+	    // put the source task as many times into the list as it provides data blocks
+	    // makes the bookkeeping for the data release easier
+	    subscribedTaskList.Add(pSrcTask);
 	  }
-	  } else {
-	    HLTFatal("Task %s (%p): BlockData array not allocated", GetName(), this);
-	    iResult=-EFAULT;
-	  }
+	  HLTDebug("Task %s (%p) successfully subscribed to %d data block(s) of task %s (%p)", GetName(), this, iResult, pSrcTask->GetName(), pSrcTask);
+	  iSourceDataBlock+=iResult;	  
+	  iResult=0;
 	} else {
-	  HLTFatal("Task %s (%p): too little space in data block array for subscription to task %s (%p)", GetName(), this, pSrcTask->GetName(), pSrcTask);
-	  HLTDebug("#data types=%d, array size=%d, current index=%d", iMatchingDB, fBlockDataArraySize, iSourceDataBlock);
+	  HLTError("Task %s (%p): subscription to task %s (%p) failed with error %d", GetName(), this, pSrcTask->GetName(), pSrcTask, iResult);
 	  iResult=-EFAULT;
 	}
       } else {
@@ -927,7 +874,7 @@ int AliHLTTask::ProcessTask(Int_t eventNo)
       AliHLTComponentBlockData* outputBlocks=NULL;
       AliHLTComponentEventDoneData* edd;
       if (pTgtBuffer!=NULL || iOutputDataSize==0) {
-	iResult=pComponent->ProcessEvent(evtData, fpBlockDataArray, trigData, pTgtBuffer, size, outputBlockCnt, outputBlocks, edd);
+	iResult=pComponent->ProcessEvent(evtData, &fBlockDataArray[0], trigData, pTgtBuffer, size, outputBlockCnt, outputBlocks, edd);
 	HLTDebug("task %s: component %s ProcessEvent finnished (%d): size=%d blocks=%d", GetName(), pComponent->GetComponentID(), iResult, size, outputBlockCnt);
 	if (iResult>=0 && pTgtBuffer) {
 	  iResult=fpDataBuffer->SetSegments(pTgtBuffer, outputBlocks, outputBlockCnt);
@@ -949,8 +896,8 @@ int AliHLTTask::ProcessTask(Int_t eventNo)
       pSrcTask=(AliHLTTask*)lnk->GetObject();
       if (pSrcTask) {
 	int iTempRes=0;
-	if ((iTempRes=pSrcTask->Release(&fpBlockDataArray[iSourceDataBlock], this))>=0) {
-	  HLTDebug("Task %s (%p) successfully released task %s (%p)", GetName(), this, pSrcTask->GetName(), pSrcTask);
+	if ((iTempRes=pSrcTask->Release(&fBlockDataArray[iSourceDataBlock], this))>=0) {
+	  HLTDebug("Task %s (%p) successfully released segment of task %s (%p)", GetName(), this, pSrcTask->GetName(), pSrcTask);
 	} else {
 	  HLTError("Task %s (%p): realease of task %s (%p) failed with error %d", GetName(), this, pSrcTask->GetName(), pSrcTask, iTempRes);
 	}

@@ -59,10 +59,6 @@ class AliHLTTask : public TObject, public AliHLTLogging {
       @param pConf pointer to configuration descriptor
    */
   AliHLTTask(AliHLTConfiguration* pConf);
-  /** not a valid copy constructor, defined according to effective C++ style */
-  AliHLTTask(const AliHLTTask&);
-  /** not a valid assignment op, but defined according to effective C++ style */
-  AliHLTTask& operator=(const AliHLTTask&);
   /** destructor */
   virtual ~AliHLTTask();
 
@@ -277,6 +273,11 @@ class AliHLTTask : public TObject, public AliHLTLogging {
   int GetNofSources() const {return fListDependencies.GetSize();}
 
  private:
+  /** prohibited copy constructor */
+  AliHLTTask(const AliHLTTask&);
+  /** prohibited assignment operator */
+  AliHLTTask& operator=(const AliHLTTask&);
+
   /** the configuration descriptor (external pointer) */
   AliHLTConfiguration* fpConfiguration;                           //! transient
   /** the component described by this task (created and deleted internally) */
@@ -293,11 +294,9 @@ class AliHLTTask : public TObject, public AliHLTLogging {
    * @ref AliHLTComponent::ProcessEvent method. 
    * Filled through subscription to source tasks (@ref Subscribe).
    */
-  AliHLTComponentBlockData* fpBlockDataArray;                     //! transient
-  /** size of the block data array */
-  int fBlockDataArraySize;                                        // see above
+  vector<AliHLTComponentBlockData> fBlockDataArray;               //! transient
 
-  ClassDef(AliHLTTask, 1);
+  ClassDef(AliHLTTask, 2);
 };
 
 #endif

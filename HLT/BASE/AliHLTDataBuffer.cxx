@@ -198,12 +198,15 @@ int AliHLTDataBuffer::Subscribe(const AliHLTComponent* pConsumer, AliHLTComponen
 	    arrayBlockDesc[i].fShmKey.fShmType=gkAliHLTComponentInvalidShmType;
 	    arrayBlockDesc[i].fShmKey.fShmID=gkAliHLTComponentInvalidShmID;
 	    arrayBlockDesc[i].fOffset=(*segment).fSegmentOffset;
-	    arrayBlockDesc[i].fPtr=fpBuffer->fPtr;
+	    arrayBlockDesc[i].fPtr=*fpBuffer;
 	    arrayBlockDesc[i].fSize=(*segment).fSegmentSize;
 	    arrayBlockDesc[i].fDataType=(*segment).fDataType;
 	    arrayBlockDesc[i].fSpecification=(*segment).fSpecification;
 	    pDesc->SetActiveDataSegment(arrayBlockDesc[i].fOffset, arrayBlockDesc[i].fSize);
-	    HLTDebug("component %p (%s) subscribed to segment #%d offset %d", pConsumer, ((AliHLTComponent*)pConsumer)->GetComponentID(), i, arrayBlockDesc[i].fOffset);
+	    HLTDebug("component %p (%s) subscribed to segment #%d offset %d size %d data type %s %#x", 
+		     pConsumer, ((AliHLTComponent*)pConsumer)->GetComponentID(), i, arrayBlockDesc[i].fOffset,
+		     arrayBlockDesc[i].fSize, (AliHLTComponent::DataType2Text(arrayBlockDesc[i].fDataType)).c_str(), 
+		     arrayBlockDesc[i].fSpecification);
 	    i++;
 	    segment++;
 	  }
@@ -283,7 +286,7 @@ AliHLTUInt8_t* AliHLTDataBuffer::GetTargetBuffer(int iMinSize)
   }
   fpBuffer=CreateRawBuffer(iMinSize);
   if (fpBuffer) {
-    pTargetBuffer=(AliHLTUInt8_t*)fpBuffer->fPtr;
+    pTargetBuffer=*fpBuffer;
   } else {
     HLTError("can not create raw buffer");
   }
@@ -296,20 +299,26 @@ int AliHLTDataBuffer::SetSegments(AliHLTUInt8_t* pTgt, AliHLTComponentBlockData*
   int iResult=0;
   if (pTgt && arrayBlockData && iSize>=0) {
     if (fpBuffer) {
-      if (fpBuffer->fPtr==(void*)pTgt) {
+      if (*fpBuffer==pTgt) {
 	AliHLTDataBuffer::AliHLTDataSegment segment;
 	for (int i=0; i<iSize; i++) {
-	  if (arrayBlockData[i].fOffset+arrayBlockData[i].fSize<=fpBuffer->fSize) {
-	    segment.fSegmentOffset=arrayBlockData[i].fOffset;
-	    segment.fSegmentSize=arrayBlockData[i].fSize;
-	    segment.fDataType=arrayBlockData[i].fDataType;
-	    segment.fSpecification=arrayBlockData[i].fSpecification;
-	    fSegments.push_back(segment);
-	    HLTDebug("set segment %s with size %d at offset %d", AliHLTComponent::DataType2Text(segment.fDataType).data(), segment.fSegmentSize, segment.fSegmentOffset);
+	  if ((*fpBuffer)<=arrayBlockData[i].fPtr && (*fpBuffer)>arrayBlockData[i].fPtr) {
+	    int ptrOffset=(*fpBuffer)-arrayBlockData[i].fPtr;
+	    if (arrayBlockData[i].fOffset+ptrOffset+arrayBlockData[i].fSize<=fpBuffer->fSize) {
+	      segment.fSegmentOffset=arrayBlockData[i].fOffset+ptrOffset;
+	      segment.fSegmentSize=arrayBlockData[i].fSize;
+	      segment.fDataType=arrayBlockData[i].fDataType;
+	      segment.fSpecification=arrayBlockData[i].fSpecification;
+	      fSegments.push_back(segment);
+	      HLTDebug("set segment %s with size %d at offset %d", AliHLTComponent::DataType2Text(segment.fDataType).data(), segment.fSegmentSize, segment.fSegmentOffset);
+	    } else {
+	      HLTError("block data specification %#d (%s) exceeds size of data buffer", i, AliHLTComponent::DataType2Text(arrayBlockData[i].fDataType).data());
+	      HLTError("block offset=%d, block size=%d, buffer size=%d", arrayBlockData[i].fOffset, arrayBlockData[i].fSize, fpBuffer->fSize);
+	      iResult=-E2BIG;
+	    }
 	  } else {
-	    HLTError("block data specification %#d (%s) exceeds size of data buffer", i, AliHLTComponent::DataType2Text(arrayBlockData[i].fDataType).data());
-	    HLTError("block offset=%d, block size=%d, buffer size=%d", arrayBlockData[i].fOffset, arrayBlockData[i].fSize, fpBuffer->fSize);
-	    iResult=-E2BIG;
+	    HLTError("invalid pointer (%p) in block data specification (buffer %p size %d)", arrayBlockData[i].fPtr, fpBuffer->fPtr, fpBuffer->fSize);
+	    iResult=-ERANGE;
 	  }
 	}
       } else {
@@ -377,7 +386,7 @@ AliHLTDataBuffer::AliHLTRawBuffer* AliHLTDataBuffer::CreateRawBuffer(AliHLTUInt3
     // no buffer found, create a new one
     pRawBuffer=new AliHLTRawBuffer;
     if (pRawBuffer) {
-      pRawBuffer->fPtr=malloc(reqSize);
+      pRawBuffer->fPtr=static_cast<AliHLTUInt8_t*>(malloc(reqSize));
       if (pRawBuffer->fPtr) {
 	pRawBuffer->fSize=size;
 	pRawBuffer->fTotalSize=reqSize;
@@ -596,4 +605,28 @@ int AliHLTDataBuffer::FindConsumer(AliHLTComponent* pConsumer, int bAllLists)
     desc++;
   }
   return 0;
+}
+
+int AliHLTDataBuffer::AliHLTRawBuffer::operator==(void* ptr)
+{
+  return fPtr == static_cast<AliHLTUInt8_t*>(ptr);
+}
+
+int AliHLTDataBuffer::AliHLTRawBuffer::operator<=(void* ptr)
+{
+  int iResult=fPtr <= static_cast<AliHLTUInt8_t*>(ptr);
+  //printf("%p: %p <= %p (%d)\n", this, fPtr, ptr, iResult);
+  return iResult;
+}
+
+int AliHLTDataBuffer::AliHLTRawBuffer::operator>(void* ptr)
+{
+  int iResult=fPtr+fSize > static_cast<AliHLTUInt8_t*>(ptr);
+  //printf("%p: %p + %d > %p (%d)\n", this, fPtr, fSize, ptr, iResult);
+  return iResult;
+}
+
+int AliHLTDataBuffer::AliHLTRawBuffer::operator-(void* ptr)
+{
+  return static_cast<int>(static_cast<AliHLTUInt8_t*>(ptr)-fPtr);
 }
