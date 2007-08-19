@@ -240,6 +240,11 @@ int AliHLTComponent::DoDeinit()
   return 0;
 }
 
+int AliHLTComponent::GetOutputDataTypes(vector<AliHLTComponentDataType>& /*tgtList*/)
+{
+  return 0;
+}
+
 void AliHLTComponent::DataType2Text( const AliHLTComponentDataType& type, char output[kAliHLTComponentDataTypefIDsize+kAliHLTComponentDataTypefOriginSize+2] ) const
 {
   // see header file for function documentation

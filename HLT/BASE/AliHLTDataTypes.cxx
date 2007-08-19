@@ -28,6 +28,13 @@
 // those types can not be implemented in the header files as rootcint
 // can not cope with the type id and origin defines.
 
+/** multiple output data types */
+const AliHLTComponentDataType kAliHLTMultipleDataType = {
+  sizeof(AliHLTComponentDataType),
+  {'M','U','L','T','I','P','L','E'},
+  kAliHLTDataOriginPrivate
+};
+
 /** data to file exchange subscriber */
 const AliHLTComponentDataType kAliHLTDataTypeFXSCalib = {
   sizeof(AliHLTComponentDataType),

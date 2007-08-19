@@ -71,6 +71,10 @@ class AliHLTMemoryFile;
  * @subsection alihltcomponent-opt-mehods Optional handlers
  * - @ref DoInit
  * - @ref DoDeinit
+ * - @ref GetOutputDataTypes
+ *   If the component has multiple output data types @ref GetOutputDataType
+ *   should return @ref kAliHLTMultipleDataType. The framework will invoke
+ *   @ref GetOutputDataTypes, a list can be filled.
  *
  * @subsection alihltcomponent-processing-mehods Data processing
  * 
@@ -323,6 +327,17 @@ class AliHLTComponent : public AliHLTLogging {
    * @return output data type
    */
   virtual AliHLTComponentDataType GetOutputDataType() = 0;
+
+  /**
+   * Get the output data types of the component.
+   * The function can be implemented to indicate multiple output data types
+   * in the target array.
+   * @ref GetOutputDataType must return @ref kAliHLTMultipleDataType in order
+   * to invoke this method.
+   * @param tgtList          list to receive the data types
+   * @return no of output data types, data types in the target list
+   */
+  virtual int GetOutputDataTypes(vector<AliHLTComponentDataType>& tgtList);
 
   /**
    * Get a ratio by how much the data volume is shrinked or enhanced.

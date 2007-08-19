@@ -304,6 +304,9 @@ extern "C" {
     kAliHLTAnyDataOrigin
   };
 
+  /** multiple output data types */
+  extern const AliHLTComponentDataType kAliHLTMultipleDataType;
+
   /** data to file exchange subscriber */
   extern const AliHLTComponentDataType kAliHLTDataTypeFXSCalib;
 
