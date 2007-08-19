@@ -39,11 +39,8 @@ ClassImp(AliHLTFilePublisher)
 AliHLTFilePublisher::AliHLTFilePublisher()
   :
   AliHLTDataSource(),
-  fFileNames(),
-  fFiles(),
   fpCurrent(NULL),
-  fDataType(kAliHLTVoidDataType),
-  fSpecification(~(AliHLTUInt32_t)0),
+  fEvents(),
   fMaxSize(0)
 {
   // see header file for class documentation
@@ -54,29 +51,7 @@ AliHLTFilePublisher::AliHLTFilePublisher()
 
   // make the lists owners of their objects in order to automatically
   // de-allocate the objects
-  fFileNames.SetOwner();
-  fFiles.SetOwner();
-}
-
-AliHLTFilePublisher::AliHLTFilePublisher(const AliHLTFilePublisher&)
-  :
-  AliHLTDataSource(),
-  fFileNames(),
-  fFiles(),
-  fpCurrent(NULL),
-  fDataType(kAliHLTVoidDataType),
-  fSpecification(0),
-  fMaxSize(0)
-{
-  // see header file for class documentation
-  HLTFatal("copy constructor untested");
-}
-
-AliHLTFilePublisher& AliHLTFilePublisher::operator=(const AliHLTFilePublisher&)
-{ 
-  // see header file for class documentation
-  HLTFatal("assignment operator untested");
-  return *this;
+  fEvents.SetOwner();
 }
 
 AliHLTFilePublisher::~AliHLTFilePublisher()
@@ -96,7 +71,7 @@ const char* AliHLTFilePublisher::GetComponentID()
 AliHLTComponentDataType AliHLTFilePublisher::GetOutputDataType()
 {
   // see header file for class documentation
-  return fDataType;
+  return kAliHLTVoidDataType;
 }
 
 void AliHLTFilePublisher::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
@@ -120,6 +95,9 @@ int AliHLTFilePublisher::DoInit( int argc, const char** argv )
   int iResult=0;
   TString argument="";
   int bMissingParam=0;
+  AliHLTComponentDataType currDataType=kAliHLTVoidDataType;
+  AliHLTUInt32_t          currSpecification=kAliHLTVoidDataSpec;
+  EventFiles*             pCurrEvent=NULL;
   for (int i=0; i<argc && iResult>=0; i++) {
     argument=argv[i];
     if (argument.IsNull()) continue;
@@ -127,9 +105,9 @@ int AliHLTFilePublisher::DoInit( int argc, const char** argv )
     // -datafile
     if (argument.CompareTo("-datafile")==0) {
       if ((bMissingParam=(++i>=argc))) break;
-      TObjString* parameter=new TObjString(argv[i]);
-      if (parameter) {
-	fFileNames.Add(parameter);
+      FileDesc* pDesc=new FileDesc(argv[i], currDataType, currSpecification);
+      if (pDesc) {
+	iResult=InsertFile(pCurrEvent, pDesc);
       } else {
 	iResult=-ENOMEM;
       }
@@ -142,9 +120,9 @@ int AliHLTFilePublisher::DoInit( int argc, const char** argv )
       // -datatype
     } else if (argument.CompareTo("-datatype")==0) {
       if ((bMissingParam=(++i>=argc))) break;
-      memcpy(&fDataType.fID, argv[i], TMath::Min(kAliHLTComponentDataTypefIDsize, (Int_t)strlen(argv[i])));
+      memcpy(&currDataType.fID, argv[i], TMath::Min(kAliHLTComponentDataTypefIDsize, (Int_t)strlen(argv[i])));
       if ((bMissingParam=(++i>=argc))) break;
-      memcpy(&fDataType.fOrigin, argv[i], TMath::Min(kAliHLTComponentDataTypefOriginSize, (Int_t)strlen(argv[i])));
+      memcpy(&currDataType.fOrigin, argv[i], TMath::Min(kAliHLTComponentDataTypefOriginSize, (Int_t)strlen(argv[i])));
 
       // -dataspec
     } else if (argument.CompareTo("-dataspec")==0) {
@@ -152,14 +130,17 @@ int AliHLTFilePublisher::DoInit( int argc, const char** argv )
       TString parameter(argv[i]);
       parameter.Remove(TString::kLeading, ' '); // remove all blanks
       if (parameter.IsDigit()) {
-	fSpecification=(AliHLTUInt32_t)parameter.Atoi();
+	currSpecification=(AliHLTUInt32_t)parameter.Atoi();
       } else if (parameter.BeginsWith("0x") &&
 		 parameter.Replace(0,2,"",0).IsHex()) {
-	sscanf(parameter.Data(),"%x", &fSpecification);
+	sscanf(parameter.Data(),"%x", &currSpecification);
       } else {
 	HLTError("wrong parameter for argument %s, number expected", argument.Data());
 	iResult=-EINVAL;
       }
+      // -nextevent
+    } else if (argument.CompareTo("-nextevent")==0) {
+      InsertEvent(pCurrEvent);
     } else {
       if ((iResult=ScanArgument(argc-i, &argv[i]))==-EINVAL) {
 	HLTError("unknown argument %s", argument.Data());
@@ -173,17 +154,51 @@ int AliHLTFilePublisher::DoInit( int argc, const char** argv )
       }
     }
   }
+  InsertEvent(pCurrEvent);
+
   if (bMissingParam) {
     HLTError("missing parameter for argument %s", argument.Data());
     iResult=-EINVAL;
   }
-  if (fFileNames.GetSize()==0) {
+  if (fEvents.GetSize()==0) {
     HLTError("the publisher needs at least one file argument");
     iResult=-EINVAL;
   }
   if (iResult>=0) iResult=OpenFiles();
   if (iResult<0) {
-    fFileNames.Clear();
+    fEvents.Clear();
+  }
+  return iResult;
+}
+
+int AliHLTFilePublisher::InsertFile(EventFiles* &pCurrEvent, FileDesc* pDesc)
+{
+  int iResult=0;
+  if (pDesc) {
+    if (pCurrEvent==NULL) {
+      pCurrEvent=new EventFiles;
+      if (pCurrEvent!=NULL) {
+      } else {
+	iResult=-ENOMEM;
+      }
+    }
+    if (iResult>=0 && pCurrEvent!=NULL) {
+      HLTDebug("Insert file %p to event %p", pDesc, pCurrEvent);
+      pCurrEvent->Add(pDesc);
+    }
+  } else {
+    iResult=-EINVAL;
+  }
+  return iResult;
+}
+
+int AliHLTFilePublisher::InsertEvent(EventFiles* &pEvent)
+{
+  int iResult=0;
+  if (pEvent) {
+    HLTDebug("Inserted event %p", pEvent);
+    fEvents.Add(pEvent);
+    pEvent=NULL;
   }
   return iResult;
 }
@@ -203,22 +218,31 @@ int AliHLTFilePublisher::OpenFiles()
 {
   // see header file for class documentation
   int iResult=0;
-  TObjLink *lnk=fFileNames.FirstLink();
+  TObjLink *lnk=fEvents.FirstLink();
   while (lnk && iResult>=0) {
-    TObjString* pFileName=(TObjString*)lnk->GetObject();
-    if (pFileName) {
-      TString fullFN= pFileName->GetString() + "?filetype=raw";
-      TFile* pFile = new TFile(fullFN);
-      if (pFile) {
-	if (pFile->IsZombie()==0) {
-	  fFiles.Add(pFile);
-	  if (pFile->GetSize()>fMaxSize) fMaxSize=pFile->GetSize();
-	} else {
-	  HLTError("can not open file %s", (pFileName->GetString()).Data());
-	  fFiles.Clear();
-	  iResult=-ENOENT;
+    EventFiles* pEventDesc=dynamic_cast<EventFiles*>(lnk->GetObject());
+    if (pEventDesc) {
+      HLTDebug("open files for event %p", pEventDesc);
+      TList& files=*pEventDesc; // type conversion operator defined
+      TObjLink *flnk=files.FirstLink();
+      int eventSize=0;
+      while (flnk && iResult>=0) {
+	FileDesc* pFileDesc=dynamic_cast<FileDesc*>(flnk->GetObject());
+	if (pFileDesc) {
+	  int size=pFileDesc->OpenFile();
+	  if (size<0) {
+	    iResult=size;
+	    HLTError("can not open file %s", pFileDesc->GetName());
+	  } else {
+	    eventSize+=size;
+	  }
 	}
+	flnk=flnk->Next();
       }
+      HLTDebug("event %p size %d", pEventDesc, eventSize);
+      if (fMaxSize<eventSize) fMaxSize=eventSize;
+    } else {
+      HLTError("can not get event descriptor for TObjLink");
     }
     lnk = lnk->Next();
   }
@@ -230,48 +254,62 @@ int AliHLTFilePublisher::DoDeinit()
 {
   // see header file for class documentation
   int iResult=0;
-  fFileNames.Clear();
-  fFiles.Clear();
+  fEvents.Clear();
   return iResult;
 }
 
 int AliHLTFilePublisher::GetEvent( const AliHLTComponentEventData& /*evtData*/,
 				   AliHLTComponentTriggerData& /*trigData*/,
-	      AliHLTUInt8_t* outputPtr, 
-	      AliHLTUInt32_t& size,
-	      vector<AliHLTComponentBlockData>& outputBlocks )
+				   AliHLTUInt8_t* outputPtr, 
+				   AliHLTUInt32_t& size,
+				   vector<AliHLTComponentBlockData>& outputBlocks )
 {
   int iResult=0;
   TObjLink *lnk=fpCurrent;
-  if (lnk==NULL) lnk=fFiles.FirstLink();
+  if (lnk==NULL) lnk=fEvents.FirstLink();
   fpCurrent=lnk;
   if (lnk) {
-    TFile* pFile=(TFile*)lnk->GetObject();
-    if (pFile) {
-      int iCopy=pFile->GetSize();
-      pFile->Seek(0);
-      if (iCopy<=(int)size) {
-      if (pFile->ReadBuffer((char*)outputPtr, iCopy)!=0) {
-	// ReadBuffer returns 1 in case of failure and 0 in case of success
-	iResult=-EIO;
-      } else {
-	AliHLTComponentBlockData bd;
-	FillBlockData(bd);
-	bd.fPtr=outputPtr;
-	bd.fOffset=0;
-	bd.fSize=iCopy;
-	bd.fDataType=fDataType;
-	bd.fSpecification=fSpecification;
-	outputBlocks.push_back(bd);
-	size=iCopy;
+    EventFiles* pEventDesc=dynamic_cast<EventFiles*>(lnk->GetObject());
+    if (pEventDesc) {
+      HLTDebug("publishing files for event %p", pEventDesc);
+      TList& files=*pEventDesc; // type conversion operator defined
+      TObjLink *flnk=files.FirstLink();
+      int iTotalSize=0;
+      while (flnk && iResult>=0) {
+	FileDesc* pFileDesc=dynamic_cast<FileDesc*>(flnk->GetObject());
+	TFile* pFile=NULL;
+	if (pFileDesc && (pFile=*pFileDesc)!=NULL) {
+	  int iCopy=pFile->GetSize();
+	  pFile->Seek(0);
+	  if (iCopy+iTotalSize<=(int)size) {
+	    if (pFile->ReadBuffer((char*)outputPtr+iTotalSize, iCopy)!=0) {
+	      // ReadBuffer returns 1 in case of failure and 0 in case of success
+	      iResult=-EIO;
+	    } else {
+	      AliHLTComponentBlockData bd;
+	      FillBlockData(bd);
+	      bd.fPtr=outputPtr;
+	      bd.fOffset=iTotalSize;
+	      bd.fSize=iCopy;
+	      bd.fDataType=*pFileDesc;      // type conversion operator defined
+	      bd.fSpecification=*pFileDesc; // type conversion operator defined
+	      outputBlocks.push_back(bd);
+	      iTotalSize+=iCopy;
+	    }
+	  } else {
+	    // output buffer too small, update GetOutputDataSize for the second trial
+	    fMaxSize=iCopy;
+	    iResult=-ENOSPC;
+	  }
+	} else {
+	  HLTError("no file available");
+	  iResult=-EFAULT;
+	}
+	flnk=flnk->Next();
       }
-      } else {
-	// output buffer too small, update GetOutputDataSize for the second trial
-	fMaxSize=iCopy;
-	iResult=-ENOSPC;
-      }
+      size=iTotalSize;
     } else {
-      HLTError("no file available");
+      HLTError("can not get event descriptor from list link");
       iResult=-EFAULT;
     }
   } else {
@@ -282,12 +320,42 @@ int AliHLTFilePublisher::GetEvent( const AliHLTComponentEventData& /*evtData*/,
   return iResult;
 }
 
-AliHLTComponentDataType AliHLTFilePublisher::GetCurrentDataType() const
+// AliHLTComponentDataType AliHLTFilePublisher::GetCurrentDataType() const
+// {
+//   return kAliHLTVoidDataType;
+// }
+
+// AliHLTUInt32_t          AliHLTFilePublisher::GetCurrentSpecification() const
+// {
+//   return 0;
+// }
+
+AliHLTFilePublisher::FileDesc::FileDesc(const char* name, AliHLTComponentDataType dt, AliHLTUInt32_t spec)
+  :
+  TObject(),
+  fName(name),
+  fpInstance(NULL),
+  fDataType(dt),
+  fSpecification(spec)
 {
-  return fDataType;
+}
+AliHLTFilePublisher::FileDesc::~FileDesc()
+{
+  if (fpInstance) delete fpInstance;
+  fpInstance=NULL;
 }
 
-AliHLTUInt32_t          AliHLTFilePublisher::GetCurrentSpecification() const
+int AliHLTFilePublisher::FileDesc::OpenFile()
 {
-  return fSpecification;
+  int iResult=0;
+  TString fullFN= fName + "?filetype=raw";
+  fpInstance = new TFile(fullFN);
+  if (fpInstance) {
+    if (fpInstance->IsZombie()==0) {
+      iResult=fpInstance->GetSize();
+    } else {
+      iResult=-ENOENT;
+    }
+  }
+  return iResult;
 }

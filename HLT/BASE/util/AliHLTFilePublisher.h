@@ -15,6 +15,7 @@
 */
 
 #include "AliHLTDataSource.h"
+#include <TFile.h>
 #include <TList.h>
 
 /**
@@ -31,27 +32,27 @@
  * \li -datafilelist <i> file pattern  </i> <br>
  *      not yet implemented
  * \li -datatype     <i> datatype   dataorigin </i> <br>
- *      data type ID and origin, e.g. <tt>-datatype CLUSTERS TPC </tt>
+ *      data type ID and origin, e.g. <tt>-datatype 'CLUSTERS' 'TPC ' </tt>
  * \li -dataspec     <i> specification </i> <br>
  *      data specification treated as decimal number or hex number if
  *      prepended by '0x'
+ * \li -nextevent
+ *      indicate files published by the next event
  *
  * Optional arguments:<br>
  *
  * The component needs at least one argument \em -datafile or \em -datafilelist.
  * Both can occur multiple times. The \em -datatype and \em -dataspec
  * parameters are valid for all files until the next occurrence of
- * \em -datatype/spec
+ * \em -datatype/spec.
+ * All files er published within one event, unless the \em -nexevent specifies
+ * where to break into multiple events.
  * @ingroup alihlt_component
  */
 class AliHLTFilePublisher : public AliHLTDataSource  {
  public:
   /** standard constructor */
   AliHLTFilePublisher();
-  /** not a valid copy constructor, defined according to effective C++ style */
-  AliHLTFilePublisher(const AliHLTFilePublisher&);
-  /** not a valid assignment op, but defined according to effective C++ style */
-  AliHLTFilePublisher& operator=(const AliHLTFilePublisher&);
   /** destructor */
   virtual ~AliHLTFilePublisher();
 
@@ -62,8 +63,8 @@ class AliHLTFilePublisher : public AliHLTDataSource  {
 
   /**
    * Open all files.
-   * Opens all files from the file name list @ref fFileNames and adds TFile
-   * opjects to the TFiles list.
+   * Opens all files for all events from the event list @ref fEvents and adds TFile
+   * opjects to the internal list.
    */
   int OpenFiles();
 
@@ -111,27 +112,114 @@ class AliHLTFilePublisher : public AliHLTDataSource  {
   /**
    * Get the data type which is set for the current file
    */
-  AliHLTComponentDataType GetCurrentDataType() const;
+  //AliHLTComponentDataType GetCurrentDataType() const;
 
   /**
    * Get the data specification which is set for the current file
    */
-  AliHLTUInt32_t          GetCurrentSpecification() const;
+  //AliHLTUInt32_t          GetCurrentSpecification() const;
   
  private:
-  /** list of file names */
-  TList                   fFileNames;                              // see above
-  /** list of opened files */
-  TList                   fFiles;                                  // see above
-  /** current positions in the file list */
-  TObjLink*               fpCurrent;                               //! transient
-  /** data type */
-  AliHLTComponentDataType fDataType;                               // see above
-  /** data specification */
-  AliHLTUInt32_t          fSpecification;                          // see above
-  /** the maximum buffer size i.e. size of the biggest file */
-  Int_t                   fMaxSize;                                // see above
+  /** prohibit copy constructor */
+  AliHLTFilePublisher(const AliHLTFilePublisher&);
+  /** prohibit assignment operator */
+  AliHLTFilePublisher& operator=(const AliHLTFilePublisher&);
 
-  ClassDef(AliHLTFilePublisher, 0)
+  /**
+   * File descriptor.
+   */
+  class FileDesc : public TObject {
+  public:
+    /** constructor not implemented */
+    FileDesc();
+    /** constructor to use */
+    FileDesc(const char* name, AliHLTComponentDataType dt, AliHLTUInt32_t spec);
+    /** destructor */
+    ~FileDesc();
+
+    /**
+     * Open the file.
+     * @return size of the file, neg. error code if failed
+     */
+    int OpenFile();
+
+    /**
+     * Get name of the file.
+     */
+    const char* GetName() {return fName.Data();}
+
+    // implicite type conversions
+    operator TFile*() const   {return fpInstance;}
+    operator AliHLTComponentDataType() {return fDataType;}
+    operator AliHLTUInt32_t() {return fSpecification;}
+
+  private:
+    /** prohibited copy constructor */
+    FileDesc(FileDesc&);
+    /** prohibited copy operator */
+    FileDesc& operator=(FileDesc&);
+
+    /** file name */
+    TString                 fName;                                 //! transient
+    /** file instance */
+    TFile*                  fpInstance;                            //! transient
+    /** data type */
+    AliHLTComponentDataType fDataType;                             //! transient
+    /** data specification */
+    AliHLTUInt32_t          fSpecification;                        //! transient
+  };
+
+  /**
+   * Compound to store all files and meta information for one event.
+   */
+  class EventFiles : public TObject {
+  public:
+    /** constructor */
+    EventFiles() : fFiles(), fSize(0) {fFiles.SetOwner();}
+    /** destructor */
+    ~EventFiles() {}
+
+    /**
+     * Add a file descriptor
+     */
+    void Add(TObject* pObj) {fFiles.Add(pObj);}
+
+    operator TList&() {return fFiles;}
+
+  private:
+    /** list of file names for the event */
+    TList fFiles;                                                  //! transient
+    /** size of all the files in that event */
+    Int_t fSize;                                                   //! transient
+  };
+
+  /**
+   * Insert a file descriptor into the event descriptor.
+   * If the event descriptor is NULL it is created before the file descriptor
+   * is inserted.
+   * @param pCurrEvent   reference of the event descriptor pointer
+   * @param pDesc        file decriptor
+   * @return neg. error value if failed
+   */
+  int InsertFile(EventFiles* &pCurrEvent, FileDesc* pDesc);
+
+  /**
+   * Insert an event.
+   * The event descriptor is added to the list and the reference is cleared.
+   * @param pEvent        event decriptor
+   * @return neg. error value if failed
+   */
+  int InsertEvent(EventFiles* &pEvent);
+
+  /** the current event */
+  TObjLink *fpCurrent;                                             //! transient
+
+  /** the list of events to be published */
+  TList fEvents;                                                   //! transient
+
+  /** the maximum buffer size i.e. size of the biggest file */
+  Int_t                   fMaxSize;                                //! transient
+
+  ClassDef(AliHLTFilePublisher, 1)
 };
 #endif
