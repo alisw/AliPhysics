@@ -28,6 +28,8 @@
 #include "AliHMPIDParam.h"
 #include <TRandom.h>
 
+extern TRandom *gRandom;
+
 ClassImp(AliHMPIDDigitizer)
 
 Bool_t AliHMPIDDigitizer::fgDoNoise=kFALSE;
@@ -83,7 +85,6 @@ void AliHMPIDDigitizer::Sdi2Dig(TClonesArray *pSdiLst,TObjArray *pDigLst)
   
   TClonesArray *pLst[7]; Int_t iCnt[7];
 
-  TRandom *rnd = new TRandom();  
   for(Int_t i=0;i<7;i++){
     pLst[i]=(TClonesArray*)(*pDigLst)[i];
     iCnt[i]=0; if(pLst[i]->GetEntries()!=0) AliErrorClass("Some of digits lists is not empty");         //in principle those lists should be empty                                                                       
@@ -95,7 +96,7 @@ void AliHMPIDDigitizer::Sdi2Dig(TClonesArray *pSdiLst,TObjArray *pDigLst)
     for (Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++)
       for (Int_t iPc=AliHMPIDParam::kMinPc;iPc<=AliHMPIDParam::kMaxPc;iPc++)
         for(Int_t iPx=AliHMPIDParam::kMinPx;iPx<=AliHMPIDParam::kMaxPx;iPx++)
-          for(Int_t iPy=AliHMPIDParam::kMinPy;iPy<=AliHMPIDParam::kMaxPy;iPy++) arrNoise[iCh][iPc][iPx][iPy] = rnd->Gaus(0,1);
+          for(Int_t iPy=AliHMPIDParam::kMinPy;iPy<=AliHMPIDParam::kMaxPy;iPy++) arrNoise[iCh][iPc][iPx][iPy] = gRandom->Gaus(0,1.1);
   }  
   
   pSdiLst->Sort();  
