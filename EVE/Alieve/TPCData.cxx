@@ -7,7 +7,6 @@
 #include <AliSimDigits.h>
 #include <AliTPCParam.h>
 #include <AliTPCRawStream.h>
-#include <AliTPCRawStreamOld.h>
 #include <TTree.h>
 
 using namespace Reve;
