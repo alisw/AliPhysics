@@ -16,7 +16,8 @@ using namespace std;
 int main(int argc, const char** argv)
 {
   
-  int n_loops = 200000;
+  //  int n_loops = 200000;
+  int n_loops = 1;
 
   clock_t  start;
   clock_t  end;
@@ -40,6 +41,9 @@ int main(int argc, const char** argv)
   fin.read (dataPtr,length);
   fin.close();
 
+  int cnt = 0;
+  int channelCnt = 0;
+
   start =clock();
  
   for(int i=0; i < n_loops; i++)
@@ -47,25 +51,44 @@ int main(int argc, const char** argv)
       decoder->SetMemory((UChar_t*)dataPtr, length);
       decoder->Decode();
  
-      while(decoder->NextChannel(&altrodata) == true)
+      
+      while(decoder->NextChannel(&altrodata) == true && channelCnt < 10)
 	{
+	  channelCnt ++;
+  decoder->PrintInfo(altrodata, altrodata.fDataSize +4);	   
 	 
 	  if(  altrodata.fDataSize != 0 )
 	    {
-  
-
+	      cnt = 0;
+	      
 	      while( altrodata.NextBunch(altrobunchPtr) == true)
 		{
-		  //cout << "altrobunch.fDataSize = "    << altrobunchPtr->fBunchSize   << endl;
-		  // cout << "altrobunch.fEndTimeBin = "  << altrobunchPtr->fEndTimeBin  << endl;
+		  printf("\n");
+
+		  if(cnt < 5)
+		    { 
+		      printf("\n");
+		      cout <<"cnt = "<< cnt <<endl;
+		      cout << "altrobunch.fDataSize = "    << altrobunchPtr->fBunchSize   << endl;
+		      cout << "altrobunch.fEndTimeBin = "  << altrobunchPtr->fEndTimeBin  << endl;
+		     
+		      for(int i=0; i<altrobunchPtr->fBunchSize+20; i++)
+			{
+			  if(i != 0 && i%4==0)
+			    {
+			      printf("\n");
+			    }
+			  printf("%d\t", altrobunchPtr->fData[i]);
+			}
+			
+		      printf("\n\n");
+		    }
+		  cnt ++; 
 		}
-	    //  printf("\n\n");
-	     
+
 	    }
 	}
-
-      //     end = clock();
-
+      
     }
 
   end = clock();

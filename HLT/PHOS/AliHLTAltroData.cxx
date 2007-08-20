@@ -13,7 +13,9 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+
 #include "AliHLTAltroData.h"
+
 
 AliHLTAltroData::AliHLTAltroData(): fData(0),
 				    fBunchData(0),
@@ -49,12 +51,18 @@ AliHLTAltroData::NextBunch(AliHLTAltroBunch *altroBunch)
 
       if(fWc < fDataSize)
 	{
-	  if(*fBunchData == 0){ fWc += 1;};
+	  
+	  //	  if(*fBunchData == 0)
+	  //	    {
+	  //	      fWc += 1;
+	  //	    }
+	  
 	  fWc += *fBunchData;
 	  altroBunch->fData = fData - *fBunchData -1; ;
 	  altroBunch->fBunchSize = *fBunchData -2;
 	  fBunchData --;
 	  altroBunch->fEndTimeBin = *fBunchData;
+	  cout <<  "*fBuncchData = " << *fBunchData << endl;
 	  fBunchData = fBunchData  -  (altroBunch->fBunchSize +1);
 
 
