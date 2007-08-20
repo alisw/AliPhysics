@@ -472,12 +472,14 @@ AH_TEMPLATE([HLT_SAMPLE],[hlt sample library])
 AC_ARG_ENABLE(sample,
   [AC_HELP_STRING([--disable-sample],
       [compile the sample library ])],
-  [sample_force=yes],[enable_sample=yes])
-if test "x$sample_force" = "xyes" ; then
-   enable_sample="yes"   
-elif test "x$have_aliroot" = "xno" ; then
-   enable_sample="no...requires.AliRoot"
-fi
+  [],
+  [if test "x$have_aliroot" = "xno" ; then
+     enable_sample="no...requires.AliRoot"
+   else
+     enable_sample=yes
+   fi
+  ])
+
 if test "x$enable_sample" = "xyes" ; then 
   AC_DEFINE(HLT_SAMPLE)
 fi
@@ -490,12 +492,13 @@ AH_TEMPLATE([HLT_UTIL],[HLT utility library])
 AC_ARG_ENABLE(util,
   [AC_HELP_STRING([--disable-util],
       [compile the util library ])],
-  [util_force=yes],[enable_util=yes])
-if test "x$util_force" = "xyes" ; then
-   enable_util="yes"   
-elif test "x$have_aliroot" = "xno" ; then
-   enable_util="no...requires.AliRoot"
-fi
+  [],
+  [if test "x$have_aliroot" = "xno" ; then
+     enable_util="no...requires.AliRoot"
+   else
+     enable_util=yes
+   fi
+  ])
 
 if test "x$enable_util" = "xyes" ; then 
   AC_DEFINE(HLT_UTIL)
@@ -509,14 +512,16 @@ AH_TEMPLATE([HLT_TPC],[hlt tpc library])
 AC_ARG_ENABLE(tpc,
   [AC_HELP_STRING([--disable-tpc],
       [compile the tpc library ])],
-  [tpc_force=yes],[enable_tpc=yes])
-if test "x$tpc_force" = "xyes" ; then
-   enable_tpc="yes"   
-elif test "x$have_aliroot" = "xno" ; then
-   enable_tpc="no...requires.AliRoot"
-elif test "x$have_alitpc" = "xno" ; then
-   enable_tpc="no...requires.AliRoot.TPC.libraries"
-fi
+  [],
+  [if test "x$have_aliroot" = "xno" ; then
+     enable_tpc="no...requires.AliRoot"
+   elif test "x$have_alitpc" = "xno" ; then
+     enable_tpc="no...requires.AliRoot.TPC.libraries"
+   else
+     enable_tpc=yes
+   fi
+  ])
+
 if test "x$enable_tpc" = "xyes" ; then 
   AC_DEFINE(HLT_TPC)
 fi
@@ -529,14 +534,16 @@ AH_TEMPLATE([HLT_PHOS],[hlt phos library])
 AC_ARG_ENABLE(phos,
   [AC_HELP_STRING([--disable-phos],
       [compile the phos library ])],
-  [phos_force=yes],[enable_phos=yes])
-if test "x$phos_force" = "xyes" ; then
-   enable_phos="yes"   
-elif test "x$have_aliroot" = "xno" ; then
-   enable_phos="no...requires.AliRoot"
-elif ! test "x$have_alicalorawstream" = "xyes"; then
-   enable_phos="no...requires.AliRoot>v4-05-07"
-fi
+  [],
+  [if test "x$have_aliroot" = "xno" ; then
+     enable_phos="no...requires.AliRoot"
+   elif ! test "x$have_alicalorawstream" = "xyes"; then
+     enable_phos="no...requires.AliRoot>v4-05-07"
+   else
+     enable_phos=yes
+   fi
+  ])
+
 if test "x$enable_phos" = "xyes" ; then 
   AC_DEFINE(HLT_PHOS)
 fi
@@ -549,12 +556,14 @@ AH_TEMPLATE([HLT_TRD],[hlt trd library])
 AC_ARG_ENABLE(trd,
   [AC_HELP_STRING([--disable-trd],
       [compile the trd library ])],
-  [trd_force=yes],[enable_trd=yes])
-if test "x$trd_force" = "xyes" ; then
-   enable_trd="yes"   
-elif test "x$have_aliroot" = "xno" ; then
-   enable_trd="no...requires.AliRoot"
-fi
+  [],
+  [if test "x$have_aliroot" = "xno" ; then
+     enable_trd="no...requires.AliRoot"
+   else
+     enable_trd=yes
+   fi
+  ])
+
 if test "x$enable_trd" = "xyes" ; then 
   AC_DEFINE(HLT_TRD)
 fi
@@ -567,12 +576,14 @@ AH_TEMPLATE([HLT_MUON],[hlt dimuon library])
 AC_ARG_ENABLE(dimuon,
   [AC_HELP_STRING([--disable-dimuon],
       [compile the dimuon library ])],
-  [dimuon_force=yes],[enable_dimuon=yes])
-if test "x$dimuon_force" = "xyes" ; then
-   enable_dimuon="yes"   
-elif test "x$have_aliroot" = "xno" ; then
-   enable_dimuon="no...requires.AliRoot"
-fi
+  [],
+  [if test "x$have_aliroot" = "xno" ; then
+     enable_dimuon="no...requires.AliRoot"
+   else
+     enable_dimuon=yes
+   fi
+  ])
+
 if test "x$enable_dimuon" = "xyes" ; then 
   AC_DEFINE(HLT_MUON)
 fi
