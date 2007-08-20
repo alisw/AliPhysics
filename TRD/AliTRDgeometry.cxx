@@ -1699,79 +1699,79 @@ Double_t AliTRDgeometry::GetCol0(Int_t p)
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDgeometry::GetPadRowFromMCM(Int_t irob, Int_t imcm) const
-{
+//Int_t AliTRDgeometry::GetPadRowFromMCM(Int_t irob, Int_t imcm) const
+//{
   //
   // Return on which row this mcm sits 
   //
-
-  return fgkMCMrow*(irob/2) + imcm/fgkMCMrow;
-
-}
+//
+//  return fgkMCMrow*(irob/2) + imcm/fgkMCMrow;
+//
+//}
 
 //_____________________________________________________________________________
-Int_t AliTRDgeometry::GetPadColFromADC(Int_t irob, Int_t imcm, Int_t iadc) const
-{
+//Int_t AliTRDgeometry::GetPadColFromADC(Int_t irob, Int_t imcm, Int_t iadc) const
+//{
   //
   // Return which pad is connected to this adc channel. return -1 if it
   // is one of the not directly connected adc channels (0, 1 20)
   //
-
-  if (iadc < 2 || iadc > 19 ) return -1;
-
-  return (iadc-2) + (imcm%fgkMCMrow)*fgkPadmax + GetRobSide(irob)*fgkColmax/2;
-
-}
+//
+//  if (iadc < 2 || iadc > 19 ) return -1;
+//
+//  return (iadc-2) + (imcm%fgkMCMrow)*fgkPadmax + GetRobSide(irob)*fgkColmax/2;
+//
+//}
 
 //_____________________________________________________________________________
-Int_t AliTRDgeometry::GetMCMfromPad(Int_t irow, Int_t icol) const
-{
+//Int_t AliTRDgeometry::GetMCMfromPad(Int_t irow, Int_t icol) const
+//{
   //
   // Return on which mcm this pad is
   //
-
-  if ( irow < 0 || icol < 0 || irow > fgkRowmaxC1 || icol > fgkColmax ) return -1;
-
-  return (icol%(fgkColmax/2))/fgkPadmax + fgkMCMrow*(irow%fgkMCMrow);
-
-}
+//
+//  if ( irow < 0 || icol < 0 || irow > fgkRowmaxC1 || icol > fgkColmax ) return -1;
+//
+//  return (icol%(fgkColmax/2))/fgkPadmax + fgkMCMrow*(irow%fgkMCMrow);
+//
+//}
 
 //_____________________________________________________________________________
-Int_t AliTRDgeometry::GetROBfromPad(Int_t irow, Int_t icol) const
-{
+//Int_t AliTRDgeometry::GetROBfromPad(Int_t irow, Int_t icol) const
+//{
   //
   // Return on which rob this pad is
   //
-
-  return (irow/fgkMCMrow)*2 + GetColSide(icol);
-
-}
+//
+//  return (irow/fgkMCMrow)*2 + GetColSide(icol);
+//
+//}
 
 //_____________________________________________________________________________
-Int_t AliTRDgeometry::GetRobSide(Int_t irob) const
-{
+//Int_t AliTRDgeometry::GetRobSide(Int_t irob) const
+//{
   //
   // Return on which side this rob sits (A side = 0, B side = 1)
   //
-
-  if ( irob < 0 || irob >= fgkROBmaxC1 ) return -1;
-
-  return irob%2;
-
-}
+//
+//  if ( irob < 0 || irob >= fgkROBmaxC1 ) return -1;
+//
+//  return irob%2;
+//
+//}
 
 //_____________________________________________________________________________
-Int_t AliTRDgeometry::GetColSide(Int_t icol) const
-{
+//Int_t AliTRDgeometry::GetColSide(Int_t icol) const
+//{
   //
   // Return on which side this column sits (A side = 0, B side = 1)
   //
-
-  if ( icol < 0 || icol >= fgkColmax ) return -1;
-
-  return icol/(fgkColmax/2);
-
-}
+//
+//  if ( icol < 0 || icol >= fgkColmax ) return -1;
+//
+//  return icol/(fgkColmax/2);
+//
+//}
 
 //_____________________________________________________________________________
 Bool_t AliTRDgeometry::ReadGeoMatrices()

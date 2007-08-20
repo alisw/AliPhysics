@@ -50,6 +50,9 @@
 
 #include "AliTRDSignalIndex.h"
 #include "AliTRDRawStream.h"
+#include "AliTRDRawStreamV2.h"
+
+#include "AliTRDfeeParam.h"
 
 ClassImp(AliTRDclusterizerV2)
 
@@ -67,6 +70,7 @@ AliTRDclusterizerV2::AliTRDclusterizerV2()
   // AliTRDclusterizerV2 default constructor
   //
 
+  fRawVersion = AliTRDfeeParam::Instance()->GetRAWversion();
 }
 
 //_____________________________________________________________________________
@@ -85,6 +89,8 @@ AliTRDclusterizerV2::AliTRDclusterizerV2(const Text_t *name, const Text_t *title
 
   fDigitsManager->CreateArrays();
   fGeometry = new AliTRDgeometry;
+
+  fRawVersion = AliTRDfeeParam::Instance()->GetRAWversion();
 }
 
 //_____________________________________________________________________________
@@ -272,6 +278,7 @@ Bool_t AliTRDclusterizerV2::MakeClusters()
 	  fDigitsManager->BuildIndexes(i);
 	}
 
+      Bool_t fR = kFALSE;
       if (indexes->HasEntry())
 	{
 	  if (fAddLabels)
@@ -283,8 +290,14 @@ Bool_t AliTRDclusterizerV2::MakeClusters()
 		  tracksIn->Expand();
 		}
 	    }
-	  Bool_t fR = MakeClusters(i);
+	  fR = MakeClusters(i);
 	  fReturn = fR && fReturn;
+	}
+
+      if (fR == kFALSE)
+	{
+	  WriteClusters(i);
+	  ResetRecPoints();
 	}
       //digitsIn->Compress(1,0);
       // no compress just remove
@@ -319,9 +332,12 @@ Bool_t AliTRDclusterizerV2::Raw2Clusters(AliRawReader *rawReader)
       fDigitsManager->CreateArrays();
     }
 
-  AliTRDRawStream input(rawReader);
+  //AliTRDRawStream input(rawReader);
+  AliTRDRawStreamV2 input(rawReader);
   input.SetRawVersion( fRawVersion );
   input.Init();
+
+  AliInfo(Form("Stream version: %s", input.IsA()->GetName()));
 
   // Loop through the digits
   Int_t lastdet = -1;
@@ -337,8 +353,14 @@ Bool_t AliTRDclusterizerV2::Raw2Clusters(AliRawReader *rawReader)
 	  if (lastdet != -1)
 	    {
 	      digits = fDigitsManager->GetDigits(lastdet);
+	      Bool_t iclusterBranch = kFALSE;
 	      if (indexes->HasEntry())
-		MakeClusters(lastdet);
+		iclusterBranch = MakeClusters(lastdet);
+	      if (iclusterBranch == kFALSE)
+		{
+		  WriteClusters(lastdet);
+		  ResetRecPoints();
+		}
 	    }
 
 	  if (digits)
@@ -399,7 +421,15 @@ Bool_t AliTRDclusterizerV2::Raw2Clusters(AliRawReader *rawReader)
 
   if (lastdet != -1)
     {
-      MakeClusters(lastdet);
+      Bool_t iclusterBranch = kFALSE;
+      if (indexes->HasEntry())
+	iclusterBranch = MakeClusters(lastdet);
+      if (iclusterBranch == kFALSE)
+	{
+	  WriteClusters(lastdet);
+	  ResetRecPoints();
+	}
+      //MakeClusters(lastdet);
       if (digits)
 	{
 	  fDigitsManager->RemoveDigits(lastdet);
@@ -432,15 +462,24 @@ Bool_t AliTRDclusterizerV2::Raw2ClustersChamber(AliRawReader *rawReader)
 
   fDigitsManager->SetUseDictionaries(fAddLabels);
 
-  AliTRDRawStream input(rawReader);
+  //AliTRDRawStream input(rawReader);
+  AliTRDRawStreamV2 input(rawReader);
   input.SetRawVersion( fRawVersion );
   input.Init();
+
+  AliInfo(Form("Stream version: %s", input.IsA()->GetName()));
   
   Int_t det    = 0;
   while ((det = input.NextChamber(fDigitsManager)) >= 0)
     {
+      Bool_t iclusterBranch = kFALSE;
       if (fDigitsManager->GetIndexes(det)->HasEntry())
-	MakeClusters(det);
+	iclusterBranch = MakeClusters(det);
+      if (iclusterBranch == kFALSE)
+	{
+	  WriteClusters(det);
+	  ResetRecPoints();
+	}
       fDigitsManager->RemoveDigits(det);
       fDigitsManager->RemoveDictionaries(det);      
       fDigitsManager->ClearIndexes(det);
@@ -495,7 +534,9 @@ Bool_t AliTRDclusterizerV2::MakeClusters(Int_t det)
   }
 
   // ADC thresholds
-  Float_t ADCthreshold   = simParam->GetADCthreshold();
+  //  Float_t ADCthreshold   = simParam->GetADCthreshold();
+  Float_t ADCthreshold   = 0; // There is no ADC threshold anymore, and simParam should not be used ni clusterizer. KO
+
   // Threshold value for the maximum
   Float_t maxThresh      = recParam->GetClusMaxThresh();
   // Threshold value for the digit signal
@@ -1000,6 +1041,7 @@ void AliTRDclusterizerV2::Transform(AliTRDdataArrayI *digitsIn
       if (recParam->TCOn()) {
 	DeConvExp(inADC,outADC,nTimeTotal,recParam->GetTCnexp());
       }
+
       indexesIn->ResetTbinCounter();
       while (indexesIn->NextTbinIndex(iTime))
 	{

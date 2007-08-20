@@ -32,7 +32,6 @@
 #include "AliTRDReconstructor.h"
 #include "AliTRDclusterizerV1.h"
 #include "AliTRDclusterizerV2.h"
-//#include "AliTRDclusterizerV2xMP.h"
 #include "AliTRDtracker.h"
 #include "AliTRDpidESD.h"
 #include "AliTRDgtuTrack.h"
@@ -129,7 +128,6 @@ void AliTRDReconstructor::Reconstruct(AliRawReader *rawReader
   clusterer.OpenOutput(clusterTree);
   clusterer.SetAddLabels(kFALSE);
   clusterer.Raw2ClustersChamber(rawReader);
-
 }
 
 //_____________________________________________________________________________
@@ -141,12 +139,11 @@ void AliTRDReconstructor::Reconstruct(TTree *digitsTree
   //
   AliInfo("Reconstruct TRD clusters from Digits [Digit TTree -> Cluster TTree]");
 
-  AliTRDclusterizerV1 clusterer("clusterer","TRD clusterizer");
-  //AliTRDclusterizerV2 clusterer("clusterer","TRD clusterizer");
+  //AliTRDclusterizerV1 clusterer("clusterer","TRD clusterizer");
+  AliTRDclusterizerV2 clusterer("clusterer","TRD clusterizer");
   clusterer.OpenOutput(clusterTree);
   clusterer.ReadDigits(digitsTree);
   clusterer.MakeClusters();
-
 }
 
 //_____________________________________________________________________________

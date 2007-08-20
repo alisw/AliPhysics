@@ -224,7 +224,7 @@ Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
         detRecPoints->AddLast(c);
       }
       else {
-        AliError("Attempt to write a cluster with unexpected detector index\n");
+        AliError(Form("Attempt to write a cluster with unexpected detector index: got=%d expected=%d\n", c->GetDetector(), det));
       }
     }
 
@@ -233,6 +233,8 @@ Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
 
     delete detRecPoints;
 
+    //AliInfo(Form("Writing %d clusters to tree", nRecPoints));
+    
     return kTRUE;
 
   }

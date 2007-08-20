@@ -13,22 +13,81 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-*/
-
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 //  TRD MCM (Multi Chip Module) simulator                                    //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <TMath.h>
+/* $Id$ */
 
+/*
+
+  New release on 2007/08/17
+
+AliTRDmcmSim is now stably working and zero suppression function seems ok.
+From now, the default version of raw data is set to 3 in AliTRDfeeParam.
+
+The following internal parameters were abolished because it is useless and
+made trouble:
+
+   fColOfADCbeg
+   fColOfADCend
+
+GetCol member was modified accordingly. 
+
+New member function DumpData was prepared for diagnostics.
+
+ZSMapping member function was debugged. It was causing crash due to
+wrong indexing in 1 dimensional numbering. Also code was shaped up better.
+
+*/
+
+/*Semi-final version of TRD raw data simulation code with zero suppression (ZS)
+similar to TRD FEE. ZS is realized by the class group:
+
+  AliTRDfeeParam
+  AliTRDmcmSim
+  AliTRDrawData
+
+AliTRDfeeParam has been modified to have more parameters like raw data
+production version and so on. AliTRDmcmSim is new class and this is the core
+of MCM (PASA+TRAP) simulator. It has still very simple function and it will be
+another project to improve this to make it closer to the reall FEE.
+AliTRDrawData has been modified to use new class AliTRDmcmSim.
+
+These modifications were tested on Aug. 02 HEAD version that code itself
+compiles. I'm sure there must be still bugs and we need testing by as many as
+possible persons now. Especially it seems HLT part is impacted by problems
+because some parameters were moved from AliTRDrawData to AliTRDfeeParam (like
+fRawVersion disappeared from AliTRDrawData).
+
+In TRD definition, we have now 4 raw data versions.
+
+  0 very old offline version (by Bogdan)
+  1 test version (no zero suppression)
+  2 final version (no zero suppression)
+  3 test version (with zero suppression)
+
+The default is still set to 2 in AliTRDfeeParam::fgkRAWversion and it uses
+previously existing codes. If you set this to 3, AliTRDrawData changes behavior
+to use AliTRDmcmSim with ZS.
+
+Plan is after we make sure it works stably, we delete AliTRDmcm which is obsolete.
+However it still take time because tarcklet part is not yet touched.
+The default raw version is 2.
+
+                                                                 Ken Oyama
+*/
+
+#include <fstream>
+#include <TMath.h>
 #include "AliLog.h"
 #include "AliTRDmcmSim.h"
 #include "AliTRDfeeParam.h"
+#include "AliTRDSimParam.h"
 #include "AliTRDgeometry.h"
+#include "AliTRDcalibDB.h"
 
 ClassImp(AliTRDmcmSim)
 
@@ -36,6 +95,8 @@ ClassImp(AliTRDmcmSim)
 AliTRDmcmSim::AliTRDmcmSim() :TObject()
   ,fInitialized(kFALSE)
   ,fFeeParam(NULL)
+  ,fSimParam(NULL)
+  ,fCal(NULL)
   ,fGeo(NULL)
   ,fChaId(-1)
   ,fSector(-1)
@@ -46,8 +107,6 @@ AliTRDmcmSim::AliTRDmcmSim() :TObject()
   ,fNADC(-1)
   ,fNTimeBin(-1)
   ,fRow(-1)
-  ,fColOfADCbeg(-1)
-  ,fColOfADCend(-1)
   ,fADCR(NULL)
   ,fADCF(NULL)
   ,fZSM(NULL)
@@ -88,6 +147,8 @@ void AliTRDmcmSim::Init( Int_t cha_id, Int_t rob_pos, Int_t mcm_pos )
   // fADC array will be reused with filled by zero
 
   fFeeParam      = AliTRDfeeParam::Instance();
+  fSimParam      = AliTRDSimParam::Instance();
+  fCal           = AliTRDcalibDB::Instance();
   fGeo           = new AliTRDgeometry();
   fChaId         = cha_id;
   fSector        = fGeo->GetSector( fChaId );
@@ -96,10 +157,8 @@ void AliTRDmcmSim::Init( Int_t cha_id, Int_t rob_pos, Int_t mcm_pos )
   fRobPos        = rob_pos;
   fMcmPos        = mcm_pos;
   fNADC          = fFeeParam->GetNadcMcm();
-  fNTimeBin      = fFeeParam->GetNtimebin();
+  fNTimeBin      = fCal->GetNumberOfTimeBins();
   fRow           = fFeeParam->GetPadRowFromMCM( fRobPos, fMcmPos );
-  fColOfADCbeg   = fFeeParam->GetPadColFromADC( fRobPos, fMcmPos, 0 );
-  fColOfADCend   = fFeeParam->GetPadColFromADC( fRobPos, fMcmPos, fNADC-1 );
 
   // Allocate ADC data memory if not yet done
   if( fADCR == NULL ) {
@@ -123,8 +182,17 @@ void AliTRDmcmSim::Init( Int_t cha_id, Int_t rob_pos, Int_t mcm_pos )
     }
     fZSM1Dim[iadc] = 1;      // Default unread = 1
   }
-
+  
   fInitialized = kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliTRDmcmSim::CheckInitialized()
+{
+  if( ! fInitialized ) {
+    AliDebug(2, Form ("AliTRDmcmSim is not initialized but function other than Init() is called."));
+  }
+  return fInitialized;
 }
 
 //_____________________________________________________________________________
@@ -132,10 +200,7 @@ void AliTRDmcmSim::SetData( Int_t iadc, Int_t *adc )
 {
   // Store ADC data into array of raw data
 
-  if( ! fInitialized ) {
-    //Log (Form ("Error: AliTRDmcmSim is not initialized but setData is called."));
-    return;
-  }
+  if( !CheckInitialized() ) return;
 
   if( iadc < 0 || iadc >= fNADC ) {
     //Log (Form ("Error: iadc is out of range (should be 0 to %d).", fNADC-1));
@@ -152,10 +217,7 @@ void AliTRDmcmSim::SetData( Int_t iadc, Int_t it, Int_t adc )
 {
   // Store ADC data into array of raw data
 
-  if( ! fInitialized ) {
-    //Log (Form ("Error: AliTRDmcmSim is not initialized but setData is called."));
-    return;
-  }
+  if( !CheckInitialized() ) return;
 
   if( iadc < 0 || iadc >= fNADC ) {
     //Log (Form ("Error: iadc is out of range (should be 0 to %d).", fNADC-1));
@@ -170,10 +232,7 @@ void AliTRDmcmSim::SetDataPedestal( Int_t iadc )
 {
   // Store ADC data into array of raw data
 
-  if( ! fInitialized ) {
-    //Log (Form ("Error: AliTRDmcmSim is not initialized but setData is called."));
-    return;
-  }
+  if( !CheckInitialized() ) return;
 
   if( iadc < 0 || iadc >= fNADC ) {
     //Log (Form ("Error: iadc is out of range (should be 0 to %d).", fNADC-1));
@@ -181,7 +240,7 @@ void AliTRDmcmSim::SetDataPedestal( Int_t iadc )
   }
 
   for( Int_t it = 0 ; it < fNTimeBin ; it++ ) {
-    fADCR[iadc][it] = fFeeParam->GetADCpedestal();
+    fADCR[iadc][it] = fSimParam->GetADCbaseline();
   }
 }
 
@@ -189,8 +248,9 @@ void AliTRDmcmSim::SetDataPedestal( Int_t iadc )
 Int_t AliTRDmcmSim::GetCol( Int_t iadc )
 {
   // Return column id of the pad for the given ADC channel
+  if( !CheckInitialized() ) return -1;
 
-  return (fColOfADCbeg - iadc);
+  return fFeeParam->GetPadColFromADC(fRobPos, fMcmPos, iadc);
 }
 
 
@@ -208,6 +268,8 @@ Int_t AliTRDmcmSim::ProduceRawStream( UInt_t *buf, Int_t maxSize )
   Int_t   of  = 0;  // Number of overflowed words
   Int_t   rawVer   = fFeeParam->GetRAWversion();
   Int_t **adc;
+
+  if( !CheckInitialized() ) return 0;
 
   if( fFeeParam->GetRAWstoreRaw() ) {
     adc = fADCR;
@@ -246,19 +308,19 @@ Int_t AliTRDmcmSim::ProduceRawStream( UInt_t *buf, Int_t maxSize )
   UInt_t aa=0, a1=0, a2=0, a3=0;
 
   for (Int_t iAdc = 0; iAdc < 21; iAdc++ ) {
-    if( rawVer>= 3 && fZSM1Dim[iAdc] == 1 ) continue; // suppressed
+    if( rawVer>= 3 && fZSM1Dim[iAdc] != 0 ) continue; // suppressed
     aa = !(iAdc & 1) + 2;
     for (Int_t iT = 0; iT < fNTimeBin; iT+=3 ) {
       a1 = ((iT    ) < fNTimeBin ) ? adc[iAdc][iT  ] : 0;
       a2 = ((iT + 1) < fNTimeBin ) ? adc[iAdc][iT+1] : 0;
       a3 = ((iT + 2) < fNTimeBin ) ? adc[iAdc][iT+2] : 0;
-    }
-    x = (a3 << 22) | (a2 << 12) | (a1 << 2) | aa;
-    if (nw < maxSize) {
-      buf[nw++] = x;
-    }
-    else {
-      of++;
+      x = (a3 << 22) | (a2 << 12) | (a1 << 2) | aa;
+      if (nw < maxSize) {
+	buf[nw++] = x;
+      }
+      else {
+	of++;
+      }
     }
   }
 
@@ -271,10 +333,7 @@ void AliTRDmcmSim::Filter()
 {
   // Apply digital filter
 
-  if( ! fInitialized ) {
-    // Log (Form ("Error: AliTRDmcmSim is not initialized but setData is called."));
-    return;
-  }
+  if( !CheckInitialized() ) return;
 
   // Initialize filtered data array with raw data
   for( Int_t iadc = 0 ; iadc < fNADC; iadc++ ) {
@@ -294,7 +353,7 @@ void AliTRDmcmSim::FilterPedestal()
 {
   // Apply pedestal filter
 
-  Int_t ap = fFeeParam->GetADCpedestal();      // ADC instrinsic pedestal
+  Int_t ap = fSimParam->GetADCbaseline();      // ADC instrinsic pedestal
   Int_t ep = fFeeParam->GetPFeffectPedestal(); // effective pedestal
   Int_t tc = fFeeParam->GetPFtimeConstant();   // this makes no sense yet
 
@@ -309,6 +368,8 @@ void AliTRDmcmSim::FilterPedestal()
 void AliTRDmcmSim::FilterGain()
 {
   // Apply gain filter (not implemented)
+  // Later it will be implemented because gain digital filiter will
+  // increase noise level.
 }
 
 //_____________________________________________________________________________
@@ -371,17 +432,25 @@ void AliTRDmcmSim::ZSMapping()
   Int_t EBIT = fFeeParam->GetEBsumIndThr();       // TRAP default = 0x28 (Tit=40)
   Int_t EBIL = fFeeParam->GetEBindLUT();          // TRAP default = 0xf0 (lookup table accept (I2,I1,I0)=(111) or (110) or (101) or (100))
   Int_t EBIN = fFeeParam->GetEBignoreNeighbour(); // TRAP default = 1 (no neighbor sensitivity)
+  Int_t ep   = AliTRDfeeParam::GetPFeffectPedestal();
+
+  if( !CheckInitialized() ) return;
 
   for( Int_t iadc = 1 ; iadc < fNADC-1; iadc++ ) {
     for( Int_t it = 0 ; it < fNTimeBin ; it++ ) {
 
-      // evaluate three conditions
-      Int_t I0 = ( fADCF[iadc][it] >=  fADCF[iadc-1][it] && fADCF[iadc][it] >=  fADCF[iadc+1][it] ) ? 0 : 1; // peak center detection
-      Int_t I1 = ( (fADCF[iadc-1][it] + fADCF[iadc][it] + fADCF[iadc+1][it]) > EBIT )               ? 0 : 1; // cluster
-      Int_t I2 = ( fADCF[iadc][it] > EBIS )                                                         ? 0 : 1; // absolute large peak
+      // Get ADC data currently in filter buffer
+      Int_t Ap = fADCF[iadc-1][it] - ep; // previous
+      Int_t Ac = fADCF[iadc  ][it] - ep; // current
+      Int_t An = fADCF[iadc+1][it] - ep; // next
 
-      Int_t I = I2 * 4 + I1 * 2 + I0; // Bit position in lookup table
-      Int_t D = (EBIL >> I) & 1;      // Looking up  (here D=0 means true and D=1 means false according to TRAP manual)
+      // evaluate three conditions
+      Int_t I0 = ( Ac >=  Ap && Ac >=  An ) ? 0 : 1; // peak center detection
+      Int_t I1 = ( Ap + Ac + An > EBIT )    ? 0 : 1; // cluster
+      Int_t I2 = ( Ac > EBIS )              ? 0 : 1; // absolute large peak
+
+      Int_t I = I2 * 4 + I1 * 2 + I0;    // Bit position in lookup table
+      Int_t D = (EBIL >> I) & 1;         // Looking up  (here D=0 means true and D=1 means false according to TRAP manual)
 
       fZSM[iadc][it] &= D;
       if( EBIN == 0 ) {  // turn on neighboring ADCs
@@ -394,7 +463,73 @@ void AliTRDmcmSim::ZSMapping()
   // do 1 dim projection
   for( Int_t iadc = 0 ; iadc < fNADC; iadc++ ) {
     for( Int_t it = 0 ; it < fNTimeBin ; it++ ) {
-      fZSM1Dim[iadc] &= fZSM[iadc+1][it];
+      fZSM1Dim[iadc] &= fZSM[iadc][it];
+    }
+  }
+}
+
+//_____________________________________________________________________________
+void AliTRDmcmSim::DumpData( char *f, char *target )
+{
+  // Dump data stored (for debugging).
+  // target should contain one or multiple of the following characters
+  //   R   for raw data
+  //   F   for filtered data
+  //   Z   for zero suppression map
+  //   S   Raw dat astream
+  // other characters are simply ignored
+  UInt_t tempbuf[1024];
+
+  if( !CheckInitialized() ) return;
+
+  std::ofstream of( f, std::ios::out | std::ios::app );
+  of << Form("AliTRDmcmSim::DumpData det=%03d sm=%02d stack=%d layer=%d rob=%d mcm=%02d\n",
+	     fChaId, fSector, fStack, fLayer, fRobPos, fMcmPos );
+
+  for( int t=0 ; target[t] != 0 ; t++ ) {
+    switch( target[t] ) {
+    case 'R' :
+    case 'r' :
+      of << Form("fADCR (raw ADC data)\n");
+      for( Int_t iadc = 0 ; iadc < fNADC; iadc++ ) {
+	of << Form("  ADC %02d: ", iadc);
+	for( Int_t it = 0 ; it < fNTimeBin ; it++ ) {
+	  of << Form("% 4d",  fADCR[iadc][it]);
+	}
+	of << Form("\n");
+      }
+      break;
+    case 'F' :
+    case 'f' :
+      of << Form("fADCF (filtered ADC data)\n");
+      for( Int_t iadc = 0 ; iadc < fNADC; iadc++ ) {
+	of << Form("  ADC %02d: ", iadc);
+	for( Int_t it = 0 ; it < fNTimeBin ; it++ ) {
+	  of << Form("% 4d",  fADCF[iadc][it]);
+	}
+	of << Form("\n");
+      }
+      break;
+    case 'Z' :
+    case 'z' :
+      of << Form("fZSM and fZSM1Dim (Zero Suppression Map)\n");
+      for( Int_t iadc = 0 ; iadc < fNADC; iadc++ ) {
+	of << Form("  ADC %02d: ", iadc);
+	if( fZSM1Dim[iadc] == 0 ) { of << " R   " ; } else { of << " .   "; } // R:read .:suppressed
+	for( Int_t it = 0 ; it < fNTimeBin ; it++ ) {
+	  if( fZSM[iadc][it] == 0 ) { of << " R"; } else { of << " ."; } // R:read .:suppressed
+	}
+	of << Form("\n");
+      }
+      break;
+    case 'S' :
+    case 's' :
+      Int_t s = ProduceRawStream( tempbuf, 1024 ); 
+      of << Form("Stream for Raw Simulation size=%d rawver=%d\n", s, fFeeParam->GetRAWversion());
+      of << Form("  address  data\n");
+      for( int i = 0 ; i < s ; i++ ) {
+	of << Form("  %04x     %08x\n", i, tempbuf[i]);
+      }
     }
   }
 }
@@ -460,18 +595,12 @@ void AliTRDmcmSim::FilterSimDeConvExpD(Int_t *source, Int_t *target, Int_t n, In
   // source will not be changed
   //
 
-  Int_t i = 0;
-
+  Int_t i        = 0;
   Int_t fAlphaL  = 0;
   Int_t fAlphaS  = 0;
-  Int_t fLambdaL = 0;
-  Int_t fLambdaS = 0;
   Int_t fTailPed = 0;
-
   Int_t iAlphaL  = 0;
   Int_t iAlphaS  = 0;
-  Int_t iLambdaL = 0;
-  Int_t iLambdaS = 0;
 
   // FilterOpt.C (aliroot@pel:/homel/aliroot/root/work/beamt/CERN02)
   // initialize (coefficient = alpha, rates = lambda)
@@ -482,10 +611,10 @@ void AliTRDmcmSim::FilterSimDeConvExpD(Int_t *source, Int_t *target, Int_t n, In
   Double_t c1 = (Double_t)fFeeParam->GetTFc1();
   Double_t c2 = (Double_t)fFeeParam->GetTFc2();
 
-  fLambdaL = (Int_t)((TMath::Exp(-dt/r1) - 0.75) * 2048.0);
-  fLambdaS = (Int_t)((TMath::Exp(-dt/r2) - 0.25) * 2048.0);
-  iLambdaL = fLambdaL & 0x01FF; iLambdaL |= 0x0600; 	//  9 bit paramter + fixed bits
-  iLambdaS = fLambdaS & 0x01FF; iLambdaS |= 0x0200; 	//  9 bit paramter + fixed bits
+  Int_t fLambdaL = (Int_t)((TMath::Exp(-dt/r1) - 0.75) * 2048.0);
+  Int_t fLambdaS = (Int_t)((TMath::Exp(-dt/r2) - 0.25) * 2048.0);
+  Int_t iLambdaL = fLambdaL & 0x01FF; iLambdaL |= 0x0600; //  9 bit paramter + fixed bits
+  Int_t iLambdaS = fLambdaS & 0x01FF; iLambdaS |= 0x0200; //  9 bit paramter + fixed bits
 
   if (nexp == 1) {
     fAlphaL = (Int_t) (c1 * 2048.0);
@@ -527,8 +656,8 @@ void AliTRDmcmSim::FilterSimDeConvExpD(Int_t *source, Int_t *target, Int_t n, In
 
   for (i = 0; i < n; i++) {
 
-    result = (source[i] - correction);
-    if (result < 0) {			        
+    result = (source[i]  - correction);
+    if (result < 0) { // Too much undershoot
       result = 0;
     }
 

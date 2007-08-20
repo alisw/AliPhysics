@@ -66,13 +66,13 @@ class AliTRDgeometry : public AliGeometry {
           Double_t GetRow0(Int_t p, Int_t c, Int_t /*s*/);
           Double_t GetCol0(Int_t p);
 
-  // Translation from MCM to Pad and vice versa
-  virtual Int_t    GetPadRowFromMCM(Int_t irob, Int_t imcm) const;
-  virtual Int_t    GetPadColFromADC(Int_t irob, Int_t imcm, Int_t iadc) const;
-  virtual Int_t    GetMCMfromPad(Int_t irow, Int_t icol) const;
-  virtual Int_t    GetROBfromPad(Int_t irow, Int_t icol) const;
-  virtual Int_t    GetRobSide(Int_t irob) const;
-  virtual Int_t    GetColSide(Int_t icol) const;
+  // Translation from MCM to Pad and vice versa (these functions are now in feeParam)
+  //virtual Int_t    GetPadRowFromMCM(Int_t irob, Int_t imcm) const;
+  //virtual Int_t    GetPadColFromADC(Int_t irob, Int_t imcm, Int_t iadc) const;
+  //virtual Int_t    GetMCMfromPad(Int_t irow, Int_t icol) const;
+  //virtual Int_t    GetROBfromPad(Int_t irow, Int_t icol) const;
+  //virtual Int_t    GetRobSide(Int_t irob) const;
+  //virtual Int_t    GetColSide(Int_t icol) const;
 
   static Float_t   GetTime0(Int_t p)                                   { return fgkTime0[p];     }
 

@@ -35,7 +35,7 @@ class AliTRDSimParam : public TObject {
           void     SetChipGain(Float_t chipgain)             { fChipGain          = chipgain;        }
           void     SetADCoutRange(Float_t range)             { fADCoutRange       = range;           }
           void     SetADCinRange(Float_t range)              { fADCinRange        = range;           }
-          void     SetADCthreshold(Int_t thresh)             { fADCthreshold      = thresh;          }
+//        void     SetADCthreshold(Int_t thresh)             { fADCthreshold      = thresh;          }
           void     SetADCbaseline(Int_t basel)               { fADCbaseline       = basel;           }   
           void     SetDiffusion(Int_t diffOn = 1)            { fDiffusionOn       = diffOn;          }
           void     SetElAttach(Int_t elOn = 1)               { fElAttachOn        = elOn;            }
@@ -53,7 +53,7 @@ class AliTRDSimParam : public TObject {
           Float_t  GetChipGain() const                       { return fChipGain;                     }
           Float_t  GetADCoutRange() const                    { return fADCoutRange;                  }
           Float_t  GetADCinRange() const                     { return fADCinRange;                   }
-          Int_t    GetADCthreshold() const                   { return fADCthreshold;                 }
+//        Int_t    GetADCthreshold() const                   { return fADCthreshold;                 }
           Int_t    GetADCbaseline() const                    { return fADCbaseline;                  }
           Float_t  GetTRFlo() const                          { return fTRFlo;                        }
           Float_t  GetTRFhi() const                          { return fTRFhi;                        }
@@ -85,8 +85,8 @@ protected:
   
           Float_t  fADCoutRange;       //  ADC output range (number of channels)
           Float_t  fADCinRange;        //  ADC input range (input charge)
-          Int_t    fADCthreshold;      //  ADC threshold in ADC channel
-          Int_t    fADCbaseline;       //  ADC baseline in ADC chann
+          // Int_t    fADCthreshold;   //  ADC threshold in ADC channel ... Obsolete
+          Int_t    fADCbaseline;       //  ADC intrinsic baseline in ADC channel
   
           Int_t    fDiffusionOn;       //  Switch for the diffusion
   

@@ -82,7 +82,6 @@ AliTRDSimParam::AliTRDSimParam()
   ,fChipGain(0.0)
   ,fADCoutRange(0.0)
   ,fADCinRange(0.0)
-  ,fADCthreshold(0)
   ,fADCbaseline(0)
   ,fDiffusionOn(kFALSE)
   ,fElAttachOn(kFALSE)
@@ -122,9 +121,8 @@ void AliTRDSimParam::Init()
   fNoise             = 1250.0;
   fADCoutRange       = 1023.0;          // 10-bit ADC
   fADCinRange        = 2000.0;          // 2V input range
-  fADCthreshold      =    3;
   // Go back to 0 again, just to be consistent with reconstruction
-  fADCbaseline       =    0;
+  fADCbaseline       =      0;
   //fADCbaseline       =   10;
 
   // Diffusion on
@@ -188,7 +186,6 @@ AliTRDSimParam::AliTRDSimParam(const AliTRDSimParam &p)
   ,fChipGain(p.fChipGain)
   ,fADCoutRange(p.fADCoutRange)
   ,fADCinRange(p.fADCinRange)
-  ,fADCthreshold(p.fADCthreshold)
   ,fADCbaseline(p.fADCbaseline)
   ,fDiffusionOn(p.fDiffusionOn)
   ,fElAttachOn(p.fElAttachOn)
@@ -263,7 +260,6 @@ void AliTRDSimParam::Copy(TObject &p) const
   target->fChipGain           = fChipGain;  
   target->fADCoutRange        = fADCoutRange;
   target->fADCinRange         = fADCinRange;
-  target->fADCthreshold       = fADCthreshold;
   target->fADCbaseline        = fADCbaseline; 
   target->fDiffusionOn        = fDiffusionOn; 
   target->fElAttachOn         = fElAttachOn;

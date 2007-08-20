@@ -48,14 +48,14 @@ class AliTRDfeeParam : public TObject
   static  Int_t    GetNrobC0()            { return fgkNrobC0; }
   static  Int_t    GetNrobC1()            { return fgkNrobC1; }
   static  Int_t    GetNadcMcm()           { return fgkNadcMcm; }
-  static  Int_t    GetNtimebin()          { return fgkNtimebin; }
+  // static  Int_t    GetNtimebin()       { return fgkNtimebin; }
   static  Int_t    GetNcol()              { return fgkNcol; }
   static  Int_t    GetNcolMcm()           { return fgkNcolMcm; }
   static  Int_t    GetNrowC0()            { return fgkNrowC0; }
   static  Int_t    GetNrowC1()            { return fgkNrowC1; }
 
-  static  Int_t    GetADCpedestal()       { return fgkADCpedestal; }
-  static  Int_t    GetADCnoise()          { return fgkADCnoise; }
+  // static  Int_t    GetADCpedestal()    { return fgkADCpedestal; }
+  // static  Int_t    GetADCnoise()       { return fgkADCnoise; }
   static  Int_t    GetADCDAC()            { return fgkADCDAC; }
 
   static  Bool_t   isPFon()               { return fgkPFon; }
@@ -65,7 +65,7 @@ class AliTRDfeeParam : public TObject
   static  Int_t    GetPFtimeConstant()    {  return fgkPFtimeConstant; }
   static  Int_t    GetPFeffectPedestal()  {  return fgkPFeffectPedestal; }
 
-  //          Float_t  GetClusThr()           { return fClusThr; };
+  //        Float_t  GetClusThr()           { return fClusThr; };
   //        Float_t  GetPadThr() const { return fPadThr; };
   //        Int_t    GetTailCancelation() const { return fTCOn; };
   //        Int_t    GetNexponential() const { return fTCnexp; };
@@ -87,8 +87,11 @@ class AliTRDfeeParam : public TObject
   static  Int_t    GetEBindLUT()          { return fgkEBindLUT; }
   static  Int_t    GetEBignoreNeighbour() { return fgkEBignoreNeighbour; }
 
-  static  Int_t    GetRAWversion()        { return fgkRAWversion; }
-  static  Bool_t   GetRAWstoreRaw()       { return fgkRAWstoreRaw; }
+  // Concerning raw data format
+          Int_t    GetRAWversion();
+          void     SetRAWversion( Int_t rawver );
+          Bool_t   GetRAWstoreRaw();
+          void     SetRAWstoreRaw( Bool_t storeraw );
 
  protected:
 
@@ -108,15 +111,15 @@ class AliTRDfeeParam : public TObject
   static const Int_t    fgkNrobC0            = 6;         // Number of ROBs per C0 chamber  (old fgkROBmaxC0)
   static const Int_t    fgkNrobC1            = 8;         // Number of ROBs per C1 chamber  (old fgkROBmaxC1)
   static const Int_t    fgkNadcMcm           = 21;        // Number of ADC channels per MCM (old fgkADCmax)
-  static const Int_t    fgkNtimebin          = 30;        // Number of Time bins            (old fgkTBmax)
+  // static const Int_t    fgkNtimebin       = 24;        // Number of Time bins should come from calibDB
   static const Int_t    fgkNcol              = 144;       // Number of pads per padplane row(old fgkColmax)
   static const Int_t    fgkNcolMcm           = 18;        // Number of pads per MCM         (old fgkPadmax)
   static const Int_t    fgkNrowC0            = 12;        // Number of Rows per C0 chamber  (old fgkRowmaxC0)
   static const Int_t    fgkNrowC1            = 16;        // Number of Rows per C1 chamber  (old fgkRowmaxC1)
 
   // ADC intrinsic parameters
-  static const Int_t    fgkADCpedestal       = 0;         // ADC baseline * 100 (old name fPedestal) it is not PFeffectPedestal
-  static const Int_t    fgkADCnoise          = 10;        // ADC noise    * 100 (not contained in the digitizer) [in ADC] 
+  // static const Int_t    fgkADCpedestal    = 0;         // This is simulation parameter and not the value set in FEE, moved to simParam
+  // static const Int_t    fgkADCnoise       = 10;        // This is simulation parameter and not the value set in FEE, moved to simParam
   static const Int_t    fgkADCDAC            = 0;         // 5 bit ADC gain parameter
 
   // TRAP filter global setup
@@ -125,17 +128,17 @@ class AliTRDfeeParam : public TObject
   static const Bool_t   fgkTFon              = kTRUE;     // Tail cancelation Filter enable/disable flag (old name fTCOn)
 
   // PF setup
-  static const Int_t    fgkPFtimeConstant    =  0;        // 0 for fastest, 3 for slowest (no effect, probably)
-  static const Int_t    fgkPFeffectPedestal  = 10;        // [in ADC units] the desired baseline (Additive)
+  static const Int_t    fgkPFtimeConstant    =  0;    // 0 for fastest, 3 for slowest (no effect, probably)
+  static const Int_t    fgkPFeffectPedestal  = 10;    // [in ADC units] the desired baseline (Additive)
 
   // GF setup
-  static const Int_t    fgkGFnoise           =  0;        // Noise level increased by gain filter x 100 [in ADC] (to be measured)
+  static const Int_t    fgkGFnoise           =  0;    // Noise level increased by gain filter x 100 [in ADC] (to be measured)
 
   // TF setup
-  static const Int_t    fgkTFtype            = 1;    // TC type (0=analog, 1=digital, 2=MI) (old name fFilterType)
+  static const Int_t    fgkTFtype            = 1;     // TC type (0=analog, 1=digital, 2=MI) (old name fFilterType)
 
   // OLD TF setup (calculated from above)  (valid only for fgkTFsimType = 0 or 1)
-  static const Int_t    fgkTFnExp          = 1;    // Number of exponential for simType 0 and 1
+  static const Int_t    fgkTFnExp          = 1;       // Number of exponential for simType 0 and 1
 
   // following need Instance because initialized in constructor
                Float_t  fTFr1;                        // Time constant [us] long (old name fR1)
@@ -151,10 +154,10 @@ class AliTRDfeeParam : public TObject
   static const Int_t    fgkTFattPar2          = 14;   //                      = -alphaL/ln(lambdaL)-(1-alphaL)/ln(lambdaS)
 
   // ZS parameters
-  static const Int_t    fgkEBsglIndThr        = 3;    // EBIS in ADC units
-  static const Int_t    fgkEBsumIndThr        = 4;    // EBIT in ADC units
+  static const Int_t    fgkEBsglIndThr        = 5;    // EBIS in ADC units
+  static const Int_t    fgkEBsumIndThr        = 5;    // EBIT in ADC units
   static const Int_t    fgkEBindLUT           = 0xF0; // EBIL lookup table
-  static const Int_t    fgkEBignoreNeighbour  = 1;    // EBIN 0:include neighbor
+  static const Int_t    fgkEBignoreNeighbour  = 0;    // EBIN 0:include neighbor
 
   // Charge accumulators
   static const Int_t    fgkPREPqAcc0Start      =  0;   // Preprocessor Charge Accumulator 0 Start
@@ -168,8 +171,9 @@ class AliTRDfeeParam : public TObject
   //static const Float_t  fPadThr;                      // Pad threshold
 
   // For raw production
-  static const Int_t    fgkRAWversion          = 2;     // Raw data production version
-  static const Bool_t   fgkRAWstoreRaw         = kTRUE; // Store unfiltered data for raw data stream
+               Int_t    fRAWversion;                    // Raw data production version
+  static const Int_t    fgkMaxRAWversion       = 3;     // Maximum raw version number supported
+               Bool_t   fRAWstoreRaw;                   // Store unfiltered data for raw data stream
 
  private:
 

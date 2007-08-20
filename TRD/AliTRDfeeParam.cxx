@@ -16,6 +16,16 @@
 
 /* $Id$ */
 
+/*
+
+  New release on 2007/08/17
+
+The default raw data version (now fRAWversion ) is set to 3
+in the constructer because version 3 raw data read and write
+are fully debugged.
+
+*/
+
 //////////////////////////////////////////////////
 //                                              //
 //  TRD front end electronics parameters class  //
@@ -26,6 +36,7 @@
 
 #include <TMath.h>
 
+#include "AliLog.h"
 #include "AliTRDfeeParam.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDCommonParam.h"
@@ -75,6 +86,8 @@ AliTRDfeeParam::AliTRDfeeParam()
   ,fTFr2(0)
   ,fTFc1(0)
   ,fTFc2(0)
+  ,fRAWversion(3)
+  ,fRAWstoreRaw(kTRUE)
 {
   //
   // Default constructor
@@ -108,6 +121,8 @@ AliTRDfeeParam::AliTRDfeeParam(const AliTRDfeeParam &p)
   ,fTFr2(p.fTFr2)
   ,fTFc1(p.fTFc1)
   ,fTFc2(p.fTFc2)
+  ,fRAWversion(p.fRAWversion)
+  ,fRAWstoreRaw(p.fRAWstoreRaw)
 {
   //
   // AliTRDfeeParam copy constructor
@@ -143,11 +158,13 @@ void AliTRDfeeParam::Copy(TObject &p) const
   //
 
   //  ((AliTRDfeeParam &) p).fGeo     = fGeo;
-  ((AliTRDfeeParam &) p).fCP      = fCP;
-  ((AliTRDfeeParam &) p).fTFr1   = fTFr1;
-  ((AliTRDfeeParam &) p).fTFr2   = fTFr2;
-  ((AliTRDfeeParam &) p).fTFc1   = fTFc1;
-  ((AliTRDfeeParam &) p).fTFc2   = fTFc2;
+  ((AliTRDfeeParam &) p).fCP          = fCP;
+  ((AliTRDfeeParam &) p).fTFr1        = fTFr1;
+  ((AliTRDfeeParam &) p).fTFr2        = fTFr2;
+  ((AliTRDfeeParam &) p).fTFc1        = fTFc1;
+  ((AliTRDfeeParam &) p).fTFc2        = fTFc2;
+  ((AliTRDfeeParam &) p).fRAWversion  = fRAWversion;
+  ((AliTRDfeeParam &) p).fRAWstoreRaw = fRAWstoreRaw;
   
   TObject::Copy(p);
 }
@@ -166,17 +183,21 @@ Int_t AliTRDfeeParam::GetPadRowFromMCM(Int_t irob, Int_t imcm) const
 Int_t AliTRDfeeParam::GetPadColFromADC(Int_t irob, Int_t imcm, Int_t iadc) const
 {
   //
-  // return which pad is connected to this adc channel.
-  // Return -1 if no appropriate pad is found.
-
+  // Return which pad is connected to this adc channel.
+  //
+  // Return virtual pad number even if ADC is outside chamber
+  // to keep compatibility of data processing at the edge MCM.
+  // User has to check that this is in the chamber if it is essential.
+  // Return -100 if iadc is invalid.
+  //
   // Caution: ADC ordering in the online data is opposite to the pad column ordering.
   // And it is not one-by-one correspondence. Precise drawing can be found in:
   // http://wiki.kip.uni-heidelberg.de/ti/TRD/index.php/Image:ROB_MCM_numbering.pdf
 
-  if (iadc < 0 || iadc > 19 ) return -1;
+  if (iadc < 0 || iadc > 19 ) return -100;
   Int_t mcmcol = imcm%fgkNmcmRobInCol + GetRobSide(irob)*fgkNmcmRobInCol;  // MCM column number on ROC [0..7]
   Int_t padcol = mcmcol*fgkNcolMcm + fgkNcolMcm + 1 - iadc;
-  if( padcol < 0 || padcol >= fgkNcol ) return -1;
+  // if( padcol < 0 || padcol >= fgkNcol ) return -1;   // thisi s commented because of reson above KO
   return padcol;
 }
 
@@ -238,3 +259,42 @@ Int_t AliTRDfeeParam::GetColSide(Int_t icol) const
   //c2            = fC2;
   //ped           = fPedestal;
 //};
+
+
+//_____________________________________________________________________________
+Int_t    AliTRDfeeParam::GetRAWversion()
+{
+  // Return raw data version (major number only)
+
+  return fRAWversion;
+}
+
+//_____________________________________________________________________________
+void     AliTRDfeeParam::SetRAWversion( Int_t rawver )
+{
+  // Set raw data version (major number only)
+  // Maximum available number is preset in fgkMaxRAWversion
+
+  if( rawver >= 0 && rawver <= fgkMaxRAWversion ) {
+
+    fRAWversion = rawver ;
+  } else {
+    AliError(Form("Raw version is out of range: %d",rawver));
+  }
+}
+
+//_____________________________________________________________________________
+Bool_t   AliTRDfeeParam::GetRAWstoreRaw()
+{
+  // Returns kTRUE if raw data itself is read instead of filtered data
+
+  return fRAWstoreRaw;
+}
+
+//_____________________________________________________________________________
+void     AliTRDfeeParam::SetRAWstoreRaw( Bool_t storeraw )
+{
+  // If kTRUE is set, raw data itself is read instead of filtered data
+
+  fRAWstoreRaw = storeraw;
+}

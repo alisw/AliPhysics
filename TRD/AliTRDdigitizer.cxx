@@ -31,7 +31,6 @@
 //      - Electronics noise                                                  //
 //      - Electronics gain                                                   //
 //      - Digitization                                                       //
-//      - ADC threshold                                                      //
 //  The corresponding parameter can be adjusted via the various              //
 //  Set-functions. If these parameters are not explicitly set, default       //
 //  values are used (see Init-function).                                     //
@@ -73,6 +72,7 @@
 #include "AliTRDcalibDB.h"
 #include "AliTRDSimParam.h"
 #include "AliTRDCommonParam.h"
+#include "AliTRDfeeParam.h"
 
 #include "Cal/AliTRDCalROC.h"
 #include "Cal/AliTRDCalDet.h"
@@ -88,6 +88,7 @@ AliTRDdigitizer::AliTRDdigitizer()
   ,fSDigitsManagerList(0)
   ,fTRD(0)
   ,fGeo(0)
+  ,fFee(0)
   ,fEvent(0)
   ,fMasks(0)
   ,fCompress(kTRUE)
@@ -122,6 +123,7 @@ AliTRDdigitizer::AliTRDdigitizer(const Text_t *name, const Text_t *title)
   ,fSDigitsManagerList(0)
   ,fTRD(0)
   ,fGeo(0)
+  ,fFee(0)
   ,fEvent(0)
   ,fMasks(0)
   ,fCompress(kTRUE)
@@ -157,6 +159,7 @@ AliTRDdigitizer::AliTRDdigitizer(AliRunDigitizer *manager
   ,fSDigitsManagerList(0)
   ,fTRD(0)
   ,fGeo(0)
+  ,fFee(0)
   ,fEvent(0)
   ,fMasks(0)
   ,fCompress(kTRUE)
@@ -191,6 +194,7 @@ AliTRDdigitizer::AliTRDdigitizer(AliRunDigitizer *manager)
   ,fSDigitsManagerList(0)
   ,fTRD(0)
   ,fGeo(0)
+  ,fFee(0)
   ,fEvent(0)
   ,fMasks(0)
   ,fCompress(kTRUE)
@@ -229,6 +233,7 @@ Bool_t AliTRDdigitizer::Init()
   fSDigitsManagerList = 0;
   fTRD                = 0;
   fGeo                = 0;
+  fFee                = AliTRDfeeParam::Instance();
 
   fEvent              = 0;
   fMasks              = 0;
@@ -261,6 +266,7 @@ AliTRDdigitizer::AliTRDdigitizer(const AliTRDdigitizer &d)
   ,fSDigitsManagerList(0)
   ,fTRD(0)
   ,fGeo(0)
+  ,fFee(0)
   ,fEvent(0)
   ,fMasks(0)
   ,fCompress(d.fCompress)
@@ -366,6 +372,7 @@ void AliTRDdigitizer::Copy(TObject &d) const
   ((AliTRDdigitizer &) d).fSDigitsManagerList = 0;
   ((AliTRDdigitizer &) d).fTRD                = 0;
   ((AliTRDdigitizer &) d).fGeo                = 0;
+  ((AliTRDdigitizer &) d).fFee                = fFee;
   ((AliTRDdigitizer &) d).fEvent              = 0;
   ((AliTRDdigitizer &) d).fMasks              = 0;
   ((AliTRDdigitizer &) d).fCompress           = fCompress;
@@ -1285,7 +1292,8 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
             for (iTime = 0; iTime < nTimeTotal; iTime++) {   
               // Store the amplitude of the digit if above threshold
-              if (outADC[iTime] > (simParam->GetADCbaseline() + simParam->GetADCthreshold())) {
+              // if (outADC[iTime] > (simParam->GetADCbaseline() + simParam->GetADCthreshold())) {
+              if (outADC[iTime] != 0 ) {   // Now this is enough because there is ZS in raw simulator
                 nDigits++;
                 digits->SetDataUnchecked(iRow,iCol,iTime,((Int_t) outADC[iTime]));
   	      }
@@ -1404,7 +1412,6 @@ Bool_t AliTRDdigitizer::ConvertSDigits()
   Double_t convert      = kEl2fC * chipGain;
   Double_t adcInRange   = simParam->GetADCinRange();
   Double_t adcOutRange  = simParam->GetADCoutRange();
-  Int_t    adcThreshold = simParam->GetADCthreshold();
   Int_t    adcBaseline  = simParam->GetADCbaseline();   
   Int_t    nTimeTotal   = calibration->GetNumberOfTimeBins();
 
@@ -1495,7 +1502,8 @@ Bool_t AliTRDdigitizer::ConvertSDigits()
 
           for (iTime = 0; iTime < nTimeTotal; iTime++) {
             // Store the amplitude of the digit if above threshold
-            if (outADC[iTime] > (adcBaseline + adcThreshold)) {
+            // if (outADC[iTime] > (adcBaseline + adcThreshold)) {
+	    if (outADC[iTime] != 0) {  // now this is ok because there is ZS in raw simulation
               digitsOut->SetDataUnchecked(iRow,iCol,iTime,((Int_t) outADC[iTime]));
   	      // Copy the dictionary
               for (iDict = 0; iDict < kNDict; iDict++) { 

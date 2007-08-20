@@ -29,6 +29,7 @@
 
 #pragma link C++ class  AliTRDrawData+;
 #pragma link C++ class  AliTRDRawStream+;
+#pragma link C++ class  AliTRDRawStreamV2+;
 
 #pragma link C++ class  AliTRDCommonParam+;
 #pragma link C++ class  AliTRDfeeParam+;

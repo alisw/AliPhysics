@@ -211,7 +211,8 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
   }
 
   // ADC thresholds
-  Float_t ADCthreshold   = simParam->GetADCthreshold();
+  // Float_t ADCthreshold   = simParam->GetADCthreshold();
+  Float_t ADCthreshold   = 0;
   // Threshold value for the maximum
   Float_t maxThresh      = recParam->GetClusMaxThresh();
   // Threshold value for the digit signal

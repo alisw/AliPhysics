@@ -38,6 +38,7 @@
 #include "AliTRDdataArrayI.h"
 #include "AliTRDSignalIndex.h"
 
+#include "AliTRDfeeParam.h"
 ClassImp(AliTRDRawStream)
 
 //_____________________________________________________________________________
@@ -1041,7 +1042,7 @@ void AliTRDRawStream::DecodeMCMheader()
   fROB  = fMCM / 16;
   fMCM  = fMCM % 16;
 
-  fROW  = fGeo->GetPadRowFromMCM(fROB, fMCM);
+  fROW  = AliTRDfeeParam::Instance()->GetPadRowFromMCM(fROB, fMCM);
 
   AliDebug(4, Form("0x%08x: SM%d L%dS%d. MCM Header: fROB=%d fMCM=%02d fEv=%02d"
 		  , *fDataWord, fSM, fLAYER, fSTACK, fROB, fMCM, fEv));
@@ -1231,7 +1232,7 @@ Int_t  AliTRDRawStream::DecodeDataWordV1V2()
   if ( fADC > 1 && fADC < (Int_t)fGeo->ADCmax()-1 ) {
 
     // Get Pad column
-    fCOL = fGeo->GetPadColFromADC(fROB, fMCM, fADC);
+    fCOL = AliTRDfeeParam::Instance()->GetPadColFromADC(fROB, fMCM, fADC);
 
     // We have only 144 Pad Columns
     //if ( fCOL > fColMax-1 || fCOL < 0 ) {
@@ -1322,7 +1323,8 @@ Int_t  AliTRDRawStream::DecodeDataWordV3()
   if ( fADC > 1 && fADC < (Int_t)fGeo->ADCmax()-1 ) {
 
     // Get Pad column
-    fCOL = fGeo->GetPadColFromADC(fROB, fMCM, fADC);
+    //fCOL = fGeo->GetPadColFromADC(fROB, fMCM, fADC);
+    fCOL = AliTRDfeeParam::Instance()->GetPadColFromADC(fROB, fMCM, fADC);
 
     // We have only 144 Pad Columns
     if ( fCOL > fColMax-1 || fCOL < 0 ) {

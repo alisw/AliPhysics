@@ -23,6 +23,7 @@
 
 #include <Riostream.h>
 #include <TMath.h>
+#include "TClass.h"
 
 #include "AliDAQ.h"
 #include "AliRawDataHeader.h"
@@ -34,6 +35,7 @@
 #include "AliTRDgeometry.h"
 #include "AliTRDdataArrayI.h"
 #include "AliTRDRawStream.h"
+#include "AliTRDRawStreamV2.h"
 
 #include "AliTRDcalibDB.h"
 #include "AliFstream.h"
@@ -292,7 +294,7 @@ Int_t AliTRDrawData::ProduceHcDataV1andV2(AliTRDdataArrayI *digits, Int_t side
   else if ( rv == 2 ) {
     // h[0] (there are 3 HC header)
     Int_t minorv = 0;      // The minor version number
-    Int_t add    = 1;      // The number of additional header words to follow
+    Int_t add    = 2;      // The number of additional header words to follow
     x = (1<<31) | (rv<<24) | (minorv<<17) | (add<<14) | (sect<<9) | (plan<<6) | (cham<<3) | (side<<2) | 1;
     if (nw < maxSize) {
       buf[nw++] = x; 
@@ -346,7 +348,7 @@ Int_t AliTRDrawData::ProduceHcDataV1andV2(AliTRDdataArrayI *digits, Int_t side
 
       // ADC data
       for (Int_t iAdc = 0; iAdc < 21; iAdc++ ) {
-	Int_t padcol = fGeo->GetPadColFromADC(iRob, iMcm, iAdc);
+	Int_t padcol = fFee->GetPadColFromADC(iRob, iMcm, iAdc);
 	UInt_t aa = !(iAdc & 1) + 2;
         UInt_t *a = new UInt_t[nTBin+2];
         // 3 timebins are packed into one 32 bits word
@@ -451,7 +453,7 @@ Int_t AliTRDrawData::ProduceHcDataV3(AliTRDdataArrayI *digits, Int_t side
   // Half Chamber header
   // h[0] (there are 3 HC header)
   Int_t minorv = 0;    // The minor version number
-  Int_t add    = 1;    // The number of additional header words to follow
+  Int_t add    = 2;    // The number of additional header words to follow
   x = (1<<31) | (rv<<24) | (minorv<<17) | (add<<14) | (sect<<9) | (plan<<6) | (cham<<3) | (side<<2) | 1;
   if (nw < maxSize) {
     buf[nw++] = x; 
@@ -511,6 +513,7 @@ Int_t AliTRDrawData::ProduceHcDataV3(AliTRDdataArrayI *digits, Int_t side
       // Simulate process in MCM
       mcm->Filter();     // Apply filter
       mcm->ZSMapping();  // Calculate zero suppression mapping
+      //mcm->DumpData( "trdmcmdata.txt", "RFZS" ); // debugging purpose
 
       // Write MCM data to buffer
       Int_t temp_nw =  mcm->ProduceRawStream( &buf[nw], maxSize - nw );
@@ -532,7 +535,7 @@ Int_t AliTRDrawData::ProduceHcDataV3(AliTRDdataArrayI *digits, Int_t side
     of++;
   }
   if (of != 0) {
-    AliWarning("Buffer overflow. Data is truncated. Please increase buffer size and recompile.");
+    AliError("Buffer overflow. Data is truncated. Please increase buffer size and recompile.");
   }
 
   return nw;
@@ -556,21 +559,22 @@ AliTRDdigitsManager *AliTRDrawData::Raw2Digits(AliRawReader *rawReader)
   AliTRDdigitsManager* digitsManager = new AliTRDdigitsManager();
   digitsManager->CreateArrays();
 
-  AliTRDRawStream input(rawReader);
+  //AliTRDRawStream input(rawReader);
+  AliTRDRawStreamV2 input(rawReader);
   input.SetRawVersion( fFee->GetRAWversion() );
   input.Init();
+
+  AliInfo(Form("Stream version: %s", input.IsA()->GetName()));
 
   // Loop through the digits
   Int_t lastdet = -1;
   Int_t det    = 0;
   Int_t it = 0;
-  while (input.Next()) 
-    {
+  while (input.Next()) {
 
       det    = input.GetDet();
 
-      if (det != lastdet) 
-	{	
+      if (det != lastdet) { // If new detector found
 	
 	  lastdet = det;
 
@@ -603,6 +607,7 @@ AliTRDdigitsManager *AliTRDrawData::Raw2Digits(AliRawReader *rawReader)
 	    indexes->Allocate(input.GetMaxRow(), input.GetMaxCol(), input.GetNumberOfTimeBins());
 	}
     
+      // 3 timebin data are stored per word
       for (it = 0; it < 3; it++)
 	{
 	  if ( input.GetTimeBin() + it < input.GetNumberOfTimeBins() )

@@ -267,7 +267,8 @@ void AliTRDSignalIndex::AddIndexTBin(Int_t row, Int_t col, Int_t tbin)
   // the RC index is updated to!!!
   // this is to be used in the TRD clusterizer!
 
-  if (fPositionCol + fNtbins >= fMaxLimit)
+  //if (fPositionCol + fNtbins >= fMaxLimit)
+  if (row * col * tbin + row * col * 2 >= fMaxLimit)
     {
       AliError(Form("Out-of-limits fPositionCol + fNtbins %d. Limit is: %d", fPositionCol + fNtbins, fMaxLimit));
       return;
@@ -294,9 +295,8 @@ void AliTRDSignalIndex::AddIndexTBin(Int_t row, Int_t col, Int_t tbin)
       (*fIndex)[fPositionRow] = row;
       (*fIndex)[fPositionCol] = col;
       (*fIndex)[fPositionCol + fPositionTbin] = tbin;
-
+      //AliInfo(Form("x1: fPositionCol + fPositionTbin = %d", fPositionCol + fPositionTbin));
       ++fPositionTbin;
-      //AliDebug(3, Form("fNRCindexed=%d", fNRCindexed));
     }
   else
     {
@@ -307,6 +307,7 @@ void AliTRDSignalIndex::AddIndexTBin(Int_t row, Int_t col, Int_t tbin)
       // 	}
       
       (*fIndex)[fPositionCol + fPositionTbin] = tbin;
+      //AliInfo(Form("x2: fPositionCol + fPositionTbin = %d", fPositionCol + fPositionTbin));
       ++fPositionTbin;      
     }
   
@@ -322,24 +323,24 @@ Bool_t  AliTRDSignalIndex::NextRCIndex(Int_t &row, Int_t &col)
 {
   // return the position (index in the data array) of the next available pad
 
-  if (fPositionCol + fNtbins >= fMaxLimit)
-    {
-      //AliDebug(8, "Out of index range");
-      return kFALSE;
-    }
-
   if (fResetCounters == kTRUE)
     {
       fPositionRow = 0;
       fPositionCol = 1;
       
       fResetCounters = kFALSE;
-      AliDebug(2, "Reset counters");
+      //AliDebug(2, "Reset counters");
     }
   else
     {
       fPositionRow += fNtbins + 2;
       fPositionCol += fNtbins + 2;
+    }
+
+  if (fPositionRow >= fMaxLimit)
+    {
+      //AliDebug(8, "Out of index range");
+      return kFALSE;
     }
 
   //AliDebug(8, Form("Next RC %d", fPositionRow / (fNtbins + 2)));
@@ -361,11 +362,9 @@ Bool_t  AliTRDSignalIndex::NextRCTbinIndex(Int_t &row, Int_t &col, Int_t &tbin)
   // return the position (index in the data array) of the next available tbin 
   // within the current pad
 
-//   if (fNRCcounter >= fNRCindexed)
-//     return kFALSE;
-
-  if (fPositionCol + fNtbins >= fMaxLimit)
+  if (fPositionRow >= fMaxLimit)
     {
+      //AliDebug(8, "Out of index range");
       return kFALSE;
     }
 
@@ -380,7 +379,6 @@ Bool_t  AliTRDSignalIndex::NextRCTbinIndex(Int_t &row, Int_t &col, Int_t &tbin)
     {
       if (NextRCIndex(row, col))
 	{
-	  //return NextTbinIndex(tbin);
 	  return NextRCTbinIndex(row, col, tbin);
 	}
     }
@@ -394,11 +392,9 @@ Bool_t  AliTRDSignalIndex::NextTbinIndex(Int_t &tbin)
   // return the position (index in the data array) of the next available tbin 
   // within the current pad
 
-//   if (fNRCcounter >= fNRCindexed)
-//     return kFALSE;
-
-  if (fPositionCol + fNtbins >= fMaxLimit || fPositionTbin > fNtbins)
+  if (fPositionCol + fPositionTbin >= fMaxLimit || fPositionTbin > fNtbins)
     {
+      //AliDebug(8, "Out of index range");
       return kFALSE;
     }
 
