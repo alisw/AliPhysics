@@ -254,14 +254,12 @@ Int_t AliEMCALTracker::LoadClusters(TTree *cTree)
 		AliEMCALMatchCluster *matchCluster = new AliEMCALMatchCluster(i, cluster);
 		fClusters->AddLast(matchCluster);
 	}
-	if (fClusters->IsEmpty()) {
-		AliError("No clusters collected");
-		return 1;
-	}
-	
+
 	branch->SetAddress(0);
         clusters->Delete();
         delete clusters;
+        if (fClusters->IsEmpty())
+           AliWarning("No clusters collected");
 
 	AliInfo(Form("Collected %d clusters", fClusters->GetEntries()));
 
@@ -294,10 +292,8 @@ Int_t AliEMCALTracker::LoadClusters(AliESDEvent *esd)
 		AliEMCALMatchCluster *matchCluster = new AliEMCALMatchCluster(i, cluster);
 		fClusters->AddLast(matchCluster);
 	}
-	if (fClusters->IsEmpty()) {
-		AliError("No clusters collected");
-		return 1;
-	}
+        if (fClusters->IsEmpty())
+           AliWarning("No clusters collected");
 	
 	AliInfo(Form("Collected %d clusters", fClusters->GetEntries()));
 
@@ -348,8 +344,7 @@ Int_t AliEMCALTracker::LoadTracks(AliESDEvent *esd)
 		fTracks->AddLast(track);
 	}
 	if (fTracks->IsEmpty()) {
-		AliError("No tracks collected");
-		return 1;
+		AliWarning("No tracks collected");
 	}
 	
 	AliInfo(Form("Collected %d tracks", fTracks->GetEntries()));
@@ -367,7 +362,10 @@ Int_t AliEMCALTracker::PropagateBack(AliESDEvent* esd)
 	// After executing match finding, stores in the same ESD object all infos
 	// and releases the object for further reconstruction steps.
 	//
-	
+        //
+        // Note: should always return 0=OK, because otherwise all tracking
+        // is aborted for this event
+
 	if (!esd) {
 		AliError("NULL ESD passed");
 		return 1;
@@ -396,7 +394,7 @@ Int_t AliEMCALTracker::PropagateBack(AliESDEvent* esd)
 	Int_t nMatches = CreateMatches();
 	if (!nMatches) {
 		AliInfo(Form("#clusters = %d -- #tracks = %d --> No good matches found.", nClusters, nTracks));
-		return 4;
+		return 0;
 	}
 	else {
 		AliInfo(Form("#clusters = %d -- #tracks = %d --> Found %d matches.", nClusters, nTracks, nMatches));
