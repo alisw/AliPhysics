@@ -51,7 +51,7 @@ public:
     AliGenEventHeader* GenEventHeader() {return (fHeader->GenEventHeader());}
     TTree*    TreeTR() {return fTreeTR;}
     Int_t     GetParticleAndTR(Int_t i, TParticle*& particle, TClonesArray*& trefs);
-    void      DrawCheck(Int_t i, Bool_t search=kFALSE);
+    void      DrawCheck(Int_t i, Int_t search=0);
 private:
     Bool_t    OpenFile(Int_t i);
     void      ReorderAndExpandTreeTR();

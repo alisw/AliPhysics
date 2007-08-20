@@ -158,7 +158,9 @@ Bool_t AliMCEventHandler::GetEvent(Int_t iev)
     dirK->GetObject("TreeK", fTreeK);
     fStack->ConnectTree(fTreeK);
     fStack->GetEvent();
+    
     //Tree TR 
+
     if (fFileTR) {
 	TDirectoryFile* dirTR = 0;
 	fFileTR->GetObject(folder, dirTR);
@@ -166,16 +168,18 @@ Bool_t AliMCEventHandler::GetEvent(Int_t iev)
 	if (fTreeTR->GetBranch("AliRun")) {
 	    // This is an old format with one branch per detector not in synch with TreeK
 	    ReorderAndExpandTreeTR();
+	    delete dirTR;
 	} else {
 	    // New format 
 	    fTreeTR->SetBranchAddress("TrackReferences", &fTrackReferences);
 	}
     }
-    
+
     //
     fNparticles = fStack->GetNtrack();
     fNprimaries = fStack->GetNprimary();
-    AliInfo(Form("AliMCEventHandler: Event#: %5d Number of particles %5d \n", fEvent, fNparticles));
+    AliInfo(Form("AliMCEventHandler: Event#: %5d Number of particles: %5d (all) %5d (primaries)\n", 
+		 fEvent, fNparticles, fNprimaries));
     
     return kTRUE;
 }
@@ -222,7 +226,7 @@ Bool_t AliMCEventHandler::BeginEvent()
 Int_t AliMCEventHandler::GetParticleAndTR(Int_t i, TParticle*& particle, TClonesArray*& trefs)
 {
     // Retrieve entry i
-    if (i > -1 && i < fNparticles) {
+    if (i < 0 || i >= fNparticles) {
 	AliWarning(Form("AliMCEventHandler::GetEntry: Index out of range"));
 	particle = 0;
 	trefs    = 0;
@@ -239,7 +243,7 @@ Int_t AliMCEventHandler::GetParticleAndTR(Int_t i, TParticle*& particle, TClones
     }
 }
 
-void AliMCEventHandler::DrawCheck(Int_t i, Bool_t search)
+void AliMCEventHandler::DrawCheck(Int_t i, Int_t search)
 {
     // Retrieve entry i and draw momentum vector and hits
     if (!fFileTR) {
@@ -257,7 +261,7 @@ void AliMCEventHandler::DrawCheck(Int_t i, Bool_t search)
     
     
     if (search) {
-	while(nh == 0 && i < fNparticles - 1) {
+	while(nh <= search && i < fNparticles - 1) {
 	    i++;
 	    fTreeTR->GetEntry(fStack->TreeKEntry(i));
 	    nh =  fTrackReferences->GetEntries();
@@ -312,7 +316,11 @@ void AliMCEventHandler::ResetIO()
 			    
 Bool_t AliMCEventHandler::FinishEvent()
 {
-    // Dummy 
+    // Reset the stack 
+    fTreeK->Clear();
+    fTreeTR->Clear();
+    Stack()->Reset();
+    
     return kTRUE;
 }
 
@@ -335,7 +343,10 @@ void AliMCEventHandler::ReorderAndExpandTreeTR()
 //  Copy the information from different branches into one
 //
 //  TreeTR
-    if (fTmpTreeTR) fTmpTreeTR->Delete();
+    if (fTmpTreeTR) {
+	fTmpTreeTR->Delete("all");
+    }
+    
     if (fTmpFileTR) {
 	fTmpFileTR->Close();
 	delete fTmpFileTR;
@@ -345,6 +356,7 @@ void AliMCEventHandler::ReorderAndExpandTreeTR()
     fTmpTreeTR = new TTree("TreeTR", "Track References");
     if (!fTrackReferences)  fTrackReferences = new TClonesArray("AliTrackReference", 100);
     fTmpTreeTR->Branch("TrackReferences", "TClonesArray", &fTrackReferences, 4000);
+
 //
     TClonesArray* trefs[7];
     for (Int_t i = 0; i < 7; i++) trefs[i] = 0;
@@ -493,6 +505,10 @@ void AliMCEventHandler::ReorderAndExpandTreeTR()
 		    }
 		} // hits
 	    } // branches
+	    for (Int_t ib = 0; ib < 7; ib++) {
+		if (trefs[ib]) trefs[ib]->Clear();
+	    }
+	    
 	} // entries
 	it++;
 	fTmpTreeTR->Fill();
