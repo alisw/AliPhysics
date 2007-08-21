@@ -392,9 +392,6 @@ AliHLTDataBuffer::AliHLTRawBuffer* AliHLTDataBuffer::CreateRawBuffer(AliHLTUInt3
 	pRawBuffer->fTotalSize=reqSize;
 	fgActiveBuffers.push_back(pRawBuffer);
 	fgLogging.Logging(kHLTLogDebug, "AliHLTDataBuffer::CreateRawBuffer", "data buffer handling", "new raw buffer %p of size %d created (container %p)", pRawBuffer->fPtr, pRawBuffer->fTotalSize, pRawBuffer);
-	if (fgkSafetyPatternSize>0) {
-	  memcpy(((char*)pRawBuffer->fPtr)+pRawBuffer->fSize, fgkSafetyPattern, fgkSafetyPatternSize);
-	}
       } else {
 	delete pRawBuffer;
 	pRawBuffer=NULL;
@@ -403,6 +400,10 @@ AliHLTDataBuffer::AliHLTRawBuffer* AliHLTDataBuffer::CreateRawBuffer(AliHLTUInt3
     } else {
       fgLogging.Logging(kHLTLogError, "AliHLTDataBuffer::CreateRawBuffer", "data buffer handling", "memory allocation failed");
     }
+  }
+  if (pRawBuffer!=NULL && fgkSafetyPatternSize>0) {
+    //fgLogging.Logging(kHLTLogDebug, "AliHLTDataBuffer::ReleaseRawBuffer", "data buffer handling", "writing safety pattern to %p offset %d", pRawBuffer->fPtr, pRawBuffer->fSize);
+    memcpy(((char*)pRawBuffer->fPtr)+pRawBuffer->fSize, fgkSafetyPattern, fgkSafetyPatternSize);
   }
   return pRawBuffer;
 }
@@ -418,6 +419,7 @@ int AliHLTDataBuffer::ReleaseRawBuffer(AliHLTRawBuffer* pBuffer)
     }
     if (buffer!=fgActiveBuffers.end()) {
       if (fgkSafetyPatternSize>0) {
+	//fgLogging.Logging(kHLTLogDebug, "AliHLTDataBuffer::ReleaseRawBuffer", "data buffer handling", "comparing safety pattern at %p offset %d", (*buffer)->fPtr, (*buffer)->fSize);
 	if (memcmp(((char*)(*buffer)->fPtr)+(*buffer)->fSize, fgkSafetyPattern, fgkSafetyPatternSize)!=0) {
 	  fgLogging.Logging(kHLTLogFatal, "AliHLTDataBuffer::ReleaseRawBuffer", "data buffer handling", "component has written beyond end of data buffer %p size %d", (*buffer)->fPtr, (*buffer)->fSize);
 	}
