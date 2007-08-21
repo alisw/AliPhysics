@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.12  2006/09/07 18:31:08  kharlov
+ * Effective c++ corrections (T.Pocheptsov)
+ *
  * Revision 1.11  2006/01/13 16:59:39  kharlov
  * Rename classes to read raw data 2004
  *
@@ -75,11 +78,7 @@
 #include "AliPHOSRawStream2004.h"
 #include "AliPHOSDigit.h"
 
-#ifdef ALI_DATE
-#include "event.h"
-#else
-#define PHYSICS_EVENT 7
-#endif
+#include "AliRawEventHeaderBase.h"
 
 ClassImp(AliPHOSCalibrator)
 
@@ -339,7 +338,7 @@ void AliPHOSCalibrator::ScanPedestals(Option_t * option )
     //Scan all event in file
     while(rawReader->NextEvent()){
       //Is it PHYSICAL event
-      if(rawReader->GetType() == PHYSICS_EVENT){
+      if(rawReader->GetType() == AliRawEventHeaderBase::kPhysicsEvent){
 	nevents++ ;
 	if(rawStream->ReadDigits(digits)){
 	  if(rawStream->IsPEDevent()){
@@ -462,7 +461,7 @@ void AliPHOSCalibrator::ScanGains(Option_t * option)
     //Scan all event in file
     while(rawReader->NextEvent()){
       //Is it PHYSICAL event
-      if(rawReader->GetType() == PHYSICS_EVENT){
+      if(rawReader->GetType() == AliRawEventHeaderBase::kPhysicsEvent){
 	if(rawStream->ReadDigits(digits)){
 	  //Test trigger
 	  if(rawStream->IsNELevent() || rawStream->IsWELevent()){
