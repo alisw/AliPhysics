@@ -317,8 +317,6 @@ void AliMCEventHandler::ResetIO()
 Bool_t AliMCEventHandler::FinishEvent()
 {
     // Reset the stack 
-    fTreeK->Clear();
-    fTreeTR->Clear();
     Stack()->Reset();
     
     return kTRUE;
@@ -358,6 +356,15 @@ void AliMCEventHandler::ReorderAndExpandTreeTR()
     fTmpTreeTR->Branch("TrackReferences", "TClonesArray", &fTrackReferences, 4000);
 
 //
+    fTreeTR->SetBranchStatus("*",      0);
+    fTreeTR->SetBranchStatus("AliRun", 1);
+    fTreeTR->SetBranchStatus("ITS",    1);
+    fTreeTR->SetBranchStatus("TPC",    1);
+    fTreeTR->SetBranchStatus("TRD",    1);
+    fTreeTR->SetBranchStatus("TOF",    1);
+    fTreeTR->SetBranchStatus("FRAME",  1);
+    fTreeTR->SetBranchStatus("MUON",   1);
+
     TClonesArray* trefs[7];
     for (Int_t i = 0; i < 7; i++) trefs[i] = 0;
     if (fTreeTR){
@@ -505,10 +512,6 @@ void AliMCEventHandler::ReorderAndExpandTreeTR()
 		    }
 		} // hits
 	    } // branches
-	    for (Int_t ib = 0; ib < 7; ib++) {
-		if (trefs[ib]) trefs[ib]->Clear();
-	    }
-	    
 	} // entries
 	it++;
 	fTmpTreeTR->Fill();
@@ -516,6 +519,11 @@ void AliMCEventHandler::ReorderAndExpandTreeTR()
 	ifills++;
     } // tracks
     // Check
+    delete fTreeTR;
+    for (Int_t ib = 0; ib < 7; ib++) {
+	if (trefs[ib]) delete trefs[ib];
+    }
+
     if (ifills != fStack->GetNtrack()) 
 	printf("AliMCEventHandler:Number of entries in TreeTR (%5d) unequal to TreeK (%5d) \n", 
 	       ifills, fStack->GetNtrack());
