@@ -489,13 +489,13 @@ Int_t AliTRDrawData::ProduceHcDataV3(AliTRDdataArrayI *digits, Int_t side
     of++;
   }
 
-  AliTRDmcmSim *mcm = new AliTRDmcmSim();
 
   // Scan for ROB and MCM
   for (Int_t iRobRow = 0; iRobRow < (kCtype + 3); iRobRow++ ) {
     Int_t iRob = iRobRow * 2 + side;
     for (Int_t iMcm = 0; iMcm < fGeo->MCMmax(); iMcm++ ) {
 
+      AliTRDmcmSim *mcm = new AliTRDmcmSim();
       mcm->Init( det, iRob, iMcm );
       Int_t padrow = mcm->GetRow();
 
@@ -524,6 +524,9 @@ Int_t AliTRDrawData::ProduceHcDataV3(AliTRDdataArrayI *digits, Int_t side
       } else {
 	nw += temp_nw;
       }
+
+      delete mcm;
+
     }
   }
 
