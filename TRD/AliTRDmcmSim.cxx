@@ -128,14 +128,14 @@ AliTRDmcmSim::~AliTRDmcmSim()
   //
   if( fADCR != NULL ) {
     for( Int_t iadc = 0 ; iadc < fNADC; iadc++ ) {
-      delete fADCR[iadc];
-      delete fADCF[iadc];
-      delete fZSM [iadc];
+      delete [] fADCR[iadc];
+      delete [] fADCF[iadc];
+      delete [] fZSM [iadc];
     }
-    delete fADCR;
-    delete fADCF;
-    delete fZSM;
-    delete fZSM1Dim;
+    delete [] fADCR;
+    delete [] fADCF;
+    delete [] fZSM;
+    delete [] fZSM1Dim;
   }
   delete fGeo;
 }
