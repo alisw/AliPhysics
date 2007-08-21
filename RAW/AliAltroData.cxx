@@ -53,13 +53,12 @@ Bool_t AliAltroData::NextBunch(AliAltroBunch *altroBunch)
 	{
 	  if(*fBunchData == 0){ fWc += 1;};
 	  fWc += *fBunchData;
-	  altroBunch->SetData( fData - *fBunchData -1 );
-	  altroBunch->SetBunchSize( *fBunchData -2 );
+	  altroBunch->SetData(fData + fDataSize - fWc);
+	  altroBunch->SetBunchSize(*fBunchData -2);
 	  fBunchData --;
 	  altroBunch->SetEndTimeBin( *fBunchData );
+	  //	  altroBunch->SetStartTimeBin(*fBunchData - fBunchSize);
 	  fBunchData -= (altroBunch->GetBunchSize() +1);
-
-
 	  fBunchCounter ++;
 	  return kTRUE;
 	}

@@ -17,15 +17,24 @@ public:
   void   SetBunchSize(Int_t size) { fBunchSize = size; }
   UInt_t GetEndTimeBin()   const { return fEndTimeBin; }
   void   SetEndTimeBin(UInt_t bin) { fEndTimeBin = bin; }
-  UInt_t GetStartTimeBin() const { return fStartTimeBin; }
+
+  //  UInt_t GetStartTimeBin() const { return fStartTimeBin; }
+
+
+  UInt_t GetStartTimeBin() const 
+    { 
+      return (fEndTimeBin - fBunchSize); 
+    }
+
   void   SetStartTimeBin(UInt_t bin) { fStartTimeBin = bin; }
+  
 
 private:
 
   AliAltroBunch& operator = (const AliAltroBunch& bunch);
   AliAltroBunch(const AliAltroBunch& bunch);
 
-  UInt_t *fData;
+  UInt_t *fData; 
   Int_t   fBunchSize;
   UInt_t  fEndTimeBin;
   UInt_t  fStartTimeBin;
