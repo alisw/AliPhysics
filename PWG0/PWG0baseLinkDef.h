@@ -12,6 +12,8 @@
 #pragma link C++ class AlidNdEtaCorrection+;
 
 #pragma link C++ class AliESDtrackCuts+;
+#pragma link C++ class AliAnalysisTaskESDfilter+;
+#pragma link C++ class AliAnalysisTaskESDfilter+;
 
 #pragma link C++ class AliCorrectionMatrix+;
 #pragma link C++ class AliCorrectionMatrix2D+;
@@ -21,6 +23,8 @@
 
 #pragma link C++ class AliCorrection+;
 
+#pragma link C++ class AliMultiplicityCorrection+;
+#pragma link C++ class AliMultiplicityCorrection+;
 #pragma link C++ class AliMultiplicityCorrection+;
 
 
