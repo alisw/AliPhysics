@@ -165,6 +165,7 @@ int AliHLTTRDClusterizerComponentV2::DoInit( int argc, const char** argv )
     }
 
   fMemReader = new AliRawReaderMemory;
+
   fClusterizer = new AliTRDclusterizerV2HLT("TRDCclusterizer", "TRDCclusterizer");
   fClusterizer->SetRawVersion(fRawDataVersion);
   fClusterizer->InitClusterTree();
@@ -193,8 +194,8 @@ int AliHLTTRDClusterizerComponentV2::DoEvent( const AliHLTComponent_EventData& e
 					    AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks )
 {
   // Process an event
-  Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "Output percentage set", "Output percentage set to %lu %%", fOutputPercentage );
-  Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "BLOCKS", "NofBlocks %lu", evtData.fBlockCnt );
+//   Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "Output percentage set", "Output percentage set to %lu %%", fOutputPercentage );
+  Logging( kHLTLogDebug, "HLT::TRDClusterizer::DoEvent", "BLOCKS", "NofBlocks %lu", evtData.fBlockCnt );
   // Process an event
   unsigned long totalSize = 0;
   AliHLTUInt32_t fDblock_Specification = 0;
@@ -216,6 +217,7 @@ int AliHLTTRDClusterizerComponentV2::DoEvent( const AliHLTComponent_EventData& e
 	  continue;
 	}
       fDblock_Specification = blocks[i].fSpecification;
+//       Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "CHECKSPEC", "fDblock_Spec %d %d", i, fDblock_Specification);
       unsigned long blockSize = blocks[i].fSize;
       totalSize += blockSize;
     }
@@ -245,45 +247,25 @@ int AliHLTTRDClusterizerComponentV2::DoEvent( const AliHLTComponent_EventData& e
       copied += blocks[i].fSize;
     }
 
-  Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "COPY STATS", "total=%lu copied=%lu", totalSize, copied);
+//   Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "COPY STATS", "total=%lu copied=%lu", totalSize, copied);
 
   fMemReader->Reset();
   fMemReader->SetMemory((UChar_t*)memBufIn, totalSize);
+  //fMemReader->SelectEquipment(0, 1024, 1041);
+  fMemReader->SetEquipmentID(1024);
   //fMemReader->Reset();
-  Bool_t ihead = fMemReader->ReadHeader();
-  if (ihead == kTRUE)
-    {
-      Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "HEADER", "Header read successfully");
-    }
-  else
-    {
-      Logging( kHLTLogError, "HLT::TRDClusterizer::DoEvent", "HEADER", "Header read ERROR");
-      //return -1; -- not FATAL
-    }
-
-  fClusterizer->ResetTree();
-//   Bool_t ireadD = fClusterizer->ReadDigits(fMemReader);
-//   if (ireadD == kTRUE)
+//   Bool_t ihead = fMemReader->ReadHeader();
+//   if (ihead == kTRUE)
 //     {
-//       Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "DIGITS", "Digits read successfully");
+//       Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "HEADER", "Header read successfully");
 //     }
 //   else
 //     {
-//       Logging( kHLTLogError, "HLT::TRDClusterizer::DoEvent", "DIGITS", "Digits read ERROR");
-//       return -1;
+//       Logging( kHLTLogError, "HLT::TRDClusterizer::DoEvent", "HEADER", "Header read ERROR");
+//       //return -1; -- not FATAL
 //     }
 
-//   Bool_t iclustered = fClusterizer->MakeClusters();
-//   if (iclustered == kTRUE)
-//     {
-//       Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "CLUSTERS", "Clustered successfully");
-//     }
-//   else
-//     {
-//       Logging( kHLTLogError, "HLT::TRDClusterizer::DoEvent", "CLUSTERS", "Clustering ERROR");
-//       return -1;
-//     }
-
+  fClusterizer->ResetTree();  
   Bool_t iclustered = fClusterizer->Raw2ClustersChamber(fMemReader);
   if (iclustered == kTRUE)
     {
@@ -295,29 +277,41 @@ int AliHLTTRDClusterizerComponentV2::DoEvent( const AliHLTComponent_EventData& e
       return -1;
     }
 
+//   AliRawReaderMemory reader;
+//   reader.Reset();
+//   reader.SetMemory((UChar_t*)memBufIn, totalSize);
+//   //reader->Reset();
+//   Bool_t ihead = reader.ReadHeader();
+// //   if (ihead == kTRUE)
+// //     {
+// //       Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "HEADER", "Header read successfully");
+// //     }
+// //   else
+// //     {
+// //       Logging( kHLTLogError, "HLT::TRDClusterizer::DoEvent", "HEADER", "Header read ERROR");
+// //       //return -1; -- not FATAL
+// //     }
+
+//   fClusterizer->ResetTree();
+  
+//   Bool_t iclustered = fClusterizer->Raw2ClustersChamber(&reader);
+//   if (iclustered == kTRUE)
+//     {
+//       Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "CLUSTERS", "Clustered successfully");
+//     }
+//   else
+//     {
+//       Logging( kHLTLogError, "HLT::TRDClusterizer::DoEvent", "CLUSTERS", "Clustering ERROR");
+//       return -1;
+//     }
+  
   free(memBufIn);
-
-  //UInt_t memBufOutSize = 0;
-  //   void *memBufOut = fClusterizer->WriteClustersToMemory(memBufOut, memBufOutSize);
-  Int_t iNclusters = fClusterizer->GetNclusters();
-  Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "COUNT", "N of Clusters = %d", iNclusters);
-
+  
   // put the tree into output blocks of TObjArrays
   TTree *fcTree = fClusterizer->GetClusterTree();
-  TList *lt = (TList*)fcTree->GetListOfBranches();
-  TIter it(lt);
-  it.Reset();
-  TBranch *tb = 0;
-  while ((tb = (TBranch*)it.Next()) != 0)
-    {
-      TObjArray *clusters = 0;
-      tb->SetAddress(&clusters);
-      for (Int_t icb = 0; icb < tb->GetEntries(); icb++)
-	{
-	  tb->GetEntry(icb);
-	  PushBack(clusters, AliHLTTRDDefinitions::fgkClusterDataType, fDblock_Specification);
-	}
-    }
-
+  
+  PushBack(fcTree, AliHLTTRDDefinitions::fgkClusterDataType, fDblock_Specification);
+  
+  Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "DONE", "Output size %d", size);
   return 0;
 }

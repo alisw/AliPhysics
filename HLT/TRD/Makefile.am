@@ -24,6 +24,7 @@ libAliHLTTRD_la_SOURCES		= AliTRDclusterizerV1HLT.cxx \
 				  AliHLTTRDClusterizerComponent.cxx \
 				  AliHLTTRDClusterizerComponentV2.cxx \
 				  AliHLTTRDTrackerComponent.cxx \
+				  AliHLTTRDTrackerComponentV2.cxx \
 				  AliTRDtrackerHLT.cxx
 
 # class header files, the link definition for the root dictionary
@@ -34,6 +35,7 @@ CLASS_HDRS			= AliTRDclusterizerV1HLT.h \
 				  AliHLTTRDClusterizerComponent.h \
 				  AliHLTTRDClusterizerComponentV2.h \
 				  AliHLTTRDTrackerComponent.h \
+				  AliHLTTRDTrackerComponentV2.h \
 				  AliTRDtrackerHLT.h
 
 pkginclude_HEADERS		= $(CLASS_HDRS) 

@@ -14,6 +14,7 @@ MODULE_SRCS= \
         AliHLTTRDClusterizerComponentV2.cxx \
         AliHLTTRDDefinitions.cxx \
         AliHLTTRDTrackerComponent.cxx \
+        AliHLTTRDTrackerComponentV2.cxx \
         AliTRDclusterizerV1HLT.cxx \
         AliTRDclusterizerV2HLT.cxx \
 	AliTRDtrackerHLT.cxx
@@ -25,6 +26,7 @@ CLASS_HDRS:= \
         AliHLTTRDClusterizerComponentV2.h \
         AliHLTTRDDefinitions.h \
         AliHLTTRDTrackerComponent.h \
+        AliHLTTRDTrackerComponentV2.h \
         AliTRDclusterizerV1HLT.h \
         AliTRDclusterizerV2HLT.h \
 	AliTRDtrackerHLT.h
