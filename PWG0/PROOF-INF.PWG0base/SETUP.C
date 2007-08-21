@@ -5,9 +5,10 @@ void SETUP()
    CheckLoadLibrary("libGeom");
 
    // Load the ESD library
-   CheckLoadLibrary("libESD");
+  CheckLoadLibrary("libANALYSIS");
+  CheckLoadLibrary("libESD");
+  CheckLoadLibrary("libPWG0base");
 
-   CheckLoadLibrary("libPWG0base");
 
    // Set the include paths
    gROOT->ProcessLine(".include PWG0base");
