@@ -115,8 +115,8 @@ AliHLTPHOSOnlineDisplayRawTab::InitDisplay(TGTab *tabPtr)
       for(int x = 0; x < N_XCOLUMNS_RCU; x ++)
 	{
 	  sprintf(tmpHistoName, "row %d column %d",z, x);
-	  //	  fgChannelDataPlotPtr[z][x] = new TH1D(tmpHistoName, tmpHistoName, 300, 0, 299);
-	  fgChannelDataPlotPtr[z][x] = new AliHLTPHOSTH1D(tmpHistoName, tmpHistoName, 100, 0, 100);
+	  fgChannelDataPlotPtr[z][x] = new TH1D(tmpHistoName, tmpHistoName, 300, 0, 299);
+	  //	  fgChannelDataPlotPtr[z][x] = new AliHLTPHOSTH1D(tmpHistoName, tmpHistoName, 100, 0, 100);
 	  //	  fgChannelDataPlotPtr[z][x]->SetMaximum(MAX_BIN_VALUE); 
 	  fgChannelDataPlotPtr[z][x]->SetMaximum(1023); 
 	  fgChannelDataPlotPtr[z][x]->Reset();
