@@ -794,16 +794,19 @@ Bool_t AliTRDRawStreamV2::DecodeNextRawWord()
     return kFALSE;
   }
 
-  if ( (*fDataWord & 0x3) != fLastADCmask) 
+  if ( (*fDataWord & 0x3) != fLastADCmask || fTbSwitchCtr > fTimeWords) 
     {    
       fADC = fADClookup[fADClookup[1]];
 //       AliDebug(8, Form("Next fADC = %d at index = %d MCM Word Number: %d Max MCM Words is %d", 
 // 		       fADC, fADClookup[1] - 2, fMCMWordCrt, fMCMWordsExpected));
       ++fADClookup[1];
       fTB = 0;    
+      fTbSwitchCtr = 0;
       fLastStatus = fkNextData;
       fLastADCmask = (*fDataWord) & 0x3;
     }
+
+  ++fTbSwitchCtr;
 
   //decode data here
   Bool_t kIsDataOK = kFALSE;
