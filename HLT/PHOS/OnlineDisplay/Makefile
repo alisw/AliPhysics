@@ -14,7 +14,7 @@ ROOTLIBS	= `root-config --libs --glibs`
 ###ALIROOTLIBS	= -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lESD -lSTEER -lRAWDatarec   -lRAWDatabase 
 ALIROOTLIBS	= -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET)  
 
-HLTLIBS		=-L$(ALIHLT_DC_DIR)/lib/Linux-i686 -lHOMERReader
+HLTLIBS		=-L$(ALIHLT_DC_DIR)/lib/Linux-x86_64-release -lHOMER
 
 HOMERINCLUDE	=$(ALIHLT_DC_DIR)/src/Util/HOMER/include 
 
