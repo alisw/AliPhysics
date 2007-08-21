@@ -1766,7 +1766,7 @@ void AliReconstruction::WriteESD(AliESDEvent* esd, const char* recStep) const
 void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
 {
   // write all files from the given esd file to an aod file
-  
+
   // create an AliAOD object 
   AliAODEvent *aod = new AliAODEvent();
   aod->CreateStdContent();
@@ -1803,9 +1803,10 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
     for (Int_t iTrack=0; iTrack<nTracks; ++iTrack) 
       if (esd->GetTrack(iTrack)->Charge()> 0) nPosTracks++;
 
-    // Update the header
-    AliAODHeader* header = aod->GetHeader();
-    
+    // Access the header
+    AliAODHeader *header = aod->GetHeader();
+
+    // fill the header
     header->SetRunNumber       (esd->GetRunNumber()       );
     header->SetBunchCrossNumber(esd->GetBunchCrossNumber());
     header->SetOrbitNumber     (esd->GetOrbitNumber()     );
@@ -1824,8 +1825,6 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
     header->SetRefMultiplicityNeg(nTracks - nPosTracks);
     header->SetMuonMagFieldScale(-999.); // FIXME
     header->SetCentrality(-999.);        // FIXME
-//
-//
 
     Int_t nV0s      = esd->GetNumberOfV0s();
     Int_t nCascades = esd->GetNumberOfCascades();
@@ -1835,7 +1834,6 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
     aod->ResetStd(nTracks, nVertices);
     AliAODTrack *aodTrack;
     
-
     // Array to take into account the tracks already added to the AOD
     Bool_t * usedTrack = NULL;
     if (nTracks>0) {
@@ -1893,7 +1891,7 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
       primary->AddDaughter(vcascade);
 
       // Add the V0 from the cascade. The ESD class have to be optimized...
-      // Now we have to search for the corresponding Vo in the list of V0s
+      // Now we have to search for the corresponding V0 in the list of V0s
       // using the indeces of the positive and negative tracks
 
       Int_t posFromV0 = cascade->GetPindex();
@@ -2371,7 +2369,7 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
       // has to be changed once the muon pid is provided by the ESD
       for (Int_t i = 0; i < 10; pid[i++] = 0.); pid[AliAODTrack::kMuon]=1.;
       
-      primary->AddDaughter(aodTrack = 
+      primary->AddDaughter(aodTrack =
 	  new(tracks[jTracks++]) AliAODTrack(0, // no ID provided
 					     0, // no label provided
 					     p,
@@ -2383,18 +2381,18 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
 					     0, // ITSClusterMap is set below
 					     pid,
 					     primary,
- 					     kFALSE,    // muon tracks are not used to fit the primary vtx
-					     kFALSE,    // not used for vertex fit
+ 					     kFALSE,  // muon tracks are not used to fit the primary vtx
+					     kFALSE,  // not used for vertex fit
 					     AliAODTrack::kPrimary)
 	  );
-    
-        aodTrack->SetHitsPatternInTrigCh(esdMuTrack->GetHitsPatternInTrigCh());
-        Int_t track2Trigger = esdMuTrack->GetMatchTrigger();
-        aodTrack->SetMatchTrigger(track2Trigger);
-        if (track2Trigger) 
-  	  aodTrack->SetChi2MatchTrigger(esdMuTrack->GetChi2MatchTrigger());
-        else 
-	  aodTrack->SetChi2MatchTrigger(0.);
+
+      aodTrack->SetHitsPatternInTrigCh(esdMuTrack->GetHitsPatternInTrigCh());
+      Int_t track2Trigger = esdMuTrack->GetMatchTrigger();
+      aodTrack->SetMatchTrigger(track2Trigger);
+      if (track2Trigger) 
+	aodTrack->SetChi2MatchTrigger(esdMuTrack->GetChi2MatchTrigger());
+      else 
+	aodTrack->SetChi2MatchTrigger(0.);
     }
     
     // Access to the AOD container of clusters
@@ -2415,17 +2413,17 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
       AliAODVertex *prodVertex = primary;
       AliAODTrack *primTrack = NULL;
       Char_t ttype=AliAODCluster::kUndef;
-      
+
       if (cluster->IsPHOS()) ttype=AliAODCluster::kPHOSNeutral;
       else if (cluster->IsEMCAL()) {
-	
+
 	if (cluster->GetClusterType() == AliESDCaloCluster::kPseudoCluster)
 	  ttype = AliAODCluster::kEMCALPseudoCluster;
 	else
 	  ttype = AliAODCluster::kEMCALClusterv1;
-	
+
       }
-      
+
       new(clusters[jClusters++]) AliAODCluster(id,
 					       label,
 					       energy,
@@ -2435,27 +2433,41 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
 					       prodVertex,
 					       primTrack,
 					       ttype);
-      
+
     } // end of loop on calo clusters
-    
+
+    // tracklets
+    const AliMultiplicity *mult = esd->GetMultiplicity();
+    if (mult) {
+      if (mult->GetNumberOfTracklets()>0) {
+	aod->GetTracklets()->CreateContainer(mult->GetNumberOfTracklets());
+
+	for (Int_t n=0; n<mult->GetNumberOfTracklets(); n++) {
+	  aod->GetTracklets()->SetTracklet(n, mult->GetTheta(n), mult->GetPhi(n), mult->GetDeltaPhi(n), mult->GetLabel(n));
+	}
+      }
+    } else {
+      Printf("ERROR: AliMultiplicity could not be retrieved from ESD");
+    }
+
     delete [] usedTrack;
     delete [] usedV0;
     delete [] usedKink;
-    
+
     // fill the tree for this event
     aodTree->Fill();
   } // end of event loop
-  
+
   aodTree->GetUserInfo()->Add(aod);
-  
+
   // close ESD file
   esdFile->Close();
-  
+
   // write the tree to the specified file
   aodFile = aodTree->GetCurrentFile();
   aodFile->cd();
   aodTree->Write();
-  
+
   return;
 }
 

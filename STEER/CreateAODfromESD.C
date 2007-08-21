@@ -25,19 +25,22 @@
 void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 		      const char *outFileName = "AliAOD.root") {
 
+  // open input file
+  TFile *inFile = TFile::Open(inFileName, "READ");
+
   // create an AliAOD object 
   AliAODEvent *aod = new AliAODEvent();
   aod->CreateStdContent();
 
-  // open the file
+  // open output file
   TFile *outFile = TFile::Open(outFileName, "RECREATE");
+  outFile->cd();
 
   // create the tree
   TTree *aodTree = new TTree("aodTree", "AliAOD tree");
   aodTree->Branch(aod->GetList());
 
   // connect to ESD
-  TFile *inFile = TFile::Open(inFileName, "READ");
   TTree *t = (TTree*) inFile->Get("esdTree");
   AliESDEvent *esd = new AliESDEvent();
   esd->ReadFromTree(t);
@@ -61,30 +64,30 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
     Int_t nPosTracks = 0;
     for (Int_t iTrack=0; iTrack<nTracks; ++iTrack) 
       if (esd->GetTrack(iTrack)->Charge()> 0) nPosTracks++;
-    
-    // Access to the header
+
+    // Access the header
     AliAODHeader *header = aod->GetHeader();
 
     // fill the header
-    *header = AliAODHeader(esd->GetRunNumber(),
-			   esd->GetBunchCrossNumber(),
-			   esd->GetOrbitNumber(),
-			   esd->GetPeriodNumber(),
-			   nTracks,
-			   nPosTracks,
-			   nTracks-nPosTracks,
-			   esd->GetMagneticField(),
-			   -999., // fill muon magnetic field
-			   -999., // centrality; to be filled, still
-			   esd->GetZDCN1Energy(),
-			   esd->GetZDCP1Energy(),
-			   esd->GetZDCN2Energy(),
-			   esd->GetZDCP2Energy(),
-			   esd->GetZDCEMEnergy(),
-			   esd->GetTriggerMask(),
-			   esd->GetTriggerCluster(),
-			   esd->GetEventType());
-  
+    header->SetRunNumber       (esd->GetRunNumber()       );
+    header->SetBunchCrossNumber(esd->GetBunchCrossNumber());
+    header->SetOrbitNumber     (esd->GetOrbitNumber()     );
+    header->SetPeriodNumber    (esd->GetPeriodNumber()    );
+    header->SetTriggerMask     (esd->GetTriggerMask()     ); 
+    header->SetTriggerCluster  (esd->GetTriggerCluster()  );
+    header->SetEventType       (esd->GetEventType()       );
+    header->SetMagneticField   (esd->GetMagneticField()   );
+    header->SetZDCN1Energy     (esd->GetZDCN1Energy()     );
+    header->SetZDCP1Energy     (esd->GetZDCP1Energy()     );
+    header->SetZDCN2Energy     (esd->GetZDCN2Energy()     );
+    header->SetZDCP2Energy     (esd->GetZDCP2Energy()     );
+    header->SetZDCEMEnergy     (esd->GetZDCEMEnergy()     );
+    header->SetRefMultiplicity   (nTracks);
+    header->SetRefMultiplicityPos(nPosTracks);
+    header->SetRefMultiplicityNeg(nTracks - nPosTracks);
+    header->SetMuonMagFieldScale(-999.); // FIXME
+    header->SetCentrality(-999.);        // FIXME
+
     Int_t nV0s      = esd->GetNumberOfV0s();
     Int_t nCascades = esd->GetNumberOfCascades();
     Int_t nKinks    = esd->GetNumberOfKinks();
@@ -628,7 +631,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
       // has to be changed once the muon pid is provided by the ESD
       for (Int_t i = 0; i < 10; pid[i++] = 0.); pid[AliAODTrack::kMuon]=1.;
       
-      primary->AddDaughter( aodTrack =
+      primary->AddDaughter(aodTrack =
 	  new(tracks[jTracks++]) AliAODTrack(0, // no ID provided
 					     0, // no label provided
 					     p,
@@ -644,13 +647,14 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 					     kFALSE,  // not used for vertex fit
 					     AliAODTrack::kPrimary)
 	  );
-	aodTrack->SetHitsPatternInTrigCh(esdMuTrack->GetHitsPatternInTrigCh());
-	Int_t track2Trigger = esdMuTrack->GetMatchTrigger();
-	aodTrack->SetMatchTrigger(track2Trigger);
-	if (track2Trigger) 
-	  aodTrack->SetChi2MatchTrigger(esdMuTrack->GetChi2MatchTrigger());
-	else 
-	  aodTrack->SetChi2MatchTrigger(0.);
+
+      aodTrack->SetHitsPatternInTrigCh(esdMuTrack->GetHitsPatternInTrigCh());
+      Int_t track2Trigger = esdMuTrack->GetMatchTrigger();
+      aodTrack->SetMatchTrigger(track2Trigger);
+      if (track2Trigger) 
+	aodTrack->SetChi2MatchTrigger(esdMuTrack->GetChi2MatchTrigger());
+      else 
+	aodTrack->SetChi2MatchTrigger(0.);
     }
     
     // Access to the AOD container of clusters
@@ -681,7 +685,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 	  ttype = AliAODCluster::kEMCALClusterv1;
 
       }
-      
+
       new(clusters[jClusters++]) AliAODCluster(id,
 					       label,
 					       energy,
@@ -715,16 +719,15 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
     // fill the tree for this event
     aodTree->Fill();
   } // end of event loop
-  
+
   aodTree->GetUserInfo()->Add(aod);
 
   // close ESD file
   inFile->Close();
-  
+
   // write the tree to the specified file
   outFile = aodTree->GetCurrentFile();
   outFile->cd();
   aodTree->Write();
   outFile->Close();
-
 }
