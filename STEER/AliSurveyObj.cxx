@@ -27,6 +27,7 @@
 #include "Riostream.h"
 #include "TObjArray.h"
 #include "TGrid.h"
+#include "TGridResult.h"
 #include "TFile.h"
 #include "TObjString.h"
 
@@ -34,6 +35,17 @@
 #include "AliLog.h"
 
 ClassImp(AliSurveyObj)
+
+
+const TString AliSurveyObj::fgkStorage = "alien://alice.cern.ch";  
+const TString AliSurveyObj::fgkBaseFolder = "/alice/data/Reference";
+const TString AliSurveyObj::fgkValidDetectors = "ACORDE,BABYFRAME,BACKFRAME,\
+EMCAL,FMD,HMPID,ITS,L3 MAGNET,MUON,MUON ABSORBERS,MUON DIPOLE,PHOS,PMD,\
+SPACEFRAME,SUPERSTRUCTURE,T0,TOF,TPC,TRD,V0,ZDC,GRP";
+const TString AliSurveyObj::fgkGRPDetectors = "BABYFRAME,BACKFRAME,L3 MAGNET,\
+SPACEFRAME,MUON DIPOLE,MUON ABSORBERS,GRP";
+const TString AliSurveyObj::fgkMUONDetectors = "MUON,SUPERSTRUCTURE";
+
   
 //_____________________________________________________________________________
 AliSurveyObj::AliSurveyObj():
@@ -62,7 +74,6 @@ AliSurveyObj::AliSurveyObj():
 AliSurveyObj::~AliSurveyObj() {
   //destructor
   if (fDataPoints) {
-    for (Int_t i = 0; i < fDataPoints->GetEntries(); ++i) delete fDataPoints->At(i);
     fDataPoints->Delete();
     fDataPoints = 0;
   }
@@ -94,6 +105,7 @@ AliSurveyObj::AliSurveyObj(const AliSurveyObj& surveyObj):
     curr = surveyObj.fDataPoints->After(curr);
   }
 }
+
 
 //_____________________________________________________________________________
 AliSurveyObj& AliSurveyObj::operator=(const AliSurveyObj& surveyObj)
@@ -160,12 +172,11 @@ Bool_t AliSurveyObj::Connect(const char *gridUrl, const char *user) {
 //_____________________________________________________________________________
 Bool_t AliSurveyObj::OpenFile(TString openString) {
   // Opens the file and reads it to a buffer
-  TString storage = "alien://alice.cern.ch";
 
-  Printf("TFile::Open string: \n -> \"%s\"\n", openString.Data());
+  Printf("Open string: \n -> \"%s\"\n", openString.Data());
 
   if (openString.BeginsWith("alien://"))
-    if (!Connect(storage.Data(), fGridUser.Data())) {
+    if (!Connect(fgkStorage.Data(), fGridUser.Data())) {
       AliError(Form("Error connecting to GRID"));
       return kFALSE;
     }
@@ -196,56 +207,6 @@ Bool_t AliSurveyObj::OpenFile(TString openString) {
 }
 
 
-
-//_____________________________________________________________________________
-Bool_t AliSurveyObj::Fill(TString detector, Int_t year, Int_t reportNumber,
-                         Int_t reportVersion, TString username) {
-  // Fills the object from a file in the default storage location in AliEn
-
-  TString baseFolder = "/alice/data/Reference/";
-  TString validDetectors = "ACORDE,BABYFRAME,BACKFRAME,EMCAL,FMD,HMPID,ITS,L3 MAGNET,MUON,MUON ABSORBERS,MUON DIPOLE,PHOS,PMD,SPACEFRAME,SUPERSTRUCTURE,T0,TOF,TPC,TRD,V0,ZDC";
-  TString GRPDetectors = "BABYFRAME,BACKFRAME,L3 MAGNET,SPACEFRAME,MUON DIPOLE,MUON ABSORBERS";
-  TString MUONDetectors = "MUON,SUPERSTRUCTURE";
-
-  detector.ToUpper();
-  
-  // Check if <detector> is valid
-  TObjArray *dets = validDetectors.Tokenize(',');
-  if (!dets->FindObject(detector)) {
-    AliError(Form("Detector '%s' is not a valid detector/structure!", detector.Data()));
-    return kFALSE;
-  }
-  dets->Delete();
-  dets = 0;
-
-  // Some "detectors" don't have a folder of their own
-  dets = GRPDetectors.Tokenize(',');
-  if (dets->FindObject(detector)) detector = "GRP";
-  dets->Delete();
-  dets = 0;
-
-  dets = MUONDetectors.Tokenize(',');
-  if (dets->FindObject(detector)) detector = "MUON";
-  dets->Delete();
-  dets = 0;
-
-  // Check if <year>, <reportNumber> and <reportVersion> are valid (roughly)
-  if ((year < 1950) || (reportNumber < 1) || (reportVersion < 1)) {
-    AliError("Invalid parameter values for AliSurveyObj::Fill. (Year, Report Number or Report Version)");
-    return kFALSE;
-  }
-
-  // Finally composes the full string
-  TString fullOpenString = "alien://" + baseFolder + detector + "/RawSurvey/";
-  fullOpenString += Form("%d/%d_v%d.txt?filetype=raw", year, reportNumber, reportVersion);
-
-  // Set the GRID username variable to connect to the GRID
-  fGridUser = username;
-
-  return OpenFile(fullOpenString);
-}
-
-
 //_____________________________________________________________________________
 Bool_t AliSurveyObj::FillFromLocalFile(const Char_t* filename) {
   // Fills the object from a file in a local filesystem
@@ -253,6 +214,333 @@ Bool_t AliSurveyObj::FillFromLocalFile(const Char_t* filename) {
   TString fullOpenString = "file://" + TString(filename) + "?filetype=raw";
 
   return OpenFile(fullOpenString);
+}
+
+
+//_____________________________________________________________________________
+Bool_t AliSurveyObj::IsValidDetector(TString detector) const {
+  // Checks if the detector name is valid
+
+  detector.ToUpper();
+
+  TObjArray *dets = fgkValidDetectors.Tokenize(',');
+  TObject *found = dets->FindObject(detector);
+  dets->Delete();
+  dets = 0;
+
+  if (!found) return kFALSE;
+  else return kTRUE;
+}
+
+
+//_____________________________________________________________________________
+TString AliSurveyObj::RealFolderName(TString detector) const {
+  // Returns the actual folder name for a given detector 
+  // Some "detectors" don't have a folder of their own
+
+  detector.ToUpper();
+  TString folderName = detector;
+
+  TObjArray *dets = fgkGRPDetectors.Tokenize(',');
+  if (dets->FindObject(detector)) folderName = "GRP";
+  dets->Delete();
+  dets = 0;
+
+  dets = fgkMUONDetectors.Tokenize(',');
+  if (dets->FindObject(detector)) folderName = "MUON";
+  dets->Delete();  
+ 
+
+
+  dets = 0;
+
+  return folderName;
+}
+
+//_____________________________________________________________________________
+Bool_t AliSurveyObj::Fill(TString detector, Int_t reportNumber,
+                          TString username) {
+  // Fills the object from a file in the default storage location in AliEn.
+  // The highest version available is selected.
+
+  return Fill(detector, reportNumber, -1, username);
+}
+
+//_____________________________________________________________________________
+Bool_t AliSurveyObj::Fill(TString detector, Int_t reportNumber,
+                          Int_t reportVersion, TString username) {
+  // Fills the object from a file in the default storage location in AliEn.
+  // A specific version is selected.
+
+  detector.ToUpper();
+  
+  // Check if <detector> is valid
+  if (!IsValidDetector(detector)) {
+    AliWarning(Form("Detector '%s' is not a valid detector/structure!", detector.Data()));
+    return kFALSE;
+  }
+
+  // Some "detectors" don't have a folder of their own
+  // TString detectorFolder = RealFolderName(detector);
+
+  // Check if <year>, <reportNumber> and <reportVersion> are valid (roughly)
+  if ((reportNumber < 1) || (reportVersion < -1) || (0 == reportVersion)) {
+    AliError("Invalid parameter values for AliSurveyObj::Fill. (Report Number or Report Version)");
+    return kFALSE;
+  }
+
+  // Check if the fGridUser is set, or specified
+  if (username.Length() > 0) SetGridUser(username);
+  else if (0 == fGridUser.Length()) {
+    AliError("GRID username not specified and not previously set!");
+    return kFALSE;
+  }
+
+  // Query AliEn for the available reports
+  TGridResult *res = QueryReports(detector, -1, reportNumber, reportVersion);
+  if (!res) AliError(Form("Error querying AliEn for detector '%s', \
+                           report number '%d' and report version '%d'.",
+			  detector.Data(), reportNumber, reportVersion));
+  Int_t numberEntries = res->GetEntries();
+  if (0 == numberEntries) {
+    AliError(Form("No report found for detector '%s', report number '%d' and report version '%d'",
+		  detector.Data(), reportNumber, reportVersion));
+    return kFALSE;
+  }
+
+  TString fileNamePath = "";
+  if (1 == numberEntries) fileNamePath = res->GetFileNamePath(0);
+  else if (numberEntries > 1) {
+    TString higherVerFNP = res->GetFileNamePath(0);
+    Int_t lastYear = FileNamePathToReportYear(higherVerFNP);
+    for (Int_t i = 1; i < numberEntries; ++i) {
+      TString currFNP = res->GetFileNamePath(i);
+      if (FileNamePathToReportVersion(currFNP) >
+	  FileNamePathToReportVersion(higherVerFNP)) higherVerFNP = currFNP;
+      if (lastYear != FileNamePathToReportYear(currFNP))
+	AliWarning("Inconsistency detected, year differs for reports with the same report number! Please inform the responsible and check the report against the one in DCDB.");
+    }
+    fileNamePath = higherVerFNP;
+  }
+
+  TString fullOpenString = "alien://" + fileNamePath + "?filetype=raw";
+  /*
+  // Finally composes the full string
+  TString fullOpenString = "alien://" + fgkBaseFolder + "/" + detectorFolder + "/RawSurvey/";
+  fullOpenString += Form("%d/%d_v%d.txt?filetype=raw", year, reportNumber, reportVersion);
+  */
+
+  return OpenFile(fullOpenString);
+}
+
+
+//_____________________________________________________________________________
+TString AliSurveyObj::FileNamePathToDetector(TString filename) const {
+  // Get the report number from the complete path in the format:
+  // /alice/data/Reference/HMPID/RawSurvey/2006/781282_v1.txt
+
+  TString ret = "";
+
+  if (filename.Length() > fgkBaseFolder.Length()) {
+    ret = filename.Remove(0, fgkBaseFolder.Length());
+    ret.Remove(TString::kLeading, '/');
+    ret = ret(0, ret.First('/'));
+    if (!IsValidDetector(ret)) ret = "";
+  } 
+  return ret;
+}
+
+///alice/cern.ch/user/r/rsilva/TRD/RawSurvey/2007/.816582_v2.txt/v1.0
+
+//_____________________________________________________________________________
+Int_t AliSurveyObj::FileNamePathToReportYear(TString filename) const {
+  // Get the report year from the complete path in the format:
+  // /alice/data/Reference/HMPID/RawSurvey/2006/781282_v1.txt
+
+  TString ret = "";
+
+  if (filename.Length() > fgkBaseFolder.Length()) {
+    ret = filename.Remove(0, fgkBaseFolder.Length());
+    ret.Remove(TString::kLeading, '/');
+    Int_t beg = ret.First('/') + TString("RawSurvey/").Length() + 1;
+    ret = ret(beg, ret.Last('/') - beg);
+    return ret.Atoi();
+  } 
+  return -1;
+}
+
+
+//_____________________________________________________________________________
+Int_t AliSurveyObj::FileNamePathToReportNumber(TString filename) const {
+  // Get the report number from the complete path in the format:
+  // /alice/data/Reference/HMPID/RawSurvey/2006/781282_v1.txt
+
+  TString ret = "";
+
+  if (filename.Length() > fgkBaseFolder.Length()) {
+    ret = filename.Remove(0, fgkBaseFolder.Length());
+    ret.Remove(TString::kLeading, '/');
+    if ((ret.CountChar('/') > 3) || (ret.CountChar('.') > 1)) {
+      AliWarning("Error getting the Report Number from the filename path!");
+      return -1;
+    }
+    ret = ret(ret.Last('/') + 1 , ret.Last('_') - ret.Last('/') - 1);
+    return ret.Atoi();
+  } 
+  AliWarning("Error getting the Report Number from the filename path!");
+  return -1;
+}
+
+
+//_____________________________________________________________________________
+Int_t AliSurveyObj::FileNamePathToReportVersion(TString filename) const {
+  // Get the report version from the complete path in the format:
+  // /alice/data/Reference/HMPID/RawSurvey/2006/781282_v1.txt
+
+  TString ret = "";
+
+  if (filename.Length() > fgkBaseFolder.Length()) {
+    ret = filename.Remove(0, fgkBaseFolder.Length());
+    ret.Remove(TString::kLeading, '/');
+    if ((ret.CountChar('/') > 3) || (ret.CountChar('.') > 1)) {
+      AliWarning("Error getting the Report Version from the filename path!");
+      return -1;
+    }
+    ret = ret(ret.Last('_') + 1 + 1 , ret.Last('.') - ret.Last('_') - 1 - 1);
+    return ret.Atoi();
+  } 
+  AliWarning("Error getting the Report Version from the filename path!");
+  return -1;
+}
+
+
+//_____________________________________________________________________________
+void AliSurveyObj::ListValidDetectors() {
+  // List the valid detector names
+  Printf("");
+  Printf("Listing all valid detectors:\n");
+  TObjArray *dets = fgkValidDetectors.Tokenize(',');
+  for (int i = 0; i < dets->GetEntries(); ++i) 
+    Printf("%s", ((TObjString *) dets->At(i))->GetString().Data());
+  dets->Delete();
+  dets = 0;
+  Printf("");
+  Printf("Some reports are stored in more general folders.");
+  Printf("These reports can be opened using either name, the original or the");
+  Printf("folder name. Example: 'SPACEFRAME' or 'GRP' are both valid when");
+  Printf("opening a report for the Spaceframe.");
+  Printf("");
+  Printf("Detectors stored in 'MUON' folder:");
+  dets = fgkMUONDetectors.Tokenize(',');
+  for (int i = 0; i < dets->GetEntries(); ++i) 
+    Printf("%s", ((TObjString *) dets->At(i))->GetString().Data());
+  dets->Delete();
+  dets = 0;
+  Printf("");
+  Printf("Detectors stored in 'GRP' folder:");
+  dets = fgkGRPDetectors.Tokenize(',');
+  for (int i = 0; i < dets->GetEntries(); ++i) 
+    Printf("%s", ((TObjString *) dets->At(i))->GetString().Data());
+  dets->Delete();
+  dets = 0;
+  return;
+}
+
+
+//_____________________________________________________________________________
+TGridResult * AliSurveyObj::QueryReports(TString detector, Int_t year,
+					 Int_t reportNumber,
+					 Int_t reportVersion) {
+  // Queries AliEn for existing reports matching the specified conditions
+  TString lsArg = fgkBaseFolder;
+  
+  TString detectorFolder = "";
+  if (detector.Length() > 0) {
+    detector.ToUpper();
+    // Check if <detector> is valid
+    if (!IsValidDetector(detector)) {
+      AliError(Form("Detector '%s' is not a valid detector/structure!",
+		    detector.Data()));
+      return 0;
+    }
+    // Some "detectors" don't have a folder of their own
+    detectorFolder = "/" + RealFolderName(detector);
+  } else detectorFolder = "/*";
+
+  lsArg += detectorFolder + "/RawSurvey";
+
+  TString yearFolder = "";
+  if (year > 1950) yearFolder.Form("/%d", year);
+  else yearFolder = "/*";
+
+  TString reportFolder = "";
+  if (reportNumber > 0) reportFolder.Form("/%d", reportNumber);
+  else reportFolder = "/*";
+
+  TString versionFolder = "";
+  if (reportVersion > 0) versionFolder.Form("_v%d", reportVersion);
+  else versionFolder = "_v*";
+
+  lsArg += yearFolder + reportFolder + versionFolder + ".txt";
+
+  Printf("");
+  Printf(Form("Looking for:  %s \n", lsArg.Data()));
+  
+  // Check if fGridUser is set and Connect to AliEn
+  if (0 == fGridUser.Length()) {
+    AliError("To use this method it's necessary to call SetGridUser(...) in advance.");
+    return 0;
+  } else if (!Connect(fgkStorage.Data(), fGridUser.Data())) {
+    AliError(Form("Error connecting to GRID"));
+    return 0;
+  }
+  return gGrid->Ls(lsArg);
+}
+
+
+//_____________________________________________________________________________
+Int_t AliSurveyObj::ListReports(TString detector, Int_t year, 
+				Int_t reportNumber,
+				Int_t reportVersion) {
+  // Lists all available reports matching the specified conditions
+  // Returns the number of reports found
+
+  TGridResult *res = QueryReports(detector, year, reportNumber, reportVersion);
+  
+  if (0 == res) {
+    AliError("Query failed.");
+    return 0;
+  }
+
+  TString fn = "";
+  Int_t numberEntries = res->GetEntries();
+
+  if (numberEntries > 0) {
+    Printf("");
+    Printf(Form("%d reports found:", numberEntries));
+    for (int i = 0; i < res->GetEntries(); ++i) {
+      fn = res->GetFileNamePath(i);
+      Printf(Form("Detector:%s\tYear:%d\tEDMS Report Number:%d\tVersion:%d",
+		  FileNamePathToDetector(fn).Data(),
+		  FileNamePathToReportYear(fn),
+		  FileNamePathToReportNumber(fn),
+		  FileNamePathToReportVersion(fn)));
+    }
+    delete res;
+    return numberEntries;
+  } else {
+    AliInfo("No results found for the requested query.");
+    delete res;
+    return 0;
+  }
+}
+
+
+//_____________________________________________________________________________
+void AliSurveyObj::SetGridUser(TString username){
+  // Set the username used to connect to the GRID
+  fGridUser = username;
+  return;
 }
 
 
@@ -537,7 +825,6 @@ void AliSurveyObj::Reset() {
   // Used if the same object is filled more than once
   
   if (fDataPoints) {
-    for (Int_t i = 0; i < fDataPoints->GetEntries(); ++i) delete fDataPoints->At(i);
     fDataPoints->Delete();
     fDataPoints = 0;
   }

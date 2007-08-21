@@ -20,14 +20,25 @@
 //#include "AliLog.h"
 #include "AliSurveyPoint.h"
 
+class TGridResult;
+
 class AliSurveyObj: public TObject {
 
  public:
   AliSurveyObj();
   ~AliSurveyObj();
   Bool_t FillFromLocalFile(const Char_t* filename);
-  Bool_t Fill(TString detector, Int_t year, Int_t reportNumber,
-	      Int_t reportVersion, TString username);
+  Bool_t Fill(TString detector, Int_t reportNumber,
+	      Int_t reportVersion, TString username = "");
+  Bool_t Fill(TString detector, Int_t reportNumber,
+	      TString username = "");
+
+  static void ListValidDetectors();
+  Int_t ListReports(TString detector = "", Int_t year = -1,
+		    Int_t reportNumber = -1,
+		    Int_t reportVersion = -1);
+
+  void SetGridUser(TString username);
  
   // Number of points (AliSurveyPoint) in the TObjArray
   Int_t GetEntries() const {return fDataPoints->GetEntries();};
@@ -73,16 +84,29 @@ class AliSurveyObj: public TObject {
   Int_t fNrColumns;   // Number of columns in data values
   TString fColNames;  // Column names sepparated by commas
   Bool_t fIsValid;    // Is the data valid? (sucessfully parsed)
-
   TString fGridUser;  // Username to be used for the connection to GRID
   
   TObjArray *fDataPoints;	// Actual Data
   
+  static const TString fgkStorage;
+  static const TString fgkBaseFolder;
+  static const TString fgkValidDetectors;
+  static const TString fgkGRPDetectors;
+  static const TString fgkMUONDetectors;
+    
   Bool_t Connect(const char *gridUrl, const char *user);
   Bool_t OpenFile(TString openString);
   TString &Sanitize(TString str);
   Bool_t ParseBuffer(const Char_t* buf);
   void Reset();
+  Bool_t IsValidDetector(TString detector) const;
+  TString RealFolderName(TString detector) const;
+  TString FileNamePathToDetector(TString filename) const;
+  Int_t FileNamePathToReportYear(TString filename) const;
+  Int_t FileNamePathToReportNumber(TString filename) const;
+  Int_t FileNamePathToReportVersion(TString filename) const;
+  TGridResult *QueryReports(TString detector, Int_t year,
+			    Int_t reportNumber, Int_t reportVersion);
 
   AliSurveyObj (const AliSurveyObj& surveyObj);
   AliSurveyObj& operator=(const AliSurveyObj& surveyObj); 
