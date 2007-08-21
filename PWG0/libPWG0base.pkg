@@ -8,7 +8,8 @@ HDRS = dNdEta/dNdEtaAnalysis.h \
       AliCorrectionMatrix3D.h \
       AliCorrection.h \
       AliPWG0Helper.h \
-      dNdEta/AliMultiplicityCorrection.h
+      dNdEta/AliMultiplicityCorrection.h \
+      base/AliAnalysisTaskESDfilter.h
 
 SRCS = $(HDRS:.h=.cxx)
 
