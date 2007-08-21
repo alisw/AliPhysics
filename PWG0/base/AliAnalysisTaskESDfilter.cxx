@@ -161,6 +161,8 @@ void AliAnalysisTaskESDfilter::Exec(Option_t */*option*/)
     Int_t nV0s      = fESD->GetNumberOfV0s();
     Int_t nCascades = fESD->GetNumberOfCascades();
     Int_t nKinks    = fESD->GetNumberOfKinks();
+    
+    printf("   NV0=%d  NCASCADES=%d  NKINKS=%d\n", nV0s, nCascades, nKinks);
 
     Int_t nVertices = nV0s + nCascades + nKinks;
     
@@ -301,7 +303,7 @@ void AliAnalysisTaskESDfilter::Exec(Option_t */*option*/)
 	
 	// Add the positive tracks from the V0
 	
-	if (! usedTrack[posFromV0]) {
+	if (posFromV0>-1 && !usedTrack[posFromV0]) {
 	    
 	    usedTrack[posFromV0] = kTRUE;
 	    
@@ -336,7 +338,7 @@ void AliAnalysisTaskESDfilter::Exec(Option_t */*option*/)
 	
 	// Add the negative tracks from the V0
 	
-	if (!usedTrack[negFromV0]) {
+	if (negFromV0>-1 && !usedTrack[negFromV0]) {
 	    
 	    usedTrack[negFromV0] = kTRUE;
 	    
@@ -373,7 +375,7 @@ void AliAnalysisTaskESDfilter::Exec(Option_t */*option*/)
 	
 	Int_t bachelor = cascade->GetBindex();
 	
-	if(!usedTrack[bachelor]) {
+	if(bachelor>-1 && !usedTrack[bachelor]) {
 	    
 	    usedTrack[bachelor] = kTRUE;
 	    
@@ -441,7 +443,7 @@ void AliAnalysisTaskESDfilter::Exec(Option_t */*option*/)
 	
 	// Add the positive tracks from the V0
 	
-	if (!usedTrack[posFromV0]) {
+	if (posFromV0>-1 && !usedTrack[posFromV0]) {
 	    
 	    usedTrack[posFromV0] = kTRUE;
 	    
@@ -476,7 +478,7 @@ void AliAnalysisTaskESDfilter::Exec(Option_t */*option*/)
 	
 	// Add the negative tracks from the V0
 	
-	if (!usedTrack[negFromV0]) {
+	if (negFromV0>-1 && !usedTrack[negFromV0]) {
 	    
 	    usedTrack[negFromV0] = kTRUE;
 	    
@@ -522,7 +524,7 @@ void AliAnalysisTaskESDfilter::Exec(Option_t */*option*/)
 	
 	Int_t ikink = esdTrack->GetKinkIndex(0);
 	
-	if (ikink) {
+	if (ikink && nKinks) {
 	    // Negative kink index: mother, positive: daughter
 	    
 	    // Search for the second track of the kink
