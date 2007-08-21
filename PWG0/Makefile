@@ -1,17 +1,27 @@
 # $Id$
 
-include $(ROOTSYS)/test/Makefile.arch
+include Makefile.arch
 
 default-target: libPWG0base.so libPWG0dep.so libPWG0selectors.so
 
 ALICEINC      = -I.
 
 ### define include dir for local case and par case
-ifneq ($(ALICE_ROOT),)
-  ALICEINC += -I$(ALICE_ROOT)/include -I$(ALICE_ROOT)/PYTHIA6 -I$(ALICE_ROOT)/EVGEN -I$(ALICE_ROOT)/RAW -I$(ALICE_ROOT)/TPC
+ifneq ($(ESD_INCLUDE),)
+   ALICEINC += -I../$(ESD_INCLUDE)
+	ifneq ($(STEERBase_INCLUDE),)
+		ALICEINC += -I../$(STEERBase_INCLUDE)
+	endif				
+	ifneq ($(AOD_INCLUDE),)
+		ALICEINC += -I../$(AOD_INCLUDE)
+	endif
+	ifneq ($(ANALYSIS_INCLUDE),)
+		ALICEINC += -I../$(ANALYSIS_INCLUDE)
+	endif
 else
-  ifneq ($(ESD_INCLUDE),)
-    ALICEINC += -I../$(ESD_INCLUDE)
+  ifneq ($(ALICE_ROOT),)
+    ALICEINC += -I$(ALICE_ROOT)/include -I$(ALICE_ROOT)/PYTHIA6 -I$(ALICE_ROOT)/EVGEN -I$(ALICE_ROOT)/RAW -I$(ALICE_ROOT)/TPC
+else
   endif
 endif
 
