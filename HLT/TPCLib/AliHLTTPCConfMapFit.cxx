@@ -95,8 +95,6 @@ Int_t AliHLTTPCConfMapFit::FitHelix()
   return 0;
 }
 
-// #### -B0-CHANGE-START == JMT
-
 Int_t AliHLTTPCConfMapFit::FitStraightLine() {
     //fit the straight line 
     if(FitLineXY()) {
@@ -111,8 +109,6 @@ Int_t AliHLTTPCConfMapFit::FitStraightLine() {
     }
     return 0;
 }
-
-// #### -B0-CHANGE-END == JMT
 
 Int_t AliHLTTPCConfMapFit::FitCircle()
 {
@@ -567,8 +563,6 @@ Int_t AliHLTTPCConfMapFit::FitLine ( )
 } 
 
 
-// #### -B0-CHANGE-START == JMT
-
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //    Straight Line Fit  in x-y plane
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -772,4 +766,3 @@ Int_t AliHLTTPCConfMapFit::FitLineSZ ( ){
     return 0;
 }
 
-// #### -B0-CHANGE-END == JMT

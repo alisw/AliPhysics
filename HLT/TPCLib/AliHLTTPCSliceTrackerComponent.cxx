@@ -58,10 +58,8 @@ AliHLTTPCSliceTrackerComponent::AliHLTTPCSliceTrackerComponent()
   fDoPP(false),
   fMultiplicity(4000),
   fBField(0.4),
-// BEGINN ############################################## MODIFIY JMT
   fnonvertextracking(kFALSE),
   fmainvertextracking(kTRUE),
-// END ################################################# MODIFIY JMT
   fpInterMerger(NULL)
 {
   // see header file for class documentation
@@ -81,10 +79,8 @@ AliHLTTPCSliceTrackerComponent::AliHLTTPCSliceTrackerComponent(const AliHLTTPCSl
   fDoPP(false),
   fMultiplicity(4000),
   fBField(0.4),
-// BEGINN ############################################## MODIFIY JMT
   fnonvertextracking(kFALSE),
   fmainvertextracking(kTRUE),
-// END ################################################# MODIFIY JMT
   fpInterMerger(NULL)
 {
   // see header file for class documentation
@@ -158,8 +154,6 @@ void AliHLTTPCSliceTrackerComponent::SetTrackerParam(Int_t phiSegments, Int_t et
     fTracker->SetMaxDca(minPtFit);
     //   fTracker->MainVertexSettings(trackletlength,tracklength,rowscopetracklet,rowscopetrack);
 
-// BEGINN ############################################## MODIFIY JMT
-#if 1
     Logging( kHLTLogDebug, "HLT::TPCSliceTracker::SetTrackerParam", "Tracking", "==============================" );
 
     if ( fmainvertextracking == kTRUE && fnonvertextracking == kFALSE){
@@ -186,17 +180,7 @@ void AliHLTTPCSliceTrackerComponent::SetTrackerParam(Int_t phiSegments, Int_t et
 	fTracker->NonVertexSettings( trackletlength, tracklength, rowscopetracklet, rowscopetrack);
 	Logging( kHLTLogDebug, "HLT::TPCSliceTracker::SetTrackerParam", "Tracking", "NONVERTEXTRACKING" );
     }
-#else
-    fTracker->SetTrackCuts(hitChi2Cut,goodHitChi2,trackChi2Cut,maxdist,vertexConstraints);
-    fTracker->SetTrackletCuts(maxangle,goodDist,vertexConstraints);
     
-    if( vertexConstraints )
-	fTracker->MainVertexSettings( trackletlength, tracklength, rowscopetracklet, rowscopetrack, maxphi, maxeta);
-    else
-	fTracker->NonVertexSettings( trackletlength, tracklength, rowscopetracklet, rowscopetrack);
-#endif
-// END ################################################# MODIFIY JMT
-
     //fTracker->SetParamDone(true);
     /* Matthias 13.12.2006
      * the global variable AliHLTTPCS::fgDoVertexFit has never been used so far
@@ -229,7 +213,7 @@ void AliHLTTPCSliceTrackerComponent::SetTrackerParam( bool doPP, int multiplicit
 	  SetTrackerParam( 50,        // phi_segments:     Devide the space into phi_segments                                      
 			   100,       // ets_segments:     Devide the space into eta_segments                                       
 			   3,         // trackletlength:   Number of hits a tracklet has to have                                   
-			   10,         // tracklength:      Number of hits a track has to have                                      
+			   60,         // tracklength:      Number of hits a track has to have                                      
 			   6,         // rowscopetracklet: Search range of rows for a tracklet                                     
 			   6,         // rowscopetrack:    Search range of rows for a track                                       
 			   0,         // min_pt_fit:       Cut for moment fit, use:SetMaxDca(min_pt_fit)                           
@@ -435,46 +419,42 @@ int AliHLTTPCSliceTrackerComponent::DoInit( int argc, const char** argv )
 	    continue;
 	    }
 
-// BEGINN ############################################## MODIFIY JMT
 	if ( !strcmp( argv[i], "nonvertextracking" ) ){
-	    fnonvertextracking = kTRUE;
-	    i++;
-	    continue;	    
+	  fnonvertextracking = kTRUE;
+	  i++;
+	  continue;	    
 	}
 	
 	if ( !strcmp( argv[i], "mainvertextrackingoff" ) ){	
-	    fmainvertextracking = kFALSE;
-	    i++;
-	    continue;	    
+	  fmainvertextracking = kFALSE;
+	  i++;
+	  continue;	    
 	}
-
+	
 	if ( !strcmp( argv[i], "etarange" ) ){	
-	    if ( argc <= i+1 ){
-		Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing Eta range", "Missing Eta-range specifiers." );
-		return ENOTSUP;
-	    }
-	    fEta[1] = strtod( argv[i+1], &cpErr );
-	    if ( *cpErr ){
-		Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing Eta range", "Cannot convert Eta-range specifier '%s'.", argv[i+1] );
-		return EINVAL;
-	    }
-   
-	    i += 2;
-	    continue;
+	  if ( argc <= i+1 ){
+	    Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing Eta range", "Missing Eta-range specifiers." );
+	    return ENOTSUP;
+	  }
+	  fEta[1] = strtod( argv[i+1], &cpErr );
+	  if ( *cpErr ){
+	    Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing Eta range", "Cannot convert Eta-range specifier '%s'.", argv[i+1] );
+	    return EINVAL;
+	  }
+	  
+	  i += 2;
+	  continue;
 	}
-// END ################################################# MODIFIY JMT
 	Logging(kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Unknown Option", "Unknown option '%s'", argv[i] );
 	return EINVAL;
 	}
-// #### -B0-CHANGE-START == JMT
     if (fBField == 0.){
-	// parameter for B=0 T 
-	fDoPP = kTRUE;
-	fnonvertextracking = kTRUE;
-	fmainvertextracking = kFALSE;
+      // parameter for B=0 T 
+      fDoPP = kTRUE;
+      fnonvertextracking = kTRUE;
+      fmainvertextracking = kFALSE;
     }
-// #### -B0-CHANGE-END == JMT
-
+        
     if (bDoMerger)
       fpInterMerger = new AliHLTTPCInterMerger();
 
@@ -674,38 +654,27 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
 	}
 
     outPtr = (AliHLTTPCTrackletData*)(outBPtr);
-// BEGINN ############################################## MODIFIY JMT
-#if 1
-    fTracker->SetPointers();
+
     if ( fmainvertextracking == kTRUE && fnonvertextracking == kFALSE){	
-	Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoEvent", "Tracking", " ---MAINVERTEXTRACKING---");
-	fTracker->MainVertexTrackingA();
-	fTracker->MainVertexTrackingB();
-	fTracker->FillTracks();
+      Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoEvent", "Tracking", " ---MAINVERTEXTRACKING---");
+      fTracker->MainVertexTrackingA();
+      fTracker->MainVertexTrackingB();
+      fTracker->FillTracks();
     }
     else if ( fmainvertextracking == kTRUE && fnonvertextracking == kTRUE){	
-	Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoEvent", "Tracking", " ---MAINVERTEXTRACKING---");
-	fTracker->MainVertexTrackingA();
-	fTracker->MainVertexTrackingB();
-	fTracker->FillTracks();	
-	Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoEvent", "Tracking", " ---NONVERTEXTRACKING---");
-	fTracker->NonVertexTracking();
+      Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoEvent", "Tracking", " ---MAINVERTEXTRACKING---");
+      fTracker->MainVertexTrackingA();
+      fTracker->MainVertexTrackingB();
+      fTracker->FillTracks();	
+      Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoEvent", "Tracking", " ---NONVERTEXTRACKING---");
+      fTracker->NonVertexTracking();
     }
     else if ( fmainvertextracking == kFALSE && fnonvertextracking == kTRUE){
-	Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoEvent", "Tracking", " ---NONVERTEXTRACKING---");
-	fTracker->NonVertexTracking();	
-	fTracker->FillTracks();	
+      Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoEvent", "Tracking", " ---NONVERTEXTRACKING---");
+      fTracker->NonVertexTracking();	
+      fTracker->FillTracks();	
     }
-#else
-    fTracker->MainVertexTracking_a();
-    fTracker->MainVertexTracking_b();
-    fTracker->FillTracks();
-    
-    if ( fDoNonVertex )
-	fTracker->NonVertexTracking();//Do a second pass for nonvertex tracks
-#endif
-// END ################################################# MODIFIY JMT
-    
+
     UInt_t ntracks0 =0;
     if(fpInterMerger){
       AliHLTTPCMemHandler memory;

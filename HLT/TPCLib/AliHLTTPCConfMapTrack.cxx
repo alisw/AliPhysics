@@ -229,7 +229,6 @@ void AliHLTTPCConfMapTrack::Fill(AliHLTTPCVertex *vertex,Double_t max_Dca)
 {
     //Fill track variables with or without fit.
     
-// #### -B0-CHANGE-START == JMT
     // for straight line fit
     if (AliHLTTPCTransform::GetBFieldValue() == 0.0 ){
 
@@ -260,18 +259,17 @@ void AliHLTTPCConfMapTrack::Fill(AliHLTTPCVertex *vertex,Double_t max_Dca)
     }
     // for helix fit
     else { 
-// #### -B0-UNCHANGED-START == JMT
-	//fRadius = sqrt(fa2Xy*fa2Xy+1)/(2*fabs(fa1Xy));
-	Double_t radius = sqrt(fa2Xy*fa2Xy+1)/(2*fabs(fa1Xy));
-	SetRadius(radius);
-	
-	//fPt = (Double_t)(AliHLTTPCTransform::GetBFieldValue() * fRadius);
-	Double_t pt = (Double_t)(AliHLTTPCTransform::GetBFieldValue() * GetRadius());
-	SetPt(pt);
-	
-	if(GetPt() > max_Dca) //go for fit of helix in real space
+      //fRadius = sqrt(fa2Xy*fa2Xy+1)/(2*fabs(fa1Xy));
+      Double_t radius = sqrt(fa2Xy*fa2Xy+1)/(2*fabs(fa1Xy));
+      SetRadius(radius);
+      
+      //fPt = (Double_t)(AliHLTTPCTransform::GetBFieldValue() * fRadius);
+      Double_t pt = (Double_t)(AliHLTTPCTransform::GetBFieldValue() * GetRadius());
+      SetPt(pt);
+      
+      if(GetPt() > max_Dca) //go for fit of helix in real space
 	{
-	    AliHLTTPCConfMapFit *fit = new AliHLTTPCConfMapFit(this,vertex);
+	  AliHLTTPCConfMapFit *fit = new AliHLTTPCConfMapFit(this,vertex);
     /* Matthias 13.12.2006
      * the global variable AliHLTTPCS::fgDoVertexFit has never been used so far
      * and has always been kTRUE.
@@ -281,30 +279,28 @@ void AliHLTTPCConfMapTrack::Fill(AliHLTTPCVertex *vertex,Double_t max_Dca)
      * anyway. 
 	    ComesFromMainVertex(AliHLTTPC::DoVertexFit());
      */
-	    ComesFromMainVertex(kTRUE);
-	    fit->FitHelix();
-	    
-	    //AliHLTTPCConfMapPoint *lHit = (AliHLTTPCConfMapPoint*)fLastHit;
-	    AliHLTTPCConfMapPoint *fHit = (AliHLTTPCConfMapPoint*)fFirstHit;
-	    SetLastPoint(fHit->GetX(),fHit->GetY(),fHit->GetZ());
-	    
-	    UpdateToFirstPoint();
-	    
-	    delete fit;
+	  ComesFromMainVertex(kTRUE);
+	  fit->FitHelix();
+	  
+	  //AliHLTTPCConfMapPoint *lHit = (AliHLTTPCConfMapPoint*)fLastHit;
+	  AliHLTTPCConfMapPoint *fHit = (AliHLTTPCConfMapPoint*)fFirstHit;
+	  SetLastPoint(fHit->GetX(),fHit->GetY(),fHit->GetZ());
+	  
+	  UpdateToFirstPoint();
+	  
+	  delete fit;
 	}
-	else if(GetPt() == 0) 
+      else if(GetPt() == 0) 
 	{
-	    LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapTrack::Fill","Tracks")<<AliHLTTPCLog::kDec<<
-		"Found track with Pt=0!!!"<<ENDLOG;
+	  LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapTrack::Fill","Tracks")<<AliHLTTPCLog::kDec<<
+	    "Found track with Pt=0!!!"<<ENDLOG;
 	}
-	else
+      else
 	{
-	    LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapTrack::Fill","Tracks")<<AliHLTTPCLog::kDec<<
-		"Track with pt<max_Dca :"<<GetPt()<<ENDLOG;
+	  LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapTrack::Fill","Tracks")<<AliHLTTPCLog::kDec<<
+	    "Track with pt<max_Dca :"<<GetPt()<<ENDLOG;
 	}
-// #### -B0-UNCHANGED-END == JMT
     }
-// #### -B0-CHANGE-END == JMT
 }
 
 Int_t AliHLTTPCConfMapTrack::GetMCLabel()

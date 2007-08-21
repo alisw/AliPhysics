@@ -283,7 +283,7 @@ void AliHLTTPCGlobalMerger::Merge()
 	  ismatched0[s0]=kFALSE;
 	  AliHLTTPCTrack *track0=ttt0->GetCheckedTrack(s0);
 	  if(!track0) continue;
-	  track0->CalculateHelix();
+	  //track0->CalculateHelix();    //This it done in TrackArray
 	  track0->CalculateEdgePoint(angle);
 	  if(track0->IsPoint()) 
 	    {
@@ -296,7 +296,7 @@ void AliHLTTPCGlobalMerger::Merge()
 	  ismatched1[s1]=kFALSE;
 	  AliHLTTPCTrack *track1=ttt1->GetCheckedTrack(s1);
 	  if(!track1) continue;
-	  track1->CalculateHelix();
+	  //track1->CalculateHelix();   //This is done in TrackArray
 	  track1->CalculateEdgePoint(angle);
 	  if(track1->IsPoint()) 
 	    {

@@ -361,11 +361,9 @@ void AliHLTTPCConfMapper::MainVertexTracking()
 
   Double_t initCpuTime,cpuTime;
   initCpuTime = CpuTime();
-// END ################################################# MODIFIY JMT
-#if 0
-  SetPointers(); // moved to Component
-#endif
-// END ################################################# MODIFIY JMT
+
+  SetPointers(); 
+
   SetVertexConstraint(true);
       
   ClusterLoop();
@@ -393,6 +391,9 @@ void AliHLTTPCConfMapper::NonVertexTracking()
     }
   
   SetVertexConstraint(false);
+  
+  SetPointers(); //To be able to do only nonvertextracking (more testing) 
+  
   ClusterLoop();
   LOG(AliHLTTPCLog::kInformational,"AliHLTTPCConfMapper::NonVertexTracking","ntracks")<<AliHLTTPCLog::kDec<<
     "Number of nonvertex tracks found: "<<(fNTracks-fMainVertexTracks)<<ENDLOG;
@@ -726,17 +727,10 @@ AliHLTTPCConfMapPoint *AliHLTTPCConfMapper::GetNextNeighbor(AliHLTTPCConfMapPoin
 		     
 		      if(track)//track search - look for nearest neighbor to extrapolated track
 			{
-// BEGINN ############################################## MODIFIY JMT
-#if 1
-			    if (fVertexConstraint) {   
-				if(!VerifyRange(starthit,hit))
-				    continue;
-			    }
-#else
-			  if(!VerifyRange(starthit,hit))
-			    continue;
-#endif
-// END ################################################# MODIFIY JMT			  
+			  if (fVertexConstraint) {   
+			    if(!VerifyRange(starthit,hit))
+			      continue;
+			  }
 			  testhit = EvaluateHit(starthit,hit,track);
 			  
 			  if(testhit == 0)//chi2 not good enough, keep looking
@@ -753,17 +747,10 @@ AliHLTTPCConfMapPoint *AliHLTTPCConfMapper::GetNextNeighbor(AliHLTTPCConfMapPoin
 			  
 			  if((dist=CalcDistance(starthit,hit)) < closestdist)
 			    {
-// BEGINN ############################################## MODIFIY JMT
-#if 1
-			    if (fVertexConstraint) {   
+			      if (fVertexConstraint) {   
 				if(!VerifyRange(starthit,hit))
-				    continue;
-			    }
-#else
-			  if(!VerifyRange(starthit,hit))
-			    continue;
-#endif
-// END ################################################# MODIFIY JMT	
+				  continue;
+			      }
 			      closestdist = dist;
 			      closesthit = hit;
 			 

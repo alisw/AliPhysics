@@ -116,10 +116,8 @@ private:
   /** magnetic field */
   Double_t fBField;                                                //  see above
 
-// BEGINN ############################################## MODIFIY JMT
   Bool_t fnonvertextracking;   // enable NONVERTEX Tracking
   Bool_t fmainvertextracking;  // enable MAINVERTEX Tracking
-// END ################################################# MODIFIY JMT
 
   /** merger object */
   AliHLTTPCInterMerger *fpInterMerger;                             //! transient

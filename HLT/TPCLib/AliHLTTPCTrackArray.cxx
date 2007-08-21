@@ -431,11 +431,9 @@ UInt_t AliHLTTPCTrackArray::WriteTracks(AliHLTTPCTrackSegmentData* tr)
     size += sizeof(AliHLTTPCTrackSegmentData)+tP->fNPoints*sizeof(UInt_t);
     tP = (AliHLTTPCTrackSegmentData*)tmpP;
 
-// BEGINN ############################################## MODIFIY JMT
 //    LOG(AliHLTTPCLog::kError,"AliHLTTPCTrackArray::WriteTracks","TRACKPARAMETER") <<ENDLOG;
 //    track->Rotate(0,kFALSE);
 //    track->Print();
-// END ################################################# MODIFIY JMT
 
   }
   return size;
