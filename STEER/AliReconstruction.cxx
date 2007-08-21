@@ -1871,7 +1871,7 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
     vtx->GetCovMatrix(covVtx); //covariance matrix
 
     AliAODVertex * primary = new(vertices[jVertices++])
-      AliAODVertex(pos, covVtx, vtx->GetChi2toNDF(), NULL, AliAODVertex::kPrimary);
+      AliAODVertex(pos, covVtx, vtx->GetChi2toNDF(), NULL, -1, AliAODVertex::kPrimary);
          
     // Create vertices starting from the most complex objects
       
@@ -1887,6 +1887,7 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
 									covVtx,
 									cascade->GetChi2Xi(), // = chi2/NDF since NDF = 2*2-3
 									primary,
+									nCascade,
 									AliAODVertex::kCascade);
 
       primary->AddDaughter(vcascade);
@@ -1929,6 +1930,7 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
 								 covVtx,
 								 v0->GetChi2V0(), // = chi2/NDF since NDF = 2*2-3
 								 vcascade,
+								 indV0,
 								 AliAODVertex::kV0);
       } else {
 
@@ -1944,6 +1946,7 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
 								 covVtx,
 								 v0->GetChi2V0(), // = chi2/NDF since NDF = 2*2-3
 								 vcascade,
+								 indV0,
 								 AliAODVertex::kV0);
 	vcascade->AddDaughter(vV0FromCascade);
       }
@@ -2075,6 +2078,7 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
 						covVtx,
 						v0->GetChi2V0(), // = chi2/NDF since NDF = 2*2-3
 						primary,
+						nV0,
 						AliAODVertex::kV0);
       primary->AddDaughter(vV0);
 
@@ -2245,6 +2249,7 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
 						    NULL,
 						    0.,
 						    mother,
+						    esdTrack->GetID(), // This is the track ID of the mother's track!
 						    AliAODVertex::kKink);
 	    // Add the daughter track
 

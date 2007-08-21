@@ -47,7 +47,7 @@ class AliAODTrack : public AliVParticle {
   };
 
   AliAODTrack();
-  AliAODTrack(Int_t id,
+  AliAODTrack(Short_t id,
 	      Int_t label,
 	      Double_t p[3],
 	      Bool_t cartesian,
@@ -63,7 +63,7 @@ class AliAODTrack : public AliVParticle {
 	      AODTrk_t ttype=kUndef,
 	      UInt_t selectInfo=0);
 
-  AliAODTrack(Int_t id,
+  AliAODTrack(Short_t id,
 	      Int_t label,
 	      Float_t p[3],
 	      Bool_t cartesian,
@@ -121,11 +121,11 @@ class AliAODTrack : public AliVParticle {
     if(pid) for(Int_t i=0; i<10; ++i) fPID[i]=pid[i];
     else {for(Int_t i=0; i<10; fPID[i++]=0.); fPID[AliAODTrack::kUnknown]=1.;}}
 
-  Int_t GetID() const { return fID; }
-  Int_t GetLabel() const { return fLabel; } 
-  Char_t GetType() const { return fType;}
-  Bool_t GetUsedForVtxFit() const { return TestBit(kUsedForVtxFit); }
-  Bool_t GetUsedForPrimVtxFit() const { return TestBit(kUsedForPrimVtxFit); }
+  Short_t GetID() const { return fID; }
+  Int_t   GetLabel() const { return fLabel; } 
+  Char_t  GetType() const { return fType;}
+  Bool_t  GetUsedForVtxFit() const { return TestBit(kUsedForVtxFit); }
+  Bool_t  GetUsedForPrimVtxFit() const { return TestBit(kUsedForPrimVtxFit); }
 
   template <class T> void GetP(T *p) const {
     p[0]=fMomentum[0]; p[1]=fMomentum[1]; p[2]=fMomentum[2];}
@@ -158,7 +158,7 @@ class AliAODTrack : public AliVParticle {
   void  Print(const Option_t *opt = "") const;
 
   // setters
-  void SetID(Int_t id) { fID = id; }
+  void SetID(Short_t id) { fID = id; }
   void SetLabel(Int_t label) {fLabel = label; }
 
   template <class T> void SetPosition(const T *x, Bool_t isDCA = kFALSE);
@@ -213,11 +213,12 @@ class AliAODTrack : public AliVParticle {
   Double32_t    fChi2MatchTrigger;  // chi2 of trigger/track matching
   Double32_t    fPID[10];           // [0.,1.,8] pointer to PID object
 
-  Int_t         fID;                // unique track ID, points back to the ESD track
   Int_t         fLabel;             // track label, points back to MC track
   
   UInt_t        fITSMuonClusterMap; // map of ITS and muon clusters, one bit per layer (ITS: bit 1-8, muon: bit 17-32) 
   UInt_t        fFilterMap;         // filter information, one bit per set of cuts
+
+  Short_t       fID;                // unique track ID, points back to the ESD track
 
   Char_t        fCharge;            // particle charge
   Char_t        fType;              // Track Type

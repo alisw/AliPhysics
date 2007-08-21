@@ -27,12 +27,14 @@ class AliAODVertex : public TObject {
 	       const Double_t *covMatrix=0x0,
 	       Double_t chi2perNDF = -999.,
 	       TObject *parent = 0x0,
+	       Short_t id=-1,
 	       Char_t vtype=kUndef);
-    AliAODVertex(const Float_t *position, 
-		 const Float_t *covMatrix=0x0,
-		 Double_t chi2perNDF = -999.,
-		 TObject *parent = 0x0,
-		 Char_t vtype=kUndef);
+  AliAODVertex(const Float_t *position, 
+	       const Float_t *covMatrix=0x0,
+	       Double_t chi2perNDF = -999.,
+	       TObject *parent = 0x0,
+	       Short_t id=-1,
+	       Char_t vtype=kUndef);
     AliAODVertex(const Double_t *position, 
 		 Double_t chi2perNDF,
 		 Char_t vtype=kUndef);
@@ -77,6 +79,9 @@ class AliAODVertex : public TObject {
   Double_t GetChi2() const { return fChi2perNDF*(Double_t)GetNDF(); }
   Int_t    GetNDF() const { return 2*GetNContributors()-3; }
 
+  Short_t  GetID() const { return fID; }
+  void     SetID(Short_t id) { fID=id; }
+
   Char_t   GetType() const { return fType; }
   void     SetType(AODVtx_t vtype) { fType=vtype; }
 
@@ -112,7 +117,8 @@ class AliAODVertex : public TObject {
 
   Double32_t      fPosition[3]; // vertex position
   Double32_t      fChi2perNDF;  // chi2/NDF of vertex fit
-  Char_t          fType;        // Vertex type
+  Short_t         fID;          // vertex ID; corresponds to the array index of the appropriate ESD container
+  Char_t          fType;        // vertex type
 
   AliAODRedCov<3> *fCovMatrix;  // vertex covariance matrix; values of and below the diagonal
   TRef            fParent;      // reference to the parent particle

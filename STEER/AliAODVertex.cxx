@@ -32,6 +32,7 @@ ClassImp(AliAODVertex)
 AliAODVertex::AliAODVertex() : 
   TObject(),
   fChi2perNDF(-999.),
+  fID(-1),
   fType(kUndef),
   fCovMatrix(NULL),
   fParent(0x0),
@@ -47,9 +48,11 @@ AliAODVertex::AliAODVertex(const Double_t position[3],
 			   const Double_t covMatrix[6],
 			   Double_t  chi2perNDF,
 			   TObject  *parent,
+			   Short_t id,
 			   Char_t vtype) :
   TObject(),
   fChi2perNDF(chi2perNDF),
+  fID(id),
   fType(vtype),
   fCovMatrix(NULL),
   fParent(parent),
@@ -66,10 +69,12 @@ AliAODVertex::AliAODVertex(const Float_t position[3],
 			   const Float_t  covMatrix[6],
 			   Double_t  chi2perNDF,
 			   TObject  *parent,
+			   Short_t id,
 			   Char_t vtype) :
 
   TObject(),
   fChi2perNDF(chi2perNDF),
+  fID(id),
   fType(vtype),
   fCovMatrix(NULL),
   fParent(parent),
@@ -87,6 +92,7 @@ AliAODVertex::AliAODVertex(const Double_t position[3],
 			   Char_t vtype) :
   TObject(),
   fChi2perNDF(chi2perNDF),
+  fID(-1),
   fType(vtype),
   fCovMatrix(NULL),
   fParent(0x0),
@@ -103,6 +109,7 @@ AliAODVertex::AliAODVertex(const Float_t position[3],
 			   Char_t vtype) :
   TObject(),
   fChi2perNDF(chi2perNDF),
+  fID(-1),
   fType(vtype),
   fCovMatrix(NULL),
   fParent(0x0),
@@ -125,6 +132,7 @@ AliAODVertex::~AliAODVertex()
 AliAODVertex::AliAODVertex(const AliAODVertex& vtx) :
   TObject(vtx),
   fChi2perNDF(vtx.fChi2perNDF),
+  fID(vtx.fID),
   fType(vtx.fType),
   fCovMatrix(NULL),
   fParent(vtx.fParent),
@@ -152,6 +160,7 @@ AliAODVertex& AliAODVertex::operator=(const AliAODVertex& vtx)
       fPosition[i] = vtx.fPosition[i];
     
     fChi2perNDF = vtx.fChi2perNDF;
+    fID = vtx.fID;
     fType = vtx.fType;
 
     //covariance matrix

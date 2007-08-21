@@ -128,7 +128,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
     vtx->GetCovMatrix(covVtx); //covariance matrix
 
     AliAODVertex * primary = new(vertices[jVertices++])
-      AliAODVertex(pos, covVtx, vtx->GetChi2toNDF(), NULL, AliAODVertex::kPrimary);
+      AliAODVertex(pos, covVtx, vtx->GetChi2toNDF(), NULL, -1, AliAODVertex::kPrimary);
          
     // Create vertices starting from the most complex objects
       
@@ -144,12 +144,13 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 									covVtx,
 									cascade->GetChi2Xi(), // = chi2/NDF since NDF = 2*2-3
 									primary,
+									nCascade,
 									AliAODVertex::kCascade);
 
       primary->AddDaughter(vcascade);
 
       // Add the V0 from the cascade. The ESD class have to be optimized...
-      // Now we have to search for the corresponding Vo in the list of V0s
+      // Now we have to search for the corresponding V0 in the list of V0s
       // using the indeces of the positive and negative tracks
 
       Int_t posFromV0 = cascade->GetPindex();
@@ -186,6 +187,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 								 covVtx,
 								 v0->GetChi2V0(), // = chi2/NDF since NDF = 2*2-3
 								 vcascade,
+								 indV0,
 								 AliAODVertex::kV0);
       } else {
 
@@ -201,6 +203,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 								 covVtx,
 								 v0->GetChi2V0(), // = chi2/NDF since NDF = 2*2-3
 								 vcascade,
+								 indV0,
 								 AliAODVertex::kV0);
 	vcascade->AddDaughter(vV0FromCascade);
       }
@@ -332,6 +335,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 						covVtx,
 						v0->GetChi2V0(), // = chi2/NDF since NDF = 2*2-3
 						primary,
+						nV0,
 						AliAODVertex::kV0);
       primary->AddDaughter(vV0);
 
@@ -502,6 +506,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 						    NULL,
 						    0.,
 						    mother,
+						    esdTrack->GetID(), // This is the track ID of the mother's track!
 						    AliAODVertex::kKink);
 	    // Add the daughter track
 
