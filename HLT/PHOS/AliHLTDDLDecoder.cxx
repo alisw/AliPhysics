@@ -96,7 +96,7 @@ AliHLTDDLDecoder::Decode()
       DecodeLastDDLBlock(); 
       fOutBufferIndex =  fN40AltroWords*4  -  1;
   
-      DumpData(fOutBuffer, 300,4);
+      //     DumpData(fOutBuffer, 300,4);
     
       fIsDecoded = true; 
       return true;
