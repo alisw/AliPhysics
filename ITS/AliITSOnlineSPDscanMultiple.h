@@ -13,12 +13,11 @@ class AliITSOnlineSPDscanMultiple :  public AliITSOnlineSPDscan {
 
  public:
   AliITSOnlineSPDscanMultiple();
-  AliITSOnlineSPDscanMultiple(Char_t *fileName);
+  AliITSOnlineSPDscanMultiple(const Char_t *fileName);
   AliITSOnlineSPDscanMultiple(const AliITSOnlineSPDscanMultiple& scan);
   virtual ~AliITSOnlineSPDscanMultiple();
   AliITSOnlineSPDscanMultiple& operator=(const AliITSOnlineSPDscanMultiple& scan);
 
-  //  virtual void   ReadFromTObjArray(TObjArray *arr);
   virtual UInt_t AddScanStep();
 
   void    SetDacId(Int_t val);
@@ -28,9 +27,6 @@ class AliITSOnlineSPDscanMultiple :  public AliITSOnlineSPDscan {
   Int_t   GetDacValue(UInt_t nsi);
 
 
- protected:
-
-  ClassDef(AliITSOnlineSPDscanMultiple,1)
-    };
+};
 
 #endif

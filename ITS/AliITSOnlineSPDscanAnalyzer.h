@@ -9,7 +9,7 @@
 // threshold values can be calculated.                    //
 ////////////////////////////////////////////////////////////
 
-#include <Rtypes.h>
+#include <TString.h>
 
 class AliITSOnlineSPDscan;
 class AliITSOnlineCalibrationSPDhandler;
@@ -19,11 +19,13 @@ class TH2F;
 class AliITSOnlineSPDscanAnalyzer {
 
  public:
-  AliITSOnlineSPDscanAnalyzer(Char_t *fileName);
+  AliITSOnlineSPDscanAnalyzer(const Char_t *fileName);
   AliITSOnlineSPDscanAnalyzer(const AliITSOnlineSPDscanAnalyzer& handle);
   ~AliITSOnlineSPDscanAnalyzer();
 
   AliITSOnlineSPDscanAnalyzer& operator=(const AliITSOnlineSPDscanAnalyzer& handle);
+
+  void       SetParam(const Char_t *pname, const Char_t *pval);
 
   UInt_t     GetType() const {return fType;}
   UInt_t     GetDacId() const {return fDacId;}
@@ -53,7 +55,7 @@ class AliITSOnlineSPDscanAnalyzer {
  private:
   UInt_t               fType;           // calib type
   UInt_t               fDacId;          // dac id
-  Char_t               fFileName[100];  // container file name
+  TString              fFileName;       // container file name
   enum                 calibvals{kMINTH,kMEANTH,kDAC,kUNIMA,kNOISE,kDELAY};  // calib types
 
   AliITSOnlineSPDscan               *fScanObj;      // container obj

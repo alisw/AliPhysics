@@ -33,6 +33,7 @@ class AliITSOnlineSPDscanInfo :  public TObject {
   void     SetDacStart(UInt_t val){fDacStart=val;}
   void     SetDacEnd(UInt_t val){fDacEnd=val;}  
   void     SetDacStep(UInt_t val){fDacStep=val;}
+  void     SetDCSVersion(UInt_t val){fDCSVersion=val;}
 
   void     IncrementTriggers(UInt_t nsi);
 
@@ -50,6 +51,7 @@ class AliITSOnlineSPDscanInfo :  public TObject {
   UInt_t   GetDacStart() const {return fDacStart;}
   UInt_t   GetDacEnd() const {return fDacEnd;}
   UInt_t   GetDacStep() const {return fDacStep;}
+  UInt_t   GetDCSVersion() const {return fDCSVersion;}
 
  protected:
   UInt_t   fType;                 // type of calibration scan
@@ -65,8 +67,9 @@ class AliITSOnlineSPDscanInfo :  public TObject {
   UInt_t   fDacStep;              // dac step
   UInt_t   fDacStart;             // dac start
   UInt_t   fDacEnd;               // dac end
+  UInt_t   fDCSVersion;           // ConfigDB version
 
-  ClassDef(AliITSOnlineSPDscanInfo,1)
+  ClassDef(AliITSOnlineSPDscanInfo,2)
     };
     
 #endif

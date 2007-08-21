@@ -13,7 +13,7 @@ class AliITSOnlineSPDscanSingle :  public AliITSOnlineSPDscan {
 
  public:
   AliITSOnlineSPDscanSingle() {}
-  AliITSOnlineSPDscanSingle(Char_t *fileName);
+  AliITSOnlineSPDscanSingle(const Char_t *fileName);
   virtual ~AliITSOnlineSPDscanSingle();
   
   //  virtual void Clear() {AliITSOnlineSPDscan::Clear(); AddScanStep();}

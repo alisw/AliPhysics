@@ -23,12 +23,14 @@ extern "C" {
 #include "AliITSOnlineSPDscanMultiple.h"
 #include "AliITSOnlineSPDscanMeanTh.h"
 #include "AliITSOnlineSPDscanAnalyzer.h"
+#include "AliITSOnlineCalibrationSPDhandler.h"
 #include "AliLog.h"
 #include <iostream>
 #include <fstream>
 #include <TROOT.h>
 #include <TPluginManager.h>
-
+#include <TObjArray.h>
+#include <TString.h>
 
 int main(int argc, char **argv) {
   if (argc<2) {
@@ -40,14 +42,17 @@ int main(int argc, char **argv) {
   system("mkdir ./calibResults >& /dev/null");
   system("mkdir ./calibResults/Noisy >& /dev/null");
   system("mkdir ./calibResults/NoisyToFXS >& /dev/null");
+  system("mkdir ./calibResults/DCSconfigToFXS >& /dev/null");
   system("mkdir ./calibResults/Parameters >& /dev/null");
   system("mkdir ./calibResults/Reference >& /dev/null");
   char *saveDirNoisy         = "./calibResults/Noisy";
-#ifndef SPD_DA_OFF
   char *saveDirNoisyToFXS    = "./calibResults/NoisyToFXS";
-#endif
+  char *saveDirDCSconfigToFXS= "./calibResults/DCSconfigToFXS";
   char *saveDirParameters    = "./calibResults/Parameters";
   char *saveDirRef           = "./calibResults/Reference";
+
+  char *paramsFileName       = "./standal_params.txt";
+  char *permNoisyFileName    = "./perm_noisy.txt";
 
   // This line is needed in case of a stand-alone application w/o
   // $ROOTSYS/etc/system.rootrc file
@@ -65,7 +70,61 @@ int main(int argc, char **argv) {
   enum calib_types{MINTH,MEANTH,DAC,UNIMA,NOISE,DELAY};
 
 
-  // ********* STEP 1: Produce scan container files. ***********************************
+  // ********* STEP 0: Get configuration files from db (if there are any) *******************************
+  UInt_t nrTuningParams = 0;
+  TObjArray paramNames;  paramNames.SetOwner(kTRUE);
+  TObjArray paramVals;  paramVals.SetOwner(kTRUE);
+  
+  // tuning parameters:
+  Int_t status = 0;
+#ifndef SPD_DA_OFF
+  TString idp = "spd_standal_params";
+  status=daqDA_DB_getFile(idp.Data(),paramsFileName);
+  if (status) {
+    printf("Failed to get config file %s: status=%d. Using default tuning parameters.\n",idp.Data(),status);
+  }
+#endif
+  if (status==0) {
+    ifstream paramsFile;
+    paramsFile.open(paramsFileName, ifstream::in);
+    if (paramsFile.fail()) {
+      printf("No config file (%s) present. Using default tuning parameters.\n",paramsFileName);
+    }
+    else {
+      while(1) {
+	Char_t paramN[50];
+	Char_t paramV[50];
+	paramsFile >> paramN;
+	if (paramsFile.eof()) break;
+	paramsFile >> paramV;
+	TString* paramNS = new TString(paramN);
+	TString* paramVS = new TString(paramV);
+	paramNames.AddAtAndExpand((TObject*)paramNS,nrTuningParams);
+	paramVals.AddAtAndExpand((TObject*)paramVS,nrTuningParams);
+	nrTuningParams++;
+	if (paramsFile.eof()) break;
+      }
+      paramsFile.close();
+    }
+  }
+  //  for (UInt_t i=0; i<nrTuningParams; i++) {
+  //    printf("Entry %d: N=%s , V=%s\n",i,((TString*)paramNames.At(i))->Data(),((TString*)paramVals.At(i))->Data());
+  //  }
+
+  // perm noisy list:
+  Int_t permstatus = 0;
+#ifndef SPD_DA_OFF
+  TString idn = "spd_perm_noisy";
+  permstatus=daqDA_DB_getFile(idn.Data(),permNoisyFileName);
+  if (permstatus) {
+    printf("Failed to get config file %s: status=%d. No additional noisy pixels added.\n",idn.Data(),permstatus);
+  }
+#endif
+
+
+
+
+  // ********* STEP 1: Produce scan container files (Reference Data). ***********************************
   int startSeg = 1;
 
 #ifndef SPD_DA_OFF
@@ -73,10 +132,6 @@ int main(int argc, char **argv) {
 #else
   int runNr = atoi(argv[1]);
   startSeg = 2;
-#endif
-
-#ifndef SPD_DA_OFF
-  UInt_t nrNoisyFilesProduced=0;
 #endif
 
   // container objects
@@ -235,24 +290,23 @@ int main(int argc, char **argv) {
 
 	    if (!bScanInit[eqId]) {
 	      // initialize container object
-	      Char_t fileName[200];
-	      sprintf(fileName,"%s/SPDcal_run_%d_eq_%d.root",saveDirRef,runNr,eqId);
+	      TString fileName = Form("%s/SPDcal_run_%d_eq_%d.root",saveDirRef,runNr,eqId);
 	      switch (type[eqId]) {
 	      case NOISE:
 	      case UNIMA:
-		scanObj[eqId] = new AliITSOnlineSPDscanSingle(fileName); 
+		scanObj[eqId] = new AliITSOnlineSPDscanSingle(fileName.Data());
 		((AliITSOnlineSPDscanSingle*)scanObj[eqId])->ClearThis();
 		bScanInit[eqId]=kTRUE;
 		break;
 	      case MINTH:
 	      case DAC:
 	      case DELAY:
-		scanObj[eqId] = new AliITSOnlineSPDscanMultiple(fileName);
+		scanObj[eqId] = new AliITSOnlineSPDscanMultiple(fileName.Data());
 		scanObj[eqId]->ClearThis();
 		bScanInit[eqId]=kTRUE;
 		break;
 	      case MEANTH: 
-		scanObj[eqId] = new AliITSOnlineSPDscanMeanTh(fileName);
+		scanObj[eqId] = new AliITSOnlineSPDscanMeanTh(fileName.Data());
 		scanObj[eqId]->ClearThis();
 		bScanInit[eqId]=kTRUE;
 		break;
@@ -319,18 +373,20 @@ int main(int argc, char **argv) {
 
 
 	  }
-	
+
 	  if (bScanInit[eqId]) {
 	    while (str->Next()) {
 	      UInt_t hs = str->GetHalfStaveNr();
 	      UInt_t chip = str->GetChipAddr();
+	      //***remove last condition when minthpresent put correctly in calib header?
 #ifndef SPD_DA_OFF
-	      if (type[eqId]!=MINTH || minTHchipPresent[eqId][chip]) { 
+	      if (type[eqId]!=MINTH || minTHchipPresent[eqId][chip] || runNr<=416900) {
 #else
-		if (type[eqId]!=MINTH || minTHchipPresent[eqId][chip] || runNr<=416900) { 
+	      if (type[eqId]!=MINTH || minTHchipPresent[eqId][chip] || runNr<=416900) {
 #endif
+	      //*************************************************************************
 		scanObj[eqId]->IncrementHits(currentStep[eqId],hs,chip,str->GetChipCol(),str->GetChipRow());
-	    
+
 		if (!hitEventHSIncremented[hs]) {
 		  scanObj[eqId]->IncrementHitEventsTot(currentStep[eqId],hs);
 		  hitEventHSIncremented[hs]=kTRUE;
@@ -385,22 +441,29 @@ int main(int argc, char **argv) {
 
 
 
-  // ********* STEP 2: Analyze scan container files. ***********************************
-#ifndef SPD_DA_OFF
-  // clear noisyToFXS dir:
-  Char_t command[200];
-  sprintf(command,"cd %s; rm -f *",saveDirNoisyToFXS);
-  system(command);
-#endif
+  // ********* STEP 2: Analyze scan container files. ************************************************
+
+  // clear noisyToFXS and DCSconfigToFXS dirs:
+  TString command = Form("cd %s; rm -f *",saveDirNoisyToFXS);
+  system(command.Data());
+  TString command2 = Form("cd %s; rm -f *",saveDirDCSconfigToFXS);
+  system(command2.Data());
+  UInt_t nrNoisyFilesProduced=0;
+  UInt_t nrDCSconfigFilesProduced=0;
 
   AliITSOnlineSPDscanAnalyzer *analyzer;
 
   // *** *** *** start loop over equipments (eq_id)
   for (int eqId=0; eqId<20; eqId++) {
 
-    Char_t fileName[200];
-    sprintf(fileName,"%s/SPDcal_run_%d_eq_%d.root",saveDirRef,runNr,eqId);
-    analyzer = new AliITSOnlineSPDscanAnalyzer(fileName);
+    // create analyzer for this eq
+    TString fileName = Form("%s/SPDcal_run_%d_eq_%d.root",saveDirRef,runNr,eqId);
+    analyzer = new AliITSOnlineSPDscanAnalyzer(fileName.Data());
+
+    // configure analyzer with tuning parameters etc:
+    for (UInt_t i=0; i<nrTuningParams; i++) {
+      analyzer->SetParam(((TString*)paramNames.At(i))->Data(),((TString*)paramVals.At(i))->Data());
+    }
 
     Int_t type  = analyzer->GetType();
     Int_t dacId = analyzer->GetDacId();
@@ -410,97 +473,132 @@ int main(int argc, char **argv) {
       }
       else printf("SPD calibrator Step2: eqId %d type %d\n",eqId,type);  
     }
+    
 
-
-
+    // algorithms for the different types of scans:
 
     if (type==UNIMA) {
+
     }
+
     else if (type==NOISE) {
       if (analyzer->ProcessNoisyPixels(saveDirNoisy)) {
-	for (UInt_t module=0; module<240; module++) {
+	// init dcs config text file
+	TString dcsConfigFileName = Form("%s/dcsConfig_run_%d_eq_%d.txt",saveDirDCSconfigToFXS,runNr,eqId);
+	ofstream dcsfile;
+	dcsfile.open(dcsConfigFileName.Data());
+	dcsfile << "[SPD SCAN]\n";
+	dcsfile << "RunNumber=" << runNr << "\n";
+	dcsfile << "Type=" << type << "\n";
+	dcsfile << "ActualDetCoonfiguration=" << "0,-1,-1\n"; // dummy values for now
+	dcsfile << "[NOISY]\n";
+	nrDCSconfigFilesProduced++;
+	for (UInt_t iModule=0; iModule<12; iModule++) {
+	  UInt_t module = AliITSRawStreamSPD::GetModuleNumber(eqId,iModule);	  
+	  AliITSOnlineCalibrationSPDhandler *handler = analyzer->GetOnlineCalibrationHandler(module);
+	  if (permstatus==0) { // add permanent noisy list
+	    UInt_t newNoisy = handler->ReadNoisyFromText(permNoisyFileName);
+	    if (newNoisy>0) {
+	      printf("%d additional noisy pixels added from permanent list.\n",newNoisy);
+	    }
+	  }
 	  if (analyzer->SaveDeadNoisyPixels(module,saveDirNoisy)) {
-#ifndef SPD_DA_OFF
+	    UInt_t nrNoisy = handler->GetNrNoisy(module);
+	    UInt_t headkey=20*10*6;
+	    for (UInt_t ind=0; ind<nrNoisy; ind++) {
+	      UInt_t newkey = handler->GetNoisyEqIdAt(module,ind)*10*6 +
+		handler->GetNoisyHSAt(module,ind)*10 +
+		handler->GetNoisyChipAt(module,ind);
+	      if (newkey!=headkey) { // print eqId,hs,chip_header
+		headkey = newkey;
+		dcsfile << "-" << newkey/(6*10) << "," << (newkey%(6*10))/10 << "," << (newkey%(6*10))%10 << "\n";
+	      }
+	      dcsfile << handler->GetNoisyColAt(module,ind) << "," << handler->GetNoisyRowAt(module,ind) << "\n";
+	    }
 	    nrNoisyFilesProduced++;
-	    Char_t command[100];
-	    sprintf(command,"cp %s/SPD_DeadNoisy_%d.root %s/.",saveDirNoisy,module,saveDirNoisyToFXS);
-	    system(command);
-#endif
+	    TString command = Form("cp %s/SPD_DeadNoisy_%d.root %s/.",saveDirNoisy,module,saveDirNoisyToFXS);
+	    system(command.Data());
 	  }
 	}
+	dcsfile.close();
       }
     }
-//    else if (type==DAC && dacId==42) {
-//      Char_t ofileName[100];
-//      sprintf(ofileName,"%s/delay_eq_%d.txt",saveDirParameters,eqId);
-//      ofstream ofile;
-//      ofile.open (ofileName);
-//      for (UInt_t hs=0; hs<6; hs++) {
-//	for (UInt_t chipNr=0; chipNr<10; chipNr++) {
-//	  ofile << analyzer->GetDelay(hs,chipNr);
-//	  ofile << "\t";
-//	}
-//	ofile << "\n";
-//      }
-//      ofile.close();
-//#ifndef SPD_DA_OFF
-//      Char_t id[20];
-//      sprintf(id,"SPD_delay_%d",eqId);
-//      Int_t status = daqDA_FES_storeFile(ofileName,id);
-//      if (status) {
-//	printf("Failed to export file %s , status %d\n",ofileName,status);
-//      }
-//#endif
-//    }
+
     else if (type==MINTH || (type==DAC && dacId==39)) {
-      Char_t ofileName[100];
-      sprintf(ofileName,"%s/minth_eq_%d.txt",saveDirParameters,eqId);
+      // init dcs config text file
+      TString dcsConfigFileName = Form("%s/dcsConfig_run_%d_eq_%d.txt",saveDirDCSconfigToFXS,runNr,eqId);
+      ofstream dcsfile;
+      dcsfile.open(dcsConfigFileName.Data());
+      dcsfile << "[SPD SCAN]\n";
+      dcsfile << "RunNumber=" << runNr << "\n";
+      dcsfile << "Type=" << type << "\n";
+      dcsfile << "ActualDetCoonfiguration=" << "0,-1,-1\n"; // dummy values for now
+      dcsfile << "[DACvalues]\n";
+      nrDCSconfigFilesProduced++;
+      TString ofileName = Form("%s/minth_eq_%d.txt",saveDirParameters,eqId);
       ofstream ofile;
-      ofile.open (ofileName);
+      ofile.open (ofileName.Data());
       for (UInt_t hs=0; hs<6; hs++) {
 	for (UInt_t chipNr=0; chipNr<10; chipNr++) {
-	  ofile << analyzer->GetMinTh(hs,chipNr);
+	  Int_t minTh = -1;
+	  if (analyzer->GetOnlineScan()->GetChipPresent(hs,chipNr)) {
+	    minTh = analyzer->GetMinTh(hs,chipNr);
+	    if (minTh!=-1) {
+	      dcsfile << "39," << eqId << "," << hs << "," << chipNr << "=" << minTh << "\n";
+	    }
+	    else {
+	      printf("MinTh failed for Eq %d , HS %d , Chip %d\n",eqId,hs,chipNr);
+	    }
+	  }
+	  ofile << minTh;
 	  ofile << "\t";
 	}
 	ofile << "\n";
       }
       ofile.close();
-#ifndef SPD_DA_OFF
-      Char_t id[20];
-      sprintf(id,"SPD_minth_%d",eqId);
-      Int_t status = daqDA_FES_storeFile(ofileName,id);
-      if (status) {
-	printf("Failed to export file %s , status %d\n",ofileName,status);
-      }
-#endif
+      dcsfile.close();
     }
+
     else if (type==DELAY) {
-      Char_t ofileName[100];
-      sprintf(ofileName,"%s/delay_eq_%d.txt",saveDirParameters,eqId);
+      // init dcs config text file
+      TString dcsConfigFileName = Form("%s/dcsConfig_run_%d_eq_%d.txt",saveDirDCSconfigToFXS,runNr,eqId);
+      ofstream dcsfile;
+      dcsfile.open(dcsConfigFileName.Data());
+      dcsfile << "[SPD SCAN]\n";
+      dcsfile << "RunNumber=" << runNr << "\n";
+      dcsfile << "Type=" << type << "\n";
+      dcsfile << "ActualDetCoonfiguration=" << "0,-1,-1\n"; // dummy values for now
+      dcsfile << "[DACvalues]\n";
+      nrDCSconfigFilesProduced++;
+      TString ofileName = Form("%s/delay_eq_%d.txt",saveDirParameters,eqId);
       ofstream ofile;
-      ofile.open (ofileName);
+      ofile.open (ofileName.Data());
       for (UInt_t hs=0; hs<6; hs++) {
 	for (UInt_t chipNr=0; chipNr<10; chipNr++) {
-	  UInt_t clockCycle = analyzer->GetDelay(hs,chipNr);
-	  UInt_t delayCtrl = clockCycle/2;
-	  UInt_t miscCtrl = 192;
-	  if (clockCycle%2==1) miscCtrl = 128;
+	  Int_t clockCycle = -1;
+	  Int_t delayCtrl = -1;
+	  Int_t miscCtrl = -1;
+	  if (analyzer->GetOnlineScan()->GetChipPresent(hs,chipNr)) {
+	    clockCycle = analyzer->GetDelay(hs,chipNr);
+	    delayCtrl = clockCycle/2;
+	    miscCtrl = 192;
+	    if (clockCycle!=-1) {
+	      if (clockCycle%2==1) miscCtrl = 128;
+	      dcsfile << "42," << eqId << "," << hs << "," << chipNr << "=" << delayCtrl << "\n";
+	      dcsfile << "43," << eqId << "," << hs << "," << chipNr << "=" << miscCtrl << "\n";
+	    }
+	    else {
+	      printf("Delay failed for Eq %d , HS %d , Chip %d\n",eqId,hs,chipNr);
+	    }
+	  }
 	  ofile << delayCtrl << "/" << miscCtrl;
 	  ofile << "\t";
 	}
 	ofile << "\n";
       }
       ofile.close();
-#ifndef SPD_DA_OFF
-      Char_t id[20];
-      sprintf(id,"SPD_delay_%d",eqId);
-      Int_t status = daqDA_FES_storeFile(ofileName,id);
-      if (status) {
-	printf("Failed to export file %s , status %d\n",ofileName,status);
-      }
-#endif
+      dcsfile.close();
     }
-
 
     delete analyzer;
 
@@ -514,23 +612,38 @@ int main(int argc, char **argv) {
   // *** *** *** end loop over equipments (eq_id)
 
 
-#ifndef SPD_DA_OFF
   if (nrNoisyFilesProduced>0) {
     // send a tared file of all new noisy maps
-    sprintf(command,"cd %s; tar -cf noisy.tar *",saveDirNoisyToFXS);
-    printf("\n\n%s\n\n",command);
-    system(command);
-    Char_t fileName[200];
-    sprintf(fileName,"%s/noisy.tar",saveDirNoisyToFXS);
-    Char_t id[20];
-    sprintf(id,"SPD_noisy");
-    Int_t status = daqDA_FES_storeFile(fileName,id);
+    TString command = Form("cd %s; tar -cf noisy.tar *",saveDirNoisyToFXS);
+    printf("\n\n%s\n\n",command.Data());
+    system(command.Data());
+#ifndef SPD_DA_OFF
+    TString fileName = Form("%s/noisy.tar",saveDirNoisyToFXS);
+    TString id = "SPD_noisy";
+    Int_t status = daqDA_FES_storeFile(fileName.Data(),id.Data());
     if (status!=0) {
-      printf("Failed to export file %s , status %d\n",fileName,status);
+      printf("Failed to export file %s , status %d\n",fileName.Data(),status);
       return -1;
     }
-  }
 #endif
+  }
+
+  if (nrDCSconfigFilesProduced>0) {
+    // send a tared file of all the dcsConfig text files
+    TString command = Form("cd %s; tar -cf dcsConfig.tar *",saveDirDCSconfigToFXS);
+    //    printf("\n\n%s\n\n",command.Data());
+    system(command.Data());
+#ifndef SPD_DA_OFF
+    TString fileName = Form("%s/dcsConfig.tar",saveDirDCSconfigToFXS);
+    TString id = "SPD_dcsConfig";
+    Int_t status = daqDA_FES_storeFile(fileName.Data(),id.Data());
+    if (status!=0) {
+      printf("Failed to export file %s , status %d\n",fileName.Data(),status);
+      return -1;
+    }
+#endif
+  }
+
 
 
   return 0;

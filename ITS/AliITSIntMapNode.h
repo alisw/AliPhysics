@@ -13,22 +13,26 @@ class AliITSIntMapNode {
 
  public:
   AliITSIntMapNode();
-  AliITSIntMapNode(Int_t key, Int_t val, AliITSIntMapNode* next);
+  AliITSIntMapNode(Int_t key, Int_t val, AliITSIntMapNode* left, AliITSIntMapNode* right);
   AliITSIntMapNode(const AliITSIntMapNode& obj);
   virtual ~AliITSIntMapNode();
   AliITSIntMapNode& operator=(const AliITSIntMapNode& obj);
 
-  Int_t             GetKey() const {return fKey;}
-  Int_t             GetVal() const {return fVal;}
-  AliITSIntMapNode* GetNext() {return fNext;}
+  Int_t             Key() const {return fKey;}
+  Int_t             Val() const {return fVal;}
+  AliITSIntMapNode*& Left() {return fLeft;}
+  AliITSIntMapNode*& Right() {return fRight;}
+
   void              SetKey(Int_t key) {fKey=key;}
   void              SetVal(Int_t val) {fVal=val;}
-  void              SetNext(AliITSIntMapNode* obj) {fNext = obj;}
+  void              SetLeft(AliITSIntMapNode* obj) {fLeft = obj;}
+  void              SetRight(AliITSIntMapNode* obj) {fRight = obj;}
 
  private:
   Int_t fKey;               // key (for sorting)
   Int_t fVal;               // value
-  AliITSIntMapNode* fNext;  // pointer to next object in list
+  AliITSIntMapNode* fLeft;  // pointer to left object in bin tree
+  AliITSIntMapNode* fRight; // pointer to right object in bin tree
 
 };
 

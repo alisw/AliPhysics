@@ -13,12 +13,11 @@ class AliITSOnlineSPDscanMeanTh :  public AliITSOnlineSPDscanMultiple {
 
  public:
   AliITSOnlineSPDscanMeanTh(){}
-  AliITSOnlineSPDscanMeanTh(Char_t *fileName);
+  AliITSOnlineSPDscanMeanTh(const Char_t *fileName);
   AliITSOnlineSPDscanMeanTh(const AliITSOnlineSPDscanMeanTh& scan);
   virtual ~AliITSOnlineSPDscanMeanTh();
   AliITSOnlineSPDscanMeanTh& operator=(const AliITSOnlineSPDscanMeanTh& scan);
 
-  //  virtual void   ReadFromTObjArray(TObjArray *arr);
   virtual UInt_t AddScanStep();
 
   void     SetDacLow(UInt_t nsi, UInt_t hs, Int_t val);
@@ -29,9 +28,6 @@ class AliITSOnlineSPDscanMeanTh :  public AliITSOnlineSPDscanMultiple {
   Int_t    GetDacHigh(UInt_t nsi, UInt_t hs);
   Int_t    GetTPAmp(UInt_t nsi, UInt_t hs);
 
- protected:
-  
-  ClassDef(AliITSOnlineSPDscanMeanTh,1)
-    };
+};
     
 #endif

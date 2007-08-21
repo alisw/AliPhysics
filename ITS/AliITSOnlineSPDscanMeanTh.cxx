@@ -8,22 +8,20 @@
 #include "AliITSOnlineSPDscanMeanTh.h"
 #include "AliITSOnlineSPDscanInfoMeanTh.h"
 
-ClassImp(AliITSOnlineSPDscanMeanTh)
-
-AliITSOnlineSPDscanMeanTh::AliITSOnlineSPDscanMeanTh(Char_t *fileName) {
+AliITSOnlineSPDscanMeanTh::AliITSOnlineSPDscanMeanTh(const Char_t *fileName) {
   // constructor
-  sprintf(fFileName,"%s",fileName);
+  fFileName=fileName;
   // look for a previously saved info object 
   // (if file not found create a new one and return, else read)
-  FILE* fp0 = fopen(fFileName, "r");
+  FILE* fp0 = fopen(fFileName.Data(), "r");
   if (fp0 == NULL) {
     fScanInfo = new AliITSOnlineSPDscanInfoMeanTh();
-    fFile = new TFile(fFileName, "RECREATE");
+    fFile = new TFile(fFileName.Data(), "RECREATE");
     fWrite=kTRUE;
   }
   else {
     fclose(fp0);
-    fFile = new TFile(fFileName, "READ");
+    fFile = new TFile(fFileName.Data(), "READ");
     fWrite=kFALSE;
     fFile->GetObject("AliITSOnlineSPDscanInfo", fScanInfo);
   }
@@ -44,16 +42,6 @@ AliITSOnlineSPDscanMeanTh& AliITSOnlineSPDscanMeanTh::operator=(const AliITSOnli
   }
   return *this;
 }
-
-//void AliITSOnlineSPDscanMeanTh::ReadFromTObjArray(TObjArray *arr) {
-//  ClearThis();
-//  Int_t nrEntries = arr->GetEntriesFast();
-//  if (nrEntries>0 && nrEntries%2==1) {
-//    fScanInfo = (AliITSOnlineSPDscanInfoMeanTh*) arr->At(0);
-//    fInfoModified=kTRUE;
-//    FillFromTObjArray(arr,nrEntries);
-//  }
-//}
 
 UInt_t AliITSOnlineSPDscanMeanTh::AddScanStep() {
   CreateNewStep();

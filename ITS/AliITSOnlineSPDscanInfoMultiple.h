@@ -33,7 +33,7 @@ class AliITSOnlineSPDscanInfoMultiple :  public AliITSOnlineSPDscanInfo {
   TArrayI   fDacValues;     // DAC values for each step
 
 
-  ClassDef(AliITSOnlineSPDscanInfoMultiple,1)
+  ClassDef(AliITSOnlineSPDscanInfoMultiple,2)
     };
 
 #endif

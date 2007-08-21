@@ -1,20 +1,3 @@
-/**************************************************************************
- * Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
-
-/* $Id$*/
-
 ////////////////////////////////////////////////////////////
 // Author: Henrik Tydesjo                                 //
 // This class is used in the detector algorithm framework //
@@ -35,6 +18,7 @@
 #include <TF1.h>
 #include <TGraph.h>
 #include <TH2F.h>
+#include <TError.h>
 
 Double_t itsSpdErrorf(Double_t *x, Double_t *par){
   if (par[2]<0) par[2]=0;
@@ -46,13 +30,12 @@ Double_t itsSpdErrorf(Double_t *x, Double_t *par){
 //}
 
 
-AliITSOnlineSPDscanAnalyzer::AliITSOnlineSPDscanAnalyzer(Char_t *fileName) :
-  fType(99),fDacId(99),fScanObj(NULL),fTriggers(NULL),
+AliITSOnlineSPDscanAnalyzer::AliITSOnlineSPDscanAnalyzer(const Char_t *fileName) :
+  fType(99),fDacId(99),fFileName(fileName),fScanObj(NULL),fTriggers(NULL),
   fOverWrite(kFALSE),fNoiseThreshold(0.01),fNoiseMinimumEvents(100),
   fMinNrStepsBeforeIncrease(5),fMinIncreaseFromBaseLine(2),fStepDownDacSafe(2),fMaxBaseLineLevel(10)
 {
   // constructor
-  sprintf(fFileName,"%s",fileName);
   for (UInt_t chipNr=0; chipNr<11; chipNr++) {
     for (UInt_t hs=0; hs<6; hs++) {
       fMeanMultiplicity[hs][chipNr]=NULL;
@@ -67,12 +50,12 @@ AliITSOnlineSPDscanAnalyzer::AliITSOnlineSPDscanAnalyzer(Char_t *fileName) :
 }
 
 AliITSOnlineSPDscanAnalyzer::AliITSOnlineSPDscanAnalyzer(const AliITSOnlineSPDscanAnalyzer& handle) :
-  fType(99),fDacId(99),fScanObj(NULL),fTriggers(NULL),
+  fType(99),fDacId(99),fFileName("."),fScanObj(NULL),fTriggers(NULL),
   fOverWrite(kFALSE),fNoiseThreshold(0.01),fNoiseMinimumEvents(100),
   fMinNrStepsBeforeIncrease(5),fMinIncreaseFromBaseLine(2),fStepDownDacSafe(2),fMaxBaseLineLevel(10)
 {
   // copy constructor, only copies the filename (not the processed data)
-  sprintf(fFileName,"%s",handle.fFileName);
+  fFileName=handle.fFileName;
 
   fScanObj=NULL;
   fType=99;
@@ -133,7 +116,7 @@ AliITSOnlineSPDscanAnalyzer& AliITSOnlineSPDscanAnalyzer::operator=(const AliITS
       }
     }
    
-    sprintf(fFileName,"%s",handle.fFileName);
+    fFileName=handle.fFileName;
 
     fScanObj=NULL;
     fType=99;
@@ -156,14 +139,14 @@ AliITSOnlineSPDscanAnalyzer& AliITSOnlineSPDscanAnalyzer::operator=(const AliITS
 
 void AliITSOnlineSPDscanAnalyzer::Init() {
   // first checks type of container and then initializes container obj
-  FILE* fp0 = fopen(fFileName, "r");
+  FILE* fp0 = fopen(fFileName.Data(), "r");
   if (fp0 == NULL) {
     return;
   }
   else {
     fclose(fp0);
   }
-  fScanObj = new AliITSOnlineSPDscan(fFileName);
+  fScanObj = new AliITSOnlineSPDscan(fFileName.Data());
   fType = fScanObj->GetType();
   delete fScanObj;
 
@@ -171,20 +154,20 @@ void AliITSOnlineSPDscanAnalyzer::Init() {
   switch(fType) {
   case kUNIMA:
   case kNOISE:
-    fScanObj = new AliITSOnlineSPDscanSingle(fFileName);
+    fScanObj = new AliITSOnlineSPDscanSingle(fFileName.Data());
     break;
   case kMINTH:
   case kDAC:
   case kDELAY:
-    fScanObj = new AliITSOnlineSPDscanMultiple(fFileName);
+    fScanObj = new AliITSOnlineSPDscanMultiple(fFileName.Data());
     fDacId = ((AliITSOnlineSPDscanMultiple*)fScanObj)->GetDacId();
     break;
   case kMEANTH:
-    fScanObj = new AliITSOnlineSPDscanMeanTh(fFileName);
+    fScanObj = new AliITSOnlineSPDscanMeanTh(fFileName.Data());
     fDacId = ((AliITSOnlineSPDscanMeanTh*)fScanObj)->GetDacId();
     break;
   default:
-    printf("Type %d not defined!\n",fType);
+    Error("AliITSOnlineSPDscanAnalyzer::Init","Type %d not defined!",fType);
     fScanObj=NULL;
     return;
     break;
@@ -201,44 +184,69 @@ void AliITSOnlineSPDscanAnalyzer::Init() {
 
 }
 
+void AliITSOnlineSPDscanAnalyzer::SetParam(const Char_t *pname, const Char_t *pval) {
+  // set a parameter
+  TString name = pname;
+  TString val = pval;
+  if (name.CompareTo("fOverWrite")==0) {
+    if (val.CompareTo("YES")==0) {
+      fOverWrite = kTRUE;
+    }
+  }
+  else if (name.CompareTo("fNoiseThreshold")==0) {
+    fNoiseThreshold = val.Atof();
+  }
+  else if (name.CompareTo("fNoiseMinimumEvents")==0) {
+    fNoiseMinimumEvents = val.Atoi();
+  }
+  else if (name.CompareTo("fMinNrStepsBeforeIncrease")==0) {
+    fMinNrStepsBeforeIncrease = val.Atoi();
+  }
+  else if (name.CompareTo("fMinIncreaseFromBaseLine")==0) {
+    fMinIncreaseFromBaseLine = val.Atof();
+  }
+  else if (name.CompareTo("fStepDownDacSafe")==0) {
+    fStepDownDacSafe = val.Atoi();
+  }
+  else if (name.CompareTo("fMaxBaseLineLevel")==0) {
+    fMaxBaseLineLevel = val.Atof();
+  }
+  else {
+    Error("AliITSOnlineSPDscanAnalyzer::SetParam","Parameter %s in configuration file unknown.",name.Data());
+  }
+}
 
 Bool_t AliITSOnlineSPDscanAnalyzer::ProcessDeadPixels(Char_t *oldcalibDir) {
-  // process dead pixel data
+  // process dead pixel data, for uniformity scan, 
+  // NB: This will not be the general way of finding dead pixels.
   if (fScanObj==NULL) {
-    printf("No data!\n");
+    Warning("AliITSOnlineSPDscanAnalyzer::ProcessDeadPixels","No data!");
     return kFALSE;
   }
   // should be type kUNIMA
   if (fType!=kUNIMA) {
-    printf("Dead pixels only for scan type %d\n",kUNIMA);
+    Warning("AliITSOnlineSPDscanAnalyzer::ProcessDeadPixels","Dead pixels only for scan type %d.",kUNIMA);
     return kFALSE;
   }
 
-  Int_t nrDead[240];
-  for (Int_t i=0; i<240; i++) {
-    nrDead[i]=0;
-  }
   UInt_t routerNr = fScanObj->GetRouterNr();
   UInt_t rowStart = fScanObj->GetRowStart();
   UInt_t rowEnd   = fScanObj->GetRowEnd();
   for (UInt_t hs=0; hs<6; hs++) {
     for (UInt_t chipNr=0; chipNr<10; chipNr++) {
       if (fScanObj->GetChipPresent(hs,chipNr) && fScanObj->GetAverageMultiplicity(0,hs,chipNr)>0) { // check the status of the chippresent parameter in the mood header!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	UInt_t module = AliITSRawStreamSPD::GetModuleNumber(routerNr,hs*2+chipNr/5);
-	if (!fHandler[module]) {
-	  fHandler[module] = new AliITSOnlineCalibrationSPDhandler(module);
-	}
-	fHandler[module]->SetFileLocation(oldcalibDir);
-	fHandler[module]->ReadFromFile();
-	if (fOverWrite) {fHandler[module]->ResetDead();}
+	UInt_t module = AliITSRawStreamSPD::GetModuleNumber(routerNr,hs,chipNr);
 	for (UInt_t col=0; col<32; col++) {
 	  for (UInt_t row=rowStart; row<=rowEnd; row++) {
 	    if (col!=1 && col!=9 && col!=17 && col!=25) { //exclude test columns!!!
 	      if (fScanObj->GetHits(0,hs,chipNr,col,row)==0) {
-		Int_t newCol = 32*(chipNr%5) + col;
-		if (fHandler[module]->SetDeadPixel(newCol,row)) {
-		  nrDead[module]++;
+		if (!fHandler[module]) {
+		  fHandler[module] = new AliITSOnlineCalibrationSPDhandler();
+		  fHandler[module]->SetFileLocation(oldcalibDir);
+		  fHandler[module]->ReadFromFile(module);
+		  if (fOverWrite) {fHandler[module]->ResetDeadForChip(routerNr,hs,chipNr);}
 		}
+		fHandler[module]->SetDeadPixel(routerNr,hs,chipNr,col,row);
 	      }
 	    }
 	  }
@@ -254,41 +262,34 @@ Bool_t AliITSOnlineSPDscanAnalyzer::ProcessDeadPixels(Char_t *oldcalibDir) {
 Bool_t AliITSOnlineSPDscanAnalyzer::ProcessNoisyPixels(Char_t *oldcalibDir) {
   // process noisy pixel data
   if (fScanObj==NULL) {
-    printf("No data!\n");
+    Warning("AliITSOnlineSPDscanAnalyzer::ProcessNoisyPixels","No data!");
     return kFALSE;
   }
   // should be type kNOISE
   if (fType != kNOISE) {
-    printf("Noisy pixels only for scan type %d\n",kNOISE);
+    Warning("AliITSOnlineSPDscanAnalyzer::ProcessNoisyPixels","Noisy pixels only for scan type %d.",kNOISE);
     return kFALSE;
   }
 
-  Int_t nrNoisy[240];
-  for (Int_t i=0; i<240; i++) {
-    nrNoisy[i]=0;
-  }
   if (fScanObj->GetTriggers(0)<fNoiseMinimumEvents) {
-    printf("Error: Process noisy: Too few events.\n"); 
+    Warning("AliITSOnlineSPDscanAnalyzer::ProcessNoisyPixels","Process noisy: Too few events.");
     return kFALSE;
   }
   UInt_t routerNr = fScanObj->GetRouterNr();
   for (UInt_t hs=0; hs<6; hs++) {
     for (UInt_t chipNr=0; chipNr<10; chipNr++) {
       if (fScanObj->GetChipPresent(hs,chipNr)) { // check the status of the chippresent parameter in the mood header!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	UInt_t module = AliITSRawStreamSPD::GetModuleNumber(routerNr,hs*2+chipNr/5);
+	UInt_t module = AliITSRawStreamSPD::GetModuleNumber(routerNr,hs,chipNr);
 	for (UInt_t col=0; col<32; col++) {
 	  for (UInt_t row=0; row<256; row++) {
 	    if (fScanObj->GetHitsEfficiency(0,hs,chipNr,col,row)>fNoiseThreshold) {
 	      if (!fHandler[module]) {
-		fHandler[module] = new AliITSOnlineCalibrationSPDhandler(module);
+		fHandler[module] = new AliITSOnlineCalibrationSPDhandler();
+		fHandler[module]->SetFileLocation(oldcalibDir);
+		fHandler[module]->ReadFromFile(module);
+		if (fOverWrite) {fHandler[module]->ResetNoisyForChip(routerNr,hs,chipNr);}
 	      }
-	      fHandler[module]->SetFileLocation(oldcalibDir);
-	      fHandler[module]->ReadFromFile();
-	      if (fOverWrite) {fHandler[module]->ResetNoisy();}
-	      Int_t newCol = 32*(chipNr%5) + col;
-	      if (fHandler[module]->SetNoisyPixel(newCol,row)) {
-		nrNoisy[module]++;
-	      }
+	      fHandler[module]->SetNoisyPixel(routerNr,hs,chipNr,col,row);
 	    }
 	  }
 	}
@@ -302,25 +303,23 @@ Bool_t AliITSOnlineSPDscanAnalyzer::SaveDeadNoisyPixels(UInt_t module, Char_t *c
   // save dead and noisy pixels to file in dir calibDir
   if (fHandler[module]!=NULL) {
     fHandler[module]->SetFileLocation(calibDir);
-    fHandler[module]->WriteToFile();
+    fHandler[module]->WriteToFile(module);
     return kTRUE;
   }
   return kFALSE;
 }
 
 
-
-
 Int_t AliITSOnlineSPDscanAnalyzer::GetDelay(UInt_t hs, UInt_t chipNr) {
   // get delay
   if (hs>=6 || chipNr>10) return -1;
   if (fScanObj==NULL) {
-    printf("No data!\n");
+    Warning("AliITSOnlineSPDscanAnalyzer::GetDelay","No data!");
     return -1;
   }
   // should be type kDELAY or kDAC with id 42 (delay_ctrl)
   if (fType!=kDELAY && (fType!=kDAC || fDacId!=42)) {
-    printf("Delay only for scan type %d or %d and dac_id 42\n",kDELAY,kDAC);
+    Warning("AliITSOnlineSPDscanAnalyzer::GetDelay","Delay only for scan type %d or %d and dac_id 42.",kDELAY,kDAC);
     return -1;
   }
   if (fMeanMultiplicity[hs][chipNr]==NULL) {
@@ -351,56 +350,20 @@ Int_t AliITSOnlineSPDscanAnalyzer::GetDelay(UInt_t hs, UInt_t chipNr) {
 }
 
 
-// ********** old version of "GetDelay", which fits a gaussian to the meanmult graph
-//Int_t AliITSOnlineSPDscanAnalyzer::GetDelay(UInt_t hs, UInt_t chipNr) {
-//  // get delay
-//  if (hs>=6 || chipNr>10) return -1;
-//  if (fScanObj==NULL) {
-//    printf("No data!\n");
-//    return -1;
-//  }
-//  // should be type kDELAY or kDAC with id 42 (delay_ctrl)
-//  if (fType!=kDELAY && (fType!=kDAC || fDacId!=42)) {
-//    printf("Delay only for scan type %d or %d and dac_id 42\n",kDELAY,kDAC);
-//    return -1;
-//  }
-//  if (fMeanMultiplicity[hs][chipNr]==NULL) {
-//    if (!ProcessMeanMultiplicity()) {
-//      return -1;
-//    }
-//  }
-//
-//  Char_t funcName[30];
-//  sprintf(funcName,"Fit delay func HS%d CHIP%d",hs,chipNr);
-//  Int_t minDac = ((AliITSOnlineSPDscanMultiple*)fScanObj)->GetDacValue(0);
-//  Int_t maxDac = ((AliITSOnlineSPDscanMultiple*)fScanObj)->GetDacValue(fScanObj->GetNSteps()-1);
-//  TF1* delayFunc = new TF1(funcName,"gaus",minDac,maxDac);
-//  fMeanMultiplicity[hs][chipNr]->Fit(funcName,"Q0");
-//  Double_t mean = delayFunc->GetParameter(1);
-//  //  Double_t sigma = fDelayFunc[hs][chipNr]->GetParameter(2);
-//  delete delayFunc;
-//  if (mean>minDac && mean<maxDac) {
-//    return (Int_t) (mean+0.5);
-//  }
-//  else {
-//    return -1;
-//  }
-//}
-
 Int_t AliITSOnlineSPDscanAnalyzer::GetNrNoisyUnima(UInt_t hs, UInt_t chipNr) {
   // in case of a uniformity scan, returns the nr of noisy pixels, (here > 200 hits)
   if (hs>=6 || chipNr>10) return -1;
   if (fScanObj==NULL) {
-    printf("No data!\n");
+    Error("AliITSOnlineSPDscanAnalyzer::GetNrNoisyUnima","No data!");
     return kFALSE;
   }
   // should be type kUNIMA
   if (fType != kUNIMA) {
-    printf("Noisy pixels Unima only for scan type %d\n",kUNIMA);
+    Error("AliITSOnlineSPDscanAnalyzer::GetNrNoisyUnima","Noisy pixels Unima only for scan type %d.",kUNIMA);
     return kFALSE;
   }
   if (fScanObj->GetTriggers(0)!=25600) {
-    printf("Error: Process noisy unima: Incorrect number of events (!=25600.\n"); 
+    Error("AliITSOnlineSPDscanAnalyzer::GetNrNoisyUnima","Process noisy unima: Incorrect number of events (!=25600.");
     return kFALSE;
   }
 
@@ -477,12 +440,12 @@ Int_t AliITSOnlineSPDscanAnalyzer::GetMinTh(UInt_t hs, UInt_t chipNr) {
   // calculates and returns the minimum threshold
   if (hs>=6 || chipNr>10) return -1;
   if (fScanObj==NULL) {
-    printf("No data!\n");
+    Error("AliITSOnlineSPDscanAnalyzer::GetMinTh","No data!");
     return -1;
   }
   // should be type  kMINTH  or  kDAC with id 39 (pre_vth)
   if (fType!=kMINTH && (fType!=kDAC || fDacId!=39)) {
-    printf("MinTh only for scan type %d OR %d with dac_id 39\n",kMINTH,kDAC);
+    Error("AliITSOnlineSPDscanAnalyzer::GetMinTh","MinTh only for scan type %d OR %d with dac_id 39.",kMINTH,kDAC);
     return -1;
   }
   if (fMeanMultiplicity[hs][chipNr]==NULL) {
@@ -493,14 +456,13 @@ Int_t AliITSOnlineSPDscanAnalyzer::GetMinTh(UInt_t hs, UInt_t chipNr) {
 
   Int_t lastDac = FindLastMinThDac(hs,chipNr);
   if (lastDac==-1) {
-    printf("GetMinTh: HS%d, Chip%d: Increase of Mean Multiplicity by %1.2f never reached.\n",hs,chipNr,fMinIncreaseFromBaseLine);
+    Warning("AliITSOnlineSPDscanAnalyzer::GetMinTh","HS%d, Chip%d: Increase of Mean Multiplicity by %1.2f never reached.",hs,chipNr,fMinIncreaseFromBaseLine);
     return -1;
   }
 
   Int_t minDac = ((AliITSOnlineSPDscanMultiple*)fScanObj)->GetDacValue(0);
-  Char_t funcName[30];
-  sprintf(funcName,"Fit minth func HS%d CHIP%d",hs,chipNr);
-  TF1 *minThFunc = new TF1(funcName,itsSpdErrorf,100,500,3);
+  TString funcName = Form("Fit minth func HS%d CHIP%d",hs,chipNr);
+  TF1 *minThFunc = new TF1(funcName.Data(),itsSpdErrorf,100,500,3);
   minThFunc->SetParameter(0,lastDac+10);
   minThFunc->SetParameter(1,2);
   minThFunc->SetParameter(2,0);
@@ -521,13 +483,13 @@ Int_t AliITSOnlineSPDscanAnalyzer::GetMinTh(UInt_t hs, UInt_t chipNr) {
   delete minThFunc;
 
   if (baseLine>fMaxBaseLineLevel) {
-    printf("GetMinTh: HS%d, Chip%d: BaseLine too large (%1.2f>%1.2f)\n",hs,chipNr,baseLine,fMaxBaseLineLevel);
+    Warning("AliITSOnlineSPDscanAnalyzer::GetMinTh","HS%d, Chip%d: BaseLine too large (%1.2f>%1.2f).",hs,chipNr,baseLine,fMaxBaseLineLevel);
     return -1;
   }
   UInt_t step=FindClosestLowerStep(lastDac);
   Float_t compareLine = GetCompareLine(step,hs,chipNr,baseLine);
   if (compareLine==-1) {
-    printf("GetMinTh: HS%d, Chip%d: Not enough steps (%d<%d) before increase to get a compare line.\n",hs,chipNr,step,fMinNrStepsBeforeIncrease);
+    Warning("AliITSOnlineSPDscanAnalyzer::GetMinTh","HS%d, Chip%d: Not enough steps (%d<%d) before increase to get a compare line.",hs,chipNr,step,fMinNrStepsBeforeIncrease);
     return -1;
   }
 
@@ -543,7 +505,7 @@ Int_t AliITSOnlineSPDscanAnalyzer::GetMinTh(UInt_t hs, UInt_t chipNr) {
     return minth;
   }
   else {
-    printf("GetMinTh: HS%d, Chip%d: Did not find a point below the compare line (%f).\n",hs,chipNr,compareLine);
+    Warning("AliITSOnlineSPDscanAnalyzer::GetMinTh","HS%d, Chip%d: Did not find a point below the compare line (%f).",hs,chipNr,compareLine);
     return -1;
   }
 }
@@ -553,7 +515,7 @@ Int_t AliITSOnlineSPDscanAnalyzer::GetMinTh(UInt_t hs, UInt_t chipNr) {
 Bool_t AliITSOnlineSPDscanAnalyzer::ProcessMeanMultiplicity() {
   // process mean multiplicity data
   if (fScanObj==NULL) {
-    printf("No data!\n");
+    Error("AliITSOnlineSPDscanAnalyzer::ProcessMeanMultiplicity","No data!");
     return kFALSE;
   }
   for (UInt_t step=0; step<fScanObj->GetNSteps(); step++) {
@@ -594,7 +556,7 @@ TGraph* AliITSOnlineSPDscanAnalyzer::GetMeanMultiplicityG(UInt_t hs, UInt_t chip
 Bool_t AliITSOnlineSPDscanAnalyzer::ProcessHitEventEfficiency() {
   // process hit event efficiency
   if (fScanObj==NULL) {
-    printf("No data!\n");
+    Error("AliITSOnlineSPDscanAnalyzer::ProcessHitEventEfficiency","No data!");
     return kFALSE;
   }
   for (UInt_t step=0; step<fScanObj->GetNSteps(); step++) {
@@ -636,7 +598,7 @@ TGraph* AliITSOnlineSPDscanAnalyzer::GetHitEventEfficiencyG(UInt_t hs, UInt_t ch
 Bool_t AliITSOnlineSPDscanAnalyzer::ProcessNrTriggers() {
   // process nr of triggers data
   if (fScanObj==NULL) {
-    printf("No data!\n");
+    Error("AliITSOnlineSPDscanAnalyzer::ProcessNrTriggers","No data!");
     return kFALSE;
   }
   for (UInt_t step=0; step<fScanObj->GetNSteps(); step++) {
@@ -693,17 +655,17 @@ UInt_t AliITSOnlineSPDscanAnalyzer::GetRouterNr() {
 TH2F* AliITSOnlineSPDscanAnalyzer::GetHitMapTot(UInt_t step) {
   // creates and returns a pointer to a hitmap histo (half sector style a la spdmood)
   if (fScanObj==NULL) {
-    printf("No data!\n");
+    Error("AliITSOnlineSPDscanAnalyzer::GetHitMapTot","No data!");
     return NULL;
   }
-  Char_t histoname[50];
+  TString histoname;
   if (fType==kMINTH || fType==kMEANTH || fType==kDAC) {
-    sprintf(histoname,"Router %d , DAC %d",GetRouterNr(),((AliITSOnlineSPDscanMultiple*)fScanObj)->GetDacValue(step));
+    histoname = Form("Router %d , DAC %d",GetRouterNr(),((AliITSOnlineSPDscanMultiple*)fScanObj)->GetDacValue(step));
   }
   else {
-    sprintf(histoname,"Router %d ",GetRouterNr());
+    histoname = Form("Router %d ",GetRouterNr());
   }
-  TH2F* fHitMapTot = new TH2F(histoname,histoname,32*10,-0.5,32*10-0.5,256*6,-0.5,256*6-0.5);
+  TH2F* fHitMapTot = new TH2F(histoname.Data(),histoname.Data(),32*10,-0.5,32*10-0.5,256*6,-0.5,256*6-0.5);
   fHitMapTot->SetNdivisions(-10,"X");
   fHitMapTot->SetNdivisions(-006,"Y");
   fHitMapTot->SetTickLength(0,"X");

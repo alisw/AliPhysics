@@ -21,29 +21,27 @@
 #include "AliITSOnlineSPDHitArray.h"
 #include "AliITSOnlineSPDHitEvent.h"
 
-ClassImp(AliITSOnlineSPDscan)
-
-AliITSOnlineSPDscan::AliITSOnlineSPDscan(Char_t *fileName) :
+AliITSOnlineSPDscan::AliITSOnlineSPDscan(const Char_t *fileName) :
   fFile(NULL),
   fWrite(kFALSE),
   fCurrentStep(-1),
   fModified(kFALSE),
   fInfoModified(kFALSE),
-  fScanInfo(NULL)
+  fScanInfo(NULL),
+  fFileName(fileName)
 {
   // constructor, open file for reading or writing
-  sprintf(fFileName,"%s",fileName);
   // look for a previously saved info object 
   // (if file not found create a new one and return, else read)
-  FILE* fp0 = fopen(fFileName, "r");
+  FILE* fp0 = fopen(fFileName.Data(), "r");
   if (fp0 == NULL) {
     fScanInfo = new AliITSOnlineSPDscanInfo();
-    fFile = new TFile(fFileName, "RECREATE");
+    fFile = new TFile(fFileName.Data(), "RECREATE");
     fWrite=kTRUE;
   }
   else {
     fclose(fp0);
-    fFile = new TFile(fFileName, "READ");
+    fFile = new TFile(fFileName.Data(), "READ");
     fWrite=kFALSE;
     fFile->GetObject("AliITSOnlineSPDscanInfo", fScanInfo);
   }
@@ -56,7 +54,8 @@ AliITSOnlineSPDscan::AliITSOnlineSPDscan(const AliITSOnlineSPDscan& /*scan*/) :
   fCurrentStep(-1),
   fModified(kFALSE),
   fInfoModified(kFALSE),
-  fScanInfo(NULL)
+  fScanInfo(NULL),
+  fFileName(".")
 {
   printf("This object should not be copied!");
 }
@@ -80,7 +79,7 @@ AliITSOnlineSPDscan::~AliITSOnlineSPDscan() {
     if (!fWrite) {
       fFile->Close();
       delete fFile;
-      fFile = new TFile(fFileName, "UPDATE");
+      fFile = new TFile(fFileName.Data(), "UPDATE");
       fWrite=kTRUE;
     }
     fFile->Delete("AliITSOnlineSPDscanInfo;*");
@@ -99,49 +98,6 @@ AliITSOnlineSPDscan& AliITSOnlineSPDscan::operator=(const AliITSOnlineSPDscan& s
   return *this;
 }
 
-
-//TObjArray* AliITSOnlineSPDscan::GetAsTObjArray() {
-//  TObjArray *arr = new TObjArray();
-//  arr->Add(fScanInfo);
-//  for (UInt_t step=0; step<GetNSteps(); step++) {
-//    SwitchToStep(step);
-//    for (UInt_t hs=0; hs<6; hs++) {
-//      arr->Add(fCurrentHitArray[hs]->CloneThis());
-//      arr->Add(fCurrentHitEvent[hs]->CloneThis());
-//    }
-//  }
-//  return arr;
-//}
-//
-//void AliITSOnlineSPDscan::ReadFromTObjArray(TObjArray *arr) {
-//  ClearThis();
-//  Int_t nrEntries = arr->GetEntriesFast();
-//  if (nrEntries>0 && nrEntries%2==1) {
-//    fScanInfo = (AliITSOnlineSPDscanInfo*) arr->At(0);
-//    fInfoModified=kTRUE;
-//    FillFromTObjArray(arr,nrEntries);
-//  }
-//}
-//
-//void AliITSOnlineSPDscan::FillFromTObjArray(TObjArray *arr, UInt_t nrEntries) {
-//  UInt_t index=1;
-//  UInt_t hs=0;
-//  while (index<nrEntries) {
-//    UInt_t step=(index-1)/12;
-//    SwitchToStep(step);
-//    if (index%2==1) {
-//      fCurrentHitArray[hs] = (AliITSOnlineSPDHitArray*) arr->At(index);
-//    }
-//    else {
-//      fCurrentHitEvent[hs] = (AliITSOnlineSPDHitEvent*) arr->At(index);
-//      hs++;
-//      if (hs>5) hs=0;
-//    }
-//    fModified=kTRUE;
-//    index++;
-//  }
-//}
-
 void AliITSOnlineSPDscan::ClearThis() {
   // clear this scan, close file and open new
   for (UInt_t hs=0; hs<6; hs++) {
@@ -157,7 +113,7 @@ void AliITSOnlineSPDscan::ClearThis() {
   fScanInfo->ClearThis();
   fFile->Close();
   delete fFile;
-  fFile = new TFile(fFileName, "RECREATE");
+  fFile = new TFile(fFileName.Data(), "RECREATE");
   fWrite=kTRUE;
   fFile->WriteTObject(fScanInfo, "AliITSOnlineSPDscanInfo");
   fInfoModified=kTRUE;
@@ -236,11 +192,9 @@ void AliITSOnlineSPDscan::FillGap(UInt_t nsi) {
 void AliITSOnlineSPDscan::ReadCurrentStep() {
   // read current step index into memory
   for (UInt_t hs=0; hs<6; hs++) {
-    Char_t stepName[40];
-    sprintf(stepName,"HitArray_HS%d_Step%d",hs,fCurrentStep);
-    fFile->GetObject(stepName, fCurrentHitArray[hs]);
-    Char_t stepName2[40];
-    sprintf(stepName2,"HitEvent_HS%d_Step%d",hs,fCurrentStep);
+    TString stepName = Form("HitArray_HS%d_Step%d",hs,fCurrentStep);
+    fFile->GetObject(stepName.Data(), fCurrentHitArray[hs]);
+    TString stepName2 = Form("HitEvent_HS%d_Step%d",hs,fCurrentStep);
     fFile->GetObject(stepName2, fCurrentHitEvent[hs]);
   }
 }
@@ -250,22 +204,18 @@ void AliITSOnlineSPDscan::SaveCurrentStep() {
   if (!fWrite) {
     fFile->Close();
     delete fFile;
-    fFile = new TFile(fFileName, "UPDATE");
+    fFile = new TFile(fFileName.Data(), "UPDATE");
     fWrite=kTRUE;
   }
   for (UInt_t hs=0; hs<6; hs++) {
-    Char_t stepName[40];
-    sprintf(stepName,"HitArray_HS%d_Step%d",hs,fCurrentStep);
-    Char_t stepDelete[40];
-    sprintf(stepDelete,"%s;*",stepName);
-    fFile->Delete(stepDelete);
-    fFile->WriteTObject(fCurrentHitArray[hs], stepName);
-    Char_t stepName2[40];
-    sprintf(stepName2,"HitEvent_HS%d_Step%d",hs,fCurrentStep);
-    Char_t stepDelete2[40];
-    sprintf(stepDelete2,"%s;*",stepName2);
-    fFile->Delete(stepDelete2);
-    fFile->WriteTObject(fCurrentHitEvent[hs], stepName2);
+    TString stepName = Form("HitArray_HS%d_Step%d",hs,fCurrentStep);
+    TString stepDelete = Form("%s;*",stepName.Data());
+    fFile->Delete(stepDelete.Data());
+    fFile->WriteTObject(fCurrentHitArray[hs], stepName.Data());
+    TString stepName2 = Form("HitEvent_HS%d_Step%d",hs,fCurrentStep);
+    TString stepDelete2 = Form("%s;*",stepName2.Data());
+    fFile->Delete(stepDelete2.Data());
+    fFile->WriteTObject(fCurrentHitEvent[hs], stepName2.Data());
   }
   fModified=kFALSE;
 }
@@ -455,6 +405,11 @@ void AliITSOnlineSPDscan::SetDacStep(UInt_t val){
   fScanInfo->SetDacStep(val); 
   fInfoModified=kTRUE;
 }
+void AliITSOnlineSPDscan::SetDCSVersion(UInt_t val){
+  // set dcs db version
+  fScanInfo->SetDCSVersion(val); 
+  fInfoModified=kTRUE;
+}
 void AliITSOnlineSPDscan::IncrementTriggers(UInt_t nsi) {
   // increment nr of triggers
   SwitchToStep(nsi);
@@ -502,4 +457,7 @@ UInt_t AliITSOnlineSPDscan::GetDacEnd() const {
 }
 UInt_t AliITSOnlineSPDscan::GetDacStep() const {
   return fScanInfo->GetDacStep();
+}
+UInt_t AliITSOnlineSPDscan::GetDCSVersion() const {
+  return fScanInfo->GetDCSVersion();
 }

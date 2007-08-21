@@ -12,6 +12,7 @@ ClassImp(AliITSOnlineSPDscanInfo)
 
 AliITSOnlineSPDscanInfo::AliITSOnlineSPDscanInfo(): 
   fType(999),
+  fDataFormat(999),
   fRunNr(0),
   fRouterNr(999),
   fNSteps(0),
@@ -20,7 +21,8 @@ AliITSOnlineSPDscanInfo::AliITSOnlineSPDscanInfo():
   fRowEnd(255),
   fDacStep(1),
   fDacStart(0),
-  fDacEnd(255)
+  fDacEnd(255),
+  fDCSVersion(0)
 {
   ClearThis();
 }

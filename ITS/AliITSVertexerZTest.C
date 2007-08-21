@@ -8,6 +8,7 @@
 #include <AliRun.h>
 #include <AliHeader.h>
 #include <AliGenEventHeader.h>
+#include <AliGeomManager.h>
 #include <AliITSVertexerZ.h>
 #include <AliRunLoader.h>
 #include <AliITSLoader.h>

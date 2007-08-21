@@ -8,25 +8,23 @@
 #include "AliITSOnlineSPDscanMultiple.h"
 #include "AliITSOnlineSPDscanInfoMultiple.h"
 
-ClassImp(AliITSOnlineSPDscanMultiple)
-
 AliITSOnlineSPDscanMultiple::AliITSOnlineSPDscanMultiple():AliITSOnlineSPDscan(){
 // Default constructor
 }
-AliITSOnlineSPDscanMultiple::AliITSOnlineSPDscanMultiple(Char_t *fileName) {
+AliITSOnlineSPDscanMultiple::AliITSOnlineSPDscanMultiple(const Char_t *fileName) {
   // constructor
-  sprintf(fFileName,"%s",fileName);
+  fFileName=fileName;
   // look for a previously saved info object 
   // (if file not found create a new one and return, else read)
-  FILE* fp0 = fopen(fFileName, "r");
+  FILE* fp0 = fopen(fFileName.Data(), "r");
   if (fp0 == NULL) {
     fScanInfo = new AliITSOnlineSPDscanInfoMultiple();
-    fFile = new TFile(fFileName, "RECREATE");
+    fFile = new TFile(fFileName.Data(), "RECREATE");
     fWrite=kTRUE;
   }
   else {
     fclose(fp0);
-    fFile = new TFile(fFileName, "READ");
+    fFile = new TFile(fFileName.Data(), "READ");
     fWrite=kFALSE;
     fFile->GetObject("AliITSOnlineSPDscanInfo", fScanInfo);
   }
@@ -47,16 +45,6 @@ AliITSOnlineSPDscanMultiple& AliITSOnlineSPDscanMultiple::operator=(const AliITS
   }
   return *this;
 }
-
-//void AliITSOnlineSPDscanMultiple::ReadFromTObjArray(TObjArray *arr) {
-//  ClearThis();
-//  Int_t nrEntries = arr->GetEntriesFast();
-//  if (nrEntries>0 && nrEntries%2==1) {
-//    fScanInfo = (AliITSOnlineSPDscanInfoMultiple*) arr->At(0);
-//    fInfoModified=kTRUE;
-//    FillFromTObjArray(arr,nrEntries);
-//  }
-//}
 
 UInt_t AliITSOnlineSPDscanMultiple::AddScanStep() {
   CreateNewStep();

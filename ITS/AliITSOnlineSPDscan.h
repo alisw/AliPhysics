@@ -12,7 +12,7 @@
 // information is stored (AliITSOnlineSPDscanInfo).       //
 ////////////////////////////////////////////////////////////
 
-#include <Rtypes.h> 
+#include <TString.h>
 
 class TFile;
 class AliITSOnlineSPDscanInfo;
@@ -22,8 +22,8 @@ class AliITSOnlineSPDHitEvent;
 class AliITSOnlineSPDscan {
 
  public:
-  AliITSOnlineSPDscan():fFile(NULL),fWrite(kFALSE),fCurrentStep(-1),fModified(kFALSE),fInfoModified(kFALSE),fScanInfo(NULL){}
-  AliITSOnlineSPDscan(Char_t *fileName);
+  AliITSOnlineSPDscan():fFile(NULL),fWrite(kFALSE),fCurrentStep(-1),fModified(kFALSE),fInfoModified(kFALSE),fScanInfo(NULL),fFileName("."){}
+  AliITSOnlineSPDscan(const Char_t *fileName);
   AliITSOnlineSPDscan(const AliITSOnlineSPDscan& scan);
   virtual ~AliITSOnlineSPDscan();
   AliITSOnlineSPDscan& operator=(const AliITSOnlineSPDscan& scan);
@@ -43,6 +43,7 @@ class AliITSOnlineSPDscan {
   void     SetDacStart(UInt_t val);
   void     SetDacEnd(UInt_t val);
   void     SetDacStep(UInt_t val);
+  void     SetDCSVersion(UInt_t val);
 
   void     SetHits(UInt_t nsi, UInt_t hs, UInt_t chipi, UInt_t coli, UInt_t rowi, UInt_t val);
   void     IncrementTriggers(UInt_t nsi);
@@ -65,6 +66,7 @@ class AliITSOnlineSPDscan {
   UInt_t   GetDacStart() const;
   UInt_t   GetDacEnd() const;
   UInt_t   GetDacStep() const;
+  UInt_t   GetDCSVersion() const;
 
   UInt_t   GetHits(UInt_t nsi, UInt_t hs, UInt_t chipi, UInt_t coli, UInt_t rowi);
   Float_t  GetHitsEfficiency(UInt_t nsi, UInt_t hs, UInt_t chipi, UInt_t coli, UInt_t rowi);
@@ -87,7 +89,7 @@ class AliITSOnlineSPDscan {
   AliITSOnlineSPDscanInfo *fScanInfo;           // overall scan information
   AliITSOnlineSPDHitArray *fCurrentHitArray[6]; // hit array, one for each halfstave
   AliITSOnlineSPDHitEvent *fCurrentHitEvent[6]; // hit events, one for each halfstave
-  Char_t   fFileName[200];                      // filename of file to read write
+  TString  fFileName;                           // filename of file to read write
 
   void     Init();
   void     CreateNewStep();

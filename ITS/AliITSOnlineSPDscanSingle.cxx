@@ -8,22 +8,20 @@
 #include "AliITSOnlineSPDscanSingle.h"
 #include "AliITSOnlineSPDscanInfo.h"
 
-ClassImp(AliITSOnlineSPDscanSingle)
-
-AliITSOnlineSPDscanSingle::AliITSOnlineSPDscanSingle(Char_t *fileName) {
+AliITSOnlineSPDscanSingle::AliITSOnlineSPDscanSingle(const Char_t *fileName) {
   // constructor
-  sprintf(fFileName,"%s",fileName);
+  fFileName=fileName;
   // look for a previously saved info object 
   // (if file not found create a new one and return, else read)
-  FILE* fp0 = fopen(fFileName, "r");
+  FILE* fp0 = fopen(fFileName.Data(), "r");
   if (fp0 == NULL) {
     fScanInfo = new AliITSOnlineSPDscanInfo();
-    fFile = new TFile(fFileName, "RECREATE");
+    fFile = new TFile(fFileName.Data(), "RECREATE");
     fWrite=kTRUE;
   }
   else {
     fclose(fp0);
-    fFile = new TFile(fFileName, "READ");
+    fFile = new TFile(fFileName.Data(), "READ");
     fWrite=kFALSE;
     fFile->GetObject("AliITSOnlineSPDscanInfo", fScanInfo);
   }

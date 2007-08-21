@@ -33,9 +33,10 @@ class AliITSRawStreamSPD: public AliITSRawStream {
     Int_t    GetChipCol() const {return fCol;};
     Int_t    GetChipRow() const {return fRow;};
 
-    // module mapping, iModule = halfStaveNr*2+chipAddr/5
+    // module mapping
     static Int_t GetModuleNumber(UInt_t iDDL, UInt_t iModule) {return fgkDDLModuleMap[iDDL][iModule];}
-    
+    static Int_t GetModuleNumber(UInt_t iDDL, UInt_t iHS, UInt_t iChip) {return fgkDDLModuleMap[iDDL][iHS*2+iChip/5];}
+
     Bool_t GetHalfStavePresent(UInt_t hs);
 
     // use the methods below to extract the information from the calibration header

@@ -33,7 +33,7 @@ class AliITSOnlineSPDscanInfoMeanTh :  public AliITSOnlineSPDscanInfoMultiple {
   TArrayI   fDacHigh[6];       // DAC high values for each step
   TArrayI   fTPAmps[6];        // test pulse amplitudes, one for each step
 
-  ClassDef(AliITSOnlineSPDscanInfoMeanTh,1)
+  ClassDef(AliITSOnlineSPDscanInfoMeanTh,2)
     };
     
 #endif
