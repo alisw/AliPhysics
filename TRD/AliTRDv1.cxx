@@ -156,6 +156,9 @@ void AliTRDv1::AddAlignableVolumes() const
   //                         TRD/sm17/st4/pl5
   //
   for (Int_t isect = 0; isect < AliTRDgeometry::Nsect(); isect++) {
+
+    if (fGeometry->GetSMstatus(isect) == 0) continue;
+
     for (Int_t icham = 0; icham < AliTRDgeometry::Ncham(); icham++) {
       for (Int_t iplan = 0; iplan < AliTRDgeometry::Nplan(); iplan++) {
 
@@ -181,7 +184,6 @@ void AliTRDv1::AddAlignableVolumes() const
 	  gGeoManager->SetAlignableEntry(symName.Data(),volPath.Data());
 
 	// Add the tracking to local matrix following the TPC example
-
 	if (alignableEntry) {
 	  const char *path = alignableEntry->GetTitle();
 	  if (!gGeoManager->cd(path)) {
@@ -197,6 +199,7 @@ void AliTRDv1::AddAlignableVolumes() const
 	else {
 	  AliError(Form("Alignable entry %s is not valid!",symName.Data()));
 	}
+
       }
     }
   }
