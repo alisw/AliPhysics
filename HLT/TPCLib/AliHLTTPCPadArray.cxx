@@ -44,7 +44,12 @@ AliHLTTPCPadArray::AliHLTTPCPadArray()
   fPatch(-1),
   fFirstRow(-1),
   fLastRow(-1),
-  fThreshold(10)
+  fThreshold(10),
+  fNumberOfRows(0),
+  fNumberOfPadsInRow(NULL),
+  fDigitReader(NULL),
+  fRowPadVector(0),
+  fClusters(0)
 {
   // see header file for class documentation
   // or
@@ -58,7 +63,12 @@ AliHLTTPCPadArray::AliHLTTPCPadArray(Int_t patch)
   fPatch(patch),
   fFirstRow(-1),
   fLastRow(-1),
-  fThreshold(10)
+  fThreshold(10),
+  fNumberOfRows(0),
+  fNumberOfPadsInRow(NULL),
+  fDigitReader(NULL),
+  fRowPadVector(0),
+  fClusters(0)
 {
   // see header file for class documentation
 }
@@ -67,7 +77,13 @@ AliHLTTPCPadArray::AliHLTTPCPadArray(const AliHLTTPCPadArray& srcPadArray)
   :
   fPatch(srcPadArray.fPatch),
   fFirstRow(srcPadArray.fFirstRow),
-  fLastRow(srcPadArray.fLastRow)
+  fLastRow(srcPadArray.fLastRow),
+  fThreshold(srcPadArray.fThreshold),
+  fNumberOfRows(srcPadArray.fNumberOfRows),
+  fNumberOfPadsInRow(srcPadArray.fNumberOfPadsInRow),
+  fDigitReader(srcPadArray.fDigitReader),
+  fRowPadVector(srcPadArray.fRowPadVector),
+  fClusters(srcPadArray.fClusters)
 {
   // see header file for class documentation
   HLTFatal("copy constructor not implemented");

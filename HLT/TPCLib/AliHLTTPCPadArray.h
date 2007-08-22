@@ -36,9 +36,9 @@ public:
 
   /** 
    * Constructor
-   * @param offset   The number of bins to ignore at the beginning
-   *                 of the channels
-   * @param nofBins  The total number of bins for one channel
+   * @param patch   Patch number, either use this constructor or 
+   * use the default constructor and the SetPatch method
+   *
    */
   AliHLTTPCPadArray(Int_t patch);
 
