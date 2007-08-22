@@ -59,6 +59,7 @@ void AliTRDReconstructor::ConvertDigits(AliRawReader *rawReader
   AliTRDdigitsManager *manager = rawData.Raw2Digits(rawReader);
   manager->MakeBranch(digitsTree);
   manager->WriteDigits();
+  delete manager;
 
 }
 

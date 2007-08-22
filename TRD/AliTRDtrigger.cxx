@@ -162,6 +162,12 @@ AliTRDtrigger::~AliTRDtrigger()
     delete fGeo;
   }
 
+  delete fDigitsManager;
+  delete fModule;
+  delete fTrkTest;
+  delete fMCM;
+  delete fTrk;
+
 }
 
 //_____________________________________________________________________________

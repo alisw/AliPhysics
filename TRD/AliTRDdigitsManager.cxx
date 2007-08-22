@@ -106,10 +106,11 @@ AliTRDdigitsManager::~AliTRDdigitsManager()
     fDictionary[iDict] = NULL;
   }
 
-  delete fSignalIndexes;
+  if (fSignalIndexes) {
+    fSignalIndexes->Delete();
+    delete fSignalIndexes;
+  }
   fSignalIndexes = NULL;
-//   for (Int_t i = 0; i < AliTRDgeometry::Ndet(); i++)
-//     delete fSignalIndexes[i];
 
 }
 
@@ -173,6 +174,7 @@ void AliTRDdigitsManager::ResetArrays()
   //
 
   if (fDigits) {
+    fDigits->Delete();
     delete fDigits;
   }
   fDigits = new AliTRDsegmentArray("AliTRDdataArrayI",AliTRDgeometry::Ndet());
@@ -180,7 +182,8 @@ void AliTRDdigitsManager::ResetArrays()
   if (fUseDictionaries)
     {
       for (Int_t iDict = 0; iDict < kNDict; iDict++) {
-	if (fDictionary[iDict]) {  
+	if (fDictionary[iDict]) { 
+	  fDictionary[iDict]->Delete();
 	  delete fDictionary[iDict];
 	}
 	fDictionary[iDict] = new AliTRDsegmentArray("AliTRDdataArrayI"
