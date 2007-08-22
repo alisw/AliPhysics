@@ -225,6 +225,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename, const char* cdb
     fReconstructor[iDet] = NULL;
     fLoader[iDet] = NULL;
     fTracker[iDet] = NULL;
+    fQualAssDataMaker[iDet] = NULL;
   }
   AliPID pid;
 }
@@ -278,6 +279,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
     fReconstructor[iDet] = NULL;
     fLoader[iDet] = NULL;
     fTracker[iDet] = NULL;
+    fQualAssDataMaker[iDet] = NULL;
   }
   for (Int_t i = 0; i < rec.fSpecCDBUri.GetEntriesFast(); i++) {
     if (rec.fSpecCDBUri[i]) fSpecCDBUri.Add(rec.fSpecCDBUri[i]->Clone());
@@ -1708,6 +1710,8 @@ void AliReconstruction::CleanUp(TFile* file, TFile* fileOld)
     fLoader[iDet] = NULL;
     delete fTracker[iDet];
     fTracker[iDet] = NULL;
+    delete fQualAssDataMaker[iDet];
+    fQualAssDataMaker[iDet] = NULL;
   }
   delete fVertexer;
   fVertexer = NULL;
