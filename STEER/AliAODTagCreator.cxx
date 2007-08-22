@@ -79,7 +79,7 @@ Bool_t AliAODTagCreator::ReadGridCollection(TGridResult *fresult) {
     if(guid && !strlen(guid)) guid = 0;
 
     TFile *f = TFile::Open(alienUrl,"READ");
-    //CreateTag(f,guid,md5,turl,size,counter);
+    CreateTag(f,guid,md5,turl,size,counter);
     f->Close();
     delete f;	 
     counter += 1;
@@ -138,7 +138,7 @@ Bool_t AliAODTagCreator::ReadCAFCollection(const char *filename) {
     in >> esdfile;
     if (!esdfile.Contains("root")) continue; // protection
     TFile *f = TFile::Open(esdfile,"READ");
-    //CreateTag(f,esdfile,counter);
+    CreateTag(f,esdfile,counter);
     f->Close();
     delete f;	 
     
@@ -337,9 +337,6 @@ void AliAODTagCreator::CreateAODTags(Int_t fFirstEvent, Int_t fLastEvent) {
   if(fLastEvent == -1) lastEvent = (Int_t)aodTree->GetEntries();
   else lastEvent = fLastEvent;
 
-  ttag.Fill();
-  tag->Clear();
-
   char fileName[256];
   sprintf(fileName, "Run%d.Event%d_%d.AOD.tag.root", 
 	  tag->GetRunId(),fFirstEvent,lastEvent );
@@ -348,6 +345,8 @@ void AliAODTagCreator::CreateAODTags(Int_t fFirstEvent, Int_t fLastEvent) {
  
   TFile* ftag = TFile::Open(fileName, "recreate");
   ftag->cd();
+  ttag.Fill();
+  tag->Clear();
   ttag.Write();
   ftag->Close();
   file->cd();
@@ -542,10 +541,7 @@ void AliAODTagCreator::CreateTag(TFile* file, const char *guid, const char *md5,
     evTag->SetMaxPt(maxPt);
     tag->AddEventTag(*evTag);
   }//event loop
-  
-  ttag.Fill();
-  tag->Clear();
-  
+    
   TString localFileName = "Run"; localFileName += tag->GetRunId();
   localFileName += ".Event"; localFileName += firstEvent; localFileName += "_"; 
   localFileName += lastEvent; localFileName += "."; localFileName += Counter;
@@ -571,6 +567,8 @@ void AliAODTagCreator::CreateTag(TFile* file, const char *guid, const char *md5,
 
   TFile* ftag = TFile::Open(fileName, "recreate");
   ftag->cd();
+  ttag.Fill();
+  tag->Clear();
   ttag.Write();
   ftag->Close();
 }
@@ -760,9 +758,6 @@ void AliAODTagCreator::CreateTag(TFile* file, const char *filepath, Int_t Counte
     tag->AddEventTag(*evTag);
   }//event loop  
 
-  ttag.Fill();
-  tag->Clear();
-
   TString localFileName = "Run"; localFileName += tag->GetRunId(); 
   localFileName += ".Event"; localFileName += firstEvent; localFileName += "_"; 
   localFileName += lastEvent; localFileName += "."; localFileName += Counter;
@@ -788,6 +783,8 @@ void AliAODTagCreator::CreateTag(TFile* file, const char *filepath, Int_t Counte
 
   TFile* ftag = TFile::Open(fileName, "recreate");
   ftag->cd();
+  ttag.Fill();
+  tag->Clear();
   ttag.Write();
   ftag->Close();
 }
