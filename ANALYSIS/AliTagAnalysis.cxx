@@ -50,9 +50,21 @@ AliTagAnalysis::AliTagAnalysis():
   TObject(),
   ftagresult(0x0),
   fTagDirName(),
-  fChain(0x0)
+  fChain(0x0),
+  fAnalysisType()
 {
   //Default constructor for a AliTagAnalysis
+}
+
+//___________________________________________________________________________
+AliTagAnalysis::AliTagAnalysis(const char* type): 
+  TObject(),
+  ftagresult(0x0),
+  fTagDirName(),
+  fChain(0x0),
+  fAnalysisType(type)
+{
+  //constructor for a AliTagAnalysis
 }
 
 //___________________________________________________________________________
@@ -88,8 +100,11 @@ void AliTagAnalysis::ChainLocalTags(const char *dirname) {
   TString fTagFilename;
   
   if (! fChain)  fChain = new TChain("T");
-  
-  const char * tagPattern = "tag.root";
+  const char * tagPattern = 0x0;
+  if(fAnalysisType == "ESD") tagPattern = "ESD.tag.root";
+  else if(fAnalysisType == "AOD") tagPattern = "AOD.tag.root";
+  else AliFatal("Only ESD and AOD type is implemented!!!");
+
   // Open the working directory
   void * dirp = gSystem->OpenDirectory(fTagDirName);
   const char * name = 0x0;
@@ -133,7 +148,10 @@ TChain *AliTagAnalysis::QueryTags(AliRunTagCuts *runTagCuts, AliLHCTagCuts *lhcT
   //and returns a TChain along with the associated TEventList
   AliInfo(Form("Querying the tags........"));
 
-  TString fAliceFile = "esdTree";
+  TString fAliceFile;
+  if(fAnalysisType == "ESD") fAliceFile = "esdTree";
+  else if(fAnalysisType == "AOD") fAliceFile = "aodTree";
+  else AliFatal("Only ESD and AOD type is implemented!!!");
 
   //ESD file chain
   TChain *fESDchain = new TChain(fAliceFile.Data());
@@ -190,7 +208,10 @@ TChain *AliTagAnalysis::QueryTags(const char *fRunCut, const char *fLHCCut, cons
   //and returns a TChain along with the associated TEventList 	 
   AliInfo(Form("Querying the tags........")); 	 
   
-  TString fAliceFile = "esdTree";
+  TString fAliceFile;
+  if(fAnalysisType == "ESD") fAliceFile = "esdTree";
+  else if(fAnalysisType == "AOD") fAliceFile = "aodTree";
+  else AliFatal("Only ESD and AOD type is implemented!!!");
 
   //ESD file chain
   TChain *fESDchain = new TChain(fAliceFile.Data());
@@ -365,8 +386,12 @@ TChain *AliTagAnalysis::GetInputChain(const char* system, const char *wn) {
   // improvements are committed
   TString fsystem = system;
   Int_t iAccepted = 0;
-  //ESD file chain
-  TChain *fESDchain = new TChain("esdTree");
+
+  TChain *fAnalysisChain = new TChain();
+  if(fAnalysisType == "ESD") fAnalysisChain->SetName("esdTree");
+  else if(fAnalysisType == "AOD") fAnalysisChain->SetName("aodTree");
+  else AliFatal("Only ESD and AOD type is implemented!!!");
+  
   //Event list
   TEventList *fEventList = new TEventList();
   AliXMLCollection *collection = AliXMLCollection::Open(wn);
@@ -374,7 +399,7 @@ TChain *AliTagAnalysis::GetInputChain(const char* system, const char *wn) {
   collection->Reset();
   while (collection->Next()) {
     AliInfo(Form("Adding: %s",collection->GetTURL("")));
-    fESDchain->Add(collection->GetTURL(""));
+    fAnalysisChain->Add(collection->GetTURL(""));
     TEntryList *list = (TEntryList *)collection->GetEventList("");
     for(Int_t i = 0; i < list->GetN(); i++) fEventList->Enter(iAccepted+list->GetEntry(i));
 
@@ -382,11 +407,11 @@ TChain *AliTagAnalysis::GetInputChain(const char* system, const char *wn) {
     else if(fsystem == "PbPb") iAccepted += 1;
   }
 
-  fESDchain->SetEventList(fEventList);
+  fAnalysisChain->SetEventList(fEventList);
   
   AliInfo(Form("Number of selected events: %d",fEventList->GetN()));
 
-  return fESDchain;
+  return fAnalysisChain;
 }
 
 //___________________________________________________________________________
@@ -395,15 +420,10 @@ TChain *AliTagAnalysis::GetChainFromCollection(const char* collectionname, const
   TString fAliceFile = treename;
   Int_t iAccepted = 0;
   TChain *fAnalysisChain = new TChain();
-  if(fAliceFile == "esdTree") {
-    //ESD file chain
-    fAnalysisChain->SetName("esdTree");
-  } else if(fAliceFile == "aodTree") {
-    //AOD file chain
-    fAnalysisChain->SetName("aodTree");
-    AliFatal("AOD case not yet implemented!!!");
-  }
+  if(fAliceFile == "esdTree") fAnalysisChain->SetName("esdTree");
+  else if(fAliceFile == "aodTree") fAnalysisChain->SetName("aodTree");
   else AliFatal("Inconsistent tree name - use esdTree or aodTree!");
+
   //Event list
   TEntryList *fGlobalList = new TEntryList();
   AliXMLCollection *collection = AliXMLCollection::Open(collectionname);

@@ -40,8 +40,11 @@ class TTreeFormula;
 class AliTagAnalysis : public TObject {
  public:
   AliTagAnalysis();
+  AliTagAnalysis(const char* type);
   ~AliTagAnalysis(); 
   
+  void SetType(const char* type) {fAnalysisType = type;}
+  const char* GetType() {return fAnalysisType.Data();}
   Bool_t AddTagsFile(const char *alienUrl);
   void ChainLocalTags(const char *dirname);
   void ChainGridTags(TGridResult *result);
@@ -61,6 +64,8 @@ class AliTagAnalysis : public TObject {
   TString fTagDirName; //the location of the locally stored tags
   
   TChain *fChain; //tag chain 
+  
+  TString fAnalysisType; //define the type of analysis (esd or aod)
   
   //____________________________________________________//
  private:
