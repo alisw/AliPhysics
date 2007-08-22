@@ -213,6 +213,7 @@ void AliHLTTPCSliceTrackerComponent::SetTrackerParam( bool doPP, int multiplicit
 	  SetTrackerParam( 50,        // phi_segments:     Devide the space into phi_segments                                      
 			   100,       // ets_segments:     Devide the space into eta_segments                                       
 			   3,         // trackletlength:   Number of hits a tracklet has to have                                   
+			   50,         // tracklength:      Number of hits a track has to have                                      
 			   60,         // tracklength:      Number of hits a track has to have                                      
 			   6,         // rowscopetracklet: Search range of rows for a tracklet                                     
 			   6,         // rowscopetrack:    Search range of rows for a track                                       
