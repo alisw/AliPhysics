@@ -36,7 +36,7 @@
 #include "ITS/AliITSvPPRasymmFMD.h"
 #include "TPC/AliTPCv2.h"
 #include "TOF/AliTOFv6T0.h"
-#include "HMPID/AliHMPIDv1.h"
+#include "HMPID/AliHMPIDv2.h"
 #include "ZDC/AliZDCv2.h"
 #include "TRD/AliTRDv1.h"
 #include "FMD/AliFMDv1.h"
@@ -503,7 +503,7 @@ void Config()
     if (iHMPID)
     {
         //=================== HMPID parameters ===========================
-        AliHMPID *HMPID = new AliHMPIDv1("HMPID", "normal HMPID");
+        AliHMPID *HMPID = new AliHMPIDv2("HMPID", "normal HMPID");
 
     }
 
