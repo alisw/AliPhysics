@@ -36,6 +36,31 @@
 // - OCDB-like root file                                                     //
 // - geometry file (like misaligned_geometry.root)                           //
 //                                                                           //
+// Some examples of usage (in an aliroot session):                           //
+// AliTRDalignment a,b,c,d,e;                                                //
+// double xsm[]={0,0,0,-70,0,0};                                             //
+// double xch[]={0,0,-50,0,0,0};                                             //
+// a.SetSm(4,xsm);                                                           // 
+// a.SetCh(120,xch);                                                         //
+// a.WriteAscii("kuku.dat");                                                 //
+// TGeoManager::Import("geometry.root"); a.WriteRoot("kuku.root");           //
+// TGeoManager::Import("geometry.root"); a.WriteDB("kukudb.root",0,0);       //
+// TGeoManager::Import("geometry.root");                                     //
+// a.WriteDB("local://$ALICE_ROOT", "TRD/Align/Data", 0,0);                  //
+// TGeoManager::Import("geometry.root"); a.WriteGeo("kukugeometry.root");    //
+//                                                                           //
+// b.ReadAscii("kuku.dat");                                                  //
+// TGeoManager::Import("geometry.root"); c.ReadRoot("kuku.root");            //
+// TGeoManager::Import("geometry.root"); d.ReadDB("kukudb.root");            //
+// TGeoManager::Import("kukugeometry.root"); e.ReadCurrentGeo();             //
+//                                                                           //
+// e.PrintSm(4);                                                             //
+// e.PrintCh(120);                                                           // 
+// a.PrintRMS();                                                             //
+// b.PrintRMS();                                                             //
+// e.PrintRMS();                                                             //
+//                                                                           //
+//                                                                           //
 // D.Miskowiec, November 2006                                                //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
@@ -64,7 +89,7 @@
 
 #include "AliTRDalignment.h"
 
-void TRDalignmentFcn(Int_t &npar, Double_t *gin, Double_t &f, Double_t *x, Int_t iflag);
+void trdAlignmentFcn(Int_t &npar, Double_t *gin, Double_t &f, Double_t *x, Int_t iflag);
 
 ClassImp(AliTRDalignment)
 
@@ -442,13 +467,103 @@ void AliTRDalignment::ReadAscii(char *filename)
 }
 
 //_____________________________________________________________________________
+void AliTRDalignment::ReadCurrentGeo() 
+{
+  //
+  // use currently loaded geometry to determine misalignment by comparing 
+  // original and misaligned matrix of the last node
+  // Now, original, does not mean "ideal". It is the matrix before the alignment. 
+  // So, if alignment was applied more than once, the numbers extracted will 
+  // represent just the last alignment. -- check this!
+  //
+
+  TGeoHMatrix *ideSm[18];  // ideal
+  TGeoHMatrix *misSm[18];  // misaligned
+  for (int i = 0; i < 18; i++) {
+
+    // read misaligned and original matrices
+
+    TGeoPNEntry      *pne  = gGeoManager->GetAlignableEntry(GetSmName(i));
+    if (!pne) AliError(Form("no such physical node entry: %s",GetSmName(i)));
+    if (!pne) continue;
+    TGeoPhysicalNode *node = pne->GetPhysicalNode();
+    if (!node) AliError(Form("physical node entry %s has no physical node",GetSmName(i)));
+    if (!node) continue;
+    misSm[i] = new TGeoHMatrix(*node->GetNode(node->GetLevel())->GetMatrix());
+    ideSm[i] = new TGeoHMatrix(*node->GetOriginalMatrix());
+
+    // calculate the local misalignment matrices as inverse misaligned times ideal
+
+    TGeoHMatrix mat(ideSm[i]->Inverse()); 
+    mat.Multiply(misSm[i]);
+    double *tra = mat.GetTranslation();
+    double *rot = mat.GetRotationMatrix();
+    double pars[6];
+    pars[0] = tra[0];
+    pars[1] = tra[1];
+    pars[2] = tra[2];
+    if (TMath::Abs(rot[0])<1e-7 || TMath::Abs(rot[8])<1e-7) AliError("Failed to extract roll-pitch-yall angles!");
+    double raddeg = TMath::RadToDeg();
+    pars[3] = raddeg * TMath::ATan2(-rot[5],rot[8]);
+    pars[4] = raddeg * TMath::ASin(rot[2]);
+    pars[5] = raddeg * TMath::ATan2(-rot[1],rot[0]);
+    SetSm(i,pars);
+
+    // cleanup
+
+    delete ideSm[i];
+    delete misSm[i];
+  }
+
+  TGeoHMatrix *ideCh[540]; // ideal
+  TGeoHMatrix *misCh[540]; // misaligned
+  for (int i = 0; i < 540; i++) {
+
+    // read misaligned and original matrices
+
+    TGeoPNEntry      *pne  = gGeoManager->GetAlignableEntry(GetChName(i));
+    if (!pne) AliError(Form("no such physical node entry: %s",GetChName(i)));
+    if (!pne) continue;
+    TGeoPhysicalNode *node = pne->GetPhysicalNode();
+    if (!node) AliError(Form("physical node entry %s has no physical node",GetChName(i)));
+    if (!node) continue;
+    misCh[i] = new TGeoHMatrix(*node->GetNode(node->GetLevel())->GetMatrix());
+    ideCh[i] = new TGeoHMatrix(*node->GetOriginalMatrix());
+
+    // calculate the local misalignment matrices as inverse misaligned times ideal
+
+    TGeoHMatrix mat(ideCh[i]->Inverse()); 
+    mat.Multiply(misCh[i]);
+    double *tra = mat.GetTranslation();
+    double *rot = mat.GetRotationMatrix();
+    double pars[6];
+    pars[0] = tra[0];
+    pars[1] = tra[1];
+    pars[2] = tra[2];
+    if(TMath::Abs(rot[0])<1e-7 || TMath::Abs(rot[8])<1e-7) {
+      AliError("Failed to extract roll-pitch-yall angles!");
+      return;
+    }
+    double raddeg = TMath::RadToDeg();
+    pars[3] = raddeg * TMath::ATan2(-rot[5],rot[8]);
+    pars[4] = raddeg * TMath::ASin(rot[2]);
+    pars[5] = raddeg * TMath::ATan2(-rot[1],rot[0]);
+    SetCh(i,pars);
+
+    // cleanup
+    delete ideCh[i];
+    delete misCh[i];
+  }
+
+  return;
+
+}
+
+//_____________________________________________________________________________
 void AliTRDalignment::ReadRoot(char *filename) 
 {
   //
   // read the alignment data from root file
-  // here I expect a fixed order and number of elements
-  // it would be much better to identify the alignment objects 
-  // one by one and set the parameters of the corresponding sm or ch
   //
 
   TFile fi(filename,"READ");
@@ -498,94 +613,12 @@ void AliTRDalignment::ReadDB(char *db, char *path, int run
   AliCDBManager *cdb     = AliCDBManager::Instance();
   AliCDBStorage *storLoc = cdb->GetStorage(db);
   AliCDBEntry   *e       = storLoc->Get(path,run,version,subversion);
-  e->PrintMetaData();
-  fComment.SetString(e->GetMetaData()->GetComment());
-  TClonesArray  *ar      =  (TClonesArray *) e->GetObject();
-  ArToNumbers(ar);
-
-}
-
-//_____________________________________________________________________________
-void AliTRDalignment::ReadGeo(char *misaligned) 
-{
-  //
-  // determine misalignment by comparing original and misaligned matrix 
-  // of the last node on the misaligned_geometry file 
-  // an alternative longer way is in attic.C
-  //
-
-  TGeoHMatrix *ideSm[18];  // ideal
-  TGeoHMatrix *ideCh[540];
-  TGeoHMatrix *misSm[18];  // misaligned
-  TGeoHMatrix *misCh[540];
-
-  // read misaligned and original matrices
-
-  TGeoManager::Import(misaligned);
-  for (int i = 0; i < 18; i++) {
-    TGeoPNEntry      *pne  = gGeoManager->GetAlignableEntry(GetSmName(i));
-    if (!pne) AliError(Form("no such physical node entry: %s",GetSmName(i)));
-    TGeoPhysicalNode *node = pne->GetPhysicalNode();
-    if (!node) AliError(Form("physical node entry %s has no physical node",GetSmName(i))); 
-    misSm[i] = new TGeoHMatrix(*node->GetNode(node->GetLevel())->GetMatrix());
-    ideSm[i] = new TGeoHMatrix(*node->GetOriginalMatrix());
+  if (e) {
+    e->PrintMetaData();
+    fComment.SetString(e->GetMetaData()->GetComment());
+    TClonesArray  *ar      =  (TClonesArray *) e->GetObject();
+    ArToNumbers(ar);
   }
-  for (int i = 0; i < 540; i++) {
-    TGeoPNEntry      *pne  = gGeoManager->GetAlignableEntry(GetChName(i));
-    if (!pne) AliError(Form("no such physical node entry: %s",GetChName(i))); 
-    TGeoPhysicalNode *node = pne->GetPhysicalNode();
-    if (!node) AliError(Form("physical node entry %s has no physical node",GetChName(i))); 
-    misCh[i] = new TGeoHMatrix(*node->GetNode(node->GetLevel())->GetMatrix());
-    ideCh[i] = new TGeoHMatrix(*node->GetOriginalMatrix());
-  }
-
-  // calculate the local misalignment matrices as inverse misaligned times ideal
-
-  for (int i = 0; i < 18; i++) {
-    TGeoHMatrix mat(ideSm[i]->Inverse()); 
-    mat.Multiply(misSm[i]);
-    double *tra = mat.GetTranslation();
-    double *rot = mat.GetRotationMatrix();
-    double pars[6];
-    pars[0] = tra[0];
-    pars[1] = tra[1];
-    pars[2] = tra[2];
-    if (TMath::Abs(rot[0])<1e-7 || TMath::Abs(rot[8])<1e-7) AliError("Failed to extract roll-pitch-yall angles!");
-    double raddeg = TMath::RadToDeg();
-    pars[3] = raddeg * TMath::ATan2(-rot[5],rot[8]);
-    pars[4] = raddeg * TMath::ASin(rot[2]);
-    pars[5] = raddeg * TMath::ATan2(-rot[1],rot[0]);
-    SetSm(i,pars);
-  }
-
-  for (int i = 0; i < 540; i++) {
-    TGeoHMatrix mat(ideCh[i]->Inverse()); 
-    mat.Multiply(misCh[i]);
-    double *tra = mat.GetTranslation();
-    double *rot = mat.GetRotationMatrix();
-    double pars[6];
-    pars[0] = tra[0];
-    pars[1] = tra[1];
-    pars[2] = tra[2];
-    if(TMath::Abs(rot[0])<1e-7 || TMath::Abs(rot[8])<1e-7) {
-      AliError("Failed to extract roll-pitch-yall angles!");
-      return;
-    }
-    double raddeg = TMath::RadToDeg();
-    pars[3] = raddeg * TMath::ATan2(-rot[5],rot[8]);
-    pars[4] = raddeg * TMath::ASin(rot[2]);
-    pars[5] = raddeg * TMath::ATan2(-rot[1],rot[0]);
-    SetCh(i,pars);
-  }
-
-  // cleanup
-  for (int i = 0; i <  18; i++) delete ideSm[i];
-  for (int i = 0; i <  18; i++) delete misSm[i];
-  for (int i = 0; i < 540; i++) delete ideCh[i];
-  for (int i = 0; i < 540; i++) delete misCh[i];
-
-  return;
-
 }
 
 //_____________________________________________________________________________
@@ -714,7 +747,7 @@ double AliTRDalignment::SurveyChi2(int i, double *a) {
   // parameters a[6]. Return chi-squared.
   //
 
-  if (!gGeoManager) LoadIdealGeometry();
+  if (!IsGeoLoaded()) return 0;
   printf("Survey of supermodule %d\n",i);
   AliAlignObjAngles al(GetSmName(i),0,a[0],a[1],a[2],a[3],a[4],a[5],0);
   TGeoPNEntry      *pne  = gGeoManager->GetAlignableEntry(GetSmName(i));
@@ -753,7 +786,7 @@ double AliTRDalignment::SurveyChi2(int i, double *a) {
 }
 
 //_____________________________________________________________________________
-void TRDalignmentFcn(int &npar, double *g, double &f, double *par, int iflag) {
+void trdAlignmentFcn(int &npar, double *g, double &f, double *par, int iflag) {
 
   // 
   // Standard function as needed by Minuit-like minimization procedures. 
@@ -790,7 +823,7 @@ void AliTRDalignment::SurveyToAlignment(int i,char *flag) {
 
   TFitter fitter(100);
   gMinuit->SetObjectFit(this);
-  fitter.SetFCN(TRDalignmentFcn);
+  fitter.SetFCN(trdAlignmentFcn);
   fitter.SetParameter(0,"dx",0,0.5,0,0);
   fitter.SetParameter(1,"dy",0,0.5,0,0);
   fitter.SetParameter(2,"dz",0,0.5,0,0);
@@ -885,7 +918,7 @@ void AliTRDalignment::WriteDB(char *filename, int run0, int run1)
 
   TClonesArray   *ar = new TClonesArray("AliAlignObjAngles",10000);
   NumbersToAr(ar);
-  char *path = "di1/di2/di3";
+  char *path = "TRD/Align/Data";
   AliCDBId id(path,run0,run1);
   AliCDBMetaData *md = new AliCDBMetaData();
   md->SetResponsible("Dariusz Miskowiec");
@@ -931,16 +964,12 @@ void AliTRDalignment::WriteDB(char *db, char *path, int run0, int run1)
 void AliTRDalignment::WriteGeo(char *filename) 
 {
   //
-  // apply misalignment to (currently loaded ideal) geometry and store the 
+  // apply misalignment to current geometry and store the 
   // resulting geometry on a root file
   //
 
   TClonesArray *ar = new TClonesArray("AliAlignObjAngles",10000);
   NumbersToAr(ar);
-  for (int i = 0; i < ar->GetEntriesFast(); i++) {
-    AliAlignObj *alobj = (AliAlignObj *) ar->UncheckedAt(i);
-    alobj->ApplyToGeometry();
-  }
   delete ar;
   gGeoManager->Export(filename);
 
@@ -1012,22 +1041,19 @@ void AliTRDalignment::PrintChRMS() const
 void AliTRDalignment::ArToNumbers(TClonesArray *ar) 
 {
   //
-  // read numbers from the array of AliAlignObj objects and fill fSm and fCh
+  // for each of the alignment objects in array ar extract the six local 
+  // alignment parameters; recognize by name to which supermodule or chamber 
+  // the alignment object pertains; set the respective fSm or fCh
   //
 
-  LoadIdealGeometry();
-  SetZero();
-  double pa[6];
-  for (int i = 0; i <  18; i++) {
+  ar->Sort();
+  if (!IsGeoLoaded()) return;
+  for (int i = 0; i < ar->GetEntries(); i++) {
     AliAlignObj *aao = (AliAlignObj *) ar->At(i);
-    aao->GetLocalPars(pa,pa+3);
-    SetSm(i,pa);
+    aao->ApplyToGeometry();
   }
-  for (int i = 0; i < 540; i++) {
-    AliAlignObj *aao = (AliAlignObj *) ar->At(18+i);
-    aao->GetLocalPars(pa,pa+3);
-    SetCh(i,pa);
-  }
+  SetZero();
+  ReadCurrentGeo();
 
 }
 
@@ -1036,9 +1062,12 @@ void AliTRDalignment::NumbersToAr(TClonesArray *ar)
 {
   //
   // build array of AliAlignObj objects based on fSm and fCh data
+  // at the same time, apply misalignment to the currently loaded geometry
+  // it is important to apply misalignment of supermodules before creating 
+  // alignment objects for chambers
   //
 
-  LoadIdealGeometry();
+  if (!IsGeoLoaded()) return;
   TClonesArray &alobj = *ar;
   int nobj = 0;
   for (int i = 0; i <  18; i++) {      
@@ -1047,6 +1076,7 @@ void AliTRDalignment::NumbersToAr(TClonesArray *ar)
 					,fSm[i][0],fSm[i][1],fSm[i][2]
 					,fSm[i][3],fSm[i][4],fSm[i][5]
 					,0);
+    ((AliAlignObj *) alobj[nobj])->ApplyToGeometry();
     nobj++;
   }
 
@@ -1056,35 +1086,29 @@ void AliTRDalignment::NumbersToAr(TClonesArray *ar)
 				      ,fCh[i][0],fCh[i][1],fCh[i][2]
 				      ,fCh[i][3],fCh[i][4],fCh[i][5]
 				      ,0);
+    ((AliAlignObj *) alobj[nobj])->ApplyToGeometry();
     nobj++;
+  }
+  AliInfo("current geometry modified");
+
+}
+
+//_____________________________________________________________________________
+int AliTRDalignment::IsGeoLoaded() 
+{
+  //
+  // check whether a geometry is loaded
+  // issue a warning if geometry is not ideal
+  //
+
+  if (gGeoManager) {
+    if (gGeoManager->GetListOfPhysicalNodes()->GetEntries()) AliWarning("current geometry is not ideal");
+    return 1;
+  } else {
+    AliError("first load geometry by calling TGeoManager::Import(filename)");
+    return 0;
   }
 
 }
 
 //_____________________________________________________________________________
-void AliTRDalignment::LoadIdealGeometry(char *filename) 
-{
-  //
-  // load ideal geometry from filename
-  // it is needed for operations on AliAlignObj objects
-  // this needs to be straightened out
-  // particularly, sequences LoadIdealGeometry("file1"); LoadIdealGeometry("file2"); 
-  // do not work as one would naturally expect
-  //
-
-  static int attempt = 0; // which reload attempt is it? just to avoid endless loops
-
-  if (!gGeoManager) TGeoManager::Import(filename);
-  if (!gGeoManager) AliError(Form("cannot open geometry file %s",filename));
-  if (gGeoManager->GetListOfPhysicalNodes()->GetEntries()) {
-    if (attempt) AliError(Form("geometry on file %s is not ideal",filename));
-    AliWarning("current geometry is not ideal - it contains physical nodes");
-    AliWarning(Form("reloading geometry from %s - attempt nr %d",filename,attempt));
-    gGeoManager = 0;
-    attempt++;
-    LoadIdealGeometry(filename);
-  }
-
-  attempt = 0;
-
-}

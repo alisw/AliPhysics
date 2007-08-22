@@ -16,8 +16,8 @@
 #include <TObject.h>
 #include <TRandom.h>
 #include <TObjString.h>
-
-#include <AliAlignObj.h>
+#include <TGeoManager.h>
+#include <AliGeomManager.h>
 
 class AliTRDalignment : public TObject {
   
@@ -36,7 +36,6 @@ class AliTRDalignment : public TObject {
 
   void SetSmZero();                                  // reset to zero supermodule data
   void SetChZero();                                  // reset to zero chamber data
-  void SetZero() {SetSmZero(); SetChZero();}         // reset to zero both
   void SetSm(int sm, const double a[6])              {for (int i = 0; i < 6; i++) fSm[sm][i] = a[i];}
   void SetCh(int ch, const double a[6])              {for (int i = 0; i < 6; i++) fCh[ch][i] = a[i];}
   void SetSmRandom(double a[6]);                     // generate random gaussians with sigmas a
@@ -45,6 +44,8 @@ class AliTRDalignment : public TObject {
   void SetChFull();                                  // set chamber data to initial aka full 
   void SetSmResidual();                              // set supermodule data to final aka residual
   void SetChResidual();                              // set chamber data to final aka residual
+  void SetZero()                                     {SetSmZero(); SetChZero();}
+  void SetIdeal()                                    {SetZero();}
   void SetFull()                                     {SetSmFull(); SetChFull();}
   void SetResidual()                                 {SetSmResidual(); SetChResidual();}
   void SetComment(char *s)                           {fComment.SetString(s);} 
@@ -61,10 +62,10 @@ class AliTRDalignment : public TObject {
   // reading-in from file
 
   void ReadAscii(char *filename);                    // read from ascii file
+  void ReadCurrentGeo();                             // read from currently loaded geometry
   void ReadRoot(char *filename);                     // read from root file
   void ReadDB(char *filename);                       // read from DB file
   void ReadDB(char *db, char *path, int run, int version=-1, int subversion=-1);
-  void ReadGeo(char *misaligned);                    // read from misaligned_geometry.root
   void ReadSurveyReport(char *filename);             // read from survey report
   void ReadAny(char *filename);                      // read from any kind of file
 
@@ -73,28 +74,31 @@ class AliTRDalignment : public TObject {
   void WriteAscii(char *filename) const;             // store data on ascii file
   void WriteRoot(char *filename);                    // store data on root file
   void WriteDB(char *filename, int run0, int run1);  // store data on a local DB-like file
-  void WriteDB(char *db, char *path, int run0, int run1); 
-                                                     // store data on DB file
+  void WriteDB(char *db, char *pa, int r0, int r1);  // store data on DB file
   void WriteGeo(char *filename);                     // apply misalignment and store geometry 
 
   // geometry and symbolic names getters
 
   // phi-sector number of chamber ch, 0-17
-  int GetSec(int ch) const                           {return ch/30;}
+  int GetSec(int ch) const           {return ch/30;}
   // stack number, 0-4
-  int GetSta(int ch) const                           {return ch%30/6;}
+  int GetSta(int ch) const           {return ch%30/6;}
   // plane number, 0-5 
-  int GetPla(int ch) const                           {return ch%30%6;}
+  int GetPla(int ch) const           {return ch%30%6;}
   // module number, 0-89
-  int GetMod(int ch) const                           {return 5*GetSec(ch)+GetSta(ch);                           } 
+  int GetMod(int ch) const           {return 5*GetSec(ch)+GetSta(ch);} 
   // layer number, 9-14
-  int GetLay(int ch) const                           {return AliGeomManager::kTRD1+GetPla(ch);                     }
+  int GetLay(int ch) const           {return AliGeomManager::kTRD1+GetPla(ch);}
   // volume id
-  UShort_t GetVoi(int ch) const                      {return AliGeomManager::LayerToVolUID(GetLay(ch),GetMod(ch)); }
+  UShort_t GetVoi(int ch) const      {return AliGeomManager::LayerToVolUID(GetLay(ch),GetMod(ch));}
   // symbolic name of a supermodule
-  char *GetSmName(int sm) const                      {return Form("TRD/sm%02d",sm);                             }
+  char *GetSmName(int sm) const      {return Form("TRD/sm%02d",sm);}
   // symbolic name of a chamber
-  char *GetChName(int ch) const                      {return Form("TRD/sm%02d/st%d/pl%d",GetSec(ch),GetSta(ch),GetPla(ch)); }
+  char *GetChName(int ch) const      {return Form("TRD/sm%02d/st%d/pl%d",GetSec(ch),GetSta(ch),GetPla(ch));}
+  // index of a supermodule 
+  int GetSmIndex(const char *name)   {for (int i=0; i<18; i++) if (strcmp(name,GetSmName(i))==0) return i; return -1;}
+  // index of a chamber
+  int GetChIndex(const char *name)   {for (int i=0; i<540; i++) if (strcmp(name,GetChName(i))==0) return i; return -1;}
 
   // data analysis
 
@@ -112,8 +116,7 @@ class AliTRDalignment : public TObject {
 
   void   ArToNumbers(TClonesArray *ar);              // read ar and fill fSm and fCh
   void   NumbersToAr(TClonesArray *ar);              // build ar using fSm and fCh data
-  void   LoadIdealGeometry(char *filename);          // load ideal geometry from file
-  void   LoadIdealGeometry()                         {LoadIdealGeometry("geometry.root");} 
+  int    IsGeoLoaded();                              // check if geometry is loaded
 
  protected:
 
