@@ -1405,7 +1405,7 @@ Int_t AliITStrackerSA::FindLabel(Int_t l1, Int_t l2, Int_t l3, Int_t l4, Int_t l
   Int_t ff=0; 
   Int_t ll=0;
   Int_t k=0;Int_t w=0;Int_t num=6;
-  if(lb[5]==-1) num=5;
+  for(Int_t i=5;i>=0;i--) if(lb[i]==-1) num=i;
   
   while(k<num){
   
@@ -1417,11 +1417,11 @@ Int_t AliITStrackerSA::FindLabel(Int_t l1, Int_t l2, Int_t l3, Int_t l4, Int_t l
         aa[i]=0;
       }
     }
-  k++;
+    k++;
   }
 
   while(w<num){
-  
+ 
     for(Int_t j=0;j<6;j++){
       if(aa[w]<aa[j]){
       ff=aa[w];
@@ -1432,10 +1432,11 @@ Int_t AliITStrackerSA::FindLabel(Int_t l1, Int_t l2, Int_t l3, Int_t l4, Int_t l
       lb[j]=ll;
      }
     }
-  w++;
+    w++;
   }
-  if(num==6)  return lb[5];
-  else return lb[4];
+  
+  if(num<1) return -1; 
+  return lb[num-1];
 }
 
 //_____________________________________________________________________________
@@ -1558,5 +1559,4 @@ void AliITStrackerSA::GetCoorErrors(AliITSRecPoint* cl,Float_t &sx,Float_t &sy, 
   sz = TMath::Sqrt(cl->GetSigmaZ2());
 */
 }
-
 
