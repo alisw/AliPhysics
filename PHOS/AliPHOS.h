@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.73  2007/08/07 14:12:03  kharlov
+ * Quality assurance added (Yves Schutz)
+ *
  * Revision 1.72  2007/02/13 10:52:08  policheh
  * Raw2SDigits() implemented
  *
@@ -96,9 +99,6 @@ public:
   virtual AliLoader* MakeLoader(const char* topfoldername);
   virtual void    SetTreeAddress();   
   virtual const TString Version() const {return TString(" ") ; } 
-
-  //QA methods
-  virtual void   CheckQA()  ; 
 
  private:                                        
   AliPHOS(AliPHOS & phos);

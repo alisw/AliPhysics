@@ -45,20 +45,17 @@ ClassImp(AliQualAssCheckerBase)
 //____________________________________________________________________________ 
 AliQualAssCheckerBase::AliQualAssCheckerBase(const char * name, const char * title) : 
   TNamed(name, title), 
-  fData(0x0), 
-  fDetectorDir(0x0),
-  fRef(0x0) 
+  fDataSubDir(0x0),
+  fRefSubDir(0x0) 
 {
   // ctor
-  Init() ; 
 }
 
 //____________________________________________________________________________ 
 AliQualAssCheckerBase::AliQualAssCheckerBase(const AliQualAssCheckerBase& qadm) :
   TNamed(qadm.GetName(), qadm.GetTitle()),
-  fData(qadm.fData),
-  fDetectorDir(qadm.fDetectorDir), 
-  fRef(qadm.fRef)
+  fDataSubDir(qadm.fDataSubDir), 
+  fRefSubDir(qadm.fRefSubDir)
 {
   //copy ctor
     
@@ -73,12 +70,56 @@ AliQualAssCheckerBase& AliQualAssCheckerBase::operator = (const AliQualAssChecke
   return *this;
 }
 
+//____________________________________________________________________________
+const Double_t AliQualAssCheckerBase::Check() 
+{
+  // Performs a basic checking
+  // Compares all the histograms stored in the directory
+
+   Double_t test = 0.0  ;
+   Int_t count = 0 ; 
+
+   if (!fDataSubDir)  
+     test = 1. ; // nothing to check
+   else 
+     if (!fRefSubDir)
+       test = -1 ; // no reference data
+     else {
+       TList * keyList = fDataSubDir->GetListOfKeys() ; 
+       TIter next(keyList) ; 
+       TKey * key ;
+       count = 0 ; 
+       while ( (key = static_cast<TKey *>(next())) ) {
+	 TObject * odata = fRefSubDir->Get(key->GetName()) ; 
+	 if ( odata->IsA()->InheritsFrom("TH1") ) {
+	   TH1 * hdata = static_cast<TH1*>(odata) ; 
+	   TH1 * href  = static_cast<TH1*>(fRefSubDir->Get(key->GetName())) ;
+	   if (!href) 
+	     test = -1 ; // no reference data ; 
+	   else {
+	     Double_t rv =  DiffK(hdata, href) ;
+	     AliInfo(Form("%s ->Test = %f", hdata->GetName(), rv)) ; 
+	     test += rv ; 
+	     count++ ; 
+	   }
+	 }
+	 else
+	   AliError(Form("%s Is a Classname that cannot be processed", key->GetClassName())) ;
+       }
+
+     }
+   if (count != 0) 
+     test /= count ;
+   
+   return test ; 
+}  
+
 //____________________________________________________________________________ 
 const Double_t AliQualAssCheckerBase::DiffC(const TH1 * href, const TH1 * hin) const
 {
   // compares two histograms using the Chi2 test
   if ( hin->Integral() == 0 ) {
-    AliWarning(Form("Spectrum %s in %s is empty", hin->GetName(), fData->GetName())) ; 
+    AliWarning(Form("Spectrum %s in %s is empty", hin->GetName(), AliQualAss::GetDataName())) ; 
     return 0. ;
   }
     
@@ -90,7 +131,7 @@ const Double_t AliQualAssCheckerBase::DiffK(const TH1 * href, const TH1 * hin) c
 {
   // compares two histograms using the Kolmogorov test
   if ( hin->Integral() == 0 ) {
-    AliWarning(Form("Spectrum %s in %s is empty", hin->GetName(), fData->GetName())) ; 
+    AliWarning(Form("Spectrum %s in %s is empty", hin->GetName(), AliQualAss::GetDataName())) ; 
     return 0. ;
   }
     
@@ -98,36 +139,20 @@ const Double_t AliQualAssCheckerBase::DiffK(const TH1 * href, const TH1 * hin) c
 }
 
 //____________________________________________________________________________ 
-void AliQualAssCheckerBase::Init()
+void AliQualAssCheckerBase::Init(const AliQualAss::DETECTORINDEX det)
 {
-  //open files and search for the appropriate detector directory
-  
-  fRef = AliQualAssChecker::GetRefFile() ;
-  if (!fRef)
-    AliFatal(Form("Reference file %s not found", AliQualAssChecker::GetRefFileName())) ; 
-	
-  fDetectorDir = fRef->GetDirectory(AliQualAssDataMaker::GetDetectorDirName()) ; 
-  if (!fDetectorDir)
-    AliFatal(Form("Directory %s not found in reference file %s not found", AliQualAssDataMaker::GetDetectorDirName(), AliQualAssChecker::GetRefFileName())) ; 
-
-  fData = AliQualAssChecker::GetDataFile() ;
-  if (!fData)
-    AliFatal(Form("Reference file %s not found", AliQualAss::GetOutputName())) ; 
-
-  if (! fData->GetDirectory(AliQualAssDataMaker::GetDetectorDirName())) ; 
-    AliFatal(Form("Directory %s not found in reference file %s not found", AliQualAssDataMaker::GetDetectorDirName(), AliQualAss::GetOutputName())) ; 
-  
-  AliQualAss::Instance(AliQualAss::kSIM) ; 
+  AliQualAss::Instance(det) ; 
 }
  
 //____________________________________________________________________________
-void AliQualAssCheckerBase::Exec(const Option_t * opt) 
+void AliQualAssCheckerBase::Run(AliQualAss::ALITASK index) 
 { 
-  AliInfo(Form("Processing %s", opt)) ; 
-// loop over detectors
-  AliQualAss * qa = AliQualAss::Instance(AliQualAss::kPHOS) ; 
-  Double_t rv = Check(opt) ;   
- if ( rv <= 0.) 
+  AliInfo(Form("Processing %s", AliQualAss::GetAliTaskName(index))) ; 
+
+  AliQualAss * qa = AliQualAss::Instance(index) ; 
+
+  Double_t rv = Check() ;   
+  if ( rv <= 0.) 
     qa->Set(AliQualAss::kFATAL) ; 
   else if ( rv > 0 && rv <= 0.2 )
     qa->Set(AliQualAss::kERROR) ; 
@@ -135,9 +160,8 @@ void AliQualAssCheckerBase::Exec(const Option_t * opt)
     qa->Set(AliQualAss::kWARNING) ;
   else if ( rv > 0.5 && rv < 1 ) 
     qa->Set(AliQualAss::kINFO) ; 
-  AliInfo(Form("Test result of %s in PHOS", opt)) ;
+  AliInfo(Form("Test result of %s", AliQualAss::GetAliTaskName(index))) ;
   Finish() ; 
-// endloop     
 }
 
 //____________________________________________________________________________
@@ -147,7 +171,7 @@ void AliQualAssCheckerBase::Finish() const
     
   AliQualAss * qa = AliQualAss::Instance() ; 
   qa->Show() ;
-  AliQualAssChecker::GetOutFile()->cd() ; 
+  AliQualAssChecker::GetQAResultFile()->cd() ; 
   qa->Write(qa->GetName(), kWriteDelete) ;   
-  AliQualAssChecker::GetOutFile()->Close() ;  
+  AliQualAssChecker::GetQAResultFile()->Close() ;  
 }

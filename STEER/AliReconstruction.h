@@ -31,7 +31,7 @@ class AliESDVertex;
 class AliESDEvent;
 class TFile;
 class TTree;
-
+class AliQualAssDataMaker;
 
 class AliReconstruction: public TNamed {
 public:
@@ -97,6 +97,8 @@ public:
 
   virtual Bool_t Run(const char* input = NULL);
 
+  // Quality Assurance 
+  virtual Bool_t RunQualAss(const char* detectors, AliESDEvent *& esd);
 
 private:
   Bool_t         RunLocalReconstruction(const TString& detectors);
@@ -126,6 +128,9 @@ private:
   void           WriteAlignmentData(AliESDEvent* esd);
 
   void           FillRawDataErrorLog(Int_t iEvent, AliESDEvent* esd);
+
+  //Quality Assurance
+  AliQualAssDataMaker* GetQualAssDataMaker(Int_t iDet);
 
   //*** Global reconstruction flags *******************
   Bool_t         fUniformField;       // uniform field tracking flag
@@ -170,6 +175,9 @@ private:
 
   TString	 fCDBUri;	      // Uri of the default CDB storage
   TObjArray      fSpecCDBUri;         // Array with detector specific CDB storages
+
+  //Quality Assurance
+  AliQualAssDataMaker * fQualAssDataMaker[fgkNDetectors];  //! array of QA data maker objects
 
   ClassDef(AliReconstruction, 12)      // class for running the reconstruction
 };

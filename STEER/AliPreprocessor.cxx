@@ -315,14 +315,3 @@ const char* AliPreprocessor::GetRunType()
 
   return fShuttle->GetRunType();
 }
-
-//______________________________________________________________________________________________
-Bool_t AliPreprocessor::GetHLTStatus()
-{
-  // Return HLT status (ON or OFF)
-  // Converts the HLT status from the status string read in the run logbook (not just a bool)
-  // The call is delegated to AliShuttleInterface
-
-  return fShuttle->GetHLTStatus();
-
-}

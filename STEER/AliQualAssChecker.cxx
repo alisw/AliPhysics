@@ -23,42 +23,50 @@
 
 #include "AliLog.h"
 #include "AliModule.h" 
-#include "AliRun.h"
-#include "AliRunLoader.h"
 #include "AliQualAss.h"
 #include "AliQualAssChecker.h"
+#include "AliQualAssCheckerBase.h"
 
+#include <TKey.h>
 #include <TObjArray.h>
+#include <TPluginManager.h> 
+#include <TROOT.h>
 #include <TStopwatch.h> 
 #include <TString.h> 
-
+#include <TSystem.h> 
 
 ClassImp(AliQualAssChecker)
-
-  TFile * AliQualAssChecker::fgOutFile = 0x0 ; 
-  TString AliQualAssChecker::fgOutDir("/RUN/") ; 
-  TString AliQualAssChecker::fgOutName("QA.root") ; 
-  TString AliQualAssChecker::fgRefDir("/QA/Ref/") ; 
-  TString AliQualAssChecker::fgRefName("QA.root") ; 
+  TFile   * AliQualAssChecker::fgQAResultFile = 0x0 ;  
+  TString   AliQualAssChecker::fgQAResultDirName = "local://RUN/";  
+  TString   AliQualAssChecker::fgQAResultFileName = "QA.root" ; 
 
 //_____________________________________________________________________________
 AliQualAssChecker::AliQualAssChecker(const char* name, const char* title) :
   TNamed(name, title),
-  fGAliceFileName("galice.root"),
-  fStopOnError(kFALSE)
+  fDataFile(0x0), 
+  fRefDirName("/QA/Ref/"), 
+  fRefName("QA.root"), 
+  fFoundDetectors(".")
 {
-  // create simulation object with default parameters
-
-  SetGAliceFile("galice.root");
+  // ctor: initialise checkers and open the data file   
+  for (Int_t det = 0 ; det < AliQualAss::kNDET ; det++) 
+    fCheckers[det] = NULL ; 
+  
+  GetDataFile() ; 
 }
 
 //_____________________________________________________________________________
 AliQualAssChecker::AliQualAssChecker(const AliQualAssChecker& qac) :
   TNamed(qac),
-  fGAliceFileName(qac.fGAliceFileName),
-  fStopOnError(qac.fStopOnError)
+  fDataFile(qac.fDataFile), 
+  fRefDirName(qac.fRefDirName), 
+  fRefName(qac.fRefName), 
+  fFoundDetectors(qac.fFoundDetectors)
 {
-// copy constructor
+  // copy constructor
+  
+  for (Int_t det = 0 ; det < AliQualAss::kNDET ; det++) 
+    fCheckers[det] = NULL ; 
 }
 
 //_____________________________________________________________________________
@@ -75,123 +83,202 @@ AliQualAssChecker& AliQualAssChecker::operator = (const AliQualAssChecker& qac)
 AliQualAssChecker::~AliQualAssChecker()
 {
 // clean up
-  fgOutFile->Close() ; 
-  delete fgOutFile ;
 }
 
 //_____________________________________________________________________________
-TFile * AliQualAssChecker:: GetOutFile() 
+TFile * AliQualAssChecker:: GetDataFile()
+{
+  // Open if necessary the Data file and return its pointer
+
+  if (!fDataFile) 
+    fDataFile =  TFile::Open(AliQualAss::GetDataName()) ;
+  if (!fDataFile) 
+    AliFatal(Form("QA Data File %s does not exist", AliQualAss::GetDataName() )) ; 
+  return fDataFile ; 
+}
+
+//_____________________________________________________________________________
+TFile * AliQualAssChecker:: GetQAResultFile() 
 {
   // Check if file to store QA exists, if not create it
 
-  if (fgOutFile) { 
-    if (fgOutFile->IsOpen()){
-      fgOutFile->Close() ; 
-      fgOutFile = 0x0 ; 
+  if (fgQAResultFile) { 
+    if (fgQAResultFile->IsOpen()){
+      fgQAResultFile->Close() ; 
+      fgQAResultFile = 0x0 ; 
     }
   }   
-  fgOutName.Prepend(fgOutDir) ;
+  if ( fgQAResultFileName.Contains("local://")) 
+    fgQAResultFileName.ReplaceAll("local:/", "") ;
+  
   TString opt("") ; 
-  if ( !gSystem->AccessPathName(fgOutName) )
+  if ( !gSystem->AccessPathName(fgQAResultFileName) )
     opt = "UPDATE" ; 
   else 
     opt = "NEW" ; 
-  fgOutFile = TFile::Open(fgOutName, opt) ;   
-  
-  return fgOutFile ; 
+  fgQAResultFile = TFile::Open(fgQAResultFileName, opt) ;   
+      
+  return fgQAResultFile ; 
 }
 
 //_____________________________________________________________________________
-AliRunLoader* AliQualAssChecker::LoadRun(const char* mode) const
+  AliQualAssCheckerBase * AliQualAssChecker::GetDetQualAssChecker(Int_t det)
 {
-// delete existing run loaders, open a new one and load gAlice
-  while (AliRunLoader::GetRunLoader()) 
-    delete AliRunLoader::GetRunLoader();
-  AliRunLoader* runLoader = 
-    AliRunLoader::Open(fGAliceFileName.Data(), 
-		       AliConfig::GetDefaultEventFolderName(), mode);
-  if (!runLoader) {
-    AliError(Form("no run loader found in file %s", fGAliceFileName.Data()));
-    return NULL;
+  // Gets the Quality Assurance checker for the detector specified by its name
+  
+  if (fCheckers[det]) 
+    return fCheckers[det];
+
+ TString detName(AliQualAss::GetDetName(det)) ; 
+
+  AliInfo(Form("Retrieving QA checker for %s", detName.Data())) ; 
+  TPluginManager* pluginManager = gROOT->GetPluginManager() ;
+  TString qacName = "Ali" + detName + "QualAssChecker" ;
+
+  AliQualAssCheckerBase * qac = NULL ;
+  // first check if a plugin is defined for the quality assurance checker
+  TPluginHandler* pluginHandler = pluginManager->FindHandler("AliQualAssChecker", detName.Data());
+  // if not, add a plugin for it
+  if (!pluginHandler) {
+    //AliInfo(Form("defining plugin for %s", qacName.Data()));
+    TString libs = gSystem->GetLibraries();
+ 
+   if (libs.Contains("lib" + detName + "base.so") || (gSystem->Load("lib" + detName + "base.so") >= 0))
+      pluginManager->AddHandler("AliQualAssChecker", detName, qacName, detName + "qac", qacName + "()");
+    else 
+      pluginManager->AddHandler("AliQualAssChecker", detName, qacName, detName, qacName + "()");
+
+   pluginHandler = pluginManager->FindHandler("AliQualAssChecker", detName);
+
+  if (pluginHandler && (pluginHandler->LoadPlugin() == 0)) 
+    qac = (AliQualAssCheckerBase *) pluginHandler->ExecPlugin(0);
+  
+  if (qac) 
+    fCheckers[det] = qac ; 
   }
-  runLoader->LoadgAlice();
-  gAlice = runLoader->GetAliRun();
-  if (!gAlice) {
-    AliError(Form("no gAlice object found in file %s", 
-                  fGAliceFileName.Data()));
-    return NULL;
-  }
-  return runLoader;
+
+ return qac ; 
+}
+
+
+//_____________________________________________________________________________
+TDirectory * AliQualAssChecker::GetRefSubDir(const char * det, const char * task)     
+{ 
+  // Opens and returns the file with the reference data 
+  TFile * f = TFile::Open(fRefDirName, "READ") ;
+  if (!f) 
+    AliFatal(Form("Cannot find reference file %s", fRefDirName.Data())) ; 
+  TDirectory * rv = NULL ; 
+  rv = f->GetDirectory(det) ; 
+  if (!rv) {
+    AliWarning(Form("Directory %s not found in %d", det, fRefDirName.Data())) ; 
+  } else {
+    rv = rv->GetDirectory(task) ; 
+    if (!rv) 
+      AliWarning(Form("Directory %s/%s not found in %s", det, task, fRefDirName.Data())) ; 
+  }  
+  return rv ; 
 }
 
 //_____________________________________________________________________________
 Bool_t AliQualAssChecker::Run()
 {
- // run the Quality Assurance Checker for all tasks Hits, SDigits, Digits, recpoints, tracksegments, recparticles and ESDs
+  // run the Quality Assurance Checker for all tasks Hits, SDigits, Digits, recpoints, tracksegments, recparticles and ESDs
 
   Bool_t rv = kFALSE ; 
-
+  
   TStopwatch stopwatch;
   stopwatch.Start();
 
-  AliRunLoader* runLoader = LoadRun("READ");
-  if (!runLoader) 
-    return rv ;
-
-  TObjArray* detArray = runLoader->GetAliRun()->Detectors();
-  for (Int_t iDet = 0; iDet < detArray->GetEntriesFast(); iDet++) {
-    AliModule* det = (AliModule*) detArray->At(iDet);
-    if (!det || !det->IsActive()) 
-      continue;
-      AliInfo(Form("QA checking %s", det->GetName()));
-      det->CheckQA();
+  //search for all detectors QA directories
+  TList * detKeyList = GetDataFile()->GetListOfKeys() ; 
+  TIter nextd(detKeyList) ; 
+  TKey * detKey ; 
+  while ( (detKey = dynamic_cast<TKey *>(nextd()) ) ) {
+    AliInfo(Form("Found %s", detKey->GetName())) ;
+    //Check which detector
+    TString detName ; 
+    TString detNameQA(detKey->GetName()) ; 
+    Int_t det ; 
+    for ( det = 0; det < AliQualAss::kNDET ; det++) {
+      detName = AliQualAss::GetDetName(det) ; 
+      if (detNameQA.Contains(detName)) {
+	fFoundDetectors+=detName ; 
+	fFoundDetectors+="." ;		
+	break ; 
+      }
+    } 
+    TDirectory * detDir = GetDataFile()->GetDirectory(detKey->GetName()) ; 
+    TList * taskKeyList = detDir->GetListOfKeys() ;
+    TIter nextt(taskKeyList) ; 
+    TKey * taskKey ; 
+    // now search for the tasks dir
+    while ( (taskKey = static_cast<TKey *>(nextt()) ) ) {
+      TString taskName( taskKey->GetName() ) ; 
+      AliInfo(Form("Found %s", taskName.Data())) ;
+      TDirectory * taskDir = detDir->GetDirectory(taskName.Data()) ; 
+      taskDir->cd() ; 
+      AliQualAssCheckerBase * qac = GetDetQualAssChecker(det) ; 
+      if (qac)
+ 	AliInfo(Form("QA checker found for %s", detName.Data())) ; 
+      if (!qac)
+ 	AliFatal(Form("QA checker not found for %s", detName.Data())) ; 
+      AliQualAss::ALITASK index = AliQualAss::kNULLTASK ; 
+      if ( taskName == AliQualAss::GetTaskName(AliQualAss::kHITS) ) 
+	index = AliQualAss::kSIM ; 
+      if ( taskName == AliQualAss::GetTaskName(AliQualAss::kSDIGITS) ) 
+	index = AliQualAss::kSIM ; 
+      if ( taskName == AliQualAss::GetTaskName(AliQualAss::kDIGITS) ) 
+	index = AliQualAss::kSIM ; 
+      if ( taskName == AliQualAss::GetTaskName(AliQualAss::kRECPOINTS) ) 
+	index = AliQualAss::kREC ; 
+      if ( taskName == AliQualAss::GetTaskName(AliQualAss::kTRACKSEGMENTS) ) 
+	index = AliQualAss::kREC ; 
+      if ( taskName == AliQualAss::GetTaskName(AliQualAss::kRECPARTICLES) ) 
+	index = AliQualAss::kREC ; 
+      if ( taskName == AliQualAss::GetTaskName(AliQualAss::kESDS) ) 
+	index = AliQualAss::kESD ; 
+      qac->Init(AliQualAss::DETECTORINDEX(det)) ; 
+      qac->SetRefandData(GetRefSubDir(detNameQA.Data(), taskName.Data()), taskDir) ; 
+      qac->Run(index) ; 
     }
-
-  delete runLoader;
-
-  AliInfo(Form("Execution time for QA: R:%.2fs C:%.2fs", stopwatch.RealTime(),stopwatch.CpuTime()));
-
-  return rv;
-}
-
-//_____________________________________________________________________________
-void AliQualAssChecker::SetGAliceFile(const char* fileName)
-{
-// set the name of the galice file
-// the path is converted to an absolute one if it is relative
-
-  fGAliceFileName = fileName;
-  if (!gSystem->IsAbsoluteFileName(fGAliceFileName)) {
-    char* absFileName = gSystem->ConcatFileName(gSystem->WorkingDirectory(),
-						fGAliceFileName);
-    fGAliceFileName = absFileName;
-    delete[] absFileName;
+ }
+  AliInfo("QA performed for following detectors:") ; 
+  for ( Int_t det = 0; det < AliQualAss::kNDET; det++) {
+    if (fFoundDetectors.Contains(AliQualAss::GetDetName(det))) {
+      printf("%s, ",AliQualAss::GetDetName(det)) ; 
+      fFoundDetectors.ReplaceAll(AliQualAss::GetDetName(det), "") ; 
+    }	
   }
+  printf("\n") ; 
+  rv = kTRUE ; 
 
-  AliDebug(2, Form("galice file name set to %s", fileName));
+  return rv ; 
+  
 }
 
 //_____________________________________________________________________________
-void AliQualAssChecker::SetOutDir(const char * outDir)
+void AliQualAssChecker::SetQAResultDirName(const char * name)
 {
   // Set the root directory where to store the QA status object
 
-  fgOutDir.Prepend(outDir) ; 
-  AliInfo(Form("QA results are in  %s", fgOutDir.Data())) ;
-  if ( fgOutDir.Contains("local://")) 
-    fgOutDir.ReplaceAll("local:/", "") ;  
+  fgQAResultDirName.Prepend(name) ; 
+  AliInfo(Form("QA results are in  %s", fgQAResultDirName.Data())) ;
+  if ( fgQAResultDirName.Contains("local://")) 
+    fgQAResultDirName.ReplaceAll("local:/", "") ;
+  fgQAResultFileName.Prepend(fgQAResultDirName) ;
 }
 
 //_____________________________________________________________________________
-void AliQualAssChecker::SetRefDir(const char * refDir)
+void AliQualAssChecker::SetRefDirName(const char * name)
 {
   // Set the root directory of reference data
 
-  fgRefDir.Prepend(refDir) ; 
-  fgRefDir.Append(fgRefName) ; 
-  AliInfo(Form("Reference data are taken from %s", fgRefDir.Data())) ;
-  if ( fgRefDir.Contains("local://")) 
-    fgRefDir.ReplaceAll("local:/", "") ; 
+  fRefDirName.Prepend(name) ; 
+  fRefDirName.Append(fRefName) ; 
+  AliInfo(Form("Reference data are taken from %s", fRefDirName.Data())) ;
+  if ( fRefDirName.Contains("local://")) 
+    fRefDirName.ReplaceAll("local:/", "") ; 
 }
 
 

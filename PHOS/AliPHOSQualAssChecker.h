@@ -34,8 +34,6 @@ public:
 
 private:
   
-  virtual const Double_t Check(const Option_t * opt) ; 
-
   ClassDef(AliPHOSQualAssChecker,1)  // description 
 
 };

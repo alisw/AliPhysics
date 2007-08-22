@@ -46,7 +46,7 @@ ClassImp(AliPHOSQualAssDataMaker)
            
 //____________________________________________________________________________ 
   AliPHOSQualAssDataMaker::AliPHOSQualAssDataMaker() : 
-  AliQualAssDataMaker("PHOSQA", "PHOS Quality Assurance Data Maker"),
+  AliQualAssDataMaker(AliQualAss::GetDetName(AliQualAss::kPHOS), "PHOS Quality Assurance Data Maker"),
   fhHits(0x0), 
   fhHitsMul(0x0), 
   fhDigits(0x0),
@@ -109,7 +109,9 @@ void AliPHOSQualAssDataMaker::InitESDs()
 {
   //create ESDs histograms in ESDs subdir
   fhESDs     = new TH1F("hPhosESDs",    "ESDs energy distribution in PHOS",       100, 0., 100.) ; 
+  fhESDs->Sumw2() ; 
   fhESDsMul  = new TH1I("hPhosESDsMul", "ESDs multiplicity distribution in PHOS", 100, 0., 100) ; 
+  fhESDsMul->Sumw2() ;
 }
 
 //____________________________________________________________________________ 
@@ -117,7 +119,9 @@ void AliPHOSQualAssDataMaker::InitHits()
 {
   // create Hits histograms in Hits subdir
   fhHits     = new TH1F("hPhosHits",    "Hits energy distribution in PHOS",       100, 0., 100.) ; 
+  fhHits->Sumw2() ;
   fhHitsMul  = new TH1I("hPhosHitsMul", "Hits multiplicity distribution in PHOS", 500, 0., 10000) ; 
+  fhHitsMul->Sumw2() ;
 }
 
 //____________________________________________________________________________ 
@@ -125,7 +129,9 @@ void AliPHOSQualAssDataMaker::InitDigits()
 {
   // create Digits histograms in Digits subdir
   fhDigits     = new TH1I("hPhosDigits",    "Digits amplitude distribution in PHOS",    500, 0, 5000) ; 
+  fhDigits->Sumw2() ;
   fhDigitsMul  = new TH1I("hPhosDigitsMul", "Digits multiplicity distribution in PHOS", 500, 0, 1000) ; 
+  fhDigitsMul->Sumw2() ;
 }
 
 //____________________________________________________________________________ 
@@ -133,7 +139,9 @@ void AliPHOSQualAssDataMaker::InitRecParticles()
 {
   // create Reconstructed particles histograms in RecParticles subdir
   fhRecParticles     = new TH1F("hPhosRecParticles",    "RecParticles energy distribution in PHOS",       100, 0., 100.) ; 
+  fhRecParticles->Sumw2() ;
   fhRecParticlesMul  = new TH1I("hPhosRecParticlesMul", "RecParticles multiplicity distribution in PHOS", 100, 0,  100) ; 
+  fhRecParticlesMul->Sumw2() ;
 }
 
 //____________________________________________________________________________ 
@@ -141,10 +149,14 @@ void AliPHOSQualAssDataMaker::InitRecPoints()
 {
   // create Reconstructed Points histograms in RecPoints subdir
   fhEmcRecPoints     = new TH1F("hEmcPhosRecPoints",    "EMCA RecPoints energy distribution in PHOS",       100, 0., 100.) ; 
+  fhEmcRecPoints->Sumw2() ;
   fhEmcRecPointsMul  = new TH1I("hEmcPhosRecPointsMul", "EMCA RecPoints multiplicity distribution in PHOS", 100, 0,  100) ; 
+  fhEmcRecPointsMul->Sumw2() ;
 
   fhCpvRecPoints     = new TH1F("hCpvPhosRecPoints",    "CPV RecPoints energy distribution in PHOS",       100, 0., 100.) ; 
+  fhCpvRecPoints->Sumw2() ;
   fhCpvRecPointsMul  = new TH1I("hCpvPhosRecPointsMul", "CPV RecPoints multiplicity distribution in PHOS", 100, 0,  100) ; 
+  fhCpvRecPointsMul->Sumw2() ;
 }
 
 //____________________________________________________________________________ 
@@ -152,7 +164,9 @@ void AliPHOSQualAssDataMaker::InitSDigits()
 {
   // create SDigits histograms in SDigits subdir
   fhSDigits     = new TH1F("hPhosSDigits",    "SDigits energy distribution in PHOS",       100, 0., 100.) ; 
+  fhSDigits->Sumw2() ;
   fhSDigitsMul  = new TH1I("hPhosSDigitsMul", "SDigits multiplicity distribution in PHOS", 500, 0,  10000) ; 
+  fhSDigitsMul->Sumw2() ;
 }
 
 //____________________________________________________________________________ 
@@ -160,7 +174,9 @@ void AliPHOSQualAssDataMaker::InitTrackSegments()
 {
   // create Track Segments histograms in TrackSegments subdir
   fhTrackSegments     = new TH1F("hPhosTrackSegments",    "TrackSegments EMC-CPV distance in PHOS",       500, 0., 5000.) ; 
+  fhTrackSegments->Sumw2() ;
   fhTrackSegmentsMul  = new TH1I("hPhosTrackSegmentsMul", "TrackSegments multiplicity distribution in PHOS", 100, 0,  100) ; 
+  fhTrackSegmentsMul->Sumw2() ;
 }
 
 //____________________________________________________________________________

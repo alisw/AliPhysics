@@ -46,6 +46,9 @@ AliQualAssDataMaker::AliQualAssDataMaker(const char * name, const char * title) 
   fData(0x0)
 {
   // ctor
+  TString tmp(GetName()) ; 
+  tmp.Append("QA") ; 
+  SetName(tmp.Data()) ; 
   fOutput = AliQualAss::GetQADMOutFile() ; 	
   fDetectorDirName = GetName() ; 
 }
@@ -125,35 +128,35 @@ void AliQualAssDataMaker::Finish(AliQualAss::TASKINDEX task) const
   fDetectorDir->cd() ; 
   TDirectory * subDir = 0x0 ; 
   
-  switch (task) { 
-  case AliQualAss::kHITS:
-    subDir = fDetectorDir->GetDirectory("Hits") ; 
-    break ; 
+//   switch (task) { 
+//   case AliQualAss::kHITS:
+  subDir = fDetectorDir->GetDirectory(AliQualAss::GetTaskName(task)) ; 
+//     break ; 
 
-   case AliQualAss::kSDIGITS:
-	subDir = fDetectorDir->GetDirectory("SDigits") ; 
-    break ; 
+//    case AliQualAss::kSDIGITS:
+// 	subDir = fDetectorDir->GetDirectory("SDigits") ; 
+//     break ; 
 
-   case AliQualAss::kDIGITS:
-    subDir = fDetectorDir->GetDirectory("Digits") ; 
-    break ;  
+//    case AliQualAss::kDIGITS:
+//     subDir = fDetectorDir->GetDirectory("Digits") ; 
+//     break ;  
  
-   case AliQualAss::kRECPOINTS:
-    subDir = fDetectorDir->GetDirectory("RecPoints") ; 
-    break ;  
+//    case AliQualAss::kRECPOINTS:
+//     subDir = fDetectorDir->GetDirectory("RecPoints") ; 
+//     break ;  
 
-   case AliQualAss::kTRACKSEGMENTS:
-    subDir = fDetectorDir->GetDirectory("TrackSegments") ; 
-    break ;  
+//    case AliQualAss::kTRACKSEGMENTS:
+//     subDir = fDetectorDir->GetDirectory("TrackSegments") ; 
+//     break ;  
   
-   case AliQualAss::kRECPARTICLES:
-    subDir = fDetectorDir->GetDirectory("RecParticles") ; 
-	break ;  
+//    case AliQualAss::kRECPARTICLES:
+//     subDir = fDetectorDir->GetDirectory("RecParticles") ; 
+// 	break ;  
      
-  case AliQualAss::kESDS:
-    subDir = fDetectorDir->GetDirectory("ESDs") ; 
-    break ;  
-  }	
+//   case AliQualAss::kESDS:
+//     subDir = fDetectorDir->GetDirectory("ESDs") ; 
+//     break ;  
+//   }	
   subDir->Write() ; 
 } 
 

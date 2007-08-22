@@ -16,6 +16,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.114  2007/08/07 14:12:03  kharlov
+ * Quality assurance added (Yves Schutz)
+ *
  * Revision 1.113  2007/07/18 16:29:54  policheh
  * Raw Sdigits energy converted to GeV.
  *
@@ -210,7 +213,8 @@ void AliPHOS::CreateMaterials()
   Float_t aG10[4] = { 12., 1., 16., 28.} ;
   Float_t zG10[4] = { 6., 1., 8., 14.} ;
   Float_t wG10[4] = { .259, .288, .248, .205} ;
-  Float_t dG10  = 1.7 ;
+  Float_t dG10  = 1.7 ; 
+
   
   AliMixture(12, "G10$", aG10, zG10, dG10, -4, wG10);
 
@@ -239,7 +243,8 @@ void AliPHOS::CreateMaterials()
   wArCO[1] = (1-arContent)*1;
   wArCO[2] = (1-arContent)*2;
   Float_t dArCO = arContent*dAr + (1-arContent)*dCO ;
-  AliMixture(16, "ArCO2$", aArCO, zArCO, dArCO,  -3, wArCO) ;
+  AliMixture(16, "ArCO2$", aArCO, zArCO, dArCO,  -3, wArCO) ; 
+
 
   // --- Stainless steel (let it be pure iron) ---
   AliMaterial(17, "Steel$", 55.845, 26, 7.87, 1.76, 0., 0, 0) ;
@@ -562,8 +567,10 @@ void AliPHOS::Hits2SDigits()
 
   AliPHOSSDigitizer phosDigitizer(fLoader->GetRunLoader()->GetFileName().Data()) ;
   phosDigitizer.SetEventRange(0, -1) ; // do all the events
+ 
   phosDigitizer.ExecuteTask("all") ; 
 }
+
 
 //____________________________________________________________________________
 AliLoader* AliPHOS::MakeLoader(const char* topfoldername)
@@ -618,26 +625,12 @@ Bool_t AliPHOS::Raw2SDigits(AliRawReader* rawReader)
   AliPHOSRawDigiProducer pr;
   pr.MakeDigits(sdigits,&dc);
 
-  //ADC counts -> GeV
-  for(Int_t i=0; i<sdigits->GetEntries(); i++) {
-    AliPHOSDigit* sdigit = (AliPHOSDigit*)sdigits->At(i);
-    sdigit->SetEnergy(sdigit->GetEnergy()/AliPHOSPulseGenerator::GeV2ADC());
-  }
-
   Int_t bufferSize = 32000 ;
-  TBranch * sdigitsBranch = tree->Branch("PHOS",&sdigits,bufferSize);
+  // TBranch * sdigitsBranch = tree->Branch("PHOS",&sdigits,bufferSize);
+  tree->Branch("PHOS",&sdigits,bufferSize);
   tree->Fill();
 
   fLoader->WriteSDigits("OVERWRITE");
   return kTRUE;
     
-}
-
-//____________________________________________________________________________
-void AliPHOS::CheckQA()   
-{ 
-  // check the Quality Assurance data
-
-  AliPHOSQualAssChecker phosQA ;
-  phosQA.Exec() ; 
 }

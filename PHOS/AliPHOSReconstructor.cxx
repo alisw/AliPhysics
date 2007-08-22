@@ -127,14 +127,18 @@ void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader, AliESDEvent* esd) co
 
   Int_t eventNumber = runLoader->GetEventNumber() ;
 
+
   AliPHOSGetter *gime = AliPHOSGetter::Instance();
   gime->Event(eventNumber, "DRTP") ; 
   TClonesArray *recParticles  = gime->RecParticles();
   Int_t nOfRecParticles = recParticles->GetEntries();
-
+  
+  
   esd->SetNumberOfPHOSClusters(nOfRecParticles) ; 
   esd->SetFirstPHOSCluster(esd->GetNumberOfCaloClusters()) ;
-  
+
+  Int_t maxClu = esd->GetNumberOfPHOSClusters() ; 
+
   AliDebug(2,Form("%d digits and %d rec. particles in event %d, option %s",gime->Digits()->GetEntries(),nOfRecParticles,eventNumber,GetOption()));
 
 

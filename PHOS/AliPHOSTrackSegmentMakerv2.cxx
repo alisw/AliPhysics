@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.5  2007/07/11 13:43:30  hristov
+ * New class AliESDEvent, backward compatibility with the old AliESD (Christian)
+ *
  * Revision 1.4  2007/05/04 14:49:29  policheh
  * AliPHOSRecPoint inheritance from AliCluster
  *
@@ -71,6 +74,7 @@
 #include "AliPHOSTrackSegment.h"
 #include "AliPHOSLink.h"
 #include "AliPHOSGetter.h"
+
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 

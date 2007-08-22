@@ -15,9 +15,9 @@
 
 // --- ROOT system ---
 #include <TNamed.h>
-#include "AliLog.h"
+#include "AliQualAss.h"
 class TFile ; 
-class TH1;
+class TH1 ; 
 
 // --- Standard library ---
 
@@ -31,18 +31,18 @@ public:
   AliQualAssCheckerBase& operator = (const AliQualAssCheckerBase& qac) ;
   virtual ~AliQualAssCheckerBase() {;} // dtor
 
-  void   Exec(const Option_t * = ""); 
+  void   Run(AliQualAss::ALITASK tsk); 
+  void   Init(const AliQualAss::DETECTORINDEX det) ; 
+  void   SetRefandData(TDirectory * ref, TDirectory * data) { fRefSubDir = ref ;  fDataSubDir = data ; }
 
 protected:
-  void Init() ; 
-  virtual const Double_t Check(const Option_t *) {AliInfo("To be implemented by detectors"); return 0; } 
+  virtual const Double_t Check() ;
   const Double_t DiffC(const TH1 * href, const TH1 * hin) const ;   
   const Double_t DiffK(const TH1 * href, const TH1 * hin) const ;   
   void           Finish() const ; 
 
-  TFile * fData ;                //! data root file produced by the QualAssDataMaker
-  TDirectory * fDetectorDir ;    //! directory for the given detector in the data file
-  TFile * fRef   ;               //! reference root file
+  TDirectory * fDataSubDir ; //! directory for the current task directory in the current detector directory in the data file
+  TDirectory * fRefSubDir  ; //! directory for the current task directory in the current detector directory in the reference file
 
   ClassDef(AliQualAssCheckerBase,1)  // description 
 

@@ -17,7 +17,7 @@
 // --- ROOT system ---
 #include <TNamed.h>  
 class TFile;  
-class TDirectory;
+
 // --- Standard library ---
 
 // --- AliRoot header files ---

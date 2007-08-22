@@ -9,8 +9,7 @@
 // Quality Assurance Object
 //
 
-#include <TNamed.h>
-#include "AliLog.h" 
+#include <TNamed.h> 
 class TFile ; 
 
 class AliQualAss : public TNamed {
@@ -33,16 +32,21 @@ public:
   
  // Creators - destructors
   AliQualAss(); // beware singleton, not to be used
-  AliQualAss(ALITASK tsk) ;
+  AliQualAss(const ALITASK tsk) ;
+  AliQualAss(const DETECTORINDEX det) ;
   AliQualAss(const AliQualAss& qa) ;   
   AliQualAss& operator = (const AliQualAss& qa) ;
   virtual ~AliQualAss();
  
   static  AliQualAss *   Instance() ;
-  static  AliQualAss *   Instance(DETECTORINDEX det) ;
-  static  AliQualAss *   Instance(ALITASK tsk) ;
+  static  AliQualAss *   Instance(const DETECTORINDEX det) ;
+  static  AliQualAss *   Instance(const ALITASK tsk) ;
   const Bool_t           CheckFatal() const ;
-  static const char *    GetOutputName() { return fgOutputName.Data() ; }
+  static const char *    GetAliTaskName(ALITASK tsk) ;
+  static const char *    GetDataName() { return fgDataName.Data() ; }
+  static const TString   GetDetName(DETECTORINDEX det) { return fgDetNames[det] ; }
+  static const TString   GetTaskName(TASKINDEX tsk) { return fgTaskNames[tsk] ; }
+  static const char *    GetDetName(Int_t det) ;
   static TFile *         GetQADMOutFile() ; 
   void                   Set(QABIT bit) ;
   void                   Show() const { ShowStatus(fDet) ; }
@@ -53,8 +57,6 @@ private:
   const Bool_t         CheckRange(DETECTORINDEX det) const ;
   const Bool_t         CheckRange(ALITASK tsk) const ;
   const Bool_t         CheckRange(QABIT bit) const ;
-  const char *         GetDetectorName(DETECTORINDEX det) const ;
-  const char *         GetTaskName(ALITASK tsk) const ;
   const char *         GetBitName(QABIT bit) const ;
   const ULong_t        GetStatus(DETECTORINDEX det) const  { return fQA[det] ;}
   void                 Finish() const ;  
@@ -63,7 +65,7 @@ private:
   virtual void         ShowStatus(DETECTORINDEX det) const ;
   void                 ResetStatus(DETECTORINDEX det) { fQA[det] = 0 ; }
   void                 Set(DETECTORINDEX det) { fDet = det ;}
-  void                 Set(ALITASK tsk) { fTask = tsk ; AliInfo(Form("Ready to set QA status in %s\n", GetTaskName(tsk) )) ; }
+  void                 Set(ALITASK tsk) { fTask = tsk ; AliInfo(Form("Ready to set QA status in %s", GetAliTaskName(tsk) )) ; }
   void                 SetStatus(DETECTORINDEX det, UShort_t status) { fQA[det] = status ; }
   void                 SetStatusBit(DETECTORINDEX det, ALITASK tsk, QABIT bit) ;
 
@@ -72,9 +74,10 @@ private:
   ULong_t *          fQA          ; //[kNDET] the status word 4 bits for SIM, REC, ESD, ANA each
   DETECTORINDEX      fDet         ; //!  the current detector (ITS, TPC, ....)
   ALITASK            fTask        ; //!  the current environment (SIM, REC, ESD, ANA)
-  static TFile *     fgOutput     ; //! the output file where the quality assurance maker store their results
-  static TString     fgOutputName ; //! the output name file where the quality assurance maker store their results
-    
-  ClassDef(AliQualAss,1)  //ALICE Quality Assurance Obbject
+  static TFile *     fgDataFile   ; //! the output file where the quality assurance maker store their results
+  static TString     fgDataName   ; //! the name of the file where the quality assurance maker store their results
+  static TString     fgDetNames[] ; //! list of detector names   
+  static TString     fgTaskNames[]; //! list of tasks names   
+ ClassDef(AliQualAss,1)  //ALICE Quality Assurance Object
 };
 #endif

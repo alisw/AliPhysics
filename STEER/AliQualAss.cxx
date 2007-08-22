@@ -43,9 +43,12 @@
 
 ClassImp(AliQualAss)
 
-  AliQualAss * AliQualAss::fgQA          = 0x0 ;
-  TFile      * AliQualAss::fgOutput      = 0x0 ;   
-  TString      AliQualAss::fgOutputName  = "QA.root" ;   
+  AliQualAss * AliQualAss::fgQA        = 0x0 ;
+  TFile      * AliQualAss::fgDataFile  = 0x0 ;   
+  TString      AliQualAss::fgDataName  = "QA.root" ;   
+  TString      AliQualAss::fgDetNames[]  = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD",
+					"ZDC", "PMD", "T0", "VZERO", "ACORDE", "HLT"} ;   
+  TString      AliQualAss::fgTaskNames[]  = {"Hits", "SDigits", "Digits", "RecPoints", "TrackSegments", "RecParticles", "ESDs"} ;   
 
 //____________________________________________________________________________
 AliQualAss::AliQualAss() : 
@@ -81,7 +84,26 @@ AliQualAss& AliQualAss::operator = (const AliQualAss& qa)
 }
 
 //_______________________________________________________________
-AliQualAss::AliQualAss(ALITASK tsk) :
+AliQualAss::AliQualAss(const DETECTORINDEX det) :
+  TNamed("QA", "Quality Assurance status"), 
+  fNdet(12), 
+  fQA(0x0), 
+  fDet(det),
+  fTask(kNULLTASK)
+{
+  // constructor to be used
+  if (! CheckRange(det) ) {
+    fDet = kNULLDET ; 
+    return ;
+  } else 
+    fQA = new ULong_t[kNDET] ;
+  Int_t index ; 
+  for (index = 0; index < kNDET; index++) 
+    fQA[index] = 0 ; 
+}
+  
+//_______________________________________________________________
+AliQualAss::AliQualAss(const ALITASK tsk) :
   TNamed("QA", "Quality Assurance status"), 
   fNdet(12), 
   fQA(0x0), 
@@ -92,12 +114,11 @@ AliQualAss::AliQualAss(ALITASK tsk) :
   if (! CheckRange(tsk) ) {
     fTask = kNULLTASK ; 
     return ;
-  } else {
-    fQA = new ULong_t[fNdet] ;
-    Int_t index ;
-    for ( index = 0 ; index <= fNdet ; index++)
-      ResetStatus(DETECTORINDEX(index)) ;
-  }
+  } else 
+    fQA = new ULong_t[kNDET] ;
+  Int_t index ; 
+  for (index = 0; index < kNDET; index++) 
+    fQA[index] = 0 ; 
 }
 
 //____________________________________________________________________________
@@ -112,7 +133,7 @@ const Bool_t AliQualAss::CheckRange(DETECTORINDEX det) const
 { 
   // check if detector is in given detector range: 0-fNdet
 
-  Bool_t rv = ( det < 0 || det > fNdet )  ? kFALSE : kTRUE ;
+  Bool_t rv = ( det < 0 || det > kNDET )  ? kFALSE : kTRUE ;
   if (!rv)
     AliFatal(Form("Detector index %d is out of range: 0 <= index <= %d", det, kNDET)) ;
   return rv ;
@@ -139,89 +160,40 @@ const Bool_t AliQualAss::CheckRange(QABIT bit) const
   return rv ;
 }
 
-//_______________________________________________________________
-const char * AliQualAss::GetDetectorName(DETECTORINDEX det) const
-{
-  // returns the char name corresponding to detector index
-
-  char * detName = "";
-  switch (det) {
-  case kNULLDET:
-    break ; 
-  case kITS:
-    detName = "ITS" ;
-    break ;
-  case kTPC:
-    detName = "TPC" ;
-    break ;
-  case kTRD:
-    detName = "TRD" ;
-    break ;
-  case kTOF:
-    detName = "TOF" ;
-    break ;
-  case kPHOS:
-    detName = "PHOS" ;
-    break ;
-  case kHMPID:
-    detName = "HMPID" ;
-    break ;
-  case kEMCAL:
-    detName = "EMCAL" ;
-    break ;
-  case kMUON:
-    detName = "MUON" ;
-    break ;
-  case kFMD:
-    detName = "FMD" ;
-    break ;
-  case kZDC:
-    detName = "ZDC" ;
-    break ;
-  case kPMD:
-    detName = "PMD" ;
-    break ;
-  case kT0:
-    detName = "TO" ;
-    break ;
-  case kVZERO:
-    detName = "VZERO" ;
-    break ;
-  case kACORDE:
-    detName = "ACORDE" ;
-    break ;
-  case kHLT:
-    detName = "HLT" ;
-    break ;
-  default:
-    AliError(Form("%d is not a valid detector index %d <= index <= %d\n", det, 0, kNDET-1)) ;
-    break ;
-  }
-  return detName ;
-}
 
 //_______________________________________________________________
 TFile * AliQualAss::GetQADMOutFile() 
 {
   // opens the file to store the detectors Quality Assurance Data Maker results
 
-  if (! fgOutput ) {     
-	 char opt[6] ; 
-     if  (gSystem->AccessPathName(fgOutputName.Data()))
-	  sprintf(opt, "%s", "NEW") ;
-     else 
-      sprintf(opt, "%s", "UPDATE") ; 
+  if (! fgDataFile ) {     
+    TString opt ; 
+    if  (gSystem->AccessPathName(fgDataName.Data()))
+      opt = "NEW" ;
+    else 
+      opt = "UPDATE" ; 
     
-     fgOutput = TFile::Open(fgOutputName.Data(), opt) ;
+    fgDataFile = TFile::Open(fgDataName.Data(), opt.Data()) ;
   }
-  return fgOutput ; 
+  return fgDataFile ; 
 } 
 
 //_______________________________________________________________
-const char * AliQualAss::GetTaskName(ALITASK tsk) const
+const char * AliQualAss::GetDetName(Int_t det) 
+{
+	// returns the detector name corresponding to a given index (needed in a loop)
+
+	if ( det >= 0 &&  det < kNDET) 
+		return (fgDetNames[det]).Data() ; 
+	else 
+		return NULL ; 
+}
+
+//_______________________________________________________________
+const char * AliQualAss::GetAliTaskName(ALITASK tsk)
 {
   // returns the char name corresponding to module index
-  char * tskName = "" ;
+  TString tskName ;
   switch (tsk) {
   case kNULLTASK:
     break ; 
@@ -238,10 +210,10 @@ const char * AliQualAss::GetTaskName(ALITASK tsk) const
     tskName = "ANA" ;
     break ;
   default:
-    AliError(Form("%d is not a valid module index %d <= index <= %d\n", tsk, 0, kNTASK-1)) ;
+    tsk = kNULLTASK ; 
     break ;
   }
-  return tskName ;
+  return tskName.Data() ;
 }
 
 //_______________________________________________________________
@@ -281,16 +253,18 @@ AliQualAss * AliQualAss::Instance()
 }
 
 //_______________________________________________________________
-AliQualAss * AliQualAss::Instance(DETECTORINDEX det)
+AliQualAss * AliQualAss::Instance(const DETECTORINDEX det)
 {
   // Get an instance of the singleton. The only authorized way to call the ctor
   
+  if ( ! fgQA)
+    fgQA = new AliQualAss(det) ;
   fgQA->Set(det) ;
   return fgQA ;
 }
 
 //_______________________________________________________________
-AliQualAss * AliQualAss::Instance(ALITASK tsk)
+AliQualAss * AliQualAss::Instance(const ALITASK tsk)
 {
   // get an instance of the singleton.
 
@@ -392,6 +366,6 @@ void AliQualAss::ShowStatus(DETECTORINDEX det) const
   ULong_t esdStatus = status & 0x0f00 ;
   ULong_t anaStatus = status & 0xf000 ;
 
-  AliInfo(Form("QA Status for %s sim=0x%x, rec=0x%x, esd=0x%x, ana=0x%x\n", GetDetectorName(det), simStatus, recStatus, esdStatus, anaStatus )) ;
+  AliInfo(Form("QA Status for %s sim=0x%x, rec=0x%x, esd=0x%x, ana=0x%x\n", GetDetName(det).Data(), simStatus, recStatus, esdStatus, anaStatus )) ;
 }
 

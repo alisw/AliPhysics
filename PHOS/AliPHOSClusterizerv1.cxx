@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.111  2007/08/08 12:11:28  kharlov
+ * Protection against uninitialized fQADM
+ *
  * Revision 1.110  2007/08/07 14:16:00  kharlov
  * Quality assurance added (Yves Schutz)
  *
@@ -363,10 +366,10 @@ void AliPHOSClusterizerv1::Exec(Option_t *option)
   
   //Write the quality assurance data only after the last event 
   if (GetQualAssDataMaker() && fEventCounter == gime->MaxEvent()) 
-	GetQualAssDataMaker()->Finish(AliQualAss::kRECPOINTS) ;
+    GetQualAssDataMaker()->Finish(AliQualAss::kRECPOINTS) ;
 
- if(fWrite) //do not unload in "on flight" mode
-    Unload();
+  if(fWrite) //do not unload in "on flight" mode
+   Unload();
   
   if(strstr(option,"tim")){
     gBenchmark->Stop("PHOSClusterizer");

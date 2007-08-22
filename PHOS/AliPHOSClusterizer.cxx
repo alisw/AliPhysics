@@ -28,6 +28,7 @@
 // --- AliRoot header files ---
 #include "AliPHOSClusterizer.h"
 #include "AliPHOSGetter.h" 
+#include "AliPHOSQualAssDataMaker.h" 
 
 // --- AliRoot header files ---
 #include "AliPHOSQualAssDataMaker.h"
@@ -43,7 +44,7 @@ AliPHOSClusterizer::AliPHOSClusterizer():
   fRawReader(0),
   fQADM(0)
 {
-  // ctor
+ // ctor
 }
 
 //____________________________________________________________________________
@@ -68,9 +69,10 @@ AliPHOSClusterizer::AliPHOSClusterizer(const AliPHOSClusterizer & clusterizer) :
   fFirstEvent(clusterizer.GetFirstEvent()),fLastEvent(clusterizer.GetLastEvent()),
   fRawReader(clusterizer.GetRawReader()),
   fQADM(clusterizer.GetQualAssDataMaker())
-  
 {
   //Copy constructor
+  //initiaizes the quality assurance data maker
+  GetQualAssDataMaker()->Init(AliQualAss::kRECPOINTS) ;    
 }
 //____________________________________________________________________________
 AliPHOSClusterizer::~AliPHOSClusterizer()
@@ -80,6 +82,7 @@ AliPHOSClusterizer::~AliPHOSClusterizer()
  //Remove this from the parental task before destroying
   if(AliPHOSGetter::Instance()->PhosLoader())
     AliPHOSGetter::Instance()->PhosLoader()->CleanReconstructioner();
+  delete fQADM ; 
 }
 
 
