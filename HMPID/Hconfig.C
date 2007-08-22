@@ -672,7 +672,6 @@ void HmpConfig::WriteBatch()
                                                     fprintf(fp,"  cout<<\"!!!!!!!!!!!!Info in <my/Batch.C>: Stop  time: \";time.Set();  time.Print();\n");
                                                     fprintf(fp,"  gBenchmark->Show(\"ALICE\");\n");
   
-                                                    fprintf(fp,"  gSystem->Exec(\"play -c 2 ~/my/end.wav\");\n");
                                                     fprintf(fp,"  gSystem->Exec(\"touch ZZZ______finished_______ZZZ\");\n}\n");
   fclose(fp);  
 }//WriteBatch()

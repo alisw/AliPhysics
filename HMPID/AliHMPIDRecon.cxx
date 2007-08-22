@@ -94,20 +94,25 @@ void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t n
       if(FindPhotCkov(pClu->X(),pClu->Y(),thetaCer,phiCer)){                                  //find ckov angle for this  photon candidate
         fPhotCkov[fPhotCnt]=thetaCer;                                                         //actual theta Cerenkov (in TRS)
         fPhotPhi [fPhotCnt]=phiCer;                                                           //actual phi   Cerenkov (in TRS): -pi to come back to "unusual" ref system (X,Y,-Z)
+        Printf("photon n. %i reconstructed theta = %f",fPhotCnt,fPhotCkov[fPhotCnt]);
         fPhotCnt++;                                                                           //increment counter of photon candidates
       }
     }
   }//clusters loop
+  if(fPhotCnt<=3) pTrk->SetHMPIDsignal(kNoPhotAccept);                                        //no reconstruction with <=3 photon candidates
   Int_t iNacc=FlagPhot(HoughResponse());                                                      //flag photons according to individual theta ckov with respect to most probable
   pTrk->SetHMPIDmip(mipX,mipY,mipQ,iNacc);                                                    //store mip info 
 
   if(mipId==-1)              {pTrk->SetHMPIDsignal(kMipQdcCut);  return;}                     //no clusters with QDC more the threshold at all
   if(dMin>pParam->DistCut()) {pTrk->SetHMPIDsignal(kMipDistCut); return;}                     //closest cluster with enough charge is still too far from intersection
   pTrk->SetHMPIDcluIdx(chId,mipId);                                                           //set index of cluster
-  if(iNacc<1)    pTrk->SetHMPIDsignal(kNoPhotAccept);                                         //no photon candidates is accepted
-  else           pTrk->SetHMPIDsignal(FindRingCkov(pCluLst->GetEntries()));                   //find best Theta ckov for ring i.e. track
-
-  pTrk->SetHMPIDchi2(fCkovSigma2);                                                            //errors squared 
+  if(iNacc<1){
+    pTrk->SetHMPIDsignal(kNoPhotAccept);                                                      //no photon candidates is accepted
+  }
+  else {
+    pTrk->SetHMPIDsignal(FindRingCkov(pCluLst->GetEntries()));                                //find best Theta ckov for ring i.e. track
+    pTrk->SetHMPIDchi2(fCkovSigma2);                                                          //errors squared
+  }
 
 }//CkovAngle()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -298,7 +303,7 @@ void AliHMPIDRecon::Refract(TVector3 &dir,Double_t n1,Double_t n2)const
 //   Returns: none
 //   On exit: dir is new direction
   Double_t sinref=(n1/n2)*TMath::Sin(dir.Theta());
-  if(sinref>1.)    dir.SetXYZ(-999,-999,-999);
+  if(TMath::Abs(sinref)>1.) dir.SetXYZ(-999,-999,-999);
   else             dir.SetTheta(TMath::ASin(sinref));
 }//Refract()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

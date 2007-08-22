@@ -40,7 +40,9 @@ public:
 
          Float_t LorsY       (                               )const{return AliHMPIDParam::LorsY(AliHMPIDParam::A2P(fPad),AliHMPIDParam::A2Y(fPad));                               } //center of the pad y, [cm]
 //  
-  inline Float_t IntMathieson(Float_t x,Float_t y            )const;                                                                   //Mathieson distribution 
+  inline Float_t Mathieson   (Float_t x                      )const;                                                                   //Mathieson distribution 
+  inline Float_t IntPartMathi(Float_t z, Int_t axis          )const;                                                                   //integral in 1-dim of Mathieson
+  inline Float_t IntMathieson(Float_t x,Float_t y            )const;                                                                   //integral in 2-dim of Mathieson  
          Int_t   PadPcX      (                               )const{return AliHMPIDParam::A2X(fPad);}                                                 //pad pc x # 0..79
          Int_t   PadPcY      (                               )const{return AliHMPIDParam::A2Y(fPad);}                                                 //pad pc y # 0..47
          Int_t   PadChX      (                               )const{return (Pc()%2)*AliHMPIDParam::kPadPcX+PadPcX();}                                 //pad ch x # 0..159
@@ -81,19 +83,55 @@ Int_t AliHMPIDDigit::Compare(const TObject *pObj) const
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+Float_t AliHMPIDDigit::Mathieson(Float_t x)const
+{
+// Mathieson function.
+// This is the answer to electrostatic problem of charge distrubution in MWPC described elsewhere. (NIM A370(1988)602-603)
+// Arguments: x- position of the center of Mathieson distribution
+//  Returns: value of the Mathieson function
+  Float_t  kK1=0.28278795,kK2=0.96242952, kSqrtK3 =0.77459667, kD=0.445;
+  Float_t lambda = x/kD;
+  Float_t a=1-TMath::TanH(kK2*lambda)*TMath::TanH(kK2*lambda);
+  Float_t b=1+kSqrtK3*kSqrtK3*TMath::TanH(kK2*lambda)*TMath::TanH(kK2*lambda);
+  Float_t mathi = kK1*a/b;
+  return mathi;
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Float_t AliHMPIDDigit::IntPartMathi(Float_t z, Int_t axis)const
+{
+// Integration of Mathieson.
+// This is the answer to electrostatic problem of charge distrubution in MWPC described elsewhere. (NIM A370(1988)602-603)
+// Arguments: x,y- position of the center of Mathieson distribution
+//  Returns: a charge fraction [0-1] imposed into the pad
+  Float_t shift1,shift2;
+  if(axis==1) {
+    shift1 = -LorsX()+0.5*AliHMPIDParam::SizePadX();
+    shift2 = -LorsX()-0.5*AliHMPIDParam::SizePadX();
+  } else {
+    shift1 = -LorsY()+0.5*AliHMPIDParam::SizePadY();
+    shift2 = -LorsY()-0.5*AliHMPIDParam::SizePadY();
+  }
+    
+  Float_t  kK2=0.96242952, kSqrtK3 =0.77459667,  kK4=0.37932926, kD=0.445;
+
+  Float_t ux1=kSqrtK3*TMath::TanH(kK2*(z+shift1)/kD);
+  Float_t ux2=kSqrtK3*TMath::TanH(kK2*(z+shift2)/kD);
+  
+  return kK4*(TMath::ATan(ux2)-TMath::ATan(ux1));
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 Float_t AliHMPIDDigit::IntMathieson(Float_t x,Float_t y)const
 {
 // Integration of Mathieson.
 // This is the answer to electrostatic problem of charge distrubution in MWPC described elsewhere. (NIM A370(1988)602-603)
 // Arguments: x,y- position of the center of Mathieson distribution
 //  Returns: a charge fraction [0-1] imposed into the pad
-  Float_t  kK2=0.96242952, kSqrtK3 =0.77459667, kK4=0.37932926;
 
-  Float_t ux1=kSqrtK3*TMath::TanH(kK2*(x-LorsX()+0.5*AliHMPIDParam::SizePadX())/0.445);
-  Float_t ux2=kSqrtK3*TMath::TanH(kK2*(x-LorsX()-0.5*AliHMPIDParam::SizePadX())/0.445);
-  Float_t uy1=kSqrtK3*TMath::TanH(kK2*(y-LorsY()+0.5*AliHMPIDParam::SizePadY())/0.445);
-  Float_t uy2=kSqrtK3*TMath::TanH(kK2*(y-LorsY()-0.5*AliHMPIDParam::SizePadY())/0.445);
-  return 4*kK4*(TMath::ATan(ux2)-TMath::ATan(ux1))*kK4*(TMath::ATan(uy2)-TMath::ATan(uy1));
+  Float_t xm = IntPartMathi(x,1);
+  Float_t ym = IntPartMathi(y,2);
+  return 4*xm*ym;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDDigit::Raw(UInt_t &w32,Int_t &ddl,Int_t &r,Int_t &d,Int_t &a)const
