@@ -681,7 +681,7 @@ Bool_t AliTRDtrack::PropagateTo(Double_t xk, Double_t xx0, Double_t xrho)
   if (oldX < xk) {
     xrho = -xrho;
     if (IsStartedTimeIntegral()) {
-      Double_t l2  = (x-oldX)*(x-oldX) + (y-oldY)*(y-oldY) + (z-oldZ)*(z-oldZ);
+      Double_t l2  = TMath::Sqrt((x-oldX)*(x-oldX) + (y-oldY)*(y-oldY) + (z-oldZ)*(z-oldZ));
       Double_t crv = GetC();
       if (TMath::Abs(l2*crv) > 0.0001) {
         // Make correction for curvature if neccesary
