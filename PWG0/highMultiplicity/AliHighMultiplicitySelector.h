@@ -27,6 +27,7 @@ class AliHighMultiplicitySelector : public AliSelectorRL {
     void ReadHistograms(const char* filename = "highmult.root");
     void DrawHistograms();
     void JPRPlots();
+    void Ntrigger();
 
  protected:
     void MakeGraphs(const char* title, TH1* xSection, TH2* fMvsL, Int_t limit);

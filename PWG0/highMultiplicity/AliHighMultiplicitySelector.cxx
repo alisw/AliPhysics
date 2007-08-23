@@ -48,7 +48,7 @@ AliHighMultiplicitySelector::AliHighMultiplicitySelector() :
   fClusterZL2(0),
   fClvsL1(0),
   fClvsL2(0),
-  centralRegion(kTRUE)
+  centralRegion(kFALSE)
 {
   //
   // Constructor. Initialization of pointers
@@ -832,6 +832,130 @@ void AliHighMultiplicitySelector::JPRPlots()
 
     legend2->Draw();
     line->Draw();
+
+    canvas2->SaveAs(Form("%s.gif", canvas2->GetName()));
+    canvas2->SaveAs(Form("%s.eps", canvas2->GetName()));
+  }
+}
+
+void AliHighMultiplicitySelector::Ntrigger()
+{
+  //
+  // produces a spectrum created with N triggers
+  // number of triggers and thresholds for the moment fixed
+  //
+
+  /*
+
+  gSystem->Load("libPWG0base");
+  .L AliHighMultiplicitySelector.cxx+g
+  x = new AliHighMultiplicitySelector();
+  x->ReadHistograms("highmult_hijing100k.root");
+  x->Ntrigger();
+
+  */
+
+  // get x-sections
+  TFile* file = TFile::Open("crosssectionEx.root");
+  if (!file)
+    return;
+
+  TH1* xSections[2];
+  xSections[0] = dynamic_cast<TH1*> (gFile->Get("xSection2Ex"));
+  xSections[1] = dynamic_cast<TH1*> (gFile->Get("xSection15Ex"));
+
+  // 10^28 lum --> 1.2 kHz
+  // 10^31 lum --> 1200 kHz
+  //Float_t rate = 1200e3;
+  Float_t rate = 1200e3;
+
+  // time in s
+  Float_t lengthRun = 1e6;
+
+  Int_t colors[] = { 2, 3, 4, 6, 7, 8 };
+  Int_t markers[] = { 7, 2, 4, 5, 6, 27 };
+
+  // put to 2 for second layer
+  for (Int_t i=0; i<1; ++i)
+  {
+    if (!xSections[i])
+      continue;
+
+    TH1* xSection = xSections[i];
+    TH2* fMvsL = (i == 0) ? fMvsL1: fMvsL2;
+
+    Int_t nCuts = 6;
+    Int_t cuts[] = { 0, 164, 178, 190, 204, 216 };
+    //Int_t nCuts = 4;
+    //Int_t cuts[] = { 0, 164, 190, 216 };
+    // desired trigger rate in Hz
+    Float_t ratePerTrigger[] = { 100, 1, 1, 1, 1, 1 };
+
+    xSection->SetStats(kFALSE);
+    xSection->SetTitle(""); //(i == 0) ? "SPD Layer 1" : "SPD Layer 2");
+    xSection->GetXaxis()->SetTitle(Form("true multiplicity in |#eta| < %.1f", (i == 0) ? 2.0 : 1.5));
+    xSection->GetXaxis()->SetRangeUser(0, (i == 0) ? 450 : 350);
+    //xSection->GetYaxis()->SetTitle("relative cross section");
+    xSection->GetYaxis()->SetTitleOffset(1.2);
+
+    // relative x-section, once we have a collision
+    xSection->Scale(1.0 / xSection->Integral());
+
+    TCanvas* canvas2 = new TCanvas(Form("HMPlots2_%d_Random", i), Form("HMPlots2_%d_Random", i), 800, 600);
+    canvas2->SetTopMargin(0.05);
+    canvas2->SetRightMargin(0.05);
+    canvas2->SetLogy();
+    xSection->DrawCopy("HIST");
+
+    TLegend* legend2 = new TLegend(0.15, 0.15, 0.6, 0.4);
+    legend2->SetFillColor(0);
+    legend2->AddEntry(xSection, "cross-section");
+
+    for (Int_t currentCut = 0; currentCut<nCuts; ++currentCut)
+    {
+      Int_t cut = cuts[currentCut];
+
+      TH1* proj = GetXSectionCut(xSection, fMvsL, cut);
+
+      Double_t total = 0;
+      if (proj->Integral(1, 1000) > 0)
+        total = proj->Integral(1, 1000);
+
+      printf("Cut at %d: rel. x-section = %e\n", cut, total);
+
+      TH1* proj2 = (TH1*) proj->Clone("random2");
+      proj2->Reset();
+
+      // calculate downscale factor
+      Float_t normalRate = rate * proj->Integral(1, 1000);
+      Float_t downScale = normalRate / ratePerTrigger[currentCut];
+      if (downScale < 1)
+        downScale = 1;
+      Long64_t nTrigger = (Long64_t) (normalRate / downScale * lengthRun);
+
+      Printf("Normal rate is %f, downscale: %f, Simulating %lld triggers", normalRate, downScale, nTrigger);
+      proj2->FillRandom(proj, nTrigger);
+
+      Int_t removed = 0;
+      for (Int_t bin=1; bin<proj2->GetNbinsX(); ++bin)
+        if (proj2->GetBinContent(bin) < 5)
+        {
+          removed += (Int_t) proj2->GetBinContent(bin);
+          proj2->SetBinContent(bin, 0);
+        }
+
+      Printf("Removed %d events", removed);
+
+      proj2->Scale(1.0 / nTrigger * proj->Integral(1, 1000));
+
+      proj2->SetLineColor(colors[currentCut]);
+      proj2->SetMarkerStyle(markers[currentCut]);
+      proj2->SetMarkerColor(colors[currentCut]);
+      proj2->DrawCopy("SAME P");
+      legend2->AddEntry(proj2, Form("%lld evts, FO > %d chips", nTrigger, cut));
+    }
+
+    legend2->Draw();
 
     canvas2->SaveAs(Form("%s.gif", canvas2->GetName()));
     canvas2->SaveAs(Form("%s.eps", canvas2->GetName()));
