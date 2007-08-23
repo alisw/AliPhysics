@@ -51,8 +51,10 @@ TMatrixD* AliMultiplicityCorrection::fgCorrelationCovarianceMatrix = 0;
 TVectorD* AliMultiplicityCorrection::fgCurrentESDVector = 0;
 TVectorD* AliMultiplicityCorrection::fgEntropyAPriori = 0;
 
+Bool_t AliMultiplicityCorrection::fgCreateBigBin = kTRUE;
 AliMultiplicityCorrection::RegularizationType AliMultiplicityCorrection::fgRegularizationType = AliMultiplicityCorrection::kPol1;
 Float_t AliMultiplicityCorrection::fgRegularizationWeight = 10000;
+Int_t AliMultiplicityCorrection::fgNParamsMinuit = AliMultiplicityCorrection::fgkMaxParams;
 
 TF1* AliMultiplicityCorrection::fgNBD = 0;
 
@@ -453,7 +455,7 @@ Double_t AliMultiplicityCorrection::RegularizationPol0(TVectorD& params)
   Double_t chi2 = 0;
 
   // ignore the first bin here. on purpose...
-  for (Int_t i=2; i<fgkMaxParams; ++i)
+  for (Int_t i=2; i<fgNParamsMinuit; ++i)
   {
     Double_t right  = params[i];
     Double_t left   = params[i-1];
@@ -478,7 +480,7 @@ Double_t AliMultiplicityCorrection::RegularizationPol1(TVectorD& params)
   Double_t chi2 = 0;
 
   // ignore the first bin here. on purpose...
-  for (Int_t i=2+1; i<fgkMaxParams; ++i)
+  for (Int_t i=2+1; i<fgNParamsMinuit; ++i)
   {
     if (params[i-1] == 0)
       continue;
@@ -522,7 +524,7 @@ Double_t AliMultiplicityCorrection::RegularizationLog(TVectorD& params)
   }*/
 
   // ignore the first bin here. on purpose...
-  for (Int_t i=2+1; i<fgkMaxParams; ++i)
+  for (Int_t i=2+1; i<fgNParamsMinuit; ++i)
   {
     if (params[i-1] == 0)
       continue;
@@ -553,7 +555,7 @@ Double_t AliMultiplicityCorrection::RegularizationTotalCurvature(TVectorD& param
   Double_t chi2 = 0;
 
   // ignore the first bin here. on purpose...
-  for (Int_t i=3; i<fgkMaxParams; ++i)
+  for (Int_t i=3; i<fgNParamsMinuit; ++i)
   {
     Double_t right  = params[i];
     Double_t middle = params[i-1];
@@ -580,11 +582,11 @@ Double_t AliMultiplicityCorrection::RegularizationEntropy(TVectorD& params)
 
   Double_t paramSum = 0;
   // ignore the first bin here. on purpose...
-  for (Int_t i=1; i<fgkMaxParams; ++i)
+  for (Int_t i=1; i<fgNParamsMinuit; ++i)
     paramSum += params[i];
 
   Double_t chi2 = 0;
-  for (Int_t i=1; i<fgkMaxParams; ++i)
+  for (Int_t i=1; i<fgNParamsMinuit; ++i)
   {
     //Double_t tmp = params[i] / paramSum;
     Double_t tmp = params[i];
@@ -629,8 +631,8 @@ void AliMultiplicityCorrection::MinuitFitFunction(Int_t&, Double_t*, Double_t& c
   //
 
   // d
-  static TVectorD paramsVector(fgkMaxParams);
-  for (Int_t i=0; i<fgkMaxParams; ++i)
+  static TVectorD paramsVector(fgNParamsMinuit);
+  for (Int_t i=0; i<fgNParamsMinuit; ++i)
     paramsVector[i] = params[i] * params[i];
 
   // calculate penalty factor
@@ -657,6 +659,8 @@ void AliMultiplicityCorrection::MinuitFitFunction(Int_t&, Double_t*, Double_t& c
   // Ad - m
   measGuessVector -= (*fgCurrentESDVector);
 
+  //measGuessVector.Print();
+
   TVectorD copy(measGuessVector);
 
   // (Ad - m) W
@@ -664,7 +668,7 @@ void AliMultiplicityCorrection::MinuitFitFunction(Int_t&, Double_t*, Double_t& c
   // normal way is like this:
   // measGuessVector *= (*fgCorrelationCovarianceMatrix);
   // optimized way like this:
-  for (Int_t i=0; i<fgkMaxParams; ++i)
+  for (Int_t i=0; i<fgNParamsMinuit; ++i)
     measGuessVector[i] *= (*fgCorrelationCovarianceMatrix)(i, i);
 
   //measGuessVector.Print();
@@ -714,6 +718,8 @@ void AliMultiplicityCorrection::SetupCurrentHists(Int_t inputRange, Bool_t fullP
   //((TH2*) fCurrentCorrelation)->Rebin2D(2, 1);
   //fMultiplicityESDCorrected[correlationID]->Rebin(2);
   fCurrentCorrelation->Sumw2();
+
+  Printf("AliMultiplicityCorrection::SetupCurrentHists: Statistics information: %.f entries in correlation map; %.f entries in measured spectrum", fCurrentCorrelation->Integral(), fCurrentESD->Integral());
 
   if (createBigBin)
   {
@@ -832,7 +838,7 @@ TH1* AliMultiplicityCorrection::GetEfficiency(Int_t inputRange, EventType eventT
 }
 
 //____________________________________________________________________
-void AliMultiplicityCorrection::SetRegularizationParameters(RegularizationType type, Float_t weight)
+void AliMultiplicityCorrection::SetRegularizationParameters(RegularizationType type, Float_t weight, Int_t minuitParams)
 {
   //
   // sets the parameters for chi2 minimization
@@ -842,6 +848,12 @@ void AliMultiplicityCorrection::SetRegularizationParameters(RegularizationType t
   fgRegularizationWeight = weight;
 
   printf("AliMultiplicityCorrection::SetRegularizationParameters --> Regularization set to %d with weight %f\n", (Int_t) type, weight);
+
+  if (minuitParams > 0)
+  {
+    fgNParamsMinuit = minuitParams;
+    printf("AliMultiplicityCorrection::SetRegularizationParameters --> Number of MINUIT iterations set to %d\n", minuitParams);
+  }
 }
 
 //____________________________________________________________________
@@ -875,13 +887,13 @@ Int_t AliMultiplicityCorrection::UnfoldWithMinuit(TH1* correlation, TH1* aEffici
   measured->Scale(1.0 / measured->Integral());
 
   if (!fgCorrelationMatrix)
-    fgCorrelationMatrix = new TMatrixD(fgkMaxInput, fgkMaxParams);
+    fgCorrelationMatrix = new TMatrixD(fgkMaxInput, fgNParamsMinuit);
   if (!fgCorrelationCovarianceMatrix)
     fgCorrelationCovarianceMatrix = new TMatrixD(fgkMaxInput, fgkMaxInput);
   if (!fgCurrentESDVector)
     fgCurrentESDVector = new TVectorD(fgkMaxInput);
   if (!fgEntropyAPriori)
-    fgEntropyAPriori = new TVectorD(fgkMaxParams);
+    fgEntropyAPriori = new TVectorD(fgNParamsMinuit);
 
   fgCorrelationMatrix->Zero();
   fgCorrelationCovarianceMatrix->Zero();
@@ -909,7 +921,7 @@ Int_t AliMultiplicityCorrection::UnfoldWithMinuit(TH1* correlation, TH1* aEffici
       correlation->SetBinContent(i, j, correlation->GetBinContent(i, j) / sum);
       correlation->SetBinError(i, j, correlation->GetBinError(i, j) / sum);
 
-      if (i <= fgkMaxParams && j <= fgkMaxInput)
+      if (i <= fgNParamsMinuit && j <= fgkMaxInput)
         (*fgCorrelationMatrix)(j-1, i-1) = correlation->GetBinContent(i, j);
     }
 
@@ -917,7 +929,7 @@ Int_t AliMultiplicityCorrection::UnfoldWithMinuit(TH1* correlation, TH1* aEffici
   }
 
   // Initialize TMinuit via generic fitter interface
-  TVirtualFitter *minuit = TVirtualFitter::Fitter(0, fgkMaxParams);
+  TVirtualFitter *minuit = TVirtualFitter::Fitter(0, fgNParamsMinuit);
   Double_t arglist[100];
 
   // disable any output (-1), unfortuantly we do not see warnings anymore then. Have to find another way...
@@ -930,7 +942,7 @@ Int_t AliMultiplicityCorrection::UnfoldWithMinuit(TH1* correlation, TH1* aEffici
   // set minimization function
   minuit->SetFCN(MinuitFitFunction);
 
-  for (Int_t i=0; i<fgkMaxParams; i++)
+  for (Int_t i=0; i<fgNParamsMinuit; i++)
     (*fgEntropyAPriori)[i] = 1;
 
   if (initialConditions)
@@ -939,20 +951,21 @@ Int_t AliMultiplicityCorrection::UnfoldWithMinuit(TH1* correlation, TH1* aEffici
     //new TCanvas; initialConditions->DrawCopy();
 
     initialConditions->Scale(1.0 / initialConditions->Integral());
-    for (Int_t i=0; i<fgkMaxParams; i++)
+    for (Int_t i=0; i<fgNParamsMinuit; i++)
       if (initialConditions->GetBinContent(i+1) > 0)
         (*fgEntropyAPriori)[i] = initialConditions->GetBinContent(i+1);
   }
   else
     initialConditions = measured;
 
-  Double_t results[fgkMaxParams+1];
-  for (Int_t i=0; i<fgkMaxParams; ++i)
+  Double_t* results = new Double_t[fgNParamsMinuit+1];
+  for (Int_t i=0; i<fgNParamsMinuit; ++i)
   {
     results[i] = initialConditions->GetBinContent(i+1);
 
     // minimum value
-    results[i] = TMath::Max(results[i], 1e-3);
+    if (!check)
+      results[i] = TMath::Max(results[i], 1e-3);
 
     Float_t stepSize = 0.1;
 
@@ -983,6 +996,8 @@ Int_t AliMultiplicityCorrection::UnfoldWithMinuit(TH1* correlation, TH1* aEffici
   MinuitFitFunction(dummy, 0, chi2, results, 0);
   printf("Chi2 of initial parameters is = %f\n", chi2);
 
+  delete[] results;
+
   if (check)
     return -1;
 
@@ -997,7 +1012,7 @@ Int_t AliMultiplicityCorrection::UnfoldWithMinuit(TH1* correlation, TH1* aEffici
   //printf("!!!!!!!!!!!!!! MIGRAD finished: Starting MINOS !!!!!!!!!!!!!!");
   //minuit->ExecuteCommand("MINOS", arglist, 0);
 
-  for (Int_t i=0; i<fgkMaxParams; ++i)
+  for (Int_t i=0; i<fgNParamsMinuit; ++i)
   {
     if (aEfficiency->GetBinContent(i+1) > 0)
     {
@@ -1025,7 +1040,7 @@ Int_t AliMultiplicityCorrection::ApplyMinuitFit(Int_t inputRange, Bool_t fullPha
   //
 
   Int_t correlationID = inputRange + ((fullPhaseSpace == kFALSE) ? 0 : 4);
-  SetupCurrentHists(inputRange, fullPhaseSpace, eventType, kTRUE);
+  SetupCurrentHists(inputRange, fullPhaseSpace, eventType, fgCreateBigBin);
 
   return UnfoldWithMinuit(fCurrentCorrelation, fCurrentEfficiency, fCurrentESD, initialConditions, fMultiplicityESDCorrected[correlationID], check);
 }
