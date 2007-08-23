@@ -51,8 +51,10 @@ class AliMultiplicityCorrection : public TNamed {
     void DrawComparison(const char* name, Int_t inputRange, Bool_t fullPhaseSpace, Bool_t normalizeESD, TH1* mcHist, Bool_t simple = kFALSE);
 
     Int_t ApplyMinuitFit(Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType, Bool_t check = kFALSE, TH1* initialConditions = 0);
-    void SetRegularizationParameters(RegularizationType type, Float_t weight);
-    void SetBayesianParameters(Float_t smoothing, Int_t nIterations);
+
+    static void SetRegularizationParameters(RegularizationType type, Float_t weight, Int_t minuitParams = -1);
+    static void SetBayesianParameters(Float_t smoothing, Int_t nIterations);
+    static void SetCreateBigBin(Bool_t flag) { fgCreateBigBin = flag; }
 
     void ApplyNBDFit(Int_t inputRange, Bool_t fullPhaseSpace);
 
@@ -125,11 +127,15 @@ class AliMultiplicityCorrection : public TNamed {
 
     static TF1* fgNBD;   //! negative binomial distribution
 
+    // configuration params follow
     static RegularizationType fgRegularizationType; //! regularization that is used during Chi2 method
     static Float_t fgRegularizationWeight;          //! factor for regularization term
+    static Bool_t  fgCreateBigBin;                  //! to fix fluctuations at high multiplicities, all entries above a certain limit are summarized in one bin
+    static Int_t   fgNParamsMinuit;                 //! number of parameters minuit uses for unfolding (todo: to be merged w/ fgkMaxParams that has to be const. for the moment)
 
     static Float_t fgBayesianSmoothing;             //! smoothing parameter (0 = no smoothing)
     static Int_t   fgBayesianIterations;            //! number of iterations in Bayesian method
+    // end of configuration
 
     TH2F* fMultiplicityESD[kESDHists]; // multiplicity histogram: vtx vs multiplicity; array: |eta| < 0.5, 0.9, 1.5, 2 (0..3)
 

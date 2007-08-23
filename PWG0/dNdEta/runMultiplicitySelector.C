@@ -11,7 +11,6 @@ void runMultiplicitySelector(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_
 {
   if (aProof)
   {
-    TProof::Mgr("lxb6046")->SetROOTVersion("vHEAD-07Jun2007b_dbg");
     connectProof("lxb6046");
   }
 
@@ -42,13 +41,34 @@ void runMultiplicitySelector(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_
   inputList.Add(esdTrackCuts);
 
   // pt study
-  if (TString(option).Contains("pt-spectrum-func"))
+  TString optionStr(option);
+  if (optionStr.Contains("pt-spectrum-func"))
   {
     //TF1* func = new TF1("func", "0.7 + x", 0, 0.3);
     //TF1* func = new TF1("func", "1.3 - x", 0, 0.3);
-    TF1* func = new TF1("func", "1", 0, 0.3);
-    new TCanvas; func->Draw();
-    inputList.Add(func->GetHistogram()->Clone("pt-spectrum"));
+    //TF1* func = new TF1("func", "1", 0, 0.3);
+    //new TCanvas; func->Draw();
+    //inputList.Add(func->GetHistogram()->Clone("pt-spectrum"));
+
+    TFile* file = TFile::Open("ptspectrum_fit.root");
+    if (!file)
+    {
+      Printf("Could not open ptspectrum_fit.root");
+      return;
+    }
+
+    TString subStr(optionStr(optionStr.Index("pt-spectrum-func")+17, 3));
+    TString histName(Form("ptspectrum_%s", subStr.Data()));
+    Printf("Pt-Spectrum modification. Using %s.", histName.Data());
+    TH1* hist = (TH1*) file->Get(histName);
+    if (!hist)
+    {
+      Printf("Could not read histogram.");
+      return;
+    }
+
+    new TCanvas; hist->Draw();
+    inputList.Add(hist->Clone("pt-spectrum"));
   }
 
   TChain* chain = CreateESDChain(data, nRuns, offset, kFALSE, kFALSE);
@@ -69,6 +89,10 @@ void runMultiplicitySelector(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_
     printf("ERROR: Executing process failed with %d.\n", result);
     return;
   }
+
+  TFile* file = TFile::Open("last_outputlist.root", "RECREATE");
+  gProof->GetOutputList()->Write();
+  file->Close();
 }
 
 void SetTPC()
@@ -137,9 +161,11 @@ void fitOther(const char* fileNameMC = "multiplicityMC_3M.root", const char* fol
   if (chi2)
   {
     mult->SetRegularizationParameters(AliMultiplicityCorrection::kPol1, 1e4);
+    mult->SetRegularizationParameters(AliMultiplicityCorrection::kNone, 0, 125); mult->SetCreateBigBin(kFALSE);
     //mult->SetRegularizationParameters(AliMultiplicityCorrection::kEntropy, 1e3);
     //mult->SetRegularizationParameters(AliMultiplicityCorrection::kLog, 1e5);
-    mult->ApplyMinuitFit(histID, fullPhaseSpace, AliMultiplicityCorrection::kTrVtx, kFALSE); //, hist2->ProjectionY("mymchist"));
+    //mult->ApplyMinuitFit(histID, fullPhaseSpace, AliMultiplicityCorrection::kTrVtx, kTRUE, hist2->ProjectionY("mymchist"));
+    mult->ApplyMinuitFit(histID, fullPhaseSpace, AliMultiplicityCorrection::kTrVtx, kFALSE, hist2->ProjectionY("mymchist"));
     mult->DrawComparison("MinuitChi2", histID, fullPhaseSpace, kTRUE, hist2->ProjectionY("mymchist"));
   }
   else
@@ -589,11 +615,11 @@ void EvaluateDrawResult(const char* targetDir, Int_t type = 0, Bool_t plotRes = 
 
     printf("Loaded %d sucessful.\n", count);
 
-    /*if (type == -1)
+    if (type == -1)
     {
-      legend->AddEntry(mc, Form("Eq. (%d)", (count-1)/3+11));
+      legend->AddEntry(mc, Form("Eq. (%d) - reg. %d", 10 + (count-1) / 3, 1+ (count-1) % 3));
     }
-    else*/
+    else
       legend->AddEntry(mc);
 
     mc->Draw("SAME PC");
@@ -646,7 +672,7 @@ void EvaluateChi2Method(const char* fileNameMC = "multiplicityMC_2M.root", const
     for (Int_t region=0; region<AliMultiplicityCorrection::kQualityRegions; ++region)
     {
       fitResultsMC[region] = new TGraph;
-      fitResultsMC[region]->SetTitle(Form("Eq. (%d) - reg. %d", type+10, region+1));
+      fitResultsMC[region]->SetTitle(Form("Eq. (%d) - reg. %d", type+9, region+1));
       fitResultsMC[region]->GetXaxis()->SetTitle("weight parameter #alpha");
       fitResultsMC[region]->GetYaxis()->SetTitle(Form("P_{1} in region %d", region));
       fitResultsMC[region]->SetName(Form("EvaluateChi2Method_MC_%d", type * AliMultiplicityCorrection::kQualityRegions + region - 2));
@@ -1769,6 +1795,36 @@ void GetCrossSections(const char* fileName)
   gFile->Close();
 }
 
+void AnalyzeSpeciesTree(const char* fileName)
+{
+  //
+  // prints statistics about fParticleSpecies
+  //
+
+  gSystem->Load("libPWG0base");
+
+  TFile::Open(fileName);
+  TNtuple* fParticleSpecies = (TNtuple*) gFile->Get("fParticleSpecies");
+
+  const Int_t nFields = 8;
+  Long_t totals[8];
+  for (Int_t i=0; i<nFields; i++)
+    totals[i] = 0;
+
+  for (Int_t i=0; i<fParticleSpecies->GetEntries(); i++)
+  {
+    fParticleSpecies->GetEvent(i);
+
+    Float_t* f = fParticleSpecies->GetArgs();
+
+    for (Int_t j=0; j<nFields; j++)
+      totals[j] += f[j+1];
+  }
+
+  for (Int_t i=0; i<nFields; i++)
+    Printf("%d --> %ld", i, totals[i]);
+}
+
 void BuildResponseFromTree(const char* fileName, const char* target)
 {
   //
@@ -1788,7 +1844,7 @@ void BuildResponseFromTree(const char* fileName, const char* target)
   Int_t secondaries = 0;
   Int_t doubleCount = 0;
 
-  for (Int_t num = 0; num < 1; num++)
+  for (Int_t num = 0; num < 7; num++)
   {
     AliMultiplicityCorrection* fMultiplicity = new AliMultiplicityCorrection(Form("Multiplicity_%d", num), Form("Multiplicity_%d", num));
 
@@ -1927,5 +1983,161 @@ void MergeModifyCrossSection(const char* output)
 
     for (Int_t i=0; i<3; ++i)
       delete data[i];
+  }
+}
+
+void Rebin(const char* fileName = "multiplicityMC_3M.root", Int_t corrMatrix = 3)
+{
+  // rebins MC axis of correlation map, MC and histogram for corrected (for evaluation of effect of regularization)
+  // rebin does not exist for 3D hists, so we convert to 2D and then back to 3D (loosing the vertex information)
+
+  Printf("WARNING: Vertex information is lost in this process. Use result only for evaluation of errors.");
+
+  gSystem->Load("libPWG0base");
+
+  AliMultiplicityCorrection* mult = new AliMultiplicityCorrection("Multiplicity", "Multiplicity");
+
+  TFile::Open(fileName);
+  mult->LoadHistograms("Multiplicity");
+
+  // rebin correlation
+  TH3* old = mult->GetCorrelation(corrMatrix);
+
+  // empty under/overflow bins in x, otherwise Project3D takes them into account
+  for (Int_t y=1; y<=old->GetYaxis()->GetNbins(); ++y)
+  {
+    for (Int_t z=1; z<=old->GetZaxis()->GetNbins(); ++z)
+    {
+      old->SetBinContent(0, y, z, 0);
+      old->SetBinContent(old->GetXaxis()->GetNbins()+1, y, z, 0);
+    }
+  }
+
+  TH2* response = (TH2*) old->Project3D("zy");
+  response->RebinX(2);
+
+  TH3F* new = new TH3F(old->GetName(), old->GetTitle(),
+    old->GetXaxis()->GetNbins(), old->GetXaxis()->GetBinLowEdge(1), old->GetXaxis()->GetBinUpEdge(old->GetXaxis()->GetNbins()),
+    old->GetYaxis()->GetNbins() / 2, old->GetYaxis()->GetBinLowEdge(1), old->GetYaxis()->GetBinUpEdge(old->GetYaxis()->GetNbins()),
+    old->GetZaxis()->GetNbins(), old->GetZaxis()->GetBinLowEdge(1), old->GetZaxis()->GetBinUpEdge(old->GetZaxis()->GetNbins()));
+  new->Reset();
+
+  Int_t vtxBin = new->GetNbinsX() / 2;
+  if (vtxBin == 0)
+    vtxBin = 1;
+
+  for (Int_t i=1; i<=new->GetYaxis()->GetNbins(); i+=1)
+    for (Int_t j=1; j<=new->GetZaxis()->GetNbins(); j+=1)
+      new->SetBinContent(vtxBin, i, j, response->GetBinContent(i, j));
+
+  // rebin MC + hist for corrected
+  for (AliMultiplicityCorrection::EventType eventType = AliMultiplicityCorrection::kTrVtx; eventType <= AliMultiplicityCorrection::kINEL; eventType++)
+    mult->GetMultiplicityMC(corrMatrix, eventType)->RebinY(2);
+
+  mult->GetMultiplicityESDCorrected(corrMatrix)->Rebin(2);
+
+  // recreate measured from correlation matrix to get rid of vertex shift effect
+  TH2* newMeasured = (TH2*) old->Project3D("zx");
+  TH2* esd = mult->GetMultiplicityESD(corrMatrix);
+  esd->Reset();
+
+  // transfer from TH2D to TH2F
+  for (Int_t i=0; i<=new->GetXaxis()->GetNbins()+1; i+=1)
+    for (Int_t j=0; j<=new->GetYaxis()->GetNbins()+1; j+=1)
+      esd->SetBinContent(i, j, newMeasured->GetBinContent(i, j));
+
+  new TCanvas;
+  new->Project3D("zy")->DrawCopy("COLZ");
+
+  TFile* file = TFile::Open("out.root", "RECREATE");
+  mult->SetCorrelation(corrMatrix, new);
+  mult->SaveHistograms();
+  file->Close();
+}
+
+void EvaluateRegularizationEffect(Int_t step, const char* fileNameRebinned = "multiplicityMC_3M_rebinned.root", const char* fileNameNormal = "multiplicityMC_3M.root", Int_t histID = 3)
+{
+  // due to some static members in AliMultiplicityCorrection, the session has to be restarted after changing the number of parameters, to be fixed
+  // that is why this is done in 2 steps
+
+  gSystem->Load("libPWG0base");
+
+  Bool_t fullPhaseSpace = kFALSE;
+
+  if (step == 1)
+  {
+    // first step: unfold without regularization and rebinned histogram ("N=M")
+    AliMultiplicityCorrection* mult = new AliMultiplicityCorrection("Multiplicity", "Multiplicity");
+    TFile::Open(fileNameRebinned);
+    mult->LoadHistograms();
+
+    mult->SetRegularizationParameters(AliMultiplicityCorrection::kNone, 0, 125);
+    mult->SetCreateBigBin(kFALSE);
+
+    mult->ApplyMinuitFit(histID, fullPhaseSpace, AliMultiplicityCorrection::kTrVtx, kFALSE);
+    mult->DrawComparison("MinuitChi2", histID, fullPhaseSpace, kTRUE, mult->GetMultiplicityVtx(histID)->ProjectionY("mymchist"));
+
+    TFile* file = TFile::Open("EvaluateRegularizationEffect1.root", "RECREATE");
+    mult->SaveHistograms();
+    file->Close();
+  }
+  else if (step == 2)
+  {
+    // second step: unfold with regularization and normal histogram
+    AliMultiplicityCorrection* mult2 = new AliMultiplicityCorrection("Multiplicity", "Multiplicity");
+    TFile::Open(fileNameNormal);
+    mult2->LoadHistograms();
+
+    mult2->SetRegularizationParameters(AliMultiplicityCorrection::kPol1, 1e4);
+    mult2->SetCreateBigBin(kTRUE);
+    mult2->ApplyMinuitFit(histID, fullPhaseSpace, AliMultiplicityCorrection::kTrVtx, kFALSE);
+    mult2->DrawComparison("MinuitChi2", histID, fullPhaseSpace, kTRUE, mult2->GetMultiplicityVtx(histID)->ProjectionY("mymchist"));
+
+    TH1* result2 = mult2->GetMultiplicityESDCorrected(histID);
+
+    AliMultiplicityCorrection* mult = new AliMultiplicityCorrection("Multiplicity", "Multiplicity");
+    TFile* file = TFile::Open("EvaluateRegularizationEffect1.root");
+    mult->LoadHistograms();
+
+    TH1* result1 = mult->GetMultiplicityESDCorrected(histID);
+
+    // compare results
+    TCanvas* canvas = new TCanvas("EvaluateRegularizationEffect", "EvaluateRegularizationEffect", 1000, 800);
+    canvas->Divide(2, 2);
+
+    canvas->cd(1);
+    result1->SetLineColor(1);
+    result1->DrawCopy();
+    result2->SetLineColor(2);
+    result2->DrawCopy("SAME");
+    gPad->SetLogy();
+
+    result2->Rebin(2);
+    result1->Scale(1.0 / result1->Integral());
+    result2->Scale(1.0 / result2->Integral());
+
+    canvas->cd(2);
+    result1->DrawCopy();
+    result2->DrawCopy("SAME");
+    gPad->SetLogy();
+
+    TH1* diff = (TH1*) result1->Clone("diff");
+    diff->Add(result2, -1);
+
+    canvas->cd(3);
+    diff->DrawCopy("HIST");
+
+    canvas->cd(4);
+    diff->Divide(result1);
+    diff->GetYaxis()->SetRangeUser(-0.3, 0.3);
+    diff->DrawCopy("HIST");
+
+    Double_t chi2 = 0;
+    for (Int_t i=1; i<=diff->GetNbinsX(); i++)
+      chi2 += diff->GetBinContent(i) * diff->GetBinContent(i);
+
+    Printf("Chi2 is %e", chi2);
+
+    canvas->SaveAs(Form("%s.eps", canvas->GetName()));
   }
 }
