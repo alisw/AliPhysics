@@ -166,7 +166,7 @@ AliTRDtrigger::~AliTRDtrigger()
   delete fModule;
   delete fTrkTest;
   delete fMCM;
-  delete fTrk;
+  //  delete fTrk;
 
 }
 
