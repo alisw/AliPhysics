@@ -87,7 +87,7 @@ class AliITSDetTypeRec : public TObject {
     TClonesArray  *RecPoints()   {return fRecPoints;}
     void MakeBranchRF(TTree *treeR){MakeBranchR(treeR,"Fast");}
     void DigitsToRecPoints(TTree *treeD,TTree *treeR,Int_t lastEntry,Option_t *det,Bool_t v2=kFALSE);
-    void DigitsToRecPoints(AliRawReader* rawReader,TTree *treeR);
+    void DigitsToRecPoints(AliRawReader* rawReader,TTree *treeR,Option_t *det="All");
 
   private:
     // private methods

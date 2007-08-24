@@ -749,7 +749,7 @@ void AliITSDetTypeRec::DigitsToRecPoints(TTree *treeD,TTree *treeR,Int_t lastent
   } 
 }
 //______________________________________________________________________
-void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,TTree *treeR){
+void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,TTree *treeR,Option_t *opt){
   // cluster finding and reconstruction of space points
   // the condition below will disappear when the geom class will be
   // initialized for all versions - for the moment it is only for v5 !
@@ -761,6 +761,9 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,TTree *treeR){
   //      none.
   // Return:
   //      none.
+  const char *all = strstr(opt,"All");
+  const char *det[3] = {strstr(opt,"SPD"),strstr(opt,"SDD"),
+                        strstr(opt,"SSD")};
   AliITSClusterFinderV2 *rec     = 0;
   Int_t id=0;
 
@@ -773,6 +776,7 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,TTree *treeR){
     clusters[iModule] = NULL;
   }
   for(id=0;id<3;id++){
+    if (!all && !det[id]) continue;
     rec = (AliITSClusterFinderV2*)GetReconstructionModel(id);
     if (!rec)
       AliFatal("The reconstruction class was not instanciated");
@@ -782,6 +786,8 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,TTree *treeR){
   Int_t nClusters =0;
   TClonesArray *emptyArray=new TClonesArray("AliITSRecPoint");
   for(Int_t iModule=0;iModule<GetITSgeom()->GetIndexMax();iModule++){
+    id = GetITSgeom()->GetModuleType(iModule);
+    if (!all && !det[id]) continue;
     array = clusters[iModule];
     if(!array){
       AliDebug(1,Form("data for module %d missing!",iModule));
