@@ -153,27 +153,32 @@ Int_t AliHLTTPCPadArray::ReadData(){
     while(fDigitReader->Next()){
       fRowPadVector[fDigitReader->GetRow()-fFirstRow][fDigitReader->GetPad()]->SetDataSignal(fDigitReader->GetTime(),fDigitReader->GetSignal());
     }
-    
+    break;
   case 1:
     while(fDigitReader->Next()){
       fRowPadVector[fDigitReader->GetRow()-fFirstRow][fDigitReader->GetPad()]->SetDataSignal(fDigitReader->GetTime(),fDigitReader->GetSignal());      
     }
+    break;
   case 2:
     while(fDigitReader->Next()){
       fRowPadVector[fDigitReader->GetRow()][fDigitReader->GetPad()]->SetDataSignal(fDigitReader->GetTime(),fDigitReader->GetSignal());
     }
+    break;
   case 3:
     while(fDigitReader->Next()){
       fRowPadVector[fDigitReader->GetRow()-27][fDigitReader->GetPad()]->SetDataSignal(fDigitReader->GetTime(),fDigitReader->GetSignal());
     }
+    break;
   case 4:
     while(fDigitReader->Next()){
       fRowPadVector[fDigitReader->GetRow()-54][fDigitReader->GetPad()]->SetDataSignal(fDigitReader->GetTime(),fDigitReader->GetSignal());
     }
+    break;
   case 5:
     while(fDigitReader->Next()){
       fRowPadVector[fDigitReader->GetRow()-76][fDigitReader->GetPad()]->SetDataSignal(fDigitReader->GetTime(),fDigitReader->GetSignal());
     }
+    break;
   }
   return 0;
 }
@@ -280,7 +285,7 @@ void AliHLTTPCPadArray::FindClusters(Int_t match){
 	    }
 	    else{
 	      //Code to look for tails, TODO insert flag.
-	      UInt_t meanTime=tmpCluster.fMean;
+	      /* UInt_t meanTime=tmpCluster.fMean;
 	      if(pad>0){
 		AliHLTTPCPad *tmpBefore=fRowPadVector[row][pad-1];
 		//checking the fMean -1 timebin for single timebin value in the pad before the cluster
@@ -352,11 +357,31 @@ void AliHLTTPCPadArray::FindClusters(Int_t match){
 		  } 
 		}
 	      }
-	      tmpCluster.fTime= tmpCluster.fTime/tmpCluster.fTotalCharge;
+	      */
+	      //	      tmpCluster.fTime= tmpCluster.fTime/tmpCluster.fTotalCharge;
 	      totalChargeOfPreviousCandidate=0;
 	      clusterChargeIsFalling=0;
-	      tmpCluster.fRowNumber=row;
 	      tmpCluster.fFirstPad=pad;
+	      switch (fPatch){
+	      case 0:
+		tmpCluster.fRowNumber=row;
+		break;
+	      case 1:
+		tmpCluster.fRowNumber=row+30;
+		break;
+	      case 2:
+		tmpCluster.fRowNumber=row+63;
+		break;
+	      case 3:
+		tmpCluster.fRowNumber=row+90;
+		break;
+	      case 4:
+		tmpCluster.fRowNumber=row+117;
+		break;
+	      case 5:
+		tmpCluster.fRowNumber=row+139;
+		break;
+	      }
 
 	      fClusters.push_back(tmpCluster);
 	    }

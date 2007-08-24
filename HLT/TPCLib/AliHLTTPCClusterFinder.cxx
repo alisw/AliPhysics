@@ -583,6 +583,9 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliClusterData *list)
   
   for(int j=0; j<nclusters; j++)
     {
+
+
+
       if(!list[j].fFlags) continue; //discard single pad clusters
       if(list[j].fTotalCharge < fThreshold) continue; //noise cluster
 
@@ -593,10 +596,10 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliClusterData *list)
       Float_t ftime2=fZErr*fZErr;  //fixed given error
 
 
+#if UNSORTED
+      fCurrentRow=list[j].fRow;
+#endif
    
-     
-
-
       if(fCalcerr) { //calc the errors, otherwice take the fixed error 
 	Int_t patch = AliHLTTPCTransform::GetPatch(fCurrentRow);
 	UInt_t q2=list[j].fTotalCharge*list[j].fTotalCharge;
@@ -741,9 +744,20 @@ void AliHLTTPCClusterFinder::ReadDataUnsorted(void* ptr,unsigned long size){
 void AliHLTTPCClusterFinder::FindClusters(){
   fPadArray->FindClusterCandidates();
   fPadArray->FindClusters(fMatch);
-  AliHLTTPCClusters * clusterlist = new AliHLTTPCClusters[fPadArray->fClusters.size()]; //Clusterlist
+
+  AliClusterData * clusterlist = new AliClusterData[fPadArray->fClusters.size()]; //Clusterlist
   for(int i=0;i<fPadArray->fClusters.size();i++){
-    clusterlist[i] = fPadArray->fClusters[i];
+    clusterlist[i].fTotalCharge = fPadArray->fClusters[i].fTotalCharge;
+    clusterlist[i].fPad = fPadArray->fClusters[i].fPad;
+    clusterlist[i].fPad2 = fPadArray->fClusters[i].fPad2;
+    clusterlist[i].fTime = fPadArray->fClusters[i].fTime;
+    clusterlist[i].fTime2 = fPadArray->fClusters[i].fTime2;
+    clusterlist[i].fMean = fPadArray->fClusters[i].fMean;
+    clusterlist[i].fFlags = fPadArray->fClusters[i].fFlags;
+    clusterlist[i].fChargeFalling = fPadArray->fClusters[i].fChargeFalling;
+    clusterlist[i].fLastCharge = fPadArray->fClusters[i].fLastCharge;
+    clusterlist[i].fLastMergedPad = fPadArray->fClusters[i].fLastMergedPad;
+    clusterlist[i].fRow = fPadArray->fClusters[i].fRowNumber;
   }
   WriteClusters(fPadArray->fClusters.size(),clusterlist);
   delete [] clusterlist;
@@ -764,6 +778,7 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliHLTTPCClusters *li
       Float_t fpad2=fXYErr*fXYErr; //fixed given error
       Float_t ftime =(Float_t)list[j].fTime / list[j].fTotalCharge;
       Float_t ftime2=fZErr*fZErr;  //fixed given error
+
 
       if(fCalcerr) { //calc the errors, otherwice take the fixed error 
 	Int_t patch = AliHLTTPCTransform::GetPatch(fCurrentRow);

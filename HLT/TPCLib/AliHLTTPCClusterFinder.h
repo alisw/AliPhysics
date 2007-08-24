@@ -20,6 +20,8 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
+#define UNSORTED 0
+
 #include "AliHLTLogging.h"
 #include "AliHLTTPCPadArray.h"
 class AliHLTTPCSpacePointData;
@@ -40,6 +42,7 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
     UInt_t fChargeFalling; //for deconvolution
     UInt_t fLastCharge;    //for deconvolution
     UInt_t fLastMergedPad; //dont merge twice per pad
+    Int_t fRow;             //row value
   };
   typedef struct AliClusterData AliClusterData; //!
 
