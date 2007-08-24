@@ -38,6 +38,7 @@ using namespace std;
 #include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCClusters.h"
+#define _ISOC99_SOURCE
 #include <stdlib.h>
 #include <errno.h>
 #include "TString.h"
@@ -203,7 +204,7 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
 
     // -- pad occupancy limit
     if ( !strcmp( argv[i], "occupancy-limit" ) ) {
-      occulimit = strtof( argv[i+1], &cpErr);
+      occulimit = strtod( argv[i+1], &cpErr);
       if ( *cpErr ) {
 	HLTError("Cannot convert occupancy specifier '%s'.", argv[i+1]);
 	return EINVAL;
