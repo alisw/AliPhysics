@@ -289,7 +289,7 @@ void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESDEvent* esd) c
       for (Int_t ipr=0; ipr<parentMult; ipr++) 
 	parentList[ipr] = (Short_t)(parentInts[ipr]);	 
       
-      
+    
       // fills the ESDCaloCluster
       AliESDCaloCluster * ec = new AliESDCaloCluster() ; 
       ec->SetEMCAL(kTRUE);
@@ -322,13 +322,18 @@ void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESDEvent* esd) c
       // add the cluster to the esd object
       esd->AddCaloCluster(ec);
       delete ec;
-      
+      delete [] parentList;
     } else { // no new ESD cluster
-      delete [] amplList;
-      delete [] timeList;
-      delete [] digiList;
+      
     }
+    delete [] amplList;
+    delete [] timeList;
+    delete [] digiList;
+
   } // cycle on clusters
+
+  delete [] matchedTrack;
+
   esd->SetNumberOfEMCALClusters(nClustersNew);
   //if(nClustersNew != nClusters) 
   //printf(" ##### nClusters %i -> new %i ##### \n", nClusters, nClustersNew );

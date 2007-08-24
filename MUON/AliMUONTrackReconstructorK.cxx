@@ -353,7 +353,7 @@ Bool_t AliMUONTrackReconstructorK::FollowTrackInStation(AliMUONTrack &trackCandi
   AliMUONTrackParam bestTrackParamAtHit2;
   Bool_t *hitForRecCh1Used = new Bool_t[fNHitsForRecPerChamber[ch1]];
   for (Int_t hit1 = 0; hit1 < fNHitsForRecPerChamber[ch1]; hit1++) hitForRecCh1Used[hit1] = kFALSE;
-  
+
   // Get track parameters
   AliMUONTrackParam extrapTrackParamAtCh(*(AliMUONTrackParam*)trackCandidate.GetTrackParamAtHit()->First());
   
@@ -630,16 +630,21 @@ Bool_t AliMUONTrackReconstructorK::FollowTrackInStation(AliMUONTrack &trackCandi
         if (AliLog::GetGlobalDebugLevel() >= 3) newTrack->RecursiveDump();
       }
       
-    } else return kFALSE;
-    
+    } else {
+      delete [] hitForRecCh1Used;
+      return kFALSE;
+    }
   } else if (foundOneHit || foundTwoHits) {
     
     // remove obsolete track
     fRecTracksPtr->Remove(&trackCandidate);
     fNRecTracks--;
     
-  } else return kFALSE;
-  
+  } else {
+    delete [] hitForRecCh1Used;
+    return kFALSE;
+  }  
+  delete [] hitForRecCh1Used;
   return kTRUE;
   
 }

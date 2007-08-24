@@ -18,7 +18,7 @@ class AliHMPIDReconstructor: public AliReconstructor
 {
 public:
            AliHMPIDReconstructor();              
-  virtual ~AliHMPIDReconstructor()                                  {delete fDig;delete fClu;}//dtor  
+  virtual ~AliHMPIDReconstructor()                                  {delete fDig;delete fClu;delete [] fUserCut;}//dtor  
 //framework part  
   AliTracker*  CreateTracker         (AliRunLoader*                      )const{return new AliHMPIDTracker;}            //from AliReconstructor for clusters->PID
   void         ConvertDigits         (AliRawReader *pRR, TTree *pDigTree) const;                                        //from AliReconstruction for raw->digit

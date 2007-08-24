@@ -30,8 +30,15 @@ public:
   virtual ~AliESDCaloTrigger();
 
   // does this create mem leak? CKB use new with placement?
-  void AddTriggerPosition(const TArrayF & array)  { fTriggerPosition     = new TArrayF(array); }
-  void AddTriggerAmplitudes(const TArrayF & array) { fTriggerAmplitudes  = new TArrayF(array); }
+  void AddTriggerPosition(const TArrayF & array)  { 
+    if(fTriggerPosition) delete fTriggerPosition;
+    fTriggerPosition =  new TArrayF(array);
+  }
+
+  void AddTriggerAmplitudes(const TArrayF & array) { 
+    if(fTriggerAmplitudes)delete fTriggerAmplitudes;
+    fTriggerAmplitudes  = new TArrayF(array); 
+  }
   
   void Reset(); 
 
