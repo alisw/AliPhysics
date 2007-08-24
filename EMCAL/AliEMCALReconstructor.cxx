@@ -343,6 +343,7 @@ void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESDEvent* esd) c
   //pid->SetPrintInfo(kTRUE);
   pid->SetReconstructor(kTRUE);
   pid->RunPID(esd);
+  delete pid;
 }
 
 
