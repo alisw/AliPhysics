@@ -494,32 +494,41 @@ void AliGeomManager::InitSymNamesLUT()
   TString strSDD = "ITS/SDD";
   TString strSSD = "ITS/SSD";
   TString strStave = "/Stave";
+  TString strHalfStave = "/HalfStave";
   TString strLadder = "/Ladder";
   TString strSector = "/Sector";
   TString strSensor = "/Sensor";
   TString strEntryName1;
   TString strEntryName2;
-
+  TString strEntryName3;
 
   /*********************       SPD layer1  ***********************/
   {
     modnum = 0;
-
-    for(Int_t c1 = 1; c1<=10; c1++){
+    
+    for(Int_t cSect = 0; cSect<10; cSect++){
       strEntryName1 = strSPD;
       strEntryName1 += 0;
       strEntryName1 += strSector;
-      strEntryName1 += (c1-1);
-      for(Int_t c2 =1; c2<=2; c2++){
+      strEntryName1 += cSect;
+      
+      for(Int_t cStave =0; cStave<2; cStave++){
 	strEntryName2 = strEntryName1;
 	strEntryName2 += strStave;
-	strEntryName2 += (c2-1);
-	for(Int_t c3 =1; c3<=4; c3++){
-	  symname = strEntryName2;
-	  symname += strLadder;
-	  symname += (c3-1);
-	  fgSymName[kSPD1-kFirstLayer][modnum] = symname.Data();
-	  modnum++;
+	strEntryName2 += cStave;
+
+	for (Int_t cHS=0; cHS<2; cHS++) {
+	  strEntryName3 = strEntryName2;
+	  strEntryName3 += strHalfStave;
+	  strEntryName3 += cHS;
+	  
+	  for(Int_t cLad =0; cLad<2; cLad++){
+	    symname = strEntryName3;
+	    symname += strLadder;
+	    symname += cLad+cHS*2;
+	    fgSymName[kSPD1-kFirstLayer][modnum] = symname.Data();
+	    modnum++;
+	  }
 	}
       }
     }
@@ -529,25 +538,89 @@ void AliGeomManager::InitSymNamesLUT()
   {
     modnum = 0;
 
-    for(Int_t c1 = 1; c1<=10; c1++){
+    for(Int_t cSect = 0; cSect<10; cSect++){
       strEntryName1 = strSPD;
       strEntryName1 += 1;
       strEntryName1 += strSector;
-      strEntryName1 += (c1-1);
-      for(Int_t c2 =1; c2<=4; c2++){
+      strEntryName1 += cSect;
+
+      for(Int_t cStave =0; cStave<4; cStave++){
 	strEntryName2 = strEntryName1;
 	strEntryName2 += strStave;
-	strEntryName2 += (c2-1);
-	for(Int_t c3 =1; c3<=4; c3++){
-	  symname = strEntryName2;
-	  symname += strLadder;
-	  symname += (c3-1);
-	  fgSymName[kSPD2-kFirstLayer][modnum] = symname.Data();
-	  modnum++;
+	strEntryName2 += cStave;
+
+	for (Int_t cHS=0; cHS<2; cHS++) {
+	  strEntryName3 = strEntryName2;
+	  strEntryName3 += strHalfStave;
+	  strEntryName3 += cHS;
+
+	  for(Int_t cLad =0; cLad<2; cLad++){
+	    symname = strEntryName3;
+	    symname += strLadder;
+	    symname += cLad+cHS*2;
+	    fgSymName[kSPD2-kFirstLayer][modnum] = symname.Data();
+	    modnum++;
+	  }
 	}
       }
     }
   }
+
+//   /*********************       SPD layer1  ***********************/
+//   {
+//     modnum = 0;
+
+//     for(Int_t c1 = 1; c1<=10; c1++){
+//       strEntryName1 = strSPD;
+//       strEntryName1 += 0;
+//       strEntryName1 += strSector;
+//       strEntryName1 += (c1-1);
+//       for(Int_t c2 =1; c2<=2; c2++){
+// 	strEntryName2 = strEntryName1;
+// 	strEntryName2 += strStave;
+// 	strEntryName2 += (c2-1);
+// 	for(Int_t c3 =1; c3<=4; c3++){
+// 	  symname = strEntryName2;
+// 	  symname += strLadder;
+// 	  symname += (c3-1);
+// 	  fgSymName[kSPD1-kFirstLayer][modnum] = symname.Data();
+// 	  modnum++;
+// 	}
+//       }
+//     }
+//   }
+  
+//   /*********************       SPD layer2  ***********************/
+//   {
+//     modnum = 0;
+
+//     for(Int_t c1 = 1; c1<=10; c1++){
+//       strEntryName1 = strSPD;
+//       strEntryName1 += 1;
+//       strEntryName1 += strSector;
+//       strEntryName1 += (c1-1);
+//       for(Int_t c2 =1; c2<=4; c2++){
+// 	strEntryName2 = strEntryName1;
+// 	strEntryName2 += strStave;
+// 	strEntryName2 += (c2-1);
+// 	for(Int_t c3 =1; c3<=4; c3++){
+// 	  symname = strEntryName2;
+// 	  symname += strLadder;
+// 	  symname += (c3-1);
+// 	  fgSymName[kSPD2-kFirstLayer][modnum] = symname.Data();
+// 	  modnum++;
+// 	}
+//       }
+//     }
+//   }
+
+
+
+
+
+
+
+
 
   /*********************       SDD layer1  ***********************/
   {

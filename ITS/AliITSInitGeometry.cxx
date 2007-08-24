@@ -712,8 +712,10 @@ Bool_t AliITSInitGeometry::InitAliITSgeomPPRasymmFMD(AliITSgeom *geom){
 	 "%sIT34_1/I005_%d/I402_%d/ITS4_%d/", // lay=4
 	 "%sIT56_1/I565_%d/I562_%d/ITS5_%d/", // lay=5
 	 "%sIT56_1/I569_%d/I566_%d/ITS6_%d/"},// lay=6
-	{"%sIT12_1/I12B_%d/I10B_%d/I107_%d/I101_1/ITS1_1", // lay=1
-	 "%sIT12_1/I12B_%d/I20B_%d/I1D7_%d/I1D1_1/ITS2_1", // lay=2
+// 	{"%sIT12_1/I12B_%d/I10B_%d/I107_%d/I101_1/ITS1_1", // lay=1
+// 	 "%sIT12_1/I12B_%d/I20B_%d/I1D7_%d/I1D1_1/ITS2_1", // lay=2
+	{"%sIT12_1/I12B_%d/I10B_%d/L1H-STAVE%d_1/I107_%d/I101_1/ITS1_1", // lay=1
+	 "%sIT12_1/I12B_%d/I20B_%d/L2H-STAVE%d_1/I1D7_%d/I1D1_1/ITS2_1", // lay=2
 	 "%sIT34_1/I004_%d/I302_%d/ITS3_%d", // lay=3
 	 "%sIT34_1/I005_%d/I402_%d/ITS4_%d", // lay=4
 	 "%sIT56_1/I565_%d/I562_%d/ITS5_%d", // lay=5
@@ -726,7 +728,7 @@ Bool_t AliITSInitGeometry::InitAliITSgeomPPRasymmFMD(AliITSgeom *geom){
       {34,22, 1},// lay=5
       {38,25, 1}};//lay=6
     */
-    Int_t mod,nmods=0,lay,lad,det,cpn0,cpn1,cpn2;
+    Int_t mod,nmods=0,lay,lad,det,cpn0,cpn1,cpn2, cpnHS;
     Double_t tran[3]={0.0,0.0,0.0},rot[10]={9*0.0,1.0};
     TArrayD shapePar;
     TString path,shapeName;
@@ -741,8 +743,18 @@ Bool_t AliITSInitGeometry::InitAliITSgeomPPRasymmFMD(AliITSgeom *geom){
         DecodeDetectorLayers(mod,lay,lad,det); // Write
         geom->CreateMatrix(mod,lay,lad,det,kIdet[lay-1],tran,rot);
         RecodeDetector(mod,cpn0,cpn1,cpn2); // Write reusing lay,lad,det.
-        path.Form(kNames[fMinorVersion-1][lay-1].Data(),
-                  kPathbase.Data(),cpn0,cpn1,cpn2);
+
+	if (kIdet[lay-1]==kSPD) { // we need 1 more copy number because of the half-stave
+	  if (det<3) cpnHS = 0; else cpnHS = 1;
+	  path.Form(kNames[fMinorVersion-1][lay-1].Data(),kPathbase.Data(),
+		    cpn0,cpn1,cpnHS,cpn2);
+	} else {
+	  path.Form(kNames[fMinorVersion-1][lay-1].Data(),kPathbase.Data(),
+		    cpn0,cpn1,cpn2);
+	};
+//         path.Form(kNames[fMinorVersion-1][lay-1].Data(),
+//                   kPathbase.Data(),cpn0,cpn1,cpn2);
+
         geom->GetGeomMatrix(mod)->SetPath(path);
         GetTransformation(path.Data(),matrix);
         geom->SetTrans(mod,matrix.GetTranslation());
@@ -785,7 +797,16 @@ Bool_t AliITSInitGeometry::InitAliITSgeomV11Hybrid(AliITSgeom *geom){
   const Int_t kdetectors[klayers] = {4,4,6,8,22,25};// number of detector/lad
   const AliITSDetector kIdet[6]   = {kSPD,kSPD,kSDD,kSDD,kSSD,kSSD};
   const TString kPathbase = "/ALIC_1/ITSV_1/";
-  
+
+  char *pathSPDsens1, *pathSPDsens2;
+  if (SPDIsTGeoNative()) {
+    pathSPDsens1="%sITSSPDCarbonFiberSectorV_%d/ITSSPDSensitiveVirtualvolumeM0_1/LAY1_STAVE_%d/HALF-STAVE%d_1/LAY1_LADDER_%d/LAY1_SENSOR_1";
+    pathSPDsens2="%sITSSPDCarbonFiberSectorV_%d/ITSSPDSensitiveVirtualvolumeM0_1/LAY2_STAVE_%d/HALF-STAVE%d_1/LAY2_LADDER_%d/LAY2_SENSOR_1";
+  } else{
+    pathSPDsens1 = "%sITSD_1/IT12_1/I12B_%d/I10B_%d/L1H-STAVE%d_1/I107_%d/I101_1/ITS1_1";
+    pathSPDsens2 = "%sITSD_1/IT12_1/I12B_%d/I20B_%d/L2H-STAVE%d_1/I1D7_%d/I1D1_1/ITS2_1";
+  }
+
   char *pathSDDsens1, *pathSDDsens2;
   if (SDDIsTGeoNative()) {
     pathSDDsens1 = "%sITSsddLayer3_1/ITSsddLadd_%d/ITSsddSensor3_%d/ITSsddWafer3_%d/ITSsddSensitivL3_1";
@@ -805,14 +826,14 @@ Bool_t AliITSInitGeometry::InitAliITSgeomV11Hybrid(AliITSgeom *geom){
   }
 
   const TString kNames[klayers] = {
-    "%sITSD_1/IT12_1/I12B_%d/I10B_%d/I107_%d/I101_1/ITS1_1", // lay=1
-    "%sITSD_1/IT12_1/I12B_%d/I20B_%d/I1D7_%d/I1D1_1/ITS2_1", // lay=2
+    pathSPDsens1, // lay=1
+    pathSPDsens2, // lay=2
     pathSDDsens1, // lay=3
     pathSDDsens2, // lay=4
     pathSSDsens1, // lay=5
     pathSSDsens2};// Lay=6
   
-  Int_t mod,nmods=0, lay, lad, det, cpn0, cpn1, cpn2;
+  Int_t mod,nmods=0, lay, lad, det, cpn0, cpn1, cpn2, cpnHS=1;
   Double_t tran[3]={0.,0.,0.}, rot[10]={9*0.0,1.0};
   TArrayD shapePar;
   TString path, shapeName;
@@ -825,30 +846,38 @@ Bool_t AliITSInitGeometry::InitAliITSgeomV11Hybrid(AliITSgeom *geom){
   for(mod=0;mod<klayers;mod++) nmods += kladders[mod]*kdetectors[mod];
   geom->Init(kItype,klayers,kladders,kdetectors,nmods);
 
-  for(mod=0;mod<nmods;mod++) {
+  for(mod=0; mod<nmods; mod++) {
 
-//     DecodeDetectorLayers(mod,lay,lad,det); // Write
-//     geom->CreateMatrix(mod,lay,lad,det,kIdet[lay-1],tran,rot);
-//     RecodeDetector(mod,cpn0,cpn1,cpn2); // Write reusing lay,lad,det.
-    DecodeDetectorLayers(mod,lay,lad,det); // Write
+    DecodeDetectorLayers(mod,lay,lad,det);
     geom->CreateMatrix(mod,lay,lad,det,kIdet[lay-1],tran,rot);
-    RecodeDetector(mod,cpn0,cpn1,cpn2); // Write reusing lay,lad,det.
+    RecodeDetectorv11Hybrid(mod,cpn0,cpn1,cpn2);
 
-    if (SDDIsTGeoNative())
-      if (kIdet[lay-1]==kSDD) {
-	cpn0 = lad-1;
-	cpn1 = det-1;
-	cpn2 = 1;
-      }
-    if (SSDIsTGeoNative())
-      if (kIdet[lay-1]==kSSD) {
-	cpn0 = lad-1;
-	cpn1 = det-1;
-	cpn2 = 1;
-      }
+//     if (SPDIsTGeoNative())
+//       if (kIdet[lay-1]==kSPD) {
+// 	cpn0 = lad-1;
+// 	cpn1 = det-1;
+// 	cpn2 = 1;
+//       }
+//     if (SDDIsTGeoNative())
+//       if (kIdet[lay-1]==kSDD) {
+// 	cpn0 = lad-1;
+// 	cpn1 = det-1;
+// 	cpn2 = 1;
+//       }
+//     if (SSDIsTGeoNative())
+//       if (kIdet[lay-1]==kSSD) {
+// 	cpn0 = lad-1;
+// 	cpn1 = det-1;
+// 	cpn2 = 1;
+//       }
 
-    path.Form(kNames[lay-1].Data(),
-	      kPathbase.Data(),cpn0,cpn1,cpn2);
+    if (kIdet[lay-1]==kSPD) { // we need 1 more copy number because of the half-stave
+      if (det<3) cpnHS = 0; else cpnHS = 1;
+      path.Form(kNames[lay-1].Data(),kPathbase.Data(),cpn0,cpn1,cpnHS,cpn2);
+    } else {
+      path.Form(kNames[lay-1].Data(),kPathbase.Data(),cpn0,cpn1,cpn2);
+    };
+
     geom->GetGeomMatrix(mod)->SetPath(path);
     GetTransformation(path.Data(),matrix);
     geom->SetTrans(mod,matrix.GetTranslation());
@@ -1523,7 +1552,7 @@ void AliITSInitGeometry::DecodeDetectorLayers(Int_t mod,Int_t &layer,
 
     // This is a FIXED switch yard function. I (Bjorn Nilsen) Don't 
     // like them but I see not better way for the moment.
-    switch (fMajorVersion){
+    switch (fMajorVersion) {
     case kvtest:{
         if(GetMinorVersion()==1) 
             return DecodeDetectorLayersvPPRasymmFMD(mod,layer,lad,det);
@@ -1533,7 +1562,7 @@ void AliITSInitGeometry::DecodeDetectorLayers(Int_t mod,Int_t &layer,
                 "Geometry is kvtest minor version=%d is not defined",
                 GetMinorVersion());
         return;
-    }break;
+    } break;
     case kvDefault:{
         Error("DecodeDetectorLayers",
               "Major version = kvDefault, not supported");
@@ -2152,12 +2181,17 @@ void AliITSInitGeometry::DecodeDetectorv11Hybrid(Int_t &mod,Int_t layer,Int_t cp
   const Int_t kDetPerLadderSPD[2]={2,4};
   const Int_t kDetPerLadder[6]={4,4,6,8,22,25};
   const Int_t kLadPerLayer[6]={20,40,14,22,34,38};
-  Int_t lad=-1,det=-1,i;
+  Int_t lad=-1,det=-1;
   
   switch(layer) {
   case 1: case 2:{
-    lad = cpn1+kDetPerLadderSPD[layer-1]*(cpn0-1);
-    det = cpn2;
+    if (SPDIsTGeoNative()) {
+      lad = cpn1+kDetPerLadderSPD[layer-1]*(cpn0-1)+1;
+      det = cpn2 + 1;
+    } else {
+      lad = cpn1+kDetPerLadderSPD[layer-1]*(cpn0-1);
+      det = cpn2;
+    }
   } break;
   case 3: case 4:{
     if (SDDIsTGeoNative()) {
@@ -2181,10 +2215,12 @@ void AliITSInitGeometry::DecodeDetectorv11Hybrid(Int_t &mod,Int_t layer,Int_t cp
   } break;
   } // end switch
   mod = 0;
-  for(i=0;i<layer-1;i++) mod += kLadPerLayer[i]*kDetPerLadder[i];
+  for(Int_t i=0;i<layer-1;i++) mod += kLadPerLayer[i]*kDetPerLadder[i];
   mod += kDetPerLadder[layer-1]*(lad-1)+det-1;// module start at zero.
   return;
 }
+
+/*
 //______________________________________________________________________
 void AliITSInitGeometry::RecodeDetectorv11Hybrid(Int_t mod,Int_t &cpn0,
                                         Int_t &cpn1,Int_t &cpn2) {
@@ -2207,12 +2243,10 @@ void AliITSInitGeometry::RecodeDetectorv11Hybrid(Int_t mod,Int_t &cpn0,
                                          {34,22, 1},// lay=5
                                          {38,25, 1}};//lay=6
     const Int_t kDetPerLadderSPD[2]={2,4};
-    //    const Int_t kDetPerLadder[6]={4,4,6,8,22,25};
-    //    const Int_t kLadPerLayer[6]={20,40,14,22,34,38};
     Int_t lay,lad,det;
 
     cpn0 = cpn1 = cpn2 = 0;
-    DecodeDetectorLayers(mod,lay,lad,det);
+    DecodeDetectorLayersv11Hybrid(mod,lay,lad,det);
     // Old encoding
     switch (lay){
     case 1: case 2:{
@@ -2239,48 +2273,138 @@ void AliITSInitGeometry::RecodeDetectorv11Hybrid(Int_t mod,Int_t &cpn0,
               cpn0,cpn1,cpn2,mod,lay,lad,det);
     return;
 }
-//______________________________________________________________________
-void AliITSInitGeometry::DecodeDetectorLayersv11Hybrid(Int_t mod,Int_t &lay,
-                                              Int_t &lad,Int_t &det) {
+*/
 
-    // decode geometry into detector module number for v11Hybrid
+
+//______________________________________________________________________
+void AliITSInitGeometry::RecodeDetectorv11Hybrid(Int_t mod,Int_t &cpn0,
+                                        Int_t &cpn1,Int_t &cpn2) {
+    // decode geometry into detector module number. There are two decoding
+    // Scheams. Old which does not follow the ALICE coordinate system
+    // requirements, and New which does.
     // Inputs:
     //    Int_t mod      The module number assoicated with this set
     //                   of copy numbers.
     // Output:
-    //    Int_t lay     The layer number
-    //    Int_t lad     The ladder number
-    //    Int_t det     the dettector number
+    //    Int_t cpn0     The lowest copy number  (SPD sector or SDD/SSD ladder)
+    //    Int_t cpn1     The middle copy number  (SPD stave or SDD/SSD module)
+    //    Int_t cpn2     the highest copy number (SPD ladder or 1 for SDD/SSD)
     // Return:
     //    none.
 
-    const Int_t kDetPerLadder[6]={4,4,6,8,22,25};
-    const Int_t kLadPerLayer[6]={20,40,14,22,34,38};
-    Int_t mod2;
+  const Int_t kDetPerLadderSPD[2]={2,4};
+  Int_t lay,lad,det;
+  DecodeDetectorLayersv11Hybrid(mod,lay,lad,det);
 
-    det  = 0;
-    lad  = 0;
-    lay  = 0;
-    mod2 = 0;
-    do{
-        mod2 += kLadPerLayer[lay]*kDetPerLadder[lay];
-        lay++;
-    } while(mod2<=mod); // end while
-    if(lay>6||lay<1) Error("DecodeDetectorLayers","0<lay=%d>6",lay);
-    mod2 -= kLadPerLayer[lay-1]*kDetPerLadder[lay-1];
-    do{
-        lad++;
-        mod2 += kDetPerLadder[lay-1];
-    } while(mod2<=mod); // end while
-    if(lad>kLadPerLayer[lay-1]||lad<1) Error("DecodeDetectorLayers",
-            "lad=%d>kLadPerLayer[lay-1=%d]=%d mod=%d mod2=%d",lad,lay-1,
-                                            kLadPerLayer[lay-1],mod,mod2);
-    mod2 -= kDetPerLadder[lay-1];
-    det = mod-mod2+1;
-    if(det>kDetPerLadder[lay-1]||det<1) Error("DecodeDetectorLayers",
-           "det=%d>detPerLayer[lay-1=%d]=%d mod=%d mod2=%d lad=%d",det,
-                                  lay-1,kDetPerLadder[lay-1],mod,mod2,lad);
-    return;
+  if (lay<3) { // SPD
+    cpn2 = det;     // Detector 1-4
+    cpn0 = (lad+kDetPerLadderSPD[lay-1]-1)/kDetPerLadderSPD[lay-1];
+    cpn1 = (lad+kDetPerLadderSPD[lay-1]-1)%kDetPerLadderSPD[lay-1] + 1;
+    if (SPDIsTGeoNative()) {
+      cpn2--;
+      cpn1--;
+    }
+  } else { // SDD and SSD
+    cpn2 = 1;
+    cpn1 = det;
+    cpn0 = lad;
+    if (lay<5) { // SDD
+      if (SDDIsTGeoNative()) {
+	cpn1--;
+	cpn0--;
+      }
+    } else { //SSD
+      if (SSDIsTGeoNative()) {
+	cpn1--;
+	cpn0--;
+      }
+    }
+  }
+}
+
+
+
+
+// //______________________________________________________________________
+// void AliITSInitGeometry::DecodeDetectorLayersv11Hybrid(Int_t mod,Int_t &lay,
+//                                               Int_t &lad,Int_t &det) {
+
+//     // decode module number into detector indices for v11Hybrid
+//     // Inputs:
+//     //    Int_t mod      The module number associated with this set
+//     //                   of copy numbers.
+//     // Output:
+//     //    Int_t lay     The layer number
+//     //    Int_t lad     The ladder number
+//     //    Int_t det     the dettector number
+//     // Return:
+//     //    none.
+
+//     const Int_t kDetPerLadder[6]={4,4,6,8,22,25};
+//     const Int_t kLadPerLayer[6]={20,40,14,22,34,38};
+//     Int_t mod2 = 0;
+//     det  = 0;
+//     lad  = 0;
+//     lay  = 0;
+
+//     do{
+//         mod2 += kLadPerLayer[lay]*kDetPerLadder[lay];
+//         lay++;
+//     } while(mod2<=mod); // end while
+//     if(lay>6||lay<1) Error("DecodeDetectorLayers","0<lay=%d>6",lay);
+//     mod2 -= kLadPerLayer[lay-1]*kDetPerLadder[lay-1];
+//     do{
+//         lad++;
+//         mod2 += kDetPerLadder[lay-1];
+//     } while(mod2<=mod); // end while
+//     if(lad>kLadPerLayer[lay-1]||lad<1) Error("DecodeDetectorLayers",
+//             "lad=%d>kLadPerLayer[lay-1=%d]=%d mod=%d mod2=%d",lad,lay-1,
+//                                             kLadPerLayer[lay-1],mod,mod2);
+//     mod2 -= kDetPerLadder[lay-1];
+//     det = mod-mod2+1;
+//     if(det>kDetPerLadder[lay-1]||det<1) Error("DecodeDetectorLayers",
+//            "det=%d>detPerLayer[lay-1=%d]=%d mod=%d mod2=%d lad=%d",det,
+//                                   lay-1,kDetPerLadder[lay-1],mod,mod2,lad);
+//     return;
+// }
+
+//______________________________________________________________________
+void AliITSInitGeometry::DecodeDetectorLayersv11Hybrid(Int_t mod,Int_t &lay,
+                                              Int_t &lad,Int_t &det) {
+
+  // decode module number into detector indices for v11Hybrid
+  // mod starts from 0
+  // lay, lad, det start from 1
+
+  // Inputs:
+  //    Int_t mod      The module number associated with this set
+  //                   of copy numbers.
+  // Output:
+  //    Int_t lay     The layer number
+  //    Int_t lad     The ladder number
+  //    Int_t det     the dettector number
+
+  const Int_t kDetPerLadder[6] = {4,4,6,8,22,25};
+  const Int_t kLadPerLayer[6]  = {20,40,14,22,34,38};
+  
+  Int_t mod2 = 0;
+  lay  = 0;
+  
+  do {
+    mod2 += kLadPerLayer[lay]*kDetPerLadder[lay];
+    lay++;
+  } while(mod2<=mod); // end while
+  if(lay>6) Error("DecodeDetectorLayers","lay=%d>6",lay);
+
+  mod2 = kLadPerLayer[lay-1]*kDetPerLadder[lay-1] - mod2+mod;
+  lad = mod2/kDetPerLadder[lay-1];
+
+  if(lad>=kLadPerLayer[lay-1]||lad<0) Error("DecodeDetectorLayers",
+					    "lad=%d not in the correct range",lad);
+  det = (mod2 - lad*kDetPerLadder[lay-1])+1;
+  if(det>kDetPerLadder[lay-1]||det<1) Error("DecodeDetectorLayers",
+					    "det=%d not in the correct range",det);
+  lad++;
 }
 
 //______________________________________________________________________

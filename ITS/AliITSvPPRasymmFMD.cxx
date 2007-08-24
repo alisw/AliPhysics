@@ -301,169 +301,186 @@ void AliITSvPPRasymmFMD::AddAlignableVolumes() const
   TString strSDD = "ITS/SDD";
   TString strSSD = "ITS/SSD";
   TString strStave = "/Stave";
+  TString strHalfStave = "/HalfStave";
   TString strLadder = "/Ladder";
   TString strSector = "/Sector";
   TString strSensor = "/Sensor";
   TString strEntryName1;
   TString strEntryName2;
   TString strEntryName3;
+  TString strEntryName4;
 
   //===== SPD layer1 =====
   {
     TString str0 = "ALIC_1/ITSV_1/ITSD_1/IT12_1/I12B_";
     TString str1 = "/I10B_";
+    TString str1Bis = "/L1H-STAVE";
+    TString str1Tierce = "_1";
     TString str2 = "/I107_";
-  
+    
     TString sector;
     TString stave;
+    TString halfStave;
     TString module;
-
-    for(Int_t c1 = 1; c1<=10; c1++){
-
+    
+    for(Int_t cSect = 0; cSect<10; cSect++) {
+      
       sector = str0;
-      sector += c1; // this is one full sector
+      sector += cSect+1; // this is one full sector
       strEntryName1 = strSPD;
       strEntryName1 += 0;
       strEntryName1 += strSector;
-      strEntryName1 += (c1-1);
+      strEntryName1 += cSect;
+      //printf("%s   ==   %s\n",strEntryName1.Data(),sector.Data());
       if(!gGeoManager->SetAlignableEntry(strEntryName1.Data(),sector.Data()))
 	AliFatal("Unable to set alignable entry!!");    
-      //printf("%s   ==   %s\n",strEntryName1.Data(),sector.Data());
       
-      for(Int_t c2 =1; c2<=2; c2++){
+      for(Int_t cStave = 0; cStave<2; cStave++) {
 	
 	stave = sector;
 	stave += str1;
-	stave += c2;
+	stave += cStave+1;
 	strEntryName2 = strEntryName1;
 	strEntryName2 += strStave;
-	strEntryName2 += (c2-1);
-	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),stave.Data()))
-	  AliFatal("Unable to set alignable entry!!");    
+	strEntryName2 += cStave;
 	//printf("%s   ==   %s\n",strEntryName2.Data(),stave.Data()); // this is a stave
 
-	for(Int_t c3 =1; c3<=4; c3++){
-	  
-	  module = stave;
-	  module += str2;
-	  module += c3;
-	  strEntryName3 = strEntryName2;
-	  strEntryName3 += strLadder;
-	  strEntryName3 += (c3-1);
-	  if(!gGeoManager->SetAlignableEntry(strEntryName3.Data(),module.Data()))
-	    AliFatal("Unable to set alignable entry!!");    
-	  //printf("%s   ==   %s\n",strEntryName3.Data(),module.Data());
+	for(Int_t cHS=0; cHS<2; cHS++) {
 
-	  // Creates the TGeo Local to Tracking transformation matrix ...
-	  TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntry(strEntryName3.Data());
-	  const char *path = alignableEntry->GetTitle();
-	  if (!gGeoManager->cd(path))
-	    AliFatal(Form("Volume path %s not valid!",path));
-	  TGeoHMatrix* globMatrix = gGeoManager->GetCurrentMatrix();
-	  gtrans = globMatrix->GetTranslation();
-	  memcpy(&rotMatrix[0], globMatrix->GetRotationMatrix(), 9*sizeof(Double_t));
-	  al = TMath::ATan2(rotMatrix[1],rotMatrix[0]);
-	  TGeoHMatrix *matLtoT = new TGeoHMatrix;
-	  matLtoT->SetDx( gtrans[0]*TMath::Cos(al)+gtrans[1]*TMath::Sin(al) ); // translation
-	  al += TMath::Pi()/2;
-	  //	  matLtoT->SetDy( gtrans[0]*TMath::Cos(al)+gtrans[1]*TMath::Sin(al) );
-	  // Not taking into account the shift w.r.t. sensitive volume
-	  // correction with fChip1*0.0001/2. is due to the fact
-	  // that the alignable volume is not the sensitive volume
-	  //	  matLtoT->SetDy( gtrans[0]*TMath::Cos(al)+gtrans[1]*TMath::Sin(al) - fChip1*0.0001/2.);
-	  matLtoT->SetDy(-fChip1*0.0001/2.);
-	  matLtoT->SetDz(-gtrans[2]);
-	  rotMatrix[0]= 0;  rotMatrix[1]= 1;  rotMatrix[2]= 0; // + rotation
-	  rotMatrix[3]=-1;  rotMatrix[4]= 0;  rotMatrix[5]= 0; // ! flip in y for the SPD1 only
-	  rotMatrix[6]= 0;  rotMatrix[7]= 0;  rotMatrix[8]=-1;
-	  TGeoRotation rot;
-	  rot.SetMatrix(rotMatrix);
-	  matLtoT->MultiplyLeft(&rot);
-	  TGeoHMatrix *matTtoL = new TGeoHMatrix(matLtoT->Inverse());
-	  delete matLtoT;
-	  alignableEntry->SetMatrix(matTtoL);
+	  halfStave = stave;
+	  halfStave += str1Bis;
+	  halfStave += cHS;
+	  halfStave += str1Tierce;
+	  strEntryName3 = strEntryName2;
+	  strEntryName3 += strHalfStave;
+	  strEntryName3 += cHS;
+	  //printf("%s   ==   %s\n",strEntryName3.Data(),halfStave.Data()); // this is a half-stave
+	  if(!gGeoManager->SetAlignableEntry(strEntryName3.Data(),halfStave.Data()))
+	    AliFatal("Unable to set alignable entry!!");    
+
+	  for(Int_t cLadder = 0; cLadder<2; cLadder++) {
+	    
+	    module = halfStave;
+	    module += str2;
+	    module += cLadder+cHS*2+1;
+	    strEntryName4 = strEntryName3;
+	    strEntryName4 += strLadder;
+	    strEntryName4 += cLadder+cHS*2;
+	    //printf("%s   ==   %s\n",strEntryName4.Data(),module.Data());
+	    if(!gGeoManager->SetAlignableEntry(strEntryName4.Data(),module.Data()))
+	      AliFatal("Unable to set alignable entry!!");    
+
+	    // Creates the TGeo Local to Tracking transformation matrix ...
+	    TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntry(strEntryName4.Data());
+	    const char *path = alignableEntry->GetTitle();
+	    if (!gGeoManager->cd(path))
+	      AliFatal(Form("Volume path %s not valid!",path));
+	    TGeoHMatrix* globMatrix = gGeoManager->GetCurrentMatrix();
+	    gtrans = globMatrix->GetTranslation();
+	    memcpy(&rotMatrix[0], globMatrix->GetRotationMatrix(), 9*sizeof(Double_t));
+	    al = TMath::ATan2(rotMatrix[1],rotMatrix[0]);
+	    TGeoHMatrix *matLtoT = new TGeoHMatrix;
+	    matLtoT->SetDx( gtrans[0]*TMath::Cos(al)+gtrans[1]*TMath::Sin(al) ); // translation
+	    al += TMath::Pi()/2;
+
+	    matLtoT->SetDy(-fChip1*0.0001/2.);
+	    matLtoT->SetDz(-gtrans[2]);
+	    rotMatrix[0]= 0;  rotMatrix[1]= 1;  rotMatrix[2]= 0; // + rotation
+	    rotMatrix[3]=-1;  rotMatrix[4]= 0;  rotMatrix[5]= 0; // ! flip in y for the SPD1 only
+	    rotMatrix[6]= 0;  rotMatrix[7]= 0;  rotMatrix[8]=-1;
+	    TGeoRotation rot;
+	    rot.SetMatrix(rotMatrix);
+	    matLtoT->MultiplyLeft(&rot);
+	    TGeoHMatrix *matTtoL = new TGeoHMatrix(matLtoT->Inverse());
+	    delete matLtoT;
+	    alignableEntry->SetMatrix(matTtoL);
+	  }
 	}
       }
     }
-  }
-
-  //===== SPD layer2 =====
-  {
-    TString str0 = "ALIC_1/ITSV_1/ITSD_1/IT12_1/I12B_";
-    TString str1 = "/I20B_";
-    TString str2 = "/I1D7_";
-  
-    TString sector;
-    TString stave;
-    TString module;
-
-    for(Int_t c1 = 1; c1<=10; c1++){
-
+    
+    //===== SPD layer2 =====
+    str1Bis = "/L2H-STAVE";
+    str1 = "/I20B_";
+    str2 = "/I1D7_";
+    
+    for(Int_t cSect = 0; cSect<10; cSect++) {
+      
       sector = str0;
-      sector += c1; // this is one full sector
+      sector += cSect+1; // this is one full sector
       strEntryName1 = strSPD;
       strEntryName1 += 1;
       strEntryName1 += strSector;
-      strEntryName1 += (c1-1);
-      if(!gGeoManager->SetAlignableEntry(strEntryName1.Data(),sector.Data()))
-	AliFatal("Unable to set alignable entry!!");    
-      //printf("%s   ==   %s\n",strEntryName1.Data(),sector.Data());
+      strEntryName1 += cSect;
+      //       if(!gGeoManager->SetAlignableEntry(strEntryName1.Data(),sector.Data()))
+      // 	AliFatal("Unable to set alignable entry!!");    
+      // we don't need the previous lines because the whole sector is already define
+      // with first layer ...
       
-      for(Int_t c2 =1; c2<=4; c2++){
+      for(Int_t cStave =0; cStave<4; cStave++) {
 	
 	stave = sector;
 	stave += str1;
-	stave += c2;
+	stave += cStave+1;
 	strEntryName2 = strEntryName1;
 	strEntryName2 += strStave;
-	strEntryName2 += (c2-1);
-	if(!gGeoManager->SetAlignableEntry(strEntryName2.Data(),stave.Data()))
-	  AliFatal("Unable to set alignable entry!!");    
-	//printf("%s   ==   %s\n",strEntryName2.Data(),stave.Data()); // this is a stave
-
-	for(Int_t c3 =1; c3<=4; c3++){
+	strEntryName2 += cStave;
+	
+	for(Int_t cHS=0; cHS<2; cHS++) {
 	  
-	  module = stave;
-	  module += str2;
-	  module += c3;
+	  halfStave = stave;
+	  halfStave += str1Bis;
+	  halfStave += cHS;
+	  halfStave += str1Tierce;
 	  strEntryName3 = strEntryName2;
-	  strEntryName3 += strLadder;
-	  strEntryName3 += (c3-1);
-	  if(!gGeoManager->SetAlignableEntry(strEntryName3.Data(),module.Data()))
-	    AliFatal("Unable to set alignable entry!!");
-	  //printf("%s   ==   %s\n",strEntryName3.Data(),module.Data());
+	  strEntryName3 += strHalfStave;
+	  strEntryName3 += cHS;
+	  //printf("%s   ==   %s\n",strEntryName3.Data(),halfStave.Data()); // this is a half-stave
+	  if(!gGeoManager->SetAlignableEntry(strEntryName3.Data(),halfStave.Data()))
+	    AliFatal("Unable to set alignable entry!!");    
+	  
+	  for(Int_t cLad =0; cLad<2; cLad++) {
+	    
+	    module = halfStave;
+	    module += str2;
+	    module += cLad+cHS*2+1;
+	    strEntryName4 = strEntryName3;
+	    strEntryName4 += strLadder;
+	    strEntryName4 += cLad+cHS*2;
+	    //printf("%s   ==   %s\n",strEntryName4.Data(),module.Data());
+	    if(!gGeoManager->SetAlignableEntry(strEntryName4.Data(),module.Data()))
+	      AliFatal("Unable to set alignable entry!!");
+	    
+	    // Creates the TGeo Local to Tracking transformation matrix ...
+	    TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntry(strEntryName4.Data());
+	    const char *path = alignableEntry->GetTitle();
+	    if (!gGeoManager->cd(path))
+	      AliFatal(Form("Volume path %s not valid!",path));
+	    TGeoHMatrix* globMatrix = gGeoManager->GetCurrentMatrix();
+	    gtrans = globMatrix->GetTranslation();
+	    memcpy(&rotMatrix[0], globMatrix->GetRotationMatrix(), 9*sizeof(Double_t));
+	    al = TMath::ATan2(rotMatrix[1],rotMatrix[0]) + TMath::Pi();
+	    TGeoHMatrix *matLtoT = new TGeoHMatrix;
+	    matLtoT->SetDx(-gtrans[0]*TMath::Cos(al)-gtrans[1]*TMath::Sin(al) ); // translation
+	    al += TMath::Pi()/2;
 
-	  // Creates the TGeo Local to Tracking transformation matrix ...
-	  TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntry(strEntryName3.Data());
-	  const char *path = alignableEntry->GetTitle();
-	  if (!gGeoManager->cd(path))
-	    AliFatal(Form("Volume path %s not valid!",path));
-	  TGeoHMatrix* globMatrix = gGeoManager->GetCurrentMatrix();
-	  gtrans = globMatrix->GetTranslation();
-	  memcpy(&rotMatrix[0], globMatrix->GetRotationMatrix(), 9*sizeof(Double_t));
-	  al = TMath::ATan2(rotMatrix[1],rotMatrix[0]) + TMath::Pi();
-	  TGeoHMatrix *matLtoT = new TGeoHMatrix;
-	  matLtoT->SetDx(-gtrans[0]*TMath::Cos(al)-gtrans[1]*TMath::Sin(al) ); // translation
-	  al += TMath::Pi()/2;
-	  //matLtoT->SetDy( gtrans[0]*TMath::Cos(al)+gtrans[1]*TMath::Sin(al) );
-	  // not taking into account the shift w.r.t. sensitive volume
-	  //	  matLtoT->SetDy( gtrans[0]*TMath::Cos(al)+gtrans[1]*TMath::Sin(al) + fChip2*0.0001/2.);
-	  matLtoT->SetDy(-fChip2*0.0001/2.);
-	  matLtoT->SetDz(-gtrans[2]);
-	  rotMatrix[0]= 0;  rotMatrix[1]= 1;  rotMatrix[2]= 0; // + rotation
-	  rotMatrix[3]= 1;  rotMatrix[4]= 0;  rotMatrix[5]= 0;
-	  rotMatrix[6]= 0;  rotMatrix[7]= 0;  rotMatrix[8]=-1;
-	  TGeoRotation rot;
-	  rot.SetMatrix(rotMatrix);
-	  matLtoT->MultiplyLeft(&rot);
-	  TGeoHMatrix *matTtoL = new TGeoHMatrix(matLtoT->Inverse());
-	  delete matLtoT;
-	  alignableEntry->SetMatrix(matTtoL);
+	    matLtoT->SetDy(-fChip2*0.0001/2.);
+	    matLtoT->SetDz(-gtrans[2]);
+	    rotMatrix[0]= 0;  rotMatrix[1]= 1;  rotMatrix[2]= 0; // + rotation
+	    rotMatrix[3]= 1;  rotMatrix[4]= 0;  rotMatrix[5]= 0;
+	    rotMatrix[6]= 0;  rotMatrix[7]= 0;  rotMatrix[8]=-1;
+	    TGeoRotation rot;
+	    rot.SetMatrix(rotMatrix);
+	    matLtoT->MultiplyLeft(&rot);
+	    TGeoHMatrix *matTtoL = new TGeoHMatrix(matLtoT->Inverse());
+	    delete matLtoT;
+	    alignableEntry->SetMatrix(matTtoL);
+	  }
 	}
       }
     }
   }
-
+  
   //===== SDD layer1 =====
   {
     TString str0 = "ALIC_1/ITSV_1/ITSD_1/IT34_1/I004_";
@@ -3617,19 +3634,40 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
      gMC->Gspos("I124",1,"I12B",-0.4965,6.8742,0.0,idrotm[215],"ONLY");
      gMC->Gspos("I105",3,"I10B",-0.05,-0.01,-16.844,idrotm[201],"ONLY");
      gMC->Gspos("I105",4,"I10B",-0.05,-0.01,16.844,0,"ONLY");
-     gMC->Gspos("I107",2,"I10B",-0.0455,-di10b[1]+di107[1],3.536,0,"ONLY");
-     gMC->Gspos("I107",1,"I10B",-0.0455,-di10b[1]+di107[1],10.708,0,"ONLY");
-     gMC->Gspos("I107",4,"I10B",-0.0455,-di10b[1]+di107[1],-10.708,0,"ONLY");
-     gMC->Gspos("I107",3,"I10B",-0.0455,-di10b[1]+di107[1],-3.536,0,"ONLY");
+
+     // Insertion of half-stave level in SPD1:
+     gGeoManager->MakeVolumeAssembly("L1H-STAVE0");
+     gGeoManager->MakeVolumeAssembly("L1H-STAVE1");
+     gMC->Gspos("L1H-STAVE0",1,"I10B",0,0,0,0,"ONLY");
+     gMC->Gspos("L1H-STAVE1",1,"I10B",0,0,0,0,"ONLY");
+     gMC->Gspos("I107",1,"L1H-STAVE0",-0.0455,-di10b[1]+di107[1],10.708,0,"ONLY");
+     gMC->Gspos("I107",2,"L1H-STAVE0",-0.0455,-di10b[1]+di107[1],3.536,0,"ONLY");
+     gMC->Gspos("I107",3,"L1H-STAVE1",-0.0455,-di10b[1]+di107[1],-3.536,0,"ONLY");
+     gMC->Gspos("I107",4,"L1H-STAVE1",-0.0455,-di10b[1]+di107[1],-10.708,0,"ONLY");
+//      gMC->Gspos("I107",2,"I10B",-0.0455,-di10b[1]+di107[1],3.536,0,"ONLY");
+//      gMC->Gspos("I107",1,"I10B",-0.0455,-di10b[1]+di107[1],10.708,0,"ONLY");
+//      gMC->Gspos("I107",4,"I10B",-0.0455,-di10b[1]+di107[1],-10.708,0,"ONLY");
+//      gMC->Gspos("I107",3,"I10B",-0.0455,-di10b[1]+di107[1],-3.536,0,"ONLY");
+
+    // Insertion of half-stave level in SPD2:
+     gGeoManager->MakeVolumeAssembly("L2H-STAVE0");
+     gGeoManager->MakeVolumeAssembly("L2H-STAVE1");
+     gMC->Gspos("L2H-STAVE0",1,"I20B",0,0,0,0,"ONLY");
+     gMC->Gspos("L2H-STAVE1",1,"I20B",0,0,0,0,"ONLY");
+     gMC->Gspos("I1D7",1,"L2H-STAVE0",-0.0455,-di20b[1]+di1d7[1],10.708,0,"ONLY");
+     gMC->Gspos("I1D7",2,"L2H-STAVE0",-0.0455,-di20b[1]+di1d7[1],3.536,0,"ONLY");
+     gMC->Gspos("I1D7",3,"L2H-STAVE1",-0.0455,-di20b[1]+di1d7[1],-3.536,0,"ONLY");
+     gMC->Gspos("I1D7",4,"L2H-STAVE1",-0.0455,-di20b[1]+di1d7[1],-10.708,0,"ONLY");
+//      gMC->Gspos("I1D7",2,"I20B",-0.0455,-di20b[1]+di1d7[1],3.536,0,"ONLY");
+//      gMC->Gspos("I1D7",1,"I20B",-0.0455,-di20b[1]+di1d7[1],10.708,0,"ONLY");
+//      gMC->Gspos("I1D7",4,"I20B",-0.0455,-di20b[1]+di1d7[1],-10.708,0,"ONLY");
+//      gMC->Gspos("I1D7",3,"I20B",-0.0455,-di20b[1]+di1d7[1],-3.536,0,"ONLY");
+
      gMC->Gspos("I109",1,"I10B",-0.138,0.015,-16.844,idrotm[201],"ONLY");
      gMC->Gspos("I109",2,"I10B",-0.138,0.015,16.844,0,"ONLY");
      gMC->Gspos("I108",1,"I10B",-0.138,-di10b[1]+2.*di107[1]+di108[1],0.0,0,"ONLY");
      gMC->Gspos("I105",1,"I20B",-0.05,-0.01,-16.844,idrotm[201],"ONLY");
      gMC->Gspos("I105",2,"I20B",-0.05,-0.01,16.844,0,"ONLY");
-     gMC->Gspos("I1D7",2,"I20B",-0.0455,-di20b[1]+di1d7[1],3.536,0,"ONLY");
-     gMC->Gspos("I1D7",1,"I20B",-0.0455,-di20b[1]+di1d7[1],10.708,0,"ONLY");
-     gMC->Gspos("I1D7",4,"I20B",-0.0455,-di20b[1]+di1d7[1],-10.708,0,"ONLY");
-     gMC->Gspos("I1D7",3,"I20B",-0.0455,-di20b[1]+di1d7[1],-3.536,0,"ONLY");
      gMC->Gspos("I109",3,"I20B",-0.138,0.015,-16.844,idrotm[201],"ONLY");
      gMC->Gspos("I109",4,"I20B",-0.138,0.015,16.844,0,"ONLY");
      gMC->Gspos("I108",2,"I20B",-0.138,-di20b[1]+2.*di1d7[1]+di108[1],0.0,0,"ONLY");
@@ -6304,8 +6342,8 @@ void AliITSvPPRasymmFMD::StepManager(){
     switch (kk){
     case 0:case 1: // SPD
         gMC->CurrentVolOffID(2,cpn2);
-        gMC->CurrentVolOffID(3,cpn1);
-        gMC->CurrentVolOffID(4,cpn0);
+        gMC->CurrentVolOffID(4,cpn1);
+        gMC->CurrentVolOffID(5,cpn0);
         break;
     case 2:case 3: // SDD
         cpn2 = 1;

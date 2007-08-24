@@ -3,13 +3,6 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// $Id$
-
-// $Log$
-// Revision 1.3  2007/05/08 16:57:42  masera
-// Updates concerning the geometry: versioning system, new V11hybrid version, bug fixes (B.Nilsend and L. Gaudichet
-//
-
 //========================================================================
 //
 //            Geometry of the Inner Tracking System
@@ -20,10 +13,23 @@
 // Ludovic Gaudichet  (gaudichet@to.infn.it)
 //
 //========================================================================
+
+
+// $Id$
+
+// $Log$
+// Revision 1.4  2007/06/28 10:17:25  masera
+// Introduction of the new SSD geometry in simulation (AliITSv11Hybrid) and suppression of overlaps between old and new parts
+//
+// Revision 1.3  2007/05/08 16:57:42  masera
+// Updates concerning the geometry: versioning system, new V11hybrid version, bug fixes (B.Nilsend and L. Gaudichet
+//
+
  
 #include "AliITS.h"
 #include "AliITSInitGeometry.h"
 
+class  AliITSv11GeometrySPD;
 class  AliITSv11GeometrySDD;
 class  AliITSv11GeometrySSD;
 
@@ -31,6 +37,7 @@ class AliITSv11Hybrid : public AliITS {
 
  public:
     AliITSv11Hybrid();
+    AliITSv11Hybrid(const char *title);
     AliITSv11Hybrid(const char *name, const char *title);
     virtual       ~AliITSv11Hybrid() ;
     virtual void   BuildGeometry();
@@ -140,10 +147,11 @@ class AliITSv11Hybrid : public AliITS {
     Int_t fIDMother;          //! ITS Mother Volume id.
 
     AliITSInitGeometry fInitGeom;   //! Get access to decoding and AliITSgeom init functins
+    AliITSv11GeometrySPD *fSPDgeom; //! SPD Geometry
     AliITSv11GeometrySDD *fSDDgeom; //! SDD Geometry
     AliITSv11GeometrySSD *fSSDgeom; //! SSD Geometry
 
-    ClassDef(AliITSv11Hybrid,3)                          
+    ClassDef(AliITSv11Hybrid,0)                          
 };
  
 #endif
