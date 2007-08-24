@@ -61,8 +61,6 @@ AliGenBeamGasNew::AliGenBeamGasNew() :
 
 AliGenBeamGasNew::~AliGenBeamGasNew()
 {
-  delete fEntries;
-  delete fHeader;
 }
 
 void AliGenBeamGasNew::SetTimeWindow(Float_t twindow) { fTwindow = twindow; }
@@ -221,7 +219,7 @@ void AliGenBeamGasNew::Generate()
       //
       // Select a generator randomly
       //
-      Int_t i;
+      Int_t i = 0;
       Float_t p0 =  gRandom->Rndm();
       
       for (i = 0; i < fNGenerators; i++) {
@@ -236,9 +234,10 @@ void AliGenBeamGasNew::Generate()
       entry->SetLast(partArray->GetEntriesFast());
     } 
     
-    for (int k = lastpart; k < stack->GetNprimary(); k++) {
+    for (Int_t k = lastpart; k < stack->GetNprimary(); k++) {
       stack->Particle(k)->ProductionVertex(v);
       v[2] *= sign;
+      eventVertex[2] *= sign;
       v[3] = fItime;  // ??? +=
       stack->Particle(k)->SetProductionVertex(v);
       stack->Particle(k)->Momentum(v);
@@ -246,11 +245,12 @@ void AliGenBeamGasNew::Generate()
       stack->Particle(k)->SetMomentum(v);
     }
 
+    ((AliGenEventHeader*) fHeader->GetHeaders()->Last())->SetPrimaryVertex(eventVertex);
+
     lastpart = stack->GetNprimary();
     next.Reset();
   } 
-  // Event Vertex
-  fHeader->SetPrimaryVertex(eventVertex);
+
   fHeader->CalcNProduced();
 
   if (fContainer) {
