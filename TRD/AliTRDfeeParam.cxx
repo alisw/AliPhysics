@@ -80,12 +80,15 @@ void AliTRDfeeParam::Terminate()
 //_____________________________________________________________________________
 AliTRDfeeParam::AliTRDfeeParam()
   :TObject()
-  //  ,fGeo(0)
   ,fCP(0)
   ,fTFr1(0)
   ,fTFr2(0)
   ,fTFc1(0)
   ,fTFc2(0)
+  ,fEBsglIndThr(5)
+  ,fEBsumIndThr(5)
+  ,fEBindLUT(0xF0)
+  ,fEBignoreNeighbour(0)
   ,fRAWversion(3)
   ,fRAWstoreRaw(kTRUE)
 {
@@ -121,6 +124,10 @@ AliTRDfeeParam::AliTRDfeeParam(const AliTRDfeeParam &p)
   ,fTFr2(p.fTFr2)
   ,fTFc1(p.fTFc1)
   ,fTFc2(p.fTFc2)
+  ,fEBsglIndThr(p.fEBsglIndThr)
+  ,fEBsumIndThr(p.fEBsumIndThr)
+  ,fEBindLUT(p.fEBindLUT)
+  ,fEBignoreNeighbour (p.fEBignoreNeighbour)
   ,fRAWversion(p.fRAWversion)
   ,fRAWstoreRaw(p.fRAWstoreRaw)
 {
@@ -163,6 +170,10 @@ void AliTRDfeeParam::Copy(TObject &p) const
   ((AliTRDfeeParam &) p).fTFr2        = fTFr2;
   ((AliTRDfeeParam &) p).fTFc1        = fTFc1;
   ((AliTRDfeeParam &) p).fTFc2        = fTFc2;
+  ((AliTRDfeeParam &) p).fEBsglIndThr = fEBsglIndThr;
+  ((AliTRDfeeParam &) p).fEBsumIndThr = fEBsumIndThr;
+  ((AliTRDfeeParam &) p).fEBindLUT    = fEBindLUT;
+  ((AliTRDfeeParam &) p).fEBignoreNeighbour = fEBignoreNeighbour;
   ((AliTRDfeeParam &) p).fRAWversion  = fRAWversion;
   ((AliTRDfeeParam &) p).fRAWstoreRaw = fRAWstoreRaw;
   
@@ -260,6 +271,62 @@ Int_t AliTRDfeeParam::GetColSide(Int_t icol) const
   //ped           = fPedestal;
 //};
 
+//_____________________________________________________________________________
+void AliTRDfeeParam::SetEBsglIndThr(Int_t val)
+{
+  // Set Event Buffer Sngle Indicator Threshold (EBIS in TRAP conf).
+  // Timebin is indicated if ADC value >= val.
+
+  if( val >= 0 && val <= 1023 ) { 
+    fEBsglIndThr = val;
+  } else {
+    AliError(Form("EBsglIndThr value %d is out of range, keep previously set value (%d).",
+		  val, fEBsglIndThr));
+  }
+}
+
+//_____________________________________________________________________________
+void AliTRDfeeParam::SetEBsumIndThr(Int_t val)
+{
+  // Set Event Buffer Sum Indicator Threshold (EBIT in TRAP conf).
+  // Timebin is indicated if ADC sum value >= val.
+
+  if( val >= 0 && val <= 4095 ) { 
+    fEBsumIndThr = val;
+  } else {
+    AliError(Form("EBsumIndThr value %d is out of range, keep previously set value (%d).",
+		  val, fEBsumIndThr));
+  }
+}
+
+
+//_____________________________________________________________________________
+void AliTRDfeeParam::SetEBindLUT(Int_t val)
+{
+  // Set Event Buffer Indicator Look-Up Table (EBIL in TRAP conf).
+  // 8 bits value forms lookup table for combination of three criterions.
+
+  if( val >= 0 && val <= 255 ) {
+    fEBindLUT = val;
+  } else {
+    AliError(Form("EBindLUT value %d is out of range, keep previously set value (%d).",
+		  val, fEBindLUT));
+  }
+}
+
+//_____________________________________________________________________________
+void AliTRDfeeParam::SetEBignoreNeighbour(Int_t val)
+{
+  // Set Event Buffer Indicator Neighbor Sensitivity. (EBIN in TRAP conf).
+  // If 0, take account of neigbor's values.
+
+  if( val >= 0 && val <= 1 ) {
+    fEBignoreNeighbour = val;
+  } else {
+    AliError(Form("EBignoreNeighbour value %d is out of range, keep previously set value (%d).",
+		  val, fEBignoreNeighbour));
+  }
+}
 
 //_____________________________________________________________________________
 Int_t    AliTRDfeeParam::GetRAWversion()

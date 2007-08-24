@@ -74,18 +74,25 @@ class AliTRDfeeParam : public TObject
 
   static  Int_t    GetTFtype()            { return fgkTFtype; }
   static  Int_t    GetTFnExp()            { return fgkTFnExp; }
-          Float_t  GetTFr1()              { return fTFr1; }
-          Float_t  GetTFr2()              { return fTFr2; }
-          Float_t  GetTFc1()              { return fTFc1; }
-          Float_t  GetTFc2()              { return fTFc2; }
+          Float_t  GetTFr1()        const { return fTFr1; }
+          Float_t  GetTFr2()        const { return fTFr2; }
+          Float_t  GetTFc1()        const { return fTFc1; }
+          Float_t  GetTFc2()        const { return fTFc2; }
 
   static  Float_t  GetTFattPar()          { return ((Float_t)fgkTFattPar1) / ((Float_t)fgkTFattPar2) ; }
-  static  Float_t  GetTFf0()              { return 1 + fgkTFon*(-1+GetTFattPar()); }   // 1 if TC off
-  
-  static  Int_t    GetEBsglIndThr()       { return fgkEBsglIndThr; }
-  static  Int_t    GetEBsumIndThr()       { return fgkEBsumIndThr; }
-  static  Int_t    GetEBindLUT()          { return fgkEBindLUT; }
-  static  Int_t    GetEBignoreNeighbour() { return fgkEBignoreNeighbour; }
+          Float_t  GetTFf0()        const { return 1 + fgkTFon*(-1+GetTFattPar()); }   // 1 if TC off
+
+          void     SetEBsglIndThr(Int_t val);  
+          Int_t    GetEBsglIndThr() const { return fEBsglIndThr; }
+
+          void     SetEBsumIndThr(Int_t val);
+          Int_t    GetEBsumIndThr() const { return fEBsumIndThr; }
+
+          void     SetEBindLUT(Int_t val);
+          Int_t    GetEBindLUT()    const { return fEBindLUT; }
+
+          void     SetEBignoreNeighbour(Int_t val);
+          Int_t    GetEBignoreNeighbour() const { return fEBignoreNeighbour; }
 
   // Concerning raw data format
           Int_t    GetRAWversion();
@@ -154,32 +161,32 @@ class AliTRDfeeParam : public TObject
   static const Int_t    fgkTFattPar2          = 14;   //                      = -alphaL/ln(lambdaL)-(1-alphaL)/ln(lambdaS)
 
   // ZS parameters
-  static const Int_t    fgkEBsglIndThr        = 5;    // EBIS in ADC units
-  static const Int_t    fgkEBsumIndThr        = 5;    // EBIT in ADC units
-  static const Int_t    fgkEBindLUT           = 0xF0; // EBIL lookup table
-  static const Int_t    fgkEBignoreNeighbour  = 0;    // EBIN 0:include neighbor
+               Int_t    fEBsglIndThr;                 // EBIS in ADC units
+               Int_t    fEBsumIndThr;                 // EBIT in ADC units
+               Int_t    fEBindLUT;                    // EBIL lookup table
+               Int_t    fEBignoreNeighbour;           // EBIN 0:include neighbor
 
   // Charge accumulators
-  static const Int_t    fgkPREPqAcc0Start      =  0;   // Preprocessor Charge Accumulator 0 Start
-  static const Int_t    fgkPREPqAcc0End        = 10;   // Preprocessor Charge Accumulator 0 End
-  static const Int_t    fgkPREPqAcc1Start      = 11;   // Preprocessor Charge Accumulator 1 Start
-  static const Int_t    fgkPREPqAcc1End        = 20;   // Preprocessor Charge Accumulator 1 End
-  static const Int_t    fgkMinClusterCharge    = 20;   // Hit detection [in ADC units]
+  static const Int_t    fgkPREPqAcc0Start     =  0;   // Preprocessor Charge Accumulator 0 Start
+  static const Int_t    fgkPREPqAcc0End       = 10;   // Preprocessor Charge Accumulator 0 End
+  static const Int_t    fgkPREPqAcc1Start     = 11;   // Preprocessor Charge Accumulator 1 Start
+  static const Int_t    fgkPREPqAcc1End       = 20;   // Preprocessor Charge Accumulator 1 End
+  static const Int_t    fgkMinClusterCharge   = 20;   // Hit detection [in ADC units]
 
   // OLD TRAP processing parameters calculated from above
-  //static const Float_t  fClusThr;                     // Cluster threshold
-  //static const Float_t  fPadThr;                      // Pad threshold
+  //static const Float_t  fClusThr;                   // Cluster threshold
+  //static const Float_t  fPadThr;                    // Pad threshold
 
   // For raw production
-               Int_t    fRAWversion;                    // Raw data production version
-  static const Int_t    fgkMaxRAWversion       = 3;     // Maximum raw version number supported
-               Bool_t   fRAWstoreRaw;                   // Store unfiltered data for raw data stream
+               Int_t    fRAWversion;                  // Raw data production version
+  static const Int_t    fgkMaxRAWversion      = 3;    // Maximum raw version number supported
+               Bool_t   fRAWstoreRaw;                 // Store unfiltered data for raw data stream
 
  private:
 
   AliTRDfeeParam();
 
-  ClassDef(AliTRDfeeParam,1)  //
+  ClassDef(AliTRDfeeParam,2)  //
 };
 
 #endif
