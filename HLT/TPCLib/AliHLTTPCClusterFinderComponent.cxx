@@ -38,7 +38,6 @@ using namespace std;
 #include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCClusters.h"
-#define _ISOC99_SOURCE
 #include <stdlib.h>
 #include <errno.h>
 #include "TString.h"
