@@ -179,8 +179,10 @@ Int_t AliITSGeoPlot (Int_t evesel=0, char *opt="All+ClustersV2", TString filenam
   ITS->FillModules(0,0,nmodules," "," ");
   cout<<"ITS modules .... DONE!"<<endl;
   
-  AliITSDetTypeRec* detTypeRec = new AliITSDetTypeRec(ITSloader);
+  AliITSDetTypeRec* detTypeRec = new AliITSDetTypeRec();
+  detTypeRec->SetITSgeom(ITSloader->GetITSgeom());
   detTypeRec->SetDefaults();
+
   // DIGITS
   TTree *TD = ITSloader->TreeD();
 
