@@ -2,6 +2,9 @@
 #define ALIITSCALIBRATIONSSD_H
  
 #include "AliITSCalibration.h"
+#include "AliITSNoiseSSD.h"
+#include "AliITSGainSSD.h"
+#include "AliITSBadChannelsSSD.h"
 #include "AliITSresponseSSD.h"
 #include "TArrayF.h"
 #include "TArrayI.h"
@@ -27,24 +30,25 @@ class AliITSCalibrationSSD : public AliITSCalibration {
     	np=fNoiseP; nn=fNoiseN;
     }
 
-    // EF
-    void SetNNoiseP(Int_t n) { fNoisP.Set(n); }
-    void AddNoiseP(Int_t c, Float_t n) { fNoisP.AddAt(n,c);}       
-    TArrayF GetNoiseP() const {return fNoisP; }
-    Float_t GetNoiseP(Int_t n) {return fNoisP.At(n); }
-    void SetNNoiseN(Int_t n) { fNoisN.Set(n); }
-    void AddNoiseN(Int_t c, Float_t n) { fNoisN.AddAt(n,c);}
-    TArrayF GetNoiseN() const {return fNoisN; }
-    Float_t GetNoiseN(Int_t n) {return fNoisN.At(n); }
+    void AddNoiseP(Int_t c, Float_t n) { fNoise->AddNoiseP(c,n);}       
+    TArrayF GetNoiseP() {return fNoise->GetNoiseP(); }
+    Float_t GetNoiseP(Int_t n) {return fNoise->GetNoiseP(n); }
+    void AddNoiseN(Int_t c, Float_t n) { fNoise->AddNoiseN(c,n);}
+    TArrayF GetNoiseN() {return fNoise->GetNoiseN(); }
+    Float_t GetNoiseN(Int_t n) {return fNoise->GetNoiseN(n); }
+    void SetNoise( AliITSNoiseSSD* noise) {fNoise=noise;}
 
-    void SetNGainP(Int_t n) { fGainP.Set(n); }
-    void AddGainP(Int_t c, Float_t n) { fGainP.AddAt(n,c);}       
-    TArrayF GetGainP() const {return fGainP; }
-    Float_t GetGainP(Int_t n) {return fGainP.At(n); }
-    void SetNGainN(Int_t n) { fGainN.Set(n); }
-    void AddGainN(Int_t c, Float_t n) { fGainN.AddAt(n,c);}
-    TArrayF GetGainN() const {return fGainN; }
-    Float_t GetGainN(Int_t n) {return fGainN.At(n); }
+    void AddGainP(Int_t c, Float_t n) { fGain->AddGainP(c,n);}       
+    TArrayF GetGainP() {return fGain->GetGainP(); }
+    Float_t GetGainP(Int_t n) {return fGain->GetGainP(n); }
+    void AddGainN(Int_t c, Float_t n) { fGain->AddGainN(c,n);}
+    TArrayF GetGainN() {return fGain->GetGainN(); }
+    Float_t GetGainN(Int_t n) {return fGain->GetGainN(n); }
+    void SetGain( AliITSGainSSD* gain) {fGain=gain;}
+
+    TArrayI GetBadPChannelsList() { fBadChannels->GetBadPChannelsList(); }
+    TArrayI GetBadNChannelsList() { fBadChannels->GetBadNChannelsList(); }
+    void SetBadChannels( AliITSBadChannelsSSD* badchannels) {fBadChannels=badchannels;}
 
     void SetNoisePThreshold(Int_t threshold) { fNoisePThreshold = threshold;}
     void AddNoisyPChannel(Int_t c, Int_t n) { fNoisyPChannelsList.AddAt(n,c);}
@@ -126,6 +130,10 @@ protected:
     Double_t fSigmaP;          // Sigma charge spread on Pside
     Double_t fSigmaN;          // Sigma charge spread on Nside
     
+    AliITSNoiseSSD *fNoise;
+    AliITSGainSSD *fGain;
+    AliITSBadChannelsSSD *fBadChannels;
+
     TArrayF fGainP;           // Gain for P side channels
     TArrayF fGainN;           // Gain for N side channels
 

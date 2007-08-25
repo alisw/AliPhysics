@@ -29,6 +29,9 @@ SRCS = 	AliITSgeom.cxx \
 		AliITSCalibrationSPD.cxx \
 		AliITSCalibrationSDD.cxx \
 		AliITSCalibrationSSD.cxx \
+		AliITSBadChannelsSSD.cxx \
+		AliITSGainSSD.cxx \
+		AliITSNoiseSSD.cxx \
 		AliITSDDLRawData.cxx \
 		AliITSRawStream.cxx \
 		AliITSRawStreamSDDv2.cxx \
