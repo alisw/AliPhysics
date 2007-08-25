@@ -24,6 +24,7 @@
 #include "AliITSRawStreamSDD.h"
 #include "AliRawReader.h"
 #include "AliLog.h"
+#include "Riostream.h"
 
 ClassImp(AliITSRawStreamSDD)
 
@@ -64,10 +65,6 @@ fEventId(0),
 fChannel(0),
 fJitter(0),
 fNCarlos(kModulesPerDDL),
-fNfifo0(0),
-fNfifo1(0),
-fNfifo2(0),
-fNfifo3(0),
 fDDL(0){
 // create an object to read ITS SDD raw digits
   
@@ -83,12 +80,14 @@ fDDL(0){
     }
     fLowThreshold[i]=0;
   }
+  for(Int_t i=0;i<kFifoWords;i++) fNfifo[i]=0;
   for(Int_t i=0;i<kDDLsNumber;i++) fSkip[i]=0;
   fRawReader->Reset();
   fRawReader->Select("ITSSDD");
 
-  //  fRawReader->SelectEquipment(17, 101, 101);//select this for test data
   //  fNCarlos = 8; //select this for test data
+  for(Short_t i=0; i<kCarlosWords; i++) iCarlosWord[i]=805306368+i;
+  for(Short_t i=0; i<kFifoWords; i++) iFifoWord[i]=805306384+i;
 }
 
 UInt_t AliITSRawStreamSDD::ReadBits()
@@ -125,31 +124,11 @@ Bool_t AliITSRawStreamSDD::Next()
   fDDL=fRawReader->GetDDLID();
   Int_t ddln = fRawReader->GetDDLID();
   if(ddln <0) ddln=0;
-  while (fSkip[ddln] < 9) {
-    if (!fRawReader->ReadNextInt(fData))return kFALSE;
-    if ((fData >> 30) == 0x01) continue;  // JTAG word
-    fSkip[ddln]++;
-  }
-  
+  Bool_t kSkip = ResetSkip(ddln);
+  if(!kSkip) return kSkip;
 
-  Int_t countFoot[kModulesPerDDL];
-  for(Int_t i=0;i<kModulesPerDDL;i++) countFoot[i]=0;
-  UInt_t iCarlos0Word=805306368;
-  UInt_t iCarlos1Word=805306369;
-  UInt_t iCarlos2Word=805306370;
-  UInt_t iCarlos3Word=805306371;
-  UInt_t iCarlos4Word=805306372;
-  UInt_t iCarlos5Word=805306373;
-  UInt_t iCarlos6Word=805306374;
-  UInt_t iCarlos7Word=805306375;
-  UInt_t iCarlos8Word=805306376;
-  UInt_t iCarlos9Word=805306377;
-  UInt_t iCarlos10Word=805306378;
-  UInt_t iCarlos11Word=805306379;
-  UInt_t iFifo0Word=805306384;
-  UInt_t iFifo1Word=805306385;
-  UInt_t iFifo2Word=805306386;
-  UInt_t iFifo3Word=805306387;
+  for(Int_t i=0;i<kModulesPerDDL;i++) iCountFoot[i]=0; 
+
   while (kTRUE) {
     if ((fChannel < 0) || (fLastBit[fCarlosId][fChannel] < fReadBits[fCarlosId][fChannel])) {
 
@@ -157,86 +136,87 @@ Bool_t AliITSRawStreamSDD::Next()
 	return kFALSE;  // read next word 
       }
       ddln = fRawReader->GetDDLID();
-      if(ddln!=fDDL){
-	Reset();
-	for(Int_t icr=0;icr<kModulesPerDDL;icr++) countFoot[icr]=0;
-      }
+
+      if(ddln!=fDDL) Reset();
       if(ddln < 0 || ddln > (kDDLsNumber-1)) ddln  = 0;
-      while (fSkip[ddln] < 9) {
-	if (!fRawReader->ReadNextInt(fData)){ 
-	  return kFALSE;
-	}
-	if ((fData >> 30) == 0x01) continue;  // JTAG word
-	fSkip[ddln]++;
-      }
+      kSkip = ResetSkip(ddln);
+      if(!kSkip) return kFALSE;  // read next word
 
       fChannel = -1;
-      if((fData>=iCarlos0Word&&fData<=iCarlos11Word)||(fData>=iFifo0Word&&fData<=iFifo3Word)){
-	if(fData==iCarlos0Word){
+      if((fData>=iCarlosWord[0]&&fData<=iCarlosWord[11])||(fData>=iFifoWord[0]&&fData<=iFifoWord[3])){
+	for(Short_t ik=0;ik<kCarlosWords;ik++) {
+	  if(fData==iCarlosWord[ik]) {
+	    fCarlosId = ik;
+	    Int_t iFifoIdx = ik/3;
+	    if(fNCarlos == 8) {
+	      if(ik==2) iFifoIdx = 1;
+	      if(ik==4 || ik==5)  iFifoIdx = 2;
+	      if(ik==6 || ik==7)  iFifoIdx = 3 ;
+	    }	    
+	    fNfifo[iFifoIdx] = fCarlosId;
+	  }
+	}
+	for(Short_t ik=0;ik<kFifoWords;ik++) {
+	  if (fData==iFifoWord[ik]) { 
+	    fCarlosId = fNfifo[ik];	    
+	  }
+	}
+	/*
+	if(fData==iCarlosWord[0]){
 	  fCarlosId = 0;
-	  fNfifo0 = fCarlosId;
+	  fNfifo[0] = fCarlosId;
 	}
-	else if (fData==iCarlos1Word){
+	else if (fData==iCarlosWord[1]){
 	  fCarlosId = 1;
-	  fNfifo0 = fCarlosId;
+	  fNfifo[0] = fCarlosId;
 	}
-	else if (fData==iCarlos2Word){
+	else if (fData==iCarlosWord[2]){
 	  fCarlosId = 2;
-	  if(fNCarlos == 8) fNfifo1 = fCarlosId;
-	  else fNfifo0 = fCarlosId;
+	  if(fNCarlos == 8) fNfifo[1] = fCarlosId;
+	  else fNfifo[0] = fCarlosId;
 	}
-	else if (fData==iCarlos3Word){
+	else if (fData==iCarlosWord[3]){
 	  fCarlosId = 3;
-	  fNfifo1 = fCarlosId;
+	  fNfifo[1] = fCarlosId;
 	}
-	else if (fData==iCarlos4Word){
+	else if (fData==iCarlosWord[4]){
 	  fCarlosId = 4;
-	  if(fNCarlos == 8) fNfifo2 = fCarlosId;
-	  else fNfifo1 = fCarlosId;
+	  if(fNCarlos == 8) fNfifo[2] = fCarlosId;
+	  else fNfifo[1] = fCarlosId;
 	}
-	else if (fData==iCarlos5Word){
+	else if (fData==iCarlosWord[5]){
 	  fCarlosId = 5;
-	  if(fNCarlos == 8) fNfifo2 = fCarlosId;
-	  else fNfifo1 = fCarlosId;
+	  if(fNCarlos == 8) fNfifo[2] = fCarlosId;
+	  else fNfifo[1] = fCarlosId;
 	}
-	else if (fData==iCarlos6Word){
+	else if (fData==iCarlosWord[6]){
 	  fCarlosId = 6;
-	  if(fNCarlos == 8) fNfifo3 = fCarlosId;
-	  else fNfifo2 = fCarlosId;
+	  if(fNCarlos == 8) fNfifo[3] = fCarlosId;
+	  else fNfifo[2] = fCarlosId;
 	}
-	else if (fData==iCarlos7Word){
+	else if (fData==iCarlosWord[7]){
 	  fCarlosId = 7;
-	  if(fNCarlos == 8) fNfifo3 = fCarlosId;
-	  else fNfifo2 = fCarlosId;
+	  if(fNCarlos == 8) fNfifo[3] = fCarlosId;
+	  else fNfifo[2] = fCarlosId;
 	}
-	else if (fData==iCarlos8Word){
+	else if (fData==iCarlosWord[8]){
 	  fCarlosId = 8;
-	  fNfifo2 = fCarlosId;
+	  fNfifo[2] = fCarlosId;
 	}
-	else if (fData==iCarlos9Word){
+	else if (fData==iCarlosWord[9]){
 	  fCarlosId = 9;
-	  fNfifo3 = fCarlosId;
+	  fNfifo[3] = fCarlosId;
 	}
-	else if (fData==iCarlos10Word){
+	else if (fData==iCarlosWord[10]){
 	  fCarlosId = 10;
-	  fNfifo3 = fCarlosId;
+	  fNfifo[3] = fCarlosId;
 	}
-	else if (fData==iCarlos11Word){
+	else if (fData==iCarlosWord[11]){
 	  fCarlosId = 11;
-	  fNfifo3 = fCarlosId;
+	  fNfifo[3] = fCarlosId;
 	}
-	else if (fData==iFifo0Word){
-	  fCarlosId = fNfifo0;
-	}
-	else if (fData==iFifo1Word){
-	  fCarlosId = fNfifo1;
-	}
-	else if (fData==iFifo2Word){
-	  fCarlosId = fNfifo2;
-	}
-	else if (fData==iFifo3Word){
-	  fCarlosId = fNfifo3;
-	}
+	*/
+
       }
       if(fData==1059004191) continue;
       if (fNCarlos == 8 && (fCarlosId == 8 || fCarlosId == 9 || 
@@ -247,10 +227,10 @@ Bool_t AliITSRawStreamSDD::Next()
       if ((fData >> 28) == 0x02) {           // header
 	fEventId = (fData >> 3) & 0x07FF;
       } else if ((fData >> 28) == 0x03) {    // footer
-        countFoot[fCarlosId]++; // stop before the last word (last word=jitter)
+        iCountFoot[fCarlosId]++; // stop before the last word (last word=jitter)
 	Bool_t exit=kTRUE;
 	for(Int_t ic=0;ic<fNCarlos;ic++){
-	  if(countFoot[ic]<3) exit=kFALSE;
+	  if(iCountFoot[ic]<3) exit=kFALSE;
 	}
         if(exit){
 	  return kFALSE;
@@ -313,8 +293,8 @@ Bool_t AliITSRawStreamSDD::Next()
 }
 
 void AliITSRawStreamSDD::Reset(){
+
   //reset data member for a new ddl
-  
   for(Int_t i=0;i<2;i++){
     for(Int_t ic=0;ic<kModulesPerDDL;ic++){
       fChannelData[ic][i]=0;
@@ -327,6 +307,18 @@ void AliITSRawStreamSDD::Reset(){
     }
     fLowThreshold[i]=0;
   }
+  for(Int_t i=0;i<kModulesPerDDL;i++) iCountFoot[i]=0;
+  
   fChannel=-1;
   fDDL=fRawReader->GetDDLID();
 }
+
+Bool_t AliITSRawStreamSDD::ResetSkip(Int_t ddln){
+  while (fSkip[ddln] < 9) {
+    if (!fRawReader->ReadNextInt(fData))return kFALSE;
+    if ((fData >> 30) == 0x01) continue;  // JTAG word
+    fSkip[ddln]++;
+  }
+  return kTRUE;
+}
+

@@ -33,10 +33,13 @@ class AliITSRawStreamSDD: public AliITSRawStream {
     static  Int_t    GetModuleNumber(UInt_t iDDL, UInt_t iModule)
                      {return fgkDDLModuleMap[iDDL][iModule];}
     virtual void     Reset(); 
+    virtual Bool_t   ResetSkip(Int_t ddln); 
 
     enum {kDDLsNumber = 24};      // number of DDLs in SDD
     enum {kModulesPerDDL = 12};   // number of modules in each DDL 
-    enum ESDDRawStreamError {
+    enum {kCarlosWords = 12};      // number of FIFOCARLOS Words
+    enum {kFifoWords =  4};      // number of FIFO Words
+    enum ESDDRawStreamError { 
       kDataError = 1,
       kDataFormatErr = 2
     };
@@ -61,15 +64,20 @@ class AliITSRawStreamSDD: public AliITSRawStream {
     UInt_t           fReadBits[kModulesPerDDL][2];   // number of bits to read
     Int_t            fLowThreshold[2]; // low Carlos threshold
     Int_t            fNCarlos;         // number of Carlos 
+    /*
     Int_t            fNfifo0;          // fifo n. 0
     Int_t            fNfifo1;          // fifo n. 1
     Int_t            fNfifo2;          // fifo n. 2
     Int_t            fNfifo3;          // fifo n. 3
+    */
+    Int_t            fNfifo[kFifoWords];
     Int_t            fTimeBin[kModulesPerDDL][2];  // current timebin [ncarlos][nchannels]
     Int_t            fAnode[kModulesPerDDL][2]; // current anode [ncarlos][nchannels]
     Int_t            fDDL;        //current ddl number
-
-    ClassDef(AliITSRawStreamSDD, 2) // class for reading ITS SDD raw digits
+    UInt_t           iCarlosWord[kCarlosWords];
+    UInt_t           iFifoWord[kFifoWords];
+    Int_t            iCountFoot[kModulesPerDDL];
+    ClassDef(AliITSRawStreamSDD, 4) // class for reading ITS SDD raw digits
 };
 
 #endif
