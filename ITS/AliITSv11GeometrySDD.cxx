@@ -456,6 +456,40 @@ const Double_t AliITSv11GeometrySDD::fgkConnectorCoolTubeR3   = 3.*fgkmm;  // ??
 const Double_t AliITSv11GeometrySDD::fgkConnectorCoolTubeL3   = 5 *fgkmm;  // ???
 
 
+// parameters for coding SDD cables on SDD and SSD cones
+const Double_t AliITSv11GeometrySDD::fgkSectionCuPerMod = 3*2*0.006 + 3*2*0.0005 + 2*0.002;
+//                                             copper :     LV     +  signal  +  HV(HV ???)
+const Double_t AliITSv11GeometrySDD::fgkSectionPlastPerMod = (TMath::Pi()*(3*0.36*0.36/4 + 3*0.21*0.21/4 + 2*0.115*0.115/4) 
+							      - fgkSectionCuPerMod);
+
+const Double_t AliITSv11GeometrySDD::fgkSectionGlassPerMod = 3*0.006; // ???
+// (sections are given in cm square)
+const Double_t AliITSv11GeometrySDD::fgkCableBendRatio = 1.3; // ??? this factor account for the bending of cables
+
+const Double_t AliITSv11GeometrySDD::fgkConeSDDr1 = 11.87574*fgkcm;
+const Double_t AliITSv11GeometrySDD::fgkConeSDDr2 = 26.07574*fgkcm;
+const Double_t AliITSv11GeometrySDD::fgkConeSDDz1 =  3.36066*fgkcm + 186.0*fgkmm + 0.5*790.0*fgkmm - 19.18934*fgkcm - 1.6;
+const Double_t AliITSv11GeometrySDD::fgkConeSDDz2 = 17.56066*fgkcm + 186.0*fgkmm + 0.5*790.0*fgkmm - 19.18934*fgkcm - 1.6;
+// These last parameters come from cone's code and define the slope
+// and position of the SDD cone end.  For some unknown reason, this doesn't
+// allow to stick on the SDD cone. This has to be checked when a correct
+// version of the cone is available ... For now 'm applying some approximative
+// corrections
+
+const Double_t AliITSv11GeometrySDD::fgkSDDCableR1    = 16*fgkcm; // ??? // part 1 of "cable cone"
+const Double_t AliITSv11GeometrySDD::fgkSDDCableR2    = 23*fgkcm; // ??? // part 1/2 of "cable cone"
+const Double_t AliITSv11GeometrySDD::fgkSDDCableR3    = 26*fgkcm; // ??? // part 2 of "cable cone"
+
+const Double_t AliITSv11GeometrySDD::fgkSDDCableDZint =  3.5*fgkcm;
+const Double_t AliITSv11GeometrySDD::fgkSDDCableR5    =  37*fgkcm; // third part of "cable cone"
+const Double_t AliITSv11GeometrySDD::fgkSDDCableZ5    =  65*fgkcm; // third part of "cable cone"
+
+
+
+
+
+
+
 ClassImp(AliITSv11GeometrySDD)
 
 //________________________________________________________________________
@@ -755,7 +789,7 @@ void AliITSv11GeometrySDD::CreateBasicObjects() {
   TGeoMedium *alSDD           = GetMedium("AL$"); //ITSal
   TGeoMedium *stainless       = GetMedium("INOX$"); // for screws, what is the material ???????????
   TGeoMedium *coolerMediumSDD = GetMedium("WATER$");
-  TGeoMedium *raccordMedium   = GetMedium("inox/alum$");  // ??? material of raccordo ???
+  TGeoMedium *raccordMedium   = GetMedium("INOX$");  // ??? material of raccordo ???
 
   //********************************************************************
   // pieces of the carbon fiber structure
@@ -1085,8 +1119,8 @@ void AliITSv11GeometrySDD::ShowOnePiece(TGeoVolume *moth) {
   //moth->AddNode(fCardLVL,1,0);
   //moth->AddNode(fCardLVR,1,0);
 
-//    TGeoVolume* seg = CreateLadderSegment( 3, 0);
-//    moth->AddNode(seg, 1, 0);
+   TGeoVolume* seg = CreateLadderSegment( 3, 0);
+   moth->AddNode(seg, 1, 0);
 
 //   TGeoVolumeAssembly *lay3Ladder = CreateLadder(3);
 //   moth->AddNode(lay3Ladder, 1, 0);
@@ -1107,10 +1141,7 @@ void AliITSv11GeometrySDD::ShowOnePiece(TGeoVolume *moth) {
 //   TGeoVolumeAssembly *supportRing = CreateSupportRing( 4 );
 //   moth->AddNode(supportRing, 1, 0);
 
-  TGeoVolume *endLadderCards = CreateEndLadderCardsV( 4 );
-  moth->AddNode(endLadderCards, 1, 0);
-
-//   TGeoVolume *endLadderCards = CreateEndLadderCards( 4 );
+//   TGeoVolume *endLadderCards = CreateEndLadderCardsV( 4 );
 //   moth->AddNode(endLadderCards, 1, 0);
 
 //   TGeoVolumeAssembly *carlosCard = CreateCarlosCard( 4 );
@@ -2336,7 +2367,7 @@ TGeoVolume* AliITSv11GeometrySDD::CreateLadderSegment(Int_t iLay, Int_t iSeg) {
   // Return a TGeoVolume* containing a segment of a ladder.
   //
 
-  TGeoMedium *phynoxSDD       = GetMedium("inox/alum$"); // phynoxSDD To code ??? !!!
+  TGeoMedium *phynoxSDD       = GetMedium("INOX$");
   TGeoMedium *coolerMediumSDD = GetMedium("WATER$");
   TGeoMedium *airSDD          = GetMedium("SDD AIR$");
 
@@ -2488,7 +2519,43 @@ TGeoVolume* AliITSv11GeometrySDD::CreateLadderSegment(Int_t iLay, Int_t iSeg) {
   virtualSeg->AddNode(fPinSupport, 6, transPS6);
   virtualSeg->AddNode(fPinSupport, 7, transPS7);
   virtualSeg->AddNode(fPinSupport, 8, transPS8);
-  
+
+  TGeoMedium *pinMed   = GetMedium("SDDKAPTON (POLYCH2)$");  // medium ???
+  Double_t fgkPinHeight = 4.5*fgkmm;
+  TGeoTube *pineS = new TGeoTube("ITSsddPin",0,fgkPinR,
+				fgkPinHeight/2.);
+  TGeoVolume *pineV = new TGeoVolume("ITSsddPinVol", pineS, pinMed);
+
+  TGeoCombiTrans *transPS2b = new TGeoCombiTrans( fgkPinDYOnSensor,
+				- fgkLadderHeight/2.-tDY
+			        + fgkPinHeight/2.,
+				sensorCenterZPos+fgkPinDXminOnSensor,rotPS1);
+  AddTranslationToCombiTrans(transPS2b, 0, 0, fgkPinPinDDXOnSensor);
+  virtualSeg->AddNode(pineV, 1, transPS2b);
+
+  TGeoCombiTrans *transPS6b = new TGeoCombiTrans( -fgkPinDYOnSensor,
+		       	         - fgkLadderHeight/2. - tDY
+			         + fgkPinHeight/2.,
+			         sensorCenterZPos+fgkPinDXminOnSensor,rotPS2);
+  AddTranslationToCombiTrans(transPS6b, 0, 0, fgkPinPinDDXOnSensor);
+  virtualSeg->AddNode(pineV, 2, transPS6b);
+
+ 
+  TGeoCombiTrans *transPS4b = new TGeoCombiTrans( fgkPinDYOnSensor,
+				- fgkLadderHeight/2.-tDY
+			        + fgkPinHeight/2.,
+				sensorCenterZPos+fgkPinDXminOnSensor,rotPS1);
+  AddTranslationToCombiTrans(transPS4b, 0, 0, -2*fgkPinDXminOnSensor-fgkPinPinDDXOnSensor);
+  virtualSeg->AddNode(pineV, 3, transPS4b);
+
+  TGeoCombiTrans *transPS8b = new TGeoCombiTrans( -fgkPinDYOnSensor,
+		       	         - fgkLadderHeight/2. - tDY
+			         + fgkPinHeight/2.,
+			         sensorCenterZPos+fgkPinDXminOnSensor,rotPS2);
+  AddTranslationToCombiTrans(transPS8b, 0, 0, -2*fgkPinDXminOnSensor-fgkPinPinDDXOnSensor);
+  virtualSeg->AddNode(pineV, 4, transPS8b);
+
+
   //******************************
   // Cooling pipe supports :
   //******************************
@@ -2662,16 +2729,20 @@ TGeoVolume* AliITSv11GeometrySDD::CreateLadderSegment(Int_t iLay, Int_t iSeg) {
 //________________________________________________________________________
 TGeoVolume* AliITSv11GeometrySDD::CreatePinSupport() {
 //
-// Create a pine support
+// Create a pine support and its pine
 // axis of rotation is the cone axis, center in its middle
 //
+    TGeoMedium *rytonSDD = GetMedium("SDD C AL (M55J)$"); //medium = ryton ?
+
     TGeoCone *cone = new TGeoCone("ITSsddPinSuppCone",fgkPinSuppHeight/2.,
                                   0,fgkPinSuppRmax,0,fgkPinSuppRmax-
                                   fgkPinSuppHeight*TanD(fgkPinSuppConeAngle) );
     TGeoBBox *tong = new TGeoBBox("ITSsddPinSuppTong",fgkPinSuppRmax,
                                   fgkPinSuppLength/2.,fgkPinSuppThickness/2.);
     TGeoTube *hole = new TGeoTube("ITSsddPinSuppHole",0,fgkPinR,
-                                  fgkPinSuppHeight/2.);
+                                  fgkPinSuppHeight/2.+0.00001);
+    // 0.00001 is for seing the actual hole (avoid viewer artefact)
+
     if(GetDebug(3)){// Remove compiler warning.
         cone->InspectShape();
         tong->InspectShape();
@@ -2683,15 +2754,13 @@ TGeoVolume* AliITSv11GeometrySDD::CreatePinSupport() {
     tongTrans->RegisterYourself();
     TGeoCompositeShape *pinSupportShape = new TGeoCompositeShape(
                "ITSsddPinSupportShape","(ITSsddPinSuppCone+"
-               "ITSsddPinSuppTong:ITSsddPinSuppTongTr)-ITSsddPinSuppHole");
+	       "ITSsddPinSuppTong:ITSsddPinSuppTongTr)-ITSsddPinSuppHole");
 
-    
-    TGeoMedium *rytonSDD = GetMedium("SDD C AL (M55J)$"); //medium = ryton ?  To code !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    TGeoVolume *pinSupport = new TGeoVolume("ITSsddPinSupport",pinSupportShape,
+    TGeoVolume *pinSupport = new TGeoVolume("ITSsddPinSupport", pinSupportShape,
                                             rytonSDD);
     pinSupport->SetLineColor(fColorRyton);
+
     return pinSupport;
-    // include the pin itself                           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 }
 
 
@@ -2981,8 +3050,8 @@ TGeoVolumeAssembly* AliITSv11GeometrySDD::CreateEndLadder(Int_t iLay) {
   //
 
   TGeoMedium *carbonFiberLadderStruct = GetMedium("SDD C AL (M55J)$"); // ITSsddCarbonM55J
-  TGeoMedium *stesalite       = GetMedium("EPOXY$");         /// To code ??? !!!!!!!!!!!!!!!!
-  TGeoMedium *phynoxSDD       = GetMedium("inox/alum$"); // phynoxSDD To code ??? !!!!!!!!!!!
+  TGeoMedium *stesalite       = GetMedium("G10FR4$");
+  TGeoMedium *phynoxSDD       = GetMedium("INOX$");
   TGeoMedium *coolerMediumSDD = GetMedium("WATER$");
 
   Double_t length        = (fgkLay3LadderLength-fgkLay3Ndet*fgkSegmentLength)/2.;
@@ -3199,7 +3268,7 @@ TGeoVolumeAssembly* AliITSv11GeometrySDD::CreateEndLadder(Int_t iLay) {
 
   TGeoBBox* guideHVbox = new TGeoBBox("guideHVbox",fgkHVguideX1/2,
 				      fgkHVguideY1/2,fgkHVguideZ1/2);
-  TGeoVolume *guideHV = new TGeoVolume("guideHV",guideHVbox,stesalite);  // material ?
+  TGeoVolume *guideHV = new TGeoVolume("guideHV",guideHVbox,stesalite);
 
   TGeoTranslation* guideHVtr = new TGeoTranslation(fgkHVguideDX,
      -(fgkLadderHeight/2-fgkLadderBeamRadius)+tDY-fgkHVguideY1/2,
@@ -3236,7 +3305,7 @@ TGeoVolumeAssembly* AliITSv11GeometrySDD::CreateLadderFoot() {
   // the really small level difference of 0.3mm on the bottom
 
 
-  TGeoMedium *stesalite = GetMedium("EPOXY$");     /// To code ??? !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  TGeoMedium *stesalite = GetMedium("G10FR4$");
 
   TGeoVolumeAssembly *virtualFoot = new TGeoVolumeAssembly("ITSsddFoot");
 
@@ -4167,7 +4236,7 @@ TGeoVolumeAssembly*  AliITSv11GeometrySDD::CreateEndLadderCards(Int_t iLay) {
 //
 
   TGeoMedium *alCu12SDD       = GetMedium("AL$"); // ITSsddAlCu12 : to code !!!!!!!!!!!!!!
-  TGeoMedium *phynoxSDD       = GetMedium("AL$"); // phynoxSDD To code !!!!!!!!!!!!!!!!!!!
+  TGeoMedium *phynoxSDD       = GetMedium("INOX$");
   TGeoMedium *coolerMediumSDD = GetMedium("WATER$");
 
   TGeoVolumeAssembly *endLadderCards = new TGeoVolumeAssembly("endLadderCards");
@@ -4362,12 +4431,16 @@ TGeoVolume*  AliITSv11GeometrySDD::CreateEndLadderCardsV(Int_t iLay) {
 // 
 // return an Pcon containing the LV, HV and Carlos cards of one ladder
 // and their cooling system 
+// This is the code actually used for the end ladder cards
 //
 
   TGeoMedium *alCu12SDD       = GetMedium("AL$"); // ITSsddAlCu12 : to code !!!!!!!!!!!!!!
-  TGeoMedium *phynoxSDD       = GetMedium("AL$"); // phynoxSDD To code !!!!!!!!!!!!!!!!!!!
+  TGeoMedium *phynoxSDD       = GetMedium("INOX$");
   TGeoMedium *coolerMediumSDD = GetMedium("WATER$");
+  TGeoMedium *copper          = GetMedium("COPPER$");
+  TGeoMedium *plastic         = GetMedium("SDDKAPTON (POLYCH2)$");  // ???
   TGeoMedium *airSDD          = GetMedium("SDD AIR$");
+  TGeoMedium *opticalFiber    = GetMedium("SDD SI insensitive$");  //  To code !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   Double_t endLadPipeUlength = fgkEndLadPipeUlengthLay3;
   Double_t endLadPipeArmZ    = fgkEndLadPipeArmZLay3;
@@ -4390,6 +4463,8 @@ TGeoVolume*  AliITSv11GeometrySDD::CreateEndLadderCardsV(Int_t iLay) {
   Double_t rMin   = rREF + cardLVyShift;
   // (The LV card is defining rMin because it is the lower object)
 
+  Double_t thickTotCable = 0.5;
+
   //==================================
   //--- The Pcon container
 
@@ -4403,19 +4478,35 @@ TGeoVolume*  AliITSv11GeometrySDD::CreateEndLadderCardsV(Int_t iLay) {
   Double_t zMax = endLadPipeUlength+coolUzPos;
   Double_t rMax = rMin + fgkLVcardY;
   rMax = TMath::Sqrt(rMax*rMax + cardLVxShift*cardLVxShift);
+  Double_t cablesRadius  = rMax-0.5;
 
-  TGeoPcon *containerShape = new TGeoPcon("EndLadderCcontainerShape", phi0, dphi, 6);
+  TGeoPcon *containerShape = new TGeoPcon("EndLadderCcontainerShape", phi0, dphi, 10);
    //DefineSection(Int_t snum, Double_t z, Double_t rmin, Double_t rmax);
-  containerShape->DefineSection(0,  fgkDistEndLaddCardsLadd, rMin, rMax);
-  containerShape->DefineSection(1,  endLadPipeArmZ+2*fgkEndLadPipeRadius, rMin, rMax);
-  containerShape->DefineSection(2,  endLadPipeArmZ+2*fgkEndLadPipeRadius, rREF-1.*fgkmm, rMax);
-  containerShape->DefineSection(3,  zMax, rREF-1.*fgkmm, rMax);
-  // the following is dirty but works ...
-  containerShape->DefineSection(4,  zMax,          rREF+fgkCarlosCardZ1/2, rMax);
-  containerShape->DefineSection(5,  zMax+6.*fgkmm, rREF+fgkCarlosCardZ1/2, rMax);
+  // hard coded numbers are fine tuning to avoid overlaps with other volume in the old geometry
+  containerShape->DefineSection(0, fgkDistEndLaddCardsLadd, rREF-fgkEndLadPipeOuterDiam/2-0.2, rMax);
+  containerShape->DefineSection(1, fgkDistEndLaddCardsLadd+1.4, rREF-fgkEndLadPipeOuterDiam/2-0.2, rMax);
+  containerShape->DefineSection(2,  fgkDistEndLaddCardsLadd+1.4, rMin, rMax);
+  containerShape->DefineSection(3,  endLadPipeArmZ+2*fgkEndLadPipeRadius, rMin, rMax);
+  containerShape->DefineSection(4,  endLadPipeArmZ+2*fgkEndLadPipeRadius, rREF-1.*fgkmm, rMax);
+  containerShape->DefineSection(5,  zMax, rREF-1.*fgkmm, rMax);
+  // the following is quite dirty but works for the moment ...
+  containerShape->DefineSection(6,  zMax,  rREF+fgkCarlosCardZ1/2, rMax);
+  containerShape->DefineSection(7, zMax+1, cablesRadius-thickTotCable/2, rMax);
+
+  // The next parameters define the shape of the Pcon at its end and where cables
+  // are escaping...
+  Double_t cableSectionR1 = cablesRadius-thickTotCable/2;
+  Double_t cableSectionR2 = rMax;
+  Double_t cableSectionZ1 = zMax + 6.3*fgkmm + 2.5*fgkcm;
+  Double_t cableSectionZ2 = zMax + 7.3*fgkmm + 4*fgkcm;
+  // Those 6.3 and 7.3 are to be fixed to stick the maximum to the SDD cone
+  // (I'm waiting for the new cone)
+
+  containerShape->DefineSection(8, cableSectionZ1, cableSectionR1, rMax);
+  containerShape->DefineSection(9, cableSectionZ2, cableSectionR2, rMax);
 
   TGeoVolume *endLadderCards = new TGeoVolume("endLadderCards",containerShape,airSDD);
-  endLadderCards->SetVisibility(kFALSE);
+  //endLadderCards->SetVisibility(kFALSE);
 
   //=*********************************
   //--- The rounded pipe for the end ladder card cooling
@@ -4581,6 +4672,42 @@ TGeoVolume*  AliITSv11GeometrySDD::CreateEndLadderCardsV(Int_t iLay) {
 
     endLadderCards->AddNode(assemblySupCarlos, iCard, carlosPos);
   }
+
+
+  //=*********************************
+  //--- Cables
+
+
+  Double_t sectionV   = (fgkSectionCuPerMod+fgkSectionPlastPerMod
+			 + fgkSectionGlassPerMod)*nCards;
+  // We fix thickness, then width is calculated accordingly
+   Double_t width      = sectionV/thickTotCable;
+  Double_t thickCu    = thickTotCable*fgkSectionCuPerMod
+              / (fgkSectionCuPerMod+fgkSectionPlastPerMod+fgkSectionGlassPerMod);
+  Double_t thickPlast = thickTotCable*fgkSectionPlastPerMod
+              / (fgkSectionCuPerMod+fgkSectionPlastPerMod+fgkSectionGlassPerMod);
+  Double_t thickGlass = thickTotCable - thickCu - thickPlast;
+
+  AliITSv11GeomCableFlat cable("SDDcableEndLadder",width,thickTotCable);
+  cable.SetNLayers(3);
+  cable.SetLayer(0, thickCu, copper, kRed);
+  cable.SetLayer(1, thickPlast, plastic, kYellow);
+  cable.SetLayer(2, thickGlass, opticalFiber, kGreen);
+
+  Double_t zVect[3]={0,0,1};
+  Double_t xMinCable = firstCarlosCardZ+nCards*(fgkCarlosSuppZ3
+		       +spaceBetweenCarlsoCards)/2 + 2.9;
+  // the 2.9cm is for taking into account carlos card angle...
+
+  Double_t zEndCable = GetConeZ(cablesRadius-thickTotCable/2, cableSectionR1,
+				cableSectionR2,cableSectionZ1,cableSectionZ2);
+
+  Double_t pos1[3] = {0, cablesRadius, xMinCable};
+  Double_t pos2[3] = {0, cablesRadius, zEndCable};
+  cable.AddCheckPoint( endLadderCards, 0, pos1, zVect );
+  cable.AddCheckPoint( endLadderCards, 1, pos2, zVect );
+  cable.SetInitialNode(endLadderCards);
+  cable.CreateAndInsertCableSegment(1);
 
   return endLadderCards;
 }
@@ -5277,4 +5404,382 @@ GetCurrentLayLaddDet(Int_t &lay, Int_t &ladd, Int_t&det) const {
   else lay = 4;
 
   return kTRUE;
+}
+
+
+//________________________________________________________________________
+TGeoPcon* AliITSv11GeometrySDD::CreateConeConstSection(Double_t r1max, Double_t z1,
+						       Double_t r2max, Double_t z2,
+						       Double_t section, Int_t nDiv)
+{
+  // Creates a cone along z where the section is approximately constant
+  // with z. This is for simulation of cables, because a cone with a constant
+  // radius difference would show a quantity of matter increasing with z...
+  // The max radius of the created Pcon is evolving linearly, the min radius
+  // is calculated at several steps (nDiv).
+  // z2 > z1 (required by the Pcon)
+
+  TGeoPcon *myPcon = new TGeoPcon(0, 360, 1+nDiv);
+  
+  Double_t dr = (r2max-r1max)/nDiv;
+  Double_t dz = (z2-z1)/nDiv;
+  Double_t r1minI, r2minI, r1maxI, r2maxI;
+  Double_t z1I, z2I;
+
+  Double_t lZ = TMath::Sqrt((r2max-r1max)*(r2max-r1max) + (z2-z1)*(z2-z1));
+  Double_t cosAlpha = (z2-z1)/lZ;
+
+  r1minI = TMath::Sqrt(r1max*r1max-section/(TMath::Pi()*cosAlpha));
+  myPcon->DefineSection(0, z1, r1minI, r1max);
+
+  for (Int_t i=0; i<nDiv; i++) {
+    
+    z1I = z1 + i*dz;
+    z2I = z1I + dz;
+    r1maxI = r1max + i*dr;
+    r2maxI = r1maxI + dr;
+
+    r2minI =  TMath::Sqrt(r2maxI*r2maxI-section/(TMath::Pi()*cosAlpha));
+    myPcon->DefineSection(i+1, z2I, r2minI, r2maxI);
+  }
+  return myPcon;
+}
+
+
+//________________________________________________________________________
+Double_t AliITSv11GeometrySDD::GetConeZ(Double_t r, Double_t refR1, Double_t refR2, 
+					Double_t refZ1, Double_t refZ2) {
+  // just a helping function
+  return refZ1+(refZ2-refZ1)*(r-refR1)/(refR2-refR1);
+}
+
+//________________________________________________________________________
+Int_t AliITSv11GeometrySDD::CreateAndInsetConeCablePart(TGeoVolume *mother, Double_t angle,
+							Int_t nLay3, Int_t nLay4,
+							Double_t r1, Double_t z1,
+							Double_t r2, Double_t z2) {
+  
+  // Create some cables portions from SDD modules grouped
+  // and attached at the border of the SSD cone
+
+  TGeoMedium *copper     = GetMedium("COPPER$");
+  TGeoMedium *plastic    = GetMedium("SDDKAPTON (POLYCH2)$");  // ???
+  TGeoMedium *opticalFiber = GetMedium("SDD SI insensitive$");  //  To code !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  char titleCable[30];
+  sprintf(titleCable,"cableSDDport%i",(Int_t)angle);
+
+  //---
+  Double_t section = (fgkSectionCuPerMod+fgkSectionPlastPerMod+fgkSectionGlassPerMod)*(nLay3+nLay4);
+  Double_t thickness = 1.; // let's fix the thickness, then calculate the width
+  Double_t width     = section/thickness;
+  Double_t thickCu   = thickness*fgkSectionCuPerMod/(fgkSectionCuPerMod+fgkSectionPlastPerMod
+						     +fgkSectionGlassPerMod);
+
+  Double_t thickPlast = thickness*fgkSectionPlastPerMod/(fgkSectionCuPerMod+fgkSectionPlastPerMod
+							 +fgkSectionGlassPerMod);
+
+  Double_t thickGlass = thickness*fgkSectionGlassPerMod/(fgkSectionCuPerMod+fgkSectionPlastPerMod
+							 +fgkSectionGlassPerMod);
+
+  Double_t hypothenus   = TMath::Sqrt( (r2-r1)*(r2-r1) + (z2-z1)*(z2-z1) );
+  Double_t cosAlpha     = (z2-z1)/hypothenus;
+  Double_t radius1Cable = TMath::Sqrt(r1*r1 - width*width/4) - 0.5*thickness/cosAlpha;
+  Double_t radius2Cable = TMath::Sqrt(r2*r2 - width*width/4) - 0.5*thickness/cosAlpha;
+  angle *= TMath::DegToRad();
+  Double_t x1 = radius1Cable*TMath::Cos(angle), y1 = radius1Cable*TMath::Sin(angle);
+  Double_t x2 = radius2Cable*TMath::Cos(angle), y2 = radius2Cable*TMath::Sin(angle);
+  Double_t pos1[3] = {x1,y1,z1};
+  Double_t pos2[3] = {x2,y2,z2};
+  Double_t zVect[3] = {0,0,1};
+
+  AliITSv11GeomCableFlat cable(titleCable,width,thickness);
+  cable.SetNLayers(3);
+  cable.SetLayer(0, thickPlast, plastic, kYellow);
+  cable.SetLayer(1, thickCu, copper, kRed);
+  cable.SetLayer(2, thickGlass, opticalFiber, kGreen);
+
+  cable.AddCheckPoint( mother, 0, pos1, zVect );
+  cable.AddCheckPoint( mother, 1, pos2, zVect );
+  cable.SetInitialNode(mother);
+  cable.CreateAndInsertCableSegment(1);
+
+  return kTRUE;
+}
+
+
+
+//________________________________________________________________________
+void AliITSv11GeometrySDD::SDDCables(TGeoVolume *moth) {
+
+  // Creates and inserts the SDD cables running on SDD and SSD cones
+
+  TGeoMedium *copper     = GetMedium("COPPER$");
+  TGeoMedium *plastic    = GetMedium("SDDKAPTON (POLYCH2)$");  // ???
+  TGeoMedium *opticalFiber = GetMedium("SDD SI insensitive$");  //  To code !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  TGeoMedium *airSDD     = GetMedium("SDD AIR$");
+
+
+  //==================================
+  //  
+  //==================================
+
+  Double_t nModLay3 = fgkLay3Nladd*fgkLay3Ndet;
+  Double_t nModLay4 = fgkLay4Nladd*fgkLay4Ndet;
+
+  Double_t sectionLay3Cu      = fgkCableBendRatio*fgkSectionCuPerMod*nModLay3/2;
+  Double_t sectionLay3Plastic = fgkCableBendRatio*fgkSectionPlastPerMod*nModLay3/2;
+  Double_t sectionLay3Glass   = fgkCableBendRatio*fgkSectionGlassPerMod*nModLay3/2;
+
+  Double_t sectionLay4Cu      = fgkCableBendRatio*fgkSectionCuPerMod*nModLay4/2;
+  Double_t sectionLay4Plastic = fgkCableBendRatio*fgkSectionPlastPerMod*nModLay4/2;
+  Double_t sectionLay4Glass   = fgkCableBendRatio*fgkSectionGlassPerMod*nModLay4/2;
+
+  // calculate z1, z2 thanks to R1 and R2
+  Double_t sddCableZ1 = GetConeZ(fgkSDDCableR1, fgkConeSDDr1,fgkConeSDDr2,fgkConeSDDz1,fgkConeSDDz2);
+  Double_t sddCableZ2 = GetConeZ(fgkSDDCableR2, fgkConeSDDr1,fgkConeSDDr2,fgkConeSDDz1,fgkConeSDDz2);
+  Double_t sddCableZ3 = GetConeZ(fgkSDDCableR3, fgkConeSDDr1,fgkConeSDDr2,fgkConeSDDz1,fgkConeSDDz2);
+
+  TGeoRotation *rotCableSDD = new TGeoRotation("rotCableSDD",0,180,0);
+
+  //==================================
+  //  first set of cones : cables from layer 3
+  //==================================
+
+  TGeoPcon* pcon1all = CreateConeConstSection(fgkSDDCableR1, sddCableZ1,
+					      fgkSDDCableR2, sddCableZ2,
+		  sectionLay3Plastic+sectionLay3Cu+sectionLay3Glass, 1);
+
+  TGeoPcon* pcon1container = new TGeoPcon(0,360,2);
+  pcon1container->DefineSection(0, sddCableZ1, pcon1all->GetRmin(0), pcon1all->GetRmax(0));
+  Double_t drMax = pcon1all->GetRmax(0)- pcon1all->GetRmin(0);
+  pcon1container->DefineSection(1, sddCableZ2, pcon1all->GetRmax(1)-drMax, pcon1all->GetRmax(1));
+  delete pcon1all;
+  TGeoVolume *vpcon1container = new TGeoVolume("vpcon1container", pcon1container, airSDD);
+  vpcon1container->SetVisibility(kFALSE);
+
+  TGeoPcon* pcon1plast = CreateConeConstSection(fgkSDDCableR1, sddCableZ1,
+						fgkSDDCableR2, sddCableZ2,
+						sectionLay3Plastic, 3);
+  TGeoVolume *vpcon1plast = new TGeoVolume("ITScablesSDDpcon1Plast", pcon1plast, plastic);
+  vpcon1plast->SetLineColor(kYellow);
+  vpcon1container->AddNode(vpcon1plast, 0);
+
+  Double_t dr1a = fgkSDDCableR1 - pcon1plast->GetRmin(0);
+  TGeoPcon* pcon1Cu = CreateConeConstSection(fgkSDDCableR1 - dr1a, sddCableZ1,
+					     fgkSDDCableR2 - dr1a, sddCableZ2,
+					     sectionLay3Cu, 3);
+  TGeoVolume *vpcon1Cu = new TGeoVolume("ITScablesSDDpcon1Cu", pcon1Cu, copper);
+  vpcon1Cu->SetLineColor(kRed);
+  vpcon1container->AddNode(vpcon1Cu, 0);
+  //moth->AddNode(vpcon1Cu, 0);
+
+  //---
+  Double_t dr1b = pcon1Cu->GetRmax(0) - pcon1Cu->GetRmin(0);
+  TGeoPcon* pcon1glass = CreateConeConstSection(fgkSDDCableR1-dr1a-dr1b, sddCableZ1,
+						fgkSDDCableR2-dr1a-dr1b, sddCableZ2,
+						sectionLay3Glass, 3);
+  TGeoVolume *vpcon1glass = new TGeoVolume("ITScablesSDDpcon1glass", pcon1glass, opticalFiber);
+  vpcon1glass->SetLineColor(kGreen);
+  vpcon1container->AddNode(vpcon1glass, 0);
+
+  moth->AddNode(vpcon1container, 0);
+  moth->AddNode(vpcon1container, 1, rotCableSDD);
+
+  //==================================
+  //  2nd set of cones : cables from layer 3 and layer 4
+  //==================================
+
+  TGeoPcon* pcon2all = CreateConeConstSection(fgkSDDCableR2, sddCableZ2,
+					      fgkSDDCableR3, sddCableZ3,
+					      sectionLay3Plastic+sectionLay4Plastic+
+					      sectionLay3Cu+sectionLay4Cu+
+					      sectionLay3Glass+sectionLay4Glass, 1);
+  TGeoPcon* pcon2container = new TGeoPcon(0,360,2);
+  pcon2container->DefineSection(0, sddCableZ2, pcon2all->GetRmin(0), pcon2all->GetRmax(0));
+  drMax = pcon2all->GetRmax(0)- pcon2all->GetRmin(0);
+  pcon2container->DefineSection(1, sddCableZ3, pcon2all->GetRmax(1)-drMax, pcon2all->GetRmax(1));
+  delete pcon2all;
+  TGeoVolume *vpcon2container = new TGeoVolume("vpcon2container", pcon2container, airSDD);
+  vpcon2container->SetVisibility(kFALSE);
+
+  TGeoPcon* pcon2plast = CreateConeConstSection(fgkSDDCableR2, sddCableZ2,
+						fgkSDDCableR3, sddCableZ3,
+						sectionLay3Plastic+sectionLay4Plastic, 3);
+  TGeoVolume *vpcon2plast = new TGeoVolume("ITScablesSDDpcon2Plast", pcon2plast, plastic);
+  vpcon2plast->SetLineColor(kYellow);
+  vpcon2container->AddNode(vpcon2plast, 0);
+
+  Double_t dr2a = fgkSDDCableR2 - pcon2plast->GetRmin(0);
+  TGeoPcon* pcon2Cu = CreateConeConstSection(fgkSDDCableR2 - dr2a, sddCableZ2,
+					     fgkSDDCableR3 - dr2a, sddCableZ3,
+					     sectionLay3Cu+sectionLay4Cu, 3);
+  TGeoVolume *vpcon2Cu = new TGeoVolume("ITScablesSDDpcon2Cu", pcon2Cu, copper);
+  vpcon2Cu->SetLineColor(kRed);
+  vpcon2container->AddNode(vpcon2Cu, 0);
+
+  //---
+  Double_t dr2b = pcon2Cu->GetRmax(0) - pcon2Cu->GetRmin(0);
+  TGeoPcon* pcon2glass = CreateConeConstSection(fgkSDDCableR2-dr2a-dr2b, sddCableZ2,
+						fgkSDDCableR3-dr2a-dr2b, sddCableZ3,
+						sectionLay3Glass+sectionLay4Glass, 3);
+  TGeoVolume *vpcon2glass = new TGeoVolume("ITScablesSDDpcon2glass", pcon2glass, opticalFiber);
+  vpcon2glass->SetLineColor(kGreen);
+  vpcon2container->AddNode(vpcon2glass, 0);
+
+  moth->AddNode(vpcon2container, 0);
+  moth->AddNode(vpcon2container, 1, rotCableSDD);
+
+  //==================================
+  //  intermediate cylinder
+  //==================================
+
+  TGeoTube *interCyl = new TGeoTube("sddCableInterCyl", pcon2container->GetRmin(1),
+				    pcon2container->GetRmax(1),
+				    fgkSDDCableDZint/2);
+  TGeoVolume *vInterCyl = new TGeoVolume("vSddCableInterCyl",interCyl, airSDD);
+  vInterCyl->SetVisibility(kFALSE);
+
+  //---
+  Double_t rmaxCylPlast = pcon2container->GetRmax(1);
+  Double_t rminCylPlast = TMath::Sqrt(rmaxCylPlast*rmaxCylPlast - 
+				 (sectionLay3Plastic+sectionLay4Plastic)/TMath::Pi() );
+
+  TGeoTube *interCylPlast = new TGeoTube("sddCableInterCylPlast", rminCylPlast,
+					 rmaxCylPlast, fgkSDDCableDZint/2);
+  TGeoVolume *vInterCylPlast = new TGeoVolume("vSddCableInterCylPlast", interCylPlast, plastic);
+  vInterCylPlast->SetLineColor(kYellow);
+  vInterCyl->AddNode(vInterCylPlast, 0);
+
+  //---
+  Double_t rmaxCylCu = pcon2Cu->GetRmax(3);
+  Double_t rminCylCu = TMath::Sqrt(rmaxCylCu*rmaxCylCu - 
+				 (sectionLay3Cu+sectionLay4Cu)/TMath::Pi() );
+  TGeoTube *interCylCu = new TGeoTube("sddCableInterCylCu", rminCylCu,
+					 rmaxCylCu, fgkSDDCableDZint/2);
+  TGeoVolume *vInterCylCu = new TGeoVolume("vSddCableInterCylCu", interCylCu, copper);
+  vInterCylCu->SetLineColor(kRed);
+  vInterCyl->AddNode(vInterCylCu, 0);
+
+  //---
+  Double_t rmaxCylGlass = pcon2glass->GetRmax(3);
+  Double_t rminCylGlass = TMath::Sqrt(rmaxCylGlass*rmaxCylGlass - 
+				 (sectionLay3Glass+sectionLay4Glass)/TMath::Pi() );
+  TGeoTube *interCylGlass = new TGeoTube("sddCableInterCylGlass", rminCylGlass,
+					 rmaxCylGlass, fgkSDDCableDZint/2);
+  TGeoVolume *vInterCylGlass = new TGeoVolume("vSddCableInterCylGlass",interCylGlass,opticalFiber);
+  vInterCylGlass->SetLineColor(kGreen);
+  vInterCyl->AddNode(vInterCylGlass, 0);
+
+  //---
+  TGeoTranslation *trInterCylP = new TGeoTranslation("trSddCableInterCylPos",
+						    0,0,sddCableZ3+fgkSDDCableDZint/2);
+  moth->AddNode(vInterCyl, 0,trInterCylP);
+  TGeoTranslation *trInterCylN = new TGeoTranslation("trSddCableInterCylNeg",
+						    0,0,-sddCableZ3-fgkSDDCableDZint/2);
+
+  moth->AddNode(vInterCyl, 1,trInterCylN);
+
+  //==================================
+  // cable cone on the SSD cone
+  //==================================
+
+  Double_t sddCableR4 = rmaxCylPlast;
+  Double_t sddCableZ4 = sddCableZ3+fgkSDDCableDZint;
+
+  TGeoPcon* pcon3all = CreateConeConstSection(sddCableR4, sddCableZ4,
+					      fgkSDDCableR5, fgkSDDCableZ5,
+					      sectionLay3Plastic+sectionLay4Plastic+
+					      sectionLay3Cu+sectionLay4Cu+
+					      sectionLay3Glass+sectionLay4Glass, 1);
+
+  TGeoPcon* pcon3container = new TGeoPcon(0,360,2);
+  pcon3container->DefineSection(0, sddCableZ4, pcon3all->GetRmin(0), pcon3all->GetRmax(0));
+  drMax = pcon3all->GetRmax(0) - pcon3all->GetRmin(0);
+  pcon3container->DefineSection(1, fgkSDDCableZ5, pcon3all->GetRmax(1)-drMax, pcon3all->GetRmax(1));
+  delete pcon3all;
+  TGeoVolume *vpcon3container = new TGeoVolume("vpcon3container", pcon3container, airSDD);
+  vpcon3container->SetVisibility(kFALSE);
+
+  TGeoPcon* pcon3plast = CreateConeConstSection(sddCableR4, sddCableZ4,
+						fgkSDDCableR5, fgkSDDCableZ5,
+						sectionLay3Plastic+sectionLay4Plastic, 3);
+  TGeoVolume *vpcon3plast = new TGeoVolume("ITScablesSDDpcon3Plast", pcon3plast, plastic);
+  vpcon3plast->SetLineColor(kYellow);
+  vpcon3container->AddNode(vpcon3plast, 0);
+
+  Double_t dr3a = sddCableR4 - pcon3plast->GetRmin(0);
+  TGeoPcon* pcon3Cu = CreateConeConstSection(sddCableR4 - dr3a, sddCableZ4,
+					     fgkSDDCableR5 - dr3a, fgkSDDCableZ5,
+					     sectionLay3Cu+sectionLay4Cu, 3);
+  TGeoVolume *vpcon3Cu = new TGeoVolume("ITScablesSDDpcon3Cu", pcon3Cu, copper);
+  vpcon3Cu->SetLineColor(kRed);
+  vpcon3container->AddNode(vpcon3Cu, 0);
+
+  //---
+  Double_t dr3b = pcon3Cu->GetRmax(0) - pcon3Cu->GetRmin(0);
+  TGeoPcon* pcon3glass = CreateConeConstSection(sddCableR4-dr3a-dr3b, sddCableZ4,
+						fgkSDDCableR5-dr3a-dr3b, fgkSDDCableZ5,
+						sectionLay3Glass+sectionLay4Glass, 3);
+  TGeoVolume *vpcon3glass = new TGeoVolume("ITScablesSDDpcon3glass", pcon3glass,opticalFiber);
+  vpcon3glass->SetLineColor(kGreen);
+  vpcon3container->AddNode(vpcon3glass, 0);
+
+  moth->AddNode(vpcon3container, 0);
+  moth->AddNode(vpcon3container, 1, rotCableSDD);
+
+
+  //==================================
+  // cables that are grouped at the end of SSD cones
+  //==================================
+
+  Double_t fgkSDDCableR6 = fgkSDDCableR5+10;
+  Double_t fgkSDDCableZ6 = fgkSDDCableZ5+10;
+
+  TGeoVolumeAssembly *endConeSDDCable = new TGeoVolumeAssembly("endConeSDDCable");
+
+  CreateAndInsetConeCablePart(endConeSDDCable, 40, 1*3,2*4, fgkSDDCableR5,
+			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
+
+  CreateAndInsetConeCablePart(endConeSDDCable, 60, 1*3,1*4, fgkSDDCableR5,
+			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
+
+  CreateAndInsetConeCablePart(endConeSDDCable, 85, 2*3,1*4, fgkSDDCableR5,
+			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
+
+  CreateAndInsetConeCablePart(endConeSDDCable, 95, 0*3,1*4, fgkSDDCableR5,
+			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
+
+  CreateAndInsetConeCablePart(endConeSDDCable, 110, 2*3,3*4, fgkSDDCableR5,
+			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
+
+  CreateAndInsetConeCablePart(endConeSDDCable, 146, 0*3,3*4, fgkSDDCableR5,
+			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
+
+  CreateAndInsetConeCablePart(endConeSDDCable, 176, 0*3,1*4, fgkSDDCableR5,
+			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
+
+  CreateAndInsetConeCablePart(endConeSDDCable, 190, 2*3,0*4, fgkSDDCableR5,
+			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
+
+  CreateAndInsetConeCablePart(endConeSDDCable, 220, 1*3,2*4, fgkSDDCableR5,
+			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
+
+  CreateAndInsetConeCablePart(endConeSDDCable, 240, 1*3,2*4, fgkSDDCableR5,
+			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
+
+  CreateAndInsetConeCablePart(endConeSDDCable, 290, 2*3,2*4, fgkSDDCableR5,
+			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
+
+  CreateAndInsetConeCablePart(endConeSDDCable, 315, 1*3,1*4, fgkSDDCableR5,
+			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
+
+  CreateAndInsetConeCablePart(endConeSDDCable, 350, 1*3,3*4, fgkSDDCableR5,
+			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
+
+  moth->AddNode(endConeSDDCable, 0, 0);
+
+  TGeoRotation* reflect = new TGeoRotation("reflectEndConeSDDCable");
+  reflect->ReflectZ(kTRUE);
+  moth->AddNode(endConeSDDCable, 1, reflect);
 }

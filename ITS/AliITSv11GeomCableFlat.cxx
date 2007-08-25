@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+// $Id$
 
 //*************************************************************************
 //   Class for flat cables
@@ -789,6 +790,7 @@ TGeoVolume *AliITSv11GeomCableFlat::CreateSegment( Double_t *coord1,
   cableSeg->SetVertex( 7,  fWidth/2, -length/2 + dL1 - dl1);
 
   TGeoVolume *vCableSeg = new TGeoVolume(GetName(), cableSeg, fLayMedia[fNlayer-1]);
+  vCableSeg->SetLineColor(fLayColor[fNlayer-1]);
 
   // add all cable layers but the last
   for (Int_t iLay=0; iLay<fNlayer-1; iLay++) {
@@ -842,6 +844,7 @@ TGeoVolume *AliITSv11GeomCableFlat::CreateCylSegment(Double_t &phi,
   TGeoTubeSeg *cableSeg = new TGeoTubeSeg(rMin, rMax, fWidth/2,
 					  phi1, phi2);
   TGeoVolume *vCableSeg = new TGeoVolume(GetName(), cableSeg, fLayMedia[fNlayer-1]);
+  vCableSeg->SetLineColor(fLayColor[fNlayer-1]);
 
   // add all cable layers but the last
   for (Int_t iLay=0; iLay<fNlayer-1; iLay++) {
@@ -877,6 +880,7 @@ TGeoVolume *AliITSv11GeomCableFlat::CreateBoxSegment( Double_t *coord1,
 
   TGeoBBox *cableSeg = new  TGeoBBox(fWidth/2, length/2, fThick/2);
   TGeoVolume *vCableSeg = new TGeoVolume(GetName(), cableSeg, fLayMedia[fNlayer-1]);
+  vCableSeg->SetLineColor(fLayColor[fNlayer-1]);
   // This volume is the cable container. It codes also the material for the
   // last layer
 

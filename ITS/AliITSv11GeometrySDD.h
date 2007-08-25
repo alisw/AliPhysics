@@ -21,6 +21,7 @@
 
 
 class TGeoVolume;
+class TGeoPcon;
 class TGeoVolumeAssembly;
 class TGeoTranslation;
 class TGeoCombiTrans;
@@ -48,6 +49,8 @@ class AliITSv11GeometrySDD : public AliITSv11Geometry {
   virtual void  Layer4(TGeoVolume *moth);
   virtual void  ForwardLayer3(TGeoVolume *moth);
   virtual void  ForwardLayer4(TGeoVolume *moth);
+  virtual void  SDDCables(TGeoVolume *moth);
+
   virtual Int_t ExportSensorGeometry(AliITSgeom *geom, Int_t iLaySDD,
 				      Int_t startMod);
   virtual Int_t GetCurrentLayLaddDet(Int_t &lay, Int_t &ladd, Int_t&det) const;
@@ -97,7 +100,15 @@ class AliITSv11GeometrySDD : public AliITSv11Geometry {
   virtual TGeoVolumeAssembly*  CreateHVCard(Int_t iLay);
 
   void                         CreateBasicObjects();
-
+  Double_t                     GetConeZ(Double_t r, Double_t refR1, Double_t refR2,
+					Double_t refZ1, Double_t refZ2);
+  TGeoPcon*                    CreateConeConstSection(Double_t r1max, Double_t z1,
+						      Double_t r2max, Double_t z2,
+						      Double_t section, Int_t nDiv=1);
+  Int_t CreateAndInsetConeCablePart(TGeoVolume *mother, Double_t angle,
+				    Int_t nLay3, Int_t nLay4,
+				    Double_t r1, Double_t z1,
+				    Double_t r2, Double_t z2);
 
   // Check that the medium exists
   virtual TGeoMedium* GetMedium(const char* mediumName);
@@ -560,6 +571,27 @@ class AliITSv11GeometrySDD : public AliITSv11Geometry {
   static const Double_t fgkConnectorCoolTubeL2;  // ===
   static const Double_t fgkConnectorCoolTubeR3;  // ===
   static const Double_t fgkConnectorCoolTubeL3;  // ===
+
+  // parameters for coding SDD cables on SDD and SSD cones
+  static const Double_t fgkSectionCuPerMod;    // area of copper per mod.
+  static const Double_t fgkSectionPlastPerMod; // area of plast per mod.
+  static const Double_t fgkSectionGlassPerMod; // area of optical fiber per mod.
+  static const Double_t fgkCableBendRatio; // ??? this factor account for the bending of cables
+
+  static const Double_t fgkConeSDDr1; // define SDD cone slope and pos
+  static const Double_t fgkConeSDDr2; // define SDD cone slope and pos
+  static const Double_t fgkConeSDDz1; // define SDD cone slope and pos
+  static const Double_t fgkConeSDDz2; // define SDD cone slope and pos
+
+  static const Double_t fgkSDDCableR1; // ??? // part 1 of "cable cone"
+  static const Double_t fgkSDDCableR2; // ??? // part 1/2 of "cable cone"
+  static const Double_t fgkSDDCableR3; // ??? // part 2 of "cable cone"
+
+  static const Double_t fgkSDDCableDZint; // length of intermediate cylinder
+  static const Double_t fgkSDDCableR5; // third part of "cable cone"
+  static const Double_t fgkSDDCableZ5; // third part of "cable cone"
+
+
 
   // distance from the heat bridge center to the card center :
   static const Double_t fgkCarlosCard2HeatBridge;// distance from the heat bridge center to the card center
