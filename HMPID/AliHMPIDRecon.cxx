@@ -94,7 +94,7 @@ void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t n
       if(FindPhotCkov(pClu->X(),pClu->Y(),thetaCer,phiCer)){                                  //find ckov angle for this  photon candidate
         fPhotCkov[fPhotCnt]=thetaCer;                                                         //actual theta Cerenkov (in TRS)
         fPhotPhi [fPhotCnt]=phiCer;                                                           //actual phi   Cerenkov (in TRS): -pi to come back to "unusual" ref system (X,Y,-Z)
-        Printf("photon n. %i reconstructed theta = %f",fPhotCnt,fPhotCkov[fPhotCnt]);
+	//PH        Printf("photon n. %i reconstructed theta = %f",fPhotCnt,fPhotCkov[fPhotCnt]);
         fPhotCnt++;                                                                           //increment counter of photon candidates
       }
     }
