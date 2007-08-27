@@ -95,6 +95,8 @@ int AliHLTFilePublisher::DoInit( int argc, const char** argv )
   int iResult=0;
   TString argument="";
   int bMissingParam=0;
+  int bHaveDatatype=0;
+  int bHaveSpecification=0;
   AliHLTComponentDataType currDataType=kAliHLTVoidDataType;
   AliHLTUInt32_t          currSpecification=kAliHLTVoidDataSpec;
   EventFiles*             pCurrEvent=NULL;
@@ -105,6 +107,9 @@ int AliHLTFilePublisher::DoInit( int argc, const char** argv )
     // -datafile
     if (argument.CompareTo("-datafile")==0) {
       if ((bMissingParam=(++i>=argc))) break;
+      if (!bHaveDatatype) {
+	HLTWarning("no data type available so far, please set data type and specification before the file name. The first available data type will be set for all files preceding it");
+      }
       FileDesc* pDesc=new FileDesc(argv[i], currDataType, currSpecification);
       if (pDesc) {
 	iResult=InsertFile(pCurrEvent, pDesc);
@@ -123,6 +128,21 @@ int AliHLTFilePublisher::DoInit( int argc, const char** argv )
       memcpy(&currDataType.fID, argv[i], TMath::Min(kAliHLTComponentDataTypefIDsize, (Int_t)strlen(argv[i])));
       if ((bMissingParam=(++i>=argc))) break;
       memcpy(&currDataType.fOrigin, argv[i], TMath::Min(kAliHLTComponentDataTypefOriginSize, (Int_t)strlen(argv[i])));
+      if (bHaveDatatype==0 && pCurrEvent && iResult>=0) {
+	// this is a workaround to make old tutorials working which contain
+	// the arguments in the wrong sequence
+	TList& files=*pCurrEvent; // type conversion operator defined
+	TObjLink *flnk=files.FirstLink();
+	int eventSize=0;
+	while (flnk) {
+	  FileDesc* pFileDesc=dynamic_cast<FileDesc*>(flnk->GetObject());
+	  if (pFileDesc) {
+	    pFileDesc->SetDataType(currDataType);
+	  }
+	  flnk=flnk->Next();
+	}
+      }
+      bHaveDatatype=1;
 
       // -dataspec
     } else if (argument.CompareTo("-dataspec")==0) {
@@ -138,6 +158,21 @@ int AliHLTFilePublisher::DoInit( int argc, const char** argv )
 	HLTError("wrong parameter for argument %s, number expected", argument.Data());
 	iResult=-EINVAL;
       }
+      if (bHaveSpecification==0 && pCurrEvent && iResult>=0) {
+	// this is a workaround to make old tutorials working which contain
+	// the arguments in the wrong sequence
+	TList& files=*pCurrEvent; // type conversion operator defined
+	TObjLink *flnk=files.FirstLink();
+	int eventSize=0;
+	while (flnk) {
+	  FileDesc* pFileDesc=dynamic_cast<FileDesc*>(flnk->GetObject());
+	  if (pFileDesc) {
+	    pFileDesc->SetSpecification(currSpecification);
+	  }
+	  flnk=flnk->Next();
+	}
+      }
+      bHaveSpecification=1;
       // -nextevent
     } else if (argument.CompareTo("-nextevent")==0) {
       InsertEvent(pCurrEvent);
