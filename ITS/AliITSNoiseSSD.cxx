@@ -33,8 +33,25 @@ fNoisN(0) {
 }
 
 //______________________________________________________________________
+AliITSNoiseSSD::AliITSNoiseSSD(const AliITSNoiseSSD &source): TObject(source),
+fMod(source.fMod),
+fNoisP(source.fNoisP),
+fNoisN(source.fNoisN) {
+    // copy Constructor
+}
+//______________________________________________________________________
 AliITSNoiseSSD::~AliITSNoiseSSD(){
     // destructor
 
 }
 
+//______________________________________________________________________
+AliITSNoiseSSD& AliITSNoiseSSD::operator=(const AliITSNoiseSSD &source) {
+ // ass. op.
+    if (this == &source)
+      return *this;
+    fMod = source.fMod;
+    fNoisP =  source.fMod;
+    fNoisN =  source.fMod;
+    return *this;
+}
