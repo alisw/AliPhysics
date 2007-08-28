@@ -403,6 +403,7 @@ Bool_t AliSimulation::MisalignGeometry(AliRunLoader *runLoader)
         loadAlObjsListOfDets += " ";
       }
     } // end loop over detectors
+    loadAlObjsListOfDets.Prepend("GRP "); //add alignment objects for non-sensitive modules
     AliGeomManager::ApplyAlignObjsFromCDB(loadAlObjsListOfDets.Data());
   }else{
     // Check if the array with alignment objects was

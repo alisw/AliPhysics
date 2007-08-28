@@ -373,20 +373,20 @@ void AliReconstruction::SetSpecificStorage(const char* calibType, const char* ur
 	}
   }
 
-  // check that calibType refers to a "valid" detector name
-  Bool_t isDetector = kFALSE;
-  for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
-    TString detName = fgkDetectorName[iDet];
-    if(aPath.GetLevel0() == detName) {
-    	isDetector = kTRUE;
-	break;
-    }
-  }
-
-  if(!isDetector) {
-	AliError(Form("Not a valid detector: %s", aPath.GetLevel0().Data()));
-	return;
-  }
+//  // check that calibType refers to a "valid" detector name
+//  Bool_t isDetector = kFALSE;
+//  for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+//    TString detName = fgkDetectorName[iDet];
+//    if(aPath.GetLevel0() == detName) {
+//    	isDetector = kTRUE;
+//	break;
+//    }
+//  }
+//
+//  if(!isDetector) {
+//	AliError(Form("Not a valid detector: %s", aPath.GetLevel0().Data()));
+//	return;
+//  }
 
   TObject* obj = fSpecCDBUri.FindObject(aPath.GetPath().Data());
   if (obj) fSpecCDBUri.Remove(obj);
@@ -456,6 +456,7 @@ Bool_t AliReconstruction::MisalignGeometry(const TString& detectors)
       loadAlObjsListOfDets += fgkDetectorName[iDet];
       loadAlObjsListOfDets += " ";
     } // end loop over detectors
+    loadAlObjsListOfDets.Prepend("GRP "); //add alignment objects for non-sensitive modules
     AliGeomManager::ApplyAlignObjsFromCDB(loadAlObjsListOfDets.Data());
   }else{
     // Check if the array with alignment objects was
