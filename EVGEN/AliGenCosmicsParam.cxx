@@ -129,7 +129,9 @@ void AliGenCosmicsParam::Generate()
       // check kinematic cuts
       if(TestBit(kMomentumRange)) {
 	if(ptot>fPMin && ptot<fPMax) okMom=kTRUE;
-      }
+      } else {
+	okMom=kTRUE;
+     }
 
       angleWRTVertical=TMath::ACos(TMath::Abs(p[1])/ptot); // acos(|py|/ptot)
       if(angleWRTVertical<fMaxAngleWRTVertical) okAngle=kTRUE;
