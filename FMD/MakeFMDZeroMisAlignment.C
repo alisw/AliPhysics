@@ -2,12 +2,35 @@ void MakeFMDZeroMisAlignment()
 {
   // Create TClonesArray of zero-misalignment objects for FMD
   //
-  if(!AliGeomManager::GetGeometry()){
-    if(!(AliCDBManager::Instance())->IsDefaultStorageSet())
-      AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
-      AliCDBManager::Instance()->SetRun(0);
-    AliGeomManager::LoadGeometry();
-  }
+  const char* macroname = "MakeFMDZeroMisAlignment.C";
+
+  // Activate CDB storage and load geometry from CDB
+  AliCDBManager* cdb = AliCDBManager::Instance();
+  if(!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  cdb->SetRun(0);
+  
+  TString Storage;
+  
+  if( gSystem->Getenv("TOCDB") == TString("kTRUE") ){
+    Storage = gSystem->Getenv("STORAGE");
+    if(!Storage.BeginsWith("local://") && !Storage.BeginsWith("alien://")) {
+      Error(macroname,"STORAGE variable set to %s is not valid. Exiting\n",Storage.Data());
+      return;
+    }
+    AliCDBStorage* storage = cdb->GetStorage(Storage.Data());
+    if(!storage){
+      Error(macroname,"Unable to open storage %s\n",Storage.Data());
+      return;
+    }
+    AliCDBPath path("GRP","Geometry","Data");
+    AliCDBEntry *entry = storage->Get(path.GetPath(),cdb->GetRun());
+    if(!entry) Fatal(macroname,"Could not get the specified CDB entry!");
+    entry->SetOwner(0);
+    TGeoManager* geom = (TGeoManager*) entry->GetObject();
+    AliGeomManager::SetGeometry(geom);
+  }else{
+    AliGeomManager::LoadGeometry(); //load geom from default CDB storage
+  }    
   
   gSystem->Load("libFMDutil.so");
   if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){
@@ -15,8 +38,7 @@ void MakeFMDZeroMisAlignment()
     AliFMDAlignFaker faker(AliFMDAlignFaker::kAll, "geometry.root","FMDAlignObjs.root");
   }else{
     // save in CDB storage
-    const char* Storage = gSystem->Getenv("STORAGE");
-    AliFMDAlignFaker faker(AliFMDAlignFaker::kAll, "geometry.root", Storage);
+    AliFMDAlignFaker faker(AliFMDAlignFaker::kAll, "geometry.root", Storage.Data());
   }
 
   // fRunMax should be changed in the constructor

@@ -3,14 +3,7 @@ void MakeEMCALZeroMisAlignment(){
   //
   TClonesArray *array = new TClonesArray("AliAlignObjParams",10);
   TClonesArray &alobj = *array;
-
-  if(!AliGeomManager::GetGeometry()){
-    if(!(AliCDBManager::Instance())->IsDefaultStorageSet())
-      AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
-      AliCDBManager::Instance()->SetRun(0);
-    AliGeomManager::LoadGeometry();
-  }
-  AliAlignObjParams a;
+  const char* macroname = "MakeEMCALZeroMisAlignment.C";
 
   Double_t dx=0., dy=0., dz=0., dpsi=0., dtheta=0., dphi=0.;
 
@@ -37,7 +30,6 @@ void MakeEMCALZeroMisAlignment(){
     new(alobj[j++]) AliAlignObjParams(pathstr, volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
   }
 
-  const char* macroname = "MakeEMCALZeroMisAlignment.C";
   if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){
     // save on file
     const char* filename = "EMCALzeroMisalignment.root";

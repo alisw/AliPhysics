@@ -4,15 +4,6 @@ void MakeT0FullMisAlignment(){
   TClonesArray *array = new TClonesArray("AliAlignObjParams",30);
   TClonesArray &alobj = *array;
 
-  if(!AliGeomManager::GetGeometry()){
-    if(!(AliCDBManager::Instance())->IsDefaultStorageSet())
-      AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
-    AliCDBManager::Instance()->SetRun(0);
-    AliGeomManager::LoadGeometry();
-  }
-
-  AliAlignObjParams a;
-
   Double_t dx, dy, dz, dpsi, dtheta, dphi;
   TRandom *rnd   = new TRandom(4321);
   Double_t sigmatr = 0.05; // sigma for shifts in cm

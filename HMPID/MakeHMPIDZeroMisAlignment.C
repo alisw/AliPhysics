@@ -3,8 +3,6 @@ void MakeHMPIDZeroMisAlignment(){
   //
   TClonesArray *pCA = new TClonesArray("AliAlignObjMatrix",10);
   
-  AliAlignObjMatrix o;
-
   Double_t dX=0.,dY=0.,dZ=0.,dPsi=0.,dTheta=0.,dPhi=0.;
  
   Int_t idHMPID =  AliGeomManager::kHMPID;

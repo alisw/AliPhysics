@@ -1,11 +1,74 @@
 void MakeTRDFullMisAlignment(){
   // Create TClonesArray of full misalignment objects for TRD
+  // Expects to read objects for FRAME
   // 
   TClonesArray *array = new TClonesArray("AliAlignObjParams",1000);
-  TClonesArray &alobj = *array;
-   
-  AliAlignObjParams a;
+  const char* macroname = "MakeTRDFullMisAlignment.C";
 
+  // Activate CDB storage and load geometry from CDB
+  AliCDBManager* cdb = AliCDBManager::Instance();
+  if(!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  cdb->SetRun(0);
+  
+  AliCDBStorage* storage;
+  
+  if( gSystem->Getenv("TOCDB") == TString("kTRUE") ){
+    TString Storage = gSystem->Getenv("STORAGE");
+    if(!Storage.BeginsWith("local://") && !Storage.BeginsWith("alien://")) {
+      Error(macroname,"STORAGE variable set to %s is not valid. Exiting\n",Storage.Data());
+      return;
+    }
+    storage = cdb->GetStorage(Storage.Data());
+    if(!storage){
+      Error(macroname,"Unable to open storage %s\n",Storage.Data());
+      return;
+    }
+    AliCDBPath path("GRP","Geometry","Data");
+    AliCDBEntry *entry = storage->Get(path.GetPath(),cdb->GetRun());
+    if(!entry) Fatal(macroname,"Could not get the specified CDB entry!");
+    entry->SetOwner(0);
+    TGeoManager* geom = (TGeoManager*) entry->GetObject();
+    AliGeomManager::SetGeometry(geom);
+  }else{
+    AliGeomManager::LoadGeometry(); //load geom from default CDB storage
+  }    
+		  
+  // load FRAME full misalignment objects (if needed, the macro
+  // for FRAME has to be ran in advance) and apply them to geometry
+  Info(macroname,"Loading FRAME alignment objects from CDB storage %s",
+      Storage.Data());
+  AliCDBPath fpath("GRP","Align","Data");
+  if( gSystem->Getenv("TOCDB") == TString("kTRUE") ){
+    AliCDBEntry *eFrame = storage->Get(fpath.GetPath(),cdb->GetRun());
+    if(!entry) Fatal(macroname,"Could not get the specified CDB entry!");
+    TClonesArray* arFrame = (TClonesArray*) eFrame->GetObject();
+    arFrame->Sort();
+    Int_t nvols = arFrame->GetEntriesFast();
+    Bool_t flag = kTRUE;
+    for(Int_t j=0; j<nvols; j++)
+      {
+	AliAlignObj* alobj = (AliAlignObj*) arFrame->UncheckedAt(j);
+	if (alobj->ApplyToGeometry() == kFALSE) flag = kFALSE;
+      }
+    if(!flag)
+      Fatal(macroname,"Error in the application of FRAME objects");
+  }else{
+    AliCDBEntry *eFrame = cdb->Get(fpath.GetPath());
+    if(!entry) Fatal(macroname,"Could not get the specified CDB entry!");
+    TClonesArray* arFrame = (TClonesArray*) eFrame->GetObject();
+    arFrame->Sort();
+    Int_t nvols = arFrame->GetEntriesFast();
+    Bool_t flag = kTRUE;
+    for(Int_t j=0; j<nvols; j++)
+      {
+	AliAlignObj* alobj = (AliAlignObj*) arFrame->UncheckedAt(j);
+	if (alobj->ApplyToGeometry() == kFALSE) flag = kFALSE;
+      }
+    if(!flag)
+      Fatal(macroname,"Error in the application of FRAME objects");
+  }
+
+   
   // sigmas for the supermodules
   Double_t smdx=0.3; // 3 mm
   Double_t smdy=0.3; // 3 mm
@@ -30,8 +93,6 @@ void MakeTRDFullMisAlignment(){
   UShort_t volid;
   const char *symname;
 
-  AliGeomManager::LoadGeometry("./geom_misalBSEGMO.root"); // geometry where the BSEGMO volumes have been misaligned
-
   // create the supermodules' alignment objects
   for (int i; i<18; i++) {
     TString sm_symname(Form("TRD/sm%02d",i));
@@ -44,7 +105,7 @@ void MakeTRDFullMisAlignment(){
     rx*=smrx;
     ry*=smry;
     rz*=smrz;
-    new(alobj[j++]) AliAlignObjParams(sm_symname.Data(),0,dx,dy,dz,rx,ry,rz,kFALSE);
+    new((*array)[j++]) AliAlignObjParams(sm_symname.Data(),0,dx,dy,dz,rx,ry,rz,kFALSE);
   }
 
   for(Int_t k=0; k<18; k++){
@@ -54,8 +115,7 @@ void MakeTRDFullMisAlignment(){
       return;
     }
   }
-  gGeoManager->Export("./geom_misalBSEGMO_trdSM.root");
-  AliGeomManager::LoadGeometry("./geom_misalBSEGMO_trdSM.root");
+
   // create the chambers' alignment objects
   ran = new TRandom(4357);
   for (Int_t iLayer = AliGeomManager::kTRD1; iLayer <= AliGeomManager::kTRD6; iLayer++) {
@@ -71,11 +131,10 @@ void MakeTRDFullMisAlignment(){
       rz*=chrz;
       volid = AliGeomManager::LayerToVolUID(iLayer,iModule);
       symname = AliGeomManager::SymName(volid);
-      new(alobj[j++]) AliAlignObjParams(symname,volid,dx,dy,dz,rx,ry,rz,kFALSE);
+      new((*array)[j++]) AliAlignObjParams(symname,volid,dx,dy,dz,rx,ry,rz,kFALSE);
     }
   }
 
-  const char* macroname = "MakeTRDFullMisAlignment.C";
   if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){
     // save on file
     const char* filename = "TRDfullMisalignment.root";
@@ -90,19 +149,8 @@ void MakeTRDFullMisAlignment(){
     f.Close();
   }else{
     // save in CDB storage
-    TString Storage = gSystem->Getenv("STORAGE");
-    if(!Storage.BeginsWith("local://") && !Storage.BeginsWith("alien://")) {
-      Error(macroname,"STORAGE variable set to %s is not valid. Exiting\n",Storage.Data());
-      return;
-    }
     Info(macroname,"Saving alignment objects in CDB storage %s",
 	 Storage.Data());
-    AliCDBManager* cdb = AliCDBManager::Instance();
-    AliCDBStorage* storage = cdb->GetStorage(Storage.Data());
-    if(!storage){
-      Error(macroname,"Unable to open storage %s\n",Storage.Data());
-      return;
-    }
     AliCDBMetaData* md = new AliCDBMetaData();
     md->SetResponsible("Dariusz Miskowiec");
     md->SetComment("Full misalignment for TRD");
@@ -112,7 +160,6 @@ void MakeTRDFullMisAlignment(){
   }
 
   array->Delete();
-  gGeoManager = 0x0;
 }
 
 

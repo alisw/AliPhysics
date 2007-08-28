@@ -3,14 +3,35 @@ void MakeEMCALFullMisAlignment(){
   //
   TClonesArray *array = new TClonesArray("AliAlignObjParams",10);
   TClonesArray &alobj = *array;
+  const char* macroname = "MakeEMCALFullMisAlignment.C";
 
-  if(!AliGeomManager::GetGeometry()){
-    if(!(AliCDBManager::Instance())->IsDefaultStorageSet())
-      AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
-      AliCDBManager::Instance()->SetRun(0);
-    AliGeomManager::LoadGeometry();
-  }
-  AliAlignObjParams a;
+  // Activate CDB storage and load geometry from CDB
+  AliCDBManager* cdb = AliCDBManager::Instance();
+  if(!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  cdb->SetRun(0);
+  
+  AliCDBStorage* storage;
+  
+  if( gSystem->Getenv("TOCDB") == TString("kTRUE") ){
+    TString Storage = gSystem->Getenv("STORAGE");
+    if(!Storage.BeginsWith("local://") && !Storage.BeginsWith("alien://")) {
+      Error(macroname,"STORAGE variable set to %s is not valid. Exiting\n",Storage.Data());
+      return;
+    }
+    storage = cdb->GetStorage(Storage.Data());
+    if(!storage){
+      Error(macroname,"Unable to open storage %s\n",Storage.Data());
+      return;
+    }
+    AliCDBPath path("GRP","Geometry","Data");
+    AliCDBEntry *entry = storage->Get(path.GetPath(),cdb->GetRun());
+    if(!entry) Fatal(macroname,"Could not get the specified CDB entry!");
+    entry->SetOwner(0);
+    TGeoManager* geom = (TGeoManager*) entry->GetObject();
+    AliGeomManager::SetGeometry(geom);
+  }else{
+    AliGeomManager::LoadGeometry(); //load geom from default CDB storage
+  }    
 
   Double_t dx, dy, dz, dpsi, dtheta, dphi;
   TRandom *rnd   = new TRandom(4321);
@@ -54,7 +75,6 @@ void MakeEMCALFullMisAlignment(){
     new(alobj[j++]) AliAlignObjParams(pathstr, volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
   }
 
-  const char* macroname = "MakeEMCALFullMisAlignment.C";
   if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){
     // save on file
     const char* filename = "EMCALfullMisalignment.root";
@@ -69,19 +89,6 @@ void MakeEMCALFullMisAlignment(){
     f.Close();
   }else{
     // save in CDB storage
-    TString Storage = gSystem->Getenv("STORAGE");
-    if(!Storage.BeginsWith("local://") && !Storage.BeginsWith("alien://")) {
-      Error(macroname,"STORAGE variable set to %s is not valid. Exiting\n",Storage.Data());
-      return;
-    }
-    Info(macroname,"Saving alignment objects in CDB storage %s",
-         Storage.Data());
-    AliCDBManager* cdb = AliCDBManager::Instance();
-    AliCDBStorage* storage = cdb->GetStorage(Storage.Data());
-    if(!storage){
-      Error(macroname,"Unable to open storage %s\n",Storage.Data());
-      return;
-    }
     AliCDBMetaData* md = new AliCDBMetaData();
     md->SetResponsible("Jennifer Clay");
     md->SetComment("Full misalignment for EMCAL");

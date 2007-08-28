@@ -1,18 +1,10 @@
 void MakeVZEROZeroMisAlignment(){
   // Create TClonesArray of zero misalignment objects for VZERO
   //
-  if(!AliGeomManager::GetGeometry()){
-    if(!(AliCDBManager::Instance())->IsDefaultStorageSet())
-      AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
-      AliCDBManager::Instance()->SetRun(0);
-    AliGeomManager::LoadGeometry();
-  }
-  // needed for the constructors with local coordinates not to fail
+  const char* macroname = "MakeVZEROZeroMisAlignment.C";
 
   TClonesArray *array = new TClonesArray("AliAlignObjParams",10);
   TClonesArray &alobj = *array;
-
-  AliAlignObjParams a;
 
   Double_t dx, dy, dz, dpsi, dtheta, dphi;
 
@@ -25,7 +17,6 @@ void MakeVZEROZeroMisAlignment(){
   TString V0left("VZERO/V0A");
   new(alobj[1]) AliAlignObjParams(V0left.Data(), volid, dx, dy, dz, dpsi, dtheta, dphi,kTRUE);
 
-  const char* macroname = "MakeVZEROZeroMisAlignment.C";
   if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){
     // save on file
     const char* filename = "VZEROzeroMisalignment.root";

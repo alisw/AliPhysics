@@ -1,18 +1,10 @@
 void MakeTRDZeroMisAlignment(){
   // Create TClonesArray of zero misalignment objects for TRD
   //
+  const char* macroname = "MakeTRDZeroMisAlignment.C";
   TClonesArray *array = new TClonesArray("AliAlignObjParams",1000);
   TClonesArray &alobj = *array;
    
-  if(!AliGeomManager::GetGeometry()){
-    if(!(AliCDBManager::Instance())->IsDefaultStorageSet())
-      AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
-      AliCDBManager::Instance()->SetRun(0);
-    AliGeomManager::LoadGeometry();
-  }
-  // needed for the constructors with local coordinates not to fail
-
-  AliAlignObjParams a;
 
   Double_t dx=0.,dy=0.,dz=0.,rx=0.,ry=0.,rz=0.;
 
@@ -20,7 +12,13 @@ void MakeTRDZeroMisAlignment(){
   UShort_t volid;
   const char *symname;
 
-  // create the chambers' alignment objects
+  // create the supermodules' alignment objects
+  for (int i; i<18; i++) {
+    TString sm_symname(Form("TRD/sm%02d",i));
+    new(alobj[j++]) AliAlignObjParams(sm_symname.Data(),0,dx,dy,dz,rx,ry,rz,kTRUE);
+  }
+  
+   // create the chambers' alignment objects
   for (Int_t iLayer = AliGeomManager::kTRD1; iLayer <= AliGeomManager::kTRD6; iLayer++) {
     for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(iLayer); iModule++) {
       volid = AliGeomManager::LayerToVolUID(iLayer,iModule);
@@ -29,7 +27,6 @@ void MakeTRDZeroMisAlignment(){
     }
   }
 
-  const char* macroname = "MakeTRDZeroMisAlignment.C";
   if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){
     // save on file
     const char* filename = "TRDzeroMisalignment.root";

@@ -3,17 +3,9 @@ void MakeTOFZeroMisAlignment(){
   //
   TClonesArray *array = new TClonesArray("AliAlignObjParams",2000);
   TClonesArray &alobj = *array;
+  const char* macroname = "MakeTOFZeroMisAlignment.C";
+
    
-  if(!AliGeomManager::GetGeometry()){
-    if(!(AliCDBManager::Instance())->IsDefaultStorageSet())
-      AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
-      AliCDBManager::Instance()->SetRun(0);
-    AliGeomManager::LoadGeometry();
-  }
-  // needed for the constructors with local coordinates not to fail
-
-  AliAlignObjParams a;
-
   AliGeomManager::ELayerID idTOF = AliGeomManager::kTOF;
   Int_t i;
   Int_t j=0;
@@ -23,7 +15,6 @@ void MakeTOFZeroMisAlignment(){
     new(alobj[j++]) AliAlignObjParams(AliGeomManager::SymName(idTOF,i), AliGeomManager::LayerToVolUID(idTOF,i), dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
   }
 
-  const char* macroname = "MakeTOFZeroMisAlignment.C";
   if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){
     // save on file
     const char* filename = "TOFzeroMisalignment.root";

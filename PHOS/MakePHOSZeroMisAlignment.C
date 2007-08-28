@@ -1,6 +1,7 @@
 void MakePHOSZeroMisAlignment(){
   // Create TClonesArray of zero misalignment objects for PHOS
   //
+  const char* macroname = "MakePHOSZeroMisAlignment.C";
   const AliPHOSGeometry *phosGeom = AliPHOSGeometry::GetInstance("IHEP", "IHEP");
   if (!phosGeom) {
     Error("MakePHOSFullMisAlignment", "Cannot obtain AliPHOSGeometry singleton\n");
@@ -62,7 +63,6 @@ void MakePHOSZeroMisAlignment(){
   AliPHOSSurvey geodesicData;
   geodesicData.CreateNullObjects(alobj, phosGeom);
 
-  const char* macroname = "MakePHOSZeroMisAlignment.C";
   if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){
     // save on file
     const char* filename = "PHOSzeroMisalignment.root";

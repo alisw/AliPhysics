@@ -9,8 +9,6 @@ void MakeHMPIDResMisAlignment(){
   
   TRandom *pRnd   = new TRandom(4357);
 
-  AliAlignObjMatrix o;
- 
   Int_t idHMPID =  AliGeomManager::kHMPID;
   for (Int_t iCh = 0; iCh < 7; iCh++) {
     dX     = (pRnd->Uniform()-0.5)*sigmaTrans;    dY     = (pRnd->Uniform()-0.5)*sigmaTrans;    dZ     = (pRnd->Uniform()-0.5)*sigmaTrans;
